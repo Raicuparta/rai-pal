@@ -1,5 +1,5 @@
-use std::{collections::HashMap, io::Error, io::BufReader, fs};
 use byteorder::{LittleEndian, ReadBytesExt};
+use std::{collections::HashMap, fs, io::BufReader, io::Error};
 
 const BIN_NONE: u8 = b'\x00';
 const BIN_STRING: u8 = b'\x01';
@@ -36,7 +36,7 @@ impl From<std::io::Error> for VdfrError {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, serde::Serialize)]
 pub enum Value {
     StringType(String),
     WideStringType(String),
@@ -54,7 +54,7 @@ type KeyValue = HashMap<String, Value>;
 // Recursively search for the specified sequence of keys in the key-value data.
 // The order of the keys dictates the hierarchy, with all except the last having
 // to be a Value::KeyValueType.
-fn find_keys<'a>(kv: &'a KeyValue, keys: &[&str]) -> Option<&'a Value> {
+pub fn find_keys<'a>(kv: &'a KeyValue, keys: &[&str]) -> Option<&'a Value> {
     if keys.len() == 0 {
         return None;
     }
@@ -70,6 +70,19 @@ fn find_keys<'a>(kv: &'a KeyValue, keys: &[&str]) -> Option<&'a Value> {
             None
         }
     }
+}
+
+#[derive(Debug, serde::Serialize)]
+pub struct AppLaunch {
+    pub executable: Option<String>,
+    pub app_type: Option<String>,
+    pub os_list: Option<String>,
+}
+
+#[derive(Debug, serde::Serialize)]
+pub struct AppConfig {
+    pub install_dir: Option<String>,
+    pub launch: Option<HashMap<String, AppLaunch>>,
 }
 
 #[derive(Debug)]
@@ -88,7 +101,7 @@ pub struct App {
 pub struct AppInfo {
     pub version: u32,
     pub universe: u32,
-    pub apps: HashMap<u32, App>,
+    pub apps: HashMap<u32, AppConfig>,
 }
 
 impl AppInfo {
@@ -118,7 +131,6 @@ impl AppInfo {
 
             let change_number = reader.read_u32::<LittleEndian>()?;
 
-            
             let mut checksum_bin: [u8; 20] = [0; 20];
             reader.read_exact(&mut checksum_bin)?;
 
@@ -134,11 +146,78 @@ impl AppInfo {
                 change_number,
                 key_values,
             };
-            appinfo.apps.insert(app_id, app);
+
+            let app_launch = if let Some(app_launch_kv) =
+                value_to_kv(app.get(&["appinfo", "config", "launch"]))
+            {
+                let launch_map: HashMap<String, AppLaunch> = app_launch_kv
+                    .into_iter()
+                    .filter_map(|(key, launch)| {
+                        value_to_kv(Some(launch)).map(|launch_kv| {
+                            (
+                                key.to_string(),
+                                AppLaunch {
+                                    app_type: value_to_string(find_keys(&launch_kv, &["type"])),
+                                    executable: value_to_string(find_keys(
+                                        &launch_kv,
+                                        &["executable"],
+                                    )),
+                                    os_list: value_to_string(find_keys(
+                                        &launch_kv,
+                                        &["config", "oslist"],
+                                    )),
+                                },
+                            )
+                        })
+                    })
+                    .collect();
+
+                if !launch_map.is_empty() {
+                    Some(launch_map)
+                } else {
+                    None
+                }
+            } else {
+                None
+            };
+
+            let app_config = AppConfig {
+                install_dir: value_to_string(app.get(&["appinfo", "config", "installdir"])),
+                launch: app_launch,
+            };
+
+            appinfo.apps.insert(app_id, app_config);
         }
 
         Ok(appinfo)
     }
+}
+
+fn value_to_string(value: Option<&Value>) -> Option<String> {
+    if value.is_none() {
+        return None;
+    }
+
+    let unwrapped = value.unwrap();
+    if let Value::StringType(string_value) = unwrapped {
+        return Some(String::from(string_value));
+    }
+
+    return None;
+}
+
+fn value_to_kv(value: Option<&Value>) -> Option<&KeyValue> {
+    if value.is_none() {
+        return None;
+    }
+
+    let unwrapped = value.unwrap();
+    if let Value::KeyValueType(kv_value) = unwrapped {
+        return Some(kv_value.clone());
+    }
+
+    // todo error?
+    return None;
 }
 
 impl App {
@@ -282,8 +361,8 @@ fn read_string<R: std::io::Read>(reader: &mut R, wide: bool) -> Result<String, E
 }
 
 pub fn read_appinfo(path: &str) -> AppInfo {
-  let mut appinfo_file =
-      BufReader::new(fs::File::open(path).expect(&format!("Failed to read {}", path)));
-  let appinfo = AppInfo::load(&mut appinfo_file);
-  return appinfo.unwrap();
+    let mut appinfo_file =
+        BufReader::new(fs::File::open(path).expect(&format!("Failed to read {}", path)));
+    let appinfo = AppInfo::load(&mut appinfo_file);
+    return appinfo.unwrap();
 }

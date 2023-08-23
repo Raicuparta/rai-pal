@@ -8,7 +8,7 @@
 fn greet(name: &str) -> String {
     let app_info = vdf::read_appinfo("/home/rai/.steam/steam/appcache/appinfo.vdf");
 
-    return format!("Hello, {}! You've been greeted from Rust!", app_info.apps.len());
+    return serde_json::to_string(&app_info.apps).unwrap();
 }
 
 fn main() {
