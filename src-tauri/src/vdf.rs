@@ -72,15 +72,16 @@ pub fn find_keys<'a>(kv: &'a KeyValue, keys: &[&str]) -> Option<&'a Value> {
     }
 }
 
-#[derive(Debug, serde::Serialize)]
+#[derive(Debug, serde::Serialize, Clone)]
 pub struct AppLaunch {
     pub executable: Option<String>,
     pub app_type: Option<String>,
     pub os_list: Option<String>,
 }
 
-#[derive(Debug, serde::Serialize)]
-pub struct AppConfig {
+#[derive(Debug, serde::Serialize, Clone)]
+pub struct AppDetails {
+    pub name: Option<String>,
     pub install_dir: Option<String>,
     pub launch: Option<HashMap<String, AppLaunch>>,
 }
@@ -101,7 +102,7 @@ pub struct App {
 pub struct AppInfo {
     pub version: u32,
     pub universe: u32,
-    pub apps: HashMap<u32, AppConfig>,
+    pub apps: HashMap<u32, AppDetails>,
 }
 
 impl AppInfo {
@@ -181,12 +182,13 @@ impl AppInfo {
                 None
             };
 
-            let app_config = AppConfig {
+            let app_details = AppDetails {
                 install_dir: value_to_string(app.get(&["appinfo", "config", "installdir"])),
                 launch: app_launch,
+                name: value_to_string(app.get(&["appinfo", "common", "name"])),
             };
 
-            appinfo.apps.insert(app_id, app_config);
+            appinfo.apps.insert(app_id, app_details);
         }
 
         Ok(appinfo)
