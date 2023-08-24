@@ -5,15 +5,12 @@ import {
   Card,
   CardBody,
   CardHeader,
-  CircularProgress,
-  Code,
   Container,
   Divider,
   Menu,
   MenuButton,
   MenuItem,
   MenuList,
-  Select,
   Stack,
   Tab,
   TabList,
@@ -23,7 +20,7 @@ import {
   Text,
   useColorMode,
 } from "@chakra-ui/react";
-import { ChevronDownIcon } from "@chakra-ui/icons";
+import { ChevronDownIcon, TriangleUpIcon } from "@chakra-ui/icons";
 
 type AppLaunch = {
   executable?: string;
@@ -65,7 +62,7 @@ function App() {
       <TabPanels flex="1" overflow={"auto"}>
         <Container maxWidth="2xl">
           <TabPanel>
-            <Stack gap={2}>
+            <Stack>
               <Button
                 type="submit"
                 onClick={() => {
@@ -85,15 +82,29 @@ function App() {
                     </CardHeader>
                     <Divider />
                     <CardBody>
-                      <Menu>
-                        <MenuButton as={Button} rightIcon={<ChevronDownIcon />}>
-                          Install mod
-                        </MenuButton>
-                        <MenuList>
-                          <MenuItem>Unity Explorer</MenuItem>
-                          <MenuItem>The other one</MenuItem>
-                        </MenuList>
-                      </Menu>
+                      <Stack direction={"row"}>
+                        <Button
+                          leftIcon={
+                            <TriangleUpIcon transform={"rotate(90deg)"} />
+                          }
+                          size="sm"
+                        >
+                          Start Game
+                        </Button>
+                        <Menu>
+                          <MenuButton
+                            size="sm"
+                            as={Button}
+                            rightIcon={<ChevronDownIcon />}
+                          >
+                            Install mod
+                          </MenuButton>
+                          <MenuList>
+                            <MenuItem>Unity Explorer</MenuItem>
+                            <MenuItem>The other one</MenuItem>
+                          </MenuList>
+                        </Menu>
+                      </Stack>
                     </CardBody>
                   </Card>
                 ))}
