@@ -9,6 +9,11 @@ import {
   Code,
   Container,
   Divider,
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuList,
+  Select,
   Stack,
   Tab,
   TabList,
@@ -18,6 +23,7 @@ import {
   Text,
   useColorMode,
 } from "@chakra-ui/react";
+import { ChevronDownIcon } from "@chakra-ui/icons";
 
 type AppLaunch = {
   executable?: string;
@@ -49,7 +55,7 @@ function App() {
   return (
     <Tabs isFitted display="flex" flexDirection={"column"} height="100vh">
       <TabList>
-        <Container display="flex" flexDirection="row">
+        <Container maxWidth="2xl" display="flex" flexDirection="row">
           <Tab>Home</Tab>
           <Tab>Steam Games</Tab>
           <Tab>Other Games</Tab>
@@ -57,7 +63,7 @@ function App() {
         </Container>
       </TabList>
       <TabPanels flex="1" overflow={"scroll"}>
-        <Container>
+        <Container maxWidth="2xl">
           <TabPanel>
             <Stack gap={2}>
               <Button
@@ -73,17 +79,21 @@ function App() {
               </Button>
               {steamApps &&
                 Object.entries(steamApps).map(([appId, steamApp]) => (
-                  <Card size="sm">
-                    <CardHeader>{steamApp.name}</CardHeader>
+                  <Card size="sm" key={appId}>
+                    <CardHeader>
+                      <Text>{steamApp.name}</Text>
+                    </CardHeader>
                     <Divider />
                     <CardBody>
-                      <Code
-                        whiteSpace={"nowrap"}
-                        width={"full"}
-                        overflow={"scroll"}
-                      >
-                        {steamApp.install_path}
-                      </Code>
+                      <Menu>
+                        <MenuButton as={Button} rightIcon={<ChevronDownIcon />}>
+                          Install mod
+                        </MenuButton>
+                        <MenuList>
+                          <MenuItem>Unity Explorer</MenuItem>
+                          <MenuItem>The other one</MenuItem>
+                        </MenuList>
+                      </Menu>
                     </CardBody>
                   </Card>
                 ))}
