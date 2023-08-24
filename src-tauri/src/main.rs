@@ -13,9 +13,9 @@ mod appinfo;
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 #[tauri::command]
 fn greet(name: &str) -> String {
-    let app_details_map = get_app_details();
+    let steam_apps = get_steam_apps();
 
-    return serde_json::to_string_pretty(&app_details_map).unwrap();
+    return serde_json::to_string_pretty(&steam_apps).unwrap();
 }
 
 #[derive(Serialize)]
@@ -25,7 +25,7 @@ struct SteamApp {
     install_path: String,
 }
 
-fn get_app_details() -> HashMap<u32, SteamApp> {
+fn get_steam_apps() -> HashMap<u32, SteamApp> {
     let mut steam_dir = SteamDir::locate().unwrap();
     let app_info = appinfo::read_appinfo(
         &steam_dir
