@@ -79,13 +79,6 @@ pub struct AppLaunch {
     pub os_list: Option<String>,
 }
 
-#[derive(Debug, serde::Serialize, Clone)]
-pub struct AppDetails {
-    pub name: Option<String>,
-    pub install_dir: Option<String>,
-    pub launch: Option<HashMap<String, AppLaunch>>,
-}
-
 #[derive(Debug)]
 pub struct App {
     pub size: u32,
@@ -98,11 +91,13 @@ pub struct App {
     pub key_values: KeyValue,
 }
 
+pub type LaunchMap = HashMap<String, AppLaunch>;
+
 #[derive(Debug)]
 pub struct AppInfo {
     pub version: u32,
     pub universe: u32,
-    pub apps: HashMap<u32, AppDetails>,
+    pub apps: HashMap<u32, LaunchMap>,
 }
 
 impl AppInfo {
@@ -182,13 +177,9 @@ impl AppInfo {
                 None
             };
 
-            let app_details = AppDetails {
-                install_dir: value_to_string(app.get(&["appinfo", "config", "installdir"])),
-                launch: app_launch,
-                name: value_to_string(app.get(&["appinfo", "common", "name"])),
-            };
-
-            appinfo.apps.insert(app_id, app_details);
+            if let Some(launch_map) = app_launch {
+                appinfo.apps.insert(app_id, launch_map);
+            }
         }
 
         Ok(appinfo)
