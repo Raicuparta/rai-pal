@@ -12,7 +12,7 @@ mod appinfo;
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 #[tauri::command]
-fn greet(name: &str) -> String {
+async fn get_steam_apps_json() -> String {
     let steam_apps = get_steam_apps();
 
     return serde_json::to_string_pretty(&steam_apps).unwrap();
@@ -55,7 +55,7 @@ fn get_steam_apps() -> HashMap<u32, SteamApp> {
 
 fn main() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![greet])
+        .invoke_handler(tauri::generate_handler![get_steam_apps_json])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

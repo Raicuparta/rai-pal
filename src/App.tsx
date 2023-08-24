@@ -5,6 +5,7 @@ import {
   Card,
   CardBody,
   CardHeader,
+  CircularProgress,
   Code,
   Container,
   Divider,
@@ -14,6 +15,7 @@ import {
   TabPanel,
   TabPanels,
   Tabs,
+  Text,
   useColorMode,
 } from "@chakra-ui/react";
 
@@ -31,12 +33,17 @@ type AppDetailsMap = Record<number, AppDetails>;
 
 function App() {
   const [steamApps, setSteamApps] = useState<AppDetailsMap>();
-  const [name, setName] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const { colorMode, toggleColorMode } = useColorMode();
 
   async function greet() {
+    setIsLoading(true);
     // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
-    setSteamApps(JSON.parse(await invoke("greet", { name })));
+    const json: string = await invoke("get_steam_apps_json");
+
+    console.log(json);
+    setSteamApps(JSON.parse(json));
+    setIsLoading(false);
   }
 
   return (
@@ -52,16 +59,18 @@ function App() {
       <TabPanels flex="1" overflow={"scroll"}>
         <Container>
           <TabPanel>
-            <Button
-              type="submit"
-              onClick={() => {
-                toggleColorMode();
-                greet();
-              }}
-            >
-              Greet {colorMode}
-            </Button>
             <Stack gap={2}>
+              <Button
+                type="submit"
+                onClick={() => {
+                  toggleColorMode();
+                  greet();
+                }}
+                isLoading={isLoading}
+                loadingText="Looking and finding and searching..."
+              >
+                Get games from Steam
+              </Button>
               {steamApps &&
                 Object.entries(steamApps).map(([appId, steamApp]) => (
                   <Card size="sm">
