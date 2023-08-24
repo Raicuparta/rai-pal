@@ -1,0 +1,18 @@
+/*
+  For some reason, default scroll bars are invisible on Linux webkit2gtk some times maybe?
+  So I'm using my own style for scroll bars, to make them visible again.
+*/
+*::-webkit-scrollbar {
+  width: 0.5em;
+  cursor: pointer;
+}
+*::-webkit-scrollbar-track {
+  background: var(--chakra-colors-gray-700);
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--chakra-colors-gray-600);
+  border-radius: 5px;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--chakra-colors-gray-500);
+}

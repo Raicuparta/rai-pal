@@ -62,7 +62,7 @@ function App() {
           <Tab>Settings</Tab>
         </Container>
       </TabList>
-      <TabPanels flex="1" overflow={"scroll"}>
+      <TabPanels flex="1" overflow={"auto"}>
         <Container maxWidth="2xl">
           <TabPanel>
             <Stack gap={2}>
