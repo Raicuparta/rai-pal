@@ -186,97 +186,27 @@ impl AppInfo {
     }
 }
 
-fn value_to_string(value: Option<&Value>) -> Option<String> {
-    if value.is_none() {
-        return None;
-    }
-
-    let unwrapped = value.unwrap();
-    if let Value::StringType(string_value) = unwrapped {
-        return Some(String::from(string_value));
+fn value_to_string(value_option: Option<&Value>) -> Option<String> {
+    if let Some(value) = value_option {
+        if let Value::StringType(string_value) = value {
+            return Some(String::from(string_value));
+        }
     }
 
     return None;
 }
 
-fn value_to_kv(value: Option<&Value>) -> Option<&KeyValue> {
-    if value.is_none() {
-        return None;
+fn value_to_kv(value_option: Option<&Value>) -> Option<&KeyValue> {
+    if let Some(value) = value_option {
+        if let Value::KeyValueType(kv_value) = value {
+            return Some(kv_value.clone());
+        }
     }
 
-    let unwrapped = value.unwrap();
-    if let Value::KeyValueType(kv_value) = unwrapped {
-        return Some(kv_value.clone());
-    }
-
-    // todo error?
     return None;
 }
 
 impl App {
-    pub fn get(&self, keys: &[&str]) -> Option<&Value> {
-        find_keys(&self.key_values, keys)
-    }
-}
-
-#[derive(Debug)]
-pub struct Package {
-    pub checksum: [u8; 20],
-    pub change_number: u32,
-    pub pics: u64,
-    pub key_values: KeyValue,
-}
-
-#[derive(Debug)]
-pub struct PackageInfo {
-    pub version: u32,
-    pub universe: u32,
-    pub packages: HashMap<u32, Package>,
-}
-
-impl PackageInfo {
-    pub fn load<R: std::io::Read>(reader: &mut R) -> Result<PackageInfo, VdfrError> {
-        let version = reader.read_u32::<LittleEndian>()?;
-        let universe = reader.read_u32::<LittleEndian>()?;
-
-        let mut packageinfo = PackageInfo {
-            version,
-            universe,
-            packages: HashMap::new(),
-        };
-
-        loop {
-            let package_id = reader.read_u32::<LittleEndian>()?;
-
-            if package_id == 0xffffffff {
-                break;
-            }
-
-            let mut checksum: [u8; 20] = [0; 20];
-            reader.read_exact(&mut checksum)?;
-
-            let change_number = reader.read_u32::<LittleEndian>()?;
-
-            // XXX: No idea what this is. Seems to get ignored in vdf.py.
-            let pics = reader.read_u64::<LittleEndian>()?;
-
-            let key_values = read_kv(reader, false)?;
-
-            let package = Package {
-                checksum,
-                change_number,
-                pics,
-                key_values,
-            };
-
-            packageinfo.packages.insert(package_id, package);
-        }
-
-        Ok(packageinfo)
-    }
-}
-
-impl Package {
     pub fn get(&self, keys: &[&str]) -> Option<&Value> {
         find_keys(&self.key_values, keys)
     }

@@ -3,12 +3,12 @@
 
 use std::collections::HashMap;
 
+use appinfo::LaunchMap;
 use serde::Serialize;
 use steamlocate::SteamDir;
-use vdf::LaunchMap;
 
-#[path = "vdf.rs"]
-mod vdf;
+#[path = "appinfo.rs"]
+mod appinfo;
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 #[tauri::command]
@@ -27,7 +27,7 @@ struct SteamApp {
 
 fn get_app_details() -> HashMap<u32, SteamApp> {
     let mut steam_dir = SteamDir::locate().unwrap();
-    let app_info = vdf::read_appinfo(
+    let app_info = appinfo::read_appinfo(
         &steam_dir
             .path
             .join("appcache/appinfo.vdf")
