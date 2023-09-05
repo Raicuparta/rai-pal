@@ -3,7 +3,7 @@
 
 use std::collections::HashMap;
 
-use appinfo::LaunchMap;
+use appinfo::Executable;
 use serde::Serialize;
 use steamlocate::SteamDir;
 
@@ -17,15 +17,16 @@ async fn get_steam_apps_json() -> String {
 
     return serde_json::to_string_pretty(&steam_apps).unwrap();
 }
-
 #[derive(Serialize)]
-struct SteamApp {
+#[serde(rename_all = "camelCase")]
+struct Game {
+    id: u32,
     name: String,
-    launch_map: LaunchMap,
-    install_path: String,
+    executables: Vec<Executable>,
+    distinct_executables: Vec<Executable>,
 }
 
-fn get_steam_apps() -> HashMap<u32, SteamApp> {
+fn get_steam_apps() -> HashMap<u32, Game> {
     let mut steam_dir = SteamDir::locate().unwrap();
     let app_info = appinfo::read_appinfo(
         &steam_dir
@@ -34,16 +35,18 @@ fn get_steam_apps() -> HashMap<u32, SteamApp> {
             .to_string_lossy(),
     );
 
-    let mut app_details_map: HashMap<u32, SteamApp> = HashMap::new();
+    let mut app_details_map: HashMap<u32, Game> = HashMap::new();
     for (app_id, app_option) in steam_dir.apps() {
         if let Some(app) = app_option {
-            if let Some(launch_map) = app_info.apps.get(&app_id) {
+            if let Some(executables) = app_info.apps.get(&app_id) {
+                let id = app_id.to_owned();
                 app_details_map.insert(
-                    app_id.to_owned(),
-                    SteamApp {
+                    id,
+                    Game {
+                        id,
                         name: app.name.clone().unwrap_or_default(),
-                        launch_map: launch_map.clone(),
-                        install_path: app.path.to_string_lossy().to_string(),
+                        executables: executables.clone(),
+                        distinct_executables: executables.clone(), // TODO distinguish them!
                     },
                 );
             }

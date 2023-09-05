@@ -1,9 +1,9 @@
 import { GameRow } from "./game-row";
-import { Box, Button, Flex, Input, Stack, Table } from "@mantine/core";
+import { Box, Button, Flex, Input, Stack, Table, Text } from "@mantine/core";
 import { useSteamApps } from "@hooks/use-steam-apps";
 import { useCallback, useEffect, useState } from "react";
-import { SteamGame } from "@api/game/steam-game";
 import { MdRefresh } from "react-icons/md";
+import { Game } from "@api/game/game";
 
 function includesIgnoreCase(term: string, text: string) {
   return text.toLowerCase().includes(term.toLowerCase());
@@ -15,7 +15,7 @@ function includesOneOf(term: string, texts: string[]) {
 
 export function InstalledGamesPage() {
   const [steamAppMap, isLoading, refreshSteamApps] = useSteamApps();
-  const [filteredSteamApps, setFilteredSteamApps] = useState<SteamGame[]>([]);
+  const [filteredSteamApps, setFilteredSteamApps] = useState<Game[]>([]);
 
   const changeFilter = useCallback(
     (newFilter: string) => {
@@ -31,8 +31,8 @@ export function InstalledGamesPage() {
         steamApps.filter((app) =>
           includesOneOf(newFilter, [
             app.name,
-            app.id,
-            ...app.distinctExecutables.map((executable) => executable.name),
+            app.id.toString(),
+            // ...app.distinctExecutables.map((executable) => executable.name),
           ])
         )
       );

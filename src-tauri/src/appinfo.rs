@@ -36,7 +36,7 @@ impl From<std::io::Error> for VdfrError {
     }
 }
 
-#[derive(Debug, serde::Serialize)]
+#[derive(Debug)]
 pub enum Value {
     StringType(String),
     WideStringType(String),
@@ -73,8 +73,10 @@ pub fn find_keys<'a>(kv: &'a KeyValue, keys: &[&str]) -> Option<&'a Value> {
 }
 
 #[derive(Debug, serde::Serialize, Clone)]
-pub struct AppLaunch {
-    pub executable: Option<String>,
+#[serde(rename_all = "camelCase")]
+pub struct Executable {
+    pub id: String,
+    pub name: Option<String>,
     pub app_type: Option<String>,
     pub os_list: Option<String>,
 }
@@ -91,13 +93,11 @@ pub struct App {
     pub key_values: KeyValue,
 }
 
-pub type LaunchMap = HashMap<String, AppLaunch>;
-
 #[derive(Debug)]
 pub struct AppInfo {
     pub version: u32,
     pub universe: u32,
-    pub apps: HashMap<u32, LaunchMap>,
+    pub apps: HashMap<u32, Vec<Executable>>,
 }
 
 impl AppInfo {
@@ -146,24 +146,14 @@ impl AppInfo {
             let app_launch = if let Some(app_launch_kv) =
                 value_to_kv(app.get(&["appinfo", "config", "launch"]))
             {
-                let launch_map: HashMap<String, AppLaunch> = app_launch_kv
+                let launch_map: Vec<Executable> = app_launch_kv
                     .into_iter()
                     .filter_map(|(key, launch)| {
-                        value_to_kv(Some(launch)).map(|launch_kv| {
-                            (
-                                key.to_string(),
-                                AppLaunch {
-                                    app_type: value_to_string(find_keys(&launch_kv, &["type"])),
-                                    executable: value_to_string(find_keys(
-                                        &launch_kv,
-                                        &["executable"],
-                                    )),
-                                    os_list: value_to_string(find_keys(
-                                        &launch_kv,
-                                        &["config", "oslist"],
-                                    )),
-                                },
-                            )
+                        value_to_kv(Some(launch)).map(|launch_kv| Executable {
+                            id: key.to_string(),
+                            app_type: value_to_string(find_keys(&launch_kv, &["type"])),
+                            name: value_to_string(find_keys(&launch_kv, &["executable"])),
+                            os_list: value_to_string(find_keys(&launch_kv, &["config", "oslist"])),
                         })
                     })
                     .collect();

@@ -1,34 +1,19 @@
 import { useCallback, useEffect, useState } from "react";
-import { AppMap } from "@api/game/steam-game";
+import { GameMap } from "@api/game/game-map";
+import { invoke } from "@tauri-apps/api";
 
 export function useSteamApps() {
-  const [steamApps, setSteamApps] = useState<AppMap>({});
+  const [steamApps, setSteamApps] = useState<GameMap>({});
   const [isLoading, setIsLoading] = useState(false);
 
   const updateSteamApps = useCallback((ignoreCache = false) => {
     setIsLoading(true);
 
-    setSteamApps({
-      "0": {
-        libraryPath: "/wrong",
-        executables: [],
-        id: "0",
-        name: "GameName",
-        distinctExecutables: [
-          {
-            architecture: "x64",
-            fullPath: "/wrong",
-            isLegacy: false,
-            isLinux: true,
-            modFilesPath: "/wrong",
-            name: "ExeName",
-            scriptingBackend: "il2cpp",
-            unityVersion: "10",
-            steamAppId: "0",
-          },
-        ],
-      },
-    });
+    invoke("get_steam_apps_json")
+      .then((json) => {
+        setSteamApps(JSON.parse(json as string) as GameMap);
+      })
+      .finally(() => setIsLoading(false));
 
     setIsLoading(false);
   }, []);
