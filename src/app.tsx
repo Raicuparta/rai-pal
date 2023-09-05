@@ -1,38 +1,55 @@
-import {
-  Container,
-  Tab,
-  TabList,
-  TabPanel,
-  TabPanels,
-  Tabs,
-} from "@chakra-ui/react";
-import { HomePage } from "./pages/home-page";
+import { InstalledGamesPage } from "./components/installed-games/installed-games-page";
+import { ModsPage } from "./components/mods/mods-page";
+import { OwnedGamesPage } from "./components/owned-games/owned-games-page";
+import { SettingsPage } from "./components/settings/settings-page";
+import { Tabs, Container, Stack } from "@mantine/core";
 
-const pages = [
-  { title: "Home", component: HomePage },
-  { title: "Find Games", component: HomePage },
-  { title: "Settings", component: HomePage },
-];
+const pages = {
+	installedGames: { title: "Installed Games", component: InstalledGamesPage },
+	ownedGames: { title: "Owned Games", component: OwnedGamesPage },
+	mods: { title: "Mods", component: ModsPage },
+	settings: { title: "Settings", component: SettingsPage },
+};
+
+const firstPage = Object.keys(pages)[0];
 
 function App() {
-  return (
-    <Tabs isFitted display="flex" flexDirection={"column"} height="100vh">
-      <TabList>
-        <Container maxWidth="2xl" display="flex" flexDirection="row">
-          {pages.map((page) => (
-            <Tab>{page.title}</Tab>
-          ))}
-        </Container>
-      </TabList>
-      <TabPanels flex="1" overflow={"auto"}>
-        {pages.map((page) => (
-          <Container maxWidth="2xl">
-            <TabPanel>{<page.component />}</TabPanel>
-          </Container>
-        ))}
-      </TabPanels>
-    </Tabs>
-  );
+	return (
+		<Tabs
+			defaultValue={firstPage}
+			radius={0}
+		>
+			<Stack sx={{ height: "100vh" }}>
+				<Tabs.List sx={{ justifyContent: "center" }}>
+					{Object.entries(pages).map(([pageId, page]) => (
+						<Tabs.Tab
+							key={pageId}
+							value={pageId}
+						>
+							{page.title}
+						</Tabs.Tab>
+					))}
+				</Tabs.List>
+				{Object.entries(pages).map(([pageId, page]) => (
+					<Tabs.Panel
+						key={pageId}
+						value={pageId}
+						sx={{
+							flex: 1,
+							overflow: "auto",
+						}}
+					>
+						<Container
+							pb="md"
+							h="100%"
+						>
+							<page.component />
+						</Container>
+					</Tabs.Panel>
+				))}
+			</Stack>
+		</Tabs>
+	);
 }
 
 export default App;

@@ -9,20 +9,20 @@
     "preview": "vite preview",
     "tauri": "tauri"
   },
-  "dependencies": {
-    "@chakra-ui/react": "^2.8.0",
+  "devDependencies": {
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
+    "@mantine/core": "^6.0.19",
+    "@mantine/hooks": "^6.0.19",
     "@tauri-apps/api": "^1.4.0",
-    "framer-motion": "^10.16.1",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
-  },
-  "devDependencies": {
     "@tauri-apps/cli": "^1.4.0",
-    "@types/react": "^18.2.15",
     "@types/react-dom": "^18.2.7",
+    "@types/react": "^18.2.15",
     "@vitejs/plugin-react": "^4.0.3",
+    "react-dom": "^18.2.0",
+    "react-icons": "^4.10.1",
+    "react-virtuoso": "^4.5.0",
+    "react": "^18.2.0",
     "typescript": "^5.0.2",
     "vite": "^4.4.4"
   }

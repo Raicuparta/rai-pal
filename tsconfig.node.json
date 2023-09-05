@@ -3,8 +3,9 @@
     "composite": true,
     "skipLibCheck": true,
     "module": "ESNext",
+    "lib": ["ES2020"],
     "moduleResolution": "bundler",
     "allowSyntheticDefaultImports": true
   },
-  "include": ["vite.config.ts"]
+  "include": ["vite.config.ts", "tsconfig.json"]
 }

@@ -1,10 +1,29 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
+import tsconfig from "./tsconfig.json";
+
+function removeAsterisk(pathWithAsterisk: string) {
+  return pathWithAsterisk.replace(/\/\*$/, "");
+}
+
+function getAliasesFromTsconfig() {
+  const resolveAlias = {};
+  for (const [key, [resolvePath]] of Object.entries(
+    tsconfig.compilerOptions.paths
+  )) {
+    resolveAlias[removeAsterisk(key)] = `/${removeAsterisk(resolvePath)}`;
+  }
+
+  return resolveAlias;
+}
+
 // https://vitejs.dev/config/
 export default defineConfig(async () => ({
   plugins: [react()],
-
+  resolve: {
+    alias: getAliasesFromTsconfig(),
+  },
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
   //
   // 1. prevent vite from obscuring rust errors
