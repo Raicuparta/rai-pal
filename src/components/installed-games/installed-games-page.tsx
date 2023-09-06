@@ -3,7 +3,7 @@ import { Box, Button, Flex, Input, Stack, Table, Text } from "@mantine/core";
 import { useSteamApps } from "@hooks/use-steam-apps";
 import { useCallback, useEffect, useState } from "react";
 import { MdRefresh } from "react-icons/md";
-import { Game } from "@api/game/game";
+import { Game } from "@api/bindings";
 
 function includesIgnoreCase(term: string, text: string) {
   return text.toLowerCase().includes(term.toLowerCase());
@@ -14,30 +14,30 @@ function includesOneOf(term: string, texts: string[]) {
 }
 
 export function InstalledGamesPage() {
-  const [steamAppMap, isLoading, refreshSteamApps] = useSteamApps();
-  const [filteredSteamApps, setFilteredSteamApps] = useState<Game[]>([]);
+  const [gameMap, isLoading, refreshGameMap] = useSteamApps();
+  const [filteredGames, setFilteredGames] = useState<Game[]>([]);
 
   const changeFilter = useCallback(
     (newFilter: string) => {
-      if (!steamAppMap) return;
+      if (!gameMap) return;
 
-      const steamApps = Object.values(steamAppMap);
+      const steamApps = Object.values(gameMap);
       if (!newFilter) {
-        setFilteredSteamApps(steamApps);
+        setFilteredGames(steamApps);
         return;
       }
 
-      setFilteredSteamApps(
+      setFilteredGames(
         steamApps.filter((app) =>
           includesOneOf(newFilter, [
             app.name,
             app.id.toString(),
-            // ...app.distinctExecutables.map((executable) => executable.name),
+            ...app.distinctExecutables.map((executable) => executable.name),
           ])
         )
       );
     },
-    [steamAppMap]
+    [gameMap]
   );
 
   useEffect(() => {
@@ -54,7 +54,7 @@ export function InstalledGamesPage() {
         />
         <Button
           disabled={isLoading}
-          onClick={refreshSteamApps}
+          onClick={refreshGameMap}
           loading={isLoading}
           sx={{ flex: 1, maxWidth: 300 }}
           leftIcon={<MdRefresh />}
@@ -84,8 +84,8 @@ export function InstalledGamesPage() {
             </tr>
           </thead>
           <tbody>
-            {filteredSteamApps.map((steamApp, index) => (
-              <GameRow index={index} key={steamApp.id} steamApp={steamApp} />
+            {filteredGames.map((game, index) => (
+              <GameRow index={index} key={game.id} game={game} />
             ))}
           </tbody>
         </Table>

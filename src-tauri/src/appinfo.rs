@@ -1,4 +1,6 @@
 use byteorder::{LittleEndian, ReadBytesExt};
+use serde::Serialize;
+use specta::Type;
 use std::{collections::HashMap, fs, io::BufReader, io::Error};
 
 const BIN_NONE: u8 = b'\x00';
@@ -72,7 +74,7 @@ pub fn find_keys<'a>(kv: &'a KeyValue, keys: &[&str]) -> Option<&'a Value> {
     }
 }
 
-#[derive(Debug, serde::Serialize, Clone)]
+#[derive(Debug, Serialize, Type, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct SteamLaunchOption {
     pub launch_id: String,

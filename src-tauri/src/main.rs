@@ -1,24 +1,26 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use std::{collections::HashMap, fs, path::PathBuf};
-
 use appinfo::SteamLaunchOption;
 use serde::Serialize;
+use specta::collect_types;
+use specta::Type;
+use std::{collections::HashMap, fs, path::PathBuf};
 use steamlocate::SteamDir;
+use tauri_specta::ts;
 
 #[path = "appinfo.rs"]
 mod appinfo;
 
-// Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
-#[tauri::command]
-async fn get_steam_apps_json() -> String {
-    let steam_apps = get_steam_apps();
+type GameMap = HashMap<u32, Game>;
 
-    return serde_json::to_string_pretty(&steam_apps).unwrap();
+#[tauri::command]
+#[specta::specta]
+async fn get_steam_apps_json() -> GameMap {
+    return get_steam_apps();
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Type)]
 #[serde(rename_all = "camelCase")]
 struct GameExecutable {
     id: String,
@@ -33,7 +35,7 @@ struct GameExecutable {
     steam_launch: Option<SteamLaunchOption>,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Type)]
 #[serde(rename_all = "camelCase")]
 struct Game {
     id: u32,
@@ -42,7 +44,7 @@ struct Game {
     distinct_executables: Vec<GameExecutable>,
 }
 
-fn get_steam_apps() -> HashMap<u32, Game> {
+fn get_steam_apps() -> GameMap {
     let mut steam_dir = SteamDir::locate().unwrap();
     let app_info = appinfo::read_appinfo(
         &steam_dir
@@ -51,7 +53,7 @@ fn get_steam_apps() -> HashMap<u32, Game> {
             .to_string_lossy(),
     );
 
-    let mut app_details_map: HashMap<u32, Game> = HashMap::new();
+    let mut app_details_map: GameMap = HashMap::new();
     for (app_id, app_option) in steam_dir.apps() {
         if let Some(app) = app_option {
             if let Some(steam_launch_options) = app_info.apps.get(&app_id) {
@@ -126,6 +128,13 @@ fn get_data_path(game_exe_path: &PathBuf) -> Result<PathBuf, &'static str> {
 }
 
 fn main() {
+    #[cfg(debug_assertions)]
+    ts::export(
+        collect_types![get_steam_apps_json],
+        "../src/api/bindings.ts",
+    )
+    .unwrap();
+
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![get_steam_apps_json])
         .run(tauri::generate_context!())

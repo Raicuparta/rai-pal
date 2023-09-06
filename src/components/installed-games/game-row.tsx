@@ -1,15 +1,15 @@
-import { Game } from "@api/game/game";
+import { Game } from "@api/bindings";
 import { GameExecutableRow } from "./game-executable-row";
 
 type Props = Readonly<{
-  steamApp: Game;
+  game: Game;
   index: number;
 }>;
 
 export function GameRow(props: Props) {
-  return props.steamApp.distinctExecutables?.map((executable) => (
+  return props.game.distinctExecutables?.map((executable) => (
     <tr key={executable.id}>
-      <GameExecutableRow game={props.steamApp} executable={executable} />
+      <GameExecutableRow game={props.game} executable={executable} />
     </tr>
   ));
 }

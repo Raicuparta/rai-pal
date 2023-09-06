@@ -1,12 +1,8 @@
 import { Badge, Box, Button, Flex, Menu } from "@mantine/core";
-import { GameExecutable } from "@api/game/game-executable";
-import { Game } from "@api/game/game";
 import { MdHandyman, MdSettings } from "react-icons/md";
 import { useModLoaders } from "../../hooks/use-mod-loaders";
-import { filterHasValue } from "@api/util/filter";
-import { UnityScriptingBackend } from "@api/engine/unity";
-import { Architecture } from "@api/game/architecture";
 import { Mod } from "@api/mod/mod";
+import { Game, GameExecutable } from "@api/bindings";
 
 type Props = Readonly<{
   game: Game;

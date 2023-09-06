@@ -1,8 +1,8 @@
 import { ModLoader } from "../mod-loader/mod-loader";
-import { UnityScriptingBackend } from "../engine/unity";
 
 export type Mod = {
   name: string;
-  scriptingBackend: UnityScriptingBackend;
+  // scriptingBackend: UnityScriptingBackend;
+  scriptingBackend: string;
   modLoader: ModLoader;
 };
