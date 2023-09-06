@@ -13,16 +13,16 @@ edition = "2021"
 tauri-build = { version = "1.4", features = [] }
 
 [dependencies]
-tauri = { version = "1.4", features = [] }
+specta = "1.0.5"
+tauri-specta = { version = "1.0.2", features = ["typescript"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 byteorder = "1.4.3"
 keyvalues-serde = "0.1.0"
 steamlocate = "1.2.1"
-specta = "1.0.5"
-tauri-specta = { version = "1.0.2", features = ["typescript"] }
+tauri = { version = "1.4.1", features = [] }
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem
 # DO NOT REMOVE!!
-custom-protocol = ["tauri/custom-protocol"]
+custom-protocol = []
