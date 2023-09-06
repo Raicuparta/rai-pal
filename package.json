@@ -5,11 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "tauri dev",
-    "build": "tsc && vite build",
-    "preview": "vite preview",
+    "build": "tauri build",
     "vite": "vite",
     "tauri": "tauri",
-    "icon": "tauri icon backend/icons/icon-source.png"
+    "update-icons": "tauri icon backend/icons/icon-source.png",
+    "frontend:build": "tsc && vite build",
+    "frontend:dev": "vite"
   },
   "devDependencies": {
     "@emotion/react": "^11.11.1",
