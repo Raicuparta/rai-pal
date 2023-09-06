@@ -1,4 +1,5 @@
 {
+  "$schema": "../node_modules/@tauri-apps/cli/schema.json",
   "build": {
     "beforeDevCommand": "pnpm vite",
     "beforeBuildCommand": "pnpm build",
@@ -7,16 +8,12 @@
     "withGlobalTauri": false
   },
   "package": {
-    "productName": "rai-mods",
-    "version": "0.0.0"
+    "productName": "rai-pal",
+    "version": "0.1.0"
   },
   "tauri": {
     "allowlist": {
-      "all": false,
-      "shell": {
-        "all": false,
-        "open": true
-      }
+      "all": false
     },
     "bundle": {
       "active": true,
@@ -37,7 +34,7 @@
       {
         "fullscreen": false,
         "resizable": true,
-        "title": "Rai Mods",
+        "title": "Rai Pal",
         "width": 800,
         "height": 600
       }
