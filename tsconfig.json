@@ -16,11 +16,11 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "paths": {
-      "@components/*": ["./src/components/*"],
-      "@hooks/*": ["./src/hooks/*"],
-      "@api/*": ["./src/api/*"]
+      "@components/*": ["./frontend/components/*"],
+      "@hooks/*": ["./frontend/hooks/*"],
+      "@api/*": ["./frontend/api/*"]
     }
   },
-  "include": ["src"],
+  "include": ["frontend"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
