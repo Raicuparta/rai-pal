@@ -2102,7 +2102,6 @@ dependencies = [
 name = "rai-mods"
 version = "0.0.0"
 dependencies = [
- "anyhow",
  "byteorder",
  "keyvalues-serde",
  "serde",

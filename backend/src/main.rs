@@ -1,7 +1,7 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use std::panic;
+use std::{backtrace::Backtrace, panic};
 
 use game::GameMap;
 use specta::collect_types;
@@ -17,10 +17,15 @@ mod steam_game;
 fn get_game_map() -> Result<GameMap, String> {
     return match panic::catch_unwind(|| steam_game::get_steam_apps()) {
         Ok(game_map) => Ok(game_map),
-        Err(error) => match error.downcast::<&str>() {
-            Ok(error_str) => Err(error_str.to_string()),
-            _ => Err("Unknown Source of Error".to_owned()),
-        },
+        Err(error) => {
+            return Err(format!(
+                "{}\nBacktrace:\n{}",
+                error
+                    .downcast::<&str>()
+                    .unwrap_or(Box::new("Unknown Source of Error")),
+                Backtrace::force_capture().to_string()
+            ));
+        }
     };
 }
 

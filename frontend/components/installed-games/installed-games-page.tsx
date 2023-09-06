@@ -71,7 +71,11 @@ export function InstalledGamesPage() {
           {isLoading ? "Finding Steam games..." : "Refresh"}
         </Button>
       </Flex>
-      {error && <Alert color="red">{error}</Alert>}
+      {error && (
+        <Alert color="red" sx={{ overflow: "auto" }}>
+          <pre>{error}</pre>
+        </Alert>
+      )}
       <Box sx={{ overflow: "auto", flex: 1 }}>
         <Table striped>
           <thead>

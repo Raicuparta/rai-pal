@@ -8,6 +8,7 @@ use crate::game_executable::is_unity_exe;
 use crate::game_executable::GameExecutable;
 
 pub fn get_steam_apps() -> GameMap {
+    panic!("oooh");
     let mut steam_dir = SteamDir::locate().unwrap();
     let app_info = read_appinfo(
         &steam_dir

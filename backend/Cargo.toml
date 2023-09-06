@@ -21,7 +21,6 @@ keyvalues-serde = "0.1.0"
 steamlocate = "1.2.1"
 specta = "1.0.5"
 tauri-specta = { version = "1.0.2", features = ["typescript"] }
-anyhow = "1.0.75"
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem
