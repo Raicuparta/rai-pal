@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Game, getSteamAppsJson } from "@api/bindings";
+import { Game, getGameMap } from "@api/bindings";
 
 export function useSteamApps() {
   const [steamApps, setSteamApps] = useState<Record<number, Game>>({});
@@ -8,7 +8,7 @@ export function useSteamApps() {
   const updateSteamApps = useCallback((ignoreCache = false) => {
     setIsLoading(true);
 
-    getSteamAppsJson()
+    getGameMap()
       .then((gameMap) => {
         setSteamApps(gameMap);
       })
