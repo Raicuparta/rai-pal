@@ -72,7 +72,7 @@ export function InstalledGamesPage() {
         </Button>
       </Flex>
       {error && (
-        <Alert color="red" sx={{ overflow: "auto" }}>
+        <Alert color="red" sx={{ overflow: "auto", flex: 1 }}>
           <pre>{error}</pre>
         </Alert>
       )}
