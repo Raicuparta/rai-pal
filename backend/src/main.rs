@@ -18,7 +18,7 @@ async fn get_game_map() -> GameMap {
 
 fn main() {
     #[cfg(debug_assertions)]
-    ts::export(collect_types![get_game_map], "../src/api/bindings.ts").unwrap();
+    ts::export(collect_types![get_game_map], "../frontend/api/bindings.ts").unwrap();
 
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![get_game_map])
