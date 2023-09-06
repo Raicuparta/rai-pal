@@ -12,7 +12,7 @@ mod steam_game;
 
 #[tauri::command]
 #[specta::specta]
-async fn get_game_map() -> GameMap {
+fn get_game_map() -> GameMap {
     return steam_game::get_steam_apps();
 }
 
