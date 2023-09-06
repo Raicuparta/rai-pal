@@ -1,7 +1,7 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use std::collections::HashMap;
+use std::{collections::HashMap, fs, path::PathBuf};
 
 use appinfo::SteamLaunchOption;
 use serde::Serialize;
@@ -25,7 +25,7 @@ struct GameExecutable {
     name: String,
     is_legacy: bool,
     mod_files_path: String,
-    full_path: String,
+    full_path: PathBuf,
     architecture: String,
     scripting_backend: String,
     unity_version: String,
@@ -63,20 +63,29 @@ fn get_steam_apps() -> HashMap<u32, Game> {
                         id,
                         name: app.name.clone().unwrap_or_default(),
                         distinct_executables: steam_launch_options
-                            .into_iter()
-                            .map(|launch_option| {
-                                GameExecutable {
-                                    architecture: String::from("x64"),
-                                    full_path: launch_option.executable.clone().unwrap_or_default(), // TODO full path!
-                                    id: launch_option.launch_id.clone(),
-                                    is_legacy: false,
-                                    is_linux: false,
-                                    mod_files_path: String::from(""),
-                                    name: launch_option.executable.clone().unwrap_or_default(),
-                                    scripting_backend: String::from("il2cpp"),
-                                    steam_launch: Some(launch_option.clone()),
-                                    unity_version: String::from("2020"),
+                            .iter()
+                            .filter_map(|launch_option| {
+                                if let Some(executable) = &launch_option.executable {
+                                    let full_path = app.path.join(executable);
+
+                                    if !is_unity_game(&full_path) {
+                                        return None;
+                                    }
+
+                                    return Some(GameExecutable {
+                                        architecture: String::from("x64"),
+                                        full_path,
+                                        id: launch_option.launch_id.clone(),
+                                        is_legacy: false,
+                                        is_linux: false,
+                                        mod_files_path: String::from(""),
+                                        name: executable.clone(),
+                                        scripting_backend: String::from("il2cpp"),
+                                        steam_launch: Some(launch_option.clone()),
+                                        unity_version: String::from("2020"),
+                                    });
                                 }
+                                return None;
                             })
                             .collect(),
                         executables: Vec::new(), // TODO distinguish them!
@@ -87,6 +96,33 @@ fn get_steam_apps() -> HashMap<u32, Game> {
     }
 
     app_details_map
+}
+
+fn is_unity_game(game_exe_path: &PathBuf) -> bool {
+    if let Ok(data_path) = get_data_path(game_exe_path) {
+        fs::metadata(game_exe_path).is_ok() && fs::metadata(data_path).is_ok()
+    } else {
+        false
+    }
+}
+
+fn file_name_without_extension(file_path: &PathBuf) -> Option<String> {
+    file_path
+        .file_stem()
+        .and_then(|stem| stem.to_str().map(|s| s.to_string()))
+}
+
+fn get_data_path(game_exe_path: &PathBuf) -> Result<PathBuf, &'static str> {
+    if let Some(parent) = game_exe_path.parent() {
+        if let Some(exe_name) = file_name_without_extension(game_exe_path) {
+            let data_folder_name = format!("{}_Data", exe_name);
+            Ok(parent.join(data_folder_name))
+        } else {
+            Err("Failed to get file name without extension")
+        }
+    } else {
+        Err("Failed to get parent directory")
+    }
 }
 
 fn main() {
