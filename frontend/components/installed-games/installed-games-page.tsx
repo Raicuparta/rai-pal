@@ -1,5 +1,14 @@
 import { GameRow } from "./game-row";
-import { Box, Button, Flex, Input, Stack, Table, Text } from "@mantine/core";
+import {
+  Alert,
+  Box,
+  Button,
+  Flex,
+  Input,
+  Stack,
+  Table,
+  Text,
+} from "@mantine/core";
 import { useSteamApps } from "@hooks/use-steam-apps";
 import { useCallback, useEffect, useState } from "react";
 import { MdRefresh } from "react-icons/md";
@@ -14,7 +23,7 @@ function includesOneOf(term: string, texts: string[]) {
 }
 
 export function InstalledGamesPage() {
-  const [gameMap, isLoading, refreshGameMap] = useSteamApps();
+  const [gameMap, isLoading, refreshGameMap, error] = useSteamApps();
   const [filteredGames, setFilteredGames] = useState<Game[]>([]);
 
   const changeFilter = useCallback(
@@ -62,6 +71,7 @@ export function InstalledGamesPage() {
           {isLoading ? "Finding Steam games..." : "Refresh"}
         </Button>
       </Flex>
+      {error && <Alert color="red">{error}</Alert>}
       <Box sx={{ overflow: "auto", flex: 1 }}>
         <Table striped>
           <thead>
