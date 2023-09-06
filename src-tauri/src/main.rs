@@ -3,7 +3,7 @@
 
 use std::collections::HashMap;
 
-use appinfo::Executable;
+use appinfo::SteamLaunchOption;
 use serde::Serialize;
 use steamlocate::SteamDir;
 
@@ -17,13 +17,29 @@ async fn get_steam_apps_json() -> String {
 
     return serde_json::to_string_pretty(&steam_apps).unwrap();
 }
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct GameExecutable {
+    id: String,
+    name: String,
+    is_legacy: bool,
+    mod_files_path: String,
+    full_path: String,
+    architecture: String,
+    scripting_backend: String,
+    unity_version: String,
+    is_linux: bool,
+    steam_launch: Option<SteamLaunchOption>,
+}
+
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 struct Game {
     id: u32,
     name: String,
-    executables: Vec<Executable>,
-    distinct_executables: Vec<Executable>,
+    executables: Vec<GameExecutable>,
+    distinct_executables: Vec<GameExecutable>,
 }
 
 fn get_steam_apps() -> HashMap<u32, Game> {
@@ -38,15 +54,32 @@ fn get_steam_apps() -> HashMap<u32, Game> {
     let mut app_details_map: HashMap<u32, Game> = HashMap::new();
     for (app_id, app_option) in steam_dir.apps() {
         if let Some(app) = app_option {
-            if let Some(executables) = app_info.apps.get(&app_id) {
+            if let Some(steam_launch_options) = app_info.apps.get(&app_id) {
                 let id = app_id.to_owned();
+
                 app_details_map.insert(
                     id,
                     Game {
                         id,
                         name: app.name.clone().unwrap_or_default(),
-                        executables: executables.clone(),
-                        distinct_executables: executables.clone(), // TODO distinguish them!
+                        distinct_executables: steam_launch_options
+                            .into_iter()
+                            .map(|launch_option| {
+                                GameExecutable {
+                                    architecture: String::from("x64"),
+                                    full_path: launch_option.executable.clone().unwrap_or_default(), // TODO full path!
+                                    id: launch_option.launch_id.clone(),
+                                    is_legacy: false,
+                                    is_linux: false,
+                                    mod_files_path: String::from(""),
+                                    name: launch_option.executable.clone().unwrap_or_default(),
+                                    scripting_backend: String::from("il2cpp"),
+                                    steam_launch: Some(launch_option.clone()),
+                                    unity_version: String::from("2020"),
+                                }
+                            })
+                            .collect(),
+                        executables: Vec::new(), // TODO distinguish them!
                     },
                 );
             }

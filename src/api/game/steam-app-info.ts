@@ -1,20 +1,18 @@
-export type AppLaunch = {
+export type SteamLaunchOption = {
+  launchId: string;
+  appId: number;
   description?: string;
   executable?: string;
   arguments?: string;
-  type?: string;
-  workingdir?: string;
-  config?: {
-    oslist?: string;
-    betakey?: string;
-    // Yeah this thing will some times randomly be a number and some times a string.
-    osarch?: string | number;
-  };
+  appType?: string;
+  osList?: string;
+  betaKey?: string;
+  osArch?: string;
 };
 
-export type LaunchMap = Record<string, AppLaunch>;
+export type SteamLaunchMap = Record<string, SteamLaunchOption>;
 
-export type AppInfo = {
+export type SteamAppInfo = {
   appinfo: {
     appid: number;
     common: {
@@ -25,7 +23,7 @@ export type AppInfo = {
     config: {
       contenttype: number;
       installdir: string;
-      launch?: LaunchMap;
+      launch?: SteamLaunchMap;
     };
   };
 };

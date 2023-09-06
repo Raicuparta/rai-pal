@@ -24,20 +24,15 @@ export function GameExecutableRow(props: Props) {
 
   const flatMods: Mod[] = [];
 
-  // const nameSuffix =
-  //   props.game.distinctExecutables.length <= 1
-  //     ? ""
-  //     : ` (${
-  //         props.executable.steamLaunch?.description ||
-  //         `${props.executable.name} ${
-  //           props.executable.steamLaunch?.arguments || ""
-  //         }`
-  //       })`;
-
   const nameSuffix =
     props.game.distinctExecutables.length <= 1
       ? ""
-      : `(${props.executable.name})`;
+      : ` (${
+          props.executable.steamLaunch?.description ||
+          `${props.executable.name} ${
+            props.executable.steamLaunch?.arguments || ""
+          }`
+        })`;
 
   return (
     <>
@@ -97,7 +92,7 @@ export function GameExecutableRow(props: Props) {
           {nameSuffix}
         </Box>
       </td>
-      {/* <td>
+      <td>
         <Badge color={props.executable.isLinux ? "yellow" : "lime"}>
           {props.executable.isLinux ? "Linux" : "Windows"}
         </Badge>
@@ -118,7 +113,7 @@ export function GameExecutableRow(props: Props) {
           {props.executable.scriptingBackend}
         </Badge>
       </td>
-      <td>{props.executable.unityVersion}</td> */}
+      <td>{props.executable.unityVersion}</td>
     </>
   );
 }

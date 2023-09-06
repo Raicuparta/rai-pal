@@ -74,11 +74,16 @@ pub fn find_keys<'a>(kv: &'a KeyValue, keys: &[&str]) -> Option<&'a Value> {
 
 #[derive(Debug, serde::Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
-pub struct Executable {
-    pub id: String,
-    pub name: Option<String>,
+pub struct SteamLaunchOption {
+    pub launch_id: String,
+    pub app_id: u32,
+    pub description: Option<String>,
+    pub executable: Option<String>,
+    pub arguments: Option<String>,
     pub app_type: Option<String>,
     pub os_list: Option<String>,
+    pub beta_key: Option<String>,
+    pub os_arch: Option<String>,
 }
 
 #[derive(Debug)]
@@ -97,7 +102,7 @@ pub struct App {
 pub struct AppInfo {
     pub version: u32,
     pub universe: u32,
-    pub apps: HashMap<u32, Vec<Executable>>,
+    pub apps: HashMap<u32, Vec<SteamLaunchOption>>,
 }
 
 impl AppInfo {
@@ -146,14 +151,22 @@ impl AppInfo {
             let app_launch = if let Some(app_launch_kv) =
                 value_to_kv(app.get(&["appinfo", "config", "launch"]))
             {
-                let launch_map: Vec<Executable> = app_launch_kv
+                let launch_map: Vec<SteamLaunchOption> = app_launch_kv
                     .into_iter()
                     .filter_map(|(key, launch)| {
-                        value_to_kv(Some(launch)).map(|launch_kv| Executable {
-                            id: key.to_string(),
+                        value_to_kv(Some(launch)).map(|launch_kv| SteamLaunchOption {
+                            launch_id: key.to_string(),
+                            app_id,
+                            description: value_to_string(find_keys(&launch_kv, &["description"])),
                             app_type: value_to_string(find_keys(&launch_kv, &["type"])),
-                            name: value_to_string(find_keys(&launch_kv, &["executable"])),
+                            executable: value_to_string(find_keys(&launch_kv, &["executable"])),
+                            arguments: value_to_string(find_keys(&launch_kv, &["arguments"])),
                             os_list: value_to_string(find_keys(&launch_kv, &["config", "oslist"])),
+                            beta_key: value_to_string(find_keys(
+                                &launch_kv,
+                                &["config", "betakey"],
+                            )),
+                            os_arch: value_to_string(find_keys(&launch_kv, &["config", "osarch"])),
                         })
                     })
                     .collect();

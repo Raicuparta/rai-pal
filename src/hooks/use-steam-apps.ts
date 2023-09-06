@@ -11,6 +11,7 @@ export function useSteamApps() {
 
     invoke("get_steam_apps_json")
       .then((json) => {
+        console.log("json", json);
         setSteamApps(JSON.parse(json as string) as GameMap);
       })
       .finally(() => setIsLoading(false));
