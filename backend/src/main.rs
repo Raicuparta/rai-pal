@@ -14,7 +14,7 @@ mod steam_game;
 
 #[tauri::command]
 #[specta::specta]
-fn get_game_map() -> Result<GameMap, String> {
+async fn get_game_map() -> Result<GameMap, String> {
     return match panic::catch_unwind(|| steam_game::get_steam_apps()) {
         Ok(game_map) => Ok(game_map),
         Err(error) => {

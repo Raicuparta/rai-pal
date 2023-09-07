@@ -16,8 +16,6 @@ export function useSteamApps() {
       })
       .catch((error) => setError(`Failed to retrieve games: ${error}`))
       .finally(() => setIsLoading(false));
-
-    setIsLoading(false);
   }, []);
 
   const refresh = useCallback(() => {
