@@ -5,7 +5,7 @@ use std::{backtrace::Backtrace, panic};
 
 use game::GameMap;
 use specta::collect_types;
-use steam_game::get_steam_apps;
+use steam_game::get_steam_games;
 use steam_owned_unity_games::{get_steam_owned_unity_games, OwnedUnityGame};
 use tauri_specta::ts;
 
@@ -18,7 +18,7 @@ mod steam_owned_unity_games;
 #[tauri::command]
 #[specta::specta]
 async fn get_game_map() -> Result<GameMap, String> {
-    return match panic::catch_unwind(|| get_steam_apps()) {
+    return match panic::catch_unwind(|| get_steam_games()) {
         Ok(game_map) => Ok(game_map),
         Err(error) => {
             return Err(format!(

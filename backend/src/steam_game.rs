@@ -7,7 +7,7 @@ use crate::game::GameMap;
 use crate::game_executable::is_unity_exe;
 use crate::game_executable::GameExecutable;
 
-pub fn get_steam_apps() -> GameMap {
+pub fn get_steam_games() -> GameMap {
     let mut steam_dir = SteamDir::locate().unwrap();
     let app_info = read_appinfo(
         &steam_dir
@@ -28,6 +28,7 @@ pub fn get_steam_apps() -> GameMap {
                         id,
                         name: app.name.clone().unwrap_or_default(),
                         distinct_executables: steam_launch_options
+                            .launch_options
                             .iter()
                             .filter_map(|launch_option| {
                                 if let Some(executable) = &launch_option.executable {

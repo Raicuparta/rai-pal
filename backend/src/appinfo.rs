@@ -101,10 +101,16 @@ pub struct App {
 }
 
 #[derive(Debug)]
+pub struct SteamApp {
+    pub launch_options: Vec<SteamLaunchOption>,
+    pub name: String,
+}
+
+#[derive(Debug)]
 pub struct AppInfo {
     pub version: u32,
     pub universe: u32,
-    pub apps: HashMap<u32, Vec<SteamLaunchOption>>,
+    pub apps: HashMap<u32, SteamApp>,
 }
 
 impl AppInfo {
@@ -182,8 +188,16 @@ impl AppInfo {
                 None
             };
 
-            if let Some(launch_map) = app_launch {
-                appinfo.apps.insert(app_id, launch_map);
+            if let Some(launch_options) = app_launch {
+                if let Some(name) = value_to_string(app.get(&["appinfo", "common", "name"])) {
+                    appinfo.apps.insert(
+                        app_id,
+                        SteamApp {
+                            name,
+                            launch_options,
+                        },
+                    );
+                }
             }
         }
 
