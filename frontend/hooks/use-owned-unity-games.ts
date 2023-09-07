@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { OwnedUnityGame } from "@api/game/steam-owned-unity-games";
+import { getOwnedGames } from "@api/bindings";
 
 export const useOwnedUnityGames = () => {
   const [ownedUnityGames, setOwnedUnityGames] = useState<OwnedUnityGame[]>([]);
@@ -7,8 +8,12 @@ export const useOwnedUnityGames = () => {
 
   const updateOwnedUnityGames = useCallback(async (ignoreCache = false) => {
     setIsLoading(true);
+    getOwnedGames()
+      .then(setOwnedUnityGames)
+      .finally(() => {
+        setIsLoading(false);
+      });
     setOwnedUnityGames([]);
-    setIsLoading(false);
   }, []);
 
   const refresh = useCallback(() => {
