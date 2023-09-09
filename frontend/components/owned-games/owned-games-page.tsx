@@ -14,7 +14,7 @@ const renderHeaders = () => (
     <Box component="th" w={100}>
       Installed?
     </Box>
-    <Box component="th" w={50} />
+    <Box component="th" w={100} />
   </Box>
 );
 

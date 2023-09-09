@@ -20,7 +20,7 @@ serde_json = "1.0"
 byteorder = "1.4.3"
 keyvalues-serde = "0.1.0"
 steamlocate = "1.2.1"
-tauri = { version = "1.4.1", features = [] }
+tauri = { version = "1.4.1", features = ["shell-open"] }
 reqwest = "0.11.20"
 
 [features]

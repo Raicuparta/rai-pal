@@ -14,10 +14,12 @@
   "tauri": {
     "allowlist": {
       "all": false,
-      "http": {
-        "scope": [
-          "https://raw.githubusercontent.com/Raicuparta/steam-unity-app-ids/main/*"
-        ]
+      "shell": {
+        "all": false,
+        "execute": false,
+        "open": "^((steam?://\\w+)|(https?://\\w+)).+",
+        "scope": [],
+        "sidecar": false
       }
     },
     "bundle": {
