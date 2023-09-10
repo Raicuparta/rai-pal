@@ -4,6 +4,7 @@ use steamlocate::SteamDir;
 use crate::appinfo::read_appinfo;
 use crate::game::Game;
 use crate::game::GameMap;
+use crate::game_executable::get_unity_scripting_backend;
 use crate::game_executable::is_unity_exe;
 use crate::game_executable::Architecture;
 use crate::game_executable::GameExecutable;
@@ -43,13 +44,14 @@ pub fn get_steam_games() -> GameMap {
 
                                     return Some(GameExecutable {
                                         architecture: Architecture::X64,
-                                        full_path,
+                                        full_path: full_path.clone(),
                                         id: launch_option.launch_id.clone(),
                                         is_legacy: false,
                                         operating_system: OperatingSystem::Linux,
                                         mod_files_path: String::from(""),
                                         name: executable.clone(),
-                                        scripting_backend: UnityScriptingBackend::Il2Cpp,
+                                        scripting_backend: get_unity_scripting_backend(&full_path)
+                                            .ok()?,
                                         steam_launch: Some(launch_option.clone()),
                                         unity_version: String::from("2020"),
                                     });

@@ -1,7 +1,7 @@
 use appinfo::SteamLaunchOption;
 use serde::Serialize;
 use specta::Type;
-use std::{fs, path::PathBuf};
+use std::{error::Error, fs, path::PathBuf};
 
 use crate::appinfo;
 
@@ -40,9 +40,26 @@ pub struct GameExecutable {
 
 pub fn is_unity_exe(game_exe_path: &PathBuf) -> bool {
     if let Ok(data_path) = get_data_path(game_exe_path) {
-        fs::metadata(game_exe_path).is_ok() && fs::metadata(data_path).is_ok()
+        game_exe_path.is_file() && data_path.is_dir()
     } else {
         false
+    }
+}
+
+pub fn get_unity_scripting_backend(
+    game_exe_path: &PathBuf,
+) -> Result<UnityScriptingBackend, String> {
+    match game_exe_path.parent() {
+        Some(game_folder) => {
+            if game_folder.join("GameAssembly.dll").is_file()
+                || game_folder.join("GameAssembly.so").is_file()
+            {
+                Ok(UnityScriptingBackend::Il2Cpp)
+            } else {
+                Ok(UnityScriptingBackend::Mono)
+            }
+        }
+        None => Err("Noooo".to_owned()),
     }
 }
 
