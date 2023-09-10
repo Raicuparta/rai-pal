@@ -19,6 +19,9 @@ export function getOwnedGames() {
 }
 
 export type Game = { id: number; name: string; executables: GameExecutable[]; distinctExecutables: GameExecutable[] }
+export type OperatingSystem = "Linux" | "Windows"
 export type SteamLaunchOption = { launchId: string; appId: number; description: string | null; executable: string | null; arguments: string | null; appType: string | null; osList: string | null; betaKey: string | null; osArch: string | null }
-export type GameExecutable = { id: string; name: string; isLegacy: boolean; modFilesPath: string; fullPath: string; architecture: string; scriptingBackend: string; unityVersion: string; isLinux: boolean; steamLaunch: SteamLaunchOption | null }
 export type OwnedUnityGame = { id: string; name: string; installed: boolean }
+export type UnityScriptingBackend = "Il2Cpp" | "Mono"
+export type GameExecutable = { id: string; name: string; isLegacy: boolean; modFilesPath: string; fullPath: string; architecture: Architecture; scriptingBackend: UnityScriptingBackend; unityVersion: string; operatingSystem: OperatingSystem; steamLaunch: SteamLaunchOption | null }
+export type Architecture = "X64" | "X32"

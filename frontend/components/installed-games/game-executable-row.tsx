@@ -89,13 +89,17 @@ export function GameExecutableRow(props: Props) {
         </Box>
       </td>
       <td>
-        <Badge color={props.executable.isLinux ? "yellow" : "lime"}>
-          {props.executable.isLinux ? "Linux" : "Windows"}
+        <Badge
+          color={
+            props.executable.operatingSystem === "Linux" ? "yellow" : "lime"
+          }
+        >
+          {props.executable.operatingSystem}
         </Badge>
       </td>
       <td>
         <Badge
-          color={props.executable.architecture === "x64" ? "blue" : "teal"}
+          color={props.executable.architecture === "X64" ? "blue" : "teal"}
         >
           {props.executable.architecture}
         </Badge>
@@ -103,7 +107,7 @@ export function GameExecutableRow(props: Props) {
       <td>
         <Badge
           color={
-            props.executable.scriptingBackend === "il2cpp" ? "red" : "grape"
+            props.executable.scriptingBackend === "Il2Cpp" ? "red" : "grape"
           }
         >
           {props.executable.scriptingBackend}

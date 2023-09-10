@@ -22,7 +22,7 @@ pub async fn get_steam_owned_unity_games() -> Result<Vec<OwnedUnityGame>, Box<dy
 
     // TODO this is repeated in steam_game.
     // Should try to cache it.
-    let mut steam_dir = SteamDir::locate().unwrap();
+    let steam_dir = SteamDir::locate().unwrap();
     let app_info = read_appinfo(
         &steam_dir
             .path

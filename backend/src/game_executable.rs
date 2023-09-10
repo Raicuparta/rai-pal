@@ -6,6 +6,24 @@ use std::{fs, path::PathBuf};
 use crate::appinfo;
 
 #[derive(Serialize, Type)]
+pub enum UnityScriptingBackend {
+    Il2Cpp,
+    Mono,
+}
+
+#[derive(Serialize, Type)]
+pub enum Architecture {
+    X64,
+    X32,
+}
+
+#[derive(Serialize, Type)]
+pub enum OperatingSystem {
+    Linux,
+    Windows,
+}
+
+#[derive(Serialize, Type)]
 #[serde(rename_all = "camelCase")]
 pub struct GameExecutable {
     pub id: String,
@@ -13,10 +31,10 @@ pub struct GameExecutable {
     pub is_legacy: bool,
     pub mod_files_path: String,
     pub full_path: PathBuf,
-    pub architecture: String,
-    pub scripting_backend: String,
+    pub architecture: Architecture,
+    pub scripting_backend: UnityScriptingBackend,
     pub unity_version: String,
-    pub is_linux: bool,
+    pub operating_system: OperatingSystem,
     pub steam_launch: Option<SteamLaunchOption>,
 }
 

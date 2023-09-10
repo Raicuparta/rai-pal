@@ -5,7 +5,10 @@ use crate::appinfo::read_appinfo;
 use crate::game::Game;
 use crate::game::GameMap;
 use crate::game_executable::is_unity_exe;
+use crate::game_executable::Architecture;
 use crate::game_executable::GameExecutable;
+use crate::game_executable::OperatingSystem;
+use crate::game_executable::UnityScriptingBackend;
 
 pub fn get_steam_games() -> GameMap {
     let mut steam_dir = SteamDir::locate().unwrap();
@@ -39,14 +42,14 @@ pub fn get_steam_games() -> GameMap {
                                     }
 
                                     return Some(GameExecutable {
-                                        architecture: String::from("x64"),
+                                        architecture: Architecture::X64,
                                         full_path,
                                         id: launch_option.launch_id.clone(),
                                         is_legacy: false,
-                                        is_linux: false,
+                                        operating_system: OperatingSystem::Linux,
                                         mod_files_path: String::from(""),
                                         name: executable.clone(),
-                                        scripting_backend: String::from("il2cpp"),
+                                        scripting_backend: UnityScriptingBackend::Il2Cpp,
                                         steam_launch: Some(launch_option.clone()),
                                         unity_version: String::from("2020"),
                                     });
