@@ -57,7 +57,7 @@ type KeyValue = HashMap<String, Value>;
 // The order of the keys dictates the hierarchy, with all except the last having
 // to be a Value::KeyValueType.
 pub fn find_keys<'a>(kv: &'a KeyValue, keys: &[&str]) -> Option<&'a Value> {
-    if keys.len() == 0 {
+    if keys.is_empty() {
         return None;
     }
 
@@ -65,12 +65,10 @@ pub fn find_keys<'a>(kv: &'a KeyValue, keys: &[&str]) -> Option<&'a Value> {
     let value = kv.get(&key.to_string());
     if keys.len() == 1 {
         value
+    } else if let Some(Value::KeyValueType(kv)) = value {
+        find_keys(kv, &keys[1..])
     } else {
-        if let Some(Value::KeyValueType(kv)) = value {
-            find_keys(&kv, &keys[1..])
-        } else {
-            None
-        }
+        None
     }
 }
 
@@ -160,21 +158,21 @@ impl SteamAppInfoFile {
                 value_to_kv(app.get(&["appinfo", "config", "launch"]))
             {
                 let launch_map: Vec<SteamLaunchOption> = app_launch_kv
-                    .into_iter()
+                    .iter()
                     .filter_map(|(key, launch)| {
                         value_to_kv(Some(launch)).map(|launch_kv| SteamLaunchOption {
                             launch_id: key.to_string(),
                             app_id,
-                            description: value_to_string(find_keys(&launch_kv, &["description"])),
-                            app_type: value_to_string(find_keys(&launch_kv, &["type"])),
-                            executable: value_to_path(find_keys(&launch_kv, &["executable"])),
-                            arguments: value_to_string(find_keys(&launch_kv, &["arguments"])),
-                            os_list: value_to_string(find_keys(&launch_kv, &["config", "oslist"])),
+                            description: value_to_string(find_keys(launch_kv, &["description"])),
+                            app_type: value_to_string(find_keys(launch_kv, &["type"])),
+                            executable: value_to_path(find_keys(launch_kv, &["executable"])),
+                            arguments: value_to_string(find_keys(launch_kv, &["arguments"])),
+                            os_list: value_to_string(find_keys(launch_kv, &["config", "oslist"])),
                             beta_key: value_to_string(find_keys(
-                                &launch_kv,
+                                launch_kv,
                                 &["config", "betakey"],
                             )),
-                            os_arch: value_to_string(find_keys(&launch_kv, &["config", "osarch"])),
+                            os_arch: value_to_string(find_keys(launch_kv, &["config", "osarch"])),
                         })
                     })
                     .collect();
@@ -212,17 +210,17 @@ fn value_to_string(value_option: Option<&Value>) -> Option<String> {
         }
     }
 
-    return None;
+    None
 }
 
 fn value_to_path(value_option: Option<&Value>) -> Option<PathBuf> {
     if let Some(value) = value_option {
         if let Value::StringType(string_value) = value {
-            return Some(PathBuf::from(string_value.replace("\\", "/")));
+            return Some(PathBuf::from(string_value.replace('\\', "/")));
         }
     }
 
-    return None;
+    None
 }
 
 fn value_to_kv(value_option: Option<&Value>) -> Option<&KeyValue> {
@@ -232,7 +230,7 @@ fn value_to_kv(value_option: Option<&Value>) -> Option<&KeyValue> {
         }
     }
 
-    return None;
+    None
 }
 
 impl App {
@@ -298,7 +296,7 @@ fn read_string<R: std::io::Read>(reader: &mut R, wide: bool) -> Result<String, E
             }
             buf.push(c);
         }
-        return Ok(std::string::String::from_utf16_lossy(&buf).to_string());
+        Ok(std::string::String::from_utf16_lossy(&buf).to_string())
     } else {
         let mut buf: Vec<u8> = vec![];
         loop {
@@ -314,7 +312,7 @@ fn read_string<R: std::io::Read>(reader: &mut R, wide: bool) -> Result<String, E
 
 pub fn read_appinfo(path: &str) -> SteamAppInfoFile {
     let mut appinfo_file =
-        BufReader::new(fs::File::open(path).expect(&format!("Failed to read {}", path)));
+        BufReader::new(fs::File::open(path).unwrap_or_else(|_| panic!("Failed to read {}", path)));
     let appinfo = SteamAppInfoFile::load(&mut appinfo_file);
-    return appinfo.unwrap();
+    appinfo.unwrap()
 }

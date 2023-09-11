@@ -46,7 +46,7 @@ pub fn get_steam_games() -> GameMap {
                             return None;
                         }
 
-                        return Some(GameExecutable {
+                        Some(GameExecutable {
                             architecture,
                             full_path: full_path.clone(),
                             id: launch_option.launch_id.clone(),
@@ -57,7 +57,7 @@ pub fn get_steam_games() -> GameMap {
                             scripting_backend: get_unity_scripting_backend(&full_path).ok()?,
                             steam_launch: Some(launch_option.clone()),
                             unity_version: get_unity_version(&full_path),
-                        });
+                        })
                     })
                     .collect(),
                 executables: Vec::new(), // TODO distinguish them!

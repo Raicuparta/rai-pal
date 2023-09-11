@@ -18,7 +18,7 @@ mod steam_owned_unity_games;
 #[tauri::command]
 #[specta::specta]
 async fn get_game_map() -> Result<GameMap, String> {
-    return match panic::catch_unwind(|| get_steam_games()) {
+    return match panic::catch_unwind(get_steam_games) {
         Ok(game_map) => Ok(game_map),
         Err(error) => {
             return Err(format!(
@@ -26,7 +26,7 @@ async fn get_game_map() -> Result<GameMap, String> {
                 error
                     .downcast::<&str>()
                     .unwrap_or(Box::new("Unknown Source of Error")),
-                Backtrace::force_capture().to_string()
+                Backtrace::force_capture()
             ));
         }
     };
@@ -35,7 +35,7 @@ async fn get_game_map() -> Result<GameMap, String> {
 #[tauri::command]
 #[specta::specta]
 async fn get_owned_games() -> Result<Vec<OwnedUnityGame>, String> {
-    return match panic::catch_unwind(|| get_steam_owned_unity_games()) {
+    return match panic::catch_unwind(get_steam_owned_unity_games) {
         Ok(game_map) => Ok(game_map.await.unwrap()), // TODO handle properly
         Err(error) => {
             return Err(format!(
@@ -43,7 +43,7 @@ async fn get_owned_games() -> Result<Vec<OwnedUnityGame>, String> {
                 error
                     .downcast::<&str>()
                     .unwrap_or(Box::new("Unknown Source of Error")),
-                Backtrace::force_capture().to_string()
+                Backtrace::force_capture()
             ));
         }
     };

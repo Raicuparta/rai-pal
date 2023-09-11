@@ -9,7 +9,6 @@ use std::{
     fs::{metadata, File},
     io::Read,
     path::PathBuf,
-    sync::Arc,
 };
 
 use crate::appinfo;
@@ -130,7 +129,7 @@ pub fn get_os_and_architecture(
 const ASSETS_WITH_VERSION: [&str; 3] = ["globalgamemanagers", "mainData", "data.unity3d"];
 
 pub fn get_unity_version(game_exe_path: &PathBuf) -> String {
-    if let Ok(data_path) = get_data_path(&game_exe_path) {
+    if let Ok(data_path) = get_data_path(game_exe_path) {
         for asset_name in &ASSETS_WITH_VERSION {
             let asset_path = data_path.join(asset_name);
 
@@ -144,11 +143,11 @@ pub fn get_unity_version(game_exe_path: &PathBuf) -> String {
         }
     }
 
-    return "Unknown".into();
+    "Unknown".into()
 }
 
 fn get_version_from_asset(asset_path: &PathBuf) -> Result<String, Box<dyn Error>> {
-    let mut file = File::open(&asset_path)?;
+    let mut file = File::open(asset_path)?;
     let mut data = vec![0u8; 4096];
 
     let bytes_read = file.read(&mut data)?;
