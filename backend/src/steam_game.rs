@@ -52,7 +52,7 @@ pub fn get_steam_games() -> GameMap {
                             id: launch_option.launch_id.clone(),
                             is_legacy: false,
                             operating_system,
-                            mod_files_path: String::from(""),
+                            mod_files_path: String::new(),
                             name: executable?.to_str()?.to_owned(),
                             scripting_backend: get_unity_scripting_backend(&full_path).ok()?,
                             steam_launch: Some(launch_option.clone()),

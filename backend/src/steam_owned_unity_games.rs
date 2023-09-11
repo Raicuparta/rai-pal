@@ -39,7 +39,7 @@ pub async fn get_steam_owned_unity_games() -> Result<Vec<OwnedUnityGame>, Box<dy
 
             return Some(OwnedUnityGame {
                 id: app_id.to_owned(),
-                name: app_info.name.to_owned(),
+                name: app_info.name.clone(),
                 installed: steam_games.get(&id).is_some(),
             });
         })

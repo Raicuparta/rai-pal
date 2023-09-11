@@ -26,7 +26,7 @@ impl std::error::Error for VdfrError {}
 impl std::fmt::Display for VdfrError {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
-            VdfrError::InvalidType(t) => write!(f, "Invalid type {:#x}", t),
+            VdfrError::InvalidType(t) => write!(f, "Invalid type {t:#x}"),
             VdfrError::ReadError(e) => e.fmt(f),
         }
     }
@@ -174,10 +174,10 @@ impl SteamAppInfoFile {
                     })
                     .collect();
 
-                if !launch_map.is_empty() {
-                    Some(launch_map)
-                } else {
+                if launch_map.is_empty() {
                     None
+                } else {
+                    Some(launch_map)
                 }
             } else {
                 None
@@ -188,8 +188,8 @@ impl SteamAppInfoFile {
                     appinfo.apps.insert(
                         app_id,
                         SteamAppInfo {
-                            name,
                             launch_options,
+                            name,
                         },
                     );
                 }
@@ -302,7 +302,7 @@ fn read_string<R: std::io::Read>(reader: &mut R, wide: bool) -> Result<String, E
 
 pub fn read_appinfo(path: &str) -> SteamAppInfoFile {
     let mut appinfo_file =
-        BufReader::new(fs::File::open(path).unwrap_or_else(|_| panic!("Failed to read {}", path)));
+        BufReader::new(fs::File::open(path).unwrap_or_else(|_| panic!("Failed to read {path}")));
     let appinfo = SteamAppInfoFile::load(&mut appinfo_file);
     appinfo.unwrap()
 }
