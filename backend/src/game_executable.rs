@@ -81,10 +81,7 @@ fn file_name_without_extension(file_path: &PathBuf) -> Option<&str> {
 fn get_data_path(game_exe_path: &PathBuf) -> Result<PathBuf, &'static str> {
     if let Some(parent) = game_exe_path.parent() {
         if let Some(exe_name) = file_name_without_extension(game_exe_path) {
-            let data_folder_name = format!("{}_Data", exe_name);
-            println!("exe_name: {}", exe_name);
-            println!("data_folder_name: {}", data_folder_name);
-            Ok(parent.join(data_folder_name))
+            Ok(parent.join(format!("{}_Data", exe_name)))
         } else {
             Err("Failed to get file name without extension")
         }
