@@ -1,9 +1,16 @@
 use appinfo::SteamLaunchOption;
 use goblin::elf::Elf;
 use goblin::pe::PE;
+use regex::Regex;
 use serde::Serialize;
 use specta::Type;
-use std::{fs::File, io::Read, path::PathBuf, sync::Arc};
+use std::{
+    error::Error,
+    fs::{metadata, File},
+    io::Read,
+    path::PathBuf,
+    sync::Arc,
+};
 
 use crate::appinfo;
 
@@ -120,5 +127,45 @@ pub fn get_os_and_architecture(
         }
     } else {
         Err("Failed to open the file".to_owned())
+    }
+}
+
+const ASSETS_WITH_VERSION: [&str; 3] = ["globalgamemanagers", "mainData", "data.unity3d"];
+
+pub fn get_unity_version(game_exe_path: &PathBuf) -> Result<String, Box<dyn Error>> {
+    let data_path = get_data_path(&game_exe_path)?;
+
+    for asset_name in &ASSETS_WITH_VERSION {
+        let asset_path = data_path.join(asset_name);
+
+        if let Ok(metadata) = metadata(&asset_path) {
+            if metadata.is_file() {
+                if let Ok(version) = get_version_from_asset(&asset_path) {
+                    return Ok(version);
+                }
+            }
+        }
+    }
+
+    return Err("found NOTHING".into());
+}
+
+fn get_version_from_asset(asset_path: &PathBuf) -> Result<String, Box<dyn Error>> {
+    let mut file = File::open(&asset_path)?;
+    let mut data = vec![0u8; 4096];
+
+    let bytes_read = file.read(&mut data)?;
+    if bytes_read == 0 {
+        return Err("No data read from file".into());
+    }
+
+    let data_str = String::from_utf8_lossy(&data[..bytes_read]);
+    let pattern = Regex::new(r"\d+\.\d+\.\d+[fp]\d+").unwrap();
+    let match_result = pattern.find(&data_str);
+
+    if let Some(matched) = match_result {
+        Ok(matched.as_str().to_string())
+    } else {
+        Ok("No version found".to_string())
     }
 }

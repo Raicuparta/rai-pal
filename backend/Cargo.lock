@@ -2316,6 +2316,7 @@ dependencies = [
  "goblin",
  "keyvalues-serde",
  "path-slash",
+ "regex",
  "reqwest",
  "serde",
  "serde_json",

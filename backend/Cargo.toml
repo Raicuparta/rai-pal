@@ -24,6 +24,7 @@ tauri = { version = "1.4.1", features = ["shell-open"] }
 reqwest = "0.11.20"
 path-slash = "0.2.1"
 goblin = "0.7.1"
+regex = "1.9.5"
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem

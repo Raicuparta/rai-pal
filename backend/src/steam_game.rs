@@ -6,10 +6,9 @@ use crate::game::Game;
 use crate::game::GameMap;
 use crate::game_executable::get_os_and_architecture;
 use crate::game_executable::get_unity_scripting_backend;
+use crate::game_executable::get_unity_version;
 use crate::game_executable::is_unity_exe;
-use crate::game_executable::Architecture;
 use crate::game_executable::GameExecutable;
-use crate::game_executable::OperatingSystem;
 
 pub fn get_steam_games() -> GameMap {
     let mut steam_dir = SteamDir::locate().unwrap();
@@ -57,7 +56,7 @@ pub fn get_steam_games() -> GameMap {
                             name: executable?.to_str()?.to_owned(),
                             scripting_backend: get_unity_scripting_backend(&full_path).ok()?,
                             steam_launch: Some(launch_option.clone()),
-                            unity_version: String::from("2020"),
+                            unity_version: get_unity_version(&full_path).ok()?,
                         });
                     })
                     .collect(),
