@@ -8,7 +8,7 @@ use std::{
     error::Error,
     fs::{metadata, File},
     io::Read,
-    path::PathBuf,
+    path::{Path, PathBuf},
 };
 
 use crate::appinfo;
@@ -48,7 +48,7 @@ pub struct GameExecutable {
     pub steam_launch: Option<SteamLaunchOption>,
 }
 
-pub fn is_unity_exe(game_exe_path: &PathBuf) -> bool {
+pub fn is_unity_exe(game_exe_path: &Path) -> bool {
     if let Ok(data_path) = get_data_path(game_exe_path) {
         game_exe_path.is_file() && data_path.is_dir()
     } else {
@@ -56,9 +56,7 @@ pub fn is_unity_exe(game_exe_path: &PathBuf) -> bool {
     }
 }
 
-pub fn get_unity_scripting_backend(
-    game_exe_path: &PathBuf,
-) -> Result<UnityScriptingBackend, String> {
+pub fn get_unity_scripting_backend(game_exe_path: &Path) -> Result<UnityScriptingBackend, String> {
     match game_exe_path.parent() {
         Some(game_folder) => {
             if game_folder.join("GameAssembly.dll").is_file()
@@ -73,11 +71,11 @@ pub fn get_unity_scripting_backend(
     }
 }
 
-fn file_name_without_extension(file_path: &PathBuf) -> Option<&str> {
+fn file_name_without_extension(file_path: &Path) -> Option<&str> {
     file_path.file_stem()?.to_str()
 }
 
-fn get_data_path(game_exe_path: &PathBuf) -> Result<PathBuf, &'static str> {
+fn get_data_path(game_exe_path: &Path) -> Result<PathBuf, &'static str> {
     if let Some(parent) = game_exe_path.parent() {
         if let Some(exe_name) = file_name_without_extension(game_exe_path) {
             Ok(parent.join(format!("{}_Data", exe_name)))
@@ -90,7 +88,7 @@ fn get_data_path(game_exe_path: &PathBuf) -> Result<PathBuf, &'static str> {
 }
 
 pub fn get_os_and_architecture(
-    file_path: &PathBuf,
+    file_path: &Path,
 ) -> Result<(OperatingSystem, Architecture), String> {
     let file = File::open(file_path);
 
@@ -128,7 +126,7 @@ pub fn get_os_and_architecture(
 
 const ASSETS_WITH_VERSION: [&str; 3] = ["globalgamemanagers", "mainData", "data.unity3d"];
 
-pub fn get_unity_version(game_exe_path: &PathBuf) -> String {
+pub fn get_unity_version(game_exe_path: &Path) -> String {
     if let Ok(data_path) = get_data_path(game_exe_path) {
         for asset_name in &ASSETS_WITH_VERSION {
             let asset_path = data_path.join(asset_name);
@@ -146,7 +144,7 @@ pub fn get_unity_version(game_exe_path: &PathBuf) -> String {
     "Unknown".into()
 }
 
-fn get_version_from_asset(asset_path: &PathBuf) -> Result<String, Box<dyn Error>> {
+fn get_version_from_asset(asset_path: &Path) -> Result<String, Box<dyn Error>> {
     let mut file = File::open(asset_path)?;
     let mut data = vec![0u8; 4096];
 

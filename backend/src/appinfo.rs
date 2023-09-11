@@ -39,24 +39,24 @@ impl From<std::io::Error> for VdfrError {
 }
 
 #[derive(Debug)]
-pub enum Value {
-    StringType(String),
-    WideStringType(String),
-    Int32Type(i32),
-    PointerType(i32),
-    ColorType(i32),
-    UInt64Type(u64),
-    Int64Type(i64),
-    Float32Type(f32),
-    KeyValueType(KeyValue),
+pub enum ValueType {
+    String(String),
+    WideString(String),
+    Int32(i32),
+    Pointer(i32),
+    Color(i32),
+    UInt64(u64),
+    Int64(i64),
+    Float32(f32),
+    KeyValue(KeyValue),
 }
 
-type KeyValue = HashMap<String, Value>;
+type KeyValue = HashMap<String, ValueType>;
 
 // Recursively search for the specified sequence of keys in the key-value data.
 // The order of the keys dictates the hierarchy, with all except the last having
 // to be a Value::KeyValueType.
-pub fn find_keys<'a>(kv: &'a KeyValue, keys: &[&str]) -> Option<&'a Value> {
+pub fn find_keys<'a>(kv: &'a KeyValue, keys: &[&str]) -> Option<&'a ValueType> {
     if keys.is_empty() {
         return None;
     }
@@ -65,7 +65,7 @@ pub fn find_keys<'a>(kv: &'a KeyValue, keys: &[&str]) -> Option<&'a Value> {
     let value = kv.get(&key.to_string());
     if keys.len() == 1 {
         value
-    } else if let Some(Value::KeyValueType(kv)) = value {
+    } else if let Some(ValueType::KeyValue(kv)) = value {
         find_keys(kv, &keys[1..])
     } else {
         None
@@ -168,10 +168,7 @@ impl SteamAppInfoFile {
                             executable: value_to_path(find_keys(launch_kv, &["executable"])),
                             arguments: value_to_string(find_keys(launch_kv, &["arguments"])),
                             os_list: value_to_string(find_keys(launch_kv, &["config", "oslist"])),
-                            beta_key: value_to_string(find_keys(
-                                launch_kv,
-                                &["config", "betakey"],
-                            )),
+                            beta_key: value_to_string(find_keys(launch_kv, &["config", "betakey"])),
                             os_arch: value_to_string(find_keys(launch_kv, &["config", "osarch"])),
                         })
                     })
@@ -203,38 +200,31 @@ impl SteamAppInfoFile {
     }
 }
 
-fn value_to_string(value_option: Option<&Value>) -> Option<String> {
-    if let Some(value) = value_option {
-        if let Value::StringType(string_value) = value {
-            return Some(String::from(string_value));
-        }
+fn value_to_string(value: Option<&ValueType>) -> Option<String> {
+    match value {
+        Some(ValueType::String(string_value)) => Some(String::from(string_value)),
+        _ => None,
     }
-
-    None
 }
 
-fn value_to_path(value_option: Option<&Value>) -> Option<PathBuf> {
-    if let Some(value) = value_option {
-        if let Value::StringType(string_value) = value {
-            return Some(PathBuf::from(string_value.replace('\\', "/")));
+fn value_to_path(value: Option<&ValueType>) -> Option<PathBuf> {
+    match value {
+        Some(ValueType::String(string_value)) => {
+            Some(PathBuf::from(string_value.replace('\\', "/")))
         }
+        _ => None,
     }
-
-    None
 }
 
-fn value_to_kv(value_option: Option<&Value>) -> Option<&KeyValue> {
-    if let Some(value) = value_option {
-        if let Value::KeyValueType(kv_value) = value {
-            return Some(kv_value.clone());
-        }
+fn value_to_kv(value: Option<&ValueType>) -> Option<&KeyValue> {
+    match value {
+        Some(ValueType::KeyValue(kv_value)) => Some(kv_value.clone()),
+        _ => None,
     }
-
-    None
 }
 
 impl App {
-    pub fn get(&self, keys: &[&str]) -> Option<&Value> {
+    pub fn get(&self, keys: &[&str]) -> Option<&ValueType> {
         find_keys(&self.key_values, keys)
     }
 }
@@ -254,31 +244,31 @@ fn read_kv<R: std::io::Read>(reader: &mut R, alt_format: bool) -> Result<KeyValu
 
         if t == BIN_NONE {
             let subnode = read_kv(reader, alt_format)?;
-            node.insert(key, Value::KeyValueType(subnode));
+            node.insert(key, ValueType::KeyValue(subnode));
         } else if t == BIN_STRING {
             let s = read_string(reader, false)?;
-            node.insert(key, Value::StringType(s));
+            node.insert(key, ValueType::String(s));
         } else if t == BIN_WIDESTRING {
             let s = read_string(reader, true)?;
-            node.insert(key, Value::WideStringType(s));
+            node.insert(key, ValueType::WideString(s));
         } else if [BIN_INT32, BIN_POINTER, BIN_COLOR].contains(&t) {
             let val = reader.read_i32::<LittleEndian>()?;
             if t == BIN_INT32 {
-                node.insert(key, Value::Int32Type(val));
+                node.insert(key, ValueType::Int32(val));
             } else if t == BIN_POINTER {
-                node.insert(key, Value::PointerType(val));
+                node.insert(key, ValueType::Pointer(val));
             } else if t == BIN_COLOR {
-                node.insert(key, Value::ColorType(val));
+                node.insert(key, ValueType::Color(val));
             }
         } else if t == BIN_UINT64 {
             let val = reader.read_u64::<LittleEndian>()?;
-            node.insert(key, Value::UInt64Type(val));
+            node.insert(key, ValueType::UInt64(val));
         } else if t == BIN_INT64 {
             let val = reader.read_i64::<LittleEndian>()?;
-            node.insert(key, Value::Int64Type(val));
+            node.insert(key, ValueType::Int64(val));
         } else if t == BIN_FLOAT32 {
             let val = reader.read_f32::<LittleEndian>()?;
-            node.insert(key, Value::Float32Type(val));
+            node.insert(key, ValueType::Float32(val));
         } else {
             return Err(VdfrError::InvalidType(t));
         }
