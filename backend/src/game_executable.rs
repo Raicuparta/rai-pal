@@ -1,7 +1,9 @@
 use appinfo::SteamLaunchOption;
+use goblin::elf::Elf;
+use goblin::pe::PE;
 use serde::Serialize;
 use specta::Type;
-use std::{error::Error, fs, path::PathBuf};
+use std::{fs::File, io::Read, path::PathBuf, sync::Arc};
 
 use crate::appinfo;
 
@@ -15,12 +17,14 @@ pub enum UnityScriptingBackend {
 pub enum Architecture {
     X64,
     X32,
+    Unknown,
 }
 
 #[derive(Serialize, Type)]
 pub enum OperatingSystem {
     Linux,
     Windows,
+    Unknown,
 }
 
 #[derive(Serialize, Type)]
@@ -79,5 +83,42 @@ fn get_data_path(game_exe_path: &PathBuf) -> Result<PathBuf, &'static str> {
         }
     } else {
         Err("Failed to get parent directory")
+    }
+}
+
+pub fn get_os_and_architecture(
+    file_path: &PathBuf,
+) -> Result<(OperatingSystem, Architecture), String> {
+    let file = File::open(file_path);
+
+    if let Ok(mut file) = file {
+        let mut buffer = Vec::new();
+        if file.read_to_end(&mut buffer).is_ok() {
+            if let Ok(elf) = Elf::parse(&buffer) {
+                match elf.header.e_machine {
+                    goblin::elf::header::EM_X86_64 => {
+                        Ok((OperatingSystem::Linux, Architecture::X64))
+                    }
+                    goblin::elf::header::EM_386 => Ok((OperatingSystem::Linux, Architecture::X32)),
+                    _ => Ok((OperatingSystem::Linux, Architecture::Unknown)),
+                }
+            } else if let Ok(pe) = PE::parse(&buffer) {
+                match pe.header.coff_header.machine {
+                    goblin::pe::header::COFF_MACHINE_X86_64 => {
+                        Ok((OperatingSystem::Windows, Architecture::X64))
+                    }
+                    goblin::pe::header::COFF_MACHINE_X86 => {
+                        Ok((OperatingSystem::Windows, Architecture::X32))
+                    }
+                    _ => Ok((OperatingSystem::Windows, Architecture::Unknown)),
+                }
+            } else {
+                Ok((OperatingSystem::Unknown, Architecture::Unknown))
+            }
+        } else {
+            Err("Failed to read the file".to_owned())
+        }
+    } else {
+        Err("Failed to open the file".to_owned())
     }
 }
