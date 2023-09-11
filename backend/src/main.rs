@@ -26,7 +26,7 @@ async fn get_game_map() -> Result<GameMap, String> {
                 "{}\nBacktrace:\n{}",
                 error
                     .downcast::<&str>()
-                    .unwrap_or(Box::new("Unknown Source of Error")),
+                    .unwrap_or_else(|_| Box::new("Unknown Source of Error")),
                 Backtrace::force_capture()
             ));
         }
@@ -43,7 +43,7 @@ async fn get_owned_games() -> Result<Vec<OwnedUnityGame>, String> {
                 "{}\nBacktrace:\n{}",
                 error
                     .downcast::<&str>()
-                    .unwrap_or(Box::new("Unknown Source of Error")),
+                    .unwrap_or_else(|_| Box::new("Unknown Source of Error")),
                 Backtrace::force_capture()
             ));
         }

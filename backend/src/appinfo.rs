@@ -26,15 +26,15 @@ impl std::error::Error for VdfrError {}
 impl std::fmt::Display for VdfrError {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
-            VdfrError::InvalidType(t) => write!(f, "Invalid type {t:#x}"),
-            VdfrError::ReadError(e) => e.fmt(f),
+            Self::InvalidType(t) => write!(f, "Invalid type {t:#x}"),
+            Self::ReadError(e) => e.fmt(f),
         }
     }
 }
 
 impl From<std::io::Error> for VdfrError {
     fn from(e: std::io::Error) -> Self {
-        VdfrError::ReadError(e)
+        Self::ReadError(e)
     }
 }
 
@@ -112,11 +112,11 @@ pub struct SteamAppInfoFile {
 }
 
 impl SteamAppInfoFile {
-    pub fn load<R: std::io::Read>(reader: &mut R) -> Result<SteamAppInfoFile, VdfrError> {
+    pub fn load<R: std::io::Read>(reader: &mut R) -> Result<Self, VdfrError> {
         let version = reader.read_u32::<LittleEndian>()?;
         let universe = reader.read_u32::<LittleEndian>()?;
 
-        let mut appinfo = SteamAppInfoFile {
+        let mut appinfo = Self {
             universe,
             version,
             apps: HashMap::new(),
@@ -154,34 +154,43 @@ impl SteamAppInfoFile {
                 key_values,
             };
 
-            let app_launch = if let Some(app_launch_kv) =
-                value_to_kv(app.get(&["appinfo", "config", "launch"]))
-            {
-                let launch_map: Vec<SteamLaunchOption> = app_launch_kv
-                    .iter()
-                    .filter_map(|(key, launch)| {
-                        value_to_kv(Some(launch)).map(|launch_kv| SteamLaunchOption {
-                            launch_id: key.to_string(),
-                            app_id,
-                            description: value_to_string(find_keys(launch_kv, &["description"])),
-                            app_type: value_to_string(find_keys(launch_kv, &["type"])),
-                            executable: value_to_path(find_keys(launch_kv, &["executable"])),
-                            arguments: value_to_string(find_keys(launch_kv, &["arguments"])),
-                            os_list: value_to_string(find_keys(launch_kv, &["config", "oslist"])),
-                            beta_key: value_to_string(find_keys(launch_kv, &["config", "betakey"])),
-                            os_arch: value_to_string(find_keys(launch_kv, &["config", "osarch"])),
+            let app_launch =
+                value_to_kv(app.get(&["appinfo", "config", "launch"])).and_then(|app_launch_kv| {
+                    let launch_map: Vec<SteamLaunchOption> = app_launch_kv
+                        .iter()
+                        .filter_map(|(key, launch)| {
+                            value_to_kv(Some(launch)).map(|launch_kv| SteamLaunchOption {
+                                launch_id: key.to_string(),
+                                app_id,
+                                description: value_to_string(find_keys(
+                                    launch_kv,
+                                    &["description"],
+                                )),
+                                app_type: value_to_string(find_keys(launch_kv, &["type"])),
+                                executable: value_to_path(find_keys(launch_kv, &["executable"])),
+                                arguments: value_to_string(find_keys(launch_kv, &["arguments"])),
+                                os_list: value_to_string(find_keys(
+                                    launch_kv,
+                                    &["config", "oslist"],
+                                )),
+                                beta_key: value_to_string(find_keys(
+                                    launch_kv,
+                                    &["config", "betakey"],
+                                )),
+                                os_arch: value_to_string(find_keys(
+                                    launch_kv,
+                                    &["config", "osarch"],
+                                )),
+                            })
                         })
-                    })
-                    .collect();
+                        .collect();
 
-                if launch_map.is_empty() {
-                    None
-                } else {
-                    Some(launch_map)
-                }
-            } else {
-                None
-            };
+                    if launch_map.is_empty() {
+                        None
+                    } else {
+                        Some(launch_map)
+                    }
+                });
 
             if let Some(launch_options) = app_launch {
                 if let Some(name) = value_to_string(app.get(&["appinfo", "common", "name"])) {
@@ -286,7 +295,7 @@ fn read_string<R: std::io::Read>(reader: &mut R, wide: bool) -> Result<String, E
             }
             buf.push(c);
         }
-        Ok(std::string::String::from_utf16_lossy(&buf).to_string())
+        Ok(std::string::String::from_utf16_lossy(&buf))
     } else {
         let mut buf: Vec<u8> = vec![];
         loop {

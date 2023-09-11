@@ -49,16 +49,15 @@ pub struct GameExecutable {
 }
 
 pub fn is_unity_exe(game_exe_path: &Path) -> bool {
-    if let Ok(data_path) = get_data_path(game_exe_path) {
+    get_data_path(game_exe_path).map_or(false, |data_path| {
         game_exe_path.is_file() && data_path.is_dir()
-    } else {
-        false
-    }
+    })
 }
 
 pub fn get_unity_scripting_backend(game_exe_path: &Path) -> Result<UnityScriptingBackend, String> {
-    match game_exe_path.parent() {
-        Some(game_folder) => {
+    game_exe_path.parent().map_or_else(
+        || Err("Noooo".to_owned()),
+        |game_folder| {
             if game_folder.join("GameAssembly.dll").is_file()
                 || game_folder.join("GameAssembly.so").is_file()
             {
@@ -66,9 +65,8 @@ pub fn get_unity_scripting_backend(game_exe_path: &Path) -> Result<UnityScriptin
             } else {
                 Ok(UnityScriptingBackend::Mono)
             }
-        }
-        None => Err("Noooo".to_owned()),
-    }
+        },
+    )
 }
 
 fn file_name_without_extension(file_path: &Path) -> Option<&str> {
@@ -76,15 +74,14 @@ fn file_name_without_extension(file_path: &Path) -> Option<&str> {
 }
 
 fn get_data_path(game_exe_path: &Path) -> Result<PathBuf, &'static str> {
-    if let Some(parent) = game_exe_path.parent() {
-        if let Some(exe_name) = file_name_without_extension(game_exe_path) {
-            Ok(parent.join(format!("{exe_name}_Data")))
-        } else {
-            Err("Failed to get file name without extension")
-        }
-    } else {
-        Err("Failed to get parent directory")
-    }
+    game_exe_path
+        .parent()
+        .map_or(Err("Failed to get parent directory"), |parent| {
+            file_name_without_extension(game_exe_path).map_or(
+                Err("Failed to get file name without extension"),
+                |exe_name| Ok(parent.join(format!("{exe_name}_Data"))),
+            )
+        })
 }
 
 pub fn get_os_and_architecture(
@@ -92,36 +89,39 @@ pub fn get_os_and_architecture(
 ) -> Result<(OperatingSystem, Architecture), String> {
     let file = File::open(file_path);
 
-    if let Ok(mut file) = file {
-        let mut buffer = Vec::new();
-        if file.read_to_end(&mut buffer).is_ok() {
-            if let Ok(elf) = Elf::parse(&buffer) {
-                match elf.header.e_machine {
-                    goblin::elf::header::EM_X86_64 => {
-                        Ok((OperatingSystem::Linux, Architecture::X64))
+    file.map_or_else(
+        |_| Err("Failed to open the file".to_owned()),
+        |mut file| {
+            let mut buffer = Vec::new();
+            if file.read_to_end(&mut buffer).is_ok() {
+                if let Ok(elf) = Elf::parse(&buffer) {
+                    match elf.header.e_machine {
+                        goblin::elf::header::EM_X86_64 => {
+                            Ok((OperatingSystem::Linux, Architecture::X64))
+                        }
+                        goblin::elf::header::EM_386 => {
+                            Ok((OperatingSystem::Linux, Architecture::X32))
+                        }
+                        _ => Ok((OperatingSystem::Linux, Architecture::Unknown)),
                     }
-                    goblin::elf::header::EM_386 => Ok((OperatingSystem::Linux, Architecture::X32)),
-                    _ => Ok((OperatingSystem::Linux, Architecture::Unknown)),
-                }
-            } else if let Ok(pe) = PE::parse(&buffer) {
-                match pe.header.coff_header.machine {
-                    goblin::pe::header::COFF_MACHINE_X86_64 => {
-                        Ok((OperatingSystem::Windows, Architecture::X64))
+                } else if let Ok(pe) = PE::parse(&buffer) {
+                    match pe.header.coff_header.machine {
+                        goblin::pe::header::COFF_MACHINE_X86_64 => {
+                            Ok((OperatingSystem::Windows, Architecture::X64))
+                        }
+                        goblin::pe::header::COFF_MACHINE_X86 => {
+                            Ok((OperatingSystem::Windows, Architecture::X32))
+                        }
+                        _ => Ok((OperatingSystem::Windows, Architecture::Unknown)),
                     }
-                    goblin::pe::header::COFF_MACHINE_X86 => {
-                        Ok((OperatingSystem::Windows, Architecture::X32))
-                    }
-                    _ => Ok((OperatingSystem::Windows, Architecture::Unknown)),
+                } else {
+                    Ok((OperatingSystem::Unknown, Architecture::Unknown))
                 }
             } else {
-                Ok((OperatingSystem::Unknown, Architecture::Unknown))
+                Err("Failed to read the file".to_owned())
             }
-        } else {
-            Err("Failed to read the file".to_owned())
-        }
-    } else {
-        Err("Failed to open the file".to_owned())
-    }
+        },
+    )
 }
 
 const ASSETS_WITH_VERSION: [&str; 3] = ["globalgamemanagers", "mainData", "data.unity3d"];
@@ -157,9 +157,8 @@ fn get_version_from_asset(asset_path: &Path) -> Result<String, Box<dyn Error>> {
     let pattern = Regex::new(r"\d+\.\d+\.\d+[fp]\d+").unwrap();
     let match_result = pattern.find(&data_str);
 
-    if let Some(matched) = match_result {
-        Ok(matched.as_str().to_string())
-    } else {
-        Ok("No version found".to_string())
-    }
+    match_result.map_or_else(
+        || Ok("No version found".to_string()),
+        |matched| Ok(matched.as_str().to_string()),
+    )
 }
