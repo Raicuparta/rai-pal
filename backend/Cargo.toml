@@ -22,6 +22,7 @@ keyvalues-serde = "0.1.0"
 steamlocate = "1.2.1"
 tauri = { version = "1.4.1", features = ["shell-open"] }
 reqwest = "0.11.20"
+path-slash = "0.2.1"
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem

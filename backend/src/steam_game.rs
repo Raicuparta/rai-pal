@@ -9,7 +9,6 @@ use crate::game_executable::is_unity_exe;
 use crate::game_executable::Architecture;
 use crate::game_executable::GameExecutable;
 use crate::game_executable::OperatingSystem;
-use crate::game_executable::UnityScriptingBackend;
 
 pub fn get_steam_games() -> GameMap {
     let mut steam_dir = SteamDir::locate().unwrap();
@@ -35,28 +34,26 @@ pub fn get_steam_games() -> GameMap {
                             .launch_options
                             .iter()
                             .filter_map(|launch_option| {
-                                if let Some(executable) = &launch_option.executable {
-                                    let full_path = app.path.join(executable);
+                                let executable = launch_option.executable.as_ref();
+                                let full_path = app.path.join(executable?);
 
-                                    if !is_unity_exe(&full_path) {
-                                        return None;
-                                    }
-
-                                    return Some(GameExecutable {
-                                        architecture: Architecture::X64,
-                                        full_path: full_path.clone(),
-                                        id: launch_option.launch_id.clone(),
-                                        is_legacy: false,
-                                        operating_system: OperatingSystem::Linux,
-                                        mod_files_path: String::from(""),
-                                        name: executable.clone(),
-                                        scripting_backend: get_unity_scripting_backend(&full_path)
-                                            .ok()?,
-                                        steam_launch: Some(launch_option.clone()),
-                                        unity_version: String::from("2020"),
-                                    });
+                                if !is_unity_exe(&full_path) {
+                                    return None;
                                 }
-                                return None;
+
+                                return Some(GameExecutable {
+                                    architecture: Architecture::X64,
+                                    full_path: full_path.clone(),
+                                    id: launch_option.launch_id.clone(),
+                                    is_legacy: false,
+                                    operating_system: OperatingSystem::Linux,
+                                    mod_files_path: String::from(""),
+                                    name: executable?.to_str()?.to_owned(),
+                                    scripting_backend: get_unity_scripting_backend(&full_path)
+                                        .ok()?,
+                                    steam_launch: Some(launch_option.clone()),
+                                    unity_version: String::from("2020"),
+                                });
                             })
                             .collect(),
                         executables: Vec::new(), // TODO distinguish them!

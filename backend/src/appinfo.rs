@@ -1,7 +1,7 @@
 use byteorder::{LittleEndian, ReadBytesExt};
 use serde::Serialize;
 use specta::Type;
-use std::{collections::HashMap, fs, io::BufReader, io::Error};
+use std::{collections::HashMap, fs, io::BufReader, io::Error, path::PathBuf};
 
 const BIN_NONE: u8 = b'\x00';
 const BIN_STRING: u8 = b'\x01';
@@ -80,7 +80,7 @@ pub struct SteamLaunchOption {
     pub launch_id: String,
     pub app_id: u32,
     pub description: Option<String>,
-    pub executable: Option<String>,
+    pub executable: Option<PathBuf>,
     pub arguments: Option<String>,
     pub app_type: Option<String>,
     pub os_list: Option<String>,
@@ -167,7 +167,7 @@ impl AppInfo {
                             app_id,
                             description: value_to_string(find_keys(&launch_kv, &["description"])),
                             app_type: value_to_string(find_keys(&launch_kv, &["type"])),
-                            executable: value_to_string(find_keys(&launch_kv, &["executable"])),
+                            executable: value_to_path(find_keys(&launch_kv, &["executable"])),
                             arguments: value_to_string(find_keys(&launch_kv, &["arguments"])),
                             os_list: value_to_string(find_keys(&launch_kv, &["config", "oslist"])),
                             beta_key: value_to_string(find_keys(
@@ -209,6 +209,16 @@ fn value_to_string(value_option: Option<&Value>) -> Option<String> {
     if let Some(value) = value_option {
         if let Value::StringType(string_value) = value {
             return Some(String::from(string_value));
+        }
+    }
+
+    return None;
+}
+
+fn value_to_path(value_option: Option<&Value>) -> Option<PathBuf> {
+    if let Some(value) = value_option {
+        if let Value::StringType(string_value) = value {
+            return Some(PathBuf::from(string_value.replace("\\", "/")));
         }
     }
 
