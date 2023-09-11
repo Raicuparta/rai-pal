@@ -101,24 +101,24 @@ pub struct App {
 }
 
 #[derive(Debug)]
-pub struct SteamApp {
+pub struct SteamAppInfo {
     pub launch_options: Vec<SteamLaunchOption>,
     pub name: String,
 }
 
 #[derive(Debug)]
-pub struct AppInfo {
+pub struct SteamAppInfoFile {
     pub version: u32,
     pub universe: u32,
-    pub apps: HashMap<u32, SteamApp>,
+    pub apps: HashMap<u32, SteamAppInfo>,
 }
 
-impl AppInfo {
-    pub fn load<R: std::io::Read>(reader: &mut R) -> Result<AppInfo, VdfrError> {
+impl SteamAppInfoFile {
+    pub fn load<R: std::io::Read>(reader: &mut R) -> Result<SteamAppInfoFile, VdfrError> {
         let version = reader.read_u32::<LittleEndian>()?;
         let universe = reader.read_u32::<LittleEndian>()?;
 
-        let mut appinfo = AppInfo {
+        let mut appinfo = SteamAppInfoFile {
             universe,
             version,
             apps: HashMap::new(),
@@ -192,7 +192,7 @@ impl AppInfo {
                 if let Some(name) = value_to_string(app.get(&["appinfo", "common", "name"])) {
                     appinfo.apps.insert(
                         app_id,
-                        SteamApp {
+                        SteamAppInfo {
                             name,
                             launch_options,
                         },
@@ -312,9 +312,9 @@ fn read_string<R: std::io::Read>(reader: &mut R, wide: bool) -> Result<String, E
     }
 }
 
-pub fn read_appinfo(path: &str) -> AppInfo {
+pub fn read_appinfo(path: &str) -> SteamAppInfoFile {
     let mut appinfo_file =
         BufReader::new(fs::File::open(path).expect(&format!("Failed to read {}", path)));
-    let appinfo = AppInfo::load(&mut appinfo_file);
+    let appinfo = SteamAppInfoFile::load(&mut appinfo_file);
     return appinfo.unwrap();
 }
