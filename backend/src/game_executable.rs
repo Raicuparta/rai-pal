@@ -132,22 +132,22 @@ pub fn get_os_and_architecture(
 
 const ASSETS_WITH_VERSION: [&str; 3] = ["globalgamemanagers", "mainData", "data.unity3d"];
 
-pub fn get_unity_version(game_exe_path: &PathBuf) -> Result<String, Box<dyn Error>> {
-    let data_path = get_data_path(&game_exe_path)?;
+pub fn get_unity_version(game_exe_path: &PathBuf) -> String {
+    if let Ok(data_path) = get_data_path(&game_exe_path) {
+        for asset_name in &ASSETS_WITH_VERSION {
+            let asset_path = data_path.join(asset_name);
 
-    for asset_name in &ASSETS_WITH_VERSION {
-        let asset_path = data_path.join(asset_name);
-
-        if let Ok(metadata) = metadata(&asset_path) {
-            if metadata.is_file() {
-                if let Ok(version) = get_version_from_asset(&asset_path) {
-                    return Ok(version);
+            if let Ok(metadata) = metadata(&asset_path) {
+                if metadata.is_file() {
+                    if let Ok(version) = get_version_from_asset(&asset_path) {
+                        return version;
+                    }
                 }
             }
         }
     }
 
-    return Err("found NOTHING".into());
+    return "Unknown".into();
 }
 
 fn get_version_from_asset(asset_path: &PathBuf) -> Result<String, Box<dyn Error>> {

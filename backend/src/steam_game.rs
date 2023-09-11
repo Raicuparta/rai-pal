@@ -56,7 +56,7 @@ pub fn get_steam_games() -> GameMap {
                             name: executable?.to_str()?.to_owned(),
                             scripting_backend: get_unity_scripting_backend(&full_path).ok()?,
                             steam_launch: Some(launch_option.clone()),
-                            unity_version: get_unity_version(&full_path).ok()?,
+                            unity_version: get_unity_version(&full_path),
                         });
                     })
                     .collect(),
