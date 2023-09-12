@@ -1,8 +1,8 @@
 import { Box, Button, Stack, Table, Text } from "@mantine/core";
 import { TableVirtuoso, TableProps } from "react-virtuoso";
 import { MdRefresh } from "react-icons/md";
-import { useOwnedUnityGames } from "@hooks/use-owned-unity-games";
 import { OwnedGameRow } from "./owned-game-row";
+import { useOwnedUnityGames } from "@hooks/use-backend-data";
 
 const tableComponents = {
   Table: (props: TableProps) => <Table {...props} highlightOnHover />,
