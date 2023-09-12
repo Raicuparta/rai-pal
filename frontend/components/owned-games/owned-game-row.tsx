@@ -1,7 +1,7 @@
 import { Button, Flex } from "@mantine/core";
 import { MdCheckCircle, MdInstallDesktop, MdOpenInNew } from "react-icons/md";
-import { OwnedUnityGame } from "@api/game/steam-owned-unity-games";
 import { open } from "@tauri-apps/api/shell";
+import { OwnedUnityGame } from "@api/bindings";
 
 export function OwnedGameRow(_: number, ownedUnityGame: OwnedUnityGame) {
   return (

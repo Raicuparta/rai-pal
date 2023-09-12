@@ -18,25 +18,22 @@ use crate::Result;
 struct Mod {
     path: PathBuf,
     name: String,
+    scripting_backend: UnityScriptingBackend,
 }
 
 #[derive(Serialize, Type, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct BepInEx {
     id: String,
-    mods: HashMap<UnityScriptingBackend, Vec<Mod>>,
+    mods: Vec<Mod>,
     pub mod_count: u32,
 }
 
 impl BepInEx {
     pub fn new(path: &Path) -> Result<Self> {
-        let il2cpp_mods = Self::get_mods(path, UnityScriptingBackend::Il2Cpp)?;
-        let mono_mods = Self::get_mods(path, UnityScriptingBackend::Mono)?;
-        let mod_count = il2cpp_mods.len() + mono_mods.len();
-        let mods = HashMap::from([
-            (UnityScriptingBackend::Il2Cpp, il2cpp_mods),
-            (UnityScriptingBackend::Mono, mono_mods),
-        ]);
+        let mut mods = Self::get_mods(path, UnityScriptingBackend::Il2Cpp)?;
+        mods.append(&mut Self::get_mods(path, UnityScriptingBackend::Mono)?);
+        let mod_count = mods.len();
 
         Ok(BepInEx {
             id: "BepInEx".to_owned(),
@@ -64,6 +61,7 @@ impl BepInEx {
                 Ok(path) => Some(Mod {
                     path: path.clone(),
                     name: String::from(path.file_name().unwrap().to_str().unwrap()),
+                    scripting_backend: scripting_backend.clone(),
                 }),
                 Err(_) => None,
             })

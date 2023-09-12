@@ -24,9 +24,6 @@ export function ModsPage() {
             <Box component="th" w={100}>
               Loader
             </Box>
-            <Box component="th" w={100}>
-              Backend
-            </Box>
             <Box component="th">Mod</Box>
             <Box component="th" w={100} />
           </tr>
@@ -34,35 +31,29 @@ export function ModsPage() {
         <tbody>
           {modLoaders.map((modLoader) => (
             <Fragment key={modLoader.id}>
-              {Object.entries(modLoader.mods).map(
-                ([backend, mods], backendIndex) => (
-                  <Fragment key={backend}>
-                    {mods.map((mod: Mod, modIndex: number) => (
-                      <tr key={mod.path}>
-                        {modIndex === 0 && backendIndex === 0 && (
-                          <td rowSpan={modLoader.modCount}>{modLoader.id}</td>
-                        )}
-                        {modIndex === 0 && (
-                          <td rowSpan={mods.length}>{backend}</td>
-                        )}
-                        <td>
-                          <Text weight="bold">{mod.name}</Text>
-                        </td>
-                        <td>
-                          <Flex gap="md">
-                            <Button
-                              onClick={() => open(mod.path)}
-                              leftIcon={<MdFolder />}
-                            >
-                              Open Folder
-                            </Button>
-                          </Flex>
-                        </td>
-                      </tr>
-                    ))}
-                  </Fragment>
-                )
-              )}
+              {modLoader.mods.map((mod, modIndex) => (
+                <tr key={mod.path}>
+                  {modIndex === 0 && (
+                    <td rowSpan={modLoader.modCount}>{modLoader.id}</td>
+                  )}
+                  <td>
+                    <Text>
+                      <strong>{mod.name}</strong>{" "}
+                      <code>({mod.scriptingBackend})</code>
+                    </Text>
+                  </td>
+                  <td>
+                    <Flex gap="md">
+                      <Button
+                        onClick={() => open(mod.path)}
+                        leftIcon={<MdFolder />}
+                      >
+                        Open Folder
+                      </Button>
+                    </Flex>
+                  </td>
+                </tr>
+              ))}
             </Fragment>
           ))}
         </tbody>

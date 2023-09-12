@@ -1,6 +1,5 @@
 import { Badge, Box, Button, Flex, Menu } from "@mantine/core";
 import { MdHandyman, MdSettings } from "react-icons/md";
-import { Mod } from "@api/mod/mod";
 import { Game, GameExecutable, openGameFolder } from "@api/bindings";
 import { useModLoaders } from "@hooks/use-backend-data";
 
@@ -13,8 +12,12 @@ export function GameExecutableRow(props: Props) {
   const [modLoaders] = useModLoaders();
 
   // Merge mods of every loader, since we don't have a way to assign loaders per game yet.
-  const flatMods: Mod[] = modLoaders
-    .map((modLoader) => modLoader.mods[props.executable.scriptingBackend])
+  const flatMods = modLoaders
+    .map((modLoader) =>
+      modLoader.mods.filter(
+        (mod) => mod.scriptingBackend === props.executable.scriptingBackend
+      )
+    )
     .flat();
 
   const nameSuffix =
