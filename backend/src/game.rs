@@ -5,7 +5,7 @@ use std::collections::HashMap;
 
 pub type GameMap = HashMap<u32, Game>;
 
-#[derive(Serialize, Type)]
+#[derive(Serialize, Type, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Game {
     pub id: u32,

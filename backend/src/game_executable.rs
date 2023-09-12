@@ -13,27 +13,27 @@ use std::{
 
 use crate::{appinfo, Result};
 
-#[derive(Serialize, Type)]
+#[derive(Serialize, Type, Clone)]
 pub enum UnityScriptingBackend {
     Il2Cpp,
     Mono,
 }
 
-#[derive(Serialize, Type)]
+#[derive(Serialize, Type, Clone)]
 pub enum Architecture {
     X64,
     X32,
     Unknown,
 }
 
-#[derive(Serialize, Type)]
+#[derive(Serialize, Type, Clone)]
 pub enum OperatingSystem {
     Linux,
     Windows,
     Unknown,
 }
 
-#[derive(Serialize, Type)]
+#[derive(Serialize, Type, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct GameExecutable {
     pub id: String,

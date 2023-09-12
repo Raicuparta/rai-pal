@@ -7,7 +7,7 @@ use crate::{appinfo::read_appinfo, steam_game::get_steam_games, Result};
 const UNITY_STEAM_APP_IDS_URL: &str =
     "https://raw.githubusercontent.com/Raicuparta/steam-unity-app-ids/main/unity-app-ids.txt";
 
-#[derive(Serialize, Type)]
+#[derive(Serialize, Type, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct OwnedUnityGame {
     id: String,

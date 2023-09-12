@@ -4,6 +4,7 @@
 
 use anyhow::anyhow;
 use std::result::Result as StdResult;
+use std::sync::Mutex;
 use std::{backtrace::Backtrace, panic};
 
 use game::GameMap;
@@ -39,11 +40,27 @@ impl Serialize for Error {
     }
 }
 
+struct AppState {
+    game_map: Mutex<Option<GameMap>>,
+    owned_games: Mutex<Option<Vec<OwnedUnityGame>>>,
+}
+
 #[tauri::command]
 #[specta::specta]
-async fn get_game_map() -> CommandResult<GameMap> {
+async fn get_game_map(state: tauri::State<'_, AppState>) -> CommandResult<GameMap> {
+    if let Ok(mutex_guard) = state.game_map.lock() {
+        if let Some(game_map) = mutex_guard.clone() {
+            return Ok(game_map);
+        }
+    }
+
     return match panic::catch_unwind(get_steam_games) {
-        Ok(game_map) => Ok(game_map),
+        Ok(game_map) => {
+            if let Ok(mut mutex_guard) = state.game_map.lock() {
+                *mutex_guard = Some(game_map.clone());
+            }
+            Ok(game_map)
+        }
         Err(error) => Err(anyhow!(
             "{}\nBacktrace:\n{}",
             error
@@ -57,9 +74,21 @@ async fn get_game_map() -> CommandResult<GameMap> {
 
 #[tauri::command]
 #[specta::specta]
-async fn get_owned_games() -> CommandResult<Vec<OwnedUnityGame>> {
+async fn get_owned_games(state: tauri::State<'_, AppState>) -> CommandResult<Vec<OwnedUnityGame>> {
+    if let Ok(mutex_guard) = state.owned_games.lock() {
+        if let Some(owned_games) = mutex_guard.clone() {
+            return Ok(owned_games);
+        }
+    }
+
     return match panic::catch_unwind(get_steam_owned_unity_games) {
-        Ok(game_map) => Ok(game_map.await.unwrap()), // TODO handle properly
+        Ok(owned_games_future) => {
+            let owned_games = owned_games_future.await?;
+            if let Ok(mut mutex_guard) = state.owned_games.lock() {
+                *mutex_guard = Some(owned_games.clone());
+            }
+            Ok(owned_games)
+        }
         Err(error) => {
             return Err(anyhow!(
                 "{}\nBacktrace:\n{}",
@@ -82,6 +111,10 @@ fn main() {
     .unwrap();
 
     tauri::Builder::default()
+        .manage(AppState {
+            game_map: Default::default(),
+            owned_games: Default::default(),
+        })
         .invoke_handler(tauri::generate_handler![get_game_map, get_owned_games])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
