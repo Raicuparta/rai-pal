@@ -86,13 +86,13 @@ impl GameExecutable {
     }
 }
 
-pub fn is_unity_exe(game_exe_path: &Path) -> bool {
+fn is_unity_exe(game_exe_path: &Path) -> bool {
     get_data_path(game_exe_path).map_or(false, |data_path| {
         game_exe_path.is_file() && data_path.is_dir()
     })
 }
 
-pub fn get_unity_scripting_backend(game_exe_path: &Path) -> Result<UnityScriptingBackend> {
+fn get_unity_scripting_backend(game_exe_path: &Path) -> Result<UnityScriptingBackend> {
     game_exe_path.parent().map_or_else(
         || {
             Err(anyhow!(
@@ -126,7 +126,7 @@ fn get_data_path(game_exe_path: &Path) -> Result<PathBuf> {
         })
 }
 
-pub fn get_os_and_architecture(file_path: &Path) -> Result<(OperatingSystem, Architecture)> {
+fn get_os_and_architecture(file_path: &Path) -> Result<(OperatingSystem, Architecture)> {
     let file = File::open(file_path);
 
     file.map_or_else(
@@ -164,9 +164,9 @@ pub fn get_os_and_architecture(file_path: &Path) -> Result<(OperatingSystem, Arc
     )
 }
 
-const ASSETS_WITH_VERSION: [&str; 3] = ["globalgamemanagers", "mainData", "data.unity3d"];
+fn get_unity_version(game_exe_path: &Path) -> String {
+    const ASSETS_WITH_VERSION: [&str; 3] = ["globalgamemanagers", "mainData", "data.unity3d"];
 
-pub fn get_unity_version(game_exe_path: &Path) -> String {
     if let Ok(data_path) = get_data_path(game_exe_path) {
         for asset_name in &ASSETS_WITH_VERSION {
             let asset_path = data_path.join(asset_name);
