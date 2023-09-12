@@ -22,10 +22,10 @@ export function openGameFolder(gameId: number, executableId: string) {
     return invoke()<null>("open_game_folder", { gameId,executableId })
 }
 
-export type Architecture = "X64" | "X32" | "Unknown"
-export type OperatingSystem = "Linux" | "Windows" | "Unknown"
 export type OwnedUnityGame = { id: string; name: string; installed: boolean }
 export type SteamLaunchOption = { launchId: string; appId: number; description: string | null; executable: string | null; arguments: string | null; appType: string | null; osList: string | null; betaKey: string | null; osArch: string | null }
-export type Game = { id: number; name: string; executables: { [key: string]: GameExecutable } }
 export type GameExecutable = { id: string; name: string; isLegacy: boolean; modFilesPath: string; fullPath: string; architecture: Architecture; scriptingBackend: UnityScriptingBackend; unityVersion: string; operatingSystem: OperatingSystem; steamLaunch: SteamLaunchOption | null }
+export type Architecture = "X64" | "X32" | "Unknown"
+export type Game = { id: number; name: string; executables: { [key: string]: GameExecutable } }
 export type UnityScriptingBackend = "Il2Cpp" | "Mono"
+export type OperatingSystem = "Linux" | "Windows" | "Unknown"

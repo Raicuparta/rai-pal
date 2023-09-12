@@ -113,13 +113,8 @@ async fn open_game_folder(
     println!("open_game_folder {game_id} {executable_id}");
 
     if let Some(game) = game_map.get(&game_id) {
-        println!("game.name {}", game.name);
         if let Some(executable) = game.executables.get(&executable_id) {
-            println!("executable.name {}", executable.name);
-            if let Some(parent) = executable.full_path.parent() {
-                open::that(parent);
-            }
-            Ok(())
+            Ok(executable.open_folder()?)
         } else {
             Err(anyhow!(
                 "Failed to find executable with id {executable_id} for game with id {game_id}"

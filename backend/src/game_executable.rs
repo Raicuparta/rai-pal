@@ -6,6 +6,7 @@ use regex::Regex;
 use serde::Serialize;
 use specta::Type;
 use std::{
+    any,
     fs::{metadata, File},
     io::Read,
     path::{Path, PathBuf},
@@ -46,6 +47,19 @@ pub struct GameExecutable {
     pub unity_version: String,
     pub operating_system: OperatingSystem,
     pub steam_launch: Option<SteamLaunchOption>,
+}
+
+impl GameExecutable {
+    pub fn open_folder(&self) -> Result {
+        if let Some(parent) = self.full_path.parent() {
+            Ok(open::that(parent)?)
+        } else {
+            Err(anyhow!(
+                "Failed to find parent for game executable {}",
+                self.name
+            ))
+        }
+    }
 }
 
 pub fn is_unity_exe(game_exe_path: &Path) -> bool {
