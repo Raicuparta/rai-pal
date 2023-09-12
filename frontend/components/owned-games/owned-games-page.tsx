@@ -5,7 +5,7 @@ import { useOwnedUnityGames } from "@hooks/use-owned-unity-games";
 import { OwnedGameRow } from "./owned-game-row";
 
 const tableComponents = {
-  Table: (props: TableProps) => <Table {...props} highlightOnHover striped />,
+  Table: (props: TableProps) => <Table {...props} highlightOnHover />,
 };
 
 const renderHeaders = () => (

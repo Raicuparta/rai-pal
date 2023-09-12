@@ -6,7 +6,6 @@ use regex::Regex;
 use serde::Serialize;
 use specta::Type;
 use std::{
-    any,
     fs::{metadata, File},
     io::Read,
     path::{Path, PathBuf},
