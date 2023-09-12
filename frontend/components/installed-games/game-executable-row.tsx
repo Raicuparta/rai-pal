@@ -1,8 +1,8 @@
 import { Badge, Box, Button, Flex, Menu } from "@mantine/core";
 import { MdHandyman, MdSettings } from "react-icons/md";
-import { useModLoaders } from "../../hooks/use-mod-loaders";
 import { Mod } from "@api/mod/mod";
 import { Game, GameExecutable, openGameFolder } from "@api/bindings";
+import { useModLoaders } from "@hooks/use-backend-data";
 
 type Props = Readonly<{
   game: Game;

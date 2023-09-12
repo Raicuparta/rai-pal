@@ -3,6 +3,7 @@
 #![deny(clippy::all)]
 
 use anyhow::anyhow;
+use mod_loader::BepInEx;
 use std::result::Result as StdResult;
 use std::sync::Mutex;
 use std::{backtrace::Backtrace, panic};
@@ -17,6 +18,7 @@ use tauri_specta::ts;
 mod appinfo;
 mod game;
 mod game_executable;
+mod mod_loader;
 mod steam_game;
 mod steam_owned_unity_games;
 
@@ -104,6 +106,21 @@ async fn get_owned_games(state: tauri::State<'_, AppState>) -> CommandResult<Vec
 
 #[tauri::command]
 #[specta::specta]
+async fn get_mod_loaders(handle: tauri::AppHandle) -> CommandResult<Vec<BepInEx>> {
+    if let Ok(bepinex) = BepInEx::new(
+        &handle
+            .path_resolver()
+            .resolve_resource("resources/bepinex")
+            .expect("Failed to find bepinex folder"),
+    ) {
+        Ok(Vec::from([bepinex]))
+    } else {
+        Err(anyhow!("aa").into())
+    }
+}
+
+#[tauri::command]
+#[specta::specta]
 async fn open_game_folder(
     game_id: u32,
     executable_id: String,
@@ -129,7 +146,12 @@ async fn open_game_folder(
 fn main() {
     #[cfg(debug_assertions)]
     ts::export(
-        collect_types![get_game_map, get_owned_games, open_game_folder],
+        collect_types![
+            get_game_map,
+            get_owned_games,
+            open_game_folder,
+            get_mod_loaders
+        ],
         "../frontend/api/bindings.ts",
     )
     .unwrap();
@@ -139,10 +161,23 @@ fn main() {
             game_map: Mutex::default(),
             owned_games: Mutex::default(),
         })
+        .setup(|app| {
+            match BepInEx::new(
+                &app.path_resolver()
+                    .resolve_resource("resources/bepinex")
+                    .expect("Failed to find bepinex folder"),
+            ) {
+                Ok(bepinex) => println!("bepinex ok"),
+                Err(error) => println!("not ok {error}"),
+            }
+
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![
             get_game_map,
             get_owned_games,
             open_game_folder,
+            get_mod_loaders,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

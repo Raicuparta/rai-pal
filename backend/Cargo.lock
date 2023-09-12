@@ -550,6 +550,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "directories"
+version = "5.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9a49173b84e034382284f27f1af4dcbbd231ffa358c0fe316541a7337f376a35"
+dependencies = [
+ "dirs-sys",
+]
+
+[[package]]
 name = "dirs"
 version = "5.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1070,6 +1079,11 @@ name = "glob"
 version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d2fabcfbdc87f4758337ca535fb41a6d701b65693ce38287d856d1674551ec9b"
+
+[[package]]
+name = "glob"
+version = "0.3.1"
+source = "git+https://github.com/rust-lang/glob#7b29204bb108a83300b0ce877072fcb62b83316a"
 
 [[package]]
 name = "globset"
@@ -2344,6 +2358,8 @@ version = "0.0.0"
 dependencies = [
  "anyhow",
  "byteorder",
+ "directories",
+ "glob 0.3.1 (git+https://github.com/rust-lang/glob)",
  "goblin",
  "keyvalues-serde",
  "open 5.0.0",
@@ -3161,7 +3177,7 @@ dependencies = [
  "flate2",
  "futures-util",
  "glib",
- "glob",
+ "glob 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "gtk",
  "heck 0.4.1",
  "http",
@@ -3316,7 +3332,7 @@ dependencies = [
  "brotli",
  "ctor",
  "dunce",
- "glob",
+ "glob 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "heck 0.4.1",
  "html5ever",
  "infer",

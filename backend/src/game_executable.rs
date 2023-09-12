@@ -13,20 +13,20 @@ use std::{
 
 use crate::{appinfo, Result};
 
-#[derive(Serialize, Type, Clone)]
+#[derive(Serialize, Type, Clone, PartialEq, Eq, Hash)]
 pub enum UnityScriptingBackend {
     Il2Cpp,
     Mono,
 }
 
-#[derive(Serialize, Type, Clone)]
+#[derive(Serialize, Type, Clone, PartialEq, Eq, Hash)]
 pub enum Architecture {
     X64,
     X32,
     Unknown,
 }
 
-#[derive(Serialize, Type, Clone)]
+#[derive(Serialize, Type, Clone, PartialEq, Eq, Hash)]
 pub enum OperatingSystem {
     Linux,
     Windows,

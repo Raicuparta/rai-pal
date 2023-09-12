@@ -27,6 +27,12 @@ goblin = "0.7.1"
 regex = "1.9.5"
 anyhow = "1.0.75"
 open = "5.0.0"
+directories = "5.0.1"
+
+# Using the git version because I need a fix that isn't on the normal version,
+# although this should be the same version so I don't know what's going on.
+# The fix is this: https://github.com/rust-lang/glob/pull/112
+glob = { git = "https://github.com/rust-lang/glob", version = "0.3.1" }
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem

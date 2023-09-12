@@ -1,7 +1,9 @@
 import { Box, Button, Flex, Stack, Table, Text } from "@mantine/core";
-import { useModLoaders } from "@hooks/use-mod-loaders";
 import { MdFolder, MdRefresh } from "react-icons/md";
 import { Fragment } from "react";
+import { useModLoaders } from "@hooks/use-backend-data";
+import { Mod } from "@api/bindings";
+import { open } from "@tauri-apps/api/shell";
 
 export function ModsPage() {
   const [modLoaders, isLoading, refreshMods] = useModLoaders();
@@ -31,16 +33,14 @@ export function ModsPage() {
         </thead>
         <tbody>
           {modLoaders.map((modLoader) => (
-            <Fragment key={modLoader.folderName}>
-              {/* {Object.entries(modLoader.getMods()).map(
+            <Fragment key={modLoader.id}>
+              {Object.entries(modLoader.mods).map(
                 ([backend, mods], backendIndex) => (
                   <Fragment key={backend}>
-                    {mods.map((mod, modIndex) => (
-                      <tr key={mod.name}>
+                    {mods.map((mod: Mod, modIndex: number) => (
+                      <tr key={mod.path}>
                         {modIndex === 0 && backendIndex === 0 && (
-                          <td rowSpan={modLoader.getModCount()}>
-                            {modLoader.folderName}
-                          </td>
+                          <td rowSpan={modLoader.modCount}>{modLoader.id}</td>
                         )}
                         {modIndex === 0 && (
                           <td rowSpan={mods.length}>{backend}</td>
@@ -51,7 +51,7 @@ export function ModsPage() {
                         <td>
                           <Flex gap="md">
                             <Button
-                              onClick={mod.openFolder}
+                              onClick={() => open(mod.path)}
                               leftIcon={<MdFolder />}
                             >
                               Open Folder
@@ -62,7 +62,7 @@ export function ModsPage() {
                     ))}
                   </Fragment>
                 )
-              )} */}
+              )}
             </Fragment>
           ))}
         </tbody>

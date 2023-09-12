@@ -1,0 +1,1546 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>RuntimeUnityEditor.Core</name>
+    </assembly>
+    <members>
+        <member name="T:RuntimeUnityEditor.Core.CursorUnlocker">
+            <summary>
+            Feature that forces the mouse cursor to stay unlocked/visible. Might cause issues with some games, especially FPSes.
+            </summary>
+        </member>
+        <member name="T:RuntimeUnityEditor.Core.IFeature">
+            <summary>
+            Feature for use with RuntimeUnityEditor. Custom features can be added with <see cref="M:RuntimeUnityEditor.Core.RuntimeUnityEditorCore.AddFeature(RuntimeUnityEditor.Core.IFeature)"/>.
+            Consider using <see cref="T:RuntimeUnityEditor.Core.FeatureBase`1"/> or <see cref="T:RuntimeUnityEditor.Core.Window`1"/> instead of the bare interface.
+            </summary>
+        </member>
+        <member name="P:RuntimeUnityEditor.Core.IFeature.Enabled">
+            <summary>
+            Turn on this feature's functionality.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.IFeature.OnInitialize(RuntimeUnityEditor.Core.Utils.Abstractions.InitSettings)">
+            <summary>
+            Initialize this feature. If this throws, the feature will be skipped.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.IFeature.OnUpdate">
+            <summary>
+            Unity Update callback.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.IFeature.OnLateUpdate">
+            <summary>
+            Unity LateUpdate callback.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.IFeature.OnOnGUI">
+            <summary>
+            Unity OnGUI callback.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.IFeature.OnEditorShownChanged(System.Boolean)">
+            <summary>
+            Callback for RuntimeUnityEditor being toggled shown/hidden. If not visible, Unity callbacks are not called.
+            </summary>
+        </member>
+        <member name="P:RuntimeUnityEditor.Core.IFeature.DisplayType">
+            <summary>
+            How this feature appears in the UI.
+            </summary>
+        </member>
+        <member name="P:RuntimeUnityEditor.Core.IFeature.DisplayName">
+            <summary>
+            How this feature is called in the UI.
+            </summary>
+        </member>
+        <member name="T:RuntimeUnityEditor.Core.FeatureDisplayType">
+            <summary>
+            Controls how a feature appears in the RuntimeUnityEditor interface.
+            </summary>
+        </member>
+        <member name="F:RuntimeUnityEditor.Core.FeatureDisplayType.Hidden">
+            <summary>
+            Do not show on the taskbar, <see cref="P:RuntimeUnityEditor.Core.IFeature.Enabled"/> has to be manually set in that case.
+            </summary>
+        </member>
+        <member name="F:RuntimeUnityEditor.Core.FeatureDisplayType.Feature">
+            <summary>
+            Show as a taskbar toggle together with other features.
+            </summary>
+        </member>
+        <member name="F:RuntimeUnityEditor.Core.FeatureDisplayType.Window">
+            <summary>
+            Show as a taskbar button together with other windows.
+            </summary>
+        </member>
+        <member name="T:RuntimeUnityEditor.Core.FeatureBase`1">
+            <summary>
+            Base implementation of <see cref="T:RuntimeUnityEditor.Core.IFeature" />.
+            <typeparamref name="T" /> should be your derived class's Type, e.g. <code>public class MyFeature : FeatureBase&lt;MyFeature&gt;</code>
+            If you want to make a window, use <see cref="T:RuntimeUnityEditor.Core.Window`1"/> instead.
+            </summary>
+            <inheritdoc />
+        </member>
+        <member name="P:RuntimeUnityEditor.Core.FeatureBase`1.Initialized">
+            <summary>
+            True if this feature was successfully initialized.
+            </summary>
+        </member>
+        <member name="P:RuntimeUnityEditor.Core.FeatureBase`1.Instance">
+            <summary>
+            Instance of this feature (null if not initialized).
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.FeatureBase`1.#ctor">
+            <summary>
+            Create a new instance of the feature. Should only ever be called once since it sets the Instance.
+            </summary>
+        </member>
+        <member name="F:RuntimeUnityEditor.Core.FeatureBase`1.SettingCategory">
+            <summary>
+            Category name, it's "Features" by default. If you want to make a window, use <see cref="T:RuntimeUnityEditor.Core.Window`1"/> instead.
+            </summary>
+        </member>
+        <member name="P:RuntimeUnityEditor.Core.FeatureBase`1.DisplayName">
+            <inheritdoc />
+        </member>
+        <member name="P:RuntimeUnityEditor.Core.FeatureBase`1.Enabled">
+            <summary>
+            If this instance is enabled and can be shown (when RUE interface is enabled as a whole).
+            </summary>
+        </member>
+        <member name="P:RuntimeUnityEditor.Core.FeatureBase`1.Visible">
+            <summary>
+            If this instance is actually shown on screen / has its events fired.
+            </summary>
+        </member>
+        <member name="P:RuntimeUnityEditor.Core.FeatureBase`1.DisplayType">
+            <inheritdoc />
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.FeatureBase`1.AfterInitialized(RuntimeUnityEditor.Core.Utils.Abstractions.InitSettings)">
+            <summary>
+            Runs after <see cref="M:RuntimeUnityEditor.Core.FeatureBase`1.Initialize(RuntimeUnityEditor.Core.Utils.Abstractions.InitSettings)"/> has successfully finished. Must succeed for the feature to be considered initialized.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.FeatureBase`1.OnVisibleChanged(System.Boolean)">
+            <summary>
+            Fired whenever the <see cref="P:RuntimeUnityEditor.Core.FeatureBase`1.Visible"/> state is changed, either by <see cref="P:RuntimeUnityEditor.Core.FeatureBase`1.Enabled"/> being changed or the entire RUE interface being hidden/shown.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.FeatureBase`1.Initialize(RuntimeUnityEditor.Core.Utils.Abstractions.InitSettings)">
+            <inheritdoc cref="M:RuntimeUnityEditor.Core.IFeature.OnInitialize(RuntimeUnityEditor.Core.Utils.Abstractions.InitSettings)"/>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.FeatureBase`1.Update">
+            <inheritdoc cref="M:RuntimeUnityEditor.Core.IFeature.OnUpdate"/>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.FeatureBase`1.LateUpdate">
+            <inheritdoc cref="M:RuntimeUnityEditor.Core.IFeature.OnLateUpdate"/>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.FeatureBase`1.OnGUI">
+            <inheritdoc cref="M:RuntimeUnityEditor.Core.IFeature.OnOnGUI"/>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.FeatureBase`1.VisibleChanged(System.Boolean)">
+            <inheritdoc cref="M:RuntimeUnityEditor.Core.IFeature.OnEditorShownChanged(System.Boolean)"/>
+        </member>
+        <member name="T:RuntimeUnityEditor.Core.Gizmos.lib.Gizmos">
+            <summary>
+            Taken from https://github.com/popcron/gizmos
+            </summary>
+        </member>
+        <member name="F:RuntimeUnityEditor.Core.Gizmos.lib.Gizmos.CameraFilter">
+            <summary>
+            By default, it will always render to scene view camera and the main camera.
+            Subscribing to this allows you to whitelist your custom cameras.
+            </summary>
+        </member>
+        <member name="P:RuntimeUnityEditor.Core.Gizmos.lib.Gizmos.BufferSize">
+            <summary>
+            The size of the total gizmos buffer.
+            Default is 4096.
+            </summary>
+        </member>
+        <member name="P:RuntimeUnityEditor.Core.Gizmos.lib.Gizmos.Enabled">
+            <summary>
+            Toggles wether the gizmos could be drawn or not.
+            </summary>
+        </member>
+        <member name="P:RuntimeUnityEditor.Core.Gizmos.lib.Gizmos.DashGap">
+            <summary>
+            The size of the gap when drawing dashed elements.
+            Default gap size is 0.1
+            </summary>
+        </member>
+        <member name="P:RuntimeUnityEditor.Core.Gizmos.lib.Gizmos.FrustumCulling">
+            <summary>
+            Should the camera not draw elements that are not visible?
+            </summary>
+        </member>
+        <member name="P:RuntimeUnityEditor.Core.Gizmos.lib.Gizmos.Material">
+            <summary>
+            The material being used to render.
+            </summary>
+        </member>
+        <member name="P:RuntimeUnityEditor.Core.Gizmos.lib.Gizmos.Pass">
+            <summary>
+            Rendering pass to activate.
+            </summary>
+        </member>
+        <member name="P:RuntimeUnityEditor.Core.Gizmos.lib.Gizmos.Offset">
+            <summary>
+            Global offset for all points. Default is (0, 0, 0).
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Gizmos.lib.Gizmos.Draw``1(System.Nullable{UnityEngine.Color},System.Boolean,System.Object[])">
+            <summary>
+            Draws an element onto the screen.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Gizmos.lib.Gizmos.Lines(UnityEngine.Vector3[],System.Nullable{UnityEngine.Color},System.Boolean)">
+            <summary>
+            Draws an array of lines. Useful for things like paths.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Gizmos.lib.Gizmos.Line(UnityEngine.Vector3,UnityEngine.Vector3,System.Nullable{UnityEngine.Color},System.Boolean)">
+            <summary>
+            Draw line in world space.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Gizmos.lib.Gizmos.Square(UnityEngine.Vector2,UnityEngine.Vector2,System.Nullable{UnityEngine.Color},System.Boolean)">
+            <summary>
+            Draw square in world space.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Gizmos.lib.Gizmos.Square(UnityEngine.Vector2,System.Single,System.Nullable{UnityEngine.Color},System.Boolean)">
+            <summary>
+            Draw square in world space with float diameter parameter.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Gizmos.lib.Gizmos.Square(UnityEngine.Vector2,UnityEngine.Quaternion,UnityEngine.Vector2,System.Nullable{UnityEngine.Color},System.Boolean)">
+            <summary>
+            Draw square in world space with a rotation parameter.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Gizmos.lib.Gizmos.Cube(UnityEngine.Vector3,UnityEngine.Quaternion,UnityEngine.Vector3,System.Nullable{UnityEngine.Color},System.Boolean)">
+            <summary>
+            Draws a cube in world space.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Gizmos.lib.Gizmos.Rect(UnityEngine.Rect,UnityEngine.Camera,System.Nullable{UnityEngine.Color},System.Boolean)">
+            <summary>
+            Draws a rectangle in screen space.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Gizmos.lib.Gizmos.Bounds(UnityEngine.Bounds,System.Nullable{UnityEngine.Color},System.Boolean)">
+            <summary>
+            Draws a representation of a bounding box.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Gizmos.lib.Gizmos.Cone(UnityEngine.Vector3,UnityEngine.Quaternion,System.Single,System.Single,System.Nullable{UnityEngine.Color},System.Boolean,System.Int32)">
+            <summary>
+            Draws a cone similar to the one that spot lights draw.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Gizmos.lib.Gizmos.Sphere(UnityEngine.Vector3,System.Single,System.Nullable{UnityEngine.Color},System.Boolean,System.Int32)">
+            <summary>
+            Draws a sphere at position with specified radius.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Gizmos.lib.Gizmos.Circle(UnityEngine.Vector3,System.Single,UnityEngine.Camera,System.Nullable{UnityEngine.Color},System.Boolean,System.Int32)">
+            <summary>
+            Draws a circle in world space and billboards towards the camera.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Gizmos.lib.Gizmos.Circle(UnityEngine.Vector3,System.Single,UnityEngine.Quaternion,System.Nullable{UnityEngine.Color},System.Boolean,System.Int32)">
+            <summary>
+            Draws a circle in world space with a specified rotation.
+            </summary>
+        </member>
+        <member name="T:RuntimeUnityEditor.Core.Gizmos.lib.GizmosInstance">
+            <summary>
+            Taken from https://github.com/popcron/gizmos
+            </summary>
+        </member>
+        <member name="P:RuntimeUnityEditor.Core.Gizmos.lib.GizmosInstance.Material">
+            <summary>
+            The material being used to render
+            </summary>
+        </member>
+        <member name="P:RuntimeUnityEditor.Core.Gizmos.lib.GizmosInstance.DefaultMaterial">
+            <summary>
+            The default line renderer material
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Gizmos.lib.GizmosInstance.Submit(UnityEngine.Vector3[],System.Nullable{UnityEngine.Color},System.Boolean)">
+            <summary>
+            Submits an array of points to draw into the queue.
+            </summary>
+        </member>
+        <member name="T:RuntimeUnityEditor.Core.Gizmos.GizmoDrawer">
+            <summary>
+            Feature that shows gizmos for selected GameObjects.
+            </summary>
+        </member>
+        <member name="T:RuntimeUnityEditor.Core.Utils.Abstractions.InitSettings">
+            <summary>
+            Collection of things required for RUE to be successfully initialized.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Utils.Abstractions.InitSettings.RegisterSetting``1(System.String,System.String,``0,System.String,System.Action{``0})">
+            <summary>
+            Register a new persistent setting.
+            </summary>
+            <typeparam name="T">Type of the setting</typeparam>
+            <param name="category">Used for grouping</param>
+            <param name="name">Name/Key</param>
+            <param name="defaultValue">Initial value if setting was never changed</param>
+            <param name="description">What the setting does</param>
+            <param name="onValueUpdated">Called when the setting changes, and immediately after this method finishes (with either the default value or the previously stored value).</param>
+            <returns>An Action that can be used to set the setting's value</returns>
+        </member>
+        <member name="P:RuntimeUnityEditor.Core.Utils.Abstractions.InitSettings.PluginMonoBehaviour">
+            <summary>
+            Instance MB of the plugin
+            </summary>
+        </member>
+        <member name="P:RuntimeUnityEditor.Core.Utils.Abstractions.InitSettings.LoggerWrapper">
+            <summary>
+            Log output
+            </summary>
+        </member>
+        <member name="P:RuntimeUnityEditor.Core.Utils.Abstractions.InitSettings.ConfigPath">
+            <summary>
+            Path to write/read extra config files from
+            </summary>
+        </member>
+        <member name="T:RuntimeUnityEditor.Core.Utils.Abstractions.UnityInput">
+            <summary>
+            Abstraction layer over Unity's input systems for use in universal plugins that need to use hotkeys.
+            It can use either Input or Unity.InputSystem, depending on what's available. Input is preferred.
+            WARNING: Use only inside of Unity's main thread!
+            Copied from BepInEx 5.4.20 to keep support for other plugin loaders.
+            </summary>
+        </member>
+        <member name="P:RuntimeUnityEditor.Core.Utils.Abstractions.UnityInput.Current">
+            <summary>
+            Best currently supported input system.
+            </summary>
+        </member>
+        <member name="P:RuntimeUnityEditor.Core.Utils.Abstractions.UnityInput.LegacyInputSystemAvailable">
+            <summary>
+            True if the Input class is not disabled.
+            </summary>
+        </member>
+        <member name="T:RuntimeUnityEditor.Core.Utils.Abstractions.IInputSystem">
+            <summary>
+            Generic input system interface. Just barely good enough for hotkeys.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Utils.Abstractions.IInputSystem.GetKey(System.String)">
+            <inheritdoc cref="M:UnityEngine.Input.GetKey(System.String)"/>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Utils.Abstractions.IInputSystem.GetKey(UnityEngine.KeyCode)">
+            <inheritdoc cref="M:UnityEngine.Input.GetKey(UnityEngine.KeyCode)"/>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Utils.Abstractions.IInputSystem.GetKeyDown(System.String)">
+            <inheritdoc cref="M:UnityEngine.Input.GetKeyDown(System.String)"/>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Utils.Abstractions.IInputSystem.GetKeyDown(UnityEngine.KeyCode)">
+            <inheritdoc cref="M:UnityEngine.Input.GetKeyDown(UnityEngine.KeyCode)"/>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Utils.Abstractions.IInputSystem.GetKeyUp(System.String)">
+            <inheritdoc cref="M:UnityEngine.Input.GetKeyUp(System.String)"/>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Utils.Abstractions.IInputSystem.GetKeyUp(UnityEngine.KeyCode)">
+            <inheritdoc cref="M:UnityEngine.Input.GetKeyUp(UnityEngine.KeyCode)"/>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Utils.Abstractions.IInputSystem.GetMouseButton(System.Int32)">
+            <inheritdoc cref="M:UnityEngine.Input.GetMouseButton(System.Int32)"/>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Utils.Abstractions.IInputSystem.GetMouseButtonDown(System.Int32)">
+            <inheritdoc cref="M:UnityEngine.Input.GetMouseButtonDown(System.Int32)"/>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Utils.Abstractions.IInputSystem.GetMouseButtonUp(System.Int32)">
+            <inheritdoc cref="M:UnityEngine.Input.GetMouseButtonUp(System.Int32)"/>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Utils.Abstractions.IInputSystem.ResetInputAxes">
+            <inheritdoc cref="M:UnityEngine.Input.ResetInputAxes"/>
+        </member>
+        <member name="P:RuntimeUnityEditor.Core.Utils.Abstractions.IInputSystem.mousePosition">
+            <inheritdoc cref="P:UnityEngine.Input.mousePosition"/>
+        </member>
+        <member name="P:RuntimeUnityEditor.Core.Utils.Abstractions.IInputSystem.mouseScrollDelta">
+            <inheritdoc cref="P:UnityEngine.Input.mouseScrollDelta"/>
+        </member>
+        <member name="P:RuntimeUnityEditor.Core.Utils.Abstractions.IInputSystem.mousePresent">
+            <inheritdoc cref="P:UnityEngine.Input.mousePresent"/>
+        </member>
+        <member name="P:RuntimeUnityEditor.Core.Utils.Abstractions.IInputSystem.anyKey">
+            <inheritdoc cref="P:UnityEngine.Input.anyKey"/>
+        </member>
+        <member name="P:RuntimeUnityEditor.Core.Utils.Abstractions.IInputSystem.anyKeyDown">
+            <inheritdoc cref="P:UnityEngine.Input.anyKeyDown"/>
+        </member>
+        <member name="P:RuntimeUnityEditor.Core.Utils.Abstractions.IInputSystem.SupportedKeyCodes">
+            <summary>
+            All KeyCodes supported by the current input system.
+            </summary>
+        </member>
+        <member name="T:RuntimeUnityEditor.Core.Utils.Abstractions.DnSpyHelper">
+            <summary>
+            Feature that makes it possible to quicly jump to a given element inside decompiled assembly in dnSpy.
+            </summary>
+        </member>
+        <member name="P:RuntimeUnityEditor.Core.Utils.Abstractions.DnSpyHelper.DnSpyPath">
+            <summary>
+            Path to dnSpy.exe
+            </summary>
+        </member>
+        <member name="P:RuntimeUnityEditor.Core.Utils.Abstractions.DnSpyHelper.DnSpyArgs">
+            <summary>
+            Arguments to use when launching dnSpy.
+            </summary>
+        </member>
+        <member name="P:RuntimeUnityEditor.Core.Utils.Abstractions.DnSpyHelper.IsAvailable">
+            <summary>
+            Is dnSpy configured correctly and actually present on disk.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Utils.Abstractions.DnSpyHelper.OpenInDnSpy(RuntimeUnityEditor.Core.Inspector.Entries.ICacheEntry)">
+            <summary>
+            Open object contained in a given entry in dnSpy.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Utils.Abstractions.DnSpyHelper.OpenInDnSpy(System.Type)">
+            <summary>
+            Navigate to a given type in dnSpy.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Utils.Abstractions.DnSpyHelper.OpenInDnSpy(System.Reflection.MemberInfo)">
+            <summary>
+            Navigate to a given method in dnSpy.
+            </summary>
+        </member>
+        <member name="T:RuntimeUnityEditor.Core.Utils.Abstractions.ILoggerWrapper">
+            <summary>
+            A place for RUE to write logs to.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Utils.Abstractions.ILoggerWrapper.Log(RuntimeUnityEditor.Core.Utils.Abstractions.LogLevel,System.Object)">
+            <summary>
+            Write a log message (source is always RUE).
+            </summary>
+            <param name="logLevel">How important the message is.</param>
+            <param name="content">Content of the message, can be any type so it will have to be converted to string if given log level is shown.</param>
+        </member>
+        <member name="T:RuntimeUnityEditor.Core.Utils.Abstractions.LogLevel">
+            <summary>
+            How a log message should be treated.
+            A single log message can have multiple levels attached to it (usually Message + something else).
+            Same as BepInEx5 LogLevel.
+            </summary>
+        </member>
+        <member name="F:RuntimeUnityEditor.Core.Utils.Abstractions.LogLevel.None">
+            <summary>
+            This shouldn't happen.
+            </summary>
+        </member>
+        <member name="F:RuntimeUnityEditor.Core.Utils.Abstractions.LogLevel.Fatal">
+            <summary>
+            The world is burning.
+            </summary>
+        </member>
+        <member name="F:RuntimeUnityEditor.Core.Utils.Abstractions.LogLevel.Error">
+            <summary>
+            Something bad and unexpected happened.
+            </summary>
+        </member>
+        <member name="F:RuntimeUnityEditor.Core.Utils.Abstractions.LogLevel.Warning">
+            <summary>
+            Something bad but expected or safe to ignore happened.
+            </summary>
+        </member>
+        <member name="F:RuntimeUnityEditor.Core.Utils.Abstractions.LogLevel.Message">
+            <summary>
+            The user should see this, ideally in the UI.
+            </summary>
+        </member>
+        <member name="F:RuntimeUnityEditor.Core.Utils.Abstractions.LogLevel.Info">
+            <summary>
+            Writing home about the cool things I did.
+            </summary>
+        </member>
+        <member name="F:RuntimeUnityEditor.Core.Utils.Abstractions.LogLevel.Debug">
+            <summary>
+            Info useful mostly for debugging RUE itself.
+            </summary>
+        </member>
+        <member name="F:RuntimeUnityEditor.Core.Utils.Abstractions.LogLevel.All">
+            <summary>
+            All for one.
+            </summary>
+        </member>
+        <member name="T:RuntimeUnityEditor.Core.Utils.Abstractions.OpenFileDialog">
+            <summary>
+            Gives access to the Windows open file dialog.
+            http://www.pinvoke.net/default.aspx/comdlg32/GetOpenFileName.html
+            http://www.pinvoke.net/default.aspx/Structures/OpenFileName.html
+            http://www.pinvoke.net/default.aspx/Enums/OpenSaveFileDialgueFlags.html
+            https://social.msdn.microsoft.com/Forums/en-US/2f4dd95e-5c7b-4f48-adfc-44956b350f38/getopenfilename-for-multiple-files?forum=csharpgeneral
+            </summary>
+        </member>
+        <member name="F:RuntimeUnityEditor.Core.Utils.Abstractions.OpenFileDialog.SingleFileFlags">
+            <summary>
+            Arguments used for opening a single file
+            </summary>
+        </member>
+        <member name="F:RuntimeUnityEditor.Core.Utils.Abstractions.OpenFileDialog.MultiFileFlags">
+            <summary>
+            Arguments used for opening multiple files
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Utils.Abstractions.OpenFileDialog.ShowDialog(System.String,System.String,System.String,System.String,RuntimeUnityEditor.Core.Utils.Abstractions.OpenFileDialog.OpenSaveFileDialgueFlags,System.IntPtr)">
+            <inheritdoc cref="M:RuntimeUnityEditor.Core.Utils.Abstractions.OpenFileDialog.ShowDialog(System.String,System.String,System.String,System.String,RuntimeUnityEditor.Core.Utils.Abstractions.OpenFileDialog.OpenSaveFileDialgueFlags,System.String,System.IntPtr)"/>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Utils.Abstractions.OpenFileDialog.ShowDialog(System.String,System.String,System.String,System.String,RuntimeUnityEditor.Core.Utils.Abstractions.OpenFileDialog.OpenSaveFileDialgueFlags,System.String,System.IntPtr)">
+            <summary>
+            Show windows file open dialog. Blocks the thread until user closes the dialog. Returns list of selected files, or null if user cancelled the action.
+            </summary>
+            <param name="title">
+            A string to be placed in the title bar of the dialog box. If this member is NULL, the system uses
+            the default title (that is, Save As or Open)
+            </param>
+            <param name="initialDir">
+            The initial directory. The algorithm for selecting the initial directory varies on different
+            platforms.
+            </param>
+            <param name="filter">
+            A list of filter pairs separated by |. First item is the display name, while the second is
+            the actual filter (e.g. *.txt) Example: <code>"Log files (.log)|*.log|All files|*.*"</code>
+            </param>
+            <param name="defaultExt">
+            The default extension. This extension is appended to the file name if the user fails to type
+            an extension.
+            </param>
+            <param name="flags">
+            A set of bit flags you can use to initialize the dialog box. When the dialog box returns, it sets these flags to
+            indicate the user's input.
+            This member can be a combination of the CommomDialgueFlags.
+            </param>
+            <param name="owner">Hwnd pointer of the owner window. IntPtr.Zero to use default parent</param>
+            <param name="defaultFilename"> Filename that is initially entered in the filename box. </param>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Utils.Abstractions.OpenFileDialog.Show(System.Action{System.String[]},System.String,System.String,System.String,System.String,RuntimeUnityEditor.Core.Utils.Abstractions.OpenFileDialog.OpenSaveFileDialgueFlags)">
+            <summary>
+            Show windows file open dialog. Doesn't pause the game.
+            </summary>
+            <param name="onAccept">Action that gets called with results of user's selection. Returns list of selected files, or null if user cancelled the action.
+            WARNING: This runs on another thread! Game will crash if you attempt to access unity methods.
+            You can use <code>KoikatuAPI.SynchronizedInvoke</code> to go back to the main thread.</param>
+            <param name="title">
+            A string to be placed in the title bar of the dialog box. If this member is NULL, the system uses
+            the default title (that is, Save As or Open)
+            </param>
+            <param name="initialDir">
+            The initial directory. The algorithm for selecting the initial directory varies on different
+            platforms.
+            </param>
+            <param name="filter">
+            A list of filter pairs separated by |. First item is the display name, while the second is
+            the actual filter (e.g. *.txt) Example: <code>"Log files (.log)|*.log|All files|*.*"</code>
+            </param>
+            <param name="defaultFilename">
+            The default extension. This extension is appended to the file name if the user fails to type
+            an extension.
+            </param>
+            <param name="flags">
+            A set of bit flags you can use to initialize the dialog box. When the dialog box returns, it sets these flags to
+            indicate the user's input.
+            This member can be a combination of the CommomDialgueFlags.
+            </param>
+        </member>
+        <member name="F:RuntimeUnityEditor.Core.Utils.Abstractions.OpenFileDialog.OpenSaveFileDialgueFlags.OFN_NOLONGNAMES">
+            <summary>
+            Force no long names for 4.x modules
+            </summary>
+        </member>
+        <member name="F:RuntimeUnityEditor.Core.Utils.Abstractions.OpenFileDialog.OpenSaveFileDialgueFlags.OFN_EXPLORER">
+            <summary>
+            New look commdlg
+            </summary>
+        </member>
+        <member name="F:RuntimeUnityEditor.Core.Utils.Abstractions.OpenFileDialog.OpenSaveFileDialgueFlags.OFN_LONGNAMES">
+            <summary>
+            Force long names for 3.x modules
+            </summary>
+        </member>
+        <member name="T:RuntimeUnityEditor.Core.Utils.Abstractions.ColorUtility">
+            <summary>
+            Utilities related to the <see cref="T:UnityEngine.Color"/> and <see cref="T:UnityEngine.Color32"/> classes.
+            </summary>
+        </member>
+        <member name="T:RuntimeUnityEditor.Core.Utils.Abstractions.ToStringUtility">
+            <summary>
+            Utilities for turning things into readable strings.
+            </summary>
+        </member>
+        <member name="T:RuntimeUnityEditor.Core.Utils.Abstractions.UnityFeatureHelper">
+            <summary>
+            Abstractions for Unity engine features that got changed in some way across different engine version.
+            </summary>
+        </member>
+        <member name="P:RuntimeUnityEditor.Core.Utils.Abstractions.UnityFeatureHelper.SupportsScenes">
+            <summary>
+            UnityEngine.SceneManagement.SceneManager is available, used by <see cref="M:RuntimeUnityEditor.Core.Utils.Abstractions.UnityFeatureHelper.GetSceneGameObjects"/>.
+            </summary>
+        </member>
+        <member name="P:RuntimeUnityEditor.Core.Utils.Abstractions.UnityFeatureHelper.SupportsCursorIndex">
+            <summary>
+            TextEditor.cursorIndex is available.
+            </summary>
+        </member>
+        <member name="P:RuntimeUnityEditor.Core.Utils.Abstractions.UnityFeatureHelper.SupportsRepl">
+            <summary>
+            C# REPL SHOULD be able to run in this environment (mcs might still be unhappy).
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Utils.Abstractions.UnityFeatureHelper.GetSceneGameObjects">
+            <summary>
+            Get root game objects in active scene, or nothing if game doesn't support this.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Utils.Abstractions.UnityFeatureHelper.OpenLog">
+            <summary>
+            Figure out where the log file is written to and open it.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Utils.Abstractions.UnityFeatureHelper.LoadTexture(System.Byte[])">
+            <summary>
+            Abstraction for Texture2D.LoadImage. In later Unity versions it was moved into an extension method.
+            </summary>
+        </member>
+        <member name="T:RuntimeUnityEditor.Core.Utils.ObjectDumper.Dumper">
+            <summary>
+            Tries to dump contents of objects into a text form.
+            </summary>
+        </member>
+        <member name="T:RuntimeUnityEditor.Core.Utils.ObjectDumper.MeshExport">
+            <summary>
+            Contains methods for exporting the renderer data in various formats
+            https://github.com/IllusionMods/KK_Plugins/blob/master/src/MaterialEditor.Base/Export.Obj.cs
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Utils.ObjectDumper.MeshExport.ExportObj(UnityEngine.Renderer,System.Boolean,System.Boolean)">
+            <summary>
+            Exports the mesh of the SkinnedMeshRenderer or MeshRenderer
+            </summary>
+        </member>
+        <member name="T:RuntimeUnityEditor.Core.Utils.TextureUtils">
+            <summary>
+            Utility methods for working with texture objects.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Utils.TextureUtils.ToTexture2D(UnityEngine.Texture,UnityEngine.TextureFormat,System.Boolean)">
+            <summary>
+            Copy this texture inside a new editable Texture2D.
+            </summary>
+            <param name="tex">Texture to copy</param>
+            <param name="format">Format of the copy</param>
+            <param name="mipMaps">Copy has mipmaps</param>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Utils.TextureUtils.BasedEncodeToPNG(UnityEngine.Texture)">
+            <summary>
+            EncodeToPNG that doesn't care about what kind of texture you give it, or what unity version is currently running.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Utils.TextureUtils.SaveTextureToFileWithDialog(UnityEngine.Texture)">
+            <summary>
+            Show file save dialog and write PNG version of the texture to selected filename.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Utils.TextureUtils.LoadTextureFromFileWithDialog">
+            <summary>
+            Show a file open dialog for .png files and load the selected png file into a new Texture2D.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Utils.TextureUtils.GetVisibleTexture(UnityEngine.Sprite)">
+            <summary>
+            Gets texture as it is shown by this sprite. If it's not packed then returns the original texture.
+            If it's packed then this tries to crop out the part that the sprite is supposed to show and return only that.
+            </summary>
+        </member>
+        <member name="T:RuntimeUnityEditor.Core.Utils.IMGUIUtils">
+            <summary>
+            Utility methods for working with IMGUI / OnGui.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Utils.IMGUIUtils.DrawSolidBox(UnityEngine.Rect)">
+            <summary>
+            Draw a gray non-transparent GUI.Box at the specified rect. Use before a GUI.Window or other controls to get rid of 
+            the default transparency and make the GUI easier to read.
+            <example>
+            IMGUIUtils.DrawSolidBox(screenRect);
+            GUILayout.Window(362, screenRect, TreeWindow, "Select character folder");
+            </example>
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Utils.IMGUIUtils.EatInputInRect(UnityEngine.Rect)">
+            <summary>
+            Block input from going through to the game/canvases if the mouse cursor is within the specified Rect.
+            Use after a GUI.Window call or the window will not be able to get the inputs either.
+            <example>
+            GUILayout.Window(362, screenRect, TreeWindow, "Select character folder");
+            Utils.EatInputInRect(screenRect);
+            </example>
+            </summary>
+            <param name="eatRect"></param>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Utils.IMGUIUtils.DrawLabelWithOutline(UnityEngine.Rect,System.String,UnityEngine.GUIStyle,UnityEngine.Color,UnityEngine.Color,System.Int32)">
+            <summary>
+            Draw a label with an outline
+            </summary>
+            <param name="rect">Size of the control</param>
+            <param name="text">Text of the label</param>
+            <param name="style">Style to be applied to the label</param>
+            <param name="txtColor">Color of the text</param>
+            <param name="outlineColor">Color of the outline</param>
+            <param name="outlineThickness">Thickness of the outline in pixels</param>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Utils.IMGUIUtils.DrawLabelWithShadow(UnityEngine.Rect,UnityEngine.GUIContent,UnityEngine.GUIStyle,UnityEngine.Color,UnityEngine.Color,UnityEngine.Vector2)">
+            <summary>
+            Draw a label with a shadow
+            </summary>        
+            <param name="rect">Size of the control</param>
+            <param name="content">Contents of the label</param>
+            <param name="style">Style to be applied to the label</param>
+            <param name="txtColor">Color of the outline</param>
+            <param name="shadowColor">Color of the text</param>
+            <param name="shadowOffset">Offset of the shadow in pixels</param>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Utils.IMGUIUtils.DragResizeEat(System.Int32,UnityEngine.Rect)">
+            <summary>
+            Handle dragging and resizing of ongui windows, and preventing inptus from going through. Use instead of GUI.DragWindow()
+            How to use: _winRect = Utils.DragResizeEat(id, _winRect);
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Utils.IMGUIUtils.DragOrResize(System.Int32,UnityEngine.Rect)">
+            <summary>
+            Handle both dragging and resizing of ongui windows. Use instead of GUI.DragWindow()
+            How to use: _winRect = Utils.DragOrResize(id, _winRect);
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Utils.IMGUIUtils.IsMouseWheelClick">
+            <summary>
+            For use inside OnGUI to check if a GUI.Button was clicked with middle mouse button.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Utils.IMGUIUtils.IsMouseRightClick">
+            <summary>
+            For use inside OnGUI to check if a GUI.Button was clicked with right mouse button.
+            </summary>
+        </member>
+        <member name="T:RuntimeUnityEditor.Core.Utils.TomlTypeConverter">
+            <summary>
+            Based on https://github.com/BepInEx/BepInEx/blob/master/BepInEx/Configuration/TomlTypeConverter.cs
+            Original is under MIT License - Copyright(c) 2018 Bepis
+            </summary>
+        </member>
+        <member name="T:RuntimeUnityEditor.Core.Utils.TomlTypeConverter.TypeConverter">
+            <summary>
+            A serializer/deserializer combo for some type(s). Used by the config system.
+            </summary>
+        </member>
+        <member name="P:RuntimeUnityEditor.Core.Utils.TomlTypeConverter.TypeConverter.ConvertToString">
+            <summary>
+            Used to serialize the type into a (hopefully) human-readable string.
+            Object is the instance to serialize, Type is the object's type.
+            </summary>
+        </member>
+        <member name="P:RuntimeUnityEditor.Core.Utils.TomlTypeConverter.TypeConverter.ConvertToObject">
+            <summary>
+            Used to deserialize the type from a string.
+            String is the data to deserialize, Type is the object's type, should return instance to an object of Type.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Utils.TomlTypeConverter.ConvertToString(System.Object,System.Type)">
+            <summary>
+            Convert object of a given type to a string using available converters.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Utils.TomlTypeConverter.ConvertToValue``1(System.String)">
+            <summary>
+            Convert string to an object of a given type using available converters.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Utils.TomlTypeConverter.ConvertToValue(System.String,System.Type)">
+            <summary>
+            Convert string to an object of a given type using available converters.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Utils.TomlTypeConverter.GetConverter(System.Type)">
+            <summary>
+            Get a converter for a given type if there is any.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Utils.TomlTypeConverter.AddConverter(System.Type,RuntimeUnityEditor.Core.Utils.TomlTypeConverter.TypeConverter)">
+            <summary>
+            Add a new type converter for a given type. 
+            If a different converter is already added, this call is ignored and false is returned.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Utils.TomlTypeConverter.CanConvert(System.Type)">
+            <summary>
+            Check if a given type can be converted to and from string.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Utils.TomlTypeConverter.GetSupportedTypes">
+            <summary>		
+            Give a list of types with registered converters.
+            </summary>
+        </member>
+        <member name="T:RuntimeUnityEditor.Core.Utils.Extensions">
+            <summary>
+            Useful stuff.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Utils.Extensions.GetAllFields(System.Type,System.Boolean)">
+            <summary>
+            Get all public and private fields, including from base classes
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Utils.Extensions.GetAllProperties(System.Type,System.Boolean)">
+            <summary>
+            Get all public and private properties, including from base classes
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Utils.Extensions.GetAllMethods(System.Type,System.Boolean)">
+            <summary>
+            Get all public and private methods, including from base classes
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Utils.Extensions.GetAllEvents(System.Type,System.Boolean)">
+            <summary>
+            Get all public and private methods, including from base classes
+            </summary>
+        </member>
+        <member name="T:RuntimeUnityEditor.Core.Utils.ResourceUtils">
+            <summary>
+            Utility methods for working with embedded resources.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Utils.ResourceUtils.ReadAllBytes(System.IO.Stream)">
+            <summary>
+            Read all bytes starting at current position and ending at the end of the stream.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Utils.ResourceUtils.GetEmbeddedResource(System.String,System.Reflection.Assembly)">
+            <summary>
+            Get a file set as "Embedded Resource" from the assembly that is calling this code, or optionally from a specified assembly.
+            The filename is matched to the end of the resource path, no need to give the full path.
+            If 0 or more than 1 resources match the provided filename, an exception is thrown.
+            For example if you have a file "ProjectRoot\Resources\icon.png" set as "Embedded Resource", you can use this to load it by
+            doing <code>GetEmbeddedResource("icon.png"), assuming that no other embedded files have the same name.</code>
+            </summary>
+        </member>
+        <member name="T:RuntimeUnityEditor.Core.IWindow">
+            <summary>
+            Feature for use with RuntimeUnityEditor that has a GUILayout window. Custom windows can be added with <see cref="M:RuntimeUnityEditor.Core.RuntimeUnityEditorCore.AddFeature(RuntimeUnityEditor.Core.IFeature)"/>.
+            Consider using <see cref="T:RuntimeUnityEditor.Core.Window`1"/> instead of the bare interface.
+            </summary>
+        </member>
+        <member name="P:RuntimeUnityEditor.Core.IWindow.Title">
+            <summary>
+            Title of the window shown in the title bar and messages related to the window.
+            </summary>
+        </member>
+        <member name="P:RuntimeUnityEditor.Core.IWindow.WindowId">
+            <summary>
+            ID of the GUILayout window. Set to a unique value automatically during initialization.
+            </summary>
+        </member>
+        <member name="P:RuntimeUnityEditor.Core.IWindow.WindowRect">
+            <summary>
+            Size and position of the window, including borders and title bar.
+            </summary>
+        </member>
+        <member name="P:RuntimeUnityEditor.Core.IWindow.MinimumSize">
+            <summary>
+            Minimum size of the window (width, height).
+            </summary>
+        </member>
+        <member name="P:RuntimeUnityEditor.Core.IWindow.DefaultScreenPosition">
+            <summary>
+            Default position of this window.
+            </summary>
+        </member>
+        <member name="T:RuntimeUnityEditor.Core.Window`1">
+            <summary>
+            Base implementation of <see cref="T:RuntimeUnityEditor.Core.IWindow" />.
+            <typeparamref name="T" /> should be your derived class's Type, e.g. <code>public class MyWindow : Window&lt;MyWindow&gt;</code>
+            </summary>
+            <inheritdoc cref="T:RuntimeUnityEditor.Core.IWindow" />
+        </member>
+        <member name="F:RuntimeUnityEditor.Core.Window`1.TooltipWidth">
+            <summary>
+            Width of tooltips shown inside windows.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Window`1.#ctor">
+            <summary>
+            Create a new window instance, should only ever be called once.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Window`1.AfterInitialized(RuntimeUnityEditor.Core.Utils.Abstractions.InitSettings)">
+            <inheritdoc cref="M:RuntimeUnityEditor.Core.FeatureBase`1.AfterInitialized(RuntimeUnityEditor.Core.Utils.Abstractions.InitSettings)"/>
+        </member>
+        <member name="P:RuntimeUnityEditor.Core.Window`1.DisplayName">
+            <inheritdoc cref="P:RuntimeUnityEditor.Core.FeatureBase`1.DisplayName"/>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Window`1.OnGUI">
+            <inheritdoc cref="M:RuntimeUnityEditor.Core.FeatureBase`1.OnGUI"/>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Window`1.OnVisibleChanged(System.Boolean)">
+            <inheritdoc cref="M:RuntimeUnityEditor.Core.FeatureBase`1.OnVisibleChanged(System.Boolean)"/>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Window`1.VisibleChanged(System.Boolean)">
+            <inheritdoc cref="M:RuntimeUnityEditor.Core.FeatureBase`1.VisibleChanged(System.Boolean)"/>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Window`1.ResetWindowRect">
+            <summary>
+            Discard current window size and position, and set the default ones for this window.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Window`1.GetDefaultWindowRect(UnityEngine.Rect)">
+            <summary>
+            Get default size of this window (including border and title bar) for the given screen rect.
+            The screen rect includes only useful work area (i.e. it excludes any margins and taskbar).
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Window`1.MakeDefaultWindowRect(UnityEngine.Rect,UnityEngine.TextAlignment)">
+            <summary>
+            Get default size of a window for a given resolution and side of the screen. Center is wider than the sides.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Window`1.DrawContents">
+            <summary>
+            Draw contents of the window.
+            This runs inside of <see cref="M:UnityEngine.GUILayout.Window(System.Int32,UnityEngine.Rect,UnityEngine.GUI.WindowFunction,System.String,UnityEngine.GUILayoutOption[])"/>
+            so all <see cref="T:UnityEngine.GUILayout"/> methods can be used to construct the interface.
+            </summary>
+        </member>
+        <member name="P:RuntimeUnityEditor.Core.Window`1.Title">
+            <inheritdoc cref="P:RuntimeUnityEditor.Core.IWindow.Title"/>
+        </member>
+        <member name="P:RuntimeUnityEditor.Core.Window`1.WindowId">
+            <inheritdoc cref="P:RuntimeUnityEditor.Core.IWindow.WindowId"/>
+        </member>
+        <member name="P:RuntimeUnityEditor.Core.Window`1.WindowRect">
+            <inheritdoc cref="P:RuntimeUnityEditor.Core.IWindow.WindowRect"/>
+        </member>
+        <member name="P:RuntimeUnityEditor.Core.Window`1.MinimumSize">
+            <inheritdoc cref="P:RuntimeUnityEditor.Core.IWindow.MinimumSize"/>
+        </member>
+        <member name="P:RuntimeUnityEditor.Core.Window`1.DefaultScreenPosition">
+            <inheritdoc cref="P:RuntimeUnityEditor.Core.IWindow.DefaultScreenPosition" />
+        </member>
+        <member name="T:RuntimeUnityEditor.Core.WireframeFeature">
+            <summary>
+            Feature that turns on Unity's built-in wireframe mode.
+            </summary>
+        </member>
+        <member name="T:RuntimeUnityEditor.Core.ContextMenu">
+            <summary>
+            Context menu invoked by right clicking on many things.
+            </summary>
+        </member>
+        <member name="P:RuntimeUnityEditor.Core.ContextMenu.Enabled">
+            <summary>
+            Is the menu currently visible. A valid object must be set first or it will always be false.
+            </summary>
+        </member>
+        <member name="P:RuntimeUnityEditor.Core.ContextMenu.MenuContents">
+            <summary>
+            Contents of the context menu.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.ContextMenu.Initialize(RuntimeUnityEditor.Core.Utils.Abstractions.InitSettings)">
+            <inheritdoc />
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.ContextMenu.Show(System.Object,System.Reflection.MemberInfo)">
+            <summary>
+            Show the context menu at current cursor position.
+            </summary>
+            <param name="obj">Object to show the menu for. Set to null to hide the menu.</param>
+            <param name="objMemberInfo">MemberInfo of wherever the object came from. Can be null.</param>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.ContextMenu.Show(System.Object,System.Reflection.MemberInfo,UnityEngine.Vector2)">
+            <summary>
+            Show the context menu at a specific screen position.
+            </summary>
+            <param name="obj">Object to show the menu for. Set to null to hide the menu.</param>
+            <param name="objMemberInfo">MemberInfo of wherever the object came from. Can be null.</param>
+            <param name="clickPoint">Screen position to show the menu at.</param>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.ContextMenu.DrawContextButton(System.Object,System.Reflection.MemberInfo)">
+            <summary>
+            Draw a GUILayout button that opens the context menu when clicked. It's only shown if the object is not null.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.ContextMenu.OnGUI">
+            <inheritdoc />
+        </member>
+        <member name="T:RuntimeUnityEditor.Core.ContextMenu.MenuEntry">
+            <summary>
+            A single entry in the context menu.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.ContextMenu.MenuEntry.#ctor(System.String,System.Func{System.Object,System.Boolean},System.Action{System.Object})">
+            <summary>
+            Create a new context menu entry.
+            </summary>
+            <param name="name">Name of the enry.</param>
+            <param name="onCheckVisible">Callback that checks if this item is visible for a given object.</param>
+            <param name="onClick">Callback invoked when user clicks on this menu entry with the object as argument.</param>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.ContextMenu.MenuEntry.#ctor(UnityEngine.GUIContent,System.Func{System.Object,System.Boolean},System.Action{System.Object})">
+            <inheritdoc cref="M:RuntimeUnityEditor.Core.ContextMenu.MenuEntry.#ctor(System.String,System.Func{System.Object,System.Boolean},System.Action{System.Object})"/>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.ContextMenu.MenuEntry.IsVisible(System.Object)">
+            <summary>
+            Check if this menu entry should be visible for a given object.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.ContextMenu.MenuEntry.Draw(System.Object)">
+            <summary>
+            Draw this menu entry. Handles user clicking on the entry too.
+            </summary>
+        </member>
+        <member name="T:RuntimeUnityEditor.Core.Clipboard.ClipboardWindow">
+            <summary>
+            Window that allows copying references to objects and using them later when invoking methods or setting fields/props.
+            </summary>
+        </member>
+        <member name="F:RuntimeUnityEditor.Core.Clipboard.ClipboardWindow.Contents">
+            <summary>
+            Contents of the clipboard.
+            </summary>
+        </member>
+        <member name="T:RuntimeUnityEditor.Core.Inspector.Entries.ICacheEntry">
+            <summary>
+            Representation of a type's member or some other entity that is shown inside the Inspector's member list.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Inspector.Entries.ICacheEntry.Name">
+            <summary>
+            Name of the member.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Inspector.Entries.ICacheEntry.TypeName">
+            <summary>
+            Name of the member's field/return type.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Inspector.Entries.ICacheEntry.GetNameContent">
+            <summary>
+            Name content shown in the UI.
+            </summary>
+        </member>
+        <member name="P:RuntimeUnityEditor.Core.Inspector.Entries.ICacheEntry.Owner">
+            <summary>
+            Type that owns this member.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Inspector.Entries.ICacheEntry.EnterValue">
+            <summary>
+            Get object that is entered when variable name is clicked in inspector
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Inspector.Entries.ICacheEntry.GetValue">
+            <summary>
+            Get the member's value.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Inspector.Entries.ICacheEntry.SetValue(System.Object)">
+            <summary>
+            Set the member's value.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Inspector.Entries.ICacheEntry.Type">
+            <summary>
+            Member's field/return type.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Inspector.Entries.ICacheEntry.CanSetValue">
+            <summary>
+            Value of this member can be set.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Inspector.Entries.ICacheEntry.CanEnterValue">
+            <summary>
+            Inspector can further inspect the value returned by this member.
+            </summary>
+        </member>
+        <member name="T:RuntimeUnityEditor.Core.Inspector.Inspector">
+            <summary>
+            Window that allows browsing and editing of the contents of types and their instances.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Inspector.Inspector.VisibleChanged(System.Boolean)">
+            <inheritdoc />
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Inspector.Inspector.Initialize(RuntimeUnityEditor.Core.Utils.Abstractions.InitSettings)">
+            <inheritdoc />
+        </member>
+        <member name="P:RuntimeUnityEditor.Core.Inspector.Inspector.SearchString">
+            <summary>
+            Only show members that match the search string.
+            Each stack item holds its own search string. This property shows the search string of the current tab item's visible stack entry.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Inspector.Inspector.InspectorClear">
+            <summary> Obsolete, will be removed soon. </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Inspector.Inspector.InspectorPush(RuntimeUnityEditor.Core.Inspector.Entries.InspectorStackEntryBase)">
+            <summary> Obsolete, will be removed soon. </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Inspector.Inspector.Push(RuntimeUnityEditor.Core.Inspector.Entries.InspectorStackEntryBase,System.Boolean)">
+            <summary>
+            Show an object inside inspector.
+            </summary>
+            <param name="stackEntry">Object to show, wrapped in an appropriate stack entry.</param>
+            <param name="newTab">Should the object be shown in a new tab, or at the top of current tab.</param>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Inspector.Inspector.GetInspectedObject">
+            <summary>
+            Get instance of currently visible object. If something other than an object instance is shown, null is returned.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Inspector.Inspector.OnGUI">
+            <inheritdoc />
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Inspector.Inspector.DrawContents">
+            <inheritdoc />
+        </member>
+        <member name="T:RuntimeUnityEditor.Core.ObjectTree.OrderedSet`1">
+            <summary>
+            Based on OrderedSet from answer https://stackoverflow.com/a/17853085 by AndreasHassing and  George Mamaladze
+            </summary>
+            <inheritdoc />
+        </member>
+        <member name="T:RuntimeUnityEditor.Core.ObjectTree.RootGameObjectSearcher">
+            <summary>
+            Keeps track of root gameobjects and allows searching objects in the scene
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.ObjectTree.RootGameObjectSearcher.IsSearching">
+            <summary>
+            A filtered list is currently being shown instead of all items.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.ObjectTree.RootGameObjectSearcher.FindAllRootGameObjects">
+            <summary>
+            Find all currently existing root Transforms. Slow.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.ObjectTree.RootGameObjectSearcher.GetRootObjects">
+            <summary>
+            Get a mostly up-to-date list of all root Transforms. Fast.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.ObjectTree.RootGameObjectSearcher.GetSearchedOrAllObjects">
+            <summary>
+            Get a list of what should be displayed.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.ObjectTree.RootGameObjectSearcher.Refresh(System.Boolean,System.Predicate{UnityEngine.GameObject})">
+            <summary>
+            Refresh the list of GameObjects currently in the scene.
+            </summary>
+            <param name="full">Gather root Transforms again, slow. Otherwise use tricks to approximate the same result but much faster.</param>
+            <param name="objectFilter">Optional filter to exclude some GameObjects from the results.</param>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.ObjectTree.RootGameObjectSearcher.Search(System.String,System.Boolean,System.Boolean,System.Boolean)">
+            <summary>
+            Perform a search in all current GameObjects. GameOjbect names are always searched.
+            </summary>
+            <param name="searchString">What to search for. Checks if the string is contained while ignoring case.</param>
+            <param name="searchComponents">Search component names.</param>
+            <param name="searchProperties">Search values of component properties. Very slow.</param>
+            <param name="refreshObjects">Perform a full refresh if necessary.</param>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.ObjectTree.RootGameObjectSearcher.SearchInComponent(System.String,UnityEngine.Component,System.Boolean)">
+            <summary>
+            Search for a string inside a given component. Component name is always searched.
+            </summary>
+            <param name="searchString">What to search for. Checks if the string is contained while ignoring case.</param>
+            <param name="c">Component to search in.</param>
+            <param name="searchProperties">Search values of component's properties. Very slow.</param>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.ObjectTree.RootGameObjectSearcher.SearchReferences(System.Object)">
+            <summary>
+            Search for references to an object inside of all components currently instantiated.
+            Only top-level properties and fields are searched inside the component.
+            </summary>
+            <param name="objInstance">Instance to search for.</param>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.ObjectTree.RootGameObjectSearcher.SearchReferencesInComponent(System.Object,UnityEngine.Component)">
+            <summary>
+            Search for references to an object inside of all components currently instantiated.
+            Only top-level properties and fields are searched inside the component.
+            </summary>
+            <param name="c">Component to search in.</param>
+            <param name="objInstance">Instance to search for.</param>
+        </member>
+        <member name="T:RuntimeUnityEditor.Core.ObjectTree.ObjectTreeViewer">
+            <summary>
+            Shows a tree of GameObjects/Transforms currently loaded. Also lists components attached to GOs and simple edit controls. Similar to Unity Editor interface.
+            </summary>
+        </member>
+        <member name="E:RuntimeUnityEditor.Core.ObjectTree.ObjectTreeViewer.TreeSelectionChanged">
+            <summary>
+            Invoked whenever a new Transform is selected in the tree.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.ObjectTree.ObjectTreeViewer.SelectAndShowObject(UnityEngine.Transform)">
+            <summary>
+            Select the transform in the tree list, expand the tree to make sure it's visible, and scroll the view to make sure user can see it.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.ObjectTree.ObjectTreeViewer.Initialize(RuntimeUnityEditor.Core.Utils.Abstractions.InitSettings)">
+            <inheritdoc />
+        </member>
+        <member name="P:RuntimeUnityEditor.Core.ObjectTree.ObjectTreeViewer.SelectedTransform">
+            <summary>
+            Transform currently selected in the tree.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.ObjectTree.ObjectTreeViewer.ClearCaches">
+            <summary>
+            Clear any display caches that might hold no longer existing data, e.g. destroyed sprites or textures.
+            </summary>
+        </member>
+        <member name="P:RuntimeUnityEditor.Core.ObjectTree.ObjectTreeViewer.WindowRect">
+            <inheritdoc />
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.ObjectTree.ObjectTreeViewer.DrawContents">
+            <inheritdoc />
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.ObjectTree.ObjectTreeViewer.FindReferencesInScene(System.Object)">
+            <summary>
+            Switch the tree into reference search mode.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.ObjectTree.ObjectTreeViewer.Update">
+            <inheritdoc />
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.ObjectTree.ObjectTreeViewer.VisibleChanged(System.Boolean)">
+            <inheritdoc />
+        </member>
+        <member name="T:RuntimeUnityEditor.Core.ScreenPartition">
+            <summary>
+            Sections of the screen managed by RUE's window manager.
+            </summary>
+        </member>
+        <member name="F:RuntimeUnityEditor.Core.ScreenPartition.Default">
+            <summary>
+            Let RUE choose, behavior can change in future versions.
+            </summary>
+        </member>
+        <member name="F:RuntimeUnityEditor.Core.ScreenPartition.Full">
+            <summary>
+            Span the entire screen, minus the taskbar.
+            </summary>
+        </member>
+        <member name="F:RuntimeUnityEditor.Core.ScreenPartition.Center">
+            <summary>
+            Span the center of the screen, top to bottom, minus the taskbar.
+            </summary>
+        </member>
+        <member name="F:RuntimeUnityEditor.Core.ScreenPartition.CenterUpper">
+            <summary>
+            Upper half of screen center. It's larger than the lower part.
+            </summary>
+        </member>
+        <member name="F:RuntimeUnityEditor.Core.ScreenPartition.CenterLower">
+            <summary>
+            Lower half of screen center. It's smaller than the upper part.
+            </summary>
+        </member>
+        <member name="F:RuntimeUnityEditor.Core.ScreenPartition.Left">
+            <summary>
+            Span the left part of the screen, top to bottom, minus the taskbar.
+            </summary>
+        </member>
+        <member name="F:RuntimeUnityEditor.Core.ScreenPartition.LeftUpper">
+            <summary>
+            Upper half of the screen's left side. Not necessarily equal in size to the lower half.
+            </summary>
+        </member>
+        <member name="F:RuntimeUnityEditor.Core.ScreenPartition.LeftLower">
+            <summary>
+            Lower half of the screen's left side. Not necessarily equal in size to the upper half.
+            </summary>
+        </member>
+        <member name="F:RuntimeUnityEditor.Core.ScreenPartition.Right">
+            <summary>
+            Span the right part of the screen, top to bottom, minus the taskbar.
+            </summary>
+        </member>
+        <member name="F:RuntimeUnityEditor.Core.ScreenPartition.RightUpper">
+            <summary>
+            Upper half of the screen's right side. Not necessarily equal in size to the lower half.
+            </summary>
+        </member>
+        <member name="F:RuntimeUnityEditor.Core.ScreenPartition.RightLower">
+            <summary>
+            Lower half of the screen's right side. Not necessarily equal in size to the upper half.
+            </summary>
+        </member>
+        <member name="T:RuntimeUnityEditor.Core.Taskbar">
+            <summary>
+            Taskbar with controls for all of the RUE features.
+            Avoid using this class directly, new features can be added with <see cref="M:RuntimeUnityEditor.Core.RuntimeUnityEditorCore.AddFeature(RuntimeUnityEditor.Core.IFeature)"/> instead.
+            </summary>
+        </member>
+        <member name="P:RuntimeUnityEditor.Core.Taskbar.Instance">
+            <summary>
+            Current instance.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Taskbar.GetTitle">
+            <summary>
+            Text shown in the title bar of the taskbar.
+            </summary>
+        </member>
+        <member name="P:RuntimeUnityEditor.Core.Taskbar.Height">
+            <summary>
+            Height of the taskbar.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Taskbar.#ctor">
+            <summary>
+            Do not create additional instances or things will break.
+            This has to be public or things will break.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.Taskbar.SetFeatures(System.Collections.Generic.List{RuntimeUnityEditor.Core.IFeature})">
+            <summary>
+            Set features shown in the taskbar.
+            </summary>
+        </member>
+        <member name="P:RuntimeUnityEditor.Core.Taskbar.Enabled">
+            <summary>
+            Show the taskbar, and by extension entire RUE interface. Use <see cref="P:RuntimeUnityEditor.Core.RuntimeUnityEditorCore.Show"/> instead.
+            </summary>
+        </member>
+        <member name="T:RuntimeUnityEditor.Core.WindowManager">
+            <summary>
+            API for organizing and managing windows.
+            </summary>
+        </member>
+        <member name="F:RuntimeUnityEditor.Core.WindowManager.ScreenMargin">
+            <summary>
+            Default distance of windows from screen corners and other windows.
+            </summary>
+        </member>
+        <member name="F:RuntimeUnityEditor.Core.WindowManager.SideWidth">
+            <summary>
+            Default width of windows shown on left and right sides.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.WindowManager.MakeDefaultWindowRect(UnityEngine.Rect,RuntimeUnityEditor.Core.ScreenPartition)">
+            <summary>
+            Get default size of a window for a given screen client rectangle and desired screen partition.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.WindowManager.ResetWindowRect(RuntimeUnityEditor.Core.IWindow)">
+            <summary>
+            Discard current window size and position, and set the default ones for the given window.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.WindowManager.IsWindowRectValid(RuntimeUnityEditor.Core.IWindow)">
+            <summary>
+            Check if the window rect of a given window is visible on the screen and of appropriate size.
+            </summary>
+        </member>
+        <member name="T:RuntimeUnityEditor.Core.Profiler.ProfilerWindow">
+            <summary>
+            Simple profiler that tracks common Unity messages like Update or OnGUI.
+            </summary>
+        </member>
+        <member name="T:RuntimeUnityEditor.Core.ObjectView.ObjectViewWindow">
+            <summary>
+            Displays a friendly representation of objects, e.g. textures.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.ObjectView.ObjectViewWindow.CanPreview(System.Object)">
+            <summary>
+            Can a given object be displayed.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.ObjectView.ObjectViewWindow.SetShownObject(System.Object,System.String)">
+            <summary>
+            Set object to display and its name to show in the title bar.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.ObjectView.ObjectViewWindow.DrawContents">
+            <inheritdoc />
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.ObjectView.ObjectViewWindow.Initialize(RuntimeUnityEditor.Core.Utils.Abstractions.InitSettings)">
+            <inheritdoc />
+        </member>
+        <member name="T:RuntimeUnityEditor.Core.REPL.REPL">
+            <summary>
+            C# REPL environment. Everything in here can be called directly in the REPL console.
+            </summary>
+        </member>
+        <member name="T:RuntimeUnityEditor.Core.REPL.ReplWindow">
+            <summary>
+            C# REPL console window.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.REPL.ReplWindow.Initialize(RuntimeUnityEditor.Core.Utils.Abstractions.InitSettings)">
+            <inheritdoc />
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.REPL.ReplWindow.RunEnvSetup">
+            <summary>
+            Set up the REPL environment. Sometimes needs to be delayed to some time after plugin instantiation or things fail.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.REPL.ReplWindow.DrawContents">
+            <inheritdoc />
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.REPL.ReplWindow.Evaluate(System.String)">
+            <summary>
+            Evaluate string as C# code and run it in the REPL environment. Write resulting log into the console.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.REPL.ReplWindow.Clear">
+            <summary>
+            Clear the log.
+            </summary>
+        </member>
+        <member name="P:RuntimeUnityEditor.Core.REPL.ReplWindow.Enabled">
+            <inheritdoc />
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.REPL.ReplWindow.IngestObject(System.Object)">
+            <summary>
+            Use to send an object into the REPL environment. User is given code to load the object in the input field.
+            </summary>
+        </member>
+        <member name="T:RuntimeUnityEditor.Core.RuntimeUnityEditorCore">
+            <summary>
+            Main class of RUE. It initializes and manages all of the features, and propagates events to them.
+            To access individual features, reference them directly by using <see cref="P:RuntimeUnityEditor.Core.FeatureBase`1.Initialized"/> and <see cref="P:RuntimeUnityEditor.Core.FeatureBase`1.Instance"/>.
+            </summary>
+        </member>
+        <member name="F:RuntimeUnityEditor.Core.RuntimeUnityEditorCore.Version">
+            <summary>
+            Version constant for use in version checks.
+            Beware that this is a const and it will be burned as a string into your assembly at build time.
+            To see the version that is currently installed use <see cref="P:RuntimeUnityEditor.Core.RuntimeUnityEditorCore.InstalledVersion"/>.
+            </summary>
+        </member>
+        <member name="P:RuntimeUnityEditor.Core.RuntimeUnityEditorCore.InstalledVersion">
+            <summary>
+            Get the currently installed version at runtime.
+            For use whenever the running instance version number is needed, instead of the version of the RUE assembly your plugin was compiled against.
+            </summary>
+        </member>
+        <member name="F:RuntimeUnityEditor.Core.RuntimeUnityEditorCore.GUID">
+            <summary>
+            GUID for use in version and dependency checks.
+            Beware that this is a const and it will be burned as a string into your assembly. This shouldn't be an issue since this should never change.
+            </summary>
+        </member>
+        <member name="P:RuntimeUnityEditor.Core.RuntimeUnityEditorCore.Inspector">
+            <summary> Obsolete, do not use. Will be removed soon. </summary>
+        </member>
+        <member name="P:RuntimeUnityEditor.Core.RuntimeUnityEditorCore.TreeViewer">
+            <summary> Obsolete, do not use. Will be removed soon. </summary>
+        </member>
+        <member name="P:RuntimeUnityEditor.Core.RuntimeUnityEditorCore.PreviewWindow">
+            <summary> Obsolete, do not use. Will be removed soon. </summary>
+        </member>
+        <member name="P:RuntimeUnityEditor.Core.RuntimeUnityEditorCore.ProfilerWindow">
+            <summary> Obsolete, do not use. Will be removed soon. </summary>
+        </member>
+        <member name="P:RuntimeUnityEditor.Core.RuntimeUnityEditorCore.Repl">
+            <summary> Obsolete, do not use. Will be removed soon. </summary>
+        </member>
+        <member name="E:RuntimeUnityEditor.Core.RuntimeUnityEditorCore.SettingsChanged">
+            <summary> Obsolete, do not use. Will be removed soon. </summary>
+        </member>
+        <member name="P:RuntimeUnityEditor.Core.RuntimeUnityEditorCore.ShowHotkey">
+            <summary>
+            Hotkey used to show/hide RuntimeUnityEditor. Changing this at runtime also updates the config file, so the value will be set on the next start.
+            </summary>
+        </member>
+        <member name="P:RuntimeUnityEditor.Core.RuntimeUnityEditorCore.ShowRepl">
+            <summary> Obsolete, do not use. Will be removed soon. </summary>
+        </member>
+        <member name="P:RuntimeUnityEditor.Core.RuntimeUnityEditorCore.EnableMouseInspect">
+            <summary> Obsolete, do not use. Will be removed soon. </summary>
+        </member>
+        <member name="P:RuntimeUnityEditor.Core.RuntimeUnityEditorCore.ShowInspector">
+            <summary> Obsolete, do not use. Will be removed soon. </summary>
+        </member>
+        <member name="P:RuntimeUnityEditor.Core.RuntimeUnityEditorCore.Instance">
+            <summary>
+            Current instance of RuntimeUnityEditor.
+            Use <see cref="M:RuntimeUnityEditor.Core.RuntimeUnityEditorCore.IsInitialized"/> to check if initialization has been finished.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.RuntimeUnityEditorCore.IsInitialized">
+            <summary>
+            Check if RuntimeUnityEditor has finished initializing.
+            If this method is called from a background thread and the initialization is currently
+            in progress, it will block until initialization finishes (or fails).
+            </summary>
+        </member>
+        <member name="P:RuntimeUnityEditor.Core.RuntimeUnityEditorCore.Show">
+            <summary>
+            Show RuntimeUnityEditor interface (global toggle controlled by the hotkey).
+            When hidden, most of the features are disabled/paused to minimize performance penalty.
+            </summary>
+        </member>
+        <member name="P:RuntimeUnityEditor.Core.RuntimeUnityEditorCore.InitializedFeatures">
+            <summary>
+            Features that have been successfully initialized so far and are available to the user.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.RuntimeUnityEditorCore.AddFeature(RuntimeUnityEditor.Core.IFeature)">
+            <summary>
+            Add a new feature to RuntimeUnityEditor.
+            Will throw if the feature fails to initialize.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.RuntimeUnityEditorCore.#ctor(RuntimeUnityEditor.Core.Utils.Abstractions.InitSettings)">
+            <summary>
+            Initialize RuntimeUnityEditor. Can only be ran once. Must run on the main Unity thread.
+            Must complete before accessing any of RuntimeUnityEditor's features or they may not be initialized.
+            </summary>
+        </member>
+        <member name="T:RuntimeUnityEditor.Core.MouseInspect">
+            <summary>
+            Feature that shows information about GameObjects and Canvas elements located directly under the mouse cursor.
+            </summary>
+        </member>
+        <member name="T:RuntimeUnityEditor.Core.UI.InterfaceMaker">
+            <summary>
+            Handles the IMGUI skin and such.
+            </summary>
+        </member>
+        <member name="M:RuntimeUnityEditor.Core.UI.InterfaceMaker.EatInputInRect(UnityEngine.Rect)">
+            <summary>
+            If mouse is inside of a given IMGUI screen rect, eat the input.
+            </summary>
+        </member>
+        <member name="P:RuntimeUnityEditor.Core.UI.InterfaceMaker.CustomSkin">
+            <summary>
+            IMGUI skin used by RUE. Can be used by other plugins to get the same look and feel, just don't modify its contents.
+            </summary>
+        </member>
+    </members>
+</doc>
