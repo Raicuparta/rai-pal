@@ -2,7 +2,7 @@ import { Badge, Box, Button, Flex, Menu } from "@mantine/core";
 import { MdHandyman, MdSettings } from "react-icons/md";
 import { useModLoaders } from "../../hooks/use-mod-loaders";
 import { Mod } from "@api/mod/mod";
-import { Game, GameExecutable } from "@api/bindings";
+import { Game, GameExecutable, openGameFolder } from "@api/bindings";
 
 type Props = Readonly<{
   game: Game;
@@ -21,7 +21,7 @@ export function GameExecutableRow(props: Props) {
   const flatMods: Mod[] = [];
 
   const nameSuffix =
-    props.game.distinctExecutables.length <= 1
+    Object.values(props.game.executables).length <= 1
       ? ""
       : ` (${
           props.executable.steamLaunch?.description ||
@@ -41,10 +41,14 @@ export function GameExecutableRow(props: Props) {
               </Button>
             </Menu.Target>
             <Menu.Dropdown>
-              {/* <Menu.Item onClick={props.executable.openGameFolder}>
+              <Menu.Item
+                onClick={() =>
+                  openGameFolder(props.game.id, props.executable.id)
+                }
+              >
                 Open Game Folder
               </Menu.Item>
-              <Menu.Item onClick={props.executable.openModsFolder}>
+              {/* <Menu.Item onClick={props.executable.openModsFolder}>
                 Open Mods Folder
               </Menu.Item>
               {modLoaders.map((modLoader) => (

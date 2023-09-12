@@ -41,7 +41,9 @@ export function InstalledGamesPage() {
           includesOneOf(newFilter, [
             app.name,
             app.id.toString(),
-            ...app.distinctExecutables.map((executable) => executable.name),
+            ...Object.values(app.executables).map(
+              (executable) => executable.name
+            ),
           ])
         )
       );

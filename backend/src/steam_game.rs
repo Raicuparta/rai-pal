@@ -33,10 +33,12 @@ pub fn get_steam_games() -> GameMap {
             Game {
                 id,
                 name: app.name.clone().unwrap_or_default(),
-                distinct_executables: app_info
+                executables: app_info
                     .launch_options
                     .iter()
                     .filter_map(|launch_option| {
+                        let id = launch_option.launch_id.clone();
+
                         let executable = launch_option.executable.as_ref();
                         let full_path = app.path.join(executable?);
                         let (operating_system, architecture) =
@@ -46,21 +48,23 @@ pub fn get_steam_games() -> GameMap {
                             return None;
                         }
 
-                        Some(GameExecutable {
-                            architecture,
-                            full_path: full_path.clone(),
-                            id: launch_option.launch_id.clone(),
-                            is_legacy: false,
-                            operating_system,
-                            mod_files_path: String::new(),
-                            name: executable?.to_str()?.to_owned(),
-                            scripting_backend: get_unity_scripting_backend(&full_path).ok()?,
-                            steam_launch: Some(launch_option.clone()),
-                            unity_version: get_unity_version(&full_path),
-                        })
+                        Some((
+                            id.clone(),
+                            GameExecutable {
+                                architecture,
+                                full_path: full_path.clone(),
+                                id,
+                                is_legacy: false,
+                                operating_system,
+                                mod_files_path: String::new(),
+                                name: executable?.to_str()?.to_owned(),
+                                scripting_backend: get_unity_scripting_backend(&full_path).ok()?,
+                                steam_launch: Some(launch_option.clone()),
+                                unity_version: get_unity_version(&full_path),
+                            },
+                        ))
                     })
                     .collect(),
-                executables: HashMap::new(), // TODO distinguish them!
             },
         );
     }

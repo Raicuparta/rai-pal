@@ -102,10 +102,39 @@ async fn get_owned_games(state: tauri::State<'_, AppState>) -> CommandResult<Vec
     };
 }
 
+#[tauri::command]
+#[specta::specta]
+async fn open_game_folder(
+    game_id: u32,
+    executable_id: String,
+    state: tauri::State<'_, AppState>,
+) -> CommandResult {
+    let game_map = get_game_map(state).await?;
+    println!("open_game_folder {game_id} {executable_id}");
+
+    if let Some(game) = game_map.get(&game_id) {
+        println!("game.name {}", game.name);
+        if let Some(executable) = game.executables.get(&executable_id) {
+            println!("executable.name {}", executable.name);
+            if let Some(parent) = executable.full_path.parent() {
+                open::that(parent);
+            }
+            Ok(())
+        } else {
+            Err(anyhow!(
+                "Failed to find executable with id {executable_id} for game with id {game_id}"
+            )
+            .into())
+        }
+    } else {
+        Err(anyhow!("Failed to find game with id {game_id}").into())
+    }
+}
+
 fn main() {
     #[cfg(debug_assertions)]
     ts::export(
-        collect_types![get_game_map, get_owned_games],
+        collect_types![get_game_map, get_owned_games, open_game_folder],
         "../frontend/api/bindings.ts",
     )
     .unwrap();
@@ -115,7 +144,11 @@ fn main() {
             game_map: Mutex::default(),
             owned_games: Mutex::default(),
         })
-        .invoke_handler(tauri::generate_handler![get_game_map, get_owned_games])
+        .invoke_handler(tauri::generate_handler![
+            get_game_map,
+            get_owned_games,
+            open_game_folder,
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

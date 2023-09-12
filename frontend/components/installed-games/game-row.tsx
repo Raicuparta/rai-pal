@@ -7,7 +7,7 @@ type Props = Readonly<{
 }>;
 
 export function GameRow(props: Props) {
-  return props.game.distinctExecutables?.map((executable) => (
+  return Object.values(props.game.executables)?.map((executable) => (
     <tr key={executable.id}>
       <GameExecutableRow game={props.game} executable={executable} />
     </tr>

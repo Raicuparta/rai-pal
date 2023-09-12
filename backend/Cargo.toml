@@ -26,6 +26,7 @@ path-slash = "0.2.1"
 goblin = "0.7.1"
 regex = "1.9.5"
 anyhow = "1.0.75"
+open = "5.0.0"
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem
