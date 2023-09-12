@@ -4,10 +4,6 @@ use steamlocate::SteamDir;
 use crate::appinfo::read_appinfo;
 use crate::game::Game;
 use crate::game::GameMap;
-use crate::game_executable::get_os_and_architecture;
-use crate::game_executable::get_unity_scripting_backend;
-use crate::game_executable::get_unity_version;
-use crate::game_executable::is_unity_exe;
 use crate::game_executable::GameExecutable;
 
 pub fn get_steam_games() -> GameMap {
@@ -44,7 +40,7 @@ pub fn get_steam_games() -> GameMap {
                             GameExecutable::new(
                                 id,
                                 &app.path.join(steam_launch.executable.as_ref()?),
-                                steam_launch,
+                                Some(steam_launch),
                             )?,
                         ))
                     })

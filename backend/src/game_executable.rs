@@ -49,7 +49,11 @@ pub struct GameExecutable {
 }
 
 impl GameExecutable {
-    pub fn new(id: String, full_path: &Path, steam_launch: &SteamLaunchOption) -> Option<Self> {
+    pub fn new(
+        id: String,
+        full_path: &Path,
+        steam_launch: Option<&SteamLaunchOption>,
+    ) -> Option<Self> {
         let (operating_system, architecture) = get_os_and_architecture(full_path).ok()?;
 
         if !is_unity_exe(full_path) {
@@ -65,7 +69,7 @@ impl GameExecutable {
             mod_files_path: String::new(),
             name: String::from(full_path.file_name()?.to_str()?),
             scripting_backend: get_unity_scripting_backend(full_path).ok()?,
-            steam_launch: Some(steam_launch.clone()),
+            steam_launch: steam_launch.cloned(),
             unity_version: get_unity_version(full_path),
         })
     }
