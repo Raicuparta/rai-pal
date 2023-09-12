@@ -36,32 +36,16 @@ pub fn get_steam_games() -> GameMap {
                 executables: app_info
                     .launch_options
                     .iter()
-                    .filter_map(|launch_option| {
-                        let id = launch_option.launch_id.clone();
-
-                        let executable = launch_option.executable.as_ref();
-                        let full_path = app.path.join(executable?);
-                        let (operating_system, architecture) =
-                            get_os_and_architecture(&full_path).ok()?;
-
-                        if !is_unity_exe(&full_path) {
-                            return None;
-                        }
+                    .filter_map(|steam_launch| {
+                        let id = steam_launch.launch_id.clone();
 
                         Some((
                             id.clone(),
-                            GameExecutable {
-                                architecture,
-                                full_path: full_path.clone(),
+                            GameExecutable::new(
                                 id,
-                                is_legacy: false,
-                                operating_system,
-                                mod_files_path: String::new(),
-                                name: executable?.to_str()?.to_owned(),
-                                scripting_backend: get_unity_scripting_backend(&full_path).ok()?,
-                                steam_launch: Some(launch_option.clone()),
-                                unity_version: get_unity_version(&full_path),
-                            },
+                                &app.path.join(steam_launch.executable.as_ref()?),
+                                steam_launch,
+                            )?,
                         ))
                     })
                     .collect(),

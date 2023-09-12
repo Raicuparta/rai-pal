@@ -49,6 +49,27 @@ pub struct GameExecutable {
 }
 
 impl GameExecutable {
+    pub fn new(id: String, full_path: &Path, steam_launch: &SteamLaunchOption) -> Option<Self> {
+        let (operating_system, architecture) = get_os_and_architecture(full_path).ok()?;
+
+        if !is_unity_exe(full_path) {
+            return None;
+        }
+
+        Some(GameExecutable {
+            architecture,
+            full_path: full_path.to_owned(),
+            id,
+            is_legacy: false,
+            operating_system,
+            mod_files_path: String::new(),
+            name: String::from(full_path.file_name()?.to_str()?),
+            scripting_backend: get_unity_scripting_backend(full_path).ok()?,
+            steam_launch: Some(steam_launch.clone()),
+            unity_version: get_unity_version(full_path),
+        })
+    }
+
     pub fn open_folder(&self) -> Result {
         if let Some(parent) = self.full_path.parent() {
             Ok(open::that(parent)?)
