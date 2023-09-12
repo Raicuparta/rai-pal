@@ -13,12 +13,9 @@ export function GameExecutableRow(props: Props) {
   const [modLoaders] = useModLoaders();
 
   // Merge mods of every loader, since we don't have a way to assign loaders per game yet.
-  // const flatMods = modLoaders
-  //   .map((modLoader) => modLoader.getMods()[props.executable.scriptingBackend])
-  //   .filter(filterHasValue)
-  //   .flat();
-
-  const flatMods: Mod[] = [];
+  const flatMods: Mod[] = modLoaders
+    .map((modLoader) => modLoader.mods[props.executable.scriptingBackend])
+    .flat();
 
   const nameSuffix =
     Object.values(props.game.executables).length <= 1
