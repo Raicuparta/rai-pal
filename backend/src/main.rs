@@ -112,8 +112,8 @@ fn main() {
 
     tauri::Builder::default()
         .manage(AppState {
-            game_map: Default::default(),
-            owned_games: Default::default(),
+            game_map: Mutex::default(),
+            owned_games: Mutex::default(),
         })
         .invoke_handler(tauri::generate_handler![get_game_map, get_owned_games])
         .run(tauri::generate_context!())
