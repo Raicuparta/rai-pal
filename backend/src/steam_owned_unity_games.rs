@@ -1,9 +1,8 @@
 use serde::Serialize;
 use specta::Type;
-use std::error::Error;
 use steamlocate::SteamDir;
 
-use crate::{appinfo::read_appinfo, steam_game::get_steam_games};
+use crate::{appinfo::read_appinfo, steam_game::get_steam_games, Result};
 
 const UNITY_STEAM_APP_IDS_URL: &str =
     "https://raw.githubusercontent.com/Raicuparta/steam-unity-app-ids/main/unity-app-ids.txt";
@@ -16,7 +15,7 @@ pub struct OwnedUnityGame {
     installed: bool,
 }
 
-pub async fn get_steam_owned_unity_games() -> Result<Vec<OwnedUnityGame>, Box<dyn Error>> {
+pub async fn get_steam_owned_unity_games() -> Result<Vec<OwnedUnityGame>> {
     let response = reqwest::get(UNITY_STEAM_APP_IDS_URL).await?.text().await?;
     let steam_games = get_steam_games();
 

@@ -60,7 +60,7 @@ pub fn get_steam_games() -> GameMap {
                         })
                     })
                     .collect(),
-                executables: Vec::new(), // TODO distinguish them!
+                executables: HashMap::new(), // TODO distinguish them!
             },
         );
     }

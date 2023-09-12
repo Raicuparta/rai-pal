@@ -1,3 +1,4 @@
+use anyhow::anyhow;
 use appinfo::SteamLaunchOption;
 use goblin::elf::Elf;
 use goblin::pe::PE;
@@ -5,13 +6,12 @@ use regex::Regex;
 use serde::Serialize;
 use specta::Type;
 use std::{
-    error::Error,
     fs::{metadata, File},
     io::Read,
     path::{Path, PathBuf},
 };
 
-use crate::appinfo;
+use crate::{appinfo, Result};
 
 #[derive(Serialize, Type)]
 pub enum UnityScriptingBackend {
@@ -54,9 +54,13 @@ pub fn is_unity_exe(game_exe_path: &Path) -> bool {
     })
 }
 
-pub fn get_unity_scripting_backend(game_exe_path: &Path) -> Result<UnityScriptingBackend, String> {
+pub fn get_unity_scripting_backend(game_exe_path: &Path) -> Result<UnityScriptingBackend> {
     game_exe_path.parent().map_or_else(
-        || Err("Noooo".to_owned()),
+        || {
+            Err(anyhow!(
+                "Failed to get game exe parent while determining Unity scripting backend."
+            ))
+        },
         |game_folder| {
             if game_folder.join("GameAssembly.dll").is_file()
                 || game_folder.join("GameAssembly.so").is_file()
@@ -73,24 +77,22 @@ fn file_name_without_extension(file_path: &Path) -> Option<&str> {
     file_path.file_stem()?.to_str()
 }
 
-fn get_data_path(game_exe_path: &Path) -> Result<PathBuf, &'static str> {
+fn get_data_path(game_exe_path: &Path) -> Result<PathBuf> {
     game_exe_path
         .parent()
-        .map_or(Err("Failed to get parent directory"), |parent| {
+        .map_or(Err(anyhow!("Failed to get parent directory")), |parent| {
             file_name_without_extension(game_exe_path).map_or(
-                Err("Failed to get file name without extension"),
+                Err(anyhow!("Failed to get file name without extension")),
                 |exe_name| Ok(parent.join(format!("{exe_name}_Data"))),
             )
         })
 }
 
-pub fn get_os_and_architecture(
-    file_path: &Path,
-) -> Result<(OperatingSystem, Architecture), String> {
+pub fn get_os_and_architecture(file_path: &Path) -> Result<(OperatingSystem, Architecture)> {
     let file = File::open(file_path);
 
     file.map_or_else(
-        |_| Err("Failed to open the file".to_owned()),
+        |_| Err(anyhow!("Failed to open the file")),
         |mut file| {
             let mut buffer = Vec::new();
             if file.read_to_end(&mut buffer).is_ok() {
@@ -118,7 +120,7 @@ pub fn get_os_and_architecture(
                     Ok((OperatingSystem::Unknown, Architecture::Unknown))
                 }
             } else {
-                Err("Failed to read the file".to_owned())
+                Err(anyhow!("Failed to read the file"))
             }
         },
     )
@@ -144,13 +146,13 @@ pub fn get_unity_version(game_exe_path: &Path) -> String {
     "Unknown".into()
 }
 
-fn get_version_from_asset(asset_path: &Path) -> Result<String, Box<dyn Error>> {
+fn get_version_from_asset(asset_path: &Path) -> Result<String> {
     let mut file = File::open(asset_path)?;
     let mut data = vec![0u8; 4096];
 
     let bytes_read = file.read(&mut data)?;
     if bytes_read == 0 {
-        return Err("No data read from file".into());
+        return Err(anyhow!("No data read from file"));
     }
 
     let data_str = String::from_utf8_lossy(&data[..bytes_read]);

@@ -10,6 +10,6 @@ pub type GameMap = HashMap<u32, Game>;
 pub struct Game {
     pub id: u32,
     pub name: String,
-    pub executables: Vec<GameExecutable>,
+    pub executables: HashMap<String, GameExecutable>,
     pub distinct_executables: Vec<GameExecutable>,
 }
