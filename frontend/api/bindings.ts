@@ -29,7 +29,7 @@ export function getModLoaders() {
 export type OwnedUnityGame = { id: string; name: string; installed: boolean }
 export type OperatingSystem = "Linux" | "Windows" | "Unknown"
 export type Game = { id: number; name: string; executables: { [key: string]: GameExecutable } }
-export type Mod = { path: string; name: string; scriptingBackend: UnityScriptingBackend }
+export type Mod = { name: string; scriptingBackend: UnityScriptingBackend; path: string }
 export type SteamLaunchOption = { launchId: string; appId: number; description: string | null; executable: string | null; arguments: string | null; appType: string | null; osList: string | null; betaKey: string | null; osArch: string | null }
 export type UnityScriptingBackend = "Il2Cpp" | "Mono"
 export type BepInEx = { id: string; mods: Mod[]; modCount: number }

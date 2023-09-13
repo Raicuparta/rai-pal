@@ -44,11 +44,7 @@ impl BepInEx {
         Ok(entries
             .iter()
             .filter_map(|entry| match entry {
-                Ok(path) => Some(Mod {
-                    path: path.clone(),
-                    name: String::from(path.file_name().unwrap().to_str().unwrap()),
-                    scripting_backend: scripting_backend.clone(),
-                }),
+                Ok(path) => Some(Mod::new(path, &scripting_backend).ok()?),
                 Err(_) => None,
             })
             .collect())
