@@ -8,6 +8,8 @@ use specta::ts::{BigIntExportBehavior, ExportConfiguration};
 use std::result::Result as StdResult;
 use std::sync::Mutex;
 use std::{backtrace::Backtrace, panic};
+use tauri::api::dialog::{self, message};
+use tauri::{App, Manager, Window};
 
 use game::GameMap;
 use serde::Serialize;
@@ -208,6 +210,15 @@ fn main() {
         "../frontend/api/bindings.ts",
     )
     .unwrap();
+
+    std::panic::set_hook(Box::new(|info| {
+        message(
+            None::<&tauri::Window>,
+            "Failed to execute command",
+            info.to_string(),
+        );
+        println!("Panic: {info}");
+    }));
 
     tauri::Builder::default()
         .manage(AppState {
