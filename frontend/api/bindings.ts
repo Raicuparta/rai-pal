@@ -30,6 +30,10 @@ export function installMod(modLoaderId: string, modId: string, gameId: number, g
     return invoke()<null>("install_mod", { modLoaderId,modId,gameId,gameExecutableId })
 }
 
+export function openModsFolder(gameId: number, executableId: string) {
+    return invoke()<null>("open_mods_folder", { gameId,executableId })
+}
+
 export type OwnedUnityGame = { id: string; name: string; installed: boolean }
 export type SteamLaunchOption = { launchId: string; appId: number; description: string | null; executable: string | null; arguments: string | null; appType: string | null; osList: string | null; betaKey: string | null; osArch: string | null }
 export type UnityScriptingBackend = "Il2Cpp" | "Mono"

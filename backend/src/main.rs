@@ -129,20 +129,36 @@ async fn open_game_folder(
     state: tauri::State<'_, AppState>,
 ) -> CommandResult {
     let game_map = get_game_map(state).await?;
-    println!("open_game_folder {game_id} {executable_id}");
+    let game = game_map
+        .get(&game_id)
+        .ok_or(anyhow!("Failed to find game with id {game_id}"))?;
+    let game_executable = game.executables.get(&executable_id).ok_or(anyhow!(
+        "Failed to find executable with id {executable_id} for game with id {game_id}"
+    ))?;
 
-    if let Some(game) = game_map.get(&game_id) {
-        if let Some(executable) = game.executables.get(&executable_id) {
-            Ok(executable.open_folder()?)
-        } else {
-            Err(anyhow!(
-                "Failed to find executable with id {executable_id} for game with id {game_id}"
-            )
-            .into())
-        }
-    } else {
-        Err(anyhow!("Failed to find game with id {game_id}").into())
-    }
+    game_executable
+        .open_game_folder()
+        .map_err(|error| anyhow!("Failed to open game folder: {error}").into())
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn open_mods_folder(
+    game_id: u32,
+    executable_id: String,
+    state: tauri::State<'_, AppState>,
+) -> CommandResult {
+    let game_map = get_game_map(state).await?;
+    let game = game_map
+        .get(&game_id)
+        .ok_or(anyhow!("Failed to find game with id {game_id}"))?;
+    let game_executable = game.executables.get(&executable_id).ok_or(anyhow!(
+        "Failed to find executable with id {executable_id} for game with id {game_id}"
+    ))?;
+
+    game_executable
+        .open_mods_folder()
+        .map_err(|error| anyhow!("Failed to open game folder: {error}").into())
 }
 
 #[tauri::command]
@@ -184,7 +200,8 @@ fn main() {
             get_owned_games,
             open_game_folder,
             get_mod_loaders,
-            install_mod
+            install_mod,
+            open_mods_folder,
         ]
         .unwrap(),
         ExportConfiguration::default().bigint(BigIntExportBehavior::BigInt),
@@ -203,6 +220,7 @@ fn main() {
             open_game_folder,
             get_mod_loaders,
             install_mod,
+            open_mods_folder,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

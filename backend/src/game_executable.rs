@@ -82,7 +82,7 @@ impl GameExecutable {
         })
     }
 
-    pub fn open_folder(&self) -> Result {
+    pub fn open_game_folder(&self) -> Result {
         if let Some(parent) = self.full_path.parent() {
             Ok(open::that(parent)?)
         } else {
@@ -91,6 +91,10 @@ impl GameExecutable {
                 self.name
             ))
         }
+    }
+
+    pub fn open_mods_folder(&self) -> Result {
+        todo!()
     }
 }
 

@@ -5,6 +5,7 @@ import {
   GameExecutable,
   installMod,
   openGameFolder,
+  openModsFolder,
 } from "@api/bindings";
 import { useModLoaders } from "@hooks/use-backend-data";
 import { Fragment } from "react";
@@ -45,18 +46,14 @@ export function GameExecutableRow(props: Props) {
               >
                 Open Game Folder
               </Menu.Item>
-              {/* <Menu.Item onClick={props.executable.openModsFolder}>
+              <Menu.Item
+                onClick={() =>
+                  openModsFolder(props.game.id, props.executable.id)
+                }
+              >
                 Open Mods Folder
               </Menu.Item>
-              {modLoaders.map((modLoader) => (
-                <Menu.Item
-                  key={modLoader.folderName}
-                  onClick={() => props.executable.installModLoader(modLoader)}
-                >
-                  Install {modLoader.folderName}
-                </Menu.Item>
-              ))}
-              <Menu.Item
+              {/* <Menu.Item
                 onClick={props.executable.addSteamLinuxLaunchParameters}
               >
                 Add Linux Steam launch parameters
