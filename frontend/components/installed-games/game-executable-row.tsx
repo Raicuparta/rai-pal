@@ -1,5 +1,12 @@
-import { Badge, Box, Button, Flex, Menu } from "@mantine/core";
-import { MdHandyman, MdSettings } from "react-icons/md";
+import { ActionIcon, Badge, Box, Button, Flex, Menu } from "@mantine/core";
+import {
+  MdChevronRight,
+  MdHandyman,
+  MdMenu,
+  MdMore,
+  MdMoreVert,
+  MdSettings,
+} from "react-icons/md";
 import {
   Game,
   GameExecutable,
@@ -35,9 +42,9 @@ export function GameExecutableRow(props: Props) {
         <Flex gap="md">
           <Menu>
             <Menu.Target>
-              <Button radius="xl" size="xs">
-                <MdSettings />
-              </Button>
+              <ActionIcon variant="default">
+                <MdMoreVert />
+              </ActionIcon>
             </Menu.Target>
             <Menu.Dropdown>
               <Menu.Item
@@ -59,39 +66,38 @@ export function GameExecutableRow(props: Props) {
               >
                 Start Game
               </Menu.Item>
-            </Menu.Dropdown>
-          </Menu>
-          <Menu>
-            <Menu.Target>
-              <Button radius="xl" size="xs">
-                <MdHandyman />
-              </Button>
-            </Menu.Target>
-            <Menu.Dropdown>
               {modLoaders.map((modLoader) => (
-                <Fragment key={modLoader.id}>
-                  {modLoader.mods
-                    .filter(
-                      (mod) =>
-                        mod.scriptingBackend ===
-                        props.executable.scriptingBackend
-                    )
-                    .map((mod) => (
-                      <Menu.Item
-                        key={mod.name}
-                        onClick={() =>
-                          installMod(
-                            modLoader.id,
-                            mod.id,
-                            props.game.id,
-                            props.executable.id
-                          )
-                        }
-                      >
-                        <Badge>{modLoader.id}</Badge> Install {mod.name}
-                      </Menu.Item>
-                    ))}
-                </Fragment>
+                <Menu key={modLoader.id} trigger="hover" position="right-start">
+                  <Menu.Target>
+                    <Menu.Item>
+                      Install {modLoader.id} mod <strong>{"›"}</strong>
+                    </Menu.Item>
+                  </Menu.Target>
+                  <Menu.Dropdown>
+                    <Menu.Item sx={{ display: "none" }} />
+                    {modLoader.mods
+                      .filter(
+                        (mod) =>
+                          mod.scriptingBackend ===
+                          props.executable.scriptingBackend
+                      )
+                      .map((mod) => (
+                        <Menu.Item
+                          key={mod.name}
+                          onClick={() =>
+                            installMod(
+                              modLoader.id,
+                              mod.id,
+                              props.game.id,
+                              props.executable.id
+                            )
+                          }
+                        >
+                          Install {mod.name}
+                        </Menu.Item>
+                      ))}
+                  </Menu.Dropdown>
+                </Menu>
               ))}
             </Menu.Dropdown>
           </Menu>

@@ -73,7 +73,7 @@ export function InstalledGamesPage() {
         <Table striped>
           <thead>
             <tr>
-              <Box component="th" w={100} />
+              <Box component="th" w={50} />
               <Box component="th">Game</Box>
               <Box component="th" w={50}>
                 OS
