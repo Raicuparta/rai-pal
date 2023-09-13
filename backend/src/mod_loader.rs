@@ -5,7 +5,7 @@ use specta::Type;
 use std::path::Path;
 
 use crate::game_executable::GameExecutable;
-use crate::{game_executable, Result};
+use crate::Result;
 use crate::{game_executable::UnityScriptingBackend, r#mod::Mod};
 
 #[derive(Serialize, Type, Clone)]

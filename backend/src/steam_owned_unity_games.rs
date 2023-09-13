@@ -17,7 +17,7 @@ pub struct OwnedUnityGame {
 
 pub async fn get_steam_owned_unity_games() -> Result<Vec<OwnedUnityGame>> {
     let response = reqwest::get(UNITY_STEAM_APP_IDS_URL).await?.text().await?;
-    let steam_games = get_steam_games();
+    let steam_games = get_steam_games().await?;
 
     // TODO this is repeated in steam_game.
     // Should try to cache it.

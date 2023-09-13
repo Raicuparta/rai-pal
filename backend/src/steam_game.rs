@@ -5,8 +5,9 @@ use crate::appinfo::read_appinfo;
 use crate::game::Game;
 use crate::game::GameMap;
 use crate::game_executable::GameExecutable;
+use crate::Result;
 
-pub fn get_steam_games() -> GameMap {
+pub async fn get_steam_games() -> Result<GameMap> {
     let mut steam_dir = SteamDir::locate().unwrap();
     let app_info = read_appinfo(
         &steam_dir
@@ -49,5 +50,5 @@ pub fn get_steam_games() -> GameMap {
         );
     }
 
-    app_details_map
+    Ok(app_details_map)
 }

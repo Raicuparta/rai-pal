@@ -5,11 +5,11 @@
 use anyhow::anyhow;
 use mod_loader::BepInEx;
 use specta::ts::{BigIntExportBehavior, ExportConfiguration};
+use std::future::Future;
 use std::result::Result as StdResult;
 use std::sync::Mutex;
 use std::{backtrace::Backtrace, panic};
-use tauri::api::dialog::{self, message};
-use tauri::{App, Manager, Window};
+use tauri::api::dialog::message;
 
 use game::GameMap;
 use serde::Serialize;
@@ -51,21 +51,28 @@ struct AppState {
     owned_games: Mutex<Option<Vec<OwnedUnityGame>>>,
 }
 
-#[tauri::command]
-#[specta::specta]
-async fn get_game_map(state: tauri::State<'_, AppState>) -> CommandResult<GameMap> {
-    if let Ok(mutex_guard) = state.game_map.lock() {
-        if let Some(game_map) = mutex_guard.clone() {
-            return Ok(game_map);
+async fn get_state_data<TData, TFunction, TFunctionResult>(
+    mutex: &Mutex<Option<TData>>,
+    function: TFunction,
+) -> CommandResult<TData>
+where
+    TFunction: Fn() -> TFunctionResult + std::panic::UnwindSafe,
+    TData: Clone,
+    TFunctionResult: Future<Output = Result<TData>>,
+{
+    if let Ok(mutex_guard) = mutex.lock() {
+        if let Some(data) = mutex_guard.clone() {
+            return Ok(data);
         }
     }
 
-    return match panic::catch_unwind(get_steam_games) {
-        Ok(game_map) => {
-            if let Ok(mut mutex_guard) = state.game_map.lock() {
-                *mutex_guard = Some(game_map.clone());
+    return match panic::catch_unwind(function) {
+        Ok(result) => {
+            let data = result.await?;
+            if let Ok(mut mutex_guard) = mutex.lock() {
+                *mutex_guard = Some(data.clone());
             }
-            Ok(game_map)
+            Ok(data)
         }
         Err(error) => Err(anyhow!(
             "{}\nBacktrace:\n{}",
@@ -80,32 +87,14 @@ async fn get_game_map(state: tauri::State<'_, AppState>) -> CommandResult<GameMa
 
 #[tauri::command]
 #[specta::specta]
-async fn get_owned_games(state: tauri::State<'_, AppState>) -> CommandResult<Vec<OwnedUnityGame>> {
-    if let Ok(mutex_guard) = state.owned_games.lock() {
-        if let Some(owned_games) = mutex_guard.clone() {
-            return Ok(owned_games);
-        }
-    }
+async fn get_game_map(state: tauri::State<'_, AppState>) -> CommandResult<GameMap> {
+    get_state_data(&state.game_map, get_steam_games).await
+}
 
-    return match panic::catch_unwind(get_steam_owned_unity_games) {
-        Ok(owned_games_future) => {
-            let owned_games = owned_games_future.await?;
-            if let Ok(mut mutex_guard) = state.owned_games.lock() {
-                *mutex_guard = Some(owned_games.clone());
-            }
-            Ok(owned_games)
-        }
-        Err(error) => {
-            return Err(anyhow!(
-                "{}\nBacktrace:\n{}",
-                error
-                    .downcast::<&str>()
-                    .unwrap_or_else(|_| Box::new("Unknown Source of Error")),
-                Backtrace::force_capture()
-            )
-            .into());
-        }
-    };
+#[tauri::command]
+#[specta::specta]
+async fn get_owned_games(state: tauri::State<'_, AppState>) -> CommandResult<Vec<OwnedUnityGame>> {
+    get_state_data(&state.owned_games, get_steam_owned_unity_games).await
 }
 
 #[tauri::command]
