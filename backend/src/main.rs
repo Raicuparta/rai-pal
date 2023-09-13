@@ -4,6 +4,7 @@
 
 use anyhow::anyhow;
 use mod_loader::BepInEx;
+use specta::ts::{BigIntExportBehavior, ExportConfiguration};
 use std::result::Result as StdResult;
 use std::sync::Mutex;
 use std::{backtrace::Backtrace, panic};
@@ -147,36 +148,46 @@ async fn open_game_folder(
 #[tauri::command]
 #[specta::specta]
 async fn install_mod(
+    mod_loader_id: String,
+    mod_id: String,
     game_id: u32,
-    executable_id: String,
+    game_executable_id: String,
     state: tauri::State<'_, AppState>,
+    handle: tauri::AppHandle,
 ) -> CommandResult {
-    let game_map = get_game_map(state).await?;
-    println!("open_game_folder {game_id} {executable_id}");
+    let mod_loaders = get_mod_loaders(handle).await?;
+    let mod_loader = mod_loaders
+        .iter()
+        .find(|loader| loader.id == mod_loader_id)
+        .ok_or(anyhow!("Failed to find mod loader with id {mod_loader_id}"))?;
 
-    if let Some(game) = game_map.get(&game_id) {
-        if let Some(executable) = game.executables.get(&executable_id) {
-            Ok(executable.open_folder()?)
-        } else {
-            Err(anyhow!(
-                "Failed to find executable with id {executable_id} for game with id {game_id}"
-            )
-            .into())
-        }
-    } else {
-        Err(anyhow!("Failed to find game with id {game_id}").into())
-    }
+    let game_map = get_game_map(state).await?;
+    let game_executable = game_map
+        .get(&game_id)
+        .ok_or(anyhow!("Failed to find game with ID {game_id}"))?
+        .executables
+        .get(&game_executable_id)
+        .ok_or(anyhow!(
+            "Failed to find game executable with ID {game_executable_id}"
+        ))?;
+
+    mod_loader
+        .install_mod(game_executable, mod_id)
+        .map_err(|err| anyhow!("Failed to install mod: {err}").into())
 }
 
 fn main() {
     #[cfg(debug_assertions)]
-    ts::export(
+    ts::export_with_cfg(
         collect_types![
             get_game_map,
             get_owned_games,
             open_game_folder,
-            get_mod_loaders
-        ],
+            get_mod_loaders,
+            install_mod
+        ]
+        .unwrap(),
+        ExportConfiguration::default().bigint(BigIntExportBehavior::BigInt),
         "../frontend/api/bindings.ts",
     )
     .unwrap();
@@ -186,23 +197,12 @@ fn main() {
             game_map: Mutex::default(),
             owned_games: Mutex::default(),
         })
-        .setup(|app| {
-            match BepInEx::new(
-                &app.path_resolver()
-                    .resolve_resource("resources/bepinex")
-                    .expect("Failed to find bepinex folder"),
-            ) {
-                Ok(bepinex) => println!("bepinex ok"),
-                Err(error) => println!("not ok {error}"),
-            }
-
-            Ok(())
-        })
         .invoke_handler(tauri::generate_handler![
             get_game_map,
             get_owned_games,
             open_game_folder,
             get_mod_loaders,
+            install_mod,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

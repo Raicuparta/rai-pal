@@ -1,11 +1,13 @@
 use anyhow::anyhow;
 use appinfo::SteamLaunchOption;
+use core::fmt;
 use goblin::elf::Elf;
 use goblin::pe::PE;
 use regex::Regex;
 use serde::Serialize;
 use specta::Type;
 use std::{
+    fmt::Display,
     fs::{metadata, File},
     io::Read,
     path::{Path, PathBuf},
@@ -13,10 +15,16 @@ use std::{
 
 use crate::{appinfo, Result};
 
-#[derive(Serialize, Type, Clone, PartialEq, Eq, Hash)]
+#[derive(Serialize, Type, Clone, PartialEq, Eq, Hash, Debug)]
 pub enum UnityScriptingBackend {
     Il2Cpp,
     Mono,
+}
+
+impl Display for UnityScriptingBackend {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:?}", self)
+    }
 }
 
 #[derive(Serialize, Type, Clone, PartialEq, Eq, Hash)]

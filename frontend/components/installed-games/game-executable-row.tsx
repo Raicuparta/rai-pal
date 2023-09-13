@@ -1,6 +1,11 @@
 import { Badge, Box, Button, Flex, Menu } from "@mantine/core";
 import { MdHandyman, MdSettings } from "react-icons/md";
-import { Game, GameExecutable, openGameFolder } from "@api/bindings";
+import {
+  Game,
+  GameExecutable,
+  installMod,
+  openGameFolder,
+} from "@api/bindings";
 import { useModLoaders } from "@hooks/use-backend-data";
 
 type Props = Readonly<{
@@ -10,15 +15,6 @@ type Props = Readonly<{
 
 export function GameExecutableRow(props: Props) {
   const [modLoaders] = useModLoaders();
-
-  // Merge mods of every loader, since we don't have a way to assign loaders per game yet.
-  const flatMods = modLoaders
-    .map((modLoader) =>
-      modLoader.mods.filter(
-        (mod) => mod.scriptingBackend === props.executable.scriptingBackend
-      )
-    )
-    .flat();
 
   const nameSuffix =
     Object.values(props.game.executables).length <= 1
@@ -74,13 +70,37 @@ export function GameExecutableRow(props: Props) {
               </Button>
             </Menu.Target>
             <Menu.Dropdown>
-              {flatMods.map((mod) => (
-                <Menu.Item
-                  key={mod.name}
-                  // onClick={() => mod.install(props.executable)}
-                >
-                  Install {mod.name}
-                </Menu.Item>
+              {modLoaders.map((modLoader) => (
+                <Menu key={modLoader.id}>
+                  <Menu.Target>
+                    <Button variant="default" key={modLoader.id}>
+                      {modLoader.id}
+                    </Button>
+                  </Menu.Target>
+                  <Menu.Dropdown>
+                    {modLoader.mods
+                      .filter(
+                        (mod) =>
+                          mod.scriptingBackend ===
+                          props.executable.scriptingBackend
+                      )
+                      .map((mod) => (
+                        <Menu.Item
+                          key={mod.name}
+                          onClick={() =>
+                            installMod(
+                              modLoader.id,
+                              mod.id,
+                              props.game.id,
+                              props.executable.id
+                            )
+                          }
+                        >
+                          Install {mod.name}
+                        </Menu.Item>
+                      ))}
+                  </Menu.Dropdown>
+                </Menu>
               ))}
             </Menu.Dropdown>
           </Menu>

@@ -26,12 +26,16 @@ export function getModLoaders() {
     return invoke()<BepInEx[]>("get_mod_loaders")
 }
 
+export function installMod(modLoaderId: string, modId: string, gameId: number, gameExecutableId: string) {
+    return invoke()<null>("install_mod", { modLoaderId,modId,gameId,gameExecutableId })
+}
+
 export type OwnedUnityGame = { id: string; name: string; installed: boolean }
-export type OperatingSystem = "Linux" | "Windows" | "Unknown"
-export type Game = { id: number; name: string; executables: { [key: string]: GameExecutable } }
-export type Mod = { name: string; scriptingBackend: UnityScriptingBackend; path: string }
 export type SteamLaunchOption = { launchId: string; appId: number; description: string | null; executable: string | null; arguments: string | null; appType: string | null; osList: string | null; betaKey: string | null; osArch: string | null }
 export type UnityScriptingBackend = "Il2Cpp" | "Mono"
-export type BepInEx = { id: string; mods: Mod[]; modCount: number }
-export type Architecture = "X64" | "X32" | "Unknown"
 export type GameExecutable = { id: string; name: string; isLegacy: boolean; modFilesPath: string; fullPath: string; architecture: Architecture; scriptingBackend: UnityScriptingBackend; unityVersion: string; operatingSystem: OperatingSystem; steamLaunch: SteamLaunchOption | null }
+export type Architecture = "X64" | "X32" | "Unknown"
+export type Mod = { id: string; name: string; scriptingBackend: UnityScriptingBackend; path: string }
+export type Game = { id: number; name: string; executables: { [key: string]: GameExecutable } }
+export type BepInEx = { id: string; modCount: number; mods: Mod[] }
+export type OperatingSystem = "Linux" | "Windows" | "Unknown"

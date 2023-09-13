@@ -1,18 +1,19 @@
-use std::path::Path;
-
+use anyhow::anyhow;
 use glob::glob;
 use serde::Serialize;
 use specta::Type;
+use std::path::Path;
 
-use crate::Result;
+use crate::game_executable::GameExecutable;
+use crate::{game_executable, Result};
 use crate::{game_executable::UnityScriptingBackend, r#mod::Mod};
 
 #[derive(Serialize, Type, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct BepInEx {
-    id: String,
-    mods: Vec<Mod>,
+    pub id: String,
     pub mod_count: u32,
+    mods: Vec<Mod>,
 }
 
 impl BepInEx {
@@ -48,5 +49,20 @@ impl BepInEx {
                 Err(_) => None,
             })
             .collect())
+    }
+
+    pub fn install_mod(&self, game_executable: &GameExecutable, mod_id: String) -> Result {
+        let game_mod = self
+            .mods
+            .iter()
+            .find(|game_mod| game_mod.id == mod_id)
+            .ok_or(anyhow!("Failed to find mod with id {mod_id}"))?;
+
+        println!(
+            "Will install mod {} on game {}",
+            game_mod.name, game_executable.name
+        );
+
+        Ok(())
     }
 }
