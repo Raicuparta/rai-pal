@@ -18,6 +18,7 @@ use tauri_specta::ts;
 mod appinfo;
 mod game;
 mod game_executable;
+mod r#mod;
 mod mod_loader;
 mod steam_game;
 mod steam_owned_unity_games;
@@ -122,6 +123,30 @@ async fn get_mod_loaders(handle: tauri::AppHandle) -> CommandResult<Vec<BepInEx>
 #[tauri::command]
 #[specta::specta]
 async fn open_game_folder(
+    game_id: u32,
+    executable_id: String,
+    state: tauri::State<'_, AppState>,
+) -> CommandResult {
+    let game_map = get_game_map(state).await?;
+    println!("open_game_folder {game_id} {executable_id}");
+
+    if let Some(game) = game_map.get(&game_id) {
+        if let Some(executable) = game.executables.get(&executable_id) {
+            Ok(executable.open_folder()?)
+        } else {
+            Err(anyhow!(
+                "Failed to find executable with id {executable_id} for game with id {game_id}"
+            )
+            .into())
+        }
+    } else {
+        Err(anyhow!("Failed to find game with id {game_id}").into())
+    }
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn install_mod(
     game_id: u32,
     executable_id: String,
     state: tauri::State<'_, AppState>,

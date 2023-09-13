@@ -1,25 +1,11 @@
-use std::{
-    collections::HashMap,
-    fs::{canonicalize, File},
-    path::{Path, PathBuf},
-};
+use std::path::Path;
 
-use anyhow::anyhow;
-use directories::BaseDirs;
-use glob::{glob, MatchOptions};
+use glob::glob;
 use serde::Serialize;
 use specta::Type;
 
-use crate::game_executable::{GameExecutable, UnityScriptingBackend};
 use crate::Result;
-
-#[derive(Serialize, Type, Clone)]
-#[serde(rename_all = "camelCase")]
-struct Mod {
-    path: PathBuf,
-    name: String,
-    scripting_backend: UnityScriptingBackend,
-}
+use crate::{game_executable::UnityScriptingBackend, r#mod::Mod};
 
 #[derive(Serialize, Type, Clone)]
 #[serde(rename_all = "camelCase")]
