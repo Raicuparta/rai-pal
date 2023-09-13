@@ -84,7 +84,7 @@ impl GameExecutable {
 
     pub fn open_game_folder(&self) -> Result {
         if let Some(parent) = self.full_path.parent() {
-            Ok(open::that(parent)?)
+            Ok(open::that_detached(parent)?)
         } else {
             Err(anyhow!(
                 "Failed to find parent for game executable {}",
@@ -95,6 +95,19 @@ impl GameExecutable {
 
     pub fn open_mods_folder(&self) -> Result {
         todo!()
+    }
+
+    pub fn start(&self) -> Result {
+        if let Some(steam_launch) = &self.steam_launch {
+            open::that_detached(format!(
+                "steam://launch/{}/{}",
+                steam_launch.app_id,
+                steam_launch.app_type.as_deref().unwrap_or("")
+            ))
+        } else {
+            open::that_detached(&self.full_path)
+        }
+        .map_err(|err| anyhow!("Failed to run game: {err}"))
     }
 }
 

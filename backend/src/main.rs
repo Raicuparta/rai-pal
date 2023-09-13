@@ -162,6 +162,25 @@ async fn open_mods_folder(
         .open_mods_folder()
         .map_err(|error| anyhow!("Failed to open game folder: {error}").into())
 }
+#[tauri::command]
+#[specta::specta]
+async fn start_game(
+    game_id: u32,
+    executable_id: String,
+    state: tauri::State<'_, AppState>,
+) -> CommandResult {
+    let game_map = get_game_map(state).await?;
+    let game = game_map
+        .get(&game_id)
+        .ok_or(anyhow!("Failed to find game with id {game_id}"))?;
+    let game_executable = game.executables.get(&executable_id).ok_or(anyhow!(
+        "Failed to find executable with id {executable_id} for game with id {game_id}"
+    ))?;
+
+    game_executable
+        .start()
+        .map_err(|error| anyhow!("Failed to open game folder: {error}").into())
+}
 
 #[tauri::command]
 #[specta::specta]
@@ -204,6 +223,7 @@ fn main() {
             get_mod_loaders,
             install_mod,
             open_mods_folder,
+            start_game,
         ]
         .unwrap(),
         ExportConfiguration::default().bigint(BigIntExportBehavior::BigInt),
@@ -232,6 +252,7 @@ fn main() {
             get_mod_loaders,
             install_mod,
             open_mods_folder,
+            start_game,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

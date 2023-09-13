@@ -6,6 +6,7 @@ import {
   installMod,
   openGameFolder,
   openModsFolder,
+  startGame,
 } from "@api/bindings";
 import { useModLoaders } from "@hooks/use-backend-data";
 import { Fragment } from "react";
@@ -53,12 +54,11 @@ export function GameExecutableRow(props: Props) {
               >
                 Open Mods Folder
               </Menu.Item>
-              {/* <Menu.Item
-                onClick={props.executable.addSteamLinuxLaunchParameters}
+              <Menu.Item
+                onClick={() => startGame(props.game.id, props.executable.id)}
               >
-                Add Linux Steam launch parameters
+                Start Game
               </Menu.Item>
-              <Menu.Item onClick={props.executable.start}>Start Game</Menu.Item> */}
             </Menu.Dropdown>
           </Menu>
           <Menu>
