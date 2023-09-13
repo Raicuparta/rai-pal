@@ -7,6 +7,7 @@ import {
   openGameFolder,
 } from "@api/bindings";
 import { useModLoaders } from "@hooks/use-backend-data";
+import { Fragment } from "react";
 
 type Props = Readonly<{
   game: Game;
@@ -71,36 +72,29 @@ export function GameExecutableRow(props: Props) {
             </Menu.Target>
             <Menu.Dropdown>
               {modLoaders.map((modLoader) => (
-                <Menu key={modLoader.id}>
-                  <Menu.Target>
-                    <Button variant="default" key={modLoader.id}>
-                      {modLoader.id}
-                    </Button>
-                  </Menu.Target>
-                  <Menu.Dropdown>
-                    {modLoader.mods
-                      .filter(
-                        (mod) =>
-                          mod.scriptingBackend ===
-                          props.executable.scriptingBackend
-                      )
-                      .map((mod) => (
-                        <Menu.Item
-                          key={mod.name}
-                          onClick={() =>
-                            installMod(
-                              modLoader.id,
-                              mod.id,
-                              props.game.id,
-                              props.executable.id
-                            )
-                          }
-                        >
-                          Install {mod.name}
-                        </Menu.Item>
-                      ))}
-                  </Menu.Dropdown>
-                </Menu>
+                <Fragment key={modLoader.id}>
+                  {modLoader.mods
+                    .filter(
+                      (mod) =>
+                        mod.scriptingBackend ===
+                        props.executable.scriptingBackend
+                    )
+                    .map((mod) => (
+                      <Menu.Item
+                        key={mod.name}
+                        onClick={() =>
+                          installMod(
+                            modLoader.id,
+                            mod.id,
+                            props.game.id,
+                            props.executable.id
+                          )
+                        }
+                      >
+                        <Badge>{modLoader.id}</Badge> Install {mod.name}
+                      </Menu.Item>
+                    ))}
+                </Fragment>
               ))}
             </Menu.Dropdown>
           </Menu>
