@@ -5,7 +5,7 @@ import {
   GameExecutable,
   installMod,
   openGameFolder,
-  openModsFolder,
+  openGameModsFolder,
   startGame,
 } from "@api/bindings";
 import { useModLoaders } from "@hooks/use-backend-data";
@@ -49,7 +49,7 @@ export function GameExecutableRow(props: Props) {
               </Menu.Item>
               <Menu.Item
                 onClick={() =>
-                  openModsFolder(props.game.id, props.executable.id)
+                  openGameModsFolder(props.game.id, props.executable.id)
                 }
               >
                 Open Mods Folder

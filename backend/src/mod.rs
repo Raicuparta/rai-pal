@@ -35,4 +35,8 @@ impl Mod {
     fn install(&self, game_executable: &GameExecutable) {
         todo!()
     }
+
+    pub fn open_folder(&self) -> Result {
+        open::that_detached(&self.path).map_err(|err| anyhow!("Failed to open mod folder: {err}"))
+    }
 }

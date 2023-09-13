@@ -2,7 +2,7 @@ import { Box, Button, Flex, Stack, Table, Text } from "@mantine/core";
 import { MdFolder, MdRefresh } from "react-icons/md";
 import { Fragment } from "react";
 import { useModLoaders } from "@hooks/use-backend-data";
-import { Mod } from "@api/bindings";
+import { Mod, openModFolder } from "@api/bindings";
 import { open } from "@tauri-apps/api/shell";
 
 export function ModsPage() {
@@ -45,7 +45,7 @@ export function ModsPage() {
                   <td>
                     <Flex gap="md">
                       <Button
-                        onClick={() => open(mod.path)}
+                        onClick={() => openModFolder(modLoader.id, mod.id)}
                         leftIcon={<MdFolder />}
                       >
                         Open Folder

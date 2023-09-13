@@ -65,4 +65,14 @@ impl BepInEx {
 
         Ok(())
     }
+
+    pub fn open_mod_folder(&self, mod_id: String) -> Result {
+        let game_mod = self
+            .mods
+            .iter()
+            .find(|game_mod| game_mod.id == mod_id)
+            .ok_or(anyhow!("Failed to find mod with id {mod_id}"))?;
+
+        game_mod.open_folder()
+    }
 }
