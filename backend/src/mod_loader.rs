@@ -37,7 +37,7 @@ impl BepInEx {
             })
             .join("mods");
 
-        let entries: Vec<_> = glob(format!("{}/*", mods_folder_path.to_str().unwrap()).as_str())
+        let entries: Vec<_> = glob(mods_folder_path.join("*").to_str().unwrap())
             .expect("Failed to glob")
             .collect();
 
