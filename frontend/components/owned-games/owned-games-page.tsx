@@ -1,15 +1,21 @@
-import { Box, Button, Flex, Input, Stack, Table, Text } from "@mantine/core";
-import { TableVirtuoso, TableProps } from "react-virtuoso";
+import {
+  Box,
+  Button,
+  Flex,
+  Input,
+  Modal,
+  Stack,
+  Table,
+  Text,
+} from "@mantine/core";
+import { TableVirtuoso, TableProps, TableComponents } from "react-virtuoso";
 import { MdRefresh } from "react-icons/md";
 import { OwnedGameRow } from "./owned-game-row";
 import { useOwnedUnityGames } from "@hooks/use-backend-data";
 import { OwnedUnityGame } from "@api/bindings";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { includesOneOf } from "../../util/filter";
-
-const tableComponents = {
-  Table: (props: TableProps) => <Table {...props} highlightOnHover />,
-};
+import { open } from "@tauri-apps/api/shell";
 
 const renderHeaders = () => (
   <Box component="tr" bg="dark">
@@ -17,13 +23,13 @@ const renderHeaders = () => (
     <Box component="th" w={100}>
       Installed?
     </Box>
-    <Box component="th" w={100} />
   </Box>
 );
 
 export function OwnedGamesPage() {
   const [ownedGames, isLoading, refreshOwnedGames] = useOwnedUnityGames();
   const [filteredGames, setFilteredGames] = useState<OwnedUnityGame[]>([]);
+  const [selectedGame, setSelectedGame] = useState<OwnedUnityGame>();
 
   const changeFilter = useCallback(
     (newFilter: string) => {
@@ -48,8 +54,50 @@ export function OwnedGamesPage() {
     changeFilter("");
   }, [changeFilter]);
 
+  const tableComponents: TableComponents<OwnedUnityGame, any> = useMemo(
+    () => ({
+      Table: (props) => (
+        <Table {...props} highlightOnHover sx={{ tableLayout: "fixed" }} />
+      ),
+      TableRow: (props) => (
+        <Box
+          component="tr"
+          sx={{ cursor: "pointer" }}
+          onClick={() => setSelectedGame(props.item)}
+          {...props}
+        />
+      ),
+    }),
+    [setSelectedGame]
+  );
+
   return (
     <Stack h="100%">
+      {selectedGame && (
+        <Modal
+          title={selectedGame.name}
+          centered
+          opened={true}
+          onClose={() => setSelectedGame(undefined)}
+        >
+          <Button.Group orientation="vertical">
+            <Button
+              variant="default"
+              onClick={() =>
+                open(`https://steampowered.com/app/${selectedGame.id}`)
+              }
+            >
+              Open Steam Page
+            </Button>
+            <Button
+              variant="default"
+              onClick={() => open(`steam://install/${selectedGame.id}`)}
+            >
+              Install on Steam
+            </Button>
+          </Button.Group>
+        </Modal>
+      )}
       <Flex gap="md">
         <Input
           placeholder="Find..."

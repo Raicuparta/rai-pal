@@ -8,7 +8,7 @@ import {
   Table,
   TableProps,
 } from "@mantine/core";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { MdRefresh } from "react-icons/md";
 import { useGameMap } from "@hooks/use-backend-data";
 import { includesOneOf } from "../../util/filter";
@@ -38,21 +38,24 @@ const renderHeaders = () => (
 export function InstalledGamesPage() {
   const [gameMap, isLoading, refreshGameMap, error] = useGameMap();
   const [filteredGames, setFilteredGames] = useState<GameExecutableData[]>([]);
-  const [gameToMod, setGameToMod] = useState<GameExecutableData>();
+  const [selectedGame, setSelectedGame] = useState<GameExecutableData>();
 
-  const tableComponents: TableComponents<GameExecutableData, any> = {
-    Table: (props) => (
-      <Table {...props} highlightOnHover sx={{ tableLayout: "fixed" }} />
-    ),
-    TableRow: (props) => (
-      <Box
-        component="tr"
-        sx={{ cursor: "pointer" }}
-        onClick={() => setGameToMod(props.item)}
-        {...props}
-      />
-    ),
-  };
+  const tableComponents: TableComponents<GameExecutableData, any> = useMemo(
+    () => ({
+      Table: (props) => (
+        <Table {...props} highlightOnHover sx={{ tableLayout: "fixed" }} />
+      ),
+      TableRow: (props) => (
+        <Box
+          component="tr"
+          sx={{ cursor: "pointer" }}
+          onClick={() => setSelectedGame(props.item)}
+          {...props}
+        />
+      ),
+    }),
+    [setSelectedGame]
+  );
 
   const changeFilter = useCallback(
     (newFilter: string) => {
@@ -62,7 +65,7 @@ export function InstalledGamesPage() {
           Object.values(game.executables).map((executable) => ({
             game,
             executable,
-            installMod: setGameToMod,
+            installMod: setSelectedGame,
           }))
         )
         .flat();
@@ -106,7 +109,7 @@ export function InstalledGamesPage() {
           <pre>{error}</pre>
         </Alert>
       )}
-      {gameToMod && <ModInstallModal data={gameToMod} />}
+      {selectedGame && <ModInstallModal data={selectedGame} />}
       <Box sx={{ flex: 1 }}>
         <TableVirtuoso
           // eslint-disable-next-line react/forbid-component-props
