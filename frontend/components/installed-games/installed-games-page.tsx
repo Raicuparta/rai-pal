@@ -12,7 +12,14 @@ import {
   TableProps,
 } from "@mantine/core";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { MdFilterAlt, MdRefresh } from "react-icons/md";
+import {
+  MdArrowDownward,
+  MdArrowDropDown,
+  MdArrowDropUp,
+  MdArrowUpward,
+  MdFilterAlt,
+  MdRefresh,
+} from "react-icons/md";
 import { useGameMap } from "@hooks/use-backend-data";
 import { includesOneOf } from "../../util/filter";
 import { TableComponents, TableVirtuoso } from "react-virtuoso";
@@ -20,6 +27,7 @@ import { GameExecutableData, InstalledGameRow } from "./installed-game-row";
 import { InstalledGameModal } from "./installed-game-modal";
 import {
   Architecture,
+  GameExecutable,
   OperatingSystem,
   UnityScriptingBackend,
 } from "@api/bindings";
@@ -27,25 +35,6 @@ import {
   SegmentedControlData,
   TypedSegmentedControl,
 } from "./typed-segmented-control";
-
-const renderHeaders = () => (
-  <Box component="tr" bg="dark">
-    <Box component="th">Game</Box>
-    <Box component="th" w={100}>
-      OS
-    </Box>
-    <Box component="th" w={100}>
-      Arch
-    </Box>
-    <Box component="th" w={100}>
-      Backend
-    </Box>
-
-    <Box component="th" w={100}>
-      Unity
-    </Box>
-  </Box>
-);
 
 type Filter = {
   text: string;
@@ -72,12 +61,43 @@ const scriptingBackendOptions: SegmentedControlData<UnityScriptingBackend>[] = [
   { label: "Mono", value: "Mono" },
 ];
 
+type TableHeaderId = keyof GameExecutable;
+
+type TableHeader = {
+  id: TableHeaderId;
+  label: string;
+  width?: number;
+};
+const tableHeaders: TableHeader[] = [
+  { id: "name", label: "Game", width: undefined },
+  { id: "operatingSystem", label: "OS", width: 100 },
+  { id: "architecture", label: "Arch", width: 100 },
+  { id: "scriptingBackend", label: "Backend", width: 100 },
+  { id: "unityVersion", label: "Unity", width: 100 },
+];
+
+type Sort = {
+  id: TableHeaderId;
+  reverse: boolean;
+};
+
 export function InstalledGamesPage() {
   const [gameMap, isLoading, refreshGameMap, error] = useGameMap();
   const [selectedGame, setSelectedGame] = useState<GameExecutableData>();
+  const [sort, setSort] = useState<Sort>({
+    id: tableHeaders[0].id,
+    reverse: false,
+  });
   const [filter, setFilter] = useState<Filter>({
     text: "",
   });
+
+  const updateSort = (sortId: TableHeaderId) => {
+    setSort((previousSort) => ({
+      id: sortId,
+      reverse: previousSort.id == sortId && !previousSort.reverse,
+    }));
+  };
 
   const updateFilter = (newFilter: Partial<Filter>) =>
     setFilter((previousFilter) => ({ ...previousFilter, ...newFilter }));
@@ -93,17 +113,29 @@ export function InstalledGamesPage() {
       )
       .flat();
 
-    return gameExecutables.filter(
-      (data) =>
-        includesOneOf(filter.text, [data.executable.name, data.game.name]) &&
-        (!filter.architecture ||
-          data.executable.architecture === filter.architecture) &&
-        (!filter.operatingSystem ||
-          data.executable.operatingSystem === filter.operatingSystem) &&
-        (!filter.scriptingBackend ||
-          data.executable.scriptingBackend === filter.scriptingBackend)
-    );
-  }, [filter, gameMap]);
+    return gameExecutables
+      .filter(
+        (data) =>
+          includesOneOf(filter.text, [data.executable.name, data.game.name]) &&
+          (!filter.architecture ||
+            data.executable.architecture === filter.architecture) &&
+          (!filter.operatingSystem ||
+            data.executable.operatingSystem === filter.operatingSystem) &&
+          (!filter.scriptingBackend ||
+            data.executable.scriptingBackend === filter.scriptingBackend)
+      )
+      .sort((dataA, dataB) => {
+        const multiplier = sort.reverse ? -1 : 1;
+
+        const valueA = dataA.executable[sort.id];
+        const valueB = dataB.executable[sort.id];
+        if (typeof valueA === "string" && typeof valueB === "string") {
+          return multiplier * valueA.localeCompare(valueB);
+        }
+
+        return 0;
+      });
+  }, [filter, gameMap, sort]);
 
   const tableComponents: TableComponents<GameExecutableData, any> = useMemo(
     () => ({
@@ -120,6 +152,34 @@ export function InstalledGamesPage() {
       ),
     }),
     [setSelectedGame]
+  );
+
+  const renderHeaders = useCallback(
+    () => (
+      <Box component="tr" bg="dark">
+        {tableHeaders.map((header) => (
+          <Box
+            key={header.id}
+            component="th"
+            w={header.width}
+            onClick={() => updateSort(header.id)}
+            sx={(theme) => ({
+              cursor: "pointer",
+              ":hover": {
+                background: theme.colors.gray,
+              },
+            })}
+          >
+            <Flex align="center">
+              {header.label}
+              {sort.id === header.id &&
+                (sort.reverse ? <MdArrowDropDown /> : <MdArrowDropUp />)}
+            </Flex>
+          </Box>
+        ))}
+      </Box>
+    ),
+    [sort]
   );
 
   return (
