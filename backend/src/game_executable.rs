@@ -29,16 +29,16 @@ impl Display for UnityScriptingBackend {
 
 #[derive(Serialize, Type, Clone, PartialEq, Eq, Hash)]
 pub enum Architecture {
+    Unknown,
     X64,
     X32,
-    Unknown,
 }
 
 #[derive(Serialize, Type, Clone, PartialEq, Eq, Hash)]
 pub enum OperatingSystem {
+    Unknown,
     Linux,
     Windows,
-    Unknown,
 }
 
 #[derive(Serialize, Type, Clone)]

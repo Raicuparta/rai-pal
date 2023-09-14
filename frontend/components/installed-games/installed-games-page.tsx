@@ -19,10 +19,10 @@ import { ModInstallModal } from "./mod-install-modal";
 const renderHeaders = () => (
   <Box component="tr" bg="dark">
     <Box component="th">Game</Box>
-    <Box component="th" w={50}>
+    <Box component="th" w={100}>
       OS
     </Box>
-    <Box component="th" w={50}>
+    <Box component="th" w={100}>
       Arch
     </Box>
     <Box component="th" w={50}>
