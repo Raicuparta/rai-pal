@@ -10,11 +10,11 @@ import {
 } from "@mantine/core";
 import { useCallback, useEffect, useState } from "react";
 import { MdRefresh } from "react-icons/md";
-import { Game, GameExecutable } from "@api/bindings";
 import { useGameMap } from "@hooks/use-backend-data";
 import { includesOneOf } from "../../util/filter";
 import { TableVirtuoso } from "react-virtuoso";
 import { GameExecutableData, GameExecutableRow } from "./game-executable-row";
+import { ModInstallModal } from "./mod-install-modal";
 
 const tableComponents = {
   Table: (props: TableProps) => <Table {...props} highlightOnHover />,
@@ -43,6 +43,7 @@ const renderHeaders = () => (
 export function InstalledGamesPage() {
   const [gameMap, isLoading, refreshGameMap, error] = useGameMap();
   const [filteredGames, setFilteredGames] = useState<GameExecutableData[]>([]);
+  const [gameToMod, setGameToMod] = useState<GameExecutableData>();
 
   const changeFilter = useCallback(
     (newFilter: string) => {
@@ -52,6 +53,7 @@ export function InstalledGamesPage() {
           Object.values(game.executables).map((executable) => ({
             game,
             executable,
+            installMod: setGameToMod,
           }))
         )
         .flat();
@@ -95,6 +97,7 @@ export function InstalledGamesPage() {
           <pre>{error}</pre>
         </Alert>
       )}
+      {gameToMod && <ModInstallModal data={gameToMod} />}
       <Box sx={{ flex: 1 }}>
         <TableVirtuoso
           // eslint-disable-next-line react/forbid-component-props

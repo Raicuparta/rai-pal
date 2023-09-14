@@ -1,31 +1,20 @@
-import { ActionIcon, Badge, Box, Button, Flex, Menu } from "@mantine/core";
-import {
-  MdChevronRight,
-  MdHandyman,
-  MdMenu,
-  MdMore,
-  MdMoreVert,
-  MdSettings,
-} from "react-icons/md";
+import { ActionIcon, Badge, Box, Flex, Menu } from "@mantine/core";
+import { MdMoreVert } from "react-icons/md";
 import {
   Game,
   GameExecutable,
-  installMod,
   openGameFolder,
   openGameModsFolder,
   startGame,
 } from "@api/bindings";
-import { useModLoaders } from "@hooks/use-backend-data";
-import { Fragment } from "react";
 
 export type GameExecutableData = {
   game: Game;
   executable: GameExecutable;
+  installMod: (data?: GameExecutableData) => void;
 };
 
 export function GameExecutableRow(index: number, data: GameExecutableData) {
-  // const [modLoaders] = useModLoaders();
-
   const nameSuffix =
     Object.values(data.game.executables).length <= 1
       ? ""
@@ -64,39 +53,9 @@ export function GameExecutableRow(index: number, data: GameExecutableData) {
               >
                 Start Game
               </Menu.Item>
-              {/* {modLoaders.map((modLoader) => (
-                <Menu key={modLoader.id} trigger="hover" position="right-start">
-                  <Menu.Target>
-                    <Menu.Item>
-                      Install {modLoader.id} mod <strong>{"›"}</strong>
-                    </Menu.Item>
-                  </Menu.Target>
-                  <Menu.Dropdown>
-                    <Menu.Item sx={{ display: "none" }} />
-                    {modLoader.mods
-                      .filter(
-                        (mod) =>
-                          mod.scriptingBackend ===
-                          data.executable.scriptingBackend
-                      )
-                      .map((mod) => (
-                        <Menu.Item
-                          key={mod.name}
-                          onClick={() =>
-                            installMod(
-                              modLoader.id,
-                              mod.id,
-                              data.game.id,
-                              data.executable.id
-                            )
-                          }
-                        >
-                          Install {mod.name}
-                        </Menu.Item>
-                      ))}
-                  </Menu.Dropdown>
-                </Menu>
-              ))} */}
+              <Menu.Item onClick={() => data.installMod(data)}>
+                Install Mod...
+              </Menu.Item>
             </Menu.Dropdown>
           </Menu>
         </Flex>
