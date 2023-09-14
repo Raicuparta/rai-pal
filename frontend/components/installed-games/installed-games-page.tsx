@@ -2,19 +2,31 @@ import {
   Alert,
   Box,
   Button,
+  Checkbox,
   Flex,
   Input,
+  Popover,
+  SegmentedControl,
   Stack,
   Table,
   TableProps,
 } from "@mantine/core";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { MdRefresh } from "react-icons/md";
+import { MdFilterAlt, MdRefresh } from "react-icons/md";
 import { useGameMap } from "@hooks/use-backend-data";
 import { includesOneOf } from "../../util/filter";
 import { TableComponents, TableVirtuoso } from "react-virtuoso";
 import { GameExecutableData, InstalledGameRow } from "./installed-game-row";
 import { InstalledGameModal } from "./installed-game-modal";
+import {
+  Architecture,
+  OperatingSystem,
+  UnityScriptingBackend,
+} from "@api/bindings";
+import {
+  SegmentedControlData,
+  TypedSegmentedControl,
+} from "./typed-segmented-control";
 
 const renderHeaders = () => (
   <Box component="tr" bg="dark">
@@ -37,7 +49,28 @@ const renderHeaders = () => (
 
 type Filter = {
   text: string;
+  operatingSystem?: OperatingSystem;
+  architecture?: Architecture;
+  scriptingBackend?: UnityScriptingBackend;
 };
+
+const operatingSystemOptions: SegmentedControlData<OperatingSystem>[] = [
+  { label: "Any OS", value: "" },
+  { label: "Windows", value: "Windows" },
+  { label: "Linux", value: "Linux" },
+];
+
+const architectureOptions: SegmentedControlData<Architecture>[] = [
+  { label: "Any architecture", value: "" },
+  { label: "x64", value: "X64" },
+  { label: "x32", value: "X32" },
+];
+
+const scriptingBackendOptions: SegmentedControlData<UnityScriptingBackend>[] = [
+  { label: "Any backend", value: "" },
+  { label: "IL2CPP", value: "Il2Cpp" },
+  { label: "Mono", value: "Mono" },
+];
 
 export function InstalledGamesPage() {
   const [gameMap, isLoading, refreshGameMap, error] = useGameMap();
@@ -60,8 +93,15 @@ export function InstalledGamesPage() {
       )
       .flat();
 
-    return gameExecutables.filter((data) =>
-      includesOneOf(filter.text, [data.executable.name, data.game.name])
+    return gameExecutables.filter(
+      (data) =>
+        includesOneOf(filter.text, [data.executable.name, data.game.name]) &&
+        (!filter.architecture ||
+          data.executable.architecture === filter.architecture) &&
+        (!filter.operatingSystem ||
+          data.executable.operatingSystem === filter.operatingSystem) &&
+        (!filter.scriptingBackend ||
+          data.executable.scriptingBackend === filter.scriptingBackend)
     );
   }, [filter, gameMap]);
 
@@ -90,6 +130,36 @@ export function InstalledGamesPage() {
           onChange={(event) => updateFilter({ text: event.target.value })}
           sx={{ flex: 1 }}
         />
+        <Popover>
+          <Popover.Target>
+            <Button variant="default" leftIcon={<MdFilterAlt />}>
+              Filter
+            </Button>
+          </Popover.Target>
+          <Popover.Dropdown>
+            <Stack>
+              <TypedSegmentedControl
+                data={operatingSystemOptions}
+                value={filter.operatingSystem}
+                onChange={(operatingSystem) =>
+                  updateFilter({ operatingSystem })
+                }
+              />
+              <TypedSegmentedControl
+                data={architectureOptions}
+                value={filter.architecture}
+                onChange={(architecture) => updateFilter({ architecture })}
+              />
+              <TypedSegmentedControl
+                data={scriptingBackendOptions}
+                value={filter.scriptingBackend}
+                onChange={(scriptingBackend) =>
+                  updateFilter({ scriptingBackend })
+                }
+              />
+            </Stack>
+          </Popover.Dropdown>
+        </Popover>
         <Button
           disabled={isLoading}
           onClick={refreshGameMap}
