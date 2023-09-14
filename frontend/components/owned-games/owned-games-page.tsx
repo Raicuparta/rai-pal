@@ -39,7 +39,6 @@ type Filter = {
 
 export function OwnedGamesPage() {
   const [ownedGames, isLoading, refreshOwnedGames] = useOwnedUnityGames();
-  const [filteredGames, setFilteredGames] = useState<OwnedUnityGame[]>([]);
   const [selectedGame, setSelectedGame] = useState<OwnedUnityGame>();
   const [filter, setFilter] = useState<Filter>({
     text: "",
@@ -47,33 +46,19 @@ export function OwnedGamesPage() {
     linuxOnly: false,
   });
 
-  const changeFilter = useCallback(
-    (newFilter: Partial<Filter>) => {
-      if (!ownedGames) return;
+  const updateFilter = (newFilter: Partial<Filter>) =>
+    setFilter((previousFilter) => ({ ...previousFilter, ...newFilter }));
 
-      const steamApps = Object.values(ownedGames);
-      if (!newFilter) {
-        setFilteredGames(steamApps);
-        return;
-      }
+  const filteredGames = useMemo(() => {
+    const steamApps = Object.values(ownedGames);
 
-      setFilter((previousFilter) => ({ ...previousFilter, ...newFilter }));
-
-      setFilteredGames(
-        steamApps.filter(
-          (game) =>
-            includesOneOf(newFilter.text, [game.name, game.id.toString()]) &&
-            (!filter.linuxOnly || game.osList.includes("Linux")) &&
-            (!filter.hideInstalled || !game.installed)
-        )
-      );
-    },
-    [ownedGames, filter]
-  );
-
-  useEffect(() => {
-    changeFilter({});
-  }, [changeFilter]);
+    return steamApps.filter(
+      (game) =>
+        includesOneOf(filter.text, [game.name, game.id.toString()]) &&
+        (!filter.linuxOnly || game.osList.includes("Linux")) &&
+        (!filter.hideInstalled || !game.installed)
+    );
+  }, [filter, ownedGames]);
 
   const tableComponents: TableComponents<OwnedUnityGame, any> = useMemo(
     () => ({
@@ -103,7 +88,7 @@ export function OwnedGamesPage() {
       <Flex gap="md">
         <Input
           placeholder="Find..."
-          onChange={(event) => changeFilter({ text: event.target.value })}
+          onChange={(event) => updateFilter({ text: event.target.value })}
           sx={{ flex: 1 }}
         />
         <Popover>
@@ -117,14 +102,14 @@ export function OwnedGamesPage() {
               <Checkbox
                 checked={filter.hideInstalled}
                 onChange={(event) =>
-                  changeFilter({ hideInstalled: event.target.checked })
+                  updateFilter({ hideInstalled: event.target.checked })
                 }
                 label="Hide installed games"
               />
               <Checkbox
                 checked={filter.linuxOnly}
                 onChange={(event) =>
-                  changeFilter({ linuxOnly: event.target.checked })
+                  updateFilter({ linuxOnly: event.target.checked })
                 }
                 label="Hide games without native Linux support"
               />

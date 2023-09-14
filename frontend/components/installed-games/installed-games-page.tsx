@@ -35,10 +35,35 @@ const renderHeaders = () => (
   </Box>
 );
 
+type Filter = {
+  text: string;
+};
+
 export function InstalledGamesPage() {
   const [gameMap, isLoading, refreshGameMap, error] = useGameMap();
-  const [filteredGames, setFilteredGames] = useState<GameExecutableData[]>([]);
   const [selectedGame, setSelectedGame] = useState<GameExecutableData>();
+  const [filter, setFilter] = useState<Filter>({
+    text: "",
+  });
+
+  const updateFilter = (newFilter: Partial<Filter>) =>
+    setFilter((previousFilter) => ({ ...previousFilter, ...newFilter }));
+
+  const filteredGames = useMemo(() => {
+    const gameExecutables = Object.values(gameMap)
+      .map((game) =>
+        Object.values(game.executables).map((executable) => ({
+          game,
+          executable,
+          installMod: setSelectedGame,
+        }))
+      )
+      .flat();
+
+    return gameExecutables.filter((data) =>
+      includesOneOf(filter.text, [data.executable.name, data.game.name])
+    );
+  }, [filter, gameMap]);
 
   const tableComponents: TableComponents<GameExecutableData, any> = useMemo(
     () => ({
@@ -57,41 +82,12 @@ export function InstalledGamesPage() {
     [setSelectedGame]
   );
 
-  const changeFilter = useCallback(
-    (newFilter: string) => {
-      if (!gameMap) return;
-      const gameExecutables = Object.values(gameMap)
-        .map((game) =>
-          Object.values(game.executables).map((executable) => ({
-            game,
-            executable,
-            installMod: setSelectedGame,
-          }))
-        )
-        .flat();
-      if (!newFilter) {
-        setFilteredGames(gameExecutables);
-        return;
-      }
-      setFilteredGames(
-        gameExecutables.filter((data) =>
-          includesOneOf(newFilter, [data.executable.name, data.game.name])
-        )
-      );
-    },
-    [gameMap]
-  );
-
-  useEffect(() => {
-    changeFilter("");
-  }, [changeFilter]);
-
   return (
     <Stack h="100%">
       <Flex gap="md">
         <Input
           placeholder="Find..."
-          onChange={(event) => changeFilter(event.target.value)}
+          onChange={(event) => updateFilter({ text: event.target.value })}
           sx={{ flex: 1 }}
         />
         <Button
