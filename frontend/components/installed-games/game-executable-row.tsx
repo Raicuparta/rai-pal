@@ -18,21 +18,21 @@ import {
 import { useModLoaders } from "@hooks/use-backend-data";
 import { Fragment } from "react";
 
-type Props = Readonly<{
+export type GameExecutableData = {
   game: Game;
   executable: GameExecutable;
-}>;
+};
 
-export function GameExecutableRow(props: Props) {
-  const [modLoaders] = useModLoaders();
+export function GameExecutableRow(index: number, data: GameExecutableData) {
+  // const [modLoaders] = useModLoaders();
 
   const nameSuffix =
-    Object.values(props.game.executables).length <= 1
+    Object.values(data.game.executables).length <= 1
       ? ""
       : ` (${
-          props.executable.steamLaunch?.description ||
-          `${props.executable.name} ${
-            props.executable.steamLaunch?.arguments || ""
+          data.executable.steamLaunch?.description ||
+          `${data.executable.name} ${
+            data.executable.steamLaunch?.arguments || ""
           }`
         })`;
 
@@ -48,25 +48,23 @@ export function GameExecutableRow(props: Props) {
             </Menu.Target>
             <Menu.Dropdown>
               <Menu.Item
-                onClick={() =>
-                  openGameFolder(props.game.id, props.executable.id)
-                }
+                onClick={() => openGameFolder(data.game.id, data.executable.id)}
               >
                 Open Game Folder
               </Menu.Item>
               <Menu.Item
                 onClick={() =>
-                  openGameModsFolder(props.game.id, props.executable.id)
+                  openGameModsFolder(data.game.id, data.executable.id)
                 }
               >
                 Open Mods Folder
               </Menu.Item>
               <Menu.Item
-                onClick={() => startGame(props.game.id, props.executable.id)}
+                onClick={() => startGame(data.game.id, data.executable.id)}
               >
                 Start Game
               </Menu.Item>
-              {modLoaders.map((modLoader) => (
+              {/* {modLoaders.map((modLoader) => (
                 <Menu key={modLoader.id} trigger="hover" position="right-start">
                   <Menu.Target>
                     <Menu.Item>
@@ -79,7 +77,7 @@ export function GameExecutableRow(props: Props) {
                       .filter(
                         (mod) =>
                           mod.scriptingBackend ===
-                          props.executable.scriptingBackend
+                          data.executable.scriptingBackend
                       )
                       .map((mod) => (
                         <Menu.Item
@@ -88,8 +86,8 @@ export function GameExecutableRow(props: Props) {
                             installMod(
                               modLoader.id,
                               mod.id,
-                              props.game.id,
-                              props.executable.id
+                              data.game.id,
+                              data.executable.id
                             )
                           }
                         >
@@ -98,13 +96,13 @@ export function GameExecutableRow(props: Props) {
                       ))}
                   </Menu.Dropdown>
                 </Menu>
-              ))}
+              ))} */}
             </Menu.Dropdown>
           </Menu>
         </Flex>
       </td>
       <td>
-        {props.game.name}{" "}
+        {data.game.name}{" "}
         <Box component="code" sx={{ color: "GrayText" }}>
           {nameSuffix}
         </Box>
@@ -112,29 +110,27 @@ export function GameExecutableRow(props: Props) {
       <td>
         <Badge
           color={
-            props.executable.operatingSystem === "Linux" ? "yellow" : "lime"
+            data.executable.operatingSystem === "Linux" ? "yellow" : "lime"
           }
         >
-          {props.executable.operatingSystem}
+          {data.executable.operatingSystem}
         </Badge>
       </td>
       <td>
-        <Badge
-          color={props.executable.architecture === "X64" ? "blue" : "teal"}
-        >
-          {props.executable.architecture}
+        <Badge color={data.executable.architecture === "X64" ? "blue" : "teal"}>
+          {data.executable.architecture}
         </Badge>
       </td>
       <td>
         <Badge
           color={
-            props.executable.scriptingBackend === "Il2Cpp" ? "red" : "grape"
+            data.executable.scriptingBackend === "Il2Cpp" ? "red" : "grape"
           }
         >
-          {props.executable.scriptingBackend}
+          {data.executable.scriptingBackend}
         </Badge>
       </td>
-      <td>{props.executable.unityVersion}</td>
+      <td>{data.executable.unityVersion}</td>
     </>
   );
 }

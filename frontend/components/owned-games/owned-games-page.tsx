@@ -4,7 +4,7 @@ import { MdRefresh } from "react-icons/md";
 import { OwnedGameRow } from "./owned-game-row";
 import { useOwnedUnityGames } from "@hooks/use-backend-data";
 import { OwnedUnityGame } from "@api/bindings";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { includesOneOf } from "../../util/filter";
 
 const tableComponents = {
@@ -43,6 +43,10 @@ export function OwnedGamesPage() {
     },
     [ownedGames]
   );
+
+  useEffect(() => {
+    changeFilter("");
+  }, [changeFilter]);
 
   return (
     <Stack h="100%">
