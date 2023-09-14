@@ -25,11 +25,11 @@ const renderHeaders = () => (
     <Box component="th" w={100}>
       Arch
     </Box>
-    <Box component="th" w={50}>
+    <Box component="th" w={100}>
       Backend
     </Box>
 
-    <Box component="th" w={150}>
+    <Box component="th" w={100}>
       Unity
     </Box>
   </Box>
@@ -41,7 +41,9 @@ export function InstalledGamesPage() {
   const [gameToMod, setGameToMod] = useState<GameExecutableData>();
 
   const tableComponents: TableComponents<GameExecutableData, any> = {
-    Table: (props) => <Table {...props} highlightOnHover />,
+    Table: (props) => (
+      <Table {...props} highlightOnHover sx={{ tableLayout: "fixed" }} />
+    ),
     TableRow: (props) => (
       <Box
         component="tr"
