@@ -7,6 +7,8 @@ import {
   openGameModsFolder,
   startGame,
 } from "@api/bindings";
+import { getGameExecutableNameSuffix } from "./game-name-suffix";
+import { GameExecutableName } from "./game-executable-name";
 
 export type GameExecutableData = {
   game: Game;
@@ -15,16 +17,6 @@ export type GameExecutableData = {
 };
 
 export function GameExecutableRow(index: number, data: GameExecutableData) {
-  const nameSuffix =
-    Object.values(data.game.executables).length <= 1
-      ? ""
-      : ` (${
-          data.executable.steamLaunch?.description ||
-          `${data.executable.name} ${
-            data.executable.steamLaunch?.arguments || ""
-          }`
-        })`;
-
   return (
     <>
       <td>
@@ -61,10 +53,7 @@ export function GameExecutableRow(index: number, data: GameExecutableData) {
         </Flex>
       </td>
       <td>
-        {data.game.name}{" "}
-        <Box component="code" sx={{ color: "GrayText" }}>
-          {nameSuffix}
-        </Box>
+        <GameExecutableName data={data} />
       </td>
       <td>
         <Badge
