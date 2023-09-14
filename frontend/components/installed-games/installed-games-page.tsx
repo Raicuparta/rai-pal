@@ -12,17 +12,12 @@ import { useCallback, useEffect, useState } from "react";
 import { MdRefresh } from "react-icons/md";
 import { useGameMap } from "@hooks/use-backend-data";
 import { includesOneOf } from "../../util/filter";
-import { TableVirtuoso } from "react-virtuoso";
+import { TableComponents, TableVirtuoso } from "react-virtuoso";
 import { GameExecutableData, GameExecutableRow } from "./game-executable-row";
 import { ModInstallModal } from "./mod-install-modal";
 
-const tableComponents = {
-  Table: (props: TableProps) => <Table {...props} highlightOnHover />,
-};
-
 const renderHeaders = () => (
   <Box component="tr" bg="dark">
-    <Box component="th" w={50} />
     <Box component="th">Game</Box>
     <Box component="th" w={50}>
       OS
@@ -44,6 +39,18 @@ export function InstalledGamesPage() {
   const [gameMap, isLoading, refreshGameMap, error] = useGameMap();
   const [filteredGames, setFilteredGames] = useState<GameExecutableData[]>([]);
   const [gameToMod, setGameToMod] = useState<GameExecutableData>();
+
+  const tableComponents: TableComponents<GameExecutableData, any> = {
+    Table: (props) => <Table {...props} highlightOnHover />,
+    TableRow: (props) => (
+      <Box
+        component="tr"
+        sx={{ cursor: "pointer" }}
+        onClick={() => setGameToMod(props.item)}
+        {...props}
+      />
+    ),
+  };
 
   const changeFilter = useCallback(
     (newFilter: string) => {

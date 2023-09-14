@@ -20,39 +20,6 @@ export function GameExecutableRow(index: number, data: GameExecutableData) {
   return (
     <>
       <td>
-        <Flex gap="md">
-          <Menu>
-            <Menu.Target>
-              <ActionIcon variant="default">
-                <MdMoreVert />
-              </ActionIcon>
-            </Menu.Target>
-            <Menu.Dropdown>
-              <Menu.Item
-                onClick={() => openGameFolder(data.game.id, data.executable.id)}
-              >
-                Open Game Folder
-              </Menu.Item>
-              <Menu.Item
-                onClick={() =>
-                  openGameModsFolder(data.game.id, data.executable.id)
-                }
-              >
-                Open Mods Folder
-              </Menu.Item>
-              <Menu.Item
-                onClick={() => startGame(data.game.id, data.executable.id)}
-              >
-                Start Game
-              </Menu.Item>
-              <Menu.Item onClick={() => data.installMod(data)}>
-                Install Mod...
-              </Menu.Item>
-            </Menu.Dropdown>
-          </Menu>
-        </Flex>
-      </td>
-      <td>
         <GameExecutableName data={data} />
       </td>
       <td>
