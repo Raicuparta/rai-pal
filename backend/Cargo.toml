@@ -37,4 +37,4 @@ glob = { git = "https://github.com/rust-lang/glob", version = "0.3.1" }
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem
 # DO NOT REMOVE!!
-custom-protocol = []
+custom-protocol = ["tauri/custom-protocol"]
