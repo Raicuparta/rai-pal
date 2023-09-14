@@ -4,14 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { MdRefresh } from "react-icons/md";
 import { Game } from "@api/bindings";
 import { useGameMap } from "@hooks/use-backend-data";
-
-function includesIgnoreCase(term: string, text: string) {
-  return text.toLowerCase().includes(term.toLowerCase());
-}
-
-function includesOneOf(term: string, texts: string[]) {
-  return Boolean(texts.find((text) => includesIgnoreCase(term, text)));
-}
+import { includesOneOf } from "../../util/filter";
 
 export function InstalledGamesPage() {
   const [gameMap, isLoading, refreshGameMap, error] = useGameMap();

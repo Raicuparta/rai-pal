@@ -1,8 +1,11 @@
-import { Box, Button, Stack, Table, Text } from "@mantine/core";
+import { Box, Button, Flex, Input, Stack, Table, Text } from "@mantine/core";
 import { TableVirtuoso, TableProps } from "react-virtuoso";
 import { MdRefresh } from "react-icons/md";
 import { OwnedGameRow } from "./owned-game-row";
 import { useOwnedUnityGames } from "@hooks/use-backend-data";
+import { OwnedUnityGame } from "@api/bindings";
+import { useCallback, useState } from "react";
+import { includesOneOf } from "../../util/filter";
 
 const tableComponents = {
   Table: (props: TableProps) => <Table {...props} highlightOnHover />,
@@ -19,30 +22,57 @@ const renderHeaders = () => (
 );
 
 export function OwnedGamesPage() {
-  const [ownedUnityGames, isLoading, updateOwnedUnityGames] =
-    useOwnedUnityGames();
+  const [ownedGames, isLoading, refreshOwnedGames] = useOwnedUnityGames();
+  const [filteredGames, setFilteredGames] = useState<OwnedUnityGame[]>([]);
+
+  const changeFilter = useCallback(
+    (newFilter: string) => {
+      if (!ownedGames) return;
+
+      const steamApps = Object.values(ownedGames);
+      if (!newFilter) {
+        setFilteredGames(steamApps);
+        return;
+      }
+
+      setFilteredGames(
+        steamApps.filter((game) =>
+          includesOneOf(newFilter, [game.name, game.id.toString()])
+        )
+      );
+    },
+    [ownedGames]
+  );
 
   return (
     <Stack h="100%">
-      <Button
-        leftIcon={<MdRefresh />}
-        loading={isLoading}
-        onClick={updateOwnedUnityGames}
-      >
-        Refresh
-      </Button>
+      <Flex gap="md">
+        <Input
+          placeholder="Find..."
+          onChange={(event) => changeFilter(event.target.value)}
+          sx={{ flex: 1 }}
+        />
+        <Button
+          leftIcon={<MdRefresh />}
+          loading={isLoading}
+          onClick={refreshOwnedGames}
+          sx={{ flex: 1, maxWidth: 300 }}
+        >
+          Refresh
+        </Button>
+      </Flex>
       <Text>
         These are the Steam games you own (maybe?) that use the Unity engine
-        (maybe??). {ownedUnityGames.length} owned games.
+        (maybe??). {ownedGames.length} owned games.
       </Text>
       <Box sx={{ flex: 1 }}>
         <TableVirtuoso
           // eslint-disable-next-line react/forbid-component-props
           style={{ height: "100%" }}
-          data={ownedUnityGames}
+          data={filteredGames}
           components={tableComponents}
           fixedHeaderContent={renderHeaders}
-          totalCount={ownedUnityGames.length}
+          totalCount={ownedGames.length}
           itemContent={OwnedGameRow}
         />
       </Box>
