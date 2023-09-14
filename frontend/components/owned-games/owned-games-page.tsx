@@ -1,21 +1,21 @@
 import {
   Box,
   Button,
+  Card,
   Checkbox,
   Flex,
   Input,
-  Menu,
   Popover,
   Stack,
   Table,
   Text,
 } from "@mantine/core";
 import { TableVirtuoso, TableComponents } from "react-virtuoso";
-import { MdFilter, MdFilter1, MdFilterAlt, MdRefresh } from "react-icons/md";
+import { MdFilterAlt, MdRefresh } from "react-icons/md";
 import { OwnedGameRow } from "./owned-game-row";
 import { useOwnedUnityGames } from "@hooks/use-backend-data";
 import { OwnedUnityGame } from "@api/bindings";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { includesOneOf } from "../../util/filter";
 import { OwnedGameModal } from "./owned-game-modal";
 
@@ -129,7 +129,7 @@ export function OwnedGamesPage() {
         These are the Steam games you own (maybe?) that use the Unity engine
         (maybe??). {ownedGames.length} owned games.
       </Text>
-      <Box sx={{ flex: 1 }}>
+      <Card padding={0} sx={{ flex: 1 }}>
         <TableVirtuoso
           // eslint-disable-next-line react/forbid-component-props
           style={{ height: "100%" }}
@@ -139,7 +139,7 @@ export function OwnedGamesPage() {
           totalCount={ownedGames.length}
           itemContent={OwnedGameRow}
         />
-      </Box>
+      </Card>
     </Stack>
   );
 }

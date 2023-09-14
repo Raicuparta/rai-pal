@@ -2,6 +2,7 @@ import {
   Alert,
   Box,
   Button,
+  Card,
   Flex,
   Input,
   Popover,
@@ -30,6 +31,7 @@ import {
   SegmentedControlData,
   TypedSegmentedControl,
 } from "./typed-segmented-control";
+import { TableHead } from "@components/table/table-head";
 
 type Filter = {
   text: string;
@@ -63,6 +65,7 @@ type TableHeader = {
   label: string;
   width?: number;
 };
+
 const tableHeaders: TableHeader[] = [
   { id: "name", label: "Game", width: undefined },
   { id: "operatingSystem", label: "OS", width: 100 },
@@ -71,7 +74,7 @@ const tableHeaders: TableHeader[] = [
   { id: "unityVersion", label: "Unity", width: 100 },
 ];
 
-type Sort = {
+type TableSort = {
   id: TableHeaderId;
   reverse: boolean;
 };
@@ -79,7 +82,7 @@ type Sort = {
 export function InstalledGamesPage() {
   const [gameMap, isLoading, refreshGameMap, error] = useGameMap();
   const [selectedGame, setSelectedGame] = useState<GameExecutableData>();
-  const [sort, setSort] = useState<Sort>({
+  const [sort, setSort] = useState<TableSort>({
     id: tableHeaders[0].id,
     reverse: false,
   });
@@ -151,30 +154,9 @@ export function InstalledGamesPage() {
 
   const renderHeaders = useCallback(
     () => (
-      <Box component="tr" bg="dark">
-        {tableHeaders.map((header) => (
-          <Box
-            key={header.id}
-            component="th"
-            w={header.width}
-            onClick={() => updateSort(header.id)}
-            sx={(theme) => ({
-              cursor: "pointer",
-              ":hover": {
-                background: theme.colors.gray,
-              },
-            })}
-          >
-            <Flex align="center">
-              {header.label}
-              {sort.id === header.id &&
-                (sort.reverse ? <MdArrowDropDown /> : <MdArrowDropUp />)}
-            </Flex>
-          </Box>
-        ))}
-      </Box>
+      <TableHead headers={tableHeaders} onChangeSort={setSort} sort={sort} />
     ),
-    [sort]
+    [sort, tableHeaders]
   );
 
   return (
@@ -231,17 +213,17 @@ export function InstalledGamesPage() {
         </Alert>
       )}
       {selectedGame && <InstalledGameModal data={selectedGame} />}
-      <Box sx={{ flex: 1 }}>
+      <Card padding={0} sx={{ flex: 1 }}>
         <TableVirtuoso
           // eslint-disable-next-line react/forbid-component-props
           style={{ height: "100%" }}
           data={filteredGames}
-          components={tableComponents}
           fixedHeaderContent={renderHeaders}
+          components={tableComponents}
           totalCount={filteredGames.length}
           itemContent={InstalledGameRow}
         />
-      </Box>
+      </Card>
     </Stack>
   );
 }
