@@ -1,6 +1,17 @@
-import { Box, Button, Flex, Input, Stack, Table, Text } from "@mantine/core";
+import {
+  Box,
+  Button,
+  Checkbox,
+  Flex,
+  Input,
+  Menu,
+  Popover,
+  Stack,
+  Table,
+  Text,
+} from "@mantine/core";
 import { TableVirtuoso, TableComponents } from "react-virtuoso";
-import { MdRefresh } from "react-icons/md";
+import { MdFilter, MdFilter1, MdFilterAlt, MdRefresh } from "react-icons/md";
 import { OwnedGameRow } from "./owned-game-row";
 import { useOwnedUnityGames } from "@hooks/use-backend-data";
 import { OwnedUnityGame } from "@api/bindings";
@@ -20,13 +31,24 @@ const renderHeaders = () => (
   </Box>
 );
 
+type Filter = {
+  text: string;
+  hideInstalled: boolean;
+  linuxOnly: boolean;
+};
+
 export function OwnedGamesPage() {
   const [ownedGames, isLoading, refreshOwnedGames] = useOwnedUnityGames();
   const [filteredGames, setFilteredGames] = useState<OwnedUnityGame[]>([]);
   const [selectedGame, setSelectedGame] = useState<OwnedUnityGame>();
+  const [filter, setFilter] = useState<Filter>({
+    text: "",
+    hideInstalled: false,
+    linuxOnly: false,
+  });
 
   const changeFilter = useCallback(
-    (newFilter: string) => {
+    (newFilter: Partial<Filter>) => {
       if (!ownedGames) return;
 
       const steamApps = Object.values(ownedGames);
@@ -35,17 +57,22 @@ export function OwnedGamesPage() {
         return;
       }
 
+      setFilter((previousFilter) => ({ ...previousFilter, ...newFilter }));
+
       setFilteredGames(
-        steamApps.filter((game) =>
-          includesOneOf(newFilter, [game.name, game.id.toString()])
+        steamApps.filter(
+          (game) =>
+            includesOneOf(newFilter.text, [game.name, game.id.toString()]) &&
+            (!filter.linuxOnly || game.osList.includes("Linux")) &&
+            (!filter.hideInstalled || !game.installed)
         )
       );
     },
-    [ownedGames]
+    [ownedGames, filter]
   );
 
   useEffect(() => {
-    changeFilter("");
+    changeFilter({});
   }, [changeFilter]);
 
   const tableComponents: TableComponents<OwnedUnityGame, any> = useMemo(
@@ -76,9 +103,34 @@ export function OwnedGamesPage() {
       <Flex gap="md">
         <Input
           placeholder="Find..."
-          onChange={(event) => changeFilter(event.target.value)}
+          onChange={(event) => changeFilter({ text: event.target.value })}
           sx={{ flex: 1 }}
         />
+        <Popover>
+          <Popover.Target>
+            <Button variant="default" leftIcon={<MdFilterAlt />}>
+              Filter
+            </Button>
+          </Popover.Target>
+          <Popover.Dropdown>
+            <Stack>
+              <Checkbox
+                checked={filter.hideInstalled}
+                onChange={(event) =>
+                  changeFilter({ hideInstalled: event.target.checked })
+                }
+                label="Hide installed games"
+              />
+              <Checkbox
+                checked={filter.linuxOnly}
+                onChange={(event) =>
+                  changeFilter({ linuxOnly: event.target.checked })
+                }
+                label="Hide games without native Linux support"
+              />
+            </Stack>
+          </Popover.Dropdown>
+        </Popover>
         <Button
           leftIcon={<MdRefresh />}
           loading={isLoading}
