@@ -1,26 +1,19 @@
-import {
-  Box,
-  Button,
-  Flex,
-  Input,
-  Modal,
-  Stack,
-  Table,
-  Text,
-} from "@mantine/core";
-import { TableVirtuoso, TableProps, TableComponents } from "react-virtuoso";
+import { Box, Button, Flex, Input, Stack, Table, Text } from "@mantine/core";
+import { TableVirtuoso, TableComponents } from "react-virtuoso";
 import { MdRefresh } from "react-icons/md";
 import { OwnedGameRow } from "./owned-game-row";
 import { useOwnedUnityGames } from "@hooks/use-backend-data";
 import { OwnedUnityGame } from "@api/bindings";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { includesOneOf } from "../../util/filter";
-import { open } from "@tauri-apps/api/shell";
 import { OwnedGameModal } from "./owned-game-modal";
 
 const renderHeaders = () => (
   <Box component="tr" bg="dark">
     <Box component="th">Game</Box>
+    <Box component="th" w={120}>
+      Native Linux?
+    </Box>
     <Box component="th" w={100}>
       Installed?
     </Box>

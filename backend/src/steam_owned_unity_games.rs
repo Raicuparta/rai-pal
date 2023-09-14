@@ -1,8 +1,12 @@
+use std::collections::HashSet;
+
 use serde::Serialize;
 use specta::Type;
 use steamlocate::SteamDir;
 
-use crate::{appinfo::read_appinfo, steam_game::get_steam_games, Result};
+use crate::{
+    appinfo::read_appinfo, game_executable::OperatingSystem, steam_game::get_steam_games, Result,
+};
 
 const UNITY_STEAM_APP_IDS_URL: &str =
     "https://raw.githubusercontent.com/Raicuparta/steam-unity-app-ids/main/unity-app-ids.txt";
@@ -13,6 +17,7 @@ pub struct OwnedUnityGame {
     id: String,
     name: String,
     installed: bool,
+    os_list: HashSet<OperatingSystem>,
 }
 
 pub async fn get_steam_owned_unity_games() -> Result<Vec<OwnedUnityGame>> {
@@ -36,10 +41,21 @@ pub async fn get_steam_owned_unity_games() -> Result<Vec<OwnedUnityGame>> {
 
             let app_info = app_info.apps.get(&id)?;
 
+            let os_list: HashSet<_> = app_info
+                .launch_options
+                .iter()
+                .filter_map(|launch| match launch.clone().os_list?.as_str() {
+                    "linux" => Some(OperatingSystem::Linux),
+                    "windows" => Some(OperatingSystem::Windows),
+                    _ => None,
+                })
+                .collect();
+
             return Some(OwnedUnityGame {
                 id: app_id.to_owned(),
                 name: app_info.name.clone(),
                 installed: steam_games.get(&id).is_some(),
+                os_list,
             });
         })
         .collect());

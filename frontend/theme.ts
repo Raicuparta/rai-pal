@@ -5,10 +5,8 @@ export const theme: MantineThemeOverride = {
   colorScheme: "dark",
   primaryColor: "violet",
   globalStyles: () => ({
-    button: {
-      svg: {
-        fontSize: "1.5em",
-      },
+    svg: {
+      fontSize: "1.5em",
     },
   }),
   components: {

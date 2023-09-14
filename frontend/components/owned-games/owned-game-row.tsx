@@ -5,6 +5,9 @@ export function OwnedGameRow(_: number, ownedUnityGame: OwnedUnityGame) {
   return (
     <>
       <td>{ownedUnityGame.name}</td>
+      <td>
+        {ownedUnityGame.osList.includes("Linux") ? <MdCheckCircle /> : ""}
+      </td>
       <td>{ownedUnityGame.installed ? <MdCheckCircle /> : ""}</td>
     </>
   );
