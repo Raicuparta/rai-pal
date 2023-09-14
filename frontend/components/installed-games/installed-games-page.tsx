@@ -2,21 +2,16 @@ import {
   Alert,
   Box,
   Button,
-  Checkbox,
   Flex,
   Input,
   Popover,
-  SegmentedControl,
   Stack,
   Table,
-  TableProps,
 } from "@mantine/core";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
-  MdArrowDownward,
   MdArrowDropDown,
   MdArrowDropUp,
-  MdArrowUpward,
   MdFilterAlt,
   MdRefresh,
 } from "react-icons/md";
