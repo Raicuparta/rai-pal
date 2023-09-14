@@ -1,4 +1,12 @@
-import { Box, Button, Flex, Stack, Table, Text } from "@mantine/core";
+import {
+  ActionIcon,
+  Box,
+  Button,
+  Flex,
+  Stack,
+  Table,
+  Text,
+} from "@mantine/core";
 import { MdFolder, MdRefresh } from "react-icons/md";
 import { Fragment } from "react";
 import { useModLoaders } from "@hooks/use-backend-data";
@@ -25,7 +33,7 @@ export function ModsPage() {
               Loader
             </Box>
             <Box component="th">Mod</Box>
-            <Box component="th" w={100} />
+            <Box component="th" w={50} />
           </tr>
         </thead>
         <tbody>
@@ -44,12 +52,13 @@ export function ModsPage() {
                   </td>
                   <td>
                     <Flex gap="md">
-                      <Button
+                      <ActionIcon
                         onClick={() => openModFolder(modLoader.id, mod.id)}
-                        leftIcon={<MdFolder />}
+                        variant="default"
+                        size="xl"
                       >
-                        Open Folder
-                      </Button>
+                        <MdFolder />
+                      </ActionIcon>
                     </Flex>
                   </td>
                 </tr>
