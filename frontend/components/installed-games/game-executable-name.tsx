@@ -1,5 +1,5 @@
 import { GameExecutable } from "@api/bindings";
-import { GameExecutableData } from "./game-executable-row";
+import { GameExecutableData } from "./installed-game-row";
 import { Box, Code } from "@mantine/core";
 
 type Props = {

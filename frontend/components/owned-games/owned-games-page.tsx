@@ -16,6 +16,7 @@ import { OwnedUnityGame } from "@api/bindings";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { includesOneOf } from "../../util/filter";
 import { open } from "@tauri-apps/api/shell";
+import { OwnedGameModal } from "./owned-game-modal";
 
 const renderHeaders = () => (
   <Box component="tr" bg="dark">
@@ -74,29 +75,10 @@ export function OwnedGamesPage() {
   return (
     <Stack h="100%">
       {selectedGame && (
-        <Modal
-          title={selectedGame.name}
-          centered
-          opened={true}
+        <OwnedGameModal
+          selectedGame={selectedGame}
           onClose={() => setSelectedGame(undefined)}
-        >
-          <Button.Group orientation="vertical">
-            <Button
-              variant="default"
-              onClick={() =>
-                open(`https://steampowered.com/app/${selectedGame.id}`)
-              }
-            >
-              Open Steam Page
-            </Button>
-            <Button
-              variant="default"
-              onClick={() => open(`steam://install/${selectedGame.id}`)}
-            >
-              Install on Steam
-            </Button>
-          </Button.Group>
-        </Modal>
+        />
       )}
       <Flex gap="md">
         <Input

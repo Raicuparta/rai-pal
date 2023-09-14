@@ -1,5 +1,5 @@
-import { ActionIcon, Button, Menu, Modal, Stack } from "@mantine/core";
-import { GameExecutableData } from "./game-executable-row";
+import { Button, Modal, Stack } from "@mantine/core";
+import { GameExecutableData } from "./installed-game-row";
 import { useModLoaders } from "@hooks/use-backend-data";
 import {
   installMod,
@@ -8,15 +8,13 @@ import {
   startGame,
 } from "@api/bindings";
 import { Fragment } from "react";
-import { getGameExecutableNameSuffix } from "./game-name-suffix";
 import { GameExecutableName } from "./game-executable-name";
-import { MdMoreVert } from "react-icons/md";
 
 type Props = {
   data: GameExecutableData;
 };
 
-export const ModInstallModal = (props: Props) => {
+export const InstalledGameModal = (props: Props) => {
   const [modLoaders] = useModLoaders();
 
   return (

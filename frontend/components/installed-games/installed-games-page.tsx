@@ -13,8 +13,8 @@ import { MdRefresh } from "react-icons/md";
 import { useGameMap } from "@hooks/use-backend-data";
 import { includesOneOf } from "../../util/filter";
 import { TableComponents, TableVirtuoso } from "react-virtuoso";
-import { GameExecutableData, GameExecutableRow } from "./game-executable-row";
-import { ModInstallModal } from "./mod-install-modal";
+import { GameExecutableData, InstalledGameRow } from "./installed-game-row";
+import { InstalledGameModal } from "./installed-game-modal";
 
 const renderHeaders = () => (
   <Box component="tr" bg="dark">
@@ -109,7 +109,7 @@ export function InstalledGamesPage() {
           <pre>{error}</pre>
         </Alert>
       )}
-      {selectedGame && <ModInstallModal data={selectedGame} />}
+      {selectedGame && <InstalledGameModal data={selectedGame} />}
       <Box sx={{ flex: 1 }}>
         <TableVirtuoso
           // eslint-disable-next-line react/forbid-component-props
@@ -118,7 +118,7 @@ export function InstalledGamesPage() {
           components={tableComponents}
           fixedHeaderContent={renderHeaders}
           totalCount={filteredGames.length}
-          itemContent={GameExecutableRow}
+          itemContent={InstalledGameRow}
         />
       </Box>
     </Stack>

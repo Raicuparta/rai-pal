@@ -1,13 +1,5 @@
-import { ActionIcon, Badge, Box, Flex, Menu } from "@mantine/core";
-import { MdMoreVert } from "react-icons/md";
-import {
-  Game,
-  GameExecutable,
-  openGameFolder,
-  openGameModsFolder,
-  startGame,
-} from "@api/bindings";
-import { getGameExecutableNameSuffix } from "./game-name-suffix";
+import { Badge } from "@mantine/core";
+import { Game, GameExecutable } from "@api/bindings";
 import { GameExecutableName } from "./game-executable-name";
 
 export type GameExecutableData = {
@@ -16,7 +8,7 @@ export type GameExecutableData = {
   installMod: (data?: GameExecutableData) => void;
 };
 
-export function GameExecutableRow(index: number, data: GameExecutableData) {
+export function InstalledGameRow(index: number, data: GameExecutableData) {
   return (
     <>
       <td>
