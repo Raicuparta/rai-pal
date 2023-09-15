@@ -1,10 +1,10 @@
-use std::collections::HashSet;
-
+use anyhow::anyhow;
 use serde::Serialize;
 use specta::Type;
+use std::collections::HashSet;
 use steamlocate::SteamDir;
 
-use crate::{appinfo::read_appinfo, game::OperatingSystem, steam_game::get_steam_games, Result};
+use crate::{appinfo::read_appinfo, game::OperatingSystem, Result};
 
 const UNITY_STEAM_APP_IDS_URL: &str =
     "https://raw.githubusercontent.com/Raicuparta/steam-unity-app-ids/main/unity-app-ids.txt";
@@ -20,11 +20,10 @@ pub struct OwnedUnityGame {
 
 pub async fn get_steam_owned_unity_games() -> Result<Vec<OwnedUnityGame>> {
     let response = reqwest::get(UNITY_STEAM_APP_IDS_URL).await?.text().await?;
-    let steam_games = get_steam_games().await?;
 
     // TODO this is repeated in steam_game.
     // Should try to cache it.
-    let steam_dir = SteamDir::locate().unwrap();
+    let steam_dir = SteamDir::locate().ok_or(anyhow!("Failed to locate Steam on this system."))?;
     let app_info = read_appinfo(
         &steam_dir
             .path
@@ -37,7 +36,7 @@ pub async fn get_steam_owned_unity_games() -> Result<Vec<OwnedUnityGame>> {
         .filter_map(|app_id| {
             let id = app_id.parse::<u32>().ok()?;
 
-            let app_info = app_info.apps.get(&id)?;
+            let app_info = app_info.as_ref().ok()?.apps.get(&id)?;
 
             let os_list: HashSet<_> = app_info
                 .launch_options

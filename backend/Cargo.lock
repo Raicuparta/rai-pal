@@ -2399,7 +2399,6 @@ dependencies = [
  "lazy-regex",
  "open 5.0.0",
  "path-slash",
- "regex",
  "reqwest",
  "serde",
  "serde_json",

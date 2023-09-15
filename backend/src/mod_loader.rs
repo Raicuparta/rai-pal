@@ -42,9 +42,14 @@ impl BepInEx {
             })
             .join("mods");
 
-        let entries: Vec<_> = glob(mods_folder_path.join("*").to_str().unwrap())
-            .expect("Failed to glob")
-            .collect();
+        let entries: Vec<_> = glob(
+            mods_folder_path
+                .join("*")
+                .to_str()
+                .ok_or(anyhow!("Failed to parse mods folder path"))?,
+        )
+        .expect("Failed to glob")
+        .collect();
 
         Ok(entries
             .iter()

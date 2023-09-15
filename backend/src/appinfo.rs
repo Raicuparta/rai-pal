@@ -1,7 +1,9 @@
+use crate::Result;
+use anyhow::anyhow;
 use byteorder::{LittleEndian, ReadBytesExt};
 use serde::Serialize;
 use specta::Type;
-use std::{collections::HashMap, fs, io::BufReader, io::Error, path::PathBuf};
+use std::{collections::HashMap, fs, io::BufReader, path::PathBuf};
 
 const BIN_NONE: u8 = b'\x00';
 const BIN_STRING: u8 = b'\x01';
@@ -14,29 +16,6 @@ const BIN_UINT64: u8 = b'\x07';
 const BIN_END: u8 = b'\x08';
 const BIN_INT64: u8 = b'\x0A';
 const BIN_END_ALT: u8 = b'\x0B';
-
-#[derive(Debug)]
-pub enum VdfrError {
-    InvalidType(u8),
-    ReadError(std::io::Error),
-}
-
-impl std::error::Error for VdfrError {}
-
-impl std::fmt::Display for VdfrError {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        match self {
-            Self::InvalidType(t) => write!(f, "Invalid type {t:#x}"),
-            Self::ReadError(e) => e.fmt(f),
-        }
-    }
-}
-
-impl From<std::io::Error> for VdfrError {
-    fn from(e: std::io::Error) -> Self {
-        Self::ReadError(e)
-    }
-}
 
 #[derive(Debug)]
 pub enum ValueType {
@@ -61,7 +40,7 @@ pub fn find_keys<'a>(kv: &'a KeyValue, keys: &[&str]) -> Option<&'a ValueType> {
         return None;
     }
 
-    let key = keys.first().unwrap();
+    let key = keys.first()?;
     let value = kv.get(&key.to_string());
     if keys.len() == 1 {
         value
@@ -112,7 +91,7 @@ pub struct SteamAppInfoFile {
 }
 
 impl SteamAppInfoFile {
-    pub fn load<R: std::io::Read>(reader: &mut R) -> Result<Self, VdfrError> {
+    pub fn load<R: std::io::Read>(reader: &mut R) -> Result<Self> {
         let version = reader.read_u32::<LittleEndian>()?;
         let universe = reader.read_u32::<LittleEndian>()?;
 
@@ -238,7 +217,7 @@ impl App {
     }
 }
 
-fn read_kv<R: std::io::Read>(reader: &mut R, alt_format: bool) -> Result<KeyValue, VdfrError> {
+fn read_kv<R: std::io::Read>(reader: &mut R, alt_format: bool) -> Result<KeyValue> {
     let current_bin_end = if alt_format { BIN_END_ALT } else { BIN_END };
 
     let mut node = KeyValue::new();
@@ -279,12 +258,12 @@ fn read_kv<R: std::io::Read>(reader: &mut R, alt_format: bool) -> Result<KeyValu
             let val = reader.read_f32::<LittleEndian>()?;
             node.insert(key, ValueType::Float32(val));
         } else {
-            return Err(VdfrError::InvalidType(t));
+            return Err(anyhow!("Binary VDF parse error: Invalid type"));
         }
     }
 }
 
-fn read_string<R: std::io::Read>(reader: &mut R, wide: bool) -> Result<String, Error> {
+fn read_string<R: std::io::Read>(reader: &mut R, wide: bool) -> Result<String> {
     if wide {
         let mut buf: Vec<u16> = vec![];
         loop {
@@ -309,9 +288,7 @@ fn read_string<R: std::io::Read>(reader: &mut R, wide: bool) -> Result<String, E
     }
 }
 
-pub fn read_appinfo(path: &str) -> SteamAppInfoFile {
-    let mut appinfo_file =
-        BufReader::new(fs::File::open(path).unwrap_or_else(|_| panic!("Failed to read {path}")));
-    let appinfo = SteamAppInfoFile::load(&mut appinfo_file);
-    appinfo.unwrap()
+pub fn read_appinfo(path: &str) -> Result<SteamAppInfoFile> {
+    let mut appinfo_file = BufReader::new(fs::File::open(path)?);
+    SteamAppInfoFile::load(&mut appinfo_file)
 }

@@ -1,10 +1,9 @@
-use anyhow::anyhow;
-use std::collections::HashMap;
-use steamlocate::SteamDir;
-
 use crate::appinfo::read_appinfo;
 use crate::game::{Game, GameMap};
 use crate::Result;
+use anyhow::anyhow;
+use std::collections::HashMap;
+use steamlocate::SteamDir;
 
 pub async fn get_steam_games() -> Result<GameMap> {
     let mut steam_dir =
@@ -19,11 +18,13 @@ pub async fn get_steam_games() -> Result<GameMap> {
 
     let mut game_map: GameMap = HashMap::new();
 
-    for (_, app, app_info) in steam_dir
-        .apps()
-        .iter()
-        .filter_map(|(app_id, app)| Some((app_id, app.as_ref()?, app_info.apps.get(app_id)?)))
-    {
+    for (_, app, app_info) in steam_dir.apps().iter().filter_map(|(app_id, app)| {
+        Some((
+            app_id,
+            app.as_ref()?,
+            app_info.as_ref().ok()?.apps.get(app_id)?,
+        ))
+    }) {
         for launch_option in &app_info.launch_options {
             let executable_id = format!("{}_{}", launch_option.app_id, launch_option.launch_id);
 
