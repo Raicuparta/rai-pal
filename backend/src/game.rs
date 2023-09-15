@@ -63,7 +63,7 @@ impl Display for OperatingSystem {
 pub struct Game {
     pub id: String,
     pub name: String,
-    pub name_suffix: Option<String>,
+    pub discriminator: Option<String>,
     pub is_legacy: bool,
     pub mod_files_path: String,
     pub full_path: PathBuf,
@@ -77,6 +77,8 @@ pub struct Game {
 impl Game {
     pub fn new(
         id: String,
+        name: String,
+        discriminator: Option<String>,
         full_path: &Path,
         steam_launch: Option<&SteamLaunchOption>,
     ) -> Option<Self> {
@@ -93,8 +95,8 @@ impl Game {
             is_legacy: false,
             operating_system,
             mod_files_path: String::new(),
-            name: String::from(full_path.file_name()?.to_str()?),
-            name_suffix: Some("todo suffix".to_string()),
+            name,
+            discriminator,
             scripting_backend: get_unity_scripting_backend(full_path).ok()?,
             steam_launch: steam_launch.cloned(),
             unity_version: get_unity_version(full_path),

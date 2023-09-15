@@ -14,7 +14,7 @@ pub async fn get_steam_games() -> Result<GameMap> {
             .to_string_lossy(),
     );
 
-    let mut app_details_map: GameMap = HashMap::new();
+    let mut game_map: GameMap = HashMap::new();
 
     for (_, app, app_info) in steam_dir
         .apps()
@@ -25,16 +25,30 @@ pub async fn get_steam_games() -> Result<GameMap> {
             let executable_id = format!("{}_{}", launch_option.app_id, launch_option.launch_id);
 
             if let Some(executable_path) = launch_option.executable.as_ref() {
-                if let Some(game) = Game::new(
-                    executable_id.clone(),
-                    &app.path.join(executable_path),
-                    Some(launch_option),
-                ) {
-                    app_details_map.insert(executable_id.clone(), game);
+                let full_path = &app.path.join(executable_path);
+
+                if let Some(name) = &app.name {
+                    let discriminator = if game_map.values().any(|game| &game.name == name) {
+                        executable_path
+                            .to_str()
+                            .map(|executable_path_string| executable_path_string.to_string())
+                    } else {
+                        None
+                    };
+
+                    if let Some(game) = Game::new(
+                        executable_id.clone(),
+                        name.clone(),
+                        discriminator,
+                        full_path,
+                        Some(launch_option),
+                    ) {
+                        game_map.insert(executable_id.clone(), game);
+                    }
                 }
             }
         }
     }
 
-    Ok(app_details_map)
+    Ok(game_map)
 }
