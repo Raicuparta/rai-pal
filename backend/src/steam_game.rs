@@ -1,3 +1,4 @@
+use anyhow::anyhow;
 use std::collections::HashMap;
 use steamlocate::SteamDir;
 
@@ -6,7 +7,9 @@ use crate::game::{Game, GameMap};
 use crate::Result;
 
 pub async fn get_steam_games() -> Result<GameMap> {
-    let mut steam_dir = SteamDir::locate().unwrap();
+    let mut steam_dir =
+        SteamDir::locate().ok_or(anyhow!("Failed to locate Steam on this system."))?;
+
     let app_info = read_appinfo(
         &steam_dir
             .path
