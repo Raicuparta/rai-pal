@@ -1,7 +1,6 @@
 import { Badge, DefaultMantineColor } from "@mantine/core";
 import {
   Architecture,
-  Game,
   GameExecutable,
   OperatingSystem,
   UnityScriptingBackend,
@@ -9,7 +8,6 @@ import {
 import { GameExecutableName } from "./game-executable-name";
 
 export type GameExecutableData = {
-  game: Game;
   executable: GameExecutable;
   installMod: (data?: GameExecutableData) => void;
 };

@@ -8,6 +8,7 @@ use regex::Regex;
 use serde::Serialize;
 use specta::Type;
 use std::{
+    collections::HashMap,
     fmt::Display,
     fs::{metadata, File},
     io::Read,
@@ -62,6 +63,7 @@ impl Display for OperatingSystem {
 pub struct GameExecutable {
     pub id: String,
     pub name: String,
+    pub name_suffix: Option<String>,
     pub is_legacy: bool,
     pub mod_files_path: String,
     pub full_path: PathBuf,
@@ -92,6 +94,7 @@ impl GameExecutable {
             operating_system,
             mod_files_path: String::new(),
             name: String::from(full_path.file_name()?.to_str()?),
+            name_suffix: Some("todo suffix".to_string()),
             scripting_backend: get_unity_scripting_backend(full_path).ok()?,
             steam_launch: steam_launch.cloned(),
             unity_version: get_unity_version(full_path),
@@ -251,3 +254,5 @@ fn get_version_from_asset(asset_path: &Path) -> Result<String> {
         |matched| Ok(matched.as_str().to_string()),
     )
 }
+
+pub type GameMap = HashMap<String, GameExecutable>;

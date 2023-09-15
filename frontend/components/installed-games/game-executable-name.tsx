@@ -1,6 +1,6 @@
 import { GameExecutable } from "@api/bindings";
 import { GameExecutableData } from "./installed-game-row";
-import { Box, Code } from "@mantine/core";
+import { Code } from "@mantine/core";
 
 type Props = {
   data: GameExecutableData;
@@ -28,15 +28,18 @@ const getInnerSuffix = (
 
 // Suffix used to discriminate between multiple game executables of the same game.
 export const getGameExecutableNameSuffix = (data: GameExecutableData) => {
-  const executables = Object.values(data.game.executables);
+  return data.executable.nameSuffix;
 
-  // If there's only one executable, nothing to discriminate against.
-  if (executables.length <= 1) return "";
+  // TODO move this to backend.
+  // const executables = Object.values(data.game.executables);
 
-  const innerSuffix = getInnerSuffix(data.executable, executables);
-  if (!innerSuffix) return "";
+  // // If there's only one executable, nothing to discriminate against.
+  // if (executables.length <= 1) return "";
 
-  return `(${innerSuffix})`;
+  // const innerSuffix = getInnerSuffix(data.executable, executables);
+  // if (!innerSuffix) return "";
+
+  // return `(${innerSuffix})`;
 };
 
 export const GameExecutableName = (props: Props) => {
@@ -44,7 +47,8 @@ export const GameExecutableName = (props: Props) => {
 
   return (
     <>
-      {props.data.game.name} {suffix && <Code opacity={0.5}>{suffix}</Code>}
+      {props.data.executable.name}{" "}
+      {suffix && <Code opacity={0.5}>{suffix}</Code>}
     </>
   );
 };

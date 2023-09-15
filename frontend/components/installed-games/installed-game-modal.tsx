@@ -29,25 +29,19 @@ export const InstalledGameModal = (props: Props) => {
         <Button.Group orientation="vertical">
           <Button
             variant="default"
-            onClick={() =>
-              startGame(props.data.game.id, props.data.executable.id)
-            }
+            onClick={() => startGame(props.data.executable.id)}
           >
             Start Game
           </Button>
           <Button
             variant="default"
-            onClick={() =>
-              openGameFolder(props.data.game.id, props.data.executable.id)
-            }
+            onClick={() => openGameFolder(props.data.executable.id)}
           >
             Open Game Folder
           </Button>
           <Button
             variant="default"
-            onClick={() =>
-              openGameModsFolder(props.data.game.id, props.data.executable.id)
-            }
+            onClick={() => openGameModsFolder(props.data.executable.id)}
           >
             Open Mods Folder
           </Button>
@@ -67,12 +61,7 @@ export const InstalledGameModal = (props: Props) => {
                     variant="default"
                     key={mod.name}
                     onClick={() =>
-                      installMod(
-                        modLoader.id,
-                        mod.id,
-                        props.data.game.id,
-                        props.data.executable.id
-                      )
+                      installMod(modLoader.id, mod.id, props.data.executable.id)
                     }
                   >
                     Install {mod.name}

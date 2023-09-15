@@ -3,6 +3,7 @@
 #![deny(clippy::all)]
 
 use anyhow::anyhow;
+use game_executable::GameMap;
 use mod_loader::BepInEx;
 use specta::ts::{BigIntExportBehavior, ExportConfiguration};
 use std::future::Future;
@@ -11,7 +12,6 @@ use std::sync::Mutex;
 use std::{backtrace::Backtrace, panic};
 use tauri::api::dialog::message;
 
-use game::GameMap;
 use serde::Serialize;
 use specta::collect_types;
 use steam_game::get_steam_games;
@@ -19,7 +19,6 @@ use steam_owned_unity_games::{get_steam_owned_unity_games, OwnedUnityGame};
 use tauri_specta::ts;
 
 mod appinfo;
-mod game;
 mod game_executable;
 mod r#mod;
 mod mod_loader;
@@ -110,41 +109,28 @@ async fn get_mod_loaders(handle: tauri::AppHandle) -> CommandResult<Vec<BepInEx>
 
 #[tauri::command]
 #[specta::specta]
-async fn open_game_folder(
-    game_id: u32,
-    executable_id: String,
-    state: tauri::State<'_, AppState>,
-) -> CommandResult {
+async fn open_game_folder(game_id: String, state: tauri::State<'_, AppState>) -> CommandResult {
     let game_map = get_game_map(state).await?;
     let game = game_map
         .get(&game_id)
         .ok_or(anyhow!("Failed to find game with id {game_id}"))?;
-    let game_executable = game.executables.get(&executable_id).ok_or(anyhow!(
-        "Failed to find executable with id {executable_id} for game with id {game_id}"
-    ))?;
 
-    game_executable
-        .open_game_folder()
+    game.open_game_folder()
         .map_err(|error| anyhow!("Failed to open game folder: {error}").into())
 }
 
 #[tauri::command]
 #[specta::specta]
 async fn open_game_mods_folder(
-    game_id: u32,
-    executable_id: String,
+    game_id: String,
     state: tauri::State<'_, AppState>,
 ) -> CommandResult {
     let game_map = get_game_map(state).await?;
     let game = game_map
         .get(&game_id)
         .ok_or(anyhow!("Failed to find game with id {game_id}"))?;
-    let game_executable = game.executables.get(&executable_id).ok_or(anyhow!(
-        "Failed to find executable with id {executable_id} for game with id {game_id}"
-    ))?;
 
-    game_executable
-        .open_mods_folder()
+    game.open_mods_folder()
         .map_err(|error| anyhow!("Failed to open game folder: {error}").into())
 }
 
@@ -168,21 +154,13 @@ async fn open_mod_folder(
 
 #[tauri::command]
 #[specta::specta]
-async fn start_game(
-    game_id: u32,
-    executable_id: String,
-    state: tauri::State<'_, AppState>,
-) -> CommandResult {
+async fn start_game(game_id: String, state: tauri::State<'_, AppState>) -> CommandResult {
     let game_map = get_game_map(state).await?;
     let game = game_map
         .get(&game_id)
         .ok_or(anyhow!("Failed to find game with id {game_id}"))?;
-    let game_executable = game.executables.get(&executable_id).ok_or(anyhow!(
-        "Failed to find executable with id {executable_id} for game with id {game_id}"
-    ))?;
 
-    game_executable
-        .start()
+    game.start()
         .map_err(|error| anyhow!("Failed to open game folder: {error}").into())
 }
 
@@ -191,8 +169,7 @@ async fn start_game(
 async fn install_mod(
     mod_loader_id: String,
     mod_id: String,
-    game_id: u32,
-    game_executable_id: String,
+    game_id: String,
     state: tauri::State<'_, AppState>,
     handle: tauri::AppHandle,
 ) -> CommandResult {
@@ -205,12 +182,7 @@ async fn install_mod(
     let game_map = get_game_map(state).await?;
     let game_executable = game_map
         .get(&game_id)
-        .ok_or(anyhow!("Failed to find game with ID {game_id}"))?
-        .executables
-        .get(&game_executable_id)
-        .ok_or(anyhow!(
-            "Failed to find game executable with ID {game_executable_id}"
-        ))?;
+        .ok_or(anyhow!("Failed to find game with ID {game_id}"))?;
 
     mod_loader
         .install_mod(game_executable, mod_id)

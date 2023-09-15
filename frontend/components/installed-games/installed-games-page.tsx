@@ -123,22 +123,17 @@ export function InstalledGamesPage() {
     setFilter((previousFilter) => ({ ...previousFilter, ...newFilter }));
 
   const filteredGames = useMemo(() => {
-    const gameExecutables = Object.values(gameMap)
-      .map((game) =>
-        Object.values(game.executables).map((executable) => ({
-          game,
-          executable,
-          installMod: setSelectedGame,
-        }))
-      )
-      .flat();
+    const gameExecutables = Object.values(gameMap).map((executable) => ({
+      executable,
+      installMod: setSelectedGame,
+    }));
 
     const sortHeader = tableHeaders.find((header) => header.id === sort.id);
 
     return gameExecutables
       .filter(
         (data) =>
-          includesOneOf(filter.text, [data.executable.name, data.game.name]) &&
+          includesOneOf(filter.text, [data.executable.name]) &&
           (!filter.architecture ||
             data.executable.architecture === filter.architecture) &&
           (!filter.operatingSystem ||

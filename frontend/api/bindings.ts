@@ -11,31 +11,31 @@ declare global {
 const invoke = () => window.__TAURI_INVOKE__;
 
 export function getGameMap() {
-    return invoke()<{ [key: number]: Game }>("get_game_map")
+    return invoke()<{ [key: string]: GameExecutable }>("get_game_map")
 }
 
 export function getOwnedGames() {
     return invoke()<OwnedUnityGame[]>("get_owned_games")
 }
 
-export function openGameFolder(gameId: number, executableId: string) {
-    return invoke()<null>("open_game_folder", { gameId,executableId })
+export function openGameFolder(gameId: string) {
+    return invoke()<null>("open_game_folder", { gameId })
 }
 
 export function getModLoaders() {
     return invoke()<BepInEx[]>("get_mod_loaders")
 }
 
-export function installMod(modLoaderId: string, modId: string, gameId: number, gameExecutableId: string) {
-    return invoke()<null>("install_mod", { modLoaderId,modId,gameId,gameExecutableId })
+export function installMod(modLoaderId: string, modId: string, gameId: string) {
+    return invoke()<null>("install_mod", { modLoaderId,modId,gameId })
 }
 
-export function openGameModsFolder(gameId: number, executableId: string) {
-    return invoke()<null>("open_game_mods_folder", { gameId,executableId })
+export function openGameModsFolder(gameId: string) {
+    return invoke()<null>("open_game_mods_folder", { gameId })
 }
 
-export function startGame(gameId: number, executableId: string) {
-    return invoke()<null>("start_game", { gameId,executableId })
+export function startGame(gameId: string) {
+    return invoke()<null>("start_game", { gameId })
 }
 
 export function openModFolder(modLoaderId: string, modId: string) {
@@ -43,11 +43,10 @@ export function openModFolder(modLoaderId: string, modId: string) {
 }
 
 export type BepInEx = { id: string; modCount: number; path: string; mods: Mod[] }
-export type Game = { id: number; name: string; executables: { [key: string]: GameExecutable } }
 export type OwnedUnityGame = { id: string; name: string; installed: boolean; osList: OperatingSystem[] }
-export type GameExecutable = { id: string; name: string; isLegacy: boolean; modFilesPath: string; fullPath: string; architecture: Architecture; scriptingBackend: UnityScriptingBackend; unityVersion: string; operatingSystem: OperatingSystem; steamLaunch: SteamLaunchOption | null }
-export type SteamLaunchOption = { launchId: string; appId: number; description: string | null; executable: string | null; arguments: string | null; appType: string | null; osList: string | null; betaKey: string | null; osArch: string | null }
 export type Architecture = "Unknown" | "X64" | "X86"
+export type SteamLaunchOption = { launchId: string; appId: number; description: string | null; executable: string | null; arguments: string | null; appType: string | null; osList: string | null; betaKey: string | null; osArch: string | null }
 export type OperatingSystem = "Unknown" | "Linux" | "Windows"
-export type Mod = { id: string; name: string; scriptingBackend: UnityScriptingBackend; path: string }
 export type UnityScriptingBackend = "Il2Cpp" | "Mono"
+export type Mod = { id: string; name: string; scriptingBackend: UnityScriptingBackend; path: string }
+export type GameExecutable = { id: string; name: string; nameSuffix: string | null; isLegacy: boolean; modFilesPath: string; fullPath: string; architecture: Architecture; scriptingBackend: UnityScriptingBackend; unityVersion: string; operatingSystem: OperatingSystem; steamLaunch: SteamLaunchOption | null }
