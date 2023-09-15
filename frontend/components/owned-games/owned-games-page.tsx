@@ -1,24 +1,22 @@
 import {
   Box,
   Button,
-  Card,
   Checkbox,
   Flex,
   Input,
-  Popover,
   Stack,
   Table,
   Text,
 } from "@mantine/core";
-import { TableVirtuoso, TableComponents } from "react-virtuoso";
-import { MdFilterAlt, MdRefresh } from "react-icons/md";
+import { TableComponents } from "react-virtuoso";
+import { MdRefresh } from "react-icons/md";
 import { OwnedGameRow } from "./owned-game-row";
 import { useOwnedUnityGames } from "@hooks/use-backend-data";
 import { OwnedUnityGame } from "@api/bindings";
-import { useCallback, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { includesOneOf } from "../../util/filter";
 import { OwnedGameModal } from "./owned-game-modal";
-import { TableHead, TableHeader } from "@components/table/table-head";
+import { TableHeader } from "@components/table/table-head";
 import { useFilteredList } from "@hooks/use-filtered-list";
 import { FilterMenu } from "@components/filter-menu";
 import { VirtualizedTable } from "@components/table/virtualized-table";
@@ -55,13 +53,6 @@ export function OwnedGamesPage() {
     ownedGames,
     filterGame,
     defaultFilter
-  );
-
-  const renderHeaders = useCallback(
-    () => (
-      <TableHead headers={tableHeaders} sort={sort} onChangeSort={setSort} />
-    ),
-    [sort, setSort]
   );
 
   const tableComponents: TableComponents<OwnedUnityGame, any> = useMemo(
@@ -129,9 +120,10 @@ export function OwnedGamesPage() {
       <VirtualizedTable
         data={filteredGames}
         components={tableComponents}
-        fixedHeaderContent={renderHeaders}
-        totalCount={ownedGames.length}
         itemContent={OwnedGameRow}
+        headerItems={tableHeaders}
+        sort={sort}
+        onChangeSort={setSort}
       />
     </Stack>
   );

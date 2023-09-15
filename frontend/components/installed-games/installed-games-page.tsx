@@ -1,19 +1,9 @@
-import {
-  Alert,
-  Box,
-  Button,
-  Card,
-  Flex,
-  Input,
-  Popover,
-  Stack,
-  Table,
-} from "@mantine/core";
-import { useCallback, useMemo, useState } from "react";
-import { MdFilterAlt, MdRefresh } from "react-icons/md";
+import { Alert, Box, Button, Flex, Input, Stack, Table } from "@mantine/core";
+import { useMemo, useState } from "react";
+import { MdRefresh } from "react-icons/md";
 import { useGameMap } from "@hooks/use-backend-data";
 import { includesOneOf } from "../../util/filter";
-import { TableComponents, TableVirtuoso } from "react-virtuoso";
+import { TableComponents } from "react-virtuoso";
 import { InstalledGameRow } from "./installed-game-row";
 import { InstalledGameModal } from "./installed-game-modal";
 import {
@@ -26,7 +16,7 @@ import {
   SegmentedControlData,
   TypedSegmentedControl,
 } from "./typed-segmented-control";
-import { TableHead, TableHeader } from "@components/table/table-head";
+import { TableHeader } from "@components/table/table-head";
 import { useFilteredList } from "@hooks/use-filtered-list";
 import { FilterMenu } from "@components/filter-menu";
 import { VirtualizedTable } from "@components/table/virtualized-table";
@@ -133,13 +123,6 @@ export function InstalledGamesPage() {
     [setSelectedGame]
   );
 
-  const renderHeaders = useCallback(
-    () => (
-      <TableHead headers={tableHeaders} onChangeSort={setSort} sort={sort} />
-    ),
-    [sort, setSort]
-  );
-
   return (
     <Stack h="100%">
       <Flex gap="md">
@@ -190,10 +173,11 @@ export function InstalledGamesPage() {
       )}
       <VirtualizedTable
         data={filteredGames}
-        fixedHeaderContent={renderHeaders}
         components={tableComponents}
-        totalCount={filteredGames.length}
         itemContent={InstalledGameRow}
+        headerItems={tableHeaders}
+        onChangeSort={setSort}
+        sort={sort}
       />
     </Stack>
   );
