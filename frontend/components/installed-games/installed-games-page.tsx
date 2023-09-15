@@ -10,12 +10,7 @@ import {
   Table,
 } from "@mantine/core";
 import { useCallback, useMemo, useState } from "react";
-import {
-  MdArrowDropDown,
-  MdArrowDropUp,
-  MdFilterAlt,
-  MdRefresh,
-} from "react-icons/md";
+import { MdFilterAlt, MdRefresh } from "react-icons/md";
 import { useGameMap } from "@hooks/use-backend-data";
 import { includesOneOf } from "../../util/filter";
 import { TableComponents, TableVirtuoso } from "react-virtuoso";
@@ -64,6 +59,28 @@ type TableHeader = {
   id: TableHeaderId;
   label: string;
   width?: number;
+  customSort?: TableSortMethod;
+};
+
+const getUnityVersionScore = (data: GameExecutableData) => {
+  const versionParts = data.executable.unityVersion.split(".");
+  let score = 0;
+  for (let i = 0; i < versionParts.length; i++) {
+    const versionPart = versionParts[i];
+    if (versionPart === undefined) continue;
+    let versionPartNumber = parseInt(versionPart);
+
+    if (i === 0 && versionPartNumber >= 2017) {
+      // Unity 2017 is Unity 6, 2018 is 7, etc.
+      versionPartNumber -= 2011;
+    }
+
+    if (isNaN(versionPartNumber)) continue;
+
+    score += Math.pow(versionPartNumber, versionParts.length - i);
+  }
+
+  return score;
 };
 
 const tableHeaders: TableHeader[] = [
@@ -71,13 +88,25 @@ const tableHeaders: TableHeader[] = [
   { id: "operatingSystem", label: "OS", width: 100 },
   { id: "architecture", label: "Arch", width: 100 },
   { id: "scriptingBackend", label: "Backend", width: 100 },
-  { id: "unityVersion", label: "Unity", width: 100 },
+  {
+    id: "unityVersion",
+    label: "Unity",
+    width: 100,
+    customSort: (dataA, dataB) =>
+      getUnityVersionScore(dataA) - getUnityVersionScore(dataB),
+  },
 ];
 
 type TableSort = {
   id: TableHeaderId;
   reverse: boolean;
+  sortMethod?: TableSortMethod;
 };
+
+export type TableSortMethod = (
+  dataA: GameExecutableData,
+  dataB: GameExecutableData
+) => number;
 
 export function InstalledGamesPage() {
   const [gameMap, isLoading, refreshGameMap, error] = useGameMap();
@@ -89,13 +118,6 @@ export function InstalledGamesPage() {
   const [filter, setFilter] = useState<Filter>({
     text: "",
   });
-
-  const updateSort = (sortId: TableHeaderId) => {
-    setSort((previousSort) => ({
-      id: sortId,
-      reverse: previousSort.id == sortId && !previousSort.reverse,
-    }));
-  };
 
   const updateFilter = (newFilter: Partial<Filter>) =>
     setFilter((previousFilter) => ({ ...previousFilter, ...newFilter }));
@@ -111,6 +133,8 @@ export function InstalledGamesPage() {
       )
       .flat();
 
+    const sortHeader = tableHeaders.find((header) => header.id === sort.id);
+
     return gameExecutables
       .filter(
         (data) =>
@@ -124,6 +148,10 @@ export function InstalledGamesPage() {
       )
       .sort((dataA, dataB) => {
         const multiplier = sort.reverse ? -1 : 1;
+
+        if (sortHeader?.customSort) {
+          return multiplier * sortHeader.customSort(dataA, dataB);
+        }
 
         const valueA = dataA.executable[sort.id];
         const valueB = dataB.executable[sort.id];

@@ -43,11 +43,11 @@ export function openModFolder(modLoaderId: string, modId: string) {
 }
 
 export type BepInEx = { id: string; modCount: number; path: string; mods: Mod[] }
-export type SteamLaunchOption = { launchId: string; appId: number; description: string | null; executable: string | null; arguments: string | null; appType: string | null; osList: string | null; betaKey: string | null; osArch: string | null }
-export type GameExecutable = { id: string; name: string; isLegacy: boolean; modFilesPath: string; fullPath: string; architecture: Architecture; scriptingBackend: UnityScriptingBackend; unityVersion: string; operatingSystem: OperatingSystem; steamLaunch: SteamLaunchOption | null }
-export type Mod = { id: string; name: string; scriptingBackend: UnityScriptingBackend; path: string }
-export type OperatingSystem = "Unknown" | "Linux" | "Windows"
-export type Architecture = "Unknown" | "X64" | "X86"
-export type OwnedUnityGame = { id: string; name: string; installed: boolean; osList: OperatingSystem[] }
 export type Game = { id: number; name: string; executables: { [key: string]: GameExecutable } }
+export type OwnedUnityGame = { id: string; name: string; installed: boolean; osList: OperatingSystem[] }
+export type GameExecutable = { id: string; name: string; isLegacy: boolean; modFilesPath: string; fullPath: string; architecture: Architecture; scriptingBackend: UnityScriptingBackend; unityVersion: string; operatingSystem: OperatingSystem; steamLaunch: SteamLaunchOption | null }
+export type SteamLaunchOption = { launchId: string; appId: number; description: string | null; executable: string | null; arguments: string | null; appType: string | null; osList: string | null; betaKey: string | null; osArch: string | null }
+export type Architecture = "Unknown" | "X64" | "X86"
+export type OperatingSystem = "Unknown" | "Linux" | "Windows"
+export type Mod = { id: string; name: string; scriptingBackend: UnityScriptingBackend; path: string }
 export type UnityScriptingBackend = "Il2Cpp" | "Mono"
