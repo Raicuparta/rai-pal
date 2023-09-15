@@ -15,20 +15,19 @@ import { MdFilterAlt, MdRefresh } from "react-icons/md";
 import { OwnedGameRow } from "./owned-game-row";
 import { useOwnedUnityGames } from "@hooks/use-backend-data";
 import { OwnedUnityGame } from "@api/bindings";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { includesOneOf } from "../../util/filter";
 import { OwnedGameModal } from "./owned-game-modal";
 import { TableHead, TableHeader } from "@components/table/table-head";
+import { useTableSort } from "@hooks/use-table-sort";
 
 type TableHeaderId = keyof OwnedUnityGame;
 
 const tableHeaders: TableHeader<TableHeaderId>[] = [
   { id: "name", label: "Game", width: undefined },
-  { id: "osList", label: "Native Linux?", width: 120 },
+  { id: "osList", label: "Linux?", width: 100 },
   { id: "installed", label: "Installed?", width: 100 },
 ];
-
-const renderHeaders = () => <TableHead headers={tableHeaders} />;
 
 type Filter = {
   text: string;
@@ -39,11 +38,19 @@ type Filter = {
 export function OwnedGamesPage() {
   const [ownedGames, isLoading, refreshOwnedGames] = useOwnedUnityGames();
   const [selectedGame, setSelectedGame] = useState<OwnedUnityGame>();
+  const [sort, setSort] = useTableSort(tableHeaders[0].id);
   const [filter, setFilter] = useState<Filter>({
     text: "",
     hideInstalled: false,
     linuxOnly: false,
   });
+
+  const renderHeaders = useCallback(
+    () => (
+      <TableHead headers={tableHeaders} sort={sort} onChangeSort={setSort} />
+    ),
+    [sort, setSort]
+  );
 
   const updateFilter = (newFilter: Partial<Filter>) =>
     setFilter((previousFilter) => ({ ...previousFilter, ...newFilter }));
@@ -51,13 +58,33 @@ export function OwnedGamesPage() {
   const filteredGames = useMemo(() => {
     const steamApps = Object.values(ownedGames);
 
-    return steamApps.filter(
-      (game) =>
-        includesOneOf(filter.text, [game.name, game.id.toString()]) &&
-        (!filter.linuxOnly || game.osList.includes("Linux")) &&
-        (!filter.hideInstalled || !game.installed)
-    );
-  }, [filter, ownedGames]);
+    const sortHeader = tableHeaders.find((header) => header.id === sort.id);
+
+    return steamApps
+      .filter(
+        (game) =>
+          includesOneOf(filter.text, [game.name, game.id.toString()]) &&
+          (!filter.linuxOnly || game.osList.includes("Linux")) &&
+          (!filter.hideInstalled || !game.installed)
+      )
+      .sort((gameA, gameB) => {
+        const multiplier = sort.reverse ? -1 : 1;
+
+        if (sortHeader?.customSort) {
+          return multiplier * sortHeader.customSort(gameA, gameB);
+        }
+
+        const valueA = gameA[sort.id];
+        const valueB = gameB[sort.id];
+        if (typeof valueA === "string" && typeof valueB === "string") {
+          return multiplier * valueA.localeCompare(valueB);
+        } else {
+          return multiplier * `${valueA}`.localeCompare(`${valueB}`);
+        }
+
+        return 0;
+      });
+  }, [filter, ownedGames, sort]);
 
   const tableComponents: TableComponents<OwnedUnityGame, any> = useMemo(
     () => ({

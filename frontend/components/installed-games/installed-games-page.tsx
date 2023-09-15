@@ -162,7 +162,7 @@ export function InstalledGamesPage() {
     () => (
       <TableHead headers={tableHeaders} onChangeSort={setSort} sort={sort} />
     ),
-    [sort, tableHeaders]
+    [sort, setSort]
   );
 
   return (
