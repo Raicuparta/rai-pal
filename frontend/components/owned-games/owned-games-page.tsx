@@ -56,11 +56,9 @@ export function OwnedGamesPage() {
     setFilter((previousFilter) => ({ ...previousFilter, ...newFilter }));
 
   const filteredGames = useMemo(() => {
-    const steamApps = Object.values(ownedGames);
-
     const sortHeader = tableHeaders.find((header) => header.id === sort.id);
 
-    return steamApps
+    return ownedGames
       .filter(
         (game) =>
           includesOneOf(filter.text, [game.name, game.id.toString()]) &&
@@ -81,8 +79,6 @@ export function OwnedGamesPage() {
         } else {
           return multiplier * `${valueA}`.localeCompare(`${valueB}`);
         }
-
-        return 0;
       });
   }, [filter, ownedGames, sort]);
 
