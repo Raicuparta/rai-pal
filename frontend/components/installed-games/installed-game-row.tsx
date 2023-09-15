@@ -1,15 +1,15 @@
 import { Badge, DefaultMantineColor } from "@mantine/core";
 import {
   Architecture,
-  GameExecutable,
+  Game,
   OperatingSystem,
   UnityScriptingBackend,
 } from "@api/bindings";
-import { GameExecutableName } from "./game-executable-name";
+import { GameName } from "./game-executable-name";
 
-export type GameExecutableData = {
-  executable: GameExecutable;
-  installMod: (data?: GameExecutableData) => void;
+export type GameData = {
+  executable: Game;
+  installMod: (data?: GameData) => void;
 };
 
 type ColorRecord<T extends string> = Record<T, DefaultMantineColor>;
@@ -31,11 +31,11 @@ const scriptingBackendColor: ColorRecord<UnityScriptingBackend> = {
   Mono: "grape",
 } as const;
 
-export function InstalledGameRow(_: number, data: GameExecutableData) {
+export function InstalledGameRow(_: number, data: GameData) {
   return (
     <>
       <td>
-        <GameExecutableName data={data} />
+        <GameName data={data} />
       </td>
       <td>
         <Badge color={operatingSystemColor[data.executable.operatingSystem]}>

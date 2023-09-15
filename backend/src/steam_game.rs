@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use steamlocate::SteamDir;
 
 use crate::appinfo::read_appinfo;
-use crate::game_executable::{GameExecutable, GameMap};
+use crate::game::{Game, GameMap};
 use crate::Result;
 
 pub async fn get_steam_games() -> Result<GameMap> {
@@ -25,12 +25,12 @@ pub async fn get_steam_games() -> Result<GameMap> {
             let executable_id = format!("{}_{}", launch_option.app_id, launch_option.launch_id);
 
             if let Some(executable_path) = launch_option.executable.as_ref() {
-                if let Some(game_executable) = GameExecutable::new(
+                if let Some(game) = Game::new(
                     executable_id.clone(),
                     &app.path.join(executable_path),
                     Some(launch_option),
                 ) {
-                    app_details_map.insert(executable_id.clone(), game_executable);
+                    app_details_map.insert(executable_id.clone(), game);
                 }
             }
         }

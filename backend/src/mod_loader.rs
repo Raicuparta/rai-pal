@@ -6,9 +6,9 @@ use specta::Type;
 use std::path::{Path, PathBuf};
 use std::{fs, io};
 
-use crate::game_executable::GameExecutable;
+use crate::game::Game;
 use crate::Result;
-use crate::{game_executable::UnityScriptingBackend, r#mod::Mod};
+use crate::{game::UnityScriptingBackend, r#mod::Mod};
 
 #[derive(Serialize, Type, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -55,15 +55,15 @@ impl BepInEx {
             .collect())
     }
 
-    pub fn install(&self, game_executable: &GameExecutable) -> Result {
+    pub fn install(&self, game: &Game) -> Result {
         let project_dirs = ProjectDirs::from("com", "raicuparta", "pal")
             .ok_or_else(|| anyhow!("Failed to get user data folders"))?;
 
         let mod_loader_folder = &self
             .path
-            .join(game_executable.scripting_backend.to_string())
-            .join(game_executable.operating_system.to_string())
-            .join(game_executable.architecture.to_string());
+            .join(game.scripting_backend.to_string())
+            .join(game.operating_system.to_string())
+            .join(game.architecture.to_string());
 
         let mod_files_folder = mod_loader_folder.join("mod-files");
         let copy_to_game_folder = mod_loader_folder.join("copy-to-game");
@@ -72,34 +72,30 @@ impl BepInEx {
             println!("folder?? {}", thing);
         }
 
-        let game_mods_data_folder = project_dirs
-            .data_dir()
-            .join("games")
-            .join(&game_executable.id);
+        let game_mods_data_folder = project_dirs.data_dir().join("games").join(&game.id);
 
         copy_dir_all(mod_files_folder, game_mods_data_folder)
             .map_err(|err| anyhow!("Failed to copy mod loader files: {err}"))?;
 
         copy_dir_all(
             copy_to_game_folder,
-            game_executable
-                .full_path
+            game.full_path
                 .parent()
-                .ok_or(anyhow!("Failed to get game exe parent"))?,
+                .ok_or(anyhow!("Failed to get game parent folder"))?,
         )?;
 
         Ok(())
     }
 
-    pub fn install_mod(&self, game_executable: &GameExecutable, mod_id: String) -> Result {
+    pub fn install_mod(&self, game: &Game, mod_id: String) -> Result {
         let game_mod = self
             .mods
             .iter()
             .find(|game_mod| game_mod.id == mod_id)
             .ok_or(anyhow!("Failed to find mod with id {mod_id}"))?;
 
-        self.install(game_executable)?;
-        game_mod.install(game_executable)
+        self.install(game)?;
+        game_mod.install(game)
     }
 
     pub fn open_mod_folder(&self, mod_id: String) -> Result {

@@ -1,5 +1,5 @@
 import { Button, Code, Modal, Stack } from "@mantine/core";
-import { GameExecutableData } from "./installed-game-row";
+import { GameData } from "./installed-game-row";
 import { useModLoaders } from "@hooks/use-backend-data";
 import {
   installMod,
@@ -8,10 +8,10 @@ import {
   startGame,
 } from "@api/bindings";
 import { Fragment } from "react";
-import { GameExecutableName } from "./game-executable-name";
+import { GameName } from "./game-executable-name";
 
 type Props = {
-  data: GameExecutableData;
+  data: GameData;
 };
 
 export const InstalledGameModal = (props: Props) => {
@@ -21,7 +21,7 @@ export const InstalledGameModal = (props: Props) => {
     <Modal
       opened={true}
       onClose={() => props.data.installMod(undefined)}
-      title={<GameExecutableName data={props.data} />}
+      title={<GameName data={props.data} />}
       centered
       size="lg"
     >

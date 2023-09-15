@@ -1,15 +1,12 @@
-import { GameExecutable } from "@api/bindings";
-import { GameExecutableData } from "./installed-game-row";
+import { Game } from "@api/bindings";
+import { GameData } from "./installed-game-row";
 import { Code } from "@mantine/core";
 
 type Props = {
-  data: GameExecutableData;
+  data: GameData;
 };
 
-const getInnerSuffix = (
-  executable: GameExecutable,
-  allExecutables: GameExecutable[]
-) => {
+const getInnerSuffix = (executable: Game, allExecutables: Game[]) => {
   const steamLaunch = executable.steamLaunch;
   if (!steamLaunch) return executable.name;
 
@@ -27,7 +24,7 @@ const getInnerSuffix = (
 };
 
 // Suffix used to discriminate between multiple game executables of the same game.
-export const getGameExecutableNameSuffix = (data: GameExecutableData) => {
+export const getGameNameSuffix = (data: GameData) => {
   return data.executable.nameSuffix;
 
   // TODO move this to backend.
@@ -42,8 +39,8 @@ export const getGameExecutableNameSuffix = (data: GameExecutableData) => {
   // return `(${innerSuffix})`;
 };
 
-export const GameExecutableName = (props: Props) => {
-  const suffix = getGameExecutableNameSuffix(props.data);
+export const GameName = (props: Props) => {
+  const suffix = getGameNameSuffix(props.data);
 
   return (
     <>

@@ -1,11 +1,11 @@
 use std::path::{Path, PathBuf};
 
 use anyhow::anyhow;
-use directories::{BaseDirs, ProjectDirs};
+use directories::ProjectDirs;
 use serde::Serialize;
 use specta::Type;
 
-use crate::game_executable::{GameExecutable, UnityScriptingBackend};
+use crate::game::{Game, UnityScriptingBackend};
 use crate::Result;
 
 #[derive(Serialize, Type, Clone)]
@@ -33,7 +33,7 @@ impl Mod {
         })
     }
 
-    pub fn install(&self, game_executable: &GameExecutable) -> Result {
+    pub fn install(&self, game: &Game) -> Result {
         let project_dirs = ProjectDirs::from("com", "raicuparta", "pal")
             .ok_or_else(|| anyhow!("Failed to get user data folders"))?;
 

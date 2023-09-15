@@ -3,7 +3,7 @@
 #![deny(clippy::all)]
 
 use anyhow::anyhow;
-use game_executable::GameMap;
+use game::GameMap;
 use mod_loader::BepInEx;
 use specta::ts::{BigIntExportBehavior, ExportConfiguration};
 use std::future::Future;
@@ -19,7 +19,7 @@ use steam_owned_unity_games::{get_steam_owned_unity_games, OwnedUnityGame};
 use tauri_specta::ts;
 
 mod appinfo;
-mod game_executable;
+mod game;
 mod r#mod;
 mod mod_loader;
 mod steam_game;
@@ -180,12 +180,12 @@ async fn install_mod(
         .ok_or(anyhow!("Failed to find mod loader with id {mod_loader_id}"))?;
 
     let game_map = get_game_map(state).await?;
-    let game_executable = game_map
+    let game = game_map
         .get(&game_id)
         .ok_or(anyhow!("Failed to find game with ID {game_id}"))?;
 
     mod_loader
-        .install_mod(game_executable, mod_id)
+        .install_mod(game, mod_id)
         .map_err(|err| anyhow!("Failed to install mod: {err}").into())
 }
 

@@ -14,11 +14,11 @@ import { MdFilterAlt, MdRefresh } from "react-icons/md";
 import { useGameMap } from "@hooks/use-backend-data";
 import { includesOneOf } from "../../util/filter";
 import { TableComponents, TableVirtuoso } from "react-virtuoso";
-import { GameExecutableData, InstalledGameRow } from "./installed-game-row";
+import { GameData, InstalledGameRow } from "./installed-game-row";
 import { InstalledGameModal } from "./installed-game-modal";
 import {
   Architecture,
-  GameExecutable,
+  Game,
   OperatingSystem,
   UnityScriptingBackend,
 } from "@api/bindings";
@@ -53,7 +53,7 @@ const scriptingBackendOptions: SegmentedControlData<UnityScriptingBackend>[] = [
   { label: "Mono", value: "Mono" },
 ];
 
-type TableHeaderId = keyof GameExecutable;
+type TableHeaderId = keyof Game;
 
 type TableHeader = {
   id: TableHeaderId;
@@ -62,7 +62,7 @@ type TableHeader = {
   customSort?: TableSortMethod;
 };
 
-const getUnityVersionScore = (data: GameExecutableData) => {
+const getUnityVersionScore = (data: GameData) => {
   const versionParts = data.executable.unityVersion.split(".");
   let score = 0;
   for (let i = 0; i < versionParts.length; i++) {
@@ -103,14 +103,11 @@ type TableSort = {
   sortMethod?: TableSortMethod;
 };
 
-export type TableSortMethod = (
-  dataA: GameExecutableData,
-  dataB: GameExecutableData
-) => number;
+export type TableSortMethod = (dataA: GameData, dataB: GameData) => number;
 
 export function InstalledGamesPage() {
   const [gameMap, isLoading, refreshGameMap, error] = useGameMap();
-  const [selectedGame, setSelectedGame] = useState<GameExecutableData>();
+  const [selectedGame, setSelectedGame] = useState<GameData>();
   const [sort, setSort] = useState<TableSort>({
     id: tableHeaders[0].id,
     reverse: false,
@@ -158,7 +155,7 @@ export function InstalledGamesPage() {
       });
   }, [filter, gameMap, sort]);
 
-  const tableComponents: TableComponents<GameExecutableData, any> = useMemo(
+  const tableComponents: TableComponents<GameData, any> = useMemo(
     () => ({
       Table: (props) => (
         <Table {...props} highlightOnHover sx={{ tableLayout: "fixed" }} />

@@ -4,9 +4,7 @@ use serde::Serialize;
 use specta::Type;
 use steamlocate::SteamDir;
 
-use crate::{
-    appinfo::read_appinfo, game_executable::OperatingSystem, steam_game::get_steam_games, Result,
-};
+use crate::{appinfo::read_appinfo, game::OperatingSystem, steam_game::get_steam_games, Result};
 
 const UNITY_STEAM_APP_IDS_URL: &str =
     "https://raw.githubusercontent.com/Raicuparta/steam-unity-app-ids/main/unity-app-ids.txt";

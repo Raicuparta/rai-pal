@@ -60,7 +60,7 @@ impl Display for OperatingSystem {
 
 #[derive(Serialize, Type, Clone)]
 #[serde(rename_all = "camelCase")]
-pub struct GameExecutable {
+pub struct Game {
     pub id: String,
     pub name: String,
     pub name_suffix: Option<String>,
@@ -74,7 +74,7 @@ pub struct GameExecutable {
     pub steam_launch: Option<SteamLaunchOption>,
 }
 
-impl GameExecutable {
+impl Game {
     pub fn new(
         id: String,
         full_path: &Path,
@@ -86,7 +86,7 @@ impl GameExecutable {
             return None;
         }
 
-        Some(GameExecutable {
+        Some(Game {
             architecture,
             full_path: full_path.to_owned(),
             id,
@@ -105,10 +105,7 @@ impl GameExecutable {
         if let Some(parent) = self.full_path.parent() {
             Ok(open::that_detached(parent)?)
         } else {
-            Err(anyhow!(
-                "Failed to find parent for game executable {}",
-                self.name
-            ))
+            Err(anyhow!("Failed to find parent for game {}", self.name))
         }
     }
 
@@ -255,4 +252,4 @@ fn get_version_from_asset(asset_path: &Path) -> Result<String> {
     )
 }
 
-pub type GameMap = HashMap<String, GameExecutable>;
+pub type GameMap = HashMap<String, Game>;
