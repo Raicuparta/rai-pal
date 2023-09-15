@@ -1,33 +1,40 @@
 import { TableHeader } from "@components/table/table-head";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useTableSort } from "./use-table-sort";
 
-export function useFilteredList<TItem, TKey extends keyof TItem>(
+export function useFilteredList<TItem, TKey extends keyof TItem, TFilter>(
   tableHeaders: TableHeader<TItem, TKey>[],
   data: TItem[],
-  filter: (item: TItem) => boolean
+  filterFunction: (item: TItem, filterValue: TFilter) => boolean,
+  defaultFilterValue: TFilter
 ) {
   const [sort, setSort] = useTableSort<TItem, TKey>(tableHeaders[0].id);
+  const [filter, setFilter] = useState<TFilter>(defaultFilterValue);
+
+  const updateFilter = (newFilter: Partial<TFilter>) =>
+    setFilter((previousFilter) => ({ ...previousFilter, ...newFilter }));
 
   const filteredData = useMemo(() => {
     const sortHeader = tableHeaders.find((header) => header.id === sort.id);
 
-    return data.filter(filter).sort((gameA, gameB) => {
-      const multiplier = sort.reverse ? -1 : 1;
+    return data
+      .filter((item) => filterFunction(item, filter))
+      .sort((gameA, gameB) => {
+        const multiplier = sort.reverse ? -1 : 1;
 
-      if (sortHeader?.customSort) {
-        return multiplier * sortHeader.customSort(gameA, gameB);
-      }
+        if (sortHeader?.customSort) {
+          return multiplier * sortHeader.customSort(gameA, gameB);
+        }
 
-      const valueA = gameA[sort.id];
-      const valueB = gameB[sort.id];
-      if (typeof valueA === "string" && typeof valueB === "string") {
-        return multiplier * valueA.localeCompare(valueB);
-      } else {
-        return multiplier * `${valueA}`.localeCompare(`${valueB}`);
-      }
-    });
-  }, [data, sort, tableHeaders, filter]);
+        const valueA = gameA[sort.id];
+        const valueB = gameB[sort.id];
+        if (typeof valueA === "string" && typeof valueB === "string") {
+          return multiplier * valueA.localeCompare(valueB);
+        } else {
+          return multiplier * `${valueA}`.localeCompare(`${valueB}`);
+        }
+      });
+  }, [data, sort, tableHeaders, filterFunction]);
 
-  return [filteredData, sort, setSort] as const;
+  return [filteredData, sort, setSort, filter, updateFilter] as const;
 }

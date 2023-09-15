@@ -33,27 +33,26 @@ type Filter = {
   linuxOnly: boolean;
 };
 
+const defaultFilter: Filter = {
+  text: "",
+  hideInstalled: false,
+  linuxOnly: false,
+};
+
+const filterGame = (game: OwnedUnityGame, filter: Filter) =>
+  includesOneOf(filter.text, [game.name, game.id.toString()]) &&
+  (!filter.linuxOnly || game.osList.includes("Linux")) &&
+  (!filter.hideInstalled || !game.installed);
+
 export function OwnedGamesPage() {
   const [ownedGames, isLoading, refreshOwnedGames] = useOwnedUnityGames();
   const [selectedGame, setSelectedGame] = useState<OwnedUnityGame>();
-  const [filter, setFilter] = useState<Filter>({
-    text: "",
-    hideInstalled: false,
-    linuxOnly: false,
-  });
 
-  const filterGame = useCallback(
-    (game: OwnedUnityGame) =>
-      includesOneOf(filter.text, [game.name, game.id.toString()]) &&
-      (!filter.linuxOnly || game.osList.includes("Linux")) &&
-      (!filter.hideInstalled || !game.installed),
-    [filter]
-  );
-
-  const [filteredGames, sort, setSort] = useFilteredList(
+  const [filteredGames, sort, setSort, filter, setFilter] = useFilteredList(
     tableHeaders,
     ownedGames,
-    filterGame
+    filterGame,
+    defaultFilter
   );
 
   const renderHeaders = useCallback(
@@ -62,9 +61,6 @@ export function OwnedGamesPage() {
     ),
     [sort, setSort]
   );
-
-  const updateFilter = (newFilter: Partial<Filter>) =>
-    setFilter((previousFilter) => ({ ...previousFilter, ...newFilter }));
 
   const tableComponents: TableComponents<OwnedUnityGame, any> = useMemo(
     () => ({
@@ -94,7 +90,7 @@ export function OwnedGamesPage() {
       <Flex gap="md">
         <Input
           placeholder="Find..."
-          onChange={(event) => updateFilter({ text: event.target.value })}
+          onChange={(event) => setFilter({ text: event.target.value })}
           sx={{ flex: 1 }}
         />
         <Popover>
@@ -108,14 +104,14 @@ export function OwnedGamesPage() {
               <Checkbox
                 checked={filter.hideInstalled}
                 onChange={(event) =>
-                  updateFilter({ hideInstalled: event.target.checked })
+                  setFilter({ hideInstalled: event.target.checked })
                 }
                 label="Hide installed games"
               />
               <Checkbox
                 checked={filter.linuxOnly}
                 onChange={(event) =>
-                  updateFilter({ linuxOnly: event.target.checked })
+                  setFilter({ linuxOnly: event.target.checked })
                 }
                 label="Hide games without native Linux support"
               />

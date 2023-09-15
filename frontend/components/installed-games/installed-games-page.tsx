@@ -27,7 +27,6 @@ import {
   TypedSegmentedControl,
 } from "./typed-segmented-control";
 import { TableHead, TableHeader } from "@components/table/table-head";
-import { useTableSort } from "@hooks/use-table-sort";
 import { useFilteredList } from "@hooks/use-filtered-list";
 
 type Filter = {
@@ -36,6 +35,18 @@ type Filter = {
   architecture?: Architecture;
   scriptingBackend?: UnityScriptingBackend;
 };
+
+const defaultFilter: Filter = {
+  text: "",
+};
+
+const filterGame = (game: Game, filter: Filter) =>
+  includesOneOf(filter.text, [game.name]) &&
+  (!filter.architecture || game.architecture === filter.architecture) &&
+  (!filter.operatingSystem ||
+    game.operatingSystem === filter.operatingSystem) &&
+  (!filter.scriptingBackend ||
+    game.scriptingBackend === filter.scriptingBackend);
 
 const operatingSystemOptions: SegmentedControlData<OperatingSystem>[] = [
   { label: "Any OS", value: "" },
@@ -95,28 +106,12 @@ export type TableSortMethod = (gameA: Game, gameB: Game) => number;
 export function InstalledGamesPage() {
   const [gameMap, isLoading, refreshGameMap, error] = useGameMap();
   const [selectedGame, setSelectedGame] = useState<Game>();
-  const [filter, setFilter] = useState<Filter>({
-    text: "",
-  });
 
-  const updateFilter = (newFilter: Partial<Filter>) =>
-    setFilter((previousFilter) => ({ ...previousFilter, ...newFilter }));
-
-  const filterGame = useCallback(
-    (game: Game) =>
-      includesOneOf(filter.text, [game.name]) &&
-      (!filter.architecture || game.architecture === filter.architecture) &&
-      (!filter.operatingSystem ||
-        game.operatingSystem === filter.operatingSystem) &&
-      (!filter.scriptingBackend ||
-        game.scriptingBackend === filter.scriptingBackend),
-    [filter]
-  );
-
-  const [filteredGames, sort, setSort] = useFilteredList(
+  const [filteredGames, sort, setSort, filter, setFilter] = useFilteredList(
     tableHeaders,
     Object.values(gameMap),
-    filterGame
+    filterGame,
+    defaultFilter
   );
 
   const tableComponents: TableComponents<Game, any> = useMemo(
@@ -148,7 +143,7 @@ export function InstalledGamesPage() {
       <Flex gap="md">
         <Input
           placeholder="Find..."
-          onChange={(event) => updateFilter({ text: event.target.value })}
+          onChange={(event) => setFilter({ text: event.target.value })}
           sx={{ flex: 1 }}
         />
         <Popover>
@@ -162,21 +157,17 @@ export function InstalledGamesPage() {
               <TypedSegmentedControl
                 data={operatingSystemOptions}
                 value={filter.operatingSystem}
-                onChange={(operatingSystem) =>
-                  updateFilter({ operatingSystem })
-                }
+                onChange={(operatingSystem) => setFilter({ operatingSystem })}
               />
               <TypedSegmentedControl
                 data={architectureOptions}
                 value={filter.architecture}
-                onChange={(architecture) => updateFilter({ architecture })}
+                onChange={(architecture) => setFilter({ architecture })}
               />
               <TypedSegmentedControl
                 data={scriptingBackendOptions}
                 value={filter.scriptingBackend}
-                onChange={(scriptingBackend) =>
-                  updateFilter({ scriptingBackend })
-                }
+                onChange={(scriptingBackend) => setFilter({ scriptingBackend })}
               />
             </Stack>
           </Popover.Dropdown>
