@@ -8,7 +8,6 @@ import {
   Table,
   Text,
 } from "@mantine/core";
-import { TableComponents } from "react-virtuoso";
 import { MdRefresh } from "react-icons/md";
 import { OwnedGameRow } from "./owned-game-row";
 import { useOwnedUnityGames } from "@hooks/use-backend-data";
@@ -53,23 +52,6 @@ export function OwnedGamesPage() {
     ownedGames,
     filterGame,
     defaultFilter
-  );
-
-  const tableComponents: TableComponents<OwnedUnityGame, any> = useMemo(
-    () => ({
-      Table: (props) => (
-        <Table {...props} highlightOnHover sx={{ tableLayout: "fixed" }} />
-      ),
-      TableRow: (props) => (
-        <Box
-          component="tr"
-          sx={{ cursor: "pointer" }}
-          onClick={() => setSelectedGame(props.item)}
-          {...props}
-        />
-      ),
-    }),
-    [setSelectedGame]
   );
 
   return (
@@ -119,11 +101,11 @@ export function OwnedGamesPage() {
       </Text>
       <VirtualizedTable
         data={filteredGames}
-        components={tableComponents}
         itemContent={OwnedGameRow}
         headerItems={tableHeaders}
         sort={sort}
         onChangeSort={setSort}
+        onClickItem={setSelectedGame}
       />
     </Stack>
   );

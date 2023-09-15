@@ -106,23 +106,6 @@ export function InstalledGamesPage() {
     defaultFilter
   );
 
-  const tableComponents: TableComponents<Game, any> = useMemo(
-    () => ({
-      Table: (props) => (
-        <Table {...props} highlightOnHover sx={{ tableLayout: "fixed" }} />
-      ),
-      TableRow: (props) => (
-        <Box
-          component="tr"
-          sx={{ cursor: "pointer" }}
-          onClick={() => setSelectedGame(props.item)}
-          {...props}
-        />
-      ),
-    }),
-    [setSelectedGame]
-  );
-
   return (
     <Stack h="100%">
       <Flex gap="md">
@@ -173,11 +156,11 @@ export function InstalledGamesPage() {
       )}
       <VirtualizedTable
         data={filteredGames}
-        components={tableComponents}
         itemContent={InstalledGameRow}
         headerItems={tableHeaders}
         onChangeSort={setSort}
         sort={sort}
+        onClickItem={setSelectedGame}
       />
     </Stack>
   );

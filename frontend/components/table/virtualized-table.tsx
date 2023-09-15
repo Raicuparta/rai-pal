@@ -1,27 +1,29 @@
 import { Card } from "@mantine/core";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { TableVirtuoso, TableVirtuosoProps } from "react-virtuoso";
 import { TableHead, TableHeader } from "./table-head";
 import { TableSort } from "@hooks/use-table-sort";
+import { getTableComponents } from "./table-components";
 
-interface Props<TItem, TKey extends keyof TItem, ItemData = any, Context = any>
-  extends TableVirtuosoProps<ItemData, Context> {
+interface Props<TItem, TKey extends keyof TItem, Context = any>
+  extends TableVirtuosoProps<TItem, Context> {
   headerItems: TableHeader<TItem, TKey>[];
   onChangeSort?: (sort: TKey) => void;
   sort?: TableSort<TItem, TKey>;
+  onClickItem: (item: TItem) => void;
 }
 
 export function VirtualizedTable<
   TItem,
   TKey extends keyof TItem,
-  ItemData = any,
   Context = any
 >({
   headerItems,
   sort,
   onChangeSort,
+  onClickItem,
   ...props
-}: Props<TItem, TKey, ItemData, Context>) {
+}: Props<TItem, TKey, Context>) {
   const renderHeaders = useCallback(
     () => (
       <TableHead
@@ -33,13 +35,19 @@ export function VirtualizedTable<
     [headerItems, sort, onChangeSort]
   );
 
+  const tableComponents = useMemo(
+    () => getTableComponents(onClickItem),
+    [onClickItem]
+  );
+
   return (
     <Card padding={0} sx={{ flex: 1 }}>
       <TableVirtuoso
-        {...props}
         fixedHeaderContent={renderHeaders}
+        components={tableComponents}
         // eslint-disable-next-line react/forbid-component-props
         style={{ height: "100%" }}
+        {...props}
       />
     </Card>
   );
