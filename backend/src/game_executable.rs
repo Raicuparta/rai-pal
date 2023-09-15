@@ -1,6 +1,7 @@
 use anyhow::anyhow;
 use appinfo::SteamLaunchOption;
 use core::fmt;
+use directories::ProjectDirs;
 use goblin::elf::Elf;
 use goblin::pe::PE;
 use regex::Regex;
@@ -21,24 +22,39 @@ pub enum UnityScriptingBackend {
     Mono,
 }
 
+// TODO clean this up, avoid repetition if possible.
 impl Display for UnityScriptingBackend {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{:?}", self)
     }
 }
 
-#[derive(Serialize, Type, Clone, PartialEq, Eq, Hash)]
+#[derive(Serialize, Type, Clone, PartialEq, Eq, Hash, Debug)]
 pub enum Architecture {
     Unknown,
     X64,
-    X32,
+    X86,
 }
 
-#[derive(Serialize, Type, Clone, PartialEq, Eq, Hash)]
+// TODO clean this up, avoid repetition if possible.
+impl Display for Architecture {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
+
+#[derive(Serialize, Type, Clone, PartialEq, Eq, Hash, Debug)]
 pub enum OperatingSystem {
     Unknown,
     Linux,
     Windows,
+}
+
+// TODO clean this up, avoid repetition if possible.
+impl Display for OperatingSystem {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:?}", self)
+    }
 }
 
 #[derive(Serialize, Type, Clone)]
@@ -93,8 +109,16 @@ impl GameExecutable {
         }
     }
 
+    pub fn get_mods_folder(&self) -> Result<PathBuf> {
+        let project_dirs = ProjectDirs::from("com", "raicuparta", "pal")
+            .ok_or_else(|| anyhow!("Failed to get user data folders"))?;
+
+        Ok(project_dirs.data_dir().join("games").join(&self.id))
+    }
+
     pub fn open_mods_folder(&self) -> Result {
-        todo!()
+        open::that_detached(self.get_mods_folder()?)
+            .map_err(|err| anyhow!("Failed to open game mods folder: {err}"))
     }
 
     pub fn start(&self) -> Result {
@@ -165,7 +189,7 @@ fn get_os_and_architecture(file_path: &Path) -> Result<(OperatingSystem, Archite
                             Ok((OperatingSystem::Linux, Architecture::X64))
                         }
                         goblin::elf::header::EM_386 => {
-                            Ok((OperatingSystem::Linux, Architecture::X32))
+                            Ok((OperatingSystem::Linux, Architecture::X86))
                         }
                         _ => Ok((OperatingSystem::Linux, Architecture::Unknown)),
                     }
@@ -175,7 +199,7 @@ fn get_os_and_architecture(file_path: &Path) -> Result<(OperatingSystem, Archite
                             Ok((OperatingSystem::Windows, Architecture::X64))
                         }
                         goblin::pe::header::COFF_MACHINE_X86 => {
-                            Ok((OperatingSystem::Windows, Architecture::X32))
+                            Ok((OperatingSystem::Windows, Architecture::X86))
                         }
                         _ => Ok((OperatingSystem::Windows, Architecture::Unknown)),
                     }

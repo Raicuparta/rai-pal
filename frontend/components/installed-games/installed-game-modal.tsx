@@ -1,4 +1,4 @@
-import { Button, Modal, Stack } from "@mantine/core";
+import { Button, Code, Modal, Stack } from "@mantine/core";
 import { GameExecutableData } from "./installed-game-row";
 import { useModLoaders } from "@hooks/use-backend-data";
 import {
@@ -81,6 +81,10 @@ export const InstalledGameModal = (props: Props) => {
             </Button.Group>
           </Fragment>
         ))}
+        <label>Debug Data</label>
+        <Code sx={{ overflow: "auto" }}>
+          <pre>{JSON.stringify(props.data, null, 2)}</pre>
+        </Code>
       </Stack>
     </Modal>
   );

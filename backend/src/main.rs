@@ -100,16 +100,12 @@ async fn get_owned_games(state: tauri::State<'_, AppState>) -> CommandResult<Vec
 #[tauri::command]
 #[specta::specta]
 async fn get_mod_loaders(handle: tauri::AppHandle) -> CommandResult<Vec<BepInEx>> {
-    if let Ok(bepinex) = BepInEx::new(
+    Ok(Vec::from([BepInEx::new(
         &handle
             .path_resolver()
             .resolve_resource("resources/bepinex")
-            .expect("Failed to find bepinex folder"),
-    ) {
-        Ok(Vec::from([bepinex]))
-    } else {
-        Err(anyhow!("aa").into())
-    }
+            .ok_or(anyhow!("Failed to find BepInEx folder"))?,
+    )?]))
 }
 
 #[tauri::command]

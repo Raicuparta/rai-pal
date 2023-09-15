@@ -49,7 +49,7 @@ const operatingSystemOptions: SegmentedControlData<OperatingSystem>[] = [
 const architectureOptions: SegmentedControlData<Architecture>[] = [
   { label: "Any architecture", value: "" },
   { label: "x64", value: "X64" },
-  { label: "x32", value: "X32" },
+  { label: "x86", value: "X86" },
 ];
 
 const scriptingBackendOptions: SegmentedControlData<UnityScriptingBackend>[] = [

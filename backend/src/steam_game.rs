@@ -23,23 +23,23 @@ pub async fn get_steam_games() -> Result<GameMap> {
         .iter()
         .filter_map(|(app_id, app)| Some((app_id, app.as_ref()?, app_info.apps.get(app_id)?)))
     {
-        let id = app_id.to_owned();
+        let game_id = app_id.to_owned();
 
         app_details_map.insert(
-            id,
+            game_id,
             Game {
-                id,
+                id: game_id,
                 name: app.name.clone().unwrap_or_default(),
                 executables: app_info
                     .launch_options
                     .iter()
                     .filter_map(|steam_launch| {
-                        let id = steam_launch.launch_id.clone();
+                        let executable_id = format!("{game_id}_{}", steam_launch.launch_id.clone());
 
                         Some((
-                            id.clone(),
+                            executable_id.clone(),
                             GameExecutable::new(
-                                id,
+                                executable_id,
                                 &app.path.join(steam_launch.executable.as_ref()?),
                                 Some(steam_launch),
                             )?,

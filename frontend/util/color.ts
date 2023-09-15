@@ -15,7 +15,7 @@ export const operatingSystemColor: ColorRecord<OperatingSystem> = {
 
 export const architectureColor: ColorRecord<Architecture> = {
   X64: "blue",
-  X32: "teal",
+  X86: "teal",
   Unknown: "dark",
 } as const;
 

@@ -1,6 +1,7 @@
 use std::path::{Path, PathBuf};
 
 use anyhow::anyhow;
+use directories::{BaseDirs, ProjectDirs};
 use serde::Serialize;
 use specta::Type;
 
@@ -32,7 +33,14 @@ impl Mod {
         })
     }
 
-    fn install(&self, game_executable: &GameExecutable) {
+    pub fn install(&self, game_executable: &GameExecutable) -> Result {
+        let project_dirs = ProjectDirs::from("com", "raicuparta", "pal")
+            .ok_or_else(|| anyhow!("Failed to get user data folders"))?;
+
+        let game_mods_folder = project_dirs.data_dir().join("mods");
+
+        // let installed_mod_folder = game_mods_folder.join(path);
+
         todo!()
     }
 
