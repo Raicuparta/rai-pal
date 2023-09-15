@@ -37,14 +37,20 @@ type Filter = {
 export function OwnedGamesPage() {
   const [ownedGames, isLoading, refreshOwnedGames] = useOwnedUnityGames();
   const [selectedGame, setSelectedGame] = useState<OwnedUnityGame>();
-  const [sort, setSort] = useTableSort<OwnedUnityGame, keyof OwnedUnityGame>(
-    tableHeaders[0].id
-  );
   const [filter, setFilter] = useState<Filter>({
     text: "",
     hideInstalled: false,
     linuxOnly: false,
   });
+
+  const [filteredGames, sort, setSort] = useFilteredList(
+    tableHeaders,
+    ownedGames,
+    (game) =>
+      includesOneOf(filter.text, [game.name, game.id.toString()]) &&
+      (!filter.linuxOnly || game.osList.includes("Linux")) &&
+      (!filter.hideInstalled || !game.installed)
+  );
 
   const renderHeaders = useCallback(
     () => (
@@ -55,16 +61,6 @@ export function OwnedGamesPage() {
 
   const updateFilter = (newFilter: Partial<Filter>) =>
     setFilter((previousFilter) => ({ ...previousFilter, ...newFilter }));
-
-  const filteredGames = useFilteredList(
-    tableHeaders,
-    ownedGames,
-    (game) =>
-      includesOneOf(filter.text, [game.name, game.id.toString()]) &&
-      (!filter.linuxOnly || game.osList.includes("Linux")) &&
-      (!filter.hideInstalled || !game.installed),
-    sort
-  );
 
   const tableComponents: TableComponents<OwnedUnityGame, any> = useMemo(
     () => ({

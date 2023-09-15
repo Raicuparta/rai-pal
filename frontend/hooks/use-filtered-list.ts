@@ -1,14 +1,15 @@
 import { TableHeader } from "@components/table/table-head";
 import { useMemo } from "react";
-import { TableSort } from "./use-table-sort";
+import { useTableSort } from "./use-table-sort";
 
 export function useFilteredList<TItem, TKey extends keyof TItem>(
   tableHeaders: TableHeader<TItem, TKey>[],
   data: TItem[],
-  filter: (item: TItem) => boolean,
-  sort: TableSort<TItem, TKey>
+  filter: (item: TItem) => boolean
 ) {
-  return useMemo(() => {
+  const [sort, setSort] = useTableSort<TItem, TKey>(tableHeaders[0].id);
+
+  const filteredData = useMemo(() => {
     const sortHeader = tableHeaders.find((header) => header.id === sort.id);
 
     return data.filter(filter).sort((gameA, gameB) => {
@@ -27,4 +28,6 @@ export function useFilteredList<TItem, TKey extends keyof TItem>(
       }
     });
   }, [filter, data, sort, tableHeaders]);
+
+  return [filteredData, sort, setSort] as const;
 }

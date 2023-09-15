@@ -95,7 +95,6 @@ export type TableSortMethod = (gameA: Game, gameB: Game) => number;
 export function InstalledGamesPage() {
   const [gameMap, isLoading, refreshGameMap, error] = useGameMap();
   const [selectedGame, setSelectedGame] = useState<Game>();
-  const [sort, setSort] = useTableSort<Game, keyof Game>(tableHeaders[0].id);
   const [filter, setFilter] = useState<Filter>({
     text: "",
   });
@@ -103,7 +102,7 @@ export function InstalledGamesPage() {
   const updateFilter = (newFilter: Partial<Filter>) =>
     setFilter((previousFilter) => ({ ...previousFilter, ...newFilter }));
 
-  const filteredGames = useFilteredList(
+  const [filteredGames, sort, setSort] = useFilteredList(
     tableHeaders,
     Object.values(gameMap),
     (game) =>
@@ -112,8 +111,7 @@ export function InstalledGamesPage() {
       (!filter.operatingSystem ||
         game.operatingSystem === filter.operatingSystem) &&
       (!filter.scriptingBackend ||
-        game.scriptingBackend === filter.scriptingBackend),
-    sort
+        game.scriptingBackend === filter.scriptingBackend)
   );
 
   const tableComponents: TableComponents<Game, any> = useMemo(
