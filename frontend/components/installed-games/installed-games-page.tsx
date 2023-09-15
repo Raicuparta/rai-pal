@@ -26,7 +26,8 @@ import {
   SegmentedControlData,
   TypedSegmentedControl,
 } from "./typed-segmented-control";
-import { TableHead } from "@components/table/table-head";
+import { TableHead, TableHeader } from "@components/table/table-head";
+import { useTableSort } from "@hooks/use-table-sort";
 
 type Filter = {
   text: string;
@@ -55,13 +56,6 @@ const scriptingBackendOptions: SegmentedControlData<UnityScriptingBackend>[] = [
 
 type TableHeaderId = keyof Game;
 
-type TableHeader = {
-  id: TableHeaderId;
-  label: string;
-  width?: number;
-  customSort?: TableSortMethod;
-};
-
 const getUnityVersionScore = (game: Game) => {
   const versionParts = game.unityVersion.split(".");
   let score = 0;
@@ -83,7 +77,7 @@ const getUnityVersionScore = (game: Game) => {
   return score;
 };
 
-const tableHeaders: TableHeader[] = [
+const tableHeaders: TableHeader<TableHeaderId>[] = [
   { id: "name", label: "Game", width: undefined },
   { id: "operatingSystem", label: "OS", width: 100 },
   { id: "architecture", label: "Arch", width: 100 },
@@ -100,7 +94,6 @@ const tableHeaders: TableHeader[] = [
 type TableSort = {
   id: TableHeaderId;
   reverse: boolean;
-  sortMethod?: TableSortMethod;
 };
 
 export type TableSortMethod = (gameA: Game, gameB: Game) => number;
@@ -108,10 +101,7 @@ export type TableSortMethod = (gameA: Game, gameB: Game) => number;
 export function InstalledGamesPage() {
   const [gameMap, isLoading, refreshGameMap, error] = useGameMap();
   const [selectedGame, setSelectedGame] = useState<Game>();
-  const [sort, setSort] = useState<TableSort>({
-    id: tableHeaders[0].id,
-    reverse: false,
-  });
+  const [sort, setSort] = useTableSort(tableHeaders[0].id);
   const [filter, setFilter] = useState<Filter>({
     text: "",
   });

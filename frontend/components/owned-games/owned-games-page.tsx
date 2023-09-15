@@ -18,18 +18,17 @@ import { OwnedUnityGame } from "@api/bindings";
 import { useMemo, useState } from "react";
 import { includesOneOf } from "../../util/filter";
 import { OwnedGameModal } from "./owned-game-modal";
+import { TableHead, TableHeader } from "@components/table/table-head";
 
-const renderHeaders = () => (
-  <Box component="tr" bg="dark">
-    <Box component="th">Game</Box>
-    <Box component="th" w={120}>
-      Native Linux?
-    </Box>
-    <Box component="th" w={100}>
-      Installed?
-    </Box>
-  </Box>
-);
+type TableHeaderId = keyof OwnedUnityGame;
+
+const tableHeaders: TableHeader<TableHeaderId>[] = [
+  { id: "name", label: "Game", width: undefined },
+  { id: "osList", label: "Native Linux?", width: 120 },
+  { id: "installed", label: "Installed?", width: 100 },
+];
+
+const renderHeaders = () => <TableHead headers={tableHeaders} />;
 
 type Filter = {
   text: string;
