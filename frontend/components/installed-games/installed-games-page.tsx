@@ -28,6 +28,7 @@ import {
 } from "./typed-segmented-control";
 import { TableHead, TableHeader } from "@components/table/table-head";
 import { useTableSort } from "@hooks/use-table-sort";
+import { useFilteredList } from "@hooks/use-filtered-list";
 
 type Filter = {
   text: string;
@@ -54,8 +55,6 @@ const scriptingBackendOptions: SegmentedControlData<UnityScriptingBackend>[] = [
   { label: "Mono", value: "Mono" },
 ];
 
-type TableHeaderId = keyof Game;
-
 const getUnityVersionScore = (game: Game) => {
   const versionParts = game.unityVersion.split(".");
   let score = 0;
@@ -77,7 +76,7 @@ const getUnityVersionScore = (game: Game) => {
   return score;
 };
 
-const tableHeaders: TableHeader<TableHeaderId>[] = [
+const tableHeaders: TableHeader<Game, keyof Game>[] = [
   { id: "name", label: "Game", width: undefined },
   { id: "operatingSystem", label: "OS", width: 100 },
   { id: "architecture", label: "Arch", width: 100 },
@@ -91,17 +90,12 @@ const tableHeaders: TableHeader<TableHeaderId>[] = [
   },
 ];
 
-type TableSort = {
-  id: TableHeaderId;
-  reverse: boolean;
-};
-
 export type TableSortMethod = (gameA: Game, gameB: Game) => number;
 
 export function InstalledGamesPage() {
   const [gameMap, isLoading, refreshGameMap, error] = useGameMap();
   const [selectedGame, setSelectedGame] = useState<Game>();
-  const [sort, setSort] = useTableSort(tableHeaders[0].id);
+  const [sort, setSort] = useTableSort<Game, keyof Game>(tableHeaders[0].id);
   const [filter, setFilter] = useState<Filter>({
     text: "",
   });
@@ -109,37 +103,18 @@ export function InstalledGamesPage() {
   const updateFilter = (newFilter: Partial<Filter>) =>
     setFilter((previousFilter) => ({ ...previousFilter, ...newFilter }));
 
-  const filteredGames = useMemo(() => {
-    const games = Object.values(gameMap);
-
-    const sortHeader = tableHeaders.find((header) => header.id === sort.id);
-
-    return games
-      .filter(
-        (game) =>
-          includesOneOf(filter.text, [game.name]) &&
-          (!filter.architecture || game.architecture === filter.architecture) &&
-          (!filter.operatingSystem ||
-            game.operatingSystem === filter.operatingSystem) &&
-          (!filter.scriptingBackend ||
-            game.scriptingBackend === filter.scriptingBackend)
-      )
-      .sort((gameA, gameB) => {
-        const multiplier = sort.reverse ? -1 : 1;
-
-        if (sortHeader?.customSort) {
-          return multiplier * sortHeader.customSort(gameA, gameB);
-        }
-
-        const valueA = gameA[sort.id];
-        const valueB = gameB[sort.id];
-        if (typeof valueA === "string" && typeof valueB === "string") {
-          return multiplier * valueA.localeCompare(valueB);
-        }
-
-        return 0;
-      });
-  }, [filter, gameMap, sort]);
+  const filteredGames = useFilteredList(
+    tableHeaders,
+    Object.values(gameMap),
+    (game) =>
+      includesOneOf(filter.text, [game.name]) &&
+      (!filter.architecture || game.architecture === filter.architecture) &&
+      (!filter.operatingSystem ||
+        game.operatingSystem === filter.operatingSystem) &&
+      (!filter.scriptingBackend ||
+        game.scriptingBackend === filter.scriptingBackend),
+    sort
+  );
 
   const tableComponents: TableComponents<Game, any> = useMemo(
     () => ({

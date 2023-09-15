@@ -20,10 +20,9 @@ import { includesOneOf } from "../../util/filter";
 import { OwnedGameModal } from "./owned-game-modal";
 import { TableHead, TableHeader } from "@components/table/table-head";
 import { useTableSort } from "@hooks/use-table-sort";
+import { useFilteredList } from "@hooks/use-filtered-list";
 
-type TableHeaderId = keyof OwnedUnityGame;
-
-const tableHeaders: TableHeader<TableHeaderId>[] = [
+const tableHeaders: TableHeader<OwnedUnityGame, keyof OwnedUnityGame>[] = [
   { id: "name", label: "Game", width: undefined },
   { id: "osList", label: "Linux?", width: 100 },
   { id: "installed", label: "Installed?", width: 100 },
@@ -38,7 +37,9 @@ type Filter = {
 export function OwnedGamesPage() {
   const [ownedGames, isLoading, refreshOwnedGames] = useOwnedUnityGames();
   const [selectedGame, setSelectedGame] = useState<OwnedUnityGame>();
-  const [sort, setSort] = useTableSort(tableHeaders[0].id);
+  const [sort, setSort] = useTableSort<OwnedUnityGame, keyof OwnedUnityGame>(
+    tableHeaders[0].id
+  );
   const [filter, setFilter] = useState<Filter>({
     text: "",
     hideInstalled: false,
@@ -55,32 +56,15 @@ export function OwnedGamesPage() {
   const updateFilter = (newFilter: Partial<Filter>) =>
     setFilter((previousFilter) => ({ ...previousFilter, ...newFilter }));
 
-  const filteredGames = useMemo(() => {
-    const sortHeader = tableHeaders.find((header) => header.id === sort.id);
-
-    return ownedGames
-      .filter(
-        (game) =>
-          includesOneOf(filter.text, [game.name, game.id.toString()]) &&
-          (!filter.linuxOnly || game.osList.includes("Linux")) &&
-          (!filter.hideInstalled || !game.installed)
-      )
-      .sort((gameA, gameB) => {
-        const multiplier = sort.reverse ? -1 : 1;
-
-        if (sortHeader?.customSort) {
-          return multiplier * sortHeader.customSort(gameA, gameB);
-        }
-
-        const valueA = gameA[sort.id];
-        const valueB = gameB[sort.id];
-        if (typeof valueA === "string" && typeof valueB === "string") {
-          return multiplier * valueA.localeCompare(valueB);
-        } else {
-          return multiplier * `${valueA}`.localeCompare(`${valueB}`);
-        }
-      });
-  }, [filter, ownedGames, sort]);
+  const filteredGames = useFilteredList(
+    tableHeaders,
+    ownedGames,
+    (game) =>
+      includesOneOf(filter.text, [game.name, game.id.toString()]) &&
+      (!filter.linuxOnly || game.osList.includes("Linux")) &&
+      (!filter.hideInstalled || !game.installed),
+    sort
+  );
 
   const tableComponents: TableComponents<OwnedUnityGame, any> = useMemo(
     () => ({

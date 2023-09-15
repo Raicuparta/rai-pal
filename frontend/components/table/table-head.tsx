@@ -1,30 +1,32 @@
 import { Box, Flex } from "@mantine/core";
 import { MdArrowDropDown, MdArrowDropUp } from "react-icons/md";
 
-export type TableHeader<THeaderId extends string> = {
-  id: THeaderId;
+export type TableHeader<TItem, TKey extends keyof TItem> = {
+  id: TKey;
   label: string;
   width?: number;
-  customSort?: (a: Record<THeaderId, any>, b: Record<THeaderId, any>) => number;
+  customSort?: (itemA: TItem, itemB: TItem) => number;
 };
 
-type TableSort<THeaderId extends string> = {
-  id: THeaderId;
+type TableSort<TItem, TKey extends keyof TItem> = {
+  id: TKey;
   reverse: boolean;
 };
 
-type Props<THeaderId extends string> = {
-  headers: TableHeader<THeaderId>[];
-  onChangeSort?: (sort: THeaderId) => void;
-  sort?: TableSort<THeaderId>;
+type Props<TItem, TKey extends keyof TItem> = {
+  headers: TableHeader<TItem, TKey>[];
+  onChangeSort?: (sort: TKey) => void;
+  sort?: TableSort<TItem, TKey>;
 };
 
-export function TableHead<THeaderId extends string>(props: Props<THeaderId>) {
+export function TableHead<TItem, TKey extends keyof TItem>(
+  props: Props<TItem, TKey>
+) {
   return (
     <Box component="tr" sx={(theme) => ({ background: theme.colors.dark[9] })}>
       {props.headers.map((header) => (
         <Box
-          key={header.id}
+          key={String(header.id)}
           component="th"
           w={header.width}
           onClick={() =>
