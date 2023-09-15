@@ -4,7 +4,7 @@ use core::fmt;
 use directories::ProjectDirs;
 use goblin::elf::Elf;
 use goblin::pe::PE;
-use regex::Regex;
+use lazy_regex::regex_find;
 use serde::Serialize;
 use specta::Type;
 use std::{
@@ -245,12 +245,11 @@ fn get_version_from_asset(asset_path: &Path) -> Result<String> {
     }
 
     let data_str = String::from_utf8_lossy(&data[..bytes_read]);
-    let pattern = Regex::new(r"\d+\.\d+\.\d+[fp]\d+").unwrap();
-    let match_result = pattern.find(&data_str);
+    let match_result = regex_find!(r"\d+\.\d+\.\d+[fp]\d+", &data_str);
 
     match_result.map_or_else(
         || Ok("No version found".to_string()),
-        |matched| Ok(matched.as_str().to_string()),
+        |matched| Ok(matched.to_string()),
     )
 }
 
