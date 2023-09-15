@@ -20,6 +20,8 @@ import { includesOneOf } from "../../util/filter";
 import { OwnedGameModal } from "./owned-game-modal";
 import { TableHead, TableHeader } from "@components/table/table-head";
 import { useFilteredList } from "@hooks/use-filtered-list";
+import { FilterMenu } from "@components/filter-menu";
+import { VirtualizedTable } from "@components/table/virtualized-table";
 
 const tableHeaders: TableHeader<OwnedUnityGame, keyof OwnedUnityGame>[] = [
   { id: "name", label: "Game", width: undefined },
@@ -93,31 +95,24 @@ export function OwnedGamesPage() {
           onChange={(event) => setFilter({ text: event.target.value })}
           sx={{ flex: 1 }}
         />
-        <Popover>
-          <Popover.Target>
-            <Button variant="default" leftIcon={<MdFilterAlt />}>
-              Filter
-            </Button>
-          </Popover.Target>
-          <Popover.Dropdown>
-            <Stack>
-              <Checkbox
-                checked={filter.hideInstalled}
-                onChange={(event) =>
-                  setFilter({ hideInstalled: event.target.checked })
-                }
-                label="Hide installed games"
-              />
-              <Checkbox
-                checked={filter.linuxOnly}
-                onChange={(event) =>
-                  setFilter({ linuxOnly: event.target.checked })
-                }
-                label="Hide games without native Linux support"
-              />
-            </Stack>
-          </Popover.Dropdown>
-        </Popover>
+        <FilterMenu>
+          <Stack>
+            <Checkbox
+              checked={filter.hideInstalled}
+              onChange={(event) =>
+                setFilter({ hideInstalled: event.target.checked })
+              }
+              label="Hide installed games"
+            />
+            <Checkbox
+              checked={filter.linuxOnly}
+              onChange={(event) =>
+                setFilter({ linuxOnly: event.target.checked })
+              }
+              label="Hide games without native Linux support"
+            />
+          </Stack>
+        </FilterMenu>
         <Button
           leftIcon={<MdRefresh />}
           loading={isLoading}
@@ -131,17 +126,13 @@ export function OwnedGamesPage() {
         These are the Steam games you own (maybe?) that use the Unity engine
         (maybe??). {ownedGames.length} owned games.
       </Text>
-      <Card padding={0} sx={{ flex: 1 }}>
-        <TableVirtuoso
-          // eslint-disable-next-line react/forbid-component-props
-          style={{ height: "100%" }}
-          data={filteredGames}
-          components={tableComponents}
-          fixedHeaderContent={renderHeaders}
-          totalCount={ownedGames.length}
-          itemContent={OwnedGameRow}
-        />
-      </Card>
+      <VirtualizedTable
+        data={filteredGames}
+        components={tableComponents}
+        fixedHeaderContent={renderHeaders}
+        totalCount={ownedGames.length}
+        itemContent={OwnedGameRow}
+      />
     </Stack>
   );
 }

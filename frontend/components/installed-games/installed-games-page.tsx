@@ -28,6 +28,8 @@ import {
 } from "./typed-segmented-control";
 import { TableHead, TableHeader } from "@components/table/table-head";
 import { useFilteredList } from "@hooks/use-filtered-list";
+import { FilterMenu } from "@components/filter-menu";
+import { VirtualizedTable } from "@components/table/virtualized-table";
 
 type Filter = {
   text: string;
@@ -146,32 +148,25 @@ export function InstalledGamesPage() {
           onChange={(event) => setFilter({ text: event.target.value })}
           sx={{ flex: 1 }}
         />
-        <Popover>
-          <Popover.Target>
-            <Button variant="default" leftIcon={<MdFilterAlt />}>
-              Filter
-            </Button>
-          </Popover.Target>
-          <Popover.Dropdown>
-            <Stack>
-              <TypedSegmentedControl
-                data={operatingSystemOptions}
-                value={filter.operatingSystem}
-                onChange={(operatingSystem) => setFilter({ operatingSystem })}
-              />
-              <TypedSegmentedControl
-                data={architectureOptions}
-                value={filter.architecture}
-                onChange={(architecture) => setFilter({ architecture })}
-              />
-              <TypedSegmentedControl
-                data={scriptingBackendOptions}
-                value={filter.scriptingBackend}
-                onChange={(scriptingBackend) => setFilter({ scriptingBackend })}
-              />
-            </Stack>
-          </Popover.Dropdown>
-        </Popover>
+        <FilterMenu>
+          <Stack>
+            <TypedSegmentedControl
+              data={operatingSystemOptions}
+              value={filter.operatingSystem}
+              onChange={(operatingSystem) => setFilter({ operatingSystem })}
+            />
+            <TypedSegmentedControl
+              data={architectureOptions}
+              value={filter.architecture}
+              onChange={(architecture) => setFilter({ architecture })}
+            />
+            <TypedSegmentedControl
+              data={scriptingBackendOptions}
+              value={filter.scriptingBackend}
+              onChange={(scriptingBackend) => setFilter({ scriptingBackend })}
+            />
+          </Stack>
+        </FilterMenu>
         <Button
           disabled={isLoading}
           onClick={refreshGameMap}
@@ -193,17 +188,13 @@ export function InstalledGamesPage() {
           onClose={() => setSelectedGame(undefined)}
         />
       )}
-      <Card padding={0} sx={{ flex: 1 }}>
-        <TableVirtuoso
-          // eslint-disable-next-line react/forbid-component-props
-          style={{ height: "100%" }}
-          data={filteredGames}
-          fixedHeaderContent={renderHeaders}
-          components={tableComponents}
-          totalCount={filteredGames.length}
-          itemContent={InstalledGameRow}
-        />
-      </Card>
+      <VirtualizedTable
+        data={filteredGames}
+        fixedHeaderContent={renderHeaders}
+        components={tableComponents}
+        totalCount={filteredGames.length}
+        itemContent={InstalledGameRow}
+      />
     </Stack>
   );
 }
