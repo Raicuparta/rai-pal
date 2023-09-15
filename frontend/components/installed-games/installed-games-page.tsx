@@ -14,7 +14,7 @@ import { MdFilterAlt, MdRefresh } from "react-icons/md";
 import { useGameMap } from "@hooks/use-backend-data";
 import { includesOneOf } from "../../util/filter";
 import { TableComponents, TableVirtuoso } from "react-virtuoso";
-import { GameData, InstalledGameRow } from "./installed-game-row";
+import { InstalledGameRow } from "./installed-game-row";
 import { InstalledGameModal } from "./installed-game-modal";
 import {
   Architecture,
@@ -62,8 +62,8 @@ type TableHeader = {
   customSort?: TableSortMethod;
 };
 
-const getUnityVersionScore = (data: GameData) => {
-  const versionParts = data.executable.unityVersion.split(".");
+const getUnityVersionScore = (game: Game) => {
+  const versionParts = game.unityVersion.split(".");
   let score = 0;
   for (let i = 0; i < versionParts.length; i++) {
     const versionPart = versionParts[i];
@@ -103,11 +103,11 @@ type TableSort = {
   sortMethod?: TableSortMethod;
 };
 
-export type TableSortMethod = (dataA: GameData, dataB: GameData) => number;
+export type TableSortMethod = (gameA: Game, gameB: Game) => number;
 
 export function InstalledGamesPage() {
   const [gameMap, isLoading, refreshGameMap, error] = useGameMap();
-  const [selectedGame, setSelectedGame] = useState<GameData>();
+  const [selectedGame, setSelectedGame] = useState<Game>();
   const [sort, setSort] = useState<TableSort>({
     id: tableHeaders[0].id,
     reverse: false,
@@ -120,33 +120,29 @@ export function InstalledGamesPage() {
     setFilter((previousFilter) => ({ ...previousFilter, ...newFilter }));
 
   const filteredGames = useMemo(() => {
-    const gameExecutables = Object.values(gameMap).map((executable) => ({
-      executable,
-      installMod: setSelectedGame,
-    }));
+    const games = Object.values(gameMap);
 
     const sortHeader = tableHeaders.find((header) => header.id === sort.id);
 
-    return gameExecutables
+    return games
       .filter(
-        (data) =>
-          includesOneOf(filter.text, [data.executable.name]) &&
-          (!filter.architecture ||
-            data.executable.architecture === filter.architecture) &&
+        (game) =>
+          includesOneOf(filter.text, [game.name]) &&
+          (!filter.architecture || game.architecture === filter.architecture) &&
           (!filter.operatingSystem ||
-            data.executable.operatingSystem === filter.operatingSystem) &&
+            game.operatingSystem === filter.operatingSystem) &&
           (!filter.scriptingBackend ||
-            data.executable.scriptingBackend === filter.scriptingBackend)
+            game.scriptingBackend === filter.scriptingBackend)
       )
-      .sort((dataA, dataB) => {
+      .sort((gameA, gameB) => {
         const multiplier = sort.reverse ? -1 : 1;
 
         if (sortHeader?.customSort) {
-          return multiplier * sortHeader.customSort(dataA, dataB);
+          return multiplier * sortHeader.customSort(gameA, gameB);
         }
 
-        const valueA = dataA.executable[sort.id];
-        const valueB = dataB.executable[sort.id];
+        const valueA = gameA[sort.id];
+        const valueB = gameB[sort.id];
         if (typeof valueA === "string" && typeof valueB === "string") {
           return multiplier * valueA.localeCompare(valueB);
         }
@@ -155,7 +151,7 @@ export function InstalledGamesPage() {
       });
   }, [filter, gameMap, sort]);
 
-  const tableComponents: TableComponents<GameData, any> = useMemo(
+  const tableComponents: TableComponents<Game, any> = useMemo(
     () => ({
       Table: (props) => (
         <Table {...props} highlightOnHover sx={{ tableLayout: "fixed" }} />
@@ -232,7 +228,12 @@ export function InstalledGamesPage() {
           <pre>{error}</pre>
         </Alert>
       )}
-      {selectedGame && <InstalledGameModal data={selectedGame} />}
+      {selectedGame && (
+        <InstalledGameModal
+          game={selectedGame}
+          onClose={() => setSelectedGame(undefined)}
+        />
+      )}
       <Card padding={0} sx={{ flex: 1 }}>
         <TableVirtuoso
           // eslint-disable-next-line react/forbid-component-props

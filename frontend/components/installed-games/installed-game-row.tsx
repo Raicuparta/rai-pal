@@ -7,11 +7,6 @@ import {
 } from "@api/bindings";
 import { GameName } from "./game-executable-name";
 
-export type GameData = {
-  executable: Game;
-  installMod: (data?: GameData) => void;
-};
-
 type ColorRecord<T extends string> = Record<T, DefaultMantineColor>;
 
 const operatingSystemColor: ColorRecord<OperatingSystem> = {
@@ -31,28 +26,28 @@ const scriptingBackendColor: ColorRecord<UnityScriptingBackend> = {
   Mono: "grape",
 } as const;
 
-export function InstalledGameRow(_: number, data: GameData) {
+export function InstalledGameRow(_: number, game: Game) {
   return (
     <>
       <td>
-        <GameName data={data} />
+        <GameName game={game} />
       </td>
       <td>
-        <Badge color={operatingSystemColor[data.executable.operatingSystem]}>
-          {data.executable.operatingSystem}
+        <Badge color={operatingSystemColor[game.operatingSystem]}>
+          {game.operatingSystem}
         </Badge>
       </td>
       <td>
-        <Badge color={architectureColor[data.executable.architecture]}>
-          {data.executable.architecture}
+        <Badge color={architectureColor[game.architecture]}>
+          {game.architecture}
         </Badge>
       </td>
       <td>
-        <Badge color={scriptingBackendColor[data.executable.scriptingBackend]}>
-          {data.executable.scriptingBackend}
+        <Badge color={scriptingBackendColor[game.scriptingBackend]}>
+          {game.scriptingBackend}
         </Badge>
       </td>
-      <td>{data.executable.unityVersion}</td>
+      <td>{game.unityVersion}</td>
     </>
   );
 }

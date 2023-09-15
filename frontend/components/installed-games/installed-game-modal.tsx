@@ -1,7 +1,7 @@
 import { Button, Code, Modal, Stack } from "@mantine/core";
-import { GameData } from "./installed-game-row";
 import { useModLoaders } from "@hooks/use-backend-data";
 import {
+  Game,
   installMod,
   openGameFolder,
   openGameModsFolder,
@@ -11,7 +11,8 @@ import { Fragment } from "react";
 import { GameName } from "./game-executable-name";
 
 type Props = {
-  data: GameData;
+  game: Game;
+  onClose: () => void;
 };
 
 export const InstalledGameModal = (props: Props) => {
@@ -20,28 +21,25 @@ export const InstalledGameModal = (props: Props) => {
   return (
     <Modal
       opened={true}
-      onClose={() => props.data.installMod(undefined)}
-      title={<GameName data={props.data} />}
+      onClose={props.onClose}
+      title={<GameName game={props.game} />}
       centered
       size="lg"
     >
       <Stack>
         <Button.Group orientation="vertical">
-          <Button
-            variant="default"
-            onClick={() => startGame(props.data.executable.id)}
-          >
+          <Button variant="default" onClick={() => startGame(props.game.id)}>
             Start Game
           </Button>
           <Button
             variant="default"
-            onClick={() => openGameFolder(props.data.executable.id)}
+            onClick={() => openGameFolder(props.game.id)}
           >
             Open Game Folder
           </Button>
           <Button
             variant="default"
-            onClick={() => openGameModsFolder(props.data.executable.id)}
+            onClick={() => openGameModsFolder(props.game.id)}
           >
             Open Mods Folder
           </Button>
@@ -52,16 +50,14 @@ export const InstalledGameModal = (props: Props) => {
             <Button.Group orientation="vertical">
               {modLoader.mods
                 .filter(
-                  (mod) =>
-                    mod.scriptingBackend ===
-                    props.data.executable.scriptingBackend
+                  (mod) => mod.scriptingBackend === props.game.scriptingBackend
                 )
                 .map((mod) => (
                   <Button
                     variant="default"
                     key={mod.name}
                     onClick={() =>
-                      installMod(modLoader.id, mod.id, props.data.executable.id)
+                      installMod(modLoader.id, mod.id, props.game.id)
                     }
                   >
                     Install {mod.name}
@@ -72,7 +68,7 @@ export const InstalledGameModal = (props: Props) => {
         ))}
         <label>Debug Data</label>
         <Code sx={{ overflow: "auto" }}>
-          <pre>{JSON.stringify(props.data, null, 2)}</pre>
+          <pre>{JSON.stringify(props.game, null, 2)}</pre>
         </Code>
       </Stack>
     </Modal>
