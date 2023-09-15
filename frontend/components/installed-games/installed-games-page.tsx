@@ -102,16 +102,21 @@ export function InstalledGamesPage() {
   const updateFilter = (newFilter: Partial<Filter>) =>
     setFilter((previousFilter) => ({ ...previousFilter, ...newFilter }));
 
-  const [filteredGames, sort, setSort] = useFilteredList(
-    tableHeaders,
-    Object.values(gameMap),
-    (game) =>
+  const filterGame = useCallback(
+    (game: Game) =>
       includesOneOf(filter.text, [game.name]) &&
       (!filter.architecture || game.architecture === filter.architecture) &&
       (!filter.operatingSystem ||
         game.operatingSystem === filter.operatingSystem) &&
       (!filter.scriptingBackend ||
-        game.scriptingBackend === filter.scriptingBackend)
+        game.scriptingBackend === filter.scriptingBackend),
+    [filter]
+  );
+
+  const [filteredGames, sort, setSort] = useFilteredList(
+    tableHeaders,
+    Object.values(gameMap),
+    filterGame
   );
 
   const tableComponents: TableComponents<Game, any> = useMemo(

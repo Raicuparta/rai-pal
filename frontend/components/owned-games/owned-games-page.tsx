@@ -19,7 +19,6 @@ import { useCallback, useMemo, useState } from "react";
 import { includesOneOf } from "../../util/filter";
 import { OwnedGameModal } from "./owned-game-modal";
 import { TableHead, TableHeader } from "@components/table/table-head";
-import { useTableSort } from "@hooks/use-table-sort";
 import { useFilteredList } from "@hooks/use-filtered-list";
 
 const tableHeaders: TableHeader<OwnedUnityGame, keyof OwnedUnityGame>[] = [
@@ -43,13 +42,18 @@ export function OwnedGamesPage() {
     linuxOnly: false,
   });
 
+  const filterGame = useCallback(
+    (game: OwnedUnityGame) =>
+      includesOneOf(filter.text, [game.name, game.id.toString()]) &&
+      (!filter.linuxOnly || game.osList.includes("Linux")) &&
+      (!filter.hideInstalled || !game.installed),
+    [filter]
+  );
+
   const [filteredGames, sort, setSort] = useFilteredList(
     tableHeaders,
     ownedGames,
-    (game) =>
-      includesOneOf(filter.text, [game.name, game.id.toString()]) &&
-      (!filter.linuxOnly || game.osList.includes("Linux")) &&
-      (!filter.hideInstalled || !game.installed)
+    filterGame
   );
 
   const renderHeaders = useCallback(

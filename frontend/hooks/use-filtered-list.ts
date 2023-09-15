@@ -27,7 +27,7 @@ export function useFilteredList<TItem, TKey extends keyof TItem>(
         return multiplier * `${valueA}`.localeCompare(`${valueB}`);
       }
     });
-  }, [filter, data, sort, tableHeaders]);
+  }, [data, sort, tableHeaders]);
 
   return [filteredData, sort, setSort] as const;
 }
