@@ -143,17 +143,13 @@ export function InstalledGamesPage() {
           {isLoading ? "Finding Steam games..." : "Refresh"}
         </Button>
       </Flex>
-      {error && (
-        <Alert color="red" sx={{ overflow: "auto", flex: 1 }}>
+      {error ? <Alert color="red" sx={{ overflow: "auto", flex: 1 }}>
           <pre>{error}</pre>
-        </Alert>
-      )}
-      {selectedGame && (
-        <InstalledGameModal
+        </Alert> : null}
+      {selectedGame ? <InstalledGameModal
           game={selectedGame}
           onClose={() => setSelectedGame(undefined)}
-        />
-      )}
+        /> : null}
       <VirtualizedTable
         data={filteredGames}
         itemContent={InstalledGameRow}

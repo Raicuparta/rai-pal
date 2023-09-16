@@ -11,16 +11,16 @@ import { Fragment } from "react";
 import { GameName } from "./game-executable-name";
 
 type Props = {
-  game: Game;
-  onClose: () => void;
+  readonly game: Game;
+  readonly onClose: () => void;
 };
 
-export const InstalledGameModal = (props: Props) => {
+export function InstalledGameModal(props: Props) {
   const [modLoaders] = useModLoaders();
 
   return (
     <Modal
-      opened={true}
+      opened
       onClose={props.onClose}
       title={<GameName game={props.game} />}
       centered
@@ -73,4 +73,4 @@ export const InstalledGameModal = (props: Props) => {
       </Stack>
     </Modal>
   );
-};
+}

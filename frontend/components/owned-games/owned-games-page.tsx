@@ -1,18 +1,9 @@
-import {
-  Box,
-  Button,
-  Checkbox,
-  Flex,
-  Input,
-  Stack,
-  Table,
-  Text,
-} from "@mantine/core";
+import { Button, Checkbox, Flex, Input, Stack, Text } from "@mantine/core";
 import { MdRefresh } from "react-icons/md";
 import { OwnedGameRow } from "./owned-game-row";
 import { useOwnedUnityGames } from "@hooks/use-backend-data";
 import { OwnedUnityGame } from "@api/bindings";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { includesOneOf } from "../../util/filter";
 import { OwnedGameModal } from "./owned-game-modal";
 import { TableHeader } from "@components/table/table-head";
@@ -56,12 +47,10 @@ export function OwnedGamesPage() {
 
   return (
     <Stack h="100%">
-      {selectedGame && (
-        <OwnedGameModal
+      {selectedGame ? <OwnedGameModal
           selectedGame={selectedGame}
           onClose={() => setSelectedGame(undefined)}
-        />
-      )}
+        /> : null}
       <Flex gap="md">
         <Input
           placeholder="Find..."

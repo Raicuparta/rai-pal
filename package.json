@@ -10,7 +10,8 @@
     "tauri": "tauri",
     "update-icons": "tauri icon backend/icons/icon-source.png",
     "frontend:build": "tsc && vite build",
-    "frontend:dev": "vite"
+    "frontend:dev": "vite",
+    "lint": "eslint . --ext .ts,.tsx --fix"
   },
   "devDependencies": {
     "@emotion/react": "^11.11.1",
@@ -28,5 +29,13 @@
     "react-virtuoso": "^4.5.1",
     "typescript": "^5.2.2",
     "vite": "^4.4.9"
+  },
+  "dependencies": {
+    "@typescript-eslint/eslint-plugin": "^6.7.0",
+    "eslint": "^8.49.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-react": "^7.33.2",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.3"
   }
 }

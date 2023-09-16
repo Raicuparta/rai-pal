@@ -3,8 +3,8 @@ import { OwnedUnityGame } from "@api/bindings";
 import { open } from "@tauri-apps/api/shell";
 
 type Props = {
-  selectedGame: OwnedUnityGame;
-  onClose: () => void;
+  readonly selectedGame: OwnedUnityGame;
+  readonly onClose: () => void;
 };
 
 export function OwnedGameModal(props: Props) {
@@ -12,7 +12,7 @@ export function OwnedGameModal(props: Props) {
     <Modal
       title={props.selectedGame.name}
       centered
-      opened={true}
+      opened
       onClose={props.onClose}
     >
       <Button.Group orientation="vertical">

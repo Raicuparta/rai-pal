@@ -7,10 +7,10 @@ import { getTableComponents } from "./table-components";
 
 interface Props<TItem, TKey extends keyof TItem, Context = any>
   extends TableVirtuosoProps<TItem, Context> {
-  headerItems: TableHeader<TItem, TKey>[];
-  onChangeSort?: (sort: TKey) => void;
-  sort?: TableSort<TItem, TKey>;
-  onClickItem: (item: TItem) => void;
+  readonly headerItems: TableHeader<TItem, TKey>[];
+  readonly onChangeSort?: (sort: TKey) => void;
+  readonly sort?: TableSort<TItem, TKey>;
+  readonly onClickItem: (item: TItem) => void;
 }
 
 export function VirtualizedTable<

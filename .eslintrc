@@ -1,0 +1,31 @@
+{
+  "env": { "browser": true, "es2020": true },
+  "extends": [
+    "eslint:recommended",
+    "plugin:react/recommended",
+    "plugin:react/jsx-runtime",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:react-hooks/recommended",
+    "prettier"
+  ],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": { "ecmaVersion": "latest", "sourceType": "module" },
+  "plugins": ["react-refresh"],
+  "rules": {
+    "react-refresh/only-export-components": "warn",
+    "react/jsx-filename-extension": [1, { "extensions": [".tsx"] }],
+    "react/jsx-sort-props": 0,
+    "react/destructuring-assignment": 0,
+    "react/jsx-max-depth": 0,
+    "react/jsx-no-literals": 0,
+    "react/jsx-handler-names": 0,
+    "react/jsx-no-bind": 0,
+    "react/jsx-props-no-spreading": 0,
+    "react/no-multi-comp": 0
+  },
+  "settings": {
+    "react": {
+      "version": "detect"
+    }
+  }
+}

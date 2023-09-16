@@ -14,9 +14,9 @@ type TableSort<TItem, TKey extends keyof TItem> = {
 };
 
 type Props<TItem, TKey extends keyof TItem> = {
-  headers: TableHeader<TItem, TKey>[];
-  onChangeSort?: (sort: TKey) => void;
-  sort?: TableSort<TItem, TKey>;
+  readonly headers: TableHeader<TItem, TKey>[];
+  readonly onChangeSort?: (sort: TKey) => void;
+  readonly sort?: TableSort<TItem, TKey>;
 };
 
 export function TableHead<TItem, TKey extends keyof TItem>(

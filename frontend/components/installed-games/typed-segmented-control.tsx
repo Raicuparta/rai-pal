@@ -5,9 +5,9 @@ export type SegmentedControlData<T extends string> = SegmentedControlItem & {
 };
 
 type Props<T extends string> = {
-  data: SegmentedControlData<T>[];
-  onChange: (value?: T) => void;
-  value?: T;
+  readonly data: SegmentedControlData<T>[];
+  readonly onChange: (value?: T) => void;
+  readonly value?: T;
 };
 
 export function TypedSegmentedControl<T extends string>(props: Props<T>) {
