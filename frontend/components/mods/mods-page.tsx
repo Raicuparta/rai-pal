@@ -10,8 +10,7 @@ import {
 import { MdFolder, MdRefresh } from "react-icons/md";
 import { Fragment } from "react";
 import { useModLoaders } from "@hooks/use-backend-data";
-import { Mod, openModFolder } from "@api/bindings";
-import { open } from "@tauri-apps/api/shell";
+import { openModFolder } from "@api/bindings";
 
 export function ModsPage() {
   const [modLoaders, isLoading, refreshMods] = useModLoaders();

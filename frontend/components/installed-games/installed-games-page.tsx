@@ -1,9 +1,8 @@
-import { Alert, Box, Button, Flex, Input, Stack, Table } from "@mantine/core";
-import { useMemo, useState } from "react";
+import { Alert, Button, Flex, Input, Stack } from "@mantine/core";
+import { useState } from "react";
 import { MdRefresh } from "react-icons/md";
 import { useGameMap } from "@hooks/use-backend-data";
 import { includesOneOf } from "../../util/filter";
-import { TableComponents } from "react-virtuoso";
 import { InstalledGameRow } from "./installed-game-row";
 import { InstalledGameModal } from "./installed-game-modal";
 import {
@@ -143,13 +142,17 @@ export function InstalledGamesPage() {
           {isLoading ? "Finding Steam games..." : "Refresh"}
         </Button>
       </Flex>
-      {error ? <Alert color="red" sx={{ overflow: "auto", flex: 1 }}>
+      {error ? (
+        <Alert color="red" sx={{ overflow: "auto", flex: 1 }}>
           <pre>{error}</pre>
-        </Alert> : null}
-      {selectedGame ? <InstalledGameModal
+        </Alert>
+      ) : null}
+      {selectedGame ? (
+        <InstalledGameModal
           game={selectedGame}
           onClose={() => setSelectedGame(undefined)}
-        /> : null}
+        />
+      ) : null}
       <VirtualizedTable
         data={filteredGames}
         itemContent={InstalledGameRow}

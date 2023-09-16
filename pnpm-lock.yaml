@@ -8,6 +8,9 @@ dependencies:
   '@typescript-eslint/eslint-plugin':
     specifier: ^6.7.0
     version: 6.7.0(@typescript-eslint/parser@6.7.0)(eslint@8.49.0)(typescript@5.2.2)
+  '@typescript-eslint/parser':
+    specifier: ^6.7.0
+    version: 6.7.0(eslint@8.49.0)(typescript@5.2.2)
   eslint:
     specifier: ^8.49.0
     version: 8.49.0

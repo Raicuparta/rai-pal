@@ -5,6 +5,7 @@ import { TableHead, TableHeader } from "./table-head";
 import { TableSort } from "@hooks/use-table-sort";
 import { getTableComponents } from "./table-components";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 interface Props<TItem, TKey extends keyof TItem, Context = any>
   extends TableVirtuosoProps<TItem, Context> {
   readonly headerItems: TableHeader<TItem, TKey>[];
@@ -16,6 +17,7 @@ interface Props<TItem, TKey extends keyof TItem, Context = any>
 export function VirtualizedTable<
   TItem,
   TKey extends keyof TItem,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   Context = any
 >({
   headerItems,
