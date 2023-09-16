@@ -47,10 +47,12 @@ export function OwnedGamesPage() {
 
   return (
     <Stack h="100%">
-      {selectedGame ? <OwnedGameModal
+      {selectedGame ? (
+        <OwnedGameModal
           selectedGame={selectedGame}
           onClose={() => setSelectedGame(undefined)}
-        /> : null}
+        />
+      ) : null}
       <Flex gap="md">
         <Input
           placeholder="Find..."
@@ -81,7 +83,7 @@ export function OwnedGamesPage() {
           onClick={refreshOwnedGames}
           sx={{ flex: 1, maxWidth: 300 }}
         >
-          Refresh
+          {isLoading ? "Finding owned games..." : "Refresh"}
         </Button>
       </Flex>
       <Text>

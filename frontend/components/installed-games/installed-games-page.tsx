@@ -133,13 +133,12 @@ export function InstalledGamesPage() {
           </Stack>
         </FilterMenu>
         <Button
-          disabled={isLoading}
           onClick={refreshGameMap}
           loading={isLoading}
           sx={{ flex: 1, maxWidth: 300 }}
           leftIcon={<MdRefresh />}
         >
-          {isLoading ? "Finding Steam games..." : "Refresh"}
+          {isLoading ? "Finding installed games..." : "Refresh"}
         </Button>
       </Flex>
       {error ? (

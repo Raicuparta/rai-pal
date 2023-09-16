@@ -1,7 +1,7 @@
 import { getGameMap, getModLoaders, getOwnedGames } from "@api/bindings";
 import { useCallback, useEffect, useState } from "react";
 
-type ApiFunction<TResultData> = () => Promise<TResultData>;
+type ApiFunction<TResultData> = (ignoreCache: boolean) => Promise<TResultData>;
 
 function useBackendData<TData>(
   apiFunction: ApiFunction<TData>,
@@ -11,15 +11,18 @@ function useBackendData<TData>(
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const updateData = useCallback((ignoreCache = false) => {
-    setIsLoading(true);
-    setError("");
+  const updateData = useCallback(
+    (ignoreCache = false) => {
+      setIsLoading(true);
+      setError("");
 
-    apiFunction()
-      .then(setData)
-      .catch((error) => setError(`Failed to retrieve backend data: ${error}`))
-      .finally(() => setIsLoading(false));
-  }, []);
+      apiFunction(ignoreCache)
+        .then(setData)
+        .catch((error) => setError(`Failed to retrieve backend data: ${error}`))
+        .finally(() => setIsLoading(false));
+    },
+    [apiFunction]
+  );
 
   const refresh = useCallback(() => {
     updateData(true);

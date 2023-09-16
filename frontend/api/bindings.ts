@@ -10,12 +10,12 @@ declare global {
 // Function avoids 'window not defined' in SSR
 const invoke = () => window.__TAURI_INVOKE__;
 
-export function getGameMap() {
-    return invoke()<{ [key: string]: Game }>("get_game_map")
+export function getGameMap(ignoreCache: boolean) {
+    return invoke()<{ [key: string]: Game }>("get_game_map", { ignoreCache })
 }
 
-export function getOwnedGames() {
-    return invoke()<OwnedUnityGame[]>("get_owned_games")
+export function getOwnedGames(ignoreCache: boolean) {
+    return invoke()<OwnedUnityGame[]>("get_owned_games", { ignoreCache })
 }
 
 export function openGameFolder(gameId: string) {
