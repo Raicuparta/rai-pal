@@ -209,9 +209,12 @@ async fn install_mod(
         .get(&game_id)
         .ok_or_else(|| anyhow!("Failed to find game with ID {game_id}"))?;
 
-    mod_loader
-        .install_mod(game, mod_id)
-        .map_err(|err| anyhow!("Failed to install mod: {err}").into())
+    mod_loader.install_mod(game, mod_id.clone()).map_err(|err| {
+        anyhow!(
+            "Failed to install mod '{mod_id}' from mod loader {mod_loader_id} on game {game_id}: {err}",
+        )
+        .into()
+    })
 }
 
 fn export_ts_definitions() -> Result {
