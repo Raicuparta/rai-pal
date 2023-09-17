@@ -86,7 +86,7 @@ const tableHeaders: TableHeader<Game, keyof Game>[] = [
   {
     id: "unityVersion",
     label: "Unity",
-    width: 100,
+    width: 120,
     customSort: (dataA, dataB) =>
       getUnityVersionScore(dataA) - getUnityVersionScore(dataB),
   },

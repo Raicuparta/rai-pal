@@ -7,7 +7,7 @@ import {
 } from "@api/bindings";
 import { GameName } from "./game-executable-name";
 
-type ColorRecord<T extends string> = Record<T, DefaultMantineColor>;
+type ColorRecord<T extends string = string> = Record<T, DefaultMantineColor>;
 
 const operatingSystemColor: ColorRecord<OperatingSystem> = {
   Linux: "yellow",
@@ -24,6 +24,11 @@ const architectureColor: ColorRecord<Architecture> = {
 const scriptingBackendColor: ColorRecord<UnityScriptingBackend> = {
   Il2Cpp: "red",
   Mono: "grape",
+} as const;
+
+const unityLegacinessColor: ColorRecord = {
+  true: "orange",
+  false: "pink",
 } as const;
 
 export function InstalledGameRow(_: number, game: Game) {
@@ -47,7 +52,11 @@ export function InstalledGameRow(_: number, game: Game) {
           {game.scriptingBackend}
         </Badge>
       </td>
-      <td>{game.unityVersion}</td>
+      <td>
+        <Badge color={unityLegacinessColor[`${game.isLegacy}`]}>
+          {game.unityVersion}
+        </Badge>
+      </td>
     </>
   );
 }

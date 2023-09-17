@@ -88,18 +88,20 @@ impl Game {
             return None;
         }
 
+        let unity_version = get_unity_version(full_path);
+
         Some(Game {
             architecture,
             full_path: full_path.to_owned(),
             id,
-            is_legacy: false,
+            is_legacy: is_legacy(&unity_version),
             operating_system,
             mod_files_path: String::new(),
             name,
             discriminator,
             scripting_backend: get_unity_scripting_backend(full_path).ok()?,
             steam_launch: steam_launch.cloned(),
-            unity_version: get_unity_version(full_path),
+            unity_version,
         })
     }
 
@@ -233,6 +235,15 @@ fn get_unity_version(game_exe_path: &Path) -> String {
     }
 
     "Unknown".into()
+}
+
+fn is_legacy(unity_version: &str) -> bool {
+    unity_version
+        .split('.')
+        .map(|part| part.parse::<u32>().unwrap_or(0))
+        .collect::<Vec<u32>>()
+        .as_slice()
+        < [5, 5].as_slice()
 }
 
 fn get_version_from_asset(asset_path: &Path) -> Result<String> {
