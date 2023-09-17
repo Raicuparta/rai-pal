@@ -11,7 +11,7 @@ use specta::Type;
 use std::{
     collections::HashMap,
     fmt::Display,
-    fs::{metadata, File},
+    fs::{self, metadata, File},
     io::Read,
     path::{Path, PathBuf},
 };
@@ -182,39 +182,29 @@ fn get_data_path(game_exe_path: &Path) -> Result<PathBuf> {
 }
 
 fn get_os_and_architecture(file_path: &Path) -> Result<(OperatingSystem, Architecture)> {
-    File::open(file_path).map_or_else(
-        |_| Err(anyhow!("Failed to open the file")),
-        |mut file| {
-            let mut buffer = Vec::new();
-            if file.read_to_end(&mut buffer).is_ok() {
-                if let Ok(elf) = Elf::parse(&buffer) {
-                    match elf.header.e_machine {
-                        goblin::elf::header::EM_X86_64 => {
-                            Ok((OperatingSystem::Linux, Architecture::X64))
-                        }
-                        goblin::elf::header::EM_386 => {
-                            Ok((OperatingSystem::Linux, Architecture::X86))
-                        }
-                        _ => Ok((OperatingSystem::Linux, Architecture::Unknown)),
+    fs::read(file_path)
+        .map(|file| {
+            if let Ok(elf) = Elf::parse(&file) {
+                match elf.header.e_machine {
+                    goblin::elf::header::EM_X86_64 => (OperatingSystem::Linux, Architecture::X64),
+                    goblin::elf::header::EM_386 => (OperatingSystem::Linux, Architecture::X86),
+                    _ => (OperatingSystem::Linux, Architecture::Unknown),
+                }
+            } else if let Ok(pe) = PE::parse(&file) {
+                match pe.header.coff_header.machine {
+                    goblin::pe::header::COFF_MACHINE_X86_64 => {
+                        (OperatingSystem::Windows, Architecture::X64)
                     }
-                } else if let Ok(pe) = PE::parse(&buffer) {
-                    match pe.header.coff_header.machine {
-                        goblin::pe::header::COFF_MACHINE_X86_64 => {
-                            Ok((OperatingSystem::Windows, Architecture::X64))
-                        }
-                        goblin::pe::header::COFF_MACHINE_X86 => {
-                            Ok((OperatingSystem::Windows, Architecture::X86))
-                        }
-                        _ => Ok((OperatingSystem::Windows, Architecture::Unknown)),
+                    goblin::pe::header::COFF_MACHINE_X86 => {
+                        (OperatingSystem::Windows, Architecture::X86)
                     }
-                } else {
-                    Ok((OperatingSystem::Unknown, Architecture::Unknown))
+                    _ => (OperatingSystem::Windows, Architecture::Unknown),
                 }
             } else {
-                Err(anyhow!("Failed to read the file"))
+                (OperatingSystem::Unknown, Architecture::Unknown)
             }
-        },
-    )
+        })
+        .map_err(|err| anyhow!("Failed to read the file: {err}"))
 }
 
 fn get_unity_version(game_exe_path: &Path) -> String {

@@ -11,6 +11,7 @@
 #![deny(clippy::clone_on_ref_ptr)]
 #![deny(clippy::decimal_literal_representation)]
 #![deny(clippy::shadow_unrelated)]
+#![deny(clippy::verbose_file_reads)]
 
 use anyhow::anyhow;
 use bepinex::BepInEx;
