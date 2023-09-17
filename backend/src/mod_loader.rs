@@ -55,24 +55,25 @@ impl BepInEx {
     }
 
     pub fn install(&self, game: &Game) -> Result {
-        let mod_loader_folder = &self
-            .path
-            .join(game.scripting_backend.to_string())
+        let scripting_backend_path = &self.path.join(game.scripting_backend.to_string());
+        let architecture_path = scripting_backend_path
             .join(game.operating_system.to_string())
             .join(game.architecture.to_string());
 
-        let mod_files_folder = mod_loader_folder.join("mod-files");
-        let copy_to_game_folder = mod_loader_folder.join("copy-to-game");
+        let mod_files_folder = architecture_path.join("mod-files");
+        let copy_to_game_folder = architecture_path.join("copy-to-game");
 
-        copy_dir_all(mod_files_folder, game.get_data_folder()?)
+        let game_data_folder = &game.get_data_folder()?;
+
+        copy_dir_all(mod_files_folder, game_data_folder)
             .map_err(|err| anyhow!("Failed to copy mod loader files: {err}"))?;
 
-        copy_dir_all(
-            copy_to_game_folder,
-            game.full_path
-                .parent()
-                .ok_or(anyhow!("Failed to get game parent folder"))?,
-        )?;
+        let game_folder = game
+            .full_path
+            .parent()
+            .ok_or(anyhow!("Failed to get game parent folder"))?;
+
+        copy_dir_all(copy_to_game_folder, game_folder)?;
 
         let config_origin_path = &self.path.join("config").join(if game.is_legacy {
             "BepInEx-legacy.cfg"
@@ -80,11 +81,24 @@ impl BepInEx {
             "BepInEx.cfg"
         });
 
-        let config_target_folder = game.get_data_folder()?.join("BepInEx").join("config");
+        let config_target_folder = game_data_folder.join("BepInEx").join("config");
 
         fs::create_dir_all(&config_target_folder)?;
 
         fs::copy(config_origin_path, config_target_folder.join("BepInEx.cfg"))?;
+
+        let doorstop_config =
+            fs::read_to_string(scripting_backend_path.join("doorstop_config.ini"))?;
+
+        fs::write(
+            game_folder.join("doorstop_config.ini"),
+            doorstop_config.replace(
+                "{{MOD_FILES_PATH}}",
+                game_data_folder
+                    .to_str()
+                    .ok_or(anyhow!("Failed to parse game data folder"))?,
+            ),
+        )?;
 
         Ok(())
     }
