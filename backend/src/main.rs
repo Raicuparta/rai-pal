@@ -3,8 +3,9 @@
 #![deny(clippy::all)]
 
 use anyhow::anyhow;
+use bepinex::BepInEx;
 use game::GameMap;
-use mod_loader::BepInEx;
+use mod_loader::ModLoader;
 use specta::ts::{BigIntExportBehavior, ExportConfiguration};
 use std::future::Future;
 use std::result::Result as StdResult;
@@ -19,6 +20,7 @@ use steam_owned_unity_games::{get_steam_owned_unity_games, OwnedUnityGame};
 use tauri_specta::ts;
 
 mod appinfo;
+mod bepinex;
 mod files;
 mod game;
 mod r#mod;
