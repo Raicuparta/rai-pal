@@ -6,6 +6,7 @@
 #![allow(clippy::used_underscore_binding)]
 #![allow(clippy::unused_async)]
 #![deny(clippy::unwrap_used)]
+#![deny(clippy::expect_used)]
 
 use anyhow::anyhow;
 use bepinex::BepInEx;
@@ -257,5 +258,5 @@ fn main() {
             open_mod_folder,
         ])
         .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+        .unwrap_or_else(|err| println!("Failed to run Tauri application: {err}"));
 }

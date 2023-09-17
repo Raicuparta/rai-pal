@@ -43,8 +43,7 @@ impl ModLoader for BepInEx {
                 .join("*")
                 .to_str()
                 .ok_or_else(|| anyhow!("Failed to parse mods folder path"))?,
-        )
-        .expect("Failed to glob")
+        )?
         .collect();
 
         Ok(entries
