@@ -34,7 +34,7 @@ impl Mod {
     pub fn install(&self, game: &Game) -> Result {
         copy_dir_all(
             &self.path,
-            game.get_data_folder()?
+            game.get_installed_mods_folder()?
                 .join("BepInEx")
                 .join("plugins")
                 .join(self.name.as_str()),

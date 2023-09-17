@@ -69,7 +69,7 @@ impl ModLoader for BepInEx {
         let mod_files_folder = architecture_path.join("mod-files");
         let copy_to_game_folder = architecture_path.join("copy-to-game");
 
-        let game_data_folder = &game.get_data_folder()?;
+        let game_data_folder = &game.get_installed_mods_folder()?;
 
         copy_dir_all(mod_files_folder, game_data_folder)
             .map_err(|err| anyhow!("Failed to copy mod loader files: {err}"))?;

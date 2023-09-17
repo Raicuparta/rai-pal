@@ -112,15 +112,18 @@ impl Game {
         }
     }
 
-    pub fn get_data_folder(&self) -> Result<PathBuf> {
+    pub fn get_installed_mods_folder(&self) -> Result<PathBuf> {
         let project_dirs = ProjectDirs::from("com", "raicuparta", "rai-pal")
             .ok_or_else(|| anyhow!("Failed to get user data folders"))?;
 
-        Ok(project_dirs.data_dir().join("games").join(&self.id))
+        let installed_mods_folder = project_dirs.data_dir().join("games").join(&self.id);
+        fs::create_dir_all(&installed_mods_folder)?;
+
+        Ok(installed_mods_folder)
     }
 
     pub fn open_mods_folder(&self) -> Result {
-        open::that_detached(self.get_data_folder()?)
+        open::that_detached(self.get_installed_mods_folder()?)
             .map_err(|err| anyhow!("Failed to open game mods folder: {err}"))
     }
 
@@ -142,7 +145,7 @@ impl Game {
 }
 
 fn is_unity_exe(game_exe_path: &Path) -> bool {
-    get_data_path(game_exe_path).map_or(false, |data_path| {
+    get_unity_data_path(game_exe_path).map_or(false, |data_path| {
         game_exe_path.is_file() && data_path.is_dir()
     })
 }
@@ -170,7 +173,7 @@ fn file_name_without_extension(file_path: &Path) -> Option<&str> {
     file_path.file_stem()?.to_str()
 }
 
-fn get_data_path(game_exe_path: &Path) -> Result<PathBuf> {
+fn get_unity_data_path(game_exe_path: &Path) -> Result<PathBuf> {
     game_exe_path
         .parent()
         .map_or(Err(anyhow!("Failed to get parent directory")), |parent| {
@@ -210,7 +213,7 @@ fn get_os_and_architecture(file_path: &Path) -> Result<(OperatingSystem, Archite
 fn get_unity_version(game_exe_path: &Path) -> String {
     const ASSETS_WITH_VERSION: [&str; 3] = ["globalgamemanagers", "mainData", "data.unity3d"];
 
-    if let Ok(data_path) = get_data_path(game_exe_path) {
+    if let Ok(data_path) = get_unity_data_path(game_exe_path) {
         for asset_name in &ASSETS_WITH_VERSION {
             let asset_path = data_path.join(asset_name);
 
