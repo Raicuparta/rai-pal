@@ -1,4 +1,4 @@
-import { Button, Code, Modal, Stack } from "@mantine/core";
+import { Alert, Button, Code, Modal, Stack } from "@mantine/core";
 import { useModLoaders } from "@hooks/use-backend-data";
 import {
   Game,
@@ -7,7 +7,7 @@ import {
   openGameModsFolder,
   startGame,
 } from "@api/bindings";
-import { Fragment } from "react";
+import { Fragment, useState } from "react";
 import { GameName } from "./game-executable-name";
 
 type Props = {
@@ -17,6 +17,11 @@ type Props = {
 
 export function InstalledGameModal(props: Props) {
   const [modLoaders] = useModLoaders();
+  const [error, setError] = useState("");
+
+  const handleError = (error: unknown) => {
+    setError(`${error}`);
+  };
 
   return (
     <Modal
@@ -27,19 +32,27 @@ export function InstalledGameModal(props: Props) {
       size="lg"
     >
       <Stack>
+        {error ? (
+          <Alert color="red" sx={{ overflow: "auto", flex: 1 }}>
+            <pre>{error}</pre>
+          </Alert>
+        ) : null}
         <Button.Group orientation="vertical">
-          <Button variant="default" onClick={() => startGame(props.game.id)}>
+          <Button
+            variant="default"
+            onClick={() => startGame(props.game.id).catch(handleError)}
+          >
             Start Game
           </Button>
           <Button
             variant="default"
-            onClick={() => openGameFolder(props.game.id)}
+            onClick={() => openGameFolder(props.game.id).catch(handleError)}
           >
             Open Game Folder
           </Button>
           <Button
             variant="default"
-            onClick={() => openGameModsFolder(props.game.id)}
+            onClick={() => openGameModsFolder(props.game.id).catch(handleError)}
           >
             Open Mods Folder
           </Button>
@@ -57,7 +70,9 @@ export function InstalledGameModal(props: Props) {
                     variant="default"
                     key={mod.name}
                     onClick={() =>
-                      installMod(modLoader.id, mod.id, props.game.id)
+                      installMod(modLoader.id, mod.id, props.game.id).catch(
+                        handleError
+                      )
                     }
                   >
                     Install {mod.name}
