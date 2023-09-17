@@ -2,6 +2,7 @@ use anyhow::anyhow;
 use glob::glob;
 use serde::Serialize;
 use specta::Type;
+use std::fs;
 use std::path::{Path, PathBuf};
 
 use crate::files::copy_dir_all;
@@ -72,6 +73,18 @@ impl BepInEx {
                 .parent()
                 .ok_or(anyhow!("Failed to get game parent folder"))?,
         )?;
+
+        let config_origin_path = &self.path.join("config").join(if game.is_legacy {
+            "BepInEx-legacy.cfg"
+        } else {
+            "BepInEx.cfg"
+        });
+
+        let config_target_folder = game.get_data_folder()?.join("BepInEx").join("config");
+
+        fs::create_dir_all(&config_target_folder)?;
+
+        fs::copy(config_origin_path, config_target_folder.join("BepInEx.cfg"))?;
 
         Ok(())
     }
