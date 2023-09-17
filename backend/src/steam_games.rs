@@ -39,7 +39,10 @@ pub async fn get() -> Result<game::Map> {
 
                 if let Some(name) = &app.name {
                     let discriminator = if used_names.contains(name) {
-                        executable_path.to_str().map(string::ToString::to_string)
+                        launch_option.description.as_ref().map_or_else(
+                            || executable_path.to_str().map(string::ToString::to_string),
+                            |description| Some(description.clone()),
+                        )
                     } else {
                         None
                     };
