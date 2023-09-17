@@ -1,17 +1,18 @@
-use crate::appinfo::read_appinfo;
-use crate::game::{Game, GameMap};
+use crate::appinfo;
+use crate::game;
 use crate::Result;
 use anyhow::anyhow;
 use std::collections::HashMap;
+use std::string;
 use steamlocate::SteamDir;
 
-pub async fn get_steam_games() -> Result<GameMap> {
+pub async fn get() -> Result<game::Map> {
     let mut steam_dir =
         SteamDir::locate().ok_or(anyhow!("Failed to locate Steam on this system."))?;
 
-    let app_info = read_appinfo(&steam_dir.path.join("appcache/appinfo.vdf"));
+    let app_info = appinfo::read(&steam_dir.path.join("appcache/appinfo.vdf"));
 
-    let mut game_map: GameMap = HashMap::new();
+    let mut game_map: game::Map = HashMap::new();
 
     for (_, app, app_info) in steam_dir.apps().iter().filter_map(|(app_id, app)| {
         Some((
@@ -28,14 +29,12 @@ pub async fn get_steam_games() -> Result<GameMap> {
 
                 if let Some(name) = &app.name {
                     let discriminator = if game_map.values().any(|game| &game.name == name) {
-                        executable_path
-                            .to_str()
-                            .map(|executable_path_string| executable_path_string.to_string())
+                        executable_path.to_str().map(string::ToString::to_string)
                     } else {
                         None
                     };
 
-                    if let Some(game) = Game::new(
+                    if let Some(game) = game::Game::new(
                         executable_id.clone(),
                         name.clone(),
                         discriminator,

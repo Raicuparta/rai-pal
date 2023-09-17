@@ -45,8 +45,7 @@ pub fn find_keys<'a>(kv: &'a KeyValue, keys: &[&str]) -> Option<&'a ValueType> {
         return None;
     }
 
-    let key = keys.first()?;
-    let value = kv.get(&key.to_string());
+    let value = kv.get(*keys.first()?);
     if keys.len() == 1 {
         value
     } else if let Some(ValueType::KeyValue(kv)) = value {
@@ -293,7 +292,7 @@ fn read_string<R: std::io::Read>(reader: &mut R, wide: bool) -> Result<String> {
     }
 }
 
-pub fn read_appinfo(path: &Path) -> Result<SteamAppInfoFile> {
+pub fn read(path: &Path) -> Result<SteamAppInfoFile> {
     let mut appinfo_file = BufReader::new(fs::File::open(path)?);
     SteamAppInfoFile::load(&mut appinfo_file)
 }

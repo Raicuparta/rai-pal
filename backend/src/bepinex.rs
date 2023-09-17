@@ -156,7 +156,7 @@ fn ensure_wine_will_load_bepinex(compat_data_dir: &Path) -> Result {
         "[Software\\\\Wine\\\\DllOverrides]",
         "winhttp",
         "native,builtin",
-    )?;
+    );
 
     if user_reg_data != ensured_user_reg_data {
         fs::copy(&user_reg, user_reg.parent().unwrap().join("user.reg.bak"))?;
@@ -166,7 +166,7 @@ fn ensure_wine_will_load_bepinex(compat_data_dir: &Path) -> Result {
     Ok(())
 }
 
-fn reg_add_in_section(reg: &str, section: &str, key: &str, value: &str) -> Result<String> {
+fn reg_add_in_section(reg: &str, section: &str, key: &str, value: &str) -> String {
     let mut split = reg.split('\n').collect::<Vec<_>>();
 
     let mut begin = 0;
@@ -187,16 +187,17 @@ fn reg_add_in_section(reg: &str, section: &str, key: &str, value: &str) -> Resul
         }
     }
 
-    let new_line = format!("\"{}\"=\"{}\"", key, value);
+    let line_start = &format!("\"{key}\"");
+    let new_line = format!("{line_start}=\"{value}\"");
 
     for (_, line) in split.iter_mut().enumerate().skip(begin) {
-        if line.starts_with(&format!("\"{}\"", key)) {
+        if line.starts_with(line_start) {
             *line = &new_line;
-            return Ok(split.join("\n"));
+            return split.join("\n");
         }
     }
 
     split.insert(end, &new_line);
 
-    Ok(split.join("\n"))
+    split.join("\n")
 }

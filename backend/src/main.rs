@@ -1,22 +1,22 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 #![deny(clippy::all)]
+#![deny(clippy::pedantic)]
+#![allow(clippy::used_underscore_binding)]
+#![allow(clippy::unused_async)]
 
 use anyhow::anyhow;
 use bepinex::BepInEx;
-use game::GameMap;
 use mod_loader::ModLoader;
+use serde::Serialize;
+use specta::collect_types;
 use specta::ts::{BigIntExportBehavior, ExportConfiguration};
 use std::future::Future;
 use std::result::Result as StdResult;
 use std::sync::Mutex;
 use std::{backtrace::Backtrace, panic};
+use steam_owned_unity_games::OwnedUnityGame;
 use tauri::api::dialog::message;
-
-use serde::Serialize;
-use specta::collect_types;
-use steam_game::get_steam_games;
-use steam_owned_unity_games::{get_steam_owned_unity_games, OwnedUnityGame};
 use tauri_specta::ts;
 
 mod appinfo;
@@ -25,7 +25,7 @@ mod files;
 mod game;
 mod r#mod;
 mod mod_loader;
-mod steam_game;
+mod steam_games;
 mod steam_owned_unity_games;
 
 struct Error(anyhow::Error);
@@ -49,7 +49,7 @@ impl Serialize for Error {
 }
 
 struct AppState {
-    game_map: Mutex<Option<GameMap>>,
+    game_map: Mutex<Option<game::Map>>,
     owned_games: Mutex<Option<Vec<OwnedUnityGame>>>,
 }
 
@@ -95,8 +95,8 @@ where
 async fn get_game_map(
     state: tauri::State<'_, AppState>,
     ignore_cache: bool,
-) -> CommandResult<GameMap> {
-    get_state_data(&state.game_map, get_steam_games, ignore_cache).await
+) -> CommandResult<game::Map> {
+    get_state_data(&state.game_map, steam_games::get, ignore_cache).await
 }
 
 #[tauri::command]
@@ -107,7 +107,7 @@ async fn get_owned_games(
 ) -> CommandResult<Vec<OwnedUnityGame>> {
     get_state_data(
         &state.owned_games,
-        get_steam_owned_unity_games,
+        steam_owned_unity_games::get,
         ignore_cache,
     )
     .await

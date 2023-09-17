@@ -1,8 +1,7 @@
-use std::path::Path;
-
 use crate::game::Game;
 use crate::Result;
 use crate::{game::UnityScriptingBackend, r#mod::Mod};
+use std::path::Path;
 
 pub trait ModLoader {
     fn get_mods(path: &Path, scripting_backend: UnityScriptingBackend) -> Result<Vec<Mod>>;

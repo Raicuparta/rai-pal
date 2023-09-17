@@ -1,3 +1,4 @@
+use crate::{appinfo, Result};
 use anyhow::anyhow;
 use appinfo::SteamLaunchOption;
 use core::fmt;
@@ -15,8 +16,6 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use crate::{appinfo, Result};
-
 #[derive(Serialize, Type, Clone, PartialEq, Eq, Hash, Debug)]
 pub enum UnityScriptingBackend {
     Il2Cpp,
@@ -26,7 +25,7 @@ pub enum UnityScriptingBackend {
 // TODO clean this up, avoid repetition if possible.
 impl Display for UnityScriptingBackend {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{:?}", self)
+        write!(f, "{self:?}")
     }
 }
 
@@ -40,7 +39,7 @@ pub enum Architecture {
 // TODO clean this up, avoid repetition if possible.
 impl Display for Architecture {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{:?}", self)
+        write!(f, "{self:?}")
     }
 }
 
@@ -54,7 +53,7 @@ pub enum OperatingSystem {
 // TODO clean this up, avoid repetition if possible.
 impl Display for OperatingSystem {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{:?}", self)
+        write!(f, "{self:?}")
     }
 }
 
@@ -264,4 +263,4 @@ fn get_version_from_asset(asset_path: &Path) -> Result<String> {
     )
 }
 
-pub type GameMap = HashMap<String, Game>;
+pub type Map = HashMap<String, Game>;
