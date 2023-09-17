@@ -81,6 +81,23 @@ impl Game {
         full_path: &Path,
         steam_launch: Option<&SteamLaunchOption>,
     ) -> Option<Self> {
+        // Games exported by Unity always have one of these extensions.
+        const VALID_EXTENSIONS: [&str; 3] = ["exe", "x86_64", "x86"];
+
+        // We ignore games that don't have an extension.
+        let extension = full_path.extension()?.to_str()?;
+
+        if !VALID_EXTENSIONS.contains(&extension) {
+            return None;
+        }
+
+        if extension == "x86" && full_path.with_extension("x86_64").is_file() {
+            // If there's an x86_64 version, we ignore the x86 version.
+            // I'm just gonna presume there are no x86 modders out there,
+            // if someone cries about it I'll make this smarter.
+            return None;
+        }
+
         let (operating_system, architecture) = get_os_and_architecture(full_path).ok()?;
 
         if !is_unity_exe(full_path) {
@@ -187,26 +204,48 @@ fn get_unity_data_path(game_exe_path: &Path) -> Result<PathBuf> {
 fn get_os_and_architecture(file_path: &Path) -> Result<(OperatingSystem, Architecture)> {
     fs::read(file_path)
         .map(|file| {
-            if let Ok(elf) = Elf::parse(&file) {
-                match elf.header.e_machine {
-                    goblin::elf::header::EM_X86_64 => (OperatingSystem::Linux, Architecture::X64),
-                    goblin::elf::header::EM_386 => (OperatingSystem::Linux, Architecture::X86),
-                    _ => (OperatingSystem::Linux, Architecture::Unknown),
-                }
-            } else if let Ok(pe) = PE::parse(&file) {
-                match pe.header.coff_header.machine {
+            let elf_result = match Elf::parse(&file) {
+                Ok(elf) => match elf.header.e_machine {
+                    goblin::elf::header::EM_X86_64 => {
+                        Ok((OperatingSystem::Linux, Architecture::X64))
+                    }
+                    goblin::elf::header::EM_386 => Ok((OperatingSystem::Linux, Architecture::X86)),
+                    _ => Ok((OperatingSystem::Linux, Architecture::Unknown)),
+                },
+                Err(err) => Err(anyhow!("Failed to parse as ELF: {}", err)),
+            };
+
+            if elf_result.is_ok() {
+                return elf_result;
+            }
+
+            let pe_result = match PE::parse(&file) {
+                Ok(pe) => match pe.header.coff_header.machine {
                     goblin::pe::header::COFF_MACHINE_X86_64 => {
-                        (OperatingSystem::Windows, Architecture::X64)
+                        Ok((OperatingSystem::Windows, Architecture::X64))
                     }
                     goblin::pe::header::COFF_MACHINE_X86 => {
-                        (OperatingSystem::Windows, Architecture::X86)
+                        Ok((OperatingSystem::Windows, Architecture::X86))
                     }
-                    _ => (OperatingSystem::Windows, Architecture::Unknown),
-                }
-            } else {
-                (OperatingSystem::Unknown, Architecture::Unknown)
+                    _ => Ok((OperatingSystem::Windows, Architecture::Unknown)),
+                },
+                Err(err) => Err(anyhow!("Failed to parse as PE: {}", err)),
+            };
+
+            if pe_result.is_ok() {
+                return pe_result;
             }
-        })
+
+            println!("Failed to parse exe as ELF or PE");
+            if let Err(err) = elf_result {
+                println!("ELF error: {err}");
+            }
+            if let Err(err) = pe_result {
+                println!("PE error: {err}");
+            }
+
+            Ok((OperatingSystem::Unknown, Architecture::Unknown))
+        })?
         .map_err(|err| anyhow!("Failed to read the file: {err}"))
 }
 
