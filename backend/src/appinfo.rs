@@ -208,7 +208,7 @@ fn value_to_path(value: Option<&ValueType>) -> Option<PathBuf> {
     }
 }
 
-fn value_to_kv(value: Option<&ValueType>) -> Option<&KeyValue> {
+const fn value_to_kv(value: Option<&ValueType>) -> Option<&KeyValue> {
     match value {
         Some(ValueType::KeyValue(kv_value)) => Some(kv_value),
         _ => None,

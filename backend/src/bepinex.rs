@@ -25,7 +25,7 @@ impl BepInEx {
         mods.append(&mut Self::get_mods(path, UnityScriptingBackend::Mono)?);
         let mod_count = mods.len();
 
-        Ok(BepInEx {
+        Ok(Self {
             id: "BepInEx".to_owned(),
             mods,
             path: path.to_path_buf(),
@@ -42,7 +42,7 @@ impl ModLoader for BepInEx {
             mods_folder_path
                 .join("*")
                 .to_str()
-                .ok_or(anyhow!("Failed to parse mods folder path"))?,
+                .ok_or_else(|| anyhow!("Failed to parse mods folder path"))?,
         )
         .expect("Failed to glob")
         .collect();
@@ -73,7 +73,7 @@ impl ModLoader for BepInEx {
         let game_folder = game
             .full_path
             .parent()
-            .ok_or(anyhow!("Failed to get game parent folder"))?;
+            .ok_or_else(|| anyhow!("Failed to get game parent folder"))?;
 
         copy_dir_all(copy_to_game_folder, game_folder)?;
 
@@ -98,7 +98,7 @@ impl ModLoader for BepInEx {
                 "{{MOD_FILES_PATH}}",
                 game_data_folder
                     .to_str()
-                    .ok_or(anyhow!("Failed to parse game data folder"))?,
+                    .ok_or_else(|| anyhow!("Failed to parse game data folder"))?,
             ),
         )?;
 
@@ -110,11 +110,11 @@ impl ModLoader for BepInEx {
                         .parent()
                         // TODO if we had the library folder we probably didn't need to to this.
                         // Also, I'm not sure if three parents is always the case.
-                        .ok_or(anyhow!("Failed to get parent"))?
+                        .ok_or_else(|| anyhow!("Failed to get parent"))?
                         .parent()
-                        .ok_or(anyhow!("Failed to get parent"))?
+                        .ok_or_else(|| anyhow!("Failed to get parent"))?
                         .parent()
-                        .ok_or(anyhow!("Failed to get parent"))?
+                        .ok_or_else(|| anyhow!("Failed to get parent"))?
                         .join("compatdata")
                         .join(steam_launch.app_id.to_string()),
                 )?;
@@ -129,7 +129,7 @@ impl ModLoader for BepInEx {
             .mods
             .iter()
             .find(|game_mod| game_mod.id == mod_id)
-            .ok_or(anyhow!("Failed to find mod with id {mod_id}"))?;
+            .ok_or_else(|| anyhow!("Failed to find mod with id {mod_id}"))?;
 
         self.install(game)?;
         game_mod.install(game)
@@ -140,7 +140,7 @@ impl ModLoader for BepInEx {
             .mods
             .iter()
             .find(|game_mod| game_mod.id == mod_id)
-            .ok_or(anyhow!("Failed to find mod with id {mod_id}"))?;
+            .ok_or_else(|| anyhow!("Failed to find mod with id {mod_id}"))?;
 
         game_mod.open_folder()
     }

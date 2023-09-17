@@ -2,6 +2,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 #![deny(clippy::all)]
 #![deny(clippy::pedantic)]
+#![deny(clippy::nursery)]
 #![allow(clippy::used_underscore_binding)]
 #![allow(clippy::unused_async)]
 
@@ -59,9 +60,9 @@ async fn get_state_data<TData, TFunction, TFunctionResult>(
     ignore_cache: bool,
 ) -> CommandResult<TData>
 where
-    TFunction: Fn() -> TFunctionResult + std::panic::UnwindSafe,
-    TData: Clone,
-    TFunctionResult: Future<Output = Result<TData>>,
+    TFunction: Fn() -> TFunctionResult + std::panic::UnwindSafe + Send,
+    TData: Clone + Send,
+    TFunctionResult: Future<Output = Result<TData>> + Send,
 {
     if !ignore_cache {
         if let Ok(mutex_guard) = mutex.lock() {
@@ -120,7 +121,7 @@ async fn get_mod_loaders(handle: tauri::AppHandle) -> CommandResult<Vec<BepInEx>
         &handle
             .path_resolver()
             .resolve_resource("resources/bepinex")
-            .ok_or(anyhow!("Failed to find BepInEx folder"))?,
+            .ok_or_else(|| anyhow!("Failed to find BepInEx folder"))?,
     )?]))
 }
 
@@ -130,7 +131,7 @@ async fn open_game_folder(game_id: String, state: tauri::State<'_, AppState>) ->
     let game_map = get_game_map(state, false).await?;
     let game = game_map
         .get(&game_id)
-        .ok_or(anyhow!("Failed to find game with id {game_id}"))?;
+        .ok_or_else(|| anyhow!("Failed to find game with id {game_id}"))?;
 
     game.open_game_folder()
         .map_err(|error| anyhow!("Failed to open game folder: {error}").into())
@@ -145,7 +146,7 @@ async fn open_game_mods_folder(
     let game_map = get_game_map(state, false).await?;
     let game = game_map
         .get(&game_id)
-        .ok_or(anyhow!("Failed to find game with id {game_id}"))?;
+        .ok_or_else(|| anyhow!("Failed to find game with id {game_id}"))?;
 
     game.open_mods_folder()
         .map_err(|error| anyhow!("Failed to open game folder: {error}").into())
@@ -162,7 +163,7 @@ async fn open_mod_folder(
     let mod_loader = mod_loaders
         .iter()
         .find(|loader| loader.id == mod_loader_id)
-        .ok_or(anyhow!("Failed to find mod loader with id {mod_loader_id}"))?;
+        .ok_or_else(|| anyhow!("Failed to find mod loader with id {mod_loader_id}"))?;
 
     mod_loader
         .open_mod_folder(mod_id)
@@ -175,7 +176,7 @@ async fn start_game(game_id: String, state: tauri::State<'_, AppState>) -> Comma
     let game_map = get_game_map(state, false).await?;
     let game = game_map
         .get(&game_id)
-        .ok_or(anyhow!("Failed to find game with id {game_id}"))?;
+        .ok_or_else(|| anyhow!("Failed to find game with id {game_id}"))?;
 
     game.start()
         .map_err(|error| anyhow!("Failed to open game folder: {error}").into())
@@ -194,12 +195,12 @@ async fn install_mod(
     let mod_loader = mod_loaders
         .iter()
         .find(|loader| loader.id == mod_loader_id)
-        .ok_or(anyhow!("Failed to find mod loader with id {mod_loader_id}"))?;
+        .ok_or_else(|| anyhow!("Failed to find mod loader with id {mod_loader_id}"))?;
 
     let game_map = get_game_map(state, false).await?;
     let game = game_map
         .get(&game_id)
-        .ok_or(anyhow!("Failed to find game with ID {game_id}"))?;
+        .ok_or_else(|| anyhow!("Failed to find game with ID {game_id}"))?;
 
     mod_loader
         .install_mod(game, mod_id)

@@ -19,11 +19,11 @@ impl Mod {
     pub fn new(path: &Path, scripting_backend: &UnityScriptingBackend) -> Result<Self> {
         let name = String::from(
             path.file_name()
-                .ok_or(anyhow!("Failed to get file name"))?
+                .ok_or_else(|| anyhow!("Failed to get file name"))?
                 .to_string_lossy(),
         );
 
-        Ok(Mod {
+        Ok(Self {
             id: format!("{scripting_backend}/{name}"),
             path: path.to_path_buf(),
             name,

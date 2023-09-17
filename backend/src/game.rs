@@ -89,7 +89,7 @@ impl Game {
 
         let unity_version = get_unity_version(full_path);
 
-        Some(Game {
+        Some(Self {
             architecture,
             full_path: full_path.to_owned(),
             id,
@@ -125,16 +125,19 @@ impl Game {
     }
 
     pub fn start(&self) -> Result {
-        if let Some(steam_launch) = &self.steam_launch {
-            open::that_detached(format!(
-                "steam://launch/{}/{}",
-                steam_launch.app_id,
-                steam_launch.app_type.as_deref().unwrap_or("")
-            ))
-        } else {
-            open::that_detached(&self.full_path)
-        }
-        .map_err(|err| anyhow!("Failed to run game: {err}"))
+        self.steam_launch
+            .as_ref()
+            .map_or_else(
+                || open::that_detached(&self.full_path),
+                |steam_launch| {
+                    open::that_detached(format!(
+                        "steam://launch/{}/{}",
+                        steam_launch.app_id,
+                        steam_launch.app_type.as_deref().unwrap_or("")
+                    ))
+                },
+            )
+            .map_err(|err| anyhow!("Failed to run game: {err}"))
     }
 }
 
