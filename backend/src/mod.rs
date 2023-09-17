@@ -1,10 +1,10 @@
 use std::path::{Path, PathBuf};
 
 use anyhow::anyhow;
-use directories::ProjectDirs;
 use serde::Serialize;
 use specta::Type;
 
+use crate::files::copy_dir_all;
 use crate::game::{Game, UnityScriptingBackend};
 use crate::Result;
 
@@ -34,14 +34,14 @@ impl Mod {
     }
 
     pub fn install(&self, game: &Game) -> Result {
-        let project_dirs = ProjectDirs::from("com", "raicuparta", "pal")
-            .ok_or_else(|| anyhow!("Failed to get user data folders"))?;
-
-        let game_mods_folder = project_dirs.data_dir().join("mods");
-
-        // let installed_mod_folder = game_mods_folder.join(path);
-
-        todo!()
+        copy_dir_all(
+            &self.path,
+            game.get_data_folder()?
+                .join("BepInEx")
+                .join("plugins")
+                .join(self.name.as_str()),
+        )
+        .map_err(|err| anyhow!("Failed to install mod: {err}"))
     }
 
     pub fn open_folder(&self) -> Result {

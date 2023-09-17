@@ -19,6 +19,7 @@ use steam_owned_unity_games::{get_steam_owned_unity_games, OwnedUnityGame};
 use tauri_specta::ts;
 
 mod appinfo;
+mod files;
 mod game;
 mod r#mod;
 mod mod_loader;

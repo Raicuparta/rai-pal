@@ -1,11 +1,10 @@
 use anyhow::anyhow;
-use directories::ProjectDirs;
 use glob::glob;
 use serde::Serialize;
 use specta::Type;
 use std::path::{Path, PathBuf};
-use std::{fs, io};
 
+use crate::files::copy_dir_all;
 use crate::game::Game;
 use crate::Result;
 use crate::{game::UnityScriptingBackend, r#mod::Mod};
@@ -34,13 +33,7 @@ impl BepInEx {
     }
 
     fn get_mods(path: &Path, scripting_backend: UnityScriptingBackend) -> Result<Vec<Mod>> {
-        let mods_folder_path = path
-            .join(if scripting_backend == UnityScriptingBackend::Il2Cpp {
-                "il2cpp"
-            } else {
-                "mono"
-            })
-            .join("mods");
+        let mods_folder_path = path.join(scripting_backend.to_string()).join("mods");
 
         let entries: Vec<_> = glob(
             mods_folder_path
@@ -61,9 +54,6 @@ impl BepInEx {
     }
 
     pub fn install(&self, game: &Game) -> Result {
-        let project_dirs = ProjectDirs::from("com", "raicuparta", "pal")
-            .ok_or_else(|| anyhow!("Failed to get user data folders"))?;
-
         let mod_loader_folder = &self
             .path
             .join(game.scripting_backend.to_string())
@@ -73,13 +63,7 @@ impl BepInEx {
         let mod_files_folder = mod_loader_folder.join("mod-files");
         let copy_to_game_folder = mod_loader_folder.join("copy-to-game");
 
-        if let Some(thing) = mod_files_folder.to_str() {
-            println!("folder?? {}", thing);
-        }
-
-        let game_mods_data_folder = project_dirs.data_dir().join("games").join(&game.id);
-
-        copy_dir_all(mod_files_folder, game_mods_data_folder)
+        copy_dir_all(mod_files_folder, game.get_data_folder()?)
             .map_err(|err| anyhow!("Failed to copy mod loader files: {err}"))?;
 
         copy_dir_all(
@@ -112,18 +96,4 @@ impl BepInEx {
 
         game_mod.open_folder()
     }
-}
-
-fn copy_dir_all(src: impl AsRef<Path>, dst: impl AsRef<Path>) -> io::Result<()> {
-    fs::create_dir_all(&dst)?;
-    for entry in fs::read_dir(src)? {
-        let entry = entry?;
-        let ty = entry.file_type()?;
-        if ty.is_dir() {
-            copy_dir_all(entry.path(), dst.as_ref().join(entry.file_name()))?;
-        } else {
-            fs::copy(entry.path(), dst.as_ref().join(entry.file_name()))?;
-        }
-    }
-    Ok(())
 }

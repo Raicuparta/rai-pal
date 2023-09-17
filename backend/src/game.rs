@@ -111,15 +111,15 @@ impl Game {
         }
     }
 
-    pub fn get_mods_folder(&self) -> Result<PathBuf> {
-        let project_dirs = ProjectDirs::from("com", "raicuparta", "pal")
+    pub fn get_data_folder(&self) -> Result<PathBuf> {
+        let project_dirs = ProjectDirs::from("com", "raicuparta", "rai-pal")
             .ok_or_else(|| anyhow!("Failed to get user data folders"))?;
 
         Ok(project_dirs.data_dir().join("games").join(&self.id))
     }
 
     pub fn open_mods_folder(&self) -> Result {
-        open::that_detached(self.get_mods_folder()?)
+        open::that_detached(self.get_data_folder()?)
             .map_err(|err| anyhow!("Failed to open game mods folder: {err}"))
     }
 
