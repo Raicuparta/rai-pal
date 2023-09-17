@@ -24,12 +24,7 @@ pub async fn get_steam_owned_unity_games() -> Result<Vec<OwnedUnityGame>> {
     // TODO this is repeated in steam_game.
     // Should try to cache it.
     let steam_dir = SteamDir::locate().ok_or(anyhow!("Failed to locate Steam on this system."))?;
-    let app_info = read_appinfo(
-        &steam_dir
-            .path
-            .join("appcache/appinfo.vdf")
-            .to_string_lossy(),
-    );
+    let app_info = read_appinfo(&steam_dir.path.join("appcache/appinfo.vdf"));
 
     return Ok(response
         .split(',')

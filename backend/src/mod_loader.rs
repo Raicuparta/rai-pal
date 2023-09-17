@@ -6,7 +6,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use crate::files::copy_dir_all;
-use crate::game::Game;
+use crate::game::{Game, OperatingSystem};
 use crate::Result;
 use crate::{game::UnityScriptingBackend, r#mod::Mod};
 
@@ -100,6 +100,25 @@ impl BepInEx {
             ),
         )?;
 
+        if std::env::consts::OS != "windows" && game.operating_system == OperatingSystem::Windows {
+            if let Some(steam_launch) = &game.steam_launch {
+                ensure_wine_will_load_bepinex(
+                    &game
+                        .full_path
+                        .parent()
+                        // TODO if we had the library folder we probably didn't need to to this.
+                        // Also, I'm not sure if three parents is always the case.
+                        .ok_or(anyhow!("Failed to get parent"))?
+                        .parent()
+                        .ok_or(anyhow!("Failed to get parent"))?
+                        .parent()
+                        .ok_or(anyhow!("Failed to get parent"))?
+                        .join("compatdata")
+                        .join(steam_launch.app_id.to_string()),
+                )?;
+            }
+        }
+
         Ok(())
     }
 
@@ -123,4 +142,59 @@ impl BepInEx {
 
         game_mod.open_folder()
     }
+}
+
+fn ensure_wine_will_load_bepinex(compat_data_dir: &Path) -> Result {
+    println!("ensure_wine_will_load_bepinex {compat_data_dir:?}");
+
+    let user_reg = compat_data_dir.join("pfx").join("user.reg");
+    let user_reg_data = fs::read_to_string(&user_reg)?;
+    let ensured_user_reg_data = reg_add_in_section(
+        &user_reg_data,
+        "[Software\\\\Wine\\\\DllOverrides]",
+        "winhttp",
+        "native,builtin",
+    )?;
+
+    if user_reg_data != ensured_user_reg_data {
+        fs::copy(&user_reg, user_reg.parent().unwrap().join("user.reg.bak"))?;
+        fs::write(&user_reg, ensured_user_reg_data)?;
+    }
+
+    Ok(())
+}
+
+fn reg_add_in_section(reg: &str, section: &str, key: &str, value: &str) -> Result<String> {
+    let mut split = reg.split('\n').collect::<Vec<_>>();
+
+    let mut begin = 0;
+
+    for (index, line) in split.iter().enumerate() {
+        if line.starts_with(section) {
+            begin = index + 2;
+            break;
+        }
+    }
+
+    let mut end = 0;
+
+    for (index, line) in split.iter().enumerate().skip(begin) {
+        if line.is_empty() {
+            end = index;
+            break;
+        }
+    }
+
+    let new_line = format!("\"{}\"=\"{}\"", key, value);
+
+    for (_, line) in split.iter_mut().enumerate().skip(begin) {
+        if line.starts_with(&format!("\"{}\"", key)) {
+            *line = &new_line;
+            return Ok(split.join("\n"));
+        }
+    }
+
+    split.insert(end, &new_line);
+
+    Ok(split.join("\n"))
 }

@@ -9,12 +9,7 @@ pub async fn get_steam_games() -> Result<GameMap> {
     let mut steam_dir =
         SteamDir::locate().ok_or(anyhow!("Failed to locate Steam on this system."))?;
 
-    let app_info = read_appinfo(
-        &steam_dir
-            .path
-            .join("appcache/appinfo.vdf")
-            .to_string_lossy(),
-    );
+    let app_info = read_appinfo(&steam_dir.path.join("appcache/appinfo.vdf"));
 
     let mut game_map: GameMap = HashMap::new();
 

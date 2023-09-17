@@ -3,7 +3,12 @@ use anyhow::anyhow;
 use byteorder::{LittleEndian, ReadBytesExt};
 use serde::Serialize;
 use specta::Type;
-use std::{collections::HashMap, fs, io::BufReader, path::PathBuf};
+use std::{
+    collections::HashMap,
+    fs,
+    io::BufReader,
+    path::{Path, PathBuf},
+};
 
 const BIN_NONE: u8 = b'\x00';
 const BIN_STRING: u8 = b'\x01';
@@ -288,7 +293,7 @@ fn read_string<R: std::io::Read>(reader: &mut R, wide: bool) -> Result<String> {
     }
 }
 
-pub fn read_appinfo(path: &str) -> Result<SteamAppInfoFile> {
+pub fn read_appinfo(path: &Path) -> Result<SteamAppInfoFile> {
     let mut appinfo_file = BufReader::new(fs::File::open(path)?);
     SteamAppInfoFile::load(&mut appinfo_file)
 }
