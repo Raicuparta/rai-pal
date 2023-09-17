@@ -149,7 +149,8 @@ impl ModLoader for BepInEx {
 fn ensure_wine_will_load_bepinex(compat_data_dir: &Path) -> Result {
     println!("ensure_wine_will_load_bepinex {compat_data_dir:?}");
 
-    let user_reg = compat_data_dir.join("pfx").join("user.reg");
+    let pfx_folder = compat_data_dir.join("pfx");
+    let user_reg = pfx_folder.join("user.reg");
     let user_reg_data = fs::read_to_string(&user_reg)?;
     let ensured_user_reg_data = reg_add_in_section(
         &user_reg_data,
@@ -159,7 +160,7 @@ fn ensure_wine_will_load_bepinex(compat_data_dir: &Path) -> Result {
     );
 
     if user_reg_data != ensured_user_reg_data {
-        fs::copy(&user_reg, user_reg.parent().unwrap().join("user.reg.bak"))?;
+        fs::copy(&user_reg, pfx_folder.join("user.reg.bak"))?;
         fs::write(&user_reg, ensured_user_reg_data)?;
     }
 

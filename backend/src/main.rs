@@ -5,6 +5,7 @@
 #![deny(clippy::nursery)]
 #![allow(clippy::used_underscore_binding)]
 #![allow(clippy::unused_async)]
+#![deny(clippy::unwrap_used)]
 
 use anyhow::anyhow;
 use bepinex::BepInEx;
@@ -207,7 +208,7 @@ async fn install_mod(
         .map_err(|err| anyhow!("Failed to install mod: {err}").into())
 }
 
-fn main() {
+fn export_ts_definitions() -> Result {
     #[cfg(debug_assertions)]
     ts::export_with_cfg(
         collect_types![
@@ -219,21 +220,26 @@ fn main() {
             open_game_mods_folder,
             start_game,
             open_mod_folder,
-        ]
-        .unwrap(),
+        ]?,
         ExportConfiguration::default().bigint(BigIntExportBehavior::BigInt),
         "../frontend/api/bindings.ts",
     )
-    .unwrap();
+    .map_err(|err| anyhow!("{err}"))
+}
 
+fn main() {
     std::panic::set_hook(Box::new(|info| {
+        println!("Panic: {info}");
         message(
             None::<&tauri::Window>,
             "Failed to execute command",
             info.to_string(),
         );
-        println!("Panic: {info}");
     }));
+
+    export_ts_definitions().unwrap_or_else(|err| {
+        println!("Failed to export TS definitions: {err}");
+    });
 
     tauri::Builder::default()
         .manage(AppState {
