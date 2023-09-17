@@ -40,16 +40,16 @@ type KeyValue = HashMap<String, ValueType>;
 // Recursively search for the specified sequence of keys in the key-value data.
 // The order of the keys dictates the hierarchy, with all except the last having
 // to be a Value::KeyValueType.
-pub fn find_keys<'a>(kv: &'a KeyValue, keys: &[&str]) -> Option<&'a ValueType> {
+pub fn find_keys<'a>(key_value: &'a KeyValue, keys: &[&str]) -> Option<&'a ValueType> {
     if keys.is_empty() {
         return None;
     }
 
-    let value = kv.get(*keys.first()?);
+    let value = key_value.get(*keys.first()?);
     if keys.len() == 1 {
         value
-    } else if let Some(ValueType::KeyValue(kv)) = value {
-        find_keys(kv, &keys[1..])
+    } else if let Some(ValueType::KeyValue(child_key_value)) = value {
+        find_keys(child_key_value, &keys[1..])
     } else {
         None
     }

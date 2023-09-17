@@ -7,6 +7,10 @@
 #![allow(clippy::unused_async)]
 #![deny(clippy::unwrap_used)]
 #![deny(clippy::expect_used)]
+#![deny(clippy::as_conversions)]
+#![deny(clippy::clone_on_ref_ptr)]
+#![deny(clippy::decimal_literal_representation)]
+#![deny(clippy::shadow_unrelated)]
 
 use anyhow::anyhow;
 use bepinex::BepInEx;

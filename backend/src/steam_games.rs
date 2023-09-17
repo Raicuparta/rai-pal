@@ -10,17 +10,15 @@ pub async fn get() -> Result<game::Map> {
     let mut steam_dir =
         SteamDir::locate().ok_or_else(|| anyhow!("Failed to locate Steam on this system."))?;
 
-    let app_info = appinfo::read(&steam_dir.path.join("appcache/appinfo.vdf"));
+    let app_info_file = appinfo::read(&steam_dir.path.join("appcache/appinfo.vdf"))?;
 
     let mut game_map: game::Map = HashMap::new();
 
-    for (_, app, app_info) in steam_dir.apps().iter().filter_map(|(app_id, app)| {
-        Some((
-            app_id,
-            app.as_ref()?,
-            app_info.as_ref().ok()?.apps.get(app_id)?,
-        ))
-    }) {
+    for (_, app, app_info) in steam_dir
+        .apps()
+        .iter()
+        .filter_map(|(app_id, app)| Some((app_id, app.as_ref()?, app_info_file.apps.get(app_id)?)))
+    {
         for launch_option in &app_info.launch_options {
             let executable_id = format!("{}_{}", launch_option.app_id, launch_option.launch_id);
 

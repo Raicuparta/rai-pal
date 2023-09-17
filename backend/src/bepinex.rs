@@ -35,8 +35,13 @@ impl BepInEx {
 }
 
 impl ModLoader for BepInEx {
-    fn get_mods(path: &Path, scripting_backend: UnityScriptingBackend) -> Result<Vec<Mod>> {
-        let mods_folder_path = path.join(scripting_backend.to_string()).join("mods");
+    fn get_mods(
+        mod_loader_path: &Path,
+        scripting_backend: UnityScriptingBackend,
+    ) -> Result<Vec<Mod>> {
+        let mods_folder_path = mod_loader_path
+            .join(scripting_backend.to_string())
+            .join("mods");
 
         let entries: Vec<_> = glob(
             mods_folder_path
@@ -49,7 +54,7 @@ impl ModLoader for BepInEx {
         Ok(entries
             .iter()
             .filter_map(|entry| match entry {
-                Ok(path) => Some(Mod::new(path, &scripting_backend).ok()?),
+                Ok(mod_path) => Some(Mod::new(mod_path, &scripting_backend).ok()?),
                 Err(_) => None,
             })
             .collect())

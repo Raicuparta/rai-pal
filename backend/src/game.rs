@@ -182,9 +182,7 @@ fn get_data_path(game_exe_path: &Path) -> Result<PathBuf> {
 }
 
 fn get_os_and_architecture(file_path: &Path) -> Result<(OperatingSystem, Architecture)> {
-    let file = File::open(file_path);
-
-    file.map_or_else(
+    File::open(file_path).map_or_else(
         |_| Err(anyhow!("Failed to open the file")),
         |mut file| {
             let mut buffer = Vec::new();
