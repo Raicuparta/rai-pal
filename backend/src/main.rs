@@ -78,23 +78,13 @@ where
         }
     }
 
-    return match panic::catch_unwind(function) {
-        Ok(result) => {
-            let data = result.await?;
-            if let Ok(mut mutex_guard) = mutex.lock() {
-                *mutex_guard = Some(data.clone());
-            }
-            Ok(data)
-        }
-        Err(error) => Err(anyhow!(
-            "{}\nBacktrace:\n{}",
-            error
-                .downcast::<&str>()
-                .unwrap_or_else(|_| Box::new("Unknown Source of Error")),
-            Backtrace::force_capture()
-        )
-        .into()),
-    };
+    let result = function();
+    let data = result.await?;
+    if let Ok(mut mutex_guard) = mutex.lock() {
+        *mutex_guard = Some(data.clone());
+    }
+
+    Ok(data)
 }
 
 #[tauri::command]
@@ -217,6 +207,8 @@ async fn install_mod(
 }
 
 fn main() {
+    // Since I'm making all exposed functions async, panics won't crash anything important, I think.
+    // So I can just catch panics here and show a system message with the error.
     std::panic::set_hook(Box::new(|info| {
         println!("Panic: {info}");
         message(
