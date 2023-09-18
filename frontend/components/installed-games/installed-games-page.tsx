@@ -57,27 +57,6 @@ const scriptingBackendOptions: SegmentedControlData<UnityScriptingBackend>[] = [
   { label: "Mono", value: "Mono" },
 ];
 
-const getUnityVersionScore = (game: Game) => {
-  const versionParts = game.unityVersion.split(".");
-  let score = 0;
-  for (let i = 0; i < versionParts.length; i++) {
-    const versionPart = versionParts[i];
-    if (versionPart === undefined) continue;
-    let versionPartNumber = parseInt(versionPart);
-
-    if (i === 0 && versionPartNumber >= 2017) {
-      // Unity 2017 is Unity 6, 2018 is 7, etc.
-      versionPartNumber -= 2011;
-    }
-
-    if (isNaN(versionPartNumber)) continue;
-
-    score += Math.pow(versionPartNumber, versionParts.length - i);
-  }
-
-  return score;
-};
-
 const tableHeaders: TableHeader<Game, keyof Game>[] = [
   { id: "name", label: "Game", width: undefined },
   { id: "operatingSystem", label: "OS", width: 100 },
@@ -88,7 +67,10 @@ const tableHeaders: TableHeader<Game, keyof Game>[] = [
     label: "Unity",
     width: 120,
     customSort: (dataA, dataB) =>
-      getUnityVersionScore(dataA) - getUnityVersionScore(dataB),
+      dataA.unityVersion.major - dataB.unityVersion.major ||
+      dataA.unityVersion.minor - dataB.unityVersion.minor ||
+      dataA.unityVersion.patch - dataB.unityVersion.patch ||
+      0,
   },
 ];
 

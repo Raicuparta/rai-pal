@@ -12,6 +12,15 @@ use std::{
     path::{Path, PathBuf},
 };
 
+serializable_struct!(UnityVersion {
+    pub major: u32,
+    pub minor: u32,
+    pub patch: u32,
+    pub suffix: String,
+    pub is_legacy: bool,
+    pub display: String,
+});
+
 serializable_enum!(UnityScriptingBackend { Il2Cpp, Mono });
 serializable_enum!(Architecture { Unknown, X64, X86 });
 serializable_enum!(OperatingSystem {
@@ -24,12 +33,11 @@ serializable_struct!(Game {
     pub id: String,
     pub name: String,
     pub discriminator: Option<String>,
-    pub is_legacy: bool,
     pub mod_files_path: String,
     pub full_path: PathBuf,
     pub architecture: Architecture,
     pub scripting_backend: UnityScriptingBackend,
-    pub unity_version: String,
+    pub unity_version: UnityVersion,
     pub operating_system: OperatingSystem,
     pub steam_launch: Option<SteamLaunchOption>,
 });
@@ -71,7 +79,6 @@ impl Game {
             architecture,
             full_path: full_path.to_owned(),
             id,
-            is_legacy: is_legacy(&unity_version),
             operating_system,
             mod_files_path: String::new(),
             name,
@@ -210,7 +217,7 @@ fn get_os_and_architecture(file_path: &Path) -> Result<(OperatingSystem, Archite
         .map_err(|err| anyhow!("Failed to read the file: {err}"))
 }
 
-fn get_unity_version(game_exe_path: &Path) -> String {
+fn get_unity_version(game_exe_path: &Path) -> UnityVersion {
     const ASSETS_WITH_VERSION: [&str; 3] = ["globalgamemanagers", "mainData", "data.unity3d"];
 
     if let Ok(data_path) = get_unity_data_path(game_exe_path) {
@@ -220,23 +227,34 @@ fn get_unity_version(game_exe_path: &Path) -> String {
             if let Ok(metadata) = metadata(&asset_path) {
                 if metadata.is_file() {
                     if let Ok(version) = get_version_from_asset(&asset_path) {
-                        return version;
+                        let mut version_parts = version.split('.').clone();
+                        let major = version_parts.next().unwrap_or("0").parse().unwrap_or(0);
+                        let minor = version_parts.next().unwrap_or("0").parse().unwrap_or(0);
+                        let patch = version_parts.next().unwrap_or("0").parse().unwrap_or(0);
+                        let suffix = version_parts.next().unwrap_or("0").to_string();
+
+                        return UnityVersion {
+                            major,
+                            minor,
+                            patch,
+                            suffix,
+                            display: version,
+                            is_legacy: major < 5 || (major == 5 && minor < 5),
+                        };
                     }
                 }
             }
         }
     }
 
-    "Unknown".into()
-}
-
-fn is_legacy(unity_version: &str) -> bool {
-    unity_version
-        .split('.')
-        .map(|part| part.parse::<u32>().unwrap_or(0))
-        .collect::<Vec<u32>>()
-        .as_slice()
-        < [5, 5].as_slice()
+    UnityVersion {
+        major: 0,
+        minor: 0,
+        patch: 0,
+        suffix: String::new(),
+        display: "Unknown".to_string(),
+        is_legacy: false,
+    }
 }
 
 fn get_version_from_asset(asset_path: &Path) -> Result<String> {
