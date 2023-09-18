@@ -1,6 +1,6 @@
 use crate::game::Game;
 use crate::Result;
-use crate::{game::UnityScriptingBackend, r#mod::Mod};
+use crate::{game::UnityScriptingBackend, game_mod::Mod};
 use std::path::Path;
 
 pub trait ModLoader {
