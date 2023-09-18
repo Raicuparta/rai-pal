@@ -21,7 +21,6 @@ use specta::ts::{BigIntExportBehavior, ExportConfiguration};
 use std::future::Future;
 use std::result::Result as StdResult;
 use std::sync::Mutex;
-use std::{backtrace::Backtrace, panic};
 use steam_owned_unity_games::OwnedUnityGame;
 use tauri::api::dialog::message;
 
