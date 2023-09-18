@@ -1,7 +1,6 @@
-use crate::{appinfo, Result};
+use crate::{appinfo, serializable_enum, Result};
 use anyhow::anyhow;
 use appinfo::SteamLaunchOption;
-use core::fmt;
 use directories::ProjectDirs;
 use goblin::elf::Elf;
 use goblin::pe::PE;
@@ -10,52 +9,18 @@ use serde::Serialize;
 use specta::Type;
 use std::{
     collections::HashMap,
-    fmt::Display,
     fs::{self, metadata, File},
     io::Read,
     path::{Path, PathBuf},
 };
 
-#[derive(Serialize, Type, Clone, PartialEq, Eq, Hash, Debug)]
-pub enum UnityScriptingBackend {
-    Il2Cpp,
-    Mono,
-}
-
-// TODO clean this up, avoid repetition if possible.
-impl Display for UnityScriptingBackend {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{self:?}")
-    }
-}
-
-#[derive(Serialize, Type, Clone, PartialEq, Eq, Hash, Debug)]
-pub enum Architecture {
-    Unknown,
-    X64,
-    X86,
-}
-
-// TODO clean this up, avoid repetition if possible.
-impl Display for Architecture {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{self:?}")
-    }
-}
-
-#[derive(Serialize, Type, Clone, PartialEq, Eq, Hash, Debug)]
-pub enum OperatingSystem {
+serializable_enum!(UnityScriptingBackend { Il2Cpp, Mono });
+serializable_enum!(Architecture { Unknown, X64, X86 });
+serializable_enum!(OperatingSystem {
     Unknown,
     Linux,
-    Windows,
-}
-
-// TODO clean this up, avoid repetition if possible.
-impl Display for OperatingSystem {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{self:?}")
-    }
-}
+    Windows
+});
 
 #[derive(Serialize, Type, Clone)]
 #[serde(rename_all = "camelCase")]

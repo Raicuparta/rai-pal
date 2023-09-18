@@ -31,6 +31,7 @@ mod appinfo;
 mod bepinex;
 mod files;
 mod game;
+mod macros;
 mod r#mod;
 mod mod_loader;
 mod steam_games;

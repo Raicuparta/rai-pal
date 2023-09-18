@@ -1,8 +1,6 @@
 use crate::Result;
 use anyhow::anyhow;
 use byteorder::{LittleEndian, ReadBytesExt};
-use serde::Serialize;
-use specta::Type;
 use std::{
     collections::HashMap,
     fs,
@@ -55,7 +53,7 @@ pub fn find_keys<'a>(key_value: &'a KeyValue, keys: &[&str]) -> Option<&'a Value
     }
 }
 
-#[derive(Debug, Serialize, Type, Clone)]
+#[derive(Debug, serde::Serialize, specta::Type, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct SteamLaunchOption {
     pub launch_id: String,

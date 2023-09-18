@@ -23,7 +23,7 @@
       }
     },
     "bundle": {
-      "active": true,
+      "active": false,
       "targets": "msi",
       "identifier": "com.raicuparta.pal",
       "icon": [
