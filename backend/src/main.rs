@@ -17,7 +17,6 @@ use anyhow::anyhow;
 use bepinex::BepInEx;
 use mod_loader::ModLoader;
 use serde::Serialize;
-use specta::collect_types;
 use specta::ts::{BigIntExportBehavior, ExportConfiguration};
 use std::future::Future;
 use std::result::Result as StdResult;
@@ -25,7 +24,6 @@ use std::sync::Mutex;
 use std::{backtrace::Backtrace, panic};
 use steam_owned_unity_games::OwnedUnityGame;
 use tauri::api::dialog::message;
-use tauri_specta::ts;
 
 mod appinfo;
 mod bepinex;
@@ -218,25 +216,6 @@ async fn install_mod(
     })
 }
 
-fn export_ts_definitions() -> Result {
-    #[cfg(debug_assertions)]
-    ts::export_with_cfg(
-        collect_types![
-            get_game_map,
-            get_owned_games,
-            open_game_folder,
-            get_mod_loaders,
-            install_mod,
-            open_game_mods_folder,
-            start_game,
-            open_mod_folder,
-        ]?,
-        ExportConfiguration::default().bigint(BigIntExportBehavior::BigInt),
-        "../frontend/api/bindings.ts",
-    )
-    .map_err(|err| anyhow!("{err}"))
-}
-
 fn main() {
     std::panic::set_hook(Box::new(|info| {
         println!("Panic: {info}");
@@ -247,16 +226,13 @@ fn main() {
         );
     }));
 
-    export_ts_definitions().unwrap_or_else(|err| {
-        println!("Failed to export TS definitions: {err}");
-    });
-
-    tauri::Builder::default()
-        .manage(AppState {
+    set_up_tauri!(
+        "../frontend/api/bindings.ts",
+        AppState {
             game_map: Mutex::default(),
             owned_games: Mutex::default(),
-        })
-        .invoke_handler(tauri::generate_handler![
+        },
+        [
             get_game_map,
             get_owned_games,
             open_game_folder,
@@ -264,8 +240,7 @@ fn main() {
             install_mod,
             open_game_mods_folder,
             start_game,
-            open_mod_folder,
-        ])
-        .run(tauri::generate_context!())
-        .unwrap_or_else(|err| println!("Failed to run Tauri application: {err}"));
+            open_mod_folder
+        ]
+    );
 }
