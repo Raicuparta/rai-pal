@@ -1,21 +1,17 @@
-use crate::{appinfo, game::OperatingSystem, Result};
+use crate::{appinfo, game::OperatingSystem, serializable_struct, Result};
 use anyhow::anyhow;
-use serde::Serialize;
-use specta::Type;
 use std::collections::HashSet;
 use steamlocate::SteamDir;
 
 const UNITY_STEAM_APP_IDS_URL: &str =
     "https://raw.githubusercontent.com/Raicuparta/steam-unity-app-ids/main/unity-app-ids.txt";
 
-#[derive(Serialize, Type, Clone)]
-#[serde(rename_all = "camelCase")]
-pub struct OwnedUnityGame {
+serializable_struct!(OwnedUnityGame {
     id: String,
     name: String,
     installed: bool,
     os_list: HashSet<OperatingSystem>,
-}
+});
 
 pub async fn get() -> Result<Vec<OwnedUnityGame>> {
     let response = reqwest::get(UNITY_STEAM_APP_IDS_URL).await?.text().await?;

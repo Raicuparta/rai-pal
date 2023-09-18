@@ -1,19 +1,15 @@
 use crate::files::copy_dir_all;
 use crate::game::{Game, UnityScriptingBackend};
-use crate::Result;
+use crate::{serializable_struct, Result};
 use anyhow::anyhow;
-use serde::Serialize;
-use specta::Type;
 use std::path::{Path, PathBuf};
 
-#[derive(Serialize, Type, Clone)]
-#[serde(rename_all = "camelCase")]
-pub struct Mod {
+serializable_struct!(Mod {
     pub id: String,
     pub name: String,
     pub scripting_backend: UnityScriptingBackend,
     path: PathBuf,
-}
+});
 
 impl Mod {
     pub fn new(path: &Path, scripting_backend: &UnityScriptingBackend) -> Result<Self> {

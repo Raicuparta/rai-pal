@@ -1,23 +1,19 @@
 use crate::files::copy_dir_all;
 use crate::game::{Game, OperatingSystem};
 use crate::mod_loader::ModLoader;
-use crate::Result;
 use crate::{game::UnityScriptingBackend, r#mod::Mod};
+use crate::{serializable_struct, Result};
 use anyhow::anyhow;
 use glob::glob;
-use serde::Serialize;
-use specta::Type;
 use std::fs;
 use std::path::{Path, PathBuf};
 
-#[derive(Serialize, Type, Clone)]
-#[serde(rename_all = "camelCase")]
-pub struct BepInEx {
+serializable_struct!(BepInEx {
     pub id: String,
     pub mod_count: u32,
     path: PathBuf,
     mods: Vec<Mod>,
-}
+});
 
 impl BepInEx {
     pub fn new(path: &Path) -> Result<Self> {

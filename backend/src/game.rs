@@ -1,12 +1,10 @@
-use crate::{appinfo, serializable_enum, Result};
+use crate::{appinfo, serializable_enum, serializable_struct, Result};
 use anyhow::anyhow;
 use appinfo::SteamLaunchOption;
 use directories::ProjectDirs;
 use goblin::elf::Elf;
 use goblin::pe::PE;
 use lazy_regex::regex_find;
-use serde::Serialize;
-use specta::Type;
 use std::{
     collections::HashMap,
     fs::{self, metadata, File},
@@ -22,9 +20,7 @@ serializable_enum!(OperatingSystem {
     Windows
 });
 
-#[derive(Serialize, Type, Clone)]
-#[serde(rename_all = "camelCase")]
-pub struct Game {
+serializable_struct!(Game {
     pub id: String,
     pub name: String,
     pub discriminator: Option<String>,
@@ -36,7 +32,7 @@ pub struct Game {
     pub unity_version: String,
     pub operating_system: OperatingSystem,
     pub steam_launch: Option<SteamLaunchOption>,
-}
+});
 
 impl Game {
     pub fn new(

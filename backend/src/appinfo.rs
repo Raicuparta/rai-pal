@@ -1,4 +1,4 @@
-use crate::Result;
+use crate::{serializable_struct, Result};
 use anyhow::anyhow;
 use byteorder::{LittleEndian, ReadBytesExt};
 use std::{
@@ -53,9 +53,7 @@ pub fn find_keys<'a>(key_value: &'a KeyValue, keys: &[&str]) -> Option<&'a Value
     }
 }
 
-#[derive(Debug, serde::Serialize, specta::Type, Clone)]
-#[serde(rename_all = "camelCase")]
-pub struct SteamLaunchOption {
+serializable_struct!(SteamLaunchOption {
     pub launch_id: String,
     pub app_id: u32,
     pub description: Option<String>,
@@ -65,7 +63,7 @@ pub struct SteamLaunchOption {
     pub os_list: Option<String>,
     pub beta_key: Option<String>,
     pub os_arch: Option<String>,
-}
+});
 
 #[derive(Debug)]
 pub struct App {
