@@ -9,28 +9,26 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 serializable_struct!(BepInEx {
-    pub id: String,
     pub mod_count: u32,
     path: PathBuf,
     mods: Vec<Mod>,
 });
 
-impl BepInEx {
-    pub fn new(path: &Path) -> Result<Self> {
+impl ModLoader for BepInEx {
+    const ID: &'static str = "BepInEx";
+
+    fn new(path: &Path) -> Result<Self> {
         let mut mods = Self::get_mods(path, UnityScriptingBackend::Il2Cpp)?;
         mods.append(&mut Self::get_mods(path, UnityScriptingBackend::Mono)?);
         let mod_count = mods.len();
 
         Ok(Self {
-            id: "BepInEx".to_owned(),
             mods,
             path: path.to_path_buf(),
             mod_count: u32::try_from(mod_count)?,
         })
     }
-}
 
-impl ModLoader for BepInEx {
     fn get_mods(
         mod_loader_path: &Path,
         scripting_backend: UnityScriptingBackend,

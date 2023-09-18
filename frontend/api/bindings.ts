@@ -50,4 +50,4 @@ export type Mod = { id: string; name: string; scriptingBackend: UnityScriptingBa
 export type UnityVersion = { major: number; minor: number; patch: number; suffix: string; isLegacy: boolean; display: string }
 export type OperatingSystem = "Unknown" | "Linux" | "Windows"
 export type Architecture = "Unknown" | "X64" | "X86"
-export type BepInEx = { id: string; modCount: number; path: string; mods: Mod[] }
+export type BepInEx = { modCount: number; path: string; mods: Mod[] }
