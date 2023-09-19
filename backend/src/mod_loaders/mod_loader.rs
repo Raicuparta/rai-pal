@@ -32,6 +32,9 @@ pub trait ModLoaderId {
     const ID: &'static str;
 }
 
+type Map = HashMap<String, Box<dyn ModLoader>>;
+pub type DataMap = HashMap<String, ModLoaderData>;
+
 fn create_map_entry<TModLoader: ModLoader + ModLoaderId + 'static>(
     path: &Path,
 ) -> Result<(String, Box<dyn ModLoader>)> {
@@ -41,28 +44,37 @@ fn create_map_entry<TModLoader: ModLoader + ModLoaderId + 'static>(
     Ok((TModLoader::ID.to_string(), boxed))
 }
 
-fn get_all(resources_path: &Path) -> Result<HashMap<String, Box<dyn ModLoader>>> {
-    Ok(HashMap::from([
-        create_map_entry::<BepInEx>(resources_path)?,
-        create_map_entry::<MelonLoader>(resources_path)?,
-    ]))
+fn add_entry<TModLoader: ModLoader + ModLoaderId + 'static>(path: &Path, map: &mut Map) {
+    match create_map_entry::<TModLoader>(path) {
+        Ok((key, value)) => {
+            map.insert(key, value);
+        }
+        Err(err) => println!("Failed to create map entry: {err}"),
+    }
+}
+
+fn get_map(resources_path: &Path) -> Map {
+    let mut map = Map::new();
+
+    add_entry::<BepInEx>(resources_path, &mut map);
+    add_entry::<MelonLoader>(resources_path, &mut map);
+
+    map
 }
 
 pub fn find(resources_path: &Path, id: &str) -> Result<Box<dyn ModLoader>> {
-    let mut mod_loaders = get_all(resources_path)?;
-
-    mod_loaders
+    get_map(resources_path)
         .remove(id)
         .ok_or_else(|| anyhow!("Failed to find mod loader with id {id}"))
 }
 
-pub async fn get_all_data(app_handle: tauri::AppHandle) -> Result<HashMap<String, ModLoaderData>> {
+pub async fn get_all_data(app_handle: tauri::AppHandle) -> Result<DataMap> {
     let resources_path = app_handle
         .path_resolver()
         .resolve_resource("resources")
         .ok_or_else(|| anyhow!("Failed to find resources path"))?;
 
-    get_all(&resources_path)?
+    get_map(&resources_path)
         .values()
         .map(|mod_loader| {
             let data = mod_loader.get_data();
