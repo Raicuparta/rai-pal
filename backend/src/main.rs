@@ -15,8 +15,7 @@
 #![allow(clippy::module_name_repetitions)]
 
 use anyhow::anyhow;
-use mod_loaders::bepinex::BepInEx;
-use mod_loaders::mod_loader::{self, ModLoader, ModLoaderData};
+use mod_loaders::mod_loader::{self, ModLoaderData};
 use serde::Serialize;
 use specta::ts::{BigIntExportBehavior, ExportConfiguration};
 use std::future::Future;
@@ -112,13 +111,15 @@ async fn get_owned_games(
 #[tauri::command]
 #[specta::specta]
 async fn get_mod_loaders(handle: tauri::AppHandle) -> CommandResult<Vec<ModLoaderData>> {
-    Ok(Vec::from([BepInEx::new(
+    Ok(mod_loader::get_all(
         &handle
             .path_resolver()
-            .resolve_resource("resources/bepinex")
-            .ok_or_else(|| anyhow!("Failed to find BepInEx folder"))?,
+            .resolve_resource("resources")
+            .ok_or_else(|| anyhow!("Failed to find resources path"))?,
     )?
-    .data]))
+    .iter()
+    .map(|loader| loader.get_data())
+    .collect())
 }
 
 #[tauri::command]

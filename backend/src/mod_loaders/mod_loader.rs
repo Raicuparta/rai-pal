@@ -1,10 +1,10 @@
+use super::bepinex::BepInEx;
+use super::melon_loader::MelonLoader;
 use crate::game::Game;
 use crate::game_mod::Mod;
 use crate::{serializable_struct, Result};
 use anyhow::anyhow;
 use std::path::{Path, PathBuf};
-
-use super::bepinex;
 
 serializable_struct!(ModLoaderData {
     pub id: String,
@@ -29,14 +29,19 @@ pub trait ModLoader {
     fn open_mod_folder(&self, mod_id: String) -> Result;
 
     fn get_id(&self) -> String;
+
+    fn get_data(&self) -> ModLoaderData;
 }
 
-pub fn get<TModLoader: ModLoader + ModLoaderID>(resources_path: &Path) -> Result<TModLoader> {
+fn create<TModLoader: ModLoader + ModLoaderID>(resources_path: &Path) -> Result<TModLoader> {
     TModLoader::new(&resources_path.join(TModLoader::ID))
 }
 
 pub fn get_all(resources_path: &Path) -> Result<Vec<Box<dyn ModLoader>>> {
-    Ok(vec![Box::new(get::<bepinex::BepInEx>(resources_path)?)])
+    Ok(vec![
+        Box::new(create::<BepInEx>(resources_path)?),
+        Box::new(create::<MelonLoader>(resources_path)?),
+    ])
 }
 
 pub fn find(resources_path: &Path, id: &str) -> Result<Box<dyn ModLoader>> {

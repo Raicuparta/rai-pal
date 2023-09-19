@@ -36,6 +36,10 @@ impl ModLoader for BepInEx {
         Self::ID.to_string()
     }
 
+    fn get_data(&self) -> ModLoaderData {
+        self.data.clone()
+    }
+
     fn install(&self, game: &Game) -> Result {
         let scripting_backend_path = &self.data.path.join(game.scripting_backend.to_string());
         let architecture_path = scripting_backend_path
