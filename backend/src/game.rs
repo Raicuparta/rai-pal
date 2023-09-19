@@ -118,8 +118,8 @@ impl Game {
             .map_or_else(
                 || open::that_detached(&self.full_path),
                 |steam_launch| {
-                    if steam_launch.launch_id == "0" {
-                        // For most games, we'll only use consider one launch option, probably the first one.
+                    if self.discriminator.is_none() {
+                        // If a game has no discriminator, it means we're only using one launch option.
                         // For those, we use the steam://rungameid command, since that one will make steam show a nice
                         // loading popup, wait for game updates, etc.
                         return open::that_detached(format!(

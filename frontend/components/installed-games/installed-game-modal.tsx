@@ -8,7 +8,7 @@ import {
   startGame,
 } from "@api/bindings";
 import { Fragment, useState } from "react";
-import { GameName } from "./game-executable-name";
+import { GameName } from "./game-name";
 import { CommandButton } from "@components/command-button";
 import {
   MdFolderSpecial,

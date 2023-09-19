@@ -6,7 +6,7 @@ import {
   UnityScriptingBackend,
   UnityVersion,
 } from "@api/bindings";
-import { GameName } from "./game-executable-name";
+import { GameName } from "./game-name";
 
 type ColorRecord<T extends string = string> = Record<T, DefaultMantineColor>;
 
