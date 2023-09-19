@@ -9,6 +9,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 serializable_struct!(BepInEx {
+    pub id: String,
     pub mod_count: u32,
     path: PathBuf,
     mods: Vec<Mod>,
@@ -18,40 +19,16 @@ impl ModLoader for BepInEx {
     const ID: &'static str = "BepInEx";
 
     fn new(path: &Path) -> Result<Self> {
-        let mut mods = Self::get_mods(path, UnityScriptingBackend::Il2Cpp)?;
-        mods.append(&mut Self::get_mods(path, UnityScriptingBackend::Mono)?);
+        let mut mods = find_mods(path, UnityScriptingBackend::Il2Cpp)?;
+        mods.append(&mut find_mods(path, UnityScriptingBackend::Mono)?);
         let mod_count = mods.len();
 
         Ok(Self {
+            id: Self::ID.to_string(),
             mods,
             path: path.to_path_buf(),
             mod_count: u32::try_from(mod_count)?,
         })
-    }
-
-    fn get_mods(
-        mod_loader_path: &Path,
-        scripting_backend: UnityScriptingBackend,
-    ) -> Result<Vec<Mod>> {
-        let mods_folder_path = mod_loader_path
-            .join(scripting_backend.to_string())
-            .join("mods");
-
-        let entries: Vec<_> = glob(
-            mods_folder_path
-                .join("*")
-                .to_str()
-                .ok_or_else(|| anyhow!("Failed to parse mods folder path"))?,
-        )?
-        .collect();
-
-        Ok(entries
-            .iter()
-            .filter_map(|entry| match entry {
-                Ok(mod_path) => Some(Mod::new(mod_path, &scripting_backend).ok()?),
-                Err(_) => None,
-            })
-            .collect())
     }
 
     fn install(&self, game: &Game) -> Result {
@@ -217,4 +194,26 @@ fn reg_add_in_section(reg: &str, section: &str, key: &str, value: &str) -> Strin
     split.insert(end, &new_line);
 
     split.join("\n")
+}
+
+fn find_mods(mod_loader_path: &Path, scripting_backend: UnityScriptingBackend) -> Result<Vec<Mod>> {
+    let mods_folder_path = mod_loader_path
+        .join(scripting_backend.to_string())
+        .join("mods");
+
+    let entries: Vec<_> = glob(
+        mods_folder_path
+            .join("*")
+            .to_str()
+            .ok_or_else(|| anyhow!("Failed to parse mods folder path"))?,
+    )?
+    .collect();
+
+    Ok(entries
+        .iter()
+        .filter_map(|entry| match entry {
+            Ok(mod_path) => Some(Mod::new(mod_path, scripting_backend).ok()?),
+            Err(_) => None,
+        })
+        .collect())
 }

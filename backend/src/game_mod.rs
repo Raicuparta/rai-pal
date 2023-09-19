@@ -12,7 +12,7 @@ serializable_struct!(Mod {
 });
 
 impl Mod {
-    pub fn new(path: &Path, scripting_backend: &UnityScriptingBackend) -> Result<Self> {
+    pub fn new(path: &Path, scripting_backend: UnityScriptingBackend) -> Result<Self> {
         let name = String::from(
             path.file_name()
                 .ok_or_else(|| anyhow!("Failed to get file name"))?
@@ -23,7 +23,7 @@ impl Mod {
             id: format!("{scripting_backend}/{name}"),
             path: path.to_path_buf(),
             name,
-            scripting_backend: scripting_backend.clone(),
+            scripting_backend,
         })
     }
 

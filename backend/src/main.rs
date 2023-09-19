@@ -157,7 +157,7 @@ async fn open_mod_folder(
     let mod_loaders = get_mod_loaders(handle).await?;
     let mod_loader = mod_loaders
         .iter()
-        .find(|loader| loader.get_id() == mod_loader_id)
+        .find(|loader| loader.id == mod_loader_id)
         .ok_or_else(|| anyhow!("Failed to find mod loader with id {mod_loader_id}"))?;
 
     mod_loader
@@ -189,7 +189,7 @@ async fn install_mod(
     let mod_loaders = get_mod_loaders(handle).await?;
     let mod_loader = mod_loaders
         .iter()
-        .find(|loader| loader.get_id() == mod_loader_id)
+        .find(|loader| loader.id == mod_loader_id)
         .ok_or_else(|| anyhow!("Failed to find mod loader with id {mod_loader_id}"))?;
 
     let game_map = get_game_map(state, false).await?;
