@@ -1,6 +1,8 @@
 import { Button, Modal } from "@mantine/core";
 import { OwnedUnityGame } from "@api/bindings";
 import { open } from "@tauri-apps/api/shell";
+import { CommandButton } from "@components/command-button";
+import { MdInstallDesktop, MdWeb } from "react-icons/md";
 
 type Props = {
   readonly selectedGame: OwnedUnityGame;
@@ -16,20 +18,20 @@ export function OwnedGameModal(props: Props) {
       onClose={props.onClose}
     >
       <Button.Group orientation="vertical">
-        <Button
-          variant="default"
+        <CommandButton
+          icon={<MdWeb />}
           onClick={() =>
             open(`https://steampowered.com/app/${props.selectedGame.id}`)
           }
         >
           Open Steam Page
-        </Button>
-        <Button
-          variant="default"
+        </CommandButton>
+        <CommandButton
+          icon={<MdInstallDesktop />}
           onClick={() => open(`steam://install/${props.selectedGame.id}`)}
         >
           Install on Steam
-        </Button>
+        </CommandButton>
       </Button.Group>
     </Modal>
   );

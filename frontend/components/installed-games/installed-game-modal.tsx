@@ -9,6 +9,13 @@ import {
 } from "@api/bindings";
 import { Fragment, useState } from "react";
 import { GameName } from "./game-executable-name";
+import { CommandButton } from "@components/command-button";
+import {
+  MdFolderSpecial,
+  MdInstallDesktop,
+  MdPlayArrow,
+  MdRuleFolder,
+} from "react-icons/md";
 
 type Props = {
   readonly game: Game;
@@ -38,24 +45,24 @@ export function InstalledGameModal(props: Props) {
           </Alert>
         ) : null}
         <Button.Group orientation="vertical">
-          <Button
-            variant="default"
-            onClick={() => startGame(props.game.id).catch(handleError)}
+          <CommandButton
+            icon={<MdPlayArrow />}
+            onClick={() => startGame(props.game.id)}
           >
             Start Game
-          </Button>
-          <Button
-            variant="default"
-            onClick={() => openGameFolder(props.game.id).catch(handleError)}
+          </CommandButton>
+          <CommandButton
+            icon={<MdFolderSpecial />}
+            onClick={() => openGameFolder(props.game.id)}
           >
             Open Game Folder
-          </Button>
-          <Button
-            variant="default"
+          </CommandButton>
+          <CommandButton
+            icon={<MdRuleFolder />}
             onClick={() => openGameModsFolder(props.game.id).catch(handleError)}
           >
             Open Mods Folder
-          </Button>
+          </CommandButton>
         </Button.Group>
         {Object.values(modLoaders).map(
           (modLoader) =>
@@ -71,17 +78,15 @@ export function InstalledGameModal(props: Props) {
                         mod.scriptingBackend === props.game.scriptingBackend
                     )
                     .map((mod) => (
-                      <Button
-                        variant="default"
+                      <CommandButton
+                        icon={<MdInstallDesktop />}
                         key={mod.name}
                         onClick={() =>
-                          installMod(modLoader.id, mod.id, props.game.id).catch(
-                            handleError
-                          )
+                          installMod(modLoader.id, mod.id, props.game.id)
                         }
                       >
                         Install {mod.name}
-                      </Button>
+                      </CommandButton>
                     ))}
                 </Button.Group>
               </Fragment>
