@@ -62,7 +62,7 @@ fn get_map(resources_path: &Path) -> Map {
     map
 }
 
-pub fn find(resources_path: &Path, id: &str) -> Result<Box<dyn ModLoader>> {
+pub fn get(resources_path: &Path, id: &str) -> Result<Box<dyn ModLoader>> {
     get_map(resources_path)
         .remove(id)
         .ok_or_else(|| anyhow!("Failed to find mod loader with id {id}"))

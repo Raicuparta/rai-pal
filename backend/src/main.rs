@@ -168,7 +168,7 @@ async fn open_mod_folder(
     mod_id: String,
     handle: tauri::AppHandle,
 ) -> CommandResult {
-    let mod_loader = mod_loader::find(
+    let mod_loader = mod_loader::get(
         &handle
             .path_resolver()
             .resolve_resource("resources")
@@ -211,7 +211,7 @@ async fn install_mod(
         .get(&game_id)
         .ok_or_else(|| anyhow!("Failed to find game with ID {game_id}"))?;
 
-    let mod_loader = mod_loader::find(
+    let mod_loader = mod_loader::get(
         &handle
             .path_resolver()
             .resolve_resource("resources")
