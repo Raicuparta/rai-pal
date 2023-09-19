@@ -1,6 +1,6 @@
 use crate::files::copy_dir_all;
 use crate::game::{Game, OperatingSystem};
-use crate::mod_loaders::mod_loader::{ModLoader, ModLoaderData, ModLoaderID};
+use crate::mod_loaders::mod_loader::{ModLoader, ModLoaderData};
 use crate::{game::UnityScriptingBackend, game_mod::Mod};
 use crate::{serializable_struct, Result};
 use anyhow::anyhow;
@@ -12,28 +12,23 @@ serializable_struct!(BepInEx {
     pub data: ModLoaderData,
 });
 
-impl ModLoaderID for BepInEx {
-    const ID: &'static str = "bepinex";
-}
-
 impl ModLoader for BepInEx {
-    fn new(path: &Path) -> Result<Self> {
-        let mut mods = find_mods(path, UnityScriptingBackend::Il2Cpp)?;
-        mods.append(&mut find_mods(path, UnityScriptingBackend::Mono)?);
+    fn new(resources_path: &Path) -> Result<Self> {
+        let id = "bepinex".to_string();
+        let path = resources_path.join(id.clone());
+
+        let mut mods = find_mods(&path, UnityScriptingBackend::Il2Cpp)?;
+        mods.append(&mut find_mods(&path, UnityScriptingBackend::Mono)?);
         let mod_count = mods.len();
 
         Ok(Self {
             data: ModLoaderData {
-                id: Self::ID.to_string(),
+                id,
                 mods,
-                path: path.to_path_buf(),
+                path,
                 mod_count: u32::try_from(mod_count)?,
             },
         })
-    }
-
-    fn get_id(&self) -> String {
-        Self::ID.to_string()
     }
 
     fn get_data(&self) -> ModLoaderData {

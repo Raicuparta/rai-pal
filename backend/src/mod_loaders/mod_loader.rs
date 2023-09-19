@@ -13,10 +13,6 @@ serializable_struct!(ModLoaderData {
     pub mods: Vec<Mod>,
 });
 
-pub trait ModLoaderID {
-    const ID: &'static str;
-}
-
 pub trait ModLoader {
     fn new(path: &Path) -> Result<Self>
     where
@@ -28,19 +24,13 @@ pub trait ModLoader {
 
     fn open_mod_folder(&self, mod_id: String) -> Result;
 
-    fn get_id(&self) -> String;
-
     fn get_data(&self) -> ModLoaderData;
-}
-
-fn create<TModLoader: ModLoader + ModLoaderID>(resources_path: &Path) -> Result<TModLoader> {
-    TModLoader::new(&resources_path.join(TModLoader::ID))
 }
 
 pub fn get_all(resources_path: &Path) -> Result<Vec<Box<dyn ModLoader>>> {
     Ok(vec![
-        Box::new(create::<BepInEx>(resources_path)?),
-        Box::new(create::<MelonLoader>(resources_path)?),
+        Box::new(BepInEx::new(resources_path)?),
+        Box::new(MelonLoader::new(resources_path)?),
     ])
 }
 
@@ -49,6 +39,6 @@ pub fn find(resources_path: &Path, id: &str) -> Result<Box<dyn ModLoader>> {
 
     mod_loaders
         .into_iter()
-        .find(|mod_loader| mod_loader.get_id() == id)
+        .find(|mod_loader| mod_loader.get_data().id == id)
         .ok_or_else(|| anyhow!("Failed to find mod loader with id {id}"))
 }

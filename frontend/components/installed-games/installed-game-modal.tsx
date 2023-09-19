@@ -57,30 +57,36 @@ export function InstalledGameModal(props: Props) {
             Open Mods Folder
           </Button>
         </Button.Group>
-        {modLoaders.map((modLoader) => (
-          <Fragment key={modLoader.id}>
-            <label>{modLoader.id} mods</label>
-            <Button.Group orientation="vertical">
-              {modLoader.mods
-                .filter(
-                  (mod) => mod.scriptingBackend === props.game.scriptingBackend
-                )
-                .map((mod) => (
-                  <Button
-                    variant="default"
-                    key={mod.name}
-                    onClick={() =>
-                      installMod(modLoader.id, mod.id, props.game.id).catch(
-                        handleError
-                      )
-                    }
-                  >
-                    Install {mod.name}
-                  </Button>
-                ))}
-            </Button.Group>
-          </Fragment>
-        ))}
+        {modLoaders.map(
+          (modLoader) =>
+            // TODO need to filter these mods before checking the length.
+            // Because we only show mods compatible with this game.
+            modLoader.mods.length > 0 && (
+              <Fragment key={modLoader.id}>
+                <label>{modLoader.id} mods</label>
+                <Button.Group orientation="vertical">
+                  {modLoader.mods
+                    .filter(
+                      (mod) =>
+                        mod.scriptingBackend === props.game.scriptingBackend
+                    )
+                    .map((mod) => (
+                      <Button
+                        variant="default"
+                        key={mod.name}
+                        onClick={() =>
+                          installMod(modLoader.id, mod.id, props.game.id).catch(
+                            handleError
+                          )
+                        }
+                      >
+                        Install {mod.name}
+                      </Button>
+                    ))}
+                </Button.Group>
+              </Fragment>
+            )
+        )}
         <label>Debug Data</label>
         <Code sx={{ overflow: "auto" }}>
           <pre>{JSON.stringify(props.game, null, 2)}</pre>
