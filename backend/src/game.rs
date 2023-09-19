@@ -119,7 +119,7 @@ impl Game {
                 || open::that_detached(&self.full_path),
                 |steam_launch| {
                     if self.discriminator.is_none() {
-                        // If a game has no discriminator, it means we're only using one launch option.
+                        // If a game has no discriminator, it means we're probably using the default launch option.
                         // For those, we use the steam://rungameid command, since that one will make steam show a nice
                         // loading popup, wait for game updates, etc.
                         return open::that_detached(format!(
