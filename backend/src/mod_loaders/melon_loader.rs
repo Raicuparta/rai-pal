@@ -1,21 +1,24 @@
-use super::mod_loader::{ModLoader, ModLoaderData};
+use super::mod_loader::{ModLoader, ModLoaderData, ModLoaderId};
 use crate::serializable_struct;
 
 serializable_struct!(MelonLoader {
   pub data: ModLoaderData,
 });
 
+impl ModLoaderId for MelonLoader {
+    const ID: &'static str = "melonloader";
+}
+
 impl ModLoader for MelonLoader {
     fn new(resources_path: &std::path::Path) -> crate::Result<Self>
     where
         Self: std::marker::Sized,
     {
-        let id = "melonloader".to_string();
-        let path = resources_path.join(id.clone());
+        let path = resources_path.join(Self::ID);
 
         Ok(Self {
             data: ModLoaderData {
-                id,
+                id: Self::ID.to_string(),
                 mods: vec![],
                 path,
                 mod_count: 0,

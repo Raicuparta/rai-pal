@@ -28,16 +28,24 @@ pub trait ModLoader {
     fn get_data(&self) -> ModLoaderData;
 }
 
+pub trait ModLoaderId {
+    const ID: &'static str;
+}
+
+fn create_map_entry<TModLoader: ModLoader + ModLoaderId + 'static>(
+    path: &Path,
+) -> Result<(String, Box<dyn ModLoader>)> {
+    let mod_loader = TModLoader::new(path)?;
+    let boxed: Box<dyn ModLoader> = Box::new(mod_loader);
+
+    Ok((TModLoader::ID.to_string(), boxed))
+}
+
 fn get_all(resources_path: &Path) -> Result<HashMap<String, Box<dyn ModLoader>>> {
-    let mut map: HashMap<String, Box<dyn ModLoader>> = HashMap::new();
-
-    let bepinex = Box::new(BepInEx::new(resources_path)?);
-    let melon_loader = Box::new(MelonLoader::new(resources_path)?);
-
-    map.insert(bepinex.get_data().id, bepinex);
-    map.insert(melon_loader.get_data().id, melon_loader);
-
-    Ok(map)
+    Ok(HashMap::from([
+        create_map_entry::<BepInEx>(resources_path)?,
+        create_map_entry::<MelonLoader>(resources_path)?,
+    ]))
 }
 
 pub fn find(resources_path: &Path, id: &str) -> Result<Box<dyn ModLoader>> {

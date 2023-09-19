@@ -8,14 +8,19 @@ use glob::glob;
 use std::fs;
 use std::path::Path;
 
+use super::mod_loader::ModLoaderId;
+
 serializable_struct!(BepInEx {
     pub data: ModLoaderData,
 });
 
+impl ModLoaderId for BepInEx {
+    const ID: &'static str = "bepinex";
+}
+
 impl ModLoader for BepInEx {
     fn new(resources_path: &Path) -> Result<Self> {
-        let id = "bepinex".to_string();
-        let path = resources_path.join(id.clone());
+        let path = resources_path.join(Self::ID);
 
         let mut mods = find_mods(&path, UnityScriptingBackend::Il2Cpp)?;
         mods.append(&mut find_mods(&path, UnityScriptingBackend::Mono)?);
@@ -23,7 +28,7 @@ impl ModLoader for BepInEx {
 
         Ok(Self {
             data: ModLoaderData {
-                id,
+                id: Self::ID.to_string(),
                 mods,
                 path,
                 mod_count: u32::try_from(mod_count)?,
