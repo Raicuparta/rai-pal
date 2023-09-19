@@ -1,8 +1,10 @@
 use crate::game::Game;
 use crate::game_mod::Mod;
-use crate::{bepinex, serializable_struct, Result};
+use crate::{serializable_struct, Result};
 use anyhow::anyhow;
 use std::path::{Path, PathBuf};
+
+use super::bepinex;
 
 serializable_struct!(ModLoaderData {
     pub id: String,

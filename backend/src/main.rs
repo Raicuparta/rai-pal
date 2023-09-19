@@ -15,8 +15,8 @@
 #![allow(clippy::module_name_repetitions)]
 
 use anyhow::anyhow;
-use bepinex::BepInEx;
-use mod_loader::{ModLoader, ModLoaderData};
+use mod_loaders::bepinex::BepInEx;
+use mod_loaders::mod_loader::{self, ModLoader, ModLoaderData};
 use serde::Serialize;
 use specta::ts::{BigIntExportBehavior, ExportConfiguration};
 use std::future::Future;
@@ -26,12 +26,11 @@ use steam_owned_unity_games::OwnedUnityGame;
 use tauri::api::dialog::message;
 
 mod appinfo;
-mod bepinex;
 mod files;
 mod game;
 mod game_mod;
 mod macros;
-mod mod_loader;
+mod mod_loaders;
 mod steam_games;
 mod steam_owned_unity_games;
 

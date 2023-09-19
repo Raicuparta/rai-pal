@@ -1,6 +1,6 @@
 use crate::files::copy_dir_all;
 use crate::game::{Game, OperatingSystem};
-use crate::mod_loader::{ModLoader, ModLoaderData, ModLoaderID};
+use crate::mod_loaders::mod_loader::{ModLoader, ModLoaderData, ModLoaderID};
 use crate::{game::UnityScriptingBackend, game_mod::Mod};
 use crate::{serializable_struct, Result};
 use anyhow::anyhow;
