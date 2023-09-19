@@ -118,6 +118,21 @@ impl Game {
             .map_or_else(
                 || open::that_detached(&self.full_path),
                 |steam_launch| {
+                    if steam_launch.launch_id == "0" {
+                        // For most games, we'll only use consider one launch option, probably the first one.
+                        // For those, we use the steam://rungameid command, since that one will make steam show a nice
+                        // loading popup, wait for game updates, etc.
+                        return open::that_detached(format!(
+                            "steam://rungameid/{}",
+                            steam_launch.app_id
+                        ));
+                    }
+                    // For the few cases where we're showing an alternative launch option, we use the steam://launch command.
+                    // This one will show an error if the game needs an update, and doesn't show the nice loading popup,
+                    // but it allows us to specify the specific launch option to run.
+                    // This one also supports passing "dialog" instead of the app_type, (steam://launch/{app_id}/dialog)
+                    // which makes Steam show the launch selection dialogue, but that dialogue stops showing if the user
+                    // selects the "don't ask again" checkbox.
                     open::that_detached(format!(
                         "steam://launch/{}/{}",
                         steam_launch.app_id,
