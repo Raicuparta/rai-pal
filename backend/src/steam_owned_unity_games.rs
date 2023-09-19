@@ -13,7 +13,7 @@ serializable_struct!(OwnedUnityGame {
     os_list: HashSet<OperatingSystem>,
 });
 
-pub async fn get() -> Result<Vec<OwnedUnityGame>> {
+pub async fn get(_: tauri::AppHandle) -> Result<Vec<OwnedUnityGame>> {
     let response = reqwest::get(UNITY_STEAM_APP_IDS_URL).await?.text().await?;
 
     // TODO this is repeated in steam_game.

@@ -8,7 +8,7 @@ use std::path::PathBuf;
 use std::string;
 use steamlocate::SteamDir;
 
-pub async fn get() -> Result<game::Map> {
+pub async fn get(_: tauri::AppHandle) -> Result<game::Map> {
     let mut steam_dir =
         SteamDir::locate().ok_or_else(|| anyhow!("Failed to locate Steam on this system."))?;
 

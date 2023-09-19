@@ -27,7 +27,7 @@ pub trait ModLoader {
     fn get_data(&self) -> ModLoaderData;
 }
 
-pub fn get_all(resources_path: &Path) -> Result<Vec<Box<dyn ModLoader>>> {
+fn get_all(resources_path: &Path) -> Result<Vec<Box<dyn ModLoader>>> {
     Ok(vec![
         Box::new(BepInEx::new(resources_path)?),
         Box::new(MelonLoader::new(resources_path)?),
@@ -41,4 +41,16 @@ pub fn find(resources_path: &Path, id: &str) -> Result<Box<dyn ModLoader>> {
         .into_iter()
         .find(|mod_loader| mod_loader.get_data().id == id)
         .ok_or_else(|| anyhow!("Failed to find mod loader with id {id}"))
+}
+
+pub async fn get_all_data(app_handle: tauri::AppHandle) -> Result<Vec<ModLoaderData>> {
+    let resources_path = app_handle
+        .path_resolver()
+        .resolve_resource("resources")
+        .ok_or_else(|| anyhow!("Failed to find resources path"))?;
+
+    get_all(&resources_path)?
+        .into_iter()
+        .map(|mod_loader| Ok(mod_loader.get_data()))
+        .collect()
 }

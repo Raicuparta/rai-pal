@@ -15,7 +15,7 @@
 #![allow(clippy::module_name_repetitions)]
 
 use anyhow::anyhow;
-use mod_loaders::mod_loader::{self, ModLoaderData};
+use mod_loaders::mod_loader::{self, ModLoader, ModLoaderData};
 use serde::Serialize;
 use specta::ts::{BigIntExportBehavior, ExportConfiguration};
 use std::future::Future;
@@ -56,15 +56,17 @@ impl Serialize for Error {
 struct AppState {
     game_map: Mutex<Option<game::Map>>,
     owned_games: Mutex<Option<Vec<OwnedUnityGame>>>,
+    mod_loaders: Mutex<Option<Vec<ModLoaderData>>>,
 }
 
 async fn get_state_data<TData, TFunction, TFunctionResult>(
     mutex: &Mutex<Option<TData>>,
     function: TFunction,
     ignore_cache: bool,
+    app_handle: tauri::AppHandle,
 ) -> CommandResult<TData>
 where
-    TFunction: Fn() -> TFunctionResult + std::panic::UnwindSafe + Send,
+    TFunction: Fn(tauri::AppHandle) -> TFunctionResult + std::panic::UnwindSafe + Send,
     TData: Clone + Send,
     TFunctionResult: Future<Output = Result<TData>> + Send,
 {
@@ -76,7 +78,7 @@ where
         }
     }
 
-    let result = function();
+    let result = function(app_handle);
     let data = result.await?;
     if let Ok(mut mutex_guard) = mutex.lock() {
         *mutex_guard = Some(data.clone());
@@ -90,8 +92,9 @@ where
 async fn get_game_map(
     state: tauri::State<'_, AppState>,
     ignore_cache: bool,
+    handle: tauri::AppHandle,
 ) -> CommandResult<game::Map> {
-    get_state_data(&state.game_map, steam_games::get, ignore_cache).await
+    get_state_data(&state.game_map, steam_games::get, ignore_cache, handle).await
 }
 
 #[tauri::command]
@@ -99,33 +102,41 @@ async fn get_game_map(
 async fn get_owned_games(
     state: tauri::State<'_, AppState>,
     ignore_cache: bool,
+    handle: tauri::AppHandle,
 ) -> CommandResult<Vec<OwnedUnityGame>> {
     get_state_data(
         &state.owned_games,
         steam_owned_unity_games::get,
         ignore_cache,
+        handle,
     )
     .await
 }
 
 #[tauri::command]
 #[specta::specta]
-async fn get_mod_loaders(handle: tauri::AppHandle) -> CommandResult<Vec<ModLoaderData>> {
-    Ok(mod_loader::get_all(
-        &handle
-            .path_resolver()
-            .resolve_resource("resources")
-            .ok_or_else(|| anyhow!("Failed to find resources path"))?,
-    )?
-    .iter()
-    .map(|loader| loader.get_data())
-    .collect())
+async fn get_mod_loaders(
+    state: tauri::State<'_, AppState>,
+    ignore_cache: bool,
+    handle: tauri::AppHandle,
+) -> CommandResult<Vec<ModLoaderData>> {
+    get_state_data(
+        &state.mod_loaders,
+        mod_loader::get_all_data,
+        ignore_cache,
+        handle,
+    )
+    .await
 }
 
 #[tauri::command]
 #[specta::specta]
-async fn open_game_folder(game_id: String, state: tauri::State<'_, AppState>) -> CommandResult {
-    let game_map = get_game_map(state, false).await?;
+async fn open_game_folder(
+    game_id: String,
+    state: tauri::State<'_, AppState>,
+    handle: tauri::AppHandle,
+) -> CommandResult {
+    let game_map = get_game_map(state, false, handle).await?;
     let game = game_map
         .get(&game_id)
         .ok_or_else(|| anyhow!("Failed to find game with id {game_id}"))?;
@@ -139,8 +150,9 @@ async fn open_game_folder(game_id: String, state: tauri::State<'_, AppState>) ->
 async fn open_game_mods_folder(
     game_id: String,
     state: tauri::State<'_, AppState>,
+    handle: tauri::AppHandle,
 ) -> CommandResult {
-    let game_map = get_game_map(state, false).await?;
+    let game_map = get_game_map(state, false, handle).await?;
     let game = game_map
         .get(&game_id)
         .ok_or_else(|| anyhow!("Failed to find game with id {game_id}"))?;
@@ -171,8 +183,12 @@ async fn open_mod_folder(
 
 #[tauri::command]
 #[specta::specta]
-async fn start_game(game_id: String, state: tauri::State<'_, AppState>) -> CommandResult {
-    let game_map = get_game_map(state, false).await?;
+async fn start_game(
+    game_id: String,
+    state: tauri::State<'_, AppState>,
+    handle: tauri::AppHandle,
+) -> CommandResult {
+    let game_map = get_game_map(state, false, handle).await?;
     let game = game_map
         .get(&game_id)
         .ok_or_else(|| anyhow!("Failed to find game with id {game_id}"))?;
@@ -190,7 +206,7 @@ async fn install_mod(
     state: tauri::State<'_, AppState>,
     handle: tauri::AppHandle,
 ) -> CommandResult {
-    let game_map = get_game_map(state, false).await?;
+    let game_map = get_game_map(state, false, handle.clone()).await?;
     let game = game_map
         .get(&game_id)
         .ok_or_else(|| anyhow!("Failed to find game with ID {game_id}"))?;
@@ -227,6 +243,7 @@ fn main() {
         AppState {
             game_map: Mutex::default(),
             owned_games: Mutex::default(),
+            mod_loaders: Mutex::default(),
         },
         [
             get_game_map,
