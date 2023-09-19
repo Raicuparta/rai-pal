@@ -3,8 +3,6 @@
 #![deny(clippy::all)]
 #![deny(clippy::pedantic)]
 #![deny(clippy::nursery)]
-#![allow(clippy::used_underscore_binding)]
-#![allow(clippy::unused_async)]
 #![deny(clippy::unwrap_used)]
 #![deny(clippy::expect_used)]
 #![deny(clippy::as_conversions)]
@@ -12,10 +10,13 @@
 #![deny(clippy::decimal_literal_representation)]
 #![deny(clippy::shadow_unrelated)]
 #![deny(clippy::verbose_file_reads)]
+#![allow(clippy::used_underscore_binding)]
+#![allow(clippy::unused_async)]
+#![allow(clippy::module_name_repetitions)]
 
 use anyhow::anyhow;
 use bepinex::BepInEx;
-use mod_loader::ModLoader;
+use mod_loader::{ModLoader, ModLoaderData};
 use serde::Serialize;
 use specta::ts::{BigIntExportBehavior, ExportConfiguration};
 use std::future::Future;
@@ -111,13 +112,14 @@ async fn get_owned_games(
 
 #[tauri::command]
 #[specta::specta]
-async fn get_mod_loaders(handle: tauri::AppHandle) -> CommandResult<Vec<BepInEx>> {
+async fn get_mod_loaders(handle: tauri::AppHandle) -> CommandResult<Vec<ModLoaderData>> {
     Ok(Vec::from([BepInEx::new(
         &handle
             .path_resolver()
             .resolve_resource("resources/bepinex")
             .ok_or_else(|| anyhow!("Failed to find BepInEx folder"))?,
-    )?]))
+    )?
+    .data]))
 }
 
 #[tauri::command]
@@ -154,11 +156,13 @@ async fn open_mod_folder(
     mod_id: String,
     handle: tauri::AppHandle,
 ) -> CommandResult {
-    let mod_loaders = get_mod_loaders(handle).await?;
-    let mod_loader = mod_loaders
-        .iter()
-        .find(|loader| loader.id == mod_loader_id)
-        .ok_or_else(|| anyhow!("Failed to find mod loader with id {mod_loader_id}"))?;
+    let mod_loader = mod_loader::find(
+        &handle
+            .path_resolver()
+            .resolve_resource("resources")
+            .ok_or_else(|| anyhow!("Failed to find resources folder"))?,
+        &mod_loader_id,
+    )?;
 
     mod_loader
         .open_mod_folder(mod_id)
@@ -186,17 +190,18 @@ async fn install_mod(
     state: tauri::State<'_, AppState>,
     handle: tauri::AppHandle,
 ) -> CommandResult {
-    let mod_loaders = get_mod_loaders(handle).await?;
-    let mod_loader = mod_loaders
-        .iter()
-        .find(|loader| loader.id == mod_loader_id)
-        .ok_or_else(|| anyhow!("Failed to find mod loader with id {mod_loader_id}"))?;
-
     let game_map = get_game_map(state, false).await?;
     let game = game_map
         .get(&game_id)
         .ok_or_else(|| anyhow!("Failed to find game with ID {game_id}"))?;
 
+    let mod_loader = mod_loader::find(
+        &handle
+            .path_resolver()
+            .resolve_resource("resources")
+            .ok_or_else(|| anyhow!("Failed to find resources folder"))?,
+        &mod_loader_id,
+    )?;
     mod_loader.install_mod(game, mod_id.clone()).map_err(|err| {
         anyhow!(
             "Failed to install mod '{mod_id}' from mod loader {mod_loader_id} on game {game_id}: {err}",

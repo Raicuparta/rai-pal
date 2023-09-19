@@ -1,38 +1,43 @@
 use crate::files::copy_dir_all;
 use crate::game::{Game, OperatingSystem};
-use crate::mod_loader::ModLoader;
+use crate::mod_loader::{ModLoader, ModLoaderData, ModLoaderID};
 use crate::{game::UnityScriptingBackend, game_mod::Mod};
 use crate::{serializable_struct, Result};
 use anyhow::anyhow;
 use glob::glob;
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 serializable_struct!(BepInEx {
-    pub id: String,
-    pub mod_count: u32,
-    path: PathBuf,
-    mods: Vec<Mod>,
+    pub data: ModLoaderData,
 });
 
-impl ModLoader for BepInEx {
+impl ModLoaderID for BepInEx {
     const ID: &'static str = "BepInEx";
+}
 
+impl ModLoader for BepInEx {
     fn new(path: &Path) -> Result<Self> {
         let mut mods = find_mods(path, UnityScriptingBackend::Il2Cpp)?;
         mods.append(&mut find_mods(path, UnityScriptingBackend::Mono)?);
         let mod_count = mods.len();
 
         Ok(Self {
-            id: Self::ID.to_string(),
-            mods,
-            path: path.to_path_buf(),
-            mod_count: u32::try_from(mod_count)?,
+            data: ModLoaderData {
+                id: Self::ID.to_string(),
+                mods,
+                path: path.to_path_buf(),
+                mod_count: u32::try_from(mod_count)?,
+            },
         })
     }
 
+    fn get_id(&self) -> String {
+        Self::ID.to_string()
+    }
+
     fn install(&self, game: &Game) -> Result {
-        let scripting_backend_path = &self.path.join(game.scripting_backend.to_string());
+        let scripting_backend_path = &self.data.path.join(game.scripting_backend.to_string());
         let architecture_path = scripting_backend_path
             .join(game.operating_system.to_string())
             .join(game.architecture.to_string());
@@ -51,14 +56,16 @@ impl ModLoader for BepInEx {
 
         copy_dir_all(folder_to_copy_to_game, game_folder)?;
 
-        let config_origin_path = &self
-            .path
-            .join("config")
-            .join(if game.unity_version.is_legacy {
-                "BepInEx-legacy.cfg"
-            } else {
-                "BepInEx.cfg"
-            });
+        let config_origin_path =
+            &self
+                .data
+                .path
+                .join("config")
+                .join(if game.unity_version.is_legacy {
+                    "BepInEx-legacy.cfg"
+                } else {
+                    "BepInEx.cfg"
+                });
 
         let config_target_folder = game_data_folder.join("BepInEx").join("config");
 
@@ -90,6 +97,7 @@ impl ModLoader for BepInEx {
 
     fn install_mod(&self, game: &Game, mod_id: String) -> Result {
         let game_mod = self
+            .data
             .mods
             .iter()
             .find(|game_mod| game_mod.id == mod_id)
@@ -101,6 +109,7 @@ impl ModLoader for BepInEx {
 
     fn open_mod_folder(&self, mod_id: String) -> Result {
         let game_mod = self
+            .data
             .mods
             .iter()
             .find(|game_mod| game_mod.id == mod_id)
