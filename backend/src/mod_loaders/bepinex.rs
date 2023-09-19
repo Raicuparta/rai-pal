@@ -13,7 +13,7 @@ serializable_struct!(BepInEx {
 });
 
 impl ModLoaderID for BepInEx {
-    const ID: &'static str = "BepInEx";
+    const ID: &'static str = "bepinex";
 }
 
 impl ModLoader for BepInEx {
