@@ -4,6 +4,7 @@ use crate::game::Game;
 use crate::game_mod::Mod;
 use crate::{serializable_struct, Result};
 use anyhow::anyhow;
+use enum_dispatch::enum_dispatch;
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
@@ -14,11 +15,20 @@ serializable_struct!(ModLoaderData {
     pub mods: Vec<Mod>,
 });
 
-pub trait ModLoader {
-    fn new(path: &Path) -> Result<Self>
-    where
-        Self: std::marker::Sized;
+#[enum_dispatch]
+pub enum ModLoaderType {
+    BepInEx,
+    MelonLoader,
+}
 
+pub trait ModLoaderStatic {
+    fn new(resources_path: &Path) -> Result<Self>
+    where
+        Self: Sized;
+}
+
+#[enum_dispatch(ModLoaderType)]
+pub trait ModLoader {
     fn install(&self, game: &Game) -> Result;
 
     fn install_mod(&self, game: &Game, mod_id: String) -> Result;
@@ -32,19 +42,26 @@ pub trait ModLoaderId {
     const ID: &'static str;
 }
 
-type Map = HashMap<String, Box<dyn ModLoader>>;
+type Map = HashMap<String, ModLoaderType>;
 pub type DataMap = HashMap<String, ModLoaderData>;
 
-fn create_map_entry<TModLoader: ModLoader + ModLoaderId + 'static>(
+fn create_map_entry<TModLoader: ModLoader + ModLoaderId + ModLoaderStatic + 'static>(
     path: &Path,
-) -> Result<(String, Box<dyn ModLoader>)> {
-    let mod_loader = TModLoader::new(path)?;
-    let boxed: Box<dyn ModLoader> = Box::new(mod_loader);
+) -> Result<(String, ModLoaderType)>
+where
+    ModLoaderType: std::convert::From<TModLoader>,
+{
+    let mod_loader: ModLoaderType = TModLoader::new(path)?.into();
 
-    Ok((TModLoader::ID.to_string(), boxed))
+    Ok((TModLoader::ID.to_string(), mod_loader))
 }
 
-fn add_entry<TModLoader: ModLoader + ModLoaderId + 'static>(path: &Path, map: &mut Map) {
+fn add_entry<TModLoader: ModLoader + ModLoaderId + ModLoaderStatic + 'static>(
+    path: &Path,
+    map: &mut Map,
+) where
+    ModLoaderType: std::convert::From<TModLoader>,
+{
     match create_map_entry::<TModLoader>(path) {
         Ok((key, value)) => {
             map.insert(key, value);
@@ -62,7 +79,7 @@ fn get_map(resources_path: &Path) -> Map {
     map
 }
 
-pub fn get(resources_path: &Path, id: &str) -> Result<Box<dyn ModLoader>> {
+pub fn get(resources_path: &Path, id: &str) -> Result<ModLoaderType> {
     get_map(resources_path)
         .remove(id)
         .ok_or_else(|| anyhow!("Failed to find mod loader with id {id}"))
@@ -81,4 +98,14 @@ pub async fn get_data_map(app_handle: tauri::AppHandle) -> Result<DataMap> {
             Ok((data.id.clone(), data))
         })
         .collect()
+}
+
+pub fn open_mod_folder(mod_loader_id: &str, mod_id: String, resources_path: &Path) -> Result {
+    let mod_loader = get(resources_path, mod_loader_id)?;
+
+    mod_loader.open_mod_folder(mod_id)
+}
+
+pub fn install_mod(mod_loader: &ModLoaderType, game: &Game, mod_id: String) -> Result {
+    mod_loader.install_mod(game, mod_id)
 }

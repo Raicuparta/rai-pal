@@ -8,7 +8,7 @@ use glob::glob;
 use std::fs;
 use std::path::Path;
 
-use super::mod_loader::ModLoaderId;
+use super::mod_loader::{ModLoaderId, ModLoaderStatic};
 
 serializable_struct!(BepInEx {
     pub data: ModLoaderData,
@@ -18,7 +18,7 @@ impl ModLoaderId for BepInEx {
     const ID: &'static str = "bepinex";
 }
 
-impl ModLoader for BepInEx {
+impl ModLoaderStatic for BepInEx {
     fn new(resources_path: &Path) -> Result<Self> {
         let path = resources_path.join(Self::ID);
 
@@ -35,7 +35,9 @@ impl ModLoader for BepInEx {
             },
         })
     }
+}
 
+impl ModLoader for BepInEx {
     fn get_data(&self) -> ModLoaderData {
         self.data.clone()
     }

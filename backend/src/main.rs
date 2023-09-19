@@ -15,6 +15,7 @@
 #![allow(clippy::module_name_repetitions)]
 
 use anyhow::anyhow;
+use enum_dispatch::enum_dispatch;
 use mod_loaders::mod_loader;
 use serde::Serialize;
 use specta::ts::{BigIntExportBehavior, ExportConfiguration};
@@ -168,17 +169,15 @@ async fn open_mod_folder(
     mod_id: String,
     handle: tauri::AppHandle,
 ) -> CommandResult {
-    let mod_loader = mod_loader::get(
+    mod_loader::open_mod_folder(
+        &mod_loader_id,
+        mod_id,
         &handle
             .path_resolver()
             .resolve_resource("resources")
             .ok_or_else(|| anyhow!("Failed to find resources folder"))?,
-        &mod_loader_id,
-    )?;
-
-    mod_loader
-        .open_mod_folder(mod_id)
-        .map_err(|err| anyhow!("Failed to open mod folder: {err}").into())
+    )
+    .map_err(|err| anyhow!("Failed to open mod folder: {err}").into())
 }
 
 #[tauri::command]
@@ -218,7 +217,8 @@ async fn install_mod(
             .ok_or_else(|| anyhow!("Failed to find resources folder"))?,
         &mod_loader_id,
     )?;
-    mod_loader.install_mod(game, mod_id.clone()).map_err(|err| {
+
+    mod_loader::install_mod(&mod_loader, game, mod_id.clone()).map_err(|err| {
         anyhow!(
             "Failed to install mod '{mod_id}' from mod loader {mod_loader_id} on game {game_id}: {err}",
         )

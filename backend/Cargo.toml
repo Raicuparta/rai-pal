@@ -33,6 +33,7 @@ lazy-regex = "3.0.2"
 # although this should be the same version so I don't know what's going on.
 # The fix is this: https://github.com/rust-lang/glob/pull/112
 glob = { git = "https://github.com/rust-lang/glob", version = "0.3.1" }
+enum_dispatch = "0.3.12"
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem
