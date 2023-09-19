@@ -108,7 +108,12 @@ impl ModLoader for BepInEx {
             .ok_or_else(|| anyhow!("Failed to find mod with id {mod_id}"))?;
 
         self.install(game)?;
-        game_mod.install(game)
+        game_mod.install(
+            &game
+                .get_installed_mods_folder()?
+                .join("BepInEx")
+                .join("plugins"),
+        )
     }
 
     fn open_mod_folder(&self, mod_id: String) -> Result {

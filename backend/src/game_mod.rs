@@ -1,5 +1,5 @@
 use crate::files::copy_dir_all;
-use crate::game::{Game, UnityScriptingBackend};
+use crate::game::UnityScriptingBackend;
 use crate::{serializable_struct, Result};
 use anyhow::anyhow;
 use std::path::{Path, PathBuf};
@@ -27,15 +27,9 @@ impl Mod {
         })
     }
 
-    pub fn install(&self, game: &Game) -> Result {
-        copy_dir_all(
-            &self.path,
-            game.get_installed_mods_folder()?
-                .join("BepInEx")
-                .join("plugins")
-                .join(self.name.as_str()),
-        )
-        .map_err(|err| anyhow!("Failed to install mod: {err}"))
+    pub fn install(&self, folder_path: &Path) -> Result {
+        copy_dir_all(&self.path, folder_path.join(&self.name))
+            .map_err(|err| anyhow!("Failed to install mod: {err}"))
     }
 
     pub fn open_folder(&self) -> Result {

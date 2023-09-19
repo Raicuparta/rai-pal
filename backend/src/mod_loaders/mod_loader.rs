@@ -68,7 +68,7 @@ pub fn find(resources_path: &Path, id: &str) -> Result<Box<dyn ModLoader>> {
         .ok_or_else(|| anyhow!("Failed to find mod loader with id {id}"))
 }
 
-pub async fn get_all_data(app_handle: tauri::AppHandle) -> Result<DataMap> {
+pub async fn get_data_map(app_handle: tauri::AppHandle) -> Result<DataMap> {
     let resources_path = app_handle
         .path_resolver()
         .resolve_resource("resources")

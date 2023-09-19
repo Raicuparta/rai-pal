@@ -122,7 +122,7 @@ async fn get_mod_loaders(
 ) -> CommandResult<mod_loader::DataMap> {
     get_state_data(
         &state.mod_loaders,
-        mod_loader::get_all_data,
+        mod_loader::get_data_map,
         ignore_cache,
         handle,
     )
