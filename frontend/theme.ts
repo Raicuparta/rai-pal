@@ -14,13 +14,14 @@ export const theme: MantineThemeOverride = {
     // The bug will probably only be fixed in Tauri 2.0
     // If this project has been updated to Tauri 2.0, please remove this and test it to see if the issue is fixed.
     "*::-webkit-scrollbar": {
-      width: "0.75em",
+      width: theme.spacing.md,
     },
     "*::-webkit-scrollbar-track": {
       background: theme.colors.dark,
+      borderBottomLeftRadius: theme.radius.md,
     },
     "*::-webkit-scrollbar-thumb": {
-      background: "gray",
+      background: theme.colors.dark[2],
       borderRadius: theme.radius.md,
       "&:hover": {
         background: theme.colors.dark[1],
