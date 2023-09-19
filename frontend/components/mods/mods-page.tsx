@@ -36,7 +36,7 @@ export function ModsPage() {
           </tr>
         </thead>
         <tbody>
-          {modLoaders.map((modLoader) => (
+          {Object.values(modLoaders).map((modLoader) => (
             <Fragment key={modLoader.id}>
               {modLoader.mods.map((mod, modIndex) => (
                 <tr key={mod.path}>

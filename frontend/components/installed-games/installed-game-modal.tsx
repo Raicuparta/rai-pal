@@ -57,7 +57,7 @@ export function InstalledGameModal(props: Props) {
             Open Mods Folder
           </Button>
         </Button.Group>
-        {modLoaders.map(
+        {Object.values(modLoaders).map(
           (modLoader) =>
             // TODO need to filter these mods before checking the length.
             // Because we only show mods compatible with this game.

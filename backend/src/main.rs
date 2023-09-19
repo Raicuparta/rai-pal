@@ -15,9 +15,10 @@
 #![allow(clippy::module_name_repetitions)]
 
 use anyhow::anyhow;
-use mod_loaders::mod_loader::{self, ModLoader, ModLoaderData};
+use mod_loaders::mod_loader::{self, ModLoaderData};
 use serde::Serialize;
 use specta::ts::{BigIntExportBehavior, ExportConfiguration};
+use std::collections::HashMap;
 use std::future::Future;
 use std::result::Result as StdResult;
 use std::sync::Mutex;
@@ -56,7 +57,7 @@ impl Serialize for Error {
 struct AppState {
     game_map: Mutex<Option<game::Map>>,
     owned_games: Mutex<Option<Vec<OwnedUnityGame>>>,
-    mod_loaders: Mutex<Option<Vec<ModLoaderData>>>,
+    mod_loaders: Mutex<Option<HashMap<String, ModLoaderData>>>,
 }
 
 async fn get_state_data<TData, TFunction, TFunctionResult>(
@@ -119,7 +120,7 @@ async fn get_mod_loaders(
     state: tauri::State<'_, AppState>,
     ignore_cache: bool,
     handle: tauri::AppHandle,
-) -> CommandResult<Vec<ModLoaderData>> {
+) -> CommandResult<HashMap<String, ModLoaderData>> {
     get_state_data(
         &state.mod_loaders,
         mod_loader::get_all_data,

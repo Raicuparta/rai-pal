@@ -23,7 +23,7 @@ export function openGameFolder(gameId: string) {
 }
 
 export function getModLoaders(ignoreCache: boolean) {
-    return invoke()<ModLoaderData[]>("get_mod_loaders", { ignoreCache })
+    return invoke()<{ [key: string]: ModLoaderData }>("get_mod_loaders", { ignoreCache })
 }
 
 export function installMod(modLoaderId: string, modId: string, gameId: string) {
@@ -47,7 +47,7 @@ export type OwnedUnityGame = { id: string; name: string; installed: boolean; osL
 export type SteamLaunchOption = { launchId: string; appId: number; description: string | null; executable: string | null; arguments: string | null; appType: string | null; osList: string | null; betaKey: string | null; osArch: string | null }
 export type Game = { id: string; name: string; discriminator: string | null; modFilesPath: string; fullPath: string; architecture: Architecture; scriptingBackend: UnityScriptingBackend; unityVersion: UnityVersion; operatingSystem: OperatingSystem; steamLaunch: SteamLaunchOption | null }
 export type Mod = { id: string; name: string; scriptingBackend: UnityScriptingBackend; path: string }
-export type UnityScriptingBackend = "Il2Cpp" | "Mono"
 export type ModLoaderData = { id: string; modCount: number; path: string; mods: Mod[] }
+export type UnityScriptingBackend = "Il2Cpp" | "Mono"
 export type Architecture = "Unknown" | "X64" | "X86"
 export type UnityVersion = { major: number; minor: number; patch: number; suffix: string; isLegacy: boolean; display: string }

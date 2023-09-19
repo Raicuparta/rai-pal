@@ -37,4 +37,4 @@ function useBackendData<TData>(
 
 export const useGameMap = () => useBackendData(getGameMap, {});
 export const useOwnedUnityGames = () => useBackendData(getOwnedGames, []);
-export const useModLoaders = () => useBackendData(getModLoaders, []);
+export const useModLoaders = () => useBackendData(getModLoaders, {});

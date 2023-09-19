@@ -4,6 +4,7 @@ use crate::game::Game;
 use crate::game_mod::Mod;
 use crate::{serializable_struct, Result};
 use anyhow::anyhow;
+use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
 serializable_struct!(ModLoaderData {
@@ -27,30 +28,37 @@ pub trait ModLoader {
     fn get_data(&self) -> ModLoaderData;
 }
 
-fn get_all(resources_path: &Path) -> Result<Vec<Box<dyn ModLoader>>> {
-    Ok(vec![
-        Box::new(BepInEx::new(resources_path)?),
-        Box::new(MelonLoader::new(resources_path)?),
-    ])
+fn get_all(resources_path: &Path) -> Result<HashMap<String, Box<dyn ModLoader>>> {
+    let mut map: HashMap<String, Box<dyn ModLoader>> = HashMap::new();
+
+    let bepinex = Box::new(BepInEx::new(resources_path)?);
+    let melon_loader = Box::new(MelonLoader::new(resources_path)?);
+
+    map.insert(bepinex.get_data().id, bepinex);
+    map.insert(melon_loader.get_data().id, melon_loader);
+
+    Ok(map)
 }
 
 pub fn find(resources_path: &Path, id: &str) -> Result<Box<dyn ModLoader>> {
-    let mod_loaders = get_all(resources_path)?;
+    let mut mod_loaders = get_all(resources_path)?;
 
     mod_loaders
-        .into_iter()
-        .find(|mod_loader| mod_loader.get_data().id == id)
+        .remove(id)
         .ok_or_else(|| anyhow!("Failed to find mod loader with id {id}"))
 }
 
-pub async fn get_all_data(app_handle: tauri::AppHandle) -> Result<Vec<ModLoaderData>> {
+pub async fn get_all_data(app_handle: tauri::AppHandle) -> Result<HashMap<String, ModLoaderData>> {
     let resources_path = app_handle
         .path_resolver()
         .resolve_resource("resources")
         .ok_or_else(|| anyhow!("Failed to find resources path"))?;
 
     get_all(&resources_path)?
-        .into_iter()
-        .map(|mod_loader| Ok(mod_loader.get_data()))
+        .values()
+        .map(|mod_loader| {
+            let data = mod_loader.get_data();
+            Ok((data.id.clone(), data))
+        })
         .collect()
 }
