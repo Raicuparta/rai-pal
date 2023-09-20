@@ -11,6 +11,7 @@ import { Fragment, useState } from "react";
 import { GameName } from "./game-name";
 import { CommandButton } from "@components/command-button";
 import {
+  MdDelete,
   MdFolderSpecial,
   MdInstallDesktop,
   MdPlayArrow,
@@ -77,17 +78,24 @@ export function InstalledGameModal(props: Props) {
                       (mod) =>
                         mod.scriptingBackend === props.game.scriptingBackend
                     )
-                    .map((mod) => (
-                      <CommandButton
-                        icon={<MdInstallDesktop />}
-                        key={mod.name}
-                        onClick={() =>
-                          installMod(modLoader.id, mod.id, props.game.id)
-                        }
-                      >
-                        Install {mod.name}
-                      </CommandButton>
-                    ))}
+                    .map((mod) => {
+                      const isInstalled = props.game.installedMods.includes(
+                        mod.id
+                      );
+                      return (
+                        <CommandButton
+                          icon={
+                            isInstalled ? <MdDelete /> : <MdInstallDesktop />
+                          }
+                          key={mod.name}
+                          onClick={() =>
+                            installMod(modLoader.id, mod.id, props.game.id)
+                          }
+                        >
+                          {isInstalled ? "Uninstall" : "Install"} {mod.name}
+                        </CommandButton>
+                      );
+                    })}
                 </Button.Group>
               </Fragment>
             )

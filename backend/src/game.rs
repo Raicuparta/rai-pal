@@ -21,6 +21,12 @@ use lazy_regex::regex_find;
 
 use crate::{
 	appinfo,
+	game_mod::Mod,
+	mod_loaders::mod_loader::{
+		self,
+		ModLoader,
+		ModLoaderData,
+	},
 	paths,
 	serializable_enum,
 	serializable_struct,
@@ -56,7 +62,10 @@ serializable_struct!(Game {
 	pub unity_version: UnityVersion,
 	pub operating_system: OperatingSystem,
 	pub steam_launch: Option<SteamLaunchOption>,
+	pub installed_mods: Vec<String>,
 });
+
+pub type Map = HashMap<String, Game>;
 
 impl Game {
 	pub fn new(
@@ -91,6 +100,14 @@ impl Game {
 
 		let unity_version = get_unity_version(full_path);
 
+		let installed_mods = match get_installed_mods(&id) {
+			Ok(mods) => mods,
+			Err(err) => {
+				println!("Failed to get installed mods for game {id}: {err}");
+				vec![]
+			}
+		};
+
 		Some(Self {
 			architecture,
 			full_path: full_path.to_owned(),
@@ -102,6 +119,7 @@ impl Game {
 			scripting_backend: get_unity_scripting_backend(full_path).ok()?,
 			steam_launch: steam_launch.cloned(),
 			unity_version,
+			installed_mods,
 		})
 	}
 
@@ -110,10 +128,7 @@ impl Game {
 	}
 
 	pub fn get_installed_mods_folder(&self) -> Result<PathBuf> {
-		let installed_mods_folder = paths::app_data_path()?.join("games").join(&self.id);
-		fs::create_dir_all(&installed_mods_folder)?;
-
-		Ok(installed_mods_folder)
+		get_installed_mods_folder(&self.id)
 	}
 
 	pub fn open_mods_folder(&self) -> Result {
@@ -276,4 +291,25 @@ fn get_version_from_asset(asset_path: &Path) -> Result<String> {
 	)
 }
 
-pub type Map = HashMap<String, Game>;
+fn get_installed_mods_folder(id: &str) -> Result<PathBuf> {
+	let installed_mods_folder = paths::app_data_path()?.join("games").join(id);
+	fs::create_dir_all(&installed_mods_folder)?;
+
+	Ok(installed_mods_folder)
+}
+
+fn get_installed_mods(id: &str) -> Result<Vec<String>> {
+	let pattern = get_installed_mods_folder(id)?
+		.join("BepInEx")
+		.join("plugins")
+		.join("*");
+	let entries: Vec<_> = paths::glob_path(&pattern)?.collect();
+
+	Ok(entries
+		.iter()
+		.filter_map(|entry| match entry {
+			Ok(mod_path) => Some(mod_path.file_name()?.to_str()?.to_string()),
+			Err(_) => None,
+		})
+		.collect())
+}

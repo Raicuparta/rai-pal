@@ -27,7 +27,7 @@ impl Mod {
 		);
 
 		Ok(Self {
-			id: format!("{scripting_backend}/{name}"),
+			id: format!("{scripting_backend}_{name}"),
 			path: path.to_path_buf(),
 			name,
 			scripting_backend,
@@ -35,7 +35,7 @@ impl Mod {
 	}
 
 	pub fn install(&self, folder_path: &Path) -> Result {
-		copy_dir_all(&self.path, folder_path.join(&self.name))
+		copy_dir_all(&self.path, folder_path.join(&self.id))
 	}
 
 	pub fn open_folder(&self) -> Result {
