@@ -18,9 +18,13 @@ export const theme: MantineThemeOverride = {
     },
     "*::-webkit-scrollbar-track": {
       background: theme.colors.dark,
-      borderBottomLeftRadius: theme.radius.md,
+      borderTopRightRadius: theme.radius.md,
+      borderBottomRightRadius: theme.radius.md,
     },
     "*::-webkit-scrollbar-thumb": {
+      borderWidth: theme.other.borderWidth,
+      borderColor: theme.colors.dark,
+      borderStyle: "solid",
       background: theme.colors.dark[2],
       borderRadius: theme.radius.md,
       "&:hover": {
