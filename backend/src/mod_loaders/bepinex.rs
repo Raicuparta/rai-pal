@@ -1,6 +1,6 @@
 use crate::files::copy_dir_all;
 use crate::game::{Game, OperatingSystem};
-use crate::mod_loaders::mod_loader::{ModLoader, ModLoaderData};
+use crate::mod_loaders::mod_loader::{ModLoaderActions, ModLoaderData};
 use crate::{game::UnityScriptingBackend, game_mod::Mod};
 use crate::{serializable_struct, Result};
 use anyhow::anyhow;
@@ -8,17 +8,15 @@ use glob::glob;
 use std::fs;
 use std::path::Path;
 
-use super::mod_loader::{ModLoaderId, ModLoaderStatic};
+use super::mod_loader::ModLoaderStatic;
 
 serializable_struct!(BepInEx {
     pub data: ModLoaderData,
 });
 
-impl ModLoaderId for BepInEx {
-    const ID: &'static str = "bepinex";
-}
-
 impl ModLoaderStatic for BepInEx {
+    const ID: &'static str = "bepinex";
+
     fn new(resources_path: &Path) -> Result<Self> {
         let path = resources_path.join(Self::ID);
 
@@ -37,7 +35,7 @@ impl ModLoaderStatic for BepInEx {
     }
 }
 
-impl ModLoader for BepInEx {
+impl ModLoaderActions for BepInEx {
     fn get_data(&self) -> ModLoaderData {
         self.data.clone()
     }

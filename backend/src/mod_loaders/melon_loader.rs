@@ -1,15 +1,13 @@
-use super::mod_loader::{ModLoader, ModLoaderData, ModLoaderId, ModLoaderStatic};
+use super::mod_loader::{ModLoaderActions, ModLoaderData, ModLoaderStatic};
 use crate::serializable_struct;
 
 serializable_struct!(MelonLoader {
   pub data: ModLoaderData,
 });
 
-impl ModLoaderId for MelonLoader {
-    const ID: &'static str = "melonloader";
-}
-
 impl ModLoaderStatic for MelonLoader {
+    const ID: &'static str = "melonloader";
+
     fn new(resources_path: &std::path::Path) -> crate::Result<Self>
     where
         Self: std::marker::Sized,
@@ -27,7 +25,7 @@ impl ModLoaderStatic for MelonLoader {
     }
 }
 
-impl ModLoader for MelonLoader {
+impl ModLoaderActions for MelonLoader {
     fn get_data(&self) -> ModLoaderData {
         self.data.clone()
     }

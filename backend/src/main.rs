@@ -15,7 +15,7 @@
 #![allow(clippy::module_name_repetitions)]
 
 use anyhow::anyhow;
-use mod_loaders::mod_loader::{self, ModLoader};
+use mod_loaders::mod_loader::{self, ModLoaderActions};
 use serde::Serialize;
 use specta::ts::{BigIntExportBehavior, ExportConfiguration};
 use std::future::Future;

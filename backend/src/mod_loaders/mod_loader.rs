@@ -16,19 +16,13 @@ serializable_struct!(ModLoaderData {
 });
 
 #[enum_dispatch]
-pub enum ModLoaderType {
+pub enum ModLoader {
     BepInEx,
     MelonLoader,
 }
 
-pub trait ModLoaderStatic {
-    fn new(resources_path: &Path) -> Result<Self>
-    where
-        Self: Sized;
-}
-
-#[enum_dispatch(ModLoaderType)]
-pub trait ModLoader {
+#[enum_dispatch(ModLoader)]
+pub trait ModLoaderActions {
     fn install(&self, game: &Game) -> Result;
 
     fn install_mod(&self, game: &Game, mod_id: String) -> Result;
@@ -38,29 +32,31 @@ pub trait ModLoader {
     fn get_data(&self) -> ModLoaderData;
 }
 
-pub trait ModLoaderId {
+pub trait ModLoaderStatic {
     const ID: &'static str;
+
+    fn new(resources_path: &Path) -> Result<Self>
+    where
+        Self: Sized;
 }
 
-type Map = HashMap<String, ModLoaderType>;
+type Map = HashMap<String, ModLoader>;
 pub type DataMap = HashMap<String, ModLoaderData>;
 
-fn create_map_entry<TModLoader: ModLoader + ModLoaderId + ModLoaderStatic + 'static>(
+fn create_map_entry<TModLoader: ModLoaderActions + ModLoaderStatic + 'static>(
     path: &Path,
-) -> Result<(String, ModLoaderType)>
+) -> Result<(String, ModLoader)>
 where
-    ModLoaderType: std::convert::From<TModLoader>,
+    ModLoader: std::convert::From<TModLoader>,
 {
-    let mod_loader: ModLoaderType = TModLoader::new(path)?.into();
+    let mod_loader: ModLoader = TModLoader::new(path)?.into();
 
     Ok((TModLoader::ID.to_string(), mod_loader))
 }
 
-fn add_entry<TModLoader: ModLoader + ModLoaderId + ModLoaderStatic + 'static>(
-    path: &Path,
-    map: &mut Map,
-) where
-    ModLoaderType: std::convert::From<TModLoader>,
+fn add_entry<TModLoader: ModLoaderActions + ModLoaderStatic + 'static>(path: &Path, map: &mut Map)
+where
+    ModLoader: std::convert::From<TModLoader>,
 {
     match create_map_entry::<TModLoader>(path) {
         Ok((key, value)) => {
@@ -79,7 +75,7 @@ fn get_map(resources_path: &Path) -> Map {
     map
 }
 
-pub fn get(resources_path: &Path, id: &str) -> Result<ModLoaderType> {
+pub fn get(resources_path: &Path, id: &str) -> Result<ModLoader> {
     get_map(resources_path)
         .remove(id)
         .ok_or_else(|| anyhow!("Failed to find mod loader with id {id}"))
