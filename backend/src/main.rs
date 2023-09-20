@@ -256,6 +256,22 @@ async fn install_mod(
 	mod_loader.install_mod(game, mod_id.clone())
 }
 
+#[tauri::command]
+#[specta::specta]
+async fn uninstall_mod(
+	game_id: String,
+	mod_id: String,
+	state: tauri::State<'_, AppState>,
+	handle: tauri::AppHandle,
+) -> Result {
+	let game_map = get_game_map(state, false, handle.clone()).await?;
+	let game = game_map
+		.get(&game_id)
+		.ok_or_else(|| Error::GameNotFound(game_id))?;
+
+	game.uninstall_mod(&mod_id)
+}
+
 fn main() {
 	// Since I'm making all exposed functions async, panics won't crash anything important, I think.
 	// So I can just catch panics here and show a system message with the error.
@@ -281,6 +297,7 @@ fn main() {
 			open_game_folder,
 			get_mod_loaders,
 			install_mod,
+			uninstall_mod,
 			open_game_mods_folder,
 			start_game,
 			open_mod_folder

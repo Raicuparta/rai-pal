@@ -30,6 +30,10 @@ export function installMod(modLoaderId: string, modId: string, gameId: string) {
     return invoke()<null>("install_mod", { modLoaderId,modId,gameId })
 }
 
+export function uninstallMod(gameId: string, modId: string) {
+    return invoke()<null>("uninstall_mod", { gameId,modId })
+}
+
 export function openGameModsFolder(gameId: string) {
     return invoke()<null>("open_game_mods_folder", { gameId })
 }

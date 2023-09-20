@@ -162,6 +162,20 @@ impl Game {
 			},
 		)?)
 	}
+
+	pub fn uninstall_mod(&self, mod_id: &str) -> Result {
+		let installed_mods_folder = self.get_installed_mods_folder()?;
+		let mod_files_folder = installed_mods_folder
+			.join("BepInEx")
+			.join("plugins")
+			.join(mod_id);
+
+		if mod_files_folder.is_dir() {
+			fs::remove_dir_all(mod_files_folder)?;
+		}
+
+		Ok(())
+	}
 }
 
 fn is_unity_exe(game_exe_path: &Path) -> bool {

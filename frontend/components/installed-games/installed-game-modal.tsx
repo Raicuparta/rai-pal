@@ -6,6 +6,7 @@ import {
   openGameFolder,
   openGameModsFolder,
   startGame,
+  uninstallMod,
 } from "@api/bindings";
 import { Fragment, useState } from "react";
 import { GameName } from "./game-name";
@@ -78,24 +79,27 @@ export function InstalledGameModal(props: Props) {
                       (mod) =>
                         mod.scriptingBackend === props.game.scriptingBackend
                     )
-                    .map((mod) => {
-                      const isInstalled = props.game.installedMods.includes(
-                        mod.id
-                      );
-                      return (
+                    .map((mod) =>
+                      props.game.installedMods.includes(mod.id) ? (
                         <CommandButton
-                          icon={
-                            isInstalled ? <MdDelete /> : <MdInstallDesktop />
-                          }
+                          icon={<MdDelete />}
+                          key={mod.name}
+                          onClick={() => uninstallMod(props.game.id, mod.id)}
+                        >
+                          Uninstall {mod.name}
+                        </CommandButton>
+                      ) : (
+                        <CommandButton
+                          icon={<MdInstallDesktop />}
                           key={mod.name}
                           onClick={() =>
                             installMod(modLoader.id, mod.id, props.game.id)
                           }
                         >
-                          {isInstalled ? "Uninstall" : "Install"} {mod.name}
+                          Install {mod.name}
                         </CommandButton>
-                      );
-                    })}
+                      )
+                    )}
                 </Button.Group>
               </Fragment>
             )
