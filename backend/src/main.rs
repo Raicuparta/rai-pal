@@ -14,13 +14,22 @@
 #![allow(clippy::unused_async)]
 #![allow(clippy::module_name_repetitions)]
 
+use std::{
+	future::Future,
+	result::Result as StdResult,
+	sync::Mutex,
+};
+
 use anyhow::anyhow;
-use mod_loaders::mod_loader::{self, ModLoaderActions};
+use mod_loaders::mod_loader::{
+	self,
+	ModLoaderActions,
+};
 use serde::Serialize;
-use specta::ts::{BigIntExportBehavior, ExportConfiguration};
-use std::future::Future;
-use std::result::Result as StdResult;
-use std::sync::Mutex;
+use specta::ts::{
+	BigIntExportBehavior,
+	ExportConfiguration,
+};
 use steam_owned_unity_games::OwnedUnityGame;
 use tauri::api::dialog::message;
 
@@ -36,190 +45,190 @@ mod steam_owned_unity_games;
 struct Error(anyhow::Error);
 
 impl From<anyhow::Error> for Error {
-    fn from(item: anyhow::Error) -> Self {
-        Self(item)
-    }
+	fn from(item: anyhow::Error) -> Self {
+		Self(item)
+	}
 }
 
 type CommandResult<T = ()> = StdResult<T, Error>;
 pub type Result<T = ()> = StdResult<T, anyhow::Error>;
 
 impl Serialize for Error {
-    fn serialize<S>(&self, serializer: S) -> StdResult<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        serializer.serialize_str(&self.0.to_string())
-    }
+	fn serialize<S>(&self, serializer: S) -> StdResult<S::Ok, S::Error>
+	where
+		S: serde::Serializer,
+	{
+		serializer.serialize_str(&self.0.to_string())
+	}
 }
 
 struct AppState {
-    game_map: Mutex<Option<game::Map>>,
-    owned_games: Mutex<Option<Vec<OwnedUnityGame>>>,
-    mod_loaders: Mutex<Option<mod_loader::DataMap>>,
+	game_map: Mutex<Option<game::Map>>,
+	owned_games: Mutex<Option<Vec<OwnedUnityGame>>>,
+	mod_loaders: Mutex<Option<mod_loader::DataMap>>,
 }
 
 async fn get_state_data<TData, TFunction, TFunctionResult>(
-    mutex: &Mutex<Option<TData>>,
-    function: TFunction,
-    ignore_cache: bool,
-    app_handle: tauri::AppHandle,
+	mutex: &Mutex<Option<TData>>,
+	function: TFunction,
+	ignore_cache: bool,
+	app_handle: tauri::AppHandle,
 ) -> CommandResult<TData>
 where
-    TFunction: Fn(tauri::AppHandle) -> TFunctionResult + std::panic::UnwindSafe + Send,
-    TData: Clone + Send,
-    TFunctionResult: Future<Output = Result<TData>> + Send,
+	TFunction: Fn(tauri::AppHandle) -> TFunctionResult + std::panic::UnwindSafe + Send,
+	TData: Clone + Send,
+	TFunctionResult: Future<Output = Result<TData>> + Send,
 {
-    if !ignore_cache {
-        if let Ok(mutex_guard) = mutex.lock() {
-            if let Some(data) = mutex_guard.clone() {
-                return Ok(data);
-            }
-        }
-    }
+	if !ignore_cache {
+		if let Ok(mutex_guard) = mutex.lock() {
+			if let Some(data) = mutex_guard.clone() {
+				return Ok(data);
+			}
+		}
+	}
 
-    let result = function(app_handle);
-    let data = result.await?;
-    if let Ok(mut mutex_guard) = mutex.lock() {
-        *mutex_guard = Some(data.clone());
-    }
+	let result = function(app_handle);
+	let data = result.await?;
+	if let Ok(mut mutex_guard) = mutex.lock() {
+		*mutex_guard = Some(data.clone());
+	}
 
-    Ok(data)
+	Ok(data)
 }
 
 #[tauri::command]
 #[specta::specta]
 async fn get_game_map(
-    state: tauri::State<'_, AppState>,
-    ignore_cache: bool,
-    handle: tauri::AppHandle,
+	state: tauri::State<'_, AppState>,
+	ignore_cache: bool,
+	handle: tauri::AppHandle,
 ) -> CommandResult<game::Map> {
-    get_state_data(&state.game_map, steam_games::get, ignore_cache, handle).await
+	get_state_data(&state.game_map, steam_games::get, ignore_cache, handle).await
 }
 
 #[tauri::command]
 #[specta::specta]
 async fn get_owned_games(
-    state: tauri::State<'_, AppState>,
-    ignore_cache: bool,
-    handle: tauri::AppHandle,
+	state: tauri::State<'_, AppState>,
+	ignore_cache: bool,
+	handle: tauri::AppHandle,
 ) -> CommandResult<Vec<OwnedUnityGame>> {
-    get_state_data(
-        &state.owned_games,
-        steam_owned_unity_games::get,
-        ignore_cache,
-        handle,
-    )
-    .await
+	get_state_data(
+		&state.owned_games,
+		steam_owned_unity_games::get,
+		ignore_cache,
+		handle,
+	)
+	.await
 }
 
 #[tauri::command]
 #[specta::specta]
 async fn get_mod_loaders(
-    state: tauri::State<'_, AppState>,
-    ignore_cache: bool,
-    handle: tauri::AppHandle,
+	state: tauri::State<'_, AppState>,
+	ignore_cache: bool,
+	handle: tauri::AppHandle,
 ) -> CommandResult<mod_loader::DataMap> {
-    get_state_data(
-        &state.mod_loaders,
-        mod_loader::get_data_map,
-        ignore_cache,
-        handle,
-    )
-    .await
+	get_state_data(
+		&state.mod_loaders,
+		mod_loader::get_data_map,
+		ignore_cache,
+		handle,
+	)
+	.await
 }
 
 #[tauri::command]
 #[specta::specta]
 async fn open_game_folder(
-    game_id: String,
-    state: tauri::State<'_, AppState>,
-    handle: tauri::AppHandle,
+	game_id: String,
+	state: tauri::State<'_, AppState>,
+	handle: tauri::AppHandle,
 ) -> CommandResult {
-    let game_map = get_game_map(state, false, handle).await?;
-    let game = game_map
-        .get(&game_id)
-        .ok_or_else(|| anyhow!("Failed to find game with id {game_id}"))?;
+	let game_map = get_game_map(state, false, handle).await?;
+	let game = game_map
+		.get(&game_id)
+		.ok_or_else(|| anyhow!("Failed to find game with id {game_id}"))?;
 
-    game.open_game_folder()
-        .map_err(|error| anyhow!("Failed to open game folder: {error}").into())
+	game.open_game_folder()
+		.map_err(|error| anyhow!("Failed to open game folder: {error}").into())
 }
 
 #[tauri::command]
 #[specta::specta]
 async fn open_game_mods_folder(
-    game_id: String,
-    state: tauri::State<'_, AppState>,
-    handle: tauri::AppHandle,
+	game_id: String,
+	state: tauri::State<'_, AppState>,
+	handle: tauri::AppHandle,
 ) -> CommandResult {
-    let game_map = get_game_map(state, false, handle).await?;
-    let game = game_map
-        .get(&game_id)
-        .ok_or_else(|| anyhow!("Failed to find game with id {game_id}"))?;
+	let game_map = get_game_map(state, false, handle).await?;
+	let game = game_map
+		.get(&game_id)
+		.ok_or_else(|| anyhow!("Failed to find game with id {game_id}"))?;
 
-    game.open_mods_folder()
-        .map_err(|error| anyhow!("Failed to open game folder: {error}").into())
+	game.open_mods_folder()
+		.map_err(|error| anyhow!("Failed to open game folder: {error}").into())
 }
 
 #[tauri::command]
 #[specta::specta]
 async fn open_mod_folder(
-    mod_loader_id: String,
-    mod_id: String,
-    handle: tauri::AppHandle,
+	mod_loader_id: String,
+	mod_id: String,
+	handle: tauri::AppHandle,
 ) -> CommandResult {
-    let mod_loader = mod_loader::get(
-        &handle
-            .path_resolver()
-            .resolve_resource("resources")
-            .ok_or_else(|| anyhow!("Failed to find resources folder"))?,
-        &mod_loader_id,
-    )?;
+	let mod_loader = mod_loader::get(
+		&handle
+			.path_resolver()
+			.resolve_resource("resources")
+			.ok_or_else(|| anyhow!("Failed to find resources folder"))?,
+		&mod_loader_id,
+	)?;
 
-    mod_loader
-        .open_mod_folder(mod_id)
-        .map_err(|err| anyhow!("Failed to open mod folder: {err}").into())
+	mod_loader
+		.open_mod_folder(mod_id)
+		.map_err(|err| anyhow!("Failed to open mod folder: {err}").into())
 }
 
 #[tauri::command]
 #[specta::specta]
 async fn start_game(
-    game_id: String,
-    state: tauri::State<'_, AppState>,
-    handle: tauri::AppHandle,
+	game_id: String,
+	state: tauri::State<'_, AppState>,
+	handle: tauri::AppHandle,
 ) -> CommandResult {
-    let game_map = get_game_map(state, false, handle).await?;
-    let game = game_map
-        .get(&game_id)
-        .ok_or_else(|| anyhow!("Failed to find game with id {game_id}"))?;
+	let game_map = get_game_map(state, false, handle).await?;
+	let game = game_map
+		.get(&game_id)
+		.ok_or_else(|| anyhow!("Failed to find game with id {game_id}"))?;
 
-    game.start()
-        .map_err(|error| anyhow!("Failed to open game folder: {error}").into())
+	game.start()
+		.map_err(|error| anyhow!("Failed to open game folder: {error}").into())
 }
 
 #[tauri::command]
 #[specta::specta]
 async fn install_mod(
-    mod_loader_id: String,
-    mod_id: String,
-    game_id: String,
-    state: tauri::State<'_, AppState>,
-    handle: tauri::AppHandle,
+	mod_loader_id: String,
+	mod_id: String,
+	game_id: String,
+	state: tauri::State<'_, AppState>,
+	handle: tauri::AppHandle,
 ) -> CommandResult {
-    let game_map = get_game_map(state, false, handle.clone()).await?;
-    let game = game_map
-        .get(&game_id)
-        .ok_or_else(|| anyhow!("Failed to find game with ID {game_id}"))?;
+	let game_map = get_game_map(state, false, handle.clone()).await?;
+	let game = game_map
+		.get(&game_id)
+		.ok_or_else(|| anyhow!("Failed to find game with ID {game_id}"))?;
 
-    let mod_loader = mod_loader::get(
-        &handle
-            .path_resolver()
-            .resolve_resource("resources")
-            .ok_or_else(|| anyhow!("Failed to find resources folder"))?,
-        &mod_loader_id,
-    )?;
+	let mod_loader = mod_loader::get(
+		&handle
+			.path_resolver()
+			.resolve_resource("resources")
+			.ok_or_else(|| anyhow!("Failed to find resources folder"))?,
+		&mod_loader_id,
+	)?;
 
-    mod_loader.install_mod(game, mod_id.clone()).map_err(|err| {
+	mod_loader.install_mod(game, mod_id.clone()).map_err(|err| {
         anyhow!(
             "Failed to install mod '{mod_id}' from mod loader {mod_loader_id} on game {game_id}: {err}",
         )
@@ -228,33 +237,33 @@ async fn install_mod(
 }
 
 fn main() {
-    // Since I'm making all exposed functions async, panics won't crash anything important, I think.
-    // So I can just catch panics here and show a system message with the error.
-    std::panic::set_hook(Box::new(|info| {
-        println!("Panic: {info}");
-        message(
-            None::<&tauri::Window>,
-            "Failed to execute command",
-            info.to_string(),
-        );
-    }));
+	// Since I'm making all exposed functions async, panics won't crash anything important, I think.
+	// So I can just catch panics here and show a system message with the error.
+	std::panic::set_hook(Box::new(|info| {
+		println!("Panic: {info}");
+		message(
+			None::<&tauri::Window>,
+			"Failed to execute command",
+			info.to_string(),
+		);
+	}));
 
-    set_up_tauri!(
-        "../frontend/api/bindings.ts",
-        AppState {
-            game_map: Mutex::default(),
-            owned_games: Mutex::default(),
-            mod_loaders: Mutex::default(),
-        },
-        [
-            get_game_map,
-            get_owned_games,
-            open_game_folder,
-            get_mod_loaders,
-            install_mod,
-            open_game_mods_folder,
-            start_game,
-            open_mod_folder
-        ]
-    );
+	set_up_tauri!(
+		"../frontend/api/bindings.ts",
+		AppState {
+			game_map: Mutex::default(),
+			owned_games: Mutex::default(),
+			mod_loaders: Mutex::default(),
+		},
+		[
+			get_game_map,
+			get_owned_games,
+			open_game_folder,
+			get_mod_loaders,
+			install_mod,
+			open_game_mods_folder,
+			start_game,
+			open_mod_folder
+		]
+	);
 }
