@@ -28,12 +28,12 @@ anyhow = "1.0.75"
 open = "5.0.0"
 directories = "5.0.1"
 lazy-regex = "3.0.2"
+enum_dispatch = "0.3.12"
 
 # Using the git version because I need a fix that isn't on the normal version,
 # although this should be the same version so I don't know what's going on.
 # The fix is this: https://github.com/rust-lang/glob/pull/112
 glob = { git = "https://github.com/rust-lang/glob", version = "0.3.1" }
-enum_dispatch = "0.3.12"
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem

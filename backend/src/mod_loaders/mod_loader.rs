@@ -99,13 +99,3 @@ pub async fn get_data_map(app_handle: tauri::AppHandle) -> Result<DataMap> {
         })
         .collect()
 }
-
-pub fn open_mod_folder(mod_loader_id: &str, mod_id: String, resources_path: &Path) -> Result {
-    let mod_loader = get(resources_path, mod_loader_id)?;
-
-    mod_loader.open_mod_folder(mod_id)
-}
-
-pub fn install_mod(mod_loader: &ModLoaderType, game: &Game, mod_id: String) -> Result {
-    mod_loader.install_mod(game, mod_id)
-}
