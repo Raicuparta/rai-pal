@@ -16,16 +16,15 @@
 
 use std::{
 	future::Future,
+	path::PathBuf,
 	result::Result as StdResult,
 	sync::Mutex,
 };
 
-use anyhow::anyhow;
 use mod_loaders::mod_loader::{
 	self,
 	ModLoaderActions,
 };
-use serde::Serialize;
 use specta::ts::{
 	BigIntExportBehavior,
 	ExportConfiguration,
@@ -39,28 +38,71 @@ mod game;
 mod game_mod;
 mod macros;
 mod mod_loaders;
+mod paths;
 mod steam_games;
 mod steam_owned_unity_games;
 
-struct Error(anyhow::Error);
+#[derive(Debug, thiserror::Error)]
+pub enum Error {
+	#[error(transparent)]
+	Io(#[from] std::io::Error),
 
-impl From<anyhow::Error> for Error {
-	fn from(item: anyhow::Error) -> Self {
-		Self(item)
-	}
+	#[error(transparent)]
+	Glob(#[from] glob::PatternError),
+
+	#[error(transparent)]
+	Reqwest(#[from] reqwest::Error),
+
+	#[error(transparent)]
+	Goblin(#[from] goblin::error::Error),
+
+	#[error("Invalid type `{0}` in binary vdf key/value pair")]
+	InvalidBinaryVdfType(u8),
+
+	#[error("Failed to get file name from path `{0}`")]
+	FailedToGetFileName(PathBuf),
+
+	#[error("Failed to install mod `{0}`")]
+	ModInstallFailure(PathBuf),
+
+	#[error("Failed to find game with ID `{0}`")]
+	GameNotFound(String),
+
+	#[error("Failed to find mod with ID `{0}`")]
+	ModNotFound(String),
+
+	#[error("Failed to find mod loader with ID `{0}`")]
+	ModLoaderNotFound(String),
+
+	#[error("Failed to find Steam on this system")]
+	SteamNotFound(),
+
+	#[error("Failed to find Rai Pal resources folder")]
+	ResourcesNotFound(),
+
+	#[error("Failed to find Rai Pal app data folder")]
+	AppDataNotFound(),
+
+	#[error("Failed to parse path (possibly because is a non-UTF-8 string) `{0}`")]
+	PathParseFailure(PathBuf),
+
+	#[error("Failed to get folder parent for path `{0}`")]
+	PathParentNotFound(PathBuf),
+
+	#[error("Tried to read empty file `{0}`")]
+	EmptyFile(PathBuf),
 }
 
-type CommandResult<T = ()> = StdResult<T, Error>;
-pub type Result<T = ()> = StdResult<T, anyhow::Error>;
-
-impl Serialize for Error {
+impl serde::Serialize for Error {
 	fn serialize<S>(&self, serializer: S) -> StdResult<S::Ok, S::Error>
 	where
-		S: serde::Serializer,
+		S: serde::ser::Serializer,
 	{
-		serializer.serialize_str(&self.0.to_string())
+		serializer.serialize_str(self.to_string().as_ref())
 	}
 }
+
+pub type Result<T = ()> = StdResult<T, Error>;
 
 struct AppState {
 	game_map: Mutex<Option<game::Map>>,
@@ -73,7 +115,7 @@ async fn get_state_data<TData, TFunction, TFunctionResult>(
 	function: TFunction,
 	ignore_cache: bool,
 	app_handle: tauri::AppHandle,
-) -> CommandResult<TData>
+) -> Result<TData>
 where
 	TFunction: Fn(tauri::AppHandle) -> TFunctionResult + std::panic::UnwindSafe + Send,
 	TData: Clone + Send,
@@ -102,7 +144,7 @@ async fn get_game_map(
 	state: tauri::State<'_, AppState>,
 	ignore_cache: bool,
 	handle: tauri::AppHandle,
-) -> CommandResult<game::Map> {
+) -> Result<game::Map> {
 	get_state_data(&state.game_map, steam_games::get, ignore_cache, handle).await
 }
 
@@ -112,7 +154,7 @@ async fn get_owned_games(
 	state: tauri::State<'_, AppState>,
 	ignore_cache: bool,
 	handle: tauri::AppHandle,
-) -> CommandResult<Vec<OwnedUnityGame>> {
+) -> Result<Vec<OwnedUnityGame>> {
 	get_state_data(
 		&state.owned_games,
 		steam_owned_unity_games::get,
@@ -128,7 +170,7 @@ async fn get_mod_loaders(
 	state: tauri::State<'_, AppState>,
 	ignore_cache: bool,
 	handle: tauri::AppHandle,
-) -> CommandResult<mod_loader::DataMap> {
+) -> Result<mod_loader::DataMap> {
 	get_state_data(
 		&state.mod_loaders,
 		mod_loader::get_data_map,
@@ -144,14 +186,13 @@ async fn open_game_folder(
 	game_id: String,
 	state: tauri::State<'_, AppState>,
 	handle: tauri::AppHandle,
-) -> CommandResult {
+) -> Result {
 	let game_map = get_game_map(state, false, handle).await?;
 	let game = game_map
 		.get(&game_id)
-		.ok_or_else(|| anyhow!("Failed to find game with id {game_id}"))?;
+		.ok_or_else(|| Error::GameNotFound(game_id))?;
 
 	game.open_game_folder()
-		.map_err(|error| anyhow!("Failed to open game folder: {error}").into())
 }
 
 #[tauri::command]
@@ -160,14 +201,13 @@ async fn open_game_mods_folder(
 	game_id: String,
 	state: tauri::State<'_, AppState>,
 	handle: tauri::AppHandle,
-) -> CommandResult {
+) -> Result {
 	let game_map = get_game_map(state, false, handle).await?;
 	let game = game_map
 		.get(&game_id)
-		.ok_or_else(|| anyhow!("Failed to find game with id {game_id}"))?;
+		.ok_or_else(|| Error::GameNotFound(game_id))?;
 
 	game.open_mods_folder()
-		.map_err(|error| anyhow!("Failed to open game folder: {error}").into())
 }
 
 #[tauri::command]
@@ -176,18 +216,10 @@ async fn open_mod_folder(
 	mod_loader_id: String,
 	mod_id: String,
 	handle: tauri::AppHandle,
-) -> CommandResult {
-	let mod_loader = mod_loader::get(
-		&handle
-			.path_resolver()
-			.resolve_resource("resources")
-			.ok_or_else(|| anyhow!("Failed to find resources folder"))?,
-		&mod_loader_id,
-	)?;
+) -> Result {
+	let mod_loader = mod_loader::get(&paths::resources_path(&handle)?, &mod_loader_id)?;
 
-	mod_loader
-		.open_mod_folder(mod_id)
-		.map_err(|err| anyhow!("Failed to open mod folder: {err}").into())
+	mod_loader.open_mod_folder(mod_id)
 }
 
 #[tauri::command]
@@ -196,14 +228,13 @@ async fn start_game(
 	game_id: String,
 	state: tauri::State<'_, AppState>,
 	handle: tauri::AppHandle,
-) -> CommandResult {
+) -> Result {
 	let game_map = get_game_map(state, false, handle).await?;
 	let game = game_map
 		.get(&game_id)
-		.ok_or_else(|| anyhow!("Failed to find game with id {game_id}"))?;
+		.ok_or_else(|| Error::GameNotFound(game_id))?;
 
 	game.start()
-		.map_err(|error| anyhow!("Failed to open game folder: {error}").into())
 }
 
 #[tauri::command]
@@ -214,26 +245,15 @@ async fn install_mod(
 	game_id: String,
 	state: tauri::State<'_, AppState>,
 	handle: tauri::AppHandle,
-) -> CommandResult {
+) -> Result {
 	let game_map = get_game_map(state, false, handle.clone()).await?;
 	let game = game_map
 		.get(&game_id)
-		.ok_or_else(|| anyhow!("Failed to find game with ID {game_id}"))?;
+		.ok_or_else(|| Error::GameNotFound(game_id))?;
 
-	let mod_loader = mod_loader::get(
-		&handle
-			.path_resolver()
-			.resolve_resource("resources")
-			.ok_or_else(|| anyhow!("Failed to find resources folder"))?,
-		&mod_loader_id,
-	)?;
+	let mod_loader = mod_loader::get(&paths::resources_path(&handle)?, &mod_loader_id)?;
 
-	mod_loader.install_mod(game, mod_id.clone()).map_err(|err| {
-        anyhow!(
-            "Failed to install mod '{mod_id}' from mod loader {mod_loader_id} on game {game_id}: {err}",
-        )
-        .into()
-    })
+	mod_loader.install_mod(game, mod_id.clone())
 }
 
 fn main() {

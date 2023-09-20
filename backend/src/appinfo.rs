@@ -8,7 +8,6 @@ use std::{
 	},
 };
 
-use anyhow::anyhow;
 use byteorder::{
 	LittleEndian,
 	ReadBytesExt,
@@ -16,6 +15,7 @@ use byteorder::{
 
 use crate::{
 	serializable_struct,
+	Error,
 	Result,
 };
 
@@ -269,7 +269,7 @@ fn read_kv<R: std::io::Read>(reader: &mut R, alt_format: bool) -> Result<KeyValu
 			let val = reader.read_f32::<LittleEndian>()?;
 			node.insert(key, ValueType::Float32(val));
 		} else {
-			return Err(anyhow!("Binary VDF parse error: Invalid type"));
+			return Err(Error::InvalidBinaryVdfType(t));
 		}
 	}
 }

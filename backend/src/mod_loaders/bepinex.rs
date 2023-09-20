@@ -3,9 +3,6 @@ use std::{
 	path::Path,
 };
 
-use anyhow::anyhow;
-use glob::glob;
-
 use super::mod_loader::ModLoaderStatic;
 use crate::{
 	files::copy_dir_all,
@@ -19,7 +16,9 @@ use crate::{
 		ModLoaderActions,
 		ModLoaderData,
 	},
+	paths,
 	serializable_struct,
+	Error,
 	Result,
 };
 
@@ -35,14 +34,11 @@ impl ModLoaderStatic for BepInEx {
 
 		let mut mods = find_mods(&path, UnityScriptingBackend::Il2Cpp)?;
 		mods.append(&mut find_mods(&path, UnityScriptingBackend::Mono)?);
-		let mod_count = mods.len();
-
 		Ok(Self {
 			data: ModLoaderData {
 				id: Self::ID.to_string(),
 				mods,
 				path,
-				mod_count: u32::try_from(mod_count)?,
 			},
 		})
 	}
@@ -63,13 +59,9 @@ impl ModLoaderActions for BepInEx {
 		let folder_to_copy_to_game = architecture_path.join("copy-to-game");
 		let game_data_folder = &game.get_installed_mods_folder()?;
 
-		copy_dir_all(mod_files_folder, game_data_folder)
-			.map_err(|err| anyhow!("Failed to copy mod loader files: {err}"))?;
+		copy_dir_all(mod_files_folder, game_data_folder)?;
 
-		let game_folder = game
-			.full_path
-			.parent()
-			.ok_or_else(|| anyhow!("Failed to get game parent folder"))?;
+		let game_folder = paths::path_parent(&game.full_path)?;
 
 		copy_dir_all(folder_to_copy_to_game, game_folder)?;
 
@@ -95,12 +87,7 @@ impl ModLoaderActions for BepInEx {
 
 		fs::write(
 			game_folder.join("doorstop_config.ini"),
-			doorstop_config.replace(
-				"{{MOD_FILES_PATH}}",
-				game_data_folder
-					.to_str()
-					.ok_or_else(|| anyhow!("Failed to parse game data folder"))?,
-			),
+			doorstop_config.replace("{{MOD_FILES_PATH}}", paths::path_to_str(game_data_folder)?),
 		)?;
 
 		if std::env::consts::OS != "windows" && game.operating_system == OperatingSystem::Windows {
@@ -118,7 +105,7 @@ impl ModLoaderActions for BepInEx {
 			.mods
 			.iter()
 			.find(|game_mod| game_mod.id == mod_id)
-			.ok_or_else(|| anyhow!("Failed to find mod with id {mod_id}"))?;
+			.ok_or_else(|| Error::ModNotFound(mod_id))?;
 
 		self.install(game)?;
 		game_mod.install(
@@ -135,7 +122,7 @@ impl ModLoaderActions for BepInEx {
 			.mods
 			.iter()
 			.find(|game_mod| game_mod.id == mod_id)
-			.ok_or_else(|| anyhow!("Failed to find mod with id {mod_id}"))?;
+			.ok_or_else(|| Error::ModNotFound(mod_id))?;
 
 		game_mod.open_folder()
 	}
@@ -152,15 +139,7 @@ fn ensure_wine_will_load_bepinex(game_path: &Path, steam_app_id: u32) -> Result 
 			break;
 		}
 
-		steam_apps_folder = steam_apps_folder
-			.parent()
-			.ok_or_else(|| {
-				anyhow!(
-					"Failed to get steamapps folder from {}",
-					game_path.display()
-				)
-			})?
-			.to_path_buf();
+		steam_apps_folder = paths::path_parent(&steam_apps_folder)?.to_path_buf();
 	}
 
 	let compat_data_dir = steam_apps_folder
@@ -169,12 +148,7 @@ fn ensure_wine_will_load_bepinex(game_path: &Path, steam_app_id: u32) -> Result 
 	let pfx_folder = compat_data_dir.join("pfx");
 	let user_reg = pfx_folder.join("user.reg");
 
-	let user_reg_data = fs::read_to_string(&user_reg).map_err(|err| {
-		anyhow!(
-			"Failed to read registry file from {}: {err}",
-			user_reg.display()
-		)
-	})?; // TODO: handle error
+	let user_reg_data = fs::read_to_string(&user_reg)?;
 
 	let ensured_user_reg_data = reg_add_in_section(
 		&user_reg_data,
@@ -232,13 +206,7 @@ fn find_mods(mod_loader_path: &Path, scripting_backend: UnityScriptingBackend) -
 		.join(scripting_backend.to_string())
 		.join("mods");
 
-	let entries: Vec<_> = glob(
-		mods_folder_path
-			.join("*")
-			.to_str()
-			.ok_or_else(|| anyhow!("Failed to parse mods folder path"))?,
-	)?
-	.collect();
+	let entries: Vec<_> = paths::glob_path(&mods_folder_path.join("*"))?.collect();
 
 	Ok(entries
 		.iter()

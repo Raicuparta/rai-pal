@@ -6,7 +6,6 @@ use std::{
 	},
 };
 
-use anyhow::anyhow;
 use enum_dispatch::enum_dispatch;
 
 use super::{
@@ -16,13 +15,14 @@ use super::{
 use crate::{
 	game::Game,
 	game_mod::Mod,
+	paths,
 	serializable_struct,
+	Error,
 	Result,
 };
 
 serializable_struct!(ModLoaderData {
 	pub id: String,
-	pub mod_count: u32,
 	pub path: PathBuf,
 	pub mods: Vec<Mod>,
 });
@@ -87,16 +87,11 @@ fn get_map(resources_path: &Path) -> Map {
 pub fn get(resources_path: &Path, id: &str) -> Result<ModLoader> {
 	get_map(resources_path)
 		.remove(id)
-		.ok_or_else(|| anyhow!("Failed to find mod loader with id {id}"))
+		.ok_or_else(|| Error::ModLoaderNotFound(id.to_string()))
 }
 
 pub async fn get_data_map(app_handle: tauri::AppHandle) -> Result<DataMap> {
-	let resources_path = app_handle
-		.path_resolver()
-		.resolve_resource("resources")
-		.ok_or_else(|| anyhow!("Failed to find resources path"))?;
-
-	get_map(&resources_path)
+	get_map(&paths::resources_path(&app_handle)?)
 		.values()
 		.map(|mod_loader| {
 			let data = mod_loader.get_data();

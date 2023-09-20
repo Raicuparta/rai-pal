@@ -1,12 +1,12 @@
 use std::collections::HashSet;
 
-use anyhow::anyhow;
 use steamlocate::SteamDir;
 
 use crate::{
 	appinfo,
 	game::OperatingSystem,
 	serializable_struct,
+	Error,
 	Result,
 };
 
@@ -25,8 +25,7 @@ pub async fn get(_: tauri::AppHandle) -> Result<Vec<OwnedUnityGame>> {
 
 	// TODO this is repeated in steam_game.
 	// Should try to cache it.
-	let steam_dir =
-		SteamDir::locate().ok_or_else(|| anyhow!("Failed to locate Steam on this system."))?;
+	let steam_dir = SteamDir::locate().ok_or_else(Error::SteamNotFound)?;
 	let app_info = appinfo::read(&steam_dir.path.join("appcache/appinfo.vdf"));
 
 	return Ok(response

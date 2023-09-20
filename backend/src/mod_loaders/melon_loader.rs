@@ -23,7 +23,6 @@ impl ModLoaderStatic for MelonLoader {
 				id: Self::ID.to_string(),
 				mods: vec![],
 				path,
-				mod_count: 0,
 			},
 		})
 	}

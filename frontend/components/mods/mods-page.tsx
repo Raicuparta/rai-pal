@@ -41,7 +41,7 @@ export function ModsPage() {
               {modLoader.mods.map((mod, modIndex) => (
                 <tr key={mod.path}>
                   {modIndex === 0 && (
-                    <td rowSpan={modLoader.modCount}>{modLoader.id}</td>
+                    <td rowSpan={modLoader.mods.length}>{modLoader.id}</td>
                   )}
                   <td>
                     <Text>
