@@ -12,7 +12,6 @@ use std::{
 	},
 };
 
-use appinfo::SteamLaunchOption;
 use goblin::{
 	elf::Elf,
 	pe::PE,
@@ -20,13 +19,7 @@ use goblin::{
 use lazy_regex::regex_find;
 
 use crate::{
-	appinfo,
-	game_mod::Mod,
-	mod_loaders::mod_loader::{
-		self,
-		ModLoader,
-		ModLoaderData,
-	},
+	appinfo::SteamLaunchOption,
 	paths,
 	serializable_enum,
 	serializable_struct,
