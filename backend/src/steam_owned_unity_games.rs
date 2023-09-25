@@ -2,13 +2,7 @@ use std::collections::HashSet;
 
 use steamlocate::SteamDir;
 
-use crate::{
-	appinfo,
-	game::OperatingSystem,
-	serializable_struct,
-	Error,
-	Result,
-};
+use crate::{appinfo, game::OperatingSystem, serializable_struct, Error, Result};
 
 const UNITY_STEAM_APP_IDS_URL: &str =
 	"https://raw.githubusercontent.com/Raicuparta/steam-unity-app-ids/main/unity-app-ids.txt";
@@ -20,7 +14,7 @@ serializable_struct!(OwnedUnityGame {
 	os_list: HashSet<OperatingSystem>,
 });
 
-pub async fn get(_: tauri::AppHandle) -> Result<Vec<OwnedUnityGame>> {
+pub async fn get() -> Result<Vec<OwnedUnityGame>> {
 	let response = reqwest::get(UNITY_STEAM_APP_IDS_URL).await?.text().await?;
 
 	// TODO this is repeated in steam_game.

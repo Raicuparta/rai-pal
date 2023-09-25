@@ -1,25 +1,12 @@
 use std::{
 	collections::HashMap,
-	path::{
-		Path,
-		PathBuf,
-	},
+	path::{Path, PathBuf},
 };
 
 use enum_dispatch::enum_dispatch;
 
-use super::{
-	bepinex::BepInEx,
-	melon_loader::MelonLoader,
-};
-use crate::{
-	game::Game,
-	game_mod::Mod,
-	paths,
-	serializable_struct,
-	Error,
-	Result,
-};
+use super::{bepinex::BepInEx, melon_loader::MelonLoader};
+use crate::{game::Game, game_mod::Mod, serializable_struct, Error, Result};
 
 serializable_struct!(ModLoaderData {
 	pub id: String,
@@ -90,8 +77,8 @@ pub fn get(resources_path: &Path, id: &str) -> Result<ModLoader> {
 		.ok_or_else(|| Error::ModLoaderNotFound(id.to_string()))
 }
 
-pub async fn get_data_map(app_handle: tauri::AppHandle) -> Result<DataMap> {
-	get_map(&paths::resources_path(&app_handle)?)
+pub async fn get_data_map(resources_path: &Path) -> Result<DataMap> {
+	get_map(resources_path)
 		.values()
 		.map(|mod_loader| {
 			let data = mod_loader.get_data();

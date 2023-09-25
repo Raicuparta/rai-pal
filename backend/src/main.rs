@@ -14,21 +14,10 @@
 #![allow(clippy::unused_async)]
 #![allow(clippy::module_name_repetitions)]
 
-use std::{
-	future::Future,
-	path::PathBuf,
-	result::Result as StdResult,
-	sync::Mutex,
-};
+use std::{future::Future, path::PathBuf, result::Result as StdResult, sync::Mutex};
 
-use mod_loaders::mod_loader::{
-	self,
-	ModLoaderActions,
-};
-use specta::ts::{
-	BigIntExportBehavior,
-	ExportConfiguration,
-};
+use mod_loaders::mod_loader::{self, ModLoaderActions};
+use specta::ts::{BigIntExportBehavior, ExportConfiguration};
 use steam_owned_unity_games::OwnedUnityGame;
 use tauri::api::dialog::message;
 
@@ -112,12 +101,11 @@ struct AppState {
 
 async fn get_state_data<TData, TFunction, TFunctionResult>(
 	mutex: &Mutex<Option<TData>>,
-	function: TFunction,
+	get_data: TFunction,
 	ignore_cache: bool,
-	app_handle: tauri::AppHandle,
 ) -> Result<TData>
 where
-	TFunction: Fn(tauri::AppHandle) -> TFunctionResult + std::panic::UnwindSafe + Send,
+	TFunction: Fn() -> TFunctionResult + std::panic::UnwindSafe + Send,
 	TData: Clone + Send,
 	TFunctionResult: Future<Output = Result<TData>> + Send,
 {
@@ -129,7 +117,7 @@ where
 		}
 	}
 
-	let result = function(app_handle);
+	let result = get_data();
 	let data = result.await?;
 	if let Ok(mut mutex_guard) = mutex.lock() {
 		*mutex_guard = Some(data.clone());
@@ -140,12 +128,8 @@ where
 
 #[tauri::command]
 #[specta::specta]
-async fn get_game_map(
-	state: tauri::State<'_, AppState>,
-	ignore_cache: bool,
-	handle: tauri::AppHandle,
-) -> Result<game::Map> {
-	get_state_data(&state.game_map, steam_games::get, ignore_cache, handle).await
+async fn get_game_map(state: tauri::State<'_, AppState>, ignore_cache: bool) -> Result<game::Map> {
+	get_state_data(&state.game_map, steam_games::get, ignore_cache).await
 }
 
 #[tauri::command]
@@ -153,13 +137,11 @@ async fn get_game_map(
 async fn get_owned_games(
 	state: tauri::State<'_, AppState>,
 	ignore_cache: bool,
-	handle: tauri::AppHandle,
 ) -> Result<Vec<OwnedUnityGame>> {
 	get_state_data(
 		&state.owned_games,
 		steam_owned_unity_games::get,
 		ignore_cache,
-		handle,
 	)
 	.await
 }
@@ -171,23 +153,19 @@ async fn get_mod_loaders(
 	ignore_cache: bool,
 	handle: tauri::AppHandle,
 ) -> Result<mod_loader::DataMap> {
+	let resources_path = paths::resources_path(&handle)?;
 	get_state_data(
 		&state.mod_loaders,
-		mod_loader::get_data_map,
+		|| mod_loader::get_data_map(&resources_path),
 		ignore_cache,
-		handle,
 	)
 	.await
 }
 
 #[tauri::command]
 #[specta::specta]
-async fn open_game_folder(
-	game_id: String,
-	state: tauri::State<'_, AppState>,
-	handle: tauri::AppHandle,
-) -> Result {
-	let game_map = get_game_map(state, false, handle).await?;
+async fn open_game_folder(game_id: String, state: tauri::State<'_, AppState>) -> Result {
+	let game_map = get_game_map(state, false).await?;
 	let game = game_map
 		.get(&game_id)
 		.ok_or_else(|| Error::GameNotFound(game_id))?;
@@ -197,12 +175,8 @@ async fn open_game_folder(
 
 #[tauri::command]
 #[specta::specta]
-async fn open_game_mods_folder(
-	game_id: String,
-	state: tauri::State<'_, AppState>,
-	handle: tauri::AppHandle,
-) -> Result {
-	let game_map = get_game_map(state, false, handle).await?;
+async fn open_game_mods_folder(game_id: String, state: tauri::State<'_, AppState>) -> Result {
+	let game_map = get_game_map(state, false).await?;
 	let game = game_map
 		.get(&game_id)
 		.ok_or_else(|| Error::GameNotFound(game_id))?;
@@ -224,12 +198,8 @@ async fn open_mod_folder(
 
 #[tauri::command]
 #[specta::specta]
-async fn start_game(
-	game_id: String,
-	state: tauri::State<'_, AppState>,
-	handle: tauri::AppHandle,
-) -> Result {
-	let game_map = get_game_map(state, false, handle).await?;
+async fn start_game(game_id: String, state: tauri::State<'_, AppState>) -> Result {
+	let game_map = get_game_map(state, false).await?;
 	let game = game_map
 		.get(&game_id)
 		.ok_or_else(|| Error::GameNotFound(game_id))?;
@@ -246,7 +216,7 @@ async fn install_mod(
 	state: tauri::State<'_, AppState>,
 	handle: tauri::AppHandle,
 ) -> Result {
-	let game_map = get_game_map(state, false, handle.clone()).await?;
+	let game_map = get_game_map(state, false).await?;
 	let game = game_map
 		.get(&game_id)
 		.ok_or_else(|| Error::GameNotFound(game_id))?;
@@ -262,9 +232,8 @@ async fn uninstall_mod(
 	game_id: String,
 	mod_id: String,
 	state: tauri::State<'_, AppState>,
-	handle: tauri::AppHandle,
 ) -> Result {
-	let game_map = get_game_map(state, false, handle.clone()).await?;
+	let game_map = get_game_map(state, false).await?;
 	let game = game_map
 		.get(&game_id)
 		.ok_or_else(|| Error::GameNotFound(game_id))?;

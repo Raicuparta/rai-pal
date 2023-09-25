@@ -1,22 +1,14 @@
 use std::{
-	collections::{
-		HashMap,
-		HashSet,
-	},
+	collections::{HashMap, HashSet},
 	path::PathBuf,
 	string,
 };
 
 use steamlocate::SteamDir;
 
-use crate::{
-	appinfo,
-	game,
-	Error,
-	Result,
-};
+use crate::{appinfo, game, Error, Result};
 
-pub async fn get(_: tauri::AppHandle) -> Result<game::Map> {
+pub async fn get() -> Result<game::Map> {
 	let mut steam_dir = SteamDir::locate().ok_or_else(Error::SteamNotFound)?;
 
 	let app_info_file = appinfo::read(&steam_dir.path.join("appcache/appinfo.vdf"))?;
