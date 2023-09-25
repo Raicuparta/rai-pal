@@ -1,7 +1,6 @@
 import { Alert, Button, Flex, Input, Stack } from "@mantine/core";
 import { useState } from "react";
 import { MdRefresh } from "react-icons/md";
-import { useGameMap } from "@hooks/use-backend-data";
 import { includesOneOf } from "../../util/filter";
 import { InstalledGameRow } from "./installed-game-row";
 import { InstalledGameModal } from "./installed-game-modal";
@@ -19,6 +18,7 @@ import { TableHeader } from "@components/table/table-head";
 import { useFilteredList } from "@hooks/use-filtered-list";
 import { FilterMenu } from "@components/filter-menu";
 import { VirtualizedTable } from "@components/table/virtualized-table";
+import { useGameMap } from "@hooks/use-game-map";
 
 type Filter = {
   text: string;
@@ -77,7 +77,7 @@ const tableHeaders: TableHeader<Game, keyof Game>[] = [
 export type TableSortMethod = (gameA: Game, gameB: Game) => number;
 
 export function InstalledGamesPage() {
-  const [gameMap, isLoading, refreshGameMap, error] = useGameMap();
+  const [gameMap, isLoading, refreshGameMap, refreshGame, error] = useGameMap();
   const [selectedGame, setSelectedGame] = useState<Game>();
 
   const [filteredGames, sort, setSort, filter, setFilter] = useFilteredList(
@@ -132,6 +132,7 @@ export function InstalledGamesPage() {
         <InstalledGameModal
           game={selectedGame}
           onClose={() => setSelectedGame(undefined)}
+          refreshGame={refreshGame}
         />
       ) : null}
       <VirtualizedTable

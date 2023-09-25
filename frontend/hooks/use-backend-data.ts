@@ -1,9 +1,9 @@
-import { getGameMap, getModLoaders, getOwnedGames } from "@api/bindings";
+import { getModLoaders, getOwnedGames } from "@api/bindings";
 import { useCallback, useEffect, useState } from "react";
 
 type ApiFunction<TResultData> = (ignoreCache: boolean) => Promise<TResultData>;
 
-function useBackendData<TData>(
+export function useBackendData<TData>(
   apiFunction: ApiFunction<TData>,
   defaultData: TData
 ) {
@@ -35,6 +35,5 @@ function useBackendData<TData>(
   return [data, isLoading, refresh, error] as const;
 }
 
-export const useGameMap = () => useBackendData(getGameMap, {});
 export const useOwnedUnityGames = () => useBackendData(getOwnedGames, []);
 export const useModLoaders = () => useBackendData(getModLoaders, {});

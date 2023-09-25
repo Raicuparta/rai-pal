@@ -22,6 +22,7 @@ import {
 type Props = {
   readonly game: Game;
   readonly onClose: () => void;
+  readonly refreshGame: (gameId: string) => void;
 };
 
 export function InstalledGameModal(props: Props) {
@@ -84,7 +85,10 @@ export function InstalledGameModal(props: Props) {
                         <CommandButton
                           icon={<MdDelete />}
                           key={mod.name}
-                          onClick={() => uninstallMod(props.game.id, mod.id)}
+                          onClick={async () => {
+                            await uninstallMod(props.game.id, mod.id);
+                            props.refreshGame(props.game.id);
+                          }}
                         >
                           Uninstall {mod.name}
                         </CommandButton>
@@ -92,9 +96,14 @@ export function InstalledGameModal(props: Props) {
                         <CommandButton
                           icon={<MdInstallDesktop />}
                           key={mod.name}
-                          onClick={() =>
-                            installMod(modLoader.id, mod.id, props.game.id)
-                          }
+                          onClick={async () => {
+                            await installMod(
+                              modLoader.id,
+                              mod.id,
+                              props.game.id
+                            );
+                            props.refreshGame(props.game.id);
+                          }}
                         >
                           Install {mod.name}
                         </CommandButton>

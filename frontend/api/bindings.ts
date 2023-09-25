@@ -46,6 +46,10 @@ export function openModFolder(modLoaderId: string, modId: string) {
     return invoke()<null>("open_mod_folder", { modLoaderId,modId })
 }
 
+export function updateGameInfo(gameId: string) {
+    return invoke()<{ [key: string]: Game }>("update_game_info", { gameId })
+}
+
 export type UnityScriptingBackend = "Il2Cpp" | "Mono"
 export type ModLoaderData = { id: string; path: string; mods: Mod[] }
 export type Game = { id: string; name: string; discriminator: string | null; modFilesPath: string; fullPath: string; architecture: Architecture; scriptingBackend: UnityScriptingBackend; unityVersion: UnityVersion; operatingSystem: OperatingSystem; steamLaunch: SteamLaunchOption | null; installedMods: string[] }

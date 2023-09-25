@@ -16,6 +16,7 @@
 
 use std::{future::Future, path::PathBuf, result::Result as StdResult, sync::Mutex};
 
+use game::Game;
 use mod_loaders::mod_loader::{self, ModLoaderActions};
 use specta::ts::{BigIntExportBehavior, ExportConfiguration};
 use steam_owned_unity_games::OwnedUnityGame;
@@ -80,6 +81,9 @@ pub enum Error {
 
 	#[error("Tried to read empty file `{0}`")]
 	EmptyFile(PathBuf),
+
+	#[error("Failed to create copy of game with ID `{0}`")]
+	GameCopyFailed(String),
 }
 
 impl serde::Serialize for Error {
@@ -209,6 +213,28 @@ async fn start_game(game_id: String, state: tauri::State<'_, AppState>) -> Resul
 
 #[tauri::command]
 #[specta::specta]
+async fn update_game_info(game_id: String, state: tauri::State<'_, AppState>) -> Result<game::Map> {
+	let mut game_map = get_game_map(state, false).await?;
+	let game = game_map
+		.get(&game_id)
+		.ok_or_else(|| Error::GameNotFound(game_id))?;
+
+	let game_copy = Game::new(
+		game.id.clone(),
+		game.name.clone(),
+		game.discriminator.clone(),
+		&game.full_path,
+		game.steam_launch.as_ref(),
+	)
+	.ok_or_else(|| Error::GameCopyFailed(game.id.clone()))?;
+
+	game_map.insert(game.id.clone(), game_copy);
+
+	Ok(game_map)
+}
+
+#[tauri::command]
+#[specta::specta]
 async fn install_mod(
 	mod_loader_id: String,
 	mod_id: String,
@@ -269,7 +295,8 @@ fn main() {
 			uninstall_mod,
 			open_game_mods_folder,
 			start_game,
-			open_mod_folder
+			open_mod_folder,
+			update_game_info
 		]
 	);
 }
