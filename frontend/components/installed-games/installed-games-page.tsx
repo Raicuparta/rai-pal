@@ -1,5 +1,5 @@
 import { Alert, Button, Flex, Input, Stack } from "@mantine/core";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { MdRefresh } from "react-icons/md";
 import { includesOneOf } from "../../util/filter";
 import { InstalledGameRow } from "./installed-game-row";
@@ -78,14 +78,25 @@ export type TableSortMethod = (gameA: Game, gameB: Game) => number;
 
 export function InstalledGamesPage() {
   const [gameMap, isLoading, refreshGameMap, refreshGame, error] = useGameMap();
-  const [selectedGame, setSelectedGame] = useState<Game>();
+  const [selectedGameId, setSelectedGameId] = useState<string>();
+
+  const games = useMemo(() => Object.values(gameMap), [gameMap]);
 
   const [filteredGames, sort, setSort, filter, setFilter] = useFilteredList(
     tableHeaders,
-    Object.values(gameMap),
+    games,
     filterGame,
     defaultFilter
   );
+
+  const selectedGame = useMemo(
+    () => (selectedGameId ? gameMap[selectedGameId] : undefined),
+    [gameMap, selectedGameId]
+  );
+
+  useEffect(() => {
+    console.log("rerender filteredGames", filteredGames);
+  }, [filteredGames]);
 
   return (
     <Stack h="100%">
@@ -131,7 +142,7 @@ export function InstalledGamesPage() {
       {selectedGame ? (
         <InstalledGameModal
           game={selectedGame}
-          onClose={() => setSelectedGame(undefined)}
+          onClose={() => setSelectedGameId(undefined)}
           refreshGame={refreshGame}
         />
       ) : null}
@@ -141,7 +152,7 @@ export function InstalledGamesPage() {
         headerItems={tableHeaders}
         onChangeSort={setSort}
         sort={sort}
-        onClickItem={setSelectedGame}
+        onClickItem={(game) => setSelectedGameId(game.id)}
       />
     </Stack>
   );
