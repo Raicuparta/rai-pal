@@ -26,17 +26,11 @@ export const useGameMap = () => {
     setIsLoading(true);
     setError("");
 
-    console.log("refreshGame", data);
-
     updateGameInfo(gameId)
       .then(setData)
       .catch((error) => setError(`Failed to retrieve data: ${error}`))
       .finally(() => setIsLoading(false));
   }, []);
-
-  useEffect(() => {
-    console.log("changed data", data);
-  }, [data]);
 
   useEffect(() => {
     updateData();

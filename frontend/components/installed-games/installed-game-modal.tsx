@@ -8,7 +8,7 @@ import {
   startGame,
   uninstallMod,
 } from "@api/bindings";
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useState } from "react";
 import { GameName } from "./game-name";
 import { CommandButton } from "@components/command-button";
 import {
@@ -32,10 +32,6 @@ export function InstalledGameModal(props: Props) {
   const handleError = (error: unknown) => {
     setError(`${error}`);
   };
-
-  useEffect(() => {
-    console.log("rerender", props.game.name);
-  }, [props.game]);
 
   return (
     <Modal

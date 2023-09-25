@@ -1,5 +1,5 @@
 import { Alert, Button, Flex, Input, Stack } from "@mantine/core";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { MdRefresh } from "react-icons/md";
 import { includesOneOf } from "../../util/filter";
 import { InstalledGameRow } from "./installed-game-row";
@@ -93,10 +93,6 @@ export function InstalledGamesPage() {
     () => (selectedGameId ? gameMap[selectedGameId] : undefined),
     [gameMap, selectedGameId]
   );
-
-  useEffect(() => {
-    console.log("rerender filteredGames", filteredGames);
-  }, [filteredGames]);
 
   return (
     <Stack h="100%">
