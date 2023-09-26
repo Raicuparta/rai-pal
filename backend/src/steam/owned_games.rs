@@ -2,7 +2,13 @@ use std::collections::HashSet;
 
 use steamlocate::SteamDir;
 
-use crate::{appinfo, game::OperatingSystem, serializable_struct, Error, Result};
+use super::appinfo;
+use crate::{
+	game::OperatingSystem,
+	serializable_struct,
+	Error,
+	Result,
+};
 
 const UNITY_STEAM_APP_IDS_URL: &str =
 	"https://raw.githubusercontent.com/Raicuparta/steam-unity-app-ids/main/unity-app-ids.txt";

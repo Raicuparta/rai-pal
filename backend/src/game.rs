@@ -19,10 +19,10 @@ use goblin::{
 use lazy_regex::regex_find;
 
 use crate::{
-	appinfo::SteamLaunchOption,
 	paths,
 	serializable_enum,
 	serializable_struct,
+	steam::appinfo::SteamLaunchOption,
 	Error,
 	Result,
 };

@@ -1,12 +1,20 @@
 use std::{
-	collections::{HashMap, HashSet},
+	collections::{
+		HashMap,
+		HashSet,
+	},
 	path::PathBuf,
 	string,
 };
 
 use steamlocate::SteamDir;
 
-use crate::{appinfo, game, Error, Result};
+use super::appinfo;
+use crate::{
+	game,
+	Error,
+	Result,
+};
 
 pub async fn get() -> Result<game::Map> {
 	let mut steam_dir = SteamDir::locate().ok_or_else(Error::SteamNotFound)?;

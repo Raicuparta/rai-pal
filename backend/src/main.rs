@@ -14,23 +14,32 @@
 #![allow(clippy::unused_async)]
 #![allow(clippy::module_name_repetitions)]
 
-use std::{future::Future, path::PathBuf, result::Result as StdResult, sync::Mutex};
+use std::{
+	future::Future,
+	path::PathBuf,
+	result::Result as StdResult,
+	sync::Mutex,
+};
 
 use game::Game;
-use mod_loaders::mod_loader::{self, ModLoaderActions};
-use specta::ts::{BigIntExportBehavior, ExportConfiguration};
-use steam_owned_unity_games::OwnedUnityGame;
+use mod_loaders::mod_loader::{
+	self,
+	ModLoaderActions,
+};
+use specta::ts::{
+	BigIntExportBehavior,
+	ExportConfiguration,
+};
+use steam::owned_games::OwnedUnityGame;
 use tauri::api::dialog::message;
 
-mod appinfo;
 mod files;
 mod game;
 mod game_mod;
 mod macros;
 mod mod_loaders;
 mod paths;
-mod steam_games;
-mod steam_owned_unity_games;
+mod steam;
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
@@ -133,7 +142,7 @@ where
 #[tauri::command]
 #[specta::specta]
 async fn get_game_map(state: tauri::State<'_, AppState>, ignore_cache: bool) -> Result<game::Map> {
-	get_state_data(&state.game_map, steam_games::get, ignore_cache).await
+	get_state_data(&state.game_map, steam::installed_games::get, ignore_cache).await
 }
 
 #[tauri::command]
@@ -142,12 +151,7 @@ async fn get_owned_games(
 	state: tauri::State<'_, AppState>,
 	ignore_cache: bool,
 ) -> Result<Vec<OwnedUnityGame>> {
-	get_state_data(
-		&state.owned_games,
-		steam_owned_unity_games::get,
-		ignore_cache,
-	)
-	.await
+	get_state_data(&state.owned_games, steam::owned_games::get, ignore_cache).await
 }
 
 #[tauri::command]
