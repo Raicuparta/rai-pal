@@ -56,6 +56,6 @@ export type Mod = { id: string; name: string; scriptingBackend: UnityScriptingBa
 export type Game = { id: string; name: string; discriminator: string | null; modFilesPath: string; fullPath: string; architecture: Architecture; scriptingBackend: UnityScriptingBackend; unityVersion: UnityVersion; operatingSystem: OperatingSystem; steamLaunch: SteamLaunchOption | null; installedMods: string[] }
 export type Architecture = "Unknown" | "X64" | "X86"
 export type OperatingSystem = "Unknown" | "Linux" | "Windows"
-export type UnityVersion = { major: number; minor: number; patch: number; suffix: string; isLegacy: boolean; display: string }
 export type OwnedUnityGame = { id: string; name: string; installed: boolean; osList: OperatingSystem[] }
+export type UnityVersion = { major: number; minor: number; patch: number; suffix: string; isLegacy: boolean; display: string }
 export type ModLoaderData = { id: string; path: string; mods: Mod[] }

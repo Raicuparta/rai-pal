@@ -55,6 +55,9 @@ pub enum Error {
 	#[error(transparent)]
 	Goblin(#[from] goblin::error::Error),
 
+	#[error(transparent)]
+	SteamLocate(#[from] steamlocate::Error),
+
 	#[error("Invalid type `{0}` in binary vdf key/value pair")]
 	InvalidBinaryVdfType(u8),
 
@@ -72,9 +75,6 @@ pub enum Error {
 
 	#[error("Failed to find mod loader with ID `{0}`")]
 	ModLoaderNotFound(String),
-
-	#[error("Failed to find Steam on this system")]
-	SteamNotFound(),
 
 	#[error("Failed to find Rai Pal resources folder")]
 	ResourcesNotFound(),

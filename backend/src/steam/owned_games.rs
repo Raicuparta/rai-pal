@@ -6,7 +6,6 @@ use super::appinfo;
 use crate::{
 	game::OperatingSystem,
 	serializable_struct,
-	Error,
 	Result,
 };
 
@@ -25,8 +24,8 @@ pub async fn get() -> Result<Vec<OwnedUnityGame>> {
 
 	// TODO this is repeated in steam_game.
 	// Should try to cache it.
-	let steam_dir = SteamDir::locate().ok_or_else(Error::SteamNotFound)?;
-	let app_info = appinfo::read(&steam_dir.path.join("appcache/appinfo.vdf"));
+	let steam_dir = SteamDir::locate()?;
+	let app_info = appinfo::read(&steam_dir.path().join("appcache/appinfo.vdf"));
 
 	return Ok(response
 		.split(',')

@@ -23,7 +23,7 @@ tauri-specta = { version = "1.0.2", features = ["typescript"] }
 serde = { version = "1.0", features = ["derive"] }
 byteorder = "1.4.3"
 keyvalues-serde = "0.1.0"
-steamlocate = "1.2.1"
+steamlocate = { git = "https://github.com/WilliamVenner/steamlocate-rs", branch = "dev-v2.0" }
 tauri = { version = "1.4.1", features = ["shell-open", "dialog"] }
 reqwest = "0.11.20"
 goblin = "0.7.1"
