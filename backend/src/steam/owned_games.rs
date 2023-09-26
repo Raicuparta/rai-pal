@@ -44,12 +44,14 @@ pub async fn get() -> Result<Vec<OwnedUnityGame>> {
 				})
 				.collect();
 
+			let installed = steam_dir
+				.app(id)
+				.map_or(false, |steam_app| steam_app.is_some());
+
 			Some(OwnedUnityGame {
 				id: app_id.to_owned(),
 				name: app_info.name.clone(),
-				// TODO do this some other way
-				// installed: steam_games.get(&id).is_some(),
-				installed: false,
+				installed,
 				os_list,
 			})
 		})
