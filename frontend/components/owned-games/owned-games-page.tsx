@@ -13,8 +13,8 @@ import { VirtualizedTable } from "@components/table/virtualized-table";
 
 const tableHeaders: TableHeader<OwnedUnityGame, keyof OwnedUnityGame>[] = [
   { id: "name", label: "Game", width: undefined },
-  { id: "osList", label: "Linux?", width: 100 },
-  { id: "installed", label: "Installed?", width: 100 },
+  { id: "osList", label: "Linux?", width: 100, center: true },
+  { id: "installed", label: "Installed?", width: 100, center: true },
 ];
 
 type Filter = {

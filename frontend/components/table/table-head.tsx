@@ -5,6 +5,7 @@ export type TableHeader<TItem, TKey extends keyof TItem> = {
   id: TKey;
   label: string;
   width?: number;
+  center?: boolean;
   customSort?: (itemA: TItem, itemB: TItem) => number;
 };
 
@@ -32,7 +33,7 @@ export function TableHead<TItem, TKey extends keyof TItem>(
             props.onChangeSort ? props.onChangeSort(header.id) : undefined
           }
         >
-          <Flex align="center">
+          <Flex justify={header.center ? "center" : undefined}>
             {header.label}
             {props.sort?.id === header.id &&
               (props.sort.reverse ? <MdArrowDropDown /> : <MdArrowDropUp />)}

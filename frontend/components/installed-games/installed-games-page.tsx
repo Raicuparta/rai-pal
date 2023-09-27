@@ -59,13 +59,14 @@ const scriptingBackendOptions: SegmentedControlData<UnityScriptingBackend>[] = [
 
 const tableHeaders: TableHeader<Game, keyof Game>[] = [
   { id: "name", label: "Game", width: undefined },
-  { id: "operatingSystem", label: "OS", width: 100 },
-  { id: "architecture", label: "Arch", width: 100 },
-  { id: "scriptingBackend", label: "Backend", width: 100 },
+  { id: "operatingSystem", label: "OS", width: 110, center: true },
+  { id: "architecture", label: "Arch", width: 100, center: true },
+  { id: "scriptingBackend", label: "Backend", width: 100, center: true },
   {
     id: "unityVersion",
     label: "Unity",
     width: 120,
+    center: true,
     customSort: (dataA, dataB) =>
       dataA.unityVersion.major - dataB.unityVersion.major ||
       dataA.unityVersion.minor - dataB.unityVersion.minor ||
