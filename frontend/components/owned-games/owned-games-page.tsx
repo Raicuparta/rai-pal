@@ -25,7 +25,7 @@ const operatingSystemOptions: SegmentedControlData<GameEngine>[] = [
 
 const tableHeaders: TableHeader<OwnedUnityGame, keyof OwnedUnityGame>[] = [
   { id: "name", label: "Game", width: undefined },
-  { id: "engine", label: "Engine", width: 200, center: true },
+  { id: "engine", label: "Engine", width: 100, center: true },
   { id: "osList", label: "Linux?", width: 100, center: true },
   { id: "installed", label: "Installed?", width: 100, center: true },
 ];
