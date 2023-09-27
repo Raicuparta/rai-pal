@@ -1,4 +1,12 @@
-import { Alert, Button, Code, Modal, Stack } from "@mantine/core";
+import {
+  Alert,
+  Button,
+  Code,
+  CopyButton,
+  Flex,
+  Modal,
+  Stack,
+} from "@mantine/core";
 import { useModLoaders } from "@hooks/use-backend-data";
 import {
   Game,
@@ -8,10 +16,11 @@ import {
   startGame,
   uninstallMod,
 } from "@api/bindings";
-import { Fragment, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import { GameName } from "./game-name";
 import { CommandButton } from "@components/command-button";
 import {
+  MdCopyAll,
   MdDelete,
   MdFolderSpecial,
   MdInstallDesktop,
@@ -32,6 +41,11 @@ export function InstalledGameModal(props: Props) {
   const handleError = (error: unknown) => {
     setError(`${error}`);
   };
+
+  const debugData = useMemo(
+    () => JSON.stringify(props.game, null, 2),
+    [props.game]
+  );
 
   return (
     <Modal
@@ -113,10 +127,27 @@ export function InstalledGameModal(props: Props) {
               </Fragment>
             )
         )}
-        <label>Debug Data</label>
-        <Code style={{ overflow: "auto" }}>
-          <pre>{JSON.stringify(props.game, null, 2)}</pre>
-        </Code>
+        <Stack gap="xs">
+          <Flex justify="space-between" align="end">
+            <label>Debug Data</label>
+            <CopyButton value={debugData}>
+              {({ copied, copy }) => (
+                <Button
+                  variant={copied ? "filled" : "default"}
+                  color="green"
+                  onClick={copy}
+                  size="xs"
+                  leftSection={<MdCopyAll />}
+                >
+                  Copy
+                </Button>
+              )}
+            </CopyButton>
+          </Flex>
+          <Code style={{ overflow: "auto" }}>
+            <pre>{debugData}</pre>
+          </Code>
+        </Stack>
       </Stack>
     </Modal>
   );

@@ -4,10 +4,12 @@ import {
   Button,
   ButtonProps,
   CloseButton,
+  Code,
   Flex,
   Popover,
+  Stack,
 } from "@mantine/core";
-import { MdCheck, MdError } from "react-icons/md";
+import { MdError } from "react-icons/md";
 
 interface Props<TResult> extends ButtonProps {
   onClick: () => Promise<TResult>;
@@ -24,25 +26,28 @@ export function CommandButton<TResult>({
 
   return (
     <>
-      <Popover variant="" opened={Boolean(error)} position="bottom" width={400}>
+      <Popover opened={Boolean(error)} position="bottom" width={400}>
         <Popover.Target>
           <Button
-            disabled={Boolean(error)}
-            variant="default"
+            justify="start"
+            variant={success || error ? "filled" : "default"}
+            color={error ? "red" : "green"}
             loading={isLoading}
             {...props}
             onClick={executeCommand}
-            leftSection={success ? <Box component={MdCheck} c="green" /> : icon}
+            leftSection={icon}
           />
         </Popover.Target>
         <Popover.Dropdown>
-          <Flex justify="space-between">
-            <Box component={MdError} c="red" />
-            <CloseButton onClick={clearError} />
-          </Flex>
-          <Box component="code" style={{ overflow: "auto", flex: 1 }}>
-            {error}
-          </Box>
+          <Stack>
+            <Flex justify="space-between">
+              <Box component={MdError} c="red" />
+              <CloseButton onClick={clearError} />
+            </Flex>
+            <Code style={{ overflow: "auto", flex: 1 }}>
+              <pre>{error}</pre>
+            </Code>
+          </Stack>
         </Popover.Dropdown>
       </Popover>
     </>

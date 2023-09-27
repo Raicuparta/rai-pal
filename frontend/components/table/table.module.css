@@ -1,6 +1,7 @@
 div.table {
   padding: 0;
   flex: 1;
+  user-select: none;
 
   table {
     table-layout: fixed;

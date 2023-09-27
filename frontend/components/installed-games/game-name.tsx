@@ -1,5 +1,5 @@
 import { Game } from "@api/bindings";
-import { Code } from "@mantine/core";
+import { Code, Flex } from "@mantine/core";
 
 type Props = {
   readonly game: Game;
@@ -7,11 +7,11 @@ type Props = {
 
 export function GameName(props: Props) {
   return (
-    <>
+    <Flex gap="xs">
       {props.game.name}
       {props.game.discriminator ? (
         <Code opacity={0.5}>{props.game.discriminator}</Code>
       ) : null}
-    </>
+    </Flex>
   );
 }

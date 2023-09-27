@@ -15,7 +15,7 @@ export function useAsyncCommand<TResult>(command: () => Promise<TResult>) {
     return command()
       .then((result) => {
         setSuccess(true);
-        setTimeout(() => setSuccess(false), 1500);
+        setTimeout(() => setSuccess(false), 1000);
         return result;
       })
       .catch((error) => setError(`Failed to execute command: ${error}`))
