@@ -4,8 +4,6 @@ import { OwnedGamesPage } from "./components/owned-games/owned-games-page";
 import { SettingsPage } from "./components/settings/settings-page";
 import { Tabs, Container, Stack } from "@mantine/core";
 
-import "./app.css";
-
 const pages = {
   installedGames: { title: "Installed Games", component: InstalledGamesPage },
   ownedGames: { title: "Owned Games", component: OwnedGamesPage },

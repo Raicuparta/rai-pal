@@ -1,0 +1,20 @@
+div.table {
+  padding: 0;
+  flex: 1;
+
+  table {
+    table-layout: fixed;
+  }
+
+  tr {
+    cursor: pointer;
+  }
+
+  thead {
+    background: var(--mantine-color-dark-8);
+
+    th:hover {
+      background: var(--mantine-color-dark-7);
+    }
+  }
+}

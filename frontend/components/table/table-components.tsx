@@ -1,7 +1,6 @@
 import { Table } from "@mantine/core";
 import React from "react";
 import { TableComponents } from "react-virtuoso";
-import { tableRowStyle, tableStyle } from "./table.css";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function getTableComponents<TItem, TContext = any>(
@@ -12,20 +11,14 @@ export function getTableComponents<TItem, TContext = any>(
     TableBody: React.forwardRef((props, ref) => (
       <Table.Tbody {...props} ref={ref} />
     )),
-    Table: (props) => (
-      <Table {...props} highlightOnHover className={tableStyle} />
-    ),
+    Table: (props) => <Table {...props} highlightOnHover />,
     // eslint-disable-next-line react/display-name
     TableHead: React.forwardRef((props, ref) => (
       <Table.Thead {...props} ref={ref} />
     )),
     // eslint-disable-next-line react/display-name
     TableRow: (props) => (
-      <Table.Tr
-        className={tableRowStyle}
-        onClick={() => onClickItem(props.item)}
-        {...props}
-      />
+      <Table.Tr onClick={() => onClickItem(props.item)} {...props} />
     ),
   };
 }
