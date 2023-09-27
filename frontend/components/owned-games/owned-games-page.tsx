@@ -2,7 +2,7 @@ import { Button, Flex, Input, Stack, Text } from "@mantine/core";
 import { MdRefresh } from "react-icons/md";
 import { OwnedGameRow } from "./owned-game-row";
 import { useOwnedUnityGames } from "@hooks/use-backend-data";
-import { OwnedUnityGame } from "@api/bindings";
+import { GameEngine, OwnedUnityGame } from "@api/bindings";
 import { useState } from "react";
 import { includesOneOf } from "../../util/filter";
 import { OwnedGameModal } from "./owned-game-modal";
@@ -11,9 +11,21 @@ import { useFilteredList } from "@hooks/use-filtered-list";
 import { FilterMenu } from "@components/filter-menu";
 import { VirtualizedTable } from "@components/table/virtualized-table";
 import { SwitchButton } from "@components/switch-button";
+import {
+  SegmentedControlData,
+  TypedSegmentedControl,
+} from "@components/installed-games/typed-segmented-control";
+
+const operatingSystemOptions: SegmentedControlData<GameEngine>[] = [
+  { label: "Any Engine", value: "" },
+  { label: "Unity", value: "Unity" },
+  { label: "Unreal", value: "Unreal" },
+  { label: "Godot", value: "Godot" },
+];
 
 const tableHeaders: TableHeader<OwnedUnityGame, keyof OwnedUnityGame>[] = [
   { id: "name", label: "Game", width: undefined },
+  { id: "engine", label: "Engine", width: 200, center: true },
   { id: "osList", label: "Linux?", width: 100, center: true },
   { id: "installed", label: "Installed?", width: 100, center: true },
 ];
@@ -22,6 +34,7 @@ type Filter = {
   text: string;
   hideInstalled: boolean;
   linuxOnly: boolean;
+  engine?: GameEngine;
 };
 
 const defaultFilter: Filter = {
@@ -33,7 +46,8 @@ const defaultFilter: Filter = {
 const filterGame = (game: OwnedUnityGame, filter: Filter) =>
   includesOneOf(filter.text, [game.name, game.id.toString()]) &&
   (!filter.linuxOnly || game.osList.includes("Linux")) &&
-  (!filter.hideInstalled || !game.installed);
+  (!filter.hideInstalled || !game.installed) &&
+  (!filter.engine || game.engine === filter.engine);
 
 export function OwnedGamesPage() {
   const [ownedGames, isLoading, refreshOwnedGames] = useOwnedUnityGames();
@@ -62,6 +76,11 @@ export function OwnedGamesPage() {
         />
         <FilterMenu>
           <Stack>
+            <TypedSegmentedControl
+              data={operatingSystemOptions}
+              value={filter.engine}
+              onChange={(engine) => setFilter({ engine })}
+            />
             <SwitchButton
               value={filter.hideInstalled}
               onChange={(value) => setFilter({ hideInstalled: value })}
