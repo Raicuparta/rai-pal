@@ -1,9 +1,10 @@
-import { ActionIcon, Button, Stack, Table, Text } from "@mantine/core";
-import { MdFolder, MdRefresh } from "react-icons/md";
+import { Badge, Button, Stack, Table } from "@mantine/core";
+import { MdRefresh } from "react-icons/md";
 import { Fragment } from "react";
 import { useModLoaders } from "@hooks/use-backend-data";
 import { openModFolder } from "@api/bindings";
 import { TableContainer } from "@components/table/table-container";
+import { scriptingBackendColor } from "../../util/color";
 
 export function ModsPage() {
   const [modLoaders, isLoading, refreshMods] = useModLoaders();
@@ -19,38 +20,31 @@ export function ModsPage() {
         {isLoading ? "Finding mods..." : "Refresh"}
       </Button>
       <TableContainer>
-        <Table withColumnBorders highlightOnHover>
+        <Table highlightOnHover>
           <Table.Thead>
             <Table.Tr>
-              <Table.Th w={100}>Loader</Table.Th>
               <Table.Th>Mod</Table.Th>
-              <Table.Th w={60} />
+              <Table.Th w={100}>Loader</Table.Th>
+              <Table.Th w={100}>Backend</Table.Th>
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
             {Object.values(modLoaders).map((modLoader) => (
               <Fragment key={modLoader.id}>
-                {modLoader.mods.map((mod, modIndex) => (
-                  <Table.Tr key={mod.path}>
-                    {modIndex === 0 && (
-                      <Table.Td rowSpan={modLoader.mods.length}>
-                        {modLoader.id}
-                      </Table.Td>
-                    )}
+                {modLoader.mods.map((mod) => (
+                  <Table.Tr
+                    key={mod.path}
+                    onClick={() => openModFolder(modLoader.id, mod.id)}
+                  >
+                    <Table.Td>{mod.name}</Table.Td>
+                    <Table.Td>{modLoader.id}</Table.Td>
                     <Table.Td>
-                      <Text>
-                        <strong>{mod.name}</strong>{" "}
-                        <code>({mod.scriptingBackend})</code>
-                      </Text>
-                    </Table.Td>
-                    <Table.Td align="center">
-                      <ActionIcon
-                        onClick={() => openModFolder(modLoader.id, mod.id)}
-                        variant="default"
-                        size="lg"
+                      <Badge
+                        fullWidth
+                        color={scriptingBackendColor[mod.scriptingBackend]}
                       >
-                        <MdFolder />
-                      </ActionIcon>
+                        {mod.scriptingBackend}
+                      </Badge>
                     </Table.Td>
                   </Table.Tr>
                 ))}
