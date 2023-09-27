@@ -1,5 +1,6 @@
 import { Flex, Table } from "@mantine/core";
 import { MdArrowDropDown, MdArrowDropUp } from "react-icons/md";
+import classes from "./table.module.css";
 
 export type TableHeader<TItem, TKey extends keyof TItem> = {
   id: TKey;
@@ -29,6 +30,7 @@ export function TableHead<TItem, TKey extends keyof TItem>(
         <Table.Th
           key={String(header.id)}
           w={header.width}
+          className={props.onChangeSort ? classes.sortable : undefined}
           onClick={() =>
             props.onChangeSort ? props.onChangeSort(header.id) : undefined
           }

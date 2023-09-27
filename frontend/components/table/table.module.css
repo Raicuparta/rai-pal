@@ -6,15 +6,18 @@ div.table {
     table-layout: fixed;
   }
 
-  tr {
+  td {
     cursor: pointer;
   }
 
   thead {
     background: var(--mantine-color-dark-8);
+  }
+}
 
-    th:hover {
-      background: var(--mantine-color-dark-7);
-    }
+.sortable {
+  cursor: pointer;
+  &:hover {
+    background: var(--mantine-color-dark-7);
   }
 }
