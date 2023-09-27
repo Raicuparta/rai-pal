@@ -2,7 +2,7 @@ import { style } from "@vanilla-extract/css";
 import { cssVars } from "../../theme";
 
 export const tableCardStyle = style({
-  padding: 0,
+  padding: "0 !important",
   flex: 1,
 });
 
@@ -15,7 +15,7 @@ export const tableStyle = style({
 });
 
 export const tableHeadTrStyle = style({
-  background: cssVars.colors.dark[8],
+  background: `${cssVars.colors.dark[8]} !important`,
 });
 
 export const tableHeadThStyle = style({
