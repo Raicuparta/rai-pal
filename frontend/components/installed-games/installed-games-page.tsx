@@ -125,7 +125,7 @@ export function InstalledGamesPage() {
         <Button
           onClick={refreshGameMap}
           loading={isLoading}
-          style={{ flex: 1, maxWidth: 300 }}
+          style={{ flex: 1, maxWidth: 200 }}
           leftSection={<MdRefresh />}
         >
           {isLoading ? "Finding installed games..." : "Refresh"}

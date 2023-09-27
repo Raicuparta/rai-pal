@@ -1,10 +1,9 @@
-import { Card } from "@mantine/core";
 import { useCallback, useMemo } from "react";
 import { TableVirtuoso, TableVirtuosoProps } from "react-virtuoso";
 import { TableHead, TableHeader } from "./table-head";
 import { TableSort } from "@hooks/use-table-sort";
 import { getTableComponents } from "./table-components";
-import classes from "./table.module.css";
+import { TableContainer } from "./table-container";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 interface Props<TItem, TKey extends keyof TItem, Context = any>
@@ -44,12 +43,12 @@ export function VirtualizedTable<
   );
 
   return (
-    <Card className={classes.table}>
+    <TableContainer>
       <TableVirtuoso
         fixedHeaderContent={renderHeaders}
         components={tableComponents}
         {...props}
       />
-    </Card>
+    </TableContainer>
   );
 }

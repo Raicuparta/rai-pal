@@ -1,4 +1,4 @@
-import { Button, Checkbox, Flex, Input, Stack, Text } from "@mantine/core";
+import { Button, Flex, Input, Stack, Text } from "@mantine/core";
 import { MdRefresh } from "react-icons/md";
 import { OwnedGameRow } from "./owned-game-row";
 import { useOwnedUnityGames } from "@hooks/use-backend-data";
@@ -10,6 +10,7 @@ import { TableHeader } from "@components/table/table-head";
 import { useFilteredList } from "@hooks/use-filtered-list";
 import { FilterMenu } from "@components/filter-menu";
 import { VirtualizedTable } from "@components/table/virtualized-table";
+import { SwitchButton } from "@components/switch-button";
 
 const tableHeaders: TableHeader<OwnedUnityGame, keyof OwnedUnityGame>[] = [
   { id: "name", label: "Game", width: undefined },
@@ -61,27 +62,25 @@ export function OwnedGamesPage() {
         />
         <FilterMenu>
           <Stack>
-            <Checkbox
-              checked={filter.hideInstalled}
-              onChange={(event) =>
-                setFilter({ hideInstalled: event.target.checked })
-              }
-              label="Hide installed games"
-            />
-            <Checkbox
-              checked={filter.linuxOnly}
-              onChange={(event) =>
-                setFilter({ linuxOnly: event.target.checked })
-              }
-              label="Hide games without native Linux support"
-            />
+            <SwitchButton
+              value={filter.hideInstalled}
+              onChange={(value) => setFilter({ hideInstalled: value })}
+            >
+              Hide installed games
+            </SwitchButton>
+            <SwitchButton
+              value={filter.linuxOnly}
+              onChange={(value) => setFilter({ linuxOnly: value })}
+            >
+              Hide games without native Linux support
+            </SwitchButton>
           </Stack>
         </FilterMenu>
         <Button
           leftSection={<MdRefresh />}
           loading={isLoading}
           onClick={refreshOwnedGames}
-          style={{ flex: 1, maxWidth: 300 }}
+          style={{ flex: 1, maxWidth: 200 }}
         >
           {isLoading ? "Finding owned games..." : "Refresh"}
         </Button>
