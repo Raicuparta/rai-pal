@@ -32,7 +32,7 @@ export function CommandButton<TResult>({
             loading={isLoading}
             {...props}
             onClick={executeCommand}
-            leftIcon={success ? <Box component={MdCheck} c="green" /> : icon}
+            leftSection={success ? <Box component={MdCheck} c="green" /> : icon}
           />
         </Popover.Target>
         <Popover.Dropdown>
@@ -40,7 +40,7 @@ export function CommandButton<TResult>({
             <Box component={MdError} c="red" />
             <CloseButton onClick={clearError} />
           </Flex>
-          <Box component="code" sx={{ overflow: "auto", flex: 1 }}>
+          <Box component="code" style={{ overflow: "auto", flex: 1 }}>
             {error}
           </Box>
         </Popover.Dropdown>

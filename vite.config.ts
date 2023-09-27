@@ -1,5 +1,6 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import { vanillaExtractPlugin } from "@vanilla-extract/vite-plugin";
 
 import tsconfig from "./tsconfig.json";
 
@@ -20,7 +21,7 @@ function getAliasesFromTsconfig() {
 
 // https://vitejs.dev/config/
 export default defineConfig(async () => ({
-  plugins: [react()],
+  plugins: [react(), vanillaExtractPlugin()],
   resolve: {
     alias: getAliasesFromTsconfig(),
   },

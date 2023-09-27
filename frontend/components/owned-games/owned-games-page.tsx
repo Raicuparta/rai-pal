@@ -57,7 +57,7 @@ export function OwnedGamesPage() {
         <Input
           placeholder="Find..."
           onChange={(event) => setFilter({ text: event.target.value })}
-          sx={{ flex: 1 }}
+          style={{ flex: 1 }}
         />
         <FilterMenu>
           <Stack>
@@ -78,10 +78,10 @@ export function OwnedGamesPage() {
           </Stack>
         </FilterMenu>
         <Button
-          leftIcon={<MdRefresh />}
+          leftSection={<MdRefresh />}
           loading={isLoading}
           onClick={refreshOwnedGames}
-          sx={{ flex: 1, maxWidth: 300 }}
+          style={{ flex: 1, maxWidth: 300 }}
         >
           {isLoading ? "Finding owned games..." : "Refresh"}
         </Button>

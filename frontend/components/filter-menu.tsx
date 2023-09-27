@@ -6,12 +6,14 @@ type Props = {
 };
 
 export function FilterMenu(props: Props) {
-  return <Popover>
-    <Popover.Target>
-      <Button variant="default" leftIcon={<MdFilterAlt />}>
-        Filter
-      </Button>
-    </Popover.Target>
-    <Popover.Dropdown>{props.children}</Popover.Dropdown>
-  </Popover>
+  return (
+    <Popover>
+      <Popover.Target>
+        <Button variant="default" leftSection={<MdFilterAlt />}>
+          Filter
+        </Button>
+      </Popover.Target>
+      <Popover.Dropdown>{props.children}</Popover.Dropdown>
+    </Popover>
+  );
 }

@@ -100,7 +100,7 @@ export function InstalledGamesPage() {
         <Input
           placeholder="Find..."
           onChange={(event) => setFilter({ text: event.target.value })}
-          sx={{ flex: 1 }}
+          style={{ flex: 1 }}
         />
         <FilterMenu>
           <Stack>
@@ -124,14 +124,14 @@ export function InstalledGamesPage() {
         <Button
           onClick={refreshGameMap}
           loading={isLoading}
-          sx={{ flex: 1, maxWidth: 300 }}
-          leftIcon={<MdRefresh />}
+          style={{ flex: 1, maxWidth: 300 }}
+          leftSection={<MdRefresh />}
         >
           {isLoading ? "Finding installed games..." : "Refresh"}
         </Button>
       </Flex>
       {error ? (
-        <Alert color="red" sx={{ overflow: "auto", flex: 1 }}>
+        <Alert color="red" style={{ overflow: "auto", flex: 1 }}>
           <pre>{error}</pre>
         </Alert>
       ) : null}

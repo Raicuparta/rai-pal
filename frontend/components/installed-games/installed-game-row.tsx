@@ -1,4 +1,4 @@
-import { Badge, DefaultMantineColor } from "@mantine/core";
+import { Badge, DefaultMantineColor, Table } from "@mantine/core";
 import {
   Architecture,
   Game,
@@ -40,29 +40,29 @@ const unityVersionColor = (
 export function InstalledGameRow(_: number, game: Game) {
   return (
     <>
-      <td>
+      <Table.Td>
         <GameName game={game} />
-      </td>
-      <td>
+      </Table.Td>
+      <Table.Td>
         <Badge color={operatingSystemColor[game.operatingSystem]}>
           {game.operatingSystem}
         </Badge>
-      </td>
-      <td>
+      </Table.Td>
+      <Table.Td>
         <Badge color={architectureColor[game.architecture]}>
           {game.architecture}
         </Badge>
-      </td>
-      <td>
+      </Table.Td>
+      <Table.Td>
         <Badge color={scriptingBackendColor[game.scriptingBackend]}>
           {game.scriptingBackend}
         </Badge>
-      </td>
-      <td>
+      </Table.Td>
+      <Table.Td>
         <Badge color={unityVersionColor(game.unityVersion)}>
           {game.unityVersion?.display ?? "Unknown"}
         </Badge>
-      </td>
+      </Table.Td>
     </>
   );
 }

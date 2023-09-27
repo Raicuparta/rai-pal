@@ -16,8 +16,8 @@
   "devDependencies": {
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
-    "@mantine/core": "^6.0.19",
-    "@mantine/hooks": "^6.0.19",
+    "@mantine/core": "^7.0.2",
+    "@mantine/hooks": "^7.0.2",
     "@tauri-apps/api": "^1.4.0",
     "@tauri-apps/cli": "^1.4.0",
     "@types/react": "^18.2.21",
@@ -31,12 +31,18 @@
     "vite": "^4.4.9"
   },
   "dependencies": {
+    "@mantine/vanilla-extract": "^7.0.2",
     "@typescript-eslint/eslint-plugin": "^6.7.0",
     "@typescript-eslint/parser": "^6.7.0",
+    "@vanilla-extract/css": "^1.13.0",
+    "@vanilla-extract/vite-plugin": "^3.9.0",
     "eslint": "^8.49.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-react": "^7.33.2",
     "eslint-plugin-react-hooks": "^4.6.0",
-    "eslint-plugin-react-refresh": "^0.4.3"
+    "eslint-plugin-react-refresh": "^0.4.3",
+    "postcss": "^8.4.30",
+    "postcss-preset-mantine": "^1.7.0",
+    "postcss-simple-vars": "^7.0.1"
   }
 }

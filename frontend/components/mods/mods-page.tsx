@@ -21,35 +21,37 @@ export function ModsPage() {
         disabled={isLoading}
         onClick={refreshMods}
         loading={isLoading}
-        leftIcon={<MdRefresh />}
+        leftSection={<MdRefresh />}
       >
         {isLoading ? "Finding mods..." : "Refresh"}
       </Button>
-      <Table striped withColumnBorders>
-        <thead>
-          <tr>
+      <Table withColumnBorders>
+        <Table.Thead>
+          <Table.Tr>
             <Box component="th" w={100}>
               Loader
             </Box>
             <Box component="th">Mod</Box>
             <Box component="th" w={50} />
-          </tr>
-        </thead>
-        <tbody>
+          </Table.Tr>
+        </Table.Thead>
+        <Table.Tbody>
           {Object.values(modLoaders).map((modLoader) => (
             <Fragment key={modLoader.id}>
               {modLoader.mods.map((mod, modIndex) => (
-                <tr key={mod.path}>
+                <Table.Tr key={mod.path}>
                   {modIndex === 0 && (
-                    <td rowSpan={modLoader.mods.length}>{modLoader.id}</td>
+                    <Table.Td rowSpan={modLoader.mods.length}>
+                      {modLoader.id}
+                    </Table.Td>
                   )}
-                  <td>
+                  <Table.Td>
                     <Text>
                       <strong>{mod.name}</strong>{" "}
                       <code>({mod.scriptingBackend})</code>
                     </Text>
-                  </td>
-                  <td>
+                  </Table.Td>
+                  <Table.Td>
                     <Flex gap="md">
                       <ActionIcon
                         onClick={() => openModFolder(modLoader.id, mod.id)}
@@ -59,12 +61,12 @@ export function ModsPage() {
                         <MdFolder />
                       </ActionIcon>
                     </Flex>
-                  </td>
-                </tr>
+                  </Table.Td>
+                </Table.Tr>
               ))}
             </Fragment>
           ))}
-        </tbody>
+        </Table.Tbody>
       </Table>
     </Stack>
   );

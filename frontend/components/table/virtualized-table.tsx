@@ -4,6 +4,7 @@ import { TableVirtuoso, TableVirtuosoProps } from "react-virtuoso";
 import { TableHead, TableHeader } from "./table-head";
 import { TableSort } from "@hooks/use-table-sort";
 import { getTableComponents } from "./table-components";
+import { tableCardStyle, virtuosoStyle } from "./table.css";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 interface Props<TItem, TKey extends keyof TItem, Context = any>
@@ -43,12 +44,11 @@ export function VirtualizedTable<
   );
 
   return (
-    <Card padding={0} sx={{ flex: 1 }}>
+    <Card className={tableCardStyle}>
       <TableVirtuoso
         fixedHeaderContent={renderHeaders}
         components={tableComponents}
-        // eslint-disable-next-line react/forbid-component-props
-        style={{ height: "100%" }}
+        className={virtuosoStyle}
         {...props}
       />
     </Card>

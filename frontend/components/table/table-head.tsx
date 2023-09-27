@@ -1,5 +1,6 @@
-import { Box, Flex } from "@mantine/core";
+import { Flex, Table } from "@mantine/core";
 import { MdArrowDropDown, MdArrowDropUp } from "react-icons/md";
+import { tableHeadThStyle, tableHeadTrStyle } from "./table.css";
 
 export type TableHeader<TItem, TKey extends keyof TItem> = {
   id: TKey;
@@ -23,33 +24,23 @@ export function TableHead<TItem, TKey extends keyof TItem>(
   props: Props<TItem, TKey>
 ) {
   return (
-    <Box component="tr" sx={(theme) => ({ background: theme.colors.dark[9] })}>
+    <Table.Tr className={tableHeadTrStyle}>
       {props.headers.map((header) => (
-        <Box
+        <Table.Th
           key={String(header.id)}
-          component="th"
           w={header.width}
           onClick={() =>
             props.onChangeSort ? props.onChangeSort(header.id) : undefined
           }
-          sx={
-            props.onChangeSort
-              ? (theme) => ({
-                  cursor: "pointer",
-                  ":hover": {
-                    background: theme.colors.dark[7],
-                  },
-                })
-              : undefined
-          }
+          className={tableHeadThStyle}
         >
           <Flex align="center">
             {header.label}
             {props.sort?.id === header.id &&
               (props.sort.reverse ? <MdArrowDropDown /> : <MdArrowDropUp />)}
           </Flex>
-        </Box>
+        </Table.Th>
       ))}
-    </Box>
+    </Table.Tr>
   );
 }

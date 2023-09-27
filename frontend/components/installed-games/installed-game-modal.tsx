@@ -43,7 +43,7 @@ export function InstalledGameModal(props: Props) {
     >
       <Stack>
         {error ? (
-          <Alert color="red" sx={{ overflow: "auto", flex: 1 }}>
+          <Alert color="red" style={{ overflow: "auto", flex: 1 }}>
             <pre>{error}</pre>
           </Alert>
         ) : null}
@@ -114,7 +114,7 @@ export function InstalledGameModal(props: Props) {
             )
         )}
         <label>Debug Data</label>
-        <Code sx={{ overflow: "auto" }}>
+        <Code style={{ overflow: "auto" }}>
           <pre>{JSON.stringify(props.game, null, 2)}</pre>
         </Code>
       </Stack>

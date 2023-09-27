@@ -1,14 +1,15 @@
 import { MdCheckCircle } from "react-icons/md";
 import { OwnedUnityGame } from "@api/bindings";
+import { Table } from "@mantine/core";
 
 export function OwnedGameRow(_: number, ownedUnityGame: OwnedUnityGame) {
   return (
     <>
-      <td>{ownedUnityGame.name}</td>
-      <td>
+      <Table.Td>{ownedUnityGame.name}</Table.Td>
+      <Table.Td>
         {ownedUnityGame.osList.includes("Linux") ? <MdCheckCircle /> : ""}
-      </td>
-      <td>{ownedUnityGame.installed ? <MdCheckCircle /> : ""}</td>
+      </Table.Td>
+      <Table.Td>{ownedUnityGame.installed ? <MdCheckCircle /> : ""}</Table.Td>
     </>
   );
 }
