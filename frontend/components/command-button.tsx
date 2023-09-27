@@ -44,9 +44,7 @@ export function CommandButton<TResult>({
               <Box component={MdError} c="red" />
               <CloseButton onClick={clearError} />
             </Flex>
-            <Code style={{ overflow: "auto", flex: 1 }}>
-              <pre>{error}</pre>
-            </Code>
+            <Code block>{error}</Code>
           </Stack>
         </Popover.Dropdown>
       </Popover>

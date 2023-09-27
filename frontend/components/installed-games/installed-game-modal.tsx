@@ -144,9 +144,7 @@ export function InstalledGameModal(props: Props) {
               )}
             </CopyButton>
           </Flex>
-          <Code style={{ overflow: "auto" }}>
-            <pre>{debugData}</pre>
-          </Code>
+          <Code block>{debugData}</Code>
         </Stack>
       </Stack>
     </Modal>

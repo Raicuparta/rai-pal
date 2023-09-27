@@ -12,13 +12,16 @@ div.table {
   }
 
   thead {
-    background: var(--mantine-color-dark-8);
+    background: var(--background-dark);
   }
 }
 
 .sortable {
   cursor: pointer;
   &:hover {
-    background: var(--mantine-color-dark-7);
+    background: light-dark(
+      var(--mantine-color-gray-3),
+      var(--mantine-color-dark-7)
+    );
   }
 }
