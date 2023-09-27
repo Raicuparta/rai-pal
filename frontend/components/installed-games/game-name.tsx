@@ -7,7 +7,7 @@ type Props = {
 
 export function GameName(props: Props) {
   return (
-    <Flex gap="xs">
+    <Flex gap="xs" wrap="wrap">
       {props.game.name}
       {props.game.discriminator ? (
         <Code opacity={0.5}>{props.game.discriminator}</Code>
