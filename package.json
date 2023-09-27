@@ -28,14 +28,9 @@
     "react-icons": "^4.10.1",
     "react-virtuoso": "^4.5.1",
     "typescript": "^5.2.2",
-    "vite": "^4.4.9"
-  },
-  "dependencies": {
-    "@mantine/vanilla-extract": "^7.0.2",
+    "vite": "^4.4.9",
     "@typescript-eslint/eslint-plugin": "^6.7.0",
     "@typescript-eslint/parser": "^6.7.0",
-    "@vanilla-extract/css": "^1.13.0",
-    "@vanilla-extract/vite-plugin": "^3.9.0",
     "eslint": "^8.49.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-react": "^7.33.2",
