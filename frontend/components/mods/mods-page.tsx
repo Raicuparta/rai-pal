@@ -1,24 +1,19 @@
-import { Badge, Button, Stack, Table } from "@mantine/core";
-import { MdRefresh } from "react-icons/md";
+import { Badge, Flex, Stack, Table } from "@mantine/core";
 import { Fragment } from "react";
 import { useModLoaders } from "@hooks/use-backend-data";
 import { openModFolder } from "@api/bindings";
 import { TableContainer } from "@components/table/table-container";
 import { scriptingBackendColor } from "../../util/color";
+import { RefreshButton } from "@components/refresh-button";
 
 export function ModsPage() {
   const [modLoaders, isLoading, refreshMods] = useModLoaders();
 
   return (
     <Stack h="100%">
-      <Button
-        disabled={isLoading}
-        onClick={refreshMods}
-        loading={isLoading}
-        leftSection={<MdRefresh />}
-      >
-        {isLoading ? "Finding mods..." : "Refresh"}
-      </Button>
+      <Flex justify="end">
+        <RefreshButton onClick={refreshMods} loading={isLoading} />
+      </Flex>
       <TableContainer>
         <Table highlightOnHover>
           <Table.Thead>

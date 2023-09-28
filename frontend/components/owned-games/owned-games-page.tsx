@@ -1,5 +1,4 @@
-import { Button, Flex, Input, Stack, Text } from "@mantine/core";
-import { MdRefresh } from "react-icons/md";
+import { Flex, Input, Stack, Text } from "@mantine/core";
 import { OwnedGameRow } from "./owned-game-row";
 import { useOwnedGames } from "@hooks/use-backend-data";
 import { GameEngine, OwnedGame } from "@api/bindings";
@@ -15,6 +14,7 @@ import {
   SegmentedControlData,
   TypedSegmentedControl,
 } from "@components/installed-games/typed-segmented-control";
+import { RefreshButton } from "@components/refresh-button";
 
 const operatingSystemOptions: SegmentedControlData<GameEngine>[] = [
   { label: "Any Engine", value: "" },
@@ -99,14 +99,7 @@ export function OwnedGamesPage() {
             </SwitchButton>
           </Stack>
         </FilterMenu>
-        <Button
-          leftSection={<MdRefresh />}
-          loading={isLoading}
-          onClick={refreshOwnedGames}
-          style={{ flex: 1, maxWidth: 200 }}
-        >
-          {isLoading ? "Finding owned games..." : "Refresh"}
-        </Button>
+        <RefreshButton loading={isLoading} onClick={refreshOwnedGames} />
       </Flex>
       <Text>
         These are the Steam games you own (maybe?) that use the Unity engine

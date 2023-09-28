@@ -1,6 +1,5 @@
-import { Alert, Button, Flex, Input, Stack } from "@mantine/core";
+import { Alert, Flex, Input, Stack } from "@mantine/core";
 import { useMemo, useState } from "react";
-import { MdRefresh } from "react-icons/md";
 import { includesOneOf } from "../../util/filter";
 import { InstalledGameRow } from "./installed-game-row";
 import { InstalledGameModal } from "./installed-game-modal";
@@ -19,6 +18,7 @@ import { useFilteredList } from "@hooks/use-filtered-list";
 import { FilterMenu } from "@components/filter-menu";
 import { VirtualizedTable } from "@components/table/virtualized-table";
 import { useGameMap } from "@hooks/use-game-map";
+import { RefreshButton } from "@components/refresh-button";
 
 type Filter = {
   text: string;
@@ -126,14 +126,7 @@ export function InstalledGamesPage() {
             />
           </Stack>
         </FilterMenu>
-        <Button
-          onClick={refreshGameMap}
-          loading={isLoading}
-          style={{ flex: 1, maxWidth: 200 }}
-          leftSection={<MdRefresh />}
-        >
-          {isLoading ? "Finding installed games..." : "Refresh"}
-        </Button>
+        <RefreshButton onClick={refreshGameMap} loading={isLoading} />
       </Flex>
       {error ? (
         <Alert color="red" style={{ overflow: "auto", flex: 1 }}>
