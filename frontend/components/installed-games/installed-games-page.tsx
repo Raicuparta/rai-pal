@@ -95,6 +95,10 @@ export function InstalledGamesPage() {
     [gameMap, selectedGameId]
   );
 
+  const isFilterActive = Boolean(
+    filter.architecture || filter.operatingSystem || filter.scriptingBackend
+  );
+
   return (
     <Stack h="100%">
       <Flex gap="md">
@@ -103,7 +107,7 @@ export function InstalledGamesPage() {
           onChange={(event) => setFilter({ text: event.target.value })}
           style={{ flex: 1 }}
         />
-        <FilterMenu>
+        <FilterMenu active={isFilterActive}>
           <Stack>
             <TypedSegmentedControl
               data={operatingSystemOptions}

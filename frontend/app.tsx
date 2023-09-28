@@ -30,7 +30,6 @@ function App() {
             value={pageId}
             style={{
               flex: 1,
-              overflow: "auto",
             }}
           >
             <Container pb="md" h="100%">

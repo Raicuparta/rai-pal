@@ -61,6 +61,9 @@ export function OwnedGamesPage() {
     defaultFilter
   );
 
+  const isFilterActive =
+    filter.linuxOnly || filter.hideInstalled || Boolean(filter.engine);
+
   return (
     <Stack h="100%">
       {selectedGame ? (
@@ -75,7 +78,7 @@ export function OwnedGamesPage() {
           onChange={(event) => setFilter({ text: event.target.value })}
           style={{ flex: 1 }}
         />
-        <FilterMenu>
+        <FilterMenu active={isFilterActive}>
           <Stack>
             <TypedSegmentedControl
               data={operatingSystemOptions}
