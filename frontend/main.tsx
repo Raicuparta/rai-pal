@@ -17,9 +17,9 @@ document.addEventListener("keydown", (e) => {
 });
 
 // Prevent opening context menu
-document.addEventListener("contextmenu", (e) => {
-	e.preventDefault();
-});
+// document.addEventListener("contextmenu", (e) => {
+// 	e.preventDefault();
+// });
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
 	<React.StrictMode>

@@ -1,9 +1,8 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { useTimeout } from "@mantine/hooks";
 
 export function useAsyncCommand<TResult>(command: () => Promise<TResult>) {
 	const [isLoading, setIsLoading] = useState(false);
-	const [isLongLoading, setIsLongLoading] = useState(false);
 	const [error, setError] = useState("");
 	const [success, setSuccess] = useState(false);
 	const { start: startSuccessTimeout, clear: clearSuccessTimeout } = useTimeout(
@@ -12,19 +11,11 @@ export function useAsyncCommand<TResult>(command: () => Promise<TResult>) {
 		},
 		1000,
 	);
-	const { start: startLoadingTimeout, clear: clearLoadingTimeout } = useTimeout(
-		() => {
-			if (!isLoading) return;
-			setIsLongLoading(true);
-		},
-		1000,
-	);
 
 	const clearError = useCallback(() => setError(""), []);
 
 	const executeCommand = useCallback(async () => {
 		clearSuccessTimeout();
-		setIsLongLoading(false);
 		setIsLoading(true);
 		setSuccess(false);
 		setError("");
@@ -39,14 +30,5 @@ export function useAsyncCommand<TResult>(command: () => Promise<TResult>) {
 			.finally(() => setIsLoading(false));
 	}, [clearSuccessTimeout, command, startSuccessTimeout]);
 
-	useEffect(() => {
-		setIsLongLoading(false);
-		if (!isLoading) return;
-
-		startLoadingTimeout();
-
-		return clearLoadingTimeout;
-	}, [clearLoadingTimeout, isLoading, startLoadingTimeout]);
-
-	return [executeCommand, isLongLoading, success, error, clearError] as const;
+	return [executeCommand, isLoading, success, error, clearError] as const;
 }

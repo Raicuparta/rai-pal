@@ -1,4 +1,5 @@
 import { useAsyncCommand } from "@hooks/use-async-command";
+import { useLongLoading } from "@hooks/use-long-loading";
 import {
 	Button,
 	ButtonProps,
@@ -24,6 +25,8 @@ export function CommandButton<TResult>({
 	const [executeCommand, isLoading, success, error, clearError] =
 		useAsyncCommand(onClick);
 
+	const isLongLoading = useLongLoading(isLoading);
+
 	return (
 		<Popover
 			opened={Boolean(error)}
@@ -34,7 +37,7 @@ export function CommandButton<TResult>({
 				<Button
 					color={error ? "red" : "green"}
 					justify="start"
-					loading={isLoading}
+					loading={isLongLoading}
 					variant={success || error ? "filled" : "default"}
 					{...props}
 					leftSection={icon}
