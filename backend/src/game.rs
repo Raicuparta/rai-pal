@@ -250,7 +250,7 @@ fn get_unity_version(game_exe_path: &Path) -> UnityVersion {
 			if let Ok(metadata) = metadata(&asset_path) {
 				if metadata.is_file() {
 					if let Ok(version) = get_version_from_asset(&asset_path) {
-						let mut version_parts = version.split('.').clone();
+						let mut version_parts = version.split('.');
 						let major = version_parts.next().unwrap_or("0").parse().unwrap_or(0);
 						let minor = version_parts.next().unwrap_or("0").parse().unwrap_or(0);
 						let patch = version_parts.next().unwrap_or("0").parse().unwrap_or(0);
