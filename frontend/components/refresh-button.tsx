@@ -12,7 +12,7 @@ export function RefreshButton(props: Props) {
 			leftSection={<IconRefresh />}
 			loading={props.loading}
 			onClick={props.onClick}
-			style={{ flex: 1, maxWidth: 200 }}
+			style={{ flex: 1, maxWidth: "10em" }}
 			variant="filled"
 		>
 			{props.loading ? "Loading..." : "Refresh"}

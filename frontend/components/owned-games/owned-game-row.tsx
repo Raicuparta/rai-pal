@@ -13,10 +13,10 @@ export function OwnedGameRow(_: number, ownedUnityGame: OwnedGame) {
 				</Badge>
 			</Table.Td>
 			<Table.Td align="center">
-				{ownedUnityGame.osList.includes("Linux") ? <IconCheck size={15} /> : ""}
+				{ownedUnityGame.osList.includes("Linux") ? <IconCheck /> : ""}
 			</Table.Td>
 			<Table.Td align="center">
-				{ownedUnityGame.installed ? <IconCheck size={15} /> : ""}
+				{ownedUnityGame.installed ? <IconCheck /> : ""}
 			</Table.Td>
 			<Table.Td align="center">
 				{ownedUnityGame.releaseDate
