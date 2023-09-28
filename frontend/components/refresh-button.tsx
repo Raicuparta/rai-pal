@@ -8,6 +8,7 @@ type Props = {
 
 export const RefreshButton = (props: Props) => (
   <Button
+    variant="filled"
     onClick={props.onClick}
     loading={props.loading}
     style={{ flex: 1, maxWidth: 200 }}

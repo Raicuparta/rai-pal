@@ -10,5 +10,10 @@ export const theme: MantineThemeOverride = {
         fullWidth: true,
       },
     },
+    Button: {
+      defaultProps: {
+        variant: "default",
+      },
+    },
   },
 };

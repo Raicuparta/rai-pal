@@ -19,6 +19,7 @@ import { FilterMenu } from "@components/filter-menu";
 import { VirtualizedTable } from "@components/table/virtualized-table";
 import { useGameMap } from "@hooks/use-game-map";
 import { RefreshButton } from "@components/refresh-button";
+import { ResetButton } from "@components/reset-button";
 
 type Filter = {
   text: string;
@@ -104,9 +105,13 @@ export function InstalledGamesPage() {
       <Flex gap="md">
         <Input
           placeholder="Find..."
+          value={filter.text}
           onChange={(event) => setFilter({ text: event.target.value })}
           style={{ flex: 1 }}
         />
+        {(isFilterActive || filter.text) && (
+          <ResetButton setFilter={setFilter} />
+        )}
         <FilterMenu active={isFilterActive}>
           <Stack>
             <TypedSegmentedControl

@@ -11,8 +11,12 @@ export function useFilteredList<TItem, TKey extends keyof TItem, TFilter>(
   const [sort, setSort] = useTableSort<TItem, TKey>(tableHeaders[0].id);
   const [filter, setFilter] = useState<TFilter>(defaultFilterValue);
 
-  const updateFilter = (newFilter: Partial<TFilter>) =>
-    setFilter((previousFilter) => ({ ...previousFilter, ...newFilter }));
+  const updateFilter = (newFilter: Partial<TFilter> | undefined) =>
+    setFilter(
+      newFilter
+        ? (previousFilter) => ({ ...previousFilter, ...newFilter })
+        : defaultFilterValue
+    );
 
   const filteredData = useMemo(() => {
     const sortHeader = tableHeaders.find((header) => header.id === sort.id);
