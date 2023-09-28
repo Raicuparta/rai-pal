@@ -5,7 +5,9 @@ import { MantineProvider } from "@mantine/core";
 import { theme } from "./theme";
 
 import "@mantine/core/styles.css";
-import "./global.css";
+import "./global-styles/global.css";
+import "./global-styles/mantine-overrides.css";
+import "./global-styles/scroll-bar.css";
 
 // Prevent ctrl+p from opening the print dialog
 document.addEventListener("keydown", (e) => {
@@ -15,9 +17,9 @@ document.addEventListener("keydown", (e) => {
 });
 
 // Prevent opening context menu
-// document.addEventListener("contextmenu", (e) => {
-//   e.preventDefault();
-// });
+document.addEventListener("contextmenu", (e) => {
+  e.preventDefault();
+});
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>

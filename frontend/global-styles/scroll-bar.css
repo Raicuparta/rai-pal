@@ -1,0 +1,42 @@
+/*
+  At the time of writing this, wry has a bug where the scrollbar
+  is not visible on Linux (probably a webkit2gtk thing).
+
+  Adding custom scrollbar styles makes the scrollbar visible again,
+  so I did that, and then I wasted some time making it nice.
+
+  The bug will probably only be fixed in Tauri 2.0
+
+  If this project has been updated to Tauri 2.0,
+  please remove this and test it to see if the issue is fixed.
+*/
+
+*::-webkit-scrollbar {
+  width: var(--mantine-spacing-md);
+}
+
+*::-webkit-scrollbar-track {
+  background: var(--background-dark);
+}
+
+*::-webkit-scrollbar-track:vertical {
+  border-top-right-radius: var(--mantine-radius-md);
+  border-bottom-right-radius: var(--mantine-radius-md);
+}
+
+*::-webkit-scrollbar-track:horizontal {
+  border-bottom-left-radius: var(--mantine-radius-md);
+  border-bottom-right-radius: var(--mantine-radius-md);
+}
+
+*::-webkit-scrollbar-thumb {
+  border-width: 3px;
+  border-color: var(--background-dark);
+  border-style: solid;
+  background: var(--mantine-color-dark-2);
+  border-radius: var(--mantine-radius-md);
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--mantine-color-dark-1);
+}

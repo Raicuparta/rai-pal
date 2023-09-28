@@ -1,0 +1,15 @@
+body {
+  --background-dark: light-dark(
+    var(--mantine-color-gray-1),
+    var(--mantine-color-dark-8)
+  );
+}
+
+/* 
+  SVG icons imported from a third party package are too small,
+  so I'm making them the font size in all SVGs bigger.
+  Definitely need a better way to do this, or a better icon package.
+*/
+svg {
+  font-size: 1.5em;
+}
