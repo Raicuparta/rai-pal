@@ -1,5 +1,5 @@
-import { useTimeout } from "@mantine/hooks";
 import { useCallback, useEffect, useState } from "react";
+import { useTimeout } from "./use-timeout";
 
 export function useLongLoading(isLoading: boolean) {
 	const [isLongLoading, setIsLongLoading] = useState(false);
@@ -9,7 +9,7 @@ export function useLongLoading(isLoading: boolean) {
 		setIsLongLoading(true);
 	}, [isLoading]);
 
-	const { start, clear } = useTimeout(timeoutCallback, 100);
+	const { start, clear } = useTimeout(timeoutCallback, 200);
 
 	useEffect(() => {
 		setIsLongLoading(false);
@@ -19,6 +19,8 @@ export function useLongLoading(isLoading: boolean) {
 
 		return clear;
 	}, [clear, isLoading, start]);
+
+	useEffect(() => {}, [start]);
 
 	return isLongLoading;
 }
