@@ -92,6 +92,8 @@ pub struct App {
 pub struct SteamAppInfo {
 	pub launch_options: Vec<SteamLaunchOption>,
 	pub name: String,
+	pub steam_release_date: Option<i32>,
+	pub original_release_date: Option<i32>,
 }
 
 #[derive(Debug)]
@@ -182,6 +184,12 @@ impl SteamAppInfoFile {
 					}
 				});
 
+			let steam_release_date =
+				value_to_i32(app.get(&["appinfo", "common", "steam_release_date"]));
+
+			let original_release_date =
+				value_to_i32(app.get(&["appinfo", "common", "original_release_date"]));
+
 			if let Some(launch_options) = app_launch {
 				if let Some(name) = value_to_string(app.get(&["appinfo", "common", "name"])) {
 					appinfo.apps.insert(
@@ -189,6 +197,8 @@ impl SteamAppInfoFile {
 						SteamAppInfo {
 							launch_options,
 							name,
+							steam_release_date,
+							original_release_date,
 						},
 					);
 				}
@@ -202,6 +212,13 @@ impl SteamAppInfoFile {
 fn value_to_string(value: Option<&ValueType>) -> Option<String> {
 	match value {
 		Some(ValueType::String(string_value)) => Some(String::from(string_value)),
+		_ => None,
+	}
+}
+
+const fn value_to_i32(value: Option<&ValueType>) -> Option<i32> {
+	match value {
+		Some(ValueType::Int32(number_value)) => Some(*number_value),
 		_ => None,
 	}
 }

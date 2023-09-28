@@ -35,5 +35,5 @@ export function useBackendData<TData>(
   return [data, isLoading, refresh, error] as const;
 }
 
-export const useOwnedUnityGames = () => useBackendData(getOwnedGames, []);
+export const useOwnedGames = () => useBackendData(getOwnedGames, []);
 export const useModLoaders = () => useBackendData(getModLoaders, {});

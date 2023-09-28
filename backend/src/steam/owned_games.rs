@@ -22,19 +22,20 @@ serializable_enum!(GameEngine {
 	Godot,
 });
 
-serializable_struct!(OwnedUnityGame {
+serializable_struct!(OwnedGame {
 	id: String,
 	name: String,
 	installed: bool,
 	os_list: HashSet<OperatingSystem>,
 	engine: GameEngine,
+	release_date: i32,
 });
 
 async fn get_engine_games(
 	engine: GameEngine,
 	steam_dir: &SteamDir,
 	app_info: &SteamAppInfoFile,
-) -> Result<Vec<OwnedUnityGame>> {
+) -> Result<Vec<OwnedGame>> {
 	let response = reqwest::get(format!("{UNITY_STEAM_APP_IDS_URL}/{engine}"))
 		.await?
 		.text()
@@ -61,18 +62,24 @@ async fn get_engine_games(
 				.app(id)
 				.map_or(false, |steam_app| steam_app.is_some());
 
-			Some(OwnedUnityGame {
+			let release_date = app_info
+				.original_release_date
+				.or(app_info.steam_release_date)
+				.unwrap_or_default();
+
+			Some(OwnedGame {
 				id: app_id.to_owned(),
 				name: app_info.name.clone(),
 				installed,
 				os_list,
 				engine,
+				release_date,
 			})
 		})
 		.collect())
 }
 
-pub async fn get() -> Result<Vec<OwnedUnityGame>> {
+pub async fn get() -> Result<Vec<OwnedGame>> {
 	let steam_dir = SteamDir::locate()?;
 	let app_info = appinfo::read(&steam_dir.path().join("appcache/appinfo.vdf"))?;
 

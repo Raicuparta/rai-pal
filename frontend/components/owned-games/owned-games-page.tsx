@@ -1,8 +1,8 @@
 import { Button, Flex, Input, Stack, Text } from "@mantine/core";
 import { MdRefresh } from "react-icons/md";
 import { OwnedGameRow } from "./owned-game-row";
-import { useOwnedUnityGames } from "@hooks/use-backend-data";
-import { GameEngine, OwnedUnityGame } from "@api/bindings";
+import { useOwnedGames } from "@hooks/use-backend-data";
+import { GameEngine, OwnedGame } from "@api/bindings";
 import { useState } from "react";
 import { includesOneOf } from "../../util/filter";
 import { OwnedGameModal } from "./owned-game-modal";
@@ -23,11 +23,12 @@ const operatingSystemOptions: SegmentedControlData<GameEngine>[] = [
   { label: "Godot", value: "Godot" },
 ];
 
-const tableHeaders: TableHeader<OwnedUnityGame, keyof OwnedUnityGame>[] = [
+const tableHeaders: TableHeader<OwnedGame, keyof OwnedGame>[] = [
   { id: "name", label: "Game", width: undefined },
   { id: "engine", label: "Engine", width: 100, center: true },
   { id: "osList", label: "Linux?", width: 100, center: true },
   { id: "installed", label: "Installed?", width: 100, center: true },
+  { id: "releaseDate", label: "Release Date", width: 130, center: true },
 ];
 
 type Filter = {
@@ -43,15 +44,15 @@ const defaultFilter: Filter = {
   linuxOnly: false,
 };
 
-const filterGame = (game: OwnedUnityGame, filter: Filter) =>
+const filterGame = (game: OwnedGame, filter: Filter) =>
   includesOneOf(filter.text, [game.name, game.id.toString()]) &&
   (!filter.linuxOnly || game.osList.includes("Linux")) &&
   (!filter.hideInstalled || !game.installed) &&
   (!filter.engine || game.engine === filter.engine);
 
 export function OwnedGamesPage() {
-  const [ownedGames, isLoading, refreshOwnedGames] = useOwnedUnityGames();
-  const [selectedGame, setSelectedGame] = useState<OwnedUnityGame>();
+  const [ownedGames, isLoading, refreshOwnedGames] = useOwnedGames();
+  const [selectedGame, setSelectedGame] = useState<OwnedGame>();
 
   const [filteredGames, sort, setSort, filter, setFilter] = useFilteredList(
     tableHeaders,

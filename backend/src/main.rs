@@ -30,7 +30,7 @@ use specta::ts::{
 	BigIntExportBehavior,
 	ExportConfiguration,
 };
-use steam::owned_games::OwnedUnityGame;
+use steam::owned_games::OwnedGame;
 use tauri::api::dialog::message;
 
 mod files;
@@ -108,7 +108,7 @@ pub type Result<T = ()> = StdResult<T, Error>;
 
 struct AppState {
 	game_map: Mutex<Option<game::Map>>,
-	owned_games: Mutex<Option<Vec<OwnedUnityGame>>>,
+	owned_games: Mutex<Option<Vec<OwnedGame>>>,
 	mod_loaders: Mutex<Option<mod_loader::DataMap>>,
 }
 
@@ -150,7 +150,7 @@ async fn get_game_map(state: tauri::State<'_, AppState>, ignore_cache: bool) -> 
 async fn get_owned_games(
 	state: tauri::State<'_, AppState>,
 	ignore_cache: bool,
-) -> Result<Vec<OwnedUnityGame>> {
+) -> Result<Vec<OwnedGame>> {
 	get_state_data(&state.owned_games, steam::owned_games::get, ignore_cache).await
 }
 
