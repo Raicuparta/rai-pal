@@ -1,3 +1,7 @@
 .mantine-Code-root {
   border-radius: var(--mantine-radius-md);
 }
+
+.mantine-Indicator-indicator {
+  pointer-events: none;
+}

@@ -10,7 +10,7 @@ export function FilterMenu(props: Props) {
   return (
     <Popover>
       <Popover.Target>
-        <Indicator disabled={!props.active}>
+        <Indicator offset={8} disabled={!props.active}>
           <Button variant="default" leftSection={<MdFilterAlt />}>
             Filter
           </Button>
