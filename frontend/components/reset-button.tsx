@@ -9,6 +9,8 @@ export const ResetButton = (props: Props) => (
   <Button
     leftSection={<MdFilterAltOff />}
     onClick={() => props.setFilter(undefined)}
+    variant="light"
+    color="pink"
   >
     Reset
   </Button>
