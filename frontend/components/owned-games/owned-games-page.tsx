@@ -76,6 +76,7 @@ export function OwnedGamesPage() {
       <Flex gap="md">
         <Input
           placeholder="Find..."
+          value={filter.text}
           onChange={(event) => setFilter({ text: event.target.value })}
           style={{ flex: 1 }}
         />
