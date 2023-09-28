@@ -7,8 +7,8 @@ interface Props extends ButtonProps {
 
 export const SwitchButton = ({ value, onChange, ...props }: Props) => (
   <Button
-    variant="filled"
-    color="dark"
+    variant={value ? "light" : "filled"}
+    color={value ? "violet" : "dark"}
     onClick={() => onChange(!value)}
     justify="start"
     leftSection={<Switch style={{ pointerEvents: "none" }} checked={value} />}

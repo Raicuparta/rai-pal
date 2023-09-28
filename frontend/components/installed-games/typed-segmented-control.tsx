@@ -13,6 +13,7 @@ type Props<T extends string> = {
 export function TypedSegmentedControl<T extends string>(props: Props<T>) {
   return (
     <SegmentedControl
+      color={props.value ? "violet" : undefined}
       onChange={(value) => props.onChange((value as T) || undefined)}
       value={props.value || ""}
       data={props.data}
