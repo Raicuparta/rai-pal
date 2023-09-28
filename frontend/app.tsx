@@ -5,41 +5,50 @@ import { SettingsPage } from "./components/settings/settings-page";
 import { Tabs, Container, Stack } from "@mantine/core";
 
 const pages = {
-  installedGames: { title: "Installed Games", component: InstalledGamesPage },
-  ownedGames: { title: "Owned Games", component: OwnedGamesPage },
-  mods: { title: "Mods", component: ModsPage },
-  settings: { title: "Settings", component: SettingsPage },
+	installedGames: { title: "Installed Games", component: InstalledGamesPage },
+	ownedGames: { title: "Owned Games", component: OwnedGamesPage },
+	mods: { title: "Mods", component: ModsPage },
+	settings: { title: "Settings", component: SettingsPage },
 };
 
 const firstPage = Object.keys(pages)[0];
 
 function App() {
-  return (
-    <Tabs defaultValue={firstPage} radius={0}>
-      <Stack style={{ height: "100vh" }}>
-        <Tabs.List style={{ justifyContent: "center" }}>
-          {Object.entries(pages).map(([pageId, page]) => (
-            <Tabs.Tab key={pageId} value={pageId}>
-              {page.title}
-            </Tabs.Tab>
-          ))}
-        </Tabs.List>
-        {Object.entries(pages).map(([pageId, page]) => (
-          <Tabs.Panel
-            key={pageId}
-            value={pageId}
-            style={{
-              flex: 1,
-            }}
-          >
-            <Container pb="md" h="100%">
-              <page.component />
-            </Container>
-          </Tabs.Panel>
-        ))}
-      </Stack>
-    </Tabs>
-  );
+	return (
+		<Tabs
+			defaultValue={firstPage}
+			radius={0}
+		>
+			<Stack style={{ height: "100vh" }}>
+				<Tabs.List style={{ justifyContent: "center" }}>
+					{Object.entries(pages).map(([pageId, page]) => (
+						<Tabs.Tab
+							key={pageId}
+							value={pageId}
+						>
+							{page.title}
+						</Tabs.Tab>
+					))}
+				</Tabs.List>
+				{Object.entries(pages).map(([pageId, page]) => (
+					<Tabs.Panel
+						key={pageId}
+						style={{
+							flex: 1,
+						}}
+						value={pageId}
+					>
+						<Container
+							h="100%"
+							pb="md"
+						>
+							<page.component />
+						</Container>
+					</Tabs.Panel>
+				))}
+			</Stack>
+		</Tabs>
+	);
 }
 
 export default App;

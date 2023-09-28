@@ -1,17 +1,24 @@
 import { Button, ButtonProps, Switch } from "@mantine/core";
 
 interface Props extends ButtonProps {
-  value: boolean;
-  onChange: (value: boolean) => void;
+	readonly value: boolean;
+	readonly onChange: (value: boolean) => void;
 }
 
-export const SwitchButton = ({ value, onChange, ...props }: Props) => (
-  <Button
-    variant={value ? "light" : "filled"}
-    color={value ? "violet" : "dark"}
-    onClick={() => onChange(!value)}
-    justify="start"
-    leftSection={<Switch style={{ pointerEvents: "none" }} checked={value} />}
-    {...props}
-  />
-);
+export function SwitchButton({ value, onChange, ...props }: Props) {
+	return (
+		<Button
+			color={value ? "violet" : "dark"}
+			justify="start"
+			leftSection={
+				<Switch
+					checked={value}
+					style={{ pointerEvents: "none" }}
+				/>
+			}
+			onClick={() => onChange(!value)}
+			variant={value ? "light" : "filled"}
+			{...props}
+		/>
+	);
+}

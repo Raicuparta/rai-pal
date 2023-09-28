@@ -12,31 +12,31 @@
 */
 
 *::-webkit-scrollbar {
-  width: var(--mantine-spacing-md);
+	width: var(--mantine-spacing-md);
 }
 
 *::-webkit-scrollbar-track {
-  background: var(--background-dark);
+	background: var(--background-dark);
 }
 
 *::-webkit-scrollbar-track:vertical {
-  border-top-right-radius: var(--mantine-radius-md);
-  border-bottom-right-radius: var(--mantine-radius-md);
+	border-top-right-radius: var(--mantine-radius-md);
+	border-bottom-right-radius: var(--mantine-radius-md);
 }
 
 *::-webkit-scrollbar-track:horizontal {
-  border-bottom-left-radius: var(--mantine-radius-md);
-  border-bottom-right-radius: var(--mantine-radius-md);
+	border-bottom-left-radius: var(--mantine-radius-md);
+	border-bottom-right-radius: var(--mantine-radius-md);
 }
 
 *::-webkit-scrollbar-thumb {
-  border-width: 3px;
-  border-color: var(--background-dark);
-  border-style: solid;
-  background: var(--mantine-color-dark-2);
-  border-radius: var(--mantine-radius-md);
+	border-width: 3px;
+	border-color: var(--background-dark);
+	border-style: solid;
+	background: var(--mantine-color-dark-2);
+	border-radius: var(--mantine-radius-md);
 }
 
 *::-webkit-scrollbar-thumb:hover {
-  background: var(--mantine-color-dark-1);
+	background: var(--mantine-color-dark-1);
 }

@@ -11,20 +11,23 @@ import "./global-styles/scroll-bar.css";
 
 // Prevent ctrl+p from opening the print dialog
 document.addEventListener("keydown", (e) => {
-  if (e.ctrlKey && e.key === "p") {
-    e.preventDefault();
-  }
+	if (e.ctrlKey && e.key === "p") {
+		e.preventDefault();
+	}
 });
 
 // Prevent opening context menu
 document.addEventListener("contextmenu", (e) => {
-  e.preventDefault();
+	e.preventDefault();
 });
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
-  <React.StrictMode>
-    <MantineProvider theme={theme} defaultColorScheme="dark">
-      <App />
-    </MantineProvider>
-  </React.StrictMode>
+	<React.StrictMode>
+		<MantineProvider
+			defaultColorScheme="dark"
+			theme={theme}
+		>
+			<App />
+		</MantineProvider>
+	</React.StrictMode>,
 );

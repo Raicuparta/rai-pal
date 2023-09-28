@@ -1,27 +1,27 @@
 div.table {
-  padding: 0;
-  flex: 1;
-  user-select: none;
+	padding: 0;
+	flex: 1;
+	user-select: none;
 
-  table {
-    table-layout: fixed;
-  }
+	table {
+		table-layout: fixed;
+	}
 
-  td {
-    cursor: pointer;
-  }
+	td {
+		cursor: pointer;
+	}
 
-  thead {
-    background: var(--background-dark);
-  }
+	thead {
+		background: var(--background-dark);
+	}
 }
 
 .sortable {
-  cursor: pointer;
-  &:hover {
-    background: light-dark(
-      var(--mantine-color-gray-3),
-      var(--mantine-color-dark-7)
-    );
-  }
+	cursor: pointer;
+	&:hover {
+		background: light-dark(
+			var(--mantine-color-gray-3),
+			var(--mantine-color-dark-7)
+		);
+	}
 }

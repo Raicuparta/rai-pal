@@ -1,8 +1,8 @@
 body {
-  --background-dark: light-dark(
-    var(--mantine-color-gray-1),
-    var(--mantine-color-dark-8)
-  );
+	--background-dark: light-dark(
+		var(--mantine-color-gray-1),
+		var(--mantine-color-dark-8)
+	);
 }
 
 /* 
@@ -11,5 +11,5 @@ body {
   Definitely need a better way to do this, or a better icon package.
 */
 svg {
-  font-size: 1.5em;
+	font-size: 1.5em;
 }
