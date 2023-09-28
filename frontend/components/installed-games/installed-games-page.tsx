@@ -19,7 +19,7 @@ import { FilterMenu } from "@components/filter-menu";
 import { VirtualizedTable } from "@components/table/virtualized-table";
 import { useGameMap } from "@hooks/use-game-map";
 import { RefreshButton } from "@components/refresh-button";
-import { ResetButton } from "@components/reset-button";
+import { FilterResetButton } from "@components/filter-reset-button";
 
 type Filter = {
 	text: string;
@@ -110,7 +110,7 @@ export function InstalledGamesPage() {
 					value={filter.text}
 				/>
 				{isFilterActive || filter.text ? (
-					<ResetButton setFilter={setFilter} />
+					<FilterResetButton setFilter={setFilter} />
 				) : null}
 				<FilterMenu active={isFilterActive}>
 					<Stack>

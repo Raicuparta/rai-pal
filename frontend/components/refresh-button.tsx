@@ -1,5 +1,5 @@
 import { Button } from "@mantine/core";
-import { MdRefresh } from "react-icons/md";
+import { IconRefresh } from "@tabler/icons-react";
 
 type Props = {
 	readonly onClick: () => void;
@@ -9,7 +9,7 @@ type Props = {
 export function RefreshButton(props: Props) {
 	return (
 		<Button
-			leftSection={<MdRefresh />}
+			leftSection={<IconRefresh />}
 			loading={props.loading}
 			onClick={props.onClick}
 			style={{ flex: 1, maxWidth: 200 }}

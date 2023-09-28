@@ -1,6 +1,6 @@
 import { Box, Flex, Table } from "@mantine/core";
-import { MdArrowDropDown, MdArrowDropUp } from "react-icons/md";
 import classes from "./table.module.css";
+import { IconChevronDown, IconChevronUp } from "@tabler/icons-react";
 
 export type TableHeader<TItem, TKey extends keyof TItem> = {
 	id: TKey;
@@ -40,9 +40,10 @@ export function TableHead<TItem, TKey extends keyof TItem>(
 						<Box
 							h={0}
 							w={0}
+							fs="xs"
 						>
 							{props.sort?.id === header.id &&
-								(props.sort.reverse ? <MdArrowDropDown /> : <MdArrowDropUp />)}
+								(props.sort.reverse ? <IconChevronDown /> : <IconChevronUp />)}
 						</Box>
 					</Flex>
 				</Table.Th>

@@ -1,7 +1,7 @@
-import { MdCheckCircle } from "react-icons/md";
 import { OwnedGame } from "@api/bindings";
 import { Badge, Table } from "@mantine/core";
 import { engineColor } from "../../util/color";
+import { IconCheck } from "@tabler/icons-react";
 
 export function OwnedGameRow(_: number, ownedUnityGame: OwnedGame) {
 	return (
@@ -13,10 +13,10 @@ export function OwnedGameRow(_: number, ownedUnityGame: OwnedGame) {
 				</Badge>
 			</Table.Td>
 			<Table.Td align="center">
-				{ownedUnityGame.osList.includes("Linux") ? <MdCheckCircle /> : ""}
+				{ownedUnityGame.osList.includes("Linux") ? <IconCheck size={15} /> : ""}
 			</Table.Td>
 			<Table.Td align="center">
-				{ownedUnityGame.installed ? <MdCheckCircle /> : ""}
+				{ownedUnityGame.installed ? <IconCheck size={15} /> : ""}
 			</Table.Td>
 			<Table.Td align="center">
 				{ownedUnityGame.releaseDate

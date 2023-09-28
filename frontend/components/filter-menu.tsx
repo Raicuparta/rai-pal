@@ -1,5 +1,5 @@
 import { Button, Indicator, Popover } from "@mantine/core";
-import { MdFilterAlt } from "react-icons/md";
+import { IconFilter } from "@tabler/icons-react";
 
 type Props = {
 	readonly children: React.ReactNode;
@@ -14,7 +14,7 @@ export function FilterMenu(props: Props) {
 					disabled={!props.active}
 					offset={8}
 				>
-					<Button leftSection={<MdFilterAlt />}>Filter</Button>
+					<Button leftSection={<IconFilter />}>Filter</Button>
 				</Indicator>
 			</Popover.Target>
 			<Popover.Dropdown>{props.children}</Popover.Dropdown>

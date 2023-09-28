@@ -2,8 +2,8 @@ import { Button, Code, CopyButton, Flex, Modal, Stack } from "@mantine/core";
 import { OwnedGame } from "@api/bindings";
 import { open } from "@tauri-apps/api/shell";
 import { CommandButton } from "@components/command-button";
-import { MdCopyAll, MdInstallDesktop, MdWeb } from "react-icons/md";
 import { useMemo } from "react";
+import { IconBrowser, IconCopy, IconDownload } from "@tabler/icons-react";
 
 type Props = {
 	readonly selectedGame: OwnedGame;
@@ -26,7 +26,7 @@ export function OwnedGameModal(props: Props) {
 			<Stack>
 				<Button.Group orientation="vertical">
 					<CommandButton
-						icon={<MdWeb />}
+						icon={<IconBrowser />}
 						onClick={() =>
 							open(`https://steampowered.com/app/${props.selectedGame.id}`)
 						}
@@ -34,7 +34,7 @@ export function OwnedGameModal(props: Props) {
 						Open Steam Page
 					</CommandButton>
 					<CommandButton
-						icon={<MdInstallDesktop />}
+						icon={<IconDownload />}
 						onClick={() => open(`steam://install/${props.selectedGame.id}`)}
 					>
 						Install on Steam
@@ -50,7 +50,7 @@ export function OwnedGameModal(props: Props) {
 							{({ copied, copy }) => (
 								<Button
 									color="green"
-									leftSection={<MdCopyAll />}
+									leftSection={<IconCopy />}
 									onClick={copy}
 									size="xs"
 									variant={copied ? "filled" : "default"}

@@ -14,10 +14,9 @@
     "lint": "prettier ./frontend --write && eslint . --ext .ts,.tsx --fix"
   },
   "devDependencies": {
-    "@emotion/react": "^11.11.1",
-    "@emotion/styled": "^11.11.0",
     "@mantine/core": "^7.0.2",
     "@mantine/hooks": "^7.0.2",
+    "@tabler/icons-react": "^2.36.0",
     "@tauri-apps/api": "^1.4.0",
     "@tauri-apps/cli": "^1.4.0",
     "@types/react": "^18.2.21",
@@ -36,7 +35,6 @@
     "prettier": "^3.0.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-icons": "^4.10.1",
     "react-virtuoso": "^4.5.1",
     "typescript": "^5.2.2",
     "vite": "^4.4.9"

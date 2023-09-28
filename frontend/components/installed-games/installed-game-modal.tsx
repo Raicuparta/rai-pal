@@ -20,13 +20,13 @@ import { Fragment, useMemo, useState } from "react";
 import { GameName } from "./game-name";
 import { CommandButton } from "@components/command-button";
 import {
-	MdCopyAll,
-	MdDelete,
-	MdFolderSpecial,
-	MdInstallDesktop,
-	MdPlayArrow,
-	MdRuleFolder,
-} from "react-icons/md";
+	IconCopy,
+	IconDownload,
+	IconFolder,
+	IconFolderCog,
+	IconPlayerPlay,
+	IconTrash,
+} from "@tabler/icons-react";
 
 type Props = {
 	readonly game: Game;
@@ -66,19 +66,19 @@ export function InstalledGameModal(props: Props) {
 				) : null}
 				<Button.Group orientation="vertical">
 					<CommandButton
-						icon={<MdPlayArrow />}
+						icon={<IconPlayerPlay />}
 						onClick={() => startGame(props.game.id)}
 					>
 						Start Game
 					</CommandButton>
 					<CommandButton
-						icon={<MdFolderSpecial />}
+						icon={<IconFolder />}
 						onClick={() => openGameFolder(props.game.id)}
 					>
 						Open Game Folder
 					</CommandButton>
 					<CommandButton
-						icon={<MdRuleFolder />}
+						icon={<IconFolderCog />}
 						onClick={() => openGameModsFolder(props.game.id).catch(handleError)}
 					>
 						Open Mods Folder
@@ -100,7 +100,7 @@ export function InstalledGameModal(props: Props) {
 										.map((mod) =>
 											props.game.installedMods.includes(mod.id) ? (
 												<CommandButton
-													icon={<MdDelete />}
+													icon={<IconTrash />}
 													key={mod.name}
 													onClick={async () => {
 														await uninstallMod(props.game.id, mod.id);
@@ -111,7 +111,7 @@ export function InstalledGameModal(props: Props) {
 												</CommandButton>
 											) : (
 												<CommandButton
-													icon={<MdInstallDesktop />}
+													icon={<IconDownload />}
 													key={mod.name}
 													onClick={async () => {
 														await installMod(
@@ -140,7 +140,7 @@ export function InstalledGameModal(props: Props) {
 							{({ copied, copy }) => (
 								<Button
 									color="green"
-									leftSection={<MdCopyAll />}
+									leftSection={<IconCopy />}
 									onClick={copy}
 									size="xs"
 									variant={copied ? "filled" : "default"}

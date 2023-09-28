@@ -1,15 +1,15 @@
 import { Button } from "@mantine/core";
-import { MdFilterAltOff } from "react-icons/md";
+import { IconFilterX } from "@tabler/icons-react";
 
 type Props = {
 	readonly setFilter: (filter: undefined) => void;
 };
 
-export function ResetButton(props: Props) {
+export function FilterResetButton(props: Props) {
 	return (
 		<Button
 			color="pink"
-			leftSection={<MdFilterAltOff />}
+			leftSection={<IconFilterX />}
 			onClick={() => props.setFilter(undefined)}
 			variant="light"
 		>

@@ -1,6 +1,5 @@
 import { useAsyncCommand } from "@hooks/use-async-command";
 import {
-	Box,
 	Button,
 	ButtonProps,
 	CloseButton,
@@ -8,8 +7,9 @@ import {
 	Flex,
 	Popover,
 	Stack,
+	ThemeIcon,
 } from "@mantine/core";
-import { MdError } from "react-icons/md";
+import { IconExclamationCircle } from "@tabler/icons-react";
 
 interface Props<TResult> extends ButtonProps {
 	readonly onClick: () => Promise<TResult>;
@@ -43,11 +43,17 @@ export function CommandButton<TResult>({
 			</Popover.Target>
 			<Popover.Dropdown>
 				<Stack>
-					<Flex justify="space-between">
-						<Box
-							c="red"
-							component={MdError}
-						/>
+					<Flex
+						justify="space-between"
+						color="red"
+					>
+						<ThemeIcon
+							size="sm"
+							radius="xl"
+							color="red"
+						>
+							<IconExclamationCircle />
+						</ThemeIcon>
 						<CloseButton onClick={clearError} />
 					</Flex>
 					<Code block>{error}</Code>

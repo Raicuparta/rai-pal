@@ -15,7 +15,7 @@ import {
 	TypedSegmentedControl,
 } from "@components/installed-games/typed-segmented-control";
 import { RefreshButton } from "@components/refresh-button";
-import { ResetButton } from "@components/reset-button";
+import { FilterResetButton } from "@components/filter-reset-button";
 
 const operatingSystemOptions: SegmentedControlData<GameEngine>[] = [
 	{ label: "Any Engine", value: "" },
@@ -81,7 +81,7 @@ export function OwnedGamesPage() {
 					value={filter.text}
 				/>
 				{isFilterActive || filter.text ? (
-					<ResetButton setFilter={setFilter} />
+					<FilterResetButton setFilter={setFilter} />
 				) : null}
 				<FilterMenu active={isFilterActive}>
 					<Stack>
