@@ -61,8 +61,8 @@ pub type Map = HashMap<String, Game>;
 
 impl Game {
 	pub fn new(
-		id: String,
-		name: String,
+		id: &str,
+		name: &str,
 		discriminator: Option<String>,
 		full_path: &Path,
 		steam_launch: Option<&SteamLaunchOption>,
@@ -92,7 +92,7 @@ impl Game {
 
 		let unity_version = get_unity_version(full_path);
 
-		let installed_mods = match get_installed_mods(&id) {
+		let installed_mods = match get_installed_mods(id) {
 			Ok(mods) => mods,
 			Err(err) => {
 				println!("Failed to get installed mods for game {id}: {err}");
@@ -103,9 +103,9 @@ impl Game {
 		Some(Self {
 			architecture,
 			full_path: full_path.to_path_buf(),
-			id,
+			id: id.to_string(),
 			operating_system,
-			name,
+			name: name.to_string(),
 			discriminator,
 			scripting_backend: get_unity_scripting_backend(full_path).ok()?,
 			steam_launch: steam_launch.cloned(),

@@ -21,15 +21,14 @@ pub async fn get() -> Result<game::Map> {
 	let app_info_file = appinfo::read(&steam_dir.path().join("appcache/appinfo.vdf"))?;
 
 	let mut game_map: game::Map = HashMap::new();
+	let mut used_paths: HashSet<PathBuf> = HashSet::new();
+	let mut used_names: HashSet<String> = HashSet::new();
 
 	for library in (steam_dir.libraries()?).flatten() {
 		for app in library.apps().flatten() {
 			if let Some(app_info) = app_info_file.apps.get(&app.app_id) {
 				let mut launch_options = app_info.launch_options.clone();
 				launch_options.sort_by(|a, b| a.launch_id.cmp(&b.launch_id));
-
-				let mut used_paths: HashSet<PathBuf> = HashSet::new();
-				let mut used_names: HashSet<String> = HashSet::new();
 
 				for launch_option in launch_options {
 					let executable_id =
@@ -53,8 +52,8 @@ pub async fn get() -> Result<game::Map> {
 							};
 
 							if let Some(game) = game::Game::new(
-								executable_id.clone(),
-								name.clone(),
+								executable_id.as_str(),
+								name.as_str(),
 								discriminator,
 								full_path,
 								Some(&launch_option),
