@@ -54,14 +54,14 @@ export function deleteSteamAppinfoCache() {
     return invoke()<null>("delete_steam_appinfo_cache")
 }
 
-export type UnityScriptingBackend = "Il2Cpp" | "Mono"
-export type Game = { id: string; name: string; discriminator: string | null; fullPath: string; architecture: Architecture; scriptingBackend: UnityScriptingBackend; operatingSystem: OperatingSystem; steamLaunch: SteamLaunchOption | null; installedMods: string[]; engine: GameEngine }
+export type UnityScriptingBackend = "Il2Cpp" | "Mono" | "Unknown"
 export type Mod = { id: string; name: string; scriptingBackend: UnityScriptingBackend; path: string }
-export type SteamLaunchOption = { launchId: string; appId: number; description: string | null; executable: string | null; arguments: string | null; appType: string | null; osList: string | null; betaKey: string | null; osArch: string | null }
-export type GameEngineBrand = "Unity" | "Unreal" | "Godot" | "Unknown"
-export type OwnedGame = { id: string; name: string; installed: boolean; osList: OperatingSystem[]; engine: GameEngineBrand; releaseDate: number }
-export type GameEngineVersion = { major: number; minor: number; patch: number; suffix: string; display: string }
-export type Architecture = "Unknown" | "X64" | "X86"
-export type OperatingSystem = "Unknown" | "Linux" | "Windows"
 export type GameEngine = { brand: GameEngineBrand; version: GameEngineVersion }
+export type OperatingSystem = "Unknown" | "Linux" | "Windows"
+export type GameEngineBrand = "Unity" | "Unreal" | "Godot" | "Unknown"
+export type SteamLaunchOption = { launchId: string; appId: number; description: string | null; executable: string | null; arguments: string | null; appType: string | null; osList: string | null; betaKey: string | null; osArch: string | null }
+export type Game = { id: string; name: string; discriminator: string | null; fullPath: string; architecture: Architecture; scriptingBackend: UnityScriptingBackend; operatingSystem: OperatingSystem; steamLaunch: SteamLaunchOption | null; installedMods: string[]; engine: GameEngine }
+export type OwnedGame = { id: string; name: string; installed: boolean; osList: OperatingSystem[]; engine: GameEngineBrand; releaseDate: number }
+export type Architecture = "Unknown" | "X64" | "X86"
+export type GameEngineVersion = { major: number; minor: number; patch: number; suffix: string; display: string }
 export type ModLoaderData = { id: string; path: string; mods: Mod[] }

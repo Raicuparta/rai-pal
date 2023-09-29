@@ -1,31 +1,12 @@
-import { Badge, DefaultMantineColor, Table } from "@mantine/core";
-import {
-	Architecture,
-	Game,
-	OperatingSystem,
-	UnityScriptingBackend,
-} from "@api/bindings";
+import { Badge, Table } from "@mantine/core";
+import { Game } from "@api/bindings";
 import { GameName } from "./game-name";
-import { engineColor } from "../../util/color";
-
-type ColorRecord<T extends string = string> = Record<T, DefaultMantineColor>;
-
-const operatingSystemColor: ColorRecord<OperatingSystem> = {
-	Linux: "yellow",
-	Windows: "lime",
-	Unknown: "dark",
-} as const;
-
-const architectureColor: ColorRecord<Architecture> = {
-	X64: "blue",
-	X86: "teal",
-	Unknown: "dark",
-} as const;
-
-const scriptingBackendColor: ColorRecord<UnityScriptingBackend> = {
-	Il2Cpp: "red",
-	Mono: "grape",
-} as const;
+import {
+	architectureColor,
+	engineColor,
+	operatingSystemColor,
+	scriptingBackendColor,
+} from "../../util/color";
 
 export function InstalledGameRow(_: number, game: Game) {
 	return (

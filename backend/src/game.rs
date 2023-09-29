@@ -27,7 +27,11 @@ use crate::{
 	Result,
 };
 
-serializable_enum!(UnityScriptingBackend { Il2Cpp, Mono });
+serializable_enum!(UnityScriptingBackend {
+	Il2Cpp,
+	Mono,
+	Unknown
+});
 serializable_enum!(Architecture { Unknown, X64, X86 });
 serializable_enum!(OperatingSystem {
 	Unknown,
@@ -105,6 +109,13 @@ impl Game {
 			}
 		};
 
+		let engine = get_engine(full_path);
+		let scripting_backend = if engine.brand == GameEngineBrand::Unity {
+			get_unity_scripting_backend(full_path).unwrap_or(UnityScriptingBackend::Unknown)
+		} else {
+			UnityScriptingBackend::Unknown
+		};
+
 		Some(Self {
 			architecture,
 			full_path: full_path.to_path_buf(),
@@ -112,10 +123,10 @@ impl Game {
 			operating_system,
 			name: name.to_string(),
 			discriminator,
-			scripting_backend: get_unity_scripting_backend(full_path).ok()?,
+			scripting_backend,
 			steam_launch: steam_launch.cloned(),
 			installed_mods,
-			engine: get_engine(full_path),
+			engine,
 		})
 	}
 
@@ -218,7 +229,7 @@ fn get_engine(game_path: &Path) -> GameEngine {
 				minor: 0,
 				patch: 0,
 				suffix: String::new(),
-				display: "Unknown".to_string(),
+				display: String::new(),
 			},
 		}
 	} else {
@@ -229,7 +240,7 @@ fn get_engine(game_path: &Path) -> GameEngine {
 				minor: 0,
 				patch: 0,
 				suffix: String::new(),
-				display: "Unknown".to_string(),
+				display: String::new(),
 			},
 		}
 	}
