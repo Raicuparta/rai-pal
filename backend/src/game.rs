@@ -97,10 +97,6 @@ impl Game {
 
 		let (operating_system, architecture) = get_os_and_architecture(full_path).ok()?;
 
-		if !is_unity_exe(full_path) {
-			return None;
-		}
-
 		let installed_mods = match get_installed_mods(id) {
 			Ok(mods) => mods,
 			Err(err) => {
@@ -179,8 +175,33 @@ impl Game {
 }
 
 fn is_unity_exe(game_path: &Path) -> bool {
-	get_unity_data_path(game_path)
-		.map_or(false, |data_path| game_path.is_file() && data_path.is_dir())
+	game_path.is_file()
+		&& get_unity_data_path(game_path).map_or(false, |data_path| data_path.is_dir())
+}
+
+fn is_unreal_exe(game_path: &Path) -> bool {
+	if let Some(parent) = game_path.parent() {
+		// For cases where the registered exe points directly to the game binary:
+		if parent.ends_with("Win64") {
+			if let Some(binaries) = parent.parent() {
+				if binaries.ends_with("Binaries") {
+					return true;
+				}
+			}
+		}
+
+		// For cases where the registered exe points to a launcher at the root level:
+		if parent
+			.join("Engine")
+			.join("Binaries")
+			.join("Win64")
+			.is_dir()
+		{
+			return true;
+		}
+	}
+
+	false
 }
 
 fn get_engine(game_path: &Path) -> GameEngine {
@@ -188,6 +209,17 @@ fn get_engine(game_path: &Path) -> GameEngine {
 		GameEngine {
 			brand: GameEngineBrand::Unity,
 			version: get_unity_version(game_path),
+		}
+	} else if is_unreal_exe(game_path) {
+		GameEngine {
+			brand: GameEngineBrand::Unreal,
+			version: GameEngineVersion {
+				major: 0,
+				minor: 0,
+				patch: 0,
+				suffix: String::new(),
+				display: "Unknown".to_string(),
+			},
 		}
 	} else {
 		GameEngine {
