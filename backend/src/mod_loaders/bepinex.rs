@@ -32,8 +32,12 @@ impl ModLoaderStatic for BepInEx {
 	fn new(resources_path: &Path) -> Result<Self> {
 		let path = resources_path.join(Self::ID);
 
-		let mut mods = find_mods(&path, UnityScriptingBackend::Il2Cpp)?;
-		mods.append(&mut find_mods(&path, UnityScriptingBackend::Mono)?);
+		let mods = {
+			let mut mods = find_mods(&path, UnityScriptingBackend::Il2Cpp)?;
+			mods.append(&mut find_mods(&path, UnityScriptingBackend::Mono)?);
+			mods
+		};
+
 		Ok(Self {
 			data: ModLoaderData {
 				id: Self::ID.to_string(),
@@ -129,18 +133,21 @@ impl ModLoaderActions for BepInEx {
 }
 
 fn ensure_wine_will_load_bepinex(game_path: &Path, steam_app_id: u32) -> Result {
-	// I think since this gets rid of symbolic links then it shouldn't be possible to
-	// get stuck in an infinite loop, but who knows. If you're currently stuck in
-	// an infinite loop then I'm very sorry, hope infinity goes well for you.
-	let mut steam_apps_folder = game_path.canonicalize()?;
+	let steam_apps_folder = {
+		// I think since canonicalize gets rid of symbolic links then it shouldn't be possible to
+		// get stuck in an infinite loop, but who knows. If you're currently stuck in
+		// an infinite loop then I'm very sorry, hope infinity goes well for you.
+		let mut steam_apps_folder = game_path.canonicalize()?;
 
-	loop {
-		if steam_apps_folder.ends_with("steamapps") {
-			break;
+		loop {
+			if steam_apps_folder.ends_with("steamapps") {
+				break;
+			}
+
+			steam_apps_folder = paths::path_parent(&steam_apps_folder)?.to_path_buf();
 		}
-
-		steam_apps_folder = paths::path_parent(&steam_apps_folder)?.to_path_buf();
-	}
+		steam_apps_folder
+	};
 
 	let compat_data_dir = steam_apps_folder
 		.join("compatdata")

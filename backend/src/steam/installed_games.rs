@@ -27,8 +27,11 @@ pub async fn get() -> Result<game::Map> {
 	for library in (steam_dir.libraries()?).flatten() {
 		for app in library.apps().flatten() {
 			if let Some(app_info) = app_info_file.apps.get(&app.app_id) {
-				let mut sorted_launch_options = app_info.launch_options.clone();
-				sorted_launch_options.sort_by(|a, b| a.launch_id.cmp(&b.launch_id));
+				let sorted_launch_options = {
+					let mut sorted_launch_options = app_info.launch_options.clone();
+					sorted_launch_options.sort_by(|a, b| a.launch_id.cmp(&b.launch_id));
+					sorted_launch_options
+				};
 
 				for launch_option in sorted_launch_options {
 					let executable_id =
