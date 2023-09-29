@@ -52,8 +52,8 @@ pub async fn get() -> Result<game::Map> {
 							};
 
 							if let Some(game) = game::Game::new(
-								executable_id.as_str(),
-								name.as_str(),
+								&executable_id,
+								name,
 								discriminator,
 								full_path,
 								Some(&launch_option),

@@ -220,8 +220,8 @@ async fn update_game_info(game_id: &str, state: tauri::State<'_, AppState>) -> R
 		.ok_or_else(|| Error::GameNotFound(game_id.to_string()))?;
 
 	let game_copy = Game::new(
-		game.id.as_str(),
-		game.name.as_str(),
+		&game.id,
+		&game.name,
 		game.discriminator.clone(),
 		&game.full_path,
 		game.steam_launch.as_ref(),
