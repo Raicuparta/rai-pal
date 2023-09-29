@@ -51,7 +51,7 @@ pub trait ModLoaderStatic {
 type Map = HashMap<String, ModLoader>;
 pub type DataMap = HashMap<String, ModLoaderData>;
 
-fn create_map_entry<TModLoader: ModLoaderActions + ModLoaderStatic + 'static>(
+fn create_map_entry<TModLoader: ModLoaderActions + ModLoaderStatic>(
 	path: &Path,
 ) -> Result<(String, ModLoader)>
 where
@@ -62,7 +62,7 @@ where
 	Ok((TModLoader::ID.to_string(), mod_loader))
 }
 
-fn add_entry<TModLoader: ModLoaderActions + ModLoaderStatic + 'static>(path: &Path, map: &mut Map)
+fn add_entry<TModLoader: ModLoaderActions + ModLoaderStatic>(path: &Path, map: &mut Map)
 where
 	ModLoader: std::convert::From<TModLoader>,
 {
