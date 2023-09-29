@@ -16,6 +16,7 @@
 
 use std::{
 	future::Future,
+	ops::Deref,
 	path::PathBuf,
 	result::Result as StdResult,
 	sync::Mutex,
@@ -124,8 +125,8 @@ where
 {
 	if !ignore_cache {
 		if let Ok(mutex_guard) = mutex.lock() {
-			if let Some(data) = mutex_guard.clone() {
-				return Ok(data);
+			if let Some(data) = &*mutex_guard {
+				return Ok(data.clone());
 			}
 		}
 	}
