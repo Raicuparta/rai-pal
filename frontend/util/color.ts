@@ -1,6 +1,6 @@
 import {
 	Architecture,
-	GameEngine,
+	GameEngineBrand,
 	OperatingSystem,
 	UnityScriptingBackend,
 } from "@api/bindings";
@@ -25,8 +25,9 @@ export const scriptingBackendColor: ColorRecord<UnityScriptingBackend> = {
 	Mono: "grape",
 } as const;
 
-export const engineColor: ColorRecord<GameEngine> = {
+export const engineColor: ColorRecord<GameEngineBrand> = {
 	Unity: "cyan",
 	Unreal: "red",
 	Godot: "violet",
+	Unknown: "dark",
 } as const;

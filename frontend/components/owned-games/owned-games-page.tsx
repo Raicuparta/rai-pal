@@ -1,7 +1,7 @@
 import { Flex, Input, Stack } from "@mantine/core";
 import { OwnedGameRow } from "./owned-game-row";
 import { useOwnedGames } from "@hooks/use-backend-data";
-import { GameEngine, OwnedGame } from "@api/bindings";
+import { GameEngineBrand, OwnedGame } from "@api/bindings";
 import { useState } from "react";
 import { includesOneOf } from "../../util/filter";
 import { OwnedGameModal } from "./owned-game-modal";
@@ -18,7 +18,7 @@ import { RefreshButton } from "@components/refresh-button";
 import { FilterResetButton } from "@components/filter-reset-button";
 import { FixOwnedGamesButton } from "./fix-owned-games-button";
 
-const operatingSystemOptions: SegmentedControlData<GameEngine>[] = [
+const operatingSystemOptions: SegmentedControlData<GameEngineBrand>[] = [
 	{ label: "Any Engine", value: "" },
 	{ label: "Unity", value: "Unity" },
 	{ label: "Unreal", value: "Unreal" },
@@ -37,7 +37,7 @@ type Filter = {
 	text: string;
 	hideInstalled: boolean;
 	linuxOnly: boolean;
-	engine?: GameEngine;
+	engine?: GameEngineBrand;
 };
 
 const defaultFilter: Filter = {

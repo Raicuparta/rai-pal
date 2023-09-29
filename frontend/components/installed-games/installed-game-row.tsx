@@ -4,7 +4,6 @@ import {
 	Game,
 	OperatingSystem,
 	UnityScriptingBackend,
-	UnityVersion,
 } from "@api/bindings";
 import { GameName } from "./game-name";
 
@@ -26,16 +25,6 @@ const scriptingBackendColor: ColorRecord<UnityScriptingBackend> = {
 	Il2Cpp: "red",
 	Mono: "grape",
 } as const;
-
-const unityVersionColor = (
-	unityVersion: UnityVersion | null,
-): DefaultMantineColor => {
-	if (!unityVersion) return "dark";
-
-	if (unityVersion.isLegacy) return "orange";
-
-	return "pink";
-};
 
 export function InstalledGameRow(_: number, game: Game) {
 	return (
@@ -59,9 +48,7 @@ export function InstalledGameRow(_: number, game: Game) {
 				</Badge>
 			</Table.Td>
 			<Table.Td>
-				<Badge color={unityVersionColor(game.unityVersion)}>
-					{game.unityVersion?.display ?? "Unknown"}
-				</Badge>
+				{game.engine.brand} {game.engine.version?.display ?? "Unknown"}
 			</Table.Td>
 		</>
 	);

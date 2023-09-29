@@ -27,21 +27,32 @@ use crate::{
 	Result,
 };
 
-serializable_struct!(UnityVersion {
-	pub major: u32,
-	pub minor: u32,
-	pub patch: u32,
-	pub suffix: String,
-	pub is_legacy: bool,
-	pub display: String,
-});
-
 serializable_enum!(UnityScriptingBackend { Il2Cpp, Mono });
 serializable_enum!(Architecture { Unknown, X64, X86 });
 serializable_enum!(OperatingSystem {
 	Unknown,
 	Linux,
 	Windows
+});
+
+serializable_enum!(GameEngineBrand {
+	Unity,
+	Unreal,
+	Godot,
+	Unknown,
+});
+
+serializable_struct!(GameEngine {
+	pub brand: GameEngineBrand,
+	pub version: GameEngineVersion,
+});
+
+serializable_struct!(GameEngineVersion {
+	pub major: u32,
+	pub minor: u32,
+	pub patch: u32,
+	pub suffix: String,
+	pub display: String,
 });
 
 serializable_struct!(Game {
@@ -51,10 +62,10 @@ serializable_struct!(Game {
 	pub full_path: PathBuf,
 	pub architecture: Architecture,
 	pub scripting_backend: UnityScriptingBackend,
-	pub unity_version: UnityVersion,
 	pub operating_system: OperatingSystem,
 	pub steam_launch: Option<SteamLaunchOption>,
 	pub installed_mods: Vec<String>,
+	pub engine: GameEngine,
 });
 
 pub type Map = HashMap<String, Game>;
@@ -90,8 +101,6 @@ impl Game {
 			return None;
 		}
 
-		let unity_version = get_unity_version(full_path);
-
 		let installed_mods = match get_installed_mods(id) {
 			Ok(mods) => mods,
 			Err(err) => {
@@ -109,8 +118,8 @@ impl Game {
 			discriminator,
 			scripting_backend: get_unity_scripting_backend(full_path).ok()?,
 			steam_launch: steam_launch.cloned(),
-			unity_version,
 			installed_mods,
+			engine: get_engine(full_path),
 		})
 	}
 
@@ -169,10 +178,29 @@ impl Game {
 	}
 }
 
-fn is_unity_exe(game_exe_path: &Path) -> bool {
-	get_unity_data_path(game_exe_path).map_or(false, |data_path| {
-		game_exe_path.is_file() && data_path.is_dir()
-	})
+fn is_unity_exe(game_path: &Path) -> bool {
+	get_unity_data_path(game_path)
+		.map_or(false, |data_path| game_path.is_file() && data_path.is_dir())
+}
+
+fn get_engine(game_path: &Path) -> GameEngine {
+	if is_unity_exe(game_path) {
+		GameEngine {
+			brand: GameEngineBrand::Unity,
+			version: get_unity_version(game_path),
+		}
+	} else {
+		GameEngine {
+			brand: GameEngineBrand::Unknown,
+			version: GameEngineVersion {
+				major: 0,
+				minor: 0,
+				patch: 0,
+				suffix: String::new(),
+				display: "Unknown".to_string(),
+			},
+		}
+	}
 }
 
 fn get_unity_scripting_backend(game_exe_path: &Path) -> Result<UnityScriptingBackend> {
@@ -238,7 +266,7 @@ fn get_os_and_architecture(file_path: &Path) -> Result<(OperatingSystem, Archite
 	})?
 }
 
-fn get_unity_version(game_exe_path: &Path) -> UnityVersion {
+fn get_unity_version(game_exe_path: &Path) -> GameEngineVersion {
 	const ASSETS_WITH_VERSION: [&str; 3] = ["globalgamemanagers", "mainData", "data.unity3d"];
 
 	if let Ok(data_path) = get_unity_data_path(game_exe_path) {
@@ -254,13 +282,12 @@ fn get_unity_version(game_exe_path: &Path) -> UnityVersion {
 						let patch = version_parts.next().unwrap_or("0").parse().unwrap_or(0);
 						let suffix = version_parts.next().unwrap_or("0").to_string();
 
-						return UnityVersion {
+						return GameEngineVersion {
 							major,
 							minor,
 							patch,
 							suffix,
 							display: version,
-							is_legacy: major < 5 || (major == 5 && minor < 5),
 						};
 					}
 				}
@@ -268,13 +295,12 @@ fn get_unity_version(game_exe_path: &Path) -> UnityVersion {
 		}
 	}
 
-	UnityVersion {
+	GameEngineVersion {
 		major: 0,
 		minor: 0,
 		patch: 0,
 		suffix: String::new(),
 		display: "Unknown".to_string(),
-		is_legacy: false,
 	}
 }
 

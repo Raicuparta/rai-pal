@@ -7,8 +7,10 @@ use super::appinfo::{
 	SteamAppInfoFile,
 };
 use crate::{
-	game::OperatingSystem,
-	serializable_enum,
+	game::{
+		GameEngineBrand,
+		OperatingSystem,
+	},
 	serializable_struct,
 	Result,
 };
@@ -16,23 +18,17 @@ use crate::{
 const UNITY_STEAM_APP_IDS_URL: &str =
 	"https://raw.githubusercontent.com/Raicuparta/steam-unity-app-ids/main";
 
-serializable_enum!(GameEngine {
-	Unity,
-	Unreal,
-	Godot,
-});
-
 serializable_struct!(OwnedGame {
 	id: String,
 	name: String,
 	installed: bool,
 	os_list: HashSet<OperatingSystem>,
-	engine: GameEngine,
+	engine: GameEngineBrand,
 	release_date: i32,
 });
 
 async fn get_engine_games(
-	engine: GameEngine,
+	engine: GameEngineBrand,
 	steam_dir: &SteamDir,
 	app_info: &SteamAppInfoFile,
 ) -> Result<Vec<OwnedGame>> {
@@ -89,9 +85,9 @@ pub async fn get() -> Result<Vec<OwnedGame>> {
 	let app_info = appinfo::read(steam_dir.path())?;
 
 	Ok([
-		get_engine_games(GameEngine::Unity, &steam_dir, &app_info).await?,
-		get_engine_games(GameEngine::Unreal, &steam_dir, &app_info).await?,
-		get_engine_games(GameEngine::Godot, &steam_dir, &app_info).await?,
+		get_engine_games(GameEngineBrand::Unity, &steam_dir, &app_info).await?,
+		get_engine_games(GameEngineBrand::Unreal, &steam_dir, &app_info).await?,
+		get_engine_games(GameEngineBrand::Godot, &steam_dir, &app_info).await?,
 	]
 	.concat())
 }

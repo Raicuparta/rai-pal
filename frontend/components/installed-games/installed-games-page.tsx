@@ -64,14 +64,14 @@ const tableHeaders: TableHeader<Game, keyof Game>[] = [
 	{ id: "architecture", label: "Arch", width: 100, center: true },
 	{ id: "scriptingBackend", label: "Backend", width: 100, center: true },
 	{
-		id: "unityVersion",
-		label: "Unity",
-		width: 120,
+		id: "engine",
+		label: "Engine",
+		width: 150,
 		center: true,
 		customSort: (dataA, dataB) =>
-			dataA.unityVersion.major - dataB.unityVersion.major ||
-			dataA.unityVersion.minor - dataB.unityVersion.minor ||
-			dataA.unityVersion.patch - dataB.unityVersion.patch ||
+			dataA.engine.version.major - dataB.engine.version.major ||
+			dataA.engine.version.minor - dataB.engine.version.minor ||
+			dataA.engine.version.patch - dataB.engine.version.patch ||
 			0,
 	},
 ];

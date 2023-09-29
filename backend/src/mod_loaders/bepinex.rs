@@ -11,6 +11,7 @@ use crate::{
 	},
 	game::{
 		Game,
+		GameEngineVersion,
 		OperatingSystem,
 		UnityScriptingBackend,
 	},
@@ -77,7 +78,7 @@ impl ModLoaderActions for BepInEx {
 				.data
 				.path
 				.join("config")
-				.join(if game.unity_version.is_legacy {
+				.join(if is_legacy(&game.engine.version) {
 					"BepInEx-legacy.cfg"
 				} else {
 					"BepInEx.cfg"
@@ -133,6 +134,10 @@ impl ModLoaderActions for BepInEx {
 
 		game_mod.open_folder()
 	}
+}
+
+const fn is_legacy(version: &GameEngineVersion) -> bool {
+	version.major < 5 || (version.major == 5 && version.minor < 5)
 }
 
 fn ensure_wine_will_load_bepinex(game_path: &Path, steam_app_id: u32) -> Result {
