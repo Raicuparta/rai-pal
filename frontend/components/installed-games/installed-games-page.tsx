@@ -71,8 +71,8 @@ const engineOptions: SegmentedControlData<GameEngineBrand>[] = [
 const tableHeaders: TableHeader<Game, keyof Game>[] = [
 	{ id: "name", label: "Game", width: undefined },
 	{ id: "operatingSystem", label: "OS", width: 110, center: true },
-	{ id: "architecture", label: "Arch", width: 100, center: true },
-	{ id: "scriptingBackend", label: "Backend", width: 100, center: true },
+	{ id: "architecture", label: "Arch", width: 110, center: true },
+	{ id: "scriptingBackend", label: "Backend", width: 110, center: true },
 	{
 		id: "engine",
 		label: "Engine",
