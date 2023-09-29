@@ -29,8 +29,8 @@ impl ModLoaderStatic for MelonLoader {
 }
 
 impl ModLoaderActions for MelonLoader {
-	fn get_data(&self) -> ModLoaderData {
-		self.data.clone()
+	fn get_data(&self) -> &ModLoaderData {
+		&self.data
 	}
 
 	fn install(&self, _game: &crate::game::Game) -> crate::Result {

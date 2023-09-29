@@ -1,12 +1,24 @@
 use std::{
 	collections::HashMap,
-	path::{Path, PathBuf},
+	path::{
+		Path,
+		PathBuf,
+	},
 };
 
 use enum_dispatch::enum_dispatch;
 
-use super::{bepinex::BepInEx, melon_loader::MelonLoader};
-use crate::{game::Game, game_mod::Mod, serializable_struct, Error, Result};
+use super::{
+	bepinex::BepInEx,
+	melon_loader::MelonLoader,
+};
+use crate::{
+	game::Game,
+	game_mod::Mod,
+	serializable_struct,
+	Error,
+	Result,
+};
 
 serializable_struct!(ModLoaderData {
 	pub id: String,
@@ -25,7 +37,7 @@ pub trait ModLoaderActions {
 	fn install(&self, game: &Game) -> Result;
 	fn install_mod(&self, game: &Game, mod_id: String) -> Result;
 	fn open_mod_folder(&self, mod_id: String) -> Result;
-	fn get_data(&self) -> ModLoaderData;
+	fn get_data(&self) -> &ModLoaderData;
 }
 
 pub trait ModLoaderStatic {
@@ -82,7 +94,7 @@ pub async fn get_data_map(resources_path: &Path) -> Result<DataMap> {
 		.values()
 		.map(|mod_loader| {
 			let data = mod_loader.get_data();
-			Ok((data.id.clone(), data))
+			Ok((data.id.clone(), data.clone()))
 		})
 		.collect()
 }

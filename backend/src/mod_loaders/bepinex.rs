@@ -45,8 +45,8 @@ impl ModLoaderStatic for BepInEx {
 }
 
 impl ModLoaderActions for BepInEx {
-	fn get_data(&self) -> ModLoaderData {
-		self.data.clone()
+	fn get_data(&self) -> &ModLoaderData {
+		&self.data
 	}
 
 	fn install(&self, game: &Game) -> Result {
