@@ -5,7 +5,7 @@ macro_rules! set_up_tauri {
             #[cfg(debug_assertions)]
             return tauri_specta::ts::export_with_cfg(
                 types,
-                ExportConfiguration::default().bigint(BigIntExportBehavior::BigInt),
+                specta::ts::ExportConfiguration::default().bigint(specta::ts::BigIntExportBehavior::BigInt),
                 $types_output_path,
             );
         }) {

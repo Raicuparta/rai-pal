@@ -26,10 +26,6 @@ use mod_loaders::mod_loader::{
 	self,
 	ModLoaderActions,
 };
-use specta::ts::{
-	BigIntExportBehavior,
-	ExportConfiguration,
-};
 use steam::owned_games::OwnedGame;
 use tauri::api::dialog::message;
 
