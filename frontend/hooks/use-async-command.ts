@@ -1,7 +1,10 @@
 import { useCallback, useState } from "react";
 import { useTimeout } from "@mantine/hooks";
 
-export function useAsyncCommand<TResult>(command: () => Promise<TResult>) {
+export function useAsyncCommand<TResult>(
+	command: () => Promise<TResult>,
+	onSuccess?: (result: TResult) => void,
+) {
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState("");
 	const [success, setSuccess] = useState(false);
@@ -22,13 +25,16 @@ export function useAsyncCommand<TResult>(command: () => Promise<TResult>) {
 
 		return command()
 			.then((result) => {
+				if (onSuccess) {
+					onSuccess(result);
+				}
 				setSuccess(true);
 				startSuccessTimeout();
 				return result;
 			})
 			.catch((error) => setError(`Failed to execute command: ${error}`))
 			.finally(() => setIsLoading(false));
-	}, [clearSuccessTimeout, command, startSuccessTimeout]);
+	}, [clearSuccessTimeout, command, startSuccessTimeout, onSuccess]);
 
 	return [executeCommand, isLoading, success, error, clearError] as const;
 }

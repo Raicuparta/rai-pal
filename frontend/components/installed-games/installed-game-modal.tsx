@@ -66,19 +66,19 @@ export function InstalledGameModal(props: Props) {
 				) : null}
 				<Button.Group orientation="vertical">
 					<CommandButton
-						icon={<IconPlayerPlay />}
+						leftSection={<IconPlayerPlay />}
 						onClick={() => startGame(props.game.id)}
 					>
 						Start Game
 					</CommandButton>
 					<CommandButton
-						icon={<IconFolder />}
+						leftSection={<IconFolder />}
 						onClick={() => openGameFolder(props.game.id)}
 					>
 						Open Game Folder
 					</CommandButton>
 					<CommandButton
-						icon={<IconFolderCog />}
+						leftSection={<IconFolderCog />}
 						onClick={() => openGameModsFolder(props.game.id).catch(handleError)}
 					>
 						Open Mods Folder
@@ -100,7 +100,7 @@ export function InstalledGameModal(props: Props) {
 										.map((mod) =>
 											props.game.installedMods.includes(mod.id) ? (
 												<CommandButton
-													icon={<IconTrash />}
+													leftSection={<IconTrash />}
 													key={mod.name}
 													onClick={async () => {
 														await uninstallMod(props.game.id, mod.id);
@@ -111,7 +111,7 @@ export function InstalledGameModal(props: Props) {
 												</CommandButton>
 											) : (
 												<CommandButton
-													icon={<IconDownload />}
+													leftSection={<IconDownload />}
 													key={mod.name}
 													onClick={async () => {
 														await installMod(

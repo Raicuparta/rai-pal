@@ -18,7 +18,7 @@ use crate::{
 pub async fn get() -> Result<game::Map> {
 	let steam_dir = SteamDir::locate()?;
 
-	let app_info_file = appinfo::read(&steam_dir.path().join("appcache/appinfo.vdf"))?;
+	let app_info_file = appinfo::read(&steam_dir.path())?;
 
 	let mut game_map: game::Map = HashMap::new();
 	let mut used_paths: HashSet<PathBuf> = HashSet::new();

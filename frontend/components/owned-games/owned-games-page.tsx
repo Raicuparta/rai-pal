@@ -1,4 +1,4 @@
-import { Flex, Input, Stack, Text } from "@mantine/core";
+import { Flex, Input, Stack } from "@mantine/core";
 import { OwnedGameRow } from "./owned-game-row";
 import { useOwnedGames } from "@hooks/use-backend-data";
 import { GameEngine, OwnedGame } from "@api/bindings";
@@ -16,6 +16,7 @@ import {
 } from "@components/installed-games/typed-segmented-control";
 import { RefreshButton } from "@components/refresh-button";
 import { FilterResetButton } from "@components/filter-reset-button";
+import { FixOwnedGamesButton } from "./fix-owned-games-button";
 
 const operatingSystemOptions: SegmentedControlData<GameEngine>[] = [
 	{ label: "Any Engine", value: "" },
@@ -74,6 +75,7 @@ export function OwnedGamesPage() {
 				/>
 			) : null}
 			<Flex gap="md">
+				<FixOwnedGamesButton />
 				<Input
 					onChange={(event) => setFilter({ text: event.target.value })}
 					placeholder="Find..."
@@ -109,10 +111,6 @@ export function OwnedGamesPage() {
 					onClick={refreshOwnedGames}
 				/>
 			</Flex>
-			<Text>
-				These are the Steam games you own (maybe?) that use the Unity engine
-				(maybe??). {ownedGames.length} owned games.
-			</Text>
 			<VirtualizedTable
 				data={filteredGames}
 				headerItems={tableHeaders}

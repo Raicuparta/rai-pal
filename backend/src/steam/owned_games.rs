@@ -86,7 +86,7 @@ async fn get_engine_games(
 
 pub async fn get() -> Result<Vec<OwnedGame>> {
 	let steam_dir = SteamDir::locate()?;
-	let app_info = appinfo::read(&steam_dir.path().join("appcache/appinfo.vdf"))?;
+	let app_info = appinfo::read(steam_dir.path())?;
 
 	Ok([
 		get_engine_games(GameEngine::Unity, &steam_dir, &app_info).await?,

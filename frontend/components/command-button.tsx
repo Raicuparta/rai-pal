@@ -14,16 +14,12 @@ import { IconExclamationCircle } from "@tabler/icons-react";
 
 interface Props<TResult> extends ButtonProps {
 	readonly onClick: () => Promise<TResult>;
-	readonly icon: React.ReactNode;
+	readonly onSuccess?: () => void;
 }
 
-export function CommandButton<TResult>({
-	onClick,
-	icon,
-	...props
-}: Props<TResult>) {
+export function CommandButton<TResult>({ onClick, ...props }: Props<TResult>) {
 	const [executeCommand, isLoading, success, error, clearError] =
-		useAsyncCommand(onClick);
+		useAsyncCommand(onClick, props.onSuccess);
 
 	const isLongLoading = useLongLoading(isLoading);
 
@@ -36,11 +32,9 @@ export function CommandButton<TResult>({
 			<Popover.Target>
 				<Button
 					color={error ? "red" : "green"}
-					justify="start"
 					loading={isLongLoading}
 					variant={success || error ? "filled" : "default"}
 					{...props}
-					leftSection={icon}
 					onClick={executeCommand}
 				/>
 			</Popover.Target>
@@ -59,7 +53,7 @@ export function CommandButton<TResult>({
 						</ThemeIcon>
 						<CloseButton onClick={clearError} />
 					</Flex>
-					<Code block>{error}</Code>
+					<Code>{error}</Code>
 				</Stack>
 			</Popover.Dropdown>
 		</Popover>

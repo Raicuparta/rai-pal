@@ -319,7 +319,15 @@ fn read_string<R: std::io::Read>(reader: &mut R, wide: bool) -> Result<String> {
 	}
 }
 
-pub fn read(path: &Path) -> Result<SteamAppInfoFile> {
-	let mut appinfo_file = BufReader::new(fs::File::open(path)?);
+fn get_path(steam_path: &Path) -> PathBuf {
+	steam_path.join("appcache/appinfo.vdf")
+}
+
+pub fn delete(steam_path: &Path) -> Result {
+	Ok(fs::remove_file(get_path(steam_path))?)
+}
+
+pub fn read(steam_path: &Path) -> Result<SteamAppInfoFile> {
+	let mut appinfo_file = BufReader::new(fs::File::open(get_path(steam_path))?);
 	SteamAppInfoFile::load(&mut appinfo_file)
 }

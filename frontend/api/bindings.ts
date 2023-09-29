@@ -50,6 +50,10 @@ export function updateGameInfo(gameId: string) {
     return invoke()<{ [key: string]: Game }>("update_game_info", { gameId })
 }
 
+export function deleteSteamAppinfoCache() {
+    return invoke()<null>("delete_steam_appinfo_cache")
+}
+
 export type UnityScriptingBackend = "Il2Cpp" | "Mono"
 export type Mod = { id: string; name: string; scriptingBackend: UnityScriptingBackend; path: string }
 export type Game = { id: string; name: string; discriminator: string | null; fullPath: string; architecture: Architecture; scriptingBackend: UnityScriptingBackend; unityVersion: UnityVersion; operatingSystem: OperatingSystem; steamLaunch: SteamLaunchOption | null; installedMods: string[] }

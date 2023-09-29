@@ -27,6 +27,7 @@ use mod_loaders::mod_loader::{
 	ModLoaderActions,
 };
 use steam::owned_games::OwnedGame;
+use steamlocate::SteamDir;
 use tauri::api::dialog::message;
 
 mod files;
@@ -262,6 +263,13 @@ async fn uninstall_mod(game_id: &str, mod_id: &str, state: tauri::State<'_, AppS
 	game.uninstall_mod(mod_id)
 }
 
+#[tauri::command]
+#[specta::specta]
+async fn delete_steam_appinfo_cache() -> Result {
+	let steam_dir = SteamDir::locate()?;
+	steam::appinfo::delete(steam_dir.path())
+}
+
 fn main() {
 	// Since I'm making all exposed functions async, panics won't crash anything important, I think.
 	// So I can just catch panics here and show a system message with the error.
@@ -291,7 +299,8 @@ fn main() {
 			open_game_mods_folder,
 			start_game,
 			open_mod_folder,
-			update_game_info
+			update_game_info,
+			delete_steam_appinfo_cache
 		]
 	);
 }
