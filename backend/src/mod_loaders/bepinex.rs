@@ -99,13 +99,13 @@ impl ModLoaderActions for BepInEx {
 		Ok(())
 	}
 
-	fn install_mod(&self, game: &Game, mod_id: String) -> Result {
+	fn install_mod(&self, game: &Game, mod_id: &str) -> Result {
 		let game_mod = self
 			.data
 			.mods
 			.iter()
 			.find(|game_mod| game_mod.id == mod_id)
-			.ok_or_else(|| Error::ModNotFound(mod_id))?;
+			.ok_or_else(|| Error::ModNotFound(mod_id.to_string()))?;
 
 		self.install(game)?;
 		game_mod.install(
@@ -116,13 +116,13 @@ impl ModLoaderActions for BepInEx {
 		)
 	}
 
-	fn open_mod_folder(&self, mod_id: String) -> Result {
+	fn open_mod_folder(&self, mod_id: &str) -> Result {
 		let game_mod = self
 			.data
 			.mods
 			.iter()
 			.find(|game_mod| game_mod.id == mod_id)
-			.ok_or_else(|| Error::ModNotFound(mod_id))?;
+			.ok_or_else(|| Error::ModNotFound(mod_id.to_string()))?;
 
 		game_mod.open_folder()
 	}

@@ -37,11 +37,11 @@ impl ModLoaderActions for MelonLoader {
 		todo!()
 	}
 
-	fn install_mod(&self, _game: &crate::game::Game, _mod_idd: String) -> crate::Result {
+	fn install_mod(&self, _game: &crate::game::Game, _mod_idd: &str) -> crate::Result {
 		todo!()
 	}
 
-	fn open_mod_folder(&self, _mod_id: String) -> crate::Result {
+	fn open_mod_folder(&self, _mod_id: &str) -> crate::Result {
 		todo!()
 	}
 }

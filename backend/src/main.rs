@@ -172,56 +172,52 @@ async fn get_mod_loaders(
 
 #[tauri::command]
 #[specta::specta]
-async fn open_game_folder(game_id: String, state: tauri::State<'_, AppState>) -> Result {
+async fn open_game_folder(game_id: &str, state: tauri::State<'_, AppState>) -> Result {
 	let game_map = get_game_map(state, false).await?;
 	let game = game_map
-		.get(&game_id)
-		.ok_or_else(|| Error::GameNotFound(game_id))?;
+		.get(game_id)
+		.ok_or_else(|| Error::GameNotFound(game_id.to_string()))?;
 
 	game.open_game_folder()
 }
 
 #[tauri::command]
 #[specta::specta]
-async fn open_game_mods_folder(game_id: String, state: tauri::State<'_, AppState>) -> Result {
+async fn open_game_mods_folder(game_id: &str, state: tauri::State<'_, AppState>) -> Result {
 	let game_map = get_game_map(state, false).await?;
 	let game = game_map
-		.get(&game_id)
-		.ok_or_else(|| Error::GameNotFound(game_id))?;
+		.get(game_id)
+		.ok_or_else(|| Error::GameNotFound(game_id.to_string()))?;
 
 	game.open_mods_folder()
 }
 
 #[tauri::command]
 #[specta::specta]
-async fn open_mod_folder(
-	mod_loader_id: String,
-	mod_id: String,
-	handle: tauri::AppHandle,
-) -> Result {
-	let mod_loader = mod_loader::get(&paths::resources_path(&handle)?, &mod_loader_id)?;
+async fn open_mod_folder(mod_loader_id: &str, mod_id: &str, handle: tauri::AppHandle) -> Result {
+	let mod_loader = mod_loader::get(&paths::resources_path(&handle)?, mod_loader_id)?;
 
 	mod_loader.open_mod_folder(mod_id)
 }
 
 #[tauri::command]
 #[specta::specta]
-async fn start_game(game_id: String, state: tauri::State<'_, AppState>) -> Result {
+async fn start_game(game_id: &str, state: tauri::State<'_, AppState>) -> Result {
 	let game_map = get_game_map(state, false).await?;
 	let game = game_map
-		.get(&game_id)
-		.ok_or_else(|| Error::GameNotFound(game_id))?;
+		.get(game_id)
+		.ok_or_else(|| Error::GameNotFound(game_id.to_string()))?;
 
 	game.start()
 }
 
 #[tauri::command]
 #[specta::specta]
-async fn update_game_info(game_id: String, state: tauri::State<'_, AppState>) -> Result<game::Map> {
+async fn update_game_info(game_id: &str, state: tauri::State<'_, AppState>) -> Result<game::Map> {
 	let mut game_map = get_game_map(state, false).await?;
 	let game = game_map
-		.get(&game_id)
-		.ok_or_else(|| Error::GameNotFound(game_id))?;
+		.get(game_id)
+		.ok_or_else(|| Error::GameNotFound(game_id.to_string()))?;
 
 	let game_copy = Game::new(
 		game.id.as_str(),
@@ -240,35 +236,31 @@ async fn update_game_info(game_id: String, state: tauri::State<'_, AppState>) ->
 #[tauri::command]
 #[specta::specta]
 async fn install_mod(
-	mod_loader_id: String,
-	mod_id: String,
-	game_id: String,
+	mod_loader_id: &str,
+	mod_id: &str,
+	game_id: &str,
 	state: tauri::State<'_, AppState>,
 	handle: tauri::AppHandle,
 ) -> Result {
 	let game_map = get_game_map(state, false).await?;
 	let game = game_map
-		.get(&game_id)
-		.ok_or_else(|| Error::GameNotFound(game_id))?;
+		.get(game_id)
+		.ok_or_else(|| Error::GameNotFound(game_id.to_string()))?;
 
-	let mod_loader = mod_loader::get(&paths::resources_path(&handle)?, &mod_loader_id)?;
+	let mod_loader = mod_loader::get(&paths::resources_path(&handle)?, mod_loader_id)?;
 
-	mod_loader.install_mod(game, mod_id.clone())
+	mod_loader.install_mod(game, mod_id)
 }
 
 #[tauri::command]
 #[specta::specta]
-async fn uninstall_mod(
-	game_id: String,
-	mod_id: String,
-	state: tauri::State<'_, AppState>,
-) -> Result {
+async fn uninstall_mod(game_id: &str, mod_id: &str, state: tauri::State<'_, AppState>) -> Result {
 	let game_map = get_game_map(state, false).await?;
 	let game = game_map
-		.get(&game_id)
-		.ok_or_else(|| Error::GameNotFound(game_id))?;
+		.get(game_id)
+		.ok_or_else(|| Error::GameNotFound(game_id.to_string()))?;
 
-	game.uninstall_mod(&mod_id)
+	game.uninstall_mod(mod_id)
 }
 
 fn main() {
