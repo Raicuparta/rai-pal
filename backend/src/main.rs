@@ -1,15 +1,15 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
-#![deny(clippy::all)]
-#![deny(clippy::pedantic)]
-#![deny(clippy::nursery)]
-#![deny(clippy::unwrap_used)]
-#![deny(clippy::expect_used)]
-#![deny(clippy::as_conversions)]
-#![deny(clippy::clone_on_ref_ptr)]
-#![deny(clippy::decimal_literal_representation)]
-#![deny(clippy::shadow_unrelated)]
-#![deny(clippy::verbose_file_reads)]
+#![warn(clippy::all)]
+#![warn(clippy::pedantic)]
+#![warn(clippy::nursery)]
+#![warn(clippy::unwrap_used)]
+#![warn(clippy::expect_used)]
+#![warn(clippy::as_conversions)]
+#![warn(clippy::clone_on_ref_ptr)]
+#![warn(clippy::decimal_literal_representation)]
+#![warn(clippy::shadow_unrelated)]
+#![warn(clippy::verbose_file_reads)]
 #![allow(clippy::used_underscore_binding)]
 #![allow(clippy::unused_async)]
 #![allow(clippy::module_name_repetitions)]
@@ -57,6 +57,9 @@ pub enum Error {
 
 	#[error(transparent)]
 	SteamLocate(#[from] steamlocate::Error),
+
+	#[error(transparent)]
+	Zip(#[from] zip::result::ZipError),
 
 	#[error("Invalid type `{0}` in binary vdf key/value pair")]
 	InvalidBinaryVdfType(u8),

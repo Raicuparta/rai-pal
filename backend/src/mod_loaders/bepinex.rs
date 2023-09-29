@@ -5,7 +5,10 @@ use std::{
 
 use super::mod_loader::ModLoaderStatic;
 use crate::{
-	files::copy_dir_all,
+	files::{
+		copy_dir_all,
+		unzip,
+	},
 	game::{
 		Game,
 		OperatingSystem,
@@ -59,11 +62,11 @@ impl ModLoaderActions for BepInEx {
 			.join(game.operating_system.to_string())
 			.join(game.architecture.to_string());
 
-		let mod_files_folder = architecture_path.join("mod-files");
+		let mod_loader_archive = architecture_path.join("mod-loader.zip");
 		let folder_to_copy_to_game = architecture_path.join("copy-to-game");
 		let game_data_folder = &game.get_installed_mods_folder()?;
 
-		copy_dir_all(mod_files_folder, game_data_folder)?;
+		unzip(&mod_loader_archive, game_data_folder)?;
 
 		let game_folder = paths::path_parent(&game.full_path)?;
 
