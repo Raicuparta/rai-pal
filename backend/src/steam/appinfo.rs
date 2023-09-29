@@ -1,3 +1,6 @@
+// This code is based on https://github.com/drguildo/vdfr
+// It has been adapted to fit the needs of this project.
+
 use std::{
 	collections::HashMap,
 	fs,
