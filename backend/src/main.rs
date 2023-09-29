@@ -16,7 +16,6 @@
 
 use std::{
 	future::Future,
-	ops::Deref,
 	path::PathBuf,
 	result::Result as StdResult,
 	sync::Mutex,
