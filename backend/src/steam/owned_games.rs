@@ -51,10 +51,15 @@ async fn get_engine_games(
 			let os_list: HashSet<_> = app_info
 				.launch_options
 				.iter()
-				.filter_map(|launch| match launch.clone().os_list?.as_str() {
-					"linux" => Some(OperatingSystem::Linux),
-					"windows" => Some(OperatingSystem::Windows),
-					_ => None,
+				.filter_map(|launch| {
+					launch
+						.os_list
+						.as_ref()
+						.and_then(|os_list| match os_list.as_str() {
+							"linux" => Some(OperatingSystem::Linux),
+							"windows" => Some(OperatingSystem::Windows),
+							_ => None,
+						})
 				})
 				.collect();
 
