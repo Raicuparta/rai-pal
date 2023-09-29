@@ -18,12 +18,15 @@ tauri-build = { version = "1.4", features = [] }
 # The fix is this: https://github.com/rust-lang/glob/pull/112
 glob = { git = "https://github.com/rust-lang/glob", version = "0.3.1" }
 
+# Using the git version because I need a fix that isn't on the normal version.
+# Something about the way the old version parses the manifests fails for some games.
+steamlocate = { git = "https://github.com/WilliamVenner/steamlocate-rs", branch = "dev-v2.0" }
+
 specta = "1.0.5"
 tauri-specta = { version = "1.0.2", features = ["typescript"] }
 serde = { version = "1.0", features = ["derive"] }
 byteorder = "1.4.3"
 keyvalues-serde = "0.1.0"
-steamlocate = { git = "https://github.com/WilliamVenner/steamlocate-rs", branch = "dev-v2.0" }
 tauri = { version = "1.4.1", features = ["shell-open", "dialog"] }
 reqwest = "0.11.20"
 goblin = "0.7.1"
