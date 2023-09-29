@@ -35,7 +35,7 @@ type Props = {
 };
 
 export function InstalledGameModal(props: Props) {
-	const [modLoaders] = useModLoaders();
+	const [modLoaderMap] = useModLoaders();
 	const [error, setError] = useState("");
 
 	const handleError = (error: unknown) => {
@@ -45,6 +45,17 @@ export function InstalledGameModal(props: Props) {
 	const debugData = useMemo(
 		() => JSON.stringify(props.game, null, 2),
 		[props.game],
+	);
+
+	const modLoaders = useMemo(
+		() =>
+			Object.values(modLoaderMap).map((modLoader) => ({
+				...modLoader,
+				mods: modLoader.mods.filter(
+					(mod) => mod.scriptingBackend === props.game.scriptingBackend,
+				),
+			})),
+		[modLoaderMap, props.game.scriptingBackend],
 	);
 
 	return (
@@ -84,10 +95,8 @@ export function InstalledGameModal(props: Props) {
 						Open Mods Folder
 					</CommandButton>
 				</Button.Group>
-				{Object.values(modLoaders).map(
+				{modLoaders.map(
 					(modLoader) =>
-						// TODO need to filter these mods before checking the length.
-						// Because we only show mods compatible with this game.
 						modLoader.mods.length > 0 && (
 							<Fragment key={modLoader.id}>
 								<label>{modLoader.id} mods</label>
