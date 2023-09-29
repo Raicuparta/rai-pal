@@ -68,7 +68,7 @@ async fn get_engine_games(
 				.unwrap_or_default();
 
 			Some(OwnedGame {
-				id: app_id.to_owned(),
+				id: app_id.to_string(),
 				name: app_info.name.clone(),
 				installed,
 				os_list,

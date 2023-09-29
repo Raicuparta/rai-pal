@@ -103,7 +103,7 @@ impl Game {
 
 		Some(Self {
 			architecture,
-			full_path: full_path.to_owned(),
+			full_path: full_path.to_path_buf(),
 			id,
 			operating_system,
 			mod_files_path: String::new(),
