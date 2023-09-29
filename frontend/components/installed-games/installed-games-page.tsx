@@ -6,6 +6,7 @@ import { InstalledGameModal } from "./installed-game-modal";
 import {
 	Architecture,
 	Game,
+	GameEngineBrand,
 	OperatingSystem,
 	UnityScriptingBackend,
 } from "@api/bindings";
@@ -26,6 +27,7 @@ type Filter = {
 	operatingSystem?: OperatingSystem;
 	architecture?: Architecture;
 	scriptingBackend?: UnityScriptingBackend;
+	engine?: GameEngineBrand;
 };
 
 const defaultFilter: Filter = {
@@ -38,7 +40,8 @@ const filterGame = (game: Game, filter: Filter) =>
 	(!filter.operatingSystem ||
 		game.operatingSystem === filter.operatingSystem) &&
 	(!filter.scriptingBackend ||
-		game.scriptingBackend === filter.scriptingBackend);
+		game.scriptingBackend === filter.scriptingBackend) &&
+	(!filter.engine || game.engine.brand === filter.engine);
 
 const operatingSystemOptions: SegmentedControlData<OperatingSystem>[] = [
 	{ label: "Any OS", value: "" },
@@ -58,6 +61,13 @@ const scriptingBackendOptions: SegmentedControlData<UnityScriptingBackend>[] = [
 	{ label: "Mono", value: "Mono" },
 ];
 
+const engineOptions: SegmentedControlData<GameEngineBrand>[] = [
+	{ label: "Any Engine", value: "" },
+	{ label: "Unity", value: "Unity" },
+	{ label: "Unreal", value: "Unreal" },
+	{ label: "Godot", value: "Godot" },
+];
+
 const tableHeaders: TableHeader<Game, keyof Game>[] = [
 	{ id: "name", label: "Game", width: undefined },
 	{ id: "operatingSystem", label: "OS", width: 110, center: true },
@@ -69,6 +79,7 @@ const tableHeaders: TableHeader<Game, keyof Game>[] = [
 		width: 150,
 		center: true,
 		customSort: (dataA, dataB) =>
+			dataA.engine.brand.localeCompare(dataB.engine.brand) ||
 			dataA.engine.version.major - dataB.engine.version.major ||
 			dataA.engine.version.minor - dataB.engine.version.minor ||
 			dataA.engine.version.patch - dataB.engine.version.patch ||
@@ -97,7 +108,10 @@ export function InstalledGamesPage() {
 	);
 
 	const isFilterActive = Boolean(
-		filter.architecture || filter.operatingSystem || filter.scriptingBackend,
+		filter.architecture ||
+			filter.operatingSystem ||
+			filter.scriptingBackend ||
+			filter.engine,
 	);
 
 	return (
@@ -128,6 +142,11 @@ export function InstalledGamesPage() {
 							data={scriptingBackendOptions}
 							onChange={(scriptingBackend) => setFilter({ scriptingBackend })}
 							value={filter.scriptingBackend}
+						/>
+						<TypedSegmentedControl
+							data={engineOptions}
+							onChange={(engine) => setFilter({ engine })}
+							value={filter.engine}
 						/>
 					</Stack>
 				</FilterMenu>

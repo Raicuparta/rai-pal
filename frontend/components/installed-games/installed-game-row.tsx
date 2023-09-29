@@ -6,6 +6,7 @@ import {
 	UnityScriptingBackend,
 } from "@api/bindings";
 import { GameName } from "./game-name";
+import { engineColor } from "../../util/color";
 
 type ColorRecord<T extends string = string> = Record<T, DefaultMantineColor>;
 
@@ -48,7 +49,9 @@ export function InstalledGameRow(_: number, game: Game) {
 				</Badge>
 			</Table.Td>
 			<Table.Td>
-				{game.engine.brand} {game.engine.version?.display ?? "Unknown"}
+				<Badge color={engineColor[game.engine.brand]}>
+					{game.engine.brand} {game.engine.version?.display ?? "Unknown"}
+				</Badge>
 			</Table.Td>
 		</>
 	);

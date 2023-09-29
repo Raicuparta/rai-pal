@@ -18,7 +18,7 @@ import { RefreshButton } from "@components/refresh-button";
 import { FilterResetButton } from "@components/filter-reset-button";
 import { FixOwnedGamesButton } from "./fix-owned-games-button";
 
-const operatingSystemOptions: SegmentedControlData<GameEngineBrand>[] = [
+const engineOptions: SegmentedControlData<GameEngineBrand>[] = [
 	{ label: "Any Engine", value: "" },
 	{ label: "Unity", value: "Unity" },
 	{ label: "Unreal", value: "Unreal" },
@@ -88,7 +88,7 @@ export function OwnedGamesPage() {
 				<FilterMenu active={isFilterActive}>
 					<Stack>
 						<TypedSegmentedControl
-							data={operatingSystemOptions}
+							data={engineOptions}
 							onChange={(engine) => setFilter({ engine })}
 							value={filter.engine}
 						/>
