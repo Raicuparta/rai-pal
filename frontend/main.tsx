@@ -6,6 +6,7 @@ import { theme } from "./theme";
 import { preventEvents } from "./prevent-events";
 
 import "@mantine/core/styles.css";
+import "@mantine/code-highlight/styles.css";
 import "./global-styles/global.css";
 import "./global-styles/mantine-overrides.css";
 import "./global-styles/scroll-bar.css";

@@ -1,12 +1,4 @@
-import {
-	Alert,
-	Button,
-	Code,
-	CopyButton,
-	Flex,
-	Modal,
-	Stack,
-} from "@mantine/core";
+import { Alert, Button, CopyButton, Flex, Modal, Stack } from "@mantine/core";
 import { useModLoaders } from "@hooks/use-backend-data";
 import {
 	Game,
@@ -27,6 +19,7 @@ import {
 	IconPlayerPlay,
 	IconTrash,
 } from "@tabler/icons-react";
+import { CodeHighlight } from "@mantine/code-highlight";
 
 type Props = {
 	readonly game: Game;
@@ -159,7 +152,10 @@ export function InstalledGameModal(props: Props) {
 							)}
 						</CopyButton>
 					</Flex>
-					<Code block>{debugData}</Code>
+					<CodeHighlight
+						code={debugData}
+						language="json"
+					/>
 				</Stack>
 			</Stack>
 		</Modal>

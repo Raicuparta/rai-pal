@@ -17,3 +17,7 @@
 		height: 1.1em;
 	}
 }
+
+.mantine-CodeHighlight-root {
+	border-radius: var(--mantine-radius-md);
+}

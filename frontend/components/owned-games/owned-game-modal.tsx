@@ -1,9 +1,10 @@
-import { Button, Code, CopyButton, Flex, Modal, Stack } from "@mantine/core";
+import { Button, Modal, Stack } from "@mantine/core";
 import { OwnedGame } from "@api/bindings";
 import { open } from "@tauri-apps/api/shell";
 import { CommandButton } from "@components/command-button";
 import { useMemo } from "react";
-import { IconBrowser, IconCopy, IconDownload } from "@tabler/icons-react";
+import { IconBrowser, IconDownload } from "@tabler/icons-react";
+import { CodeHighlight } from "@mantine/code-highlight";
 
 type Props = {
 	readonly selectedGame: OwnedGame;
@@ -41,26 +42,11 @@ export function OwnedGameModal(props: Props) {
 					</CommandButton>
 				</Button.Group>
 				<Stack gap="xs">
-					<Flex
-						align="end"
-						justify="space-between"
-					>
-						<label>Debug Data</label>
-						<CopyButton value={debugData}>
-							{({ copied, copy }) => (
-								<Button
-									color="green"
-									leftSection={<IconCopy />}
-									onClick={copy}
-									size="xs"
-									variant={copied ? "filled" : "default"}
-								>
-									Copy
-								</Button>
-							)}
-						</CopyButton>
-					</Flex>
-					<Code block>{debugData}</Code>
+					<label>Debug Data</label>
+					<CodeHighlight
+						code={debugData}
+						language="json"
+					/>
 				</Stack>
 			</Stack>
 		</Modal>

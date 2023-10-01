@@ -43,5 +43,8 @@
     "useTabs": true,
     "singleAttributePerLine": true,
     "quoteProps": "as-needed"
+  },
+  "dependencies": {
+    "@mantine/code-highlight": "^7.1.0"
   }
 }
