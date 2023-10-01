@@ -11,17 +11,19 @@ export function useBackendData<TData>(
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState("");
 
+	const clearError = useCallback(() => setError(""), []);
+
 	const updateData = useCallback(
 		(ignoreCache = false) => {
 			setIsLoading(true);
-			setError("");
+			clearError();
 
 			apiFunction(ignoreCache)
 				.then(setData)
 				.catch((error) => setError(`Failed to retrieve data: ${error}`))
 				.finally(() => setIsLoading(false));
 		},
-		[apiFunction],
+		[apiFunction, clearError],
 	);
 
 	const refresh = useCallback(() => {
@@ -32,7 +34,7 @@ export function useBackendData<TData>(
 		updateData();
 	}, [updateData]);
 
-	return [data, isLoading, refresh, error] as const;
+	return [data, isLoading, refresh, error, clearError] as const;
 }
 
 export const useOwnedGames = () => useBackendData(getOwnedGames, []);

@@ -93,6 +93,9 @@ pub enum Error {
 
 	#[error("Failed to create copy of game with ID `{0}`")]
 	GameCopyFailed(String),
+
+	#[error("Failed to find Steam appinfo.vdf file in path `{0}`. Try restarting Steam.")]
+	AppInfoNotFound(String),
 }
 
 impl serde::Serialize for Error {

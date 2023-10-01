@@ -8,15 +8,20 @@ export const useGameMap = () => {
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState("");
 
-	const updateData = useCallback((ignoreCache = false) => {
-		setIsLoading(true);
-		setError("");
+	const clearError = useCallback(() => setError(""), []);
 
-		getGameMap(ignoreCache)
-			.then(setData)
-			.catch((error) => setError(`Failed to retrieve data: ${error}`))
-			.finally(() => setIsLoading(false));
-	}, []);
+	const updateData = useCallback(
+		(ignoreCache = false) => {
+			setIsLoading(true);
+			clearError();
+
+			getGameMap(ignoreCache)
+				.then(setData)
+				.catch((error) => setError(`Failed to retrieve data: ${error}`))
+				.finally(() => setIsLoading(false));
+		},
+		[clearError],
+	);
 
 	const refresh = useCallback(() => {
 		updateData(true);
@@ -36,5 +41,5 @@ export const useGameMap = () => {
 		updateData();
 	}, [updateData]);
 
-	return [data, isLoading, refresh, refreshGame, error] as const;
+	return [data, isLoading, refresh, refreshGame, error, clearError] as const;
 };

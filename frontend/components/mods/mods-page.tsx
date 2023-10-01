@@ -5,17 +5,24 @@ import { openModFolder } from "@api/bindings";
 import { TableContainer } from "@components/table/table-container";
 import { scriptingBackendColor } from "../../util/color";
 import { RefreshButton } from "@components/refresh-button";
+import { ErrorPopover } from "@components/error-popover";
 
 export function ModsPage() {
-	const [modLoaders, isLoading, refreshMods] = useModLoaders();
+	const [modLoaders, isLoading, refreshMods, error, clearError] =
+		useModLoaders();
 
 	return (
 		<Stack h="100%">
 			<Flex justify="end">
-				<RefreshButton
-					loading={isLoading}
-					onClick={refreshMods}
-				/>
+				<ErrorPopover
+					error={error}
+					clearError={clearError}
+				>
+					<RefreshButton
+						loading={isLoading}
+						onClick={refreshMods}
+					/>
+				</ErrorPopover>
 			</Flex>
 			<TableContainer>
 				<Table highlightOnHover>

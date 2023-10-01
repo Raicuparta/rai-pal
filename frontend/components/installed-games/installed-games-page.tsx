@@ -1,4 +1,4 @@
-import { Alert, Flex, Stack } from "@mantine/core";
+import { Flex, Stack } from "@mantine/core";
 import { useMemo, useState } from "react";
 import { includesOneOf } from "../../util/filter";
 import { InstalledGameRow } from "./installed-game-row";
@@ -22,6 +22,7 @@ import { useGameMap } from "@hooks/use-game-map";
 import { RefreshButton } from "@components/refresh-button";
 import { FilterResetButton } from "@components/filter-reset-button";
 import { SearchInput } from "@components/search-input";
+import { ErrorPopover } from "@components/error-popover";
 
 interface InstalledGamesFilter extends Filter {
 	search: string;
@@ -91,7 +92,8 @@ const tableHeaders: TableHeader<Game, keyof Game>[] = [
 export type TableSortMethod = (gameA: Game, gameB: Game) => number;
 
 export function InstalledGamesPage() {
-	const [gameMap, isLoading, refreshGameMap, refreshGame, error] = useGameMap();
+	const [gameMap, isLoading, refreshGameMap, refreshGame, error, clearError] =
+		useGameMap();
 	const [selectedGameId, setSelectedGameId] = useState<string>();
 
 	const games = useMemo(() => Object.values(gameMap), [gameMap]);
@@ -147,19 +149,16 @@ export function InstalledGamesPage() {
 						/>
 					</Stack>
 				</FilterMenu>
-				<RefreshButton
-					loading={isLoading}
-					onClick={refreshGameMap}
-				/>
-			</Flex>
-			{error ? (
-				<Alert
-					color="red"
-					style={{ overflow: "auto", flex: 1 }}
+				<ErrorPopover
+					error={error}
+					clearError={clearError}
 				>
-					<pre>{error}</pre>
-				</Alert>
-			) : null}
+					<RefreshButton
+						loading={isLoading}
+						onClick={refreshGameMap}
+					/>
+				</ErrorPopover>
+			</Flex>
 			{selectedGame ? (
 				<InstalledGameModal
 					game={selectedGame}

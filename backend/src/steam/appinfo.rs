@@ -328,6 +328,15 @@ pub fn delete(steam_path: &Path) -> Result {
 }
 
 pub fn read(steam_path: &Path) -> Result<SteamAppInfoFile> {
+	let appinfo_path = &get_path(steam_path);
+	fs::File::open(appinfo_path).map_err(|err| {
+		if err.kind() == std::io::ErrorKind::NotFound {
+			Error::AppInfoNotFound(appinfo_path.to_string_lossy().to_string())
+		} else {
+			err.into()
+		}
+	})?;
+
 	let mut appinfo_file = BufReader::new(fs::File::open(get_path(steam_path))?);
 	SteamAppInfoFile::load(&mut appinfo_file)
 }

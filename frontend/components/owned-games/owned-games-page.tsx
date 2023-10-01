@@ -18,6 +18,7 @@ import { RefreshButton } from "@components/refresh-button";
 import { FilterResetButton } from "@components/filter-reset-button";
 import { FixOwnedGamesButton } from "./fix-owned-games-button";
 import { SearchInput } from "@components/search-input";
+import { ErrorPopover } from "@components/error-popover";
 
 const engineOptions: SegmentedControlData<GameEngineBrand>[] = [
 	{ label: "Any Engine", value: "" },
@@ -54,7 +55,8 @@ const filterGame = (game: OwnedGame, filter: Filter) =>
 	(!filter.engine || game.engine === filter.engine);
 
 export function OwnedGamesPage() {
-	const [ownedGames, isLoading, refreshOwnedGames] = useOwnedGames();
+	const [ownedGames, isLoading, refreshOwnedGames, error, clearError] =
+		useOwnedGames();
 	const [selectedGame, setSelectedGame] = useState<OwnedGame>();
 
 	const [filteredGames, sort, setSort, filter, setFilter] = useFilteredList(
@@ -103,10 +105,15 @@ export function OwnedGamesPage() {
 						</SwitchButton>
 					</Stack>
 				</FilterMenu>
-				<RefreshButton
-					loading={isLoading}
-					onClick={refreshOwnedGames}
-				/>
+				<ErrorPopover
+					error={error}
+					clearError={clearError}
+				>
+					<RefreshButton
+						loading={isLoading}
+						onClick={refreshOwnedGames}
+					/>
+				</ErrorPopover>
 			</Flex>
 			<VirtualizedTable
 				data={filteredGames}
