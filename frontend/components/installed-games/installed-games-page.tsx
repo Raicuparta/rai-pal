@@ -1,4 +1,4 @@
-import { Alert, Flex, Input, Stack } from "@mantine/core";
+import { Alert, Flex, Stack } from "@mantine/core";
 import { useMemo, useState } from "react";
 import { includesOneOf } from "../../util/filter";
 import { InstalledGameRow } from "./installed-game-row";
@@ -21,6 +21,7 @@ import { VirtualizedTable } from "@components/table/virtualized-table";
 import { useGameMap } from "@hooks/use-game-map";
 import { RefreshButton } from "@components/refresh-button";
 import { FilterResetButton } from "@components/filter-reset-button";
+import { SearchInput } from "@components/search-input";
 
 type Filter = {
 	text: string;
@@ -117,15 +118,11 @@ export function InstalledGamesPage() {
 	return (
 		<Stack h="100%">
 			<Flex gap="md">
-				<Input
-					onChange={(event) => setFilter({ text: event.target.value })}
-					placeholder="Find..."
-					style={{ flex: 1 }}
+				<SearchInput
+					onChange={(value) => setFilter({ text: value })}
 					value={filter.text}
 				/>
-				{isFilterActive || filter.text ? (
-					<FilterResetButton setFilter={setFilter} />
-				) : null}
+				{isFilterActive && <FilterResetButton setFilter={setFilter} />}
 				<FilterMenu active={isFilterActive}>
 					<Stack>
 						<TypedSegmentedControl

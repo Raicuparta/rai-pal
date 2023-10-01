@@ -1,4 +1,4 @@
-import { Flex, Input, Stack } from "@mantine/core";
+import { Flex, Stack } from "@mantine/core";
 import { OwnedGameRow } from "./owned-game-row";
 import { useOwnedGames } from "@hooks/use-backend-data";
 import { GameEngineBrand, OwnedGame } from "@api/bindings";
@@ -17,6 +17,7 @@ import {
 import { RefreshButton } from "@components/refresh-button";
 import { FilterResetButton } from "@components/filter-reset-button";
 import { FixOwnedGamesButton } from "./fix-owned-games-button";
+import { SearchInput } from "@components/search-input";
 
 const engineOptions: SegmentedControlData<GameEngineBrand>[] = [
 	{ label: "Any Engine", value: "" },
@@ -76,15 +77,11 @@ export function OwnedGamesPage() {
 			) : null}
 			<Flex gap="md">
 				<FixOwnedGamesButton />
-				<Input
-					onChange={(event) => setFilter({ text: event.target.value })}
-					placeholder="Find..."
-					style={{ flex: 1 }}
+				<SearchInput
+					onChange={(value) => setFilter({ text: value })}
 					value={filter.text}
 				/>
-				{isFilterActive || filter.text ? (
-					<FilterResetButton setFilter={setFilter} />
-				) : null}
+				{isFilterActive && <FilterResetButton setFilter={setFilter} />}
 				<FilterMenu active={isFilterActive}>
 					<Stack>
 						<TypedSegmentedControl
