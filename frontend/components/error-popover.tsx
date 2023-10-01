@@ -20,6 +20,7 @@ export function ErrorPopover(props: Props) {
 			opened={Boolean(props.error)}
 			position="bottom"
 			width={400}
+			withinPortal={false}
 		>
 			<Popover.Target>
 				<span>{props.children}</span>
