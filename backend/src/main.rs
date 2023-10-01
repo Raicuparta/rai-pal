@@ -14,18 +14,10 @@
 #![allow(clippy::unused_async)]
 #![allow(clippy::module_name_repetitions)]
 
-use std::{
-	future::Future,
-	path::PathBuf,
-	result::Result as StdResult,
-	sync::Mutex,
-};
+use std::{future::Future, path::PathBuf, result::Result as StdResult, sync::Mutex};
 
 use game::Game;
-use mod_loaders::mod_loader::{
-	self,
-	ModLoaderActions,
-};
+use mod_loaders::mod_loader::{self, ModLoaderActions};
 use steam::owned_games::OwnedGame;
 use steamlocate::SteamDir;
 use tauri::api::dialog::message;
@@ -94,7 +86,9 @@ pub enum Error {
 	#[error("Failed to create copy of game with ID `{0}`")]
 	GameCopyFailed(String),
 
-	#[error("Failed to find Steam appinfo.vdf file in path `{0}`. Try restarting Steam.")]
+	#[error(
+		"Failed to find Steam cache file. **Try restarting Steam**. (Tried to read from `{0}`)"
+	)]
 	AppInfoNotFound(String),
 }
 

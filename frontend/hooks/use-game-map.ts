@@ -17,7 +17,7 @@ export const useGameMap = () => {
 
 			getGameMap(ignoreCache)
 				.then(setData)
-				.catch((error) => setError(`Failed to retrieve data: ${error}`))
+				.catch((error) => setError(`Error: ${error}`))
 				.finally(() => setIsLoading(false));
 		},
 		[clearError],
@@ -33,7 +33,7 @@ export const useGameMap = () => {
 
 		updateGameInfo(gameId)
 			.then(setData)
-			.catch((error) => setError(`Failed to retrieve data: ${error}`))
+			.catch((error) => setError(`Error: ${error}`))
 			.finally(() => setIsLoading(false));
 	}, []);
 

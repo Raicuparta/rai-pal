@@ -20,7 +20,7 @@ export function useBackendData<TData>(
 
 			apiFunction(ignoreCache)
 				.then(setData)
-				.catch((error) => setError(`Failed to retrieve data: ${error}`))
+				.catch((error) => setError(`Error: ${error}`))
 				.finally(() => setIsLoading(false));
 		},
 		[apiFunction, clearError],

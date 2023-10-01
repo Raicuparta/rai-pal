@@ -1,4 +1,4 @@
-import { Alert, Button, CopyButton, Flex, Modal, Stack } from "@mantine/core";
+import { Alert, Button, Modal, Stack } from "@mantine/core";
 import { useModLoaders } from "@hooks/use-backend-data";
 import {
 	Game,
@@ -12,7 +12,6 @@ import { Fragment, useMemo, useState } from "react";
 import { GameName } from "./game-name";
 import { CommandButton } from "@components/command-button";
 import {
-	IconCopy,
 	IconDownload,
 	IconFolder,
 	IconFolderCog,
@@ -133,25 +132,7 @@ export function InstalledGameModal(props: Props) {
 						),
 				)}
 				<Stack gap="xs">
-					<Flex
-						align="end"
-						justify="space-between"
-					>
-						<label>Debug Data</label>
-						<CopyButton value={debugData}>
-							{({ copied, copy }) => (
-								<Button
-									color="green"
-									leftSection={<IconCopy />}
-									onClick={copy}
-									size="xs"
-									variant={copied ? "filled" : "default"}
-								>
-									Copy
-								</Button>
-							)}
-						</CopyButton>
-					</Flex>
+					<label>Debug Data</label>
 					<CodeHighlight
 						code={debugData}
 						language="json"

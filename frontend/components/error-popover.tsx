@@ -1,11 +1,5 @@
-import {
-	CloseButton,
-	Code,
-	Flex,
-	Popover,
-	Stack,
-	ThemeIcon,
-} from "@mantine/core";
+import { CodeHighlight } from "@mantine/code-highlight";
+import { CloseButton, Flex, Popover, Stack, ThemeIcon } from "@mantine/core";
 import { IconExclamationCircle } from "@tabler/icons-react";
 
 type Props = {
@@ -19,12 +13,10 @@ export function ErrorPopover(props: Props) {
 		<Popover
 			opened={Boolean(props.error)}
 			position="bottom"
-			width={400}
+			width={600}
 			withinPortal={false}
 		>
-			<Popover.Target>
-				<span>{props.children}</span>
-			</Popover.Target>
+			<Popover.Target>{props.children}</Popover.Target>
 			<Popover.Dropdown>
 				<Stack>
 					<Flex
@@ -40,7 +32,11 @@ export function ErrorPopover(props: Props) {
 						</ThemeIcon>
 						<CloseButton onClick={props.clearError} />
 					</Flex>
-					<Code>{props.error}</Code>
+					<CodeHighlight
+						language="md"
+						code={props.error ?? ""}
+						styles={{ code: { whiteSpace: "break-spaces" } }}
+					/>
 				</Stack>
 			</Popover.Dropdown>
 		</Popover>
