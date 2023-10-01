@@ -18,7 +18,7 @@ export function RefreshButton(props: Props) {
 			style={{ flex: 1, maxWidth: "10em" }}
 			variant="filled"
 		>
-			{isLoading ? "Loading..." : "Refresh"}
+			Refresh
 		</Button>
 	);
 }
