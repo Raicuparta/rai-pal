@@ -2,7 +2,15 @@ import { TableHeader } from "@components/table/table-head";
 import { useMemo, useState } from "react";
 import { useTableSort } from "./use-table-sort";
 
-export function useFilteredList<TItem, TKey extends keyof TItem, TFilter>(
+export type Filter = {
+	search: string;
+};
+
+export function useFilteredList<
+	TItem,
+	TKey extends keyof TItem,
+	TFilter extends Filter,
+>(
 	tableHeaders: TableHeader<TItem, TKey>[],
 	data: TItem[],
 	filterFunction: (item: TItem, filterValue: TFilter) => boolean,

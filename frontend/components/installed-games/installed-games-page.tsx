@@ -15,7 +15,7 @@ import {
 	TypedSegmentedControl,
 } from "./typed-segmented-control";
 import { TableHeader } from "@components/table/table-head";
-import { useFilteredList } from "@hooks/use-filtered-list";
+import { Filter, useFilteredList } from "@hooks/use-filtered-list";
 import { FilterMenu } from "@components/filter-menu";
 import { VirtualizedTable } from "@components/table/virtualized-table";
 import { useGameMap } from "@hooks/use-game-map";
@@ -23,20 +23,20 @@ import { RefreshButton } from "@components/refresh-button";
 import { FilterResetButton } from "@components/filter-reset-button";
 import { SearchInput } from "@components/search-input";
 
-type Filter = {
-	text: string;
+interface InstalledGamesFilter extends Filter {
+	search: string;
 	operatingSystem?: OperatingSystem;
 	architecture?: Architecture;
 	scriptingBackend?: UnityScriptingBackend;
 	engine?: GameEngineBrand;
+}
+
+const defaultFilter: InstalledGamesFilter = {
+	search: "",
 };
 
-const defaultFilter: Filter = {
-	text: "",
-};
-
-const filterGame = (game: Game, filter: Filter) =>
-	includesOneOf(filter.text, [game.name]) &&
+const filterGame = (game: Game, filter: InstalledGamesFilter) =>
+	includesOneOf(filter.search, [game.name]) &&
 	(!filter.architecture || game.architecture === filter.architecture) &&
 	(!filter.operatingSystem ||
 		game.operatingSystem === filter.operatingSystem) &&
@@ -119,8 +119,8 @@ export function InstalledGamesPage() {
 		<Stack h="100%">
 			<Flex gap="md">
 				<SearchInput
-					onChange={(value) => setFilter({ text: value })}
-					value={filter.text}
+					onChange={setFilter}
+					value={filter.search}
 				/>
 				{isFilterActive && <FilterResetButton setFilter={setFilter} />}
 				<FilterMenu active={isFilterActive}>

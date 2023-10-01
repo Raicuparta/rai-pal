@@ -35,20 +35,20 @@ const tableHeaders: TableHeader<OwnedGame, keyof OwnedGame>[] = [
 ];
 
 type Filter = {
-	text: string;
+	search: string;
 	hideInstalled: boolean;
 	linuxOnly: boolean;
 	engine?: GameEngineBrand;
 };
 
 const defaultFilter: Filter = {
-	text: "",
+	search: "",
 	hideInstalled: false,
 	linuxOnly: false,
 };
 
 const filterGame = (game: OwnedGame, filter: Filter) =>
-	includesOneOf(filter.text, [game.name, game.id.toString()]) &&
+	includesOneOf(filter.search, [game.name, game.id.toString()]) &&
 	(!filter.linuxOnly || game.osList.includes("Linux")) &&
 	(!filter.hideInstalled || !game.installed) &&
 	(!filter.engine || game.engine === filter.engine);
@@ -78,8 +78,8 @@ export function OwnedGamesPage() {
 			<Flex gap="md">
 				<FixOwnedGamesButton />
 				<SearchInput
-					onChange={(value) => setFilter({ text: value })}
-					value={filter.text}
+					onChange={setFilter}
+					value={filter.search}
 				/>
 				{isFilterActive && <FilterResetButton setFilter={setFilter} />}
 				<FilterMenu active={isFilterActive}>
