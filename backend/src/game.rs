@@ -191,24 +191,27 @@ fn is_unity_exe(game_path: &Path) -> bool {
 }
 
 fn is_unreal_exe(game_path: &Path) -> bool {
+	const VALID_FOLDER_NAMES: [&str; 3] = ["Win64", "Win32", "ThirdParty"];
+
 	if let Some(parent) = game_path.parent() {
-		// For cases where the registered exe points directly to the game binary:
-		if parent.ends_with("Win64") {
+		// For cases where the registered exe points to a launcher at the root level:
+		if VALID_FOLDER_NAMES.iter().any(|folder_name| {
+			parent
+				.join("Engine")
+				.join("Binaries")
+				.join(folder_name)
+				.is_dir()
+		}) {
+			return true;
+		}
+
+		// For cases where the registered exe points directly to the shipping binary:
+		if parent.ends_with("Win64") || parent.ends_with("Win32") {
 			if let Some(binaries) = parent.parent() {
 				if binaries.ends_with("Binaries") {
 					return true;
 				}
 			}
-		}
-
-		// For cases where the registered exe points to a launcher at the root level:
-		if parent
-			.join("Engine")
-			.join("Binaries")
-			.join("Win64")
-			.is_dir()
-		{
-			return true;
 		}
 	}
 
