@@ -48,6 +48,12 @@ jobs:
       - name: Install frontend dependencies
         run: pnpm install
 
+      - name: Generate changelog
+        id: changelog
+        uses: heinrichreimer/action-github-changelog-generator@v2.3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -57,6 +63,6 @@ jobs:
           tagName: v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version
           releaseName: "Rai Pal __VERSION__"
           includeUpdaterJson: true
-          releaseBody: ""
+          releaseBody: ${{ steps.changelog.outputs.changelog }}
           releaseDraft: true
           prerelease: false
