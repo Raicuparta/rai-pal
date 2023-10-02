@@ -73,13 +73,13 @@ const engineOptions: SegmentedControlData<GameEngineBrand>[] = [
 const tableHeaders: TableHeader<Game, keyof Game>[] = [
 	{ id: "thumbnailUrl", label: "", width: 100 },
 	{ id: "name", label: "Game", width: undefined, sortable: true },
-	{
-		id: "operatingSystem",
-		label: "OS",
-		width: 110,
-		center: true,
-		sortable: true,
-	},
+	// {
+	// 	id: "operatingSystem",
+	// 	label: "OS",
+	// 	width: 110,
+	// 	center: true,
+	// 	sortable: true,
+	// },
 	{
 		id: "architecture",
 		label: "Arch",

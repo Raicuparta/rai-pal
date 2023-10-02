@@ -14,9 +14,9 @@ export function OwnedGameRow(_: number, ownedUnityGame: OwnedGame) {
 					{ownedUnityGame.engine}
 				</Badge>
 			</Table.Td>
-			<Table.Td align="center">
+			{/* <Table.Td align="center">
 				{ownedUnityGame.osList.includes("Linux") ? <IconCheck /> : ""}
-			</Table.Td>
+			</Table.Td> */}
 			<Table.Td align="center">
 				{ownedUnityGame.installed ? <IconCheck /> : ""}
 			</Table.Td>
