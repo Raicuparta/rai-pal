@@ -24,7 +24,6 @@ jobs:
       - name: Setup Rust Cache
         uses: Swatinem/rust-cache@v2
         with:
-          shared-key: ${{ runner.os }}-rust-cache-${{ hashFiles('Cargo.lock') }}
           workspaces: "./backend -> target"
 
       - uses: pnpm/action-setup@v2
