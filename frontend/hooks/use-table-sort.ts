@@ -1,11 +1,13 @@
 import { useCallback, useState } from "react";
 
 export type TableSort<TItem, TKey extends keyof TItem> = {
-	id: TKey;
+	id?: TKey;
 	reverse: boolean;
 };
 
-export function useTableSort<TItem, TKey extends keyof TItem>(defaultId: TKey) {
+export function useTableSort<TItem, TKey extends keyof TItem>(
+	defaultId: TKey | undefined,
+) {
 	const [sort, setSort] = useState<TableSort<TItem, TKey>>({
 		id: defaultId,
 		reverse: false,
