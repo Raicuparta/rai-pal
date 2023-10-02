@@ -1,18 +1,5 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
-#![warn(clippy::all)]
-#![warn(clippy::pedantic)]
-#![warn(clippy::nursery)]
-#![warn(clippy::unwrap_used)]
-#![warn(clippy::expect_used)]
-#![warn(clippy::as_conversions)]
-#![warn(clippy::clone_on_ref_ptr)]
-#![warn(clippy::decimal_literal_representation)]
-#![warn(clippy::shadow_unrelated)]
-#![warn(clippy::verbose_file_reads)]
-#![allow(clippy::used_underscore_binding)]
-#![allow(clippy::unused_async)]
-#![allow(clippy::module_name_repetitions)]
 
 use std::{
 	future::Future,
