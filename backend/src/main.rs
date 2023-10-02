@@ -14,10 +14,18 @@
 #![allow(clippy::unused_async)]
 #![allow(clippy::module_name_repetitions)]
 
-use std::{future::Future, path::PathBuf, result::Result as StdResult, sync::Mutex};
+use std::{
+	future::Future,
+	path::PathBuf,
+	result::Result as StdResult,
+	sync::Mutex,
+};
 
 use game::Game;
-use mod_loaders::mod_loader::{self, ModLoaderActions};
+use mod_loaders::mod_loader::{
+	self,
+	ModLoaderActions,
+};
 use steam::owned_games::OwnedGame;
 use steamlocate::SteamDir;
 use tauri::api::dialog::message;
@@ -44,7 +52,7 @@ pub enum Error {
 	#[error(transparent)]
 	Goblin(#[from] goblin::error::Error),
 
-	#[error(transparent)]
+	#[error("Failed to find Steam. Is Steam installed? ({0})")]
 	SteamLocate(#[from] steamlocate::Error),
 
 	#[error(transparent)]
