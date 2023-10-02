@@ -58,6 +58,6 @@ jobs:
           tagName: v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version
           releaseName: "Rai Pal __VERSION__"
           includeUpdaterJson: true
-          releaseBody: ""
+          releaseBody: "[Read the readme](https://github.com/Raicuparta/rai-pal#readme)"
           releaseDraft: true
           prerelease: false
