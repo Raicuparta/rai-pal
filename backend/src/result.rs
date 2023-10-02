@@ -29,9 +29,6 @@ pub enum Error {
 	#[error("Failed to get file name from path `{0}`")]
 	FailedToGetFileName(PathBuf),
 
-	#[error("Failed to install mod `{0}`")]
-	ModInstallFailure(PathBuf),
-
 	#[error("Failed to find game with ID `{0}`")]
 	GameNotFound(String),
 
