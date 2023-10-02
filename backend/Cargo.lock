@@ -2517,7 +2517,7 @@ dependencies = [
 
 [[package]]
 name = "rai-pal"
-version = "0.1.2"
+version = "0.1.3"
 dependencies = [
  "byteorder",
  "directories",
