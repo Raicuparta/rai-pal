@@ -28,6 +28,7 @@ const engineOptions: SegmentedControlData<GameEngineBrand>[] = [
 ];
 
 const tableHeaders: TableHeader<OwnedGame, keyof OwnedGame>[] = [
+	{ id: "thumbnailUrl", label: "", width: 100 },
 	{ id: "name", label: "Game", width: undefined },
 	{ id: "engine", label: "Engine", width: 100, center: true },
 	{ id: "osList", label: "Linux?", width: 100, center: true },

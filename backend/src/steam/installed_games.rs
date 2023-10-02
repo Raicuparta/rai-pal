@@ -9,7 +9,10 @@ use std::{
 
 use steamlocate::SteamDir;
 
-use super::appinfo;
+use super::{
+	appinfo,
+	thumbnail::get_steam_thumbnail,
+};
 use crate::{
 	game,
 	Result,
@@ -60,6 +63,7 @@ pub async fn get() -> Result<game::Map> {
 								discriminator,
 								full_path,
 								Some(&launch_option),
+								Some(get_steam_thumbnail(&app.app_id.to_string())),
 							) {
 								game_map.insert(executable_id.clone(), game);
 								used_names.insert(name.clone());

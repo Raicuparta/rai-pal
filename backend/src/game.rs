@@ -70,6 +70,7 @@ serializable_struct!(Game {
 	pub steam_launch: Option<SteamLaunchOption>,
 	pub installed_mods: Vec<String>,
 	pub engine: GameEngine,
+	pub thumbnail_url: Option<String>,
 });
 
 pub type Map = HashMap<String, Game>;
@@ -81,6 +82,7 @@ impl Game {
 		discriminator: Option<String>,
 		full_path: &Path,
 		steam_launch: Option<&SteamLaunchOption>,
+		thumbnail_url: Option<String>,
 	) -> Option<Self> {
 		// Games exported by Unity always have one of these extensions.
 		const VALID_EXTENSIONS: [&str; 3] = ["exe", "x86_64", "x86"];
@@ -127,6 +129,7 @@ impl Game {
 			steam_launch: steam_launch.cloned(),
 			installed_mods,
 			engine,
+			thumbnail_url,
 		})
 	}
 

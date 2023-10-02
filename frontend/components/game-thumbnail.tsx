@@ -1,15 +1,16 @@
-import styles from "./game-thumbnail.module.css";
-import { BackgroundImage } from "@mantine/core";
+import { BackgroundImage, Table } from "@mantine/core";
 
 type Props = {
-	readonly url: string;
+	readonly url: string | null;
 };
 
 export function GameThumbnail(props: Props) {
 	return (
 		<BackgroundImage
-			src={props.url}
-			className={styles.wrapper}
-		/>
+			src={props.url ?? ""}
+			component={Table.Td}
+		>
+			{"\u200b"}
+		</BackgroundImage>
 	);
 }

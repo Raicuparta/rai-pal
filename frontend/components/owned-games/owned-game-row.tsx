@@ -1,5 +1,5 @@
 import { OwnedGame } from "@api/bindings";
-import { Badge, Flex, Table } from "@mantine/core";
+import { Badge, Table } from "@mantine/core";
 import { engineColor } from "../../util/color";
 import { IconCheck } from "@tabler/icons-react";
 import { GameThumbnail } from "@components/game-thumbnail";
@@ -7,17 +7,8 @@ import { GameThumbnail } from "@components/game-thumbnail";
 export function OwnedGameRow(_: number, ownedUnityGame: OwnedGame) {
 	return (
 		<>
-			<Table.Td p={0}>
-				<Flex
-					gap="sm"
-					align="center"
-				>
-					<GameThumbnail
-						url={`https://cdn.cloudflare.steamstatic.com/steam/apps/${ownedUnityGame.id}/capsule_231x87.jpg`}
-					/>
-					{ownedUnityGame.name}
-				</Flex>
-			</Table.Td>
+			<GameThumbnail url={ownedUnityGame.thumbnailUrl} />
+			<Table.Td>{ownedUnityGame.name}</Table.Td>
 			<Table.Td align="center">
 				<Badge color={engineColor[ownedUnityGame.engine]}>
 					{ownedUnityGame.engine}

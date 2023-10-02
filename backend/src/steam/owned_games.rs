@@ -2,9 +2,12 @@ use std::collections::HashSet;
 
 use steamlocate::SteamDir;
 
-use super::appinfo::{
-	self,
-	SteamAppInfoFile,
+use super::{
+	appinfo::{
+		self,
+		SteamAppInfoFile,
+	},
+	thumbnail::get_steam_thumbnail,
 };
 use crate::{
 	game::{
@@ -25,6 +28,7 @@ serializable_struct!(OwnedGame {
 	os_list: HashSet<OperatingSystem>,
 	engine: GameEngineBrand,
 	release_date: i32,
+	thumbnail_url: String,
 });
 
 async fn get_engine_games(
@@ -75,6 +79,7 @@ async fn get_engine_games(
 				os_list,
 				engine,
 				release_date,
+				thumbnail_url: get_steam_thumbnail(app_id),
 			})
 		})
 		.collect())
