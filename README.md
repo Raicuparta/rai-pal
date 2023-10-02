@@ -12,8 +12,7 @@ This is a thing to help find games of a specific engine, and then easily install
 
 So this tool automates a lot of that work. This also lets you filter your Steam owned games by engine, so you can for instance find all the Unreal games you own.
 
-![image](https://github.com/Raicuparta/rai-pal/assets/3955124/79c71743-24a8-4351-9571-71d9b9419f1f)
-
+![image](https://github.com/Raicuparta/rai-pal/assets/3955124/a457d90c-fa48-47f7-ad09-44909ca10500)
 
 ## License
 
