@@ -8,8 +8,7 @@
     "withGlobalTauri": false
   },
   "package": {
-    "productName": "Rai Pal",
-    "version": "0.1.1"
+    "productName": "Rai Pal"
   },
   "tauri": {
     "updater": {
