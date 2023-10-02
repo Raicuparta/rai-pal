@@ -21,6 +21,11 @@ jobs:
       - name: install Rust stable
         uses: dtolnay/rust-toolchain@stable
 
+      - name: Setup Rust Cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: ${{ runner.os }}-rust-cache-${{ hashFiles('Cargo.lock') }}
+
       - uses: pnpm/action-setup@v2
         name: Install pnpm
         with:
