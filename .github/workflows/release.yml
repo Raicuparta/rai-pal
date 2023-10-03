@@ -3,7 +3,20 @@ on:
   workflow_dispatch:
 
 jobs:
+  generate-changelog:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Generate changelog
+        id: changelog
+        uses: heinrichreimer/action-github-changelog-generator@v2.3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
   publish-tauri:
+    needs: generate-changelog
     permissions:
       contents: write
     strategy:
@@ -48,12 +61,6 @@ jobs:
       - name: Install frontend dependencies
         run: pnpm install
 
-      - name: Generate changelog
-        id: changelog
-        uses: heinrichreimer/action-github-changelog-generator@v2.3
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -63,6 +70,6 @@ jobs:
           tagName: v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version
           releaseName: "Rai Pal __VERSION__"
           includeUpdaterJson: true
-          releaseBody: ${{ steps.changelog.outputs.changelog }}
+          releaseBody: ${{ needs.generate-changelog.outputs.changelog }}
           releaseDraft: true
           prerelease: false
