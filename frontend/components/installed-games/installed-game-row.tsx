@@ -4,21 +4,23 @@ import { GameName } from "./game-name";
 import {
 	architectureColor,
 	engineColor,
-	operatingSystemColor,
+	// operatingSystemColor,
 	scriptingBackendColor,
 } from "../../util/color";
+import { GameThumbnail } from "@components/game-thumbnail";
 
 export function InstalledGameRow(_: number, game: Game) {
 	return (
 		<>
+			<GameThumbnail url={game.thumbnailUrl} />
 			<Table.Td>
 				<GameName game={game} />
 			</Table.Td>
-			<Table.Td>
+			{/* <Table.Td>
 				<Badge color={operatingSystemColor[game.operatingSystem]}>
 					{game.operatingSystem}
 				</Badge>
-			</Table.Td>
+			</Table.Td> */}
 			<Table.Td>
 				<Badge color={architectureColor[game.architecture]}>
 					{game.architecture}

@@ -28,11 +28,24 @@ const engineOptions: SegmentedControlData<GameEngineBrand>[] = [
 ];
 
 const tableHeaders: TableHeader<OwnedGame, keyof OwnedGame>[] = [
-	{ id: "name", label: "Game", width: undefined },
-	{ id: "engine", label: "Engine", width: 100, center: true },
-	{ id: "osList", label: "Linux?", width: 100, center: true },
-	{ id: "installed", label: "Installed?", width: 100, center: true },
-	{ id: "releaseDate", label: "Release Date", width: 130, center: true },
+	{ id: "thumbnailUrl", label: "", width: 100 },
+	{ id: "name", label: "Game", width: undefined, sortable: true },
+	{ id: "engine", label: "Engine", width: 100, center: true, sortable: true },
+	// { id: "osList", label: "Linux?", width: 100, center: true, sortable: true },
+	{
+		id: "installed",
+		label: "Installed",
+		width: 60,
+		center: true,
+		sortable: true,
+	},
+	{
+		id: "releaseDate",
+		label: "Release Date",
+		width: 130,
+		center: true,
+		sortable: true,
+	},
 ];
 
 type Filter = {

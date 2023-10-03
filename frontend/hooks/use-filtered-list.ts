@@ -16,7 +16,9 @@ export function useFilteredList<
 	filterFunction: (item: TItem, filterValue: TFilter) => boolean,
 	defaultFilterValue: TFilter,
 ) {
-	const [sort, setSort] = useTableSort<TItem, TKey>(tableHeaders[0].id);
+	const [sort, setSort] = useTableSort<TItem, TKey>(
+		tableHeaders.find((header) => header.sortable)?.id,
+	);
 	const [filter, setFilter] = useState<TFilter>(defaultFilterValue);
 
 	const updateFilter = (newFilter: Partial<TFilter> | undefined) =>
@@ -32,6 +34,8 @@ export function useFilteredList<
 		return data
 			.filter((item) => filterFunction(item, filter))
 			.sort((gameA, gameB) => {
+				if (sort.id == undefined) return 0;
+
 				const multiplier = sort.reverse ? -1 : 1;
 
 				if (sortHeader?.customSort) {

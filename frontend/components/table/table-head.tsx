@@ -1,18 +1,15 @@
 import { Box, Flex, Table } from "@mantine/core";
 import classes from "./table.module.css";
 import { IconChevronDown, IconChevronUp } from "@tabler/icons-react";
+import { TableSort } from "@hooks/use-table-sort";
 
 export type TableHeader<TItem, TKey extends keyof TItem> = {
 	id: TKey;
 	label: string;
 	width?: number;
 	center?: boolean;
+	sortable?: boolean;
 	customSort?: (itemA: TItem, itemB: TItem) => number;
-};
-
-type TableSort<TItem, TKey extends keyof TItem> = {
-	id: TKey;
-	reverse: boolean;
 };
 
 type Props<TItem, TKey extends keyof TItem> = {
@@ -28,10 +25,15 @@ export function TableHead<TItem, TKey extends keyof TItem>(
 		<Table.Tr>
 			{props.headers.map((header) => (
 				<Table.Th
-					className={props.onChangeSort ? classes.sortable : undefined}
+					className={
+						props.onChangeSort && header.sortable ? classes.sortable : undefined
+					}
 					key={String(header.id)}
-					onClick={() =>
-						props.onChangeSort ? props.onChangeSort(header.id) : undefined
+					onClick={
+						header.sortable
+							? () =>
+									props.onChangeSort ? props.onChangeSort(header.id) : undefined
+							: undefined
 					}
 					w={header.width}
 				>

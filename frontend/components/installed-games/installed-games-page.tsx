@@ -71,15 +71,35 @@ const engineOptions: SegmentedControlData<GameEngineBrand>[] = [
 ];
 
 const tableHeaders: TableHeader<Game, keyof Game>[] = [
-	{ id: "name", label: "Game", width: undefined },
-	{ id: "operatingSystem", label: "OS", width: 110, center: true },
-	{ id: "architecture", label: "Arch", width: 110, center: true },
-	{ id: "scriptingBackend", label: "Backend", width: 110, center: true },
+	{ id: "thumbnailUrl", label: "", width: 100 },
+	{ id: "name", label: "Game", width: undefined, sortable: true },
+	// {
+	// 	id: "operatingSystem",
+	// 	label: "OS",
+	// 	width: 110,
+	// 	center: true,
+	// 	sortable: true,
+	// },
+	{
+		id: "architecture",
+		label: "Arch",
+		width: 110,
+		center: true,
+		sortable: true,
+	},
+	{
+		id: "scriptingBackend",
+		label: "Backend",
+		width: 110,
+		center: true,
+		sortable: true,
+	},
 	{
 		id: "engine",
 		label: "Engine",
 		width: 150,
 		center: true,
+		sortable: true,
 		customSort: (dataA, dataB) =>
 			dataA.engine.brand.localeCompare(dataB.engine.brand) ||
 			dataA.engine.version.major - dataB.engine.version.major ||
