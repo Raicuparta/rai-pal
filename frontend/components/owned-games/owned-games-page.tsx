@@ -15,7 +15,6 @@ import {
 	TypedSegmentedControl,
 } from "@components/installed-games/typed-segmented-control";
 import { RefreshButton } from "@components/refresh-button";
-import { FilterResetButton } from "@components/filter-reset-button";
 import { FixOwnedGamesButton } from "./fix-owned-games-button";
 import { SearchInput } from "@components/search-input";
 import { ErrorPopover } from "@components/error-popover";
@@ -96,8 +95,10 @@ export function OwnedGamesPage() {
 					onChange={setFilter}
 					value={filter.search}
 				/>
-				{isFilterActive && <FilterResetButton setFilter={setFilter} />}
-				<FilterMenu active={isFilterActive}>
+				<FilterMenu
+					active={isFilterActive}
+					setFilter={setFilter}
+				>
 					<Stack>
 						<TypedSegmentedControl
 							data={engineOptions}

@@ -14,7 +14,7 @@ export function FixOwnedGamesButton() {
 				onClick={() => setIsModalOpen(true)}
 				leftSection={<IconHammer />}
 			>
-				Fix owned game list
+				Fix list
 			</Button>
 			<Modal
 				centered

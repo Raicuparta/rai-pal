@@ -20,7 +20,6 @@ import { FilterMenu } from "@components/filter-menu";
 import { VirtualizedTable } from "@components/table/virtualized-table";
 import { useGameMap } from "@hooks/use-game-map";
 import { RefreshButton } from "@components/refresh-button";
-import { FilterResetButton } from "@components/filter-reset-button";
 import { SearchInput } from "@components/search-input";
 import { ErrorPopover } from "@components/error-popover";
 
@@ -144,8 +143,10 @@ export function InstalledGamesPage() {
 					onChange={setFilter}
 					value={filter.search}
 				/>
-				{isFilterActive && <FilterResetButton setFilter={setFilter} />}
-				<FilterMenu active={isFilterActive}>
+				<FilterMenu
+					setFilter={setFilter}
+					active={isFilterActive}
+				>
 					<Stack>
 						<TypedSegmentedControl
 							data={operatingSystemOptions}
