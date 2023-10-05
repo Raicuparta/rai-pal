@@ -378,7 +378,7 @@ fn get_unreal_version(game_exe_path: &Path) -> Option<GameEngineVersion> {
 			// The {0,100} is matching the "+release-" etc part,
 			// it can be different for every game, but I'm limiting it to 100 chars.
 			let match_result = regex_find!(
-				r"(?i)\+\x00U\x00E\x00[45]\x00(?:.{0,100}?[45]\x00\.\x00(\d\x00)+|\x00)"B,
+				r"(?i)\+\x00U\x00E\x00[45]\x00(?:.{0,100}?[45]\x00\.\x00(\d\x00)+)?"B,
 				&file_bytes
 			);
 			// I also noticed the game ABZU has the version in the exe as "4.12.5-0+UE4".
