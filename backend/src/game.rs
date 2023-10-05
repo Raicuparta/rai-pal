@@ -376,12 +376,12 @@ fn get_unreal_version(game_exe_path: &Path) -> Option<GameEngineVersion> {
 			// Looking for strings like "++ue4+release-4.25".
 			// The extra \x00 are because the strings are unicode.
 			let match_result = regex_find!(
-				r"(?i)\+\x00\+\x00U\x00E\x00[4|5]\x00.{0,100}?([4|5]\x00\.\x00(\d\x00)+)"B,
+				r"(?i)\+\x00\+\x00U\x00E\x00[45]\x00.{0,100}?([45]\x00\.\x00(\d\x00)+)"B,
 				&file_bytes
 			)
 			// Some games don't have the full version string,
 			// so we try getting just the major version from strings like "+ue4"
-			.or(regex_find!(r"(?i)\+\x00U\x00E\x00[4|5]\x00"B, &file_bytes));
+			.or(regex_find!(r"(?i)\+\x00U\x00E\x00[45]\x00"B, &file_bytes));
 			// I also noticed the game ABZU has the version in the exe as "4.12.5-0+UE4".
 			// But I don't know if any other games do that. This regex would match that:
 			// r"([4|5]\x00\.\x00(\d\x00)+).{0,100}?(?i)\+\x00U\x00E\x00[4|5]\x00"B
@@ -398,9 +398,9 @@ fn get_unreal_version(game_exe_path: &Path) -> Option<GameEngineVersion> {
 				},
 			);
 
-			let version = regex_find!(r"[4|5]\.\d+", &match_string).map_or_else(
+			let version = regex_find!(r"[45]\.\d+", &match_string).map_or_else(
 				|| {
-					regex_captures!(r"(?i)\+UE([4|5])", &match_string)
+					regex_captures!(r"(?i)\+UE([45])", &match_string)
 						.map_or("failed", |(_, version)| version)
 				},
 				|version| version,
