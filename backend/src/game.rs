@@ -373,8 +373,10 @@ fn get_unreal_version(game_exe_path: &Path) -> Option<GameEngineVersion> {
 	let actual_binary = get_actual_unreal_binary(game_exe_path);
 	match fs::read(actual_binary) {
 		Ok(file_bytes) => {
-			// Looking for strings like "++ue4+release-4.25".
+			// Looking for strings like "++UE4+release-4.25".
 			// The extra \x00 are because the strings are unicode.
+			// The {0,100} is matching the "+release-" etc part,
+			// it can be different for every game, but I'm limiting it to 100 chars.
 			let match_result = regex_find!(
 				r"(?i)\+\x00\+\x00U\x00E\x00[45]\x00.{0,100}?([45]\x00\.\x00(\d\x00)+)"B,
 				&file_bytes
@@ -386,26 +388,24 @@ fn get_unreal_version(game_exe_path: &Path) -> Option<GameEngineVersion> {
 			// But I don't know if any other games do that. This regex would match that:
 			// r"([4|5]\x00\.\x00(\d\x00)+).{0,100}?(?i)\+\x00U\x00E\x00[4|5]\x00"B
 
-			let match_string = match_result.map_or_else(
-				|| "No version found".to_string(),
-				|matched| {
-					String::from_utf16_lossy(
-						&matched
-							.chunks(2)
-							.map(|e| u16::from_le_bytes(e.try_into().unwrap_or_default()))
-							.collect::<Vec<_>>(),
-					)
-				},
+			let match_string = String::from_utf16_lossy(
+				&match_result?
+					.chunks(2)
+					.map(|e| u16::from_le_bytes(e.try_into().unwrap_or_default()))
+					.collect::<Vec<_>>(),
 			);
 
-			let version = regex_find!(r"[45]\.\d+", &match_string).map_or_else(
-				|| {
-					regex_captures!(r"(?i)\+UE([45])", &match_string)
-						.map_or("failed", |(_, version)| version)
-				},
-				|version| version,
-			);
+			// Regex again because the byte regex above can't extract the match groups.
+			// Full version is something like "4.25"
+			let version = if let Some(full_version) = regex_find!(r"[45]\.\d+", &match_string) {
+				full_version
+			} else {
+				// Not so full version is something like "4"
+				regex_captures!(r"(?i)\+UE([45])", &match_string)?.1
+			};
 
+			// Splitting the regex result to get each part of the version.
+			// I should probably just do it all in one regex tbh but I'm bad at regex.
 			let version_parts: Vec<_> = version.split('.').collect();
 			let major = version_parts.first().map_or(0, |f| f.parse().unwrap_or(0));
 			let minor = version_parts.get(1).map_or(0, |f| f.parse().unwrap_or(0));
