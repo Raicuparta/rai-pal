@@ -387,15 +387,18 @@ fn get_unreal_version(game_exe_path: &Path) -> GameEngineVersion {
 	let actual_binary = get_actual_unreal_binary(game_exe_path);
 	match fs::read(actual_binary) {
 		Ok(file_bytes) => {
-			// looking for strings like "++ue4+release-4.25"
-			// the extra \x00 are because the strings are unicode
+			// Looking for strings like "++ue4+release-4.25".
+			// The extra \x00 are because the strings are unicode.
 			let match_result = regex_find!(
-				r"(?i)\+\x00\+\x00U\x00E\x00[4|5]\x00.{0,100}}?([4|5]\x00\.\x00(\d\x00)+)"B,
+				r"(?i)\+\x00\+\x00U\x00E\x00[4|5]\x00.{0,100}?([4|5]\x00\.\x00(\d\x00)+)"B,
 				&file_bytes
 			)
-			// some games don't have the full version string,
+			// Some games don't have the full version string,
 			// so we try getting just the major version from strings like "+ue4"
 			.or(regex_find!(r"(?i)\+\x00U\x00E\x00[4|5]\x00"B, &file_bytes));
+			// I also noticed the game ABZU has the version in the exe as "4.12.5-0+UE4".
+			// But I don't know if any other games do that. This regex would match that:
+			// r"([4|5]\x00\.\x00(\d\x00)+).{0,100}?(?i)\+\x00U\x00E\x00[4|5]\x00"B
 
 			let match_string = match_result.map_or_else(
 				|| "No version found".to_string(),
