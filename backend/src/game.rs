@@ -61,7 +61,7 @@ serializable_struct!(GameEngineVersion {
 	pub major: u32,
 	pub minor: u32,
 	pub patch: u32,
-	pub suffix: String,
+	pub suffix: Option<String>,
 	pub display: String,
 });
 
@@ -245,7 +245,7 @@ fn get_engine(game_path: &Path) -> GameEngine {
 				major: 0,
 				minor: 0,
 				patch: 0,
-				suffix: String::new(),
+				suffix: None,
 				display: String::new(),
 			},
 		}
@@ -335,7 +335,7 @@ fn get_unity_version(game_exe_path: &Path) -> GameEngineVersion {
 							major,
 							minor,
 							patch,
-							suffix,
+							suffix: Some(suffix),
 							display: version,
 						};
 					}
@@ -348,7 +348,7 @@ fn get_unity_version(game_exe_path: &Path) -> GameEngineVersion {
 		major: 0,
 		minor: 0,
 		patch: 0,
-		suffix: String::new(),
+		suffix: None,
 		display: "Unknown".to_string(),
 	}
 }
@@ -428,7 +428,7 @@ fn get_unreal_version(game_exe_path: &Path) -> GameEngineVersion {
 				major,
 				minor,
 				patch: 0,
-				suffix: String::new(),
+				suffix: None,
 				display: version.to_string(),
 			};
 		}
@@ -441,7 +441,7 @@ fn get_unreal_version(game_exe_path: &Path) -> GameEngineVersion {
 		major: 0,
 		minor: 0,
 		patch: 0,
-		suffix: String::new(),
+		suffix: None,
 		display: "nope".to_string(),
 	}
 }
