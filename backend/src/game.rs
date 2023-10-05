@@ -387,10 +387,14 @@ fn get_unreal_version(game_exe_path: &Path) -> GameEngineVersion {
 	let actual_binary = get_actual_unreal_binary(game_exe_path);
 	match fs::read(actual_binary) {
 		Ok(file_bytes) => {
+			// looking for strings like "++ue4+release-4.25"
+			// the extra \x00 are because the strings are unicode
 			let match_result = regex_find!(
 				r"(?i)\+\x00\+\x00U\x00E\x00[4|5]\x00.{0,100}}?([4|5]\x00\.\x00(\d\x00)+)"B,
 				&file_bytes
 			)
+			// some games don't have the full version string,
+			// so we try getting just the major version from strings like "+ue4"
 			.or(regex_find!(r"(?i)\+\x00U\x00E\x00[4|5]\x00"B, &file_bytes));
 
 			let match_string = match_result.map_or_else(
