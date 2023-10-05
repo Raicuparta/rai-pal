@@ -7,6 +7,7 @@ import {
 	Architecture,
 	Game,
 	GameEngineBrand,
+	GameEngineVersion,
 	OperatingSystem,
 	UnityScriptingBackend,
 } from "@api/bindings";
@@ -69,6 +70,14 @@ const engineOptions: SegmentedControlData<GameEngineBrand>[] = [
 	{ label: "Godot", value: "Godot" },
 ];
 
+const defaultVersion: GameEngineVersion = {
+	major: 0,
+	minor: 0,
+	patch: 0,
+	suffix: "",
+	display: "",
+};
+
 const tableHeaders: TableHeader<Game, keyof Game>[] = [
 	{ id: "thumbnailUrl", label: "", width: 100 },
 	{ id: "name", label: "Game", width: undefined, sortable: true },
@@ -99,12 +108,18 @@ const tableHeaders: TableHeader<Game, keyof Game>[] = [
 		width: 150,
 		center: true,
 		sortable: true,
-		customSort: (dataA, dataB) =>
-			dataA.engine.brand.localeCompare(dataB.engine.brand) ||
-			dataA.engine.version.major - dataB.engine.version.major ||
-			dataA.engine.version.minor - dataB.engine.version.minor ||
-			dataA.engine.version.patch - dataB.engine.version.patch ||
-			0,
+		customSort: (dataA, dataB) => {
+			const versionA = dataA.engine.version ?? defaultVersion;
+			const versionB = dataB.engine.version ?? defaultVersion;
+
+			return (
+				dataA.engine.brand.localeCompare(dataB.engine.brand) ||
+				versionA.major - versionB.major ||
+				versionA.minor - versionB.minor ||
+				versionA.patch - versionB.patch ||
+				0
+			);
+		},
 	},
 ];
 

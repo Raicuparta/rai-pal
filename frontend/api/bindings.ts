@@ -55,13 +55,13 @@ export function deleteSteamAppinfoCache() {
 }
 
 export type ModLoaderData = { id: string; path: string; mods: Mod[] }
-export type GameEngine = { brand: GameEngineBrand; version: GameEngineVersion }
-export type GameEngineBrand = "Unity" | "Unreal" | "Godot" | "Unknown"
-export type Architecture = "Unknown" | "X64" | "X86"
-export type UnityScriptingBackend = "Il2Cpp" | "Mono" | "Unknown"
 export type Game = { id: string; name: string; discriminator: string | null; fullPath: string; architecture: Architecture; scriptingBackend: UnityScriptingBackend; operatingSystem: OperatingSystem; steamLaunch: SteamLaunchOption | null; installedMods: string[]; engine: GameEngine; thumbnailUrl: string | null }
+export type OperatingSystem = "Unknown" | "Linux" | "Windows"
+export type GameEngineBrand = "Unity" | "Unreal" | "Godot" | "Unknown"
+export type UnityScriptingBackend = "Il2Cpp" | "Mono" | "Unknown"
+export type Architecture = "Unknown" | "X64" | "X86"
+export type GameEngine = { brand: GameEngineBrand; version: GameEngineVersion | null }
 export type SteamLaunchOption = { launchId: string; appId: number; description: string | null; executable: string | null; arguments: string | null; appType: string | null; osList: string | null; betaKey: string | null; osArch: string | null }
 export type OwnedGame = { id: string; name: string; installed: boolean; osList: OperatingSystem[]; engine: GameEngineBrand; releaseDate: number; thumbnailUrl: string }
-export type OperatingSystem = "Unknown" | "Linux" | "Windows"
-export type GameEngineVersion = { major: number; minor: number; patch: number; suffix: string; display: string }
+export type GameEngineVersion = { major: number; minor: number; patch: number; suffix: string | null; display: string }
 export type Mod = { id: string; name: string; scriptingBackend: UnityScriptingBackend; path: string }

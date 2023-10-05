@@ -73,16 +73,13 @@ impl ModLoaderActions for BepInEx {
 
 		copy_dir_all(folder_to_copy_to_game, game_folder)?;
 
-		let config_origin_path =
-			&self
-				.data
-				.path
-				.join("config")
-				.join(if is_legacy(&game.engine.version) {
-					"BepInEx-legacy.cfg"
-				} else {
-					"BepInEx.cfg"
-				});
+		let is_legacy = game.engine.version.as_ref().map_or(false, is_legacy);
+
+		let config_origin_path = &self.data.path.join("config").join(if is_legacy {
+			"BepInEx-legacy.cfg"
+		} else {
+			"BepInEx.cfg"
+		});
 
 		let config_target_folder = game_data_folder.join("BepInEx").join("config");
 

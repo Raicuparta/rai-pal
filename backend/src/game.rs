@@ -54,7 +54,7 @@ serializable_enum!(GameEngineBrand {
 
 serializable_struct!(GameEngine {
 	pub brand: GameEngineBrand,
-	pub version: GameEngineVersion,
+	pub version: Option<GameEngineVersion>,
 });
 
 serializable_struct!(GameEngineVersion {
@@ -241,13 +241,7 @@ fn get_engine(game_path: &Path) -> GameEngine {
 	} else {
 		GameEngine {
 			brand: GameEngineBrand::Unknown,
-			version: GameEngineVersion {
-				major: 0,
-				minor: 0,
-				patch: 0,
-				suffix: None,
-				display: String::new(),
-			},
+			version: None,
 		}
 	}
 }
@@ -315,7 +309,7 @@ fn get_os_and_architecture(file_path: &Path) -> Result<(OperatingSystem, Archite
 	})?
 }
 
-fn get_unity_version(game_exe_path: &Path) -> GameEngineVersion {
+fn get_unity_version(game_exe_path: &Path) -> Option<GameEngineVersion> {
 	const ASSETS_WITH_VERSION: [&str; 3] = ["globalgamemanagers", "mainData", "data.unity3d"];
 
 	if let Ok(data_path) = get_unity_data_path(game_exe_path) {
@@ -331,26 +325,20 @@ fn get_unity_version(game_exe_path: &Path) -> GameEngineVersion {
 						let patch = version_parts.next().unwrap_or("0").parse().unwrap_or(0);
 						let suffix = version_parts.next().unwrap_or("0").to_string();
 
-						return GameEngineVersion {
+						return Some(GameEngineVersion {
 							major,
 							minor,
 							patch,
 							suffix: Some(suffix),
 							display: version,
-						};
+						});
 					}
 				}
 			}
 		}
 	}
 
-	GameEngineVersion {
-		major: 0,
-		minor: 0,
-		patch: 0,
-		suffix: None,
-		display: "Unknown".to_string(),
-	}
+	None
 }
 
 fn get_actual_unreal_binary(game_exe_path: &Path) -> PathBuf {
@@ -383,7 +371,7 @@ fn get_actual_unreal_binary(game_exe_path: &Path) -> PathBuf {
 	game_exe_path.to_path_buf()
 }
 
-fn get_unreal_version(game_exe_path: &Path) -> GameEngineVersion {
+fn get_unreal_version(game_exe_path: &Path) -> Option<GameEngineVersion> {
 	let actual_binary = get_actual_unreal_binary(game_exe_path);
 	match fs::read(actual_binary) {
 		Ok(file_bytes) => {
@@ -424,26 +412,20 @@ fn get_unreal_version(game_exe_path: &Path) -> GameEngineVersion {
 			let major = version_parts.first().map_or(0, |f| f.parse().unwrap_or(0));
 			let minor = version_parts.get(1).map_or(0, |f| f.parse().unwrap_or(0));
 
-			return GameEngineVersion {
+			return Some(GameEngineVersion {
 				major,
 				minor,
 				patch: 0,
 				suffix: None,
 				display: version.to_string(),
-			};
+			});
 		}
 		Err(err) => {
 			println!("Failed to read game exe: {err}");
 		}
 	}
 
-	GameEngineVersion {
-		major: 0,
-		minor: 0,
-		patch: 0,
-		suffix: None,
-		display: "nope".to_string(),
-	}
+	None
 }
 
 fn get_version_from_asset(asset_path: &Path) -> Result<String> {
