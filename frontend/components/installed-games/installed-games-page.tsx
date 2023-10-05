@@ -43,7 +43,7 @@ const filterGame = (game: Game, filter: InstalledGamesFilter) =>
 		game.operatingSystem === filter.operatingSystem) &&
 	(!filter.scriptingBackend ||
 		game.scriptingBackend === filter.scriptingBackend) &&
-	(!filter.engine || game.engine.brand === filter.engine);
+	(!filter.engine || game.engine?.brand === filter.engine);
 
 const operatingSystemOptions: SegmentedControlData<OperatingSystem>[] = [
 	{ label: "Any OS", value: "" },
@@ -109,11 +109,13 @@ const tableHeaders: TableHeader<Game, keyof Game>[] = [
 		center: true,
 		sortable: true,
 		customSort: (dataA, dataB) => {
-			const versionA = dataA.engine.version ?? defaultVersion;
-			const versionB = dataB.engine.version ?? defaultVersion;
+			const versionA = dataA.engine?.version ?? defaultVersion;
+			const versionB = dataB.engine?.version ?? defaultVersion;
+			const brandA = dataA.engine?.brand ?? "";
+			const brandB = dataB.engine?.brand ?? "";
 
 			return (
-				dataA.engine.brand.localeCompare(dataB.engine.brand) ||
+				brandA.localeCompare(brandB) ||
 				versionA.major - versionB.major ||
 				versionA.minor - versionB.minor ||
 				versionA.patch - versionB.patch ||

@@ -27,8 +27,7 @@ export const scriptingBackendColor: ColorRecord<UnityScriptingBackend> = {
 } as const;
 
 export const engineColor: ColorRecord<GameEngineBrand> = {
-	Unity: "cyan",
+	Unity: "blue",
 	Unreal: "red",
 	Godot: "violet",
-	Unknown: "dark",
 } as const;

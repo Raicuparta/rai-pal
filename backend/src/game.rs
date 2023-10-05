@@ -49,7 +49,6 @@ serializable_enum!(GameEngineBrand {
 	Unity,
 	Unreal,
 	Godot,
-	Unknown,
 });
 
 serializable_struct!(GameEngine {
@@ -75,7 +74,7 @@ serializable_struct!(Game {
 	pub operating_system: OperatingSystem,
 	pub steam_launch: Option<SteamLaunchOption>,
 	pub installed_mods: Vec<String>,
-	pub engine: GameEngine,
+	pub engine: Option<GameEngine>,
 	pub thumbnail_url: Option<String>,
 });
 
@@ -118,11 +117,13 @@ impl Game {
 		};
 
 		let engine = get_engine(full_path);
-		let scripting_backend = if engine.brand == GameEngineBrand::Unity {
-			get_unity_scripting_backend(full_path).unwrap_or(UnityScriptingBackend::Unknown)
-		} else {
-			UnityScriptingBackend::Unknown
-		};
+		let scripting_backend = engine.as_ref().map_or(UnityScriptingBackend::Unknown, |e| {
+			if e.brand == GameEngineBrand::Unity {
+				get_unity_scripting_backend(full_path).unwrap_or(UnityScriptingBackend::Unknown)
+			} else {
+				UnityScriptingBackend::Unknown
+			}
+		});
 
 		Some(Self {
 			architecture,
@@ -227,22 +228,19 @@ fn is_unreal_exe(game_path: &Path) -> bool {
 	false
 }
 
-fn get_engine(game_path: &Path) -> GameEngine {
+fn get_engine(game_path: &Path) -> Option<GameEngine> {
 	if is_unity_exe(game_path) {
-		GameEngine {
+		Some(GameEngine {
 			brand: GameEngineBrand::Unity,
 			version: get_unity_version(game_path),
-		}
+		})
 	} else if is_unreal_exe(game_path) {
-		GameEngine {
+		Some(GameEngine {
 			brand: GameEngineBrand::Unreal,
 			version: get_unreal_version(game_path),
-		}
+		})
 	} else {
-		GameEngine {
-			brand: GameEngineBrand::Unknown,
-			version: None,
-		}
+		None
 	}
 }
 
