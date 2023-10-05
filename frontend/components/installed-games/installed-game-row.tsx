@@ -33,12 +33,12 @@ export function InstalledGameRow(_: number, game: Game) {
 			</Table.Td>
 			<Table.Td>
 				<Badge color={game.engine ? engineColor[game.engine.brand] : "dark"}>
-					{game.engine?.brand ?? ""}{" "}
+					{game.engine?.brand ?? "Unknown"}{" "}
 					<Box
 						component="small"
 						opacity={0.5}
 					>
-						{game.engine?.version?.display ?? "Unknown"}
+						{game.engine?.version?.display ?? ""}
 					</Box>
 				</Badge>
 			</Table.Td>
