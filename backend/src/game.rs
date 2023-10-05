@@ -16,10 +16,16 @@ use goblin::{
 	elf::Elf,
 	pe::PE,
 };
-use lazy_regex::regex_find;
+use lazy_regex::{
+	regex_captures,
+	regex_find,
+};
 
 use crate::{
-	paths,
+	paths::{
+		self,
+		glob_path,
+	},
 	serializable_enum,
 	serializable_struct,
 	steam::appinfo::SteamLaunchOption,
@@ -230,13 +236,7 @@ fn get_engine(game_path: &Path) -> GameEngine {
 	} else if is_unreal_exe(game_path) {
 		GameEngine {
 			brand: GameEngineBrand::Unreal,
-			version: GameEngineVersion {
-				major: 0,
-				minor: 0,
-				patch: 0,
-				suffix: String::new(),
-				display: String::new(),
-			},
+			version: get_unreal_version(game_path),
 		}
 	} else {
 		GameEngine {
@@ -350,6 +350,92 @@ fn get_unity_version(game_exe_path: &Path) -> GameEngineVersion {
 		patch: 0,
 		suffix: String::new(),
 		display: "Unknown".to_string(),
+	}
+}
+
+fn get_actual_unreal_binary(game_exe_path: &Path) -> PathBuf {
+	if let Some(parent) = game_exe_path.parent() {
+		if parent.ends_with("Win64") {
+			return game_exe_path.to_path_buf();
+		}
+
+		let paths = glob_path(
+			&parent
+				.join("*")
+				.join("Binaries")
+				.join("Win64")
+				.join("*.exe"),
+		);
+
+		if let Ok(mut paths) = paths {
+			let path = paths.find(|path_result| {
+				path_result
+					.as_ref()
+					.map_or(false, |path| !path.starts_with(parent.join("Engine")))
+			});
+
+			if let Some(Ok(path)) = path {
+				return path;
+			}
+		}
+	}
+
+	game_exe_path.to_path_buf()
+}
+
+fn get_unreal_version(game_exe_path: &Path) -> GameEngineVersion {
+	let actual_binary = get_actual_unreal_binary(game_exe_path);
+	match fs::read(actual_binary) {
+		Ok(file_bytes) => {
+			let match_result = regex_find!(
+				r"(?i)\+\x00\+\x00U\x00E\x00[4|5]\x00.{0,100}}?([4|5]\x00\.\x00(\d\x00)+)"B,
+				&file_bytes
+			)
+			.or(regex_find!(r"(?i)\+\x00U\x00E\x00[4|5]\x00"B, &file_bytes));
+
+			let match_string = match_result.map_or_else(
+				|| "No version found".to_string(),
+				|matched| {
+					String::from_utf16_lossy(
+						&matched
+							.chunks(2)
+							.map(|e| u16::from_le_bytes(e.try_into().unwrap_or_default()))
+							.collect::<Vec<_>>(),
+					)
+				},
+			);
+
+			let version = regex_find!(r"[4|5]\.\d+", &match_string).map_or_else(
+				|| {
+					regex_captures!(r"(?i)\+UE([4|5])", &match_string)
+						.map_or("failed", |(_, version)| version)
+				},
+				|version| version,
+			);
+
+			let version_parts: Vec<_> = version.split('.').collect();
+			let major = version_parts.first().map_or(0, |f| f.parse().unwrap_or(0));
+			let minor = version_parts.get(1).map_or(0, |f| f.parse().unwrap_or(0));
+
+			return GameEngineVersion {
+				major,
+				minor,
+				patch: 0,
+				suffix: String::new(),
+				display: version.to_string(),
+			};
+		}
+		Err(err) => {
+			println!("Failed to read game exe: {err}");
+		}
+	}
+
+	GameEngineVersion {
+		major: 0,
+		minor: 0,
+		patch: 0,
+		suffix: String::new(),
+		display: "nope".to_string(),
 	}
 }
 
