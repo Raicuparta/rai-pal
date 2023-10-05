@@ -14,6 +14,10 @@ div.table {
 	thead {
 		background: var(--background-dark);
 	}
+
+	code {
+		font-size: 10px;
+	}
 }
 
 .sortable {

@@ -6,15 +6,15 @@ type Props = {
 };
 
 export function GameName(props: Props) {
-	return (
+	return props.game.discriminator ? (
 		<Flex
 			gap="xs"
 			wrap="wrap"
 		>
 			{props.game.name}
-			{props.game.discriminator ? (
-				<Code opacity={0.5}>{props.game.discriminator}</Code>
-			) : null}
+			<Code opacity={0.5}>{props.game.discriminator}</Code>
 		</Flex>
+	) : (
+		props.game.name
 	);
 }
