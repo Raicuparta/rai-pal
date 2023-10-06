@@ -45,7 +45,11 @@ fn get_version_from_asset(asset_path: &Path) -> Result<String> {
 	let match_result = regex_find!(r"\d+\.\d+\.\d+[fp]\d+", &data_str);
 
 	match_result.map_or_else(
-		|| Ok("No version found".to_string()),
+		|| {
+			Err(Error::FailedToParseUnityVersionAsset(
+				asset_path.to_path_buf(),
+			))
+		},
 		|matched| Ok(matched.to_string()),
 	)
 }
@@ -59,20 +63,23 @@ fn get_unity_version(game_exe_path: &Path) -> Option<GameEngineVersion> {
 
 			if let Ok(metadata) = fs::metadata(&asset_path) {
 				if metadata.is_file() {
-					if let Ok(version) = get_version_from_asset(&asset_path) {
-						let mut version_parts = version.split('.');
-						let major = version_parts.next().unwrap_or("0").parse().unwrap_or(0);
-						let minor = version_parts.next().unwrap_or("0").parse().unwrap_or(0);
-						let patch = version_parts.next().unwrap_or("0").parse().unwrap_or(0);
-						let suffix = version_parts.next().unwrap_or("0").to_string();
+					match get_version_from_asset(&asset_path) {
+						Ok(version) => {
+							let mut version_parts = version.split('.');
+							let major = version_parts.next().unwrap_or("0").parse().unwrap_or(0);
+							let minor = version_parts.next().unwrap_or("0").parse().unwrap_or(0);
+							let patch = version_parts.next().unwrap_or("0").parse().unwrap_or(0);
+							let suffix = version_parts.next().unwrap_or("0").to_string();
 
-						return Some(GameEngineVersion {
-							major,
-							minor,
-							patch,
-							suffix: Some(suffix),
-							display: version,
-						});
+							return Some(GameEngineVersion {
+								major,
+								minor,
+								patch,
+								suffix: Some(suffix),
+								display: version,
+							});
+						}
+						Err(err) => println!("Failed to get Unity version: {err}"),
 					}
 				}
 			}

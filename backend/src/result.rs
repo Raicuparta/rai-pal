@@ -60,6 +60,9 @@ pub enum Error {
 		"Failed to find Steam cache file. **Try restarting Steam**. (Tried to read from `{0}`)"
 	)]
 	AppInfoNotFound(String),
+
+	#[error("Failed to retrieve Unity version from asset `{0}`")]
+	FailedToParseUnityVersionAsset(PathBuf),
 }
 
 impl serde::Serialize for Error {
