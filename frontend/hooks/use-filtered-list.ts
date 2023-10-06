@@ -48,6 +48,8 @@ export function useFilteredList<
 					return multiplier * valueA.localeCompare(valueB);
 				} else if (typeof valueA === "number" && typeof valueB === "number") {
 					return multiplier * (valueA - valueB);
+				} else if (typeof valueA === "boolean" && typeof valueB === "boolean") {
+					return multiplier * ((valueA ? 0 : 1) - (valueB ? 0 : 1));
 				} else {
 					return multiplier * `${valueA}`.localeCompare(`${valueB}`);
 				}
