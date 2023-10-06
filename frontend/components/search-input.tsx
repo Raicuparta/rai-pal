@@ -4,13 +4,14 @@ import { CloseButton, Input } from "@mantine/core";
 type Props = {
 	readonly onChange: (filter: Filter) => void;
 	readonly value: string;
+	readonly count: number;
 };
 
 export function SearchInput(props: Props) {
 	return (
 		<Input
 			onChange={(event) => props.onChange({ search: event.target.value })}
-			placeholder="Find..."
+			placeholder={`Search ${props.count} games...`}
 			style={{ flex: 1 }}
 			value={props.value}
 			rightSectionPointerEvents="all"

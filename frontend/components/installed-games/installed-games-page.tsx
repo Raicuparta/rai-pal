@@ -159,6 +159,7 @@ export function InstalledGamesPage() {
 				<SearchInput
 					onChange={setFilter}
 					value={filter.search}
+					count={filteredGames.length}
 				/>
 				<FilterMenu
 					setFilter={setFilter}

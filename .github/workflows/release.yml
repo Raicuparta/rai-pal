@@ -1,22 +1,15 @@
 name: "release"
 on:
   workflow_dispatch:
+    inputs:
+      change_log:
+        description: "Changelog"
+        required: true
+  push:
+    branches: [main]
 
 jobs:
-  generate-changelog:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Generate changelog
-        id: changelog
-        uses: heinrichreimer/action-github-changelog-generator@v2.3
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-  publish-tauri:
-    needs: generate-changelog
+  publish-release:
     permissions:
       contents: write
     strategy:
@@ -70,6 +63,6 @@ jobs:
           tagName: v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version
           releaseName: "Rai Pal __VERSION__"
           includeUpdaterJson: true
-          releaseBody: ${{ needs.generate-changelog.outputs.changelog }}
+          releaseBody: ${{ inputs.commit_message || github.event.pull_request.body || github.event.head_commit.message }}
           releaseDraft: true
           prerelease: false

@@ -94,6 +94,7 @@ export function OwnedGamesPage() {
 				<SearchInput
 					onChange={setFilter}
 					value={filter.search}
+					count={filteredGames.length}
 				/>
 				<FilterMenu
 					active={isFilterActive}
