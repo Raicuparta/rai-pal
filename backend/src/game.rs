@@ -1,11 +1,6 @@
 use std::{
 	collections::HashMap,
-	fs::{
-		self,
-		metadata,
-		File,
-	},
-	io::Read,
+	fs::{self,},
 	path::{
 		Path,
 		PathBuf,
@@ -16,20 +11,16 @@ use goblin::{
 	elf::Elf,
 	pe::PE,
 };
-use lazy_regex::{
-	regex_captures,
-	regex_find,
-};
 
 use crate::{
-	paths::{
-		self,
-		glob_path,
+	game_engines::{
+		unity,
+		unreal,
 	},
+	paths::{self,},
 	serializable_enum,
 	serializable_struct,
 	steam::appinfo::SteamLaunchOption,
-	Error,
 	Result,
 };
 
@@ -119,7 +110,7 @@ impl Game {
 		let engine = get_engine(full_path);
 		let scripting_backend = engine.as_ref().map_or(UnityScriptingBackend::Unknown, |e| {
 			if e.brand == GameEngineBrand::Unity {
-				get_unity_scripting_backend(full_path).unwrap_or(UnityScriptingBackend::Unknown)
+				unity::get_scripting_backend(full_path).unwrap_or(UnityScriptingBackend::Unknown)
 			} else {
 				UnityScriptingBackend::Unknown
 			}
@@ -195,72 +186,8 @@ impl Game {
 	}
 }
 
-fn is_unity_exe(game_path: &Path) -> bool {
-	game_path.is_file()
-		&& get_unity_data_path(game_path).map_or(false, |data_path| data_path.is_dir())
-}
-
-fn is_unreal_exe(game_path: &Path) -> bool {
-	const VALID_FOLDER_NAMES: [&str; 3] = ["Win64", "Win32", "ThirdParty"];
-
-	if let Some(parent) = game_path.parent() {
-		// For cases where the registered exe points to a launcher at the root level:
-		if VALID_FOLDER_NAMES.iter().any(|folder_name| {
-			parent
-				.join("Engine")
-				.join("Binaries")
-				.join(folder_name)
-				.is_dir()
-		}) {
-			return true;
-		}
-
-		// For cases where the registered exe points directly to the shipping binary:
-		if parent.ends_with("Win64") || parent.ends_with("Win32") {
-			if let Some(binaries) = parent.parent() {
-				if binaries.ends_with("Binaries") {
-					return true;
-				}
-			}
-		}
-	}
-
-	false
-}
-
 fn get_engine(game_path: &Path) -> Option<GameEngine> {
-	if is_unity_exe(game_path) {
-		Some(GameEngine {
-			brand: GameEngineBrand::Unity,
-			version: get_unity_version(game_path),
-		})
-	} else if is_unreal_exe(game_path) {
-		Some(GameEngine {
-			brand: GameEngineBrand::Unreal,
-			version: get_unreal_version(game_path),
-		})
-	} else {
-		None
-	}
-}
-
-fn get_unity_scripting_backend(game_exe_path: &Path) -> Result<UnityScriptingBackend> {
-	let game_folder = paths::path_parent(game_exe_path)?;
-
-	if game_folder.join("GameAssembly.dll").is_file()
-		|| game_folder.join("GameAssembly.so").is_file()
-	{
-		Ok(UnityScriptingBackend::Il2Cpp)
-	} else {
-		Ok(UnityScriptingBackend::Mono)
-	}
-}
-
-fn get_unity_data_path(game_exe_path: &Path) -> Result<PathBuf> {
-	let parent = paths::path_parent(game_exe_path)?;
-	let file_stem = paths::file_name_without_extension(game_exe_path)?;
-
-	Ok(parent.join(format!("{file_stem}_Data")))
+	unity::get_engine(game_path).or_else(|| unreal::get_engine(game_path))
 }
 
 fn get_os_and_architecture(file_path: &Path) -> Result<(OperatingSystem, Architecture)> {
@@ -305,137 +232,6 @@ fn get_os_and_architecture(file_path: &Path) -> Result<(OperatingSystem, Archite
 
 		Ok((OperatingSystem::Unknown, Architecture::Unknown))
 	})?
-}
-
-fn get_unity_version(game_exe_path: &Path) -> Option<GameEngineVersion> {
-	const ASSETS_WITH_VERSION: [&str; 3] = ["globalgamemanagers", "mainData", "data.unity3d"];
-
-	if let Ok(data_path) = get_unity_data_path(game_exe_path) {
-		for asset_name in &ASSETS_WITH_VERSION {
-			let asset_path = data_path.join(asset_name);
-
-			if let Ok(metadata) = metadata(&asset_path) {
-				if metadata.is_file() {
-					if let Ok(version) = get_version_from_asset(&asset_path) {
-						let mut version_parts = version.split('.');
-						let major = version_parts.next().unwrap_or("0").parse().unwrap_or(0);
-						let minor = version_parts.next().unwrap_or("0").parse().unwrap_or(0);
-						let patch = version_parts.next().unwrap_or("0").parse().unwrap_or(0);
-						let suffix = version_parts.next().unwrap_or("0").to_string();
-
-						return Some(GameEngineVersion {
-							major,
-							minor,
-							patch,
-							suffix: Some(suffix),
-							display: version,
-						});
-					}
-				}
-			}
-		}
-	}
-
-	None
-}
-
-fn get_actual_unreal_binary(game_exe_path: &Path) -> PathBuf {
-	if let Some(parent) = game_exe_path.parent() {
-		if parent.ends_with("Win64") {
-			return game_exe_path.to_path_buf();
-		}
-
-		let paths = glob_path(
-			&parent
-				.join("*")
-				.join("Binaries")
-				.join("Win64")
-				.join("*.exe"),
-		);
-
-		if let Ok(mut paths) = paths {
-			let path = paths.find(|path_result| {
-				path_result
-					.as_ref()
-					.map_or(false, |path| !path.starts_with(parent.join("Engine")))
-			});
-
-			if let Some(Ok(path)) = path {
-				return path;
-			}
-		}
-	}
-
-	game_exe_path.to_path_buf()
-}
-
-fn get_unreal_version(game_exe_path: &Path) -> Option<GameEngineVersion> {
-	let actual_binary = get_actual_unreal_binary(game_exe_path);
-	match fs::read(actual_binary) {
-		Ok(file_bytes) => {
-			// Looking for strings like "+UE4+release-4.25", or just "+UE4" if the full version isn't found.
-			// The extra \x00 are because the strings are unicode.
-			// The {0,100} is matching the "+release-" etc part,
-			// it can be different for every game, but I'm limiting it to 100 chars.
-			let match_result = regex_find!(
-				r"(?i)\+\x00U\x00E\x00[45]\x00(?:.{0,100}?[45]\x00\.\x00(\d\x00)+)?"B,
-				&file_bytes
-			);
-			// I also noticed the game ABZU has the version in the exe as "4.12.5-0+UE4".
-			// But I don't know if any other games do that, so I didn't try to match it.
-
-			let match_string = String::from_utf16_lossy(
-				&match_result?
-					.chunks(2)
-					.map(|e| u16::from_le_bytes(e.try_into().unwrap_or_default()))
-					.collect::<Vec<_>>(),
-			);
-
-			// Regex again because the byte regex above can't extract the match groups.
-			// Can either be major.minor, or just major.
-			let (_, major, minor) =
-				regex_captures!(r"(?i)\+UE([45])(?:.*?[45]\.(\d+))?", &match_string)?;
-
-			return Some(GameEngineVersion {
-				major: major.parse().unwrap_or(0),
-				minor: minor.parse().unwrap_or(0),
-				patch: 0,
-				suffix: Some(match_string.clone()),
-				display: format!("{major}.{}", {
-					if minor.is_empty() {
-						// If we couldn't figure out the minor version,
-						// we just put an x in there, like "4.x".
-						"x"
-					} else {
-						minor
-					}
-				}),
-			});
-		}
-		Err(err) => {
-			println!("Failed to read game exe: {err}");
-		}
-	}
-
-	None
-}
-
-fn get_version_from_asset(asset_path: &Path) -> Result<String> {
-	let mut file = File::open(asset_path)?;
-	let mut data = vec![0u8; 4096];
-
-	let bytes_read = file.read(&mut data)?;
-	if bytes_read == 0 {
-		return Err(Error::EmptyFile(asset_path.to_path_buf()));
-	}
-
-	let data_str = String::from_utf8_lossy(&data[..bytes_read]);
-	let match_result = regex_find!(r"\d+\.\d+\.\d+[fp]\d+", &data_str);
-
-	match_result.map_or_else(
-		|| Ok("No version found".to_string()),
-		|matched| Ok(matched.to_string()),
-	)
 }
 
 fn get_installed_mods_folder(id: &str) -> Result<PathBuf> {
