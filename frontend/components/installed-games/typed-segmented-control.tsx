@@ -15,6 +15,7 @@ export function TypedSegmentedControl<T extends string>(
 ) {
 	return (
 		<SegmentedControl
+			my={-2.5}
 			color={props.value ? "violet" : undefined}
 			data={props.data}
 			onChange={(value) => props.onChange((value as T) || undefined)}

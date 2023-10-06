@@ -43,6 +43,7 @@ function App() {
 						<Container
 							h="100%"
 							pb="md"
+							size="lg"
 						>
 							<page.component />
 						</Container>
