@@ -61,9 +61,7 @@ export function DiscoverPage() {
 						<img
 							className={styles.item}
 							onClick={() =>
-								shell.open(
-									`https://steampowered.com/app/${filteredGames[index].id}`,
-								)
+								shell.open(`steam://store/${filteredGames[index].id}`)
 							}
 							height={87}
 							width={231}

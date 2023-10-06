@@ -28,13 +28,9 @@ export function OwnedGameModal(props: Props) {
 				<Button.Group orientation="vertical">
 					<CommandButton
 						leftSection={<IconBrowser />}
-						onClick={() =>
-							shell.open(
-								`https://steampowered.com/app/${props.selectedGame.id}`,
-							)
-						}
+						onClick={() => shell.open(`steam://store/${props.selectedGame.id}`)}
 					>
-						Open Steam Page
+						Steam Store
 					</CommandButton>
 					<CommandButton
 						leftSection={<IconDownload />}
@@ -42,7 +38,7 @@ export function OwnedGameModal(props: Props) {
 							shell.open(`steam://install/${props.selectedGame.id}`)
 						}
 					>
-						Install on Steam
+						Install
 					</CommandButton>
 				</Button.Group>
 				<Stack gap="xs">
