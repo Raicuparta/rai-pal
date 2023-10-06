@@ -8,8 +8,8 @@ import { Tabs, Container, Stack } from "@mantine/core";
 const pages = {
 	installedGames: { title: "Installed Games", component: InstalledGamesPage },
 	ownedGames: { title: "Owned Games", component: OwnedGamesPage },
-	mods: { title: "Mods", component: ModsPage },
 	discover: { title: "Discover", component: DiscoverPage },
+	mods: { title: "Mods", component: ModsPage },
 	settings: { title: "Settings", component: SettingsPage },
 };
 
