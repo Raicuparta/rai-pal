@@ -27,8 +27,14 @@ export function InstalledGameRow(_: number, game: Game) {
 				</Badge>
 			</Table.Td>
 			<Table.Td>
-				<Badge color={scriptingBackendColor[game.scriptingBackend]}>
-					{game.scriptingBackend}
+				<Badge
+					color={
+						game.scriptingBackend
+							? scriptingBackendColor[game.scriptingBackend]
+							: "dark"
+					}
+				>
+					{game.scriptingBackend ?? "Unknown"}
 				</Badge>
 			</Table.Td>
 			<Table.Td>

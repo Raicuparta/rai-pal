@@ -26,11 +26,7 @@ use crate::{
 	serializable_enum,
 };
 
-serializable_enum!(UnityScriptingBackend {
-	Il2Cpp,
-	Mono,
-	Unknown
-});
+serializable_enum!(UnityScriptingBackend { Il2Cpp, Mono });
 
 fn get_version_from_asset(asset_path: &Path) -> Result<String> {
 	let mut file = File::open(asset_path)?;
@@ -96,15 +92,32 @@ fn get_unity_data_path(game_exe_path: &Path) -> Result<PathBuf> {
 	Ok(parent.join(format!("{file_stem}_Data")))
 }
 
-pub fn get_scripting_backend(game_exe_path: &Path) -> Result<UnityScriptingBackend> {
-	let game_folder = paths::path_parent(game_exe_path)?;
-
-	if game_folder.join("GameAssembly.dll").is_file()
-		|| game_folder.join("GameAssembly.so").is_file()
-	{
-		Ok(UnityScriptingBackend::Il2Cpp)
+pub fn get_scripting_backend(
+	game_exe_path: &Path,
+	engine: &Option<GameEngine>,
+) -> Option<UnityScriptingBackend> {
+	if let Some(engine) = engine {
+		if engine.brand != GameEngineBrand::Unity {
+			return None;
+		}
 	} else {
-		Ok(UnityScriptingBackend::Mono)
+		return None;
+	}
+
+	match paths::path_parent(game_exe_path) {
+		Ok(game_folder) => {
+			if game_folder.join("GameAssembly.dll").is_file()
+				|| game_folder.join("GameAssembly.so").is_file()
+			{
+				Some(UnityScriptingBackend::Il2Cpp)
+			} else {
+				Some(UnityScriptingBackend::Mono)
+			}
+		}
+		Err(err) => {
+			println!("Failed to get Unity scripting backend: {err}");
+			None
+		}
 	}
 }
 

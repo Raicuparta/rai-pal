@@ -14,10 +14,7 @@ use goblin::{
 
 use crate::{
 	game_engines::{
-		game_engine::{
-			GameEngine,
-			GameEngineBrand,
-		},
+		game_engine::GameEngine,
 		unity::{
 			self,
 			UnityScriptingBackend,
@@ -45,7 +42,7 @@ serializable_struct!(Game {
 	pub discriminator: Option<String>,
 	pub full_path: PathBuf,
 	pub architecture: Architecture,
-	pub scripting_backend: UnityScriptingBackend,
+	pub scripting_backend: Option<UnityScriptingBackend>,
 	pub operating_system: OperatingSystem,
 	pub steam_launch: Option<SteamLaunchOption>,
 	pub installed_mods: Vec<String>,
@@ -92,13 +89,7 @@ impl Game {
 		};
 
 		let engine = get_engine(full_path);
-		let scripting_backend = engine.as_ref().map_or(UnityScriptingBackend::Unknown, |e| {
-			if e.brand == GameEngineBrand::Unity {
-				unity::get_scripting_backend(full_path).unwrap_or(UnityScriptingBackend::Unknown)
-			} else {
-				UnityScriptingBackend::Unknown
-			}
-		});
+		let scripting_backend = unity::get_scripting_backend(full_path, &engine);
 
 		Some(Self {
 			architecture,
