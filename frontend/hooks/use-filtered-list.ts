@@ -46,6 +46,8 @@ export function useFilteredList<
 				const valueB = gameB[sort.id];
 				if (typeof valueA === "string" && typeof valueB === "string") {
 					return multiplier * valueA.localeCompare(valueB);
+				} else if (typeof valueA === "number" && typeof valueB === "number") {
+					return multiplier * (valueA - valueB);
 				} else {
 					return multiplier * `${valueA}`.localeCompare(`${valueB}`);
 				}
