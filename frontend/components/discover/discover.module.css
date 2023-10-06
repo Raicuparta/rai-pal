@@ -7,9 +7,11 @@ div.wrapper {
 	overflow: hidden;
 	background-color: var(--mantine-color-dark-8);
 	display: block;
-}
+	cursor: pointer;
 
-.itemContainer {
+	&:hover {
+		opacity: 0.75;
+	}
 }
 
 .listContainer {

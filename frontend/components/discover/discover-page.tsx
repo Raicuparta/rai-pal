@@ -1,41 +1,77 @@
 import { useUnownedGames } from "@hooks/use-backend-data";
-import { Box, Paper } from "@mantine/core";
+import { Box, Flex, Paper, Stack, Text } from "@mantine/core";
 import { VirtuosoGrid } from "react-virtuoso";
 import styles from "./discover.module.css";
 import { shell } from "@tauri-apps/api";
+import { useMemo, useState } from "react";
+import { RefreshButton } from "@components/refresh-button";
+import { ErrorPopover } from "@components/error-popover";
+import { GameEngineBrand } from "@api/bindings";
+import { EngineSelect } from "@components/engine-select";
 
 export function DiscoverPage() {
 	const [unownedGames, isLoading, refresh, error, clearError] =
 		useUnownedGames();
 
+	const [engine, setEngine] = useState<GameEngineBrand>();
+
+	const filteredGames = useMemo(
+		() =>
+			engine
+				? unownedGames.filter((game) => game.engine == engine)
+				: unownedGames,
+		[unownedGames, engine],
+	);
+
 	return (
-		<Paper
-			h="100%"
-			className={styles.wrapper}
-		>
-			<VirtuosoGrid
-				overscan={200}
-				data={unownedGames}
-				itemClassName={styles.itemContainer}
-				listClassName={styles.listContainer}
-				components={{
-					Header: () => <Box className={styles.spacer} />,
-					Footer: () => <Box className={styles.spacer} />,
-				}}
-				itemContent={(index) => (
-					<img
-						className={styles.item}
-						onClick={() =>
-							shell.open(
-								`https://steampowered.com/app/${unownedGames[index].id}`,
-							)
-						}
-						height={87}
-						width={231}
-						src={`https://cdn.cloudflare.steamstatic.com/steam/apps/${unownedGames[index].id}/capsule_231x87.jpg`}
+		<Stack h="100%">
+			<Flex
+				justify="space-between"
+				align="center"
+				gap="md"
+			>
+				<EngineSelect
+					onChange={setEngine}
+					value={engine}
+				/>
+				<Text>{filteredGames.length} games</Text>
+				<ErrorPopover
+					error={error}
+					clearError={clearError}
+				>
+					<RefreshButton
+						loading={isLoading}
+						onClick={refresh}
 					/>
-				)}
-			/>
-		</Paper>
+				</ErrorPopover>
+			</Flex>
+			<Paper
+				h="100%"
+				className={styles.wrapper}
+			>
+				<VirtuosoGrid
+					overscan={200}
+					data={filteredGames}
+					listClassName={styles.listContainer}
+					components={{
+						Header: () => <Box className={styles.spacer} />,
+						Footer: () => <Box className={styles.spacer} />,
+					}}
+					itemContent={(index) => (
+						<img
+							className={styles.item}
+							onClick={() =>
+								shell.open(
+									`https://steampowered.com/app/${filteredGames[index].id}`,
+								)
+							}
+							height={87}
+							width={231}
+							src={`https://cdn.cloudflare.steamstatic.com/steam/apps/${filteredGames[index].id}/capsule_231x87.jpg`}
+						/>
+					)}
+				/>
+			</Paper>
+		</Stack>
 	);
 }
