@@ -83,7 +83,7 @@ async fn get_owned_games(
 #[tauri::command]
 #[specta::specta]
 async fn get_unowned_games() -> Result<Vec<GameDatabaseEntry>> {
-	steam::ids_by_engine::get_ids().await
+	steam::ids_by_engine::get_unowned_games().await
 }
 
 #[tauri::command]
