@@ -13,18 +13,24 @@ use std::{
 use lazy_regex::regex_find;
 
 use crate::{
-	game::{
+	game_engines::game_engine::{
 		GameEngine,
 		GameEngineBrand,
 		GameEngineVersion,
-		UnityScriptingBackend,
 	},
 	paths,
 	result::{
 		Error,
 		Result,
 	},
+	serializable_enum,
 };
+
+serializable_enum!(UnityScriptingBackend {
+	Il2Cpp,
+	Mono,
+	Unknown
+});
 
 fn get_version_from_asset(asset_path: &Path) -> Result<String> {
 	let mut file = File::open(asset_path)?;

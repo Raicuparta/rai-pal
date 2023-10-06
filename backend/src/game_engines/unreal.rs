@@ -12,7 +12,7 @@ use lazy_regex::{
 };
 
 use crate::{
-	game::{
+	game_engines::game_engine::{
 		GameEngine,
 		GameEngineBrand,
 		GameEngineVersion,

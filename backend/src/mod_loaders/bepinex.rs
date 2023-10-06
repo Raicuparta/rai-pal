@@ -11,9 +11,11 @@ use crate::{
 	},
 	game::{
 		Game,
-		GameEngine,
 		OperatingSystem,
-		UnityScriptingBackend,
+	},
+	game_engines::{
+		game_engine::GameEngine,
+		unity::UnityScriptingBackend,
 	},
 	game_mod::Mod,
 	mod_loaders::mod_loader::{

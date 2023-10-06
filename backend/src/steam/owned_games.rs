@@ -10,10 +10,8 @@ use super::{
 	thumbnail::get_steam_thumbnail,
 };
 use crate::{
-	game::{
-		GameEngineBrand,
-		OperatingSystem,
-	},
+	game::OperatingSystem,
+	game_engines::game_engine::GameEngineBrand,
 	serializable_struct,
 	Result,
 };

@@ -14,7 +14,14 @@ use goblin::{
 
 use crate::{
 	game_engines::{
-		unity,
+		game_engine::{
+			GameEngine,
+			GameEngineBrand,
+		},
+		unity::{
+			self,
+			UnityScriptingBackend,
+		},
 		unreal,
 	},
 	paths::{self,},
@@ -24,35 +31,12 @@ use crate::{
 	Result,
 };
 
-serializable_enum!(UnityScriptingBackend {
-	Il2Cpp,
-	Mono,
-	Unknown
-});
 serializable_enum!(Architecture { Unknown, X64, X86 });
+
 serializable_enum!(OperatingSystem {
 	Unknown,
 	Linux,
 	Windows
-});
-
-serializable_enum!(GameEngineBrand {
-	Unity,
-	Unreal,
-	Godot,
-});
-
-serializable_struct!(GameEngine {
-	pub brand: GameEngineBrand,
-	pub version: Option<GameEngineVersion>,
-});
-
-serializable_struct!(GameEngineVersion {
-	pub major: u32,
-	pub minor: u32,
-	pub patch: u32,
-	pub suffix: Option<String>,
-	pub display: String,
 });
 
 serializable_struct!(Game {
