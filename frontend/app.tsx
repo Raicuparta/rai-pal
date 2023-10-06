@@ -1,3 +1,4 @@
+import { DiscoverPage } from "@components/discover/discover-page";
 import { InstalledGamesPage } from "./components/installed-games/installed-games-page";
 import { ModsPage } from "./components/mods/mods-page";
 import { OwnedGamesPage } from "./components/owned-games/owned-games-page";
@@ -7,6 +8,7 @@ import { Tabs, Container, Stack } from "@mantine/core";
 const pages = {
 	installedGames: { title: "Installed Games", component: InstalledGamesPage },
 	ownedGames: { title: "Owned Games", component: OwnedGamesPage },
+	discover: { title: "Discover", component: DiscoverPage },
 	mods: { title: "Mods", component: ModsPage },
 	settings: { title: "Settings", component: SettingsPage },
 };

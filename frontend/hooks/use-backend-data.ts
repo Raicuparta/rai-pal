@@ -1,4 +1,4 @@
-import { getModLoaders, getOwnedGames } from "@api/bindings";
+import { getModLoaders, getOwnedGames, getUnownedGames } from "@api/bindings";
 import { useCallback, useEffect, useState } from "react";
 
 type ApiFunction<TResultData> = (ignoreCache: boolean) => Promise<TResultData>;
@@ -39,3 +39,4 @@ export function useBackendData<TData>(
 
 export const useOwnedGames = () => useBackendData(getOwnedGames, []);
 export const useModLoaders = () => useBackendData(getModLoaders, {});
+export const useUnownedGames = () => useBackendData(getUnownedGames, []);

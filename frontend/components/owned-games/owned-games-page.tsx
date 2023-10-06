@@ -10,21 +10,11 @@ import { useFilteredList } from "@hooks/use-filtered-list";
 import { FilterMenu } from "@components/filter-menu";
 import { VirtualizedTable } from "@components/table/virtualized-table";
 import { SwitchButton } from "@components/switch-button";
-import {
-	SegmentedControlData,
-	TypedSegmentedControl,
-} from "@components/installed-games/typed-segmented-control";
 import { RefreshButton } from "@components/refresh-button";
 import { FixOwnedGamesButton } from "./fix-owned-games-button";
 import { SearchInput } from "@components/search-input";
 import { ErrorPopover } from "@components/error-popover";
-
-const engineOptions: SegmentedControlData<GameEngineBrand>[] = [
-	{ label: "Any Engine", value: "" },
-	{ label: "Unity", value: "Unity" },
-	{ label: "Unreal", value: "Unreal" },
-	{ label: "Godot", value: "Godot" },
-];
+import { EngineSelect } from "@components/engine-select";
 
 const tableHeaders: TableHeader<OwnedGame, keyof OwnedGame>[] = [
 	{ id: "thumbnailUrl", label: "", width: 100 },
@@ -101,8 +91,7 @@ export function OwnedGamesPage() {
 					setFilter={setFilter}
 				>
 					<Stack>
-						<TypedSegmentedControl
-							data={engineOptions}
+						<EngineSelect
 							onChange={(engine) => setFilter({ engine })}
 							value={filter.engine}
 						/>
