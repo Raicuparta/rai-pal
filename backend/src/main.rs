@@ -21,6 +21,7 @@ use tauri::api::dialog::message;
 
 mod files;
 mod game;
+mod game_engines;
 mod game_mod;
 mod macros;
 mod mod_loaders;

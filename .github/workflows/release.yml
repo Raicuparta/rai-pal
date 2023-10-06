@@ -5,11 +5,13 @@ on:
       change_log:
         description: "Changelog"
         required: true
-  push:
+  pull_request:
+    types: [closed]
     branches: [main]
 
 jobs:
   publish-release:
+    if: github.event.pull_request.merged == true
     permissions:
       contents: write
     strategy:
