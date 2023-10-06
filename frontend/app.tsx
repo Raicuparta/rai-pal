@@ -1,3 +1,4 @@
+import { DiscoverPage } from "@components/discover/discover-page";
 import { InstalledGamesPage } from "./components/installed-games/installed-games-page";
 import { ModsPage } from "./components/mods/mods-page";
 import { OwnedGamesPage } from "./components/owned-games/owned-games-page";
@@ -8,6 +9,7 @@ const pages = {
 	installedGames: { title: "Installed Games", component: InstalledGamesPage },
 	ownedGames: { title: "Owned Games", component: OwnedGamesPage },
 	mods: { title: "Mods", component: ModsPage },
+	discover: { title: "Discover", component: DiscoverPage },
 	settings: { title: "Settings", component: SettingsPage },
 };
 
