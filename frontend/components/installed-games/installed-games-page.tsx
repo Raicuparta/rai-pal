@@ -23,6 +23,7 @@ import { useGameMap } from "@hooks/use-game-map";
 import { RefreshButton } from "@components/refresh-button";
 import { SearchInput } from "@components/search-input";
 import { ErrorPopover } from "@components/error-popover";
+import { EngineSelect } from "@components/engine-select";
 
 interface InstalledGamesFilter extends Filter {
 	search: string;
@@ -61,13 +62,6 @@ const scriptingBackendOptions: SegmentedControlData<UnityScriptingBackend>[] = [
 	{ label: "Any backend", value: "" },
 	{ label: "IL2CPP", value: "Il2Cpp" },
 	{ label: "Mono", value: "Mono" },
-];
-
-const engineOptions: SegmentedControlData<GameEngineBrand>[] = [
-	{ label: "Any Engine", value: "" },
-	{ label: "Unity", value: "Unity" },
-	{ label: "Unreal", value: "Unreal" },
-	{ label: "Godot", value: "Godot" },
 ];
 
 const defaultVersion: GameEngineVersion = {
@@ -181,8 +175,7 @@ export function InstalledGamesPage() {
 							onChange={(scriptingBackend) => setFilter({ scriptingBackend })}
 							value={filter.scriptingBackend}
 						/>
-						<TypedSegmentedControl
-							data={engineOptions}
+						<EngineSelect
 							onChange={(engine) => setFilter({ engine })}
 							value={filter.engine}
 						/>

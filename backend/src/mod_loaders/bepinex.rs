@@ -11,9 +11,11 @@ use crate::{
 	},
 	game::{
 		Game,
-		GameEngine,
 		OperatingSystem,
-		UnityScriptingBackend,
+	},
+	game_engines::{
+		game_engine::GameEngine,
+		unity::UnityScriptingBackend,
 	},
 	game_mod::Mod,
 	mod_loaders::mod_loader::{
@@ -58,7 +60,11 @@ impl ModLoaderActions for BepInEx {
 	}
 
 	fn install(&self, game: &Game) -> Result {
-		let scripting_backend_path = &self.data.path.join(game.scripting_backend.to_string());
+		let scripting_backend_path = &self.data.path.join(
+			game.scripting_backend
+				.ok_or_else(|| Error::InstallModWithoutBackend(game.full_path.clone()))?
+				.to_string(),
+		);
 		let architecture_path = scripting_backend_path
 			.join(game.operating_system.to_string())
 			.join(game.architecture.to_string());

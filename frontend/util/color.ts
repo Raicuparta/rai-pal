@@ -23,7 +23,6 @@ export const architectureColor: ColorRecord<Architecture> = {
 export const scriptingBackendColor: ColorRecord<UnityScriptingBackend> = {
 	Il2Cpp: "red",
 	Mono: "grape",
-	Unknown: "dark",
 } as const;
 
 export const engineColor: ColorRecord<GameEngineBrand> = {

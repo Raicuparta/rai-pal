@@ -14,7 +14,11 @@ use goblin::{
 
 use crate::{
 	game_engines::{
-		unity,
+		game_engine::GameEngine,
+		unity::{
+			self,
+			UnityScriptingBackend,
+		},
 		unreal,
 	},
 	paths::{self,},
@@ -24,35 +28,12 @@ use crate::{
 	Result,
 };
 
-serializable_enum!(UnityScriptingBackend {
-	Il2Cpp,
-	Mono,
-	Unknown
-});
 serializable_enum!(Architecture { Unknown, X64, X86 });
+
 serializable_enum!(OperatingSystem {
 	Unknown,
 	Linux,
 	Windows
-});
-
-serializable_enum!(GameEngineBrand {
-	Unity,
-	Unreal,
-	Godot,
-});
-
-serializable_struct!(GameEngine {
-	pub brand: GameEngineBrand,
-	pub version: Option<GameEngineVersion>,
-});
-
-serializable_struct!(GameEngineVersion {
-	pub major: u32,
-	pub minor: u32,
-	pub patch: u32,
-	pub suffix: Option<String>,
-	pub display: String,
 });
 
 serializable_struct!(Game {
@@ -61,7 +42,7 @@ serializable_struct!(Game {
 	pub discriminator: Option<String>,
 	pub full_path: PathBuf,
 	pub architecture: Architecture,
-	pub scripting_backend: UnityScriptingBackend,
+	pub scripting_backend: Option<UnityScriptingBackend>,
 	pub operating_system: OperatingSystem,
 	pub steam_launch: Option<SteamLaunchOption>,
 	pub installed_mods: Vec<String>,
@@ -108,13 +89,7 @@ impl Game {
 		};
 
 		let engine = get_engine(full_path);
-		let scripting_backend = engine.as_ref().map_or(UnityScriptingBackend::Unknown, |e| {
-			if e.brand == GameEngineBrand::Unity {
-				unity::get_scripting_backend(full_path).unwrap_or(UnityScriptingBackend::Unknown)
-			} else {
-				UnityScriptingBackend::Unknown
-			}
-		});
+		let scripting_backend = unity::get_scripting_backend(full_path, &engine);
 
 		Some(Self {
 			architecture,

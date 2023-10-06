@@ -15,7 +15,10 @@ use result::{
 	Error,
 	Result,
 };
-use steam::owned_games::OwnedGame;
+use steam::{
+	ids_by_engine::GameDatabaseEntry,
+	owned_games::OwnedGame,
+};
 use steamlocate::SteamDir;
 use tauri::api::dialog::message;
 
@@ -75,6 +78,12 @@ async fn get_owned_games(
 	ignore_cache: bool,
 ) -> Result<Vec<OwnedGame>> {
 	get_state_data(&state.owned_games, steam::owned_games::get, ignore_cache).await
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn get_unowned_games() -> Result<Vec<GameDatabaseEntry>> {
+	steam::ids_by_engine::get_unowned_games().await
 }
 
 #[tauri::command]
@@ -224,7 +233,8 @@ fn main() {
 			start_game,
 			open_mod_folder,
 			update_game_info,
-			delete_steam_appinfo_cache
+			delete_steam_appinfo_cache,
+			get_unowned_games
 		]
 	);
 }

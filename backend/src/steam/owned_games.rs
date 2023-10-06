@@ -7,19 +7,15 @@ use super::{
 		self,
 		SteamAppInfoFile,
 	},
+	ids_by_engine::get_ids_for_engine,
 	thumbnail::get_steam_thumbnail,
 };
 use crate::{
-	game::{
-		GameEngineBrand,
-		OperatingSystem,
-	},
+	game::OperatingSystem,
+	game_engines::game_engine::GameEngineBrand,
 	serializable_struct,
 	Result,
 };
-
-const UNITY_STEAM_APP_IDS_URL: &str =
-	"https://raw.githubusercontent.com/Raicuparta/steam-unity-app-ids/main";
 
 serializable_struct!(OwnedGame {
 	id: String,
@@ -36,15 +32,11 @@ async fn get_engine_games(
 	steam_dir: &SteamDir,
 	app_info: &SteamAppInfoFile,
 ) -> Result<Vec<OwnedGame>> {
-	let response = reqwest::get(format!("{UNITY_STEAM_APP_IDS_URL}/{engine}"))
+	Ok(get_ids_for_engine(engine)
 		.await?
-		.text()
-		.await?;
-
-	Ok(response
-		.split('\n')
-		.filter_map(|app_id| {
-			let id = app_id.parse::<u32>().ok()?;
+		.iter()
+		.filter_map(|entry| {
+			let id = entry.id.parse::<u32>().ok()?;
 
 			let app_info = app_info.apps.get(&id)?;
 
@@ -73,13 +65,13 @@ async fn get_engine_games(
 				.unwrap_or_default();
 
 			Some(OwnedGame {
-				id: app_id.to_string(),
+				id: entry.id.clone(),
 				name: app_info.name.clone(),
 				installed,
 				os_list,
 				engine,
 				release_date,
-				thumbnail_url: get_steam_thumbnail(app_id),
+				thumbnail_url: get_steam_thumbnail(&entry.id),
 			})
 		})
 		.collect())

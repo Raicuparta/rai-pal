@@ -1,0 +1,26 @@
+div.wrapper {
+	background-color: var(--mantine-color-dark-6);
+}
+
+.item {
+	border-radius: var(--mantine-radius-default);
+	overflow: hidden;
+	background-color: var(--mantine-color-dark-8);
+	display: block;
+	cursor: pointer;
+
+	&:hover {
+		opacity: 0.75;
+	}
+}
+
+.listContainer {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: var(--mantine-spacing-xs);
+}
+
+.spacer {
+	height: var(--mantine-spacing-xs);
+}

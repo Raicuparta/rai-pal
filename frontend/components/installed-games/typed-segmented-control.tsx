@@ -4,15 +4,18 @@ export type SegmentedControlData<T extends string> = SegmentedControlItem & {
 	value: T | "";
 };
 
-type Props<T extends string> = {
+export type TypedSegmentedControlProps<T extends string> = {
 	readonly data: SegmentedControlData<T>[];
 	readonly onChange: (value?: T) => void;
 	readonly value?: T;
 };
 
-export function TypedSegmentedControl<T extends string>(props: Props<T>) {
+export function TypedSegmentedControl<T extends string>(
+	props: TypedSegmentedControlProps<T>,
+) {
 	return (
 		<SegmentedControl
+			my={-2.5}
 			color={props.value ? "violet" : undefined}
 			data={props.data}
 			onChange={(value) => props.onChange((value as T) || undefined)}
