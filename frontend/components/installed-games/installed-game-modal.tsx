@@ -1,4 +1,4 @@
-import { Alert, Button, Modal, Stack } from "@mantine/core";
+import { Alert, Button, Flex, Modal, Stack } from "@mantine/core";
 import { useModLoaders } from "@hooks/use-backend-data";
 import {
 	Game,
@@ -22,6 +22,7 @@ import {
 } from "@tabler/icons-react";
 import { CodeHighlight } from "@mantine/code-highlight";
 import { steamCommands } from "../../util/steam";
+import { ModalImage } from "@components/modal-image";
 
 type Props = {
 	readonly game: Game;
@@ -59,9 +60,14 @@ export function InstalledGameModal(props: Props) {
 			onClose={props.onClose}
 			opened
 			size="lg"
-			title={<GameName game={props.game} />}
+			title={
+				<Flex>
+					<GameName game={props.game} />
+				</Flex>
+			}
 		>
 			<Stack>
+				<ModalImage src={props.game.thumbnailUrl} />
 				{error ? (
 					<Alert
 						color="red"
