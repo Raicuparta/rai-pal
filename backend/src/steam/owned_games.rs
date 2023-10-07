@@ -32,7 +32,7 @@ async fn get_engine_games(
 	steam_dir: &SteamDir,
 	app_info: &SteamAppInfoFile,
 ) -> Result<Vec<OwnedGame>> {
-	Ok(get_ids_for_engine(engine)
+	Ok(get_ids_for_engine(engine, &None)
 		.await?
 		.iter()
 		.filter_map(|entry| {

@@ -7,6 +7,7 @@ export function useBackendData<TData>(
 	apiFunction: ApiFunction<TData>,
 	defaultData: TData,
 ) {
+	console.log("call something");
 	const [data, setData] = useState<TData>(defaultData);
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState("");

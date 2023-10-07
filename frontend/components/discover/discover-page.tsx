@@ -7,7 +7,7 @@ import { RefreshButton } from "@components/refresh-button";
 import { ErrorPopover } from "@components/error-popover";
 import { GameEngineBrand } from "@api/bindings";
 import { EngineSelect } from "@components/engine-select";
-import { steamCommands } from "../../util/steam";
+import { DiscoverGame } from "./discover-game";
 
 export function DiscoverPage() {
 	const [unownedGames, isLoading, refresh, error, clearError] =
@@ -57,17 +57,7 @@ export function DiscoverPage() {
 						Header: () => <Box className={styles.spacer} />,
 						Footer: () => <Box className={styles.spacer} />,
 					}}
-					itemContent={(index) => (
-						<img
-							className={styles.item}
-							onClick={() =>
-								steamCommands.openStorePage(filteredGames[index].id)
-							}
-							height={87}
-							width={231}
-							src={`https://cdn.cloudflare.steamstatic.com/steam/apps/${filteredGames[index].id}/capsule_231x87.jpg`}
-						/>
-					)}
+					itemContent={(index) => <DiscoverGame game={filteredGames[index]} />}
 				/>
 			</Paper>
 		</Stack>
