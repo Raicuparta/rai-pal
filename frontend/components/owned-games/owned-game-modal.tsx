@@ -30,7 +30,7 @@ export function OwnedGameModal(props: Props) {
 						leftSection={<IconBrowser />}
 						onClick={() => shell.open(`steam://store/${props.selectedGame.id}`)}
 					>
-						Steam Store
+						Open Store Page
 					</CommandButton>
 					<CommandButton
 						leftSection={<IconDownload />}
