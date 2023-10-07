@@ -1,4 +1,7 @@
-use std::string;
+use std::{
+	collections::HashSet,
+	string,
+};
 
 use steamlocate::SteamDir;
 
@@ -18,7 +21,7 @@ serializable_struct!(GameDatabaseEntry {
 	pub nsfw: bool,
 });
 
-pub async fn get_nsfw_ids() -> Result<Vec<String>> {
+pub async fn get_nsfw_ids() -> Result<HashSet<String>> {
 	Ok(reqwest::get(format!("{UNITY_STEAM_APP_IDS_URL}/NSFW"))
 		.await?
 		.text()
@@ -30,9 +33,10 @@ pub async fn get_nsfw_ids() -> Result<Vec<String>> {
 
 pub async fn get_ids_for_engine(
 	engine: GameEngineBrand,
-	nsfw_ids: &Option<Vec<String>>,
+	nsfw_ids: &Option<HashSet<String>>,
 ) -> Result<Vec<GameDatabaseEntry>> {
-	Ok(reqwest::get(format!("{UNITY_STEAM_APP_IDS_URL}/{engine}"))
+	println!("Fetching {} games... ", engine);
+	let result = Ok(reqwest::get(format!("{UNITY_STEAM_APP_IDS_URL}/{engine}"))
 		.await?
 		.text()
 		.await?
@@ -48,15 +52,22 @@ pub async fn get_ids_for_engine(
 				nsfw,
 			}
 		})
-		.collect())
+		.collect());
+
+	println!("Done fetching {} games!", engine);
+
+	return result;
 }
 
 pub async fn get_unowned_games() -> Result<Vec<GameDatabaseEntry>> {
 	let nsfw_ids = Some(get_nsfw_ids().await?);
 
-	let mut ids = get_ids_for_engine(GameEngineBrand::Unity, &nsfw_ids).await?;
-	ids.append(&mut get_ids_for_engine(GameEngineBrand::Unreal, &nsfw_ids).await?);
-	ids.append(&mut get_ids_for_engine(GameEngineBrand::Godot, &nsfw_ids).await?);
+	let mut ids = [
+		get_ids_for_engine(GameEngineBrand::Unity, &None).await?,
+		get_ids_for_engine(GameEngineBrand::Unreal, &None).await?,
+		get_ids_for_engine(GameEngineBrand::Godot, &None).await?,
+	]
+	.concat();
 
 	let steam_dir = SteamDir::locate()?;
 	let app_info = appinfo::read(steam_dir.path())?;
