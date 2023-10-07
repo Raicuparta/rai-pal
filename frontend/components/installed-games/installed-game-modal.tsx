@@ -8,7 +8,7 @@ import {
 	startGame,
 	uninstallMod,
 } from "@api/bindings";
-import { Fragment, useCallback, useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import { GameName } from "./game-name";
 import { CommandButton } from "@components/command-button";
 import {
@@ -21,7 +21,7 @@ import {
 	IconTrash,
 } from "@tabler/icons-react";
 import { CodeHighlight } from "@mantine/code-highlight";
-import { shell } from "@tauri-apps/api";
+import { steamCommands } from "../../util/steam";
 
 type Props = {
 	readonly game: Game;
@@ -52,20 +52,6 @@ export function InstalledGameModal(props: Props) {
 			})),
 		[modLoaderMap, props.game.scriptingBackend],
 	);
-
-	const openStorePage = useCallback(async () => {
-		if (!props.game.steamLaunch) return;
-
-		return shell.open(`steam://store/${props.game.steamLaunch.appId}`);
-	}, [props.game.steamLaunch]);
-
-	const showInLibrary = useCallback(async () => {
-		if (!props.game.steamLaunch) return;
-
-		return shell.open(
-			`steam://nav/games/details/${props.game.steamLaunch.appId}`,
-		);
-	}, [props.game.steamLaunch]);
 
 	return (
 		<Modal
@@ -107,13 +93,17 @@ export function InstalledGameModal(props: Props) {
 						<>
 							<CommandButton
 								leftSection={<IconBooks />}
-								onClick={showInLibrary}
+								onClick={() =>
+									steamCommands.showInLibrary(props.game.steamLaunch?.appId)
+								}
 							>
 								Show in Library
 							</CommandButton>
 							<CommandButton
 								leftSection={<IconBrowser />}
-								onClick={openStorePage}
+								onClick={() =>
+									steamCommands.openStorePage(props.game.steamLaunch?.appId)
+								}
 							>
 								Open Store Page
 							</CommandButton>

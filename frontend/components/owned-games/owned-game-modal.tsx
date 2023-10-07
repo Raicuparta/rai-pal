@@ -1,10 +1,10 @@
 import { Button, Modal, Stack } from "@mantine/core";
 import { OwnedGame } from "@api/bindings";
-import { shell } from "@tauri-apps/api";
 import { CommandButton } from "@components/command-button";
 import { useMemo } from "react";
-import { IconBrowser, IconDownload } from "@tabler/icons-react";
+import { IconBooks, IconBrowser, IconDownload } from "@tabler/icons-react";
 import { CodeHighlight } from "@mantine/code-highlight";
+import { steamCommands } from "../../util/steam";
 
 type Props = {
 	readonly selectedGame: OwnedGame;
@@ -28,15 +28,19 @@ export function OwnedGameModal(props: Props) {
 				<Button.Group orientation="vertical">
 					<CommandButton
 						leftSection={<IconBrowser />}
-						onClick={() => shell.open(`steam://store/${props.selectedGame.id}`)}
+						onClick={() => steamCommands.openStorePage(props.selectedGame.id)}
 					>
 						Open Store Page
 					</CommandButton>
 					<CommandButton
+						leftSection={<IconBooks />}
+						onClick={() => steamCommands.showInLibrary(props.selectedGame.id)}
+					>
+						Show in Library
+					</CommandButton>
+					<CommandButton
 						leftSection={<IconDownload />}
-						onClick={() =>
-							shell.open(`steam://install/${props.selectedGame.id}`)
-						}
+						onClick={() => steamCommands.install(props.selectedGame.id)}
 					>
 						Install
 					</CommandButton>

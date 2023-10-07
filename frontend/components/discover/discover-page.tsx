@@ -2,12 +2,12 @@ import { useUnownedGames } from "@hooks/use-backend-data";
 import { Box, Flex, Paper, Stack, Text } from "@mantine/core";
 import { VirtuosoGrid } from "react-virtuoso";
 import styles from "./discover.module.css";
-import { shell } from "@tauri-apps/api";
 import { useMemo, useState } from "react";
 import { RefreshButton } from "@components/refresh-button";
 import { ErrorPopover } from "@components/error-popover";
 import { GameEngineBrand } from "@api/bindings";
 import { EngineSelect } from "@components/engine-select";
+import { steamCommands } from "../../util/steam";
 
 export function DiscoverPage() {
 	const [unownedGames, isLoading, refresh, error, clearError] =
@@ -61,7 +61,7 @@ export function DiscoverPage() {
 						<img
 							className={styles.item}
 							onClick={() =>
-								shell.open(`steam://store/${filteredGames[index].id}`)
+								steamCommands.openStorePage(filteredGames[index].id)
 							}
 							height={87}
 							width={231}
