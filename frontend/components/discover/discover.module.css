@@ -2,15 +2,18 @@ div.wrapper {
 	background-color: var(--mantine-color-dark-6);
 }
 
-.item {
+.game {
 	border-radius: var(--mantine-radius-default);
 	overflow: hidden;
 	background-color: var(--mantine-color-dark-8);
-	display: block;
-	cursor: pointer;
+	position: relative;
 
-	&:hover {
-		opacity: 0.75;
+	img {
+		display: block;
+		&:hover {
+			cursor: pointer;
+			opacity: 0.75;
+		}
 	}
 }
 
@@ -23,4 +26,26 @@ div.wrapper {
 
 .spacer {
 	height: var(--mantine-spacing-xs);
+}
+
+.nsfwImage {
+	filter: blur(10px);
+}
+
+.nsfwLabel {
+	position: absolute;
+	flex-direction: column;
+	gap: var(--mantine-spacing-xs);
+	height: 100%;
+	width: 100%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	font-size: 1rem;
+	pointer-events: none;
+	text-align: center;
+	line-height: 0.8;
+	z-index: 1;
+	background-color: rgba(0, 0, 0, 0.5);
+	text-shadow: 0 0 5px black;
 }

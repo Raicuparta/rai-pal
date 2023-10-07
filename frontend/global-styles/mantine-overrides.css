@@ -21,3 +21,9 @@
 .mantine-CodeHighlight-root {
 	border-radius: var(--mantine-radius-md);
 }
+
+.mantine-CodeHighlight-copy {
+	/* Mantine auto-hides the copy button on narrow screens.
+	I don't want that */
+	display: flex;
+}

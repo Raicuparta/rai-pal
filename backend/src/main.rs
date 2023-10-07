@@ -16,7 +16,7 @@ use result::{
 	Result,
 };
 use steam::{
-	ids_by_engine::GameDatabaseEntry,
+	ids_by_engine::DiscoverGame,
 	owned_games::OwnedGame,
 };
 use steamlocate::SteamDir;
@@ -82,8 +82,8 @@ async fn get_owned_games(
 
 #[tauri::command]
 #[specta::specta]
-async fn get_unowned_games() -> Result<Vec<GameDatabaseEntry>> {
-	steam::ids_by_engine::get_unowned_games().await
+async fn get_unowned_games() -> Result<Vec<DiscoverGame>> {
+	steam::ids_by_engine::get_discover_games().await
 }
 
 #[tauri::command]

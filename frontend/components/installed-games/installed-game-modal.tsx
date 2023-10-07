@@ -1,4 +1,4 @@
-import { Alert, Button, Modal, Stack } from "@mantine/core";
+import { Alert, Button, Flex, Modal, Stack } from "@mantine/core";
 import { useModLoaders } from "@hooks/use-backend-data";
 import {
 	Game,
@@ -12,6 +12,8 @@ import { Fragment, useMemo, useState } from "react";
 import { GameName } from "./game-name";
 import { CommandButton } from "@components/command-button";
 import {
+	IconBooks,
+	IconBrowser,
 	IconDownload,
 	IconFolder,
 	IconFolderCog,
@@ -19,6 +21,8 @@ import {
 	IconTrash,
 } from "@tabler/icons-react";
 import { CodeHighlight } from "@mantine/code-highlight";
+import { steamCommands } from "../../util/steam";
+import { ModalImage } from "@components/modal-image";
 
 type Props = {
 	readonly game: Game;
@@ -56,9 +60,14 @@ export function InstalledGameModal(props: Props) {
 			onClose={props.onClose}
 			opened
 			size="lg"
-			title={<GameName game={props.game} />}
+			title={
+				<Flex>
+					<GameName game={props.game} />
+				</Flex>
+			}
 		>
 			<Stack>
+				<ModalImage src={props.game.thumbnailUrl} />
 				{error ? (
 					<Alert
 						color="red"
@@ -86,6 +95,26 @@ export function InstalledGameModal(props: Props) {
 					>
 						Open Mods Folder
 					</CommandButton>
+					{props.game.steamLaunch && (
+						<>
+							<CommandButton
+								leftSection={<IconBooks />}
+								onClick={() =>
+									steamCommands.showInLibrary(props.game.steamLaunch?.appId)
+								}
+							>
+								Show in Library
+							</CommandButton>
+							<CommandButton
+								leftSection={<IconBrowser />}
+								onClick={() =>
+									steamCommands.openStorePage(props.game.steamLaunch?.appId)
+								}
+							>
+								Open Store Page
+							</CommandButton>
+						</>
+					)}
 				</Button.Group>
 				{modLoaders.map(
 					(modLoader) =>

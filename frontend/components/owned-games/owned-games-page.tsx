@@ -76,7 +76,7 @@ export function OwnedGamesPage() {
 			{selectedGame ? (
 				<OwnedGameModal
 					onClose={() => setSelectedGame(undefined)}
-					selectedGame={selectedGame}
+					game={selectedGame}
 				/>
 			) : null}
 			<Flex gap="md">

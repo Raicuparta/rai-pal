@@ -2,12 +2,12 @@ import { useUnownedGames } from "@hooks/use-backend-data";
 import { Box, Flex, Paper, Stack, Text } from "@mantine/core";
 import { VirtuosoGrid } from "react-virtuoso";
 import styles from "./discover.module.css";
-import { shell } from "@tauri-apps/api";
 import { useMemo, useState } from "react";
 import { RefreshButton } from "@components/refresh-button";
 import { ErrorPopover } from "@components/error-popover";
 import { GameEngineBrand } from "@api/bindings";
 import { EngineSelect } from "@components/engine-select";
+import { DiscoverGameCard } from "./discover-game";
 
 export function DiscoverPage() {
 	const [unownedGames, isLoading, refresh, error, clearError] =
@@ -26,15 +26,16 @@ export function DiscoverPage() {
 	return (
 		<Stack h="100%">
 			<Flex
-				justify="space-between"
 				align="center"
 				gap="md"
 			>
+				<Text style={{ flex: 1 }}>
+					{filteredGames.length} games you don&apos;t own
+				</Text>
 				<EngineSelect
 					onChange={setEngine}
 					value={engine}
 				/>
-				<Text>{filteredGames.length} games</Text>
 				<ErrorPopover
 					error={error}
 					clearError={clearError}
@@ -58,17 +59,7 @@ export function DiscoverPage() {
 						Footer: () => <Box className={styles.spacer} />,
 					}}
 					itemContent={(index) => (
-						<img
-							className={styles.item}
-							onClick={() =>
-								shell.open(
-									`https://steampowered.com/app/${filteredGames[index].id}`,
-								)
-							}
-							height={87}
-							width={231}
-							src={`https://cdn.cloudflare.steamstatic.com/steam/apps/${filteredGames[index].id}/capsule_231x87.jpg`}
-						/>
+						<DiscoverGameCard game={filteredGames[index]} />
 					)}
 				/>
 			</Paper>

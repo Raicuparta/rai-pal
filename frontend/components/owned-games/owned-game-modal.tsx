@@ -1,20 +1,21 @@
 import { Button, Modal, Stack } from "@mantine/core";
 import { OwnedGame } from "@api/bindings";
-import { shell } from "@tauri-apps/api";
 import { CommandButton } from "@components/command-button";
 import { useMemo } from "react";
-import { IconBrowser, IconDownload } from "@tabler/icons-react";
+import { IconBooks, IconBrowser, IconDownload } from "@tabler/icons-react";
 import { CodeHighlight } from "@mantine/code-highlight";
+import { steamCommands } from "../../util/steam";
+import { ModalImage } from "@components/modal-image";
 
 type Props = {
-	readonly selectedGame: OwnedGame;
+	readonly game: OwnedGame;
 	readonly onClose: () => void;
 };
 
 export function OwnedGameModal(props: Props) {
 	const debugData = useMemo(
-		() => JSON.stringify(props.selectedGame, null, 2),
-		[props.selectedGame],
+		() => JSON.stringify(props.game, null, 2),
+		[props.game],
 	);
 
 	return (
@@ -22,27 +23,30 @@ export function OwnedGameModal(props: Props) {
 			centered
 			onClose={props.onClose}
 			opened
-			title={props.selectedGame.name}
+			size="lg"
+			title={props.game.name}
 		>
 			<Stack>
+				<ModalImage src={props.game.thumbnailUrl} />
+
 				<Button.Group orientation="vertical">
 					<CommandButton
 						leftSection={<IconBrowser />}
-						onClick={() =>
-							shell.open(
-								`https://steampowered.com/app/${props.selectedGame.id}`,
-							)
-						}
+						onClick={() => steamCommands.openStorePage(props.game.id)}
 					>
-						Open Steam Page
+						Open Store Page
+					</CommandButton>
+					<CommandButton
+						leftSection={<IconBooks />}
+						onClick={() => steamCommands.showInLibrary(props.game.id)}
+					>
+						Show in Library
 					</CommandButton>
 					<CommandButton
 						leftSection={<IconDownload />}
-						onClick={() =>
-							shell.open(`steam://install/${props.selectedGame.id}`)
-						}
+						onClick={() => steamCommands.install(props.game.id)}
 					>
-						Install on Steam
+						Install
 					</CommandButton>
 				</Button.Group>
 				<Stack gap="xs">

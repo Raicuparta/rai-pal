@@ -55,14 +55,14 @@ export function deleteSteamAppinfoCache() {
 }
 
 export function getUnownedGames() {
-    return invoke()<GameDatabaseEntry[]>("get_unowned_games")
+    return invoke()<DiscoverGame[]>("get_unowned_games")
 }
 
 export type GameEngineVersion = { major: number; minor: number; patch: number; suffix: string | null; display: string }
 export type ModLoaderData = { id: string; path: string; mods: Mod[] }
 export type UnityScriptingBackend = "Il2Cpp" | "Mono"
 export type GameEngineBrand = "Unity" | "Unreal" | "Godot"
-export type GameDatabaseEntry = { id: string; engine: GameEngineBrand }
+export type DiscoverGame = { id: string; engine: GameEngineBrand; nsfw: boolean }
 export type SteamLaunchOption = { launchId: string; appId: number; description: string | null; executable: string | null; arguments: string | null; appType: string | null; osList: string | null; betaKey: string | null; osArch: string | null }
 export type Game = { id: string; name: string; discriminator: string | null; fullPath: string; architecture: Architecture; scriptingBackend: UnityScriptingBackend | null; operatingSystem: OperatingSystem; steamLaunch: SteamLaunchOption | null; installedMods: string[]; engine: GameEngine | null; thumbnailUrl: string | null }
 export type Architecture = "Unknown" | "X64" | "X86"
