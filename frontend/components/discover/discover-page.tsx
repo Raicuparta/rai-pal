@@ -7,7 +7,7 @@ import { RefreshButton } from "@components/refresh-button";
 import { ErrorPopover } from "@components/error-popover";
 import { GameEngineBrand } from "@api/bindings";
 import { EngineSelect } from "@components/engine-select";
-import { DiscoverGame } from "./discover-game";
+import { DiscoverGameCard } from "./discover-game";
 
 export function DiscoverPage() {
 	const [unownedGames, isLoading, refresh, error, clearError] =
@@ -26,15 +26,16 @@ export function DiscoverPage() {
 	return (
 		<Stack h="100%">
 			<Flex
-				justify="space-between"
 				align="center"
 				gap="md"
 			>
+				<Text style={{ flex: 1 }}>
+					{filteredGames.length} games you don&apos;t own
+				</Text>
 				<EngineSelect
 					onChange={setEngine}
 					value={engine}
 				/>
-				<Text>{filteredGames.length} games</Text>
 				<ErrorPopover
 					error={error}
 					clearError={clearError}
@@ -57,7 +58,9 @@ export function DiscoverPage() {
 						Header: () => <Box className={styles.spacer} />,
 						Footer: () => <Box className={styles.spacer} />,
 					}}
-					itemContent={(index) => <DiscoverGame game={filteredGames[index]} />}
+					itemContent={(index) => (
+						<DiscoverGameCard game={filteredGames[index]} />
+					)}
 				/>
 			</Paper>
 		</Stack>

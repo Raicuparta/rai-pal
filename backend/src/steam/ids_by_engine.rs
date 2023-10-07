@@ -15,7 +15,7 @@ use crate::{
 const UNITY_STEAM_APP_IDS_URL: &str =
 	"https://raw.githubusercontent.com/Raicuparta/steam-unity-app-ids/main";
 
-serializable_struct!(GameDatabaseEntry {
+serializable_struct!(DiscoverGame {
 	pub id: String,
 	pub engine: GameEngineBrand,
 	pub nsfw: bool,
@@ -34,9 +34,8 @@ pub async fn get_nsfw_ids() -> Result<HashSet<String>> {
 pub async fn get_ids_for_engine(
 	engine: GameEngineBrand,
 	nsfw_ids: &Option<HashSet<String>>,
-) -> Result<Vec<GameDatabaseEntry>> {
-	println!("Fetching {} games... ", engine);
-	let result = Ok(reqwest::get(format!("{UNITY_STEAM_APP_IDS_URL}/{engine}"))
+) -> Result<Vec<DiscoverGame>> {
+	Ok(reqwest::get(format!("{UNITY_STEAM_APP_IDS_URL}/{engine}"))
 		.await?
 		.text()
 		.await?
@@ -46,26 +45,22 @@ pub async fn get_ids_for_engine(
 			let nsfw = nsfw_ids
 				.as_ref()
 				.map_or(false, |ids| ids.contains(&id_string));
-			GameDatabaseEntry {
+			DiscoverGame {
 				id: id_string,
 				engine,
 				nsfw,
 			}
 		})
-		.collect());
-
-	println!("Done fetching {} games!", engine);
-
-	return result;
+		.collect())
 }
 
-pub async fn get_unowned_games() -> Result<Vec<GameDatabaseEntry>> {
+pub async fn get_discover_games() -> Result<Vec<DiscoverGame>> {
 	let nsfw_ids = Some(get_nsfw_ids().await?);
 
-	let mut ids = [
-		get_ids_for_engine(GameEngineBrand::Unity, &None).await?,
-		get_ids_for_engine(GameEngineBrand::Unreal, &None).await?,
-		get_ids_for_engine(GameEngineBrand::Godot, &None).await?,
+	let ids = [
+		get_ids_for_engine(GameEngineBrand::Unity, &nsfw_ids).await?,
+		get_ids_for_engine(GameEngineBrand::Unreal, &nsfw_ids).await?,
+		get_ids_for_engine(GameEngineBrand::Godot, &nsfw_ids).await?,
 	]
 	.concat();
 

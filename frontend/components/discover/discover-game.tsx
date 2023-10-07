@@ -1,14 +1,14 @@
-import { GameDatabaseEntry } from "@api/bindings";
+import { DiscoverGame } from "@api/bindings";
 import { steamCommands } from "../../util/steam";
 import styles from "./discover.module.css";
 import { Box } from "@mantine/core";
 import { useState } from "react";
 
 type Props = {
-	readonly game: GameDatabaseEntry;
+	readonly game: DiscoverGame;
 };
 
-export function DiscoverGame(props: Props) {
+export function DiscoverGameCard(props: Props) {
 	const [isNsfwRevealed, setIsNsfwRevealed] = useState<boolean>(false);
 
 	const isHidden = !isNsfwRevealed && props.game.nsfw;

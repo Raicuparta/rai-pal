@@ -29,7 +29,7 @@ div.wrapper {
 }
 
 .nsfwImage {
-	filter: blur(5px);
+	filter: blur(10px);
 }
 
 .nsfwLabel {
