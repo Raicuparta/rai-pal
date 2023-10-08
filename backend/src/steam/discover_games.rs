@@ -19,7 +19,7 @@ async fn get_discover_games(
 	owned_apps: &HashMap<u32, SteamAppInfo>,
 	nsfw_ids: &HashSet<String>,
 ) -> Result<Vec<DiscoverGame>> {
-	Ok(id_lists::get(&GameEngineBrand::Unity.to_string())
+	Ok(id_lists::get(&engine.to_string())
 		.await?
 		.iter()
 		.filter_map(|id| {
