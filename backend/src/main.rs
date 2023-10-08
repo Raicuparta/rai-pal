@@ -1,24 +1,12 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use std::{
-	future::Future,
-	sync::Mutex,
-};
+use std::{future::Future, sync::Mutex};
 
 use game::Game;
-use mod_loaders::mod_loader::{
-	self,
-	ModLoaderActions,
-};
-use result::{
-	Error,
-	Result,
-};
-use steam::{
-	ids_by_engine::DiscoverGame,
-	owned_games::OwnedGame,
-};
+use mod_loaders::mod_loader::{self, ModLoaderActions};
+use result::{Error, Result};
+use steam::{discover_games::DiscoverGame, owned_games::OwnedGame};
 use steamlocate::SteamDir;
 use tauri::api::dialog::message;
 
@@ -83,7 +71,7 @@ async fn get_owned_games(
 #[tauri::command]
 #[specta::specta]
 async fn get_unowned_games() -> Result<Vec<DiscoverGame>> {
-	steam::ids_by_engine::get_discover_games().await
+	steam::discover_games::get().await
 }
 
 #[tauri::command]
