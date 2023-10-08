@@ -14,7 +14,10 @@ use crate::{
 		OperatingSystem,
 	},
 	game_engines::{
-		game_engine::GameEngine,
+		game_engine::{
+			GameEngine,
+			GameEngineBrand,
+		},
 		unity::UnityScriptingBackend,
 	},
 	game_mod::Mod,
@@ -258,7 +261,14 @@ fn find_mods(mod_loader_path: &Path, scripting_backend: UnityScriptingBackend) -
 	Ok(entries
 		.iter()
 		.filter_map(|entry| match entry {
-			Ok(mod_path) => Some(Mod::new(mod_path, scripting_backend).ok()?),
+			Ok(mod_path) => Some(
+				Mod::new(
+					mod_path,
+					Some(GameEngineBrand::Unity),
+					Some(scripting_backend),
+				)
+				.ok()?,
+			),
 			Err(_) => None,
 		})
 		.collect())

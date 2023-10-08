@@ -59,7 +59,7 @@ export function getUnownedGames() {
 }
 
 export type GameEngineVersion = { major: number; minor: number; patch: number; suffix: string | null; display: string }
-export type ModLoaderData = { id: string; path: string; mods: Mod[] }
+export type Mod = { id: string; name: string; scriptingBackend: UnityScriptingBackend | null; engine: GameEngineBrand | null; path: string }
 export type DiscoverGame = { id: string; engine: GameEngineBrand; nsfw: boolean }
 export type GameEngineBrand = "Unity" | "Unreal" | "Godot"
 export type OwnedGame = { id: string; name: string; installed: boolean; osList: OperatingSystem[]; engine: GameEngineBrand; releaseDate: number; thumbnailUrl: string }
@@ -67,6 +67,6 @@ export type Game = { id: string; name: string; discriminator: string | null; ful
 export type SteamLaunchOption = { launchId: string; appId: number; description: string | null; executable: string | null; arguments: string | null; appType: string | null; osList: string | null; betaKey: string | null; osArch: string | null }
 export type UnityScriptingBackend = "Il2Cpp" | "Mono"
 export type Architecture = "X64" | "X86"
+export type ModLoaderData = { id: string; path: string; mods: Mod[] }
 export type OperatingSystem = "Linux" | "Windows"
 export type GameEngine = { brand: GameEngineBrand; version: GameEngineVersion | null }
-export type Mod = { id: string; name: string; scriptingBackend: UnityScriptingBackend; path: string }

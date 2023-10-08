@@ -48,10 +48,13 @@ export function InstalledGameModal(props: Props) {
 			Object.values(modLoaderMap).map((modLoader) => ({
 				...modLoader,
 				mods: modLoader.mods.filter(
-					(mod) => mod.scriptingBackend === props.game.scriptingBackend,
+					(mod) =>
+						(!mod.engine || mod.engine === props.game.engine?.brand) &&
+						(!mod.scriptingBackend ||
+							mod.scriptingBackend === props.game.scriptingBackend),
 				),
 			})),
-		[modLoaderMap, props.game.scriptingBackend],
+		[modLoaderMap, props.game.engine?.brand, props.game.scriptingBackend],
 	);
 
 	return (
@@ -122,40 +125,31 @@ export function InstalledGameModal(props: Props) {
 							<Fragment key={modLoader.id}>
 								<label>{modLoader.id} mods</label>
 								<Button.Group orientation="vertical">
-									{modLoader.mods
-										.filter(
-											(mod) =>
-												mod.scriptingBackend === props.game.scriptingBackend,
-										)
-										.map((mod) =>
-											props.game.installedMods.includes(mod.id) ? (
-												<CommandButton
-													leftSection={<IconTrash />}
-													key={mod.name}
-													onClick={async () => {
-														await uninstallMod(props.game.id, mod.id);
-														props.refreshGame(props.game.id);
-													}}
-												>
-													Uninstall {mod.name}
-												</CommandButton>
-											) : (
-												<CommandButton
-													leftSection={<IconDownload />}
-													key={mod.name}
-													onClick={async () => {
-														await installMod(
-															modLoader.id,
-															mod.id,
-															props.game.id,
-														);
-														props.refreshGame(props.game.id);
-													}}
-												>
-													Install {mod.name}
-												</CommandButton>
-											),
-										)}
+									{modLoader.mods.map((mod) =>
+										props.game.installedMods.includes(mod.id) ? (
+											<CommandButton
+												leftSection={<IconTrash />}
+												key={mod.name}
+												onClick={async () => {
+													await uninstallMod(props.game.id, mod.id);
+													props.refreshGame(props.game.id);
+												}}
+											>
+												Uninstall {mod.name}
+											</CommandButton>
+										) : (
+											<CommandButton
+												leftSection={<IconDownload />}
+												key={mod.name}
+												onClick={async () => {
+													await installMod(modLoader.id, mod.id, props.game.id);
+													props.refreshGame(props.game.id);
+												}}
+											>
+												Install {mod.name}
+											</CommandButton>
+										),
+									)}
 								</Button.Group>
 							</Fragment>
 						),

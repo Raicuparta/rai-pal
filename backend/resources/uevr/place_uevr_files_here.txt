@@ -1,0 +1,1 @@
+Place your UEVR files in this folder. UnrealVR.exe needs to be on the same folder as this txt file (together with all the other UEVR files).

@@ -150,7 +150,7 @@ fn get_version(game_exe_path: &Path) -> Option<GameEngineVersion> {
 	None
 }
 
-fn get_actual_unreal_binary(game_exe_path: &Path) -> PathBuf {
+pub fn get_actual_unreal_binary(game_exe_path: &Path) -> PathBuf {
 	if let Some(parent) = game_exe_path.parent() {
 		if parent.ends_with("Win64") || parent.ends_with("Win32") {
 			return game_exe_path.to_path_buf();

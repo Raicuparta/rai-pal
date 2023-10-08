@@ -1,11 +1,11 @@
 import { Badge, Flex, Stack, Table } from "@mantine/core";
 import { Fragment } from "react";
 import { useModLoaders } from "@hooks/use-backend-data";
-import { openModFolder } from "@api/bindings";
 import { TableContainer } from "@components/table/table-container";
-import { scriptingBackendColor } from "../../util/color";
+import { engineColor, scriptingBackendColor } from "../../util/color";
 import { RefreshButton } from "@components/refresh-button";
 import { ErrorPopover } from "@components/error-popover";
+import { openModFolder } from "@api/bindings";
 
 export function ModsPage() {
 	const [modLoaders, isLoading, refreshMods, error, clearError] =
@@ -13,7 +13,10 @@ export function ModsPage() {
 
 	return (
 		<Stack h="100%">
-			<Flex justify="end">
+			<Flex
+				justify="end"
+				gap="md"
+			>
 				<ErrorPopover
 					error={error}
 					clearError={clearError}
@@ -30,6 +33,7 @@ export function ModsPage() {
 						<Table.Tr>
 							<Table.Th>Mod</Table.Th>
 							<Table.Th w={100}>Loader</Table.Th>
+							<Table.Th w={100}>Engine</Table.Th>
 							<Table.Th w={100}>Backend</Table.Th>
 						</Table.Tr>
 					</Table.Thead>
@@ -45,10 +49,21 @@ export function ModsPage() {
 										<Table.Td>{modLoader.id}</Table.Td>
 										<Table.Td>
 											<Badge
-												color={scriptingBackendColor[mod.scriptingBackend]}
+												color={mod.engine ? engineColor[mod.engine] : "dark"}
+											>
+												{mod.engine ?? "Unknown"}
+											</Badge>
+										</Table.Td>
+										<Table.Td>
+											<Badge
+												color={
+													mod.scriptingBackend
+														? scriptingBackendColor[mod.scriptingBackend]
+														: "dark"
+												}
 												fullWidth
 											>
-												{mod.scriptingBackend}
+												{mod.scriptingBackend ?? "-"}
 											</Badge>
 										</Table.Td>
 									</Table.Tr>
