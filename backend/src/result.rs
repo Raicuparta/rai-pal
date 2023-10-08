@@ -64,8 +64,8 @@ pub enum Error {
 	#[error("Failed to retrieve Unity version from asset `{0}`")]
 	FailedToParseUnityVersionAsset(PathBuf),
 
-	#[error("Can't install a mod without knowing the Unity scripting backend. Game: `{0}`")]
-	InstallModWithoutBackend(PathBuf),
+	#[error("Failed to install mod, because the known game information is insufficient. Missing information: `{0}`. Game: `{1}`")]
+	ModInstallInfoInsufficient(String, PathBuf),
 }
 
 impl serde::Serialize for Error {

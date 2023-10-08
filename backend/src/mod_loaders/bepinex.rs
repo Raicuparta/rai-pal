@@ -62,12 +62,35 @@ impl ModLoaderActions for BepInEx {
 	fn install(&self, game: &Game) -> Result {
 		let scripting_backend_path = &self.data.path.join(
 			game.scripting_backend
-				.ok_or_else(|| Error::InstallModWithoutBackend(game.full_path.clone()))?
+				.ok_or_else(|| {
+					Error::ModInstallInfoInsufficient(
+						"scripting_backend".to_string(),
+						game.full_path.clone(),
+					)
+				})?
 				.to_string(),
 		);
 		let architecture_path = scripting_backend_path
-			.join(game.operating_system.to_string())
-			.join(game.architecture.to_string());
+			.join(
+				game.operating_system
+					.ok_or_else(|| {
+						Error::ModInstallInfoInsufficient(
+							"operating_system".to_string(),
+							game.full_path.clone(),
+						)
+					})?
+					.to_string(),
+			)
+			.join(
+				game.architecture
+					.ok_or_else(|| {
+						Error::ModInstallInfoInsufficient(
+							"architecture".to_string(),
+							game.full_path.clone(),
+						)
+					})?
+					.to_string(),
+			);
 
 		let mod_loader_archive = architecture_path.join("mod-loader.zip");
 		let folder_to_copy_to_game = architecture_path.join("copy-to-game");
@@ -101,9 +124,11 @@ impl ModLoaderActions for BepInEx {
 			doorstop_config.replace("{{MOD_FILES_PATH}}", paths::path_to_str(game_data_folder)?),
 		)?;
 
-		if std::env::consts::OS != "windows" && game.operating_system == OperatingSystem::Windows {
-			if let Some(steam_launch) = &game.steam_launch {
-				ensure_wine_will_load_bepinex(&game.full_path, steam_launch.app_id)?;
+		if let Some(operating_system) = game.operating_system {
+			if std::env::consts::OS != "windows" && operating_system == OperatingSystem::Windows {
+				if let Some(steam_launch) = &game.steam_launch {
+					ensure_wine_will_load_bepinex(&game.full_path, steam_launch.app_id)?;
+				}
 			}
 		}
 

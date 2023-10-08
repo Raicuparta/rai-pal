@@ -22,8 +22,12 @@ export function InstalledGameRow(_: number, game: Game) {
 				</Badge>
 			</Table.Td> */}
 			<Table.Td>
-				<Badge color={architectureColor[game.architecture]}>
-					{game.architecture}
+				<Badge
+					color={
+						game.architecture ? architectureColor[game.architecture] : "dark"
+					}
+				>
+					{game.architecture ?? "X??"}
 				</Badge>
 			</Table.Td>
 			<Table.Td>
@@ -34,7 +38,7 @@ export function InstalledGameRow(_: number, game: Game) {
 							: "dark"
 					}
 				>
-					{game.scriptingBackend ?? "Unknown"}
+					{game.scriptingBackend ?? "-"}
 				</Badge>
 			</Table.Td>
 			<Table.Td>

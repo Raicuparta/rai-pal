@@ -12,7 +12,7 @@ pub async fn get(list_name: &str) -> Result<HashSet<String>> {
 			.text()
 			.await?
 			.split('\n')
-			.map(|id| id.to_string())
+			.map(std::string::ToString::to_string)
 			.collect(),
 	)
 }
