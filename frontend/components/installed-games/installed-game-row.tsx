@@ -1,4 +1,4 @@
-import { Badge, Table, Box } from "@mantine/core";
+import { Badge, Table, Box, Flex } from "@mantine/core";
 import { Game } from "@api/bindings";
 import { GameName } from "./game-name";
 import {
@@ -22,8 +22,12 @@ export function InstalledGameRow(_: number, game: Game) {
 				</Badge>
 			</Table.Td> */}
 			<Table.Td>
-				<Badge color={architectureColor[game.architecture]}>
-					{game.architecture}
+				<Badge
+					color={
+						game.architecture ? architectureColor[game.architecture] : "dark"
+					}
+				>
+					{game.architecture ?? "X??"}
 				</Badge>
 			</Table.Td>
 			<Table.Td>
@@ -34,19 +38,29 @@ export function InstalledGameRow(_: number, game: Game) {
 							: "dark"
 					}
 				>
-					{game.scriptingBackend ?? "Unknown"}
+					{game.scriptingBackend ?? "-"}
 				</Badge>
 			</Table.Td>
 			<Table.Td>
-				<Badge color={game.engine ? engineColor[game.engine.brand] : "dark"}>
-					{game.engine?.brand ?? "Unknown"}{" "}
-					<Box
-						component="small"
-						opacity={0.5}
+				<Flex
+					align="center"
+					gap="xs"
+				>
+					<Badge
+						fullWidth={false}
+						color={game.engine ? engineColor[game.engine.brand] : "dark"}
 					>
-						{game.engine?.version?.display ?? ""}
-					</Box>
-				</Badge>
+						{game.engine?.brand ?? "Unknown"}{" "}
+					</Badge>
+					{game.engine?.version && (
+						<Box
+							component="small"
+							opacity={0.5}
+						>
+							{game.engine.version.display}
+						</Box>
+					)}
+				</Flex>
 			</Table.Td>
 		</>
 	);

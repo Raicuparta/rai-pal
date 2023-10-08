@@ -5,7 +5,10 @@ use std::path::{
 
 use crate::{
 	files::copy_dir_all,
-	game_engines::unity::UnityScriptingBackend,
+	game_engines::{
+		game_engine::GameEngineBrand,
+		unity::UnityScriptingBackend,
+	},
 	serializable_struct,
 	Error,
 	Result,
@@ -14,12 +17,17 @@ use crate::{
 serializable_struct!(Mod {
 	pub id: String,
 	pub name: String,
-	pub scripting_backend: UnityScriptingBackend,
+	pub scripting_backend: Option<UnityScriptingBackend>,
+	pub engine: Option<GameEngineBrand>,
 	path: PathBuf,
 });
 
 impl Mod {
-	pub fn new(path: &Path, scripting_backend: UnityScriptingBackend) -> Result<Self> {
+	pub fn new(
+		path: &Path,
+		engine: Option<GameEngineBrand>,
+		scripting_backend: Option<UnityScriptingBackend>,
+	) -> Result<Self> {
 		let name = String::from(
 			path.file_name()
 				.ok_or_else(|| Error::FailedToGetFileName(path.to_path_buf()))?
@@ -27,9 +35,10 @@ impl Mod {
 		);
 
 		Ok(Self {
-			id: format!("{scripting_backend}_{name}"),
+			id: name.clone(),
 			path: path.to_path_buf(),
 			name,
+			engine,
 			scripting_backend,
 		})
 	}

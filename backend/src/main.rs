@@ -16,7 +16,7 @@ use result::{
 	Result,
 };
 use steam::{
-	ids_by_engine::DiscoverGame,
+	discover_games::DiscoverGame,
 	owned_games::OwnedGame,
 };
 use steamlocate::SteamDir;
@@ -83,7 +83,7 @@ async fn get_owned_games(
 #[tauri::command]
 #[specta::specta]
 async fn get_unowned_games() -> Result<Vec<DiscoverGame>> {
-	steam::ids_by_engine::get_discover_games().await
+	steam::discover_games::get().await
 }
 
 #[tauri::command]
@@ -122,6 +122,12 @@ async fn open_game_mods_folder(game_id: &str, state: tauri::State<'_, AppState>)
 		.ok_or_else(|| Error::GameNotFound(game_id.to_string()))?;
 
 	game.open_mods_folder()
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn open_mods_folder(handle: tauri::AppHandle) -> Result {
+	Ok(open::that_detached(paths::resources_path(&handle)?)?)
 }
 
 #[tauri::command]
@@ -234,7 +240,8 @@ fn main() {
 			open_mod_folder,
 			update_game_info,
 			delete_steam_appinfo_cache,
-			get_unowned_games
+			get_unowned_games,
+			open_mods_folder
 		]
 	);
 }

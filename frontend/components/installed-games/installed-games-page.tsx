@@ -85,14 +85,14 @@ const tableHeaders: TableHeader<Game, keyof Game>[] = [
 	{
 		id: "architecture",
 		label: "Arch",
-		width: 110,
+		width: 70,
 		center: true,
 		sortable: true,
 	},
 	{
 		id: "scriptingBackend",
 		label: "Backend",
-		width: 110,
+		width: 90,
 		center: true,
 		sortable: true,
 	},

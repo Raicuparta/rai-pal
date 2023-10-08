@@ -7,7 +7,7 @@ import { RefreshButton } from "@components/refresh-button";
 import { ErrorPopover } from "@components/error-popover";
 import { GameEngineBrand } from "@api/bindings";
 import { EngineSelect } from "@components/engine-select";
-import { DiscoverGameCard } from "./discover-game";
+import { DiscoverGameCard } from "./discover-game-card";
 
 export function DiscoverPage() {
 	const [unownedGames, isLoading, refresh, error, clearError] =

@@ -28,22 +28,18 @@ use crate::{
 	Result,
 };
 
-serializable_enum!(Architecture { Unknown, X64, X86 });
+serializable_enum!(Architecture { X64, X86 });
 
-serializable_enum!(OperatingSystem {
-	Unknown,
-	Linux,
-	Windows
-});
+serializable_enum!(OperatingSystem { Linux, Windows });
 
 serializable_struct!(Game {
 	pub id: String,
 	pub name: String,
 	pub discriminator: Option<String>,
 	pub full_path: PathBuf,
-	pub architecture: Architecture,
+	pub architecture: Option<Architecture>,
 	pub scripting_backend: Option<UnityScriptingBackend>,
-	pub operating_system: OperatingSystem,
+	pub operating_system: Option<OperatingSystem>,
 	pub steam_launch: Option<SteamLaunchOption>,
 	pub installed_mods: Vec<String>,
 	pub engine: Option<GameEngine>,
@@ -165,13 +161,19 @@ fn get_engine(game_path: &Path) -> Option<GameEngine> {
 	unity::get_engine(game_path).or_else(|| unreal::get_engine(game_path))
 }
 
-fn get_os_and_architecture(file_path: &Path) -> Result<(OperatingSystem, Architecture)> {
+fn get_os_and_architecture(
+	file_path: &Path,
+) -> Result<(Option<OperatingSystem>, Option<Architecture>)> {
 	fs::read(file_path).map(|file| {
 		let elf_result = match Elf::parse(&file) {
 			Ok(elf) => match elf.header.e_machine {
-				goblin::elf::header::EM_X86_64 => Ok((OperatingSystem::Linux, Architecture::X64)),
-				goblin::elf::header::EM_386 => Ok((OperatingSystem::Linux, Architecture::X86)),
-				_ => Ok((OperatingSystem::Linux, Architecture::Unknown)),
+				goblin::elf::header::EM_X86_64 => {
+					Ok((Some(OperatingSystem::Linux), Some(Architecture::X64)))
+				}
+				goblin::elf::header::EM_386 => {
+					Ok((Some(OperatingSystem::Linux), Some(Architecture::X86)))
+				}
+				_ => Ok((Some(OperatingSystem::Linux), None)),
 			},
 			Err(err) => Err(err),
 		};
@@ -183,12 +185,12 @@ fn get_os_and_architecture(file_path: &Path) -> Result<(OperatingSystem, Archite
 		let pe_result = match PE::parse(&file) {
 			Ok(pe) => match pe.header.coff_header.machine {
 				goblin::pe::header::COFF_MACHINE_X86_64 => {
-					Ok((OperatingSystem::Windows, Architecture::X64))
+					Ok((Some(OperatingSystem::Windows), Some(Architecture::X64)))
 				}
 				goblin::pe::header::COFF_MACHINE_X86 => {
-					Ok((OperatingSystem::Windows, Architecture::X86))
+					Ok((Some(OperatingSystem::Windows), Some(Architecture::X86)))
 				}
-				_ => Ok((OperatingSystem::Windows, Architecture::Unknown)),
+				_ => Ok((Some(OperatingSystem::Windows), None)),
 			},
 			Err(err) => Err(err),
 		};
@@ -205,7 +207,7 @@ fn get_os_and_architecture(file_path: &Path) -> Result<(OperatingSystem, Archite
 			println!("PE error: {err}");
 		}
 
-		Ok((OperatingSystem::Unknown, Architecture::Unknown))
+		Ok((None, None))
 	})?
 }
 

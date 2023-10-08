@@ -3,18 +3,12 @@ use std::collections::HashSet;
 use steamlocate::SteamDir;
 
 use super::{
-	appinfo::{
-		self,
-		SteamAppInfoFile,
-	},
-	ids_by_engine::get_ids_for_engine,
+	appinfo::{self, SteamAppInfoFile},
+	id_lists,
 	thumbnail::get_steam_thumbnail,
 };
 use crate::{
-	game::OperatingSystem,
-	game_engines::game_engine::GameEngineBrand,
-	serializable_struct,
-	Result,
+	game::OperatingSystem, game_engines::game_engine::GameEngineBrand, serializable_struct, Result,
 };
 
 serializable_struct!(OwnedGame {
@@ -32,13 +26,13 @@ async fn get_engine_games(
 	steam_dir: &SteamDir,
 	app_info: &SteamAppInfoFile,
 ) -> Result<Vec<OwnedGame>> {
-	Ok(get_ids_for_engine(engine, &None)
+	Ok(id_lists::get(&engine.to_string())
 		.await?
 		.iter()
-		.filter_map(|entry| {
-			let id = entry.id.parse::<u32>().ok()?;
+		.filter_map(|id| {
+			let id_number = id.parse::<u32>().ok()?;
 
-			let app_info = app_info.apps.get(&id)?;
+			let app_info = app_info.apps.get(&id_number)?;
 
 			let os_list: HashSet<_> = app_info
 				.launch_options
@@ -56,7 +50,7 @@ async fn get_engine_games(
 				.collect();
 
 			let installed = steam_dir
-				.app(id)
+				.app(id_number)
 				.map_or(false, |steam_app| steam_app.is_some());
 
 			let release_date = app_info
@@ -65,13 +59,13 @@ async fn get_engine_games(
 				.unwrap_or_default();
 
 			Some(OwnedGame {
-				id: entry.id.clone(),
+				id: id.clone(),
 				name: app_info.name.clone(),
 				installed,
 				os_list,
 				engine,
 				release_date,
-				thumbnail_url: get_steam_thumbnail(&entry.id),
+				thumbnail_url: get_steam_thumbnail(id),
 			})
 		})
 		.collect())
