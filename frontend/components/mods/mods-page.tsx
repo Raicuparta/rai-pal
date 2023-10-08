@@ -1,11 +1,12 @@
-import { Badge, Flex, Stack, Table } from "@mantine/core";
+import { Badge, Button, Flex, Stack, Table } from "@mantine/core";
 import { Fragment } from "react";
 import { useModLoaders } from "@hooks/use-backend-data";
 import { TableContainer } from "@components/table/table-container";
 import { engineColor, scriptingBackendColor } from "../../util/color";
 import { RefreshButton } from "@components/refresh-button";
 import { ErrorPopover } from "@components/error-popover";
-import { openModFolder } from "@api/bindings";
+import { openModFolder, openModsFolder } from "@api/bindings";
+import { IconFolderCog } from "@tabler/icons-react";
 
 export function ModsPage() {
 	const [modLoaders, isLoading, refreshMods, error, clearError] =
@@ -17,6 +18,12 @@ export function ModsPage() {
 				justify="end"
 				gap="md"
 			>
+				<Button
+					onClick={openModsFolder}
+					leftSection={<IconFolderCog />}
+				>
+					Open Mods Folder
+				</Button>
 				<ErrorPopover
 					error={error}
 					clearError={clearError}

@@ -58,6 +58,10 @@ export function getUnownedGames() {
     return invoke()<DiscoverGame[]>("get_unowned_games")
 }
 
+export function openModsFolder() {
+    return invoke()<null>("open_mods_folder")
+}
+
 export type GameEngineVersion = { major: number; minor: number; patch: number; suffix: string | null; display: string }
 export type Mod = { id: string; name: string; scriptingBackend: UnityScriptingBackend | null; engine: GameEngineBrand | null; path: string }
 export type DiscoverGame = { id: string; engine: GameEngineBrand; nsfw: boolean }

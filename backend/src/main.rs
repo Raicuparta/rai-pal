@@ -1,12 +1,24 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use std::{future::Future, sync::Mutex};
+use std::{
+	future::Future,
+	sync::Mutex,
+};
 
 use game::Game;
-use mod_loaders::mod_loader::{self, ModLoaderActions};
-use result::{Error, Result};
-use steam::{discover_games::DiscoverGame, owned_games::OwnedGame};
+use mod_loaders::mod_loader::{
+	self,
+	ModLoaderActions,
+};
+use result::{
+	Error,
+	Result,
+};
+use steam::{
+	discover_games::DiscoverGame,
+	owned_games::OwnedGame,
+};
 use steamlocate::SteamDir;
 use tauri::api::dialog::message;
 
@@ -110,6 +122,12 @@ async fn open_game_mods_folder(game_id: &str, state: tauri::State<'_, AppState>)
 		.ok_or_else(|| Error::GameNotFound(game_id.to_string()))?;
 
 	game.open_mods_folder()
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn open_mods_folder(handle: tauri::AppHandle) -> Result {
+	Ok(open::that_detached(paths::resources_path(&handle)?)?)
 }
 
 #[tauri::command]
@@ -222,7 +240,8 @@ fn main() {
 			open_mod_folder,
 			update_game_info,
 			delete_steam_appinfo_cache,
-			get_unowned_games
+			get_unowned_games,
+			open_mods_folder
 		]
 	);
 }
