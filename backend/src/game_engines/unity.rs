@@ -1,28 +1,15 @@
 use std::{
-	fs::{
-		self,
-		File,
-	},
+	fs::{self, File},
 	io::Read,
-	path::{
-		Path,
-		PathBuf,
-	},
+	path::{Path, PathBuf},
 };
 
 use lazy_regex::regex_find;
 
 use crate::{
-	game_engines::game_engine::{
-		GameEngine,
-		GameEngineBrand,
-		GameEngineVersion,
-	},
+	game_engines::game_engine::{GameEngine, GameEngineBrand, GameEngineVersion},
 	paths,
-	result::{
-		Error,
-		Result,
-	},
+	result::{Error, Result},
 	serializable_enum,
 };
 
@@ -38,7 +25,16 @@ fn get_version_from_asset(asset_path: &Path) -> Result<String> {
 	}
 
 	let data_str = String::from_utf8_lossy(&data[..bytes_read]);
-	let match_result = regex_find!(r"\d+\.\d+\.\d+[fp]\d+", &data_str);
+	let match_result = regex_find!(
+		r#"(?x)
+			# Version number as "major.minor.patch".
+			\d+\.\d+\.\d+
+
+			# Suffix, like "f1" or "p3".
+			[fp]\d+
+		"#,
+		&data_str
+	);
 
 	match_result.map_or_else(
 		|| {

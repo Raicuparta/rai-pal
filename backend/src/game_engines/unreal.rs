@@ -1,22 +1,12 @@
 use std::{
-	fs::{self,},
-	path::{
-		Path,
-		PathBuf,
-	},
+	fs::{self},
+	path::{Path, PathBuf},
 };
 
-use lazy_regex::{
-	regex_captures,
-	regex_find,
-};
+use lazy_regex::{regex_captures, regex_find};
 
 use crate::{
-	game_engines::game_engine::{
-		GameEngine,
-		GameEngineBrand,
-		GameEngineVersion,
-	},
+	game_engines::game_engine::{GameEngine, GameEngineBrand, GameEngineVersion},
 	paths::glob_path,
 };
 
@@ -26,10 +16,27 @@ fn get_unreal_version(game_exe_path: &Path) -> Option<GameEngineVersion> {
 		Ok(file_bytes) => {
 			// Looking for strings like "+UE4+release-4.25", or just "+UE4" if the full version isn't found.
 			// The extra \x00 are because the strings are unicode.
-			// The {0,100} is matching the "+release-" etc part,
-			// it can be different for every game, but I'm limiting it to 100 chars.
 			let match_result = regex_find!(
-				r"(?i)\+\x00U\x00E\x00[45]\x00(?:.{0,100}?[45]\x00\.\x00(\d\x00)+)?"B,
+				r#"(?x)
+					# Case insensitive.
+					(?i)
+
+					# Starts with "+UE".
+					\+\x00U\x00E\x00
+					
+					# Major version number.
+					[45]\x00
+
+					# Optional block with full version number.
+					(?:
+						# Skip over some characters, usually something like "+release-",
+						# but changes between different games.
+						.{0,100}?
+
+						# Full version as "major.minor".
+						[45]\x00\.\x00(\d\x00)+
+					)?
+				"#B,
 				&file_bytes
 			);
 			// I also noticed the game ABZU has the version in the exe as "4.12.5-0+UE4".
@@ -44,8 +51,29 @@ fn get_unreal_version(game_exe_path: &Path) -> Option<GameEngineVersion> {
 
 			// Regex again because the byte regex above can't extract the match groups.
 			// Can either be major.minor, or just major.
-			let (_, major, minor) =
-				regex_captures!(r"(?i)\+UE([45])(?:.*?[45]\.(\d+))?", &match_string)?;
+			let (_, major, minor) = regex_captures!(
+				r#"(?x)
+					# Case insensitive.
+					(?i)
+				
+					# Starts with "+UE".
+					\+UE
+					
+					# Capture major version number.
+					([45])
+					
+					# Capture optional block with full version number.
+					(?:
+						# Skip over some characters, usually something like "+release-".
+						.*?
+						
+						# Full version as "major.minor".
+						# Capture minor only (major already captured above).
+						[45]\.(\d+)
+					)?
+				"#,
+				&match_string
+			)?;
 
 			return Some(GameEngineVersion {
 				major: major.parse().unwrap_or(0),
