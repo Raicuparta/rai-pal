@@ -1,4 +1,4 @@
-import { Alert, Button, Card, Flex, Modal, Stack } from "@mantine/core";
+import { Alert, Button, Divider, Flex, Modal, Stack } from "@mantine/core";
 import { useModLoaders } from "@hooks/use-backend-data";
 import {
 	Game,
@@ -8,7 +8,7 @@ import {
 	startGame,
 	uninstallMod,
 } from "@api/bindings";
-import { Fragment, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { GameName } from "./game-name";
 import { CommandButton } from "@components/command-button";
 import {
@@ -80,64 +80,67 @@ export function InstalledGameModal(props: Props) {
 					</Alert>
 				) : null}
 				<Flex
-					justify="center"
+					justify="space-between"
 					wrap="wrap"
 					gap="md"
 					w="100%"
 				>
-					<Button.Group
-						orientation="vertical"
-						w="fit-content"
-					>
-						<CommandButton
-							leftSection={<IconPlayerPlay />}
-							onClick={() => startGame(props.game.id)}
+					<Stack gap="xs">
+						<Divider label="Game actions" />
+						<Button.Group
+							orientation="vertical"
+							w="fit-content"
 						>
-							Start Game
-						</CommandButton>
-						<CommandButton
-							leftSection={<IconFolder />}
-							onClick={() => openGameFolder(props.game.id)}
-						>
-							Open Game Folder
-						</CommandButton>
-						<CommandButton
-							leftSection={<IconFolderCog />}
-							onClick={() =>
-								openGameModsFolder(props.game.id).catch(handleError)
-							}
-						>
-							Open Mods Folder
-						</CommandButton>
-						{props.game.steamLaunch && (
-							<>
-								<CommandButton
-									leftSection={<IconBooks />}
-									onClick={() =>
-										steamCommands.showInLibrary(props.game.steamLaunch?.appId)
-									}
-								>
-									Show in Library
-								</CommandButton>
-								<CommandButton
-									leftSection={<IconBrowser />}
-									onClick={() =>
-										steamCommands.openStorePage(props.game.steamLaunch?.appId)
-									}
-								>
-									Open Store Page
-								</CommandButton>
-							</>
-						)}
-					</Button.Group>
+							<CommandButton
+								leftSection={<IconPlayerPlay />}
+								onClick={() => startGame(props.game.id)}
+							>
+								Start Game
+							</CommandButton>
+							<CommandButton
+								leftSection={<IconFolder />}
+								onClick={() => openGameFolder(props.game.id)}
+							>
+								Open Game Folder
+							</CommandButton>
+							<CommandButton
+								leftSection={<IconFolderCog />}
+								onClick={() =>
+									openGameModsFolder(props.game.id).catch(handleError)
+								}
+							>
+								Open Mods Folder
+							</CommandButton>
+							{props.game.steamLaunch && (
+								<>
+									<CommandButton
+										leftSection={<IconBooks />}
+										onClick={() =>
+											steamCommands.showInLibrary(props.game.steamLaunch?.appId)
+										}
+									>
+										Show in Library
+									</CommandButton>
+									<CommandButton
+										leftSection={<IconBrowser />}
+										onClick={() =>
+											steamCommands.openStorePage(props.game.steamLaunch?.appId)
+										}
+									>
+										Open Store Page
+									</CommandButton>
+								</>
+							)}
+						</Button.Group>
+					</Stack>
 					{modLoaders.map(
 						(modLoader) =>
 							modLoader.mods.length > 0 && (
 								<Stack
 									key={modLoader.id}
-									gap={0}
+									gap="xs"
 								>
-									<label>{modLoader.id.toUpperCase()}</label>
+									<Divider label={modLoader.id.toUpperCase()} />
 									<Button.Group
 										orientation="vertical"
 										w="fit-content"
