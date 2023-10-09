@@ -2627,6 +2627,7 @@ dependencies = [
  "tauri-build",
  "tauri-specta",
  "thiserror",
+ "winapi",
  "zip",
 ]
 
