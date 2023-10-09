@@ -1,7 +1,7 @@
 import { DiscoverGame } from "@api/bindings";
 import { steamCommands } from "../../util/steam";
 import styles from "./discover.module.css";
-import { Box, Flex, Loader, Overlay } from "@mantine/core";
+import { Box, Loader, Overlay } from "@mantine/core";
 import { useState } from "react";
 
 type Props = {
@@ -23,19 +23,13 @@ export function DiscoverGameCard(props: Props) {
 					<span>Click to reveal</span>
 				</div>
 			)}
+
 			{!isBroken && !isLoaded && (
-				<Overlay>
-					<Flex
-						justify="center"
-						align="center"
-						h="100%"
-						opacity={0.5}
-					>
-						<Loader
-							color="white"
-							size="xl"
-						/>
-					</Flex>
+				<Overlay className={styles.loadingImage}>
+					<Loader
+						color="gray"
+						size="xl"
+					/>
 				</Overlay>
 			)}
 			<img

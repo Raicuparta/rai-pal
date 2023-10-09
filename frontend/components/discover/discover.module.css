@@ -49,3 +49,9 @@ div.wrapper {
 	background-color: rgba(0, 0, 0, 0.5);
 	text-shadow: 0 0 5px black;
 }
+
+.loadingImage {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
