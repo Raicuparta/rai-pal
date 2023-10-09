@@ -3,11 +3,11 @@ import { Game } from "@api/bindings";
 import { GameName } from "./game-name";
 import {
 	architectureColor,
-	engineColor,
 	// operatingSystemColor,
-	scriptingBackendColor,
 } from "../../util/color";
 import { GameThumbnail } from "@components/game-thumbnail";
+import { EngineBadge } from "@components/badges/engine-badge";
+import { UnityBackendBadge } from "@components/badges/unity-backend.badge";
 
 export function InstalledGameRow(_: number, game: Game) {
 	return (
@@ -31,27 +31,14 @@ export function InstalledGameRow(_: number, game: Game) {
 				</Badge>
 			</Table.Td>
 			<Table.Td>
-				<Badge
-					color={
-						game.scriptingBackend
-							? scriptingBackendColor[game.scriptingBackend]
-							: "dark"
-					}
-				>
-					{game.scriptingBackend ?? "-"}
-				</Badge>
+				<UnityBackendBadge backend={game.scriptingBackend} />
 			</Table.Td>
 			<Table.Td>
 				<Flex
 					align="center"
 					gap="xs"
 				>
-					<Badge
-						fullWidth={false}
-						color={game.engine ? engineColor[game.engine.brand] : "dark"}
-					>
-						{game.engine?.brand ?? "Unknown"}{" "}
-					</Badge>
+					<EngineBadge engine={game.engine?.brand} />
 					{game.engine?.version && (
 						<Box
 							component="small"
