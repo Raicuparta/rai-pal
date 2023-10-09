@@ -23,7 +23,6 @@ export function DiscoverGameCard(props: Props) {
 					<span>Click to reveal</span>
 				</div>
 			)}
-
 			{!isBroken && !isLoaded && (
 				<Overlay className={styles.loadingImage}>
 					<Loader
