@@ -25,21 +25,24 @@ use crate::{
 		game_engine::GameEngineBrand,
 		unreal::get_actual_unreal_binary,
 	},
-	game_mod::Mod,
+	game_mod::{
+		Mod,
+		ModKind,
+	},
 	result::Error,
 	serializable_struct,
 	Result,
 };
 
-serializable_struct!(UeVr {
+serializable_struct!(UnrealVr {
   pub data: ModLoaderData,
 });
 
-impl UeVr {
+impl UnrealVr {
 	const EXE_NAME: &'static str = "UnrealVR.exe";
 }
 
-impl ModLoaderStatic for UeVr {
+impl ModLoaderStatic for UnrealVr {
 	const ID: &'static str = "uevr";
 
 	fn new(resources_path: &Path) -> Result<Self>
@@ -49,9 +52,10 @@ impl ModLoaderStatic for UeVr {
 		let path = resources_path.join(Self::ID);
 		let mods = if path.join(Self::EXE_NAME).exists() {
 			vec![Mod::new(
-				&resources_path.join(Self::ID),
+				&path.join(Self::EXE_NAME),
 				Some(GameEngineBrand::Unreal),
 				None,
+				ModKind::Runnable,
 			)?]
 		} else {
 			vec![]
@@ -67,7 +71,7 @@ impl ModLoaderStatic for UeVr {
 	}
 }
 
-impl ModLoaderActions for UeVr {
+impl ModLoaderActions for UnrealVr {
 	fn get_data(&self) -> &ModLoaderData {
 		&self.data
 	}

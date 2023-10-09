@@ -1,6 +1,6 @@
 import { useAsyncCommand } from "@hooks/use-async-command";
 import { useLongLoading } from "@hooks/use-long-loading";
-import { Button, ButtonProps } from "@mantine/core";
+import { Box, Button, ButtonProps, Flex } from "@mantine/core";
 import { ErrorPopover } from "./error-popover";
 import { forwardRef } from "react";
 
@@ -10,7 +10,7 @@ interface Props<TResult> extends ButtonProps {
 }
 
 function CommandButtonInternal<TResult>(
-	{ onClick, ...props }: Props<TResult>,
+	{ onClick, children, ...props }: Props<TResult>,
 	ref: React.ForwardedRef<HTMLButtonElement>,
 ) {
 	const [executeCommand, isLoading, success, error, clearError] =
@@ -26,11 +26,14 @@ function CommandButtonInternal<TResult>(
 			<Button
 				ref={ref}
 				color={error ? "red" : "green"}
+				justify="start"
 				loading={isLongLoading}
 				variant={success || error ? "filled" : "default"}
 				{...props}
 				onClick={executeCommand}
-			/>
+			>
+				{children}
+			</Button>
 		</ErrorPopover>
 	);
 }

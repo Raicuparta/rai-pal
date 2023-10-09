@@ -9,17 +9,24 @@ use crate::{
 		game_engine::GameEngineBrand,
 		unity::UnityScriptingBackend,
 	},
+	paths,
+	serializable_enum,
 	serializable_struct,
-	Error,
 	Result,
 };
+
+serializable_enum!(ModKind {
+	Installable,
+	Runnable,
+});
 
 serializable_struct!(Mod {
 	pub id: String,
 	pub name: String,
 	pub scripting_backend: Option<UnityScriptingBackend>,
 	pub engine: Option<GameEngineBrand>,
-	path: PathBuf,
+	pub kind: ModKind,
+	pub path: PathBuf,
 });
 
 impl Mod {
@@ -27,19 +34,17 @@ impl Mod {
 		path: &Path,
 		engine: Option<GameEngineBrand>,
 		scripting_backend: Option<UnityScriptingBackend>,
+		kind: ModKind,
 	) -> Result<Self> {
-		let name = String::from(
-			path.file_name()
-				.ok_or_else(|| Error::FailedToGetFileName(path.to_path_buf()))?
-				.to_string_lossy(),
-		);
+		let name = paths::file_name_without_extension(path)?;
 
 		Ok(Self {
-			id: name.clone(),
+			id: name.to_string(),
 			path: path.to_path_buf(),
-			name,
+			name: name.to_string(),
 			engine,
 			scripting_backend,
+			kind,
 		})
 	}
 
