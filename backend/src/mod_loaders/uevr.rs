@@ -106,7 +106,6 @@ impl ModLoaderActions for UeVr {
 				parameters_str.as_ptr(),
 				directory_str.as_ptr(),
 				SW_SHOW,
-				// SEE_MASK_NOASYNC | SEE_MASK_FLAG_NO_UI,
 			)
 		};
 
