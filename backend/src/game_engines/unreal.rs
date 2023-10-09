@@ -1,26 +1,13 @@
 use std::{
-	fs::{self,},
-	path::{
-		Path,
-		PathBuf,
-	},
+	fs::{self},
+	path::{Path, PathBuf},
 };
 
-use lazy_regex::{
-	regex_captures,
-	regex_find,
-};
-use pelite::{
-	pe::Pe,
-	pe64::PeFile,
-};
+use lazy_regex::{regex_captures, regex_find};
+use pelite::pe64::{Pe, PeFile};
 
 use crate::{
-	game_engines::game_engine::{
-		GameEngine,
-		GameEngineBrand,
-		GameEngineVersion,
-	},
+	game_engines::game_engine::{GameEngine, GameEngineBrand, GameEngineVersion},
 	paths::glob_path,
 };
 
