@@ -5,7 +5,7 @@ div.wrapper {
 .game {
 	border-radius: var(--mantine-radius-default);
 	overflow: hidden;
-	background-color: var(--mantine-color-dark-8);
+	background-color: var(--background-dark);
 	position: relative;
 
 	img {

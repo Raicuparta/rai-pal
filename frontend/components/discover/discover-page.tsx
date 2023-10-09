@@ -58,9 +58,7 @@ export function DiscoverPage() {
 						Header: () => <Box className={styles.spacer} />,
 						Footer: () => <Box className={styles.spacer} />,
 					}}
-					itemContent={(index) => (
-						<DiscoverGameCard game={filteredGames[index]} />
-					)}
+					itemContent={(_, game) => <DiscoverGameCard game={game} />}
 				/>
 			</Paper>
 		</Stack>
