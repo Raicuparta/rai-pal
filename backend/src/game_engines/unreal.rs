@@ -67,7 +67,7 @@ fn get_version_from_exe_parse(file_bytes: &[u8]) -> Option<GameEngineVersion> {
 				[45]\x00\.\x00(\d\x00)+
 			)?
 		"#B,
-		&file_bytes
+		file_bytes
 	);
 	// I also noticed the game ABZU has the version in the exe as "4.12.5-0+UE4".
 	// But I don't know if any other games do that, so I didn't try to match it.
