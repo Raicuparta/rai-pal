@@ -1,24 +1,12 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use std::{
-	future::Future,
-	sync::Mutex,
-};
+use std::{future::Future, sync::Mutex};
 
 use game::Game;
-use mod_loaders::mod_loader::{
-	self,
-	ModLoaderActions,
-};
-use result::{
-	Error,
-	Result,
-};
-use steam::{
-	discover_games::DiscoverGame,
-	owned_games::OwnedGame,
-};
+use mod_loaders::mod_loader::{self, ModLoaderActions};
+use result::{Error, Result};
+use steam::{discover_games::DiscoverGame, owned_games::OwnedGame};
 use steamlocate::SteamDir;
 use tauri::api::dialog::message;
 
@@ -31,6 +19,7 @@ mod mod_loaders;
 mod paths;
 mod result;
 mod steam;
+mod windows;
 
 struct AppState {
 	game_map: Mutex<Option<game::Map>>,

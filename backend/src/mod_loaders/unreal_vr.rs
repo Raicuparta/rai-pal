@@ -1,37 +1,12 @@
-use std::{
-	ffi::OsStr,
-	io,
-	os::windows::ffi::OsStrExt,
-	path::Path,
-	ptr,
-};
+use std::path::Path;
 
-use winapi::{
-	ctypes::c_int,
-	um::{
-		shellapi::ShellExecuteW,
-		winuser::SW_SHOW,
-	},
-};
-
-use super::mod_loader::{
-	ModLoaderActions,
-	ModLoaderData,
-	ModLoaderStatic,
-};
+use super::mod_loader::{ModLoaderActions, ModLoaderData, ModLoaderStatic};
 use crate::{
 	game::Game,
-	game_engines::{
-		game_engine::GameEngineBrand,
-		unreal::get_actual_unreal_binary,
-	},
-	game_mod::{
-		Mod,
-		ModKind,
-	},
+	game_engines::{game_engine::GameEngineBrand, unreal::get_actual_unreal_binary},
+	game_mod::{Mod, ModKind},
 	result::Error,
-	serializable_struct,
-	Result,
+	serializable_struct, windows, Result,
 };
 
 serializable_struct!(UnrealVr {
@@ -81,12 +56,6 @@ impl ModLoaderActions for UnrealVr {
 	}
 
 	fn install_mod(&self, game: &Game, _mod_idd: &str) -> Result {
-		let exe_path = self.data.path.join(Self::EXE_NAME);
-		let exe_path_str: Vec<u16> = OsStr::new(&exe_path).encode_wide().chain(Some(0)).collect();
-
-		let verb = OsStr::new("runas");
-		let verb_str: Vec<u16> = verb.encode_wide().chain(Some(0)).collect();
-
 		let parameters = format!(
 			"--attach=\"{}\"",
 			get_actual_unreal_binary(&game.full_path)
@@ -94,31 +63,8 @@ impl ModLoaderActions for UnrealVr {
 				.ok_or_else(|| Error::FailedToGetFileName(game.full_path.clone()))?
 				.to_string_lossy()
 		);
-		let parameters_str: Vec<u16> = OsStr::new(&parameters)
-			.encode_wide()
-			.chain(Some(0))
-			.collect();
 
-		let directory = self.data.path.as_os_str();
-		let directory_str: Vec<u16> = directory.encode_wide().chain(Some(0)).collect();
-
-		let result = unsafe {
-			ShellExecuteW(
-				ptr::null_mut(),
-				verb_str.as_ptr(),
-				exe_path_str.as_ptr(),
-				parameters_str.as_ptr(),
-				directory_str.as_ptr(),
-				SW_SHOW,
-			)
-		};
-
-		#[allow(clippy::as_conversions)]
-		if result as c_int > 32 {
-			Ok(())
-		} else {
-			Err(io::Error::last_os_error())?
-		}
+		windows::run_as_admin(&self.data.path.join(Self::EXE_NAME), &parameters)
 	}
 
 	fn open_mod_folder(&self, _mod_id: &str) -> Result {
