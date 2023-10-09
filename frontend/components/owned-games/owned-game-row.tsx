@@ -1,18 +1,19 @@
 import { OwnedGame } from "@api/bindings";
-import { Badge, Table } from "@mantine/core";
-import { engineColor } from "../../util/color";
+import { Flex, Table } from "@mantine/core";
 import { IconCheck } from "@tabler/icons-react";
 import { GameThumbnail } from "@components/game-thumbnail";
+import { EngineBadge } from "@components/color-coded-badge";
+import styles from "../table/table.module.css";
 
 export function OwnedGameRow(_: number, ownedUnityGame: OwnedGame) {
 	return (
 		<>
 			<GameThumbnail url={ownedUnityGame.thumbnailUrl} />
-			<Table.Td>{ownedUnityGame.name}</Table.Td>
+			<Table.Td className={styles.leftAligned}>
+				<Flex>{ownedUnityGame.name}</Flex>
+			</Table.Td>
 			<Table.Td align="center">
-				<Badge color={engineColor[ownedUnityGame.engine]}>
-					{ownedUnityGame.engine}
-				</Badge>
+				<EngineBadge value={ownedUnityGame.engine} />
 			</Table.Td>
 			{/* <Table.Td align="center">
 				{ownedUnityGame.osList.includes("Linux") ? <IconCheck /> : ""}

@@ -9,6 +9,7 @@ div.table {
 
 	td {
 		cursor: pointer;
+		text-align: center;
 	}
 
 	thead {

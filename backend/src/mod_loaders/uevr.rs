@@ -1,6 +1,17 @@
 use std::{
+	ffi::OsStr,
+	io,
+	os::windows::ffi::OsStrExt,
 	path::Path,
-	process::Command,
+	ptr,
+};
+
+use winapi::{
+	ctypes::c_int,
+	um::{
+		shellapi::ShellExecuteW,
+		winuser::SW_SHOW,
+	},
 };
 
 use super::mod_loader::{
@@ -66,25 +77,44 @@ impl ModLoaderActions for UeVr {
 	}
 
 	fn install_mod(&self, game: &Game, _mod_idd: &str) -> Result {
-		let command = format!(
-			// Messy way to launch the uevr exe, because we need admin privileges.
-			"Start-Process -FilePath \"{}\" -ArgumentList '--attach=\"{}\"' -WorkingDirectory \"{}\" -Verb RunAs",
-			self.data.path.join(Self::EXE_NAME).to_string_lossy(),
+		let exe_path = self.data.path.join(Self::EXE_NAME);
+		let exe_path_str: Vec<u16> = OsStr::new(&exe_path).encode_wide().chain(Some(0)).collect();
+
+		let verb = OsStr::new("runas");
+		let verb_str: Vec<u16> = verb.encode_wide().chain(Some(0)).collect();
+
+		let parameters = format!(
+			"--attach=\"{}\"",
 			get_actual_unreal_binary(&game.full_path)
 				.file_name()
-				.ok_or_else(|| Error::FailedToGetFileName(
-					game.full_path.clone()
-				))?
-				.to_string_lossy(),
-			self.data.path.to_string_lossy(),
+				.ok_or_else(|| Error::FailedToGetFileName(game.full_path.clone()))?
+				.to_string_lossy()
 		);
+		let parameters_str: Vec<u16> = OsStr::new(&parameters)
+			.encode_wide()
+			.chain(Some(0))
+			.collect();
 
-		Command::new("powershell")
-			.arg("-Command")
-			.arg(command)
-			.spawn()?;
+		let directory = self.data.path.as_os_str();
+		let directory_str: Vec<u16> = directory.encode_wide().chain(Some(0)).collect();
 
-		Ok(())
+		let result = unsafe {
+			ShellExecuteW(
+				ptr::null_mut(),
+				verb_str.as_ptr(),
+				exe_path_str.as_ptr(),
+				parameters_str.as_ptr(),
+				directory_str.as_ptr(),
+				SW_SHOW,
+			)
+		};
+
+		#[allow(clippy::as_conversions)]
+		if result as c_int > 32 {
+			Ok(())
+		} else {
+			Err(io::Error::last_os_error())?
+		}
 	}
 
 	fn open_mod_folder(&self, _mod_id: &str) -> Result {

@@ -1,12 +1,12 @@
-import { Badge, Button, Flex, Stack, Table } from "@mantine/core";
+import { Button, Flex, Stack, Table } from "@mantine/core";
 import { Fragment } from "react";
 import { useModLoaders } from "@hooks/use-backend-data";
 import { TableContainer } from "@components/table/table-container";
-import { engineColor, scriptingBackendColor } from "../../util/color";
 import { RefreshButton } from "@components/refresh-button";
 import { ErrorPopover } from "@components/error-popover";
 import { openModFolder, openModsFolder } from "@api/bindings";
 import { IconFolderCog } from "@tabler/icons-react";
+import { EngineBadge, UnityBackendBadge } from "@components/color-coded-badge";
 
 export function ModsPage() {
 	const [modLoaders, isLoading, refreshMods, error, clearError] =
@@ -39,9 +39,24 @@ export function ModsPage() {
 					<Table.Thead>
 						<Table.Tr>
 							<Table.Th>Mod</Table.Th>
-							<Table.Th w={100}>Loader</Table.Th>
-							<Table.Th w={100}>Engine</Table.Th>
-							<Table.Th w={100}>Backend</Table.Th>
+							<Table.Th
+								ta="center"
+								w={100}
+							>
+								Loader
+							</Table.Th>
+							<Table.Th
+								w={100}
+								ta="center"
+							>
+								Engine
+							</Table.Th>
+							<Table.Th
+								w={100}
+								ta="center"
+							>
+								Backend
+							</Table.Th>
 						</Table.Tr>
 					</Table.Thead>
 					<Table.Tbody>
@@ -52,26 +67,13 @@ export function ModsPage() {
 										key={mod.path}
 										onClick={() => openModFolder(modLoader.id, mod.id)}
 									>
-										<Table.Td>{mod.name}</Table.Td>
+										<Table.Td ta="left">{mod.name}</Table.Td>
 										<Table.Td>{modLoader.id}</Table.Td>
 										<Table.Td>
-											<Badge
-												color={mod.engine ? engineColor[mod.engine] : "dark"}
-											>
-												{mod.engine ?? "Unknown"}
-											</Badge>
+											<EngineBadge value={mod.engine} />
 										</Table.Td>
 										<Table.Td>
-											<Badge
-												color={
-													mod.scriptingBackend
-														? scriptingBackendColor[mod.scriptingBackend]
-														: "dark"
-												}
-												fullWidth
-											>
-												{mod.scriptingBackend ?? "-"}
-											</Badge>
+											<UnityBackendBadge value={mod.scriptingBackend} />
 										</Table.Td>
 									</Table.Tr>
 								))}

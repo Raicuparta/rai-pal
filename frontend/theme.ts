@@ -8,7 +8,6 @@ export const theme: MantineThemeOverride = {
 		Badge: {
 			defaultProps: {
 				variant: "light",
-				fullWidth: true,
 			},
 		},
 		Button: {

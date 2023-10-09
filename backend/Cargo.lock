@@ -2608,7 +2608,7 @@ dependencies = [
 
 [[package]]
 name = "rai-pal"
-version = "0.1.10"
+version = "0.1.11"
 dependencies = [
  "byteorder",
  "directories",
@@ -2627,6 +2627,7 @@ dependencies = [
  "tauri-build",
  "tauri-specta",
  "thiserror",
+ "winapi",
  "zip",
 ]
 
