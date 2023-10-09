@@ -3,19 +3,13 @@ use std::{
 	io,
 	os::windows::ffi::OsStrExt,
 	path::Path,
-	process::Command,
 	ptr,
 };
 
 use winapi::{
 	ctypes::c_int,
-	shared::minwindef::HINSTANCE,
 	um::{
-		shellapi::{
-			ShellExecuteW,
-			SEE_MASK_FLAG_NO_UI,
-			SEE_MASK_NOASYNC,
-		},
+		shellapi::ShellExecuteW,
 		winuser::SW_SHOW,
 	},
 };
@@ -116,6 +110,7 @@ impl ModLoaderActions for UeVr {
 			)
 		};
 
+		#[allow(clippy::as_conversions)]
 		if result as c_int > 32 {
 			Ok(())
 		} else {
