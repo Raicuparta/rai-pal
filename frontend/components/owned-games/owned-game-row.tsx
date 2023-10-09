@@ -2,7 +2,7 @@ import { OwnedGame } from "@api/bindings";
 import { Flex, Table } from "@mantine/core";
 import { IconCheck } from "@tabler/icons-react";
 import { GameThumbnail } from "@components/game-thumbnail";
-import { EngineBadge } from "@components/badges/engine-badge";
+import { EngineBadge } from "@components/color-coded-badge";
 import styles from "../table/table.module.css";
 
 export function OwnedGameRow(_: number, ownedUnityGame: OwnedGame) {
@@ -13,7 +13,7 @@ export function OwnedGameRow(_: number, ownedUnityGame: OwnedGame) {
 				<Flex>{ownedUnityGame.name}</Flex>
 			</Table.Td>
 			<Table.Td align="center">
-				<EngineBadge engine={ownedUnityGame.engine} />
+				<EngineBadge value={ownedUnityGame.engine} />
 			</Table.Td>
 			{/* <Table.Td align="center">
 				{ownedUnityGame.osList.includes("Linux") ? <IconCheck /> : ""}

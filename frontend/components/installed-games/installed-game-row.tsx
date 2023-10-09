@@ -1,13 +1,13 @@
-import { Badge, Table, Box, Flex } from "@mantine/core";
+import { Table, Box, Flex } from "@mantine/core";
 import { Game } from "@api/bindings";
 import { GameName } from "./game-name";
-import {
-	architectureColor,
-	// operatingSystemColor,
-} from "../../util/color";
 import { GameThumbnail } from "@components/game-thumbnail";
-import { EngineBadge } from "@components/badges/engine-badge";
-import { UnityBackendBadge } from "@components/badges/unity-backend.badge";
+import {
+	ArchitectureBadge,
+	EngineBadge,
+	// OperatingSystemBadge,
+	UnityBackendBadge,
+} from "@components/color-coded-badge";
 
 export function InstalledGameRow(_: number, game: Game) {
 	return (
@@ -17,28 +17,20 @@ export function InstalledGameRow(_: number, game: Game) {
 				<GameName game={game} />
 			</Table.Td>
 			{/* <Table.Td>
-				<Badge color={operatingSystemColor[game.operatingSystem]}>
-					{game.operatingSystem}
-				</Badge>
+				<OperatingSystemBadge value={game.operatingSystem} />
 			</Table.Td> */}
 			<Table.Td>
-				<Badge
-					color={
-						game.architecture ? architectureColor[game.architecture] : "dark"
-					}
-				>
-					{game.architecture ?? "X??"}
-				</Badge>
+				<ArchitectureBadge value={game.architecture} />
 			</Table.Td>
 			<Table.Td>
-				<UnityBackendBadge backend={game.scriptingBackend} />
+				<UnityBackendBadge value={game.scriptingBackend} />
 			</Table.Td>
 			<Table.Td>
 				<Flex
 					align="center"
 					gap="xs"
 				>
-					<EngineBadge engine={game.engine?.brand} />
+					<EngineBadge value={game.engine?.brand} />
 					{game.engine?.version && (
 						<Box
 							component="small"

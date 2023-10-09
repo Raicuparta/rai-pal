@@ -1,13 +1,12 @@
-import { Badge, Button, Flex, Stack, Table } from "@mantine/core";
+import { Button, Flex, Stack, Table } from "@mantine/core";
 import { Fragment } from "react";
 import { useModLoaders } from "@hooks/use-backend-data";
 import { TableContainer } from "@components/table/table-container";
-import { engineColor } from "../../util/color";
 import { RefreshButton } from "@components/refresh-button";
 import { ErrorPopover } from "@components/error-popover";
 import { openModFolder, openModsFolder } from "@api/bindings";
 import { IconFolderCog } from "@tabler/icons-react";
-import { UnityBackendBadge } from "@components/badges/unity-backend.badge";
+import { EngineBadge, UnityBackendBadge } from "@components/color-coded-badge";
 
 export function ModsPage() {
 	const [modLoaders, isLoading, refreshMods, error, clearError] =
@@ -71,14 +70,10 @@ export function ModsPage() {
 										<Table.Td ta="left">{mod.name}</Table.Td>
 										<Table.Td>{modLoader.id}</Table.Td>
 										<Table.Td>
-											<Badge
-												color={mod.engine ? engineColor[mod.engine] : "dark"}
-											>
-												{mod.engine ?? "Unknown"}
-											</Badge>
+											<EngineBadge value={mod.engine} />
 										</Table.Td>
 										<Table.Td>
-											<UnityBackendBadge backend={mod.scriptingBackend} />
+											<UnityBackendBadge value={mod.scriptingBackend} />
 										</Table.Td>
 									</Table.Tr>
 								))}
