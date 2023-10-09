@@ -54,8 +54,8 @@ export function deleteSteamAppinfoCache() {
     return invoke()<null>("delete_steam_appinfo_cache")
 }
 
-export function getUnownedGames() {
-    return invoke()<DiscoverGame[]>("get_unowned_games")
+export function getDiscoverGames(ignoreCache: boolean) {
+    return invoke()<DiscoverGame[]>("get_discover_games", { ignoreCache })
 }
 
 export function openModsFolder() {
@@ -63,8 +63,8 @@ export function openModsFolder() {
 }
 
 export type GameEngineVersion = { major: number; minor: number; patch: number; suffix: string | null; display: string }
-export type DiscoverGame = { id: string; engine: GameEngineBrand; nsfw: boolean }
 export type GameEngineBrand = "Unity" | "Unreal" | "Godot"
+export type DiscoverGame = { id: string; engine: GameEngineBrand; nsfw: boolean }
 export type ModKind = "Installable" | "Runnable"
 export type OwnedGame = { id: string; name: string; installed: boolean; osList: OperatingSystem[]; engine: GameEngineBrand; releaseDate: number; thumbnailUrl: string }
 export type Game = { id: string; name: string; discriminator: string | null; fullPath: string; architecture: Architecture | null; scriptingBackend: UnityScriptingBackend | null; operatingSystem: OperatingSystem | null; steamLaunch: SteamLaunchOption | null; installedMods: string[]; engine: GameEngine | null; thumbnailUrl: string | null }

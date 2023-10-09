@@ -1,12 +1,22 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::{
+	HashMap,
+	HashSet,
+};
 
 use steamlocate::SteamDir;
 
 use super::{
-	appinfo::{self, SteamAppInfo},
-	id_lists::{self},
+	appinfo::{
+		self,
+		SteamAppInfo,
+	},
+	id_lists::{self,},
 };
-use crate::{game_engines::game_engine::GameEngineBrand, serializable_struct, Result};
+use crate::{
+	game_engines::game_engine::GameEngineBrand,
+	serializable_struct,
+	Result,
+};
 
 serializable_struct!(DiscoverGame {
 	pub id: String,
@@ -44,6 +54,8 @@ pub async fn get() -> Result<Vec<DiscoverGame>> {
 	let steam_dir = SteamDir::locate()?;
 	let owned_apps = appinfo::read(steam_dir.path())?.apps;
 	let nsfw_ids = id_lists::get("NSFW").await?;
+
+	println!("getting discover games!!!!!!!!!!");
 
 	Ok([
 		get_discover_games(GameEngineBrand::Unity, &owned_apps, &nsfw_ids).await?,

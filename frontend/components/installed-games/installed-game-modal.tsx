@@ -1,4 +1,4 @@
-import { Alert, Button, Divider, Flex, Modal, Stack } from "@mantine/core";
+import { Button, Divider, Flex, Modal, Stack } from "@mantine/core";
 import { useModLoaders } from "@hooks/use-backend-data";
 import {
 	Game,
@@ -8,7 +8,7 @@ import {
 	startGame,
 	uninstallMod,
 } from "@api/bindings";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { GameName } from "./game-name";
 import { CommandButton } from "@components/command-button";
 import {
@@ -32,11 +32,6 @@ type Props = {
 
 export function InstalledGameModal(props: Props) {
 	const [modLoaderMap] = useModLoaders();
-	const [error, setError] = useState("");
-
-	const handleError = (error: unknown) => {
-		setError(`${error}`);
-	};
 
 	const debugData = useMemo(
 		() => JSON.stringify(props.game, null, 2),
@@ -71,14 +66,6 @@ export function InstalledGameModal(props: Props) {
 		>
 			<Stack>
 				<ModalImage src={props.game.thumbnailUrl} />
-				{error ? (
-					<Alert
-						color="red"
-						style={{ overflow: "auto", flex: 1 }}
-					>
-						<pre>{error}</pre>
-					</Alert>
-				) : null}
 				<Flex
 					justify="space-between"
 					wrap="wrap"
@@ -105,9 +92,7 @@ export function InstalledGameModal(props: Props) {
 							</CommandButton>
 							<CommandButton
 								leftSection={<IconFolderCog />}
-								onClick={() =>
-									openGameModsFolder(props.game.id).catch(handleError)
-								}
+								onClick={() => openGameModsFolder(props.game.id)}
 							>
 								Open Mods Folder
 							</CommandButton>
