@@ -55,7 +55,7 @@ export function InstalledGameRow(_: number, game: Game) {
 					{game.engine?.version && (
 						<Box
 							component="small"
-							opacity={0.5}
+							opacity={0.75}
 						>
 							{game.engine.version.display}
 						</Box>
