@@ -10,12 +10,19 @@ use lazy_regex::{
 	regex_captures,
 	regex_find,
 };
-use pelite::pe64::{
-	Pe,
-	PeFile,
+use pelite::{
+	pe32::{
+		Pe as Pe32,
+		PeFile as PeFile32,
+	},
+	pe64::{
+		Pe as Pe64,
+		PeFile as PeFile64,
+	},
 };
 
 use crate::{
+	game::Architecture,
 	game_engines::game_engine::{
 		GameEngine,
 		GameEngineBrand,
@@ -24,15 +31,27 @@ use crate::{
 	paths::glob_path,
 };
 
-fn get_version_from_metadata(file_bytes: &[u8]) -> Option<GameEngineVersion> {
-	let file = PeFile::from_bytes(&file_bytes).ok()?;
-	// Get the version resource
-	let version = file.resources().ok()?.version_info().ok()?.fixed()?;
-	// Get the fixed file info			// Print the file version
-	println!(
-		"File version: {}.{}.{}",
-		version.dwFileVersion.Major, version.dwFileVersion.Minor, version.dwFileVersion.Patch
-	);
+fn get_version_from_metadata(
+	file_bytes: &[u8],
+	architecture: Architecture,
+) -> Option<GameEngineVersion> {
+	let version = if architecture == Architecture::X86 {
+		PeFile32::from_bytes(&file_bytes)
+			.ok()?
+			.resources()
+			.ok()?
+			.version_info()
+			.ok()?
+			.fixed()?
+	} else {
+		PeFile64::from_bytes(&file_bytes)
+			.ok()?
+			.resources()
+			.ok()?
+			.version_info()
+			.ok()?
+			.fixed()?
+	};
 
 	let major = u32::from(version.dwFileVersion.Major);
 	let minor = u32::from(version.dwFileVersion.Minor);
@@ -48,15 +67,6 @@ fn get_version_from_metadata(file_bytes: &[u8]) -> Option<GameEngineVersion> {
 }
 
 fn get_version_from_exe_parse(file_bytes: &[u8]) -> Option<GameEngineVersion> {
-	let file = PeFile::from_bytes(&file_bytes).ok()?;
-	// Get the version resource
-	let version = file.resources().ok()?.version_info().ok()?.fixed()?;
-	// Get the fixed file info			// Print the file version
-	println!(
-		"File version: {}.{}.{}",
-		version.dwFileVersion.Major, version.dwFileVersion.Minor, version.dwFileVersion.Patch
-	);
-
 	// Looking for strings like "+UE4+release-4.25", or just "+UE4" if the full version isn't found.
 	// The extra \x00 are because the strings are unicode.
 	let match_result = regex_find!(
@@ -135,11 +145,11 @@ fn get_version_from_exe_parse(file_bytes: &[u8]) -> Option<GameEngineVersion> {
 	})
 }
 
-fn get_version(game_exe_path: &Path) -> Option<GameEngineVersion> {
+fn get_version(game_exe_path: &Path, architecture: Architecture) -> Option<GameEngineVersion> {
 	let actual_binary = get_actual_unreal_binary(game_exe_path);
 	match fs::read(actual_binary) {
 		Ok(file_bytes) => {
-			return get_version_from_metadata(&file_bytes)
+			return get_version_from_metadata(&file_bytes, architecture)
 				.or_else(|| get_version_from_exe_parse(&file_bytes));
 		}
 		Err(err) => {
@@ -208,11 +218,11 @@ fn is_unreal_exe(game_path: &Path) -> bool {
 	false
 }
 
-pub fn get_engine(game_path: &Path) -> Option<GameEngine> {
+pub fn get_engine(game_path: &Path, architecture: Architecture) -> Option<GameEngine> {
 	if is_unreal_exe(game_path) {
 		Some(GameEngine {
 			brand: GameEngineBrand::Unreal,
-			version: get_version(game_path),
+			version: get_version(game_path, architecture),
 		})
 	} else {
 		None

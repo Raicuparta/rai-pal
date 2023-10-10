@@ -84,7 +84,7 @@ impl Game {
 			}
 		};
 
-		let engine = get_engine(full_path);
+		let engine = get_engine(full_path, architecture.unwrap_or(Architecture::X64));
 		let scripting_backend = unity::get_scripting_backend(full_path, &engine);
 
 		Some(Self {
@@ -157,8 +157,8 @@ impl Game {
 	}
 }
 
-fn get_engine(game_path: &Path) -> Option<GameEngine> {
-	unity::get_engine(game_path).or_else(|| unreal::get_engine(game_path))
+fn get_engine(game_path: &Path, architecture: Architecture) -> Option<GameEngine> {
+	unity::get_engine(game_path).or_else(|| unreal::get_engine(game_path, architecture))
 }
 
 fn get_os_and_architecture(
