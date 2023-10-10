@@ -1,12 +1,24 @@
 use std::path::Path;
 
-use super::mod_loader::{ModLoaderActions, ModLoaderData, ModLoaderStatic};
+use super::mod_loader::{
+	ModLoaderActions,
+	ModLoaderData,
+	ModLoaderStatic,
+};
 use crate::{
 	game::Game,
-	game_engines::{game_engine::GameEngineBrand, unreal::get_actual_unreal_binary},
-	game_mod::{Mod, ModKind},
+	game_engines::{
+		game_engine::GameEngineBrand,
+		unreal::get_actual_unreal_binary,
+	},
+	game_mod::{
+		Mod,
+		ModKind,
+	},
 	result::Error,
-	serializable_struct, windows, Result,
+	serializable_struct,
+	windows,
+	Result,
 };
 
 serializable_struct!(UnrealVr {
