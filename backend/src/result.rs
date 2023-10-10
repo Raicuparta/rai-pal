@@ -1,4 +1,7 @@
-use std::{path::PathBuf, result};
+use std::{
+	path::PathBuf,
+	result,
+};
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {

@@ -1,16 +1,25 @@
-use crate::Result;
 use std::path::Path;
+
+use crate::Result;
 
 #[cfg(windows)]
 pub fn run_as_admin(exe_path: &Path, parameters: &str) -> Result {
-	use crate::paths;
-	use std::ptr;
-	use std::{ffi::OsStr, io, os::windows::ffi::OsStrExt};
+	use std::{
+		ffi::OsStr,
+		io,
+		os::windows::ffi::OsStrExt,
+		ptr,
+	};
 
 	use winapi::{
 		ctypes::c_int,
-		um::{shellapi::ShellExecuteW, winuser::SW_SHOW},
+		um::{
+			shellapi::ShellExecuteW,
+			winuser::SW_SHOW,
+		},
 	};
+
+	use crate::paths;
 
 	let exe_path_str: Vec<u16> = OsStr::new(&exe_path).encode_wide().chain(Some(0)).collect();
 
@@ -45,7 +54,7 @@ pub fn run_as_admin(exe_path: &Path, parameters: &str) -> Result {
 }
 
 #[cfg(not(windows))]
-pub fn run_as_admin(_exe_path: &Path, _parameters: &str) -> Result {
+pub const fn run_as_admin(_exe_path: &Path, _parameters: &str) -> Result {
 	use crate::result::Error;
 
 	Err(Error::NotImplemented)

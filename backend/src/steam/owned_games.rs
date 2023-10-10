@@ -3,12 +3,18 @@ use std::collections::HashSet;
 use steamlocate::SteamDir;
 
 use super::{
-	appinfo::{self, SteamAppInfoFile},
+	appinfo::{
+		self,
+		SteamAppInfoFile,
+	},
 	id_lists,
 	thumbnail::get_steam_thumbnail,
 };
 use crate::{
-	game::OperatingSystem, game_engines::game_engine::GameEngineBrand, serializable_struct, Result,
+	game::OperatingSystem,
+	game_engines::game_engine::GameEngineBrand,
+	serializable_struct,
+	Result,
 };
 
 serializable_struct!(OwnedGame {
