@@ -99,7 +99,7 @@ const tableHeaders: TableHeader<Game, keyof Game>[] = [
 	{
 		id: "engine",
 		label: "Engine",
-		width: 150,
+		width: 170,
 		center: true,
 		sortable: true,
 		customSort: (dataA, dataB) => {
