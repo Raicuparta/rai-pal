@@ -7,7 +7,7 @@ import {
 	EngineBadge,
 	// OperatingSystemBadge,
 	UnityBackendBadge,
-} from "@components/color-coded-badge";
+} from "@components/badges/color-coded-badge";
 
 export function InstalledGameRow(_: number, game: Game) {
 	return (

@@ -1,0 +1,20 @@
+div.wrapper {
+	width: 100%;
+}
+
+div.label {
+	border-top-left-radius: 0;
+	border-bottom-left-radius: 0;
+	padding-left: 5px;
+	opacity: 0.75;
+	font-size: 0.55rem;
+	flex: 1;
+	justify-content: start;
+}
+
+div.labelledBadge {
+	border-top-right-radius: 0;
+	border-bottom-right-radius: 0;
+	padding-right: 5px;
+	flex: 1;
+}

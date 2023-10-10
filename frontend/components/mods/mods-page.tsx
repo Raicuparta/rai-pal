@@ -6,7 +6,10 @@ import { RefreshButton } from "@components/refresh-button";
 import { ErrorPopover } from "@components/error-popover";
 import { openModFolder, openModsFolder } from "@api/bindings";
 import { IconFolderCog } from "@tabler/icons-react";
-import { EngineBadge, UnityBackendBadge } from "@components/color-coded-badge";
+import {
+	EngineBadge,
+	UnityBackendBadge,
+} from "@components/badges/color-coded-badge";
 
 export function ModsPage() {
 	const [modLoaders, isLoading, refreshMods, error, clearError] =

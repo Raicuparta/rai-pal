@@ -4,6 +4,7 @@ import {
 	UnityScriptingBackend,
 } from "@api/bindings";
 import { Badge, BadgeProps, DefaultMantineColor, Flex } from "@mantine/core";
+import styles from "./badges.module.css";
 
 interface Props<TValue extends string> extends BadgeProps {
 	readonly value?: TValue | null;
@@ -19,22 +20,10 @@ function CreateColorCodedBadge<TValue extends string>(
 	return function ColorCodedBadge(props: Props<TValue>) {
 		const color = props.value ? colorMap[props.value] : "dark";
 		return (
-			<Flex
-				justify="center"
-				w="100%"
-			>
+			<Flex className={styles.wrapper}>
 				<Badge
 					color={color}
-					style={
-						props.label
-							? {
-									borderTopRightRadius: 0,
-									borderBottomRightRadius: 0,
-									paddingRight: 5,
-									flex: 1,
-							  }
-							: undefined
-					}
+					className={props.label ? styles.labelledBadge : undefined}
 					{...props}
 				>
 					{props.value ?? fallbackText ?? "-"}
@@ -43,15 +32,7 @@ function CreateColorCodedBadge<TValue extends string>(
 					<Badge
 						color="dark"
 						variant="filled"
-						style={{
-							borderTopLeftRadius: 0,
-							borderBottomLeftRadius: 0,
-							paddingLeft: 5,
-							opacity: 0.75,
-							fontSize: "0.55rem",
-							flex: 1,
-							justifyContent: "start",
-						}}
+						className={styles.label}
 					>
 						{props.label}
 					</Badge>
