@@ -1,4 +1,4 @@
-import { Alert, Button, Flex, Modal, Stack } from "@mantine/core";
+import { Button, Divider, Flex, Modal, Stack } from "@mantine/core";
 import { useModLoaders } from "@hooks/use-backend-data";
 import {
 	Game,
@@ -8,16 +8,16 @@ import {
 	startGame,
 	uninstallMod,
 } from "@api/bindings";
-import { Fragment, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { GameName } from "./game-name";
 import { CommandButton } from "@components/command-button";
 import {
 	IconBooks,
 	IconBrowser,
-	IconDownload,
 	IconFolder,
 	IconFolderCog,
 	IconPlayerPlay,
+	IconTool,
 	IconTrash,
 } from "@tabler/icons-react";
 import { CodeHighlight } from "@mantine/code-highlight";
@@ -32,11 +32,6 @@ type Props = {
 
 export function InstalledGameModal(props: Props) {
 	const [modLoaderMap] = useModLoaders();
-	const [error, setError] = useState("");
-
-	const handleError = (error: unknown) => {
-		setError(`${error}`);
-	};
 
 	const debugData = useMemo(
 		() => JSON.stringify(props.game, null, 2),
@@ -71,89 +66,105 @@ export function InstalledGameModal(props: Props) {
 		>
 			<Stack>
 				<ModalImage src={props.game.thumbnailUrl} />
-				{error ? (
-					<Alert
-						color="red"
-						style={{ overflow: "auto", flex: 1 }}
-					>
-						<pre>{error}</pre>
-					</Alert>
-				) : null}
-				<Button.Group orientation="vertical">
-					<CommandButton
-						leftSection={<IconPlayerPlay />}
-						onClick={() => startGame(props.game.id)}
-					>
-						Start Game
-					</CommandButton>
-					<CommandButton
-						leftSection={<IconFolder />}
-						onClick={() => openGameFolder(props.game.id)}
-					>
-						Open Game Folder
-					</CommandButton>
-					<CommandButton
-						leftSection={<IconFolderCog />}
-						onClick={() => openGameModsFolder(props.game.id).catch(handleError)}
-					>
-						Open Mods Folder
-					</CommandButton>
-					{props.game.steamLaunch && (
-						<>
+				<Flex
+					justify="space-between"
+					wrap="wrap"
+					gap="md"
+					w="100%"
+				>
+					<Stack gap="xs">
+						<Divider label="Game actions" />
+						<Button.Group
+							orientation="vertical"
+							w="fit-content"
+						>
 							<CommandButton
-								leftSection={<IconBooks />}
-								onClick={() =>
-									steamCommands.showInLibrary(props.game.steamLaunch?.appId)
-								}
+								leftSection={<IconPlayerPlay />}
+								onClick={() => startGame(props.game.id)}
 							>
-								Show in Library
+								Start Game
 							</CommandButton>
 							<CommandButton
-								leftSection={<IconBrowser />}
-								onClick={() =>
-									steamCommands.openStorePage(props.game.steamLaunch?.appId)
-								}
+								leftSection={<IconFolder />}
+								onClick={() => openGameFolder(props.game.id)}
 							>
-								Open Store Page
+								Open Game Folder
 							</CommandButton>
-						</>
+							<CommandButton
+								leftSection={<IconFolderCog />}
+								onClick={() => openGameModsFolder(props.game.id)}
+							>
+								Open Mods Folder
+							</CommandButton>
+							{props.game.steamLaunch && (
+								<>
+									<CommandButton
+										leftSection={<IconBooks />}
+										onClick={() =>
+											steamCommands.showInLibrary(props.game.steamLaunch?.appId)
+										}
+									>
+										Show in Library
+									</CommandButton>
+									<CommandButton
+										leftSection={<IconBrowser />}
+										onClick={() =>
+											steamCommands.openStorePage(props.game.steamLaunch?.appId)
+										}
+									>
+										Open Store Page
+									</CommandButton>
+								</>
+							)}
+						</Button.Group>
+					</Stack>
+					{modLoaders.map(
+						(modLoader) =>
+							modLoader.mods.length > 0 && (
+								<Stack
+									key={modLoader.id}
+									gap="xs"
+								>
+									<Divider label={modLoader.id.toUpperCase()} />
+									<Button.Group
+										orientation="vertical"
+										w="fit-content"
+									>
+										{modLoader.mods.map((mod) =>
+											props.game.installedMods.includes(mod.id) ? (
+												<CommandButton
+													leftSection={<IconTrash />}
+													key={mod.name}
+													onClick={async () => {
+														await uninstallMod(props.game.id, mod.id);
+														props.refreshGame(props.game.id);
+													}}
+												>
+													Uninstall {mod.name}
+												</CommandButton>
+											) : (
+												<CommandButton
+													leftSection={<IconTool />}
+													key={mod.name}
+													onClick={async () => {
+														await installMod(
+															modLoader.id,
+															mod.id,
+															props.game.id,
+														);
+														props.refreshGame(props.game.id);
+													}}
+												>
+													{mod.kind === "Installable" ? "Install" : "Run"}{" "}
+													{mod.name}
+												</CommandButton>
+											),
+										)}
+									</Button.Group>
+								</Stack>
+							),
 					)}
-				</Button.Group>
-				{modLoaders.map(
-					(modLoader) =>
-						modLoader.mods.length > 0 && (
-							<Fragment key={modLoader.id}>
-								<label>{modLoader.id} mods</label>
-								<Button.Group orientation="vertical">
-									{modLoader.mods.map((mod) =>
-										props.game.installedMods.includes(mod.id) ? (
-											<CommandButton
-												leftSection={<IconTrash />}
-												key={mod.name}
-												onClick={async () => {
-													await uninstallMod(props.game.id, mod.id);
-													props.refreshGame(props.game.id);
-												}}
-											>
-												Uninstall {mod.name}
-											</CommandButton>
-										) : (
-											<CommandButton
-												leftSection={<IconDownload />}
-												key={mod.name}
-												onClick={async () => {
-													await installMod(modLoader.id, mod.id, props.game.id);
-													props.refreshGame(props.game.id);
-												}}
-											>
-												Install {mod.name}
-											</CommandButton>
-										),
-									)}
-								</Button.Group>
-							</Fragment>
-						),
-				)}
+				</Flex>
 				<Stack gap="xs">
 					<label>Debug Data</label>
 					<CodeHighlight

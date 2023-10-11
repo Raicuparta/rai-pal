@@ -45,6 +45,7 @@ export function VirtualizedTable<
 	return (
 		<TableContainer>
 			<TableVirtuoso
+				style={{ overflowY: "scroll" }}
 				components={tableComponents}
 				fixedHeaderContent={renderHeaders}
 				{...props}

@@ -5,7 +5,7 @@ div.wrapper {
 .game {
 	border-radius: var(--mantine-radius-default);
 	overflow: hidden;
-	background-color: var(--mantine-color-dark-8);
+	background-color: var(--background-dark);
 	position: relative;
 
 	img {
@@ -48,4 +48,10 @@ div.wrapper {
 	z-index: 1;
 	background-color: rgba(0, 0, 0, 0.5);
 	text-shadow: 0 0 5px black;
+}
+
+.loadingImage {
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }

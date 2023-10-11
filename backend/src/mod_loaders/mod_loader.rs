@@ -11,7 +11,7 @@ use enum_dispatch::enum_dispatch;
 use super::{
 	bepinex::BepInEx,
 	melon_loader::MelonLoader,
-	uevr::UeVr,
+	unreal_vr::UnrealVr,
 };
 use crate::{
 	game::Game,
@@ -31,7 +31,7 @@ serializable_struct!(ModLoaderData {
 pub enum ModLoader {
 	BepInEx,
 	MelonLoader,
-	UeVr,
+	UnrealVr,
 }
 
 #[enum_dispatch(ModLoader)]
@@ -81,7 +81,7 @@ fn get_map(resources_path: &Path) -> Map {
 
 	add_entry::<BepInEx>(resources_path, &mut map);
 	add_entry::<MelonLoader>(resources_path, &mut map);
-	add_entry::<UeVr>(resources_path, &mut map);
+	add_entry::<UnrealVr>(resources_path, &mut map);
 
 	map
 }

@@ -1,4 +1,4 @@
-import { Table, Box, Flex } from "@mantine/core";
+import { Table, Flex } from "@mantine/core";
 import { Game } from "@api/bindings";
 import { GameName } from "./game-name";
 import { GameThumbnail } from "@components/game-thumbnail";
@@ -7,7 +7,7 @@ import {
 	EngineBadge,
 	// OperatingSystemBadge,
 	UnityBackendBadge,
-} from "@components/color-coded-badge";
+} from "@components/badges/color-coded-badge";
 
 export function InstalledGameRow(_: number, game: Game) {
 	return (
@@ -30,15 +30,11 @@ export function InstalledGameRow(_: number, game: Game) {
 					align="center"
 					gap="xs"
 				>
-					<EngineBadge value={game.engine?.brand} />
-					{game.engine?.version && (
-						<Box
-							component="small"
-							opacity={0.75}
-						>
-							{game.engine.version.display}
-						</Box>
-					)}
+					<EngineBadge
+						maw={70}
+						value={game.engine?.brand}
+						label={game.engine?.version?.display}
+					/>
 				</Flex>
 			</Table.Td>
 		</>

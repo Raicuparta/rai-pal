@@ -5,6 +5,9 @@ use std::{
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
+	#[error("Not implemented")]
+	NotImplemented,
+
 	#[error(transparent)]
 	Io(#[from] std::io::Error),
 
