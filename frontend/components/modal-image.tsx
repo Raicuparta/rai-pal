@@ -13,7 +13,7 @@ export function ModalImage(props: Props) {
 				radius="md"
 				src={props.src}
 				fit="contain"
-				height={100}
+				height={87}
 			/>
 		</Box>
 	);

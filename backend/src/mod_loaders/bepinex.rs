@@ -20,7 +20,10 @@ use crate::{
 		},
 		unity::UnityScriptingBackend,
 	},
-	game_mod::Mod,
+	game_mod::{
+		Mod,
+		ModKind,
+	},
 	mod_loaders::mod_loader::{
 		ModLoaderActions,
 		ModLoaderData,
@@ -266,6 +269,7 @@ fn find_mods(mod_loader_path: &Path, scripting_backend: UnityScriptingBackend) -
 					mod_path,
 					Some(GameEngineBrand::Unity),
 					Some(scripting_backend),
+					ModKind::Installable,
 				)
 				.ok()?,
 			),

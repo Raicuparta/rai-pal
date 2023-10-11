@@ -10,7 +10,7 @@ interface Props<TResult> extends ButtonProps {
 }
 
 function CommandButtonInternal<TResult>(
-	{ onClick, ...props }: Props<TResult>,
+	{ onClick, children, ...props }: Props<TResult>,
 	ref: React.ForwardedRef<HTMLButtonElement>,
 ) {
 	const [executeCommand, isLoading, success, error, clearError] =
@@ -26,11 +26,14 @@ function CommandButtonInternal<TResult>(
 			<Button
 				ref={ref}
 				color={error ? "red" : "green"}
+				justify="start"
 				loading={isLongLoading}
 				variant={success || error ? "filled" : "default"}
 				{...props}
 				onClick={executeCommand}
-			/>
+			>
+				{children}
+			</Button>
 		</ErrorPopover>
 	);
 }

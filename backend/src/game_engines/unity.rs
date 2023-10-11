@@ -1,15 +1,28 @@
 use std::{
-	fs::{self, File},
+	fs::{
+		self,
+		File,
+	},
 	io::Read,
-	path::{Path, PathBuf},
+	path::{
+		Path,
+		PathBuf,
+	},
 };
 
 use lazy_regex::regex_find;
 
 use crate::{
-	game_engines::game_engine::{GameEngine, GameEngineBrand, GameEngineVersion},
+	game_engines::game_engine::{
+		GameEngine,
+		GameEngineBrand,
+		GameEngineVersion,
+	},
 	paths,
-	result::{Error, Result},
+	result::{
+		Error,
+		Result,
+	},
 	serializable_enum,
 };
 

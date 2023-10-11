@@ -1,4 +1,4 @@
-import { useUnownedGames } from "@hooks/use-backend-data";
+import { useDiscoverGames } from "@hooks/use-backend-data";
 import { Box, Flex, Paper, Stack, Text } from "@mantine/core";
 import { VirtuosoGrid } from "react-virtuoso";
 import styles from "./discover.module.css";
@@ -11,7 +11,7 @@ import { DiscoverGameCard } from "./discover-game-card";
 
 export function DiscoverPage() {
 	const [unownedGames, isLoading, refresh, error, clearError] =
-		useUnownedGames();
+		useDiscoverGames();
 
 	const [engine, setEngine] = useState<GameEngineBrand>();
 
@@ -58,9 +58,7 @@ export function DiscoverPage() {
 						Header: () => <Box className={styles.spacer} />,
 						Footer: () => <Box className={styles.spacer} />,
 					}}
-					itemContent={(index) => (
-						<DiscoverGameCard game={filteredGames[index]} />
-					)}
+					itemContent={(_, game) => <DiscoverGameCard game={game} />}
 				/>
 			</Paper>
 		</Stack>

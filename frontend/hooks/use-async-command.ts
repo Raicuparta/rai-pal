@@ -1,5 +1,4 @@
-import { useCallback, useState } from "react";
-import { useTimeout } from "@mantine/hooks";
+import { useCallback, useRef, useState } from "react";
 
 export function useAsyncCommand<TResult>(
 	command: () => Promise<TResult>,
@@ -8,20 +7,18 @@ export function useAsyncCommand<TResult>(
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState("");
 	const [success, setSuccess] = useState(false);
-	const { start: startSuccessTimeout, clear: clearSuccessTimeout } = useTimeout(
-		() => {
-			setSuccess(false);
-		},
-		1000,
-	);
+	const timeout = useRef<number>();
 
 	const clearError = useCallback(() => setError(""), []);
 
 	const executeCommand = useCallback(async () => {
-		clearSuccessTimeout();
 		setIsLoading(true);
 		setSuccess(false);
 		setError("");
+
+		if (timeout.current) {
+			clearTimeout(timeout.current);
+		}
 
 		return command()
 			.then((result) => {
@@ -29,12 +26,14 @@ export function useAsyncCommand<TResult>(
 					onSuccess(result);
 				}
 				setSuccess(true);
-				startSuccessTimeout();
+				timeout.current = setTimeout(() => {
+					setSuccess(false);
+				}, 1000);
 				return result;
 			})
 			.catch((error) => setError(`Failed to execute command: ${error}`))
 			.finally(() => setIsLoading(false));
-	}, [clearSuccessTimeout, command, startSuccessTimeout, onSuccess]);
+	}, [command, onSuccess]);
 
 	return [executeCommand, isLoading, success, error, clearError] as const;
 }

@@ -2,7 +2,7 @@ import { OwnedGame } from "@api/bindings";
 import { Flex, Table } from "@mantine/core";
 import { IconCheck } from "@tabler/icons-react";
 import { GameThumbnail } from "@components/game-thumbnail";
-import { EngineBadge } from "@components/color-coded-badge";
+import { EngineBadge } from "@components/badges/color-coded-badge";
 import styles from "../table/table.module.css";
 
 export function OwnedGameRow(_: number, ownedUnityGame: OwnedGame) {
