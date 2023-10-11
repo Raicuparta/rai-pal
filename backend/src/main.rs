@@ -12,8 +12,10 @@ use mod_loaders::mod_loader::{
 	ModLoaderActions,
 };
 use result::{
+	CommandResult,
 	Error,
 	Result,
+	ToCommandResult,
 };
 use steam::{
 	discover_games::DiscoverGame,
@@ -44,7 +46,7 @@ async fn get_state_data<TData, TFunction, TFunctionResult>(
 	mutex: &Mutex<Option<TData>>,
 	get_data: TFunction,
 	ignore_cache: bool,
-) -> Result<TData>
+) -> CommandResult<TData>
 where
 	TFunction: Fn() -> TFunctionResult + Send,
 	TData: Clone + Send,
@@ -59,7 +61,7 @@ where
 	}
 
 	let result = get_data();
-	let data = result.await?;
+	let data = result.await.to_command_result()?;
 	if let Ok(mut mutex_guard) = mutex.lock() {
 		*mutex_guard = Some(data.clone());
 	}
@@ -69,7 +71,10 @@ where
 
 #[tauri::command]
 #[specta::specta]
-async fn get_game_map(state: tauri::State<'_, AppState>, ignore_cache: bool) -> Result<game::Map> {
+async fn get_game_map(
+	state: tauri::State<'_, AppState>,
+	ignore_cache: bool,
+) -> CommandResult<game::Map> {
 	get_state_data(&state.game_map, steam::installed_games::get, ignore_cache).await
 }
 
@@ -78,7 +83,7 @@ async fn get_game_map(state: tauri::State<'_, AppState>, ignore_cache: bool) -> 
 async fn get_owned_games(
 	state: tauri::State<'_, AppState>,
 	ignore_cache: bool,
-) -> Result<Vec<OwnedGame>> {
+) -> CommandResult<Vec<OwnedGame>> {
 	get_state_data(&state.owned_games, steam::owned_games::get, ignore_cache).await
 }
 
@@ -88,8 +93,8 @@ async fn get_mod_loaders(
 	state: tauri::State<'_, AppState>,
 	ignore_cache: bool,
 	handle: tauri::AppHandle,
-) -> Result<mod_loader::DataMap> {
-	let resources_path = paths::resources_path(&handle)?;
+) -> CommandResult<mod_loader::DataMap> {
+	let resources_path = paths::resources_path(&handle).to_command_result()?;
 
 	get_state_data(
 		&state.mod_loaders,
@@ -104,7 +109,7 @@ async fn get_mod_loaders(
 async fn get_discover_games(
 	state: tauri::State<'_, AppState>,
 	ignore_cache: bool,
-) -> Result<Vec<DiscoverGame>> {
+) -> CommandResult<Vec<DiscoverGame>> {
 	get_state_data(
 		&state.discover_games,
 		steam::discover_games::get,
@@ -115,60 +120,71 @@ async fn get_discover_games(
 
 #[tauri::command]
 #[specta::specta]
-async fn open_game_folder(game_id: &str, state: tauri::State<'_, AppState>) -> Result {
+async fn open_game_folder(game_id: &str, state: tauri::State<'_, AppState>) -> CommandResult {
 	let game_map = get_game_map(state, false).await?;
 
 	let game = game_map
 		.get(game_id)
-		.ok_or_else(|| Error::GameNotFound(game_id.to_string()))?;
+		.ok_or_else(|| Error::GameNotFound(game_id.to_string()))
+		.to_command_result()?;
 
-	game.open_game_folder()
+	game.open_game_folder().to_command_result()
 }
 
 #[tauri::command]
 #[specta::specta]
-async fn open_game_mods_folder(game_id: &str, state: tauri::State<'_, AppState>) -> Result {
+async fn open_game_mods_folder(game_id: &str, state: tauri::State<'_, AppState>) -> CommandResult {
 	let game_map = get_game_map(state, false).await?;
 	let game = game_map
 		.get(game_id)
-		.ok_or_else(|| Error::GameNotFound(game_id.to_string()))?;
+		.ok_or_else(|| Error::GameNotFound(game_id.to_string()))
+		.to_command_result()?;
 
-	game.open_mods_folder()
+	game.open_mods_folder().to_command_result()
 }
 
 #[tauri::command]
 #[specta::specta]
-async fn open_mods_folder(handle: tauri::AppHandle) -> Result {
-	let resources_path = paths::resources_path(&handle)?;
-	Ok(open::that_detached(resources_path)?)
+async fn open_mods_folder(handle: tauri::AppHandle) -> CommandResult {
+	let resources_path = paths::resources_path(&handle).to_command_result()?;
+	open::that_detached(resources_path).to_command_result()
 }
 
 #[tauri::command]
 #[specta::specta]
-async fn open_mod_folder(mod_loader_id: &str, mod_id: &str, handle: tauri::AppHandle) -> Result {
-	let resources_path = paths::resources_path(&handle)?;
-	let mod_loader = mod_loader::get(&resources_path, mod_loader_id)?;
-	mod_loader.open_mod_folder(mod_id)
+async fn open_mod_folder(
+	mod_loader_id: &str,
+	mod_id: &str,
+	handle: tauri::AppHandle,
+) -> CommandResult {
+	let resources_path = paths::resources_path(&handle).to_command_result()?;
+	let mod_loader = mod_loader::get(&resources_path, mod_loader_id).to_command_result()?;
+	mod_loader.open_mod_folder(mod_id).to_command_result()
 }
 
 #[tauri::command]
 #[specta::specta]
-async fn start_game(game_id: &str, state: tauri::State<'_, AppState>) -> Result {
+async fn start_game(game_id: &str, state: tauri::State<'_, AppState>) -> CommandResult {
 	let game_map = get_game_map(state, false).await?;
 	let game = game_map
 		.get(game_id)
-		.ok_or_else(|| Error::GameNotFound(game_id.to_string()))?;
+		.ok_or_else(|| Error::GameNotFound(game_id.to_string()))
+		.to_command_result()?;
 
-	game.start()
+	game.start().to_command_result()
 }
 
 #[tauri::command]
 #[specta::specta]
-async fn update_game_info(game_id: &str, state: tauri::State<'_, AppState>) -> Result<game::Map> {
+async fn update_game_info(
+	game_id: &str,
+	state: tauri::State<'_, AppState>,
+) -> CommandResult<game::Map> {
 	let mut game_map = get_game_map(state, false).await?;
 	let game = game_map
 		.get(game_id)
-		.ok_or_else(|| Error::GameNotFound(game_id.to_string()))?;
+		.ok_or_else(|| Error::GameNotFound(game_id.to_string()))
+		.to_command_result()?;
 
 	let game_copy = Game::new(
 		&game.id,
@@ -178,7 +194,8 @@ async fn update_game_info(game_id: &str, state: tauri::State<'_, AppState>) -> R
 		game.steam_launch.as_ref(),
 		game.thumbnail_url.clone(),
 	)
-	.ok_or_else(|| Error::GameCopyFailed(game.id.clone()))?;
+	.ok_or_else(|| Error::GameCopyFailed(game.id.clone()))
+	.to_command_result()?;
 
 	game_map.insert(game.id.clone(), game_copy);
 
@@ -193,35 +210,41 @@ async fn install_mod(
 	game_id: &str,
 	state: tauri::State<'_, AppState>,
 	handle: tauri::AppHandle,
-) -> Result {
-	let resources_path = paths::resources_path(&handle)?;
+) -> CommandResult {
+	let resources_path = paths::resources_path(&handle).to_command_result()?;
 
 	let game_map = get_game_map(state, false).await?;
 	let game = game_map
 		.get(game_id)
-		.ok_or_else(|| Error::GameNotFound(game_id.to_string()))?;
+		.ok_or_else(|| Error::GameNotFound(game_id.to_string()))
+		.to_command_result()?;
 
-	let mod_loader = mod_loader::get(&resources_path, mod_loader_id)?;
+	let mod_loader = mod_loader::get(&resources_path, mod_loader_id).to_command_result()?;
 
-	mod_loader.install_mod(game, mod_id)
+	mod_loader.install_mod(game, mod_id).to_command_result()
 }
 
 #[tauri::command]
 #[specta::specta]
-async fn uninstall_mod(game_id: &str, mod_id: &str, state: tauri::State<'_, AppState>) -> Result {
+async fn uninstall_mod(
+	game_id: &str,
+	mod_id: &str,
+	state: tauri::State<'_, AppState>,
+) -> CommandResult {
 	let game_map = get_game_map(state, false).await?;
 	let game = game_map
 		.get(game_id)
-		.ok_or_else(|| Error::GameNotFound(game_id.to_string()))?;
+		.ok_or_else(|| Error::GameNotFound(game_id.to_string()))
+		.to_command_result()?;
 
-	game.uninstall_mod(mod_id)
+	game.uninstall_mod(mod_id).to_command_result()
 }
 
 #[tauri::command]
 #[specta::specta]
-async fn delete_steam_appinfo_cache() -> Result {
-	let steam_dir = SteamDir::locate()?;
-	steam::appinfo::delete(steam_dir.path())
+async fn delete_steam_appinfo_cache() -> CommandResult {
+	let steam_dir = SteamDir::locate().to_command_result()?;
+	steam::appinfo::delete(steam_dir.path()).to_command_result()
 }
 
 fn main() {
@@ -235,6 +258,23 @@ fn main() {
 			info.to_string(),
 		);
 	}));
+
+	// let specta_builder = {
+	// 	// You can use `tauri_specta::js::builder` for exporting JS Doc instead of Typescript!`
+	// 	let specta_builder = tauri_specta::ts::builder().commands(tauri_specta::collect_commands![
+	// 		delete_steam_appinfo_cache_2
+	// 	]); // <- Each of your comments
+
+	// 	#[cfg(debug_assertions)] // <- Only export on non-release builds
+	// 	let specta_builder = specta_builder.path("../src/bindings.ts");
+
+	// 	specta_builder.into_plugin()
+	// };
+
+	// tauri::Builder::default()
+	// 	.plugin(specta_builder)
+	// 	.run(tauri::generate_context!())
+	// 	.expect("error while running tauri application");
 
 	set_up_tauri!(
 		"../frontend/api/bindings.ts",

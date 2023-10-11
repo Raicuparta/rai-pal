@@ -81,3 +81,19 @@ impl serde::Serialize for Error {
 }
 
 pub type Result<T = ()> = result::Result<T, Error>;
+
+pub type CommandResult<T = ()> = result::Result<T, String>;
+
+pub trait ToCommandResult<T, E> {
+	fn to_command_result(self) -> CommandResult<T>;
+}
+
+// implement ToCommandResult for Result:
+impl<T, E: ToString> ToCommandResult<T, E> for result::Result<T, E> {
+	fn to_command_result(self) -> CommandResult<T> {
+		match self {
+			Ok(value) => Ok(value),
+			Err(err) => Err(err.to_string()),
+		}
+	}
+}
