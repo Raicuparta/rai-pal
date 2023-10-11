@@ -88,7 +88,6 @@ pub trait ToCommandResult<T, E> {
 	fn to_command_result(self) -> CommandResult<T>;
 }
 
-// implement ToCommandResult for Result:
 impl<T, E: ToString> ToCommandResult<T, E> for result::Result<T, E> {
 	fn to_command_result(self) -> CommandResult<T> {
 		match self {
