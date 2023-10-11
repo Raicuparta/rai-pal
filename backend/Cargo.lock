@@ -2615,7 +2615,6 @@ dependencies = [
  "enum_dispatch",
  "glob 0.3.1 (git+https://github.com/rust-lang/glob)",
  "goblin",
- "keyvalues-serde",
  "lazy-regex",
  "open 5.0.0",
  "pelite",
