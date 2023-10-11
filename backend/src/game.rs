@@ -53,7 +53,7 @@ impl Game {
 		id: &str,
 		name: &str,
 		discriminator: Option<String>,
-		path: &Path,
+		full_path: &Path,
 		steam_launch: Option<&SteamLaunchOption>,
 		thumbnail_url: Option<String>,
 	) -> Option<Self> {
@@ -61,20 +61,20 @@ impl Game {
 		const VALID_EXTENSIONS: [&str; 3] = ["exe", "x86_64", "x86"];
 
 		// We ignore games that don't have an extension.
-		let extension = path.extension()?.to_str()?;
+		let extension = full_path.extension()?.to_str()?;
 
 		if !VALID_EXTENSIONS.contains(&extension) {
 			return None;
 		}
 
-		if extension == "x86" && path.with_extension("x86_64").is_file() {
+		if extension == "x86" && full_path.with_extension("x86_64").is_file() {
 			// If there's an x86_64 version, we ignore the x86 version.
 			// I'm just gonna presume there are no x86 modders out there,
 			// if someone cries about it I'll make this smarter.
 			return None;
 		}
 
-		let (operating_system, architecture) = get_os_and_architecture(path).ok()?;
+		let (operating_system, architecture) = get_os_and_architecture(full_path).ok()?;
 
 		let installed_mods = match get_installed_mods(id) {
 			Ok(mods) => mods,
@@ -84,12 +84,12 @@ impl Game {
 			}
 		};
 
-		let engine = get_engine(path, architecture.unwrap_or(Architecture::X64));
-		let scripting_backend = unity::get_scripting_backend(path, &engine);
+		let engine = get_engine(full_path, architecture.unwrap_or(Architecture::X64));
+		let scripting_backend = unity::get_scripting_backend(full_path, &engine);
 
 		Some(Self {
 			architecture,
-			full_path: path.to_path_buf(),
+			full_path: full_path.to_path_buf(),
 			id: id.to_string(),
 			operating_system,
 			name: name.to_string(),
