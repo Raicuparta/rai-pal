@@ -2585,7 +2585,7 @@ dependencies = [
  "pelite",
  "reqwest",
  "serde",
- "specta",
+ "specta 2.0.0-rc.5 (git+https://github.com/oscartbeaumont/specta?branch=main)",
  "steamlocate",
  "tauri",
  "tauri-build",
@@ -3206,8 +3206,19 @@ dependencies = [
  "once_cell",
  "paste",
  "serde",
- "specta-macros",
+ "specta-macros 2.0.0-rc.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "tauri",
+ "thiserror",
+]
+
+[[package]]
+name = "specta"
+version = "2.0.0-rc.5"
+source = "git+https://github.com/oscartbeaumont/specta?branch=main#4dea4d52ebced76e9ccf5970f8122b00772b809c"
+dependencies = [
+ "once_cell",
+ "paste",
+ "specta-macros 2.0.0-rc.5 (git+https://github.com/oscartbeaumont/specta?branch=main)",
  "thiserror",
 ]
 
@@ -3216,6 +3227,17 @@ name = "specta-macros"
 version = "2.0.0-rc.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "90d0f2e40494548bae05e3b59d6a26298bab89c2af8b2c83bc966352f3cb12f5"
+dependencies = [
+ "Inflector",
+ "proc-macro2",
+ "quote",
+ "syn 1.0.109",
+]
+
+[[package]]
+name = "specta-macros"
+version = "2.0.0-rc.5"
+source = "git+https://github.com/oscartbeaumont/specta?branch=main#4dea4d52ebced76e9ccf5970f8122b00772b809c"
 dependencies = [
  "Inflector",
  "proc-macro2",
@@ -3589,14 +3611,13 @@ dependencies = [
 [[package]]
 name = "tauri-specta"
 version = "2.0.0-rc.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9abd71b1215ede2c49195cab3fa091d5c48ab5fc42dc7392acf894131045a567"
+source = "git+https://github.com/oscartbeaumont/tauri-specta?branch=main#e06610cd47a64b11ee9c07e1b8099b37a31e26e6"
 dependencies = [
  "heck 0.4.1",
  "indoc",
  "serde",
  "serde_json",
- "specta",
+ "specta 2.0.0-rc.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "tauri",
  "tauri-specta-macros",
  "thiserror",
@@ -3605,8 +3626,7 @@ dependencies = [
 [[package]]
 name = "tauri-specta-macros"
 version = "2.0.0-rc.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b5c495b1af3441017cf63ec96e4e872d3573751af20dbf47ff0478829464b1dd"
+source = "git+https://github.com/oscartbeaumont/tauri-specta?branch=main#e06610cd47a64b11ee9c07e1b8099b37a31e26e6"
 dependencies = [
  "heck 0.4.1",
  "proc-macro2",

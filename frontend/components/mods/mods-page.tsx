@@ -4,7 +4,7 @@ import { useModLoaders } from "@hooks/use-backend-data";
 import { TableContainer } from "@components/table/table-container";
 import { RefreshButton } from "@components/refresh-button";
 import { ErrorPopover } from "@components/error-popover";
-import { openModFolder, openModsFolder } from "@api/bindings";
+import { commands } from "@api/bindings";
 import { IconFolderCog } from "@tabler/icons-react";
 import {
 	EngineBadge,
@@ -22,7 +22,7 @@ export function ModsPage() {
 				gap="md"
 			>
 				<Button
-					onClick={openModsFolder}
+					onClick={commands.openModsFolder}
 					leftSection={<IconFolderCog />}
 				>
 					Open Mods Folder
@@ -68,7 +68,7 @@ export function ModsPage() {
 								{modLoader.mods.map((mod) => (
 									<Table.Tr
 										key={mod.path}
-										onClick={() => openModFolder(modLoader.id, mod.id)}
+										onClick={() => commands.openModFolder(modLoader.id, mod.id)}
 									>
 										<Table.Td ta="left">{mod.name}</Table.Td>
 										<Table.Td>{modLoader.id}</Table.Td>

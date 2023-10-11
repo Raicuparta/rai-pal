@@ -1,7 +1,11 @@
-import { getModLoaders, getOwnedGames, getDiscoverGames } from "@api/bindings";
+import { commands } from "@api/bindings";
 import { useCallback, useEffect, useState } from "react";
 
-type ApiFunction<TResultData> = (ignoreCache: boolean) => Promise<TResultData>;
+type ApiFunction<TResultData> = (
+	ignoreCache: boolean,
+) => Promise<Result<TResultData>>;
+
+type Result<T> = { status: "ok"; data: T } | { status: "error"; error: string };
 
 export function useBackendData<TData>(
 	apiFunction: ApiFunction<TData>,
@@ -19,8 +23,13 @@ export function useBackendData<TData>(
 			clearError();
 
 			apiFunction(ignoreCache)
-				.then(setData)
-				.catch((error) => setError(`Error: ${error}`))
+				.then((result) => {
+					if (result.status == "ok") {
+						setData(result.data);
+					} else {
+						setError(result.error);
+					}
+				})
 				.finally(() => setIsLoading(false));
 		},
 		[apiFunction, clearError],
@@ -37,6 +46,7 @@ export function useBackendData<TData>(
 	return [data, isLoading, refresh, error, clearError] as const;
 }
 
-export const useOwnedGames = () => useBackendData(getOwnedGames, []);
-export const useModLoaders = () => useBackendData(getModLoaders, {});
-export const useDiscoverGames = () => useBackendData(getDiscoverGames, []);
+export const useOwnedGames = () => useBackendData(commands.getOwnedGames, []);
+export const useModLoaders = () => useBackendData(commands.getModLoaders, {});
+export const useDiscoverGames = () =>
+	useBackendData(commands.getDiscoverGames, []);

@@ -1,4 +1,4 @@
-import { Game, getGameMap, updateGameInfo } from "@api/bindings";
+import { Game, commands } from "@api/bindings";
 import { useCallback, useEffect, useState } from "react";
 
 const defaultData = {};
@@ -15,7 +15,8 @@ export const useGameMap = () => {
 			setIsLoading(true);
 			clearError();
 
-			getGameMap(ignoreCache)
+			commands
+				.getGameMap(ignoreCache)
 				.then(setData)
 				.catch((error) => setError(`Error: ${error}`))
 				.finally(() => setIsLoading(false));
@@ -31,7 +32,8 @@ export const useGameMap = () => {
 		setIsLoading(true);
 		setError("");
 
-		updateGameInfo(gameId)
+		commands
+			.updateGameInfo(gameId)
 			.then(setData)
 			.catch((error) => setError(`Error: ${error}`))
 			.finally(() => setIsLoading(false));

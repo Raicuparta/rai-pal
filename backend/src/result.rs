@@ -3,27 +3,35 @@ use std::{
 	result,
 };
 
-#[derive(Debug, thiserror::Error)]
+use specta::PrimitiveType;
+
+#[derive(Debug, thiserror::Error, specta::Type)]
 pub enum Error {
 	#[error("Not implemented")]
 	NotImplemented,
 
 	#[error(transparent)]
+	#[serde(skip)]
 	Io(#[from] std::io::Error),
 
 	#[error(transparent)]
+	#[serde(skip)]
 	Glob(#[from] glob::PatternError),
 
 	#[error(transparent)]
+	#[serde(skip)]
 	Reqwest(#[from] reqwest::Error),
 
 	#[error(transparent)]
+	#[serde(skip)]
 	Goblin(#[from] goblin::error::Error),
 
 	#[error("Failed to find Steam. **Is Steam installed**? ({0})")]
+	#[serde(skip)]
 	SteamLocate(#[from] steamlocate::Error),
 
 	#[error(transparent)]
+	#[serde(skip)]
 	Zip(#[from] zip::result::ZipError),
 
 	#[error("Invalid type `{0}` in binary vdf key/value pair")]
@@ -81,18 +89,3 @@ impl serde::Serialize for Error {
 }
 
 pub type Result<T = ()> = result::Result<T, Error>;
-
-pub type CommandResult<T = ()> = result::Result<T, String>;
-
-pub trait ToCommandResult<T, E> {
-	fn to_command_result(self) -> CommandResult<T>;
-}
-
-impl<T, E: ToString> ToCommandResult<T, E> for result::Result<T, E> {
-	fn to_command_result(self) -> CommandResult<T> {
-		match self {
-			Ok(value) => Ok(value),
-			Err(err) => Err(err.to_string()),
-		}
-	}
-}

@@ -1,13 +1,6 @@
 import { Button, Divider, Flex, Modal, Stack } from "@mantine/core";
 import { useModLoaders } from "@hooks/use-backend-data";
-import {
-	Game,
-	installMod,
-	openGameFolder,
-	openGameModsFolder,
-	startGame,
-	uninstallMod,
-} from "@api/bindings";
+import { Game, commands } from "@api/bindings";
 import { useMemo } from "react";
 import { GameName } from "./game-name";
 import { CommandButton } from "@components/command-button";
@@ -80,19 +73,19 @@ export function InstalledGameModal(props: Props) {
 						>
 							<CommandButton
 								leftSection={<IconPlayerPlay />}
-								onClick={() => startGame(props.game.id)}
+								onClick={() => commands.startGame(props.game.id)}
 							>
 								Start Game
 							</CommandButton>
 							<CommandButton
 								leftSection={<IconFolder />}
-								onClick={() => openGameFolder(props.game.id)}
+								onClick={() => commands.openGameFolder(props.game.id)}
 							>
 								Open Game Folder
 							</CommandButton>
 							<CommandButton
 								leftSection={<IconFolderCog />}
-								onClick={() => openGameModsFolder(props.game.id)}
+								onClick={() => commands.openGameModsFolder(props.game.id)}
 							>
 								Open Mods Folder
 							</CommandButton>
@@ -136,7 +129,7 @@ export function InstalledGameModal(props: Props) {
 													leftSection={<IconTrash />}
 													key={mod.name}
 													onClick={async () => {
-														await uninstallMod(props.game.id, mod.id);
+														await commands.uninstallMod(props.game.id, mod.id);
 														props.refreshGame(props.game.id);
 													}}
 												>
@@ -147,7 +140,7 @@ export function InstalledGameModal(props: Props) {
 													leftSection={<IconTool />}
 													key={mod.name}
 													onClick={async () => {
-														await installMod(
+														await commands.installMod(
 															modLoader.id,
 															mod.id,
 															props.game.id,
