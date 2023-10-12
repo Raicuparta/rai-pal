@@ -11,10 +11,11 @@ type State = {
 };
 
 type Actions = {
-	updateState: (state: Partial<State>) => void;
+	updateState: () => void;
+	clearError: () => void;
 };
 
-export const useAppStore = create<State & Actions>((set) => ({
+export const useAppStore = create<State & Actions>((setStore, getStore) => ({
 	isReady: false,
 	error: "",
 	isLoading: false,
@@ -24,38 +25,23 @@ export const useAppStore = create<State & Actions>((set) => ({
 		modLoaders: {},
 		ownedGames: [],
 	},
-	updateState: (newState: Partial<State>) =>
-		set((previousState) => ({ ...previousState, ...newState })),
+
+	clearError: () => setStore({ error: "" }),
+
+	updateState: () => {
+		setStore({ isLoading: true, error: "" });
+
+		getFullState()
+			.then((data) => setStore({ data, isReady: true }))
+			.catch((error) => setStore({ error }))
+			.finally(() => setStore({ isLoading: false }));
+	},
 }));
 
-export function useAppState() {
-	const updateAppState = useAppStore((store) => store.updateState);
-	const isReady = useAppStore((store) => store.isReady);
-
-	const clearError = useCallback(() => updateAppState({ error: "" }), []);
-
-	const updateData = useCallback(
-		(ignoreCache = false) => {
-			if (!ignoreCache && isReady) return;
-
-			updateAppState({ isLoading: true });
-			clearError();
-
-			getFullState()
-				.then((data) => updateAppState({ data, isReady: true }))
-				.catch((error) => updateAppState({ error }))
-				.finally(() => updateAppState({ isLoading: false }));
-		},
-		[clearError],
-	);
-
-	const refresh = useCallback(() => {
-		updateData(true);
-	}, [updateData]);
+export function useAppStoreEffect() {
+	const updateAppStore = useAppStore((store) => store.updateState);
 
 	useEffect(() => {
-		updateData();
-	}, [updateData]);
-
-	// return [appState, isLoading, refresh, error, clearError] as const;
+		updateAppStore();
+	}, [updateAppStore]);
 }

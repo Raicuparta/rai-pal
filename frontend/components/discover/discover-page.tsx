@@ -7,12 +7,14 @@ import { ErrorPopover } from "@components/error-popover";
 import { GameEngineBrand } from "@api/bindings";
 import { EngineSelect } from "@components/engine-select";
 import { DiscoverGameCard } from "./discover-game-card";
-import { useAppState, useAppStore } from "@hooks/use-app-state";
+import { useAppStore } from "@hooks/use-app-state";
 
 export function DiscoverPage() {
 	const discoverGames = useAppStore((state) => state.data.discoverGames);
 	const isLoading = useAppStore((state) => state.isLoading);
 	const error = useAppStore((state) => state.error);
+	const refresh = useAppStore((store) => store.updateState);
+	const clearError = useAppStore((store) => store.clearError);
 
 	const [engine, setEngine] = useState<GameEngineBrand>();
 
@@ -37,7 +39,7 @@ export function DiscoverPage() {
 					onChange={setEngine}
 					value={engine}
 				/>
-				{/* <ErrorPopover
+				<ErrorPopover
 					error={error}
 					clearError={clearError}
 				>
@@ -45,7 +47,7 @@ export function DiscoverPage() {
 						loading={isLoading}
 						onClick={refresh}
 					/>
-				</ErrorPopover> */}
+				</ErrorPopover>
 			</Flex>
 			<Paper
 				h="100%"

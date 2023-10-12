@@ -24,7 +24,7 @@ import { RefreshButton } from "@components/refresh-button";
 import { SearchInput } from "@components/search-input";
 import { ErrorPopover } from "@components/error-popover";
 import { EngineSelect } from "@components/engine-select";
-import { useAppState, useAppStore } from "@hooks/use-app-state";
+import { useAppStore } from "@hooks/use-app-state";
 
 interface InstalledGamesFilter extends Filter {
 	search: string;

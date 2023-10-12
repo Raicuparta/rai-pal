@@ -14,7 +14,7 @@ import { FixOwnedGamesButton } from "./fix-owned-games-button";
 import { SearchInput } from "@components/search-input";
 import { ErrorPopover } from "@components/error-popover";
 import { EngineSelect } from "@components/engine-select";
-import { useAppState, useAppStore } from "@hooks/use-app-state";
+import { useAppStore } from "@hooks/use-app-state";
 
 const tableHeaders: TableHeader<OwnedGame>[] = [
 	{ id: "thumbnailUrl", label: "", width: 100 },

@@ -9,7 +9,7 @@ import {
 	EngineBadge,
 	UnityBackendBadge,
 } from "@components/badges/color-coded-badge";
-import { useAppState, useAppStore } from "@hooks/use-app-state";
+import { useAppStore } from "@hooks/use-app-state";
 
 export function ModsPage() {
 	const modLoaders = useAppStore((state) => state.data.modLoaders);

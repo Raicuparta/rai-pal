@@ -22,7 +22,7 @@ import {
 import { CodeHighlight } from "@mantine/code-highlight";
 import { steamCommands } from "../../util/steam";
 import { ModalImage } from "@components/modal-image";
-import { useAppState } from "@hooks/use-app-state";
+import { useAppStore } from "@hooks/use-app-state";
 
 type Props = {
 	readonly game: Game;
@@ -31,11 +31,7 @@ type Props = {
 };
 
 export function InstalledGameModal(props: Props) {
-	const [
-		{
-			data: { modLoaders: modLoaderMap },
-		},
-	] = useAppState();
+	const modLoaderMap = useAppStore((store) => store.data.modLoaders);
 
 	const debugData = useMemo(
 		() => JSON.stringify(props.game, null, 2),
