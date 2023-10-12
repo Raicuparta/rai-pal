@@ -44,42 +44,19 @@ struct AppState {
 }
 
 fn get_game(game_id: &str, state: &tauri::State<'_, AppState>) -> Result<Game> {
-	let state = state.full_state.lock().unwrap();
-	let state = state
-		.as_ref()
-		.ok_or(Error::GameNotFound(game_id.to_string()))?;
-	let game = state
-		.game_map
-		.get(game_id)
-		.ok_or_else(|| Error::GameNotFound(game_id.to_string()))?;
-	Ok(game.clone())
-}
+	if let Ok(read_guard) = state.full_state.lock() {
+		let full_state = read_guard
+			.as_ref()
+			.ok_or(Error::GameNotFound(game_id.to_string()))?;
+		let game = full_state
+			.game_map
+			.get(game_id)
+			.ok_or_else(|| Error::GameNotFound(game_id.to_string()))?;
 
-async fn get_state_data<TData, TFunction, TFunctionResult>(
-	mutex: &Mutex<Option<TData>>,
-	get_data: TFunction,
-	ignore_cache: bool,
-) -> Result<TData>
-where
-	TFunction: Fn() -> TFunctionResult + Send,
-	TData: Clone + Send,
-	TFunctionResult: Future<Output = Result<TData>> + Send,
-{
-	if !ignore_cache {
-		if let Ok(mutex_guard) = mutex.lock() {
-			if let Some(data) = &*mutex_guard {
-				return Ok(data.clone());
-			}
-		}
+		return Ok(game.clone());
 	}
 
-	let result = get_data();
-	let data = result.await?;
-	if let Ok(mut mutex_guard) = mutex.lock() {
-		*mutex_guard = Some(data.clone());
-	}
-
-	Ok(data)
+	Err(Error::GameNotFound(game_id.to_string()))
 }
 
 serializable_struct!(FullState {
