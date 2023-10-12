@@ -1,6 +1,5 @@
 import { Flex, Stack } from "@mantine/core";
 import { OwnedGameRow } from "./owned-game-row";
-import { useOwnedGames } from "@hooks/use-backend-data";
 import { GameEngineBrand, OwnedGame } from "@api/bindings";
 import { useState } from "react";
 import { includesOneOf } from "../../util/filter";
@@ -15,6 +14,7 @@ import { FixOwnedGamesButton } from "./fix-owned-games-button";
 import { SearchInput } from "@components/search-input";
 import { ErrorPopover } from "@components/error-popover";
 import { EngineSelect } from "@components/engine-select";
+import { useAppState } from "@hooks/use-app-state";
 
 const tableHeaders: TableHeader<OwnedGame>[] = [
 	{ id: "thumbnailUrl", label: "", width: 100 },
@@ -68,8 +68,15 @@ const filterGame = (game: OwnedGame, filter: Filter) =>
 	(!filter.engine || game.engine === filter.engine);
 
 export function OwnedGamesPage() {
-	const [ownedGames, isLoading, refreshOwnedGames, error, clearError] =
-		useOwnedGames();
+	const [
+		{
+			data: { ownedGames },
+		},
+		isLoading,
+		refresh,
+		error,
+		clearError,
+	] = useAppState();
 	const [selectedGame, setSelectedGame] = useState<OwnedGame>();
 
 	const [filteredGames, sort, setSort, filter, setFilter] = useFilteredList(
@@ -126,7 +133,7 @@ export function OwnedGamesPage() {
 				>
 					<RefreshButton
 						loading={isLoading}
-						onClick={refreshOwnedGames}
+						onClick={refresh}
 					/>
 				</ErrorPopover>
 			</Flex>

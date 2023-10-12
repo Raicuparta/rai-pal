@@ -1,4 +1,3 @@
-import { useDiscoverGames } from "@hooks/use-backend-data";
 import { Box, Flex, Paper, Stack, Text } from "@mantine/core";
 import { VirtuosoGrid } from "react-virtuoso";
 import styles from "./discover.module.css";
@@ -8,19 +7,27 @@ import { ErrorPopover } from "@components/error-popover";
 import { GameEngineBrand } from "@api/bindings";
 import { EngineSelect } from "@components/engine-select";
 import { DiscoverGameCard } from "./discover-game-card";
+import { useAppState } from "@hooks/use-app-state";
 
 export function DiscoverPage() {
-	const [unownedGames, isLoading, refresh, error, clearError] =
-		useDiscoverGames();
+	const [
+		{
+			data: { discoverGames },
+		},
+		isLoading,
+		refresh,
+		error,
+		clearError,
+	] = useAppState();
 
 	const [engine, setEngine] = useState<GameEngineBrand>();
 
 	const filteredGames = useMemo(
 		() =>
 			engine
-				? unownedGames.filter((game) => game.engine == engine)
-				: unownedGames,
-		[unownedGames, engine],
+				? discoverGames.filter((game) => game.engine == engine)
+				: discoverGames,
+		[discoverGames, engine],
 	);
 
 	return (

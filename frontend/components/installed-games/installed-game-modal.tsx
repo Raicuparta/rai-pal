@@ -1,5 +1,4 @@
 import { Button, Divider, Flex, Modal, Stack } from "@mantine/core";
-import { useModLoaders } from "@hooks/use-backend-data";
 import {
 	Game,
 	installMod,
@@ -23,6 +22,7 @@ import {
 import { CodeHighlight } from "@mantine/code-highlight";
 import { steamCommands } from "../../util/steam";
 import { ModalImage } from "@components/modal-image";
+import { useAppState } from "@hooks/use-app-state";
 
 type Props = {
 	readonly game: Game;
@@ -31,7 +31,11 @@ type Props = {
 };
 
 export function InstalledGameModal(props: Props) {
-	const [modLoaderMap] = useModLoaders();
+	const [
+		{
+			data: { modLoaders: modLoaderMap },
+		},
+	] = useAppState();
 
 	const debugData = useMemo(
 		() => JSON.stringify(props.game, null, 2),

@@ -24,6 +24,7 @@ import { RefreshButton } from "@components/refresh-button";
 import { SearchInput } from "@components/search-input";
 import { ErrorPopover } from "@components/error-popover";
 import { EngineSelect } from "@components/engine-select";
+import { useAppState } from "@hooks/use-app-state";
 
 interface InstalledGamesFilter extends Filter {
 	search: string;
@@ -127,8 +128,15 @@ const tableHeaders: TableHeader<Game>[] = [
 export type TableSortMethod = (gameA: Game, gameB: Game) => number;
 
 export function InstalledGamesPage() {
-	const [gameMap, isLoading, refreshGameMap, refreshGame, error, clearError] =
-		useGameMap();
+	const [
+		{
+			data: { gameMap },
+		},
+		isLoading,
+		refreshGameMap,
+		error,
+		clearError,
+	] = useAppState();
 	const [selectedGameId, setSelectedGameId] = useState<string>();
 
 	const games = useMemo(() => Object.values(gameMap), [gameMap]);
@@ -200,7 +208,8 @@ export function InstalledGamesPage() {
 				<InstalledGameModal
 					game={selectedGame}
 					onClose={() => setSelectedGameId(undefined)}
-					refreshGame={refreshGame}
+					// refreshGame={refreshGame}
+					refreshGame={() => {}} // TODO
 				/>
 			) : null}
 			<VirtualizedTable

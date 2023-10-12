@@ -62,9 +62,14 @@ export function openModsFolder() {
     return invoke()<null>("open_mods_folder")
 }
 
+export function getFullState() {
+    return invoke()<FullState>("get_full_state")
+}
+
 export type DiscoverGame = { id: string; engine: GameEngineBrand; nsfw: boolean }
 export type OwnedGame = { id: string; name: string; installed: boolean; osList: OperatingSystem[]; engine: GameEngineBrand; releaseDate: number; thumbnailUrl: string }
 export type OperatingSystem = "Linux" | "Windows"
+export type FullState = { gameMap: { [key: string]: Game }; ownedGames: OwnedGame[]; discoverGames: DiscoverGame[]; modLoaders: { [key: string]: ModLoaderData } }
 export type GameEngine = { brand: GameEngineBrand; version: GameEngineVersion | null }
 export type GameExecutable = { path: string; engine: GameEngine | null; architecture: Architecture | null; operatingSystem: OperatingSystem | null; scriptingBackend: UnityScriptingBackend | null }
 export type Mod = { id: string; name: string; scriptingBackend: UnityScriptingBackend | null; engine: GameEngineBrand | null; kind: ModKind; path: string }

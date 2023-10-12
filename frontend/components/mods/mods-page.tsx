@@ -1,6 +1,5 @@
 import { Button, Flex, Stack, Table } from "@mantine/core";
 import { Fragment } from "react";
-import { useModLoaders } from "@hooks/use-backend-data";
 import { TableContainer } from "@components/table/table-container";
 import { RefreshButton } from "@components/refresh-button";
 import { ErrorPopover } from "@components/error-popover";
@@ -10,10 +9,18 @@ import {
 	EngineBadge,
 	UnityBackendBadge,
 } from "@components/badges/color-coded-badge";
+import { useAppState } from "@hooks/use-app-state";
 
 export function ModsPage() {
-	const [modLoaders, isLoading, refreshMods, error, clearError] =
-		useModLoaders();
+	const [
+		{
+			data: { modLoaders },
+		},
+		isLoading,
+		refreshMods,
+		error,
+		clearError,
+	] = useAppState();
 
 	return (
 		<Stack h="100%">

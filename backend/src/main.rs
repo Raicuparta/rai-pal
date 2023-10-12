@@ -2,6 +2,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use std::{
+	collections::HashMap,
 	future::Future,
 	sync::Mutex,
 };
@@ -40,6 +41,13 @@ struct AppState {
 	discover_games: Mutex<Option<Vec<DiscoverGame>>>,
 	mod_loaders: Mutex<Option<mod_loader::DataMap>>,
 }
+
+serializable_struct!(FullState {
+	game_map: game::Map,
+	owned_games: Vec<OwnedGame>,
+	discover_games: Vec<DiscoverGame>,
+	mod_loaders: mod_loader::DataMap,
+});
 
 async fn get_state_data<TData, TFunction, TFunctionResult>(
 	mutex: &Mutex<Option<TData>>,
@@ -220,6 +228,21 @@ async fn uninstall_mod(game_id: &str, mod_id: &str, state: tauri::State<'_, AppS
 
 #[tauri::command]
 #[specta::specta]
+async fn get_full_state(handle: tauri::AppHandle) -> Result<FullState> {
+	let resources_path = paths::resources_path(&handle)?;
+
+	Ok(FullState {
+		discover_games: steam::discover_games::get().await.unwrap_or_default(),
+		game_map: steam::installed_games::get().await.unwrap_or_default(),
+		mod_loaders: mod_loader::get_data_map(&resources_path)
+			.await
+			.unwrap_or_default(),
+		owned_games: steam::owned_games::get().await.unwrap_or_default(),
+	})
+}
+
+#[tauri::command]
+#[specta::specta]
 async fn delete_steam_appinfo_cache() -> Result {
 	let steam_dir = SteamDir::locate()?;
 	steam::appinfo::delete(steam_dir.path())
@@ -258,7 +281,8 @@ fn main() {
 			update_game_info,
 			delete_steam_appinfo_cache,
 			get_discover_games,
-			open_mods_folder
+			open_mods_folder,
+			get_full_state
 		]
 	);
 }
