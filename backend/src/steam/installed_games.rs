@@ -15,10 +15,11 @@ use super::{
 };
 use crate::{
 	game,
+	mod_loaders::mod_loader,
 	Result,
 };
 
-pub async fn get() -> Result<game::Map> {
+pub async fn get(mod_loaders: &mod_loader::DataMap) -> Result<game::Map> {
 	let steam_dir = SteamDir::locate()?;
 
 	let app_info_file = appinfo::read(steam_dir.path())?;
