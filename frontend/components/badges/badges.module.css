@@ -1,11 +1,12 @@
 div.wrapper {
 	width: 100%;
+	justify-content: center;
 }
 
 div.label {
 	border-top-left-radius: 0;
 	border-bottom-left-radius: 0;
-	padding-left: 5px;
+	padding-left: 1em;
 	opacity: 0.75;
 	font-size: 0.55rem;
 	flex: 1;
@@ -15,6 +16,5 @@ div.label {
 div.labelledBadge {
 	border-top-right-radius: 0;
 	border-bottom-right-radius: 0;
-	padding-right: 5px;
 	flex: 1;
 }

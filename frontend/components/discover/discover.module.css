@@ -14,6 +14,8 @@ div.wrapper {
 			cursor: pointer;
 			opacity: 0.75;
 		}
+		width: 16em;
+		height: 6em;
 	}
 }
 
@@ -41,13 +43,13 @@ div.wrapper {
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	font-size: 1rem;
+	font-size: 1em;
 	pointer-events: none;
 	text-align: center;
 	line-height: 0.8;
 	z-index: 1;
 	background-color: rgba(0, 0, 0, 0.5);
-	text-shadow: 0 0 5px black;
+	text-shadow: 0 0 0.5em black;
 }
 
 .loadingImage {

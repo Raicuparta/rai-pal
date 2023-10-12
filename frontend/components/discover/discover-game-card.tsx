@@ -40,8 +40,6 @@ export function DiscoverGameCard(props: Props) {
 				}
 				onError={() => setIsBroken(true)}
 				onLoad={() => setIsLoaded(true)}
-				height={87}
-				width={231}
 				src={
 					isBroken
 						? "images/fallback-thumbnail.png"
