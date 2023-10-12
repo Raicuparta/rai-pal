@@ -10,7 +10,7 @@ use std::{
 	},
 };
 
-use lazy_regex::regex_find;
+use lazy_regex::regex_captures;
 
 use crate::{
 	game_engines::game_engine::{
@@ -32,7 +32,7 @@ use crate::{
 
 serializable_enum!(UnityScriptingBackend { Il2Cpp, Mono });
 
-fn get_version_from_asset(asset_path: &Path) -> Result<String> {
+fn get_version_from_asset(asset_path: &Path) -> Result<GameEngineVersion> {
 	let mut file = File::open(asset_path)?;
 	let mut data = vec![0u8; 4096];
 
@@ -42,28 +42,30 @@ fn get_version_from_asset(asset_path: &Path) -> Result<String> {
 	}
 
 	let data_str = String::from_utf8_lossy(&data[..bytes_read]);
-	let match_result = regex_find!(
+	let (full, major, minor, patch, suffix) = regex_captures!(
 		r#"(?x)
 			# Version number as "major.minor.patch".
-			\d+\.\d+\.\d+
+			(\d+)\.(\d+)\.(\d+)
 
 			# Suffix, like "f1" or "p3".
-			[fp]\d+
+			([fp]\d+)
 		"#,
 		&data_str
-	);
-
-	match_result.map_or_else(
-		|| {
-			Err(Error::FailedToParseUnityVersionAsset(
-				asset_path.to_path_buf(),
-			))
-		},
-		|matched| Ok(matched.to_string()),
 	)
+	.ok_or(Error::FailedToParseUnityVersionAsset(
+		asset_path.to_path_buf(),
+	))?;
+
+	Ok(GameEngineVersion {
+		display: full.to_string(),
+		major: major.parse().unwrap_or(0),
+		minor: minor.parse().unwrap_or(0),
+		patch: patch.parse().unwrap_or(0),
+		suffix: Some(suffix.to_string()),
+	})
 }
 
-fn get_unity_version(game_exe_path: &Path) -> Option<GameEngineVersion> {
+fn get_version(game_exe_path: &Path) -> Option<GameEngineVersion> {
 	const ASSETS_WITH_VERSION: [&str; 3] = ["globalgamemanagers", "mainData", "data.unity3d"];
 
 	if let Ok(data_path) = get_unity_data_path(game_exe_path) {
@@ -74,19 +76,7 @@ fn get_unity_version(game_exe_path: &Path) -> Option<GameEngineVersion> {
 				if metadata.is_file() {
 					match get_version_from_asset(&asset_path) {
 						Ok(version) => {
-							let mut version_parts = version.split('.');
-							let major = version_parts.next().unwrap_or("0").parse().unwrap_or(0);
-							let minor = version_parts.next().unwrap_or("0").parse().unwrap_or(0);
-							let patch = version_parts.next().unwrap_or("0").parse().unwrap_or(0);
-							let suffix = version_parts.next().unwrap_or("0").to_string();
-
-							return Some(GameEngineVersion {
-								major,
-								minor,
-								patch,
-								suffix: Some(suffix),
-								display: version,
-							});
+							return Some(version);
 						}
 						Err(err) => println!("Failed to get Unity version: {err}"),
 					}
@@ -140,7 +130,7 @@ pub fn get_engine(game_path: &Path) -> Option<GameExecutable> {
 			scripting_backend: get_scripting_backend(game_path),
 			engine: Some(GameEngine {
 				brand: GameEngineBrand::Unity,
-				version: get_unity_version(game_path),
+				version: get_version(game_path),
 			}),
 		})
 	} else {
