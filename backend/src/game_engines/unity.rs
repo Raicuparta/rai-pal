@@ -18,6 +18,10 @@ use crate::{
 		GameEngineBrand,
 		GameEngineVersion,
 	},
+	game_executable::{
+		get_os_and_architecture,
+		GameExecutable,
+	},
 	paths,
 	result::{
 		Error,
@@ -101,19 +105,8 @@ fn get_unity_data_path(game_exe_path: &Path) -> Result<PathBuf> {
 	Ok(parent.join(format!("{file_stem}_Data")))
 }
 
-pub fn get_scripting_backend(
-	game_exe_path: &Path,
-	engine: &Option<GameEngine>,
-) -> Option<UnityScriptingBackend> {
-	if let Some(engine) = engine {
-		if engine.brand != GameEngineBrand::Unity {
-			return None;
-		}
-	} else {
-		return None;
-	}
-
-	match paths::path_parent(game_exe_path) {
+fn get_scripting_backend(path: &Path) -> Option<UnityScriptingBackend> {
+	match paths::path_parent(path) {
 		Ok(game_folder) => {
 			if game_folder.join("GameAssembly.dll").is_file()
 				|| game_folder.join("GameAssembly.so").is_file()
@@ -135,11 +128,20 @@ fn is_unity_exe(game_path: &Path) -> bool {
 		&& get_unity_data_path(game_path).map_or(false, |data_path| data_path.is_dir())
 }
 
-pub fn get_engine(game_path: &Path) -> Option<GameEngine> {
+pub fn get_engine(game_path: &Path) -> Option<GameExecutable> {
 	if is_unity_exe(game_path) {
-		Some(GameEngine {
-			brand: GameEngineBrand::Unity,
-			version: get_unity_version(game_path),
+		let (operating_system, architecture) =
+			get_os_and_architecture(game_path).unwrap_or((None, None));
+
+		Some(GameExecutable {
+			path: game_path.to_path_buf(),
+			architecture,
+			operating_system,
+			scripting_backend: get_scripting_backend(game_path),
+			engine: Some(GameEngine {
+				brand: GameEngineBrand::Unity,
+				version: get_unity_version(game_path),
+			}),
 		})
 	} else {
 		None

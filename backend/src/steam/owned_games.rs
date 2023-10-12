@@ -11,8 +11,8 @@ use super::{
 	thumbnail::get_steam_thumbnail,
 };
 use crate::{
-	game::OperatingSystem,
 	game_engines::game_engine::GameEngineBrand,
+	game_executable::OperatingSystem,
 	serializable_struct,
 	Result,
 };

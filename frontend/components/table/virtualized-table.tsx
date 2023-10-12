@@ -6,17 +6,16 @@ import { getTableComponents } from "./table-components";
 import { TableContainer } from "./table-container";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-interface Props<TItem, TKey extends keyof TItem, Context = any>
+interface Props<TItem, Context = any>
 	extends TableVirtuosoProps<TItem, Context> {
-	readonly headerItems: TableHeader<TItem, TKey>[];
-	readonly onChangeSort?: (sort: TKey) => void;
-	readonly sort?: TableSort<TItem, TKey>;
+	readonly headerItems: TableHeader<TItem>[];
+	readonly onChangeSort?: (sort: string) => void;
+	readonly sort?: TableSort;
 	readonly onClickItem: (item: TItem) => void;
 }
 
 export function VirtualizedTable<
 	TItem,
-	TKey extends keyof TItem,
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	Context = any,
 >({
@@ -25,7 +24,7 @@ export function VirtualizedTable<
 	onChangeSort,
 	onClickItem,
 	...props
-}: Props<TItem, TKey, Context>) {
+}: Props<TItem, Context>) {
 	const renderHeaders = useCallback(
 		() => (
 			<TableHead

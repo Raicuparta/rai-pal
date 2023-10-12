@@ -7,10 +7,7 @@ use super::mod_loader::{
 };
 use crate::{
 	game::Game,
-	game_engines::{
-		game_engine::GameEngineBrand,
-		unreal::get_actual_unreal_binary,
-	},
+	game_engines::game_engine::GameEngineBrand,
 	game_mod::{
 		Mod,
 		ModKind,
@@ -66,9 +63,10 @@ impl ModLoaderActions for UnrealVr {
 	fn install(&self, game: &Game) -> Result {
 		let parameters = format!(
 			"--attach=\"{}\"",
-			get_actual_unreal_binary(&game.full_path)
+			game.executable
+				.path
 				.file_name()
-				.ok_or_else(|| Error::FailedToGetFileName(game.full_path.clone()))?
+				.ok_or_else(|| Error::FailedToGetFileName(game.executable.path.clone()))?
 				.to_string_lossy()
 		);
 

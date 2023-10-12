@@ -44,12 +44,17 @@ export function InstalledGameModal(props: Props) {
 				...modLoader,
 				mods: modLoader.mods.filter(
 					(mod) =>
-						(!mod.engine || mod.engine === props.game.engine?.brand) &&
+						(!mod.engine ||
+							mod.engine === props.game.executable.engine?.brand) &&
 						(!mod.scriptingBackend ||
-							mod.scriptingBackend === props.game.scriptingBackend),
+							mod.scriptingBackend === props.game.executable.scriptingBackend),
 				),
 			})),
-		[modLoaderMap, props.game.engine?.brand, props.game.scriptingBackend],
+		[
+			modLoaderMap,
+			props.game.executable.engine?.brand,
+			props.game.executable.scriptingBackend,
+		],
 	);
 
 	return (

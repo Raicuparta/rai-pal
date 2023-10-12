@@ -20,10 +20,10 @@ export function InstalledGameRow(_: number, game: Game) {
 				<OperatingSystemBadge value={game.operatingSystem} />
 			</Table.Td> */}
 			<Table.Td>
-				<ArchitectureBadge value={game.architecture} />
+				<ArchitectureBadge value={game.executable.architecture} />
 			</Table.Td>
 			<Table.Td>
-				<UnityBackendBadge value={game.scriptingBackend} />
+				<UnityBackendBadge value={game.executable.scriptingBackend} />
 			</Table.Td>
 			<Table.Td>
 				<Flex
@@ -32,8 +32,8 @@ export function InstalledGameRow(_: number, game: Game) {
 				>
 					<EngineBadge
 						maw={70}
-						value={game.engine?.brand}
-						label={game.engine?.version?.display}
+						value={game.executable.engine?.brand}
+						label={game.executable.engine?.version?.display}
 					/>
 				</Flex>
 			</Table.Td>

@@ -39,12 +39,13 @@ const defaultFilter: InstalledGamesFilter = {
 
 const filterGame = (game: Game, filter: InstalledGamesFilter) =>
 	includesOneOf(filter.search, [game.name]) &&
-	(!filter.architecture || game.architecture === filter.architecture) &&
+	(!filter.architecture ||
+		game.executable.architecture === filter.architecture) &&
 	(!filter.operatingSystem ||
-		game.operatingSystem === filter.operatingSystem) &&
+		game.executable.operatingSystem === filter.operatingSystem) &&
 	(!filter.scriptingBackend ||
-		game.scriptingBackend === filter.scriptingBackend) &&
-	(!filter.engine || game.engine?.brand === filter.engine);
+		game.executable.scriptingBackend === filter.scriptingBackend) &&
+	(!filter.engine || game.executable.engine?.brand === filter.engine);
 
 const operatingSystemOptions: SegmentedControlData<OperatingSystem>[] = [
 	{ label: "Any OS", value: "" },
@@ -72,9 +73,14 @@ const defaultVersion: GameEngineVersion = {
 	display: "",
 };
 
-const tableHeaders: TableHeader<Game, keyof Game>[] = [
+const tableHeaders: TableHeader<Game>[] = [
 	{ id: "thumbnailUrl", label: "", width: 100 },
-	{ id: "name", label: "Game", width: undefined, sortable: true },
+	{
+		id: "name",
+		label: "Game",
+		width: undefined,
+		getSortValue: (game) => game.name,
+	},
 	// {
 	// 	id: "operatingSystem",
 	// 	label: "OS",
@@ -87,26 +93,25 @@ const tableHeaders: TableHeader<Game, keyof Game>[] = [
 		label: "Arch",
 		width: 70,
 		center: true,
-		sortable: true,
+		getSortValue: (game) => game.executable.architecture,
 	},
 	{
 		id: "scriptingBackend",
 		label: "Backend",
 		width: 90,
 		center: true,
-		sortable: true,
+		getSortValue: (game) => game.executable.scriptingBackend,
 	},
 	{
 		id: "engine",
 		label: "Engine",
 		width: 170,
 		center: true,
-		sortable: true,
-		customSort: (dataA, dataB) => {
-			const versionA = dataA.engine?.version ?? defaultVersion;
-			const versionB = dataB.engine?.version ?? defaultVersion;
-			const brandA = dataA.engine?.brand ?? "";
-			const brandB = dataB.engine?.brand ?? "";
+		sort: (dataA, dataB) => {
+			const versionA = dataA.executable.engine?.version ?? defaultVersion;
+			const versionB = dataB.executable.engine?.version ?? defaultVersion;
+			const brandA = dataA.executable.engine?.brand ?? "";
+			const brandB = dataB.executable.engine?.brand ?? "";
 
 			return (
 				brandA.localeCompare(brandB) ||

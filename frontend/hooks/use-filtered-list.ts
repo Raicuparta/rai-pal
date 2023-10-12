@@ -6,18 +6,14 @@ export type Filter = {
 	search: string;
 };
 
-export function useFilteredList<
-	TItem,
-	TKey extends keyof TItem,
-	TFilter extends Filter,
->(
-	tableHeaders: TableHeader<TItem, TKey>[],
+export function useFilteredList<TItem, TFilter extends Filter>(
+	tableHeaders: TableHeader<TItem>[],
 	data: TItem[],
 	filterFunction: (item: TItem, filterValue: TFilter) => boolean,
 	defaultFilterValue: TFilter,
 ) {
-	const [sort, setSort] = useTableSort<TItem, TKey>(
-		tableHeaders.find((header) => header.sortable)?.id,
+	const [sort, setSort] = useTableSort(
+		tableHeaders.find((header) => header.sort || header.getSortValue)?.id,
 	);
 	const [filter, setFilter] = useState<TFilter>(defaultFilterValue);
 
@@ -38,21 +34,27 @@ export function useFilteredList<
 
 				const multiplier = sort.reverse ? -1 : 1;
 
-				if (sortHeader?.customSort) {
-					return multiplier * sortHeader.customSort(gameA, gameB);
+				if (sortHeader?.sort) {
+					return multiplier * sortHeader.sort(gameA, gameB);
+				} else if (sortHeader?.getSortValue) {
+					const valueA = sortHeader.getSortValue(gameA);
+					const valueB = sortHeader.getSortValue(gameB);
+
+					if (typeof valueA === "string" && typeof valueB === "string") {
+						return multiplier * valueA.localeCompare(valueB);
+					} else if (typeof valueA === "number" && typeof valueB === "number") {
+						return multiplier * (valueA - valueB);
+					} else if (
+						typeof valueA === "boolean" &&
+						typeof valueB === "boolean"
+					) {
+						return multiplier * ((valueA ? 0 : 1) - (valueB ? 0 : 1));
+					} else {
+						return multiplier * `${valueA}`.localeCompare(`${valueB}`);
+					}
 				}
 
-				const valueA = gameA[sort.id];
-				const valueB = gameB[sort.id];
-				if (typeof valueA === "string" && typeof valueB === "string") {
-					return multiplier * valueA.localeCompare(valueB);
-				} else if (typeof valueA === "number" && typeof valueB === "number") {
-					return multiplier * (valueA - valueB);
-				} else if (typeof valueA === "boolean" && typeof valueB === "boolean") {
-					return multiplier * ((valueA ? 0 : 1) - (valueB ? 0 : 1));
-				} else {
-					return multiplier * `${valueA}`.localeCompare(`${valueB}`);
-				}
+				return 0;
 			});
 	}, [tableHeaders, data, sort.id, sort.reverse, filterFunction, filter]);
 

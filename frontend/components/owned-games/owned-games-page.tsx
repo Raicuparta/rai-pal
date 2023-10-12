@@ -16,24 +16,35 @@ import { SearchInput } from "@components/search-input";
 import { ErrorPopover } from "@components/error-popover";
 import { EngineSelect } from "@components/engine-select";
 
-const tableHeaders: TableHeader<OwnedGame, keyof OwnedGame>[] = [
+const tableHeaders: TableHeader<OwnedGame>[] = [
 	{ id: "thumbnailUrl", label: "", width: 100 },
-	{ id: "name", label: "Game", width: undefined, sortable: true },
-	{ id: "engine", label: "Engine", width: 100, center: true, sortable: true },
+	{
+		id: "name",
+		label: "Game",
+		width: undefined,
+		getSortValue: (game) => game.name,
+	},
+	{
+		id: "engine",
+		label: "Engine",
+		width: 100,
+		center: true,
+		getSortValue: (game) => game.engine,
+	},
 	// { id: "osList", label: "Linux?", width: 100, center: true, sortable: true },
 	{
 		id: "installed",
 		label: "Installed",
 		width: 60,
 		center: true,
-		sortable: true,
+		getSortValue: (game) => game.installed,
 	},
 	{
 		id: "releaseDate",
 		label: "Release Date",
 		width: 130,
 		center: true,
-		sortable: true,
+		getSortValue: (game) => game.releaseDate,
 	},
 ];
 

@@ -7,42 +7,24 @@ use std::{
 	},
 };
 
-use goblin::{
-	elf::Elf,
-	pe::PE,
-};
-
 use crate::{
-	game_engines::{
-		game_engine::GameEngine,
-		unity::{
-			self,
-			UnityScriptingBackend,
-		},
-		unreal,
+	game_executable::{
+		self,
+		GameExecutable,
 	},
 	paths::{self,},
-	serializable_enum,
 	serializable_struct,
 	steam::appinfo::SteamLaunchOption,
 	Result,
 };
 
-serializable_enum!(Architecture { X64, X86 });
-
-serializable_enum!(OperatingSystem { Linux, Windows });
-
 serializable_struct!(Game {
 	pub id: String,
 	pub name: String,
 	pub discriminator: Option<String>,
-	pub full_path: PathBuf,
-	pub architecture: Option<Architecture>,
-	pub scripting_backend: Option<UnityScriptingBackend>,
-	pub operating_system: Option<OperatingSystem>,
 	pub steam_launch: Option<SteamLaunchOption>,
 	pub installed_mods: Vec<String>,
-	pub engine: Option<GameEngine>,
+	pub executable: GameExecutable,
 	pub thumbnail_url: Option<String>,
 });
 
@@ -53,28 +35,30 @@ impl Game {
 		id: &str,
 		name: &str,
 		discriminator: Option<String>,
-		full_path: &Path,
+		path: &Path,
 		steam_launch: Option<&SteamLaunchOption>,
 		thumbnail_url: Option<String>,
 	) -> Option<Self> {
 		// Games exported by Unity always have one of these extensions.
 		const VALID_EXTENSIONS: [&str; 3] = ["exe", "x86_64", "x86"];
 
+		if !path.is_file() {
+			return None;
+		}
+
 		// We ignore games that don't have an extension.
-		let extension = full_path.extension()?.to_str()?;
+		let extension = path.extension()?.to_str()?;
 
 		if !VALID_EXTENSIONS.contains(&extension) {
 			return None;
 		}
 
-		if extension == "x86" && full_path.with_extension("x86_64").is_file() {
+		if extension == "x86" && path.with_extension("x86_64").is_file() {
 			// If there's an x86_64 version, we ignore the x86 version.
 			// I'm just gonna presume there are no x86 modders out there,
 			// if someone cries about it I'll make this smarter.
 			return None;
 		}
-
-		let (operating_system, architecture) = get_os_and_architecture(full_path).ok()?;
 
 		let installed_mods = match get_installed_mods(id) {
 			Ok(mods) => mods,
@@ -84,26 +68,21 @@ impl Game {
 			}
 		};
 
-		let engine = get_engine(full_path, architecture.unwrap_or(Architecture::X64));
-		let scripting_backend = unity::get_scripting_backend(full_path, &engine);
-
 		Some(Self {
-			architecture,
-			full_path: full_path.to_path_buf(),
 			id: id.to_string(),
-			operating_system,
 			name: name.to_string(),
 			discriminator,
-			scripting_backend,
 			steam_launch: steam_launch.cloned(),
 			installed_mods,
-			engine,
+			executable: game_executable::get(path),
 			thumbnail_url,
 		})
 	}
 
 	pub fn open_game_folder(&self) -> Result {
-		Ok(open::that_detached(paths::path_parent(&self.full_path)?)?)
+		Ok(open::that_detached(paths::path_parent(
+			&self.executable.path,
+		)?)?)
 	}
 
 	pub fn get_installed_mods_folder(&self) -> Result<PathBuf> {
@@ -116,7 +95,7 @@ impl Game {
 
 	pub fn start(&self) -> Result {
 		Ok(self.steam_launch.as_ref().map_or_else(
-			|| open::that_detached(&self.full_path),
+			|| open::that_detached(&self.executable.path),
 			|steam_launch| {
 				if self.discriminator.is_none() {
 					// If a game has no discriminator, it means we're probably using the default launch option.
@@ -155,60 +134,6 @@ impl Game {
 
 		Ok(())
 	}
-}
-
-fn get_engine(game_path: &Path, architecture: Architecture) -> Option<GameEngine> {
-	unity::get_engine(game_path).or_else(|| unreal::get_engine(game_path, architecture))
-}
-
-fn get_os_and_architecture(
-	file_path: &Path,
-) -> Result<(Option<OperatingSystem>, Option<Architecture>)> {
-	fs::read(file_path).map(|file| {
-		let elf_result = match Elf::parse(&file) {
-			Ok(elf) => match elf.header.e_machine {
-				goblin::elf::header::EM_X86_64 => {
-					Ok((Some(OperatingSystem::Linux), Some(Architecture::X64)))
-				}
-				goblin::elf::header::EM_386 => {
-					Ok((Some(OperatingSystem::Linux), Some(Architecture::X86)))
-				}
-				_ => Ok((Some(OperatingSystem::Linux), None)),
-			},
-			Err(err) => Err(err),
-		};
-
-		if elf_result.is_ok() {
-			return Ok(elf_result?);
-		}
-
-		let pe_result = match PE::parse(&file) {
-			Ok(pe) => match pe.header.coff_header.machine {
-				goblin::pe::header::COFF_MACHINE_X86_64 => {
-					Ok((Some(OperatingSystem::Windows), Some(Architecture::X64)))
-				}
-				goblin::pe::header::COFF_MACHINE_X86 => {
-					Ok((Some(OperatingSystem::Windows), Some(Architecture::X86)))
-				}
-				_ => Ok((Some(OperatingSystem::Windows), None)),
-			},
-			Err(err) => Err(err),
-		};
-
-		if pe_result.is_ok() {
-			return Ok(pe_result?);
-		}
-
-		println!("Failed to parse exe as ELF or PE");
-		if let Err(err) = elf_result {
-			println!("ELF error: {err}");
-		}
-		if let Err(err) = pe_result {
-			println!("PE error: {err}");
-		}
-
-		Ok((None, None))
-	})?
 }
 
 fn get_installed_mods_folder(id: &str) -> Result<PathBuf> {

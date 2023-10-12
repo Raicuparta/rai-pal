@@ -9,10 +9,7 @@ use crate::{
 		copy_dir_all,
 		unzip,
 	},
-	game::{
-		Game,
-		OperatingSystem,
-	},
+	game::Game,
 	game_engines::{
 		game_engine::{
 			GameEngine,
@@ -20,6 +17,7 @@ use crate::{
 		},
 		unity::UnityScriptingBackend,
 	},
+	game_executable::OperatingSystem,
 	game_mod::{
 		Mod,
 		ModKind,
@@ -67,32 +65,35 @@ impl ModLoaderActions for BepInEx {
 
 	fn install(&self, game: &Game) -> Result {
 		let scripting_backend_path = &self.data.path.join(
-			game.scripting_backend
+			game.executable
+				.scripting_backend
 				.ok_or_else(|| {
 					Error::ModInstallInfoInsufficient(
 						"scripting_backend".to_string(),
-						game.full_path.clone(),
+						game.executable.path.clone(),
 					)
 				})?
 				.to_string(),
 		);
 		let architecture_path = scripting_backend_path
 			.join(
-				game.operating_system
+				game.executable
+					.operating_system
 					.ok_or_else(|| {
 						Error::ModInstallInfoInsufficient(
 							"operating_system".to_string(),
-							game.full_path.clone(),
+							game.executable.path.clone(),
 						)
 					})?
 					.to_string(),
 			)
 			.join(
-				game.architecture
+				game.executable
+					.architecture
 					.ok_or_else(|| {
 						Error::ModInstallInfoInsufficient(
 							"architecture".to_string(),
-							game.full_path.clone(),
+							game.executable.path.clone(),
 						)
 					})?
 					.to_string(),
@@ -104,11 +105,11 @@ impl ModLoaderActions for BepInEx {
 
 		unzip(&mod_loader_archive, game_data_folder)?;
 
-		let game_folder = paths::path_parent(&game.full_path)?;
+		let game_folder = paths::path_parent(&game.executable.path)?;
 
 		copy_dir_all(folder_to_copy_to_game, game_folder)?;
 
-		let is_legacy = game.engine.as_ref().map_or(false, is_legacy);
+		let is_legacy = game.executable.engine.as_ref().map_or(false, is_legacy);
 
 		let config_origin_path = &self.data.path.join("config").join(if is_legacy {
 			"BepInEx-legacy.cfg"
@@ -130,10 +131,10 @@ impl ModLoaderActions for BepInEx {
 			doorstop_config.replace("{{MOD_FILES_PATH}}", paths::path_to_str(game_data_folder)?),
 		)?;
 
-		if let Some(operating_system) = game.operating_system {
+		if let Some(operating_system) = game.executable.operating_system {
 			if std::env::consts::OS != "windows" && operating_system == OperatingSystem::Windows {
 				if let Some(steam_launch) = &game.steam_launch {
-					ensure_wine_will_load_bepinex(&game.full_path, steam_launch.app_id)?;
+					ensure_wine_will_load_bepinex(&game.executable.path, steam_launch.app_id)?;
 				}
 			}
 		}

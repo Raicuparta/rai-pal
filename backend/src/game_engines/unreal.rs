@@ -22,11 +22,15 @@ use pelite::{
 };
 
 use crate::{
-	game::Architecture,
 	game_engines::game_engine::{
 		GameEngine,
 		GameEngineBrand,
 		GameEngineVersion,
+	},
+	game_executable::{
+		get_os_and_architecture,
+		Architecture,
+		GameExecutable,
 	},
 	paths::glob_path,
 };
@@ -145,9 +149,8 @@ fn get_version_from_exe_parse(file_bytes: &[u8]) -> Option<GameEngineVersion> {
 	})
 }
 
-fn get_version(game_exe_path: &Path, architecture: Architecture) -> Option<GameEngineVersion> {
-	let actual_binary = get_actual_unreal_binary(game_exe_path);
-	match fs::read(actual_binary) {
+fn get_version(path: &Path, architecture: Architecture) -> Option<GameEngineVersion> {
+	match fs::read(path) {
 		Ok(file_bytes) => {
 			return get_version_from_metadata(&file_bytes, architecture)
 				.or_else(|| get_version_from_exe_parse(&file_bytes));
@@ -160,7 +163,7 @@ fn get_version(game_exe_path: &Path, architecture: Architecture) -> Option<GameE
 	None
 }
 
-pub fn get_actual_unreal_binary(game_exe_path: &Path) -> PathBuf {
+fn get_actual_unreal_binary(game_exe_path: &Path) -> PathBuf {
 	if let Some(parent) = game_exe_path.parent() {
 		if parent.ends_with("Win64") || parent.ends_with("Win32") {
 			return game_exe_path.to_path_buf();
@@ -218,11 +221,22 @@ fn is_unreal_exe(game_path: &Path) -> bool {
 	false
 }
 
-pub fn get_engine(game_path: &Path, architecture: Architecture) -> Option<GameEngine> {
-	if is_unreal_exe(game_path) {
-		Some(GameEngine {
-			brand: GameEngineBrand::Unreal,
-			version: get_version(game_path, architecture),
+pub fn get_engine(launch_path: &Path) -> Option<GameExecutable> {
+	if is_unreal_exe(launch_path) {
+		let path = get_actual_unreal_binary(launch_path);
+
+		let (operating_system, architecture) =
+			get_os_and_architecture(&path).unwrap_or((None, None));
+
+		Some(GameExecutable {
+			path,
+			architecture,
+			operating_system,
+			scripting_backend: None,
+			engine: Some(GameEngine {
+				brand: GameEngineBrand::Unreal,
+				version: get_version(launch_path, architecture.unwrap_or(Architecture::X64)),
+			}),
 		})
 	} else {
 		None

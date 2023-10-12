@@ -25,6 +25,7 @@ use tauri::api::dialog::message;
 mod files;
 mod game;
 mod game_engines;
+mod game_executable;
 mod game_mod;
 mod macros;
 mod mod_loaders;
@@ -174,7 +175,7 @@ async fn update_game_info(game_id: &str, state: tauri::State<'_, AppState>) -> R
 		&game.id,
 		&game.name,
 		game.discriminator.clone(),
-		&game.full_path,
+		&game.executable.path,
 		game.steam_launch.as_ref(),
 		game.thumbnail_url.clone(),
 	)
