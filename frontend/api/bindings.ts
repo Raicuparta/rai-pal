@@ -10,6 +10,10 @@ declare global {
 // Function avoids 'window not defined' in SSR
 const invoke = () => window.__TAURI_INVOKE__;
 
+export function dummyCommand() {
+    return invoke()<[Game, FullState]>("dummy_command")
+}
+
 export function getFullState() {
     return invoke()<null>("get_full_state")
 }
@@ -36,10 +40,6 @@ export function startGame(gameId: string) {
 
 export function openModFolder(modLoaderId: string, modId: string) {
     return invoke()<null>("open_mod_folder", { modLoaderId,modId })
-}
-
-export function updateGameInfo(gameId: string) {
-    return invoke()<FullState>("update_game_info", { gameId })
 }
 
 export function deleteSteamAppinfoCache() {
