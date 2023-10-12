@@ -9,18 +9,12 @@ import {
 	EngineBadge,
 	UnityBackendBadge,
 } from "@components/badges/color-coded-badge";
-import { useAppState } from "@hooks/use-app-state";
+import { useAppState, useAppStore } from "@hooks/use-app-state";
 
 export function ModsPage() {
-	const [
-		{
-			data: { modLoaders },
-		},
-		isLoading,
-		refreshMods,
-		error,
-		clearError,
-	] = useAppState();
+	const modLoaders = useAppStore((state) => state.data.modLoaders);
+	const isLoading = useAppStore((state) => state.isLoading);
+	const error = useAppStore((state) => state.error);
 
 	return (
 		<Stack h="100%">
@@ -34,7 +28,7 @@ export function ModsPage() {
 				>
 					Open Mods Folder
 				</Button>
-				<ErrorPopover
+				{/* <ErrorPopover
 					error={error}
 					clearError={clearError}
 				>
@@ -42,7 +36,7 @@ export function ModsPage() {
 						loading={isLoading}
 						onClick={refreshMods}
 					/>
-				</ErrorPopover>
+				</ErrorPopover> */}
 			</Flex>
 			<TableContainer>
 				<Table highlightOnHover>

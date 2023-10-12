@@ -1,43 +1,50 @@
 import { FullState, getFullState } from "@api/bindings";
-import { atom, useAtom } from "jotai";
+// import { atom, useAtom } from "jotai";
+import { create } from "zustand";
 import { useCallback, useEffect } from "react";
 
 type State = {
 	isReady: boolean;
+	error: string;
+	isLoading: boolean;
 	data: FullState;
 };
 
-const stateAtom = atom<State>({
-	isReady: false,
-	data: {
-		gameMap: {},
-		ownedGames: [],
-		discoverGames: [],
-		modLoaders: {},
-	},
-});
+type Actions = {
+	updateState: (state: Partial<State>) => void;
+};
 
-const isLoadingAtom = atom(false);
-const errorAtom = atom("");
+export const useAppStore = create<State & Actions>((set) => ({
+	isReady: false,
+	error: "",
+	isLoading: false,
+	data: {
+		discoverGames: [],
+		gameMap: {},
+		modLoaders: {},
+		ownedGames: [],
+	},
+	updateState: (newState: Partial<State>) =>
+		set((previousState) => ({ ...previousState, ...newState })),
+}));
 
 export function useAppState() {
-	const [appState, setAppState] = useAtom(stateAtom);
-	const [isLoading, setIsLoading] = useAtom(isLoadingAtom);
-	const [error, setError] = useAtom(errorAtom);
+	const updateAppState = useAppStore((store) => store.updateState);
+	const isReady = useAppStore((store) => store.isReady);
 
-	const clearError = useCallback(() => setError(""), []);
+	const clearError = useCallback(() => updateAppState({ error: "" }), []);
 
 	const updateData = useCallback(
 		(ignoreCache = false) => {
-			if (!ignoreCache && appState.isReady) return;
+			if (!ignoreCache && isReady) return;
 
-			setIsLoading(true);
+			updateAppState({ isLoading: true });
 			clearError();
 
 			getFullState()
-				.then((data) => setAppState({ data, isReady: true }))
-				.catch((error) => setError(`Error: ${error}`))
-				.finally(() => setIsLoading(false));
+				.then((data) => updateAppState({ data, isReady: true }))
+				.catch((error) => updateAppState({ error }))
+				.finally(() => updateAppState({ isLoading: false }));
 		},
 		[clearError],
 	);
@@ -50,5 +57,5 @@ export function useAppState() {
 		updateData();
 	}, [updateData]);
 
-	return [appState, isLoading, refresh, error, clearError] as const;
+	// return [appState, isLoading, refresh, error, clearError] as const;
 }

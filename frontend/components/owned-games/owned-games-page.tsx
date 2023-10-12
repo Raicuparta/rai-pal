@@ -14,7 +14,7 @@ import { FixOwnedGamesButton } from "./fix-owned-games-button";
 import { SearchInput } from "@components/search-input";
 import { ErrorPopover } from "@components/error-popover";
 import { EngineSelect } from "@components/engine-select";
-import { useAppState } from "@hooks/use-app-state";
+import { useAppState, useAppStore } from "@hooks/use-app-state";
 
 const tableHeaders: TableHeader<OwnedGame>[] = [
 	{ id: "thumbnailUrl", label: "", width: 100 },
@@ -68,15 +68,10 @@ const filterGame = (game: OwnedGame, filter: Filter) =>
 	(!filter.engine || game.engine === filter.engine);
 
 export function OwnedGamesPage() {
-	const [
-		{
-			data: { ownedGames },
-		},
-		isLoading,
-		refresh,
-		error,
-		clearError,
-	] = useAppState();
+	const ownedGames = useAppStore((state) => state.data.ownedGames);
+	const isLoading = useAppStore((state) => state.isLoading);
+	const error = useAppStore((state) => state.error);
+
 	const [selectedGame, setSelectedGame] = useState<OwnedGame>();
 
 	const [filteredGames, sort, setSort, filter, setFilter] = useFilteredList(
@@ -127,7 +122,7 @@ export function OwnedGamesPage() {
 						</SwitchButton>
 					</Stack>
 				</FilterMenu>
-				<ErrorPopover
+				{/* <ErrorPopover
 					error={error}
 					clearError={clearError}
 				>
@@ -135,7 +130,7 @@ export function OwnedGamesPage() {
 						loading={isLoading}
 						onClick={refresh}
 					/>
-				</ErrorPopover>
+				</ErrorPopover> */}
 			</Flex>
 			<VirtualizedTable
 				data={filteredGames}

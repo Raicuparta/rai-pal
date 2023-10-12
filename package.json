@@ -46,6 +46,7 @@
     "quoteProps": "as-needed"
   },
   "dependencies": {
-    "jotai": "^2.4.3"
+    "jotai": "^2.4.3",
+    "zustand": "^4.4.3"
   }
 }

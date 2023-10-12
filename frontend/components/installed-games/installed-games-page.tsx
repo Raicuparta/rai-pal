@@ -24,7 +24,7 @@ import { RefreshButton } from "@components/refresh-button";
 import { SearchInput } from "@components/search-input";
 import { ErrorPopover } from "@components/error-popover";
 import { EngineSelect } from "@components/engine-select";
-import { useAppState } from "@hooks/use-app-state";
+import { useAppState, useAppStore } from "@hooks/use-app-state";
 
 interface InstalledGamesFilter extends Filter {
 	search: string;
@@ -128,15 +128,10 @@ const tableHeaders: TableHeader<Game>[] = [
 export type TableSortMethod = (gameA: Game, gameB: Game) => number;
 
 export function InstalledGamesPage() {
-	const [
-		{
-			data: { gameMap },
-		},
-		isLoading,
-		refreshGameMap,
-		error,
-		clearError,
-	] = useAppState();
+	const gameMap = useAppStore((state) => state.data.gameMap);
+	const isLoading = useAppStore((state) => state.isLoading);
+	const error = useAppStore((state) => state.error);
+
 	const [selectedGameId, setSelectedGameId] = useState<string>();
 
 	const games = useMemo(() => Object.values(gameMap), [gameMap]);
@@ -194,7 +189,7 @@ export function InstalledGamesPage() {
 						/>
 					</Stack>
 				</FilterMenu>
-				<ErrorPopover
+				{/* <ErrorPopover
 					error={error}
 					clearError={clearError}
 				>
@@ -202,7 +197,7 @@ export function InstalledGamesPage() {
 						loading={isLoading}
 						onClick={refreshGameMap}
 					/>
-				</ErrorPopover>
+				</ErrorPopover> */}
 			</Flex>
 			{selectedGame ? (
 				<InstalledGameModal
