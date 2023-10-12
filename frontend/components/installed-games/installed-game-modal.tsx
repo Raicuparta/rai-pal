@@ -43,18 +43,10 @@ export function InstalledGameModal(props: Props) {
 			Object.values(modLoaderMap).map((modLoader) => ({
 				...modLoader,
 				mods: modLoader.mods.filter(
-					(mod) =>
-						(!mod.engine ||
-							mod.engine === props.game.executable.engine?.brand) &&
-						(!mod.scriptingBackend ||
-							mod.scriptingBackend === props.game.executable.scriptingBackend),
+					(mod) => mod.id in props.game.availableMods,
 				),
 			})),
-		[
-			modLoaderMap,
-			props.game.executable.engine?.brand,
-			props.game.executable.scriptingBackend,
-		],
+		[modLoaderMap, props.game.availableMods],
 	);
 
 	return (
@@ -136,7 +128,7 @@ export function InstalledGameModal(props: Props) {
 										w="fit-content"
 									>
 										{modLoader.mods.map((mod) =>
-											props.game.installedMods.includes(mod.id) ? (
+											props.game.availableMods[mod.id] ? (
 												<CommandButton
 													leftSection={<IconTrash />}
 													key={mod.name}

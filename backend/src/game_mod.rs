@@ -39,7 +39,12 @@ impl Mod {
 		let name = paths::file_name_without_extension(path)?;
 
 		Ok(Self {
-			id: name.to_string(),
+			id: format!(
+				"{}_{}_{}",
+				name,
+				engine.map_or(String::new(), |e| e.to_string()),
+				scripting_backend.map_or(String::new(), |s| s.to_string()),
+			),
 			path: path.to_path_buf(),
 			name: name.to_string(),
 			engine,

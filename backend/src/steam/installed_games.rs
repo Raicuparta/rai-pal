@@ -65,6 +65,7 @@ pub async fn get(mod_loaders: &mod_loader::DataMap) -> Result<game::Map> {
 								full_path,
 								Some(&launch_option),
 								Some(get_steam_thumbnail(&app.app_id.to_string())),
+								mod_loaders,
 							) {
 								game_map.insert(executable_id.clone(), game);
 								used_names.insert(name.clone());

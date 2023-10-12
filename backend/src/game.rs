@@ -1,6 +1,7 @@
 use std::{
 	collections::HashMap,
 	fs::{self,},
+	hash::Hash,
 	path::{
 		Path,
 		PathBuf,
@@ -12,6 +13,7 @@ use crate::{
 		self,
 		GameExecutable,
 	},
+	mod_loaders::mod_loader,
 	paths::{self,},
 	serializable_struct,
 	steam::appinfo::SteamLaunchOption,
@@ -23,7 +25,7 @@ serializable_struct!(Game {
 	pub name: String,
 	pub discriminator: Option<String>,
 	pub steam_launch: Option<SteamLaunchOption>,
-	pub installed_mods: Vec<String>,
+	pub available_mods: HashMap<String, bool>,
 	pub executable: GameExecutable,
 	pub thumbnail_url: Option<String>,
 });
@@ -38,6 +40,7 @@ impl Game {
 		path: &Path,
 		steam_launch: Option<&SteamLaunchOption>,
 		thumbnail_url: Option<String>,
+		mod_loaders: &mod_loader::DataMap,
 	) -> Option<Self> {
 		// Games exported by Unity always have one of these extensions.
 		const VALID_EXTENSIONS: [&str; 3] = ["exe", "x86_64", "x86"];
@@ -60,21 +63,16 @@ impl Game {
 			return None;
 		}
 
-		let installed_mods = match get_installed_mods(id) {
-			Ok(mods) => mods,
-			Err(err) => {
-				println!("Failed to get installed mods for game {id}: {err}");
-				vec![]
-			}
-		};
+		let executable = game_executable::get(path);
+		let available_mods = get_available_mods(id, mod_loaders, &executable);
 
 		Some(Self {
 			id: id.to_string(),
 			name: name.to_string(),
 			discriminator,
 			steam_launch: steam_launch.cloned(),
-			installed_mods,
-			executable: game_executable::get(path),
+			available_mods,
+			executable,
 			thumbnail_url,
 		})
 	}
@@ -136,25 +134,41 @@ impl Game {
 	}
 }
 
-fn get_installed_mods_folder(id: &str) -> Result<PathBuf> {
-	let installed_mods_folder = paths::app_data_path()?.join("games").join(id);
+fn get_installed_mods_folder(game_id: &str) -> Result<PathBuf> {
+	let installed_mods_folder = paths::app_data_path()?.join("games").join(game_id);
 	fs::create_dir_all(&installed_mods_folder)?;
 
 	Ok(installed_mods_folder)
 }
 
-fn get_installed_mods(id: &str) -> Result<Vec<String>> {
-	let pattern = get_installed_mods_folder(id)?
-		.join("BepInEx")
-		.join("plugins")
-		.join("*");
-	let entries: Vec<_> = paths::glob_path(&pattern)?.collect();
+fn is_mod_installed(game_id: &str, mod_id: &str) -> bool {
+	if let Ok(installed_mods_folder) = get_installed_mods_folder(game_id) {
+		return installed_mods_folder
+			.join("BepInEx")
+			.join("plugins")
+			.join(mod_id)
+			.is_dir();
+	}
 
-	Ok(entries
+	false
+}
+
+fn get_available_mods(
+	game_id: &str,
+	mod_loaders: &mod_loader::DataMap,
+	executable: &GameExecutable,
+) -> HashMap<String, bool> {
+	mod_loaders
 		.iter()
-		.filter_map(|entry| match entry {
-			Ok(mod_path) => Some(mod_path.file_name()?.to_str()?.to_string()),
-			Err(_) => None,
+		.flat_map(|(_, mod_loader)| &mod_loader.mods)
+		.filter_map(|game_mod| {
+			if game_mod.engine? == executable.engine.as_ref()?.brand
+				&& game_mod.scripting_backend? == executable.scripting_backend?
+			{
+				Some((game_mod.id.clone(), is_mod_installed(game_id, &game_mod.id)))
+			} else {
+				None
+			}
 		})
-		.collect())
+		.collect()
 }

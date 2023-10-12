@@ -143,6 +143,7 @@ async fn update_game_info(game_id: &str, state: tauri::State<'_, AppState>) -> R
 			&game.executable.path,
 			game.steam_launch.as_ref(),
 			game.thumbnail_url.clone(),
+			&full_state.mod_loaders,
 		)
 		.ok_or_else(|| Error::GameCopyFailed(game.id.clone()))?;
 
