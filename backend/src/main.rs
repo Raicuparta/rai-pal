@@ -3,7 +3,6 @@
 #![feature(future_join)]
 
 use std::{
-	collections::HashMap,
 	future::{
 		self,
 		Future,
@@ -25,7 +24,10 @@ use steam::{
 	owned_games::OwnedGame,
 };
 use steamlocate::SteamDir;
-use tauri::api::dialog::message;
+use tauri::{
+	api::dialog::message,
+	Manager,
+};
 
 mod files;
 mod game;
@@ -162,10 +164,7 @@ async fn uninstall_mod(game_id: &str, mod_id: &str, state: tauri::State<'_, AppS
 
 #[tauri::command]
 #[specta::specta]
-async fn get_full_state(
-	handle: tauri::AppHandle,
-	state: tauri::State<'_, AppState>,
-) -> Result<FullState> {
+async fn get_full_state(handle: tauri::AppHandle, state: tauri::State<'_, AppState>) -> Result {
 	let resources_path = paths::resources_path(&handle)?;
 
 	let mod_loaders = mod_loader::get_data_map(&resources_path)
@@ -190,7 +189,7 @@ async fn get_full_state(
 		*write_guard = Some(full_state.clone());
 	}
 
-	Ok(full_state)
+	Ok(handle.emit_all("update_state", full_state)?)
 }
 
 #[tauri::command]

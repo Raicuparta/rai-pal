@@ -26,6 +26,9 @@ pub enum Error {
 	#[error(transparent)]
 	Zip(#[from] zip::result::ZipError),
 
+	#[error(transparent)]
+	Tauri(#[from] tauri::Error),
+
 	#[error("Invalid type `{0}` in binary vdf key/value pair")]
 	InvalidBinaryVdfType(u8),
 

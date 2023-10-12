@@ -11,7 +11,7 @@ declare global {
 const invoke = () => window.__TAURI_INVOKE__;
 
 export function getFullState() {
-    return invoke()<FullState>("get_full_state")
+    return invoke()<null>("get_full_state")
 }
 
 export function openGameFolder(gameId: string) {
