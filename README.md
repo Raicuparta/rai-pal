@@ -1,7 +1,10 @@
-# Rai Pal
+# ![image](https://github.com/Raicuparta/rai-pal/assets/3955124/7386ee78-e859-4ecd-876f-1727c2304c87)
 
-> **Warning**
+
+> ⚠️ **Warning**:  
 > Work in progress, lots of features missing, expect bugs.
+
+[**Download Rai Pal**](https://github.com/Raicuparta/rai-pal/releases/latest)
 
 This is a thing to help find games of a specific engine, and then easily install universal mods for that game. I made it because when I'm making mods for games, there's a few different steps that are repeated for every game:
 
@@ -13,7 +16,7 @@ This is a thing to help find games of a specific engine, and then easily install
 
 So this tool automates a lot of that work. This also lets you filter your Steam owned games by engine, so you can for instance find all the Unreal games you own.
 
-![image](https://github.com/Raicuparta/rai-pal/assets/3955124/c8c0e8f9-e3c0-4928-9961-479cb1ef408e)
+
 
 ## License
 
