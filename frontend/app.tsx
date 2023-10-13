@@ -4,7 +4,6 @@ import { ModsPage } from "./components/mods/mods-page";
 import { OwnedGamesPage } from "./components/owned-games/owned-games-page";
 import { SettingsPage } from "./components/settings/settings-page";
 import { Tabs, Container, Stack } from "@mantine/core";
-import { useEffect } from "react";
 import { useAppStoreEffect } from "@hooks/use-app-state";
 
 const pages = {
