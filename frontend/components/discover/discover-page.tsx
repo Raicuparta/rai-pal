@@ -20,9 +20,9 @@ export function DiscoverPage() {
 
 	const filteredGames = useMemo(
 		() =>
-			engine
-				? discoverGames.filter((game) => game.engine == engine)
-				: discoverGames,
+			(engine
+				? discoverGames?.filter((game) => game.engine == engine)
+				: discoverGames) ?? [],
 		[discoverGames, engine],
 	);
 

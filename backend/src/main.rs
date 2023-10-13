@@ -50,8 +50,13 @@ fn get_game(game_id: &str, state: &tauri::State<'_, AppState>) -> Result<Game> {
 		let full_state = read_guard
 			.as_ref()
 			.ok_or(Error::GameNotFound(game_id.to_string()))?;
-		let game = full_state
+
+		let game_map = full_state
 			.game_map
+			.as_ref()
+			.ok_or_else(|| Error::GameNotFound(game_id.to_string()))?;
+
+		let game = game_map
 			.get(game_id)
 			.ok_or_else(|| Error::GameNotFound(game_id.to_string()))?;
 
@@ -62,10 +67,10 @@ fn get_game(game_id: &str, state: &tauri::State<'_, AppState>) -> Result<Game> {
 }
 
 serializable_struct!(FullState {
-	game_map: game::Map,
-	owned_games: Vec<OwnedGame>,
-	discover_games: Vec<DiscoverGame>,
-	mod_loaders: mod_loader::DataMap,
+	game_map: Option<game::Map>,
+	owned_games: Option<Vec<OwnedGame>>,
+	discover_games: Option<Vec<DiscoverGame>>,
+	mod_loaders: Option<mod_loader::DataMap>,
 });
 
 #[tauri::command]
@@ -135,27 +140,31 @@ async fn get_full_state(handle: tauri::AppHandle, state: tauri::State<'_, AppSta
 	let resources_path = paths::resources_path(&handle)?;
 
 	let mut full_state = FullState {
-		discover_games: Vec::new(),
-		game_map: game::Map::new(),
-		mod_loaders: mod_loader::DataMap::new(),
-		owned_games: Vec::new(),
+		discover_games: None,
+		game_map: None,
+		mod_loaders: None,
+		owned_games: None,
 	};
 
-	full_state.mod_loaders = mod_loader::get_data_map(&resources_path)
+	let mod_loaders = mod_loader::get_data_map(&resources_path)
 		.await
 		.unwrap_or_default();
 
-	full_state.game_map = steam::installed_games::get(&full_state.mod_loaders)
-		.await
-		.unwrap_or_default();
+	full_state.game_map = Some(
+		steam::installed_games::get(&mod_loaders)
+			.await
+			.unwrap_or_default(),
+	);
+
+	full_state.mod_loaders = Some(mod_loaders);
 
 	handle.emit_all("update_state", full_state.clone())?;
 
 	let (discover_games, owned_games) =
 		future::join!(steam::discover_games::get(), steam::owned_games::get()).await;
 
-	full_state.discover_games = discover_games.unwrap_or_default();
-	full_state.owned_games = owned_games.unwrap_or_default();
+	full_state.discover_games = Some(discover_games.unwrap_or_default());
+	full_state.owned_games = Some(owned_games.unwrap_or_default());
 
 	if let Ok(mut write_guard) = state.full_state.lock() {
 		*write_guard = Some(full_state.clone());

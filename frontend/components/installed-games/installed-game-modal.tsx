@@ -40,7 +40,7 @@ export function InstalledGameModal(props: Props) {
 
 	const modLoaders = useMemo(
 		() =>
-			Object.values(modLoaderMap).map((modLoader) => ({
+			Object.values(modLoaderMap ?? {}).map((modLoader) => ({
 				...modLoader,
 				mods: modLoader.mods.filter(
 					(mod) => mod.id in props.game.availableMods,

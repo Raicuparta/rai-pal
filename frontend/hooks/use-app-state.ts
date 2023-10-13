@@ -31,7 +31,11 @@ export const useAppStore = create<State & Actions>((setStore) => ({
 	clearError: () => setStore({ error: "" }),
 
 	setData: (data) => {
-		setStore((store) => ({ ...store, data: { ...store.data, ...data } }));
+		const cleanData = Object.fromEntries(
+			Object.entries(data).filter(([, value]) => value),
+		);
+
+		setStore((store) => ({ ...store, data: { ...store.data, ...cleanData } }));
 	},
 
 	updateState: () => {

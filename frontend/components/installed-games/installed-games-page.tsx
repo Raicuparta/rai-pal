@@ -19,7 +19,6 @@ import { TableHeader } from "@components/table/table-head";
 import { Filter, useFilteredList } from "@hooks/use-filtered-list";
 import { FilterMenu } from "@components/filter-menu";
 import { VirtualizedTable } from "@components/table/virtualized-table";
-import { useGameMap } from "@hooks/use-game-map";
 import { RefreshButton } from "@components/refresh-button";
 import { SearchInput } from "@components/search-input";
 import { ErrorPopover } from "@components/error-popover";
@@ -131,10 +130,15 @@ export function InstalledGamesPage() {
 	const gameMap = useAppStore((state) => state.data.gameMap);
 	const isLoading = useAppStore((state) => state.isLoading);
 	const error = useAppStore((state) => state.error);
+	const clearError = useAppStore((state) => state.clearError);
+	const refresh = useAppStore((state) => state.updateState);
 
 	const [selectedGameId, setSelectedGameId] = useState<string>();
 
-	const games = useMemo(() => Object.values(gameMap), [gameMap]);
+	const games = useMemo(
+		() => (gameMap ? Object.values(gameMap) : []),
+		[gameMap],
+	);
 
 	const [filteredGames, sort, setSort, filter, setFilter] = useFilteredList(
 		tableHeaders,
@@ -144,7 +148,7 @@ export function InstalledGamesPage() {
 	);
 
 	const selectedGame = useMemo(
-		() => (selectedGameId ? gameMap[selectedGameId] : undefined),
+		() => (gameMap && selectedGameId ? gameMap[selectedGameId] : undefined),
 		[gameMap, selectedGameId],
 	);
 
@@ -189,15 +193,15 @@ export function InstalledGamesPage() {
 						/>
 					</Stack>
 				</FilterMenu>
-				{/* <ErrorPopover
+				<ErrorPopover
 					error={error}
 					clearError={clearError}
 				>
 					<RefreshButton
 						loading={isLoading}
-						onClick={refreshGameMap}
+						onClick={refresh}
 					/>
-				</ErrorPopover> */}
+				</ErrorPopover>
 			</Flex>
 			{selectedGame ? (
 				<InstalledGameModal

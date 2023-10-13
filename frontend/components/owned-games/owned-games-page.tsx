@@ -71,12 +71,14 @@ export function OwnedGamesPage() {
 	const ownedGames = useAppStore((state) => state.data.ownedGames);
 	const isLoading = useAppStore((state) => state.isLoading);
 	const error = useAppStore((state) => state.error);
+	const clearError = useAppStore((state) => state.clearError);
+	const refresh = useAppStore((state) => state.updateState);
 
 	const [selectedGame, setSelectedGame] = useState<OwnedGame>();
 
 	const [filteredGames, sort, setSort, filter, setFilter] = useFilteredList(
 		tableHeaders,
-		ownedGames,
+		ownedGames ?? [],
 		filterGame,
 		defaultFilter,
 	);
@@ -122,7 +124,7 @@ export function OwnedGamesPage() {
 						</SwitchButton>
 					</Stack>
 				</FilterMenu>
-				{/* <ErrorPopover
+				<ErrorPopover
 					error={error}
 					clearError={clearError}
 				>
@@ -130,7 +132,7 @@ export function OwnedGamesPage() {
 						loading={isLoading}
 						onClick={refresh}
 					/>
-				</ErrorPopover> */}
+				</ErrorPopover>
 			</Flex>
 			<VirtualizedTable
 				data={filteredGames}
