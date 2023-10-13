@@ -3,10 +3,7 @@ use std::collections::HashSet;
 use steamlocate::SteamDir;
 
 use super::{
-	appinfo::{
-		self,
-		SteamAppInfoFile,
-	},
+	appinfo::SteamAppInfoFile,
 	id_lists,
 	thumbnail::get_steam_thumbnail,
 };
@@ -77,14 +74,11 @@ async fn get_engine_games(
 		.collect())
 }
 
-pub async fn get() -> Result<Vec<OwnedGame>> {
-	let steam_dir = SteamDir::locate()?;
-	let app_info = appinfo::read(steam_dir.path())?;
-
+pub async fn get(steam_dir: &SteamDir, app_info: &SteamAppInfoFile) -> Result<Vec<OwnedGame>> {
 	Ok([
-		get_engine_games(GameEngineBrand::Unity, &steam_dir, &app_info).await?,
-		get_engine_games(GameEngineBrand::Unreal, &steam_dir, &app_info).await?,
-		get_engine_games(GameEngineBrand::Godot, &steam_dir, &app_info).await?,
+		get_engine_games(GameEngineBrand::Unity, steam_dir, app_info).await?,
+		get_engine_games(GameEngineBrand::Unreal, steam_dir, app_info).await?,
+		get_engine_games(GameEngineBrand::Godot, steam_dir, app_info).await?,
 	]
 	.concat())
 }

@@ -3,12 +3,10 @@ use std::collections::{
 	HashSet,
 };
 
-use steamlocate::SteamDir;
-
 use super::{
 	appinfo::{
-		self,
 		SteamAppInfo,
+		SteamAppInfoFile,
 	},
 	id_lists::{self,},
 };
@@ -50,17 +48,15 @@ async fn get_discover_games(
 		.collect())
 }
 
-pub async fn get() -> Result<Vec<DiscoverGame>> {
-	let steam_dir = SteamDir::locate()?;
-	let owned_apps = appinfo::read(steam_dir.path())?.apps;
+pub async fn get(app_info: &SteamAppInfoFile) -> Result<Vec<DiscoverGame>> {
 	let nsfw_ids = id_lists::get("NSFW").await?;
 
 	println!("getting discover games!!!!!!!!!!");
 
 	Ok([
-		get_discover_games(GameEngineBrand::Unity, &owned_apps, &nsfw_ids).await?,
-		get_discover_games(GameEngineBrand::Unreal, &owned_apps, &nsfw_ids).await?,
-		get_discover_games(GameEngineBrand::Godot, &owned_apps, &nsfw_ids).await?,
+		get_discover_games(GameEngineBrand::Unity, &app_info.apps, &nsfw_ids).await?,
+		get_discover_games(GameEngineBrand::Unreal, &app_info.apps, &nsfw_ids).await?,
+		get_discover_games(GameEngineBrand::Godot, &app_info.apps, &nsfw_ids).await?,
 	]
 	.concat())
 }

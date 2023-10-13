@@ -20,6 +20,7 @@ use result::{
 	Result,
 };
 use steam::{
+	appinfo,
 	discover_games::DiscoverGame,
 	owned_games::OwnedGame,
 };
@@ -150,8 +151,11 @@ async fn get_full_state(handle: tauri::AppHandle, state: tauri::State<'_, AppSta
 		.await
 		.unwrap_or_default();
 
+	let steam_dir = SteamDir::locate()?;
+	let app_info = appinfo::read(steam_dir.path())?;
+
 	full_state.game_map = Some(
-		steam::installed_games::get(&mod_loaders)
+		steam::installed_games::get(&steam_dir, &app_info, &mod_loaders)
 			.await
 			.unwrap_or_default(),
 	);
@@ -160,8 +164,11 @@ async fn get_full_state(handle: tauri::AppHandle, state: tauri::State<'_, AppSta
 
 	handle.emit_all("update_state", full_state.clone())?;
 
-	let (discover_games, owned_games) =
-		future::join!(steam::discover_games::get(), steam::owned_games::get()).await;
+	let (discover_games, owned_games) = future::join!(
+		steam::discover_games::get(&app_info),
+		steam::owned_games::get(&steam_dir, &app_info)
+	)
+	.await;
 
 	full_state.discover_games = Some(discover_games.unwrap_or_default());
 	full_state.owned_games = Some(owned_games.unwrap_or_default());
