@@ -58,7 +58,7 @@ export function useAppStoreEffect() {
 		let unlisten: Awaited<ReturnType<typeof listen>> | undefined;
 
 		(async () => {
-			unlisten = await listen("update_state", updateState);
+			unlisten = await listen("sync_state", updateState);
 		})();
 
 		return () => {
