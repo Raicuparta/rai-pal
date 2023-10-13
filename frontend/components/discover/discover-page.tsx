@@ -3,7 +3,6 @@ import { VirtuosoGrid } from "react-virtuoso";
 import styles from "./discover.module.css";
 import { useMemo, useState } from "react";
 import { RefreshButton } from "@components/refresh-button";
-import { ErrorPopover } from "@components/error-popover";
 import { GameEngineBrand } from "@api/bindings";
 import { EngineSelect } from "@components/engine-select";
 import { DiscoverGameCard } from "./discover-game-card";
@@ -11,10 +10,6 @@ import { useAppStore } from "@hooks/use-app-state";
 
 export function DiscoverPage() {
 	const discoverGames = useAppStore((state) => state.data.discoverGames);
-	const isLoading = useAppStore((state) => state.isLoading);
-	const error = useAppStore((state) => state.error);
-	const refresh = useAppStore((store) => store.updateState);
-	const clearError = useAppStore((store) => store.clearError);
 
 	const [engine, setEngine] = useState<GameEngineBrand>();
 
@@ -39,15 +34,7 @@ export function DiscoverPage() {
 					onChange={setEngine}
 					value={engine}
 				/>
-				<ErrorPopover
-					error={error}
-					clearError={clearError}
-				>
-					<RefreshButton
-						loading={isLoading}
-						onClick={refresh}
-					/>
-				</ErrorPopover>
+				<RefreshButton />
 			</Flex>
 			<Paper
 				h="100%"

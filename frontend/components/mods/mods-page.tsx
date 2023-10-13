@@ -2,7 +2,6 @@ import { Button, Flex, Stack, Table } from "@mantine/core";
 import { Fragment } from "react";
 import { TableContainer } from "@components/table/table-container";
 import { RefreshButton } from "@components/refresh-button";
-import { ErrorPopover } from "@components/error-popover";
 import { openModFolder, openModsFolder } from "@api/bindings";
 import { IconFolderCog } from "@tabler/icons-react";
 import {
@@ -13,8 +12,6 @@ import { useAppStore } from "@hooks/use-app-state";
 
 export function ModsPage() {
 	const modLoaders = useAppStore((state) => state.data.modLoaders);
-	const isLoading = useAppStore((state) => state.isLoading);
-	const error = useAppStore((state) => state.error);
 
 	return (
 		<Stack h="100%">
@@ -28,15 +25,7 @@ export function ModsPage() {
 				>
 					Open Mods Folder
 				</Button>
-				{/* <ErrorPopover
-					error={error}
-					clearError={clearError}
-				>
-					<RefreshButton
-						loading={isLoading}
-						onClick={refreshMods}
-					/>
-				</ErrorPopover> */}
+				<RefreshButton />
 			</Flex>
 			<TableContainer>
 				<Table highlightOnHover>
@@ -64,7 +53,7 @@ export function ModsPage() {
 						</Table.Tr>
 					</Table.Thead>
 					<Table.Tbody>
-						{Object.values(modLoaders).map((modLoader) => (
+						{Object.values(modLoaders ?? {}).map((modLoader) => (
 							<Fragment key={modLoader.id}>
 								{modLoader.mods.map((mod) => (
 									<Table.Tr

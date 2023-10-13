@@ -12,7 +12,6 @@ import { SwitchButton } from "@components/switch-button";
 import { RefreshButton } from "@components/refresh-button";
 import { FixOwnedGamesButton } from "./fix-owned-games-button";
 import { SearchInput } from "@components/search-input";
-import { ErrorPopover } from "@components/error-popover";
 import { EngineSelect } from "@components/engine-select";
 import { useAppStore } from "@hooks/use-app-state";
 
@@ -69,10 +68,6 @@ const filterGame = (game: OwnedGame, filter: Filter) =>
 
 export function OwnedGamesPage() {
 	const ownedGames = useAppStore((state) => state.data.ownedGames);
-	const isLoading = useAppStore((state) => state.isLoading);
-	const error = useAppStore((state) => state.error);
-	const clearError = useAppStore((state) => state.clearError);
-	const refresh = useAppStore((state) => state.updateState);
 
 	const [selectedGame, setSelectedGame] = useState<OwnedGame>();
 
@@ -124,15 +119,7 @@ export function OwnedGamesPage() {
 						</SwitchButton>
 					</Stack>
 				</FilterMenu>
-				<ErrorPopover
-					error={error}
-					clearError={clearError}
-				>
-					<RefreshButton
-						loading={isLoading}
-						onClick={refresh}
-					/>
-				</ErrorPopover>
+				<RefreshButton />
 			</Flex>
 			<VirtualizedTable
 				data={filteredGames}

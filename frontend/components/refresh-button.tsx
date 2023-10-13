@@ -1,31 +1,28 @@
-import { useLongLoading } from "@hooks/use-long-loading";
 import { Button } from "@mantine/core";
 import { IconRefresh } from "@tabler/icons-react";
-import React from "react";
+import { ErrorPopover } from "./error-popover";
+import { useAppStore } from "@hooks/use-app-state";
 
-type Props = {
-	readonly onClick: () => void;
-	readonly loading: boolean;
-};
-
-function RefreshButtonInner(
-	props: Props,
-	ref: React.ForwardedRef<HTMLButtonElement>,
-) {
-	const isLoading = useLongLoading(props.loading);
+export function RefreshButton() {
+	const isLoading = useAppStore((state) => state.isLoading);
+	const error = useAppStore((state) => state.error);
+	const refresh = useAppStore((store) => store.updateState);
+	const clearError = useAppStore((store) => store.clearError);
 
 	return (
-		<Button
-			ref={ref}
-			leftSection={<IconRefresh />}
-			loading={isLoading}
-			onClick={props.onClick}
-			style={{ flex: 1, maxWidth: "10em" }}
-			variant="filled"
+		<ErrorPopover
+			error={error}
+			clearError={clearError}
 		>
-			Refresh
-		</Button>
+			<Button
+				leftSection={<IconRefresh />}
+				loading={isLoading}
+				onClick={refresh}
+				style={{ flex: 1, maxWidth: "10em" }}
+				variant="filled"
+			>
+				Refresh
+			</Button>
+		</ErrorPopover>
 	);
 }
-
-export const RefreshButton = React.forwardRef(RefreshButtonInner);

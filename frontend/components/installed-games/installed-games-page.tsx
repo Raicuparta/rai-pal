@@ -21,7 +21,6 @@ import { FilterMenu } from "@components/filter-menu";
 import { VirtualizedTable } from "@components/table/virtualized-table";
 import { RefreshButton } from "@components/refresh-button";
 import { SearchInput } from "@components/search-input";
-import { ErrorPopover } from "@components/error-popover";
 import { EngineSelect } from "@components/engine-select";
 import { useAppStore } from "@hooks/use-app-state";
 
@@ -128,10 +127,6 @@ export type TableSortMethod = (gameA: Game, gameB: Game) => number;
 
 export function InstalledGamesPage() {
 	const gameMap = useAppStore((state) => state.data.gameMap);
-	const isLoading = useAppStore((state) => state.isLoading);
-	const error = useAppStore((state) => state.error);
-	const clearError = useAppStore((state) => state.clearError);
-	const refresh = useAppStore((state) => state.updateState);
 
 	const [selectedGameId, setSelectedGameId] = useState<string>();
 
@@ -193,15 +188,7 @@ export function InstalledGamesPage() {
 						/>
 					</Stack>
 				</FilterMenu>
-				<ErrorPopover
-					error={error}
-					clearError={clearError}
-				>
-					<RefreshButton
-						loading={isLoading}
-						onClick={refresh}
-					/>
-				</ErrorPopover>
+				<RefreshButton />
 			</Flex>
 			{selectedGame ? (
 				<InstalledGameModal
