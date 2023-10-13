@@ -59,9 +59,6 @@ pub enum Error {
 	#[error("Tried to read empty file `{0}`")]
 	EmptyFile(PathBuf),
 
-	#[error("Failed to create copy of game with ID `{0}`")]
-	GameCopyFailed(String),
-
 	#[error(
 		"Failed to find Steam cache file. **Try restarting Steam**. (Tried to read from `{0}`)"
 	)]

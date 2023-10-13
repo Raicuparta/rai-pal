@@ -36,12 +36,10 @@ fn get_ids_data_list(
 	engine: GameEngineBrand,
 ) -> Vec<SteamGame> {
 	ids.iter()
-		.filter_map(|id| {
-			Some(SteamGame {
-				id: id.to_string(),
-				nsfw: nsfw_ids.contains(id),
-				engine,
-			})
+		.map(|id| SteamGame {
+			id: id.to_string(),
+			nsfw: nsfw_ids.contains(id),
+			engine,
 		})
 		.collect()
 }
