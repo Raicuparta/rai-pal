@@ -154,12 +154,8 @@ async fn get_full_state(handle: tauri::AppHandle, state: tauri::State<'_, AppSta
 	let (discover_games, owned_games) =
 		future::join!(steam::discover_games::get(), steam::owned_games::get()).await;
 
-	let full_state = FullState {
-		discover_games: discover_games.unwrap_or_default(),
-		game_map: full_state.game_map,
-		mod_loaders: full_state.mod_loaders,
-		owned_games: owned_games.unwrap_or_default(),
-	};
+	full_state.discover_games = discover_games.unwrap_or_default();
+	full_state.owned_games = owned_games.unwrap_or_default();
 
 	if let Ok(mut write_guard) = state.full_state.lock() {
 		*write_guard = Some(full_state.clone());
