@@ -27,7 +27,6 @@ import { useAppStore } from "@hooks/use-app-state";
 type Props = {
 	readonly game: Game;
 	readonly onClose: () => void;
-	readonly refreshGame: (gameId: string) => void;
 };
 
 export function InstalledGameModal(props: Props) {
@@ -132,10 +131,7 @@ export function InstalledGameModal(props: Props) {
 												<CommandButton
 													leftSection={<IconTrash />}
 													key={mod.name}
-													onClick={async () => {
-														await uninstallMod(props.game.id, mod.id);
-														props.refreshGame(props.game.id);
-													}}
+													onClick={() => uninstallMod(props.game.id, mod.id)}
 												>
 													Uninstall {mod.name}
 												</CommandButton>
@@ -143,14 +139,9 @@ export function InstalledGameModal(props: Props) {
 												<CommandButton
 													leftSection={<IconTool />}
 													key={mod.name}
-													onClick={async () => {
-														await installMod(
-															modLoader.id,
-															mod.id,
-															props.game.id,
-														);
-														props.refreshGame(props.game.id);
-													}}
+													onClick={() =>
+														installMod(modLoader.id, mod.id, props.game.id)
+													}
 												>
 													{mod.kind === "Installable" ? "Install" : "Run"}{" "}
 													{mod.name}

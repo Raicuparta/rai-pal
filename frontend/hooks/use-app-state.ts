@@ -1,5 +1,5 @@
 import { FullState, getFullState } from "@api/bindings";
-import { Event, listen } from "@tauri-apps/api/event";
+import { listen } from "@tauri-apps/api/event";
 // import { atom, useAtom } from "jotai";
 import { create } from "zustand";
 import { useEffect } from "react";
@@ -42,6 +42,7 @@ export const useAppStore = create<State & Actions>((setStore) => ({
 		setStore({ isLoading: true, error: "" });
 
 		getFullState()
+			.then((data) => setStore({ data }))
 			.catch((error) => setStore({ error }))
 			.finally(() => setStore({ isLoading: false }));
 	},
@@ -57,9 +58,7 @@ export function useAppStoreEffect() {
 		let unlisten: Awaited<ReturnType<typeof listen>> | undefined;
 
 		(async () => {
-			unlisten = await listen("update_state", (event: Event<FullState>) => {
-				setData(event.payload);
-			});
+			unlisten = await listen("update_state", updateState);
 		})();
 
 		return () => {

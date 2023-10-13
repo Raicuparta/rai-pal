@@ -194,8 +194,6 @@ export function InstalledGamesPage() {
 				<InstalledGameModal
 					game={selectedGame}
 					onClose={() => setSelectedGameId(undefined)}
-					// refreshGame={refreshGame}
-					refreshGame={() => {}} // TODO
 				/>
 			) : null}
 			<VirtualizedTable

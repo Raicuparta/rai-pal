@@ -74,6 +74,15 @@ serializable_struct!(FullState {
 	mod_loaders: Option<mod_loader::DataMap>,
 });
 
+// Sends a signal to make the frontend request an app state refresh.
+// I would have preferred to just send the state with the signal,
+// but it seems like Tauri events are really slow for large data.
+fn sync_state(handle: &tauri::AppHandle) -> Result {
+	handle.emit_all("sync_state", ())?;
+
+	Ok(())
+}
+
 #[tauri::command]
 #[specta::specta]
 async fn open_game_folder(game_id: &str, state: tauri::State<'_, AppState>) -> Result {
@@ -124,20 +133,32 @@ async fn install_mod(
 
 	mod_loader.install_mod(&game, mod_id)?;
 
-	Box::pin(get_full_state(handle, state)).await?;
+	sync_state(&handle)?;
 
 	Ok(())
 }
 
 #[tauri::command]
 #[specta::specta]
-async fn uninstall_mod(game_id: &str, mod_id: &str, state: tauri::State<'_, AppState>) -> Result {
-	get_game(game_id, &state)?.uninstall_mod(mod_id)
+async fn uninstall_mod(
+	game_id: &str,
+	mod_id: &str,
+	state: tauri::State<'_, AppState>,
+	handle: tauri::AppHandle,
+) -> Result {
+	get_game(game_id, &state)?.uninstall_mod(mod_id)?;
+
+	sync_state(&handle)?;
+
+	Ok(())
 }
 
 #[tauri::command]
 #[specta::specta]
-async fn get_full_state(handle: tauri::AppHandle, state: tauri::State<'_, AppState>) -> Result {
+async fn get_full_state(
+	handle: tauri::AppHandle,
+	state: tauri::State<'_, AppState>,
+) -> Result<FullState> {
 	let resources_path = paths::resources_path(&handle)?;
 
 	let mut full_state = FullState {
@@ -162,8 +183,6 @@ async fn get_full_state(handle: tauri::AppHandle, state: tauri::State<'_, AppSta
 
 	full_state.mod_loaders = Some(mod_loaders);
 
-	handle.emit_all("update_state", full_state.clone())?;
-
 	let (discover_games, owned_games) = Box::pin(future::join!(
 		steam::discover_games::get(&app_info),
 		steam::owned_games::get(&steam_dir, &app_info)
@@ -177,9 +196,7 @@ async fn get_full_state(handle: tauri::AppHandle, state: tauri::State<'_, AppSta
 		*write_guard = Some(full_state.clone());
 	}
 
-	handle.emit_all("update_state", full_state)?;
-
-	Ok(())
+	Ok(full_state)
 }
 
 #[tauri::command]

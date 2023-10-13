@@ -15,7 +15,7 @@ export function dummyCommand() {
 }
 
 export function getFullState() {
-    return invoke()<null>("get_full_state")
+    return invoke()<FullState>("get_full_state")
 }
 
 export function openGameFolder(gameId: string) {
