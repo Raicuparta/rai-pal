@@ -9,7 +9,7 @@ import { DiscoverGameCard } from "./discover-game-card";
 import { useAppStore } from "@hooks/use-app-state";
 
 export function DiscoverPage() {
-	const discoverGames = useAppStore((state) => state.data.discoverGames);
+	const discoverGames = useAppStore((state) => state.remoteState.discoverGames);
 
 	const [engine, setEngine] = useState<GameEngineBrand>();
 

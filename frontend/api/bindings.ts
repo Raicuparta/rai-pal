@@ -11,11 +11,15 @@ declare global {
 const invoke = () => window.__TAURI_INVOKE__;
 
 export function dummyCommand() {
-    return invoke()<[Game, FullState]>("dummy_command")
+    return invoke()<Game>("dummy_command")
 }
 
-export function getFullState() {
-    return invoke()<FullState>("get_full_state")
+export function getLocalState() {
+    return invoke()<LocalState>("get_local_state")
+}
+
+export function getRemoteState() {
+    return invoke()<RemoteState>("get_remote_state")
 }
 
 export function openGameFolder(gameId: string) {
@@ -50,8 +54,8 @@ export function openModsFolder() {
     return invoke()<null>("open_mods_folder")
 }
 
+export type RemoteState = { ownedGames: OwnedGame[]; discoverGames: SteamGame[] }
 export type OperatingSystem = "Linux" | "Windows"
-export type FullState = { gameMap: { [key: string]: Game } | null; ownedGames: OwnedGame[] | null; discoverGames: SteamGame[] | null; modLoaders: { [key: string]: ModLoaderData } | null }
 export type SteamGame = { id: string; nsfw: boolean; engine: GameEngineBrand }
 export type GameEngine = { brand: GameEngineBrand; version: GameEngineVersion | null }
 export type GameExecutable = { path: string; engine: GameEngine | null; architecture: Architecture | null; operatingSystem: OperatingSystem | null; scriptingBackend: UnityScriptingBackend | null }
@@ -63,5 +67,6 @@ export type SteamLaunchOption = { launchId: string; appId: number; description: 
 export type GameEngineVersion = { major: number; minor: number; patch: number; suffix: string | null; display: string }
 export type ModKind = "Installable" | "Runnable"
 export type GameEngineBrand = "Unity" | "Unreal" | "Godot"
+export type LocalState = { gameMap: { [key: string]: Game }; modLoaders: { [key: string]: ModLoaderData } }
 export type Game = { id: string; name: string; discriminator: string | null; steamLaunch: SteamLaunchOption | null; availableMods: { [key: string]: boolean }; executable: GameExecutable; thumbnailUrl: string | null }
 export type Architecture = "X64" | "X86"

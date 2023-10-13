@@ -30,7 +30,7 @@ type Props = {
 };
 
 export function InstalledGameModal(props: Props) {
-	const modLoaderMap = useAppStore((store) => store.data.modLoaders);
+	const modLoaderMap = useAppStore((store) => store.localState.modLoaders);
 
 	const debugData = useMemo(
 		() => JSON.stringify(props.game, null, 2),

@@ -67,7 +67,7 @@ const filterGame = (game: OwnedGame, filter: Filter) =>
 	(!filter.engine || game.engine === filter.engine);
 
 export function OwnedGamesPage() {
-	const ownedGames = useAppStore((state) => state.data.ownedGames);
+	const ownedGames = useAppStore((state) => state.remoteState.ownedGames);
 
 	const [selectedGame, setSelectedGame] = useState<OwnedGame>();
 

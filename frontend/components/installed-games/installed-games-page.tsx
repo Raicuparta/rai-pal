@@ -126,7 +126,7 @@ const tableHeaders: TableHeader<Game>[] = [
 export type TableSortMethod = (gameA: Game, gameB: Game) => number;
 
 export function InstalledGamesPage() {
-	const gameMap = useAppStore((state) => state.data.gameMap);
+	const gameMap = useAppStore((state) => state.localState.gameMap);
 
 	const [selectedGameId, setSelectedGameId] = useState<string>();
 

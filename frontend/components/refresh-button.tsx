@@ -6,7 +6,7 @@ import { useAppStore } from "@hooks/use-app-state";
 export function RefreshButton() {
 	const isLoading = useAppStore((state) => state.isLoading);
 	const error = useAppStore((state) => state.error);
-	const refresh = useAppStore((store) => store.updateState);
+	const refresh = useAppStore((store) => store.updateLocal);
 	const clearError = useAppStore((store) => store.clearError);
 
 	return (

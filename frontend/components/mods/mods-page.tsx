@@ -11,7 +11,7 @@ import {
 import { useAppStore } from "@hooks/use-app-state";
 
 export function ModsPage() {
-	const modLoaders = useAppStore((state) => state.data.modLoaders);
+	const modLoaders = useAppStore((state) => state.localState.modLoaders);
 
 	return (
 		<Stack h="100%">

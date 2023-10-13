@@ -1,6 +1,10 @@
-import { FullState, getFullState } from "@api/bindings";
+import {
+	LocalState,
+	RemoteState,
+	getLocalState,
+	getRemoteState,
+} from "@api/bindings";
 import { listen } from "@tauri-apps/api/event";
-// import { atom, useAtom } from "jotai";
 import { create } from "zustand";
 import { useEffect } from "react";
 
@@ -8,12 +12,17 @@ type State = {
 	isReady: boolean;
 	error: string;
 	isLoading: boolean;
-	data: FullState;
+	localState: LocalState;
+	remoteState: RemoteState;
 };
 
 type Actions = {
-	updateState: () => void;
-	setData: (data: FullState) => void;
+	updateLocal: () => void;
+	updateRemote: () => void;
+	setData: (data: {
+		localState?: LocalState;
+		remoteState?: RemoteState;
+	}) => void;
 	clearError: () => void;
 };
 
@@ -21,10 +30,12 @@ export const useAppStore = create<State & Actions>((setStore) => ({
 	isReady: false,
 	error: "",
 	isLoading: false,
-	data: {
-		discoverGames: [],
+	localState: {
 		gameMap: {},
 		modLoaders: {},
+	},
+	remoteState: {
+		discoverGames: [],
 		ownedGames: [],
 	},
 
@@ -35,34 +46,45 @@ export const useAppStore = create<State & Actions>((setStore) => ({
 			Object.entries(data).filter(([, value]) => value),
 		);
 
-		setStore((store) => ({ ...store, data: { ...store.data, ...cleanData } }));
+		setStore((store) => ({ ...store, ...cleanData }));
 	},
 
-	updateState: () => {
+	updateLocal: () => {
 		setStore({ isLoading: true, error: "" });
 
-		getFullState()
-			.then((data) => setStore({ data }))
+		getLocalState()
+			.then((data) => setStore({ localState: data }))
+			.catch((error) => setStore({ error }))
+			.finally(() => setStore({ isLoading: false }));
+	},
+
+	updateRemote: () => {
+		setStore({ isLoading: true, error: "" });
+
+		getRemoteState()
+			.then((data) => setStore({ remoteState: data }))
 			.catch((error) => setStore({ error }))
 			.finally(() => setStore({ isLoading: false }));
 	},
 }));
 
 export function useAppStoreEffect() {
-	const updateState = useAppStore((store) => store.updateState);
+	const updateLocal = useAppStore((store) => store.updateLocal);
+	const updateRemote = useAppStore((store) => store.updateRemote);
 	const setData = useAppStore((store) => store.setData);
 
 	useEffect(() => {
-		updateState();
+		updateLocal();
+		updateRemote();
 
 		let unlisten: Awaited<ReturnType<typeof listen>> | undefined;
 
 		(async () => {
-			unlisten = await listen("sync_state", updateState);
+			unlisten = await listen("sync_local", updateLocal);
 		})();
 
 		return () => {
 			if (unlisten) unlisten();
 		};
-	}, [setData, updateState]);
+	}, [setData, updateLocal, updateRemote]);
 }
