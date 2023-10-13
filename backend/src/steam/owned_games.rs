@@ -24,16 +24,12 @@ serializable_struct!(OwnedGame {
 	thumbnail_url: String,
 });
 
-async fn get_engine_games(
-	engine: GameEngineBrand,
-	steam_dir: &SteamDir,
-	app_info: &SteamAppInfoFile,
-) -> Result<Vec<OwnedGame>> {
-	Ok(id_lists::get(&engine.to_string())
+pub async fn get(steam_dir: &SteamDir, app_info: &SteamAppInfoFile) -> Result<Vec<OwnedGame>> {
+	Ok(id_lists::get()
 		.await?
 		.iter()
-		.filter_map(|id| {
-			let id_number = id.parse::<u32>().ok()?;
+		.filter_map(|steam_id_data| {
+			let id_number = steam_id_data.id.parse::<u32>().ok()?;
 
 			let app_info = app_info.apps.get(&id_number)?;
 
@@ -62,23 +58,14 @@ async fn get_engine_games(
 				.unwrap_or_default();
 
 			Some(OwnedGame {
-				id: id.clone(),
+				id: steam_id_data.id.clone(),
 				name: app_info.name.clone(),
 				installed,
 				os_list,
-				engine,
+				engine: steam_id_data.engine,
 				release_date,
-				thumbnail_url: get_steam_thumbnail(id),
+				thumbnail_url: get_steam_thumbnail(&steam_id_data.id),
 			})
 		})
 		.collect())
-}
-
-pub async fn get(steam_dir: &SteamDir, app_info: &SteamAppInfoFile) -> Result<Vec<OwnedGame>> {
-	Ok([
-		get_engine_games(GameEngineBrand::Unity, steam_dir, app_info).await?,
-		get_engine_games(GameEngineBrand::Unreal, steam_dir, app_info).await?,
-		get_engine_games(GameEngineBrand::Godot, steam_dir, app_info).await?,
-	]
-	.concat())
 }

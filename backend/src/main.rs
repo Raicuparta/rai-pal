@@ -21,7 +21,7 @@ use result::{
 };
 use steam::{
 	appinfo,
-	discover_games::DiscoverGame,
+	id_lists::SteamGame,
 	owned_games::OwnedGame,
 };
 use steamlocate::SteamDir;
@@ -70,7 +70,7 @@ fn get_game(game_id: &str, state: &tauri::State<'_, AppState>) -> Result<Game> {
 serializable_struct!(FullState {
 	game_map: Option<game::Map>,
 	owned_games: Option<Vec<OwnedGame>>,
-	discover_games: Option<Vec<DiscoverGame>>,
+	discover_games: Option<Vec<SteamGame>>,
 	mod_loaders: Option<mod_loader::DataMap>,
 });
 
@@ -124,7 +124,7 @@ async fn install_mod(
 
 	mod_loader.install_mod(&game, mod_id)?;
 
-	get_full_state(handle, state).await?;
+	Box::pin(get_full_state(handle, state)).await?;
 
 	Ok(())
 }
@@ -164,10 +164,10 @@ async fn get_full_state(handle: tauri::AppHandle, state: tauri::State<'_, AppSta
 
 	handle.emit_all("update_state", full_state.clone())?;
 
-	let (discover_games, owned_games) = future::join!(
+	let (discover_games, owned_games) = Box::pin(future::join!(
 		steam::discover_games::get(&app_info),
 		steam::owned_games::get(&steam_dir, &app_info)
-	)
+	))
 	.await;
 
 	full_state.discover_games = Some(discover_games.unwrap_or_default());
