@@ -45,8 +45,5 @@
     "useTabs": true,
     "singleAttributePerLine": true,
     "quoteProps": "as-needed"
-  },
-  "dependencies": {
-    "zustand": "^4.4.3"
   }
 }
