@@ -1,5 +1,4 @@
 import { Button, Divider, Flex, Modal, Stack } from "@mantine/core";
-import { useModLoaders } from "@hooks/use-backend-data";
 import {
 	Game,
 	installMod,
@@ -23,15 +22,16 @@ import {
 import { CodeHighlight } from "@mantine/code-highlight";
 import { steamCommands } from "../../util/steam";
 import { ModalImage } from "@components/modal-image";
+import { useAtomValue } from "jotai";
+import { modLoadersAtom } from "@hooks/use-data";
 
 type Props = {
 	readonly game: Game;
 	readonly onClose: () => void;
-	readonly refreshGame: (gameId: string) => void;
 };
 
 export function InstalledGameModal(props: Props) {
-	const [modLoaderMap] = useModLoaders();
+	const modLoaderMap = useAtomValue(modLoadersAtom);
 
 	const debugData = useMemo(
 		() => JSON.stringify(props.game, null, 2),
@@ -40,21 +40,13 @@ export function InstalledGameModal(props: Props) {
 
 	const modLoaders = useMemo(
 		() =>
-			Object.values(modLoaderMap).map((modLoader) => ({
+			Object.values(modLoaderMap ?? {}).map((modLoader) => ({
 				...modLoader,
 				mods: modLoader.mods.filter(
-					(mod) =>
-						(!mod.engine ||
-							mod.engine === props.game.executable.engine?.brand) &&
-						(!mod.scriptingBackend ||
-							mod.scriptingBackend === props.game.executable.scriptingBackend),
+					(mod) => mod.id in props.game.availableMods,
 				),
 			})),
-		[
-			modLoaderMap,
-			props.game.executable.engine?.brand,
-			props.game.executable.scriptingBackend,
-		],
+		[modLoaderMap, props.game.availableMods],
 	);
 
 	return (
@@ -136,14 +128,11 @@ export function InstalledGameModal(props: Props) {
 										w="fit-content"
 									>
 										{modLoader.mods.map((mod) =>
-											props.game.installedMods.includes(mod.id) ? (
+											props.game.availableMods[mod.id] ? (
 												<CommandButton
 													leftSection={<IconTrash />}
 													key={mod.name}
-													onClick={async () => {
-														await uninstallMod(props.game.id, mod.id);
-														props.refreshGame(props.game.id);
-													}}
+													onClick={() => uninstallMod(props.game.id, mod.id)}
 												>
 													Uninstall {mod.name}
 												</CommandButton>
@@ -151,14 +140,9 @@ export function InstalledGameModal(props: Props) {
 												<CommandButton
 													leftSection={<IconTool />}
 													key={mod.name}
-													onClick={async () => {
-														await installMod(
-															modLoader.id,
-															mod.id,
-															props.game.id,
-														);
-														props.refreshGame(props.game.id);
-													}}
+													onClick={() =>
+														installMod(modLoader.id, mod.id, props.game.id)
+													}
 												>
 													{mod.kind === "Installable" ? "Install" : "Run"}{" "}
 													{mod.name}

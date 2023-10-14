@@ -1,11 +1,11 @@
-import { DiscoverGame } from "@api/bindings";
+import { SteamGame } from "@api/bindings";
 import { steamCommands } from "../../util/steam";
 import styles from "./discover.module.css";
 import { Box, Loader, Overlay } from "@mantine/core";
 import { useState } from "react";
 
 type Props = {
-	readonly game: DiscoverGame;
+	readonly game: SteamGame;
 };
 
 export function DiscoverGameCard(props: Props) {

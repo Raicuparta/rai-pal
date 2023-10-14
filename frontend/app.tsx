@@ -4,6 +4,7 @@ import { ModsPage } from "./components/mods/mods-page";
 import { OwnedGamesPage } from "./components/owned-games/owned-games-page";
 import { SettingsPage } from "./components/settings/settings-page";
 import { Tabs, Container, Stack } from "@mantine/core";
+import { useData } from "@hooks/use-data";
 
 const pages = {
 	installedGames: { title: "Installed Games", component: InstalledGamesPage },
@@ -16,6 +17,8 @@ const pages = {
 const firstPage = Object.keys(pages)[0];
 
 function App() {
+	useData();
+
 	return (
 		<Tabs
 			defaultValue={firstPage}

@@ -19,11 +19,11 @@ import { TableHeader } from "@components/table/table-head";
 import { Filter, useFilteredList } from "@hooks/use-filtered-list";
 import { FilterMenu } from "@components/filter-menu";
 import { VirtualizedTable } from "@components/table/virtualized-table";
-import { useGameMap } from "@hooks/use-game-map";
 import { RefreshButton } from "@components/refresh-button";
 import { SearchInput } from "@components/search-input";
-import { ErrorPopover } from "@components/error-popover";
 import { EngineSelect } from "@components/engine-select";
+import { useAtomValue } from "jotai";
+import { installedGamesAtom } from "@hooks/use-data";
 
 interface InstalledGamesFilter extends Filter {
 	search: string;
@@ -127,11 +127,14 @@ const tableHeaders: TableHeader<Game>[] = [
 export type TableSortMethod = (gameA: Game, gameB: Game) => number;
 
 export function InstalledGamesPage() {
-	const [gameMap, isLoading, refreshGameMap, refreshGame, error, clearError] =
-		useGameMap();
+	const gameMap = useAtomValue(installedGamesAtom);
+
 	const [selectedGameId, setSelectedGameId] = useState<string>();
 
-	const games = useMemo(() => Object.values(gameMap), [gameMap]);
+	const games = useMemo(
+		() => (gameMap ? Object.values(gameMap) : []),
+		[gameMap],
+	);
 
 	const [filteredGames, sort, setSort, filter, setFilter] = useFilteredList(
 		tableHeaders,
@@ -141,7 +144,7 @@ export function InstalledGamesPage() {
 	);
 
 	const selectedGame = useMemo(
-		() => (selectedGameId ? gameMap[selectedGameId] : undefined),
+		() => (gameMap && selectedGameId ? gameMap[selectedGameId] : undefined),
 		[gameMap, selectedGameId],
 	);
 
@@ -186,21 +189,12 @@ export function InstalledGamesPage() {
 						/>
 					</Stack>
 				</FilterMenu>
-				<ErrorPopover
-					error={error}
-					clearError={clearError}
-				>
-					<RefreshButton
-						loading={isLoading}
-						onClick={refreshGameMap}
-					/>
-				</ErrorPopover>
+				<RefreshButton />
 			</Flex>
 			{selectedGame ? (
 				<InstalledGameModal
 					game={selectedGame}
 					onClose={() => setSelectedGameId(undefined)}
-					refreshGame={refreshGame}
 				/>
 			) : null}
 			<VirtualizedTable

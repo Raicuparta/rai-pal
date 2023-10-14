@@ -26,6 +26,9 @@ pub enum Error {
 	#[error(transparent)]
 	Zip(#[from] zip::result::ZipError),
 
+	#[error(transparent)]
+	Tauri(#[from] tauri::Error),
+
 	#[error("Invalid type `{0}` in binary vdf key/value pair")]
 	InvalidBinaryVdfType(u8),
 
@@ -56,9 +59,6 @@ pub enum Error {
 	#[error("Tried to read empty file `{0}`")]
 	EmptyFile(PathBuf),
 
-	#[error("Failed to create copy of game with ID `{0}`")]
-	GameCopyFailed(String),
-
 	#[error(
 		"Failed to find Steam cache file. **Try restarting Steam**. (Tried to read from `{0}`)"
 	)]
@@ -69,6 +69,9 @@ pub enum Error {
 
 	#[error("Failed to install mod, because the known game information is insufficient. Missing information: `{0}`. Game: `{1}`")]
 	ModInstallInfoInsufficient(String, PathBuf),
+
+	#[error("Failed to get state data")]
+	FailedToGetStateData(String),
 }
 
 impl serde::Serialize for Error {

@@ -10,19 +10,20 @@ use std::{
 use steamlocate::SteamDir;
 
 use super::{
-	appinfo,
+	appinfo::SteamAppInfoFile,
 	thumbnail::get_steam_thumbnail,
 };
 use crate::{
 	game,
+	mod_loaders::mod_loader,
 	Result,
 };
 
-pub async fn get() -> Result<game::Map> {
-	let steam_dir = SteamDir::locate()?;
-
-	let app_info_file = appinfo::read(steam_dir.path())?;
-
+pub async fn get(
+	steam_dir: &SteamDir,
+	app_info_file: &SteamAppInfoFile,
+	mod_loaders: &mod_loader::DataMap,
+) -> Result<game::Map> {
 	let mut game_map: game::Map = HashMap::new();
 	let mut used_paths: HashSet<PathBuf> = HashSet::new();
 	let mut used_names: HashSet<String> = HashSet::new();
@@ -64,6 +65,7 @@ pub async fn get() -> Result<game::Map> {
 								full_path,
 								Some(&launch_option),
 								Some(get_steam_thumbnail(&app.app_id.to_string())),
+								mod_loaders,
 							) {
 								game_map.insert(executable_id.clone(), game);
 								used_names.insert(name.clone());

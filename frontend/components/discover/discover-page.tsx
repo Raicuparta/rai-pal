@@ -1,26 +1,25 @@
-import { useDiscoverGames } from "@hooks/use-backend-data";
 import { Box, Flex, Paper, Stack, Text } from "@mantine/core";
 import { VirtuosoGrid } from "react-virtuoso";
 import styles from "./discover.module.css";
 import { useMemo, useState } from "react";
 import { RefreshButton } from "@components/refresh-button";
-import { ErrorPopover } from "@components/error-popover";
 import { GameEngineBrand } from "@api/bindings";
 import { EngineSelect } from "@components/engine-select";
 import { DiscoverGameCard } from "./discover-game-card";
+import { discoverGamesAtom } from "@hooks/use-data";
+import { useAtomValue } from "jotai";
 
 export function DiscoverPage() {
-	const [unownedGames, isLoading, refresh, error, clearError] =
-		useDiscoverGames();
+	const discoverGames = useAtomValue(discoverGamesAtom);
 
 	const [engine, setEngine] = useState<GameEngineBrand>();
 
 	const filteredGames = useMemo(
 		() =>
-			engine
-				? unownedGames.filter((game) => game.engine == engine)
-				: unownedGames,
-		[unownedGames, engine],
+			(engine
+				? discoverGames?.filter((game) => game.engine == engine)
+				: discoverGames) ?? [],
+		[discoverGames, engine],
 	);
 
 	return (
@@ -36,15 +35,7 @@ export function DiscoverPage() {
 					onChange={setEngine}
 					value={engine}
 				/>
-				<ErrorPopover
-					error={error}
-					clearError={clearError}
-				>
-					<RefreshButton
-						loading={isLoading}
-						onClick={refresh}
-					/>
-				</ErrorPopover>
+				<RefreshButton />
 			</Flex>
 			<Paper
 				h="100%"

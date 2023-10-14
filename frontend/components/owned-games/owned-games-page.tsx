@@ -1,6 +1,5 @@
 import { Flex, Stack } from "@mantine/core";
 import { OwnedGameRow } from "./owned-game-row";
-import { useOwnedGames } from "@hooks/use-backend-data";
 import { GameEngineBrand, OwnedGame } from "@api/bindings";
 import { useState } from "react";
 import { includesOneOf } from "../../util/filter";
@@ -13,8 +12,9 @@ import { SwitchButton } from "@components/switch-button";
 import { RefreshButton } from "@components/refresh-button";
 import { FixOwnedGamesButton } from "./fix-owned-games-button";
 import { SearchInput } from "@components/search-input";
-import { ErrorPopover } from "@components/error-popover";
 import { EngineSelect } from "@components/engine-select";
+import { ownedGamesAtom } from "@hooks/use-data";
+import { useAtomValue } from "jotai";
 
 const tableHeaders: TableHeader<OwnedGame>[] = [
 	{ id: "thumbnailUrl", label: "", width: 100 },
@@ -68,13 +68,13 @@ const filterGame = (game: OwnedGame, filter: Filter) =>
 	(!filter.engine || game.engine === filter.engine);
 
 export function OwnedGamesPage() {
-	const [ownedGames, isLoading, refreshOwnedGames, error, clearError] =
-		useOwnedGames();
+	const ownedGames = useAtomValue(ownedGamesAtom);
+
 	const [selectedGame, setSelectedGame] = useState<OwnedGame>();
 
 	const [filteredGames, sort, setSort, filter, setFilter] = useFilteredList(
 		tableHeaders,
-		ownedGames,
+		ownedGames ?? [],
 		filterGame,
 		defaultFilter,
 	);
@@ -120,15 +120,7 @@ export function OwnedGamesPage() {
 						</SwitchButton>
 					</Stack>
 				</FilterMenu>
-				<ErrorPopover
-					error={error}
-					clearError={clearError}
-				>
-					<RefreshButton
-						loading={isLoading}
-						onClick={refreshOwnedGames}
-					/>
-				</ErrorPopover>
+				<RefreshButton />
 			</Flex>
 			<VirtualizedTable
 				data={filteredGames}

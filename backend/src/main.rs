@@ -1,8 +1,12 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+#![feature(future_join)]
 
 use std::{
-	future::Future,
+	future::{
+		self,
+		Future,
+	},
 	sync::Mutex,
 };
 
@@ -16,11 +20,15 @@ use result::{
 	Result,
 };
 use steam::{
-	discover_games::DiscoverGame,
+	appinfo,
+	id_lists::SteamGame,
 	owned_games::OwnedGame,
 };
 use steamlocate::SteamDir;
-use tauri::api::dialog::message;
+use tauri::{
+	api::dialog::message,
+	Manager,
+};
 
 mod files;
 mod game;
@@ -34,107 +42,101 @@ mod result;
 mod steam;
 mod windows;
 
+serializable_enum!(SyncDataEvent {
+	SyncInstalledGames,
+	SyncOwnedGames,
+	SyncDiscoverGames,
+	SyncMods,
+});
+
 struct AppState {
-	game_map: Mutex<Option<game::Map>>,
+	installed_games: Mutex<Option<game::Map>>,
 	owned_games: Mutex<Option<Vec<OwnedGame>>>,
-	discover_games: Mutex<Option<Vec<DiscoverGame>>>,
+	discover_games: Mutex<Option<Vec<SteamGame>>>,
 	mod_loaders: Mutex<Option<mod_loader::DataMap>>,
 }
 
-async fn get_state_data<TData, TFunction, TFunctionResult>(
-	mutex: &Mutex<Option<TData>>,
-	get_data: TFunction,
-	ignore_cache: bool,
-) -> Result<TData>
-where
-	TFunction: Fn() -> TFunctionResult + Send,
-	TData: Clone + Send,
-	TFunctionResult: Future<Output = Result<TData>> + Send,
-{
-	if !ignore_cache {
-		if let Ok(mutex_guard) = mutex.lock() {
-			if let Some(data) = &*mutex_guard {
-				return Ok(data.clone());
-			}
+fn get_game(game_id: &str, state: &tauri::State<'_, AppState>) -> Result<Game> {
+	if let Ok(read_guard) = state.installed_games.lock() {
+		let installed_games = read_guard
+			.as_ref()
+			.ok_or(Error::GameNotFound(game_id.to_string()))?;
+
+		let game = installed_games
+			.get(game_id)
+			.ok_or_else(|| Error::GameNotFound(game_id.to_string()))?;
+
+		return Ok(game.clone());
+	}
+
+	Err(Error::GameNotFound(game_id.to_string()))
+}
+
+fn get_state_data<TData: Clone>(mutex: &Mutex<Option<TData>>) -> Result<TData> {
+	match mutex.lock() {
+		Ok(guard) => {
+			let data = guard
+				.as_ref()
+				.ok_or(Error::FailedToGetStateData("Data is empty".to_string()))?;
+
+			Ok(data.clone())
 		}
+		Err(err) => Err(Error::FailedToGetStateData(err.to_string())),
 	}
+}
 
-	let result = get_data();
-	let data = result.await?;
+#[tauri::command]
+#[specta::specta]
+async fn get_installed_games(state: tauri::State<'_, AppState>) -> Result<game::Map> {
+	get_state_data(&state.installed_games)
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn get_owned_games(state: tauri::State<'_, AppState>) -> Result<Vec<OwnedGame>> {
+	get_state_data(&state.owned_games)
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn get_discover_games(state: tauri::State<'_, AppState>) -> Result<Vec<SteamGame>> {
+	get_state_data(&state.discover_games)
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn get_mod_loaders(state: tauri::State<'_, AppState>) -> Result<mod_loader::DataMap> {
+	get_state_data(&state.mod_loaders)
+}
+
+fn update_state<TData>(
+	event: SyncDataEvent,
+	data: TData,
+	mutex: &Mutex<Option<TData>>,
+	handle: &tauri::AppHandle,
+) -> Result {
 	if let Ok(mut mutex_guard) = mutex.lock() {
-		*mutex_guard = Some(data.clone());
+		*mutex_guard = Some(data);
 	}
 
-	Ok(data)
-}
+	// Sends a signal to make the frontend request an app state refresh.
+	// I would have preferred to just send the state with the signal,
+	// but it seems like Tauri events are really slow for large data.
+	handle.emit_all(&event.to_string(), ())?;
 
-#[tauri::command]
-#[specta::specta]
-async fn get_game_map(state: tauri::State<'_, AppState>, ignore_cache: bool) -> Result<game::Map> {
-	get_state_data(&state.game_map, steam::installed_games::get, ignore_cache).await
-}
-
-#[tauri::command]
-#[specta::specta]
-async fn get_owned_games(
-	state: tauri::State<'_, AppState>,
-	ignore_cache: bool,
-) -> Result<Vec<OwnedGame>> {
-	get_state_data(&state.owned_games, steam::owned_games::get, ignore_cache).await
-}
-
-#[tauri::command]
-#[specta::specta]
-async fn get_mod_loaders(
-	state: tauri::State<'_, AppState>,
-	ignore_cache: bool,
-	handle: tauri::AppHandle,
-) -> Result<mod_loader::DataMap> {
-	let resources_path = paths::resources_path(&handle)?;
-
-	get_state_data(
-		&state.mod_loaders,
-		|| mod_loader::get_data_map(&resources_path),
-		ignore_cache,
-	)
-	.await
-}
-
-#[tauri::command]
-#[specta::specta]
-async fn get_discover_games(
-	state: tauri::State<'_, AppState>,
-	ignore_cache: bool,
-) -> Result<Vec<DiscoverGame>> {
-	get_state_data(
-		&state.discover_games,
-		steam::discover_games::get,
-		ignore_cache,
-	)
-	.await
+	Ok(())
 }
 
 #[tauri::command]
 #[specta::specta]
 async fn open_game_folder(game_id: &str, state: tauri::State<'_, AppState>) -> Result {
-	let game_map = get_game_map(state, false).await?;
-
-	let game = game_map
-		.get(game_id)
-		.ok_or_else(|| Error::GameNotFound(game_id.to_string()))?;
-
-	game.open_game_folder()
+	get_game(game_id, &state)?.open_game_folder()
 }
 
 #[tauri::command]
 #[specta::specta]
 async fn open_game_mods_folder(game_id: &str, state: tauri::State<'_, AppState>) -> Result {
-	let game_map = get_game_map(state, false).await?;
-	let game = game_map
-		.get(game_id)
-		.ok_or_else(|| Error::GameNotFound(game_id.to_string()))?;
-
-	game.open_mods_folder()
+	get_game(game_id, &state)?.open_mods_folder()
 }
 
 #[tauri::command]
@@ -155,35 +157,7 @@ async fn open_mod_folder(mod_loader_id: &str, mod_id: &str, handle: tauri::AppHa
 #[tauri::command]
 #[specta::specta]
 async fn start_game(game_id: &str, state: tauri::State<'_, AppState>) -> Result {
-	let game_map = get_game_map(state, false).await?;
-	let game = game_map
-		.get(game_id)
-		.ok_or_else(|| Error::GameNotFound(game_id.to_string()))?;
-
-	game.start()
-}
-
-#[tauri::command]
-#[specta::specta]
-async fn update_game_info(game_id: &str, state: tauri::State<'_, AppState>) -> Result<game::Map> {
-	let mut game_map = get_game_map(state, false).await?;
-	let game = game_map
-		.get(game_id)
-		.ok_or_else(|| Error::GameNotFound(game_id.to_string()))?;
-
-	let game_copy = Game::new(
-		&game.id,
-		&game.name,
-		game.discriminator.clone(),
-		&game.executable.path,
-		game.steam_launch.as_ref(),
-		game.thumbnail_url.clone(),
-	)
-	.ok_or_else(|| Error::GameCopyFailed(game.id.clone()))?;
-
-	game_map.insert(game.id.clone(), game_copy);
-
-	Ok(game_map)
+	get_game(game_id, &state)?.start()
 }
 
 #[tauri::command]
@@ -197,25 +171,106 @@ async fn install_mod(
 ) -> Result {
 	let resources_path = paths::resources_path(&handle)?;
 
-	let game_map = get_game_map(state, false).await?;
-	let game = game_map
-		.get(game_id)
-		.ok_or_else(|| Error::GameNotFound(game_id.to_string()))?;
+	let game = get_game(game_id, &state)?;
 
 	let mod_loader = mod_loader::get(&resources_path, mod_loader_id)?;
 
-	mod_loader.install_mod(game, mod_id)
+	mod_loader.install_mod(&game, mod_id)?;
+
+	refresh_single_game(game_id, &state, &handle)?;
+
+	Ok(())
+}
+
+fn refresh_single_game(
+	game_id: &str,
+	state: &tauri::State<'_, AppState>,
+	handle: &tauri::AppHandle,
+) -> Result {
+	let mod_loaders = get_state_data(&state.mod_loaders)?;
+	let mut installed_games = get_state_data(&state.installed_games)?;
+
+	installed_games
+		.get_mut(game_id)
+		.ok_or_else(|| Error::GameNotFound(game_id.to_string()))?
+		.refresh_mods(&mod_loaders);
+
+	update_state(
+		SyncDataEvent::SyncInstalledGames,
+		installed_games,
+		&state.installed_games,
+		handle,
+	)?;
+
+	Ok(())
 }
 
 #[tauri::command]
 #[specta::specta]
-async fn uninstall_mod(game_id: &str, mod_id: &str, state: tauri::State<'_, AppState>) -> Result {
-	let game_map = get_game_map(state, false).await?;
-	let game = game_map
-		.get(game_id)
-		.ok_or_else(|| Error::GameNotFound(game_id.to_string()))?;
+async fn uninstall_mod(
+	game_id: &str,
+	mod_id: &str,
+	state: tauri::State<'_, AppState>,
+	handle: tauri::AppHandle,
+) -> Result {
+	get_game(game_id, &state)?.uninstall_mod(mod_id)?;
 
-	game.uninstall_mod(mod_id)
+	refresh_single_game(game_id, &state, &handle)?;
+
+	Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn update_data(handle: tauri::AppHandle, state: tauri::State<'_, AppState>) -> Result {
+	let resources_path = paths::resources_path(&handle)?;
+
+	let mod_loaders = mod_loader::get_data_map(&resources_path)
+		.await
+		.unwrap_or_default();
+	update_state(
+		SyncDataEvent::SyncMods,
+		mod_loaders.clone(),
+		&state.mod_loaders,
+		&handle,
+	)?;
+
+	let steam_dir = SteamDir::locate()?;
+	let app_info = appinfo::read(steam_dir.path())?;
+
+	let installed_games = steam::installed_games::get(&steam_dir, &app_info, &mod_loaders)
+		.await
+		.unwrap_or_default();
+	update_state(
+		SyncDataEvent::SyncInstalledGames,
+		installed_games.clone(),
+		&state.installed_games,
+		&handle,
+	)?;
+
+	let (discover_games, owned_games) = Box::pin(future::join!(
+		steam::discover_games::get(&app_info),
+		steam::owned_games::get(&steam_dir, &app_info)
+	))
+	.await;
+
+	let discover_games = discover_games.unwrap_or_default();
+	update_state(
+		SyncDataEvent::SyncDiscoverGames,
+		discover_games,
+		&state.discover_games,
+		&handle,
+	)?;
+
+	let owned_games = owned_games.unwrap_or_default();
+	update_state(
+		SyncDataEvent::SyncOwnedGames,
+		owned_games,
+		&state.owned_games,
+		&handle,
+	)?;
+
+	Ok(())
 }
 
 #[tauri::command]
@@ -223,6 +278,14 @@ async fn uninstall_mod(game_id: &str, mod_id: &str, state: tauri::State<'_, AppS
 async fn delete_steam_appinfo_cache() -> Result {
 	let steam_dir = SteamDir::locate()?;
 	steam::appinfo::delete(steam_dir.path())
+}
+
+#[tauri::command]
+#[specta::specta]
+// This command is here just so tauri_specta exports these types.
+// This should stop being needed once tauri_specta starts supporting events.
+async fn dummy_command() -> Result<(Game, SyncDataEvent)> {
+	Err(Error::NotImplemented)
 }
 
 fn main() {
@@ -240,24 +303,25 @@ fn main() {
 	set_up_tauri!(
 		"../frontend/api/bindings.ts",
 		AppState {
-			game_map: Mutex::default(),
+			installed_games: Mutex::default(),
 			owned_games: Mutex::default(),
 			discover_games: Mutex::default(),
 			mod_loaders: Mutex::default(),
 		},
 		[
-			get_game_map,
+			dummy_command,
+			update_data,
+			get_installed_games,
 			get_owned_games,
-			open_game_folder,
+			get_discover_games,
 			get_mod_loaders,
+			open_game_folder,
 			install_mod,
 			uninstall_mod,
 			open_game_mods_folder,
 			start_game,
 			open_mod_folder,
-			update_game_info,
 			delete_steam_appinfo_cache,
-			get_discover_games,
 			open_mods_folder
 		]
 	);

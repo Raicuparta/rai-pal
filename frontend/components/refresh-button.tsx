@@ -1,31 +1,29 @@
-import { useLongLoading } from "@hooks/use-long-loading";
 import { Button } from "@mantine/core";
 import { IconRefresh } from "@tabler/icons-react";
-import React from "react";
+import { ErrorPopover } from "./error-popover";
+import { useAtom, useAtomValue } from "jotai";
+import { useUpdateData } from "@hooks/use-update-data";
+import { errorAtom, loadingAtom } from "@hooks/use-data";
 
-type Props = {
-	readonly onClick: () => void;
-	readonly loading: boolean;
-};
-
-function RefreshButtonInner(
-	props: Props,
-	ref: React.ForwardedRef<HTMLButtonElement>,
-) {
-	const isLoading = useLongLoading(props.loading);
+export function RefreshButton() {
+	const isLoading = useAtomValue(loadingAtom);
+	const [error, setError] = useAtom(errorAtom);
+	const updateAppData = useUpdateData();
 
 	return (
-		<Button
-			ref={ref}
-			leftSection={<IconRefresh />}
-			loading={isLoading}
-			onClick={props.onClick}
-			style={{ flex: 1, maxWidth: "10em" }}
-			variant="filled"
+		<ErrorPopover
+			error={error}
+			clearError={() => setError("")}
 		>
-			Refresh
-		</Button>
+			<Button
+				leftSection={<IconRefresh />}
+				loading={isLoading}
+				onClick={updateAppData}
+				style={{ flex: 1, maxWidth: "10em" }}
+				variant="filled"
+			>
+				Refresh
+			</Button>
+		</ErrorPopover>
 	);
 }
-
-export const RefreshButton = React.forwardRef(RefreshButtonInner);
