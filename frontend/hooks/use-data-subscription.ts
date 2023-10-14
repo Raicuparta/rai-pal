@@ -5,7 +5,7 @@ import { useEffect } from "react";
 
 type Atom<TData> = PrimitiveAtom<TData>;
 
-export function useListen<TData>(
+export function useDataSubscription<TData>(
 	event: SyncDataEvent,
 	stateAtom: Atom<TData>,
 	apiFunction: () => Promise<TData>,

@@ -9,7 +9,7 @@ import {
 	UnityBackendBadge,
 } from "@components/badges/color-coded-badge";
 import { useAtomValue } from "jotai";
-import { modLoadersAtom } from "@hooks/use-app-state";
+import { modLoadersAtom } from "@hooks/use-data";
 
 export function ModsPage() {
 	const modLoaders = useAtomValue(modLoadersAtom);

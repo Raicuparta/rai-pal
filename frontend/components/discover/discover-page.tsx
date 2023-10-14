@@ -6,7 +6,7 @@ import { RefreshButton } from "@components/refresh-button";
 import { GameEngineBrand } from "@api/bindings";
 import { EngineSelect } from "@components/engine-select";
 import { DiscoverGameCard } from "./discover-game-card";
-import { discoverGamesAtom } from "@hooks/use-app-state";
+import { discoverGamesAtom } from "@hooks/use-data";
 import { useAtomValue } from "jotai";
 
 export function DiscoverPage() {

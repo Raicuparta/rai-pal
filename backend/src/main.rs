@@ -106,7 +106,7 @@ async fn get_mod_loaders(state: tauri::State<'_, AppState>) -> Result<mod_loader
 	get_state_data(&state.mod_loaders)
 }
 
-fn update_state_data<TData>(
+fn update_state<TData>(
 	event: SyncDataEvent,
 	data: TData,
 	mutex: &Mutex<Option<TData>>,
@@ -192,7 +192,7 @@ fn refresh_single_game(
 		.ok_or_else(|| Error::GameNotFound(game_id.to_string()))?
 		.refresh_mods(&mod_loaders);
 
-	update_state_data(
+	update_state(
 		SyncDataEvent::SyncInstalledGames,
 		installed_games,
 		&state.installed_games,
@@ -219,13 +219,13 @@ async fn uninstall_mod(
 
 #[tauri::command]
 #[specta::specta]
-async fn update_state(handle: tauri::AppHandle, state: tauri::State<'_, AppState>) -> Result {
+async fn update_data(handle: tauri::AppHandle, state: tauri::State<'_, AppState>) -> Result {
 	let resources_path = paths::resources_path(&handle)?;
 
 	let mod_loaders = mod_loader::get_data_map(&resources_path)
 		.await
 		.unwrap_or_default();
-	update_state_data(
+	update_state(
 		SyncDataEvent::SyncMods,
 		mod_loaders.clone(),
 		&state.mod_loaders,
@@ -238,7 +238,7 @@ async fn update_state(handle: tauri::AppHandle, state: tauri::State<'_, AppState
 	let installed_games = steam::installed_games::get(&steam_dir, &app_info, &mod_loaders)
 		.await
 		.unwrap_or_default();
-	update_state_data(
+	update_state(
 		SyncDataEvent::SyncInstalledGames,
 		installed_games.clone(),
 		&state.installed_games,
@@ -252,7 +252,7 @@ async fn update_state(handle: tauri::AppHandle, state: tauri::State<'_, AppState
 	.await;
 
 	let discover_games = discover_games.unwrap_or_default();
-	update_state_data(
+	update_state(
 		SyncDataEvent::SyncDiscoverGames,
 		discover_games,
 		&state.discover_games,
@@ -260,7 +260,7 @@ async fn update_state(handle: tauri::AppHandle, state: tauri::State<'_, AppState
 	)?;
 
 	let owned_games = owned_games.unwrap_or_default();
-	update_state_data(
+	update_state(
 		SyncDataEvent::SyncOwnedGames,
 		owned_games,
 		&state.owned_games,
@@ -307,7 +307,7 @@ fn main() {
 		},
 		[
 			dummy_command,
-			update_state,
+			update_data,
 			get_installed_games,
 			get_owned_games,
 			get_discover_games,

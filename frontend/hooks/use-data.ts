@@ -10,8 +10,8 @@ import {
 	getModLoaders,
 	getOwnedGames,
 } from "@api/bindings";
-import { useListen } from "./use-listen";
-import { useUpdateAppState } from "./use-update-state";
+import { useDataSubscription } from "./use-data-subscription";
+import { useUpdateData } from "./use-update-data";
 
 export const installedGamesAtom = atom<Record<string, Game>>({});
 export const ownedGamesAtom = atom<OwnedGame[]>([]);
@@ -20,14 +20,18 @@ export const modLoadersAtom = atom<Record<string, ModLoaderData>>({});
 export const errorAtom = atom<string>("");
 export const loadingAtom = atom<boolean>(false);
 
-export function useAppStoreEffect() {
-	useListen("SyncInstalledGames", installedGamesAtom, getInstalledGames);
-	useListen("SyncOwnedGames", ownedGamesAtom, getOwnedGames);
-	useListen("SyncDiscoverGames", discoverGamesAtom, getDiscoverGames);
-	useListen("SyncMods", modLoadersAtom, getModLoaders);
-	const updateAppState = useUpdateAppState();
+export function useData() {
+	useDataSubscription(
+		"SyncInstalledGames",
+		installedGamesAtom,
+		getInstalledGames,
+	);
+	useDataSubscription("SyncOwnedGames", ownedGamesAtom, getOwnedGames);
+	useDataSubscription("SyncDiscoverGames", discoverGamesAtom, getDiscoverGames);
+	useDataSubscription("SyncMods", modLoadersAtom, getModLoaders);
+	const updateData = useUpdateData();
 
 	useEffect(() => {
-		updateAppState();
-	}, [updateAppState]);
+		updateData();
+	}, [updateData]);
 }

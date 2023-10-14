@@ -13,7 +13,7 @@ import { RefreshButton } from "@components/refresh-button";
 import { FixOwnedGamesButton } from "./fix-owned-games-button";
 import { SearchInput } from "@components/search-input";
 import { EngineSelect } from "@components/engine-select";
-import { ownedGamesAtom } from "@hooks/use-app-state";
+import { ownedGamesAtom } from "@hooks/use-data";
 import { useAtomValue } from "jotai";
 
 const tableHeaders: TableHeader<OwnedGame>[] = [

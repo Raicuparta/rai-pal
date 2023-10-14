@@ -23,7 +23,7 @@ import { CodeHighlight } from "@mantine/code-highlight";
 import { steamCommands } from "../../util/steam";
 import { ModalImage } from "@components/modal-image";
 import { useAtomValue } from "jotai";
-import { modLoadersAtom } from "@hooks/use-app-state";
+import { modLoadersAtom } from "@hooks/use-data";
 
 type Props = {
 	readonly game: Game;

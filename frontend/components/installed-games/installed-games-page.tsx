@@ -23,7 +23,7 @@ import { RefreshButton } from "@components/refresh-button";
 import { SearchInput } from "@components/search-input";
 import { EngineSelect } from "@components/engine-select";
 import { useAtomValue } from "jotai";
-import { installedGamesAtom } from "@hooks/use-app-state";
+import { installedGamesAtom } from "@hooks/use-data";
 
 interface InstalledGamesFilter extends Filter {
 	search: string;

@@ -2,13 +2,13 @@ import { Button } from "@mantine/core";
 import { IconRefresh } from "@tabler/icons-react";
 import { ErrorPopover } from "./error-popover";
 import { useAtom, useAtomValue } from "jotai";
-import { errorAtom, loadingAtom } from "@hooks/use-app-state";
-import { useUpdateAppState } from "@hooks/use-update-state";
+import { useUpdateData } from "@hooks/use-update-data";
+import { errorAtom, loadingAtom } from "@hooks/use-data";
 
 export function RefreshButton() {
 	const isLoading = useAtomValue(loadingAtom);
 	const [error, setError] = useAtom(errorAtom);
-	const updateAppState = useUpdateAppState();
+	const updateAppState = useUpdateData();
 
 	return (
 		<ErrorPopover

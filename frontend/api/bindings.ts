@@ -14,8 +14,8 @@ export function dummyCommand() {
     return invoke()<[Game, SyncDataEvent]>("dummy_command")
 }
 
-export function updateState() {
-    return invoke()<null>("update_state")
+export function updateData() {
+    return invoke()<null>("update_data")
 }
 
 export function getInstalledGames() {

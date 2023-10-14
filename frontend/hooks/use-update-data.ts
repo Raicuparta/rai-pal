@@ -1,18 +1,18 @@
 import { useCallback } from "react";
 import { useSetAtom } from "jotai";
-import { updateState } from "@api/bindings";
-import { errorAtom, loadingAtom } from "./use-app-state";
+import { updateData } from "@api/bindings";
+import { errorAtom, loadingAtom } from "./use-data";
 
-export function useUpdateAppState() {
+export function useUpdateData() {
 	const setError = useSetAtom(errorAtom);
 	const setIsLoading = useSetAtom(loadingAtom);
 
-	const updateAppState = useCallback(() => {
+	const updateAppData = useCallback(() => {
 		setIsLoading(true);
-		updateState()
+		updateData()
 			.catch(setError)
 			.finally(() => setIsLoading(false));
 	}, [setError, setIsLoading]);
 
-	return updateAppState;
+	return updateAppData;
 }
