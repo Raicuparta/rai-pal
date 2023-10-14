@@ -23,6 +23,7 @@ import { useAtomValue } from "jotai";
 import { installedGamesAtom } from "@hooks/use-data";
 import { installedGamesColumns } from "./installed-games-columns";
 import { ColumnsSelect } from "@components/columns-select";
+import { usePersistedState } from "@hooks/use-persisted-state";
 
 interface InstalledGamesFilter extends Filter {
 	search: string;
@@ -71,9 +72,10 @@ export function InstalledGamesPage() {
 
 	const [selectedGameId, setSelectedGameId] = useState<string>();
 
-	const [hiddenColumns, setHiddenColumns] = useState<string[]>([
-		"operatingSystem",
-	]);
+	const [hiddenColumns, setHiddenColumns] = usePersistedState<string[]>(
+		"installed-hidden-columns",
+		["operatingSystem"],
+	);
 
 	const games = useMemo(
 		() => (gameMap ? Object.values(gameMap) : []),

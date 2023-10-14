@@ -1,6 +1,7 @@
 import { TableColumn } from "@components/table/table-head";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useTableSort } from "./use-table-sort";
+import { usePersistedState } from "./use-persisted-state";
 
 export type Filter = {
 	search: string;
@@ -15,7 +16,10 @@ export function useFilteredList<TItem, TFilter extends Filter>(
 	const [sort, setSort] = useTableSort(
 		tableHeaders.find((header) => header.sort || header.getSortValue)?.id,
 	);
-	const [filter, setFilter] = useState<TFilter>(defaultFilterValue);
+	const [filter, setFilter] = usePersistedState<TFilter>(
+		`filter-${filterFunction.name}`,
+		defaultFilterValue,
+	);
 
 	const updateFilter = (newFilter: Partial<TFilter> | undefined) =>
 		setFilter(
