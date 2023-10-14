@@ -1,13 +1,12 @@
 import { Button } from "@mantine/core";
 import { IconRefresh } from "@tabler/icons-react";
 import { ErrorPopover } from "./error-popover";
-import { useAppStore } from "@hooks/use-app-state";
 
 export function RefreshButton() {
-	const isLoading = useAppStore((state) => state.isLoading);
-	const error = useAppStore((state) => state.error);
-	const refresh = useAppStore((store) => store.updateLocal);
-	const clearError = useAppStore((store) => store.clearError);
+	const isLoading = false;
+	const error = "";
+	const refresh = () => {};
+	const clearError = () => {};
 
 	return (
 		<ErrorPopover

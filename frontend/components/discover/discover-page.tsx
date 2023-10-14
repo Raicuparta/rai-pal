@@ -6,10 +6,11 @@ import { RefreshButton } from "@components/refresh-button";
 import { GameEngineBrand } from "@api/bindings";
 import { EngineSelect } from "@components/engine-select";
 import { DiscoverGameCard } from "./discover-game-card";
-import { useAppStore } from "@hooks/use-app-state";
+import { discoverGamesAtom } from "@hooks/use-app-state";
+import { useAtomValue } from "jotai";
 
 export function DiscoverPage() {
-	const discoverGames = useAppStore((state) => state.remoteState.discoverGames);
+	const discoverGames = useAtomValue(discoverGamesAtom);
 
 	const [engine, setEngine] = useState<GameEngineBrand>();
 

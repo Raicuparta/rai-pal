@@ -8,10 +8,11 @@ import {
 	EngineBadge,
 	UnityBackendBadge,
 } from "@components/badges/color-coded-badge";
-import { useAppStore } from "@hooks/use-app-state";
+import { useAtomValue } from "jotai";
+import { modLoadersAtom } from "@hooks/use-app-state";
 
 export function ModsPage() {
-	const modLoaders = useAppStore((state) => state.localState.modLoaders);
+	const modLoaders = useAtomValue(modLoadersAtom);
 
 	return (
 		<Stack h="100%">

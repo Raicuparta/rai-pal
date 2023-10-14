@@ -22,7 +22,8 @@ import {
 import { CodeHighlight } from "@mantine/code-highlight";
 import { steamCommands } from "../../util/steam";
 import { ModalImage } from "@components/modal-image";
-import { useAppStore } from "@hooks/use-app-state";
+import { useAtomValue } from "jotai";
+import { modLoadersAtom } from "@hooks/use-app-state";
 
 type Props = {
 	readonly game: Game;
@@ -30,7 +31,7 @@ type Props = {
 };
 
 export function InstalledGameModal(props: Props) {
-	const modLoaderMap = useAppStore((store) => store.localState.modLoaders);
+	const modLoaderMap = useAtomValue(modLoadersAtom);
 
 	const debugData = useMemo(
 		() => JSON.stringify(props.game, null, 2),

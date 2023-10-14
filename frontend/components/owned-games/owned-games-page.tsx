@@ -13,7 +13,8 @@ import { RefreshButton } from "@components/refresh-button";
 import { FixOwnedGamesButton } from "./fix-owned-games-button";
 import { SearchInput } from "@components/search-input";
 import { EngineSelect } from "@components/engine-select";
-import { useAppStore } from "@hooks/use-app-state";
+import { ownedGamesAtom } from "@hooks/use-app-state";
+import { useAtomValue } from "jotai";
 
 const tableHeaders: TableHeader<OwnedGame>[] = [
 	{ id: "thumbnailUrl", label: "", width: 100 },
@@ -67,7 +68,7 @@ const filterGame = (game: OwnedGame, filter: Filter) =>
 	(!filter.engine || game.engine === filter.engine);
 
 export function OwnedGamesPage() {
-	const ownedGames = useAppStore((state) => state.remoteState.ownedGames);
+	const ownedGames = useAtomValue(ownedGamesAtom);
 
 	const [selectedGame, setSelectedGame] = useState<OwnedGame>();
 

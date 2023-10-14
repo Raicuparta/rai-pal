@@ -22,7 +22,8 @@ import { VirtualizedTable } from "@components/table/virtualized-table";
 import { RefreshButton } from "@components/refresh-button";
 import { SearchInput } from "@components/search-input";
 import { EngineSelect } from "@components/engine-select";
-import { useAppStore } from "@hooks/use-app-state";
+import { useAtomValue } from "jotai";
+import { installedGamesAtom } from "@hooks/use-app-state";
 
 interface InstalledGamesFilter extends Filter {
 	search: string;
@@ -126,7 +127,7 @@ const tableHeaders: TableHeader<Game>[] = [
 export type TableSortMethod = (gameA: Game, gameB: Game) => number;
 
 export function InstalledGamesPage() {
-	const gameMap = useAppStore((state) => state.localState.gameMap);
+	const gameMap = useAtomValue(installedGamesAtom);
 
 	const [selectedGameId, setSelectedGameId] = useState<string>();
 

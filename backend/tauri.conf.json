@@ -31,7 +31,7 @@
     "bundle": {
       "active": true,
       "targets": [
-        "msi",
+        "appimage",
         "updater"
       ],
       "identifier": "com.raicuparta.pal",

@@ -5,9 +5,6 @@ settings:
   excludeLinksFromLockfile: false
 
 dependencies:
-  jotai:
-    specifier: ^2.4.3
-    version: 2.4.3(@types/react@18.2.25)(react@18.2.0)
   zustand:
     specifier: ^4.4.3
     version: 4.4.3(@types/react@18.2.25)(react@18.2.0)
@@ -61,6 +58,9 @@ devDependencies:
   eslint-plugin-react-refresh:
     specifier: ^0.4.3
     version: 0.4.3(eslint@8.50.0)
+  jotai:
+    specifier: ^2.4.3
+    version: 2.4.3(@types/react@18.2.25)(react@18.2.0)
   postcss:
     specifier: ^8.4.31
     version: 8.4.31
@@ -2112,7 +2112,7 @@ packages:
     dependencies:
       '@types/react': 18.2.25
       react: 18.2.0
-    dev: false
+    dev: true
 
   /js-tokens@4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
