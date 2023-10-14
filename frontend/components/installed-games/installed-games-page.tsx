@@ -1,4 +1,4 @@
-import { Button, Flex, Stack } from "@mantine/core";
+import { Flex, Stack } from "@mantine/core";
 import { useMemo, useState } from "react";
 import { includesOneOf } from "../../util/filter";
 import { InstalledGameModal } from "./installed-game-modal";
@@ -23,6 +23,7 @@ import { useAtomValue } from "jotai";
 import { installedGamesAtom } from "@hooks/use-data";
 import { useTableRowContent } from "@components/table/use-table-row-content";
 import { installedGamesColumns } from "./installed-games-columns";
+import { ColumnsSelect } from "@components/columns-select";
 
 interface InstalledGamesFilter extends Filter {
 	search: string;
@@ -89,10 +90,6 @@ export function InstalledGamesPage() {
 
 	const tableRowContent = useTableRowContent(filteredTableHeaders);
 
-	const hidableHeaders = installedGamesColumns.filter(
-		(header) => header.hidable,
-	);
-
 	const [filteredGames, sort, setSort, filter, setFilter] = useFilteredList(
 		filteredTableHeaders,
 		games,
@@ -125,27 +122,11 @@ export function InstalledGamesPage() {
 					active={isFilterActive}
 				>
 					<Stack>
-						<Button.Group>
-							{hidableHeaders.map((header) => (
-								<Button
-									variant={
-										hideTableHeaders.find((id) => id === header.id)
-											? "default"
-											: "light"
-									}
-									key={header.id}
-									onClick={() => {
-										setHideTableHeaders(
-											hideTableHeaders.find((id) => id === header.id)
-												? hideTableHeaders.filter((id) => id !== header.id)
-												: [...hideTableHeaders, header.id],
-										);
-									}}
-								>
-									{header.label || header.id}
-								</Button>
-							))}
-						</Button.Group>
+						<ColumnsSelect
+							columns={installedGamesColumns}
+							hiddenIds={hideTableHeaders}
+							onChange={setHideTableHeaders}
+						/>
 						<TypedSegmentedControl
 							data={operatingSystemOptions}
 							onChange={(operatingSystem) => setFilter({ operatingSystem })}
