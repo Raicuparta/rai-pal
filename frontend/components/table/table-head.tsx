@@ -15,7 +15,7 @@ export type TableColumn<TItem> = {
 };
 
 type Props<TItem> = {
-	readonly headers: TableColumn<TItem>[];
+	readonly columns: TableColumn<TItem>[];
 	readonly onChangeSort?: (sort: string) => void;
 	readonly sort?: TableSort;
 };
@@ -23,32 +23,32 @@ type Props<TItem> = {
 export function TableHead<TItem>(props: Props<TItem>) {
 	return (
 		<Table.Tr>
-			{props.headers.map((header) => {
-				const isSortable = Boolean(header.sort || header.getSortValue);
+			{props.columns.map((column) => {
+				const isSortable = Boolean(column.sort || column.getSortValue);
 				return (
 					<Table.Th
 						className={
 							props.onChangeSort && isSortable ? classes.sortable : undefined
 						}
-						key={String(header.id)}
+						key={String(column.id)}
 						onClick={
 							isSortable
 								? () =>
 										props.onChangeSort
-											? props.onChangeSort(header.id)
+											? props.onChangeSort(column.id)
 											: undefined
 								: undefined
 						}
-						w={header.width}
+						w={column.width}
 					>
-						<Flex justify={header.center ? "center" : undefined}>
-							{header.label}
+						<Flex justify={column.center ? "center" : undefined}>
+							{column.label}
 							<Box
 								h={0}
 								w={0}
 								fs="xs"
 							>
-								{props.sort?.id === header.id &&
+								{props.sort?.id === column.id &&
 									(props.sort.reverse ? (
 										<IconChevronDown />
 									) : (

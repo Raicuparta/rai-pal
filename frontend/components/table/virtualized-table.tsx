@@ -29,7 +29,7 @@ export function VirtualizedTable<
 	const renderHeaders = useCallback(
 		() => (
 			<TableHead
-				headers={columns}
+				columns={columns}
 				onChangeSort={onChangeSort}
 				sort={sort}
 			/>

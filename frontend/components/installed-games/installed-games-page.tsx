@@ -71,7 +71,7 @@ export function InstalledGamesPage() {
 
 	const [selectedGameId, setSelectedGameId] = useState<string>();
 
-	const [hideTableHeaders, setHideTableHeaders] = useState<string[]>([
+	const [hiddenColumns, setHiddenColumns] = useState<string[]>([
 		"operatingSystem",
 	]);
 
@@ -80,16 +80,16 @@ export function InstalledGamesPage() {
 		[gameMap],
 	);
 
-	const filteredTableHeaders = useMemo(
+	const filteredColumns = useMemo(
 		() =>
 			installedGamesColumns.filter(
-				(header) => !hideTableHeaders.includes(header.id),
+				(column) => !hiddenColumns.includes(column.id),
 			),
-		[hideTableHeaders],
+		[hiddenColumns],
 	);
 
 	const [filteredGames, sort, setSort, filter, setFilter] = useFilteredList(
-		filteredTableHeaders,
+		filteredColumns,
 		games,
 		filterGame,
 		defaultFilter,
@@ -122,8 +122,8 @@ export function InstalledGamesPage() {
 					<Stack>
 						<ColumnsSelect
 							columns={installedGamesColumns}
-							hiddenIds={hideTableHeaders}
-							onChange={setHideTableHeaders}
+							hiddenIds={hiddenColumns}
+							onChange={setHiddenColumns}
 						/>
 						<TypedSegmentedControl
 							data={operatingSystemOptions}
@@ -156,7 +156,7 @@ export function InstalledGamesPage() {
 			) : null}
 			<VirtualizedTable
 				data={filteredGames}
-				columns={filteredTableHeaders}
+				columns={filteredColumns}
 				onChangeSort={setSort}
 				onClickItem={(game) => setSelectedGameId(game.id)}
 				sort={sort}

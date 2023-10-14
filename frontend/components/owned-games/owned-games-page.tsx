@@ -40,14 +40,12 @@ export function OwnedGamesPage() {
 
 	const [selectedGame, setSelectedGame] = useState<OwnedGame>();
 
-	const [hideTableHeaders, setHideTableHeaders] = useState<string[]>([]);
+	const [hiddenColumns, setHiddenColumns] = useState<string[]>([]);
 
 	const filteredColumns = useMemo(
 		() =>
-			ownedGamesColumns.filter(
-				(column) => !hideTableHeaders.includes(column.id),
-			),
-		[hideTableHeaders],
+			ownedGamesColumns.filter((column) => !hiddenColumns.includes(column.id)),
+		[hiddenColumns],
 	);
 
 	const [filteredGames, sort, setSort, filter, setFilter] = useFilteredList(
@@ -82,8 +80,8 @@ export function OwnedGamesPage() {
 					<Stack>
 						<ColumnsSelect
 							columns={ownedGamesColumns}
-							hiddenIds={hideTableHeaders}
-							onChange={setHideTableHeaders}
+							hiddenIds={hiddenColumns}
+							onChange={setHiddenColumns}
 						/>
 						<EngineSelect
 							onChange={(engine) => setFilter({ engine })}
