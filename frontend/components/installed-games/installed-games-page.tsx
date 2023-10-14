@@ -13,7 +13,7 @@ import {
 	SegmentedControlData,
 	TypedSegmentedControl,
 } from "./typed-segmented-control";
-import { Filter, useFilteredList } from "@hooks/use-filtered-list";
+import { useFilteredList } from "@hooks/use-filtered-list";
 import { FilterMenu } from "@components/filter-menu";
 import { VirtualizedTable } from "@components/table/virtualized-table";
 import { RefreshButton } from "@components/refresh-button";
@@ -25,20 +25,17 @@ import { installedGamesColumns } from "./installed-games-columns";
 import { ColumnsSelect } from "@components/columns-select";
 import { usePersistedState } from "@hooks/use-persisted-state";
 
-interface InstalledGamesFilter extends Filter {
-	search: string;
+interface InstalledGamesFilter {
 	operatingSystem?: OperatingSystem;
 	architecture?: Architecture;
 	scriptingBackend?: UnityScriptingBackend;
 	engine?: GameEngineBrand;
 }
 
-const defaultFilter: InstalledGamesFilter = {
-	search: "",
-};
+const defaultFilter: InstalledGamesFilter = {};
 
-const filterGame = (game: Game, filter: InstalledGamesFilter) =>
-	includesOneOf(filter.search, [game.name]) &&
+const filterGame = (game: Game, filter: InstalledGamesFilter, search: string) =>
+	includesOneOf(search, [game.name]) &&
 	(!filter.architecture ||
 		game.executable.architecture === filter.architecture) &&
 	(!filter.operatingSystem ||
@@ -90,12 +87,8 @@ export function InstalledGamesPage() {
 		[hiddenColumns],
 	);
 
-	const [filteredGames, sort, setSort, filter, setFilter] = useFilteredList(
-		filteredColumns,
-		games,
-		filterGame,
-		defaultFilter,
-	);
+	const [filteredGames, sort, setSort, filter, setFilter, search, setSearch] =
+		useFilteredList(filteredColumns, games, filterGame, defaultFilter);
 
 	const selectedGame = useMemo(
 		() => (gameMap && selectedGameId ? gameMap[selectedGameId] : undefined),
@@ -113,8 +106,8 @@ export function InstalledGamesPage() {
 		<Stack h="100%">
 			<Flex gap="md">
 				<SearchInput
-					onChange={setFilter}
-					value={filter.search}
+					onChange={setSearch}
+					value={search}
 					count={filteredGames.length}
 				/>
 				<FilterMenu

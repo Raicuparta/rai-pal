@@ -1,8 +1,7 @@
-import { Filter } from "@hooks/use-filtered-list";
 import { CloseButton, Input } from "@mantine/core";
 
 type Props = {
-	readonly onChange: (filter: Filter) => void;
+	readonly onChange: (search: string) => void;
 	readonly value: string;
 	readonly count: number;
 };
@@ -10,7 +9,7 @@ type Props = {
 export function SearchInput(props: Props) {
 	return (
 		<Input
-			onChange={(event) => props.onChange({ search: event.target.value })}
+			onChange={(event) => props.onChange(event.target.value)}
 			placeholder={`Search ${props.count} games...`}
 			style={{ flex: 1 }}
 			value={props.value}
@@ -18,7 +17,7 @@ export function SearchInput(props: Props) {
 			rightSection={
 				<CloseButton
 					aria-label="Reset search field"
-					onClick={() => props.onChange({ search: "" })}
+					onClick={() => props.onChange("")}
 					style={{ display: props.value ? undefined : "none" }}
 				/>
 			}

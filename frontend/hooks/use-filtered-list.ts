@@ -1,16 +1,16 @@
 import { TableColumn } from "@components/table/table-head";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useTableSort } from "./use-table-sort";
 import { usePersistedState } from "./use-persisted-state";
 
-export type Filter = {
-	search: string;
-};
-
-export function useFilteredList<TItem, TFilter extends Filter>(
+export function useFilteredList<TItem, TFilter>(
 	tableHeaders: TableColumn<TItem>[],
 	data: TItem[],
-	filterFunction: (item: TItem, filterValue: TFilter) => boolean,
+	filterFunction: (
+		item: TItem,
+		filterValue: TFilter,
+		search: string,
+	) => boolean,
 	defaultFilterValue: TFilter,
 ) {
 	const [sort, setSort] = useTableSort(
@@ -20,6 +20,7 @@ export function useFilteredList<TItem, TFilter extends Filter>(
 		`filter-${filterFunction.name}`,
 		defaultFilterValue,
 	);
+	const [search, setSearch] = useState("");
 
 	const updateFilter = (newFilter: Partial<TFilter> | undefined) =>
 		setFilter(
@@ -32,7 +33,7 @@ export function useFilteredList<TItem, TFilter extends Filter>(
 		const sortHeader = tableHeaders.find((header) => header.id === sort.id);
 
 		return data
-			.filter((item) => filterFunction(item, filter))
+			.filter((item) => filterFunction(item, filter, search))
 			.sort((gameA, gameB) => {
 				if (sort.id == undefined) return 0;
 
@@ -60,7 +61,23 @@ export function useFilteredList<TItem, TFilter extends Filter>(
 
 				return 0;
 			});
-	}, [tableHeaders, data, sort.id, sort.reverse, filterFunction, filter]);
+	}, [
+		tableHeaders,
+		data,
+		sort.id,
+		sort.reverse,
+		filterFunction,
+		filter,
+		search,
+	]);
 
-	return [filteredData, sort, setSort, filter, updateFilter] as const;
+	return [
+		filteredData,
+		sort,
+		setSort,
+		filter,
+		updateFilter,
+		search,
+		setSearch,
+	] as const;
 }

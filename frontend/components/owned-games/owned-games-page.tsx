@@ -17,20 +17,18 @@ import { ownedGamesColumns } from "./owned-games-columns";
 import { ColumnsSelect } from "@components/columns-select";
 
 type Filter = {
-	search: string;
 	hideInstalled: boolean;
 	linuxOnly: boolean;
 	engine?: GameEngineBrand;
 };
 
 const defaultFilter: Filter = {
-	search: "",
 	hideInstalled: false,
 	linuxOnly: false,
 };
 
-const filterGame = (game: OwnedGame, filter: Filter) =>
-	includesOneOf(filter.search, [game.name, game.id.toString()]) &&
+const filterGame = (game: OwnedGame, filter: Filter, search: string) =>
+	includesOneOf(search, [game.name, game.id.toString()]) &&
 	(!filter.linuxOnly || game.osList.includes("Linux")) &&
 	(!filter.hideInstalled || !game.installed) &&
 	(!filter.engine || game.engine === filter.engine);
@@ -48,12 +46,13 @@ export function OwnedGamesPage() {
 		[hiddenColumns],
 	);
 
-	const [filteredGames, sort, setSort, filter, setFilter] = useFilteredList(
-		filteredColumns,
-		ownedGames ?? [],
-		filterGame,
-		defaultFilter,
-	);
+	const [filteredGames, sort, setSort, filter, setFilter, search, setSearch] =
+		useFilteredList(
+			filteredColumns,
+			ownedGames ?? [],
+			filterGame,
+			defaultFilter,
+		);
 
 	const isFilterActive =
 		filter.linuxOnly || filter.hideInstalled || Boolean(filter.engine);
@@ -69,8 +68,8 @@ export function OwnedGamesPage() {
 			<Flex gap="md">
 				<FixOwnedGamesButton />
 				<SearchInput
-					onChange={setFilter}
-					value={filter.search}
+					onChange={setSearch}
+					value={search}
 					count={filteredGames.length}
 				/>
 				<FilterMenu
