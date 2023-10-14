@@ -1,30 +1,34 @@
 import { SyncDataEvent } from "@api/bindings";
 import { listen } from "@tauri-apps/api/event";
-import { PrimitiveAtom, useSetAtom } from "jotai";
+import { useSetAtom, atom } from "jotai";
 import { useEffect } from "react";
 
-type Atom<TData> = PrimitiveAtom<TData>;
-
-export function useDataSubscription<TData>(
+export function dataSubscription<TData>(
 	event: SyncDataEvent,
-	stateAtom: Atom<TData>,
 	apiFunction: () => Promise<TData>,
+	defaultValue: TData,
 ) {
-	const setData = useSetAtom(stateAtom);
+	const stateAtom = atom<TData>(defaultValue);
 
-	useEffect(() => {
-		let unlisten: Awaited<ReturnType<typeof listen>> | undefined;
+	function useDataSubscription() {
+		const setData = useSetAtom(stateAtom);
 
-		(async () => {
-			unlisten = await listen(event, () =>
-				apiFunction()
-					.then(setData)
-					.finally(() => console.log("called event", event)),
-			);
-		})();
+		useEffect(() => {
+			let unlisten: Awaited<ReturnType<typeof listen>> | undefined;
 
-		return () => {
-			if (unlisten) unlisten();
-		};
-	}, [apiFunction, event, setData]);
+			(async () => {
+				unlisten = await listen(event, () =>
+					apiFunction()
+						.then((data) => setData(data as TData))
+						.finally(() => console.log("called event", event)),
+				);
+			})();
+
+			return () => {
+				if (unlisten) unlisten();
+			};
+		}, [setData]);
+	}
+
+	return [stateAtom, useDataSubscription] as const;
 }
