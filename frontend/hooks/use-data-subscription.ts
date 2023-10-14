@@ -18,9 +18,7 @@ export function dataSubscription<TData>(
 
 			(async () => {
 				unlisten = await listen(event, () =>
-					apiFunction()
-						.then((data) => setData(data as TData))
-						.finally(() => console.log("called event", event)),
+					apiFunction().then((data) => setData(data as TData)),
 				);
 			})();
 
