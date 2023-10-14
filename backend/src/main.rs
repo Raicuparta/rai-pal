@@ -106,10 +106,19 @@ async fn get_mod_loaders(state: tauri::State<'_, AppState>) -> Result<mod_loader
 	get_state_data(&state.mod_loaders)
 }
 
-// Sends a signal to make the frontend request an app state refresh.
-// I would have preferred to just send the state with the signal,
-// but it seems like Tauri events are really slow for large data.
-fn sync_data(event: SyncDataEvent, handle: &tauri::AppHandle) -> Result {
+fn update_state_data<TData>(
+	event: SyncDataEvent,
+	data: TData,
+	mutex: &Mutex<Option<TData>>,
+	handle: &tauri::AppHandle,
+) -> Result {
+	if let Ok(mut mutex_guard) = mutex.lock() {
+		*mutex_guard = Some(data);
+	}
+
+	// Sends a signal to make the frontend request an app state refresh.
+	// I would have preferred to just send the state with the signal,
+	// but it seems like Tauri events are really slow for large data.
 	handle.emit_all(&event.to_string(), ())?;
 
 	Ok(())
@@ -183,11 +192,12 @@ fn refresh_single_game(
 		.ok_or_else(|| Error::GameNotFound(game_id.to_string()))?
 		.refresh_mods(&mod_loaders);
 
-	if let Ok(mut mutex_guard) = state.installed_games.lock() {
-		*mutex_guard = Some(installed_games);
-	}
-
-	sync_data(SyncDataEvent::SyncInstalledGames, handle)?;
+	update_state_data(
+		SyncDataEvent::SyncInstalledGames,
+		installed_games,
+		&state.installed_games,
+		handle,
+	)?;
 
 	Ok(())
 }
@@ -215,11 +225,12 @@ async fn update_state(handle: tauri::AppHandle, state: tauri::State<'_, AppState
 	let mod_loaders = mod_loader::get_data_map(&resources_path)
 		.await
 		.unwrap_or_default();
-
-	if let Ok(mut write_guard) = state.mod_loaders.lock() {
-		*write_guard = Some(mod_loaders.clone());
-	}
-	sync_data(SyncDataEvent::SyncMods, &handle)?;
+	update_state_data(
+		SyncDataEvent::SyncMods,
+		mod_loaders.clone(),
+		&state.mod_loaders,
+		&handle,
+	)?;
 
 	let steam_dir = SteamDir::locate()?;
 	let app_info = appinfo::read(steam_dir.path())?;
@@ -227,11 +238,12 @@ async fn update_state(handle: tauri::AppHandle, state: tauri::State<'_, AppState
 	let installed_games = steam::installed_games::get(&steam_dir, &app_info, &mod_loaders)
 		.await
 		.unwrap_or_default();
-
-	if let Ok(mut write_guard) = state.installed_games.lock() {
-		*write_guard = Some(installed_games.clone());
-	}
-	sync_data(SyncDataEvent::SyncInstalledGames, &handle)?;
+	update_state_data(
+		SyncDataEvent::SyncInstalledGames,
+		installed_games.clone(),
+		&state.installed_games,
+		&handle,
+	)?;
 
 	let (discover_games, owned_games) = Box::pin(future::join!(
 		steam::discover_games::get(&app_info),
@@ -240,16 +252,20 @@ async fn update_state(handle: tauri::AppHandle, state: tauri::State<'_, AppState
 	.await;
 
 	let discover_games = discover_games.unwrap_or_default();
-	if let Ok(mut write_guard) = state.discover_games.lock() {
-		*write_guard = Some(discover_games);
-	}
-	sync_data(SyncDataEvent::SyncDiscoverGames, &handle)?;
+	update_state_data(
+		SyncDataEvent::SyncDiscoverGames,
+		discover_games,
+		&state.discover_games,
+		&handle,
+	)?;
 
 	let owned_games = owned_games.unwrap_or_default();
-	if let Ok(mut write_guard) = state.owned_games.lock() {
-		*write_guard = Some(owned_games);
-	}
-	sync_data(SyncDataEvent::SyncOwnedGames, &handle)?;
+	update_state_data(
+		SyncDataEvent::SyncOwnedGames,
+		owned_games,
+		&state.owned_games,
+		&handle,
+	)?;
 
 	Ok(())
 }
