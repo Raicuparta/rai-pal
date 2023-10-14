@@ -1,4 +1,4 @@
-import { Button, Divider, Flex, Modal, Stack } from "@mantine/core";
+import { Flex, Modal, Stack } from "@mantine/core";
 import {
 	Game,
 	installMod,
@@ -24,6 +24,7 @@ import { steamCommands } from "../../util/steam";
 import { ModalImage } from "@components/modal-image";
 import { useAtomValue } from "jotai";
 import { modLoadersAtom } from "@hooks/use-data";
+import { CommandButtonGroup } from "@components/command-button-group";
 
 type Props = {
 	readonly game: Game;
@@ -64,93 +65,80 @@ export function InstalledGameModal(props: Props) {
 			<Stack>
 				<ModalImage src={props.game.thumbnailUrl} />
 				<Flex
-					justify="space-between"
+					justify="center"
 					wrap="wrap"
 					gap="md"
-					w="100%"
 				>
-					<Stack gap="xs">
-						<Divider label="Game actions" />
-						<Button.Group
-							orientation="vertical"
-							w="fit-content"
+					<CommandButtonGroup label="Game Actions">
+						<CommandButton
+							leftSection={<IconPlayerPlay />}
+							onClick={() => startGame(props.game.id)}
 						>
-							<CommandButton
-								leftSection={<IconPlayerPlay />}
-								onClick={() => startGame(props.game.id)}
-							>
-								Start Game
-							</CommandButton>
-							<CommandButton
-								leftSection={<IconFolder />}
-								onClick={() => openGameFolder(props.game.id)}
-							>
-								Open Game Folder
-							</CommandButton>
-							<CommandButton
-								leftSection={<IconFolderCog />}
-								onClick={() => openGameModsFolder(props.game.id)}
-							>
-								Open Mods Folder
-							</CommandButton>
-							{props.game.steamLaunch && (
-								<>
-									<CommandButton
-										leftSection={<IconBooks />}
-										onClick={() =>
-											steamCommands.showInLibrary(props.game.steamLaunch?.appId)
-										}
-									>
-										Show in Library
-									</CommandButton>
-									<CommandButton
-										leftSection={<IconBrowser />}
-										onClick={() =>
-											steamCommands.openStorePage(props.game.steamLaunch?.appId)
-										}
-									>
-										Open Store Page
-									</CommandButton>
-								</>
-							)}
-						</Button.Group>
-					</Stack>
+							Start Game
+						</CommandButton>
+						<CommandButton
+							leftSection={<IconFolder />}
+							onClick={() => openGameFolder(props.game.id)}
+						>
+							Open Game Folder
+						</CommandButton>
+						<CommandButton
+							leftSection={<IconFolderCog />}
+							onClick={() => openGameModsFolder(props.game.id)}
+						>
+							Open Mods Folder
+						</CommandButton>
+						{props.game.steamLaunch && (
+							<>
+								<CommandButton
+									leftSection={<IconBooks />}
+									onClick={() =>
+										steamCommands.showInLibrary(props.game.steamLaunch?.appId)
+									}
+								>
+									Show in Library
+								</CommandButton>
+								<CommandButton
+									leftSection={<IconBrowser />}
+									onClick={() =>
+										steamCommands.openStorePage(props.game.steamLaunch?.appId)
+									}
+								>
+									Open Store Page
+								</CommandButton>
+							</>
+						)}
+					</CommandButtonGroup>
 					{modLoaders.map(
 						(modLoader) =>
 							modLoader.mods.length > 0 && (
-								<Stack
+								<CommandButtonGroup
+									label={modLoader.id.toUpperCase()}
 									key={modLoader.id}
-									gap="xs"
 								>
-									<Divider label={modLoader.id.toUpperCase()} />
-									<Button.Group
-										orientation="vertical"
-										w="fit-content"
-									>
-										{modLoader.mods.map((mod) =>
-											props.game.availableMods[mod.id] ? (
-												<CommandButton
-													leftSection={<IconTrash />}
-													key={mod.name}
-													onClick={() => uninstallMod(props.game.id, mod.id)}
-												>
-													Uninstall {mod.name}
-												</CommandButton>
-											) : (
-												<CommandButton
-													leftSection={<IconTool />}
-													key={mod.name}
-													onClick={() =>
-														installMod(modLoader.id, mod.id, props.game.id)
-													}
-												>
-													{mod.kind === "Installable" ? "Install" : "Run"}{" "}
-													{mod.name}
-												</CommandButton>
-											),
-										)}
-									</Button.Group>
-								</Stack>
+									{modLoader.mods.map((mod) =>
+										props.game.availableMods[mod.id] ? (
+											<CommandButton
+												leftSection={<IconTrash />}
+												key={mod.name}
+												onClick={() => uninstallMod(props.game.id, mod.id)}
+											>
+												Uninstall {mod.name}
+											</CommandButton>
+										) : (
+											<CommandButton
+												leftSection={<IconTool />}
+												key={mod.name}
+												onClick={() =>
+													installMod(modLoader.id, mod.id, props.game.id)
+												}
+											>
+												{mod.kind === "Installable" ? "Install" : "Run"}{" "}
+												{mod.name}
+											</CommandButton>
+										),
+									)}
+								</CommandButtonGroup>
 							),
 					)}
 				</Flex>

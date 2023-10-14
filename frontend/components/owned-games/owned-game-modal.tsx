@@ -1,4 +1,4 @@
-import { Button, Modal, Stack } from "@mantine/core";
+import { Modal, Stack } from "@mantine/core";
 import { OwnedGame } from "@api/bindings";
 import { CommandButton } from "@components/command-button";
 import { useMemo } from "react";
@@ -6,6 +6,7 @@ import { IconBooks, IconBrowser, IconDownload } from "@tabler/icons-react";
 import { CodeHighlight } from "@mantine/code-highlight";
 import { steamCommands } from "../../util/steam";
 import { ModalImage } from "@components/modal-image";
+import { CommandButtonGroup } from "@components/command-button-group";
 
 type Props = {
 	readonly game: OwnedGame;
@@ -28,8 +29,10 @@ export function OwnedGameModal(props: Props) {
 		>
 			<Stack>
 				<ModalImage src={props.game.thumbnailUrl} />
-
-				<Button.Group orientation="vertical">
+				<CommandButtonGroup
+					label="Game Actions"
+					m="auto"
+				>
 					<CommandButton
 						leftSection={<IconBrowser />}
 						onClick={() => steamCommands.openStorePage(props.game.id)}
@@ -48,7 +51,7 @@ export function OwnedGameModal(props: Props) {
 					>
 						Install
 					</CommandButton>
-				</Button.Group>
+				</CommandButtonGroup>
 				<Stack gap="xs">
 					<label>Debug Data</label>
 					<CodeHighlight
