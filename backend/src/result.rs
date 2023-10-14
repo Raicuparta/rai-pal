@@ -69,6 +69,9 @@ pub enum Error {
 
 	#[error("Failed to install mod, because the known game information is insufficient. Missing information: `{0}`. Game: `{1}`")]
 	ModInstallInfoInsufficient(String, PathBuf),
+
+	#[error("Failed to get state data")]
+	FailedToGetStateData(String),
 }
 
 impl serde::Serialize for Error {

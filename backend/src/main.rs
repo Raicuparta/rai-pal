@@ -73,13 +73,16 @@ fn get_game(game_id: &str, state: &tauri::State<'_, AppState>) -> Result<Game> {
 }
 
 fn get_state_data<TData: Clone>(mutex: &Mutex<Option<TData>>) -> Result<TData> {
-	if let Ok(guard) = mutex.lock() {
-		let data = guard.as_ref().ok_or(Error::NotImplemented)?;
+	match mutex.lock() {
+		Ok(guard) => {
+			let data = guard
+				.as_ref()
+				.ok_or(Error::FailedToGetStateData("Data is empty".to_string()))?;
 
-		return Ok(data.clone());
+			Ok(data.clone())
+		}
+		Err(err) => Err(Error::FailedToGetStateData(err.to_string())),
 	}
-
-	Err(Error::NotImplemented) // TODO error
 }
 
 #[tauri::command]
