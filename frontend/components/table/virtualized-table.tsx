@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from "react";
 import { TableVirtuoso, TableVirtuosoProps } from "react-virtuoso";
-import { TableHead, TableHeader } from "./table-head";
+import { TableHead, TableColumn } from "./table-head";
 import { TableSort } from "@hooks/use-table-sort";
 import { getTableComponents } from "./table-components";
 import { TableContainer } from "./table-container";
@@ -8,7 +8,7 @@ import { TableContainer } from "./table-container";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 interface Props<TItem, Context = any>
 	extends TableVirtuosoProps<TItem, Context> {
-	readonly headerItems: TableHeader<TItem>[];
+	readonly headerItems: TableColumn<TItem>[];
 	readonly onChangeSort?: (sort: string) => void;
 	readonly sort?: TableSort;
 	readonly onClickItem: (item: TItem) => void;

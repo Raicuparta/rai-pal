@@ -4,7 +4,7 @@ import { GameEngineBrand, OwnedGame } from "@api/bindings";
 import { useState } from "react";
 import { includesOneOf } from "../../util/filter";
 import { OwnedGameModal } from "./owned-game-modal";
-import { TableHeader } from "@components/table/table-head";
+import { TableColumn } from "@components/table/table-head";
 import { useFilteredList } from "@hooks/use-filtered-list";
 import { FilterMenu } from "@components/filter-menu";
 import { VirtualizedTable } from "@components/table/virtualized-table";
@@ -16,7 +16,7 @@ import { EngineSelect } from "@components/engine-select";
 import { ownedGamesAtom } from "@hooks/use-data";
 import { useAtomValue } from "jotai";
 
-const tableHeaders: TableHeader<OwnedGame>[] = [
+const tableHeaders: TableColumn<OwnedGame>[] = [
 	{ id: "thumbnailUrl", label: "", width: 100 },
 	{
 		id: "name",

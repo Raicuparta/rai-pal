@@ -1,4 +1,4 @@
-import { TableHeader } from "@components/table/table-head";
+import { TableColumn } from "@components/table/table-head";
 import { useMemo, useState } from "react";
 import { useTableSort } from "./use-table-sort";
 
@@ -7,7 +7,7 @@ export type Filter = {
 };
 
 export function useFilteredList<TItem, TFilter extends Filter>(
-	tableHeaders: TableHeader<TItem>[],
+	tableHeaders: TableColumn<TItem>[],
 	data: TItem[],
 	filterFunction: (item: TItem, filterValue: TFilter) => boolean,
 	defaultFilterValue: TFilter,

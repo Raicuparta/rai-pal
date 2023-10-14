@@ -3,7 +3,7 @@ import classes from "./table.module.css";
 import { IconChevronDown, IconChevronUp } from "@tabler/icons-react";
 import { TableSort } from "@hooks/use-table-sort";
 
-export type TableHeader<TItem> = {
+export type TableColumn<TItem> = {
 	id: string;
 	label: string;
 	width?: number;
@@ -15,7 +15,7 @@ export type TableHeader<TItem> = {
 };
 
 type Props<TItem> = {
-	readonly headers: TableHeader<TItem>[];
+	readonly headers: TableColumn<TItem>[];
 	readonly onChangeSort?: (sort: string) => void;
 	readonly sort?: TableSort;
 };
