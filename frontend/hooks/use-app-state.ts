@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { atom, useSetAtom } from "jotai";
+import { atom } from "jotai";
 import {
 	Game,
 	ModLoaderData,
@@ -9,9 +9,9 @@ import {
 	getInstalledGames,
 	getModLoaders,
 	getOwnedGames,
-	updateState,
 } from "@api/bindings";
 import { useListen } from "./use-listen";
+import { useUpdateAppState } from "./use-update-state";
 
 export const installedGamesAtom = atom<Record<string, Game>>({});
 export const ownedGamesAtom = atom<OwnedGame[]>([]);
@@ -25,13 +25,9 @@ export function useAppStoreEffect() {
 	useListen("SyncOwnedGames", ownedGamesAtom, getOwnedGames);
 	useListen("SyncDiscoverGames", discoverGamesAtom, getDiscoverGames);
 	useListen("SyncMods", modLoadersAtom, getModLoaders);
-	const setError = useSetAtom(errorAtom);
-	const setIsLoading = useSetAtom(loadingAtom);
+	const updateAppState = useUpdateAppState();
 
 	useEffect(() => {
-		setIsLoading(true);
-		updateState()
-			.catch(setError)
-			.finally(() => setIsLoading(false));
-	}, [setError, setIsLoading]);
+		updateAppState();
+	}, [updateAppState]);
 }
