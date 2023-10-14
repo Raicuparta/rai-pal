@@ -8,7 +8,7 @@ import { errorAtom, loadingAtom } from "@hooks/use-data";
 export function RefreshButton() {
 	const isLoading = useAtomValue(loadingAtom);
 	const [error, setError] = useAtom(errorAtom);
-	const updateAppState = useUpdateData();
+	const updateAppData = useUpdateData();
 
 	return (
 		<ErrorPopover
@@ -18,7 +18,7 @@ export function RefreshButton() {
 			<Button
 				leftSection={<IconRefresh />}
 				loading={isLoading}
-				onClick={updateAppState}
+				onClick={updateAppData}
 				style={{ flex: 1, maxWidth: "10em" }}
 				variant="filled"
 			>
