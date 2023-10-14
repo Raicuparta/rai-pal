@@ -1,42 +1,17 @@
-import { Table, Flex } from "@mantine/core";
 import { Game } from "@api/bindings";
-import { GameName } from "./game-name";
-import { GameThumbnail } from "@components/game-thumbnail";
-import {
-	ArchitectureBadge,
-	EngineBadge,
-	// OperatingSystemBadge,
-	UnityBackendBadge,
-} from "@components/badges/color-coded-badge";
+import { TableHeader } from "@components/table/table-head";
+import React from "react";
 
-export function InstalledGameRow(_: number, game: Game) {
-	return (
+export function InstalledGameRow(headers: TableHeader<Game>[]) {
+	const InstalledGameRow = (_: number, game: Game) => (
 		<>
-			<GameThumbnail url={game.thumbnailUrl} />
-			<Table.Td>
-				<GameName game={game} />
-			</Table.Td>
-			{/* <Table.Td>
-				<OperatingSystemBadge value={game.operatingSystem} />
-			</Table.Td> */}
-			<Table.Td>
-				<ArchitectureBadge value={game.executable.architecture} />
-			</Table.Td>
-			<Table.Td>
-				<UnityBackendBadge value={game.executable.scriptingBackend} />
-			</Table.Td>
-			<Table.Td>
-				<Flex
-					align="center"
-					gap="xs"
-				>
-					<EngineBadge
-						maw={70}
-						value={game.executable.engine?.brand}
-						label={game.executable.engine?.version?.display}
-					/>
-				</Flex>
-			</Table.Td>
+			{headers.map((header) => (
+				<React.Fragment key={header.id}>
+					{header.renderCell ? header.renderCell(game) : "TODO"}
+				</React.Fragment>
+			))}
 		</>
 	);
+
+	return InstalledGameRow;
 }

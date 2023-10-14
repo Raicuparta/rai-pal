@@ -1,4 +1,4 @@
-import { Flex, Stack } from "@mantine/core";
+import { Button, Flex, Stack, Table } from "@mantine/core";
 import { useMemo, useState } from "react";
 import { includesOneOf } from "../../util/filter";
 import { InstalledGameRow } from "./installed-game-row";
@@ -24,6 +24,14 @@ import { SearchInput } from "@components/search-input";
 import { EngineSelect } from "@components/engine-select";
 import { useAtomValue } from "jotai";
 import { installedGamesAtom } from "@hooks/use-data";
+import { GameName } from "./game-name";
+import {
+	ArchitectureBadge,
+	EngineBadge,
+	OperatingSystemBadge,
+	UnityBackendBadge,
+} from "@components/badges/color-coded-badge";
+import { GameThumbnail } from "@components/game-thumbnail";
 
 interface InstalledGamesFilter extends Filter {
 	search: string;
@@ -74,39 +82,68 @@ const defaultVersion: GameEngineVersion = {
 };
 
 const tableHeaders: TableHeader<Game>[] = [
-	{ id: "thumbnailUrl", label: "", width: 100 },
+	{
+		id: "thumbnailUrl",
+		label: "",
+		width: 100,
+		renderCell: (game) => <GameThumbnail url={game.thumbnailUrl} />,
+	},
 	{
 		id: "name",
 		label: "Game",
 		width: undefined,
 		getSortValue: (game) => game.name,
+		renderCell: (game) => (
+			<Table.Td>
+				<GameName game={game} />
+			</Table.Td>
+		),
 	},
-	// {
-	// 	id: "operatingSystem",
-	// 	label: "OS",
-	// 	width: 110,
-	// 	center: true,
-	// 	sortable: true,
-	// },
+	{
+		id: "operatingSystem",
+		label: "OS",
+		width: 110,
+		center: true,
+		hidable: true,
+		getSortValue: (game) => game.executable.operatingSystem,
+		renderCell: (game) => (
+			<Table.Td>
+				<OperatingSystemBadge value={game.executable.operatingSystem} />
+			</Table.Td>
+		),
+	},
 	{
 		id: "architecture",
 		label: "Arch",
 		width: 70,
 		center: true,
+		hidable: true,
 		getSortValue: (game) => game.executable.architecture,
+		renderCell: (game) => (
+			<Table.Td>
+				<ArchitectureBadge value={game.executable.architecture} />
+			</Table.Td>
+		),
 	},
 	{
 		id: "scriptingBackend",
 		label: "Backend",
 		width: 90,
 		center: true,
+		hidable: true,
 		getSortValue: (game) => game.executable.scriptingBackend,
+		renderCell: (game) => (
+			<Table.Td>
+				<UnityBackendBadge value={game.executable.scriptingBackend} />
+			</Table.Td>
+		),
 	},
 	{
 		id: "engine",
 		label: "Engine",
 		width: 170,
 		center: true,
+		hidable: true,
 		sort: (dataA, dataB) => {
 			const versionA = dataA.executable.engine?.version ?? defaultVersion;
 			const versionB = dataB.executable.engine?.version ?? defaultVersion;
@@ -121,6 +158,20 @@ const tableHeaders: TableHeader<Game>[] = [
 				0
 			);
 		},
+		renderCell: (game) => (
+			<Table.Td>
+				<Flex
+					align="center"
+					gap="xs"
+				>
+					<EngineBadge
+						maw={70}
+						value={game.executable.engine?.brand}
+						label={game.executable.engine?.version?.display}
+					/>
+				</Flex>
+			</Table.Td>
+		),
 	},
 ];
 
@@ -130,14 +181,25 @@ export function InstalledGamesPage() {
 	const gameMap = useAtomValue(installedGamesAtom);
 
 	const [selectedGameId, setSelectedGameId] = useState<string>();
+	const [hideTableHeaders, setHideTableHeaders] = useState<string[]>([
+		"operatingSystem",
+	]);
 
 	const games = useMemo(
 		() => (gameMap ? Object.values(gameMap) : []),
 		[gameMap],
 	);
 
+	const filteredTableHeaders = useMemo(
+		() =>
+			tableHeaders.filter((header) => !hideTableHeaders.includes(header.id)),
+		[hideTableHeaders],
+	);
+
+	const hidableHeaders = tableHeaders.filter((header) => header.hidable);
+
 	const [filteredGames, sort, setSort, filter, setFilter] = useFilteredList(
-		tableHeaders,
+		filteredTableHeaders,
 		games,
 		filterGame,
 		defaultFilter,
@@ -168,6 +230,27 @@ export function InstalledGamesPage() {
 					active={isFilterActive}
 				>
 					<Stack>
+						<Button.Group>
+							{hidableHeaders.map((header) => (
+								<Button
+									variant={
+										hideTableHeaders.find((id) => id === header.id)
+											? "default"
+											: "light"
+									}
+									key={header.id}
+									onClick={() => {
+										setHideTableHeaders(
+											hideTableHeaders.find((id) => id === header.id)
+												? hideTableHeaders.filter((id) => id !== header.id)
+												: [...hideTableHeaders, header.id],
+										);
+									}}
+								>
+									{header.label || header.id}
+								</Button>
+							))}
+						</Button.Group>
 						<TypedSegmentedControl
 							data={operatingSystemOptions}
 							onChange={(operatingSystem) => setFilter({ operatingSystem })}
@@ -199,8 +282,8 @@ export function InstalledGamesPage() {
 			) : null}
 			<VirtualizedTable
 				data={filteredGames}
-				headerItems={tableHeaders}
-				itemContent={InstalledGameRow}
+				headerItems={filteredTableHeaders}
+				itemContent={InstalledGameRow(filteredTableHeaders)}
 				onChangeSort={setSort}
 				onClickItem={(game) => setSelectedGameId(game.id)}
 				sort={sort}

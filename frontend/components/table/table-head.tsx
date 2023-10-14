@@ -8,8 +8,10 @@ export type TableHeader<TItem> = {
 	label: string;
 	width?: number;
 	center?: boolean;
+	hidable?: boolean;
 	sort?: (itemA: TItem, itemB: TItem) => number;
 	getSortValue?: (item: TItem) => unknown;
+	renderCell?: (item: TItem) => JSX.Element;
 };
 
 type Props<TItem> = {
