@@ -24,9 +24,9 @@ serializable_struct!(Game {
 	pub name: String,
 	pub discriminator: Option<String>,
 	pub steam_launch: Option<SteamLaunchOption>,
-	pub available_mods: HashMap<String, bool>,
 	pub executable: GameExecutable,
 	pub thumbnail_url: Option<String>,
+	pub available_mods: HashMap<String, bool>,
 });
 
 pub type Map = HashMap<String, Game>;
@@ -130,6 +130,10 @@ impl Game {
 		}
 
 		Ok(())
+	}
+
+	pub fn refresh_mods(&mut self, mod_loaders: &mod_loader::DataMap) {
+		self.available_mods = get_available_mods(&self.id, mod_loaders, &self.executable);
 	}
 }
 

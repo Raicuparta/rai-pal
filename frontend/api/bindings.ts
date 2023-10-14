@@ -79,5 +79,5 @@ export type SteamLaunchOption = { launchId: string; appId: number; description: 
 export type GameEngineVersion = { major: number; minor: number; patch: number; suffix: string | null; display: string }
 export type ModKind = "Installable" | "Runnable"
 export type GameEngineBrand = "Unity" | "Unreal" | "Godot"
-export type Game = { id: string; name: string; discriminator: string | null; steamLaunch: SteamLaunchOption | null; availableMods: { [key: string]: boolean }; executable: GameExecutable; thumbnailUrl: string | null }
+export type Game = { id: string; name: string; discriminator: string | null; steamLaunch: SteamLaunchOption | null; executable: GameExecutable; thumbnailUrl: string | null; availableMods: { [key: string]: boolean } }
 export type Architecture = "X64" | "X86"

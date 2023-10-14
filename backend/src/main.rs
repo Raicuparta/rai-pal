@@ -177,22 +177,11 @@ fn refresh_single_game(
 ) -> Result {
 	let mod_loaders = get_state_data(&state.mod_loaders)?;
 	let mut installed_games = get_state_data(&state.installed_games)?;
-	let game = installed_games
-		.get(game_id)
-		.ok_or_else(|| Error::GameNotFound(game_id.to_string()))?;
 
-	let game_copy = Game::new(
-		&game.id,
-		&game.name,
-		game.discriminator.clone(),
-		&game.executable.path,
-		game.steam_launch.as_ref(),
-		game.thumbnail_url.clone(),
-		&mod_loaders,
-	)
-	.ok_or_else(|| Error::GameCopyFailed(game.id.clone()))?;
-
-	installed_games.insert(game.id.clone(), game_copy);
+	installed_games
+		.get_mut(game_id)
+		.ok_or_else(|| Error::GameNotFound(game_id.to_string()))?
+		.refresh_mods(&mod_loaders);
 
 	if let Ok(mut mutex_guard) = state.installed_games.lock() {
 		*mutex_guard = Some(installed_games);
