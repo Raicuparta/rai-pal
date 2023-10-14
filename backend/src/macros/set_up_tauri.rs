@@ -13,6 +13,7 @@ macro_rules! set_up_tauri {
         }
 
         tauri::Builder::default()
+            .plugin(tauri_plugin_window_state::Builder::default().build())
             .manage($app_state)
             .invoke_handler(tauri::generate_handler![$($func),*])
             .run(tauri::generate_context!())
