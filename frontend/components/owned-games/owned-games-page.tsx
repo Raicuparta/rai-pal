@@ -1,10 +1,8 @@
 import { Flex, Stack } from "@mantine/core";
-import { OwnedGameRow } from "./owned-game-row";
 import { GameEngineBrand, OwnedGame } from "@api/bindings";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { includesOneOf } from "../../util/filter";
 import { OwnedGameModal } from "./owned-game-modal";
-import { TableHeader } from "@components/table/table-head";
 import { useFilteredList } from "@hooks/use-filtered-list";
 import { FilterMenu } from "@components/filter-menu";
 import { VirtualizedTable } from "@components/table/virtualized-table";
@@ -15,54 +13,22 @@ import { SearchInput } from "@components/search-input";
 import { EngineSelect } from "@components/engine-select";
 import { ownedGamesAtom } from "@hooks/use-data";
 import { useAtomValue } from "jotai";
-
-const tableHeaders: TableHeader<OwnedGame>[] = [
-	{ id: "thumbnailUrl", label: "", width: 100 },
-	{
-		id: "name",
-		label: "Game",
-		width: undefined,
-		getSortValue: (game) => game.name,
-	},
-	{
-		id: "engine",
-		label: "Engine",
-		width: 100,
-		center: true,
-		getSortValue: (game) => game.engine,
-	},
-	// { id: "osList", label: "Linux?", width: 100, center: true, sortable: true },
-	{
-		id: "installed",
-		label: "Installed",
-		width: 60,
-		center: true,
-		getSortValue: (game) => game.installed,
-	},
-	{
-		id: "releaseDate",
-		label: "Release Date",
-		width: 130,
-		center: true,
-		getSortValue: (game) => game.releaseDate,
-	},
-];
+import { ownedGamesColumns } from "./owned-games-columns";
+import { ColumnsSelect } from "@components/columns-select";
 
 type Filter = {
-	search: string;
 	hideInstalled: boolean;
 	linuxOnly: boolean;
 	engine?: GameEngineBrand;
 };
 
 const defaultFilter: Filter = {
-	search: "",
 	hideInstalled: false,
 	linuxOnly: false,
 };
 
-const filterGame = (game: OwnedGame, filter: Filter) =>
-	includesOneOf(filter.search, [game.name, game.id.toString()]) &&
+const filterGame = (game: OwnedGame, filter: Filter, search: string) =>
+	includesOneOf(search, [game.name, game.id.toString()]) &&
 	(!filter.linuxOnly || game.osList.includes("Linux")) &&
 	(!filter.hideInstalled || !game.installed) &&
 	(!filter.engine || game.engine === filter.engine);
@@ -72,12 +38,21 @@ export function OwnedGamesPage() {
 
 	const [selectedGame, setSelectedGame] = useState<OwnedGame>();
 
-	const [filteredGames, sort, setSort, filter, setFilter] = useFilteredList(
-		tableHeaders,
-		ownedGames ?? [],
-		filterGame,
-		defaultFilter,
+	const [hiddenColumns, setHiddenColumns] = useState<string[]>([]);
+
+	const filteredColumns = useMemo(
+		() =>
+			ownedGamesColumns.filter((column) => !hiddenColumns.includes(column.id)),
+		[hiddenColumns],
 	);
+
+	const [filteredGames, sort, setSort, filter, setFilter, search, setSearch] =
+		useFilteredList(
+			filteredColumns,
+			ownedGames ?? [],
+			filterGame,
+			defaultFilter,
+		);
 
 	const isFilterActive =
 		filter.linuxOnly || filter.hideInstalled || Boolean(filter.engine);
@@ -93,8 +68,8 @@ export function OwnedGamesPage() {
 			<Flex gap="md">
 				<FixOwnedGamesButton />
 				<SearchInput
-					onChange={setFilter}
-					value={filter.search}
+					onChange={setSearch}
+					value={search}
 					count={filteredGames.length}
 				/>
 				<FilterMenu
@@ -102,6 +77,11 @@ export function OwnedGamesPage() {
 					setFilter={setFilter}
 				>
 					<Stack>
+						<ColumnsSelect
+							columns={ownedGamesColumns}
+							hiddenIds={hiddenColumns}
+							onChange={setHiddenColumns}
+						/>
 						<EngineSelect
 							onChange={(engine) => setFilter({ engine })}
 							value={filter.engine}
@@ -124,8 +104,7 @@ export function OwnedGamesPage() {
 			</Flex>
 			<VirtualizedTable
 				data={filteredGames}
-				headerItems={tableHeaders}
-				itemContent={OwnedGameRow}
+				columns={filteredColumns}
 				onChangeSort={setSort}
 				onClickItem={setSelectedGame}
 				sort={sort}

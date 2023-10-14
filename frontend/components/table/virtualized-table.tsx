@@ -1,14 +1,15 @@
 import { useCallback, useMemo } from "react";
 import { TableVirtuoso, TableVirtuosoProps } from "react-virtuoso";
-import { TableHead, TableHeader } from "./table-head";
+import { TableHead, TableColumn } from "./table-head";
 import { TableSort } from "@hooks/use-table-sort";
 import { getTableComponents } from "./table-components";
 import { TableContainer } from "./table-container";
+import { useTableRowContent } from "./use-table-row-content";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 interface Props<TItem, Context = any>
 	extends TableVirtuosoProps<TItem, Context> {
-	readonly headerItems: TableHeader<TItem>[];
+	readonly columns: TableColumn<TItem>[];
 	readonly onChangeSort?: (sort: string) => void;
 	readonly sort?: TableSort;
 	readonly onClickItem: (item: TItem) => void;
@@ -19,7 +20,7 @@ export function VirtualizedTable<
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	Context = any,
 >({
-	headerItems,
+	columns,
 	sort,
 	onChangeSort,
 	onClickItem,
@@ -28,12 +29,12 @@ export function VirtualizedTable<
 	const renderHeaders = useCallback(
 		() => (
 			<TableHead
-				headers={headerItems}
+				columns={columns}
 				onChangeSort={onChangeSort}
 				sort={sort}
 			/>
 		),
-		[headerItems, sort, onChangeSort],
+		[columns, sort, onChangeSort],
 	);
 
 	const tableComponents = useMemo(
@@ -41,11 +42,14 @@ export function VirtualizedTable<
 		[onClickItem],
 	);
 
+	const itemContent = useTableRowContent(columns);
+
 	return (
 		<TableContainer>
 			<TableVirtuoso
 				style={{ overflowY: "scroll" }}
 				components={tableComponents}
+				itemContent={itemContent}
 				fixedHeaderContent={renderHeaders}
 				{...props}
 			/>

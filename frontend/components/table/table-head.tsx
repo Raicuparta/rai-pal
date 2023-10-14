@@ -3,17 +3,19 @@ import classes from "./table.module.css";
 import { IconChevronDown, IconChevronUp } from "@tabler/icons-react";
 import { TableSort } from "@hooks/use-table-sort";
 
-export type TableHeader<TItem> = {
+export type TableColumn<TItem> = {
 	id: string;
 	label: string;
 	width?: number;
 	center?: boolean;
+	hidable?: boolean;
 	sort?: (itemA: TItem, itemB: TItem) => number;
 	getSortValue?: (item: TItem) => unknown;
+	renderCell: (item: TItem) => JSX.Element;
 };
 
 type Props<TItem> = {
-	readonly headers: TableHeader<TItem>[];
+	readonly columns: TableColumn<TItem>[];
 	readonly onChangeSort?: (sort: string) => void;
 	readonly sort?: TableSort;
 };
@@ -21,32 +23,32 @@ type Props<TItem> = {
 export function TableHead<TItem>(props: Props<TItem>) {
 	return (
 		<Table.Tr>
-			{props.headers.map((header) => {
-				const isSortable = Boolean(header.sort || header.getSortValue);
+			{props.columns.map((column) => {
+				const isSortable = Boolean(column.sort || column.getSortValue);
 				return (
 					<Table.Th
 						className={
 							props.onChangeSort && isSortable ? classes.sortable : undefined
 						}
-						key={String(header.id)}
+						key={String(column.id)}
 						onClick={
 							isSortable
 								? () =>
 										props.onChangeSort
-											? props.onChangeSort(header.id)
+											? props.onChangeSort(column.id)
 											: undefined
 								: undefined
 						}
-						w={header.width}
+						w={column.width}
 					>
-						<Flex justify={header.center ? "center" : undefined}>
-							{header.label}
+						<Flex justify={column.center ? "center" : undefined}>
+							{column.label}
 							<Box
 								h={0}
 								w={0}
 								fs="xs"
 							>
-								{props.sort?.id === header.id &&
+								{props.sort?.id === column.id &&
 									(props.sort.reverse ? (
 										<IconChevronDown />
 									) : (

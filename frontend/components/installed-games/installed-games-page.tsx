@@ -1,13 +1,11 @@
 import { Flex, Stack } from "@mantine/core";
 import { useMemo, useState } from "react";
 import { includesOneOf } from "../../util/filter";
-import { InstalledGameRow } from "./installed-game-row";
 import { InstalledGameModal } from "./installed-game-modal";
 import {
 	Architecture,
 	Game,
 	GameEngineBrand,
-	GameEngineVersion,
 	OperatingSystem,
 	UnityScriptingBackend,
 } from "@api/bindings";
@@ -15,8 +13,7 @@ import {
 	SegmentedControlData,
 	TypedSegmentedControl,
 } from "./typed-segmented-control";
-import { TableHeader } from "@components/table/table-head";
-import { Filter, useFilteredList } from "@hooks/use-filtered-list";
+import { useFilteredList } from "@hooks/use-filtered-list";
 import { FilterMenu } from "@components/filter-menu";
 import { VirtualizedTable } from "@components/table/virtualized-table";
 import { RefreshButton } from "@components/refresh-button";
@@ -24,21 +21,21 @@ import { SearchInput } from "@components/search-input";
 import { EngineSelect } from "@components/engine-select";
 import { useAtomValue } from "jotai";
 import { installedGamesAtom } from "@hooks/use-data";
+import { installedGamesColumns } from "./installed-games-columns";
+import { ColumnsSelect } from "@components/columns-select";
+import { usePersistedState } from "@hooks/use-persisted-state";
 
-interface InstalledGamesFilter extends Filter {
-	search: string;
+interface InstalledGamesFilter {
 	operatingSystem?: OperatingSystem;
 	architecture?: Architecture;
 	scriptingBackend?: UnityScriptingBackend;
 	engine?: GameEngineBrand;
 }
 
-const defaultFilter: InstalledGamesFilter = {
-	search: "",
-};
+const defaultFilter: InstalledGamesFilter = {};
 
-const filterGame = (game: Game, filter: InstalledGamesFilter) =>
-	includesOneOf(filter.search, [game.name]) &&
+const filterGame = (game: Game, filter: InstalledGamesFilter, search: string) =>
+	includesOneOf(search, [game.name]) &&
 	(!filter.architecture ||
 		game.executable.architecture === filter.architecture) &&
 	(!filter.operatingSystem ||
@@ -65,65 +62,6 @@ const scriptingBackendOptions: SegmentedControlData<UnityScriptingBackend>[] = [
 	{ label: "Mono", value: "Mono" },
 ];
 
-const defaultVersion: GameEngineVersion = {
-	major: 0,
-	minor: 0,
-	patch: 0,
-	suffix: "",
-	display: "",
-};
-
-const tableHeaders: TableHeader<Game>[] = [
-	{ id: "thumbnailUrl", label: "", width: 100 },
-	{
-		id: "name",
-		label: "Game",
-		width: undefined,
-		getSortValue: (game) => game.name,
-	},
-	// {
-	// 	id: "operatingSystem",
-	// 	label: "OS",
-	// 	width: 110,
-	// 	center: true,
-	// 	sortable: true,
-	// },
-	{
-		id: "architecture",
-		label: "Arch",
-		width: 70,
-		center: true,
-		getSortValue: (game) => game.executable.architecture,
-	},
-	{
-		id: "scriptingBackend",
-		label: "Backend",
-		width: 90,
-		center: true,
-		getSortValue: (game) => game.executable.scriptingBackend,
-	},
-	{
-		id: "engine",
-		label: "Engine",
-		width: 170,
-		center: true,
-		sort: (dataA, dataB) => {
-			const versionA = dataA.executable.engine?.version ?? defaultVersion;
-			const versionB = dataB.executable.engine?.version ?? defaultVersion;
-			const brandA = dataA.executable.engine?.brand ?? "";
-			const brandB = dataB.executable.engine?.brand ?? "";
-
-			return (
-				brandA.localeCompare(brandB) ||
-				versionA.major - versionB.major ||
-				versionA.minor - versionB.minor ||
-				versionA.patch - versionB.patch ||
-				0
-			);
-		},
-	},
-];
-
 export type TableSortMethod = (gameA: Game, gameB: Game) => number;
 
 export function InstalledGamesPage() {
@@ -131,17 +69,26 @@ export function InstalledGamesPage() {
 
 	const [selectedGameId, setSelectedGameId] = useState<string>();
 
+	const [hiddenColumns, setHiddenColumns] = usePersistedState<string[]>(
+		"installed-hidden-columns",
+		["operatingSystem"],
+	);
+
 	const games = useMemo(
 		() => (gameMap ? Object.values(gameMap) : []),
 		[gameMap],
 	);
 
-	const [filteredGames, sort, setSort, filter, setFilter] = useFilteredList(
-		tableHeaders,
-		games,
-		filterGame,
-		defaultFilter,
+	const filteredColumns = useMemo(
+		() =>
+			installedGamesColumns.filter(
+				(column) => !hiddenColumns.includes(column.id),
+			),
+		[hiddenColumns],
 	);
+
+	const [filteredGames, sort, setSort, filter, setFilter, search, setSearch] =
+		useFilteredList(filteredColumns, games, filterGame, defaultFilter);
 
 	const selectedGame = useMemo(
 		() => (gameMap && selectedGameId ? gameMap[selectedGameId] : undefined),
@@ -159,8 +106,8 @@ export function InstalledGamesPage() {
 		<Stack h="100%">
 			<Flex gap="md">
 				<SearchInput
-					onChange={setFilter}
-					value={filter.search}
+					onChange={setSearch}
+					value={search}
 					count={filteredGames.length}
 				/>
 				<FilterMenu
@@ -168,6 +115,11 @@ export function InstalledGamesPage() {
 					active={isFilterActive}
 				>
 					<Stack>
+						<ColumnsSelect
+							columns={installedGamesColumns}
+							hiddenIds={hiddenColumns}
+							onChange={setHiddenColumns}
+						/>
 						<TypedSegmentedControl
 							data={operatingSystemOptions}
 							onChange={(operatingSystem) => setFilter({ operatingSystem })}
@@ -199,8 +151,7 @@ export function InstalledGamesPage() {
 			) : null}
 			<VirtualizedTable
 				data={filteredGames}
-				headerItems={tableHeaders}
-				itemContent={InstalledGameRow}
+				columns={filteredColumns}
 				onChangeSort={setSort}
 				onClickItem={(game) => setSelectedGameId(game.id)}
 				sort={sort}

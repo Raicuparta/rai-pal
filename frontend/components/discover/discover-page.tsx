@@ -1,18 +1,22 @@
 import { Box, Flex, Paper, Stack, Text } from "@mantine/core";
 import { VirtuosoGrid } from "react-virtuoso";
 import styles from "./discover.module.css";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { RefreshButton } from "@components/refresh-button";
 import { GameEngineBrand } from "@api/bindings";
 import { EngineSelect } from "@components/engine-select";
 import { DiscoverGameCard } from "./discover-game-card";
 import { discoverGamesAtom } from "@hooks/use-data";
 import { useAtomValue } from "jotai";
+import { usePersistedState } from "@hooks/use-persisted-state";
 
 export function DiscoverPage() {
 	const discoverGames = useAtomValue(discoverGamesAtom);
 
-	const [engine, setEngine] = useState<GameEngineBrand>();
+	const [engine, setEngine] = usePersistedState<GameEngineBrand | undefined>(
+		"discover-filter-engine",
+		undefined,
+	);
 
 	const filteredGames = useMemo(
 		() =>
