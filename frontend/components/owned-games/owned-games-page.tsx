@@ -1,10 +1,8 @@
 import { Flex, Stack } from "@mantine/core";
-import { OwnedGameRow } from "./owned-game-row";
 import { GameEngineBrand, OwnedGame } from "@api/bindings";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { includesOneOf } from "../../util/filter";
 import { OwnedGameModal } from "./owned-game-modal";
-import { TableColumn } from "@components/table/table-head";
 import { useFilteredList } from "@hooks/use-filtered-list";
 import { FilterMenu } from "@components/filter-menu";
 import { VirtualizedTable } from "@components/table/virtualized-table";
@@ -15,38 +13,8 @@ import { SearchInput } from "@components/search-input";
 import { EngineSelect } from "@components/engine-select";
 import { ownedGamesAtom } from "@hooks/use-data";
 import { useAtomValue } from "jotai";
-
-const tableHeaders: TableColumn<OwnedGame>[] = [
-	{ id: "thumbnailUrl", label: "", width: 100 },
-	{
-		id: "name",
-		label: "Game",
-		width: undefined,
-		getSortValue: (game) => game.name,
-	},
-	{
-		id: "engine",
-		label: "Engine",
-		width: 100,
-		center: true,
-		getSortValue: (game) => game.engine,
-	},
-	// { id: "osList", label: "Linux?", width: 100, center: true, sortable: true },
-	{
-		id: "installed",
-		label: "Installed",
-		width: 60,
-		center: true,
-		getSortValue: (game) => game.installed,
-	},
-	{
-		id: "releaseDate",
-		label: "Release Date",
-		width: 130,
-		center: true,
-		getSortValue: (game) => game.releaseDate,
-	},
-];
+import { ownedGamesColumns } from "./owned-games-columns";
+import { ColumnsSelect } from "@components/columns-select";
 
 type Filter = {
 	search: string;
@@ -72,8 +40,18 @@ export function OwnedGamesPage() {
 
 	const [selectedGame, setSelectedGame] = useState<OwnedGame>();
 
+	const [hideTableHeaders, setHideTableHeaders] = useState<string[]>([]);
+
+	const filteredColumns = useMemo(
+		() =>
+			ownedGamesColumns.filter(
+				(column) => !hideTableHeaders.includes(column.id),
+			),
+		[hideTableHeaders],
+	);
+
 	const [filteredGames, sort, setSort, filter, setFilter] = useFilteredList(
-		tableHeaders,
+		filteredColumns,
 		ownedGames ?? [],
 		filterGame,
 		defaultFilter,
@@ -102,6 +80,11 @@ export function OwnedGamesPage() {
 					setFilter={setFilter}
 				>
 					<Stack>
+						<ColumnsSelect
+							columns={ownedGamesColumns}
+							hiddenIds={hideTableHeaders}
+							onChange={setHideTableHeaders}
+						/>
 						<EngineSelect
 							onChange={(engine) => setFilter({ engine })}
 							value={filter.engine}
@@ -124,8 +107,7 @@ export function OwnedGamesPage() {
 			</Flex>
 			<VirtualizedTable
 				data={filteredGames}
-				headerItems={tableHeaders}
-				itemContent={OwnedGameRow}
+				columns={filteredColumns}
 				onChangeSort={setSort}
 				onClickItem={setSelectedGame}
 				sort={sort}

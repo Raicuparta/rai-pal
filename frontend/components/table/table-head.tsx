@@ -11,7 +11,7 @@ export type TableColumn<TItem> = {
 	hidable?: boolean;
 	sort?: (itemA: TItem, itemB: TItem) => number;
 	getSortValue?: (item: TItem) => unknown;
-	renderCell?: (item: TItem) => JSX.Element;
+	renderCell: (item: TItem) => JSX.Element;
 };
 
 type Props<TItem> = {

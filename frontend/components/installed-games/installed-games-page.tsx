@@ -21,7 +21,6 @@ import { SearchInput } from "@components/search-input";
 import { EngineSelect } from "@components/engine-select";
 import { useAtomValue } from "jotai";
 import { installedGamesAtom } from "@hooks/use-data";
-import { useTableRowContent } from "@components/table/use-table-row-content";
 import { installedGamesColumns } from "./installed-games-columns";
 import { ColumnsSelect } from "@components/columns-select";
 
@@ -71,6 +70,7 @@ export function InstalledGamesPage() {
 	const gameMap = useAtomValue(installedGamesAtom);
 
 	const [selectedGameId, setSelectedGameId] = useState<string>();
+
 	const [hideTableHeaders, setHideTableHeaders] = useState<string[]>([
 		"operatingSystem",
 	]);
@@ -87,8 +87,6 @@ export function InstalledGamesPage() {
 			),
 		[hideTableHeaders],
 	);
-
-	const tableRowContent = useTableRowContent(filteredTableHeaders);
 
 	const [filteredGames, sort, setSort, filter, setFilter] = useFilteredList(
 		filteredTableHeaders,
@@ -158,8 +156,7 @@ export function InstalledGamesPage() {
 			) : null}
 			<VirtualizedTable
 				data={filteredGames}
-				headerItems={filteredTableHeaders}
-				itemContent={tableRowContent}
+				columns={filteredTableHeaders}
 				onChangeSort={setSort}
 				onClickItem={(game) => setSelectedGameId(game.id)}
 				sort={sort}
