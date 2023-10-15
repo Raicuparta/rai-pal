@@ -1,3 +1,10 @@
 {
-	"cSpell.words": ["ctypes", "shellapi", "ureq", "winapi", "winuser"]
+	"cSpell.words": [
+		"ctypes",
+		"flashbang",
+		"shellapi",
+		"ureq",
+		"winapi",
+		"winuser"
+	]
 }

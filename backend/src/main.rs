@@ -300,15 +300,61 @@ fn main() {
 		);
 	}));
 
-	set_up_tauri!(
-		"../frontend/api/bindings.ts",
-		AppState {
+	if let Err(specta_err) = specta::collect_types![
+		dummy_command,
+		update_data,
+		get_installed_games,
+		get_owned_games,
+		get_discover_games,
+		get_mod_loaders,
+		open_game_folder,
+		install_mod,
+		uninstall_mod,
+		open_game_mods_folder,
+		start_game,
+		open_mod_folder,
+		delete_steam_appinfo_cache,
+		open_mods_folder
+	]
+	.map(|types| {
+		#[cfg(debug_assertions)]
+		return tauri_specta::ts::export_with_cfg(
+			types,
+			specta::ts::ExportConfiguration::default()
+				.bigint(specta::ts::BigIntExportBehavior::BigInt),
+			"../frontend/api/bindings.ts",
+		);
+	}) {
+		println!("Failed to generate TypeScript bindings: {specta_err}");
+	}
+	tauri::Builder::default()
+		.plugin(tauri_plugin_window_state::Builder::default().build())
+		.manage(AppState {
 			installed_games: Mutex::default(),
 			owned_games: Mutex::default(),
 			discover_games: Mutex::default(),
 			mod_loaders: Mutex::default(),
-		},
-		[
+		})
+		.setup(|app| {
+			#[cfg(target_os = "linux")]
+			{
+				// This prevents/reduces the white flashbang on app start.
+				// Unfortunately, it will still show the default window color for the system for a bit,
+				// which can some times be white.
+				if let Some(window) = app.get_window("main") {
+					window.with_webview(|webview| {
+						use webkit2gtk::traits::WebViewExt;
+						let mut color = webview.inner().background_color();
+						color.set_red(0.102);
+						color.set_green(0.106);
+						color.set_blue(0.118);
+						webview.inner().set_background_color(&color);
+					})?;
+				}
+			}
+			Ok(())
+		})
+		.invoke_handler(tauri::generate_handler![
 			dummy_command,
 			update_data,
 			get_installed_games,
@@ -322,7 +368,7 @@ fn main() {
 			start_game,
 			open_mod_folder,
 			delete_steam_appinfo_cache,
-			open_mods_folder
-		]
-	);
+		])
+		.run(tauri::generate_context!())
+		.unwrap_or_else(|err| println!("Failed to run Tauri application: {err}"));
 }

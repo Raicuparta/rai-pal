@@ -2636,6 +2636,7 @@ dependencies = [
  "tauri-plugin-window-state",
  "tauri-specta",
  "thiserror",
+ "webkit2gtk",
  "winapi",
  "zip",
 ]

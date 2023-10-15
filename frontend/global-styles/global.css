@@ -4,3 +4,12 @@ body {
 		var(--mantine-color-dark-8)
 	);
 }
+
+html {
+	/* 
+		Mantine only sets the body background color by default,
+		which would cause a white flash while the content is still loading.
+		Setting the html background color means we get the correct color earlier.
+	*/
+	background-color: var(--mantine-color-body);
+}
