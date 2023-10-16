@@ -348,6 +348,7 @@ fn main() {
 		]
 	) {
 		Ok(types) => {
+			#[cfg(debug_assertions)]
 			if let Err(err) = tauri_specta::ts::export_with_cfg(
 				types,
 				specta::ts::ExportConfiguration::default()
