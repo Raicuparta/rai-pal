@@ -300,34 +300,7 @@ fn main() {
 		);
 	}));
 
-	if let Err(specta_err) = specta::collect_types![
-		dummy_command,
-		update_data,
-		get_installed_games,
-		get_owned_games,
-		get_discover_games,
-		get_mod_loaders,
-		open_game_folder,
-		install_mod,
-		uninstall_mod,
-		open_game_mods_folder,
-		start_game,
-		open_mod_folder,
-		delete_steam_appinfo_cache,
-		open_mods_folder
-	]
-	.map(|types| {
-		#[cfg(debug_assertions)]
-		return tauri_specta::ts::export_with_cfg(
-			types,
-			specta::ts::ExportConfiguration::default()
-				.bigint(specta::ts::BigIntExportBehavior::BigInt),
-			"../frontend/api/bindings.ts",
-		);
-	}) {
-		println!("Failed to generate TypeScript bindings: {specta_err}");
-	}
-	tauri::Builder::default()
+	let tauri_builder = tauri::Builder::default()
 		.plugin(tauri_plugin_window_state::Builder::default().build())
 		.manage(AppState {
 			installed_games: Mutex::default(),
@@ -353,8 +326,11 @@ fn main() {
 				}
 			}
 			Ok(())
-		})
-		.invoke_handler(tauri::generate_handler![
+		});
+
+	set_up_api!(
+		tauri_builder,
+		[
 			dummy_command,
 			update_data,
 			get_installed_games,
@@ -366,9 +342,9 @@ fn main() {
 			uninstall_mod,
 			open_game_mods_folder,
 			start_game,
-			open_mod_folder,
 			delete_steam_appinfo_cache,
-		])
-		.run(tauri::generate_context!())
-		.unwrap_or_else(|err| println!("Failed to run Tauri application: {err}"));
+			open_mod_folder,
+			open_mods_folder,
+		]
+	);
 }

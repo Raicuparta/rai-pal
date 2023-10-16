@@ -1,3 +1,3 @@
 mod serializable_enum;
 mod serializable_struct;
-mod set_up_tauri;
+mod set_up_api;
