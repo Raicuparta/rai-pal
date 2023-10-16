@@ -25,10 +25,7 @@ use steam::{
 	owned_games::OwnedGame,
 };
 use steamlocate::SteamDir;
-use tauri::{
-	api::dialog::message,
-	Manager,
-};
+use tauri::Manager;
 
 mod files;
 mod game;
@@ -86,25 +83,25 @@ fn get_state_data<TData: Clone>(mutex: &Mutex<Option<TData>>) -> Result<TData> {
 }
 
 #[tauri::command]
-#[specta::specta]
+// #[specta::specta]
 async fn get_installed_games(state: tauri::State<'_, AppState>) -> Result<game::Map> {
 	get_state_data(&state.installed_games)
 }
 
 #[tauri::command]
-#[specta::specta]
+// #[specta::specta]
 async fn get_owned_games(state: tauri::State<'_, AppState>) -> Result<Vec<OwnedGame>> {
 	get_state_data(&state.owned_games)
 }
 
 #[tauri::command]
-#[specta::specta]
+// #[specta::specta]
 async fn get_discover_games(state: tauri::State<'_, AppState>) -> Result<Vec<SteamGame>> {
 	get_state_data(&state.discover_games)
 }
 
 #[tauri::command]
-#[specta::specta]
+// #[specta::specta]
 async fn get_mod_loaders(state: tauri::State<'_, AppState>) -> Result<mod_loader::DataMap> {
 	get_state_data(&state.mod_loaders)
 }
@@ -128,26 +125,26 @@ fn update_state<TData>(
 }
 
 #[tauri::command]
-#[specta::specta]
+// #[specta::specta]
 async fn open_game_folder(game_id: &str, state: tauri::State<'_, AppState>) -> Result {
 	get_game(game_id, &state)?.open_game_folder()
 }
 
 #[tauri::command]
-#[specta::specta]
+// #[specta::specta]
 async fn open_game_mods_folder(game_id: &str, state: tauri::State<'_, AppState>) -> Result {
 	get_game(game_id, &state)?.open_mods_folder()
 }
 
 #[tauri::command]
-#[specta::specta]
+// #[specta::specta]
 async fn open_mods_folder(handle: tauri::AppHandle) -> Result {
 	let resources_path = paths::resources_path(&handle)?;
 	Ok(open::that_detached(resources_path)?)
 }
 
 #[tauri::command]
-#[specta::specta]
+// #[specta::specta]
 async fn open_mod_folder(mod_loader_id: &str, mod_id: &str, handle: tauri::AppHandle) -> Result {
 	let resources_path = paths::resources_path(&handle)?;
 	let mod_loader = mod_loader::get(&resources_path, mod_loader_id)?;
@@ -155,13 +152,13 @@ async fn open_mod_folder(mod_loader_id: &str, mod_id: &str, handle: tauri::AppHa
 }
 
 #[tauri::command]
-#[specta::specta]
+// #[specta::specta]
 async fn start_game(game_id: &str, state: tauri::State<'_, AppState>) -> Result {
 	get_game(game_id, &state)?.start()
 }
 
 #[tauri::command]
-#[specta::specta]
+// #[specta::specta]
 async fn install_mod(
 	mod_loader_id: &str,
 	mod_id: &str,
@@ -206,7 +203,7 @@ fn refresh_single_game(
 }
 
 #[tauri::command]
-#[specta::specta]
+// #[specta::specta]
 async fn uninstall_mod(
 	game_id: &str,
 	mod_id: &str,
@@ -221,7 +218,7 @@ async fn uninstall_mod(
 }
 
 #[tauri::command]
-#[specta::specta]
+// #[specta::specta]
 async fn update_data(handle: tauri::AppHandle, state: tauri::State<'_, AppState>) -> Result {
 	let resources_path = paths::resources_path(&handle)?;
 
@@ -274,14 +271,14 @@ async fn update_data(handle: tauri::AppHandle, state: tauri::State<'_, AppState>
 }
 
 #[tauri::command]
-#[specta::specta]
+// #[specta::specta]
 async fn delete_steam_appinfo_cache() -> Result {
 	let steam_dir = SteamDir::locate()?;
 	steam::appinfo::delete(steam_dir.path())
 }
 
 #[tauri::command]
-#[specta::specta]
+// #[specta::specta]
 // This command is here just so tauri_specta exports these types.
 // This should stop being needed once tauri_specta starts supporting events.
 async fn dummy_command() -> Result<(Game, SyncDataEvent)> {
@@ -293,42 +290,42 @@ fn main() {
 	// So I can just catch panics here and show a system message with the error.
 	std::panic::set_hook(Box::new(|info| {
 		println!("Panic: {info}");
-		message(
-			None::<&tauri::Window>,
-			"Failed to execute command",
-			info.to_string(),
-		);
+		// message(
+		// 	None::<&tauri::Window>,
+		// 	"Failed to execute command",
+		// 	info.to_string(),
+		// );
 	}));
 
-	if let Err(specta_err) = specta::collect_types![
-		dummy_command,
-		update_data,
-		get_installed_games,
-		get_owned_games,
-		get_discover_games,
-		get_mod_loaders,
-		open_game_folder,
-		install_mod,
-		uninstall_mod,
-		open_game_mods_folder,
-		start_game,
-		open_mod_folder,
-		delete_steam_appinfo_cache,
-		open_mods_folder
-	]
-	.map(|types| {
-		#[cfg(debug_assertions)]
-		return tauri_specta::ts::export_with_cfg(
-			types,
-			specta::ts::ExportConfiguration::default()
-				.bigint(specta::ts::BigIntExportBehavior::BigInt),
-			"../frontend/api/bindings.ts",
-		);
-	}) {
-		println!("Failed to generate TypeScript bindings: {specta_err}");
-	}
+	// if let Err(specta_err) = specta::collect_types![
+	// 	dummy_command,
+	// 	update_data,
+	// 	get_installed_games,
+	// 	get_owned_games,
+	// 	get_discover_games,
+	// 	get_mod_loaders,
+	// 	open_game_folder,
+	// 	install_mod,
+	// 	uninstall_mod,
+	// 	open_game_mods_folder,
+	// 	start_game,
+	// 	open_mod_folder,
+	// 	delete_steam_appinfo_cache,
+	// 	open_mods_folder
+	// ]
+	// .map(|types| {
+	// 	#[cfg(debug_assertions)]
+	// 	return tauri_specta::ts::export_with_cfg(
+	// 		types,
+	// 		specta::ts::ExportConfiguration::default()
+	// 			.bigint(specta::ts::BigIntExportBehavior::BigInt),
+	// 		"../frontend/api/bindings.ts",
+	// 	);
+	// }) {
+	// 	println!("Failed to generate TypeScript bindings: {specta_err}");
+	// }
 	tauri::Builder::default()
-		.plugin(tauri_plugin_window_state::Builder::default().build())
+		// .plugin(tauri_plugin_window_state::Builder::default().build())
 		.manage(AppState {
 			installed_games: Mutex::default(),
 			owned_games: Mutex::default(),

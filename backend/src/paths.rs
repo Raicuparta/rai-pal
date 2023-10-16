@@ -36,10 +36,10 @@ pub fn app_data_path() -> Result<PathBuf> {
 }
 
 pub fn resources_path(handle: &tauri::AppHandle) -> Result<PathBuf> {
-	handle
-		.path_resolver()
-		.resolve_resource("resources")
-		.ok_or_else(Error::ResourcesNotFound)
+	// TODO
+	Ok(PathBuf::from(
+		"/home/rai/Repos/rai-mods-tauri/backend/resources",
+	))
 }
 
 pub fn file_name_without_extension(file_path: &Path) -> Result<&str> {
