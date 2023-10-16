@@ -328,7 +328,7 @@ fn main() {
 			Ok(())
 		});
 
-	set_up_api!(
+	match set_up_api!(
 		tauri_builder,
 		[
 			dummy_command,
@@ -346,5 +346,19 @@ fn main() {
 			open_mod_folder,
 			open_mods_folder,
 		]
-	);
+	) {
+		Ok(types) => {
+			if let Err(err) = tauri_specta::ts::export_with_cfg(
+				types,
+				specta::ts::ExportConfiguration::default()
+					.bigint(specta::ts::BigIntExportBehavior::BigInt),
+				"../frontend/api/bindings.ts",
+			) {
+				println!("Failed to generate TypeScript bindings: {err}");
+			}
+		}
+		Err(err) => {
+			println!("Failed to generate api bindings: {err}");
+		}
+	}
 }
