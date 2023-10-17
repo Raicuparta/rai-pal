@@ -315,6 +315,8 @@ fn main() {
 				// Unfortunately, it will still show the default window color for the system for a bit,
 				// which can some times be white.
 				if let Some(window) = app.get_window("main") {
+					window.set_title(&format!("Rai Pal {}", env!("CARGO_PKG_VERSION")))?;
+
 					window.with_webview(|webview| {
 						use webkit2gtk::traits::WebViewExt;
 						let mut color = webview.inner().background_color();
