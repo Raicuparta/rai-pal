@@ -54,12 +54,12 @@ export function startGame(gameId: string) {
     return invoke()<null>("start_game", { gameId })
 }
 
-export function openModFolder(modLoaderId: string, modId: string) {
-    return invoke()<null>("open_mod_folder", { modLoaderId,modId })
-}
-
 export function deleteSteamAppinfoCache() {
     return invoke()<null>("delete_steam_appinfo_cache")
+}
+
+export function openModFolder(modLoaderId: string, modId: string) {
+    return invoke()<null>("open_mod_folder", { modLoaderId,modId })
 }
 
 export function openModsFolder() {

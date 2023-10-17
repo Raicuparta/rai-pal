@@ -300,14 +300,36 @@ fn main() {
 		);
 	}));
 
-	set_up_tauri!(
-		"../frontend/api/bindings.ts",
-		AppState {
+	let tauri_builder = tauri::Builder::default()
+		.plugin(tauri_plugin_window_state::Builder::default().build())
+		.manage(AppState {
 			installed_games: Mutex::default(),
 			owned_games: Mutex::default(),
 			discover_games: Mutex::default(),
 			mod_loaders: Mutex::default(),
-		},
+		})
+		.setup(|app| {
+			#[cfg(target_os = "linux")]
+			{
+				// This prevents/reduces the white flashbang on app start.
+				// Unfortunately, it will still show the default window color for the system for a bit,
+				// which can some times be white.
+				if let Some(window) = app.get_window("main") {
+					window.with_webview(|webview| {
+						use webkit2gtk::traits::WebViewExt;
+						let mut color = webview.inner().background_color();
+						color.set_red(0.102);
+						color.set_green(0.106);
+						color.set_blue(0.118);
+						webview.inner().set_background_color(&color);
+					})?;
+				}
+			}
+			Ok(())
+		});
+
+	match set_up_api!(
+		tauri_builder,
 		[
 			dummy_command,
 			update_data,
@@ -320,9 +342,24 @@ fn main() {
 			uninstall_mod,
 			open_game_mods_folder,
 			start_game,
-			open_mod_folder,
 			delete_steam_appinfo_cache,
-			open_mods_folder
+			open_mod_folder,
+			open_mods_folder,
 		]
-	);
+	) {
+		Ok(types) => {
+			#[cfg(debug_assertions)]
+			if let Err(err) = tauri_specta::ts::export_with_cfg(
+				types,
+				specta::ts::ExportConfiguration::default()
+					.bigint(specta::ts::BigIntExportBehavior::BigInt),
+				"../frontend/api/bindings.ts",
+			) {
+				println!("Failed to generate TypeScript bindings: {err}");
+			}
+		}
+		Err(err) => {
+			println!("Failed to generate api bindings: {err}");
+		}
+	}
 }
