@@ -1,5 +1,5 @@
 import { Flex, Table } from "@mantine/core";
-import { Game, GameEngineVersion } from "@api/bindings";
+import { InstalledGame, GameEngineVersion } from "@api/bindings";
 import { TableColumn } from "@components/table/table-head";
 import { GameName } from "./game-name";
 import {
@@ -18,7 +18,7 @@ const defaultVersion: GameEngineVersion = {
 	display: "",
 };
 
-export const installedGamesColumns: TableColumn<Game>[] = [
+export const installedGamesColumns: TableColumn<InstalledGame>[] = [
 	{
 		id: "thumbnailUrl",
 		label: "",

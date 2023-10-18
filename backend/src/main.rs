@@ -14,7 +14,7 @@ use events::{
 	AppEvent,
 	EventEmitter,
 };
-use game::Game;
+use installed_game::InstalledGame;
 use mod_loaders::mod_loader::{
 	self,
 	ModLoaderActions,
@@ -36,25 +36,26 @@ use tauri::{
 
 mod events;
 mod files;
-mod game;
 mod game_engines;
 mod game_executable;
 mod game_mod;
+mod installed_game;
 mod macros;
 mod mod_loaders;
 mod paths;
+mod provider;
 mod result;
 mod steam;
 mod windows;
 
 struct AppState {
-	installed_games: Mutex<Option<game::Map>>,
+	installed_games: Mutex<Option<installed_game::Map>>,
 	owned_games: Mutex<Option<Vec<OwnedGame>>>,
 	discover_games: Mutex<Option<Vec<SteamGame>>>,
 	mod_loaders: Mutex<Option<mod_loader::DataMap>>,
 }
 
-fn get_game(game_id: &str, state: &tauri::State<'_, AppState>) -> Result<Game> {
+fn get_game(game_id: &str, state: &tauri::State<'_, AppState>) -> Result<InstalledGame> {
 	if let Ok(read_guard) = state.installed_games.lock() {
 		let installed_games = read_guard
 			.as_ref()
@@ -85,7 +86,7 @@ fn get_state_data<TData: Clone>(mutex: &Mutex<Option<TData>>) -> Result<TData> {
 
 #[tauri::command]
 #[specta::specta]
-async fn get_installed_games(state: tauri::State<'_, AppState>) -> Result<game::Map> {
+async fn get_installed_games(state: tauri::State<'_, AppState>) -> Result<installed_game::Map> {
 	get_state_data(&state.installed_games)
 }
 
@@ -286,7 +287,7 @@ async fn delete_steam_appinfo_cache() -> Result {
 #[specta::specta]
 // This command is here just so tauri_specta exports these types.
 // This should stop being needed once tauri_specta starts supporting events.
-async fn dummy_command() -> Result<(Game, AppEvent)> {
+async fn dummy_command() -> Result<(InstalledGame, AppEvent)> {
 	Err(Error::NotImplemented)
 }
 

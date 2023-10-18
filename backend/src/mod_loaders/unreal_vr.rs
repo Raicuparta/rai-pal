@@ -6,12 +6,12 @@ use super::mod_loader::{
 	ModLoaderStatic,
 };
 use crate::{
-	game::Game,
 	game_engines::game_engine::GameEngineBrand,
 	game_mod::{
 		Mod,
 		ModKind,
 	},
+	installed_game::InstalledGame,
 	result::Error,
 	serializable_struct,
 	windows,
@@ -60,7 +60,7 @@ impl ModLoaderActions for UnrealVr {
 		&self.data
 	}
 
-	fn install(&self, game: &Game) -> Result {
+	fn install(&self, game: &InstalledGame) -> Result {
 		let parameters = format!(
 			"--attach=\"{}\"",
 			game.executable
@@ -73,7 +73,7 @@ impl ModLoaderActions for UnrealVr {
 		windows::run_as_admin(&self.data.path.join(Self::EXE_NAME), &parameters)
 	}
 
-	fn install_mod(&self, game: &Game, _mod_idd: &str) -> Result {
+	fn install_mod(&self, game: &InstalledGame, _mod_idd: &str) -> Result {
 		self.install(game)
 	}
 

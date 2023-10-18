@@ -22,7 +22,7 @@ use crate::{
 	Result,
 };
 
-serializable_struct!(Game {
+serializable_struct!(InstalledGame {
 	pub id: String,
 	pub name: String,
 	pub discriminator: Option<String>,
@@ -32,9 +32,9 @@ serializable_struct!(Game {
 	pub available_mods: HashMap<String, bool>,
 });
 
-pub type Map = HashMap<String, Game>;
+pub type Map = HashMap<String, InstalledGame>;
 
-impl Game {
+impl InstalledGame {
 	pub fn new(
 		id: &str,
 		name: &str,

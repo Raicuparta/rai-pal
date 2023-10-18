@@ -11,7 +11,7 @@ declare global {
 const invoke = () => window.__TAURI_INVOKE__;
 
 export function dummyCommand() {
-    return invoke()<[Game, AppEvent]>("dummy_command")
+    return invoke()<[InstalledGame, AppEvent]>("dummy_command")
 }
 
 export function updateData() {
@@ -19,7 +19,7 @@ export function updateData() {
 }
 
 export function getInstalledGames() {
-    return invoke()<{ [key: string]: Game }>("get_installed_games")
+    return invoke()<{ [key: string]: InstalledGame }>("get_installed_games")
 }
 
 export function getOwnedGames() {
@@ -66,7 +66,6 @@ export function openModsFolder() {
     return invoke()<null>("open_mods_folder")
 }
 
-export type Game = { id: string; name: string; discriminator: string | null; steamLaunch: SteamLaunchOption | null; executable: GameExecutable; thumbnailUrl: string | null; availableMods: { [key: string]: boolean } }
 export type OperatingSystem = "Linux" | "Windows"
 export type SteamGame = { id: string; nsfw: boolean; engine: GameEngineBrand }
 export type GameEngine = { brand: GameEngineBrand; version: GameEngineVersion | null }
@@ -80,4 +79,5 @@ export type GameEngineVersion = { major: number; minor: number; patch: number; s
 export type AppEvent = "SyncInstalledGames" | "SyncOwnedGames" | "SyncDiscoverGames" | "SyncMods" | "ExecutedSteamCommand"
 export type ModKind = "Installable" | "Runnable"
 export type GameEngineBrand = "Unity" | "Unreal" | "Godot"
+export type InstalledGame = { id: string; name: string; discriminator: string | null; steamLaunch: SteamLaunchOption | null; executable: GameExecutable; thumbnailUrl: string | null; availableMods: { [key: string]: boolean } }
 export type Architecture = "X64" | "X86"

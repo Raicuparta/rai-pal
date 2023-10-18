@@ -9,7 +9,6 @@ use crate::{
 		copy_dir_all,
 		unzip,
 	},
-	game::Game,
 	game_engines::{
 		game_engine::{
 			GameEngine,
@@ -22,6 +21,7 @@ use crate::{
 		Mod,
 		ModKind,
 	},
+	installed_game::InstalledGame,
 	mod_loaders::mod_loader::{
 		ModLoaderActions,
 		ModLoaderData,
@@ -63,7 +63,7 @@ impl ModLoaderActions for BepInEx {
 		&self.data
 	}
 
-	fn install(&self, game: &Game) -> Result {
+	fn install(&self, game: &InstalledGame) -> Result {
 		let scripting_backend_path = &self.data.path.join(
 			game.executable
 				.scripting_backend
@@ -142,7 +142,7 @@ impl ModLoaderActions for BepInEx {
 		Ok(())
 	}
 
-	fn install_mod(&self, game: &Game, mod_id: &str) -> Result {
+	fn install_mod(&self, game: &InstalledGame, mod_id: &str) -> Result {
 		let game_mod = self
 			.data
 			.mods
