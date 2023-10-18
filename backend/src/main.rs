@@ -332,7 +332,7 @@ fn main() {
 			Ok(())
 		});
 
-	match set_up_api!(
+	let (tauri_builder, types_result) = set_up_api!(
 		tauri_builder,
 		[
 			dummy_command,
@@ -350,7 +350,9 @@ fn main() {
 			open_mod_folder,
 			open_mods_folder,
 		]
-	) {
+	);
+
+	match types_result {
 		Ok(types) => {
 			#[cfg(debug_assertions)]
 			if let Err(err) = tauri_specta::ts::export_with_cfg(
@@ -366,4 +368,7 @@ fn main() {
 			println!("Failed to generate api bindings: {err}");
 		}
 	}
+	tauri_builder
+		.run(tauri::generate_context!())
+		.unwrap_or_else(|err| println!("Failed to run Tauri application: {err}"));
 }
