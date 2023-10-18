@@ -11,7 +11,7 @@ declare global {
 const invoke = () => window.__TAURI_INVOKE__;
 
 export function dummyCommand() {
-    return invoke()<[Game, SyncDataEvent]>("dummy_command")
+    return invoke()<[Game, AppEvent]>("dummy_command")
 }
 
 export function updateData() {
@@ -66,6 +66,7 @@ export function openModsFolder() {
     return invoke()<null>("open_mods_folder")
 }
 
+export type Game = { id: string; name: string; discriminator: string | null; steamLaunch: SteamLaunchOption | null; executable: GameExecutable; thumbnailUrl: string | null; availableMods: { [key: string]: boolean } }
 export type OperatingSystem = "Linux" | "Windows"
 export type SteamGame = { id: string; nsfw: boolean; engine: GameEngineBrand }
 export type GameEngine = { brand: GameEngineBrand; version: GameEngineVersion | null }
@@ -74,10 +75,9 @@ export type Mod = { id: string; name: string; scriptingBackend: UnityScriptingBa
 export type OwnedGame = { id: string; name: string; installed: boolean; osList: OperatingSystem[]; engine: GameEngineBrand; releaseDate: number; thumbnailUrl: string }
 export type ModLoaderData = { id: string; path: string; mods: Mod[] }
 export type UnityScriptingBackend = "Il2Cpp" | "Mono"
-export type SyncDataEvent = "SyncInstalledGames" | "SyncOwnedGames" | "SyncDiscoverGames" | "SyncMods"
 export type SteamLaunchOption = { launchId: string; appId: number; description: string | null; executable: string | null; arguments: string | null; appType: string | null; osList: string | null; betaKey: string | null; osArch: string | null }
 export type GameEngineVersion = { major: number; minor: number; patch: number; suffix: string | null; display: string }
+export type AppEvent = "SyncInstalledGames" | "SyncOwnedGames" | "SyncDiscoverGames" | "SyncMods" | "ExecutedSteamCommand"
 export type ModKind = "Installable" | "Runnable"
 export type GameEngineBrand = "Unity" | "Unreal" | "Godot"
-export type Game = { id: string; name: string; discriminator: string | null; steamLaunch: SteamLaunchOption | null; executable: GameExecutable; thumbnailUrl: string | null; availableMods: { [key: string]: boolean } }
 export type Architecture = "X64" | "X86"

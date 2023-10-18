@@ -15,7 +15,10 @@ use crate::{
 	mod_loaders::mod_loader,
 	paths::{self,},
 	serializable_struct,
-	steam::appinfo::SteamLaunchOption,
+	steam::{
+		self,
+		appinfo::SteamLaunchOption,
+	},
 	Result,
 };
 
@@ -90,18 +93,18 @@ impl Game {
 		Ok(open::that_detached(self.get_installed_mods_folder()?)?)
 	}
 
-	pub fn start(&self) -> Result {
-		Ok(self.steam_launch.as_ref().map_or_else(
-			|| open::that_detached(&self.executable.path),
+	pub fn start(&self, handle: &tauri::AppHandle) -> Result {
+		self.steam_launch.as_ref().map_or_else(
+			|| Ok(open::that_detached(&self.executable.path)?),
 			|steam_launch| {
 				if self.discriminator.is_none() {
 					// If a game has no discriminator, it means we're probably using the default launch option.
 					// For those, we use the steam://rungameid command, since that one will make steam show a nice
 					// loading popup, wait for game updates, etc.
-					return open::that_detached(format!(
-						"steam://rungameid/{}",
-						steam_launch.app_id
-					));
+					return steam::command::run(
+						&format!("rungameid/{}", steam_launch.app_id),
+						handle,
+					);
 				}
 				// For the few cases where we're showing an alternative launch option, we use the steam://launch command.
 				// This one will show an error if the game needs an update, and doesn't show the nice loading popup,
@@ -109,13 +112,16 @@ impl Game {
 				// This one also supports passing "dialog" instead of the app_type, (steam://launch/{app_id}/dialog)
 				// which makes Steam show the launch selection dialogue, but that dialogue stops showing if the user
 				// selects the "don't ask again" checkbox.
-				open::that_detached(format!(
-					"steam://launch/{}/{}",
-					steam_launch.app_id,
-					steam_launch.app_type.as_deref().unwrap_or("")
-				))
+				steam::command::run(
+					&format!(
+						"launch/{}/{}",
+						steam_launch.app_id,
+						steam_launch.app_type.as_deref().unwrap_or("")
+					),
+					handle,
+				)
 			},
-		)?)
+		)
 	}
 
 	pub fn uninstall_mod(&self, mod_id: &str) -> Result {
