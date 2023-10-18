@@ -10,6 +10,10 @@ use std::{
 	sync::Mutex,
 };
 
+use events::{
+	AppEvent,
+	EventEmitter,
+};
 use game::Game;
 use mod_loaders::mod_loader::{
 	self,
@@ -30,6 +34,7 @@ use tauri::{
 	Manager,
 };
 
+mod events;
 mod files;
 mod game;
 mod game_engines;
@@ -41,13 +46,6 @@ mod paths;
 mod result;
 mod steam;
 mod windows;
-
-serializable_enum!(SyncDataEvent {
-	SyncInstalledGames,
-	SyncOwnedGames,
-	SyncDiscoverGames,
-	SyncMods,
-});
 
 struct AppState {
 	installed_games: Mutex<Option<game::Map>>,
@@ -110,7 +108,7 @@ async fn get_mod_loaders(state: tauri::State<'_, AppState>) -> Result<mod_loader
 }
 
 fn update_state<TData>(
-	event: SyncDataEvent,
+	event: AppEvent,
 	data: TData,
 	mutex: &Mutex<Option<TData>>,
 	handle: &tauri::AppHandle,
@@ -122,7 +120,7 @@ fn update_state<TData>(
 	// Sends a signal to make the frontend request an app state refresh.
 	// I would have preferred to just send the state with the signal,
 	// but it seems like Tauri events are really slow for large data.
-	handle.emit_all(&event.to_string(), ())?;
+	handle.emit_event(event)?;
 
 	Ok(())
 }
@@ -156,8 +154,12 @@ async fn open_mod_folder(mod_loader_id: &str, mod_id: &str, handle: tauri::AppHa
 
 #[tauri::command]
 #[specta::specta]
-async fn start_game(game_id: &str, state: tauri::State<'_, AppState>) -> Result {
-	get_game(game_id, &state)?.start()
+async fn start_game(
+	game_id: &str,
+	state: tauri::State<'_, AppState>,
+	handle: tauri::AppHandle,
+) -> Result {
+	get_game(game_id, &state)?.start(&handle)
 }
 
 #[tauri::command]
@@ -196,7 +198,7 @@ fn refresh_single_game(
 		.refresh_mods(&mod_loaders);
 
 	update_state(
-		SyncDataEvent::SyncInstalledGames,
+		AppEvent::SyncInstalledGames,
 		installed_games,
 		&state.installed_games,
 		handle,
@@ -229,7 +231,7 @@ async fn update_data(handle: tauri::AppHandle, state: tauri::State<'_, AppState>
 		.await
 		.unwrap_or_default();
 	update_state(
-		SyncDataEvent::SyncMods,
+		AppEvent::SyncMods,
 		mod_loaders.clone(),
 		&state.mod_loaders,
 		&handle,
@@ -242,7 +244,7 @@ async fn update_data(handle: tauri::AppHandle, state: tauri::State<'_, AppState>
 		.await
 		.unwrap_or_default();
 	update_state(
-		SyncDataEvent::SyncInstalledGames,
+		AppEvent::SyncInstalledGames,
 		installed_games.clone(),
 		&state.installed_games,
 		&handle,
@@ -256,7 +258,7 @@ async fn update_data(handle: tauri::AppHandle, state: tauri::State<'_, AppState>
 
 	let discover_games = discover_games.unwrap_or_default();
 	update_state(
-		SyncDataEvent::SyncDiscoverGames,
+		AppEvent::SyncDiscoverGames,
 		discover_games,
 		&state.discover_games,
 		&handle,
@@ -264,7 +266,7 @@ async fn update_data(handle: tauri::AppHandle, state: tauri::State<'_, AppState>
 
 	let owned_games = owned_games.unwrap_or_default();
 	update_state(
-		SyncDataEvent::SyncOwnedGames,
+		AppEvent::SyncOwnedGames,
 		owned_games,
 		&state.owned_games,
 		&handle,
@@ -284,7 +286,7 @@ async fn delete_steam_appinfo_cache() -> Result {
 #[specta::specta]
 // This command is here just so tauri_specta exports these types.
 // This should stop being needed once tauri_specta starts supporting events.
-async fn dummy_command() -> Result<(Game, SyncDataEvent)> {
+async fn dummy_command() -> Result<(Game, AppEvent)> {
 	Err(Error::NotImplemented)
 }
 
