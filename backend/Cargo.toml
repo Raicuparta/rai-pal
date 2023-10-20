@@ -17,7 +17,8 @@ glob = { git = "https://github.com/rust-lang/glob", version = "0.3.1" }
 
 # Using the git version because I need a fix that isn't on the normal version.
 # Something about the way the old version parses the manifests fails for some games.
-steamlocate = { git = "https://github.com/WilliamVenner/steamlocate-rs", branch = "dev-v2.0" }
+# Also I made my own fork to remove some annoying prints.
+steamlocate = { git = "https://github.com/Raicuparta/steamlocate-rs", branch = "dev-v2.0" }
 
 specta = "1.0.5"
 tauri-specta = { version = "1.0.2", features = ["typescript"] }

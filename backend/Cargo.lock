@@ -3293,7 +3293,7 @@ dependencies = [
 [[package]]
 name = "steamlocate"
 version = "2.0.0-alpha.0"
-source = "git+https://github.com/WilliamVenner/steamlocate-rs?branch=dev-v2.0#ace7fca10917e7bc7526400a129c83a602578f87"
+source = "git+https://github.com/Raicuparta/steamlocate-rs?branch=dev-v2.0#200b5f31c299cc37223653c70e4a9edac3aead06"
 dependencies = [
  "dirs",
  "keyvalues-parser",
