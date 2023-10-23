@@ -137,13 +137,11 @@ fn get_version_from_exe_parse(file_bytes: &[u8]) -> Option<GameEngineVersion> {
 		minor: minor.parse().unwrap_or(0),
 		patch: 0,
 		suffix: None,
-		display: format!("{major}.{}", {
+		display: format!("{major}{}", {
 			if minor.is_empty() {
-				// If we couldn't figure out the minor version,
-				// we just put an x in there, like "4.x".
-				"x"
+				String::new()
 			} else {
-				minor
+				format!(".{minor}")
 			}
 		}),
 	})
