@@ -97,6 +97,7 @@ pub struct SteamAppInfo {
 	pub name: String,
 	pub steam_release_date: Option<i32>,
 	pub original_release_date: Option<i32>,
+	pub is_free: bool,
 }
 
 #[derive(Debug)]
@@ -193,6 +194,8 @@ impl SteamAppInfoFile {
 			let original_release_date =
 				value_to_i32(app.get(&["appinfo", "common", "original_release_date"]));
 
+			let is_free = value_to_string(app.get(&["appinfo", "extended", "isfreeapp"])).is_some();
+
 			if let Some(launch_options) = app_launch {
 				if let Some(name) = value_to_string(app.get(&["appinfo", "common", "name"])) {
 					appinfo.apps.insert(
@@ -202,6 +205,7 @@ impl SteamAppInfoFile {
 							name,
 							steam_release_date,
 							original_release_date,
+							is_free,
 						},
 					);
 				}
