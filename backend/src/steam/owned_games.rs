@@ -3,10 +3,7 @@ use std::{
 	fs,
 };
 
-use lazy_regex::{
-	BytesRegex,
-	Regex,
-};
+use lazy_regex::BytesRegex;
 use steamlocate::SteamDir;
 
 use super::{
