@@ -327,10 +327,6 @@ fn get_path(steam_path: &Path) -> PathBuf {
 	steam_path.join("appcache/appinfo.vdf")
 }
 
-pub fn delete(steam_path: &Path) -> Result {
-	Ok(fs::remove_file(get_path(steam_path))?)
-}
-
 pub fn read(steam_path: &Path) -> Result<SteamAppInfoFile> {
 	let appinfo_path = &get_path(steam_path);
 	fs::File::open(appinfo_path).map_err(|err| {

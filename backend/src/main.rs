@@ -278,13 +278,6 @@ async fn update_data(handle: tauri::AppHandle, state: tauri::State<'_, AppState>
 
 #[tauri::command]
 #[specta::specta]
-async fn delete_steam_appinfo_cache() -> Result {
-	let steam_dir = SteamDir::locate()?;
-	steam::appinfo::delete(steam_dir.path())
-}
-
-#[tauri::command]
-#[specta::specta]
 // This command is here just so tauri_specta exports these types.
 // This should stop being needed once tauri_specta starts supporting events.
 async fn dummy_command() -> Result<(InstalledGame, AppEvent)> {
@@ -347,7 +340,6 @@ fn main() {
 			uninstall_mod,
 			open_game_mods_folder,
 			start_game,
-			delete_steam_appinfo_cache,
 			open_mod_folder,
 			open_mods_folder,
 		]
