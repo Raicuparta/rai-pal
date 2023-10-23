@@ -8,7 +8,6 @@ import { FilterMenu } from "@components/filter-menu";
 import { VirtualizedTable } from "@components/table/virtualized-table";
 import { SwitchButton } from "@components/switch-button";
 import { RefreshButton } from "@components/refresh-button";
-import { FixOwnedGamesButton } from "./fix-owned-games-button";
 import { SearchInput } from "@components/search-input";
 import { EngineSelect } from "@components/engine-select";
 import { ownedGamesAtom } from "@hooks/use-data";
@@ -66,7 +65,6 @@ export function OwnedGamesPage() {
 				/>
 			) : null}
 			<Flex gap="md">
-				<FixOwnedGamesButton />
 				<SearchInput
 					onChange={setSearch}
 					value={search}

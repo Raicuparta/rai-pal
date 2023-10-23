@@ -10,7 +10,11 @@ use std::{
 	sync::Mutex,
 };
 
-use game::Game;
+use events::{
+	AppEvent,
+	EventEmitter,
+};
+use installed_game::InstalledGame;
 use mod_loaders::mod_loader::{
 	self,
 	ModLoaderActions,
@@ -30,33 +34,28 @@ use tauri::{
 	Manager,
 };
 
+mod events;
 mod files;
-mod game;
 mod game_engines;
 mod game_executable;
 mod game_mod;
+mod installed_game;
 mod macros;
 mod mod_loaders;
 mod paths;
+mod provider;
 mod result;
 mod steam;
 mod windows;
 
-serializable_enum!(SyncDataEvent {
-	SyncInstalledGames,
-	SyncOwnedGames,
-	SyncDiscoverGames,
-	SyncMods,
-});
-
 struct AppState {
-	installed_games: Mutex<Option<game::Map>>,
+	installed_games: Mutex<Option<installed_game::Map>>,
 	owned_games: Mutex<Option<Vec<OwnedGame>>>,
 	discover_games: Mutex<Option<Vec<SteamGame>>>,
 	mod_loaders: Mutex<Option<mod_loader::DataMap>>,
 }
 
-fn get_game(game_id: &str, state: &tauri::State<'_, AppState>) -> Result<Game> {
+fn get_game(game_id: &str, state: &tauri::State<'_, AppState>) -> Result<InstalledGame> {
 	if let Ok(read_guard) = state.installed_games.lock() {
 		let installed_games = read_guard
 			.as_ref()
@@ -87,7 +86,7 @@ fn get_state_data<TData: Clone>(mutex: &Mutex<Option<TData>>) -> Result<TData> {
 
 #[tauri::command]
 #[specta::specta]
-async fn get_installed_games(state: tauri::State<'_, AppState>) -> Result<game::Map> {
+async fn get_installed_games(state: tauri::State<'_, AppState>) -> Result<installed_game::Map> {
 	get_state_data(&state.installed_games)
 }
 
@@ -110,7 +109,7 @@ async fn get_mod_loaders(state: tauri::State<'_, AppState>) -> Result<mod_loader
 }
 
 fn update_state<TData>(
-	event: SyncDataEvent,
+	event: AppEvent,
 	data: TData,
 	mutex: &Mutex<Option<TData>>,
 	handle: &tauri::AppHandle,
@@ -122,7 +121,7 @@ fn update_state<TData>(
 	// Sends a signal to make the frontend request an app state refresh.
 	// I would have preferred to just send the state with the signal,
 	// but it seems like Tauri events are really slow for large data.
-	handle.emit_all(&event.to_string(), ())?;
+	handle.emit_event(event)?;
 
 	Ok(())
 }
@@ -156,8 +155,12 @@ async fn open_mod_folder(mod_loader_id: &str, mod_id: &str, handle: tauri::AppHa
 
 #[tauri::command]
 #[specta::specta]
-async fn start_game(game_id: &str, state: tauri::State<'_, AppState>) -> Result {
-	get_game(game_id, &state)?.start()
+async fn start_game(
+	game_id: &str,
+	state: tauri::State<'_, AppState>,
+	handle: tauri::AppHandle,
+) -> Result {
+	get_game(game_id, &state)?.start(&handle)
 }
 
 #[tauri::command]
@@ -196,7 +199,7 @@ fn refresh_single_game(
 		.refresh_mods(&mod_loaders);
 
 	update_state(
-		SyncDataEvent::SyncInstalledGames,
+		AppEvent::SyncInstalledGames,
 		installed_games,
 		&state.installed_games,
 		handle,
@@ -229,7 +232,7 @@ async fn update_data(handle: tauri::AppHandle, state: tauri::State<'_, AppState>
 		.await
 		.unwrap_or_default();
 	update_state(
-		SyncDataEvent::SyncMods,
+		AppEvent::SyncMods,
 		mod_loaders.clone(),
 		&state.mod_loaders,
 		&handle,
@@ -242,7 +245,7 @@ async fn update_data(handle: tauri::AppHandle, state: tauri::State<'_, AppState>
 		.await
 		.unwrap_or_default();
 	update_state(
-		SyncDataEvent::SyncInstalledGames,
+		AppEvent::SyncInstalledGames,
 		installed_games.clone(),
 		&state.installed_games,
 		&handle,
@@ -256,7 +259,7 @@ async fn update_data(handle: tauri::AppHandle, state: tauri::State<'_, AppState>
 
 	let discover_games = discover_games.unwrap_or_default();
 	update_state(
-		SyncDataEvent::SyncDiscoverGames,
+		AppEvent::SyncDiscoverGames,
 		discover_games,
 		&state.discover_games,
 		&handle,
@@ -264,7 +267,7 @@ async fn update_data(handle: tauri::AppHandle, state: tauri::State<'_, AppState>
 
 	let owned_games = owned_games.unwrap_or_default();
 	update_state(
-		SyncDataEvent::SyncOwnedGames,
+		AppEvent::SyncOwnedGames,
 		owned_games,
 		&state.owned_games,
 		&handle,
@@ -275,16 +278,9 @@ async fn update_data(handle: tauri::AppHandle, state: tauri::State<'_, AppState>
 
 #[tauri::command]
 #[specta::specta]
-async fn delete_steam_appinfo_cache() -> Result {
-	let steam_dir = SteamDir::locate()?;
-	steam::appinfo::delete(steam_dir.path())
-}
-
-#[tauri::command]
-#[specta::specta]
 // This command is here just so tauri_specta exports these types.
 // This should stop being needed once tauri_specta starts supporting events.
-async fn dummy_command() -> Result<(Game, SyncDataEvent)> {
+async fn dummy_command() -> Result<(InstalledGame, AppEvent)> {
 	Err(Error::NotImplemented)
 }
 
@@ -315,6 +311,8 @@ fn main() {
 				// Unfortunately, it will still show the default window color for the system for a bit,
 				// which can some times be white.
 				if let Some(window) = app.get_window("main") {
+					window.set_title(&format!("Rai Pal {}", env!("CARGO_PKG_VERSION")))?;
+
 					window.with_webview(|webview| {
 						use webkit2gtk::traits::WebViewExt;
 						let mut color = webview.inner().background_color();
@@ -328,7 +326,7 @@ fn main() {
 			Ok(())
 		});
 
-	match set_up_api!(
+	let (tauri_builder, types_result) = set_up_api!(
 		tauri_builder,
 		[
 			dummy_command,
@@ -342,11 +340,12 @@ fn main() {
 			uninstall_mod,
 			open_game_mods_folder,
 			start_game,
-			delete_steam_appinfo_cache,
 			open_mod_folder,
 			open_mods_folder,
 		]
-	) {
+	);
+
+	match types_result {
 		Ok(types) => {
 			#[cfg(debug_assertions)]
 			if let Err(err) = tauri_specta::ts::export_with_cfg(
@@ -362,4 +361,7 @@ fn main() {
 			println!("Failed to generate api bindings: {err}");
 		}
 	}
+	tauri_builder
+		.run(tauri::generate_context!())
+		.unwrap_or_else(|err| println!("Failed to run Tauri application: {err}"));
 }

@@ -1,8 +1,8 @@
-import { Game } from "@api/bindings";
+import { InstalledGame } from "@api/bindings";
 import { Code, Flex } from "@mantine/core";
 
 type Props = {
-	readonly game: Game;
+	readonly game: InstalledGame;
 };
 
 export function GameName(props: Props) {

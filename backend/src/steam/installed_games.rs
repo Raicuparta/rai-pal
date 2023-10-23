@@ -14,7 +14,7 @@ use super::{
 	thumbnail::get_steam_thumbnail,
 };
 use crate::{
-	game,
+	installed_game,
 	mod_loaders::mod_loader,
 	Result,
 };
@@ -23,8 +23,8 @@ pub async fn get(
 	steam_dir: &SteamDir,
 	app_info_file: &SteamAppInfoFile,
 	mod_loaders: &mod_loader::DataMap,
-) -> Result<game::Map> {
-	let mut game_map: game::Map = HashMap::new();
+) -> Result<installed_game::Map> {
+	let mut game_map: installed_game::Map = HashMap::new();
 	let mut used_paths: HashSet<PathBuf> = HashSet::new();
 	let mut used_names: HashSet<String> = HashSet::new();
 
@@ -58,7 +58,7 @@ pub async fn get(
 								None
 							};
 
-							if let Some(game) = game::Game::new(
+							if let Some(game) = installed_game::InstalledGame::new(
 								&executable_id,
 								name,
 								discriminator,

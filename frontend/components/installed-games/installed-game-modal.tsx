@@ -1,6 +1,6 @@
 import { Flex, Modal, Stack } from "@mantine/core";
 import {
-	Game,
+	InstalledGame,
 	installMod,
 	openGameFolder,
 	openGameModsFolder,
@@ -27,7 +27,7 @@ import { modLoadersAtom } from "@hooks/use-data";
 import { CommandButtonGroup } from "@components/command-button-group";
 
 type Props = {
-	readonly game: Game;
+	readonly game: InstalledGame;
 	readonly onClose: () => void;
 };
 

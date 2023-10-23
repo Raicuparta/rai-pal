@@ -4,7 +4,7 @@ import { includesOneOf } from "../../util/filter";
 import { InstalledGameModal } from "./installed-game-modal";
 import {
 	Architecture,
-	Game,
+	InstalledGame,
 	GameEngineBrand,
 	OperatingSystem,
 	UnityScriptingBackend,
@@ -34,7 +34,11 @@ interface InstalledGamesFilter {
 
 const defaultFilter: InstalledGamesFilter = {};
 
-const filterGame = (game: Game, filter: InstalledGamesFilter, search: string) =>
+const filterGame = (
+	game: InstalledGame,
+	filter: InstalledGamesFilter,
+	search: string,
+) =>
 	includesOneOf(search, [game.name]) &&
 	(!filter.architecture ||
 		game.executable.architecture === filter.architecture) &&
@@ -62,7 +66,10 @@ const scriptingBackendOptions: SegmentedControlData<UnityScriptingBackend>[] = [
 	{ label: "Mono", value: "Mono" },
 ];
 
-export type TableSortMethod = (gameA: Game, gameB: Game) => number;
+export type TableSortMethod = (
+	gameA: InstalledGame,
+	gameB: InstalledGame,
+) => number;
 
 export function InstalledGamesPage() {
 	const gameMap = useAtomValue(installedGamesAtom);

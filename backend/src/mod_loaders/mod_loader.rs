@@ -14,8 +14,8 @@ use super::{
 	unreal_vr::UnrealVr,
 };
 use crate::{
-	game::Game,
 	game_mod::Mod,
+	installed_game::InstalledGame,
 	serializable_struct,
 	Error,
 	Result,
@@ -36,8 +36,8 @@ pub enum ModLoader {
 
 #[enum_dispatch(ModLoader)]
 pub trait ModLoaderActions {
-	fn install(&self, game: &Game) -> Result;
-	fn install_mod(&self, game: &Game, mod_id: &str) -> Result;
+	fn install(&self, game: &InstalledGame) -> Result;
+	fn install_mod(&self, game: &InstalledGame, mod_id: &str) -> Result;
 	fn open_mod_folder(&self, mod_id: &str) -> Result;
 	fn get_data(&self) -> &ModLoaderData;
 }

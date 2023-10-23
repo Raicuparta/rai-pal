@@ -3,7 +3,10 @@ use super::mod_loader::{
 	ModLoaderData,
 	ModLoaderStatic,
 };
-use crate::serializable_struct;
+use crate::{
+	installed_game::InstalledGame,
+	serializable_struct,
+};
 
 serializable_struct!(MelonLoader {
   pub data: ModLoaderData,
@@ -33,11 +36,11 @@ impl ModLoaderActions for MelonLoader {
 		&self.data
 	}
 
-	fn install(&self, _game: &crate::game::Game) -> crate::Result {
+	fn install(&self, _game: &InstalledGame) -> crate::Result {
 		todo!()
 	}
 
-	fn install_mod(&self, _game: &crate::game::Game, _mod_idd: &str) -> crate::Result {
+	fn install_mod(&self, _game: &InstalledGame, _mod_idd: &str) -> crate::Result {
 		todo!()
 	}
 

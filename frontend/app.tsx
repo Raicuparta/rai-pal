@@ -5,6 +5,7 @@ import { OwnedGamesPage } from "./components/owned-games/owned-games-page";
 import { SettingsPage } from "./components/settings/settings-page";
 import { Tabs, Container, Stack } from "@mantine/core";
 import { useData } from "@hooks/use-data";
+import { AppNotifications } from "@components/app-notifications";
 
 const pages = {
 	installedGames: { title: "Installed Games", component: InstalledGamesPage },
@@ -20,40 +21,43 @@ function App() {
 	useData();
 
 	return (
-		<Tabs
-			defaultValue={firstPage}
-			radius={0}
-		>
-			<Stack style={{ height: "100vh" }}>
-				<Tabs.List style={{ justifyContent: "center" }}>
+		<>
+			<AppNotifications />
+			<Tabs
+				defaultValue={firstPage}
+				radius={0}
+			>
+				<Stack style={{ height: "100vh" }}>
+					<Tabs.List style={{ justifyContent: "center" }}>
+						{Object.entries(pages).map(([pageId, page]) => (
+							<Tabs.Tab
+								key={pageId}
+								value={pageId}
+							>
+								{page.title}
+							</Tabs.Tab>
+						))}
+					</Tabs.List>
 					{Object.entries(pages).map(([pageId, page]) => (
-						<Tabs.Tab
+						<Tabs.Panel
 							key={pageId}
+							style={{
+								flex: 1,
+							}}
 							value={pageId}
 						>
-							{page.title}
-						</Tabs.Tab>
+							<Container
+								h="100%"
+								pb="md"
+								size="lg"
+							>
+								<page.component />
+							</Container>
+						</Tabs.Panel>
 					))}
-				</Tabs.List>
-				{Object.entries(pages).map(([pageId, page]) => (
-					<Tabs.Panel
-						key={pageId}
-						style={{
-							flex: 1,
-						}}
-						value={pageId}
-					>
-						<Container
-							h="100%"
-							pb="md"
-							size="lg"
-						>
-							<page.component />
-						</Container>
-					</Tabs.Panel>
-				))}
-			</Stack>
-		</Tabs>
+				</Stack>
+			</Tabs>
+		</>
 	);
 }
 
