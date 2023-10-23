@@ -42,7 +42,7 @@ function CreateColorCodedBadge<TValue extends string>(
 	};
 }
 
-export const EngineBadge = CreateColorCodedBadge<GameEngineBrand>("Unknown", {
+export const EngineBadge = CreateColorCodedBadge<GameEngineBrand>("-", {
 	Unity: "blue",
 	Unreal: "red",
 	Godot: "violet",
@@ -56,7 +56,7 @@ export const UnityBackendBadge = CreateColorCodedBadge<UnityScriptingBackend>(
 	},
 );
 
-export const ArchitectureBadge = CreateColorCodedBadge<Architecture>("X??", {
+export const ArchitectureBadge = CreateColorCodedBadge<Architecture>("-", {
 	X64: "blue",
 	X86: "teal",
 });

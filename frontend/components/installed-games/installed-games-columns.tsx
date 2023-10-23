@@ -95,7 +95,7 @@ export const installedGamesColumns: TableColumn<InstalledGame>[] = [
 				0
 			);
 		},
-		renderCell: (game) => (
+		renderCell: ({ executable: { engine } }) => (
 			<Table.Td>
 				<Flex
 					align="center"
@@ -103,8 +103,8 @@ export const installedGamesColumns: TableColumn<InstalledGame>[] = [
 				>
 					<EngineBadge
 						maw={70}
-						value={game.executable.engine?.brand}
-						label={game.executable.engine?.version?.display}
+						value={engine?.brand}
+						label={engine ? engine.version?.display ?? "-" : undefined}
 					/>
 				</Flex>
 			</Table.Td>

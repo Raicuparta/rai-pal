@@ -162,6 +162,13 @@ fn is_mod_installed(game_id: &str, mod_id: &str) -> bool {
 	false
 }
 
+fn equal_or_none<T: PartialEq>(a: Option<T>, b: Option<T>) -> bool {
+	match (a, b) {
+		(Some(value_a), Some(value_b)) => value_a == value_b,
+		_ => true,
+	}
+}
+
 fn get_available_mods(
 	game_id: &str,
 	mod_loaders: &mod_loader::DataMap,
@@ -171,8 +178,10 @@ fn get_available_mods(
 		.iter()
 		.flat_map(|(_, mod_loader)| &mod_loader.mods)
 		.filter_map(|game_mod| {
-			if game_mod.engine? == executable.engine.as_ref()?.brand
-				&& game_mod.scripting_backend? == executable.scripting_backend?
+			if equal_or_none(
+				game_mod.engine,
+				executable.engine.as_ref().map(|engine| engine.brand),
+			) && equal_or_none(game_mod.scripting_backend, executable.scripting_backend)
 			{
 				Some((game_mod.id.clone(), is_mod_installed(game_id, &game_mod.id)))
 			} else {
