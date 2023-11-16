@@ -1,5 +1,5 @@
 import { Flex, Table } from "@mantine/core";
-import { InstalledGame, GameEngineVersion } from "@api/bindings";
+import { InstalledGame } from "@api/bindings";
 import { TableColumn } from "@components/table/table-head";
 import { GameName } from "./game-name";
 import {
@@ -9,14 +9,6 @@ import {
 	UnityBackendBadge,
 } from "@components/badges/color-coded-badge";
 import { GameThumbnail } from "@components/game-thumbnail";
-
-const defaultVersion: GameEngineVersion = {
-	major: 0,
-	minor: 0,
-	patch: 0,
-	suffix: "",
-	display: "",
-};
 
 export const installedGamesColumns: TableColumn<InstalledGame>[] = [
 	{
@@ -81,18 +73,22 @@ export const installedGamesColumns: TableColumn<InstalledGame>[] = [
 		width: 170,
 		center: true,
 		hidable: true,
-		sort: (dataA, dataB) => {
-			const versionA = dataA.executable.engine?.version ?? defaultVersion;
-			const versionB = dataB.executable.engine?.version ?? defaultVersion;
-			const brandA = dataA.executable.engine?.brand ?? "";
-			const brandB = dataB.executable.engine?.brand ?? "";
+		getSortValue: (game) => {
+			const engine = game.executable.engine;
+			if (!engine?.version) return 0;
+
+			let major = engine.version.major;
+
+			// Unity did this silly thing.
+			// It went from Unity 5 to Unity 2017-2023, then back to Unity 6.
+			// So for sorting purposes, we consider Unity 6, 7, 8, etc to be Unity 2106, 2107, 2108, etc.
+			// This will of course break if they go back to year-based versions.
+			if (engine.brand == "Unity" && major > 5 && major < 2000) {
+				major += 2100;
+			}
 
 			return (
-				brandA.localeCompare(brandB) ||
-				versionA.major - versionB.major ||
-				versionA.minor - versionB.minor ||
-				versionA.patch - versionB.patch ||
-				0
+				major * 100000000 + engine.version.minor * 100000 + engine.version.patch
 			);
 		},
 		renderCell: ({ executable: { engine } }) => (
