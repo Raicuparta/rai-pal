@@ -4,14 +4,14 @@ import { TableColumn } from "@components/table/table-head";
 import { Flex, Table } from "@mantine/core";
 import { IconCheck } from "@tabler/icons-react";
 import styles from "../table/table.module.css";
-import { GameThumbnail } from "@components/game-thumbnail";
+import { ThumbnailCell } from "@components/table/thumbnail-cell";
 
 export const ownedGamesColumns: TableColumn<OwnedGame>[] = [
 	{
 		id: "thumbnailUrl",
 		label: "",
 		width: 100,
-		renderCell: (game) => <GameThumbnail url={game.thumbnailUrl} />,
+		renderCell: (game) => <ThumbnailCell url={game.thumbnailUrl} />,
 	},
 	{
 		id: "name",

@@ -8,14 +8,14 @@ import {
 	OperatingSystemBadge,
 	UnityBackendBadge,
 } from "@components/badges/color-coded-badge";
-import { GameThumbnail } from "@components/game-thumbnail";
+import { ThumbnailCell } from "@components/table/thumbnail-cell";
 
 export const installedGamesColumns: TableColumn<InstalledGame>[] = [
 	{
 		id: "thumbnailUrl",
 		label: "",
 		width: 100,
-		renderCell: (game) => <GameThumbnail url={game.thumbnailUrl} />,
+		renderCell: (game) => <ThumbnailCell url={game.thumbnailUrl} />,
 	},
 	{
 		id: "name",
