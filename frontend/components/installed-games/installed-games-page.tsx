@@ -1,4 +1,4 @@
-import { Flex, Stack } from "@mantine/core";
+import { Button, Flex, Stack } from "@mantine/core";
 import { useMemo, useState } from "react";
 import { includesOneOf } from "../../util/filter";
 import { InstalledGameModal } from "./installed-game-modal";
@@ -24,6 +24,7 @@ import { installedGamesAtom } from "@hooks/use-data";
 import { installedGamesColumns } from "./installed-games-columns";
 import { ColumnsSelect } from "@components/columns-select";
 import { usePersistedState } from "@hooks/use-persisted-state";
+import { IconPlaylistAdd } from "@tabler/icons-react";
 
 interface InstalledGamesFilter {
 	operatingSystem?: OperatingSystem;
@@ -112,6 +113,7 @@ export function InstalledGamesPage() {
 	return (
 		<Stack h="100%">
 			<Flex gap="md">
+				<Button leftSection={<IconPlaylistAdd />}>Add game...</Button>
 				<SearchInput
 					onChange={setSearch}
 					value={search}
