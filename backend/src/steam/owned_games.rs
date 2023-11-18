@@ -64,7 +64,7 @@ pub async fn get(steam_dir: &SteamDir, app_info_file: &SteamAppInfoFile) -> Resu
 						// Would be smarter to actually parse assets.vdf and extract all the ids,
 						// but I didn't feel like figuring out how to parse another binary vdf.
 						// Maybe later. But most likely never.
-						BytesRegex::new(&format!("{}", steam_id_data.id))
+						BytesRegex::new(&steam_id_data.id)
 							.map_or(false, |regex| regex.is_match(&assets_cache_bytes))
 					},
 				);
