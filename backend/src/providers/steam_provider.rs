@@ -21,16 +21,21 @@ use crate::{
 		ProviderActions,
 		ProviderStatic,
 	},
-	serializable_struct,
 	steam::{
-		appinfo,
+		appinfo::{
+			self,
+			SteamAppInfoFile,
+		},
 		id_lists,
 		thumbnail::get_steam_thumbnail,
 	},
 	Result,
 };
 
-serializable_struct!(SteamProvider {});
+pub struct SteamProvider {
+	steam_dir: SteamDir,
+	app_info_file: SteamAppInfoFile,
+}
 
 impl ProviderStatic for SteamProvider {
 	const ID: &'static str = "steam";
@@ -39,7 +44,13 @@ impl ProviderStatic for SteamProvider {
 	where
 		Self: Sized,
 	{
-		Ok(Self {})
+		let steam_dir = SteamDir::locate()?;
+		let app_info_file = appinfo::read(steam_dir.path())?;
+
+		Ok(Self {
+			steam_dir,
+			app_info_file,
+		})
 	}
 }
 
@@ -49,17 +60,13 @@ impl ProviderActions for SteamProvider {
 		&self,
 		mod_loaders: &mod_loader::DataMap,
 	) -> Result<installed_game::Map> {
-		// TODO store this in steam struct.
-		let steam_dir = SteamDir::locate()?;
-		let app_info_file = appinfo::read(steam_dir.path())?;
-
 		let mut game_map: installed_game::Map = HashMap::new();
 		let mut used_paths: HashSet<PathBuf> = HashSet::new();
 		let mut used_names: HashSet<String> = HashSet::new();
 
-		for library in (steam_dir.libraries()?).flatten() {
+		for library in (self.steam_dir.libraries()?).flatten() {
 			for app in library.apps().flatten() {
-				if let Some(app_info) = app_info_file.apps.get(&app.app_id) {
+				if let Some(app_info) = self.app_info_file.apps.get(&app.app_id) {
 					let sorted_launch_options = {
 						let mut sorted_launch_options = app_info.launch_options.clone();
 						sorted_launch_options.sort_by(|a, b| a.launch_id.cmp(&b.launch_id));
@@ -115,17 +122,13 @@ impl ProviderActions for SteamProvider {
 	}
 
 	async fn get_owned_games(&self) -> Result<Vec<OwnedGame>> {
-		// TODO store this in steam struct.
-		let steam_dir = SteamDir::locate()?;
-		let app_info_file = appinfo::read(steam_dir.path())?;
-
 		Ok(id_lists::get()
 			.await?
 			.iter()
 			.filter_map(|steam_id_data| {
 				let id_number = steam_id_data.id.parse::<u32>().ok()?;
 
-				let app_info = app_info_file.apps.get(&id_number)?;
+				let app_info = self.app_info_file.apps.get(&id_number)?;
 
 				let os_list: HashSet<_> = app_info
 					.launch_options
@@ -147,22 +150,26 @@ impl ProviderActions for SteamProvider {
 				// assets.vdf is another cache file, and from my (not very extensive) tests, it to really only include owned files.
 				// Free games are some times not there though, so I'm presuming that any free game found in appinfo.vdf is owned.
 				// appinfo.vdf is also still needed since most of the game data we want is there, so we can't just read everything from assets.vdf.
-				let owned =
-					app_info.is_free
-						|| fs::read(steam_dir.path().join("appcache/librarycache/assets.vdf"))
-							.map_or(false, |assets_cache_bytes| {
-								// Would be smarter to actually parse assets.vdf and extract all the ids,
-								// but I didn't feel like figuring out how to parse another binary vdf.
-								// Maybe later. But most likely never.
-								BytesRegex::new(&steam_id_data.id)
-									.map_or(false, |regex| regex.is_match(&assets_cache_bytes))
-							});
+				let owned = app_info.is_free
+					|| fs::read(
+						self.steam_dir
+							.path()
+							.join("appcache/librarycache/assets.vdf"),
+					)
+					.map_or(false, |assets_cache_bytes| {
+						// Would be smarter to actually parse assets.vdf and extract all the ids,
+						// but I didn't feel like figuring out how to parse another binary vdf.
+						// Maybe later. But most likely never.
+						BytesRegex::new(&steam_id_data.id)
+							.map_or(false, |regex| regex.is_match(&assets_cache_bytes))
+					});
 
 				if !owned {
 					return None;
 				}
 
-				let installed = steam_dir
+				let installed = self
+					.steam_dir
 					.app(id_number)
 					.map_or(false, |steam_app| steam_app.is_some());
 
