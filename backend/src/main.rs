@@ -44,6 +44,7 @@ mod macros;
 mod mod_loaders;
 mod paths;
 mod provider;
+mod providers;
 mod result;
 mod steam;
 mod windows;
