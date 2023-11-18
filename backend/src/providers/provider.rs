@@ -1,14 +1,16 @@
 use std::collections::HashMap;
 
+use async_trait::async_trait;
 use enum_dispatch::enum_dispatch;
 
-use super::{
-	manual_provider::ManualProvider,
-	steam_provider::SteamProvider,
-};
 use crate::{
 	installed_game,
 	mod_loaders::mod_loader,
+	owned_game::OwnedGame,
+	providers::{
+		manual_provider::ManualProvider,
+		steam_provider::SteamProvider,
+	},
 	Result,
 };
 
@@ -18,10 +20,13 @@ pub enum Provider {
 	ManualProvider,
 }
 
+#[async_trait]
 #[enum_dispatch(Provider)]
 pub trait ProviderActions {
 	fn get_installed_games(&self, mod_loaders: &mod_loader::DataMap)
 		-> Result<installed_game::Map>;
+
+	async fn get_owned_games(&self) -> Result<Vec<OwnedGame>>;
 }
 
 pub trait ProviderStatic {

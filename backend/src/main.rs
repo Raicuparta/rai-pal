@@ -4,10 +4,6 @@
 
 use std::{
 	collections::HashMap,
-	future::{
-		self,
-		Future,
-	},
 	sync::Mutex,
 };
 
@@ -20,6 +16,7 @@ use mod_loaders::mod_loader::{
 	self,
 	ModLoaderActions,
 };
+use owned_game::OwnedGame;
 use providers::provider::{
 	self,
 	ProviderActions,
@@ -31,7 +28,6 @@ use result::{
 use steam::{
 	appinfo,
 	id_lists::SteamGame,
-	owned_games::OwnedGame,
 };
 use steamlocate::SteamDir;
 use tauri::{
@@ -47,6 +43,7 @@ mod game_mod;
 mod installed_game;
 mod macros;
 mod mod_loaders;
+mod owned_game;
 mod paths;
 mod providers;
 mod result;
@@ -264,13 +261,22 @@ async fn update_data(handle: tauri::AppHandle, state: tauri::State<'_, AppState>
 		&handle,
 	)?;
 
-	let (discover_games, owned_games) = Box::pin(future::join!(
+	let (discover_games_result, owned_games_result) = futures::future::join(
 		steam::discover_games::get(&app_info),
-		steam::owned_games::get(&steam_dir, &app_info)
-	))
+		futures::future::join_all(
+			provider_map
+				.values()
+				.map(provider::ProviderActions::get_owned_games),
+		),
+	)
 	.await;
 
-	let discover_games = discover_games.unwrap_or_default();
+	let owned_games: Vec<OwnedGame> = owned_games_result
+		.into_iter()
+		.flat_map(result::Result::unwrap_or_default)
+		.collect();
+
+	let discover_games = discover_games_result.unwrap_or_default();
 	update_state(
 		AppEvent::SyncDiscoverGames,
 		discover_games,
@@ -278,7 +284,6 @@ async fn update_data(handle: tauri::AppHandle, state: tauri::State<'_, AppState>
 		&handle,
 	)?;
 
-	let owned_games = owned_games.unwrap_or_default();
 	update_state(
 		AppEvent::SyncOwnedGames,
 		owned_games,
