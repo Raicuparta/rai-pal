@@ -8,6 +8,7 @@ use super::{
 };
 use crate::{
 	installed_game,
+	mod_loaders::mod_loader,
 	Result,
 };
 
@@ -19,7 +20,8 @@ pub enum Provider {
 
 #[enum_dispatch(Provider)]
 pub trait ProviderActions {
-	fn get_installed_games(&self) -> Result<installed_game::Map>;
+	fn get_installed_games(&self, mod_loaders: &mod_loader::DataMap)
+		-> Result<installed_game::Map>;
 }
 
 pub trait ProviderStatic {

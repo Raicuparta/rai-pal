@@ -4,6 +4,7 @@ use super::provider::{
 };
 use crate::{
 	installed_game,
+	mod_loaders::mod_loader,
 	serializable_struct,
 	Result,
 };
@@ -11,8 +12,11 @@ use crate::{
 serializable_struct!(ManualProvider {});
 
 impl ProviderActions for ManualProvider {
-	fn get_installed_games(&self) -> Result<installed_game::Map> {
-		todo!()
+	fn get_installed_games(
+		&self,
+		mod_loaders: &mod_loader::DataMap,
+	) -> Result<installed_game::Map> {
+		Ok(installed_game::Map::new())
 	}
 }
 
@@ -23,6 +27,6 @@ impl ProviderStatic for ManualProvider {
 	where
 		Self: Sized,
 	{
-		todo!()
+		Ok(Self {})
 	}
 }

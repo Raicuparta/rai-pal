@@ -3,6 +3,7 @@
 #![feature(future_join)]
 
 use std::{
+	collections::HashMap,
 	future::{
 		self,
 		Future,
@@ -18,6 +19,10 @@ use installed_game::InstalledGame;
 use mod_loaders::mod_loader::{
 	self,
 	ModLoaderActions,
+};
+use providers::provider::{
+	self,
+	ProviderActions,
 };
 use result::{
 	Error,
@@ -43,7 +48,6 @@ mod installed_game;
 mod macros;
 mod mod_loaders;
 mod paths;
-mod provider;
 mod providers;
 mod result;
 mod steam;
@@ -239,12 +243,20 @@ async fn update_data(handle: tauri::AppHandle, state: tauri::State<'_, AppState>
 		&handle,
 	)?;
 
+	let provider_map = provider::get_map();
+
 	let steam_dir = SteamDir::locate()?;
 	let app_info = appinfo::read(steam_dir.path())?;
 
-	let installed_games = steam::installed_games::get(&steam_dir, &app_info, &mod_loaders)
-		.await
-		.unwrap_or_default();
+	let installed_games: HashMap<String, InstalledGame> = provider_map
+		.iter()
+		.flat_map(|(_, provider)| {
+			provider
+				.get_installed_games(&mod_loaders)
+				.unwrap_or_default()
+		})
+		.collect();
+
 	update_state(
 		AppEvent::SyncInstalledGames,
 		installed_games.clone(),
