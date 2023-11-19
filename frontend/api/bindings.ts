@@ -62,8 +62,8 @@ export function openModsFolder() {
     return invoke()<null>("open_mods_folder")
 }
 
-export function pickGameExe() {
-    return invoke()<null>("pick_game_exe")
+export function addGame(path: string) {
+    return invoke()<null>("add_game", { path })
 }
 
 export type GameEngineVersion = { major: number; minor: number; patch: number; suffix: string | null; display: string }

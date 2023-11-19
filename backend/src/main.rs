@@ -4,6 +4,7 @@
 
 use std::{
 	collections::HashMap,
+	path::PathBuf,
 	sync::Mutex,
 };
 
@@ -311,16 +312,14 @@ async fn update_data(handle: tauri::AppHandle, state: tauri::State<'_, AppState>
 
 #[tauri::command]
 #[specta::specta]
-async fn pick_game_exe(state: tauri::State<'_, AppState>, handle: tauri::AppHandle) -> Result {
-	if let Some(file_path) = FileDialogBuilder::default()
-		.add_filter("Windows executable", &["exe"])
-		.add_filter("Other executable", &["*"])
-		.pick_file()
-	{
-		manual_provider::add_game(&file_path)?;
-		// TODO: add only new game, instead of refreshing entire list.
-		update_data(handle, state).await?;
-	}
+async fn add_game(
+	path: &str,
+	state: tauri::State<'_, AppState>,
+	handle: tauri::AppHandle,
+) -> Result {
+	manual_provider::add_game(&PathBuf::from(path))?;
+	// TODO: add only new game, instead of refreshing entire list.
+	update_data(handle, state).await?;
 
 	Ok(())
 }
@@ -373,19 +372,6 @@ fn main() {
 				}
 			}
 
-			if let Some(window) = app.get_window("main") {
-				window.on_window_event(|window_event| {
-					if let WindowEvent::FileDrop(FileDropEvent::Dropped(paths)) = window_event {
-						if let Some(file_path) = paths.first() {
-							if let Err(err) = manual_provider::add_game(file_path) {
-								// TODO properly handle error (shown message?)
-								println!("Failed to add dropped game: {}", err);
-							}
-							// TODO refresh after adding.
-						}
-					}
-				});
-			}
 			Ok(())
 		});
 
@@ -405,7 +391,7 @@ fn main() {
 			start_game,
 			open_mod_folder,
 			open_mods_folder,
-			pick_game_exe,
+			add_game,
 		]
 	);
 

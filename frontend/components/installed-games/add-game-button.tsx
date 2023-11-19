@@ -1,11 +1,50 @@
 import { Button, Flex, Modal, Stack, Text } from "@mantine/core";
 import { IconAppWindowFilled, IconPlaylistAdd } from "@tabler/icons-react";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import styles from "./installed-games.module.css";
-import { pickGameExe } from "@api/bindings";
+import { addGame } from "@api/bindings";
+import { dialog, event } from "@tauri-apps/api";
 
 export function AddGame() {
 	const [isOpen, setIsOpen] = useState(false);
+
+	useEffect(() => {
+		const unlisten = event.listen<string[]>(
+			event.TauriEvent.WINDOW_FILE_DROP,
+			(event) => {
+				if (event.payload.length > 0) {
+					addGame(event.payload[0]);
+				}
+			},
+		);
+
+		return () => {
+			unlisten.then((f) => f());
+		};
+	});
+
+	const handleClick = useCallback(() => {
+		dialog
+			.open({
+				multiple: false,
+				title: "Select the game executable",
+				filters: [
+					{
+						extensions: ["exe"],
+						name: "Windows executable",
+					},
+					{
+						extensions: ["*"],
+						name: "Other executable",
+					},
+				],
+			})
+			.then((result) => {
+				if (!result || Array.isArray(result)) return;
+
+				addGame(result);
+			});
+	}, []);
 
 	return (
 		<>
@@ -27,7 +66,7 @@ export function AddGame() {
 					<Button
 						fullWidth
 						h="20em"
-						onClick={pickGameExe}
+						onClick={handleClick}
 					>
 						<Flex
 							gap="md"
