@@ -306,8 +306,6 @@ async fn update_data(handle: tauri::AppHandle, state: tauri::State<'_, AppState>
 
 #[tauri::command]
 #[specta::specta]
-// This command is here just so tauri_specta exports these types.
-// This should stop being needed once tauri_specta starts supporting events.
 async fn pick_game_exe() -> Result {
 	if let Some(file_path) = FileDialogBuilder::default()
 		.add_filter("Windows executable", &["exe"])
