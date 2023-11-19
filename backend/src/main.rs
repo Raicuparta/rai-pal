@@ -17,9 +17,12 @@ use mod_loaders::mod_loader::{
 	ModLoaderActions,
 };
 use owned_game::OwnedGame;
-use providers::provider::{
-	self,
-	ProviderActions,
+use providers::{
+	manual_provider,
+	provider::{
+		self,
+		ProviderActions,
+	},
 };
 use result::{
 	Error,
@@ -311,7 +314,7 @@ async fn pick_game_exe() -> Result {
 		.add_filter("Other executable", &["*"])
 		.pick_file()
 	{
-		println!("found this one {}", file_path.to_string_lossy());
+		manual_provider::add_game(&file_path)?;
 	}
 
 	Ok(())

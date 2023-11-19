@@ -1,7 +1,9 @@
 use std::{
-	collections::HashMap,
 	fs,
-	path::PathBuf,
+	path::{
+		Path,
+		PathBuf,
+	},
 };
 
 use async_trait::async_trait;
@@ -32,18 +34,24 @@ struct GamesConfig {
 	pub paths: Vec<PathBuf>,
 }
 
+impl ProviderStatic for ManualProvider {
+	const ID: &'static str = "manual";
+
+	fn new() -> Result<Self>
+	where
+		Self: Sized,
+	{
+		Ok(Self {})
+	}
+}
+
 #[async_trait]
 impl ProviderActions for ManualProvider {
 	fn get_installed_games(
 		&self,
 		mod_loaders: &mod_loader::DataMap,
 	) -> Result<installed_game::Map> {
-		let games_json = app_data_path()?.join("games.json");
-
-		// TODO: handle missing / empty file gracefully.
-		let games_config = serde_json::from_str::<GamesConfig>(&fs::read_to_string(games_json)?)?;
-
-		Ok(games_config
+		Ok(read_games_config(&games_config_path()?)?
 			.paths
 			.iter()
 			.filter_map(|file_path| {
@@ -70,13 +78,24 @@ impl ProviderActions for ManualProvider {
 	}
 }
 
-impl ProviderStatic for ManualProvider {
-	const ID: &'static str = "manual";
+fn games_config_path() -> Result<PathBuf> {
+	Ok(app_data_path()?.join("games.json"))
+}
 
-	fn new() -> Result<Self>
-	where
-		Self: Sized,
-	{
-		Ok(Self {})
-	}
+fn read_games_config(games_config_path: &Path) -> Result<GamesConfig> {
+	// TODO: handle missing / empty file gracefully.
+	Ok(serde_json::from_str::<GamesConfig>(&fs::read_to_string(
+		games_config_path,
+	)?)?)
+}
+
+pub fn add_game(path: &Path) -> Result {
+	let config_path = games_config_path()?;
+
+	let mut games_config = read_games_config(&config_path)?;
+	games_config.paths.push(path.to_path_buf());
+
+	fs::write(config_path, serde_json::to_string_pretty(&games_config)?)?;
+
+	Ok(())
 }
