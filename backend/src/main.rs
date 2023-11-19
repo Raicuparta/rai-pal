@@ -375,13 +375,13 @@ fn main() {
 
 			if let Some(window) = app.get_window("main") {
 				window.on_window_event(|window_event| {
-					if let WindowEvent::FileDrop(file_drop_event) = window_event {
-						if let FileDropEvent::Dropped(paths) = file_drop_event {
-							if let Some(file_path) = paths.first() {
-								// TODO handle error.
-								manual_provider::add_game(&file_path);
-								// TODO refresh after adding.
+					if let WindowEvent::FileDrop(FileDropEvent::Dropped(paths)) = window_event {
+						if let Some(file_path) = paths.first() {
+							if let Err(err) = manual_provider::add_game(file_path) {
+								// TODO properly handle error (shown message?)
+								println!("Failed to add dropped game: {}", err);
 							}
+							// TODO refresh after adding.
 						}
 					}
 				});
