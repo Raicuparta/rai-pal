@@ -35,6 +35,8 @@ use tauri::api::dialog::{
 	message,
 };
 
+use crate::paths::file_name_without_extension;
+
 mod events;
 mod files;
 mod game_engines;
@@ -247,11 +249,16 @@ async fn update_data(handle: tauri::AppHandle, state: tauri::State<'_, AppState>
 
 	let installed_games: HashMap<String, InstalledGame> = provider_map
 		.iter()
-		.flat_map(|(_, provider)| {
-			provider
-				.get_installed_games(&mod_loaders)
-				.unwrap_or_default()
-		})
+		.flat_map(
+			|(_, provider)| match provider.get_installed_games(&mod_loaders) {
+				Ok(games) => games,
+				Err(err) => {
+					// TODO properly handle these errors message to frontend.
+					println!("Error gettings installed games for provider: {}", err);
+					HashMap::new()
+				}
+			},
+		)
 		.collect();
 
 	update_state(

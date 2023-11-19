@@ -38,6 +38,7 @@ tauri-plugin-window-state = "0.1.0"
 webview2-com = "0.27.0"
 async-trait = "0.1.74"
 futures = "0.3.29"
+serde_json = "1.0.108"
 
 [target.'cfg(target_os = "linux")'.dependencies]
 webkit2gtk = "0.18.2"
