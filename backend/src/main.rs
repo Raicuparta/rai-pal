@@ -30,9 +30,9 @@ use steam::{
 	id_lists::SteamGame,
 };
 use steamlocate::SteamDir;
-use tauri::{
-	api::dialog::message,
-	Manager,
+use tauri::api::dialog::{
+	blocking::FileDialogBuilder,
+	message,
 };
 
 mod events;
@@ -298,6 +298,22 @@ async fn update_data(handle: tauri::AppHandle, state: tauri::State<'_, AppState>
 #[specta::specta]
 // This command is here just so tauri_specta exports these types.
 // This should stop being needed once tauri_specta starts supporting events.
+async fn pick_game_exe() -> Result {
+	if let Some(file_path) = FileDialogBuilder::default()
+		.add_filter("Windows executable", &["exe"])
+		.add_filter("Other executable", &["*"])
+		.pick_file()
+	{
+		println!("found this one {}", file_path.to_string_lossy());
+	}
+
+	Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
+// This command is here just so tauri_specta exports these types.
+// This should stop being needed once tauri_specta starts supporting events.
 async fn dummy_command() -> Result<(InstalledGame, AppEvent)> {
 	Err(Error::NotImplemented)
 }
@@ -360,6 +376,7 @@ fn main() {
 			start_game,
 			open_mod_folder,
 			open_mods_folder,
+			pick_game_exe,
 		]
 	);
 

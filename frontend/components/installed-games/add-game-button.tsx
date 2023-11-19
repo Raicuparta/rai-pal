@@ -2,6 +2,7 @@ import { Button, Flex, Modal, Stack, Text } from "@mantine/core";
 import { IconAppWindowFilled, IconPlaylistAdd } from "@tabler/icons-react";
 import { useState } from "react";
 import styles from "./installed-games.module.css";
+import { pickGameExe } from "@api/bindings";
 
 export function AddGame() {
 	const [isOpen, setIsOpen] = useState(false);
@@ -26,19 +27,17 @@ export function AddGame() {
 					<Button
 						fullWidth
 						h="20em"
+						onClick={pickGameExe}
 					>
 						<Flex
 							gap="md"
 							align="center"
 						>
 							<IconAppWindowFilled fontSize={50} />
-							<Text
-								size="xl"
-								ta="left"
-							>
-								<div>Drag and drop a game&apos;s executable file here</div>
-								<div>or click to select a file</div>
-							</Text>
+							<Stack gap={0}>
+								<Text>Drag and drop a game&apos;s executable file here</Text>
+								<Text>or click to select a file</Text>
+							</Stack>
 						</Flex>
 					</Button>
 					<Text>
