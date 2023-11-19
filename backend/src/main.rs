@@ -306,13 +306,15 @@ async fn update_data(handle: tauri::AppHandle, state: tauri::State<'_, AppState>
 
 #[tauri::command]
 #[specta::specta]
-async fn pick_game_exe() -> Result {
+async fn pick_game_exe(state: tauri::State<'_, AppState>, handle: tauri::AppHandle) -> Result {
 	if let Some(file_path) = FileDialogBuilder::default()
 		.add_filter("Windows executable", &["exe"])
 		.add_filter("Other executable", &["*"])
 		.pick_file()
 	{
 		manual_provider::add_game(&file_path)?;
+		// TODO: add only new game, instead of refreshing entire list.
+		update_data(handle, state).await?;
 	}
 
 	Ok(())
