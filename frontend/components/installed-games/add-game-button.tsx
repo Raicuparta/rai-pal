@@ -1,35 +1,43 @@
 import { Button, Flex, Modal, Stack, Text } from "@mantine/core";
 import { IconAppWindowFilled, IconPlaylistAdd } from "@tabler/icons-react";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import styles from "./installed-games.module.css";
 import { addGame } from "@api/bindings";
 import { dialog } from "@tauri-apps/api";
+import { useUpdateData } from "@hooks/use-update-data";
+import { useAtomValue } from "jotai";
+import { loadingAtom } from "@hooks/use-data";
 
 export function AddGame() {
 	const [isOpen, setIsOpen] = useState(false);
+	const updateData = useUpdateData();
+	const isLoading = useAtomValue(loadingAtom);
 
-	const handleClick = useCallback(() => {
-		dialog
-			.open({
-				multiple: false,
-				title: "Select the game executable",
-				filters: [
-					{
-						extensions: ["exe"],
-						name: "Windows executable",
-					},
-					{
-						extensions: ["*"],
-						name: "Other executable",
-					},
-				],
-			})
-			.then((result) => {
-				if (!result || Array.isArray(result)) return;
+	const handleClick = useCallback(async () => {
+		const result = await dialog.open({
+			multiple: false,
+			title: "Select the game executable",
+			filters: [
+				{
+					extensions: ["exe"],
+					name: "Windows executable",
+				},
+				{
+					extensions: ["*"],
+					name: "Other executable",
+				},
+			],
+		});
+		if (!result || Array.isArray(result)) return;
 
-				addGame(result);
-			});
-	}, []);
+		await addGame(result);
+
+		updateData();
+	}, [updateData]);
+
+	useEffect(() => {
+		if (isLoading) setIsOpen(false);
+	}, [isLoading]);
 
 	return (
 		<>

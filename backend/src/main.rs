@@ -318,8 +318,7 @@ async fn add_game(
 	handle: tauri::AppHandle,
 ) -> Result {
 	manual_provider::add_game(&PathBuf::from(path))?;
-	// TODO: add only new game, instead of refreshing entire list.
-	update_data(handle, state).await?;
+	// TODO: update data automatically?
 
 	Ok(())
 }

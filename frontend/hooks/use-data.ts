@@ -1,4 +1,6 @@
 import { useEffect } from "react";
+import { addGame } from "@api/bindings";
+import { event } from "@tauri-apps/api";
 import { atom } from "jotai";
 import {
 	getDiscoverGames,
@@ -36,6 +38,22 @@ export function useData() {
 	useOwnedGamesSubscription();
 
 	const updateData = useUpdateData();
+
+	useEffect(() => {
+		const unlistenPromise = event.listen<string[]>(
+			event.TauriEvent.WINDOW_FILE_DROP,
+			(event) => {
+				if (event.payload.length > 0) {
+					addGame(event.payload[0]);
+					updateData();
+				}
+			},
+		);
+
+		return () => {
+			unlistenPromise.then((unlisten) => unlisten());
+		};
+	}, [updateData]);
 
 	useEffect(() => {
 		updateData();
