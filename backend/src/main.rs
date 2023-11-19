@@ -33,9 +33,14 @@ use steam::{
 	id_lists::SteamGame,
 };
 use steamlocate::SteamDir;
-use tauri::api::dialog::{
-	blocking::FileDialogBuilder,
-	message,
+use tauri::{
+	api::dialog::{
+		blocking::FileDialogBuilder,
+		message,
+	},
+	FileDropEvent,
+	Manager,
+	WindowEvent,
 };
 
 use crate::paths::file_name_without_extension;
@@ -366,6 +371,20 @@ fn main() {
 						webview.inner().set_background_color(&color);
 					})?;
 				}
+			}
+
+			if let Some(window) = app.get_window("main") {
+				window.on_window_event(|window_event| {
+					if let WindowEvent::FileDrop(file_drop_event) = window_event {
+						if let FileDropEvent::Dropped(paths) = file_drop_event {
+							if let Some(file_path) = paths.first() {
+								// TODO handle error.
+								manual_provider::add_game(&file_path);
+								// TODO refresh after adding.
+							}
+						}
+					}
+				});
 			}
 			Ok(())
 		});
