@@ -73,7 +73,7 @@ fn create_game_from_path(path: &Path, mod_loaders: &mod_loader::DataMap) -> Opti
 	InstalledGame::new(
 		path,
 		file_name_without_extension(path).ok()?,
-		ManualProvider::ID,
+		*ManualProvider::ID,
 		None,
 		None,
 		None,

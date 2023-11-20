@@ -99,7 +99,7 @@ impl ProviderActions for SteamProvider {
 								if let Some(game) = installed_game::InstalledGame::new(
 									full_path,
 									name,
-									Self::ID,
+									*Self::ID,
 									discriminator,
 									Some(&launch_option),
 									Some(get_steam_thumbnail(&app.app_id.to_string())),

@@ -36,7 +36,7 @@ impl InstalledGame {
 	pub fn new(
 		path: &Path,
 		name: &str,
-		provider_id: &ProviderId,
+		provider_id: ProviderId,
 		discriminator: Option<String>,
 		steam_launch: Option<&SteamLaunchOption>,
 		thumbnail_url: Option<String>,
@@ -68,7 +68,7 @@ impl InstalledGame {
 
 		Some(Self {
 			name: name.to_string(),
-			provider_id: provider_id.to_owned(),
+			provider_id,
 			discriminator,
 			steam_launch: steam_launch.cloned(),
 			available_mods,

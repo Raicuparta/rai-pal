@@ -105,7 +105,7 @@ impl GameExecutable {
 				let (operating_system, architecture) =
 					get_os_and_architecture(game_path).unwrap_or((None, None));
 
-				GameExecutable {
+				Self {
 					engine: None,
 					architecture,
 					operating_system,

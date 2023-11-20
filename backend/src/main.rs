@@ -364,13 +364,13 @@ fn main() {
 			discover_games: Mutex::default(),
 			mod_loaders: Mutex::default(),
 		})
-		.setup(|app| {
+		.setup(|_app| {
 			#[cfg(target_os = "linux")]
 			{
 				// This prevents/reduces the white flashbang on app start.
 				// Unfortunately, it will still show the default window color for the system for a bit,
 				// which can some times be white.
-				if let Some(window) = app.get_window("main") {
+				if let Some(window) = _app.get_window("main") {
 					window.set_title(&format!("Rai Pal {}", env!("CARGO_PKG_VERSION")))?;
 
 					window.with_webview(|webview| {
