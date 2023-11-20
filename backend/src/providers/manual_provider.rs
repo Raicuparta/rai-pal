@@ -14,10 +14,7 @@ use super::provider::{
 	ProviderStatic,
 };
 use crate::{
-	installed_game::{
-		self,
-		InstalledGame,
-	},
+	installed_game::InstalledGame,
 	mod_loaders::mod_loader,
 	owned_game::OwnedGame,
 	paths::{
@@ -49,18 +46,11 @@ impl ProviderStatic for ManualProvider {
 
 #[async_trait]
 impl ProviderActions for ManualProvider {
-	fn get_installed_games(
-		&self,
-		mod_loaders: &mod_loader::DataMap,
-	) -> Result<installed_game::Map> {
+	fn get_installed_games(&self, mod_loaders: &mod_loader::DataMap) -> Result<Vec<InstalledGame>> {
 		Ok(read_games_config(&games_config_path()?)?
 			.paths
 			.iter()
-			.filter_map(|path| {
-				let game = create_game_from_path(path, mod_loaders)?;
-
-				Some((game.executable.path.clone(), game))
-			})
+			.filter_map(|path| create_game_from_path(path, mod_loaders))
 			.collect())
 	}
 

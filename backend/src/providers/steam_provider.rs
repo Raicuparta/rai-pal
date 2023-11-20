@@ -1,8 +1,5 @@
 use std::{
-	collections::{
-		HashMap,
-		HashSet,
-	},
+	collections::HashSet,
 	fs,
 	path::PathBuf,
 	string,
@@ -15,7 +12,10 @@ use steamlocate::SteamDir;
 use super::provider::ProviderId;
 use crate::{
 	game_executable::OperatingSystem,
-	installed_game,
+	installed_game::{
+		self,
+		InstalledGame,
+	},
 	mod_loaders::mod_loader,
 	owned_game::OwnedGame,
 	provider::{
@@ -57,11 +57,8 @@ impl ProviderStatic for SteamProvider {
 
 #[async_trait]
 impl ProviderActions for SteamProvider {
-	fn get_installed_games(
-		&self,
-		mod_loaders: &mod_loader::DataMap,
-	) -> Result<installed_game::Map> {
-		let mut game_map: installed_game::Map = HashMap::new();
+	fn get_installed_games(&self, mod_loaders: &mod_loader::DataMap) -> Result<Vec<InstalledGame>> {
+		let mut games: Vec<InstalledGame> = Vec::new();
 		let mut used_paths: HashSet<PathBuf> = HashSet::new();
 		let mut used_names: HashSet<String> = HashSet::new();
 
@@ -105,7 +102,7 @@ impl ProviderActions for SteamProvider {
 									Some(get_steam_thumbnail(&app.app_id.to_string())),
 									mod_loaders,
 								) {
-									game_map.insert(game.executable.path.clone(), game);
+									games.push(game);
 									used_names.insert(name.clone());
 									used_paths.insert(full_path.clone());
 								}
@@ -116,7 +113,7 @@ impl ProviderActions for SteamProvider {
 			}
 		}
 
-		Ok(game_map)
+		Ok(games)
 	}
 
 	async fn get_owned_games(&self) -> Result<Vec<OwnedGame>> {

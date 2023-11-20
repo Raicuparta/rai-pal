@@ -22,7 +22,10 @@ use crate::{
 		unreal,
 	},
 	mod_loaders::mod_loader,
-	paths,
+	paths::{
+		self,
+		normalize_path,
+	},
 	result::Result,
 	serializable_enum,
 	serializable_struct,
@@ -98,18 +101,20 @@ fn equal_or_none<T: PartialEq>(a: Option<T>, b: Option<T>) -> bool {
 }
 
 impl GameExecutable {
-	pub fn new(game_path: &Path) -> Self {
-		unity::get_engine(game_path)
-			.or_else(|| unreal::get_engine(game_path))
+	pub fn new(path: &Path) -> Self {
+		let normalized_path = normalize_path(path);
+
+		unity::get_engine(&normalized_path)
+			.or_else(|| unreal::get_engine(&normalized_path))
 			.unwrap_or_else(|| {
 				let (operating_system, architecture) =
-					get_os_and_architecture(game_path).unwrap_or((None, None));
+					get_os_and_architecture(&normalized_path).unwrap_or((None, None));
 
 				Self {
 					engine: None,
 					architecture,
 					operating_system,
-					path: game_path.to_path_buf(),
+					path: normalized_path,
 					scripting_backend: None,
 				}
 			})
