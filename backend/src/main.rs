@@ -37,17 +37,7 @@ use steam::{
 	id_lists::SteamGame,
 };
 use steamlocate::SteamDir;
-use tauri::{
-	api::dialog::{
-		blocking::FileDialogBuilder,
-		message,
-	},
-	FileDropEvent,
-	Manager,
-	WindowEvent,
-};
-
-use crate::paths::file_name_without_extension;
+use tauri::api::dialog::message;
 
 mod events;
 mod files;
