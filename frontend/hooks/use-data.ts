@@ -45,7 +45,6 @@ export function useData() {
 			(event) => {
 				if (event.payload.length > 0) {
 					addGame(event.payload[0]);
-					updateData();
 				}
 			},
 		);
@@ -53,7 +52,7 @@ export function useData() {
 		return () => {
 			unlistenPromise.then((unlisten) => unlisten());
 		};
-	}, [updateData]);
+	}, []);
 
 	useEffect(() => {
 		updateData();

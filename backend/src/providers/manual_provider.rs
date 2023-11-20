@@ -22,8 +22,10 @@ use crate::{
 	paths::{
 		app_data_path,
 		file_name_without_extension,
+		path_to_str,
 	},
 	serializable_struct,
+	Error,
 	Result,
 };
 
@@ -54,21 +56,10 @@ impl ProviderActions for ManualProvider {
 		Ok(read_games_config(&games_config_path()?)?
 			.paths
 			.iter()
-			.filter_map(|file_path| {
-				let id = file_path.to_string_lossy().to_string();
+			.filter_map(|path| {
+				let game = create_game_from_path(path, mod_loaders)?;
 
-				Some((
-					id.clone(),
-					InstalledGame::new(
-						&id,
-						file_name_without_extension(file_path).ok()?,
-						None,
-						file_path,
-						None,
-						None,
-						mod_loaders,
-					)?,
-				))
+				Some((game.id.clone(), game))
 			})
 			.collect())
 	}
@@ -76,6 +67,18 @@ impl ProviderActions for ManualProvider {
 	async fn get_owned_games(&self) -> Result<Vec<OwnedGame>> {
 		Ok(Vec::new())
 	}
+}
+
+fn create_game_from_path(path: &Path, mod_loaders: &mod_loader::DataMap) -> Option<InstalledGame> {
+	InstalledGame::new(
+		path_to_str(path).ok()?,
+		file_name_without_extension(path).ok()?,
+		None,
+		path,
+		None,
+		None,
+		mod_loaders,
+	)
 }
 
 fn games_config_path() -> Result<PathBuf> {
@@ -89,7 +92,10 @@ fn read_games_config(games_config_path: &Path) -> Result<GamesConfig> {
 	)?)?)
 }
 
-pub fn add_game(path: &Path) -> Result {
+pub fn add_game(path: &Path, mod_loaders: &mod_loader::DataMap) -> Result<InstalledGame> {
+	let game = create_game_from_path(path, mod_loaders)
+		.ok_or(Error::FailedToGetGameFromPath(path.to_path_buf()))?;
+
 	let config_path = games_config_path()?;
 
 	let mut games_config = read_games_config(&config_path)?;
@@ -98,5 +104,5 @@ pub fn add_game(path: &Path) -> Result {
 
 	fs::write(config_path, serde_json::to_string_pretty(&games_config)?)?;
 
-	Ok(())
+	Ok(game)
 }

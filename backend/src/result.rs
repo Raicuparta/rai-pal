@@ -75,6 +75,9 @@ pub enum Error {
 
 	#[error("Failed to get state data")]
 	FailedToGetStateData(String),
+
+	#[error("Failed to get game data from path `{0}`")]
+	FailedToGetGameFromPath(PathBuf),
 }
 
 impl serde::Serialize for Error {

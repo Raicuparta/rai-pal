@@ -317,8 +317,18 @@ async fn add_game(
 	state: tauri::State<'_, AppState>,
 	handle: tauri::AppHandle,
 ) -> Result {
-	manual_provider::add_game(&PathBuf::from(path))?;
-	// TODO: update data automatically?
+	let game =
+		manual_provider::add_game(&PathBuf::from(path), &get_state_data(&state.mod_loaders)?)?;
+
+	let mut installed_games = get_state_data(&state.installed_games)?;
+	installed_games.insert(game.id.clone(), game);
+
+	update_state(
+		AppEvent::SyncInstalledGames,
+		installed_games,
+		&state.installed_games,
+		&handle,
+	)?;
 
 	Ok(())
 }
