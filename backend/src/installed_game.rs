@@ -14,6 +14,7 @@ use crate::{
 	},
 	mod_loaders::mod_loader,
 	paths::{self,},
+	providers::provider::ProviderId,
 	serializable_struct,
 	steam::{
 		self,
@@ -25,6 +26,7 @@ use crate::{
 serializable_struct!(InstalledGame {
 	pub id: String,
 	pub name: String,
+	pub provider_id: ProviderId,
 	pub discriminator: Option<String>,
 	pub steam_launch: Option<SteamLaunchOption>,
 	pub executable: GameExecutable,
@@ -38,6 +40,7 @@ impl InstalledGame {
 	pub fn new(
 		id: &str,
 		name: &str,
+		provider_id: &ProviderId,
 		discriminator: Option<String>,
 		path: &Path,
 		steam_launch: Option<&SteamLaunchOption>,
@@ -71,6 +74,7 @@ impl InstalledGame {
 		Some(Self {
 			id: id.to_string(),
 			name: name.to_string(),
+			provider_id: provider_id.to_owned(),
 			discriminator,
 			steam_launch: steam_launch.cloned(),
 			available_mods,

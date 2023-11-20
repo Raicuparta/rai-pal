@@ -10,6 +10,7 @@ use async_trait::async_trait;
 
 use super::provider::{
 	ProviderActions,
+	ProviderId,
 	ProviderStatic,
 };
 use crate::{
@@ -37,7 +38,7 @@ struct GamesConfig {
 }
 
 impl ProviderStatic for ManualProvider {
-	const ID: &'static str = "manual";
+	const ID: &'static ProviderId = &ProviderId::Manual;
 
 	fn new() -> Result<Self>
 	where
@@ -73,6 +74,7 @@ fn create_game_from_path(path: &Path, mod_loaders: &mod_loader::DataMap) -> Opti
 	InstalledGame::new(
 		path_to_str(path).ok()?,
 		file_name_without_extension(path).ok()?,
+		ManualProvider::ID,
 		None,
 		path,
 		None,

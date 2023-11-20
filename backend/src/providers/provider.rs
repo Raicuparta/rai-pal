@@ -11,8 +11,11 @@ use crate::{
 		manual_provider::ManualProvider,
 		steam_provider::SteamProvider,
 	},
+	serializable_enum,
 	Result,
 };
+
+serializable_enum!(ProviderId { Steam, Manual });
 
 #[enum_dispatch]
 pub enum Provider {
@@ -30,7 +33,7 @@ pub trait ProviderActions {
 }
 
 pub trait ProviderStatic {
-	const ID: &'static str;
+	const ID: &'static ProviderId;
 
 	fn new() -> Result<Self>
 	where

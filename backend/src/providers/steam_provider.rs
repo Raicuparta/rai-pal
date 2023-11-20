@@ -12,6 +12,7 @@ use async_trait::async_trait;
 use lazy_regex::BytesRegex;
 use steamlocate::SteamDir;
 
+use super::provider::ProviderId;
 use crate::{
 	game_executable::OperatingSystem,
 	installed_game,
@@ -38,7 +39,7 @@ pub struct SteamProvider {
 }
 
 impl ProviderStatic for SteamProvider {
-	const ID: &'static str = "steam";
+	const ID: &'static ProviderId = &ProviderId::Steam;
 
 	fn new() -> Result<Self>
 	where
@@ -101,6 +102,7 @@ impl ProviderActions for SteamProvider {
 								if let Some(game) = installed_game::InstalledGame::new(
 									&executable_id,
 									name,
+									Self::ID,
 									discriminator,
 									full_path,
 									Some(&launch_option),
