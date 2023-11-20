@@ -23,7 +23,6 @@ use crate::{
 	paths::{
 		app_data_path,
 		file_name_without_extension,
-		path_to_str,
 	},
 	serializable_struct,
 	Error,
@@ -60,7 +59,7 @@ impl ProviderActions for ManualProvider {
 			.filter_map(|path| {
 				let game = create_game_from_path(path, mod_loaders)?;
 
-				Some((game.id.clone(), game))
+				Some((game.executable.path.clone(), game))
 			})
 			.collect())
 	}
@@ -72,11 +71,10 @@ impl ProviderActions for ManualProvider {
 
 fn create_game_from_path(path: &Path, mod_loaders: &mod_loader::DataMap) -> Option<InstalledGame> {
 	InstalledGame::new(
-		path_to_str(path).ok()?,
+		path,
 		file_name_without_extension(path).ok()?,
 		ManualProvider::ID,
 		None,
-		path,
 		None,
 		None,
 		mod_loaders,

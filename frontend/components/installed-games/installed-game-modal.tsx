@@ -72,19 +72,19 @@ export function InstalledGameModal(props: Props) {
 					<CommandButtonGroup label="Game Actions">
 						<CommandButton
 							leftSection={<IconPlayerPlay />}
-							onClick={() => startGame(props.game.id)}
+							onClick={() => startGame(props.game.executable.path)}
 						>
 							Start Game
 						</CommandButton>
 						<CommandButton
 							leftSection={<IconFolder />}
-							onClick={() => openGameFolder(props.game.id)}
+							onClick={() => openGameFolder(props.game.executable.path)}
 						>
 							Open Game Folder
 						</CommandButton>
 						<CommandButton
 							leftSection={<IconFolderCog />}
-							onClick={() => openGameModsFolder(props.game.id)}
+							onClick={() => openGameModsFolder(props.game.executable.path)}
 						>
 							Open Mods Folder
 						</CommandButton>
@@ -121,7 +121,9 @@ export function InstalledGameModal(props: Props) {
 											<CommandButton
 												leftSection={<IconTrash />}
 												key={mod.name}
-												onClick={() => uninstallMod(props.game.id, mod.id)}
+												onClick={() =>
+													uninstallMod(props.game.executable.path, mod.id)
+												}
 											>
 												Uninstall {mod.name}
 											</CommandButton>
@@ -130,7 +132,11 @@ export function InstalledGameModal(props: Props) {
 												leftSection={<IconTool />}
 												key={mod.name}
 												onClick={() =>
-													installMod(modLoader.id, mod.id, props.game.id)
+													installMod(
+														modLoader.id,
+														mod.id,
+														props.game.executable.path,
+													)
 												}
 											>
 												{mod.kind === "Installable" ? "Install" : "Run"}{" "}

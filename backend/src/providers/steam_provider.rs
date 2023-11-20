@@ -75,9 +75,6 @@ impl ProviderActions for SteamProvider {
 					};
 
 					for launch_option in sorted_launch_options {
-						let executable_id =
-							format!("{}_{}", launch_option.app_id, launch_option.launch_id);
-
 						if let Some(executable_path) = launch_option.executable.as_ref() {
 							let full_path = &app.path.join(executable_path);
 
@@ -100,16 +97,15 @@ impl ProviderActions for SteamProvider {
 								};
 
 								if let Some(game) = installed_game::InstalledGame::new(
-									&executable_id,
+									full_path,
 									name,
 									Self::ID,
 									discriminator,
-									full_path,
 									Some(&launch_option),
 									Some(get_steam_thumbnail(&app.app_id.to_string())),
 									mod_loaders,
 								) {
-									game_map.insert(executable_id.clone(), game);
+									game_map.insert(game.executable.path.clone(), game);
 									used_names.insert(name.clone());
 									used_paths.insert(full_path.clone());
 								}

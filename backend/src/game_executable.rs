@@ -1,4 +1,5 @@
 use std::{
+	collections::HashMap,
 	fs,
 	path::{
 		Path,
@@ -20,6 +21,8 @@ use crate::{
 		},
 		unreal,
 	},
+	mod_loaders::mod_loader,
+	paths,
 	result::Result,
 	serializable_enum,
 	serializable_struct,
@@ -87,19 +90,65 @@ pub fn get_os_and_architecture(
 	})?
 }
 
-pub fn get(game_path: &Path) -> GameExecutable {
-	unity::get_engine(game_path)
-		.or_else(|| unreal::get_engine(game_path))
-		.unwrap_or_else(|| {
-			let (operating_system, architecture) =
-				get_os_and_architecture(game_path).unwrap_or((None, None));
+fn equal_or_none<T: PartialEq>(a: Option<T>, b: Option<T>) -> bool {
+	match (a, b) {
+		(Some(value_a), Some(value_b)) => value_a == value_b,
+		_ => true,
+	}
+}
 
-			GameExecutable {
-				engine: None,
-				architecture,
-				operating_system,
-				path: game_path.to_path_buf(),
-				scripting_backend: None,
-			}
-		})
+impl GameExecutable {
+	pub fn new(game_path: &Path) -> Self {
+		unity::get_engine(game_path)
+			.or_else(|| unreal::get_engine(game_path))
+			.unwrap_or_else(|| {
+				let (operating_system, architecture) =
+					get_os_and_architecture(game_path).unwrap_or((None, None));
+
+				GameExecutable {
+					engine: None,
+					architecture,
+					operating_system,
+					path: game_path.to_path_buf(),
+					scripting_backend: None,
+				}
+			})
+	}
+
+	pub fn get_available_mods(&self, mod_loaders: &mod_loader::DataMap) -> HashMap<String, bool> {
+		mod_loaders
+			.iter()
+			.flat_map(|(_, mod_loader)| &mod_loader.mods)
+			.filter_map(|game_mod| {
+				if equal_or_none(
+					game_mod.engine,
+					self.engine.as_ref().map(|engine| engine.brand),
+				) && equal_or_none(game_mod.scripting_backend, self.scripting_backend)
+				{
+					Some((game_mod.id.clone(), self.is_mod_installed(&game_mod.id)))
+				} else {
+					None
+				}
+			})
+			.collect()
+	}
+
+	pub fn get_installed_mods_folder(&self) -> Result<PathBuf> {
+		let installed_mods_folder = paths::app_data_path()?.join("games").join(&self.path);
+		fs::create_dir_all(&installed_mods_folder)?;
+
+		Ok(installed_mods_folder)
+	}
+
+	pub fn is_mod_installed(&self, mod_id: &str) -> bool {
+		if let Ok(installed_mods_folder) = self.get_installed_mods_folder() {
+			return installed_mods_folder
+				.join("BepInEx")
+				.join("plugins")
+				.join(mod_id)
+				.is_dir();
+		}
+
+		false
+	}
 }
