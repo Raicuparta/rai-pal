@@ -21,6 +21,7 @@ use mod_loaders::mod_loader::{
 	ModLoaderActions,
 };
 use owned_game::OwnedGame;
+use paths::normalize_path;
 use providers::{
 	manual_provider,
 	provider::{
@@ -311,8 +312,14 @@ async fn add_game(
 	state: tauri::State<'_, AppState>,
 	handle: tauri::AppHandle,
 ) -> Result {
-	let game =
-		manual_provider::add_game(&PathBuf::from(path), &get_state_data(&state.mod_loaders)?)?;
+	let normalized_path = normalize_path(&PathBuf::from(path));
+	let existing_game = get_game(&normalized_path, &state);
+
+	if existing_game.is_ok() {
+		return Err(Error::GameAlreadyAdded(normalized_path));
+	}
+
+	let game = manual_provider::add_game(&normalized_path, &get_state_data(&state.mod_loaders)?)?;
 
 	let mut installed_games = get_state_data(&state.installed_games)?;
 	installed_games.insert(game.executable.path.clone(), game);
@@ -323,6 +330,8 @@ async fn add_game(
 		&state.installed_games,
 		&handle,
 	)?;
+
+	// TODO: show thrown errors somewhere on frontend.
 
 	Ok(())
 }

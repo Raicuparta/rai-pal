@@ -89,7 +89,6 @@ pub fn add_game(path: &Path, mod_loaders: &mod_loader::DataMap) -> Result<Instal
 	let config_path = games_config_path()?;
 
 	let mut games_config = read_games_config(&config_path)?;
-	// TODO: normalize and prevent adding repeated entries.
 	games_config.paths.push(path.to_path_buf());
 
 	fs::write(config_path, serde_json::to_string_pretty(&games_config)?)?;

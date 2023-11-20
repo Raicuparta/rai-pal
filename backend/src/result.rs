@@ -78,6 +78,9 @@ pub enum Error {
 
 	#[error("Failed to get game data from path `{0}`")]
 	FailedToGetGameFromPath(PathBuf),
+
+	#[error("This game has already been added before: `{0}`")]
+	GameAlreadyAdded(PathBuf),
 }
 
 impl serde::Serialize for Error {
