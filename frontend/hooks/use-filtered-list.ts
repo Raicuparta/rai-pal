@@ -4,6 +4,7 @@ import { useTableSort } from "./use-table-sort";
 import { usePersistedState } from "./use-persisted-state";
 
 export function useFilteredList<TItem, TFilter>(
+	id: string,
 	tableHeaders: TableColumn<TItem>[],
 	data: TItem[],
 	filterFunction: (
@@ -17,7 +18,7 @@ export function useFilteredList<TItem, TFilter>(
 		tableHeaders.find((header) => header.sort || header.getSortValue)?.id,
 	);
 	const [filter, setFilter] = usePersistedState<TFilter>(
-		`filter-${filterFunction.name}`,
+		id,
 		defaultFilterValue,
 	);
 	const [search, setSearch] = useState("");

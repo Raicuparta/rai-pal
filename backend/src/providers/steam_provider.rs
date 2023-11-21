@@ -175,6 +175,7 @@ impl ProviderActions for SteamProvider {
 
 				Some(OwnedGame {
 					id: steam_id_data.id.clone(),
+					provider_id: *Self::ID,
 					name: app_info.name.clone(),
 					installed,
 					os_list,

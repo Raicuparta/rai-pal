@@ -17,6 +17,10 @@ import {
 	UnityBackendBadge,
 } from "@components/badges/color-coded-badge";
 import { ThumbnailCell } from "@components/table/thumbnail-cell";
+import {
+	engineFilterOptions,
+	providerFilterOptions,
+} from "../../util/common-filter-options";
 
 const thumbnailColumn: TableColumn<InstalledGame> = {
 	id: "thumbnailUrl",
@@ -37,7 +41,6 @@ const nameColumn: TableColumn<InstalledGame> = {
 	),
 };
 
-// TODO: Define this somewhere central, since it's common between installed and owned games.
 const providerColumn: TableColumn<InstalledGame, ProviderId> = {
 	id: "provider",
 	label: "Provider",
@@ -45,11 +48,7 @@ const providerColumn: TableColumn<InstalledGame, ProviderId> = {
 	center: true,
 	hidable: true,
 	getSortValue: (game) => game.providerId,
-	filterOptions: [
-		{ label: "Any provider", value: "" },
-		{ label: "Steam", value: "Steam" },
-		{ label: "Manual", value: "Manual" },
-	],
+	filterOptions: providerFilterOptions,
 	renderCell: (game) => (
 		<Table.Td>
 			<ProviderBadge value={game.providerId} />
@@ -142,12 +141,7 @@ const engineColumn: TableColumn<InstalledGame, GameEngineBrand> = {
 			major * 100000000 + engine.version.minor * 100000 + engine.version.patch
 		);
 	},
-	filterOptions: [
-		{ label: "Any Engine", value: "" },
-		{ label: "Unity", value: "Unity" },
-		{ label: "Unreal", value: "Unreal" },
-		{ label: "Godot", value: "Godot" },
-	],
+	filterOptions: engineFilterOptions,
 	renderCell: ({ executable: { engine } }) => (
 		<Table.Td>
 			<Flex

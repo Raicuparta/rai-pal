@@ -24,14 +24,12 @@ const filterGame = (
 	search: string,
 ) =>
 	includesOneOf(search, [game.name]) &&
-	(!filter.provider || game.providerId === filter.provider) &&
-	(!filter.architecture ||
-		game.executable.architecture === filter.architecture) &&
-	(!filter.operatingSystem ||
-		game.executable.operatingSystem === filter.operatingSystem) &&
-	(!filter.scriptingBackend ||
-		game.executable.scriptingBackend === filter.scriptingBackend) &&
-	(!filter.engine || game.executable.engine?.brand === filter.engine);
+	installedGamesColumns.findIndex(
+		(column) =>
+			filter[column.id] &&
+			column.getSortValue &&
+			filter[column.id] !== column.getSortValue(game),
+	) === -1;
 
 export type TableSortMethod = (
 	gameA: InstalledGame,
@@ -62,7 +60,13 @@ export function InstalledGamesPage() {
 	);
 
 	const [filteredGames, sort, setSort, filter, setFilter, search, setSearch] =
-		useFilteredList(filteredColumns, games, filterGame, defaultFilter);
+		useFilteredList(
+			"installed-games-filter",
+			filteredColumns,
+			games,
+			filterGame,
+			defaultFilter,
+		);
 
 	const selectedGame = useMemo(
 		() => (gameMap && selectedGameId ? gameMap[selectedGameId] : undefined),

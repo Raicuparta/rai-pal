@@ -1,43 +1,44 @@
 import { Flex, Stack } from "@mantine/core";
-import { GameEngineBrand, OwnedGame } from "@api/bindings";
+import { OwnedGame } from "@api/bindings";
 import { useMemo, useState } from "react";
 import { includesOneOf } from "../../util/filter";
 import { OwnedGameModal } from "./owned-game-modal";
 import { useFilteredList } from "@hooks/use-filtered-list";
 import { FilterMenu } from "@components/filter-menu";
 import { VirtualizedTable } from "@components/table/virtualized-table";
-import { SwitchButton } from "@components/switch-button";
 import { RefreshButton } from "@components/refresh-button";
 import { SearchInput } from "@components/search-input";
-import { EngineSelect } from "@components/engine-select";
 import { ownedGamesAtom } from "@hooks/use-data";
 import { useAtomValue } from "jotai";
 import { ownedGamesColumns } from "./owned-games-columns";
 import { ColumnsSelect } from "@components/columns-select";
+import { usePersistedState } from "@hooks/use-persisted-state";
+import { TypedSegmentedControl } from "@components/installed-games/typed-segmented-control";
 
-type Filter = {
-	hideInstalled: boolean;
-	linuxOnly: boolean;
-	engine?: GameEngineBrand;
-};
+const defaultFilter: Record<string, string> = {};
 
-const defaultFilter: Filter = {
-	hideInstalled: false,
-	linuxOnly: false,
-};
-
-const filterGame = (game: OwnedGame, filter: Filter, search: string) =>
-	includesOneOf(search, [game.name, game.id.toString()]) &&
-	(!filter.linuxOnly || game.osList.includes("Linux")) &&
-	(!filter.hideInstalled || !game.installed) &&
-	(!filter.engine || game.engine === filter.engine);
+const filterGame = (
+	game: OwnedGame,
+	filter: Record<string, string>,
+	search: string,
+) =>
+	includesOneOf(search, [game.name]) &&
+	ownedGamesColumns.findIndex(
+		(column) =>
+			filter[column.id] &&
+			column.getSortValue &&
+			filter[column.id] !== column.getSortValue(game),
+	) === -1;
 
 export function OwnedGamesPage() {
 	const ownedGames = useAtomValue(ownedGamesAtom);
 
 	const [selectedGame, setSelectedGame] = useState<OwnedGame>();
 
-	const [hiddenColumns, setHiddenColumns] = useState<string[]>([]);
+	const [hiddenColumns, setHiddenColumns] = usePersistedState<string[]>(
+		"installed-hidden-columns",
+		["provider"],
+	);
 
 	const filteredColumns = useMemo(
 		() =>
@@ -47,14 +48,14 @@ export function OwnedGamesPage() {
 
 	const [filteredGames, sort, setSort, filter, setFilter, search, setSearch] =
 		useFilteredList(
+			"owned-games-filter",
 			filteredColumns,
 			ownedGames ?? [],
 			filterGame,
 			defaultFilter,
 		);
 
-	const isFilterActive =
-		filter.linuxOnly || filter.hideInstalled || Boolean(filter.engine);
+	const isFilterActive = Object.values(filter).filter(Boolean).length > 0;
 
 	return (
 		<Stack h="100%">
@@ -80,23 +81,17 @@ export function OwnedGamesPage() {
 							hiddenIds={hiddenColumns}
 							onChange={setHiddenColumns}
 						/>
-						{/* TODO: define these in the owned games columns, like I did for installed games. */}
-						<EngineSelect
-							onChange={(engine) => setFilter({ engine })}
-							value={filter.engine}
-						/>
-						<SwitchButton
-							onChange={(value) => setFilter({ hideInstalled: value })}
-							value={filter.hideInstalled}
-						>
-							Hide installed games
-						</SwitchButton>
-						<SwitchButton
-							onChange={(value) => setFilter({ linuxOnly: value })}
-							value={filter.linuxOnly}
-						>
-							Hide games without native Linux support
-						</SwitchButton>
+						{ownedGamesColumns.map(
+							(column) =>
+								column.filterOptions && (
+									<TypedSegmentedControl
+										key={column.id}
+										data={column.filterOptions}
+										onChange={(value) => setFilter({ [column.id]: value })}
+										value={filter[column.id]}
+									/>
+								),
+						)}
 					</Stack>
 				</FilterMenu>
 				<RefreshButton />
