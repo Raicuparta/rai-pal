@@ -58,7 +58,7 @@ where
 		Ok((key, value)) => {
 			map.insert(key, value);
 		}
-		Err(err) => println!("Failed to create map entry: {err}"),
+		Err(err) => eprintln!("Failed to create map entry: {err}"),
 	}
 }
 

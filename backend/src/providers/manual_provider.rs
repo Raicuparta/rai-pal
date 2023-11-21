@@ -47,7 +47,7 @@ impl ProviderStatic for ManualProvider {
 #[async_trait]
 impl ProviderActions for ManualProvider {
 	fn get_installed_games(&self, mod_loaders: &mod_loader::DataMap) -> Result<Vec<InstalledGame>> {
-		Ok(read_games_config(&games_config_path()?)?
+		Ok(read_games_config(&games_config_path()?)
 			.paths
 			.iter()
 			.filter_map(|path| create_game_from_path(path, mod_loaders))
@@ -75,11 +75,18 @@ fn games_config_path() -> Result<PathBuf> {
 	Ok(app_data_path()?.join("games.json"))
 }
 
-fn read_games_config(games_config_path: &Path) -> Result<GamesConfig> {
-	// TODO: handle missing / empty file gracefully.
-	Ok(serde_json::from_str::<GamesConfig>(&fs::read_to_string(
-		games_config_path,
-	)?)?)
+fn read_games_config(games_config_path: &Path) -> GamesConfig {
+	match fs::read_to_string(games_config_path)
+		.and_then(|games_config_file| Ok(serde_json::from_str::<GamesConfig>(&games_config_file)?))
+	{
+		Ok(games_config) => games_config,
+		Err(error) => {
+			eprintln!("Error reading config: {error}");
+			GamesConfig {
+				paths: Vec::default(),
+			}
+		}
+	}
 }
 
 pub fn add_game(path: &Path, mod_loaders: &mod_loader::DataMap) -> Result<InstalledGame> {
@@ -88,7 +95,7 @@ pub fn add_game(path: &Path, mod_loaders: &mod_loader::DataMap) -> Result<Instal
 
 	let config_path = games_config_path()?;
 
-	let mut games_config = read_games_config(&config_path)?;
+	let mut games_config = read_games_config(&config_path);
 	games_config.paths.push(path.to_path_buf());
 
 	fs::write(config_path, serde_json::to_string_pretty(&games_config)?)?;

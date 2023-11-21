@@ -257,7 +257,7 @@ async fn update_data(handle: tauri::AppHandle, state: tauri::State<'_, AppState>
 				Ok(games) => games,
 				Err(err) => {
 					// TODO properly handle these errors message to frontend.
-					println!("Error getting installed games for provider: {}", err);
+					eprintln!("Error getting installed games for provider: {}", err);
 					Vec::default()
 				}
 			},
@@ -346,7 +346,7 @@ fn main() {
 	// Since I'm making all exposed functions async, panics won't crash anything important, I think.
 	// So I can just catch panics here and show a system message with the error.
 	std::panic::set_hook(Box::new(|info| {
-		println!("Panic: {info}");
+		eprintln!("Panic: {info}");
 		message(
 			None::<&tauri::Window>,
 			"Failed to execute command",
@@ -414,14 +414,14 @@ fn main() {
 					.bigint(specta::ts::BigIntExportBehavior::BigInt),
 				"../frontend/api/bindings.ts",
 			) {
-				println!("Failed to generate TypeScript bindings: {err}");
+				eprintln!("Failed to generate TypeScript bindings: {err}");
 			}
 		}
 		Err(err) => {
-			println!("Failed to generate api bindings: {err}");
+			eprintln!("Failed to generate api bindings: {err}");
 		}
 	}
 	tauri_builder
 		.run(tauri::generate_context!())
-		.unwrap_or_else(|err| println!("Failed to run Tauri application: {err}"));
+		.unwrap_or_else(|err| eprintln!("Failed to run Tauri application: {err}"));
 }

@@ -154,7 +154,7 @@ fn get_version(path: &Path, architecture: Architecture) -> Option<GameEngineVers
 				.or_else(|| get_version_from_exe_parse(&file_bytes));
 		}
 		Err(err) => {
-			println!("Failed to read game exe: {err}");
+			eprintln!("Failed to read game exe: {err}");
 		}
 	}
 

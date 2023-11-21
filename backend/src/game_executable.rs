@@ -81,12 +81,12 @@ pub fn get_os_and_architecture(
 			return Ok(pe_result?);
 		}
 
-		println!("Failed to parse exe as ELF or PE");
+		eprintln!("Failed to parse exe as ELF or PE");
 		if let Err(err) = elf_result {
-			println!("ELF error: {err}");
+			eprintln!("ELF error: {err}");
 		}
 		if let Err(err) = pe_result {
-			println!("PE error: {err}");
+			eprintln!("PE error: {err}");
 		}
 
 		Ok((None, None))
