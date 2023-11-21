@@ -6,6 +6,7 @@ import {
 	ArchitectureBadge,
 	EngineBadge,
 	OperatingSystemBadge,
+	ProviderBadge,
 	UnityBackendBadge,
 } from "@components/badges/color-coded-badge";
 import { ThumbnailCell } from "@components/table/thumbnail-cell";
@@ -25,6 +26,19 @@ export const installedGamesColumns: TableColumn<InstalledGame>[] = [
 		renderCell: (game) => (
 			<Table.Td>
 				<GameName game={game} />
+			</Table.Td>
+		),
+	},
+	{
+		id: "provider",
+		label: "Provider",
+		width: 110,
+		center: true,
+		hidable: true,
+		getSortValue: (game) => game.providerId,
+		renderCell: (game) => (
+			<Table.Td>
+				<ProviderBadge value={game.providerId} />
 			</Table.Td>
 		),
 	},

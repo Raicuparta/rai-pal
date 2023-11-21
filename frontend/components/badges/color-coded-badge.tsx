@@ -1,6 +1,8 @@
 import {
 	Architecture,
 	GameEngineBrand,
+	OperatingSystem,
+	ProviderId,
 	UnityScriptingBackend,
 } from "@api/bindings";
 import { Badge, BadgeProps, DefaultMantineColor, Flex } from "@mantine/core";
@@ -61,7 +63,15 @@ export const ArchitectureBadge = CreateColorCodedBadge<Architecture>("-", {
 	X86: "teal",
 });
 
-export const OperatingSystemBadge = CreateColorCodedBadge<string>("Unknown", {
-	Linux: "yellow",
-	Windows: "lime",
+export const OperatingSystemBadge = CreateColorCodedBadge<OperatingSystem>(
+	"Unknown",
+	{
+		Linux: "yellow",
+		Windows: "lime",
+	},
+);
+
+export const ProviderBadge = CreateColorCodedBadge<ProviderId>("Unknown", {
+	Manual: "gray",
+	Steam: "blue",
 });
