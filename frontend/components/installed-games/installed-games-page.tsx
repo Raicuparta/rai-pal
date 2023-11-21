@@ -8,6 +8,7 @@ import {
 	GameEngineBrand,
 	OperatingSystem,
 	UnityScriptingBackend,
+	ProviderId,
 } from "@api/bindings";
 import {
 	SegmentedControlData,
@@ -27,6 +28,7 @@ import { usePersistedState } from "@hooks/use-persisted-state";
 import { AddGame } from "./add-game-button";
 
 interface InstalledGamesFilter {
+	provider?: ProviderId;
 	operatingSystem?: OperatingSystem;
 	architecture?: Architecture;
 	scriptingBackend?: UnityScriptingBackend;
@@ -41,6 +43,7 @@ const filterGame = (
 	search: string,
 ) =>
 	includesOneOf(search, [game.name]) &&
+	(!filter.provider || game.providerId === filter.provider) &&
 	(!filter.architecture ||
 		game.executable.architecture === filter.architecture) &&
 	(!filter.operatingSystem ||
@@ -48,6 +51,12 @@ const filterGame = (
 	(!filter.scriptingBackend ||
 		game.executable.scriptingBackend === filter.scriptingBackend) &&
 	(!filter.engine || game.executable.engine?.brand === filter.engine);
+
+const providerOptions: SegmentedControlData<ProviderId>[] = [
+	{ label: "Any provider", value: "" },
+	{ label: "Steam", value: "Steam" },
+	{ label: "Manual", value: "Manual" },
+];
 
 const operatingSystemOptions: SegmentedControlData<OperatingSystem>[] = [
 	{ label: "Any OS", value: "" },
@@ -104,7 +113,8 @@ export function InstalledGamesPage() {
 	);
 
 	const isFilterActive = Boolean(
-		filter.architecture ||
+		filter.provider ||
+			filter.architecture ||
 			filter.operatingSystem ||
 			filter.scriptingBackend ||
 			filter.engine,
@@ -128,6 +138,12 @@ export function InstalledGamesPage() {
 							columns={installedGamesColumns}
 							hiddenIds={hiddenColumns}
 							onChange={setHiddenColumns}
+						/>
+
+						<TypedSegmentedControl
+							data={providerOptions}
+							onChange={(provider) => setFilter({ provider })}
+							value={filter.provider}
 						/>
 						<TypedSegmentedControl
 							data={operatingSystemOptions}
