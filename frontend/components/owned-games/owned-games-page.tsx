@@ -80,6 +80,7 @@ export function OwnedGamesPage() {
 							hiddenIds={hiddenColumns}
 							onChange={setHiddenColumns}
 						/>
+						{/* TODO: define these in the owned games columns, like I did for installed games. */}
 						<EngineSelect
 							onChange={(engine) => setFilter({ engine })}
 							value={filter.engine}
