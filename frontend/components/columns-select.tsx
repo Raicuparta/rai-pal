@@ -1,8 +1,8 @@
 import { Button } from "@mantine/core";
 import { TableColumn } from "./table/table-head";
 
-type Props<TItem> = {
-	readonly columns: TableColumn<TItem>[];
+type Props<TItem, TFilterOption extends string = string> = {
+	readonly columns: TableColumn<TItem, TFilterOption>[];
 	readonly hiddenIds: string[];
 	readonly onChange: (hiddenIds: string[]) => void;
 };

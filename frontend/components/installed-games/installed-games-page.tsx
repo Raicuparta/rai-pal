@@ -2,24 +2,13 @@ import { Flex, Stack } from "@mantine/core";
 import { useMemo, useState } from "react";
 import { includesOneOf } from "../../util/filter";
 import { InstalledGameModal } from "./installed-game-modal";
-import {
-	Architecture,
-	InstalledGame,
-	GameEngineBrand,
-	OperatingSystem,
-	UnityScriptingBackend,
-	ProviderId,
-} from "@api/bindings";
-import {
-	SegmentedControlData,
-	TypedSegmentedControl,
-} from "./typed-segmented-control";
+import { InstalledGame } from "@api/bindings";
+import { TypedSegmentedControl } from "./typed-segmented-control";
 import { useFilteredList } from "@hooks/use-filtered-list";
 import { FilterMenu } from "@components/filter-menu";
 import { VirtualizedTable } from "@components/table/virtualized-table";
 import { RefreshButton } from "@components/refresh-button";
 import { SearchInput } from "@components/search-input";
-import { EngineSelect } from "@components/engine-select";
 import { useAtomValue } from "jotai";
 import { installedGamesAtom } from "@hooks/use-data";
 import { installedGamesColumns } from "./installed-games-columns";
@@ -27,19 +16,11 @@ import { ColumnsSelect } from "@components/columns-select";
 import { usePersistedState } from "@hooks/use-persisted-state";
 import { AddGame } from "./add-game-button";
 
-interface InstalledGamesFilter {
-	provider?: ProviderId;
-	operatingSystem?: OperatingSystem;
-	architecture?: Architecture;
-	scriptingBackend?: UnityScriptingBackend;
-	engine?: GameEngineBrand;
-}
-
-const defaultFilter: InstalledGamesFilter = {};
+const defaultFilter: Record<string, string> = {};
 
 const filterGame = (
 	game: InstalledGame,
-	filter: InstalledGamesFilter,
+	filter: Record<string, string>,
 	search: string,
 ) =>
 	includesOneOf(search, [game.name]) &&
@@ -51,30 +32,6 @@ const filterGame = (
 	(!filter.scriptingBackend ||
 		game.executable.scriptingBackend === filter.scriptingBackend) &&
 	(!filter.engine || game.executable.engine?.brand === filter.engine);
-
-const providerOptions: SegmentedControlData<ProviderId>[] = [
-	{ label: "Any provider", value: "" },
-	{ label: "Steam", value: "Steam" },
-	{ label: "Manual", value: "Manual" },
-];
-
-const operatingSystemOptions: SegmentedControlData<OperatingSystem>[] = [
-	{ label: "Any OS", value: "" },
-	{ label: "Windows", value: "Windows" },
-	{ label: "Linux", value: "Linux" },
-];
-
-const architectureOptions: SegmentedControlData<Architecture>[] = [
-	{ label: "Any architecture", value: "" },
-	{ label: "x64", value: "X64" },
-	{ label: "x86", value: "X86" },
-];
-
-const scriptingBackendOptions: SegmentedControlData<UnityScriptingBackend>[] = [
-	{ label: "Any backend", value: "" },
-	{ label: "IL2CPP", value: "Il2Cpp" },
-	{ label: "Mono", value: "Mono" },
-];
 
 export type TableSortMethod = (
 	gameA: InstalledGame,
@@ -88,7 +45,7 @@ export function InstalledGamesPage() {
 
 	const [hiddenColumns, setHiddenColumns] = usePersistedState<string[]>(
 		"installed-hidden-columns",
-		["operatingSystem"],
+		["operatingSystem", "provider"],
 	);
 
 	const games = useMemo(
@@ -112,13 +69,7 @@ export function InstalledGamesPage() {
 		[gameMap, selectedGameId],
 	);
 
-	const isFilterActive = Boolean(
-		filter.provider ||
-			filter.architecture ||
-			filter.operatingSystem ||
-			filter.scriptingBackend ||
-			filter.engine,
-	);
+	const isFilterActive = Object.values(filter).filter(Boolean).length > 0;
 
 	return (
 		<Stack h="100%">
@@ -140,30 +91,17 @@ export function InstalledGamesPage() {
 							onChange={setHiddenColumns}
 						/>
 
-						<TypedSegmentedControl
-							data={providerOptions}
-							onChange={(provider) => setFilter({ provider })}
-							value={filter.provider}
-						/>
-						<TypedSegmentedControl
-							data={operatingSystemOptions}
-							onChange={(operatingSystem) => setFilter({ operatingSystem })}
-							value={filter.operatingSystem}
-						/>
-						<TypedSegmentedControl
-							data={architectureOptions}
-							onChange={(architecture) => setFilter({ architecture })}
-							value={filter.architecture}
-						/>
-						<TypedSegmentedControl
-							data={scriptingBackendOptions}
-							onChange={(scriptingBackend) => setFilter({ scriptingBackend })}
-							value={filter.scriptingBackend}
-						/>
-						<EngineSelect
-							onChange={(engine) => setFilter({ engine })}
-							value={filter.engine}
-						/>
+						{installedGamesColumns.map(
+							(column) =>
+								column.filterOptions && (
+									<TypedSegmentedControl
+										key={column.id}
+										data={column.filterOptions}
+										onChange={(value) => setFilter({ [column.id]: value })}
+										value={filter[column.id]}
+									/>
+								),
+						)}
 					</Stack>
 				</FilterMenu>
 				<RefreshButton />

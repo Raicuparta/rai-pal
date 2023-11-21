@@ -2,25 +2,29 @@ import { Box, Flex, Table } from "@mantine/core";
 import classes from "./table.module.css";
 import { IconChevronDown, IconChevronUp } from "@tabler/icons-react";
 import { TableSort } from "@hooks/use-table-sort";
+import { SegmentedControlData } from "@components/installed-games/typed-segmented-control";
 
-export type TableColumn<TItem> = {
+export type TableColumn<TItem, TFilterOption extends string = string> = {
 	id: string;
 	label: string;
+	renderCell: (item: TItem) => JSX.Element;
 	width?: number;
 	center?: boolean;
 	hidable?: boolean;
 	sort?: (itemA: TItem, itemB: TItem) => number;
 	getSortValue?: (item: TItem) => unknown;
-	renderCell: (item: TItem) => JSX.Element;
+	filterOptions?: SegmentedControlData<TFilterOption>[];
 };
 
-type Props<TItem> = {
-	readonly columns: TableColumn<TItem>[];
+type Props<TItem, TFilterOption extends string = string> = {
+	readonly columns: TableColumn<TItem, TFilterOption>[];
 	readonly onChangeSort?: (sort: string) => void;
 	readonly sort?: TableSort;
 };
 
-export function TableHead<TItem>(props: Props<TItem>) {
+export function TableHead<TItem, TFilterOption extends string = string>(
+	props: Props<TItem, TFilterOption>,
+) {
 	return (
 		<Table.Tr>
 			{props.columns.map((column) => {
