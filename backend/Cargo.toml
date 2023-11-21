@@ -24,7 +24,7 @@ specta = "1.0.5"
 tauri-specta = { version = "1.0.2", features = ["typescript"] }
 serde = { version = "1.0", features = ["derive"] }
 byteorder = "1.5.0"
-tauri = { version = "1.5.2", features = [ "updater", "shell-open", "dialog"] }
+tauri = { version = "1.5.2", features = [ "dialog-open", "updater", "shell-open", "dialog"] }
 reqwest = "0.11.22"
 goblin = "0.7.1"
 open = "5.0.0"
@@ -36,6 +36,9 @@ zip = "0.6.6"
 pelite = "0.10.0"
 tauri-plugin-window-state = "0.1.0"
 webview2-com = "0.27.0"
+async-trait = "0.1.74"
+futures = "0.3.29"
+serde_json = "1.0.108"
 
 [target.'cfg(target_os = "linux")'.dependencies]
 webkit2gtk = "0.18.2"

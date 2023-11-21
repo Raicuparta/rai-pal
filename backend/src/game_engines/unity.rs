@@ -78,7 +78,7 @@ fn get_version(game_exe_path: &Path) -> Option<GameEngineVersion> {
 						Ok(version) => {
 							return Some(version);
 						}
-						Err(err) => println!("Failed to get Unity version: {err}"),
+						Err(err) => eprintln!("Failed to get Unity version: {err}"),
 					}
 				}
 			}
@@ -107,7 +107,7 @@ fn get_scripting_backend(path: &Path) -> Option<UnityScriptingBackend> {
 			}
 		}
 		Err(err) => {
-			println!("Failed to get Unity scripting backend: {err}");
+			eprintln!("Failed to get Unity scripting backend: {err}");
 			None
 		}
 	}

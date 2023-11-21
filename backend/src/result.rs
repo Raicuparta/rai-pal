@@ -29,14 +29,17 @@ pub enum Error {
 	#[error(transparent)]
 	Tauri(#[from] tauri::Error),
 
+	#[error(transparent)]
+	Json(#[from] serde_json::Error),
+
 	#[error("Invalid type `{0}` in binary vdf key/value pair")]
 	InvalidBinaryVdfType(u8),
 
 	#[error("Failed to get file name from path `{0}`")]
 	FailedToGetFileName(PathBuf),
 
-	#[error("Failed to find game with ID `{0}`")]
-	GameNotFound(String),
+	#[error("Failed to find game `{0}`")]
+	GameNotFound(PathBuf),
 
 	#[error("Failed to find mod with ID `{0}`")]
 	ModNotFound(String),
@@ -72,6 +75,12 @@ pub enum Error {
 
 	#[error("Failed to get state data")]
 	FailedToGetStateData(String),
+
+	#[error("Failed to get game data from path `{0}`")]
+	FailedToGetGameFromPath(PathBuf),
+
+	#[error("This game has already been added before: `{0}`")]
+	GameAlreadyAdded(PathBuf),
 }
 
 impl serde::Serialize for Error {

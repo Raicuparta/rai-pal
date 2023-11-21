@@ -7,7 +7,7 @@ export function useTableRowContent<TItem>(columns: TableColumn<TItem>[]) {
 			<>
 				{columns.map((column) => (
 					<React.Fragment key={column.id}>
-						{column.renderCell ? column.renderCell(item) : "TODO"}
+						{column.renderCell(item)}
 					</React.Fragment>
 				))}
 			</>

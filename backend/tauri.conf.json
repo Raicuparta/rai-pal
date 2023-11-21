@@ -26,6 +26,14 @@
         "open": "^((steam?://\\w+)|(https?://\\w+)).+",
         "scope": [],
         "sidecar": false
+      },
+      "dialog": {
+        "all": false,
+        "ask": false,
+        "confirm": false,
+        "message": false,
+        "open": true,
+        "save": false
       }
     },
     "bundle": {

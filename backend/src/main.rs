@@ -3,9 +3,10 @@
 #![feature(future_join)]
 
 use std::{
-	future::{
-		self,
-		Future,
+	collections::HashMap,
+	path::{
+		Path,
+		PathBuf,
 	},
 	sync::Mutex,
 };
@@ -19,6 +20,15 @@ use mod_loaders::mod_loader::{
 	self,
 	ModLoaderActions,
 };
+use owned_game::OwnedGame;
+use paths::normalize_path;
+use providers::{
+	manual_provider,
+	provider::{
+		self,
+		ProviderActions,
+	},
+};
 use result::{
 	Error,
 	Result,
@@ -26,13 +36,9 @@ use result::{
 use steam::{
 	appinfo,
 	id_lists::SteamGame,
-	owned_games::OwnedGame,
 };
 use steamlocate::SteamDir;
-use tauri::{
-	api::dialog::message,
-	Manager,
-};
+use tauri::api::dialog::message;
 
 mod events;
 mod files;
@@ -42,8 +48,9 @@ mod game_mod;
 mod installed_game;
 mod macros;
 mod mod_loaders;
+mod owned_game;
 mod paths;
-mod provider;
+mod providers;
 mod result;
 mod steam;
 mod windows;
@@ -55,20 +62,20 @@ struct AppState {
 	mod_loaders: Mutex<Option<mod_loader::DataMap>>,
 }
 
-fn get_game(game_id: &str, state: &tauri::State<'_, AppState>) -> Result<InstalledGame> {
+fn get_game(game_id: &Path, state: &tauri::State<'_, AppState>) -> Result<InstalledGame> {
 	if let Ok(read_guard) = state.installed_games.lock() {
 		let installed_games = read_guard
 			.as_ref()
-			.ok_or(Error::GameNotFound(game_id.to_string()))?;
+			.ok_or(Error::GameNotFound(game_id.to_owned()))?;
 
 		let game = installed_games
 			.get(game_id)
-			.ok_or_else(|| Error::GameNotFound(game_id.to_string()))?;
+			.ok_or_else(|| Error::GameNotFound(game_id.to_owned()))?;
 
 		return Ok(game.clone());
 	}
 
-	Err(Error::GameNotFound(game_id.to_string()))
+	Err(Error::GameNotFound(game_id.to_owned()))
 }
 
 fn get_state_data<TData: Clone>(mutex: &Mutex<Option<TData>>) -> Result<TData> {
@@ -128,14 +135,14 @@ fn update_state<TData>(
 
 #[tauri::command]
 #[specta::specta]
-async fn open_game_folder(game_id: &str, state: tauri::State<'_, AppState>) -> Result {
-	get_game(game_id, &state)?.open_game_folder()
+async fn open_game_folder(path: PathBuf, state: tauri::State<'_, AppState>) -> Result {
+	get_game(&path, &state)?.open_game_folder()
 }
 
 #[tauri::command]
 #[specta::specta]
-async fn open_game_mods_folder(game_id: &str, state: tauri::State<'_, AppState>) -> Result {
-	get_game(game_id, &state)?.open_mods_folder()
+async fn open_game_mods_folder(path: PathBuf, state: tauri::State<'_, AppState>) -> Result {
+	get_game(&path, &state)?.open_mods_folder()
 }
 
 #[tauri::command]
@@ -156,11 +163,11 @@ async fn open_mod_folder(mod_loader_id: &str, mod_id: &str, handle: tauri::AppHa
 #[tauri::command]
 #[specta::specta]
 async fn start_game(
-	game_id: &str,
+	path: PathBuf,
 	state: tauri::State<'_, AppState>,
 	handle: tauri::AppHandle,
 ) -> Result {
-	get_game(game_id, &state)?.start(&handle)
+	get_game(&path, &state)?.start(&handle)
 }
 
 #[tauri::command]
@@ -168,25 +175,25 @@ async fn start_game(
 async fn install_mod(
 	mod_loader_id: &str,
 	mod_id: &str,
-	game_id: &str,
+	path: PathBuf,
 	state: tauri::State<'_, AppState>,
 	handle: tauri::AppHandle,
 ) -> Result {
 	let resources_path = paths::resources_path(&handle)?;
 
-	let game = get_game(game_id, &state)?;
+	let game = get_game(&path, &state)?;
 
 	let mod_loader = mod_loader::get(&resources_path, mod_loader_id)?;
 
 	mod_loader.install_mod(&game, mod_id)?;
 
-	refresh_single_game(game_id, &state, &handle)?;
+	refresh_single_game(&path, &state, &handle)?;
 
 	Ok(())
 }
 
 fn refresh_single_game(
-	game_id: &str,
+	path: &Path,
 	state: &tauri::State<'_, AppState>,
 	handle: &tauri::AppHandle,
 ) -> Result {
@@ -194,8 +201,8 @@ fn refresh_single_game(
 	let mut installed_games = get_state_data(&state.installed_games)?;
 
 	installed_games
-		.get_mut(game_id)
-		.ok_or_else(|| Error::GameNotFound(game_id.to_string()))?
+		.get_mut(path)
+		.ok_or_else(|| Error::GameNotFound(path.to_owned()))?
 		.refresh_mods(&mod_loaders);
 
 	update_state(
@@ -211,14 +218,14 @@ fn refresh_single_game(
 #[tauri::command]
 #[specta::specta]
 async fn uninstall_mod(
-	game_id: &str,
+	path: PathBuf,
 	mod_id: &str,
 	state: tauri::State<'_, AppState>,
 	handle: tauri::AppHandle,
 ) -> Result {
-	get_game(game_id, &state)?.uninstall_mod(mod_id)?;
+	get_game(&path, &state)?.uninstall_mod(mod_id)?;
 
-	refresh_single_game(game_id, &state, &handle)?;
+	refresh_single_game(&path, &state, &handle)?;
 
 	Ok(())
 }
@@ -238,12 +245,26 @@ async fn update_data(handle: tauri::AppHandle, state: tauri::State<'_, AppState>
 		&handle,
 	)?;
 
+	let provider_map = provider::get_map();
+
 	let steam_dir = SteamDir::locate()?;
 	let app_info = appinfo::read(steam_dir.path())?;
 
-	let installed_games = steam::installed_games::get(&steam_dir, &app_info, &mod_loaders)
-		.await
-		.unwrap_or_default();
+	let installed_games: HashMap<_, _> = provider_map
+		.values()
+		.flat_map(
+			|provider| match provider.get_installed_games(&mod_loaders) {
+				Ok(games) => games,
+				Err(err) => {
+					// TODO properly handle these errors message to frontend.
+					eprintln!("Error getting installed games for provider: {}", err);
+					Vec::default()
+				}
+			},
+		)
+		.map(|game| (game.executable.path.clone(), game))
+		.collect();
+
 	update_state(
 		AppEvent::SyncInstalledGames,
 		installed_games.clone(),
@@ -251,13 +272,22 @@ async fn update_data(handle: tauri::AppHandle, state: tauri::State<'_, AppState>
 		&handle,
 	)?;
 
-	let (discover_games, owned_games) = Box::pin(future::join!(
+	let (discover_games_result, owned_games_result) = futures::future::join(
 		steam::discover_games::get(&app_info),
-		steam::owned_games::get(&steam_dir, &app_info)
-	))
+		futures::future::join_all(
+			provider_map
+				.values()
+				.map(provider::ProviderActions::get_owned_games),
+		),
+	)
 	.await;
 
-	let discover_games = discover_games.unwrap_or_default();
+	let owned_games: Vec<OwnedGame> = owned_games_result
+		.into_iter()
+		.flat_map(result::Result::unwrap_or_default)
+		.collect();
+
+	let discover_games = discover_games_result.unwrap_or_default();
 	update_state(
 		AppEvent::SyncDiscoverGames,
 		discover_games,
@@ -265,11 +295,39 @@ async fn update_data(handle: tauri::AppHandle, state: tauri::State<'_, AppState>
 		&handle,
 	)?;
 
-	let owned_games = owned_games.unwrap_or_default();
 	update_state(
 		AppEvent::SyncOwnedGames,
 		owned_games,
 		&state.owned_games,
+		&handle,
+	)?;
+
+	Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn add_game(
+	path: PathBuf,
+	state: tauri::State<'_, AppState>,
+	handle: tauri::AppHandle,
+) -> Result {
+	let normalized_path = normalize_path(&path);
+	let existing_game = get_game(&normalized_path, &state);
+
+	if existing_game.is_ok() {
+		return Err(Error::GameAlreadyAdded(normalized_path));
+	}
+
+	let game = manual_provider::add_game(&normalized_path, &get_state_data(&state.mod_loaders)?)?;
+
+	let mut installed_games = get_state_data(&state.installed_games)?;
+	installed_games.insert(game.executable.path.clone(), game);
+
+	update_state(
+		AppEvent::SyncInstalledGames,
+		installed_games,
+		&state.installed_games,
 		&handle,
 	)?;
 
@@ -288,7 +346,7 @@ fn main() {
 	// Since I'm making all exposed functions async, panics won't crash anything important, I think.
 	// So I can just catch panics here and show a system message with the error.
 	std::panic::set_hook(Box::new(|info| {
-		println!("Panic: {info}");
+		eprintln!("Panic: {info}");
 		message(
 			None::<&tauri::Window>,
 			"Failed to execute command",
@@ -304,13 +362,13 @@ fn main() {
 			discover_games: Mutex::default(),
 			mod_loaders: Mutex::default(),
 		})
-		.setup(|app| {
+		.setup(|_app| {
 			#[cfg(target_os = "linux")]
 			{
 				// This prevents/reduces the white flashbang on app start.
 				// Unfortunately, it will still show the default window color for the system for a bit,
 				// which can some times be white.
-				if let Some(window) = app.get_window("main") {
+				if let Some(window) = _app.get_window("main") {
 					window.set_title(&format!("Rai Pal {}", env!("CARGO_PKG_VERSION")))?;
 
 					window.with_webview(|webview| {
@@ -323,6 +381,7 @@ fn main() {
 					})?;
 				}
 			}
+
 			Ok(())
 		});
 
@@ -342,6 +401,7 @@ fn main() {
 			start_game,
 			open_mod_folder,
 			open_mods_folder,
+			add_game,
 		]
 	);
 
@@ -354,14 +414,14 @@ fn main() {
 					.bigint(specta::ts::BigIntExportBehavior::BigInt),
 				"../frontend/api/bindings.ts",
 			) {
-				println!("Failed to generate TypeScript bindings: {err}");
+				eprintln!("Failed to generate TypeScript bindings: {err}");
 			}
 		}
 		Err(err) => {
-			println!("Failed to generate api bindings: {err}");
+			eprintln!("Failed to generate api bindings: {err}");
 		}
 	}
 	tauri_builder
 		.run(tauri::generate_context!())
-		.unwrap_or_else(|err| println!("Failed to run Tauri application: {err}"));
+		.unwrap_or_else(|err| eprintln!("Failed to run Tauri application: {err}"));
 }

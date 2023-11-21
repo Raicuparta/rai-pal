@@ -10,7 +10,7 @@ export function SearchInput(props: Props) {
 	return (
 		<Input
 			onChange={(event) => props.onChange(event.target.value)}
-			placeholder={`Search ${props.count} games...`}
+			placeholder={`Search (count: ${props.count})`}
 			style={{ flex: 1 }}
 			value={props.value}
 			rightSectionPointerEvents="all"

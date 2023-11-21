@@ -6,15 +6,17 @@ type Props = {
 
 export function ModalImage(props: Props) {
 	return (
-		<Box>
-			<Image
-				fallbackSrc="images/fallback-thumbnail.png"
-				bg="dark"
-				radius="md"
-				src={props.src}
-				fit="contain"
-				height={87}
-			/>
-		</Box>
+		props.src && (
+			<Box>
+				<Image
+					fallbackSrc="images/fallback-thumbnail.png"
+					bg="dark"
+					radius="md"
+					src={props.src}
+					fit="contain"
+					height={87}
+				/>
+			</Box>
+		)
 	);
 }

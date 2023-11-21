@@ -49,3 +49,14 @@ pub fn file_name_without_extension(file_path: &Path) -> Result<&str> {
 		.to_str()
 		.ok_or_else(|| Error::PathParseFailure(file_path.to_path_buf()))
 }
+
+pub fn normalize_path(path: &Path) -> PathBuf {
+	path.canonicalize().unwrap_or_else(|err| {
+		eprintln!(
+			"Failed to normalize path `{}`: {}",
+			path.to_string_lossy(),
+			err
+		);
+		path.to_path_buf()
+	})
+}
