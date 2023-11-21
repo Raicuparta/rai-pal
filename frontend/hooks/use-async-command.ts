@@ -1,39 +1,44 @@
+import { notifications } from "@mantine/notifications";
 import { useCallback, useRef, useState } from "react";
 
-export function useAsyncCommand<TResult>(
-	command: () => Promise<TResult>,
+export function useAsyncCommand<TResult, TArgs>(
+	command: (args: TArgs) => Promise<TResult>,
 	onSuccess?: (result: TResult) => void,
 ) {
 	const [isLoading, setIsLoading] = useState(false);
-	const [error, setError] = useState("");
 	const [success, setSuccess] = useState(false);
 	const timeout = useRef<number>();
 
-	const clearError = useCallback(() => setError(""), []);
+	const executeCommand = useCallback(
+		async (args: TArgs) => {
+			setIsLoading(true);
+			setSuccess(false);
 
-	const executeCommand = useCallback(async () => {
-		setIsLoading(true);
-		setSuccess(false);
-		setError("");
+			if (timeout.current) {
+				clearTimeout(timeout.current);
+			}
 
-		if (timeout.current) {
-			clearTimeout(timeout.current);
-		}
+			return command(args)
+				.then((result) => {
+					if (onSuccess) {
+						onSuccess(result);
+					}
+					setSuccess(true);
+					timeout.current = setTimeout(() => {
+						setSuccess(false);
+					}, 1000);
+					return result;
+				})
+				.catch((error) =>
+					notifications.show({
+						message: `Failed to execute command: ${error}`,
+						color: "red",
+					}),
+				)
+				.finally(() => setIsLoading(false));
+		},
+		[command, onSuccess],
+	);
 
-		return command()
-			.then((result) => {
-				if (onSuccess) {
-					onSuccess(result);
-				}
-				setSuccess(true);
-				timeout.current = setTimeout(() => {
-					setSuccess(false);
-				}, 1000);
-				return result;
-			})
-			.catch((error) => setError(`Failed to execute command: ${error}`))
-			.finally(() => setIsLoading(false));
-	}, [command, onSuccess]);
-
-	return [executeCommand, isLoading, success, error, clearError] as const;
+	return [executeCommand, isLoading, success] as const;
 }

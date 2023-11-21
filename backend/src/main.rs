@@ -308,11 +308,11 @@ async fn update_data(handle: tauri::AppHandle, state: tauri::State<'_, AppState>
 #[tauri::command]
 #[specta::specta]
 async fn add_game(
-	path: &str,
+	path: PathBuf,
 	state: tauri::State<'_, AppState>,
 	handle: tauri::AppHandle,
 ) -> Result {
-	let normalized_path = normalize_path(&PathBuf::from(path));
+	let normalized_path = normalize_path(&path);
 	let existing_game = get_game(&normalized_path, &state);
 
 	if existing_game.is_ok() {
@@ -330,8 +330,6 @@ async fn add_game(
 		&state.installed_games,
 		&handle,
 	)?;
-
-	// TODO: show thrown errors somewhere on frontend.
 
 	Ok(())
 }
@@ -387,8 +385,9 @@ fn main() {
 			Ok(())
 		});
 
-	let (tauri_builder, types_result) = (
-		tauri_builder.invoke_handler(tauri::generate_handler![
+	let (tauri_builder, types_result) = set_up_api!(
+		tauri_builder,
+		[
 			dummy_command,
 			update_data,
 			get_installed_games,
@@ -402,24 +401,8 @@ fn main() {
 			start_game,
 			open_mod_folder,
 			open_mods_folder,
-			add_game
-		]),
-		specta::collect_types![
-			dummy_command,
-			update_data,
-			get_installed_games,
-			get_owned_games,
-			get_discover_games,
-			get_mod_loaders,
-			open_game_folder,
-			install_mod,
-			uninstall_mod,
-			open_game_mods_folder,
-			start_game,
-			open_mod_folder,
-			open_mods_folder,
-			add_game
-		],
+			add_game,
+		]
 	);
 
 	match types_result {

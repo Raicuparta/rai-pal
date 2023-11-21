@@ -10,6 +10,7 @@ import {
 } from "@api/bindings";
 import { dataSubscription } from "./use-data-subscription";
 import { useUpdateData } from "./use-update-data";
+import { useAsyncCommand } from "./use-async-command";
 
 export const [installedGamesAtom, useInstalledGamesSubscription] =
 	dataSubscription("SyncInstalledGames", getInstalledGames, {});
@@ -28,7 +29,6 @@ export const [ownedGamesAtom, useOwnedGamesSubscription] = dataSubscription(
 	[],
 );
 
-export const errorAtom = atom<string>("");
 export const loadingAtom = atom<boolean>(false);
 
 export function useData() {
@@ -39,12 +39,14 @@ export function useData() {
 
 	const updateData = useUpdateData();
 
+	const [executeAddGame] = useAsyncCommand(addGame);
+
 	useEffect(() => {
 		const unlistenPromise = event.listen<string[]>(
 			event.TauriEvent.WINDOW_FILE_DROP,
 			(event) => {
 				if (event.payload.length > 0) {
-					addGame(event.payload[0]);
+					executeAddGame(event.payload[0]);
 				}
 			},
 		);
@@ -52,7 +54,7 @@ export function useData() {
 		return () => {
 			unlistenPromise.then((unlisten) => unlisten());
 		};
-	}, []);
+	}, [executeAddGame]);
 
 	useEffect(() => {
 		updateData();
