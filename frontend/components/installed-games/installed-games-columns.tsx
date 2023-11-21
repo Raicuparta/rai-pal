@@ -116,7 +116,6 @@ const scriptingBackendColumn: TableColumn<
 	),
 };
 
-// TODO: Define this somewhere central, since it's common between installed and owned games.
 const engineColumn: TableColumn<InstalledGame, GameEngineBrand> = {
 	id: "engine",
 	label: "Engine",
