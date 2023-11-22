@@ -68,7 +68,8 @@ const installedColumn: TableColumn<OwnedGame, string> = {
 	width: 60,
 	center: true,
 	hidable: true,
-	getSortValue: (game) => `${game.installed}`,
+	getSortValue: (game) => game.installed,
+	getFilterValue: (game) => `${game.installed}`,
 	filterOptions: [
 		{ label: "Any install state", value: "" },
 		{ label: "Installed", value: "true" },

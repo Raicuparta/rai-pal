@@ -1,6 +1,6 @@
 import { Flex, Stack } from "@mantine/core";
 import { useMemo, useState } from "react";
-import { includesOneOf } from "../../util/filter";
+import { filterGame, includesOneOf } from "../../util/filter";
 import { InstalledGameModal } from "./installed-game-modal";
 import { InstalledGame } from "@api/bindings";
 import { TypedSegmentedControl } from "./typed-segmented-control";
@@ -18,21 +18,16 @@ import { AddGame } from "./add-game-button";
 
 const defaultFilter: Record<string, string> = {};
 
-const filterGame = (
+function filterInstalledGame(
 	game: InstalledGame,
 	filter: Record<string, string>,
 	search: string,
-) =>
-	includesOneOf(search, [game.name]) &&
-	installedGamesColumns.findIndex((column) => {
-		const getValueFunction = column.getFilterValue ?? column.getSortValue;
-
-		return (
-			getValueFunction &&
-			filter[column.id] &&
-			filter[column.id] !== getValueFunction(game)
-		);
-	}) === -1;
+) {
+	return (
+		includesOneOf(search, [game.name]) &&
+		filterGame(game, filter, installedGamesColumns)
+	);
+}
 
 export type TableSortMethod = (
 	gameA: InstalledGame,
@@ -67,7 +62,7 @@ export function InstalledGamesPage() {
 			"installed-games-filter",
 			filteredColumns,
 			games,
-			filterGame,
+			filterInstalledGame,
 			defaultFilter,
 		);
 
