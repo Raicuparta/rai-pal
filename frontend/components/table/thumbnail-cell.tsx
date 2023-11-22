@@ -10,7 +10,7 @@ export function ThumbnailCell(props: Props) {
 		<Table.Td
 			className={styles.thumbnail}
 			style={{
-				backgroundImage: `url(${props.url})`,
+				backgroundImage: `url(${props.url ?? "images/fallback-thumbnail.png"})`,
 			}}
 		/>
 	);
