@@ -118,7 +118,7 @@ export function InstalledGamesPage() {
 				data={filteredGames}
 				columns={filteredColumns}
 				onChangeSort={setSort}
-				onClickItem={(game) => setSelectedGameId(game.executable.path)}
+				onClickItem={(game) => setSelectedGameId(game.id)}
 				sort={sort}
 			/>
 		</Stack>

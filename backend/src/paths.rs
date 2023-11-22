@@ -1,6 +1,13 @@
-use std::path::{
-	Path,
-	PathBuf,
+use std::{
+	collections::hash_map::DefaultHasher,
+	hash::{
+		Hash,
+		Hasher,
+	},
+	path::{
+		Path,
+		PathBuf,
+	},
 };
 
 use directories::ProjectDirs;
@@ -59,4 +66,10 @@ pub fn normalize_path(path: &Path) -> PathBuf {
 		);
 		path.to_path_buf()
 	})
+}
+
+pub fn hash_path(path: &Path) -> String {
+	let mut hasher = DefaultHasher::new();
+	path.hash(&mut hasher);
+	hasher.finish().to_string()
 }

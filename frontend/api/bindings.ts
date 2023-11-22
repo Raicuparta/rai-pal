@@ -34,24 +34,24 @@ export function getModLoaders() {
     return invoke()<{ [key: string]: ModLoaderData }>("get_mod_loaders")
 }
 
-export function openGameFolder(path: string) {
-    return invoke()<null>("open_game_folder", { path })
+export function openGameFolder(gameId: string) {
+    return invoke()<null>("open_game_folder", { gameId })
 }
 
-export function installMod(modLoaderId: string, modId: string, path: string) {
-    return invoke()<null>("install_mod", { modLoaderId,modId,path })
+export function installMod(modLoaderId: string, modId: string, gameId: string) {
+    return invoke()<null>("install_mod", { modLoaderId,modId,gameId })
 }
 
-export function uninstallMod(path: string, modId: string) {
-    return invoke()<null>("uninstall_mod", { path,modId })
+export function uninstallMod(gameId: string, modId: string) {
+    return invoke()<null>("uninstall_mod", { gameId,modId })
 }
 
-export function openGameModsFolder(path: string) {
-    return invoke()<null>("open_game_mods_folder", { path })
+export function openGameModsFolder(gameId: string) {
+    return invoke()<null>("open_game_mods_folder", { gameId })
 }
 
-export function startGame(path: string) {
-    return invoke()<null>("start_game", { path })
+export function startGame(gameId: string) {
+    return invoke()<null>("start_game", { gameId })
 }
 
 export function openModFolder(modLoaderId: string, modId: string) {
@@ -68,17 +68,17 @@ export function addGame(path: string) {
 
 export type GameEngineVersion = { major: number; minor: number; patch: number; suffix: string | null; display: string }
 export type SteamGame = { id: string; nsfw: boolean; engine: GameEngineBrand }
-export type GameExecutable = { path: string; engine: GameEngine | null; architecture: Architecture | null; operatingSystem: OperatingSystem | null; scriptingBackend: UnityScriptingBackend | null }
-export type OperatingSystem = "Linux" | "Windows"
 export type GameEngineBrand = "Unity" | "Unreal" | "Godot"
 export type ProviderId = "Steam" | "Manual"
-export type InstalledGame = { name: string; providerId: ProviderId; discriminator: string | null; steamLaunch: SteamLaunchOption | null; executable: GameExecutable; thumbnailUrl: string | null; availableMods: { [key: string]: boolean } }
+export type Architecture = "X64" | "X86"
 export type ModKind = "Installable" | "Runnable"
 export type AppEvent = "SyncInstalledGames" | "SyncOwnedGames" | "SyncDiscoverGames" | "SyncMods" | "ExecutedSteamCommand"
-export type Architecture = "X64" | "X86"
+export type OperatingSystem = "Linux" | "Windows"
+export type GameExecutable = { path: string; engine: GameEngine | null; architecture: Architecture | null; operatingSystem: OperatingSystem | null; scriptingBackend: UnityScriptingBackend | null }
 export type SteamLaunchOption = { launchId: string; appId: number; description: string | null; executable: string | null; arguments: string | null; appType: string | null; osList: string | null; betaKey: string | null; osArch: string | null }
 export type Mod = { id: string; name: string; scriptingBackend: UnityScriptingBackend | null; engine: GameEngineBrand | null; kind: ModKind; path: string }
 export type ModLoaderData = { id: string; path: string; mods: Mod[] }
 export type UnityScriptingBackend = "Il2Cpp" | "Mono"
 export type GameEngine = { brand: GameEngineBrand; version: GameEngineVersion | null }
+export type InstalledGame = { id: string; name: string; providerId: ProviderId; discriminator: string | null; steamLaunch: SteamLaunchOption | null; executable: GameExecutable; thumbnailUrl: string | null; availableMods: { [key: string]: boolean } }
 export type OwnedGame = { id: string; providerId: ProviderId; name: string; installed: boolean; osList: OperatingSystem[]; engine: GameEngineBrand; releaseDate: number; thumbnailUrl: string }

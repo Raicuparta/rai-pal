@@ -4,10 +4,7 @@
 
 use std::{
 	collections::HashMap,
-	path::{
-		Path,
-		PathBuf,
-	},
+	path::PathBuf,
 	sync::Mutex,
 };
 
@@ -21,7 +18,10 @@ use mod_loaders::mod_loader::{
 	ModLoaderActions,
 };
 use owned_game::OwnedGame;
-use paths::normalize_path;
+use paths::{
+	hash_path,
+	normalize_path,
+};
 use providers::{
 	manual_provider,
 	provider::{
@@ -62,7 +62,7 @@ struct AppState {
 	mod_loaders: Mutex<Option<mod_loader::DataMap>>,
 }
 
-fn get_game(game_id: &Path, state: &tauri::State<'_, AppState>) -> Result<InstalledGame> {
+fn get_game(game_id: &String, state: &tauri::State<'_, AppState>) -> Result<InstalledGame> {
 	if let Ok(read_guard) = state.installed_games.lock() {
 		let installed_games = read_guard
 			.as_ref()
@@ -135,14 +135,14 @@ fn update_state<TData>(
 
 #[tauri::command]
 #[specta::specta]
-async fn open_game_folder(path: PathBuf, state: tauri::State<'_, AppState>) -> Result {
-	get_game(&path, &state)?.open_game_folder()
+async fn open_game_folder(game_id: String, state: tauri::State<'_, AppState>) -> Result {
+	get_game(&game_id, &state)?.open_game_folder()
 }
 
 #[tauri::command]
 #[specta::specta]
-async fn open_game_mods_folder(path: PathBuf, state: tauri::State<'_, AppState>) -> Result {
-	get_game(&path, &state)?.open_mods_folder()
+async fn open_game_mods_folder(game_id: String, state: tauri::State<'_, AppState>) -> Result {
+	get_game(&game_id, &state)?.open_mods_folder()
 }
 
 #[tauri::command]
@@ -163,11 +163,11 @@ async fn open_mod_folder(mod_loader_id: &str, mod_id: &str, handle: tauri::AppHa
 #[tauri::command]
 #[specta::specta]
 async fn start_game(
-	path: PathBuf,
+	game_id: String,
 	state: tauri::State<'_, AppState>,
 	handle: tauri::AppHandle,
 ) -> Result {
-	get_game(&path, &state)?.start(&handle)
+	get_game(&game_id, &state)?.start(&handle)
 }
 
 #[tauri::command]
@@ -175,25 +175,25 @@ async fn start_game(
 async fn install_mod(
 	mod_loader_id: &str,
 	mod_id: &str,
-	path: PathBuf,
+	game_id: String,
 	state: tauri::State<'_, AppState>,
 	handle: tauri::AppHandle,
 ) -> Result {
 	let resources_path = paths::resources_path(&handle)?;
 
-	let game = get_game(&path, &state)?;
+	let game = get_game(&game_id, &state)?;
 
 	let mod_loader = mod_loader::get(&resources_path, mod_loader_id)?;
 
 	mod_loader.install_mod(&game, mod_id)?;
 
-	refresh_single_game(&path, &state, &handle)?;
+	refresh_single_game(&game_id, &state, &handle)?;
 
 	Ok(())
 }
 
 fn refresh_single_game(
-	path: &Path,
+	game_id: &String,
 	state: &tauri::State<'_, AppState>,
 	handle: &tauri::AppHandle,
 ) -> Result {
@@ -201,8 +201,8 @@ fn refresh_single_game(
 	let mut installed_games = get_state_data(&state.installed_games)?;
 
 	installed_games
-		.get_mut(path)
-		.ok_or_else(|| Error::GameNotFound(path.to_owned()))?
+		.get_mut(game_id)
+		.ok_or_else(|| Error::GameNotFound(game_id.to_owned()))?
 		.refresh_mods(&mod_loaders);
 
 	update_state(
@@ -218,14 +218,14 @@ fn refresh_single_game(
 #[tauri::command]
 #[specta::specta]
 async fn uninstall_mod(
-	path: PathBuf,
+	game_id: String,
 	mod_id: &str,
 	state: tauri::State<'_, AppState>,
 	handle: tauri::AppHandle,
 ) -> Result {
-	get_game(&path, &state)?.uninstall_mod(mod_id)?;
+	get_game(&game_id, &state)?.uninstall_mod(mod_id)?;
 
-	refresh_single_game(&path, &state, &handle)?;
+	refresh_single_game(&game_id, &state, &handle)?;
 
 	Ok(())
 }
@@ -252,17 +252,18 @@ async fn update_data(handle: tauri::AppHandle, state: tauri::State<'_, AppState>
 
 	let installed_games: HashMap<_, _> = provider_map
 		.values()
-		.flat_map(
-			|provider| match provider.get_installed_games(&mod_loaders) {
-				Ok(games) => games,
-				Err(err) => {
-					// TODO properly handle these errors message to frontend.
-					eprintln!("Error getting installed games for provider: {}", err);
-					Vec::default()
-				}
-			},
-		)
-		.map(|game| (game.executable.path.clone(), game))
+		.flat_map(|provider| match provider.get_installed_games() {
+			Ok(games) => games,
+			Err(err) => {
+				// TODO properly handle these errors message to frontend.
+				eprintln!("Error getting installed games for provider: {}", err);
+				Vec::default()
+			}
+		})
+		.map(|mut game| {
+			game.update_available_mods(&mod_loaders);
+			(game.id.clone(), game)
+		})
 		.collect();
 
 	update_state(
@@ -313,16 +314,18 @@ async fn add_game(
 	handle: tauri::AppHandle,
 ) -> Result {
 	let normalized_path = normalize_path(&path);
-	let existing_game = get_game(&normalized_path, &state);
+	let game_id = hash_path(&normalized_path);
+	let existing_game = get_game(&game_id, &state);
 
 	if existing_game.is_ok() {
 		return Err(Error::GameAlreadyAdded(normalized_path));
 	}
 
-	let game = manual_provider::add_game(&normalized_path, &get_state_data(&state.mod_loaders)?)?;
+	let mut game = manual_provider::add_game(&normalized_path)?;
+	game.update_available_mods(&get_state_data(&state.mod_loaders)?);
 
 	let mut installed_games = get_state_data(&state.installed_games)?;
-	installed_games.insert(game.executable.path.clone(), game);
+	installed_games.insert(game.id.clone(), game);
 
 	update_state(
 		AppEvent::SyncInstalledGames,

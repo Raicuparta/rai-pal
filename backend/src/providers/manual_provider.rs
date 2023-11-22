@@ -15,7 +15,6 @@ use super::provider::{
 };
 use crate::{
 	installed_game::InstalledGame,
-	mod_loaders::mod_loader,
 	owned_game::OwnedGame,
 	paths::{
 		app_data_path,
@@ -46,11 +45,11 @@ impl ProviderStatic for ManualProvider {
 
 #[async_trait]
 impl ProviderActions for ManualProvider {
-	fn get_installed_games(&self, mod_loaders: &mod_loader::DataMap) -> Result<Vec<InstalledGame>> {
+	fn get_installed_games(&self) -> Result<Vec<InstalledGame>> {
 		Ok(read_games_config(&games_config_path()?)
 			.paths
 			.iter()
-			.filter_map(|path| create_game_from_path(path, mod_loaders))
+			.filter_map(|path| create_game_from_path(path))
 			.collect())
 	}
 
@@ -59,7 +58,7 @@ impl ProviderActions for ManualProvider {
 	}
 }
 
-fn create_game_from_path(path: &Path, mod_loaders: &mod_loader::DataMap) -> Option<InstalledGame> {
+fn create_game_from_path(path: &Path) -> Option<InstalledGame> {
 	InstalledGame::new(
 		path,
 		file_name_without_extension(path).ok()?,
@@ -67,7 +66,6 @@ fn create_game_from_path(path: &Path, mod_loaders: &mod_loader::DataMap) -> Opti
 		None,
 		None,
 		None,
-		mod_loaders,
 	)
 }
 
@@ -89,9 +87,9 @@ fn read_games_config(games_config_path: &Path) -> GamesConfig {
 	}
 }
 
-pub fn add_game(path: &Path, mod_loaders: &mod_loader::DataMap) -> Result<InstalledGame> {
-	let game = create_game_from_path(path, mod_loaders)
-		.ok_or(Error::FailedToGetGameFromPath(path.to_path_buf()))?;
+pub fn add_game(path: &Path) -> Result<InstalledGame> {
+	let game =
+		create_game_from_path(path).ok_or(Error::FailedToGetGameFromPath(path.to_path_buf()))?;
 
 	let config_path = games_config_path()?;
 
