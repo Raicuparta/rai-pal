@@ -3,17 +3,13 @@ div.table {
 	flex: 1;
 	user-select: none;
 
-	table {
-		table-layout: fixed;
-	}
-
 	td {
 		cursor: pointer;
-		text-align: center;
 	}
 
 	thead {
 		background: var(--background-dark);
+		white-space: nowrap;
 	}
 
 	code {
@@ -36,4 +32,9 @@ div.table {
 	background-size: 100%;
 	background-repeat: no-repeat;
 	background-color: var(--mantine-color-dark-9);
+	min-width: 50px;
+}
+
+.nameCell {
+	min-width: 10em;
 }

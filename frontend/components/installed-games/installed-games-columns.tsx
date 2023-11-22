@@ -23,10 +23,13 @@ import {
 	engineFilterOptions,
 	providerFilterOptions,
 } from "../../util/common-filter-options";
+import styles from "../table/table.module.css";
 
 const thumbnailColumn: TableColumn<InstalledGame> = {
 	id: "thumbnailUrl",
-	label: "",
+	label: "Thumbnail",
+	hideLabel: true,
+	hidable: true,
 	width: 100,
 	renderCell: (game) => <ThumbnailCell url={game.thumbnailUrl} />,
 };
@@ -34,10 +37,9 @@ const thumbnailColumn: TableColumn<InstalledGame> = {
 const nameColumn: TableColumn<InstalledGame> = {
 	id: "name",
 	label: "Game",
-	width: undefined,
 	getSortValue: (game) => game.name,
 	renderCell: (game) => (
-		<Table.Td>
+		<Table.Td className={styles.nameCell}>
 			<GameName game={game} />
 		</Table.Td>
 	),
@@ -167,7 +169,12 @@ const engineColumn: TableColumn<InstalledGame, GameEngineBrand> = {
 	getFilterValue: (game) => game.executable.engine?.brand ?? "",
 	filterOptions: engineFilterOptions,
 	renderCell: ({ executable: { engine } }) => (
-		<Table.Td>
+		<Table.Td
+			// A bit annoying that I'm defining the column width in two places (see engineColumn.width),
+			// but it's to prevent this one from being squished and hiding the version number.
+			// Maybe I shouldn't be using a regular table component at all for this...
+			miw={170}
+		>
 			<Flex
 				align="center"
 				gap="xs"
