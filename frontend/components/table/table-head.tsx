@@ -10,6 +10,7 @@ export type TableColumn<TItem, TFilterOption extends string = string> = {
 	renderCell: (item: TItem) => JSX.Element;
 	width?: number;
 	center?: boolean;
+	hideLabel?: boolean;
 	hidable?: boolean;
 	sort?: (itemA: TItem, itemB: TItem) => number;
 	getSortValue?: (item: TItem) => unknown;
@@ -47,7 +48,7 @@ export function TableHead<TItem, TFilterOption extends string = string>(
 						w={column.width}
 					>
 						<Flex justify={column.center ? "center" : undefined}>
-							{column.label}
+							{column.hideLabel ? "" : column.label}
 							<Box
 								h={0}
 								w={0}

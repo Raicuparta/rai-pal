@@ -11,6 +11,10 @@
   please remove this and test it to see if the issue is fixed.
 */
 
+*::-webkit-scrollbar-corner {
+	background: transparent;
+}
+
 *::-webkit-scrollbar {
 	width: var(--mantine-spacing-md);
 }

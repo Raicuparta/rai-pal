@@ -1,3 +1,8 @@
 .fileDropZone {
 	height: 15em;
 }
+
+.gameName {
+	gap: var(--mantine-spacing-xs);
+	flex-wrap: wrap;
+}

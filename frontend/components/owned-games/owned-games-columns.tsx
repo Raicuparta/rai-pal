@@ -4,7 +4,7 @@ import {
 	ProviderBadge,
 } from "@components/badges/color-coded-badge";
 import { TableColumn } from "@components/table/table-head";
-import { Flex, Table } from "@mantine/core";
+import { Table } from "@mantine/core";
 import { IconCheck } from "@tabler/icons-react";
 import styles from "../table/table.module.css";
 import { ThumbnailCell } from "@components/table/thumbnail-cell";
@@ -15,7 +15,9 @@ import {
 
 const thumbnailColumn: TableColumn<OwnedGame> = {
 	id: "thumbnail",
-	label: "",
+	label: "Thumbnail",
+	hideLabel: true,
+	hidable: true,
 	width: 100,
 	renderCell: (game) => <ThumbnailCell url={game.thumbnailUrl} />,
 };
@@ -26,9 +28,7 @@ const nameColumn: TableColumn<OwnedGame> = {
 	width: undefined,
 	getSortValue: (game) => game.name,
 	renderCell: (game) => (
-		<Table.Td className={styles.leftAligned}>
-			<Flex>{game.name}</Flex>
-		</Table.Td>
+		<Table.Td className={styles.nameCell}>{game.name}</Table.Td>
 	),
 };
 
