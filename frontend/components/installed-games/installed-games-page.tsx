@@ -24,12 +24,15 @@ const filterGame = (
 	search: string,
 ) =>
 	includesOneOf(search, [game.name]) &&
-	installedGamesColumns.findIndex(
-		(column) =>
+	installedGamesColumns.findIndex((column) => {
+		const getValueFunction = column.getFilterValue ?? column.getSortValue;
+
+		return (
+			getValueFunction &&
 			filter[column.id] &&
-			column.getSortValue &&
-			filter[column.id] !== column.getSortValue(game),
-	) === -1;
+			filter[column.id] !== getValueFunction(game)
+		);
+	}) === -1;
 
 export type TableSortMethod = (
 	gameA: InstalledGame,
