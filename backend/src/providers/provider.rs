@@ -5,7 +5,6 @@ use enum_dispatch::enum_dispatch;
 
 use crate::{
 	installed_game::InstalledGame,
-	mod_loaders::mod_loader,
 	owned_game::OwnedGame,
 	providers::{
 		manual_provider::ManualProvider,
@@ -26,7 +25,7 @@ pub enum Provider {
 #[async_trait]
 #[enum_dispatch(Provider)]
 pub trait ProviderActions {
-	fn get_installed_games(&self, mod_loaders: &mod_loader::DataMap) -> Result<Vec<InstalledGame>>;
+	fn get_installed_games(&self) -> Result<Vec<InstalledGame>>;
 
 	async fn get_owned_games(&self) -> Result<Vec<OwnedGame>>;
 }

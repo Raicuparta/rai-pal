@@ -10,7 +10,10 @@ use std::{
 use crate::{
 	game_executable::GameExecutable,
 	mod_loaders::mod_loader,
-	paths::{self,},
+	paths::{
+		self,
+		hash_path,
+	},
 	providers::provider::ProviderId,
 	serializable_struct,
 	steam::{
@@ -21,6 +24,7 @@ use crate::{
 };
 
 serializable_struct!(InstalledGame {
+	pub id: String,
 	pub name: String,
 	pub provider_id: ProviderId,
 	pub discriminator: Option<String>,
@@ -30,7 +34,7 @@ serializable_struct!(InstalledGame {
 	pub available_mods: HashMap<String, bool>,
 });
 
-pub type Map = HashMap<PathBuf, InstalledGame>;
+pub type Map = HashMap<String, InstalledGame>;
 
 impl InstalledGame {
 	pub fn new(
@@ -40,7 +44,6 @@ impl InstalledGame {
 		discriminator: Option<String>,
 		steam_launch: Option<&SteamLaunchOption>,
 		thumbnail_url: Option<String>,
-		mod_loaders: &mod_loader::DataMap,
 	) -> Option<Self> {
 		// Games exported by Unity always have one of these extensions.
 		const VALID_EXTENSIONS: [&str; 3] = ["exe", "x86_64", "x86"];
@@ -63,28 +66,26 @@ impl InstalledGame {
 			return None;
 		}
 
-		let executable = GameExecutable::new(path);
-		let available_mods = executable.get_available_mods(mod_loaders);
-
 		Some(Self {
+			id: hash_path(path),
 			name: name.to_string(),
 			provider_id,
 			discriminator,
 			steam_launch: steam_launch.cloned(),
-			available_mods,
-			executable,
+			available_mods: HashMap::default(),
+			executable: GameExecutable::new(path),
 			thumbnail_url,
 		})
+	}
+
+	pub fn update_available_mods(&mut self, mod_loaders: &mod_loader::DataMap) {
+		self.available_mods = self.get_available_mods(mod_loaders);
 	}
 
 	pub fn open_game_folder(&self) -> Result {
 		Ok(open::that_detached(paths::path_parent(
 			&self.executable.path,
 		)?)?)
-	}
-
-	pub fn get_installed_mods_folder(&self) -> Result<PathBuf> {
-		get_installed_mods_folder(&self.executable.path)
 	}
 
 	pub fn open_mods_folder(&self) -> Result {
@@ -137,13 +138,52 @@ impl InstalledGame {
 	}
 
 	pub fn refresh_mods(&mut self, mod_loaders: &mod_loader::DataMap) {
-		self.available_mods = self.executable.get_available_mods(mod_loaders);
+		self.available_mods = self.get_available_mods(mod_loaders);
+	}
+
+	pub fn get_installed_mods_folder(&self) -> Result<PathBuf> {
+		let installed_mods_folder = paths::app_data_path()?.join("games").join(&self.id);
+		fs::create_dir_all(&installed_mods_folder)?;
+
+		Ok(installed_mods_folder)
+	}
+
+	pub fn is_mod_installed(&self, mod_id: &str) -> bool {
+		if let Ok(installed_mods_folder) = self.get_installed_mods_folder() {
+			return installed_mods_folder
+				.join("BepInEx")
+				.join("plugins")
+				.join(mod_id)
+				.is_dir();
+		}
+
+		false
+	}
+
+	pub fn get_available_mods(&self, mod_loaders: &mod_loader::DataMap) -> HashMap<String, bool> {
+		mod_loaders
+			.iter()
+			.flat_map(|(_, mod_loader)| &mod_loader.mods)
+			.filter_map(|game_mod| {
+				if equal_or_none(
+					game_mod.engine,
+					self.executable.engine.as_ref().map(|engine| engine.brand),
+				) && equal_or_none(
+					game_mod.scripting_backend,
+					self.executable.scripting_backend,
+				) {
+					Some((game_mod.id.clone(), self.is_mod_installed(&game_mod.id)))
+				} else {
+					None
+				}
+			})
+			.collect()
 	}
 }
 
-fn get_installed_mods_folder(game_path: &Path) -> Result<PathBuf> {
-	let installed_mods_folder = paths::app_data_path()?.join("games").join(game_path);
-	fs::create_dir_all(&installed_mods_folder)?;
-
-	Ok(installed_mods_folder)
+fn equal_or_none<T: PartialEq>(a: Option<T>, b: Option<T>) -> bool {
+	match (a, b) {
+		(Some(value_a), Some(value_b)) => value_a == value_b,
+		_ => true,
+	}
 }

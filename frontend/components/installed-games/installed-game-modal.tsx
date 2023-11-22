@@ -1,4 +1,4 @@
-import { Flex, Modal, Stack } from "@mantine/core";
+import { Flex, Modal, Stack, Text } from "@mantine/core";
 import {
 	InstalledGame,
 	installMod,
@@ -72,19 +72,19 @@ export function InstalledGameModal(props: Props) {
 					<CommandButtonGroup label="Game Actions">
 						<CommandButton
 							leftSection={<IconPlayerPlay />}
-							onClick={() => startGame(props.game.executable.path)}
+							onClick={() => startGame(props.game.id)}
 						>
 							Start Game
 						</CommandButton>
 						<CommandButton
 							leftSection={<IconFolder />}
-							onClick={() => openGameFolder(props.game.executable.path)}
+							onClick={() => openGameFolder(props.game.id)}
 						>
 							Open Game Folder
 						</CommandButton>
 						<CommandButton
 							leftSection={<IconFolderCog />}
-							onClick={() => openGameModsFolder(props.game.executable.path)}
+							onClick={() => openGameModsFolder(props.game.id)}
 						>
 							Open Mods Folder
 						</CommandButton>
@@ -121,9 +121,7 @@ export function InstalledGameModal(props: Props) {
 											<CommandButton
 												leftSection={<IconTrash />}
 												key={mod.name}
-												onClick={() =>
-													uninstallMod(props.game.executable.path, mod.id)
-												}
+												onClick={() => uninstallMod(props.game.id, mod.id)}
 											>
 												Uninstall {mod.name}
 											</CommandButton>
@@ -132,15 +130,24 @@ export function InstalledGameModal(props: Props) {
 												leftSection={<IconTool />}
 												key={mod.name}
 												onClick={() =>
-													installMod(
-														modLoader.id,
-														mod.id,
-														props.game.executable.path,
-													)
+													installMod(modLoader.id, mod.id, props.game.id)
 												}
 											>
 												{mod.kind === "Installable" ? "Install" : "Run"}{" "}
 												{mod.name}
+												<Text
+													opacity={0.5}
+													ml="xs"
+													size="xs"
+												>
+													{props.game.executable.engine
+														? ""
+														: ` (${mod.engine}${
+																mod.scriptingBackend
+																	? ` ${mod.scriptingBackend}`
+																	: ""
+														  })`}
+												</Text>
 											</CommandButton>
 										),
 									)}

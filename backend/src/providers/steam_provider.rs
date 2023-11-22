@@ -16,7 +16,6 @@ use crate::{
 		self,
 		InstalledGame,
 	},
-	mod_loaders::mod_loader,
 	owned_game::OwnedGame,
 	provider::{
 		ProviderActions,
@@ -57,7 +56,7 @@ impl ProviderStatic for SteamProvider {
 
 #[async_trait]
 impl ProviderActions for SteamProvider {
-	fn get_installed_games(&self, mod_loaders: &mod_loader::DataMap) -> Result<Vec<InstalledGame>> {
+	fn get_installed_games(&self) -> Result<Vec<InstalledGame>> {
 		let mut games: Vec<InstalledGame> = Vec::new();
 		let mut used_paths: HashSet<PathBuf> = HashSet::new();
 		let mut used_names: HashSet<String> = HashSet::new();
@@ -100,7 +99,6 @@ impl ProviderActions for SteamProvider {
 									discriminator,
 									Some(&launch_option),
 									Some(get_steam_thumbnail(&app.app_id.to_string())),
-									mod_loaders,
 								) {
 									games.push(game);
 									used_names.insert(name.clone());
