@@ -1,7 +1,9 @@
 import { Flex, Table } from "@mantine/core";
 import {
 	Architecture,
+	GameEngine,
 	GameEngineBrand,
+	GameEngineVersion,
 	InstalledGame,
 	OperatingSystem,
 	ProviderId,
@@ -116,30 +118,53 @@ const scriptingBackendColumn: TableColumn<
 	),
 };
 
+const defaultVersion: GameEngineVersion = {
+	major: 0,
+	minor: 0,
+	patch: 0,
+	suffix: "",
+	display: "",
+};
+
+function getAdjustedMajor(engine: GameEngine | null) {
+	const major = engine?.version?.major;
+	if (!major) return 0;
+
+	if (engine?.brand === "Unity" && major > 5 && major < 2000) {
+		// Unity did this silly thing.
+		// It went from Unity 5 to Unity 2017-2023, then back to Unity 6.
+		// So for sorting purposes, we consider Unity 6, 7, 8, etc to be Unity 2106, 2107, 2108, etc.
+		// This will of course break if they go back to year-based versions,
+		// or if they release a LOT of major versions.
+		return major + 2100;
+	}
+
+	return major;
+}
+
 const engineColumn: TableColumn<InstalledGame, GameEngineBrand> = {
 	id: "engine",
 	label: "Engine",
 	width: 170,
 	center: true,
 	hidable: true,
-	getSortValue: (game) => {
-		const engine = game.executable.engine;
-		if (!engine?.version) return 0;
-
-		let major = engine.version.major;
-
-		// Unity did this silly thing.
-		// It went from Unity 5 to Unity 2017-2023, then back to Unity 6.
-		// So for sorting purposes, we consider Unity 6, 7, 8, etc to be Unity 2106, 2107, 2108, etc.
-		// This will of course break if they go back to year-based versions.
-		if (engine.brand == "Unity" && major > 5 && major < 2000) {
-			major += 2100;
-		}
+	sort: (dataA, dataB) => {
+		const engineA = dataA.executable.engine;
+		const engineB = dataB.executable.engine;
+		const versionA = engineA?.version ?? defaultVersion;
+		const versionB = engineB?.version ?? defaultVersion;
+		const brandA = engineA?.brand ?? "";
+		const brandB = engineB?.brand ?? "";
 
 		return (
-			major * 100000000 + engine.version.minor * 100000 + engine.version.patch
+			brandA.localeCompare(brandB) ||
+			getAdjustedMajor(engineA) - getAdjustedMajor(engineB) ||
+			versionA.minor - versionB.minor ||
+			versionA.patch - versionB.patch ||
+			0
 		);
 	},
+	getFilterValue: (game) => game.executable.engine?.brand ?? "",
 	filterOptions: engineFilterOptions,
 	renderCell: ({ executable: { engine } }) => (
 		<Table.Td>

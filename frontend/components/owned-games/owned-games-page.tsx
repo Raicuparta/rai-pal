@@ -1,7 +1,7 @@
 import { Flex, Stack } from "@mantine/core";
 import { OwnedGame } from "@api/bindings";
 import { useMemo, useState } from "react";
-import { includesOneOf } from "../../util/filter";
+import { filterGame, includesOneOf } from "../../util/filter";
 import { OwnedGameModal } from "./owned-game-modal";
 import { useFilteredList } from "@hooks/use-filtered-list";
 import { FilterMenu } from "@components/filter-menu";
@@ -17,18 +17,16 @@ import { TypedSegmentedControl } from "@components/installed-games/typed-segment
 
 const defaultFilter: Record<string, string> = {};
 
-const filterGame = (
+function filterOwnedGame(
 	game: OwnedGame,
 	filter: Record<string, string>,
 	search: string,
-) =>
-	includesOneOf(search, [game.name]) &&
-	ownedGamesColumns.findIndex(
-		(column) =>
-			filter[column.id] &&
-			column.getSortValue &&
-			filter[column.id] !== column.getSortValue(game),
-	) === -1;
+) {
+	return (
+		includesOneOf(search, [game.name]) &&
+		filterGame(game, filter, ownedGamesColumns)
+	);
+}
 
 export function OwnedGamesPage() {
 	const ownedGames = useAtomValue(ownedGamesAtom);
@@ -51,7 +49,7 @@ export function OwnedGamesPage() {
 			"owned-games-filter",
 			filteredColumns,
 			ownedGames ?? [],
-			filterGame,
+			filterOwnedGame,
 			defaultFilter,
 		);
 
