@@ -6,10 +6,17 @@ import { addGame } from "@api/bindings";
 import { dialog } from "@tauri-apps/api";
 import { useAtomValue } from "jotai";
 import { loadingAtom } from "@hooks/use-data";
+import { useAsyncCommand } from "@hooks/use-async-command";
 
 export function AddGame() {
 	const [isOpen, setIsOpen] = useState(false);
 	const isLoading = useAtomValue(loadingAtom);
+
+	const handleSuccess = useCallback(() => {
+		setIsOpen(false);
+	}, []);
+
+	const [executeAddGame] = useAsyncCommand(addGame, handleSuccess);
 
 	const handleClick = useCallback(async () => {
 		const result = await dialog.open({
@@ -28,8 +35,8 @@ export function AddGame() {
 		});
 		if (!result || Array.isArray(result)) return;
 
-		await addGame(result);
-	}, []);
+		await executeAddGame(result);
+	}, [executeAddGame]);
 
 	useEffect(() => {
 		if (isLoading) setIsOpen(false);
