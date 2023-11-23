@@ -66,6 +66,10 @@ export function addGame(path: string) {
     return invoke()<null>("add_game", { path })
 }
 
+export function removeGame(gameId: string) {
+    return invoke()<null>("remove_game", { gameId })
+}
+
 export type GameEngineVersion = { major: number; minor: number; patch: number; suffix: string | null; display: string }
 export type SteamGame = { id: string; nsfw: boolean; engine: GameEngineBrand }
 export type GameEngineBrand = "Unity" | "Unreal" | "Godot"
