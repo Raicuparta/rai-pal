@@ -9,16 +9,12 @@ export function useAppEvent<TPayload = void>(
 	const callbackRef = useRef(callback);
 
 	useEffect(() => {
-		let unlisten: Awaited<ReturnType<typeof listen>> | undefined;
-
-		(async () => {
-			unlisten = await listen(event, (event) =>
-				callbackRef.current(event.payload as TPayload),
-			);
-		})();
+		const unlistenPromise = listen(event, (event) =>
+			callbackRef.current(event.payload as TPayload),
+		);
 
 		return () => {
-			if (unlisten) unlisten();
+			unlistenPromise.then((unlisten) => unlisten());
 		};
 	}, [event]);
 }
