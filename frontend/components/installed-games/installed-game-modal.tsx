@@ -109,13 +109,15 @@ export function InstalledGameModal(props: Props) {
 								</CommandButton>
 							</>
 						)}
-						<CommandButton
-							onClick={() => removeGame(props.game.id)}
-							onSuccess={props.onClose}
-							leftSection={<IconTrash />}
-						>
-							Remove from Rai Pal
-						</CommandButton>
+						{props.game.providerId === "Manual" && (
+							<CommandButton
+								onClick={() => removeGame(props.game.id)}
+								onSuccess={props.onClose}
+								leftSection={<IconTrash />}
+							>
+								Remove from Rai Pal
+							</CommandButton>
+						)}
 					</CommandButtonGroup>
 					{modLoaders.map(
 						(modLoader) =>
