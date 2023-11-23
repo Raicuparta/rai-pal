@@ -38,7 +38,10 @@ use steam::{
 	id_lists::SteamGame,
 };
 use steamlocate::SteamDir;
-use tauri::api::dialog::message;
+use tauri::{
+	api::dialog::message,
+	Manager,
+};
 
 mod events;
 mod files;
