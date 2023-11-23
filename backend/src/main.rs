@@ -128,7 +128,7 @@ fn update_state<TData>(
 	// Sends a signal to make the frontend request an app state refresh.
 	// I would have preferred to just send the state with the signal,
 	// but it seems like Tauri events are really slow for large data.
-	handle.emit_event(event)?;
+	handle.emit_event(event, ())?;
 
 	Ok(())
 }
@@ -323,6 +323,7 @@ async fn add_game(
 
 	let mut game = manual_provider::add_game(&normalized_path)?;
 	game.update_available_mods(&get_state_data(&state.mod_loaders)?);
+	let game_name = game.name.clone();
 
 	let mut installed_games = get_state_data(&state.installed_games)?;
 	installed_games.insert(game.id.clone(), game);
@@ -333,6 +334,8 @@ async fn add_game(
 		&state.installed_games,
 		&handle,
 	)?;
+
+	handle.emit_event(AppEvent::GameAdded, game_name)?;
 
 	Ok(())
 }
