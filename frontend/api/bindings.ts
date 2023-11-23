@@ -66,13 +66,17 @@ export function addGame(path: string) {
     return invoke()<null>("add_game", { path })
 }
 
+export function removeGame(gameId: string) {
+    return invoke()<null>("remove_game", { gameId })
+}
+
 export type GameEngineVersion = { major: number; minor: number; patch: number; suffix: string | null; display: string }
 export type SteamGame = { id: string; nsfw: boolean; engine: GameEngineBrand }
 export type GameEngineBrand = "Unity" | "Unreal" | "Godot"
 export type ProviderId = "Steam" | "Manual"
 export type Architecture = "X64" | "X86"
+export type AppEvent = "SyncInstalledGames" | "SyncOwnedGames" | "SyncDiscoverGames" | "SyncMods" | "ExecutedSteamCommand" | "GameAdded" | "GameRemoved"
 export type ModKind = "Installable" | "Runnable"
-export type AppEvent = "SyncInstalledGames" | "SyncOwnedGames" | "SyncDiscoverGames" | "SyncMods" | "ExecutedSteamCommand"
 export type OperatingSystem = "Linux" | "Windows"
 export type GameExecutable = { path: string; engine: GameEngine | null; architecture: Architecture | null; operatingSystem: OperatingSystem | null; scriptingBackend: UnityScriptingBackend | null }
 export type SteamLaunchOption = { launchId: string; appId: number; description: string | null; executable: string | null; arguments: string | null; appType: string | null; osList: string | null; betaKey: string | null; osArch: string | null }

@@ -9,12 +9,12 @@ interface Props<TResult> extends ButtonProps {
 }
 
 function CommandButtonInternal<TResult>(
-	{ onClick, children, ...props }: Props<TResult>,
+	{ onClick, onSuccess, children, ...props }: Props<TResult>,
 	ref: React.ForwardedRef<HTMLButtonElement>,
 ) {
 	const [executeCommand, isLoading, success] = useAsyncCommand(
 		onClick,
-		props.onSuccess,
+		onSuccess,
 	);
 
 	const isLongLoading = useLongLoading(isLoading);

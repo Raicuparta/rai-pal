@@ -128,7 +128,7 @@ fn update_state<TData>(
 	// Sends a signal to make the frontend request an app state refresh.
 	// I would have preferred to just send the state with the signal,
 	// but it seems like Tauri events are really slow for large data.
-	handle.emit_event(event)?;
+	handle.emit_event(event, ())?;
 
 	Ok(())
 }
@@ -315,14 +315,14 @@ async fn add_game(
 ) -> Result {
 	let normalized_path = normalize_path(&path);
 	let game_id = hash_path(&normalized_path);
-	let existing_game = get_game(&game_id, &state);
 
-	if existing_game.is_ok() {
+	if get_game(&game_id, &state).is_ok() {
 		return Err(Error::GameAlreadyAdded(normalized_path));
 	}
 
 	let mut game = manual_provider::add_game(&normalized_path)?;
 	game.update_available_mods(&get_state_data(&state.mod_loaders)?);
+	let game_name = game.name.clone();
 
 	let mut installed_games = get_state_data(&state.installed_games)?;
 	installed_games.insert(game.id.clone(), game);
@@ -333,6 +333,33 @@ async fn add_game(
 		&state.installed_games,
 		&handle,
 	)?;
+
+	handle.emit_event(AppEvent::GameAdded, game_name)?;
+
+	Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn remove_game(
+	game_id: String,
+	state: tauri::State<'_, AppState>,
+	handle: tauri::AppHandle,
+) -> Result {
+	let game = get_game(&game_id, &state)?;
+	manual_provider::remove_game(&game.executable.path)?;
+
+	let mut installed_games = get_state_data(&state.installed_games)?;
+	installed_games.remove(&game_id);
+
+	update_state(
+		AppEvent::SyncInstalledGames,
+		installed_games,
+		&state.installed_games,
+		&handle,
+	)?;
+
+	handle.emit_event(AppEvent::GameRemoved, game.name)?;
 
 	Ok(())
 }
@@ -405,6 +432,7 @@ fn main() {
 			open_mod_folder,
 			open_mods_folder,
 			add_game,
+			remove_game,
 		]
 	);
 

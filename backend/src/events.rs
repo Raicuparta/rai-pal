@@ -1,3 +1,4 @@
+use serde::Serialize;
 use tauri::Manager;
 
 use crate::{
@@ -11,14 +12,21 @@ serializable_enum!(AppEvent {
 	SyncDiscoverGames,
 	SyncMods,
 	ExecutedSteamCommand,
+	GameAdded,
+	GameRemoved,
 });
 
 pub trait EventEmitter {
-	fn emit_event(&self, event: AppEvent) -> Result;
+	fn emit_event<TPayload: Serialize + Clone>(&self, event: AppEvent, payload: TPayload)
+		-> Result;
 }
 
 impl EventEmitter for tauri::AppHandle {
-	fn emit_event(&self, event: AppEvent) -> Result {
-		Ok(self.emit_all(&event.to_string(), ())?)
+	fn emit_event<TPayload: Serialize + Clone>(
+		&self,
+		event: AppEvent,
+		payload: TPayload,
+	) -> Result {
+		Ok(self.emit_all(&event.to_string(), payload)?)
 	}
 }

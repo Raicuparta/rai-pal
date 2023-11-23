@@ -100,3 +100,13 @@ pub fn add_game(path: &Path) -> Result<InstalledGame> {
 
 	Ok(game)
 }
+
+pub fn remove_game(path: &Path) -> Result {
+	let config_path = games_config_path()?;
+	let mut games_config = read_games_config(&config_path);
+	games_config.paths.retain(|p| p != path);
+
+	fs::write(config_path, serde_json::to_string_pretty(&games_config)?)?;
+
+	Ok(())
+}
