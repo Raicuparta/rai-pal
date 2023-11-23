@@ -359,6 +359,8 @@ async fn remove_game(
 		&handle,
 	)?;
 
+	handle.emit_event(AppEvent::GameRemoved, game.name)?;
+
 	Ok(())
 }
 

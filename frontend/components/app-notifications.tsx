@@ -16,5 +16,12 @@ export function AppNotifications() {
 		});
 	});
 
+	useAppEvent<string>("GameRemoved", (gameName) => {
+		notifications.show({
+			message: `Removed game "${gameName}".`,
+			color: "green",
+		});
+	});
+
 	return <Notifications />;
 }

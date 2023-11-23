@@ -13,6 +13,7 @@ serializable_enum!(AppEvent {
 	SyncMods,
 	ExecutedSteamCommand,
 	GameAdded,
+	GameRemoved,
 });
 
 pub trait EventEmitter {
