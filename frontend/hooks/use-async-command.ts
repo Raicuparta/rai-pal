@@ -1,7 +1,7 @@
 import { notifications } from "@mantine/notifications";
 import { useCallback, useRef, useState } from "react";
 
-export function useAsyncCommand<TResult, TArgs>(
+export function useAsyncCommand<TResult, TArgs = void>(
 	command: (args: TArgs) => Promise<TResult>,
 	onSuccess?: (result: TResult) => void,
 ) {
