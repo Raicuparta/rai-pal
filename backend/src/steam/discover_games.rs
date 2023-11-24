@@ -1,5 +1,7 @@
+use steamlocate::SteamDir;
+
 use super::{
-	appinfo::SteamAppInfoFile,
+	appinfo::{self,},
 	id_lists::{
 		self,
 		SteamGame,
@@ -7,7 +9,11 @@ use super::{
 };
 use crate::Result;
 
-pub async fn get(app_info: &SteamAppInfoFile) -> Result<Vec<SteamGame>> {
+pub async fn get() -> Result<Vec<SteamGame>> {
+	let steam_dir = SteamDir::locate()?;
+	// TODO This is already done in the Steam provider, avoid repetition.
+	let app_info = appinfo::read(steam_dir.path())?;
+
 	Ok(id_lists::get()
 		.await?
 		.into_iter()

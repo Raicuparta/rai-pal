@@ -36,6 +36,10 @@ export function showAppNotification(message: string, type: NotificationType) {
 }
 
 export function AppNotifications() {
+	useAppEvent<string>("Error", (error) => {
+		showAppNotification(error, "error");
+	});
+
 	useAppEvent("ExecutedSteamCommand", () => {
 		showAppNotification("Running steam command...", "info");
 	});

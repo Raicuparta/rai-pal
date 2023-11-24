@@ -33,10 +33,7 @@ use result::{
 	Error,
 	Result,
 };
-use steam::{
-	appinfo,
-	id_lists::SteamGame,
-};
+use steam::id_lists::SteamGame;
 use steamlocate::SteamDir;
 use tauri::{
 	api::dialog::message,
@@ -123,7 +120,7 @@ fn update_state<TData>(
 	data: TData,
 	mutex: &Mutex<Option<TData>>,
 	handle: &tauri::AppHandle,
-) -> Result {
+) {
 	if let Ok(mut mutex_guard) = mutex.lock() {
 		*mutex_guard = Some(data);
 	}
@@ -131,9 +128,7 @@ fn update_state<TData>(
 	// Sends a signal to make the frontend request an app state refresh.
 	// I would have preferred to just send the state with the signal,
 	// but it seems like Tauri events are really slow for large data.
-	handle.emit_event(event, ())?;
-
-	Ok(())
+	handle.emit_event(event, ());
 }
 
 #[tauri::command]
@@ -213,7 +208,7 @@ fn refresh_single_game(
 		installed_games,
 		&state.installed_games,
 		handle,
-	)?;
+	);
 
 	Ok(())
 }
@@ -246,20 +241,19 @@ async fn update_data(handle: tauri::AppHandle, state: tauri::State<'_, AppState>
 		mod_loaders.clone(),
 		&state.mod_loaders,
 		&handle,
-	)?;
+	);
 
-	let provider_map = provider::get_map();
-
-	let steam_dir = SteamDir::locate()?;
-	let app_info = appinfo::read(steam_dir.path())?;
+	let provider_map = provider::get_map(&handle);
 
 	let installed_games: HashMap<_, _> = provider_map
 		.values()
 		.flat_map(|provider| match provider.get_installed_games() {
 			Ok(games) => games,
 			Err(err) => {
-				// TODO properly handle these errors message to frontend.
-				eprintln!("Error getting installed games for provider: {err}");
+				handle.emit_event(
+					AppEvent::Error,
+					format!("Error getting installed games for provider: {err}"),
+				);
 				Vec::default()
 			}
 		})
@@ -274,10 +268,10 @@ async fn update_data(handle: tauri::AppHandle, state: tauri::State<'_, AppState>
 		installed_games.clone(),
 		&state.installed_games,
 		&handle,
-	)?;
+	);
 
 	let (discover_games_result, owned_games_result) = futures::future::join(
-		steam::discover_games::get(&app_info),
+		steam::discover_games::get(),
 		futures::future::join_all(
 			provider_map
 				.values()
@@ -297,14 +291,14 @@ async fn update_data(handle: tauri::AppHandle, state: tauri::State<'_, AppState>
 		discover_games,
 		&state.discover_games,
 		&handle,
-	)?;
+	);
 
 	update_state(
 		AppEvent::SyncOwnedGames,
 		owned_games,
 		&state.owned_games,
 		&handle,
-	)?;
+	);
 
 	Ok(())
 }
@@ -335,9 +329,9 @@ async fn add_game(
 		installed_games,
 		&state.installed_games,
 		&handle,
-	)?;
+	);
 
-	handle.emit_event(AppEvent::GameAdded, game_name)?;
+	handle.emit_event(AppEvent::GameAdded, game_name);
 
 	Ok(())
 }
@@ -360,9 +354,9 @@ async fn remove_game(
 		installed_games,
 		&state.installed_games,
 		&handle,
-	)?;
+	);
 
-	handle.emit_event(AppEvent::GameRemoved, game.name)?;
+	handle.emit_event(AppEvent::GameRemoved, game.name);
 
 	Ok(())
 }
