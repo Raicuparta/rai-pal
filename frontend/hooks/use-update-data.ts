@@ -2,7 +2,7 @@ import { useCallback } from "react";
 import { useSetAtom } from "jotai";
 import { updateData } from "@api/bindings";
 import { loadingAtom } from "./use-data";
-import { notifications } from "@mantine/notifications";
+import { showAppNotification } from "@components/app-notifications";
 
 export function useUpdateData() {
 	const setIsLoading = useSetAtom(loadingAtom);
@@ -11,10 +11,7 @@ export function useUpdateData() {
 		setIsLoading(true);
 		updateData()
 			.catch((error) => {
-				notifications.show({
-					message: `Error finding games: ${error}`,
-					color: "red",
-				});
+				showAppNotification(`Error finding games: ${error}`, "error");
 			})
 			.finally(() => setIsLoading(false));
 	}, [setIsLoading]);

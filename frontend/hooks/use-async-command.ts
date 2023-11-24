@@ -1,4 +1,4 @@
-import { notifications } from "@mantine/notifications";
+import { showAppNotification } from "@components/app-notifications";
 import { useCallback, useRef, useState } from "react";
 
 export function useAsyncCommand<TResult, TArgs = void>(
@@ -30,10 +30,7 @@ export function useAsyncCommand<TResult, TArgs = void>(
 					return result;
 				})
 				.catch((error) =>
-					notifications.show({
-						message: `Failed to execute command: ${error}`,
-						color: "red",
-					}),
+					showAppNotification(`Failed to execute command: ${error}`, "error"),
 				)
 				.finally(() => setIsLoading(false));
 		},
