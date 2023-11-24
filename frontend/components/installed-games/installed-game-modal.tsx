@@ -1,13 +1,5 @@
 import { Flex, Modal, Stack, Text } from "@mantine/core";
-import {
-	InstalledGame,
-	installMod,
-	openGameFolder,
-	openGameModsFolder,
-	removeGame,
-	startGame,
-	uninstallMod,
-} from "@api/bindings";
+import { InstalledGame, commands } from "@api/bindings";
 import { useMemo } from "react";
 import { GameName } from "./game-name";
 import { CommandButton } from "@components/command-button";
@@ -73,19 +65,19 @@ export function InstalledGameModal(props: Props) {
 					<CommandButtonGroup label="Game Actions">
 						<CommandButton
 							leftSection={<IconPlayerPlay />}
-							onClick={() => startGame(props.game.id)}
+							onClick={() => commands.startGame(props.game.id)}
 						>
 							Start Game
 						</CommandButton>
 						<CommandButton
 							leftSection={<IconFolder />}
-							onClick={() => openGameFolder(props.game.id)}
+							onClick={() => commands.openGameFolder(props.game.id)}
 						>
 							Open Game Folder
 						</CommandButton>
 						<CommandButton
 							leftSection={<IconFolderCog />}
-							onClick={() => openGameModsFolder(props.game.id)}
+							onClick={() => commands.openGameModsFolder(props.game.id)}
 						>
 							Open Mods Folder
 						</CommandButton>
@@ -111,7 +103,7 @@ export function InstalledGameModal(props: Props) {
 						)}
 						{props.game.providerId === "Manual" && (
 							<CommandButton
-								onClick={() => removeGame(props.game.id)}
+								onClick={() => commands.removeGame(props.game.id)}
 								onSuccess={props.onClose}
 								leftSection={<IconTrash />}
 							>
@@ -131,7 +123,9 @@ export function InstalledGameModal(props: Props) {
 											<CommandButton
 												leftSection={<IconTrash />}
 												key={mod.name}
-												onClick={() => uninstallMod(props.game.id, mod.id)}
+												onClick={() =>
+													commands.uninstallMod(props.game.id, mod.id)
+												}
 											>
 												Uninstall {mod.name}
 											</CommandButton>
@@ -140,7 +134,11 @@ export function InstalledGameModal(props: Props) {
 												leftSection={<IconTool />}
 												key={mod.name}
 												onClick={() =>
-													installMod(modLoader.id, mod.id, props.game.id)
+													commands.installMod(
+														modLoader.id,
+														mod.id,
+														props.game.id,
+													)
 												}
 											>
 												{mod.kind === "Installable" ? "Install" : "Run"}{" "}

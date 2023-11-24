@@ -1,31 +1,25 @@
 import { useEffect } from "react";
-import { addGame } from "@api/bindings";
 import { event } from "@tauri-apps/api";
 import { atom } from "jotai";
-import {
-	getDiscoverGames,
-	getInstalledGames,
-	getModLoaders,
-	getOwnedGames,
-} from "@api/bindings";
+import { commands } from "@api/bindings";
 import { dataSubscription } from "./use-data-subscription";
 import { useUpdateData } from "./use-update-data";
 import { useAsyncCommand } from "./use-async-command";
 
 export const [installedGamesAtom, useInstalledGamesSubscription] =
-	dataSubscription("SyncInstalledGames", getInstalledGames, {});
+	dataSubscription("SyncInstalledGames", commands.getInstalledGames, {});
 
 export const [discoverGamesAtom, useDiscoverGamesSubscription] =
-	dataSubscription("SyncDiscoverGames", getDiscoverGames, []);
+	dataSubscription("SyncDiscoverGames", commands.getDiscoverGames, []);
 
 export const [modLoadersAtom, useModLoadersSubscription] = dataSubscription(
 	"SyncMods",
-	getModLoaders,
+	commands.getModLoaders,
 	{},
 );
 export const [ownedGamesAtom, useOwnedGamesSubscription] = dataSubscription(
 	"SyncOwnedGames",
-	getOwnedGames,
+	commands.getOwnedGames,
 	[],
 );
 
@@ -39,7 +33,7 @@ export function useData() {
 
 	const updateData = useUpdateData();
 
-	const [executeAddGame] = useAsyncCommand(addGame);
+	const [executeAddGame] = useAsyncCommand(commands.addGame);
 
 	useEffect(() => {
 		const unlistenPromise = event.listen<string[]>(

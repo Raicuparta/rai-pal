@@ -1,15 +1,16 @@
+import { Result } from "@api/result";
 import { useAsyncCommand } from "@hooks/use-async-command";
 import { useLongLoading } from "@hooks/use-long-loading";
 import { Button, ButtonProps } from "@mantine/core";
 import { forwardRef } from "react";
 
-interface Props<TResult> extends ButtonProps {
-	readonly onClick: () => Promise<TResult>;
+interface Props<TData, TError> extends ButtonProps {
+	readonly onClick: () => Promise<Result<TData, TError>>;
 	readonly onSuccess?: () => void;
 }
 
-function CommandButtonInternal<TResult>(
-	{ onClick, onSuccess, children, ...props }: Props<TResult>,
+function CommandButtonInternal<TData, TError>(
+	{ onClick, onSuccess, children, ...props }: Props<TData, TError>,
 	ref: React.ForwardedRef<HTMLButtonElement>,
 ) {
 	const [executeCommand, isLoading, success] = useAsyncCommand(

@@ -259,7 +259,7 @@ async fn update_data(handle: tauri::AppHandle, state: tauri::State<'_, AppState>
 			Ok(games) => games,
 			Err(err) => {
 				// TODO properly handle these errors message to frontend.
-				eprintln!("Error getting installed games for provider: {}", err);
+				eprintln!("Error getting installed games for provider: {err}");
 				Vec::default()
 			}
 		})
@@ -418,9 +418,27 @@ fn main() {
 			Ok(())
 		});
 
-	let (tauri_builder, types_result) = set_up_api!(
-		tauri_builder,
-		[
+	let tauri_builder = tauri_builder.invoke_handler(tauri::generate_handler![
+		dummy_command,
+		update_data,
+		get_installed_games,
+		get_owned_games,
+		get_discover_games,
+		get_mod_loaders,
+		open_game_folder,
+		install_mod,
+		uninstall_mod,
+		open_game_mods_folder,
+		start_game,
+		open_mod_folder,
+		open_mods_folder,
+		add_game,
+		remove_game
+	]);
+
+	let specta_builder = {
+		// You can use `tauri_specta::js::builder` for exporting JS Doc instead of Typescript!`
+		let specta_builder = tauri_specta::ts::builder().commands(tauri_specta::collect_commands![
 			dummy_command,
 			update_data,
 			get_installed_games,
@@ -435,27 +453,17 @@ fn main() {
 			open_mod_folder,
 			open_mods_folder,
 			add_game,
-			remove_game,
-		]
-	);
+			remove_game
+		]);
 
-	match types_result {
-		Ok(types) => {
-			#[cfg(debug_assertions)]
-			if let Err(err) = tauri_specta::ts::export_with_cfg(
-				types,
-				specta::ts::ExportConfiguration::default()
-					.bigint(specta::ts::BigIntExportBehavior::BigInt),
-				"../frontend/api/bindings.ts",
-			) {
-				eprintln!("Failed to generate TypeScript bindings: {err}");
-			}
-		}
-		Err(err) => {
-			eprintln!("Failed to generate api bindings: {err}");
-		}
-	}
+		#[cfg(debug_assertions)] // <- Only export on non-release builds
+		let specta_builder = specta_builder.path("../frontend/api/bindings.ts");
+
+		specta_builder.into_plugin()
+	};
+
 	tauri_builder
+		.plugin(specta_builder)
 		.run(tauri::generate_context!())
 		.unwrap_or_else(|err| eprintln!("Failed to run Tauri application: {err}"));
 }

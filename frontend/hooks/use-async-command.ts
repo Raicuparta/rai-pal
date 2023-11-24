@@ -1,9 +1,10 @@
+import { Result } from "@api/result";
 import { notifications } from "@mantine/notifications";
 import { useCallback, useRef, useState } from "react";
 
-export function useAsyncCommand<TResult, TArgs>(
-	command: (args: TArgs) => Promise<TResult>,
-	onSuccess?: (result: TResult) => void,
+export function useAsyncCommand<TData, TArgs, TError>(
+	command: (args: TArgs) => Promise<Result<TData, TError>>,
+	onSuccess?: (result: TData) => void,
 ) {
 	const [isLoading, setIsLoading] = useState(false);
 	const [success, setSuccess] = useState(false);
@@ -20,14 +21,18 @@ export function useAsyncCommand<TResult, TArgs>(
 
 			return command(args)
 				.then((result) => {
-					if (onSuccess) {
-						onSuccess(result);
+					if (result.status === "error") {
+						throw result.error;
+					} else {
+						if (onSuccess) {
+							onSuccess(result.data);
+						}
+						setSuccess(true);
+						timeout.current = setTimeout(() => {
+							setSuccess(false);
+						}, 1000);
+						return result;
 					}
-					setSuccess(true);
-					timeout.current = setTimeout(() => {
-						setSuccess(false);
-					}, 1000);
-					return result;
 				})
 				.catch((error) =>
 					notifications.show({

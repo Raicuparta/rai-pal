@@ -1,10 +1,11 @@
 import { AppEvent } from "@api/bindings";
 import { useSetAtom, atom } from "jotai";
 import { useAppEvent } from "./use-app-event";
+import { Result } from "@api/result";
 
-export function dataSubscription<TData>(
+export function dataSubscription<TData, TError>(
 	event: AppEvent,
-	apiFunction: () => Promise<TData>,
+	apiFunction: () => Promise<Result<TData, TError>>,
 	defaultValue: TData,
 ) {
 	const stateAtom = atom<TData>(defaultValue);
@@ -13,7 +14,12 @@ export function dataSubscription<TData>(
 		const setData = useSetAtom(stateAtom);
 
 		useAppEvent(event, () => {
-			apiFunction().then((data) => setData(data as TData));
+			apiFunction().then((data) => {
+				// TODO handle error
+				if (data.status === "ok") {
+					setData(data.data);
+				}
+			});
 		});
 	}
 
