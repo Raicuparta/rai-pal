@@ -259,7 +259,7 @@ async fn update_data(handle: tauri::AppHandle, state: tauri::State<'_, AppState>
 			Ok(games) => games,
 			Err(err) => {
 				// TODO properly handle these errors message to frontend.
-				eprintln!("Error getting installed games for provider: {}", err);
+				eprintln!("Error getting installed games for provider: {err}");
 				Vec::default()
 			}
 		})
