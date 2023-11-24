@@ -58,7 +58,6 @@ mod windows;
 struct AppState {
 	installed_games: Mutex<Option<installed_game::Map>>,
 	owned_games: Mutex<Option<Vec<OwnedGame>>>,
-	discover_games: Mutex<Option<Vec<SteamGame>>>,
 	mod_loaders: Mutex<Option<mod_loader::DataMap>>,
 }
 
@@ -101,12 +100,6 @@ async fn get_installed_games(state: tauri::State<'_, AppState>) -> Result<instal
 #[specta::specta]
 async fn get_owned_games(state: tauri::State<'_, AppState>) -> Result<Vec<OwnedGame>> {
 	get_state_data(&state.owned_games)
-}
-
-#[tauri::command]
-#[specta::specta]
-async fn get_discover_games(state: tauri::State<'_, AppState>) -> Result<Vec<SteamGame>> {
-	get_state_data(&state.discover_games)
 }
 
 #[tauri::command]
@@ -270,28 +263,15 @@ async fn update_data(handle: tauri::AppHandle, state: tauri::State<'_, AppState>
 		&handle,
 	);
 
-	let (discover_games_result, owned_games_result) = futures::future::join(
-		steam::discover_games::get(),
-		futures::future::join_all(
-			provider_map
-				.values()
-				.map(provider::ProviderActions::get_owned_games),
-		),
+	let owned_games: Vec<OwnedGame> = futures::future::join_all(
+		provider_map
+			.values()
+			.map(provider::ProviderActions::get_owned_games),
 	)
-	.await;
-
-	let owned_games: Vec<OwnedGame> = owned_games_result
-		.into_iter()
-		.flat_map(result::Result::unwrap_or_default)
-		.collect();
-
-	let discover_games = discover_games_result.unwrap_or_default();
-	update_state(
-		AppEvent::SyncDiscoverGames,
-		discover_games,
-		&state.discover_games,
-		&handle,
-	);
+	.await
+	.into_iter()
+	.flat_map(result::Result::unwrap_or_default)
+	.collect();
 
 	update_state(
 		AppEvent::SyncOwnedGames,
@@ -393,7 +373,6 @@ fn main() {
 		.manage(AppState {
 			installed_games: Mutex::default(),
 			owned_games: Mutex::default(),
-			discover_games: Mutex::default(),
 			mod_loaders: Mutex::default(),
 		})
 		.setup(|_app| {
@@ -426,7 +405,6 @@ fn main() {
 			update_data,
 			get_installed_games,
 			get_owned_games,
-			get_discover_games,
 			get_mod_loaders,
 			open_game_folder,
 			install_mod,
