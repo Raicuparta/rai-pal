@@ -340,3 +340,7 @@ pub fn read(steam_path: &Path) -> Result<SteamAppInfoFile> {
 	let mut appinfo_file = BufReader::new(fs::File::open(get_path(steam_path))?);
 	SteamAppInfoFile::load(&mut appinfo_file)
 }
+
+pub fn delete(steam_path: &Path) -> Result {
+	Ok(fs::remove_file(get_path(steam_path))?)
+}

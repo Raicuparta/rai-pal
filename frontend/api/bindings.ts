@@ -70,6 +70,10 @@ export function removeGame(gameId: string) {
     return invoke()<null>("remove_game", { gameId })
 }
 
+export function deleteSteamAppinfoCache() {
+    return invoke()<null>("delete_steam_appinfo_cache")
+}
+
 export type GameExecutable = { path: string; engine: GameEngine | null; architecture: Architecture | null; operatingSystem: OperatingSystem | null; scriptingBackend: UnityScriptingBackend | null }
 export type InstalledGame = { id: string; name: string; providerId: ProviderId; discriminator: string | null; steamLaunch: SteamLaunchOption | null; executable: GameExecutable; thumbnailUrl: string | null; availableMods: { [key: string]: boolean } }
 export type ProviderId = "Steam" | "Manual"
