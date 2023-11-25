@@ -1,12 +1,18 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import {
+	getLocalStorage,
+	listenToStorageChange,
+	setLocalStorage,
+} from "../util/local-storage";
 
-export function usePersistedState<TState>(key: string, defaultState: TState) {
+export function usePersistedState<TState>(defaultState: TState, key?: string) {
 	const [state, setState] = useState<TState>(() => {
+		if (!key) return defaultState;
+
 		try {
-			const persistedState = localStorage.getItem(key);
-			return persistedState ? JSON.parse(persistedState) : defaultState;
+			return getLocalStorage(key, defaultState);
 		} catch (error) {
-			console.log(
+			console.error(
 				`Failed to get localStorage state with key "${key}": ${error}`,
 			);
 			return defaultState;
@@ -14,12 +20,32 @@ export function usePersistedState<TState>(key: string, defaultState: TState) {
 	});
 
 	useEffect(() => {
-		if (state) {
-			localStorage.setItem(key, JSON.stringify(state));
-		} else {
-			localStorage.removeItem(key);
-		}
-	}, [state, key]);
+		if (!key) return;
 
-	return [state, setState] as const;
+		const unlistenToStorageChange = listenToStorageChange(
+			key,
+			defaultState,
+			setState,
+		);
+
+		return () => {
+			unlistenToStorageChange();
+		};
+	}, [defaultState, key]);
+
+	const setPersistedState = useCallback(
+		(stateSetParam: TState | ((previousState: TState) => TState)) => {
+			if (!key) return;
+
+			const newState =
+				typeof stateSetParam === "function"
+					? (stateSetParam as (newState: TState) => TState)(state)
+					: (stateSetParam as TState);
+
+			setLocalStorage(key, newState);
+		},
+		[key, state],
+	);
+
+	return [state, setPersistedState] as const;
 }

@@ -35,8 +35,8 @@ export function OwnedGamesPage() {
 	const [selectedGame, setSelectedGame] = useState<OwnedGame>();
 
 	const [hiddenColumns, setHiddenColumns] = usePersistedState<string[]>(
-		"installed-hidden-columns",
 		["provider"],
+		"installed-hidden-columns",
 	);
 
 	const filteredColumns = useMemo(

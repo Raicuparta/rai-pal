@@ -109,7 +109,7 @@ impl InstalledGame {
 				// This one will show an error if the game needs an update, and doesn't show the nice loading popup,
 				// but it allows us to specify the specific launch option to run.
 				// This one also supports passing "dialog" instead of the app_type, (steam://launch/{app_id}/dialog)
-				// which makes Steam show the launch selection dialogue, but that dialogue stops showing if the user
+				// which makes Steam show the launch selection dialog, but that dialog stops showing if the user
 				// selects the "don't ask again" checkbox.
 				steam::command::run(
 					&format!(

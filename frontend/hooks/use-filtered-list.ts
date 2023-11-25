@@ -18,8 +18,8 @@ export function useFilteredList<TItem, TFilter>(
 		tableHeaders.find((header) => header.sort || header.getSortValue)?.id,
 	);
 	const [filter, setFilter] = usePersistedState<TFilter>(
-		id,
 		defaultFilterValue,
+		id,
 	);
 	const [search, setSearch] = useState("");
 

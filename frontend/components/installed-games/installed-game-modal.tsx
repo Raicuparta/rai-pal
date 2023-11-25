@@ -140,6 +140,8 @@ export function InstalledGameModal(props: Props) {
 											<CommandButton
 												leftSection={<IconTool />}
 												key={mod.name}
+												confirmationText="Attention: be careful when installing mods on multiplayer games! Anticheat can detect some mods and get you banned, even if the mods seem harmless."
+												confirmationSkipId="install-mod-confirm"
 												onClick={() =>
 													installMod(modLoader.id, mod.id, props.game.id)
 												}

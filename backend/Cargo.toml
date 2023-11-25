@@ -1,6 +1,6 @@
 [package]
 name = "rai-pal"
-version = "0.1.25"
+version = "0.1.26"
 authors = ["Raicuparta"]
 license = "GPL-3.0-or-later"
 repository = "https://github.com/Raicuparta/rai-pal"
