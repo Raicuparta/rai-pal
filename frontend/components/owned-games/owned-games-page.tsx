@@ -14,6 +14,7 @@ import { ownedGamesColumns } from "./owned-games-columns";
 import { ColumnsSelect } from "@components/columns-select";
 import { usePersistedState } from "@hooks/use-persisted-state";
 import { TypedSegmentedControl } from "@components/installed-games/typed-segmented-control";
+import { FixOwnedGamesButton } from "./fix-owned-games-button";
 
 const defaultFilter: Record<string, string> = {};
 
@@ -64,6 +65,7 @@ export function OwnedGamesPage() {
 				/>
 			) : null}
 			<Flex gap="md">
+				<FixOwnedGamesButton />
 				<SearchInput
 					onChange={setSearch}
 					value={search}

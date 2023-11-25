@@ -15,5 +15,10 @@ export const theme: MantineThemeOverride = {
 				variant: "default",
 			},
 		},
+		Notification: {
+			defaultProps: {
+				withBorder: true,
+			},
+		},
 	},
 };

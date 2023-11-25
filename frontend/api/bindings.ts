@@ -26,10 +26,6 @@ export function getOwnedGames() {
     return invoke()<OwnedGame[]>("get_owned_games")
 }
 
-export function getDiscoverGames() {
-    return invoke()<SteamGame[]>("get_discover_games")
-}
-
 export function getModLoaders() {
     return invoke()<{ [key: string]: ModLoaderData }>("get_mod_loaders")
 }
@@ -70,12 +66,15 @@ export function removeGame(gameId: string) {
     return invoke()<null>("remove_game", { gameId })
 }
 
+export function deleteSteamAppinfoCache() {
+    return invoke()<null>("delete_steam_appinfo_cache")
+}
+
 export type GameExecutable = { path: string; engine: GameEngine | null; architecture: Architecture | null; operatingSystem: OperatingSystem | null; scriptingBackend: UnityScriptingBackend | null }
 export type InstalledGame = { id: string; name: string; providerId: ProviderId; discriminator: string | null; steamLaunch: SteamLaunchOption | null; executable: GameExecutable; thumbnailUrl: string | null; availableMods: { [key: string]: boolean } }
 export type ProviderId = "Steam" | "Manual"
-export type AppEvent = "SyncInstalledGames" | "SyncOwnedGames" | "SyncDiscoverGames" | "SyncMods" | "ExecutedSteamCommand" | "GameAdded" | "GameRemoved"
-export type SteamGame = { id: string; nsfw: boolean; engine: GameEngineBrand }
 export type GameEngine = { brand: GameEngineBrand; version: GameEngineVersion | null }
+export type AppEvent = "SyncInstalledGames" | "SyncOwnedGames" | "SyncMods" | "ExecutedSteamCommand" | "GameAdded" | "GameRemoved" | "Error"
 export type Mod = { id: string; name: string; scriptingBackend: UnityScriptingBackend | null; engine: GameEngineBrand | null; kind: ModKind; path: string }
 export type ModLoaderData = { id: string; path: string; mods: Mod[] }
 export type OwnedGame = { id: string; providerId: ProviderId; name: string; installed: boolean; osList: OperatingSystem[]; engine: GameEngineBrand; releaseDate: number; thumbnailUrl: string }

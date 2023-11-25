@@ -4,6 +4,10 @@ use async_trait::async_trait;
 use enum_dispatch::enum_dispatch;
 
 use crate::{
+	events::{
+		AppEvent,
+		EventEmitter,
+	},
 	installed_game::InstalledGame,
 	owned_game::OwnedGame,
 	providers::{
@@ -49,7 +53,7 @@ where
 	Ok((TProvider::ID.to_string(), mod_loader))
 }
 
-fn add_entry<TProvider: ProviderActions + ProviderStatic>(map: &mut Map)
+fn add_entry<TProvider: ProviderActions + ProviderStatic>(map: &mut Map, handle: &tauri::AppHandle)
 where
 	Provider: std::convert::From<TProvider>,
 {
@@ -57,15 +61,15 @@ where
 		Ok((key, value)) => {
 			map.insert(key, value);
 		}
-		Err(err) => eprintln!("Failed to create map entry: {err}"),
+		Err(err) => handle.emit_event(AppEvent::Error, format!("Failed to set up provider: {err}")),
 	}
 }
 
-pub fn get_map() -> Map {
+pub fn get_map(handle: &tauri::AppHandle) -> Map {
 	let mut map = Map::new();
 
-	add_entry::<SteamProvider>(&mut map);
-	add_entry::<ManualProvider>(&mut map);
+	add_entry::<SteamProvider>(&mut map, handle);
+	add_entry::<ManualProvider>(&mut map, handle);
 
 	map
 }

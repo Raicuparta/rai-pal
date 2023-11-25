@@ -1,6 +1,6 @@
 [package]
 name = "rai-pal"
-version = "0.1.24"
+version = "0.1.25"
 authors = ["Raicuparta"]
 license = "GPL-3.0-or-later"
 repository = "https://github.com/Raicuparta/rai-pal"
@@ -24,7 +24,7 @@ specta = "1.0.5"
 tauri-specta = { version = "1.0.2", features = ["typescript"] }
 serde = { version = "1.0", features = ["derive"] }
 byteorder = "1.5.0"
-tauri = { version = "1.5.2", features = [ "dialog-open", "updater", "shell-open", "dialog"] }
+tauri = { version = "1.5.2", features = [ "dialog-confirm", "dialog-open", "updater", "shell-open", "dialog"] }
 reqwest = "0.11.22"
 goblin = "0.7.1"
 open = "5.0.0"

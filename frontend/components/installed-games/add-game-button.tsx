@@ -48,7 +48,7 @@ export function AddGame() {
 				onClick={() => setIsOpen(true)}
 				leftSection={<IconPlaylistAdd />}
 			>
-				Add game...
+				Add game
 			</Button>
 			<Modal
 				opened={isOpen}

@@ -33,10 +33,6 @@ use result::{
 	Error,
 	Result,
 };
-use steam::{
-	appinfo,
-	id_lists::SteamGame,
-};
 use steamlocate::SteamDir;
 use tauri::{
 	api::dialog::message,
@@ -61,7 +57,6 @@ mod windows;
 struct AppState {
 	installed_games: Mutex<Option<installed_game::Map>>,
 	owned_games: Mutex<Option<Vec<OwnedGame>>>,
-	discover_games: Mutex<Option<Vec<SteamGame>>>,
 	mod_loaders: Mutex<Option<mod_loader::DataMap>>,
 }
 
@@ -108,12 +103,6 @@ async fn get_owned_games(state: tauri::State<'_, AppState>) -> Result<Vec<OwnedG
 
 #[tauri::command]
 #[specta::specta]
-async fn get_discover_games(state: tauri::State<'_, AppState>) -> Result<Vec<SteamGame>> {
-	get_state_data(&state.discover_games)
-}
-
-#[tauri::command]
-#[specta::specta]
 async fn get_mod_loaders(state: tauri::State<'_, AppState>) -> Result<mod_loader::DataMap> {
 	get_state_data(&state.mod_loaders)
 }
@@ -123,7 +112,7 @@ fn update_state<TData>(
 	data: TData,
 	mutex: &Mutex<Option<TData>>,
 	handle: &tauri::AppHandle,
-) -> Result {
+) {
 	if let Ok(mut mutex_guard) = mutex.lock() {
 		*mutex_guard = Some(data);
 	}
@@ -131,9 +120,7 @@ fn update_state<TData>(
 	// Sends a signal to make the frontend request an app state refresh.
 	// I would have preferred to just send the state with the signal,
 	// but it seems like Tauri events are really slow for large data.
-	handle.emit_event(event, ())?;
-
-	Ok(())
+	handle.emit_event(event, ());
 }
 
 #[tauri::command]
@@ -213,7 +200,7 @@ fn refresh_single_game(
 		installed_games,
 		&state.installed_games,
 		handle,
-	)?;
+	);
 
 	Ok(())
 }
@@ -246,20 +233,19 @@ async fn update_data(handle: tauri::AppHandle, state: tauri::State<'_, AppState>
 		mod_loaders.clone(),
 		&state.mod_loaders,
 		&handle,
-	)?;
+	);
 
-	let provider_map = provider::get_map();
-
-	let steam_dir = SteamDir::locate()?;
-	let app_info = appinfo::read(steam_dir.path())?;
+	let provider_map = provider::get_map(&handle);
 
 	let installed_games: HashMap<_, _> = provider_map
 		.values()
 		.flat_map(|provider| match provider.get_installed_games() {
 			Ok(games) => games,
 			Err(err) => {
-				// TODO properly handle these errors message to frontend.
-				eprintln!("Error getting installed games for provider: {}", err);
+				handle.emit_event(
+					AppEvent::Error,
+					format!("Error getting installed games for provider: {err}"),
+				);
 				Vec::default()
 			}
 		})
@@ -274,37 +260,24 @@ async fn update_data(handle: tauri::AppHandle, state: tauri::State<'_, AppState>
 		installed_games.clone(),
 		&state.installed_games,
 		&handle,
-	)?;
+	);
 
-	let (discover_games_result, owned_games_result) = futures::future::join(
-		steam::discover_games::get(&app_info),
-		futures::future::join_all(
-			provider_map
-				.values()
-				.map(provider::ProviderActions::get_owned_games),
-		),
+	let owned_games: Vec<OwnedGame> = futures::future::join_all(
+		provider_map
+			.values()
+			.map(provider::ProviderActions::get_owned_games),
 	)
-	.await;
-
-	let owned_games: Vec<OwnedGame> = owned_games_result
-		.into_iter()
-		.flat_map(result::Result::unwrap_or_default)
-		.collect();
-
-	let discover_games = discover_games_result.unwrap_or_default();
-	update_state(
-		AppEvent::SyncDiscoverGames,
-		discover_games,
-		&state.discover_games,
-		&handle,
-	)?;
+	.await
+	.into_iter()
+	.flat_map(result::Result::unwrap_or_default)
+	.collect();
 
 	update_state(
 		AppEvent::SyncOwnedGames,
 		owned_games,
 		&state.owned_games,
 		&handle,
-	)?;
+	);
 
 	Ok(())
 }
@@ -335,9 +308,9 @@ async fn add_game(
 		installed_games,
 		&state.installed_games,
 		&handle,
-	)?;
+	);
 
-	handle.emit_event(AppEvent::GameAdded, game_name)?;
+	handle.emit_event(AppEvent::GameAdded, game_name);
 
 	Ok(())
 }
@@ -360,11 +333,18 @@ async fn remove_game(
 		installed_games,
 		&state.installed_games,
 		&handle,
-	)?;
+	);
 
-	handle.emit_event(AppEvent::GameRemoved, game.name)?;
+	handle.emit_event(AppEvent::GameRemoved, game.name);
 
 	Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn delete_steam_appinfo_cache() -> Result {
+	let steam_dir = SteamDir::locate()?;
+	steam::appinfo::delete(steam_dir.path())
 }
 
 #[tauri::command]
@@ -392,7 +372,6 @@ fn main() {
 		.manage(AppState {
 			installed_games: Mutex::default(),
 			owned_games: Mutex::default(),
-			discover_games: Mutex::default(),
 			mod_loaders: Mutex::default(),
 		})
 		.setup(|_app| {
@@ -425,7 +404,6 @@ fn main() {
 			update_data,
 			get_installed_games,
 			get_owned_games,
-			get_discover_games,
 			get_mod_loaders,
 			open_game_folder,
 			install_mod,
@@ -436,6 +414,7 @@ fn main() {
 			open_mods_folder,
 			add_game,
 			remove_game,
+			delete_steam_appinfo_cache,
 		]
 	);
 
