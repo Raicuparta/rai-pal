@@ -33,7 +33,6 @@ use result::{
 	Error,
 	Result,
 };
-use steam::id_lists::SteamGame;
 use steamlocate::SteamDir;
 use tauri::{
 	api::dialog::message,
