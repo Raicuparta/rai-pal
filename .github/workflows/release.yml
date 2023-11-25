@@ -66,5 +66,5 @@ jobs:
           releaseName: "Rai Pal __VERSION__"
           includeUpdaterJson: true
           releaseBody: ${{ inputs.commit_message || github.event.pull_request.body || github.event.head_commit.message }}
-          releaseDraft: true
+          releaseDraft: false
           prerelease: false
