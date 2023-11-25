@@ -4,7 +4,7 @@ import {
 	Button,
 	ButtonProps,
 	Checkbox,
-	Flex,
+	Group,
 	Paper,
 	Popover,
 	Stack,
@@ -95,10 +95,7 @@ function CommandButtonInternal<TResult>(
 				>
 					<Stack align="center">
 						{confirmationText}
-						<Flex
-							gap="md"
-							justify="center"
-						>
+						<Group>
 							<Button
 								leftSection={<IconArrowBack />}
 								onClick={closeConfirmation}
@@ -112,7 +109,7 @@ function CommandButtonInternal<TResult>(
 							>
 								{children}
 							</Button>
-						</Flex>
+						</Group>
 						{confirmationSkipId && (
 							<Checkbox
 								checked={dontAskAgain}

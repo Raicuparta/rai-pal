@@ -1,4 +1,4 @@
-import { Flex, Table } from "@mantine/core";
+import { Table } from "@mantine/core";
 import {
 	Architecture,
 	GameEngine,
@@ -175,16 +175,11 @@ const engineColumn: TableColumn<InstalledGame, GameEngineBrand> = {
 			// Maybe I shouldn't be using a regular table component at all for this...
 			miw={170}
 		>
-			<Flex
-				align="center"
-				gap="xs"
-			>
-				<EngineBadge
-					maw={70}
-					value={engine?.brand}
-					label={engine ? engine.version?.display ?? "-" : undefined}
-				/>
-			</Flex>
+			<EngineBadge
+				maw={70}
+				value={engine?.brand}
+				label={engine ? engine.version?.display ?? "-" : undefined}
+			/>
 		</Table.Td>
 	),
 };

@@ -29,10 +29,7 @@ export function OwnedGameModal(props: Props) {
 		>
 			<Stack>
 				<ModalImage src={props.game.thumbnailUrl} />
-				<CommandButtonGroup
-					label="Game Actions"
-					m="auto"
-				>
+				<CommandButtonGroup label="Game Actions">
 					<CommandButton
 						leftSection={<IconBrowser />}
 						onClick={() => steamCommands.openStorePage(props.game.id)}

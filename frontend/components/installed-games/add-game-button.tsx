@@ -1,4 +1,4 @@
-import { Button, Flex, Modal, Stack, Text } from "@mantine/core";
+import { Button, Flex, Group, Modal, Stack, Text } from "@mantine/core";
 import { IconAppWindowFilled, IconPlaylistAdd } from "@tabler/icons-react";
 import { useCallback, useEffect, useState } from "react";
 import styles from "./installed-games.module.css";
@@ -64,16 +64,13 @@ export function AddGame() {
 						h="20em"
 						onClick={handleClick}
 					>
-						<Flex
-							gap="md"
-							align="center"
-						>
+						<Group>
 							<IconAppWindowFilled fontSize={50} />
 							<Stack gap={0}>
 								<Text>Drag and drop a game&apos;s executable file here</Text>
 								<Text>or click to select a file</Text>
 							</Stack>
-						</Flex>
+						</Group>
 					</Button>
 					<Text>
 						Note: you can drop game executable files anywhere on Rai Pal&apos;s
