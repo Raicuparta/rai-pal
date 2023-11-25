@@ -1,9 +1,15 @@
-import { Stack, Text } from "@mantine/core";
+import { Button, Stack, Tooltip } from "@mantine/core";
+import { resetLocalStorage } from "../../util/local-storage";
 
 export function SettingsPage() {
 	return (
 		<Stack>
-			<Text>Nothing to set lmao</Text>
+			<Tooltip
+				label="Will reset filters, confirmation dialogs, probably other stuff."
+				position="bottom"
+			>
+				<Button onClick={resetLocalStorage}>Reset settings to defaults</Button>
+			</Tooltip>
 		</Stack>
 	);
 }

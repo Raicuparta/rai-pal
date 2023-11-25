@@ -1,16 +1,16 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-
-const eventIdPrefix = "storage-changed";
+import { useCallback, useEffect, useState } from "react";
+import {
+	getLocalStorage,
+	listenToStorageChange,
+	setLocalStorage,
+} from "../util/local-storage";
 
 export function usePersistedState<TState>(defaultState: TState, key?: string) {
-	const eventName = useRef(`${eventIdPrefix}-${key}`);
-
 	const [state, setState] = useState<TState>(() => {
 		if (!key) return defaultState;
 
 		try {
-			const persistedState = localStorage.getItem(key);
-			return persistedState ? JSON.parse(persistedState) : defaultState;
+			return getLocalStorage(key, defaultState);
 		} catch (error) {
 			console.error(
 				`Failed to get localStorage state with key "${key}": ${error}`,
@@ -20,19 +20,16 @@ export function usePersistedState<TState>(defaultState: TState, key?: string) {
 	});
 
 	useEffect(() => {
-		function handleStorageChanged() {
-			if (!key) return;
+		if (!key) return;
 
-			const persistedState = localStorage.getItem(key);
-			setState(persistedState ? JSON.parse(persistedState) : defaultState);
-		}
-
-		const currentEventName = eventName.current;
-
-		window.addEventListener(currentEventName, handleStorageChanged);
+		const unlistenToStorageChange = listenToStorageChange(
+			key,
+			defaultState,
+			setState,
+		);
 
 		return () => {
-			window.removeEventListener(currentEventName, handleStorageChanged);
+			unlistenToStorageChange();
 		};
 	}, [defaultState, key]);
 
@@ -45,13 +42,7 @@ export function usePersistedState<TState>(defaultState: TState, key?: string) {
 					? (stateSetParam as (newState: TState) => TState)(state)
 					: (stateSetParam as TState);
 
-			if (newState) {
-				localStorage.setItem(key, JSON.stringify(newState));
-			} else {
-				localStorage.removeItem(key);
-			}
-
-			window.dispatchEvent(new Event(eventName.current));
+			setLocalStorage(key, newState);
 		},
 		[key, state],
 	);
