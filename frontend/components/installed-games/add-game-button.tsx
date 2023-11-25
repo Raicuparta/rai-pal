@@ -1,4 +1,4 @@
-import { Button, Flex, Group, Modal, Stack, Text } from "@mantine/core";
+import { Button, Group, Modal, Stack, Text } from "@mantine/core";
 import { IconAppWindowFilled, IconPlaylistAdd } from "@tabler/icons-react";
 import { useCallback, useEffect, useState } from "react";
 import styles from "./installed-games.module.css";
