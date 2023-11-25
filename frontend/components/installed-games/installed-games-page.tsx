@@ -40,8 +40,8 @@ export function InstalledGamesPage() {
 	const [selectedGameId, setSelectedGameId] = useState<string>();
 
 	const [hiddenColumns, setHiddenColumns] = usePersistedState<string[]>(
-		"installed-hidden-columns",
 		["operatingSystem", "provider"],
+		"installed-hidden-columns",
 	);
 
 	const games = useMemo(
