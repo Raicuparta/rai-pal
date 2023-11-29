@@ -39,6 +39,7 @@ use tauri::{
 	Manager,
 };
 
+mod analytics;
 mod events;
 mod files;
 mod game_engines;
@@ -179,6 +180,8 @@ async fn install_mod(
 
 	refresh_single_game(&game_id, &state, &handle)?;
 
+	analytics::send_event(analytics::Event::InstallOrRunMod, mod_id).await;
+
 	Ok(())
 }
 
@@ -310,7 +313,9 @@ async fn add_game(
 		&handle,
 	);
 
-	handle.emit_event(AppEvent::GameAdded, game_name);
+	handle.emit_event(AppEvent::GameAdded, game_name.clone());
+
+	analytics::send_event(analytics::Event::ManuallyAddGame, &game_name).await;
 
 	Ok(())
 }
@@ -349,9 +354,17 @@ async fn delete_steam_appinfo_cache() -> Result {
 
 #[tauri::command]
 #[specta::specta]
-// This command is here just so tauri_specta exports these types.
-// This should stop being needed once tauri_specta starts supporting events.
+async fn frontend_ready() -> Result {
+	analytics::send_event(analytics::Event::StartApp, "").await;
+
+	Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
 async fn dummy_command() -> Result<(InstalledGame, AppEvent)> {
+	// This command is here just so tauri_specta exports these types.
+	// This should stop being needed once tauri_specta starts supporting events.
 	Err(Error::NotImplemented)
 }
 
@@ -415,6 +428,7 @@ fn main() {
 			add_game,
 			remove_game,
 			delete_steam_appinfo_cache,
+			frontend_ready,
 		]
 	);
 
