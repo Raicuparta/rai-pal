@@ -1,4 +1,4 @@
-import { Button, Flex, Stack, Table } from "@mantine/core";
+import { Button, Group, Stack, Table } from "@mantine/core";
 import { Fragment } from "react";
 import { TableContainer } from "@components/table/table-container";
 import { RefreshButton } from "@components/refresh-button";
@@ -16,10 +16,7 @@ export function ModsPage() {
 
 	return (
 		<Stack h="100%">
-			<Flex
-				justify="end"
-				gap="md"
-			>
+			<Group justify="end">
 				<Button
 					onClick={openModsFolder}
 					leftSection={<IconFolderCog />}
@@ -27,7 +24,7 @@ export function ModsPage() {
 					Open Mods Folder
 				</Button>
 				<RefreshButton />
-			</Flex>
+			</Group>
 			<TableContainer>
 				<Table highlightOnHover>
 					<Table.Thead>

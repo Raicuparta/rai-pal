@@ -1,4 +1,4 @@
-import { Flex, Stack } from "@mantine/core";
+import { Group, Stack } from "@mantine/core";
 import { OwnedGame } from "@api/bindings";
 import { useMemo, useState } from "react";
 import { filterGame, includesOneOf } from "../../util/filter";
@@ -64,7 +64,7 @@ export function OwnedGamesPage() {
 					game={selectedGame}
 				/>
 			) : null}
-			<Flex gap="md">
+			<Group>
 				<FixOwnedGamesButton />
 				<SearchInput
 					onChange={setSearch}
@@ -95,7 +95,7 @@ export function OwnedGamesPage() {
 					</Stack>
 				</FilterMenu>
 				<RefreshButton />
-			</Flex>
+			</Group>
 			<VirtualizedTable
 				data={filteredGames}
 				columns={filteredColumns}

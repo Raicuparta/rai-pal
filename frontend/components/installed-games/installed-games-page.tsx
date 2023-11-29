@@ -1,4 +1,4 @@
-import { Flex, Stack } from "@mantine/core";
+import { Group, Stack } from "@mantine/core";
 import { useMemo, useState } from "react";
 import { filterGame, includesOneOf } from "../../util/filter";
 import { InstalledGameModal } from "./installed-game-modal";
@@ -75,7 +75,7 @@ export function InstalledGamesPage() {
 
 	return (
 		<Stack h="100%">
-			<Flex gap="md">
+			<Group>
 				<AddGame />
 				<SearchInput
 					onChange={setSearch}
@@ -107,7 +107,7 @@ export function InstalledGamesPage() {
 					</Stack>
 				</FilterMenu>
 				<RefreshButton />
-			</Flex>
+			</Group>
 			{selectedGame ? (
 				<InstalledGameModal
 					game={selectedGame}

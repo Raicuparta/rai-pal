@@ -57,16 +57,11 @@ export function InstalledGameModal(props: Props) {
 			onClose={props.onClose}
 			opened
 			size="lg"
-			title={
-				<Flex>
-					<GameName game={props.game} />
-				</Flex>
-			}
+			title={<GameName game={props.game} />}
 		>
 			<Stack>
 				<ModalImage src={props.game.thumbnailUrl} />
 				<Flex
-					justify="center"
 					wrap="wrap"
 					gap="md"
 				>
