@@ -151,12 +151,26 @@ impl ModLoaderActions for BepInEx {
 			.ok_or_else(|| Error::ModNotFound(mod_id.to_string()))?;
 
 		self.install(game)?;
-		game_mod.install(
-			&game
-				.get_installed_mods_folder()?
-				.join("BepInEx")
-				.join("plugins"),
-		)
+
+		let bepinex_folder = game.get_installed_mods_folder()?.join("BepInEx");
+
+		let mod_plugin_path = game_mod.path.join("plugins");
+		if mod_plugin_path.is_dir() {
+			copy_dir_all(
+				mod_plugin_path,
+				bepinex_folder.join("plugins").join(&game_mod.id),
+			)?;
+		}
+
+		let mod_patch_path = game_mod.path.join("patchers");
+		if mod_patch_path.is_dir() {
+			copy_dir_all(
+				mod_patch_path,
+				bepinex_folder.join("patchers").join(&game_mod.id),
+			)?;
+		}
+
+		Ok(())
 	}
 
 	fn open_mod_folder(&self, mod_id: &str) -> Result {

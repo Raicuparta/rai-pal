@@ -124,14 +124,18 @@ impl InstalledGame {
 	}
 
 	pub fn uninstall_mod(&self, mod_id: &str) -> Result {
+		// TODO this should be handled by each mod loader.
 		let installed_mods_folder = self.get_installed_mods_folder()?;
-		let mod_files_folder = installed_mods_folder
-			.join("BepInEx")
-			.join("plugins")
-			.join(mod_id);
+		let bepinex_folder = installed_mods_folder.join("BepInEx");
 
-		if mod_files_folder.is_dir() {
-			fs::remove_dir_all(mod_files_folder)?;
+		let plugins_folder = bepinex_folder.join("plugins").join(mod_id);
+		if plugins_folder.is_dir() {
+			fs::remove_dir_all(plugins_folder)?;
+		}
+
+		let patchers_folder = bepinex_folder.join("patchers").join(mod_id);
+		if patchers_folder.is_dir() {
+			fs::remove_dir_all(patchers_folder)?;
 		}
 
 		Ok(())
@@ -149,12 +153,13 @@ impl InstalledGame {
 	}
 
 	pub fn is_mod_installed(&self, mod_id: &str) -> bool {
+		// TODO this should be handled by each mod loader.
+
 		if let Ok(installed_mods_folder) = self.get_installed_mods_folder() {
-			return installed_mods_folder
-				.join("BepInEx")
-				.join("plugins")
-				.join(mod_id)
-				.is_dir();
+			let bepinex_folder = installed_mods_folder.join("BepInEx");
+
+			return bepinex_folder.join("plugins").join(mod_id).is_dir()
+				|| bepinex_folder.join("patchers").join(mod_id).is_dir();
 		}
 
 		false
