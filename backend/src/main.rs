@@ -34,10 +34,7 @@ use result::{
 	Result,
 };
 use steamlocate::SteamDir;
-use tauri::{
-	api::dialog::message,
-	Manager,
-};
+use tauri::api::dialog::message;
 
 mod analytics;
 mod events;

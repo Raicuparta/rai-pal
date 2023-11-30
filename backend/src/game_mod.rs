@@ -4,7 +4,6 @@ use std::path::{
 };
 
 use crate::{
-	files::copy_dir_all,
 	game_engines::{
 		game_engine::GameEngineBrand,
 		unity::UnityScriptingBackend,
@@ -51,10 +50,6 @@ impl Mod {
 			scripting_backend,
 			kind,
 		})
-	}
-
-	pub fn install(&self, folder_path: &Path) -> Result {
-		copy_dir_all(&self.path, folder_path.join(&self.id))
 	}
 
 	pub fn open_folder(&self) -> Result {
