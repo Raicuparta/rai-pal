@@ -170,20 +170,17 @@ impl InstalledGame {
 			.iter()
 			.flat_map(|(_, mod_loader)| &mod_loader.mods)
 			.filter_map(|(mod_id, game_mod)| {
-				// TODO add remote mods too.
-				game_mod.local_mod.as_ref().and_then(|local_mod| {
-					if equal_or_none(
-						local_mod.engine,
-						self.executable.engine.as_ref().map(|engine| engine.brand),
-					) && equal_or_none(
-						local_mod.scripting_backend,
-						self.executable.scripting_backend,
-					) {
-						Some((mod_id.clone(), self.is_mod_installed(mod_id)))
-					} else {
-						None
-					}
-				})
+				if equal_or_none(
+					game_mod.common.engine,
+					self.executable.engine.as_ref().map(|engine| engine.brand),
+				) && equal_or_none(
+					game_mod.common.unity_backend,
+					self.executable.scripting_backend,
+				) {
+					Some((mod_id.clone(), self.is_mod_installed(mod_id)))
+				} else {
+					None
+				}
 			})
 			.collect()
 	}

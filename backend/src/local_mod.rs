@@ -8,6 +8,7 @@ use crate::{
 		game_engine::GameEngineBrand,
 		unity::UnityScriptingBackend,
 	},
+	game_mod::CommonModData,
 	paths,
 	serializable_enum,
 	serializable_struct,
@@ -19,31 +20,33 @@ serializable_enum!(ModKind {
 	Runnable,
 });
 
-serializable_struct!(LocalMod {
-	pub id: String,
-	pub scripting_backend: Option<UnityScriptingBackend>,
-	pub engine: Option<GameEngineBrand>,
+serializable_struct!(LocalModData {
 	pub kind: ModKind,
 	pub path: PathBuf,
+});
+
+serializable_struct!(LocalMod {
+	pub data: LocalModData,
+	pub common: CommonModData,
 });
 
 impl LocalMod {
 	pub fn new(
 		path: &Path,
 		engine: Option<GameEngineBrand>,
-		scripting_backend: Option<UnityScriptingBackend>,
+		unity_backend: Option<UnityScriptingBackend>,
 		kind: ModKind,
 	) -> Result<Self> {
 		Ok(Self {
-			id: paths::file_name_without_extension(path)?.to_string(),
-			path: path.to_path_buf(),
-			engine,
-			scripting_backend,
-			kind,
+			data: LocalModData {
+				kind,
+				path: path.to_path_buf(),
+			},
+			common: CommonModData {
+				id: paths::file_name_without_extension(path)?.to_string(),
+				engine,
+				unity_backend,
+			},
 		})
-	}
-
-	pub fn open_folder(&self) -> Result {
-		Ok(open::that_detached(&self.path)?)
 	}
 }

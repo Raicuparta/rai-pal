@@ -1,10 +1,7 @@
 use std::collections::HashMap;
 
 use crate::{
-	game_engines::{
-		game_engine::GameEngineBrand,
-		unity::UnityScriptingBackend,
-	},
+	game_mod::CommonModData,
 	serializable_struct,
 	Result,
 };
@@ -15,15 +12,17 @@ serializable_struct!(ModDatabase {
   pub mods: HashMap<String, RemoteMod>,
 });
 
-serializable_struct!(RemoteMod {
-  pub id: String,
+serializable_struct!(RemoteModData {
   pub title: String,
   pub author: String,
   pub source_code: String,
   pub description: String,
-  pub engine: GameEngineBrand,
-  pub unity_backend: Option<UnityScriptingBackend>,
   pub downloads: Vec<ModDownload>,
+});
+
+serializable_struct!(RemoteMod {
+	pub common: CommonModData,
+	pub data: RemoteModData,
 });
 
 serializable_struct!(ModDownload {

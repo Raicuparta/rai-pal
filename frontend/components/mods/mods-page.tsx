@@ -67,17 +67,10 @@ export function ModsPage() {
 										</Table.Td>
 										<Table.Td>{modLoader.id}</Table.Td>
 										<Table.Td>
-											<EngineBadge
-												value={mod.localMod?.engine ?? mod.remoteMod?.engine}
-											/>
+											<EngineBadge value={mod.common.engine} />
 										</Table.Td>
 										<Table.Td>
-											<UnityBackendBadge
-												value={
-													mod.localMod?.scriptingBackend ??
-													mod.remoteMod?.unityBackend
-												}
-											/>
+											<UnityBackendBadge value={mod.common.unityBackend} />
 										</Table.Td>
 									</Table.Tr>
 								))}

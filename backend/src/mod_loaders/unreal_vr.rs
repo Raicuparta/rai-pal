@@ -42,16 +42,19 @@ impl ModLoaderStatic for UnrealVr {
 	{
 		let path = resources_path.join(Self::ID);
 		let mods = if path.join(Self::EXE_NAME).exists() {
+			let local_mod = LocalMod::new(
+				&path.join(Self::EXE_NAME),
+				Some(GameEngineBrand::Unreal),
+				None,
+				ModKind::Runnable,
+			)?;
+
 			HashMap::from([(
-				"uevr".to_string(),
+				local_mod.common.id.clone(),
 				GameMod {
-					local_mod: Some(LocalMod::new(
-						&path.join(Self::EXE_NAME),
-						Some(GameEngineBrand::Unreal),
-						None,
-						ModKind::Runnable,
-					)?),
+					local_mod: Some(local_mod.data),
 					remote_mod: None,
+					common: local_mod.common,
 				},
 			)])
 		} else {

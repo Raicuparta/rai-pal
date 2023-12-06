@@ -1,4 +1,4 @@
-import { Flex, Modal, Stack } from "@mantine/core";
+import { Flex, Modal, Stack, Text } from "@mantine/core";
 import {
 	InstalledGame,
 	installMod,
@@ -144,21 +144,20 @@ export function InstalledGameModal(props: Props) {
 												{mod.localMod?.kind === "Installable"
 													? "Install"
 													: "Run"}{" "}
-												{mod.remoteMod?.title ?? mod.localMod?.id}
-												{/* TODO: handle local/remote mod stuff */}
-												{/* <Text
+												{mod.remoteMod?.title ?? mod.common.id}
+												<Text
 													opacity={0.5}
 													ml="xs"
 													size="xs"
 												>
 													{props.game.executable.engine
 														? ""
-														: ` (${mod.engine}${
-																mod.scriptingBackend
-																	? ` ${mod.scriptingBackend}`
+														: ` (${mod.common.engine}${
+																mod.common.unityBackend
+																	? ` ${mod.common.unityBackend}`
 																	: ""
 														  })`}
-												</Text> */}
+												</Text>
 											</CommandButton>
 										),
 									)}

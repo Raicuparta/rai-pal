@@ -32,9 +32,12 @@ use crate::{
 		LocalMod,
 		ModKind,
 	},
-	mod_loaders::mod_loader::{
-		ModLoaderActions,
-		ModLoaderData,
+	mod_loaders::{
+		mod_database::ModDatabase,
+		mod_loader::{
+			ModLoaderActions,
+			ModLoaderData,
+		},
 	},
 	paths,
 	serializable_struct,
@@ -59,7 +62,17 @@ impl ModLoaderStatic for BepInEx {
 			local_mods
 		};
 
-		let database = mod_database::get(Self::ID).await?; // TODO don't fail everything if database fails.
+		let database = mod_database::get(Self::ID).await.unwrap_or_else(|error| {
+			// Show this error somewhere on frontend.
+			println!(
+				"Failed to get mod database for loader {}: {}",
+				Self::ID,
+				error
+			);
+			ModDatabase {
+				mods: HashMap::new(),
+			}
+		});
 
 		let keys: HashSet<_> = local_mods
 			.keys()
@@ -69,14 +82,23 @@ impl ModLoaderStatic for BepInEx {
 
 		let mods: HashMap<_, _> = keys
 			.iter()
-			.map(|key| {
-				(
+			.filter_map(|key| {
+				let remote_mod = database.mods.get(key);
+				let local_mod = local_mods.get(key);
+
+				let common = remote_mod.map_or_else(
+					|| local_mod.map(|local| local.common.clone()),
+					|remote| Some(remote.common.clone()),
+				)?;
+
+				Some((
 					key.clone(),
 					GameMod {
-						remote_mod: database.mods.get(key).cloned(),
-						local_mod: local_mods.get(key).cloned(),
+						remote_mod: remote_mod.map(|m| m.data.clone()),
+						local_mod: local_mod.map(|m| m.data.clone()),
+						common,
 					},
-				)
+				))
 			})
 			.collect();
 
@@ -188,18 +210,12 @@ impl ModLoaderActions for BepInEx {
 		if let Some(local_mod) = &game_mod.local_mod {
 			let mod_plugin_path = local_mod.path.join("plugins");
 			if mod_plugin_path.is_dir() {
-				copy_dir_all(
-					mod_plugin_path,
-					bepinex_folder.join("plugins").join(&local_mod.id),
-				)?;
+				copy_dir_all(mod_plugin_path, bepinex_folder.join("plugins").join(mod_id))?;
 			}
 
 			let mod_patch_path = local_mod.path.join("patchers");
 			if mod_patch_path.is_dir() {
-				copy_dir_all(
-					mod_patch_path,
-					bepinex_folder.join("patchers").join(&local_mod.id),
-				)?;
+				copy_dir_all(mod_patch_path, bepinex_folder.join("patchers").join(mod_id))?;
 			}
 		}
 
@@ -215,12 +231,7 @@ impl ModLoaderActions for BepInEx {
 			.get(mod_id)
 			.ok_or_else(|| Error::ModNotFound(mod_id.to_string()))?;
 
-		if let Some(local_mod) = &game_mod.local_mod {
-			return local_mod.open_folder();
-		}
-
-		// TODO error if not local.
-		Ok(())
+		game_mod.open_folder()
 	}
 }
 
@@ -328,7 +339,7 @@ fn find_mods(
 					Some(scripting_backend),
 					ModKind::Installable,
 				) {
-					Some((local_mod.id.clone(), local_mod))
+					Some((local_mod.common.id.clone(), local_mod))
 				} else {
 					None
 				}
