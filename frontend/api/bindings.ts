@@ -90,5 +90,5 @@ export type GameMod = { localMod: LocalMod | null; databaseMod: DatabaseMod | nu
 export type OperatingSystem = "Linux" | "Windows"
 export type ModLoaderData = { id: string; path: string; mods: { [key: string]: GameMod } }
 export type GameEngineBrand = "Unity" | "Unreal" | "Godot"
-export type LocalMod = { id: string; name: string; scriptingBackend: UnityScriptingBackend | null; engine: GameEngineBrand | null; kind: ModKind; path: string }
+export type LocalMod = { id: string; scriptingBackend: UnityScriptingBackend | null; engine: GameEngineBrand | null; kind: ModKind; path: string }
 export type DatabaseMod = { id: string; title: string; author: string; sourceCode: string; description: string; engine: GameEngineBrand; unityBackend: UnityScriptingBackend | null; downloads: ModDownload[] }

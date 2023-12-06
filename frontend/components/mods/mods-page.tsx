@@ -30,6 +30,7 @@ export function ModsPage() {
 					<Table.Thead>
 						<Table.Tr>
 							<Table.Th>Mod</Table.Th>
+							<Table.Th>Source</Table.Th>
 							<Table.Th
 								ta="center"
 								w={100}
@@ -59,8 +60,9 @@ export function ModsPage() {
 										onClick={() => openModFolder(modLoader.id, modId)}
 									>
 										<Table.Td ta="left">
-											{mod.localMod?.name ?? mod.databaseMod?.title}
+											{modId} ({mod.databaseMod?.title})
 										</Table.Td>
+										<Table.Td ta="left">{mod.databaseMod?.sourceCode}</Table.Td>
 										<Table.Td>{modLoader.id}</Table.Td>
 										<Table.Td>
 											<EngineBadge
