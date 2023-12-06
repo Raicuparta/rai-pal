@@ -144,7 +144,7 @@ export function InstalledGameModal(props: Props) {
 												{mod.localMod?.kind === "Installable"
 													? "Install"
 													: "Run"}{" "}
-												{mod.databaseMod?.title}
+												{mod.databaseMod?.title ?? mod.localMod?.id}
 												{/* TODO: handle local/remote mod stuff */}
 												{/* <Text
 													opacity={0.5}

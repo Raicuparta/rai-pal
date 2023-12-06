@@ -62,7 +62,9 @@ export function ModsPage() {
 										<Table.Td ta="left">
 											{modId} ({mod.databaseMod?.title})
 										</Table.Td>
-										<Table.Td ta="left">{mod.databaseMod?.sourceCode}</Table.Td>
+										<Table.Td ta="left">
+											{mod.databaseMod?.sourceCode ?? mod.localMod?.path}
+										</Table.Td>
 										<Table.Td>{modLoader.id}</Table.Td>
 										<Table.Td>
 											<EngineBadge
