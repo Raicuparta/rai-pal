@@ -12,10 +12,10 @@ use crate::{
 const URL_BASE: &str = "https://raw.githubusercontent.com/Raicuparta/rai-pal-db/main";
 
 serializable_struct!(ModDatabase {
-  pub mods: HashMap<String, DatabaseMod>,
+  pub mods: HashMap<String, RemoteMod>,
 });
 
-serializable_struct!(DatabaseMod {
+serializable_struct!(RemoteMod {
   pub id: String,
   pub title: String,
   pub author: String,

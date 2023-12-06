@@ -60,22 +60,22 @@ export function ModsPage() {
 										onClick={() => openModFolder(modLoader.id, modId)}
 									>
 										<Table.Td ta="left">
-											{modId} ({mod.databaseMod?.title})
+											{modId} ({mod.remoteMod?.title})
 										</Table.Td>
 										<Table.Td ta="left">
-											{mod.databaseMod?.sourceCode ?? mod.localMod?.path}
+											{mod.remoteMod?.sourceCode ?? mod.localMod?.path}
 										</Table.Td>
 										<Table.Td>{modLoader.id}</Table.Td>
 										<Table.Td>
 											<EngineBadge
-												value={mod.localMod?.engine ?? mod.databaseMod?.engine}
+												value={mod.localMod?.engine ?? mod.remoteMod?.engine}
 											/>
 										</Table.Td>
 										<Table.Td>
 											<UnityBackendBadge
 												value={
 													mod.localMod?.scriptingBackend ??
-													mod.databaseMod?.unityBackend
+													mod.remoteMod?.unityBackend
 												}
 											/>
 										</Table.Td>

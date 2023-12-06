@@ -73,7 +73,7 @@ impl ModLoaderStatic for BepInEx {
 				(
 					key.clone(),
 					GameMod {
-						database_mod: database.mods.get(key).cloned(),
+						remote_mod: database.mods.get(key).cloned(),
 						local_mod: local_mods.get(key).cloned(),
 					},
 				)

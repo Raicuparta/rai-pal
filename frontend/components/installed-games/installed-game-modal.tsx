@@ -129,7 +129,7 @@ export function InstalledGameModal(props: Props) {
 												key={modId}
 												onClick={() => uninstallMod(props.game.id, modId)}
 											>
-												Uninstall {mod.databaseMod?.title}
+												Uninstall {mod.remoteMod?.title}
 											</CommandButton>
 										) : (
 											<CommandButton
@@ -144,7 +144,7 @@ export function InstalledGameModal(props: Props) {
 												{mod.localMod?.kind === "Installable"
 													? "Install"
 													: "Run"}{" "}
-												{mod.databaseMod?.title ?? mod.localMod?.id}
+												{mod.remoteMod?.title ?? mod.localMod?.id}
 												{/* TODO: handle local/remote mod stuff */}
 												{/* <Text
 													opacity={0.5}

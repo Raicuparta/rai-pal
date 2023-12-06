@@ -51,7 +51,7 @@ impl ModLoaderStatic for UnrealVr {
 						None,
 						ModKind::Runnable,
 					)?),
-					database_mod: None,
+					remote_mod: None,
 				},
 			)])
 		} else {
