@@ -169,18 +169,20 @@ impl InstalledGame {
 		mod_loaders
 			.iter()
 			.flat_map(|(_, mod_loader)| &mod_loader.mods)
-			.filter_map(|game_mod| {
-				if equal_or_none(
-					game_mod.engine,
-					self.executable.engine.as_ref().map(|engine| engine.brand),
-				) && equal_or_none(
-					game_mod.scripting_backend,
-					self.executable.scripting_backend,
-				) {
-					Some((game_mod.id.clone(), self.is_mod_installed(&game_mod.id)))
-				} else {
-					None
-				}
+			.filter_map(|(mod_id, game_mod)| {
+				game_mod.local_mod.as_ref().and_then(|local_mod| {
+					if equal_or_none(
+						local_mod.engine,
+						self.executable.engine.as_ref().map(|engine| engine.brand),
+					) && equal_or_none(
+						local_mod.scripting_backend,
+						self.executable.scripting_backend,
+					) {
+						Some((mod_id.clone(), self.is_mod_installed(mod_id)))
+					} else {
+						None
+					}
+				})
 			})
 			.collect()
 	}

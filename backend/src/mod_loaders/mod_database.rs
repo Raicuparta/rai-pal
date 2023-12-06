@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use crate::{
 	game_engines::{
 		game_engine::GameEngineBrand,
@@ -10,7 +12,7 @@ use crate::{
 const URL_BASE: &str = "https://raw.githubusercontent.com/Raicuparta/rai-pal-db/main";
 
 serializable_struct!(ModDatabase {
-  pub mods: Vec<DatabaseMod>,
+  pub mods: HashMap<String, DatabaseMod>,
 });
 
 serializable_struct!(DatabaseMod {
@@ -30,8 +32,12 @@ serializable_struct!(ModDownload {
 });
 
 pub async fn get(mod_loader_id: &str) -> Result<ModDatabase> {
-	Ok(reqwest::get(format!("{URL_BASE}/{mod_loader_id}.json"))
-		.await?
-		.json::<ModDatabase>()
-		.await?)
+	let random = rand::random::<u32>();
+
+	Ok(reqwest::get(format!(
+		"{URL_BASE}/{mod_loader_id}.json?cache_avoider={random}"
+	))
+	.await?
+	.json::<ModDatabase>()
+	.await?)
 }

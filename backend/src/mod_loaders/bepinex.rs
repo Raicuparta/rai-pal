@@ -1,4 +1,8 @@
 use std::{
+	collections::{
+		HashMap,
+		HashSet,
+	},
 	fs,
 	path::Path,
 };
@@ -22,11 +26,12 @@ use crate::{
 		unity::UnityScriptingBackend,
 	},
 	game_executable::OperatingSystem,
-	game_mod::{
-		Mod,
+	game_mod::GameMod,
+	installed_game::InstalledGame,
+	local_mod::{
+		LocalMod,
 		ModKind,
 	},
-	installed_game::InstalledGame,
 	mod_loaders::mod_loader::{
 		ModLoaderActions,
 		ModLoaderData,
@@ -48,18 +53,38 @@ impl ModLoaderStatic for BepInEx {
 	async fn new(resources_path: &Path) -> Result<Self> {
 		let path = resources_path.join(Self::ID);
 
-		let mods = {
-			let mut mods = find_mods(&path, UnityScriptingBackend::Il2Cpp)?;
-			mods.append(&mut find_mods(&path, UnityScriptingBackend::Mono)?);
-			mods
+		let local_mods = {
+			let mut local_mods = find_mods(&path, UnityScriptingBackend::Il2Cpp)?;
+			local_mods.extend(find_mods(&path, UnityScriptingBackend::Mono)?);
+			local_mods
 		};
+
+		let database = mod_database::get(Self::ID).await?; // TODO don't fail everything if database fails.
+
+		let keys: HashSet<_> = local_mods
+			.keys()
+			.chain(database.mods.keys())
+			.cloned()
+			.collect();
+
+		let mods: HashMap<_, _> = keys
+			.iter()
+			.map(|key| {
+				(
+					key.clone(),
+					GameMod {
+						database_mod: database.mods.get(key).cloned(),
+						local_mod: local_mods.get(key).cloned(),
+					},
+				)
+			})
+			.collect();
 
 		Ok(Self {
 			data: ModLoaderData {
 				id: Self::ID.to_string(),
 				mods,
 				path,
-				database: mod_database::get(Self::ID).await.ok(), // TODO show error somewhere.
 			},
 		})
 	}
@@ -153,29 +178,32 @@ impl ModLoaderActions for BepInEx {
 		let game_mod = self
 			.data
 			.mods
-			.iter()
-			.find(|game_mod| game_mod.id == mod_id)
+			.get(mod_id)
 			.ok_or_else(|| Error::ModNotFound(mod_id.to_string()))?;
 
 		self.install(game)?;
 
 		let bepinex_folder = game.get_installed_mods_folder()?.join("BepInEx");
 
-		let mod_plugin_path = game_mod.path.join("plugins");
-		if mod_plugin_path.is_dir() {
-			copy_dir_all(
-				mod_plugin_path,
-				bepinex_folder.join("plugins").join(&game_mod.id),
-			)?;
+		if let Some(local_mod) = &game_mod.local_mod {
+			let mod_plugin_path = local_mod.path.join("plugins");
+			if mod_plugin_path.is_dir() {
+				copy_dir_all(
+					mod_plugin_path,
+					bepinex_folder.join("plugins").join(&local_mod.id),
+				)?;
+			}
+
+			let mod_patch_path = local_mod.path.join("patchers");
+			if mod_patch_path.is_dir() {
+				copy_dir_all(
+					mod_patch_path,
+					bepinex_folder.join("patchers").join(&local_mod.id),
+				)?;
+			}
 		}
 
-		let mod_patch_path = game_mod.path.join("patchers");
-		if mod_patch_path.is_dir() {
-			copy_dir_all(
-				mod_patch_path,
-				bepinex_folder.join("patchers").join(&game_mod.id),
-			)?;
-		}
+		// TODO handle case where local mod missing.
 
 		Ok(())
 	}
@@ -184,11 +212,15 @@ impl ModLoaderActions for BepInEx {
 		let game_mod = self
 			.data
 			.mods
-			.iter()
-			.find(|game_mod| game_mod.id == mod_id)
+			.get(mod_id)
 			.ok_or_else(|| Error::ModNotFound(mod_id.to_string()))?;
 
-		game_mod.open_folder()
+		if let Some(local_mod) = &game_mod.local_mod {
+			return local_mod.open_folder();
+		}
+
+		// TODO error if not local.
+		Ok(())
 	}
 }
 
@@ -276,7 +308,10 @@ fn reg_add_in_section(reg: &str, section: &str, key: &str, value: &str) -> Strin
 	split.join("\n")
 }
 
-fn find_mods(mod_loader_path: &Path, scripting_backend: UnityScriptingBackend) -> Result<Vec<Mod>> {
+fn find_mods(
+	mod_loader_path: &Path,
+	scripting_backend: UnityScriptingBackend,
+) -> Result<HashMap<String, LocalMod>> {
 	let mods_folder_path = mod_loader_path
 		.join(scripting_backend.to_string())
 		.join("mods");
@@ -285,17 +320,19 @@ fn find_mods(mod_loader_path: &Path, scripting_backend: UnityScriptingBackend) -
 
 	Ok(entries
 		.iter()
-		.filter_map(|entry| match entry {
-			Ok(mod_path) => Some(
-				Mod::new(
+		.filter_map(|entry| {
+			entry.as_ref().map_or(None, |mod_path| {
+				if let Ok(local_mod) = LocalMod::new(
 					mod_path,
 					Some(GameEngineBrand::Unity),
 					Some(scripting_backend),
 					ModKind::Installable,
-				)
-				.ok()?,
-			),
-			Err(_) => None,
+				) {
+					Some((local_mod.id.clone(), local_mod))
+				} else {
+					None
+				}
+			})
 		})
 		.collect())
 }

@@ -12,11 +12,10 @@ use enum_dispatch::enum_dispatch;
 use super::{
 	bepinex::BepInEx,
 	melon_loader::MelonLoader,
-	mod_database::ModDatabase,
 	unreal_vr::UnrealVr,
 };
 use crate::{
-	game_mod::Mod,
+	game_mod::GameMod,
 	installed_game::InstalledGame,
 	serializable_struct,
 	Error,
@@ -26,8 +25,7 @@ use crate::{
 serializable_struct!(ModLoaderData {
 	pub id: String,
 	pub path: PathBuf,
-	pub mods: Vec<Mod>,
-	pub database: Option<ModDatabase>,
+	pub mods: HashMap<String, GameMod>,
 });
 
 #[enum_dispatch]

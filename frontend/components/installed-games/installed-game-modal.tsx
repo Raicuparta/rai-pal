@@ -1,4 +1,4 @@
-import { Flex, Modal, Stack, Text } from "@mantine/core";
+import { Flex, Modal, Stack } from "@mantine/core";
 import {
 	InstalledGame,
 	installMod,
@@ -44,9 +44,9 @@ export function InstalledGameModal(props: Props) {
 		() =>
 			Object.values(modLoaderMap ?? {}).map((modLoader) => ({
 				...modLoader,
-				mods: modLoader.mods.filter(
-					(mod) => mod.id in props.game.availableMods,
-				),
+				mods: Object.entries(modLoader.mods)
+					.filter(([modId]) => modId in props.game.availableMods)
+					.map(([, mod]) => mod),
 			})),
 		[modLoaderMap, props.game.availableMods],
 	);
@@ -122,28 +122,31 @@ export function InstalledGameModal(props: Props) {
 									label={modLoader.id.toUpperCase()}
 									key={modLoader.id}
 								>
-									{modLoader.mods.map((mod) =>
-										props.game.availableMods[mod.id] ? (
+									{Object.entries(modLoader.mods).map(([modId, mod]) =>
+										props.game.availableMods[modId] ? (
 											<CommandButton
 												leftSection={<IconTrash />}
-												key={mod.name}
-												onClick={() => uninstallMod(props.game.id, mod.id)}
+												key={modId}
+												onClick={() => uninstallMod(props.game.id, modId)}
 											>
-												Uninstall {mod.name}
+												Uninstall {mod.localMod?.name ?? mod.databaseMod?.title}
 											</CommandButton>
 										) : (
 											<CommandButton
 												leftSection={<IconTool />}
-												key={mod.name}
+												key={modId}
 												confirmationText="Attention: be careful when installing mods on multiplayer games! Anticheat can detect some mods and get you banned, even if the mods seem harmless."
 												confirmationSkipId="install-mod-confirm"
 												onClick={() =>
-													installMod(modLoader.id, mod.id, props.game.id)
+													installMod(modLoader.id, modId, props.game.id)
 												}
 											>
-												{mod.kind === "Installable" ? "Install" : "Run"}{" "}
-												{mod.name}
-												<Text
+												{mod.localMod?.kind === "Installable"
+													? "Install"
+													: "Run"}{" "}
+												{mod.localMod?.name ?? mod.databaseMod?.title}
+												{/* TODO: handle local/remote mod stuff */}
+												{/* <Text
 													opacity={0.5}
 													ml="xs"
 													size="xs"
@@ -155,7 +158,7 @@ export function InstalledGameModal(props: Props) {
 																	? ` ${mod.scriptingBackend}`
 																	: ""
 														  })`}
-												</Text>
+												</Text> */}
 											</CommandButton>
 										),
 									)}

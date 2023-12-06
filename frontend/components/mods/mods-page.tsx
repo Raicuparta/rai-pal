@@ -53,30 +53,27 @@ export function ModsPage() {
 					<Table.Tbody>
 						{Object.values(modLoaders).map((modLoader) => (
 							<Fragment key={modLoader.id}>
-								{modLoader.database?.mods.map((mod) => (
-									<Table.Tr key={mod.id}>
-										<Table.Td ta="left">{mod.title}</Table.Td>
-										<Table.Td>{modLoader.id}</Table.Td>
-										<Table.Td>
-											<EngineBadge value={mod.engine} />
-										</Table.Td>
-										<Table.Td>
-											<UnityBackendBadge value={mod.unityBackend} />
-										</Table.Td>
-									</Table.Tr>
-								))}
-								{modLoader.mods.map((mod) => (
+								{Object.entries(modLoader.mods).map(([modId, mod]) => (
 									<Table.Tr
-										key={mod.id}
-										onClick={() => openModFolder(modLoader.id, mod.id)}
+										key={modId}
+										onClick={() => openModFolder(modLoader.id, modId)}
 									>
-										<Table.Td ta="left">{mod.name}</Table.Td>
+										<Table.Td ta="left">
+											{mod.localMod?.name ?? mod.databaseMod?.title}
+										</Table.Td>
 										<Table.Td>{modLoader.id}</Table.Td>
 										<Table.Td>
-											<EngineBadge value={mod.engine} />
+											<EngineBadge
+												value={mod.localMod?.engine ?? mod.databaseMod?.engine}
+											/>
 										</Table.Td>
 										<Table.Td>
-											<UnityBackendBadge value={mod.scriptingBackend} />
+											<UnityBackendBadge
+												value={
+													mod.localMod?.scriptingBackend ??
+													mod.databaseMod?.unityBackend
+												}
+											/>
 										</Table.Td>
 									</Table.Tr>
 								))}

@@ -1,22 +1,23 @@
-use std::path::Path;
+use std::{
+	collections::HashMap,
+	path::Path,
+};
 
 use async_trait::async_trait;
 
-use super::{
-	mod_database,
-	mod_loader::{
-		ModLoaderActions,
-		ModLoaderData,
-		ModLoaderStatic,
-	},
+use super::mod_loader::{
+	ModLoaderActions,
+	ModLoaderData,
+	ModLoaderStatic,
 };
 use crate::{
 	game_engines::game_engine::GameEngineBrand,
-	game_mod::{
-		Mod,
+	game_mod::GameMod,
+	installed_game::InstalledGame,
+	local_mod::{
+		LocalMod,
 		ModKind,
 	},
-	installed_game::InstalledGame,
 	result::Error,
 	serializable_struct,
 	windows,
@@ -41,14 +42,20 @@ impl ModLoaderStatic for UnrealVr {
 	{
 		let path = resources_path.join(Self::ID);
 		let mods = if path.join(Self::EXE_NAME).exists() {
-			vec![Mod::new(
-				&path.join(Self::EXE_NAME),
-				Some(GameEngineBrand::Unreal),
-				None,
-				ModKind::Runnable,
-			)?]
+			HashMap::from([(
+				"uevr".to_string(),
+				GameMod {
+					local_mod: Some(LocalMod::new(
+						&path.join(Self::EXE_NAME),
+						Some(GameEngineBrand::Unreal),
+						None,
+						ModKind::Runnable,
+					)?),
+					database_mod: None,
+				},
+			)])
 		} else {
-			vec![]
+			HashMap::new()
 		};
 
 		Ok(Self {
@@ -56,7 +63,6 @@ impl ModLoaderStatic for UnrealVr {
 				id: Self::ID.to_string(),
 				mods,
 				path,
-				database: mod_database::get(Self::ID).await.ok(), // TODO show error somewhere.
 			},
 		})
 	}

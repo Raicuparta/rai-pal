@@ -2658,6 +2658,7 @@ dependencies = [
  "lazy_static",
  "open 5.0.0",
  "pelite",
+ "rand 0.8.5",
  "reqwest",
  "serde",
  "serde_json",

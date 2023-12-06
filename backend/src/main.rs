@@ -46,6 +46,7 @@ mod game_engines;
 mod game_executable;
 mod game_mod;
 mod installed_game;
+mod local_mod;
 mod macros;
 mod mod_loaders;
 mod owned_game;

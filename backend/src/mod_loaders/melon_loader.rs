@@ -1,12 +1,11 @@
+use std::collections::HashMap;
+
 use async_trait::async_trait;
 
-use super::{
-	mod_database,
-	mod_loader::{
-		ModLoaderActions,
-		ModLoaderData,
-		ModLoaderStatic,
-	},
+use super::mod_loader::{
+	ModLoaderActions,
+	ModLoaderData,
+	ModLoaderStatic,
 };
 use crate::{
 	installed_game::InstalledGame,
@@ -30,9 +29,8 @@ impl ModLoaderStatic for MelonLoader {
 		Ok(Self {
 			data: ModLoaderData {
 				id: Self::ID.to_string(),
-				mods: vec![],
+				mods: HashMap::new(),
 				path,
-				database: mod_database::get(Self::ID).await.ok(), // TODO show error somewhere.
 			},
 		})
 	}
