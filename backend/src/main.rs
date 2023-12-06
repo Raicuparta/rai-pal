@@ -147,7 +147,7 @@ async fn open_mods_folder(handle: tauri::AppHandle) -> Result {
 #[specta::specta]
 async fn open_mod_folder(mod_loader_id: &str, mod_id: &str, handle: tauri::AppHandle) -> Result {
 	let resources_path = paths::resources_path(&handle)?;
-	let mod_loader = mod_loader::get(&resources_path, mod_loader_id)?;
+	let mod_loader = mod_loader::get(&resources_path, mod_loader_id).await?;
 	mod_loader.open_mod_folder(mod_id)
 }
 
@@ -174,7 +174,7 @@ async fn install_mod(
 
 	let game = get_game(&game_id, &state)?;
 
-	let mod_loader = mod_loader::get(&resources_path, mod_loader_id)?;
+	let mod_loader = mod_loader::get(&resources_path, mod_loader_id).await?;
 
 	mod_loader.install_mod(&game, mod_id)?;
 

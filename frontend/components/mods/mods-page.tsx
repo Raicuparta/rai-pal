@@ -51,11 +51,23 @@ export function ModsPage() {
 						</Table.Tr>
 					</Table.Thead>
 					<Table.Tbody>
-						{Object.values(modLoaders ?? {}).map((modLoader) => (
+						{Object.values(modLoaders).map((modLoader) => (
 							<Fragment key={modLoader.id}>
+								{modLoader.database?.mods.map((mod) => (
+									<Table.Tr key={mod.id}>
+										<Table.Td ta="left">{mod.title}</Table.Td>
+										<Table.Td>{modLoader.id}</Table.Td>
+										<Table.Td>
+											<EngineBadge value={mod.engine} />
+										</Table.Td>
+										<Table.Td>
+											<UnityBackendBadge value={mod.unityBackend} />
+										</Table.Td>
+									</Table.Tr>
+								))}
 								{modLoader.mods.map((mod) => (
 									<Table.Tr
-										key={mod.path}
+										key={mod.id}
 										onClick={() => openModFolder(modLoader.id, mod.id)}
 									>
 										<Table.Td ta="left">{mod.name}</Table.Td>

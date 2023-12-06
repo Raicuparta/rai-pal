@@ -1,7 +1,12 @@
-use super::mod_loader::{
-	ModLoaderActions,
-	ModLoaderData,
-	ModLoaderStatic,
+use async_trait::async_trait;
+
+use super::{
+	mod_database,
+	mod_loader::{
+		ModLoaderActions,
+		ModLoaderData,
+		ModLoaderStatic,
+	},
 };
 use crate::{
 	installed_game::InstalledGame,
@@ -12,10 +17,11 @@ serializable_struct!(MelonLoader {
   pub data: ModLoaderData,
 });
 
+#[async_trait]
 impl ModLoaderStatic for MelonLoader {
 	const ID: &'static str = "melonloader";
 
-	fn new(resources_path: &std::path::Path) -> crate::Result<Self>
+	async fn new(resources_path: &std::path::Path) -> crate::Result<Self>
 	where
 		Self: std::marker::Sized,
 	{
@@ -26,6 +32,7 @@ impl ModLoaderStatic for MelonLoader {
 				id: Self::ID.to_string(),
 				mods: vec![],
 				path,
+				database: mod_database::get(Self::ID).await.ok(), // TODO show error somewhere.
 			},
 		})
 	}

@@ -6,11 +6,13 @@ use std::{
 	},
 };
 
+use async_trait::async_trait;
 use enum_dispatch::enum_dispatch;
 
 use super::{
 	bepinex::BepInEx,
 	melon_loader::MelonLoader,
+	mod_database::ModDatabase,
 	unreal_vr::UnrealVr,
 };
 use crate::{
@@ -25,6 +27,7 @@ serializable_struct!(ModLoaderData {
 	pub id: String,
 	pub path: PathBuf,
 	pub mods: Vec<Mod>,
+	pub database: Option<ModDatabase>,
 });
 
 #[enum_dispatch]
@@ -42,10 +45,11 @@ pub trait ModLoaderActions {
 	fn get_data(&self) -> &ModLoaderData;
 }
 
+#[async_trait]
 pub trait ModLoaderStatic {
 	const ID: &'static str;
 
-	fn new(resources_path: &Path) -> Result<Self>
+	async fn new(resources_path: &Path) -> Result<Self>
 	where
 		Self: Sized;
 }
@@ -53,22 +57,22 @@ pub trait ModLoaderStatic {
 type Map = HashMap<String, ModLoader>;
 pub type DataMap = HashMap<String, ModLoaderData>;
 
-fn create_map_entry<TModLoader: ModLoaderActions + ModLoaderStatic>(
+async fn create_map_entry<TModLoader: ModLoaderActions + ModLoaderStatic>(
 	path: &Path,
 ) -> Result<(String, ModLoader)>
 where
 	ModLoader: std::convert::From<TModLoader>,
 {
-	let mod_loader: ModLoader = TModLoader::new(path)?.into();
+	let mod_loader: ModLoader = TModLoader::new(path).await?.into();
 
 	Ok((TModLoader::ID.to_string(), mod_loader))
 }
 
-fn add_entry<TModLoader: ModLoaderActions + ModLoaderStatic>(path: &Path, map: &mut Map)
+async fn add_entry<TModLoader: ModLoaderActions + ModLoaderStatic>(path: &Path, map: &mut Map)
 where
 	ModLoader: std::convert::From<TModLoader>,
 {
-	match create_map_entry::<TModLoader>(path) {
+	match create_map_entry::<TModLoader>(path).await {
 		Ok((key, value)) => {
 			map.insert(key, value);
 		}
@@ -76,24 +80,26 @@ where
 	}
 }
 
-fn get_map(resources_path: &Path) -> Map {
+async fn get_map(resources_path: &Path) -> Map {
 	let mut map = Map::new();
 
-	add_entry::<BepInEx>(resources_path, &mut map);
-	add_entry::<MelonLoader>(resources_path, &mut map);
-	add_entry::<UnrealVr>(resources_path, &mut map);
+	add_entry::<BepInEx>(resources_path, &mut map).await;
+	add_entry::<MelonLoader>(resources_path, &mut map).await;
+	add_entry::<UnrealVr>(resources_path, &mut map).await;
 
 	map
 }
 
-pub fn get(resources_path: &Path, id: &str) -> Result<ModLoader> {
+pub async fn get(resources_path: &Path, id: &str) -> Result<ModLoader> {
 	get_map(resources_path)
+		.await
 		.remove(id)
 		.ok_or_else(|| Error::ModLoaderNotFound(id.to_string()))
 }
 
 pub async fn get_data_map(resources_path: &Path) -> Result<DataMap> {
 	get_map(resources_path)
+		.await
 		.values()
 		.map(|mod_loader| {
 			let data = mod_loader.get_data();

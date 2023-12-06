@@ -3,7 +3,12 @@ use std::{
 	path::Path,
 };
 
-use super::mod_loader::ModLoaderStatic;
+use async_trait::async_trait;
+
+use super::{
+	mod_database,
+	mod_loader::ModLoaderStatic,
+};
 use crate::{
 	files::{
 		copy_dir_all,
@@ -36,10 +41,11 @@ serializable_struct!(BepInEx {
 	pub data: ModLoaderData,
 });
 
+#[async_trait]
 impl ModLoaderStatic for BepInEx {
 	const ID: &'static str = "bepinex";
 
-	fn new(resources_path: &Path) -> Result<Self> {
+	async fn new(resources_path: &Path) -> Result<Self> {
 		let path = resources_path.join(Self::ID);
 
 		let mods = {
@@ -53,6 +59,7 @@ impl ModLoaderStatic for BepInEx {
 				id: Self::ID.to_string(),
 				mods,
 				path,
+				database: mod_database::get(Self::ID).await.ok(), // TODO show error somewhere.
 			},
 		})
 	}

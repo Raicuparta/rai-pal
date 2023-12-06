@@ -1,9 +1,14 @@
 use std::path::Path;
 
-use super::mod_loader::{
-	ModLoaderActions,
-	ModLoaderData,
-	ModLoaderStatic,
+use async_trait::async_trait;
+
+use super::{
+	mod_database,
+	mod_loader::{
+		ModLoaderActions,
+		ModLoaderData,
+		ModLoaderStatic,
+	},
 };
 use crate::{
 	game_engines::game_engine::GameEngineBrand,
@@ -26,10 +31,11 @@ impl UnrealVr {
 	const EXE_NAME: &'static str = "UnrealVR.exe";
 }
 
+#[async_trait]
 impl ModLoaderStatic for UnrealVr {
 	const ID: &'static str = "uevr";
 
-	fn new(resources_path: &Path) -> Result<Self>
+	async fn new(resources_path: &Path) -> Result<Self>
 	where
 		Self: std::marker::Sized,
 	{
@@ -50,6 +56,7 @@ impl ModLoaderStatic for UnrealVr {
 				id: Self::ID.to_string(),
 				mods,
 				path,
+				database: mod_database::get(Self::ID).await.ok(), // TODO show error somewhere.
 			},
 		})
 	}
