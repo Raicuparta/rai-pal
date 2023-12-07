@@ -12,6 +12,7 @@ use super::mod_loader::{
 };
 use crate::{
 	installed_game::InstalledGame,
+	local_mod::ModKind,
 	serializable_struct,
 	Result,
 };
@@ -35,6 +36,7 @@ impl ModLoaderStatic for MelonLoader {
 				id: Self::ID.to_string(),
 				mods: HashMap::new(),
 				path,
+				kind: ModKind::Installable,
 			},
 		})
 	}
@@ -57,7 +59,7 @@ impl ModLoaderActions for MelonLoader {
 		todo!()
 	}
 
-	fn get_mod_path(&self, mod_id: &str) -> Result<PathBuf> {
+	fn get_mod_path(&self, _mod_id: &str) -> Result<PathBuf> {
 		todo!()
 	}
 }

@@ -49,7 +49,6 @@ impl ModLoaderStatic for UnrealVr {
 				&path.join(Self::EXE_NAME),
 				Some(GameEngineBrand::Unreal),
 				None,
-				ModKind::Runnable,
 			)?;
 
 			HashMap::from([(
@@ -69,6 +68,7 @@ impl ModLoaderStatic for UnrealVr {
 				id: Self::ID.to_string(),
 				mods,
 				path,
+				kind: ModKind::Runnable,
 			},
 		})
 	}
@@ -100,7 +100,7 @@ impl ModLoaderActions for UnrealVr {
 		Ok(open::that_detached(&self.data.path)?)
 	}
 
-	fn get_mod_path(&self, mod_id: &str) -> Result<PathBuf> {
+	fn get_mod_path(&self, _mod_id: &str) -> Result<PathBuf> {
 		todo!()
 	}
 }

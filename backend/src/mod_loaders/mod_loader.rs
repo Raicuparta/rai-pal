@@ -20,6 +20,7 @@ use super::{
 use crate::{
 	game_mod::GameMod,
 	installed_game::InstalledGame,
+	local_mod::ModKind,
 	serializable_struct,
 	Error,
 	Result,
@@ -29,6 +30,7 @@ serializable_struct!(ModLoaderData {
 	pub id: String,
 	pub path: PathBuf,
 	pub mods: HashMap<String, GameMod>,
+	pub kind: ModKind,
 });
 
 #[enum_dispatch]

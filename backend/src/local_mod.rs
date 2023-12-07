@@ -21,7 +21,6 @@ serializable_enum!(ModKind {
 });
 
 serializable_struct!(LocalModData {
-	pub kind: ModKind,
 	pub path: PathBuf,
 });
 
@@ -35,11 +34,9 @@ impl LocalMod {
 		path: &Path,
 		engine: Option<GameEngineBrand>,
 		unity_backend: Option<UnityScriptingBackend>,
-		kind: ModKind,
 	) -> Result<Self> {
 		Ok(Self {
 			data: LocalModData {
-				kind,
 				path: path.to_path_buf(),
 			},
 			common: CommonModData {

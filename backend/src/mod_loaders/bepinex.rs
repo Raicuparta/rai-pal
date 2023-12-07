@@ -3,7 +3,10 @@ use std::{
 		HashMap,
 		HashSet,
 	},
-	fs,
+	fs::{
+		self,
+		File,
+	},
 	path::{
 		Path,
 		PathBuf,
@@ -11,16 +14,14 @@ use std::{
 };
 
 use async_trait::async_trait;
+use zip::ZipArchive;
 
 use super::{
 	mod_database,
 	mod_loader::ModLoaderStatic,
 };
 use crate::{
-	files::{
-		copy_dir_all,
-		unzip,
-	},
+	files::copy_dir_all,
 	game_engines::{
 		game_engine::{
 			GameEngine,
@@ -110,6 +111,7 @@ impl ModLoaderStatic for BepInEx {
 				id: Self::ID.to_string(),
 				mods,
 				path,
+				kind: ModKind::Installable,
 			},
 		})
 	}
@@ -160,7 +162,7 @@ impl ModLoaderActions for BepInEx {
 		let folder_to_copy_to_game = architecture_path.join("copy-to-game");
 		let game_data_folder = &game.get_installed_mods_folder()?;
 
-		unzip(&mod_loader_archive, game_data_folder)?;
+		ZipArchive::new(File::open(mod_loader_archive)?)?.extract(game_data_folder)?;
 
 		let game_folder = paths::path_parent(&game.executable.path)?;
 
@@ -360,7 +362,6 @@ fn find_mods(
 					mod_path,
 					Some(GameEngineBrand::Unity),
 					Some(scripting_backend),
-					ModKind::Installable,
 				) {
 					Some((local_mod.common.id.clone(), local_mod))
 				} else {

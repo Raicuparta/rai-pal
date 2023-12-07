@@ -141,9 +141,7 @@ export function InstalledGameModal(props: Props) {
 													installMod(modLoader.id, modId, props.game.id)
 												}
 											>
-												{mod.localMod?.kind === "Installable"
-													? "Install"
-													: "Run"}{" "}
+												{modLoader.kind === "Installable" ? "Install" : "Run"}{" "}
 												{mod.remoteMod?.title ?? mod.common.id}
 												<Text
 													opacity={0.5}
