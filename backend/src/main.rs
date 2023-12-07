@@ -15,6 +15,7 @@ use events::{
 use installed_game::InstalledGame;
 use mod_loaders::mod_loader::{
 	self,
+	ModLoader,
 	ModLoaderActions,
 };
 use owned_game::OwnedGame;
@@ -59,10 +60,10 @@ mod windows;
 struct AppState {
 	installed_games: Mutex<Option<installed_game::Map>>,
 	owned_games: Mutex<Option<Vec<OwnedGame>>>,
-	mod_loaders: Mutex<Option<mod_loader::DataMap>>,
+	mod_loaders: Mutex<Option<mod_loader::Map>>,
 }
 
-fn get_game(game_id: &String, state: &tauri::State<'_, AppState>) -> Result<InstalledGame> {
+fn get_game(game_id: &str, state: &tauri::State<'_, AppState>) -> Result<InstalledGame> {
 	if let Ok(read_guard) = state.installed_games.lock() {
 		let installed_games = read_guard
 			.as_ref()
@@ -76,6 +77,13 @@ fn get_game(game_id: &String, state: &tauri::State<'_, AppState>) -> Result<Inst
 	}
 
 	Err(Error::GameNotFound(game_id.to_owned()))
+}
+
+fn get_mod_loader(mod_loader_id: &str, state: &tauri::State<'_, AppState>) -> Result<ModLoader> {
+	get_state_data(&state.mod_loaders)?
+		.get(mod_loader_id)
+		.ok_or_else(|| Error::ModLoaderNotFound(mod_loader_id.to_string()))
+		.cloned()
 }
 
 fn get_state_data<TData: Clone>(mutex: &Mutex<Option<TData>>) -> Result<TData> {
@@ -106,7 +114,7 @@ async fn get_owned_games(state: tauri::State<'_, AppState>) -> Result<Vec<OwnedG
 #[tauri::command]
 #[specta::specta]
 async fn get_mod_loaders(state: tauri::State<'_, AppState>) -> Result<mod_loader::DataMap> {
-	get_state_data(&state.mod_loaders)
+	mod_loader::get_data_map(&get_state_data(&state.mod_loaders)?)
 }
 
 fn update_state<TData>(
@@ -146,18 +154,24 @@ async fn open_mods_folder(handle: tauri::AppHandle) -> Result {
 
 #[tauri::command]
 #[specta::specta]
-async fn open_mod_folder(mod_loader_id: &str, mod_id: &str, handle: tauri::AppHandle) -> Result {
-	let resources_path = paths::resources_path(&handle)?;
-	let mod_loader = mod_loader::get(&resources_path, mod_loader_id).await?;
-	mod_loader.open_mod_folder(mod_id)
+async fn open_mod_folder(
+	mod_loader_id: &str,
+	mod_id: &str,
+	state: tauri::State<'_, AppState>,
+) -> Result {
+	get_mod_loader(mod_loader_id, &state)?.open_mod_folder(mod_id)
 }
 
 #[tauri::command]
 #[specta::specta]
-async fn download_mod(mod_loader_id: &str, mod_id: &str, handle: tauri::AppHandle) -> Result {
-	let resources_path = paths::resources_path(&handle)?;
-	let mod_loader = mod_loader::get(&resources_path, mod_loader_id).await?;
-	mod_loader.download_mod(mod_id).await
+async fn download_mod(
+	mod_loader_id: &str,
+	mod_id: &str,
+	state: tauri::State<'_, AppState>,
+) -> Result {
+	get_mod_loader(mod_loader_id, &state)?
+		.download_mod(mod_id)
+		.await
 }
 
 #[tauri::command]
@@ -179,13 +193,9 @@ async fn install_mod(
 	state: tauri::State<'_, AppState>,
 	handle: tauri::AppHandle,
 ) -> Result {
-	let resources_path = paths::resources_path(&handle)?;
-
 	let game = get_game(&game_id, &state)?;
 
-	let mod_loader = mod_loader::get(&resources_path, mod_loader_id).await?;
-
-	mod_loader.install_mod(&game, mod_id)?;
+	get_mod_loader(mod_loader_id, &state)?.install_mod(&game, mod_id)?;
 
 	refresh_single_game(&game_id, &state, &handle)?;
 
@@ -237,9 +247,8 @@ async fn uninstall_mod(
 async fn update_data(handle: tauri::AppHandle, state: tauri::State<'_, AppState>) -> Result {
 	let resources_path = paths::resources_path(&handle)?;
 
-	let mod_loaders = mod_loader::get_data_map(&resources_path)
-		.await
-		.unwrap_or_default();
+	let mod_loaders = mod_loader::get_map(&resources_path).await;
+
 	update_state(
 		AppEvent::SyncMods,
 		mod_loaders.clone(),

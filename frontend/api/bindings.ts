@@ -79,10 +79,10 @@ export function frontendReady() {
 }
 
 export type GameExecutable = { path: string; engine: GameEngine | null; architecture: Architecture | null; operatingSystem: OperatingSystem | null; scriptingBackend: UnityScriptingBackend | null }
-export type InstalledGame = { id: string; name: string; providerId: ProviderId; discriminator: string | null; steamLaunch: SteamLaunchOption | null; executable: GameExecutable; thumbnailUrl: string | null; availableMods: { [key: string]: boolean } }
 export type LocalModData = { kind: ModKind; path: string }
 export type ProviderId = "Steam" | "Manual"
 export type GameMod = { localMod: LocalModData | null; remoteMod: RemoteModData | null; common: CommonModData }
+export type InstalledGame = { id: string; name: string; providerId: ProviderId; discriminator: string | null; steamLaunch: SteamLaunchOption | null; executable: GameExecutable; thumbnailUrl: string | null; availableMods: { [key: string]: boolean } }
 export type GameEngine = { brand: GameEngineBrand; version: GameEngineVersion | null }
 export type AppEvent = "SyncInstalledGames" | "SyncOwnedGames" | "SyncMods" | "ExecutedSteamCommand" | "GameAdded" | "GameRemoved" | "Error"
 export type OwnedGame = { id: string; providerId: ProviderId; name: string; installed: boolean; osList: OperatingSystem[]; engine: GameEngineBrand; releaseDate: number; thumbnailUrl: string }

@@ -67,7 +67,7 @@ impl ModLoaderStatic for BepInEx {
 
 		let database = mod_database::get(Self::ID).await.unwrap_or_else(|error| {
 			// Show this error somewhere on frontend.
-			println!(
+			eprintln!(
 				"Failed to get mod database for loader {}: {}",
 				Self::ID,
 				error

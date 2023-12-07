@@ -32,6 +32,7 @@ serializable_struct!(ModLoaderData {
 });
 
 #[enum_dispatch]
+#[derive(Clone)]
 pub enum ModLoader {
 	BepInEx,
 	MelonLoader,
@@ -89,7 +90,7 @@ pub trait ModLoaderStatic {
 		Self: Sized;
 }
 
-type Map = HashMap<String, ModLoader>;
+pub type Map = HashMap<String, ModLoader>;
 pub type DataMap = HashMap<String, ModLoaderData>;
 
 async fn create_map_entry<TModLoader: ModLoaderActions + ModLoaderStatic>(
@@ -115,7 +116,7 @@ where
 	}
 }
 
-async fn get_map(resources_path: &Path) -> Map {
+pub async fn get_map(resources_path: &Path) -> Map {
 	let mut map = Map::new();
 
 	add_entry::<BepInEx>(resources_path, &mut map).await;
@@ -125,17 +126,8 @@ async fn get_map(resources_path: &Path) -> Map {
 	map
 }
 
-pub async fn get(resources_path: &Path, id: &str) -> Result<ModLoader> {
-	get_map(resources_path)
-		.await
-		.remove(id)
-		.ok_or_else(|| Error::ModLoaderNotFound(id.to_string()))
-}
-
-pub async fn get_data_map(resources_path: &Path) -> Result<DataMap> {
-	get_map(resources_path)
-		.await
-		.values()
+pub fn get_data_map(map: &Map) -> Result<DataMap> {
+	map.values()
 		.map(|mod_loader| {
 			let data = mod_loader.get_data();
 			Ok((data.id.clone(), data.clone()))
