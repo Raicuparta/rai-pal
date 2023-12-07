@@ -27,7 +27,7 @@ impl GameMod {
 		if let Some(local_mod) = &self.local_mod {
 			Ok(open::that_detached(&local_mod.path)?)
 		} else {
-			Err(Error::CantOpenNonLocalMod(self.common.id.clone()))
+			Err(Error::LocalModRequired(self.common.id.clone()))
 		}
 	}
 }

@@ -222,9 +222,9 @@ impl ModLoaderActions for BepInEx {
 			if mod_patch_path.is_dir() {
 				copy_dir_all(mod_patch_path, bepinex_folder.join("patchers").join(mod_id))?;
 			}
+		} else {
+			return Err(Error::LocalModRequired(mod_id.to_string()));
 		}
-
-		// TODO handle case where local mod missing.
 
 		Ok(())
 	}
