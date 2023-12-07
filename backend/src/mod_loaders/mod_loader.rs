@@ -62,6 +62,9 @@ pub trait ModLoaderActions {
 					let response = reqwest::get(&first_download.url).await?;
 
 					if response.status().is_success() {
+						// This keeps the whole zip in memory and only copies the extracted part to disk.
+						// If we ever need to support very big mods, we should stream the zip to disk first,
+						// and extract it after it's written to disk.
 						ZipArchive::new(Cursor::new(response.bytes().await?))?
 							.extract(target_path)?;
 
