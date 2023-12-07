@@ -20,7 +20,10 @@ use super::{
 use crate::{
 	game_mod::GameMod,
 	installed_game::InstalledGame,
-	local_mod::ModKind,
+	local_mod::{
+		self,
+		ModKind,
+	},
 	serializable_struct,
 	Error,
 	Result,
@@ -66,7 +69,15 @@ pub trait ModLoaderActions {
 						// If we ever need to support very big mods, we should stream the zip to disk first,
 						// and extract it after it's written to disk.
 						ZipArchive::new(Cursor::new(response.bytes().await?))?
-							.extract(target_path)?;
+							.extract(&target_path)?;
+
+						// Saves the manifest so we know which version of the mod we installed.
+						fs::write(
+							local_mod::get_manifest_path(&target_path),
+							serde_json::to_string_pretty(&local_mod::Manifest {
+								version: first_download.version.clone(),
+							})?,
+						)?;
 
 						Ok(())
 					} else {

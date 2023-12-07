@@ -38,7 +38,8 @@ export function ModsPage() {
 					<Table.Thead>
 						<Table.Tr>
 							<Table.Th>Mod</Table.Th>
-							<Table.Th>Source</Table.Th>
+							<Table.Th>Current</Table.Th>
+							<Table.Th>Latest</Table.Th>
 							<Table.Th
 								ta="center"
 								w={100}
@@ -70,8 +71,11 @@ export function ModsPage() {
 										<Table.Td ta="left">
 											{modId} ({mod.remoteMod?.title})
 										</Table.Td>
-										<Table.Td ta="left">
-											{mod.remoteMod?.sourceCode ?? mod.localMod?.path}
+										<Table.Td>
+											{mod.localMod?.manifest?.version ?? "Unknown"}
+										</Table.Td>
+										<Table.Td>
+											{mod.remoteMod?.downloads[0]?.version ?? "Unknown"}
 										</Table.Td>
 										<Table.Td>{modLoader.id}</Table.Td>
 										<Table.Td>
