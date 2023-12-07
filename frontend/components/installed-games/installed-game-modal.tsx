@@ -122,23 +122,25 @@ export function InstalledGameModal(props: Props) {
 									label={modLoader.id.toUpperCase()}
 									key={modLoader.id}
 								>
-									{Object.entries(modLoader.mods).map(([modId, mod]) =>
-										props.game.availableMods[modId] ? (
+									{modLoader.mods.map((mod) =>
+										props.game.availableMods[mod.common.id] ? (
 											<CommandButton
 												leftSection={<IconTrash />}
-												key={modId}
-												onClick={() => uninstallMod(props.game.id, modId)}
+												key={mod.common.id}
+												onClick={() =>
+													uninstallMod(props.game.id, mod.common.id)
+												}
 											>
-												Uninstall {mod.remoteMod?.title}
+												Uninstall {mod.remoteMod?.title ?? mod.common.id}
 											</CommandButton>
 										) : (
 											<CommandButton
 												leftSection={<IconTool />}
-												key={modId}
+												key={mod.common.id}
 												confirmationText="Attention: be careful when installing mods on multiplayer games! Anticheat can detect some mods and get you banned, even if the mods seem harmless."
 												confirmationSkipId="install-mod-confirm"
 												onClick={() =>
-													installMod(modLoader.id, modId, props.game.id)
+													installMod(modLoader.id, mod.common.id, props.game.id)
 												}
 											>
 												{modLoader.kind === "Installable" ? "Install" : "Run"}{" "}
