@@ -1,10 +1,7 @@
 use std::{
 	collections::HashMap,
-	fs::{
-		self,
-		File,
-	},
-	io::Write,
+	fs,
+	io::Cursor,
 	path::{
 		Path,
 		PathBuf,
@@ -13,6 +10,7 @@ use std::{
 
 use async_trait::async_trait;
 use enum_dispatch::enum_dispatch;
+use zip::ZipArchive;
 
 use super::{
 	bepinex::BepInEx,
@@ -53,20 +51,18 @@ pub trait ModLoaderActions {
 		let target_path = self.get_mod_path(mod_id)?;
 		let data = self.get_data();
 		let downloads_folder = data.path.join("downloads");
-		println!("downloads_folder {}", downloads_folder.to_string_lossy());
 		fs::create_dir_all(&downloads_folder)?;
 
-		let temp_file_path = downloads_folder.join(mod_id);
 		if let Some(game_mod) = data.mods.get(mod_id) {
 			if let Some(remote_mod) = &game_mod.remote_mod {
 				if let Some(first_download) = remote_mod.downloads.first() {
 					let response = reqwest::get(&first_download.url).await?;
 
 					if response.status().is_success() {
-						let mut file = File::create(temp_file_path)?;
-						file.write_all(response.bytes().await?.as_ref())?;
+						let bytes = response.bytes().await?;
+						let cursor = Cursor::new(bytes);
 
-						// TODO: extract zip.
+						ZipArchive::new(cursor)?.extract(target_path)?;
 
 						Ok(())
 					} else {

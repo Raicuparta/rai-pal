@@ -244,16 +244,17 @@ impl ModLoaderActions for BepInEx {
 			.get(mod_id)
 			.ok_or_else(|| Error::ModNotFound(mod_id.to_string()))?;
 
-		if let Some(unity_backend) = game_mod.common.unity_backend {
-			Ok(self
-				.data
-				.path
-				.join(unity_backend.to_string())
-				.join("mods")
-				.join(mod_id))
-		} else {
-			Err(Error::ModNotFound(mod_id.to_string())) // TODO error
-		}
+		game_mod.common.unity_backend.map_or_else(
+			|| Err(Error::ModNotFound(mod_id.to_string())),
+			|unity_backend| {
+				Ok(self
+					.data
+					.path
+					.join(unity_backend.to_string())
+					.join("mods")
+					.join(mod_id))
+			},
+		)
 	}
 }
 
