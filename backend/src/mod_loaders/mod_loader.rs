@@ -62,10 +62,8 @@ pub trait ModLoaderActions {
 					let response = reqwest::get(&first_download.url).await?;
 
 					if response.status().is_success() {
-						let bytes = response.bytes().await?;
-						let cursor = Cursor::new(bytes);
-
-						ZipArchive::new(cursor)?.extract(target_path)?;
+						ZipArchive::new(Cursor::new(response.bytes().await?))?
+							.extract(target_path)?;
 
 						Ok(())
 					} else {
