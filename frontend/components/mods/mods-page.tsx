@@ -1,4 +1,4 @@
-import { Button, Group, Stack, Table } from "@mantine/core";
+import { Button, Group, Stack, Table, Text } from "@mantine/core";
 import { Fragment, useState } from "react";
 import { TableContainer } from "@components/table/table-container";
 import { RefreshButton } from "@components/refresh-button";
@@ -69,7 +69,15 @@ export function ModsPage() {
 										onClick={() => setSelectedMod(mod)}
 									>
 										<Table.Td ta="left">
-											{mod.remoteMod?.title ?? modId}
+											<Text>{mod.remoteMod?.title ?? modId}</Text>
+											{mod.remoteMod?.description && (
+												<Text
+													size="sm"
+													opacity={0.5}
+												>
+													{mod.remoteMod.description}
+												</Text>
+											)}
 										</Table.Td>
 										<Table.Td>
 											{mod.localMod?.manifest?.version ?? "Unknown"}
