@@ -69,7 +69,7 @@ export function ModsPage() {
 										onClick={() => setSelectedMod(mod)}
 									>
 										<Table.Td ta="left">
-											{modId} ({mod.remoteMod?.title})
+											{mod.remoteMod?.title ?? modId}
 										</Table.Td>
 										<Table.Td>
 											{mod.localMod?.manifest?.version ?? "Unknown"}
