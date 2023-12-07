@@ -168,10 +168,15 @@ async fn download_mod(
 	mod_loader_id: &str,
 	mod_id: &str,
 	state: tauri::State<'_, AppState>,
+	handle: tauri::AppHandle,
 ) -> Result {
 	get_mod_loader(mod_loader_id, &state)?
 		.download_mod(mod_id)
-		.await
+		.await?;
+
+	refresh_mod_loaders(&handle, &state).await?;
+
+	Ok(())
 }
 
 #[tauri::command]
@@ -200,6 +205,7 @@ async fn install_mod(
 		.await?;
 
 	refresh_single_game(&game_id, &state, &handle)?;
+	refresh_mod_loaders(&handle, &state).await?;
 
 	analytics::send_event(analytics::Event::InstallOrRunMod, mod_id).await;
 
@@ -244,10 +250,11 @@ async fn uninstall_mod(
 	Ok(())
 }
 
-#[tauri::command]
-#[specta::specta]
-async fn update_data(handle: tauri::AppHandle, state: tauri::State<'_, AppState>) -> Result {
-	let resources_path = paths::resources_path(&handle)?;
+async fn refresh_mod_loaders(
+	handle: &tauri::AppHandle,
+	state: &tauri::State<'_, AppState>,
+) -> Result<mod_loader::Map> {
+	let resources_path = paths::resources_path(handle)?;
 
 	let mod_loaders = mod_loader::get_map(&resources_path).await;
 
@@ -255,8 +262,16 @@ async fn update_data(handle: tauri::AppHandle, state: tauri::State<'_, AppState>
 		AppEvent::SyncMods,
 		mod_loaders.clone(),
 		&state.mod_loaders,
-		&handle,
+		handle,
 	);
+
+	Ok(mod_loaders)
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn update_data(handle: tauri::AppHandle, state: tauri::State<'_, AppState>) -> Result {
+	let mod_loaders = refresh_mod_loaders(&handle, &state).await?;
 
 	let provider_map = provider::get_map(&handle);
 
