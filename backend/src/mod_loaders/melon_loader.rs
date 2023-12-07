@@ -42,6 +42,7 @@ impl ModLoaderStatic for MelonLoader {
 	}
 }
 
+#[async_trait]
 impl ModLoaderActions for MelonLoader {
 	fn get_data(&self) -> &ModLoaderData {
 		&self.data
@@ -51,7 +52,7 @@ impl ModLoaderActions for MelonLoader {
 		todo!()
 	}
 
-	fn install_mod(&self, _game: &InstalledGame, _mod_idd: &str) -> crate::Result {
+	async fn install_mod(&self, _game: &InstalledGame, _mod_idd: &str) -> crate::Result {
 		todo!()
 	}
 

@@ -195,7 +195,9 @@ async fn install_mod(
 ) -> Result {
 	let game = get_game(&game_id, &state)?;
 
-	get_mod_loader(mod_loader_id, &state)?.install_mod(&game, mod_id)?;
+	get_mod_loader(mod_loader_id, &state)?
+		.install_mod(&game, mod_id)
+		.await?;
 
 	refresh_single_game(&game_id, &state, &handle)?;
 

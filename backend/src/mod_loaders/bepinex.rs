@@ -117,6 +117,7 @@ impl ModLoaderStatic for BepInEx {
 	}
 }
 
+#[async_trait]
 impl ModLoaderActions for BepInEx {
 	fn get_data(&self) -> &ModLoaderData {
 		&self.data
@@ -201,7 +202,7 @@ impl ModLoaderActions for BepInEx {
 		Ok(())
 	}
 
-	fn install_mod(&self, game: &InstalledGame, mod_id: &str) -> Result {
+	async fn install_mod(&self, game: &InstalledGame, mod_id: &str) -> Result {
 		let game_mod = self
 			.data
 			.mods
@@ -212,18 +213,21 @@ impl ModLoaderActions for BepInEx {
 
 		let bepinex_folder = game.get_installed_mods_folder()?.join("BepInEx");
 
-		if let Some(local_mod) = &game_mod.local_mod {
-			let mod_plugin_path = local_mod.path.join("plugins");
-			if mod_plugin_path.is_dir() {
-				copy_dir_all(mod_plugin_path, bepinex_folder.join("plugins").join(mod_id))?;
-			}
-
-			let mod_patch_path = local_mod.path.join("patchers");
-			if mod_patch_path.is_dir() {
-				copy_dir_all(mod_patch_path, bepinex_folder.join("patchers").join(mod_id))?;
-			}
+		let mod_path = if let Some(local_mod) = &game_mod.local_mod {
+			local_mod.path.clone()
 		} else {
-			return Err(Error::LocalModRequired(mod_id.to_string()));
+			self.download_mod(mod_id).await?;
+			self.get_mod_path(mod_id)?
+		};
+
+		let mod_plugin_path = mod_path.join("plugins");
+		if mod_plugin_path.is_dir() {
+			copy_dir_all(mod_plugin_path, bepinex_folder.join("plugins").join(mod_id))?;
+		}
+
+		let mod_patch_path = mod_path.join("patchers");
+		if mod_patch_path.is_dir() {
+			copy_dir_all(mod_patch_path, bepinex_folder.join("patchers").join(mod_id))?;
 		}
 
 		Ok(())

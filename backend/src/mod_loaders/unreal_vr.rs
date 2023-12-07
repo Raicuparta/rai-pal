@@ -74,6 +74,7 @@ impl ModLoaderStatic for UnrealVr {
 	}
 }
 
+#[async_trait]
 impl ModLoaderActions for UnrealVr {
 	fn get_data(&self) -> &ModLoaderData {
 		&self.data
@@ -92,7 +93,7 @@ impl ModLoaderActions for UnrealVr {
 		windows::run_as_admin(&self.data.path.join(Self::EXE_NAME), &parameters)
 	}
 
-	fn install_mod(&self, game: &InstalledGame, _mod_idd: &str) -> Result {
+	async fn install_mod(&self, game: &InstalledGame, _mod_idd: &str) -> Result {
 		self.install(game)
 	}
 
