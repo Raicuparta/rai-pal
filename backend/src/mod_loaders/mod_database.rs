@@ -26,8 +26,8 @@ serializable_struct!(RemoteMod {
 });
 
 serializable_struct!(ModDownload {
-	version: String,
-	url: String,
+	pub version: String,
+	pub url: String,
 });
 
 pub async fn get(mod_loader_id: &str) -> Result<ModDatabase> {

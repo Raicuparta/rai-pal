@@ -1,4 +1,7 @@
-use std::collections::HashMap;
+use std::{
+	collections::HashMap,
+	path::PathBuf,
+};
 
 use async_trait::async_trait;
 
@@ -10,6 +13,7 @@ use super::mod_loader::{
 use crate::{
 	installed_game::InstalledGame,
 	serializable_struct,
+	Result,
 };
 
 serializable_struct!(MelonLoader {
@@ -50,6 +54,10 @@ impl ModLoaderActions for MelonLoader {
 	}
 
 	fn open_mod_folder(&self, _mod_id: &str) -> crate::Result {
+		todo!()
+	}
+
+	fn get_mod_path(&self, mod_id: &str) -> Result<PathBuf> {
 		todo!()
 	}
 }

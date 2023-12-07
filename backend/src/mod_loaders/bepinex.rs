@@ -4,7 +4,10 @@ use std::{
 		HashSet,
 	},
 	fs,
-	path::Path,
+	path::{
+		Path,
+		PathBuf,
+	},
 };
 
 use async_trait::async_trait;
@@ -232,6 +235,25 @@ impl ModLoaderActions for BepInEx {
 			.ok_or_else(|| Error::ModNotFound(mod_id.to_string()))?;
 
 		game_mod.open_folder()
+	}
+
+	fn get_mod_path(&self, mod_id: &str) -> Result<PathBuf> {
+		let game_mod = self
+			.data
+			.mods
+			.get(mod_id)
+			.ok_or_else(|| Error::ModNotFound(mod_id.to_string()))?;
+
+		if let Some(unity_backend) = game_mod.common.unity_backend {
+			Ok(self
+				.data
+				.path
+				.join(unity_backend.to_string())
+				.join("mods")
+				.join(mod_id))
+		} else {
+			Err(Error::ModNotFound(mod_id.to_string())) // TODO error
+		}
 	}
 }
 

@@ -1,5 +1,10 @@
 use std::{
 	collections::HashMap,
+	fs::{
+		self,
+		File,
+	},
+	io::Write,
 	path::{
 		Path,
 		PathBuf,
@@ -35,12 +40,48 @@ pub enum ModLoader {
 	UnrealVr,
 }
 
+#[async_trait]
 #[enum_dispatch(ModLoader)]
 pub trait ModLoaderActions {
 	fn install(&self, game: &InstalledGame) -> Result;
 	fn install_mod(&self, game: &InstalledGame, mod_id: &str) -> Result;
 	fn open_mod_folder(&self, mod_id: &str) -> Result;
 	fn get_data(&self) -> &ModLoaderData;
+	fn get_mod_path(&self, mod_id: &str) -> Result<PathBuf>;
+
+	async fn download_mod(&self, mod_id: &str) -> Result {
+		let target_path = self.get_mod_path(mod_id)?;
+		let data = self.get_data();
+		let downloads_folder = data.path.join("downloads");
+		println!("downloads_folder {}", downloads_folder.to_string_lossy());
+		fs::create_dir_all(&downloads_folder)?;
+
+		let temp_file_path = downloads_folder.join(mod_id);
+		if let Some(game_mod) = data.mods.get(mod_id) {
+			if let Some(remote_mod) = &game_mod.remote_mod {
+				if let Some(first_download) = remote_mod.downloads.first() {
+					let response = reqwest::get(&first_download.url).await?;
+
+					if response.status().is_success() {
+						let mut file = File::create(temp_file_path)?;
+						file.write_all(response.bytes().await?.as_ref())?;
+
+						// TODO: extract zip.
+
+						Ok(())
+					} else {
+						Err(Error::ModNotFound(mod_id.to_string())) // TODO error
+					}
+				} else {
+					Err(Error::ModNotFound(mod_id.to_string())) // TODO error
+				}
+			} else {
+				Err(Error::ModNotFound(mod_id.to_string())) // TODO error
+			}
+		} else {
+			Err(Error::ModNotFound(mod_id.to_string()))
+		}
+	}
 }
 
 #[async_trait]

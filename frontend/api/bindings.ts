@@ -54,6 +54,10 @@ export function openModFolder(modLoaderId: string, modId: string) {
     return invoke()<null>("open_mod_folder", { modLoaderId,modId })
 }
 
+export function downloadMod(modLoaderId: string, modId: string) {
+    return invoke()<null>("download_mod", { modLoaderId,modId })
+}
+
 export function openModsFolder() {
     return invoke()<null>("open_mods_folder")
 }

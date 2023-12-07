@@ -1,6 +1,9 @@
 use std::{
 	collections::HashMap,
-	path::Path,
+	path::{
+		Path,
+		PathBuf,
+	},
 };
 
 use async_trait::async_trait;
@@ -95,5 +98,9 @@ impl ModLoaderActions for UnrealVr {
 
 	fn open_mod_folder(&self, _mod_id: &str) -> Result {
 		Ok(open::that_detached(&self.data.path)?)
+	}
+
+	fn get_mod_path(&self, mod_id: &str) -> Result<PathBuf> {
+		todo!()
 	}
 }

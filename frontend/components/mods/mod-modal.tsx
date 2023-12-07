@@ -1,8 +1,8 @@
 import { Modal, Stack } from "@mantine/core";
-import { GameMod, openModFolder } from "@api/bindings";
+import { GameMod, downloadMod, openModFolder } from "@api/bindings";
 import { useMemo } from "react";
 import { CommandButton } from "@components/command-button";
-import { IconFolderCog } from "@tabler/icons-react";
+import { IconDownload, IconFolderCog } from "@tabler/icons-react";
 import { CodeHighlight } from "@mantine/code-highlight";
 import { CommandButtonGroup } from "@components/command-button-group";
 
@@ -31,7 +31,13 @@ export function ModModal(props: Props) {
 						leftSection={<IconFolderCog />}
 						onClick={() => openModFolder("bepinex", props.mod.common.id)} // TODO modloader id
 					>
-						Open Mod Folder
+						Open mod folder
+					</CommandButton>
+					<CommandButton
+						leftSection={<IconDownload />}
+						onClick={() => downloadMod("bepinex", props.mod.common.id)} // TODO modloader id
+					>
+						Download mod
 					</CommandButton>
 				</CommandButtonGroup>
 				<Stack gap="xs">

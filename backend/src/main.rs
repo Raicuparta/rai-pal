@@ -154,6 +154,14 @@ async fn open_mod_folder(mod_loader_id: &str, mod_id: &str, handle: tauri::AppHa
 
 #[tauri::command]
 #[specta::specta]
+async fn download_mod(mod_loader_id: &str, mod_id: &str, handle: tauri::AppHandle) -> Result {
+	let resources_path = paths::resources_path(&handle)?;
+	let mod_loader = mod_loader::get(&resources_path, mod_loader_id).await?;
+	mod_loader.download_mod(mod_id).await
+}
+
+#[tauri::command]
+#[specta::specta]
 async fn start_game(
 	game_id: String,
 	state: tauri::State<'_, AppState>,
@@ -425,6 +433,7 @@ fn main() {
 			open_game_mods_folder,
 			start_game,
 			open_mod_folder,
+			download_mod,
 			open_mods_folder,
 			add_game,
 			remove_game,
