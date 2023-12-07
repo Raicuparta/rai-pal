@@ -13,7 +13,10 @@ import { modLoadersAtom } from "@hooks/use-data";
 import { ModModal } from "./mod-modal";
 
 export function ModsPage() {
+	// TODO should use a selected ID instead of storing the whole mod in state.
+	// Otherwise it can easily become stale.
 	const [selectedMod, setSelectedMod] = useState<GameMod>();
+
 	const modLoaders = useAtomValue(modLoadersAtom);
 
 	return (

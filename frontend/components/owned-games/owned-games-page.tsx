@@ -32,6 +32,8 @@ function filterOwnedGame(
 export function OwnedGamesPage() {
 	const ownedGames = useAtomValue(ownedGamesAtom);
 
+	// TODO should use a selected ID instead of storing the whole game in state.
+	// Otherwise it can easily become stale.
 	const [selectedGame, setSelectedGame] = useState<OwnedGame>();
 
 	const [hiddenColumns, setHiddenColumns] = usePersistedState<string[]>(
