@@ -1,8 +1,8 @@
 import { Button, Group, Stack, Table } from "@mantine/core";
-import { Fragment } from "react";
+import { Fragment, useState } from "react";
 import { TableContainer } from "@components/table/table-container";
 import { RefreshButton } from "@components/refresh-button";
-import { openModFolder, openModsFolder } from "@api/bindings";
+import { GameMod, openModsFolder } from "@api/bindings";
 import { IconFolderCog } from "@tabler/icons-react";
 import {
 	EngineBadge,
@@ -10,12 +10,20 @@ import {
 } from "@components/badges/color-coded-badge";
 import { useAtomValue } from "jotai";
 import { modLoadersAtom } from "@hooks/use-data";
+import { ModModal } from "./mod-modal";
 
 export function ModsPage() {
+	const [selectedMod, setSelectedMod] = useState<GameMod>();
 	const modLoaders = useAtomValue(modLoadersAtom);
 
 	return (
 		<Stack h="100%">
+			{selectedMod ? (
+				<ModModal
+					onClose={() => setSelectedMod(undefined)}
+					mod={selectedMod}
+				/>
+			) : null}
 			<Group justify="end">
 				<Button
 					onClick={openModsFolder}
@@ -57,7 +65,7 @@ export function ModsPage() {
 								{Object.entries(modLoader.mods).map(([modId, mod]) => (
 									<Table.Tr
 										key={modId}
-										onClick={() => openModFolder(modLoader.id, modId)}
+										onClick={() => setSelectedMod(mod)}
 									>
 										<Table.Td ta="left">
 											{modId} ({mod.remoteMod?.title})
