@@ -43,6 +43,7 @@ use crate::{
 
 serializable_struct!(BepInEx {
 	pub data: ModLoaderData,
+	pub id: &'static str,
 });
 
 #[async_trait]
@@ -73,6 +74,7 @@ impl ModLoaderStatic for BepInEx {
 			.collect();
 
 		Ok(Self {
+			id: Self::ID,
 			data: ModLoaderData {
 				id: Self::ID.to_string(),
 				mods,

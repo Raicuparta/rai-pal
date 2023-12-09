@@ -63,7 +63,8 @@ pub trait ModLoaderActions {
 	where
 		F: Fn(Error) + Send,
 	{
-		let id = "bepinex"; // TODO get actual ID.
+		let data = self.get_data();
+		let id = &data.id;
 
 		let database = mod_database::get(id).await.unwrap_or_else(|error| {
 			error_handler(error);
@@ -72,7 +73,7 @@ pub trait ModLoaderActions {
 			}
 		});
 
-		let game_mods = &self.get_data().mods;
+		let game_mods = &data.mods;
 
 		let keys: HashSet<_> = game_mods
 			.keys()

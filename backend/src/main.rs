@@ -276,6 +276,13 @@ async fn update_data(handle: tauri::AppHandle, state: tauri::State<'_, AppState>
 	});
 	let mut mod_loaders = refresh_mod_loaders(&handle, &state).await?;
 
+	update_state(
+		AppEvent::SyncMods,
+		mod_loaders.clone(),
+		&state.mod_loaders,
+		&handle,
+	);
+
 	let mut installed_games: HashMap<_, _> = provider_map
 		.values()
 		.flat_map(|provider| match provider.get_installed_games() {
