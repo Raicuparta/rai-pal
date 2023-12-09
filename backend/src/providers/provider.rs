@@ -4,10 +4,7 @@ use async_trait::async_trait;
 use enum_dispatch::enum_dispatch;
 
 use crate::{
-	events::{
-		AppEvent,
-		EventEmitter,
-	},
+	events::EventEmitter,
 	installed_game::InstalledGame,
 	owned_game::OwnedGame,
 	providers::{
@@ -61,7 +58,7 @@ where
 		Ok((key, value)) => {
 			map.insert(key, value);
 		}
-		Err(err) => handle.emit_event(AppEvent::Error, format!("Failed to set up provider: {err}")),
+		Err(err) => handle.emit_error(format!("Failed to set up provider: {err}")),
 	}
 }
 

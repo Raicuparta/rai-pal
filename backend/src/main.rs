@@ -279,10 +279,7 @@ async fn update_data(handle: tauri::AppHandle, state: tauri::State<'_, AppState>
 		.flat_map(|provider| match provider.get_installed_games() {
 			Ok(games) => games,
 			Err(err) => {
-				handle.emit_event(
-					AppEvent::Error,
-					format!("Error getting installed games for provider: {err}"),
-				);
+				handle.emit_error(format!("Error getting installed games for provider: {err}"));
 				Vec::default()
 			}
 		})
@@ -300,7 +297,7 @@ async fn update_data(handle: tauri::AppHandle, state: tauri::State<'_, AppState>
 	);
 
 	for mod_loader in mod_loaders.values_mut() {
-		mod_loader.update_remote_mods().await;
+		mod_loader.update_remote_mods(&handle).await;
 	}
 
 	update_state(
