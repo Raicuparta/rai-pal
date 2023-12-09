@@ -79,6 +79,7 @@ export function frontendReady() {
 }
 
 export type GameExecutable = { path: string; engine: GameEngine | null; architecture: Architecture | null; operatingSystem: OperatingSystem | null; scriptingBackend: UnityScriptingBackend | null }
+export type ModLoaderData = { id: string; path: string; mods: { [key: string]: GameMod }; kind: ModKind }
 export type GameMod = { localMod: LocalModData | null; remoteMod: RemoteModData | null; common: CommonModData }
 export type InstalledGame = { id: string; name: string; providerId: ProviderId; discriminator: string | null; steamLaunch: SteamLaunchOption | null; executable: GameExecutable; thumbnailUrl: string | null; availableMods: { [key: string]: boolean } }
 export type GameEngine = { brand: GameEngineBrand; version: GameEngineVersion | null }
@@ -92,7 +93,6 @@ export type OperatingSystem = "Linux" | "Windows"
 export type ProviderId = "Steam" | "Manual"
 export type ModDownload = { version: string; url: string }
 export type Manifest = { version: string }
-export type ModLoaderData = { id: string; path: string; mods: { [key: string]: GameMod }; kind: ModKind }
 export type GameEngineBrand = "Unity" | "Unreal" | "Godot"
 export type ModKind = "Installable" | "Runnable"
 export type CommonModData = { id: string; engine: GameEngineBrand | null; unityBackend: UnityScriptingBackend | null }

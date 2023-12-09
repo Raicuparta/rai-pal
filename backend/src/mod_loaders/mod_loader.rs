@@ -22,7 +22,6 @@ use super::{
 	unreal_vr::UnrealVr,
 };
 use crate::{
-	events::EventEmitter,
 	game_mod::GameMod,
 	installed_game::InstalledGame,
 	local_mod::{
@@ -60,13 +59,14 @@ pub trait ModLoaderActions {
 	fn get_data_mut(&mut self) -> &mut ModLoaderData;
 	fn get_mod_path(&self, mod_id: &str) -> Result<PathBuf>;
 
-	async fn update_remote_mods(&mut self, handle: &tauri::AppHandle) {
+	async fn update_remote_mods<F>(&mut self, error_handler: F)
+	where
+		F: Fn(Error) + Send,
+	{
 		let id = "bepinex"; // TODO get actual ID.
 
 		let database = mod_database::get(id).await.unwrap_or_else(|error| {
-			handle.emit_error(format!(
-				"Failed to get mod database for loader {id}: {error}"
-			));
+			error_handler(error);
 			ModDatabase {
 				mods: HashMap::new(),
 			}

@@ -271,7 +271,9 @@ async fn refresh_mod_loaders(
 #[tauri::command]
 #[specta::specta]
 async fn update_data(handle: tauri::AppHandle, state: tauri::State<'_, AppState>) -> Result {
-	let provider_map = provider::get_map(&handle);
+	let provider_map = provider::get_map(|error| {
+		handle.emit_error(format!("Failed to set up provider: {error}"));
+	});
 	let mut mod_loaders = refresh_mod_loaders(&handle, &state).await?;
 
 	let mut installed_games: HashMap<_, _> = provider_map
@@ -297,7 +299,11 @@ async fn update_data(handle: tauri::AppHandle, state: tauri::State<'_, AppState>
 	);
 
 	for mod_loader in mod_loaders.values_mut() {
-		mod_loader.update_remote_mods(&handle).await;
+		mod_loader
+			.update_remote_mods(|error| {
+				handle.emit_error(format!("Failed to get mod database: {error}"));
+			})
+			.await;
 	}
 
 	update_state(
