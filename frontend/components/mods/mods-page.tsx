@@ -1,8 +1,8 @@
 import { Button, Group, Stack, Table, Text } from "@mantine/core";
-import { Fragment, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import { TableContainer } from "@components/table/table-container";
 import { RefreshButton } from "@components/refresh-button";
-import { GameMod, openModsFolder } from "@api/bindings";
+import { openModsFolder } from "@api/bindings";
 import { IconFolderCog } from "@tabler/icons-react";
 import {
 	EngineBadge,
@@ -12,18 +12,28 @@ import { useAtomValue } from "jotai";
 import { modLoadersAtom } from "@hooks/use-data";
 import { ModModal } from "./mod-modal";
 
+const defaultSelection = ["", ""];
+
 export function ModsPage() {
-	// TODO should use a selected ID instead of storing the whole mod in state.
-	// Otherwise it can easily become stale.
-	const [selectedMod, setSelectedMod] = useState<GameMod>();
+	const [[selectedModLoaderId, selectedModId], setSelectedId] =
+		useState(defaultSelection);
 
 	const modLoaders = useAtomValue(modLoadersAtom);
+
+	const selectedMod = useMemo(() => {
+		const result = selectedModId
+			? modLoaders[selectedModLoaderId]?.mods[selectedModId]
+			: undefined;
+
+		console.log("oh boy did it change", result);
+		return result;
+	}, [modLoaders, selectedModLoaderId, selectedModId]);
 
 	return (
 		<Stack h="100%">
 			{selectedMod ? (
 				<ModModal
-					onClose={() => setSelectedMod(undefined)}
+					onClose={() => setSelectedId(defaultSelection)}
 					mod={selectedMod}
 				/>
 			) : null}
@@ -69,7 +79,7 @@ export function ModsPage() {
 								{Object.entries(modLoader.mods).map(([modId, mod]) => (
 									<Table.Tr
 										key={modId}
-										onClick={() => setSelectedMod(mod)}
+										onClick={() => setSelectedId([modLoader.id, mod.common.id])}
 									>
 										<Table.Td ta="left">
 											<Text>{mod.remoteMod?.title ?? modId}</Text>

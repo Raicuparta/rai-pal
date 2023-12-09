@@ -174,7 +174,8 @@ async fn download_mod(
 		.download_mod(mod_id)
 		.await?;
 
-	refresh_mod_loaders(&handle, &state).await?;
+	let mut mod_loaders = refresh_mod_loaders_local(&handle, &state).await?;
+	refresh_mod_loaders_remote(&mut mod_loaders, &handle, &state).await?;
 
 	Ok(())
 }
@@ -205,7 +206,7 @@ async fn install_mod(
 		.await?;
 
 	refresh_single_game(&game_id, &state, &handle)?;
-	refresh_mod_loaders(&handle, &state).await?;
+	refresh_mod_loaders_local(&handle, &state).await?;
 
 	analytics::send_event(analytics::Event::InstallOrRunMod, mod_id).await;
 
@@ -250,7 +251,7 @@ async fn uninstall_mod(
 	Ok(())
 }
 
-async fn refresh_mod_loaders(
+async fn refresh_mod_loaders_local(
 	handle: &tauri::AppHandle,
 	state: &tauri::State<'_, AppState>,
 ) -> Result<mod_loader::Map> {
@@ -268,20 +269,36 @@ async fn refresh_mod_loaders(
 	Ok(mod_loaders)
 }
 
+async fn refresh_mod_loaders_remote(
+	mod_loaders: &mut mod_loader::Map,
+	handle: &tauri::AppHandle,
+	state: &tauri::State<'_, AppState>,
+) -> Result {
+	for mod_loader in mod_loaders.values_mut() {
+		mod_loader
+			.update_remote_mods(|error| {
+				handle.emit_error(format!("Failed to get mod database: {error}"));
+			})
+			.await;
+	}
+
+	update_state(
+		AppEvent::SyncMods,
+		mod_loaders.clone(),
+		&state.mod_loaders,
+		handle,
+	);
+
+	Ok(())
+}
+
 #[tauri::command]
 #[specta::specta]
 async fn update_data(handle: tauri::AppHandle, state: tauri::State<'_, AppState>) -> Result {
 	let provider_map = provider::get_map(|error| {
 		handle.emit_error(format!("Failed to set up provider: {error}"));
 	});
-	let mut mod_loaders = refresh_mod_loaders(&handle, &state).await?;
-
-	update_state(
-		AppEvent::SyncMods,
-		mod_loaders.clone(),
-		&state.mod_loaders,
-		&handle,
-	);
+	let mut mod_loaders = refresh_mod_loaders_local(&handle, &state).await?;
 
 	let mut installed_games: HashMap<_, _> = provider_map
 		.values()
@@ -305,20 +322,7 @@ async fn update_data(handle: tauri::AppHandle, state: tauri::State<'_, AppState>
 		&handle,
 	);
 
-	for mod_loader in mod_loaders.values_mut() {
-		mod_loader
-			.update_remote_mods(|error| {
-				handle.emit_error(format!("Failed to get mod database: {error}"));
-			})
-			.await;
-	}
-
-	update_state(
-		AppEvent::SyncMods,
-		mod_loaders.clone(),
-		&state.mod_loaders,
-		&handle,
-	);
+	refresh_mod_loaders_remote(&mut mod_loaders, &handle, &state).await?;
 
 	for game in installed_games.values_mut() {
 		game.update_available_mods(&mod_loaders);

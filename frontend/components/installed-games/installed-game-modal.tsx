@@ -12,20 +12,22 @@ import { useMemo } from "react";
 import { GameName } from "./game-name";
 import { CommandButton } from "@components/command-button";
 import {
+	IconAppWindow,
 	IconBooks,
 	IconBrowser,
 	IconFolder,
 	IconFolderCog,
 	IconPlayerPlay,
+	IconShoppingBag,
 	IconTool,
 	IconTrash,
 } from "@tabler/icons-react";
-import { CodeHighlight } from "@mantine/code-highlight";
 import { steamCommands } from "../../util/steam";
 import { ModalImage } from "@components/modal-image";
 import { useAtomValue } from "jotai";
 import { modLoadersAtom } from "@hooks/use-data";
 import { CommandButtonGroup } from "@components/command-button-group";
+import { DebugData } from "@components/debug-data";
 
 type Props = {
 	readonly game: InstalledGame;
@@ -34,11 +36,6 @@ type Props = {
 
 export function InstalledGameModal(props: Props) {
 	const modLoaderMap = useAtomValue(modLoadersAtom);
-
-	const debugData = useMemo(
-		() => JSON.stringify(props.game, null, 2),
-		[props.game],
-	);
 
 	const modLoaders = useMemo(
 		() =>
@@ -66,11 +63,21 @@ export function InstalledGameModal(props: Props) {
 					gap="md"
 				>
 					<CommandButtonGroup label="Game Actions">
+						{props.game.providerId !== "Manual" && (
+							<CommandButton
+								leftSection={<IconPlayerPlay />}
+								rightSection={<IconShoppingBag />}
+								onClick={() => startGame(props.game.id)}
+							>
+								Start Game ({props.game.providerId})
+							</CommandButton>
+						)}
 						<CommandButton
 							leftSection={<IconPlayerPlay />}
+							rightSection={<IconAppWindow />}
 							onClick={() => startGame(props.game.id)}
 						>
-							Start Game
+							Start Game (Exe)
 						</CommandButton>
 						<CommandButton
 							leftSection={<IconFolder />}
@@ -165,13 +172,7 @@ export function InstalledGameModal(props: Props) {
 							),
 					)}
 				</Flex>
-				<Stack gap="xs">
-					<label>Debug Data</label>
-					<CodeHighlight
-						code={debugData}
-						language="json"
-					/>
-				</Stack>
+				<DebugData data={props.game} />
 			</Stack>
 		</Modal>
 	);
