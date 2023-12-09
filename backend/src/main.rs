@@ -174,8 +174,7 @@ async fn download_mod(
 		.download_mod(mod_id)
 		.await?;
 
-	let mut mod_loaders = refresh_mod_loaders_local(&handle, &state).await?;
-	refresh_mod_loaders_remote(&mut mod_loaders, &handle, &state).await?;
+	refresh_mod_loaders_local(&handle, &state).await?;
 
 	Ok(())
 }
@@ -257,7 +256,19 @@ async fn refresh_mod_loaders_local(
 ) -> Result<mod_loader::Map> {
 	let resources_path = paths::resources_path(handle)?;
 
-	let mod_loaders = mod_loader::get_map(&resources_path).await;
+	let mut mod_loaders = mod_loader::get_map(&resources_path).await;
+
+	if let Ok(previous_mod_loaders) = get_state_data(&state.mod_loaders) {
+		for mod_loader in mod_loaders.values_mut() {
+			let loader_data = mod_loader.get_data_mut();
+			loader_data.mods.iter_mut().for_each(|(mod_id, game_mod)| {
+				game_mod.remote_mod = previous_mod_loaders
+					.get(&loader_data.id)
+					.and_then(|previous_loader| previous_loader.get_data().mods.get(mod_id))
+					.and_then(|previous_game_mod| previous_game_mod.remote_mod.clone());
+			});
+		}
+	}
 
 	update_state(
 		AppEvent::SyncMods,
