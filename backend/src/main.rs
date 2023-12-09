@@ -271,11 +271,10 @@ async fn refresh_mod_loaders(
 #[tauri::command]
 #[specta::specta]
 async fn update_data(handle: tauri::AppHandle, state: tauri::State<'_, AppState>) -> Result {
-	let mod_loaders = refresh_mod_loaders(&handle, &state).await?;
-
 	let provider_map = provider::get_map(&handle);
+	let mut mod_loaders = refresh_mod_loaders(&handle, &state).await?;
 
-	let installed_games: HashMap<_, _> = provider_map
+	let mut installed_games: HashMap<_, _> = provider_map
 		.values()
 		.flat_map(|provider| match provider.get_installed_games() {
 			Ok(games) => games,
@@ -292,6 +291,28 @@ async fn update_data(handle: tauri::AppHandle, state: tauri::State<'_, AppState>
 			(game.id.clone(), game)
 		})
 		.collect();
+
+	update_state(
+		AppEvent::SyncInstalledGames,
+		installed_games.clone(),
+		&state.installed_games,
+		&handle,
+	);
+
+	for mod_loader in mod_loaders.values_mut() {
+		mod_loader.update_remote_mods().await;
+	}
+
+	update_state(
+		AppEvent::SyncMods,
+		mod_loaders.clone(),
+		&state.mod_loaders,
+		&handle,
+	);
+
+	for game in installed_games.values_mut() {
+		game.update_available_mods(&mod_loaders);
+	}
 
 	update_state(
 		AppEvent::SyncInstalledGames,

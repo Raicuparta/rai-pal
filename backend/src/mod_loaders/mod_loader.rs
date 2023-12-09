@@ -1,5 +1,8 @@
 use std::{
-	collections::HashMap,
+	collections::{
+		HashMap,
+		HashSet,
+	},
 	fs,
 	io::Cursor,
 	path::{
@@ -15,6 +18,7 @@ use zip::ZipArchive;
 use super::{
 	bepinex::BepInEx,
 	melon_loader::MelonLoader,
+	mod_database,
 	unreal_vr::UnrealVr,
 };
 use crate::{
@@ -24,6 +28,7 @@ use crate::{
 		self,
 		ModKind,
 	},
+	mod_loaders::mod_database::ModDatabase,
 	serializable_struct,
 	Error,
 	Result,
@@ -51,7 +56,50 @@ pub trait ModLoaderActions {
 	async fn install_mod(&self, game: &InstalledGame, mod_id: &str) -> Result;
 	fn open_mod_folder(&self, mod_id: &str) -> Result;
 	fn get_data(&self) -> &ModLoaderData;
+	fn get_data_mut(&mut self) -> &mut ModLoaderData;
 	fn get_mod_path(&self, mod_id: &str) -> Result<PathBuf>;
+
+	async fn update_remote_mods(&mut self) {
+		let id = "bepinex"; // TODO get actual ID.
+
+		let database = mod_database::get(id).await.unwrap_or_else(|error| {
+			// Show this error somewhere on frontend.
+			eprintln!("Failed to get mod database for loader {id}: {error}");
+			ModDatabase {
+				mods: HashMap::new(),
+			}
+		});
+
+		let game_mods = &self.get_data().mods;
+
+		let keys: HashSet<_> = game_mods
+			.keys()
+			.chain(database.mods.keys())
+			.cloned()
+			.collect();
+
+		self.get_data_mut().mods = keys
+			.iter()
+			.filter_map(|key| {
+				let remote_mod = database.mods.get(key);
+				let game_mod = game_mods.get(key);
+
+				let common = remote_mod.map_or_else(
+					|| game_mod.map(|local| local.common.clone()),
+					|remote| Some(remote.common.clone()),
+				)?;
+
+				Some((
+					key.clone(),
+					GameMod {
+						remote_mod: remote_mod.map(|m| m.data.clone()),
+						local_mod: game_mod.and_then(|m| m.local_mod.clone()),
+						common,
+					},
+				))
+			})
+			.collect();
+	}
 
 	async fn download_mod(&self, mod_id: &str) -> Result {
 		let target_path = self.get_mod_path(mod_id)?;

@@ -1,4 +1,5 @@
 use std::{
+	borrow::BorrowMut,
 	collections::HashMap,
 	path::PathBuf,
 };
@@ -46,6 +47,10 @@ impl ModLoaderStatic for MelonLoader {
 impl ModLoaderActions for MelonLoader {
 	fn get_data(&self) -> &ModLoaderData {
 		&self.data
+	}
+
+	fn get_data_mut(&mut self) -> &mut ModLoaderData {
+		self.data.borrow_mut()
 	}
 
 	fn install(&self, _game: &InstalledGame) -> crate::Result {

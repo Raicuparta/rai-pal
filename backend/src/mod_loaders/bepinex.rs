@@ -1,8 +1,6 @@
 use std::{
-	collections::{
-		HashMap,
-		HashSet,
-	},
+	borrow::BorrowMut,
+	collections::HashMap,
 	fs::{
 		self,
 		File,
@@ -16,10 +14,7 @@ use std::{
 use async_trait::async_trait;
 use zip::ZipArchive;
 
-use super::{
-	mod_database,
-	mod_loader::ModLoaderStatic,
-};
+use super::mod_loader::ModLoaderStatic;
 use crate::{
 	files::copy_dir_all,
 	game_engines::{
@@ -36,12 +31,9 @@ use crate::{
 		LocalMod,
 		ModKind,
 	},
-	mod_loaders::{
-		mod_database::ModDatabase,
-		mod_loader::{
-			ModLoaderActions,
-			ModLoaderData,
-		},
+	mod_loaders::mod_loader::{
+		ModLoaderActions,
+		ModLoaderData,
 	},
 	paths,
 	serializable_struct,
@@ -66,43 +58,17 @@ impl ModLoaderStatic for BepInEx {
 			local_mods
 		};
 
-		let database = mod_database::get(Self::ID).await.unwrap_or_else(|error| {
-			// Show this error somewhere on frontend.
-			eprintln!(
-				"Failed to get mod database for loader {}: {}",
-				Self::ID,
-				error
-			);
-			ModDatabase {
-				mods: HashMap::new(),
-			}
-		});
-
-		let keys: HashSet<_> = local_mods
-			.keys()
-			.chain(database.mods.keys())
-			.cloned()
-			.collect();
-
-		let mods: HashMap<_, _> = keys
-			.iter()
-			.filter_map(|key| {
-				let remote_mod = database.mods.get(key);
-				let local_mod = local_mods.get(key);
-
-				let common = remote_mod.map_or_else(
-					|| local_mod.map(|local| local.common.clone()),
-					|remote| Some(remote.common.clone()),
-				)?;
-
-				Some((
-					key.clone(),
+		let mods: HashMap<_, _> = local_mods
+			.into_iter()
+			.map(|(mod_id, local_mod)| {
+				(
+					mod_id,
 					GameMod {
-						remote_mod: remote_mod.map(|m| m.data.clone()),
-						local_mod: local_mod.map(|m| m.data.clone()),
-						common,
+						remote_mod: None,
+						local_mod: Some(local_mod.data),
+						common: local_mod.common,
 					},
-				))
+				)
 			})
 			.collect();
 
@@ -121,6 +87,10 @@ impl ModLoaderStatic for BepInEx {
 impl ModLoaderActions for BepInEx {
 	fn get_data(&self) -> &ModLoaderData {
 		&self.data
+	}
+
+	fn get_data_mut(&mut self) -> &mut ModLoaderData {
+		self.data.borrow_mut()
 	}
 
 	fn install(&self, game: &InstalledGame) -> Result {
