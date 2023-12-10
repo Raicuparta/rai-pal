@@ -23,7 +23,7 @@ export function getInstalledGames() {
 }
 
 export function getOwnedGames() {
-    return invoke()<OwnedGame[]>("get_owned_games")
+    return invoke()<{ [key: string]: OwnedGame }>("get_owned_games")
 }
 
 export function getModLoaders() {
@@ -88,6 +88,7 @@ export function getRemoteMods() {
 
 export type GameEngineVersion = { major: number; minor: number; patch: number; suffix: string | null; display: string }
 export type ModDownload = { version: string; url: string; root: string | null }
+export type OwnedGame = { id: string; providerId: ProviderId; name: string; installed: boolean; osList: OperatingSystem[]; engine: GameEngineBrand; releaseDate: number; thumbnailUrl: string }
 export type GameEngineBrand = "Unity" | "Unreal" | "Godot"
 export type Architecture = "X64" | "X86"
 export type ProviderId = "Steam" | "Manual"
@@ -105,5 +106,4 @@ export type ModLoaderData = { id: string; path: string; kind: ModKind }
 export type GameEngine = { brand: GameEngineBrand; version: GameEngineVersion | null }
 export type CommonModData = { id: string; engine: GameEngineBrand | null; unityBackend: UnityScriptingBackend | null; loaderId: string }
 export type InstalledGame = { id: string; name: string; providerId: ProviderId; discriminator: string | null; steamLaunch: SteamLaunchOption | null; executable: GameExecutable; thumbnailUrl: string | null; availableMods: { [key: string]: boolean } }
-export type OwnedGame = { id: string; providerId: ProviderId; name: string; installed: boolean; osList: OperatingSystem[]; engine: GameEngineBrand; releaseDate: number; thumbnailUrl: string }
 export type LocalModData = { path: string; manifest: Manifest | null }

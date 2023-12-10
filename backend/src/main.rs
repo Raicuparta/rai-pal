@@ -60,10 +60,10 @@ mod windows;
 
 struct AppState {
 	installed_games: Mutex<Option<installed_game::Map>>,
-	owned_games: Mutex<Option<Vec<OwnedGame>>>,
+	owned_games: Mutex<Option<owned_game::Map>>,
 	mod_loaders: Mutex<Option<mod_loader::Map>>,
-	local_mods: Mutex<Option<HashMap<String, LocalMod>>>,
-	remote_mods: Mutex<Option<HashMap<String, RemoteMod>>>,
+	local_mods: Mutex<Option<local_mod::Map>>,
+	remote_mods: Mutex<Option<remote_mod::Map>>,
 }
 
 fn get_game(game_id: &str, state: &tauri::State<'_, AppState>) -> Result<InstalledGame> {
@@ -124,7 +124,7 @@ async fn get_installed_games(state: tauri::State<'_, AppState>) -> Result<instal
 
 #[tauri::command]
 #[specta::specta]
-async fn get_owned_games(state: tauri::State<'_, AppState>) -> Result<Vec<OwnedGame>> {
+async fn get_owned_games(state: tauri::State<'_, AppState>) -> Result<owned_game::Map> {
 	get_state_data(&state.owned_games)
 }
 
@@ -387,7 +387,7 @@ async fn update_data(handle: tauri::AppHandle, state: tauri::State<'_, AppState>
 		&handle,
 	);
 
-	let owned_games: Vec<OwnedGame> = futures::future::join_all(
+	let owned_games: owned_game::Map = futures::future::join_all(
 		provider_map
 			.values()
 			.map(provider::ProviderActions::get_owned_games),
@@ -395,6 +395,7 @@ async fn update_data(handle: tauri::AppHandle, state: tauri::State<'_, AppState>
 	.await
 	.into_iter()
 	.flat_map(result::Result::unwrap_or_default)
+	.map(|owned_game| (owned_game.id.clone(), owned_game))
 	.collect();
 
 	update_state(

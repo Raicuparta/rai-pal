@@ -32,9 +32,18 @@ function filterOwnedGame(
 export function OwnedGamesPage() {
 	const ownedGames = useAtomValue(ownedGamesAtom);
 
-	// TODO should use a selected ID instead of storing the whole game in state.
-	// Otherwise it can easily become stale.
-	const [selectedGame, setSelectedGame] = useState<OwnedGame>();
+	const games_list = useMemo(
+		() => (ownedGames ? Object.values(ownedGames) : []),
+		[ownedGames],
+	);
+
+	const [selectedGameId, setSelectedGameId] = useState<string>();
+
+	const selectedGame = useMemo(
+		() =>
+			ownedGames && selectedGameId ? ownedGames[selectedGameId] : undefined,
+		[ownedGames, selectedGameId],
+	);
 
 	const [hiddenColumns, setHiddenColumns] = usePersistedState<string[]>(
 		["provider"],
@@ -51,7 +60,7 @@ export function OwnedGamesPage() {
 		useFilteredList(
 			"owned-games-filter",
 			filteredColumns,
-			ownedGames ?? [],
+			games_list,
 			filterOwnedGame,
 			defaultFilter,
 		);
@@ -62,7 +71,7 @@ export function OwnedGamesPage() {
 		<Stack h="100%">
 			{selectedGame ? (
 				<OwnedGameModal
-					onClose={() => setSelectedGame(undefined)}
+					onClose={() => setSelectedGameId(undefined)}
 					game={selectedGame}
 				/>
 			) : null}
@@ -102,7 +111,7 @@ export function OwnedGamesPage() {
 				data={filteredGames}
 				columns={filteredColumns}
 				onChangeSort={setSort}
-				onClickItem={setSelectedGame}
+				onClickItem={(game) => setSelectedGameId(game.id)}
 				sort={sort}
 			/>
 		</Stack>
