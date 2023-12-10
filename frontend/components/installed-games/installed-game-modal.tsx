@@ -25,9 +25,10 @@ import {
 import { steamCommands } from "../../util/steam";
 import { ModalImage } from "@components/modal-image";
 import { useAtomValue } from "jotai";
-import { modLoadersAtom, modsAtom } from "@hooks/use-data";
+import { modLoadersAtom } from "@hooks/use-data";
 import { CommandButtonGroup } from "@components/command-button-group";
 import { DebugData } from "@components/debug-data";
+import { useUnifiedMods } from "@hooks/use-unified-mods";
 
 type Props = {
 	readonly game: InstalledGame;
@@ -36,7 +37,7 @@ type Props = {
 
 export function InstalledGameModal(props: Props) {
 	const modLoaderMap = useAtomValue(modLoadersAtom);
-	const mods = useAtomValue(modsAtom);
+	const mods = useUnifiedMods();
 
 	// TODO make less insane?
 	const modLoaders = useMemo(
@@ -47,7 +48,7 @@ export function InstalledGameModal(props: Props) {
 					.filter(
 						([modId, mod]) =>
 							modId in props.game.availableMods &&
-							mod.loaderId === modLoader.id,
+							mod.common.loaderId === modLoader.id,
 					)
 					.map(([, mod]) => mod),
 			})),
@@ -144,7 +145,7 @@ export function InstalledGameModal(props: Props) {
 													uninstallMod(props.game.id, mod.common.id)
 												}
 											>
-												Uninstall {mod.remoteMod?.title ?? mod.common.id}
+												Uninstall {mod.remote?.title ?? mod.common.id}
 											</CommandButton>
 										) : (
 											<CommandButton
@@ -157,7 +158,7 @@ export function InstalledGameModal(props: Props) {
 												}
 											>
 												{modLoader.kind === "Installable" ? "Install" : "Run"}{" "}
-												{mod.remoteMod?.title ?? mod.common.id}
+												{mod.remote?.title ?? mod.common.id}
 												<Text
 													opacity={0.5}
 													ml="xs"

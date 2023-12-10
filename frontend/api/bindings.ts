@@ -78,27 +78,32 @@ export function frontendReady() {
     return invoke()<null>("frontend_ready")
 }
 
-export function getMods() {
-    return invoke()<{ [key: string]: GameMod }>("get_mods")
+export function getLocalMods() {
+    return invoke()<{ [key: string]: LocalMod }>("get_local_mods")
+}
+
+export function getRemoteMods() {
+    return invoke()<{ [key: string]: RemoteMod }>("get_remote_mods")
 }
 
 export type GameEngineVersion = { major: number; minor: number; patch: number; suffix: string | null; display: string }
 export type ModDownload = { version: string; url: string; root: string | null }
-export type RemoteModData = { title: string; author: string; sourceCode: string; description: string; downloads: ModDownload[] }
 export type GameEngineBrand = "Unity" | "Unreal" | "Godot"
 export type Architecture = "X64" | "X86"
 export type ProviderId = "Steam" | "Manual"
-export type AppEvent = "SyncInstalledGames" | "SyncOwnedGames" | "SyncMods" | "ExecutedSteamCommand" | "GameAdded" | "GameRemoved" | "Error"
+export type AppEvent = "SyncInstalledGames" | "SyncOwnedGames" | "SyncModLoaders" | "SyncLocalMods" | "SyncRemoteMods" | "ExecutedSteamCommand" | "GameAdded" | "GameRemoved" | "Error"
 export type OperatingSystem = "Linux" | "Windows"
+export type RemoteModData = { title: string; author: string; sourceCode: string; description: string; downloads: ModDownload[] }
 export type GameExecutable = { path: string; engine: GameEngine | null; architecture: Architecture | null; operatingSystem: OperatingSystem | null; scriptingBackend: UnityScriptingBackend | null }
-export type SteamLaunchOption = { launchId: string; appId: number; description: string | null; executable: string | null; arguments: string | null; appType: string | null; osList: string | null; betaKey: string | null; osArch: string | null }
-export type ModLoaderData = { id: string; path: string; kind: ModKind }
 export type Manifest = { version: string }
-export type GameMod = { localMod: LocalModData | null; remoteMod: RemoteModData | null; common: CommonModData; loaderId: string }
-export type LocalModData = { path: string; manifest: Manifest | null }
-export type UnityScriptingBackend = "Il2Cpp" | "Mono"
+export type LocalMod = { data: LocalModData; common: CommonModData }
+export type SteamLaunchOption = { launchId: string; appId: number; description: string | null; executable: string | null; arguments: string | null; appType: string | null; osList: string | null; betaKey: string | null; osArch: string | null }
+export type RemoteMod = { common: CommonModData; data: RemoteModData }
 export type ModKind = "Installable" | "Runnable"
-export type CommonModData = { id: string; engine: GameEngineBrand | null; unityBackend: UnityScriptingBackend | null }
+export type UnityScriptingBackend = "Il2Cpp" | "Mono"
+export type ModLoaderData = { id: string; path: string; kind: ModKind }
 export type GameEngine = { brand: GameEngineBrand; version: GameEngineVersion | null }
+export type CommonModData = { id: string; engine: GameEngineBrand | null; unityBackend: UnityScriptingBackend | null; loaderId: string }
 export type InstalledGame = { id: string; name: string; providerId: ProviderId; discriminator: string | null; steamLaunch: SteamLaunchOption | null; executable: GameExecutable; thumbnailUrl: string | null; availableMods: { [key: string]: boolean } }
 export type OwnedGame = { id: string; providerId: ProviderId; name: string; installed: boolean; osList: OperatingSystem[]; engine: GameEngineBrand; releaseDate: number; thumbnailUrl: string }
+export type LocalModData = { path: string; manifest: Manifest | null }

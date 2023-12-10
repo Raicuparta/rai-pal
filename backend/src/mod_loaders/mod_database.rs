@@ -4,28 +4,28 @@ use std::{
 };
 
 use crate::{
-	game_mod::CommonModData,
+	game_engines::{
+		game_engine::GameEngineBrand,
+		unity::UnityScriptingBackend,
+	},
 	serializable_struct,
 	Result,
 };
 
 const URL_BASE: &str = "https://raw.githubusercontent.com/Raicuparta/rai-pal-db/main";
 
+serializable_struct!(DatabaseEntry {
+	pub title: String,
+	pub author: String,
+	pub source_code: String,
+	pub description: String,
+	pub downloads: Vec<ModDownload>,
+	pub engine: Option<GameEngineBrand>,
+	pub unity_backend: Option<UnityScriptingBackend>,
+});
+
 serializable_struct!(ModDatabase {
-  pub mods: HashMap<String, RemoteMod>,
-});
-
-serializable_struct!(RemoteModData {
-  pub title: String,
-  pub author: String,
-  pub source_code: String,
-  pub description: String,
-  pub downloads: Vec<ModDownload>,
-});
-
-serializable_struct!(RemoteMod {
-	pub common: CommonModData,
-	pub data: RemoteModData,
+  pub mods: HashMap<String, DatabaseEntry>,
 });
 
 serializable_struct!(ModDownload {

@@ -15,7 +15,7 @@ use super::mod_loader::{
 };
 use crate::{
 	game_engines::game_engine::GameEngineBrand,
-	game_mod::GameMod,
+	game_mod::CommonModData,
 	installed_game::InstalledGame,
 	local_mod::{
 		LocalMod,
@@ -74,16 +74,17 @@ impl ModLoaderActions for UnrealVr {
 		windows::run_as_admin(&self.data.path.join(Self::EXE_NAME), &parameters)
 	}
 
-	async fn install_mod(&self, game: &InstalledGame, _game_mod: &GameMod) -> Result {
+	async fn install_mod(&self, game: &InstalledGame, _game_mod: &LocalMod) -> Result {
 		self.install(game)
 	}
 
-	fn get_mod_path(&self, _game_mod: &GameMod) -> Result<PathBuf> {
+	fn get_mod_path(&self, _game_mod: &CommonModData) -> Result<PathBuf> {
 		todo!()
 	}
 
 	fn get_local_mods(&self) -> Result<HashMap<String, LocalMod>> {
 		let local_mod = LocalMod::new(
+			Self::ID,
 			&self.get_data().path.join(Self::EXE_NAME),
 			Some(GameEngineBrand::Unreal),
 			None,

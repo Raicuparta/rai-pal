@@ -1,9 +1,5 @@
 use std::{
-	borrow::BorrowMut,
-	collections::{
-		HashMap,
-		HashSet,
-	},
+	collections::HashMap,
 	fs::{
 		self,
 		File,
@@ -28,7 +24,7 @@ use crate::{
 		unity::UnityScriptingBackend,
 	},
 	game_executable::OperatingSystem,
-	game_mod::GameMod,
+	game_mod::CommonModData,
 	installed_game::InstalledGame,
 	local_mod::{
 		LocalMod,
@@ -152,45 +148,38 @@ impl ModLoaderActions for BepInEx {
 		Ok(())
 	}
 
-	async fn install_mod(&self, game: &InstalledGame, game_mod: &GameMod) -> Result {
+	async fn install_mod(&self, game: &InstalledGame, local_mod: &LocalMod) -> Result {
 		self.install(game)?;
 
 		let bepinex_folder = game.get_installed_mods_folder()?.join("BepInEx");
 
-		let mod_path = if let Some(local_mod) = &game_mod.local_mod {
-			local_mod.path.clone()
-		} else {
-			self.download_mod(game_mod).await?;
-			self.get_mod_path(game_mod)?
-		};
-
-		let mod_plugin_path = mod_path.join("plugins");
+		let mod_plugin_path = local_mod.data.path.join("plugins");
 		if mod_plugin_path.is_dir() {
 			copy_dir_all(
 				mod_plugin_path,
-				bepinex_folder.join("plugins").join(&game_mod.common.id),
+				bepinex_folder.join("plugins").join(&local_mod.common.id),
 			)?;
 		}
 
-		let mod_patch_path = mod_path.join("patchers");
+		let mod_patch_path = local_mod.data.path.join("patchers");
 		if mod_patch_path.is_dir() {
 			copy_dir_all(
 				mod_patch_path,
-				bepinex_folder.join("patchers").join(&game_mod.common.id),
+				bepinex_folder.join("patchers").join(&local_mod.common.id),
 			)?;
 		}
 
 		Ok(())
 	}
 
-	fn get_mod_path(&self, game_mod: &GameMod) -> Result<PathBuf> {
-		game_mod.common.unity_backend.map_or_else(
-			|| Err(Error::ModNotFound(game_mod.common.id.clone())),
+	fn get_mod_path(&self, mod_data: &CommonModData) -> Result<PathBuf> {
+		mod_data.unity_backend.map_or_else(
+			|| Err(Error::ModNotFound(mod_data.id.clone())), // TODO specific error
 			|unity_backend| {
 				Ok(self
 					.get_installed_mods_path()?
 					.join(unity_backend.to_string())
-					.join(&game_mod.common.id))
+					.join(&mod_data.id))
 			},
 		)
 	}
@@ -308,6 +297,7 @@ fn find_mods(
 		.filter_map(|entry| {
 			entry.as_ref().map_or(None, |mod_path| {
 				if let Ok(local_mod) = LocalMod::new(
+					BepInEx::ID,
 					mod_path,
 					Some(GameEngineBrand::Unity),
 					Some(scripting_backend),

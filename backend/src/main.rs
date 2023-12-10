@@ -3,10 +3,7 @@
 #![feature(future_join)]
 
 use std::{
-	collections::{
-		HashMap,
-		HashSet,
-	},
+	collections::HashMap,
 	path::PathBuf,
 	sync::Mutex,
 };
@@ -15,8 +12,9 @@ use events::{
 	AppEvent,
 	EventEmitter,
 };
-use game_mod::GameMod;
+use game_mod::get_common_data_map;
 use installed_game::InstalledGame;
+use local_mod::LocalMod;
 use mod_loaders::mod_loader::{
 	self,
 	ModLoader,
@@ -34,6 +32,7 @@ use providers::{
 		ProviderActions,
 	},
 };
+use remote_mod::RemoteMod;
 use result::{
 	Error,
 	Result,
@@ -54,6 +53,7 @@ mod mod_loaders;
 mod owned_game;
 mod paths;
 mod providers;
+mod remote_mod;
 mod result;
 mod steam;
 mod windows;
@@ -62,7 +62,8 @@ struct AppState {
 	installed_games: Mutex<Option<installed_game::Map>>,
 	owned_games: Mutex<Option<Vec<OwnedGame>>>,
 	mod_loaders: Mutex<Option<mod_loader::Map>>,
-	mods: Mutex<Option<game_mod::Map>>,
+	local_mods: Mutex<Option<HashMap<String, LocalMod>>>,
+	remote_mods: Mutex<Option<HashMap<String, RemoteMod>>>,
 }
 
 fn get_game(game_id: &str, state: &tauri::State<'_, AppState>) -> Result<InstalledGame> {
@@ -88,8 +89,15 @@ fn get_mod_loader(mod_loader_id: &str, state: &tauri::State<'_, AppState>) -> Re
 		.cloned()
 }
 
-fn get_mod(mod_id: &str, state: &tauri::State<'_, AppState>) -> Result<GameMod> {
-	get_state_data(&state.mods)?
+fn get_local_mod(mod_id: &str, state: &tauri::State<'_, AppState>) -> Result<LocalMod> {
+	get_state_data(&state.local_mods)?
+		.get(mod_id)
+		.ok_or_else(|| Error::ModNotFound(mod_id.to_string()))
+		.cloned()
+}
+
+fn get_remote_mod(mod_id: &str, state: &tauri::State<'_, AppState>) -> Result<RemoteMod> {
+	get_state_data(&state.remote_mods)?
 		.get(mod_id)
 		.ok_or_else(|| Error::ModNotFound(mod_id.to_string()))
 		.cloned()
@@ -128,8 +136,14 @@ async fn get_mod_loaders(state: tauri::State<'_, AppState>) -> Result<mod_loader
 
 #[tauri::command]
 #[specta::specta]
-async fn get_mods(state: tauri::State<'_, AppState>) -> Result<game_mod::Map> {
-	get_state_data(&state.mods)
+async fn get_local_mods(state: tauri::State<'_, AppState>) -> Result<local_mod::Map> {
+	get_state_data(&state.local_mods)
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn get_remote_mods(state: tauri::State<'_, AppState>) -> Result<remote_mod::Map> {
+	get_state_data(&state.remote_mods)
 }
 
 fn update_state<TData>(
@@ -170,7 +184,7 @@ async fn open_mods_folder(handle: tauri::AppHandle) -> Result {
 #[tauri::command]
 #[specta::specta]
 async fn open_mod_folder(mod_id: &str, state: tauri::State<'_, AppState>) -> Result {
-	get_mod(mod_id, &state)?.open_folder()
+	get_local_mod(mod_id, &state)?.open_folder()
 }
 
 #[tauri::command]
@@ -181,7 +195,7 @@ async fn download_mod(
 	state: tauri::State<'_, AppState>,
 	handle: tauri::AppHandle,
 ) -> Result {
-	let game_mod = get_mod(mod_id, &state)?;
+	let game_mod = get_remote_mod(mod_id, &state)?;
 	get_mod_loader(mod_loader_id, &state)?
 		.download_mod(&game_mod)
 		.await?;
@@ -212,10 +226,11 @@ async fn install_mod(
 ) -> Result {
 	let game = get_game(game_id, &state)?;
 
-	let game_mod = get_mod(mod_id, &state)?;
+	// TODO download mod if missing.
+	let local_mod = get_local_mod(mod_id, &state)?;
 
 	get_mod_loader(mod_loader_id, &state)?
-		.install_mod(&game, &game_mod)
+		.install_mod(&game, &local_mod)
 		.await?;
 
 	refresh_single_game(game_id, &state, &handle)?;
@@ -231,13 +246,16 @@ fn refresh_single_game(
 	state: &tauri::State<'_, AppState>,
 	handle: &tauri::AppHandle,
 ) -> Result {
-	let mods = get_state_data(&state.mods)?;
+	let mod_data_map = game_mod::get_common_data_map(
+		&get_state_data(&state.local_mods)?,
+		&get_state_data(&state.remote_mods)?,
+	);
 	let mut installed_games = get_state_data(&state.installed_games)?;
 
 	installed_games
 		.get_mut(game_id)
 		.ok_or_else(|| Error::GameNotFound(game_id.to_owned()))?
-		.refresh_mods(&mods);
+		.refresh_mods(&mod_data_map);
 
 	update_state(
 		AppEvent::SyncInstalledGames,
@@ -264,105 +282,55 @@ async fn uninstall_mod(
 	Ok(())
 }
 
-// TODO reduce repetition between remote and local.
 async fn refresh_local_mods(
 	mod_loaders: &mod_loader::Map,
 	handle: &tauri::AppHandle,
 	state: &tauri::State<'_, AppState>,
-) -> game_mod::Map {
-	let existing_mods = get_state_data(&state.mods).unwrap_or_default();
-
-	let mods: HashMap<_, _> = mod_loaders
+) -> local_mod::Map {
+	let local_mods: HashMap<_, _> = mod_loaders
 		.values()
 		.filter_map(|mod_loader| {
-			let local_mods = mod_loader.get_local_mods().ok()?; // don't swallow error.
-
-			let keys: HashSet<_> = existing_mods
-				.keys()
-				.chain(local_mods.keys())
-				.cloned()
-				.collect();
-
-			let mods: HashMap<_, _> = keys
-				.iter()
-				.filter_map(|key| {
-					let existing_mod = existing_mods.get(key);
-					let local_mod = local_mods.get(key);
-
-					let common = local_mod.map_or_else(
-						|| existing_mod.map(|local| local.common.clone()),
-						|remote| Some(remote.common.clone()),
-					)?;
-
-					Some((
-						key.clone(),
-						GameMod {
-							local_mod: local_mod.map(|m| m.data.clone()),
-							remote_mod: existing_mod.and_then(|m| m.remote_mod.clone()),
-							common,
-							loader_id: mod_loader.get_data().id.clone(),
-						},
-					))
-				})
-				.collect();
-
-			Some(mods)
+			mod_loader.get_local_mods().ok() // don't swallow error.
 		})
 		.flatten()
 		.collect();
 
-	update_state(AppEvent::SyncMods, mods.clone(), &state.mods, handle);
+	update_state(
+		AppEvent::SyncLocalMods,
+		local_mods.clone(),
+		&state.local_mods,
+		handle,
+	);
 
-	mods
+	local_mods
 }
 
-// TODO reduce repetition between remote and local.
 async fn refresh_remote_mods(
 	mod_loaders: &mod_loader::Map,
 	handle: &tauri::AppHandle,
 	state: &tauri::State<'_, AppState>,
-) -> game_mod::Map {
-	let existing_mods = get_state_data(&state.mods).unwrap_or_default();
-
-	let mut mods = game_mod::Map::default();
+) -> remote_mod::Map {
+	let mut remote_mods = remote_mod::Map::default();
 
 	for mod_loader in mod_loaders.values() {
-		let remote_mods = mod_loader
+		for (mod_id, remote_mod) in mod_loader
 			.get_remote_mods(|error| {
 				handle.emit_error(format!("Failed to get remote mods: {error}"));
 			})
-			.await;
-
-		let keys: HashSet<_> = existing_mods
-			.keys()
-			.chain(remote_mods.keys())
-			.cloned()
-			.collect();
-
-		for key in &keys {
-			let existing_mod = existing_mods.get(key);
-			let remote_mod = remote_mods.get(key);
-
-			if let Some(common) = remote_mod.map_or_else(
-				|| existing_mod.map(|local| local.common.clone()),
-				|remote| Some(remote.common.clone()),
-			) {
-				mods.insert(
-					key.clone(),
-					GameMod {
-						remote_mod: remote_mod.map(|m| m.data.clone()),
-						local_mod: existing_mod.and_then(|m| m.local_mod.clone()),
-						common,
-						loader_id: mod_loader.get_data().id.clone(),
-					},
-				);
-			}
+			.await
+		{
+			remote_mods.insert(mod_id.clone(), remote_mod.clone());
 		}
 	}
 
-	update_state(AppEvent::SyncMods, mods.clone(), &state.mods, handle);
+	update_state(
+		AppEvent::SyncRemoteMods,
+		remote_mods.clone(),
+		&state.remote_mods,
+		handle,
+	);
 
-	mods
+	remote_mods
 }
 
 #[tauri::command]
@@ -372,13 +340,13 @@ async fn update_data(handle: tauri::AppHandle, state: tauri::State<'_, AppState>
 
 	let mod_loaders = mod_loader::get_map(&resources_path).await;
 	update_state(
-		AppEvent::SyncMods,
+		AppEvent::SyncModLoaders,
 		mod_loaders.clone(),
 		&state.mod_loaders,
 		&handle,
 	);
 
-	let mut mods = refresh_local_mods(&mod_loaders, &handle, &state).await;
+	let local_mods = refresh_local_mods(&mod_loaders, &handle, &state).await;
 
 	let provider_map = provider::get_map(|error| {
 		handle.emit_error(format!("Failed to set up provider: {error}"));
@@ -394,7 +362,7 @@ async fn update_data(handle: tauri::AppHandle, state: tauri::State<'_, AppState>
 			}
 		})
 		.map(|mut game| {
-			game.update_available_mods(&mods);
+			game.update_available_mods(&get_common_data_map(&local_mods, &HashMap::default()));
 			(game.id.clone(), game)
 		})
 		.collect();
@@ -406,10 +374,10 @@ async fn update_data(handle: tauri::AppHandle, state: tauri::State<'_, AppState>
 		&handle,
 	);
 
-	mods = refresh_remote_mods(&mod_loaders, &handle, &state).await;
+	let remote_mods = refresh_remote_mods(&mod_loaders, &handle, &state).await;
 
 	for game in installed_games.values_mut() {
-		game.update_available_mods(&mods);
+		game.update_available_mods(&get_common_data_map(&local_mods, &remote_mods));
 	}
 
 	update_state(
@@ -454,7 +422,10 @@ async fn add_game(
 	}
 
 	let mut game = manual_provider::add_game(&normalized_path)?;
-	game.update_available_mods(&get_state_data(&state.mods)?);
+	game.update_available_mods(&get_common_data_map(
+		&get_state_data(&state.local_mods)?,
+		&get_state_data(&state.remote_mods)?,
+	));
 	let game_name = game.name.clone();
 
 	let mut installed_games = get_state_data(&state.installed_games)?;
@@ -540,7 +511,8 @@ fn main() {
 			installed_games: Mutex::default(),
 			owned_games: Mutex::default(),
 			mod_loaders: Mutex::default(),
-			mods: Mutex::default(),
+			local_mods: Mutex::default(),
+			remote_mods: Mutex::default(),
 		})
 		.setup(|_app| {
 			#[cfg(target_os = "linux")]
@@ -585,7 +557,8 @@ fn main() {
 			remove_game,
 			delete_steam_appinfo_cache,
 			frontend_ready,
-			get_mods,
+			get_local_mods,
+			get_remote_mods,
 		]
 	);
 

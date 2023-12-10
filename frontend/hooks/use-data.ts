@@ -6,7 +6,8 @@ import {
 	getInstalledGames,
 	getModLoaders,
 	getOwnedGames,
-	getMods,
+	getLocalMods,
+	getRemoteMods,
 } from "@api/bindings";
 import { dataSubscription } from "./use-data-subscription";
 import { useUpdateData } from "./use-update-data";
@@ -16,14 +17,20 @@ export const [installedGamesAtom, useInstalledGamesSubscription] =
 	dataSubscription("SyncInstalledGames", getInstalledGames, {});
 
 export const [modLoadersAtom, useModLoadersSubscription] = dataSubscription(
-	"SyncMods",
+	"SyncModLoaders",
 	getModLoaders,
 	{},
 );
 
-export const [modsAtom, useModsSubscription] = dataSubscription(
-	"SyncMods",
-	getMods,
+export const [localModsAtom, useLocalModsSubscription] = dataSubscription(
+	"SyncLocalMods",
+	getLocalMods,
+	{},
+);
+
+export const [remoteModsAtom, useRemoteModsSubscription] = dataSubscription(
+	"SyncRemoteMods",
+	getRemoteMods,
 	{},
 );
 
@@ -38,7 +45,8 @@ export const loadingAtom = atom<boolean>(false);
 export function useData() {
 	useInstalledGamesSubscription();
 	useModLoadersSubscription();
-	useModsSubscription();
+	useLocalModsSubscription();
+	useRemoteModsSubscription();
 	useOwnedGamesSubscription();
 
 	const updateData = useUpdateData();

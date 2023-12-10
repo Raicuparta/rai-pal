@@ -78,8 +78,8 @@ impl InstalledGame {
 		})
 	}
 
-	pub fn update_available_mods(&mut self, mod_map: &game_mod::Map) {
-		self.available_mods = self.get_available_mods(mod_map);
+	pub fn update_available_mods(&mut self, data_map: &game_mod::CommonDataMap) {
+		self.available_mods = self.get_available_mods(data_map);
 	}
 
 	pub fn open_game_folder(&self) -> Result {
@@ -141,8 +141,8 @@ impl InstalledGame {
 		Ok(())
 	}
 
-	pub fn refresh_mods(&mut self, mod_map: &game_mod::Map) {
-		self.available_mods = self.get_available_mods(mod_map);
+	pub fn refresh_mods(&mut self, data_map: &game_mod::CommonDataMap) {
+		self.available_mods = self.get_available_mods(data_map);
 	}
 
 	pub fn get_installed_mods_folder(&self) -> Result<PathBuf> {
@@ -165,17 +165,15 @@ impl InstalledGame {
 		false
 	}
 
-	pub fn get_available_mods(&self, mod_map: &game_mod::Map) -> HashMap<String, bool> {
-		mod_map
+	pub fn get_available_mods(&self, data_map: &game_mod::CommonDataMap) -> HashMap<String, bool> {
+		data_map
 			.iter()
-			.filter_map(|(mod_id, game_mod)| {
+			.filter_map(|(mod_id, mod_data)| {
 				if equal_or_none(
-					game_mod.common.engine,
+					mod_data.engine,
 					self.executable.engine.as_ref().map(|engine| engine.brand),
-				) && equal_or_none(
-					game_mod.common.unity_backend,
-					self.executable.scripting_backend,
-				) {
+				) && equal_or_none(mod_data.unity_backend, self.executable.scripting_backend)
+				{
 					Some((mod_id.clone(), self.is_mod_installed(mod_id)))
 				} else {
 					None

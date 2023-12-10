@@ -8,14 +8,17 @@ import {
 	EngineBadge,
 	UnityBackendBadge,
 } from "@components/badges/color-coded-badge";
-import { useAtomValue } from "jotai";
-import { modsAtom } from "@hooks/use-data";
 import { ModModal } from "./mod-modal";
+import { useUnifiedMods } from "@hooks/use-unified-mods";
+import { DebugData } from "@components/debug-data";
+import { useAtomValue } from "jotai";
+import { modLoadersAtom } from "@hooks/use-data";
 
 export function ModsPage() {
 	const [selectedModId, setSelectedId] = useState<string>();
 
-	const mods = useAtomValue(modsAtom);
+	const mods = useUnifiedMods();
+	const modLoaders = useAtomValue(modLoadersAtom);
 
 	const selectedMod = useMemo(() => {
 		const result = selectedModId ? mods[selectedModId] : undefined;
@@ -74,21 +77,19 @@ export function ModsPage() {
 								onClick={() => setSelectedId(mod.common.id)}
 							>
 								<Table.Td ta="left">
-									<Text>{mod.remoteMod?.title ?? modId}</Text>
-									{mod.remoteMod?.description && (
+									<Text>{mod.remote?.title ?? modId}</Text>
+									{mod.remote?.description && (
 										<Text
 											size="sm"
 											opacity={0.5}
 										>
-											{mod.remoteMod.description}
+											{mod.remote.description}
 										</Text>
 									)}
 								</Table.Td>
+								<Table.Td>{mod.local?.manifest?.version ?? "Unknown"}</Table.Td>
 								<Table.Td>
-									{mod.localMod?.manifest?.version ?? "Unknown"}
-								</Table.Td>
-								<Table.Td>
-									{mod.remoteMod?.downloads[0]?.version ?? "Unknown"}
+									{mod.remote?.downloads[0]?.version ?? "Unknown"}
 								</Table.Td>
 								<Table.Td>TODO</Table.Td>
 								<Table.Td>
@@ -102,6 +103,8 @@ export function ModsPage() {
 					</Table.Tbody>
 				</Table>
 			</TableContainer>
+
+			<DebugData data={modLoaders} />
 		</Stack>
 	);
 }

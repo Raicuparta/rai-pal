@@ -1,4 +1,5 @@
 use std::{
+	collections::HashMap,
 	fs,
 	path::{
 		Path,
@@ -55,6 +56,7 @@ fn get_manifest(mod_path: &Path) -> Option<Manifest> {
 
 impl LocalMod {
 	pub fn new(
+		loader_id: &str,
 		path: &Path,
 		engine: Option<GameEngineBrand>,
 		unity_backend: Option<UnityScriptingBackend>,
@@ -68,7 +70,14 @@ impl LocalMod {
 				id: paths::file_name_without_extension(path)?.to_string(),
 				engine,
 				unity_backend,
+				loader_id: loader_id.to_string(),
 			},
 		})
 	}
+
+	pub fn open_folder(&self) -> Result {
+		Ok(open::that_detached(&self.data.path)?)
+	}
 }
+
+pub type Map = HashMap<String, LocalMod>;

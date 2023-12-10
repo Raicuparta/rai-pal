@@ -14,14 +14,11 @@ use zip::ZipArchive;
 
 use super::{
 	bepinex::BepInEx,
-	mod_database::{
-		self,
-		RemoteMod,
-	},
+	mod_database::{self,},
 	unreal_vr::UnrealVr,
 };
 use crate::{
-	game_mod::GameMod,
+	game_mod::CommonModData,
 	installed_game::InstalledGame,
 	local_mod::{
 		self,
@@ -30,6 +27,10 @@ use crate::{
 	},
 	mod_loaders::mod_database::ModDatabase,
 	paths,
+	remote_mod::{
+		RemoteMod,
+		RemoteModData,
+	},
 	serializable_struct,
 	Error,
 	Result,
@@ -52,9 +53,9 @@ pub enum ModLoader {
 #[enum_dispatch(ModLoader)]
 pub trait ModLoaderActions {
 	fn install(&self, game: &InstalledGame) -> Result;
-	async fn install_mod(&self, game: &InstalledGame, game_mod: &GameMod) -> Result;
+	async fn install_mod(&self, game: &InstalledGame, game_mod: &LocalMod) -> Result;
 	fn get_data(&self) -> &ModLoaderData;
-	fn get_mod_path(&self, mod_id: &GameMod) -> Result<PathBuf>;
+	fn get_mod_path(&self, mod_data: &CommonModData) -> Result<PathBuf>;
 	fn get_local_mods(&self) -> Result<HashMap<String, LocalMod>>;
 
 	fn get_installed_mods_path(&self) -> Result<PathBuf> {
@@ -78,42 +79,61 @@ pub trait ModLoaderActions {
 			}
 		});
 
-		database.mods
+		database
+			.mods
+			.into_iter()
+			.map(|(mod_id, database_mod)| {
+				(
+					mod_id.clone(),
+					RemoteMod {
+						common: CommonModData {
+							id: mod_id,
+							engine: database_mod.engine,
+							unity_backend: database_mod.unity_backend,
+							loader_id: id.clone(),
+						},
+						data: RemoteModData {
+							author: database_mod.author,
+							description: database_mod.description,
+							source_code: database_mod.source_code,
+							title: database_mod.title,
+							downloads: database_mod.downloads,
+						},
+					},
+				)
+			})
+			.collect()
 	}
 
-	async fn download_mod(&self, game_mod: &GameMod) -> Result {
-		let target_path = self.get_mod_path(game_mod)?;
+	async fn download_mod(&self, remote_mod: &RemoteMod) -> Result {
+		let target_path = self.get_mod_path(&remote_mod.common)?;
 		let data = self.get_data();
 		let downloads_folder = data.path.join("downloads");
 		fs::create_dir_all(&downloads_folder)?;
 
-		if let Some(remote_mod) = &game_mod.remote_mod {
-			if let Some(first_download) = remote_mod.downloads.first() {
-				let response = reqwest::get(&first_download.url).await?;
+		if let Some(first_download) = remote_mod.data.downloads.first() {
+			let response = reqwest::get(&first_download.url).await?;
 
-				if response.status().is_success() {
-					// This keeps the whole zip in memory and only copies the extracted part to disk.
-					// If we ever need to support very big mods, we should stream the zip to disk first,
-					// and extract it after it's written to disk.
-					ZipArchive::new(Cursor::new(response.bytes().await?))?.extract(&target_path)?;
+			if response.status().is_success() {
+				// This keeps the whole zip in memory and only copies the extracted part to disk.
+				// If we ever need to support very big mods, we should stream the zip to disk first,
+				// and extract it after it's written to disk.
+				ZipArchive::new(Cursor::new(response.bytes().await?))?.extract(&target_path)?;
 
-					// Saves the manifest so we know which version of the mod we installed.
-					fs::write(
-						local_mod::get_manifest_path(&target_path),
-						serde_json::to_string_pretty(&local_mod::Manifest {
-							version: first_download.version.clone(),
-						})?,
-					)?;
+				// Saves the manifest so we know which version of the mod we installed.
+				fs::write(
+					local_mod::get_manifest_path(&target_path),
+					serde_json::to_string_pretty(&local_mod::Manifest {
+						version: first_download.version.clone(),
+					})?,
+				)?;
 
-					Ok(())
-				} else {
-					Err(Error::ModNotFound(game_mod.common.id.to_string())) // TODO error
-				}
+				Ok(())
 			} else {
-				Err(Error::ModNotFound(game_mod.common.id.to_string())) // TODO error
+				Err(Error::ModNotFound(remote_mod.common.id.to_string())) // TODO error
 			}
 		} else {
-			Err(Error::ModNotFound(game_mod.common.id.to_string())) // TODO error
+			Err(Error::ModNotFound(remote_mod.common.id.to_string())) // TODO error
 		}
 	}
 }

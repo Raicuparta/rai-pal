@@ -8,7 +8,9 @@ use crate::serializable_enum;
 serializable_enum!(AppEvent {
 	SyncInstalledGames,
 	SyncOwnedGames,
-	SyncMods,
+	SyncModLoaders,
+	SyncLocalMods,
+	SyncRemoteMods,
 	ExecutedSteamCommand,
 	GameAdded,
 	GameRemoved,

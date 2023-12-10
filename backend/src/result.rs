@@ -81,9 +81,6 @@ pub enum Error {
 
 	#[error("This game has already been added before: `{0}`")]
 	GameAlreadyAdded(PathBuf),
-
-	#[error("Failed to execute operation for mod with ID=`{0}` since it isn't present locally.")]
-	LocalModRequired(String),
 }
 
 impl serde::Serialize for Error {

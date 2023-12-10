@@ -1,12 +1,13 @@
 import { Modal, Stack } from "@mantine/core";
-import { GameMod, downloadMod, openModFolder } from "@api/bindings";
+import { downloadMod, openModFolder } from "@api/bindings";
 import { CommandButton } from "@components/command-button";
 import { IconDownload, IconFolderCog } from "@tabler/icons-react";
 import { CommandButtonGroup } from "@components/command-button-group";
 import { DebugData } from "@components/debug-data";
+import { UnifiedMod } from "@hooks/use-unified-mods";
 
 type Props = {
-	readonly mod: GameMod;
+	readonly mod: UnifiedMod;
 	readonly onClose: () => void;
 };
 
@@ -17,19 +18,19 @@ export function ModModal(props: Props) {
 			onClose={props.onClose}
 			opened
 			size="lg"
-			title={props.mod.remoteMod?.title ?? props.mod.common.id}
+			title={props.mod.remote?.title ?? props.mod.common.id}
 		>
 			<Stack>
 				<CommandButtonGroup label="Mod Actions">
 					<CommandButton
 						leftSection={<IconFolderCog />}
-						onClick={() => openModFolder(props.mod.common.id)} // TODO modloader id
+						onClick={() => openModFolder(props.mod.common.id)}
 					>
 						Open mod folder
 					</CommandButton>
 					<CommandButton
 						leftSection={<IconDownload />}
-						onClick={() => downloadMod("bepinex", props.mod.common.id)} // TODO modloader id
+						onClick={() => downloadMod("bepinex", props.mod.common.id)}
 					>
 						Download mod
 					</CommandButton>
