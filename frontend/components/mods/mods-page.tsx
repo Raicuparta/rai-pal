@@ -25,7 +25,6 @@ export function ModsPage() {
 			? modLoaders[selectedModLoaderId]?.mods[selectedModId]
 			: undefined;
 
-		console.log("oh boy did it change", result);
 		return result;
 	}, [modLoaders, selectedModLoaderId, selectedModId]);
 

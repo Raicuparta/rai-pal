@@ -1,4 +1,7 @@
-use std::collections::HashMap;
+use std::{
+	collections::HashMap,
+	path::PathBuf,
+};
 
 use crate::{
 	game_mod::CommonModData,
@@ -28,6 +31,7 @@ serializable_struct!(RemoteMod {
 serializable_struct!(ModDownload {
 	pub version: String,
 	pub url: String,
+	pub root: Option<PathBuf>,
 });
 
 pub async fn get(mod_loader_id: &str) -> Result<ModDatabase> {
