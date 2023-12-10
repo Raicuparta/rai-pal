@@ -76,7 +76,13 @@ impl LocalMod {
 	}
 
 	pub fn open_folder(&self) -> Result {
-		Ok(open::that_detached(&self.data.path)?)
+		let path = if self.data.path.is_dir() {
+			&self.data.path
+		} else {
+			paths::path_parent(&self.data.path)?
+		};
+
+		Ok(open::that_detached(path)?)
 	}
 }
 

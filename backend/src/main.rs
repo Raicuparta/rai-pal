@@ -20,7 +20,6 @@ use mod_loaders::mod_loader::{
 	ModLoader,
 	ModLoaderActions,
 };
-use owned_game::OwnedGame;
 use paths::{
 	hash_path,
 	normalize_path,
@@ -176,9 +175,8 @@ async fn open_game_mods_folder(game_id: String, state: tauri::State<'_, AppState
 
 #[tauri::command]
 #[specta::specta]
-async fn open_mods_folder(handle: tauri::AppHandle) -> Result {
-	let resources_path = paths::resources_path(&handle)?;
-	Ok(open::that_detached(resources_path)?)
+async fn open_mods_folder() -> Result {
+	Ok(open::that_detached(paths::installed_mods_path()?)?)
 }
 
 #[tauri::command]

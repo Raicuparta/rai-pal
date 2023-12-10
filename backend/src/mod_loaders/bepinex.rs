@@ -50,13 +50,11 @@ impl ModLoaderStatic for BepInEx {
 	const ID: &'static str = "bepinex";
 
 	async fn new(resources_path: &Path) -> Result<Self> {
-		let path = resources_path.join(Self::ID);
-
 		Ok(Self {
 			id: Self::ID,
 			data: ModLoaderData {
 				id: Self::ID.to_string(),
-				path,
+				path: resources_path.join(Self::ID),
 				kind: ModKind::Installable,
 			},
 		})
@@ -176,8 +174,7 @@ impl ModLoaderActions for BepInEx {
 		mod_data.unity_backend.map_or_else(
 			|| Err(Error::ModNotFound(mod_data.id.clone())), // TODO specific error
 			|unity_backend| {
-				Ok(self
-					.get_installed_mods_path()?
+				Ok(Self::get_installed_mods_path()?
 					.join(unity_backend.to_string())
 					.join(&mod_data.id))
 			},
@@ -185,7 +182,7 @@ impl ModLoaderActions for BepInEx {
 	}
 
 	fn get_local_mods(&self) -> Result<HashMap<String, LocalMod>> {
-		let installed_mods_path = self.get_installed_mods_path()?;
+		let installed_mods_path = Self::get_installed_mods_path()?;
 
 		let local_mods = {
 			let mut local_mods = find_mods(&installed_mods_path, UnityScriptingBackend::Il2Cpp)?;

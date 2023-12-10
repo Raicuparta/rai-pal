@@ -43,12 +43,10 @@ impl ModLoaderStatic for UnrealVr {
 	where
 		Self: std::marker::Sized,
 	{
-		let path = resources_path.join(Self::ID);
-
 		Ok(Self {
 			data: ModLoaderData {
 				id: Self::ID.to_string(),
-				path,
+				path: resources_path.join(Self::ID),
 				kind: ModKind::Runnable,
 			},
 		})
@@ -61,7 +59,11 @@ impl ModLoaderActions for UnrealVr {
 		&self.data
 	}
 
-	fn install(&self, game: &InstalledGame) -> Result {
+	fn install(&self, _game: &InstalledGame) -> Result {
+		todo!()
+	}
+
+	async fn install_mod(&self, game: &InstalledGame, local_mod: &LocalMod) -> Result {
 		let parameters = format!(
 			"--attach=\"{}\"",
 			game.executable
@@ -71,15 +73,14 @@ impl ModLoaderActions for UnrealVr {
 				.to_string_lossy()
 		);
 
-		windows::run_as_admin(&self.data.path.join(Self::EXE_NAME), &parameters)
-	}
-
-	async fn install_mod(&self, game: &InstalledGame, _game_mod: &LocalMod) -> Result {
-		self.install(game)
+		windows::run_as_admin(
+			&self.get_mod_path(&local_mod.common)?.join(Self::EXE_NAME),
+			&parameters,
+		)
 	}
 
 	fn get_mod_path(&self, _game_mod: &CommonModData) -> Result<PathBuf> {
-		todo!()
+		Ok(self.get_data().path.clone())
 	}
 
 	fn get_local_mods(&self) -> Result<HashMap<String, LocalMod>> {

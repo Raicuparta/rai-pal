@@ -42,6 +42,10 @@ pub fn app_data_path() -> Result<PathBuf> {
 	Ok(project_dirs.data_dir().to_path_buf())
 }
 
+pub fn installed_mods_path() -> Result<PathBuf> {
+	Ok(app_data_path()?.join("mod-loaders"))
+}
+
 pub fn resources_path(handle: &tauri::AppHandle) -> Result<PathBuf> {
 	handle
 		.path_resolver()

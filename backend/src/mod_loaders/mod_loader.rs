@@ -58,13 +58,6 @@ pub trait ModLoaderActions {
 	fn get_mod_path(&self, mod_data: &CommonModData) -> Result<PathBuf>;
 	fn get_local_mods(&self) -> Result<HashMap<String, LocalMod>>;
 
-	fn get_installed_mods_path(&self) -> Result<PathBuf> {
-		Ok(paths::app_data_path()?
-			.join("mod-loaders")
-			.join(&self.get_data().id)
-			.join("mods"))
-	}
-
 	async fn get_remote_mods<F>(&self, error_handler: F) -> HashMap<String, RemoteMod>
 	where
 		F: Fn(Error) + Send,
@@ -145,6 +138,10 @@ pub trait ModLoaderStatic {
 	async fn new(resources_path: &Path) -> Result<Self>
 	where
 		Self: Sized;
+
+	fn get_installed_mods_path() -> Result<PathBuf> {
+		Ok(paths::installed_mods_path()?.join(Self::ID).join("mods"))
+	}
 }
 
 pub type Map = HashMap<String, ModLoader>;

@@ -37,7 +37,7 @@ export const [remoteModsAtom, useRemoteModsSubscription] = dataSubscription(
 export const [ownedGamesAtom, useOwnedGamesSubscription] = dataSubscription(
 	"SyncOwnedGames",
 	getOwnedGames,
-	[],
+	{},
 );
 
 export const loadingAtom = atom<boolean>(false);

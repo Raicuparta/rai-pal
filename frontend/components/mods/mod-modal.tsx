@@ -28,12 +28,16 @@ export function ModModal(props: Props) {
 					>
 						Open mod folder
 					</CommandButton>
-					<CommandButton
-						leftSection={<IconDownload />}
-						onClick={() => downloadMod("bepinex", props.mod.common.id)}
-					>
-						Download mod
-					</CommandButton>
+					{Boolean(props.mod.remote) && (
+						<CommandButton
+							leftSection={<IconDownload />}
+							onClick={() =>
+								downloadMod(props.mod.common.loaderId, props.mod.common.id)
+							}
+						>
+							Download mod
+						</CommandButton>
+					)}
 				</CommandButtonGroup>
 				<DebugData data={props.mod} />
 			</Stack>
