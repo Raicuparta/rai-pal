@@ -114,7 +114,7 @@ pub trait ModLoaderActions {
 	}
 
 	async fn download_mod(&self, mod_id: &str) -> Result {
-		let target_path = self.get_installed_mods_path()?.join(mod_id);
+		let target_path = self.get_mod_path(mod_id)?;
 		let data = self.get_data();
 		let downloads_folder = data.path.join("downloads");
 		fs::create_dir_all(&downloads_folder)?;

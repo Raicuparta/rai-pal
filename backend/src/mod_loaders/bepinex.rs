@@ -1,6 +1,9 @@
 use std::{
 	borrow::BorrowMut,
-	collections::HashMap,
+	collections::{
+		HashMap,
+		HashSet,
+	},
 	fs::{
 		self,
 		File,
@@ -208,36 +211,48 @@ impl ModLoaderActions for BepInEx {
 				Ok(self
 					.get_installed_mods_path()?
 					.join(unity_backend.to_string())
-					.join("mods")
 					.join(mod_id))
 			},
 		)
 	}
 
 	fn update_local_mods(&mut self) -> Result {
-		let data = self.get_data_mut();
+		let installed_mods_path = self.get_installed_mods_path()?;
 
 		let local_mods = {
-			let mut local_mods = find_mods(&data.path, UnityScriptingBackend::Il2Cpp)?;
-			local_mods.extend(find_mods(&data.path, UnityScriptingBackend::Mono)?);
+			let mut local_mods = find_mods(&installed_mods_path, UnityScriptingBackend::Il2Cpp)?;
+			local_mods.extend(find_mods(
+				&installed_mods_path,
+				UnityScriptingBackend::Mono,
+			)?);
 			local_mods
 		};
 
-		let mods: HashMap<_, _> = local_mods
-			.into_iter()
-			.map(|(mod_id, local_mod)| {
-				(
-					mod_id,
+		let game_mods = &self.get_data().mods;
+
+		let keys: HashSet<_> = game_mods.keys().chain(local_mods.keys()).cloned().collect();
+
+		self.get_data_mut().mods = keys
+			.iter()
+			.filter_map(|key| {
+				let local_mod = local_mods.get(key);
+				let game_mod = game_mods.get(key);
+
+				let common = local_mod.map_or_else(
+					|| game_mod.map(|previous| previous.common.clone()),
+					|local| Some(local.common.clone()),
+				)?;
+
+				Some((
+					key.clone(),
 					GameMod {
-						remote_mod: None,
-						local_mod: Some(local_mod.data),
-						common: local_mod.common,
+						local_mod: local_mod.map(|m| m.data.clone()),
+						remote_mod: game_mod.and_then(|m| m.remote_mod.clone()),
+						common,
 					},
-				)
+				))
 			})
 			.collect();
-
-		self.get_data_mut().mods = mods;
 
 		Ok(())
 	}
@@ -328,12 +343,10 @@ fn reg_add_in_section(reg: &str, section: &str, key: &str, value: &str) -> Strin
 }
 
 fn find_mods(
-	mod_loader_path: &Path,
+	installed_mods_path: &Path,
 	scripting_backend: UnityScriptingBackend,
 ) -> Result<HashMap<String, LocalMod>> {
-	let mods_folder_path = mod_loader_path
-		.join(scripting_backend.to_string())
-		.join("mods");
+	let mods_folder_path = installed_mods_path.join(scripting_backend.to_string());
 
 	let entries: Vec<_> = paths::glob_path(&mods_folder_path.join("*"))?.collect();
 

@@ -260,7 +260,6 @@ async fn refresh_mod_loaders_local(
 
 	if let Ok(previous_mod_loaders) = get_state_data(&state.mod_loaders) {
 		for mod_loader in mod_loaders.values_mut() {
-			mod_loader.update_local_mods()?;
 			let loader_data = mod_loader.get_data_mut();
 			loader_data.mods.iter_mut().for_each(|(mod_id, game_mod)| {
 				game_mod.remote_mod = previous_mod_loaders
@@ -268,6 +267,7 @@ async fn refresh_mod_loaders_local(
 					.and_then(|previous_loader| previous_loader.get_data().mods.get(mod_id))
 					.and_then(|previous_game_mod| previous_game_mod.remote_mod.clone());
 			});
+			mod_loader.update_local_mods()?;
 		}
 	}
 
