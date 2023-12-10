@@ -6,6 +6,7 @@ import {
 	openGameModsFolder,
 	removeGame,
 	startGame,
+	startGameExe,
 	uninstallMod,
 } from "@api/bindings";
 import { useMemo } from "react";
@@ -82,7 +83,7 @@ export function InstalledGameModal(props: Props) {
 						<CommandButton
 							leftSection={<IconPlayerPlay />}
 							rightSection={<IconAppWindow />}
-							onClick={() => startGame(props.game.id)}
+							onClick={() => startGameExe(props.game.id)}
 						>
 							Start Game (Exe)
 						</CommandButton>

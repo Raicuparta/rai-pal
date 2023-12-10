@@ -50,6 +50,10 @@ export function startGame(gameId: string) {
     return invoke()<null>("start_game", { gameId })
 }
 
+export function startGameExe(gameId: string) {
+    return invoke()<null>("start_game_exe", { gameId })
+}
+
 export function openModFolder(modId: string) {
     return invoke()<null>("open_mod_folder", { modId })
 }

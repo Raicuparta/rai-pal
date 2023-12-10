@@ -94,7 +94,7 @@ impl InstalledGame {
 
 	pub fn start(&self, handle: &tauri::AppHandle) -> Result {
 		self.steam_launch.as_ref().map_or_else(
-			|| Ok(open::that_detached(&self.executable.path)?),
+			|| self.start_exe(),
 			|steam_launch| {
 				if self.discriminator.is_none() {
 					// If a game has no discriminator, it means we're probably using the default launch option.
@@ -121,6 +121,10 @@ impl InstalledGame {
 				)
 			},
 		)
+	}
+
+	pub fn start_exe(&self) -> Result {
+		Ok(open::that_detached(&self.executable.path)?)
 	}
 
 	pub fn uninstall_mod(&self, mod_id: &str) -> Result {

@@ -215,6 +215,12 @@ async fn start_game(
 
 #[tauri::command]
 #[specta::specta]
+async fn start_game_exe(game_id: String, state: tauri::State<'_, AppState>) -> Result {
+	get_game(&game_id, &state)?.start_exe()
+}
+
+#[tauri::command]
+#[specta::specta]
 async fn install_mod(
 	mod_loader_id: &str, // TODO mod loader id should come from mod struct
 	mod_id: &str,
@@ -549,6 +555,7 @@ fn main() {
 			uninstall_mod,
 			open_game_mods_folder,
 			start_game,
+			start_game_exe,
 			open_mod_folder,
 			download_mod,
 			open_mods_folder,
