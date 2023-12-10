@@ -68,4 +68,8 @@ impl ModLoaderActions for MelonLoader {
 	fn get_mod_path(&self, _mod_id: &str) -> Result<PathBuf> {
 		todo!()
 	}
+
+	fn update_local_mods(&mut self) -> Result {
+		Ok(())
+	}
 }

@@ -29,6 +29,7 @@ use crate::{
 		ModKind,
 	},
 	mod_loaders::mod_database::ModDatabase,
+	paths,
 	serializable_struct,
 	Error,
 	Result,
@@ -58,6 +59,14 @@ pub trait ModLoaderActions {
 	fn get_data(&self) -> &ModLoaderData;
 	fn get_data_mut(&mut self) -> &mut ModLoaderData;
 	fn get_mod_path(&self, mod_id: &str) -> Result<PathBuf>;
+	fn update_local_mods(&mut self) -> Result;
+
+	fn get_installed_mods_path(&self) -> Result<PathBuf> {
+		Ok(paths::app_data_path()?
+			.join("mod-loaders")
+			.join(&self.get_data().id)
+			.join("mods"))
+	}
 
 	async fn update_remote_mods<F>(&mut self, error_handler: F)
 	where
@@ -105,7 +114,7 @@ pub trait ModLoaderActions {
 	}
 
 	async fn download_mod(&self, mod_id: &str) -> Result {
-		let target_path = self.get_mod_path(mod_id)?;
+		let target_path = self.get_installed_mods_path()?.join(mod_id);
 		let data = self.get_data();
 		let downloads_folder = data.path.join("downloads");
 		fs::create_dir_all(&downloads_folder)?;

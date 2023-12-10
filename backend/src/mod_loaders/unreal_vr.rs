@@ -45,29 +45,11 @@ impl ModLoaderStatic for UnrealVr {
 		Self: std::marker::Sized,
 	{
 		let path = resources_path.join(Self::ID);
-		let mods = if path.join(Self::EXE_NAME).exists() {
-			let local_mod = LocalMod::new(
-				&path.join(Self::EXE_NAME),
-				Some(GameEngineBrand::Unreal),
-				None,
-			)?;
-
-			HashMap::from([(
-				local_mod.common.id.clone(),
-				GameMod {
-					local_mod: Some(local_mod.data),
-					remote_mod: None,
-					common: local_mod.common,
-				},
-			)])
-		} else {
-			HashMap::new()
-		};
 
 		Ok(Self {
 			data: ModLoaderData {
 				id: Self::ID.to_string(),
-				mods,
+				mods: HashMap::default(),
 				path,
 				kind: ModKind::Runnable,
 			},
@@ -108,5 +90,30 @@ impl ModLoaderActions for UnrealVr {
 
 	fn get_mod_path(&self, _mod_id: &str) -> Result<PathBuf> {
 		todo!()
+	}
+
+	fn update_local_mods(&mut self) -> Result {
+		let data = self.get_data_mut();
+
+		data.mods = if data.path.join(Self::EXE_NAME).exists() {
+			let local_mod = LocalMod::new(
+				&data.path.join(Self::EXE_NAME),
+				Some(GameEngineBrand::Unreal),
+				None,
+			)?;
+
+			HashMap::from([(
+				local_mod.common.id.clone(),
+				GameMod {
+					local_mod: Some(local_mod.data),
+					remote_mod: None,
+					common: local_mod.common,
+				},
+			)])
+		} else {
+			HashMap::default()
+		};
+
+		Ok(())
 	}
 }

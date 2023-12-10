@@ -53,31 +53,11 @@ impl ModLoaderStatic for BepInEx {
 	async fn new(resources_path: &Path) -> Result<Self> {
 		let path = resources_path.join(Self::ID);
 
-		let local_mods = {
-			let mut local_mods = find_mods(&path, UnityScriptingBackend::Il2Cpp)?;
-			local_mods.extend(find_mods(&path, UnityScriptingBackend::Mono)?);
-			local_mods
-		};
-
-		let mods: HashMap<_, _> = local_mods
-			.into_iter()
-			.map(|(mod_id, local_mod)| {
-				(
-					mod_id,
-					GameMod {
-						remote_mod: None,
-						local_mod: Some(local_mod.data),
-						common: local_mod.common,
-					},
-				)
-			})
-			.collect();
-
 		Ok(Self {
 			id: Self::ID,
 			data: ModLoaderData {
 				id: Self::ID.to_string(),
-				mods,
+				mods: HashMap::default(),
 				path,
 				kind: ModKind::Installable,
 			},
@@ -226,13 +206,40 @@ impl ModLoaderActions for BepInEx {
 			|| Err(Error::ModNotFound(mod_id.to_string())),
 			|unity_backend| {
 				Ok(self
-					.data
-					.path
+					.get_installed_mods_path()?
 					.join(unity_backend.to_string())
 					.join("mods")
 					.join(mod_id))
 			},
 		)
+	}
+
+	fn update_local_mods(&mut self) -> Result {
+		let data = self.get_data_mut();
+
+		let local_mods = {
+			let mut local_mods = find_mods(&data.path, UnityScriptingBackend::Il2Cpp)?;
+			local_mods.extend(find_mods(&data.path, UnityScriptingBackend::Mono)?);
+			local_mods
+		};
+
+		let mods: HashMap<_, _> = local_mods
+			.into_iter()
+			.map(|(mod_id, local_mod)| {
+				(
+					mod_id,
+					GameMod {
+						remote_mod: None,
+						local_mod: Some(local_mod.data),
+						common: local_mod.common,
+					},
+				)
+			})
+			.collect();
+
+		self.get_data_mut().mods = mods;
+
+		Ok(())
 	}
 }
 
