@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use crate::{
 	game_engines::{
 		game_engine::GameEngineBrand,
@@ -20,6 +22,7 @@ serializable_struct!(GameMod {
   pub local_mod: Option<LocalModData>,
   pub remote_mod: Option<RemoteModData>,
 	pub common: CommonModData,
+	pub loader_id: String,
 });
 
 impl GameMod {
@@ -31,3 +34,5 @@ impl GameMod {
 		}
 	}
 }
+
+pub type Map = HashMap<String, GameMod>;

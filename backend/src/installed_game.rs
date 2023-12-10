@@ -9,10 +9,7 @@ use std::{
 
 use crate::{
 	game_executable::GameExecutable,
-	mod_loaders::mod_loader::{
-		self,
-		ModLoaderActions,
-	},
+	game_mod,
 	paths::{
 		self,
 		hash_path,
@@ -81,8 +78,8 @@ impl InstalledGame {
 		})
 	}
 
-	pub fn update_available_mods(&mut self, mod_loaders: &mod_loader::Map) {
-		self.available_mods = self.get_available_mods(mod_loaders);
+	pub fn update_available_mods(&mut self, mod_map: &game_mod::Map) {
+		self.available_mods = self.get_available_mods(mod_map);
 	}
 
 	pub fn open_game_folder(&self) -> Result {
@@ -144,8 +141,8 @@ impl InstalledGame {
 		Ok(())
 	}
 
-	pub fn refresh_mods(&mut self, mod_loaders: &mod_loader::Map) {
-		self.available_mods = self.get_available_mods(mod_loaders);
+	pub fn refresh_mods(&mut self, mod_map: &game_mod::Map) {
+		self.available_mods = self.get_available_mods(mod_map);
 	}
 
 	pub fn get_installed_mods_folder(&self) -> Result<PathBuf> {
@@ -168,10 +165,9 @@ impl InstalledGame {
 		false
 	}
 
-	pub fn get_available_mods(&self, mod_loaders: &mod_loader::Map) -> HashMap<String, bool> {
-		mod_loaders
+	pub fn get_available_mods(&self, mod_map: &game_mod::Map) -> HashMap<String, bool> {
+		mod_map
 			.iter()
-			.flat_map(|(_, mod_loader)| &mod_loader.get_data().mods)
 			.filter_map(|(mod_id, game_mod)| {
 				if equal_or_none(
 					game_mod.common.engine,

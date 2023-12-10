@@ -23,7 +23,7 @@ export function ModModal(props: Props) {
 				<CommandButtonGroup label="Mod Actions">
 					<CommandButton
 						leftSection={<IconFolderCog />}
-						onClick={() => openModFolder("bepinex", props.mod.common.id)} // TODO modloader id
+						onClick={() => openModFolder(props.mod.common.id)} // TODO modloader id
 					>
 						Open mod folder
 					</CommandButton>

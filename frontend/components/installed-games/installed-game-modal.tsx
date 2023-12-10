@@ -25,7 +25,7 @@ import {
 import { steamCommands } from "../../util/steam";
 import { ModalImage } from "@components/modal-image";
 import { useAtomValue } from "jotai";
-import { modLoadersAtom } from "@hooks/use-data";
+import { modLoadersAtom, modsAtom } from "@hooks/use-data";
 import { CommandButtonGroup } from "@components/command-button-group";
 import { DebugData } from "@components/debug-data";
 
@@ -36,16 +36,22 @@ type Props = {
 
 export function InstalledGameModal(props: Props) {
 	const modLoaderMap = useAtomValue(modLoadersAtom);
+	const mods = useAtomValue(modsAtom);
 
+	// TODO make less insane?
 	const modLoaders = useMemo(
 		() =>
 			Object.values(modLoaderMap ?? {}).map((modLoader) => ({
 				...modLoader,
-				mods: Object.entries(modLoader.mods)
-					.filter(([modId]) => modId in props.game.availableMods)
+				mods: Object.entries(mods)
+					.filter(
+						([modId, mod]) =>
+							modId in props.game.availableMods &&
+							mod.loaderId === modLoader.id,
+					)
 					.map(([, mod]) => mod),
 			})),
-		[modLoaderMap, props.game.availableMods],
+		[modLoaderMap, mods, props.game.availableMods],
 	);
 
 	return (
@@ -173,6 +179,7 @@ export function InstalledGameModal(props: Props) {
 					)}
 				</Flex>
 				<DebugData data={props.game} />
+				<DebugData data={modLoaderMap} />
 			</Stack>
 		</Modal>
 	);

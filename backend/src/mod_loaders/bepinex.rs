@@ -60,7 +60,6 @@ impl ModLoaderStatic for BepInEx {
 			id: Self::ID,
 			data: ModLoaderData {
 				id: Self::ID.to_string(),
-				mods: HashMap::default(),
 				path,
 				kind: ModKind::Installable,
 			},
@@ -72,10 +71,6 @@ impl ModLoaderStatic for BepInEx {
 impl ModLoaderActions for BepInEx {
 	fn get_data(&self) -> &ModLoaderData {
 		&self.data
-	}
-
-	fn get_data_mut(&mut self) -> &mut ModLoaderData {
-		self.data.borrow_mut()
 	}
 
 	fn install(&self, game: &InstalledGame) -> Result {
@@ -157,13 +152,7 @@ impl ModLoaderActions for BepInEx {
 		Ok(())
 	}
 
-	async fn install_mod(&self, game: &InstalledGame, mod_id: &str) -> Result {
-		let game_mod = self
-			.data
-			.mods
-			.get(mod_id)
-			.ok_or_else(|| Error::ModNotFound(mod_id.to_string()))?;
-
+	async fn install_mod(&self, game: &InstalledGame, game_mod: &GameMod) -> Result {
 		self.install(game)?;
 
 		let bepinex_folder = game.get_installed_mods_folder()?.join("BepInEx");
@@ -171,52 +160,42 @@ impl ModLoaderActions for BepInEx {
 		let mod_path = if let Some(local_mod) = &game_mod.local_mod {
 			local_mod.path.clone()
 		} else {
-			self.download_mod(mod_id).await?;
-			self.get_mod_path(mod_id)?
+			self.download_mod(game_mod).await?;
+			self.get_mod_path(game_mod)?
 		};
 
 		let mod_plugin_path = mod_path.join("plugins");
 		if mod_plugin_path.is_dir() {
-			copy_dir_all(mod_plugin_path, bepinex_folder.join("plugins").join(mod_id))?;
+			copy_dir_all(
+				mod_plugin_path,
+				bepinex_folder.join("plugins").join(&game_mod.common.id),
+			)?;
 		}
 
 		let mod_patch_path = mod_path.join("patchers");
 		if mod_patch_path.is_dir() {
-			copy_dir_all(mod_patch_path, bepinex_folder.join("patchers").join(mod_id))?;
+			copy_dir_all(
+				mod_patch_path,
+				bepinex_folder.join("patchers").join(&game_mod.common.id),
+			)?;
 		}
 
 		Ok(())
 	}
 
-	fn open_mod_folder(&self, mod_id: &str) -> Result {
-		let game_mod = self
-			.data
-			.mods
-			.get(mod_id)
-			.ok_or_else(|| Error::ModNotFound(mod_id.to_string()))?;
-
-		game_mod.open_folder()
-	}
-
-	fn get_mod_path(&self, mod_id: &str) -> Result<PathBuf> {
-		let game_mod = self
-			.data
-			.mods
-			.get(mod_id)
-			.ok_or_else(|| Error::ModNotFound(mod_id.to_string()))?;
-
+	fn get_mod_path(&self, game_mod: &GameMod) -> Result<PathBuf> {
 		game_mod.common.unity_backend.map_or_else(
-			|| Err(Error::ModNotFound(mod_id.to_string())),
+			|| Err(Error::ModNotFound(game_mod.common.id.clone())),
 			|unity_backend| {
 				Ok(self
 					.get_installed_mods_path()?
 					.join(unity_backend.to_string())
-					.join(mod_id))
+					.join(&game_mod.common.id))
 			},
 		)
 	}
 
-	fn update_local_mods(&mut self) -> Result {
+	fn get_local_mods(&self) -> Result<HashMap<String, LocalMod>> {
 		let installed_mods_path = self.get_installed_mods_path()?;
 
 		let local_mods = {
@@ -228,33 +207,7 @@ impl ModLoaderActions for BepInEx {
 			local_mods
 		};
 
-		let game_mods = &self.get_data().mods;
-
-		let keys: HashSet<_> = game_mods.keys().chain(local_mods.keys()).cloned().collect();
-
-		self.get_data_mut().mods = keys
-			.iter()
-			.filter_map(|key| {
-				let local_mod = local_mods.get(key);
-				let game_mod = game_mods.get(key);
-
-				let common = local_mod.map_or_else(
-					|| game_mod.map(|previous| previous.common.clone()),
-					|local| Some(local.common.clone()),
-				)?;
-
-				Some((
-					key.clone(),
-					GameMod {
-						local_mod: local_mod.map(|m| m.data.clone()),
-						remote_mod: game_mod.and_then(|m| m.remote_mod.clone()),
-						common,
-					},
-				))
-			})
-			.collect();
-
-		Ok(())
+		Ok(local_mods)
 	}
 }
 

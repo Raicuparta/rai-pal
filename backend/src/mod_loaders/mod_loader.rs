@@ -1,8 +1,5 @@
 use std::{
-	collections::{
-		HashMap,
-		HashSet,
-	},
+	collections::HashMap,
 	fs,
 	io::Cursor,
 	path::{
@@ -17,8 +14,10 @@ use zip::ZipArchive;
 
 use super::{
 	bepinex::BepInEx,
-	melon_loader::MelonLoader,
-	mod_database,
+	mod_database::{
+		self,
+		RemoteMod,
+	},
 	unreal_vr::UnrealVr,
 };
 use crate::{
@@ -26,6 +25,7 @@ use crate::{
 	installed_game::InstalledGame,
 	local_mod::{
 		self,
+		LocalMod,
 		ModKind,
 	},
 	mod_loaders::mod_database::ModDatabase,
@@ -38,7 +38,6 @@ use crate::{
 serializable_struct!(ModLoaderData {
 	pub id: String,
 	pub path: PathBuf,
-	pub mods: HashMap<String, GameMod>,
 	pub kind: ModKind,
 });
 
@@ -46,7 +45,6 @@ serializable_struct!(ModLoaderData {
 #[derive(Clone)]
 pub enum ModLoader {
 	BepInEx,
-	MelonLoader,
 	UnrealVr,
 }
 
@@ -54,12 +52,10 @@ pub enum ModLoader {
 #[enum_dispatch(ModLoader)]
 pub trait ModLoaderActions {
 	fn install(&self, game: &InstalledGame) -> Result;
-	async fn install_mod(&self, game: &InstalledGame, mod_id: &str) -> Result;
-	fn open_mod_folder(&self, mod_id: &str) -> Result;
+	async fn install_mod(&self, game: &InstalledGame, game_mod: &GameMod) -> Result;
 	fn get_data(&self) -> &ModLoaderData;
-	fn get_data_mut(&mut self) -> &mut ModLoaderData;
-	fn get_mod_path(&self, mod_id: &str) -> Result<PathBuf>;
-	fn update_local_mods(&mut self) -> Result;
+	fn get_mod_path(&self, mod_id: &GameMod) -> Result<PathBuf>;
+	fn get_local_mods(&self) -> Result<HashMap<String, LocalMod>>;
 
 	fn get_installed_mods_path(&self) -> Result<PathBuf> {
 		Ok(paths::app_data_path()?
@@ -68,7 +64,7 @@ pub trait ModLoaderActions {
 			.join("mods"))
 	}
 
-	async fn update_remote_mods<F>(&mut self, error_handler: F)
+	async fn get_remote_mods<F>(&self, error_handler: F) -> HashMap<String, RemoteMod>
 	where
 		F: Fn(Error) + Send,
 	{
@@ -82,75 +78,42 @@ pub trait ModLoaderActions {
 			}
 		});
 
-		let game_mods = &data.mods;
-
-		let keys: HashSet<_> = game_mods
-			.keys()
-			.chain(database.mods.keys())
-			.cloned()
-			.collect();
-
-		self.get_data_mut().mods = keys
-			.iter()
-			.filter_map(|key| {
-				let remote_mod = database.mods.get(key);
-				let game_mod = game_mods.get(key);
-
-				let common = remote_mod.map_or_else(
-					|| game_mod.map(|local| local.common.clone()),
-					|remote| Some(remote.common.clone()),
-				)?;
-
-				Some((
-					key.clone(),
-					GameMod {
-						remote_mod: remote_mod.map(|m| m.data.clone()),
-						local_mod: game_mod.and_then(|m| m.local_mod.clone()),
-						common,
-					},
-				))
-			})
-			.collect();
+		database.mods
 	}
 
-	async fn download_mod(&self, mod_id: &str) -> Result {
-		let target_path = self.get_mod_path(mod_id)?;
+	async fn download_mod(&self, game_mod: &GameMod) -> Result {
+		let target_path = self.get_mod_path(game_mod)?;
 		let data = self.get_data();
 		let downloads_folder = data.path.join("downloads");
 		fs::create_dir_all(&downloads_folder)?;
 
-		if let Some(game_mod) = data.mods.get(mod_id) {
-			if let Some(remote_mod) = &game_mod.remote_mod {
-				if let Some(first_download) = remote_mod.downloads.first() {
-					let response = reqwest::get(&first_download.url).await?;
+		if let Some(remote_mod) = &game_mod.remote_mod {
+			if let Some(first_download) = remote_mod.downloads.first() {
+				let response = reqwest::get(&first_download.url).await?;
 
-					if response.status().is_success() {
-						// This keeps the whole zip in memory and only copies the extracted part to disk.
-						// If we ever need to support very big mods, we should stream the zip to disk first,
-						// and extract it after it's written to disk.
-						ZipArchive::new(Cursor::new(response.bytes().await?))?
-							.extract(&target_path)?;
+				if response.status().is_success() {
+					// This keeps the whole zip in memory and only copies the extracted part to disk.
+					// If we ever need to support very big mods, we should stream the zip to disk first,
+					// and extract it after it's written to disk.
+					ZipArchive::new(Cursor::new(response.bytes().await?))?.extract(&target_path)?;
 
-						// Saves the manifest so we know which version of the mod we installed.
-						fs::write(
-							local_mod::get_manifest_path(&target_path),
-							serde_json::to_string_pretty(&local_mod::Manifest {
-								version: first_download.version.clone(),
-							})?,
-						)?;
+					// Saves the manifest so we know which version of the mod we installed.
+					fs::write(
+						local_mod::get_manifest_path(&target_path),
+						serde_json::to_string_pretty(&local_mod::Manifest {
+							version: first_download.version.clone(),
+						})?,
+					)?;
 
-						Ok(())
-					} else {
-						Err(Error::ModNotFound(mod_id.to_string())) // TODO error
-					}
+					Ok(())
 				} else {
-					Err(Error::ModNotFound(mod_id.to_string())) // TODO error
+					Err(Error::ModNotFound(game_mod.common.id.to_string())) // TODO error
 				}
 			} else {
-				Err(Error::ModNotFound(mod_id.to_string())) // TODO error
+				Err(Error::ModNotFound(game_mod.common.id.to_string())) // TODO error
 			}
 		} else {
-			Err(Error::ModNotFound(mod_id.to_string()))
+			Err(Error::ModNotFound(game_mod.common.id.to_string())) // TODO error
 		}
 	}
 }
@@ -194,7 +157,6 @@ pub async fn get_map(resources_path: &Path) -> Map {
 	let mut map = Map::new();
 
 	add_entry::<BepInEx>(resources_path, &mut map).await;
-	add_entry::<MelonLoader>(resources_path, &mut map).await;
 	add_entry::<UnrealVr>(resources_path, &mut map).await;
 
 	map

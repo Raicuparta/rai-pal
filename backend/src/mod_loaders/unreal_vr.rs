@@ -1,5 +1,4 @@
 use std::{
-	borrow::BorrowMut,
 	collections::HashMap,
 	path::{
 		Path,
@@ -49,7 +48,6 @@ impl ModLoaderStatic for UnrealVr {
 		Ok(Self {
 			data: ModLoaderData {
 				id: Self::ID.to_string(),
-				mods: HashMap::default(),
 				path,
 				kind: ModKind::Runnable,
 			},
@@ -61,10 +59,6 @@ impl ModLoaderStatic for UnrealVr {
 impl ModLoaderActions for UnrealVr {
 	fn get_data(&self) -> &ModLoaderData {
 		&self.data
-	}
-
-	fn get_data_mut(&mut self) -> &mut ModLoaderData {
-		self.data.borrow_mut()
 	}
 
 	fn install(&self, game: &InstalledGame) -> Result {
@@ -80,40 +74,21 @@ impl ModLoaderActions for UnrealVr {
 		windows::run_as_admin(&self.data.path.join(Self::EXE_NAME), &parameters)
 	}
 
-	async fn install_mod(&self, game: &InstalledGame, _mod_idd: &str) -> Result {
+	async fn install_mod(&self, game: &InstalledGame, _game_mod: &GameMod) -> Result {
 		self.install(game)
 	}
 
-	fn open_mod_folder(&self, _mod_id: &str) -> Result {
-		Ok(open::that_detached(&self.data.path)?)
-	}
-
-	fn get_mod_path(&self, _mod_id: &str) -> Result<PathBuf> {
+	fn get_mod_path(&self, _game_mod: &GameMod) -> Result<PathBuf> {
 		todo!()
 	}
 
-	fn update_local_mods(&mut self) -> Result {
-		let data = self.get_data_mut();
+	fn get_local_mods(&self) -> Result<HashMap<String, LocalMod>> {
+		let local_mod = LocalMod::new(
+			&self.get_data().path.join(Self::EXE_NAME),
+			Some(GameEngineBrand::Unreal),
+			None,
+		)?;
 
-		data.mods = if data.path.join(Self::EXE_NAME).exists() {
-			let local_mod = LocalMod::new(
-				&data.path.join(Self::EXE_NAME),
-				Some(GameEngineBrand::Unreal),
-				None,
-			)?;
-
-			HashMap::from([(
-				local_mod.common.id.clone(),
-				GameMod {
-					local_mod: Some(local_mod.data),
-					remote_mod: None,
-					common: local_mod.common,
-				},
-			)])
-		} else {
-			HashMap::default()
-		};
-
-		Ok(())
+		Ok(HashMap::from([(local_mod.common.id.clone(), local_mod)]))
 	}
 }
