@@ -91,7 +91,7 @@ export function ModsPage() {
 								<Table.Td>
 									{mod.remote?.downloads[0]?.version ?? "Unknown"}
 								</Table.Td>
-								<Table.Td>TODO</Table.Td>
+								<Table.Td>{mod.common.loaderId}</Table.Td>
 								<Table.Td>
 									<EngineBadge value={mod.common.engine} />
 								</Table.Td>
