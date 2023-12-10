@@ -1,7 +1,9 @@
 use std::{
 	collections::HashMap,
-	fs,
-	io::Cursor,
+	fs::{
+		self,
+		File,
+	},
 	path::{
 		Path,
 		PathBuf,
@@ -100,18 +102,25 @@ pub trait ModLoaderActions {
 
 	async fn download_mod(&self, remote_mod: &RemoteMod) -> Result {
 		let target_path = self.get_mod_path(&remote_mod.common)?;
-		let data = self.get_data();
-		let downloads_folder = data.path.join("downloads");
-		fs::create_dir_all(&downloads_folder)?;
+		let mod_loader_data = self.get_data();
+		let downloads_path = paths::installed_mods_path()?
+			.join(&mod_loader_data.id)
+			.join("downloads");
 
 		if let Some(first_download) = remote_mod.data.downloads.first() {
 			let response = reqwest::get(&first_download.url).await?;
 
 			if response.status().is_success() {
-				// This keeps the whole zip in memory and only copies the extracted part to disk.
-				// If we ever need to support very big mods, we should stream the zip to disk first,
-				// and extract it after it's written to disk.
-				ZipArchive::new(Cursor::new(response.bytes().await?))?.extract(&target_path)?;
+				fs::create_dir_all(&downloads_path)?;
+
+				let zip_path = downloads_path.join(format!("{}.zip", remote_mod.common.id));
+
+				// TODO Stream to disk instead of keeping it all in memory.
+				fs::write(&zip_path, response.bytes().await?)?;
+				let file = File::open(&zip_path)?;
+
+				// TODO take "root" property into account.
+				ZipArchive::new(file)?.extract(&target_path)?;
 
 				// Saves the manifest so we know which version of the mod we installed.
 				fs::write(
