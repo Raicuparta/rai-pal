@@ -10,15 +10,11 @@ import {
 } from "@components/badges/color-coded-badge";
 import { ModModal } from "./mod-modal";
 import { useUnifiedMods } from "@hooks/use-unified-mods";
-import { DebugData } from "@components/debug-data";
-import { useAtomValue } from "jotai";
-import { modLoadersAtom } from "@hooks/use-data";
 
 export function ModsPage() {
 	const [selectedModId, setSelectedId] = useState<string>();
 
 	const mods = useUnifiedMods();
-	const modLoaders = useAtomValue(modLoadersAtom);
 
 	const selectedMod = useMemo(() => {
 		const result = selectedModId ? mods[selectedModId] : undefined;
@@ -103,8 +99,6 @@ export function ModsPage() {
 					</Table.Tbody>
 				</Table>
 			</TableContainer>
-
-			<DebugData data={modLoaders} />
 		</Stack>
 	);
 }
