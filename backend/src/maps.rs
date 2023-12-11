@@ -10,14 +10,19 @@ use crate::{
 	Result,
 };
 
-pub trait TryGet<K, V> {
+pub trait TryGettable<K, V> {
 	fn try_get<Q>(&self, k: &Q) -> Result<&V>
+	where
+		K: Borrow<Q> + Display,
+		Q: Hash + Eq + Display + ?Sized;
+
+	fn try_get_mut<Q>(&mut self, k: &Q) -> Result<&mut V>
 	where
 		K: Borrow<Q> + Display,
 		Q: Hash + Eq + Display + ?Sized;
 }
 
-impl<K, V> TryGet<K, V> for HashMap<K, V>
+impl<K, V> TryGettable<K, V> for HashMap<K, V>
 where
 	K: Hash + Eq + Display,
 {
@@ -29,20 +34,7 @@ where
 		self.get(key)
 			.ok_or_else(|| Error::DataEntryNotFound(key.to_string()))
 	}
-}
 
-pub trait TryGetMut<K, V> {
-	fn try_get_mut<Q>(&mut self, k: &Q) -> Result<&mut V>
-	where
-		K: Borrow<Q> + Display,
-		Q: Hash + Eq + Display + ?Sized;
-}
-
-impl<K, V> TryGetMut<K, V> for HashMap<K, V>
-where
-	K: Hash + Eq + Display,
-	V: Clone,
-{
 	fn try_get_mut<Q>(&mut self, key: &Q) -> Result<&mut V>
 	where
 		K: Borrow<Q> + Display,

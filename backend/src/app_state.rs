@@ -9,7 +9,7 @@ use std::{
 use crate::{
 	installed_game,
 	local_mod,
-	maps::TryGet,
+	maps::TryGettable,
 	mod_loaders::mod_loader,
 	owned_game,
 	remote_mod,
