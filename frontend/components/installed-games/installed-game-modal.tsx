@@ -201,13 +201,15 @@ export function InstalledGameModal(props: Props) {
 														({mod.common.engine})
 													</Text>
 												)}
-												<Text
-													opacity={0.5}
-													ml="xs"
-													size="xs"
-												>
-													({mod.remote?.latestVersion.id})
-												</Text>
+												{mod.remote && (
+													<Text
+														opacity={0.5}
+														ml="xs"
+														size="xs"
+													>
+														({mod.remote.latestVersion.id})
+													</Text>
+												)}
 											</CommandButton>
 										);
 									})}
