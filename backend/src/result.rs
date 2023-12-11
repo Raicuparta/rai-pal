@@ -38,9 +38,6 @@ pub enum Error {
 	#[error("Failed to get file name from path `{0}`")]
 	FailedToGetFileName(PathBuf),
 
-	#[error("Failed to find game with ID `{0}`")]
-	GameNotFound(String),
-
 	#[error("Failed to find Rai Pal resources folder")]
 	ResourcesNotFound(),
 
