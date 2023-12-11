@@ -1,4 +1,5 @@
 use std::{
+	borrow::Borrow,
 	collections::HashMap,
 	fmt::Display,
 	hash::Hash,
@@ -48,10 +49,10 @@ where
 	K: Hash + Eq + Display + Clone,
 	V: Clone,
 {
-	fn try_get<Q: ?Sized>(&self, key: &Q) -> Result<V>
+	fn try_get<Q>(&self, key: &Q) -> Result<V>
 	where
-		K: std::borrow::Borrow<Q>,
-		Q: Hash + Display + Eq,
+		K: Borrow<Q>,
+		Q: ?Sized + Hash + Display + Eq,
 	{
 		self.get_data()?.try_get(key)
 	}

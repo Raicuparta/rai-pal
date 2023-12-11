@@ -1,7 +1,6 @@
 use std::{
 	path::PathBuf,
 	result,
-	sync::TryLockError,
 };
 
 #[derive(Debug, thiserror::Error)]
@@ -44,9 +43,6 @@ pub enum Error {
 
 	#[error("Failed to find mod with ID `{0}`")]
 	ModNotFound(String),
-
-	#[error("Failed to find mod loader with ID `{0}`")]
-	ModLoaderNotFound(String),
 
 	#[error("Failed to find Rai Pal resources folder")]
 	ResourcesNotFound(),

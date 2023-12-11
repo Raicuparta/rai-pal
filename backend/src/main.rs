@@ -65,13 +65,13 @@ mod windows;
 #[tauri::command]
 #[specta::specta]
 async fn get_installed_games(state: TauriState<'_>) -> Result<installed_game::Map> {
-	Ok(state.installed_games.get_data()?)
+	state.installed_games.get_data()
 }
 
 #[tauri::command]
 #[specta::specta]
 async fn get_owned_games(state: TauriState<'_>) -> Result<owned_game::Map> {
-	Ok(state.owned_games.get_data()?)
+	state.owned_games.get_data()
 }
 
 #[tauri::command]
@@ -83,13 +83,13 @@ async fn get_mod_loaders(state: TauriState<'_>) -> Result<mod_loader::DataMap> {
 #[tauri::command]
 #[specta::specta]
 async fn get_local_mods(state: TauriState<'_>) -> Result<local_mod::Map> {
-	Ok(state.local_mods.get_data()?)
+	state.local_mods.get_data()
 }
 
 #[tauri::command]
 #[specta::specta]
 async fn get_remote_mods(state: TauriState<'_>) -> Result<remote_mod::Map> {
-	Ok(state.remote_mods.get_data()?)
+	state.remote_mods.get_data()
 }
 
 fn update_state<TData>(
@@ -204,7 +204,7 @@ fn refresh_single_game(game_id: &str, state: &TauriState<'_>, handle: &tauri::Ap
 		&state.remote_mods.get_data()?,
 	);
 
-	let mut installed_games = state.installed_games.get_data()?.clone();
+	let mut installed_games = state.installed_games.get_data()?;
 
 	installed_games
 		.get_mut(game_id)
@@ -234,7 +234,7 @@ async fn uninstall_mod(
 		.try_get(game_id)?
 		.uninstall_mod(mod_id)?;
 
-	refresh_single_game(&game_id, &state, &handle)?;
+	refresh_single_game(game_id, &state, &handle)?;
 
 	Ok(())
 }
@@ -405,7 +405,7 @@ async fn remove_game(game_id: &str, state: TauriState<'_>, handle: tauri::AppHan
 	let game = state.installed_games.try_get(game_id)?;
 	manual_provider::remove_game(&game.executable.path)?;
 
-	let mut installed_games = state.installed_games.get_data()?.clone();
+	let mut installed_games = state.installed_games.get_data()?;
 	installed_games.remove(game_id);
 
 	update_state(
@@ -415,7 +415,7 @@ async fn remove_game(game_id: &str, state: TauriState<'_>, handle: tauri::AppHan
 		&handle,
 	);
 
-	handle.emit_event(AppEvent::GameRemoved, game.name.clone());
+	handle.emit_event(AppEvent::GameRemoved, game.name);
 
 	Ok(())
 }
