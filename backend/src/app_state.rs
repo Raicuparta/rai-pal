@@ -44,7 +44,14 @@ impl<TData: Clone> StateData<TData> for Mutex<Option<TData>> {
 	}
 }
 
-impl<K, V> TryGet<K, V> for Mutex<Option<HashMap<K, V>>>
+pub trait DataValue<K, V> {
+	fn try_get<Q>(&self, k: &Q) -> Result<V>
+	where
+		K: Borrow<Q> + Display,
+		Q: Hash + Eq + Display + ?Sized;
+}
+
+impl<K, V> DataValue<K, V> for Mutex<Option<HashMap<K, V>>>
 where
 	K: Hash + Eq + Display + Clone,
 	V: Clone,
@@ -54,6 +61,6 @@ where
 		K: Borrow<Q>,
 		Q: ?Sized + Hash + Display + Eq,
 	{
-		self.get_data()?.try_get(key)
+		self.get_data()?.try_get(key).cloned()
 	}
 }

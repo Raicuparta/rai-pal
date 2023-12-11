@@ -10,6 +10,7 @@ use std::{
 
 use app_state::{
 	AppState,
+	DataValue,
 	StateData,
 	TauriState,
 };
@@ -191,7 +192,7 @@ async fn install_mod(
 	}
 
 	mod_loader
-		.install_mod(&game, &local_mods.try_get(mod_id)?)
+		.install_mod(&game, local_mods.try_get(mod_id)?)
 		.await?;
 
 	refresh_single_game(game_id, &state, &handle)?;
