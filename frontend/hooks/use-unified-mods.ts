@@ -14,10 +14,9 @@ export function useUnifiedMods() {
 	const remoteMods = useAtomValue(remoteModsAtom);
 	const unifiedMods = useMemo(() => {
 		const modMap: Record<string, UnifiedMod> = {};
-		const keys = new Set([
-			...Object.keys(localMods),
-			...Object.keys(remoteMods),
-		]);
+		const keys = [
+			...new Set([...Object.keys(localMods), ...Object.keys(remoteMods)]),
+		].sort();
 
 		for (const key of keys) {
 			const localMod = localMods[key];
