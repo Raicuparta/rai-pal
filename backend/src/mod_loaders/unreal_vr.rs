@@ -63,7 +63,7 @@ impl ModLoaderActions for UnrealVr {
 		todo!()
 	}
 
-	async fn install_mod(&self, game: &InstalledGame, local_mod: &LocalMod) -> Result {
+	async fn install_mod_inner(&self, game: &InstalledGame, local_mod: &LocalMod) -> Result {
 		let parameters = format!(
 			"--attach=\"{}\"",
 			game.executable
@@ -79,7 +79,7 @@ impl ModLoaderActions for UnrealVr {
 		)
 	}
 
-	fn get_mod_path(&self, _game_mod: &CommonModData) -> Result<PathBuf> {
+	fn get_mod_path(&self, _mod_data: &CommonModData) -> Result<PathBuf> {
 		Ok(self.get_data().path.clone())
 	}
 

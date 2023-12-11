@@ -56,10 +56,24 @@ pub enum ModLoader {
 #[enum_dispatch(ModLoader)]
 pub trait ModLoaderActions {
 	fn install(&self, game: &InstalledGame) -> Result;
-	async fn install_mod(&self, game: &InstalledGame, game_mod: &LocalMod) -> Result;
+	async fn install_mod_inner(&self, game: &InstalledGame, local_mod: &LocalMod) -> Result;
 	fn get_data(&self) -> &ModLoaderData;
 	fn get_mod_path(&self, mod_data: &CommonModData) -> Result<PathBuf>;
 	fn get_local_mods(&self) -> Result<HashMap<String, LocalMod>>;
+
+	async fn install_mod(&self, game: &InstalledGame, local_mod: &LocalMod) -> Result {
+		self.install_mod_inner(game, local_mod).await?;
+
+		if let Some(manifest) = &local_mod.data.manifest {
+			let manifest_path = game.get_installed_mod_manifest_path(&local_mod.common.id)?;
+			fs::create_dir_all(paths::path_parent(&manifest_path)?)?;
+			println!("manifest_path: {}", manifest_path.to_string_lossy());
+			let manifest_contents = serde_json::to_string_pretty(manifest)?;
+			fs::write(manifest_path, manifest_contents)?;
+		}
+
+		Ok(())
+	}
 
 	async fn get_remote_mods<F>(&self, error_handler: F) -> HashMap<String, RemoteMod>
 	where

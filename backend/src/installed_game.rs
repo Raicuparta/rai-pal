@@ -1,6 +1,9 @@
 use std::{
 	collections::HashMap,
-	fs::{self,},
+	fs::{
+		self,
+		File,
+	},
 	path::{
 		Path,
 		PathBuf,
@@ -10,6 +13,7 @@ use std::{
 use crate::{
 	game_executable::GameExecutable,
 	game_mod,
+	local_mod,
 	paths::{
 		self,
 		hash_path,
@@ -31,10 +35,11 @@ serializable_struct!(InstalledGame {
 	pub steam_launch: Option<SteamLaunchOption>,
 	pub executable: GameExecutable,
 	pub thumbnail_url: Option<String>,
-	pub available_mods: HashMap<String, bool>,
+	pub installed_mod_versions: InstalledModVersions,
 });
 
 pub type Map = HashMap<String, InstalledGame>;
+type InstalledModVersions = HashMap<String, Option<String>>;
 
 impl InstalledGame {
 	pub fn new(
@@ -72,14 +77,14 @@ impl InstalledGame {
 			provider_id,
 			discriminator,
 			steam_launch: steam_launch.cloned(),
-			available_mods: HashMap::default(),
+			installed_mod_versions: HashMap::default(),
 			executable: GameExecutable::new(path),
 			thumbnail_url,
 		})
 	}
 
 	pub fn update_available_mods(&mut self, data_map: &game_mod::CommonDataMap) {
-		self.available_mods = self.get_available_mods(data_map);
+		self.installed_mod_versions = self.get_available_mods(data_map);
 	}
 
 	pub fn open_game_folder(&self) -> Result {
@@ -146,7 +151,7 @@ impl InstalledGame {
 	}
 
 	pub fn refresh_mods(&mut self, data_map: &game_mod::CommonDataMap) {
-		self.available_mods = self.get_available_mods(data_map);
+		self.installed_mod_versions = self.get_available_mods(data_map);
 	}
 
 	pub fn get_installed_mods_folder(&self) -> Result<PathBuf> {
@@ -156,20 +161,21 @@ impl InstalledGame {
 		Ok(installed_mods_folder)
 	}
 
-	pub fn is_mod_installed(&self, mod_id: &str) -> bool {
-		// TODO this should be handled by each mod loader.
-
-		if let Ok(installed_mods_folder) = self.get_installed_mods_folder() {
-			let bepinex_folder = installed_mods_folder.join("BepInEx");
-
-			return bepinex_folder.join("plugins").join(mod_id).is_dir()
-				|| bepinex_folder.join("patchers").join(mod_id).is_dir();
-		}
-
-		false
+	pub fn get_installed_mod_manifest_path(&self, mod_id: &str) -> Result<PathBuf> {
+		Ok(self
+			.get_installed_mods_folder()?
+			.join("manifests")
+			.join(format!("{mod_id}.json")))
 	}
 
-	pub fn get_available_mods(&self, data_map: &game_mod::CommonDataMap) -> HashMap<String, bool> {
+	pub fn get_installed_mod_version(&self, mod_id: &str) -> Option<String> {
+		let manifest_path = self.get_installed_mod_manifest_path(mod_id).ok()?;
+		let manifest_file = File::open(manifest_path).ok()?;
+		let manifest: local_mod::Manifest = serde_json::from_reader(manifest_file).ok()?;
+		Some(manifest.version)
+	}
+
+	pub fn get_available_mods(&self, data_map: &game_mod::CommonDataMap) -> InstalledModVersions {
 		data_map
 			.iter()
 			.filter_map(|(mod_id, mod_data)| {
@@ -178,7 +184,7 @@ impl InstalledGame {
 					self.executable.engine.as_ref().map(|engine| engine.brand),
 				) && equal_or_none(mod_data.unity_backend, self.executable.scripting_backend)
 				{
-					Some((mod_id.clone(), self.is_mod_installed(mod_id)))
+					Some((mod_id.clone(), self.get_installed_mod_version(mod_id)))
 				} else {
 					None
 				}

@@ -146,7 +146,7 @@ impl ModLoaderActions for BepInEx {
 		Ok(())
 	}
 
-	async fn install_mod(&self, game: &InstalledGame, local_mod: &LocalMod) -> Result {
+	async fn install_mod_inner(&self, game: &InstalledGame, local_mod: &LocalMod) -> Result {
 		self.install(game)?;
 
 		let bepinex_folder = game.get_installed_mods_folder()?.join("BepInEx");

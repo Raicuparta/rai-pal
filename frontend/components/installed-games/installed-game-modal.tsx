@@ -48,12 +48,12 @@ export function InstalledGameModal(props: Props) {
 				mods: Object.entries(mods)
 					.filter(
 						([modId, mod]) =>
-							modId in props.game.availableMods &&
+							modId in props.game.installedModVersions &&
 							mod.common.loaderId === modLoader.id,
 					)
 					.map(([, mod]) => mod),
 			})),
-		[modLoaderMap, mods, props.game.availableMods],
+		[modLoaderMap, mods, props.game.installedModVersions],
 	);
 
 	return (
@@ -138,7 +138,7 @@ export function InstalledGameModal(props: Props) {
 									key={modLoader.id}
 								>
 									{modLoader.mods.map((mod) =>
-										props.game.availableMods[mod.common.id] ? (
+										props.game.installedModVersions[mod.common.id] ? (
 											<CommandButton
 												leftSection={<IconTrash />}
 												key={mod.common.id}
