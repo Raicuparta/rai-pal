@@ -158,19 +158,15 @@ export function InstalledGameModal(props: Props) {
 											>
 												{modLoader.kind === "Installable" ? "Install" : "Run"}{" "}
 												{mod.remote?.title ?? mod.common.id}
-												<Text
-													opacity={0.5}
-													ml="xs"
-													size="xs"
-												>
-													{props.game.executable.engine
-														? ""
-														: ` (${mod.common.engine}${
-																mod.common.unityBackend
-																	? ` ${mod.common.unityBackend}`
-																	: ""
-														  })`}
-												</Text>
+												{!props.game.executable.engine && (
+													<Text
+														opacity={0.5}
+														ml="xs"
+														size="xs"
+													>
+														({mod.common.engine})
+													</Text>
+												)}
 											</CommandButton>
 										),
 									)}

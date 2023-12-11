@@ -67,7 +67,6 @@ pub trait ModLoaderActions {
 		if let Some(manifest) = &local_mod.data.manifest {
 			let manifest_path = game.get_installed_mod_manifest_path(&local_mod.common.id)?;
 			fs::create_dir_all(paths::path_parent(&manifest_path)?)?;
-			println!("manifest_path: {}", manifest_path.to_string_lossy());
 			let manifest_contents = serde_json::to_string_pretty(manifest)?;
 			fs::write(manifest_path, manifest_contents)?;
 		}
