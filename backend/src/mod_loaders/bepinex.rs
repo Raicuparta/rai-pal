@@ -172,7 +172,7 @@ impl ModLoaderActions for BepInEx {
 
 	fn get_mod_path(&self, mod_data: &CommonModData) -> Result<PathBuf> {
 		mod_data.unity_backend.map_or_else(
-			|| Err(Error::ModNotFound(mod_data.id.clone())), // TODO specific error
+			|| Err(Error::UnityBackendUnknown(mod_data.id.clone())),
 			|unity_backend| {
 				Ok(Self::get_installed_mods_path()?
 					.join(unity_backend.to_string())

@@ -41,9 +41,6 @@ pub enum Error {
 	#[error("Failed to find game with ID `{0}`")]
 	GameNotFound(String),
 
-	#[error("Failed to find mod with ID `{0}`")]
-	ModNotFound(String),
-
 	#[error("Failed to find Rai Pal resources folder")]
 	ResourcesNotFound(),
 
@@ -84,6 +81,12 @@ pub enum Error {
 
 	#[error("Data entry not found: `{0}`")]
 	DataEntryNotFound(String),
+
+	#[error("Unity backend not known for mod `{0}`")]
+	UnityBackendUnknown(String),
+
+	#[error("Mod `{0}` has no downloads available in the database.")]
+	EmptyRemoteModDownloads(String),
 }
 
 impl serde::Serialize for Error {

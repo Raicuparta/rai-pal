@@ -19,7 +19,10 @@ use events::{
 };
 use game_mod::get_common_data_map;
 use installed_game::InstalledGame;
-use maps::TryGet;
+use maps::{
+	TryGet,
+	TryGetMut,
+};
 use mod_loaders::mod_loader::{
 	self,
 	ModLoaderActions,
@@ -207,8 +210,7 @@ fn refresh_single_game(game_id: &str, state: &TauriState<'_>, handle: &tauri::Ap
 	let mut installed_games = state.installed_games.get_data()?;
 
 	installed_games
-		.get_mut(game_id)
-		.ok_or_else(|| Error::GameNotFound(game_id.to_owned()))?
+		.try_get_mut(game_id)?
 		.refresh_mods(&mod_data_map);
 
 	update_state(
