@@ -81,9 +81,6 @@ pub enum Error {
 
 	#[error("Unity backend not known for mod `{0}`")]
 	UnityBackendUnknown(String),
-
-	#[error("Mod `{0}` has no downloads available in the database.")]
-	EmptyRemoteModDownloads(String),
 }
 
 impl serde::Serialize for Error {

@@ -147,6 +147,11 @@ impl InstalledGame {
 			fs::remove_dir_all(patchers_folder)?;
 		}
 
+		let manifest_path = self.get_installed_mod_manifest_path(mod_id)?;
+		if manifest_path.is_file() {
+			fs::remove_file(manifest_path)?;
+		}
+
 		Ok(())
 	}
 

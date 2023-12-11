@@ -86,7 +86,7 @@ export function ModsPage() {
 								<Table.Td>
 									<ModVersionBadge
 										localVersion={mod.local?.manifest?.version}
-										remoteVersion={mod.remote?.downloads[0]?.version}
+										remoteVersion={mod.remote?.latestVersion.id}
 									/>
 								</Table.Td>
 								<Table.Td>{mod.common.loaderId}</Table.Td>

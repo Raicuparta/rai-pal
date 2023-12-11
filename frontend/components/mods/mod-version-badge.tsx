@@ -6,24 +6,21 @@ import {
 	Tooltip,
 } from "@mantine/core";
 import { IconAlertTriangleFilled } from "@tabler/icons-react";
+import { isOutdated } from "../../util/is-outdated";
 
 type Props = {
 	readonly localVersion?: string;
 	readonly remoteVersion?: string;
 };
 
-function isOutdated(props: Props) {
-	return props.localVersion && props.localVersion !== props.remoteVersion;
-}
-
 function getColor(props: Props): DefaultMantineColor {
 	if (!props.localVersion) return "gray";
-	if (isOutdated(props)) return "orange";
+	if (isOutdated(props.localVersion, props.remoteVersion)) return "orange";
 	return "green";
 }
 
 export function ModVersionBadge(props: Props) {
-	const outdated = isOutdated(props);
+	const outdated = isOutdated(props.localVersion, props.remoteVersion);
 	return (
 		<Tooltip
 			disabled={!outdated}

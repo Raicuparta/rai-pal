@@ -78,6 +78,7 @@ function CommandButtonInternal<TResult>(
 					color="green"
 					justify="start"
 					loading={isLongLoading}
+					// TODO seems like success is being cleared immediately, investigate.
 					variant={success ? "filled" : "default"}
 					{...props}
 					onClick={handleClick}

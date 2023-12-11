@@ -17,7 +17,7 @@ serializable_struct!(DatabaseEntry {
 	pub author: String,
 	pub source_code: String,
 	pub description: String,
-	pub downloads: Vec<ModDownload>,
+	pub latest_version: ModDownload,
 	pub engine: Option<GameEngineBrand>,
 	pub unity_backend: Option<UnityScriptingBackend>,
 });
@@ -27,7 +27,7 @@ serializable_struct!(ModDatabase {
 });
 
 serializable_struct!(ModDownload {
-	pub version: String,
+	pub id: String,
 	pub url: String,
 	pub root: Option<PathBuf>,
 });

@@ -1,4 +1,4 @@
-import { Flex, Modal, Stack, Text } from "@mantine/core";
+import { Flex, Modal, Stack, Text, ThemeIcon, Tooltip } from "@mantine/core";
 import {
 	InstalledGame,
 	installMod,
@@ -19,6 +19,7 @@ import {
 	IconFolder,
 	IconFolderCog,
 	IconPlayerPlay,
+	IconRefreshAlert,
 	IconShoppingBag,
 	IconTool,
 	IconTrash,
@@ -30,6 +31,7 @@ import { modLoadersAtom } from "@hooks/use-data";
 import { CommandButtonGroup } from "@components/command-button-group";
 import { DebugData } from "@components/debug-data";
 import { useUnifiedMods } from "@hooks/use-unified-mods";
+import { isOutdated } from "../../util/is-outdated";
 
 type Props = {
 	readonly game: InstalledGame;
@@ -137,17 +139,48 @@ export function InstalledGameModal(props: Props) {
 									label={modLoader.id.toUpperCase()}
 									key={modLoader.id}
 								>
-									{modLoader.mods.map((mod) =>
-										props.game.installedModVersions[mod.common.id] ? (
-											<CommandButton
-												leftSection={<IconTrash />}
+									{/* TODO: these buttons could be extracted to a separate component, lots of stuff happening. */}
+									{modLoader.mods.map((mod) => {
+										const installedVersion =
+											props.game.installedModVersions[mod.common.id];
+										const outdated = isOutdated(
+											installedVersion,
+											mod.remote?.latestVersion.id,
+										);
+
+										return installedVersion ? (
+											<Tooltip
+												disabled={!outdated}
+												label="Mod outdated. Reinstall it to update."
 												key={mod.common.id}
-												onClick={() =>
-													uninstallMod(props.game.id, mod.common.id)
-												}
 											>
-												Uninstall {mod.remote?.title ?? mod.common.id}
-											</CommandButton>
+												<CommandButton
+													leftSection={
+														outdated ? (
+															<ThemeIcon
+																radius="xl"
+																color="orange"
+															>
+																<IconRefreshAlert />
+															</ThemeIcon>
+														) : (
+															<IconTrash />
+														)
+													}
+													onClick={() =>
+														uninstallMod(props.game.id, mod.common.id)
+													}
+												>
+													Uninstall {mod.remote?.title ?? mod.common.id}{" "}
+													<Text
+														opacity={0.5}
+														ml="xs"
+														size="xs"
+													>
+														({installedVersion})
+													</Text>
+												</CommandButton>
+											</Tooltip>
 										) : (
 											<CommandButton
 												leftSection={<IconTool />}
@@ -159,6 +192,7 @@ export function InstalledGameModal(props: Props) {
 												{modLoader.kind === "Installable" ? "Install" : "Run"}{" "}
 												{mod.remote?.title ?? mod.common.id}
 												{!props.game.executable.engine && (
+													// TODO this text to separate component, it's used in multiple places.
 													<Text
 														opacity={0.5}
 														ml="xs"
@@ -167,15 +201,21 @@ export function InstalledGameModal(props: Props) {
 														({mod.common.engine})
 													</Text>
 												)}
+												<Text
+													opacity={0.5}
+													ml="xs"
+													size="xs"
+												>
+													({mod.remote?.latestVersion.id})
+												</Text>
 											</CommandButton>
-										),
-									)}
+										);
+									})}
 								</CommandButtonGroup>
 							),
 					)}
 				</Flex>
 				<DebugData data={props.game} />
-				<DebugData data={modLoaderMap} />
 			</Stack>
 		</Modal>
 	);
