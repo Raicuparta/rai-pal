@@ -20,6 +20,7 @@ use super::{
 	unreal_vr::UnrealVr,
 };
 use crate::{
+	files,
 	game_mod::CommonModData,
 	installed_game::InstalledGame,
 	local_mod::{
@@ -103,6 +104,7 @@ pub trait ModLoaderActions {
 	async fn download_mod(&self, remote_mod: &RemoteMod) -> Result {
 		let target_path = self.get_mod_path(&remote_mod.common)?;
 		let mod_loader_data = self.get_data();
+		let mod_id = &remote_mod.common.id;
 		let downloads_path = paths::installed_mods_path()?
 			.join(&mod_loader_data.id)
 			.join("downloads");
@@ -113,14 +115,21 @@ pub trait ModLoaderActions {
 			if response.status().is_success() {
 				fs::create_dir_all(&downloads_path)?;
 
-				let zip_path = downloads_path.join(format!("{}.zip", remote_mod.common.id));
+				let zip_path = downloads_path.join(format!("{}.zip", mod_id));
 
 				// TODO Stream to disk instead of keeping it all in memory.
 				fs::write(&zip_path, response.bytes().await?)?;
 				let file = File::open(&zip_path)?;
 
-				// TODO take "root" property into account.
-				ZipArchive::new(file)?.extract(&target_path)?;
+				let mut zip_archive = ZipArchive::new(file)?;
+
+				if let Some(root) = &first_download.root {
+					let unzip_path = downloads_path.join(mod_id);
+					zip_archive.extract(downloads_path.join(mod_id))?;
+					files::copy_dir_all(unzip_path.join(root), &target_path)?;
+				} else {
+					zip_archive.extract(&target_path)?;
+				}
 
 				// Saves the manifest so we know which version of the mod we installed.
 				fs::write(
