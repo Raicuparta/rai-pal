@@ -10,6 +10,7 @@ import {
 } from "@components/badges/color-coded-badge";
 import { ModModal } from "./mod-modal";
 import { useUnifiedMods } from "@hooks/use-unified-mods";
+import { ModVersionBadge } from "./mod-version-badge";
 
 export function ModsPage() {
 	const [selectedModId, setSelectedId] = useState<string>();
@@ -44,8 +45,7 @@ export function ModsPage() {
 					<Table.Thead>
 						<Table.Tr>
 							<Table.Th>Mod</Table.Th>
-							<Table.Th>Current</Table.Th>
-							<Table.Th>Latest</Table.Th>
+							<Table.Th>Version</Table.Th>
 							<Table.Th
 								ta="center"
 								w={100}
@@ -83,9 +83,11 @@ export function ModsPage() {
 										</Text>
 									)}
 								</Table.Td>
-								<Table.Td>{mod.local?.manifest?.version ?? "Unknown"}</Table.Td>
 								<Table.Td>
-									{mod.remote?.downloads[0]?.version ?? "Unknown"}
+									<ModVersionBadge
+										localVersion={mod.local?.manifest?.version}
+										remoteVersion={mod.remote?.downloads[0]?.version}
+									/>
 								</Table.Td>
 								<Table.Td>{mod.common.loaderId}</Table.Td>
 								<Table.Td>
