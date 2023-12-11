@@ -1,7 +1,4 @@
-use std::{
-	collections::HashMap,
-	path::PathBuf,
-};
+use std::path::PathBuf;
 
 use crate::{
 	game_engines::{
@@ -15,6 +12,7 @@ use crate::{
 const URL_BASE: &str = "https://raw.githubusercontent.com/Raicuparta/rai-pal-db/main";
 
 serializable_struct!(DatabaseEntry {
+	pub id: String,
 	pub title: String,
 	pub author: String,
 	pub source_code: String,
@@ -25,7 +23,7 @@ serializable_struct!(DatabaseEntry {
 });
 
 serializable_struct!(ModDatabase {
-  pub mods: HashMap<String, DatabaseEntry>,
+  pub mods: Vec<DatabaseEntry>,
 });
 
 serializable_struct!(ModDownload {

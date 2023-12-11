@@ -91,7 +91,6 @@ export function getRemoteMods() {
 }
 
 export type GameEngineVersion = { major: number; minor: number; patch: number; suffix: string | null; display: string }
-export type ModDownload = { version: string; url: string; root: string | null }
 export type OwnedGame = { id: string; providerId: ProviderId; name: string; installed: boolean; osList: OperatingSystem[]; engine: GameEngineBrand; releaseDate: number; thumbnailUrl: string }
 export type GameEngineBrand = "Unity" | "Unreal" | "Godot"
 export type Architecture = "X64" | "X86"
@@ -104,6 +103,7 @@ export type Manifest = { version: string }
 export type LocalMod = { data: LocalModData; common: CommonModData }
 export type SteamLaunchOption = { launchId: string; appId: number; description: string | null; executable: string | null; arguments: string | null; appType: string | null; osList: string | null; betaKey: string | null; osArch: string | null }
 export type RemoteMod = { common: CommonModData; data: RemoteModData }
+export type ModDownload = { version: string; url: string; root: string | null }
 export type ModKind = "Installable" | "Runnable"
 export type UnityScriptingBackend = "Il2Cpp" | "Mono"
 export type GameEngine = { brand: GameEngineBrand; version: GameEngineVersion | null }

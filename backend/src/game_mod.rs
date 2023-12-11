@@ -14,7 +14,7 @@ use crate::{
 };
 
 serializable_struct!(CommonModData {
-	pub id: String, // TODO: make sure mod ID is globally unique, even within different loaders.
+	pub id: String,
 	pub engine: Option<GameEngineBrand>,
 	pub unity_backend: Option<UnityScriptingBackend>,
 	pub loader_id: String, // TODO make enum

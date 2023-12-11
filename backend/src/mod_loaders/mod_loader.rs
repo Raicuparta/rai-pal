@@ -66,27 +66,25 @@ pub trait ModLoaderActions {
 		F: Fn(Error) + Send,
 	{
 		let data = self.get_data();
-		let id = &data.id;
+		let loader_id = &data.id;
 
-		let database = mod_database::get(id).await.unwrap_or_else(|error| {
+		let database = mod_database::get(loader_id).await.unwrap_or_else(|error| {
 			error_handler(error);
-			ModDatabase {
-				mods: HashMap::new(),
-			}
+			ModDatabase { mods: Vec::new() }
 		});
 
 		database
 			.mods
 			.into_iter()
-			.map(|(mod_id, database_mod)| {
+			.map(|database_mod| {
 				(
-					mod_id.clone(),
+					database_mod.id.clone(),
 					RemoteMod {
 						common: CommonModData {
-							id: mod_id,
+							id: database_mod.id,
 							engine: database_mod.engine,
 							unity_backend: database_mod.unity_backend,
-							loader_id: id.clone(),
+							loader_id: loader_id.clone(),
 						},
 						data: RemoteModData {
 							author: database_mod.author,
