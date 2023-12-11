@@ -1,5 +1,5 @@
 import { Modal, Stack } from "@mantine/core";
-import { downloadMod, openModFolder } from "@api/bindings";
+import { downloadMod, openModFolder, openModLoaderFolder } from "@api/bindings";
 import { CommandButton } from "@components/command-button";
 import { IconDownload, IconFolderCog } from "@tabler/icons-react";
 import { CommandButtonGroup } from "@components/command-button-group";
@@ -12,6 +12,8 @@ type Props = {
 };
 
 export function ModModal(props: Props) {
+	const isDownloadAvailable = Boolean(props.mod.remote?.latestVersion.url);
+
 	return (
 		<Modal
 			centered
@@ -22,13 +24,23 @@ export function ModModal(props: Props) {
 		>
 			<Stack>
 				<CommandButtonGroup label="Mod Actions">
-					<CommandButton
-						leftSection={<IconFolderCog />}
-						onClick={() => openModFolder(props.mod.common.id)}
-					>
-						Open mod folder
-					</CommandButton>
-					{Boolean(props.mod.remote) && (
+					{props.mod.local && (
+						<CommandButton
+							leftSection={<IconFolderCog />}
+							onClick={() => openModFolder(props.mod.common.id)}
+						>
+							Open mod folder
+						</CommandButton>
+					)}
+					{!isDownloadAvailable && !props.mod.local && (
+						<CommandButton
+							leftSection={<IconFolderCog />}
+							onClick={() => openModLoaderFolder(props.mod.common.loaderId)}
+						>
+							Open mod loader folder
+						</CommandButton>
+					)}
+					{isDownloadAvailable && (
 						<CommandButton
 							leftSection={<IconDownload />}
 							onClick={() => downloadMod(props.mod.common.id)}

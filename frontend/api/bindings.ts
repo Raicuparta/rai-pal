@@ -90,6 +90,10 @@ export function getRemoteMods() {
     return invoke()<{ [key: string]: RemoteMod }>("get_remote_mods")
 }
 
+export function openModLoaderFolder(modLoaderId: string) {
+    return invoke()<null>("open_mod_loader_folder", { modLoaderId })
+}
+
 export type GameEngineVersion = { major: number; minor: number; patch: number; suffix: string | null; display: string }
 export type OwnedGame = { id: string; providerId: ProviderId; name: string; installed: boolean; osList: OperatingSystem[]; engine: GameEngineBrand; releaseDate: number; thumbnailUrl: string }
 export type GameEngineBrand = "Unity" | "Unreal" | "Godot"

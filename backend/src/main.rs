@@ -135,6 +135,12 @@ async fn open_mod_folder(mod_id: &str, state: TauriState<'_>) -> Result {
 
 #[tauri::command]
 #[specta::specta]
+async fn open_mod_loader_folder(mod_loader_id: &str, state: TauriState<'_>) -> Result {
+	state.mod_loaders.try_get(mod_loader_id)?.open_folder()
+}
+
+#[tauri::command]
+#[specta::specta]
 async fn download_mod(mod_id: &str, state: TauriState<'_>, handle: tauri::AppHandle) -> Result {
 	let remote_mod = state.remote_mods.try_get(mod_id)?;
 	let mod_loaders = state.mod_loaders.get_data()?;
@@ -509,6 +515,7 @@ fn main() {
 			frontend_ready,
 			get_local_mods,
 			get_remote_mods,
+			open_mod_loader_folder,
 		]
 	);
 

@@ -61,6 +61,18 @@ pub trait ModLoaderActions {
 	fn get_mod_path(&self, mod_data: &CommonModData) -> Result<PathBuf>;
 	fn get_local_mods(&self) -> Result<HashMap<String, LocalMod>>;
 
+	fn open_folder(&self) -> Result {
+		// TODO cleanup code repeated from local_mod.
+		let data = self.get_data();
+		let path = if data.path.is_dir() {
+			&data.path
+		} else {
+			paths::path_parent(&data.path)?
+		};
+
+		Ok(open::that_detached(path)?)
+	}
+
 	async fn install_mod(&self, game: &InstalledGame, local_mod: &LocalMod) -> Result {
 		self.install_mod_inner(game, local_mod).await?;
 
