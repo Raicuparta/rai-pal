@@ -160,7 +160,9 @@ impl InstalledGame {
 	}
 
 	pub fn get_installed_mods_folder(&self) -> Result<PathBuf> {
-		let installed_mods_folder = paths::app_data_path()?.join("games").join(&self.id);
+		let installed_mods_folder = paths::app_data_path()?
+			.join("installed-mods")
+			.join(&self.id);
 		fs::create_dir_all(&installed_mods_folder)?;
 
 		Ok(installed_mods_folder)
