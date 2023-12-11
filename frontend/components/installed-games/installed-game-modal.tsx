@@ -154,9 +154,7 @@ export function InstalledGameModal(props: Props) {
 												key={mod.common.id}
 												confirmationText="Attention: be careful when installing mods on multiplayer games! Anticheat can detect some mods and get you banned, even if the mods seem harmless."
 												confirmationSkipId="install-mod-confirm"
-												onClick={() =>
-													installMod(modLoader.id, mod.common.id, props.game.id)
-												}
+												onClick={() => installMod(mod.common.id, props.game.id)}
 											>
 												{modLoader.kind === "Installable" ? "Install" : "Run"}{" "}
 												{mod.remote?.title ?? mod.common.id}

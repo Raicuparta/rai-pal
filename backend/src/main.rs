@@ -169,7 +169,6 @@ async fn start_game_exe(game_id: &str, state: TauriState<'_>) -> Result {
 #[tauri::command]
 #[specta::specta]
 async fn install_mod(
-	mod_loader_id: &str, // TODO mod loader id should come from mod struct
 	mod_id: &str,
 	game_id: &str,
 	state: TauriState<'_>,
@@ -177,7 +176,8 @@ async fn install_mod(
 ) -> Result {
 	let game = state.installed_games.try_get(game_id)?;
 	let mod_loaders = state.mod_loaders.get_data()?;
-	let mod_loader = mod_loaders.try_get(mod_loader_id)?;
+	let remote_mod = state.remote_mods.try_get(mod_id)?;
+	let mod_loader = mod_loaders.try_get(&remote_mod.common.loader_id)?;
 
 	let local_mods = {
 		let local_mods = state.local_mods.get_data()?;
