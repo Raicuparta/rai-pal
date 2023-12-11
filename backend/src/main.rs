@@ -8,16 +8,20 @@ use std::{
 	sync::Mutex,
 };
 
+use app_state::{
+	AppState,
+	StateData,
+	TauriState,
+};
 use events::{
 	AppEvent,
 	EventEmitter,
 };
 use game_mod::get_common_data_map;
 use installed_game::InstalledGame;
-use local_mod::LocalMod;
+use maps::TryGet;
 use mod_loaders::mod_loader::{
 	self,
-	ModLoader,
 	ModLoaderActions,
 };
 use paths::{
@@ -31,7 +35,6 @@ use providers::{
 		ProviderActions,
 	},
 };
-use remote_mod::RemoteMod;
 use result::{
 	Error,
 	Result,
@@ -40,6 +43,7 @@ use steamlocate::SteamDir;
 use tauri::api::dialog::message;
 
 mod analytics;
+mod app_state;
 mod events;
 mod files;
 mod game_engines;
@@ -48,6 +52,7 @@ mod game_mod;
 mod installed_game;
 mod local_mod;
 mod macros;
+mod maps;
 mod mod_loaders;
 mod owned_game;
 mod paths;
@@ -57,92 +62,34 @@ mod result;
 mod steam;
 mod windows;
 
-struct AppState {
-	installed_games: Mutex<Option<installed_game::Map>>,
-	owned_games: Mutex<Option<owned_game::Map>>,
-	mod_loaders: Mutex<Option<mod_loader::Map>>,
-	local_mods: Mutex<Option<local_mod::Map>>,
-	remote_mods: Mutex<Option<remote_mod::Map>>,
-}
-
-fn get_game(game_id: &str, state: &tauri::State<'_, AppState>) -> Result<InstalledGame> {
-	if let Ok(read_guard) = state.installed_games.lock() {
-		let installed_games = read_guard
-			.as_ref()
-			.ok_or(Error::GameNotFound(game_id.to_owned()))?;
-
-		let game = installed_games
-			.get(game_id)
-			.ok_or_else(|| Error::GameNotFound(game_id.to_owned()))?;
-
-		return Ok(game.clone());
-	}
-
-	Err(Error::GameNotFound(game_id.to_owned()))
-}
-
-fn get_mod_loader(mod_loader_id: &str, state: &tauri::State<'_, AppState>) -> Result<ModLoader> {
-	get_state_data(&state.mod_loaders)?
-		.get(mod_loader_id)
-		.ok_or_else(|| Error::ModLoaderNotFound(mod_loader_id.to_string()))
-		.cloned()
-}
-
-fn get_local_mod(mod_id: &str, state: &tauri::State<'_, AppState>) -> Result<LocalMod> {
-	get_state_data(&state.local_mods)?
-		.get(mod_id)
-		.ok_or_else(|| Error::ModNotFound(mod_id.to_string()))
-		.cloned()
-}
-
-fn get_remote_mod(mod_id: &str, state: &tauri::State<'_, AppState>) -> Result<RemoteMod> {
-	get_state_data(&state.remote_mods)?
-		.get(mod_id)
-		.ok_or_else(|| Error::ModNotFound(mod_id.to_string()))
-		.cloned()
-}
-
-fn get_state_data<TData: Clone>(mutex: &Mutex<Option<TData>>) -> Result<TData> {
-	match mutex.lock() {
-		Ok(guard) => {
-			let data = guard
-				.as_ref()
-				.ok_or(Error::FailedToGetStateData("Data is empty".to_string()))?;
-
-			Ok(data.clone())
-		}
-		Err(err) => Err(Error::FailedToGetStateData(err.to_string())),
-	}
+#[tauri::command]
+#[specta::specta]
+async fn get_installed_games(state: TauriState<'_>) -> Result<installed_game::Map> {
+	Ok(state.installed_games.get_data()?)
 }
 
 #[tauri::command]
 #[specta::specta]
-async fn get_installed_games(state: tauri::State<'_, AppState>) -> Result<installed_game::Map> {
-	get_state_data(&state.installed_games)
+async fn get_owned_games(state: TauriState<'_>) -> Result<owned_game::Map> {
+	Ok(state.owned_games.get_data()?)
 }
 
 #[tauri::command]
 #[specta::specta]
-async fn get_owned_games(state: tauri::State<'_, AppState>) -> Result<owned_game::Map> {
-	get_state_data(&state.owned_games)
+async fn get_mod_loaders(state: TauriState<'_>) -> Result<mod_loader::DataMap> {
+	mod_loader::get_data_map(&state.mod_loaders.get_data()?)
 }
 
 #[tauri::command]
 #[specta::specta]
-async fn get_mod_loaders(state: tauri::State<'_, AppState>) -> Result<mod_loader::DataMap> {
-	mod_loader::get_data_map(&get_state_data(&state.mod_loaders)?)
+async fn get_local_mods(state: TauriState<'_>) -> Result<local_mod::Map> {
+	Ok(state.local_mods.get_data()?)
 }
 
 #[tauri::command]
 #[specta::specta]
-async fn get_local_mods(state: tauri::State<'_, AppState>) -> Result<local_mod::Map> {
-	get_state_data(&state.local_mods)
-}
-
-#[tauri::command]
-#[specta::specta]
-async fn get_remote_mods(state: tauri::State<'_, AppState>) -> Result<remote_mod::Map> {
-	get_state_data(&state.remote_mods)
+async fn get_remote_mods(state: TauriState<'_>) -> Result<remote_mod::Map> {
+	Ok(state.remote_mods.get_data()?)
 }
 
 fn update_state<TData>(
@@ -163,14 +110,14 @@ fn update_state<TData>(
 
 #[tauri::command]
 #[specta::specta]
-async fn open_game_folder(game_id: String, state: tauri::State<'_, AppState>) -> Result {
-	get_game(&game_id, &state)?.open_game_folder()
+async fn open_game_folder(game_id: &str, state: TauriState<'_>) -> Result {
+	state.installed_games.try_get(game_id)?.open_game_folder()
 }
 
 #[tauri::command]
 #[specta::specta]
-async fn open_game_mods_folder(game_id: String, state: tauri::State<'_, AppState>) -> Result {
-	get_game(&game_id, &state)?.open_mods_folder()
+async fn open_game_mods_folder(game_id: &str, state: TauriState<'_>) -> Result {
+	state.installed_games.try_get(game_id)?.open_mods_folder()
 }
 
 #[tauri::command]
@@ -181,8 +128,8 @@ async fn open_mods_folder() -> Result {
 
 #[tauri::command]
 #[specta::specta]
-async fn open_mod_folder(mod_id: &str, state: tauri::State<'_, AppState>) -> Result {
-	get_local_mod(mod_id, &state)?.open_folder()
+async fn open_mod_folder(mod_id: &str, state: TauriState<'_>) -> Result {
+	state.local_mods.try_get(mod_id)?.open_folder()
 }
 
 #[tauri::command]
@@ -190,33 +137,32 @@ async fn open_mod_folder(mod_id: &str, state: tauri::State<'_, AppState>) -> Res
 async fn download_mod(
 	mod_loader_id: &str,
 	mod_id: &str,
-	state: tauri::State<'_, AppState>,
+	state: TauriState<'_>,
 	handle: tauri::AppHandle,
 ) -> Result {
-	let game_mod = get_remote_mod(mod_id, &state)?;
-	get_mod_loader(mod_loader_id, &state)?
+	let game_mod = state.remote_mods.try_get(mod_id)?;
+	let mod_loaders = state.mod_loaders.get_data()?;
+
+	mod_loaders
+		.try_get(mod_loader_id)?
 		.download_mod(&game_mod)
 		.await?;
 
-	refresh_local_mods(&get_state_data(&state.mod_loaders)?, &handle, &state).await;
+	refresh_local_mods(&mod_loaders, &handle, &state).await;
 
 	Ok(())
 }
 
 #[tauri::command]
 #[specta::specta]
-async fn start_game(
-	game_id: String,
-	state: tauri::State<'_, AppState>,
-	handle: tauri::AppHandle,
-) -> Result {
-	get_game(&game_id, &state)?.start(&handle)
+async fn start_game(game_id: &str, state: TauriState<'_>, handle: tauri::AppHandle) -> Result {
+	state.installed_games.try_get(game_id)?.start(&handle)
 }
 
 #[tauri::command]
 #[specta::specta]
-async fn start_game_exe(game_id: String, state: tauri::State<'_, AppState>) -> Result {
-	get_game(&game_id, &state)?.start_exe()
+async fn start_game_exe(game_id: &str, state: TauriState<'_>) -> Result {
+	state.installed_games.try_get(game_id)?.start_exe()
 }
 
 #[tauri::command]
@@ -225,36 +171,40 @@ async fn install_mod(
 	mod_loader_id: &str, // TODO mod loader id should come from mod struct
 	mod_id: &str,
 	game_id: &str,
-	state: tauri::State<'_, AppState>,
+	state: TauriState<'_>,
 	handle: tauri::AppHandle,
 ) -> Result {
-	let game = get_game(game_id, &state)?;
+	let game = state.installed_games.try_get(game_id)?;
+	let local_mods = state.local_mods.get_data()?;
+	let mod_loaders = state.mod_loaders.get_data()?;
+	let mod_loader = mod_loaders.try_get(mod_loader_id)?;
 
-	// TODO download mod if missing.
-	let local_mod = get_local_mod(mod_id, &state)?;
+	if !local_mods.contains_key(mod_id) {
+		mod_loader
+			.download_mod(&state.remote_mods.try_get(mod_id)?)
+			.await?;
 
-	get_mod_loader(mod_loader_id, &state)?
-		.install_mod(&game, &local_mod)
+		refresh_local_mods(&mod_loaders, &handle, &state).await;
+	}
+
+	mod_loader
+		.install_mod(&game, &local_mods.try_get(mod_id)?)
 		.await?;
 
 	refresh_single_game(game_id, &state, &handle)?;
-	refresh_local_mods(&get_state_data(&state.mod_loaders)?, &handle, &state).await;
 
 	analytics::send_event(analytics::Event::InstallOrRunMod, mod_id).await;
 
 	Ok(())
 }
 
-fn refresh_single_game(
-	game_id: &str,
-	state: &tauri::State<'_, AppState>,
-	handle: &tauri::AppHandle,
-) -> Result {
+fn refresh_single_game(game_id: &str, state: &TauriState<'_>, handle: &tauri::AppHandle) -> Result {
 	let mod_data_map = game_mod::get_common_data_map(
-		&get_state_data(&state.local_mods)?,
-		&get_state_data(&state.remote_mods)?,
+		&state.local_mods.get_data()?,
+		&state.remote_mods.get_data()?,
 	);
-	let mut installed_games = get_state_data(&state.installed_games)?;
+
+	let mut installed_games = state.installed_games.get_data()?.clone();
 
 	installed_games
 		.get_mut(game_id)
@@ -274,12 +224,15 @@ fn refresh_single_game(
 #[tauri::command]
 #[specta::specta]
 async fn uninstall_mod(
-	game_id: String,
+	game_id: &str,
 	mod_id: &str,
-	state: tauri::State<'_, AppState>,
+	state: TauriState<'_>,
 	handle: tauri::AppHandle,
 ) -> Result {
-	get_game(&game_id, &state)?.uninstall_mod(mod_id)?;
+	state
+		.installed_games
+		.try_get(game_id)?
+		.uninstall_mod(mod_id)?;
 
 	refresh_single_game(&game_id, &state, &handle)?;
 
@@ -289,7 +242,7 @@ async fn uninstall_mod(
 async fn refresh_local_mods(
 	mod_loaders: &mod_loader::Map,
 	handle: &tauri::AppHandle,
-	state: &tauri::State<'_, AppState>,
+	state: &TauriState<'_>,
 ) -> local_mod::Map {
 	let local_mods: HashMap<_, _> = mod_loaders
 		.values()
@@ -312,7 +265,7 @@ async fn refresh_local_mods(
 async fn refresh_remote_mods(
 	mod_loaders: &mod_loader::Map,
 	handle: &tauri::AppHandle,
-	state: &tauri::State<'_, AppState>,
+	state: &TauriState<'_>,
 ) -> remote_mod::Map {
 	let mut remote_mods = remote_mod::Map::default();
 
@@ -339,7 +292,7 @@ async fn refresh_remote_mods(
 
 #[tauri::command]
 #[specta::specta]
-async fn update_data(handle: tauri::AppHandle, state: tauri::State<'_, AppState>) -> Result {
+async fn update_data(handle: tauri::AppHandle, state: TauriState<'_>) -> Result {
 	let resources_path = paths::resources_path(&handle)?;
 
 	let mod_loaders = mod_loader::get_map(&resources_path).await;
@@ -414,26 +367,22 @@ async fn update_data(handle: tauri::AppHandle, state: tauri::State<'_, AppState>
 
 #[tauri::command]
 #[specta::specta]
-async fn add_game(
-	path: PathBuf,
-	state: tauri::State<'_, AppState>,
-	handle: tauri::AppHandle,
-) -> Result {
+async fn add_game(path: PathBuf, state: TauriState<'_>, handle: tauri::AppHandle) -> Result {
 	let normalized_path = normalize_path(&path);
 	let game_id = hash_path(&normalized_path);
 
-	if get_game(&game_id, &state).is_ok() {
+	if state.installed_games.try_get(&game_id).is_ok() {
 		return Err(Error::GameAlreadyAdded(normalized_path));
 	}
 
 	let mut game = manual_provider::add_game(&normalized_path)?;
 	game.update_available_mods(&get_common_data_map(
-		&get_state_data(&state.local_mods)?,
-		&get_state_data(&state.remote_mods)?,
+		&state.local_mods.get_data()?,
+		&state.remote_mods.get_data()?,
 	));
 	let game_name = game.name.clone();
 
-	let mut installed_games = get_state_data(&state.installed_games)?;
+	let mut installed_games = state.installed_games.get_data()?.clone();
 	installed_games.insert(game.id.clone(), game);
 
 	update_state(
@@ -452,16 +401,12 @@ async fn add_game(
 
 #[tauri::command]
 #[specta::specta]
-async fn remove_game(
-	game_id: String,
-	state: tauri::State<'_, AppState>,
-	handle: tauri::AppHandle,
-) -> Result {
-	let game = get_game(&game_id, &state)?;
+async fn remove_game(game_id: &str, state: TauriState<'_>, handle: tauri::AppHandle) -> Result {
+	let game = state.installed_games.try_get(game_id)?;
 	manual_provider::remove_game(&game.executable.path)?;
 
-	let mut installed_games = get_state_data(&state.installed_games)?;
-	installed_games.remove(&game_id);
+	let mut installed_games = state.installed_games.get_data()?.clone();
+	installed_games.remove(game_id);
 
 	update_state(
 		AppEvent::SyncInstalledGames,
@@ -470,7 +415,7 @@ async fn remove_game(
 		&handle,
 	);
 
-	handle.emit_event(AppEvent::GameRemoved, game.name);
+	handle.emit_event(AppEvent::GameRemoved, game.name.clone());
 
 	Ok(())
 }

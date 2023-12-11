@@ -1,6 +1,7 @@
 use std::{
 	path::PathBuf,
 	result,
+	sync::TryLockError,
 };
 
 #[derive(Debug, thiserror::Error)]
@@ -73,14 +74,20 @@ pub enum Error {
 	#[error("Failed to install mod, because the known game information is insufficient. Missing information: `{0}`. Game: `{1}`")]
 	ModInstallInfoInsufficient(String, PathBuf),
 
-	#[error("Failed to get state data")]
-	FailedToGetStateData(String),
+	#[error("State data is empty")]
+	EmptyStateData(),
+
+	#[error("Failed to access state data: `{0}`")]
+	FailedToAccessStateData(String),
 
 	#[error("Failed to get game data from path `{0}`")]
 	FailedToGetGameFromPath(PathBuf),
 
 	#[error("This game has already been added before: `{0}`")]
 	GameAlreadyAdded(PathBuf),
+
+	#[error("Data entry not found: `{0}`")]
+	DataEntryNotFound(String),
 }
 
 impl serde::Serialize for Error {
