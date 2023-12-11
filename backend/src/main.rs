@@ -135,18 +135,13 @@ async fn open_mod_folder(mod_id: &str, state: TauriState<'_>) -> Result {
 
 #[tauri::command]
 #[specta::specta]
-async fn download_mod(
-	mod_loader_id: &str,
-	mod_id: &str,
-	state: TauriState<'_>,
-	handle: tauri::AppHandle,
-) -> Result {
-	let game_mod = state.remote_mods.try_get(mod_id)?;
+async fn download_mod(mod_id: &str, state: TauriState<'_>, handle: tauri::AppHandle) -> Result {
+	let remote_mod = state.remote_mods.try_get(mod_id)?;
 	let mod_loaders = state.mod_loaders.get_data()?;
 
 	mod_loaders
-		.try_get(mod_loader_id)?
-		.download_mod(&game_mod)
+		.try_get(&remote_mod.common.loader_id)?
+		.download_mod(&remote_mod)
 		.await?;
 
 	refresh_local_mods(&mod_loaders, &handle, &state).await;

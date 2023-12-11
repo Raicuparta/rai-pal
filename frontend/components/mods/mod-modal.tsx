@@ -31,9 +31,7 @@ export function ModModal(props: Props) {
 					{Boolean(props.mod.remote) && (
 						<CommandButton
 							leftSection={<IconDownload />}
-							onClick={() =>
-								downloadMod(props.mod.common.loaderId, props.mod.common.id)
-							}
+							onClick={() => downloadMod(props.mod.common.id)}
 						>
 							Download mod
 						</CommandButton>
