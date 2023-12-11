@@ -36,11 +36,11 @@ impl<TData: Clone> StateData<TData> for Mutex<Option<TData>> {
 	where
 		TData: Clone,
 	{
-		let guard = self
-			.try_lock()
-			.map_err(|err| Error::FailedToAccessStateData(err.to_string()))?;
-
-		Ok(guard.as_ref().ok_or(Error::EmptyStateData())?.clone())
+		self.try_lock()
+			.map_err(|err| Error::FailedToAccessStateData(err.to_string()))?
+			.as_ref()
+			.ok_or(Error::EmptyStateData())
+			.cloned()
 	}
 }
 
@@ -61,6 +61,11 @@ where
 		K: Borrow<Q>,
 		Q: ?Sized + Hash + Display + Eq,
 	{
-		self.get_data()?.try_get(key).cloned()
+		self.try_lock()
+			.map_err(|err| Error::FailedToAccessStateData(err.to_string()))?
+			.as_ref()
+			.ok_or(Error::EmptyStateData())?
+			.try_get(key)
+			.cloned()
 	}
 }
