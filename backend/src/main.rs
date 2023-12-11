@@ -176,17 +176,21 @@ async fn install_mod(
 	handle: tauri::AppHandle,
 ) -> Result {
 	let game = state.installed_games.try_get(game_id)?;
-	let local_mods = state.local_mods.get_data()?;
 	let mod_loaders = state.mod_loaders.get_data()?;
 	let mod_loader = mod_loaders.try_get(mod_loader_id)?;
 
-	if !local_mods.contains_key(mod_id) {
-		mod_loader
-			.download_mod(&state.remote_mods.try_get(mod_id)?)
-			.await?;
+	let local_mods = {
+		let local_mods = state.local_mods.get_data()?;
+		if local_mods.contains_key(mod_id) {
+			local_mods
+		} else {
+			mod_loader
+				.download_mod(&state.remote_mods.try_get(mod_id)?)
+				.await?;
 
-		refresh_local_mods(&mod_loaders, &handle, &state).await;
-	}
+			refresh_local_mods(&mod_loaders, &handle, &state).await
+		}
+	};
 
 	mod_loader
 		.install_mod(&game, local_mods.try_get(mod_id)?)
