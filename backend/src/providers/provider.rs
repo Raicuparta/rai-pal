@@ -4,10 +4,6 @@ use async_trait::async_trait;
 use enum_dispatch::enum_dispatch;
 
 use crate::{
-	events::{
-		AppEvent,
-		EventEmitter,
-	},
 	installed_game::InstalledGame,
 	owned_game::OwnedGame,
 	providers::{
@@ -15,6 +11,7 @@ use crate::{
 		steam_provider::SteamProvider,
 	},
 	serializable_enum,
+	Error,
 	Result,
 };
 
@@ -53,23 +50,27 @@ where
 	Ok((TProvider::ID.to_string(), mod_loader))
 }
 
-fn add_entry<TProvider: ProviderActions + ProviderStatic>(map: &mut Map, handle: &tauri::AppHandle)
+fn add_entry<TProvider: ProviderActions + ProviderStatic, F>(map: &mut Map, error_handler: &F)
 where
 	Provider: std::convert::From<TProvider>,
+	F: Fn(Error) + Send,
 {
 	match create_map_entry::<TProvider>() {
 		Ok((key, value)) => {
 			map.insert(key, value);
 		}
-		Err(err) => handle.emit_event(AppEvent::Error, format!("Failed to set up provider: {err}")),
+		Err(error) => error_handler(error),
 	}
 }
 
-pub fn get_map(handle: &tauri::AppHandle) -> Map {
+pub fn get_map<F>(error_handler: F) -> Map
+where
+	F: Fn(Error) + Send,
+{
 	let mut map = Map::new();
 
-	add_entry::<SteamProvider>(&mut map, handle);
-	add_entry::<ManualProvider>(&mut map, handle);
+	add_entry::<SteamProvider, F>(&mut map, &error_handler);
+	add_entry::<ManualProvider, F>(&mut map, &error_handler);
 
 	map
 }

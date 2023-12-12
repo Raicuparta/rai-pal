@@ -1,14 +1,21 @@
 use std::{
-	fs,
-	path::Path,
+	collections::HashMap,
+	fs::{
+		self,
+		File,
+	},
+	path::{
+		Path,
+		PathBuf,
+	},
 };
+
+use async_trait::async_trait;
+use zip::ZipArchive;
 
 use super::mod_loader::ModLoaderStatic;
 use crate::{
-	files::{
-		copy_dir_all,
-		unzip,
-	},
+	files::copy_dir_all,
 	game_engines::{
 		game_engine::{
 			GameEngine,
@@ -17,11 +24,12 @@ use crate::{
 		unity::UnityScriptingBackend,
 	},
 	game_executable::OperatingSystem,
-	game_mod::{
-		Mod,
+	game_mod::CommonModData,
+	installed_game::InstalledGame,
+	local_mod::{
+		LocalMod,
 		ModKind,
 	},
-	installed_game::InstalledGame,
 	mod_loaders::mod_loader::{
 		ModLoaderActions,
 		ModLoaderData,
@@ -34,30 +42,26 @@ use crate::{
 
 serializable_struct!(BepInEx {
 	pub data: ModLoaderData,
+	pub id: &'static str,
 });
 
+#[async_trait]
 impl ModLoaderStatic for BepInEx {
 	const ID: &'static str = "bepinex";
 
-	fn new(resources_path: &Path) -> Result<Self> {
-		let path = resources_path.join(Self::ID);
-
-		let mods = {
-			let mut mods = find_mods(&path, UnityScriptingBackend::Il2Cpp)?;
-			mods.append(&mut find_mods(&path, UnityScriptingBackend::Mono)?);
-			mods
-		};
-
+	async fn new(resources_path: &Path) -> Result<Self> {
 		Ok(Self {
+			id: Self::ID,
 			data: ModLoaderData {
 				id: Self::ID.to_string(),
-				mods,
-				path,
+				path: resources_path.join(Self::ID),
+				kind: ModKind::Installable,
 			},
 		})
 	}
 }
 
+#[async_trait]
 impl ModLoaderActions for BepInEx {
 	fn get_data(&self) -> &ModLoaderData {
 		&self.data
@@ -103,7 +107,7 @@ impl ModLoaderActions for BepInEx {
 		let folder_to_copy_to_game = architecture_path.join("copy-to-game");
 		let game_data_folder = &game.get_installed_mods_folder()?;
 
-		unzip(&mod_loader_archive, game_data_folder)?;
+		ZipArchive::new(File::open(mod_loader_archive)?)?.extract(game_data_folder)?;
 
 		let game_folder = paths::path_parent(&game.executable.path)?;
 
@@ -142,46 +146,54 @@ impl ModLoaderActions for BepInEx {
 		Ok(())
 	}
 
-	fn install_mod(&self, game: &InstalledGame, mod_id: &str) -> Result {
-		let game_mod = self
-			.data
-			.mods
-			.iter()
-			.find(|game_mod| game_mod.id == mod_id)
-			.ok_or_else(|| Error::ModNotFound(mod_id.to_string()))?;
-
+	async fn install_mod_inner(&self, game: &InstalledGame, local_mod: &LocalMod) -> Result {
 		self.install(game)?;
 
 		let bepinex_folder = game.get_installed_mods_folder()?.join("BepInEx");
 
-		let mod_plugin_path = game_mod.path.join("plugins");
+		let mod_plugin_path = local_mod.data.path.join("plugins");
 		if mod_plugin_path.is_dir() {
 			copy_dir_all(
 				mod_plugin_path,
-				bepinex_folder.join("plugins").join(&game_mod.id),
+				bepinex_folder.join("plugins").join(&local_mod.common.id),
 			)?;
 		}
 
-		let mod_patch_path = game_mod.path.join("patchers");
+		let mod_patch_path = local_mod.data.path.join("patchers");
 		if mod_patch_path.is_dir() {
 			copy_dir_all(
 				mod_patch_path,
-				bepinex_folder.join("patchers").join(&game_mod.id),
+				bepinex_folder.join("patchers").join(&local_mod.common.id),
 			)?;
 		}
 
 		Ok(())
 	}
 
-	fn open_mod_folder(&self, mod_id: &str) -> Result {
-		let game_mod = self
-			.data
-			.mods
-			.iter()
-			.find(|game_mod| game_mod.id == mod_id)
-			.ok_or_else(|| Error::ModNotFound(mod_id.to_string()))?;
+	fn get_mod_path(&self, mod_data: &CommonModData) -> Result<PathBuf> {
+		mod_data.unity_backend.map_or_else(
+			|| Err(Error::UnityBackendUnknown(mod_data.id.clone())),
+			|unity_backend| {
+				Ok(Self::get_installed_mods_path()?
+					.join(unity_backend.to_string())
+					.join(&mod_data.id))
+			},
+		)
+	}
 
-		game_mod.open_folder()
+	fn get_local_mods(&self) -> Result<HashMap<String, LocalMod>> {
+		let installed_mods_path = Self::get_installed_mods_path()?;
+
+		let local_mods = {
+			let mut local_mods = find_mods(&installed_mods_path, UnityScriptingBackend::Il2Cpp)?;
+			local_mods.extend(find_mods(
+				&installed_mods_path,
+				UnityScriptingBackend::Mono,
+			)?);
+			local_mods
+		};
+
+		Ok(local_mods)
 	}
 }
 
@@ -269,26 +281,29 @@ fn reg_add_in_section(reg: &str, section: &str, key: &str, value: &str) -> Strin
 	split.join("\n")
 }
 
-fn find_mods(mod_loader_path: &Path, scripting_backend: UnityScriptingBackend) -> Result<Vec<Mod>> {
-	let mods_folder_path = mod_loader_path
-		.join(scripting_backend.to_string())
-		.join("mods");
+fn find_mods(
+	installed_mods_path: &Path,
+	scripting_backend: UnityScriptingBackend,
+) -> Result<HashMap<String, LocalMod>> {
+	let mods_folder_path = installed_mods_path.join(scripting_backend.to_string());
 
 	let entries: Vec<_> = paths::glob_path(&mods_folder_path.join("*"))?.collect();
 
 	Ok(entries
 		.iter()
-		.filter_map(|entry| match entry {
-			Ok(mod_path) => Some(
-				Mod::new(
+		.filter_map(|entry| {
+			entry.as_ref().map_or(None, |mod_path| {
+				if let Ok(local_mod) = LocalMod::new(
+					BepInEx::ID,
 					mod_path,
 					Some(GameEngineBrand::Unity),
 					Some(scripting_backend),
-					ModKind::Installable,
-				)
-				.ok()?,
-			),
-			Err(_) => None,
+				) {
+					Some((local_mod.common.id.clone(), local_mod))
+				} else {
+					None
+				}
+			})
 		})
 		.collect())
 }

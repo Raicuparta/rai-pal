@@ -1,6 +1,6 @@
-use std::path::{
-	Path,
-	PathBuf,
+use std::collections::{
+	HashMap,
+	HashSet,
 };
 
 use crate::{
@@ -8,51 +8,39 @@ use crate::{
 		game_engine::GameEngineBrand,
 		unity::UnityScriptingBackend,
 	},
-	paths,
-	serializable_enum,
+	local_mod::{self,},
+	remote_mod,
 	serializable_struct,
-	Result,
 };
 
-serializable_enum!(ModKind {
-	Installable,
-	Runnable,
-});
-
-serializable_struct!(Mod {
+serializable_struct!(CommonModData {
 	pub id: String,
-	pub name: String,
-	pub scripting_backend: Option<UnityScriptingBackend>,
 	pub engine: Option<GameEngineBrand>,
-	pub kind: ModKind,
-	pub path: PathBuf,
+	pub unity_backend: Option<UnityScriptingBackend>,
+	pub loader_id: String, // TODO make enum
 });
 
-impl Mod {
-	pub fn new(
-		path: &Path,
-		engine: Option<GameEngineBrand>,
-		scripting_backend: Option<UnityScriptingBackend>,
-		kind: ModKind,
-	) -> Result<Self> {
-		let name = paths::file_name_without_extension(path)?;
+pub type CommonDataMap = HashMap<String, CommonModData>;
 
-		Ok(Self {
-			id: format!(
-				"{}_{}_{}",
-				name,
-				engine.map_or(String::new(), |e| e.to_string()),
-				scripting_backend.map_or(String::new(), |s| s.to_string()),
-			),
-			path: path.to_path_buf(),
-			name: name.to_string(),
-			engine,
-			scripting_backend,
-			kind,
+pub fn get_common_data_map(
+	local_mods: &local_mod::Map,
+	remote_mods: &remote_mod::Map,
+) -> CommonDataMap {
+	let keys: HashSet<_> = remote_mods
+		.keys()
+		.chain(local_mods.keys())
+		.cloned()
+		.collect();
+
+	keys.iter()
+		.filter_map(|key| {
+			Some((
+				key.clone(),
+				local_mods.get(key).map_or_else(
+					|| remote_mods.get(key).map(|local| local.common.clone()),
+					|remote| Some(remote.common.clone()),
+				)?,
+			))
 		})
-	}
-
-	pub fn open_folder(&self) -> Result {
-		Ok(open::that_detached(&self.path)?)
-	}
+		.collect()
 }

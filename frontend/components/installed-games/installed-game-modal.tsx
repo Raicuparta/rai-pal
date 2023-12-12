@@ -1,4 +1,4 @@
-import { Flex, Modal, Stack, Text } from "@mantine/core";
+import { Flex, Modal, Stack, Text, ThemeIcon, Tooltip } from "@mantine/core";
 import {
 	InstalledGame,
 	installMod,
@@ -6,26 +6,32 @@ import {
 	openGameModsFolder,
 	removeGame,
 	startGame,
+	startGameExe,
 	uninstallMod,
 } from "@api/bindings";
 import { useMemo } from "react";
-import { GameName } from "./game-name";
+import { ItemName } from "../item-name";
 import { CommandButton } from "@components/command-button";
 import {
+	IconAppWindow,
 	IconBooks,
 	IconBrowser,
 	IconFolder,
 	IconFolderCog,
 	IconPlayerPlay,
+	IconRefreshAlert,
+	IconShoppingBag,
 	IconTool,
 	IconTrash,
 } from "@tabler/icons-react";
-import { CodeHighlight } from "@mantine/code-highlight";
 import { steamCommands } from "../../util/steam";
 import { ModalImage } from "@components/modal-image";
 import { useAtomValue } from "jotai";
 import { modLoadersAtom } from "@hooks/use-data";
 import { CommandButtonGroup } from "@components/command-button-group";
+import { DebugData } from "@components/debug-data";
+import { useUnifiedMods } from "@hooks/use-unified-mods";
+import { isOutdated } from "../../util/is-outdated";
 
 type Props = {
 	readonly game: InstalledGame;
@@ -34,21 +40,22 @@ type Props = {
 
 export function InstalledGameModal(props: Props) {
 	const modLoaderMap = useAtomValue(modLoadersAtom);
+	const mods = useUnifiedMods();
 
-	const debugData = useMemo(
-		() => JSON.stringify(props.game, null, 2),
-		[props.game],
-	);
-
+	// TODO make less insane?
 	const modLoaders = useMemo(
 		() =>
 			Object.values(modLoaderMap ?? {}).map((modLoader) => ({
 				...modLoader,
-				mods: modLoader.mods.filter(
-					(mod) => mod.id in props.game.availableMods,
-				),
+				mods: Object.entries(mods)
+					.filter(
+						([modId, mod]) =>
+							modId in props.game.installedModVersions &&
+							mod.common.loaderId === modLoader.id,
+					)
+					.map(([, mod]) => mod),
 			})),
-		[modLoaderMap, props.game.availableMods],
+		[modLoaderMap, mods, props.game.installedModVersions],
 	);
 
 	return (
@@ -57,7 +64,9 @@ export function InstalledGameModal(props: Props) {
 			onClose={props.onClose}
 			opened
 			size="lg"
-			title={<GameName game={props.game} />}
+			title={
+				<ItemName label={props.game.discriminator}>{props.game.name}</ItemName>
+			}
 		>
 			<Stack>
 				<ModalImage src={props.game.thumbnailUrl} />
@@ -66,11 +75,21 @@ export function InstalledGameModal(props: Props) {
 					gap="md"
 				>
 					<CommandButtonGroup label="Game Actions">
+						{props.game.providerId !== "Manual" && (
+							<CommandButton
+								leftSection={<IconPlayerPlay />}
+								rightSection={<IconShoppingBag />}
+								onClick={() => startGame(props.game.id)}
+							>
+								Start Game ({props.game.providerId})
+							</CommandButton>
+						)}
 						<CommandButton
 							leftSection={<IconPlayerPlay />}
-							onClick={() => startGame(props.game.id)}
+							rightSection={<IconAppWindow />}
+							onClick={() => startGameExe(props.game.id)}
 						>
-							Start Game
+							Start Game (Exe)
 						</CommandButton>
 						<CommandButton
 							leftSection={<IconFolder />}
@@ -122,54 +141,85 @@ export function InstalledGameModal(props: Props) {
 									label={modLoader.id.toUpperCase()}
 									key={modLoader.id}
 								>
-									{modLoader.mods.map((mod) =>
-										props.game.availableMods[mod.id] ? (
-											<CommandButton
-												leftSection={<IconTrash />}
-												key={mod.name}
-												onClick={() => uninstallMod(props.game.id, mod.id)}
+									{/* TODO: these buttons could be extracted to a separate component, lots of stuff happening. */}
+									{modLoader.mods.map((mod) => {
+										const installedVersion =
+											props.game.installedModVersions[mod.common.id];
+										const outdated = isOutdated(
+											installedVersion,
+											mod.remote?.latestVersion?.id,
+										);
+
+										return installedVersion ? (
+											<Tooltip
+												disabled={!outdated}
+												label="Mod outdated. Reinstall it to update."
+												key={mod.common.id}
 											>
-												Uninstall {mod.name}
-											</CommandButton>
+												<CommandButton
+													leftSection={
+														outdated ? (
+															<ThemeIcon
+																radius="xl"
+																color="orange"
+															>
+																<IconRefreshAlert />
+															</ThemeIcon>
+														) : (
+															<IconTrash />
+														)
+													}
+													onClick={() =>
+														uninstallMod(props.game.id, mod.common.id)
+													}
+												>
+													Uninstall {mod.remote?.title ?? mod.common.id}{" "}
+													<Text
+														opacity={0.5}
+														ml="xs"
+														size="xs"
+													>
+														({installedVersion})
+													</Text>
+												</CommandButton>
+											</Tooltip>
 										) : (
 											<CommandButton
 												leftSection={<IconTool />}
-												key={mod.name}
+												key={mod.common.id}
 												confirmationText="Attention: be careful when installing mods on multiplayer games! Anticheat can detect some mods and get you banned, even if the mods seem harmless."
 												confirmationSkipId="install-mod-confirm"
-												onClick={() =>
-													installMod(modLoader.id, mod.id, props.game.id)
-												}
+												onClick={() => installMod(mod.common.id, props.game.id)}
 											>
-												{mod.kind === "Installable" ? "Install" : "Run"}{" "}
-												{mod.name}
-												<Text
-													opacity={0.5}
-													ml="xs"
-													size="xs"
-												>
-													{props.game.executable.engine
-														? ""
-														: ` (${mod.engine}${
-																mod.scriptingBackend
-																	? ` ${mod.scriptingBackend}`
-																	: ""
-														  })`}
-												</Text>
+												{modLoader.kind === "Installable" ? "Install" : "Run"}{" "}
+												{mod.remote?.title ?? mod.common.id}
+												{!props.game.executable.engine && (
+													// TODO this text to separate component, it's used in multiple places.
+													<Text
+														opacity={0.5}
+														ml="xs"
+														size="xs"
+													>
+														({mod.common.engine})
+													</Text>
+												)}
+												{mod.remote?.latestVersion && (
+													<Text
+														opacity={0.5}
+														ml="xs"
+														size="xs"
+													>
+														({mod.remote.latestVersion?.id})
+													</Text>
+												)}
 											</CommandButton>
-										),
-									)}
+										);
+									})}
 								</CommandButtonGroup>
 							),
 					)}
 				</Flex>
-				<Stack gap="xs">
-					<label>Debug Data</label>
-					<CodeHighlight
-						code={debugData}
-						language="json"
-					/>
-				</Stack>
+				<DebugData data={props.game} />
 			</Stack>
 		</Modal>
 	);

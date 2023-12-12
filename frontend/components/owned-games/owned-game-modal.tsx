@@ -1,12 +1,11 @@
 import { Modal, Stack } from "@mantine/core";
 import { OwnedGame } from "@api/bindings";
 import { CommandButton } from "@components/command-button";
-import { useMemo } from "react";
 import { IconBooks, IconBrowser, IconDownload } from "@tabler/icons-react";
-import { CodeHighlight } from "@mantine/code-highlight";
 import { steamCommands } from "../../util/steam";
 import { ModalImage } from "@components/modal-image";
 import { CommandButtonGroup } from "@components/command-button-group";
+import { DebugData } from "@components/debug-data";
 
 type Props = {
 	readonly game: OwnedGame;
@@ -14,11 +13,6 @@ type Props = {
 };
 
 export function OwnedGameModal(props: Props) {
-	const debugData = useMemo(
-		() => JSON.stringify(props.game, null, 2),
-		[props.game],
-	);
-
 	return (
 		<Modal
 			centered
@@ -49,13 +43,7 @@ export function OwnedGameModal(props: Props) {
 						Install
 					</CommandButton>
 				</CommandButtonGroup>
-				<Stack gap="xs">
-					<label>Debug Data</label>
-					<CodeHighlight
-						code={debugData}
-						language="json"
-					/>
-				</Stack>
+				<DebugData data={props.game} />
 			</Stack>
 		</Modal>
 	);

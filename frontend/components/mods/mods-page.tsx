@@ -1,21 +1,37 @@
-import { Button, Group, Stack, Table } from "@mantine/core";
-import { Fragment } from "react";
+import { Button, Group, Stack, Table, Text } from "@mantine/core";
+import { useMemo, useState } from "react";
 import { TableContainer } from "@components/table/table-container";
 import { RefreshButton } from "@components/refresh-button";
-import { openModFolder, openModsFolder } from "@api/bindings";
+import { openModsFolder } from "@api/bindings";
 import { IconFolderCog } from "@tabler/icons-react";
 import {
 	EngineBadge,
 	UnityBackendBadge,
 } from "@components/badges/color-coded-badge";
-import { useAtomValue } from "jotai";
-import { modLoadersAtom } from "@hooks/use-data";
+import { ModModal } from "./mod-modal";
+import { useUnifiedMods } from "@hooks/use-unified-mods";
+import { ModVersionBadge } from "./mod-version-badge";
+import { ItemName } from "@components/item-name";
 
 export function ModsPage() {
-	const modLoaders = useAtomValue(modLoadersAtom);
+	const [selectedModId, setSelectedId] = useState<string>();
+
+	const mods = useUnifiedMods();
+
+	const selectedMod = useMemo(() => {
+		const result = selectedModId ? mods[selectedModId] : undefined;
+
+		return result;
+	}, [selectedModId, mods]);
 
 	return (
 		<Stack h="100%">
+			{selectedMod ? (
+				<ModModal
+					onClose={() => setSelectedId(undefined)}
+					mod={selectedMod}
+				/>
+			) : null}
 			<Group justify="end">
 				<Button
 					onClick={openModsFolder}
@@ -30,6 +46,7 @@ export function ModsPage() {
 					<Table.Thead>
 						<Table.Tr>
 							<Table.Th>Mod</Table.Th>
+							<Table.Th>Version</Table.Th>
 							<Table.Th
 								ta="center"
 								w={100}
@@ -51,24 +68,38 @@ export function ModsPage() {
 						</Table.Tr>
 					</Table.Thead>
 					<Table.Tbody>
-						{Object.values(modLoaders ?? {}).map((modLoader) => (
-							<Fragment key={modLoader.id}>
-								{modLoader.mods.map((mod) => (
-									<Table.Tr
-										key={mod.path}
-										onClick={() => openModFolder(modLoader.id, mod.id)}
-									>
-										<Table.Td ta="left">{mod.name}</Table.Td>
-										<Table.Td>{modLoader.id}</Table.Td>
-										<Table.Td>
-											<EngineBadge value={mod.engine} />
-										</Table.Td>
-										<Table.Td>
-											<UnityBackendBadge value={mod.scriptingBackend} />
-										</Table.Td>
-									</Table.Tr>
-								))}
-							</Fragment>
+						{Object.entries(mods).map(([modId, mod]) => (
+							<Table.Tr
+								key={modId}
+								onClick={() => setSelectedId(mod.common.id)}
+							>
+								<Table.Td ta="left">
+									<ItemName label={`by ${mod.remote?.author}`}>
+										{mod.remote?.title ?? modId}
+									</ItemName>
+									{mod.remote?.description && (
+										<Text
+											size="sm"
+											opacity={0.5}
+										>
+											{mod.remote.description}
+										</Text>
+									)}
+								</Table.Td>
+								<Table.Td>
+									<ModVersionBadge
+										localVersion={mod.local?.manifest?.version}
+										remoteVersion={mod.remote?.latestVersion?.id}
+									/>
+								</Table.Td>
+								<Table.Td>{mod.common.loaderId}</Table.Td>
+								<Table.Td>
+									<EngineBadge value={mod.common.engine} />
+								</Table.Td>
+								<Table.Td>
+									<UnityBackendBadge value={mod.common.unityBackend} />
+								</Table.Td>
+							</Table.Tr>
 						))}
 					</Table.Tbody>
 				</Table>
