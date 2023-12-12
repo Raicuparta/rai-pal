@@ -12,7 +12,7 @@ type Props = {
 };
 
 export function ModModal(props: Props) {
-	const isDownloadAvailable = Boolean(props.mod.remote?.latestVersion.url);
+	const isDownloadAvailable = Boolean(props.mod.remote?.latestVersion?.url);
 
 	return (
 		<Modal

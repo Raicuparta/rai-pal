@@ -84,12 +84,12 @@ impl ModLoaderActions for UnrealVr {
 	}
 
 	fn get_local_mods(&self) -> Result<HashMap<String, LocalMod>> {
-		let exe_path = self.get_data().path.join(Self::EXE_NAME);
-		if !exe_path.is_file() {
+		let folder_path = &self.get_data().path;
+		if !folder_path.join(Self::EXE_NAME).is_file() {
 			return Ok(HashMap::default());
 		}
 
-		let local_mod = LocalMod::new(Self::ID, &exe_path, Some(GameEngineBrand::Unreal), None)?;
+		let local_mod = LocalMod::new(Self::ID, folder_path, Some(GameEngineBrand::Unreal), None)?;
 
 		Ok(HashMap::from([(local_mod.common.id.clone(), local_mod)]))
 	}

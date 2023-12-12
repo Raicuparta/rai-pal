@@ -17,7 +17,7 @@ serializable_struct!(DatabaseEntry {
 	pub author: String,
 	pub source_code: String,
 	pub description: String,
-	pub latest_version: ModDownload,
+	pub latest_version: Option<ModDownload>,
 	pub engine: Option<GameEngineBrand>,
 	pub unity_backend: Option<UnityScriptingBackend>,
 });

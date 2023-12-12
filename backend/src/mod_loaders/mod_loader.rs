@@ -125,42 +125,45 @@ pub trait ModLoaderActions {
 	}
 
 	async fn download_mod(&self, remote_mod: &RemoteMod) -> Result {
-		let target_path = self.get_mod_path(&remote_mod.common)?;
-		let mod_loader_data = self.get_data();
-		let mod_id = &remote_mod.common.id;
-		let downloads_path = paths::installed_mods_path()?
-			.join(&mod_loader_data.id)
-			.join("downloads");
+		if let Some(latest_version) = &remote_mod.data.latest_version {
+			let target_path = self.get_mod_path(&remote_mod.common)?;
+			let mod_loader_data = self.get_data();
+			let mod_id = &remote_mod.common.id;
+			let downloads_path = paths::installed_mods_path()?
+				.join(&mod_loader_data.id)
+				.join("downloads");
 
-		let response = reqwest::get(&remote_mod.data.latest_version.url).await?;
+			let response = reqwest::get(&latest_version.url).await?;
 
-		fs::create_dir_all(&downloads_path)?;
+			fs::create_dir_all(&downloads_path)?;
 
-		let zip_path = downloads_path.join(format!("{}.zip", mod_id));
+			let zip_path = downloads_path.join(format!("{}.zip", mod_id));
 
-		// TODO Stream to disk instead of keeping it all in memory.
-		fs::write(&zip_path, response.bytes().await?)?;
-		let file = File::open(&zip_path)?;
+			// TODO Stream to disk instead of keeping it all in memory.
+			fs::write(&zip_path, response.bytes().await?)?;
+			let file = File::open(&zip_path)?;
 
-		let mut zip_archive = ZipArchive::new(file)?;
+			let mut zip_archive = ZipArchive::new(file)?;
 
-		if let Some(root) = &remote_mod.data.latest_version.root {
-			let unzip_path = downloads_path.join(mod_id);
-			zip_archive.extract(downloads_path.join(mod_id))?;
-			files::copy_dir_all(unzip_path.join(root), &target_path)?;
-		} else {
-			zip_archive.extract(&target_path)?;
+			if let Some(root) = &latest_version.root {
+				let unzip_path = downloads_path.join(mod_id);
+				zip_archive.extract(downloads_path.join(mod_id))?;
+				files::copy_dir_all(unzip_path.join(root), &target_path)?;
+			} else {
+				zip_archive.extract(&target_path)?;
+			}
+
+			// Saves the manifest so we know which version of the mod we installed.
+			fs::write(
+				local_mod::get_manifest_path(&target_path),
+				serde_json::to_string_pretty(&local_mod::Manifest {
+					version: latest_version.id.clone(),
+				})?,
+			)?;
+
+			return Ok(());
 		}
-
-		// Saves the manifest so we know which version of the mod we installed.
-		fs::write(
-			local_mod::get_manifest_path(&target_path),
-			serde_json::to_string_pretty(&local_mod::Manifest {
-				version: remote_mod.data.latest_version.id.clone(),
-			})?,
-		)?;
-
-		Ok(())
+		Err(Error::ModDownloadNotAvailable(remote_mod.common.id.clone()))
 	}
 }
 

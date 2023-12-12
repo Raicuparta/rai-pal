@@ -145,7 +145,7 @@ export function InstalledGameModal(props: Props) {
 											props.game.installedModVersions[mod.common.id];
 										const outdated = isOutdated(
 											installedVersion,
-											mod.remote?.latestVersion.id,
+											mod.remote?.latestVersion?.id,
 										);
 
 										return installedVersion ? (
@@ -201,13 +201,13 @@ export function InstalledGameModal(props: Props) {
 														({mod.common.engine})
 													</Text>
 												)}
-												{mod.remote && (
+												{mod.remote?.latestVersion && (
 													<Text
 														opacity={0.5}
 														ml="xs"
 														size="xs"
 													>
-														({mod.remote.latestVersion.id})
+														({mod.remote.latestVersion?.id})
 													</Text>
 												)}
 											</CommandButton>

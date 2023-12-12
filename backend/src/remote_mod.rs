@@ -11,7 +11,7 @@ serializable_struct!(RemoteModData {
   pub author: String,
   pub source_code: String,
   pub description: String,
-  pub latest_version: ModDownload,
+  pub latest_version: Option<ModDownload>,
 });
 
 serializable_struct!(RemoteMod {
