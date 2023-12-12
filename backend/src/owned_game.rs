@@ -1,4 +1,7 @@
-use std::collections::HashSet;
+use std::collections::{
+	HashMap,
+	HashSet,
+};
 
 use crate::{
 	game_engines::game_engine::GameEngineBrand,
@@ -17,3 +20,5 @@ serializable_struct!(OwnedGame {
 	pub release_date: i32,
 	pub thumbnail_url: String,
 });
+
+pub type Map = HashMap<String, OwnedGame>;

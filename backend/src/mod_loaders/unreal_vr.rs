@@ -1,4 +1,12 @@
-use std::path::Path;
+use std::{
+	collections::HashMap,
+	path::{
+		Path,
+		PathBuf,
+	},
+};
+
+use async_trait::async_trait;
 
 use super::mod_loader::{
 	ModLoaderActions,
@@ -7,11 +15,12 @@ use super::mod_loader::{
 };
 use crate::{
 	game_engines::game_engine::GameEngineBrand,
-	game_mod::{
-		Mod,
+	game_mod::CommonModData,
+	installed_game::InstalledGame,
+	local_mod::{
+		LocalMod,
 		ModKind,
 	},
-	installed_game::InstalledGame,
 	result::Error,
 	serializable_struct,
 	windows,
@@ -26,41 +35,35 @@ impl UnrealVr {
 	const EXE_NAME: &'static str = "UnrealVR.exe";
 }
 
+#[async_trait]
 impl ModLoaderStatic for UnrealVr {
 	const ID: &'static str = "uevr";
 
-	fn new(resources_path: &Path) -> Result<Self>
+	async fn new(resources_path: &Path) -> Result<Self>
 	where
 		Self: std::marker::Sized,
 	{
-		let path = resources_path.join(Self::ID);
-		let mods = if path.join(Self::EXE_NAME).exists() {
-			vec![Mod::new(
-				&path.join(Self::EXE_NAME),
-				Some(GameEngineBrand::Unreal),
-				None,
-				ModKind::Runnable,
-			)?]
-		} else {
-			vec![]
-		};
-
 		Ok(Self {
 			data: ModLoaderData {
 				id: Self::ID.to_string(),
-				mods,
-				path,
+				path: resources_path.join(Self::ID),
+				kind: ModKind::Runnable,
 			},
 		})
 	}
 }
 
+#[async_trait]
 impl ModLoaderActions for UnrealVr {
 	fn get_data(&self) -> &ModLoaderData {
 		&self.data
 	}
 
-	fn install(&self, game: &InstalledGame) -> Result {
+	fn install(&self, _game: &InstalledGame) -> Result {
+		todo!()
+	}
+
+	async fn install_mod_inner(&self, game: &InstalledGame, local_mod: &LocalMod) -> Result {
 		let parameters = format!(
 			"--attach=\"{}\"",
 			game.executable
@@ -70,14 +73,24 @@ impl ModLoaderActions for UnrealVr {
 				.to_string_lossy()
 		);
 
-		windows::run_as_admin(&self.data.path.join(Self::EXE_NAME), &parameters)
+		windows::run_as_admin(
+			&self.get_mod_path(&local_mod.common)?.join(Self::EXE_NAME),
+			&parameters,
+		)
 	}
 
-	fn install_mod(&self, game: &InstalledGame, _mod_idd: &str) -> Result {
-		self.install(game)
+	fn get_mod_path(&self, _mod_data: &CommonModData) -> Result<PathBuf> {
+		Ok(self.get_data().path.clone())
 	}
 
-	fn open_mod_folder(&self, _mod_id: &str) -> Result {
-		Ok(open::that_detached(&self.data.path)?)
+	fn get_local_mods(&self) -> Result<HashMap<String, LocalMod>> {
+		let folder_path = &self.get_data().path;
+		if !folder_path.join(Self::EXE_NAME).is_file() {
+			return Ok(HashMap::default());
+		}
+
+		let local_mod = LocalMod::new(Self::ID, folder_path, Some(GameEngineBrand::Unreal), None)?;
+
+		Ok(HashMap::from([(local_mod.common.id.clone(), local_mod)]))
 	}
 }

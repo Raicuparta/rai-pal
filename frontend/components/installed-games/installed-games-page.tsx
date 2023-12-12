@@ -35,18 +35,26 @@ export type TableSortMethod = (
 ) => number;
 
 export function InstalledGamesPage() {
-	const gameMap = useAtomValue(installedGamesAtom);
+	const installedGames = useAtomValue(installedGamesAtom);
+
+	const games_list = useMemo(
+		() => (installedGames ? Object.values(installedGames) : []),
+		[installedGames],
+	);
 
 	const [selectedGameId, setSelectedGameId] = useState<string>();
+
+	const selectedGame = useMemo(
+		() =>
+			installedGames && selectedGameId
+				? installedGames[selectedGameId]
+				: undefined,
+		[installedGames, selectedGameId],
+	);
 
 	const [hiddenColumns, setHiddenColumns] = usePersistedState<string[]>(
 		["operatingSystem", "provider"],
 		"installed-hidden-columns",
-	);
-
-	const games = useMemo(
-		() => (gameMap ? Object.values(gameMap) : []),
-		[gameMap],
 	);
 
 	const filteredColumns = useMemo(
@@ -61,15 +69,10 @@ export function InstalledGamesPage() {
 		useFilteredList(
 			"installed-games-filter",
 			filteredColumns,
-			games,
+			games_list,
 			filterInstalledGame,
 			defaultFilter,
 		);
-
-	const selectedGame = useMemo(
-		() => (gameMap && selectedGameId ? gameMap[selectedGameId] : undefined),
-		[gameMap, selectedGameId],
-	);
 
 	const isFilterActive = Object.values(filter).filter(Boolean).length > 0;
 

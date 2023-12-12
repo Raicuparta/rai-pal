@@ -10,7 +10,7 @@ import {
 	UnityScriptingBackend,
 } from "@api/bindings";
 import { TableColumn } from "@components/table/table-head";
-import { GameName } from "./game-name";
+import { ItemName } from "../item-name";
 import {
 	ArchitectureBadge,
 	EngineBadge,
@@ -40,7 +40,7 @@ const nameColumn: TableColumn<InstalledGame> = {
 	getSortValue: (game) => game.name,
 	renderCell: (game) => (
 		<Table.Td className={styles.nameCell}>
-			<GameName game={game} />
+			<ItemName label={game.discriminator}>{game.name}</ItemName>
 		</Table.Td>
 	),
 };
