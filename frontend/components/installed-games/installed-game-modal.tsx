@@ -10,7 +10,7 @@ import {
 	uninstallMod,
 } from "@api/bindings";
 import { useMemo } from "react";
-import { GameName } from "./game-name";
+import { ItemName } from "../item-name";
 import { CommandButton } from "@components/command-button";
 import {
 	IconAppWindow,
@@ -64,7 +64,9 @@ export function InstalledGameModal(props: Props) {
 			onClose={props.onClose}
 			opened
 			size="lg"
-			title={<GameName game={props.game} />}
+			title={
+				<ItemName label={props.game.discriminator}>{props.game.name}</ItemName>
+			}
 		>
 			<Stack>
 				<ModalImage src={props.game.thumbnailUrl} />

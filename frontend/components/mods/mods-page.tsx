@@ -11,6 +11,7 @@ import {
 import { ModModal } from "./mod-modal";
 import { useUnifiedMods } from "@hooks/use-unified-mods";
 import { ModVersionBadge } from "./mod-version-badge";
+import { ItemName } from "@components/item-name";
 
 export function ModsPage() {
 	const [selectedModId, setSelectedId] = useState<string>();
@@ -73,7 +74,9 @@ export function ModsPage() {
 								onClick={() => setSelectedId(mod.common.id)}
 							>
 								<Table.Td ta="left">
-									<Text>{mod.remote?.title ?? modId}</Text>
+									<ItemName label={`by ${mod.remote?.author}`}>
+										{mod.remote?.title ?? modId}
+									</ItemName>
 									{mod.remote?.description && (
 										<Text
 											size="sm"

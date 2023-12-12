@@ -1,0 +1,5 @@
+.gameName {
+	gap: var(--mantine-spacing-xs);
+	flex-wrap: wrap;
+	align-items: center;
+}

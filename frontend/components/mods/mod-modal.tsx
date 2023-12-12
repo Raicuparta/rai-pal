@@ -5,6 +5,7 @@ import { IconDownload, IconFolderCog } from "@tabler/icons-react";
 import { CommandButtonGroup } from "@components/command-button-group";
 import { DebugData } from "@components/debug-data";
 import { UnifiedMod } from "@hooks/use-unified-mods";
+import { ItemName } from "@components/item-name";
 
 type Props = {
 	readonly mod: UnifiedMod;
@@ -20,7 +21,11 @@ export function ModModal(props: Props) {
 			onClose={props.onClose}
 			opened
 			size="lg"
-			title={props.mod.remote?.title ?? props.mod.common.id}
+			title={
+				<ItemName label={`by ${props.mod.remote?.author}`}>
+					{props.mod.remote?.title ?? props.mod.common.id}
+				</ItemName>
+			}
 		>
 			<Stack>
 				<CommandButtonGroup label="Mod Actions">
