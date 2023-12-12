@@ -41,7 +41,10 @@ use result::{
 	Result,
 };
 use steamlocate::SteamDir;
-use tauri::api::dialog::message;
+use tauri::{
+	api::dialog::message,
+	Manager,
+};
 
 mod analytics;
 mod app_state;
@@ -485,15 +488,15 @@ fn main() {
 			local_mods: Mutex::default(),
 			remote_mods: Mutex::default(),
 		})
-		.setup(|_app| {
-			#[cfg(target_os = "linux")]
-			{
-				// This prevents/reduces the white flashbang on app start.
-				// Unfortunately, it will still show the default window color for the system for a bit,
-				// which can some times be white.
-				if let Some(window) = _app.get_window("main") {
-					window.set_title(&format!("Rai Pal {}", env!("CARGO_PKG_VERSION")))?;
+		.setup(|app| {
+			// This prevents/reduces the white flashbang on app start.
+			// Unfortunately, it will still show the default window color for the system for a bit,
+			// which can some times be white.
+			if let Some(window) = app.get_window("main") {
+				window.set_title(&format!("Rai Pal {}", env!("CARGO_PKG_VERSION")))?;
 
+				#[cfg(target_os = "linux")]
+				{
 					window.with_webview(|webview| {
 						use webkit2gtk::traits::WebViewExt;
 						let mut color = webview.inner().background_color();
