@@ -181,15 +181,31 @@ async fn install_mod(
 	let mod_loader = mod_loaders.try_get(&remote_mod.common.loader_id)?;
 
 	let local_mods = {
-		let local_mods = state.local_mods.get_data()?;
-		if local_mods.contains_key(mod_id) {
-			local_mods
+		let state_local_mods = state.local_mods.get_data()?;
+		if state_local_mods.contains_key(mod_id) {
+			state_local_mods
 		} else {
-			mod_loader
-				.download_mod(&state.remote_mods.try_get(mod_id)?)
-				.await?;
+			// Local mod wasn't in app state,
+			// so let's sync app state to local files in case some file was manually changed.
+			let disk_local_mods = refresh_local_mods(&mod_loaders, &handle, &state).await;
 
-			refresh_local_mods(&mod_loaders, &handle, &state).await
+			if state_local_mods.contains_key(mod_id) {
+				disk_local_mods
+			} else {
+				if remote_mod.data.latest_version.is_some() {
+					// If local mod still can't be found on disk,
+					// we try to download it from the database.
+					mod_loader
+						.download_mod(&state.remote_mods.try_get(mod_id)?)
+						.await?;
+				} else {
+					// If downloading from the database isn't possible,
+					// we just open the mod loader folder so the user can install it themselves.
+					mod_loader.open_folder()?;
+				}
+
+				refresh_local_mods(&mod_loaders, &handle, &state).await
+			}
 		}
 	};
 
