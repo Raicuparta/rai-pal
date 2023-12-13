@@ -1,10 +1,9 @@
-import { Table } from "@mantine/core";
+import { Table, Tooltip } from "@mantine/core";
 import {
 	Architecture,
 	GameEngine,
 	GameEngineBrand,
 	GameEngineVersion,
-	InstalledGame,
 	OperatingSystem,
 	ProviderId,
 	UnityScriptingBackend,
@@ -19,13 +18,15 @@ import {
 	UnityBackendBadge,
 } from "@components/badges/color-coded-badge";
 import { ThumbnailCell } from "@components/table/thumbnail-cell";
+import { OutdatedMarker } from "@components/OutdatedMarker";
 import {
 	engineFilterOptions,
 	providerFilterOptions,
 } from "../../util/common-filter-options";
 import styles from "../table/table.module.css";
+import { ProcessedInstalledGame } from "@hooks/use-processed-installed-games";
 
-const thumbnailColumn: TableColumn<InstalledGame> = {
+const thumbnailColumn: TableColumn<ProcessedInstalledGame> = {
 	hideInDetails: true,
 	id: "thumbnailUrl",
 	label: "Thumbnail",
@@ -35,19 +36,30 @@ const thumbnailColumn: TableColumn<InstalledGame> = {
 	renderCell: (game) => <ThumbnailCell url={game.thumbnailUrl} />,
 };
 
-const nameColumn: TableColumn<InstalledGame> = {
+const nameColumn: TableColumn<ProcessedInstalledGame> = {
 	hideInDetails: true,
 	id: "name",
 	label: "Game",
 	getSortValue: (game) => game.name,
 	renderCell: (game) => (
 		<Table.Td className={styles.nameCell}>
-			<ItemName label={game.discriminator}>{game.name}</ItemName>
+			<Tooltip
+				disabled={!game.hasOutdatedMod}
+				label="One of the mods installed in this game is outdated."
+				position="bottom"
+			>
+				<span>
+					<ItemName label={game.discriminator}>
+						{game.hasOutdatedMod && <OutdatedMarker />}
+						{game.name}
+					</ItemName>
+				</span>
+			</Tooltip>
 		</Table.Td>
 	),
 };
 
-const providerColumn: TableColumn<InstalledGame, ProviderId> = {
+const providerColumn: TableColumn<ProcessedInstalledGame, ProviderId> = {
 	id: "provider",
 	label: "Provider",
 	width: 110,
@@ -62,7 +74,10 @@ const providerColumn: TableColumn<InstalledGame, ProviderId> = {
 	),
 };
 
-const operatingSystemColumn: TableColumn<InstalledGame, OperatingSystem> = {
+const operatingSystemColumn: TableColumn<
+	ProcessedInstalledGame,
+	OperatingSystem
+> = {
 	id: "operatingSystem",
 	label: "OS",
 	width: 110,
@@ -81,7 +96,7 @@ const operatingSystemColumn: TableColumn<InstalledGame, OperatingSystem> = {
 	),
 };
 
-const architectureColumn: TableColumn<InstalledGame, Architecture> = {
+const architectureColumn: TableColumn<ProcessedInstalledGame, Architecture> = {
 	id: "architecture",
 	label: "Arch",
 	width: 70,
@@ -101,7 +116,7 @@ const architectureColumn: TableColumn<InstalledGame, Architecture> = {
 };
 
 const scriptingBackendColumn: TableColumn<
-	InstalledGame,
+	ProcessedInstalledGame,
 	UnityScriptingBackend
 > = {
 	id: "scriptingBackend",
@@ -146,7 +161,7 @@ function getAdjustedMajor(engine: GameEngine | null) {
 	return major;
 }
 
-const engineColumn: TableColumn<InstalledGame, GameEngineBrand> = {
+const engineColumn: TableColumn<ProcessedInstalledGame, GameEngineBrand> = {
 	id: "engine",
 	label: "Engine",
 	width: 170,

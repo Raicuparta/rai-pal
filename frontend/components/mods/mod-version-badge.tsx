@@ -1,12 +1,6 @@
-import {
-	Badge,
-	DefaultMantineColor,
-	Stack,
-	ThemeIcon,
-	Tooltip,
-} from "@mantine/core";
-import { IconAlertTriangleFilled } from "@tabler/icons-react";
+import { Badge, DefaultMantineColor, Stack, Tooltip } from "@mantine/core";
 import { isOutdated } from "../../util/is-outdated";
+import { OutdatedMarker } from "@components/OutdatedMarker";
 
 type Props = {
 	readonly localVersion?: string;
@@ -33,14 +27,7 @@ export function ModVersionBadge(props: Props) {
 				<Badge color={getColor(props)}>
 					{props.localVersion || props.remoteVersion || "-"}
 				</Badge>
-				{outdated && (
-					<ThemeIcon
-						color="orange"
-						radius="xl"
-					>
-						<IconAlertTriangleFilled fontSize={15} />
-					</ThemeIcon>
-				)}
+				{outdated && <OutdatedMarker />}
 			</Stack>
 		</Tooltip>
 	);
