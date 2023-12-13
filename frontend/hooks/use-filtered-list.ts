@@ -6,7 +6,7 @@ import { usePersistedState } from "./use-persisted-state";
 export function useFilteredList<TItem, TFilter>(
 	id: string,
 	tableHeaders: TableColumn<TItem>[],
-	data: TItem[],
+	data: Record<string, TItem>,
 	filterFunction: (
 		item: TItem,
 		filterValue: TFilter,
@@ -33,7 +33,7 @@ export function useFilteredList<TItem, TFilter>(
 	const filteredData = useMemo(() => {
 		const sortHeader = tableHeaders.find((header) => header.id === sort.id);
 
-		return data
+		return Object.values(data)
 			.filter((item) => filterFunction(item, filter, search))
 			.sort((gameA, gameB) => {
 				if (sort.id == undefined) return 0;

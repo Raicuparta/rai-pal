@@ -9,7 +9,7 @@ use crate::{
 	Result,
 };
 
-const URL_BASE: &str = "https://raw.githubusercontent.com/Raicuparta/rai-pal-db/main";
+const URL_BASE: &str = "https://raicuparta.github.io/rai-pal-db";
 
 serializable_struct!(DatabaseEntry {
 	pub id: String,

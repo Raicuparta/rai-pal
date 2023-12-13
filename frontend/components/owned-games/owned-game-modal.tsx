@@ -6,6 +6,8 @@ import { steamCommands } from "../../util/steam";
 import { ModalImage } from "@components/modal-image";
 import { CommandButtonGroup } from "@components/command-button-group";
 import { DebugData } from "@components/debug-data";
+import { TableItemDetails } from "@components/table/table-item-details";
+import { ownedGamesColumns } from "./owned-games-columns";
 
 type Props = {
 	readonly game: OwnedGame;
@@ -43,6 +45,10 @@ export function OwnedGameModal(props: Props) {
 						Install
 					</CommandButton>
 				</CommandButtonGroup>
+				<TableItemDetails
+					columns={ownedGamesColumns}
+					item={props.game}
+				/>
 				<DebugData data={props.game} />
 			</Stack>
 		</Modal>

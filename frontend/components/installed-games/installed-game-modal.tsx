@@ -1,9 +1,9 @@
-import { Flex, Modal, Stack, Text, ThemeIcon, Tooltip } from "@mantine/core";
+import { Flex, Modal, Stack, Text, Tooltip } from "@mantine/core";
 import {
-	InstalledGame,
 	installMod,
 	openGameFolder,
 	openGameModsFolder,
+	refreshGame,
 	removeGame,
 	startGame,
 	startGameExe,
@@ -19,7 +19,7 @@ import {
 	IconFolder,
 	IconFolderCog,
 	IconPlayerPlay,
-	IconRefreshAlert,
+	IconRefresh,
 	IconShoppingBag,
 	IconTool,
 	IconTrash,
@@ -32,9 +32,13 @@ import { CommandButtonGroup } from "@components/command-button-group";
 import { DebugData } from "@components/debug-data";
 import { useUnifiedMods } from "@hooks/use-unified-mods";
 import { isOutdated } from "../../util/is-outdated";
+import { installedGamesColumns } from "./installed-games-columns";
+import { TableItemDetails } from "@components/table/table-item-details";
+import { OutdatedMarker } from "@components/OutdatedMarker";
+import { ProcessedInstalledGame } from "@hooks/use-processed-installed-games";
 
 type Props = {
-	readonly game: InstalledGame;
+	readonly game: ProcessedInstalledGame;
 	readonly onClose: () => void;
 };
 
@@ -133,6 +137,12 @@ export function InstalledGameModal(props: Props) {
 								Remove from Rai Pal
 							</CommandButton>
 						)}
+						<CommandButton
+							onClick={() => refreshGame(props.game.id)}
+							leftSection={<IconRefresh />}
+						>
+							Refresh Game
+						</CommandButton>
 					</CommandButtonGroup>
 					{modLoaders.map(
 						(modLoader) =>
@@ -158,16 +168,7 @@ export function InstalledGameModal(props: Props) {
 											>
 												<CommandButton
 													leftSection={
-														outdated ? (
-															<ThemeIcon
-																radius="xl"
-																color="orange"
-															>
-																<IconRefreshAlert />
-															</ThemeIcon>
-														) : (
-															<IconTrash />
-														)
+														outdated ? <OutdatedMarker /> : <IconTrash />
 													}
 													onClick={() =>
 														uninstallMod(props.game.id, mod.common.id)
@@ -219,6 +220,10 @@ export function InstalledGameModal(props: Props) {
 							),
 					)}
 				</Flex>
+				<TableItemDetails
+					columns={installedGamesColumns}
+					item={props.game}
+				/>
 				<DebugData data={props.game} />
 			</Stack>
 		</Modal>

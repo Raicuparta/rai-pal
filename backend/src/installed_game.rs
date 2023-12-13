@@ -83,6 +83,10 @@ impl InstalledGame {
 		})
 	}
 
+	pub fn refresh_executable(&mut self) {
+		self.executable = GameExecutable::new(&self.executable.path);
+	}
+
 	pub fn update_available_mods(&mut self, data_map: &game_mod::CommonDataMap) {
 		self.installed_mod_versions = self.get_available_mods(data_map);
 	}

@@ -18,6 +18,7 @@ const thumbnailColumn: TableColumn<OwnedGame> = {
 	label: "Thumbnail",
 	hideLabel: true,
 	hidable: true,
+	hideInDetails: true,
 	width: 100,
 	renderCell: (game) => <ThumbnailCell url={game.thumbnailUrl} />,
 };
@@ -26,6 +27,7 @@ const nameColumn: TableColumn<OwnedGame> = {
 	id: "name",
 	label: "Game",
 	width: undefined,
+	hideInDetails: true,
 	getSortValue: (game) => game.name,
 	renderCell: (game) => (
 		<Table.Td className={styles.nameCell}>{game.name}</Table.Td>

@@ -2,24 +2,25 @@ import { Group, Stack } from "@mantine/core";
 import { useMemo, useState } from "react";
 import { filterGame, includesOneOf } from "../../util/filter";
 import { InstalledGameModal } from "./installed-game-modal";
-import { InstalledGame } from "@api/bindings";
 import { TypedSegmentedControl } from "./typed-segmented-control";
 import { useFilteredList } from "@hooks/use-filtered-list";
 import { FilterMenu } from "@components/filter-menu";
 import { VirtualizedTable } from "@components/table/virtualized-table";
 import { RefreshButton } from "@components/refresh-button";
 import { SearchInput } from "@components/search-input";
-import { useAtomValue } from "jotai";
-import { installedGamesAtom } from "@hooks/use-data";
 import { installedGamesColumns } from "./installed-games-columns";
 import { ColumnsSelect } from "@components/columns-select";
 import { usePersistedState } from "@hooks/use-persisted-state";
 import { AddGame } from "./add-game-button";
+import {
+	ProcessedInstalledGame,
+	useProcessedInstalledGames,
+} from "@hooks/use-processed-installed-games";
 
 const defaultFilter: Record<string, string> = {};
 
 function filterInstalledGame(
-	game: InstalledGame,
+	game: ProcessedInstalledGame,
 	filter: Record<string, string>,
 	search: string,
 ) {
@@ -30,17 +31,12 @@ function filterInstalledGame(
 }
 
 export type TableSortMethod = (
-	gameA: InstalledGame,
-	gameB: InstalledGame,
+	gameA: ProcessedInstalledGame,
+	gameB: ProcessedInstalledGame,
 ) => number;
 
 export function InstalledGamesPage() {
-	const installedGames = useAtomValue(installedGamesAtom);
-
-	const games_list = useMemo(
-		() => (installedGames ? Object.values(installedGames) : []),
-		[installedGames],
-	);
+	const installedGames = useProcessedInstalledGames();
 
 	const [selectedGameId, setSelectedGameId] = useState<string>();
 
@@ -69,7 +65,7 @@ export function InstalledGamesPage() {
 		useFilteredList(
 			"installed-games-filter",
 			filteredColumns,
-			games_list,
+			installedGames,
 			filterInstalledGame,
 			defaultFilter,
 		);

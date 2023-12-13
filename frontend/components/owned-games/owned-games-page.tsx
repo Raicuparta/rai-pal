@@ -32,11 +32,6 @@ function filterOwnedGame(
 export function OwnedGamesPage() {
 	const ownedGames = useAtomValue(ownedGamesAtom);
 
-	const games_list = useMemo(
-		() => (ownedGames ? Object.values(ownedGames) : []),
-		[ownedGames],
-	);
-
 	const [selectedGameId, setSelectedGameId] = useState<string>();
 
 	const selectedGame = useMemo(
@@ -60,7 +55,7 @@ export function OwnedGamesPage() {
 		useFilteredList(
 			"owned-games-filter",
 			filteredColumns,
-			games_list,
+			ownedGames,
 			filterOwnedGame,
 			defaultFilter,
 		);
