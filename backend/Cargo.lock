@@ -2645,7 +2645,7 @@ dependencies = [
 
 [[package]]
 name = "rai-pal"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "async-trait",
  "byteorder",
