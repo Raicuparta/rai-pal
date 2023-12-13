@@ -26,6 +26,7 @@ import {
 import styles from "../table/table.module.css";
 
 const thumbnailColumn: TableColumn<InstalledGame> = {
+	hideInDetails: true,
 	id: "thumbnailUrl",
 	label: "Thumbnail",
 	hideLabel: true,
@@ -35,6 +36,7 @@ const thumbnailColumn: TableColumn<InstalledGame> = {
 };
 
 const nameColumn: TableColumn<InstalledGame> = {
+	hideInDetails: true,
 	id: "name",
 	label: "Game",
 	getSortValue: (game) => game.name,

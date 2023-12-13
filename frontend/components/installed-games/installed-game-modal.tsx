@@ -34,6 +34,8 @@ import { CommandButtonGroup } from "@components/command-button-group";
 import { DebugData } from "@components/debug-data";
 import { useUnifiedMods } from "@hooks/use-unified-mods";
 import { isOutdated } from "../../util/is-outdated";
+import { installedGamesColumns } from "./installed-games-columns";
+import { TableItemDetails } from "@components/table/table-item-details";
 
 type Props = {
 	readonly game: InstalledGame;
@@ -227,6 +229,10 @@ export function InstalledGameModal(props: Props) {
 							),
 					)}
 				</Flex>
+				<TableItemDetails
+					columns={installedGamesColumns}
+					item={props.game}
+				/>
 				<DebugData data={props.game} />
 			</Stack>
 		</Modal>

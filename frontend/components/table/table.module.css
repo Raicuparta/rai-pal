@@ -3,10 +3,6 @@ div.table {
 	flex: 1;
 	user-select: none;
 
-	td {
-		cursor: pointer;
-	}
-
 	thead {
 		background: var(--background-dark);
 		white-space: nowrap;
@@ -14,6 +10,12 @@ div.table {
 
 	code {
 		font-size: 0.8em;
+	}
+
+	[data-hover="true"] {
+		td {
+			cursor: pointer;
+		}
 	}
 }
 
