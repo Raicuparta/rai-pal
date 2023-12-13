@@ -37,10 +37,6 @@ export type TableSortMethod = (
 
 export function InstalledGamesPage() {
 	const installedGames = useProcessedInstalledGames();
-	const gameList = useMemo(
-		() => Object.values(installedGames),
-		[installedGames],
-	);
 
 	const [selectedGameId, setSelectedGameId] = useState<string>();
 
@@ -69,7 +65,7 @@ export function InstalledGamesPage() {
 		useFilteredList(
 			"installed-games-filter",
 			filteredColumns,
-			gameList,
+			installedGames,
 			filterInstalledGame,
 			defaultFilter,
 		);
