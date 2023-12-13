@@ -4,6 +4,7 @@ import {
 	installMod,
 	openGameFolder,
 	openGameModsFolder,
+	refreshGame,
 	removeGame,
 	startGame,
 	startGameExe,
@@ -19,6 +20,7 @@ import {
 	IconFolder,
 	IconFolderCog,
 	IconPlayerPlay,
+	IconRefresh,
 	IconRefreshAlert,
 	IconShoppingBag,
 	IconTool,
@@ -133,6 +135,12 @@ export function InstalledGameModal(props: Props) {
 								Remove from Rai Pal
 							</CommandButton>
 						)}
+						<CommandButton
+							onClick={() => refreshGame(props.game.id)}
+							leftSection={<IconRefresh />}
+						>
+							Refresh Game
+						</CommandButton>
 					</CommandButtonGroup>
 					{modLoaders.map(
 						(modLoader) =>

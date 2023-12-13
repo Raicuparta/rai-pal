@@ -6,6 +6,8 @@ use std::{
 	sync::Mutex,
 };
 
+use tauri::Manager;
+
 use crate::{
 	installed_game,
 	local_mod,
@@ -25,7 +27,7 @@ pub struct AppState {
 	pub remote_mods: Mutex<Option<remote_mod::Map>>,
 }
 
-pub type TauriState<'a> = tauri::State<'a, AppState>;
+type TauriState<'a> = tauri::State<'a, AppState>;
 
 pub trait StateData<TData: Clone> {
 	fn get_data(&self) -> Result<TData>;
@@ -67,5 +69,15 @@ where
 			.ok_or(Error::EmptyStateData())?
 			.try_get(key)
 			.cloned()
+	}
+}
+
+pub trait StatefulHandle {
+	fn app_state(&self) -> TauriState<'_>;
+}
+
+impl StatefulHandle for tauri::AppHandle {
+	fn app_state(&self) -> TauriState<'_> {
+		self.state::<AppState>()
 	}
 }
