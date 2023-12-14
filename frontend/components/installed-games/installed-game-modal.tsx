@@ -1,13 +1,11 @@
-import { Flex, Modal, Stack, Text, Tooltip } from "@mantine/core";
+import { Flex, Modal, Stack } from "@mantine/core";
 import {
-	installMod,
 	openGameFolder,
 	openGameModsFolder,
 	refreshGame,
 	removeGame,
 	startGame,
 	startGameExe,
-	uninstallMod,
 } from "@api/bindings";
 import { useMemo } from "react";
 import { ItemName } from "../item-name";
@@ -21,7 +19,6 @@ import {
 	IconPlayerPlay,
 	IconRefresh,
 	IconShoppingBag,
-	IconTool,
 	IconTrash,
 } from "@tabler/icons-react";
 import { steamCommands } from "../../util/steam";
@@ -31,11 +28,10 @@ import { modLoadersAtom } from "@hooks/use-data";
 import { CommandButtonGroup } from "@components/command-button-group";
 import { DebugData } from "@components/debug-data";
 import { useUnifiedMods } from "@hooks/use-unified-mods";
-import { isOutdated } from "../../util/is-outdated";
 import { installedGamesColumns } from "./installed-games-columns";
 import { TableItemDetails } from "@components/table/table-item-details";
-import { OutdatedMarker } from "@components/OutdatedMarker";
 import { ProcessedInstalledGame } from "@hooks/use-processed-installed-games";
+import { GameModButton } from "./game-mod-button";
 
 type Props = {
 	readonly game: ProcessedInstalledGame;
@@ -151,71 +147,14 @@ export function InstalledGameModal(props: Props) {
 									label={modLoader.id.toUpperCase()}
 									key={modLoader.id}
 								>
-									{/* TODO: these buttons could be extracted to a separate component, lots of stuff happening. */}
-									{modLoader.mods.map((mod) => {
-										const installedVersion =
-											props.game.installedModVersions[mod.common.id];
-										const outdated = isOutdated(
-											installedVersion,
-											mod.remote?.latestVersion?.id,
-										);
-
-										return installedVersion ? (
-											<Tooltip
-												disabled={!outdated}
-												label="Mod outdated. Reinstall it to update."
-												key={mod.common.id}
-											>
-												<CommandButton
-													leftSection={
-														outdated ? <OutdatedMarker /> : <IconTrash />
-													}
-													onClick={() =>
-														uninstallMod(props.game.id, mod.common.id)
-													}
-												>
-													Uninstall {mod.remote?.title ?? mod.common.id}{" "}
-													<Text
-														opacity={0.5}
-														ml="xs"
-														size="xs"
-													>
-														({installedVersion})
-													</Text>
-												</CommandButton>
-											</Tooltip>
-										) : (
-											<CommandButton
-												leftSection={<IconTool />}
-												key={mod.common.id}
-												confirmationText="Attention: be careful when installing mods on multiplayer games! Anticheat can detect some mods and get you banned, even if the mods seem harmless."
-												confirmationSkipId="install-mod-confirm"
-												onClick={() => installMod(mod.common.id, props.game.id)}
-											>
-												{modLoader.kind === "Installable" ? "Install" : "Run"}{" "}
-												{mod.remote?.title ?? mod.common.id}
-												{!props.game.executable.engine && (
-													// TODO this text to separate component, it's used in multiple places.
-													<Text
-														opacity={0.5}
-														ml="xs"
-														size="xs"
-													>
-														({mod.common.engine})
-													</Text>
-												)}
-												{mod.remote?.latestVersion && (
-													<Text
-														opacity={0.5}
-														ml="xs"
-														size="xs"
-													>
-														({mod.remote.latestVersion?.id})
-													</Text>
-												)}
-											</CommandButton>
-										);
-									})}
+									{modLoader.mods.map((mod) => (
+										<GameModButton
+											key={mod.common.id}
+											game={props.game}
+											mod={mod}
+											modLoader={modLoader}
+										/>
+									))}
 								</CommandButtonGroup>
 							),
 					)}
