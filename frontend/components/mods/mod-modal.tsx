@@ -20,7 +20,7 @@ export function ModModal(props: Props) {
 			centered
 			onClose={props.onClose}
 			opened
-			size="lg"
+			size="xl"
 			title={
 				<ItemName label={`by ${props.mod.remote?.author}`}>
 					{props.mod.remote?.title ?? props.mod.common.id}

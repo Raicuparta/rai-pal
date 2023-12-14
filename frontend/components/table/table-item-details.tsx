@@ -3,22 +3,24 @@ import { TableColumn, TableHead } from "./table-head";
 import React from "react";
 import { TableContainer } from "./table-container";
 
-type Props<TData> = {
-	readonly columns: TableColumn<TData>[];
+type Props<TKey extends string, TData> = {
+	readonly columns: TableColumn<TKey, TData>[];
 	readonly item: TData;
 };
 
-export function TableItemDetails<TData>(props: Props<TData>) {
+export function TableItemDetails<TKey extends string, TData>(
+	props: Props<TKey, TData>,
+) {
 	const columns = props.columns.filter((column) => !column.hideInDetails);
 
 	return (
 		<TableContainer>
 			<Table>
-				<thead>
+				<Table.Thead>
 					<TableHead columns={columns} />
-				</thead>
-				<tbody>
-					<tr>
+				</Table.Thead>
+				<Table.Tbody>
+					<Table.Tr>
 						{columns.map(
 							(column) =>
 								!column.hideInDetails && (
@@ -27,8 +29,8 @@ export function TableItemDetails<TData>(props: Props<TData>) {
 									</React.Fragment>
 								),
 						)}
-					</tr>
-				</tbody>
+					</Table.Tr>
+				</Table.Tbody>
 			</Table>
 		</TableContainer>
 	);

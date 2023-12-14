@@ -8,7 +8,10 @@ import { FilterMenu } from "@components/filter-menu";
 import { VirtualizedTable } from "@components/table/virtualized-table";
 import { RefreshButton } from "@components/refresh-button";
 import { SearchInput } from "@components/search-input";
-import { installedGamesColumns } from "./installed-games-columns";
+import {
+	InstalledGameColumnsId,
+	installedGamesColumns,
+} from "./installed-games-columns";
 import { ColumnsSelect } from "@components/columns-select";
 import { usePersistedState } from "@hooks/use-persisted-state";
 import { AddGame } from "./add-game-button";
@@ -48,17 +51,16 @@ export function InstalledGamesPage() {
 		[installedGames, selectedGameId],
 	);
 
-	const [hiddenColumns, setHiddenColumns] = usePersistedState<string[]>(
-		["operatingSystem", "provider"],
-		"installed-hidden-columns",
-	);
+	const [visibleColumnIds, setVisibleColumnIds] = usePersistedState<
+		InstalledGameColumnsId[]
+	>(["thumbnail", "engine"], "installed-visible-columns");
 
 	const filteredColumns = useMemo(
 		() =>
 			installedGamesColumns.filter(
-				(column) => !hiddenColumns.includes(column.id),
+				(column) => !column.hidable || visibleColumnIds.includes(column.id),
 			),
-		[hiddenColumns],
+		[visibleColumnIds],
 	);
 
 	const [filteredGames, sort, setSort, filter, setFilter, search, setSearch] =
@@ -88,8 +90,8 @@ export function InstalledGamesPage() {
 					<Stack>
 						<ColumnsSelect
 							columns={installedGamesColumns}
-							hiddenIds={hiddenColumns}
-							onChange={setHiddenColumns}
+							hiddenIds={visibleColumnIds}
+							onChange={setVisibleColumnIds}
 						/>
 
 						{installedGamesColumns.map(

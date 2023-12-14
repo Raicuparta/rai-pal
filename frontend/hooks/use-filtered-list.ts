@@ -3,9 +3,9 @@ import { useMemo, useState } from "react";
 import { useTableSort } from "./use-table-sort";
 import { usePersistedState } from "./use-persisted-state";
 
-export function useFilteredList<TItem, TFilter>(
+export function useFilteredList<TKey extends string, TItem, TFilter>(
 	id: string,
-	tableHeaders: TableColumn<TItem>[],
+	tableHeaders: TableColumn<TKey, TItem>[],
 	data: Record<string, TItem>,
 	filterFunction: (
 		item: TItem,

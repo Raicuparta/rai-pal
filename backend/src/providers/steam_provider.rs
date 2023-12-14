@@ -12,6 +12,7 @@ use steamlocate::SteamDir;
 use super::provider::ProviderId;
 use crate::{
 	game_executable::OperatingSystem,
+	game_mode::GameMode,
 	installed_game::{
 		self,
 		InstalledGame,
@@ -171,6 +172,16 @@ impl ProviderActions for SteamProvider {
 					.or(app_info.steam_release_date)
 					.unwrap_or_default();
 
+				let game_mode = if app_info
+					.launch_options
+					.iter()
+					.any(|launch| launch.get_game_mode() == GameMode::VR)
+				{
+					GameMode::VR
+				} else {
+					GameMode::Flat
+				};
+
 				Some(OwnedGame {
 					id: steam_id_data.id.clone(),
 					provider_id: *Self::ID,
@@ -180,6 +191,7 @@ impl ProviderActions for SteamProvider {
 					engine: steam_id_data.engine,
 					release_date,
 					thumbnail_url: get_steam_thumbnail(&steam_id_data.id),
+					game_mode,
 				})
 			})
 			.collect())

@@ -17,6 +17,7 @@ use byteorder::{
 };
 
 use crate::{
+	game_mode::GameMode,
 	serializable_struct,
 	Error,
 	Result,
@@ -78,6 +79,17 @@ serializable_struct!(SteamLaunchOption {
 	pub beta_key: Option<String>,
 	pub os_arch: Option<String>,
 });
+
+impl SteamLaunchOption {
+	pub fn get_game_mode(&self) -> GameMode {
+		if let Some(app_type) = &self.app_type {
+			if app_type == "vr" {
+				return GameMode::VR;
+			}
+		}
+		GameMode::Flat
+	}
+}
 
 #[derive(Debug)]
 pub struct App {

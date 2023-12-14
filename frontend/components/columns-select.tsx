@@ -1,13 +1,19 @@
 import { Button, InputLabel } from "@mantine/core";
 import { TableColumn } from "./table/table-head";
 
-type Props<TItem, TFilterOption extends string = string> = {
-	readonly columns: TableColumn<TItem, TFilterOption>[];
-	readonly hiddenIds: string[];
-	readonly onChange: (hiddenIds: string[]) => void;
+type Props<
+	TKey extends string,
+	TItem,
+	TFilterOption extends string = string,
+> = {
+	readonly columns: TableColumn<TKey, TItem, TFilterOption>[];
+	readonly hiddenIds: TKey[];
+	readonly onChange: (hiddenIds: TKey[]) => void;
 };
 
-export function ColumnsSelect<TItem>(props: Props<TItem>) {
+export function ColumnsSelect<TKey extends string, TItem>(
+	props: Props<TKey, TItem>,
+) {
 	return (
 		<div>
 			<InputLabel>Table columns:</InputLabel>

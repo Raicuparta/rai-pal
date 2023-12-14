@@ -10,7 +10,7 @@ import { RefreshButton } from "@components/refresh-button";
 import { SearchInput } from "@components/search-input";
 import { ownedGamesAtom } from "@hooks/use-data";
 import { useAtomValue } from "jotai";
-import { ownedGamesColumns } from "./owned-games-columns";
+import { OwnedGameColumnsId, ownedGamesColumns } from "./owned-games-columns";
 import { ColumnsSelect } from "@components/columns-select";
 import { usePersistedState } from "@hooks/use-persisted-state";
 import { TypedSegmentedControl } from "@components/installed-games/typed-segmented-control";
@@ -40,15 +40,16 @@ export function OwnedGamesPage() {
 		[ownedGames, selectedGameId],
 	);
 
-	const [hiddenColumns, setHiddenColumns] = usePersistedState<string[]>(
-		["provider"],
-		"installed-hidden-columns",
-	);
+	const [visibleColumnIds, setVisibleColumnIds] = usePersistedState<
+		OwnedGameColumnsId[]
+	>(["thumbnail", "engine", "releaseDate"], "owned-visible-columns");
 
 	const filteredColumns = useMemo(
 		() =>
-			ownedGamesColumns.filter((column) => !hiddenColumns.includes(column.id)),
-		[hiddenColumns],
+			ownedGamesColumns.filter(
+				(column) => !column.hidable || visibleColumnIds.includes(column.id),
+			),
+		[visibleColumnIds],
 	);
 
 	const [filteredGames, sort, setSort, filter, setFilter, search, setSearch] =
@@ -84,8 +85,8 @@ export function OwnedGamesPage() {
 					<Stack>
 						<ColumnsSelect
 							columns={ownedGamesColumns}
-							hiddenIds={hiddenColumns}
-							onChange={setHiddenColumns}
+							hiddenIds={visibleColumnIds}
+							onChange={setVisibleColumnIds}
 						/>
 						{ownedGamesColumns.map(
 							(column) =>

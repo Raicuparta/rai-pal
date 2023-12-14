@@ -13,6 +13,7 @@ use std::{
 use crate::{
 	game_executable::GameExecutable,
 	game_mod,
+	game_mode::GameMode,
 	local_mod,
 	paths::{
 		self,
@@ -36,6 +37,7 @@ serializable_struct!(InstalledGame {
 	pub executable: GameExecutable,
 	pub thumbnail_url: Option<String>,
 	pub installed_mod_versions: InstalledModVersions,
+	pub game_mode: GameMode,
 });
 
 pub type Map = HashMap<String, InstalledGame>;
@@ -71,6 +73,8 @@ impl InstalledGame {
 			return None;
 		}
 
+		let game_mode = steam_launch.map_or(GameMode::Flat, SteamLaunchOption::get_game_mode);
+
 		Some(Self {
 			id: hash_path(path),
 			name: name.to_string(),
@@ -80,6 +84,7 @@ impl InstalledGame {
 			installed_mod_versions: HashMap::default(),
 			executable: GameExecutable::new(path),
 			thumbnail_url,
+			game_mode,
 		})
 	}
 
