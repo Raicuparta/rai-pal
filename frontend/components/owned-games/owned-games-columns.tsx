@@ -9,7 +9,7 @@ import {
 	GameModeBadge,
 	ProviderBadge,
 } from "@components/badges/color-coded-badge";
-import { TableColumn } from "@components/table/table-head";
+import { TableColumnBase, columnMapToList } from "@components/table/table-head";
 import { Table } from "@mantine/core";
 import { IconCheck } from "@tabler/icons-react";
 import styles from "../table/table.module.css";
@@ -19,8 +19,7 @@ import {
 	providerFilterOptions,
 } from "../../util/common-filter-options";
 
-const thumbnailColumn: TableColumn<OwnedGame> = {
-	id: "thumbnail",
+const thumbnail: TableColumnBase<OwnedGame> = {
 	label: "Thumbnail",
 	hideLabel: true,
 	hidable: true,
@@ -29,8 +28,7 @@ const thumbnailColumn: TableColumn<OwnedGame> = {
 	renderCell: (game) => <ThumbnailCell url={game.thumbnailUrl} />,
 };
 
-const nameColumn: TableColumn<OwnedGame> = {
-	id: "name",
+const name: TableColumnBase<OwnedGame> = {
 	label: "Game",
 	width: undefined,
 	hideInDetails: true,
@@ -40,8 +38,7 @@ const nameColumn: TableColumn<OwnedGame> = {
 	),
 };
 
-const providerColumn: TableColumn<OwnedGame, ProviderId> = {
-	id: "provider",
+const provider: TableColumnBase<OwnedGame, ProviderId> = {
 	label: "Provider",
 	width: 110,
 	center: true,
@@ -55,8 +52,7 @@ const providerColumn: TableColumn<OwnedGame, ProviderId> = {
 	),
 };
 
-const engineColumn: TableColumn<OwnedGame, GameEngineBrand> = {
-	id: "engine",
+const engine: TableColumnBase<OwnedGame, GameEngineBrand> = {
 	label: "Engine",
 	width: 100,
 	center: true,
@@ -70,8 +66,7 @@ const engineColumn: TableColumn<OwnedGame, GameEngineBrand> = {
 	),
 };
 
-const installedColumn: TableColumn<OwnedGame, string> = {
-	id: "installed",
+const installed: TableColumnBase<OwnedGame, string> = {
 	label: "Installed",
 	width: 60,
 	center: true,
@@ -88,8 +83,7 @@ const installedColumn: TableColumn<OwnedGame, string> = {
 	),
 };
 
-const gameModeColumn: TableColumn<OwnedGame, GameMode> = {
-	id: "mode",
+const gameMode: TableColumnBase<OwnedGame, GameMode> = {
 	label: "Mode",
 	width: 90,
 	center: true,
@@ -107,8 +101,7 @@ const gameModeColumn: TableColumn<OwnedGame, GameMode> = {
 	),
 };
 
-const releaseDateColumn: TableColumn<OwnedGame> = {
-	id: "releaseDate",
+const releaseDate: TableColumnBase<OwnedGame> = {
 	label: "Release Date",
 	width: 130,
 	center: true,
@@ -123,12 +116,16 @@ const releaseDateColumn: TableColumn<OwnedGame> = {
 	),
 };
 
-export const ownedGamesColumns: TableColumn<OwnedGame>[] = [
-	thumbnailColumn,
-	nameColumn,
-	providerColumn,
-	engineColumn,
-	gameModeColumn,
-	installedColumn,
-	releaseDateColumn,
-];
+const ownedGamesColumnsMap = {
+	thumbnail,
+	name,
+	provider,
+	engine,
+	gameMode,
+	installed,
+	releaseDate,
+};
+
+export type OwnedGameColumnsId = keyof typeof ownedGamesColumnsMap;
+
+export const ownedGamesColumns = columnMapToList(ownedGamesColumnsMap);

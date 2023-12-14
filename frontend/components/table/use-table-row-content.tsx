@@ -1,7 +1,9 @@
 import { TableColumn } from "@components/table/table-head";
 import React, { useCallback } from "react";
 
-export function useTableRowContent<TItem>(columns: TableColumn<TItem>[]) {
+export function useTableRowContent<TKey extends string, TItem>(
+	columns: TableColumn<TKey, TItem>[],
+) {
 	const TableRowContentInner = useCallback(
 		(_: number, item: TItem) => (
 			<>

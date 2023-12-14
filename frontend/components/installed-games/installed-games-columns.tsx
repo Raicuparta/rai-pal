@@ -9,7 +9,7 @@ import {
 	ProviderId,
 	UnityScriptingBackend,
 } from "@api/bindings";
-import { TableColumn } from "@components/table/table-head";
+import { TableColumnBase, columnMapToList } from "@components/table/table-head";
 import { ItemName } from "../item-name";
 import {
 	ArchitectureBadge,
@@ -28,9 +28,8 @@ import {
 import styles from "../table/table.module.css";
 import { ProcessedInstalledGame } from "@hooks/use-processed-installed-games";
 
-const thumbnailColumn: TableColumn<ProcessedInstalledGame> = {
+const thumbnail: TableColumnBase<ProcessedInstalledGame> = {
 	hideInDetails: true,
-	id: "thumbnailUrl",
 	label: "Thumbnail",
 	hideLabel: true,
 	hidable: true,
@@ -38,9 +37,8 @@ const thumbnailColumn: TableColumn<ProcessedInstalledGame> = {
 	renderCell: (game) => <ThumbnailCell url={game.thumbnailUrl} />,
 };
 
-const nameColumn: TableColumn<ProcessedInstalledGame> = {
+const name: TableColumnBase<ProcessedInstalledGame> = {
 	hideInDetails: true,
-	id: "name",
 	label: "Game",
 	getSortValue: (game) => game.name,
 	renderCell: (game) => (
@@ -61,8 +59,7 @@ const nameColumn: TableColumn<ProcessedInstalledGame> = {
 	),
 };
 
-const providerColumn: TableColumn<ProcessedInstalledGame, ProviderId> = {
-	id: "provider",
+const provider: TableColumnBase<ProcessedInstalledGame, ProviderId> = {
 	label: "Provider",
 	width: 110,
 	center: true,
@@ -76,11 +73,10 @@ const providerColumn: TableColumn<ProcessedInstalledGame, ProviderId> = {
 	),
 };
 
-const operatingSystemColumn: TableColumn<
+const operatingSystem: TableColumnBase<
 	ProcessedInstalledGame,
 	OperatingSystem
 > = {
-	id: "operatingSystem",
 	label: "OS",
 	width: 110,
 	center: true,
@@ -98,8 +94,7 @@ const operatingSystemColumn: TableColumn<
 	),
 };
 
-const architectureColumn: TableColumn<ProcessedInstalledGame, Architecture> = {
-	id: "architecture",
+const architecture: TableColumnBase<ProcessedInstalledGame, Architecture> = {
 	label: "Arch",
 	width: 70,
 	center: true,
@@ -117,11 +112,10 @@ const architectureColumn: TableColumn<ProcessedInstalledGame, Architecture> = {
 	),
 };
 
-const scriptingBackendColumn: TableColumn<
+const scriptingBackend: TableColumnBase<
 	ProcessedInstalledGame,
 	UnityScriptingBackend
 > = {
-	id: "scriptingBackend",
 	label: "Backend",
 	width: 90,
 	center: true,
@@ -139,8 +133,7 @@ const scriptingBackendColumn: TableColumn<
 	),
 };
 
-const gameModeColumn: TableColumn<ProcessedInstalledGame, GameMode> = {
-	id: "mode",
+const gameMode: TableColumnBase<ProcessedInstalledGame, GameMode> = {
 	label: "Mode",
 	width: 90,
 	center: true,
@@ -182,8 +175,7 @@ function getAdjustedMajor(engine: GameEngine | null) {
 	return major;
 }
 
-const engineColumn: TableColumn<ProcessedInstalledGame, GameEngineBrand> = {
-	id: "engine",
+const engine: TableColumnBase<ProcessedInstalledGame, GameEngineBrand> = {
 	label: "Engine",
 	width: 180,
 	center: true,
@@ -222,13 +214,17 @@ const engineColumn: TableColumn<ProcessedInstalledGame, GameEngineBrand> = {
 	),
 };
 
-export const installedGamesColumns = [
-	thumbnailColumn,
-	nameColumn,
-	providerColumn,
-	gameModeColumn,
-	operatingSystemColumn,
-	architectureColumn,
-	scriptingBackendColumn,
-	engineColumn,
-];
+const installedGamesColumnsMap = {
+	thumbnail,
+	name,
+	provider,
+	gameMode,
+	operatingSystem,
+	architecture,
+	scriptingBackend,
+	engine,
+};
+
+export type InstalledGameColumnsId = keyof typeof installedGamesColumnsMap;
+
+export const installedGamesColumns = columnMapToList(installedGamesColumnsMap);

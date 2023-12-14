@@ -10,10 +10,10 @@ export function includesOneOf(term: string | undefined, texts: string[]) {
 	return Boolean(texts.find((text) => includesIgnoreCase(term, text)));
 }
 
-export function filterGame<TGame>(
+export function filterGame<TKey extends string, TGame>(
 	game: TGame,
 	filter: Record<string, string>,
-	columns: TableColumn<TGame>[],
+	columns: TableColumn<TKey, TGame>[],
 ) {
 	return (
 		columns.findIndex((column) => {

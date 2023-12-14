@@ -8,7 +8,10 @@ import { FilterMenu } from "@components/filter-menu";
 import { VirtualizedTable } from "@components/table/virtualized-table";
 import { RefreshButton } from "@components/refresh-button";
 import { SearchInput } from "@components/search-input";
-import { installedGamesColumns } from "./installed-games-columns";
+import {
+	InstalledGameColumnsId,
+	installedGamesColumns,
+} from "./installed-games-columns";
 import { ColumnsSelect } from "@components/columns-select";
 import { usePersistedState } from "@hooks/use-persisted-state";
 import { AddGame } from "./add-game-button";
@@ -48,8 +51,10 @@ export function InstalledGamesPage() {
 		[installedGames, selectedGameId],
 	);
 
-	const [hiddenColumns, setHiddenColumns] = usePersistedState<string[]>(
-		["mode", "operatingSystem", "provider"],
+	const [hiddenColumns, setHiddenColumns] = usePersistedState<
+		InstalledGameColumnsId[]
+	>(
+		["gameMode", "operatingSystem", "architecture", "provider"],
 		"installed-hidden-columns",
 	);
 
