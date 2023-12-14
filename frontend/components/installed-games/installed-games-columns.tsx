@@ -4,6 +4,7 @@ import {
 	GameEngine,
 	GameEngineBrand,
 	GameEngineVersion,
+	GameMode,
 	OperatingSystem,
 	ProviderId,
 	UnityScriptingBackend,
@@ -13,6 +14,7 @@ import { ItemName } from "../item-name";
 import {
 	ArchitectureBadge,
 	EngineBadge,
+	GameModeBadge,
 	OperatingSystemBadge,
 	ProviderBadge,
 	UnityBackendBadge,
@@ -137,6 +139,25 @@ const scriptingBackendColumn: TableColumn<
 	),
 };
 
+const gameModeColumn: TableColumn<ProcessedInstalledGame, GameMode> = {
+	id: "mode",
+	label: "Mode",
+	width: 90,
+	center: true,
+	hidable: true,
+	getSortValue: (game) => game.gameMode,
+	filterOptions: [
+		{ label: "Any mode", value: "" },
+		{ label: "Flat", value: "Flat" },
+		{ label: "VR", value: "VR" },
+	],
+	renderCell: (game) => (
+		<Table.Td>
+			<GameModeBadge value={game.gameMode} />
+		</Table.Td>
+	),
+};
+
 const defaultVersion: GameEngineVersion = {
 	major: 0,
 	minor: 0,
@@ -205,6 +226,7 @@ export const installedGamesColumns = [
 	thumbnailColumn,
 	nameColumn,
 	providerColumn,
+	gameModeColumn,
 	operatingSystemColumn,
 	architectureColumn,
 	scriptingBackendColumn,

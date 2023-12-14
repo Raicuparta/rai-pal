@@ -1,6 +1,7 @@
 import {
 	Architecture,
 	GameEngineBrand,
+	GameMode,
 	OperatingSystem,
 	ProviderId,
 	UnityScriptingBackend,
@@ -57,6 +58,11 @@ export const UnityBackendBadge = CreateColorCodedBadge<UnityScriptingBackend>(
 		Mono: "grape",
 	},
 );
+
+export const GameModeBadge = CreateColorCodedBadge<GameMode>("-", {
+	VR: "green",
+	Flat: "gray",
+});
 
 export const ArchitectureBadge = CreateColorCodedBadge<Architecture>("-", {
 	X64: "blue",

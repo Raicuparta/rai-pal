@@ -6,6 +6,7 @@ use std::collections::{
 use crate::{
 	game_engines::game_engine::GameEngineBrand,
 	game_executable::OperatingSystem,
+	game_mode::GameMode,
 	providers::provider::ProviderId,
 	serializable_struct,
 };
@@ -19,6 +20,7 @@ serializable_struct!(OwnedGame {
 	pub engine: GameEngineBrand,
 	pub release_date: i32,
 	pub thumbnail_url: String,
+	pub game_mode: GameMode,
 });
 
 pub type Map = HashMap<String, OwnedGame>;

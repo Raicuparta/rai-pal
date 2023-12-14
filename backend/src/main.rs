@@ -54,6 +54,7 @@ mod files;
 mod game_engines;
 mod game_executable;
 mod game_mod;
+mod game_mode;
 mod installed_game;
 mod local_mod;
 mod macros;

@@ -49,7 +49,7 @@ export function InstalledGamesPage() {
 	);
 
 	const [hiddenColumns, setHiddenColumns] = usePersistedState<string[]>(
-		["operatingSystem", "provider"],
+		["mode", "operatingSystem", "provider"],
 		"installed-hidden-columns",
 	);
 

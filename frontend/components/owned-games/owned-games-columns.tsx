@@ -1,6 +1,12 @@
-import { GameEngineBrand, OwnedGame, ProviderId } from "@api/bindings";
+import {
+	GameEngineBrand,
+	GameMode,
+	OwnedGame,
+	ProviderId,
+} from "@api/bindings";
 import {
 	EngineBadge,
+	GameModeBadge,
 	ProviderBadge,
 } from "@components/badges/color-coded-badge";
 import { TableColumn } from "@components/table/table-head";
@@ -82,6 +88,25 @@ const installedColumn: TableColumn<OwnedGame, string> = {
 	),
 };
 
+const gameModeColumn: TableColumn<OwnedGame, GameMode> = {
+	id: "mode",
+	label: "Mode",
+	width: 90,
+	center: true,
+	hidable: true,
+	getSortValue: (game) => game.gameMode,
+	filterOptions: [
+		{ label: "Any mode", value: "" },
+		{ label: "Flat", value: "Flat" },
+		{ label: "VR", value: "VR" },
+	],
+	renderCell: (game) => (
+		<Table.Td>
+			<GameModeBadge value={game.gameMode} />
+		</Table.Td>
+	),
+};
+
 const releaseDateColumn: TableColumn<OwnedGame> = {
 	id: "releaseDate",
 	label: "Release Date",
@@ -103,6 +128,7 @@ export const ownedGamesColumns: TableColumn<OwnedGame>[] = [
 	nameColumn,
 	providerColumn,
 	engineColumn,
+	gameModeColumn,
 	installedColumn,
 	releaseDateColumn,
 ];
