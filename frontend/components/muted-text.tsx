@@ -7,7 +7,8 @@ type Props = {
 export function MutedText(props: Props) {
 	return (
 		<Text
-			size="sm"
+			component="span"
+			size="xs"
 			opacity={0.5}
 		>
 			{props.children}

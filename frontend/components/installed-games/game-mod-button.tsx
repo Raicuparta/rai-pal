@@ -1,4 +1,4 @@
-import { Tooltip } from "@mantine/core";
+import { Tooltip, Text } from "@mantine/core";
 import {
 	ModLoaderData,
 	downloadMod,
@@ -83,11 +83,13 @@ export function GameModButton(props: Props) {
 				confirmationSkipId={isInstalled ? undefined : "install-mod-confirm"}
 				onClick={handleClick}
 			>
-				{getActionText()} {props.mod.remote?.title ?? props.mod.common.id}
-				{versionText && <MutedText>({versionText})</MutedText>}
-				{!props.game.executable.engine && (
-					<MutedText>({props.mod.common.engine})</MutedText>
-				)}
+				<Text>
+					{getActionText()} {props.mod.remote?.title ?? props.mod.common.id}{" "}
+					{versionText && <MutedText>({versionText})</MutedText>}
+					{!props.game.executable.engine && (
+						<MutedText>({props.mod.common.engine})</MutedText>
+					)}
+				</Text>
 			</CommandButton>
 		</Tooltip>
 	);
