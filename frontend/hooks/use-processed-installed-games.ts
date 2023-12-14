@@ -2,7 +2,7 @@ import { useAtomValue } from "jotai";
 import { useMemo } from "react";
 import { installedGamesAtom } from "./use-data";
 import { useUnifiedMods } from "./use-unified-mods";
-import { isOutdated } from "../util/is-outdated";
+import { getIsOutdated } from "../util/is-outdated";
 import { InstalledGame } from "@api/bindings";
 
 type ProcessedInstalledGameRecord = Record<string, ProcessedInstalledGame>;
@@ -22,7 +22,7 @@ export function useProcessedInstalledGames() {
 				hasOutdatedMod:
 					Object.entries(installedGame.installedModVersions).findIndex(
 						([modId, installedVersion]) =>
-							isOutdated(
+							getIsOutdated(
 								installedVersion,
 								mods[modId]?.remote?.latestVersion?.id,
 							),

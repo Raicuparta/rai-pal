@@ -194,7 +194,7 @@ async fn start_game_exe(game_id: &str, handle: AppHandle) -> Result {
 
 #[tauri::command]
 #[specta::specta]
-async fn install_mod(mod_id: &str, game_id: &str, handle: AppHandle) -> Result {
+async fn install_mod(game_id: &str, mod_id: &str, handle: AppHandle) -> Result {
 	let state = handle.app_state();
 
 	let mut installed_games = state.installed_games.get_data()?;

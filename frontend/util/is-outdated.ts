@@ -1,4 +1,4 @@
-export function isOutdated(
+export function getIsOutdated(
 	localVersion: string | undefined | null,
 	remoteVersion: string | undefined | null,
 ) {

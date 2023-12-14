@@ -34,8 +34,8 @@ export function openGameFolder(gameId: string) {
     return invoke()<null>("open_game_folder", { gameId })
 }
 
-export function installMod(modId: string, gameId: string) {
-    return invoke()<null>("install_mod", { modId,gameId })
+export function installMod(gameId: string, modId: string) {
+    return invoke()<null>("install_mod", { gameId,modId })
 }
 
 export function uninstallMod(gameId: string, modId: string) {
