@@ -14,11 +14,11 @@ export function TableItemDetails<TData>(props: Props<TData>) {
 	return (
 		<TableContainer>
 			<Table>
-				<thead>
+				<Table.Thead>
 					<TableHead columns={columns} />
-				</thead>
-				<tbody>
-					<tr>
+				</Table.Thead>
+				<Table.Tbody>
+					<Table.Tr>
 						{columns.map(
 							(column) =>
 								!column.hideInDetails && (
@@ -27,8 +27,8 @@ export function TableItemDetails<TData>(props: Props<TData>) {
 									</React.Fragment>
 								),
 						)}
-					</tr>
-				</tbody>
+					</Table.Tr>
+				</Table.Tbody>
 			</Table>
 		</TableContainer>
 	);

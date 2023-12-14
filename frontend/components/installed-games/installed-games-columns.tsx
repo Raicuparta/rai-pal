@@ -164,7 +164,7 @@ function getAdjustedMajor(engine: GameEngine | null) {
 const engineColumn: TableColumn<ProcessedInstalledGame, GameEngineBrand> = {
 	id: "engine",
 	label: "Engine",
-	width: 170,
+	width: 180,
 	center: true,
 	hidable: true,
 	sort: (dataA, dataB) => {
