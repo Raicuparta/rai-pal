@@ -40,14 +40,16 @@ export function OwnedGamesPage() {
 		[ownedGames, selectedGameId],
 	);
 
-	const [hiddenColumns, setHiddenColumns] = usePersistedState<
+	const [visibleColumnIds, setVisibleColumnIds] = usePersistedState<
 		OwnedGameColumnsId[]
-	>(["provider", "gameMode"], "owned-visible-columns");
+	>(["thumbnail", "engine", "releaseDate"], "owned-visible-columns");
 
 	const filteredColumns = useMemo(
 		() =>
-			ownedGamesColumns.filter((column) => !hiddenColumns.includes(column.id)),
-		[hiddenColumns],
+			ownedGamesColumns.filter(
+				(column) => !column.hidable || visibleColumnIds.includes(column.id),
+			),
+		[visibleColumnIds],
 	);
 
 	const [filteredGames, sort, setSort, filter, setFilter, search, setSearch] =
@@ -83,8 +85,8 @@ export function OwnedGamesPage() {
 					<Stack>
 						<ColumnsSelect
 							columns={ownedGamesColumns}
-							hiddenIds={hiddenColumns}
-							onChange={setHiddenColumns}
+							hiddenIds={visibleColumnIds}
+							onChange={setVisibleColumnIds}
 						/>
 						{ownedGamesColumns.map(
 							(column) =>

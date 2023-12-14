@@ -51,19 +51,16 @@ export function InstalledGamesPage() {
 		[installedGames, selectedGameId],
 	);
 
-	const [hiddenColumns, setHiddenColumns] = usePersistedState<
+	const [visibleColumnIds, setVisibleColumnIds] = usePersistedState<
 		InstalledGameColumnsId[]
-	>(
-		["gameMode", "operatingSystem", "architecture", "provider"],
-		"installed-hidden-columns",
-	);
+	>(["thumbnail", "engine"], "installed-visible-columns");
 
 	const filteredColumns = useMemo(
 		() =>
 			installedGamesColumns.filter(
-				(column) => !hiddenColumns.includes(column.id),
+				(column) => !column.hidable || visibleColumnIds.includes(column.id),
 			),
-		[hiddenColumns],
+		[visibleColumnIds],
 	);
 
 	const [filteredGames, sort, setSort, filter, setFilter, search, setSearch] =
@@ -93,8 +90,8 @@ export function InstalledGamesPage() {
 					<Stack>
 						<ColumnsSelect
 							columns={installedGamesColumns}
-							hiddenIds={hiddenColumns}
-							onChange={setHiddenColumns}
+							hiddenIds={visibleColumnIds}
+							onChange={setVisibleColumnIds}
 						/>
 
 						{installedGamesColumns.map(
