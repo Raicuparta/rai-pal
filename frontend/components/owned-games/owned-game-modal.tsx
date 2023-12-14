@@ -20,7 +20,7 @@ export function OwnedGameModal(props: Props) {
 			centered
 			onClose={props.onClose}
 			opened
-			size="lg"
+			size="xl"
 			title={props.game.name}
 		>
 			<Stack>

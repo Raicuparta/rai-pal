@@ -63,7 +63,7 @@ export function InstalledGameModal(props: Props) {
 			centered
 			onClose={props.onClose}
 			opened
-			size="lg"
+			size="xl"
 			title={
 				<ItemName label={props.game.discriminator}>{props.game.name}</ItemName>
 			}
