@@ -1,6 +1,6 @@
 import { deleteSteamAppinfoCache } from "@api/bindings";
 import { CommandButton } from "@components/command-button";
-import { Button, Modal, Stack } from "@mantine/core";
+import { Button, Flex, Group, Modal, Stack } from "@mantine/core";
 import { IconHammer } from "@tabler/icons-react";
 import { useCallback, useState } from "react";
 
@@ -43,13 +43,15 @@ export function FixOwnedGamesButton() {
 					<span>
 						You&apos;ll get an error if the file has already been deleted.
 					</span>
-					<CommandButton
-						onClick={() => deleteSteamAppinfoCache()}
-						onSuccess={() => setShowSteamRestartPrompt(true)}
-						leftSection={<IconHammer />}
-					>
-						Delete Steam&apos;s Game Info Cache
-					</CommandButton>
+					<Flex justify="center">
+						<CommandButton
+							onClick={() => deleteSteamAppinfoCache()}
+							onSuccess={() => setShowSteamRestartPrompt(true)}
+							leftSection={<IconHammer />}
+						>
+							Delete Steam&apos;s Game Info Cache
+						</CommandButton>
+					</Flex>
 					{showSteamRestartPrompt && (
 						<Stack>
 							The cache file has been deleted. Please restart Steam, wait a few
