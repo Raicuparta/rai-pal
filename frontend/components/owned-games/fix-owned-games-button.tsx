@@ -1,6 +1,6 @@
 import { deleteSteamAppinfoCache } from "@api/bindings";
 import { CommandButton } from "@components/command-button";
-import { Button, Flex, Group, Modal, Stack } from "@mantine/core";
+import { Button, Flex, Modal, Stack } from "@mantine/core";
 import { IconHammer } from "@tabler/icons-react";
 import { useCallback, useState } from "react";
 
