@@ -1,4 +1,4 @@
-import { Flex, Modal, Stack } from "@mantine/core";
+import { Button, Group, Modal, Stack, Table, Text } from "@mantine/core";
 import {
 	openGameFolder,
 	openGameModsFolder,
@@ -25,13 +25,13 @@ import { steamCommands } from "../../util/steam";
 import { ModalImage } from "@components/modal-image";
 import { useAtomValue } from "jotai";
 import { modLoadersAtom } from "@hooks/use-data";
-import { CommandButtonGroup } from "@components/command-button-group";
 import { DebugData } from "@components/debug-data";
 import { useUnifiedMods } from "@hooks/use-unified-mods";
 import { installedGamesColumns } from "./installed-games-columns";
 import { TableItemDetails } from "@components/table/table-item-details";
 import { ProcessedInstalledGame } from "@hooks/use-processed-installed-games";
 import { GameModButton } from "./game-mod-button";
+import { TableContainer } from "@components/table/table-container";
 
 type Props = {
 	readonly game: ProcessedInstalledGame;
@@ -42,21 +42,11 @@ export function InstalledGameModal(props: Props) {
 	const modLoaderMap = useAtomValue(modLoadersAtom);
 	const mods = useUnifiedMods();
 
-	// TODO make less insane?
-	const modLoaders = useMemo(
-		() =>
-			Object.values(modLoaderMap ?? {}).map((modLoader) => ({
-				...modLoader,
-				mods: Object.entries(mods)
-					.filter(
-						([modId, mod]) =>
-							modId in props.game.installedModVersions &&
-							mod.common.loaderId === modLoader.id,
-					)
-					.map(([, mod]) => mod),
-			})),
-		[modLoaderMap, mods, props.game.installedModVersions],
-	);
+	const filteredMods = useMemo(() => {
+		return Object.values(mods).filter(
+			(mod) => mod.common.id in props.game.installedModVersions,
+		);
+	}, [mods, props.game.installedModVersions]);
 
 	return (
 		<Modal
@@ -65,16 +55,17 @@ export function InstalledGameModal(props: Props) {
 			opened
 			size="xl"
 			title={
-				<ItemName label={props.game.discriminator}>{props.game.name}</ItemName>
+				<Group>
+					<ModalImage src={props.game.thumbnailUrl} />
+					<ItemName label={props.game.discriminator}>
+						{props.game.name}
+					</ItemName>
+				</Group>
 			}
 		>
 			<Stack>
-				<ModalImage src={props.game.thumbnailUrl} />
-				<Flex
-					wrap="wrap"
-					gap="md"
-				>
-					<CommandButtonGroup label="Game Actions">
+				<Group>
+					<Button.Group orientation="vertical">
 						{props.game.providerId !== "Manual" && (
 							<CommandButton
 								leftSection={<IconPlayerPlay />}
@@ -91,6 +82,8 @@ export function InstalledGameModal(props: Props) {
 						>
 							Start Game (Exe)
 						</CommandButton>
+					</Button.Group>
+					<Button.Group orientation="vertical">
 						<CommandButton
 							leftSection={<IconFolder />}
 							onClick={() => openGameFolder(props.game.id)}
@@ -103,6 +96,8 @@ export function InstalledGameModal(props: Props) {
 						>
 							Open Mods Folder
 						</CommandButton>
+					</Button.Group>
+					<Button.Group orientation="vertical">
 						{props.game.steamLaunch && (
 							<>
 								<CommandButton
@@ -111,7 +106,7 @@ export function InstalledGameModal(props: Props) {
 										steamCommands.showInLibrary(props.game.steamLaunch?.appId)
 									}
 								>
-									Show in Library
+									Show in Steam Library
 								</CommandButton>
 								<CommandButton
 									leftSection={<IconBrowser />}
@@ -119,7 +114,7 @@ export function InstalledGameModal(props: Props) {
 										steamCommands.openStorePage(props.game.steamLaunch?.appId)
 									}
 								>
-									Open Store Page
+									Open Steam Page
 								</CommandButton>
 							</>
 						)}
@@ -139,26 +134,46 @@ export function InstalledGameModal(props: Props) {
 						>
 							Refresh Game
 						</CommandButton>
-					</CommandButtonGroup>
-					{modLoaders.map(
-						(modLoader) =>
-							modLoader.mods.length > 0 && (
-								<CommandButtonGroup
-									label={modLoader.id.toUpperCase()}
-									key={modLoader.id}
-								>
-									{modLoader.mods.map((mod) => (
+					</Button.Group>
+				</Group>
+				<TableContainer>
+					<Table>
+						<Table.Thead>
+							<Table.Tr>
+								<Table.Th>Mod</Table.Th>
+								<Table.Th w={200}></Table.Th>
+							</Table.Tr>
+						</Table.Thead>
+						<Table.Tbody>
+							{filteredMods.map((mod) => (
+								<Table.Tr key={mod.common.id}>
+									<Table.Td ta="left">
+										<ItemName label={`by ${mod.remote?.author}`}>
+											{mod.remote?.title ?? mod.common.id}
+										</ItemName>
+										{mod.remote?.description && (
+											<Text
+												size="sm"
+												opacity={0.5}
+											>
+												{mod.remote.description}
+											</Text>
+										)}
+									</Table.Td>
+									<Table.Td>
 										<GameModButton
 											key={mod.common.id}
 											game={props.game}
 											mod={mod}
-											modLoader={modLoader}
+											modLoader={modLoaderMap[mod.common.loaderId]}
 										/>
-									))}
-								</CommandButtonGroup>
-							),
-					)}
-				</Flex>
+									</Table.Td>
+								</Table.Tr>
+							))}
+						</Table.Tbody>
+					</Table>
+				</TableContainer>
+
 				<TableItemDetails
 					columns={installedGamesColumns}
 					item={props.game}

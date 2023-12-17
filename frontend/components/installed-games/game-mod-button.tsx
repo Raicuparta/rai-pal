@@ -55,7 +55,7 @@ export function GameModButton(props: Props) {
 			: installedVersion;
 
 	function getActionText() {
-		if (isInstalledModOutdated) return "Update";
+		if (isInstalledModOutdated) return "Update to";
 		if (isInstalled) return "Uninstall";
 		if (props.modLoader.kind === "Installable") return "Install";
 		return "Run";
@@ -75,6 +75,7 @@ export function GameModButton(props: Props) {
 		>
 			<CommandButton
 				leftSection={getIcon()}
+				fullWidth
 				confirmationText={
 					isInstalled
 						? undefined
@@ -84,8 +85,7 @@ export function GameModButton(props: Props) {
 				onClick={handleClick}
 			>
 				<Text>
-					{getActionText()} {props.mod.remote?.title ?? props.mod.common.id}{" "}
-					{versionText && <MutedText>({versionText})</MutedText>}
+					{getActionText()} {versionText}
 					{!props.game.executable.engine && (
 						<MutedText>({props.mod.common.engine})</MutedText>
 					)}
