@@ -1,4 +1,5 @@
 import {
+	Box,
 	Divider,
 	Group,
 	Modal,
@@ -81,7 +82,7 @@ export function InstalledGameModal(props: Props) {
 					<ItemName label={props.game.discriminator}>
 						{props.game.name}
 					</ItemName>
-					<Tooltip label="Refrseh game info">
+					<Tooltip label="Refresh game info">
 						<CommandButton onClick={() => refreshGame(props.game.id)}>
 							<IconRefresh />
 						</CommandButton>
@@ -93,19 +94,6 @@ export function InstalledGameModal(props: Props) {
 				<Divider label="Mods" />
 				<TableContainer>
 					<Table>
-						<Table.Thead>
-							<Table.Tr>
-								<Table.Th>Mod</Table.Th>
-								<Table.Th w={200}>
-									<CommandButton
-										leftSection={<IconFolderCog />}
-										onClick={() => openGameModsFolder(props.game.id)}
-									>
-										Open Mods Folder
-									</CommandButton>
-								</Table.Th>
-							</Table.Tr>
-						</Table.Thead>
 						<Table.Tbody>
 							{filteredMods.map((mod) => (
 								<Table.Tr key={mod.common.id}>
@@ -135,6 +123,14 @@ export function InstalledGameModal(props: Props) {
 						</Table.Tbody>
 					</Table>
 				</TableContainer>
+				<Box>
+					<CommandButton
+						leftSection={<IconFolderCog />}
+						onClick={() => openGameModsFolder(props.game.id)}
+					>
+						Open Mods Folder
+					</CommandButton>
+				</Box>
 				{props.game.providerId !== "Manual" && props.game.steamLaunch && (
 					<>
 						<Divider label={props.game.providerId} />
