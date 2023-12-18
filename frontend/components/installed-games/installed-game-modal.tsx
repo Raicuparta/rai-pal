@@ -8,6 +8,7 @@ import {
 	Tooltip,
 } from "@mantine/core";
 import {
+	ProviderId,
 	openGameFolder,
 	openGameModsFolder,
 	refreshGame,
@@ -19,8 +20,10 @@ import { useMemo } from "react";
 import { ItemName } from "../item-name";
 import { CommandButton } from "@components/command-button";
 import {
+	Icon,
 	IconAppWindow,
 	IconBooks,
+	IconBrandSteam,
 	IconBrowser,
 	IconDeviceGamepad,
 	IconFolder,
@@ -45,6 +48,15 @@ type Props = {
 	readonly onClose: () => void;
 };
 
+const providerIcons: Record<ProviderId, Icon> = {
+	Manual: IconDeviceGamepad,
+	Steam: IconBrandSteam,
+};
+
+function getProviderIcon(providerId: ProviderId) {
+	return providerIcons[providerId] ?? IconDeviceGamepad;
+}
+
 export function InstalledGameModal(props: Props) {
 	const modLoaderMap = useAtomValue(modLoadersAtom);
 	const mods = useUnifiedMods();
@@ -54,6 +66,8 @@ export function InstalledGameModal(props: Props) {
 			(mod) => mod.common.id in props.game.installedModVersions,
 		);
 	}, [mods, props.game.installedModVersions]);
+
+	const ProviderIcon = getProviderIcon(props.game.providerId);
 
 	return (
 		<Modal
@@ -126,7 +140,7 @@ export function InstalledGameModal(props: Props) {
 						<Divider label={props.game.providerId} />
 						<Group>
 							<CommandButton
-								leftSection={<IconDeviceGamepad />}
+								leftSection={<ProviderIcon />}
 								onClick={() => startGame(props.game.id)}
 							>
 								Start Game via {props.game.providerId}
