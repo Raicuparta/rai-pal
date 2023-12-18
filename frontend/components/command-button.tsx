@@ -75,12 +75,11 @@ function CommandButtonInternal<TResult>(
 			<Popover.Target>
 				<Button
 					ref={ref}
-					color="green"
 					justify="start"
 					loading={isLongLoading}
-					// TODO seems like success is being cleared immediately, investigate.
-					variant={success ? "filled" : "default"}
 					{...props}
+					color={success ? "green" : props.color}
+					variant={success ? "filled" : props.variant}
 					onClick={handleClick}
 				>
 					{children}
@@ -106,7 +105,6 @@ function CommandButtonInternal<TResult>(
 							<Button
 								leftSection={<IconCheck />}
 								onClick={confirm}
-								{...props}
 							>
 								{children}
 							</Button>

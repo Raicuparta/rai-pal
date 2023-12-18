@@ -1,4 +1,4 @@
-import { Tooltip, Text } from "@mantine/core";
+import { Text, DefaultMantineColor } from "@mantine/core";
 import {
 	ModLoaderData,
 	downloadMod,
@@ -6,13 +6,12 @@ import {
 	uninstallMod,
 } from "@api/bindings";
 import { CommandButton } from "@components/command-button";
-import { IconTool, IconTrash } from "@tabler/icons-react";
+import { IconCubeOff, IconCubePlus, IconPlayerPlay } from "@tabler/icons-react";
 import { UnifiedMod } from "@hooks/use-unified-mods";
 import { getIsOutdated } from "../../util/is-outdated";
 import { OutdatedMarker } from "@components/OutdatedMarker";
 import { ProcessedInstalledGame } from "@hooks/use-processed-installed-games";
 import { useCallback } from "react";
-import { MutedText } from "@components/muted-text";
 
 type Props = {
 	readonly game: ProcessedInstalledGame;
@@ -63,34 +62,34 @@ export function GameModButton(props: Props) {
 
 	function getIcon() {
 		if (isInstalledModOutdated) return <OutdatedMarker />;
-		if (isInstalled) return <IconTrash />;
-		return <IconTool />;
+		if (isInstalled) return <IconCubeOff />;
+		if (props.modLoader.kind === "Runnable") return <IconPlayerPlay />;
+		return <IconCubePlus />;
+	}
+
+	function getColor(): DefaultMantineColor {
+		if (isInstalledModOutdated) return "orange";
+		if (isInstalled) return "red";
+		return "violet";
 	}
 
 	return (
-		<Tooltip
-			disabled={!isInstalledModOutdated}
-			label="Mod outdated. Click to update."
-			key={props.mod.common.id}
+		<CommandButton
+			leftSection={getIcon()}
+			fullWidth
+			variant="light"
+			color={getColor()}
+			confirmationText={
+				isInstalled
+					? undefined
+					: "Attention: be careful when installing mods on multiplayer games! Anticheat can detect some mods and get you banned, even if the mods seem harmless."
+			}
+			confirmationSkipId={isInstalled ? undefined : "install-mod-confirm"}
+			onClick={handleClick}
 		>
-			<CommandButton
-				leftSection={getIcon()}
-				fullWidth
-				confirmationText={
-					isInstalled
-						? undefined
-						: "Attention: be careful when installing mods on multiplayer games! Anticheat can detect some mods and get you banned, even if the mods seem harmless."
-				}
-				confirmationSkipId={isInstalled ? undefined : "install-mod-confirm"}
-				onClick={handleClick}
-			>
-				<Text>
-					{getActionText()} {versionText}
-					{!props.game.executable.engine && (
-						<MutedText>({props.mod.common.engine})</MutedText>
-					)}
-				</Text>
-			</CommandButton>
-		</Tooltip>
+			<Text>
+				{getActionText()} {versionText}
+			</Text>
+		</CommandButton>
 	);
 }

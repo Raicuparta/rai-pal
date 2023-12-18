@@ -1,4 +1,12 @@
-import { Button, Group, Modal, Stack, Table, Text } from "@mantine/core";
+import {
+	Divider,
+	Group,
+	Modal,
+	Stack,
+	Table,
+	Text,
+	Tooltip,
+} from "@mantine/core";
 import {
 	openGameFolder,
 	openGameModsFolder,
@@ -14,11 +22,10 @@ import {
 	IconAppWindow,
 	IconBooks,
 	IconBrowser,
+	IconDeviceGamepad,
 	IconFolder,
 	IconFolderCog,
-	IconPlayerPlay,
 	IconRefresh,
-	IconShoppingBag,
 	IconTrash,
 } from "@tabler/icons-react";
 import { steamCommands } from "../../util/steam";
@@ -60,88 +67,29 @@ export function InstalledGameModal(props: Props) {
 					<ItemName label={props.game.discriminator}>
 						{props.game.name}
 					</ItemName>
+					<Tooltip label="Refrseh game info">
+						<CommandButton onClick={() => refreshGame(props.game.id)}>
+							<IconRefresh />
+						</CommandButton>
+					</Tooltip>
 				</Group>
 			}
 		>
 			<Stack>
-				<Group>
-					<Button.Group orientation="vertical">
-						{props.game.providerId !== "Manual" && (
-							<CommandButton
-								leftSection={<IconPlayerPlay />}
-								rightSection={<IconShoppingBag />}
-								onClick={() => startGame(props.game.id)}
-							>
-								Start Game ({props.game.providerId})
-							</CommandButton>
-						)}
-						<CommandButton
-							leftSection={<IconPlayerPlay />}
-							rightSection={<IconAppWindow />}
-							onClick={() => startGameExe(props.game.id)}
-						>
-							Start Game (Exe)
-						</CommandButton>
-					</Button.Group>
-					<Button.Group orientation="vertical">
-						<CommandButton
-							leftSection={<IconFolder />}
-							onClick={() => openGameFolder(props.game.id)}
-						>
-							Open Game Folder
-						</CommandButton>
-						<CommandButton
-							leftSection={<IconFolderCog />}
-							onClick={() => openGameModsFolder(props.game.id)}
-						>
-							Open Mods Folder
-						</CommandButton>
-					</Button.Group>
-					<Button.Group orientation="vertical">
-						{props.game.steamLaunch && (
-							<>
-								<CommandButton
-									leftSection={<IconBooks />}
-									onClick={() =>
-										steamCommands.showInLibrary(props.game.steamLaunch?.appId)
-									}
-								>
-									Show in Steam Library
-								</CommandButton>
-								<CommandButton
-									leftSection={<IconBrowser />}
-									onClick={() =>
-										steamCommands.openStorePage(props.game.steamLaunch?.appId)
-									}
-								>
-									Open Steam Page
-								</CommandButton>
-							</>
-						)}
-						{props.game.providerId === "Manual" && (
-							<CommandButton
-								onClick={() => removeGame(props.game.id)}
-								confirmationText="Are you sure you want to remove this game from Rai Pal?"
-								onSuccess={props.onClose}
-								leftSection={<IconTrash />}
-							>
-								Remove from Rai Pal
-							</CommandButton>
-						)}
-						<CommandButton
-							onClick={() => refreshGame(props.game.id)}
-							leftSection={<IconRefresh />}
-						>
-							Refresh Game
-						</CommandButton>
-					</Button.Group>
-				</Group>
+				<Divider label="Mods" />
 				<TableContainer>
 					<Table>
 						<Table.Thead>
 							<Table.Tr>
 								<Table.Th>Mod</Table.Th>
-								<Table.Th w={200}></Table.Th>
+								<Table.Th w={200}>
+									<CommandButton
+										leftSection={<IconFolderCog />}
+										onClick={() => openGameModsFolder(props.game.id)}
+									>
+										Open Mods Folder
+									</CommandButton>
+								</Table.Th>
 							</Table.Tr>
 						</Table.Thead>
 						<Table.Tbody>
@@ -173,11 +121,66 @@ export function InstalledGameModal(props: Props) {
 						</Table.Tbody>
 					</Table>
 				</TableContainer>
-
+				{props.game.providerId !== "Manual" && props.game.steamLaunch && (
+					<>
+						<Divider label={props.game.providerId} />
+						<Group>
+							<CommandButton
+								leftSection={<IconDeviceGamepad />}
+								onClick={() => startGame(props.game.id)}
+							>
+								Start Game via {props.game.providerId}
+							</CommandButton>
+							<>
+								<CommandButton
+									leftSection={<IconBooks />}
+									onClick={() =>
+										steamCommands.showInLibrary(props.game.steamLaunch?.appId)
+									}
+								>
+									Show in Steam Library
+								</CommandButton>
+								<CommandButton
+									leftSection={<IconBrowser />}
+									onClick={() =>
+										steamCommands.openStorePage(props.game.steamLaunch?.appId)
+									}
+								>
+									Open Steam Page
+								</CommandButton>
+							</>
+						</Group>
+					</>
+				)}
+				<Divider label="Game Files" />
 				<TableItemDetails
 					columns={installedGamesColumns}
 					item={props.game}
 				/>
+				<Group>
+					<CommandButton
+						leftSection={<IconAppWindow />}
+						onClick={() => startGameExe(props.game.id)}
+					>
+						Start Game Executable
+					</CommandButton>
+					<CommandButton
+						leftSection={<IconFolder />}
+						onClick={() => openGameFolder(props.game.id)}
+					>
+						Open Game Folder
+					</CommandButton>
+					{props.game.providerId === "Manual" && (
+						<CommandButton
+							onClick={() => removeGame(props.game.id)}
+							confirmationText="Are you sure you want to remove this game from Rai Pal?"
+							onSuccess={props.onClose}
+							leftSection={<IconTrash />}
+						>
+							Remove from Rai Pal
+						</CommandButton>
+					)}
+				</Group>
 				<DebugData data={props.game} />
 			</Stack>
 		</Modal>
