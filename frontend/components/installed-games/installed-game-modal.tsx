@@ -5,7 +5,6 @@ import {
 	Modal,
 	Stack,
 	Table,
-	Text,
 	Tooltip,
 } from "@mantine/core";
 import {
@@ -41,7 +40,7 @@ import { useUnifiedMods } from "@hooks/use-unified-mods";
 import { installedGamesColumns } from "./installed-games-columns";
 import { TableItemDetails } from "@components/table/table-item-details";
 import { ProcessedInstalledGame } from "@hooks/use-processed-installed-games";
-import { GameModButton } from "./game-mod-button";
+import { GameModRow } from "./game-mod-row";
 import { TableContainer } from "@components/table/table-container";
 
 type Props = {
@@ -96,29 +95,12 @@ export function InstalledGameModal(props: Props) {
 					<Table>
 						<Table.Tbody>
 							{filteredMods.map((mod) => (
-								<Table.Tr key={mod.common.id}>
-									<Table.Td ta="left">
-										<ItemName label={`by ${mod.remote?.author}`}>
-											{mod.remote?.title ?? mod.common.id}
-										</ItemName>
-										{mod.remote?.description && (
-											<Text
-												size="sm"
-												opacity={0.5}
-											>
-												{mod.remote.description}
-											</Text>
-										)}
-									</Table.Td>
-									<Table.Td>
-										<GameModButton
-											key={mod.common.id}
-											game={props.game}
-											mod={mod}
-											modLoader={modLoaderMap[mod.common.loaderId]}
-										/>
-									</Table.Td>
-								</Table.Tr>
+								<GameModRow
+									key={mod.common.id}
+									game={props.game}
+									mod={mod}
+									modLoader={modLoaderMap[mod.common.loaderId]}
+								/>
 							))}
 						</Table.Tbody>
 					</Table>
