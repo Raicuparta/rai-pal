@@ -1,7 +1,9 @@
 import {
 	Box,
+	Button,
 	Divider,
 	Group,
+	Menu,
 	Modal,
 	Stack,
 	Table,
@@ -25,9 +27,13 @@ import {
 	IconBooks,
 	IconBrandSteam,
 	IconBrowser,
+	IconChevronDown,
 	IconDeviceGamepad,
 	IconFolder,
 	IconFolderCog,
+	IconFolderOpen,
+	IconFolderStar,
+	IconPlayerPlay,
 	IconRefresh,
 	IconTrash,
 } from "@tabler/icons-react";
@@ -90,6 +96,68 @@ export function InstalledGameModal(props: Props) {
 			}
 		>
 			<Stack>
+				<TableItemDetails
+					columns={installedGamesColumns}
+					item={props.game}
+				/>
+				<Group>
+					<Button.Group>
+						<Button leftSection={<IconPlayerPlay />}>Start Game</Button>
+						<Menu>
+							<Menu.Target>
+								<Button p="xs">
+									<IconChevronDown />
+								</Button>
+							</Menu.Target>
+							<Menu.Dropdown>
+								<Menu.Item leftSection={<IconAppWindow />}>
+									Executable
+								</Menu.Item>
+								<Menu.Item leftSection={<ProviderIcon />}>
+									{props.game.providerId}
+								</Menu.Item>
+							</Menu.Dropdown>
+						</Menu>
+					</Button.Group>
+					<Menu>
+						<Menu.Target>
+							<Button
+								leftSection={<IconFolderOpen />}
+								rightSection={<IconChevronDown />}
+							>
+								Folders
+							</Button>
+						</Menu.Target>
+						<Menu.Dropdown>
+							<Menu.Item leftSection={<IconFolder />}>
+								Open Game Files Folder
+							</Menu.Item>
+							<Menu.Item leftSection={<IconFolderCog />}>
+								Open Installed Mods Folder
+							</Menu.Item>
+						</Menu.Dropdown>
+					</Menu>
+					<Button.Group>
+						<Menu>
+							<Menu.Target>
+								<Button
+									leftSection={<ProviderIcon />}
+									rightSection={<IconChevronDown />}
+								>
+									{props.game.providerId}
+								</Button>
+							</Menu.Target>
+							<Menu.Dropdown>
+								<Menu.Item leftSection={<IconBrowser />}>
+									Open Store Page
+								</Menu.Item>
+								<Menu.Item leftSection={<IconBooks />}>
+									Show in Library
+								</Menu.Item>
+							</Menu.Dropdown>
+						</Menu>
+					</Button.Group>
+				</Group>
 				<Divider label="Mods" />
 				<TableContainer>
 					<Table>
@@ -105,15 +173,15 @@ export function InstalledGameModal(props: Props) {
 						</Table.Tbody>
 					</Table>
 				</TableContainer>
-				<Box>
+				{/* <Box>
 					<CommandButton
 						leftSection={<IconFolderCog />}
 						onClick={() => openGameModsFolder(props.game.id)}
 					>
 						Open Mods Folder
 					</CommandButton>
-				</Box>
-				{props.game.providerId !== "Manual" && props.game.steamLaunch && (
+				</Box> */}
+				{/* {props.game.providerId !== "Manual" && props.game.steamLaunch && (
 					<>
 						<Divider label={props.game.providerId} />
 						<Group>
@@ -143,13 +211,9 @@ export function InstalledGameModal(props: Props) {
 							</>
 						</Group>
 					</>
-				)}
-				<Divider label="Game Files" />
-				<TableItemDetails
-					columns={installedGamesColumns}
-					item={props.game}
-				/>
-				<Group>
+				)} */}
+				{/* <Divider label="Game Files" /> */}
+				{/* <Group>
 					<CommandButton
 						leftSection={<IconAppWindow />}
 						onClick={() => startGameExe(props.game.id)}
@@ -172,7 +236,7 @@ export function InstalledGameModal(props: Props) {
 							Remove from Rai Pal
 						</CommandButton>
 					)}
-				</Group>
+				</Group> */}
 				<DebugData data={props.game} />
 			</Stack>
 		</Modal>
