@@ -159,7 +159,7 @@ export function InstalledGameModal(props: Props) {
 					</Button.Group>
 				</Group>
 				<Divider label="Mods" />
-				<TableContainer>
+				<TableContainer bg="dark">
 					<Table>
 						<Table.Tbody>
 							{filteredMods.map((mod) => (

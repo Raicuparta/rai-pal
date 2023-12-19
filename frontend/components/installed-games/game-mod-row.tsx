@@ -89,7 +89,6 @@ export function GameModRow(props: Props) {
 				<CommandButton
 					leftSection={getIcon()}
 					fullWidth
-					variant="light"
 					color={getColor()}
 					confirmationText={
 						isInstalled
