@@ -1,4 +1,4 @@
-import { Text, DefaultMantineColor, Table } from "@mantine/core";
+import { Text, DefaultMantineColor, Table, ThemeIcon } from "@mantine/core";
 import {
 	ModLoaderData,
 	downloadMod,
@@ -6,7 +6,17 @@ import {
 	uninstallMod,
 } from "@api/bindings";
 import { CommandButton } from "@components/command-button";
-import { IconCubeOff, IconCubePlus, IconPlayerPlay } from "@tabler/icons-react";
+import {
+	IconCheck,
+	IconCircleOff,
+	IconCirclePlus,
+	IconCubeOff,
+	IconCubePlus,
+	IconMinus,
+	IconPlayerPlay,
+	IconPlus,
+	IconTrash,
+} from "@tabler/icons-react";
 import { UnifiedMod } from "@hooks/use-unified-mods";
 import { getIsOutdated } from "../../util/is-outdated";
 import { OutdatedMarker } from "@components/OutdatedMarker";
@@ -62,23 +72,41 @@ export function GameModRow(props: Props) {
 		return "Run";
 	}
 
-	function getIcon() {
+	function getButtonIcon() {
 		if (isInstalledModOutdated) return <OutdatedMarker />;
-		if (isInstalled) return <IconCubeOff />;
+		if (isInstalled) return <IconTrash />;
 		if (props.modLoader.kind === "Runnable") return <IconPlayerPlay />;
-		return <IconCubePlus />;
+		return <IconCirclePlus />;
 	}
 
-	function getColor(): DefaultMantineColor {
+	function getStatusIcon() {
+		if (isInstalledModOutdated) return <OutdatedMarker />;
+		if (isInstalled) return <IconCheck />;
+		return <IconMinus />;
+	}
+
+	function getButtonColor(): DefaultMantineColor {
 		if (isInstalledModOutdated) return "orange";
 		if (isInstalled) return "red";
 		return "violet";
+	}
+
+	function getStatusColor(): DefaultMantineColor {
+		if (isInstalledModOutdated) return "orange";
+		if (isInstalled) return "green";
+		return "gray";
 	}
 
 	return (
 		<Table.Tr key={props.mod.common.id}>
 			<Table.Td ta="left">
 				<ItemName label={`by ${props.mod.remote?.author}`}>
+					<ThemeIcon
+						color={getStatusColor()}
+						size="sm"
+					>
+						{getStatusIcon()}
+					</ThemeIcon>
 					{props.mod.remote?.title ?? props.mod.common.id}
 				</ItemName>
 				{props.mod.remote?.description && (
@@ -87,9 +115,10 @@ export function GameModRow(props: Props) {
 			</Table.Td>
 			<Table.Td>
 				<CommandButton
-					leftSection={getIcon()}
+					leftSection={getButtonIcon()}
 					fullWidth
-					color={getColor()}
+					color={getButtonColor()}
+					variant={isInstalled ? "light" : "default"}
 					confirmationText={
 						isInstalled
 							? undefined
