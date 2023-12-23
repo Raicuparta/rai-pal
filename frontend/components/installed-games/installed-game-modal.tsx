@@ -3,7 +3,6 @@ import {
 	Divider,
 	Group,
 	Modal,
-	Popover,
 	Stack,
 	Table,
 	Tooltip,
@@ -26,7 +25,6 @@ import {
 	IconBooks,
 	IconBrandSteam,
 	IconBrowser,
-	IconChevronDown,
 	IconDeviceGamepad,
 	IconFolder,
 	IconFolderCog,
@@ -46,6 +44,7 @@ import { TableItemDetails } from "@components/table/table-item-details";
 import { ProcessedInstalledGame } from "@hooks/use-processed-installed-games";
 import { GameModRow } from "./game-mod-row";
 import { TableContainer } from "@components/table/table-container";
+import { CommandDropdown } from "@components/command-dropdown";
 
 type Props = {
 	readonly game: ProcessedInstalledGame;
@@ -106,93 +105,60 @@ export function InstalledGameModal(props: Props) {
 						>
 							Start Game
 						</CommandButton>
-						<Popover>
-							<Popover.Target>
-								<Button p="xs">
-									<IconChevronDown />
-								</Button>
-							</Popover.Target>
-							<Popover.Dropdown>
-								<Stack>
-									<CommandButton
-										leftSection={<IconAppWindow />}
-										onClick={() => startGameExe(props.game.id)}
-									>
-										Start Game Executable
-									</CommandButton>
-									<CommandButton
-										leftSection={<ProviderIcon />}
-										onClick={() => startGame(props.game.id)}
-									>
-										Start Game via {props.game.providerId}
-									</CommandButton>
-								</Stack>
-							</Popover.Dropdown>
-						</Popover>
-					</Button.Group>
-					<Popover>
-						<Popover.Target>
-							<Button
-								leftSection={<IconFolderOpen />}
-								rightSection={<IconChevronDown />}
+						<CommandDropdown>
+							<CommandButton
+								leftSection={<IconAppWindow />}
+								onClick={() => startGameExe(props.game.id)}
 							>
-								Folders
-							</Button>
-						</Popover.Target>
-						<Popover.Dropdown>
-							<Stack>
-								<CommandButton
-									leftSection={<IconFolder />}
-									onClick={() => openGameFolder(props.game.id)}
-								>
-									Open Game Files Folder
-								</CommandButton>
-								<CommandButton
-									leftSection={<IconFolderCog />}
-									onClick={() => openGameModsFolder(props.game.id)}
-								>
-									Open Installed Mods Folder
-								</CommandButton>
-							</Stack>
-						</Popover.Dropdown>
-					</Popover>
+								Start Game Executable
+							</CommandButton>
+							<CommandButton
+								leftSection={<ProviderIcon />}
+								onClick={() => startGame(props.game.id)}
+							>
+								Start Game via {props.game.providerId}
+							</CommandButton>
+						</CommandDropdown>
+					</Button.Group>
+					<CommandDropdown
+						label="Folders"
+						icon={<IconFolderOpen />}
+					>
+						<CommandButton
+							leftSection={<IconFolder />}
+							onClick={() => openGameFolder(props.game.id)}
+						>
+							Open Game Files Folder
+						</CommandButton>
+						<CommandButton
+							leftSection={<IconFolderCog />}
+							onClick={() => openGameModsFolder(props.game.id)}
+						>
+							Open Installed Mods Folder
+						</CommandButton>
+					</CommandDropdown>
 					{props.game.providerId !== "Manual" && (
-						<Button.Group>
-							<Popover>
-								<Popover.Target>
-									<Button
-										leftSection={<ProviderIcon />}
-										rightSection={<IconChevronDown />}
-									>
-										{props.game.providerId}
-									</Button>
-								</Popover.Target>
-								<Popover.Dropdown>
-									<Stack>
-										<CommandButton
-											leftSection={<IconBrowser />}
-											onClick={() =>
-												steamCommands.openStorePage(
-													props.game.steamLaunch?.appId,
-												)
-											}
-										>
-											Open Steam Page
-										</CommandButton>
-										<CommandButton
-											leftSection={<IconBooks />}
-											onClick={() =>
-												steamCommands.showInLibrary(
-													props.game.steamLaunch?.appId,
-												)
-											}
-										>
-											Show in Library
-										</CommandButton>
-									</Stack>
-								</Popover.Dropdown>
-							</Popover>
-						</Button.Group>
+						<CommandDropdown
+							label={props.game.providerId}
+							icon={<ProviderIcon />}
+						>
+							<CommandButton
+								leftSection={<IconBrowser />}
+								onClick={() =>
+									steamCommands.openStorePage(props.game.steamLaunch?.appId)
+								}
+							>
+								Open Steam Page
+							</CommandButton>
+							<CommandButton
+								leftSection={<IconBooks />}
+								onClick={() =>
+									steamCommands.showInLibrary(props.game.steamLaunch?.appId)
+								}
+							>
+								Show in Library
+							</CommandButton>
+						</CommandDropdown>
 					)}
 					{props.game.providerId === "Manual" && (
 						<CommandButton
