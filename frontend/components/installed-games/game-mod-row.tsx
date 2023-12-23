@@ -1,4 +1,4 @@
-import { Text, DefaultMantineColor, Table, ThemeIcon } from "@mantine/core";
+import { DefaultMantineColor, Table, ThemeIcon, Group } from "@mantine/core";
 import {
 	ModLoaderData,
 	downloadMod,
@@ -8,13 +8,10 @@ import {
 import { CommandButton } from "@components/command-button";
 import {
 	IconCheck,
-	IconCircleOff,
 	IconCirclePlus,
-	IconCubeOff,
-	IconCubePlus,
 	IconMinus,
 	IconPlayerPlay,
-	IconPlus,
+	IconRefreshAlert,
 	IconTrash,
 } from "@tabler/icons-react";
 import { UnifiedMod } from "@hooks/use-unified-mods";
@@ -73,7 +70,7 @@ export function GameModRow(props: Props) {
 	}
 
 	function getButtonIcon() {
-		if (isInstalledModOutdated) return <OutdatedMarker />;
+		if (isInstalledModOutdated) return <IconRefreshAlert />;
 		if (isInstalled) return <IconTrash />;
 		if (props.modLoader.kind === "Runnable") return <IconPlayerPlay />;
 		return <IconCirclePlus />;
@@ -114,23 +111,24 @@ export function GameModRow(props: Props) {
 				)}
 			</Table.Td>
 			<Table.Td>
-				<CommandButton
-					leftSection={getButtonIcon()}
-					fullWidth
-					color={getButtonColor()}
-					variant={isInstalled ? "light" : "default"}
-					confirmationText={
-						isInstalled
-							? undefined
-							: "Attention: be careful when installing mods on multiplayer games! Anticheat can detect some mods and get you banned, even if the mods seem harmless."
-					}
-					confirmationSkipId={isInstalled ? undefined : "install-mod-confirm"}
-					onClick={handleClick}
-				>
-					<Text>
+				<Group>
+					<CommandButton
+						fullWidth
+						color={getButtonColor()}
+						size="xs"
+						leftSection={getButtonIcon()}
+						variant={isInstalled ? "light" : "default"}
+						confirmationText={
+							isInstalled
+								? undefined
+								: "Attention: be careful when installing mods on multiplayer games! Anticheat can detect some mods and get you banned, even if the mods seem harmless."
+						}
+						confirmationSkipId={isInstalled ? undefined : "install-mod-confirm"}
+						onClick={handleClick}
+					>
 						{getActionText()} {versionText}
-					</Text>
-				</CommandButton>
+					</CommandButton>
+				</Group>
 			</Table.Td>
 		</Table.Tr>
 	);
