@@ -1,10 +1,9 @@
 import {
-	Box,
 	Button,
 	Divider,
 	Group,
-	Menu,
 	Modal,
+	Popover,
 	Stack,
 	Table,
 	Tooltip,
@@ -32,7 +31,6 @@ import {
 	IconFolder,
 	IconFolderCog,
 	IconFolderOpen,
-	IconFolderStar,
 	IconPlayerPlay,
 	IconRefresh,
 	IconTrash,
@@ -102,61 +100,110 @@ export function InstalledGameModal(props: Props) {
 				/>
 				<Group>
 					<Button.Group>
-						<Button leftSection={<IconPlayerPlay />}>Start Game</Button>
-						<Menu>
-							<Menu.Target>
+						<CommandButton
+							leftSection={<IconPlayerPlay />}
+							onClick={() => startGame(props.game.id)}
+						>
+							Start Game
+						</CommandButton>
+						<Popover>
+							<Popover.Target>
 								<Button p="xs">
 									<IconChevronDown />
 								</Button>
-							</Menu.Target>
-							<Menu.Dropdown>
-								<Menu.Item leftSection={<IconAppWindow />}>
-									Executable
-								</Menu.Item>
-								<Menu.Item leftSection={<ProviderIcon />}>
-									{props.game.providerId}
-								</Menu.Item>
-							</Menu.Dropdown>
-						</Menu>
+							</Popover.Target>
+							<Popover.Dropdown>
+								<Stack>
+									<CommandButton
+										leftSection={<IconAppWindow />}
+										onClick={() => startGameExe(props.game.id)}
+									>
+										Start Game Executable
+									</CommandButton>
+									<CommandButton
+										leftSection={<ProviderIcon />}
+										onClick={() => startGame(props.game.id)}
+									>
+										Start Game via {props.game.providerId}
+									</CommandButton>
+								</Stack>
+							</Popover.Dropdown>
+						</Popover>
 					</Button.Group>
-					<Menu>
-						<Menu.Target>
+					<Popover>
+						<Popover.Target>
 							<Button
 								leftSection={<IconFolderOpen />}
 								rightSection={<IconChevronDown />}
 							>
 								Folders
 							</Button>
-						</Menu.Target>
-						<Menu.Dropdown>
-							<Menu.Item leftSection={<IconFolder />}>
-								Open Game Files Folder
-							</Menu.Item>
-							<Menu.Item leftSection={<IconFolderCog />}>
-								Open Installed Mods Folder
-							</Menu.Item>
-						</Menu.Dropdown>
-					</Menu>
-					<Button.Group>
-						<Menu>
-							<Menu.Target>
-								<Button
-									leftSection={<ProviderIcon />}
-									rightSection={<IconChevronDown />}
+						</Popover.Target>
+						<Popover.Dropdown>
+							<Stack>
+								<CommandButton
+									leftSection={<IconFolder />}
+									onClick={() => openGameFolder(props.game.id)}
 								>
-									{props.game.providerId}
-								</Button>
-							</Menu.Target>
-							<Menu.Dropdown>
-								<Menu.Item leftSection={<IconBrowser />}>
-									Open Store Page
-								</Menu.Item>
-								<Menu.Item leftSection={<IconBooks />}>
-									Show in Library
-								</Menu.Item>
-							</Menu.Dropdown>
-						</Menu>
-					</Button.Group>
+									Open Game Files Folder
+								</CommandButton>
+								<CommandButton
+									leftSection={<IconFolderCog />}
+									onClick={() => openGameModsFolder(props.game.id)}
+								>
+									Open Installed Mods Folder
+								</CommandButton>
+							</Stack>
+						</Popover.Dropdown>
+					</Popover>
+					{props.game.providerId !== "Manual" && (
+						<Button.Group>
+							<Popover>
+								<Popover.Target>
+									<Button
+										leftSection={<ProviderIcon />}
+										rightSection={<IconChevronDown />}
+									>
+										{props.game.providerId}
+									</Button>
+								</Popover.Target>
+								<Popover.Dropdown>
+									<Stack>
+										<CommandButton
+											leftSection={<IconBrowser />}
+											onClick={() =>
+												steamCommands.openStorePage(
+													props.game.steamLaunch?.appId,
+												)
+											}
+										>
+											Open Steam Page
+										</CommandButton>
+										<CommandButton
+											leftSection={<IconBooks />}
+											onClick={() =>
+												steamCommands.showInLibrary(
+													props.game.steamLaunch?.appId,
+												)
+											}
+										>
+											Show in Library
+										</CommandButton>
+									</Stack>
+								</Popover.Dropdown>
+							</Popover>
+						</Button.Group>
+					)}
+					{props.game.providerId === "Manual" && (
+						<CommandButton
+							onClick={() => removeGame(props.game.id)}
+							confirmationText="Are you sure you want to remove this game from Rai Pal?"
+							onSuccess={props.onClose}
+							leftSection={<IconTrash />}
+						>
+							Remove from Rai Pal
+						</CommandButton>
+					)}
 				</Group>
 				<Divider label="Mods" />
 				<TableContainer bg="dark">
@@ -173,70 +220,6 @@ export function InstalledGameModal(props: Props) {
 						</Table.Tbody>
 					</Table>
 				</TableContainer>
-				{/* <Box>
-					<CommandButton
-						leftSection={<IconFolderCog />}
-						onClick={() => openGameModsFolder(props.game.id)}
-					>
-						Open Mods Folder
-					</CommandButton>
-				</Box> */}
-				{/* {props.game.providerId !== "Manual" && props.game.steamLaunch && (
-					<>
-						<Divider label={props.game.providerId} />
-						<Group>
-							<CommandButton
-								leftSection={<ProviderIcon />}
-								onClick={() => startGame(props.game.id)}
-							>
-								Start Game via {props.game.providerId}
-							</CommandButton>
-							<>
-								<CommandButton
-									leftSection={<IconBooks />}
-									onClick={() =>
-										steamCommands.showInLibrary(props.game.steamLaunch?.appId)
-									}
-								>
-									Show in Steam Library
-								</CommandButton>
-								<CommandButton
-									leftSection={<IconBrowser />}
-									onClick={() =>
-										steamCommands.openStorePage(props.game.steamLaunch?.appId)
-									}
-								>
-									Open Steam Page
-								</CommandButton>
-							</>
-						</Group>
-					</>
-				)} */}
-				{/* <Divider label="Game Files" /> */}
-				{/* <Group>
-					<CommandButton
-						leftSection={<IconAppWindow />}
-						onClick={() => startGameExe(props.game.id)}
-					>
-						Start Game Executable
-					</CommandButton>
-					<CommandButton
-						leftSection={<IconFolder />}
-						onClick={() => openGameFolder(props.game.id)}
-					>
-						Open Game Folder
-					</CommandButton>
-					{props.game.providerId === "Manual" && (
-						<CommandButton
-							onClick={() => removeGame(props.game.id)}
-							confirmationText="Are you sure you want to remove this game from Rai Pal?"
-							onSuccess={props.onClose}
-							leftSection={<IconTrash />}
-						>
-							Remove from Rai Pal
-						</CommandButton>
-					)}
-				</Group> */}
 				<DebugData data={props.game} />
 			</Stack>
 		</Modal>
