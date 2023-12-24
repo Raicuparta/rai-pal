@@ -66,6 +66,7 @@ export function GameModRow(props: Props) {
 		if (isInstalledModOutdated) return "Update to";
 		if (isInstalled) return "Uninstall";
 		if (props.modLoader.kind === "Installable") return "Install";
+		// TODO runnable mod should say "open mod folder" if not installed.
 		return "Run";
 	}
 
