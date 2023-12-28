@@ -1,12 +1,21 @@
-import { Text, DefaultMantineColor, Table } from "@mantine/core";
+import { DefaultMantineColor, Table, ThemeIcon, Group } from "@mantine/core";
 import {
 	ModLoaderData,
 	downloadMod,
 	installMod,
+	openModLoaderFolder,
 	uninstallMod,
 } from "@api/bindings";
 import { CommandButton } from "@components/command-button";
-import { IconCubeOff, IconCubePlus, IconPlayerPlay } from "@tabler/icons-react";
+import {
+	IconCheck,
+	IconCirclePlus,
+	IconFolderOpen,
+	IconMinus,
+	IconPlayerPlay,
+	IconRefreshAlert,
+	IconTrash,
+} from "@tabler/icons-react";
 import { UnifiedMod } from "@hooks/use-unified-mods";
 import { getIsOutdated } from "../../util/is-outdated";
 import { OutdatedMarker } from "@components/OutdatedMarker";
@@ -34,6 +43,11 @@ export function GameModRow(props: Props) {
 	const isInstalled = Boolean(installedVersion);
 
 	const handleClick = useCallback(async () => {
+		if (props.modLoader.kind === "Runnable" && !props.mod.local) {
+			await openModLoaderFolder(props.modLoader.id);
+			return;
+		}
+
 		if (isLocalModOutdated) {
 			await downloadMod(props.mod.common.id);
 		} else if (isInstalled && !isInstalledModOutdated) {
@@ -43,11 +57,14 @@ export function GameModRow(props: Props) {
 
 		await installMod(props.game.id, props.mod.common.id);
 	}, [
-		isInstalled,
-		isLocalModOutdated,
-		isInstalledModOutdated,
-		props.game.id,
+		props.modLoader.kind,
+		props.modLoader.id,
+		props.mod.local,
 		props.mod.common.id,
+		props.game.id,
+		isLocalModOutdated,
+		isInstalled,
+		isInstalledModOutdated,
 	]);
 
 	const versionText =
@@ -55,30 +72,54 @@ export function GameModRow(props: Props) {
 			? props.mod.remote?.latestVersion?.id
 			: installedVersion;
 
-	function getActionText() {
-		if (isInstalledModOutdated) return "Update to";
-		if (isInstalled) return "Uninstall";
-		if (props.modLoader.kind === "Installable") return "Install";
-		return "Run";
-	}
+	const { actionText, actionIcon } = (() => {
+		if (isInstalledModOutdated) {
+			return { actionText: "Update to", actionIcon: <IconRefreshAlert /> };
+		}
 
-	function getIcon() {
+		if (isInstalled) {
+			return { actionText: "Uninstall", actionIcon: <IconTrash /> };
+		}
+
+		if (props.modLoader.kind === "Installable") {
+			return { actionText: "Install", actionIcon: <IconCirclePlus /> };
+		}
+
+		if (!props.mod.local) {
+			return { actionText: "Open mod folder", actionIcon: <IconFolderOpen /> };
+		}
+
+		return { actionText: "Run", actionIcon: <IconPlayerPlay /> };
+	})();
+
+	const statusIcon = (() => {
 		if (isInstalledModOutdated) return <OutdatedMarker />;
-		if (isInstalled) return <IconCubeOff />;
-		if (props.modLoader.kind === "Runnable") return <IconPlayerPlay />;
-		return <IconCubePlus />;
-	}
+		if (isInstalled) return <IconCheck />;
+		return <IconMinus />;
+	})();
 
-	function getColor(): DefaultMantineColor {
+	const buttonColor = ((): DefaultMantineColor => {
 		if (isInstalledModOutdated) return "orange";
 		if (isInstalled) return "red";
 		return "violet";
-	}
+	})();
+
+	const statusColor = ((): DefaultMantineColor => {
+		if (isInstalledModOutdated) return "orange";
+		if (isInstalled) return "green";
+		return "gray";
+	})();
 
 	return (
 		<Table.Tr key={props.mod.common.id}>
 			<Table.Td ta="left">
 				<ItemName label={`by ${props.mod.remote?.author}`}>
+					<ThemeIcon
+						color={statusColor}
+						size="sm"
+					>
+						{statusIcon}
+					</ThemeIcon>
 					{props.mod.remote?.title ?? props.mod.common.id}
 				</ItemName>
 				{props.mod.remote?.description && (
@@ -86,23 +127,24 @@ export function GameModRow(props: Props) {
 				)}
 			</Table.Td>
 			<Table.Td>
-				<CommandButton
-					leftSection={getIcon()}
-					fullWidth
-					variant="light"
-					color={getColor()}
-					confirmationText={
-						isInstalled
-							? undefined
-							: "Attention: be careful when installing mods on multiplayer games! Anticheat can detect some mods and get you banned, even if the mods seem harmless."
-					}
-					confirmationSkipId={isInstalled ? undefined : "install-mod-confirm"}
-					onClick={handleClick}
-				>
-					<Text>
-						{getActionText()} {versionText}
-					</Text>
-				</CommandButton>
+				<Group>
+					<CommandButton
+						fullWidth
+						color={buttonColor}
+						size="xs"
+						leftSection={actionIcon}
+						variant={isInstalled ? "light" : "default"}
+						confirmationText={
+							isInstalled
+								? undefined
+								: "Attention: be careful when installing mods on multiplayer games! Anticheat can detect some mods and get you banned, even if the mods seem harmless."
+						}
+						confirmationSkipId={isInstalled ? undefined : "install-mod-confirm"}
+						onClick={handleClick}
+					>
+						{actionText} {versionText}
+					</CommandButton>
+				</Group>
 			</Table.Td>
 		</Table.Tr>
 	);
