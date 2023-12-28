@@ -3,12 +3,14 @@ import {
 	ModLoaderData,
 	downloadMod,
 	installMod,
+	openModLoaderFolder,
 	uninstallMod,
 } from "@api/bindings";
 import { CommandButton } from "@components/command-button";
 import {
 	IconCheck,
 	IconCirclePlus,
+	IconFolderOpen,
 	IconMinus,
 	IconPlayerPlay,
 	IconRefreshAlert,
@@ -41,6 +43,11 @@ export function GameModRow(props: Props) {
 	const isInstalled = Boolean(installedVersion);
 
 	const handleClick = useCallback(async () => {
+		if (props.modLoader.kind === "Runnable" && !props.mod.local) {
+			await openModLoaderFolder(props.modLoader.id);
+			return;
+		}
+
 		if (isLocalModOutdated) {
 			await downloadMod(props.mod.common.id);
 		} else if (isInstalled && !isInstalledModOutdated) {
@@ -50,11 +57,14 @@ export function GameModRow(props: Props) {
 
 		await installMod(props.game.id, props.mod.common.id);
 	}, [
-		isInstalled,
-		isLocalModOutdated,
-		isInstalledModOutdated,
-		props.game.id,
+		props.modLoader.kind,
+		props.modLoader.id,
+		props.mod.local,
 		props.mod.common.id,
+		props.game.id,
+		isLocalModOutdated,
+		isInstalled,
+		isInstalledModOutdated,
 	]);
 
 	const versionText =
@@ -62,48 +72,53 @@ export function GameModRow(props: Props) {
 			? props.mod.remote?.latestVersion?.id
 			: installedVersion;
 
-	function getActionText() {
-		if (isInstalledModOutdated) return "Update to";
-		if (isInstalled) return "Uninstall";
-		if (props.modLoader.kind === "Installable") return "Install";
-		// TODO runnable mod should say "open mod folder" if not installed.
-		return "Run";
-	}
+	const { actionText, actionIcon } = (() => {
+		if (isInstalledModOutdated) {
+			return { actionText: "Update to", actionIcon: <IconRefreshAlert /> };
+		}
 
-	function getButtonIcon() {
-		if (isInstalledModOutdated) return <IconRefreshAlert />;
-		if (isInstalled) return <IconTrash />;
-		if (props.modLoader.kind === "Runnable") return <IconPlayerPlay />;
-		return <IconCirclePlus />;
-	}
+		if (isInstalled) {
+			return { actionText: "Uninstall", actionIcon: <IconTrash /> };
+		}
 
-	function getStatusIcon() {
+		if (props.modLoader.kind === "Installable") {
+			return { actionText: "Install", actionIcon: <IconCirclePlus /> };
+		}
+
+		if (!props.mod.local) {
+			return { actionText: "Open mod folder", actionIcon: <IconFolderOpen /> };
+		}
+
+		return { actionText: "Run", actionIcon: <IconPlayerPlay /> };
+	})();
+
+	const statusIcon = (() => {
 		if (isInstalledModOutdated) return <OutdatedMarker />;
 		if (isInstalled) return <IconCheck />;
 		return <IconMinus />;
-	}
+	})();
 
-	function getButtonColor(): DefaultMantineColor {
+	const buttonColor = ((): DefaultMantineColor => {
 		if (isInstalledModOutdated) return "orange";
 		if (isInstalled) return "red";
 		return "violet";
-	}
+	})();
 
-	function getStatusColor(): DefaultMantineColor {
+	const statusColor = ((): DefaultMantineColor => {
 		if (isInstalledModOutdated) return "orange";
 		if (isInstalled) return "green";
 		return "gray";
-	}
+	})();
 
 	return (
 		<Table.Tr key={props.mod.common.id}>
 			<Table.Td ta="left">
 				<ItemName label={`by ${props.mod.remote?.author}`}>
 					<ThemeIcon
-						color={getStatusColor()}
+						color={statusColor}
 						size="sm"
 					>
-						{getStatusIcon()}
+						{statusIcon}
 					</ThemeIcon>
 					{props.mod.remote?.title ?? props.mod.common.id}
 				</ItemName>
@@ -115,9 +130,9 @@ export function GameModRow(props: Props) {
 				<Group>
 					<CommandButton
 						fullWidth
-						color={getButtonColor()}
+						color={buttonColor}
 						size="xs"
-						leftSection={getButtonIcon()}
+						leftSection={actionIcon}
 						variant={isInstalled ? "light" : "default"}
 						confirmationText={
 							isInstalled
@@ -127,7 +142,7 @@ export function GameModRow(props: Props) {
 						confirmationSkipId={isInstalled ? undefined : "install-mod-confirm"}
 						onClick={handleClick}
 					>
-						{getActionText()} {versionText}
+						{actionText} {versionText}
 					</CommandButton>
 				</Group>
 			</Table.Td>
