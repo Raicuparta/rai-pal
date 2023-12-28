@@ -1,5 +1,5 @@
 import { CodeHighlight } from "@mantine/code-highlight";
-import { Stack } from "@mantine/core";
+import { Divider, Stack } from "@mantine/core";
 import { useMemo } from "react";
 
 type Props<TData> = {
@@ -14,7 +14,7 @@ export function DebugData<TData>(props: Props<TData>) {
 
 	return (
 		<Stack gap="xs">
-			<label>Debug Data</label>
+			<Divider label="Debug Data" />
 			<CodeHighlight
 				// Using text as key to force component to remount,
 				// seems like there's some bug preventing it from updating.

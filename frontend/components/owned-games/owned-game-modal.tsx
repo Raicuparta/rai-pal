@@ -1,4 +1,4 @@
-import { Modal, Stack } from "@mantine/core";
+import { Group, Modal, Stack } from "@mantine/core";
 import { OwnedGame } from "@api/bindings";
 import { CommandButton } from "@components/command-button";
 import { IconBooks, IconBrowser, IconDownload } from "@tabler/icons-react";
@@ -8,6 +8,7 @@ import { CommandButtonGroup } from "@components/command-button-group";
 import { DebugData } from "@components/debug-data";
 import { TableItemDetails } from "@components/table/table-item-details";
 import { ownedGamesColumns } from "./owned-games-columns";
+import { ItemName } from "@components/item-name";
 
 type Props = {
 	readonly game: OwnedGame;
@@ -21,10 +22,18 @@ export function OwnedGameModal(props: Props) {
 			onClose={props.onClose}
 			opened
 			size="xl"
-			title={props.game.name}
+			title={
+				<Group>
+					<ModalImage src={props.game.thumbnailUrl} />
+					<ItemName>{props.game.name}</ItemName>
+				</Group>
+			}
 		>
 			<Stack>
-				<ModalImage src={props.game.thumbnailUrl} />
+				<TableItemDetails
+					columns={ownedGamesColumns}
+					item={props.game}
+				/>
 				<CommandButtonGroup label="Game Actions">
 					<CommandButton
 						leftSection={<IconBrowser />}
@@ -45,10 +54,6 @@ export function OwnedGameModal(props: Props) {
 						Install
 					</CommandButton>
 				</CommandButtonGroup>
-				<TableItemDetails
-					columns={ownedGamesColumns}
-					item={props.game}
-				/>
 				<DebugData data={props.game} />
 			</Stack>
 		</Modal>

@@ -24,8 +24,8 @@ export function ColumnsSelect<TKey extends string, TItem>(
 						<Button
 							variant={
 								props.hiddenIds.find((id) => id === column.id)
-									? "default"
-									: "light"
+									? "filled"
+									: "default"
 							}
 							key={column.id}
 							onClick={() => {

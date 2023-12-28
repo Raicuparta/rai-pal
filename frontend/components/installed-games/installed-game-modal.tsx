@@ -1,5 +1,14 @@
-import { Flex, Modal, Stack } from "@mantine/core";
 import {
+	Button,
+	Divider,
+	Group,
+	Modal,
+	Stack,
+	Table,
+	Tooltip,
+} from "@mantine/core";
+import {
+	ProviderId,
 	openGameFolder,
 	openGameModsFolder,
 	refreshGame,
@@ -11,52 +20,57 @@ import { useMemo } from "react";
 import { ItemName } from "../item-name";
 import { CommandButton } from "@components/command-button";
 import {
+	Icon,
 	IconAppWindow,
 	IconBooks,
+	IconBrandSteam,
 	IconBrowser,
+	IconDeviceGamepad,
 	IconFolder,
 	IconFolderCog,
+	IconFolderOpen,
 	IconPlayerPlay,
 	IconRefresh,
-	IconShoppingBag,
 	IconTrash,
 } from "@tabler/icons-react";
 import { steamCommands } from "../../util/steam";
 import { ModalImage } from "@components/modal-image";
 import { useAtomValue } from "jotai";
 import { modLoadersAtom } from "@hooks/use-data";
-import { CommandButtonGroup } from "@components/command-button-group";
 import { DebugData } from "@components/debug-data";
 import { useUnifiedMods } from "@hooks/use-unified-mods";
 import { installedGamesColumns } from "./installed-games-columns";
 import { TableItemDetails } from "@components/table/table-item-details";
 import { ProcessedInstalledGame } from "@hooks/use-processed-installed-games";
-import { GameModButton } from "./game-mod-button";
+import { GameModRow } from "./game-mod-row";
+import { TableContainer } from "@components/table/table-container";
+import { CommandDropdown } from "@components/command-dropdown";
 
 type Props = {
 	readonly game: ProcessedInstalledGame;
 	readonly onClose: () => void;
 };
 
+const providerIcons: Record<ProviderId, Icon> = {
+	Manual: IconDeviceGamepad,
+	Steam: IconBrandSteam,
+};
+
+function getProviderIcon(providerId: ProviderId) {
+	return providerIcons[providerId] ?? IconDeviceGamepad;
+}
+
 export function InstalledGameModal(props: Props) {
 	const modLoaderMap = useAtomValue(modLoadersAtom);
 	const mods = useUnifiedMods();
 
-	// TODO make less insane?
-	const modLoaders = useMemo(
-		() =>
-			Object.values(modLoaderMap ?? {}).map((modLoader) => ({
-				...modLoader,
-				mods: Object.entries(mods)
-					.filter(
-						([modId, mod]) =>
-							modId in props.game.installedModVersions &&
-							mod.common.loaderId === modLoader.id,
-					)
-					.map(([, mod]) => mod),
-			})),
-		[modLoaderMap, mods, props.game.installedModVersions],
-	);
+	const filteredMods = useMemo(() => {
+		return Object.values(mods).filter(
+			(mod) => mod.common.id in props.game.installedModVersions,
+		);
+	}, [mods, props.game.installedModVersions]);
+
+	const ProviderIcon = getProviderIcon(props.game.providerId);
 
 	return (
 		<Modal
@@ -65,104 +79,113 @@ export function InstalledGameModal(props: Props) {
 			opened
 			size="xl"
 			title={
-				<ItemName label={props.game.discriminator}>{props.game.name}</ItemName>
+				<Group>
+					<ModalImage src={props.game.thumbnailUrl} />
+					<ItemName label={props.game.discriminator}>
+						{props.game.name}
+					</ItemName>
+					<Tooltip label="Refresh game info">
+						<CommandButton onClick={() => refreshGame(props.game.id)}>
+							<IconRefresh />
+						</CommandButton>
+					</Tooltip>
+				</Group>
 			}
 		>
 			<Stack>
-				<ModalImage src={props.game.thumbnailUrl} />
-				<Flex
-					wrap="wrap"
-					gap="md"
-				>
-					<CommandButtonGroup label="Game Actions">
-						{props.game.providerId !== "Manual" && (
-							<CommandButton
-								leftSection={<IconPlayerPlay />}
-								rightSection={<IconShoppingBag />}
-								onClick={() => startGame(props.game.id)}
-							>
-								Start Game ({props.game.providerId})
-							</CommandButton>
-						)}
+				<TableItemDetails
+					columns={installedGamesColumns}
+					item={props.game}
+				/>
+				<Group>
+					<Button.Group>
 						<CommandButton
 							leftSection={<IconPlayerPlay />}
-							rightSection={<IconAppWindow />}
-							onClick={() => startGameExe(props.game.id)}
+							onClick={() => startGame(props.game.id)}
 						>
-							Start Game (Exe)
+							Start Game
 						</CommandButton>
+						<CommandDropdown>
+							<CommandButton
+								leftSection={<IconAppWindow />}
+								onClick={() => startGameExe(props.game.id)}
+							>
+								Start Game Executable
+							</CommandButton>
+							<CommandButton
+								leftSection={<ProviderIcon />}
+								onClick={() => startGame(props.game.id)}
+							>
+								Start Game via {props.game.providerId}
+							</CommandButton>
+						</CommandDropdown>
+					</Button.Group>
+					<CommandDropdown
+						label="Folders"
+						icon={<IconFolderOpen />}
+					>
 						<CommandButton
 							leftSection={<IconFolder />}
 							onClick={() => openGameFolder(props.game.id)}
 						>
-							Open Game Folder
+							Open Game Files Folder
 						</CommandButton>
 						<CommandButton
 							leftSection={<IconFolderCog />}
 							onClick={() => openGameModsFolder(props.game.id)}
 						>
-							Open Mods Folder
+							Open Installed Mods Folder
 						</CommandButton>
-						{props.game.steamLaunch && (
-							<>
-								<CommandButton
-									leftSection={<IconBooks />}
-									onClick={() =>
-										steamCommands.showInLibrary(props.game.steamLaunch?.appId)
-									}
-								>
-									Show in Library
-								</CommandButton>
-								<CommandButton
-									leftSection={<IconBrowser />}
-									onClick={() =>
-										steamCommands.openStorePage(props.game.steamLaunch?.appId)
-									}
-								>
-									Open Store Page
-								</CommandButton>
-							</>
-						)}
-						{props.game.providerId === "Manual" && (
-							<CommandButton
-								onClick={() => removeGame(props.game.id)}
-								confirmationText="Are you sure you want to remove this game from Rai Pal?"
-								onSuccess={props.onClose}
-								leftSection={<IconTrash />}
-							>
-								Remove from Rai Pal
-							</CommandButton>
-						)}
-						<CommandButton
-							onClick={() => refreshGame(props.game.id)}
-							leftSection={<IconRefresh />}
+					</CommandDropdown>
+					{props.game.providerId !== "Manual" && (
+						<CommandDropdown
+							label={props.game.providerId}
+							icon={<ProviderIcon />}
 						>
-							Refresh Game
-						</CommandButton>
-					</CommandButtonGroup>
-					{modLoaders.map(
-						(modLoader) =>
-							modLoader.mods.length > 0 && (
-								<CommandButtonGroup
-									label={modLoader.id.toUpperCase()}
-									key={modLoader.id}
-								>
-									{modLoader.mods.map((mod) => (
-										<GameModButton
-											key={mod.common.id}
-											game={props.game}
-											mod={mod}
-											modLoader={modLoader}
-										/>
-									))}
-								</CommandButtonGroup>
-							),
+							<CommandButton
+								leftSection={<IconBrowser />}
+								onClick={() =>
+									steamCommands.openStorePage(props.game.steamLaunch?.appId)
+								}
+							>
+								Open Steam Page
+							</CommandButton>
+							<CommandButton
+								leftSection={<IconBooks />}
+								onClick={() =>
+									steamCommands.showInLibrary(props.game.steamLaunch?.appId)
+								}
+							>
+								Show in Library
+							</CommandButton>
+						</CommandDropdown>
 					)}
-				</Flex>
-				<TableItemDetails
-					columns={installedGamesColumns}
-					item={props.game}
-				/>
+					{props.game.providerId === "Manual" && (
+						<CommandButton
+							onClick={() => removeGame(props.game.id)}
+							confirmationText="Are you sure you want to remove this game from Rai Pal?"
+							onSuccess={props.onClose}
+							leftSection={<IconTrash />}
+						>
+							Remove from Rai Pal
+						</CommandButton>
+					)}
+				</Group>
+				<Divider label="Mods" />
+				<TableContainer bg="dark">
+					<Table>
+						<Table.Tbody>
+							{filteredMods.map((mod) => (
+								<GameModRow
+									key={mod.common.id}
+									game={props.game}
+									mod={mod}
+									modLoader={modLoaderMap[mod.common.loaderId]}
+								/>
+							))}
+						</Table.Tbody>
+					</Table>
+				</TableContainer>
 				<DebugData data={props.game} />
 			</Stack>
 		</Modal>
