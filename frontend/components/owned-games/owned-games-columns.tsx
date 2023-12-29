@@ -27,7 +27,7 @@ const thumbnail: TableColumnBase<OwnedGame> = {
 	hidable: true,
 	hideInDetails: true,
 	width: 100,
-	renderCell: (game) => <ThumbnailCell url={game.thumbnailUrl} />,
+	renderCell: (game) => <ThumbnailCell src={game.thumbnailUrl} />,
 };
 
 const name: TableColumnBase<OwnedGame> = {

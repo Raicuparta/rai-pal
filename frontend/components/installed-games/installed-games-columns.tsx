@@ -27,6 +27,7 @@ import {
 } from "../../util/common-filter-options";
 import styles from "../table/table.module.css";
 import { ProcessedInstalledGame } from "@hooks/use-processed-installed-games";
+import { getThumbnailWithFallback } from "../../util/fallback-thumbnail";
 
 const thumbnail: TableColumnBase<ProcessedInstalledGame> = {
 	hideInDetails: true,
@@ -34,7 +35,11 @@ const thumbnail: TableColumnBase<ProcessedInstalledGame> = {
 	hideLabel: true,
 	hidable: true,
 	width: 100,
-	renderCell: (game) => <ThumbnailCell url={game.thumbnailUrl} />,
+	renderCell: (game) => (
+		<ThumbnailCell
+			src={getThumbnailWithFallback(game.thumbnailUrl, game.providerId)}
+		/>
+	),
 };
 
 const name: TableColumnBase<ProcessedInstalledGame> = {

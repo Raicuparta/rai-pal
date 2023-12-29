@@ -9,6 +9,7 @@ import { DebugData } from "@components/debug-data";
 import { TableItemDetails } from "@components/table/table-item-details";
 import { ownedGamesColumns } from "./owned-games-columns";
 import { ItemName } from "@components/item-name";
+import { getThumbnailWithFallback } from "../../util/fallback-thumbnail";
 
 type Props = {
 	readonly game: OwnedGame;
@@ -24,7 +25,12 @@ export function OwnedGameModal(props: Props) {
 			size="xl"
 			title={
 				<Group>
-					<ModalImage src={props.game.thumbnailUrl} />
+					<ModalImage
+						src={getThumbnailWithFallback(
+							props.game.thumbnailUrl,
+							props.game.providerId,
+						)}
+					/>
 					<ItemName>{props.game.name}</ItemName>
 				</Group>
 			}

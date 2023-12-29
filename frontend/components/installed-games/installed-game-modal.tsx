@@ -31,6 +31,7 @@ import {
 	IconFolderOpen,
 	IconPlayerPlay,
 	IconRefresh,
+	IconSquareLetterE,
 	IconTrash,
 } from "@tabler/icons-react";
 import { steamCommands } from "../../util/steam";
@@ -45,6 +46,7 @@ import { ProcessedInstalledGame } from "@hooks/use-processed-installed-games";
 import { GameModRow } from "./game-mod-row";
 import { TableContainer } from "@components/table/table-container";
 import { CommandDropdown } from "@components/command-dropdown";
+import { getThumbnailWithFallback } from "../../util/fallback-thumbnail";
 
 type Props = {
 	readonly game: ProcessedInstalledGame;
@@ -54,6 +56,7 @@ type Props = {
 const providerIcons: Record<ProviderId, Icon> = {
 	Manual: IconDeviceGamepad,
 	Steam: IconBrandSteam,
+	Epic: IconSquareLetterE,
 };
 
 function getProviderIcon(providerId: ProviderId) {
@@ -80,7 +83,12 @@ export function InstalledGameModal(props: Props) {
 			size="xl"
 			title={
 				<Group>
-					<ModalImage src={props.game.thumbnailUrl} />
+					<ModalImage
+						src={getThumbnailWithFallback(
+							props.game.thumbnailUrl,
+							props.game.providerId,
+						)}
+					/>
 					<ItemName label={props.game.discriminator}>
 						{props.game.name}
 					</ItemName>
