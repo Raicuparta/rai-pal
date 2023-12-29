@@ -98,6 +98,7 @@ export function refreshGame(gameId: string) {
     return invoke()<null>("refresh_game", { gameId })
 }
 
+export type OwnedGame = { id: string; providerId: ProviderId; name: string; installed: boolean; osList: OperatingSystem[]; engine: GameEngineBrand; releaseDate: number; thumbnailUrl: string; gameMode: GameMode; uevrScore: UevrScore | null }
 export type LocalMod = { data: LocalModData; common: CommonModData }
 export type ModLoaderData = { id: string; path: string; kind: ModKind }
 export type GameExecutable = { path: string; engine: GameEngine | null; architecture: Architecture | null; operatingSystem: OperatingSystem | null; scriptingBackend: UnityScriptingBackend | null }
@@ -111,9 +112,9 @@ export type UnityScriptingBackend = "Il2Cpp" | "Mono"
 export type Architecture = "X64" | "X86"
 export type GameEngineVersion = { major: number; minor: number; patch: number; suffix: string | null; display: string }
 export type AppEvent = "SyncInstalledGames" | "SyncOwnedGames" | "SyncModLoaders" | "SyncLocalMods" | "SyncRemoteMods" | "ExecutedSteamCommand" | "GameAdded" | "GameRemoved" | "Error"
-export type OwnedGame = { id: string; providerId: ProviderId; name: string; installed: boolean; osList: OperatingSystem[]; engine: GameEngineBrand; releaseDate: number; thumbnailUrl: string; gameMode: GameMode }
 export type OperatingSystem = "Linux" | "Windows"
 export type Manifest = { version: string }
+export type UevrScore = "A" | "B" | "C" | "D" | "E"
 export type ProviderId = "Steam" | "Manual"
 export type CommonModData = { id: string; engine: GameEngineBrand | null; unityBackend: UnityScriptingBackend | null; loaderId: string }
 export type GameEngineBrand = "Unity" | "Unreal" | "Godot"

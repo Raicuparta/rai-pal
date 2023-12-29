@@ -9,6 +9,7 @@ use crate::{
 	game_mode::GameMode,
 	providers::provider::ProviderId,
 	serializable_struct,
+	steam::id_lists::UevrScore,
 };
 
 serializable_struct!(OwnedGame {
@@ -21,6 +22,7 @@ serializable_struct!(OwnedGame {
 	pub release_date: i32,
 	pub thumbnail_url: String,
 	pub game_mode: GameMode,
+	pub uevr_score: Option<UevrScore>,
 });
 
 pub type Map = HashMap<String, OwnedGame>;
