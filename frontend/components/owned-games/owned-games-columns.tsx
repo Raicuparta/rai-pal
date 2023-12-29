@@ -20,6 +20,7 @@ import {
 	engineFilterOptions,
 	providerFilterOptions,
 } from "../../util/common-filter-options";
+import { getThumbnailWithFallback } from "../../util/fallback-thumbnail";
 
 const thumbnail: TableColumnBase<OwnedGame> = {
 	label: "Thumbnail",
@@ -27,7 +28,11 @@ const thumbnail: TableColumnBase<OwnedGame> = {
 	hidable: true,
 	hideInDetails: true,
 	width: 100,
-	renderCell: (game) => <ThumbnailCell src={game.thumbnailUrl} />,
+	renderCell: (game) => (
+		<ThumbnailCell
+			src={getThumbnailWithFallback(game.thumbnailUrl, game.providerId)}
+		/>
+	),
 };
 
 const name: TableColumnBase<OwnedGame> = {
