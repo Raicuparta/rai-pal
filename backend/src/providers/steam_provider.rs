@@ -192,6 +192,7 @@ impl ProviderActions for SteamProvider {
 					release_date,
 					thumbnail_url: get_steam_thumbnail(&steam_id_data.id),
 					game_mode,
+					uevr_score: steam_id_data.uevr_score,
 				})
 			})
 			.collect())

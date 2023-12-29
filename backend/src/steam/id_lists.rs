@@ -1,10 +1,14 @@
 use std::{
-	collections::HashSet,
+	collections::{
+		HashMap,
+		HashSet,
+	},
 	future,
 };
 
 use crate::{
 	game_engines::game_engine::GameEngineBrand,
+	serializable_enum,
 	serializable_struct,
 	Result,
 };
@@ -12,10 +16,12 @@ use crate::{
 const STEAM_APP_IDS_URL_BASE: &str =
 	"https://raw.githubusercontent.com/Raicuparta/steam-app-ids-by-engine/main";
 
+serializable_enum!(UevrScore { A, B, C, D, E });
+
 serializable_struct!(SteamGame {
 	pub id: String,
-	pub nsfw: bool,
 	pub engine: GameEngineBrand,
+	pub uevr_score: Option<UevrScore>,
 });
 
 async fn get_list(list_name: &str) -> Result<HashSet<String>> {
@@ -30,47 +36,44 @@ async fn get_list(list_name: &str) -> Result<HashSet<String>> {
 	)
 }
 
-fn get_ids_data_list(
-	ids: &HashSet<String>,
-	nsfw_ids: &HashSet<String>,
-	engine: GameEngineBrand,
-) -> Vec<SteamGame> {
+// TODO this should be a more generic thing where you can load arbitrary json databases,
+// and show them as columns in Rai Pal.
+// For now it's just a hardcoded uevr db.
+async fn get_uevr_scores() -> Result<HashMap<String, UevrScore>> {
+	Ok(
+		reqwest::get(format!("{STEAM_APP_IDS_URL_BASE}/uevr-scores.json"))
+			.await?
+			.json::<HashMap<String, UevrScore>>()
+			.await?,
+	)
+}
+
+fn get_ids_data_list(ids: &HashSet<String>, engine: GameEngineBrand) -> Vec<SteamGame> {
 	ids.iter()
 		.map(|id| SteamGame {
 			id: id.to_string(),
-			nsfw: nsfw_ids.contains(id),
 			engine,
+			uevr_score: None,
 		})
 		.collect()
 }
 
 pub async fn get() -> Result<Vec<SteamGame>> {
-	let (unity, unreal, godot, nsfw) = future::join!(
-		get_list("Unity"),
-		get_list("Unreal"),
-		get_list("Godot"),
-		get_list("NSFW"),
-	)
-	.await;
+	let (unity, unreal, godot) =
+		future::join!(get_list("Unity"), get_list("Unreal"), get_list("Godot"),).await;
 
-	let nsfw_ids = nsfw.unwrap_or_default();
+	let uevr_scores = get_uevr_scores().await.unwrap_or_default();
 
-	Ok([
-		get_ids_data_list(
-			&unity.unwrap_or_default(),
-			&nsfw_ids,
-			GameEngineBrand::Unity,
-		),
-		get_ids_data_list(
-			&unreal.unwrap_or_default(),
-			&nsfw_ids,
-			GameEngineBrand::Unreal,
-		),
-		get_ids_data_list(
-			&godot.unwrap_or_default(),
-			&nsfw_ids,
-			GameEngineBrand::Godot,
-		),
+	let mut ids = [
+		get_ids_data_list(&unity.unwrap_or_default(), GameEngineBrand::Unity),
+		get_ids_data_list(&unreal.unwrap_or_default(), GameEngineBrand::Unreal),
+		get_ids_data_list(&godot.unwrap_or_default(), GameEngineBrand::Godot),
 	]
-	.concat())
+	.concat();
+
+	for game in &mut ids {
+		game.uevr_score = uevr_scores.get(&game.id).copied();
+	}
+
+	Ok(ids)
 }
