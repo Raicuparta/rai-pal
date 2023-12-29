@@ -3,7 +3,10 @@ use std::collections::HashMap;
 use async_trait::async_trait;
 use enum_dispatch::enum_dispatch;
 
-use super::epic_provider::EpicProvider;
+use super::{
+	epic_provider::EpicProvider,
+	gog_provider::GogProvider,
+};
 use crate::{
 	installed_game::InstalledGame,
 	owned_game::OwnedGame,
@@ -19,7 +22,8 @@ use crate::{
 serializable_enum!(ProviderId {
 	Steam,
 	Manual,
-	Epic
+	Epic,
+	Gog,
 });
 
 #[enum_dispatch]
@@ -27,6 +31,7 @@ pub enum Provider {
 	SteamProvider,
 	ManualProvider,
 	EpicProvider,
+	GogProvider,
 }
 
 #[async_trait]
@@ -77,6 +82,7 @@ where
 
 	add_entry::<SteamProvider, F>(&mut map, &error_handler);
 	add_entry::<EpicProvider, F>(&mut map, &error_handler);
+	add_entry::<GogProvider, F>(&mut map, &error_handler);
 	add_entry::<ManualProvider, F>(&mut map, &error_handler);
 
 	map

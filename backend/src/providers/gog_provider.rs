@@ -11,10 +11,10 @@ use crate::{
 	Result,
 };
 
-pub struct EpicProvider {}
+pub struct GogProvider {}
 
-impl ProviderStatic for EpicProvider {
-	const ID: &'static ProviderId = &ProviderId::Epic;
+impl ProviderStatic for GogProvider {
+	const ID: &'static ProviderId = &ProviderId::Gog;
 
 	fn new() -> Result<Self>
 	where
@@ -25,14 +25,16 @@ impl ProviderStatic for EpicProvider {
 }
 
 #[async_trait]
-impl ProviderActions for EpicProvider {
+impl ProviderActions for GogProvider {
 	fn get_installed_games(&self) -> Result<Vec<InstalledGame>> {
-		Ok(game_scanner::epicgames::games()
+		Ok(game_scanner::gog::games()
 			.unwrap_or_default()
 			.iter()
 			.filter_map(|game| {
 				if let Some(path) = game.path.clone().map(|path| {
-					// TODO get the real exe path from the Epic manifest.
+					// TODO this is just presuming the exe name is the same as the folder,
+					// which is a dumb thing to guess. Need to either find an exe inside this folder,
+					// or see if gog keeps a reference to the full exe path somewhere.
 					path.join(format!(
 						"{}.exe",
 						path.file_name().unwrap_or_default().to_string_lossy()

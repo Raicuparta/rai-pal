@@ -25,6 +25,7 @@ import {
 	IconBooks,
 	IconBrandSteam,
 	IconBrowser,
+	IconCircleLetterG,
 	IconDeviceGamepad,
 	IconFolder,
 	IconFolderCog,
@@ -57,6 +58,7 @@ const providerIcons: Record<ProviderId, Icon> = {
 	Manual: IconDeviceGamepad,
 	Steam: IconBrandSteam,
 	Epic: IconSquareLetterE,
+	Gog: IconCircleLetterG,
 };
 
 function getProviderIcon(providerId: ProviderId) {
