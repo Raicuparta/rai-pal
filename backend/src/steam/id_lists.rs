@@ -14,7 +14,6 @@ const STEAM_APP_IDS_URL_BASE: &str =
 
 serializable_struct!(SteamGame {
 	pub id: String,
-	pub nsfw: bool,
 	pub engine: GameEngineBrand,
 });
 
@@ -30,47 +29,23 @@ async fn get_list(list_name: &str) -> Result<HashSet<String>> {
 	)
 }
 
-fn get_ids_data_list(
-	ids: &HashSet<String>,
-	nsfw_ids: &HashSet<String>,
-	engine: GameEngineBrand,
-) -> Vec<SteamGame> {
+fn get_ids_data_list(ids: &HashSet<String>, engine: GameEngineBrand) -> Vec<SteamGame> {
 	ids.iter()
 		.map(|id| SteamGame {
 			id: id.to_string(),
-			nsfw: nsfw_ids.contains(id),
 			engine,
 		})
 		.collect()
 }
 
 pub async fn get() -> Result<Vec<SteamGame>> {
-	let (unity, unreal, godot, nsfw) = future::join!(
-		get_list("Unity"),
-		get_list("Unreal"),
-		get_list("Godot"),
-		get_list("NSFW"),
-	)
-	.await;
-
-	let nsfw_ids = nsfw.unwrap_or_default();
+	let (unity, unreal, godot) =
+		future::join!(get_list("Unity"), get_list("Unreal"), get_list("Godot"),).await;
 
 	Ok([
-		get_ids_data_list(
-			&unity.unwrap_or_default(),
-			&nsfw_ids,
-			GameEngineBrand::Unity,
-		),
-		get_ids_data_list(
-			&unreal.unwrap_or_default(),
-			&nsfw_ids,
-			GameEngineBrand::Unreal,
-		),
-		get_ids_data_list(
-			&godot.unwrap_or_default(),
-			&nsfw_ids,
-			GameEngineBrand::Godot,
-		),
+		get_ids_data_list(&unity.unwrap_or_default(), GameEngineBrand::Unity),
+		get_ids_data_list(&unreal.unwrap_or_default(), GameEngineBrand::Unreal),
+		get_ids_data_list(&godot.unwrap_or_default(), GameEngineBrand::Godot),
 	]
 	.concat())
 }
