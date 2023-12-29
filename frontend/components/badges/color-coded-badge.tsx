@@ -4,6 +4,7 @@ import {
 	GameMode,
 	OperatingSystem,
 	ProviderId,
+	UevrScore,
 	UnityScriptingBackend,
 } from "@api/bindings";
 import { Badge, BadgeProps, DefaultMantineColor, Flex } from "@mantine/core";
@@ -80,4 +81,12 @@ export const OperatingSystemBadge = CreateColorCodedBadge<OperatingSystem>(
 export const ProviderBadge = CreateColorCodedBadge<ProviderId>("Unknown", {
 	Manual: "gray",
 	Steam: "blue",
+});
+
+export const UevrScoreBadge = CreateColorCodedBadge<UevrScore>("-", {
+	A: "green",
+	B: "lime",
+	C: "yellow",
+	D: "orange",
+	E: "red",
 });
