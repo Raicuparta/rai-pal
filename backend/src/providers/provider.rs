@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use async_trait::async_trait;
 use enum_dispatch::enum_dispatch;
 
+use super::epic_provider::EpicProvider;
 use crate::{
 	installed_game::InstalledGame,
 	owned_game::OwnedGame,
@@ -15,12 +16,17 @@ use crate::{
 	Result,
 };
 
-serializable_enum!(ProviderId { Steam, Manual });
+serializable_enum!(ProviderId {
+	Steam,
+	Manual,
+	Epic
+});
 
 #[enum_dispatch]
 pub enum Provider {
 	SteamProvider,
 	ManualProvider,
+	EpicProvider,
 }
 
 #[async_trait]
@@ -70,6 +76,7 @@ where
 	let mut map = Map::new();
 
 	add_entry::<SteamProvider, F>(&mut map, &error_handler);
+	add_entry::<EpicProvider, F>(&mut map, &error_handler);
 	add_entry::<ManualProvider, F>(&mut map, &error_handler);
 
 	map

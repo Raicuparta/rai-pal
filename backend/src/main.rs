@@ -480,16 +480,129 @@ async fn frontend_ready() -> Result {
 
 #[tauri::command]
 #[specta::specta]
-async fn get_other_games() -> Result<Vec<String>> {
-	let games = [
-		game_scanner::epicgames::games().unwrap_or_default(),
-		game_scanner::gog::games().unwrap_or_default(),
-		game_scanner::origin::games().unwrap_or_default(),
-	]
-	.concat()
-	.iter()
-	.map(|game| game.name.clone())
-	.collect();
+async fn get_other_games() -> Result<HashMap<String, Vec<String>>> {
+	let games = HashMap::from([
+		(
+			"Epic".to_string(),
+			game_scanner::epicgames::games()
+				.unwrap_or_default()
+				.iter()
+				.map(|game| {
+					format!(
+						"{}: {}. {} ({})",
+						game.id,
+						game.name,
+						if game.state.installed {
+							"installed"
+						} else {
+							"owned"
+						},
+						game.path.clone().unwrap_or_default().to_string_lossy()
+					)
+				})
+				.collect(),
+		),
+		(
+			"GOG".to_string(),
+			game_scanner::gog::games()
+				.unwrap_or_default()
+				.iter()
+				.map(|game| {
+					format!(
+						"{}: {}. {} ({})",
+						game.id,
+						game.name,
+						if game.state.installed {
+							"installed"
+						} else {
+							"owned"
+						},
+						game.path.clone().unwrap_or_default().to_string_lossy()
+					)
+				})
+				.collect(),
+		),
+		(
+			"Origin".to_string(),
+			game_scanner::origin::games()
+				.unwrap_or_default()
+				.iter()
+				.map(|game| {
+					format!(
+						"{}: {}. {} ({})",
+						game.id,
+						game.name,
+						if game.state.installed {
+							"installed"
+						} else {
+							"owned"
+						},
+						game.path.clone().unwrap_or_default().to_string_lossy()
+					)
+				})
+				.collect(),
+		),
+		(
+			"Ubisoft".to_string(),
+			game_scanner::ubisoft::games()
+				.unwrap_or_default()
+				.iter()
+				.map(|game| {
+					format!(
+						"{}: {}. {} ({})",
+						game.id,
+						game.name,
+						if game.state.installed {
+							"installed"
+						} else {
+							"owned"
+						},
+						game.path.clone().unwrap_or_default().to_string_lossy()
+					)
+				})
+				.collect(),
+		),
+		(
+			"Amazon".to_string(),
+			game_scanner::amazon::games()
+				.unwrap_or_default()
+				.iter()
+				.map(|game| {
+					format!(
+						"{}: {}. {} ({})",
+						game.id,
+						game.name,
+						if game.state.installed {
+							"installed"
+						} else {
+							"owned"
+						},
+						game.path.clone().unwrap_or_default().to_string_lossy()
+					)
+				})
+				.collect(),
+		),
+		(
+			"Steam".to_string(),
+			game_scanner::steam::games()
+				.unwrap_or_default()
+				.iter()
+				.map(|game| {
+					format!(
+						"{}: {}. {} ({})",
+						game.id,
+						game.name,
+						if game.state.installed {
+							"installed"
+						} else {
+							"owned"
+						},
+						game.path.clone().unwrap_or_default().to_string_lossy()
+					)
+				})
+				.collect(),
+		),
+	]);
 
 	Ok(games)
 }
