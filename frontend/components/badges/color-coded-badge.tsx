@@ -81,6 +81,7 @@ export const OperatingSystemBadge = CreateColorCodedBadge<OperatingSystem>(
 export const ProviderBadge = CreateColorCodedBadge<ProviderId>("Unknown", {
 	Manual: "gray",
 	Steam: "blue",
+	Epic: "red",
 });
 
 export const UevrScoreBadge = CreateColorCodedBadge<UevrScore>("-", {
