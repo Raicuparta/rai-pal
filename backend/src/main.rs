@@ -480,6 +480,22 @@ async fn frontend_ready() -> Result {
 
 #[tauri::command]
 #[specta::specta]
+async fn get_other_games() -> Result<Vec<String>> {
+	let games = [
+		game_scanner::epicgames::games().unwrap_or_default(),
+		game_scanner::gog::games().unwrap_or_default(),
+		game_scanner::origin::games().unwrap_or_default(),
+	]
+	.concat()
+	.iter()
+	.map(|game| game.name.clone())
+	.collect();
+
+	Ok(games)
+}
+
+#[tauri::command]
+#[specta::specta]
 async fn dummy_command() -> Result<(InstalledGame, AppEvent)> {
 	// This command is here just so tauri_specta exports these types.
 	// This should stop being needed once tauri_specta starts supporting events.
@@ -555,6 +571,7 @@ fn main() {
 			get_remote_mods,
 			open_mod_loader_folder,
 			refresh_game,
+			get_other_games,
 		]
 	);
 

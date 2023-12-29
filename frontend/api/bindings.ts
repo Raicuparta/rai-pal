@@ -98,6 +98,10 @@ export function refreshGame(gameId: string) {
     return invoke()<null>("refresh_game", { gameId })
 }
 
+export function getOtherGames() {
+    return invoke()<string[]>("get_other_games")
+}
+
 export type OwnedGame = { id: string; providerId: ProviderId; name: string; installed: boolean; osList: OperatingSystem[]; engine: GameEngineBrand; releaseDate: number; thumbnailUrl: string; gameMode: GameMode; uevrScore: UevrScore | null }
 export type LocalMod = { data: LocalModData; common: CommonModData }
 export type ModLoaderData = { id: string; path: string; kind: ModKind }
