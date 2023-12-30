@@ -11,5 +11,7 @@ export const engineFilterOptions: SegmentedControlData<GameEngineBrand>[] = [
 export const providerFilterOptions: SegmentedControlData<ProviderId>[] = [
 	{ label: "Any provider", value: "" },
 	{ label: "Steam", value: "Steam" },
+	{ label: "Epic", value: "Epic" },
+	{ label: "GOG", value: "Gog" },
 	{ label: "Manual", value: "Manual" },
 ];

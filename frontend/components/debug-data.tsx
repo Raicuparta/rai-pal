@@ -8,7 +8,7 @@ type Props<TData> = {
 
 export function DebugData<TData>(props: Props<TData>) {
 	const debugText = useMemo(
-		() => JSON.stringify(props.data, null, 2),
+		() => JSON.stringify(props.data, null, 2) ?? "",
 		[props.data],
 	);
 
