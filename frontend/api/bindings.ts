@@ -98,10 +98,6 @@ export function refreshGame(gameId: string) {
     return invoke()<null>("refresh_game", { gameId })
 }
 
-export function getOtherGames() {
-    return invoke()<{ [key: string]: string[] }>("get_other_games")
-}
-
 export type GameEngineVersion = { major: number; minor: number; patch: number; suffix: string | null; display: string }
 export type GameEngineBrand = "Unity" | "Unreal" | "Godot"
 export type GameMode = "VR" | "Flat"
