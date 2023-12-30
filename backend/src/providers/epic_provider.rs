@@ -31,23 +31,14 @@ impl ProviderActions for EpicProvider {
 			.unwrap_or_default()
 			.iter()
 			.filter_map(|game| {
-				if let Some(path) = game.path.clone().map(|path| {
-					// TODO get the real exe path from the Epic manifest.
-					path.join(format!(
-						"{}.exe",
-						path.file_name().unwrap_or_default().to_string_lossy()
-					))
-				}) {
-					return InstalledGame::new(
-						&path,
-						&game.name,
-						Self::ID.to_owned(),
-						None,
-						None,
-						None,
-					);
-				}
-				None
+				InstalledGame::new(
+					game.path.as_ref()?,
+					&game.name,
+					Self::ID.to_owned(),
+					None,
+					None,
+					None,
+				)
 			})
 			.collect())
 	}

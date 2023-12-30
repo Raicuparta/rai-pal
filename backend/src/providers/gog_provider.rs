@@ -35,25 +35,14 @@ impl ProviderActions for GogProvider {
 			.unwrap_or_default()
 			.iter()
 			.filter_map(|game| {
-				if let Some(path) = game.path.clone().map(|path| {
-					// TODO this is just presuming the exe name is the same as the folder,
-					// which is a dumb thing to guess. Need to either find an exe inside this folder,
-					// or see if gog keeps a reference to the full exe path somewhere.
-					path.join(format!(
-						"{}.exe",
-						path.file_name().unwrap_or_default().to_string_lossy()
-					))
-				}) {
-					return InstalledGame::new(
-						&path,
-						&game.name,
-						Self::ID.to_owned(),
-						None,
-						None,
-						None,
-					);
-				}
-				None
+				InstalledGame::new(
+					game.path.as_ref()?,
+					&game.name,
+					Self::ID.to_owned(),
+					None,
+					None,
+					None,
+				)
 			})
 			.collect())
 	}

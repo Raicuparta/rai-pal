@@ -20,8 +20,8 @@ glob = { git = "https://github.com/rust-lang/glob", version = "0.3.1" }
 # Also I made my own fork to remove some annoying prints.
 steamlocate = { git = "https://github.com/Raicuparta/steamlocate-rs", branch = "dev-v2.0" }
 
-# Using git version from specific branch that fixes error that crashes compilation on Windows.
-game-scanner = { git = "https://github.com/EqualGames/game-scanner", branch = "dependabot/cargo/sysinfo-0.28.2"}
+# Made my own fork to fix builds on windows and add my own stuff.
+game-scanner = { git = "https://github.com/Raicuparta/game-scanner", branch = "main"}
 
 specta = "1.0.5"
 tauri-specta = { version = "1.0.2", features = ["typescript"] }
