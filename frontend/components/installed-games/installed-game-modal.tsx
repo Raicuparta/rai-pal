@@ -115,20 +115,23 @@ export function InstalledGameModal(props: Props) {
 						>
 							Start Game
 						</CommandButton>
-						<CommandDropdown>
-							<CommandButton
-								leftSection={<IconAppWindow />}
-								onClick={() => startGameExe(props.game.id)}
-							>
-								Start Game Executable
-							</CommandButton>
-							<CommandButton
-								leftSection={<ProviderIcon />}
-								onClick={() => startGame(props.game.id)}
-							>
-								Start Game via {props.game.providerId}
-							</CommandButton>
-						</CommandDropdown>
+						{props.game.providerId === "Steam" && (
+							<CommandDropdown>
+								<CommandButton
+									leftSection={<IconAppWindow />}
+									onClick={() => startGameExe(props.game.id)}
+								>
+									Start Game Executable
+								</CommandButton>
+								{/* TODO: Implement this in a generic way on the Rust side, for every provider. */}
+								<CommandButton
+									leftSection={<ProviderIcon />}
+									onClick={() => startGame(props.game.id)}
+								>
+									Start Game via {props.game.providerId}
+								</CommandButton>
+							</CommandDropdown>
+						)}
 					</Button.Group>
 					<CommandDropdown
 						label="Folders"
@@ -147,7 +150,8 @@ export function InstalledGameModal(props: Props) {
 							Open Installed Mods Folder
 						</CommandButton>
 					</CommandDropdown>
-					{props.game.providerId !== "Manual" && (
+					{/* TODO: Implement this in a generic way on the Rust side, for every provider. */}
+					{props.game.providerId === "Steam" && (
 						<CommandDropdown
 							label={props.game.providerId}
 							icon={<ProviderIcon />}
@@ -158,7 +162,7 @@ export function InstalledGameModal(props: Props) {
 									steamCommands.openStorePage(props.game.steamLaunch?.appId)
 								}
 							>
-								Open Steam Page
+								Open Store Page
 							</CommandButton>
 							<CommandButton
 								leftSection={<IconBooks />}
