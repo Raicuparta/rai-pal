@@ -6,6 +6,7 @@ use enum_dispatch::enum_dispatch;
 use super::{
 	epic_provider::EpicProvider,
 	gog_provider::GogProvider,
+	xbox_provider::XboxProvider,
 };
 use crate::{
 	installed_game::InstalledGame,
@@ -24,6 +25,7 @@ serializable_enum!(ProviderId {
 	Manual,
 	Epic,
 	Gog,
+	Xbox,
 });
 
 #[enum_dispatch]
@@ -32,6 +34,7 @@ pub enum Provider {
 	ManualProvider,
 	EpicProvider,
 	GogProvider,
+	XboxProvider,
 }
 
 #[async_trait]
@@ -83,6 +86,7 @@ where
 	add_entry::<SteamProvider, F>(&mut map, &error_handler);
 	add_entry::<EpicProvider, F>(&mut map, &error_handler);
 	add_entry::<GogProvider, F>(&mut map, &error_handler);
+	add_entry::<XboxProvider, F>(&mut map, &error_handler);
 	add_entry::<ManualProvider, F>(&mut map, &error_handler);
 
 	map
