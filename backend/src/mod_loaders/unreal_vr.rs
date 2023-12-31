@@ -32,7 +32,7 @@ serializable_struct!(UnrealVr {
 });
 
 impl UnrealVr {
-	const EXE_NAME: &'static str = "UnrealVR.exe";
+	const EXE_NAME: &'static str = "UEVRInjector.exe";
 }
 
 #[async_trait]
