@@ -5,12 +5,17 @@
 		"ctypes",
 		"flashbang",
 		"hasher",
+		"HKEY",
 		"isfreeapp",
 		"KTJZNR",
+		"predef",
 		"shellapi",
+		"subchild",
+		"subkey",
 		"uevr",
 		"ureq",
 		"winapi",
+		"winreg",
 		"winuser"
 	]
 }

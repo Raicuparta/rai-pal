@@ -163,7 +163,7 @@ fn get_version(path: &Path, architecture: Architecture) -> Option<GameEngineVers
 
 fn get_actual_unreal_binary(game_exe_path: &Path) -> PathBuf {
 	if let Some(parent) = game_exe_path.parent() {
-		if parent.ends_with("Win64") || parent.ends_with("Win32") {
+		if parent.ends_with("Win64") || parent.ends_with("Win32") || parent.ends_with("WinGDK") {
 			return game_exe_path.to_path_buf();
 		}
 
@@ -207,7 +207,7 @@ fn is_unreal_exe(game_path: &Path) -> bool {
 		}
 
 		// For cases where the registered exe points directly to the shipping binary:
-		if parent.ends_with("Win64") || parent.ends_with("Win32") {
+		if parent.ends_with("Win64") || parent.ends_with("Win32") || parent.ends_with("WinGDK") {
 			if let Some(binaries) = parent.parent() {
 				if binaries.ends_with("Binaries") {
 					return true;

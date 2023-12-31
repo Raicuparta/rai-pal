@@ -83,6 +83,7 @@ export const ProviderBadge = CreateColorCodedBadge<ProviderId>("Unknown", {
 	Steam: "blue",
 	Epic: "red",
 	Gog: "violet",
+	Xbox: "green",
 });
 
 export const UevrScoreBadge = CreateColorCodedBadge<UevrScore>("-", {
