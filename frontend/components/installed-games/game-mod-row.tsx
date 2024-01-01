@@ -3,7 +3,7 @@ import {
 	ModLoaderData,
 	downloadMod,
 	installMod,
-	openModLoaderFolder,
+	openModFolder,
 	uninstallMod,
 } from "@api/bindings";
 import { CommandButton } from "@components/command-button";
@@ -43,8 +43,12 @@ export function GameModRow(props: Props) {
 	const isInstalled = Boolean(installedVersion);
 
 	const handleClick = useCallback(async () => {
-		if (props.modLoader.kind === "Runnable" && !props.mod.local) {
-			await openModLoaderFolder(props.modLoader.id);
+		if (
+			props.modLoader.kind === "Runnable" &&
+			!props.mod.local &&
+			!props.mod.remote
+		) {
+			await openModFolder(props.mod.common.id);
 			return;
 		}
 
@@ -58,8 +62,8 @@ export function GameModRow(props: Props) {
 		await installMod(props.game.id, props.mod.common.id);
 	}, [
 		props.modLoader.kind,
-		props.modLoader.id,
 		props.mod.local,
+		props.mod.remote,
 		props.mod.common.id,
 		props.game.id,
 		isLocalModOutdated,
@@ -85,7 +89,7 @@ export function GameModRow(props: Props) {
 			return { actionText: "Install", actionIcon: <IconCirclePlus /> };
 		}
 
-		if (!props.mod.local) {
+		if (!props.mod.remote && !props.mod.local) {
 			return { actionText: "Open mod folder", actionIcon: <IconFolderOpen /> };
 		}
 
