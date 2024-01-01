@@ -3,7 +3,7 @@ import {
 	ModLoaderData,
 	downloadMod,
 	installMod,
-	openModLoaderFolder,
+	openModFolder,
 	uninstallMod,
 } from "@api/bindings";
 import { CommandButton } from "@components/command-button";
@@ -43,8 +43,12 @@ export function GameModRow(props: Props) {
 	const isInstalled = Boolean(installedVersion);
 
 	const handleClick = useCallback(async () => {
-		if (props.modLoader.kind === "Runnable" && !props.mod.local) {
-			await openModLoaderFolder(props.modLoader.id);
+		if (
+			props.modLoader.kind === "Runnable" &&
+			!props.mod.local &&
+			!props.mod.remote
+		) {
+			await openModFolder(props.mod.common.id);
 			return;
 		}
 
@@ -58,8 +62,8 @@ export function GameModRow(props: Props) {
 		await installMod(props.game.id, props.mod.common.id);
 	}, [
 		props.modLoader.kind,
-		props.modLoader.id,
 		props.mod.local,
+		props.mod.remote,
 		props.mod.common.id,
 		props.game.id,
 		isLocalModOutdated,
@@ -85,29 +89,34 @@ export function GameModRow(props: Props) {
 			return { actionText: "Install", actionIcon: <IconCirclePlus /> };
 		}
 
-		if (!props.mod.local) {
+		if (!props.mod.remote && !props.mod.local) {
 			return { actionText: "Open mod folder", actionIcon: <IconFolderOpen /> };
 		}
 
 		return { actionText: "Run", actionIcon: <IconPlayerPlay /> };
 	})();
 
-	const statusIcon = (() => {
-		if (isInstalledModOutdated) return <OutdatedMarker />;
-		if (isInstalled) return <IconCheck />;
-		return <IconMinus />;
+	const { statusIcon, statusColor } = (() => {
+		if (isInstalledModOutdated)
+			return {
+				statusIcon: <OutdatedMarker />,
+				statusColor: "orange",
+			};
+		if (isInstalled || (props.mod.local && props.modLoader.kind == "Runnable"))
+			return {
+				statusIcon: <IconCheck />,
+				statusColor: "green",
+			};
+		return {
+			statusIcon: <IconMinus />,
+			statusColor: "gray",
+		};
 	})();
 
 	const buttonColor = ((): DefaultMantineColor => {
 		if (isInstalledModOutdated) return "orange";
 		if (isInstalled) return "red";
 		return "violet";
-	})();
-
-	const statusColor = ((): DefaultMantineColor => {
-		if (isInstalledModOutdated) return "orange";
-		if (isInstalled) return "green";
-		return "gray";
 	})();
 
 	return (

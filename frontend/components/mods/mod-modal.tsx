@@ -1,5 +1,5 @@
 import { Modal, Stack } from "@mantine/core";
-import { downloadMod, openModFolder, openModLoaderFolder } from "@api/bindings";
+import { downloadMod, openModFolder } from "@api/bindings";
 import { CommandButton } from "@components/command-button";
 import { IconDownload, IconFolderCog } from "@tabler/icons-react";
 import { CommandButtonGroup } from "@components/command-button-group";
@@ -40,7 +40,7 @@ export function ModModal(props: Props) {
 					{!isDownloadAvailable && !props.mod.local && (
 						<CommandButton
 							leftSection={<IconFolderCog />}
-							onClick={() => openModLoaderFolder(props.mod.common.loaderId)}
+							onClick={() => openModFolder(props.mod.common.id)}
 						>
 							Open mod loader folder
 						</CommandButton>

@@ -79,12 +79,12 @@ impl ModLoaderActions for UnrealVr {
 		)
 	}
 
-	fn get_mod_path(&self, _mod_data: &CommonModData) -> Result<PathBuf> {
-		Ok(self.get_data().path.clone())
+	fn get_mod_path(&self, mod_data: &CommonModData) -> Result<PathBuf> {
+		Ok(Self::get_installed_mods_path()?.join(&mod_data.id))
 	}
 
 	fn get_local_mods(&self) -> Result<HashMap<String, LocalMod>> {
-		let folder_path = &self.get_data().path;
+		let folder_path = &Self::get_installed_mods_path()?.join(Self::ID);
 		if !folder_path.join(Self::EXE_NAME).is_file() {
 			return Ok(HashMap::default());
 		}
