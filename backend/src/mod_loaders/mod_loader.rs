@@ -76,11 +76,13 @@ pub trait ModLoaderActions {
 	async fn install_mod(&self, game: &InstalledGame, local_mod: &LocalMod) -> Result {
 		self.install_mod_inner(game, local_mod).await?;
 
-		if let Some(manifest) = &local_mod.data.manifest {
-			let manifest_path = game.get_installed_mod_manifest_path(&local_mod.common.id)?;
-			fs::create_dir_all(paths::path_parent(&manifest_path)?)?;
-			let manifest_contents = serde_json::to_string_pretty(manifest)?;
-			fs::write(manifest_path, manifest_contents)?;
+		if self.get_data().kind != ModKind::Runnable {
+			if let Some(manifest) = &local_mod.data.manifest {
+				let manifest_path = game.get_installed_mod_manifest_path(&local_mod.common.id)?;
+				fs::create_dir_all(paths::path_parent(&manifest_path)?)?;
+				let manifest_contents = serde_json::to_string_pretty(manifest)?;
+				fs::write(manifest_path, manifest_contents)?;
+			}
 		}
 
 		Ok(())
