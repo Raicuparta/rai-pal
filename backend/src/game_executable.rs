@@ -10,6 +10,7 @@ use goblin::{
 	elf::Elf,
 	pe::PE,
 };
+use log::error;
 
 use crate::{
 	game_engines::{
@@ -76,12 +77,12 @@ pub fn get_os_and_architecture(
 			return Ok(pe_result?);
 		}
 
-		eprintln!("Failed to parse exe as ELF or PE");
+		error!("Failed to parse exe as ELF or PE");
 		if let Err(err) = elf_result {
-			eprintln!("ELF error: {err}");
+			error!("ELF error: {err}");
 		}
 		if let Err(err) = pe_result {
-			eprintln!("PE error: {err}");
+			error!("PE error: {err}");
 		}
 
 		Ok((None, None))

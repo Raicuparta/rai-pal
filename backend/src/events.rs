@@ -1,5 +1,6 @@
 use std::fmt::Display;
 
+use log::error;
 use serde::Serialize;
 use tauri::Manager;
 
@@ -25,12 +26,12 @@ pub trait EventEmitter {
 impl EventEmitter for tauri::AppHandle {
 	fn emit_event<TPayload: Serialize + Clone>(&self, event: AppEvent, payload: TPayload) {
 		self.emit_all(&event.to_string(), payload)
-			.unwrap_or_else(|err| eprintln!("Failed to emit event: {err}"));
+			.unwrap_or_else(|err| error!("Failed to emit event: {err}"));
 	}
 
 	fn emit_error<TPayload: Serialize + Clone + Display>(&self, payload: TPayload) {
-		eprintln!("Error: {payload}");
+		error!("Error: {payload}");
 		self.emit_all(&AppEvent::Error.to_string(), payload)
-			.unwrap_or_else(|err| eprintln!("Failed to emit error: {err}."));
+			.unwrap_or_else(|err| error!("Failed to emit error: {err}."));
 	}
 }

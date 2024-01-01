@@ -7,6 +7,8 @@ use std::{
 	},
 };
 
+use log::error;
+
 use crate::{
 	game_engines::{
 		game_engine::GameEngineBrand,
@@ -48,7 +50,7 @@ fn get_manifest(mod_path: &Path) -> Option<Manifest> {
 	{
 		Ok(manifest) => Some(manifest),
 		Err(error) => {
-			eprintln!("Error getting manifest: {error}");
+			error!("Error getting manifest: {error}");
 			None
 		}
 	}

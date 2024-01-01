@@ -7,6 +7,7 @@ use std::{
 };
 
 use async_trait::async_trait;
+use log::error;
 
 use super::provider::{
 	ProviderActions,
@@ -79,7 +80,7 @@ fn read_games_config(games_config_path: &Path) -> GamesConfig {
 	{
 		Ok(games_config) => games_config,
 		Err(error) => {
-			eprintln!("Error reading config: {error}");
+			error!("Error reading config: {error}");
 			GamesConfig {
 				paths: Vec::default(),
 			}

@@ -20,6 +20,7 @@ use events::{
 };
 use game_mod::get_common_data_map;
 use installed_game::InstalledGame;
+use log::error;
 use maps::TryGettable;
 use mod_loaders::mod_loader::{
 	self,
@@ -45,6 +46,10 @@ use tauri::{
 	api::dialog::message,
 	AppHandle,
 	Manager,
+};
+use tauri_plugin_log::{
+	LogLevel,
+	LogTarget,
 };
 
 mod analytics;
@@ -490,7 +495,7 @@ fn main() {
 	// Since I'm making all exposed functions async, panics won't crash anything important, I think.
 	// So I can just catch panics here and show a system message with the error.
 	std::panic::set_hook(Box::new(|info| {
-		eprintln!("Panic: {info}");
+		error!("Panic: {info}");
 		message(
 			None::<&tauri::Window>,
 			"Failed to execute command",
@@ -500,6 +505,12 @@ fn main() {
 
 	let tauri_builder = tauri::Builder::default()
 		.plugin(tauri_plugin_window_state::Builder::default().build())
+		.plugin(
+			tauri_plugin_log::Builder::default()
+				.level(log::LevelFilter::Info)
+				.targets([LogTarget::LogDir, LogTarget::Stdout])
+				.build(),
+		)
 		.manage(AppState {
 			installed_games: Mutex::default(),
 			owned_games: Mutex::default(),
@@ -567,14 +578,14 @@ fn main() {
 					.bigint(specta::ts::BigIntExportBehavior::BigInt),
 				"../frontend/api/bindings.ts",
 			) {
-				eprintln!("Failed to generate TypeScript bindings: {err}");
+				error!("Failed to generate TypeScript bindings: {err}");
 			}
 		}
 		Err(err) => {
-			eprintln!("Failed to generate api bindings: {err}");
+			error!("Failed to generate api bindings: {err}");
 		}
 	}
 	tauri_builder
 		.run(tauri::generate_context!())
-		.unwrap_or_else(|err| eprintln!("Failed to run Tauri application: {err}"));
+		.unwrap_or_else(|err| error!("Failed to run Tauri application: {err}"));
 }

@@ -1,6 +1,7 @@
 use std::path::PathBuf;
 
 use async_trait::async_trait;
+use log::error;
 use winreg::{
 	enums::{
 		HKEY_CURRENT_USER,
@@ -73,14 +74,14 @@ impl ProviderActions for XboxProvider {
 															.get_value::<String, _>("DisplayName")
 													})
 													.or_else(|error| {
-														eprintln!("Failed to find display name for Xbox game: {}", error);
+														error!("Failed to find display name for Xbox game: {}", error);
 														file_name_without_extension(
 															&executable_path,
 														)
 														.map(ToString::to_string)
 													})
 													.unwrap_or_else(|error| {
-														eprintln!("Failed to get game name from exe path: {}", error);
+														error!("Failed to get game name from exe path: {}", error);
 														"[Name Not Found]".to_string()
 													});
 
