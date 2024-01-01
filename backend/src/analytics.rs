@@ -4,6 +4,10 @@ use std::time::{
 };
 
 use lazy_static::lazy_static;
+use log::{
+	error,
+	info,
+};
 use reqwest::Client;
 use serde::Serialize;
 
@@ -67,14 +71,14 @@ pub async fn send_event(event_name: Event, data: &str) {
 		let url = format!("https://www.google-analytics.com/mp/collect?measurement_id={MEASUREMENT_ID}&api_secret={api_key}");
 		let client = Client::new();
 		let payload = AnalyticsPayload::new(&event_name, data);
-		println!("Sending {payload:?}");
+		info!("Sending {payload:?}");
 		let resp = client.post(url).json(&payload).send().await;
 		match resp {
 			Ok(resp) => {
 				if resp.status().is_success() {
-					println!("Successfully Sent Analytics Event {event_name:?} for {data}");
+					info!("Successfully Sent Analytics Event {event_name:?} for {data}");
 				} else {
-					eprintln!(
+					error!(
 						"Couldn't Send Analytics Event For {}! {}",
 						data,
 						resp.status()
@@ -82,7 +86,7 @@ pub async fn send_event(event_name: Event, data: &str) {
 				}
 			}
 			Err(err) => {
-				eprintln!(
+				error!(
 					"{}",
 					format!("Couldn't Send Analytics Event For {data}! {err:?}")
 						.replace(api_key, "***")
@@ -90,6 +94,6 @@ pub async fn send_event(event_name: Event, data: &str) {
 			}
 		}
 	} else {
-		println!("Skipping Analytics As The ANALYTICS_API_KEY Is Null ({event_name:?})");
+		info!("Skipping Analytics As The ANALYTICS_API_KEY Is Null ({event_name:?})");
 	}
 }

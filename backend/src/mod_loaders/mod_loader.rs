@@ -12,6 +12,7 @@ use std::{
 
 use async_trait::async_trait;
 use enum_dispatch::enum_dispatch;
+use log::error;
 use zip::ZipArchive;
 
 use super::{
@@ -204,7 +205,7 @@ where
 		Ok((key, value)) => {
 			map.insert(key, value);
 		}
-		Err(err) => eprintln!("Failed to create map entry: {err}"),
+		Err(err) => error!("Failed to create map entry: {err}"),
 	}
 }
 

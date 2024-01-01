@@ -15,6 +15,7 @@ use glob::{
 	glob,
 	Paths,
 };
+use log::error;
 
 use crate::{
 	Error,
@@ -63,7 +64,7 @@ pub fn file_name_without_extension(file_path: &Path) -> Result<&str> {
 
 pub fn normalize_path(path: &Path) -> PathBuf {
 	path.canonicalize().unwrap_or_else(|err| {
-		eprintln!(
+		error!(
 			"Failed to normalize path `{}`: {}",
 			path.to_string_lossy(),
 			err

@@ -11,6 +11,7 @@ use std::{
 };
 
 use lazy_regex::regex_captures;
+use log::error;
 
 use crate::{
 	game_engines::game_engine::{
@@ -78,7 +79,7 @@ fn get_version(game_exe_path: &Path) -> Option<GameEngineVersion> {
 						Ok(version) => {
 							return Some(version);
 						}
-						Err(err) => eprintln!("Failed to get Unity version: {err}"),
+						Err(err) => error!("Failed to get Unity version: {err}"),
 					}
 				}
 			}
@@ -107,7 +108,7 @@ fn get_scripting_backend(path: &Path) -> Option<UnityScriptingBackend> {
 			}
 		}
 		Err(err) => {
-			eprintln!("Failed to get Unity scripting backend: {err}");
+			error!("Failed to get Unity scripting backend: {err}");
 			None
 		}
 	}
