@@ -96,22 +96,27 @@ export function GameModRow(props: Props) {
 		return { actionText: "Run", actionIcon: <IconPlayerPlay /> };
 	})();
 
-	const statusIcon = (() => {
-		if (isInstalledModOutdated) return <OutdatedMarker />;
-		if (isInstalled) return <IconCheck />;
-		return <IconMinus />;
+	const { statusIcon, statusColor } = (() => {
+		if (isInstalledModOutdated)
+			return {
+				statusIcon: <OutdatedMarker />,
+				statusColor: "orange",
+			};
+		if (isInstalled || (props.mod.local && props.modLoader.kind == "Runnable"))
+			return {
+				statusIcon: <IconCheck />,
+				statusColor: "green",
+			};
+		return {
+			statusIcon: <IconMinus />,
+			statusColor: "gray",
+		};
 	})();
 
 	const buttonColor = ((): DefaultMantineColor => {
 		if (isInstalledModOutdated) return "orange";
 		if (isInstalled) return "red";
 		return "violet";
-	})();
-
-	const statusColor = ((): DefaultMantineColor => {
-		if (isInstalledModOutdated) return "orange";
-		if (isInstalled) return "green";
-		return "gray";
 	})();
 
 	return (
