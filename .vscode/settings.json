@@ -1,15 +1,22 @@
 {
 	"cSpell.words": [
 		"Anticheat",
+		"appguid",
+		"appname",
 		"compatdata",
 		"ctypes",
 		"flashbang",
 		"hasher",
 		"HKEY",
 		"ICONERROR",
+		"IDYES",
+		"installsource",
 		"isfreeapp",
 		"KTJZNR",
+		"needsadmin",
+		"otherinstallcmd",
 		"predef",
+		"repairtype",
 		"shellapi",
 		"subchild",
 		"subkey",
@@ -17,7 +24,9 @@
 		"uevr",
 		"ureq",
 		"winapi",
+		"windowsonlinerepair",
 		"winreg",
-		"winuser"
+		"winuser",
+		"YESNO"
 	]
 }

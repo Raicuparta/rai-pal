@@ -492,7 +492,7 @@ fn main() {
 	// Since I'm making all exposed functions async, panics won't crash anything important, I think.
 	// So I can just catch panics here and show a system message with the error.
 	std::panic::set_hook(Box::new(|info| {
-		native_dialog::error(&info.to_string());
+		native_dialog::error_dialog(&info.to_string());
 	}));
 
 	let tauri_builder = tauri::Builder::default()
@@ -580,7 +580,13 @@ fn main() {
 
 	tauri_builder
 		.run(tauri::generate_context!())
-		.unwrap_or_else(|err| {
-			native_dialog::error(&err.to_string());
+		.unwrap_or_else(|error| {
+			// if let webview2_com::Error::WindowsError(webview2_error) = err {
+			if let tauri::Error::Runtime(tauri_runtime::Error::CreateWebview(webview_error)) = error
+			{
+				native_dialog::webview_error_dialog(&webview_error.to_string());
+			} else {
+				native_dialog::error_dialog(&error.to_string());
+			}
 		});
 }
