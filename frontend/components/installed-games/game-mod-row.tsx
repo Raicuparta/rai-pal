@@ -77,7 +77,7 @@ export function GameModRow(props: Props) {
 			: installedVersion;
 
 	const { actionText, actionIcon } = (() => {
-		if (isInstalledModOutdated) {
+		if (isLocalModOutdated || isInstalledModOutdated) {
 			return { actionText: "Update to", actionIcon: <IconRefreshAlert /> };
 		}
 
@@ -97,7 +97,7 @@ export function GameModRow(props: Props) {
 	})();
 
 	const { statusIcon, statusColor } = (() => {
-		if (isInstalledModOutdated)
+		if (isLocalModOutdated || isInstalledModOutdated)
 			return {
 				statusIcon: <OutdatedMarker />,
 				statusColor: "orange",
@@ -114,7 +114,7 @@ export function GameModRow(props: Props) {
 	})();
 
 	const buttonColor = ((): DefaultMantineColor => {
-		if (isInstalledModOutdated) return "orange";
+		if (isLocalModOutdated || isInstalledModOutdated) return "orange";
 		if (isInstalled) return "red";
 		return "violet";
 	})();
