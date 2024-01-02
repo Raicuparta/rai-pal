@@ -61,7 +61,6 @@ mod local_mod;
 mod macros;
 mod maps;
 mod mod_loaders;
-mod native_dialog;
 mod owned_game;
 mod paths;
 mod providers;
@@ -482,6 +481,14 @@ async fn frontend_ready() -> Result {
 
 #[tauri::command]
 #[specta::specta]
+async fn open_logs_folder() -> Result {
+	paths::open_logs_folder()?;
+
+	Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
 async fn dummy_command() -> Result<(InstalledGame, AppEvent)> {
 	// This command is here just so tauri_specta exports these types.
 	// This should stop being needed once tauri_specta starts supporting events.
@@ -492,7 +499,7 @@ fn main() {
 	// Since I'm making all exposed functions async, panics won't crash anything important, I think.
 	// So I can just catch panics here and show a system message with the error.
 	std::panic::set_hook(Box::new(|info| {
-		native_dialog::error_dialog(&info.to_string());
+		windows::error_dialog(&info.to_string());
 	}));
 
 	let tauri_builder = tauri::Builder::default()
@@ -500,7 +507,10 @@ fn main() {
 		.plugin(
 			tauri_plugin_log::Builder::default()
 				.level(log::LevelFilter::Info)
-				.targets([LogTarget::LogDir, LogTarget::Stdout])
+				.targets([
+					paths::logs_path().map_or(LogTarget::LogDir, LogTarget::Folder),
+					LogTarget::Stdout,
+				])
 				.build(),
 		)
 		.manage(AppState {
@@ -558,6 +568,7 @@ fn main() {
 			get_remote_mods,
 			open_mod_loader_folder,
 			refresh_game,
+			open_logs_folder,
 		]
 	);
 
@@ -581,12 +592,11 @@ fn main() {
 	tauri_builder
 		.run(tauri::generate_context!())
 		.unwrap_or_else(|error| {
-			// if let webview2_com::Error::WindowsError(webview2_error) = err {
 			if let tauri::Error::Runtime(tauri_runtime::Error::CreateWebview(webview_error)) = error
 			{
-				native_dialog::webview_error_dialog(&webview_error.to_string());
+				windows::webview_error_dialog(&webview_error.to_string());
 			} else {
-				native_dialog::error_dialog(&error.to_string());
+				windows::error_dialog(&error.to_string());
 			}
 		});
 }

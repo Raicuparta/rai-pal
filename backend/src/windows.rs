@@ -131,7 +131,9 @@ pub fn webview_error_dialog(error_text: &str) {
 		});
 	}
 
-	// TODO open logs folder here.
+	if let Err(error) = paths::open_logs_folder() {
+		error!("Failed to even open the logs folder: {error}");
+	}
 }
 
 // Seems to be common for Webview2 to be broken, but with Edge still present,
