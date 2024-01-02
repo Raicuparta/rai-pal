@@ -43,14 +43,10 @@ use result::{
 };
 use steamlocate::SteamDir;
 use tauri::{
-	api::dialog::message,
 	AppHandle,
 	Manager,
 };
-use tauri_plugin_log::{
-	LogLevel,
-	LogTarget,
-};
+use tauri_plugin_log::LogTarget;
 
 mod analytics;
 mod app_state;
@@ -65,6 +61,7 @@ mod local_mod;
 mod macros;
 mod maps;
 mod mod_loaders;
+mod native_dialog;
 mod owned_game;
 mod paths;
 mod providers;
@@ -495,12 +492,7 @@ fn main() {
 	// Since I'm making all exposed functions async, panics won't crash anything important, I think.
 	// So I can just catch panics here and show a system message with the error.
 	std::panic::set_hook(Box::new(|info| {
-		error!("Panic: {info}");
-		message(
-			None::<&tauri::Window>,
-			"Failed to execute command",
-			info.to_string(),
-		);
+		native_dialog::error(&info.to_string());
 	}));
 
 	let tauri_builder = tauri::Builder::default()
@@ -585,7 +577,10 @@ fn main() {
 			error!("Failed to generate api bindings: {err}");
 		}
 	}
+
 	tauri_builder
 		.run(tauri::generate_context!())
-		.unwrap_or_else(|err| error!("Failed to run Tauri application: {err}"));
+		.unwrap_or_else(|err| {
+			native_dialog::error(&err.to_string());
+		});
 }
