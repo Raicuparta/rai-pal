@@ -3,6 +3,7 @@ use std::{
 	ptr,
 };
 
+use lazy_regex::regex_captures;
 use log::error;
 use winapi::{
 	ctypes::{
@@ -18,9 +19,14 @@ use winapi::{
 		MB_YESNO,
 	},
 };
+use winreg::{
+	enums::HKEY_LOCAL_MACHINE,
+	RegKey,
+};
 
 use crate::windows::run_as_admin;
 
+// TODO use OsStr encode_wide
 fn to_wide_string_ptr(text: &str) -> Vec<u16> {
 	text.encode_utf16().chain(std::iter::once(0)).collect()
 }
@@ -50,20 +56,44 @@ const WEBVIEW_ERROR_MESSAGE: &str = "Webview error. This usually means something
 const WEBVIEW_REPAIR_FAILED_MESSAGE: &str = "Ok, that didn't work either.\n\nWould you like to open the Microsoft website to download Webview2 yourself?";
 const WEBVIEW_WEBSITE_URL: &str =
 	"https://developer.microsoft.com/microsoft-edge/webview2#download";
+const DEFAULT_WEBVIEW2_REPAIR_PATH: &str =
+	"C:\\Program Files (x86)\\Microsoft\\EdgeUpdate\\MicrosoftEdgeUpdate.exe";
+const DEFAULT_WEBVIEW2_REPAIR_ARGS: &str = "/install appguid={F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}&appname=Microsoft%20Edge%20WebView&needsadmin=true&repairtype=windowsonlinerepair /installsource otherinstallcmd";
+
+fn get_fallback_webview2_repair(message: &str) -> (PathBuf, String) {
+	error!("Failed to get WebView2 repair exe path from registry. Attempting with default path. {message}");
+	(
+		PathBuf::from(DEFAULT_WEBVIEW2_REPAIR_PATH),
+		DEFAULT_WEBVIEW2_REPAIR_ARGS.to_string(),
+	)
+}
+
+fn get_webview2_repair() -> (PathBuf, String) {
+	RegKey::predef(HKEY_LOCAL_MACHINE).open_subkey("SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Microsoft EdgeWebView")
+	.and_then(|key| key.get_value::<String, _>("ModifyPath")).map_or_else(|error| {
+		get_fallback_webview2_repair(&error.to_string())
+	}, |path_with_args| {
+		if let Some((_, path, args)) = regex_captures!(r#""(.+)" ?(.*)"#, &path_with_args) {
+			return (PathBuf::from(path), args.to_string());
+		}
+		get_fallback_webview2_repair(&format!("Failed to parse registry item: {path_with_args}"))
+	})
+}
 
 pub fn webview_error_dialog(error_text: &str) {
 	error!("{error_text}");
 	if error_question_dialog(WEBVIEW_ERROR_MESSAGE) {
-		run_as_admin(
-			&PathBuf::from("C:\\Program Files (x86)\\Microsoft\\EdgeUpdate\\MicrosoftEdgeUpdate.exe"),
-			"/install appguid={F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}&appname=Microsoft%20Edge%20WebView&needsadmin=true&repairtype=windowsonlinerepair /installsource otherinstallcmd")
-			.unwrap_or_else(|repair_error| {
-				error!("{repair_error}");
-				if error_question_dialog(WEBVIEW_REPAIR_FAILED_MESSAGE) {
-					open::that_detached(WEBVIEW_WEBSITE_URL).unwrap_or_else(|open_website_error| {
-						error_dialog(&format!("Somehow even that failed. Error: {open_website_error}"));
-					});
-				}
+		let (path, command) = get_webview2_repair();
+
+		run_as_admin(&path, &command).unwrap_or_else(|repair_error| {
+			error!("{repair_error}");
+			if error_question_dialog(WEBVIEW_REPAIR_FAILED_MESSAGE) {
+				open::that_detached(WEBVIEW_WEBSITE_URL).unwrap_or_else(|open_website_error| {
+					error_dialog(&format!(
+						"Somehow even that failed. Error: {open_website_error}"
+					));
+				});
+			}
 		});
 	}
 
