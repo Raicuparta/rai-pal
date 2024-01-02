@@ -17,6 +17,7 @@
 		"otherinstallcmd",
 		"predef",
 		"repairtype",
+		"runas",
 		"shellapi",
 		"subchild",
 		"subkey",
