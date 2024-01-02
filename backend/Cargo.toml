@@ -47,6 +47,7 @@ rand = "0.8.5"
 winreg = "0.52.0"
 tauri-plugin-log = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
 log = "0.4.20"
+tauri-runtime = "0.14.1"
 
 [target.'cfg(target_os = "linux")'.dependencies]
 webkit2gtk = "0.18.2"

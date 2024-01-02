@@ -43,6 +43,14 @@ pub fn app_data_path() -> Result<PathBuf> {
 	Ok(project_dirs.data_dir().to_path_buf())
 }
 
+pub fn logs_path() -> Result<PathBuf> {
+	Ok(app_data_path()?.join("logs"))
+}
+
+pub fn open_logs_folder() -> Result {
+	Ok(open::that_detached(logs_path()?)?)
+}
+
 pub fn installed_mods_path() -> Result<PathBuf> {
 	Ok(app_data_path()?.join("mod-loaders"))
 }

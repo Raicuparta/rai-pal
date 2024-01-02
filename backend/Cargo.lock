@@ -3053,6 +3053,7 @@ dependencies = [
  "tauri-build",
  "tauri-plugin-log",
  "tauri-plugin-window-state",
+ "tauri-runtime",
  "tauri-specta",
  "thiserror",
  "uuid",

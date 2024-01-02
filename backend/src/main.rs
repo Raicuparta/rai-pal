@@ -43,14 +43,10 @@ use result::{
 };
 use steamlocate::SteamDir;
 use tauri::{
-	api::dialog::message,
 	AppHandle,
 	Manager,
 };
-use tauri_plugin_log::{
-	LogLevel,
-	LogTarget,
-};
+use tauri_plugin_log::LogTarget;
 
 mod analytics;
 mod app_state;
@@ -485,6 +481,14 @@ async fn frontend_ready() -> Result {
 
 #[tauri::command]
 #[specta::specta]
+async fn open_logs_folder() -> Result {
+	paths::open_logs_folder()?;
+
+	Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
 async fn dummy_command() -> Result<(InstalledGame, AppEvent)> {
 	// This command is here just so tauri_specta exports these types.
 	// This should stop being needed once tauri_specta starts supporting events.
@@ -495,12 +499,7 @@ fn main() {
 	// Since I'm making all exposed functions async, panics won't crash anything important, I think.
 	// So I can just catch panics here and show a system message with the error.
 	std::panic::set_hook(Box::new(|info| {
-		error!("Panic: {info}");
-		message(
-			None::<&tauri::Window>,
-			"Failed to execute command",
-			info.to_string(),
-		);
+		windows::error_dialog(&info.to_string());
 	}));
 
 	let tauri_builder = tauri::Builder::default()
@@ -508,7 +507,10 @@ fn main() {
 		.plugin(
 			tauri_plugin_log::Builder::default()
 				.level(log::LevelFilter::Info)
-				.targets([LogTarget::LogDir, LogTarget::Stdout])
+				.targets([
+					paths::logs_path().map_or(LogTarget::LogDir, LogTarget::Folder),
+					LogTarget::Stdout,
+				])
 				.build(),
 		)
 		.manage(AppState {
@@ -566,6 +568,7 @@ fn main() {
 			get_remote_mods,
 			open_mod_loader_folder,
 			refresh_game,
+			open_logs_folder,
 		]
 	);
 
@@ -585,7 +588,15 @@ fn main() {
 			error!("Failed to generate api bindings: {err}");
 		}
 	}
+
 	tauri_builder
 		.run(tauri::generate_context!())
-		.unwrap_or_else(|err| error!("Failed to run Tauri application: {err}"));
+		.unwrap_or_else(|error| {
+			if let tauri::Error::Runtime(tauri_runtime::Error::CreateWebview(webview_error)) = error
+			{
+				windows::webview_error_dialog(&webview_error.to_string());
+			} else {
+				windows::error_dialog(&error.to_string());
+			}
+		});
 }
