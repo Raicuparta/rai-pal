@@ -96,8 +96,15 @@ pub fn error_question_dialog(error_text: &str) -> bool {
 	base_error_dialog(error_text, MB_YESNO) == IDYES
 }
 
-const WEBVIEW_ERROR_MESSAGE: &str = "Webview error. This usually means something is wrong with your Webview2 installation.\n\nWould you like to attempt to repair it?";
-const WEBVIEW_REPAIR_FAILED_MESSAGE: &str = "Ok, that didn't work either.\n\nWould you like to open the Microsoft website to download Webview2 yourself?";
+const WEBVIEW_ERROR_MESSAGE: &str = r#"Webview error. This usually means something is wrong with your Webview2 installation.
+
+Would you like to attempt to repair it?"#;
+
+const WEBVIEW_REPAIR_FAILED_MESSAGE: &str = r#"Ok, that didn't work either.
+
+You can try to repair it yourself by going to Windows "Installed Apps", then selecting WebView2 and picking "Repair".
+
+If that does't work, you can try downloading it from Microsoft. Would you like to open the website to download Webview2?"#;
 
 const WEBVIEW_WEBSITE_URL: &str =
 	"https://developer.microsoft.com/microsoft-edge/webview2#download";
@@ -109,6 +116,12 @@ const DEFAULT_WEBVIEW2_REPAIR_ARGS: &str =
 
 const WEBVIEW_REGISTRY_KEY: &str =
 	r"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\Microsoft EdgeWebView";
+
+fn try_open_logs_folder() {
+	if let Err(error) = paths::open_logs_folder() {
+		error!("Failed to even open the logs folder: {error}");
+	}
+}
 
 // Even though Tauri is supposed to check if Webview2 is installed and install it if needed,
 // it's easy to corrupt it in such a way that it gets detected as installed, even though it's actually unusable.
@@ -122,17 +135,19 @@ pub fn webview_error_dialog(error_text: &str) {
 			error!("{repair_error}");
 			if error_question_dialog(WEBVIEW_REPAIR_FAILED_MESSAGE) {
 				open::that_detached(WEBVIEW_WEBSITE_URL).unwrap_or_else(|open_website_error| {
+					error!("{open_website_error}");
 					// If we reached here then everything failed, just give up please.
 					error_dialog(&format!(
-						"Somehow even that failed. Please report this error.\n\nError: {open_website_error}"
+						"Somehow even that failed.\n\nPlease report this error, and include the logs file."
 					));
+					try_open_logs_folder();
 				});
+			} else {
+				try_open_logs_folder();
 			}
 		});
-	}
-
-	if let Err(error) = paths::open_logs_folder() {
-		error!("Failed to even open the logs folder: {error}");
+	} else {
+		try_open_logs_folder();
 	}
 }
 
