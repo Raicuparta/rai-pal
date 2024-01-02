@@ -27,10 +27,11 @@ So this tool automates a lot of that work. This also lets you filter your Steam 
 
 Rai Pal can make it easier to use [Praydog's UEVR](https://uevr.io/), a universal VR mod for Unreal Engine games. Here are some of the fun activities Rai Pal can help you with:
 - Find all the Unreal Engine games in your Steam library (even the ones you haven't installed yet).
+- Automatically find installed Unreal Engine games (supports Steam, GOG, and Epic, more to come later).
 - Detect the Unreal Engine version of games you have installed.
-- Download and auto-update UEVR (once it's publicly released).
+- Show the UEVR compatibility score for installed Steam games (hidden by default, check the filters menu).
+- Download and auto-update UEVR.
 - Launch UEVR for a specific game, so you don't need to select the game process in the UEVR menu.
-- If you already have access to a private release of UEVR, you can just manually drop the UEVR files in Rai Pal's mod folder to be able to use these features.
 
 ## License
 
