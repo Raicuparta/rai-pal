@@ -4,6 +4,7 @@ use std::{
 		Path,
 		PathBuf,
 	},
+	process::Command,
 };
 
 use async_trait::async_trait;
@@ -73,10 +74,11 @@ impl ModLoaderActions for UnrealVr {
 				.to_string_lossy()
 		);
 
-		windows::run_as_admin(
-			&self.get_mod_path(&local_mod.common)?.join(Self::EXE_NAME),
-			&parameters,
-		)
+		Command::new(self.get_mod_path(&local_mod.common)?.join(Self::EXE_NAME))
+			.arg(&parameters)
+			.spawn()?;
+
+		Ok(())
 	}
 
 	fn get_mod_path(&self, mod_data: &CommonModData) -> Result<PathBuf> {
