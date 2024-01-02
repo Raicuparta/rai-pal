@@ -104,7 +104,7 @@ const WEBVIEW_REPAIR_FAILED_MESSAGE: &str = r#"Ok, that didn't work either.
 
 You can try to repair it yourself by going to Windows "Installed Apps", then selecting WebView2 and picking "Repair".
 
-If that does't work, you can try downloading it from Microsoft. Would you like to open the website to download Webview2?"#;
+If that does't work, you can try downloading it from Microsoft. Would you like to open the website to download WebView2?"#;
 
 const WEBVIEW_WEBSITE_URL: &str =
 	"https://developer.microsoft.com/microsoft-edge/webview2#download";
