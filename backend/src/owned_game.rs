@@ -21,7 +21,7 @@ serializable_struct!(OwnedGame {
 	pub engine: Option<GameEngineBrand>,
 	pub release_date: i32,
 	pub thumbnail_url: String,
-	pub game_mode: GameMode,
+	pub game_mode: Option<GameMode>,
 	pub uevr_score: Option<UevrScore>,
 });
 

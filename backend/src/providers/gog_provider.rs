@@ -4,8 +4,6 @@ use async_trait::async_trait;
 
 use super::provider::ProviderId;
 use crate::{
-	game_engines::game_engine::GameEngineBrand,
-	game_mode::GameMode,
 	installed_game::InstalledGame,
 	owned_game::OwnedGame,
 	provider::{
@@ -48,7 +46,6 @@ impl ProviderActions for GogProvider {
 	}
 
 	async fn get_owned_games(&self) -> Result<Vec<OwnedGame>> {
-		// TODO figure out if this is worth implementing.
 		Ok(game_scanner::gog::games()
 			.unwrap_or_default()
 			.iter()
@@ -59,11 +56,10 @@ impl ProviderActions for GogProvider {
 				name: game.name.clone(),
 				installed: false, // TODO
 				os_list: HashSet::default(),
-				// Make engine optional?
 				engine: None,
-				release_date: 0,
-				thumbnail_url: String::default(),
-				game_mode: GameMode::Flat,
+				release_date: 0,                  // TODO
+				thumbnail_url: String::default(), // TODO Maybe possible to get from the sqlite db?
+				game_mode: None,
 				uevr_score: None,
 			})
 			.collect())

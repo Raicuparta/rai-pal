@@ -3,7 +3,6 @@ use std::{
 	fs,
 	path::PathBuf,
 	string,
-	time::Instant,
 };
 
 use async_trait::async_trait;
@@ -192,7 +191,7 @@ impl ProviderActions for SteamProvider {
 					engine: steam_game.map(|game| game.engine),
 					release_date,
 					thumbnail_url: get_steam_thumbnail(&steam_id.to_string()),
-					game_mode,
+					game_mode: Some(game_mode),
 					uevr_score: steam_game.and_then(|game| game.uevr_score),
 				})
 			})
