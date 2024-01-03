@@ -94,8 +94,8 @@ where
 	now.log_next("set up provider (Epic)");
 	add_entry::<GogProvider, F>(&mut map, &error_handler);
 	now.log_next("set up provider (Gog)");
-	// add_entry::<XboxProvider, F>(&mut map, &error_handler);
-	// now.log_next("set up provider (Xbox)");
+	add_entry::<XboxProvider, F>(&mut map, &error_handler);
+	now.log_next("set up provider (Xbox)");
 	add_entry::<ManualProvider, F>(&mut map, &error_handler);
 	now.log_next("set up provider (Manual)");
 
