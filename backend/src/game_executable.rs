@@ -70,29 +70,27 @@ pub fn read_linux_binary(file: &[u8]) -> Result<(Option<OperatingSystem>, Option
 pub fn get_os_and_architecture(
 	file_path: &Path,
 ) -> Result<(Option<OperatingSystem>, Option<Architecture>)> {
-	let mut file = File::open(file_path)?;
-	let mut header_buffer = [0u8; 400];
-	file.read_exact(&mut header_buffer)?;
+	fs::read(file_path).map(|file| {
+		let elf_result = read_linux_binary(&file);
+		if elf_result.is_ok() {
+			return elf_result;
+		}
 
-	let pe_result = read_windows_binary(&header_buffer);
-	if pe_result.is_ok() {
-		return pe_result;
-	}
+		let pe_result = read_windows_binary(&file);
+		if pe_result.is_ok() {
+			return pe_result;
+		}
 
-	let elf_result = read_linux_binary(&header_buffer);
-	if elf_result.is_ok() {
-		return elf_result;
-	}
+		error!("Failed to parse exe as ELF or PE");
+		if let Err(err) = elf_result {
+			error!("ELF error: {err}");
+		}
+		if let Err(err) = pe_result {
+			error!("PE error: {err}");
+		}
 
-	error!("Failed to parse exe as ELF or PE");
-	if let Err(err) = elf_result {
-		error!("ELF error: {err}");
-	}
-	if let Err(err) = pe_result {
-		error!("PE error: {err}");
-	}
-
-	Ok((None, None))
+		Ok((None, None))
+	})?
 }
 
 impl GameExecutable {
