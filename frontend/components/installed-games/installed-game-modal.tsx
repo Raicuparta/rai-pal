@@ -196,6 +196,12 @@ export function InstalledGameModal(props: Props) {
 						to install.
 					</Alert>
 				)}
+				{!props.game.executable.engine && (
+					<Alert color="red">
+						Failed to determine the engine for this game. Some mods might fail
+						to install.
+					</Alert>
+				)}
 				<Divider label="Mods" />
 				<TableContainer bg="dark">
 					<Table>
