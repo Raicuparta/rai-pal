@@ -1,4 +1,7 @@
-use std::collections::HashMap;
+use std::{
+	collections::HashMap,
+	time::Instant,
+};
 
 use async_trait::async_trait;
 use enum_dispatch::enum_dispatch;
@@ -9,6 +12,7 @@ use super::{
 	xbox_provider::XboxProvider,
 };
 use crate::{
+	debug::LoggableInstant,
 	installed_game::InstalledGame,
 	owned_game::OwnedGame,
 	providers::{
@@ -82,12 +86,18 @@ where
 	F: Fn(Error) + Send,
 {
 	let mut map = Map::new();
+	let now = &mut Instant::now();
 
 	add_entry::<SteamProvider, F>(&mut map, &error_handler);
+	now.log_next("SteamProvider");
 	add_entry::<EpicProvider, F>(&mut map, &error_handler);
+	now.log_next("EpicProvider");
 	add_entry::<GogProvider, F>(&mut map, &error_handler);
+	now.log_next("GogProvider");
 	// add_entry::<XboxProvider, F>(&mut map, &error_handler);
+	// now.log_next("XboxProvider");
 	add_entry::<ManualProvider, F>(&mut map, &error_handler);
+	now.log_next("ManualProvider");
 
 	map
 }

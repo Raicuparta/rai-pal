@@ -6,6 +6,7 @@ use std::{
 	collections::HashMap,
 	path::PathBuf,
 	sync::Mutex,
+	time::Instant,
 };
 
 use app_state::{
@@ -14,6 +15,7 @@ use app_state::{
 	StateData,
 	StatefulHandle,
 };
+use debug::LoggableInstant;
 use events::{
 	AppEvent,
 	EventEmitter,
@@ -50,6 +52,7 @@ use tauri_plugin_log::LogTarget;
 
 mod analytics;
 mod app_state;
+mod debug;
 mod events;
 mod files;
 mod game_engines;
@@ -336,8 +339,11 @@ async fn refresh_remote_mods(mod_loaders: &mod_loader::Map, handle: &AppHandle) 
 #[specta::specta]
 async fn update_data(handle: AppHandle) -> Result {
 	let resources_path = paths::resources_path(&handle)?;
+	let now = &mut Instant::now();
 
 	let mod_loaders = mod_loader::get_map(&resources_path).await;
+	now.log_next("mod_loaders");
+
 	update_state(
 		AppEvent::SyncModLoaders,
 		mod_loaders.clone(),
@@ -346,18 +352,27 @@ async fn update_data(handle: AppHandle) -> Result {
 	);
 
 	let local_mods = refresh_local_mods(&mod_loaders, &handle).await;
+	now.log_next("local_mods");
 
 	let provider_map = provider::get_map(|error| {
 		handle.emit_error(format!("Failed to set up provider: {error}"));
 	});
+	now.log_next("provider_map");
 
 	let mut installed_games: HashMap<_, _> = provider_map
-		.values()
-		.flat_map(|provider| match provider.get_installed_games() {
-			Ok(games) => games,
-			Err(err) => {
-				handle.emit_error(format!("Error getting installed games for provider: {err}"));
-				Vec::default()
+		.iter()
+		.flat_map(|(provider_id, provider)| {
+			let installed_games = provider.get_installed_games();
+			now.log_next(&format!("installed games ({provider_id}, {} games)", {
+				installed_games.as_ref().map(Vec::len).unwrap_or_default()
+			}));
+
+			match installed_games {
+				Ok(games) => games,
+				Err(err) => {
+					handle.emit_error(format!("Error getting installed games for provider: {err}"));
+					Vec::default()
+				}
 			}
 		})
 		.map(|mut game| {
@@ -365,6 +380,7 @@ async fn update_data(handle: AppHandle) -> Result {
 			(game.id.clone(), game)
 		})
 		.collect();
+	now.log_next("installed_games");
 
 	update_state(
 		AppEvent::SyncInstalledGames,
@@ -374,10 +390,12 @@ async fn update_data(handle: AppHandle) -> Result {
 	);
 
 	let remote_mods = refresh_remote_mods(&mod_loaders, &handle).await;
+	now.log_next("remote_mods");
 
 	for game in installed_games.values_mut() {
 		game.update_available_mods(&get_common_data_map(&local_mods, &remote_mods));
 	}
+	now.log_next("update_available_mods");
 
 	update_state(
 		AppEvent::SyncInstalledGames,
@@ -396,6 +414,7 @@ async fn update_data(handle: AppHandle) -> Result {
 	.flat_map(result::Result::unwrap_or_default)
 	.map(|owned_game| (owned_game.id.clone(), owned_game))
 	.collect();
+	now.log_next(&format!("owned games ({} games)", owned_games.len()));
 
 	update_state(
 		AppEvent::SyncOwnedGames,
