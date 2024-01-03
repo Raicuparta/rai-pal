@@ -4,6 +4,7 @@ use std::{
 		Path,
 		PathBuf,
 	},
+	time::Instant,
 };
 
 use lazy_regex::{
@@ -23,6 +24,7 @@ use pelite::{
 };
 
 use crate::{
+	debug::LoggableInstant,
 	game_engines::game_engine::{
 		GameEngine,
 		GameEngineBrand,
@@ -220,12 +222,19 @@ fn is_unreal_exe(game_path: &Path) -> bool {
 	false
 }
 
-pub fn get_engine(launch_path: &Path) -> Option<GameExecutable> {
-	if is_unreal_exe(launch_path) {
+pub fn get_executable(launch_path: &Path) -> Option<GameExecutable> {
+	let now = &mut Instant::now();
+	let executable = if is_unreal_exe(launch_path) {
+		now.log_next("check if is unreal exe");
 		let path = get_actual_unreal_binary(launch_path);
+		now.log_next("get actual unreal binary");
 
 		let (operating_system, architecture) =
 			get_os_and_architecture(&path).unwrap_or((None, None));
+		now.log_next("get os and arch");
+
+		let version = get_version(launch_path, architecture.unwrap_or(Architecture::X64));
+		now.log_next("get unreal version");
 
 		Some(GameExecutable {
 			path,
@@ -234,10 +243,13 @@ pub fn get_engine(launch_path: &Path) -> Option<GameExecutable> {
 			scripting_backend: None,
 			engine: Some(GameEngine {
 				brand: GameEngineBrand::Unreal,
-				version: get_version(launch_path, architecture.unwrap_or(Architecture::X64)),
+				version,
 			}),
 		})
 	} else {
 		None
-	}
+	};
+	now.log_next("get unreal executable");
+
+	executable
 }

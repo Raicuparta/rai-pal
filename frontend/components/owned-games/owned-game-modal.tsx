@@ -40,26 +40,28 @@ export function OwnedGameModal(props: Props) {
 					columns={ownedGamesColumns}
 					item={props.game}
 				/>
-				<CommandButtonGroup label="Game Actions">
-					<CommandButton
-						leftSection={<IconBrowser />}
-						onClick={() => steamCommands.openStorePage(props.game.id)}
-					>
-						Open Store Page
-					</CommandButton>
-					<CommandButton
-						leftSection={<IconBooks />}
-						onClick={() => steamCommands.showInLibrary(props.game.id)}
-					>
-						Show in Library
-					</CommandButton>
-					<CommandButton
-						leftSection={<IconDownload />}
-						onClick={() => steamCommands.install(props.game.id)}
-					>
-						Install
-					</CommandButton>
-				</CommandButtonGroup>
+				{props.game.providerId === "Steam" && (
+					<CommandButtonGroup label="Game Actions">
+						<CommandButton
+							leftSection={<IconBrowser />}
+							onClick={() => steamCommands.openStorePage(props.game.id)}
+						>
+							Open Store Page
+						</CommandButton>
+						<CommandButton
+							leftSection={<IconBooks />}
+							onClick={() => steamCommands.showInLibrary(props.game.id)}
+						>
+							Show in Library
+						</CommandButton>
+						<CommandButton
+							leftSection={<IconDownload />}
+							onClick={() => steamCommands.install(props.game.id)}
+						>
+							Install
+						</CommandButton>
+					</CommandButtonGroup>
+				)}
 				<DebugData data={props.game} />
 			</Stack>
 		</Modal>

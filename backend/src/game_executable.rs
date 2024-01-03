@@ -1,9 +1,14 @@
 use std::{
-	fs,
+	fs::{
+		self,
+		File,
+	},
+	io::Read,
 	path::{
 		Path,
 		PathBuf,
 	},
+	time::Instant,
 };
 
 use goblin::{
@@ -13,6 +18,7 @@ use goblin::{
 use log::error;
 
 use crate::{
+	debug::LoggableInstant,
 	game_engines::{
 		game_engine::GameEngine,
 		unity::{
@@ -88,22 +94,9 @@ pub fn get_os_and_architecture(
 }
 
 impl GameExecutable {
-	pub fn new(path: &Path) -> Self {
+	pub fn new(path: &Path) -> Option<Self> {
 		let normalized_path = normalize_path(path);
 
-		unity::get_engine(&normalized_path)
-			.or_else(|| unreal::get_engine(&normalized_path))
-			.unwrap_or_else(|| {
-				let (operating_system, architecture) =
-					get_os_and_architecture(&normalized_path).unwrap_or((None, None));
-
-				Self {
-					engine: None,
-					architecture,
-					operating_system,
-					path: normalized_path,
-					scripting_backend: None,
-				}
-			})
+		unity::get_executable(&normalized_path).or_else(|| unreal::get_executable(&normalized_path))
 	}
 }

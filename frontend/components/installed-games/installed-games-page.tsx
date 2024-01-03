@@ -101,6 +101,7 @@ export function InstalledGamesPage() {
 										key={column.id}
 										data={column.filterOptions}
 										onChange={(value) => setFilter({ [column.id]: value })}
+										unavailableValues={column.unavailableValues}
 										value={filter[column.id]}
 									/>
 								),

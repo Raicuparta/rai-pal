@@ -8,9 +8,11 @@ use std::{
 		Path,
 		PathBuf,
 	},
+	time::Instant,
 };
 
 use crate::{
+	debug::LoggableInstant,
 	game_executable::GameExecutable,
 	game_mod,
 	game_mode::GameMode,
@@ -25,6 +27,7 @@ use crate::{
 		self,
 		appinfo::SteamLaunchOption,
 	},
+	Error,
 	Result,
 };
 
@@ -52,12 +55,15 @@ impl InstalledGame {
 		steam_launch: Option<&SteamLaunchOption>,
 		thumbnail_url: Option<String>,
 	) -> Option<Self> {
+		let now = &mut Instant::now();
 		// Games exported by Unity always have one of these extensions.
 		const VALID_EXTENSIONS: [&str; 3] = ["exe", "x86_64", "x86"];
 
 		if !path.is_file() {
 			return None;
 		}
+
+		now.log_next("check if game exists");
 
 		// We ignore games that don't have an extension.
 		let extension = path.extension()?.to_str()?;
@@ -75,21 +81,36 @@ impl InstalledGame {
 
 		let game_mode = steam_launch.map_or(GameMode::Flat, SteamLaunchOption::get_game_mode);
 
-		Some(Self {
+		now.log_next(&format!(
+			"before creating installed game ({})",
+			path.display()
+		));
+
+		let installed_game = Some(Self {
 			id: hash_path(path),
 			name: name.to_string(),
 			provider_id,
 			discriminator,
 			steam_launch: steam_launch.cloned(),
 			installed_mod_versions: HashMap::default(),
-			executable: GameExecutable::new(path),
+			executable: GameExecutable::new(path)?,
 			thumbnail_url,
 			game_mode,
-		})
+		});
+
+		now.log_next("after creating installed game");
+
+		installed_game
 	}
 
-	pub fn refresh_executable(&mut self) {
-		self.executable = GameExecutable::new(&self.executable.path);
+	pub fn refresh_executable(&mut self) -> Result {
+		if let Some(executable) = GameExecutable::new(&self.executable.path) {
+			self.executable = executable;
+		} else {
+			return Err(Error::FailedToGetGameFromPath(self.executable.path.clone()));
+		}
+
+		Ok(())
 	}
 
 	pub fn update_available_mods(&mut self, data_map: &game_mod::CommonDataMap) {

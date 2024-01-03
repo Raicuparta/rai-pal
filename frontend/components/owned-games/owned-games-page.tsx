@@ -94,6 +94,7 @@ export function OwnedGamesPage() {
 									<TypedSegmentedControl
 										key={column.id}
 										data={column.filterOptions}
+										unavailableValues={column.unavailableValues}
 										onChange={(value) => setFilter({ [column.id]: value })}
 										value={filter[column.id]}
 									/>
