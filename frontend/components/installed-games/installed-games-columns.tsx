@@ -202,6 +202,7 @@ const engine: TableColumnBase<ProcessedInstalledGame, GameEngineBrand> = {
 		);
 	},
 	getFilterValue: (game) => game.executable.engine?.brand ?? "",
+	unavailableValues: ["Godot"],
 	filterOptions: engineFilterOptions,
 	renderCell: ({ executable: { engine } }) => (
 		<Table.Td

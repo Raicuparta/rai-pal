@@ -12,6 +12,7 @@ export type TableColumnBase<TItem, TFilterOption extends string = string> = {
 	hideLabel?: boolean;
 	hidable?: boolean;
 	hideInDetails?: boolean;
+	unavailableValues?: TFilterOption[];
 	sort?: (itemA: TItem, itemB: TItem) => number;
 	getSortValue?: (item: TItem) => unknown;
 	getFilterValue?: (item: TItem) => TFilterOption | "";
