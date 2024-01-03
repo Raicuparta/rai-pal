@@ -64,6 +64,7 @@ mod local_mod;
 mod macros;
 mod maps;
 mod mod_loaders;
+mod operating_systems;
 mod owned_game;
 mod paths;
 mod providers;
@@ -370,7 +371,9 @@ async fn update_data(handle: AppHandle) -> Result {
 			match installed_games {
 				Ok(games) => games,
 				Err(err) => {
-					handle.emit_error(format!("Error getting installed games for provider: {err}"));
+					handle.emit_error(format!(
+						"Error getting installed games for provider ({provider_id}): {err}"
+					));
 					Vec::default()
 				}
 			}

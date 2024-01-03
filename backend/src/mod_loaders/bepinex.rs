@@ -34,6 +34,7 @@ use crate::{
 		ModLoaderActions,
 		ModLoaderData,
 	},
+	operating_systems::get_current_os,
 	paths,
 	serializable_struct,
 	Error,
@@ -136,7 +137,9 @@ impl ModLoaderActions for BepInEx {
 		)?;
 
 		if let Some(operating_system) = game.executable.operating_system {
-			if std::env::consts::OS != "windows" && operating_system == OperatingSystem::Windows {
+			if get_current_os() == OperatingSystem::Windows
+				&& operating_system == OperatingSystem::Windows
+			{
 				if let Some(steam_launch) = &game.steam_launch {
 					ensure_wine_will_load_bepinex(&game.executable.path, steam_launch.app_id)?;
 				}
