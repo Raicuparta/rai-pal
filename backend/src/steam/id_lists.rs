@@ -58,22 +58,25 @@ fn get_ids_data_list(ids: &HashSet<String>, engine: GameEngineBrand) -> Vec<Stea
 		.collect()
 }
 
-pub async fn get() -> Result<Vec<SteamGame>> {
+pub async fn get() -> Result<HashMap<String, SteamGame>> {
 	let (unity, unreal, godot) =
 		future::join!(get_list("Unity"), get_list("Unreal"), get_list("Godot"),).await;
 
 	let uevr_scores = get_uevr_scores().await.unwrap_or_default();
 
-	let mut ids = [
+	let mut games = [
 		get_ids_data_list(&unity.unwrap_or_default(), GameEngineBrand::Unity),
 		get_ids_data_list(&unreal.unwrap_or_default(), GameEngineBrand::Unreal),
 		get_ids_data_list(&godot.unwrap_or_default(), GameEngineBrand::Godot),
 	]
 	.concat();
 
-	for game in &mut ids {
+	for game in &mut games {
 		game.uevr_score = uevr_scores.get(&game.id).copied();
 	}
 
-	Ok(ids)
+	Ok(games
+		.into_iter()
+		.map(|game| (game.id.clone(), game))
+		.collect())
 }

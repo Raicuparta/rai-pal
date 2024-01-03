@@ -371,9 +371,7 @@ async fn update_data(handle: AppHandle) -> Result {
 			match installed_games {
 				Ok(games) => games,
 				Err(err) => {
-					handle.emit_error(format!(
-						"Error getting installed games for provider ({provider_id}): {err}"
-					));
+					error!("Error getting installed games for provider ({provider_id}): {err}");
 					Vec::default()
 				}
 			}
