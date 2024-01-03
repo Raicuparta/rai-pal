@@ -89,15 +89,15 @@ where
 	let now = &mut Instant::now();
 
 	add_entry::<SteamProvider, F>(&mut map, &error_handler);
-	now.log_next("SteamProvider");
+	now.log_next("set up provider (Steam)");
 	add_entry::<EpicProvider, F>(&mut map, &error_handler);
-	now.log_next("EpicProvider");
+	now.log_next("set up provider (Epic)");
 	add_entry::<GogProvider, F>(&mut map, &error_handler);
-	now.log_next("GogProvider");
+	now.log_next("set up provider (Gog)");
 	// add_entry::<XboxProvider, F>(&mut map, &error_handler);
-	// now.log_next("XboxProvider");
+	// now.log_next("set up provider (Xbox)");
 	add_entry::<ManualProvider, F>(&mut map, &error_handler);
-	now.log_next("ManualProvider");
+	now.log_next("set up provider (Manual)");
 
 	map
 }

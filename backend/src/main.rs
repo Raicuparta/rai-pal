@@ -342,7 +342,7 @@ async fn update_data(handle: AppHandle) -> Result {
 	let now = &mut Instant::now();
 
 	let mod_loaders = mod_loader::get_map(&resources_path).await;
-	now.log_next("mod_loaders");
+	now.log_next("get mod loader map");
 
 	update_state(
 		AppEvent::SyncModLoaders,
@@ -352,18 +352,18 @@ async fn update_data(handle: AppHandle) -> Result {
 	);
 
 	let local_mods = refresh_local_mods(&mod_loaders, &handle).await;
-	now.log_next("local_mods");
+	now.log_next("refresh local mods");
 
 	let provider_map = provider::get_map(|error| {
 		handle.emit_error(format!("Failed to set up provider: {error}"));
 	});
-	now.log_next("provider_map");
+	now.log_next("get provider map");
 
 	let mut installed_games: HashMap<_, _> = provider_map
 		.iter()
 		.flat_map(|(provider_id, provider)| {
 			let installed_games = provider.get_installed_games();
-			now.log_next(&format!("installed games ({provider_id}, {} games)", {
+			now.log_next(&format!("get {provider_id} installed games ({} total)", {
 				installed_games.as_ref().map(Vec::len).unwrap_or_default()
 			}));
 
@@ -380,7 +380,7 @@ async fn update_data(handle: AppHandle) -> Result {
 			(game.id.clone(), game)
 		})
 		.collect();
-	now.log_next("installed_games");
+	now.log_next("get installed game map + update game mods");
 
 	update_state(
 		AppEvent::SyncInstalledGames,
@@ -390,12 +390,12 @@ async fn update_data(handle: AppHandle) -> Result {
 	);
 
 	let remote_mods = refresh_remote_mods(&mod_loaders, &handle).await;
-	now.log_next("remote_mods");
+	now.log_next("refresh remote mods");
 
 	for game in installed_games.values_mut() {
 		game.update_available_mods(&get_common_data_map(&local_mods, &remote_mods));
 	}
-	now.log_next("update_available_mods");
+	now.log_next("update game mods");
 
 	update_state(
 		AppEvent::SyncInstalledGames,
@@ -414,7 +414,7 @@ async fn update_data(handle: AppHandle) -> Result {
 	.flat_map(result::Result::unwrap_or_default)
 	.map(|owned_game| (owned_game.id.clone(), owned_game))
 	.collect();
-	now.log_next(&format!("owned games ({} games)", owned_games.len()));
+	now.log_next(&format!("get owned games ({} total)", owned_games.len()));
 
 	update_state(
 		AppEvent::SyncOwnedGames,
