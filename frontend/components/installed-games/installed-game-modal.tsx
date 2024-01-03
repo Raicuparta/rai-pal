@@ -1,4 +1,5 @@
 import {
+	Alert,
 	Button,
 	Divider,
 	Group,
@@ -187,6 +188,20 @@ export function InstalledGameModal(props: Props) {
 						</CommandButton>
 					)}
 				</Group>
+				{(!props.game.executable.architecture ||
+					!props.game.executable.operatingSystem) && (
+					<Alert color="red">
+						Failed to read some important information about this game. This
+						could be due to the executable being protected. Some mods might fail
+						to install.
+					</Alert>
+				)}
+				{!props.game.executable.engine && (
+					<Alert color="red">
+						Failed to determine the engine for this game. Some mods might fail
+						to install.
+					</Alert>
+				)}
 				<Divider label="Mods" />
 				<TableContainer bg="dark">
 					<Table>
