@@ -3,6 +3,7 @@ use std::{
 	fs,
 	path::PathBuf,
 	string,
+	time::Instant,
 };
 
 use async_trait::async_trait;

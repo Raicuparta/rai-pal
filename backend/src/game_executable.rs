@@ -1,9 +1,14 @@
 use std::{
-	fs,
+	fs::{
+		self,
+		File,
+	},
+	io::Read,
 	path::{
 		Path,
 		PathBuf,
 	},
+	time::Instant,
 };
 
 use goblin::{
@@ -13,6 +18,7 @@ use goblin::{
 use log::error;
 
 use crate::{
+	debug::LoggableInstant,
 	game_engines::{
 		game_engine::GameEngine,
 		unity::{
@@ -64,46 +70,35 @@ pub fn read_linux_binary(file: &[u8]) -> Result<(Option<OperatingSystem>, Option
 pub fn get_os_and_architecture(
 	file_path: &Path,
 ) -> Result<(Option<OperatingSystem>, Option<Architecture>)> {
-	fs::read(file_path).map(|file| {
-		let elf_result = read_linux_binary(&file);
-		if elf_result.is_ok() {
-			return elf_result;
-		}
+	let mut file = File::open(file_path)?;
+	let mut header_buffer = [0u8; 400];
+	file.read_exact(&mut header_buffer)?;
 
-		let pe_result = read_windows_binary(&file);
-		if pe_result.is_ok() {
-			return pe_result;
-		}
+	let pe_result = read_windows_binary(&header_buffer);
+	if pe_result.is_ok() {
+		return pe_result;
+	}
 
-		error!("Failed to parse exe as ELF or PE");
-		if let Err(err) = elf_result {
-			error!("ELF error: {err}");
-		}
-		if let Err(err) = pe_result {
-			error!("PE error: {err}");
-		}
+	let elf_result = read_linux_binary(&header_buffer);
+	if elf_result.is_ok() {
+		return elf_result;
+	}
 
-		Ok((None, None))
-	})?
+	error!("Failed to parse exe as ELF or PE");
+	if let Err(err) = elf_result {
+		error!("ELF error: {err}");
+	}
+	if let Err(err) = pe_result {
+		error!("PE error: {err}");
+	}
+
+	Ok((None, None))
 }
 
 impl GameExecutable {
-	pub fn new(path: &Path) -> Self {
+	pub fn new(path: &Path) -> Option<Self> {
 		let normalized_path = normalize_path(path);
 
-		unity::get_engine(&normalized_path)
-			.or_else(|| unreal::get_engine(&normalized_path))
-			.unwrap_or_else(|| {
-				let (operating_system, architecture) =
-					get_os_and_architecture(&normalized_path).unwrap_or((None, None));
-
-				Self {
-					engine: None,
-					architecture,
-					operating_system,
-					path: normalized_path,
-					scripting_backend: None,
-				}
-			})
+		unity::get_executable(&normalized_path).or_else(|| unreal::get_executable(&normalized_path))
 	}
 }
