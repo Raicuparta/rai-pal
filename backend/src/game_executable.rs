@@ -39,42 +39,40 @@ serializable_struct!(GameExecutable {
 	pub scripting_backend: Option<UnityScriptingBackend>
 });
 
+pub fn read_windows_binary(file: &[u8]) -> Result<(Option<OperatingSystem>, Option<Architecture>)> {
+	match PE::parse(file)?.header.coff_header.machine {
+		goblin::pe::header::COFF_MACHINE_X86_64 => {
+			Ok((Some(OperatingSystem::Windows), Some(Architecture::X64)))
+		}
+		goblin::pe::header::COFF_MACHINE_X86 => {
+			Ok((Some(OperatingSystem::Windows), Some(Architecture::X86)))
+		}
+		_ => Ok((Some(OperatingSystem::Windows), None)),
+	}
+}
+
+pub fn read_linux_binary(file: &[u8]) -> Result<(Option<OperatingSystem>, Option<Architecture>)> {
+	match Elf::parse(file)?.header.e_machine {
+		goblin::elf::header::EM_X86_64 => {
+			Ok((Some(OperatingSystem::Linux), Some(Architecture::X64)))
+		}
+		goblin::elf::header::EM_386 => Ok((Some(OperatingSystem::Linux), Some(Architecture::X86))),
+		_ => Ok((Some(OperatingSystem::Linux), None)),
+	}
+}
+
 pub fn get_os_and_architecture(
 	file_path: &Path,
 ) -> Result<(Option<OperatingSystem>, Option<Architecture>)> {
 	fs::read(file_path).map(|file| {
-		let elf_result = match Elf::parse(&file) {
-			Ok(elf) => match elf.header.e_machine {
-				goblin::elf::header::EM_X86_64 => {
-					Ok((Some(OperatingSystem::Linux), Some(Architecture::X64)))
-				}
-				goblin::elf::header::EM_386 => {
-					Ok((Some(OperatingSystem::Linux), Some(Architecture::X86)))
-				}
-				_ => Ok((Some(OperatingSystem::Linux), None)),
-			},
-			Err(err) => Err(err),
-		};
-
+		let elf_result = read_linux_binary(&file);
 		if elf_result.is_ok() {
-			return Ok(elf_result?);
+			return elf_result;
 		}
 
-		let pe_result = match PE::parse(&file) {
-			Ok(pe) => match pe.header.coff_header.machine {
-				goblin::pe::header::COFF_MACHINE_X86_64 => {
-					Ok((Some(OperatingSystem::Windows), Some(Architecture::X64)))
-				}
-				goblin::pe::header::COFF_MACHINE_X86 => {
-					Ok((Some(OperatingSystem::Windows), Some(Architecture::X86)))
-				}
-				_ => Ok((Some(OperatingSystem::Windows), None)),
-			},
-			Err(err) => Err(err),
-		};
-
+		let pe_result = read_windows_binary(&file);
 		if pe_result.is_ok() {
-			return Ok(pe_result?);
+			return pe_result;
 		}
 
 		error!("Failed to parse exe as ELF or PE");

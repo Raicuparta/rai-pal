@@ -64,6 +64,7 @@ mod local_mod;
 mod macros;
 mod maps;
 mod mod_loaders;
+mod operating_systems;
 mod owned_game;
 mod paths;
 mod providers;
