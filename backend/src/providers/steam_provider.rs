@@ -116,14 +116,12 @@ impl ProviderActions for SteamProvider {
 	}
 
 	async fn get_owned_games(&self) -> Result<Vec<OwnedGame>> {
-		Ok(id_lists::get()
-			.await?
+		let steam_games = id_lists::get().await?;
+		Ok(self
+			.app_info_file
+			.apps
 			.iter()
-			.filter_map(|steam_id_data| {
-				let id_number = steam_id_data.id.parse::<u32>().ok()?;
-
-				let app_info = self.app_info_file.apps.get(&id_number)?;
-
+			.filter_map(|(steam_id, app_info)| {
 				let os_list: HashSet<_> = app_info
 					.launch_options
 					.iter()
@@ -154,7 +152,7 @@ impl ProviderActions for SteamProvider {
 						// Would be smarter to actually parse assets.vdf and extract all the ids,
 						// but I didn't feel like figuring out how to parse another binary vdf.
 						// Maybe later. But most likely never.
-						BytesRegex::new(&steam_id_data.id)
+						BytesRegex::new(&steam_id.to_string())
 							.map_or(false, |regex| regex.is_match(&assets_cache_bytes))
 					});
 
@@ -164,7 +162,7 @@ impl ProviderActions for SteamProvider {
 
 				let installed = self
 					.steam_dir
-					.app(id_number)
+					.app(*steam_id)
 					.map_or(false, |steam_app| steam_app.is_some());
 
 				let release_date = app_info
@@ -182,17 +180,19 @@ impl ProviderActions for SteamProvider {
 					GameMode::Flat
 				};
 
+				let steam_game = steam_games.get(&steam_id.to_string());
+
 				Some(OwnedGame {
-					id: steam_id_data.id.clone(),
+					id: steam_id.to_string(),
 					provider_id: *Self::ID,
 					name: app_info.name.clone(),
 					installed,
 					os_list,
-					engine: steam_id_data.engine,
+					engine: steam_game.map(|game| game.engine),
 					release_date,
-					thumbnail_url: get_steam_thumbnail(&steam_id_data.id),
+					thumbnail_url: get_steam_thumbnail(&steam_id.to_string()),
 					game_mode,
-					uevr_score: steam_id_data.uevr_score,
+					uevr_score: steam_game.and_then(|game| game.uevr_score),
 				})
 			})
 			.collect())

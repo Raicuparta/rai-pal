@@ -105,7 +105,7 @@ export function openLogsFolder() {
 export type GameEngineVersion = { major: number; minor: number; patch: number; suffix: string | null; display: string }
 export type GameEngineBrand = "Unity" | "Unreal" | "Godot"
 export type GameMode = "VR" | "Flat"
-export type OwnedGame = { id: string; providerId: ProviderId; name: string; installed: boolean; osList: OperatingSystem[]; engine: GameEngineBrand; releaseDate: number; thumbnailUrl: string; gameMode: GameMode; uevrScore: UevrScore | null }
+export type OwnedGame = { id: string; providerId: ProviderId; name: string; installed: boolean; osList: OperatingSystem[]; engine: GameEngineBrand | null; releaseDate: number; thumbnailUrl: string; gameMode: GameMode; uevrScore: UevrScore | null }
 export type AppEvent = "SyncInstalledGames" | "SyncOwnedGames" | "SyncModLoaders" | "SyncLocalMods" | "SyncRemoteMods" | "ExecutedSteamCommand" | "GameAdded" | "GameRemoved" | "Error"
 export type Manifest = { version: string }
 export type RemoteModData = { title: string; author: string; sourceCode: string; description: string; latestVersion: ModDownload | null }
