@@ -34,13 +34,7 @@ const pages = {
 	donate: {
 		title: "Donate",
 		component: DonatePage,
-		icon: (
-			<IconHeartFilled
-				color="red"
-				fill="red"
-				stroke="red"
-			/>
-		),
+		icon: <IconHeartFilled style={{ color: "var(--mantine-color-red-9)" }} />,
 	},
 };
 
