@@ -3017,7 +3017,7 @@ checksum = "dc33ff2d4973d518d823d61aa239014831e521c75da58e3df4840d3f47749d09"
 
 [[package]]
 name = "rai-pal"
-version = "0.5.3"
+version = "0.5.4"
 dependencies = [
  "async-trait",
  "byteorder",
