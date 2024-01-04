@@ -137,7 +137,7 @@ impl ModLoaderActions for BepInEx {
 		)?;
 
 		if let Some(operating_system) = game.executable.operating_system {
-			if get_current_os() == OperatingSystem::Windows
+			if get_current_os() != OperatingSystem::Windows
 				&& operating_system == OperatingSystem::Windows
 			{
 				if let Some(steam_launch) = &game.steam_launch {
