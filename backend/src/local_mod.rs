@@ -15,6 +15,7 @@ use crate::{
 		unity::UnityScriptingBackend,
 	},
 	game_mod::CommonModData,
+	mod_loaders::mod_database::RunnableModData,
 	paths,
 	serializable_enum,
 	serializable_struct,
@@ -38,6 +39,7 @@ serializable_struct!(LocalMod {
 
 serializable_struct!(Manifest {
 	pub version: String,
+	pub runnable: Option<RunnableModData>,
 });
 
 pub fn get_manifest_path(mod_path: &Path) -> PathBuf {

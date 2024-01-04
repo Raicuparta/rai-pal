@@ -18,7 +18,7 @@ use zip::ZipArchive;
 use super::{
 	bepinex::BepInEx,
 	mod_database::{self,},
-	unreal_vr::UnrealVr,
+	runnable_loader::RunnableLoader,
 };
 use crate::{
 	files,
@@ -50,7 +50,7 @@ serializable_struct!(ModLoaderData {
 #[derive(Clone)]
 pub enum ModLoader {
 	BepInEx,
-	UnrealVr,
+	RunnableLoader,
 }
 
 #[async_trait]
@@ -161,6 +161,7 @@ pub trait ModLoaderActions {
 				local_mod::get_manifest_path(&target_path),
 				serde_json::to_string_pretty(&local_mod::Manifest {
 					version: latest_version.id.clone(),
+					runnable: latest_version.runnable.clone(),
 				})?,
 			)?;
 
@@ -213,7 +214,7 @@ pub async fn get_map(resources_path: &Path) -> Map {
 	let mut map = Map::new();
 
 	add_entry::<BepInEx>(resources_path, &mut map).await;
-	add_entry::<UnrealVr>(resources_path, &mut map).await;
+	add_entry::<RunnableLoader>(resources_path, &mut map).await;
 
 	map
 }

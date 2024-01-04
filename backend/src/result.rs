@@ -12,7 +12,10 @@ pub enum Error {
 	Io(#[from] std::io::Error),
 
 	#[error(transparent)]
-	Glob(#[from] glob::PatternError),
+	GlobPattern(#[from] glob::PatternError),
+
+	#[error(transparent)]
+	Glob(#[from] glob::GlobError),
 
 	#[error(transparent)]
 	Reqwest(#[from] reqwest::Error),
@@ -84,6 +87,9 @@ pub enum Error {
 
 	#[error("Download not available for mod `{0}`")]
 	ModDownloadNotAvailable(String),
+
+	#[error("Operation can't be completed without a `runnable` section in the mod manifest (rai-pal-manifest.json) `{0}`")]
+	RunnableManifestNotFound(String),
 }
 
 impl serde::Serialize for Error {

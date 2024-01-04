@@ -22,6 +22,11 @@ serializable_struct!(DatabaseEntry {
 	pub unity_backend: Option<UnityScriptingBackend>,
 });
 
+serializable_struct!(RunnableModData {
+	pub path: String,
+	pub args: Vec<String>,
+});
+
 serializable_struct!(ModDatabase {
   pub mods: Vec<DatabaseEntry>,
 });
@@ -30,6 +35,7 @@ serializable_struct!(ModDownload {
 	pub id: String,
 	pub url: String,
 	pub root: Option<PathBuf>,
+	pub runnable: Option<RunnableModData>,
 });
 
 pub async fn get(mod_loader_id: &str) -> Result<ModDatabase> {
