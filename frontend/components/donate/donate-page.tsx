@@ -52,8 +52,8 @@ export function DonatePage() {
 									Hello. I made Rai Pal. I also made other VR mods in the past,
 									and am currently working in a universal VR mod for Unity
 									games. If you like what I do, and would like to see more,
-									please consider donating! You can also donate by buying one of
-									my free mods on itch.io.
+									please consider donating! You can also support me by buying
+									one of my free mods on itch.io.
 								</Text>
 							</Stack>
 						</Group>
