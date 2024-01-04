@@ -38,9 +38,6 @@ pub enum Error {
 	#[error("Invalid type `{0}` in binary vdf key/value pair")]
 	InvalidBinaryVdfType(u8),
 
-	#[error("Failed to get file name from path `{0}`")]
-	FailedToGetFileName(PathBuf),
-
 	#[error("Failed to find Rai Pal resources folder")]
 	ResourcesNotFound(),
 

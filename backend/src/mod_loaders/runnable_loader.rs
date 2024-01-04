@@ -124,14 +124,6 @@ impl ModLoaderActions for RunnableLoader {
 
 		Command::new(mod_folder.join(&runnable.path))
 			.current_dir(mod_folder)
-			// .arg(&format!(
-			// 	"--attach={}",
-			// 	game.executable
-			// 		.path
-			// 		.file_name()
-			// 		.ok_or_else(|| Error::FailedToGetFileName(game.executable.path.clone()))?
-			// 		.to_string_lossy()
-			// ))
 			.args(&args)
 			.spawn()?;
 
