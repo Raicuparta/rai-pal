@@ -1,0 +1,5 @@
+.heart {
+	color: var(--mantine-color-red-9);
+	width: 30px;
+	height: 30px;
+}

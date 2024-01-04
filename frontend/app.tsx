@@ -5,12 +5,37 @@ import { SettingsPage } from "./components/settings/settings-page";
 import { Tabs, Container, Stack } from "@mantine/core";
 import { useData } from "@hooks/use-data";
 import { AppNotifications } from "@components/app-notifications";
+import {
+	IconBooks,
+	IconHeartFilled,
+	IconList,
+	IconSettings,
+	IconTool,
+} from "@tabler/icons-react";
+import { DonatePage } from "@components/donate/donate-page";
 
 const pages = {
-	installedGames: { title: "Installed Games", component: InstalledGamesPage },
-	ownedGames: { title: "Owned Games", component: OwnedGamesPage },
-	mods: { title: "Mods", component: ModsPage },
-	settings: { title: "Settings", component: SettingsPage },
+	installedGames: {
+		title: "Installed Games",
+		component: InstalledGamesPage,
+		icon: <IconList />,
+	},
+	ownedGames: {
+		title: "Owned Games",
+		component: OwnedGamesPage,
+		icon: <IconBooks />,
+	},
+	mods: { title: "Mods", component: ModsPage, icon: <IconTool /> },
+	settings: {
+		title: "Settings",
+		component: SettingsPage,
+		icon: <IconSettings />,
+	},
+	donate: {
+		title: "Donate",
+		component: DonatePage,
+		icon: <IconHeartFilled style={{ color: "var(--mantine-color-red-9)" }} />,
+	},
 };
 
 const firstPage = Object.keys(pages)[0];
@@ -25,12 +50,16 @@ function App() {
 				defaultValue={firstPage}
 				radius={0}
 			>
-				<Stack style={{ height: "100vh" }}>
+				<Stack
+					gap={0}
+					style={{ height: "100vh" }}
+				>
 					<Tabs.List style={{ justifyContent: "center" }}>
 						{Object.entries(pages).map(([pageId, page]) => (
 							<Tabs.Tab
 								key={pageId}
 								value={pageId}
+								leftSection={page.icon}
 							>
 								{page.title}
 							</Tabs.Tab>
@@ -40,13 +69,14 @@ function App() {
 						<Tabs.Panel
 							key={pageId}
 							style={{
+								overflowY: "auto",
 								flex: 1,
 							}}
 							value={pageId}
 						>
 							<Container
 								h="100%"
-								pb="md"
+								py="md"
 								size="lg"
 							>
 								<page.component />
