@@ -1,14 +1,9 @@
 use std::{
-	fs::{
-		self,
-		File,
-	},
-	io::Read,
+	fs,
 	path::{
 		Path,
 		PathBuf,
 	},
-	time::Instant,
 };
 
 use goblin::{
@@ -18,7 +13,6 @@ use goblin::{
 use log::error;
 
 use crate::{
-	debug::LoggableInstant,
 	game_engines::{
 		game_engine::GameEngine,
 		unity::{
@@ -39,6 +33,7 @@ serializable_enum!(OperatingSystem { Linux, Windows });
 
 serializable_struct!(GameExecutable {
 	pub path: PathBuf,
+	pub name: String,
 	pub engine: Option<GameEngine>,
 	pub architecture: Option<Architecture>,
   pub operating_system: Option<OperatingSystem>,
