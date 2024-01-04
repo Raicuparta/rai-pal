@@ -230,7 +230,8 @@ pub fn get_executable(launch_path: &Path) -> Option<GameExecutable> {
 		let version = get_version(launch_path, architecture.unwrap_or(Architecture::X64));
 
 		Some(GameExecutable {
-			path,
+			path: path.clone(),
+			name: path.file_name()?.to_string_lossy().to_string(),
 			architecture,
 			operating_system,
 			scripting_backend: None,

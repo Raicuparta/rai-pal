@@ -14,7 +14,7 @@ use crate::{
 	game_executable::GameExecutable,
 	game_mod,
 	game_mode::GameMode,
-	local_mod,
+	mod_manifest,
 	paths::{
 		self,
 		hash_path,
@@ -194,7 +194,7 @@ impl InstalledGame {
 	pub fn get_installed_mod_version(&self, mod_id: &str) -> Option<String> {
 		let manifest_path = self.get_installed_mod_manifest_path(mod_id).ok()?;
 		let manifest_file = File::open(manifest_path).ok()?;
-		let manifest: local_mod::Manifest = serde_json::from_reader(manifest_file).ok()?;
+		let manifest: mod_manifest::Manifest = serde_json::from_reader(manifest_file).ok()?;
 		Some(manifest.version)
 	}
 

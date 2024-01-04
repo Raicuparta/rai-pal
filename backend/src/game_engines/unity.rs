@@ -179,6 +179,7 @@ pub fn get_executable(game_path: &Path) -> Option<GameExecutable> {
 
 		Some(GameExecutable {
 			path: game_path.to_path_buf(),
+			name: game_path.file_name()?.to_string_lossy().to_string(),
 			// If we can't figure out the exe OS, we just presume it's the current one.
 			operating_system: operating_system.or_else(|| Some(get_current_os())),
 			architecture: architecture.or_else(|| get_alt_architecture(game_path)),

@@ -33,6 +33,7 @@ serializable_enum!(OperatingSystem { Linux, Windows });
 
 serializable_struct!(GameExecutable {
 	pub path: PathBuf,
+	pub name: String,
 	pub engine: Option<GameEngine>,
 	pub architecture: Option<Architecture>,
   pub operating_system: Option<OperatingSystem>,
