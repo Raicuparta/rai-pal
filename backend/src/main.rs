@@ -262,7 +262,7 @@ fn refresh_game_mods_and_exe(game_id: &str, handle: &AppHandle) -> Result {
 	let game = installed_games.try_get_mut(game_id)?;
 
 	game.refresh_mods(&mod_data_map);
-	game.refresh_executable();
+	game.refresh_executable()?;
 
 	update_state(
 		AppEvent::SyncInstalledGames,

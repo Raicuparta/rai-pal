@@ -8,14 +8,12 @@ use std::{
 		Path,
 		PathBuf,
 	},
-	time::Instant,
 };
 
 use lazy_regex::regex_captures;
 use log::error;
 
 use crate::{
-	debug::LoggableInstant,
 	game_engines::game_engine::{
 		GameEngine,
 		GameEngineBrand,
@@ -175,15 +173,9 @@ fn get_alt_architecture(game_path: &Path) -> Option<Architecture> {
 }
 
 pub fn get_executable(game_path: &Path) -> Option<GameExecutable> {
-	let now = &mut Instant::now();
-	let executable = if is_unity_exe(game_path) {
-		now.log_next("check if is unity exe");
+	if is_unity_exe(game_path) {
 		let (operating_system, architecture) =
 			get_os_and_architecture(game_path).unwrap_or((None, None));
-		now.log_next("get os and arch");
-
-		let version = get_version(game_path);
-		now.log_next("get unity version");
 
 		Some(GameExecutable {
 			path: game_path.to_path_buf(),
@@ -193,13 +185,10 @@ pub fn get_executable(game_path: &Path) -> Option<GameExecutable> {
 			scripting_backend: get_scripting_backend(game_path),
 			engine: Some(GameEngine {
 				brand: GameEngineBrand::Unity,
-				version,
+				version: get_version(game_path),
 			}),
 		})
 	} else {
 		None
-	};
-	now.log_next("get unity executable");
-
-	executable
+	}
 }

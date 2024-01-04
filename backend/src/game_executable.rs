@@ -1,14 +1,9 @@
 use std::{
-	fs::{
-		self,
-		File,
-	},
-	io::Read,
+	fs,
 	path::{
 		Path,
 		PathBuf,
 	},
-	time::Instant,
 };
 
 use goblin::{
@@ -18,7 +13,6 @@ use goblin::{
 use log::error;
 
 use crate::{
-	debug::LoggableInstant,
 	game_engines::{
 		game_engine::GameEngine,
 		unity::{
