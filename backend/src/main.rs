@@ -207,8 +207,6 @@ async fn install_mod(game_id: &str, mod_id: &str, handle: AppHandle) -> Result {
 	let mut installed_games = state.installed_games.get_data()?;
 	let game = installed_games.try_get_mut(game_id)?;
 	let mod_loaders = state.mod_loaders.get_data()?;
-	let remote_mod = state.remote_mods.try_get(mod_id)?;
-	let mod_loader = mod_loaders.try_get(&remote_mod.common.loader_id)?;
 
 	let local_mods = {
 		let state_local_mods = state.local_mods.get_data()?;
@@ -222,6 +220,9 @@ async fn install_mod(game_id: &str, mod_id: &str, handle: AppHandle) -> Result {
 			if state_local_mods.contains_key(mod_id) {
 				disk_local_mods
 			} else {
+				let remote_mod = state.remote_mods.try_get(mod_id)?;
+				let mod_loader = mod_loaders.try_get(&remote_mod.common.loader_id)?;
+
 				if remote_mod.data.latest_version.is_some() {
 					// If local mod still can't be found on disk,
 					// we try to download it from the database.
@@ -239,9 +240,11 @@ async fn install_mod(game_id: &str, mod_id: &str, handle: AppHandle) -> Result {
 		}
 	};
 
-	mod_loader
-		.install_mod(game, local_mods.try_get(mod_id)?)
-		.await?;
+	let local_mod = local_mods.try_get(mod_id)?;
+
+	let mod_loader = mod_loaders.try_get(&local_mod.common.loader_id)?;
+
+	mod_loader.install_mod(game, local_mod).await?;
 
 	refresh_game_mods_and_exe(&game.id, &handle)?;
 

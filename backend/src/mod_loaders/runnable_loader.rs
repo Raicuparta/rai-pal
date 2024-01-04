@@ -90,7 +90,7 @@ fn replace_parameters(argument: &str, game: &InstalledGame) -> String {
 		Ok(game.executable.path.to_string_lossy())
 	});
 	result = replace_parameter_value(&result, RunnableParameter::GameJson, || {
-		Ok(serde_json::to_string_pretty(&game)?)
+		Ok(serde_json::to_string(&game)?)
 	});
 
 	result
@@ -124,14 +124,6 @@ impl ModLoaderActions for RunnableLoader {
 
 		Command::new(mod_folder.join(&runnable.path))
 			.current_dir(mod_folder)
-			// .arg(&format!(
-			// 	"--attach={}",
-			// 	game.executable
-			// 		.path
-			// 		.file_name()
-			// 		.ok_or_else(|| Error::FailedToGetFileName(game.executable.path.clone()))?
-			// 		.to_string_lossy()
-			// ))
 			.args(&args)
 			.spawn()?;
 
