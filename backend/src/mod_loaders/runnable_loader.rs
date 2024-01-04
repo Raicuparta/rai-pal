@@ -155,18 +155,26 @@ impl ModLoaderActions for RunnableLoader {
 		let mut mod_map = local_mod::Map::default();
 
 		for manifest_path_result in manifests {
-			// TODO don't crash whole thing on single mod failure.
 			match manifest_path_result {
 				Ok(manifest_path) => {
 					if let Some(manifest) = mod_manifest::get(&manifest_path) {
-						let local_mod = LocalMod::new(
+						match LocalMod::new(
 							Self::ID,
 							manifest_path.parent().unwrap_or(&manifest_path),
-							manifest.engine, // TODO read from manifest.
+							manifest.engine,
 							manifest.unity_backend,
-						)?;
-
-						mod_map.insert(local_mod.common.id.clone(), local_mod);
+						) {
+							Ok(local_mod) => {
+								mod_map.insert(local_mod.common.id.clone(), local_mod);
+							}
+							Err(error) => {
+								error!(
+									"Failed to create local runnable mod from manifest in {}. Error: {}",
+									manifest_path.display(),
+									error
+								);
+							}
+						}
 					}
 				}
 				Err(error) => {
