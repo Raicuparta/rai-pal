@@ -90,7 +90,7 @@ fn replace_parameters(argument: &str, game: &InstalledGame) -> String {
 		Ok(game.executable.path.to_string_lossy())
 	});
 	result = replace_parameter_value(&result, RunnableParameter::GameJson, || {
-		Ok(serde_json::to_string_pretty(&game)?)
+		Ok(serde_json::to_string(&game)?)
 	});
 
 	result
