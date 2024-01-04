@@ -4,6 +4,7 @@ use std::{
 		Path,
 		PathBuf,
 	},
+	process::Command,
 };
 
 use async_trait::async_trait;
@@ -23,7 +24,6 @@ use crate::{
 	},
 	result::Error,
 	serializable_struct,
-	windows,
 	Result,
 };
 
@@ -64,19 +64,21 @@ impl ModLoaderActions for UnrealVr {
 	}
 
 	async fn install_mod_inner(&self, game: &InstalledGame, local_mod: &LocalMod) -> Result {
-		let parameters = format!(
-			"--attach=\"{}\"",
-			game.executable
-				.path
-				.file_name()
-				.ok_or_else(|| Error::FailedToGetFileName(game.executable.path.clone()))?
-				.to_string_lossy()
-		);
+		let mod_folder = self.get_mod_path(&local_mod.common)?;
 
-		windows::run_as_admin(
-			&self.get_mod_path(&local_mod.common)?.join(Self::EXE_NAME),
-			&parameters,
-		)
+		Command::new(mod_folder.join(Self::EXE_NAME))
+			.current_dir(mod_folder)
+			.arg(&format!(
+				"--attach={}",
+				game.executable
+					.path
+					.file_name()
+					.ok_or_else(|| Error::FailedToGetFileName(game.executable.path.clone()))?
+					.to_string_lossy()
+			))
+			.spawn()?;
+
+		Ok(())
 	}
 
 	fn get_mod_path(&self, mod_data: &CommonModData) -> Result<PathBuf> {
