@@ -25,7 +25,7 @@ export function ModsPage() {
 	}, [selectedModId, mods]);
 
 	return (
-		<Stack h="100%">
+		<Stack>
 			{selectedMod ? (
 				<ModModal
 					onClose={() => setSelectedId(undefined)}
