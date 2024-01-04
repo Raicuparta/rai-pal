@@ -74,7 +74,7 @@ export function DonatePage() {
 								component="a"
 								href="https://paypal.me/raicuparta/5usd"
 								target="_blank"
-								color="blue"
+								color="indigo"
 								variant="light"
 								style={{ flex: 1 }}
 								leftSection={<IconBrandPaypalFilled />}
@@ -96,7 +96,7 @@ export function DonatePage() {
 								component="a"
 								href="https://raicuparta.com"
 								target="_blank"
-								color="red"
+								color="grape"
 								variant="light"
 								style={{ flex: 1 }}
 								leftSection={
@@ -162,7 +162,7 @@ export function DonatePage() {
 								component="a"
 								href="https://github.com/praydog/"
 								target="_blank"
-								color="grape"
+								color="blue"
 								variant="light"
 								leftSection={<IconBrandGithubFilled />}
 								style={{ flex: 1 }}
@@ -194,7 +194,7 @@ export function DonatePage() {
 								component="a"
 								href="https://github.com/BepInEx"
 								target="_blank"
-								color="grape"
+								color="blue"
 								variant="light"
 								leftSection={<IconBrandGithubFilled />}
 							>
@@ -214,7 +214,7 @@ export function DonatePage() {
 								component="a"
 								href="https://github.com/sinai-dev"
 								target="_blank"
-								color="grape"
+								color="blue"
 								variant="light"
 								leftSection={<IconBrandGithubFilled />}
 							>
