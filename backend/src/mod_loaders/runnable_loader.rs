@@ -1,5 +1,4 @@
 use std::{
-	collections::HashMap,
 	path::{
 		Path,
 		PathBuf,
@@ -8,6 +7,7 @@ use std::{
 };
 
 use async_trait::async_trait;
+use log::error;
 
 use super::mod_loader::{
 	ModLoaderActions,
@@ -15,7 +15,6 @@ use super::mod_loader::{
 	ModLoaderStatic,
 };
 use crate::{
-	game_engines::game_engine::GameEngineBrand,
 	game_mod::CommonModData,
 	installed_game::InstalledGame,
 	local_mod::{
@@ -23,6 +22,7 @@ use crate::{
 		LocalMod,
 		ModKind,
 	},
+	mod_manifest,
 	paths::glob_path,
 	result::Error,
 	serializable_struct,
@@ -94,8 +94,10 @@ impl ModLoaderActions for RunnableLoader {
 	}
 
 	fn get_local_mods(&self) -> Result<local_mod::Map> {
+		let mods_path = Self::get_installed_mods_path()?;
+
 		let manifests = glob_path(
-			&Self::get_installed_mods_path()?
+			&mods_path
 				.join("*")
 				// TODO manifest name const somewhere.
 				.join("rai-pal-manifest.json"),
@@ -104,16 +106,28 @@ impl ModLoaderActions for RunnableLoader {
 		let mut mod_map = local_mod::Map::default();
 
 		for manifest_path_result in manifests {
-			let manifest_path = manifest_path_result?;
 			// TODO don't crash whole thing on single mod failure.
-			let local_mod = LocalMod::new(
-				Self::ID,
-				manifest_path.parent().unwrap_or(&manifest_path),
-				Some(GameEngineBrand::Unreal), // TODO read from manifest.
-				None,
-			)?;
+			match manifest_path_result {
+				Ok(manifest_path) => {
+					if let Some(manifest) = mod_manifest::get(&manifest_path) {
+						let local_mod = LocalMod::new(
+							Self::ID,
+							manifest_path.parent().unwrap_or(&manifest_path),
+							manifest.engine, // TODO read from manifest.
+							manifest.unity_backend,
+						)?;
 
-			mod_map.insert(local_mod.common.id.clone(), local_mod);
+						mod_map.insert(local_mod.common.id.clone(), local_mod);
+					}
+				}
+				Err(error) => {
+					error!(
+						"Failed to read mod manifest from {}. Error: {}",
+						mods_path.display(),
+						error
+					);
+				}
+			}
 		}
 
 		Ok(mod_map)

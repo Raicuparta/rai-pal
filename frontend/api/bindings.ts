@@ -103,11 +103,11 @@ export function openLogsFolder() {
 }
 
 export type GameEngineVersion = { major: number; minor: number; patch: number; suffix: string | null; display: string }
+export type Manifest = { version: string; runnable: RunnableModData | null; engine: GameEngineBrand | null; unityBackend: UnityScriptingBackend | null }
 export type GameEngineBrand = "Unity" | "Unreal" | "Godot"
 export type GameMode = "VR" | "Flat"
 export type ModKind = "Installable" | "Runnable"
 export type RunnableModData = { path: string; args: string[] }
-export type Manifest = { version: string; runnable: RunnableModData | null }
 export type OwnedGame = { id: string; providerId: ProviderId; name: string; installed: boolean; osList: OperatingSystem[]; engine: GameEngineBrand | null; releaseDate: number; thumbnailUrl: string; gameMode: GameMode | null; uevrScore: UevrScore | null }
 export type AppEvent = "SyncInstalledGames" | "SyncOwnedGames" | "SyncModLoaders" | "SyncLocalMods" | "SyncRemoteMods" | "ExecutedSteamCommand" | "GameAdded" | "GameRemoved" | "Error"
 export type ModDownload = { id: string; url: string; root: string | null; runnable: RunnableModData | null }
@@ -115,10 +115,10 @@ export type LocalMod = { data: LocalModData; common: CommonModData }
 export type RemoteModData = { title: string; author: string; sourceCode: string; description: string; latestVersion: ModDownload | null }
 export type SteamLaunchOption = { launchId: string; appId: number; description: string | null; executable: string | null; arguments: string | null; appType: string | null; osList: string | null; betaKey: string | null; osArch: string | null }
 export type LocalModData = { path: string; manifest: Manifest | null }
+export type ModLoaderData = { id: string; path: string; kind: ModKind }
 export type UnityScriptingBackend = "Il2Cpp" | "Mono"
 export type GameExecutable = { path: string; engine: GameEngine | null; architecture: Architecture | null; operatingSystem: OperatingSystem | null; scriptingBackend: UnityScriptingBackend | null }
 export type RemoteMod = { common: CommonModData; data: RemoteModData }
-export type ModLoaderData = { id: string; path: string; kind: ModKind }
 export type InstalledGame = { id: string; name: string; providerId: ProviderId; discriminator: string | null; steamLaunch: SteamLaunchOption | null; executable: GameExecutable; thumbnailUrl: string | null; installedModVersions: { [key: string]: string | null }; gameMode: GameMode }
 export type ProviderId = "Steam" | "Manual" | "Epic" | "Gog" | "Xbox"
 export type GameEngine = { brand: GameEngineBrand; version: GameEngineVersion | null }

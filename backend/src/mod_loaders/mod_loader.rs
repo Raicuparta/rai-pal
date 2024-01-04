@@ -30,6 +30,7 @@ use crate::{
 		ModKind,
 	},
 	mod_loaders::mod_database::ModDatabase,
+	mod_manifest,
 	paths,
 	remote_mod::{
 		RemoteMod,
@@ -159,9 +160,11 @@ pub trait ModLoaderActions {
 			// Saves the manifest so we know which version of the mod we installed.
 			fs::write(
 				local_mod::get_manifest_path(&target_path),
-				serde_json::to_string_pretty(&local_mod::Manifest {
+				serde_json::to_string_pretty(&mod_manifest::Manifest {
 					version: latest_version.id.clone(),
 					runnable: latest_version.runnable.clone(),
+					engine: remote_mod.common.engine,
+					unity_backend: remote_mod.common.unity_backend,
 				})?,
 			)?;
 
