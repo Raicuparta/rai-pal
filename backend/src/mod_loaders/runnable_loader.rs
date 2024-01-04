@@ -25,6 +25,7 @@ use crate::{
 	mod_manifest,
 	paths::glob_path,
 	result::Error,
+	serializable_enum,
 	serializable_struct,
 	Result,
 };
@@ -33,7 +34,11 @@ serializable_struct!(RunnableLoader {
   pub data: ModLoaderData,
 });
 
-impl RunnableLoader {}
+serializable_enum!(RunnableParameter {
+	ExecutableName,
+	ExecutablePath,
+	GameJson,
+});
 
 #[async_trait]
 impl ModLoaderStatic for RunnableLoader {
@@ -51,6 +56,44 @@ impl ModLoaderStatic for RunnableLoader {
 			},
 		})
 	}
+}
+
+fn get_parameter_token(parameter: RunnableParameter) -> String {
+	format!("{{{{{parameter}}}}}")
+}
+
+fn replace_parameter_value<TValue: AsRef<str>, TGetValue: Fn() -> Result<TValue>>(
+	argument: &str,
+	parameter: RunnableParameter,
+	get_value: TGetValue,
+) -> String {
+	if !argument.contains(&get_parameter_token(parameter)) {
+		return argument.to_string();
+	}
+
+	match get_value() {
+		Ok(value) => argument.replace(&get_parameter_token(parameter), value.as_ref()),
+		Err(error) => {
+			error!("Failed get value to replace parameter `{parameter}` in runnable argument `{argument}`. Error: {error}");
+			argument.to_string()
+		}
+	}
+}
+
+fn replace_parameters(argument: &str, game: &InstalledGame) -> String {
+	let mut result = argument.to_string();
+
+	result = replace_parameter_value(&result, RunnableParameter::ExecutableName, || {
+		Ok(&game.executable.name)
+	});
+	result = replace_parameter_value(&result, RunnableParameter::ExecutablePath, || {
+		Ok(game.executable.path.to_string_lossy())
+	});
+	result = replace_parameter_value(&result, RunnableParameter::GameJson, || {
+		Ok(serde_json::to_string_pretty(&game)?)
+	});
+
+	result
 }
 
 #[async_trait]
@@ -73,6 +116,12 @@ impl ModLoaderActions for RunnableLoader {
 			.and_then(|manifest| manifest.runnable.as_ref())
 			.ok_or_else(|| Error::RunnableManifestNotFound(local_mod.common.id.clone()))?;
 
+		let args: Vec<String> = runnable
+			.args
+			.iter()
+			.map(|arg| replace_parameters(arg, game))
+			.collect();
+
 		Command::new(mod_folder.join(&runnable.path))
 			.current_dir(mod_folder)
 			// .arg(&format!(
@@ -83,7 +132,7 @@ impl ModLoaderActions for RunnableLoader {
 			// 		.ok_or_else(|| Error::FailedToGetFileName(game.executable.path.clone()))?
 			// 		.to_string_lossy()
 			// ))
-			.args(&runnable.args)
+			.args(&args)
 			.spawn()?;
 
 		Ok(())
