@@ -31,6 +31,7 @@ export function DonatePage() {
 							<Stack
 								gap={0}
 								bg="dark"
+								justify="center"
 								p="sm"
 								style={{ flex: 1, borderRadius: 10 }}
 							>
@@ -91,6 +92,23 @@ export function DonatePage() {
 							>
 								Itch.io
 							</Button>
+							<Button
+								component="a"
+								href="https://raicuparta.com"
+								target="_blank"
+								color="red"
+								variant="light"
+								style={{ flex: 1 }}
+								leftSection={
+									<Image
+										src="/images/donate/raicuparta.png"
+										radius="100%"
+										height={20}
+									/>
+								}
+							>
+								raicuparta.com
+							</Button>
 						</Group>
 					</Stack>
 				</Card>
@@ -98,9 +116,19 @@ export function DonatePage() {
 				<Card>
 					<Stack>
 						<Group align="top">
+							<Stack style={{ flex: 4 }}>
+								<Text>
+									Right now, the most likely reason for you to be using Rai Pal
+									is to make it easier to manage Unreal Engine games for
+									praydog&apos;s UEVR. You should consider supporting praydog on
+									Patreon if you&apos;re excited about UEVR and want to continue
+									seeing more of praydog&apos;s excellent work.
+								</Text>
+							</Stack>
 							<Stack
 								gap={0}
 								bg="dark"
+								justify="center"
 								p="sm"
 								style={{ flex: 1, borderRadius: 10 }}
 							>
@@ -114,15 +142,6 @@ export function DonatePage() {
 									ta="center"
 								>
 									praydog
-								</Text>
-							</Stack>
-							<Stack style={{ flex: 4 }}>
-								<Text>
-									Right now, the most likely reason for you to be using Rai Pal
-									is to make it easier to manage Unreal Engine games for
-									praydog&apos;s UEVR. You should consider supporting praydog on
-									Patreon if you&apos;re excited about UEVR and want to continue
-									seeing more of praydog&apos;s excellent work.
 								</Text>
 							</Stack>
 						</Group>
