@@ -76,8 +76,10 @@ impl InstalledGame {
 
 		let game_mode = steam_launch.map_or(GameMode::Flat, SteamLaunchOption::get_game_mode);
 
+		let executable = GameExecutable::new(path)?;
+
 		Some(Self {
-			id: hash_path(path),
+			id: hash_path(&executable.path),
 			name: name.to_string(),
 			provider_id,
 			discriminator,
