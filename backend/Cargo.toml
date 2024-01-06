@@ -1,6 +1,6 @@
 [package]
 name = "rai-pal"
-version = "0.5.4"
+version = "0.5.5"
 authors = ["Raicuparta"]
 license = "GPL-3.0-or-later"
 repository = "https://github.com/Raicuparta/rai-pal"
@@ -45,7 +45,7 @@ lazy_static = "1.4.0"
 uuid = "1.6.1"
 rand = "0.8.5"
 winreg = "0.52.0"
-tauri-plugin-log = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
+tauri-plugin-log = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1", features = ["colored"] }
 log = "0.4.20"
 tauri-runtime = "0.14.1"
 
