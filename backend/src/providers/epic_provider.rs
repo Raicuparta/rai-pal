@@ -59,6 +59,20 @@ serializable_struct!(EpicCatalogItem {
 	release_info: Vec<EpicCatalogReleaseInfo>,
 });
 
+impl EpicCatalogItem {
+	fn get_release_date(&self) -> Option<i64> {
+		Some(
+			self.release_info
+				.first()?
+				.date_added
+				.as_ref()?
+				.parse::<chrono::DateTime<chrono::Utc>>()
+				.ok()?
+				.timestamp(),
+		)
+	}
+}
+
 #[async_trait]
 impl ProviderActions for EpicProvider {
 	fn get_installed_games(&self) -> Result<Vec<InstalledGame>> {
@@ -104,6 +118,7 @@ impl ProviderActions for EpicProvider {
 				{
 					return None;
 				}
+
 				Some(OwnedGame {
 					engine: None,
 					game_mode: None,
@@ -113,7 +128,7 @@ impl ProviderActions for EpicProvider {
 					installed: false,
 					os_list: HashSet::default(),
 					provider_id: *Self::ID,
-					release_date: 0,
+					release_date: catalog_item.get_release_date().unwrap_or(0),
 					uevr_score: None,
 				})
 			})

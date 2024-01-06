@@ -165,10 +165,12 @@ impl ProviderActions for SteamProvider {
 					.app(*steam_id)
 					.map_or(false, |steam_app| steam_app.is_some());
 
-				let release_date = app_info
-					.original_release_date
-					.or(app_info.steam_release_date)
-					.unwrap_or_default();
+				let release_date = i64::from(
+					app_info
+						.original_release_date
+						.or(app_info.steam_release_date)
+						.unwrap_or_default(),
+				);
 
 				let game_mode = if app_info
 					.launch_options

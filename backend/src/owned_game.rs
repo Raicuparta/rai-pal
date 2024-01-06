@@ -19,7 +19,7 @@ serializable_struct!(OwnedGame {
 	pub installed: bool,
 	pub os_list: HashSet<OperatingSystem>,
 	pub engine: Option<GameEngineBrand>,
-	pub release_date: i32,
+	pub release_date: i64,
 	pub thumbnail_url: String,
 	pub game_mode: Option<GameMode>,
 	pub uevr_score: Option<UevrScore>,

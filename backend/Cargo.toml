@@ -49,6 +49,7 @@ tauri-plugin-log = { git = "https://github.com/tauri-apps/plugins-workspace", br
 log = "0.4.20"
 tauri-runtime = "0.14.1"
 base64 = "0.21.5"
+chrono = "0.4.31"
 
 [target.'cfg(target_os = "linux")'.dependencies]
 webkit2gtk = "0.18.2"
