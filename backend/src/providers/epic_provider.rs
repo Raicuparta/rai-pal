@@ -52,11 +52,17 @@ serializable_struct!(EpicCatalogReleaseInfo {
 	date_added: Option<String>,
 });
 
+serializable_struct!(EpicCatalogImage {
+	height: i32,
+	url: String,
+});
+
 serializable_struct!(EpicCatalogItem {
 	id: String,
 	title: String,
 	categories: Vec<EpicCatalogCategory>,
 	release_info: Vec<EpicCatalogReleaseInfo>,
+	key_images: Vec<EpicCatalogImage>,
 });
 
 impl EpicCatalogItem {
@@ -69,6 +75,17 @@ impl EpicCatalogItem {
 				.parse::<chrono::DateTime<chrono::Utc>>()
 				.ok()?
 				.timestamp(),
+		)
+	}
+
+	fn get_thumbnail_url(&self) -> Option<String> {
+		Some(
+			self.key_images
+				.iter()
+				// The available images here seem to be a bit inconsistent, so we'll just pick the smallest one.
+				.min_by_key(|image| image.height)?
+				.url
+				.clone(),
 		)
 	}
 }
@@ -124,7 +141,7 @@ impl ProviderActions for EpicProvider {
 					game_mode: None,
 					id: catalog_item.id.clone(),
 					name: catalog_item.title.clone(),
-					thumbnail_url: String::default(),
+					thumbnail_url: catalog_item.get_thumbnail_url().unwrap_or_default(),
 					installed: false,
 					os_list: HashSet::default(),
 					provider_id: *Self::ID,

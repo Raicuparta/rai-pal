@@ -165,6 +165,8 @@ impl ProviderActions for SteamProvider {
 					.app(*steam_id)
 					.map_or(false, |steam_app| steam_app.is_some());
 
+				// Steam's appinfo cache file seems to use i32 for the timestamps...
+				// See you in 2038
 				let release_date = i64::from(
 					app_info
 						.original_release_date
