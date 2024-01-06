@@ -3043,6 +3043,7 @@ name = "rai-pal"
 version = "0.5.5"
 dependencies = [
  "async-trait",
+ "base64 0.21.5",
  "byteorder",
  "directories 5.0.1",
  "enum_dispatch",

@@ -416,7 +416,12 @@ async fn update_data(handle: AppHandle) -> Result {
 	)
 	.await
 	.into_iter()
-	.flat_map(result::Result::unwrap_or_default)
+	.flat_map(|result| {
+		result.unwrap_or_else(|err| {
+			error!("Failed to get owned games for a provider: {err}");
+			Vec::default()
+		})
+	})
 	.map(|owned_game| (owned_game.id.clone(), owned_game))
 	.collect();
 	now.log_next(&format!("get owned games ({} total)", owned_games.len()));
