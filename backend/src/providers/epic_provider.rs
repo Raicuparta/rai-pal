@@ -1,27 +1,14 @@
 use std::{
 	collections::HashSet,
-	fs::{
-		self,
-		File,
-	},
+	fs::File,
 	io::Read,
 	path::PathBuf,
 };
 
 use async_trait::async_trait;
-use base64::{
-	alphabet,
-	engine::{
-		self,
-		general_purpose,
-	},
-	Engine as _,
-};
+use base64::engine::general_purpose;
 use winreg::{
-	enums::{
-		HKEY_CURRENT_USER,
-		HKEY_LOCAL_MACHINE,
-	},
+	enums::HKEY_LOCAL_MACHINE,
 	RegKey,
 };
 
@@ -33,7 +20,6 @@ use crate::{
 		ProviderActions,
 		ProviderStatic,
 	},
-	serializable_enum,
 	serializable_struct,
 	Result,
 };
