@@ -84,6 +84,8 @@ async fn get_engine(id: &str) -> Option<GameEngineBrand> {
 						Some(GameEngineBrand::Unity)
 					} else if text.contains("Unreal") {
 						Some(GameEngineBrand::Unreal)
+					} else if text.contains("Godot") {
+						Some(GameEngineBrand::Godot)
 					} else {
 						None
 					}
