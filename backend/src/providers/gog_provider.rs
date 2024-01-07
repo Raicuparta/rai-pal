@@ -7,6 +7,7 @@ use crate::{
 	game_engines::game_engine::GameEngineBrand,
 	installed_game::InstalledGame,
 	owned_game::OwnedGame,
+	pc_gaming_wiki,
 	provider::{
 		ProviderActions,
 		ProviderStatic,
@@ -71,28 +72,5 @@ impl ProviderActions for GogProvider {
 }
 
 async fn get_engine(id: &str) -> Option<GameEngineBrand> {
-	let url = format!("https://www.pcgamingwiki.com/w/api.php?action=cargoquery&tables=Infobox_game&fields=Engines%2C_pageName%3Dtitle&where=GOGcom_ID%20HOLDS%20%22{}%22&format=json", id);
-	let result = reqwest::get(url).await;
-
-	match result {
-		Ok(response) => {
-			let body = response.text().await;
-
-			match body {
-				Ok(text) => {
-					if text.contains("Unity") {
-						Some(GameEngineBrand::Unity)
-					} else if text.contains("Unreal") {
-						Some(GameEngineBrand::Unreal)
-					} else if text.contains("Godot") {
-						Some(GameEngineBrand::Godot)
-					} else {
-						None
-					}
-				}
-				Err(err) => None,
-			}
-		}
-		Err(err) => None,
-	}
+	pc_gaming_wiki::get_engine(&format!("GOGcom_ID%20HOLDS%20%22{id}%22")).await
 }

@@ -68,6 +68,7 @@ mod mod_manifest;
 mod operating_systems;
 mod owned_game;
 mod paths;
+mod pc_gaming_wiki;
 mod providers;
 mod remote_mod;
 mod result;

@@ -7,6 +7,10 @@ use std::{
 
 use async_trait::async_trait;
 use base64::engine::general_purpose;
+use lazy_regex::{
+	regex_replace_all,
+	Regex,
+};
 use winreg::{
 	enums::HKEY_LOCAL_MACHINE,
 	RegKey,
@@ -14,8 +18,10 @@ use winreg::{
 
 use super::provider::ProviderId;
 use crate::{
+	game_engines::game_engine::GameEngineBrand,
 	installed_game::InstalledGame,
 	owned_game::OwnedGame,
+	pc_gaming_wiki,
 	provider::{
 		ProviderActions,
 		ProviderStatic,
@@ -120,9 +126,8 @@ impl ProviderActions for EpicProvider {
 
 		let items = serde_json::from_str::<Vec<EpicCatalogItem>>(&json)?;
 
-		Ok(items
-			.iter()
-			.filter_map(|catalog_item| {
+		Ok(
+			futures::future::join_all(items.iter().map(|catalog_item| async {
 				if catalog_item
 					.categories
 					.iter()
@@ -132,7 +137,7 @@ impl ProviderActions for EpicProvider {
 				}
 
 				Some(OwnedGame {
-					engine: None,
+					engine: pc_gaming_wiki::get_engine_from_game_title(&catalog_item.title).await,
 					game_mode: None,
 					id: catalog_item.id.clone(),
 					name: catalog_item.title.clone(),
@@ -143,7 +148,11 @@ impl ProviderActions for EpicProvider {
 					release_date: catalog_item.get_release_date().unwrap_or(0),
 					uevr_score: None,
 				})
-			})
-			.collect())
+			}))
+			.await
+			.into_iter()
+			.flatten()
+			.collect(),
+		)
 	}
 }
