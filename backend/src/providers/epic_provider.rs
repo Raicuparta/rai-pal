@@ -17,6 +17,13 @@ use base64::{
 	},
 	Engine as _,
 };
+use winreg::{
+	enums::{
+		HKEY_CURRENT_USER,
+		HKEY_LOCAL_MACHINE,
+	},
+	RegKey,
+};
 
 use super::provider::ProviderId;
 use crate::{
@@ -31,7 +38,9 @@ use crate::{
 	Result,
 };
 
-pub struct EpicProvider {}
+pub struct EpicProvider {
+	app_data_path: PathBuf,
+}
 
 impl ProviderStatic for EpicProvider {
 	const ID: &'static ProviderId = &ProviderId::Epic;
@@ -40,7 +49,13 @@ impl ProviderStatic for EpicProvider {
 	where
 		Self: Sized,
 	{
-		Ok(Self {})
+		// TODO check if user isn't spammed by errors.
+		let app_data_path = RegKey::predef(HKEY_LOCAL_MACHINE)
+			.open_subkey("SOFTWARE\\WOW6432Node\\Epic Games\\EpicGamesLauncher")
+			.and_then(|launcher_reg| launcher_reg.get_value::<String, _>("AppDataPath"))
+			.map(PathBuf::from)?;
+
+		Ok(Self { app_data_path })
 	}
 }
 
@@ -93,6 +108,8 @@ impl EpicCatalogItem {
 #[async_trait]
 impl ProviderActions for EpicProvider {
 	fn get_installed_games(&self) -> Result<Vec<InstalledGame>> {
+		// TODO stop using game_scanner,
+		// just implement it here since I have to make so many changes anyway.
 		Ok(game_scanner::epicgames::games()
 			.unwrap_or_default()
 			.iter()
@@ -110,20 +127,13 @@ impl ProviderActions for EpicProvider {
 	}
 
 	async fn get_owned_games(&self) -> Result<Vec<OwnedGame>> {
-		// TODO get path
-		let catalog_path =
-			PathBuf::from(r"C:\ProgramData\Epic\EpicGamesLauncher\Data\Catalog\catcache.bin");
-
-		println!("catalog_path");
-		let mut file = File::open(catalog_path)?;
+		let mut file = File::open(self.app_data_path.join("Catalog").join("catcache.bin"))?;
 
 		let mut decoder = base64::read::DecoderReader::new(&mut file, &general_purpose::STANDARD);
 		let mut json = String::default();
 		decoder.read_to_string(&mut json)?;
-		println!("decoder");
 
 		let items = serde_json::from_str::<Vec<EpicCatalogItem>>(&json)?;
-		println!("items");
 
 		Ok(items
 			.iter()
