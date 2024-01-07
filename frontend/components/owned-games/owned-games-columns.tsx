@@ -138,7 +138,7 @@ const releaseDate: TableColumnBase<OwnedGame> = {
 	renderCell: (game) => (
 		<Table.Td align="center">
 			{game.releaseDate
-				? new Date(game.releaseDate * 1000).toISOString().split("T")[0]
+				? new Date(Number(game.releaseDate) * 1000).toISOString().split("T")[0]
 				: "Unknown"}
 		</Table.Td>
 	),
