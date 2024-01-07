@@ -359,9 +359,7 @@ async fn update_data(handle: AppHandle) -> Result {
 	let local_mods = refresh_local_mods(&mod_loaders, &handle).await;
 	now.log_next("refresh local mods");
 
-	let provider_map = provider::get_map(|error| {
-		handle.emit_error(format!("Failed to set up provider: {error}"));
-	});
+	let provider_map = provider::get_map();
 	now.log_next("get provider map");
 
 	let mut installed_games: HashMap<_, _> = provider_map

@@ -35,7 +35,6 @@ impl ProviderStatic for EpicProvider {
 	where
 		Self: Sized,
 	{
-		// TODO check if user isn't spammed by errors.
 		let app_data_path = RegKey::predef(HKEY_LOCAL_MACHINE)
 			.open_subkey("SOFTWARE\\WOW6432Node\\Epic Games\\EpicGamesLauncher")
 			.and_then(|launcher_reg| launcher_reg.get_value::<String, _>("AppDataPath"))

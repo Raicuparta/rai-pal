@@ -5,6 +5,7 @@ use std::{
 
 use async_trait::async_trait;
 use enum_dispatch::enum_dispatch;
+use log::error;
 
 use super::{
 	epic_provider::EpicProvider,
@@ -20,7 +21,6 @@ use crate::{
 		steam_provider::SteamProvider,
 	},
 	serializable_enum,
-	Error,
 	Result,
 };
 
@@ -61,42 +61,42 @@ type Map = HashMap<String, Provider>;
 
 fn create_map_entry<TProvider: ProviderActions + ProviderStatic>() -> Result<(String, Provider)>
 where
-	Provider: std::convert::From<TProvider>,
+	Provider: From<TProvider>,
 {
 	let mod_loader: Provider = TProvider::new()?.into();
 
 	Ok((TProvider::ID.to_string(), mod_loader))
 }
 
-fn add_entry<TProvider: ProviderActions + ProviderStatic, F>(map: &mut Map, error_handler: &F)
+fn add_entry<TProvider: ProviderActions + ProviderStatic>(map: &mut Map)
 where
-	Provider: std::convert::From<TProvider>,
-	F: Fn(Error) + Send,
+	Provider: From<TProvider>,
 {
 	match create_map_entry::<TProvider>() {
 		Ok((key, value)) => {
 			map.insert(key, value);
 		}
-		Err(error) => error_handler(error),
+		Err(error) => error!("Failed to set up provider: {error}"),
 	}
 }
 
-pub fn get_map<F>(error_handler: F) -> Map
-where
-	F: Fn(Error) + Send,
-{
+pub fn get_map() -> Map {
 	let mut map = Map::new();
 	let now = &mut Instant::now();
 
-	add_entry::<SteamProvider, F>(&mut map, &error_handler);
+	add_entry::<SteamProvider>(&mut map);
 	now.log_next("set up provider (Steam)");
-	add_entry::<EpicProvider, F>(&mut map, &error_handler);
+
+	add_entry::<EpicProvider>(&mut map);
 	now.log_next("set up provider (Epic)");
-	add_entry::<GogProvider, F>(&mut map, &error_handler);
+
+	add_entry::<GogProvider>(&mut map);
 	now.log_next("set up provider (Gog)");
-	add_entry::<XboxProvider, F>(&mut map, &error_handler);
+
+	add_entry::<XboxProvider>(&mut map);
 	now.log_next("set up provider (Xbox)");
-	add_entry::<ManualProvider, F>(&mut map, &error_handler);
+
+	add_entry::<ManualProvider>(&mut map);
 	now.log_next("set up provider (Manual)");
 
 	map
