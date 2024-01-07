@@ -137,7 +137,7 @@ impl ProviderActions for EpicProvider {
 					id: catalog_item.id.clone(),
 					name: catalog_item.title.clone(),
 					thumbnail_url: catalog_item.get_thumbnail_url().unwrap_or_default(),
-					installed: false,
+					installed: false, // TODO
 					os_list: HashSet::default(),
 					provider_id: *Self::ID,
 					release_date: catalog_item.get_release_date().unwrap_or(0),
