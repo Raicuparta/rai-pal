@@ -4,7 +4,7 @@ use std::collections::{
 };
 
 use crate::{
-	game_engines::game_engine::GameEngineBrand,
+	game_engines::game_engine::GameEngine,
 	game_executable::OperatingSystem,
 	game_mode::GameMode,
 	providers::provider::ProviderId,
@@ -18,7 +18,7 @@ serializable_struct!(OwnedGame {
 	pub name: String,
 	pub installed: bool,
 	pub os_list: HashSet<OperatingSystem>,
-	pub engine: Option<GameEngineBrand>,
+	pub engine: Option<GameEngine>,
 	pub release_date: i64,
 	pub thumbnail_url: String,
 	pub game_mode: Option<GameMode>,

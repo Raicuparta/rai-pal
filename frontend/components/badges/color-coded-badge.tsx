@@ -32,7 +32,7 @@ function CreateColorCodedBadge<TValue extends string>(
 				>
 					{props.value ?? fallbackText ?? "-"}
 				</Badge>
-				{props.label && (
+				{props.label && props.value && (
 					<Badge
 						color="dark"
 						variant="filled"

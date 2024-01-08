@@ -4,7 +4,10 @@ use async_trait::async_trait;
 
 use super::provider::ProviderId;
 use crate::{
-	game_engines::game_engine::GameEngineBrand,
+	game_engines::game_engine::{
+		GameEngine,
+		GameEngineBrand,
+	},
 	installed_game::InstalledGame,
 	owned_game::OwnedGame,
 	pc_gaming_wiki,
@@ -71,6 +74,6 @@ impl ProviderActions for GogProvider {
 	}
 }
 
-async fn get_engine(id: &str) -> Option<GameEngineBrand> {
+async fn get_engine(id: &str) -> Option<GameEngine> {
 	pc_gaming_wiki::get_engine(&format!("GOGcom_ID%20HOLDS%20%22{id}%22")).await
 }
