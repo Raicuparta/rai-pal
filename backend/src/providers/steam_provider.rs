@@ -11,7 +11,10 @@ use steamlocate::SteamDir;
 
 use super::provider::ProviderId;
 use crate::{
-	game_engines::game_engine::GameEngine,
+	game_engines::game_engine::{
+		GameEngine,
+		GameEngineBrand,
+	},
 	game_executable::OperatingSystem,
 	game_mode::GameMode,
 	installed_game::{
@@ -185,8 +188,22 @@ impl ProviderActions for SteamProvider {
 						GameMode::Flat
 					};
 
-					let steam_game = steam_games.get(&id_string);
-					let more_engine_info = get_engine(&id_string).await;
+					let steam_game_option = steam_games.get(&id_string);
+					let engine = if let Some(steam_game) = steam_game_option {
+						Some(GameEngine {
+							brand: steam_game.engine,
+							// PCGamingWiki only differentiates engine version for Unreal.
+							// Well they do have the Unity version sometimes, but only as text in the thing,
+							// not as the actual value in the API?
+							version: if steam_game.engine == GameEngineBrand::Unreal {
+								get_engine(&id_string).await.and_then(|info| info.version)
+							} else {
+								None
+							},
+						})
+					} else {
+						None
+					};
 
 					Some(OwnedGame {
 						id: id_string.clone(),
@@ -195,13 +212,10 @@ impl ProviderActions for SteamProvider {
 						name: app_info.name.clone(),
 						installed,
 						os_list,
-						engine: steam_game.map(|game| GameEngine {
-							brand: game.engine,
-							version: more_engine_info.and_then(|info| info.version),
-						}),
+						engine,
 						release_date,
 						game_mode: Some(game_mode),
-						uevr_score: steam_game.and_then(|game| game.uevr_score),
+						uevr_score: steam_game_option.and_then(|game| game.uevr_score),
 					})
 				},
 			))

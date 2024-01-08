@@ -1,9 +1,7 @@
 import { Table, Tooltip } from "@mantine/core";
 import {
 	Architecture,
-	GameEngine,
 	GameEngineBrand,
-	GameEngineVersion,
 	GameMode,
 	OperatingSystem,
 	ProviderId,
@@ -28,10 +26,7 @@ import {
 import styles from "../table/table.module.css";
 import { ProcessedInstalledGame } from "@hooks/use-processed-installed-games";
 import { getThumbnailWithFallback } from "../../util/fallback-thumbnail";
-import {
-	getAdjustedUnityMajor,
-	sortGamesByEngine,
-} from "../../util/game-engines";
+import { sortGamesByEngine } from "../../util/game-engines";
 
 const thumbnail: TableColumnBase<ProcessedInstalledGame> = {
 	hideInDetails: true,
