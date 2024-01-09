@@ -63,7 +63,7 @@ const provider: TableColumnBase<OwnedGame, ProviderId> = {
 
 const engine: TableColumnBase<OwnedGame, GameEngineBrand> = {
 	label: "Engine",
-	width: 120,
+	width: 150,
 	center: true,
 	hidable: true,
 	sort: (dataA, dataB) => sortGamesByEngine(dataA.engine, dataB.engine),
@@ -73,7 +73,7 @@ const engine: TableColumnBase<OwnedGame, GameEngineBrand> = {
 	renderCell: ({ engine }) => (
 		<Table.Td>
 			<EngineBadge
-				miw={70}
+				maw={70}
 				value={engine?.brand}
 				label={engine ? engine.version?.display ?? "-" : undefined}
 			/>
