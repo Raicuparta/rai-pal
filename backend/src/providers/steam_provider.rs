@@ -11,10 +11,7 @@ use steamlocate::SteamDir;
 
 use super::provider::ProviderId;
 use crate::{
-	game_engines::game_engine::{
-		GameEngine,
-		GameEngineBrand,
-	},
+	game_engines::game_engine::GameEngine,
 	game_executable::OperatingSystem,
 	game_mode::GameMode,
 	installed_game::{
@@ -192,14 +189,9 @@ impl ProviderActions for SteamProvider {
 					let engine = if let Some(steam_game) = steam_game_option {
 						Some(GameEngine {
 							brand: steam_game.engine,
-							// PCGamingWiki only differentiates engine version for Unreal.
-							// Well they do have the Unity version sometimes, but only as text in the thing,
-							// not as the actual value in the API?
-							version: if steam_game.engine == GameEngineBrand::Unreal {
-								get_engine(&id_string).await.and_then(|info| info.version)
-							} else {
-								None
-							},
+							version: pc_gaming_wiki::get_engine_from_steam_id(&id_string)
+								.await
+								.and_then(|info| info.version),
 						})
 					} else {
 						None
@@ -225,8 +217,4 @@ impl ProviderActions for SteamProvider {
 			.collect(),
 		)
 	}
-}
-
-async fn get_engine(id: &str) -> Option<GameEngine> {
-	pc_gaming_wiki::get_engine(&format!("Steam_AppID%20HOLDS%20%22{id}%22")).await
 }

@@ -4,10 +4,6 @@ use async_trait::async_trait;
 
 use super::provider::ProviderId;
 use crate::{
-	game_engines::game_engine::{
-		GameEngine,
-		GameEngineBrand,
-	},
 	installed_game::InstalledGame,
 	owned_game::OwnedGame,
 	pc_gaming_wiki,
@@ -61,7 +57,7 @@ impl ProviderActions for GogProvider {
 						name: game.name.clone(),
 						installed: false, // TODO
 						os_list: HashSet::default(),
-						engine: get_engine(&game.id).await,
+						engine: pc_gaming_wiki::get_engine_from_gog_id(&game.id).await,
 						release_date: 0,                  // TODO
 						thumbnail_url: String::default(), // TODO Maybe possible to get from the sqlite db?
 						game_mode: None,
@@ -72,8 +68,4 @@ impl ProviderActions for GogProvider {
 			.await,
 		)
 	}
-}
-
-async fn get_engine(id: &str) -> Option<GameEngine> {
-	pc_gaming_wiki::get_engine(&format!("GOGcom_ID%20HOLDS%20%22{id}%22")).await
 }

@@ -7,10 +7,6 @@ use std::{
 
 use async_trait::async_trait;
 use base64::engine::general_purpose;
-use lazy_regex::{
-	regex_replace_all,
-	Regex,
-};
 use winreg::{
 	enums::HKEY_LOCAL_MACHINE,
 	RegKey,
@@ -18,7 +14,6 @@ use winreg::{
 
 use super::provider::ProviderId;
 use crate::{
-	game_engines::game_engine::GameEngineBrand,
 	installed_game::InstalledGame,
 	owned_game::OwnedGame,
 	pc_gaming_wiki,
