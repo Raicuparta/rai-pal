@@ -26,14 +26,14 @@ use crate::{
 	Result,
 };
 
-serializable_struct!(ManualProvider {});
+serializable_struct!(Manual {});
 
 #[derive(serde::Serialize, serde::Deserialize)]
 struct GamesConfig {
 	pub paths: Vec<PathBuf>,
 }
 
-impl ProviderStatic for ManualProvider {
+impl ProviderStatic for Manual {
 	const ID: &'static ProviderId = &ProviderId::Manual;
 
 	fn new() -> Result<Self>
@@ -45,7 +45,7 @@ impl ProviderStatic for ManualProvider {
 }
 
 #[async_trait]
-impl ProviderActions for ManualProvider {
+impl ProviderActions for Manual {
 	fn get_installed_games(&self) -> Result<Vec<InstalledGame>> {
 		Ok(read_games_config(&games_config_path()?)
 			.paths
@@ -63,7 +63,7 @@ fn create_game_from_path(path: &Path) -> Option<InstalledGame> {
 	InstalledGame::new(
 		path,
 		file_name_without_extension(path).ok()?,
-		*ManualProvider::ID,
+		*Manual::ID,
 		None,
 		None,
 		None,

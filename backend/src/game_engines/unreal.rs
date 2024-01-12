@@ -71,6 +71,47 @@ fn get_version_from_metadata(
 	})
 }
 
+fn parse_version(string: &str) -> Option<GameEngineVersion> {
+	// Can either be major.minor, or just major.
+	let (_, major, minor) = regex_captures!(
+		r#"(?x)
+			# Case insensitive.
+			(?i)
+		
+			# Starts with "+UE".
+			\+UE
+			
+			# Capture major version number.
+			([45])
+			
+			# Capture optional block with full version number.
+			(?:
+				# Skip over some characters, usually something like "+release-".
+				.*?
+				
+				# Full version as "major.minor".
+				# Capture minor only (major already captured above).
+				[45]\.(\d+)
+			)?
+		"#,
+		&string
+	)?;
+
+	Some(GameEngineVersion {
+		major: major.parse().unwrap_or(0),
+		minor: minor.parse().unwrap_or(0),
+		patch: 0,
+		suffix: None,
+		display: format!("{major}{}", {
+			if minor.is_empty() {
+				String::new()
+			} else {
+				format!(".{minor}")
+			}
+		}),
+	})
+}
+
 fn get_version_from_exe_parse(file_bytes: &[u8]) -> Option<GameEngineVersion> {
 	// Looking for strings like "+UE4+release-4.25", or just "+UE4" if the full version isn't found.
 	// The extra \x00 are because the strings are unicode.
@@ -107,45 +148,8 @@ fn get_version_from_exe_parse(file_bytes: &[u8]) -> Option<GameEngineVersion> {
 			.collect::<Vec<_>>(),
 	);
 
-	// Regex again because the byte regex above can't extract the match groups.
-	// Can either be major.minor, or just major.
-	let (_, major, minor) = regex_captures!(
-		r#"(?x)
-			# Case insensitive.
-			(?i)
-		
-			# Starts with "+UE".
-			\+UE
-			
-			# Capture major version number.
-			([45])
-			
-			# Capture optional block with full version number.
-			(?:
-				# Skip over some characters, usually something like "+release-".
-				.*?
-				
-				# Full version as "major.minor".
-				# Capture minor only (major already captured above).
-				[45]\.(\d+)
-			)?
-		"#,
-		&match_string
-	)?;
-
-	Some(GameEngineVersion {
-		major: major.parse().unwrap_or(0),
-		minor: minor.parse().unwrap_or(0),
-		patch: 0,
-		suffix: None,
-		display: format!("{major}{}", {
-			if minor.is_empty() {
-				String::new()
-			} else {
-				format!(".{minor}")
-			}
-		}),
-	})
+	// Parse again because the byte regex above can't extract the match groups.
+	parse_version(&match_string)
 }
 
 fn get_version(path: &Path, architecture: Architecture) -> Option<GameEngineVersion> {

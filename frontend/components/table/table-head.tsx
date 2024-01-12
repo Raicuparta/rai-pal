@@ -76,6 +76,8 @@ export function TableHead<
 								: undefined
 						}
 						w={column.width}
+						maw={column.width}
+						miw={column.width}
 					>
 						<Flex justify={column.center ? "center" : undefined}>
 							{column.hideLabel ? "" : column.label}

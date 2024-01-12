@@ -16,5 +16,5 @@ div.label {
 div.labelledBadge {
 	border-top-right-radius: 0;
 	border-bottom-right-radius: 0;
-	flex: 1;
+	flex: 3;
 }

@@ -12,10 +12,15 @@ use winreg::{
 	RegKey,
 };
 
-use super::provider::ProviderId;
+use super::provider::{
+	self,
+	ProviderId,
+};
 use crate::{
+	game_engines::game_engine::GameEngine,
 	installed_game::InstalledGame,
 	owned_game::OwnedGame,
+	pc_gaming_wiki,
 	provider::{
 		ProviderActions,
 		ProviderStatic,
@@ -24,11 +29,12 @@ use crate::{
 	Result,
 };
 
-pub struct EpicProvider {
+pub struct Epic {
 	app_data_path: PathBuf,
+	engine_cache: provider::EngineCache,
 }
 
-impl ProviderStatic for EpicProvider {
+impl ProviderStatic for Epic {
 	const ID: &'static ProviderId = &ProviderId::Epic;
 
 	fn new() -> Result<Self>
@@ -40,7 +46,12 @@ impl ProviderStatic for EpicProvider {
 			.and_then(|launcher_reg| launcher_reg.get_value::<String, _>("AppDataPath"))
 			.map(PathBuf::from)?;
 
-		Ok(Self { app_data_path })
+		let engine_cache = Self::try_get_engine_cache();
+
+		Ok(Self {
+			app_data_path,
+			engine_cache,
+		})
 	}
 }
 
@@ -91,7 +102,7 @@ impl EpicCatalogItem {
 }
 
 #[async_trait]
-impl ProviderActions for EpicProvider {
+impl ProviderActions for Epic {
 	fn get_installed_games(&self) -> Result<Vec<InstalledGame>> {
 		// TODO stop using game_scanner,
 		// just implement it here since I have to make so many changes anyway.
@@ -120,30 +131,47 @@ impl ProviderActions for EpicProvider {
 
 		let items = serde_json::from_str::<Vec<EpicCatalogItem>>(&json)?;
 
-		Ok(items
-			.iter()
-			.filter_map(|catalog_item| {
-				if catalog_item
-					.categories
-					.iter()
-					.all(|category| category.path != "games")
-				{
-					return None;
-				}
+		let owned_games = futures::future::join_all(items.iter().map(|catalog_item| async {
+			if catalog_item
+				.categories
+				.iter()
+				.all(|category| category.path != "games")
+			{
+				return None;
+			}
 
-				Some(OwnedGame {
-					engine: None,
-					game_mode: None,
-					id: catalog_item.id.clone(),
-					name: catalog_item.title.clone(),
-					thumbnail_url: catalog_item.get_thumbnail_url().unwrap_or_default(),
-					installed: false, // TODO
-					os_list: HashSet::default(),
-					provider_id: *Self::ID,
-					release_date: catalog_item.get_release_date().unwrap_or(0),
-					uevr_score: None,
-				})
+			Some(OwnedGame {
+				engine: get_engine(&catalog_item.title, &self.engine_cache).await,
+				game_mode: None,
+				id: catalog_item.id.clone(),
+				name: catalog_item.title.clone(),
+				thumbnail_url: catalog_item.get_thumbnail_url().unwrap_or_default(),
+				installed: false, // TODO
+				os_list: HashSet::default(),
+				provider_id: *Self::ID,
+				release_date: catalog_item.get_release_date().unwrap_or(0),
+				uevr_score: None,
 			})
-			.collect())
+		}))
+		.await
+		.into_iter()
+		.flatten();
+
+		Self::try_save_engine_cache(
+			&owned_games
+				.clone()
+				.map(|owned_game| (owned_game.name.clone(), owned_game.engine))
+				.collect(),
+		);
+
+		Ok(owned_games.collect())
 	}
+}
+
+async fn get_engine(title: &str, cache: &provider::EngineCache) -> Option<GameEngine> {
+	if let Some(cached_engine) = cache.get(title) {
+		return cached_engine.clone();
+	}
+
+	pc_gaming_wiki::get_engine_from_game_title(title).await
 }

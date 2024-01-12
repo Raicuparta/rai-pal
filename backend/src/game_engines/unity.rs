@@ -39,6 +39,27 @@ use crate::{
 
 serializable_enum!(UnityScriptingBackend { Il2Cpp, Mono });
 
+pub fn parse_version(string: &str) -> Option<GameEngineVersion> {
+	let (full, major, minor, patch, suffix) = regex_captures!(
+		r#"(?x)
+			# Version number as "major.minor.patch".
+			(\d+)\.(\d+)\.(\d+)
+
+			# Suffix, like "f1" or "p3".
+			([fp]\d+)
+		"#,
+		&string
+	)?;
+
+	Some(GameEngineVersion {
+		display: full.to_string(),
+		major: major.parse().unwrap_or(0),
+		minor: minor.parse().unwrap_or(0),
+		patch: patch.parse().unwrap_or(0),
+		suffix: Some(suffix.to_string()),
+	})
+}
+
 fn get_version_from_asset(asset_path: &Path) -> Result<GameEngineVersion> {
 	let mut file = File::open(asset_path)?;
 	let mut data = vec![0u8; 4096];
@@ -49,27 +70,10 @@ fn get_version_from_asset(asset_path: &Path) -> Result<GameEngineVersion> {
 	}
 
 	let data_str = String::from_utf8_lossy(&data[..bytes_read]);
-	let (full, major, minor, patch, suffix) = regex_captures!(
-		r#"(?x)
-			# Version number as "major.minor.patch".
-			(\d+)\.(\d+)\.(\d+)
 
-			# Suffix, like "f1" or "p3".
-			([fp]\d+)
-		"#,
-		&data_str
-	)
-	.ok_or(Error::FailedToParseUnityVersionAsset(
+	parse_version(&data_str).ok_or(Error::FailedToParseUnityVersionAsset(
 		asset_path.to_path_buf(),
-	))?;
-
-	Ok(GameEngineVersion {
-		display: full.to_string(),
-		major: major.parse().unwrap_or(0),
-		minor: minor.parse().unwrap_or(0),
-		patch: patch.parse().unwrap_or(0),
-		suffix: Some(suffix.to_string()),
-	})
+	))
 }
 
 fn get_version(game_exe_path: &Path) -> Option<GameEngineVersion> {

@@ -104,11 +104,12 @@ export function openLogsFolder() {
 
 export type GameEngineVersion = { major: number; minor: number; patch: number; suffix: string | null; display: string }
 export type Manifest = { version: string; runnable: RunnableModData | null; engine: GameEngineBrand | null; unityBackend: UnityScriptingBackend | null }
+export type ProviderId = "Steam" | "Manual" | "Epic" | "Gog" | "Xbox"
 export type GameEngineBrand = "Unity" | "Unreal" | "Godot"
 export type GameMode = "VR" | "Flat"
 export type ModKind = "Installable" | "Runnable"
 export type RunnableModData = { path: string; args: string[] }
-export type OwnedGame = { id: string; providerId: ProviderId; name: string; installed: boolean; osList: OperatingSystem[]; engine: GameEngineBrand | null; releaseDate: BigInt; thumbnailUrl: string; gameMode: GameMode | null; uevrScore: UevrScore | null }
+export type OwnedGame = { id: string; providerId: ProviderId; name: string; installed: boolean; osList: OperatingSystem[]; engine: GameEngine | null; releaseDate: BigInt; thumbnailUrl: string; gameMode: GameMode | null; uevrScore: UevrScore | null }
 export type AppEvent = "SyncInstalledGames" | "SyncOwnedGames" | "SyncModLoaders" | "SyncLocalMods" | "SyncRemoteMods" | "ExecutedSteamCommand" | "GameAdded" | "GameRemoved" | "Error"
 export type ModDownload = { id: string; url: string; root: string | null; runnable: RunnableModData | null }
 export type LocalMod = { data: LocalModData; common: CommonModData }
@@ -121,7 +122,6 @@ export type GameExecutable = { path: string; name: string; engine: GameEngine | 
 export type RemoteMod = { common: CommonModData; data: RemoteModData }
 export type UevrScore = "A" | "B" | "C" | "D" | "E"
 export type InstalledGame = { id: string; name: string; providerId: ProviderId; discriminator: string | null; steamLaunch: SteamLaunchOption | null; executable: GameExecutable; thumbnailUrl: string | null; installedModVersions: { [key: string]: string | null }; gameMode: GameMode }
-export type ProviderId = "Steam" | "Manual" | "Epic" | "Gog" | "Xbox"
 export type GameEngine = { brand: GameEngineBrand; version: GameEngineVersion | null }
 export type OperatingSystem = "Linux" | "Windows"
 export type CommonModData = { id: string; engine: GameEngineBrand | null; unityBackend: UnityScriptingBackend | null; loaderId: string }

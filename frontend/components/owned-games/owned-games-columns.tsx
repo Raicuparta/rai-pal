@@ -21,6 +21,7 @@ import {
 	providerFilterOptions,
 } from "../../util/common-filter-options";
 import { getThumbnailWithFallback } from "../../util/fallback-thumbnail";
+import { sortGamesByEngine } from "../../util/game-engines";
 
 const thumbnail: TableColumnBase<OwnedGame> = {
 	label: "Thumbnail",
@@ -62,14 +63,20 @@ const provider: TableColumnBase<OwnedGame, ProviderId> = {
 
 const engine: TableColumnBase<OwnedGame, GameEngineBrand> = {
 	label: "Engine",
-	width: 100,
+	width: 150,
 	center: true,
 	hidable: true,
-	getSortValue: (game) => game.engine,
+	sort: (dataA, dataB) => sortGamesByEngine(dataA.engine, dataB.engine),
+	getFilterValue: (game) => game.engine?.brand ?? "",
+	unavailableValues: ["Godot"],
 	filterOptions: engineFilterOptions,
-	renderCell: (game) => (
-		<Table.Td align="center">
-			<EngineBadge value={game.engine} />
+	renderCell: ({ engine }) => (
+		<Table.Td>
+			<EngineBadge
+				maw={70}
+				value={engine?.brand}
+				label={engine ? engine.version?.display ?? "-" : undefined}
+			/>
 		</Table.Td>
 	),
 };
