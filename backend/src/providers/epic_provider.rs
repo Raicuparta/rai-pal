@@ -29,12 +29,12 @@ use crate::{
 	Result,
 };
 
-pub struct EpicProvider {
+pub struct Epic {
 	app_data_path: PathBuf,
 	engine_cache: provider::EngineCache,
 }
 
-impl ProviderStatic for EpicProvider {
+impl ProviderStatic for Epic {
 	const ID: &'static ProviderId = &ProviderId::Epic;
 
 	fn new() -> Result<Self>
@@ -102,7 +102,7 @@ impl EpicCatalogItem {
 }
 
 #[async_trait]
-impl ProviderActions for EpicProvider {
+impl ProviderActions for Epic {
 	fn get_installed_games(&self) -> Result<Vec<InstalledGame>> {
 		// TODO stop using game_scanner,
 		// just implement it here since I have to make so many changes anyway.

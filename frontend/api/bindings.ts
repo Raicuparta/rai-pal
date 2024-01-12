@@ -102,9 +102,9 @@ export function openLogsFolder() {
     return invoke()<null>("open_logs_folder")
 }
 
-export type ProviderId = "Steam" | "Manual" | "Epic" | "Gog" | "Xbox"
 export type GameEngineVersion = { major: number; minor: number; patch: number; suffix: string | null; display: string }
 export type Manifest = { version: string; runnable: RunnableModData | null; engine: GameEngineBrand | null; unityBackend: UnityScriptingBackend | null }
+export type ProviderId = "Steam" | "Manual" | "Epic" | "Gog" | "Xbox"
 export type GameEngineBrand = "Unity" | "Unreal" | "Godot"
 export type GameMode = "VR" | "Flat"
 export type ModKind = "Installable" | "Runnable"

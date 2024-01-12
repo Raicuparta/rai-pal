@@ -1,8 +1,5 @@
 use std::{
-	collections::{
-		HashMap,
-		HashSet,
-	},
+	collections::HashSet,
 	fs,
 	path::PathBuf,
 	string,
@@ -41,13 +38,13 @@ use crate::{
 	Result,
 };
 
-pub struct SteamProvider {
+pub struct Steam {
 	steam_dir: SteamDir,
 	app_info_file: SteamAppInfoFile,
 	engine_cache: provider::EngineCache,
 }
 
-impl ProviderStatic for SteamProvider {
+impl ProviderStatic for Steam {
 	const ID: &'static ProviderId = &ProviderId::Steam;
 
 	fn new() -> Result<Self>
@@ -67,7 +64,7 @@ impl ProviderStatic for SteamProvider {
 }
 
 #[async_trait]
-impl ProviderActions for SteamProvider {
+impl ProviderActions for Steam {
 	fn get_installed_games(&self) -> Result<Vec<InstalledGame>> {
 		let mut games: Vec<InstalledGame> = Vec::new();
 		let mut used_paths: HashSet<PathBuf> = HashSet::new();

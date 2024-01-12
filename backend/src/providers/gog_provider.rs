@@ -18,11 +18,11 @@ use crate::{
 	Result,
 };
 
-pub struct GogProvider {
+pub struct Gog {
 	engine_cache: provider::EngineCache,
 }
 
-impl ProviderStatic for GogProvider {
+impl ProviderStatic for Gog {
 	const ID: &'static ProviderId = &ProviderId::Gog;
 
 	fn new() -> Result<Self>
@@ -36,7 +36,7 @@ impl ProviderStatic for GogProvider {
 }
 
 #[async_trait]
-impl ProviderActions for GogProvider {
+impl ProviderActions for Gog {
 	fn get_installed_games(&self) -> Result<Vec<InstalledGame>> {
 		Ok(game_scanner::gog::games()
 			.unwrap_or_default()

@@ -1,8 +1,5 @@
 use std::{
-	collections::{
-		HashMap,
-		HashSet,
-	},
+	collections::HashMap,
 	fs,
 	path::PathBuf,
 	time::Instant,
@@ -13,9 +10,9 @@ use enum_dispatch::enum_dispatch;
 use log::error;
 
 use super::{
-	epic_provider::EpicProvider,
-	gog_provider::GogProvider,
-	xbox_provider::XboxProvider,
+	epic_provider::Epic,
+	gog_provider::Gog,
+	xbox_provider::Xbox,
 };
 use crate::{
 	debug::LoggableInstant,
@@ -23,10 +20,9 @@ use crate::{
 	installed_game::InstalledGame,
 	owned_game::OwnedGame,
 	paths,
-	pc_gaming_wiki,
 	providers::{
-		manual_provider::ManualProvider,
-		steam_provider::SteamProvider,
+		manual_provider::Manual,
+		steam_provider::Steam,
 	},
 	serializable_enum,
 	Result,
@@ -42,11 +38,11 @@ serializable_enum!(ProviderId {
 
 #[enum_dispatch]
 pub enum Provider {
-	SteamProvider,
-	ManualProvider,
-	EpicProvider,
-	GogProvider,
-	XboxProvider,
+	Steam,
+	Manual,
+	Epic,
+	Gog,
+	Xbox,
 }
 
 #[async_trait]
@@ -143,19 +139,19 @@ pub fn get_map() -> Map {
 	let mut map = Map::new();
 	let now = &mut Instant::now();
 
-	add_entry::<SteamProvider>(&mut map);
+	add_entry::<Steam>(&mut map);
 	now.log_next("set up provider (Steam)");
 
-	add_entry::<EpicProvider>(&mut map);
+	add_entry::<Epic>(&mut map);
 	now.log_next("set up provider (Epic)");
 
-	add_entry::<GogProvider>(&mut map);
+	add_entry::<Gog>(&mut map);
 	now.log_next("set up provider (Gog)");
 
-	add_entry::<XboxProvider>(&mut map);
+	add_entry::<Xbox>(&mut map);
 	now.log_next("set up provider (Xbox)");
 
-	add_entry::<ManualProvider>(&mut map);
+	add_entry::<Manual>(&mut map);
 	now.log_next("set up provider (Manual)");
 
 	map
