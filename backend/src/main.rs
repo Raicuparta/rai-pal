@@ -68,6 +68,7 @@ mod mod_manifest;
 mod operating_systems;
 mod owned_game;
 mod paths;
+mod pc_gaming_wiki;
 mod providers;
 mod remote_mod;
 mod result;
@@ -359,9 +360,7 @@ async fn update_data(handle: AppHandle) -> Result {
 	let local_mods = refresh_local_mods(&mod_loaders, &handle).await;
 	now.log_next("refresh local mods");
 
-	let provider_map = provider::get_map(|error| {
-		handle.emit_error(format!("Failed to set up provider: {error}"));
-	});
+	let provider_map = provider::get_map();
 	now.log_next("get provider map");
 
 	let mut installed_games: HashMap<_, _> = provider_map
@@ -416,7 +415,12 @@ async fn update_data(handle: AppHandle) -> Result {
 	)
 	.await
 	.into_iter()
-	.flat_map(result::Result::unwrap_or_default)
+	.flat_map(|result| {
+		result.unwrap_or_else(|err| {
+			error!("Failed to get owned games for a provider: {err}");
+			Vec::default()
+		})
+	})
 	.map(|owned_game| (owned_game.id.clone(), owned_game))
 	.collect();
 	now.log_next(&format!("get owned games ({} total)", owned_games.len()));

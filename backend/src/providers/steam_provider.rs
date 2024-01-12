@@ -9,8 +9,12 @@ use async_trait::async_trait;
 use lazy_regex::BytesRegex;
 use steamlocate::SteamDir;
 
-use super::provider::ProviderId;
+use super::provider::{
+	self,
+	ProviderId,
+};
 use crate::{
+	game_engines::game_engine::GameEngine,
 	game_executable::OperatingSystem,
 	game_mode::GameMode,
 	installed_game::{
@@ -18,6 +22,7 @@ use crate::{
 		InstalledGame,
 	},
 	owned_game::OwnedGame,
+	pc_gaming_wiki,
 	provider::{
 		ProviderActions,
 		ProviderStatic,
@@ -33,12 +38,13 @@ use crate::{
 	Result,
 };
 
-pub struct SteamProvider {
+pub struct Steam {
 	steam_dir: SteamDir,
 	app_info_file: SteamAppInfoFile,
+	engine_cache: provider::EngineCache,
 }
 
-impl ProviderStatic for SteamProvider {
+impl ProviderStatic for Steam {
 	const ID: &'static ProviderId = &ProviderId::Steam;
 
 	fn new() -> Result<Self>
@@ -47,16 +53,18 @@ impl ProviderStatic for SteamProvider {
 	{
 		let steam_dir = SteamDir::locate()?;
 		let app_info_file = appinfo::read(steam_dir.path())?;
+		let engine_cache = Self::try_get_engine_cache();
 
 		Ok(Self {
 			steam_dir,
 			app_info_file,
+			engine_cache,
 		})
 	}
 }
 
 #[async_trait]
-impl ProviderActions for SteamProvider {
+impl ProviderActions for Steam {
 	fn get_installed_games(&self) -> Result<Vec<InstalledGame>> {
 		let mut games: Vec<InstalledGame> = Vec::new();
 		let mut used_paths: HashSet<PathBuf> = HashSet::new();
@@ -117,11 +125,9 @@ impl ProviderActions for SteamProvider {
 
 	async fn get_owned_games(&self) -> Result<Vec<OwnedGame>> {
 		let steam_games = id_lists::get().await?;
-		Ok(self
-			.app_info_file
-			.apps
-			.iter()
-			.filter_map(|(steam_id, app_info)| {
+		let owned_games = futures::future::join_all(self.app_info_file.apps.iter().map(
+			|(steam_id, app_info)| async {
+				let id_string = steam_id.to_string();
 				let os_list: HashSet<_> = app_info
 					.launch_options
 					.iter()
@@ -152,7 +158,7 @@ impl ProviderActions for SteamProvider {
 						// Would be smarter to actually parse assets.vdf and extract all the ids,
 						// but I didn't feel like figuring out how to parse another binary vdf.
 						// Maybe later. But most likely never.
-						BytesRegex::new(&steam_id.to_string())
+						BytesRegex::new(&id_string)
 							.map_or(false, |regex| regex.is_match(&assets_cache_bytes))
 					});
 
@@ -165,10 +171,14 @@ impl ProviderActions for SteamProvider {
 					.app(*steam_id)
 					.map_or(false, |steam_app| steam_app.is_some());
 
-				let release_date = app_info
-					.original_release_date
-					.or(app_info.steam_release_date)
-					.unwrap_or_default();
+				// Steam's appinfo cache file seems to use i32 for the timestamps...
+				// See you in 2038
+				let release_date = i64::from(
+					app_info
+						.original_release_date
+						.or(app_info.steam_release_date)
+						.unwrap_or_default(),
+				);
 
 				let game_mode = if app_info
 					.launch_options
@@ -180,21 +190,52 @@ impl ProviderActions for SteamProvider {
 					GameMode::Flat
 				};
 
-				let steam_game = steam_games.get(&steam_id.to_string());
+				// TODO: cache the whole thing, not just the engine version.
+				let steam_game_option = steam_games.get(&id_string);
+				let engine_option = if let Some(steam_game) = steam_game_option {
+					Some(GameEngine {
+						brand: steam_game.engine,
+						version: get_engine(&id_string, &self.engine_cache)
+							.await
+							.and_then(|info| info.version),
+					})
+				} else {
+					None
+				};
 
 				Some(OwnedGame {
-					id: steam_id.to_string(),
+					id: id_string.clone(),
+					thumbnail_url: get_steam_thumbnail(&id_string),
 					provider_id: *Self::ID,
 					name: app_info.name.clone(),
 					installed,
 					os_list,
-					engine: steam_game.map(|game| game.engine),
+					engine: engine_option,
 					release_date,
-					thumbnail_url: get_steam_thumbnail(&steam_id.to_string()),
 					game_mode: Some(game_mode),
-					uevr_score: steam_game.and_then(|game| game.uevr_score),
+					uevr_score: steam_game_option.and_then(|game| game.uevr_score),
 				})
-			})
-			.collect())
+			},
+		))
+		.await
+		.into_iter()
+		.flatten();
+
+		Self::try_save_engine_cache(
+			&owned_games
+				.clone()
+				.map(|owned_game| (owned_game.id.clone(), owned_game.engine))
+				.collect(),
+		);
+
+		Ok(owned_games.collect())
 	}
+}
+
+async fn get_engine(steam_id: &str, cache: &provider::EngineCache) -> Option<GameEngine> {
+	if let Some(cached_engine) = cache.get(steam_id) {
+		return cached_engine.clone();
+	}
+
+	pc_gaming_wiki::get_engine(&format!("Steam_AppID%20HOLDS%20%22{steam_id}%22")).await
 }

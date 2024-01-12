@@ -35,6 +35,9 @@ pub enum Error {
 	#[error(transparent)]
 	Json(#[from] serde_json::Error),
 
+	#[error(transparent)]
+	ChronoParse(#[from] chrono::ParseError),
+
 	#[error("Invalid type `{0}` in binary vdf key/value pair")]
 	InvalidBinaryVdfType(u8),
 

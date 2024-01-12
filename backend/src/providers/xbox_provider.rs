@@ -22,9 +22,9 @@ use crate::{
 	Result,
 };
 
-pub struct XboxProvider {}
+pub struct Xbox {}
 
-impl ProviderStatic for XboxProvider {
+impl ProviderStatic for Xbox {
 	const ID: &'static ProviderId = &ProviderId::Xbox;
 
 	fn new() -> Result<Self>
@@ -36,7 +36,7 @@ impl ProviderStatic for XboxProvider {
 }
 
 #[async_trait]
-impl ProviderActions for XboxProvider {
+impl ProviderActions for Xbox {
 	fn get_installed_games(&self) -> Result<Vec<InstalledGame>> {
 		let gaming_services = RegKey::predef(HKEY_LOCAL_MACHINE)
 			.open_subkey("SOFTWARE\\Microsoft\\GamingServices")?;
