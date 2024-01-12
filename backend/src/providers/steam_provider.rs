@@ -1,5 +1,8 @@
 use std::{
-	collections::HashSet,
+	collections::{
+		HashMap,
+		HashSet,
+	},
 	fs,
 	path::PathBuf,
 	string,
@@ -9,7 +12,10 @@ use async_trait::async_trait;
 use lazy_regex::BytesRegex;
 use steamlocate::SteamDir;
 
-use super::provider::ProviderId;
+use super::provider::{
+	self,
+	ProviderId,
+};
 use crate::{
 	game_engines::game_engine::GameEngine,
 	game_executable::OperatingSystem,
@@ -38,6 +44,7 @@ use crate::{
 pub struct SteamProvider {
 	steam_dir: SteamDir,
 	app_info_file: SteamAppInfoFile,
+	engine_cache: provider::EngineCache,
 }
 
 impl ProviderStatic for SteamProvider {
@@ -49,10 +56,12 @@ impl ProviderStatic for SteamProvider {
 	{
 		let steam_dir = SteamDir::locate()?;
 		let app_info_file = appinfo::read(steam_dir.path())?;
+		let engine_cache = Self::try_get_engine_cache();
 
 		Ok(Self {
 			steam_dir,
 			app_info_file,
+			engine_cache,
 		})
 	}
 }
@@ -119,7 +128,8 @@ impl ProviderActions for SteamProvider {
 
 	async fn get_owned_games(&self) -> Result<Vec<OwnedGame>> {
 		let steam_games = id_lists::get().await?;
-		Ok(
+		// let mut engine_cache = provider::EngineCache::default();
+		let result = Ok(
 			futures::future::join_all(self.app_info_file.apps.iter().map(
 				|(steam_id, app_info)| async {
 					let id_string = steam_id.to_string();
@@ -186,16 +196,20 @@ impl ProviderActions for SteamProvider {
 					};
 
 					let steam_game_option = steam_games.get(&id_string);
-					let engine = if let Some(steam_game) = steam_game_option {
+					let engine_option = if let Some(steam_game) = steam_game_option {
 						Some(GameEngine {
 							brand: steam_game.engine,
-							version: pc_gaming_wiki::get_engine_from_steam_id(&id_string)
+							version: get_engine(&id_string, &self.engine_cache)
 								.await
 								.and_then(|info| info.version),
 						})
 					} else {
 						None
 					};
+
+					// if let Some(engine) = engine_option {
+					// 	engine_cache.insert(id_string, engine);
+					// }
 
 					Some(OwnedGame {
 						id: id_string.clone(),
@@ -204,7 +218,7 @@ impl ProviderActions for SteamProvider {
 						name: app_info.name.clone(),
 						installed,
 						os_list,
-						engine,
+						engine: engine_option,
 						release_date,
 						game_mode: Some(game_mode),
 						uevr_score: steam_game_option.and_then(|game| game.uevr_score),
@@ -215,6 +229,18 @@ impl ProviderActions for SteamProvider {
 			.into_iter()
 			.flatten()
 			.collect(),
-		)
+		);
+
+		// Self::save_engine_cache(&engine_cache);
+
+		result
 	}
+}
+
+async fn get_engine(steam_id: &str, cache: &provider::EngineCache) -> Option<GameEngine> {
+	if let Some(cached_engine) = cache.get(steam_id) {
+		return Some(cached_engine.clone());
+	}
+
+	pc_gaming_wiki::get_engine(&format!("Steam_AppID%20HOLDS%20%22{steam_id}%22")).await
 }

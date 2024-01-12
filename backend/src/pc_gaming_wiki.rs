@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use lazy_regex::{
 	regex_captures,
 	regex_replace_all,
@@ -46,7 +48,7 @@ fn parse_version(version_text: &str) -> Option<GameEngineVersion> {
 	})
 }
 
-async fn get_engine(where_query: &str) -> Option<GameEngine> {
+pub async fn get_engine(where_query: &str) -> Option<GameEngine> {
 	let url = format!("https://www.pcgamingwiki.com/w/api.php?action=cargoquery&tables=Infobox_game,Infobox_game_engine&fields=Infobox_game_engine.Engine,Infobox_game_engine.Build&where={where_query}&format=json&join%20on=Infobox_game._pageName%20=%20Infobox_game_engine._pageName");
 
 	println!("### fetching the one and only {url}");
@@ -96,10 +98,6 @@ async fn get_engine(where_query: &str) -> Option<GameEngine> {
 		}
 		Err(err) => None,
 	}
-}
-
-pub async fn get_engine_from_steam_id(steam_id: &str) -> Option<GameEngine> {
-	get_engine(&format!("Steam_AppID%20HOLDS%20%22{steam_id}%22")).await
 }
 
 pub async fn get_engine_from_gog_id(gog_id: &str) -> Option<GameEngine> {

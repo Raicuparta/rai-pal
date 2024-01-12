@@ -1,5 +1,10 @@
 use std::{
-	collections::HashMap,
+	collections::{
+		HashMap,
+		HashSet,
+	},
+	fs,
+	path::PathBuf,
 	time::Instant,
 };
 
@@ -14,8 +19,11 @@ use super::{
 };
 use crate::{
 	debug::LoggableInstant,
+	game_engines::game_engine::GameEngine,
 	installed_game::InstalledGame,
 	owned_game::OwnedGame,
+	paths,
+	pc_gaming_wiki,
 	providers::{
 		manual_provider::ManualProvider,
 		steam_provider::SteamProvider,
@@ -49,12 +57,56 @@ pub trait ProviderActions {
 	async fn get_owned_games(&self) -> Result<Vec<OwnedGame>>;
 }
 
+pub type EngineCache = HashMap<String, GameEngine>;
+
 pub trait ProviderStatic {
 	const ID: &'static ProviderId;
 
 	fn new() -> Result<Self>
 	where
 		Self: Sized;
+
+	fn get_engine_cache_path() -> Result<PathBuf> {
+		Ok(paths::app_data_path()?
+			.join("providers")
+			.join(Self::ID.to_string())
+			.join("engine-cache.json"))
+	}
+
+	fn save_engine_cache(cache: &EngineCache) -> Result {
+		let json = serde_json::to_string_pretty(cache)?;
+		fs::write(Self::get_engine_cache_path()?, json)?;
+		Ok(())
+	}
+
+	fn try_save_engine_cache(cache: &EngineCache) {
+		if let Err(err) = Self::save_engine_cache(cache) {
+			error!(
+				"Failed to save engine cache for provider '{}'. Error: {}",
+				Self::ID,
+				err
+			)
+		}
+	}
+
+	fn get_engine_cache() -> Result<EngineCache> {
+		let json = fs::read_to_string(Self::get_engine_cache_path()?)?;
+		Ok(serde_json::from_str::<EngineCache>(&json)?)
+	}
+
+	fn try_get_engine_cache() -> EngineCache {
+		match Self::get_engine_cache() {
+			Ok(pc_gaming_wiki_cache) => pc_gaming_wiki_cache,
+			Err(err) => {
+				error!(
+					"Failed to get engine cache for provider '{}'. Error: {}",
+					Self::ID,
+					err
+				);
+				HashMap::default()
+			}
+		}
+	}
 }
 
 type Map = HashMap<String, Provider>;
