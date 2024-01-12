@@ -63,7 +63,7 @@ impl ProviderActions for Gog {
 						id: game.id.clone(),
 						provider_id: *Self::ID,
 						name: game.name.clone(),
-						installed: false, // TODO
+						installed: game.state.installed,
 						os_list: HashSet::default(),
 						engine: get_engine(&game.id, &self.engine_cache).await,
 						release_date: 0,                  // TODO
