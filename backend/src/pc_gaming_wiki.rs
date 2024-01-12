@@ -1,9 +1,8 @@
-use std::collections::HashMap;
-
 use lazy_regex::{
 	regex_captures,
 	regex_replace_all,
 };
+use log::error;
 
 use crate::{
 	game_engines::game_engine::{
@@ -92,10 +91,16 @@ pub async fn get_engine(where_query: &str) -> Option<GameEngine> {
 							}
 						})
 				}
-				Err(err) => None,
+				Err(err) => {
+					error!("Error parsing PCGamingWiki response: {err}");
+					None
+				}
 			}
 		}
-		Err(err) => None,
+		Err(err) => {
+			error!("Error fetching from PCGamingWiki: {err}");
+			None
+		}
 	}
 }
 
