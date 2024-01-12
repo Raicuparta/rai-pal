@@ -159,7 +159,11 @@ fn get_version(path: &Path, architecture: Architecture) -> Option<GameEngineVers
 				.or_else(|| get_version_from_exe_parse(&file_bytes));
 		}
 		Err(err) => {
-			error!("Failed to read game exe: {err}");
+			error!(
+				"Failed to read game exe `{}`. Error: {}",
+				path.display(),
+				err
+			);
 		}
 	}
 
@@ -231,7 +235,7 @@ pub fn get_executable(launch_path: &Path) -> Option<GameExecutable> {
 		let (operating_system, architecture) =
 			get_os_and_architecture(&path).unwrap_or((None, None));
 
-		let version = get_version(launch_path, architecture.unwrap_or(Architecture::X64));
+		let version = get_version(&path, architecture.unwrap_or(Architecture::X64));
 
 		Some(GameExecutable {
 			path: path.clone(),
