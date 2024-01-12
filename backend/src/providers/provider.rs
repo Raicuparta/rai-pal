@@ -57,20 +57,27 @@ pub trait ProviderActions {
 	async fn get_owned_games(&self) -> Result<Vec<OwnedGame>>;
 }
 
-pub type EngineCache = HashMap<String, GameEngine>;
+pub type EngineCache = HashMap<String, Option<GameEngine>>;
 
-pub trait ProviderStatic {
+pub trait ProviderStatic: ProviderActions {
 	const ID: &'static ProviderId;
 
 	fn new() -> Result<Self>
 	where
 		Self: Sized;
 
-	fn get_engine_cache_path() -> Result<PathBuf> {
-		Ok(paths::app_data_path()?
+	fn get_folder() -> Result<PathBuf> {
+		let path = paths::app_data_path()?
 			.join("providers")
-			.join(Self::ID.to_string())
-			.join("engine-cache.json"))
+			.join(Self::ID.to_string());
+
+		fs::create_dir_all(&path)?;
+
+		Ok(path)
+	}
+
+	fn get_engine_cache_path() -> Result<PathBuf> {
+		Ok(Self::get_folder()?.join("engine-cache.json"))
 	}
 
 	fn save_engine_cache(cache: &EngineCache) -> Result {
@@ -85,7 +92,7 @@ pub trait ProviderStatic {
 				"Failed to save engine cache for provider '{}'. Error: {}",
 				Self::ID,
 				err
-			)
+			);
 		}
 	}
 

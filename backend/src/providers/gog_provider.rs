@@ -2,8 +2,12 @@ use std::collections::HashSet;
 
 use async_trait::async_trait;
 
-use super::provider::ProviderId;
+use super::provider::{
+	self,
+	ProviderId,
+};
 use crate::{
+	game_engines::game_engine::GameEngine,
 	installed_game::InstalledGame,
 	owned_game::OwnedGame,
 	pc_gaming_wiki,
@@ -14,7 +18,9 @@ use crate::{
 	Result,
 };
 
-pub struct GogProvider {}
+pub struct GogProvider {
+	engine_cache: provider::EngineCache,
+}
 
 impl ProviderStatic for GogProvider {
 	const ID: &'static ProviderId = &ProviderId::Gog;
@@ -23,7 +29,9 @@ impl ProviderStatic for GogProvider {
 	where
 		Self: Sized,
 	{
-		Ok(Self {})
+		let engine_cache = Self::try_get_engine_cache();
+
+		Ok(Self { engine_cache })
 	}
 }
 
@@ -47,7 +55,7 @@ impl ProviderActions for GogProvider {
 	}
 
 	async fn get_owned_games(&self) -> Result<Vec<OwnedGame>> {
-		Ok(
+		let owned_games =
 			futures::future::join_all(game_scanner::gog::games().unwrap_or_default().iter().map(
 				|game| async {
 					OwnedGame {
@@ -57,7 +65,7 @@ impl ProviderActions for GogProvider {
 						name: game.name.clone(),
 						installed: false, // TODO
 						os_list: HashSet::default(),
-						engine: pc_gaming_wiki::get_engine_from_gog_id(&game.id).await,
+						engine: get_engine(&game.id, &self.engine_cache).await,
 						release_date: 0,                  // TODO
 						thumbnail_url: String::default(), // TODO Maybe possible to get from the sqlite db?
 						game_mode: None,
@@ -65,7 +73,24 @@ impl ProviderActions for GogProvider {
 					}
 				},
 			))
-			.await,
-		)
+			.await;
+
+		Self::try_save_engine_cache(
+			&owned_games
+				.clone()
+				.into_iter()
+				.map(|owned_game| (owned_game.name.clone(), owned_game.engine))
+				.collect(),
+		);
+
+		Ok(owned_games)
 	}
+}
+
+async fn get_engine(gog_id: &str, cache: &provider::EngineCache) -> Option<GameEngine> {
+	if let Some(cached_engine) = cache.get(gog_id) {
+		return cached_engine.clone();
+	}
+
+	pc_gaming_wiki::get_engine(&format!("GOGcom_ID%20HOLDS%20%22{gog_id}%22")).await
 }

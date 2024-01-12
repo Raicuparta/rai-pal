@@ -51,7 +51,6 @@ fn parse_version(version_text: &str) -> Option<GameEngineVersion> {
 pub async fn get_engine(where_query: &str) -> Option<GameEngine> {
 	let url = format!("https://www.pcgamingwiki.com/w/api.php?action=cargoquery&tables=Infobox_game,Infobox_game_engine&fields=Infobox_game_engine.Engine,Infobox_game_engine.Build&where={where_query}&format=json&join%20on=Infobox_game._pageName%20=%20Infobox_game_engine._pageName");
 
-	println!("### fetching the one and only {url}");
 	let result = reqwest::get(url).await;
 
 	match result {
@@ -98,10 +97,6 @@ pub async fn get_engine(where_query: &str) -> Option<GameEngine> {
 		}
 		Err(err) => None,
 	}
-}
-
-pub async fn get_engine_from_gog_id(gog_id: &str) -> Option<GameEngine> {
-	get_engine(&format!("GOGcom_ID%20HOLDS%20%22{gog_id}%22")).await
 }
 
 pub async fn get_engine_from_game_title(title: &str) -> Option<GameEngine> {
