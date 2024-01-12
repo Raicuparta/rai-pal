@@ -125,7 +125,6 @@ impl ProviderActions for Steam {
 
 	async fn get_owned_games(&self) -> Result<Vec<OwnedGame>> {
 		let steam_games = id_lists::get().await?;
-		// let mut engine_cache = provider::EngineCache::default();
 		let owned_games = futures::future::join_all(self.app_info_file.apps.iter().map(
 			|(steam_id, app_info)| async {
 				let id_string = steam_id.to_string();
@@ -203,10 +202,6 @@ impl ProviderActions for Steam {
 				} else {
 					None
 				};
-
-				// if let Some(engine) = engine_option {
-				// 	engine_cache.insert(id_string, engine);
-				// }
 
 				Some(OwnedGame {
 					id: id_string.clone(),
