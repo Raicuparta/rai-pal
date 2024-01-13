@@ -1,5 +1,6 @@
 use std::{
 	collections::hash_map::DefaultHasher,
+	env,
 	hash::{
 		Hash,
 		Hasher,
@@ -85,4 +86,16 @@ pub fn hash_path(path: &Path) -> String {
 	let mut hasher = DefaultHasher::new();
 	path.hash(&mut hasher);
 	hasher.finish().to_string()
+}
+
+fn get_program_data_path() -> Result<PathBuf> {
+	let path_from_env = env::var("ProgramData")?;
+	Ok(PathBuf::from(path_from_env))
+}
+
+pub fn try_get_program_data_path() -> PathBuf {
+	get_program_data_path().unwrap_or_else(|err| {
+		error!("Failed to get ProgramData path from environment: {err}");
+		PathBuf::from("C:/ProgramData")
+	})
 }

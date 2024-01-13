@@ -19,6 +19,7 @@ use crate::{
 	game_engines::game_engine::GameEngine,
 	installed_game::InstalledGame,
 	owned_game::OwnedGame,
+	paths,
 	pc_gaming_wiki,
 	provider::{
 		ProviderActions,
@@ -120,8 +121,8 @@ serializable_struct!(GogDbEntryImages { square_icon: Option<String> });
 serializable_struct!(GogDbEntryMeta { release_date: Option<i32> });
 
 fn get_database() -> Result<Vec<GogDbEntry>> {
-	// TODO get from registry or something.
-	let database_path = PathBuf::from("C:\\ProgramData\\GOG.com\\Galaxy\\storage\\galaxy-2.0.db");
+	let program_data = paths::try_get_program_data_path();
+	let database_path = program_data.join("GOG.com/Galaxy/storage/galaxy-2.0.db");
 
 	let connection = Connection::open_with_flags(database_path, OpenFlags::SQLITE_OPEN_READ_ONLY)?;
 

@@ -1,4 +1,5 @@
 use std::{
+	env,
 	path::PathBuf,
 	result,
 };
@@ -40,6 +41,9 @@ pub enum Error {
 
 	#[error(transparent)]
 	SQLite(#[from] rusqlite::Error),
+
+	#[error(transparent)]
+	Env(#[from] env::VarError),
 
 	#[error("Invalid type `{0}` in binary vdf key/value pair")]
 	InvalidBinaryVdfType(u8),
