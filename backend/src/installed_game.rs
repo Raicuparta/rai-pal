@@ -138,7 +138,7 @@ impl InstalledGame {
 					&format!(
 						"launch/{}/{}",
 						steam_launch.app_id,
-						steam_launch.app_type.as_deref().unwrap_or("")
+						steam_launch.launch_type.as_deref().unwrap_or("")
 					),
 					handle,
 				)

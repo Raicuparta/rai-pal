@@ -159,40 +159,98 @@ fn get_version(path: &Path, architecture: Architecture) -> Option<GameEngineVers
 				.or_else(|| get_version_from_exe_parse(&file_bytes));
 		}
 		Err(err) => {
-			error!("Failed to read game exe: {err}");
+			error!(
+				"Failed to read game exe `{}`. Error: {}",
+				path.display(),
+				err
+			);
 		}
 	}
 
 	None
 }
 
-fn get_actual_unreal_binary(game_exe_path: &Path) -> PathBuf {
+// The shipping exe is usually in a Win* folder.
+fn is_valid_win_folder(path: &Path) -> bool {
+	path.ends_with("Win64") || path.ends_with("Win32") || path.ends_with("WinGDK")
+}
+
+// Some games have multiple exes in the same folder.
+// The exe names can be anything, but it's common to have a launcher exe,
+// next to a *-Shipping.exe, which is usually the one we want.
+fn is_shipping_exe(path: &Path) -> bool {
+	path.file_name()
+		.and_then(|file_name| file_name.to_str())
+		.is_some_and(|file_name| file_name.ends_with("Shipping.exe"))
+}
+
+// Unreal games often ship with extra launcher exes that we don't care about.
+// We need the actual exe built by Unreal Engine to be able to find the engine version.
+// Usually, the exe we want would have a name like Game-Name-Win64-Shipping.exe, but not always.
+// Unfortunately there are no precise rules for this, so there's a lot of guesswork involved.
+fn get_shipping_exe(game_exe_path: &Path) -> PathBuf {
 	if let Some(parent) = game_exe_path.parent() {
-		if parent.ends_with("Win64") || parent.ends_with("Win32") || parent.ends_with("WinGDK") {
+		if is_valid_win_folder(parent) {
+			if is_shipping_exe(game_exe_path) {
+				// Case where given exe is the shipping exe.
+				return game_exe_path.to_path_buf();
+			}
+
+			if let Some(Ok(sibling_shipping_exe)) = glob_path(&parent.join("*Shipping.exe"))
+				.ok()
+				.and_then(|mut paths| paths.next())
+			{
+				// Case where given exe is a sibling of the shipping exe.
+				return sibling_shipping_exe;
+			}
+
+			// Case where the given exe isn't a shipping exe,
+			// but doesn't have a shipping exe sibling.
+			// We just presume the given exe is good enough.
 			return game_exe_path.to_path_buf();
 		}
 
-		let paths = glob_path(
+		// From here, we start presuming that the given exe is a launcher at the root level,
+		// and we need to dig down to find the shipping exe.
+		if let Ok(globbed_paths) = glob_path(
 			&parent
+				// This portion of the path would usually be the game's name, but no way to guess that.
+				// We know it's not "Engine", but can't exclude with the rust glob crate (we filter it below).
 				.join("*")
 				.join("Binaries")
-				.join("Win[63][42]")
+				// This could usually be globbed more precisely with "Win{64,32,GDK}",
+				// but the rust glob crate is stinky and does't support that syntax.
+				// So we just filter it below with is_valid_win_folder().
+				.join("Win*")
+				// The file name may or may not end with Shipping.exe, so we don't test for that yet.
 				.join("*.exe"),
-		);
+		) {
+			let mut suitable_paths = globbed_paths.filter_map(|path_result| {
+				let path = path_result.ok()?;
 
-		if let Ok(mut paths) = paths {
-			let path = paths.find(|path_result| {
-				path_result
-					.as_ref()
-					.map_or(false, |path| !path.starts_with(parent.join("Engine")))
+				// Filter for the correct Win* folders, since the glob couldn't do it above.
+				if path.parent().is_some_and(is_valid_win_folder)
+					// The Engine folder can have similar structure, but it's not the one we want.
+					&& !path.starts_with(parent.join("Engine"))
+				{
+					Some(path)
+				} else {
+					None
+				}
 			});
 
-			if let Some(Ok(path)) = path {
-				return path;
+			let first_path = suitable_paths.next();
+			if let Some(best_path) = suitable_paths
+				// Exe that looks like a shipping exe takes priority.
+				.find(|path| is_shipping_exe(path))
+				.or(first_path)
+			{
+				return best_path;
 			}
 		}
 	}
 
+	// If nothing works, just fall back to the given exe.
 	game_exe_path.to_path_buf()
 }
 
@@ -212,7 +270,7 @@ fn is_unreal_exe(game_path: &Path) -> bool {
 		}
 
 		// For cases where the registered exe points directly to the shipping binary:
-		if parent.ends_with("Win64") || parent.ends_with("Win32") || parent.ends_with("WinGDK") {
+		if is_valid_win_folder(parent) {
 			if let Some(binaries) = parent.parent() {
 				if binaries.ends_with("Binaries") {
 					return true;
@@ -226,16 +284,19 @@ fn is_unreal_exe(game_path: &Path) -> bool {
 
 pub fn get_executable(launch_path: &Path) -> Option<GameExecutable> {
 	if is_unreal_exe(launch_path) {
-		let path = get_actual_unreal_binary(launch_path);
+		let shipping_exe_path = get_shipping_exe(launch_path);
 
 		let (operating_system, architecture) =
-			get_os_and_architecture(&path).unwrap_or((None, None));
+			get_os_and_architecture(&shipping_exe_path).unwrap_or((None, None));
 
-		let version = get_version(launch_path, architecture.unwrap_or(Architecture::X64));
+		let version = get_version(
+			&shipping_exe_path,
+			architecture.unwrap_or(Architecture::X64),
+		);
 
 		Some(GameExecutable {
-			path: path.clone(),
-			name: path.file_name()?.to_string_lossy().to_string(),
+			path: shipping_exe_path.clone(),
+			name: shipping_exe_path.file_name()?.to_string_lossy().to_string(),
 			architecture,
 			operating_system,
 			scripting_backend: None,

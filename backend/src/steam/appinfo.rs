@@ -74,7 +74,7 @@ serializable_struct!(SteamLaunchOption {
 	pub description: Option<String>,
 	pub executable: Option<PathBuf>,
 	pub arguments: Option<String>,
-	pub app_type: Option<String>,
+	pub launch_type: Option<String>,
 	pub os_list: Option<String>,
 	pub beta_key: Option<String>,
 	pub os_arch: Option<String>,
@@ -82,7 +82,7 @@ serializable_struct!(SteamLaunchOption {
 
 impl SteamLaunchOption {
 	pub fn get_game_mode(&self) -> GameMode {
-		if let Some(app_type) = &self.app_type {
+		if let Some(app_type) = &self.launch_type {
 			if app_type == "vr" {
 				return GameMode::VR;
 			}
@@ -174,7 +174,7 @@ impl SteamAppInfoFile {
 									launch_kv,
 									&["description"],
 								)),
-								app_type: value_to_string(find_keys(launch_kv, &["type"])),
+								launch_type: value_to_string(find_keys(launch_kv, &["type"])),
 								executable: value_to_path(find_keys(launch_kv, &["executable"])),
 								arguments: value_to_string(find_keys(launch_kv, &["arguments"])),
 								os_list: value_to_string(find_keys(
@@ -207,6 +207,13 @@ impl SteamAppInfoFile {
 				value_to_i32(app.get(&["appinfo", "common", "original_release_date"]));
 
 			let is_free = value_to_string(app.get(&["appinfo", "extended", "isfreeapp"])).is_some();
+
+			if value_to_string(app.get(&["appinfo", "common", "type"]))
+				.is_some_and(|app_type| app_type == "Tool")
+			{
+				// We don't care about tools like dedicated server, sdk, etc.
+				continue;
+			}
 
 			if let Some(launch_options) = app_launch {
 				if let Some(name) = value_to_string(app.get(&["appinfo", "common", "name"])) {
