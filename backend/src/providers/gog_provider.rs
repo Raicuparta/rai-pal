@@ -146,19 +146,12 @@ GROUP BY
 
 	let rows: Vec<GogDbEntry> = statement
 		.query_map([], |row| {
-			let id: i32 = row.get(0)?;
-			let title_json: Option<String> = row.get(1).ok();
-			let images_json: Option<String> = row.get(2).ok();
-			let meta_json: Option<String> = row.get(3).ok();
-			let executable_path: Option<String> = row.get(4).ok();
-
-			let title =
-				try_parse_json::<GogDbEntryTitle>(&title_json).and_then(|title| title.title);
-
+			let id: i32 = row.get("id")?;
+			let executable_path: Option<String> = try_get_string(row, "executablePath");
+			let title = try_get_json::<GogDbEntryTitle>(row, "title").and_then(|title| title.title);
 			let release_date =
-				try_parse_json::<GogDbEntryMeta>(&meta_json).and_then(|meta| meta.release_date);
-
-			let image_url = try_parse_json::<GogDbEntryImages>(&images_json)
+				try_get_json::<GogDbEntryMeta>(row, "meta").and_then(|meta| meta.release_date);
+			let image_url = try_get_json::<GogDbEntryImages>(row, "images")
 				.and_then(|images| images.square_icon);
 
 			Ok(GogDbEntry {
@@ -181,11 +174,10 @@ GROUP BY
 	Ok(rows)
 }
 
-fn try_parse_json<'a, TData>(json_option: &'a Option<String>) -> Option<TData>
+fn try_parse_json<TData>(json: &str) -> Option<TData>
 where
-	TData: Deserialize<'a>,
+	TData: for<'a> Deserialize<'a>,
 {
-	let json = json_option.as_deref()?;
 	match serde_json::from_str::<TData>(json) {
 		Ok(data) => Some(data),
 		Err(err) => {
@@ -193,4 +185,22 @@ where
 			None
 		}
 	}
+}
+
+fn try_get_string(row: &rusqlite::Row, id: &str) -> Option<String> {
+	match row.get::<&str, Option<String>>(id) {
+		Ok(value) => value,
+		Err(err) => {
+			error!("Failed to read GOG database value `{id}`. Error: {err}");
+			None
+		}
+	}
+}
+
+fn try_get_json<TData>(row: &rusqlite::Row, id: &str) -> Option<TData>
+where
+	TData: for<'a> Deserialize<'a>,
+{
+	let json = try_get_string(row, id)?;
+	try_parse_json(&json)
 }
