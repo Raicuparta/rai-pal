@@ -39,6 +39,7 @@ serializable_struct!(InstalledGame {
 	pub thumbnail_url: Option<String>,
 	pub installed_mod_versions: InstalledModVersions,
 	pub game_mode: GameMode,
+	pub start_command: Option<String>,
 });
 
 pub type Map = HashMap<String, InstalledGame>;
@@ -52,6 +53,7 @@ impl InstalledGame {
 		discriminator: Option<String>,
 		steam_launch: Option<&SteamLaunchOption>,
 		thumbnail_url: Option<String>,
+		start_command: Option<String>,
 	) -> Option<Self> {
 		// Games exported by Unity always have one of these extensions.
 		const VALID_EXTENSIONS: [&str; 3] = ["exe", "x86_64", "x86"];
@@ -88,6 +90,7 @@ impl InstalledGame {
 			executable: GameExecutable::new(path)?,
 			thumbnail_url,
 			game_mode,
+			start_command,
 		})
 	}
 
@@ -115,34 +118,10 @@ impl InstalledGame {
 		Ok(open::that_detached(self.get_installed_mods_folder()?)?)
 	}
 
-	pub fn start(&self, handle: &tauri::AppHandle) -> Result {
-		self.steam_launch.as_ref().map_or_else(
+	pub fn start(&self) -> Result {
+		self.start_command.as_ref().map_or_else(
 			|| self.start_exe(),
-			|steam_launch| {
-				if self.discriminator.is_none() {
-					// If a game has no discriminator, it means we're probably using the default launch option.
-					// For those, we use the steam://rungameid command, since that one will make steam show a nice
-					// loading popup, wait for game updates, etc.
-					return steam::command::run(
-						&format!("rungameid/{}", steam_launch.app_id),
-						handle,
-					);
-				}
-				// For the few cases where we're showing an alternative launch option, we use the steam://launch command.
-				// This one will show an error if the game needs an update, and doesn't show the nice loading popup,
-				// but it allows us to specify the specific launch option to run.
-				// This one also supports passing "dialog" instead of the app_type, (steam://launch/{app_id}/dialog)
-				// which makes Steam show the launch selection dialog, but that dialog stops showing if the user
-				// selects the "don't ask again" checkbox.
-				steam::command::run(
-					&format!(
-						"launch/{}/{}",
-						steam_launch.app_id,
-						steam_launch.launch_type.as_deref().unwrap_or("")
-					),
-					handle,
-				)
-			},
+			|start_command| Ok(open::that_detached(start_command)?),
 		)
 	}
 

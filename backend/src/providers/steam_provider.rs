@@ -31,6 +31,7 @@ use crate::{
 		appinfo::{
 			self,
 			SteamAppInfoFile,
+			SteamLaunchOption,
 		},
 		id_lists,
 		thumbnail::get_steam_thumbnail,
@@ -105,9 +106,10 @@ impl ProviderActions for Steam {
 									full_path,
 									name,
 									*Self::ID,
-									discriminator,
+									discriminator.clone(),
 									Some(&launch_option),
 									Some(get_steam_thumbnail(&app.app_id.to_string())),
+									Some(get_start_command(&launch_option, &discriminator)),
 								) {
 									games.push(game);
 									used_names.insert(name.clone());
@@ -238,4 +240,29 @@ async fn get_engine(steam_id: &str, cache: &provider::EngineCache) -> Option<Gam
 	}
 
 	pc_gaming_wiki::get_engine(&format!("Steam_AppID%20HOLDS%20%22{steam_id}%22")).await
+}
+
+pub fn get_start_command(
+	steam_launch: &SteamLaunchOption,
+	discriminator: &Option<String>,
+) -> String {
+	if discriminator.is_none() {
+		// If a game has no discriminator, it means we're probably using the default launch option.
+		// For those, we use the steam://rungameid command, since that one will make steam show a nice
+		// loading popup, wait for game updates, etc.
+
+		format!("steam://rungameid/{}", steam_launch.app_id)
+	} else {
+		// For the few cases where we're showing an alternative launch option, we use the steam://launch command.
+		// This one will show an error if the game needs an update, and doesn't show the nice loading popup,
+		// but it allows us to specify the specific launch option to run.
+		// This one also supports passing "dialog" instead of the app_type, (steam://launch/{app_id}/dialog)
+		// which makes Steam show the launch selection dialog, but that dialog stops showing if the user
+		// selects the "don't ask again" checkbox.
+		format!(
+			"steam://launch/{}/{}",
+			steam_launch.app_id,
+			steam_launch.launch_type.as_deref().unwrap_or(""),
+		)
+	}
 }

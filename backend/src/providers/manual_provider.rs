@@ -67,6 +67,7 @@ fn create_game_from_path(path: &Path) -> Option<InstalledGame> {
 		None,
 		None,
 		None,
+		None,
 	)
 }
 

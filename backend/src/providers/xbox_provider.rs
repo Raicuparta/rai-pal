@@ -92,6 +92,7 @@ impl ProviderActions for Xbox {
 													None,
 													None,
 													None,
+													None,
 												) {
 													result.push(game);
 												}

@@ -118,7 +118,7 @@ export function InstalledGameModal(props: Props) {
 						>
 							Start Game
 						</CommandButton>
-						{props.game.providerId === "Steam" && (
+						{props.game.startCommand && (
 							<CommandDropdown>
 								{/* TODO: Implement these in a generic way on the Rust side, for every provider. */}
 								<CommandButton

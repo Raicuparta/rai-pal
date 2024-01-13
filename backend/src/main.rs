@@ -183,11 +183,7 @@ async fn download_mod(mod_id: &str, handle: AppHandle) -> Result {
 #[tauri::command]
 #[specta::specta]
 async fn start_game(game_id: &str, handle: AppHandle) -> Result {
-	handle
-		.app_state()
-		.installed_games
-		.try_get(game_id)?
-		.start(&handle)
+	handle.app_state().installed_games.try_get(game_id)?.start()
 }
 
 #[tauri::command]

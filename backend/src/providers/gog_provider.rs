@@ -73,6 +73,7 @@ impl ProviderActions for Gog {
 					None,
 					None,
 					db_entry.image_url.clone(),
+					None,
 				)
 			})
 			.collect())
