@@ -1,6 +1,15 @@
-use std::collections::HashSet;
+use std::{
+	collections::HashSet,
+	path::PathBuf,
+};
 
 use async_trait::async_trait;
+use log::error;
+use rusqlite::{
+	Connection,
+	OpenFlags,
+};
+use serde::Deserialize;
 
 use super::provider::{
 	self,
@@ -15,11 +24,21 @@ use crate::{
 		ProviderActions,
 		ProviderStatic,
 	},
+	serializable_struct,
 	Result,
 };
 
+struct GogDbEntry {
+	id: String,
+	title: String,
+	image_url: Option<String>,
+	release_date: Option<i32>,
+	executable_path: Option<PathBuf>,
+}
+
 pub struct Gog {
 	engine_cache: provider::EngineCache,
+	database: Vec<GogDbEntry>,
 }
 
 impl ProviderStatic for Gog {
@@ -30,50 +49,51 @@ impl ProviderStatic for Gog {
 		Self: Sized,
 	{
 		let engine_cache = Self::try_get_engine_cache();
+		let database = get_database()?;
 
-		Ok(Self { engine_cache })
+		Ok(Self {
+			engine_cache,
+			database,
+		})
 	}
 }
 
 #[async_trait]
 impl ProviderActions for Gog {
 	fn get_installed_games(&self) -> Result<Vec<InstalledGame>> {
-		Ok(game_scanner::gog::games()
-			.unwrap_or_default()
+		Ok(self
+			.database
 			.iter()
-			.filter_map(|game| {
+			.filter_map(|db_entry| {
 				InstalledGame::new(
-					game.path.as_ref()?,
-					&game.name,
+					db_entry.executable_path.as_ref()?,
+					&db_entry.title,
 					Self::ID.to_owned(),
 					None,
 					None,
-					None,
+					db_entry.image_url.clone(),
 				)
 			})
 			.collect())
 	}
 
 	async fn get_owned_games(&self) -> Result<Vec<OwnedGame>> {
-		let owned_games =
-			futures::future::join_all(game_scanner::gog::games().unwrap_or_default().iter().map(
-				|game| async {
-					OwnedGame {
-						// TODO should add a constructor to OwnedGame to avoid ID collisions and stuff.
-						id: game.id.clone(),
-						provider_id: *Self::ID,
-						name: game.name.clone(),
-						installed: game.state.installed,
-						os_list: HashSet::default(),
-						engine: get_engine(&game.id, &self.engine_cache).await,
-						release_date: 0,                  // TODO
-						thumbnail_url: String::default(), // TODO Maybe possible to get from the sqlite db?
-						game_mode: None,
-						uevr_score: None,
-					}
-				},
-			))
-			.await;
+		let owned_games = futures::future::join_all(self.database.iter().map(|db_entry| async {
+			OwnedGame {
+				// TODO should add a constructor to OwnedGame to avoid ID collisions and stuff.
+				id: db_entry.id.clone(),
+				provider_id: *Self::ID,
+				name: db_entry.title.clone(),
+				installed: db_entry.executable_path.is_some(),
+				os_list: HashSet::default(),
+				engine: get_engine(&db_entry.id, &self.engine_cache).await,
+				release_date: db_entry.release_date.unwrap_or_default().into(),
+				thumbnail_url: db_entry.image_url.clone().unwrap_or_default(),
+				game_mode: None,
+				uevr_score: None,
+			}
+		}))
+		.await;
 
 		Self::try_save_engine_cache(
 			&owned_games
@@ -93,4 +113,94 @@ async fn get_engine(gog_id: &str, cache: &provider::EngineCache) -> Option<GameE
 	}
 
 	pc_gaming_wiki::get_engine(&format!("GOGcom_ID%20HOLDS%20%22{gog_id}%22")).await
+}
+
+serializable_struct!(GogDbEntryTitle { title: Option<String> });
+serializable_struct!(GogDbEntryImages { square_icon: Option<String> });
+serializable_struct!(GogDbEntryMeta { release_date: Option<i32> });
+
+fn get_database() -> Result<Vec<GogDbEntry>> {
+	// TODO get from registry or something.
+	let database_path = PathBuf::from("C:\\ProgramData\\GOG.com\\Galaxy\\storage\\galaxy-2.0.db");
+
+	let connection = Connection::open_with_flags(database_path, OpenFlags::SQLITE_OPEN_READ_ONLY)?;
+
+	let mut statement = connection.prepare(
+		r"SELECT 
+    P.id,
+    MAX(CASE WHEN GP.gamePieceTypeId = 277 THEN GP.value END) AS title,
+    MAX(CASE WHEN GP.gamePieceTypeId = 814 THEN GP.value END) AS images,
+    MAX(CASE WHEN GP.gamePieceTypeId = 815 THEN GP.value END) AS meta,
+		MAX(PTLP.executablePath) AS executablePath
+FROM 
+    Products P
+JOIN 
+    GamePieces GP ON P.id = substr(GP.releaseKey, 5) AND GP.releaseKey GLOB 'gog_*'
+LEFT JOIN 
+    PlayTasks PT ON GP.releaseKey = PT.gameReleaseKey
+LEFT JOIN 
+    PlayTaskLaunchParameters PTLP ON PT.id = PTLP.playTaskId
+GROUP BY 
+    P.id;",
+	)?;
+
+	let rows: Vec<GogDbEntry> = statement
+		.query_map([], |row| {
+			let id: i32 = row.get("id")?;
+			let executable_path: Option<String> = try_get_string(row, "executablePath");
+			let title = try_get_json::<GogDbEntryTitle>(row, "title").and_then(|title| title.title);
+			let release_date =
+				try_get_json::<GogDbEntryMeta>(row, "meta").and_then(|meta| meta.release_date);
+			let image_url = try_get_json::<GogDbEntryImages>(row, "images")
+				.and_then(|images| images.square_icon);
+
+			Ok(GogDbEntry {
+				id: id.to_string(),
+				title: title.unwrap_or_else(|| id.to_string()),
+				image_url,
+				release_date,
+				executable_path: executable_path.map(PathBuf::from),
+			})
+		})?
+		.filter_map(|row_result| match row_result {
+			Ok(row) => Some(row),
+			Err(err) => {
+				error!("Failed to read GOG database row: {err}");
+				None
+			}
+		})
+		.collect();
+
+	Ok(rows)
+}
+
+fn try_parse_json<TData>(json: &str) -> Option<TData>
+where
+	TData: for<'a> Deserialize<'a>,
+{
+	match serde_json::from_str::<TData>(json) {
+		Ok(data) => Some(data),
+		Err(err) => {
+			error!("Failed to parse GOG database json `{json}`. Error: {err}");
+			None
+		}
+	}
+}
+
+fn try_get_string(row: &rusqlite::Row, id: &str) -> Option<String> {
+	match row.get::<&str, Option<String>>(id) {
+		Ok(value) => value,
+		Err(err) => {
+			error!("Failed to read GOG database value `{id}`. Error: {err}");
+			None
+		}
+	}
+}
+
+fn try_get_json<TData>(row: &rusqlite::Row, id: &str) -> Option<TData>
+where
+	TData: for<'a> Deserialize<'a>,
+{
+	let json = try_get_string(row, id)?;
+	try_parse_json(&json)
 }
