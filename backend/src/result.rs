@@ -38,6 +38,9 @@ pub enum Error {
 	#[error(transparent)]
 	ChronoParse(#[from] chrono::ParseError),
 
+	#[error(transparent)]
+	SQLite(#[from] rusqlite::Error),
+
 	#[error("Invalid type `{0}` in binary vdf key/value pair")]
 	InvalidBinaryVdfType(u8),
 

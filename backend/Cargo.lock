@@ -1194,7 +1194,6 @@ dependencies = [
 [[package]]
 name = "game-scanner"
 version = "1.2.0"
-source = "git+https://github.com/Raicuparta/game-scanner?branch=main#cdcd64f18c5f4e45c3b9ec72453129205da568d1"
 dependencies = [
  "bytes",
  "case",
@@ -3059,6 +3058,7 @@ dependencies = [
  "pelite",
  "rand 0.8.5",
  "reqwest",
+ "rusqlite",
  "serde",
  "serde_json",
  "specta",

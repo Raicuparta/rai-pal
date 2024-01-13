@@ -21,7 +21,8 @@ glob = { git = "https://github.com/rust-lang/glob", version = "0.3.1" }
 steamlocate = { git = "https://github.com/Raicuparta/steamlocate-rs", branch = "dev-v2.0" }
 
 # Made my own fork to fix builds on windows and add my own stuff.
-game-scanner = { git = "https://github.com/Raicuparta/game-scanner", branch = "main"}
+# game-scanner = { git = "https://github.com/Raicuparta/game-scanner", branch = "main"}
+game-scanner = { path = "../../game-scanner" }
 
 specta = "1.0.5"
 tauri-specta = { version = "1.0.2", features = ["typescript"] }
@@ -50,6 +51,7 @@ log = "0.4.20"
 tauri-runtime = "0.14.1"
 base64 = "0.21.5"
 chrono = "0.4.31"
+rusqlite = "0.28.0"
 
 [target.'cfg(target_os = "linux")'.dependencies]
 webkit2gtk = "0.18.2"

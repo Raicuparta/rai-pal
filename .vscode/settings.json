@@ -27,6 +27,7 @@
 		"predef",
 		"repairtype",
 		"runas",
+		"rusqlite",
 		"shellapi",
 		"subchild",
 		"subkey",
