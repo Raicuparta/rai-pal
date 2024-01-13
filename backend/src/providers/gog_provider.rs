@@ -4,10 +4,12 @@ use std::{
 };
 
 use async_trait::async_trait;
+use log::error;
 use rusqlite::{
 	Connection,
 	OpenFlags,
 };
+use serde::Deserialize;
 
 use super::provider::{
 	self,
@@ -150,16 +152,13 @@ GROUP BY
 			let meta_json: Option<String> = row.get(3).ok();
 			let executable_path: Option<String> = row.get(4).ok();
 
-			let title = title_json
-				.and_then(|json| serde_json::from_str::<GogDbEntryTitle>(&json).ok())
-				.and_then(|title| title.title);
+			let title =
+				try_parse_json::<GogDbEntryTitle>(&title_json).and_then(|title| title.title);
 
-			let release_date = meta_json
-				.and_then(|json| serde_json::from_str::<GogDbEntryMeta>(&json).ok())
-				.and_then(|meta| meta.release_date);
+			let release_date =
+				try_parse_json::<GogDbEntryMeta>(&meta_json).and_then(|meta| meta.release_date);
 
-			let image_url = images_json
-				.and_then(|json| serde_json::from_str::<GogDbEntryImages>(&json).ok())
+			let image_url = try_parse_json::<GogDbEntryImages>(&images_json)
 				.and_then(|images| images.square_icon);
 
 			Ok(GogDbEntry {
@@ -170,8 +169,28 @@ GROUP BY
 				executable_path: executable_path.map(PathBuf::from),
 			})
 		})?
-		.filter_map(|row| row.ok()) // TODO log errors
+		.filter_map(|row_result| match row_result {
+			Ok(row) => Some(row),
+			Err(err) => {
+				error!("Failed to read GOG database row: {err}");
+				None
+			}
+		})
 		.collect();
 
 	Ok(rows)
+}
+
+fn try_parse_json<'a, TData>(json_option: &'a Option<String>) -> Option<TData>
+where
+	TData: Deserialize<'a>,
+{
+	let json = json_option.as_deref()?;
+	match serde_json::from_str::<TData>(json) {
+		Ok(data) => Some(data),
+		Err(err) => {
+			error!("Failed to parse GOG database json `{json}`. Error: {err}");
+			None
+		}
+	}
 }
