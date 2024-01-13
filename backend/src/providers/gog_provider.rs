@@ -5,10 +5,8 @@ use std::{
 
 use async_trait::async_trait;
 use rusqlite::{
-	params_from_iter,
 	Connection,
 	OpenFlags,
-	Row,
 };
 
 use super::provider::{
@@ -33,10 +31,12 @@ struct GogDbEntry {
 	title: String,
 	image_url: Option<String>,
 	release_date: Option<i32>,
+	executable_path: Option<PathBuf>,
 }
 
 pub struct Gog {
 	engine_cache: provider::EngineCache,
+	database: Vec<GogDbEntry>,
 }
 
 impl ProviderStatic for Gog {
@@ -47,48 +47,50 @@ impl ProviderStatic for Gog {
 		Self: Sized,
 	{
 		let engine_cache = Self::try_get_engine_cache();
+		let database = get_database()?;
 
-		Ok(Self { engine_cache })
+		Ok(Self {
+			engine_cache,
+			database,
+		})
 	}
 }
 
 #[async_trait]
 impl ProviderActions for Gog {
 	fn get_installed_games(&self) -> Result<Vec<InstalledGame>> {
-		Ok(game_scanner::gog::games()
-			.unwrap_or_default()
+		Ok(self
+			.database
 			.iter()
-			.filter_map(|game| {
+			.filter_map(|db_entry| {
 				InstalledGame::new(
-					game.path.as_ref()?,
-					&game.name,
+					db_entry.executable_path.as_ref()?,
+					&db_entry.title,
 					Self::ID.to_owned(),
 					None,
 					None,
-					None,
+					db_entry.image_url.clone(),
 				)
 			})
 			.collect())
 	}
 
 	async fn get_owned_games(&self) -> Result<Vec<OwnedGame>> {
-		let owned_games = futures::future::join_all(get_database().unwrap_or_default().iter().map(
-			|db_entry| async {
-				OwnedGame {
-					// TODO should add a constructor to OwnedGame to avoid ID collisions and stuff.
-					id: db_entry.id.clone(),
-					provider_id: *Self::ID,
-					name: db_entry.title.clone(),
-					installed: false, // TODO
-					os_list: HashSet::default(),
-					engine: get_engine(&db_entry.id, &self.engine_cache).await,
-					release_date: db_entry.release_date.unwrap_or_default().into(),
-					thumbnail_url: db_entry.image_url.clone().unwrap_or_default(),
-					game_mode: None,
-					uevr_score: None,
-				}
-			},
-		))
+		let owned_games = futures::future::join_all(self.database.iter().map(|db_entry| async {
+			OwnedGame {
+				// TODO should add a constructor to OwnedGame to avoid ID collisions and stuff.
+				id: db_entry.id.clone(),
+				provider_id: *Self::ID,
+				name: db_entry.title.clone(),
+				installed: db_entry.executable_path.is_some(),
+				os_list: HashSet::default(),
+				engine: get_engine(&db_entry.id, &self.engine_cache).await,
+				release_date: db_entry.release_date.unwrap_or_default().into(),
+				thumbnail_url: db_entry.image_url.clone().unwrap_or_default(),
+				game_mode: None,
+				uevr_score: None,
+			}
+		}))
 		.await;
 
 		Self::try_save_engine_cache(
@@ -126,11 +128,16 @@ fn get_database() -> Result<Vec<GogDbEntry>> {
     P.id,
     MAX(CASE WHEN GP.gamePieceTypeId = 277 THEN GP.value END) AS title,
     MAX(CASE WHEN GP.gamePieceTypeId = 814 THEN GP.value END) AS images,
-    MAX(CASE WHEN GP.gamePieceTypeId = 815 THEN GP.value END) AS meta
+    MAX(CASE WHEN GP.gamePieceTypeId = 815 THEN GP.value END) AS meta,
+		MAX(PTLP.executablePath) AS executablePath
 FROM 
     Products P
 JOIN 
     GamePieces GP ON P.id = substr(GP.releaseKey, 5) AND GP.releaseKey GLOB 'gog_*'
+LEFT JOIN 
+    PlayTasks PT ON GP.releaseKey = PT.gameReleaseKey
+LEFT JOIN 
+    PlayTaskLaunchParameters PTLP ON PT.id = PTLP.playTaskId
 GROUP BY 
     P.id;",
 	)?;
@@ -141,6 +148,7 @@ GROUP BY
 			let title_json: Option<String> = row.get(1).ok();
 			let images_json: Option<String> = row.get(2).ok();
 			let meta_json: Option<String> = row.get(3).ok();
+			let executable_path: Option<String> = row.get(4).ok();
 
 			let title = title_json
 				.and_then(|json| serde_json::from_str::<GogDbEntryTitle>(&json).ok())
@@ -159,6 +167,7 @@ GROUP BY
 				title: title.unwrap_or_else(|| id.to_string()),
 				image_url,
 				release_date,
+				executable_path: executable_path.map(PathBuf::from),
 			})
 		})?
 		.filter_map(|row| row.ok()) // TODO log errors
