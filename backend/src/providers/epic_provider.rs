@@ -110,14 +110,18 @@ impl ProviderActions for Epic {
 			.unwrap_or_default()
 			.iter()
 			.filter_map(|game| {
+				let path = game.path.as_ref()?;
 				InstalledGame::new(
-					game.path.as_ref()?,
+					path,
 					&game.name,
 					Self::ID.to_owned(),
 					None,
 					None,
 					None,
-					None,
+					Some(format!(
+						"com.epicgames.launcher://apps/{}?action=launch&silent=true",
+						game.id
+					)),
 				)
 			})
 			.collect())
