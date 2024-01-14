@@ -8,7 +8,6 @@ import {
 import { CommandButton } from "@components/command-button";
 import { IconBooks, IconBrowser, IconDownload } from "@tabler/icons-react";
 import { ModalImage } from "@components/modal-image";
-import { CommandButtonGroup } from "@components/command-button-group";
 import { DebugData } from "@components/debug-data";
 import { TableItemDetails } from "@components/table/table-item-details";
 import { ownedGamesColumns } from "./owned-games-columns";
