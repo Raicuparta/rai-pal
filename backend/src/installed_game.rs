@@ -28,7 +28,7 @@ use crate::{
 };
 
 #[derive(serde::Serialize, serde::Deserialize, specta::Type, Clone, PartialEq, Eq, Hash, Debug)]
-pub enum StartCommand {
+enum StartCommand {
 	String(String),
 	Path(PathBuf, Vec<String>),
 }
@@ -43,7 +43,7 @@ serializable_struct!(InstalledGame {
 	pub steam_launch: Option<SteamLaunchOption>,
 	pub thumbnail_url: Option<String>,
 	pub game_mode: Option<GameMode>,
-	pub start_command: Option<StartCommand>,
+	start_command: Option<StartCommand>,
 });
 
 pub type Map = HashMap<String, InstalledGame>;
