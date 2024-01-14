@@ -73,6 +73,7 @@ serializable_struct!(EpicCatalogImage {
 
 serializable_struct!(EpicCatalogItem {
 	id: String,
+	namespace: String,
 	title: String,
 	categories: Vec<EpicCatalogCategory>,
 	release_info: Vec<EpicCatalogReleaseInfo>,
@@ -156,7 +157,16 @@ impl ProviderActions for Epic {
 				uevr_score: None,
 				show_library_command: None,
 				open_page_command: None,
-				install_command: None,
+				install_command: Some(ProviderCommand::String(format!(
+					"com.epicgames.launcher://apps/{}%3A{}%3A{}?action=install",
+					catalog_item.namespace,
+					catalog_item.id,
+					catalog_item
+						.release_info
+						.first()
+						.map(|release_info| release_info.app_id.clone())
+						.unwrap_or_default(),
+				))),
 			})
 		}))
 		.await
