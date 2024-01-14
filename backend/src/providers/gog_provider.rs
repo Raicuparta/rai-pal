@@ -10,6 +10,10 @@ use rusqlite::{
 	OpenFlags,
 };
 use serde::Deserialize;
+use winreg::{
+	enums::HKEY_LOCAL_MACHINE,
+	RegKey,
+};
 
 use super::provider::{
 	self,
@@ -17,7 +21,11 @@ use super::provider::{
 };
 use crate::{
 	game_engines::game_engine::GameEngine,
-	installed_game::InstalledGame,
+	installed_game::{
+		self,
+		InstalledGame,
+		StartCommandProgram,
+	},
 	owned_game::OwnedGame,
 	paths,
 	pc_gaming_wiki,
@@ -40,6 +48,7 @@ struct GogDbEntry {
 pub struct Gog {
 	engine_cache: provider::EngineCache,
 	database: Vec<GogDbEntry>,
+	launcher_path: PathBuf,
 }
 
 impl ProviderStatic for Gog {
@@ -49,12 +58,10 @@ impl ProviderStatic for Gog {
 	where
 		Self: Sized,
 	{
-		let engine_cache = Self::try_get_engine_cache();
-		let database = get_database()?;
-
 		Ok(Self {
-			engine_cache,
-			database,
+			engine_cache: Self::try_get_engine_cache(),
+			database: get_database()?,
+			launcher_path: get_launcher_path()?,
 		})
 	}
 }
@@ -73,7 +80,16 @@ impl ProviderActions for Gog {
 					None,
 					None,
 					db_entry.image_url.clone(),
-					None,
+					Some(installed_game::StartCommand {
+						program: StartCommandProgram::PathCommand(self.launcher_path.clone()),
+						args: Some(
+							[
+								"/command=runGame".to_string(),
+								format!("/gameId={}", db_entry.id),
+							]
+							.to_vec(),
+						),
+					}),
 				)
 			})
 			.collect())
@@ -205,4 +221,12 @@ where
 {
 	let json = try_get_string(row, id)?;
 	try_parse_json(&json)
+}
+
+fn get_launcher_path() -> Result<PathBuf> {
+	Ok(RegKey::predef(HKEY_LOCAL_MACHINE)
+		.open_subkey(r"SOFTWARE\WOW6432Node\GOG.com\GalaxyClient\paths")
+		.and_then(|reg_key| reg_key.get_value::<String, _>("client"))
+		.map(PathBuf::from)?
+		.join("GalaxyClient.exe"))
 }

@@ -8,6 +8,7 @@ use std::{
 		Path,
 		PathBuf,
 	},
+	process::Command,
 };
 
 use crate::{
@@ -21,13 +22,21 @@ use crate::{
 	},
 	providers::provider::ProviderId,
 	serializable_struct,
-	steam::{
-		self,
-		appinfo::SteamLaunchOption,
-	},
+	steam::appinfo::SteamLaunchOption,
 	Error,
 	Result,
 };
+
+#[derive(serde::Serialize, serde::Deserialize, specta::Type, Clone, PartialEq, Eq, Hash, Debug)]
+pub enum StartCommandProgram {
+	StringCommand(String),
+	PathCommand(PathBuf),
+}
+
+serializable_struct!(StartCommand {
+	pub program: StartCommandProgram,
+	pub args: Option<Vec<String>>,
+});
 
 serializable_struct!(InstalledGame {
 	pub id: String,
@@ -39,7 +48,7 @@ serializable_struct!(InstalledGame {
 	pub thumbnail_url: Option<String>,
 	pub installed_mod_versions: InstalledModVersions,
 	pub game_mode: GameMode,
-	pub start_command: Option<String>,
+	pub start_command: Option<StartCommand>,
 });
 
 pub type Map = HashMap<String, InstalledGame>;
@@ -53,7 +62,7 @@ impl InstalledGame {
 		discriminator: Option<String>,
 		steam_launch: Option<&SteamLaunchOption>,
 		thumbnail_url: Option<String>,
-		start_command: Option<String>,
+		start_command: Option<StartCommand>,
 	) -> Option<Self> {
 		// Games exported by Unity always have one of these extensions.
 		const VALID_EXTENSIONS: [&str; 3] = ["exe", "x86_64", "x86"];
@@ -121,7 +130,24 @@ impl InstalledGame {
 	pub fn start(&self) -> Result {
 		self.start_command.as_ref().map_or_else(
 			|| self.start_exe(),
-			|start_command| Ok(open::that_detached(start_command)?),
+			|start_command| {
+				match &start_command.program {
+					StartCommandProgram::StringCommand(command) => {
+						open::that_detached(command)?;
+					}
+					StartCommandProgram::PathCommand(path) => {
+						let mut command = Command::new(path);
+						if let Some(args) = &start_command.args {
+							command.args(args);
+						}
+						if let Some(parent) = path.parent() {
+							command.current_dir(parent);
+						}
+						command.spawn()?;
+					}
+				}
+				Ok(())
+			},
 		)
 	}
 

@@ -18,7 +18,11 @@ use super::provider::{
 };
 use crate::{
 	game_engines::game_engine::GameEngine,
-	installed_game::InstalledGame,
+	installed_game::{
+		self,
+		InstalledGame,
+		StartCommandProgram,
+	},
 	owned_game::OwnedGame,
 	pc_gaming_wiki,
 	provider::{
@@ -118,10 +122,13 @@ impl ProviderActions for Epic {
 					None,
 					None,
 					None,
-					Some(format!(
-						"com.epicgames.launcher://apps/{}?action=launch&silent=true",
-						game.id
-					)),
+					Some(installed_game::StartCommand {
+						program: StartCommandProgram::StringCommand(format!(
+							"com.epicgames.launcher://apps/{}?action=launch&silent=true",
+							game.id
+						)),
+						args: None,
+					}),
 				)
 			})
 			.collect())
