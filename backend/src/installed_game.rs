@@ -28,26 +28,21 @@ use crate::{
 };
 
 #[derive(serde::Serialize, serde::Deserialize, specta::Type, Clone, PartialEq, Eq, Hash, Debug)]
-pub enum StartCommandProgram {
-	StringCommand(String),
-	PathCommand(PathBuf),
+pub enum StartCommand {
+	String(String),
+	Path(PathBuf, Vec<String>),
 }
-
-serializable_struct!(StartCommand {
-	pub program: StartCommandProgram,
-	pub args: Option<Vec<String>>,
-});
 
 serializable_struct!(InstalledGame {
 	pub id: String,
 	pub name: String,
 	pub provider_id: ProviderId,
+	pub executable: GameExecutable,
+	pub installed_mod_versions: InstalledModVersions,
 	pub discriminator: Option<String>,
 	pub steam_launch: Option<SteamLaunchOption>,
-	pub executable: GameExecutable,
 	pub thumbnail_url: Option<String>,
-	pub installed_mod_versions: InstalledModVersions,
-	pub game_mode: GameMode,
+	pub game_mode: Option<GameMode>,
 	pub start_command: Option<StartCommand>,
 });
 
@@ -55,15 +50,7 @@ pub type Map = HashMap<String, InstalledGame>;
 type InstalledModVersions = HashMap<String, Option<String>>;
 
 impl InstalledGame {
-	pub fn new(
-		path: &Path,
-		name: &str,
-		provider_id: ProviderId,
-		discriminator: Option<String>,
-		steam_launch: Option<&SteamLaunchOption>,
-		thumbnail_url: Option<String>,
-		start_command: Option<StartCommand>,
-	) -> Option<Self> {
+	pub fn new(path: &Path, name: &str, provider_id: ProviderId) -> Option<Self> {
 		// Games exported by Unity always have one of these extensions.
 		const VALID_EXTENSIONS: [&str; 3] = ["exe", "x86_64", "x86"];
 
@@ -85,22 +72,46 @@ impl InstalledGame {
 			return None;
 		}
 
-		let game_mode = steam_launch.map_or(GameMode::Flat, SteamLaunchOption::get_game_mode);
-
 		let executable = GameExecutable::new(path)?;
 
 		Some(Self {
 			id: hash_path(&executable.path),
 			name: name.to_string(),
 			provider_id,
-			discriminator,
-			steam_launch: steam_launch.cloned(),
 			installed_mod_versions: HashMap::default(),
 			executable: GameExecutable::new(path)?,
-			thumbnail_url,
-			game_mode,
-			start_command,
+			game_mode: None,
+			steam_launch: None,
+			discriminator: None,
+			thumbnail_url: None,
+			start_command: None,
 		})
+	}
+
+	pub fn set_discriminator(&mut self, discriminator: &str) -> &Self {
+		self.discriminator = Some(discriminator.to_string());
+		self
+	}
+
+	pub fn set_steam_launch(&mut self, steam_launch: &SteamLaunchOption) -> &Self {
+		self.steam_launch = Some(steam_launch.clone());
+		self.game_mode = Some(steam_launch.get_game_mode());
+		self
+	}
+
+	pub fn set_thumbnail_url(&mut self, thumbnail_url: &str) -> &Self {
+		self.thumbnail_url = Some(thumbnail_url.to_string());
+		self
+	}
+
+	pub fn set_start_command_string(&mut self, program: &str) -> &Self {
+		self.start_command = Some(StartCommand::String(program.to_string()));
+		self
+	}
+
+	pub fn set_start_command_path(&mut self, path: &Path, args: Vec<String>) -> &Self {
+		self.start_command = Some(StartCommand::Path(path.to_path_buf(), args));
+		self
 	}
 
 	pub fn refresh_executable(&mut self) -> Result {
@@ -131,15 +142,13 @@ impl InstalledGame {
 		self.start_command.as_ref().map_or_else(
 			|| self.start_exe(),
 			|start_command| {
-				match &start_command.program {
-					StartCommandProgram::StringCommand(command) => {
+				match start_command {
+					StartCommand::String(command) => {
 						open::that_detached(command)?;
 					}
-					StartCommandProgram::PathCommand(path) => {
+					StartCommand::Path(path, args) => {
 						let mut command = Command::new(path);
-						if let Some(args) = &start_command.args {
-							command.args(args);
-						}
+						command.args(args);
 						if let Some(parent) = path.parent() {
 							command.current_dir(parent);
 						}

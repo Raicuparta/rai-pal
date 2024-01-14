@@ -18,11 +18,7 @@ use super::provider::{
 };
 use crate::{
 	game_engines::game_engine::GameEngine,
-	installed_game::{
-		self,
-		InstalledGame,
-		StartCommandProgram,
-	},
+	installed_game::InstalledGame,
 	owned_game::OwnedGame,
 	pc_gaming_wiki,
 	provider::{
@@ -113,23 +109,15 @@ impl ProviderActions for Epic {
 		Ok(game_scanner::epicgames::games()
 			.unwrap_or_default()
 			.iter()
-			.filter_map(|game| {
-				let path = game.path.as_ref()?;
-				InstalledGame::new(
-					path,
-					&game.name,
-					Self::ID.to_owned(),
-					None,
-					None,
-					None,
-					Some(installed_game::StartCommand {
-						program: StartCommandProgram::StringCommand(format!(
-							"com.epicgames.launcher://apps/{}?action=launch&silent=true",
-							game.id
-						)),
-						args: None,
-					}),
-				)
+			.filter_map(|manifest_entry| {
+				let path = manifest_entry.path.as_ref()?;
+				let mut game = InstalledGame::new(path, &manifest_entry.name, Self::ID.to_owned())?;
+				game.set_start_command_string(&format!(
+					"com.epicgames.launcher://apps/{}?action=launch&silent=true",
+					manifest_entry.id
+				));
+
+				Some(game)
 			})
 			.collect())
 	}

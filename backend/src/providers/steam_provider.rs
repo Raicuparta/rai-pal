@@ -2,7 +2,6 @@ use std::{
 	collections::HashSet,
 	fs,
 	path::PathBuf,
-	string,
 };
 
 use async_trait::async_trait;
@@ -20,7 +19,6 @@ use crate::{
 	installed_game::{
 		self,
 		InstalledGame,
-		StartCommandProgram,
 	},
 	owned_game::OwnedGame,
 	pc_gaming_wiki,
@@ -90,31 +88,31 @@ impl ProviderActions for Steam {
 							}
 
 							if let Some(name) = &app.name {
-								let discriminator = if used_names.contains(name) {
-									launch_option.description.as_ref().map_or_else(
-										|| {
-											executable_path
-												.to_str()
-												.map(string::ToString::to_string)
-										},
-										|description| Some(description.clone()),
-									)
-								} else {
-									None
-								};
+								if let Some(mut game) =
+									installed_game::InstalledGame::new(full_path, name, *Self::ID)
+								{
+									let discriminator_option = if used_names.contains(name) {
+										Some(launch_option.description.as_ref().map_or_else(
+											|| executable_path.display().to_string(),
+											|description| description.clone(),
+										))
+									} else {
+										None
+									};
 
-								if let Some(game) = installed_game::InstalledGame::new(
-									full_path,
-									name,
-									*Self::ID,
-									discriminator.clone(),
-									Some(&launch_option),
-									Some(get_steam_thumbnail(&app.app_id.to_string())),
-									Some(installed_game::StartCommand {
-										program: get_start_command(&launch_option, &discriminator),
-										args: None,
-									}),
-								) {
+									if let Some(discriminator) = &discriminator_option {
+										game.set_discriminator(&discriminator);
+									}
+
+									game.set_steam_launch(&launch_option);
+									game.set_thumbnail_url(&get_steam_thumbnail(
+										&app.app_id.to_string(),
+									));
+									game.set_start_command_string(&get_start_command(
+										&launch_option,
+										&discriminator_option,
+									));
+
 									games.push(game);
 									used_names.insert(name.clone());
 									used_paths.insert(full_path.clone());
@@ -249,8 +247,8 @@ async fn get_engine(steam_id: &str, cache: &provider::EngineCache) -> Option<Gam
 pub fn get_start_command(
 	steam_launch: &SteamLaunchOption,
 	discriminator: &Option<String>,
-) -> StartCommandProgram {
-	StartCommandProgram::StringCommand(if discriminator.is_none() {
+) -> String {
+	if discriminator.is_none() {
 		// If a game has no discriminator, it means we're probably using the default launch option.
 		// For those, we use the steam://rungameid command, since that one will make steam show a nice
 		// loading popup, wait for game updates, etc.
@@ -268,5 +266,5 @@ pub fn get_start_command(
 			steam_launch.app_id,
 			steam_launch.launch_type.as_deref().unwrap_or(""),
 		)
-	})
+	}
 }

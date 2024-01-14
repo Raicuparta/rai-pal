@@ -21,11 +21,7 @@ use super::provider::{
 };
 use crate::{
 	game_engines::game_engine::GameEngine,
-	installed_game::{
-		self,
-		InstalledGame,
-		StartCommandProgram,
-	},
+	installed_game::InstalledGame,
 	owned_game::OwnedGame,
 	paths,
 	pc_gaming_wiki,
@@ -73,24 +69,26 @@ impl ProviderActions for Gog {
 			.database
 			.iter()
 			.filter_map(|db_entry| {
-				InstalledGame::new(
+				let mut game = InstalledGame::new(
 					db_entry.executable_path.as_ref()?,
 					&db_entry.title,
 					Self::ID.to_owned(),
-					None,
-					None,
-					db_entry.image_url.clone(),
-					Some(installed_game::StartCommand {
-						program: StartCommandProgram::PathCommand(self.launcher_path.clone()),
-						args: Some(
-							[
-								"/command=runGame".to_string(),
-								format!("/gameId={}", db_entry.id),
-							]
-							.to_vec(),
-						),
-					}),
-				)
+				)?;
+
+				game.set_start_command_path(
+					&self.launcher_path,
+					[
+						"/command=runGame".to_string(),
+						format!("/gameId={}", db_entry.id),
+					]
+					.to_vec(),
+				);
+
+				if let Some(image_url) = &db_entry.image_url {
+					game.set_thumbnail_url(image_url);
+				}
+
+				Some(game)
 			})
 			.collect())
 	}
