@@ -1,8 +1,12 @@
 import { Group, Modal, Stack } from "@mantine/core";
-import { OwnedGame } from "@api/bindings";
+import {
+	OwnedGame,
+	installGame,
+	openGamePage,
+	showGameInLibrary,
+} from "@api/bindings";
 import { CommandButton } from "@components/command-button";
 import { IconBooks, IconBrowser, IconDownload } from "@tabler/icons-react";
-import { steamCommands } from "../../util/steam";
 import { ModalImage } from "@components/modal-image";
 import { CommandButtonGroup } from "@components/command-button-group";
 import { DebugData } from "@components/debug-data";
@@ -40,28 +44,33 @@ export function OwnedGameModal(props: Props) {
 					columns={ownedGamesColumns}
 					item={props.game}
 				/>
-				{props.game.providerId === "Steam" && (
-					<CommandButtonGroup label="Game Actions">
+				<CommandButtonGroup label="Game Actions">
+					{props.game.openPageCommand && (
 						<CommandButton
 							leftSection={<IconBrowser />}
-							onClick={() => steamCommands.openStorePage(props.game.id)}
+							onClick={() => openGamePage(props.game.id)}
 						>
 							Open Store Page
 						</CommandButton>
+					)}
+					{props.game.showLibraryCommand && (
 						<CommandButton
 							leftSection={<IconBooks />}
-							onClick={() => steamCommands.showInLibrary(props.game.id)}
+							onClick={() => showGameInLibrary(props.game.id)}
 						>
 							Show in Library
 						</CommandButton>
+					)}
+					{props.game.installCommand && (
 						<CommandButton
 							leftSection={<IconDownload />}
-							onClick={() => steamCommands.install(props.game.id)}
+							onClick={() => installGame(props.game.id)}
 						>
 							Install
 						</CommandButton>
-					</CommandButtonGroup>
-				)}
+					)}
+				</CommandButtonGroup>
+
 				<DebugData data={props.game} />
 			</Stack>
 		</Modal>

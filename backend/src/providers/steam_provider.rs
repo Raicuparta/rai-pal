@@ -8,9 +8,12 @@ use async_trait::async_trait;
 use lazy_regex::BytesRegex;
 use steamlocate::SteamDir;
 
-use super::provider::{
-	self,
-	ProviderId,
+use super::{
+	provider::{
+		self,
+		ProviderId,
+	},
+	provider_command::ProviderCommand,
 };
 use crate::{
 	game_engines::game_engine::GameEngine,
@@ -104,7 +107,6 @@ impl ProviderActions for Steam {
 										game.set_discriminator(discriminator);
 									}
 
-									game.set_steam_launch(&launch_option);
 									game.set_thumbnail_url(&get_steam_thumbnail(
 										&app.app_id.to_string(),
 									));
@@ -218,6 +220,15 @@ impl ProviderActions for Steam {
 					release_date,
 					game_mode: Some(game_mode),
 					uevr_score: steam_game_option.and_then(|game| game.uevr_score),
+					show_library_command: Some(ProviderCommand::String(format!(
+						"steam://nav/games/details/{id_string}"
+					))),
+					open_page_command: Some(ProviderCommand::String(format!(
+						"steam://store/{id_string}"
+					))),
+					install_command: Some(ProviderCommand::String(format!(
+						"steam://install/{id_string}"
+					))),
 				})
 			},
 		))

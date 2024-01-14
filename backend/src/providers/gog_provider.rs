@@ -107,6 +107,9 @@ impl ProviderActions for Gog {
 				thumbnail_url: db_entry.image_url.clone().unwrap_or_default(),
 				game_mode: None,
 				uevr_score: None,
+				show_library_command: None,
+				open_page_command: None,
+				install_command: None,
 			}
 		}))
 		.await;

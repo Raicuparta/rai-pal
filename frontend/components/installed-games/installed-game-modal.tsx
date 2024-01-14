@@ -23,10 +23,8 @@ import { CommandButton } from "@components/command-button";
 import {
 	Icon,
 	IconAppWindow,
-	IconBooks,
 	IconBrandSteam,
 	IconBrandXbox,
-	IconBrowser,
 	IconCircleLetterG,
 	IconDeviceGamepad,
 	IconFolder,
@@ -37,7 +35,6 @@ import {
 	IconSquareLetterE,
 	IconTrash,
 } from "@tabler/icons-react";
-import { steamCommands } from "../../util/steam";
 import { ModalImage } from "@components/modal-image";
 import { useAtomValue } from "jotai";
 import { modLoadersAtom } from "@hooks/use-data";
@@ -152,30 +149,6 @@ export function InstalledGameModal(props: Props) {
 							Open Installed Mods Folder
 						</CommandButton>
 					</CommandDropdown>
-					{props.game.providerId === "Steam" && (
-						<CommandDropdown
-							label={props.game.providerId}
-							icon={<ProviderIcon />}
-						>
-							{/* TODO: Implement these in a generic way on the Rust side, for every provider. */}
-							<CommandButton
-								leftSection={<IconBrowser />}
-								onClick={() =>
-									steamCommands.openStorePage(props.game.steamLaunch?.appId)
-								}
-							>
-								Open Store Page
-							</CommandButton>
-							<CommandButton
-								leftSection={<IconBooks />}
-								onClick={() =>
-									steamCommands.showInLibrary(props.game.steamLaunch?.appId)
-								}
-							>
-								Show in Library
-							</CommandButton>
-						</CommandDropdown>
-					)}
 					{props.game.providerId === "Manual" && (
 						<CommandButton
 							onClick={() => removeGame(props.game.id)}

@@ -8,7 +8,6 @@ use std::{
 		Path,
 		PathBuf,
 	},
-	process::Command,
 };
 
 use crate::{
@@ -20,18 +19,14 @@ use crate::{
 		self,
 		hash_path,
 	},
-	providers::provider::ProviderId,
+	providers::{
+		provider::ProviderId,
+		provider_command::ProviderCommand,
+	},
 	serializable_struct,
-	steam::appinfo::SteamLaunchOption,
 	Error,
 	Result,
 };
-
-#[derive(serde::Serialize, serde::Deserialize, specta::Type, Clone, PartialEq, Eq, Hash, Debug)]
-enum StartCommand {
-	String(String),
-	Path(PathBuf, Vec<String>),
-}
 
 serializable_struct!(InstalledGame {
 	pub id: String,
@@ -40,10 +35,9 @@ serializable_struct!(InstalledGame {
 	pub executable: GameExecutable,
 	pub installed_mod_versions: InstalledModVersions,
 	pub discriminator: Option<String>,
-	pub steam_launch: Option<SteamLaunchOption>,
 	pub thumbnail_url: Option<String>,
 	pub game_mode: Option<GameMode>,
-	start_command: Option<StartCommand>,
+	start_command: Option<ProviderCommand>,
 });
 
 pub type Map = HashMap<String, InstalledGame>;
@@ -81,7 +75,6 @@ impl InstalledGame {
 			installed_mod_versions: HashMap::default(),
 			executable: GameExecutable::new(path)?,
 			game_mode: None,
-			steam_launch: None,
 			discriminator: None,
 			thumbnail_url: None,
 			start_command: None,
@@ -93,24 +86,18 @@ impl InstalledGame {
 		self
 	}
 
-	pub fn set_steam_launch(&mut self, steam_launch: &SteamLaunchOption) -> &Self {
-		self.steam_launch = Some(steam_launch.clone());
-		self.game_mode = Some(steam_launch.get_game_mode());
-		self
-	}
-
 	pub fn set_thumbnail_url(&mut self, thumbnail_url: &str) -> &Self {
 		self.thumbnail_url = Some(thumbnail_url.to_string());
 		self
 	}
 
 	pub fn set_start_command_string(&mut self, program: &str) -> &Self {
-		self.start_command = Some(StartCommand::String(program.to_string()));
+		self.start_command = Some(ProviderCommand::String(program.to_string()));
 		self
 	}
 
 	pub fn set_start_command_path(&mut self, path: &Path, args: Vec<String>) -> &Self {
-		self.start_command = Some(StartCommand::Path(path.to_path_buf(), args));
+		self.start_command = Some(ProviderCommand::Path(path.to_path_buf(), args));
 		self
 	}
 
@@ -139,25 +126,9 @@ impl InstalledGame {
 	}
 
 	pub fn start(&self) -> Result {
-		self.start_command.as_ref().map_or_else(
-			|| self.start_exe(),
-			|start_command| {
-				match start_command {
-					StartCommand::String(command) => {
-						open::that_detached(command)?;
-					}
-					StartCommand::Path(path, args) => {
-						let mut command = Command::new(path);
-						command.args(args);
-						if let Some(parent) = path.parent() {
-							command.current_dir(parent);
-						}
-						command.spawn()?;
-					}
-				}
-				Ok(())
-			},
-		)
+		self.start_command
+			.as_ref()
+			.map_or_else(|| self.start_exe(), ProviderCommand::run)
 	}
 
 	pub fn start_exe(&self) -> Result {

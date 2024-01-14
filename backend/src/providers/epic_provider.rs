@@ -12,9 +12,12 @@ use winreg::{
 	RegKey,
 };
 
-use super::provider::{
-	self,
-	ProviderId,
+use super::{
+	provider::{
+		self,
+		ProviderId,
+	},
+	provider_command::ProviderCommand,
 };
 use crate::{
 	game_engines::game_engine::GameEngine,
@@ -42,7 +45,7 @@ impl ProviderStatic for Epic {
 		Self: Sized,
 	{
 		let app_data_path = RegKey::predef(HKEY_LOCAL_MACHINE)
-			.open_subkey("SOFTWARE\\WOW6432Node\\Epic Games\\EpicGamesLauncher")
+			.open_subkey(r"SOFTWARE\WOW6432Node\Epic Games\EpicGamesLauncher")
 			.and_then(|launcher_reg| launcher_reg.get_value::<String, _>("AppDataPath"))
 			.map(PathBuf::from)?;
 
@@ -151,6 +154,9 @@ impl ProviderActions for Epic {
 				provider_id: *Self::ID,
 				release_date: catalog_item.get_release_date().unwrap_or(0),
 				uevr_score: None,
+				show_library_command: None,
+				open_page_command: None,
+				install_command: None,
 			})
 		}))
 		.await

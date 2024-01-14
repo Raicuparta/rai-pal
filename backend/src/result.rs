@@ -97,6 +97,9 @@ pub enum Error {
 
 	#[error("Operation can't be completed without a `runnable` section in the mod manifest (rai-pal-manifest.json) `{0}`")]
 	RunnableManifestNotFound(String),
+
+	#[error("Can't run command because it isn't defined for this game.")]
+	CommandNotDefined(),
 }
 
 impl serde::Serialize for Error {
