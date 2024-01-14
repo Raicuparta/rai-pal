@@ -15,9 +15,12 @@ use winreg::{
 	RegKey,
 };
 
-use super::provider::{
-	self,
-	ProviderId,
+use super::{
+	provider::{
+		self,
+		ProviderId,
+	},
+	provider_command::ProviderCommand,
 };
 use crate::{
 	game_engines::game_engine::GameEngine,
@@ -107,7 +110,14 @@ impl ProviderActions for Gog {
 				thumbnail_url: db_entry.image_url.clone().unwrap_or_default(),
 				game_mode: None,
 				uevr_score: None,
-				show_library_command: None,
+				show_library_command: Some(ProviderCommand::Path(
+					self.launcher_path.clone(),
+					[
+						"/command=launch".to_string(),
+						format!("/gameId={}", db_entry.id),
+					]
+					.to_vec(),
+				)),
 				open_page_command: None,
 				install_command: None,
 			}
