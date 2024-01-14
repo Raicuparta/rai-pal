@@ -198,38 +198,38 @@ impl ProviderActions for Steam {
 
 				// TODO: cache the whole thing, not just the engine version.
 				let steam_game_option = steam_games.get(&id_string);
-				let engine_option = if let Some(steam_game) = steam_game_option {
-					Some(GameEngine {
+
+				let mut game = OwnedGame::new(&id_string, *Self::ID, &app_info.name);
+
+				game.set_thumbnail_url(&get_steam_thumbnail(&id_string))
+					.set_installed(installed)
+					.set_os_list(os_list)
+					.set_release_date(release_date)
+					.set_game_mode(game_mode)
+					.set_show_library_command(ProviderCommand::String(format!(
+						"steam://nav/games/details/{id_string}"
+					)))
+					.set_open_page_command(ProviderCommand::String(format!(
+						"steam://store/{id_string}"
+					)))
+					.set_install_command(ProviderCommand::String(format!(
+						"steam://install/{id_string}"
+					)));
+
+				if let Some(steam_game) = steam_game_option {
+					if let Some(uevr_score) = steam_game.uevr_score {
+						game.set_uevr_score(uevr_score);
+					}
+
+					game.set_engine(GameEngine {
 						brand: steam_game.engine,
 						version: get_engine(&id_string, &self.engine_cache)
 							.await
 							.and_then(|info| info.version),
-					})
-				} else {
-					None
-				};
+					});
+				}
 
-				Some(OwnedGame {
-					id: id_string.clone(),
-					thumbnail_url: get_steam_thumbnail(&id_string),
-					provider_id: *Self::ID,
-					name: app_info.name.clone(),
-					installed,
-					os_list,
-					engine: engine_option,
-					release_date,
-					game_mode: Some(game_mode),
-					uevr_score: steam_game_option.and_then(|game| game.uevr_score),
-					show_library_command: Some(ProviderCommand::String(format!(
-						"steam://nav/games/details/{id_string}"
-					))),
-					open_page_command: Some(ProviderCommand::String(format!(
-						"steam://store/{id_string}"
-					))),
-					install_command: Some(ProviderCommand::String(format!(
-						"steam://install/{id_string}"
-					))),
-				})
+				Some(game)
 			},
 		))
 		.await

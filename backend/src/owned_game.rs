@@ -31,4 +31,75 @@ serializable_struct!(OwnedGame {
 	pub install_command: Option<ProviderCommand>,
 });
 
+impl OwnedGame {
+	// TODO compute ID to make it unique among different providers.
+	pub fn new(id: &str, provider_id: ProviderId, name: &str) -> Self {
+		Self {
+			id: id.to_string(),
+			provider_id,
+			name: name.to_string(),
+			installed: false,
+			os_list: HashSet::default(),
+			engine: None,
+			release_date: 0,
+			thumbnail_url: String::default(),
+			game_mode: None,
+			uevr_score: None,
+			show_library_command: None,
+			open_page_command: None,
+			install_command: None,
+		}
+	}
+
+	pub fn set_installed(&mut self, installed: bool) -> &mut Self {
+		self.installed = installed;
+		self
+	}
+
+	pub fn set_os_list(&mut self, os_list: HashSet<OperatingSystem>) -> &mut Self {
+		self.os_list = os_list;
+		self
+	}
+
+	pub fn set_engine(&mut self, engine: GameEngine) -> &mut Self {
+		self.engine = Some(engine);
+		self
+	}
+
+	pub fn set_release_date(&mut self, release_date: i64) -> &mut Self {
+		self.release_date = release_date;
+		self
+	}
+
+	pub fn set_thumbnail_url(&mut self, thumbnail_url: &str) -> &mut Self {
+		self.thumbnail_url = thumbnail_url.to_string();
+		self
+	}
+
+	pub fn set_game_mode(&mut self, game_mode: GameMode) -> &mut Self {
+		self.game_mode = Some(game_mode);
+		self
+	}
+
+	pub fn set_uevr_score(&mut self, uevr_score: UevrScore) -> &mut Self {
+		self.uevr_score = Some(uevr_score);
+		self
+	}
+
+	pub fn set_show_library_command(&mut self, show_library_command: ProviderCommand) -> &mut Self {
+		self.show_library_command = Some(show_library_command);
+		self
+	}
+
+	pub fn set_open_page_command(&mut self, open_page_command: ProviderCommand) -> &mut Self {
+		self.open_page_command = Some(open_page_command);
+		self
+	}
+
+	pub fn set_install_command(&mut self, install_command: ProviderCommand) -> &mut Self {
+		self.install_command = Some(install_command);
+		self
+	}
+}
+
 pub type Map = HashMap<String, OwnedGame>;

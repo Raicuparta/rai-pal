@@ -1,7 +1,4 @@
-use std::{
-	collections::HashSet,
-	path::PathBuf,
-};
+use std::path::PathBuf;
 
 use async_trait::async_trait;
 use log::error;
@@ -98,29 +95,25 @@ impl ProviderActions for Gog {
 
 	async fn get_owned_games(&self) -> Result<Vec<OwnedGame>> {
 		let owned_games = futures::future::join_all(self.database.iter().map(|db_entry| async {
-			OwnedGame {
-				// TODO should add a constructor to OwnedGame to avoid ID collisions and stuff.
-				id: db_entry.id.clone(),
-				provider_id: *Self::ID,
-				name: db_entry.title.clone(),
-				installed: db_entry.executable_path.is_some(),
-				os_list: HashSet::default(),
-				engine: get_engine(&db_entry.id, &self.engine_cache).await,
-				release_date: db_entry.release_date.unwrap_or_default().into(),
-				thumbnail_url: db_entry.image_url.clone().unwrap_or_default(),
-				game_mode: None,
-				uevr_score: None,
-				show_library_command: Some(ProviderCommand::Path(
+			let mut game = OwnedGame::new(&db_entry.id, *Self::ID, &db_entry.title);
+
+			game.set_thumbnail_url(&db_entry.image_url.clone().unwrap_or_default())
+				.set_installed(db_entry.executable_path.is_some())
+				.set_release_date(db_entry.release_date.unwrap_or_default().into())
+				.set_show_library_command(ProviderCommand::Path(
 					self.launcher_path.clone(),
 					[
 						"/command=launch".to_string(),
 						format!("/gameId={}", db_entry.id),
 					]
 					.to_vec(),
-				)),
-				open_page_command: None,
-				install_command: None,
+				));
+
+			if let Some(engine) = get_engine(&db_entry.id, &self.engine_cache).await {
+				game.set_engine(engine);
 			}
+
+			game
 		}))
 		.await;
 

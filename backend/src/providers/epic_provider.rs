@@ -1,5 +1,4 @@
 use std::{
-	collections::HashSet,
 	fs::File,
 	io::Read,
 	path::PathBuf,
@@ -144,20 +143,11 @@ impl ProviderActions for Epic {
 				return None;
 			}
 
-			Some(OwnedGame {
-				engine: get_engine(&catalog_item.title, &self.engine_cache).await,
-				game_mode: None,
-				id: catalog_item.id.clone(),
-				name: catalog_item.title.clone(),
-				thumbnail_url: catalog_item.get_thumbnail_url().unwrap_or_default(),
-				installed: false, // TODO
-				os_list: HashSet::default(),
-				provider_id: *Self::ID,
-				release_date: catalog_item.get_release_date().unwrap_or(0),
-				uevr_score: None,
-				show_library_command: None,
-				open_page_command: None,
-				install_command: Some(ProviderCommand::String(format!(
+			let mut game = OwnedGame::new(&catalog_item.id, *Self::ID, &catalog_item.title);
+
+			game.set_thumbnail_url(&catalog_item.get_thumbnail_url().unwrap_or_default())
+				.set_release_date(catalog_item.get_release_date().unwrap_or(0))
+				.set_install_command(ProviderCommand::String(format!(
 					"com.epicgames.launcher://apps/{}%3A{}%3A{}?action=install",
 					catalog_item.namespace,
 					catalog_item.id,
@@ -166,8 +156,13 @@ impl ProviderActions for Epic {
 						.first()
 						.map(|release_info| release_info.app_id.clone())
 						.unwrap_or_default(),
-				))),
-			})
+				)));
+
+			if let Some(engine) = get_engine(&catalog_item.title, &self.engine_cache).await {
+				game.set_engine(engine);
+			}
+
+			Some(game)
 		}))
 		.await
 		.into_iter()
