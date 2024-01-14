@@ -94,14 +94,14 @@ impl ProviderActions for Steam {
 									let discriminator_option = if used_names.contains(name) {
 										Some(launch_option.description.as_ref().map_or_else(
 											|| executable_path.display().to_string(),
-											|description| description.clone(),
+											Clone::clone,
 										))
 									} else {
 										None
 									};
 
 									if let Some(discriminator) = &discriminator_option {
-										game.set_discriminator(&discriminator);
+										game.set_discriminator(discriminator);
 									}
 
 									game.set_steam_launch(&launch_option);
