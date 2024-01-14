@@ -120,7 +120,6 @@ export function InstalledGameModal(props: Props) {
 						</CommandButton>
 						{props.game.startCommand && (
 							<CommandDropdown>
-								{/* TODO: Implement these in a generic way on the Rust side, for every provider. */}
 								<CommandButton
 									leftSection={<IconAppWindow />}
 									onClick={() => startGameExe(props.game.id)}
