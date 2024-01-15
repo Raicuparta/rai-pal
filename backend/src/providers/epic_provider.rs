@@ -141,7 +141,7 @@ impl ProviderActions for Epic {
 							InstalledGame::new(&path, &manifest.display_name, Self::ID.to_owned())?;
 						game.set_start_command_string(&format!(
 							"com.epicgames.launcher://apps/{}?action=launch&silent=true",
-							manifest.catalog_item_id
+							manifest.app_name
 						));
 						game.set_provider_game_id(&manifest.catalog_item_id);
 
