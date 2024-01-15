@@ -9,10 +9,7 @@ use lazy_regex::BytesRegex;
 use steamlocate::SteamDir;
 
 use super::{
-	provider::{
-		self,
-		ProviderId,
-	},
+	provider::ProviderId,
 	provider_command::{
 		ProviderCommand,
 		ProviderCommandAction,
@@ -144,27 +141,25 @@ impl ProviderActions for Steam {
 		let steam_games = id_lists::get().await?;
 
 		let remote_games: Vec<RemoteGame> =
-			futures::future::join_all(self.app_info_file.apps.iter().map(
-				|(app_id, steam_app)| async {
-					let id_string = app_id.to_string();
+			futures::future::join_all(self.app_info_file.apps.keys().map(|app_id| async {
+				let id_string = app_id.to_string();
 
-					// TODO: cache the whole thing, not just the engine version.
-					if let Some(steam_game) = steam_games.get(&id_string) {
-						Some(RemoteGame {
-							id: owned_game::get_id(*Self::ID, &id_string), // TODO use constructor
-							engine: Some(GameEngine {
-								brand: steam_game.engine,
-								version: get_engine(&id_string, &self.remote_game_cache)
-									.await
-									.and_then(|info| info.version),
-							}),
-							uevr_score: steam_game.uevr_score,
-						})
-					} else {
-						None
-					}
-				},
-			))
+				// TODO: cache the whole thing, not just the engine version.
+				if let Some(steam_game) = steam_games.get(&id_string) {
+					Some(RemoteGame {
+						id: owned_game::get_id(*Self::ID, &id_string), // TODO use constructor
+						engine: Some(GameEngine {
+							brand: steam_game.engine,
+							version: get_engine(&id_string, &self.remote_game_cache)
+								.await
+								.and_then(|info| info.version),
+						}),
+						uevr_score: steam_game.uevr_score,
+					})
+				} else {
+					None
+				}
+			}))
 			.await
 			.into_iter()
 			.flatten()

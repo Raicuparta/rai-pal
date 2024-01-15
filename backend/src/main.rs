@@ -28,7 +28,6 @@ use mod_loaders::mod_loader::{
 	self,
 	ModLoaderActions,
 };
-use owned_game::OwnedGame;
 use paths::{
 	hash_path,
 	normalize_path,
