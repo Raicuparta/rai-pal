@@ -17,7 +17,8 @@ use crate::{
 
 serializable_struct!(OwnedGame {
 	pub id: String,
-	pub provider_id: ProviderId,
+	pub provider: ProviderId,
+	pub provider_game_id: String,
 	pub name: String,
 	pub installed: bool,
 	pub os_list: HashSet<OperatingSystem>,
@@ -32,11 +33,11 @@ serializable_struct!(OwnedGame {
 });
 
 impl OwnedGame {
-	// TODO compute ID to make it unique among different providers.
-	pub fn new(id: &str, provider_id: ProviderId, name: &str) -> Self {
+	pub fn new(provider_game_id: &str, provider: ProviderId, name: &str) -> Self {
 		Self {
-			id: id.to_string(),
-			provider_id,
+			id: format!("{provider}_{provider_game_id}"),
+			provider_game_id: provider_game_id.to_string(),
+			provider,
 			name: name.to_string(),
 			installed: false,
 			os_list: HashSet::default(),

@@ -31,7 +31,7 @@ export function OwnedGameModal(props: Props) {
 					<ModalImage
 						src={getThumbnailWithFallback(
 							props.game.thumbnailUrl,
-							props.game.providerId,
+							props.game.provider,
 						)}
 					/>
 					<ItemName>{props.game.name}</ItemName>

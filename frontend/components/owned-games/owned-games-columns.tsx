@@ -31,7 +31,7 @@ const thumbnail: TableColumnBase<OwnedGame> = {
 	width: 100,
 	renderCell: (game) => (
 		<ThumbnailCell
-			src={getThumbnailWithFallback(game.thumbnailUrl, game.providerId)}
+			src={getThumbnailWithFallback(game.thumbnailUrl, game.provider)}
 		/>
 	),
 };
@@ -51,12 +51,12 @@ const provider: TableColumnBase<OwnedGame, ProviderId> = {
 	width: 110,
 	center: true,
 	hidable: true,
-	getSortValue: (game) => game.providerId,
+	getSortValue: (game) => game.provider,
 	filterOptions: providerFilterOptions,
 	unavailableValues: ["Manual", "Xbox"],
 	renderCell: (game) => (
 		<Table.Td>
-			<ProviderBadge value={game.providerId} />
+			<ProviderBadge value={game.provider} />
 		</Table.Td>
 	),
 };
