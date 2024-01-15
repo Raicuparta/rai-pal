@@ -406,14 +406,6 @@ async fn update_data(handle: AppHandle) -> Result {
 		&handle,
 	);
 
-	let remote_mods = refresh_remote_mods(&mod_loaders, &handle).await;
-	now.log_next("refresh remote mods");
-
-	for game in installed_games.values_mut() {
-		game.update_available_mods(&get_common_data_map(&local_mods, &remote_mods));
-	}
-	now.log_next("update game mods");
-
 	update_state(
 		AppEvent::SyncInstalledGames,
 		installed_games.clone(),
@@ -440,6 +432,14 @@ async fn update_data(handle: AppHandle) -> Result {
 		owned_games.len()
 	));
 
+	let remote_mods = refresh_remote_mods(&mod_loaders, &handle).await;
+	now.log_next("refresh remote mods");
+
+	for game in installed_games.values_mut() {
+		game.update_available_mods(&get_common_data_map(&local_mods, &remote_mods));
+	}
+	now.log_next("update game mods");
+
 	update_state(
 		AppEvent::SyncOwnedGames,
 		owned_games.clone(),
@@ -456,13 +456,13 @@ async fn update_data(handle: AppHandle) -> Result {
 	.into_iter()
 	.flat_map(|result| {
 		result.unwrap_or_else(|err| {
-			error!("Failed to get owned games for a provider: {err}");
+			error!("Failed to get remote games for a provider: {err}");
 			Vec::default()
 		})
 	})
 	.map(|remote_game| (remote_game.id.clone(), remote_game))
 	.collect();
-	now.log_next(&format!("get owned games ({} total)", owned_games.len()));
+	now.log_next(&format!("get remote games ({} total)", remote_games.len()));
 
 	update_state(
 		AppEvent::SyncRemoteGames,
