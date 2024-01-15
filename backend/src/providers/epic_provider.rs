@@ -21,7 +21,10 @@ use super::{
 		self,
 		ProviderId,
 	},
-	provider_command::ProviderCommand,
+	provider_command::{
+		ProviderCommand,
+		ProviderCommandAction,
+	},
 };
 use crate::{
 	game_engines::game_engine::GameEngine,
@@ -176,16 +179,19 @@ impl ProviderActions for Epic {
 
 			let mut game = OwnedGame::new(&catalog_item.id, *Self::ID, &catalog_item.title);
 
-			game.set_install_command(ProviderCommand::String(format!(
-				"com.epicgames.launcher://apps/{}%3A{}%3A{}?action=install",
-				catalog_item.namespace,
-				catalog_item.id,
-				catalog_item
-					.release_info
-					.first()
-					.map(|release_info| release_info.app_id.clone())
-					.unwrap_or_default(),
-			)));
+			game.add_provider_command(
+				ProviderCommandAction::Install,
+				ProviderCommand::String(format!(
+					"com.epicgames.launcher://apps/{}%3A{}%3A{}?action=install",
+					catalog_item.namespace,
+					catalog_item.id,
+					catalog_item
+						.release_info
+						.first()
+						.map(|release_info| release_info.app_id.clone())
+						.unwrap_or_default(),
+				)),
+			);
 
 			if let Some(thumbnail_url) = catalog_item.get_thumbnail_url() {
 				game.set_thumbnail_url(&thumbnail_url);

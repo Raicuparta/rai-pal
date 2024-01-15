@@ -18,7 +18,7 @@ import {
 	UnityBackendBadge,
 } from "@components/badges/color-coded-badge";
 import { ThumbnailCell } from "@components/table/thumbnail-cell";
-import { OutdatedMarker } from "@components/OutdatedMarker";
+import { OutdatedMarker } from "@components/outdated-marker";
 import {
 	engineFilterOptions,
 	providerFilterOptions,

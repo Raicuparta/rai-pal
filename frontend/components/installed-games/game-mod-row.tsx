@@ -18,7 +18,7 @@ import {
 } from "@tabler/icons-react";
 import { UnifiedMod } from "@hooks/use-unified-mods";
 import { getIsOutdated } from "../../util/is-outdated";
-import { OutdatedMarker } from "@components/OutdatedMarker";
+import { OutdatedMarker } from "@components/outdated-marker";
 import { ProcessedInstalledGame } from "@hooks/use-processed-installed-games";
 import { useCallback } from "react";
 import { ItemName } from "@components/item-name";

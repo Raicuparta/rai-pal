@@ -9,13 +9,10 @@ import {
 	Tooltip,
 } from "@mantine/core";
 import {
-	ProviderId,
 	openGameFolder,
 	openGameModsFolder,
-	openGamePage,
 	refreshGame,
 	removeGame,
-	showGameInLibrary,
 	startGame,
 	startGameExe,
 } from "@api/bindings";
@@ -23,20 +20,12 @@ import { useMemo } from "react";
 import { ItemName } from "../item-name";
 import { CommandButton } from "@components/command-button";
 import {
-	Icon,
 	IconAppWindow,
-	IconBooks,
-	IconBrandSteam,
-	IconBrandXbox,
-	IconBrowser,
-	IconCircleLetterG,
-	IconDeviceGamepad,
 	IconFolder,
 	IconFolderCog,
 	IconFolderOpen,
 	IconPlayerPlay,
 	IconRefresh,
-	IconSquareLetterE,
 	IconTrash,
 } from "@tabler/icons-react";
 import { ModalImage } from "@components/modal-image";
@@ -51,23 +40,13 @@ import { GameModRow } from "./game-mod-row";
 import { TableContainer } from "@components/table/table-container";
 import { CommandDropdown } from "@components/command-dropdown";
 import { getThumbnailWithFallback } from "../../util/fallback-thumbnail";
+import { ProviderCommandButtons } from "@components/providers/provider-command-dropdown";
+import { ProviderIcon } from "@components/providers/provider-icon";
 
 type Props = {
 	readonly game: ProcessedInstalledGame;
 	readonly onClose: () => void;
 };
-
-const providerIcons: Record<ProviderId, Icon> = {
-	Manual: IconDeviceGamepad,
-	Steam: IconBrandSteam,
-	Epic: IconSquareLetterE,
-	Gog: IconCircleLetterG,
-	Xbox: IconBrandXbox,
-};
-
-function getProviderIcon(providerId: ProviderId) {
-	return providerIcons[providerId] ?? IconDeviceGamepad;
-}
 
 export function InstalledGameModal(props: Props) {
 	const modLoaderMap = useAtomValue(modLoadersAtom);
@@ -78,9 +57,6 @@ export function InstalledGameModal(props: Props) {
 			(mod) => mod.common.id in props.game.installedModVersions,
 		);
 	}, [mods, props.game.installedModVersions]);
-
-	const ProviderIcon = getProviderIcon(props.game.provider);
-	const ownedGame = props.game.ownedGame;
 
 	return (
 		<Modal
@@ -129,7 +105,9 @@ export function InstalledGameModal(props: Props) {
 									Start Game Executable
 								</CommandButton>
 								<CommandButton
-									leftSection={<ProviderIcon />}
+									leftSection={
+										<ProviderIcon providerId={props.game.provider} />
+									}
 									onClick={() => startGame(props.game.id)}
 								>
 									Start Game via {props.game.provider}
@@ -154,28 +132,11 @@ export function InstalledGameModal(props: Props) {
 							Open Installed Mods Folder
 						</CommandButton>
 					</CommandDropdown>
-					{(ownedGame?.openPageCommand || ownedGame?.showLibraryCommand) && (
-						<CommandDropdown
-							label={props.game.provider}
-							icon={<ProviderIcon />}
-						>
-							{ownedGame.openPageCommand && (
-								<CommandButton
-									leftSection={<IconBrowser />}
-									onClick={() => openGamePage(ownedGame.id)}
-								>
-									Open Store Page
-								</CommandButton>
-							)}
-							{ownedGame.showLibraryCommand && (
-								<CommandButton
-									leftSection={<IconBooks />}
-									onClick={() => showGameInLibrary(ownedGame.id)}
-								>
-									Show in Library
-								</CommandButton>
-							)}
-						</CommandDropdown>
+					{props.game.ownedGame && (
+						<ProviderCommandButtons
+							game={props.game.ownedGame}
+							isInstalled={true}
+						/>
 					)}
 					{props.game.provider === "Manual" && (
 						<CommandButton

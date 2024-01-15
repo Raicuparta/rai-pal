@@ -13,7 +13,10 @@ use super::{
 		self,
 		ProviderId,
 	},
-	provider_command::ProviderCommand,
+	provider_command::{
+		ProviderCommand,
+		ProviderCommandAction,
+	},
 };
 use crate::{
 	game_engines::game_engine::GameEngine,
@@ -191,15 +194,18 @@ impl ProviderActions for Steam {
 				game.set_thumbnail_url(&get_steam_thumbnail(&id_string))
 					.set_os_list(os_list)
 					.set_game_mode(game_mode)
-					.set_show_library_command(ProviderCommand::String(format!(
-						"steam://nav/games/details/{id_string}"
-					)))
-					.set_open_page_command(ProviderCommand::String(format!(
-						"steam://store/{id_string}"
-					)))
-					.set_install_command(ProviderCommand::String(format!(
-						"steam://install/{id_string}"
-					)));
+					.add_provider_command(
+						ProviderCommandAction::ShowInLibrary,
+						ProviderCommand::String(format!("steam://nav/games/details/{id_string}")),
+					)
+					.add_provider_command(
+						ProviderCommandAction::ShowInStore,
+						ProviderCommand::String(format!("steam://store/{id_string}")),
+					)
+					.add_provider_command(
+						ProviderCommandAction::Install,
+						ProviderCommand::String(format!("steam://install/{id_string}")),
+					);
 
 				if let Some(release_date) = app_info
 					.original_release_date

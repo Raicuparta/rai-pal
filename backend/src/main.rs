@@ -38,6 +38,7 @@ use providers::{
 		self,
 		ProviderActions,
 	},
+	provider_command::ProviderCommandAction,
 };
 use result::{
 	Error,
@@ -498,45 +499,17 @@ async fn remove_game(game_id: &str, handle: AppHandle) -> Result {
 
 #[tauri::command]
 #[specta::specta]
-async fn show_game_in_library(owned_game_id: &str, handle: AppHandle) -> Result {
+async fn run_provider_command(
+	owned_game_id: &str,
+	command_action: &str,
+	handle: AppHandle,
+) -> Result {
 	handle
 		.app_state()
 		.owned_games
 		.try_get(owned_game_id)?
-		.show_library_command
-		.ok_or_else(Error::CommandNotDefined)?
-		.run()?;
-
-	handle.emit_event(AppEvent::ExecutedProviderCommand, ());
-
-	Ok(())
-}
-
-#[tauri::command]
-#[specta::specta]
-async fn install_game(owned_game_id: &str, handle: AppHandle) -> Result {
-	handle
-		.app_state()
-		.owned_games
-		.try_get(owned_game_id)?
-		.install_command
-		.ok_or_else(Error::CommandNotDefined)?
-		.run()?;
-
-	handle.emit_event(AppEvent::ExecutedProviderCommand, ());
-
-	Ok(())
-}
-
-#[tauri::command]
-#[specta::specta]
-async fn open_game_page(owned_game_id: &str, handle: AppHandle) -> Result {
-	handle
-		.app_state()
-		.owned_games
-		.try_get(owned_game_id)?
-		.open_page_command
-		.ok_or_else(Error::CommandNotDefined)?
+		.provider_commands
+		.try_get(command_action)?
 		.run()?;
 
 	handle.emit_event(AppEvent::ExecutedProviderCommand, ());
@@ -569,7 +542,7 @@ async fn open_logs_folder() -> Result {
 
 #[tauri::command]
 #[specta::specta]
-async fn dummy_command() -> Result<(InstalledGame, AppEvent)> {
+async fn dummy_command() -> Result<(InstalledGame, AppEvent, ProviderCommandAction)> {
 	// This command is here just so tauri_specta exports these types.
 	// This should stop being needed once tauri_specta starts supporting events.
 	Err(Error::NotImplemented)
@@ -649,9 +622,7 @@ fn main() {
 			open_mod_loader_folder,
 			refresh_game,
 			open_logs_folder,
-			show_game_in_library,
-			install_game,
-			open_game_page,
+			run_provider_command,
 		]
 	);
 

@@ -17,7 +17,10 @@ use super::{
 		self,
 		ProviderId,
 	},
-	provider_command::ProviderCommand,
+	provider_command::{
+		ProviderCommand,
+		ProviderCommandAction,
+	},
 };
 use crate::{
 	game_engines::game_engine::GameEngine,
@@ -98,14 +101,17 @@ impl ProviderActions for Gog {
 		let owned_games = futures::future::join_all(self.database.iter().map(|db_entry| async {
 			let mut game = OwnedGame::new(&db_entry.id, *Self::ID, &db_entry.title);
 
-			game.set_show_library_command(ProviderCommand::Path(
-				self.launcher_path.clone(),
-				[
-					"/command=launch".to_string(),
-					format!("/gameId={}", db_entry.id),
-				]
-				.to_vec(),
-			));
+			game.add_provider_command(
+				ProviderCommandAction::ShowInLibrary,
+				ProviderCommand::Path(
+					self.launcher_path.clone(),
+					[
+						"/command=launch".to_string(),
+						format!("/gameId={}", db_entry.id),
+					]
+					.to_vec(),
+				),
+			);
 
 			if let Some(thumbnail_url) = db_entry.image_url.clone() {
 				game.set_thumbnail_url(&thumbnail_url);
