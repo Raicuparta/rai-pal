@@ -183,7 +183,15 @@ async fn download_mod(mod_id: &str, handle: AppHandle) -> Result {
 #[tauri::command]
 #[specta::specta]
 async fn start_game(game_id: &str, handle: AppHandle) -> Result {
-	handle.app_state().installed_games.try_get(game_id)?.start()
+	handle
+		.app_state()
+		.installed_games
+		.try_get(game_id)?
+		.start()?;
+
+	handle.emit_event(AppEvent::ExecutedProviderCommand, ());
+
+	Ok(())
 }
 
 #[tauri::command]
@@ -497,7 +505,11 @@ async fn show_game_in_library(owned_game_id: &str, handle: AppHandle) -> Result 
 		.try_get(owned_game_id)?
 		.show_library_command
 		.ok_or_else(Error::CommandNotDefined)?
-		.run()
+		.run();
+
+	handle.emit_event(AppEvent::ExecutedProviderCommand, ());
+
+	Ok(())
 }
 
 #[tauri::command]
@@ -509,7 +521,11 @@ async fn install_game(owned_game_id: &str, handle: AppHandle) -> Result {
 		.try_get(owned_game_id)?
 		.install_command
 		.ok_or_else(Error::CommandNotDefined)?
-		.run()
+		.run();
+
+	handle.emit_event(AppEvent::ExecutedProviderCommand, ());
+
+	Ok(())
 }
 
 #[tauri::command]
@@ -521,7 +537,11 @@ async fn open_game_page(owned_game_id: &str, handle: AppHandle) -> Result {
 		.try_get(owned_game_id)?
 		.open_page_command
 		.ok_or_else(Error::CommandNotDefined)?
-		.run()
+		.run();
+
+	handle.emit_event(AppEvent::ExecutedProviderCommand, ());
+
+	Ok(())
 }
 
 #[tauri::command]

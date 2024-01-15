@@ -40,8 +40,11 @@ export function AppNotifications() {
 		showAppNotification(error, "error");
 	});
 
-	useAppEvent("ExecutedSteamCommand", () => {
-		showAppNotification("Running steam command...", "info");
+	useAppEvent("ExecutedProviderCommand", () => {
+		showAppNotification(
+			"Running command... This might take a few seconds.",
+			"info",
+		);
 	});
 
 	useAppEvent<string>("GameAdded", (gameName) => {
