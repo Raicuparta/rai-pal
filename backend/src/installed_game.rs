@@ -31,13 +31,14 @@ use crate::{
 serializable_struct!(InstalledGame {
 	pub id: String,
 	pub name: String,
-	pub provider_id: ProviderId,
+	pub provider: ProviderId,
 	pub executable: GameExecutable,
 	pub installed_mod_versions: InstalledModVersions,
 	pub discriminator: Option<String>,
 	pub thumbnail_url: Option<String>,
 	pub game_mode: Option<GameMode>,
-	start_command: Option<ProviderCommand>,
+	pub provider_game_id: Option<String>,
+	pub start_command: Option<ProviderCommand>,
 });
 
 pub type Map = HashMap<String, InstalledGame>;
@@ -71,13 +72,14 @@ impl InstalledGame {
 		Some(Self {
 			id: hash_path(&executable.path),
 			name: name.to_string(),
-			provider_id,
+			provider: provider_id,
 			installed_mod_versions: HashMap::default(),
 			executable: GameExecutable::new(path)?,
 			game_mode: None,
 			discriminator: None,
 			thumbnail_url: None,
 			start_command: None,
+			provider_game_id: None,
 		})
 	}
 
@@ -98,6 +100,11 @@ impl InstalledGame {
 
 	pub fn set_start_command_path(&mut self, path: &Path, args: Vec<String>) -> &Self {
 		self.start_command = Some(ProviderCommand::Path(path.to_path_buf(), args));
+		self
+	}
+
+	pub fn set_provider_game_id(&mut self, provider_game_id: &str) -> &Self {
+		self.provider_game_id = Some(provider_game_id.to_string());
 		self
 	}
 

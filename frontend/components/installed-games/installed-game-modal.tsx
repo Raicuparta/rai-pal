@@ -75,7 +75,7 @@ export function InstalledGameModal(props: Props) {
 		);
 	}, [mods, props.game.installedModVersions]);
 
-	const ProviderIcon = getProviderIcon(props.game.providerId);
+	const ProviderIcon = getProviderIcon(props.game.provider);
 
 	return (
 		<Modal
@@ -88,7 +88,7 @@ export function InstalledGameModal(props: Props) {
 					<ModalImage
 						src={getThumbnailWithFallback(
 							props.game.thumbnailUrl,
-							props.game.providerId,
+							props.game.provider,
 						)}
 					/>
 					<ItemName label={props.game.discriminator}>
@@ -127,7 +127,7 @@ export function InstalledGameModal(props: Props) {
 									leftSection={<ProviderIcon />}
 									onClick={() => startGame(props.game.id)}
 								>
-									Start Game via {props.game.providerId}
+									Start Game via {props.game.provider}
 								</CommandButton>
 							</CommandDropdown>
 						)}
@@ -149,7 +149,7 @@ export function InstalledGameModal(props: Props) {
 							Open Installed Mods Folder
 						</CommandButton>
 					</CommandDropdown>
-					{props.game.providerId === "Manual" && (
+					{props.game.provider === "Manual" && (
 						<CommandButton
 							onClick={() => removeGame(props.game.id)}
 							confirmationText="Are you sure you want to remove this game from Rai Pal?"

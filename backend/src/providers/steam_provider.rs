@@ -107,9 +107,10 @@ impl ProviderActions for Steam {
 										game.set_discriminator(discriminator);
 									}
 
-									game.set_thumbnail_url(&get_steam_thumbnail(
-										&app.app_id.to_string(),
-									));
+									let app_id_string = app.app_id.to_string();
+
+									game.set_provider_game_id(&app_id_string);
+									game.set_thumbnail_url(&get_steam_thumbnail(&app_id_string));
 									game.set_start_command_string(&get_start_command(
 										&launch_option,
 										&discriminator_option,
