@@ -20,6 +20,7 @@ use super::{
 	provider::{
 		self,
 		ProviderId,
+		RemoteGameData,
 	},
 	provider_command::{
 		ProviderCommand,
@@ -159,67 +160,75 @@ impl ProviderActions for Epic {
 			.collect())
 	}
 
-	async fn get_owned_games(&self) -> Result<Vec<OwnedGame>> {
-		let mut file = File::open(self.app_data_path.join("Catalog").join("catcache.bin"))?;
-
-		let mut decoder = base64::read::DecoderReader::new(&mut file, &general_purpose::STANDARD);
-		let mut json = String::default();
-		decoder.read_to_string(&mut json)?;
-
-		let items = serde_json::from_str::<Vec<EpicCatalogItem>>(&json)?;
-
-		let owned_games = futures::future::join_all(items.iter().map(|catalog_item| async {
-			if catalog_item
-				.categories
-				.iter()
-				.all(|category| category.path != "games")
-			{
-				return None;
-			}
-
-			let mut game = OwnedGame::new(&catalog_item.id, *Self::ID, &catalog_item.title);
-
-			game.add_provider_command(
-				ProviderCommandAction::Install,
-				ProviderCommand::String(format!(
-					"com.epicgames.launcher://apps/{}%3A{}%3A{}?action=install",
-					catalog_item.namespace,
-					catalog_item.id,
-					catalog_item
-						.release_info
-						.first()
-						.map(|release_info| release_info.app_id.clone())
-						.unwrap_or_default(),
-				)),
-			);
-
-			if let Some(thumbnail_url) = catalog_item.get_thumbnail_url() {
-				game.set_thumbnail_url(&thumbnail_url);
-			}
-
-			if let Some(release_date) = catalog_item.get_release_date() {
-				game.set_release_date(release_date);
-			}
-
-			if let Some(engine) = get_engine(&catalog_item.title, &self.engine_cache).await {
-				game.set_engine(engine);
-			}
-
-			Some(game)
-		}))
-		.await
-		.into_iter()
-		.flatten();
-
-		Self::try_save_engine_cache(
-			&owned_games
-				.clone()
-				.map(|owned_game| (owned_game.name.clone(), owned_game.engine))
-				.collect(),
-		);
-
-		Ok(owned_games.collect())
+	fn get_local_owned_games(&self) -> Result<Vec<OwnedGame>> {
+		Ok(Vec::default())
 	}
+
+	async fn get_remote_game_data(&self) -> Result<Vec<RemoteGameData>> {
+		Ok(Vec::default())
+	}
+
+	// async fn update_local_owned_games(&self) -> Result<Vec<OwnedGame>> {
+	// 	let mut file = File::open(self.app_data_path.join("Catalog").join("catcache.bin"))?;
+
+	// 	let mut decoder = base64::read::DecoderReader::new(&mut file, &general_purpose::STANDARD);
+	// 	let mut json = String::default();
+	// 	decoder.read_to_string(&mut json)?;
+
+	// 	let items = serde_json::from_str::<Vec<EpicCatalogItem>>(&json)?;
+
+	// 	let owned_games = futures::future::join_all(items.iter().map(|catalog_item| async {
+	// 		if catalog_item
+	// 			.categories
+	// 			.iter()
+	// 			.all(|category| category.path != "games")
+	// 		{
+	// 			return None;
+	// 		}
+
+	// 		let mut game = OwnedGame::new(&catalog_item.id, *Self::ID, &catalog_item.title);
+
+	// 		game.add_provider_command(
+	// 			ProviderCommandAction::Install,
+	// 			ProviderCommand::String(format!(
+	// 				"com.epicgames.launcher://apps/{}%3A{}%3A{}?action=install",
+	// 				catalog_item.namespace,
+	// 				catalog_item.id,
+	// 				catalog_item
+	// 					.release_info
+	// 					.first()
+	// 					.map(|release_info| release_info.app_id.clone())
+	// 					.unwrap_or_default(),
+	// 			)),
+	// 		);
+
+	// 		if let Some(thumbnail_url) = catalog_item.get_thumbnail_url() {
+	// 			game.set_thumbnail_url(&thumbnail_url);
+	// 		}
+
+	// 		if let Some(release_date) = catalog_item.get_release_date() {
+	// 			game.set_release_date(release_date);
+	// 		}
+
+	// 		if let Some(engine) = get_engine(&catalog_item.title, &self.engine_cache).await {
+	// 			game.set_engine(engine);
+	// 		}
+
+	// 		Some(game)
+	// 	}))
+	// 	.await
+	// 	.into_iter()
+	// 	.flatten();
+
+	// 	Self::try_save_engine_cache(
+	// 		&owned_games
+	// 			.clone()
+	// 			.map(|owned_game| (owned_game.name.clone(), owned_game.engine))
+	// 			.collect(),
+	// 	);
+
+	// 	Ok(owned_games.collect())
+	// }
 }
 
 async fn get_engine(title: &str, cache: &provider::EngineCache) -> Option<GameEngine> {

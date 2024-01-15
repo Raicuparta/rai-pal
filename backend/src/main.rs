@@ -28,6 +28,7 @@ use mod_loaders::mod_loader::{
 	self,
 	ModLoaderActions,
 };
+use owned_game::OwnedGame;
 use paths::{
 	hash_path,
 	normalize_path,
@@ -37,6 +38,7 @@ use providers::{
 	provider::{
 		self,
 		ProviderActions,
+		RemoteGameData,
 	},
 	provider_command::ProviderCommandAction,
 };
@@ -104,6 +106,12 @@ async fn get_local_mods(handle: AppHandle) -> Result<local_mod::Map> {
 #[specta::specta]
 async fn get_remote_mods(handle: AppHandle) -> Result<remote_mod::Map> {
 	handle.app_state().remote_mods.get_data()
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn get_remote_game_data(handle: AppHandle) -> Result<HashMap<String, RemoteGameData>> {
+	handle.app_state().remote_game_data.get_data()
 }
 
 fn update_state<TData>(
@@ -413,10 +421,36 @@ async fn update_data(handle: AppHandle) -> Result {
 		&handle,
 	);
 
-	let owned_games: owned_game::Map = futures::future::join_all(
+	let owned_games: owned_game::Map = provider_map
+		.iter()
+		.flat_map(
+			|(provider_id, provider)| match provider.get_local_owned_games() {
+				Ok(owned_games) => owned_games,
+				Err(err) => {
+					error!("Failed to get owned games for provider '{provider_id}': {err}");
+					Vec::default()
+				}
+			},
+		)
+		.map(|owned_game| (owned_game.id.clone(), owned_game))
+		.collect();
+
+	now.log_next(&format!(
+		"get local owned games ({} total)",
+		owned_games.len()
+	));
+
+	update_state(
+		AppEvent::SyncOwnedGames,
+		owned_games.clone(),
+		&handle.app_state().owned_games,
+		&handle,
+	);
+
+	let remote_game_data: HashMap<String, RemoteGameData> = futures::future::join_all(
 		provider_map
 			.values()
-			.map(provider::ProviderActions::get_owned_games),
+			.map(provider::Provider::get_remote_game_data),
 	)
 	.await
 	.into_iter()
@@ -426,14 +460,14 @@ async fn update_data(handle: AppHandle) -> Result {
 			Vec::default()
 		})
 	})
-	.map(|owned_game| (owned_game.id.clone(), owned_game))
+	.map(|remote_game_data| (remote_game_data.id.clone(), remote_game_data))
 	.collect();
 	now.log_next(&format!("get owned games ({} total)", owned_games.len()));
 
 	update_state(
-		AppEvent::SyncOwnedGames,
-		owned_games,
-		&handle.app_state().owned_games,
+		AppEvent::SyncRemoteGameData,
+		remote_game_data,
+		&handle.app_state().remote_game_data,
 		&handle,
 	);
 
@@ -569,6 +603,7 @@ fn main() {
 		.manage(AppState {
 			installed_games: Mutex::default(),
 			owned_games: Mutex::default(),
+			remote_game_data: Mutex::default(),
 			mod_loaders: Mutex::default(),
 			local_mods: Mutex::default(),
 			remote_mods: Mutex::default(),
@@ -619,6 +654,7 @@ fn main() {
 			frontend_ready,
 			get_local_mods,
 			get_remote_mods,
+			get_remote_game_data,
 			open_mod_loader_folder,
 			refresh_game,
 			open_logs_folder,

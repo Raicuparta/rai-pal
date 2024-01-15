@@ -13,6 +13,7 @@ use super::provider::{
 	ProviderActions,
 	ProviderId,
 	ProviderStatic,
+	RemoteGameData,
 };
 use crate::{
 	installed_game::InstalledGame,
@@ -54,8 +55,12 @@ impl ProviderActions for Manual {
 			.collect())
 	}
 
-	async fn get_owned_games(&self) -> Result<Vec<OwnedGame>> {
-		Ok(Vec::new())
+	fn get_local_owned_games(&self) -> Result<Vec<OwnedGame>> {
+		Ok(Vec::default())
+	}
+
+	async fn get_remote_game_data(&self) -> Result<Vec<RemoteGameData>> {
+		Ok(Vec::default())
 	}
 }
 

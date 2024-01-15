@@ -8,7 +8,7 @@ const defaultVersion: GameEngineVersion = {
 	display: "",
 };
 
-export function getAdjustedUnityMajor(engine: GameEngine | null) {
+export function getAdjustedUnityMajor(engine: GameEngine | null | undefined) {
 	const major = engine?.version?.major;
 	if (!major) return 0;
 
@@ -25,8 +25,8 @@ export function getAdjustedUnityMajor(engine: GameEngine | null) {
 }
 
 export function sortGamesByEngine(
-	engineA: GameEngine | null,
-	engineB: GameEngine | null,
+	engineA: GameEngine | null | undefined,
+	engineB: GameEngine | null | undefined,
 ) {
 	const versionA = engineA?.version ?? defaultVersion;
 	const versionB = engineB?.version ?? defaultVersion;

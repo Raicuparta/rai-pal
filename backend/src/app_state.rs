@@ -14,6 +14,7 @@ use crate::{
 	maps::TryGettable,
 	mod_loaders::mod_loader,
 	owned_game,
+	providers::provider::RemoteGameData,
 	remote_mod,
 	Error,
 	Result,
@@ -25,6 +26,7 @@ pub struct AppState {
 	pub mod_loaders: Mutex<Option<mod_loader::Map>>,
 	pub local_mods: Mutex<Option<local_mod::Map>>,
 	pub remote_mods: Mutex<Option<remote_mod::Map>>,
+	pub remote_game_data: Mutex<Option<HashMap<String, RemoteGameData>>>,
 }
 
 type TauriState<'a> = tauri::State<'a, AppState>;

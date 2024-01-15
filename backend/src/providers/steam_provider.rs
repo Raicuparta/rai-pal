@@ -12,6 +12,7 @@ use super::{
 	provider::{
 		self,
 		ProviderId,
+		RemoteGameData,
 	},
 	provider_command::{
 		ProviderCommand,
@@ -26,7 +27,10 @@ use crate::{
 		self,
 		InstalledGame,
 	},
-	owned_game::OwnedGame,
+	owned_game::{
+		self,
+		OwnedGame,
+	},
 	pc_gaming_wiki,
 	provider::{
 		ProviderActions,
@@ -133,10 +137,52 @@ impl ProviderActions for Steam {
 		Ok(games)
 	}
 
-	async fn get_owned_games(&self) -> Result<Vec<OwnedGame>> {
+	async fn get_remote_game_data(&self) -> Result<Vec<RemoteGameData>> {
 		let steam_games = id_lists::get().await?;
-		let owned_games = futures::future::join_all(self.app_info_file.apps.iter().map(
-			|(steam_id, app_info)| async {
+
+		let remote_game_data: Vec<RemoteGameData> =
+			futures::future::join_all(self.app_info_file.apps.iter().map(
+				|(app_id, steam_app)| async {
+					let id_string = app_id.to_string();
+
+					// TODO: cache the whole thing, not just the engine version.
+					if let Some(steam_game) = steam_games.get(&id_string) {
+						Some(RemoteGameData {
+							id: owned_game::get_id(*Self::ID, &id_string), // TODO use constructor
+							engine: Some(GameEngine {
+								brand: steam_game.engine,
+								version: get_engine(&id_string, &self.engine_cache)
+									.await
+									.and_then(|info| info.version),
+							}),
+							uevr_score: steam_game.uevr_score,
+						})
+					} else {
+						None
+					}
+				},
+			))
+			.await
+			.into_iter()
+			.flatten()
+			.collect();
+
+		Self::try_save_engine_cache(
+			&remote_game_data
+				.iter()
+				.map(|owned_game| (owned_game.id.clone(), owned_game.engine.clone()))
+				.collect(),
+		);
+
+		Ok(remote_game_data)
+	}
+
+	fn get_local_owned_games(&self) -> Result<Vec<OwnedGame>> {
+		let owned_games: Vec<OwnedGame> = self
+			.app_info_file
+			.apps
+			.iter()
+			.filter_map(|(steam_id, app_info)| {
 				let id_string = steam_id.to_string();
 				let os_list: HashSet<_> = app_info
 					.launch_options
@@ -186,9 +232,6 @@ impl ProviderActions for Steam {
 					GameMode::Flat
 				};
 
-				// TODO: cache the whole thing, not just the engine version.
-				let steam_game_option = steam_games.get(&id_string);
-
 				let mut game = OwnedGame::new(&id_string, *Self::ID, &app_info.name);
 
 				game.set_thumbnail_url(&get_steam_thumbnail(&id_string))
@@ -214,34 +257,11 @@ impl ProviderActions for Steam {
 					game.set_release_date(release_date.into());
 				}
 
-				if let Some(steam_game) = steam_game_option {
-					if let Some(uevr_score) = steam_game.uevr_score {
-						game.set_uevr_score(uevr_score);
-					}
-
-					game.set_engine(GameEngine {
-						brand: steam_game.engine,
-						version: get_engine(&id_string, &self.engine_cache)
-							.await
-							.and_then(|info| info.version),
-					});
-				}
-
 				Some(game)
-			},
-		))
-		.await
-		.into_iter()
-		.flatten();
+			})
+			.collect();
 
-		Self::try_save_engine_cache(
-			&owned_games
-				.clone()
-				.map(|owned_game| (owned_game.id.clone(), owned_game.engine))
-				.collect(),
-		);
-
-		Ok(owned_games.collect())
+		Ok(owned_games)
 	}
 }
 

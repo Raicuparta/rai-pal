@@ -90,6 +90,10 @@ export function getRemoteMods() {
     return invoke()<{ [key: string]: RemoteMod }>("get_remote_mods")
 }
 
+export function getRemoteGameData() {
+    return invoke()<{ [key: string]: RemoteGameData }>("get_remote_game_data")
+}
+
 export function openModLoaderFolder(modLoaderId: string) {
     return invoke()<null>("open_mod_loader_folder", { modLoaderId })
 }
@@ -108,14 +112,16 @@ export function runProviderCommand(ownedGameId: string, commandAction: string) {
 
 export type GameEngineVersion = { major: number; minor: number; patch: number; suffix: string | null; display: string }
 export type Manifest = { version: string; runnable: RunnableModData | null; engine: GameEngineBrand | null; unityBackend: UnityScriptingBackend | null }
-export type ProviderId = "Steam" | "Manual" | "Epic" | "Gog" | "Xbox"
 export type GameEngineBrand = "Unity" | "Unreal" | "Godot"
 export type GameMode = "VR" | "Flat"
 export type ModKind = "Installable" | "Runnable"
 export type RunnableModData = { path: string; args: string[] }
-export type AppEvent = "SyncInstalledGames" | "SyncOwnedGames" | "SyncModLoaders" | "SyncLocalMods" | "SyncRemoteMods" | "ExecutedProviderCommand" | "GameAdded" | "GameRemoved" | "Error"
+export type OwnedGame = { id: string; provider: ProviderId; name: string; osList: OperatingSystem[]; releaseDate: BigInt | null; thumbnailUrl: string | null; gameMode: GameMode | null; providerCommands: { [key: string]: ProviderCommand } }
+export type AppEvent = "SyncInstalledGames" | "SyncOwnedGames" | "SyncRemoteGameData" | "SyncModLoaders" | "SyncLocalMods" | "SyncRemoteMods" | "ExecutedProviderCommand" | "GameAdded" | "GameRemoved" | "Error"
 export type ModDownload = { id: string; url: string; root: string | null; runnable: RunnableModData | null }
+export type RemoteGameData = { id: string; engine: GameEngine | null; uevrScore: UevrScore | null }
 export type LocalMod = { data: LocalModData; common: CommonModData }
+export type ProviderId = "Steam" | "Manual" | "Epic" | "Gog" | "Xbox"
 export type RemoteModData = { title: string; author: string; sourceCode: string; description: string; latestVersion: ModDownload | null }
 export type LocalModData = { path: string; manifest: Manifest | null }
 export type ModLoaderData = { id: string; path: string; kind: ModKind }
@@ -130,4 +136,3 @@ export type OperatingSystem = "Linux" | "Windows"
 export type CommonModData = { id: string; engine: GameEngineBrand | null; unityBackend: UnityScriptingBackend | null; loaderId: string }
 export type ProviderCommand = { String: string } | { Path: [string, string[]] }
 export type Architecture = "X64" | "X86"
-export type OwnedGame = { id: string; provider: ProviderId; name: string; osList: OperatingSystem[]; engine: GameEngine | null; releaseDate: BigInt | null; thumbnailUrl: string | null; gameMode: GameMode | null; uevrScore: UevrScore | null; providerCommands: { [key: string]: ProviderCommand } }

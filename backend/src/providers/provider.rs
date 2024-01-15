@@ -25,6 +25,8 @@ use crate::{
 		steam_provider::Steam,
 	},
 	serializable_enum,
+	serializable_struct,
+	steam::id_lists::UevrScore,
 	Result,
 };
 
@@ -45,12 +47,20 @@ pub enum Provider {
 	Xbox,
 }
 
+serializable_struct!(RemoteGameData {
+	pub id: String,
+	pub engine: Option<GameEngine>,
+	pub uevr_score: Option<UevrScore>
+});
+
 #[async_trait]
 #[enum_dispatch(Provider)]
 pub trait ProviderActions {
 	fn get_installed_games(&self) -> Result<Vec<InstalledGame>>;
 
-	async fn get_owned_games(&self) -> Result<Vec<OwnedGame>>;
+	fn get_local_owned_games(&self) -> Result<Vec<OwnedGame>>;
+
+	async fn get_remote_game_data(&self) -> Result<Vec<RemoteGameData>>;
 }
 
 pub type EngineCache = HashMap<String, Option<GameEngine>>;
