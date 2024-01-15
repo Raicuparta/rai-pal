@@ -155,23 +155,23 @@ fn get_database() -> Result<Vec<GogDbEntry>> {
 
 	let mut statement = connection.prepare(
 		r"SELECT 
-		P.id,
-		MAX(CASE WHEN GPT.type = 'originalTitle' THEN GP.value END) AS title,
-		MAX(CASE WHEN GPT.type = 'originalImages' THEN GP.value END) AS images,
-		MAX(CASE WHEN GPT.type = 'originalMeta' THEN GP.value END) AS meta,
-		MAX(PTLP.executablePath) AS executablePath
+	Products.id,
+	MAX(CASE WHEN GamePieceTypes.type = 'originalTitle' THEN GamePieces.value END) AS title,
+	MAX(CASE WHEN GamePieceTypes.type = 'originalImages' THEN GamePieces.value END) AS images,
+	MAX(CASE WHEN GamePieceTypes.type = 'originalMeta' THEN GamePieces.value END) AS meta,
+	MAX(PlayTaskLaunchParameters.executablePath) AS executablePath
 FROM 
-		Products P
+	Products
 JOIN 
-		GamePieces GP ON P.id = substr(GP.releaseKey, 5) AND GP.releaseKey GLOB 'gog_*'
+	GamePieces ON GamePieces.releaseKey = 'gog_' || Products.id
 LEFT JOIN 
-		PlayTasks PT ON GP.releaseKey = PT.gameReleaseKey
+	PlayTasks ON GamePieces.releaseKey = PlayTasks.gameReleaseKey
 LEFT JOIN 
-		PlayTaskLaunchParameters PTLP ON PT.id = PTLP.playTaskId
+	PlayTaskLaunchParameters ON PlayTasks.id = PlayTaskLaunchParameters.playTaskId
 JOIN
-		GamePieceTypes GPT ON GP.gamePieceTypeId = GPT.id
+	GamePieceTypes ON GamePieces.gamePieceTypeId = GamePieceTypes.id
 GROUP BY 
-		P.id;",
+	Products.id;",
 	)?;
 
 	let rows: Vec<GogDbEntry> = statement
