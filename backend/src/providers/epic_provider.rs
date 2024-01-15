@@ -46,6 +46,7 @@ use crate::{
 
 pub struct Epic {
 	app_data_path: PathBuf,
+	catalog: Vec<EpicCatalogItem>,
 	engine_cache: remote_game::Map,
 }
 
@@ -63,9 +64,18 @@ impl ProviderStatic for Epic {
 
 		let engine_cache = Self::try_get_remote_game_cache();
 
+		let mut file = File::open(app_data_path.join("Catalog").join("catcache.bin"))?;
+
+		let mut decoder = base64::read::DecoderReader::new(&mut file, &general_purpose::STANDARD);
+		let mut json = String::default();
+		decoder.read_to_string(&mut json)?;
+
+		let catalog = serde_json::from_str::<Vec<EpicCatalogItem>>(&json)?;
+
 		Ok(Self {
 			app_data_path,
 			engine_cache,
+			catalog,
 		})
 	}
 }
@@ -164,11 +174,67 @@ impl ProviderActions for Epic {
 	}
 
 	fn get_local_owned_games(&self) -> Result<Vec<OwnedGame>> {
-		Ok(Vec::default())
+		let owned_games = self.catalog.iter().filter_map(|catalog_item| {
+			if catalog_item
+				.categories
+				.iter()
+				.all(|category| category.path != "games")
+			{
+				return None;
+			}
+
+			let mut game = OwnedGame::new(&catalog_item.id, *Self::ID, &catalog_item.title);
+
+			game.add_provider_command(
+				ProviderCommandAction::Install,
+				ProviderCommand::String(format!(
+					"com.epicgames.launcher://apps/{}%3A{}%3A{}?action=install",
+					catalog_item.namespace,
+					catalog_item.id,
+					catalog_item
+						.release_info
+						.first()
+						.map(|release_info| release_info.app_id.clone())
+						.unwrap_or_default(),
+				)),
+			);
+
+			if let Some(thumbnail_url) = catalog_item.get_thumbnail_url() {
+				game.set_thumbnail_url(&thumbnail_url);
+			}
+
+			if let Some(release_date) = catalog_item.get_release_date() {
+				game.set_release_date(release_date);
+			}
+
+			Some(game)
+		});
+
+		Ok(owned_games.collect())
 	}
 
 	async fn get_remote_games(&self) -> Result<Vec<RemoteGame>> {
-		Ok(Vec::default())
+		let remote_games: Vec<RemoteGame> =
+			futures::future::join_all(self.catalog.iter().map(|catalog_item| async {
+				let mut remote_game = RemoteGame::new(*Self::ID, &catalog_item.id);
+
+				if let Some(engine) = get_engine(&catalog_item.title, &self.engine_cache).await {
+					remote_game.set_engine(engine);
+				}
+
+				remote_game
+			}))
+			.await;
+
+		Self::try_save_remote_game_cache(
+			&remote_games
+				.clone()
+				.into_iter()
+				.map(|remote_game| (remote_game.id.clone(), remote_game))
+				.collect(),
+		);
+
+		Ok(remote_games)
 	}
 
 	// async fn update_local_owned_games(&self) -> Result<Vec<OwnedGame>> {

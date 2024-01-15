@@ -146,16 +146,22 @@ impl ProviderActions for Steam {
 
 				// TODO: cache the whole thing, not just the engine version.
 				if let Some(steam_game) = steam_games.get(&id_string) {
-					Some(RemoteGame {
-						id: owned_game::get_id(*Self::ID, &id_string), // TODO use constructor
-						engine: Some(GameEngine {
-							brand: steam_game.engine,
-							version: get_engine(&id_string, &self.remote_game_cache)
-								.await
-								.and_then(|info| info.version),
-						}),
-						uevr_score: steam_game.uevr_score,
-					})
+					let mut remote_game = RemoteGame::new(*Self::ID, &id_string);
+
+					if let Some(engine) = Some(GameEngine {
+						brand: steam_game.engine,
+						version: get_engine(&id_string, &self.remote_game_cache)
+							.await
+							.and_then(|info| info.version),
+					}) {
+						remote_game.set_engine(engine);
+					}
+
+					if let Some(uevr_score) = steam_game.uevr_score {
+						remote_game.set_uevr_score(uevr_score);
+					}
+
+					Some(remote_game)
 				} else {
 					None
 				}
