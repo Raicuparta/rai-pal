@@ -15,6 +15,7 @@ use crate::{
 	game_mod,
 	game_mode::GameMode,
 	mod_manifest,
+	owned_game,
 	paths::{
 		self,
 		hash_path,
@@ -37,7 +38,7 @@ serializable_struct!(InstalledGame {
 	pub discriminator: Option<String>,
 	pub thumbnail_url: Option<String>,
 	pub game_mode: Option<GameMode>,
-	pub provider_game_id: Option<String>,
+	pub owned_game_id: Option<String>,
 	pub start_command: Option<ProviderCommand>,
 });
 
@@ -79,7 +80,7 @@ impl InstalledGame {
 			discriminator: None,
 			thumbnail_url: None,
 			start_command: None,
-			provider_game_id: None,
+			owned_game_id: None,
 		})
 	}
 
@@ -104,7 +105,7 @@ impl InstalledGame {
 	}
 
 	pub fn set_provider_game_id(&mut self, provider_game_id: &str) -> &Self {
-		self.provider_game_id = Some(provider_game_id.to_string());
+		self.owned_game_id = Some(owned_game::get_id(self.provider, provider_game_id));
 		self
 	}
 

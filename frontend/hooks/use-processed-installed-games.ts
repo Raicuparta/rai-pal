@@ -19,12 +19,14 @@ export function useProcessedInstalledGames() {
 		const result: ProcessedInstalledGameRecord = {};
 
 		for (const [gameId, installedGame] of Object.entries(installedGames)) {
-			const ownedGame =
-				ownedGames[`${installedGame.provider}_${installedGame.providerGameId}`];
+			const ownedGame = installedGame.ownedGameId
+				? ownedGames[installedGame.ownedGameId]
+				: null;
 
 			result[gameId] = {
 				...installedGame,
-				thumbnailUrl: installedGame.thumbnailUrl || ownedGame?.thumbnailUrl,
+				thumbnailUrl:
+					installedGame.thumbnailUrl || ownedGame?.thumbnailUrl || null,
 				hasOutdatedMod:
 					Object.entries(installedGame.installedModVersions).findIndex(
 						([modId, installedVersion]) =>

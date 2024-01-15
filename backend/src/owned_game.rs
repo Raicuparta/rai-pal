@@ -18,7 +18,6 @@ use crate::{
 serializable_struct!(OwnedGame {
 	pub id: String,
 	pub provider: ProviderId,
-	pub provider_game_id: String,
 	pub name: String,
 	pub os_list: HashSet<OperatingSystem>,
 	pub engine: Option<GameEngine>,
@@ -34,8 +33,7 @@ serializable_struct!(OwnedGame {
 impl OwnedGame {
 	pub fn new(provider_game_id: &str, provider: ProviderId, name: &str) -> Self {
 		Self {
-			id: format!("{provider}_{provider_game_id}"),
-			provider_game_id: provider_game_id.to_string(),
+			id: get_id(provider, provider_game_id),
 			provider,
 			name: name.to_string(),
 			os_list: HashSet::default(),
@@ -94,6 +92,10 @@ impl OwnedGame {
 		self.install_command = Some(install_command);
 		self
 	}
+}
+
+pub fn get_id(provider: ProviderId, provider_game_id: &str) -> String {
+	format!("{provider}_{provider_game_id}")
 }
 
 pub type Map = HashMap<String, OwnedGame>;

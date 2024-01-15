@@ -28,10 +28,9 @@ export function useProcessedOwnedGames() {
 		};
 
 		for (const installedGame of Object.values(installedGames)) {
-			if (!installedGame.providerGameId) continue;
+			if (!installedGame.ownedGameId) continue;
 
-			result[installedGame.provider][installedGame.providerGameId] =
-				installedGame;
+			result[installedGame.provider][installedGame.ownedGameId] = installedGame;
 		}
 
 		return result;
@@ -42,7 +41,7 @@ export function useProcessedOwnedGames() {
 
 		for (const [gameId, ownedGame] of Object.entries(ownedGames)) {
 			const installedGame =
-				installedGamesByProvider[ownedGame.provider][ownedGame.providerGameId];
+				installedGamesByProvider[ownedGame.provider][ownedGame.id];
 
 			result[gameId] = {
 				...ownedGame,
