@@ -156,9 +156,9 @@ fn get_database() -> Result<Vec<GogDbEntry>> {
 	let mut statement = connection.prepare(
 		r"SELECT 
     P.id,
-    MAX(CASE WHEN GP.gamePieceTypeId = 277 THEN GP.value END) AS title,
-    MAX(CASE WHEN GP.gamePieceTypeId = 814 THEN GP.value END) AS images,
-    MAX(CASE WHEN GP.gamePieceTypeId = 815 THEN GP.value END) AS meta,
+    MAX(CASE WHEN GPT.type = 'originalTitle' THEN GP.value END) AS title,
+    MAX(CASE WHEN GPT.type = 'originalImages' THEN GP.value END) AS images,
+    MAX(CASE WHEN GPT.type = 'originalMeta' THEN GP.value END) AS meta,
 		MAX(PTLP.executablePath) AS executablePath
 FROM 
     Products P
@@ -168,6 +168,8 @@ LEFT JOIN
     PlayTasks PT ON GP.releaseKey = PT.gameReleaseKey
 LEFT JOIN 
     PlayTaskLaunchParameters PTLP ON PT.id = PTLP.playTaskId
+JOIN
+		GamePieceTypes GPT ON GP.gamePieceTypeId = GPT.id
 GROUP BY 
     P.id;",
 	)?;
