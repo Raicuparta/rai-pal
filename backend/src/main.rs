@@ -505,7 +505,7 @@ async fn show_game_in_library(owned_game_id: &str, handle: AppHandle) -> Result 
 		.try_get(owned_game_id)?
 		.show_library_command
 		.ok_or_else(Error::CommandNotDefined)?
-		.run();
+		.run()?;
 
 	handle.emit_event(AppEvent::ExecutedProviderCommand, ());
 
@@ -521,7 +521,7 @@ async fn install_game(owned_game_id: &str, handle: AppHandle) -> Result {
 		.try_get(owned_game_id)?
 		.install_command
 		.ok_or_else(Error::CommandNotDefined)?
-		.run();
+		.run()?;
 
 	handle.emit_event(AppEvent::ExecutedProviderCommand, ());
 
@@ -537,7 +537,7 @@ async fn open_game_page(owned_game_id: &str, handle: AppHandle) -> Result {
 		.try_get(owned_game_id)?
 		.open_page_command
 		.ok_or_else(Error::CommandNotDefined)?
-		.run();
+		.run()?;
 
 	handle.emit_event(AppEvent::ExecutedProviderCommand, ());
 
