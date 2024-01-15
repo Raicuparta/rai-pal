@@ -27,7 +27,7 @@ use crate::{
 	result::Error,
 	serializable_enum,
 	serializable_struct,
-	Result,
+	Result, providers::provider_command::ProviderCommand,
 };
 
 serializable_struct!(RunnableLoader {
@@ -38,6 +38,8 @@ serializable_enum!(RunnableParameter {
 	ExecutableName,
 	ExecutablePath,
 	GameJson,
+	StartCommand,
+	StartCommandArgs,
 });
 
 impl ModLoaderStatic for RunnableLoader {
@@ -90,6 +92,24 @@ fn replace_parameters(argument: &str, game: &InstalledGame) -> String {
 	});
 	result = replace_parameter_value(&result, RunnableParameter::GameJson, || {
 		Ok(serde_json::to_string(&game)?)
+	});
+	result = replace_parameter_value(&result, RunnableParameter::StartCommand, || {
+		match &game.start_command {
+			Some(provider_command) => match provider_command {
+				ProviderCommand::String(s) => Ok(s.to_string()),
+				ProviderCommand::Path(exe_path, _) => Ok(exe_path.to_string_lossy().to_string())
+			}
+			None => Ok(game.executable.path.to_string_lossy().to_string()) // fallback to path
+		}
+	});
+	result = replace_parameter_value(&result, RunnableParameter::StartCommandArgs, || {
+		match &game.start_command {
+			Some(provider_command) => match provider_command {
+				ProviderCommand::Path(_, args) => Ok(args.join(" ")),
+				_ => Ok(String::from("")),
+			}
+			_ => Ok(String::from("")),
+		}
 	});
 
 	result
