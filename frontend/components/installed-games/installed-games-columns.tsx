@@ -36,7 +36,10 @@ const thumbnail: TableColumnBase<ProcessedInstalledGame> = {
 	width: 100,
 	renderCell: (game) => (
 		<ThumbnailCell
-			src={getThumbnailWithFallback(game.thumbnailUrl, game.provider)}
+			src={getThumbnailWithFallback(
+				game.thumbnailUrl || game.ownedGame?.thumbnailUrl,
+				game.provider,
+			)}
 		/>
 	),
 };
@@ -142,7 +145,7 @@ const gameMode: TableColumnBase<ProcessedInstalledGame, GameMode> = {
 	width: 90,
 	center: true,
 	hidable: true,
-	getSortValue: (game) => game.gameMode,
+	getSortValue: (game) => game.ownedGame?.gameMode,
 	filterOptions: [
 		{ label: "Any mode", value: "" },
 		{ label: "Flat", value: "Flat" },
@@ -150,7 +153,7 @@ const gameMode: TableColumnBase<ProcessedInstalledGame, GameMode> = {
 	],
 	renderCell: (game) => (
 		<Table.Td>
-			<GameModeBadge value={game.gameMode} />
+			<GameModeBadge value={game.ownedGame?.gameMode} />
 		</Table.Td>
 	),
 };

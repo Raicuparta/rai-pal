@@ -12,8 +12,10 @@ import {
 	ProviderId,
 	openGameFolder,
 	openGameModsFolder,
+	openGamePage,
 	refreshGame,
 	removeGame,
+	showGameInLibrary,
 	startGame,
 	startGameExe,
 } from "@api/bindings";
@@ -23,8 +25,10 @@ import { CommandButton } from "@components/command-button";
 import {
 	Icon,
 	IconAppWindow,
+	IconBooks,
 	IconBrandSteam,
 	IconBrandXbox,
+	IconBrowser,
 	IconCircleLetterG,
 	IconDeviceGamepad,
 	IconFolder,
@@ -76,6 +80,7 @@ export function InstalledGameModal(props: Props) {
 	}, [mods, props.game.installedModVersions]);
 
 	const ProviderIcon = getProviderIcon(props.game.provider);
+	const ownedGame = props.game.ownedGame;
 
 	return (
 		<Modal
@@ -149,6 +154,29 @@ export function InstalledGameModal(props: Props) {
 							Open Installed Mods Folder
 						</CommandButton>
 					</CommandDropdown>
+					{(ownedGame?.openPageCommand || ownedGame?.showLibraryCommand) && (
+						<CommandDropdown
+							label={props.game.provider}
+							icon={<ProviderIcon />}
+						>
+							{ownedGame.openPageCommand && (
+								<CommandButton
+									leftSection={<IconBrowser />}
+									onClick={() => openGamePage(ownedGame.id)}
+								>
+									Open Store Page
+								</CommandButton>
+							)}
+							{ownedGame.showLibraryCommand && (
+								<CommandButton
+									leftSection={<IconBooks />}
+									onClick={() => showGameInLibrary(ownedGame.id)}
+								>
+									Show in Library
+								</CommandButton>
+							)}
+						</CommandDropdown>
+					)}
 					{props.game.provider === "Manual" && (
 						<CommandButton
 							onClick={() => removeGame(props.game.id)}

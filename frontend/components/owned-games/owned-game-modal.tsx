@@ -63,7 +63,6 @@ export function OwnedGameModal(props: Props) {
 						Install
 					</CommandButton>
 				)}
-
 				<DebugData data={props.game} />
 			</Stack>
 		</Modal>

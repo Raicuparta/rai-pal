@@ -3,13 +3,12 @@ import { useMemo } from "react";
 import { installedGamesAtom, ownedGamesAtom } from "./use-data";
 import { useUnifiedMods } from "./use-unified-mods";
 import { getIsOutdated } from "../util/is-outdated";
-import { GameMode, InstalledGame } from "@api/bindings";
+import { InstalledGame, OwnedGame } from "@api/bindings";
 
 type ProcessedInstalledGameRecord = Record<string, ProcessedInstalledGame>;
 export interface ProcessedInstalledGame extends InstalledGame {
 	hasOutdatedMod: boolean;
-	thumbnailUrl: string | null;
-	gameMode: GameMode | null;
+	ownedGame?: OwnedGame;
 }
 
 export function useProcessedInstalledGames() {
@@ -20,15 +19,11 @@ export function useProcessedInstalledGames() {
 		const result: ProcessedInstalledGameRecord = {};
 
 		for (const [gameId, installedGame] of Object.entries(installedGames)) {
-			const ownedGame = installedGame.ownedGameId
-				? ownedGames[installedGame.ownedGameId]
-				: null;
-
 			result[gameId] = {
 				...installedGame,
-				gameMode: ownedGame?.gameMode || null,
-				thumbnailUrl:
-					installedGame.thumbnailUrl || ownedGame?.thumbnailUrl || null,
+				ownedGame: installedGame.ownedGameId
+					? ownedGames[installedGame.ownedGameId]
+					: undefined,
 				hasOutdatedMod:
 					Object.entries(installedGame.installedModVersions).findIndex(
 						([modId, installedVersion]) =>
