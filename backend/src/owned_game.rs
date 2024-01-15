@@ -21,8 +21,8 @@ serializable_struct!(OwnedGame {
 	pub name: String,
 	pub os_list: HashSet<OperatingSystem>,
 	pub engine: Option<GameEngine>,
-	pub release_date: i64,
-	pub thumbnail_url: String,
+	pub release_date: Option<i64>,
+	pub thumbnail_url: Option<String>,
 	pub game_mode: Option<GameMode>,
 	pub uevr_score: Option<UevrScore>,
 	pub show_library_command: Option<ProviderCommand>,
@@ -38,8 +38,8 @@ impl OwnedGame {
 			name: name.to_string(),
 			os_list: HashSet::default(),
 			engine: None,
-			release_date: 0,
-			thumbnail_url: String::default(),
+			release_date: None,
+			thumbnail_url: None,
 			game_mode: None,
 			uevr_score: None,
 			show_library_command: None,
@@ -59,12 +59,12 @@ impl OwnedGame {
 	}
 
 	pub fn set_release_date(&mut self, release_date: i64) -> &mut Self {
-		self.release_date = release_date;
+		self.release_date = Some(release_date);
 		self
 	}
 
 	pub fn set_thumbnail_url(&mut self, thumbnail_url: &str) -> &mut Self {
-		self.thumbnail_url = thumbnail_url.to_string();
+		self.thumbnail_url = Some(thumbnail_url.to_string());
 		self
 	}
 

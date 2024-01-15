@@ -98,16 +98,22 @@ impl ProviderActions for Gog {
 		let owned_games = futures::future::join_all(self.database.iter().map(|db_entry| async {
 			let mut game = OwnedGame::new(&db_entry.id, *Self::ID, &db_entry.title);
 
-			game.set_thumbnail_url(&db_entry.image_url.clone().unwrap_or_default())
-				.set_release_date(db_entry.release_date.unwrap_or_default().into())
-				.set_show_library_command(ProviderCommand::Path(
-					self.launcher_path.clone(),
-					[
-						"/command=launch".to_string(),
-						format!("/gameId={}", db_entry.id),
-					]
-					.to_vec(),
-				));
+			game.set_show_library_command(ProviderCommand::Path(
+				self.launcher_path.clone(),
+				[
+					"/command=launch".to_string(),
+					format!("/gameId={}", db_entry.id),
+				]
+				.to_vec(),
+			));
+
+			if let Some(thumbnail_url) = db_entry.image_url.clone() {
+				game.set_thumbnail_url(&thumbnail_url);
+			}
+
+			if let Some(release_date) = db_entry.release_date {
+				game.set_release_date(release_date.into());
+			}
 
 			if let Some(engine) = get_engine(&db_entry.id, &self.engine_cache).await {
 				game.set_engine(engine);

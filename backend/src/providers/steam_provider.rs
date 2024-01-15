@@ -173,15 +173,6 @@ impl ProviderActions for Steam {
 					return None;
 				}
 
-				// Steam's appinfo cache file seems to use i32 for the timestamps...
-				// See you in 2038
-				let release_date = i64::from(
-					app_info
-						.original_release_date
-						.or(app_info.steam_release_date)
-						.unwrap_or_default(),
-				);
-
 				let game_mode = if app_info
 					.launch_options
 					.iter()
@@ -199,7 +190,6 @@ impl ProviderActions for Steam {
 
 				game.set_thumbnail_url(&get_steam_thumbnail(&id_string))
 					.set_os_list(os_list)
-					.set_release_date(release_date)
 					.set_game_mode(game_mode)
 					.set_show_library_command(ProviderCommand::String(format!(
 						"steam://nav/games/details/{id_string}"
@@ -210,6 +200,13 @@ impl ProviderActions for Steam {
 					.set_install_command(ProviderCommand::String(format!(
 						"steam://install/{id_string}"
 					)));
+
+				if let Some(release_date) = app_info
+					.original_release_date
+					.or(app_info.steam_release_date)
+				{
+					game.set_release_date(release_date.into());
+				}
 
 				if let Some(steam_game) = steam_game_option {
 					if let Some(uevr_score) = steam_game.uevr_score {
