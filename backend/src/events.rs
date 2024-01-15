@@ -12,7 +12,7 @@ serializable_enum!(AppEvent {
 	SyncModLoaders,
 	SyncLocalMods,
 	SyncRemoteMods,
-	ExecutedSteamCommand,
+	ExecutedProviderCommand,
 	GameAdded,
 	GameRemoved,
 	Error,

@@ -75,7 +75,6 @@ function CommandButtonInternal<TResult>(
 			<Popover.Target>
 				<Button
 					ref={ref}
-					justify="start"
 					loading={isLongLoading}
 					{...props}
 					color={success ? "green" : props.color}

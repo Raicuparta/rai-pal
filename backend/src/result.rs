@@ -1,4 +1,5 @@
 use std::{
+	env,
 	path::PathBuf,
 	result,
 };
@@ -37,6 +38,12 @@ pub enum Error {
 
 	#[error(transparent)]
 	ChronoParse(#[from] chrono::ParseError),
+
+	#[error(transparent)]
+	SQLite(#[from] rusqlite::Error),
+
+	#[error(transparent)]
+	Env(#[from] env::VarError),
 
 	#[error("Invalid type `{0}` in binary vdf key/value pair")]
 	InvalidBinaryVdfType(u8),
@@ -90,6 +97,9 @@ pub enum Error {
 
 	#[error("Operation can't be completed without a `runnable` section in the mod manifest (rai-pal-manifest.json) `{0}`")]
 	RunnableManifestNotFound(String),
+
+	#[error("Can't run command because it isn't defined for this game.")]
+	CommandNotDefined(),
 }
 
 impl serde::Serialize for Error {

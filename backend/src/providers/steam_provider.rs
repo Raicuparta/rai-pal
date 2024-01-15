@@ -2,16 +2,18 @@ use std::{
 	collections::HashSet,
 	fs,
 	path::PathBuf,
-	string,
 };
 
 use async_trait::async_trait;
 use lazy_regex::BytesRegex;
 use steamlocate::SteamDir;
 
-use super::provider::{
-	self,
-	ProviderId,
+use super::{
+	provider::{
+		self,
+		ProviderId,
+	},
+	provider_command::ProviderCommand,
 };
 use crate::{
 	game_engines::game_engine::GameEngine,
@@ -31,6 +33,7 @@ use crate::{
 		appinfo::{
 			self,
 			SteamAppInfoFile,
+			SteamLaunchOption,
 		},
 		id_lists,
 		thumbnail::get_steam_thumbnail,
@@ -88,27 +91,31 @@ impl ProviderActions for Steam {
 							}
 
 							if let Some(name) = &app.name {
-								let discriminator = if used_names.contains(name) {
-									launch_option.description.as_ref().map_or_else(
-										|| {
-											executable_path
-												.to_str()
-												.map(string::ToString::to_string)
-										},
-										|description| Some(description.clone()),
-									)
-								} else {
-									None
-								};
+								if let Some(mut game) =
+									installed_game::InstalledGame::new(full_path, name, *Self::ID)
+								{
+									let discriminator_option = if used_names.contains(name) {
+										Some(launch_option.description.as_ref().map_or_else(
+											|| executable_path.display().to_string(),
+											Clone::clone,
+										))
+									} else {
+										None
+									};
 
-								if let Some(game) = installed_game::InstalledGame::new(
-									full_path,
-									name,
-									*Self::ID,
-									discriminator,
-									Some(&launch_option),
-									Some(get_steam_thumbnail(&app.app_id.to_string())),
-								) {
+									if let Some(discriminator) = &discriminator_option {
+										game.set_discriminator(discriminator);
+									}
+
+									let app_id_string = app.app_id.to_string();
+
+									game.set_provider_game_id(&app_id_string);
+									game.set_thumbnail_url(&get_steam_thumbnail(&app_id_string));
+									game.set_start_command_string(&get_start_command(
+										&launch_option,
+										&discriminator_option,
+									));
+
 									games.push(game);
 									used_names.insert(name.clone());
 									used_paths.insert(full_path.clone());
@@ -166,20 +173,6 @@ impl ProviderActions for Steam {
 					return None;
 				}
 
-				let installed = self
-					.steam_dir
-					.app(*steam_id)
-					.map_or(false, |steam_app| steam_app.is_some());
-
-				// Steam's appinfo cache file seems to use i32 for the timestamps...
-				// See you in 2038
-				let release_date = i64::from(
-					app_info
-						.original_release_date
-						.or(app_info.steam_release_date)
-						.unwrap_or_default(),
-				);
-
 				let game_mode = if app_info
 					.launch_options
 					.iter()
@@ -192,29 +185,43 @@ impl ProviderActions for Steam {
 
 				// TODO: cache the whole thing, not just the engine version.
 				let steam_game_option = steam_games.get(&id_string);
-				let engine_option = if let Some(steam_game) = steam_game_option {
-					Some(GameEngine {
+
+				let mut game = OwnedGame::new(&id_string, *Self::ID, &app_info.name);
+
+				game.set_thumbnail_url(&get_steam_thumbnail(&id_string))
+					.set_os_list(os_list)
+					.set_game_mode(game_mode)
+					.set_show_library_command(ProviderCommand::String(format!(
+						"steam://nav/games/details/{id_string}"
+					)))
+					.set_open_page_command(ProviderCommand::String(format!(
+						"steam://store/{id_string}"
+					)))
+					.set_install_command(ProviderCommand::String(format!(
+						"steam://install/{id_string}"
+					)));
+
+				if let Some(release_date) = app_info
+					.original_release_date
+					.or(app_info.steam_release_date)
+				{
+					game.set_release_date(release_date.into());
+				}
+
+				if let Some(steam_game) = steam_game_option {
+					if let Some(uevr_score) = steam_game.uevr_score {
+						game.set_uevr_score(uevr_score);
+					}
+
+					game.set_engine(GameEngine {
 						brand: steam_game.engine,
 						version: get_engine(&id_string, &self.engine_cache)
 							.await
 							.and_then(|info| info.version),
-					})
-				} else {
-					None
-				};
+					});
+				}
 
-				Some(OwnedGame {
-					id: id_string.clone(),
-					thumbnail_url: get_steam_thumbnail(&id_string),
-					provider_id: *Self::ID,
-					name: app_info.name.clone(),
-					installed,
-					os_list,
-					engine: engine_option,
-					release_date,
-					game_mode: Some(game_mode),
-					uevr_score: steam_game_option.and_then(|game| game.uevr_score),
-				})
+				Some(game)
 			},
 		))
 		.await
@@ -238,4 +245,29 @@ async fn get_engine(steam_id: &str, cache: &provider::EngineCache) -> Option<Gam
 	}
 
 	pc_gaming_wiki::get_engine(&format!("Steam_AppID%20HOLDS%20%22{steam_id}%22")).await
+}
+
+pub fn get_start_command(
+	steam_launch: &SteamLaunchOption,
+	discriminator: &Option<String>,
+) -> String {
+	if discriminator.is_none() {
+		// If a game has no discriminator, it means we're probably using the default launch option.
+		// For those, we use the steam://rungameid command, since that one will make steam show a nice
+		// loading popup, wait for game updates, etc.
+
+		format!("steam://rungameid/{}", steam_launch.app_id)
+	} else {
+		// For the few cases where we're showing an alternative launch option, we use the steam://launch command.
+		// This one will show an error if the game needs an update, and doesn't show the nice loading popup,
+		// but it allows us to specify the specific launch option to run.
+		// This one also supports passing "dialog" instead of the app_type, (steam://launch/{app_id}/dialog)
+		// which makes Steam show the launch selection dialog, but that dialog stops showing if the user
+		// selects the "don't ask again" checkbox.
+		format!(
+			"steam://launch/{}/{}",
+			steam_launch.app_id,
+			steam_launch.launch_type.as_deref().unwrap_or(""),
+		)
+	}
 }

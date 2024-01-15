@@ -12,8 +12,10 @@ import {
 	ProviderId,
 	openGameFolder,
 	openGameModsFolder,
+	openGamePage,
 	refreshGame,
 	removeGame,
+	showGameInLibrary,
 	startGame,
 	startGameExe,
 } from "@api/bindings";
@@ -37,7 +39,6 @@ import {
 	IconSquareLetterE,
 	IconTrash,
 } from "@tabler/icons-react";
-import { steamCommands } from "../../util/steam";
 import { ModalImage } from "@components/modal-image";
 import { useAtomValue } from "jotai";
 import { modLoadersAtom } from "@hooks/use-data";
@@ -78,7 +79,8 @@ export function InstalledGameModal(props: Props) {
 		);
 	}, [mods, props.game.installedModVersions]);
 
-	const ProviderIcon = getProviderIcon(props.game.providerId);
+	const ProviderIcon = getProviderIcon(props.game.provider);
+	const ownedGame = props.game.ownedGame;
 
 	return (
 		<Modal
@@ -91,7 +93,7 @@ export function InstalledGameModal(props: Props) {
 					<ModalImage
 						src={getThumbnailWithFallback(
 							props.game.thumbnailUrl,
-							props.game.providerId,
+							props.game.provider,
 						)}
 					/>
 					<ItemName label={props.game.discriminator}>
@@ -118,9 +120,8 @@ export function InstalledGameModal(props: Props) {
 						>
 							Start Game
 						</CommandButton>
-						{props.game.providerId === "Steam" && (
+						{props.game.startCommand && (
 							<CommandDropdown>
-								{/* TODO: Implement these in a generic way on the Rust side, for every provider. */}
 								<CommandButton
 									leftSection={<IconAppWindow />}
 									onClick={() => startGameExe(props.game.id)}
@@ -131,7 +132,7 @@ export function InstalledGameModal(props: Props) {
 									leftSection={<ProviderIcon />}
 									onClick={() => startGame(props.game.id)}
 								>
-									Start Game via {props.game.providerId}
+									Start Game via {props.game.provider}
 								</CommandButton>
 							</CommandDropdown>
 						)}
@@ -153,31 +154,30 @@ export function InstalledGameModal(props: Props) {
 							Open Installed Mods Folder
 						</CommandButton>
 					</CommandDropdown>
-					{props.game.providerId === "Steam" && (
+					{(ownedGame?.openPageCommand || ownedGame?.showLibraryCommand) && (
 						<CommandDropdown
-							label={props.game.providerId}
+							label={props.game.provider}
 							icon={<ProviderIcon />}
 						>
-							{/* TODO: Implement these in a generic way on the Rust side, for every provider. */}
-							<CommandButton
-								leftSection={<IconBrowser />}
-								onClick={() =>
-									steamCommands.openStorePage(props.game.steamLaunch?.appId)
-								}
-							>
-								Open Store Page
-							</CommandButton>
-							<CommandButton
-								leftSection={<IconBooks />}
-								onClick={() =>
-									steamCommands.showInLibrary(props.game.steamLaunch?.appId)
-								}
-							>
-								Show in Library
-							</CommandButton>
+							{ownedGame.openPageCommand && (
+								<CommandButton
+									leftSection={<IconBrowser />}
+									onClick={() => openGamePage(ownedGame.id)}
+								>
+									Open Store Page
+								</CommandButton>
+							)}
+							{ownedGame.showLibraryCommand && (
+								<CommandButton
+									leftSection={<IconBooks />}
+									onClick={() => showGameInLibrary(ownedGame.id)}
+								>
+									Show in Library
+								</CommandButton>
+							)}
 						</CommandDropdown>
 					)}
-					{props.game.providerId === "Manual" && (
+					{props.game.provider === "Manual" && (
 						<CommandButton
 							onClick={() => removeGame(props.game.id)}
 							confirmationText="Are you sure you want to remove this game from Rai Pal?"

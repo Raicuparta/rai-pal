@@ -1,18 +1,17 @@
 import { Group, Modal, Stack } from "@mantine/core";
-import { OwnedGame } from "@api/bindings";
+import { installGame, openGamePage, showGameInLibrary } from "@api/bindings";
 import { CommandButton } from "@components/command-button";
 import { IconBooks, IconBrowser, IconDownload } from "@tabler/icons-react";
-import { steamCommands } from "../../util/steam";
 import { ModalImage } from "@components/modal-image";
-import { CommandButtonGroup } from "@components/command-button-group";
 import { DebugData } from "@components/debug-data";
 import { TableItemDetails } from "@components/table/table-item-details";
 import { ownedGamesColumns } from "./owned-games-columns";
 import { ItemName } from "@components/item-name";
 import { getThumbnailWithFallback } from "../../util/fallback-thumbnail";
+import { ProcessedOwnedGame } from "@hooks/use-processed-owned-games";
 
 type Props = {
-	readonly game: OwnedGame;
+	readonly game: ProcessedOwnedGame;
 	readonly onClose: () => void;
 };
 
@@ -28,7 +27,7 @@ export function OwnedGameModal(props: Props) {
 					<ModalImage
 						src={getThumbnailWithFallback(
 							props.game.thumbnailUrl,
-							props.game.providerId,
+							props.game.provider,
 						)}
 					/>
 					<ItemName>{props.game.name}</ItemName>
@@ -40,27 +39,29 @@ export function OwnedGameModal(props: Props) {
 					columns={ownedGamesColumns}
 					item={props.game}
 				/>
-				{props.game.providerId === "Steam" && (
-					<CommandButtonGroup label="Game Actions">
-						<CommandButton
-							leftSection={<IconBrowser />}
-							onClick={() => steamCommands.openStorePage(props.game.id)}
-						>
-							Open Store Page
-						</CommandButton>
-						<CommandButton
-							leftSection={<IconBooks />}
-							onClick={() => steamCommands.showInLibrary(props.game.id)}
-						>
-							Show in Library
-						</CommandButton>
-						<CommandButton
-							leftSection={<IconDownload />}
-							onClick={() => steamCommands.install(props.game.id)}
-						>
-							Install
-						</CommandButton>
-					</CommandButtonGroup>
+				{props.game.openPageCommand && (
+					<CommandButton
+						leftSection={<IconBrowser />}
+						onClick={() => openGamePage(props.game.id)}
+					>
+						Open Store Page
+					</CommandButton>
+				)}
+				{props.game.showLibraryCommand && (
+					<CommandButton
+						leftSection={<IconBooks />}
+						onClick={() => showGameInLibrary(props.game.id)}
+					>
+						Show in Library
+					</CommandButton>
+				)}
+				{props.game.installCommand && (
+					<CommandButton
+						leftSection={<IconDownload />}
+						onClick={() => installGame(props.game.id)}
+					>
+						Install
+					</CommandButton>
 				)}
 				<DebugData data={props.game} />
 			</Stack>

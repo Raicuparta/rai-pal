@@ -1,6 +1,6 @@
 [package]
 name = "rai-pal"
-version = "0.6.1"
+version = "0.7.0"
 authors = ["Raicuparta"]
 license = "GPL-3.0-or-later"
 repository = "https://github.com/Raicuparta/rai-pal"
@@ -19,9 +19,6 @@ glob = { git = "https://github.com/rust-lang/glob", version = "0.3.1" }
 # Something about the way the old version parses the manifests fails for some games.
 # Also I made my own fork to remove some annoying prints.
 steamlocate = { git = "https://github.com/Raicuparta/steamlocate-rs", branch = "dev-v2.0" }
-
-# Made my own fork to fix builds on windows and add my own stuff.
-game-scanner = { git = "https://github.com/Raicuparta/game-scanner", branch = "main"}
 
 specta = "1.0.5"
 tauri-specta = { version = "1.0.2", features = ["typescript"] }
@@ -50,6 +47,7 @@ log = "0.4.20"
 tauri-runtime = "0.14.1"
 base64 = "0.21.5"
 chrono = "0.4.31"
+rusqlite = { version = "0.30.0",  features = ["bundled"] }
 
 [target.'cfg(target_os = "linux")'.dependencies]
 webkit2gtk = "0.18.2"

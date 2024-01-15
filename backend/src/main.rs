@@ -187,7 +187,11 @@ async fn start_game(game_id: &str, handle: AppHandle) -> Result {
 		.app_state()
 		.installed_games
 		.try_get(game_id)?
-		.start(&handle)
+		.start()?;
+
+	handle.emit_event(AppEvent::ExecutedProviderCommand, ());
+
+	Ok(())
 }
 
 #[tauri::command]
@@ -494,6 +498,54 @@ async fn remove_game(game_id: &str, handle: AppHandle) -> Result {
 
 #[tauri::command]
 #[specta::specta]
+async fn show_game_in_library(owned_game_id: &str, handle: AppHandle) -> Result {
+	handle
+		.app_state()
+		.owned_games
+		.try_get(owned_game_id)?
+		.show_library_command
+		.ok_or_else(Error::CommandNotDefined)?
+		.run();
+
+	handle.emit_event(AppEvent::ExecutedProviderCommand, ());
+
+	Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn install_game(owned_game_id: &str, handle: AppHandle) -> Result {
+	handle
+		.app_state()
+		.owned_games
+		.try_get(owned_game_id)?
+		.install_command
+		.ok_or_else(Error::CommandNotDefined)?
+		.run();
+
+	handle.emit_event(AppEvent::ExecutedProviderCommand, ());
+
+	Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn open_game_page(owned_game_id: &str, handle: AppHandle) -> Result {
+	handle
+		.app_state()
+		.owned_games
+		.try_get(owned_game_id)?
+		.open_page_command
+		.ok_or_else(Error::CommandNotDefined)?
+		.run();
+
+	handle.emit_event(AppEvent::ExecutedProviderCommand, ());
+
+	Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
 async fn delete_steam_appinfo_cache() -> Result {
 	let steam_dir = SteamDir::locate()?;
 	steam::appinfo::delete(steam_dir.path())
@@ -597,6 +649,9 @@ fn main() {
 			open_mod_loader_folder,
 			refresh_game,
 			open_logs_folder,
+			show_game_in_library,
+			install_game,
+			open_game_page,
 		]
 	);
 

@@ -60,14 +60,7 @@ impl ProviderActions for Manual {
 }
 
 fn create_game_from_path(path: &Path) -> Option<InstalledGame> {
-	InstalledGame::new(
-		path,
-		file_name_without_extension(path).ok()?,
-		*Manual::ID,
-		None,
-		None,
-		None,
-	)
+	InstalledGame::new(path, file_name_without_extension(path).ok()?, *Manual::ID)
 }
 
 fn games_config_path() -> Result<PathBuf> {

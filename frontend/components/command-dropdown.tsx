@@ -12,7 +12,7 @@ export function CommandDropdown(props: Props) {
 		<Popover withArrow>
 			<Popover.Target>
 				<Button
-					p="xs"
+					px="xs"
 					leftSection={props.icon}
 					rightSection={
 						props.label || props.icon ? <IconChevronDown /> : undefined

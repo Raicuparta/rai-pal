@@ -89,9 +89,6 @@ impl ProviderActions for Xbox {
 													&executable_path,
 													&display_name,
 													*Self::ID,
-													None,
-													None,
-													None,
 												) {
 													result.push(game);
 												}

@@ -13,18 +13,17 @@ use std::{
 use crate::{
 	game_executable::GameExecutable,
 	game_mod,
-	game_mode::GameMode,
 	mod_manifest,
+	owned_game,
 	paths::{
 		self,
 		hash_path,
 	},
-	providers::provider::ProviderId,
-	serializable_struct,
-	steam::{
-		self,
-		appinfo::SteamLaunchOption,
+	providers::{
+		provider::ProviderId,
+		provider_command::ProviderCommand,
 	},
+	serializable_struct,
 	Error,
 	Result,
 };
@@ -32,27 +31,20 @@ use crate::{
 serializable_struct!(InstalledGame {
 	pub id: String,
 	pub name: String,
-	pub provider_id: ProviderId,
-	pub discriminator: Option<String>,
-	pub steam_launch: Option<SteamLaunchOption>,
+	pub provider: ProviderId,
 	pub executable: GameExecutable,
-	pub thumbnail_url: Option<String>,
 	pub installed_mod_versions: InstalledModVersions,
-	pub game_mode: GameMode,
+	pub discriminator: Option<String>,
+	pub thumbnail_url: Option<String>,
+	pub owned_game_id: Option<String>,
+	pub start_command: Option<ProviderCommand>,
 });
 
 pub type Map = HashMap<String, InstalledGame>;
 type InstalledModVersions = HashMap<String, Option<String>>;
 
 impl InstalledGame {
-	pub fn new(
-		path: &Path,
-		name: &str,
-		provider_id: ProviderId,
-		discriminator: Option<String>,
-		steam_launch: Option<&SteamLaunchOption>,
-		thumbnail_url: Option<String>,
-	) -> Option<Self> {
+	pub fn new(path: &Path, name: &str, provider_id: ProviderId) -> Option<Self> {
 		// Games exported by Unity always have one of these extensions.
 		const VALID_EXTENSIONS: [&str; 3] = ["exe", "x86_64", "x86"];
 
@@ -74,21 +66,44 @@ impl InstalledGame {
 			return None;
 		}
 
-		let game_mode = steam_launch.map_or(GameMode::Flat, SteamLaunchOption::get_game_mode);
-
 		let executable = GameExecutable::new(path)?;
 
 		Some(Self {
 			id: hash_path(&executable.path),
 			name: name.to_string(),
-			provider_id,
-			discriminator,
-			steam_launch: steam_launch.cloned(),
+			provider: provider_id,
 			installed_mod_versions: HashMap::default(),
 			executable: GameExecutable::new(path)?,
-			thumbnail_url,
-			game_mode,
+			discriminator: None,
+			thumbnail_url: None,
+			start_command: None,
+			owned_game_id: None,
 		})
+	}
+
+	pub fn set_discriminator(&mut self, discriminator: &str) -> &Self {
+		self.discriminator = Some(discriminator.to_string());
+		self
+	}
+
+	pub fn set_thumbnail_url(&mut self, thumbnail_url: &str) -> &Self {
+		self.thumbnail_url = Some(thumbnail_url.to_string());
+		self
+	}
+
+	pub fn set_start_command_string(&mut self, program: &str) -> &Self {
+		self.start_command = Some(ProviderCommand::String(program.to_string()));
+		self
+	}
+
+	pub fn set_start_command_path(&mut self, path: &Path, args: Vec<String>) -> &Self {
+		self.start_command = Some(ProviderCommand::Path(path.to_path_buf(), args));
+		self
+	}
+
+	pub fn set_provider_game_id(&mut self, provider_game_id: &str) -> &Self {
+		self.owned_game_id = Some(owned_game::get_id(self.provider, provider_game_id));
+		self
 	}
 
 	pub fn refresh_executable(&mut self) -> Result {
@@ -115,35 +130,10 @@ impl InstalledGame {
 		Ok(open::that_detached(self.get_installed_mods_folder()?)?)
 	}
 
-	pub fn start(&self, handle: &tauri::AppHandle) -> Result {
-		self.steam_launch.as_ref().map_or_else(
-			|| self.start_exe(),
-			|steam_launch| {
-				if self.discriminator.is_none() {
-					// If a game has no discriminator, it means we're probably using the default launch option.
-					// For those, we use the steam://rungameid command, since that one will make steam show a nice
-					// loading popup, wait for game updates, etc.
-					return steam::command::run(
-						&format!("rungameid/{}", steam_launch.app_id),
-						handle,
-					);
-				}
-				// For the few cases where we're showing an alternative launch option, we use the steam://launch command.
-				// This one will show an error if the game needs an update, and doesn't show the nice loading popup,
-				// but it allows us to specify the specific launch option to run.
-				// This one also supports passing "dialog" instead of the app_type, (steam://launch/{app_id}/dialog)
-				// which makes Steam show the launch selection dialog, but that dialog stops showing if the user
-				// selects the "don't ask again" checkbox.
-				steam::command::run(
-					&format!(
-						"launch/{}/{}",
-						steam_launch.app_id,
-						steam_launch.launch_type.as_deref().unwrap_or("")
-					),
-					handle,
-				)
-			},
-		)
+	pub fn start(&self) -> Result {
+		self.start_command
+			.as_ref()
+			.map_or_else(|| self.start_exe(), ProviderCommand::run)
 	}
 
 	pub fn start_exe(&self) -> Result {
