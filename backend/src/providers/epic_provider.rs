@@ -17,10 +17,7 @@ use winreg::{
 };
 
 use super::{
-	provider::{
-		self,
-		ProviderId,
-	},
+	provider::ProviderId,
 	provider_command::{
 		ProviderCommand,
 		ProviderCommandAction,
@@ -74,8 +71,8 @@ impl ProviderStatic for Epic {
 
 		Ok(Self {
 			app_data_path,
-			engine_cache,
 			catalog,
+			engine_cache,
 		})
 	}
 }

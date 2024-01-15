@@ -23,10 +23,7 @@ use crate::{
 		self,
 		InstalledGame,
 	},
-	owned_game::{
-		self,
-		OwnedGame,
-	},
+	owned_game::OwnedGame,
 	pc_gaming_wiki,
 	provider::{
 		ProviderActions,
