@@ -3,12 +3,13 @@ import { useMemo } from "react";
 import { installedGamesAtom, ownedGamesAtom } from "./use-data";
 import { useUnifiedMods } from "./use-unified-mods";
 import { getIsOutdated } from "../util/is-outdated";
-import { InstalledGame } from "@api/bindings";
+import { GameMode, InstalledGame } from "@api/bindings";
 
 type ProcessedInstalledGameRecord = Record<string, ProcessedInstalledGame>;
 export interface ProcessedInstalledGame extends InstalledGame {
 	hasOutdatedMod: boolean;
 	thumbnailUrl: string | null;
+	gameMode: GameMode | null;
 }
 
 export function useProcessedInstalledGames() {
@@ -25,6 +26,7 @@ export function useProcessedInstalledGames() {
 
 			result[gameId] = {
 				...installedGame,
+				gameMode: ownedGame?.gameMode || null,
 				thumbnailUrl:
 					installedGame.thumbnailUrl || ownedGame?.thumbnailUrl || null,
 				hasOutdatedMod:

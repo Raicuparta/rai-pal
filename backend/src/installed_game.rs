@@ -13,7 +13,6 @@ use std::{
 use crate::{
 	game_executable::GameExecutable,
 	game_mod,
-	game_mode::GameMode,
 	mod_manifest,
 	owned_game,
 	paths::{
@@ -37,7 +36,6 @@ serializable_struct!(InstalledGame {
 	pub installed_mod_versions: InstalledModVersions,
 	pub discriminator: Option<String>,
 	pub thumbnail_url: Option<String>,
-	pub game_mode: Option<GameMode>,
 	pub owned_game_id: Option<String>,
 	pub start_command: Option<ProviderCommand>,
 });
@@ -76,7 +74,6 @@ impl InstalledGame {
 			provider: provider_id,
 			installed_mod_versions: HashMap::default(),
 			executable: GameExecutable::new(path)?,
-			game_mode: None,
 			discriminator: None,
 			thumbnail_url: None,
 			start_command: None,
