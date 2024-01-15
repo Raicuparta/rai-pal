@@ -1,11 +1,16 @@
 use std::{
-	fs::File,
+	fs::{
+		self,
+		File,
+	},
 	io::Read,
 	path::PathBuf,
 };
 
 use async_trait::async_trait;
 use base64::engine::general_purpose;
+use glob::GlobError;
+use log::error;
 use winreg::{
 	enums::HKEY_LOCAL_MACHINE,
 	RegKey,
@@ -22,6 +27,7 @@ use crate::{
 	game_engines::game_engine::GameEngine,
 	installed_game::InstalledGame,
 	owned_game::OwnedGame,
+	paths::glob_path,
 	pc_gaming_wiki,
 	provider::{
 		ProviderActions,
@@ -56,6 +62,21 @@ impl ProviderStatic for Epic {
 		})
 	}
 }
+
+serializable_struct!(EpicManifest {
+	#[serde(rename = "DisplayName")]
+	display_name: String,
+	#[serde(rename = "LaunchExecutable")]
+	launch_executable: String,
+	#[serde(rename = "InstallLocation")]
+	install_location: String,
+	#[serde(rename = "CatalogNamespace")]
+	catalog_namespace: String,
+	#[serde(rename = "CatalogItemId")]
+	catalog_item_id: String,
+	#[serde(rename = "AppName")]
+	app_name: String,
+});
 
 serializable_struct!(EpicCatalogCategory { path: String });
 
@@ -107,21 +128,30 @@ impl EpicCatalogItem {
 #[async_trait]
 impl ProviderActions for Epic {
 	fn get_installed_games(&self) -> Result<Vec<InstalledGame>> {
-		// TODO stop using game_scanner,
-		// just implement it here since I have to make so many changes anyway.
-		Ok(game_scanner::epicgames::games()
-			.unwrap_or_default()
-			.iter()
-			.filter_map(|manifest_entry| {
-				let path = manifest_entry.path.as_ref()?;
-				let mut game = InstalledGame::new(path, &manifest_entry.name, Self::ID.to_owned())?;
-				game.set_start_command_string(&format!(
-					"com.epicgames.launcher://apps/{}?action=launch&silent=true",
-					manifest_entry.id
-				));
+		let manifests = glob_path(&self.app_data_path.join("Manifests").join("*.item"))?;
 
-				Some(game)
-			})
+		Ok(manifests
+			.filter_map(
+				|manifest_path_result| match read_manifest(manifest_path_result) {
+					Ok(manifest) => {
+						let path = PathBuf::from(manifest.install_location)
+							.join(manifest.launch_executable);
+
+						let mut game =
+							InstalledGame::new(&path, &manifest.display_name, Self::ID.to_owned())?;
+						game.set_start_command_string(&format!(
+							"com.epicgames.launcher://apps/{}?action=launch&silent=true",
+							manifest.catalog_item_id
+						));
+
+						Some(game)
+					}
+					Err(err) => {
+						error!("Failed to glob manifest path: {err}");
+						None
+					}
+				},
+			)
 			.collect())
 	}
 
@@ -185,4 +215,10 @@ async fn get_engine(title: &str, cache: &provider::EngineCache) -> Option<GameEn
 	}
 
 	pc_gaming_wiki::get_engine_from_game_title(title).await
+}
+
+fn read_manifest(path_result: std::result::Result<PathBuf, GlobError>) -> Result<EpicManifest> {
+	let json = fs::read_to_string(path_result?)?;
+	let manifest = serde_json::from_str::<EpicManifest>(&json)?;
+	Ok(manifest)
 }
