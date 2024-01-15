@@ -13,7 +13,6 @@ use super::provider::{
 	ProviderActions,
 	ProviderId,
 	ProviderStatic,
-	RemoteGameData,
 };
 use crate::{
 	installed_game::InstalledGame,
@@ -22,6 +21,7 @@ use crate::{
 		app_data_path,
 		file_name_without_extension,
 	},
+	remote_game::RemoteGame,
 	serializable_struct,
 	Error,
 	Result,
@@ -59,7 +59,7 @@ impl ProviderActions for Manual {
 		Ok(Vec::default())
 	}
 
-	async fn get_remote_game_data(&self) -> Result<Vec<RemoteGameData>> {
+	async fn get_remote_games(&self) -> Result<Vec<RemoteGame>> {
 		Ok(Vec::default())
 	}
 }

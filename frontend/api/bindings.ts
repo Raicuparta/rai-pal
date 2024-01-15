@@ -90,8 +90,8 @@ export function getRemoteMods() {
     return invoke()<{ [key: string]: RemoteMod }>("get_remote_mods")
 }
 
-export function getRemoteGameData() {
-    return invoke()<{ [key: string]: RemoteGameData }>("get_remote_game_data")
+export function getRemoteGames() {
+    return invoke()<{ [key: string]: RemoteGame }>("get_remote_games")
 }
 
 export function openModLoaderFolder(modLoaderId: string) {
@@ -117,9 +117,8 @@ export type GameMode = "VR" | "Flat"
 export type ModKind = "Installable" | "Runnable"
 export type RunnableModData = { path: string; args: string[] }
 export type OwnedGame = { id: string; provider: ProviderId; name: string; osList: OperatingSystem[]; releaseDate: BigInt | null; thumbnailUrl: string | null; gameMode: GameMode | null; providerCommands: { [key: string]: ProviderCommand } }
-export type AppEvent = "SyncInstalledGames" | "SyncOwnedGames" | "SyncRemoteGameData" | "SyncModLoaders" | "SyncLocalMods" | "SyncRemoteMods" | "ExecutedProviderCommand" | "GameAdded" | "GameRemoved" | "Error"
+export type AppEvent = "SyncInstalledGames" | "SyncOwnedGames" | "SyncRemoteGames" | "SyncModLoaders" | "SyncLocalMods" | "SyncRemoteMods" | "ExecutedProviderCommand" | "GameAdded" | "GameRemoved" | "Error"
 export type ModDownload = { id: string; url: string; root: string | null; runnable: RunnableModData | null }
-export type RemoteGameData = { id: string; engine: GameEngine | null; uevrScore: UevrScore | null }
 export type LocalMod = { data: LocalModData; common: CommonModData }
 export type ProviderId = "Steam" | "Manual" | "Epic" | "Gog" | "Xbox"
 export type RemoteModData = { title: string; author: string; sourceCode: string; description: string; latestVersion: ModDownload | null }
@@ -136,3 +135,4 @@ export type OperatingSystem = "Linux" | "Windows"
 export type CommonModData = { id: string; engine: GameEngineBrand | null; unityBackend: UnityScriptingBackend | null; loaderId: string }
 export type ProviderCommand = { String: string } | { Path: [string, string[]] }
 export type Architecture = "X64" | "X86"
+export type RemoteGame = { id: string; engine: GameEngine | null; uevrScore: UevrScore | null }

@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { addGame, getRemoteGameData } from "@api/bindings";
+import { addGame, getRemoteGames } from "@api/bindings";
 import { event } from "@tauri-apps/api";
 import { atom } from "jotai";
 import {
@@ -40,8 +40,8 @@ export const [ownedGamesAtom, useOwnedGamesSubscription] = dataSubscription(
 	{},
 );
 
-export const [remoteGameDataAtom, useRemoteGameDataSubscription] =
-	dataSubscription("SyncRemoteGameData", getRemoteGameData, {});
+export const [remoteGamesAtom, useRemoteGameDataSubscription] =
+	dataSubscription("SyncRemoteGames", getRemoteGames, {});
 
 export const loadingAtom = atom<boolean>(false);
 

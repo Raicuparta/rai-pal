@@ -10,10 +10,7 @@ use winreg::{
 	RegKey,
 };
 
-use super::provider::{
-	ProviderId,
-	RemoteGameData,
-};
+use super::provider::ProviderId;
 use crate::{
 	installed_game::InstalledGame,
 	owned_game::OwnedGame,
@@ -22,6 +19,7 @@ use crate::{
 		ProviderActions,
 		ProviderStatic,
 	},
+	remote_game::RemoteGame,
 	Result,
 };
 
@@ -113,7 +111,7 @@ impl ProviderActions for Xbox {
 		Ok(Vec::default())
 	}
 
-	async fn get_remote_game_data(&self) -> Result<Vec<RemoteGameData>> {
+	async fn get_remote_games(&self) -> Result<Vec<RemoteGame>> {
 		Ok(Vec::default())
 	}
 }

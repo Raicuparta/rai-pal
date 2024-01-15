@@ -12,7 +12,6 @@ use super::{
 	provider::{
 		self,
 		ProviderId,
-		RemoteGameData,
 	},
 	provider_command::{
 		ProviderCommand,
@@ -36,6 +35,10 @@ use crate::{
 		ProviderActions,
 		ProviderStatic,
 	},
+	remote_game::{
+		self,
+		RemoteGame,
+	},
 	steam::{
 		appinfo::{
 			self,
@@ -51,7 +54,7 @@ use crate::{
 pub struct Steam {
 	steam_dir: SteamDir,
 	app_info_file: SteamAppInfoFile,
-	engine_cache: provider::EngineCache,
+	remote_game_cache: remote_game::Map,
 }
 
 impl ProviderStatic for Steam {
@@ -63,12 +66,12 @@ impl ProviderStatic for Steam {
 	{
 		let steam_dir = SteamDir::locate()?;
 		let app_info_file = appinfo::read(steam_dir.path())?;
-		let engine_cache = Self::try_get_engine_cache();
+		let engine_cache = Self::try_get_remote_game_cache();
 
 		Ok(Self {
 			steam_dir,
 			app_info_file,
-			engine_cache,
+			remote_game_cache: engine_cache,
 		})
 	}
 }
@@ -137,21 +140,21 @@ impl ProviderActions for Steam {
 		Ok(games)
 	}
 
-	async fn get_remote_game_data(&self) -> Result<Vec<RemoteGameData>> {
+	async fn get_remote_games(&self) -> Result<Vec<RemoteGame>> {
 		let steam_games = id_lists::get().await?;
 
-		let remote_game_data: Vec<RemoteGameData> =
+		let remote_games: Vec<RemoteGame> =
 			futures::future::join_all(self.app_info_file.apps.iter().map(
 				|(app_id, steam_app)| async {
 					let id_string = app_id.to_string();
 
 					// TODO: cache the whole thing, not just the engine version.
 					if let Some(steam_game) = steam_games.get(&id_string) {
-						Some(RemoteGameData {
+						Some(RemoteGame {
 							id: owned_game::get_id(*Self::ID, &id_string), // TODO use constructor
 							engine: Some(GameEngine {
 								brand: steam_game.engine,
-								version: get_engine(&id_string, &self.engine_cache)
+								version: get_engine(&id_string, &self.remote_game_cache)
 									.await
 									.and_then(|info| info.version),
 							}),
@@ -167,14 +170,14 @@ impl ProviderActions for Steam {
 			.flatten()
 			.collect();
 
-		Self::try_save_engine_cache(
-			&remote_game_data
+		Self::try_save_remote_game_cache(
+			&remote_games
 				.iter()
-				.map(|owned_game| (owned_game.id.clone(), owned_game.engine.clone()))
+				.map(|remote_game| (remote_game.id.clone(), remote_game.clone()))
 				.collect(),
 		);
 
-		Ok(remote_game_data)
+		Ok(remote_games)
 	}
 
 	fn get_local_owned_games(&self) -> Result<Vec<OwnedGame>> {
@@ -265,9 +268,9 @@ impl ProviderActions for Steam {
 	}
 }
 
-async fn get_engine(steam_id: &str, cache: &provider::EngineCache) -> Option<GameEngine> {
+async fn get_engine(steam_id: &str, cache: &remote_game::Map) -> Option<GameEngine> {
 	if let Some(cached_engine) = cache.get(steam_id) {
-		return cached_engine.clone();
+		return cached_engine.engine.clone();
 	}
 
 	pc_gaming_wiki::get_engine(&format!("Steam_AppID%20HOLDS%20%22{steam_id}%22")).await

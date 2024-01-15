@@ -38,7 +38,6 @@ use providers::{
 	provider::{
 		self,
 		ProviderActions,
-		RemoteGameData,
 	},
 	provider_command::ProviderCommandAction,
 };
@@ -73,6 +72,7 @@ mod owned_game;
 mod paths;
 mod pc_gaming_wiki;
 mod providers;
+mod remote_game;
 mod remote_mod;
 mod result;
 mod steam;
@@ -110,8 +110,8 @@ async fn get_remote_mods(handle: AppHandle) -> Result<remote_mod::Map> {
 
 #[tauri::command]
 #[specta::specta]
-async fn get_remote_game_data(handle: AppHandle) -> Result<HashMap<String, RemoteGameData>> {
-	handle.app_state().remote_game_data.get_data()
+async fn get_remote_games(handle: AppHandle) -> Result<remote_game::Map> {
+	handle.app_state().remote_games.get_data()
 }
 
 fn update_state<TData>(
@@ -447,10 +447,10 @@ async fn update_data(handle: AppHandle) -> Result {
 		&handle,
 	);
 
-	let remote_game_data: HashMap<String, RemoteGameData> = futures::future::join_all(
+	let remote_games: remote_game::Map = futures::future::join_all(
 		provider_map
 			.values()
-			.map(provider::Provider::get_remote_game_data),
+			.map(provider::Provider::get_remote_games),
 	)
 	.await
 	.into_iter()
@@ -460,14 +460,14 @@ async fn update_data(handle: AppHandle) -> Result {
 			Vec::default()
 		})
 	})
-	.map(|remote_game_data| (remote_game_data.id.clone(), remote_game_data))
+	.map(|remote_game| (remote_game.id.clone(), remote_game))
 	.collect();
 	now.log_next(&format!("get owned games ({} total)", owned_games.len()));
 
 	update_state(
-		AppEvent::SyncRemoteGameData,
-		remote_game_data,
-		&handle.app_state().remote_game_data,
+		AppEvent::SyncRemoteGames,
+		remote_games,
+		&handle.app_state().remote_games,
 		&handle,
 	);
 
@@ -603,7 +603,7 @@ fn main() {
 		.manage(AppState {
 			installed_games: Mutex::default(),
 			owned_games: Mutex::default(),
-			remote_game_data: Mutex::default(),
+			remote_games: Mutex::default(),
 			mod_loaders: Mutex::default(),
 			local_mods: Mutex::default(),
 			remote_mods: Mutex::default(),
@@ -654,7 +654,7 @@ fn main() {
 			frontend_ready,
 			get_local_mods,
 			get_remote_mods,
-			get_remote_game_data,
+			get_remote_games,
 			open_mod_loader_folder,
 			refresh_game,
 			open_logs_folder,

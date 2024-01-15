@@ -16,7 +16,6 @@ use super::{
 };
 use crate::{
 	debug::LoggableInstant,
-	game_engines::game_engine::GameEngine,
 	installed_game::InstalledGame,
 	owned_game::OwnedGame,
 	paths,
@@ -24,9 +23,11 @@ use crate::{
 		manual_provider::Manual,
 		steam_provider::Steam,
 	},
+	remote_game::{
+		self,
+		RemoteGame,
+	},
 	serializable_enum,
-	serializable_struct,
-	steam::id_lists::UevrScore,
 	Result,
 };
 
@@ -47,12 +48,6 @@ pub enum Provider {
 	Xbox,
 }
 
-serializable_struct!(RemoteGameData {
-	pub id: String,
-	pub engine: Option<GameEngine>,
-	pub uevr_score: Option<UevrScore>
-});
-
 #[async_trait]
 #[enum_dispatch(Provider)]
 pub trait ProviderActions {
@@ -60,10 +55,8 @@ pub trait ProviderActions {
 
 	fn get_local_owned_games(&self) -> Result<Vec<OwnedGame>>;
 
-	async fn get_remote_game_data(&self) -> Result<Vec<RemoteGameData>>;
+	async fn get_remote_games(&self) -> Result<Vec<RemoteGame>>;
 }
-
-pub type EngineCache = HashMap<String, Option<GameEngine>>;
 
 pub trait ProviderStatic: ProviderActions {
 	const ID: &'static ProviderId;
@@ -82,18 +75,18 @@ pub trait ProviderStatic: ProviderActions {
 		Ok(path)
 	}
 
-	fn get_engine_cache_path() -> Result<PathBuf> {
-		Ok(Self::get_folder()?.join("engine-cache.json"))
+	fn get_remote_game_cache_path() -> Result<PathBuf> {
+		Ok(Self::get_folder()?.join("remote-game-cache.json"))
 	}
 
-	fn save_engine_cache(cache: &EngineCache) -> Result {
+	fn save_remote_game_cache(cache: &remote_game::Map) -> Result {
 		let json = serde_json::to_string_pretty(cache)?;
-		fs::write(Self::get_engine_cache_path()?, json)?;
+		fs::write(Self::get_remote_game_cache_path()?, json)?;
 		Ok(())
 	}
 
-	fn try_save_engine_cache(cache: &EngineCache) {
-		if let Err(err) = Self::save_engine_cache(cache) {
+	fn try_save_remote_game_cache(cache: &remote_game::Map) {
+		if let Err(err) = Self::save_remote_game_cache(cache) {
 			error!(
 				"Failed to save engine cache for provider '{}'. Error: {}",
 				Self::ID,
@@ -102,13 +95,13 @@ pub trait ProviderStatic: ProviderActions {
 		}
 	}
 
-	fn get_engine_cache() -> Result<EngineCache> {
-		let json = fs::read_to_string(Self::get_engine_cache_path()?)?;
-		Ok(serde_json::from_str::<EngineCache>(&json)?)
+	fn get_remote_game_cache() -> Result<remote_game::Map> {
+		let json = fs::read_to_string(Self::get_remote_game_cache_path()?)?;
+		Ok(serde_json::from_str::<remote_game::Map>(&json)?)
 	}
 
-	fn try_get_engine_cache() -> EngineCache {
-		match Self::get_engine_cache() {
+	fn try_get_remote_game_cache() -> remote_game::Map {
+		match Self::get_remote_game_cache() {
 			Ok(pc_gaming_wiki_cache) => pc_gaming_wiki_cache,
 			Err(err) => {
 				error!(

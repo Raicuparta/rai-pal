@@ -20,7 +20,6 @@ use super::{
 	provider::{
 		self,
 		ProviderId,
-		RemoteGameData,
 	},
 	provider_command::{
 		ProviderCommand,
@@ -37,13 +36,17 @@ use crate::{
 		ProviderActions,
 		ProviderStatic,
 	},
+	remote_game::{
+		self,
+		RemoteGame,
+	},
 	serializable_struct,
 	Result,
 };
 
 pub struct Epic {
 	app_data_path: PathBuf,
-	engine_cache: provider::EngineCache,
+	engine_cache: remote_game::Map,
 }
 
 impl ProviderStatic for Epic {
@@ -58,7 +61,7 @@ impl ProviderStatic for Epic {
 			.and_then(|launcher_reg| launcher_reg.get_value::<String, _>("AppDataPath"))
 			.map(PathBuf::from)?;
 
-		let engine_cache = Self::try_get_engine_cache();
+		let engine_cache = Self::try_get_remote_game_cache();
 
 		Ok(Self {
 			app_data_path,
@@ -164,7 +167,7 @@ impl ProviderActions for Epic {
 		Ok(Vec::default())
 	}
 
-	async fn get_remote_game_data(&self) -> Result<Vec<RemoteGameData>> {
+	async fn get_remote_games(&self) -> Result<Vec<RemoteGame>> {
 		Ok(Vec::default())
 	}
 
@@ -231,9 +234,9 @@ impl ProviderActions for Epic {
 	// }
 }
 
-async fn get_engine(title: &str, cache: &provider::EngineCache) -> Option<GameEngine> {
-	if let Some(cached_engine) = cache.get(title) {
-		return cached_engine.clone();
+async fn get_engine(title: &str, cache: &remote_game::Map) -> Option<GameEngine> {
+	if let Some(remote_game) = cache.get(title) {
+		return remote_game.engine.clone();
 	}
 
 	pc_gaming_wiki::get_engine_from_game_title(title).await

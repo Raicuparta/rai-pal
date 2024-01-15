@@ -3,19 +3,19 @@ import { useMemo } from "react";
 import {
 	ownedGamesAtom,
 	installedGamesAtom,
-	remoteGameDataAtom,
+	remoteGamesAtom,
 } from "./use-data";
 import {
 	InstalledGame,
 	OwnedGame,
 	ProviderId,
-	RemoteGameData,
+	RemoteGame,
 } from "@api/bindings";
 
 type ProcessedOwnedGameRecord = Record<string, ProcessedOwnedGame>;
 export interface ProcessedOwnedGame extends OwnedGame {
 	isInstalled: boolean;
-	remoteData?: RemoteGameData;
+	remoteData?: RemoteGame;
 }
 
 type InstalledGamesByProvider = Record<
@@ -25,7 +25,7 @@ type InstalledGamesByProvider = Record<
 
 export function useProcessedOwnedGames() {
 	const ownedGames = useAtomValue(ownedGamesAtom);
-	const remoteGameData = useAtomValue(remoteGameDataAtom);
+	const remoteGames = useAtomValue(remoteGamesAtom);
 	const installedGames = useAtomValue(installedGamesAtom);
 
 	const installedGamesByProvider: InstalledGamesByProvider = useMemo(() => {
@@ -57,12 +57,12 @@ export function useProcessedOwnedGames() {
 			result[gameId] = {
 				...ownedGame,
 				isInstalled: Boolean(installedGame),
-				remoteData: remoteGameData[ownedGame.id],
+				remoteData: remoteGames[ownedGame.id],
 			};
 		}
 
 		return result;
-	}, [ownedGames, installedGamesByProvider, remoteGameData]);
+	}, [ownedGames, installedGamesByProvider, remoteGames]);
 
 	return processedOwnedGames;
 }

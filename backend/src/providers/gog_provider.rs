@@ -16,7 +16,6 @@ use super::{
 	provider::{
 		self,
 		ProviderId,
-		RemoteGameData,
 	},
 	provider_command::{
 		ProviderCommand,
@@ -33,6 +32,10 @@ use crate::{
 		ProviderActions,
 		ProviderStatic,
 	},
+	remote_game::{
+		self,
+		RemoteGame,
+	},
 	serializable_struct,
 	Result,
 };
@@ -46,7 +49,7 @@ struct GogDbEntry {
 }
 
 pub struct Gog {
-	engine_cache: provider::EngineCache,
+	engine_cache: remote_game::Map,
 	database: Vec<GogDbEntry>,
 	launcher_path: PathBuf,
 }
@@ -59,7 +62,7 @@ impl ProviderStatic for Gog {
 		Self: Sized,
 	{
 		Ok(Self {
-			engine_cache: Self::try_get_engine_cache(),
+			engine_cache: Self::try_get_remote_game_cache(),
 			database: get_database()?,
 			launcher_path: get_launcher_path()?,
 		})
@@ -102,7 +105,7 @@ impl ProviderActions for Gog {
 		Ok(Vec::default())
 	}
 
-	async fn get_remote_game_data(&self) -> Result<Vec<RemoteGameData>> {
+	async fn get_remote_games(&self) -> Result<Vec<RemoteGame>> {
 		Ok(Vec::default())
 	}
 
@@ -150,9 +153,9 @@ impl ProviderActions for Gog {
 	// }
 }
 
-async fn get_engine(gog_id: &str, cache: &provider::EngineCache) -> Option<GameEngine> {
-	if let Some(cached_engine) = cache.get(gog_id) {
-		return cached_engine.clone();
+async fn get_engine(gog_id: &str, cache: &remote_game::Map) -> Option<GameEngine> {
+	if let Some(remote_game) = cache.get(gog_id) {
+		return remote_game.engine.clone();
 	}
 
 	pc_gaming_wiki::get_engine(&format!("GOGcom_ID%20HOLDS%20%22{gog_id}%22")).await
