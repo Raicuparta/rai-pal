@@ -173,11 +173,6 @@ impl ProviderActions for Steam {
 					return None;
 				}
 
-				let installed = self
-					.steam_dir
-					.app(*steam_id)
-					.map_or(false, |steam_app| steam_app.is_some());
-
 				// Steam's appinfo cache file seems to use i32 for the timestamps...
 				// See you in 2038
 				let release_date = i64::from(
@@ -203,7 +198,6 @@ impl ProviderActions for Steam {
 				let mut game = OwnedGame::new(&id_string, *Self::ID, &app_info.name);
 
 				game.set_thumbnail_url(&get_steam_thumbnail(&id_string))
-					.set_installed(installed)
 					.set_os_list(os_list)
 					.set_release_date(release_date)
 					.set_game_mode(game_mode)

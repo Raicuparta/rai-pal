@@ -20,7 +20,6 @@ serializable_struct!(OwnedGame {
 	pub provider: ProviderId,
 	pub provider_game_id: String,
 	pub name: String,
-	pub installed: bool,
 	pub os_list: HashSet<OperatingSystem>,
 	pub engine: Option<GameEngine>,
 	pub release_date: i64,
@@ -39,7 +38,6 @@ impl OwnedGame {
 			provider_game_id: provider_game_id.to_string(),
 			provider,
 			name: name.to_string(),
-			installed: false,
 			os_list: HashSet::default(),
 			engine: None,
 			release_date: 0,
@@ -50,11 +48,6 @@ impl OwnedGame {
 			open_page_command: None,
 			install_command: None,
 		}
-	}
-
-	pub fn set_installed(&mut self, installed: bool) -> &mut Self {
-		self.installed = installed;
-		self
 	}
 
 	pub fn set_os_list(&mut self, os_list: HashSet<OperatingSystem>) -> &mut Self {

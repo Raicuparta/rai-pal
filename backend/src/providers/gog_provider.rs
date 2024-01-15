@@ -99,7 +99,6 @@ impl ProviderActions for Gog {
 			let mut game = OwnedGame::new(&db_entry.id, *Self::ID, &db_entry.title);
 
 			game.set_thumbnail_url(&db_entry.image_url.clone().unwrap_or_default())
-				.set_installed(db_entry.executable_path.is_some())
 				.set_release_date(db_entry.release_date.unwrap_or_default().into())
 				.set_show_library_command(ProviderCommand::Path(
 					self.launcher_path.clone(),

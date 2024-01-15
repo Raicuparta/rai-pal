@@ -1,7 +1,6 @@
 import {
 	GameEngineBrand,
 	GameMode,
-	OwnedGame,
 	ProviderId,
 	UevrScore,
 } from "@api/bindings";
@@ -22,8 +21,9 @@ import {
 } from "../../util/common-filter-options";
 import { getThumbnailWithFallback } from "../../util/fallback-thumbnail";
 import { sortGamesByEngine } from "../../util/game-engines";
+import { ProcessedOwnedGame } from "@hooks/use-processed-owned-games";
 
-const thumbnail: TableColumnBase<OwnedGame> = {
+const thumbnail: TableColumnBase<ProcessedOwnedGame> = {
 	label: "Thumbnail",
 	hideLabel: true,
 	hidable: true,
@@ -36,7 +36,7 @@ const thumbnail: TableColumnBase<OwnedGame> = {
 	),
 };
 
-const name: TableColumnBase<OwnedGame> = {
+const name: TableColumnBase<ProcessedOwnedGame> = {
 	label: "Game",
 	width: undefined,
 	hideInDetails: true,
@@ -46,7 +46,7 @@ const name: TableColumnBase<OwnedGame> = {
 	),
 };
 
-const provider: TableColumnBase<OwnedGame, ProviderId> = {
+const provider: TableColumnBase<ProcessedOwnedGame, ProviderId> = {
 	label: "Provider",
 	width: 110,
 	center: true,
@@ -61,7 +61,7 @@ const provider: TableColumnBase<OwnedGame, ProviderId> = {
 	),
 };
 
-const engine: TableColumnBase<OwnedGame, GameEngineBrand> = {
+const engine: TableColumnBase<ProcessedOwnedGame, GameEngineBrand> = {
 	label: "Engine",
 	width: 150,
 	center: true,
@@ -81,24 +81,24 @@ const engine: TableColumnBase<OwnedGame, GameEngineBrand> = {
 	),
 };
 
-const installed: TableColumnBase<OwnedGame, string> = {
+const installed: TableColumnBase<ProcessedOwnedGame, string> = {
 	label: "Installed",
 	width: 60,
 	center: true,
 	hidable: true,
-	getSortValue: (game) => game.installed,
-	getFilterValue: (game) => `${game.installed}`,
+	getSortValue: (game) => game.isInstalled,
+	getFilterValue: (game) => `${game.isInstalled}`,
 	filterOptions: [
 		{ label: "Any install state", value: "" },
 		{ label: "Installed", value: "true" },
 		{ label: "Not Installed", value: "false" },
 	],
 	renderCell: (game) => (
-		<Table.Td align="center">{game.installed ? <IconCheck /> : ""}</Table.Td>
+		<Table.Td align="center">{game.isInstalled ? <IconCheck /> : ""}</Table.Td>
 	),
 };
 
-const gameMode: TableColumnBase<OwnedGame, GameMode> = {
+const gameMode: TableColumnBase<ProcessedOwnedGame, GameMode> = {
 	label: "Mode",
 	width: 90,
 	center: true,
@@ -116,7 +116,7 @@ const gameMode: TableColumnBase<OwnedGame, GameMode> = {
 	),
 };
 
-const uevrScore: TableColumnBase<OwnedGame, UevrScore> = {
+const uevrScore: TableColumnBase<ProcessedOwnedGame, UevrScore> = {
 	label: "UEVR",
 	width: 90,
 	center: true,
@@ -136,7 +136,7 @@ const uevrScore: TableColumnBase<OwnedGame, UevrScore> = {
 	),
 };
 
-const releaseDate: TableColumnBase<OwnedGame> = {
+const releaseDate: TableColumnBase<ProcessedOwnedGame> = {
 	label: "Release Date",
 	width: 130,
 	center: true,

@@ -1,5 +1,4 @@
 import { Group, Stack } from "@mantine/core";
-import { OwnedGame } from "@api/bindings";
 import { useMemo, useState } from "react";
 import { filterGame, includesOneOf } from "../../util/filter";
 import { OwnedGameModal } from "./owned-game-modal";
@@ -8,18 +7,20 @@ import { FilterMenu } from "@components/filter-menu";
 import { VirtualizedTable } from "@components/table/virtualized-table";
 import { RefreshButton } from "@components/refresh-button";
 import { SearchInput } from "@components/search-input";
-import { ownedGamesAtom } from "@hooks/use-data";
-import { useAtomValue } from "jotai";
 import { OwnedGameColumnsId, ownedGamesColumns } from "./owned-games-columns";
 import { ColumnsSelect } from "@components/columns-select";
 import { usePersistedState } from "@hooks/use-persisted-state";
 import { TypedSegmentedControl } from "@components/installed-games/typed-segmented-control";
 import { FixOwnedGamesButton } from "./fix-owned-games-button";
+import {
+	ProcessedOwnedGame,
+	useProcessedOwnedGames,
+} from "@hooks/use-processed-owned-games";
 
 const defaultFilter: Record<string, string> = {};
 
 function filterOwnedGame(
-	game: OwnedGame,
+	game: ProcessedOwnedGame,
 	filter: Record<string, string>,
 	search: string,
 ) {
@@ -30,7 +31,7 @@ function filterOwnedGame(
 }
 
 export function OwnedGamesPage() {
-	const ownedGames = useAtomValue(ownedGamesAtom);
+	const ownedGames = useProcessedOwnedGames();
 
 	const [selectedGameId, setSelectedGameId] = useState<string>();
 

@@ -1,10 +1,5 @@
 import { Group, Modal, Stack } from "@mantine/core";
-import {
-	OwnedGame,
-	installGame,
-	openGamePage,
-	showGameInLibrary,
-} from "@api/bindings";
+import { installGame, openGamePage, showGameInLibrary } from "@api/bindings";
 import { CommandButton } from "@components/command-button";
 import { IconBooks, IconBrowser, IconDownload } from "@tabler/icons-react";
 import { ModalImage } from "@components/modal-image";
@@ -13,9 +8,10 @@ import { TableItemDetails } from "@components/table/table-item-details";
 import { ownedGamesColumns } from "./owned-games-columns";
 import { ItemName } from "@components/item-name";
 import { getThumbnailWithFallback } from "../../util/fallback-thumbnail";
+import { ProcessedOwnedGame } from "@hooks/use-processed-owned-games";
 
 type Props = {
-	readonly game: OwnedGame;
+	readonly game: ProcessedOwnedGame;
 	readonly onClose: () => void;
 };
 
