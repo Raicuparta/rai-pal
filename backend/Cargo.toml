@@ -47,7 +47,7 @@ log = "0.4.20"
 tauri-runtime = "0.14.1"
 base64 = "0.21.5"
 chrono = "0.4.31"
-rusqlite = "0.28.0"
+rusqlite = { version = "0.30.0",  features = ["bundled"] }
 
 [target.'cfg(target_os = "linux")'.dependencies]
 webkit2gtk = "0.18.2"
