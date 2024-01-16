@@ -2,7 +2,6 @@ import { Group, Stack } from "@mantine/core";
 import { useMemo, useState } from "react";
 import { filterGame, includesOneOf } from "../../util/filter";
 import { InstalledGameModal } from "./installed-game-modal";
-import { TypedSegmentedControl } from "./typed-segmented-control";
 import { useFilteredList } from "@hooks/use-filtered-list";
 import { FilterMenu } from "@components/filter-menu";
 import { VirtualizedTable } from "@components/table/virtualized-table";
@@ -19,12 +18,14 @@ import {
 	ProcessedInstalledGame,
 	useProcessedInstalledGames,
 } from "@hooks/use-processed-installed-games";
+import { FilterSelect } from "@components/filter-select";
+import { DebugData } from "@components/debug-data";
 
-const defaultFilter: Record<string, string> = {};
+const defaultFilter: Record<string, (string | null)[]> = {};
 
 function filterInstalledGame(
 	game: ProcessedInstalledGame,
-	filter: Record<string, string>,
+	filter: Record<string, (string | null)[]>,
 	search: string,
 ) {
 	return (
@@ -87,26 +88,29 @@ export function InstalledGamesPage() {
 					setFilter={setFilter}
 					active={isFilterActive}
 				>
-					<Stack>
-						<ColumnsSelect
-							columns={installedGamesColumns}
-							hiddenIds={visibleColumnIds}
-							onChange={setVisibleColumnIds}
-						/>
-
-						{installedGamesColumns.map(
-							(column) =>
-								column.filterOptions && (
-									<TypedSegmentedControl
-										key={column.id}
-										data={column.filterOptions}
-										onChange={(value) => setFilter({ [column.id]: value })}
-										unavailableValues={column.unavailableValues}
-										value={filter[column.id]}
-									/>
-								),
-						)}
-					</Stack>
+					{installedGamesColumns.map(
+						(column) =>
+							column.filterOptions && (
+								<FilterSelect
+									key={column.id}
+									column={column}
+									visibleColumns={visibleColumnIds}
+									onChangeVisibleColumns={setVisibleColumnIds}
+									hiddenValues={filter[column.id]}
+									onChange={(selectedValues) =>
+										setFilter({ [column.id]: selectedValues })
+									}
+								/>
+								// <TypedSegmentedControl
+								// 	key={column.id}
+								// 	data={column.filterOptions}
+								// 	onChange={(value) => setFilter({ [column.id]: value })}
+								// 	unavailableValues={column.unavailableValues}
+								// 	value={filter[column.id]}
+								// />
+							),
+					)}
+					<DebugData data={filter} />
 				</FilterMenu>
 				<RefreshButton />
 			</Group>

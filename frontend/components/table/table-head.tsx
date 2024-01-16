@@ -2,7 +2,11 @@ import { Box, Flex, Table } from "@mantine/core";
 import classes from "./table.module.css";
 import { IconChevronDown, IconChevronUp } from "@tabler/icons-react";
 import { TableSort } from "@hooks/use-table-sort";
-import { SegmentedControlData } from "@components/installed-games/typed-segmented-control";
+
+export type FilterOption<TFilterOption extends string> = {
+	value: TFilterOption;
+	label: string;
+};
 
 export type TableColumnBase<TItem, TFilterOption extends string = string> = {
 	label: string;
@@ -16,7 +20,7 @@ export type TableColumnBase<TItem, TFilterOption extends string = string> = {
 	sort?: (itemA: TItem, itemB: TItem) => number;
 	getSortValue?: (item: TItem) => unknown;
 	getFilterValue?: (item: TItem) => TFilterOption | "";
-	filterOptions?: SegmentedControlData<TFilterOption>[];
+	filterOptions?: FilterOption<TFilterOption>[];
 };
 
 export interface TableColumn<

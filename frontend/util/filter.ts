@@ -12,7 +12,7 @@ export function includesOneOf(term: string | undefined, texts: string[]) {
 
 export function filterGame<TKey extends string, TGame>(
 	game: TGame,
-	filter: Record<string, string>,
+	filter: Record<string, (string | null)[]>,
 	columns: TableColumn<TKey, TGame>[],
 ) {
 	return (
@@ -22,7 +22,8 @@ export function filterGame<TKey extends string, TGame>(
 			return (
 				getValueFunction &&
 				filter[column.id] &&
-				filter[column.id] !== getValueFunction(game)
+				filter[column.id].length > 0 &&
+				!filter[column.id].includes(getValueFunction(game))
 			);
 		}) === -1
 	);

@@ -90,7 +90,6 @@ const operatingSystem: TableColumnBase<
 	hidable: true,
 	getSortValue: (game) => game.executable.operatingSystem,
 	filterOptions: [
-		{ label: "Any OS", value: "" },
 		{ label: "Windows", value: "Windows" },
 		{ label: "Linux", value: "Linux" },
 	],
@@ -108,7 +107,6 @@ const architecture: TableColumnBase<ProcessedInstalledGame, Architecture> = {
 	hidable: true,
 	getSortValue: (game) => game.executable.architecture,
 	filterOptions: [
-		{ label: "Any architecture", value: "" },
 		{ label: "x64", value: "X64" },
 		{ label: "x86", value: "X86" },
 	],
@@ -129,7 +127,6 @@ const scriptingBackend: TableColumnBase<
 	hidable: true,
 	getSortValue: (game) => game.executable.scriptingBackend,
 	filterOptions: [
-		{ label: "Any backend", value: "" },
 		{ label: "IL2CPP", value: "Il2Cpp" },
 		{ label: "Mono", value: "Mono" },
 	],
@@ -147,7 +144,6 @@ const gameMode: TableColumnBase<ProcessedInstalledGame, GameMode> = {
 	hidable: true,
 	getSortValue: (game) => game.ownedGame?.gameMode,
 	filterOptions: [
-		{ label: "Any mode", value: "" },
 		{ label: "Flat", value: "Flat" },
 		{ label: "VR", value: "VR" },
 	],

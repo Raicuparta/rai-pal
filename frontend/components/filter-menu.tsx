@@ -1,4 +1,4 @@
-import { Button, Indicator, Popover } from "@mantine/core";
+import { Button, Indicator, Popover, Stack } from "@mantine/core";
 import { IconFilter, IconX } from "@tabler/icons-react";
 
 type Props = {
@@ -26,7 +26,9 @@ export function FilterMenu(props: Props) {
 					<Popover.Target>
 						<Button leftSection={<IconFilter />}>Filter</Button>
 					</Popover.Target>
-					<Popover.Dropdown>{props.children}</Popover.Dropdown>
+					<Popover.Dropdown>
+						<Stack>{props.children}</Stack>
+					</Popover.Dropdown>
 				</Popover>
 			</Button.Group>
 		</Indicator>
