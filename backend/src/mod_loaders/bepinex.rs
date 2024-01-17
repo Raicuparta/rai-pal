@@ -44,11 +44,10 @@ serializable_struct!(BepInEx {
 	pub id: &'static str,
 });
 
-#[async_trait]
 impl ModLoaderStatic for BepInEx {
 	const ID: &'static str = "bepinex";
 
-	async fn new(resources_path: &Path) -> Result<Self> {
+	fn new(resources_path: &Path) -> Result<Self> {
 		Ok(Self {
 			id: Self::ID,
 			data: ModLoaderData {

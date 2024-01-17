@@ -40,11 +40,10 @@ serializable_enum!(RunnableParameter {
 	GameJson,
 });
 
-#[async_trait]
 impl ModLoaderStatic for RunnableLoader {
 	const ID: &'static str = "runnable";
 
-	async fn new(resources_path: &Path) -> Result<Self>
+	fn new(resources_path: &Path) -> Result<Self>
 	where
 		Self: std::marker::Sized,
 	{

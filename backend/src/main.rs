@@ -183,7 +183,7 @@ async fn download_mod(mod_id: &str, handle: AppHandle) -> Result {
 		.download_mod(&remote_mod)
 		.await?;
 
-	refresh_local_mods(&mod_loaders, &handle).await;
+	refresh_local_mods(&mod_loaders, &handle);
 
 	Ok(())
 }
@@ -228,7 +228,7 @@ async fn install_mod(game_id: &str, mod_id: &str, handle: AppHandle) -> Result {
 		} else {
 			// Local mod wasn't in app state,
 			// so let's sync app state to local files in case some file was manually changed.
-			let disk_local_mods = refresh_local_mods(&mod_loaders, &handle).await;
+			let disk_local_mods = refresh_local_mods(&mod_loaders, &handle);
 
 			if state_local_mods.contains_key(mod_id) {
 				disk_local_mods
@@ -248,7 +248,7 @@ async fn install_mod(game_id: &str, mod_id: &str, handle: AppHandle) -> Result {
 					mod_loader.open_folder()?;
 				}
 
-				refresh_local_mods(&mod_loaders, &handle).await
+				refresh_local_mods(&mod_loaders, &handle)
 			}
 		}
 	};
@@ -310,7 +310,7 @@ async fn uninstall_mod(game_id: &str, mod_id: &str, handle: AppHandle) -> Result
 	Ok(())
 }
 
-async fn refresh_local_mods(mod_loaders: &mod_loader::Map, handle: &AppHandle) -> local_mod::Map {
+fn refresh_local_mods(mod_loaders: &mod_loader::Map, handle: &AppHandle) -> local_mod::Map {
 	let local_mods: HashMap<_, _> = mod_loaders
 		.values()
 		.filter_map(|mod_loader| {
@@ -359,7 +359,7 @@ async fn update_data(handle: AppHandle) -> Result {
 	let resources_path = paths::resources_path(&handle)?;
 	let now = &mut Instant::now();
 
-	let mod_loaders = mod_loader::get_map(&resources_path).await;
+	let mod_loaders = mod_loader::get_map(&resources_path);
 	now.log_next("get mod loader map");
 
 	update_state(
@@ -369,7 +369,7 @@ async fn update_data(handle: AppHandle) -> Result {
 		&handle,
 	);
 
-	let local_mods = refresh_local_mods(&mod_loaders, &handle).await;
+	let local_mods = refresh_local_mods(&mod_loaders, &handle);
 	now.log_next("refresh local mods");
 
 	let provider_map = provider::get_map();
@@ -405,13 +405,6 @@ async fn update_data(handle: AppHandle) -> Result {
 		&handle,
 	);
 
-	update_state(
-		AppEvent::SyncInstalledGames,
-		installed_games.clone(),
-		&handle.app_state().installed_games,
-		&handle,
-	);
-
 	let owned_games: owned_game::Map = provider_map
 		.iter()
 		.flat_map(
@@ -430,6 +423,13 @@ async fn update_data(handle: AppHandle) -> Result {
 		"get local owned games ({} total)",
 		owned_games.len()
 	));
+
+	update_state(
+		AppEvent::SyncOwnedGames,
+		owned_games.clone(),
+		&handle.app_state().owned_games,
+		&handle,
+	);
 
 	let remote_mods = refresh_remote_mods(&mod_loaders, &handle).await;
 	now.log_next("refresh remote mods");
