@@ -20,7 +20,6 @@ use super::{
 	},
 };
 use crate::{
-	game_engines::game_engine::GameEngine,
 	installed_game::InstalledGame,
 	owned_game::OwnedGame,
 	paths,
@@ -135,7 +134,16 @@ impl ProviderActions for Gog {
 			futures::future::join_all(self.database.iter().map(|db_entry| async {
 				let mut remote_game = RemoteGame::new(*Self::ID, &db_entry.id);
 
-				if let Some(engine) = get_engine(&db_entry.id, &self.remote_game_cache).await {
+				if let Some(cached_remote_game) = self.remote_game_cache.get(&remote_game.id) {
+					return cached_remote_game.clone();
+				}
+
+				if let Some(engine) = pc_gaming_wiki::get_engine(&format!(
+					"GOGcom_ID%20HOLDS%20%22{}%22",
+					db_entry.id
+				))
+				.await
+				{
 					remote_game.set_engine(engine);
 				}
 
@@ -153,14 +161,6 @@ impl ProviderActions for Gog {
 
 		Ok(remote_games)
 	}
-}
-
-async fn get_engine(gog_id: &str, cache: &remote_game::Map) -> Option<GameEngine> {
-	if let Some(remote_game) = cache.get(gog_id) {
-		return remote_game.engine.clone();
-	}
-
-	pc_gaming_wiki::get_engine(&format!("GOGcom_ID%20HOLDS%20%22{gog_id}%22")).await
 }
 
 serializable_struct!(GogDbEntryTitle { title: Option<String> });

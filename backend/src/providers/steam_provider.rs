@@ -140,16 +140,20 @@ impl ProviderActions for Steam {
 		let remote_games: Vec<RemoteGame> =
 			futures::future::join_all(self.app_info_file.apps.keys().map(|app_id| async {
 				let id_string = app_id.to_string();
+				let mut remote_game = RemoteGame::new(*Self::ID, &id_string);
 
-				// TODO: cache the whole thing, not just the engine version.
+				if let Some(cached_remote_game) = self.remote_game_cache.get(&remote_game.id) {
+					return Some(cached_remote_game.clone());
+				}
+
 				if let Some(steam_game) = steam_games.get(&id_string) {
-					let mut remote_game = RemoteGame::new(*Self::ID, &id_string);
-
 					if let Some(engine) = Some(GameEngine {
 						brand: steam_game.engine,
-						version: get_engine(&id_string, &self.remote_game_cache)
-							.await
-							.and_then(|info| info.version),
+						version: pc_gaming_wiki::get_engine(&format!(
+							"Steam_AppID%20HOLDS%20%22{id_string}%22"
+						))
+						.await
+						.and_then(|remote_engine| remote_engine.version),
 					}) {
 						remote_game.set_engine(engine);
 					}
@@ -264,14 +268,6 @@ impl ProviderActions for Steam {
 
 		Ok(owned_games)
 	}
-}
-
-async fn get_engine(steam_id: &str, cache: &remote_game::Map) -> Option<GameEngine> {
-	if let Some(cached_engine) = cache.get(steam_id) {
-		return cached_engine.engine.clone();
-	}
-
-	pc_gaming_wiki::get_engine(&format!("Steam_AppID%20HOLDS%20%22{steam_id}%22")).await
 }
 
 pub fn get_start_command(

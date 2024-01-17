@@ -24,7 +24,6 @@ use super::{
 	},
 };
 use crate::{
-	game_engines::game_engine::GameEngine,
 	installed_game::InstalledGame,
 	owned_game::OwnedGame,
 	paths::glob_path,
