@@ -98,8 +98,10 @@ pub async fn get_engine(where_query: &str) -> Option<GameEngine> {
 				}
 			}
 		}
-		Err(err) => {
-			error!("Error fetching from PCGamingWiki: {err}");
+		Err(_) => {
+			// We ignore this error, since it's very likely to happen.
+			// TODO: need to distinguish between a network error (pc offline) and a 404.
+			// 404 should store a None in the cache, network error shouldn't.
 			None
 		}
 	}

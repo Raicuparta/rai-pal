@@ -46,7 +46,7 @@ struct GogDbEntry {
 }
 
 pub struct Gog {
-	engine_cache: remote_game::Map,
+	remote_game_cache: remote_game::Map,
 	database: Vec<GogDbEntry>,
 	launcher_path: PathBuf,
 }
@@ -59,7 +59,7 @@ impl ProviderStatic for Gog {
 		Self: Sized,
 	{
 		Ok(Self {
-			engine_cache: Self::try_get_remote_game_cache(),
+			remote_game_cache: Self::try_get_remote_game_cache(),
 			database: get_database()?,
 			launcher_path: get_launcher_path()?,
 		})
@@ -135,7 +135,7 @@ impl ProviderActions for Gog {
 			futures::future::join_all(self.database.iter().map(|db_entry| async {
 				let mut remote_game = RemoteGame::new(*Self::ID, &db_entry.id);
 
-				if let Some(engine) = get_engine(&db_entry.id, &self.engine_cache).await {
+				if let Some(engine) = get_engine(&db_entry.id, &self.remote_game_cache).await {
 					remote_game.set_engine(engine);
 				}
 

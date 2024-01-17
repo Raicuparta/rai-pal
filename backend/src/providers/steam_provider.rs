@@ -60,12 +60,12 @@ impl ProviderStatic for Steam {
 	{
 		let steam_dir = SteamDir::locate()?;
 		let app_info_file = appinfo::read(steam_dir.path())?;
-		let engine_cache = Self::try_get_remote_game_cache();
+		let remote_game_cache = Self::try_get_remote_game_cache();
 
 		Ok(Self {
 			steam_dir,
 			app_info_file,
-			remote_game_cache: engine_cache,
+			remote_game_cache,
 		})
 	}
 }
