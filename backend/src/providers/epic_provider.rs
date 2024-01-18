@@ -198,8 +198,12 @@ impl ProviderActions for Epic {
 			.add_provider_command(
 				ProviderCommandAction::OpenInBrowser,
 				ProviderCommand::String(format!(
-					"https://store.epicgames.com/browse?q={}&sortBy=relevancy",
-					catalog_item.title,
+					"https://store.epicgames.com/browse?{}",
+					serde_urlencoded::to_string([
+						("sortBy", "relevancy"),
+						("q", &catalog_item.title)
+					])
+					.ok()?,
 				)),
 			);
 
