@@ -436,15 +436,14 @@ async fn update_data(handle: AppHandle) -> Result {
 
 	let provider_map = provider::get_map();
 
-	futures::future::join_all([
+	// TODO handle errors.
+	let results = futures::future::join_all([
 		tokio::spawn(update_installed_games(handle.clone(), provider_map.clone())),
 		tokio::spawn(update_owned_games(handle.clone(), provider_map.clone())),
 		tokio::spawn(update_remote_games(handle.clone(), provider_map)),
 		tokio::spawn(update_mods(handle, resources_path)),
 	])
 	.await;
-
-	// for result in var_name.iter() {}
 
 	Ok(())
 }
