@@ -109,17 +109,19 @@ fn get_database() -> Result<Vec<ItchDatabaseItem>> {
 	let db_path = PathBuf::from(r"C:\Users\rai\AppData\Roaming\itch\db\butler.db");
 	let connection = Connection::open_with_flags(db_path, OpenFlags::SQLITE_OPEN_READ_ONLY)?;
 	let mut statement = connection.prepare("SELECT id, title, url, published_at, cover_url FROM 'games' WHERE type='default' AND classification='game'")?;
-	let result = Ok(statement
-		.query_map([], |row| {
-			Ok(ItchDatabaseItem {
-				id: row.get(0)?,
-				title: row.get(1)?,
-				// TODO maybe not great that I'm swallowing errors here.
-				url: row.get(2).ok(),
-				published_at: row.get(3).ok(),
-				cover_url: row.get(4).ok(),
-			})
-		})?
+
+	let rows = statement.query_map([], |row| {
+		Ok(ItchDatabaseItem {
+			id: row.get(0)?,
+			title: row.get(1)?,
+			// TODO maybe not great that I'm swallowing errors here.
+			url: row.get(2).ok(),
+			published_at: row.get(3).ok(),
+			cover_url: row.get(4).ok(),
+		})
+	})?;
+
+	Ok(rows
 		.filter_map(|row| match row {
 			Ok(game) => Some(game),
 			Err(err) => {
@@ -127,6 +129,5 @@ fn get_database() -> Result<Vec<ItchDatabaseItem>> {
 				None
 			}
 		})
-		.collect());
-	result
+		.collect())
 }
