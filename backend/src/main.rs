@@ -6,7 +6,6 @@ use std::{
 	collections::HashMap,
 	path::PathBuf,
 	sync::Mutex,
-	time::Instant,
 };
 
 use app_state::{
@@ -15,12 +14,10 @@ use app_state::{
 	StateData,
 	StatefulHandle,
 };
-use debug::LoggableInstant;
 use events::{
 	AppEvent,
 	EventEmitter,
 };
-use game_mod::get_common_data_map;
 use installed_game::InstalledGame;
 use log::error;
 use maps::TryGettable;
@@ -269,16 +266,11 @@ async fn install_mod(game_id: &str, mod_id: &str, handle: AppHandle) -> Result {
 fn refresh_game_mods_and_exe(game_id: &str, handle: &AppHandle) -> Result {
 	let state = handle.app_state();
 
-	let mod_data_map = game_mod::get_common_data_map(
-		&handle.app_state().local_mods.get_data()?,
-		&handle.app_state().remote_mods.get_data()?,
-	);
-
 	let mut installed_games = state.installed_games.get_data()?;
 
 	let game = installed_games.try_get_mut(game_id)?;
 
-	game.refresh_mods(&mod_data_map);
+	game.refresh_installed_mods();
 	game.refresh_executable()?;
 
 	update_state(
@@ -474,11 +466,7 @@ async fn add_game(path: PathBuf, handle: AppHandle) -> Result {
 		return Err(Error::GameAlreadyAdded(normalized_path));
 	}
 
-	let mut game = manual_provider::add_game(&normalized_path)?;
-	game.update_available_mods(&get_common_data_map(
-		&state.local_mods.get_data()?,
-		&state.remote_mods.get_data()?,
-	));
+	let game = manual_provider::add_game(&normalized_path)?;
 	let game_name = game.name.clone();
 
 	let mut installed_games = state.installed_games.get_data()?.clone();

@@ -9,7 +9,6 @@ use std::{
 
 use async_trait::async_trait;
 use base64::engine::general_purpose;
-use glob::GlobError;
 use log::error;
 use winreg::{
 	enums::HKEY_LOCAL_MACHINE,
@@ -145,6 +144,7 @@ impl ProviderActions for Epic {
 		let manifests = glob_path(&self.app_data_path.join("Manifests").join("*.item"))?;
 
 		Ok(manifests
+			.iter()
 			.filter_map(
 				|manifest_path_result| match read_manifest(manifest_path_result) {
 					Ok(manifest) => {
@@ -162,7 +162,7 @@ impl ProviderActions for Epic {
 						Some(game)
 					}
 					Err(err) => {
-						error!("Failed to glob manifest path: {err}");
+						error!("Failed to parse manifest: {err}");
 						None
 					}
 				},
@@ -241,8 +241,8 @@ impl ProviderActions for Epic {
 	}
 }
 
-fn read_manifest(path_result: std::result::Result<PathBuf, GlobError>) -> Result<EpicManifest> {
-	let json = fs::read_to_string(path_result?)?;
+fn read_manifest(path: &PathBuf) -> Result<EpicManifest> {
+	let json = fs::read_to_string(path)?;
 	let manifest = serde_json::from_str::<EpicManifest>(&json)?;
 	Ok(manifest)
 }
