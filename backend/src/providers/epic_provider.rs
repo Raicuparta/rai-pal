@@ -194,6 +194,13 @@ impl ProviderActions for Epic {
 						.map(|release_info| release_info.app_id.clone())
 						.unwrap_or_default(),
 				)),
+			)
+			.add_provider_command(
+				ProviderCommandAction::OpenInBrowser,
+				ProviderCommand::String(format!(
+					"https://store.epicgames.com/browse?q={}&sortBy=relevancy",
+					catalog_item.title,
+				)),
 			);
 
 			if let Some(thumbnail_url) = catalog_item.get_thumbnail_url() {
