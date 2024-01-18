@@ -54,9 +54,17 @@ export function InstalledGameModal(props: Props) {
 
 	const filteredMods = useMemo(() => {
 		return Object.values(mods).filter(
-			(mod) => mod.common.id in props.game.installedModVersions,
+			(mod) =>
+				(!mod.common.engine ||
+					mod.common.engine === props.game.executable.engine?.brand) &&
+				(!mod.common.unityBackend ||
+					mod.common.unityBackend === props.game.executable.scriptingBackend),
 		);
-	}, [mods, props.game.installedModVersions]);
+	}, [
+		mods,
+		props.game.executable.engine?.brand,
+		props.game.executable.scriptingBackend,
+	]);
 
 	return (
 		<Modal
