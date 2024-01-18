@@ -99,7 +99,7 @@ impl ProviderActions for Gog {
 			.collect())
 	}
 
-	fn get_local_owned_games(&self) -> Result<Vec<OwnedGame>> {
+	fn get_owned_games(&self) -> Result<Vec<OwnedGame>> {
 		Ok(self
 			.database
 			.iter()

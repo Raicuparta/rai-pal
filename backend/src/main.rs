@@ -374,20 +374,17 @@ fn update_installed_games(handle: AppHandle, provider_map: provider::Map) {
 
 fn update_owned_games(handle: AppHandle, provider_map: provider::Map) {
 	tokio::spawn(async move {
-		let owned_games: owned_game::Map =
-			provider_map
-				.iter()
-				.flat_map(
-					|(provider_id, provider)| match provider.get_local_owned_games() {
-						Ok(owned_games) => owned_games,
-						Err(err) => {
-							error!("Failed to get owned games for provider '{provider_id}'. Error: {err}");
-							Vec::default()
-						}
-					},
-				)
-				.map(|owned_game| (owned_game.id.clone(), owned_game))
-				.collect();
+		let owned_games: owned_game::Map = provider_map
+			.iter()
+			.flat_map(|(provider_id, provider)| match provider.get_owned_games() {
+				Ok(owned_games) => owned_games,
+				Err(err) => {
+					error!("Failed to get owned games for provider '{provider_id}'. Error: {err}");
+					Vec::default()
+				}
+			})
+			.map(|owned_game| (owned_game.id.clone(), owned_game))
+			.collect();
 
 		update_state(
 			AppEvent::SyncOwnedGames,

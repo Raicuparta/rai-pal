@@ -14,5 +14,6 @@ export const providerFilterOptions: SegmentedControlData<ProviderId>[] = [
 	{ label: "Epic", value: "Epic" },
 	{ label: "GOG", value: "Gog" },
 	{ label: "Xbox", value: "Xbox" },
+	{ label: "Itch", value: "Itch" },
 	{ label: "Manual", value: "Manual" },
 ];

@@ -9,19 +9,18 @@ use async_trait::async_trait;
 use enum_dispatch::enum_dispatch;
 use log::error;
 
-use super::{
-	epic_provider::Epic,
-	gog_provider::Gog,
-	xbox_provider::Xbox,
-};
 use crate::{
 	debug::LoggableInstant,
 	installed_game::InstalledGame,
 	owned_game::OwnedGame,
 	paths,
 	providers::{
+		epic_provider::Epic,
+		gog_provider::Gog,
+		itch_provider::Itch,
 		manual_provider::Manual,
 		steam_provider::Steam,
+		xbox_provider::Xbox,
 	},
 	remote_game::{
 		self,
@@ -37,6 +36,7 @@ serializable_enum!(ProviderId {
 	Epic,
 	Gog,
 	Xbox,
+	Itch,
 });
 
 #[enum_dispatch]
@@ -47,6 +47,7 @@ pub enum Provider {
 	Epic,
 	Gog,
 	Xbox,
+	Itch,
 }
 
 #[async_trait]
@@ -54,7 +55,7 @@ pub enum Provider {
 pub trait ProviderActions {
 	fn get_installed_games(&self) -> Result<Vec<InstalledGame>>;
 
-	fn get_local_owned_games(&self) -> Result<Vec<OwnedGame>>;
+	fn get_owned_games(&self) -> Result<Vec<OwnedGame>>;
 
 	async fn get_remote_games(&self) -> Result<Vec<RemoteGame>>;
 }
@@ -154,6 +155,9 @@ pub fn get_map() -> Map {
 
 	add_entry::<Xbox>(&mut map);
 	now.log_next("set up provider (Xbox)");
+
+	add_entry::<Itch>(&mut map);
+	now.log_next("set up provider (Itch)");
 
 	add_entry::<Manual>(&mut map);
 	now.log_next("set up provider (Manual)");

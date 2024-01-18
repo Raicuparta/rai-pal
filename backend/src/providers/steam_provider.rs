@@ -183,7 +183,7 @@ impl ProviderActions for Steam {
 		Ok(remote_games)
 	}
 
-	fn get_local_owned_games(&self) -> Result<Vec<OwnedGame>> {
+	fn get_owned_games(&self) -> Result<Vec<OwnedGame>> {
 		let owned_games: Vec<OwnedGame> = self
 			.app_info_file
 			.apps

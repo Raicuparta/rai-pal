@@ -170,7 +170,7 @@ impl ProviderActions for Epic {
 			.collect())
 	}
 
-	fn get_local_owned_games(&self) -> Result<Vec<OwnedGame>> {
+	fn get_owned_games(&self) -> Result<Vec<OwnedGame>> {
 		let owned_games = self.catalog.iter().filter_map(|catalog_item| {
 			if catalog_item
 				.categories

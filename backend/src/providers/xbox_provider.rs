@@ -108,7 +108,7 @@ impl ProviderActions for Xbox {
 		Ok(result)
 	}
 
-	fn get_local_owned_games(&self) -> Result<Vec<OwnedGame>> {
+	fn get_owned_games(&self) -> Result<Vec<OwnedGame>> {
 		Ok(Vec::default())
 	}
 
