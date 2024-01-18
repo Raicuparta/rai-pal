@@ -69,7 +69,6 @@ const engine: TableColumnBase<ProcessedOwnedGame, GameEngineBrand> = {
 	sort: (dataA, dataB) =>
 		sortGamesByEngine(dataA.remoteData?.engine, dataB.remoteData?.engine),
 	getFilterValue: (game) => game.remoteData?.engine?.brand ?? "",
-	unavailableValues: ["Godot"],
 	filterOptions: engineFilterOptions,
 	renderCell: ({ remoteData }) => (
 		<Table.Td>
