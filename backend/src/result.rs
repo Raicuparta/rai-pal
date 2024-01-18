@@ -51,7 +51,7 @@ pub enum Error {
 	#[error("Failed to find Rai Pal resources folder")]
 	ResourcesNotFound(),
 
-	#[error("Failed to find Rai Pal app data folder")]
+	#[error("Failed to find app data folder")]
 	AppDataNotFound(),
 
 	#[error("Failed to parse path (possibly because is a non-UTF-8 string) `{0}`")]

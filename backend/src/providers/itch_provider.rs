@@ -1,4 +1,7 @@
-use std::path::PathBuf;
+use std::path::{
+	Path,
+	PathBuf,
+};
 
 use async_trait::async_trait;
 use log::error;
@@ -7,13 +10,13 @@ use rusqlite::{
 	OpenFlags,
 };
 
-use super::provider::ProviderId;
 use crate::{
 	installed_game::InstalledGame,
 	owned_game::OwnedGame,
 	pc_gaming_wiki,
 	provider::{
 		ProviderActions,
+		ProviderId,
 		ProviderStatic,
 	},
 	remote_game::{
@@ -21,12 +24,14 @@ use crate::{
 		RemoteGame,
 	},
 	serializable_struct,
+	Error,
 	Result,
 };
 
 #[derive(Clone)]
 pub struct Itch {
 	database: Vec<ItchDatabaseItem>,
+	app_data_path: PathBuf,
 	remote_game_cache: remote_game::Map,
 }
 
@@ -37,9 +42,15 @@ impl ProviderStatic for Itch {
 	where
 		Self: Sized,
 	{
+		let app_data_path = directories::BaseDirs::new()
+			.ok_or_else(Error::AppDataNotFound)?
+			.data_dir()
+			.join("itch");
+
 		Ok(Self {
-			database: get_database()?,
+			database: get_database(&app_data_path)?,
 			remote_game_cache: Self::try_get_remote_game_cache(),
+			app_data_path,
 		})
 	}
 }
@@ -105,8 +116,8 @@ impl ProviderActions for Itch {
 	}
 }
 
-fn get_database() -> Result<Vec<ItchDatabaseItem>> {
-	let db_path = PathBuf::from(r"C:\Users\rai\AppData\Roaming\itch\db\butler.db");
+fn get_database(app_data_path: &Path) -> Result<Vec<ItchDatabaseItem>> {
+	let db_path = app_data_path.join("db").join("butler.db");
 	let connection = Connection::open_with_flags(db_path, OpenFlags::SQLITE_OPEN_READ_ONLY)?;
 	let mut statement = connection.prepare("SELECT id, title, url, published_at, cover_url FROM 'games' WHERE type='default' AND classification='game'")?;
 
