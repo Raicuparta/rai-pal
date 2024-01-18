@@ -45,6 +45,7 @@ use crate::{
 	Result,
 };
 
+#[derive(Clone)]
 pub struct Steam {
 	steam_dir: SteamDir,
 	app_info_file: SteamAppInfoFile,

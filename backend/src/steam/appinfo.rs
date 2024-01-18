@@ -103,7 +103,7 @@ pub struct App {
 	pub key_values: KeyValue,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SteamAppInfo {
 	pub launch_options: Vec<SteamLaunchOption>,
 	pub name: String,
@@ -112,7 +112,7 @@ pub struct SteamAppInfo {
 	pub is_free: bool,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SteamAppInfoFile {
 	pub version: u32,
 	pub universe: u32,

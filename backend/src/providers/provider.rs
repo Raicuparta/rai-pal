@@ -40,6 +40,7 @@ serializable_enum!(ProviderId {
 });
 
 #[enum_dispatch]
+#[derive(Clone)]
 pub enum Provider {
 	Steam,
 	Manual,
@@ -115,7 +116,7 @@ pub trait ProviderStatic: ProviderActions {
 	}
 }
 
-type Map = HashMap<String, Provider>;
+pub type Map = HashMap<String, Provider>;
 
 fn create_map_entry<TProvider: ProviderActions + ProviderStatic>() -> Result<(String, Provider)>
 where

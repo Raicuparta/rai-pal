@@ -36,6 +36,7 @@ use crate::{
 	Result,
 };
 
+#[derive(Clone)]
 struct GogDbEntry {
 	id: String,
 	title: String,
@@ -44,6 +45,7 @@ struct GogDbEntry {
 	executable_path: Option<PathBuf>,
 }
 
+#[derive(Clone)]
 pub struct Gog {
 	remote_game_cache: remote_game::Map,
 	database: Vec<GogDbEntry>,

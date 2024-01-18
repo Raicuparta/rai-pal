@@ -2924,6 +2924,7 @@ dependencies = [
  "tauri-runtime",
  "tauri-specta",
  "thiserror",
+ "tokio",
  "uuid",
  "webkit2gtk",
  "webview2-com 0.27.0",

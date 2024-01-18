@@ -23,6 +23,7 @@ use crate::{
 	Result,
 };
 
+#[derive(Clone)]
 pub struct Xbox {}
 
 impl ProviderStatic for Xbox {

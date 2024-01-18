@@ -40,6 +40,7 @@ use crate::{
 	Result,
 };
 
+#[derive(Clone)]
 pub struct Epic {
 	app_data_path: PathBuf,
 	catalog: Vec<EpicCatalogItem>,
