@@ -254,6 +254,12 @@ impl ProviderActions for Steam {
 					.add_provider_command(
 						ProviderCommandAction::Install,
 						ProviderCommand::String(format!("steam://install/{id_string}")),
+					)
+					.add_provider_command(
+						ProviderCommandAction::OpenInBrowser,
+						ProviderCommand::String(format!(
+							"https://store.steampowered.com/app/{id_string}"
+						)),
 					);
 
 				if let Some(release_date) = app_info
