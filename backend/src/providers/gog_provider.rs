@@ -1,3 +1,5 @@
+#![cfg(target_os = "windows")]
+
 use std::path::PathBuf;
 
 use async_trait::async_trait;

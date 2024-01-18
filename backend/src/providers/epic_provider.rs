@@ -1,3 +1,5 @@
+#![cfg(target_os = "windows")]
+
 use std::{
 	fs::{
 		self,
@@ -10,6 +12,7 @@ use std::{
 use async_trait::async_trait;
 use base64::engine::general_purpose;
 use log::error;
+#[cfg(target_os = "windows")]
 use winreg::{
 	enums::HKEY_LOCAL_MACHINE,
 	RegKey,
@@ -41,8 +44,13 @@ use crate::{
 
 #[derive(Clone)]
 pub struct Epic {
+	#[cfg(target_os = "windows")]
 	app_data_path: PathBuf,
+
+	#[cfg(target_os = "windows")]
 	catalog: Vec<EpicCatalogItem>,
+
+	#[cfg(target_os = "windows")]
 	remote_game_cache: remote_game::Map,
 }
 
@@ -53,24 +61,33 @@ impl ProviderStatic for Epic {
 	where
 		Self: Sized,
 	{
-		let app_data_path = RegKey::predef(HKEY_LOCAL_MACHINE)
-			.open_subkey(r"SOFTWARE\WOW6432Node\Epic Games\EpicGamesLauncher")
-			.and_then(|launcher_reg| launcher_reg.get_value::<String, _>("AppDataPath"))
-			.map(PathBuf::from)?;
+		#[cfg(target_os = "windows")]
+		{
+			let app_data_path = RegKey::predef(HKEY_LOCAL_MACHINE)
+				.open_subkey(r"SOFTWARE\WOW6432Node\Epic Games\EpicGamesLauncher")
+				.and_then(|launcher_reg| launcher_reg.get_value::<String, _>("AppDataPath"))
+				.map(PathBuf::from)?;
 
-		let remote_game_cache = Self::try_get_remote_game_cache();
+			let remote_game_cache = Self::try_get_remote_game_cache();
 
-		let mut file = File::open(app_data_path.join("Catalog").join("catcache.bin"))?;
+			let mut file = File::open(app_data_path.join("Catalog").join("catcache.bin"))?;
 
-		let mut decoder = base64::read::DecoderReader::new(&mut file, &general_purpose::STANDARD);
-		let mut json = String::default();
-		decoder.read_to_string(&mut json)?;
+			let mut decoder =
+				base64::read::DecoderReader::new(&mut file, &general_purpose::STANDARD);
+			let mut json = String::default();
+			decoder.read_to_string(&mut json)?;
 
-		let catalog = serde_json::from_str::<Vec<EpicCatalogItem>>(&json)?;
+			let catalog = serde_json::from_str::<Vec<EpicCatalogItem>>(&json)?;
+		}
 
 		Ok(Self {
+			#[cfg(target_os = "windows")]
 			app_data_path,
+
+			#[cfg(target_os = "windows")]
 			catalog,
+
+			#[cfg(target_os = "windows")]
 			remote_game_cache,
 		})
 	}

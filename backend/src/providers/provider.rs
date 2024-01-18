@@ -9,18 +9,21 @@ use async_trait::async_trait;
 use enum_dispatch::enum_dispatch;
 use log::error;
 
+#[cfg(target_os = "windows")]
+use crate::providers::{
+	epic_provider::Epic,
+	gog_provider::Gog,
+	xbox_provider::Xbox,
+};
 use crate::{
 	debug::LoggableInstant,
 	installed_game::InstalledGame,
 	owned_game::OwnedGame,
 	paths,
 	providers::{
-		epic_provider::Epic,
-		gog_provider::Gog,
 		itch_provider::Itch,
 		manual_provider::Manual,
 		steam_provider::Steam,
-		xbox_provider::Xbox,
 	},
 	remote_game::{
 		self,
@@ -33,10 +36,10 @@ use crate::{
 serializable_enum!(ProviderId {
 	Steam,
 	Manual,
+	Itch,
 	Epic,
 	Gog,
 	Xbox,
-	Itch,
 });
 
 #[enum_dispatch]
@@ -44,10 +47,13 @@ serializable_enum!(ProviderId {
 pub enum Provider {
 	Steam,
 	Manual,
-	Epic,
-	Gog,
-	Xbox,
 	Itch,
+	#[cfg(target_os = "windows")]
+	Epic,
+	#[cfg(target_os = "windows")]
+	Gog,
+	#[cfg(target_os = "windows")]
+	Xbox,
 }
 
 #[async_trait]
@@ -147,20 +153,22 @@ pub fn get_map() -> Map {
 	add_entry::<Steam>(&mut map);
 	now.log_next("set up provider (Steam)");
 
-	add_entry::<Epic>(&mut map);
-	now.log_next("set up provider (Epic)");
-
-	add_entry::<Gog>(&mut map);
-	now.log_next("set up provider (Gog)");
-
-	add_entry::<Xbox>(&mut map);
-	now.log_next("set up provider (Xbox)");
-
 	add_entry::<Itch>(&mut map);
 	now.log_next("set up provider (Itch)");
 
 	add_entry::<Manual>(&mut map);
 	now.log_next("set up provider (Manual)");
 
+	#[cfg(target_os = "windows")]
+	{
+		add_entry::<Epic>(&mut map);
+		now.log_next("set up provider (Epic)");
+
+		add_entry::<Gog>(&mut map);
+		now.log_next("set up provider (Gog)");
+
+		add_entry::<Xbox>(&mut map);
+		now.log_next("set up provider (Xbox)");
+	}
 	map
 }

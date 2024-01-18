@@ -556,8 +556,10 @@ async fn dummy_command() -> Result<(InstalledGame, AppEvent, ProviderCommandActi
 fn main() {
 	// Since I'm making all exposed functions async, panics won't crash anything important, I think.
 	// So I can just catch panics here and show a system message with the error.
+	#[cfg(target_os = "windows")]
 	std::panic::set_hook(Box::new(|info| {
 		windows::error_dialog(&info.to_string());
+		// TODO handle Linux.
 	}));
 
 	let tauri_builder = tauri::Builder::default()
@@ -653,11 +655,14 @@ fn main() {
 	tauri_builder
 		.run(tauri::generate_context!())
 		.unwrap_or_else(|error| {
+			#[cfg(target_os = "windows")]
 			if let tauri::Error::Runtime(tauri_runtime::Error::CreateWebview(webview_error)) = error
 			{
 				windows::webview_error_dialog(&webview_error.to_string());
-			} else {
-				windows::error_dialog(&error.to_string());
+				return;
 			}
+			#[cfg(target_os = "windows")]
+			windows::error_dialog(&error.to_string());
+			// TODO handle Linux.
 		});
 }
