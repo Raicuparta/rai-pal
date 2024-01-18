@@ -48,7 +48,7 @@ impl ProviderStatic for Itch {
 	{
 		let app_data_path = directories::BaseDirs::new()
 			.ok_or_else(Error::AppDataNotFound)?
-			.data_dir()
+			.config_dir()
 			.join("itch");
 
 		Ok(Self {
