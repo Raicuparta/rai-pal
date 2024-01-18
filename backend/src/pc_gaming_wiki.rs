@@ -49,7 +49,24 @@ fn parse_version(version_text: &str) -> Option<GameEngineVersion> {
 }
 
 pub async fn get_engine(where_query: &str) -> Option<GameEngine> {
-	let url = format!("https://www.pcgamingwiki.com/w/api.php?action=cargoquery&tables=Infobox_game,Infobox_game_engine&fields=Infobox_game_engine.Engine,Infobox_game_engine.Build&where={where_query}&format=json&join%20on=Infobox_game._pageName%20=%20Infobox_game_engine._pageName");
+	let url = format!(
+		"https://www.pcgamingwiki.com/w/api.php?{}",
+		serde_urlencoded::to_string([
+			("action", "cargoquery"),
+			("tables", "Infobox_game,Infobox_game_engine"),
+			(
+				"fields",
+				"Infobox_game_engine.Engine,Infobox_game_engine.Build"
+			),
+			("where", where_query),
+			(
+				"join on",
+				"Infobox_game._pageName = Infobox_game_engine._pageName"
+			),
+			("format", "json"),
+		])
+		.ok()? // TODO log error.
+	);
 
 	let result = reqwest::get(url).await;
 
@@ -118,13 +135,8 @@ pub async fn get_engine_from_game_title(title: &str) -> Option<GameEngine> {
 	// Replace anything that isn't alphanumeric with a % character, the wildcard for the LIKE query.
 	// This way we can still match even if the game has slight differences in the presented title punctuation.
 	// Problem is, this can easily cause false flags (and it does).
-	// In this case we use %25, which is % encoded for url components.
-	let clean_title = regex_replace_all!(r"[^a-zA-Z0-9]+", &non_demo_title, "%25");
+	let clean_title = regex_replace_all!(r"[^a-zA-Z0-9]+", &non_demo_title, "%");
 
 	// Finally do the query by page title.
-	get_engine(&format!(
-		"Infobox_game._pageName%20LIKE%20%22{}%22",
-		clean_title
-	))
-	.await
+	get_engine(&format!("Infobox_game._pageName LIKE \"{}\"", clean_title)).await
 }
