@@ -21,6 +21,7 @@ use crate::{
 		app_data_path,
 		file_name_without_extension,
 	},
+	remote_game::RemoteGame,
 	serializable_struct,
 	Error,
 	Result,
@@ -54,8 +55,12 @@ impl ProviderActions for Manual {
 			.collect())
 	}
 
-	async fn get_owned_games(&self) -> Result<Vec<OwnedGame>> {
-		Ok(Vec::new())
+	fn get_local_owned_games(&self) -> Result<Vec<OwnedGame>> {
+		Ok(Vec::default())
+	}
+
+	async fn get_remote_games(&self) -> Result<Vec<RemoteGame>> {
+		Ok(Vec::default())
 	}
 }
 

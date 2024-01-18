@@ -174,11 +174,10 @@ pub trait ModLoaderActions {
 	}
 }
 
-#[async_trait]
 pub trait ModLoaderStatic {
 	const ID: &'static str;
 
-	async fn new(resources_path: &Path) -> Result<Self>
+	fn new(resources_path: &Path) -> Result<Self>
 	where
 		Self: Sized;
 
@@ -190,22 +189,22 @@ pub trait ModLoaderStatic {
 pub type Map = HashMap<String, ModLoader>;
 pub type DataMap = HashMap<String, ModLoaderData>;
 
-async fn create_map_entry<TModLoader: ModLoaderActions + ModLoaderStatic>(
+fn create_map_entry<TModLoader: ModLoaderActions + ModLoaderStatic>(
 	path: &Path,
 ) -> Result<(String, ModLoader)>
 where
 	ModLoader: std::convert::From<TModLoader>,
 {
-	let mod_loader: ModLoader = TModLoader::new(path).await?.into();
+	let mod_loader: ModLoader = TModLoader::new(path)?.into();
 
 	Ok((TModLoader::ID.to_string(), mod_loader))
 }
 
-async fn add_entry<TModLoader: ModLoaderActions + ModLoaderStatic>(path: &Path, map: &mut Map)
+fn add_entry<TModLoader: ModLoaderActions + ModLoaderStatic>(path: &Path, map: &mut Map)
 where
 	ModLoader: std::convert::From<TModLoader>,
 {
-	match create_map_entry::<TModLoader>(path).await {
+	match create_map_entry::<TModLoader>(path) {
 		Ok((key, value)) => {
 			map.insert(key, value);
 		}
@@ -213,11 +212,11 @@ where
 	}
 }
 
-pub async fn get_map(resources_path: &Path) -> Map {
+pub fn get_map(resources_path: &Path) -> Map {
 	let mut map = Map::new();
 
-	add_entry::<BepInEx>(resources_path, &mut map).await;
-	add_entry::<RunnableLoader>(resources_path, &mut map).await;
+	add_entry::<BepInEx>(resources_path, &mut map);
+	add_entry::<RunnableLoader>(resources_path, &mut map);
 
 	map
 }

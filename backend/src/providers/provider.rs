@@ -16,13 +16,16 @@ use super::{
 };
 use crate::{
 	debug::LoggableInstant,
-	game_engines::game_engine::GameEngine,
 	installed_game::InstalledGame,
 	owned_game::OwnedGame,
 	paths,
 	providers::{
 		manual_provider::Manual,
 		steam_provider::Steam,
+	},
+	remote_game::{
+		self,
+		RemoteGame,
 	},
 	serializable_enum,
 	Result,
@@ -37,6 +40,7 @@ serializable_enum!(ProviderId {
 });
 
 #[enum_dispatch]
+#[derive(Clone)]
 pub enum Provider {
 	Steam,
 	Manual,
@@ -50,10 +54,10 @@ pub enum Provider {
 pub trait ProviderActions {
 	fn get_installed_games(&self) -> Result<Vec<InstalledGame>>;
 
-	async fn get_owned_games(&self) -> Result<Vec<OwnedGame>>;
-}
+	fn get_local_owned_games(&self) -> Result<Vec<OwnedGame>>;
 
-pub type EngineCache = HashMap<String, Option<GameEngine>>;
+	async fn get_remote_games(&self) -> Result<Vec<RemoteGame>>;
+}
 
 pub trait ProviderStatic: ProviderActions {
 	const ID: &'static ProviderId;
@@ -72,18 +76,18 @@ pub trait ProviderStatic: ProviderActions {
 		Ok(path)
 	}
 
-	fn get_engine_cache_path() -> Result<PathBuf> {
-		Ok(Self::get_folder()?.join("engine-cache.json"))
+	fn get_remote_game_cache_path() -> Result<PathBuf> {
+		Ok(Self::get_folder()?.join("remote-game-cache.json"))
 	}
 
-	fn save_engine_cache(cache: &EngineCache) -> Result {
+	fn save_remote_game_cache(cache: &remote_game::Map) -> Result {
 		let json = serde_json::to_string_pretty(cache)?;
-		fs::write(Self::get_engine_cache_path()?, json)?;
+		fs::write(Self::get_remote_game_cache_path()?, json)?;
 		Ok(())
 	}
 
-	fn try_save_engine_cache(cache: &EngineCache) {
-		if let Err(err) = Self::save_engine_cache(cache) {
+	fn try_save_remote_game_cache(cache: &remote_game::Map) {
+		if let Err(err) = Self::save_remote_game_cache(cache) {
 			error!(
 				"Failed to save engine cache for provider '{}'. Error: {}",
 				Self::ID,
@@ -92,13 +96,13 @@ pub trait ProviderStatic: ProviderActions {
 		}
 	}
 
-	fn get_engine_cache() -> Result<EngineCache> {
-		let json = fs::read_to_string(Self::get_engine_cache_path()?)?;
-		Ok(serde_json::from_str::<EngineCache>(&json)?)
+	fn get_remote_game_cache() -> Result<remote_game::Map> {
+		let json = fs::read_to_string(Self::get_remote_game_cache_path()?)?;
+		Ok(serde_json::from_str::<remote_game::Map>(&json)?)
 	}
 
-	fn try_get_engine_cache() -> EngineCache {
-		match Self::get_engine_cache() {
+	fn try_get_remote_game_cache() -> remote_game::Map {
+		match Self::get_remote_game_cache() {
 			Ok(pc_gaming_wiki_cache) => pc_gaming_wiki_cache,
 			Err(err) => {
 				error!(
@@ -112,7 +116,7 @@ pub trait ProviderStatic: ProviderActions {
 	}
 }
 
-type Map = HashMap<String, Provider>;
+pub type Map = HashMap<String, Provider>;
 
 fn create_map_entry<TProvider: ProviderActions + ProviderStatic>() -> Result<(String, Provider)>
 where

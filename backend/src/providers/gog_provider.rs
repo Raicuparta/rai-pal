@@ -13,17 +13,13 @@ use winreg::{
 };
 
 use super::{
-	provider::{
-		self,
-		ProviderId,
-	},
+	provider::ProviderId,
 	provider_command::{
 		ProviderCommand,
 		ProviderCommandAction,
 	},
 };
 use crate::{
-	game_engines::game_engine::GameEngine,
 	installed_game::InstalledGame,
 	owned_game::OwnedGame,
 	paths,
@@ -32,10 +28,15 @@ use crate::{
 		ProviderActions,
 		ProviderStatic,
 	},
+	remote_game::{
+		self,
+		RemoteGame,
+	},
 	serializable_struct,
 	Result,
 };
 
+#[derive(Clone)]
 struct GogDbEntry {
 	id: String,
 	title: String,
@@ -44,8 +45,9 @@ struct GogDbEntry {
 	executable_path: Option<PathBuf>,
 }
 
+#[derive(Clone)]
 pub struct Gog {
-	engine_cache: provider::EngineCache,
+	remote_game_cache: remote_game::Map,
 	database: Vec<GogDbEntry>,
 	launcher_path: PathBuf,
 }
@@ -58,7 +60,7 @@ impl ProviderStatic for Gog {
 		Self: Sized,
 	{
 		Ok(Self {
-			engine_cache: Self::try_get_engine_cache(),
+			remote_game_cache: Self::try_get_remote_game_cache(),
 			database: get_database()?,
 			launcher_path: get_launcher_path()?,
 		})
@@ -97,56 +99,70 @@ impl ProviderActions for Gog {
 			.collect())
 	}
 
-	async fn get_owned_games(&self) -> Result<Vec<OwnedGame>> {
-		let owned_games = futures::future::join_all(self.database.iter().map(|db_entry| async {
-			let mut game = OwnedGame::new(&db_entry.id, *Self::ID, &db_entry.title);
+	fn get_local_owned_games(&self) -> Result<Vec<OwnedGame>> {
+		Ok(self
+			.database
+			.iter()
+			.map(|db_entry| {
+				let mut game = OwnedGame::new(&db_entry.id, *Self::ID, &db_entry.title);
 
-			game.add_provider_command(
-				ProviderCommandAction::ShowInLibrary,
-				ProviderCommand::Path(
-					self.launcher_path.clone(),
-					[
-						"/command=launch".to_string(),
-						format!("/gameId={}", db_entry.id),
-					]
-					.to_vec(),
-				),
-			);
+				game.add_provider_command(
+					ProviderCommandAction::ShowInLibrary,
+					ProviderCommand::Path(
+						self.launcher_path.clone(),
+						[
+							"/command=launch".to_string(),
+							format!("/gameId={}", db_entry.id),
+						]
+						.to_vec(),
+					),
+				);
 
-			if let Some(thumbnail_url) = db_entry.image_url.clone() {
-				game.set_thumbnail_url(&thumbnail_url);
-			}
+				if let Some(thumbnail_url) = db_entry.image_url.clone() {
+					game.set_thumbnail_url(&thumbnail_url);
+				}
 
-			if let Some(release_date) = db_entry.release_date {
-				game.set_release_date(release_date.into());
-			}
+				if let Some(release_date) = db_entry.release_date {
+					game.set_release_date(release_date.into());
+				}
 
-			if let Some(engine) = get_engine(&db_entry.id, &self.engine_cache).await {
-				game.set_engine(engine);
-			}
+				game
+			})
+			.collect())
+	}
 
-			game
-		}))
-		.await;
+	async fn get_remote_games(&self) -> Result<Vec<RemoteGame>> {
+		let remote_games: Vec<RemoteGame> =
+			futures::future::join_all(self.database.iter().map(|db_entry| async {
+				let mut remote_game = RemoteGame::new(*Self::ID, &db_entry.id);
 
-		Self::try_save_engine_cache(
-			&owned_games
+				if let Some(cached_remote_game) = self.remote_game_cache.get(&remote_game.id) {
+					return cached_remote_game.clone();
+				}
+
+				if let Some(engine) = pc_gaming_wiki::get_engine(&format!(
+					"GOGcom_ID%20HOLDS%20%22{}%22",
+					db_entry.id
+				))
+				.await
+				{
+					remote_game.set_engine(engine);
+				}
+
+				remote_game
+			}))
+			.await;
+
+		Self::try_save_remote_game_cache(
+			&remote_games
 				.clone()
 				.into_iter()
-				.map(|owned_game| (owned_game.name.clone(), owned_game.engine))
+				.map(|remote_game| (remote_game.id.clone(), remote_game))
 				.collect(),
 		);
 
-		Ok(owned_games)
+		Ok(remote_games)
 	}
-}
-
-async fn get_engine(gog_id: &str, cache: &provider::EngineCache) -> Option<GameEngine> {
-	if let Some(cached_engine) = cache.get(gog_id) {
-		return cached_engine.clone();
-	}
-
-	pc_gaming_wiki::get_engine(&format!("GOGcom_ID%20HOLDS%20%22{gog_id}%22")).await
 }
 
 serializable_struct!(GogDbEntryTitle { title: Option<String> });

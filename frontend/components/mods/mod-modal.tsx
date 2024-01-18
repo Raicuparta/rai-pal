@@ -1,7 +1,11 @@
 import { Modal, Stack } from "@mantine/core";
 import { downloadMod, openModFolder } from "@api/bindings";
 import { CommandButton } from "@components/command-button";
-import { IconDownload, IconFolderCog } from "@tabler/icons-react";
+import {
+	IconDownload,
+	IconFolderCog,
+	IconRefreshAlert,
+} from "@tabler/icons-react";
 import { DebugData } from "@components/debug-data";
 import { UnifiedMod } from "@hooks/use-unified-mods";
 import { ItemName } from "@components/item-name";
@@ -13,6 +17,10 @@ type Props = {
 
 export function ModModal(props: Props) {
 	const isDownloadAvailable = Boolean(props.mod.remote?.latestVersion?.url);
+	const localVersion = props.mod.local?.manifest?.version;
+	const remoteVersion = props.mod.remote?.latestVersion?.id;
+	const isOutdated =
+		localVersion && remoteVersion && remoteVersion !== localVersion;
 
 	return (
 		<Modal
@@ -35,20 +43,12 @@ export function ModModal(props: Props) {
 						Open mod folder
 					</CommandButton>
 				)}
-				{!isDownloadAvailable && !props.mod.local && (
-					<CommandButton
-						leftSection={<IconFolderCog />}
-						onClick={() => openModFolder(props.mod.common.id)}
-					>
-						Open mod loader folder
-					</CommandButton>
-				)}
 				{isDownloadAvailable && (
 					<CommandButton
-						leftSection={<IconDownload />}
+						leftSection={isOutdated ? <IconRefreshAlert /> : <IconDownload />}
 						onClick={() => downloadMod(props.mod.common.id)}
 					>
-						Download mod
+						{isOutdated ? "Update mod" : "Download mod"}
 					</CommandButton>
 				)}
 				<DebugData data={props.mod} />

@@ -5,6 +5,7 @@ import { useUnifiedMods } from "./use-unified-mods";
 import { getIsOutdated } from "../util/is-outdated";
 import { InstalledGame, OwnedGame } from "@api/bindings";
 
+type InstalledModVersions = Record<string, string | null>;
 type ProcessedInstalledGameRecord = Record<string, ProcessedInstalledGame>;
 export interface ProcessedInstalledGame extends InstalledGame {
 	hasOutdatedMod: boolean;
@@ -19,6 +20,24 @@ export function useProcessedInstalledGames() {
 		const result: ProcessedInstalledGameRecord = {};
 
 		for (const [gameId, installedGame] of Object.entries(installedGames)) {
+			const installedModVersions: InstalledModVersions = {};
+			for (const mod of Object.values(mods)) {
+				const modEngine = mod.common.engine;
+				const gameEngine = installedGame.executable.engine?.brand;
+				const engineMatch =
+					!modEngine || !gameEngine || modEngine == gameEngine;
+
+				const modBackend = mod.common.unityBackend;
+				const gameBackend = installedGame.executable.scriptingBackend;
+				const backendMatch =
+					!modBackend || !gameBackend || modBackend == gameBackend;
+
+				if (backendMatch && engineMatch) {
+					installedModVersions[mod.common.id] =
+						mod.local?.manifest?.version ?? null;
+				}
+			}
+
 			result[gameId] = {
 				...installedGame,
 				ownedGame: installedGame.ownedGameId

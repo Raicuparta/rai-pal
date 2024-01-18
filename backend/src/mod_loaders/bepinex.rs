@@ -44,11 +44,10 @@ serializable_struct!(BepInEx {
 	pub id: &'static str,
 });
 
-#[async_trait]
 impl ModLoaderStatic for BepInEx {
 	const ID: &'static str = "bepinex";
 
-	async fn new(resources_path: &Path) -> Result<Self> {
+	fn new(resources_path: &Path) -> Result<Self> {
 		Ok(Self {
 			id: Self::ID,
 			data: ModLoaderData {
@@ -291,23 +290,21 @@ fn find_mods(
 ) -> Result<HashMap<String, LocalMod>> {
 	let mods_folder_path = installed_mods_path.join(scripting_backend.to_string());
 
-	let entries: Vec<_> = paths::glob_path(&mods_folder_path.join("*"))?.collect();
+	let entries = paths::glob_path(&mods_folder_path.join("*"))?;
 
 	Ok(entries
 		.iter()
-		.filter_map(|entry| {
-			entry.as_ref().map_or(None, |mod_path| {
-				if let Ok(local_mod) = LocalMod::new(
-					BepInEx::ID,
-					mod_path,
-					Some(GameEngineBrand::Unity),
-					Some(scripting_backend),
-				) {
-					Some((local_mod.common.id.clone(), local_mod))
-				} else {
-					None
-				}
-			})
+		.filter_map(|mod_path| {
+			if let Ok(local_mod) = LocalMod::new(
+				BepInEx::ID,
+				mod_path,
+				Some(GameEngineBrand::Unity),
+				Some(scripting_backend),
+			) {
+				Some((local_mod.common.id.clone(), local_mod))
+			} else {
+				None
+			}
 		})
 		.collect())
 }

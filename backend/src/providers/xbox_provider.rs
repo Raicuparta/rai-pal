@@ -19,9 +19,11 @@ use crate::{
 		ProviderActions,
 		ProviderStatic,
 	},
+	remote_game::RemoteGame,
 	Result,
 };
 
+#[derive(Clone)]
 pub struct Xbox {}
 
 impl ProviderStatic for Xbox {
@@ -106,7 +108,11 @@ impl ProviderActions for Xbox {
 		Ok(result)
 	}
 
-	async fn get_owned_games(&self) -> Result<Vec<OwnedGame>> {
+	fn get_local_owned_games(&self) -> Result<Vec<OwnedGame>> {
+		Ok(Vec::default())
+	}
+
+	async fn get_remote_games(&self) -> Result<Vec<RemoteGame>> {
 		Ok(Vec::default())
 	}
 }

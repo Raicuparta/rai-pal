@@ -66,16 +66,17 @@ const engine: TableColumnBase<ProcessedOwnedGame, GameEngineBrand> = {
 	width: 150,
 	center: true,
 	hidable: true,
-	sort: (dataA, dataB) => sortGamesByEngine(dataA.engine, dataB.engine),
-	getFilterValue: (game) => game.engine?.brand ?? "",
+	sort: (dataA, dataB) =>
+		sortGamesByEngine(dataA.remoteData?.engine, dataB.remoteData?.engine),
+	getFilterValue: (game) => game.remoteData?.engine?.brand ?? "",
 	unavailableValues: ["Godot"],
 	filterOptions: engineFilterOptions,
-	renderCell: ({ engine }) => (
+	renderCell: ({ remoteData }) => (
 		<Table.Td>
 			<EngineBadge
 				maw={70}
-				value={engine?.brand}
-				label={engine ? engine.version?.display ?? "-" : undefined}
+				value={remoteData?.engine?.brand}
+				label={remoteData?.engine?.version?.display ?? "-"}
 			/>
 		</Table.Td>
 	),
@@ -121,7 +122,7 @@ const uevrScore: TableColumnBase<ProcessedOwnedGame, UevrScore> = {
 	width: 90,
 	center: true,
 	hidable: true,
-	getSortValue: (game) => game.uevrScore,
+	getSortValue: (game) => game.remoteData?.uevrScore,
 	filterOptions: [
 		{ label: "Any UEVR score", value: "" },
 		{ label: "A", value: "A" },
@@ -131,7 +132,7 @@ const uevrScore: TableColumnBase<ProcessedOwnedGame, UevrScore> = {
 	],
 	renderCell: (game) => (
 		<Table.Td>
-			<UevrScoreBadge value={game.uevrScore} />
+			<UevrScoreBadge value={game.remoteData?.uevrScore} />
 		</Table.Td>
 	),
 };

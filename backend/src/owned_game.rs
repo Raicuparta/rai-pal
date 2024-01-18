@@ -4,7 +4,6 @@ use std::collections::{
 };
 
 use crate::{
-	game_engines::game_engine::GameEngine,
 	game_executable::OperatingSystem,
 	game_mode::GameMode,
 	providers::{
@@ -15,7 +14,6 @@ use crate::{
 		},
 	},
 	serializable_struct,
-	steam::id_lists::UevrScore,
 };
 
 serializable_struct!(OwnedGame {
@@ -23,11 +21,9 @@ serializable_struct!(OwnedGame {
 	pub provider: ProviderId,
 	pub name: String,
 	pub os_list: HashSet<OperatingSystem>,
-	pub engine: Option<GameEngine>,
 	pub release_date: Option<i64>,
 	pub thumbnail_url: Option<String>,
 	pub game_mode: Option<GameMode>,
-	pub uevr_score: Option<UevrScore>,
 
 	// TODO: the keys for this map should be ProviderCommandAction, but tauri-specta doesn't support that.
 	pub provider_commands: HashMap<String, ProviderCommand>,
@@ -41,21 +37,14 @@ impl OwnedGame {
 			name: name.to_string(),
 			os_list: HashSet::default(),
 			provider_commands: HashMap::default(),
-			engine: None,
 			release_date: None,
 			thumbnail_url: None,
 			game_mode: None,
-			uevr_score: None,
 		}
 	}
 
 	pub fn set_os_list(&mut self, os_list: HashSet<OperatingSystem>) -> &mut Self {
 		self.os_list = os_list;
-		self
-	}
-
-	pub fn set_engine(&mut self, engine: GameEngine) -> &mut Self {
-		self.engine = Some(engine);
 		self
 	}
 
@@ -71,11 +60,6 @@ impl OwnedGame {
 
 	pub fn set_game_mode(&mut self, game_mode: GameMode) -> &mut Self {
 		self.game_mode = Some(game_mode);
-		self
-	}
-
-	pub fn set_uevr_score(&mut self, uevr_score: UevrScore) -> &mut Self {
-		self.uevr_score = Some(uevr_score);
 		self
 	}
 

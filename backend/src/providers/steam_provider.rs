@@ -9,10 +9,7 @@ use lazy_regex::BytesRegex;
 use steamlocate::SteamDir;
 
 use super::{
-	provider::{
-		self,
-		ProviderId,
-	},
+	provider::ProviderId,
 	provider_command::{
 		ProviderCommand,
 		ProviderCommandAction,
@@ -32,6 +29,10 @@ use crate::{
 		ProviderActions,
 		ProviderStatic,
 	},
+	remote_game::{
+		self,
+		RemoteGame,
+	},
 	steam::{
 		appinfo::{
 			self,
@@ -44,10 +45,11 @@ use crate::{
 	Result,
 };
 
+#[derive(Clone)]
 pub struct Steam {
 	steam_dir: SteamDir,
 	app_info_file: SteamAppInfoFile,
-	engine_cache: provider::EngineCache,
+	remote_game_cache: remote_game::Map,
 }
 
 impl ProviderStatic for Steam {
@@ -59,12 +61,12 @@ impl ProviderStatic for Steam {
 	{
 		let steam_dir = SteamDir::locate()?;
 		let app_info_file = appinfo::read(steam_dir.path())?;
-		let engine_cache = Self::try_get_engine_cache();
+		let remote_game_cache = Self::try_get_remote_game_cache();
 
 		Ok(Self {
 			steam_dir,
 			app_info_file,
-			engine_cache,
+			remote_game_cache,
 		})
 	}
 }
@@ -133,10 +135,60 @@ impl ProviderActions for Steam {
 		Ok(games)
 	}
 
-	async fn get_owned_games(&self) -> Result<Vec<OwnedGame>> {
+	async fn get_remote_games(&self) -> Result<Vec<RemoteGame>> {
 		let steam_games = id_lists::get().await?;
-		let owned_games = futures::future::join_all(self.app_info_file.apps.iter().map(
-			|(steam_id, app_info)| async {
+
+		let remote_games: Vec<RemoteGame> =
+			futures::future::join_all(self.app_info_file.apps.keys().map(|app_id| async {
+				let id_string = app_id.to_string();
+				let mut remote_game = RemoteGame::new(*Self::ID, &id_string);
+
+				if let Some(cached_remote_game) = self.remote_game_cache.get(&remote_game.id) {
+					return Some(cached_remote_game.clone());
+				}
+
+				if let Some(steam_game) = steam_games.get(&id_string) {
+					if let Some(engine) = Some(GameEngine {
+						brand: steam_game.engine,
+						version: pc_gaming_wiki::get_engine(&format!(
+							"Steam_AppID%20HOLDS%20%22{id_string}%22"
+						))
+						.await
+						.and_then(|remote_engine| remote_engine.version),
+					}) {
+						remote_game.set_engine(engine);
+					}
+
+					if let Some(uevr_score) = steam_game.uevr_score {
+						remote_game.set_uevr_score(uevr_score);
+					}
+
+					Some(remote_game)
+				} else {
+					None
+				}
+			}))
+			.await
+			.into_iter()
+			.flatten()
+			.collect();
+
+		Self::try_save_remote_game_cache(
+			&remote_games
+				.iter()
+				.map(|remote_game| (remote_game.id.clone(), remote_game.clone()))
+				.collect(),
+		);
+
+		Ok(remote_games)
+	}
+
+	fn get_local_owned_games(&self) -> Result<Vec<OwnedGame>> {
+		let owned_games: Vec<OwnedGame> = self
+			.app_info_file
+			.apps
+			.iter()
+			.filter_map(|(steam_id, app_info)| {
 				let id_string = steam_id.to_string();
 				let os_list: HashSet<_> = app_info
 					.launch_options
@@ -186,9 +238,6 @@ impl ProviderActions for Steam {
 					GameMode::Flat
 				};
 
-				// TODO: cache the whole thing, not just the engine version.
-				let steam_game_option = steam_games.get(&id_string);
-
 				let mut game = OwnedGame::new(&id_string, *Self::ID, &app_info.name);
 
 				game.set_thumbnail_url(&get_steam_thumbnail(&id_string))
@@ -214,43 +263,12 @@ impl ProviderActions for Steam {
 					game.set_release_date(release_date.into());
 				}
 
-				if let Some(steam_game) = steam_game_option {
-					if let Some(uevr_score) = steam_game.uevr_score {
-						game.set_uevr_score(uevr_score);
-					}
-
-					game.set_engine(GameEngine {
-						brand: steam_game.engine,
-						version: get_engine(&id_string, &self.engine_cache)
-							.await
-							.and_then(|info| info.version),
-					});
-				}
-
 				Some(game)
-			},
-		))
-		.await
-		.into_iter()
-		.flatten();
+			})
+			.collect();
 
-		Self::try_save_engine_cache(
-			&owned_games
-				.clone()
-				.map(|owned_game| (owned_game.id.clone(), owned_game.engine))
-				.collect(),
-		);
-
-		Ok(owned_games.collect())
+		Ok(owned_games)
 	}
-}
-
-async fn get_engine(steam_id: &str, cache: &provider::EngineCache) -> Option<GameEngine> {
-	if let Some(cached_engine) = cache.get(steam_id) {
-		return cached_engine.clone();
-	}
-
-	pc_gaming_wiki::get_engine(&format!("Steam_AppID%20HOLDS%20%22{steam_id}%22")).await
 }
 
 pub fn get_start_command(

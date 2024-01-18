@@ -12,10 +12,7 @@ use std::{
 };
 
 use directories::ProjectDirs;
-use glob::{
-	glob,
-	Paths,
-};
+use glob::glob;
 use log::error;
 
 use crate::{
@@ -28,8 +25,20 @@ pub fn path_to_str(path: &Path) -> Result<&str> {
 		.ok_or_else(|| Error::PathParseFailure(path.to_path_buf()))
 }
 
-pub fn glob_path(path: &Path) -> Result<Paths> {
-	Ok(glob(path_to_str(path)?)?)
+pub fn glob_path(path: &Path) -> Result<Vec<PathBuf>> {
+	Ok(glob(path_to_str(path)?)?
+		.filter_map(|glob_result| match glob_result {
+			Ok(globbed_path) => Some(globbed_path),
+			Err(err) => {
+				error!(
+					"Failed to resolve one of the globbed paths from glob '{}'. Error: {}",
+					path.display(),
+					err
+				);
+				None
+			}
+		})
+		.collect())
 }
 
 pub fn path_parent(path: &Path) -> Result<&Path> {
