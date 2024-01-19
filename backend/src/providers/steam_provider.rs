@@ -151,7 +151,7 @@ impl ProviderActions for Steam {
 					if let Some(engine) = Some(GameEngine {
 						brand: steam_game.engine,
 						version: pc_gaming_wiki::get_engine(&format!(
-							"Steam_AppID%20HOLDS%20%22{id_string}%22"
+							"Steam_AppID HOLDS \"{id_string}\""
 						))
 						.await
 						.and_then(|remote_engine| remote_engine.version),
@@ -254,6 +254,12 @@ impl ProviderActions for Steam {
 					.add_provider_command(
 						ProviderCommandAction::Install,
 						ProviderCommand::String(format!("steam://install/{id_string}")),
+					)
+					.add_provider_command(
+						ProviderCommandAction::OpenInBrowser,
+						ProviderCommand::String(format!(
+							"https://store.steampowered.com/app/{id_string}"
+						)),
 					);
 
 				if let Some(release_date) = app_info

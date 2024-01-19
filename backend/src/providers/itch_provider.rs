@@ -10,6 +10,10 @@ use rusqlite::{
 	OpenFlags,
 };
 
+use super::provider_command::{
+	ProviderCommand,
+	ProviderCommandAction,
+};
 use crate::{
 	installed_game::{
 		self,
@@ -119,6 +123,14 @@ impl ProviderActions for Itch {
 				if let Some(thumbnail_url) = &row.cover_url {
 					game.set_thumbnail_url(thumbnail_url);
 				}
+				game.add_provider_command(
+					ProviderCommandAction::ShowInLibrary,
+					ProviderCommand::String(format!("itch://games/{}", row.id)),
+				)
+				.add_provider_command(
+					ProviderCommandAction::Install,
+					ProviderCommand::String(format!("itch://install?game_id={}", row.id)),
+				);
 
 				game
 			})

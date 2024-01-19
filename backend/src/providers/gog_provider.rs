@@ -142,11 +142,9 @@ impl ProviderActions for Gog {
 					return cached_remote_game.clone();
 				}
 
-				if let Some(engine) = pc_gaming_wiki::get_engine(&format!(
-					"GOGcom_ID%20HOLDS%20%22{}%22",
-					db_entry.id
-				))
-				.await
+				if let Some(engine) =
+					pc_gaming_wiki::get_engine(&format!("GOGcom_ID HOLDS \"{}\"", db_entry.id))
+						.await
 				{
 					remote_game.set_engine(engine);
 				}
