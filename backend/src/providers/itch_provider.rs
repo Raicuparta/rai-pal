@@ -15,12 +15,8 @@ use super::provider_command::{
 	ProviderCommandAction,
 };
 use crate::{
-	installed_game::{
-		self,
-		InstalledGame,
-	},
+	installed_game::InstalledGame,
 	owned_game::OwnedGame,
-	paths,
 	pc_gaming_wiki,
 	provider::{
 		ProviderActions,
@@ -39,7 +35,6 @@ use crate::{
 #[derive(Clone)]
 pub struct Itch {
 	database: ItchDatabase,
-	app_data_path: PathBuf,
 	remote_game_cache: remote_game::Map,
 }
 
@@ -58,7 +53,6 @@ impl ProviderStatic for Itch {
 		Ok(Self {
 			database: get_database(&app_data_path)?,
 			remote_game_cache: Self::try_get_remote_game_cache(),
-			app_data_path,
 		})
 	}
 }
@@ -73,7 +67,7 @@ serializable_struct!(ItchDatabaseGame {
 
 serializable_struct!(ItchDatabaseCave {
 	id: i32,
-	verdict: ItchDatabaseVerdict,
+	verdict: Option<ItchDatabaseVerdict>,
 	title: String,
   cover_url: Option<String>,
 });
@@ -98,10 +92,8 @@ impl ProviderActions for Itch {
 			.caves
 			.iter()
 			.filter_map(|cave| {
-				let exe_path = cave
-					.verdict
-					.base_path
-					.join(&cave.verdict.candidates.first()?.path);
+				let verdict = cave.verdict.as_ref()?;
+				let exe_path = verdict.base_path.join(&verdict.candidates.first()?.path);
 				let mut game = InstalledGame::new(&exe_path, &cave.title, *Self::ID)?;
 				if let Some(cover_url) = &cave.cover_url {
 					game.set_thumbnail_url(cover_url);
@@ -168,6 +160,17 @@ impl ProviderActions for Itch {
 	}
 }
 
+fn parse_verdict(json_option: &Option<String>) -> Option<ItchDatabaseVerdict> {
+	let json = json_option.as_ref()?;
+	match serde_json::from_str(json) {
+		Ok(verdict) => Some(verdict),
+		Err(err) => {
+			error!("Failed to parse verdict from json `{json}`. Error: {err}");
+			None
+		}
+	}
+}
+
 fn get_database(app_data_path: &Path) -> Result<ItchDatabase> {
 	let db_path = app_data_path.join("db").join("butler.db");
 	let connection = Connection::open_with_flags(db_path, OpenFlags::SQLITE_OPEN_READ_ONLY)?;
@@ -180,27 +183,24 @@ fn get_database(app_data_path: &Path) -> Result<ItchDatabase> {
   ",
 	)?;
 	let cave_rows = caves_statement.query_map([], |row| {
-		// TODO maybe not great that I'm swallowing errors here.
-		let verdict_json: String = row.get("verdict")?;
 		Ok(ItchDatabaseCave {
 			id: row.get("game_id")?,
 			title: row.get("title")?,
+			verdict: parse_verdict(&row.get("verdict").ok()),
 			cover_url: row.get("cover_url").ok(),
-			verdict: serde_json::from_str(&verdict_json).unwrap(), // TODO no unwrap
 		})
-	})?; // TODO prevent everything crashing if one row fails.
+	})?;
 
 	let mut games_statement = connection.prepare("SELECT id, title, url, published_at, cover_url FROM 'games' WHERE type='default' AND classification='game'")?;
 	let game_rows = games_statement.query_map([], |row| {
 		Ok(ItchDatabaseGame {
 			id: row.get(0)?,
 			title: row.get(1)?,
-			// TODO maybe not great that I'm swallowing errors here.
 			url: row.get(2).ok(),
 			published_at: row.get(3).ok(),
 			cover_url: row.get(4).ok(),
 		})
-	})?; // TODO prevent everything crashing if one row fails.
+	})?;
 
 	Ok(ItchDatabase {
 		games: game_rows
