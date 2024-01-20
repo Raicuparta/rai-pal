@@ -45,6 +45,9 @@ pub enum Error {
 	#[error(transparent)]
 	Env(#[from] env::VarError),
 
+	#[error(transparent)]
+	TaskJoin(#[from] tokio::task::JoinError),
+
 	#[error("Invalid type `{0}` in binary vdf key/value pair")]
 	InvalidBinaryVdfType(u8),
 
