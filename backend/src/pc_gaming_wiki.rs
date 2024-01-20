@@ -12,6 +12,7 @@ use crate::{
 		GameEngineVersion,
 	},
 	serializable_struct,
+	Result,
 };
 
 serializable_struct!(PCGamingWikiTitle {
@@ -48,88 +49,77 @@ fn parse_version(version_text: &str) -> Option<GameEngineVersion> {
 	})
 }
 
-fn get_url(where_query: &str) -> Option<String> {
-	match serde_urlencoded::to_string([
-		("action", "cargoquery"),
-		("tables", "Infobox_game,Infobox_game_engine"),
-		(
-			"fields",
-			"Infobox_game_engine.Engine,Infobox_game_engine.Build",
-		),
-		("where", where_query),
-		(
-			"join on",
-			"Infobox_game._pageName = Infobox_game_engine._pageName",
-		),
-		("format", "json"),
-	]) {
-		Ok(query_params) => Some(format!(
-			"https://www.pcgamingwiki.com/w/api.php?{query_params}"
-		)),
-		Err(err) => {
-			error!("Failed to encode query params for query `{where_query}`. Error: {err}");
-			None
-		}
-	}
-}
+pub async fn get_engine(where_query: &str) -> Result<Option<GameEngine>> {
+	let url = format!(
+		"https://www.pcgamingwiki.com/w/api.php?{}",
+		serde_urlencoded::to_string([
+			("action", "cargoquery"),
+			("tables", "Infobox_game,Infobox_game_engine"),
+			(
+				"fields",
+				"Infobox_game_engine.Engine,Infobox_game_engine.Build",
+			),
+			("where", where_query),
+			(
+				"join on",
+				"Infobox_game._pageName = Infobox_game_engine._pageName",
+			),
+			("format", "json"),
+		])?
+	);
 
-pub async fn get_engine(where_query: &str) -> Option<GameEngine> {
-	match reqwest::get(get_url(where_query)?).await {
-		Ok(response) => {
-			match response.json::<PCGamingWikiQueryResponse>().await {
-				Ok(parsed_response) => {
-					parsed_response
-						.cargoquery
-						.into_iter()
-						// This has high potential for false positives, since we search by title kinda fuzzily,
-						// and then just pick the first one with an engine.
-						.find_map(|item| Some((item.title.engine?, item.title.build)))
-						.and_then(|(engine, build)| {
-							let version = build
-								.and_then(|version_text| parse_version(&version_text))
-								// On PCGamingWiki, each Unreal major version is considered a separate engine.
-								// So we can parse the engine name to get the major version.
-								.or_else(|| parse_version(&engine));
+	Ok(
+		match reqwest::get(url)
+			.await?
+			.json::<PCGamingWikiQueryResponse>()
+			.await
+		{
+			Ok(parsed_response) => {
+				parsed_response
+					.cargoquery
+					.into_iter()
+					// This has high potential for false positives, since we search by title kinda fuzzily,
+					// and then just pick the first one with an engine.
+					.find_map(|item| Some((item.title.engine?, item.title.build)))
+					.and_then(|(engine, build)| {
+						let version = build
+							.and_then(|version_text| parse_version(&version_text))
+							// On PCGamingWiki, each Unreal major version is considered a separate engine.
+							// So we can parse the engine name to get the major version.
+							.or_else(|| parse_version(&engine));
 
-							// I don't feel like figuring out the exact format,
-							// since it can sometimes have the engine version included, sometimes not.
-							if engine.contains("Unreal") {
-								Some(GameEngine {
-									brand: GameEngineBrand::Unreal,
-									version,
-								})
-							} else if engine.contains("Unity") {
-								Some(GameEngine {
-									brand: GameEngineBrand::Unity,
-									version,
-								})
-							} else if engine.contains("Godot") {
-								Some(GameEngine {
-									brand: GameEngineBrand::Godot,
-									version,
-								})
-							} else {
-								None
-							}
-						})
-				}
-				Err(err) => {
-					error!("Error parsing PCGamingWiki response: {err}");
-					None
-				}
+						// I don't feel like figuring out the exact format,
+						// since it can sometimes have the engine version included, sometimes not.
+						if engine.contains("Unreal") {
+							Some(GameEngine {
+								brand: GameEngineBrand::Unreal,
+								version,
+							})
+						} else if engine.contains("Unity") {
+							Some(GameEngine {
+								brand: GameEngineBrand::Unity,
+								version,
+							})
+						} else if engine.contains("Godot") {
+							Some(GameEngine {
+								brand: GameEngineBrand::Godot,
+								version,
+							})
+						} else {
+							None
+						}
+					})
 			}
-		}
-		Err(_) => {
-			// We ignore this error, since it's very likely to happen.
-			// TODO: need to distinguish between a network error (pc offline) and a 404.
-			// 404 should store a None in the cache, network error shouldn't.
-			None
-		}
-	}
+			Err(err) => {
+				error!("Error parsing PCGamingWiki response: {err}");
+				None
+			}
+		},
+	)
 }
 
 // Since there's no way to get a game by every provider ID from PCGamingWiki, we try with the game title.
-pub async fn get_engine_from_game_title(title: &str) -> Option<GameEngine> {
+pub async fn get_engine_from_game_title(title: &str) -> Result<Option<GameEngine>> {
 	// Use only ascii and lowercase to make it easier to find by title.
 	let lowercase_title = title.to_ascii_lowercase();
 

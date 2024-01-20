@@ -48,6 +48,9 @@ pub enum Error {
 	#[error(transparent)]
 	TaskJoin(#[from] tokio::task::JoinError),
 
+	#[error(transparent)]
+	UrlEncode(#[from] serde_urlencoded::ser::Error),
+
 	#[error("Invalid type `{0}` in binary vdf key/value pair")]
 	InvalidBinaryVdfType(u8),
 

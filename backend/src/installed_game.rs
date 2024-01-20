@@ -1,9 +1,6 @@
 use std::{
 	collections::HashMap,
-	fs::{
-		self,
-		File,
-	},
+	fs::{self,},
 	path::{
 		Path,
 		PathBuf,

@@ -93,8 +93,19 @@ pub trait ProviderStatic: ProviderActions {
 		Ok(())
 	}
 
-	fn try_save_remote_game_cache(cache: &remote_game::Map) {
-		if let Err(err) = Self::save_remote_game_cache(cache) {
+	fn try_save_remote_game_cache(remote_games: &[RemoteGame]) {
+		if let Err(err) = Self::save_remote_game_cache(
+			&remote_games
+				.iter()
+				.filter_map(|remote_game| {
+					if remote_game.skip_cache {
+						None
+					} else {
+						Some((remote_game.id.clone(), remote_game.clone()))
+					}
+				})
+				.collect(),
+		) {
 			error!(
 				"Failed to save engine cache for provider '{}'. Error: {}",
 				Self::ID,

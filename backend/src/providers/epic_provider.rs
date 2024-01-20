@@ -232,23 +232,21 @@ impl ProviderActions for Epic {
 					return cached_remote_game.clone();
 				}
 
-				if let Some(engine) =
-					pc_gaming_wiki::get_engine_from_game_title(&catalog_item.title).await
-				{
-					remote_game.set_engine(engine);
+				match pc_gaming_wiki::get_engine_from_game_title(&catalog_item.title).await {
+					Ok(Some(engine)) => {
+						remote_game.set_engine(engine);
+					}
+					Ok(None) => {}
+					Err(_) => {
+						remote_game.set_skip_cache(true);
+					}
 				}
 
 				remote_game
 			}))
 			.await;
 
-		Self::try_save_remote_game_cache(
-			&remote_games
-				.clone()
-				.into_iter()
-				.map(|remote_game| (remote_game.id.clone(), remote_game))
-				.collect(),
-		);
+		Self::try_save_remote_game_cache(&remote_games);
 
 		Ok(remote_games)
 	}
