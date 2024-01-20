@@ -48,29 +48,33 @@ fn parse_version(version_text: &str) -> Option<GameEngineVersion> {
 	})
 }
 
+fn get_url(where_query: &str) -> Option<String> {
+	match serde_urlencoded::to_string([
+		("action", "cargoquery"),
+		("tables", "Infobox_game,Infobox_game_engine"),
+		(
+			"fields",
+			"Infobox_game_engine.Engine,Infobox_game_engine.Build",
+		),
+		("where", where_query),
+		(
+			"join on",
+			"Infobox_game._pageName = Infobox_game_engine._pageName",
+		),
+		("format", "json"),
+	]) {
+		Ok(query_params) => Some(format!(
+			"https://www.pcgamingwiki.com/w/api.php?{query_params}"
+		)),
+		Err(err) => {
+			error!("Failed to encode query params for query `{where_query}`. Error: {err}");
+			None
+		}
+	}
+}
+
 pub async fn get_engine(where_query: &str) -> Option<GameEngine> {
-	let url = format!(
-		"https://www.pcgamingwiki.com/w/api.php?{}",
-		serde_urlencoded::to_string([
-			("action", "cargoquery"),
-			("tables", "Infobox_game,Infobox_game_engine"),
-			(
-				"fields",
-				"Infobox_game_engine.Engine,Infobox_game_engine.Build"
-			),
-			("where", where_query),
-			(
-				"join on",
-				"Infobox_game._pageName = Infobox_game_engine._pageName"
-			),
-			("format", "json"),
-		])
-		.ok()? // TODO log error.
-	);
-
-	let result = reqwest::get(url).await;
-
-	match result {
+	match reqwest::get(get_url(where_query)?).await {
 		Ok(response) => {
 			match response.json::<PCGamingWikiQueryResponse>().await {
 				Ok(parsed_response) => {
