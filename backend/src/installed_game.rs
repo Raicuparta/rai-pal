@@ -195,9 +195,7 @@ impl InstalledGame {
 		self.get_manifest_paths()
 			.iter()
 			.filter_map(|manifest_path| {
-				let manifest_file = File::open(manifest_path).ok()?; // TODO log error
-				let manifest: mod_manifest::Manifest =
-					serde_json::from_reader(manifest_file).ok()?; // TODO log error
+				let manifest = mod_manifest::get(manifest_path)?;
 
 				Some((
 					manifest_path.file_stem()?.to_str()?.to_string(),
