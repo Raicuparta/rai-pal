@@ -13,9 +13,9 @@ import {
 	IconBrandPatreonFilled,
 	IconBrandPaypalFilled,
 } from "@tabler/icons-react";
-import { DonateLinkButton } from "./donate-link-button";
+import { ThanksLinkButton } from "./thanks-link-button";
 
-export function DonatePage() {
+export function ThanksPage() {
 	return (
 		<Container
 			size="xs"
@@ -37,7 +37,7 @@ export function DonatePage() {
 									style={{ flex: 1, borderRadius: 10 }}
 								>
 									<Image
-										src="/images/donate/raicuparta.png"
+										src="/images/thanks/raicuparta.png"
 										radius="100%"
 									/>
 									<Text
@@ -59,49 +59,49 @@ export function DonatePage() {
 								</Stack>
 							</Group>
 							<Group>
-								<DonateLinkButton
+								<ThanksLinkButton
 									color="blue"
 									href="https://github.com/raicuparta/rai-pal"
 									leftSection={<IconBrandGithubFilled />}
 								>
 									Star Rai Pal on GitHub
-								</DonateLinkButton>
-								<DonateLinkButton
+								</ThanksLinkButton>
+								<ThanksLinkButton
 									href="https://raicuparta.com"
 									color="grape"
 									leftSection={
 										<Image
-											src="/images/donate/raicuparta.png"
+											src="/images/thanks/raicuparta.png"
 											radius="100%"
 											height={20}
 										/>
 									}
 								>
 									raicuparta.com
-								</DonateLinkButton>
+								</ThanksLinkButton>
 							</Group>
 							<Group>
-								<DonateLinkButton
+								<ThanksLinkButton
 									href="https://www.patreon.com/raivr"
 									color="pink"
 									leftSection={<IconBrandPatreonFilled />}
 								>
 									Patreon
-								</DonateLinkButton>
-								<DonateLinkButton
+								</ThanksLinkButton>
+								<ThanksLinkButton
 									href="https://paypal.me/raicuparta/5usd"
 									color="indigo"
 									leftSection={<IconBrandPaypalFilled />}
 								>
 									Paypal
-								</DonateLinkButton>
-								<DonateLinkButton
+								</ThanksLinkButton>
+								<ThanksLinkButton
 									href="https://raicuparta.itch.io/"
 									color="red"
 									leftSection={<IconBrandItch />}
 								>
 									Itch.io
-								</DonateLinkButton>
+								</ThanksLinkButton>
 							</Group>
 						</Stack>
 					</Card>
@@ -126,7 +126,7 @@ export function DonatePage() {
 									style={{ flex: 1, borderRadius: 10 }}
 								>
 									<Image
-										src="/images/donate/praydog.png"
+										src="/images/thanks/praydog.png"
 										radius="100%"
 									/>
 									<Text
@@ -139,21 +139,21 @@ export function DonatePage() {
 								</Stack>
 							</Group>
 							<Group>
-								<DonateLinkButton
+								<ThanksLinkButton
 									href="https://www.patreon.com/praydog"
 									color="pink"
 									leftSection={<IconBrandPatreonFilled />}
 								>
 									praydog on Patreon
-								</DonateLinkButton>
+								</ThanksLinkButton>
 
-								<DonateLinkButton
+								<ThanksLinkButton
 									href="https://github.com/praydog/"
 									color="blue"
 									leftSection={<IconBrandGithubFilled />}
 								>
 									praydog on GitHub
-								</DonateLinkButton>
+								</ThanksLinkButton>
 							</Group>
 						</Stack>
 					</Card>{" "}
@@ -175,34 +175,34 @@ export function DonatePage() {
 								</Text>
 							</Stack>
 							<Stack>
-								<DonateLinkButton
+								<ThanksLinkButton
 									href="https://github.com/BepInEx"
 									color="blue"
 									leftSection={<IconBrandGithubFilled />}
 								>
 									BepInEx on GitHub
-								</DonateLinkButton>
-								<DonateLinkButton
+								</ThanksLinkButton>
+								<ThanksLinkButton
 									href="https://www.patreon.com/pardeike"
 									color="pink"
 									leftSection={<IconBrandPatreonFilled />}
 								>
 									Andreas Pardeike on Patreon
-								</DonateLinkButton>
-								<DonateLinkButton
+								</ThanksLinkButton>
+								<ThanksLinkButton
 									href="https://github.com/sinai-dev"
 									color="blue"
 									leftSection={<IconBrandGithubFilled />}
 								>
 									sinai on GitHub
-								</DonateLinkButton>
-								<DonateLinkButton
+								</ThanksLinkButton>
+								<ThanksLinkButton
 									href="https://www.patreon.com/ManlyMarco"
 									color="pink"
 									leftSection={<IconBrandPatreonFilled />}
 								>
 									ManlyMarco on Patreon
-								</DonateLinkButton>
+								</ThanksLinkButton>
 							</Stack>
 						</Stack>
 					</Card>

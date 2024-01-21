@@ -13,7 +13,6 @@ export function RefreshButton() {
 			leftSection={<IconRefresh />}
 			loading={isLoading}
 			onClick={updateAppData}
-			style={{ flex: 1, maxWidth: "10em" }}
 			variant="filled"
 		>
 			Refresh
