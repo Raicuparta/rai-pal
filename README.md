@@ -7,7 +7,6 @@
 [![Twitter @Raicuparta](https://img.shields.io/badge/Twitter-sucks-1DA1F2?logo=twitter&style=flat-square&logoColor=white)](https://twitter.com/Raicuparta)
 [![Mastodon @Raicuparta](https://img.shields.io/mastodon/follow/109258008992010873?color=6a5df9&domain=https%3A%2F%2Fmastodon.gamedev.place&label=Mastodon&logo=mastodon&logoColor=white&style=flat-square)](https://mastodon.gamedev.place/@Raicuparta)
 
-
 > ⚠️ **Warning**:  
 > Work in progress, lots of features missing, expect bugs.
 
@@ -27,19 +26,20 @@ So this tool automates a lot of that work. This also lets you filter your Steam 
 
 Rai Pal analyzes files on your system to determine which games you own, and which games you have currently installed. There's some guesswork involved in this, especially since Rai Pal tries to give you this information as quickly as possible, without the need to log in with each provider's account. Here is the current status of how Rai Pal handles finding games from each provider:
 
-| Provider | Installed | Owned | Notes                                                                                                              |
-|----------|-----------|-------|--------------------------------------------------------------------------------------------------------------------|
-| Steam    | ✅         | ✅*    | Owned games based on Steam cache, may show weird stuff. Recreating Steam cache helps.                              |
-| Epic     | ✅         | ✅     |                                                                                                                    |
-| GOG      | ✅         | ✅     |                                                                                                                    |
-| PC Xbox  | ✅*        | ❌     | Only finds installed games marked as moddable (the ones where you can open the game files folder via the Xbox app) |
-| Itch     | ✅         | ✅*    | Does not include games from bundles, unless you add them to your library. There are [scripts](https://gist.github.com/lats/c920866caf9c0cb04e82abba411e1bb9) for adding all games from a bundle to your library, but they're slow and not recommended by the Itch team. |
+| Provider | Installed | Owned | Engine detection for owned games | Notes                                                                                                                                                                                                                                                                   |
+| -------- | --------- | ----- | -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Steam    | ✅        | ✅\*  | 👍Good                           | Owned games based on Steam cache, may show weird stuff. Recreating Steam cache helps.                                                                                                                                                                                   |
+| GOG      | ✅        | ✅    | 👍Good                           |                                                                                                                                                                                                                                                                         |
+| Epic     | ✅        | ✅    | 🤏Approximate                    |                                                                                                                                                                                                                                                                         |
+| Itch     | ✅        | ✅\*  | 🤏Approximate                    | Does not include games from bundles, unless you add them to your library. There are [scripts](https://gist.github.com/lats/c920866caf9c0cb04e82abba411e1bb9) for adding all games from a bundle to your library, but they're slow and not recommended by the Itch team. |
+| PC Xbox  | ✅\*      | ❌    | 👎None                           | Only finds installed games marked as moddable (the ones where you can open the game files folder via the Xbox app)                                                                                                                                                      |
 
 For all other providers, you'll have to manually add the games to Rai Pal using the "add game" button on the installed games tab, or by just dropping the game exe on the Rai Pal window.
 
 ## UEVR
 
 Rai Pal can make it easier to use [Praydog's UEVR](https://uevr.io/), a universal VR mod for Unreal Engine games. Here are some of the fun activities Rai Pal can help you with:
+
 - Find all the Unreal Engine games in your Steam library (even the ones you haven't installed yet).
 - Automatically find installed Unreal Engine games (supports Steam, GOG, and Epic, more to come later).
 - Detect the Unreal Engine version of games you have installed.
