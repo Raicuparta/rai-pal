@@ -37,6 +37,12 @@ export type TableSortMethod = (
 	gameB: ProcessedInstalledGame,
 ) => number;
 
+const defaultColumns: InstalledGameColumnsId[] = [
+	"thumbnail",
+	"engine",
+	"provider",
+];
+
 export function InstalledGamesPage() {
 	const installedGames = useProcessedInstalledGames();
 
@@ -52,7 +58,7 @@ export function InstalledGamesPage() {
 
 	const [visibleColumnIds, setVisibleColumnIds] = usePersistedState<
 		InstalledGameColumnsId[]
-	>(["thumbnail", "engine"], "installed-visible-columns");
+	>(defaultColumns, "installed-visible-columns");
 
 	const filteredColumns = useMemo(
 		() =>

@@ -18,6 +18,12 @@ import { FilterSelect } from "@components/filters/filter-select";
 
 const defaultFilter: Record<string, (string | null)[]> = {};
 
+const defaultColumns: OwnedGameColumnsId[] = [
+	"thumbnail",
+	"engine",
+	"provider",
+];
+
 function filterOwnedGame(
 	game: ProcessedOwnedGame,
 	filter: Record<string, (string | null)[]>,
@@ -42,7 +48,7 @@ export function OwnedGamesPage() {
 
 	const [visibleColumnIds, setVisibleColumnIds] = usePersistedState<
 		OwnedGameColumnsId[]
-	>(["thumbnail", "engine", "releaseDate"], "owned-visible-columns");
+	>(defaultColumns, "owned-visible-columns");
 
 	const filteredColumns = useMemo(
 		() =>
