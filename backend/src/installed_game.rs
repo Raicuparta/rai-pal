@@ -1,22 +1,21 @@
 use std::{
 	collections::HashMap,
-	fs::{
-		self,
-		File,
-	},
+	fs::{self,},
 	path::{
 		Path,
 		PathBuf,
 	},
 };
 
+use log::error;
+
 use crate::{
 	game_executable::GameExecutable,
-	game_mod,
 	mod_manifest,
 	owned_game,
 	paths::{
 		self,
+		glob_path,
 		hash_path,
 	},
 	providers::{
@@ -41,7 +40,7 @@ serializable_struct!(InstalledGame {
 });
 
 pub type Map = HashMap<String, InstalledGame>;
-type InstalledModVersions = HashMap<String, Option<String>>;
+type InstalledModVersions = HashMap<String, String>;
 
 impl InstalledGame {
 	pub fn new(path: &Path, name: &str, provider_id: ProviderId) -> Option<Self> {
@@ -68,8 +67,10 @@ impl InstalledGame {
 
 		let executable = GameExecutable::new(path)?;
 
-		Some(Self {
-			id: hash_path(&executable.path),
+		let game_id = hash_path(&executable.path);
+
+		let mut installed_game = Self {
+			id: game_id,
 			name: name.to_string(),
 			provider: provider_id,
 			installed_mod_versions: HashMap::default(),
@@ -78,7 +79,11 @@ impl InstalledGame {
 			thumbnail_url: None,
 			start_command: None,
 			owned_game_id: None,
-		})
+		};
+
+		installed_game.refresh_installed_mods();
+
+		Some(installed_game)
 	}
 
 	pub fn set_discriminator(&mut self, discriminator: &str) -> &Self {
@@ -116,8 +121,8 @@ impl InstalledGame {
 		Ok(())
 	}
 
-	pub fn update_available_mods(&mut self, data_map: &game_mod::CommonDataMap) {
-		self.installed_mod_versions = self.get_available_mods(data_map);
+	pub fn refresh_installed_mods(&mut self) {
+		self.installed_mod_versions = self.get_available_mods();
 	}
 
 	pub fn open_game_folder(&self) -> Result {
@@ -163,17 +168,31 @@ impl InstalledGame {
 		Ok(())
 	}
 
-	pub fn refresh_mods(&mut self, data_map: &game_mod::CommonDataMap) {
-		self.installed_mod_versions = self.get_available_mods(data_map);
+	pub fn get_manifest_paths(&self) -> Vec<PathBuf> {
+		match self.get_installed_mod_manifest_path("*") {
+			Ok(manifests_path) => glob_path(&manifests_path),
+			Err(err) => {
+				error!(
+					"Failed to get mod manifests glob path for game {}. Error: {}",
+					self.id, err
+				);
+				Vec::default()
+			}
+		}
 	}
 
-	pub fn get_installed_mods_folder(&self) -> Result<PathBuf> {
-		let installed_mods_folder = paths::app_data_path()?
-			.join("installed-mods")
-			.join(&self.id);
-		fs::create_dir_all(&installed_mods_folder)?;
+	pub fn get_available_mods(&self) -> InstalledModVersions {
+		self.get_manifest_paths()
+			.iter()
+			.filter_map(|manifest_path| {
+				let manifest = mod_manifest::get(manifest_path)?;
 
-		Ok(installed_mods_folder)
+				Some((
+					manifest_path.file_stem()?.to_str()?.to_string(),
+					manifest.version,
+				))
+			})
+			.collect()
 	}
 
 	pub fn get_installed_mod_manifest_path(&self, mod_id: &str) -> Result<PathBuf> {
@@ -183,34 +202,12 @@ impl InstalledGame {
 			.join(format!("{mod_id}.json")))
 	}
 
-	pub fn get_installed_mod_version(&self, mod_id: &str) -> Option<String> {
-		let manifest_path = self.get_installed_mod_manifest_path(mod_id).ok()?;
-		let manifest_file = File::open(manifest_path).ok()?;
-		let manifest: mod_manifest::Manifest = serde_json::from_reader(manifest_file).ok()?;
-		Some(manifest.version)
-	}
+	pub fn get_installed_mods_folder(&self) -> Result<PathBuf> {
+		let installed_mods_folder = paths::app_data_path()?
+			.join("installed-mods")
+			.join(&self.id);
+		fs::create_dir_all(&installed_mods_folder)?;
 
-	pub fn get_available_mods(&self, data_map: &game_mod::CommonDataMap) -> InstalledModVersions {
-		data_map
-			.iter()
-			.filter_map(|(mod_id, mod_data)| {
-				if equal_or_none(
-					mod_data.engine,
-					self.executable.engine.as_ref().map(|engine| engine.brand),
-				) && equal_or_none(mod_data.unity_backend, self.executable.scripting_backend)
-				{
-					Some((mod_id.clone(), self.get_installed_mod_version(mod_id)))
-				} else {
-					None
-				}
-			})
-			.collect()
-	}
-}
-
-fn equal_or_none<T: PartialEq>(a: Option<T>, b: Option<T>) -> bool {
-	match (a, b) {
-		(Some(value_a), Some(value_b)) => value_a == value_b,
-		_ => true,
+		Ok(installed_mods_folder)
 	}
 }

@@ -27,7 +27,7 @@ export function TypedSegmentedControl<T extends string>(
 					disabled: isUnavailable,
 					label: (
 						<Tooltip
-							label="Unavailable, or not implemented"
+							label="Not implemented"
 							disabled={!isUnavailable}
 						>
 							<div>{data.label || data.value}</div>

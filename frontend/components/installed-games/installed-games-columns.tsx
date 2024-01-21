@@ -18,7 +18,7 @@ import {
 	UnityBackendBadge,
 } from "@components/badges/color-coded-badge";
 import { ThumbnailCell } from "@components/table/thumbnail-cell";
-import { OutdatedMarker } from "@components/OutdatedMarker";
+import { OutdatedMarker } from "@components/outdated-marker";
 import {
 	engineFilterOptions,
 	providerFilterOptions,
@@ -72,6 +72,7 @@ const provider: TableColumnBase<ProcessedInstalledGame, ProviderId> = {
 	center: true,
 	hidable: true,
 	getSortValue: (game) => game.provider,
+	getFilterValue: (game) => game.provider,
 	filterOptions: providerFilterOptions,
 	renderCell: (game) => (
 		<Table.Td>
@@ -89,8 +90,8 @@ const operatingSystem: TableColumnBase<
 	center: true,
 	hidable: true,
 	getSortValue: (game) => game.executable.operatingSystem,
+	getFilterValue: (game) => game.executable.operatingSystem,
 	filterOptions: [
-		{ label: "Any OS", value: "" },
 		{ label: "Windows", value: "Windows" },
 		{ label: "Linux", value: "Linux" },
 	],
@@ -107,8 +108,8 @@ const architecture: TableColumnBase<ProcessedInstalledGame, Architecture> = {
 	center: true,
 	hidable: true,
 	getSortValue: (game) => game.executable.architecture,
+	getFilterValue: (game) => game.executable.architecture,
 	filterOptions: [
-		{ label: "Any architecture", value: "" },
 		{ label: "x64", value: "X64" },
 		{ label: "x86", value: "X86" },
 	],
@@ -128,8 +129,8 @@ const scriptingBackend: TableColumnBase<
 	center: true,
 	hidable: true,
 	getSortValue: (game) => game.executable.scriptingBackend,
+	getFilterValue: (game) => game.executable.scriptingBackend,
 	filterOptions: [
-		{ label: "Any backend", value: "" },
 		{ label: "IL2CPP", value: "Il2Cpp" },
 		{ label: "Mono", value: "Mono" },
 	],
@@ -146,8 +147,8 @@ const gameMode: TableColumnBase<ProcessedInstalledGame, GameMode> = {
 	center: true,
 	hidable: true,
 	getSortValue: (game) => game.ownedGame?.gameMode,
+	getFilterValue: (game) => game.ownedGame?.gameMode ?? null,
 	filterOptions: [
-		{ label: "Any mode", value: "" },
 		{ label: "Flat", value: "Flat" },
 		{ label: "VR", value: "VR" },
 	],
@@ -165,7 +166,7 @@ const engine: TableColumnBase<ProcessedInstalledGame, GameEngineBrand> = {
 	hidable: true,
 	sort: (dataA, dataB) =>
 		sortGamesByEngine(dataA.executable.engine, dataB.executable.engine),
-	getFilterValue: (game) => game.executable.engine?.brand ?? "",
+	getFilterValue: (game) => game.executable.engine?.brand ?? null,
 	unavailableValues: ["Godot"],
 	filterOptions: engineFilterOptions,
 	renderCell: ({ executable: { engine } }) => (

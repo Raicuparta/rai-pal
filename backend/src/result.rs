@@ -45,13 +45,19 @@ pub enum Error {
 	#[error(transparent)]
 	Env(#[from] env::VarError),
 
+	#[error(transparent)]
+	TaskJoin(#[from] tokio::task::JoinError),
+
+	#[error(transparent)]
+	UrlEncode(#[from] serde_urlencoded::ser::Error),
+
 	#[error("Invalid type `{0}` in binary vdf key/value pair")]
 	InvalidBinaryVdfType(u8),
 
 	#[error("Failed to find Rai Pal resources folder")]
 	ResourcesNotFound(),
 
-	#[error("Failed to find Rai Pal app data folder")]
+	#[error("Failed to find app data folder")]
 	AppDataNotFound(),
 
 	#[error("Failed to parse path (possibly because is a non-UTF-8 string) `{0}`")]
@@ -97,9 +103,6 @@ pub enum Error {
 
 	#[error("Operation can't be completed without a `runnable` section in the mod manifest (rai-pal-manifest.json) `{0}`")]
 	RunnableManifestNotFound(String),
-
-	#[error("Can't run command because it isn't defined for this game.")]
-	CommandNotDefined(),
 }
 
 impl serde::Serialize for Error {

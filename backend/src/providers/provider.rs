@@ -9,20 +9,25 @@ use async_trait::async_trait;
 use enum_dispatch::enum_dispatch;
 use log::error;
 
-use super::{
+#[cfg(target_os = "windows")]
+use crate::providers::{
 	epic_provider::Epic,
 	gog_provider::Gog,
 	xbox_provider::Xbox,
 };
 use crate::{
 	debug::LoggableInstant,
-	game_engines::game_engine::GameEngine,
 	installed_game::InstalledGame,
 	owned_game::OwnedGame,
 	paths,
 	providers::{
+		itch_provider::Itch,
 		manual_provider::Manual,
 		steam_provider::Steam,
+	},
+	remote_game::{
+		self,
+		RemoteGame,
 	},
 	serializable_enum,
 	Result,
@@ -31,17 +36,23 @@ use crate::{
 serializable_enum!(ProviderId {
 	Steam,
 	Manual,
+	Itch,
 	Epic,
 	Gog,
 	Xbox,
 });
 
 #[enum_dispatch]
+#[derive(Clone)]
 pub enum Provider {
 	Steam,
 	Manual,
+	Itch,
+	#[cfg(target_os = "windows")]
 	Epic,
+	#[cfg(target_os = "windows")]
 	Gog,
+	#[cfg(target_os = "windows")]
 	Xbox,
 }
 
@@ -50,10 +61,10 @@ pub enum Provider {
 pub trait ProviderActions {
 	fn get_installed_games(&self) -> Result<Vec<InstalledGame>>;
 
-	async fn get_owned_games(&self) -> Result<Vec<OwnedGame>>;
-}
+	fn get_owned_games(&self) -> Result<Vec<OwnedGame>>;
 
-pub type EngineCache = HashMap<String, Option<GameEngine>>;
+	async fn get_remote_games(&self) -> Result<Vec<RemoteGame>>;
+}
 
 pub trait ProviderStatic: ProviderActions {
 	const ID: &'static ProviderId;
@@ -72,18 +83,29 @@ pub trait ProviderStatic: ProviderActions {
 		Ok(path)
 	}
 
-	fn get_engine_cache_path() -> Result<PathBuf> {
-		Ok(Self::get_folder()?.join("engine-cache.json"))
+	fn get_remote_game_cache_path() -> Result<PathBuf> {
+		Ok(Self::get_folder()?.join("remote-game-cache.json"))
 	}
 
-	fn save_engine_cache(cache: &EngineCache) -> Result {
+	fn save_remote_game_cache(cache: &remote_game::Map) -> Result {
 		let json = serde_json::to_string_pretty(cache)?;
-		fs::write(Self::get_engine_cache_path()?, json)?;
+		fs::write(Self::get_remote_game_cache_path()?, json)?;
 		Ok(())
 	}
 
-	fn try_save_engine_cache(cache: &EngineCache) {
-		if let Err(err) = Self::save_engine_cache(cache) {
+	fn try_save_remote_game_cache(remote_games: &[RemoteGame]) {
+		if let Err(err) = Self::save_remote_game_cache(
+			&remote_games
+				.iter()
+				.filter_map(|remote_game| {
+					if remote_game.skip_cache {
+						None
+					} else {
+						Some((remote_game.id.clone(), remote_game.clone()))
+					}
+				})
+				.collect(),
+		) {
 			error!(
 				"Failed to save engine cache for provider '{}'. Error: {}",
 				Self::ID,
@@ -92,13 +114,13 @@ pub trait ProviderStatic: ProviderActions {
 		}
 	}
 
-	fn get_engine_cache() -> Result<EngineCache> {
-		let json = fs::read_to_string(Self::get_engine_cache_path()?)?;
-		Ok(serde_json::from_str::<EngineCache>(&json)?)
+	fn get_remote_game_cache() -> Result<remote_game::Map> {
+		let json = fs::read_to_string(Self::get_remote_game_cache_path()?)?;
+		Ok(serde_json::from_str::<remote_game::Map>(&json)?)
 	}
 
-	fn try_get_engine_cache() -> EngineCache {
-		match Self::get_engine_cache() {
+	fn try_get_remote_game_cache() -> remote_game::Map {
+		match Self::get_remote_game_cache() {
 			Ok(pc_gaming_wiki_cache) => pc_gaming_wiki_cache,
 			Err(err) => {
 				error!(
@@ -112,7 +134,7 @@ pub trait ProviderStatic: ProviderActions {
 	}
 }
 
-type Map = HashMap<String, Provider>;
+pub type Map = HashMap<String, Provider>;
 
 fn create_map_entry<TProvider: ProviderActions + ProviderStatic>() -> Result<(String, Provider)>
 where
@@ -142,17 +164,22 @@ pub fn get_map() -> Map {
 	add_entry::<Steam>(&mut map);
 	now.log_next("set up provider (Steam)");
 
-	add_entry::<Epic>(&mut map);
-	now.log_next("set up provider (Epic)");
-
-	add_entry::<Gog>(&mut map);
-	now.log_next("set up provider (Gog)");
-
-	add_entry::<Xbox>(&mut map);
-	now.log_next("set up provider (Xbox)");
+	add_entry::<Itch>(&mut map);
+	now.log_next("set up provider (Itch)");
 
 	add_entry::<Manual>(&mut map);
 	now.log_next("set up provider (Manual)");
 
+	#[cfg(target_os = "windows")]
+	{
+		add_entry::<Epic>(&mut map);
+		now.log_next("set up provider (Epic)");
+
+		add_entry::<Gog>(&mut map);
+		now.log_next("set up provider (Gog)");
+
+		add_entry::<Xbox>(&mut map);
+		now.log_next("set up provider (Xbox)");
+	}
 	map
 }

@@ -12,7 +12,7 @@ import {
 	IconSettings,
 	IconTool,
 } from "@tabler/icons-react";
-import { DonatePage } from "@components/donate/donate-page";
+import { ThanksPage } from "@components/thanks/thanks-page";
 
 const pages = {
 	installedGames: {
@@ -31,9 +31,9 @@ const pages = {
 		component: SettingsPage,
 		icon: <IconSettings />,
 	},
-	donate: {
-		title: "Donate",
-		component: DonatePage,
+	thanks: {
+		title: "Thanks",
+		component: ThanksPage,
 		icon: <IconHeartFilled style={{ color: "var(--mantine-color-red-9)" }} />,
 	},
 };
@@ -76,7 +76,7 @@ function App() {
 						>
 							<Container
 								h="100%"
-								py="md"
+								py="xs"
 								size="lg"
 							>
 								<page.component />

@@ -1,3 +1,5 @@
+#![cfg(target_os = "windows")]
+
 use std::{
 	fs::{
 		self,
@@ -9,7 +11,6 @@ use std::{
 
 use async_trait::async_trait;
 use base64::engine::general_purpose;
-use glob::GlobError;
 use log::error;
 use winreg::{
 	enums::HKEY_LOCAL_MACHINE,
@@ -17,14 +18,13 @@ use winreg::{
 };
 
 use super::{
-	provider::{
-		self,
-		ProviderId,
+	provider::ProviderId,
+	provider_command::{
+		ProviderCommand,
+		ProviderCommandAction,
 	},
-	provider_command::ProviderCommand,
 };
 use crate::{
-	game_engines::game_engine::GameEngine,
 	installed_game::InstalledGame,
 	owned_game::OwnedGame,
 	paths::glob_path,
@@ -33,13 +33,19 @@ use crate::{
 		ProviderActions,
 		ProviderStatic,
 	},
+	remote_game::{
+		self,
+		RemoteGame,
+	},
 	serializable_struct,
 	Result,
 };
 
+#[derive(Clone)]
 pub struct Epic {
 	app_data_path: PathBuf,
-	engine_cache: provider::EngineCache,
+	catalog: Vec<EpicCatalogItem>,
+	remote_game_cache: remote_game::Map,
 }
 
 impl ProviderStatic for Epic {
@@ -54,11 +60,20 @@ impl ProviderStatic for Epic {
 			.and_then(|launcher_reg| launcher_reg.get_value::<String, _>("AppDataPath"))
 			.map(PathBuf::from)?;
 
-		let engine_cache = Self::try_get_engine_cache();
+		let remote_game_cache = Self::try_get_remote_game_cache();
+
+		let mut file = File::open(app_data_path.join("Catalog").join("catcache.bin"))?;
+
+		let mut decoder = base64::read::DecoderReader::new(&mut file, &general_purpose::STANDARD);
+		let mut json = String::default();
+		decoder.read_to_string(&mut json)?;
+
+		let catalog = serde_json::from_str::<Vec<EpicCatalogItem>>(&json)?;
 
 		Ok(Self {
 			app_data_path,
-			engine_cache,
+			catalog,
+			remote_game_cache,
 		})
 	}
 }
@@ -128,9 +143,10 @@ impl EpicCatalogItem {
 #[async_trait]
 impl ProviderActions for Epic {
 	fn get_installed_games(&self) -> Result<Vec<InstalledGame>> {
-		let manifests = glob_path(&self.app_data_path.join("Manifests").join("*.item"))?;
+		let manifests = glob_path(&self.app_data_path.join("Manifests").join("*.item"));
 
 		Ok(manifests
+			.iter()
 			.filter_map(
 				|manifest_path_result| match read_manifest(manifest_path_result) {
 					Ok(manifest) => {
@@ -148,7 +164,7 @@ impl ProviderActions for Epic {
 						Some(game)
 					}
 					Err(err) => {
-						error!("Failed to glob manifest path: {err}");
+						error!("Failed to parse manifest: {err}");
 						None
 					}
 				},
@@ -156,16 +172,8 @@ impl ProviderActions for Epic {
 			.collect())
 	}
 
-	async fn get_owned_games(&self) -> Result<Vec<OwnedGame>> {
-		let mut file = File::open(self.app_data_path.join("Catalog").join("catcache.bin"))?;
-
-		let mut decoder = base64::read::DecoderReader::new(&mut file, &general_purpose::STANDARD);
-		let mut json = String::default();
-		decoder.read_to_string(&mut json)?;
-
-		let items = serde_json::from_str::<Vec<EpicCatalogItem>>(&json)?;
-
-		let owned_games = futures::future::join_all(items.iter().map(|catalog_item| async {
+	fn get_owned_games(&self) -> Result<Vec<OwnedGame>> {
+		let owned_games = self.catalog.iter().filter_map(|catalog_item| {
 			if catalog_item
 				.categories
 				.iter()
@@ -176,16 +184,30 @@ impl ProviderActions for Epic {
 
 			let mut game = OwnedGame::new(&catalog_item.id, *Self::ID, &catalog_item.title);
 
-			game.set_install_command(ProviderCommand::String(format!(
-				"com.epicgames.launcher://apps/{}%3A{}%3A{}?action=install",
-				catalog_item.namespace,
-				catalog_item.id,
-				catalog_item
-					.release_info
-					.first()
-					.map(|release_info| release_info.app_id.clone())
-					.unwrap_or_default(),
-			)));
+			game.add_provider_command(
+				ProviderCommandAction::Install,
+				ProviderCommand::String(format!(
+					"com.epicgames.launcher://apps/{}%3A{}%3A{}?action=install",
+					catalog_item.namespace,
+					catalog_item.id,
+					catalog_item
+						.release_info
+						.first()
+						.map(|release_info| release_info.app_id.clone())
+						.unwrap_or_default(),
+				)),
+			)
+			.add_provider_command(
+				ProviderCommandAction::OpenInBrowser,
+				ProviderCommand::String(format!(
+					"https://store.epicgames.com/browse?{}",
+					serde_urlencoded::to_string([
+						("sortBy", "relevancy"),
+						("q", &catalog_item.title)
+					])
+					.ok()?,
+				)),
+			);
 
 			if let Some(thumbnail_url) = catalog_item.get_thumbnail_url() {
 				game.set_thumbnail_url(&thumbnail_url);
@@ -195,37 +217,43 @@ impl ProviderActions for Epic {
 				game.set_release_date(release_date);
 			}
 
-			if let Some(engine) = get_engine(&catalog_item.title, &self.engine_cache).await {
-				game.set_engine(engine);
-			}
-
 			Some(game)
-		}))
-		.await
-		.into_iter()
-		.flatten();
-
-		Self::try_save_engine_cache(
-			&owned_games
-				.clone()
-				.map(|owned_game| (owned_game.name.clone(), owned_game.engine))
-				.collect(),
-		);
+		});
 
 		Ok(owned_games.collect())
 	}
-}
 
-async fn get_engine(title: &str, cache: &provider::EngineCache) -> Option<GameEngine> {
-	if let Some(cached_engine) = cache.get(title) {
-		return cached_engine.clone();
+	async fn get_remote_games(&self) -> Result<Vec<RemoteGame>> {
+		let remote_games: Vec<RemoteGame> =
+			futures::future::join_all(self.catalog.iter().map(|catalog_item| async {
+				let mut remote_game = RemoteGame::new(*Self::ID, &catalog_item.id);
+
+				if let Some(cached_remote_game) = self.remote_game_cache.get(&remote_game.id) {
+					return cached_remote_game.clone();
+				}
+
+				match pc_gaming_wiki::get_engine_from_game_title(&catalog_item.title).await {
+					Ok(Some(engine)) => {
+						remote_game.set_engine(engine);
+					}
+					Ok(None) => {}
+					Err(_) => {
+						remote_game.set_skip_cache(true);
+					}
+				}
+
+				remote_game
+			}))
+			.await;
+
+		Self::try_save_remote_game_cache(&remote_games);
+
+		Ok(remote_games)
 	}
-
-	pc_gaming_wiki::get_engine_from_game_title(title).await
 }
 
-fn read_manifest(path_result: std::result::Result<PathBuf, GlobError>) -> Result<EpicManifest> {
-	let json = fs::read_to_string(path_result?)?;
+fn read_manifest(path: &PathBuf) -> Result<EpicManifest> {
+	let json = fs::read_to_string(path)?;
 	let manifest = serde_json::from_str::<EpicManifest>(&json)?;
 	Ok(manifest)
 }

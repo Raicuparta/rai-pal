@@ -3,3 +3,7 @@
 	width: 30px;
 	height: 30px;
 }
+
+.thanksButton {
+	flex-grow: 1;
+}

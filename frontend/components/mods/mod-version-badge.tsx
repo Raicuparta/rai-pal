@@ -1,6 +1,6 @@
 import { Badge, DefaultMantineColor, Stack, Tooltip } from "@mantine/core";
 import { getIsOutdated } from "../../util/is-outdated";
-import { OutdatedMarker } from "@components/OutdatedMarker";
+import { OutdatedMarker } from "@components/outdated-marker";
 
 type Props = {
 	readonly localVersion?: string;

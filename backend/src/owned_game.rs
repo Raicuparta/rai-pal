@@ -4,15 +4,16 @@ use std::collections::{
 };
 
 use crate::{
-	game_engines::game_engine::GameEngine,
 	game_executable::OperatingSystem,
 	game_mode::GameMode,
 	providers::{
 		provider::ProviderId,
-		provider_command::ProviderCommand,
+		provider_command::{
+			ProviderCommand,
+			ProviderCommandAction,
+		},
 	},
 	serializable_struct,
-	steam::id_lists::UevrScore,
 };
 
 serializable_struct!(OwnedGame {
@@ -20,14 +21,12 @@ serializable_struct!(OwnedGame {
 	pub provider: ProviderId,
 	pub name: String,
 	pub os_list: HashSet<OperatingSystem>,
-	pub engine: Option<GameEngine>,
 	pub release_date: Option<i64>,
 	pub thumbnail_url: Option<String>,
 	pub game_mode: Option<GameMode>,
-	pub uevr_score: Option<UevrScore>,
-	pub show_library_command: Option<ProviderCommand>,
-	pub open_page_command: Option<ProviderCommand>,
-	pub install_command: Option<ProviderCommand>,
+
+	// TODO: the keys for this map should be ProviderCommandAction, but tauri-specta doesn't support that.
+	pub provider_commands: HashMap<String, ProviderCommand>,
 });
 
 impl OwnedGame {
@@ -37,24 +36,15 @@ impl OwnedGame {
 			provider,
 			name: name.to_string(),
 			os_list: HashSet::default(),
-			engine: None,
+			provider_commands: HashMap::default(),
 			release_date: None,
 			thumbnail_url: None,
 			game_mode: None,
-			uevr_score: None,
-			show_library_command: None,
-			open_page_command: None,
-			install_command: None,
 		}
 	}
 
 	pub fn set_os_list(&mut self, os_list: HashSet<OperatingSystem>) -> &mut Self {
 		self.os_list = os_list;
-		self
-	}
-
-	pub fn set_engine(&mut self, engine: GameEngine) -> &mut Self {
-		self.engine = Some(engine);
 		self
 	}
 
@@ -73,23 +63,13 @@ impl OwnedGame {
 		self
 	}
 
-	pub fn set_uevr_score(&mut self, uevr_score: UevrScore) -> &mut Self {
-		self.uevr_score = Some(uevr_score);
-		self
-	}
-
-	pub fn set_show_library_command(&mut self, show_library_command: ProviderCommand) -> &mut Self {
-		self.show_library_command = Some(show_library_command);
-		self
-	}
-
-	pub fn set_open_page_command(&mut self, open_page_command: ProviderCommand) -> &mut Self {
-		self.open_page_command = Some(open_page_command);
-		self
-	}
-
-	pub fn set_install_command(&mut self, install_command: ProviderCommand) -> &mut Self {
-		self.install_command = Some(install_command);
+	pub fn add_provider_command(
+		&mut self,
+		command_action: ProviderCommandAction,
+		command: ProviderCommand,
+	) -> &mut Self {
+		self.provider_commands
+			.insert(command_action.to_string(), command);
 		self
 	}
 }

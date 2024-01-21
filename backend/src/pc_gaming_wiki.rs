@@ -12,6 +12,7 @@ use crate::{
 		GameEngineVersion,
 	},
 	serializable_struct,
+	Result,
 };
 
 serializable_struct!(PCGamingWikiTitle {
@@ -48,81 +49,89 @@ fn parse_version(version_text: &str) -> Option<GameEngineVersion> {
 	})
 }
 
-pub async fn get_engine(where_query: &str) -> Option<GameEngine> {
-	let url = format!("https://www.pcgamingwiki.com/w/api.php?action=cargoquery&tables=Infobox_game,Infobox_game_engine&fields=Infobox_game_engine.Engine,Infobox_game_engine.Build&where={where_query}&format=json&join%20on=Infobox_game._pageName%20=%20Infobox_game_engine._pageName");
+pub async fn get_engine(where_query: &str) -> Result<Option<GameEngine>> {
+	let url = format!(
+		"https://www.pcgamingwiki.com/w/api.php?{}",
+		serde_urlencoded::to_string([
+			("action", "cargoquery"),
+			("tables", "Infobox_game,Infobox_game_engine"),
+			(
+				"fields",
+				"Infobox_game_engine.Engine,Infobox_game_engine.Build",
+			),
+			("where", where_query),
+			(
+				"join on",
+				"Infobox_game._pageName = Infobox_game_engine._pageName",
+			),
+			("format", "json"),
+		])?
+	);
 
-	let result = reqwest::get(url).await;
+	Ok(
+		match reqwest::get(url)
+			.await?
+			.json::<PCGamingWikiQueryResponse>()
+			.await
+		{
+			Ok(parsed_response) => {
+				parsed_response
+					.cargoquery
+					.into_iter()
+					// This has high potential for false positives, since we search by title kinda fuzzily,
+					// and then just pick the first one with an engine.
+					.find_map(|item| Some((item.title.engine?, item.title.build)))
+					.and_then(|(engine, build)| {
+						let version = build
+							.and_then(|version_text| parse_version(&version_text))
+							// On PCGamingWiki, each Unreal major version is considered a separate engine.
+							// So we can parse the engine name to get the major version.
+							.or_else(|| parse_version(&engine));
 
-	match result {
-		Ok(response) => {
-			match response.json::<PCGamingWikiQueryResponse>().await {
-				Ok(parsed_response) => {
-					parsed_response
-						.cargoquery
-						.into_iter()
-						// This has high potential for false positives, since we search by title kinda fuzzily,
-						// and then just pick the first one with an engine.
-						.find_map(|item| Some((item.title.engine?, item.title.build)))
-						.and_then(|(engine, build)| {
-							let version = build
-								.and_then(|version_text| parse_version(&version_text))
-								// On PCGamingWiki, each Unreal major version is considered a separate engine.
-								// So we can parse the engine name to get the major version.
-								.or_else(|| parse_version(&engine));
-
-							// I don't feel like figuring out the exact format,
-							// since it can sometimes have the engine version included, sometimes not.
-							if engine.contains("Unreal") {
-								Some(GameEngine {
-									brand: GameEngineBrand::Unreal,
-									version,
-								})
-							} else if engine.contains("Unity") {
-								Some(GameEngine {
-									brand: GameEngineBrand::Unity,
-									version,
-								})
-							} else if engine.contains("Godot") {
-								Some(GameEngine {
-									brand: GameEngineBrand::Godot,
-									version,
-								})
-							} else {
-								None
-							}
-						})
-				}
-				Err(err) => {
-					error!("Error parsing PCGamingWiki response: {err}");
-					None
-				}
+						// I don't feel like figuring out the exact format,
+						// since it can sometimes have the engine version included, sometimes not.
+						if engine.contains("Unreal") {
+							Some(GameEngine {
+								brand: GameEngineBrand::Unreal,
+								version,
+							})
+						} else if engine.contains("Unity") {
+							Some(GameEngine {
+								brand: GameEngineBrand::Unity,
+								version,
+							})
+						} else if engine.contains("Godot") {
+							Some(GameEngine {
+								brand: GameEngineBrand::Godot,
+								version,
+							})
+						} else {
+							None
+						}
+					})
 			}
-		}
-		Err(err) => {
-			error!("Error fetching from PCGamingWiki: {err}");
-			None
-		}
-	}
+			Err(err) => {
+				error!("Error parsing PCGamingWiki response: {err}");
+				None
+			}
+		},
+	)
 }
 
 // Since there's no way to get a game by every provider ID from PCGamingWiki, we try with the game title.
-pub async fn get_engine_from_game_title(title: &str) -> Option<GameEngine> {
+pub async fn get_engine_from_game_title(title: &str) -> Result<Option<GameEngine>> {
 	// Use only ascii and lowercase to make it easier to find by title.
 	let lowercase_title = title.to_ascii_lowercase();
 
 	// Remove "demo" suffix so that demos can match with the main game.
+	#[allow(clippy::trivial_regex)]
 	let non_demo_title = regex_replace!(r" demo$", &lowercase_title, "");
 
 	// Replace anything that isn't alphanumeric with a % character, the wildcard for the LIKE query.
 	// This way we can still match even if the game has slight differences in the presented title punctuation.
 	// Problem is, this can easily cause false flags (and it does).
-	// In this case we use %25, which is % encoded for url components.
-	let clean_title = regex_replace_all!(r"[^a-zA-Z0-9]+", &non_demo_title, "%25");
+	let clean_title = regex_replace_all!(r"[^a-zA-Z0-9]+", &non_demo_title, "%");
 
 	// Finally do the query by page title.
-	get_engine(&format!(
-		"Infobox_game._pageName%20LIKE%20%22{}%22",
-		clean_title
-	))
-	.await
+	get_engine(&format!("Infobox_game._pageName LIKE \"{}\"", clean_title)).await
 }

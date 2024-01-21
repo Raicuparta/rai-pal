@@ -52,6 +52,7 @@ const provider: TableColumnBase<ProcessedOwnedGame, ProviderId> = {
 	center: true,
 	hidable: true,
 	getSortValue: (game) => game.provider,
+	getFilterValue: (game) => game.provider,
 	filterOptions: providerFilterOptions,
 	unavailableValues: ["Manual", "Xbox"],
 	renderCell: (game) => (
@@ -66,16 +67,16 @@ const engine: TableColumnBase<ProcessedOwnedGame, GameEngineBrand> = {
 	width: 150,
 	center: true,
 	hidable: true,
-	sort: (dataA, dataB) => sortGamesByEngine(dataA.engine, dataB.engine),
-	getFilterValue: (game) => game.engine?.brand ?? "",
-	unavailableValues: ["Godot"],
+	sort: (dataA, dataB) =>
+		sortGamesByEngine(dataA.remoteData?.engine, dataB.remoteData?.engine),
+	getFilterValue: (game) => game.remoteData?.engine?.brand ?? null,
 	filterOptions: engineFilterOptions,
-	renderCell: ({ engine }) => (
+	renderCell: ({ remoteData }) => (
 		<Table.Td>
 			<EngineBadge
 				maw={70}
-				value={engine?.brand}
-				label={engine ? engine.version?.display ?? "-" : undefined}
+				value={remoteData?.engine?.brand}
+				label={remoteData?.engine?.version?.display ?? "-"}
 			/>
 		</Table.Td>
 	),
@@ -89,7 +90,6 @@ const installed: TableColumnBase<ProcessedOwnedGame, string> = {
 	getSortValue: (game) => game.isInstalled,
 	getFilterValue: (game) => `${game.isInstalled}`,
 	filterOptions: [
-		{ label: "Any install state", value: "" },
 		{ label: "Installed", value: "true" },
 		{ label: "Not Installed", value: "false" },
 	],
@@ -104,8 +104,8 @@ const gameMode: TableColumnBase<ProcessedOwnedGame, GameMode> = {
 	center: true,
 	hidable: true,
 	getSortValue: (game) => game.gameMode,
+	getFilterValue: (game) => game.gameMode,
 	filterOptions: [
-		{ label: "Any mode", value: "" },
 		{ label: "Flat", value: "Flat" },
 		{ label: "VR", value: "VR" },
 	],
@@ -121,9 +121,9 @@ const uevrScore: TableColumnBase<ProcessedOwnedGame, UevrScore> = {
 	width: 90,
 	center: true,
 	hidable: true,
-	getSortValue: (game) => game.uevrScore,
+	getSortValue: (game) => game.remoteData?.uevrScore,
+	getFilterValue: (game) => game.remoteData?.uevrScore ?? null,
 	filterOptions: [
-		{ label: "Any UEVR score", value: "" },
 		{ label: "A", value: "A" },
 		{ label: "B", value: "B" },
 		{ label: "C", value: "C" },
@@ -131,7 +131,7 @@ const uevrScore: TableColumnBase<ProcessedOwnedGame, UevrScore> = {
 	],
 	renderCell: (game) => (
 		<Table.Td>
-			<UevrScoreBadge value={game.uevrScore} />
+			<UevrScoreBadge value={game.remoteData?.uevrScore} />
 		</Table.Td>
 	),
 };

@@ -3,25 +3,30 @@ import { useMemo, useState } from "react";
 import { filterGame, includesOneOf } from "../../util/filter";
 import { OwnedGameModal } from "./owned-game-modal";
 import { useFilteredList } from "@hooks/use-filtered-list";
-import { FilterMenu } from "@components/filter-menu";
+import { FilterMenu } from "@components/filters/filter-menu";
 import { VirtualizedTable } from "@components/table/virtualized-table";
 import { RefreshButton } from "@components/refresh-button";
 import { SearchInput } from "@components/search-input";
 import { OwnedGameColumnsId, ownedGamesColumns } from "./owned-games-columns";
-import { ColumnsSelect } from "@components/columns-select";
 import { usePersistedState } from "@hooks/use-persisted-state";
-import { TypedSegmentedControl } from "@components/installed-games/typed-segmented-control";
 import { FixOwnedGamesButton } from "./fix-owned-games-button";
 import {
 	ProcessedOwnedGame,
 	useProcessedOwnedGames,
 } from "@hooks/use-processed-owned-games";
+import { FilterSelect } from "@components/filters/filter-select";
 
-const defaultFilter: Record<string, string> = {};
+const defaultFilter: Record<string, (string | null)[]> = {};
+
+const defaultColumns: OwnedGameColumnsId[] = [
+	"thumbnail",
+	"engine",
+	"provider",
+];
 
 function filterOwnedGame(
 	game: ProcessedOwnedGame,
-	filter: Record<string, string>,
+	filter: Record<string, (string | null)[]>,
 	search: string,
 ) {
 	return (
@@ -43,7 +48,7 @@ export function OwnedGamesPage() {
 
 	const [visibleColumnIds, setVisibleColumnIds] = usePersistedState<
 		OwnedGameColumnsId[]
-	>(["thumbnail", "engine", "releaseDate"], "owned-visible-columns");
+	>(defaultColumns, "owned-visible-columns");
 
 	const filteredColumns = useMemo(
 		() =>
@@ -53,16 +58,23 @@ export function OwnedGamesPage() {
 		[visibleColumnIds],
 	);
 
-	const [filteredGames, sort, setSort, filter, setFilter, search, setSearch] =
-		useFilteredList(
-			"owned-games-filter",
-			filteredColumns,
-			ownedGames,
-			filterOwnedGame,
-			defaultFilter,
-		);
+	const [
+		filteredGames,
+		sort,
+		setSort,
+		hiddenValues,
+		setHiddenValues,
+		search,
+		setSearch,
+	] = useFilteredList(
+		"owned-games-hidden",
+		filteredColumns,
+		ownedGames,
+		filterOwnedGame,
+		defaultFilter,
+	);
 
-	const isFilterActive = Object.values(filter).filter(Boolean).length > 0;
+	const isFilterActive = Object.values(hiddenValues).filter(Boolean).length > 0;
 
 	return (
 		<Stack h="100%">
@@ -80,28 +92,24 @@ export function OwnedGamesPage() {
 					count={filteredGames.length}
 				/>
 				<FilterMenu
+					setFilter={setHiddenValues}
 					active={isFilterActive}
-					setFilter={setFilter}
 				>
-					<Stack>
-						<ColumnsSelect
-							columns={ownedGamesColumns}
-							hiddenIds={visibleColumnIds}
-							onChange={setVisibleColumnIds}
-						/>
-						{ownedGamesColumns.map(
-							(column) =>
-								column.filterOptions && (
-									<TypedSegmentedControl
-										key={column.id}
-										data={column.filterOptions}
-										unavailableValues={column.unavailableValues}
-										onChange={(value) => setFilter({ [column.id]: value })}
-										value={filter[column.id]}
-									/>
-								),
-						)}
-					</Stack>
+					{ownedGamesColumns.map(
+						(column) =>
+							column.filterOptions && (
+								<FilterSelect
+									key={column.id}
+									column={column}
+									visibleColumns={visibleColumnIds}
+									onChangeVisibleColumns={setVisibleColumnIds}
+									hiddenValues={hiddenValues[column.id]}
+									onChange={(selectedValues) =>
+										setHiddenValues({ [column.id]: selectedValues })
+									}
+								/>
+							),
+					)}
 				</FilterMenu>
 				<RefreshButton />
 			</Group>

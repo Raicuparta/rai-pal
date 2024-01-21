@@ -40,11 +40,10 @@ serializable_enum!(RunnableParameter {
 	GameJson,
 });
 
-#[async_trait]
 impl ModLoaderStatic for RunnableLoader {
 	const ID: &'static str = "runnable";
 
-	async fn new(resources_path: &Path) -> Result<Self>
+	fn new(resources_path: &Path) -> Result<Self>
 	where
 		Self: std::marker::Sized,
 	{
@@ -137,44 +136,27 @@ impl ModLoaderActions for RunnableLoader {
 	fn get_local_mods(&self) -> Result<local_mod::Map> {
 		let mods_path = Self::get_installed_mods_path()?;
 
-		let manifests = glob_path(
-			&mods_path
-				.join("*")
-				// TODO manifest name const somewhere.
-				.join("rai-pal-manifest.json"),
-		)?;
-
 		let mut mod_map = local_mod::Map::default();
 
-		for manifest_path_result in manifests {
-			match manifest_path_result {
-				Ok(manifest_path) => {
-					if let Some(manifest) = mod_manifest::get(&manifest_path) {
-						match LocalMod::new(
-							Self::ID,
-							manifest_path.parent().unwrap_or(&manifest_path),
-							manifest.engine,
-							manifest.unity_backend,
-						) {
-							Ok(local_mod) => {
-								mod_map.insert(local_mod.common.id.clone(), local_mod);
-							}
-							Err(error) => {
-								error!(
-									"Failed to create local runnable mod from manifest in {}. Error: {}",
-									manifest_path.display(),
-									error
-								);
-							}
-						}
+		for manifest_path in glob_path(&mods_path.join("*").join(mod_manifest::Manifest::FILE_NAME))
+		{
+			if let Some(manifest) = mod_manifest::get(&manifest_path) {
+				match LocalMod::new(
+					Self::ID,
+					manifest_path.parent().unwrap_or(&manifest_path),
+					manifest.engine,
+					manifest.unity_backend,
+				) {
+					Ok(local_mod) => {
+						mod_map.insert(local_mod.common.id.clone(), local_mod);
 					}
-				}
-				Err(error) => {
-					error!(
-						"Failed to read mod manifest from {}. Error: {}",
-						mods_path.display(),
-						error
-					);
+					Err(error) => {
+						error!(
+							"Failed to create local runnable mod from manifest in {}. Error: {}",
+							manifest_path.display(),
+							error
+						);
+					}
 				}
 			}
 		}

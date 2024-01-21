@@ -44,11 +44,10 @@ serializable_struct!(BepInEx {
 	pub id: &'static str,
 });
 
-#[async_trait]
 impl ModLoaderStatic for BepInEx {
 	const ID: &'static str = "bepinex";
 
-	async fn new(resources_path: &Path) -> Result<Self> {
+	fn new(resources_path: &Path) -> Result<Self> {
 		Ok(Self {
 			id: Self::ID,
 			data: ModLoaderData {
@@ -131,7 +130,10 @@ impl ModLoaderActions for BepInEx {
 
 		fs::write(
 			game_folder.join("doorstop_config.ini"),
-			doorstop_config.replace("{{MOD_FILES_PATH}}", paths::path_to_str(game_data_folder)?),
+			doorstop_config.replace(
+				"{{MOD_FILES_PATH}}",
+				game_data_folder.to_string_lossy().as_ref(),
+			),
 		)?;
 
 		// TODO: linux stuff
@@ -187,11 +189,8 @@ impl ModLoaderActions for BepInEx {
 		let installed_mods_path = Self::get_installed_mods_path()?;
 
 		let local_mods = {
-			let mut local_mods = find_mods(&installed_mods_path, UnityScriptingBackend::Il2Cpp)?;
-			local_mods.extend(find_mods(
-				&installed_mods_path,
-				UnityScriptingBackend::Mono,
-			)?);
+			let mut local_mods = find_mods(&installed_mods_path, UnityScriptingBackend::Il2Cpp);
+			local_mods.extend(find_mods(&installed_mods_path, UnityScriptingBackend::Mono));
 			local_mods
 		};
 
@@ -288,26 +287,22 @@ const fn is_legacy(engine: &GameEngine) -> bool {
 fn find_mods(
 	installed_mods_path: &Path,
 	scripting_backend: UnityScriptingBackend,
-) -> Result<HashMap<String, LocalMod>> {
+) -> HashMap<String, LocalMod> {
 	let mods_folder_path = installed_mods_path.join(scripting_backend.to_string());
 
-	let entries: Vec<_> = paths::glob_path(&mods_folder_path.join("*"))?.collect();
-
-	Ok(entries
+	paths::glob_path(&mods_folder_path.join("*"))
 		.iter()
-		.filter_map(|entry| {
-			entry.as_ref().map_or(None, |mod_path| {
-				if let Ok(local_mod) = LocalMod::new(
-					BepInEx::ID,
-					mod_path,
-					Some(GameEngineBrand::Unity),
-					Some(scripting_backend),
-				) {
-					Some((local_mod.common.id.clone(), local_mod))
-				} else {
-					None
-				}
-			})
+		.filter_map(|mod_path| {
+			if let Ok(local_mod) = LocalMod::new(
+				BepInEx::ID,
+				mod_path,
+				Some(GameEngineBrand::Unity),
+				Some(scripting_backend),
+			) {
+				Some((local_mod.common.id.clone(), local_mod))
+			} else {
+				None
+			}
 		})
-		.collect())
+		.collect()
 }

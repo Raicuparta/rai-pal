@@ -2894,7 +2894,7 @@ checksum = "dc33ff2d4973d518d823d61aa239014831e521c75da58e3df4840d3f47749d09"
 
 [[package]]
 name = "rai-pal"
-version = "0.7.1"
+version = "0.8.0"
 dependencies = [
  "async-trait",
  "base64 0.21.5",
@@ -2915,6 +2915,7 @@ dependencies = [
  "rusqlite",
  "serde",
  "serde_json",
+ "serde_urlencoded",
  "specta",
  "steamlocate",
  "tauri",
@@ -2924,6 +2925,7 @@ dependencies = [
  "tauri-runtime",
  "tauri-specta",
  "thiserror",
+ "tokio",
  "uuid",
  "webkit2gtk",
  "webview2-com 0.27.0",
