@@ -17,7 +17,7 @@ export function FilterMenu(props: Props) {
 				{props.active && (
 					<Button
 						onClick={() => props.setFilter(undefined)}
-						p="xs"
+						px={5}
 					>
 						<IconX />
 					</Button>
