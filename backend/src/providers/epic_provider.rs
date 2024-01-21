@@ -143,7 +143,7 @@ impl EpicCatalogItem {
 #[async_trait]
 impl ProviderActions for Epic {
 	fn get_installed_games(&self) -> Result<Vec<InstalledGame>> {
-		let manifests = glob_path(&self.app_data_path.join("Manifests").join("*.item"))?;
+		let manifests = glob_path(&self.app_data_path.join("Manifests").join("*.item"));
 
 		Ok(manifests
 			.iter()

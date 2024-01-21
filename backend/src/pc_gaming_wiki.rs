@@ -124,6 +124,7 @@ pub async fn get_engine_from_game_title(title: &str) -> Result<Option<GameEngine
 	let lowercase_title = title.to_ascii_lowercase();
 
 	// Remove "demo" suffix so that demos can match with the main game.
+	#[allow(clippy::trivial_regex)]
 	let non_demo_title = regex_replace!(r" demo$", &lowercase_title, "");
 
 	// Replace anything that isn't alphanumeric with a % character, the wildcard for the LIKE query.

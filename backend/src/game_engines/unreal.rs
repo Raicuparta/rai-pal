@@ -196,9 +196,8 @@ fn get_shipping_exe(game_exe_path: &Path) -> PathBuf {
 				return game_exe_path.to_path_buf();
 			}
 
-			if let Some(sibling_shipping_exe) = glob_path(&parent.join("*Shipping.exe"))
-				.ok() // TODO log error.
-				.and_then(|paths| paths.first().cloned())
+			if let Some(sibling_shipping_exe) =
+				glob_path(&parent.join("*Shipping.exe")).first().cloned()
 			{
 				// Case where given exe is a sibling of the shipping exe.
 				return sibling_shipping_exe;
@@ -212,7 +211,7 @@ fn get_shipping_exe(game_exe_path: &Path) -> PathBuf {
 
 		// From here, we start presuming that the given exe is a launcher at the root level,
 		// and we need to dig down to find the shipping exe.
-		if let Ok(globbed_paths) = glob_path(
+		let globbed_paths = glob_path(
 			&parent
 				// This portion of the path would usually be the game's name, but no way to guess that.
 				// We know it's not "Engine", but can't exclude with the rust glob crate (we filter it below).
@@ -224,22 +223,22 @@ fn get_shipping_exe(game_exe_path: &Path) -> PathBuf {
 				.join("Win*")
 				// The file name may or may not end with Shipping.exe, so we don't test for that yet.
 				.join("*.exe"),
-		) {
-			let mut suitable_paths = globbed_paths.iter().filter(|path| {
-				// Filter for the correct Win* folders, since the glob couldn't do it above.
-				path.parent().is_some_and(is_valid_win_folder)
+		);
+
+		let mut suitable_paths = globbed_paths.iter().filter(|path| {
+			// Filter for the correct Win* folders, since the glob couldn't do it above.
+			path.parent().is_some_and(is_valid_win_folder)
 					// The Engine folder can have similar structure, but it's not the one we want.
 					&& !path.starts_with(parent.join("Engine"))
-			});
+		});
 
-			let first_path = suitable_paths.next();
-			if let Some(best_path) = suitable_paths
-				// Exe that looks like a shipping exe takes priority.
-				.find(|path| is_shipping_exe(path))
-				.or(first_path)
-			{
-				return best_path.clone();
-			}
+		let first_path = suitable_paths.next();
+		if let Some(best_path) = suitable_paths
+			// Exe that looks like a shipping exe takes priority.
+			.find(|path| is_shipping_exe(path))
+			.or(first_path)
+		{
+			return best_path.clone();
 		}
 	}
 

@@ -170,14 +170,7 @@ impl InstalledGame {
 
 	pub fn get_manifest_paths(&self) -> Vec<PathBuf> {
 		match self.get_installed_mod_manifest_path("*") {
-			Ok(manifests_path) => glob_path(&manifests_path).unwrap_or_else(|err| {
-				error!(
-					"Failed to glob path for game {}. Error: {}",
-					manifests_path.display(),
-					err
-				);
-				Vec::default()
-			}),
+			Ok(manifests_path) => glob_path(&manifests_path),
 			Err(err) => {
 				error!(
 					"Failed to get mod manifests glob path for game {}. Error: {}",

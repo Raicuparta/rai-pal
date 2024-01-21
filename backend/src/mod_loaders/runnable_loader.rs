@@ -136,16 +136,10 @@ impl ModLoaderActions for RunnableLoader {
 	fn get_local_mods(&self) -> Result<local_mod::Map> {
 		let mods_path = Self::get_installed_mods_path()?;
 
-		let manifests = glob_path(
-			&mods_path
-				.join("*")
-				// TODO manifest name const somewhere.
-				.join("rai-pal-manifest.json"),
-		)?;
-
 		let mut mod_map = local_mod::Map::default();
 
-		for manifest_path in manifests {
+		for manifest_path in glob_path(&mods_path.join("*").join(mod_manifest::Manifest::FILE_NAME))
+		{
 			if let Some(manifest) = mod_manifest::get(&manifest_path) {
 				match LocalMod::new(
 					Self::ID,

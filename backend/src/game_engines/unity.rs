@@ -143,12 +143,10 @@ fn get_alt_architecture(game_path: &Path) -> Option<Architecture> {
 		// This would usually be UnityPlayer.dll, steam_api.dll, etc.
 		// Here the guessing can go wrong, since it's possible a top level dll is actual x86,
 		// when the actual game is x64.
-		if let Ok(top_level_dlls) = glob_path(&game_folder.join("*.dll")) {
-			if let Some(first_dll) = top_level_dlls.first() {
-				if let Ok(file) = fs::read(first_dll) {
-					if let Ok((_, arch)) = read_windows_binary(&file) {
-						return arch;
-					}
+		if let Some(first_dll) = glob_path(&game_folder.join("*.dll")).first() {
+			if let Ok(file) = fs::read(first_dll) {
+				if let Ok((_, arch)) = read_windows_binary(&file) {
+					return arch;
 				}
 			}
 		}
@@ -159,14 +157,12 @@ fn get_alt_architecture(game_path: &Path) -> Option<Architecture> {
 		// so I'm leaving it for last. (mostly because my own UUVR mod drops both the
 		// x86 and x64 dlls in the folder so Unity picks the right one)
 		if let Ok(unity_data_path) = get_unity_data_path(game_path) {
-			if let Ok(plugin_dlls) =
-				glob_path(&unity_data_path.join("Plugins").join("**").join("*.dll"))
+			if let Some(first_dll) =
+				glob_path(&unity_data_path.join("Plugins").join("**").join("*.dll")).first()
 			{
-				if let Some(first_dll) = plugin_dlls.first() {
-					if let Ok(file) = fs::read(first_dll) {
-						if let Ok((_, arch)) = read_windows_binary(&file) {
-							return arch;
-						}
+				if let Ok(file) = fs::read(first_dll) {
+					if let Ok((_, arch)) = read_windows_binary(&file) {
+						return arch;
 					}
 				}
 			}
