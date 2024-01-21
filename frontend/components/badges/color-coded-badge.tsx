@@ -7,7 +7,14 @@ import {
 	UevrScore,
 	UnityScriptingBackend,
 } from "@api/bindings";
-import { Badge, BadgeProps, DefaultMantineColor, Flex } from "@mantine/core";
+import {
+	Badge,
+	BadgeProps,
+	Box,
+	DefaultMantineColor,
+	Flex,
+	Text,
+} from "@mantine/core";
 import styles from "./badges.module.css";
 
 interface Props<TValue extends string> extends BadgeProps {
@@ -22,15 +29,18 @@ function CreateColorCodedBadge<TValue extends string>(
 	colorMap: ColorRecord<TValue>,
 ) {
 	return function ColorCodedBadge(props: Props<TValue>) {
-		const color = props.value ? colorMap[props.value] : "dark";
+		const color = props.value ? colorMap[props.value] : "white";
+
 		return (
 			<Flex className={styles.wrapper}>
 				<Badge
 					color={color}
-					className={props.label ? styles.labelledBadge : undefined}
+					className={
+						props.value && props.label ? styles.labelledBadge : undefined
+					}
 					{...props}
 				>
-					{props.value ?? fallbackText ?? "-"}
+					{props.value ?? fallbackText}
 				</Badge>
 				{props.label && props.value && (
 					<Badge
