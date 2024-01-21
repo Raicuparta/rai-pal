@@ -33,7 +33,7 @@ Rai Pal analyzes files on your system to determine which games you own, and whic
 | Epic     | ✅         | ✅     |                                                                                                                    |
 | GOG      | ✅         | ✅     |                                                                                                                    |
 | PC Xbox  | ✅*        | ❌     | Only finds installed games marked as moddable (the ones where you can open the game files folder via the Xbox app) |
-| Itch     | ✅         | ✅*    | Does not include games from bundles, unless you add them to your library.                                          |
+| Itch     | ✅         | ✅*    | Does not include games from bundles, unless you add them to your library. There are [scripts](https://gist.github.com/lats/c920866caf9c0cb04e82abba411e1bb9) for adding all games from a bundle to your library, but they're slow and not recommended by the Itch team. |
 
 For all other providers, you'll have to manually add the games to Rai Pal using the "add game" button on the installed games tab, or by just dropping the game exe on the Rai Pal window.
 
