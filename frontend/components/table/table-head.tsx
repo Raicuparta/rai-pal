@@ -19,7 +19,7 @@ export type TableColumnBase<TItem, TFilterOption extends string = string> = {
 	unavailableValues?: TFilterOption[];
 	sort?: (itemA: TItem, itemB: TItem) => number;
 	getSortValue?: (item: TItem) => unknown;
-	getFilterValue?: (item: TItem) => TFilterOption | "";
+	getFilterValue?: (item: TItem) => TFilterOption | null;
 	filterOptions?: FilterOption<TFilterOption>[];
 };
 

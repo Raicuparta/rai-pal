@@ -52,6 +52,7 @@ const provider: TableColumnBase<ProcessedOwnedGame, ProviderId> = {
 	center: true,
 	hidable: true,
 	getSortValue: (game) => game.provider,
+	getFilterValue: (game) => game.provider,
 	filterOptions: providerFilterOptions,
 	unavailableValues: ["Manual", "Xbox"],
 	renderCell: (game) => (
@@ -68,7 +69,7 @@ const engine: TableColumnBase<ProcessedOwnedGame, GameEngineBrand> = {
 	hidable: true,
 	sort: (dataA, dataB) =>
 		sortGamesByEngine(dataA.remoteData?.engine, dataB.remoteData?.engine),
-	getFilterValue: (game) => game.remoteData?.engine?.brand ?? "",
+	getFilterValue: (game) => game.remoteData?.engine?.brand ?? null,
 	filterOptions: engineFilterOptions,
 	renderCell: ({ remoteData }) => (
 		<Table.Td>
@@ -89,7 +90,6 @@ const installed: TableColumnBase<ProcessedOwnedGame, string> = {
 	getSortValue: (game) => game.isInstalled,
 	getFilterValue: (game) => `${game.isInstalled}`,
 	filterOptions: [
-		{ label: "Any install state", value: "" },
 		{ label: "Installed", value: "true" },
 		{ label: "Not Installed", value: "false" },
 	],
@@ -104,6 +104,7 @@ const gameMode: TableColumnBase<ProcessedOwnedGame, GameMode> = {
 	center: true,
 	hidable: true,
 	getSortValue: (game) => game.gameMode,
+	getFilterValue: (game) => game.gameMode,
 	filterOptions: [
 		{ label: "Flat", value: "Flat" },
 		{ label: "VR", value: "VR" },
@@ -121,6 +122,7 @@ const uevrScore: TableColumnBase<ProcessedOwnedGame, UevrScore> = {
 	center: true,
 	hidable: true,
 	getSortValue: (game) => game.remoteData?.uevrScore,
+	getFilterValue: (game) => game.remoteData?.uevrScore ?? null,
 	filterOptions: [
 		{ label: "A", value: "A" },
 		{ label: "B", value: "B" },

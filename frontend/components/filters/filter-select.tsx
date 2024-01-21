@@ -1,12 +1,15 @@
 import { Button, Group, Stack, Tooltip } from "@mantine/core";
 import { TableColumn } from "../table/table-head";
-import {
-	IconEye,
-	IconEyeClosed,
-	IconRestore,
-	IconSquare,
-	IconSquareCheck,
-} from "@tabler/icons-react";
+import { IconEye, IconEyeClosed, IconRestore } from "@tabler/icons-react";
+import { useCallback, useMemo } from "react";
+import { FilterButton } from "./filter-button";
+
+const unknownOption = {
+	value: null,
+	label: "Unknown",
+};
+
+export type UnknownFilterOption = typeof unknownOption;
 
 type Props<TKey extends string, TItem, TFilterOption extends string> = {
 	readonly column: TableColumn<TKey, TItem, TFilterOption>;
@@ -16,35 +19,45 @@ type Props<TKey extends string, TItem, TFilterOption extends string> = {
 	readonly onChange: (hiddenValues: (TFilterOption | null)[]) => void;
 };
 
-const defaultValue: unknown[] = [];
+const defaultHiddenValues: unknown[] = [];
 
 export function FilterSelect<
 	TKey extends string,
 	TItem,
 	TFilterOption extends string,
->(props: Props<TKey, TItem, TFilterOption>) {
-	const selectedValues =
-		props.hiddenValues ?? (defaultValue as TFilterOption[]);
+>({
+	column,
+	onChange,
+	onChangeVisibleColumns,
+	visibleColumns,
+	hiddenValues = defaultHiddenValues as TFilterOption[],
+}: Props<TKey, TItem, TFilterOption>) {
+	const optionsWithUnknown = useMemo(
+		() => [unknownOption, ...(column.filterOptions ?? [])],
+		[column.filterOptions],
+	);
 
-	const isHidden = (value: TFilterOption | null) => {
-		return selectedValues.includes(value);
-	};
+	const handleFilterClick = useCallback(
+		(value: TFilterOption | null) => {
+			const newValues =
+				hiddenValues.indexOf(value) === -1
+					? [...hiddenValues, value]
+					: hiddenValues.filter((id) => id !== value);
 
-	const handleChange = (newValue: TFilterOption | null) => {
-		props.onChange(
-			selectedValues.indexOf(newValue) === -1
-				? [...selectedValues, newValue]
-				: selectedValues.filter((id) => id !== newValue),
-		);
-	};
+			// If all possible values are hidden, it will always yield an empty result list,
+			// so in that case we just reset this filter.
+			onChange(newValues.length >= optionsWithUnknown.length ? [] : newValues);
+		},
+		[hiddenValues, onChange, optionsWithUnknown.length],
+	);
 
 	const handleReset = () => {
-		props.onChange([]);
+		onChange([]);
 	};
 
-	if (!props.column.filterOptions) return null;
+	if (!column.filterOptions) return null;
 
-	const isColumnVisible = props.visibleColumns.includes(props.column.id);
+	const isColumnVisible = visibleColumns.includes(column.id);
 
 	return (
 		<Stack gap="xs">
@@ -57,54 +70,31 @@ export function FilterSelect<
 					variant={isColumnVisible ? "filled" : "light"}
 					leftSection={isColumnVisible ? <IconEye /> : <IconEyeClosed />}
 					onClick={() =>
-						props.onChangeVisibleColumns(
+						onChangeVisibleColumns(
 							isColumnVisible
-								? props.visibleColumns.filter((col) => col !== props.column.id)
-								: props.visibleColumns.concat(props.column.id),
+								? visibleColumns.filter((col) => col !== column.id)
+								: visibleColumns.concat(column.id),
 						)
 					}
 				>
-					<Group gap="xs">{props.column.label}</Group>
+					<Group gap="xs">{column.label}</Group>
 				</Button>
 			</Tooltip>
 			<Button.Group orientation="vertical">
-				<Button
-					variant={isHidden(null) ? "light" : "filled"}
-					onClick={() => handleChange(null)}
-					leftSection={isHidden(null) ? <IconSquare /> : <IconSquareCheck />}
-				>
-					Unknown
-				</Button>
-				{props.column.filterOptions.map((filterOption) => (
-					<Button
-						fullWidth
-						variant={isHidden(filterOption.value) ? "light" : "filled"}
+				{optionsWithUnknown.map((filterOption) => (
+					<FilterButton
+						filterOption={filterOption}
+						onClick={handleFilterClick}
+						isHidden={hiddenValues.includes(filterOption.value)}
 						key={filterOption.value}
-						justify="start"
-						leftSection={
-							isHidden(filterOption.value) ? (
-								<IconSquare />
-							) : (
-								<IconSquareCheck />
-							)
-						}
-						onClick={() => {
-							props.onChange(
-								isHidden(filterOption.value)
-									? selectedValues.filter((id) => id !== filterOption.value)
-									: [...selectedValues, filterOption.value],
-							);
-						}}
-					>
-						{filterOption.label || filterOption.value}
-					</Button>
+					/>
 				))}
 			</Button.Group>
 			<Button
 				onClick={handleReset}
 				leftSection={<IconRestore fontSize={10} />}
 				size="compact-sm"
-				disabled={(props.hiddenValues?.length || 0) === 0}
+				disabled={(hiddenValues?.length || 0) === 0}
 			>
 				Reset
 			</Button>

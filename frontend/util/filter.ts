@@ -12,18 +12,16 @@ export function includesOneOf(term: string | undefined, texts: string[]) {
 
 export function filterGame<TKey extends string, TGame>(
 	game: TGame,
-	filter: Record<string, (string | null)[]>,
+	hiddenValues: Record<string, (string | null)[]>,
 	columns: TableColumn<TKey, TGame>[],
 ) {
 	return (
 		columns.findIndex((column) => {
-			const getValueFunction = column.getFilterValue ?? column.getSortValue;
-
 			return (
-				getValueFunction &&
-				filter[column.id] &&
-				filter[column.id].length > 0 &&
-				filter[column.id].includes(getValueFunction(game))
+				column.getFilterValue &&
+				hiddenValues[column.id] &&
+				hiddenValues[column.id].length > 0 &&
+				hiddenValues[column.id].includes(column.getFilterValue(game))
 			);
 		}) === -1
 	);
