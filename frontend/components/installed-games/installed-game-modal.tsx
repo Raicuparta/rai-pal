@@ -76,7 +76,7 @@ export function InstalledGameModal(props: Props) {
 				<Group>
 					<ModalImage
 						src={getThumbnailWithFallback(
-							props.game.thumbnailUrl,
+							props.game.thumbnailUrl ?? props.game.ownedGame?.thumbnailUrl,
 							props.game.provider,
 						)}
 					/>
