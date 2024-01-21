@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import { filterGame, includesOneOf } from "../../util/filter";
 import { InstalledGameModal } from "./installed-game-modal";
 import { useFilteredList } from "@hooks/use-filtered-list";
-import { FilterMenu } from "@components/filter-menu";
+import { FilterMenu } from "@components/filters/filter-menu";
 import { VirtualizedTable } from "@components/table/virtualized-table";
 import { RefreshButton } from "@components/refresh-button";
 import { SearchInput } from "@components/search-input";
@@ -11,15 +11,13 @@ import {
 	InstalledGameColumnsId,
 	installedGamesColumns,
 } from "./installed-games-columns";
-import { ColumnsSelect } from "@components/columns-select";
 import { usePersistedState } from "@hooks/use-persisted-state";
 import { AddGame } from "./add-game-button";
 import {
 	ProcessedInstalledGame,
 	useProcessedInstalledGames,
 } from "@hooks/use-processed-installed-games";
-import { FilterSelect } from "@components/filter-select";
-import { DebugData } from "@components/debug-data";
+import { FilterSelect } from "@components/filters/filter-select";
 
 const defaultFilter: Record<string, (string | null)[]> = {};
 
@@ -73,7 +71,9 @@ export function InstalledGamesPage() {
 			defaultFilter,
 		);
 
-	const isFilterActive = Object.values(filter).filter(Boolean).length > 0;
+	const isFilterActive =
+		Object.values(filter).filter((filterValue) => filterValue.length > 0)
+			.length > 0;
 
 	return (
 		<Stack h="100%">
@@ -101,16 +101,8 @@ export function InstalledGamesPage() {
 										setFilter({ [column.id]: selectedValues })
 									}
 								/>
-								// <TypedSegmentedControl
-								// 	key={column.id}
-								// 	data={column.filterOptions}
-								// 	onChange={(value) => setFilter({ [column.id]: value })}
-								// 	unavailableValues={column.unavailableValues}
-								// 	value={filter[column.id]}
-								// />
 							),
 					)}
-					<DebugData data={filter} />
 				</FilterMenu>
 				<RefreshButton />
 			</Group>

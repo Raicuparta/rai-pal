@@ -23,7 +23,7 @@ export function filterGame<TKey extends string, TGame>(
 				getValueFunction &&
 				filter[column.id] &&
 				filter[column.id].length > 0 &&
-				!filter[column.id].includes(getValueFunction(game))
+				filter[column.id].includes(getValueFunction(game))
 			);
 		}) === -1
 	);

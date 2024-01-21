@@ -105,7 +105,6 @@ const gameMode: TableColumnBase<ProcessedOwnedGame, GameMode> = {
 	hidable: true,
 	getSortValue: (game) => game.gameMode,
 	filterOptions: [
-		{ label: "Any mode", value: "" },
 		{ label: "Flat", value: "Flat" },
 		{ label: "VR", value: "VR" },
 	],
@@ -123,7 +122,6 @@ const uevrScore: TableColumnBase<ProcessedOwnedGame, UevrScore> = {
 	hidable: true,
 	getSortValue: (game) => game.remoteData?.uevrScore,
 	filterOptions: [
-		{ label: "Any UEVR score", value: "" },
 		{ label: "A", value: "A" },
 		{ label: "B", value: "B" },
 		{ label: "C", value: "C" },

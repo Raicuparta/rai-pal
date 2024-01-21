@@ -1,6 +1,12 @@
-import { Button, Group, Tooltip } from "@mantine/core";
-import { TableColumn } from "./table/table-head";
-import { IconEye, IconEyeClosed } from "@tabler/icons-react";
+import { Button, Group, Stack, Tooltip } from "@mantine/core";
+import { TableColumn } from "../table/table-head";
+import {
+	IconEye,
+	IconEyeClosed,
+	IconRestore,
+	IconSquare,
+	IconSquareCheck,
+} from "@tabler/icons-react";
 
 type Props<TKey extends string, TItem, TFilterOption extends string> = {
 	readonly column: TableColumn<TKey, TItem, TFilterOption>;
@@ -32,20 +38,24 @@ export function FilterSelect<
 		);
 	};
 
+	const handleReset = () => {
+		props.onChange([]);
+	};
+
 	if (!props.column.filterOptions) return null;
 
 	const isColumnVisible = props.visibleColumns.includes(props.column.id);
 
 	return (
-		<div>
+		<Stack gap="xs">
 			<Tooltip
 				openDelay={500}
 				label="Toggle table column visibility"
 			>
 				<Button
-					size="compact-xs"
-					radius="xl"
+					size="compact-sm"
 					variant={isColumnVisible ? "filled" : "light"}
+					leftSection={isColumnVisible ? <IconEye /> : <IconEyeClosed />}
 					onClick={() =>
 						props.onChangeVisibleColumns(
 							isColumnVisible
@@ -54,16 +64,14 @@ export function FilterSelect<
 						)
 					}
 				>
-					<Group gap="xs">
-						{isColumnVisible ? <IconEye /> : <IconEyeClosed />}
-						{props.column.label}
-					</Group>
+					<Group gap="xs">{props.column.label}</Group>
 				</Button>
 			</Tooltip>
-			<Button.Group>
+			<Button.Group orientation="vertical">
 				<Button
 					variant={isHidden(null) ? "light" : "filled"}
 					onClick={() => handleChange(null)}
+					leftSection={isHidden(null) ? <IconSquare /> : <IconSquareCheck />}
 				>
 					Unknown
 				</Button>
@@ -72,6 +80,14 @@ export function FilterSelect<
 						fullWidth
 						variant={isHidden(filterOption.value) ? "light" : "filled"}
 						key={filterOption.value}
+						justify="start"
+						leftSection={
+							isHidden(filterOption.value) ? (
+								<IconSquare />
+							) : (
+								<IconSquareCheck />
+							)
+						}
 						onClick={() => {
 							props.onChange(
 								isHidden(filterOption.value)
@@ -84,6 +100,14 @@ export function FilterSelect<
 					</Button>
 				))}
 			</Button.Group>
-		</div>
+			<Button
+				onClick={handleReset}
+				leftSection={<IconRestore fontSize={10} />}
+				size="compact-sm"
+				disabled={(props.hiddenValues?.length || 0) === 0}
+			>
+				Reset
+			</Button>
+		</Stack>
 	);
 }
