@@ -4,6 +4,7 @@ use std::path::{
 };
 
 use async_trait::async_trait;
+use chrono::DateTime;
 use log::error;
 use rusqlite::{
 	Connection,
@@ -98,6 +99,7 @@ impl ProviderActions for Itch {
 				if let Some(cover_url) = &cave.cover_url {
 					game.set_thumbnail_url(cover_url);
 				}
+				game.set_provider_game_id(&cave.id.to_string());
 
 				Some(game)
 			})
@@ -114,6 +116,13 @@ impl ProviderActions for Itch {
 
 				if let Some(thumbnail_url) = &row.cover_url {
 					game.set_thumbnail_url(thumbnail_url);
+				}
+				if let Some(date_time) = row
+					.published_at
+					.as_ref()
+					.and_then(|published_at| DateTime::parse_from_rfc3339(published_at).ok())
+				{
+					game.set_release_date(date_time.timestamp());
 				}
 				game.add_provider_command(
 					ProviderCommandAction::ShowInLibrary,
@@ -174,10 +183,12 @@ fn get_database(app_data_path: &Path) -> Result<ItchDatabase> {
 	let connection = Connection::open_with_flags(db_path, OpenFlags::SQLITE_OPEN_READ_ONLY)?;
 
 	let mut caves_statement = connection.prepare(
-		r"
-    SELECT caves.game_id, caves.verdict, games.title, games.cover_url
-    FROM caves
-    JOIN games ON caves.game_id = games.id;
+		r"SELECT
+			caves.game_id, caves.verdict, games.title, games.cover_url
+    FROM
+			caves
+    JOIN
+			games ON caves.game_id = games.id;
   ",
 	)?;
 	let cave_rows = caves_statement.query_map([], |row| {
@@ -189,7 +200,15 @@ fn get_database(app_data_path: &Path) -> Result<ItchDatabase> {
 		})
 	})?;
 
-	let mut games_statement = connection.prepare("SELECT id, title, url, published_at, cover_url FROM 'games' WHERE type='default' AND classification='game'")?;
+	let mut games_statement = connection.prepare(
+		r"SELECT
+			id, title, url, published_at, cover_url
+		FROM
+			'games'
+		WHERE
+			type='default' AND classification='game'
+		",
+	)?;
 	let game_rows = games_statement.query_map([], |row| {
 		Ok(ItchDatabaseGame {
 			id: row.get(0)?,
