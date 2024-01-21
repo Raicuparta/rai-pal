@@ -23,6 +23,20 @@ This is a thing to help find games of a specific engine, and then easily install
 
 So this tool automates a lot of that work. This also lets you filter your Steam owned games by engine, so you can for instance find all the Unreal games you own.
 
+## Automatically finding games
+
+Rai Pal analyzes files on your system to determine which games you own, and which games you have currently installed. There's some guesswork involved in this, especially since Rai Pal tries to give you this information as quickly as possible, without the need to log in with each provider's account. Here is the current status of how Rai Pal handles finding games from each provider:
+
+| Provider | Installed | Owned | Notes                                                                                                              |
+|----------|-----------|-------|--------------------------------------------------------------------------------------------------------------------|
+| Steam    | ✅         | ✅*    | Owned games based on Steam cache, may show weird stuff. Recreating Steam cache helps.                              |
+| Epic     | ✅         | ✅     |                                                                                                                    |
+| GOG      | ✅         | ✅     |                                                                                                                    |
+| PC Xbox  | ✅*        | ❌     | Only finds installed games marked as moddable (the ones where you can open the game files folder via the Xbox app) |
+| Itch     | ✅         | ✅*    | Does not include games from bundles, unless you add them to your library.                                          |
+
+For all other providers, you'll have to manually add the games to Rai Pal using the "add game" button on the installed games tab, or by just dropping the game exe on the Rai Pal window.
+
 ## UEVR
 
 Rai Pal can make it easier to use [Praydog's UEVR](https://uevr.io/), a universal VR mod for Unreal Engine games. Here are some of the fun activities Rai Pal can help you with:
