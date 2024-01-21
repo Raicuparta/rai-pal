@@ -48,8 +48,6 @@ Rai Pal also uses a few different methods for detecting game engines. There's a 
 | Itch     | ✅                 | ✅                  | 🤏Decent guess  | 🤏Decent guess  |
 | PC Xbox  | ✅                 | Unity only          | 👎Not available | 👎Not available |
 
-For all other providers, you'll have to manually add the games to Rai Pal using the "add game" button on the installed games tab, or by just dropping the game exe on the Rai Pal window.
-
 ## UEVR
 
 Rai Pal can make it easier to use [Praydog's UEVR](https://uevr.io/), a universal VR mod for Unreal Engine games. Here are some of the fun activities Rai Pal can help you with:
