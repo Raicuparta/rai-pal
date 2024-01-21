@@ -148,15 +148,21 @@ impl ProviderActions for Steam {
 				}
 
 				if let Some(steam_game) = steam_games.get(&id_string) {
-					if let Some(engine) = Some(GameEngine {
-						brand: steam_game.engine,
-						version: pc_gaming_wiki::get_engine(&format!(
-							"Steam_AppID%20HOLDS%20%22{id_string}%22"
-						))
+					match pc_gaming_wiki::get_engine(&format!("Steam_AppID HOLDS \"{id_string}\""))
 						.await
-						.and_then(|remote_engine| remote_engine.version),
-					}) {
-						remote_game.set_engine(engine);
+					{
+						Ok(Some(pc_gaming_wiki_engine)) => {
+							remote_game.set_engine(pc_gaming_wiki_engine);
+						}
+						Ok(None) => {
+							remote_game.set_engine(GameEngine {
+								brand: steam_game.engine,
+								version: None,
+							});
+						}
+						Err(_) => {
+							remote_game.set_skip_cache(true);
+						}
 					}
 
 					if let Some(uevr_score) = steam_game.uevr_score {
@@ -173,17 +179,12 @@ impl ProviderActions for Steam {
 			.flatten()
 			.collect();
 
-		Self::try_save_remote_game_cache(
-			&remote_games
-				.iter()
-				.map(|remote_game| (remote_game.id.clone(), remote_game.clone()))
-				.collect(),
-		);
+		Self::try_save_remote_game_cache(&remote_games);
 
 		Ok(remote_games)
 	}
 
-	fn get_local_owned_games(&self) -> Result<Vec<OwnedGame>> {
+	fn get_owned_games(&self) -> Result<Vec<OwnedGame>> {
 		let owned_games: Vec<OwnedGame> = self
 			.app_info_file
 			.apps
@@ -254,6 +255,12 @@ impl ProviderActions for Steam {
 					.add_provider_command(
 						ProviderCommandAction::Install,
 						ProviderCommand::String(format!("steam://install/{id_string}")),
+					)
+					.add_provider_command(
+						ProviderCommandAction::OpenInBrowser,
+						ProviderCommand::String(format!(
+							"https://store.steampowered.com/app/{id_string}"
+						)),
 					);
 
 				if let Some(release_date) = app_info

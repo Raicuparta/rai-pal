@@ -21,6 +21,10 @@ serializable_struct!(Manifest {
 	pub unity_backend: Option<UnityScriptingBackend>,
 });
 
+impl Manifest {
+	pub const FILE_NAME: &'static str = "rai-pal-manifest.json";
+}
+
 pub fn get(path: &Path) -> Option<Manifest> {
 	match fs::read_to_string(path)
 		.and_then(|manifest_bytes| Ok(serde_json::from_str::<Manifest>(&manifest_bytes)?))

@@ -19,6 +19,7 @@ serializable_enum!(ProviderCommandAction {
 	ShowInLibrary,
 	ShowInStore,
 	Start,
+	OpenInBrowser,
 });
 
 impl ProviderCommand {

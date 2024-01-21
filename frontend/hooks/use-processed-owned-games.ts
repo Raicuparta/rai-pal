@@ -36,6 +36,7 @@ export function useProcessedOwnedGames() {
 			Epic: {},
 			Gog: {},
 			Xbox: {},
+			Itch: {},
 		};
 
 		for (const installedGame of Object.values(installedGames)) {

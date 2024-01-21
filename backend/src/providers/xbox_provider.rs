@@ -1,3 +1,5 @@
+#![cfg(target_os = "windows")]
+
 use std::path::PathBuf;
 
 use async_trait::async_trait;
@@ -108,7 +110,7 @@ impl ProviderActions for Xbox {
 		Ok(result)
 	}
 
-	fn get_local_owned_games(&self) -> Result<Vec<OwnedGame>> {
+	fn get_owned_games(&self) -> Result<Vec<OwnedGame>> {
 		Ok(Vec::default())
 	}
 

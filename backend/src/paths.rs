@@ -20,25 +20,26 @@ use crate::{
 	Result,
 };
 
-pub fn path_to_str(path: &Path) -> Result<&str> {
-	path.to_str()
-		.ok_or_else(|| Error::PathParseFailure(path.to_path_buf()))
-}
-
-pub fn glob_path(path: &Path) -> Result<Vec<PathBuf>> {
-	Ok(glob(path_to_str(path)?)?
-		.filter_map(|glob_result| match glob_result {
-			Ok(globbed_path) => Some(globbed_path),
-			Err(err) => {
-				error!(
-					"Failed to resolve one of the globbed paths from glob '{}'. Error: {}",
-					path.display(),
-					err
-				);
-				None
-			}
-		})
-		.collect())
+pub fn glob_path(path: &Path) -> Vec<PathBuf> {
+	match glob(path.to_string_lossy().as_ref()) {
+		Ok(paths) => paths
+			.filter_map(|glob_result| match glob_result {
+				Ok(globbed_path) => Some(globbed_path),
+				Err(err) => {
+					error!(
+						"Failed to resolve one of the globbed paths from glob '{}'. Error: {}",
+						path.display(),
+						err
+					);
+					None
+				}
+			})
+			.collect(),
+		Err(err) => {
+			error!("Failed to glob path `{}`. Error: {}", path.display(), err);
+			Vec::default()
+		}
+	}
 }
 
 pub fn path_parent(path: &Path) -> Result<&Path> {

@@ -38,7 +38,7 @@ serializable_struct!(LocalMod {
 });
 
 pub fn get_manifest_path(mod_path: &Path) -> PathBuf {
-	mod_path.join("rai-pal-manifest.json")
+	mod_path.join(mod_manifest::Manifest::FILE_NAME)
 }
 
 impl LocalMod {

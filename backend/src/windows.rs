@@ -1,3 +1,5 @@
+#![cfg(target_os = "windows")]
+
 use std::{
 	ffi::OsStr,
 	os::windows::ffi::OsStrExt,
@@ -47,7 +49,7 @@ pub fn error_dialog(error_text: &str) {
 	base_error_dialog(error_text, MB_OK);
 }
 
-pub fn error_question_dialog(error_text: &str) -> bool {
+fn error_question_dialog(error_text: &str) -> bool {
 	base_error_dialog(error_text, MB_YESNO) == IDYES
 }
 

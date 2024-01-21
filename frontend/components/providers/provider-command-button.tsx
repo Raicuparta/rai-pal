@@ -11,6 +11,7 @@ import {
 	IconBrowser,
 	IconDownload,
 	IconPlayerPlay,
+	IconExternalLink,
 } from "@tabler/icons-react";
 
 type Props = {
@@ -23,6 +24,7 @@ const providerCommandActionName: Record<ProviderCommandAction, string> = {
 	ShowInLibrary: "Show In Library",
 	ShowInStore: "Open Store Page",
 	Start: "Start Game",
+	OpenInBrowser: "Open In Browser",
 };
 
 const providerCommandActionIcon: Record<ProviderCommandAction, Icon> = {
@@ -30,6 +32,7 @@ const providerCommandActionIcon: Record<ProviderCommandAction, Icon> = {
 	ShowInLibrary: IconBooks,
 	ShowInStore: IconBrowser,
 	Start: IconPlayerPlay,
+	OpenInBrowser: IconExternalLink,
 };
 
 export function ProviderCommandButton(props: Props) {

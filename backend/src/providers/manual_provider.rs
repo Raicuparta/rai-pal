@@ -55,7 +55,7 @@ impl ProviderActions for Manual {
 			.collect())
 	}
 
-	fn get_local_owned_games(&self) -> Result<Vec<OwnedGame>> {
+	fn get_owned_games(&self) -> Result<Vec<OwnedGame>> {
 		Ok(Vec::default())
 	}
 
