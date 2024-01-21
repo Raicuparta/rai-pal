@@ -85,6 +85,10 @@ export function FilterSelect<
 						filterOption={filterOption}
 						onClick={handleFilterClick}
 						isHidden={hiddenValues.includes(filterOption.value)}
+						isUnavailable={Boolean(
+							filterOption.value &&
+								column.unavailableValues?.includes(filterOption.value),
+						)}
 						key={filterOption.value}
 					/>
 				))}
