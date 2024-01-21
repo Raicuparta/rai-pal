@@ -239,47 +239,40 @@ pub fn get_data_map(map: &Map) -> Result<DataMap> {
 		.collect()
 }
 
-async fn get_latest_tag_from_github(github_url: &str) -> Option<String> {
-	let url = format!("{github_url}/releases/latest");
-	println!("get_latest_tag_from_github: {url}");
+// GitHub redirects urls like
+// github.com/{USER}/{PROJECT}/releases/latest
+// to
+// github.com/{USER}/{PROJECT}/releases/tag/{LATEST_TAG}
+// We can use this to cheaply check if a mod is outdated.
+// If we know the asset name stays the same across versions,
+// we can also use this to download the latest version via
+// github.com/{USER}/{PROJECT}/releases/download/{LATEST_TAG}/{ASSET_NAME}
+async fn get_latest_tag_from_github(github_url: &str) -> Result<String> {
 	let client = reqwest::Client::builder()
+		// Don't follow redirects. We don't need to actually download the final page,
+		// we just want to look at where it wants to redirect.
 		.redirect(Policy::none())
-		.build()
-		.ok()?;
+		.build()?;
 
-	match client.head(url).send().await {
-		Ok(response) => {
-			if response.status().is_redirection() {
-				println!("status IS redirection for {github_url}");
-				if let Some(location_header) = response.headers().get("Location") {
-					match location_header.to_str() {
-						Ok(location) => {
-							println!("location is {location}");
-							let (_, tag) = regex_captures!(r".*/tag/v?(.+)", location)?;
-							Some(tag.to_string())
-						}
-						Err(err) => {
-							println!("err1  is {err}");
-							// TODO error
-							None
-						}
-					}
-				} else {
-					println!("location_header  is none");
-					None
-				}
-			} else {
-				println!(
-					"status is NOT redirection for {}, it is {}",
-					github_url,
-					response.status().as_str()
-				);
-				None
-			}
-		}
-		Err(err) => {
-			println!("err2  is {err}");
-			None // TODO error
-		}
+	let response = client
+		.head(format!("{github_url}/releases/latest"))
+		.send()
+		.await?;
+
+	if response.status().is_redirection() {
+		let location_header = response
+			.headers()
+			// The location header contains the redirect target.
+			.get("location")
+			.ok_or(Error::NotImplemented)?; // TODO error
+
+		// Redirect target looks like https://github.com/{USER}/{PROJECT}/releases/tag/{LATEST_TAG}.
+		// We only care about that final {LATEST_TAG} part.
+		let (_, tag) = regex_captures!(r".*/tag/(.+)", location_header.to_str()?)
+			.ok_or(Error::NotImplemented)?; // TODO error
+
+		Ok(tag.to_string())
+	} else {
+		Err(Error::NotImplemented) // TODO error
 	}
 }
