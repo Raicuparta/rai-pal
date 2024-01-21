@@ -24,15 +24,29 @@ So this tool automates a lot of that work. This also lets you filter your Steam 
 
 ## Automatically finding games
 
-Rai Pal analyzes files on your system to determine which games you own, and which games you have currently installed. There's some guesswork involved in this, especially since Rai Pal tries to give you this information as quickly as possible, without the need to log in with each provider's account. Here is the current status of how Rai Pal handles finding games from each provider:
+Rai Pal analyzes files on your system to determine which games you own, and which games you have currently installed. There's some guesswork involved in this, especially since Rai Pal tries to give you this information as quickly as possible, without the need to log in with each provider's account. Here is how Rai Pal handles finding games from each provider:
 
-| Provider | Installed | Owned | Engine detection for owned games | Notes                                                                                                                                                                                                                                                                   |
-| -------- | --------- | ----- | -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Steam    | ✅        | ✅\*  | 👍Good                           | Owned games based on Steam cache, may show weird stuff. Recreating Steam cache helps.                                                                                                                                                                                   |
-| GOG      | ✅        | ✅    | 👍Good                           |                                                                                                                                                                                                                                                                         |
-| Epic     | ✅        | ✅    | 🤏Approximate                    |                                                                                                                                                                                                                                                                         |
-| Itch     | ✅        | ✅\*  | 🤏Approximate                    | Does not include games from bundles, unless you add them to your library. There are [scripts](https://gist.github.com/lats/c920866caf9c0cb04e82abba411e1bb9) for adding all games from a bundle to your library, but they're slow and not recommended by the Itch team. |
-| PC Xbox  | ✅\*      | ❌    | 👎None                           | Only finds installed games marked as moddable (the ones where you can open the game files folder via the Xbox app)                                                                                                                                                      |
+| Provider | Installed | Owned | Notes                                                                                                                                                                                                                                                                   |
+| -------- | --------- | ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Steam    | ✅        | ✅\*  | Owned games based on Steam cache, may show weird stuff. Recreating Steam cache helps.                                                                                                                                                                                   |
+| GOG      | ✅        | ✅    |                                                                                                                                                                                                                                                                         |
+| Epic     | ✅        | ✅    |                                                                                                                                                                                                                                                                         |
+| Itch     | ✅        | ✅\*  | Does not include games from bundles, unless you add them to your library. There are [scripts](https://gist.github.com/lats/c920866caf9c0cb04e82abba411e1bb9) for adding all games from a bundle to your library, but they're slow and not recommended by the Itch team. |
+| PC Xbox  | ✅\*      | ❌    | Only finds installed games marked as moddable (the ones where you can open the game files folder via the Xbox app)                                                                                                                                                      |
+
+For all other providers, you'll have to manually add the games to Rai Pal using the "add game" button on the installed games tab, or by just dropping the game exe on the Rai Pal window.
+
+## Game engine detection
+
+Rai Pal also uses a few different methods for detecting game engines. There's a lot of guesswork here as well. For installed games this is usually pretty straightforward, but for owned games it involves using remote sources, and often going by the game's name. Here is how Rai Pal handles detecting the game engine from each provider:
+
+| Provider | Installed (Engine) | Installed (Version) | Owned (Engine)  | Owned (Version) |
+| -------- | ------------------ | ------------------- | --------------- | --------------- |
+| Steam    | ✅                 | ✅                  | ⭐Great guess   | 👍Good guess    |
+| GOG      | ✅                 | ✅                  | 👍Good guess    | 👍Good guess    |
+| Epic     | ✅                 | ✅                  | 🤏Decent guess  | 🤏Decent guess  |
+| Itch     | ✅                 | ✅                  | 🤏Decent guess  | 🤏Decent guess  |
+| PC Xbox  | ✅                 | Unity only          | 👎Not available | 👎Not available |
 
 For all other providers, you'll have to manually add the games to Rai Pal using the "add game" button on the installed games tab, or by just dropping the game exe on the Rai Pal window.
 
