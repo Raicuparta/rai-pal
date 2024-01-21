@@ -26,7 +26,7 @@ So this tool automates a lot of that work. This also lets you filter your Steam 
 
 Rai Pal analyzes files on your system to determine which games you own, and which games you have currently installed. There's some guesswork involved in this, especially since Rai Pal tries to give you this information as quickly as possible, without the need to log in with each provider's account. Here is how Rai Pal handles finding games from each provider:
 
-| Provider | Installed | Owned | Notes                                                                                                                                                                                                                                                                   |
+| Provider | Installed games | Owned games | Notes                                                                                                                                                                                                                                                                   |
 | -------- | --------- | ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Steam    | ✅        | ✅\*  | Owned games based on Steam cache, may show weird stuff. Recreating Steam cache helps.                                                                                                                                                                                   |
 | GOG      | ✅        | ✅    |                                                                                                                                                                                                                                                                         |
@@ -40,13 +40,13 @@ For all other providers, you'll have to manually add the games to Rai Pal using 
 
 Rai Pal also uses a few different methods for detecting game engines. There's a lot of guesswork here as well. For installed games this is usually pretty straightforward, but for owned games it involves using remote sources, and often going by the game's name. Here is how Rai Pal handles detecting the game engine from each provider:
 
-| Provider | Installed (Engine) | Installed (Version) | Owned (Engine)  | Owned (Version) |
+| Provider | Engine<br>(installed games) | Engine version<br>(installed games) | Engine<br>(owned games)  | Engine version<br>(owned games) |
 | -------- | ------------------ | ------------------- | --------------- | --------------- |
-| Steam    | ✅                 | ✅                  | ⭐Great guess   | 👍Good guess    |
-| GOG      | ✅                 | ✅                  | 👍Good guess    | 👍Good guess    |
-| Epic     | ✅                 | ✅                  | 🤏Decent guess  | 🤏Decent guess  |
-| Itch     | ✅                 | ✅                  | 🤏Decent guess  | 🤏Decent guess  |
-| PC Xbox  | ✅                 | Unity only          | 👎Not available | 👎Not available |
+| Steam    | ✅                 | ✅                  | ⭐ Great guess   | 👍 Good guess    |
+| GOG      | ✅                 | ✅                  | 👍 Good guess    | 👍 Good guess    |
+| Epic     | ✅                 | ✅                  | 🤏 Decent guess  | 🤏 Decent guess  |
+| Itch     | ✅                 | ✅                  | 🤏 Decent guess  | 🤏 Decent guess  |
+| PC Xbox  | ✅                 | Unity only          | 👎 Not available | 👎 Not available |
 
 ## UEVR
 
