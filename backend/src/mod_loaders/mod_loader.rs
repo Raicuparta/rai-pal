@@ -12,14 +12,12 @@ use std::{
 
 use async_trait::async_trait;
 use enum_dispatch::enum_dispatch;
-use lazy_regex::regex_captures;
 use log::error;
-use reqwest::redirect::Policy;
 use zip::ZipArchive;
 
 use super::{
 	bepinex::BepInEx,
-	mod_database::{self,},
+	mod_database,
 	runnable_loader::RunnableLoader,
 };
 use crate::{
@@ -104,22 +102,14 @@ pub trait ModLoaderActions {
 			ModDatabase { mods: Vec::new() }
 		});
 
-		let a = futures::future::join_all(database.mods.iter().map(|database_mod| async {
-			let latest_tag_from_github =
-				get_latest_tag_from_github(&database_mod.source_code.clone()).await; // TODO use a new thing for this, not source_code.
-
-			println!(
-				"### latest tag from github is {}",
-				latest_tag_from_github.unwrap_or("Nothing".to_string())
-			);
-
+		futures::future::join_all(database.mods.iter().map(|database_mod| async {
 			(
 				database_mod.id.clone(),
 				RemoteMod {
 					common: CommonModData {
 						id: database_mod.id.clone(),
-						engine: database_mod.engine.clone(),
-						unity_backend: database_mod.unity_backend.clone(),
+						engine: database_mod.engine,
+						unity_backend: database_mod.unity_backend,
 						loader_id: loader_id.clone(),
 					},
 					data: RemoteModData {
@@ -127,14 +117,14 @@ pub trait ModLoaderActions {
 						description: database_mod.description.clone(),
 						source_code: database_mod.source_code.clone(),
 						title: database_mod.title.clone(),
-						latest_version: database_mod.latest_version.clone(),
+						latest_version: database_mod.get_download().await,
 					},
 				},
 			)
 		}))
-		.await;
-
-		return a.into_iter().collect();
+		.await
+		.into_iter()
+		.collect()
 	}
 
 	async fn download_mod(&self, remote_mod: &RemoteMod) -> Result {
@@ -237,42 +227,4 @@ pub fn get_data_map(map: &Map) -> Result<DataMap> {
 			Ok((data.id.clone(), data.clone()))
 		})
 		.collect()
-}
-
-// GitHub redirects urls like
-// github.com/{USER}/{PROJECT}/releases/latest
-// to
-// github.com/{USER}/{PROJECT}/releases/tag/{LATEST_TAG}
-// We can use this to cheaply check if a mod is outdated.
-// If we know the asset name stays the same across versions,
-// we can also use this to download the latest version via
-// github.com/{USER}/{PROJECT}/releases/download/{LATEST_TAG}/{ASSET_NAME}
-async fn get_latest_tag_from_github(github_url: &str) -> Result<String> {
-	let client = reqwest::Client::builder()
-		// Don't follow redirects. We don't need to actually download the final page,
-		// we just want to look at where it wants to redirect.
-		.redirect(Policy::none())
-		.build()?;
-
-	let response = client
-		.head(format!("{github_url}/releases/latest"))
-		.send()
-		.await?;
-
-	if response.status().is_redirection() {
-		let location_header = response
-			.headers()
-			// The location header contains the redirect target.
-			.get("location")
-			.ok_or(Error::NotImplemented)?; // TODO error
-
-		// Redirect target looks like https://github.com/{USER}/{PROJECT}/releases/tag/{LATEST_TAG}.
-		// We only care about that final {LATEST_TAG} part.
-		let (_, tag) = regex_captures!(r".*/tag/(.+)", location_header.to_str()?)
-			.ok_or(Error::NotImplemented)?; // TODO error
-
-		Ok(tag.to_string())
-	} else {
-		Err(Error::NotImplemented) // TODO error
-	}
 }
