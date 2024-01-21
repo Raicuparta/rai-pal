@@ -12,7 +12,9 @@ use std::{
 
 use async_trait::async_trait;
 use enum_dispatch::enum_dispatch;
+use lazy_regex::regex_captures;
 use log::error;
+use reqwest::redirect::Policy;
 use zip::ZipArchive;
 
 use super::{
@@ -102,30 +104,37 @@ pub trait ModLoaderActions {
 			ModDatabase { mods: Vec::new() }
 		});
 
-		database
-			.mods
-			.into_iter()
-			.map(|database_mod| {
-				(
-					database_mod.id.clone(),
-					RemoteMod {
-						common: CommonModData {
-							id: database_mod.id,
-							engine: database_mod.engine,
-							unity_backend: database_mod.unity_backend,
-							loader_id: loader_id.clone(),
-						},
-						data: RemoteModData {
-							author: database_mod.author,
-							description: database_mod.description,
-							source_code: database_mod.source_code,
-							title: database_mod.title,
-							latest_version: database_mod.latest_version,
-						},
+		let a = futures::future::join_all(database.mods.iter().map(|database_mod| async {
+			let latest_tag_from_github =
+				get_latest_tag_from_github(&database_mod.source_code.clone()).await; // TODO use a new thing for this, not source_code.
+
+			println!(
+				"### latest tag from github is {}",
+				latest_tag_from_github.unwrap_or("Nothing".to_string())
+			);
+
+			(
+				database_mod.id.clone(),
+				RemoteMod {
+					common: CommonModData {
+						id: database_mod.id.clone(),
+						engine: database_mod.engine.clone(),
+						unity_backend: database_mod.unity_backend.clone(),
+						loader_id: loader_id.clone(),
 					},
-				)
-			})
-			.collect()
+					data: RemoteModData {
+						author: database_mod.author.clone(),
+						description: database_mod.description.clone(),
+						source_code: database_mod.source_code.clone(),
+						title: database_mod.title.clone(),
+						latest_version: database_mod.latest_version.clone(),
+					},
+				},
+			)
+		}))
+		.await;
+
+		return a.into_iter().collect();
 	}
 
 	async fn download_mod(&self, remote_mod: &RemoteMod) -> Result {
@@ -228,4 +237,49 @@ pub fn get_data_map(map: &Map) -> Result<DataMap> {
 			Ok((data.id.clone(), data.clone()))
 		})
 		.collect()
+}
+
+async fn get_latest_tag_from_github(github_url: &str) -> Option<String> {
+	let url = format!("{github_url}/releases/latest");
+	println!("get_latest_tag_from_github: {url}");
+	let client = reqwest::Client::builder()
+		.redirect(Policy::none())
+		.build()
+		.ok()?;
+
+	match client.head(url).send().await {
+		Ok(response) => {
+			if response.status().is_redirection() {
+				println!("status IS redirection for {github_url}");
+				if let Some(location_header) = response.headers().get("Location") {
+					match location_header.to_str() {
+						Ok(location) => {
+							println!("location is {location}");
+							let (_, tag) = regex_captures!(r".*/tag/v?(.+)", location)?;
+							Some(tag.to_string())
+						}
+						Err(err) => {
+							println!("err1  is {err}");
+							// TODO error
+							None
+						}
+					}
+				} else {
+					println!("location_header  is none");
+					None
+				}
+			} else {
+				println!(
+					"status is NOT redirection for {}, it is {}",
+					github_url,
+					response.status().as_str()
+				);
+				None
+			}
+		}
+		Err(err) => {
+			println!("err2  is {err}");
+			None // TODO error
+		}
+	}
 }
