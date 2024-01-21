@@ -13,6 +13,22 @@ export const theme: MantineThemeOverride = {
 		Button: {
 			defaultProps: {
 				variant: "default",
+				size: "xs",
+			},
+		},
+		Input: {
+			defaultProps: {
+				size: "xs",
+			},
+		},
+		Stack: {
+			defaultProps: {
+				gap: "xs",
+			},
+		},
+		Group: {
+			defaultProps: {
+				gap: "xs",
 			},
 		},
 		Notification: {

@@ -21,9 +21,15 @@ export function FilterButton<TFilterOption extends string>(
 		<Button
 			fullWidth
 			variant={props.isHidden ? "light" : "filled"}
-			key={props.filterOption.value}
 			justify="start"
-			leftSection={props.isHidden ? <IconSquare /> : <IconSquareCheck />}
+			size="compact-sm"
+			leftSection={
+				props.isHidden ? (
+					<IconSquare fontSize={10} />
+				) : (
+					<IconSquareCheck fontSize={10} />
+				)
+			}
 			onClick={handleClick}
 		>
 			{props.filterOption.label || props.filterOption.value}

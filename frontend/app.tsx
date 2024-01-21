@@ -76,7 +76,7 @@ function App() {
 						>
 							<Container
 								h="100%"
-								py="md"
+								py="xs"
 								size="lg"
 							>
 								<page.component />
