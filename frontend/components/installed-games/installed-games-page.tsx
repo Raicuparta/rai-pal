@@ -68,17 +68,24 @@ export function InstalledGamesPage() {
 		[visibleColumnIds],
 	);
 
-	const [filteredGames, sort, setSort, filter, setFilter, search, setSearch] =
-		useFilteredList(
-			"installed-games-filter",
-			filteredColumns,
-			installedGames,
-			filterInstalledGame,
-			defaultFilter,
-		);
+	const [
+		filteredGames,
+		sort,
+		setSort,
+		hiddenValues,
+		setHiddenValues,
+		search,
+		setSearch,
+	] = useFilteredList(
+		"installed-games-hidden",
+		filteredColumns,
+		installedGames,
+		filterInstalledGame,
+		defaultFilter,
+	);
 
 	const isFilterActive =
-		Object.values(filter).filter((filterValue) => filterValue.length > 0)
+		Object.values(hiddenValues).filter((filterValue) => filterValue.length > 0)
 			.length > 0;
 
 	return (
@@ -91,7 +98,7 @@ export function InstalledGamesPage() {
 					count={filteredGames.length}
 				/>
 				<FilterMenu
-					setFilter={setFilter}
+					setFilter={setHiddenValues}
 					active={isFilterActive}
 				>
 					{installedGamesColumns.map(
@@ -102,9 +109,9 @@ export function InstalledGamesPage() {
 									column={column}
 									visibleColumns={visibleColumnIds}
 									onChangeVisibleColumns={setVisibleColumnIds}
-									hiddenValues={filter[column.id]}
+									hiddenValues={hiddenValues[column.id]}
 									onChange={(selectedValues) =>
-										setFilter({ [column.id]: selectedValues })
+										setHiddenValues({ [column.id]: selectedValues })
 									}
 								/>
 							),

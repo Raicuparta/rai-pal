@@ -58,16 +58,23 @@ export function OwnedGamesPage() {
 		[visibleColumnIds],
 	);
 
-	const [filteredGames, sort, setSort, filter, setFilter, search, setSearch] =
-		useFilteredList(
-			"owned-games-filter",
-			filteredColumns,
-			ownedGames,
-			filterOwnedGame,
-			defaultFilter,
-		);
+	const [
+		filteredGames,
+		sort,
+		setSort,
+		hiddenValues,
+		setHiddenValues,
+		search,
+		setSearch,
+	] = useFilteredList(
+		"owned-games-hidden",
+		filteredColumns,
+		ownedGames,
+		filterOwnedGame,
+		defaultFilter,
+	);
 
-	const isFilterActive = Object.values(filter).filter(Boolean).length > 0;
+	const isFilterActive = Object.values(hiddenValues).filter(Boolean).length > 0;
 
 	return (
 		<Stack h="100%">
@@ -85,7 +92,7 @@ export function OwnedGamesPage() {
 					count={filteredGames.length}
 				/>
 				<FilterMenu
-					setFilter={setFilter}
+					setFilter={setHiddenValues}
 					active={isFilterActive}
 				>
 					{ownedGamesColumns.map(
@@ -96,9 +103,9 @@ export function OwnedGamesPage() {
 									column={column}
 									visibleColumns={visibleColumnIds}
 									onChangeVisibleColumns={setVisibleColumnIds}
-									hiddenValues={filter[column.id]}
+									hiddenValues={hiddenValues[column.id]}
 									onChange={(selectedValues) =>
-										setFilter({ [column.id]: selectedValues })
+										setHiddenValues({ [column.id]: selectedValues })
 									}
 								/>
 							),
