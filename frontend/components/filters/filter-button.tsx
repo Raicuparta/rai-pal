@@ -1,8 +1,8 @@
 import { FilterOption } from "@components/table/table-head";
-import { Button } from "@mantine/core";
-import { IconSquare, IconSquareCheck } from "@tabler/icons-react";
+import { Button, Checkbox } from "@mantine/core";
 import { useCallback } from "react";
 import { UnknownFilterOption } from "./filter-select";
+import styles from "./filters.module.css";
 
 type Props<TFilterOption extends string> = {
 	readonly isHidden: boolean;
@@ -20,15 +20,12 @@ export function FilterButton<TFilterOption extends string>(
 	return (
 		<Button
 			fullWidth
-			variant={props.isHidden ? "light" : "filled"}
 			justify="start"
-			size="compact-sm"
 			leftSection={
-				props.isHidden ? (
-					<IconSquare fontSize={10} />
-				) : (
-					<IconSquareCheck fontSize={10} />
-				)
+				<Checkbox
+					className={styles.checkbox}
+					checked={!props.isHidden}
+				/>
 			}
 			onClick={handleClick}
 		>

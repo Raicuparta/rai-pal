@@ -66,7 +66,6 @@ export function FilterSelect<
 				label="Toggle table column visibility"
 			>
 				<Button
-					size="compact-sm"
 					variant={isColumnVisible ? "filled" : "light"}
 					leftSection={isColumnVisible ? <IconEye /> : <IconEyeClosed />}
 					onClick={() =>
@@ -93,7 +92,6 @@ export function FilterSelect<
 			<Button
 				onClick={handleReset}
 				leftSection={<IconRestore fontSize={10} />}
-				size="compact-sm"
 				disabled={(hiddenValues?.length || 0) === 0}
 			>
 				Reset
