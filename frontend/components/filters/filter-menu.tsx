@@ -22,7 +22,7 @@ export function FilterMenu(props: Props) {
 						<IconX />
 					</Button>
 				)}
-				<Popover>
+				<Popover trapFocus>
 					<Popover.Target>
 						<Button leftSection={<IconFilter />}>Filter</Button>
 					</Popover.Target>

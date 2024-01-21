@@ -23,6 +23,7 @@ export function FilterButton<TFilterOption extends string>(
 			justify="start"
 			leftSection={
 				<Checkbox
+					tabIndex={-1}
 					className={styles.checkbox}
 					checked={!props.isHidden}
 				/>
