@@ -3,6 +3,13 @@ body {
 		var(--mantine-color-gray-1),
 		var(--mantine-color-dark-8)
 	);
+
+	/*
+		Prevent unwanted scrolling. All scrolling in Rai Pal is meant to happen within each tab,
+		or within modals. The main window should never scroll. If it does, that's a mistake, and
+		it can cause some weird issues where pointer events inside modals are offset.
+	*/
+	overflow: hidden;
 }
 
 html {
