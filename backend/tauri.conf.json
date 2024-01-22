@@ -13,6 +13,9 @@
   "tauri": {
     "updater": {
       "active": true,
+      "windows": {
+        "installMode": "quiet"
+      },
       "endpoints": [
         "https://github.com/Raicuparta/rai-pal/releases/latest/download/latest.json"
       ],
