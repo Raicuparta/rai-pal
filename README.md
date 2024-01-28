@@ -1,4 +1,4 @@
-# ![image](https://github.com/Raicuparta/rai-pal/assets/3955124/7386ee78-e859-4ecd-876f-1727c2304c87)
+# Rai Pal
 
 [![Raicuparta's VR mods](https://img.shields.io/badge/-raicuparta.com-blue?style=flat-square&color=563397&logo=data%3Aimage%2Fpng%3Bbase64%2CiVBORw0KGgoAAAANSUhEUgAAABQAAAASCAMAAABsDg4iAAAAAXNSR0IB2cksfwAAAAlwSFlzAAALEwAACxMBAJqcGAAAApdQTFRFAAAA9sIq9sIq9sIq9sIq9sIq9sIq9sIq9sIq9sIq9sIq9sIq9sIq9sIq9sIq9sIq98Mp9sIq9sIq9sIq56xC4aJM3p1R1I5g%2Bscl9sIq9sIq2ZZYr1Wd9L8t8Lkz98Mpt2GQ0otj9sIq9sIq9sIq7bQ5pkirxXh4rVOe77c2p0qo5KZI9sIq9sIq9sIq9cErv26CoD60p0mprlOerlSe8bsx98Iq9sIq9sIq9sIq9sIq9sIq9sIq77wpzaEj9cIq874v6a8%2B7rY2zYNr6KxB9cEpim0XupMg9sIq9sIq9sIqyZ8jEg8EpYIc8b0t8r4w8b0y7ro46bU%2FoHwqDAkGZVAW9sIq9sIq9sIq9L8r7bcs4qsv2J4z16NXz5tlfFpPHRUOUj4lvYtw0pqC0pqIi2ZbGhMRlGxk3qKW%2BMUqs3M%2FqWc%2Bp2U9xohx2Z6T3KCV36OXv4uBUjw4HhYUonZuxI%2BEKx8deFhRZ0tG66yf97Sn4KCPtnVSsW9K6aiZ76%2Bi8bCj9LKlak5IV0A7vYmAzYCN7Xym4IqatIF7Vj876qqe6aqe9rSnxYNkz4xy9rSn9bOm46aa%2BLSnuoh%2Brmh48XOq7lyr7VWr7lqr7maq5n2hYkdDKB0b97Sn9bKk9rOm97Sn3KGVJxwapnlwTjY111aa7lWsx0iPKhkduYh%2F97Sn97Sn9bKma05IBwUFEw0NditV3U%2Bg41Gk7lWr3E%2BflzZtQBcuQi8s%2F8u897Sn97Sn97Sn5aebc1NOY0dDIg4YiFNeXyNEaTtJW0I%2BfVtUcVNN97Sn97Sn152R9LGlwIyC4KOX%2BLWo%2FLms97Sn97Sn97Sn97Sn97Sn97Sn97Sn97Sn97Sn97Sn97Sn97Sn97Sn97Sn97SnUVD75gAAAN10Uk5TAAIdZJytk1UUDXnm%2Fv%2F9xyIgu%2Fv%2F%2F%2F%2B0AkTi%2F%2F%2F%2F%2F%2F%2F%2F%2FCox6v%2F%2F%2F%2F%2F%2F%2F%2F99ATz%2F%2F%2F%2F%2F%2F%2F%2F%2F7qWYqooz5P%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F3v2zF%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F708bBt%2F8%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FhdC5n%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2BUTe%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F1mH%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2Fimj%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FlEi8%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F3gwBav3%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2Flkbu7%2F%2F%2F%2F%2F8QMCPsv598hDD0BwlKCTOQ4NJ5LvAAAAs0lEQVQYGQXBPSoAAACA0e9NUn6SFGXCYiAxipWUmQNYHMBkNzmAxQGYLWZmkgwWm6IkkZKF91QVwE9VqhqEwkeVqjF%2BB%2FzUIC%2BVaspXjQCeKjXrtZoEuF%2B41%2BLbV9UMAKy6q5YAuF5j66pqHQDO7AIAnJR9AABH6RAA4CAdAwDspVOAz2oUO%2Bncd0MAsJkueW7axTZgtdTlsMc%2BR%2F7m4X18pVQ3uK1a5nmjUtUDeJswV9U%2FPAYlllR%2F3sAAAAAASUVORK5CYII%3D)](https://raicuparta.com)
 [![Support on Patreon](https://img.shields.io/badge/dynamic/json?style=flat-square&color=D93841&label=Patreon&logoColor=fff&query=data.attributes.patron_count&url=https%3A%2F%2Fwww.patreon.com%2Fapi%2Fcampaigns%2F7004713&logo=patreon)](https://www.patreon.com/raivr)
@@ -7,20 +7,19 @@
 [![Twitter @Raicuparta](https://img.shields.io/badge/Twitter-sucks-1DA1F2?logo=twitter&style=flat-square&logoColor=white)](https://twitter.com/Raicuparta)
 [![Mastodon @Raicuparta](https://img.shields.io/mastodon/follow/109258008992010873?color=6a5df9&domain=https%3A%2F%2Fmastodon.gamedev.place&label=Mastodon&logo=mastodon&logoColor=white&style=flat-square)](https://mastodon.gamedev.place/@Raicuparta)
 
-> ⚠️ **Warning**:  
-> Work in progress, lots of features missing, expect bugs.
+![rai-pal](https://github.com/Raicuparta/rai-pal/assets/3955124/aa4c0b67-8eb0-47e1-8f93-7244ab13bf19)
 
 [**Download Rai Pal**](https://github.com/Raicuparta/rai-pal/releases/latest)
 
-This is a thing to help find games of a specific engine, and then easily install universal mods for that game. I made it because when I'm making mods for games, there's a few different steps that are repeated for every game:
+## What's this?
 
-- Checking the game engine.
-- Checking the engine version.
-- Checking the Unity scripting backend (il2cpp/mono).
-- Installing Unity Explorer for inspecting the game scenes.
-- etc
+A tool that helps you use and make universal game mods. That means mods that aren't made for any specific game, but work across multiple games, usually of the same game engine. Some features:
 
-So this tool automates a lot of that work. This also lets you filter your Steam owned games by engine, so you can for instance find all the Unreal games you own.
+- Auto-find installed games from supported providers.
+- Auto-find owned (but not necessarily installed) games from supported providers.
+- Detect relevant information about each game, such as their game engine.
+- Easily install/run the correct version of universal mods.
+- Easily update universal mods.
 
 ## Automatically finding games
 
@@ -62,7 +61,7 @@ Rai Pal can make it easier to use [Praydog's UEVR](https://uevr.io/), a universa
 ## License
 
     Rai Pal
-    Copyright (C) 2023  Raicuparta
+    Copyright (C) 2024  Raicuparta
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
