@@ -17,7 +17,7 @@ use zip::ZipArchive;
 
 use super::{
 	bepinex::BepInEx,
-	mod_database::{self,},
+	mod_database,
 	runnable_loader::RunnableLoader,
 };
 use crate::{
@@ -102,30 +102,29 @@ pub trait ModLoaderActions {
 			ModDatabase { mods: Vec::new() }
 		});
 
-		database
-			.mods
-			.into_iter()
-			.map(|database_mod| {
-				(
-					database_mod.id.clone(),
-					RemoteMod {
-						common: CommonModData {
-							id: database_mod.id,
-							engine: database_mod.engine,
-							unity_backend: database_mod.unity_backend,
-							loader_id: loader_id.clone(),
-						},
-						data: RemoteModData {
-							author: database_mod.author,
-							description: database_mod.description,
-							source_code: database_mod.source_code,
-							title: database_mod.title,
-							latest_version: database_mod.latest_version,
-						},
+		futures::future::join_all(database.mods.iter().map(|database_mod| async {
+			(
+				database_mod.id.clone(),
+				RemoteMod {
+					common: CommonModData {
+						id: database_mod.id.clone(),
+						engine: database_mod.engine,
+						unity_backend: database_mod.unity_backend,
+						loader_id: loader_id.clone(),
 					},
-				)
-			})
-			.collect()
+					data: RemoteModData {
+						author: database_mod.author.clone(),
+						description: database_mod.description.clone(),
+						source_code: database_mod.source_code.clone(),
+						title: database_mod.title.clone(),
+						latest_version: database_mod.get_download().await,
+					},
+				},
+			)
+		}))
+		.await
+		.into_iter()
+		.collect()
 	}
 
 	async fn download_mod(&self, remote_mod: &RemoteMod) -> Result {

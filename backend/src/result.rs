@@ -51,6 +51,9 @@ pub enum Error {
 	#[error(transparent)]
 	UrlEncode(#[from] serde_urlencoded::ser::Error),
 
+	#[error(transparent)]
+	HeaderToStr(#[from] reqwest::header::ToStrError),
+
 	#[error("Invalid type `{0}` in binary vdf key/value pair")]
 	InvalidBinaryVdfType(u8),
 
