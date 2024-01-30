@@ -110,12 +110,13 @@ export function runProviderCommand(ownedGameId: string, commandAction: string) {
     return invoke()<null>("run_provider_command", { ownedGameId,commandAction })
 }
 
-export type GameEngineVersion = { major: number; minor: number; patch: number; suffix: string | null; display: string }
 export type Manifest = { version: string; runnable: RunnableModData | null; engine: GameEngineBrand | null; unityBackend: UnityScriptingBackend | null }
 export type CommonModData = { id: string; engine: GameEngineBrand | null; unityBackend: UnityScriptingBackend | null; loaderId: string }
-export type GameEngineBrand = "Unity" | "Unreal" | "Godot"
+export type GameEngineBrand = "Unity" | "Unreal" | "Godot" | "GMaker"
 export type GameMode = "VR" | "Flat"
 export type ModKind = "Installable" | "Runnable"
+export type GameEngine = { brand: GameEngineBrand; version: GameEngineVersion | null }
+export type GameEngineVersion = { major: number; minor: number; patch: number; suffix: string | null; display: string }
 export type OwnedGame = { id: string; provider: ProviderId; name: string; osList: OperatingSystem[]; releaseDate: BigInt | null; thumbnailUrl: string | null; gameMode: GameMode | null; providerCommands: { [key: string]: ProviderCommand } }
 export type AppEvent = "SyncInstalledGames" | "SyncOwnedGames" | "SyncRemoteGames" | "SyncModLoaders" | "SyncLocalMods" | "SyncRemoteMods" | "ExecutedProviderCommand" | "GameAdded" | "GameRemoved" | "Error"
 export type LocalMod = { data: LocalModData; common: CommonModData }
@@ -132,7 +133,6 @@ export type ProviderId = "Steam" | "Manual" | "Itch" | "Epic" | "Gog" | "Xbox"
 export type RemoteMod = { common: CommonModData; data: RemoteModData }
 export type ModDownload = { id: string; url: string; root: string | null; runnable: RunnableModData | null }
 export type UevrScore = "A" | "B" | "C" | "D" | "E"
-export type GameEngine = { brand: GameEngineBrand; version: GameEngineVersion | null }
 export type OperatingSystem = "Linux" | "Windows"
 export type ProviderCommand = { String: string } | { Path: [string, string[]] }
 export type Architecture = "X64" | "X86"

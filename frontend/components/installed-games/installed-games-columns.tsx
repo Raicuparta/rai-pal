@@ -167,7 +167,7 @@ const engine: TableColumnBase<ProcessedInstalledGame, GameEngineBrand> = {
 	sort: (dataA, dataB) =>
 		sortGamesByEngine(dataA.executable.engine, dataB.executable.engine),
 	getFilterValue: (game) => game.executable.engine?.brand ?? null,
-	unavailableValues: ["Godot"],
+	unavailableValues: ["Godot", "GMaker"],
 	filterOptions: engineFilterOptions,
 	renderCell: ({ executable: { engine } }) => (
 		<Table.Td

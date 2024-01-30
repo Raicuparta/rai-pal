@@ -7,14 +7,7 @@ import {
 	UevrScore,
 	UnityScriptingBackend,
 } from "@api/bindings";
-import {
-	Badge,
-	BadgeProps,
-	Box,
-	DefaultMantineColor,
-	Flex,
-	Text,
-} from "@mantine/core";
+import { Badge, BadgeProps, DefaultMantineColor, Flex } from "@mantine/core";
 import styles from "./badges.module.css";
 
 interface Props<TValue extends string> extends BadgeProps {
@@ -60,6 +53,7 @@ export const EngineBadge = CreateColorCodedBadge<GameEngineBrand>("-", {
 	Unity: "blue",
 	Unreal: "red",
 	Godot: "violet",
+	GMaker: "teal",
 });
 
 export const UnityBackendBadge = CreateColorCodedBadge<UnityScriptingBackend>(
@@ -94,7 +88,7 @@ export const ProviderBadge = CreateColorCodedBadge<ProviderId>("Unknown", {
 	Epic: "red",
 	Gog: "violet",
 	Xbox: "green",
-	Itch: "pink",
+	Itch: "teal",
 });
 
 export const UevrScoreBadge = CreateColorCodedBadge<UevrScore>("-", {

@@ -147,32 +147,36 @@ impl ProviderActions for Steam {
 					return Some(cached_remote_game.clone());
 				}
 
-				if let Some(steam_game) = steam_games.get(&id_string) {
-					match pc_gaming_wiki::get_engine(&format!("Steam_AppID HOLDS \"{id_string}\""))
-						.await
-					{
-						Ok(Some(pc_gaming_wiki_engine)) => {
-							remote_game.set_engine(pc_gaming_wiki_engine);
-						}
-						Ok(None) => {
+				let steam_game_option = steam_games.get(&id_string);
+
+				match pc_gaming_wiki::get_engine(&format!("Steam_AppID HOLDS \"{id_string}\""))
+					.await
+				{
+					Ok(Some(pc_gaming_wiki_engine)) => {
+						remote_game.set_engine(pc_gaming_wiki_engine);
+					}
+					Ok(None) => {
+						if let Some(engine_brand) =
+							steam_game_option.map(|steam_game| steam_game.engine)
+						{
 							remote_game.set_engine(GameEngine {
-								brand: steam_game.engine,
+								brand: engine_brand,
 								version: None,
 							});
 						}
-						Err(_) => {
-							remote_game.set_skip_cache(true);
-						}
 					}
-
-					if let Some(uevr_score) = steam_game.uevr_score {
-						remote_game.set_uevr_score(uevr_score);
+					Err(_) => {
+						remote_game.set_skip_cache(true);
 					}
-
-					Some(remote_game)
-				} else {
-					None
 				}
+
+				if let Some(uevr_score) =
+					steam_game_option.and_then(|steam_game| steam_game.uevr_score)
+				{
+					remote_game.set_uevr_score(uevr_score);
+				}
+
+				Some(remote_game)
 			}))
 			.await
 			.into_iter()

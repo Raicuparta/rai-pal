@@ -105,6 +105,11 @@ pub async fn get_engine(where_query: &str) -> Result<Option<GameEngine>> {
 								brand: GameEngineBrand::Godot,
 								version,
 							})
+						} else if engine.contains("GameMaker") {
+							Some(GameEngine {
+								brand: GameEngineBrand::GMaker,
+								version,
+							})
 						} else {
 							None
 						}
