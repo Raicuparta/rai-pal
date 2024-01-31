@@ -7,6 +7,7 @@ serializable_enum!(GameEngineBrand {
 	Unity,
 	Unreal,
 	Godot,
+	GameMaker,
 });
 
 serializable_struct!(GameEngine {

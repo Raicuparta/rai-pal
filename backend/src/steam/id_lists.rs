@@ -74,8 +74,13 @@ fn get_ids_data_list(ids: &HashSet<String>, engine: GameEngineBrand) -> Vec<Stea
 }
 
 pub async fn get() -> Result<HashMap<String, SteamGame>> {
-	let (unity, unreal, godot) =
-		future::join!(get_list("Unity"), get_list("Unreal"), get_list("Godot"),).await;
+	let (unity, unreal, godot, game_maker) = future::join!(
+		get_list("Unity"),
+		get_list("Unreal"),
+		get_list("Godot"),
+		get_list("GameMaker")
+	)
+	.await;
 
 	let uevr_scores = get_uevr_scores().await;
 
@@ -83,6 +88,7 @@ pub async fn get() -> Result<HashMap<String, SteamGame>> {
 		get_ids_data_list(&unity, GameEngineBrand::Unity),
 		get_ids_data_list(&unreal, GameEngineBrand::Unreal),
 		get_ids_data_list(&godot, GameEngineBrand::Godot),
+		get_ids_data_list(&game_maker, GameEngineBrand::GameMaker),
 	]
 	.concat();
 
