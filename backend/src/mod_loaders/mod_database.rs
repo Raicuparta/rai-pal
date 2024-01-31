@@ -25,6 +25,7 @@ serializable_struct!(DatabaseEntry {
 	pub engine: Option<GameEngineBrand>,
 	pub unity_backend: Option<UnityScriptingBackend>,
 	pub github: Option<ModGithubInfo>,
+	pub redownload_id: Option<i32>,
 });
 
 serializable_struct!(RunnableModData {
@@ -64,6 +65,16 @@ pub async fn get(mod_loader_id: &str) -> Result<ModDatabase> {
 
 impl DatabaseEntry {
 	pub async fn get_download(&self) -> Option<ModDownload> {
+		self.get_download_inner().await.map(|mut download| {
+			if let Some(redownload_id) = self.redownload_id {
+				download.id = format!("{}/{}", download.id, redownload_id);
+			}
+
+			download
+		})
+	}
+
+	async fn get_download_inner(&self) -> Option<ModDownload> {
 		if let Some(github) = &self.github {
 			if let Some(github_download) = github.get_download().await {
 				return Some(github_download);
