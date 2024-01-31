@@ -9,6 +9,11 @@ import {
 } from "@api/bindings";
 import { Badge, BadgeProps, DefaultMantineColor, Flex } from "@mantine/core";
 import styles from "./badges.module.css";
+import {
+	engineFilterOptions,
+	providerFilterOptions,
+} from "../../util/common-filter-options";
+import { FilterOption } from "@components/table/table-head";
 
 interface Props<TValue extends string> extends BadgeProps {
 	readonly value?: TValue | null;
@@ -20,9 +25,14 @@ type ColorRecord<TValue extends string> = Record<TValue, DefaultMantineColor>;
 function CreateColorCodedBadge<TValue extends string>(
 	fallbackText: string,
 	colorMap: ColorRecord<TValue>,
+	filterOptions?: FilterOption<TValue>[],
 ) {
 	return function ColorCodedBadge(props: Props<TValue>) {
 		const color = props.value ? colorMap[props.value] : "white";
+		const label =
+			props.value && filterOptions
+				? filterOptions.find((option) => option.value === props.value)?.label
+				: undefined;
 
 		return (
 			<Flex className={styles.wrapper}>
@@ -33,7 +43,7 @@ function CreateColorCodedBadge<TValue extends string>(
 					}
 					{...props}
 				>
-					{props.value ?? fallbackText}
+					{label ?? props.value ?? fallbackText}
 				</Badge>
 				{props.label && props.value && (
 					<Badge
@@ -49,12 +59,16 @@ function CreateColorCodedBadge<TValue extends string>(
 	};
 }
 
-export const EngineBadge = CreateColorCodedBadge<GameEngineBrand>("-", {
-	Unity: "blue",
-	Unreal: "red",
-	Godot: "violet",
-	GMaker: "teal",
-});
+export const EngineBadge = CreateColorCodedBadge<GameEngineBrand>(
+	"-",
+	{
+		Unity: "blue",
+		Unreal: "red",
+		Godot: "violet",
+		GameMaker: "teal",
+	},
+	engineFilterOptions,
+);
 
 export const UnityBackendBadge = CreateColorCodedBadge<UnityScriptingBackend>(
 	"-",
@@ -82,14 +96,18 @@ export const OperatingSystemBadge = CreateColorCodedBadge<OperatingSystem>(
 	},
 );
 
-export const ProviderBadge = CreateColorCodedBadge<ProviderId>("Unknown", {
-	Manual: "gray",
-	Steam: "blue",
-	Epic: "red",
-	Gog: "violet",
-	Xbox: "green",
-	Itch: "teal",
-});
+export const ProviderBadge = CreateColorCodedBadge<ProviderId>(
+	"Unknown",
+	{
+		Manual: "gray",
+		Steam: "blue",
+		Epic: "red",
+		Gog: "violet",
+		Xbox: "green",
+		Itch: "teal",
+	},
+	providerFilterOptions,
+);
 
 export const UevrScoreBadge = CreateColorCodedBadge<UevrScore>("-", {
 	A: "green",

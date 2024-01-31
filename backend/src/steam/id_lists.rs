@@ -88,7 +88,7 @@ pub async fn get() -> Result<HashMap<String, SteamGame>> {
 		get_ids_data_list(&unity, GameEngineBrand::Unity),
 		get_ids_data_list(&unreal, GameEngineBrand::Unreal),
 		get_ids_data_list(&godot, GameEngineBrand::Godot),
-		get_ids_data_list(&game_maker, GameEngineBrand::GMaker),
+		get_ids_data_list(&game_maker, GameEngineBrand::GameMaker),
 	]
 	.concat();
 

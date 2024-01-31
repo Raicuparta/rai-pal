@@ -5,7 +5,7 @@ export const engineFilterOptions: FilterOption<GameEngineBrand>[] = [
 	{ label: "Unity", value: "Unity" },
 	{ label: "Unreal", value: "Unreal" },
 	{ label: "Godot", value: "Godot" },
-	{ label: "GMaker", value: "GMaker" },
+	{ label: "Game Maker", value: "GameMaker" },
 ];
 
 export const providerFilterOptions: FilterOption<ProviderId>[] = [

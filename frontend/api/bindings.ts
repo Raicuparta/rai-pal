@@ -133,6 +133,6 @@ export type ModLoaderData = { id: string; path: string; kind: ModKind }
 export type Architecture = "X64" | "X86"
 export type GameExecutable = { path: string; name: string; engine: GameEngine | null; architecture: Architecture | null; operatingSystem: OperatingSystem | null; scriptingBackend: UnityScriptingBackend | null }
 export type ProviderCommandAction = "Install" | "ShowInLibrary" | "ShowInStore" | "Start" | "OpenInBrowser"
-export type GameEngineBrand = "Unity" | "Unreal" | "Godot" | "GMaker"
+export type GameEngineBrand = "Unity" | "Unreal" | "Godot" | "GameMaker"
 export type ModKind = "Installable" | "Runnable"
 export type RemoteMod = { common: CommonModData; data: RemoteModData }
