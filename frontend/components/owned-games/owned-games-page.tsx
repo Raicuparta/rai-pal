@@ -95,21 +95,18 @@ export function OwnedGamesPage() {
 					setFilter={setHiddenValues}
 					active={isFilterActive}
 				>
-					{ownedGamesColumns.map(
-						(column) =>
-							column.filterOptions && (
-								<FilterSelect
-									key={column.id}
-									column={column}
-									visibleColumns={visibleColumnIds}
-									onChangeVisibleColumns={setVisibleColumnIds}
-									hiddenValues={hiddenValues[column.id]}
-									onChange={(selectedValues) =>
-										setHiddenValues({ [column.id]: selectedValues })
-									}
-								/>
-							),
-					)}
+					{ownedGamesColumns.map((column) => (
+						<FilterSelect
+							key={column.id}
+							column={column}
+							visibleColumns={visibleColumnIds}
+							onChangeVisibleColumns={setVisibleColumnIds}
+							hiddenValues={hiddenValues[column.id]}
+							onChange={(selectedValues) =>
+								setHiddenValues({ [column.id]: selectedValues })
+							}
+						/>
+					))}
 				</FilterMenu>
 				<RefreshButton />
 			</Group>

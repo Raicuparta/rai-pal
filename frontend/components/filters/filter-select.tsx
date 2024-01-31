@@ -55,7 +55,7 @@ export function FilterSelect<
 		onChange([]);
 	};
 
-	if (!column.filterOptions) return null;
+	if (!column.hidable) return null;
 
 	const isColumnVisible = visibleColumns.includes(column.id);
 
@@ -79,27 +79,31 @@ export function FilterSelect<
 					<Group gap="xs">{column.label}</Group>
 				</Button>
 			</Tooltip>
-			<Button.Group orientation="vertical">
-				{optionsWithUnknown.map((filterOption) => (
-					<FilterButton
-						filterOption={filterOption}
-						onClick={handleFilterClick}
-						isHidden={hiddenValues.includes(filterOption.value)}
-						isUnavailable={Boolean(
-							filterOption.value &&
-								column.unavailableValues?.includes(filterOption.value),
-						)}
-						key={filterOption.value}
-					/>
-				))}
-			</Button.Group>
-			<Button
-				onClick={handleReset}
-				leftSection={<IconRestore fontSize={10} />}
-				disabled={(hiddenValues?.length || 0) === 0}
-			>
-				Reset
-			</Button>
+			{column.filterOptions && (
+				<>
+					<Button.Group orientation="vertical">
+						{optionsWithUnknown.map((filterOption) => (
+							<FilterButton
+								filterOption={filterOption}
+								onClick={handleFilterClick}
+								isHidden={hiddenValues.includes(filterOption.value)}
+								isUnavailable={Boolean(
+									filterOption.value &&
+										column.unavailableValues?.includes(filterOption.value),
+								)}
+								key={filterOption.value}
+							/>
+						))}
+					</Button.Group>
+					<Button
+						onClick={handleReset}
+						leftSection={<IconRestore fontSize={10} />}
+						disabled={(hiddenValues?.length || 0) === 0}
+					>
+						Reset
+					</Button>
+				</>
+			)}
 		</Stack>
 	);
 }

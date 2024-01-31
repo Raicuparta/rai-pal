@@ -101,21 +101,18 @@ export function InstalledGamesPage() {
 					setFilter={setHiddenValues}
 					active={isFilterActive}
 				>
-					{installedGamesColumns.map(
-						(column) =>
-							column.filterOptions && (
-								<FilterSelect
-									key={column.id}
-									column={column}
-									visibleColumns={visibleColumnIds}
-									onChangeVisibleColumns={setVisibleColumnIds}
-									hiddenValues={hiddenValues[column.id]}
-									onChange={(selectedValues) =>
-										setHiddenValues({ [column.id]: selectedValues })
-									}
-								/>
-							),
-					)}
+					{installedGamesColumns.map((column) => (
+						<FilterSelect
+							key={column.id}
+							column={column}
+							visibleColumns={visibleColumnIds}
+							onChangeVisibleColumns={setVisibleColumnIds}
+							hiddenValues={hiddenValues[column.id]}
+							onChange={(selectedValues) =>
+								setHiddenValues({ [column.id]: selectedValues })
+							}
+						/>
+					))}
 				</FilterMenu>
 				<RefreshButton />
 			</Group>
