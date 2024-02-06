@@ -46,7 +46,7 @@ export function ModsPage() {
 					<Table.Thead>
 						<Table.Tr>
 							<Table.Th>Mod</Table.Th>
-							<Table.Th>Version</Table.Th>
+							<Table.Th ta="center">Version</Table.Th>
 							<Table.Th
 								ta="center"
 								w={100}
@@ -73,7 +73,7 @@ export function ModsPage() {
 								key={modId}
 								onClick={() => setSelectedId(mod.common.id)}
 							>
-								<Table.Td ta="left">
+								<Table.Td>
 									<ItemName label={`by ${mod.remote?.author}`}>
 										{mod.remote?.title ?? modId}
 									</ItemName>
@@ -92,7 +92,7 @@ export function ModsPage() {
 										remoteVersion={mod.remote?.latestVersion?.id}
 									/>
 								</Table.Td>
-								<Table.Td>{mod.common.loaderId}</Table.Td>
+								<Table.Td ta="center">{mod.common.loaderId}</Table.Td>
 								<Table.Td>
 									<EngineBadge value={mod.common.engine} />
 								</Table.Td>

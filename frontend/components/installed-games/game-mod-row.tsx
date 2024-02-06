@@ -144,6 +144,7 @@ export function GameModRow(props: Props) {
 						size="xs"
 						leftSection={actionIcon}
 						variant={isInstalled ? "light" : "default"}
+						maw="300"
 						confirmationText={
 							isInstalled
 								? undefined
