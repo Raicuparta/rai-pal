@@ -1,10 +1,4 @@
-import {
-	DefaultMantineColor,
-	Table,
-	ThemeIcon,
-	Group,
-	Box,
-} from "@mantine/core";
+import { DefaultMantineColor, Table, ThemeIcon, Box } from "@mantine/core";
 import {
 	ModLoaderData,
 	downloadMod,
