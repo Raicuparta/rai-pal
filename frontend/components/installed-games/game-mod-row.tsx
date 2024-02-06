@@ -136,7 +136,7 @@ export function GameModRow(props: Props) {
 					<MutedText>{props.mod.remote.description}</MutedText>
 				)}
 			</Table.Td>
-			<Table.Td maw={150}>
+			<Table.Td maw={200}>
 				<CommandButton
 					fullWidth
 					color={buttonColor}
