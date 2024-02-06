@@ -71,13 +71,11 @@ export function GameModRow(props: Props) {
 		isInstalledModOutdated,
 	]);
 
-	const versionText =
-		"asdsadgagdsasdasdasdaasdfasdfasfadfasdfasdfsdasdsad" ||
-		(
-			(!isInstalled || isInstalledModOutdated
-				? props.mod.remote?.latestVersion?.id
-				: installedVersion) ?? ""
-		).split("/")[0];
+	const versionText = (
+		(!isInstalled || isInstalledModOutdated
+			? props.mod.remote?.latestVersion?.id
+			: installedVersion) ?? ""
+	).split("/")[0];
 
 	const { actionText, actionIcon } = (() => {
 		if (isLocalModOutdated || isInstalledModOutdated) {
