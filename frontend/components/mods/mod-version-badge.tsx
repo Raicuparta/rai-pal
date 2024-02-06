@@ -24,7 +24,10 @@ export function ModVersionBadge(props: Props) {
 				gap={5}
 				align="center"
 			>
-				<Badge color={getColor(props)}>
+				<Badge
+					color={getColor(props)}
+					maw={150}
+				>
 					{props.localVersion || props.remoteVersion || "-"}
 				</Badge>
 				{isOutdated && <OutdatedMarker />}

@@ -1,4 +1,4 @@
-import { DefaultMantineColor, Table, ThemeIcon, Group } from "@mantine/core";
+import { DefaultMantineColor, Table, ThemeIcon, Box } from "@mantine/core";
 import {
 	ModLoaderData,
 	downloadMod,
@@ -71,11 +71,13 @@ export function GameModRow(props: Props) {
 		isInstalledModOutdated,
 	]);
 
-	const versionText = (
-		(!isInstalled || isInstalledModOutdated
-			? props.mod.remote?.latestVersion?.id
-			: installedVersion) ?? ""
-	).split("/")[0];
+	const versionText =
+		"asdsadgagdsasdasdasdaasdfasdfasfadfasdfasdfsdasdsad" ||
+		(
+			(!isInstalled || isInstalledModOutdated
+				? props.mod.remote?.latestVersion?.id
+				: installedVersion) ?? ""
+		).split("/")[0];
 
 	const { actionText, actionIcon } = (() => {
 		if (isLocalModOutdated || isInstalledModOutdated) {
@@ -136,25 +138,25 @@ export function GameModRow(props: Props) {
 					<MutedText>{props.mod.remote.description}</MutedText>
 				)}
 			</Table.Td>
-			<Table.Td>
-				<Group>
-					<CommandButton
-						fullWidth
-						color={buttonColor}
-						size="xs"
-						leftSection={actionIcon}
-						variant={isInstalled ? "light" : "default"}
-						confirmationText={
-							isInstalled
-								? undefined
-								: "Attention: be careful when installing mods on multiplayer games! Anticheat can detect some mods and get you banned, even if the mods seem harmless."
-						}
-						confirmationSkipId={isInstalled ? undefined : "install-mod-confirm"}
-						onClick={handleClick}
-					>
+			<Table.Td maw={150}>
+				<CommandButton
+					fullWidth
+					color={buttonColor}
+					size="xs"
+					leftSection={actionIcon}
+					variant={isInstalled ? "light" : "default"}
+					confirmationText={
+						isInstalled
+							? undefined
+							: "Attention: be careful when installing mods on multiplayer games! Anticheat can detect some mods and get you banned, even if the mods seem harmless."
+					}
+					confirmationSkipId={isInstalled ? undefined : "install-mod-confirm"}
+					onClick={handleClick}
+				>
+					<Box style={{ textOverflow: "ellipsis", overflow: "hidden" }}>
 						{actionText} {versionText}
-					</CommandButton>
-				</Group>
+					</Box>
+				</CommandButton>
 			</Table.Td>
 		</Table.Tr>
 	);
