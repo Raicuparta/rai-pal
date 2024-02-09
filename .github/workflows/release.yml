@@ -63,9 +63,13 @@ jobs:
           TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
           ANALYTICS_API_KEY: ${{ secrets.ANALYTICS_API_KEY }}
         with:
-          tagName: v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version
-          releaseName: "Rai Pal __VERSION__"
+          includeRelease: false
           includeUpdaterJson: true
+          # the action automatically replaces \_\_VERSION\_\_ with the app version
+          # TODO: remove -test suffix
+          tagName: v__VERSION__-test
+          releaseName: "Rai Pal __VERSION__"
           releaseBody: ${{ inputs.commit_message || github.event.pull_request.body || github.event.head_commit.message }}
-          releaseDraft: false
+          # TODO: make draft flag false
+          releaseDraft: true
           prerelease: false
