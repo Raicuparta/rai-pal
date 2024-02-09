@@ -15,10 +15,10 @@ function CheckEnvVar {
   }
 }
 
-# CheckEnvVar -Var "TAURI_PRIVATE_KEY"
-# CheckEnvVar -Var "TAURI_KEY_PASSWORD"
+CheckEnvVar -Var "TAURI_PRIVATE_KEY"
+CheckEnvVar -Var "TAURI_KEY_PASSWORD"
 
-# pnpm build
+pnpm build
 
 $msiFolder = "./backend/target/release/bundle/msi"
 
