@@ -59,4 +59,5 @@ $updaterJson | Set-Content -Path "$outputFolder/latest.json"
 Copy-Item "$msiFolder/*.msi" "$outputFolder/RaiPal.msi" -Force
 Copy-Item "$msiFolder/*.zip" "$outputFolder/updater.zip" -Force
 
-Write-Output $version
+# Save version to environment veriable, so we can read it in other scripts.
+$Env:RAI_PAL_VERSION = "$version"
