@@ -38,7 +38,7 @@ $updaterJson = ConvertTo-Json -InputObjec @{
   platforms = @{
     "windows-x86_64" = @{
       signature = "${signature}"
-      url       = "https://github.com/Raicuparta/rai-pal/releases/latest/download/updater.zip"
+      url       = "https://github.com/Raicuparta/rai-pal/releases/download/v${version}/updater.zip"
     }
   }
 }
