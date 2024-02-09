@@ -62,7 +62,7 @@ jobs:
         run: |
           $output = ./publish.ps1 -Changelog "${{ inputs.commit_message || github.event.pull_request.body || github.event.head_commit.message || github.event.inputs.change_log }}"
           $version = $output | Select-Object -Last 1
-          Write-Output "::set-output name=version::$version "
+          "version=$version" >> $env:GITHUB_OUTPUT
         env:
           TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
           TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
@@ -73,7 +73,7 @@ jobs:
         with:
           draft: true
           name: Rai Pal ${{ steps.build.outputs.version }}
-          tag_name: v${{ steps.build.outputs.version }}
+          tag_name: v${{ steps.build.outputs.version }}-test
           body: ${{ inputs.commit_message || github.event.pull_request.body || github.event.head_commit.message || github.event.inputs.change_log }}"
           files: |
             ./publish/*
