@@ -11,7 +11,8 @@ on:
 
 jobs:
   publish-release:
-    if: github.event.pull_request.merged == true
+    # TODO uncomment
+    # if: github.event.pull_request.merged == true
     permissions:
       contents: write
     strategy:
