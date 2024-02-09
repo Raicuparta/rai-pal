@@ -60,7 +60,7 @@ jobs:
       - name: Build
         id: build
         run: |
-          $version = ./publish.ps1 -Changelog "${{ inputs.commit_message || github.event.pull_request.body || github.event.head_commit.message }}"
+          $version = ./publish.ps1 -Changelog "${{ inputs.commit_message || github.event.pull_request.body || github.event.head_commit.message }} || test"
           Write-Output "::set-output name=version::$version"
         env:
           TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
