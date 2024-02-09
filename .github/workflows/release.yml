@@ -1,18 +1,13 @@
 name: "release"
 on:
   workflow_dispatch:
-    inputs:
-      change_log:
-        description: "Changelog"
-        required: true
   pull_request:
     types: [closed]
     branches: [main]
 
 jobs:
   publish-release:
-    # TODO uncomment
-    # if: github.event.pull_request.merged == true
+    if: github.event.pull_request.merged == true
     permissions:
       contents: write
     strategy:
@@ -60,7 +55,7 @@ jobs:
       - name: Build
         id: build
         run: |
-          $output = ./publish.ps1 -Changelog "${{ inputs.commit_message || github.event.pull_request.body || github.event.head_commit.message || github.event.inputs.change_log }}"
+          $output = ./publish.ps1 -Changelog "${{ github.event.pull_request.body || 'no changelog provided' }}"
           $version = $output | Select-Object -Last 1
           "version=$version" >> $env:GITHUB_OUTPUT
         env:
@@ -73,7 +68,7 @@ jobs:
         with:
           draft: true
           name: Rai Pal ${{ steps.build.outputs.version }}
-          tag_name: v${{ steps.build.outputs.version }}-test
-          body: ${{ inputs.commit_message || github.event.pull_request.body || github.event.head_commit.message || github.event.inputs.change_log }}"
+          tag_name: v${{ steps.build.outputs.version }}
+          body: ${{ github.event.pull_request.body }}"
           files: |
             ./publish/*
