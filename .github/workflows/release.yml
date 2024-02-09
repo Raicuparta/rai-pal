@@ -57,20 +57,22 @@ jobs:
       - name: Install frontend dependencies
         run: pnpm install
 
-      - uses: tauri-apps/tauri-action@v0
+      - name: Build
+        id: build
+        run: |
+          $version = ./deploy.ps1 -Changelog ${{ inputs.commit_message || github.event.pull_request.body || github.event.head_commit.message }}
+          Write-Output "::set-output name=version::$version"
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
           TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
           ANALYTICS_API_KEY: ${{ secrets.ANALYTICS_API_KEY }}
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
         with:
-          includeRelease: false
-          includeUpdaterJson: true
-          # the action automatically replaces \_\_VERSION\_\_ with the app version
-          # TODO: remove -test suffix
-          tagName: v__VERSION__-test
-          releaseName: "Rai Pal __VERSION__"
-          releaseBody: ${{ inputs.commit_message || github.event.pull_request.body || github.event.head_commit.message }}
-          # TODO: make draft flag false
-          releaseDraft: true
-          prerelease: false
+          draft: true
+          name: Rai Pal ${{ steps.build.outputs.version }}
+          tag_name: v${{ steps.build.outputs.version }}
+          body: ${{ inputs.commit_message || github.event.pull_request.body || github.event.head_commit.message }}
+          files: |
+            ./publish/*
