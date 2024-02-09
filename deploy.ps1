@@ -1,19 +1,15 @@
-function Check-EnvVariables {
+function CheckEnvVar {
     param (
-        [string[]]$EnvVariableNames
+        [string]$Var
     )
 
-    foreach ($envVariableName in $EnvVariableNames) {
-        # Check if the environment variable is defined
-        if (-not (Test-Path Env:$envVariableName)) {
-            Write-Error "Environment variable '$envVariableName' is not defined."
-            exit 1  # Exit the script with an error code
-        }
-
-        # Access the value of the environment variable
-        $envVariableValue = $env:$envVariableName
-
-        # Use the environment variable value here...
-        Write-Host "Environment variable '$envVariableName' is defined with value: $envVariableValue"
+    if (-not (Test-Path Env:$Var)) {
+        Write-Error "Environment variable '$Var' is not defined."
+        exit 1
     }
 }
+
+CheckEnvVar -Var "TAURI_PRIVATE_KEY"
+CheckEnvVar -Var "TAURI_KEY_PASSWORD"
+
+pnpm build
