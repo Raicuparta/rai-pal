@@ -13,6 +13,7 @@ import {
 	IconTool,
 } from "@tabler/icons-react";
 import { ThanksPage } from "@components/thanks/thanks-page";
+import { useAppUpdates } from "@hooks/use-app-updates";
 
 const pages = {
 	installedGames: {
@@ -42,6 +43,7 @@ const firstPage = Object.keys(pages)[0];
 
 function App() {
 	useData();
+	useAppUpdates();
 
 	return (
 		<>
