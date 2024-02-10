@@ -16,6 +16,7 @@
       "endpoints": [
         "https://github.com/Raicuparta/rai-pal/releases/latest/download/latest.json"
       ],
+      "dialog": false,
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDNGMzI5QUM1RjMwMjM0OTMKUldTVE5BTHp4Wm95UDcvaWgyKzRENVkzZVc2K1JTOEhidUR4OFVENWVqemloUWRmZDllbzJGaSsK"
     },
     "allowlist": {
@@ -29,7 +30,7 @@
       },
       "dialog": {
         "all": false,
-        "ask": false,
+        "ask": true,
         "confirm": true,
         "message": false,
         "open": true,
