@@ -12,26 +12,28 @@ import { dialog } from "@tauri-apps/api";
 
 const checkFrequencyMilliseconds = 3.6e6;
 
-export function useAppUpdates() {
+export function useAppUpdater() {
 	useEffect(() => {
 		const unlistenPromise = onUpdaterEvent(({ error, status }) => {
-			showAppNotification(error || status, error ? "error" : "info");
+			(error ? console.error : console.log)(error || status);
 		});
 
 		checkUpdate()
 			.then(async ({ shouldUpdate, manifest }) => {
 				if (shouldUpdate) {
-					// You could show a dialog asking the user if they want to install the update here.
 					console.log(
 						`Installing update ${manifest?.version}, ${manifest?.date}, ${manifest?.body}`,
 					);
 
-					const shouldUpdate = await dialog.ask("Wanna update this bad boy?", {
-						type: "info",
-						cancelLabel: "No thanks",
-						okLabel: "Update now",
-						title: "Hey",
-					});
+					const shouldUpdate = await dialog.ask(
+						`A new Rai Pal update is available.\n\nIf you skip the update for now, you'll be prompted again once you restart Rai Pal.\n\nChanges in version ${manifest?.version}:\n\n${manifest?.body}`,
+						{
+							type: "info",
+							cancelLabel: "No thanks",
+							okLabel: "Update now",
+							title: "Rai Pal Update",
+						},
+					);
 
 					if (!shouldUpdate) {
 						return;
@@ -40,13 +42,12 @@ export function useAppUpdates() {
 					// Install the update. This will also restart the app on Windows!
 					await installUpdate();
 
-					// On macOS and Linux you will need to restart the app manually.
-					// You could use this step to display another confirmation dialog.
+					// On macOS and Linux we need to restart manually.
 					await relaunch();
 				}
 			})
 			.catch((error) => {
-				showAppNotification(error, "error");
+				showAppNotification(`Failed to get app updates: ${error}`, "error");
 			});
 
 		const interval = setInterval(() => {
