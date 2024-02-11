@@ -29,7 +29,6 @@ export function useProcessedOwnedGames() {
 	const installedGames = useAtomValue(installedGamesAtom);
 
 	const installedGamesByProvider: InstalledGamesByProvider = useMemo(() => {
-		console.log("recalculating processed owned games");
 		const result: InstalledGamesByProvider = {
 			Steam: {},
 			Manual: {},

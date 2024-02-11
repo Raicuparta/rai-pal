@@ -23,6 +23,7 @@ import { ProcessedInstalledGame } from "@hooks/use-processed-installed-games";
 import { useCallback } from "react";
 import { ItemName } from "@components/item-name";
 import { MutedText } from "@components/muted-text";
+import { ModVersionBadge } from "@components/mods/mod-version-badge";
 
 type Props = {
 	readonly game: ProcessedInstalledGame;
@@ -71,15 +72,9 @@ export function GameModRow(props: Props) {
 		isInstalledModOutdated,
 	]);
 
-	const versionText = (
-		(!isInstalled || isInstalledModOutdated
-			? props.mod.remote?.latestVersion?.id
-			: installedVersion) ?? ""
-	).split("/")[0];
-
 	const { actionText, actionIcon } = (() => {
 		if (isLocalModOutdated || isInstalledModOutdated) {
-			return { actionText: "Update to", actionIcon: <IconRefreshAlert /> };
+			return { actionText: "Update", actionIcon: <IconRefreshAlert /> };
 		}
 
 		if (isInstalled) {
@@ -131,6 +126,10 @@ export function GameModRow(props: Props) {
 						{statusIcon}
 					</ThemeIcon>
 					{props.mod.remote?.title ?? props.mod.common.id}
+					<ModVersionBadge
+						localVersion={installedVersion}
+						remoteVersion={props.mod.remote?.latestVersion?.id}
+					/>
 				</ItemName>
 				{props.mod.remote?.description && (
 					<MutedText>{props.mod.remote.description}</MutedText>
@@ -152,7 +151,7 @@ export function GameModRow(props: Props) {
 					onClick={handleClick}
 				>
 					<Box style={{ textOverflow: "ellipsis", overflow: "hidden" }}>
-						{actionText} {versionText}
+						{actionText}
 					</Box>
 				</CommandButton>
 			</Table.Td>

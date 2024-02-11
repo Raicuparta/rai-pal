@@ -1,6 +1,6 @@
 import { Badge, DefaultMantineColor, Stack, Tooltip } from "@mantine/core";
 import { getIsOutdated } from "../../util/is-outdated";
-import { OutdatedMarker } from "@components/outdated-marker";
+import { IconRefreshAlert } from "@tabler/icons-react";
 
 type Props = {
 	readonly localVersion?: string;
@@ -15,10 +15,15 @@ function getColor(props: Props): DefaultMantineColor {
 
 export function ModVersionBadge(props: Props) {
 	const isOutdated = getIsOutdated(props.localVersion, props.remoteVersion);
+
+	const versionText = (props.localVersion || props.remoteVersion || "-").split(
+		"/",
+	)[0];
+
 	return (
 		<Tooltip
 			disabled={!isOutdated}
-			label="Mod outdated. Re-download it to update."
+			label="Mod outdated"
 		>
 			<Stack
 				gap={5}
@@ -27,10 +32,10 @@ export function ModVersionBadge(props: Props) {
 				<Badge
 					color={getColor(props)}
 					maw={150}
+					leftSection={isOutdated && <IconRefreshAlert fontSize={15} />}
 				>
-					{props.localVersion || props.remoteVersion || "-"}
+					{versionText}
 				</Badge>
-				{isOutdated && <OutdatedMarker />}
 			</Stack>
 		</Tooltip>
 	);

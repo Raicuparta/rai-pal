@@ -1,10 +1,6 @@
 name: "release"
 on:
   workflow_dispatch:
-    inputs:
-      change_log:
-        description: "Changelog"
-        required: true
   pull_request:
     types: [closed]
     branches: [main]
@@ -56,16 +52,23 @@ jobs:
       - name: Install frontend dependencies
         run: pnpm install
 
-      - uses: tauri-apps/tauri-action@v0
+      - name: Build
+        id: build
+        run: |
+          $output = ./publish.ps1 -Changelog "${{ github.event.pull_request.body || 'no changelog provided' }}"
+          $version = $output | Select-Object -Last 1
+          "version=$version" >> $env:GITHUB_OUTPUT
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
           TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
           ANALYTICS_API_KEY: ${{ secrets.ANALYTICS_API_KEY }}
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
         with:
-          tagName: v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version
-          releaseName: "Rai Pal __VERSION__"
-          includeUpdaterJson: true
-          releaseBody: ${{ inputs.commit_message || github.event.pull_request.body || github.event.head_commit.message }}
-          releaseDraft: false
-          prerelease: false
+          draft: false
+          name: Rai Pal ${{ steps.build.outputs.version }}
+          tag_name: v${{ steps.build.outputs.version }}
+          body: ${{ github.event.pull_request.body }}"
+          files: |
+            ./publish/*
