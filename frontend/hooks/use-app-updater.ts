@@ -29,16 +29,16 @@ export function useAppUpdater() {
 
 			checkUpdate()
 				.then(async ({ shouldUpdate, manifest }) => {
-					if (!manifest) {
-						throw new Error("Update manifest not present.");
-					}
-
 					if (currentCheckId !== updateCheckId.current) {
 						// If the IDs are different, that means a new check has started in the meantime.
 						return;
 					}
 
 					if (!shouldUpdate || shouldSkipUpdate) return;
+
+					if (!manifest) {
+						throw new Error("Update manifest not present.");
+					}
 
 					console.log(
 						`Received update ${manifest.version}, ${manifest.date}, ${manifest.body}`,
