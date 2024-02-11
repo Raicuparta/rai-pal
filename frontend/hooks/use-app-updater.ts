@@ -1,5 +1,4 @@
-import { emit } from "@tauri-apps/api/event";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 import {
 	checkUpdate,
@@ -10,32 +9,59 @@ import { relaunch } from "@tauri-apps/api/process";
 import { showAppNotification } from "@components/app-notifications";
 import { dialog } from "@tauri-apps/api";
 
-const checkFrequencyMilliseconds = 3.6e6;
+const checkIntervalMilliseconds = 120000;
 
 export function useAppUpdater() {
+	// Use this ID as a way to prevent multiple checks at once.
+	const updateCheckId = useRef(0);
+
 	useEffect(() => {
 		const unlistenPromise = onUpdaterEvent(({ error, status }) => {
 			(error ? console.error : console.log)(error || status);
 		});
 
-		checkUpdate()
-			.then(async ({ shouldUpdate, manifest }) => {
-				if (shouldUpdate) {
+		let shouldSkipUpdate = false;
+
+		function triggerUpdateCheck() {
+			// Increment the ID and use it for this check.
+			updateCheckId.current++;
+			const currentCheckId = updateCheckId.current;
+
+			checkUpdate()
+				.then(async ({ shouldUpdate, manifest }) => {
+					if (!manifest) {
+						throw new Error("Update manifest not present.");
+					}
+
+					if (currentCheckId !== updateCheckId.current) {
+						// If the IDs are different, that means a new check has started in the meantime.
+						return;
+					}
+
+					if (!shouldUpdate || shouldSkipUpdate) return;
+
 					console.log(
-						`Installing update ${manifest?.version}, ${manifest?.date}, ${manifest?.body}`,
+						`Received update ${manifest.version}, ${manifest.date}, ${manifest.body}`,
 					);
 
-					const shouldUpdate = await dialog.ask(
-						`A new Rai Pal update is available.\n\nIf you skip the update for now, you'll be prompted again once you restart Rai Pal.\n\nChanges in version ${manifest?.version}:\n\n${manifest?.body}`,
-						{
-							type: "info",
-							cancelLabel: "No thanks",
-							okLabel: "Update now",
-							title: "Rai Pal Update",
-						},
-					);
+					// Skip any checks that happen while this one is open.
+					shouldSkipUpdate = true;
 
-					if (!shouldUpdate) {
+					const userAcceptedUpdate = await dialog.ask(manifest.body, {
+						type: "info",
+						cancelLabel: "Ignore (won't ask again until you restart Rai Pal)",
+						okLabel: "Update now",
+						title: `Rai Pal Update ${manifest.version}`,
+					});
+
+					shouldSkipUpdate = false;
+
+					if (!userAcceptedUpdate) {
+						// If the user says no, let's not bother them any longer during this session.
+
+						shouldSkipUpdate = true;
+						clearInterval(interval);
+
 						return;
 					}
 
@@ -44,16 +70,17 @@ export function useAppUpdater() {
 
 					// On macOS and Linux we need to restart manually.
 					await relaunch();
-				}
-			})
-			.catch((error) => {
-				showAppNotification(`Failed to get app updates: ${error}`, "error");
-			});
+				})
+				.catch((error) => {
+					showAppNotification(`Failed to get app updates: ${error}`, "error");
+				});
+		}
 
-		const interval = setInterval(() => {
-			if (!document.hasFocus()) return;
-			emit("tauri://update");
-		}, checkFrequencyMilliseconds);
+		// Initial check on mount.
+		triggerUpdateCheck();
+
+		// Subsequent checks every so often.
+		const interval = setInterval(triggerUpdateCheck, checkIntervalMilliseconds);
 
 		return () => {
 			unlistenPromise.then((unlisten) => unlisten());
