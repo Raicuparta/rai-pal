@@ -66,7 +66,7 @@ jobs:
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
-          draft: true
+          draft: false
           name: Rai Pal ${{ steps.build.outputs.version }}
           tag_name: v${{ steps.build.outputs.version }}
           body: ${{ github.event.pull_request.body }}"
