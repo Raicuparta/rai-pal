@@ -11,8 +11,6 @@
 
 [![Download Rai Pal for Windows](https://shields.io/badge/-Download_Rai_Pal_for_Windows-8A2BE2?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/Raicuparta/rai-pal/releases/latest/download/RaiPal.msi)
 
-[**Download Rai Pal**](https://github.com/Raicuparta/rai-pal/releases/latest)
-
 ## What's this?
 
 A tool that helps you use and make universal game mods. That means mods that aren't made for any specific game, but work across multiple games, usually of the same game engine. Some features:
