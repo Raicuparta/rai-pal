@@ -69,6 +69,6 @@ jobs:
           draft: false
           name: Rai Pal ${{ steps.build.outputs.version }}
           tag_name: v${{ steps.build.outputs.version }}
-          body: ${{ github.event.pull_request.body }}"
+          body: ${{ github.event.pull_request.body }}
           files: |
             ./publish/*
