@@ -296,7 +296,6 @@ fn find_mods(
 				BepInEx::ID,
 				mod_path,
 				Some(EngineBrand::Unity),
-				None, // TODO: should I be reading the engine versions from local mods somehow?
 				Some(scripting_backend),
 			) {
 				Some((local_mod.common.id.clone(), local_mod))

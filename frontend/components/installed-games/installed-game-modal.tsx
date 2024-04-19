@@ -9,6 +9,8 @@ import {
 	Tooltip,
 } from "@mantine/core";
 import {
+	EngineVersion,
+	EngineVersionRange,
 	openGameFolder,
 	openGameModsFolder,
 	refreshGame,
@@ -48,6 +50,55 @@ type Props = {
 	readonly onClose: () => void;
 };
 
+function isVersionWithinRange(
+	version: EngineVersion | null | undefined,
+	range: EngineVersionRange | null,
+) {
+	if (!version || !range) return true;
+
+	const { major, minor, patch } = version.numbers;
+	const { minimum, maximum } = range;
+
+	if (minimum && minimum.major > major) return false;
+	if (maximum && maximum.major < major) return false;
+	if (
+		minimum &&
+		minimum.major === major &&
+		minimum.minor != null &&
+		minor != null &&
+		minimum.minor > minor
+	)
+		return false;
+	if (
+		maximum &&
+		maximum.major === major &&
+		maximum.minor != null &&
+		minor != null &&
+		maximum.minor < minor
+	)
+		return false;
+	if (
+		minimum &&
+		minimum.major === major &&
+		minimum.minor === minor &&
+		minimum.patch != null &&
+		patch != null &&
+		minimum.patch > patch
+	)
+		return false;
+	if (
+		maximum &&
+		maximum.major === major &&
+		maximum.minor === minor &&
+		maximum.patch != null &&
+		patch != null &&
+		maximum.patch < patch
+	)
+		return false;
+
+	return true;
+}
+
 export function InstalledGameModal(props: Props) {
 	const modLoaderMap = useAtomValue(modLoadersAtom);
 	const mods = useUnifiedMods();
@@ -58,11 +109,15 @@ export function InstalledGameModal(props: Props) {
 				(!mod.common.engine ||
 					mod.common.engine === props.game.executable.engine?.brand) &&
 				(!mod.common.unityBackend ||
-					mod.common.unityBackend === props.game.executable.scriptingBackend),
+					mod.common.unityBackend === props.game.executable.scriptingBackend) &&
+				isVersionWithinRange(
+					props.game.executable.engine?.version,
+					mod.common.engineVersionRange,
+				),
 		);
 	}, [
 		mods,
-		props.game.executable.engine?.brand,
+		props.game.executable.engine,
 		props.game.executable.scriptingBackend,
 	]);
 

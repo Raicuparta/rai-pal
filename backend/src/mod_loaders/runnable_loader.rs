@@ -145,7 +145,6 @@ impl ModLoaderActions for RunnableLoader {
 					Self::ID,
 					manifest_path.parent().unwrap_or(&manifest_path),
 					manifest.engine,
-					manifest.engine_version_range,
 					manifest.unity_backend,
 				) {
 					Ok(local_mod) => {
