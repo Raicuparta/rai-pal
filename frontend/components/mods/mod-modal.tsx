@@ -9,6 +9,7 @@ import {
 import { DebugData } from "@components/debug-data";
 import { UnifiedMod } from "@hooks/use-unified-mods";
 import { ItemName } from "@components/item-name";
+import { getModTitle } from "../../util/game-mod";
 
 type Props = {
 	readonly mod: UnifiedMod;
@@ -30,7 +31,7 @@ export function ModModal(props: Props) {
 			size="xl"
 			title={
 				<ItemName label={`by ${props.mod.remote?.author}`}>
-					{props.mod.remote?.title ?? props.mod.common.id}
+					{getModTitle(props.mod)}
 				</ItemName>
 			}
 		>

@@ -24,6 +24,7 @@ import { useCallback } from "react";
 import { ItemName } from "@components/item-name";
 import { MutedText } from "@components/muted-text";
 import { ModVersionBadge } from "@components/mods/mod-version-badge";
+import { getModTitle } from "../../util/game-mod";
 
 type Props = {
 	readonly game: ProcessedInstalledGame;
@@ -125,7 +126,7 @@ export function GameModRow(props: Props) {
 					>
 						{statusIcon}
 					</ThemeIcon>
-					{props.mod.remote?.title ?? props.mod.common.id}
+					{getModTitle(props.mod)}
 					<ModVersionBadge
 						localVersion={installedVersion}
 						remoteVersion={props.mod.remote?.latestVersion?.id}

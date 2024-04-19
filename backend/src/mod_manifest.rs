@@ -16,6 +16,7 @@ use crate::{
 };
 
 serializable_struct!(Manifest {
+	pub title: String,
 	pub version: String,
 	pub runnable: Option<RunnableModData>,
 	pub engine: Option<EngineBrand>,

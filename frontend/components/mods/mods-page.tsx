@@ -12,6 +12,7 @@ import { ModModal } from "./mod-modal";
 import { useUnifiedMods } from "@hooks/use-unified-mods";
 import { ModVersionBadge } from "./mod-version-badge";
 import { ItemName } from "@components/item-name";
+import { getModTitle } from "../../util/game-mod";
 
 export function ModsPage() {
 	const [selectedModId, setSelectedId] = useState<string>();
@@ -75,7 +76,7 @@ export function ModsPage() {
 							>
 								<Table.Td>
 									<ItemName label={`by ${mod.remote?.author}`}>
-										{mod.remote?.title ?? modId}
+										{getModTitle(mod)}
 									</ItemName>
 									{mod.remote?.description && (
 										<Text
