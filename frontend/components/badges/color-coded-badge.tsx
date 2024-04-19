@@ -1,6 +1,6 @@
 import {
 	Architecture,
-	GameEngineBrand,
+	EngineBrand,
 	GameMode,
 	OperatingSystem,
 	ProviderId,
@@ -59,7 +59,7 @@ function CreateColorCodedBadge<TValue extends string>(
 	};
 }
 
-export const EngineBadge = CreateColorCodedBadge<GameEngineBrand>(
+export const EngineBadge = CreateColorCodedBadge<EngineBrand>(
 	"-",
 	{
 		Unity: "blue",

@@ -1,7 +1,7 @@
 import { Table, Tooltip } from "@mantine/core";
 import {
 	Architecture,
-	GameEngineBrand,
+	EngineBrand,
 	GameMode,
 	OperatingSystem,
 	ProviderId,
@@ -159,7 +159,7 @@ const gameMode: TableColumnBase<ProcessedInstalledGame, GameMode> = {
 	),
 };
 
-const engine: TableColumnBase<ProcessedInstalledGame, GameEngineBrand> = {
+const engine: TableColumnBase<ProcessedInstalledGame, EngineBrand> = {
 	label: "Engine",
 	width: 180,
 	center: true,

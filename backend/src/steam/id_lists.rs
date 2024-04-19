@@ -9,7 +9,7 @@ use std::{
 use log::error;
 
 use crate::{
-	game_engines::game_engine::GameEngineBrand,
+	game_engines::game_engine::EngineBrand,
 	serializable_enum,
 	serializable_struct,
 	Result,
@@ -21,7 +21,7 @@ serializable_enum!(UevrScore { A, B, C, D, E });
 
 serializable_struct!(SteamGame {
 	pub id: String,
-	pub engine: GameEngineBrand,
+	pub engine: EngineBrand,
 	pub uevr_score: Option<UevrScore>,
 });
 
@@ -63,7 +63,7 @@ async fn get_uevr_scores() -> HashMap<String, UevrScore> {
 	}
 }
 
-fn get_ids_data_list(ids: &HashSet<String>, engine: GameEngineBrand) -> Vec<SteamGame> {
+fn get_ids_data_list(ids: &HashSet<String>, engine: EngineBrand) -> Vec<SteamGame> {
 	ids.iter()
 		.map(|id| SteamGame {
 			id: id.to_string(),
@@ -85,10 +85,10 @@ pub async fn get() -> Result<HashMap<String, SteamGame>> {
 	let uevr_scores = get_uevr_scores().await;
 
 	let mut games = [
-		get_ids_data_list(&unity, GameEngineBrand::Unity),
-		get_ids_data_list(&unreal, GameEngineBrand::Unreal),
-		get_ids_data_list(&godot, GameEngineBrand::Godot),
-		get_ids_data_list(&game_maker, GameEngineBrand::GameMaker),
+		get_ids_data_list(&unity, EngineBrand::Unity),
+		get_ids_data_list(&unreal, EngineBrand::Unreal),
+		get_ids_data_list(&godot, EngineBrand::Godot),
+		get_ids_data_list(&game_maker, EngineBrand::GameMaker),
 	]
 	.concat();
 

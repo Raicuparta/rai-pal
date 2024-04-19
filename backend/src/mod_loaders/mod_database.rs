@@ -6,9 +6,10 @@ use reqwest::redirect::Policy;
 
 use crate::{
 	game_engines::{
-		game_engine::GameEngineBrand,
+		game_engine::EngineBrand,
 		unity::UnityScriptingBackend,
 	},
+	game_mod::EngineVersionRange,
 	serializable_struct,
 	Result,
 };
@@ -22,7 +23,8 @@ serializable_struct!(DatabaseEntry {
 	pub source_code: String,
 	pub description: String,
 	pub latest_version: Option<ModDownload>,
-	pub engine: Option<GameEngineBrand>,
+	pub engine: Option<EngineBrand>,
+	pub engine_version_range: Option<EngineVersionRange>,
 	pub unity_backend: Option<UnityScriptingBackend>,
 	pub github: Option<ModGithubInfo>,
 	pub redownload_id: Option<i32>,

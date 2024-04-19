@@ -1,7 +1,7 @@
-import { GameEngineBrand, ProviderId } from "@api/bindings";
+import { EngineBrand, ProviderId } from "@api/bindings";
 import { FilterOption } from "@components/table/table-head";
 
-export const engineFilterOptions: FilterOption<GameEngineBrand>[] = [
+export const engineFilterOptions: FilterOption<EngineBrand>[] = [
 	{ label: "Unity", value: "Unity" },
 	{ label: "Unreal", value: "Unreal" },
 	{ label: "Godot", value: "Godot" },

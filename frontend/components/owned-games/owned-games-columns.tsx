@@ -1,9 +1,4 @@
-import {
-	GameEngineBrand,
-	GameMode,
-	ProviderId,
-	UevrScore,
-} from "@api/bindings";
+import { EngineBrand, GameMode, ProviderId, UevrScore } from "@api/bindings";
 import {
 	EngineBadge,
 	GameModeBadge,
@@ -62,7 +57,7 @@ const provider: TableColumnBase<ProcessedOwnedGame, ProviderId> = {
 	),
 };
 
-const engine: TableColumnBase<ProcessedOwnedGame, GameEngineBrand> = {
+const engine: TableColumnBase<ProcessedOwnedGame, EngineBrand> = {
 	label: "Engine",
 	width: 150,
 	center: true,

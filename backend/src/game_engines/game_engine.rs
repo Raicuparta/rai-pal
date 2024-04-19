@@ -3,7 +3,7 @@ use crate::{
 	serializable_struct,
 };
 
-serializable_enum!(GameEngineBrand {
+serializable_enum!(EngineBrand {
 	Unity,
 	Unreal,
 	Godot,
@@ -11,14 +11,18 @@ serializable_enum!(GameEngineBrand {
 });
 
 serializable_struct!(GameEngine {
-	pub brand: GameEngineBrand,
-	pub version: Option<GameEngineVersion>,
+	pub brand: EngineBrand,
+	pub version: Option<EngineVersion>,
 });
 
-serializable_struct!(GameEngineVersion {
+serializable_struct!(EngineVersionNumbers {
 	pub major: u32,
-	pub minor: u32,
-	pub patch: u32,
+	pub minor: Option<u32>,
+	pub patch: Option<u32>,
+});
+
+serializable_struct!(EngineVersion {
+	pub numbers: EngineVersionNumbers,
 	pub suffix: Option<String>,
 	pub display: String,
 });

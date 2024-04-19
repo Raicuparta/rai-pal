@@ -7,9 +7,10 @@ use log::error;
 
 use crate::{
 	game_engines::{
-		game_engine::GameEngineBrand,
+		game_engine::EngineBrand,
 		unity::UnityScriptingBackend,
 	},
+	game_mod::EngineVersionRange,
 	mod_loaders::mod_database::RunnableModData,
 	serializable_struct,
 };
@@ -17,7 +18,8 @@ use crate::{
 serializable_struct!(Manifest {
 	pub version: String,
 	pub runnable: Option<RunnableModData>,
-	pub engine: Option<GameEngineBrand>,
+	pub engine: Option<EngineBrand>,
+	pub engine_version_range: Option<EngineVersionRange>,
 	pub unity_backend: Option<UnityScriptingBackend>,
 });
 

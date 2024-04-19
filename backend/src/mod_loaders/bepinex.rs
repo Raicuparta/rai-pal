@@ -18,8 +18,8 @@ use crate::{
 	files::copy_dir_all,
 	game_engines::{
 		game_engine::{
+			EngineBrand,
 			GameEngine,
-			GameEngineBrand,
 		},
 		unity::UnityScriptingBackend,
 	},
@@ -198,12 +198,11 @@ impl ModLoaderActions for BepInEx {
 	}
 }
 
-const fn is_legacy(engine: &GameEngine) -> bool {
-	if let Some(version) = &engine.version {
-		version.major < 5 || (version.major == 5 && version.minor < 5)
-	} else {
-		false
-	}
+fn is_legacy(engine: &GameEngine) -> bool {
+	engine.version.as_ref().map_or(false, |version| {
+		version.numbers.major < 5
+			|| (version.numbers.major == 5 && version.numbers.minor.is_some_and(|minor| minor < 5))
+	})
 }
 
 // TODO: Linux stuff.
@@ -296,7 +295,8 @@ fn find_mods(
 			if let Ok(local_mod) = LocalMod::new(
 				BepInEx::ID,
 				mod_path,
-				Some(GameEngineBrand::Unity),
+				Some(EngineBrand::Unity),
+				None, // TODO: should I be reading the engine versions from local mods somehow?
 				Some(scripting_backend),
 			) {
 				Some((local_mod.common.id.clone(), local_mod))

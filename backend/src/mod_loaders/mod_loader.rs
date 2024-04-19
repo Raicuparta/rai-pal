@@ -109,6 +109,7 @@ pub trait ModLoaderActions {
 					common: CommonModData {
 						id: database_mod.id.clone(),
 						engine: database_mod.engine,
+						engine_version_range: database_mod.engine_version_range.clone(),
 						unity_backend: database_mod.unity_backend,
 						loader_id: loader_id.clone(),
 					},
@@ -163,6 +164,7 @@ pub trait ModLoaderActions {
 					version: latest_version.id.clone(),
 					runnable: latest_version.runnable.clone(),
 					engine: remote_mod.common.engine,
+					engine_version_range: remote_mod.common.engine_version_range.clone(),
 					unity_backend: remote_mod.common.unity_backend,
 				})?,
 			)?;

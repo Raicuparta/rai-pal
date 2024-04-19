@@ -8,10 +8,13 @@ use std::{
 
 use crate::{
 	game_engines::{
-		game_engine::GameEngineBrand,
+		game_engine::EngineBrand,
 		unity::UnityScriptingBackend,
 	},
-	game_mod::CommonModData,
+	game_mod::{
+		CommonModData,
+		EngineVersionRange,
+	},
 	mod_manifest::{
 		self,
 		Manifest,
@@ -45,7 +48,8 @@ impl LocalMod {
 	pub fn new(
 		loader_id: &str,
 		path: &Path,
-		engine: Option<GameEngineBrand>,
+		engine: Option<EngineBrand>,
+		engine_version_range: Option<EngineVersionRange>,
 		unity_backend: Option<UnityScriptingBackend>,
 	) -> Result<Self> {
 		Ok(Self {
@@ -56,6 +60,7 @@ impl LocalMod {
 			common: CommonModData {
 				id: paths::file_name_without_extension(path)?.to_string(),
 				engine,
+				engine_version_range,
 				unity_backend,
 				loader_id: loader_id.to_string(),
 			},

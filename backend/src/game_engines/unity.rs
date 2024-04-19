@@ -13,11 +13,12 @@ use std::{
 use lazy_regex::regex_captures;
 use log::error;
 
+use super::game_engine::EngineVersionNumbers;
 use crate::{
 	game_engines::game_engine::{
+		EngineBrand,
+		EngineVersion,
 		GameEngine,
-		GameEngineBrand,
-		GameEngineVersion,
 	},
 	game_executable::{
 		get_os_and_architecture,
@@ -39,7 +40,7 @@ use crate::{
 
 serializable_enum!(UnityScriptingBackend { Il2Cpp, Mono });
 
-pub fn parse_version(string: &str) -> Option<GameEngineVersion> {
+pub fn parse_version(string: &str) -> Option<EngineVersion> {
 	let (full, major, minor, patch, suffix) = regex_captures!(
 		r#"(?x)
 			# Version number as "major.minor.patch".
@@ -51,16 +52,18 @@ pub fn parse_version(string: &str) -> Option<GameEngineVersion> {
 		&string
 	)?;
 
-	Some(GameEngineVersion {
+	Some(EngineVersion {
 		display: full.to_string(),
-		major: major.parse().unwrap_or(0),
-		minor: minor.parse().unwrap_or(0),
-		patch: patch.parse().unwrap_or(0),
+		numbers: EngineVersionNumbers {
+			major: major.parse().unwrap_or(0),
+			minor: minor.parse().ok(),
+			patch: patch.parse().ok(),
+		},
 		suffix: Some(suffix.to_string()),
 	})
 }
 
-fn get_version_from_asset(asset_path: &Path) -> Result<GameEngineVersion> {
+fn get_version_from_asset(asset_path: &Path) -> Result<EngineVersion> {
 	let mut file = File::open(asset_path)?;
 	let mut data = vec![0u8; 4096];
 
@@ -76,7 +79,7 @@ fn get_version_from_asset(asset_path: &Path) -> Result<GameEngineVersion> {
 	))
 }
 
-fn get_version(game_exe_path: &Path) -> Option<GameEngineVersion> {
+fn get_version(game_exe_path: &Path) -> Option<EngineVersion> {
 	const ASSETS_WITH_VERSION: [&str; 3] = ["globalgamemanagers", "mainData", "data.unity3d"];
 
 	if let Ok(data_path) = get_unity_data_path(game_exe_path) {
@@ -185,7 +188,7 @@ pub fn get_executable(game_path: &Path) -> Option<GameExecutable> {
 			architecture: architecture.or_else(|| get_alt_architecture(game_path)),
 			scripting_backend: get_scripting_backend(game_path),
 			engine: Some(GameEngine {
-				brand: GameEngineBrand::Unity,
+				brand: EngineBrand::Unity,
 				version: get_version(game_path),
 			}),
 		})
