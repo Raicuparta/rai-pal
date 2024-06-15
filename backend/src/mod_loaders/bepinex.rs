@@ -183,14 +183,18 @@ impl ModLoaderActions for BepInEx {
 		Ok(open::that_detached(mod_config_path)?)
 	}
 
+	async fn run_without_game(&self, local_mod: &LocalMod) -> Result {
+		Err(Error::CantRunNonRunnable(local_mod.common.id.clone()))
+	}
+
 	fn open_installed_mod_folder(&self, game: &InstalledGame, local_mod: &LocalMod) -> Result {
 		let game_data_folder = game.get_installed_mods_folder()?;
-		let pluginFolder = game_data_folder
+		let plugin_folder = game_data_folder
 			.join("BepInEx")
 			.join("plugins")
 			.join(&local_mod.common.id);
 
-		Ok(open::that_detached(pluginFolder)?)
+		Ok(open::that_detached(plugin_folder)?)
 	}
 
 	fn get_mod_path(&self, mod_data: &CommonModData) -> Result<PathBuf> {

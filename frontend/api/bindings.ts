@@ -118,6 +118,10 @@ export function runProviderCommand(ownedGameId: string, commandAction: string) {
     return invoke()<null>("run_provider_command", { ownedGameId,commandAction })
 }
 
+export function runRunnableWithoutGame(modId: string) {
+    return invoke()<null>("run_runnable_without_game", { modId })
+}
+
 export type RunnableModData = { path: string; args: string[] }
 export type UnityScriptingBackend = "Il2Cpp" | "Mono"
 export type ModDownload = { id: string; url: string; root: string | null; runnable: RunnableModData | null }

@@ -1,9 +1,14 @@
 import { Modal, Stack } from "@mantine/core";
-import { downloadMod, openModFolder } from "@api/bindings";
+import {
+	downloadMod,
+	openModFolder,
+	runRunnableWithoutGame,
+} from "@api/bindings";
 import { CommandButton } from "@components/command-button";
 import {
 	IconDownload,
 	IconFolderCog,
+	IconPlayerPlay,
 	IconRefreshAlert,
 } from "@tabler/icons-react";
 import { DebugData } from "@components/debug-data";
@@ -36,6 +41,14 @@ export function ModModal(props: Props) {
 			}
 		>
 			<Stack>
+				{props.mod.local && props.mod.local.manifest?.runnable && (
+					<CommandButton
+						leftSection={<IconPlayerPlay />}
+						onClick={() => runRunnableWithoutGame(props.mod.common.id)}
+					>
+						Run
+					</CommandButton>
+				)}
 				{props.mod.local && (
 					<CommandButton
 						leftSection={<IconFolderCog />}

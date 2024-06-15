@@ -234,6 +234,22 @@ async fn install_mod(game_id: &str, mod_id: &str, handle: AppHandle) -> Result {
 
 #[tauri::command]
 #[specta::specta]
+async fn run_runnable_without_game(mod_id: &str, handle: AppHandle) -> Result {
+	let state = handle.app_state();
+
+	let mod_loaders = state.mod_loaders.get_data()?;
+	let local_mod = refresh_and_get_local_mod(mod_id, &mod_loaders, &handle).await?;
+	let mod_loader = mod_loaders.try_get(&local_mod.common.loader_id)?;
+
+	mod_loader.run_without_game(&local_mod).await?;
+
+	analytics::send_event(analytics::Event::InstallOrRunMod, mod_id).await;
+
+	Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
 async fn configure_mod(game_id: &str, mod_id: &str, handle: AppHandle) -> Result {
 	let state = handle.app_state();
 
@@ -683,6 +699,7 @@ fn main() {
 			refresh_game,
 			open_logs_folder,
 			run_provider_command,
+			run_runnable_without_game,
 		]
 	);
 
