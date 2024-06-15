@@ -38,6 +38,14 @@ export function installMod(gameId: string, modId: string) {
     return invoke()<null>("install_mod", { gameId,modId })
 }
 
+export function configureMod(gameId: string, modId: string) {
+    return invoke()<null>("configure_mod", { gameId,modId })
+}
+
+export function openInstalledModFolder(gameId: string, modId: string) {
+    return invoke()<null>("open_installed_mod_folder", { gameId,modId })
+}
+
 export function uninstallMod(gameId: string, modId: string) {
     return invoke()<null>("uninstall_mod", { gameId,modId })
 }

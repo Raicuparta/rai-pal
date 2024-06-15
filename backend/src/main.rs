@@ -19,6 +19,7 @@ use events::{
 	EventEmitter,
 };
 use installed_game::InstalledGame;
+use local_mod::LocalMod;
 use log::error;
 use maps::TryGettable;
 use mod_loaders::mod_loader::{
@@ -218,47 +219,49 @@ async fn install_mod(game_id: &str, mod_id: &str, handle: AppHandle) -> Result {
 	let game = installed_games.try_get_mut(game_id)?;
 	let mod_loaders = state.mod_loaders.get_data()?;
 
-	let local_mods = {
-		let state_local_mods = state.local_mods.get_data()?;
-		if state_local_mods.contains_key(mod_id) {
-			state_local_mods
-		} else {
-			// Local mod wasn't in app state,
-			// so let's sync app state to local files in case some file was manually changed.
-			let disk_local_mods = refresh_local_mods(&mod_loaders, &handle);
-
-			if state_local_mods.contains_key(mod_id) {
-				disk_local_mods
-			} else {
-				let remote_mod = state.remote_mods.try_get(mod_id)?;
-				let mod_loader = mod_loaders.try_get(&remote_mod.common.loader_id)?;
-
-				if remote_mod.data.latest_version.is_some() {
-					// If local mod still can't be found on disk,
-					// we try to download it from the database.
-					mod_loader
-						.download_mod(&state.remote_mods.try_get(mod_id)?)
-						.await?;
-				} else {
-					// If downloading from the database isn't possible,
-					// we just open the mod loader folder so the user can install it themselves.
-					mod_loader.open_folder()?;
-				}
-
-				refresh_local_mods(&mod_loaders, &handle)
-			}
-		}
-	};
-
-	let local_mod = local_mods.try_get(mod_id)?;
+	let local_mod = refresh_and_get_local_mod(mod_id, &mod_loaders, &handle).await?;
 
 	let mod_loader = mod_loaders.try_get(&local_mod.common.loader_id)?;
 
-	mod_loader.install_mod(game, local_mod).await?;
+	mod_loader.install_mod(game, &local_mod).await?;
 
 	refresh_game_mods_and_exe(&game.id, &handle)?;
 
 	analytics::send_event(analytics::Event::InstallOrRunMod, mod_id).await;
+
+	Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn configure_mod(game_id: &str, mod_id: &str, handle: AppHandle) -> Result {
+	let state = handle.app_state();
+
+	let mut installed_games = state.installed_games.get_data()?;
+	let game = installed_games.try_get_mut(game_id)?;
+	let mod_loaders = state.mod_loaders.get_data()?;
+	let local_mod = refresh_and_get_local_mod(mod_id, &mod_loaders, &handle).await?;
+
+	let mod_loader = mod_loaders.try_get(&local_mod.common.loader_id)?;
+
+	mod_loader.configure_mod(game, &local_mod)?;
+
+	Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn open_installed_mod_folder(game_id: &str, mod_id: &str, handle: AppHandle) -> Result {
+	let state = handle.app_state();
+
+	let mut installed_games = state.installed_games.get_data()?;
+	let game = installed_games.try_get_mut(game_id)?;
+	let mod_loaders = state.mod_loaders.get_data()?;
+	let local_mod = refresh_and_get_local_mod(mod_id, &mod_loaders, &handle).await?;
+
+	let mod_loader = mod_loaders.try_get(&local_mod.common.loader_id)?;
+
+	mod_loader.open_installed_mod_folder(game, &local_mod)?;
 
 	Ok(())
 }
@@ -343,6 +346,48 @@ async fn refresh_remote_mods(mod_loaders: &mod_loader::Map, handle: &AppHandle) 
 	);
 
 	remote_mods
+}
+
+async fn refresh_and_get_local_mod(
+	mod_id: &str,
+	mod_loaders: &mod_loader::Map,
+	handle: &AppHandle,
+) -> Result<LocalMod> {
+	let local_mods = {
+		let state = handle.app_state();
+
+		let state_local_mods = state.local_mods.get_data()?;
+		if state_local_mods.contains_key(mod_id) {
+			state_local_mods
+		} else {
+			// Local mod wasn't in app state,
+			// so let's sync app state to local files in case some file was manually changed.
+			let disk_local_mods = refresh_local_mods(mod_loaders, handle);
+
+			if state_local_mods.contains_key(mod_id) {
+				disk_local_mods
+			} else {
+				let remote_mod = state.remote_mods.try_get(mod_id)?;
+				let mod_loader = mod_loaders.try_get(&remote_mod.common.loader_id)?;
+
+				if remote_mod.data.latest_version.is_some() {
+					// If local mod still can't be found on disk,
+					// we try to download it from the database.
+					mod_loader
+						.download_mod(&state.remote_mods.try_get(mod_id)?)
+						.await?;
+				} else {
+					// If downloading from the database isn't possible,
+					// we just open the mod loader folder so the user can install it themselves.
+					mod_loader.open_folder()?;
+				}
+
+				refresh_local_mods(mod_loaders, handle)
+			}
+		}
+	};
+
+	local_mods.try_get(mod_id).cloned()
 }
 
 async fn update_installed_games(handle: AppHandle, provider_map: provider::Map) {
@@ -618,6 +663,8 @@ fn main() {
 			get_mod_loaders,
 			open_game_folder,
 			install_mod,
+			configure_mod,
+			open_installed_mod_folder,
 			uninstall_mod,
 			open_game_mods_folder,
 			start_game,

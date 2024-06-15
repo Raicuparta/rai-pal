@@ -174,6 +174,25 @@ impl ModLoaderActions for BepInEx {
 		Ok(())
 	}
 
+	fn configure_mod(&self, game: &InstalledGame, _local_mod: &LocalMod) -> Result {
+		let game_data_folder = game.get_installed_mods_folder()?;
+		let mod_config_path = game_data_folder.join("BepInEx").join("config");
+
+		// TODO: actually open the specific config file somehow. Probably needs to be in the remote mod manifest.
+
+		Ok(open::that_detached(mod_config_path)?)
+	}
+
+	fn open_installed_mod_folder(&self, game: &InstalledGame, local_mod: &LocalMod) -> Result {
+		let game_data_folder = game.get_installed_mods_folder()?;
+		let pluginFolder = game_data_folder
+			.join("BepInEx")
+			.join("plugins")
+			.join(&local_mod.common.id);
+
+		Ok(open::that_detached(pluginFolder)?)
+	}
+
 	fn get_mod_path(&self, mod_data: &CommonModData) -> Result<PathBuf> {
 		mod_data.unity_backend.map_or_else(
 			|| Err(Error::UnityBackendUnknown(mod_data.id.clone())),

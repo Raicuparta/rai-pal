@@ -59,6 +59,8 @@ pub enum ModLoader {
 pub trait ModLoaderActions {
 	fn install(&self, game: &InstalledGame) -> Result;
 	async fn install_mod_inner(&self, game: &InstalledGame, local_mod: &LocalMod) -> Result;
+	fn configure_mod(&self, game: &InstalledGame, local_mod: &LocalMod) -> Result;
+	fn open_installed_mod_folder(&self, game: &InstalledGame, local_mod: &LocalMod) -> Result;
 	fn get_data(&self) -> &ModLoaderData;
 	fn get_mod_path(&self, mod_data: &CommonModData) -> Result<PathBuf>;
 	fn get_local_mods(&self) -> Result<HashMap<String, LocalMod>>;
