@@ -337,6 +337,18 @@ async fn uninstall_mod(game_id: &str, mod_id: &str, handle: AppHandle) -> Result
 	Ok(())
 }
 
+#[tauri::command]
+#[specta::specta]
+async fn uninstall_all_mods(game_id: &str, handle: AppHandle) -> Result {
+	let state = handle.app_state();
+	let game = state.installed_games.try_get(game_id)?;
+	game.uninstall_all_mods()?;
+
+	refresh_game_mods_and_exe(&game.id, &handle)?;
+
+	Ok(())
+}
+
 fn refresh_local_mods(mod_loaders: &mod_loader::Map, handle: &AppHandle) -> local_mod::Map {
 	let local_mods: HashMap<_, _> = mod_loaders
 		.values()
@@ -698,6 +710,7 @@ fn main() {
 			configure_mod,
 			open_installed_mod_folder,
 			uninstall_mod,
+			uninstall_all_mods,
 			open_game_mods_folder,
 			start_game,
 			start_game_exe,

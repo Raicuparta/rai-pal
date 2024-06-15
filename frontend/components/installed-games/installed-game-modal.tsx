@@ -17,6 +17,7 @@ import {
 	removeGame,
 	startGame,
 	startGameExe,
+	uninstallAllMods,
 } from "@api/bindings";
 import { useMemo } from "react";
 import { ItemName } from "../item-name";
@@ -247,6 +248,15 @@ export function InstalledGameModal(props: Props) {
 						</Table.Tbody>
 					</Table>
 				</TableContainer>
+				<CommandButton
+					confirmationText="You sure? This will delete all files in this game's mods folder. It won't delete any files from the actual game though."
+					onClick={() => uninstallAllMods(props.game.id)}
+					color="red"
+					variant="light"
+					leftSection={<IconTrash />}
+				>
+					Uninstall all mods
+				</CommandButton>
 				<DebugData data={props.game} />
 			</Stack>
 		</Modal>
