@@ -6,7 +6,6 @@ import {
 	Button,
 	ButtonGroup,
 	Group,
-	Badge,
 	Stack,
 } from "@mantine/core";
 import {
@@ -20,7 +19,6 @@ import {
 } from "@api/bindings";
 import { CommandButton } from "@components/command-button";
 import {
-	IconAlertTriangleFilled,
 	IconCheck,
 	IconCirclePlus,
 	IconDotsVertical,
@@ -41,6 +39,7 @@ import { MutedText } from "@components/muted-text";
 import { ModVersionBadge } from "@components/mods/mod-version-badge";
 import { getModTitle } from "../../util/game-mod";
 import { CommandDropdown } from "@components/command-dropdown";
+import { DeprecatedBadge } from "@components/mods/deprecated-badge";
 
 type Props = {
 	readonly game: ProcessedInstalledGame;
@@ -158,15 +157,7 @@ export function GameModRow(props: Props) {
 					/>
 				</ItemName>
 				<Stack gap={0}>
-					{props.mod.remote?.deprecated && (
-						<Badge
-							mt={5}
-							color="yellow"
-							leftSection={<IconAlertTriangleFilled />}
-						>
-							Deprecated
-						</Badge>
-					)}
+					{props.mod.remote?.deprecated && <DeprecatedBadge mt={5} />}
 					{props.mod.remote?.description && (
 						<MutedText>{props.mod.remote.description}</MutedText>
 					)}
