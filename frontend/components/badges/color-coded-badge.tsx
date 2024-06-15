@@ -1,10 +1,9 @@
 import {
 	Architecture,
-	GameEngineBrand,
+	EngineBrand,
 	GameMode,
 	OperatingSystem,
 	ProviderId,
-	UevrScore,
 	UnityScriptingBackend,
 } from "@api/bindings";
 import { Badge, BadgeProps, DefaultMantineColor, Flex } from "@mantine/core";
@@ -59,7 +58,7 @@ function CreateColorCodedBadge<TValue extends string>(
 	};
 }
 
-export const EngineBadge = CreateColorCodedBadge<GameEngineBrand>(
+export const EngineBadge = CreateColorCodedBadge<EngineBrand>(
 	"-",
 	{
 		Unity: "blue",
@@ -108,11 +107,3 @@ export const ProviderBadge = CreateColorCodedBadge<ProviderId>(
 	},
 	providerFilterOptions,
 );
-
-export const UevrScoreBadge = CreateColorCodedBadge<UevrScore>("-", {
-	A: "green",
-	B: "lime",
-	C: "yellow",
-	D: "orange",
-	E: "red",
-});

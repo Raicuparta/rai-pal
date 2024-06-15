@@ -59,6 +59,9 @@ pub enum ModLoader {
 pub trait ModLoaderActions {
 	fn install(&self, game: &InstalledGame) -> Result;
 	async fn install_mod_inner(&self, game: &InstalledGame, local_mod: &LocalMod) -> Result;
+	async fn run_without_game(&self, local_mod: &LocalMod) -> Result;
+	fn configure_mod(&self, game: &InstalledGame, local_mod: &LocalMod) -> Result;
+	fn open_installed_mod_folder(&self, game: &InstalledGame, local_mod: &LocalMod) -> Result;
 	fn get_data(&self) -> &ModLoaderData;
 	fn get_mod_path(&self, mod_data: &CommonModData) -> Result<PathBuf>;
 	fn get_local_mods(&self) -> Result<HashMap<String, LocalMod>>;
@@ -109,6 +112,7 @@ pub trait ModLoaderActions {
 					common: CommonModData {
 						id: database_mod.id.clone(),
 						engine: database_mod.engine,
+						engine_version_range: database_mod.engine_version_range.clone(),
 						unity_backend: database_mod.unity_backend,
 						loader_id: loader_id.clone(),
 					},
@@ -118,6 +122,7 @@ pub trait ModLoaderActions {
 						source_code: database_mod.source_code.clone(),
 						title: database_mod.title.clone(),
 						latest_version: database_mod.get_download().await,
+						deprecated: database_mod.deprecated.unwrap_or(false),
 					},
 				},
 			)
@@ -160,9 +165,11 @@ pub trait ModLoaderActions {
 			fs::write(
 				local_mod::get_manifest_path(&target_path),
 				serde_json::to_string_pretty(&mod_manifest::Manifest {
+					title: remote_mod.data.title.clone(),
 					version: latest_version.id.clone(),
 					runnable: latest_version.runnable.clone(),
 					engine: remote_mod.common.engine,
+					engine_version_range: remote_mod.common.engine_version_range.clone(),
 					unity_backend: remote_mod.common.unity_backend,
 				})?,
 			)?;
@@ -170,6 +177,16 @@ pub trait ModLoaderActions {
 			return Ok(());
 		}
 		Err(Error::ModDownloadNotAvailable(remote_mod.common.id.clone()))
+	}
+
+	fn delete_mod(&self, local_mod: &LocalMod) -> Result {
+		let mod_path = self.get_mod_path(&local_mod.common)?;
+
+		if mod_path.exists() {
+			fs::remove_dir_all(&mod_path)?;
+		}
+
+		Ok(())
 	}
 }
 

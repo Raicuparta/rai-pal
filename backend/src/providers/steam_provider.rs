@@ -170,12 +170,6 @@ impl ProviderActions for Steam {
 					}
 				}
 
-				if let Some(uevr_score) =
-					steam_game_option.and_then(|steam_game| steam_game.uevr_score)
-				{
-					remote_game.set_uevr_score(uevr_score);
-				}
-
 				Some(remote_game)
 			}))
 			.await

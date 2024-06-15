@@ -1,15 +1,17 @@
-import { GameEngine, GameEngineVersion } from "@api/bindings";
+import { GameEngine, EngineVersion } from "@api/bindings";
 
-const defaultVersion: GameEngineVersion = {
-	major: 0,
-	minor: 0,
-	patch: 0,
+const defaultVersion: EngineVersion = {
+	numbers: {
+		major: 0,
+		minor: 0,
+		patch: 0,
+	},
 	suffix: "",
 	display: "",
 };
 
 export function getAdjustedUnityMajor(engine: GameEngine | null | undefined) {
-	const major = engine?.version?.major;
+	const major = engine?.version?.numbers.major;
 	if (!major) return 0;
 
 	if (engine?.brand === "Unity" && major > 5 && major < 2000) {
@@ -36,8 +38,8 @@ export function sortGamesByEngine(
 	return (
 		brandA.localeCompare(brandB) ||
 		getAdjustedUnityMajor(engineA) - getAdjustedUnityMajor(engineB) ||
-		versionA.minor - versionB.minor ||
-		versionA.patch - versionB.patch ||
+		(versionA.numbers.minor ?? 0) - (versionB.numbers.minor ?? 0) ||
+		(versionA.numbers.patch ?? 0) - (versionB.numbers.patch ?? 0) ||
 		0
 	);
 }

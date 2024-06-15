@@ -7,9 +7,10 @@ use log::error;
 
 use crate::{
 	game_engines::game_engine::{
+		EngineBrand,
+		EngineVersion,
+		EngineVersionNumbers,
 		GameEngine,
-		GameEngineBrand,
-		GameEngineVersion,
 	},
 	serializable_struct,
 	Result,
@@ -33,18 +34,20 @@ serializable_struct!(PCGamingWikiQueryResponse {
 // We could try to parse more version parts here, but I find that engine versions
 // on PCGamingWiki are very commonly outdated. So if we just do major+minor, it's
 // less likely to be outdated.
-fn parse_version(version_text: &str) -> Option<GameEngineVersion> {
+fn parse_version(version_text: &str) -> Option<EngineVersion> {
 	let (_, major, _, minor) = regex_captures!(r".*?(\d+)(\.(\d+))?.*", version_text)?;
 
-	Some(GameEngineVersion {
+	Some(EngineVersion {
 		display: if minor.is_empty() {
 			major.to_string()
 		} else {
 			[major, minor].join(".")
 		},
-		major: major.parse::<u32>().ok()?,
-		minor: minor.parse::<u32>().ok().unwrap_or(0),
-		patch: 0,
+		numbers: EngineVersionNumbers {
+			major: major.parse::<u32>().ok()?,
+			minor: minor.parse::<u32>().ok(),
+			patch: None,
+		},
 		suffix: None,
 	})
 }
@@ -92,22 +95,22 @@ pub async fn get_engine(where_query: &str) -> Result<Option<GameEngine>> {
 						// since it can sometimes have the engine version included, sometimes not.
 						if engine.contains("Unreal") {
 							Some(GameEngine {
-								brand: GameEngineBrand::Unreal,
+								brand: EngineBrand::Unreal,
 								version,
 							})
 						} else if engine.contains("Unity") {
 							Some(GameEngine {
-								brand: GameEngineBrand::Unity,
+								brand: EngineBrand::Unity,
 								version,
 							})
 						} else if engine.contains("Godot") {
 							Some(GameEngine {
-								brand: GameEngineBrand::Godot,
+								brand: EngineBrand::Godot,
 								version,
 							})
 						} else if engine.contains("GameMaker") {
 							Some(GameEngine {
-								brand: GameEngineBrand::GameMaker,
+								brand: EngineBrand::GameMaker,
 								version,
 							})
 						} else {

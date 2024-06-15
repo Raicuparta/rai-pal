@@ -22,11 +22,12 @@ use pelite::{
 	},
 };
 
+use super::game_engine::EngineVersionNumbers;
 use crate::{
 	game_engines::game_engine::{
+		EngineBrand,
+		EngineVersion,
 		GameEngine,
-		GameEngineBrand,
-		GameEngineVersion,
 	},
 	game_executable::{
 		get_os_and_architecture,
@@ -39,7 +40,7 @@ use crate::{
 fn get_version_from_metadata(
 	file_bytes: &[u8],
 	architecture: Architecture,
-) -> Option<GameEngineVersion> {
+) -> Option<EngineVersion> {
 	let version = if architecture == Architecture::X86 {
 		PeFile32::from_bytes(&file_bytes)
 			.ok()?
@@ -62,16 +63,18 @@ fn get_version_from_metadata(
 	let minor = u32::from(version.dwFileVersion.Minor);
 	let patch = u32::from(version.dwFileVersion.Patch);
 
-	Some(GameEngineVersion {
-		major,
-		minor,
-		patch,
+	Some(EngineVersion {
+		numbers: EngineVersionNumbers {
+			major,
+			minor: Some(minor),
+			patch: Some(patch),
+		},
 		suffix: None,
 		display: format!("{major}.{minor}.{patch}"),
 	})
 }
 
-fn parse_version(string: &str) -> Option<GameEngineVersion> {
+fn parse_version(string: &str) -> Option<EngineVersion> {
 	// Can either be major.minor, or just major.
 	let (_, major, minor) = regex_captures!(
 		r#"(?x)
@@ -97,10 +100,12 @@ fn parse_version(string: &str) -> Option<GameEngineVersion> {
 		&string
 	)?;
 
-	Some(GameEngineVersion {
-		major: major.parse().unwrap_or(0),
-		minor: minor.parse().unwrap_or(0),
-		patch: 0,
+	Some(EngineVersion {
+		numbers: EngineVersionNumbers {
+			major: major.parse().unwrap_or(0),
+			minor: minor.parse().ok(),
+			patch: None,
+		},
 		suffix: None,
 		display: format!("{major}{}", {
 			if minor.is_empty() {
@@ -112,7 +117,7 @@ fn parse_version(string: &str) -> Option<GameEngineVersion> {
 	})
 }
 
-fn get_version_from_exe_parse(file_bytes: &[u8]) -> Option<GameEngineVersion> {
+fn get_version_from_exe_parse(file_bytes: &[u8]) -> Option<EngineVersion> {
 	// Looking for strings like "+UE4+release-4.25", or just "+UE4" if the full version isn't found.
 	// The extra \x00 are because the strings are unicode.
 	let match_result = regex_find!(
@@ -152,7 +157,7 @@ fn get_version_from_exe_parse(file_bytes: &[u8]) -> Option<GameEngineVersion> {
 	parse_version(&match_string)
 }
 
-fn get_version(path: &Path, architecture: Architecture) -> Option<GameEngineVersion> {
+fn get_version(path: &Path, architecture: Architecture) -> Option<EngineVersion> {
 	match fs::read(path) {
 		Ok(file_bytes) => {
 			return get_version_from_metadata(&file_bytes, architecture)
@@ -293,7 +298,7 @@ pub fn get_executable(launch_path: &Path) -> Option<GameExecutable> {
 			operating_system,
 			scripting_backend: None,
 			engine: Some(GameEngine {
-				brand: GameEngineBrand::Unreal,
+				brand: EngineBrand::Unreal,
 				version,
 			}),
 		})

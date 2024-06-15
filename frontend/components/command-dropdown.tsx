@@ -13,10 +13,8 @@ export function CommandDropdown(props: Props) {
 			<Popover.Target>
 				<Button
 					px="xs"
-					leftSection={props.icon}
-					rightSection={
-						props.label || props.icon ? <IconChevronDown /> : undefined
-					}
+					leftSection={props.label ? props.icon : undefined}
+					rightSection={props.label ? <IconChevronDown /> : undefined}
 				>
 					{props.label ?? props.icon ?? <IconChevronDown />}
 				</Button>

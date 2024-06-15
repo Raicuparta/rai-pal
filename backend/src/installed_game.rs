@@ -135,6 +135,10 @@ impl InstalledGame {
 		Ok(open::that_detached(self.get_installed_mods_folder()?)?)
 	}
 
+	pub fn uninstall_all_mods(&self) -> Result {
+		Ok(fs::remove_dir_all(self.get_installed_mods_folder()?)?)
+	}
+
 	pub fn start(&self) -> Result {
 		self.start_command
 			.as_ref()

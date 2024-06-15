@@ -106,6 +106,9 @@ pub enum Error {
 
 	#[error("Operation can't be completed without a `runnable` section in the mod manifest (rai-pal-manifest.json) `{0}`")]
 	RunnableManifestNotFound(String),
+
+	#[error("Can't run mod with ID `{0}` because it isn't a runnable mod.")]
+	CantRunNonRunnable(String),
 }
 
 impl serde::Serialize for Error {

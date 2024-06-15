@@ -9,12 +9,15 @@ import {
 	Tooltip,
 } from "@mantine/core";
 import {
+	EngineVersion,
+	EngineVersionRange,
 	openGameFolder,
 	openGameModsFolder,
 	refreshGame,
 	removeGame,
 	startGame,
 	startGameExe,
+	uninstallAllMods,
 } from "@api/bindings";
 import { useMemo } from "react";
 import { ItemName } from "../item-name";
@@ -48,6 +51,55 @@ type Props = {
 	readonly onClose: () => void;
 };
 
+function isVersionWithinRange(
+	version: EngineVersion | null | undefined,
+	range: EngineVersionRange | null,
+) {
+	if (!version || !range) return true;
+
+	const { major, minor, patch } = version.numbers;
+	const { minimum, maximum } = range;
+
+	if (minimum && minimum.major > major) return false;
+	if (maximum && maximum.major < major) return false;
+	if (
+		minimum &&
+		minimum.major === major &&
+		minimum.minor != null &&
+		minor != null &&
+		minimum.minor > minor
+	)
+		return false;
+	if (
+		maximum &&
+		maximum.major === major &&
+		maximum.minor != null &&
+		minor != null &&
+		maximum.minor < minor
+	)
+		return false;
+	if (
+		minimum &&
+		minimum.major === major &&
+		minimum.minor === minor &&
+		minimum.patch != null &&
+		patch != null &&
+		minimum.patch > patch
+	)
+		return false;
+	if (
+		maximum &&
+		maximum.major === major &&
+		maximum.minor === minor &&
+		maximum.patch != null &&
+		patch != null &&
+		maximum.patch < patch
+	)
+		return false;
+
+	return true;
+}
+
 export function InstalledGameModal(props: Props) {
 	const modLoaderMap = useAtomValue(modLoadersAtom);
 	const mods = useUnifiedMods();
@@ -58,12 +110,22 @@ export function InstalledGameModal(props: Props) {
 				(!mod.common.engine ||
 					mod.common.engine === props.game.executable.engine?.brand) &&
 				(!mod.common.unityBackend ||
-					mod.common.unityBackend === props.game.executable.scriptingBackend),
+					mod.common.unityBackend === props.game.executable.scriptingBackend) &&
+				isVersionWithinRange(
+					props.game.executable.engine?.version,
+					mod.common.engineVersionRange,
+				) &&
+				!(
+					mod.remote?.deprecated &&
+					!props.game.installedModVersions[mod.common.id]
+				),
 		);
 	}, [
 		mods,
 		props.game.executable.engine?.brand,
+		props.game.executable.engine?.version,
 		props.game.executable.scriptingBackend,
+		props.game.installedModVersions,
 	]);
 
 	return (
@@ -186,6 +248,15 @@ export function InstalledGameModal(props: Props) {
 						</Table.Tbody>
 					</Table>
 				</TableContainer>
+				<CommandButton
+					confirmationText="You sure? This will delete all files in this game's mods folder. It won't delete any files from the actual game though."
+					onClick={() => uninstallAllMods(props.game.id)}
+					color="red"
+					variant="light"
+					leftSection={<IconTrash />}
+				>
+					Uninstall all mods
+				</CommandButton>
 				<DebugData data={props.game} />
 			</Stack>
 		</Modal>

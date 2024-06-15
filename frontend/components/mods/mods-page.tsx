@@ -9,20 +9,33 @@ import {
 	UnityBackendBadge,
 } from "@components/badges/color-coded-badge";
 import { ModModal } from "./mod-modal";
-import { useUnifiedMods } from "@hooks/use-unified-mods";
+import { UnifiedMod, useUnifiedMods } from "@hooks/use-unified-mods";
 import { ModVersionBadge } from "./mod-version-badge";
 import { ItemName } from "@components/item-name";
+import { getModTitle } from "../../util/game-mod";
+import { DeprecatedBadge } from "./deprecated-badge";
 
 export function ModsPage() {
 	const [selectedModId, setSelectedId] = useState<string>();
 
 	const mods = useUnifiedMods();
+	const filteredMods = useMemo(() => {
+		const result: Record<string, UnifiedMod> = {};
+		for (const [modId, mod] of Object.entries(mods)) {
+			if (!mod.local && mod.remote?.deprecated) {
+				continue;
+			}
+
+			result[modId] = mod;
+		}
+		return result;
+	}, [mods]);
 
 	const selectedMod = useMemo(() => {
-		const result = selectedModId ? mods[selectedModId] : undefined;
+		const result = selectedModId ? filteredMods[selectedModId] : undefined;
 
 		return result;
-	}, [selectedModId, mods]);
+	}, [selectedModId, filteredMods]);
 
 	return (
 		<Stack>
@@ -68,14 +81,21 @@ export function ModsPage() {
 						</Table.Tr>
 					</Table.Thead>
 					<Table.Tbody>
-						{Object.entries(mods).map(([modId, mod]) => (
+						{Object.entries(filteredMods).map(([modId, mod]) => (
 							<Table.Tr
 								key={modId}
 								onClick={() => setSelectedId(mod.common.id)}
 							>
 								<Table.Td>
-									<ItemName label={`by ${mod.remote?.author}`}>
-										{mod.remote?.title ?? modId}
+									{mod.remote?.deprecated && <DeprecatedBadge />}
+									<ItemName
+										label={
+											mod.remote?.author
+												? `by ${mod.remote?.author}`
+												: undefined
+										}
+									>
+										{getModTitle(mod)}
 									</ItemName>
 									{mod.remote?.description && (
 										<Text

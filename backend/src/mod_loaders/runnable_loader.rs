@@ -129,6 +129,34 @@ impl ModLoaderActions for RunnableLoader {
 		Ok(())
 	}
 
+	async fn run_without_game(&self, local_mod: &LocalMod) -> Result {
+		let mod_folder = self.get_mod_path(&local_mod.common)?;
+
+		let runnable = local_mod
+			.data
+			.manifest
+			.as_ref()
+			.and_then(|manifest| manifest.runnable.as_ref())
+			.ok_or_else(|| Error::RunnableManifestNotFound(local_mod.common.id.clone()))?;
+
+		Command::new(mod_folder.join(&runnable.path))
+			.current_dir(mod_folder)
+			.spawn()?;
+
+		Ok(())
+	}
+
+	fn configure_mod(&self, game: &InstalledGame, local_mod: &LocalMod) -> Result {
+		// TODO: make it actually open the config file / folder as per manifest.
+		self.open_installed_mod_folder(game, local_mod)
+	}
+
+	fn open_installed_mod_folder(&self, _game: &InstalledGame, local_mod: &LocalMod) -> Result {
+		let mod_folder = self.get_mod_path(&local_mod.common)?;
+
+		Ok(open::that_detached(mod_folder)?)
+	}
+
 	fn get_mod_path(&self, mod_data: &CommonModData) -> Result<PathBuf> {
 		Ok(Self::get_installed_mods_path()?.join(&mod_data.id))
 	}

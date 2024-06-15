@@ -18,8 +18,8 @@ use crate::{
 	files::copy_dir_all,
 	game_engines::{
 		game_engine::{
+			EngineBrand,
 			GameEngine,
-			GameEngineBrand,
 		},
 		unity::UnityScriptingBackend,
 	},
@@ -174,6 +174,29 @@ impl ModLoaderActions for BepInEx {
 		Ok(())
 	}
 
+	fn configure_mod(&self, game: &InstalledGame, _local_mod: &LocalMod) -> Result {
+		let game_data_folder = game.get_installed_mods_folder()?;
+		let mod_config_path = game_data_folder.join("BepInEx").join("config");
+
+		// TODO: actually open the specific config file somehow. Probably needs to be in the remote mod manifest.
+
+		Ok(open::that_detached(mod_config_path)?)
+	}
+
+	async fn run_without_game(&self, local_mod: &LocalMod) -> Result {
+		Err(Error::CantRunNonRunnable(local_mod.common.id.clone()))
+	}
+
+	fn open_installed_mod_folder(&self, game: &InstalledGame, local_mod: &LocalMod) -> Result {
+		let game_data_folder = game.get_installed_mods_folder()?;
+		let plugin_folder = game_data_folder
+			.join("BepInEx")
+			.join("plugins")
+			.join(&local_mod.common.id);
+
+		Ok(open::that_detached(plugin_folder)?)
+	}
+
 	fn get_mod_path(&self, mod_data: &CommonModData) -> Result<PathBuf> {
 		mod_data.unity_backend.map_or_else(
 			|| Err(Error::UnityBackendUnknown(mod_data.id.clone())),
@@ -198,12 +221,11 @@ impl ModLoaderActions for BepInEx {
 	}
 }
 
-const fn is_legacy(engine: &GameEngine) -> bool {
-	if let Some(version) = &engine.version {
-		version.major < 5 || (version.major == 5 && version.minor < 5)
-	} else {
-		false
-	}
+fn is_legacy(engine: &GameEngine) -> bool {
+	engine.version.as_ref().map_or(false, |version| {
+		version.numbers.major < 5
+			|| (version.numbers.major == 5 && version.numbers.minor.is_some_and(|minor| minor < 5))
+	})
 }
 
 // TODO: Linux stuff.
@@ -296,7 +318,7 @@ fn find_mods(
 			if let Ok(local_mod) = LocalMod::new(
 				BepInEx::ID,
 				mod_path,
-				Some(GameEngineBrand::Unity),
+				Some(EngineBrand::Unity),
 				Some(scripting_backend),
 			) {
 				Some((local_mod.common.id.clone(), local_mod))

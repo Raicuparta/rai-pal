@@ -1,14 +1,23 @@
-import { Modal, Stack } from "@mantine/core";
-import { downloadMod, openModFolder } from "@api/bindings";
+import { Group, Modal, Stack } from "@mantine/core";
+import {
+	deleteMod,
+	downloadMod,
+	openModFolder,
+	runRunnableWithoutGame,
+} from "@api/bindings";
 import { CommandButton } from "@components/command-button";
 import {
 	IconDownload,
 	IconFolderCog,
+	IconPlayerPlay,
 	IconRefreshAlert,
+	IconTrash,
 } from "@tabler/icons-react";
 import { DebugData } from "@components/debug-data";
 import { UnifiedMod } from "@hooks/use-unified-mods";
 import { ItemName } from "@components/item-name";
+import { getModTitle } from "../../util/game-mod";
+import { DeprecatedBadge } from "./deprecated-badge";
 
 type Props = {
 	readonly mod: UnifiedMod;
@@ -29,12 +38,23 @@ export function ModModal(props: Props) {
 			opened
 			size="xl"
 			title={
-				<ItemName label={`by ${props.mod.remote?.author}`}>
-					{props.mod.remote?.title ?? props.mod.common.id}
-				</ItemName>
+				<Group>
+					<ItemName label={`by ${props.mod.remote?.author}`}>
+						{getModTitle(props.mod)}
+					</ItemName>
+					{props.mod.remote?.deprecated && <DeprecatedBadge />}
+				</Group>
 			}
 		>
 			<Stack>
+				{props.mod.local && props.mod.local.manifest?.runnable && (
+					<CommandButton
+						leftSection={<IconPlayerPlay />}
+						onClick={() => runRunnableWithoutGame(props.mod.common.id)}
+					>
+						Run
+					</CommandButton>
+				)}
 				{props.mod.local && (
 					<CommandButton
 						leftSection={<IconFolderCog />}
@@ -49,6 +69,17 @@ export function ModModal(props: Props) {
 						onClick={() => downloadMod(props.mod.common.id)}
 					>
 						{isOutdated ? "Update mod" : "Download mod"}
+					</CommandButton>
+				)}
+				{localVersion && (
+					<CommandButton
+						color="red"
+						variant="light"
+						confirmationText="You sure? Any files inside the mod's folder will be lost."
+						leftSection={<IconTrash />}
+						onClick={() => deleteMod(props.mod.common.id)}
+					>
+						Delete mod
 					</CommandButton>
 				)}
 				<DebugData data={props.mod} />
