@@ -1,9 +1,9 @@
-import { Button, Group, Stack, Table, Text } from "@mantine/core";
+import { Badge, Button, Group, Stack, Table, Text } from "@mantine/core";
 import { useMemo, useState } from "react";
 import { TableContainer } from "@components/table/table-container";
 import { RefreshButton } from "@components/refresh-button";
 import { openModsFolder } from "@api/bindings";
-import { IconFolderCog } from "@tabler/icons-react";
+import { IconAlertTriangleFilled, IconFolderCog } from "@tabler/icons-react";
 import {
 	EngineBadge,
 	UnityBackendBadge,
@@ -75,7 +75,21 @@ export function ModsPage() {
 								onClick={() => setSelectedId(mod.common.id)}
 							>
 								<Table.Td>
-									<ItemName label={`by ${mod.remote?.author}`}>
+									{mod.remote?.deprecated && (
+										<Badge
+											color="yellow"
+											leftSection={<IconAlertTriangleFilled />}
+										>
+											Deprecated
+										</Badge>
+									)}
+									<ItemName
+										label={
+											mod.remote?.author
+												? `by ${mod.remote?.author}`
+												: undefined
+										}
+									>
 										{getModTitle(mod)}
 									</ItemName>
 									{mod.remote?.description && (

@@ -28,6 +28,7 @@ serializable_struct!(DatabaseEntry {
 	pub unity_backend: Option<UnityScriptingBackend>,
 	pub github: Option<ModGithubInfo>,
 	pub redownload_id: Option<i32>,
+	pub deprecated: Option<bool>,
 });
 
 serializable_struct!(RunnableModData {

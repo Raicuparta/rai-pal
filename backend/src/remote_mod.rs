@@ -8,6 +8,7 @@ use crate::{
 
 serializable_struct!(RemoteModData {
   pub title: String,
+  pub deprecated: bool,
   pub author: String,
   pub source_code: String,
   pub description: String,

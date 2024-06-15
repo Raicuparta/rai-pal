@@ -122,6 +122,7 @@ pub trait ModLoaderActions {
 						source_code: database_mod.source_code.clone(),
 						title: database_mod.title.clone(),
 						latest_version: database_mod.get_download().await,
+						deprecated: database_mod.deprecated.unwrap_or(false),
 					},
 				},
 			)

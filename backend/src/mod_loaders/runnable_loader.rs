@@ -151,7 +151,7 @@ impl ModLoaderActions for RunnableLoader {
 		self.open_installed_mod_folder(game, local_mod)
 	}
 
-	fn open_installed_mod_folder(&self, game: &InstalledGame, local_mod: &LocalMod) -> Result {
+	fn open_installed_mod_folder(&self, _game: &InstalledGame, local_mod: &LocalMod) -> Result {
 		let mod_folder = self.get_mod_path(&local_mod.common)?;
 
 		Ok(open::that_detached(mod_folder)?)
