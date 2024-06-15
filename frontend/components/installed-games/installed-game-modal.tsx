@@ -113,12 +113,18 @@ export function InstalledGameModal(props: Props) {
 				isVersionWithinRange(
 					props.game.executable.engine?.version,
 					mod.common.engineVersionRange,
+				) &&
+				!(
+					mod.remote?.deprecated &&
+					!props.game.installedModVersions[mod.common.id]
 				),
 		);
 	}, [
 		mods,
-		props.game.executable.engine,
+		props.game.executable.engine?.brand,
+		props.game.executable.engine?.version,
 		props.game.executable.scriptingBackend,
+		props.game.installedModVersions,
 	]);
 
 	return (

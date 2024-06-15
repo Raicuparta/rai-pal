@@ -6,6 +6,8 @@ import {
 	Button,
 	ButtonGroup,
 	Group,
+	Badge,
+	Stack,
 } from "@mantine/core";
 import {
 	ModLoaderData,
@@ -18,6 +20,7 @@ import {
 } from "@api/bindings";
 import { CommandButton } from "@components/command-button";
 import {
+	IconAlertTriangleFilled,
 	IconCheck,
 	IconCirclePlus,
 	IconDotsVertical,
@@ -154,9 +157,20 @@ export function GameModRow(props: Props) {
 						remoteVersion={props.mod.remote?.latestVersion?.id}
 					/>
 				</ItemName>
-				{props.mod.remote?.description && (
-					<MutedText>{props.mod.remote.description}</MutedText>
-				)}
+				<Stack gap={0}>
+					{props.mod.remote?.deprecated && (
+						<Badge
+							mt={5}
+							color="yellow"
+							leftSection={<IconAlertTriangleFilled />}
+						>
+							Deprecated
+						</Badge>
+					)}
+					{props.mod.remote?.description && (
+						<MutedText>{props.mod.remote.description}</MutedText>
+					)}
+				</Stack>
 			</Table.Td>
 			<Table.Td maw={200}>
 				<Group justify="right">
