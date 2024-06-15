@@ -1,9 +1,8 @@
-import { EngineBrand, GameMode, ProviderId, UevrScore } from "@api/bindings";
+import { EngineBrand, GameMode, ProviderId } from "@api/bindings";
 import {
 	EngineBadge,
 	GameModeBadge,
 	ProviderBadge,
-	UevrScoreBadge,
 } from "@components/badges/color-coded-badge";
 import { TableColumnBase, columnMapToList } from "@components/table/table-head";
 import { Table } from "@mantine/core";
@@ -111,26 +110,6 @@ const gameMode: TableColumnBase<ProcessedOwnedGame, GameMode> = {
 	),
 };
 
-const uevrScore: TableColumnBase<ProcessedOwnedGame, UevrScore> = {
-	label: "UEVR",
-	width: 90,
-	center: true,
-	hidable: true,
-	getSortValue: (game) => game.remoteData?.uevrScore,
-	getFilterValue: (game) => game.remoteData?.uevrScore ?? null,
-	filterOptions: [
-		{ label: "A", value: "A" },
-		{ label: "B", value: "B" },
-		{ label: "C", value: "C" },
-		{ label: "D", value: "D" },
-	],
-	renderCell: (game) => (
-		<Table.Td>
-			<UevrScoreBadge value={game.remoteData?.uevrScore} />
-		</Table.Td>
-	),
-};
-
 const releaseDate: TableColumnBase<ProcessedOwnedGame> = {
 	label: "Release Date",
 	width: 130,
@@ -152,7 +131,6 @@ const ownedGamesColumnsMap = {
 	provider,
 	engine,
 	gameMode,
-	uevrScore,
 	installed,
 	releaseDate,
 };
