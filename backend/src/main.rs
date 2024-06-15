@@ -188,6 +188,22 @@ async fn download_mod(mod_id: &str, handle: AppHandle) -> Result {
 
 #[tauri::command]
 #[specta::specta]
+async fn delete_mod(mod_id: &str, handle: AppHandle) -> Result {
+	let state = handle.app_state();
+	let local_mod = state.local_mods.try_get(mod_id)?;
+	let mod_loaders = state.mod_loaders.get_data()?;
+
+	mod_loaders
+		.try_get(&local_mod.common.loader_id)?
+		.delete_mod(&local_mod)?;
+
+	refresh_local_mods(&mod_loaders, &handle);
+
+	Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
 async fn start_game(game_id: &str, handle: AppHandle) -> Result {
 	handle
 		.app_state()
@@ -687,6 +703,8 @@ fn main() {
 			start_game_exe,
 			open_mod_folder,
 			download_mod,
+			run_runnable_without_game,
+			delete_mod,
 			open_mods_folder,
 			add_game,
 			remove_game,
@@ -699,7 +717,6 @@ fn main() {
 			refresh_game,
 			open_logs_folder,
 			run_provider_command,
-			run_runnable_without_game,
 		]
 	);
 

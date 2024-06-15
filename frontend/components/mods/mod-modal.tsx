@@ -1,5 +1,6 @@
 import { Modal, Stack } from "@mantine/core";
 import {
+	deleteMod,
 	downloadMod,
 	openModFolder,
 	runRunnableWithoutGame,
@@ -10,6 +11,7 @@ import {
 	IconFolderCog,
 	IconPlayerPlay,
 	IconRefreshAlert,
+	IconTrash,
 } from "@tabler/icons-react";
 import { DebugData } from "@components/debug-data";
 import { UnifiedMod } from "@hooks/use-unified-mods";
@@ -63,6 +65,17 @@ export function ModModal(props: Props) {
 						onClick={() => downloadMod(props.mod.common.id)}
 					>
 						{isOutdated ? "Update mod" : "Download mod"}
+					</CommandButton>
+				)}
+				{localVersion && (
+					<CommandButton
+						color="red"
+						variant="light"
+						confirmationText="You sure? Any files inside the mod's folder will be lost."
+						leftSection={<IconTrash />}
+						onClick={() => deleteMod(props.mod.common.id)}
+					>
+						Delete mod
 					</CommandButton>
 				)}
 				<DebugData data={props.mod} />

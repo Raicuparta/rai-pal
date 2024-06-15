@@ -70,6 +70,14 @@ export function downloadMod(modId: string) {
     return invoke()<null>("download_mod", { modId })
 }
 
+export function runRunnableWithoutGame(modId: string) {
+    return invoke()<null>("run_runnable_without_game", { modId })
+}
+
+export function deleteMod(modId: string) {
+    return invoke()<null>("delete_mod", { modId })
+}
+
 export function openModsFolder() {
     return invoke()<null>("open_mods_folder")
 }
@@ -116,10 +124,6 @@ export function openLogsFolder() {
 
 export function runProviderCommand(ownedGameId: string, commandAction: string) {
     return invoke()<null>("run_provider_command", { ownedGameId,commandAction })
-}
-
-export function runRunnableWithoutGame(modId: string) {
-    return invoke()<null>("run_runnable_without_game", { modId })
 }
 
 export type UnityScriptingBackend = "Il2Cpp" | "Mono"

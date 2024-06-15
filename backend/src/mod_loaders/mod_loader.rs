@@ -178,6 +178,16 @@ pub trait ModLoaderActions {
 		}
 		Err(Error::ModDownloadNotAvailable(remote_mod.common.id.clone()))
 	}
+
+	fn delete_mod(&self, local_mod: &LocalMod) -> Result {
+		let mod_path = self.get_mod_path(&local_mod.common)?;
+
+		if mod_path.exists() {
+			fs::remove_dir_all(&mod_path)?;
+		}
+
+		Ok(())
+	}
 }
 
 pub trait ModLoaderStatic {
