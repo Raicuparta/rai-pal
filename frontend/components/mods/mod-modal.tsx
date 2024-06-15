@@ -1,4 +1,4 @@
-import { Modal, Stack } from "@mantine/core";
+import { Group, Modal, Stack } from "@mantine/core";
 import {
 	deleteMod,
 	downloadMod,
@@ -17,6 +17,7 @@ import { DebugData } from "@components/debug-data";
 import { UnifiedMod } from "@hooks/use-unified-mods";
 import { ItemName } from "@components/item-name";
 import { getModTitle } from "../../util/game-mod";
+import { DeprecatedBadge } from "./deprecated-badge";
 
 type Props = {
 	readonly mod: UnifiedMod;
@@ -37,9 +38,12 @@ export function ModModal(props: Props) {
 			opened
 			size="xl"
 			title={
-				<ItemName label={`by ${props.mod.remote?.author}`}>
-					{getModTitle(props.mod)}
-				</ItemName>
+				<Group>
+					<ItemName label={`by ${props.mod.remote?.author}`}>
+						{getModTitle(props.mod)}
+					</ItemName>
+					<DeprecatedBadge />
+				</Group>
 			}
 		>
 			<Stack>
