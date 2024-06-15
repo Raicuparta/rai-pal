@@ -42,7 +42,7 @@ export function ModModal(props: Props) {
 					<ItemName label={`by ${props.mod.remote?.author}`}>
 						{getModTitle(props.mod)}
 					</ItemName>
-					<DeprecatedBadge />
+					{props.mod.remote?.deprecated && <DeprecatedBadge />}
 				</Group>
 			}
 		>
