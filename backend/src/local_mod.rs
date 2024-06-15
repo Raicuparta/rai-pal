@@ -11,10 +11,7 @@ use crate::{
 		game_engine::EngineBrand,
 		unity::UnityScriptingBackend,
 	},
-	game_mod::{
-		CommonModData,
-		EngineVersionRange,
-	},
+	game_mod::CommonModData,
 	mod_manifest::{
 		self,
 		Manifest,
