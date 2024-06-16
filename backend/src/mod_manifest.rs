@@ -16,7 +16,7 @@ use crate::{
 };
 
 serializable_struct!(Manifest {
-	pub title: String,
+	pub title: Option<String>,
 	pub version: String,
 	pub runnable: Option<RunnableModData>,
 	pub engine: Option<EngineBrand>,
@@ -34,7 +34,11 @@ pub fn get(path: &Path) -> Option<Manifest> {
 	{
 		Ok(manifest) => Some(manifest),
 		Err(error) => {
-			error!("Error getting manifest: {error}");
+			error!(
+				"Error getting manifest in path '{}': {}",
+				path.display(),
+				error
+			);
 			None
 		}
 	}

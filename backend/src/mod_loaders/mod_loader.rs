@@ -165,7 +165,7 @@ pub trait ModLoaderActions {
 			fs::write(
 				local_mod::get_manifest_path(&target_path),
 				serde_json::to_string_pretty(&mod_manifest::Manifest {
-					title: remote_mod.data.title.clone(),
+					title: Some(remote_mod.data.title.clone()),
 					version: latest_version.id.clone(),
 					runnable: latest_version.runnable.clone(),
 					engine: remote_mod.common.engine,
