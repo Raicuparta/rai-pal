@@ -14,7 +14,13 @@ use crate::{
 	Result,
 };
 
-const URL_BASE: &str = "https://raicuparta.github.io/rai-pal-db";
+const URL_BASE: &str = "https://raicuparta.github.io/rai-pal-db/mod-db";
+
+// The repository over at github.com/Raicuparta/rai-pal-db can have multiple versions of the database.
+// This way we prevent old versions of Rai Pal from breaking unless we want them to.
+// So when you need to change the database in a backwards-incompatible way,
+// you would create a new folder in the database repository and change this number to match the folder.
+const DATABASE_VERSION: i32 = 0;
 
 serializable_struct!(DatabaseEntry {
 	pub id: String,
@@ -59,7 +65,7 @@ pub async fn get(mod_loader_id: &str) -> Result<ModDatabase> {
 	let random = rand::random::<u32>();
 
 	Ok(reqwest::get(format!(
-		"{URL_BASE}/{mod_loader_id}.json?cache_avoider={random}"
+		"{URL_BASE}/{DATABASE_VERSION}/{mod_loader_id}.json?cache_avoider={random}"
 	))
 	.await?
 	.json::<ModDatabase>()
