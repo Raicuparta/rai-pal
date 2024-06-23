@@ -16,6 +16,7 @@ use super::provider_command::{
 	ProviderCommandAction,
 };
 use crate::{
+	app_type::AppType,
 	installed_game::InstalledGame,
 	owned_game::OwnedGame,
 	pc_gaming_wiki,
@@ -131,7 +132,8 @@ impl ProviderActions for Itch {
 				.add_provider_command(
 					ProviderCommandAction::Install,
 					ProviderCommand::String(format!("itch://install?game_id={}", row.id)),
-				);
+				)
+				.set_app_type(AppType::Game);
 
 				game
 			})

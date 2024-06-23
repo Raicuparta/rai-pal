@@ -111,7 +111,7 @@ export const ProviderBadge = CreateColorCodedBadge<ProviderId>(
 );
 
 export const AppTypeBadge = CreateColorCodedBadge<AppType>(
-	"Other",
+	"-",
 	{
 		Game: "blue",
 		Demo: "yellow",

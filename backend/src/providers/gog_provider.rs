@@ -22,6 +22,7 @@ use super::{
 	},
 };
 use crate::{
+	app_type::AppType,
 	installed_game::InstalledGame,
 	owned_game::OwnedGame,
 	paths,
@@ -118,7 +119,8 @@ impl ProviderActions for Gog {
 						]
 						.to_vec(),
 					),
-				);
+				)
+				.set_app_type(AppType::Game);
 
 				if let Some(thumbnail_url) = db_entry.image_url.clone() {
 					game.set_thumbnail_url(&thumbnail_url);
