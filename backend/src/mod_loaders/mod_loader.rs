@@ -59,6 +59,7 @@ pub enum ModLoader {
 pub trait ModLoaderActions {
 	fn install(&self, game: &InstalledGame) -> Result;
 	async fn install_mod_inner(&self, game: &InstalledGame, local_mod: &LocalMod) -> Result;
+	async fn uninstall_mod(&self, game: &InstalledGame, local_mod: &LocalMod) -> Result;
 	async fn run_without_game(&self, local_mod: &LocalMod) -> Result;
 	fn configure_mod(&self, game: &InstalledGame, local_mod: &LocalMod) -> Result;
 	fn open_installed_mod_folder(&self, game: &InstalledGame, local_mod: &LocalMod) -> Result;

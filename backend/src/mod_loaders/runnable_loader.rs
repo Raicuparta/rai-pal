@@ -24,10 +24,11 @@ use crate::{
 	},
 	mod_manifest,
 	paths::glob_path,
+	providers::provider_command::ProviderCommand,
 	result::Error,
 	serializable_enum,
 	serializable_struct,
-	Result, providers::provider_command::ProviderCommand,
+	Result,
 };
 
 serializable_struct!(RunnableLoader {
@@ -94,22 +95,22 @@ fn replace_parameters(argument: &str, game: &InstalledGame) -> String {
 		Ok(serde_json::to_string(&game)?)
 	});
 	result = replace_parameter_value(&result, RunnableParameter::StartCommand, || {
-		match &game.start_command {
-			Some(provider_command) => match provider_command {
+		game.start_command.as_ref().map_or_else(
+			|| Ok(game.executable.path.to_string_lossy().to_string()),
+			|provider_command| match provider_command {
 				ProviderCommand::String(s) => Ok(s.to_string()),
-				ProviderCommand::Path(exe_path, _) => Ok(exe_path.to_string_lossy().to_string())
-			}
-			None => Ok(game.executable.path.to_string_lossy().to_string()) // fallback to path
-		}
+				ProviderCommand::Path(exe_path, _) => Ok(exe_path.to_string_lossy().to_string()),
+			},
+		)
 	});
 	result = replace_parameter_value(&result, RunnableParameter::StartCommandArgs, || {
-		match &game.start_command {
-			Some(provider_command) => match provider_command {
+		game.start_command.as_ref().map_or_else(
+			|| Ok(String::new()),
+			|provider_command| match provider_command {
 				ProviderCommand::Path(_, args) => Ok(args.join(" ")),
-				_ => Ok(String::from("")),
-			}
-			_ => Ok(String::from("")),
-		}
+				ProviderCommand::String(_) => Ok(String::new()),
+			},
+		)
 	});
 
 	result
@@ -145,6 +146,12 @@ impl ModLoaderActions for RunnableLoader {
 			.current_dir(mod_folder)
 			.args(&args)
 			.spawn()?;
+
+		Ok(())
+	}
+
+	async fn uninstall_mod(&self, _game: &InstalledGame, _local_mod: &LocalMod) -> Result {
+		// There's nothing to uninstall for runnables.
 
 		Ok(())
 	}

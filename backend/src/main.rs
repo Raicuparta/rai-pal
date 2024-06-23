@@ -240,6 +240,9 @@ async fn install_mod(game_id: &str, mod_id: &str, handle: AppHandle) -> Result {
 
 	let mod_loader = mod_loaders.try_get(&local_mod.common.loader_id)?;
 
+	// Uninstall mod if it already exists, in case there are conflicting leftover files when updating.
+	mod_loader.uninstall_mod(game, &local_mod).await?;
+
 	mod_loader.install_mod(game, &local_mod).await?;
 
 	refresh_game_mods_and_exe(&game.id, &handle)?;
@@ -331,7 +334,15 @@ async fn uninstall_mod(game_id: &str, mod_id: &str, handle: AppHandle) -> Result
 	let state = handle.app_state();
 	let mut installed_games = state.installed_games.get_data()?;
 	let game = installed_games.try_get_mut(game_id)?;
-	game.uninstall_mod(mod_id)?;
+
+	let mod_loaders = state.mod_loaders.get_data()?;
+
+	let local_mod = refresh_and_get_local_mod(mod_id, &mod_loaders, &handle).await?;
+
+	let mod_loader = mod_loaders.try_get(&local_mod.common.loader_id)?;
+
+	// Uninstall mod if it already exists, in case there are conflicting leftover files when updating.
+	mod_loader.uninstall_mod(game, &local_mod).await?;
 
 	refresh_game_mods_and_exe(&game.id, &handle)?;
 

@@ -149,29 +149,6 @@ impl InstalledGame {
 		Ok(open::that_detached(&self.executable.path)?)
 	}
 
-	pub fn uninstall_mod(&self, mod_id: &str) -> Result {
-		// TODO this should be handled by each mod loader.
-		let installed_mods_folder = self.get_installed_mods_folder()?;
-		let bepinex_folder = installed_mods_folder.join("BepInEx");
-
-		let plugins_folder = bepinex_folder.join("plugins").join(mod_id);
-		if plugins_folder.is_dir() {
-			fs::remove_dir_all(plugins_folder)?;
-		}
-
-		let patchers_folder = bepinex_folder.join("patchers").join(mod_id);
-		if patchers_folder.is_dir() {
-			fs::remove_dir_all(patchers_folder)?;
-		}
-
-		let manifest_path = self.get_installed_mod_manifest_path(mod_id)?;
-		if manifest_path.is_file() {
-			fs::remove_file(manifest_path)?;
-		}
-
-		Ok(())
-	}
-
 	pub fn get_manifest_paths(&self) -> Vec<PathBuf> {
 		match self.get_installed_mod_manifest_path("*") {
 			Ok(manifests_path) => glob_path(&manifests_path),
