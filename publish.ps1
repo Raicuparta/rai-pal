@@ -34,7 +34,7 @@ $signature = Get-Content -Path "$msiFolder/*.sig" -Raw
 # Create json that's used by Rai Pal for checking updates.
 $updaterJson = ConvertTo-Json -InputObjec @{
   version   = "${version}"
-  notes     = "${Changelog}"
+  notes     = "${Changelog}" -replace '"', '\"'
   platforms = @{
     "windows-x86_64" = @{
       signature = "${signature}"
