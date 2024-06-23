@@ -174,6 +174,28 @@ impl ModLoaderActions for BepInEx {
 		Ok(())
 	}
 
+	async fn uninstall_mod(&self, game: &InstalledGame, local_mod: &LocalMod) -> Result {
+		let installed_mods_folder = game.get_installed_mods_folder()?;
+		let bepinex_folder = installed_mods_folder.join("BepInEx");
+
+		let plugins_folder = bepinex_folder.join("plugins").join(&local_mod.common.id);
+		if plugins_folder.is_dir() {
+			fs::remove_dir_all(plugins_folder)?;
+		}
+
+		let patchers_folder = bepinex_folder.join("patchers").join(&local_mod.common.id);
+		if patchers_folder.is_dir() {
+			fs::remove_dir_all(patchers_folder)?;
+		}
+
+		let manifest_path = game.get_installed_mod_manifest_path(&local_mod.common.id)?;
+		if manifest_path.is_file() {
+			fs::remove_file(manifest_path)?;
+		}
+
+		Ok(())
+	}
+
 	fn configure_mod(&self, game: &InstalledGame, _local_mod: &LocalMod) -> Result {
 		let game_data_folder = game.get_installed_mods_folder()?;
 		let mod_config_path = game_data_folder.join("BepInEx").join("config");

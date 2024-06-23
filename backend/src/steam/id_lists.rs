@@ -10,7 +10,6 @@ use log::error;
 
 use crate::{
 	game_engines::game_engine::EngineBrand,
-	serializable_enum,
 	serializable_struct,
 	Result,
 };
@@ -59,7 +58,7 @@ pub async fn get() -> Result<HashMap<String, SteamGame>> {
 	)
 	.await;
 
-	let mut games = [
+	let games = [
 		get_ids_data_list(&unity, EngineBrand::Unity),
 		get_ids_data_list(&unreal, EngineBrand::Unreal),
 		get_ids_data_list(&godot, EngineBrand::Godot),

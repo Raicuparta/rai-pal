@@ -1,4 +1,4 @@
-import { EngineBrand, ProviderId } from "@api/bindings";
+import { AppType, EngineBrand, ProviderId } from "@api/bindings";
 import { FilterOption } from "@components/table/table-head";
 
 export const engineFilterOptions: FilterOption<EngineBrand>[] = [
@@ -15,4 +15,9 @@ export const providerFilterOptions: FilterOption<ProviderId>[] = [
 	{ label: "Xbox", value: "Xbox" },
 	{ label: "Itch", value: "Itch" },
 	{ label: "Manual", value: "Manual" },
+];
+
+export const appTypeFilterOptions: FilterOption<AppType>[] = [
+	{ label: "Game", value: "Game" },
+	{ label: "Demo", value: "Demo" },
 ];

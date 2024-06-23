@@ -4,6 +4,7 @@ use std::collections::{
 };
 
 use crate::{
+	app_type::AppType,
 	game_executable::OperatingSystem,
 	game_mode::GameMode,
 	providers::{
@@ -24,6 +25,7 @@ serializable_struct!(OwnedGame {
 	pub release_date: Option<i64>,
 	pub thumbnail_url: Option<String>,
 	pub game_mode: Option<GameMode>,
+	pub app_type: Option<AppType>,
 
 	// TODO: the keys for this map should be ProviderCommandAction, but tauri-specta doesn't support that.
 	pub provider_commands: HashMap<String, ProviderCommand>,
@@ -40,6 +42,7 @@ impl OwnedGame {
 			release_date: None,
 			thumbnail_url: None,
 			game_mode: None,
+			app_type: None,
 		}
 	}
 
@@ -60,6 +63,20 @@ impl OwnedGame {
 
 	pub fn set_game_mode(&mut self, game_mode: GameMode) -> &mut Self {
 		self.game_mode = Some(game_mode);
+		self
+	}
+
+	pub fn set_app_type(&mut self, app_type: AppType) -> &mut Self {
+		self.app_type = Some(app_type);
+		self
+	}
+
+	pub fn guess_app_type(&mut self) -> &mut Self {
+		self.app_type = Some(if self.name.to_lowercase().ends_with(" demo") {
+			AppType::Demo
+		} else {
+			AppType::Game
+		});
 		self
 	}
 

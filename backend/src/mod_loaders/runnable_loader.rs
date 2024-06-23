@@ -24,6 +24,7 @@ use crate::{
 	},
 	mod_manifest,
 	paths::glob_path,
+	providers::provider_command::ProviderCommand,
 	result::Error,
 	serializable_enum,
 	serializable_struct,
@@ -38,6 +39,8 @@ serializable_enum!(RunnableParameter {
 	ExecutableName,
 	ExecutablePath,
 	GameJson,
+	StartCommand,
+	StartCommandArgs,
 });
 
 impl ModLoaderStatic for RunnableLoader {
@@ -91,6 +94,24 @@ fn replace_parameters(argument: &str, game: &InstalledGame) -> String {
 	result = replace_parameter_value(&result, RunnableParameter::GameJson, || {
 		Ok(serde_json::to_string(&game)?)
 	});
+	result = replace_parameter_value(&result, RunnableParameter::StartCommand, || {
+		game.start_command.as_ref().map_or_else(
+			|| Ok(game.executable.path.to_string_lossy().to_string()),
+			|provider_command| match provider_command {
+				ProviderCommand::String(s) => Ok(s.to_string()),
+				ProviderCommand::Path(exe_path, _) => Ok(exe_path.to_string_lossy().to_string()),
+			},
+		)
+	});
+	result = replace_parameter_value(&result, RunnableParameter::StartCommandArgs, || {
+		game.start_command.as_ref().map_or_else(
+			|| Ok(String::new()),
+			|provider_command| match provider_command {
+				ProviderCommand::Path(_, args) => Ok(args.join(" ")),
+				ProviderCommand::String(_) => Ok(String::new()),
+			},
+		)
+	});
 
 	result
 }
@@ -129,6 +150,12 @@ impl ModLoaderActions for RunnableLoader {
 		Ok(())
 	}
 
+	async fn uninstall_mod(&self, _game: &InstalledGame, _local_mod: &LocalMod) -> Result {
+		// There's nothing to uninstall for runnables.
+
+		Ok(())
+	}
+
 	async fn run_without_game(&self, local_mod: &LocalMod) -> Result {
 		let mod_folder = self.get_mod_path(&local_mod.common)?;
 
@@ -147,7 +174,7 @@ impl ModLoaderActions for RunnableLoader {
 	}
 
 	fn configure_mod(&self, game: &InstalledGame, local_mod: &LocalMod) -> Result {
-		// TODO: make it actually open the config file / folder as per manifest.
+		// TODO: make it actually open the config file / folder (would need extra info in database / manifest).
 		self.open_installed_mod_folder(game, local_mod)
 	}
 

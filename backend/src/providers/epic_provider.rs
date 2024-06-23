@@ -207,7 +207,8 @@ impl ProviderActions for Epic {
 					])
 					.ok()?,
 				)),
-			);
+			)
+			.guess_app_type();
 
 			if let Some(thumbnail_url) = catalog_item.get_thumbnail_url() {
 				game.set_thumbnail_url(&thumbnail_url);

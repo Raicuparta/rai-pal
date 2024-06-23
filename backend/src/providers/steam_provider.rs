@@ -16,6 +16,7 @@ use super::{
 	},
 };
 use crate::{
+	app_type::AppType,
 	game_engines::game_engine::GameEngine,
 	game_executable::OperatingSystem,
 	game_mode::GameMode,
@@ -266,6 +267,18 @@ impl ProviderActions for Steam {
 					.or(app_info.steam_release_date)
 				{
 					game.set_release_date(release_date.into());
+				}
+
+				if let Some(app_type) = &app_info.app_type {
+					if app_type == "Game" {
+						game.set_app_type(AppType::Game);
+					} else if app_type == "Demo" {
+						game.set_app_type(AppType::Demo);
+					}
+				} else {
+					// We only try to guess the app type if couldn't read it from appinfo.
+					// For instance, something marked as Tool or Application shouldn't be marked as a game.
+					game.guess_app_type();
 				}
 
 				Some(game)

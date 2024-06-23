@@ -1,5 +1,6 @@
 import { Table, Tooltip } from "@mantine/core";
 import {
+	AppType,
 	Architecture,
 	EngineBrand,
 	GameMode,
@@ -10,6 +11,7 @@ import {
 import { TableColumnBase, columnMapToList } from "@components/table/table-head";
 import { ItemName } from "../item-name";
 import {
+	AppTypeBadge,
 	ArchitectureBadge,
 	EngineBadge,
 	GameModeBadge,
@@ -20,6 +22,7 @@ import {
 import { ThumbnailCell } from "@components/table/thumbnail-cell";
 import { OutdatedMarker } from "@components/outdated-marker";
 import {
+	appTypeFilterOptions,
 	engineFilterOptions,
 	providerFilterOptions,
 } from "../../util/common-filter-options";
@@ -159,6 +162,24 @@ const gameMode: TableColumnBase<ProcessedInstalledGame, GameMode> = {
 	),
 };
 
+const getAppType = (game: ProcessedInstalledGame) =>
+	game.ownedGame?.appType ?? null;
+
+const appType: TableColumnBase<ProcessedInstalledGame, AppType> = {
+	label: "App Type",
+	width: 110,
+	center: true,
+	hidable: true,
+	getSortValue: (game) => getAppType(game),
+	getFilterValue: (game) => getAppType(game),
+	filterOptions: appTypeFilterOptions,
+	renderCell: (game) => (
+		<Table.Td>
+			<AppTypeBadge value={getAppType(game)}>{getAppType(game)}</AppTypeBadge>
+		</Table.Td>
+	),
+};
+
 const engine: TableColumnBase<ProcessedInstalledGame, EngineBrand> = {
 	label: "Engine",
 	width: 180,
@@ -194,6 +215,7 @@ const installedGamesColumnsMap = {
 	architecture,
 	scriptingBackend,
 	engine,
+	appType,
 };
 
 export type InstalledGameColumnsId = keyof typeof installedGamesColumnsMap;

@@ -21,9 +21,23 @@ export function useUnifiedMods() {
 		for (const key of keys) {
 			const localMod = localMods[key];
 			const remoteMod = remoteMods[key];
-			const common = localMod?.common ?? remoteMod?.common;
 
-			if (!common) continue;
+			if (!localMod?.common && !remoteMod?.common) continue;
+
+			// When a mod is downloaded, the database information is stored in the local manifest.
+			// But there can be cases where the information isn't the same on both ends.
+			// Local manifest information takes precedence, but if certain parts of the manifest are missing,
+			// we'll just use the one from the database.
+			// This might cause some discrepancies, but since this should mostly only happen when messing
+			// with mods for dev purposes, I think it's ok.
+			const common = {
+				...remoteMod?.common,
+				...Object.fromEntries(
+					Object.entries(localMod?.common || {}).filter(
+						([, value]) => value != null && value != undefined,
+					),
+				),
+			};
 
 			modMap[key] = {
 				common,
