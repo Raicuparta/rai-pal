@@ -174,7 +174,7 @@ impl ModLoaderActions for RunnableLoader {
 	}
 
 	fn configure_mod(&self, game: &InstalledGame, local_mod: &LocalMod) -> Result {
-		// TODO: make it actually open the config file / folder as per manifest.
+		// TODO: make it actually open the config file / folder (would need extra info in database / manifest).
 		self.open_installed_mod_folder(game, local_mod)
 	}
 
