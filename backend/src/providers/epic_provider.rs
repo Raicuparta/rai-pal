@@ -25,7 +25,6 @@ use super::{
 	},
 };
 use crate::{
-	app_type::AppType,
 	installed_game::InstalledGame,
 	owned_game::OwnedGame,
 	paths::glob_path,
@@ -209,7 +208,7 @@ impl ProviderActions for Epic {
 					.ok()?,
 				)),
 			)
-			.set_app_type(AppType::Game);
+			.guess_app_type();
 
 			if let Some(thumbnail_url) = catalog_item.get_thumbnail_url() {
 				game.set_thumbnail_url(&thumbnail_url);

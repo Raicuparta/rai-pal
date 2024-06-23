@@ -275,6 +275,10 @@ impl ProviderActions for Steam {
 					} else if app_type == "Demo" {
 						game.set_app_type(AppType::Demo);
 					}
+				} else {
+					// We only try to guess the app type if couldn't read it from appinfo.
+					// For instance, something marked as Tool or Application shouldn't be marked as a game.
+					game.guess_app_type();
 				}
 
 				Some(game)

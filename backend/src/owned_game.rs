@@ -71,6 +71,15 @@ impl OwnedGame {
 		self
 	}
 
+	pub fn guess_app_type(&mut self) -> &mut Self {
+		self.app_type = Some(if self.name.to_lowercase().ends_with(" demo") {
+			AppType::Demo
+		} else {
+			AppType::Game
+		});
+		self
+	}
+
 	pub fn add_provider_command(
 		&mut self,
 		command_action: ProviderCommandAction,
