@@ -1,4 +1,4 @@
-import { EngineBrand, GameMode, ProviderId } from "@api/bindings";
+import { AppType, EngineBrand, GameMode, ProviderId } from "@api/bindings";
 import {
 	EngineBadge,
 	GameModeBadge,
@@ -10,6 +10,7 @@ import { IconCheck } from "@tabler/icons-react";
 import styles from "../table/table.module.css";
 import { ThumbnailCell } from "@components/table/thumbnail-cell";
 import {
+	appTypeFilterOptions,
 	engineFilterOptions,
 	providerFilterOptions,
 } from "../../util/common-filter-options";
@@ -54,6 +55,17 @@ const provider: TableColumnBase<ProcessedOwnedGame, ProviderId> = {
 			<ProviderBadge value={game.provider} />
 		</Table.Td>
 	),
+};
+
+const appType: TableColumnBase<ProcessedOwnedGame, AppType> = {
+	label: "App Type",
+	width: 110,
+	center: true,
+	hidable: true,
+	getSortValue: (game) => game.appType,
+	getFilterValue: (game) => game.appType,
+	filterOptions: appTypeFilterOptions,
+	renderCell: (game) => <Table.Td>{game.appType}</Table.Td>,
 };
 
 const engine: TableColumnBase<ProcessedOwnedGame, EngineBrand> = {
@@ -130,6 +142,7 @@ const ownedGamesColumnsMap = {
 	name,
 	provider,
 	engine,
+	appType,
 	gameMode,
 	installed,
 	releaseDate,

@@ -130,20 +130,19 @@ export function runProviderCommand(ownedGameId: string, commandAction: string) {
     return invoke()<null>("run_provider_command", { ownedGameId,commandAction })
 }
 
+export type ModDownload = { id: string; url: string; root: string | null; runnable: RunnableModData | null }
 export type UnityScriptingBackend = "Il2Cpp" | "Mono"
-export type RunnableModData = { path: string; args: string[] }
 export type RemoteMod = { common: CommonModData; data: RemoteModData }
 export type GameMode = "VR" | "Flat"
 export type EngineVersion = { numbers: EngineVersionNumbers; suffix: string | null; display: string }
 export type EngineVersionRange = { minimum: EngineVersionNumbers | null; maximum: EngineVersionNumbers | null }
 export type ModKind = "Installable" | "Runnable"
 export type GameEngine = { brand: EngineBrand; version: EngineVersion | null }
-export type ModDownload = { id: string; url: string; root: string | null; runnable: RunnableModData | null }
-export type OwnedGame = { id: string; provider: ProviderId; name: string; osList: OperatingSystem[]; releaseDate: BigInt | null; thumbnailUrl: string | null; gameMode: GameMode | null; providerCommands: { [key: string]: ProviderCommand } }
 export type AppEvent = "SyncInstalledGames" | "SyncOwnedGames" | "SyncRemoteGames" | "SyncModLoaders" | "SyncLocalMods" | "SyncRemoteMods" | "ExecutedProviderCommand" | "GameAdded" | "GameRemoved" | "Error"
 export type Manifest = { title: string | null; version: string; runnable: RunnableModData | null; engine: EngineBrand | null; engineVersionRange: EngineVersionRange | null; unityBackend: UnityScriptingBackend | null }
 export type LocalMod = { data: LocalModData; common: CommonModData }
 export type InstalledGame = { id: string; name: string; provider: ProviderId; executable: GameExecutable; installedModVersions: { [key: string]: string }; discriminator: string | null; thumbnailUrl: string | null; ownedGameId: string | null; startCommand: ProviderCommand | null }
+export type RunnableModData = { path: string; args: string[] }
 export type RemoteGame = { id: string; engine: GameEngine | null; skipCache: boolean }
 export type RemoteModData = { title: string; deprecated: boolean; author: string; sourceCode: string; description: string; latestVersion: ModDownload | null }
 export type LocalModData = { path: string; manifest: Manifest | null }
@@ -153,7 +152,9 @@ export type ProviderCommandAction = "Install" | "ShowInLibrary" | "ShowInStore" 
 export type ProviderId = "Steam" | "Manual" | "Itch" | "Epic" | "Gog" | "Xbox"
 export type EngineBrand = "Unity" | "Unreal" | "Godot" | "GameMaker"
 export type EngineVersionNumbers = { major: number; minor: number | null; patch: number | null }
+export type AppType = "Game" | "Demo"
 export type OperatingSystem = "Linux" | "Windows"
 export type ProviderCommand = { String: string } | { Path: [string, string[]] }
 export type Architecture = "X64" | "X86"
 export type CommonModData = { id: string; engine: EngineBrand | null; unityBackend: UnityScriptingBackend | null; engineVersionRange: EngineVersionRange | null; loaderId: string }
+export type OwnedGame = { id: string; provider: ProviderId; name: string; osList: OperatingSystem[]; releaseDate: BigInt | null; thumbnailUrl: string | null; gameMode: GameMode | null; appType: AppType | null; providerCommands: { [key: string]: ProviderCommand } }

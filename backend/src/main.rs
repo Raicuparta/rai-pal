@@ -51,6 +51,7 @@ use tauri_plugin_log::LogTarget;
 
 mod analytics;
 mod app_state;
+mod app_type;
 mod debug;
 mod events;
 mod files;

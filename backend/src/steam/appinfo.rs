@@ -110,6 +110,7 @@ pub struct SteamAppInfo {
 	pub steam_release_date: Option<i32>,
 	pub original_release_date: Option<i32>,
 	pub is_free: bool,
+	pub app_type: Option<String>,
 }
 
 #[derive(Debug, Clone)]
@@ -208,7 +209,10 @@ impl SteamAppInfoFile {
 
 			let is_free = value_to_string(app.get(&["appinfo", "extended", "isfreeapp"])).is_some();
 
-			if value_to_string(app.get(&["appinfo", "common", "type"]))
+			let app_type_option = value_to_string(app.get(&["appinfo", "common", "type"]));
+
+			if app_type_option
+				.clone()
 				.is_some_and(|app_type| app_type == "Tool")
 			{
 				// We don't care about tools like dedicated server, sdk, etc.
@@ -225,6 +229,7 @@ impl SteamAppInfoFile {
 							steam_release_date,
 							original_release_date,
 							is_free,
+							app_type: app_type_option,
 						},
 					);
 				}
