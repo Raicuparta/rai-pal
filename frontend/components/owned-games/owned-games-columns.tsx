@@ -1,5 +1,6 @@
 import { AppType, EngineBrand, GameMode, ProviderId } from "@api/bindings";
 import {
+	AppTypeBadge,
 	EngineBadge,
 	GameModeBadge,
 	ProviderBadge,
@@ -65,7 +66,11 @@ const appType: TableColumnBase<ProcessedOwnedGame, AppType> = {
 	getSortValue: (game) => game.appType,
 	getFilterValue: (game) => game.appType,
 	filterOptions: appTypeFilterOptions,
-	renderCell: (game) => <Table.Td>{game.appType}</Table.Td>,
+	renderCell: (game) => (
+		<Table.Td>
+			<AppTypeBadge value={game.appType}>{game.appType}</AppTypeBadge>
+		</Table.Td>
+	),
 };
 
 const engine: TableColumnBase<ProcessedOwnedGame, EngineBrand> = {

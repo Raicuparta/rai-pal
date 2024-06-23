@@ -1,4 +1,5 @@
 import {
+	AppType,
 	Architecture,
 	EngineBrand,
 	GameMode,
@@ -9,6 +10,7 @@ import {
 import { Badge, BadgeProps, DefaultMantineColor, Flex } from "@mantine/core";
 import styles from "./badges.module.css";
 import {
+	appTypeFilterOptions,
 	engineFilterOptions,
 	providerFilterOptions,
 } from "../../util/common-filter-options";
@@ -106,4 +108,13 @@ export const ProviderBadge = CreateColorCodedBadge<ProviderId>(
 		Itch: "teal",
 	},
 	providerFilterOptions,
+);
+
+export const AppTypeBadge = CreateColorCodedBadge<AppType>(
+	"Other",
+	{
+		Game: "blue",
+		Demo: "yellow",
+	},
+	appTypeFilterOptions,
 );
