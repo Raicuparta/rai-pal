@@ -14,6 +14,10 @@ use std::{
 use directories::ProjectDirs;
 use glob::glob;
 use log::error;
+use tauri::{
+	path::BaseDirectory,
+	Manager,
+};
 
 use crate::{
 	Error,
@@ -67,10 +71,9 @@ pub fn installed_mods_path() -> Result<PathBuf> {
 }
 
 pub fn resources_path(handle: &tauri::AppHandle) -> Result<PathBuf> {
-	handle
-		.path_resolver()
-		.resolve_resource("resources")
-		.ok_or_else(Error::ResourcesNotFound)
+	Ok(handle
+		.path()
+		.resolve("resources", BaseDirectory::Resource)?)
 }
 
 pub fn file_name_without_extension(file_path: &Path) -> Result<&str> {

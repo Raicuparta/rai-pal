@@ -4,8 +4,8 @@ import {
 	checkUpdate,
 	installUpdate,
 	onUpdaterEvent,
-} from "@tauri-apps/api/updater";
-import { relaunch } from "@tauri-apps/api/process";
+} from "@tauri-apps/plugin-updater";
+import { relaunch } from "@tauri-apps/plugin-process";
 import { showAppNotification } from "@components/app-notifications";
 import { dialog } from "@tauri-apps/api";
 

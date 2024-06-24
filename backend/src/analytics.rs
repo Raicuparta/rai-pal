@@ -10,12 +10,13 @@ use log::{
 };
 use reqwest::Client;
 use serde::Serialize;
+use uuid::Uuid;
 
 const MEASUREMENT_ID: &str = "G-KTJZNR0ZET";
 const API_KEY: Option<&str> = option_env!("ANALYTICS_API_KEY");
 
 lazy_static! {
-	static ref ANALYTICS_ID: String = uuid::Uuid::new_v4().hyphenated().to_string();
+	static ref ANALYTICS_ID: String = Uuid::new_v4().hyphenated().to_string();
 }
 
 #[derive(Serialize, Debug, Clone)]

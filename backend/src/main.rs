@@ -47,7 +47,7 @@ use tauri::{
 	AppHandle,
 	Manager,
 };
-use tauri_plugin_log::LogTarget;
+// use tauri_plugin_log::Target;
 
 mod analytics;
 mod app_state;
@@ -669,15 +669,15 @@ fn main() {
 
 	let tauri_builder = tauri::Builder::default()
 		.plugin(tauri_plugin_window_state::Builder::default().build())
-		.plugin(
-			tauri_plugin_log::Builder::default()
-				.level(log::LevelFilter::Info)
-				.targets([
-					paths::logs_path().map_or(LogTarget::LogDir, LogTarget::Folder),
-					LogTarget::Stdout,
-				])
-				.build(),
-		)
+		// .plugin(
+		// 	tauri_plugin_log::Builder::default()
+		// 		.level(log::LevelFilter::Info)
+		// 		.targets([
+		// 			paths::logs_path().map_or(LogTarget::LogDir, LogTarget::Folder),
+		// 			LogTarget::Stdout,
+		// 		])
+		// 		.build(),
+		// )
 		.manage(AppState {
 			installed_games: Mutex::default(),
 			owned_games: Mutex::default(),
@@ -690,20 +690,8 @@ fn main() {
 			// This prevents/reduces the white flashbang on app start.
 			// Unfortunately, it will still show the default window color for the system for a bit,
 			// which can some times be white.
-			if let Some(window) = app.get_window("main") {
+			if let Some(window) = app.get_webview_window("main") {
 				window.set_title(&format!("Rai Pal {}", env!("CARGO_PKG_VERSION")))?;
-
-				#[cfg(target_os = "linux")]
-				{
-					window.with_webview(|webview| {
-						use webkit2gtk::traits::WebViewExt;
-						let mut color = webview.inner().background_color();
-						color.set_red(0.102);
-						color.set_green(0.106);
-						color.set_blue(0.118);
-						webview.inner().set_background_color(&color);
-					})?;
-				}
 			}
 
 			Ok(())

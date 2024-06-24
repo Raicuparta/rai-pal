@@ -3,61 +3,37 @@
   "build": {
     "beforeDevCommand": "pnpm frontend:dev",
     "beforeBuildCommand": "pnpm frontend:build",
-    "devPath": "http://localhost:1420",
-    "distDir": "../dist",
-    "withGlobalTauri": false
+    "frontendDist": "../dist",
+    "devUrl": "http://localhost:1420"
   },
-  "package": {
-    "productName": "Rai Pal"
+  "bundle": {
+    "active": true,
+    "targets": [
+      "msi",
+      "updater"
+    ],
+    "resources": [
+      "resources/*"
+    ],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ]
   },
-  "tauri": {
+  "productName": "Rai Pal",
+  "identifier": "com.raicuparta.pal",
+  "plugins": {
     "updater": {
-      "active": true,
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDNGMzI5QUM1RjMwMjM0OTMKUldTVE5BTHp4Wm95UDcvaWgyKzRENVkzZVc2K1JTOEhidUR4OFVENWVqemloUWRmZDllbzJGaSsK",
       "endpoints": [
         "https://github.com/Raicuparta/rai-pal/releases/latest/download/latest.json"
-      ],
-      "dialog": false,
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDNGMzI5QUM1RjMwMjM0OTMKUldTVE5BTHp4Wm95UDcvaWgyKzRENVkzZVc2K1JTOEhidUR4OFVENWVqemloUWRmZDllbzJGaSsK"
-    },
-    "allowlist": {
-      "all": false,
-      "shell": {
-        "all": false,
-        "execute": false,
-        "open": "^((steam?://\\w+)|(https?://\\w+)).+",
-        "scope": [],
-        "sidecar": false
-      },
-      "dialog": {
-        "all": false,
-        "ask": true,
-        "confirm": true,
-        "message": false,
-        "open": true,
-        "save": false
-      }
-    },
-    "bundle": {
-      "active": true,
-      "targets": [
-        "msi",
-        "updater"
-      ],
-      "identifier": "com.raicuparta.pal",
-      "icon": [
-        "icons/32x32.png",
-        "icons/128x128.png",
-        "icons/128x128@2x.png",
-        "icons/icon.icns",
-        "icons/icon.ico"
-      ],
-      "resources": [
-        "resources/*"
       ]
-    },
-    "security": {
-      "csp": null
-    },
+    }
+  },
+  "app": {
     "windows": [
       {
         "fullscreen": false,
@@ -68,6 +44,10 @@
         "minHeight": 300,
         "minWidth": 800
       }
-    ]
+    ],
+    "withGlobalTauri": false,
+    "security": {
+      "csp": null
+    }
   }
 }

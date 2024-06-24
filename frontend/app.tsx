@@ -43,7 +43,7 @@ const firstPage = Object.keys(pages)[0];
 
 function App() {
 	useData();
-	useAppUpdater();
+	// useAppUpdater();
 
 	return (
 		<>
