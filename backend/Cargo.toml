@@ -23,13 +23,13 @@ steamlocate = { git = "https://github.com/Raicuparta/steamlocate-rs", branch = "
 # specta = "1.0.5"
 # tauri-specta = { version = "1.0.2", features = ["typescript"] }
 async-trait = "0.1.74"
-base64 = "0.21.5"
+base64 = "0.22.1"
 byteorder = "1.5.0"
 chrono = "0.4.31"
 directories = "5.0.1"
 enum_dispatch = "0.3.12"
 futures = "0.3.29"
-goblin = "0.7.1"
+goblin = "0.8.2"
 lazy_static = "1.4.0"
 lazy-regex = "3.0.2"
 log = "0.4.20"
@@ -37,7 +37,7 @@ open = "5.0.0"
 pelite = "0.10.0"
 rand = "0.8.5"
 reqwest = { version = "0.12.5", features = ["json"] }
-rusqlite = { version = "0.30.0",  features = ["bundled"] }
+rusqlite = { version = "0.31.0",  features = ["bundled"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0.108"
 serde_urlencoded = "0.7.1"
