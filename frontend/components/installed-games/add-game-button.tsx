@@ -3,7 +3,7 @@ import { IconAppWindowFilled, IconPlaylistAdd } from "@tabler/icons-react";
 import { useCallback, useEffect, useState } from "react";
 import styles from "./installed-games.module.css";
 import { addGame } from "@api/bindings";
-import { dialog } from "@tauri-apps/api";
+import { open as openDialog } from "@tauri-apps/plugin-dialog";
 import { useAtomValue } from "jotai";
 import { loadingAtom } from "@hooks/use-data";
 import { useAsyncCommand } from "@hooks/use-async-command";
@@ -19,7 +19,7 @@ export function AddGame() {
 	const [executeAddGame] = useAsyncCommand(addGame, handleSuccess);
 
 	const handleClick = useCallback(async () => {
-		const result = await dialog.open({
+		const result = await openDialog({
 			multiple: false,
 			title: "Select the game executable",
 			filters: [
@@ -33,9 +33,9 @@ export function AddGame() {
 				},
 			],
 		});
-		if (!result || Array.isArray(result)) return;
+		if (!result) return;
 
-		await executeAddGame(result);
+		await executeAddGame(result.path);
 	}, [executeAddGame]);
 
 	useEffect(() => {

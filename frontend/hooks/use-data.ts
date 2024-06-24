@@ -59,7 +59,7 @@ export function useData() {
 
 	useEffect(() => {
 		const unlistenPromise = event.listen<string[]>(
-			event.TauriEvent.WINDOW_FILE_DROP,
+			event.TauriEvent.DROP,
 			(event) => {
 				if (event.payload.length > 0) {
 					executeAddGame(event.payload[0]);

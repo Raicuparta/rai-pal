@@ -1,5 +1,5 @@
 import { showAppNotification } from "@components/app-notifications";
-import { shell } from "@tauri-apps/api";
+import { open as shellOpen } from "@tauri-apps/plugin-shell";
 
 function runSteamCommand(command: string) {
 	return async function (appId?: string | number) {
@@ -7,7 +7,7 @@ function runSteamCommand(command: string) {
 
 		showAppNotification("Running Steam command...", "info");
 
-		return shell.open(`steam://${command}/${appId}`);
+		return shellOpen(`steam://${command}/${appId}`);
 	};
 }
 
