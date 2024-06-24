@@ -8,15 +8,7 @@ import {
 	Group,
 	Stack,
 } from "@mantine/core";
-import {
-	ModLoaderData,
-	configureMod,
-	downloadMod,
-	installMod,
-	openInstalledModFolder,
-	openModFolder,
-	uninstallMod,
-} from "@api/bindings";
+import { ModLoaderData, commands } from "@api/bindings";
 import { CommandButton } from "@components/command-button";
 import {
 	IconCheck,
@@ -40,6 +32,15 @@ import { ModVersionBadge } from "@components/mods/mod-version-badge";
 import { getModTitle } from "../../util/game-mod";
 import { CommandDropdown } from "@components/command-dropdown";
 import { DeprecatedBadge } from "@components/mods/deprecated-badge";
+
+const {
+	configureMod,
+	downloadMod,
+	installMod,
+	openInstalledModFolder,
+	openModFolder,
+	uninstallMod,
+} = commands;
 
 type Props = {
 	readonly game: ProcessedInstalledGame;

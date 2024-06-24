@@ -1,8 +1,4 @@
-import {
-	OwnedGame,
-	ProviderCommandAction,
-	runProviderCommand,
-} from "@api/bindings";
+import { OwnedGame, ProviderCommandAction, commands } from "@api/bindings";
 import { CommandButton } from "@components/command-button";
 import {
 	Icon,
@@ -42,7 +38,7 @@ export function ProviderCommandButton(props: Props) {
 	return (
 		<CommandButton
 			leftSection={<IconComponent />}
-			onClick={() => runProviderCommand(props.game.id, props.action)}
+			onClick={() => commands.runProviderCommand(props.game.id, props.action)}
 		>
 			{providerCommandActionName[props.action]}
 		</CommandButton>

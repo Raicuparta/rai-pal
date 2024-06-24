@@ -1,7 +1,7 @@
 #[macro_export]
 macro_rules! serializable_enum {
   ($enum_name:ident { $($variant:ident),* $(,)? }) => {
-      #[derive(serde::Serialize, serde::Deserialize, /*specta::Type, */Clone, PartialEq, Eq, Hash, Debug, Copy)]
+      #[derive(serde::Serialize, serde::Deserialize, specta::Type, Clone, PartialEq, Eq, Hash, Debug, Copy)]
       pub enum $enum_name {
           $($variant,)*
       }

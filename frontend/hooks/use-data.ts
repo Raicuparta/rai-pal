@@ -1,17 +1,20 @@
 import { useEffect } from "react";
-import { addGame, getRemoteGames } from "@api/bindings";
 import { event } from "@tauri-apps/api";
 import { atom } from "jotai";
-import {
+import { commands } from "@api/bindings";
+import { dataSubscription } from "./use-data-subscription";
+import { useUpdateData } from "./use-update-data";
+import { useAsyncCommand } from "./use-async-command";
+
+const {
 	getInstalledGames,
 	getModLoaders,
 	getOwnedGames,
 	getLocalMods,
 	getRemoteMods,
-} from "@api/bindings";
-import { dataSubscription } from "./use-data-subscription";
-import { useUpdateData } from "./use-update-data";
-import { useAsyncCommand } from "./use-async-command";
+	addGame,
+	getRemoteGames,
+} = commands;
 
 export const [installedGamesAtom, useInstalledGamesSubscription] =
 	dataSubscription("SyncInstalledGames", getInstalledGames, {});

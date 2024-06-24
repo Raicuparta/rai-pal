@@ -8,17 +8,7 @@ import {
 	Table,
 	Tooltip,
 } from "@mantine/core";
-import {
-	EngineVersion,
-	EngineVersionRange,
-	openGameFolder,
-	openGameModsFolder,
-	refreshGame,
-	removeGame,
-	startGame,
-	startGameExe,
-	uninstallAllMods,
-} from "@api/bindings";
+import { EngineVersion, EngineVersionRange, commands } from "@api/bindings";
 import { useMemo } from "react";
 import { ItemName } from "../item-name";
 import { CommandButton } from "@components/command-button";
@@ -50,6 +40,16 @@ type Props = {
 	readonly game: ProcessedInstalledGame;
 	readonly onClose: () => void;
 };
+
+const {
+	openGameFolder,
+	openGameModsFolder,
+	refreshGame,
+	removeGame,
+	startGame,
+	startGameExe,
+	uninstallAllMods,
+} = commands;
 
 function isVersionWithinRange(
 	version: EngineVersion | null | undefined,

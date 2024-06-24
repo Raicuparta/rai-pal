@@ -2,14 +2,14 @@ import { Button, Container, Stack, Tooltip } from "@mantine/core";
 import { resetLocalStorage } from "../../util/local-storage";
 import { IconFolderCode, IconRotateDot } from "@tabler/icons-react";
 import { CommandButton } from "@components/command-button";
-import { openLogsFolder } from "@api/bindings";
+import { commands } from "@api/bindings";
 
 export function SettingsPage() {
 	return (
 		<Container size="xs">
 			<Stack>
 				<CommandButton
-					onClick={openLogsFolder}
+					onClick={commands.openLogsFolder}
 					leftSection={<IconFolderCode />}
 					justify="center"
 				>

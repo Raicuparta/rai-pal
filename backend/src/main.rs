@@ -49,37 +49,37 @@ mod steam;
 mod windows;
 
 #[tauri::command]
-// #[specta::specta]
+#[specta::specta]
 async fn get_installed_games(handle: AppHandle) -> Result<installed_game::Map> {
 	handle.app_state().installed_games.get_data()
 }
 
 #[tauri::command]
-// #[specta::specta]
+#[specta::specta]
 async fn get_owned_games(handle: AppHandle) -> Result<owned_game::Map> {
 	handle.app_state().owned_games.get_data()
 }
 
 #[tauri::command]
-// #[specta::specta]
+#[specta::specta]
 async fn get_mod_loaders(handle: AppHandle) -> Result<mod_loader::DataMap> {
 	mod_loader::get_data_map(&handle.app_state().mod_loaders.get_data()?)
 }
 
 #[tauri::command]
-// #[specta::specta]
+#[specta::specta]
 async fn get_local_mods(handle: AppHandle) -> Result<local_mod::Map> {
 	handle.app_state().local_mods.get_data()
 }
 
 #[tauri::command]
-// #[specta::specta]
+#[specta::specta]
 async fn get_remote_mods(handle: AppHandle) -> Result<remote_mod::Map> {
 	handle.app_state().remote_mods.get_data()
 }
 
 #[tauri::command]
-// #[specta::specta]
+#[specta::specta]
 async fn get_remote_games(handle: AppHandle) -> Result<remote_game::Map> {
 	handle.app_state().remote_games.get_data()
 }
@@ -101,7 +101,7 @@ fn update_state<TData>(
 }
 
 #[tauri::command]
-// #[specta::specta]
+#[specta::specta]
 async fn open_game_folder(game_id: &str, handle: AppHandle) -> Result {
 	handle
 		.app_state()
@@ -111,7 +111,7 @@ async fn open_game_folder(game_id: &str, handle: AppHandle) -> Result {
 }
 
 #[tauri::command]
-// #[specta::specta]
+#[specta::specta]
 async fn open_game_mods_folder(game_id: &str, handle: AppHandle) -> Result {
 	handle
 		.app_state()
@@ -121,19 +121,19 @@ async fn open_game_mods_folder(game_id: &str, handle: AppHandle) -> Result {
 }
 
 #[tauri::command]
-// #[specta::specta]
+#[specta::specta]
 async fn open_mods_folder() -> Result {
 	Ok(open::that_detached(paths::installed_mods_path()?)?)
 }
 
 #[tauri::command]
-// #[specta::specta]
+#[specta::specta]
 async fn open_mod_folder(mod_id: &str, handle: AppHandle) -> Result {
 	handle.app_state().local_mods.try_get(mod_id)?.open_folder()
 }
 
 #[tauri::command]
-// #[specta::specta]
+#[specta::specta]
 async fn open_mod_loader_folder(mod_loader_id: &str, handle: AppHandle) -> Result {
 	handle
 		.app_state()
@@ -143,7 +143,7 @@ async fn open_mod_loader_folder(mod_loader_id: &str, handle: AppHandle) -> Resul
 }
 
 #[tauri::command]
-// #[specta::specta]
+#[specta::specta]
 async fn download_mod(mod_id: &str, handle: AppHandle) -> Result {
 	let state = handle.app_state();
 	let remote_mod = state.remote_mods.try_get(mod_id)?;
@@ -160,7 +160,7 @@ async fn download_mod(mod_id: &str, handle: AppHandle) -> Result {
 }
 
 #[tauri::command]
-// #[specta::specta]
+#[specta::specta]
 async fn delete_mod(mod_id: &str, handle: AppHandle) -> Result {
 	let state = handle.app_state();
 	let local_mod = state.local_mods.try_get(mod_id)?;
@@ -176,7 +176,7 @@ async fn delete_mod(mod_id: &str, handle: AppHandle) -> Result {
 }
 
 #[tauri::command]
-// #[specta::specta]
+#[specta::specta]
 async fn start_game(game_id: &str, handle: AppHandle) -> Result {
 	handle
 		.app_state()
@@ -190,7 +190,7 @@ async fn start_game(game_id: &str, handle: AppHandle) -> Result {
 }
 
 #[tauri::command]
-// #[specta::specta]
+#[specta::specta]
 async fn start_game_exe(game_id: &str, handle: AppHandle) -> Result {
 	handle
 		.app_state()
@@ -200,7 +200,7 @@ async fn start_game_exe(game_id: &str, handle: AppHandle) -> Result {
 }
 
 #[tauri::command]
-// #[specta::specta]
+#[specta::specta]
 async fn install_mod(game_id: &str, mod_id: &str, handle: AppHandle) -> Result {
 	let state = handle.app_state();
 
@@ -225,7 +225,7 @@ async fn install_mod(game_id: &str, mod_id: &str, handle: AppHandle) -> Result {
 }
 
 #[tauri::command]
-// #[specta::specta]
+#[specta::specta]
 async fn run_runnable_without_game(mod_id: &str, handle: AppHandle) -> Result {
 	let state = handle.app_state();
 
@@ -241,7 +241,7 @@ async fn run_runnable_without_game(mod_id: &str, handle: AppHandle) -> Result {
 }
 
 #[tauri::command]
-// #[specta::specta]
+#[specta::specta]
 async fn configure_mod(game_id: &str, mod_id: &str, handle: AppHandle) -> Result {
 	let state = handle.app_state();
 
@@ -258,7 +258,7 @@ async fn configure_mod(game_id: &str, mod_id: &str, handle: AppHandle) -> Result
 }
 
 #[tauri::command]
-// #[specta::specta]
+#[specta::specta]
 async fn open_installed_mod_folder(game_id: &str, mod_id: &str, handle: AppHandle) -> Result {
 	let state = handle.app_state();
 
@@ -295,13 +295,13 @@ fn refresh_game_mods_and_exe(game_id: &str, handle: &AppHandle) -> Result {
 }
 
 #[tauri::command]
-// #[specta::specta]
+#[specta::specta]
 async fn refresh_game(game_id: &str, handle: AppHandle) -> Result {
 	refresh_game_mods_and_exe(game_id, &handle)
 }
 
 #[tauri::command]
-// #[specta::specta]
+#[specta::specta]
 async fn uninstall_mod(game_id: &str, mod_id: &str, handle: AppHandle) -> Result {
 	let state = handle.app_state();
 	let mut installed_games = state.installed_games.get_data()?;
@@ -322,7 +322,7 @@ async fn uninstall_mod(game_id: &str, mod_id: &str, handle: AppHandle) -> Result
 }
 
 #[tauri::command]
-// #[specta::specta]
+#[specta::specta]
 async fn uninstall_all_mods(game_id: &str, handle: AppHandle) -> Result {
 	let state = handle.app_state();
 	let game = state.installed_games.try_get(game_id)?;
@@ -503,7 +503,7 @@ async fn update_mods(handle: AppHandle, resources_path: PathBuf) {
 }
 
 #[tauri::command]
-// #[specta::specta]
+#[specta::specta]
 async fn update_data(handle: AppHandle) -> Result {
 	let resources_path = paths::resources_path(&handle)?;
 
@@ -527,7 +527,7 @@ async fn update_data(handle: AppHandle) -> Result {
 }
 
 #[tauri::command]
-// #[specta::specta]
+#[specta::specta]
 async fn add_game(path: PathBuf, handle: AppHandle) -> Result {
 	let state = handle.app_state();
 	let normalized_path = normalize_path(&path);
@@ -558,7 +558,7 @@ async fn add_game(path: PathBuf, handle: AppHandle) -> Result {
 }
 
 #[tauri::command]
-// #[specta::specta]
+#[specta::specta]
 async fn remove_game(game_id: &str, handle: AppHandle) -> Result {
 	let state = handle.app_state();
 	let game = state.installed_games.try_get(game_id)?;
@@ -580,7 +580,7 @@ async fn remove_game(game_id: &str, handle: AppHandle) -> Result {
 }
 
 #[tauri::command]
-// #[specta::specta]
+#[specta::specta]
 async fn run_provider_command(
 	owned_game_id: &str,
 	command_action: &str,
@@ -600,14 +600,14 @@ async fn run_provider_command(
 }
 
 #[tauri::command]
-// #[specta::specta]
+#[specta::specta]
 async fn delete_steam_appinfo_cache() -> Result {
 	let steam_dir = SteamDir::locate()?;
 	steam::appinfo::delete(steam_dir.path())
 }
 
 #[tauri::command]
-// #[specta::specta]
+#[specta::specta]
 async fn frontend_ready() -> Result {
 	analytics::send_event(analytics::Event::StartApp, "").await;
 
@@ -615,7 +615,7 @@ async fn frontend_ready() -> Result {
 }
 
 #[tauri::command]
-// #[specta::specta]
+#[specta::specta]
 async fn open_logs_folder() -> Result {
 	paths::open_logs_folder()?;
 
@@ -623,7 +623,7 @@ async fn open_logs_folder() -> Result {
 }
 
 #[tauri::command]
-// #[specta::specta]
+#[specta::specta]
 async fn dummy_command() -> Result<(InstalledGame, AppEvent, ProviderCommandAction)> {
 	// This command is here just so tauri_specta exports these types.
 	// This should stop being needed once tauri_specta starts supporting events.
@@ -639,7 +639,53 @@ fn main() {
 		// TODO handle Linux.
 	}));
 
-	let tauri_builder = tauri::Builder::default()
+	let invoke_handler = {
+		// You can use `tauri_specta::js::builder` for exporting JS Doc instead of Typescript!`
+		let builder = tauri_specta::ts::builder()
+			.config(
+				specta::ts::ExportConfig::default()
+					.bigint(specta::ts::BigIntExportBehavior::BigInt),
+			)
+			.commands(tauri_specta::collect_commands![
+				dummy_command,
+				update_data,
+				get_installed_games,
+				get_owned_games,
+				get_mod_loaders,
+				open_game_folder,
+				install_mod,
+				configure_mod,
+				open_installed_mod_folder,
+				uninstall_mod,
+				uninstall_all_mods,
+				open_game_mods_folder,
+				start_game,
+				start_game_exe,
+				open_mod_folder,
+				download_mod,
+				run_runnable_without_game,
+				delete_mod,
+				open_mods_folder,
+				add_game,
+				remove_game,
+				delete_steam_appinfo_cache,
+				frontend_ready,
+				get_local_mods,
+				get_remote_mods,
+				get_remote_games,
+				open_mod_loader_folder,
+				refresh_game,
+				open_logs_folder,
+				run_provider_command,
+			]);
+
+		#[cfg(debug_assertions)]
+		let builder = builder.path("../frontend/api/bindings.ts");
+
+		builder.build().unwrap()
+	};
+
+	tauri::Builder::default()
 		.plugin(tauri_plugin_window_state::Builder::default().build())
 		// .plugin(
 		// 	tauri_plugin_log::Builder::default()
@@ -667,43 +713,20 @@ fn main() {
 			}
 
 			Ok(())
+		})
+		.invoke_handler(invoke_handler)
+		.run(tauri::generate_context!())
+		.unwrap_or_else(|error| {
+			#[cfg(target_os = "windows")]
+			if let tauri::Error::Runtime(tauri_runtime::Error::CreateWebview(webview_error)) = error
+			{
+				windows::webview_error_dialog(&webview_error.to_string());
+				return;
+			}
+			#[cfg(target_os = "windows")]
+			windows::error_dialog(&error.to_string());
+			// TODO handle Linux.
 		});
-
-	let (tauri_builder/*, types_result*/) = set_up_api!(
-		tauri_builder,
-		[
-			dummy_command,
-			update_data,
-			get_installed_games,
-			get_owned_games,
-			get_mod_loaders,
-			open_game_folder,
-			install_mod,
-			configure_mod,
-			open_installed_mod_folder,
-			uninstall_mod,
-			uninstall_all_mods,
-			open_game_mods_folder,
-			start_game,
-			start_game_exe,
-			open_mod_folder,
-			download_mod,
-			run_runnable_without_game,
-			delete_mod,
-			open_mods_folder,
-			add_game,
-			remove_game,
-			delete_steam_appinfo_cache,
-			frontend_ready,
-			get_local_mods,
-			get_remote_mods,
-			get_remote_games,
-			open_mod_loader_folder,
-			refresh_game,
-			open_logs_folder,
-			run_provider_command,
-		]
-	);
 
 	// match types_result {
 	// 	Ok(types) => {
@@ -721,18 +744,4 @@ fn main() {
 	// 		error!("Failed to generate api bindings: {err}");
 	// 	}
 	// }
-
-	tauri_builder
-		.run(tauri::generate_context!())
-		.unwrap_or_else(|error| {
-			#[cfg(target_os = "windows")]
-			if let tauri::Error::Runtime(tauri_runtime::Error::CreateWebview(webview_error)) = error
-			{
-				windows::webview_error_dialog(&webview_error.to_string());
-				return;
-			}
-			#[cfg(target_os = "windows")]
-			windows::error_dialog(&error.to_string());
-			// TODO handle Linux.
-		});
 }

@@ -2,7 +2,7 @@ import { Button, Group, Modal, Stack, Text } from "@mantine/core";
 import { IconAppWindowFilled, IconPlaylistAdd } from "@tabler/icons-react";
 import { useCallback, useEffect, useState } from "react";
 import styles from "./installed-games.module.css";
-import { addGame } from "@api/bindings";
+import { commands } from "@api/bindings";
 import { open as openDialog } from "@tauri-apps/plugin-dialog";
 import { useAtomValue } from "jotai";
 import { loadingAtom } from "@hooks/use-data";
@@ -16,7 +16,7 @@ export function AddGame() {
 		setIsOpen(false);
 	}, []);
 
-	const [executeAddGame] = useAsyncCommand(addGame, handleSuccess);
+	const [executeAddGame] = useAsyncCommand(commands.addGame, handleSuccess);
 
 	const handleClick = useCallback(async () => {
 		const result = await openDialog({

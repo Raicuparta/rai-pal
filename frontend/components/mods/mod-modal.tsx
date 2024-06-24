@@ -1,10 +1,5 @@
 import { Group, Modal, Stack } from "@mantine/core";
-import {
-	deleteMod,
-	downloadMod,
-	openModFolder,
-	runRunnableWithoutGame,
-} from "@api/bindings";
+import { commands } from "@api/bindings";
 import { CommandButton } from "@components/command-button";
 import {
 	IconDownload,
@@ -18,6 +13,9 @@ import { UnifiedMod } from "@hooks/use-unified-mods";
 import { ItemName } from "@components/item-name";
 import { getModTitle } from "../../util/game-mod";
 import { DeprecatedBadge } from "./deprecated-badge";
+
+const { deleteMod, downloadMod, openModFolder, runRunnableWithoutGame } =
+	commands;
 
 type Props = {
 	readonly mod: UnifiedMod;
