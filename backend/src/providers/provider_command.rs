@@ -8,7 +8,9 @@ use crate::{
 	Result,
 };
 
-#[derive(serde::Serialize, serde::Deserialize, specta::Type, Clone, PartialEq, Eq, Hash, Debug)]
+#[derive(
+	serde::Serialize, serde::Deserialize, /*specta::Type,*/ Clone, PartialEq, Eq, Hash, Debug,
+)]
 pub enum ProviderCommand {
 	String(String),
 	Path(PathBuf, Vec<String>),

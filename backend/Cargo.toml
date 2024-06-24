@@ -20,8 +20,8 @@ glob = { git = "https://github.com/rust-lang/glob", version = "0.3.1" }
 # Also I made my own fork to remove some annoying prints.
 steamlocate = { git = "https://github.com/Raicuparta/steamlocate-rs", branch = "dev-v2.0" }
 
-specta = "1.0.5"
-tauri-specta = { version = "1.0.2", features = ["typescript"] }
+# specta = "1.0.5"
+# tauri-specta = { version = "1.0.2", features = ["typescript"] }
 serde = { version = "1.0", features = ["derive"] }
 byteorder = "1.5.0"
 tauri = { version = "1.5.2", features = [ "dialog-ask", "dialog-confirm", "dialog-open", "updater", "shell-open", "dialog"] }
