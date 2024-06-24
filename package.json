@@ -47,11 +47,13 @@
     "singleAttributePerLine": true,
     "quoteProps": "as-needed"
   },
-  "packageManager": "pnpm@8.15.1+sha256.245fe901f8e7fa8782d7f17d32b6a83995e2ae03984cb5b62b8949bfdc27c7b5",
   "dependencies": {
     "@tauri-apps/plugin-dialog": "2.0.0-beta.5",
     "@tauri-apps/plugin-process": "2.0.0-beta.5",
     "@tauri-apps/plugin-shell": "2.0.0-beta.6",
     "@tauri-apps/plugin-updater": "2.0.0-beta.5"
+  },
+  "engines": {
+    "node": ">=20.0.0"
   }
 }
