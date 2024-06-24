@@ -20,7 +20,7 @@
     "@mantine/notifications": "^7.4.2",
     "@tabler/icons-react": "^2.46.0",
     "@tauri-apps/api": "^1.5.3",
-    "@tauri-apps/cli": "^1.5.9",
+    "@tauri-apps/cli": "2.0.0-beta.20",
     "@types/react": "^18.2.48",
     "@types/react-dom": "^18.2.18",
     "@typescript-eslint/eslint-plugin": "^6.19.0",
