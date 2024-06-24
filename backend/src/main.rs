@@ -1,52 +1,24 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
-#![feature(future_join)]
 
-use std::{
-	collections::HashMap,
-	path::PathBuf,
-	sync::Mutex,
-};
+use std::{collections::HashMap, path::PathBuf, sync::Mutex};
 
-use app_state::{
-	AppState,
-	DataValue,
-	StateData,
-	StatefulHandle,
-};
-use events::{
-	AppEvent,
-	EventEmitter,
-};
+use app_state::{AppState, DataValue, StateData, StatefulHandle};
+use events::{AppEvent, EventEmitter};
 use installed_game::InstalledGame;
 use local_mod::LocalMod;
 use log::error;
 use maps::TryGettable;
-use mod_loaders::mod_loader::{
-	self,
-	ModLoaderActions,
-};
-use paths::{
-	hash_path,
-	normalize_path,
-};
+use mod_loaders::mod_loader::{self, ModLoaderActions};
+use paths::{hash_path, normalize_path};
 use providers::{
 	manual_provider,
-	provider::{
-		self,
-		ProviderActions,
-	},
+	provider::{self, ProviderActions},
 	provider_command::ProviderCommandAction,
 };
-use result::{
-	Error,
-	Result,
-};
+use result::{Error, Result};
 use steamlocate::SteamDir;
-use tauri::{
-	AppHandle,
-	Manager,
-};
+use tauri::{AppHandle, Manager};
 // use tauri_plugin_log::Target;
 
 mod analytics;
