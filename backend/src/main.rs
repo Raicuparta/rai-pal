@@ -4,7 +4,6 @@
 use std::{collections::HashMap, path::PathBuf, sync::Mutex};
 
 use app_state::{AppState, DataValue, StateData, StatefulHandle};
-use events::{AppEvent, EventEmitter};
 use installed_game::InstalledGame;
 use local_mod::LocalMod;
 use log::error;
@@ -19,6 +18,7 @@ use providers::{
 use result::{Error, Result};
 use steamlocate::SteamDir;
 use tauri::{AppHandle, Manager};
+use tauri_specta::Event;
 // use tauri_plugin_log::Target;
 
 mod analytics;
@@ -84,12 +84,14 @@ async fn get_remote_games(handle: AppHandle) -> Result<remote_game::Map> {
 	handle.app_state().remote_games.get_data()
 }
 
-fn update_state<TData>(
-	event: AppEvent,
+fn update_state<TData, TEvent>(
+	event: TEvent,
 	data: TData,
 	mutex: &Mutex<Option<TData>>,
 	handle: &AppHandle,
-) {
+) where
+	TEvent: tauri_specta::Event + std::clone::Clone + serde::Serialize,
+{
 	if let Ok(mut mutex_guard) = mutex.lock() {
 		*mutex_guard = Some(data);
 	}
@@ -97,7 +99,7 @@ fn update_state<TData>(
 	// Sends a signal to make the frontend request an app state refresh.
 	// I would have preferred to just send the state with the signal,
 	// but it seems like Tauri events are really slow for large data.
-	handle.emit_event(event, ());
+	event.emit(handle);
 }
 
 #[tauri::command]
@@ -184,7 +186,7 @@ async fn start_game(game_id: &str, handle: AppHandle) -> Result {
 		.try_get(game_id)?
 		.start()?;
 
-	handle.emit_event(AppEvent::ExecutedProviderCommand, ());
+	events::ExecutedProviderCommand.emit(&handle);
 
 	Ok(())
 }
@@ -285,7 +287,7 @@ fn refresh_game_mods_and_exe(game_id: &str, handle: &AppHandle) -> Result {
 	game.refresh_executable()?;
 
 	update_state(
-		AppEvent::SyncInstalledGames,
+		events::SyncInstalledGames,
 		installed_games,
 		&handle.app_state().installed_games,
 		handle,
@@ -343,7 +345,7 @@ fn refresh_local_mods(mod_loaders: &mod_loader::Map, handle: &AppHandle) -> loca
 		.collect();
 
 	update_state(
-		AppEvent::SyncLocalMods,
+		events::SyncLocalMods,
 		local_mods.clone(),
 		&handle.app_state().local_mods,
 		handle,
@@ -358,7 +360,8 @@ async fn refresh_remote_mods(mod_loaders: &mod_loader::Map, handle: &AppHandle) 
 	for mod_loader in mod_loaders.values() {
 		for (mod_id, remote_mod) in mod_loader
 			.get_remote_mods(|error| {
-				handle.emit_error(format!("Failed to get remote mods: {error}"));
+				events::Error.emit(&handle);
+				// handle.emit_error(format!("Failed to get remote mods: {error}"));
 			})
 			.await
 		{
@@ -367,7 +370,7 @@ async fn refresh_remote_mods(mod_loaders: &mod_loader::Map, handle: &AppHandle) 
 	}
 
 	update_state(
-		AppEvent::SyncRemoteMods,
+		events::SyncRemoteMods,
 		remote_mods.clone(),
 		&handle.app_state().remote_mods,
 		handle,
@@ -436,7 +439,7 @@ async fn update_installed_games(handle: AppHandle, provider_map: provider::Map) 
 		.collect();
 
 	update_state(
-		AppEvent::SyncInstalledGames,
+		events::SyncInstalledGames,
 		installed_games,
 		&handle.app_state().installed_games,
 		&handle,
@@ -457,7 +460,7 @@ async fn update_owned_games(handle: AppHandle, provider_map: provider::Map) {
 		.collect();
 
 	update_state(
-		AppEvent::SyncOwnedGames,
+		events::SyncOwnedGames,
 		owned_games,
 		&handle.app_state().owned_games,
 		&handle,
@@ -482,7 +485,7 @@ async fn update_remote_games(handle: AppHandle, provider_map: provider::Map) {
 	.collect();
 
 	update_state(
-		AppEvent::SyncRemoteGames,
+		events::SyncRemoteGames,
 		remote_games,
 		&handle.app_state().remote_games,
 		&handle,
@@ -492,7 +495,7 @@ async fn update_remote_games(handle: AppHandle, provider_map: provider::Map) {
 async fn update_mods(handle: AppHandle, resources_path: PathBuf) {
 	let mod_loaders = mod_loader::get_map(&resources_path);
 	update_state(
-		AppEvent::SyncModLoaders,
+		events::SyncModLoaders,
 		mod_loaders.clone(),
 		&handle.app_state().mod_loaders,
 		&handle,
@@ -544,13 +547,13 @@ async fn add_game(path: PathBuf, handle: AppHandle) -> Result {
 	installed_games.insert(game.id.clone(), game);
 
 	update_state(
-		AppEvent::SyncInstalledGames,
+		events::SyncInstalledGames,
 		installed_games,
 		&state.installed_games,
 		&handle,
 	);
 
-	handle.emit_event(AppEvent::GameAdded, game_name.clone());
+	handle.emit_event(events::GameAdded, game_name.clone());
 
 	analytics::send_event(analytics::Event::ManuallyAddGame, &game_name).await;
 
@@ -568,13 +571,13 @@ async fn remove_game(game_id: &str, handle: AppHandle) -> Result {
 	installed_games.remove(game_id);
 
 	update_state(
-		AppEvent::SyncInstalledGames,
+		events::SyncInstalledGames,
 		installed_games,
 		&handle.app_state().installed_games,
 		&handle,
 	);
 
-	handle.emit_event(AppEvent::GameRemoved, game.name);
+	handle.emit_event(events::GameRemoved, game.name);
 
 	Ok(())
 }
@@ -594,7 +597,7 @@ async fn run_provider_command(
 		.try_get(command_action)?
 		.run()?;
 
-	handle.emit_event(AppEvent::ExecutedProviderCommand, ());
+	handle.emit_event(events::ExecutedProviderCommand, ());
 
 	Ok(())
 }
@@ -622,14 +625,6 @@ async fn open_logs_folder() -> Result {
 	Ok(())
 }
 
-#[tauri::command]
-#[specta::specta]
-async fn dummy_command() -> Result<(InstalledGame, AppEvent, ProviderCommandAction)> {
-	// This command is here just so tauri_specta exports these types.
-	// This should stop being needed once tauri_specta starts supporting events.
-	Err(Error::NotImplemented)
-}
-
 fn main() {
 	// Since I'm making all exposed functions async, panics won't crash anything important, I think.
 	// So I can just catch panics here and show a system message with the error.
@@ -639,7 +634,7 @@ fn main() {
 		// TODO handle Linux.
 	}));
 
-	let invoke_handler = {
+	let (invoke_handler, register_events) = {
 		// You can use `tauri_specta::js::builder` for exporting JS Doc instead of Typescript!`
 		let builder = tauri_specta::ts::builder()
 			.config(
@@ -647,7 +642,6 @@ fn main() {
 					.bigint(specta::ts::BigIntExportBehavior::BigInt),
 			)
 			.commands(tauri_specta::collect_commands![
-				dummy_command,
 				update_data,
 				get_installed_games,
 				get_owned_games,
@@ -677,7 +671,8 @@ fn main() {
 				refresh_game,
 				open_logs_folder,
 				run_provider_command,
-			]);
+			])
+			.events(events::collect_events());
 
 		#[cfg(debug_assertions)]
 		let builder = builder.path("../frontend/api/bindings.ts");
@@ -705,9 +700,8 @@ fn main() {
 			remote_mods: Mutex::default(),
 		})
 		.setup(|app| {
-			// This prevents/reduces the white flashbang on app start.
-			// Unfortunately, it will still show the default window color for the system for a bit,
-			// which can some times be white.
+			register_events(app);
+
 			if let Some(window) = app.get_webview_window("main") {
 				window.set_title(&format!("Rai Pal {}", env!("CARGO_PKG_VERSION")))?;
 			}

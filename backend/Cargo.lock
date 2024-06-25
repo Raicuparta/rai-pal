@@ -3174,6 +3174,7 @@ dependencies = [
  "log",
  "open",
  "pelite",
+ "rai-pal-proc-macros",
  "rand 0.8.5",
  "reqwest",
  "rusqlite",
@@ -3198,6 +3199,14 @@ dependencies = [
  "winapi",
  "winreg 0.52.0",
  "zip 0.6.6",
+]
+
+[[package]]
+name = "rai-pal-proc-macros"
+version = "0.1.0"
+dependencies = [
+ "quote",
+ "serde",
 ]
 
 [[package]]

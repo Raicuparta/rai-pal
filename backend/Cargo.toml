@@ -6,6 +6,11 @@ license = "GPL-3.0-or-later"
 repository = "https://github.com/Raicuparta/rai-pal"
 edition = "2021"
 
+[workspace]
+members = [
+    "proc-macros",
+]
+
 [build-dependencies]
 tauri-build = { version = "2.0.0-beta", features = [] }
 
@@ -51,6 +56,7 @@ thiserror = "1.0.50"
 tokio = { version = "1.35.1", features = ["macros"] }
 uuid = { version =  "1.8.0", features = ["v4"] }
 zip = "0.6.6"
+rai-pal-proc-macros = { path = "./proc-macros" }
 
 [target.'cfg(target_os = "linux")'.dependencies]
 webkit2gtk = "2.0.1"

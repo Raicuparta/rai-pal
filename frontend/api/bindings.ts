@@ -4,14 +4,6 @@
          /** user-defined commands **/
 
          export const commands = {
-async dummyCommand() : Promise<Result<[InstalledGame, AppEvent, ProviderCommandAction], Error>> {
-try {
-    return { status: "ok", data: await TAURI_INVOKE("dummy_command") };
-} catch (e) {
-    if(e instanceof Error) throw e;
-    else return { status: "error", error: e  as any };
-}
-},
 async updateData() : Promise<Result<null, Error>> {
 try {
     return { status: "ok", data: await TAURI_INVOKE("update_data") };
@@ -256,7 +248,6 @@ try {
 
 /** user-defined types **/
 
-export type AppEvent = "SyncInstalledGames" | "SyncOwnedGames" | "SyncRemoteGames" | "SyncModLoaders" | "SyncLocalMods" | "SyncRemoteMods" | "ExecutedProviderCommand" | "GameAdded" | "GameRemoved" | "Error"
 export type AppType = "Game" | "Demo"
 export type Architecture = "X64" | "X86"
 export type CommonModData = { id: string; engine: EngineBrand | null; unityBackend: UnityScriptingBackend | null; engineVersionRange: EngineVersionRange | null; loaderId: string }
@@ -278,7 +269,6 @@ export type ModLoaderData = { id: string; path: string; kind: ModKind }
 export type OperatingSystem = "Linux" | "Windows"
 export type OwnedGame = { id: string; provider: ProviderId; name: string; osList: OperatingSystem[]; releaseDate: bigint | null; thumbnailUrl: string | null; gameMode: GameMode | null; appType: AppType | null; providerCommands: { [key in string]: ProviderCommand } }
 export type ProviderCommand = { String: string } | { Path: [string, string[]] }
-export type ProviderCommandAction = "Install" | "ShowInLibrary" | "ShowInStore" | "Start" | "OpenInBrowser"
 export type ProviderId = "Steam" | "Manual" | "Itch" | "Epic" | "Gog" | "Xbox"
 export type RemoteGame = { id: string; engine: GameEngine | null; skipCache: boolean }
 export type RemoteMod = { common: CommonModData; data: RemoteModData }
