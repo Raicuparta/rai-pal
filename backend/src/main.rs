@@ -287,7 +287,7 @@ fn refresh_game_mods_and_exe(game_id: &str, handle: &AppHandle) -> Result {
 	game.refresh_executable()?;
 
 	update_state(
-		events::SyncInstalledGames,
+		events::SyncInstalledGames(installed_games.clone()),
 		installed_games,
 		&handle.app_state().installed_games,
 		handle,
@@ -345,7 +345,7 @@ fn refresh_local_mods(mod_loaders: &mod_loader::Map, handle: &AppHandle) -> loca
 		.collect();
 
 	update_state(
-		events::SyncLocalMods,
+		events::SyncLocalMods(local_mods.clone()),
 		local_mods.clone(),
 		&handle.app_state().local_mods,
 		handle,
@@ -369,7 +369,7 @@ async fn refresh_remote_mods(mod_loaders: &mod_loader::Map, handle: &AppHandle) 
 	}
 
 	update_state(
-		events::SyncRemoteMods,
+		events::SyncRemoteMods(remote_mods.clone()),
 		remote_mods.clone(),
 		&handle.app_state().remote_mods,
 		handle,
@@ -438,7 +438,7 @@ async fn update_installed_games(handle: AppHandle, provider_map: provider::Map) 
 		.collect();
 
 	update_state(
-		events::SyncInstalledGames,
+		events::SyncInstalledGames(installed_games.clone()),
 		installed_games,
 		&handle.app_state().installed_games,
 		&handle,
@@ -459,7 +459,7 @@ async fn update_owned_games(handle: AppHandle, provider_map: provider::Map) {
 		.collect();
 
 	update_state(
-		events::SyncOwnedGames,
+		events::SyncOwnedGames(owned_games.clone()),
 		owned_games,
 		&handle.app_state().owned_games,
 		&handle,
@@ -484,7 +484,7 @@ async fn update_remote_games(handle: AppHandle, provider_map: provider::Map) {
 	.collect();
 
 	update_state(
-		events::SyncRemoteGames,
+		events::SyncRemoteGames(remote_games.clone()),
 		remote_games,
 		&handle.app_state().remote_games,
 		&handle,
@@ -493,8 +493,9 @@ async fn update_remote_games(handle: AppHandle, provider_map: provider::Map) {
 
 async fn update_mods(handle: AppHandle, resources_path: PathBuf) {
 	let mod_loaders = mod_loader::get_map(&resources_path);
+
 	update_state(
-		events::SyncModLoaders,
+		events::SyncModLoaders(mod_loader::get_data_map(&mod_loaders).unwrap()), // TODO handle error.
 		mod_loaders.clone(),
 		&handle.app_state().mod_loaders,
 		&handle,
@@ -546,7 +547,7 @@ async fn add_game(path: PathBuf, handle: AppHandle) -> Result {
 	installed_games.insert(game.id.clone(), game);
 
 	update_state(
-		events::SyncInstalledGames,
+		events::SyncInstalledGames(installed_games.clone()),
 		installed_games,
 		&state.installed_games,
 		&handle,
@@ -570,7 +571,7 @@ async fn remove_game(game_id: &str, handle: AppHandle) -> Result {
 	installed_games.remove(game_id);
 
 	update_state(
-		events::SyncInstalledGames,
+		events::SyncInstalledGames(installed_games.clone()),
 		installed_games,
 		&handle.app_state().installed_games,
 		&handle,

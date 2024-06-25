@@ -6,45 +6,33 @@ import { dataSubscription } from "./use-data-subscription";
 import { useUpdateData } from "./use-update-data";
 import { useAsyncCommand } from "./use-async-command";
 
-const {
-	getInstalledGames,
-	getModLoaders,
-	getOwnedGames,
-	getLocalMods,
-	getRemoteMods,
-	addGame,
-	getRemoteGames,
-} = commands;
+const { addGame } = commands;
 
 export const [installedGamesAtom, useInstalledGamesSubscription] =
-	dataSubscription(events.syncInstalledGames, getInstalledGames, {});
+	dataSubscription(events.syncInstalledGames, {});
 
 export const [modLoadersAtom, useModLoadersSubscription] = dataSubscription(
 	events.syncModLoaders,
-	getModLoaders,
 	{},
 );
 
 export const [localModsAtom, useLocalModsSubscription] = dataSubscription(
 	events.syncLocalMods,
-	getLocalMods,
 	{},
 );
 
 export const [remoteModsAtom, useRemoteModsSubscription] = dataSubscription(
 	events.syncRemoteMods,
-	getRemoteMods,
 	{},
 );
 
 export const [ownedGamesAtom, useOwnedGamesSubscription] = dataSubscription(
 	events.syncOwnedGames,
-	getOwnedGames,
 	{},
 );
 
 export const [remoteGamesAtom, useRemoteGameDataSubscription] =
-	dataSubscription(events.syncRemoteGames, getRemoteGames, {});
+	dataSubscription(events.syncRemoteGames, {});
 
 export const loadingAtom = atom<boolean>(false);
 

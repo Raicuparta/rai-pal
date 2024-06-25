@@ -300,12 +300,12 @@ export type RemoteGame = { id: string; engine: GameEngine | null; skipCache: boo
 export type RemoteMod = { common: CommonModData; data: RemoteModData }
 export type RemoteModData = { title: string; deprecated: boolean; author: string; sourceCode: string; description: string; latestVersion: ModDownload | null }
 export type RunnableModData = { path: string; args: string[] }
-export type SyncInstalledGames = null
-export type SyncLocalMods = null
-export type SyncModLoaders = null
-export type SyncOwnedGames = null
-export type SyncRemoteGames = null
-export type SyncRemoteMods = null
+export type SyncInstalledGames = { [key in string]: InstalledGame }
+export type SyncLocalMods = { [key in string]: LocalMod }
+export type SyncModLoaders = { [key in string]: ModLoaderData }
+export type SyncOwnedGames = { [key in string]: OwnedGame }
+export type SyncRemoteGames = { [key in string]: RemoteGame }
+export type SyncRemoteMods = { [key in string]: RemoteMod }
 export type UnityScriptingBackend = "Il2Cpp" | "Mono"
 
 /** tauri-specta globals **/

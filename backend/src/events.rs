@@ -1,22 +1,28 @@
 use rai_pal_proc_macros::serializable_event;
 
-#[serializable_event]
-pub struct SyncInstalledGames;
+use crate::{
+	installed_game, local_mod,
+	mod_loaders::{self, mod_loader},
+	owned_game, remote_game, remote_mod,
+};
 
 #[serializable_event]
-pub struct SyncOwnedGames;
+pub struct SyncInstalledGames(pub installed_game::Map);
 
 #[serializable_event]
-pub struct SyncRemoteGames;
+pub struct SyncOwnedGames(pub owned_game::Map);
 
 #[serializable_event]
-pub struct SyncModLoaders;
+pub struct SyncRemoteGames(pub remote_game::Map);
 
 #[serializable_event]
-pub struct SyncLocalMods;
+pub struct SyncModLoaders(pub mod_loader::DataMap);
 
 #[serializable_event]
-pub struct SyncRemoteMods;
+pub struct SyncLocalMods(pub local_mod::Map);
+
+#[serializable_event]
+pub struct SyncRemoteMods(pub remote_mod::Map);
 
 #[serializable_event]
 pub struct ExecutedProviderCommand;
