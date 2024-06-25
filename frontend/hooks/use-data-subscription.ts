@@ -1,6 +1,6 @@
-import { AppEvent, Error, Result } from "@api/bindings";
+import { Error, Result } from "@api/bindings";
 import { useSetAtom, atom } from "jotai";
-import { useAppEvent } from "./use-app-event";
+import { AppEvent, useAppEvent } from "./use-app-event";
 
 export function dataSubscription<TData>(
 	event: AppEvent,

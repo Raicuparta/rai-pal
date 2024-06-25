@@ -360,7 +360,7 @@ async fn refresh_remote_mods(mod_loaders: &mod_loader::Map, handle: &AppHandle) 
 	for mod_loader in mod_loaders.values() {
 		for (mod_id, remote_mod) in mod_loader
 			.get_remote_mods(|error| {
-				events::Error(format!("Failed to get remote mods: {error}")).emit(handle);
+				events::ErrorRaised(format!("Failed to get remote mods: {error}")).emit(handle);
 			})
 			.await
 		{

@@ -28,7 +28,7 @@ pub struct GameAdded(pub String);
 pub struct GameRemoved(pub String);
 
 #[serializable_event]
-pub struct Error(pub String);
+pub struct ErrorRaised(pub String);
 
 // pub trait EventEmitter {
 // 	fn emit_event<TPayload: Serialize + Clone>(&self, event: AppEvent, payload: TPayload);
@@ -69,6 +69,6 @@ pub fn collect_events() -> (
 		ExecutedProviderCommand,
 		GameAdded,
 		GameRemoved,
-		Error,
+		ErrorRaised,
 	]
 }

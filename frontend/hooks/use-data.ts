@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { event } from "@tauri-apps/api";
 import { atom } from "jotai";
-import { commands } from "@api/bindings";
+import { commands, events } from "@api/bindings";
 import { dataSubscription } from "./use-data-subscription";
 import { useUpdateData } from "./use-update-data";
 import { useAsyncCommand } from "./use-async-command";
@@ -17,34 +17,34 @@ const {
 } = commands;
 
 export const [installedGamesAtom, useInstalledGamesSubscription] =
-	dataSubscription("SyncInstalledGames", getInstalledGames, {});
+	dataSubscription(events.syncInstalledGames, getInstalledGames, {});
 
 export const [modLoadersAtom, useModLoadersSubscription] = dataSubscription(
-	"SyncModLoaders",
+	events.syncModLoaders,
 	getModLoaders,
 	{},
 );
 
 export const [localModsAtom, useLocalModsSubscription] = dataSubscription(
-	"SyncLocalMods",
+	events.syncLocalMods,
 	getLocalMods,
 	{},
 );
 
 export const [remoteModsAtom, useRemoteModsSubscription] = dataSubscription(
-	"SyncRemoteMods",
+	events.syncRemoteMods,
 	getRemoteMods,
 	{},
 );
 
 export const [ownedGamesAtom, useOwnedGamesSubscription] = dataSubscription(
-	"SyncOwnedGames",
+	events.syncOwnedGames,
 	getOwnedGames,
 	{},
 );
 
 export const [remoteGamesAtom, useRemoteGameDataSubscription] =
-	dataSubscription("SyncRemoteGames", getRemoteGames, {});
+	dataSubscription(events.syncRemoteGames, getRemoteGames, {});
 
 export const loadingAtom = atom<boolean>(false);
 

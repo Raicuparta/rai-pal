@@ -240,7 +240,29 @@ try {
 
          /** user-defined events **/
 
-
+export const events = __makeEvents__<{
+syncInstalledGames: SyncInstalledGames,
+syncOwnedGames: SyncOwnedGames,
+syncRemoteGames: SyncRemoteGames,
+syncModLoaders: SyncModLoaders,
+syncLocalMods: SyncLocalMods,
+syncRemoteMods: SyncRemoteMods,
+executedProviderCommand: ExecutedProviderCommand,
+gameAdded: GameAdded,
+gameRemoved: GameRemoved,
+errorRaised: ErrorRaised
+}>({
+syncInstalledGames: "sync-installed-games",
+syncOwnedGames: "sync-owned-games",
+syncRemoteGames: "sync-remote-games",
+syncModLoaders: "sync-mod-loaders",
+syncLocalMods: "sync-local-mods",
+syncRemoteMods: "sync-remote-mods",
+executedProviderCommand: "executed-provider-command",
+gameAdded: "game-added",
+gameRemoved: "game-removed",
+errorRaised: "error-raised"
+})
 
          /** user-defined statics **/
 
@@ -256,9 +278,13 @@ export type EngineVersion = { numbers: EngineVersionNumbers; suffix: string | nu
 export type EngineVersionNumbers = { major: number; minor: number | null; patch: number | null }
 export type EngineVersionRange = { minimum: EngineVersionNumbers | null; maximum: EngineVersionNumbers | null }
 export type Error = "NotImplemented" | "Io" | "GlobPattern" | "Glob" | "Reqwest" | "Goblin" | "SteamLocate" | "Zip" | "Tauri" | "Json" | "ChronoParse" | "SQLite" | "Env" | "TaskJoin" | "UrlEncode" | "HeaderToStr" | { InvalidBinaryVdfType: number } | { AppDataNotFound: [] } | { PathParseFailure: string } | { PathParentNotFound: string } | { EmptyFile: string } | { AppInfoNotFound: string } | { FailedToParseUnityVersionAsset: string } | { ModInstallInfoInsufficient: [string, string] } | { EmptyStateData: [] } | { FailedToAccessStateData: string } | { FailedToGetGameFromPath: string } | { GameAlreadyAdded: string } | { DataEntryNotFound: string } | { UnityBackendUnknown: string } | { ModDownloadNotAvailable: string } | { RunnableManifestNotFound: string } | { CantRunNonRunnable: string }
+export type ErrorRaised = string
+export type ExecutedProviderCommand = null
+export type GameAdded = string
 export type GameEngine = { brand: EngineBrand; version: EngineVersion | null }
 export type GameExecutable = { path: string; name: string; engine: GameEngine | null; architecture: Architecture | null; operatingSystem: OperatingSystem | null; scriptingBackend: UnityScriptingBackend | null }
 export type GameMode = "VR" | "Flat"
+export type GameRemoved = string
 export type InstalledGame = { id: string; name: string; provider: ProviderId; executable: GameExecutable; installedModVersions: { [key in string]: string }; discriminator: string | null; thumbnailUrl: string | null; ownedGameId: string | null; startCommand: ProviderCommand | null }
 export type LocalMod = { data: LocalModData; common: CommonModData }
 export type LocalModData = { path: string; manifest: Manifest | null }
@@ -274,6 +300,12 @@ export type RemoteGame = { id: string; engine: GameEngine | null; skipCache: boo
 export type RemoteMod = { common: CommonModData; data: RemoteModData }
 export type RemoteModData = { title: string; deprecated: boolean; author: string; sourceCode: string; description: string; latestVersion: ModDownload | null }
 export type RunnableModData = { path: string; args: string[] }
+export type SyncInstalledGames = null
+export type SyncLocalMods = null
+export type SyncModLoaders = null
+export type SyncOwnedGames = null
+export type SyncRemoteGames = null
+export type SyncRemoteMods = null
 export type UnityScriptingBackend = "Il2Cpp" | "Mono"
 
 /** tauri-specta globals **/
