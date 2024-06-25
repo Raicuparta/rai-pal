@@ -3,11 +3,13 @@ use std::{
 	path::{Path, PathBuf},
 };
 
+use rai_pal_proc_macros::serializable_struct;
+
 use crate::{
 	game_engines::{game_engine::EngineBrand, unity::UnityScriptingBackend},
 	game_mod::CommonModData,
 	mod_manifest::{self, Manifest},
-	paths, serializable_enum, serializable_struct, Result,
+	paths, serializable_enum, Result,
 };
 
 serializable_enum!(ModKind {

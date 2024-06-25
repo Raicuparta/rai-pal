@@ -80,8 +80,8 @@ strip = true
 incremental = false
 
 [lints.clippy]
-all = "warn"
-nursery = "warn"
+# all = "warn"
+# nursery = "warn"
 
 # Restriction level lints:
 unwrap_used = "warn"

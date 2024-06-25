@@ -186,7 +186,7 @@ async fn start_game(game_id: &str, handle: AppHandle) -> Result {
 		.try_get(game_id)?
 		.start()?;
 
-	events::ExecutedProviderCommand.emit(&handle);
+	events::ExecutedProviderCommand.emit(&handle)?;
 
 	Ok(())
 }
@@ -360,8 +360,7 @@ async fn refresh_remote_mods(mod_loaders: &mod_loader::Map, handle: &AppHandle) 
 	for mod_loader in mod_loaders.values() {
 		for (mod_id, remote_mod) in mod_loader
 			.get_remote_mods(|error| {
-				events::Error.emit(&handle);
-				// handle.emit_error(format!("Failed to get remote mods: {error}"));
+				events::Error(format!("Failed to get remote mods: {error}")).emit(handle);
 			})
 			.await
 		{
@@ -553,7 +552,7 @@ async fn add_game(path: PathBuf, handle: AppHandle) -> Result {
 		&handle,
 	);
 
-	handle.emit_event(events::GameAdded, game_name.clone());
+	events::GameAdded(game_name.clone()).emit(&handle)?;
 
 	analytics::send_event(analytics::Event::ManuallyAddGame, &game_name).await;
 
@@ -577,7 +576,7 @@ async fn remove_game(game_id: &str, handle: AppHandle) -> Result {
 		&handle,
 	);
 
-	handle.emit_event(events::GameRemoved, game.name);
+	events::GameRemoved(game.name).emit(&handle)?;
 
 	Ok(())
 }
@@ -597,7 +596,7 @@ async fn run_provider_command(
 		.try_get(command_action)?
 		.run()?;
 
-	handle.emit_event(events::ExecutedProviderCommand, ());
+	events::ExecutedProviderCommand.emit(&handle)?;
 
 	Ok(())
 }

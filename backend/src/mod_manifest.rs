@@ -7,7 +7,6 @@ use crate::{
 	game_engines::{game_engine::EngineBrand, unity::UnityScriptingBackend},
 	game_mod::EngineVersionRange,
 	mod_loaders::mod_database::RunnableModData,
-	serializable_struct,
 };
 
 #[serializable_struct]

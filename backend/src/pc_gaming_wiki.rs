@@ -4,7 +4,7 @@ use rai_pal_proc_macros::serializable_struct;
 
 use crate::{
 	game_engines::game_engine::{EngineBrand, EngineVersion, EngineVersionNumbers, GameEngine},
-	serializable_struct, Result,
+	Result,
 };
 
 #[serializable_struct]
@@ -21,7 +21,7 @@ pub struct PCGamingWikiQueryItem {
 }
 
 #[serializable_struct]
-pub struct CGamingWikiQueryResponse {
+pub struct PCGamingWikiQueryResponse {
 	cargoquery: Vec<PCGamingWikiQueryItem>,
 }
 

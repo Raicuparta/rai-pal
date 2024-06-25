@@ -5,13 +5,14 @@ use std::{
 };
 
 use log::error;
+use rai_pal_proc_macros::serializable_struct;
 
 use crate::{
 	game_executable::GameExecutable,
 	mod_manifest, owned_game,
 	paths::{self, glob_path, hash_path},
 	providers::{provider::ProviderId, provider_command::ProviderCommand},
-	serializable_struct, Error, Result,
+	Error, Result,
 };
 
 #[serializable_struct]

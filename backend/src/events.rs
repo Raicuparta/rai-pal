@@ -1,11 +1,4 @@
-use std::fmt::Display;
-
-use log::error;
-use rai_pal_proc_macros::derive_event;
-use serde::{Deserialize, Serialize};
-use tauri::{EventTarget, Manager};
-
-use crate::serializable_event;
+use rai_pal_proc_macros::serializable_event;
 
 #[serializable_event]
 pub struct SyncInstalledGames;
@@ -29,13 +22,13 @@ pub struct SyncRemoteMods;
 pub struct ExecutedProviderCommand;
 
 #[serializable_event]
-pub struct GameAdded;
+pub struct GameAdded(pub String);
 
 #[serializable_event]
-pub struct GameRemoved;
+pub struct GameRemoved(pub String);
 
 #[serializable_event]
-pub struct Error(String);
+pub struct Error(pub String);
 
 // pub trait EventEmitter {
 // 	fn emit_event<TPayload: Serialize + Clone>(&self, event: AppEvent, payload: TPayload);

@@ -16,7 +16,7 @@ use crate::{
 	paths::glob_path,
 	providers::provider_command::ProviderCommand,
 	result::Error,
-	serializable_enum, serializable_struct, Result,
+	serializable_enum, Result,
 };
 
 #[serializable_struct]

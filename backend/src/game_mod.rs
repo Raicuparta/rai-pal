@@ -1,9 +1,8 @@
-use crate::{
-	game_engines::{
-		game_engine::{EngineBrand, EngineVersionNumbers},
-		unity::UnityScriptingBackend,
-	},
-	serializable_struct,
+use rai_pal_proc_macros::serializable_struct;
+
+use crate::game_engines::{
+	game_engine::{EngineBrand, EngineVersionNumbers},
+	unity::UnityScriptingBackend,
 };
 
 #[serializable_struct]

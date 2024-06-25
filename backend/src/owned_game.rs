@@ -10,7 +10,6 @@ use crate::{
 		provider::ProviderId,
 		provider_command::{ProviderCommand, ProviderCommandAction},
 	},
-	serializable_struct,
 };
 
 #[serializable_struct]
