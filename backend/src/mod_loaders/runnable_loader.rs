@@ -1,39 +1,28 @@
 use std::{
-	path::{
-		Path,
-		PathBuf,
-	},
+	path::{Path, PathBuf},
 	process::Command,
 };
 
 use async_trait::async_trait;
 use log::error;
+use rai_pal_proc_macros::serializable_struct;
 
-use super::mod_loader::{
-	ModLoaderActions,
-	ModLoaderData,
-	ModLoaderStatic,
-};
+use super::mod_loader::{ModLoaderActions, ModLoaderData, ModLoaderStatic};
 use crate::{
 	game_mod::CommonModData,
 	installed_game::InstalledGame,
-	local_mod::{
-		self,
-		LocalMod,
-		ModKind,
-	},
+	local_mod::{self, LocalMod, ModKind},
 	mod_manifest,
 	paths::glob_path,
 	providers::provider_command::ProviderCommand,
 	result::Error,
-	serializable_enum,
-	serializable_struct,
-	Result,
+	serializable_enum, serializable_struct, Result,
 };
 
-serializable_struct!(RunnableLoader {
-  pub data: ModLoaderData,
-});
+#[serializable_struct]
+pub struct RunnableLoader {
+	pub data: ModLoaderData,
+}
 
 serializable_enum!(RunnableParameter {
 	ExecutableName,

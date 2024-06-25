@@ -1,33 +1,23 @@
 use std::{
 	fs,
-	path::{
-		Path,
-		PathBuf,
-	},
+	path::{Path, PathBuf},
 };
 
 use async_trait::async_trait;
 use log::error;
+use rai_pal_proc_macros::serializable_struct;
 
-use super::provider::{
-	ProviderActions,
-	ProviderId,
-	ProviderStatic,
-};
+use super::provider::{ProviderActions, ProviderId, ProviderStatic};
 use crate::{
 	installed_game::InstalledGame,
 	owned_game::OwnedGame,
-	paths::{
-		app_data_path,
-		file_name_without_extension,
-	},
+	paths::{app_data_path, file_name_without_extension},
 	remote_game::RemoteGame,
-	serializable_struct,
-	Error,
-	Result,
+	Error, Result,
 };
 
-serializable_struct!(Manual {});
+#[serializable_struct]
+pub struct Manual {}
 
 #[derive(serde::Serialize, serde::Deserialize)]
 struct GamesConfig {

@@ -4,15 +4,17 @@ use std::{
 };
 
 use log::error;
+use rai_pal_proc_macros::serializable_struct;
 
-use crate::{game_engines::game_engine::EngineBrand, serializable_struct, Result};
+use crate::{game_engines::game_engine::EngineBrand, Result};
 
 const STEAM_APP_IDS_URL_BASE: &str = "https://raicuparta.github.io/rai-pal-db/steam-ids";
 
-serializable_struct!(SteamGame {
+#[serializable_struct]
+pub struct SteamGame {
 	pub id: String,
 	pub engine: EngineBrand,
-});
+}
 
 async fn get_list(list_name: &str) -> HashSet<String> {
 	match reqwest::get(format!("{STEAM_APP_IDS_URL_BASE}/{list_name}")).await {

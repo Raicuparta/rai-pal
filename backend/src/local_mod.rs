@@ -1,25 +1,13 @@
 use std::{
 	collections::HashMap,
-	path::{
-		Path,
-		PathBuf,
-	},
+	path::{Path, PathBuf},
 };
 
 use crate::{
-	game_engines::{
-		game_engine::EngineBrand,
-		unity::UnityScriptingBackend,
-	},
+	game_engines::{game_engine::EngineBrand, unity::UnityScriptingBackend},
 	game_mod::CommonModData,
-	mod_manifest::{
-		self,
-		Manifest,
-	},
-	paths,
-	serializable_enum,
-	serializable_struct,
-	Result,
+	mod_manifest::{self, Manifest},
+	paths, serializable_enum, serializable_struct, Result,
 };
 
 serializable_enum!(ModKind {
@@ -27,15 +15,17 @@ serializable_enum!(ModKind {
 	Runnable,
 });
 
-serializable_struct!(LocalModData {
+#[serializable_struct]
+pub struct LocalModData {
 	pub path: PathBuf,
 	pub manifest: Option<Manifest>,
-});
+}
 
-serializable_struct!(LocalMod {
+#[serializable_struct]
+pub struct LocalMod {
 	pub data: LocalModData,
 	pub common: CommonModData,
-});
+}
 
 pub fn get_manifest_path(mod_path: &Path) -> PathBuf {
 	mod_path.join(mod_manifest::Manifest::FILE_NAME)

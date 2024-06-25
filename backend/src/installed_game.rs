@@ -1,33 +1,21 @@
 use std::{
 	collections::HashMap,
-	fs::{self,},
-	path::{
-		Path,
-		PathBuf,
-	},
+	fs::{self},
+	path::{Path, PathBuf},
 };
 
 use log::error;
 
 use crate::{
 	game_executable::GameExecutable,
-	mod_manifest,
-	owned_game,
-	paths::{
-		self,
-		glob_path,
-		hash_path,
-	},
-	providers::{
-		provider::ProviderId,
-		provider_command::ProviderCommand,
-	},
-	serializable_struct,
-	Error,
-	Result,
+	mod_manifest, owned_game,
+	paths::{self, glob_path, hash_path},
+	providers::{provider::ProviderId, provider_command::ProviderCommand},
+	serializable_struct, Error, Result,
 };
 
-serializable_struct!(InstalledGame {
+#[serializable_struct]
+pub struct InstalledGame {
 	pub id: String,
 	pub name: String,
 	pub provider: ProviderId,
@@ -37,7 +25,7 @@ serializable_struct!(InstalledGame {
 	pub thumbnail_url: Option<String>,
 	pub owned_game_id: Option<String>,
 	pub start_command: Option<ProviderCommand>,
-});
+}
 
 pub type Map = HashMap<String, InstalledGame>;
 type InstalledModVersions = HashMap<String, String>;

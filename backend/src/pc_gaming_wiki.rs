@@ -1,35 +1,29 @@
-use lazy_regex::{
-	regex_captures,
-	regex_replace,
-	regex_replace_all,
-};
+use lazy_regex::{regex_captures, regex_replace, regex_replace_all};
 use log::error;
+use rai_pal_proc_macros::serializable_struct;
 
 use crate::{
-	game_engines::game_engine::{
-		EngineBrand,
-		EngineVersion,
-		EngineVersionNumbers,
-		GameEngine,
-	},
-	serializable_struct,
-	Result,
+	game_engines::game_engine::{EngineBrand, EngineVersion, EngineVersionNumbers, GameEngine},
+	serializable_struct, Result,
 };
 
-serializable_struct!(PCGamingWikiTitle {
+#[serializable_struct]
+pub struct PCGamingWikiTitle {
 	#[serde(rename = "Engine")]
 	engine: Option<String>,
 	#[serde(rename = "Build")]
 	build: Option<String>,
-});
+}
 
-serializable_struct!(PCGamingWikiQueryItem {
+#[serializable_struct]
+pub struct PCGamingWikiQueryItem {
 	title: PCGamingWikiTitle,
-});
+}
 
-serializable_struct!(PCGamingWikiQueryResponse {
+#[serializable_struct]
+pub struct CGamingWikiQueryResponse {
 	cargoquery: Vec<PCGamingWikiQueryItem>,
-});
+}
 
 // We could try to parse more version parts here, but I find that engine versions
 // on PCGamingWiki are very commonly outdated. So if we just do major+minor, it's

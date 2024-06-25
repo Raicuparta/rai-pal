@@ -5,23 +5,13 @@ use std::{
 	collections::HashMap,
 	fs,
 	io::BufReader,
-	path::{
-		Path,
-		PathBuf,
-	},
+	path::{Path, PathBuf},
 };
 
-use byteorder::{
-	LittleEndian,
-	ReadBytesExt,
-};
+use byteorder::{LittleEndian, ReadBytesExt};
+use rai_pal_proc_macros::serializable_struct;
 
-use crate::{
-	game_mode::GameMode,
-	serializable_struct,
-	Error,
-	Result,
-};
+use crate::{game_mode::GameMode, Error, Result};
 
 const BIN_NONE: u8 = b'\x00';
 const BIN_STRING: u8 = b'\x01';
@@ -68,7 +58,8 @@ pub fn find_keys<'a>(key_value: &'a KeyValue, keys: &[&str]) -> Option<&'a Value
 	}
 }
 
-serializable_struct!(SteamLaunchOption {
+#[serializable_struct]
+pub struct SteamLaunchOption {
 	pub launch_id: String,
 	pub app_id: u32,
 	pub description: Option<String>,
@@ -78,7 +69,7 @@ serializable_struct!(SteamLaunchOption {
 	pub os_list: Option<String>,
 	pub beta_key: Option<String>,
 	pub os_arch: Option<String>,
-});
+}
 
 impl SteamLaunchOption {
 	pub fn get_game_mode(&self) -> GameMode {

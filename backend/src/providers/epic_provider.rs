@@ -1,10 +1,7 @@
 #![cfg(target_os = "windows")]
 
 use std::{
-	fs::{
-		self,
-		File,
-	},
+	fs::{self, File},
 	io::Read,
 	path::PathBuf,
 };
@@ -12,32 +9,20 @@ use std::{
 use async_trait::async_trait;
 use base64::engine::general_purpose;
 use log::error;
-use winreg::{
-	enums::HKEY_LOCAL_MACHINE,
-	RegKey,
-};
+use rai_pal_proc_macros::serializable_struct;
+use winreg::{enums::HKEY_LOCAL_MACHINE, RegKey};
 
 use super::{
 	provider::ProviderId,
-	provider_command::{
-		ProviderCommand,
-		ProviderCommandAction,
-	},
+	provider_command::{ProviderCommand, ProviderCommandAction},
 };
 use crate::{
 	installed_game::InstalledGame,
 	owned_game::OwnedGame,
 	paths::glob_path,
 	pc_gaming_wiki,
-	provider::{
-		ProviderActions,
-		ProviderStatic,
-	},
-	remote_game::{
-		self,
-		RemoteGame,
-	},
-	serializable_struct,
+	provider::{ProviderActions, ProviderStatic},
+	remote_game::{self, RemoteGame},
 	Result,
 };
 
@@ -78,7 +63,8 @@ impl ProviderStatic for Epic {
 	}
 }
 
-serializable_struct!(EpicManifest {
+#[serializable_struct]
+pub struct EpicManifest {
 	#[serde(rename = "DisplayName")]
 	display_name: String,
 	#[serde(rename = "LaunchExecutable")]
@@ -91,29 +77,35 @@ serializable_struct!(EpicManifest {
 	catalog_item_id: String,
 	#[serde(rename = "AppName")]
 	app_name: String,
-});
+}
 
-serializable_struct!(EpicCatalogCategory { path: String });
+#[serializable_struct]
+pub struct EpicCatalogCategory {
+	path: String,
+}
 
-serializable_struct!(EpicCatalogReleaseInfo {
+#[serializable_struct]
+pub struct EpicCatalogReleaseInfo {
 	app_id: String,
 	platform: Vec<String>,
 	date_added: Option<String>,
-});
+}
 
-serializable_struct!(EpicCatalogImage {
+#[serializable_struct]
+pub struct EpicCatalogImage {
 	height: i32,
 	url: String,
-});
+}
 
-serializable_struct!(EpicCatalogItem {
+#[serializable_struct]
+pub struct EpicCatalogItem {
 	id: String,
 	namespace: String,
 	title: String,
 	categories: Vec<EpicCatalogCategory>,
 	release_info: Vec<EpicCatalogReleaseInfo>,
 	key_images: Vec<EpicCatalogImage>,
-});
+}
 
 impl EpicCatalogItem {
 	fn get_release_date(&self) -> Option<i64> {

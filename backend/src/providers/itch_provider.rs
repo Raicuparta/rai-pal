@@ -1,36 +1,19 @@
-use std::path::{
-	Path,
-	PathBuf,
-};
+use std::path::{Path, PathBuf};
 
 use async_trait::async_trait;
 use chrono::DateTime;
 use log::error;
-use rusqlite::{
-	Connection,
-	OpenFlags,
-};
+use rai_pal_proc_macros::serializable_struct;
+use rusqlite::{Connection, OpenFlags};
 
-use super::provider_command::{
-	ProviderCommand,
-	ProviderCommandAction,
-};
+use super::provider_command::{ProviderCommand, ProviderCommandAction};
 use crate::{
 	installed_game::InstalledGame,
 	owned_game::OwnedGame,
 	pc_gaming_wiki,
-	provider::{
-		ProviderActions,
-		ProviderId,
-		ProviderStatic,
-	},
-	remote_game::{
-		self,
-		RemoteGame,
-	},
-	serializable_struct,
-	Error,
-	Result,
+	provider::{ProviderActions, ProviderId, ProviderStatic},
+	remote_game::{self, RemoteGame},
+	Error, Result,
 };
 
 #[derive(Clone)]
@@ -58,32 +41,39 @@ impl ProviderStatic for Itch {
 	}
 }
 
-serializable_struct!(ItchDatabaseGame {
+#[serializable_struct]
+pub struct ItchDatabaseGame {
 	id: i32,
 	title: String,
 	url: Option<String>,
 	published_at: Option<String>,
-  cover_url: Option<String>,
-});
+	cover_url: Option<String>,
+}
 
-serializable_struct!(ItchDatabaseCave {
+#[serializable_struct]
+pub struct ItchDatabaseCave {
 	id: i32,
 	verdict: Option<ItchDatabaseVerdict>,
 	title: String,
-  cover_url: Option<String>,
-});
+	cover_url: Option<String>,
+}
 
-serializable_struct!(ItchDatabaseVerdict {
+#[serializable_struct]
+pub struct ItchDatabaseVerdict {
 	base_path: PathBuf,
-  candidates: Vec<ItchDatabaseCandidate>
-});
+	candidates: Vec<ItchDatabaseCandidate>,
+}
 
-serializable_struct!(ItchDatabaseCandidate { path: PathBuf });
+#[serializable_struct]
+pub struct ItchDatabaseCandidate {
+	path: PathBuf,
+}
 
-serializable_struct!(ItchDatabase {
+#[serializable_struct]
+pub struct ItchDatabase {
 	games: Vec<ItchDatabaseGame>,
-  caves: Vec<ItchDatabaseCave>,
-});
+	caves: Vec<ItchDatabaseCave>,
+}
 
 #[async_trait]
 impl ProviderActions for Itch {
