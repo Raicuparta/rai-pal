@@ -38,7 +38,10 @@ impl ProviderStatic for Xbox {
 
 #[async_trait]
 impl ProviderActions for Xbox {
-	fn get_installed_games(&self, handle: &AppHandle) -> Result<Vec<InstalledGame>> {
+	fn get_installed_games<TCallback>(&self, callback: TCallback) -> Result<Vec<InstalledGame>>
+	where
+		TCallback: Fn(InstalledGame),
+	{
 		let gaming_services = RegKey::predef(HKEY_LOCAL_MACHINE)
 			.open_subkey("SOFTWARE\\Microsoft\\GamingServices")?;
 		let package_roots = gaming_services.open_subkey("PackageRepository\\Root")?;
@@ -91,8 +94,7 @@ impl ProviderActions for Xbox {
 													&display_name,
 													*Self::ID,
 												) {
-													events::FoundInstalledGame(game.clone())
-														.emit(handle)?;
+													callback(game.clone());
 
 													result.push(game);
 												}

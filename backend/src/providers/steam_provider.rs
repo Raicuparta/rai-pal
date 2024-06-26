@@ -57,7 +57,10 @@ impl ProviderStatic for Steam {
 
 #[async_trait]
 impl ProviderActions for Steam {
-	fn get_installed_games(&self, handle: &AppHandle) -> Result<Vec<InstalledGame>> {
+	fn get_installed_games<TCallback>(&self, callback: TCallback) -> Result<Vec<InstalledGame>>
+	where
+		TCallback: Fn(InstalledGame),
+	{
 		let mut games: Vec<InstalledGame> = Vec::new();
 		let mut used_paths: HashSet<PathBuf> = HashSet::new();
 		let mut used_names: HashSet<String> = HashSet::new();
@@ -105,7 +108,8 @@ impl ProviderActions for Steam {
 										&discriminator_option,
 									));
 
-									events::FoundInstalledGame(game.clone()).emit(handle)?;
+									callback(game.clone());
+									// events::FoundInstalledGame(game.clone()).emit(handle)?;
 
 									games.push(game);
 									used_names.insert(name.clone());

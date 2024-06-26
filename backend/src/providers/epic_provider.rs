@@ -137,7 +137,10 @@ impl EpicCatalogItem {
 
 #[async_trait]
 impl ProviderActions for Epic {
-	fn get_installed_games(&self, handle: &AppHandle) -> Result<Vec<InstalledGame>> {
+	fn get_installed_games<TCallback>(&self, callback: TCallback) -> Result<Vec<InstalledGame>>
+	where
+		TCallback: Fn(InstalledGame),
+	{
 		let manifests = glob_path(&self.app_data_path.join("Manifests").join("*.item"));
 
 		Ok(manifests
@@ -156,7 +159,7 @@ impl ProviderActions for Epic {
 						));
 						game.set_provider_game_id(&manifest.catalog_item_id);
 
-						events::FoundInstalledGame(game.clone()).emit(handle);
+						callback(game.clone());
 
 						Some(game)
 					}

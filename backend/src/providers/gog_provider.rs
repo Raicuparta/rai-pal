@@ -58,7 +58,10 @@ impl ProviderStatic for Gog {
 
 #[async_trait]
 impl ProviderActions for Gog {
-	fn get_installed_games(&self, handle: &AppHandle) -> Result<Vec<InstalledGame>> {
+	fn get_installed_games<TCallback>(&self, callback: TCallback) -> Result<Vec<InstalledGame>>
+	where
+		TCallback: Fn(InstalledGame),
+	{
 		Ok(self
 			.database
 			.iter()
@@ -83,7 +86,7 @@ impl ProviderActions for Gog {
 					game.set_thumbnail_url(image_url);
 				}
 
-				events::FoundInstalledGame(game.clone()).emit(handle);
+				callback(game.clone());
 
 				Some(game)
 			})

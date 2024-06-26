@@ -80,7 +80,10 @@ pub struct ItchDatabase {
 
 #[async_trait]
 impl ProviderActions for Itch {
-	fn get_installed_games(&self, handle: &AppHandle) -> Result<Vec<InstalledGame>> {
+	fn get_installed_games<TCallback>(&self, callback: TCallback) -> Result<Vec<InstalledGame>>
+	where
+		TCallback: Fn(InstalledGame),
+	{
 		Ok(self
 			.database
 			.caves
@@ -94,7 +97,7 @@ impl ProviderActions for Itch {
 				}
 				game.set_provider_game_id(&cave.id.to_string());
 
-				events::FoundInstalledGame(game.clone()).emit(handle);
+				callback(game.clone());
 
 				Some(game)
 			})
