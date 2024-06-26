@@ -6,9 +6,11 @@ use log::error;
 use rai_pal_proc_macros::serializable_struct;
 use rusqlite::{Connection, OpenFlags};
 use tauri::AppHandle;
+use tauri_specta::Event;
 
 use super::provider_command::{ProviderCommand, ProviderCommandAction};
 use crate::{
+	events,
 	installed_game::InstalledGame,
 	owned_game::OwnedGame,
 	pc_gaming_wiki,
@@ -91,6 +93,8 @@ impl ProviderActions for Itch {
 					game.set_thumbnail_url(cover_url);
 				}
 				game.set_provider_game_id(&cave.id.to_string());
+
+				events::FoundInstalledGame(game.clone()).emit(handle);
 
 				Some(game)
 			})

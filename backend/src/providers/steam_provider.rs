@@ -58,8 +58,6 @@ impl ProviderStatic for Steam {
 #[async_trait]
 impl ProviderActions for Steam {
 	fn get_installed_games(&self, handle: &AppHandle) -> Result<Vec<InstalledGame>> {
-		println!("Steam provider get_installed_games");
-
 		let mut games: Vec<InstalledGame> = Vec::new();
 		let mut used_paths: HashSet<PathBuf> = HashSet::new();
 		let mut used_names: HashSet<String> = HashSet::new();

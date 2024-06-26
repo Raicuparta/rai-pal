@@ -8,6 +8,7 @@ use rai_pal_proc_macros::serializable_struct;
 use rusqlite::{Connection, OpenFlags};
 use serde::Deserialize;
 use tauri::AppHandle;
+use tauri_specta::Event;
 use winreg::{enums::HKEY_LOCAL_MACHINE, RegKey};
 
 use super::{
@@ -15,6 +16,7 @@ use super::{
 	provider_command::{ProviderCommand, ProviderCommandAction},
 };
 use crate::{
+	events,
 	installed_game::InstalledGame,
 	owned_game::OwnedGame,
 	paths, pc_gaming_wiki,
@@ -80,6 +82,8 @@ impl ProviderActions for Gog {
 				if let Some(image_url) = &db_entry.image_url {
 					game.set_thumbnail_url(image_url);
 				}
+
+				events::FoundInstalledGame(game.clone()).emit(handle);
 
 				Some(game)
 			})

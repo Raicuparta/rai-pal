@@ -11,6 +11,7 @@ use base64::engine::general_purpose;
 use log::error;
 use rai_pal_proc_macros::serializable_struct;
 use tauri::AppHandle;
+use tauri_specta::Event;
 use winreg::{enums::HKEY_LOCAL_MACHINE, RegKey};
 
 use super::{
@@ -18,6 +19,7 @@ use super::{
 	provider_command::{ProviderCommand, ProviderCommandAction},
 };
 use crate::{
+	events,
 	installed_game::InstalledGame,
 	owned_game::OwnedGame,
 	paths::glob_path,
@@ -153,6 +155,8 @@ impl ProviderActions for Epic {
 							manifest.app_name
 						));
 						game.set_provider_game_id(&manifest.catalog_item_id);
+
+						events::FoundInstalledGame(game.clone()).emit(handle);
 
 						Some(game)
 					}
