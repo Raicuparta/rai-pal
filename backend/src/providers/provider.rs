@@ -43,11 +43,13 @@ pub enum Provider {
 #[async_trait]
 #[enum_dispatch(Provider)]
 pub trait ProviderActions {
-	fn get_installed_games<TCallback>(&self, handle: TCallback) -> Result<Vec<InstalledGame>>
+	fn get_installed_games<TCallback>(&self, callback: TCallback) -> Result<Vec<InstalledGame>>
 	where
 		TCallback: Fn(InstalledGame);
 
-	fn get_owned_games(&self) -> Result<Vec<OwnedGame>>;
+	fn get_owned_games<TCallback>(&self, callback: TCallback) -> Result<Vec<OwnedGame>>
+	where
+		TCallback: Fn(OwnedGame);
 
 	async fn get_remote_games(&self) -> Result<Vec<RemoteGame>>;
 }

@@ -172,7 +172,10 @@ impl ProviderActions for Steam {
 		Ok(remote_games)
 	}
 
-	fn get_owned_games(&self) -> Result<Vec<OwnedGame>> {
+	fn get_owned_games<TCallback>(&self, callback: TCallback) -> Result<Vec<OwnedGame>>
+	where
+		TCallback: Fn(OwnedGame),
+	{
 		let owned_games: Vec<OwnedGame> = self
 			.app_info_file
 			.apps
@@ -270,6 +273,7 @@ impl ProviderActions for Steam {
 					game.guess_app_type();
 				}
 
+				callback(game.clone());
 				Some(game)
 			})
 			.collect();

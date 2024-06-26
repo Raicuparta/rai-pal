@@ -112,7 +112,10 @@ impl ProviderActions for Xbox {
 		Ok(result)
 	}
 
-	fn get_owned_games(&self) -> Result<Vec<OwnedGame>> {
+	fn get_owned_games<TCallback>(&self, callback: TCallback) -> Result<Vec<OwnedGame>>
+	where
+		TCallback: Fn(OwnedGame),
+	{
 		Ok(Vec::default())
 	}
 

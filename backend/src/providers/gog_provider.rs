@@ -93,7 +93,10 @@ impl ProviderActions for Gog {
 			.collect())
 	}
 
-	fn get_owned_games(&self) -> Result<Vec<OwnedGame>> {
+	fn get_owned_games<TCallback>(&self, callback: TCallback) -> Result<Vec<OwnedGame>>
+	where
+		TCallback: Fn(OwnedGame),
+	{
 		Ok(self
 			.database
 			.iter()
@@ -121,6 +124,7 @@ impl ProviderActions for Gog {
 					game.set_release_date(release_date.into());
 				}
 
+				callback(game.clone());
 				game
 			})
 			.collect())

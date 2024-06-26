@@ -99,12 +99,16 @@ impl ProviderActions for Itch {
 
 				callback(game.clone());
 
+				callback(game.clone());
 				Some(game)
 			})
 			.collect())
 	}
 
-	fn get_owned_games(&self) -> Result<Vec<OwnedGame>> {
+	fn get_owned_games<TCallback>(&self, callback: TCallback) -> Result<Vec<OwnedGame>>
+	where
+		TCallback: Fn(OwnedGame),
+	{
 		Ok(self
 			.database
 			.games

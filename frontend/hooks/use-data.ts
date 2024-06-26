@@ -31,10 +31,8 @@ export const [remoteModsAtom, useRemoteModsSubscription] = dataSubscription(
 	{},
 );
 
-export const [ownedGamesAtom, useOwnedGamesSubscription] = dataSubscription(
-	events.syncOwnedGames,
-	{},
-);
+export const [ownedGamesAtom, useOwnedGamesSubscription] =
+	dataPartialSubscription(events.foundOwnedGame, (payload) => payload.id, {});
 
 export const [remoteGamesAtom, useRemoteGameDataSubscription] =
 	dataSubscription(events.syncRemoteGames, {});

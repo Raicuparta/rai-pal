@@ -172,7 +172,10 @@ impl ProviderActions for Epic {
 			.collect())
 	}
 
-	fn get_owned_games(&self) -> Result<Vec<OwnedGame>> {
+	fn get_owned_games<TCallback>(&self, callback: TCallback) -> Result<Vec<OwnedGame>>
+	where
+		TCallback: Fn(OwnedGame),
+	{
 		let owned_games = self.catalog.iter().filter_map(|catalog_item| {
 			if catalog_item
 				.categories
@@ -218,6 +221,7 @@ impl ProviderActions for Epic {
 				game.set_release_date(release_date);
 			}
 
+			callback(game.clone());
 			Some(game)
 		});
 

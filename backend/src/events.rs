@@ -16,6 +16,9 @@ pub struct FoundInstalledGame(pub installed_game::InstalledGame);
 pub struct SyncOwnedGames(pub owned_game::Map);
 
 #[serializable_event]
+pub struct FoundOwnedGame(pub owned_game::OwnedGame);
+
+#[serializable_event]
 pub struct SyncRemoteGames(pub remote_game::Map);
 
 #[serializable_event]
@@ -71,6 +74,7 @@ pub fn collect_events() -> (
 	tauri_specta::collect_events![
 		SyncInstalledGames,
 		FoundInstalledGame,
+		FoundOwnedGame,
 		SyncOwnedGames,
 		SyncRemoteGames,
 		SyncModLoaders,
