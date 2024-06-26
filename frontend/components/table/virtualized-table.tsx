@@ -52,6 +52,7 @@ export function VirtualizedTable<
 				components={tableComponents}
 				itemContent={itemContent}
 				fixedHeaderContent={renderHeaders}
+				defaultItemHeight={33}
 				{...props}
 			/>
 		</TableContainer>

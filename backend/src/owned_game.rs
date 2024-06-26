@@ -23,8 +23,7 @@ pub struct OwnedGame {
 	pub game_mode: Option<GameMode>,
 	pub app_type: Option<AppType>,
 
-	// TODO: the keys for this map should be ProviderCommandAction, but tauri-specta doesn't support that.
-	pub provider_commands: HashMap<String, ProviderCommand>,
+	pub provider_commands: HashMap<ProviderCommandAction, ProviderCommand>,
 }
 
 impl OwnedGame {
@@ -81,8 +80,7 @@ impl OwnedGame {
 		command_action: ProviderCommandAction,
 		command: ProviderCommand,
 	) -> &mut Self {
-		self.provider_commands
-			.insert(command_action.to_string(), command);
+		self.provider_commands.insert(command_action, command);
 		self
 	}
 }

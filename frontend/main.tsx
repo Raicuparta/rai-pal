@@ -17,12 +17,12 @@ commands.frontendReady();
 registerEvents();
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
-	// <React.StrictMode>
-	<MantineProvider
-		defaultColorScheme="dark"
-		theme={theme}
-	>
-		<App />
-	</MantineProvider>,
-	// </React.StrictMode>,
+	<React.StrictMode>
+		<MantineProvider
+			defaultColorScheme="dark"
+			theme={theme}
+		>
+			<App />
+		</MantineProvider>
+	</React.StrictMode>,
 );

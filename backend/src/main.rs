@@ -586,7 +586,7 @@ async fn remove_game(game_id: &str, handle: AppHandle) -> Result {
 #[specta::specta]
 async fn run_provider_command(
 	owned_game_id: &str,
-	command_action: &str,
+	command_action: ProviderCommandAction,
 	handle: AppHandle,
 ) -> Result {
 	handle
@@ -594,7 +594,7 @@ async fn run_provider_command(
 		.owned_games
 		.try_get(owned_game_id)?
 		.provider_commands
-		.try_get(command_action)?
+		.try_get(&command_action)?
 		.run()?;
 
 	events::ExecutedProviderCommand.emit(&handle)?;

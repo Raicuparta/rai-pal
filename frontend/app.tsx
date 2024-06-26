@@ -13,7 +13,7 @@ import {
 	IconTool,
 } from "@tabler/icons-react";
 import { ThanksPage } from "@components/thanks/thanks-page";
-import { useAppUpdater } from "@hooks/use-app-updater";
+// import { useAppUpdater } from "@hooks/use-app-updater";
 
 const pages = {
 	installedGames: {
