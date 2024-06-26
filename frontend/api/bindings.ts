@@ -242,6 +242,7 @@ try {
 
 export const events = __makeEvents__<{
 syncInstalledGames: SyncInstalledGames,
+foundInstalledGame: FoundInstalledGame,
 syncOwnedGames: SyncOwnedGames,
 syncRemoteGames: SyncRemoteGames,
 syncModLoaders: SyncModLoaders,
@@ -253,6 +254,7 @@ gameRemoved: GameRemoved,
 errorRaised: ErrorRaised
 }>({
 syncInstalledGames: "sync-installed-games",
+foundInstalledGame: "found-installed-game",
 syncOwnedGames: "sync-owned-games",
 syncRemoteGames: "sync-remote-games",
 syncModLoaders: "sync-mod-loaders",
@@ -280,6 +282,7 @@ export type EngineVersionRange = { minimum: EngineVersionNumbers | null; maximum
 export type Error = "NotImplemented" | "Io" | "GlobPattern" | "Glob" | "Reqwest" | "Goblin" | "SteamLocate" | "Zip" | "Tauri" | "Json" | "ChronoParse" | "SQLite" | "Env" | "TaskJoin" | "UrlEncode" | "HeaderToStr" | { InvalidBinaryVdfType: number } | { AppDataNotFound: [] } | { PathParseFailure: string } | { PathParentNotFound: string } | { EmptyFile: string } | { AppInfoNotFound: string } | { FailedToParseUnityVersionAsset: string } | { ModInstallInfoInsufficient: [string, string] } | { EmptyStateData: [] } | { FailedToAccessStateData: string } | { FailedToGetGameFromPath: string } | { GameAlreadyAdded: string } | { DataEntryNotFound: string } | { UnityBackendUnknown: string } | { ModDownloadNotAvailable: string } | { RunnableManifestNotFound: string } | { CantRunNonRunnable: string }
 export type ErrorRaised = string
 export type ExecutedProviderCommand = null
+export type FoundInstalledGame = InstalledGame
 export type GameAdded = string
 export type GameEngine = { brand: EngineBrand; version: EngineVersion | null }
 export type GameExecutable = { path: string; name: string; engine: GameEngine | null; architecture: Architecture | null; operatingSystem: OperatingSystem | null; scriptingBackend: UnityScriptingBackend | null }

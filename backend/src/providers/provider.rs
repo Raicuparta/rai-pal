@@ -1,36 +1,20 @@
-use std::{
-	collections::HashMap,
-	fs,
-	path::PathBuf,
-	time::Instant,
-};
+use std::{collections::HashMap, fs, path::PathBuf, time::Instant};
 
 use async_trait::async_trait;
 use enum_dispatch::enum_dispatch;
 use log::error;
+use tauri::AppHandle;
 
 #[cfg(target_os = "windows")]
-use crate::providers::{
-	epic_provider::Epic,
-	gog_provider::Gog,
-	xbox_provider::Xbox,
-};
+use crate::providers::{epic_provider::Epic, gog_provider::Gog, xbox_provider::Xbox};
 use crate::{
 	debug::LoggableInstant,
 	installed_game::InstalledGame,
 	owned_game::OwnedGame,
 	paths,
-	providers::{
-		itch_provider::Itch,
-		manual_provider::Manual,
-		steam_provider::Steam,
-	},
-	remote_game::{
-		self,
-		RemoteGame,
-	},
-	serializable_enum,
-	Result,
+	providers::{itch_provider::Itch, manual_provider::Manual, steam_provider::Steam},
+	remote_game::{self, RemoteGame},
+	serializable_enum, Result,
 };
 
 serializable_enum!(ProviderId {
@@ -59,7 +43,7 @@ pub enum Provider {
 #[async_trait]
 #[enum_dispatch(Provider)]
 pub trait ProviderActions {
-	fn get_installed_games(&self) -> Result<Vec<InstalledGame>>;
+	fn get_installed_games(&self, handle: &AppHandle) -> Result<Vec<InstalledGame>>;
 
 	fn get_owned_games(&self) -> Result<Vec<OwnedGame>>;
 

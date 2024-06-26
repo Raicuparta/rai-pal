@@ -10,6 +10,7 @@ use async_trait::async_trait;
 use base64::engine::general_purpose;
 use log::error;
 use rai_pal_proc_macros::serializable_struct;
+use tauri::AppHandle;
 use winreg::{enums::HKEY_LOCAL_MACHINE, RegKey};
 
 use super::{
@@ -134,7 +135,7 @@ impl EpicCatalogItem {
 
 #[async_trait]
 impl ProviderActions for Epic {
-	fn get_installed_games(&self) -> Result<Vec<InstalledGame>> {
+	fn get_installed_games(&self, handle: &AppHandle) -> Result<Vec<InstalledGame>> {
 		let manifests = glob_path(&self.app_data_path.join("Manifests").join("*.item"));
 
 		Ok(manifests

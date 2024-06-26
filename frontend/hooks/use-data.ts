@@ -5,11 +5,16 @@ import { commands, events } from "@api/bindings";
 import { dataSubscription } from "./use-data-subscription";
 import { useUpdateData } from "./use-update-data";
 import { useAsyncCommand } from "./use-async-command";
+import { dataPartialSubscription } from "./use-data-partial-subscription";
 
 const { addGame } = commands;
 
 export const [installedGamesAtom, useInstalledGamesSubscription] =
-	dataSubscription(events.syncInstalledGames, {});
+	dataPartialSubscription(
+		events.foundInstalledGame,
+		(payload) => payload.id,
+		{},
+	);
 
 export const [modLoadersAtom, useModLoadersSubscription] = dataSubscription(
 	events.syncModLoaders,

@@ -1,3 +1,4 @@
+import { Error, Result } from "@api/bindings";
 import { useSetAtom, atom } from "jotai";
 import { AppEvent, EventPayload, useAppEvent } from "./use-app-event";
 

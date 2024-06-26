@@ -5,6 +5,7 @@ use chrono::DateTime;
 use log::error;
 use rai_pal_proc_macros::serializable_struct;
 use rusqlite::{Connection, OpenFlags};
+use tauri::AppHandle;
 
 use super::provider_command::{ProviderCommand, ProviderCommandAction};
 use crate::{
@@ -77,7 +78,7 @@ pub struct ItchDatabase {
 
 #[async_trait]
 impl ProviderActions for Itch {
-	fn get_installed_games(&self) -> Result<Vec<InstalledGame>> {
+	fn get_installed_games(&self, handle: &AppHandle) -> Result<Vec<InstalledGame>> {
 		Ok(self
 			.database
 			.caves

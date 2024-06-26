@@ -1,45 +1,28 @@
-use std::{
-	collections::HashSet,
-	fs,
-	path::PathBuf,
-};
+use std::{collections::HashSet, fs, path::PathBuf};
 
 use async_trait::async_trait;
 use lazy_regex::BytesRegex;
 use steamlocate::SteamDir;
+use tauri::AppHandle;
+use tauri_specta::Event;
 
 use super::{
 	provider::ProviderId,
-	provider_command::{
-		ProviderCommand,
-		ProviderCommandAction,
-	},
+	provider_command::{ProviderCommand, ProviderCommandAction},
 };
 use crate::{
 	app_type::AppType,
+	events::{self, FoundInstalledGame},
 	game_engines::game_engine::GameEngine,
 	game_executable::OperatingSystem,
 	game_mode::GameMode,
-	installed_game::{
-		self,
-		InstalledGame,
-	},
+	installed_game::{self, InstalledGame},
 	owned_game::OwnedGame,
 	pc_gaming_wiki,
-	provider::{
-		ProviderActions,
-		ProviderStatic,
-	},
-	remote_game::{
-		self,
-		RemoteGame,
-	},
+	provider::{ProviderActions, ProviderStatic},
+	remote_game::{self, RemoteGame},
 	steam::{
-		appinfo::{
-			self,
-			SteamAppInfoFile,
-			SteamLaunchOption,
-		},
+		appinfo::{self, SteamAppInfoFile, SteamLaunchOption},
 		id_lists,
 		thumbnail::get_steam_thumbnail,
 	},
@@ -74,7 +57,9 @@ impl ProviderStatic for Steam {
 
 #[async_trait]
 impl ProviderActions for Steam {
-	fn get_installed_games(&self) -> Result<Vec<InstalledGame>> {
+	fn get_installed_games(&self, handle: &AppHandle) -> Result<Vec<InstalledGame>> {
+		println!("Steam provider get_installed_games");
+
 		let mut games: Vec<InstalledGame> = Vec::new();
 		let mut used_paths: HashSet<PathBuf> = HashSet::new();
 		let mut used_names: HashSet<String> = HashSet::new();
@@ -121,6 +106,8 @@ impl ProviderActions for Steam {
 										&launch_option,
 										&discriminator_option,
 									));
+
+									events::FoundInstalledGame(game.clone()).emit(handle)?;
 
 									games.push(game);
 									used_names.insert(name.clone());

@@ -424,7 +424,7 @@ async fn update_installed_games(handle: AppHandle, provider_map: provider::Map) 
 	let installed_games: HashMap<_, _> = provider_map
 		.iter()
 		.flat_map(|(provider_id, provider)| {
-			let installed_games = provider.get_installed_games();
+			let installed_games = provider.get_installed_games(&handle);
 
 			match installed_games {
 				Ok(games) => games,

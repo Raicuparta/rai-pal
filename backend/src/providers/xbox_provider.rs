@@ -4,11 +4,9 @@ use std::path::PathBuf;
 
 use async_trait::async_trait;
 use log::error;
+use tauri::AppHandle;
 use winreg::{
-	enums::{
-		HKEY_CURRENT_USER,
-		HKEY_LOCAL_MACHINE,
-	},
+	enums::{HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE},
 	RegKey,
 };
 
@@ -17,10 +15,7 @@ use crate::{
 	installed_game::InstalledGame,
 	owned_game::OwnedGame,
 	paths::file_name_without_extension,
-	provider::{
-		ProviderActions,
-		ProviderStatic,
-	},
+	provider::{ProviderActions, ProviderStatic},
 	remote_game::RemoteGame,
 	Result,
 };
@@ -41,7 +36,7 @@ impl ProviderStatic for Xbox {
 
 #[async_trait]
 impl ProviderActions for Xbox {
-	fn get_installed_games(&self) -> Result<Vec<InstalledGame>> {
+	fn get_installed_games(&self, handle: &AppHandle) -> Result<Vec<InstalledGame>> {
 		let gaming_services = RegKey::predef(HKEY_LOCAL_MACHINE)
 			.open_subkey("SOFTWARE\\Microsoft\\GamingServices")?;
 		let package_roots = gaming_services.open_subkey("PackageRepository\\Root")?;

@@ -6,6 +6,7 @@ use std::{
 use async_trait::async_trait;
 use log::error;
 use rai_pal_proc_macros::serializable_struct;
+use tauri::AppHandle;
 
 use super::provider::{ProviderActions, ProviderId, ProviderStatic};
 use crate::{
@@ -37,7 +38,7 @@ impl ProviderStatic for Manual {
 
 #[async_trait]
 impl ProviderActions for Manual {
-	fn get_installed_games(&self) -> Result<Vec<InstalledGame>> {
+	fn get_installed_games(&self, handle: &AppHandle) -> Result<Vec<InstalledGame>> {
 		Ok(read_games_config(&games_config_path()?)
 			.paths
 			.iter()

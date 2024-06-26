@@ -7,6 +7,7 @@ use log::error;
 use rai_pal_proc_macros::serializable_struct;
 use rusqlite::{Connection, OpenFlags};
 use serde::Deserialize;
+use tauri::AppHandle;
 use winreg::{enums::HKEY_LOCAL_MACHINE, RegKey};
 
 use super::{
@@ -55,7 +56,7 @@ impl ProviderStatic for Gog {
 
 #[async_trait]
 impl ProviderActions for Gog {
-	fn get_installed_games(&self) -> Result<Vec<InstalledGame>> {
+	fn get_installed_games(&self, handle: &AppHandle) -> Result<Vec<InstalledGame>> {
 		Ok(self
 			.database
 			.iter()
