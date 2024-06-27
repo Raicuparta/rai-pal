@@ -99,7 +99,6 @@ impl ProviderActions for Itch {
 
 				callback(game.clone());
 
-				callback(game.clone());
 				Some(game)
 			})
 			.collect())
