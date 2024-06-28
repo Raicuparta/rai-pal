@@ -47,7 +47,14 @@
     ],
     "withGlobalTauri": false,
     "security": {
-      "csp": null
+      "csp": {
+        "img-src": [
+          "https://cdn1.epicgames.com",
+          "https://img.itch.zone",
+          "https://cdn.cloudflare.steamstatic.com",
+          "https://images.gog.com"
+        ]
+      }
     }
   }
 }
