@@ -3,7 +3,6 @@ use std::{collections::HashMap, fs, path::PathBuf, time::Instant};
 use async_trait::async_trait;
 use enum_dispatch::enum_dispatch;
 use log::error;
-use tauri::AppHandle;
 
 #[cfg(target_os = "windows")]
 use crate::providers::{epic_provider::Epic, gog_provider::Gog, xbox_provider::Xbox};
@@ -51,7 +50,9 @@ pub trait ProviderActions {
 	where
 		TCallback: Fn(OwnedGame);
 
-	async fn get_remote_games(&self) -> Result<Vec<RemoteGame>>;
+	async fn get_remote_games<TCallback>(&self, callback: TCallback) -> Result<Vec<RemoteGame>>
+	where
+		TCallback: Fn(RemoteGame) + std::marker::Send + std::marker::Sync;
 }
 
 pub trait ProviderStatic: ProviderActions {

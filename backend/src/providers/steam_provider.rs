@@ -3,8 +3,6 @@ use std::{collections::HashSet, fs, path::PathBuf};
 use async_trait::async_trait;
 use lazy_regex::BytesRegex;
 use steamlocate::SteamDir;
-use tauri::AppHandle;
-use tauri_specta::Event;
 
 use super::{
 	provider::ProviderId,
@@ -12,7 +10,6 @@ use super::{
 };
 use crate::{
 	app_type::AppType,
-	events::{self, FoundInstalledGame},
 	game_engines::game_engine::GameEngine,
 	game_executable::OperatingSystem,
 	game_mode::GameMode,
@@ -125,7 +122,10 @@ impl ProviderActions for Steam {
 		Ok(games)
 	}
 
-	async fn get_remote_games(&self) -> Result<Vec<RemoteGame>> {
+	async fn get_remote_games<TCallback>(&self, callback: TCallback) -> Result<Vec<RemoteGame>>
+	where
+		TCallback: Fn(RemoteGame) + std::marker::Send + std::marker::Sync,
+	{
 		let steam_games = id_lists::get().await?;
 
 		let remote_games: Vec<RemoteGame> =
@@ -134,6 +134,7 @@ impl ProviderActions for Steam {
 				let mut remote_game = RemoteGame::new(*Self::ID, &id_string);
 
 				if let Some(cached_remote_game) = self.remote_game_cache.get(&remote_game.id) {
+					callback(cached_remote_game.clone());
 					return Some(cached_remote_game.clone());
 				}
 
@@ -160,6 +161,7 @@ impl ProviderActions for Steam {
 					}
 				}
 
+				callback(remote_game.clone());
 				Some(remote_game)
 			}))
 			.await

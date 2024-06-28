@@ -4,8 +4,6 @@ use std::path::PathBuf;
 
 use async_trait::async_trait;
 use log::error;
-use tauri::AppHandle;
-use tauri_specta::Event;
 use winreg::{
 	enums::{HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE},
 	RegKey,
@@ -13,7 +11,6 @@ use winreg::{
 
 use super::provider::ProviderId;
 use crate::{
-	events,
 	installed_game::InstalledGame,
 	owned_game::OwnedGame,
 	paths::file_name_without_extension,
@@ -112,14 +109,17 @@ impl ProviderActions for Xbox {
 		Ok(result)
 	}
 
-	fn get_owned_games<TCallback>(&self, callback: TCallback) -> Result<Vec<OwnedGame>>
+	fn get_owned_games<TCallback>(&self, _: TCallback) -> Result<Vec<OwnedGame>>
 	where
 		TCallback: Fn(OwnedGame),
 	{
 		Ok(Vec::default())
 	}
 
-	async fn get_remote_games(&self) -> Result<Vec<RemoteGame>> {
+	async fn get_remote_games<TCallback>(&self, _: TCallback) -> Result<Vec<RemoteGame>>
+	where
+		TCallback: Fn(RemoteGame) + std::marker::Send,
+	{
 		Ok(Vec::default())
 	}
 }

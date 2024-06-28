@@ -7,8 +7,6 @@ use log::error;
 use rai_pal_proc_macros::serializable_struct;
 use rusqlite::{Connection, OpenFlags};
 use serde::Deserialize;
-use tauri::AppHandle;
-use tauri_specta::Event;
 use winreg::{enums::HKEY_LOCAL_MACHINE, RegKey};
 
 use super::{
@@ -16,7 +14,6 @@ use super::{
 	provider_command::{ProviderCommand, ProviderCommandAction},
 };
 use crate::{
-	events,
 	installed_game::InstalledGame,
 	owned_game::OwnedGame,
 	paths, pc_gaming_wiki,
@@ -130,12 +127,16 @@ impl ProviderActions for Gog {
 			.collect())
 	}
 
-	async fn get_remote_games(&self) -> Result<Vec<RemoteGame>> {
+	async fn get_remote_games<TCallback>(&self, callback: TCallback) -> Result<Vec<RemoteGame>>
+	where
+		TCallback: Fn(RemoteGame) + std::marker::Send + std::marker::Sync,
+	{
 		let remote_games: Vec<RemoteGame> =
 			futures::future::join_all(self.database.iter().map(|db_entry| async {
 				let mut remote_game = RemoteGame::new(*Self::ID, &db_entry.id);
 
 				if let Some(cached_remote_game) = self.remote_game_cache.get(&remote_game.id) {
+					callback(cached_remote_game.clone());
 					return cached_remote_game.clone();
 				}
 
@@ -151,6 +152,7 @@ impl ProviderActions for Gog {
 					}
 				}
 
+				callback(remote_game.clone());
 				remote_game
 			}))
 			.await;

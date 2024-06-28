@@ -35,7 +35,7 @@ export const [ownedGamesAtom, useOwnedGamesSubscription] =
 	dataPartialSubscription(events.foundOwnedGame, (payload) => payload.id, {});
 
 export const [remoteGamesAtom, useRemoteGameDataSubscription] =
-	dataSubscription(events.syncRemoteGames, {});
+	dataPartialSubscription(events.foundRemoteGame, (payload) => payload.id, {});
 
 export const loadingAtom = atom<boolean>(false);
 

@@ -6,7 +6,6 @@ use std::{
 use async_trait::async_trait;
 use log::error;
 use rai_pal_proc_macros::serializable_struct;
-use tauri::AppHandle;
 
 use super::provider::{ProviderActions, ProviderId, ProviderStatic};
 use crate::{
@@ -46,14 +45,17 @@ impl ProviderActions for Manual {
 			.collect())
 	}
 
-	fn get_owned_games<TCallback>(&self, callback: TCallback) -> Result<Vec<OwnedGame>>
+	fn get_owned_games<TCallback>(&self, _: TCallback) -> Result<Vec<OwnedGame>>
 	where
 		TCallback: Fn(OwnedGame),
 	{
 		Ok(Vec::default())
 	}
 
-	async fn get_remote_games(&self) -> Result<Vec<RemoteGame>> {
+	async fn get_remote_games<TCallback>(&self, _: TCallback) -> Result<Vec<RemoteGame>>
+	where
+		TCallback: Fn(RemoteGame) + std::marker::Send,
+	{
 		Ok(Vec::default())
 	}
 }

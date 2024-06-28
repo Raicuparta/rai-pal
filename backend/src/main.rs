@@ -473,21 +473,22 @@ async fn update_owned_games(handle: AppHandle, provider_map: provider::Map) {
 }
 
 async fn update_remote_games(handle: AppHandle, provider_map: provider::Map) {
-	let remote_games: remote_game::Map = futures::future::join_all(
-		provider_map
-			.values()
-			.map(provider::Provider::get_remote_games),
-	)
-	.await
-	.into_iter()
-	.flat_map(|result| {
-		result.unwrap_or_else(|err| {
-			error!("Failed to get remote games for a provider: {err}");
-			Vec::default()
+	let remote_games: remote_game::Map =
+		futures::future::join_all(provider_map.values().map(|provider| {
+			provider.get_remote_games(|remote_game| {
+				events::FoundRemoteGame(remote_game.clone()).emit(&handle);
+			})
+		}))
+		.await
+		.into_iter()
+		.flat_map(|result| {
+			result.unwrap_or_else(|err| {
+				error!("Failed to get remote games for a provider: {err}");
+				Vec::default()
+			})
 		})
-	})
-	.map(|remote_game| (remote_game.id.clone(), remote_game))
-	.collect();
+		.map(|remote_game| (remote_game.id.clone(), remote_game))
+		.collect();
 
 	update_state(
 		events::SyncRemoteGames(remote_games.clone()),

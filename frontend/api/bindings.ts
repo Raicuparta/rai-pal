@@ -244,6 +244,7 @@ export const events = __makeEvents__<{
 syncInstalledGames: SyncInstalledGames,
 foundInstalledGame: FoundInstalledGame,
 foundOwnedGame: FoundOwnedGame,
+foundRemoteGame: FoundRemoteGame,
 syncOwnedGames: SyncOwnedGames,
 syncRemoteGames: SyncRemoteGames,
 syncModLoaders: SyncModLoaders,
@@ -257,6 +258,7 @@ errorRaised: ErrorRaised
 syncInstalledGames: "sync-installed-games",
 foundInstalledGame: "found-installed-game",
 foundOwnedGame: "found-owned-game",
+foundRemoteGame: "found-remote-game",
 syncOwnedGames: "sync-owned-games",
 syncRemoteGames: "sync-remote-games",
 syncModLoaders: "sync-mod-loaders",
@@ -286,6 +288,7 @@ export type ErrorRaised = string
 export type ExecutedProviderCommand = null
 export type FoundInstalledGame = InstalledGame
 export type FoundOwnedGame = OwnedGame
+export type FoundRemoteGame = RemoteGame
 export type GameAdded = string
 export type GameEngine = { brand: EngineBrand; version: EngineVersion | null }
 export type GameExecutable = { path: string; name: string; engine: GameEngine | null; architecture: Architecture | null; operatingSystem: OperatingSystem | null; scriptingBackend: UnityScriptingBackend | null }

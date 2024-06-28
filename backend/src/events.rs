@@ -1,9 +1,7 @@
 use rai_pal_proc_macros::serializable_event;
 
 use crate::{
-	installed_game, local_mod,
-	mod_loaders::{self, mod_loader},
-	owned_game, remote_game, remote_mod,
+	installed_game, local_mod, mod_loaders::mod_loader, owned_game, remote_game, remote_mod,
 };
 
 #[serializable_event]
@@ -17,6 +15,9 @@ pub struct SyncOwnedGames(pub owned_game::Map);
 
 #[serializable_event]
 pub struct FoundOwnedGame(pub owned_game::OwnedGame);
+
+#[serializable_event]
+pub struct FoundRemoteGame(pub remote_game::RemoteGame);
 
 #[serializable_event]
 pub struct SyncRemoteGames(pub remote_game::Map);
@@ -75,6 +76,7 @@ pub fn collect_events() -> (
 		SyncInstalledGames,
 		FoundInstalledGame,
 		FoundOwnedGame,
+		FoundRemoteGame,
 		SyncOwnedGames,
 		SyncRemoteGames,
 		SyncModLoaders,
