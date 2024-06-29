@@ -18,6 +18,7 @@ use providers::{
 use result::{Error, Result};
 use steamlocate::SteamDir;
 use tauri::{AppHandle, Manager};
+use tauri_plugin_log::{Target, TargetKind};
 use tauri_specta::Event;
 // use tauri_plugin_log::Target;
 
@@ -689,15 +690,22 @@ fn main() {
 
 	tauri::Builder::default()
 		.plugin(tauri_plugin_window_state::Builder::default().build())
-		// .plugin(
-		// 	tauri_plugin_log::Builder::default()
-		// 		.level(log::LevelFilter::Info)
-		// 		.targets([
-		// 			paths::logs_path().map_or(LogTarget::LogDir, LogTarget::Folder),
-		// 			LogTarget::Stdout,
-		// 		])
-		// 		.build(),
-		// )
+		.plugin(
+			tauri_plugin_log::Builder::new()
+				.level(log::LevelFilter::Info)
+				.targets([
+					// TODO: check if all of these are working.
+					Target::new(TargetKind::Stdout),
+					Target::new(paths::logs_path().map_or(
+						TargetKind::LogDir { file_name: None },
+						|logs_path| TargetKind::Folder {
+							path: logs_path,
+							file_name: None,
+						},
+					)),
+				])
+				.build(),
+		)
 		.manage(AppState {
 			installed_games: Mutex::default(),
 			owned_games: Mutex::default(),
