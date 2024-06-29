@@ -37,11 +37,19 @@ impl ProviderStatic for Manual {
 
 #[async_trait]
 impl ProviderActions for Manual {
-	fn get_installed_games<TCallback>(&self, callback: TCallback) -> Result<Vec<InstalledGame>> {
+	fn get_installed_games<TCallback>(&self, callback: TCallback) -> Result<Vec<InstalledGame>>
+	where
+		TCallback: Fn(InstalledGame),
+	{
 		Ok(read_games_config(&games_config_path()?)
 			.paths
 			.iter()
-			.filter_map(|path| create_game_from_path(path))
+			.filter_map(|path| {
+				create_game_from_path(path).map(|game| {
+					callback(game.clone());
+					game
+				})
+			})
 			.collect())
 	}
 

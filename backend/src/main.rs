@@ -4,7 +4,6 @@
 use std::{collections::HashMap, path::PathBuf, sync::Mutex};
 
 use app_state::{AppState, DataValue, StateData, StatefulHandle};
-use installed_game::InstalledGame;
 use local_mod::LocalMod;
 use log::error;
 use maps::TryGettable;

@@ -3,9 +3,6 @@ use std::{env, path::PathBuf, result};
 
 #[derive(Debug, thiserror::Error, specta::Type)]
 pub enum Error {
-	#[error("Not implemented")]
-	NotImplemented,
-
 	#[error(transparent)]
 	Io(
 		#[serde(skip)]

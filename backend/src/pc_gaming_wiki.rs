@@ -135,5 +135,5 @@ pub async fn get_engine_from_game_title(title: &str) -> Result<Option<GameEngine
 	let clean_title = regex_replace_all!(r"[^a-zA-Z0-9]+", &non_demo_title, "%");
 
 	// Finally do the query by page title.
-	get_engine(&format!("Infobox_game._pageName LIKE \"{}\"", clean_title)).await
+	get_engine(&format!("Infobox_game._pageName LIKE \"{clean_title}\"")).await
 }
