@@ -1,3 +1,4 @@
+use core::num;
 use std::{env, path::PathBuf, result};
 
 #[derive(Debug, thiserror::Error, specta::Type)]
@@ -110,8 +111,15 @@ pub enum Error {
 		reqwest::header::ToStrError,
 	),
 
-	#[error("Invalid type `{0}` in binary vdf key/value pair")]
-	InvalidBinaryVdfType(u8),
+	#[error(transparent)]
+	TryFromInt(
+		#[from]
+		#[serde(skip)]
+		num::TryFromIntError,
+	),
+
+	#[error("Invalid type `{0}` in binary vdf for key {1}")]
+	InvalidBinaryVdfType(u8, String),
 
 	#[error("Failed to find app data folder")]
 	AppDataNotFound(),
