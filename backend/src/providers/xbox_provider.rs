@@ -5,10 +5,7 @@ use std::path::PathBuf;
 use async_trait::async_trait;
 use log::error;
 use winreg::{
-	enums::{
-		HKEY_CURRENT_USER,
-		HKEY_LOCAL_MACHINE,
-	},
+	enums::{HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE},
 	RegKey,
 };
 
@@ -17,10 +14,7 @@ use crate::{
 	installed_game::InstalledGame,
 	owned_game::OwnedGame,
 	paths::file_name_without_extension,
-	provider::{
-		ProviderActions,
-		ProviderStatic,
-	},
+	provider::{ProviderActions, ProviderStatic},
 	remote_game::RemoteGame,
 	Result,
 };
@@ -41,7 +35,10 @@ impl ProviderStatic for Xbox {
 
 #[async_trait]
 impl ProviderActions for Xbox {
-	fn get_installed_games(&self) -> Result<Vec<InstalledGame>> {
+	fn get_installed_games<TCallback>(&self, callback: TCallback) -> Result<Vec<InstalledGame>>
+	where
+		TCallback: Fn(InstalledGame),
+	{
 		let gaming_services = RegKey::predef(HKEY_LOCAL_MACHINE)
 			.open_subkey("SOFTWARE\\Microsoft\\GamingServices")?;
 		let package_roots = gaming_services.open_subkey("PackageRepository\\Root")?;
@@ -94,6 +91,8 @@ impl ProviderActions for Xbox {
 													&display_name,
 													*Self::ID,
 												) {
+													callback(game.clone());
+
 													result.push(game);
 												}
 											}
@@ -110,11 +109,17 @@ impl ProviderActions for Xbox {
 		Ok(result)
 	}
 
-	fn get_owned_games(&self) -> Result<Vec<OwnedGame>> {
+	fn get_owned_games<TCallback>(&self, _: TCallback) -> Result<Vec<OwnedGame>>
+	where
+		TCallback: Fn(OwnedGame),
+	{
 		Ok(Vec::default())
 	}
 
-	async fn get_remote_games(&self) -> Result<Vec<RemoteGame>> {
+	async fn get_remote_games<TCallback>(&self, _: TCallback) -> Result<Vec<RemoteGame>>
+	where
+		TCallback: Fn(RemoteGame) + std::marker::Send,
+	{
 		Ok(Vec::default())
 	}
 }

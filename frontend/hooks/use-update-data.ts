@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { useSetAtom } from "jotai";
-import { updateData } from "@api/bindings";
+import { commands } from "@api/bindings";
 import { loadingAtom } from "./use-data";
 import { showAppNotification } from "@components/app-notifications";
 
@@ -9,8 +9,10 @@ export function useUpdateData() {
 
 	const updateAppData = useCallback(() => {
 		setIsLoading(true);
-		updateData()
+		commands
+			.updateData()
 			.catch((error) => {
+				// TODO: handle error via Result.
 				showAppNotification(`Error finding games: ${error}`, "error");
 			})
 			.finally(() => setIsLoading(false));

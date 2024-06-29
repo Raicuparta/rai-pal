@@ -1,47 +1,41 @@
 import { useEffect } from "react";
-import { addGame, getRemoteGames } from "@api/bindings";
 import { event } from "@tauri-apps/api";
 import { atom } from "jotai";
-import {
-	getInstalledGames,
-	getModLoaders,
-	getOwnedGames,
-	getLocalMods,
-	getRemoteMods,
-} from "@api/bindings";
+import { commands, events } from "@api/bindings";
 import { dataSubscription } from "./use-data-subscription";
 import { useUpdateData } from "./use-update-data";
 import { useAsyncCommand } from "./use-async-command";
+import { dataPartialSubscription } from "./use-data-partial-subscription";
+
+const { addGame } = commands;
 
 export const [installedGamesAtom, useInstalledGamesSubscription] =
-	dataSubscription("SyncInstalledGames", getInstalledGames, {});
+	dataPartialSubscription(
+		events.foundInstalledGame,
+		(payload) => payload.id,
+		{},
+	);
 
 export const [modLoadersAtom, useModLoadersSubscription] = dataSubscription(
-	"SyncModLoaders",
-	getModLoaders,
+	events.syncModLoaders,
 	{},
 );
 
 export const [localModsAtom, useLocalModsSubscription] = dataSubscription(
-	"SyncLocalMods",
-	getLocalMods,
+	events.syncLocalMods,
 	{},
 );
 
 export const [remoteModsAtom, useRemoteModsSubscription] = dataSubscription(
-	"SyncRemoteMods",
-	getRemoteMods,
+	events.syncRemoteMods,
 	{},
 );
 
-export const [ownedGamesAtom, useOwnedGamesSubscription] = dataSubscription(
-	"SyncOwnedGames",
-	getOwnedGames,
-	{},
-);
+export const [ownedGamesAtom, useOwnedGamesSubscription] =
+	dataPartialSubscription(events.foundOwnedGame, (payload) => payload.id, {});
 
 export const [remoteGamesAtom, useRemoteGameDataSubscription] =
-	dataSubscription("SyncRemoteGames", getRemoteGames, {});
+	dataPartialSubscription(events.foundRemoteGame, (payload) => payload.id, {});
 
 export const loadingAtom = atom<boolean>(false);
 
@@ -59,7 +53,7 @@ export function useData() {
 
 	useEffect(() => {
 		const unlistenPromise = event.listen<string[]>(
-			event.TauriEvent.WINDOW_FILE_DROP,
+			event.TauriEvent.DROP,
 			(event) => {
 				if (event.payload.length > 0) {
 					executeAddGame(event.payload[0]);

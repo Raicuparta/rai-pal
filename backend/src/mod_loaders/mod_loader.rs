@@ -1,51 +1,33 @@
 use std::{
 	collections::HashMap,
-	fs::{
-		self,
-		File,
-	},
-	path::{
-		Path,
-		PathBuf,
-	},
+	fs::{self, File},
+	path::{Path, PathBuf},
 };
 
 use async_trait::async_trait;
 use enum_dispatch::enum_dispatch;
 use log::error;
+use rai_pal_proc_macros::serializable_struct;
 use zip::ZipArchive;
 
-use super::{
-	bepinex::BepInEx,
-	mod_database,
-	runnable_loader::RunnableLoader,
-};
+use super::{bepinex::BepInEx, mod_database, runnable_loader::RunnableLoader};
 use crate::{
 	files,
 	game_mod::CommonModData,
 	installed_game::InstalledGame,
-	local_mod::{
-		self,
-		LocalMod,
-		ModKind,
-	},
+	local_mod::{self, LocalMod, ModKind},
 	mod_loaders::mod_database::ModDatabase,
-	mod_manifest,
-	paths,
-	remote_mod::{
-		RemoteMod,
-		RemoteModData,
-	},
-	serializable_struct,
-	Error,
-	Result,
+	mod_manifest, paths,
+	remote_mod::{RemoteMod, RemoteModData},
+	Error, Result,
 };
 
-serializable_struct!(ModLoaderData {
+#[serializable_struct]
+pub struct ModLoaderData {
 	pub id: String,
 	pub path: PathBuf,
 	pub kind: ModKind,
-});
+}
 
 #[enum_dispatch]
 #[derive(Clone)]
@@ -146,7 +128,7 @@ pub trait ModLoaderActions {
 
 			fs::create_dir_all(&downloads_path)?;
 
-			let zip_path = downloads_path.join(format!("{}.zip", mod_id));
+			let zip_path = downloads_path.join(format!("{mod_id}.zip"));
 
 			// TODO Stream to disk instead of keeping it all in memory.
 			fs::write(&zip_path, response.bytes().await?)?;

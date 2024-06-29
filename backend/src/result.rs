@@ -1,64 +1,122 @@
-use std::{
-	env,
-	path::PathBuf,
-	result,
-};
+use core::num;
+use std::{env, path::PathBuf, result};
 
-#[derive(Debug, thiserror::Error)]
+#[derive(Debug, thiserror::Error, specta::Type)]
 pub enum Error {
-	#[error("Not implemented")]
-	NotImplemented,
+	#[error(transparent)]
+	Io(
+		#[serde(skip)]
+		#[from]
+		std::io::Error,
+	),
 
 	#[error(transparent)]
-	Io(#[from] std::io::Error),
+	GlobPattern(
+		#[serde(skip)]
+		#[from]
+		glob::PatternError,
+	),
 
 	#[error(transparent)]
-	GlobPattern(#[from] glob::PatternError),
+	Glob(
+		#[from]
+		#[serde(skip)]
+		glob::GlobError,
+	),
 
 	#[error(transparent)]
-	Glob(#[from] glob::GlobError),
+	Reqwest(
+		#[from]
+		#[serde(skip)]
+		reqwest::Error,
+	),
 
 	#[error(transparent)]
-	Reqwest(#[from] reqwest::Error),
-
-	#[error(transparent)]
-	Goblin(#[from] goblin::error::Error),
+	Goblin(
+		#[from]
+		#[serde(skip)]
+		goblin::error::Error,
+	),
 
 	#[error("Failed to find Steam. **Is Steam installed**? ({0})")]
-	SteamLocate(#[from] steamlocate::Error),
+	SteamLocate(
+		#[from]
+		#[serde(skip)]
+		steamlocate::Error,
+	),
 
 	#[error(transparent)]
-	Zip(#[from] zip::result::ZipError),
+	Zip(
+		#[from]
+		#[serde(skip)]
+		zip::result::ZipError,
+	),
 
 	#[error(transparent)]
-	Tauri(#[from] tauri::Error),
+	Tauri(
+		#[from]
+		#[serde(skip)]
+		tauri::Error,
+	),
 
 	#[error(transparent)]
-	Json(#[from] serde_json::Error),
+	Json(
+		#[from]
+		#[serde(skip)]
+		serde_json::Error,
+	),
 
 	#[error(transparent)]
-	ChronoParse(#[from] chrono::ParseError),
+	ChronoParse(
+		#[from]
+		#[serde(skip)]
+		chrono::ParseError,
+	),
 
 	#[error(transparent)]
-	SQLite(#[from] rusqlite::Error),
+	SQLite(
+		#[from]
+		#[serde(skip)]
+		rusqlite::Error,
+	),
 
 	#[error(transparent)]
-	Env(#[from] env::VarError),
+	Env(
+		#[from]
+		#[serde(skip)]
+		env::VarError,
+	),
 
 	#[error(transparent)]
-	TaskJoin(#[from] tokio::task::JoinError),
+	TaskJoin(
+		#[from]
+		#[serde(skip)]
+		tokio::task::JoinError,
+	),
 
 	#[error(transparent)]
-	UrlEncode(#[from] serde_urlencoded::ser::Error),
+	UrlEncode(
+		#[from]
+		#[serde(skip)]
+		serde_urlencoded::ser::Error,
+	),
 
 	#[error(transparent)]
-	HeaderToStr(#[from] reqwest::header::ToStrError),
+	HeaderToStr(
+		#[from]
+		#[serde(skip)]
+		reqwest::header::ToStrError,
+	),
 
-	#[error("Invalid type `{0}` in binary vdf key/value pair")]
-	InvalidBinaryVdfType(u8),
+	#[error(transparent)]
+	TryFromInt(
+		#[from]
+		#[serde(skip)]
+		num::TryFromIntError,
+	),
 
-	#[error("Failed to find Rai Pal resources folder")]
-	ResourcesNotFound(),
+	#[error("Invalid type `{0}` in binary vdf for key {1}")]
+	InvalidBinaryVdfType(u8, String),
 
 	#[error("Failed to find app data folder")]
 	AppDataNotFound(),

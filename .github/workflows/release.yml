@@ -19,8 +19,6 @@ jobs:
 
       - name: setup node
         uses: actions/setup-node@v3
-        with:
-          node-version: 16
 
       - name: install Rust stable
         uses: dtolnay/rust-toolchain@stable
@@ -30,27 +28,21 @@ jobs:
         with:
           workspaces: "./backend -> target"
 
-      - uses: pnpm/action-setup@v2
-        name: Install pnpm
-        with:
-          version: 8
-          run_install: false
-
-      - name: Get pnpm store directory
+      - name: Get npm store directory
         shell: bash
         run: |
-          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+          echo "STORE_PATH=$(npm store path --silent)" >> $GITHUB_ENV
 
       - uses: actions/cache@v3
-        name: Setup pnpm cache
+        name: Setup npm cache
         with:
           path: ${{ env.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          key: ${{ runner.os }}-npm-store-${{ hashFiles('**/package.lock.json') }}
           restore-keys: |
-            ${{ runner.os }}-pnpm-store-
+            ${{ runner.os }}-npm-store-
 
       - name: Install frontend dependencies
-        run: pnpm install
+        run: npm install
 
       - name: Build
         id: build

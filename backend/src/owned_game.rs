@@ -1,7 +1,6 @@
-use std::collections::{
-	HashMap,
-	HashSet,
-};
+use std::collections::{HashMap, HashSet};
+
+use rai_pal_proc_macros::serializable_struct;
 
 use crate::{
 	app_type::AppType,
@@ -9,15 +8,12 @@ use crate::{
 	game_mode::GameMode,
 	providers::{
 		provider::ProviderId,
-		provider_command::{
-			ProviderCommand,
-			ProviderCommandAction,
-		},
+		provider_command::{ProviderCommand, ProviderCommandAction},
 	},
-	serializable_struct,
 };
 
-serializable_struct!(OwnedGame {
+#[serializable_struct]
+pub struct OwnedGame {
 	pub id: String,
 	pub provider: ProviderId,
 	pub name: String,
@@ -27,9 +23,8 @@ serializable_struct!(OwnedGame {
 	pub game_mode: Option<GameMode>,
 	pub app_type: Option<AppType>,
 
-	// TODO: the keys for this map should be ProviderCommandAction, but tauri-specta doesn't support that.
-	pub provider_commands: HashMap<String, ProviderCommand>,
-});
+	pub provider_commands: HashMap<ProviderCommandAction, ProviderCommand>,
+}
 
 impl OwnedGame {
 	pub fn new(provider_game_id: &str, provider: ProviderId, name: &str) -> Self {
@@ -85,8 +80,7 @@ impl OwnedGame {
 		command_action: ProviderCommandAction,
 		command: ProviderCommand,
 	) -> &mut Self {
-		self.provider_commands
-			.insert(command_action.to_string(), command);
+		self.provider_commands.insert(command_action, command);
 		self
 	}
 }
