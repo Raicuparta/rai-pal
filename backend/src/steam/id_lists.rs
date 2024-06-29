@@ -1,7 +1,4 @@
-use std::{
-	collections::{HashMap, HashSet},
-	future,
-};
+use std::collections::{HashMap, HashSet};
 
 use log::error;
 use rai_pal_proc_macros::serializable_struct;

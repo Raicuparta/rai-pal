@@ -28,7 +28,7 @@ use crate::{
 
 #[derive(Clone)]
 pub struct Steam {
-	steam_dir: SteamDir,
+	directory: SteamDir,
 	app_info_file: SteamAppInfoFile,
 	remote_game_cache: remote_game::Map,
 }
@@ -45,7 +45,7 @@ impl ProviderStatic for Steam {
 		let remote_game_cache = Self::try_get_remote_game_cache();
 
 		Ok(Self {
-			steam_dir,
+			directory: steam_dir,
 			app_info_file,
 			remote_game_cache,
 		})
@@ -62,7 +62,7 @@ impl ProviderActions for Steam {
 		let mut used_paths: HashSet<PathBuf> = HashSet::new();
 		let mut used_names: HashSet<String> = HashSet::new();
 
-		for library in (self.steam_dir.libraries()?).flatten() {
+		for library in (self.directory.libraries()?).flatten() {
 			for app in library.apps().flatten() {
 				if let Some(app_info) = self.app_info_file.apps.get(&app.app_id) {
 					let sorted_launch_options = {
@@ -206,7 +206,7 @@ impl ProviderActions for Steam {
 				// appinfo.vdf is also still needed since most of the game data we want is there, so we can't just read everything from assets.vdf.
 				let owned = app_info.is_free
 					|| fs::read(
-						self.steam_dir
+						self.directory
 							.path()
 							.join("appcache/librarycache/assets.vdf"),
 					)

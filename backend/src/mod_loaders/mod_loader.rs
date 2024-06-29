@@ -128,7 +128,7 @@ pub trait ModLoaderActions {
 
 			fs::create_dir_all(&downloads_path)?;
 
-			let zip_path = downloads_path.join(format!("{}.zip", mod_id));
+			let zip_path = downloads_path.join(format!("{mod_id}.zip"));
 
 			// TODO Stream to disk instead of keeping it all in memory.
 			fs::write(&zip_path, response.bytes().await?)?;
