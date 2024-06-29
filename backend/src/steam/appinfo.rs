@@ -308,7 +308,7 @@ fn read_kv<R: std::io::Read>(reader: &mut R, alt_format: bool) -> Result<KeyValu
 			let val = reader.read_f32::<LittleEndian>()?;
 			node.insert(key, ValueType::Float32(val));
 		} else {
-			return Err(Error::InvalidBinaryVdfType(t));
+			return Err(Error::InvalidBinaryVdfType(t, key.clone()));
 		}
 	}
 }
