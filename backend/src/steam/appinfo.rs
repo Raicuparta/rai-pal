@@ -123,7 +123,7 @@ impl SteamAppInfoFile {
 		let keys = if is_new_version {
 			let key_list_address = reader.read_u64::<LittleEndian>()?;
 
-			let position_before_jump = reader.seek(SeekFrom::Current(0))?;
+			let position_before_jump = reader.stream_position()?;
 
 			// This new version of appinfo has all the keyvalue keys at the end of the file,
 			// starting at the address given at the start.
@@ -325,8 +325,16 @@ fn read_kv<R: std::io::Read>(
 		}
 
 		let key = if let Some(keys) = keys_option {
-			let key_index = reader.read_i32::<LittleEndian>()?;
-			keys.get(usize::try_from(key_index)?).unwrap().clone()
+			let key_index = usize::try_from(reader.read_i32::<LittleEndian>()?)?;
+			keys.get(key_index).cloned().unwrap_or_else(|| {
+				let fallback_key = format!("APPINFO_FALLBACK_{key_index}");
+				log::warn!(
+					"Failed to find a Steam appinfo key at index {}. Falling back to {}",
+					key_index,
+					fallback_key
+				);
+				fallback_key
+			})
 		} else {
 			read_string(reader, false)?
 		};
