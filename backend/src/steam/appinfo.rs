@@ -38,24 +38,25 @@ pub enum ValueType {
 	KeyValue(KeyValue),
 }
 
-type KeyValue = HashMap<String, ValueType>;
+type KeyValue = HashMap<i32, ValueType>;
 
 // Recursively search for the specified sequence of keys in the key-value data.
 // The order of the keys dictates the hierarchy, with all except the last having
 // to be a Value::KeyValueType.
 pub fn find_keys<'a>(key_value: &'a KeyValue, keys: &[&str]) -> Option<&'a ValueType> {
-	if keys.is_empty() {
-		return None;
-	}
+	return None;
+	// if keys.is_empty() {
+	// 	return None;
+	// }
 
-	let value = key_value.get(*keys.first()?);
-	if keys.len() == 1 {
-		value
-	} else if let Some(ValueType::KeyValue(child_key_value)) = value {
-		find_keys(child_key_value, &keys[1..])
-	} else {
-		None
-	}
+	// let value = key_value.get(*keys.first()?);
+	// if keys.len() == 1 {
+	// 	value
+	// } else if let Some(ValueType::KeyValue(child_key_value)) = value {
+	// 	find_keys(child_key_value, &keys[1..])
+	// } else {
+	// 	None
+	// }
 }
 
 #[serializable_struct]
@@ -115,6 +116,7 @@ impl SteamAppInfoFile {
 	pub fn load<R: std::io::Read>(reader: &mut R) -> Result<Self> {
 		let version = reader.read_u32::<LittleEndian>()?;
 		let universe = reader.read_u32::<LittleEndian>()?;
+		let some_thing = reader.read_u64::<LittleEndian>()?;
 
 		let mut appinfo = Self {
 			universe,
@@ -124,22 +126,32 @@ impl SteamAppInfoFile {
 
 		loop {
 			let app_id = reader.read_u32::<LittleEndian>()?;
+			log::info!("Reading Steam app_id: {}", app_id);
+
 			if app_id == 0 {
 				break;
 			}
 
 			let size = reader.read_u32::<LittleEndian>()?;
+			log::info!("Reading Steam size: {}", size);
 			let state = reader.read_u32::<LittleEndian>()?;
+			log::info!("Reading Steam state: {}", state);
 			let last_update = reader.read_u32::<LittleEndian>()?;
+			log::info!("Reading Steam last_update: {}", last_update);
 			let access_token = reader.read_u64::<LittleEndian>()?;
+			log::info!("Reading Steam access_token: {}", access_token);
 
 			let mut checksum_txt: [u8; 20] = [0; 20];
 			reader.read_exact(&mut checksum_txt)?;
 
 			let change_number = reader.read_u32::<LittleEndian>()?;
+			log::info!("Reading Steam change_number: {}", change_number);
 
 			let mut checksum_bin: [u8; 20] = [0; 20];
 			reader.read_exact(&mut checksum_bin)?;
+
+			// let some_pre_kv_thing = reader.read_u64::<LittleEndian>()?;
+			// log::info!("Reading Steam some_pre_kv_thing: {}", some_pre_kv_thing);
 
 			let key_values = read_kv(reader, false)?;
 
@@ -278,7 +290,9 @@ fn read_kv<R: std::io::Read>(reader: &mut R, alt_format: bool) -> Result<KeyValu
 			return Ok(node);
 		}
 
-		let key = read_string(reader, false)?;
+		let key = reader.read_i32::<LittleEndian>()?;
+		// log::info!("> KV Reading Steam key: {}", key.clone());
+		let key_clone = key.clone();
 
 		if t == BIN_NONE {
 			let subnode = read_kv(reader, alt_format)?;
@@ -308,7 +322,9 @@ fn read_kv<R: std::io::Read>(reader: &mut R, alt_format: bool) -> Result<KeyValu
 			let val = reader.read_f32::<LittleEndian>()?;
 			node.insert(key, ValueType::Float32(val));
 		} else {
-			return Err(Error::InvalidBinaryVdfType(t, key.clone()));
+			let s = read_string(reader, false)?;
+			node.insert(key, ValueType::String(s));
+			return Err(Error::InvalidBinaryVdfType(t, key_clone.to_string()));
 		}
 	}
 }
