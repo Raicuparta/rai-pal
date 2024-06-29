@@ -1,3 +1,4 @@
+use core::num;
 use std::{env, path::PathBuf, result};
 
 #[derive(Debug, thiserror::Error, specta::Type)]
@@ -108,6 +109,13 @@ pub enum Error {
 		#[from]
 		#[serde(skip)]
 		reqwest::header::ToStrError,
+	),
+
+	#[error(transparent)]
+	TryFromInt(
+		#[from]
+		#[serde(skip)]
+		num::TryFromIntError,
 	),
 
 	#[error("Invalid type `{0}` in binary vdf for key {1}")]
