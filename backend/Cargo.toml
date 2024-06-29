@@ -83,9 +83,9 @@ strip = true
 all = { level = "warn", priority = -1 }
 nursery = { level = "warn", priority = -1 }
 pedantic = { level = "warn", priority = -1 }
+restriction = { level = "allow", priority = -1 }
 
 # Restriction level lints:
-allow_attributes_without_reason = "warn"
 as_conversions = "warn"
 as_underscore = "warn"
 box_collection = "warn"

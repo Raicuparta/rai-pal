@@ -25,6 +25,7 @@ const BIN_END: u8 = b'\x08';
 const BIN_INT64: u8 = b'\x0A';
 const BIN_END_ALT: u8 = b'\x0B';
 
+#[allow(dead_code)] // Some unused fields inside the types, keeping them for future reference.
 #[derive(Debug)]
 pub enum ValueType {
 	String(String),
@@ -84,13 +85,6 @@ impl SteamLaunchOption {
 
 #[derive(Debug)]
 pub struct App {
-	pub size: u32,
-	pub state: u32,
-	pub last_update: u32,
-	pub access_token: u64,
-	pub checksum_txt: [u8; 20],
-	pub checksum_bin: [u8; 20],
-	pub change_number: u32,
 	pub key_values: KeyValue,
 }
 
@@ -106,8 +100,6 @@ pub struct SteamAppInfo {
 
 #[derive(Debug, Clone)]
 pub struct SteamAppInfoFile {
-	pub version: u32,
-	pub universe: u32,
 	pub apps: HashMap<u32, SteamAppInfo>,
 }
 
@@ -116,7 +108,7 @@ const OLD_APPINFO_MAX_VERSION: u32 = 0x07_56_44_28;
 impl SteamAppInfoFile {
 	pub fn load<R: Read + Seek>(reader: &mut R) -> Result<Self> {
 		let version = reader.read_u32::<LittleEndian>()?;
-		let universe = reader.read_u32::<LittleEndian>()?;
+		let _universe = reader.read_u32::<LittleEndian>()?;
 
 		let is_new_version = version > OLD_APPINFO_MAX_VERSION;
 
@@ -130,7 +122,6 @@ impl SteamAppInfoFile {
 			reader.seek(SeekFrom::Start(key_list_address))?;
 
 			let key_count = reader.read_u32::<LittleEndian>()?;
-			log::info!("Reading Steam probably_list_size: {}", key_count);
 
 			let mut keys: Vec<String> = Vec::with_capacity(usize::try_from(key_count)?);
 			// loop key_count times and push into keys:
@@ -149,52 +140,34 @@ impl SteamAppInfoFile {
 		};
 
 		let mut appinfo = Self {
-			universe,
-			version,
 			apps: HashMap::new(),
 		};
 
 		loop {
 			let app_id = reader.read_u32::<LittleEndian>()?;
-			log::info!("Reading Steam app_id: {}", app_id);
 
 			if app_id == 0 {
 				break;
 			}
 
-			let size = reader.read_u32::<LittleEndian>()?;
-			log::info!("Reading Steam size: {}", size);
-			let state = reader.read_u32::<LittleEndian>()?;
-			log::info!("Reading Steam state: {}", state);
-			let last_update = reader.read_u32::<LittleEndian>()?;
-			log::info!("Reading Steam last_update: {}", last_update);
-			let access_token = reader.read_u64::<LittleEndian>()?;
-			log::info!("Reading Steam access_token: {}", access_token);
+			let _size = reader.read_u32::<LittleEndian>()?;
+			let _state = reader.read_u32::<LittleEndian>()?;
+			let _last_update = reader.read_u32::<LittleEndian>()?;
+			let _access_token = reader.read_u64::<LittleEndian>()?;
 
 			let mut checksum_txt: [u8; 20] = [0; 20];
 			reader.read_exact(&mut checksum_txt)?;
 
-			let change_number = reader.read_u32::<LittleEndian>()?;
-			log::info!("Reading Steam change_number: {}", change_number);
+			let _change_number = reader.read_u32::<LittleEndian>()?;
 
 			let mut checksum_bin: [u8; 20] = [0; 20];
 			reader.read_exact(&mut checksum_bin)?;
 
 			// let some_pre_kv_thing = reader.read_u64::<LittleEndian>()?;
-			// log::info!("Reading Steam some_pre_kv_thing: {}", some_pre_kv_thing);
 
 			let key_values = read_kv(reader, false, keys.as_ref())?;
 
-			let app = App {
-				size,
-				state,
-				last_update,
-				access_token,
-				checksum_txt,
-				checksum_bin,
-				change_number,
-				key_values,
-			};
+			let app = App { key_values };
 
 			let app_launch =
 				value_to_kv(app.get(&["appinfo", "config", "launch"])).and_then(|app_launch_kv| {
@@ -339,8 +312,6 @@ fn read_kv<R: std::io::Read>(
 			read_string(reader, false)?
 		};
 
-		let key_clone = key.clone();
-
 		if t == BIN_NONE {
 			let subnode = read_kv(reader, alt_format, keys_option)?;
 			node.insert(key, ValueType::KeyValue(subnode));
@@ -369,9 +340,7 @@ fn read_kv<R: std::io::Read>(
 			let val = reader.read_f32::<LittleEndian>()?;
 			node.insert(key, ValueType::Float32(val));
 		} else {
-			let s = read_string(reader, false)?;
-			node.insert(key, ValueType::String(s));
-			return Err(Error::InvalidBinaryVdfType(t, key_clone.to_string()));
+			return Err(Error::InvalidBinaryVdfType(t, key));
 		}
 	}
 }
