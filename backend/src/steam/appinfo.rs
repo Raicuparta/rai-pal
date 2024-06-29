@@ -111,28 +111,42 @@ pub struct SteamAppInfoFile {
 	pub apps: HashMap<u32, SteamAppInfo>,
 }
 
+const OLD_APPINFO_MAX_VERSION: u32 = 0x07_56_44_28;
+
 impl SteamAppInfoFile {
 	pub fn load<R: Read + Seek>(reader: &mut R) -> Result<Self> {
 		let version = reader.read_u32::<LittleEndian>()?;
 		let universe = reader.read_u32::<LittleEndian>()?;
-		let key_list_address = reader.read_u64::<LittleEndian>()?;
 
-		// jump to the key list:
-		reader.seek(SeekFrom::Start(key_list_address))?;
+		let is_new_version = version > OLD_APPINFO_MAX_VERSION;
 
-		let key_count = reader.read_u32::<LittleEndian>()?;
-		log::info!("Reading Steam probably_list_size: {}", key_count);
+		let keys = if is_new_version {
+			let key_list_address = reader.read_u64::<LittleEndian>()?;
 
-		let mut keys: Vec<String> = Vec::with_capacity(usize::try_from(key_count)?);
-		// loop key_count times and push into keys:
-		for _ in 0..key_count {
-			if let Ok(key) = read_string(reader, false) {
-				keys.push(key);
+			let position_before_jump = reader.seek(SeekFrom::Current(0))?;
+
+			// This new version of appinfo has all the keyvalue keys at the end of the file,
+			// starting at the address given at the start.
+			reader.seek(SeekFrom::Start(key_list_address))?;
+
+			let key_count = reader.read_u32::<LittleEndian>()?;
+			log::info!("Reading Steam probably_list_size: {}", key_count);
+
+			let mut keys: Vec<String> = Vec::with_capacity(usize::try_from(key_count)?);
+			// loop key_count times and push into keys:
+			for _ in 0..key_count {
+				if let Ok(key) = read_string(reader, false) {
+					keys.push(key);
+				}
 			}
-		}
 
-		// jump back to start:
-		reader.seek(SeekFrom::Start(16))?;
+			// Now we jump back to the start and do what we did before.
+			reader.seek(SeekFrom::Start(position_before_jump))?;
+
+			Some(keys)
+		} else {
+			None
+		};
 
 		let mut appinfo = Self {
 			universe,
@@ -169,7 +183,7 @@ impl SteamAppInfoFile {
 			// let some_pre_kv_thing = reader.read_u64::<LittleEndian>()?;
 			// log::info!("Reading Steam some_pre_kv_thing: {}", some_pre_kv_thing);
 
-			let key_values = read_kv(reader, false, &keys)?;
+			let key_values = read_kv(reader, false, keys.as_ref())?;
 
 			let app = App {
 				size,
@@ -298,7 +312,7 @@ impl App {
 fn read_kv<R: std::io::Read>(
 	reader: &mut R,
 	alt_format: bool,
-	keys: &Vec<String>,
+	keys_option: Option<&Vec<String>>,
 ) -> Result<KeyValue> {
 	let current_bin_end = if alt_format { BIN_END_ALT } else { BIN_END };
 
@@ -310,13 +324,17 @@ fn read_kv<R: std::io::Read>(
 			return Ok(node);
 		}
 
-		let key_index = reader.read_i32::<LittleEndian>()?;
-		let key = keys.get(usize::try_from(key_index)?).unwrap().clone();
-		// log::info!("> KV Reading Steam key: {}", key.clone());
+		let key = if let Some(keys) = keys_option {
+			let key_index = reader.read_i32::<LittleEndian>()?;
+			keys.get(usize::try_from(key_index)?).unwrap().clone()
+		} else {
+			read_string(reader, false)?
+		};
+
 		let key_clone = key.clone();
 
 		if t == BIN_NONE {
-			let subnode = read_kv(reader, alt_format, keys)?;
+			let subnode = read_kv(reader, alt_format, keys_option)?;
 			node.insert(key, ValueType::KeyValue(subnode));
 		} else if t == BIN_STRING {
 			let s = read_string(reader, false)?;
