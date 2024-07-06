@@ -1,25 +1,17 @@
-use std::{
-	collections::{
-		HashMap,
-		HashSet,
-	},
-	future,
-};
+use std::collections::{HashMap, HashSet};
 
 use log::error;
+use rai_pal_proc_macros::serializable_struct;
 
-use crate::{
-	game_engines::game_engine::EngineBrand,
-	serializable_struct,
-	Result,
-};
+use crate::{game_engines::game_engine::EngineBrand, Result};
 
 const STEAM_APP_IDS_URL_BASE: &str = "https://raicuparta.github.io/rai-pal-db/steam-ids";
 
-serializable_struct!(SteamGame {
+#[serializable_struct]
+pub struct SteamGame {
 	pub id: String,
 	pub engine: EngineBrand,
-});
+}
 
 async fn get_list(list_name: &str) -> HashSet<String> {
 	match reqwest::get(format!("{STEAM_APP_IDS_URL_BASE}/{list_name}")).await {
@@ -50,13 +42,12 @@ fn get_ids_data_list(ids: &HashSet<String>, engine: EngineBrand) -> Vec<SteamGam
 }
 
 pub async fn get() -> Result<HashMap<String, SteamGame>> {
-	let (unity, unreal, godot, game_maker) = future::join!(
+	let (unity, unreal, godot, game_maker) = tokio::join!(
 		get_list("Unity"),
 		get_list("Unreal"),
 		get_list("Godot"),
 		get_list("GameMaker")
-	)
-	.await;
+	);
 
 	let games = [
 		get_ids_data_list(&unity, EngineBrand::Unity),

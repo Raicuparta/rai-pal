@@ -1,4 +1,4 @@
-import { deleteSteamAppinfoCache } from "@api/bindings";
+import { commands } from "@api/bindings";
 import { CommandButton } from "@components/command-button";
 import { Button, Flex, Modal, Stack } from "@mantine/core";
 import { IconHammer } from "@tabler/icons-react";
@@ -45,7 +45,7 @@ export function FixOwnedGamesButton() {
 					</span>
 					<Flex justify="center">
 						<CommandButton
-							onClick={() => deleteSteamAppinfoCache()}
+							onClick={() => commands.deleteSteamAppinfoCache()}
 							onSuccess={() => setShowSteamRestartPrompt(true)}
 							leftSection={<IconHammer />}
 						>

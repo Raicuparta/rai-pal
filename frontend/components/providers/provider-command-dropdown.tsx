@@ -11,7 +11,7 @@ type Props = {
 export function ProviderCommandButtons(props: Props) {
 	let providerCommandActions = Object.keys(
 		props.game.providerCommands,
-	) as ProviderCommandAction[]; // TODO need to convert the type here since tauri-specta can't do it.
+	) as ProviderCommandAction[];
 	if (props.isInstalled) {
 		providerCommandActions = providerCommandActions.filter(
 			(action) => (action as ProviderCommandAction) != "Install",

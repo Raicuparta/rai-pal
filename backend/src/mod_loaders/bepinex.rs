@@ -1,48 +1,32 @@
 use std::{
 	collections::HashMap,
-	fs::{
-		self,
-		File,
-	},
-	path::{
-		Path,
-		PathBuf,
-	},
+	fs::{self, File},
+	path::{Path, PathBuf},
 };
 
 use async_trait::async_trait;
+use rai_pal_proc_macros::serializable_struct;
 use zip::ZipArchive;
 
 use super::mod_loader::ModLoaderStatic;
 use crate::{
 	files::copy_dir_all,
 	game_engines::{
-		game_engine::{
-			EngineBrand,
-			GameEngine,
-		},
+		game_engine::{EngineBrand, GameEngine},
 		unity::UnityScriptingBackend,
 	},
 	game_mod::CommonModData,
 	installed_game::InstalledGame,
-	local_mod::{
-		LocalMod,
-		ModKind,
-	},
-	mod_loaders::mod_loader::{
-		ModLoaderActions,
-		ModLoaderData,
-	},
-	paths,
-	serializable_struct,
-	Error,
-	Result,
+	local_mod::{LocalMod, ModKind},
+	mod_loaders::mod_loader::{ModLoaderActions, ModLoaderData},
+	paths, Error, Result,
 };
 
-serializable_struct!(BepInEx {
+#[serializable_struct]
+pub struct BepInEx {
 	pub data: ModLoaderData,
 	pub id: &'static str,
-});
+}
 
 impl ModLoaderStatic for BepInEx {
 	const ID: &'static str = "bepinex";

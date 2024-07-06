@@ -1,8 +1,4 @@
-use std::{
-	collections::HashSet,
-	fs,
-	path::PathBuf,
-};
+use std::{collections::HashSet, fs, path::PathBuf};
 
 use async_trait::async_trait;
 use lazy_regex::BytesRegex;
@@ -10,36 +6,20 @@ use steamlocate::SteamDir;
 
 use super::{
 	provider::ProviderId,
-	provider_command::{
-		ProviderCommand,
-		ProviderCommandAction,
-	},
+	provider_command::{ProviderCommand, ProviderCommandAction},
 };
 use crate::{
 	app_type::AppType,
 	game_engines::game_engine::GameEngine,
 	game_executable::OperatingSystem,
 	game_mode::GameMode,
-	installed_game::{
-		self,
-		InstalledGame,
-	},
+	installed_game::{self, InstalledGame},
 	owned_game::OwnedGame,
 	pc_gaming_wiki,
-	provider::{
-		ProviderActions,
-		ProviderStatic,
-	},
-	remote_game::{
-		self,
-		RemoteGame,
-	},
+	provider::{ProviderActions, ProviderStatic},
+	remote_game::{self, RemoteGame},
 	steam::{
-		appinfo::{
-			self,
-			SteamAppInfoFile,
-			SteamLaunchOption,
-		},
+		appinfo::{self, SteamAppInfoFile, SteamLaunchOption},
 		id_lists,
 		thumbnail::get_steam_thumbnail,
 	},
@@ -48,7 +28,7 @@ use crate::{
 
 #[derive(Clone)]
 pub struct Steam {
-	steam_dir: SteamDir,
+	directory: SteamDir,
 	app_info_file: SteamAppInfoFile,
 	remote_game_cache: remote_game::Map,
 }
@@ -65,7 +45,7 @@ impl ProviderStatic for Steam {
 		let remote_game_cache = Self::try_get_remote_game_cache();
 
 		Ok(Self {
-			steam_dir,
+			directory: steam_dir,
 			app_info_file,
 			remote_game_cache,
 		})
@@ -74,12 +54,15 @@ impl ProviderStatic for Steam {
 
 #[async_trait]
 impl ProviderActions for Steam {
-	fn get_installed_games(&self) -> Result<Vec<InstalledGame>> {
+	fn get_installed_games<TCallback>(&self, callback: TCallback) -> Result<Vec<InstalledGame>>
+	where
+		TCallback: Fn(InstalledGame),
+	{
 		let mut games: Vec<InstalledGame> = Vec::new();
 		let mut used_paths: HashSet<PathBuf> = HashSet::new();
 		let mut used_names: HashSet<String> = HashSet::new();
 
-		for library in (self.steam_dir.libraries()?).flatten() {
+		for library in (self.directory.libraries()?).flatten() {
 			for app in library.apps().flatten() {
 				if let Some(app_info) = self.app_info_file.apps.get(&app.app_id) {
 					let sorted_launch_options = {
@@ -122,6 +105,9 @@ impl ProviderActions for Steam {
 										&discriminator_option,
 									));
 
+									callback(game.clone());
+									// events::FoundInstalledGame(game.clone()).emit(handle)?;
+
 									games.push(game);
 									used_names.insert(name.clone());
 									used_paths.insert(full_path.clone());
@@ -136,7 +122,10 @@ impl ProviderActions for Steam {
 		Ok(games)
 	}
 
-	async fn get_remote_games(&self) -> Result<Vec<RemoteGame>> {
+	async fn get_remote_games<TCallback>(&self, callback: TCallback) -> Result<Vec<RemoteGame>>
+	where
+		TCallback: Fn(RemoteGame) + std::marker::Send + std::marker::Sync,
+	{
 		let steam_games = id_lists::get().await?;
 
 		let remote_games: Vec<RemoteGame> =
@@ -145,6 +134,7 @@ impl ProviderActions for Steam {
 				let mut remote_game = RemoteGame::new(*Self::ID, &id_string);
 
 				if let Some(cached_remote_game) = self.remote_game_cache.get(&remote_game.id) {
+					callback(cached_remote_game.clone());
 					return Some(cached_remote_game.clone());
 				}
 
@@ -171,6 +161,7 @@ impl ProviderActions for Steam {
 					}
 				}
 
+				callback(remote_game.clone());
 				Some(remote_game)
 			}))
 			.await
@@ -183,7 +174,10 @@ impl ProviderActions for Steam {
 		Ok(remote_games)
 	}
 
-	fn get_owned_games(&self) -> Result<Vec<OwnedGame>> {
+	fn get_owned_games<TCallback>(&self, callback: TCallback) -> Result<Vec<OwnedGame>>
+	where
+		TCallback: Fn(OwnedGame),
+	{
 		let owned_games: Vec<OwnedGame> = self
 			.app_info_file
 			.apps
@@ -212,7 +206,7 @@ impl ProviderActions for Steam {
 				// appinfo.vdf is also still needed since most of the game data we want is there, so we can't just read everything from assets.vdf.
 				let owned = app_info.is_free
 					|| fs::read(
-						self.steam_dir
+						self.directory
 							.path()
 							.join("appcache/librarycache/assets.vdf"),
 					)
@@ -281,6 +275,7 @@ impl ProviderActions for Steam {
 					game.guess_app_type();
 				}
 
+				callback(game.clone());
 				Some(game)
 			})
 			.collect();

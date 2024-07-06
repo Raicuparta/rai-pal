@@ -1,33 +1,23 @@
 use std::{
 	fs,
-	path::{
-		Path,
-		PathBuf,
-	},
+	path::{Path, PathBuf},
 };
 
 use async_trait::async_trait;
 use log::error;
+use rai_pal_proc_macros::serializable_struct;
 
-use super::provider::{
-	ProviderActions,
-	ProviderId,
-	ProviderStatic,
-};
+use super::provider::{ProviderActions, ProviderId, ProviderStatic};
 use crate::{
 	installed_game::InstalledGame,
 	owned_game::OwnedGame,
-	paths::{
-		app_data_path,
-		file_name_without_extension,
-	},
+	paths::{app_data_path, file_name_without_extension},
 	remote_game::RemoteGame,
-	serializable_struct,
-	Error,
-	Result,
+	Error, Result,
 };
 
-serializable_struct!(Manual {});
+#[serializable_struct]
+pub struct Manual {}
 
 #[derive(serde::Serialize, serde::Deserialize)]
 struct GamesConfig {
@@ -47,19 +37,33 @@ impl ProviderStatic for Manual {
 
 #[async_trait]
 impl ProviderActions for Manual {
-	fn get_installed_games(&self) -> Result<Vec<InstalledGame>> {
+	fn get_installed_games<TCallback>(&self, callback: TCallback) -> Result<Vec<InstalledGame>>
+	where
+		TCallback: Fn(InstalledGame),
+	{
 		Ok(read_games_config(&games_config_path()?)
 			.paths
 			.iter()
-			.filter_map(|path| create_game_from_path(path))
+			.filter_map(|path| {
+				create_game_from_path(path).map(|game| {
+					callback(game.clone());
+					game
+				})
+			})
 			.collect())
 	}
 
-	fn get_owned_games(&self) -> Result<Vec<OwnedGame>> {
+	fn get_owned_games<TCallback>(&self, _: TCallback) -> Result<Vec<OwnedGame>>
+	where
+		TCallback: Fn(OwnedGame),
+	{
 		Ok(Vec::default())
 	}
 
-	async fn get_remote_games(&self) -> Result<Vec<RemoteGame>> {
+	async fn get_remote_games<TCallback>(&self, _: TCallback) -> Result<Vec<RemoteGame>>
+	where
+		TCallback: Fn(RemoteGame) + std::marker::Send,
+	{
 		Ok(Vec::default())
 	}
 }

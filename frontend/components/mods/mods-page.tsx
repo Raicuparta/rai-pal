@@ -2,7 +2,7 @@ import { Button, Group, Stack, Table, Text } from "@mantine/core";
 import { useMemo, useState } from "react";
 import { TableContainer } from "@components/table/table-container";
 import { RefreshButton } from "@components/refresh-button";
-import { openModsFolder } from "@api/bindings";
+import { commands } from "@api/bindings";
 import { IconFolderCog } from "@tabler/icons-react";
 import {
 	EngineBadge,
@@ -47,7 +47,7 @@ export function ModsPage() {
 			) : null}
 			<Group justify="end">
 				<Button
-					onClick={openModsFolder}
+					onClick={commands.openModsFolder}
 					leftSection={<IconFolderCog />}
 				>
 					Open Mods Folder

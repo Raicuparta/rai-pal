@@ -2,15 +2,12 @@ use std::path::PathBuf;
 
 use lazy_regex::regex_captures;
 use log::error;
+use rai_pal_proc_macros::serializable_struct;
 use reqwest::redirect::Policy;
 
 use crate::{
-	game_engines::{
-		game_engine::EngineBrand,
-		unity::UnityScriptingBackend,
-	},
+	game_engines::{game_engine::EngineBrand, unity::UnityScriptingBackend},
 	game_mod::EngineVersionRange,
-	serializable_struct,
 	Result,
 };
 
@@ -22,7 +19,8 @@ const URL_BASE: &str = "https://raicuparta.github.io/rai-pal-db/mod-db";
 // you would create a new folder in the database repository and change this number to match the folder.
 const DATABASE_VERSION: i32 = 0;
 
-serializable_struct!(DatabaseEntry {
+#[serializable_struct]
+pub struct DatabaseEntry {
 	pub id: String,
 	pub title: String,
 	pub author: String,
@@ -35,31 +33,35 @@ serializable_struct!(DatabaseEntry {
 	pub github: Option<ModGithubInfo>,
 	pub redownload_id: Option<i32>,
 	pub deprecated: Option<bool>,
-});
+}
 
-serializable_struct!(RunnableModData {
+#[serializable_struct]
+pub struct RunnableModData {
 	pub path: String,
 	pub args: Vec<String>,
-});
+}
 
-serializable_struct!(ModDatabase {
-  pub mods: Vec<DatabaseEntry>,
-});
+#[serializable_struct]
+pub struct ModDatabase {
+	pub mods: Vec<DatabaseEntry>,
+}
 
-serializable_struct!(ModDownload {
+#[serializable_struct]
+pub struct ModDownload {
 	pub id: String,
 	pub url: String,
 	pub root: Option<PathBuf>,
 	pub runnable: Option<RunnableModData>,
-});
+}
 
-serializable_struct!(ModGithubInfo {
+#[serializable_struct]
+pub struct ModGithubInfo {
 	pub user: String,
 	pub repo: String,
 	pub asset_name: String,
 	pub root: Option<PathBuf>,
 	pub runnable: Option<RunnableModData>,
-});
+}
 
 pub async fn get(mod_loader_id: &str) -> Result<ModDatabase> {
 	let random = rand::random::<u32>();

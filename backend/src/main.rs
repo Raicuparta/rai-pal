@@ -1,53 +1,25 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
-#![feature(future_join)]
 
-use std::{
-	collections::HashMap,
-	path::PathBuf,
-	sync::Mutex,
-};
+use std::{collections::HashMap, path::PathBuf, sync::Mutex};
 
-use app_state::{
-	AppState,
-	DataValue,
-	StateData,
-	StatefulHandle,
-};
-use events::{
-	AppEvent,
-	EventEmitter,
-};
-use installed_game::InstalledGame;
+use app_state::{AppState, DataValue, StateData, StatefulHandle};
 use local_mod::LocalMod;
 use log::error;
 use maps::TryGettable;
-use mod_loaders::mod_loader::{
-	self,
-	ModLoaderActions,
-};
-use paths::{
-	hash_path,
-	normalize_path,
-};
+use mod_loaders::mod_loader::{self, ModLoaderActions};
+use paths::{hash_path, normalize_path};
 use providers::{
 	manual_provider,
-	provider::{
-		self,
-		ProviderActions,
-	},
+	provider::{self, ProviderActions},
 	provider_command::ProviderCommandAction,
 };
-use result::{
-	Error,
-	Result,
-};
+use result::{Error, Result};
 use steamlocate::SteamDir;
-use tauri::{
-	AppHandle,
-	Manager,
-};
-use tauri_plugin_log::LogTarget;
+use tauri::{AppHandle, Manager};
+use tauri_plugin_log::{Target, TargetKind};
+use tauri_specta::Event;
+// use tauri_plugin_log::Target;
 
 mod analytics;
 mod app_state;
@@ -112,12 +84,14 @@ async fn get_remote_games(handle: AppHandle) -> Result<remote_game::Map> {
 	handle.app_state().remote_games.get_data()
 }
 
-fn update_state<TData>(
-	event: AppEvent,
+fn update_state<TData, TEvent>(
+	event: TEvent,
 	data: TData,
 	mutex: &Mutex<Option<TData>>,
 	handle: &AppHandle,
-) {
+) where
+	TEvent: tauri_specta::Event + std::clone::Clone + serde::Serialize,
+{
 	if let Ok(mut mutex_guard) = mutex.lock() {
 		*mutex_guard = Some(data);
 	}
@@ -125,7 +99,7 @@ fn update_state<TData>(
 	// Sends a signal to make the frontend request an app state refresh.
 	// I would have preferred to just send the state with the signal,
 	// but it seems like Tauri events are really slow for large data.
-	handle.emit_event(event, ());
+	event.emit(handle);
 }
 
 #[tauri::command]
@@ -212,7 +186,7 @@ async fn start_game(game_id: &str, handle: AppHandle) -> Result {
 		.try_get(game_id)?
 		.start()?;
 
-	handle.emit_event(AppEvent::ExecutedProviderCommand, ());
+	events::ExecutedProviderCommand.emit(&handle)?;
 
 	Ok(())
 }
@@ -313,7 +287,7 @@ fn refresh_game_mods_and_exe(game_id: &str, handle: &AppHandle) -> Result {
 	game.refresh_executable()?;
 
 	update_state(
-		AppEvent::SyncInstalledGames,
+		events::SyncInstalledGames(installed_games.clone()),
 		installed_games,
 		&handle.app_state().installed_games,
 		handle,
@@ -371,7 +345,7 @@ fn refresh_local_mods(mod_loaders: &mod_loader::Map, handle: &AppHandle) -> loca
 		.collect();
 
 	update_state(
-		AppEvent::SyncLocalMods,
+		events::SyncLocalMods(local_mods.clone()),
 		local_mods.clone(),
 		&handle.app_state().local_mods,
 		handle,
@@ -386,7 +360,7 @@ async fn refresh_remote_mods(mod_loaders: &mod_loader::Map, handle: &AppHandle) 
 	for mod_loader in mod_loaders.values() {
 		for (mod_id, remote_mod) in mod_loader
 			.get_remote_mods(|error| {
-				handle.emit_error(format!("Failed to get remote mods: {error}"));
+				events::ErrorRaised(format!("Failed to get remote mods: {error}")).emit(handle);
 			})
 			.await
 		{
@@ -395,7 +369,7 @@ async fn refresh_remote_mods(mod_loaders: &mod_loader::Map, handle: &AppHandle) 
 	}
 
 	update_state(
-		AppEvent::SyncRemoteMods,
+		events::SyncRemoteMods(remote_mods.clone()),
 		remote_mods.clone(),
 		&handle.app_state().remote_mods,
 		handle,
@@ -450,7 +424,9 @@ async fn update_installed_games(handle: AppHandle, provider_map: provider::Map) 
 	let installed_games: HashMap<_, _> = provider_map
 		.iter()
 		.flat_map(|(provider_id, provider)| {
-			let installed_games = provider.get_installed_games();
+			let installed_games = provider.get_installed_games(|game| {
+				events::FoundInstalledGame(game.clone()).emit(&handle);
+			});
 
 			match installed_games {
 				Ok(games) => games,
@@ -464,7 +440,7 @@ async fn update_installed_games(handle: AppHandle, provider_map: provider::Map) 
 		.collect();
 
 	update_state(
-		AppEvent::SyncInstalledGames,
+		events::SyncInstalledGames(installed_games.clone()),
 		installed_games,
 		&handle.app_state().installed_games,
 		&handle,
@@ -474,18 +450,22 @@ async fn update_installed_games(handle: AppHandle, provider_map: provider::Map) 
 async fn update_owned_games(handle: AppHandle, provider_map: provider::Map) {
 	let owned_games: owned_game::Map = provider_map
 		.iter()
-		.flat_map(|(provider_id, provider)| match provider.get_owned_games() {
-			Ok(owned_games) => owned_games,
-			Err(err) => {
-				error!("Failed to get owned games for provider '{provider_id}'. Error: {err}");
-				Vec::default()
+		.flat_map(|(provider_id, provider)| {
+			match provider.get_owned_games(|game| {
+				events::FoundOwnedGame(game.clone()).emit(&handle);
+			}) {
+				Ok(owned_games) => owned_games,
+				Err(err) => {
+					error!("Failed to get owned games for provider '{provider_id}'. Error: {err}");
+					Vec::default()
+				}
 			}
 		})
 		.map(|owned_game| (owned_game.id.clone(), owned_game))
 		.collect();
 
 	update_state(
-		AppEvent::SyncOwnedGames,
+		events::SyncOwnedGames(owned_games.clone()),
 		owned_games,
 		&handle.app_state().owned_games,
 		&handle,
@@ -493,24 +473,25 @@ async fn update_owned_games(handle: AppHandle, provider_map: provider::Map) {
 }
 
 async fn update_remote_games(handle: AppHandle, provider_map: provider::Map) {
-	let remote_games: remote_game::Map = futures::future::join_all(
-		provider_map
-			.values()
-			.map(provider::Provider::get_remote_games),
-	)
-	.await
-	.into_iter()
-	.flat_map(|result| {
-		result.unwrap_or_else(|err| {
-			error!("Failed to get remote games for a provider: {err}");
-			Vec::default()
+	let remote_games: remote_game::Map =
+		futures::future::join_all(provider_map.values().map(|provider| {
+			provider.get_remote_games(|remote_game| {
+				events::FoundRemoteGame(remote_game.clone()).emit(&handle);
+			})
+		}))
+		.await
+		.into_iter()
+		.flat_map(|result| {
+			result.unwrap_or_else(|err| {
+				error!("Failed to get remote games for a provider: {err}");
+				Vec::default()
+			})
 		})
-	})
-	.map(|remote_game| (remote_game.id.clone(), remote_game))
-	.collect();
+		.map(|remote_game| (remote_game.id.clone(), remote_game))
+		.collect();
 
 	update_state(
-		AppEvent::SyncRemoteGames,
+		events::SyncRemoteGames(remote_games.clone()),
 		remote_games,
 		&handle.app_state().remote_games,
 		&handle,
@@ -519,8 +500,9 @@ async fn update_remote_games(handle: AppHandle, provider_map: provider::Map) {
 
 async fn update_mods(handle: AppHandle, resources_path: PathBuf) {
 	let mod_loaders = mod_loader::get_map(&resources_path);
+
 	update_state(
-		AppEvent::SyncModLoaders,
+		events::SyncModLoaders(mod_loader::get_data_map(&mod_loaders).unwrap()), // TODO handle error.
 		mod_loaders.clone(),
 		&handle.app_state().mod_loaders,
 		&handle,
@@ -572,13 +554,13 @@ async fn add_game(path: PathBuf, handle: AppHandle) -> Result {
 	installed_games.insert(game.id.clone(), game);
 
 	update_state(
-		AppEvent::SyncInstalledGames,
+		events::SyncInstalledGames(installed_games.clone()),
 		installed_games,
 		&state.installed_games,
 		&handle,
 	);
 
-	handle.emit_event(AppEvent::GameAdded, game_name.clone());
+	events::GameAdded(game_name.clone()).emit(&handle)?;
 
 	analytics::send_event(analytics::Event::ManuallyAddGame, &game_name).await;
 
@@ -596,13 +578,13 @@ async fn remove_game(game_id: &str, handle: AppHandle) -> Result {
 	installed_games.remove(game_id);
 
 	update_state(
-		AppEvent::SyncInstalledGames,
+		events::SyncInstalledGames(installed_games.clone()),
 		installed_games,
 		&handle.app_state().installed_games,
 		&handle,
 	);
 
-	handle.emit_event(AppEvent::GameRemoved, game.name);
+	events::GameRemoved(game.name).emit(&handle)?;
 
 	Ok(())
 }
@@ -611,7 +593,7 @@ async fn remove_game(game_id: &str, handle: AppHandle) -> Result {
 #[specta::specta]
 async fn run_provider_command(
 	owned_game_id: &str,
-	command_action: &str,
+	command_action: ProviderCommandAction,
 	handle: AppHandle,
 ) -> Result {
 	handle
@@ -619,10 +601,10 @@ async fn run_provider_command(
 		.owned_games
 		.try_get(owned_game_id)?
 		.provider_commands
-		.try_get(command_action)?
+		.try_get(&command_action)?
 		.run()?;
 
-	handle.emit_event(AppEvent::ExecutedProviderCommand, ());
+	events::ExecutedProviderCommand.emit(&handle)?;
 
 	Ok(())
 }
@@ -650,14 +632,6 @@ async fn open_logs_folder() -> Result {
 	Ok(())
 }
 
-#[tauri::command]
-#[specta::specta]
-async fn dummy_command() -> Result<(InstalledGame, AppEvent, ProviderCommandAction)> {
-	// This command is here just so tauri_specta exports these types.
-	// This should stop being needed once tauri_specta starts supporting events.
-	Err(Error::NotImplemented)
-}
-
 fn main() {
 	// Since I'm making all exposed functions async, panics won't crash anything important, I think.
 	// So I can just catch panics here and show a system message with the error.
@@ -667,14 +641,67 @@ fn main() {
 		// TODO handle Linux.
 	}));
 
-	let tauri_builder = tauri::Builder::default()
+	let (invoke_handler, register_events) = {
+		// You can use `tauri_specta::js::builder` for exporting JS Doc instead of Typescript!`
+		let builder = tauri_specta::ts::builder()
+			.config(
+				specta::ts::ExportConfig::default()
+					.bigint(specta::ts::BigIntExportBehavior::BigInt),
+			)
+			.commands(tauri_specta::collect_commands![
+				update_data,
+				get_installed_games,
+				get_owned_games,
+				get_mod_loaders,
+				open_game_folder,
+				install_mod,
+				configure_mod,
+				open_installed_mod_folder,
+				uninstall_mod,
+				uninstall_all_mods,
+				open_game_mods_folder,
+				start_game,
+				start_game_exe,
+				open_mod_folder,
+				download_mod,
+				run_runnable_without_game,
+				delete_mod,
+				open_mods_folder,
+				add_game,
+				remove_game,
+				delete_steam_appinfo_cache,
+				frontend_ready,
+				get_local_mods,
+				get_remote_mods,
+				get_remote_games,
+				open_mod_loader_folder,
+				refresh_game,
+				open_logs_folder,
+				run_provider_command,
+			])
+			.events(events::collect_events());
+
+		#[cfg(debug_assertions)]
+		let builder = builder.path("../frontend/api/bindings.ts");
+
+		builder.build().unwrap()
+	};
+
+	tauri::Builder::default()
 		.plugin(tauri_plugin_window_state::Builder::default().build())
 		.plugin(
-			tauri_plugin_log::Builder::default()
+			tauri_plugin_log::Builder::new()
 				.level(log::LevelFilter::Info)
 				.targets([
-					paths::logs_path().map_or(LogTarget::LogDir, LogTarget::Folder),
-					LogTarget::Stdout,
+					// TODO: check if all of these are working.
+					Target::new(TargetKind::Stdout),
+					Target::new(paths::logs_path().map_or(
+						TargetKind::LogDir { file_name: None },
+						|logs_path| TargetKind::Folder {
+							path: logs_path,
+							file_name: None,
+						},
+					)),
 				])
 				.build(),
 		)
@@ -687,82 +714,15 @@ fn main() {
 			remote_mods: Mutex::default(),
 		})
 		.setup(|app| {
-			// This prevents/reduces the white flashbang on app start.
-			// Unfortunately, it will still show the default window color for the system for a bit,
-			// which can some times be white.
-			if let Some(window) = app.get_window("main") {
-				window.set_title(&format!("Rai Pal {}", env!("CARGO_PKG_VERSION")))?;
+			register_events(app);
 
-				#[cfg(target_os = "linux")]
-				{
-					window.with_webview(|webview| {
-						use webkit2gtk::traits::WebViewExt;
-						let mut color = webview.inner().background_color();
-						color.set_red(0.102);
-						color.set_green(0.106);
-						color.set_blue(0.118);
-						webview.inner().set_background_color(&color);
-					})?;
-				}
+			if let Some(window) = app.get_webview_window("main") {
+				window.set_title(&format!("Rai Pal {}", env!("CARGO_PKG_VERSION")))?;
 			}
 
 			Ok(())
-		});
-
-	let (tauri_builder, types_result) = set_up_api!(
-		tauri_builder,
-		[
-			dummy_command,
-			update_data,
-			get_installed_games,
-			get_owned_games,
-			get_mod_loaders,
-			open_game_folder,
-			install_mod,
-			configure_mod,
-			open_installed_mod_folder,
-			uninstall_mod,
-			uninstall_all_mods,
-			open_game_mods_folder,
-			start_game,
-			start_game_exe,
-			open_mod_folder,
-			download_mod,
-			run_runnable_without_game,
-			delete_mod,
-			open_mods_folder,
-			add_game,
-			remove_game,
-			delete_steam_appinfo_cache,
-			frontend_ready,
-			get_local_mods,
-			get_remote_mods,
-			get_remote_games,
-			open_mod_loader_folder,
-			refresh_game,
-			open_logs_folder,
-			run_provider_command,
-		]
-	);
-
-	match types_result {
-		Ok(types) => {
-			#[cfg(debug_assertions)]
-			if let Err(err) = tauri_specta::ts::export_with_cfg(
-				types,
-				specta::ts::ExportConfiguration::default()
-					.bigint(specta::ts::BigIntExportBehavior::BigInt),
-				"../frontend/api/bindings.ts",
-			) {
-				error!("Failed to generate TypeScript bindings: {err}");
-			}
-		}
-		Err(err) => {
-			error!("Failed to generate api bindings: {err}");
-		}
-	}
-
-	tauri_builder
+		})
+		.invoke_handler(invoke_handler)
 		.run(tauri::generate_context!())
 		.unwrap_or_else(|error| {
 			#[cfg(target_os = "windows")]
@@ -775,4 +735,21 @@ fn main() {
 			windows::error_dialog(&error.to_string());
 			// TODO handle Linux.
 		});
+
+	// match types_result {
+	// 	Ok(types) => {
+	// 		#[cfg(debug_assertions)]
+	// 		if let Err(err) = tauri_specta::ts::export_with_cfg(
+	// 			types,
+	// 			specta::ts::ExportConfiguration::default()
+	// 				.bigint(specta::ts::BigIntExportBehavior::BigInt),
+	// 			"../frontend/api/bindings.ts",
+	// 		) {
+	// 			error!("Failed to generate TypeScript bindings: {err}");
+	// 		}
+	// 	}
+	// 	Err(err) => {
+	// 		error!("Failed to generate api bindings: {err}");
+	// 	}
+	// }
 }

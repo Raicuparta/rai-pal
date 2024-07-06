@@ -1,16 +1,21 @@
-import { AppEvent } from "@api/bindings";
-import { listen } from "@tauri-apps/api/event";
+import { events } from "@api/bindings";
 import { useEffect, useRef } from "react";
 
-export function useAppEvent<TPayload = void>(
-	event: AppEvent,
-	callback: (payload: TPayload) => void,
+type AppEvents = typeof events;
+export type AppEvent = AppEvents[keyof AppEvents];
+export type EventPayload<TEvent extends AppEvent> = Parameters<
+	Parameters<TEvent["listen"]>[0]
+>[0]["payload"];
+
+export function useAppEvent<TEvent extends AppEvent>(
+	event: TEvent,
+	callback: (payload: EventPayload<TEvent>) => void,
 ) {
 	const callbackRef = useRef(callback);
 
 	useEffect(() => {
-		const unlistenPromise = listen(event, (event) =>
-			callbackRef.current(event.payload as TPayload),
+		const unlistenPromise = event.listen((event) =>
+			callbackRef.current(event.payload),
 		);
 
 		return () => {

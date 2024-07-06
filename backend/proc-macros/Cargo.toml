@@ -1,0 +1,12 @@
+[package]
+name = "rai-pal-proc-macros"
+version = "0.1.0"
+authors = ["Raicuparta"]
+license = "GPL-3.0-or-later"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+quote = "1.0.36"
+serde = { version = "1.0", features = ["derive"] }

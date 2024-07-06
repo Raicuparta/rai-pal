@@ -1,17 +1,15 @@
 use std::collections::HashMap;
 
-use crate::{
-	game_engines::game_engine::GameEngine,
-	owned_game,
-	providers::provider::ProviderId,
-	serializable_struct,
-};
+use rai_pal_proc_macros::serializable_struct;
 
-serializable_struct!(RemoteGame {
+use crate::{game_engines::game_engine::GameEngine, owned_game, providers::provider::ProviderId};
+
+#[serializable_struct]
+pub struct RemoteGame {
 	pub id: String,
 	pub engine: Option<GameEngine>,
 	pub skip_cache: bool,
-});
+}
 
 pub type Map = HashMap<String, RemoteGame>;
 

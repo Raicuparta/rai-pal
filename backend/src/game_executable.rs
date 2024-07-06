@@ -1,44 +1,36 @@
 use std::{
 	fs,
-	path::{
-		Path,
-		PathBuf,
-	},
+	path::{Path, PathBuf},
 };
 
-use goblin::{
-	elf::Elf,
-	pe::PE,
-};
+use goblin::{elf::Elf, pe::PE};
 use log::error;
+use rai_pal_proc_macros::serializable_struct;
 
 use crate::{
 	game_engines::{
 		game_engine::GameEngine,
-		unity::{
-			self,
-			UnityScriptingBackend,
-		},
+		unity::{self, UnityScriptingBackend},
 		unreal,
 	},
 	paths::normalize_path,
 	result::Result,
 	serializable_enum,
-	serializable_struct,
 };
 
 serializable_enum!(Architecture { X64, X86 });
 
 serializable_enum!(OperatingSystem { Linux, Windows });
 
-serializable_struct!(GameExecutable {
+#[serializable_struct]
+pub struct GameExecutable {
 	pub path: PathBuf,
 	pub name: String,
 	pub engine: Option<GameEngine>,
 	pub architecture: Option<Architecture>,
-  pub operating_system: Option<OperatingSystem>,
-	pub scripting_backend: Option<UnityScriptingBackend>
-});
+	pub operating_system: Option<OperatingSystem>,
+	pub scripting_backend: Option<UnityScriptingBackend>,
+}
 
 pub fn read_windows_binary(file: &[u8]) -> Result<(Option<OperatingSystem>, Option<Architecture>)> {
 	match PE::parse(file)?.header.coff_header.machine {

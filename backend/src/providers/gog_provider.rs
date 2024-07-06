@@ -4,37 +4,21 @@ use std::path::PathBuf;
 
 use async_trait::async_trait;
 use log::error;
-use rusqlite::{
-	Connection,
-	OpenFlags,
-};
+use rai_pal_proc_macros::serializable_struct;
+use rusqlite::{Connection, OpenFlags};
 use serde::Deserialize;
-use winreg::{
-	enums::HKEY_LOCAL_MACHINE,
-	RegKey,
-};
+use winreg::{enums::HKEY_LOCAL_MACHINE, RegKey};
 
 use super::{
 	provider::ProviderId,
-	provider_command::{
-		ProviderCommand,
-		ProviderCommandAction,
-	},
+	provider_command::{ProviderCommand, ProviderCommandAction},
 };
 use crate::{
 	installed_game::InstalledGame,
 	owned_game::OwnedGame,
-	paths,
-	pc_gaming_wiki,
-	provider::{
-		ProviderActions,
-		ProviderStatic,
-	},
-	remote_game::{
-		self,
-		RemoteGame,
-	},
-	serializable_struct,
+	paths, pc_gaming_wiki,
+	provider::{ProviderActions, ProviderStatic},
+	remote_game::{self, RemoteGame},
 	Result,
 };
 
@@ -71,7 +55,10 @@ impl ProviderStatic for Gog {
 
 #[async_trait]
 impl ProviderActions for Gog {
-	fn get_installed_games(&self) -> Result<Vec<InstalledGame>> {
+	fn get_installed_games<TCallback>(&self, callback: TCallback) -> Result<Vec<InstalledGame>>
+	where
+		TCallback: Fn(InstalledGame),
+	{
 		Ok(self
 			.database
 			.iter()
@@ -96,12 +83,17 @@ impl ProviderActions for Gog {
 					game.set_thumbnail_url(image_url);
 				}
 
+				callback(game.clone());
+
 				Some(game)
 			})
 			.collect())
 	}
 
-	fn get_owned_games(&self) -> Result<Vec<OwnedGame>> {
+	fn get_owned_games<TCallback>(&self, callback: TCallback) -> Result<Vec<OwnedGame>>
+	where
+		TCallback: Fn(OwnedGame),
+	{
 		Ok(self
 			.database
 			.iter()
@@ -129,17 +121,22 @@ impl ProviderActions for Gog {
 					game.set_release_date(release_date.into());
 				}
 
+				callback(game.clone());
 				game
 			})
 			.collect())
 	}
 
-	async fn get_remote_games(&self) -> Result<Vec<RemoteGame>> {
+	async fn get_remote_games<TCallback>(&self, callback: TCallback) -> Result<Vec<RemoteGame>>
+	where
+		TCallback: Fn(RemoteGame) + std::marker::Send + std::marker::Sync,
+	{
 		let remote_games: Vec<RemoteGame> =
 			futures::future::join_all(self.database.iter().map(|db_entry| async {
 				let mut remote_game = RemoteGame::new(*Self::ID, &db_entry.id);
 
 				if let Some(cached_remote_game) = self.remote_game_cache.get(&remote_game.id) {
+					callback(cached_remote_game.clone());
 					return cached_remote_game.clone();
 				}
 
@@ -155,6 +152,7 @@ impl ProviderActions for Gog {
 					}
 				}
 
+				callback(remote_game.clone());
 				remote_game
 			}))
 			.await;
@@ -165,9 +163,18 @@ impl ProviderActions for Gog {
 	}
 }
 
-serializable_struct!(GogDbEntryTitle { title: Option<String> });
-serializable_struct!(GogDbEntryImages { square_icon: Option<String> });
-serializable_struct!(GogDbEntryMeta { release_date: Option<i32> });
+#[serializable_struct]
+pub struct GogDbEntryTitle {
+	title: Option<String>,
+}
+#[serializable_struct]
+pub struct GogDbEntryImages {
+	square_icon: Option<String>,
+}
+#[serializable_struct]
+pub struct GogDbEntryMeta {
+	release_date: Option<i32>,
+}
 
 fn get_database() -> Result<Vec<GogDbEntry>> {
 	let program_data = paths::try_get_program_data_path();
