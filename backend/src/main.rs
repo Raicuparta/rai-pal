@@ -87,22 +87,10 @@ async fn get_remote_games(handle: AppHandle) -> Result<remote_game::Map> {
 	handle.app_state().remote_games.get_data()
 }
 
-fn update_state<TData, TEvent>(
-	event: TEvent,
-	data: TData,
-	mutex: &Mutex<Option<TData>>,
-	handle: &AppHandle,
-) where
-	TEvent: tauri_specta::Event + std::clone::Clone + serde::Serialize,
-{
+fn update_state<TData>(data: TData, mutex: &Mutex<Option<TData>>) {
 	if let Ok(mut mutex_guard) = mutex.lock() {
 		*mutex_guard = Some(data);
 	}
-
-	// Sends a signal to make the frontend request an app state refresh.
-	// I would have preferred to just send the state with the signal,
-	// but it seems like Tauri events are really slow for large data.
-	handle.emit_safe(event);
 }
 
 #[tauri::command]
@@ -291,12 +279,9 @@ fn refresh_game_mods_and_exe(game_id: &str, handle: &AppHandle) -> Result {
 
 	handle.emit_safe(events::FoundInstalledGame(game.clone()));
 
-	update_state(
-		events::SyncInstalledGames(installed_games.clone()),
-		installed_games,
-		&handle.app_state().installed_games,
-		handle,
-	);
+	handle.emit_safe(events::SyncInstalledGames(installed_games.clone()));
+
+	update_state(installed_games, &handle.app_state().installed_games);
 
 	Ok(())
 }
@@ -349,12 +334,9 @@ fn refresh_local_mods(mod_loaders: &mod_loader::Map, handle: &AppHandle) -> loca
 		.flatten()
 		.collect();
 
-	update_state(
-		events::SyncLocalMods(local_mods.clone()),
-		local_mods.clone(),
-		&handle.app_state().local_mods,
-		handle,
-	);
+	handle.emit_safe(events::SyncLocalMods(local_mods.clone()));
+
+	update_state(local_mods.clone(), &handle.app_state().local_mods);
 
 	local_mods
 }
@@ -373,12 +355,9 @@ async fn refresh_remote_mods(mod_loaders: &mod_loader::Map, handle: &AppHandle) 
 		}
 	}
 
-	update_state(
-		events::SyncRemoteMods(remote_mods.clone()),
-		remote_mods.clone(),
-		&handle.app_state().remote_mods,
-		handle,
-	);
+	handle.emit_safe(events::SyncRemoteMods(remote_mods.clone()));
+
+	update_state(remote_mods.clone(), &handle.app_state().remote_mods);
 
 	remote_mods
 }
@@ -444,12 +423,9 @@ async fn update_installed_games(handle: AppHandle, provider_map: provider::Map) 
 		.map(|game| (game.id.clone(), game))
 		.collect();
 
-	update_state(
-		events::SyncInstalledGames(installed_games.clone()),
-		installed_games,
-		&handle.app_state().installed_games,
-		&handle,
-	);
+	handle.emit_safe(events::SyncInstalledGames(installed_games.clone()));
+
+	update_state(installed_games, &handle.app_state().installed_games);
 }
 
 async fn update_owned_games(handle: AppHandle, provider_map: provider::Map) {
@@ -468,12 +444,9 @@ async fn update_owned_games(handle: AppHandle, provider_map: provider::Map) {
 		.map(|owned_game| (owned_game.id.clone(), owned_game))
 		.collect();
 
-	update_state(
-		events::SyncOwnedGames(owned_games.clone()),
-		owned_games,
-		&handle.app_state().owned_games,
-		&handle,
-	);
+	handle.emit_safe(events::SyncOwnedGames(owned_games.clone()));
+
+	update_state(owned_games, &handle.app_state().owned_games);
 }
 
 async fn update_remote_games(handle: AppHandle, provider_map: provider::Map) {
@@ -494,12 +467,9 @@ async fn update_remote_games(handle: AppHandle, provider_map: provider::Map) {
 		.map(|remote_game| (remote_game.id.clone(), remote_game))
 		.collect();
 
-	update_state(
-		events::SyncRemoteGames(remote_games.clone()),
-		remote_games,
-		&handle.app_state().remote_games,
-		&handle,
-	);
+	handle.emit_safe(events::SyncRemoteGames(remote_games.clone()));
+
+	update_state(remote_games, &handle.app_state().remote_games);
 }
 
 async fn update_mods(handle: AppHandle, resources_path: PathBuf) {
@@ -507,12 +477,8 @@ async fn update_mods(handle: AppHandle, resources_path: PathBuf) {
 
 	match mod_loader::get_data_map(&mod_loaders) {
 		Ok(mod_loaders_data_map) => {
-			update_state(
-				events::SyncModLoaders(mod_loaders_data_map),
-				mod_loaders.clone(),
-				&handle.app_state().mod_loaders,
-				&handle,
-			);
+			handle.emit_safe(events::SyncModLoaders(mod_loaders_data_map));
+			update_state(mod_loaders.clone(), &handle.app_state().mod_loaders);
 
 			refresh_local_mods(&mod_loaders, &handle);
 			refresh_remote_mods(&mod_loaders, &handle).await;
@@ -564,12 +530,9 @@ async fn add_game(path: PathBuf, handle: AppHandle) -> Result {
 	let mut installed_games = state.installed_games.get_data()?.clone();
 	installed_games.insert(game.id.clone(), game);
 
-	update_state(
-		events::SyncInstalledGames(installed_games.clone()),
-		installed_games,
-		&state.installed_games,
-		&handle,
-	);
+	handle.emit_safe(events::SyncInstalledGames(installed_games.clone()));
+
+	update_state(installed_games, &state.installed_games);
 
 	handle.emit_safe(events::GameAdded(game_name.clone()));
 
@@ -588,12 +551,9 @@ async fn remove_game(game_id: &str, handle: AppHandle) -> Result {
 	let mut installed_games = state.installed_games.get_data()?;
 	installed_games.remove(game_id);
 
-	update_state(
-		events::SyncInstalledGames(installed_games.clone()),
-		installed_games,
-		&handle.app_state().installed_games,
-		&handle,
-	);
+	handle.emit_safe(events::SyncInstalledGames(installed_games.clone()));
+
+	update_state(installed_games, &handle.app_state().installed_games);
 
 	handle.emit_safe(events::GameRemoved(game.name));
 
