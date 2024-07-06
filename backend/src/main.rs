@@ -279,8 +279,6 @@ fn refresh_game_mods_and_exe(game_id: &str, handle: &AppHandle) -> Result {
 
 	handle.emit_safe(events::FoundInstalledGame(game.clone()));
 
-	handle.emit_safe(events::SyncInstalledGames(installed_games.clone()));
-
 	update_state(installed_games, &handle.app_state().installed_games);
 
 	Ok(())
@@ -423,8 +421,6 @@ async fn update_installed_games(handle: AppHandle, provider_map: provider::Map) 
 		.map(|game| (game.id.clone(), game))
 		.collect();
 
-	handle.emit_safe(events::SyncInstalledGames(installed_games.clone()));
-
 	update_state(installed_games, &handle.app_state().installed_games);
 }
 
@@ -443,8 +439,6 @@ async fn update_owned_games(handle: AppHandle, provider_map: provider::Map) {
 		})
 		.map(|owned_game| (owned_game.id.clone(), owned_game))
 		.collect();
-
-	handle.emit_safe(events::SyncOwnedGames(owned_games.clone()));
 
 	update_state(owned_games, &handle.app_state().owned_games);
 }
@@ -466,8 +460,6 @@ async fn update_remote_games(handle: AppHandle, provider_map: provider::Map) {
 		})
 		.map(|remote_game| (remote_game.id.clone(), remote_game))
 		.collect();
-
-	handle.emit_safe(events::SyncRemoteGames(remote_games.clone()));
 
 	update_state(remote_games, &handle.app_state().remote_games);
 }
@@ -530,8 +522,6 @@ async fn add_game(path: PathBuf, handle: AppHandle) -> Result {
 	let mut installed_games = state.installed_games.get_data()?.clone();
 	installed_games.insert(game.id.clone(), game);
 
-	handle.emit_safe(events::SyncInstalledGames(installed_games.clone()));
-
 	update_state(installed_games, &state.installed_games);
 
 	handle.emit_safe(events::GameAdded(game_name.clone()));
@@ -550,8 +540,6 @@ async fn remove_game(game_id: &str, handle: AppHandle) -> Result {
 
 	let mut installed_games = state.installed_games.get_data()?;
 	installed_games.remove(game_id);
-
-	handle.emit_safe(events::SyncInstalledGames(installed_games.clone()));
 
 	update_state(installed_games, &handle.app_state().installed_games);
 

@@ -9,22 +9,13 @@ use crate::{
 };
 
 #[serializable_event]
-pub struct SyncInstalledGames(pub installed_game::Map);
-
-#[serializable_event]
 pub struct FoundInstalledGame(pub installed_game::InstalledGame);
-
-#[serializable_event]
-pub struct SyncOwnedGames(pub owned_game::Map);
 
 #[serializable_event]
 pub struct FoundOwnedGame(pub owned_game::OwnedGame);
 
 #[serializable_event]
 pub struct FoundRemoteGame(pub remote_game::RemoteGame);
-
-#[serializable_event]
-pub struct SyncRemoteGames(pub remote_game::Map);
 
 #[serializable_event]
 pub struct SyncModLoaders(pub mod_loader::DataMap);
@@ -74,12 +65,9 @@ pub fn collect_events() -> (
 	specta::TypeMap,
 ) {
 	tauri_specta::collect_events![
-		SyncInstalledGames,
 		FoundInstalledGame,
 		FoundOwnedGame,
 		FoundRemoteGame,
-		SyncOwnedGames,
-		SyncRemoteGames,
 		SyncModLoaders,
 		SyncLocalMods,
 		SyncRemoteMods,
