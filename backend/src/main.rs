@@ -1,9 +1,12 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+// There's some weird tauri thing making this clippy error show up everywhere.
+#![allow(clippy::used_underscore_binding)]
 
 use std::{collections::HashMap, path::PathBuf, sync::Mutex};
 
 use app_state::{AppState, DataValue, StateData, StatefulHandle};
+use events::EventEmitter;
 use local_mod::LocalMod;
 use log::error;
 use maps::TryGettable;
@@ -18,8 +21,6 @@ use result::{Error, Result};
 use steamlocate::SteamDir;
 use tauri::{AppHandle, Manager};
 use tauri_plugin_log::{Target, TargetKind};
-use tauri_specta::Event;
-// use tauri_plugin_log::Target;
 
 mod analytics;
 mod app_state;
@@ -99,7 +100,7 @@ fn update_state<TData, TEvent>(
 	// Sends a signal to make the frontend request an app state refresh.
 	// I would have preferred to just send the state with the signal,
 	// but it seems like Tauri events are really slow for large data.
-	event.emit(handle);
+	handle.emit_safe(event);
 }
 
 #[tauri::command]
@@ -186,7 +187,7 @@ async fn start_game(game_id: &str, handle: AppHandle) -> Result {
 		.try_get(game_id)?
 		.start()?;
 
-	events::ExecutedProviderCommand.emit(&handle)?;
+	handle.emit_safe(events::ExecutedProviderCommand);
 
 	Ok(())
 }
@@ -360,7 +361,7 @@ async fn refresh_remote_mods(mod_loaders: &mod_loader::Map, handle: &AppHandle) 
 	for mod_loader in mod_loaders.values() {
 		for (mod_id, remote_mod) in mod_loader
 			.get_remote_mods(|error| {
-				events::ErrorRaised(format!("Failed to get remote mods: {error}")).emit(handle);
+				handle.emit_error(format!("Failed to get remote mods: {error}"));
 			})
 			.await
 		{
@@ -425,7 +426,7 @@ async fn update_installed_games(handle: AppHandle, provider_map: provider::Map) 
 		.iter()
 		.flat_map(|(provider_id, provider)| {
 			let installed_games = provider.get_installed_games(|game| {
-				events::FoundInstalledGame(game.clone()).emit(&handle);
+				handle.emit_safe(events::FoundInstalledGame(game));
 			});
 
 			match installed_games {
@@ -451,15 +452,14 @@ async fn update_owned_games(handle: AppHandle, provider_map: provider::Map) {
 	let owned_games: owned_game::Map = provider_map
 		.iter()
 		.flat_map(|(provider_id, provider)| {
-			match provider.get_owned_games(|game| {
-				events::FoundOwnedGame(game.clone()).emit(&handle);
-			}) {
-				Ok(owned_games) => owned_games,
-				Err(err) => {
+			provider
+				.get_owned_games(|game| {
+					handle.emit_safe(events::FoundOwnedGame(game));
+				})
+				.unwrap_or_else(|err| {
 					error!("Failed to get owned games for provider '{provider_id}'. Error: {err}");
 					Vec::default()
-				}
-			}
+				})
 		})
 		.map(|owned_game| (owned_game.id.clone(), owned_game))
 		.collect();
@@ -476,7 +476,7 @@ async fn update_remote_games(handle: AppHandle, provider_map: provider::Map) {
 	let remote_games: remote_game::Map =
 		futures::future::join_all(provider_map.values().map(|provider| {
 			provider.get_remote_games(|remote_game| {
-				events::FoundRemoteGame(remote_game.clone()).emit(&handle);
+				handle.emit_safe(events::FoundRemoteGame(remote_game));
 			})
 		}))
 		.await
@@ -501,15 +501,22 @@ async fn update_remote_games(handle: AppHandle, provider_map: provider::Map) {
 async fn update_mods(handle: AppHandle, resources_path: PathBuf) {
 	let mod_loaders = mod_loader::get_map(&resources_path);
 
-	update_state(
-		events::SyncModLoaders(mod_loader::get_data_map(&mod_loaders).unwrap()), // TODO handle error.
-		mod_loaders.clone(),
-		&handle.app_state().mod_loaders,
-		&handle,
-	);
+	match mod_loader::get_data_map(&mod_loaders) {
+		Ok(mod_loaders_data_map) => {
+			update_state(
+				events::SyncModLoaders(mod_loaders_data_map),
+				mod_loaders.clone(),
+				&handle.app_state().mod_loaders,
+				&handle,
+			);
 
-	refresh_local_mods(&mod_loaders, &handle);
-	refresh_remote_mods(&mod_loaders, &handle).await;
+			refresh_local_mods(&mod_loaders, &handle);
+			refresh_remote_mods(&mod_loaders, &handle).await;
+		}
+		Err(err) => {
+			handle.emit_error(format!("Failed to get mod loaders: {err}"));
+		}
+	}
 }
 
 #[tauri::command]
@@ -523,13 +530,13 @@ async fn update_data(handle: AppHandle) -> Result {
 		tokio::spawn(update_installed_games(handle.clone(), provider_map.clone())),
 		tokio::spawn(update_owned_games(handle.clone(), provider_map.clone())),
 		tokio::spawn(update_remote_games(handle.clone(), provider_map)),
-		tokio::spawn(update_mods(handle, resources_path)),
+		tokio::spawn(update_mods(handle.clone(), resources_path)),
 	])
 	.await;
 
 	for result in results {
 		if let Err(err) = result {
-			error!("Error updating data: {err}");
+			handle.emit_error(format!("Error updating data: {err}"));
 		}
 	}
 
@@ -560,7 +567,7 @@ async fn add_game(path: PathBuf, handle: AppHandle) -> Result {
 		&handle,
 	);
 
-	events::GameAdded(game_name.clone()).emit(&handle)?;
+	handle.emit_safe(events::GameAdded(game_name.clone()));
 
 	analytics::send_event(analytics::Event::ManuallyAddGame, &game_name).await;
 
@@ -584,7 +591,7 @@ async fn remove_game(game_id: &str, handle: AppHandle) -> Result {
 		&handle,
 	);
 
-	events::GameRemoved(game.name).emit(&handle)?;
+	handle.emit_safe(events::GameRemoved(game.name));
 
 	Ok(())
 }
@@ -604,7 +611,7 @@ async fn run_provider_command(
 		.try_get(&command_action)?
 		.run()?;
 
-	events::ExecutedProviderCommand.emit(&handle)?;
+	handle.emit_safe(events::ExecutedProviderCommand);
 
 	Ok(())
 }
@@ -642,7 +649,6 @@ fn main() {
 	}));
 
 	let (invoke_handler, register_events) = {
-		// You can use `tauri_specta::js::builder` for exporting JS Doc instead of Typescript!`
 		let builder = tauri_specta::ts::builder()
 			.config(
 				specta::ts::ExportConfig::default()
@@ -684,7 +690,10 @@ fn main() {
 		#[cfg(debug_assertions)]
 		let builder = builder.path("../frontend/api/bindings.ts");
 
-		builder.build().unwrap()
+		builder.build().unwrap_or_else(|err| {
+			error!("Failed to generate TypeScript bindings: {err}");
+			std::process::exit(1);
+		})
 	};
 
 	tauri::Builder::default()

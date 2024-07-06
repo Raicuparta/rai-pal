@@ -1,4 +1,8 @@
+use std::fmt::Display;
+
 use rai_pal_proc_macros::serializable_event;
+use serde::Serialize;
+use tauri_specta::Event;
 
 use crate::{
 	installed_game, local_mod, mod_loaders::mod_loader, owned_game, remote_game, remote_mod,
@@ -43,29 +47,26 @@ pub struct GameRemoved(pub String);
 #[serializable_event]
 pub struct ErrorRaised(pub String);
 
-// pub trait EventEmitter {
-// 	fn emit_event<TPayload: Serialize + Clone>(&self, event: AppEvent, payload: TPayload);
-// 	fn emit_error<TPayload: Serialize + Clone + Display>(&self, payload: TPayload);
-// }
+pub trait EventEmitter {
+	fn emit_safe<TEvent: tauri_specta::Event + Serialize + Clone>(&self, event: TEvent);
+	fn emit_error<TError: Serialize + Clone + Display>(&self, error: TError);
+}
 
-// impl EventEmitter for tauri::AppHandle {
-// 	fn emit_event<TPayload: Serialize + Clone>(&self, event: AppEvent, payload: TPayload) {
-// 		self.emit_to(EventTarget::any(), &event.to_string(), payload)
-// 			.unwrap_or_else(|err| error!("Failed to emit event: {err}"));
-// 	}
+impl EventEmitter for tauri::AppHandle {
+	fn emit_safe<TEvent: tauri_specta::Event + serde::Serialize + Clone>(&self, event: TEvent) {
+		event
+			.emit(self)
+			.unwrap_or_else(|err| log::error!("Failed to emit event: {err}"));
+	}
 
-// 	fn emit_error<TPayload: Serialize + Clone + Display>(&self, payload: TPayload) {
-// 		error!("Error: {payload}");
-// 		self.emit_to(EventTarget::any(), &AppEvent::Error.to_string(), payload)
-// 			.unwrap_or_else(|err| error!("Failed to emit error: {err}."));
-// 	}
-// }
+	fn emit_error<TError: Serialize + Clone + Display>(&self, error: TError) {
+		log::error!("Error: {error}");
 
-// impl core::fmt::Display for AppEvent {
-// 	fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
-// 		write!(f, "{:?}", self)
-// 	}
-// }
+		ErrorRaised(error.to_string())
+			.emit(self)
+			.unwrap_or_else(|err| log::error!("Failed to emit error event: {err}"));
+	}
+}
 
 pub fn collect_events() -> (
 	tauri_specta::EventCollection,
