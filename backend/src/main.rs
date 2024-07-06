@@ -9,16 +9,19 @@ use std::{collections::HashMap, path::PathBuf, sync::Mutex};
 
 use app_state::{AppState, DataValue, StateData, StatefulHandle};
 use events::EventEmitter;
+use installed_game::InstalledGame;
 use local_mod::LocalMod;
 use log::error;
 use maps::TryGettable;
 use mod_loaders::mod_loader::{self, ModLoaderActions};
+use owned_game::OwnedGame;
 use paths::{hash_path, normalize_path};
 use providers::{
 	manual_provider,
 	provider::{self, ProviderActions},
 	provider_command::ProviderCommandAction,
 };
+use remote_game::RemoteGame;
 use result::{Error, Result};
 use steamlocate::SteamDir;
 use tauri::{AppHandle, Manager};
@@ -402,67 +405,112 @@ async fn refresh_and_get_local_mod(
 	local_mods.try_get(mod_id).cloned()
 }
 
-async fn update_installed_games(handle: AppHandle, provider_map: provider::Map) {
-	let installed_games: HashMap<_, _> = provider_map
-		.iter()
-		.flat_map(|(provider_id, provider)| {
-			let installed_games = provider.get_installed_games(|game| {
-				handle.emit_safe(events::FoundInstalledGame(game));
-			});
-
-			match installed_games {
-				Ok(games) => games,
-				Err(err) => {
-					error!("Error getting installed games for provider ({provider_id}): {err}");
-					Vec::default()
-				}
-			}
-		})
-		.map(|game| (game.id.clone(), game))
-		.collect();
-
-	update_state(installed_games, &handle.app_state().installed_games);
+fn installed_game_callback(handle: AppHandle) -> impl Fn(InstalledGame) {
+	move |game: InstalledGame| {
+		handle.emit_safe(events::FoundInstalledGame(game));
+	}
 }
 
-async fn update_owned_games(handle: AppHandle, provider_map: provider::Map) {
-	let owned_games: owned_game::Map = provider_map
-		.iter()
-		.flat_map(|(provider_id, provider)| {
-			provider
-				.get_owned_games(|game| {
-					handle.emit_safe(events::FoundOwnedGame(game));
-				})
-				.unwrap_or_else(|err| {
-					error!("Failed to get owned games for provider '{provider_id}'. Error: {err}");
-					Vec::default()
-				})
-		})
-		.map(|owned_game| (owned_game.id.clone(), owned_game))
-		.collect();
-
-	update_state(owned_games, &handle.app_state().owned_games);
+fn owned_game_callback(handle: AppHandle) -> impl Fn(OwnedGame) {
+	move |game: OwnedGame| {
+		handle.emit_safe(events::FoundOwnedGame(game));
+	}
 }
 
-async fn update_remote_games(handle: AppHandle, provider_map: provider::Map) {
-	let remote_games: remote_game::Map =
-		futures::future::join_all(provider_map.values().map(|provider| {
-			provider.get_remote_games(|remote_game| {
-				handle.emit_safe(events::FoundRemoteGame(remote_game));
-			})
-		}))
-		.await
-		.into_iter()
-		.flat_map(|result| {
-			result.unwrap_or_else(|err| {
-				error!("Failed to get remote games for a provider: {err}");
-				Vec::default()
-			})
-		})
-		.map(|remote_game| (remote_game.id.clone(), remote_game))
-		.collect();
-
-	update_state(remote_games, &handle.app_state().remote_games);
+fn remote_game_callback(handle: AppHandle) -> impl Fn(RemoteGame) {
+	move |game: RemoteGame| {
+		handle.emit_safe(events::FoundRemoteGame(game));
+	}
 }
+
+async fn update_games(handle: AppHandle) {
+	let provider_map = provider::get_map();
+
+	futures::future::join_all(provider_map.values().map(|provider| {
+		let provider_clone = provider.clone();
+
+		let handle_clone = handle.clone();
+
+		tokio::spawn(async move {
+			provider_clone
+				.get_games(
+					installed_game_callback(handle_clone.clone()),
+					owned_game_callback(handle_clone.clone()),
+					remote_game_callback(handle_clone),
+				)
+				.await
+		})
+	}))
+	.await
+	.into_iter()
+	.for_each(|result| {
+		if let Err(err) = result {
+			error!("Failed to get games for a provider: {err}");
+		}
+	});
+}
+
+// async fn update_installed_games(handle: AppHandle, provider_map: provider::Map) {
+// 	let installed_games: HashMap<_, _> = provider_map
+// 		.iter()
+// 		.flat_map(|(provider_id, provider)| {
+// 			let installed_games = provider.get_installed_games(|game| {
+// 				handle.emit_safe(events::FoundInstalledGame(game));
+// 			});
+
+// 			match installed_games {
+// 				Ok(games) => games,
+// 				Err(err) => {
+// 					error!("Error getting installed games for provider ({provider_id}): {err}");
+// 					Vec::default()
+// 				}
+// 			}
+// 		})
+// 		.map(|game| (game.id.clone(), game))
+// 		.collect();
+
+// 	update_state(installed_games, &handle.app_state().installed_games);
+// }
+
+// async fn update_owned_games(handle: AppHandle, provider_map: provider::Map) {
+// 	let owned_games: owned_game::Map = provider_map
+// 		.iter()
+// 		.flat_map(|(provider_id, provider)| {
+// 			provider
+// 				.get_owned_games(|game| {
+// 					handle.emit_safe(events::FoundOwnedGame(game));
+// 				})
+// 				.unwrap_or_else(|err| {
+// 					error!("Failed to get owned games for provider '{provider_id}'. Error: {err}");
+// 					Vec::default()
+// 				})
+// 		})
+// 		.map(|owned_game| (owned_game.id.clone(), owned_game))
+// 		.collect();
+
+// 	update_state(owned_games, &handle.app_state().owned_games);
+// }
+
+// async fn update_remote_games(handle: AppHandle, provider_map: provider::Map) {
+// 	let remote_games: remote_game::Map =
+// 		futures::future::join_all(provider_map.values().map(|provider| {
+// 			provider.get_remote_games(|remote_game| {
+// 				handle.emit_safe(events::FoundRemoteGame(remote_game));
+// 			})
+// 		}))
+// 		.await
+// 		.into_iter()
+// 		.flat_map(|result| {
+// 			result.unwrap_or_else(|err| {
+// 				error!("Failed to get remote games for a provider: {err}");
+// 				Vec::default()
+// 			})
+// 		})
+// 		.map(|remote_game| (remote_game.id.clone(), remote_game))
+// 		.collect();
+
+// 	update_state(remote_games, &handle.app_state().remote_games);
+// }
 
 async fn update_mods(handle: AppHandle, resources_path: PathBuf) {
 	let mod_loaders = mod_loader::get_map(&resources_path);
@@ -486,12 +534,8 @@ async fn update_mods(handle: AppHandle, resources_path: PathBuf) {
 async fn update_data(handle: AppHandle) -> Result {
 	let resources_path = paths::resources_path(&handle)?;
 
-	let provider_map = provider::get_map();
-
 	let results = futures::future::join_all([
-		tokio::spawn(update_installed_games(handle.clone(), provider_map.clone())),
-		tokio::spawn(update_owned_games(handle.clone(), provider_map.clone())),
-		tokio::spawn(update_remote_games(handle.clone(), provider_map)),
+		tokio::spawn(update_games(handle.clone())),
 		tokio::spawn(update_mods(handle.clone(), resources_path)),
 	])
 	.await;

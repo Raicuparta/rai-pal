@@ -134,129 +134,143 @@ impl EpicCatalogItem {
 
 #[async_trait]
 impl ProviderActions for Epic {
-	fn get_installed_games<TCallback>(&self, callback: TCallback) -> Result<Vec<InstalledGame>>
+	async fn get_games<TInstalledCallback, TOwnedCallback, TRemoteCallback>(
+		&self,
+		installed_callback: TInstalledCallback,
+		owned_callback: TOwnedCallback,
+		remote_callback: TRemoteCallback,
+	) -> Result
 	where
-		TCallback: Fn(InstalledGame),
+		TInstalledCallback: Fn(InstalledGame) + Send + Sync,
+		TOwnedCallback: Fn(OwnedGame) + Send + Sync,
+		TRemoteCallback: Fn(RemoteGame) + Send + Sync,
 	{
-		let manifests = glob_path(&self.app_data_path.join("Manifests").join("*.item"));
-
-		Ok(manifests
-			.iter()
-			.filter_map(
-				|manifest_path_result| match read_manifest(manifest_path_result) {
-					Ok(manifest) => {
-						let path = PathBuf::from(manifest.install_location)
-							.join(manifest.launch_executable);
-
-						let mut game =
-							InstalledGame::new(&path, &manifest.display_name, Self::ID.to_owned())?;
-						game.set_start_command_string(&format!(
-							"com.epicgames.launcher://apps/{}?action=launch&silent=true",
-							manifest.app_name
-						));
-						game.set_provider_game_id(&manifest.catalog_item_id);
-
-						callback(game.clone());
-
-						Some(game)
-					}
-					Err(err) => {
-						error!("Failed to parse manifest: {err}");
-						None
-					}
-				},
-			)
-			.collect())
+		Ok(())
 	}
 
-	fn get_owned_games<TCallback>(&self, callback: TCallback) -> Result<Vec<OwnedGame>>
-	where
-		TCallback: Fn(OwnedGame),
-	{
-		let owned_games = self.catalog.iter().filter_map(|catalog_item| {
-			if catalog_item
-				.categories
-				.iter()
-				.all(|category| category.path != "games")
-			{
-				return None;
-			}
+	// fn get_installed_games<TCallback>(&self, callback: TCallback) -> Result<Vec<InstalledGame>>
+	// where
+	// 	TCallback: Fn(InstalledGame),
+	// {
+	// 	let manifests = glob_path(&self.app_data_path.join("Manifests").join("*.item"));
 
-			let mut game = OwnedGame::new(&catalog_item.id, *Self::ID, &catalog_item.title);
+	// 	Ok(manifests
+	// 		.iter()
+	// 		.filter_map(
+	// 			|manifest_path_result| match read_manifest(manifest_path_result) {
+	// 				Ok(manifest) => {
+	// 					let path = PathBuf::from(manifest.install_location)
+	// 						.join(manifest.launch_executable);
 
-			game.add_provider_command(
-				ProviderCommandAction::Install,
-				ProviderCommand::String(format!(
-					"com.epicgames.launcher://apps/{}%3A{}%3A{}?action=install",
-					catalog_item.namespace,
-					catalog_item.id,
-					catalog_item
-						.release_info
-						.first()
-						.map(|release_info| release_info.app_id.clone())
-						.unwrap_or_default(),
-				)),
-			)
-			.add_provider_command(
-				ProviderCommandAction::OpenInBrowser,
-				ProviderCommand::String(format!(
-					"https://store.epicgames.com/browse?{}",
-					serde_urlencoded::to_string([
-						("sortBy", "relevancy"),
-						("q", &catalog_item.title)
-					])
-					.ok()?,
-				)),
-			)
-			.guess_app_type();
+	// 					let mut game =
+	// 						InstalledGame::new(&path, &manifest.display_name, Self::ID.to_owned())?;
+	// 					game.set_start_command_string(&format!(
+	// 						"com.epicgames.launcher://apps/{}?action=launch&silent=true",
+	// 						manifest.app_name
+	// 					));
+	// 					game.set_provider_game_id(&manifest.catalog_item_id);
 
-			if let Some(thumbnail_url) = catalog_item.get_thumbnail_url() {
-				game.set_thumbnail_url(&thumbnail_url);
-			}
+	// 					callback(game.clone());
 
-			if let Some(release_date) = catalog_item.get_release_date() {
-				game.set_release_date(release_date);
-			}
+	// 					Some(game)
+	// 				}
+	// 				Err(err) => {
+	// 					error!("Failed to parse manifest: {err}");
+	// 					None
+	// 				}
+	// 			},
+	// 		)
+	// 		.collect())
+	// }
 
-			callback(game.clone());
-			Some(game)
-		});
+	// fn get_owned_games<TCallback>(&self, callback: TCallback) -> Result<Vec<OwnedGame>>
+	// where
+	// 	TCallback: Fn(OwnedGame),
+	// {
+	// 	let owned_games = self.catalog.iter().filter_map(|catalog_item| {
+	// 		if catalog_item
+	// 			.categories
+	// 			.iter()
+	// 			.all(|category| category.path != "games")
+	// 		{
+	// 			return None;
+	// 		}
 
-		Ok(owned_games.collect())
-	}
+	// 		let mut game = OwnedGame::new(&catalog_item.id, *Self::ID, &catalog_item.title);
 
-	async fn get_remote_games<TCallback>(&self, callback: TCallback) -> Result<Vec<RemoteGame>>
-	where
-		TCallback: Fn(RemoteGame) + std::marker::Send + std::marker::Sync,
-	{
-		let remote_games: Vec<RemoteGame> =
-			futures::future::join_all(self.catalog.iter().map(|catalog_item| async {
-				let mut remote_game = RemoteGame::new(*Self::ID, &catalog_item.id);
+	// 		game.add_provider_command(
+	// 			ProviderCommandAction::Install,
+	// 			ProviderCommand::String(format!(
+	// 				"com.epicgames.launcher://apps/{}%3A{}%3A{}?action=install",
+	// 				catalog_item.namespace,
+	// 				catalog_item.id,
+	// 				catalog_item
+	// 					.release_info
+	// 					.first()
+	// 					.map(|release_info| release_info.app_id.clone())
+	// 					.unwrap_or_default(),
+	// 			)),
+	// 		)
+	// 		.add_provider_command(
+	// 			ProviderCommandAction::OpenInBrowser,
+	// 			ProviderCommand::String(format!(
+	// 				"https://store.epicgames.com/browse?{}",
+	// 				serde_urlencoded::to_string([
+	// 					("sortBy", "relevancy"),
+	// 					("q", &catalog_item.title)
+	// 				])
+	// 				.ok()?,
+	// 			)),
+	// 		)
+	// 		.guess_app_type();
 
-				if let Some(cached_remote_game) = self.remote_game_cache.get(&remote_game.id) {
-					callback(cached_remote_game.clone());
-					return cached_remote_game.clone();
-				}
+	// 		if let Some(thumbnail_url) = catalog_item.get_thumbnail_url() {
+	// 			game.set_thumbnail_url(&thumbnail_url);
+	// 		}
 
-				match pc_gaming_wiki::get_engine_from_game_title(&catalog_item.title).await {
-					Ok(Some(engine)) => {
-						remote_game.set_engine(engine);
-					}
-					Ok(None) => {}
-					Err(_) => {
-						remote_game.set_skip_cache(true);
-					}
-				}
+	// 		if let Some(release_date) = catalog_item.get_release_date() {
+	// 			game.set_release_date(release_date);
+	// 		}
 
-				callback(remote_game.clone());
-				remote_game
-			}))
-			.await;
+	// 		callback(game.clone());
+	// 		Some(game)
+	// 	});
 
-		Self::try_save_remote_game_cache(&remote_games);
+	// 	Ok(owned_games.collect())
+	// }
 
-		Ok(remote_games)
-	}
+	// async fn get_remote_games<TCallback>(&self, callback: TCallback) -> Result<Vec<RemoteGame>>
+	// where
+	// 	TCallback: Fn(RemoteGame) + std::marker::Send + std::marker::Sync,
+	// {
+	// 	let remote_games: Vec<RemoteGame> =
+	// 		futures::future::join_all(self.catalog.iter().map(|catalog_item| async {
+	// 			let mut remote_game = RemoteGame::new(*Self::ID, &catalog_item.id);
+
+	// 			if let Some(cached_remote_game) = self.remote_game_cache.get(&remote_game.id) {
+	// 				callback(cached_remote_game.clone());
+	// 				return cached_remote_game.clone();
+	// 			}
+
+	// 			match pc_gaming_wiki::get_engine_from_game_title(&catalog_item.title).await {
+	// 				Ok(Some(engine)) => {
+	// 					remote_game.set_engine(engine);
+	// 				}
+	// 				Ok(None) => {}
+	// 				Err(_) => {
+	// 					remote_game.set_skip_cache(true);
+	// 				}
+	// 			}
+
+	// 			callback(remote_game.clone());
+	// 			remote_game
+	// 		}))
+	// 		.await;
+
+	// 	Self::try_save_remote_game_cache(&remote_games);
+
+	// 	Ok(remote_games)
+	// }
 }
 
 fn read_manifest(path: &PathBuf) -> Result<EpicManifest> {

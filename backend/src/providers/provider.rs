@@ -1,4 +1,10 @@
-use std::{collections::HashMap, fs, path::PathBuf, time::Instant};
+use std::{
+	collections::HashMap,
+	fs,
+	marker::{Send, Sync},
+	path::PathBuf,
+	time::Instant,
+};
 
 use async_trait::async_trait;
 use enum_dispatch::enum_dispatch;
@@ -42,17 +48,16 @@ pub enum Provider {
 #[async_trait]
 #[enum_dispatch(Provider)]
 pub trait ProviderActions {
-	fn get_installed_games<TCallback>(&self, callback: TCallback) -> Result<Vec<InstalledGame>>
+	async fn get_games<TInstalledCallback, TOwnedCallback, TRemoteCallback>(
+		&self,
+		installed_callback: TInstalledCallback,
+		owned_callback: TOwnedCallback,
+		remote_callback: TRemoteCallback,
+	) -> Result
 	where
-		TCallback: Fn(InstalledGame);
-
-	fn get_owned_games<TCallback>(&self, callback: TCallback) -> Result<Vec<OwnedGame>>
-	where
-		TCallback: Fn(OwnedGame);
-
-	async fn get_remote_games<TCallback>(&self, callback: TCallback) -> Result<Vec<RemoteGame>>
-	where
-		TCallback: Fn(RemoteGame) + std::marker::Send + std::marker::Sync;
+		TInstalledCallback: Fn(InstalledGame) + Send + Sync,
+		TOwnedCallback: Fn(OwnedGame) + Send + Sync,
+		TRemoteCallback: Fn(RemoteGame) + Send + Sync;
 }
 
 pub trait ProviderStatic: ProviderActions {
