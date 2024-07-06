@@ -289,6 +289,8 @@ fn refresh_game_mods_and_exe(game_id: &str, handle: &AppHandle) -> Result {
 	game.refresh_installed_mods();
 	game.refresh_executable()?;
 
+	handle.emit_safe(events::FoundInstalledGame(game.clone()));
+
 	update_state(
 		events::SyncInstalledGames(installed_games.clone()),
 		installed_games,
