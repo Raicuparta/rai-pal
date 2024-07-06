@@ -1,4 +1,9 @@
-use std::{collections::HashSet, fs, path::PathBuf};
+use std::{
+	collections::HashSet,
+	fs,
+	marker::{Send, Sync},
+	path::PathBuf,
+};
 
 use async_trait::async_trait;
 use lazy_regex::BytesRegex;
@@ -28,8 +33,6 @@ use crate::{
 
 #[derive(Clone)]
 pub struct Steam {
-	directory: SteamDir,
-	app_info_file: SteamAppInfoFile,
 	remote_game_cache: remote_game::Map,
 }
 
@@ -40,21 +43,19 @@ impl ProviderStatic for Steam {
 	where
 		Self: Sized,
 	{
-		let steam_dir = SteamDir::locate()?;
-		let app_info_file = appinfo::read(steam_dir.path())?;
 		let remote_game_cache = Self::try_get_remote_game_cache();
 
-		Ok(Self {
-			directory: steam_dir,
-			app_info_file,
-			remote_game_cache,
-		})
+		Ok(Self { remote_game_cache })
 	}
 }
 
-#[async_trait]
-impl ProviderActions for Steam {
-	fn get_installed_games<TCallback>(&self, callback: TCallback) -> Result<Vec<InstalledGame>>
+impl Steam {
+	fn get_installed_games<TCallback>(
+		&self,
+		directory: &SteamDir,
+		app_info_file: &SteamAppInfoFile,
+		callback: TCallback,
+	) -> Result<Vec<InstalledGame>>
 	where
 		TCallback: Fn(InstalledGame),
 	{
@@ -62,9 +63,9 @@ impl ProviderActions for Steam {
 		let mut used_paths: HashSet<PathBuf> = HashSet::new();
 		let mut used_names: HashSet<String> = HashSet::new();
 
-		for library in (self.directory.libraries()?).flatten() {
+		for library in (directory.libraries()?).flatten() {
 			for app in library.apps().flatten() {
-				if let Some(app_info) = self.app_info_file.apps.get(&app.app_id) {
+				if let Some(app_info) = app_info_file.apps.get(&app.app_id) {
 					let sorted_launch_options = {
 						let mut sorted_launch_options = app_info.launch_options.clone();
 						sorted_launch_options.sort_by(|a, b| a.launch_id.cmp(&b.launch_id));
@@ -122,64 +123,16 @@ impl ProviderActions for Steam {
 		Ok(games)
 	}
 
-	async fn get_remote_games<TCallback>(&self, callback: TCallback) -> Result<Vec<RemoteGame>>
-	where
-		TCallback: Fn(RemoteGame) + std::marker::Send + std::marker::Sync,
-	{
-		let steam_games = id_lists::get().await?;
-
-		let remote_games: Vec<RemoteGame> =
-			futures::future::join_all(self.app_info_file.apps.keys().map(|app_id| async {
-				let id_string = app_id.to_string();
-				let mut remote_game = RemoteGame::new(*Self::ID, &id_string);
-
-				if let Some(cached_remote_game) = self.remote_game_cache.get(&remote_game.id) {
-					callback(cached_remote_game.clone());
-					return Some(cached_remote_game.clone());
-				}
-
-				let steam_game_option = steam_games.get(&id_string);
-
-				match pc_gaming_wiki::get_engine(&format!("Steam_AppID HOLDS \"{id_string}\""))
-					.await
-				{
-					Ok(Some(pc_gaming_wiki_engine)) => {
-						remote_game.set_engine(pc_gaming_wiki_engine);
-					}
-					Ok(None) => {
-						if let Some(engine_brand) =
-							steam_game_option.map(|steam_game| steam_game.engine)
-						{
-							remote_game.set_engine(GameEngine {
-								brand: engine_brand,
-								version: None,
-							});
-						}
-					}
-					Err(_) => {
-						remote_game.set_skip_cache(true);
-					}
-				}
-
-				callback(remote_game.clone());
-				Some(remote_game)
-			}))
-			.await
-			.into_iter()
-			.flatten()
-			.collect();
-
-		Self::try_save_remote_game_cache(&remote_games);
-
-		Ok(remote_games)
-	}
-
-	fn get_owned_games<TCallback>(&self, callback: TCallback) -> Result<Vec<OwnedGame>>
+	fn get_owned_games<TCallback>(
+		&self,
+		directory: &SteamDir,
+		app_info_file: &SteamAppInfoFile,
+		callback: TCallback,
+	) -> Result<Vec<OwnedGame>>
 	where
 		TCallback: Fn(OwnedGame),
 	{
-		let owned_games: Vec<OwnedGame> = self
-			.app_info_file
+		let owned_games: Vec<OwnedGame> = app_info_file
 			.apps
 			.iter()
 			.filter_map(|(steam_id, app_info)| {
@@ -204,19 +157,16 @@ impl ProviderActions for Steam {
 				// assets.vdf is another cache file, and from my (not very extensive) tests, it to really only include owned files.
 				// Free games are some times not there though, so I'm presuming that any free game found in appinfo.vdf is owned.
 				// appinfo.vdf is also still needed since most of the game data we want is there, so we can't just read everything from assets.vdf.
-				let owned = app_info.is_free
-					|| fs::read(
-						self.directory
-							.path()
-							.join("appcache/librarycache/assets.vdf"),
-					)
-					.map_or(false, |assets_cache_bytes| {
-						// Would be smarter to actually parse assets.vdf and extract all the ids,
-						// but I didn't feel like figuring out how to parse another binary vdf.
-						// Maybe later. But most likely never.
-						BytesRegex::new(&id_string)
-							.map_or(false, |regex| regex.is_match(&assets_cache_bytes))
-					});
+				let owned =
+					app_info.is_free
+						|| fs::read(directory.path().join("appcache/librarycache/assets.vdf"))
+							.map_or(false, |assets_cache_bytes| {
+								// Would be smarter to actually parse assets.vdf and extract all the ids,
+								// but I didn't feel like figuring out how to parse another binary vdf.
+								// Maybe later. But most likely never.
+								BytesRegex::new(&id_string)
+									.map_or(false, |regex| regex.is_match(&assets_cache_bytes))
+							});
 
 				if !owned {
 					return None;
@@ -281,6 +231,88 @@ impl ProviderActions for Steam {
 			.collect();
 
 		Ok(owned_games)
+	}
+
+	async fn get_remote_games<TCallback>(
+		&self,
+		directory: &SteamDir,
+		app_info_file: &SteamAppInfoFile,
+		callback: TCallback,
+	) -> Result<Vec<RemoteGame>>
+	where
+		TCallback: Fn(RemoteGame) + Send + Sync,
+	{
+		let steam_games = id_lists::get().await?;
+
+		let remote_games: Vec<RemoteGame> =
+			futures::future::join_all(app_info_file.apps.keys().map(|app_id| async {
+				let id_string = app_id.to_string();
+				let mut remote_game = RemoteGame::new(*Self::ID, &id_string);
+
+				if let Some(cached_remote_game) = self.remote_game_cache.get(&remote_game.id) {
+					callback(cached_remote_game.clone());
+					return Some(cached_remote_game.clone());
+				}
+
+				let steam_game_option = steam_games.get(&id_string);
+
+				match pc_gaming_wiki::get_engine(&format!("Steam_AppID HOLDS \"{id_string}\""))
+					.await
+				{
+					Ok(Some(pc_gaming_wiki_engine)) => {
+						remote_game.set_engine(pc_gaming_wiki_engine);
+					}
+					Ok(None) => {
+						if let Some(engine_brand) =
+							steam_game_option.map(|steam_game| steam_game.engine)
+						{
+							remote_game.set_engine(GameEngine {
+								brand: engine_brand,
+								version: None,
+							});
+						}
+					}
+					Err(_) => {
+						remote_game.set_skip_cache(true);
+					}
+				}
+
+				callback(remote_game.clone());
+				Some(remote_game)
+			}))
+			.await
+			.into_iter()
+			.flatten()
+			.collect();
+
+		Self::try_save_remote_game_cache(&remote_games);
+
+		Ok(remote_games)
+	}
+}
+
+#[async_trait]
+impl ProviderActions for Steam {
+	async fn get_games<TInstalledCallback, TOwnedCallback, TRemoteCallback>(
+		&self,
+		installed_callback: TInstalledCallback,
+		owned_callback: TOwnedCallback,
+		remote_callback: TRemoteCallback,
+	) -> Result
+	where
+		TInstalledCallback: Fn(InstalledGame) + Send + Sync,
+		TOwnedCallback: Fn(OwnedGame) + Send + Sync,
+		TRemoteCallback: Fn(RemoteGame) + Send + Sync,
+	{
+		let steam_dir = SteamDir::locate()?;
+		let app_info_file = appinfo::read(steam_dir.path())?;
+
+		self.get_owned_games(&steam_dir, &app_info_file, owned_callback)?;
+		self.get_installed_games(&steam_dir, &app_info_file, installed_callback)?;
+		self.get_remote_games(&steam_dir, &app_info_file, remote_callback)
+			.await?;
+
+		Ok(())
 	}
 }
 

@@ -241,12 +241,9 @@ try {
          /** user-defined events **/
 
 export const events = __makeEvents__<{
-syncInstalledGames: SyncInstalledGames,
 foundInstalledGame: FoundInstalledGame,
 foundOwnedGame: FoundOwnedGame,
 foundRemoteGame: FoundRemoteGame,
-syncOwnedGames: SyncOwnedGames,
-syncRemoteGames: SyncRemoteGames,
 syncModLoaders: SyncModLoaders,
 syncLocalMods: SyncLocalMods,
 syncRemoteMods: SyncRemoteMods,
@@ -255,12 +252,9 @@ gameAdded: GameAdded,
 gameRemoved: GameRemoved,
 errorRaised: ErrorRaised
 }>({
-syncInstalledGames: "sync-installed-games",
 foundInstalledGame: "found-installed-game",
 foundOwnedGame: "found-owned-game",
 foundRemoteGame: "found-remote-game",
-syncOwnedGames: "sync-owned-games",
-syncRemoteGames: "sync-remote-games",
 syncModLoaders: "sync-mod-loaders",
 syncLocalMods: "sync-local-mods",
 syncRemoteMods: "sync-remote-mods",
@@ -310,11 +304,8 @@ export type RemoteGame = { id: string; engine: GameEngine | null; skipCache: boo
 export type RemoteMod = { common: CommonModData; data: RemoteModData }
 export type RemoteModData = { title: string; deprecated: boolean; author: string; sourceCode: string; description: string; latestVersion: ModDownload | null }
 export type RunnableModData = { path: string; args: string[] }
-export type SyncInstalledGames = { [key in string]: InstalledGame }
 export type SyncLocalMods = { [key in string]: LocalMod }
 export type SyncModLoaders = { [key in string]: ModLoaderData }
-export type SyncOwnedGames = { [key in string]: OwnedGame }
-export type SyncRemoteGames = { [key in string]: RemoteGame }
 export type SyncRemoteMods = { [key in string]: RemoteMod }
 export type UnityScriptingBackend = "Il2Cpp" | "Mono"
 

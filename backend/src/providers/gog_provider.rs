@@ -55,112 +55,126 @@ impl ProviderStatic for Gog {
 
 #[async_trait]
 impl ProviderActions for Gog {
-	fn get_installed_games<TCallback>(&self, callback: TCallback) -> Result<Vec<InstalledGame>>
+	async fn get_games<TInstalledCallback, TOwnedCallback, TRemoteCallback>(
+		&self,
+		installed_callback: TInstalledCallback,
+		owned_callback: TOwnedCallback,
+		remote_callback: TRemoteCallback,
+	) -> Result
 	where
-		TCallback: Fn(InstalledGame),
+		TInstalledCallback: Fn(InstalledGame) + Send + Sync,
+		TOwnedCallback: Fn(OwnedGame) + Send + Sync,
+		TRemoteCallback: Fn(RemoteGame) + Send + Sync,
 	{
-		Ok(self
-			.database
-			.iter()
-			.filter_map(|db_entry| {
-				let mut game = InstalledGame::new(
-					db_entry.executable_path.as_ref()?,
-					&db_entry.title,
-					Self::ID.to_owned(),
-				)?;
-
-				game.set_start_command_path(
-					&self.launcher_path,
-					[
-						"/command=runGame".to_string(),
-						format!("/gameId={}", db_entry.id),
-					]
-					.to_vec(),
-				);
-				game.set_provider_game_id(&db_entry.id);
-
-				if let Some(image_url) = &db_entry.image_url {
-					game.set_thumbnail_url(image_url);
-				}
-
-				callback(game.clone());
-
-				Some(game)
-			})
-			.collect())
+		Ok(())
 	}
 
-	fn get_owned_games<TCallback>(&self, callback: TCallback) -> Result<Vec<OwnedGame>>
-	where
-		TCallback: Fn(OwnedGame),
-	{
-		Ok(self
-			.database
-			.iter()
-			.map(|db_entry| {
-				let mut game = OwnedGame::new(&db_entry.id, *Self::ID, &db_entry.title);
+	// fn get_installed_games<TCallback>(&self, callback: TCallback) -> Result<Vec<InstalledGame>>
+	// where
+	// 	TCallback: Fn(InstalledGame),
+	// {
+	// 	Ok(self
+	// 		.database
+	// 		.iter()
+	// 		.filter_map(|db_entry| {
+	// 			let mut game = InstalledGame::new(
+	// 				db_entry.executable_path.as_ref()?,
+	// 				&db_entry.title,
+	// 				Self::ID.to_owned(),
+	// 			)?;
 
-				game.add_provider_command(
-					ProviderCommandAction::ShowInLibrary,
-					ProviderCommand::Path(
-						self.launcher_path.clone(),
-						[
-							"/command=launch".to_string(),
-							format!("/gameId={}", db_entry.id),
-						]
-						.to_vec(),
-					),
-				)
-				.guess_app_type();
+	// 			game.set_start_command_path(
+	// 				&self.launcher_path,
+	// 				[
+	// 					"/command=runGame".to_string(),
+	// 					format!("/gameId={}", db_entry.id),
+	// 				]
+	// 				.to_vec(),
+	// 			);
+	// 			game.set_provider_game_id(&db_entry.id);
 
-				if let Some(thumbnail_url) = db_entry.image_url.clone() {
-					game.set_thumbnail_url(&thumbnail_url);
-				}
+	// 			if let Some(image_url) = &db_entry.image_url {
+	// 				game.set_thumbnail_url(image_url);
+	// 			}
 
-				if let Some(release_date) = db_entry.release_date {
-					game.set_release_date(release_date.into());
-				}
+	// 			callback(game.clone());
 
-				callback(game.clone());
-				game
-			})
-			.collect())
-	}
+	// 			Some(game)
+	// 		})
+	// 		.collect())
+	// }
 
-	async fn get_remote_games<TCallback>(&self, callback: TCallback) -> Result<Vec<RemoteGame>>
-	where
-		TCallback: Fn(RemoteGame) + std::marker::Send + std::marker::Sync,
-	{
-		let remote_games: Vec<RemoteGame> =
-			futures::future::join_all(self.database.iter().map(|db_entry| async {
-				let mut remote_game = RemoteGame::new(*Self::ID, &db_entry.id);
+	// fn get_owned_games<TCallback>(&self, callback: TCallback) -> Result<Vec<OwnedGame>>
+	// where
+	// 	TCallback: Fn(OwnedGame),
+	// {
+	// 	Ok(self
+	// 		.database
+	// 		.iter()
+	// 		.map(|db_entry| {
+	// 			let mut game = OwnedGame::new(&db_entry.id, *Self::ID, &db_entry.title);
 
-				if let Some(cached_remote_game) = self.remote_game_cache.get(&remote_game.id) {
-					callback(cached_remote_game.clone());
-					return cached_remote_game.clone();
-				}
+	// 			game.add_provider_command(
+	// 				ProviderCommandAction::ShowInLibrary,
+	// 				ProviderCommand::Path(
+	// 					self.launcher_path.clone(),
+	// 					[
+	// 						"/command=launch".to_string(),
+	// 						format!("/gameId={}", db_entry.id),
+	// 					]
+	// 					.to_vec(),
+	// 				),
+	// 			)
+	// 			.guess_app_type();
 
-				match pc_gaming_wiki::get_engine(&format!("GOGcom_ID HOLDS \"{}\"", db_entry.id))
-					.await
-				{
-					Ok(Some(engine)) => {
-						remote_game.set_engine(engine);
-					}
-					Ok(None) => {}
-					Err(_) => {
-						remote_game.set_skip_cache(true);
-					}
-				}
+	// 			if let Some(thumbnail_url) = db_entry.image_url.clone() {
+	// 				game.set_thumbnail_url(&thumbnail_url);
+	// 			}
 
-				callback(remote_game.clone());
-				remote_game
-			}))
-			.await;
+	// 			if let Some(release_date) = db_entry.release_date {
+	// 				game.set_release_date(release_date.into());
+	// 			}
 
-		Self::try_save_remote_game_cache(&remote_games);
+	// 			callback(game.clone());
+	// 			game
+	// 		})
+	// 		.collect())
+	// }
 
-		Ok(remote_games)
-	}
+	// async fn get_remote_games<TCallback>(&self, callback: TCallback) -> Result<Vec<RemoteGame>>
+	// where
+	// 	TCallback: Fn(RemoteGame) + std::marker::Send + std::marker::Sync,
+	// {
+	// 	let remote_games: Vec<RemoteGame> =
+	// 		futures::future::join_all(self.database.iter().map(|db_entry| async {
+	// 			let mut remote_game = RemoteGame::new(*Self::ID, &db_entry.id);
+
+	// 			if let Some(cached_remote_game) = self.remote_game_cache.get(&remote_game.id) {
+	// 				callback(cached_remote_game.clone());
+	// 				return cached_remote_game.clone();
+	// 			}
+
+	// 			match pc_gaming_wiki::get_engine(&format!("GOGcom_ID HOLDS \"{}\"", db_entry.id))
+	// 				.await
+	// 			{
+	// 				Ok(Some(engine)) => {
+	// 					remote_game.set_engine(engine);
+	// 				}
+	// 				Ok(None) => {}
+	// 				Err(_) => {
+	// 					remote_game.set_skip_cache(true);
+	// 				}
+	// 			}
+
+	// 			callback(remote_game.clone());
+	// 			remote_game
+	// 		}))
+	// 		.await;
+
+	// 	Self::try_save_remote_game_cache(&remote_games);
+
+	// 	Ok(remote_games)
+	// }
 }
 
 #[serializable_struct]
