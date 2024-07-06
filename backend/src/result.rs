@@ -54,8 +54,11 @@ pub enum Error {
 	#[error(transparent)]
 	HeaderToStr(#[from] reqwest::header::ToStrError),
 
-	#[error("Invalid type `{0}` in binary vdf key/value pair")]
-	InvalidBinaryVdfType(u8),
+	#[error(transparent)]
+	TryFromInt(#[from] std::num::TryFromIntError),
+
+	#[error("Invalid type `{0}` in binary vdf for key `{1}`")]
+	InvalidBinaryVdfType(u8, String),
 
 	#[error("Failed to find Rai Pal resources folder")]
 	ResourcesNotFound(),
