@@ -12,15 +12,16 @@ import {
 import { forwardRef, useCallback, useState } from "react";
 import { IconArrowBack, IconCheck } from "@tabler/icons-react";
 import { usePersistedState } from "@hooks/use-persisted-state";
+import { Result } from "@api/bindings";
 
-interface Props<TResult> extends ButtonProps {
-	readonly onClick: () => Promise<TResult>;
+interface Props<TResultValue, TError> extends ButtonProps {
+	readonly onClick: () => Promise<Result<TResultValue, TError>>;
 	readonly onSuccess?: () => void;
 	readonly confirmationText?: string;
 	readonly confirmationSkipId?: string;
 }
 
-function CommandButtonInternal<TResult>(
+function CommandButtonInternal<TResultValue, TError>(
 	{
 		onClick,
 		onSuccess,
@@ -28,7 +29,7 @@ function CommandButtonInternal<TResult>(
 		confirmationSkipId,
 		children,
 		...props
-	}: Props<TResult>,
+	}: Props<TResultValue, TError>,
 	ref: React.ForwardedRef<HTMLButtonElement>,
 ) {
 	const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);

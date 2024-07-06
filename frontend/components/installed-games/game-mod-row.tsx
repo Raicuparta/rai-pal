@@ -67,18 +67,17 @@ export function GameModRow(props: Props) {
 			!props.mod.local &&
 			!props.mod.remote
 		) {
-			await openModFolder(props.mod.common.id);
-			return;
+			return openModFolder(props.mod.common.id);
 		}
 
 		if (isLocalModOutdated) {
+			// TODO: errors are being swallowed here.
 			await downloadMod(props.mod.common.id);
 		} else if (isInstalled && !isInstalledModOutdated) {
-			await uninstallMod(props.game.id, props.mod.common.id);
-			return;
+			return uninstallMod(props.game.id, props.mod.common.id);
 		}
 
-		await installMod(props.game.id, props.mod.common.id);
+		return installMod(props.game.id, props.mod.common.id);
 	}, [
 		props.modLoader.kind,
 		props.mod.local,

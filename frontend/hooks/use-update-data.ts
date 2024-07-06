@@ -11,9 +11,19 @@ export function useUpdateData() {
 		setIsLoading(true);
 		commands
 			.updateData()
+			.then((result) => {
+				if (result.status === "error") {
+					showAppNotification(
+						`Error while updating data: ${result.error}`,
+						"error",
+					);
+				}
+			})
 			.catch((error) => {
-				// TODO: handle error via Result.
-				showAppNotification(`Error finding games: ${error}`, "error");
+				showAppNotification(
+					`Failed to initialize data update: ${error}`,
+					"error",
+				);
 			})
 			.finally(() => setIsLoading(false));
 	}, [setIsLoading]);
