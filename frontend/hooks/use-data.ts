@@ -13,7 +13,7 @@ export const [installedGamesAtom, useInstalledGamesSubscription] =
 	dataPartialSubscription(
 		events.foundInstalledGame,
 		(payload) => payload.id,
-		{},
+		new Map(),
 	);
 
 export const [modLoadersAtom, useModLoadersSubscription] = dataSubscription(
@@ -32,10 +32,18 @@ export const [remoteModsAtom, useRemoteModsSubscription] = dataSubscription(
 );
 
 export const [ownedGamesAtom, useOwnedGamesSubscription] =
-	dataPartialSubscription(events.foundOwnedGame, (payload) => payload.id, {});
+	dataPartialSubscription(
+		events.foundOwnedGame,
+		(payload) => payload.id,
+		new Map(),
+	);
 
 export const [remoteGamesAtom, useRemoteGameDataSubscription] =
-	dataPartialSubscription(events.foundRemoteGame, (payload) => payload.id, {});
+	dataPartialSubscription(
+		events.foundRemoteGame,
+		(payload) => payload.id,
+		new Map(),
+	);
 
 export const loadingAtom = atom<boolean>(false);
 

@@ -19,7 +19,7 @@ export function useProcessedInstalledGames() {
 	const processedInstalledGames: ProcessedInstalledGameRecord = useMemo(() => {
 		const result: ProcessedInstalledGameRecord = {};
 
-		for (const [gameId, installedGame] of Object.entries(installedGames)) {
+		for (const [gameId, installedGame] of installedGames.entries()) {
 			const installedModVersions: InstalledModVersions = {};
 			for (const mod of Object.values(mods)) {
 				const modEngine = mod.common.engine;
@@ -41,7 +41,7 @@ export function useProcessedInstalledGames() {
 			result[gameId] = {
 				...installedGame,
 				ownedGame: installedGame.ownedGameId
-					? ownedGames[installedGame.ownedGameId]
+					? ownedGames.get(installedGame.ownedGameId)
 					: undefined,
 				hasOutdatedMod:
 					Object.entries(installedGame.installedModVersions).findIndex(
