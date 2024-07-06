@@ -2,6 +2,8 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 // There's some weird tauri thing making this clippy error show up everywhere.
 #![allow(clippy::used_underscore_binding)]
+// Command stuff needs to be async so I can spawn tasks.
+#![allow(clippy::unused_async)]
 
 use std::{collections::HashMap, path::PathBuf, sync::Mutex};
 
