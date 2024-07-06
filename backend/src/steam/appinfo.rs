@@ -90,6 +90,7 @@ pub struct App {
 
 #[derive(Debug, Clone)]
 pub struct SteamAppInfo {
+	pub app_id: u32,
 	pub launch_options: Vec<SteamLaunchOption>,
 	pub name: String,
 	pub steam_release_date: Option<i32>,
@@ -98,15 +99,17 @@ pub struct SteamAppInfo {
 	pub app_type: Option<String>,
 }
 
-#[derive(Debug, Clone)]
-pub struct SteamAppInfoFile {
-	pub apps: HashMap<u32, SteamAppInfo>,
+pub struct SteamAppInfoReader {
+	pub reader: BufReader<fs::File>,
+	pub keys: Option<Vec<String>>,
 }
 
 const OLD_APPINFO_MAX_VERSION: u32 = 0x07_56_44_28;
 
-impl SteamAppInfoFile {
-	pub fn load<R: Read + Seek>(reader: &mut R) -> Result<Self> {
+impl SteamAppInfoReader {
+	pub fn new(steam_path: &Path) -> Result<Self> {
+		let mut reader = BufReader::new(fs::File::open(get_path(steam_path))?);
+
 		let version = reader.read_u32::<LittleEndian>()?;
 		let _universe = reader.read_u32::<LittleEndian>()?;
 
@@ -126,7 +129,7 @@ impl SteamAppInfoFile {
 			let mut keys: Vec<String> = Vec::with_capacity(usize::try_from(key_count)?);
 			// loop key_count times and push into keys:
 			for _ in 0..key_count {
-				if let Ok(key) = read_string(reader, false) {
+				if let Ok(key) = read_string(&mut reader, false) {
 					keys.push(key);
 				}
 			}
@@ -139,33 +142,33 @@ impl SteamAppInfoFile {
 			None
 		};
 
-		let mut appinfo = Self {
-			apps: HashMap::new(),
-		};
+		Ok(Self { reader, keys })
+	}
 
+	pub fn try_next(&mut self) -> Result<Option<SteamAppInfo>> {
 		loop {
-			let app_id = reader.read_u32::<LittleEndian>()?;
+			let app_id = self.reader.read_u32::<LittleEndian>()?;
 
 			if app_id == 0 {
 				break;
 			}
 
-			let _size = reader.read_u32::<LittleEndian>()?;
-			let _state = reader.read_u32::<LittleEndian>()?;
-			let _last_update = reader.read_u32::<LittleEndian>()?;
-			let _access_token = reader.read_u64::<LittleEndian>()?;
+			let _size = self.reader.read_u32::<LittleEndian>()?;
+			let _state = self.reader.read_u32::<LittleEndian>()?;
+			let _last_update = self.reader.read_u32::<LittleEndian>()?;
+			let _access_token = self.reader.read_u64::<LittleEndian>()?;
 
 			let mut checksum_txt: [u8; 20] = [0; 20];
-			reader.read_exact(&mut checksum_txt)?;
+			self.reader.read_exact(&mut checksum_txt)?;
 
-			let _change_number = reader.read_u32::<LittleEndian>()?;
+			let _change_number = self.reader.read_u32::<LittleEndian>()?;
 
 			let mut checksum_bin: [u8; 20] = [0; 20];
-			reader.read_exact(&mut checksum_bin)?;
+			self.reader.read_exact(&mut checksum_bin)?;
 
-			// let some_pre_kv_thing = reader.read_u64::<LittleEndian>()?;
+			// let some_pre_kv_thing = self.reader.read_u64::<LittleEndian>()?;
 
-			let key_values = read_kv(reader, false, keys.as_ref())?;
+			let key_values = read_kv(&mut self.reader, false, self.keys.as_ref())?;
 
 			let app = App { key_values };
 
@@ -227,22 +230,28 @@ impl SteamAppInfoFile {
 
 			if let Some(launch_options) = app_launch {
 				if let Some(name) = value_to_string(app.get(&["appinfo", "common", "name"])) {
-					appinfo.apps.insert(
+					return Ok(Some(SteamAppInfo {
 						app_id,
-						SteamAppInfo {
-							launch_options,
-							name,
-							steam_release_date,
-							original_release_date,
-							is_free,
-							app_type: app_type_option,
-						},
-					);
+						launch_options,
+						name,
+						steam_release_date,
+						original_release_date,
+						is_free,
+						app_type: app_type_option,
+					}));
 				}
 			}
 		}
 
-		Ok(appinfo)
+		Ok(None)
+	}
+}
+
+impl Iterator for SteamAppInfoReader {
+	type Item = Result<SteamAppInfo>;
+
+	fn next(&mut self) -> Option<Self::Item> {
+		self.try_next().transpose()
 	}
 }
 
@@ -282,8 +291,8 @@ impl App {
 	}
 }
 
-fn read_kv<R: std::io::Read>(
-	reader: &mut R,
+fn read_kv(
+	reader: &mut BufReader<fs::File>,
 	alt_format: bool,
 	keys_option: Option<&Vec<String>>,
 ) -> Result<KeyValue> {
@@ -345,7 +354,7 @@ fn read_kv<R: std::io::Read>(
 	}
 }
 
-fn read_string<R: std::io::Read>(reader: &mut R, wide: bool) -> Result<String> {
+fn read_string(reader: &mut BufReader<fs::File>, wide: bool) -> Result<String> {
 	if wide {
 		let mut buf: Vec<u16> = vec![];
 		loop {
@@ -372,20 +381,6 @@ fn read_string<R: std::io::Read>(reader: &mut R, wide: bool) -> Result<String> {
 
 fn get_path(steam_path: &Path) -> PathBuf {
 	steam_path.join("appcache/appinfo.vdf")
-}
-
-pub fn read(steam_path: &Path) -> Result<SteamAppInfoFile> {
-	let appinfo_path = &get_path(steam_path);
-	fs::File::open(appinfo_path).map_err(|err| {
-		if err.kind() == std::io::ErrorKind::NotFound {
-			Error::AppInfoNotFound(appinfo_path.to_string_lossy().to_string())
-		} else {
-			err.into()
-		}
-	})?;
-
-	let mut appinfo_file = BufReader::new(fs::File::open(get_path(steam_path))?);
-	SteamAppInfoFile::load(&mut appinfo_file)
 }
 
 pub fn delete(steam_path: &Path) -> Result {
