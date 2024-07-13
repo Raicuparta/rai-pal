@@ -3,13 +3,12 @@ use std::{
 	fs,
 	marker::{Send, Sync},
 	path::PathBuf,
-	time::Instant,
 };
 
 use async_trait::async_trait;
+use futures::future;
 use lazy_regex::BytesRegex;
 use steamlocate::SteamDir;
-use tauri::App;
 
 use super::{
 	provider::ProviderId,
@@ -17,7 +16,6 @@ use super::{
 };
 use crate::{
 	app_type::AppType,
-	debug::LoggableInstant,
 	game_engines::game_engine::GameEngine,
 	game_executable::OperatingSystem,
 	game_mode::GameMode,
@@ -27,7 +25,7 @@ use crate::{
 	provider::{ProviderActions, ProviderStatic},
 	remote_game::{self, RemoteGame},
 	steam::{
-		appinfo::{self, SteamAppInfo, SteamAppInfoReader, SteamLaunchOption},
+		appinfo::{SteamAppInfo, SteamAppInfoReader, SteamLaunchOption},
 		id_lists,
 		thumbnail::get_steam_thumbnail,
 	},
@@ -211,62 +209,39 @@ impl Steam {
 		None
 	}
 
-	// 	async fn get_remote_games<TCallback>(
-	// 		&self,
-	// 		directory: &SteamDir,
-	// 		app_info_file: &SteamAppInfoFile,
-	// 		callback: TCallback,
-	// 	) -> Result<Vec<RemoteGame>>
-	// 	where
-	// 		TCallback: Fn(RemoteGame) + Send + Sync,
-	// 	{
-	// 		let steam_games = id_lists::get().await?;
+	pub async fn get_remote_game(
+		&self,
+		app_info: SteamAppInfo,
+		steam_games: &HashMap<String, id_lists::SteamGame>,
+	) -> Option<RemoteGame> {
+		let id_string = app_info.app_id.to_string();
+		let mut remote_game = RemoteGame::new(*Self::ID, &id_string);
 
-	// 		let remote_games: Vec<RemoteGame> =
-	// 			futures::future::join_all(app_info_file.apps.keys().map(|app_id| async {
-	// 				let id_string = app_id.to_string();
-	// 				let mut remote_game = RemoteGame::new(*Self::ID, &id_string);
+		if let Some(cached_remote_game) = self.remote_game_cache.get(&remote_game.id) {
+			return Some(cached_remote_game.clone());
+		}
 
-	// 				if let Some(cached_remote_game) = self.remote_game_cache.get(&remote_game.id) {
-	// 					callback(cached_remote_game.clone());
-	// 					return Some(cached_remote_game.clone());
-	// 				}
+		let steam_game_option = steam_games.get(&id_string);
 
-	// 				let steam_game_option = steam_games.get(&id_string);
+		match pc_gaming_wiki::get_engine(&format!("Steam_AppID HOLDS \"{id_string}\"")).await {
+			Ok(Some(pc_gaming_wiki_engine)) => {
+				remote_game.set_engine(pc_gaming_wiki_engine);
+			}
+			Ok(None) => {
+				if let Some(engine_brand) = steam_game_option.map(|steam_game| steam_game.engine) {
+					remote_game.set_engine(GameEngine {
+						brand: engine_brand,
+						version: None,
+					});
+				}
+			}
+			Err(_) => {
+				remote_game.set_skip_cache(true);
+			}
+		}
 
-	// 				match pc_gaming_wiki::get_engine(&format!("Steam_AppID HOLDS \"{id_string}\""))
-	// 					.await
-	// 				{
-	// 					Ok(Some(pc_gaming_wiki_engine)) => {
-	// 						remote_game.set_engine(pc_gaming_wiki_engine);
-	// 					}
-	// 					Ok(None) => {
-	// 						if let Some(engine_brand) =
-	// 							steam_game_option.map(|steam_game| steam_game.engine)
-	// 						{
-	// 							remote_game.set_engine(GameEngine {
-	// 								brand: engine_brand,
-	// 								version: None,
-	// 							});
-	// 						}
-	// 					}
-	// 					Err(_) => {
-	// 						remote_game.set_skip_cache(true);
-	// 					}
-	// 				}
-
-	// 				callback(remote_game.clone());
-	// 				Some(remote_game)
-	// 			}))
-	// 			.await
-	// 			.into_iter()
-	// 			.flatten()
-	// 			.collect();
-
-	// 		Self::try_save_remote_game_cache(&remote_games);
-
-	// 		Ok(remote_games)
-	// 	}
+		Some(remote_game)
+	}
 }
 
 #[async_trait]
@@ -294,15 +269,21 @@ impl ProviderActions for Steam {
 			}
 		}
 
+		let steam_games = id_lists::get().await?;
+		let mut remote_game_futures = Vec::new();
+
 		for app_info_result in app_info_reader {
 			// get owned game for this app info
 			match app_info_result {
 				Ok(app_info) => {
 					if let Some(owned_game) = self.get_owned_game(&app_info, &steam_dir) {
 						owned_callback(owned_game);
+
+						remote_game_futures
+							.push(self.get_remote_game(app_info.clone(), &steam_games));
 					}
 					if let Some(dir_app) = steam_dir_app_map.get(&app_info.app_id) {
-						if let Some(installed_game) = self.get_installed_game(&app_info, &dir_app) {
+						if let Some(installed_game) = self.get_installed_game(&app_info, dir_app) {
 							installed_callback(installed_game);
 						}
 					}
@@ -313,10 +294,17 @@ impl ProviderActions for Steam {
 			}
 		}
 
-		// self.get_owned_games(&steam_dir, &app_info_file, owned_callback)?;
-		// self.get_installed_games(&steam_dir, &app_info_file, installed_callback)?;
-		// self.get_remote_games(&steam_dir, &app_info_file, remote_callback)
-		// 	.await?;
+		// TODO: cache
+		future::join_all(remote_game_futures)
+			.await
+			.iter()
+			.for_each(|result| {
+				if let Some(remote_game) = result {
+					remote_callback(remote_game.clone());
+					// self.remote_game_cache
+					// 	.insert(remote_game.id.clone(), remote_game.clone());
+				}
+			});
 
 		Ok(())
 	}
