@@ -147,188 +147,70 @@ impl Steam {
 		Some(game)
 	}
 
-	// 	fn get_installed_games<TCallback>(
-	// 		&self,
-	// 		directory: &SteamDir,
-	// 		app_info_file: &SteamAppInfoFile,
-	// 		callback: TCallback,
-	// 	) -> Result<Vec<InstalledGame>>
-	// 	where
-	// 		TCallback: Fn(InstalledGame),
-	// 	{
-	// 		let mut games: Vec<InstalledGame> = Vec::new();
-	// 		let mut used_paths: HashSet<PathBuf> = HashSet::new();
-	// 		let mut used_names: HashSet<String> = HashSet::new();
+	pub fn get_installed_game(
+		&self,
+		steam_dir: &SteamDir,
+		app_info: &SteamAppInfo,
+	) -> Option<InstalledGame> {
+		// TODO: move these to Steam provider data.
+		let mut used_paths: HashSet<PathBuf> = HashSet::new();
+		let mut used_names: HashSet<String> = HashSet::new();
 
-	// 		for library in (directory.libraries()?).flatten() {
-	// 			for app in library.apps().flatten() {
-	// 				if let Some(app_info) = app_info_file.apps.get(&app.app_id) {
-	// 					let sorted_launch_options = {
-	// 						let mut sorted_launch_options = app_info.launch_options.clone();
-	// 						sorted_launch_options.sort_by(|a, b| a.launch_id.cmp(&b.launch_id));
-	// 						sorted_launch_options
-	// 					};
+		let sorted_launch_options = {
+			let mut sorted_launch_options = app_info.launch_options.clone();
+			sorted_launch_options.sort_by(|a, b| a.launch_id.cmp(&b.launch_id));
+			sorted_launch_options
+		};
 
-	// 					for launch_option in sorted_launch_options {
-	// 						if let Some(executable_path) = launch_option.executable.as_ref() {
-	// 							let full_path = &app.path.join(executable_path);
+		// TODO: handle error.
+		let app = steam_dir.app(app_info.app_id).ok()??;
 
-	// 							if used_paths.contains(full_path) {
-	// 								continue;
-	// 							}
+		for launch_option in sorted_launch_options {
+			if let Some(executable_path) = launch_option.executable.as_ref() {
+				let full_path = &app.path.join(executable_path);
 
-	// 							if let Some(name) = &app.name {
-	// 								if let Some(mut game) =
-	// 									installed_game::InstalledGame::new(full_path, name, *Self::ID)
-	// 								{
-	// 									let discriminator_option = if used_names.contains(name) {
-	// 										Some(launch_option.description.as_ref().map_or_else(
-	// 											|| executable_path.display().to_string(),
-	// 											Clone::clone,
-	// 										))
-	// 									} else {
-	// 										None
-	// 									};
+				if used_paths.contains(full_path) {
+					continue;
+				}
 
-	// 									if let Some(discriminator) = &discriminator_option {
-	// 										game.set_discriminator(discriminator);
-	// 									}
+				if let Some(name) = &app.name {
+					if let Some(mut game) =
+						installed_game::InstalledGame::new(full_path, name, *Self::ID)
+					{
+						let discriminator_option = if used_names.contains(name) {
+							Some(launch_option.description.as_ref().map_or_else(
+								|| executable_path.display().to_string(),
+								Clone::clone,
+							))
+						} else {
+							None
+						};
 
-	// 									let app_id_string = app.app_id.to_string();
+						if let Some(discriminator) = &discriminator_option {
+							game.set_discriminator(discriminator);
+						}
 
-	// 									game.set_provider_game_id(&app_id_string);
-	// 									game.set_thumbnail_url(&get_steam_thumbnail(&app_id_string));
-	// 									game.set_start_command_string(&get_start_command(
-	// 										&launch_option,
-	// 										&discriminator_option,
-	// 									));
+						let app_id_string = app.app_id.to_string();
 
-	// 									callback(game.clone());
-	// 									// events::FoundInstalledGame(game.clone()).emit(handle)?;
+						game.set_provider_game_id(&app_id_string);
+						game.set_thumbnail_url(&get_steam_thumbnail(&app_id_string));
+						game.set_start_command_string(&get_start_command(
+							&launch_option,
+							&discriminator_option,
+						));
 
-	// 									games.push(game);
-	// 									used_names.insert(name.clone());
-	// 									used_paths.insert(full_path.clone());
-	// 								}
-	// 							}
-	// 						}
-	// 					}
-	// 				}
-	// 			}
-	// 		}
+						// events::FoundInstalledGame(game.clone()).emit(handle)?;
 
-	// 		Ok(games)
-	// 	}
+						used_names.insert(name.clone());
+						used_paths.insert(full_path.clone());
+						return Some(game);
+					}
+				}
+			}
+		}
 
-	// 	fn get_owned_games<TCallback>(
-	// 		&self,
-	// 		directory: &SteamDir,
-	// 		app_info_file: &SteamAppInfoFile,
-	// 		callback: TCallback,
-	// 	) -> Result<Vec<OwnedGame>>
-	// 	where
-	// 		TCallback: Fn(OwnedGame),
-	// 	{
-	// 		let owned_games: Vec<OwnedGame> = app_info_file
-	// 			.apps
-	// 			.iter()
-	// 			.filter_map(|(steam_id, app_info)| {
-	// 				let id_string = steam_id.to_string();
-	// 				let os_list: HashSet<_> = app_info
-	// 					.launch_options
-	// 					.iter()
-	// 					.filter_map(|launch| {
-	// 						launch
-	// 							.os_list
-	// 							.as_ref()
-	// 							.and_then(|os_list| match os_list.as_str() {
-	// 								"linux" => Some(OperatingSystem::Linux),
-	// 								"windows" => Some(OperatingSystem::Windows),
-	// 								_ => None,
-	// 							})
-	// 					})
-	// 					.collect();
-
-	// 				// Games in appinfo.vdf aren't necessarily owned.
-	// 				// Most of them are, but there are also a bunch of other games that Steam needs to reference for one reason or another.
-	// 				// assets.vdf is another cache file, and from my (not very extensive) tests, it to really only include owned files.
-	// 				// Free games are some times not there though, so I'm presuming that any free game found in appinfo.vdf is owned.
-	// 				// appinfo.vdf is also still needed since most of the game data we want is there, so we can't just read everything from assets.vdf.
-	// 				let owned =
-	// 					app_info.is_free
-	// 						|| fs::read(directory.path().join("appcache/librarycache/assets.vdf"))
-	// 							.map_or(false, |assets_cache_bytes| {
-	// 								// Would be smarter to actually parse assets.vdf and extract all the ids,
-	// 								// but I didn't feel like figuring out how to parse another binary vdf.
-	// 								// Maybe later. But most likely never.
-	// 								BytesRegex::new(&id_string)
-	// 									.map_or(false, |regex| regex.is_match(&assets_cache_bytes))
-	// 							});
-
-	// 				if !owned {
-	// 					return None;
-	// 				}
-
-	// 				let game_mode = if app_info
-	// 					.launch_options
-	// 					.iter()
-	// 					.any(|launch| launch.get_game_mode() == GameMode::VR)
-	// 				{
-	// 					GameMode::VR
-	// 				} else {
-	// 					GameMode::Flat
-	// 				};
-
-	// 				let mut game = OwnedGame::new(&id_string, *Self::ID, &app_info.name);
-
-	// 				game.set_thumbnail_url(&get_steam_thumbnail(&id_string))
-	// 					.set_os_list(os_list)
-	// 					.set_game_mode(game_mode)
-	// 					.add_provider_command(
-	// 						ProviderCommandAction::ShowInLibrary,
-	// 						ProviderCommand::String(format!("steam://nav/games/details/{id_string}")),
-	// 					)
-	// 					.add_provider_command(
-	// 						ProviderCommandAction::ShowInStore,
-	// 						ProviderCommand::String(format!("steam://store/{id_string}")),
-	// 					)
-	// 					.add_provider_command(
-	// 						ProviderCommandAction::Install,
-	// 						ProviderCommand::String(format!("steam://install/{id_string}")),
-	// 					)
-	// 					.add_provider_command(
-	// 						ProviderCommandAction::OpenInBrowser,
-	// 						ProviderCommand::String(format!(
-	// 							"https://store.steampowered.com/app/{id_string}"
-	// 						)),
-	// 					);
-
-	// 				if let Some(release_date) = app_info
-	// 					.original_release_date
-	// 					.or(app_info.steam_release_date)
-	// 				{
-	// 					game.set_release_date(release_date.into());
-	// 				}
-
-	// 				if let Some(app_type) = &app_info.app_type {
-	// 					if app_type == "Game" {
-	// 						game.set_app_type(AppType::Game);
-	// 					} else if app_type == "Demo" {
-	// 						game.set_app_type(AppType::Demo);
-	// 					}
-	// 				} else {
-	// 					// We only try to guess the app type if couldn't read it from appinfo.
-	// 					// For instance, something marked as Tool or Application shouldn't be marked as a game.
-	// 					game.guess_app_type();
-	// 				}
-
-	// 				callback(game.clone());
-	// 				Some(game)
-	// 			})
-	// 			.collect();
-
-	// 		Ok(owned_games)
-	// 	}
+		None
+	}
 
 	// 	async fn get_remote_games<TCallback>(
 	// 		&self,
@@ -411,6 +293,9 @@ impl ProviderActions for Steam {
 				Ok(app_info) => {
 					if let Some(owned_game) = self.get_owned_game(&steam_dir, &app_info) {
 						owned_callback(owned_game);
+					}
+					if let Some(installed_game) = self.get_installed_game(&steam_dir, &app_info) {
+						installed_callback(installed_game);
 					}
 				}
 				Err(e) => {
