@@ -38,7 +38,7 @@ export function useProcessedOwnedGames() {
 			Itch: {},
 		};
 
-		for (const installedGame of installedGames.values()) {
+		for (const installedGame of installedGames.data.values()) {
 			if (!installedGame.ownedGameId) continue;
 
 			result[installedGame.provider][installedGame.ownedGameId] = installedGame;
@@ -50,14 +50,14 @@ export function useProcessedOwnedGames() {
 	const processedOwnedGames: ProcessedOwnedGameRecord = useMemo(() => {
 		const result: ProcessedOwnedGameRecord = {};
 
-		for (const [gameId, ownedGame] of ownedGames.entries()) {
+		for (const [gameId, ownedGame] of ownedGames.data.entries()) {
 			const installedGame =
 				installedGamesByProvider[ownedGame.provider][ownedGame.id];
 
 			result[gameId] = {
 				...ownedGame,
 				isInstalled: Boolean(installedGame),
-				remoteData: remoteGames.get(ownedGame.id),
+				remoteData: remoteGames.data.get(ownedGame.id),
 			};
 		}
 
