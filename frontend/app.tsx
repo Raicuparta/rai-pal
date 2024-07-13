@@ -3,7 +3,7 @@ import { ModsPage } from "./components/mods/mods-page";
 import { OwnedGamesPage } from "./components/owned-games/owned-games-page";
 import { SettingsPage } from "./components/settings/settings-page";
 import { Tabs, Container, Stack } from "@mantine/core";
-import { useData } from "@hooks/use-data";
+import { installedGamesAtom, ownedGamesAtom, useData } from "@hooks/use-data";
 import { AppNotifications } from "@components/app-notifications";
 import {
 	IconBooks,
@@ -13,6 +13,9 @@ import {
 	IconTool,
 } from "@tabler/icons-react";
 import { ThanksPage } from "@components/thanks/thanks-page";
+import { useAtomValue } from "jotai";
+import { PageTab } from "@components/page-tab";
+import { useMemo } from "react";
 // import { useAppUpdater } from "@hooks/use-app-updater";
 
 const pages = {
@@ -39,11 +42,27 @@ const pages = {
 	},
 };
 
+type PageId = keyof typeof pages;
+
+type TabCounts = Record<PageId, number>;
+
 const firstPage = Object.keys(pages)[0];
 
 function App() {
 	useData();
-	// useAppUpdater();
+	const installedGames = useAtomValue(installedGamesAtom);
+	const ownedGames = useAtomValue(ownedGamesAtom);
+
+	const counts: TabCounts = useMemo(
+		() => ({
+			installedGames: installedGames.data.size,
+			ownedGames: ownedGames.data.size,
+			mods: -1,
+			settings: -1,
+			thanks: -1,
+		}),
+		[installedGames.data.size, ownedGames.data.size],
+	);
 
 	return (
 		<>
@@ -58,13 +77,12 @@ function App() {
 				>
 					<Tabs.List style={{ justifyContent: "center" }}>
 						{Object.entries(pages).map(([pageId, page]) => (
-							<Tabs.Tab
+							<PageTab
 								key={pageId}
-								value={pageId}
-								leftSection={page.icon}
-							>
-								{page.title}
-							</Tabs.Tab>
+								id={pageId}
+								page={page}
+								count={counts[pageId as PageId] ?? -1}
+							/>
 						))}
 					</Tabs.List>
 					{Object.entries(pages).map(([pageId, page]) => (
