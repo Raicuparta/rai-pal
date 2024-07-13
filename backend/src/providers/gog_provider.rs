@@ -1,8 +1,9 @@
 #![cfg(target_os = "windows")]
 
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use async_trait::async_trait;
+use futures::future;
 use log::error;
 use rai_pal_proc_macros::serializable_struct;
 use rusqlite::{Connection, OpenFlags};
@@ -34,8 +35,79 @@ struct GogDbEntry {
 #[derive(Clone)]
 pub struct Gog {
 	remote_game_cache: remote_game::Map,
-	database: Vec<GogDbEntry>,
-	launcher_path: PathBuf,
+}
+
+impl Gog {
+	fn get_installed_game(db_entry: &GogDbEntry, launcher_path: &Path) -> Option<InstalledGame> {
+		let mut game = InstalledGame::new(
+			db_entry.executable_path.as_ref()?,
+			&db_entry.title,
+			Self::ID.to_owned(),
+		)?;
+
+		game.set_start_command_path(
+			launcher_path,
+			[
+				"/command=runGame".to_string(),
+				format!("/gameId={}", db_entry.id),
+			]
+			.to_vec(),
+		);
+		game.set_provider_game_id(&db_entry.id);
+
+		if let Some(image_url) = &db_entry.image_url {
+			game.set_thumbnail_url(image_url);
+		}
+
+		Some(game)
+	}
+
+	fn get_owned_game(db_entry: &GogDbEntry, launcher_path: &Path) -> OwnedGame {
+		let mut game = OwnedGame::new(&db_entry.id, *Self::ID, &db_entry.title);
+
+		game.add_provider_command(
+			ProviderCommandAction::ShowInLibrary,
+			ProviderCommand::Path(
+				launcher_path.to_owned(),
+				[
+					"/command=launch".to_string(),
+					format!("/gameId={}", db_entry.id),
+				]
+				.to_vec(),
+			),
+		)
+		.guess_app_type();
+
+		if let Some(thumbnail_url) = db_entry.image_url.clone() {
+			game.set_thumbnail_url(&thumbnail_url);
+		}
+
+		if let Some(release_date) = db_entry.release_date {
+			game.set_release_date(release_date.into());
+		}
+
+		game
+	}
+
+	async fn get_remote_game(&self, db_entry: GogDbEntry) -> RemoteGame {
+		let mut remote_game = RemoteGame::new(*Self::ID, &db_entry.id);
+
+		if let Some(cached_remote_game) = self.remote_game_cache.get(&remote_game.id) {
+			return cached_remote_game.clone();
+		}
+
+		match pc_gaming_wiki::get_engine(&format!("GOGcom_ID HOLDS \"{}\"", db_entry.id)).await {
+			Ok(Some(engine)) => {
+				remote_game.set_engine(engine);
+			}
+			Ok(None) => {}
+			Err(_) => {
+				remote_game.set_skip_cache(true);
+			}
+		}
+
+		remote_game
+	}
 }
 
 impl ProviderStatic for Gog {
@@ -47,8 +119,6 @@ impl ProviderStatic for Gog {
 	{
 		Ok(Self {
 			remote_game_cache: Self::try_get_remote_game_cache(),
-			database: get_database()?,
-			launcher_path: get_launcher_path()?,
 		})
 	}
 }
@@ -66,115 +136,31 @@ impl ProviderActions for Gog {
 		TOwnedCallback: Fn(OwnedGame) + Send + Sync,
 		TRemoteCallback: Fn(RemoteGame) + Send + Sync,
 	{
+		let database = get_database()?;
+		let launcher_path = get_launcher_path()?;
+		let mut remote_game_futures = Vec::new();
+
+		for db_entry in database {
+			owned_callback(Self::get_owned_game(&db_entry, &launcher_path));
+			if let Some(installed_game) = Self::get_installed_game(&db_entry, &launcher_path) {
+				installed_callback(installed_game);
+			}
+
+			remote_game_futures.push(self.get_remote_game(db_entry.clone()));
+		}
+
+		// TODO: cache
+		future::join_all(remote_game_futures)
+			.await
+			.iter()
+			.for_each(|remote_game| {
+				remote_callback(remote_game.clone());
+				// self.remote_game_cache
+				// 	.insert(remote_game.id.clone(), remote_game.clone());
+			});
+
 		Ok(())
 	}
-
-	// fn get_installed_games<TCallback>(&self, callback: TCallback) -> Result<Vec<InstalledGame>>
-	// where
-	// 	TCallback: Fn(InstalledGame),
-	// {
-	// 	Ok(self
-	// 		.database
-	// 		.iter()
-	// 		.filter_map(|db_entry| {
-	// 			let mut game = InstalledGame::new(
-	// 				db_entry.executable_path.as_ref()?,
-	// 				&db_entry.title,
-	// 				Self::ID.to_owned(),
-	// 			)?;
-
-	// 			game.set_start_command_path(
-	// 				&self.launcher_path,
-	// 				[
-	// 					"/command=runGame".to_string(),
-	// 					format!("/gameId={}", db_entry.id),
-	// 				]
-	// 				.to_vec(),
-	// 			);
-	// 			game.set_provider_game_id(&db_entry.id);
-
-	// 			if let Some(image_url) = &db_entry.image_url {
-	// 				game.set_thumbnail_url(image_url);
-	// 			}
-
-	// 			callback(game.clone());
-
-	// 			Some(game)
-	// 		})
-	// 		.collect())
-	// }
-
-	// fn get_owned_games<TCallback>(&self, callback: TCallback) -> Result<Vec<OwnedGame>>
-	// where
-	// 	TCallback: Fn(OwnedGame),
-	// {
-	// 	Ok(self
-	// 		.database
-	// 		.iter()
-	// 		.map(|db_entry| {
-	// 			let mut game = OwnedGame::new(&db_entry.id, *Self::ID, &db_entry.title);
-
-	// 			game.add_provider_command(
-	// 				ProviderCommandAction::ShowInLibrary,
-	// 				ProviderCommand::Path(
-	// 					self.launcher_path.clone(),
-	// 					[
-	// 						"/command=launch".to_string(),
-	// 						format!("/gameId={}", db_entry.id),
-	// 					]
-	// 					.to_vec(),
-	// 				),
-	// 			)
-	// 			.guess_app_type();
-
-	// 			if let Some(thumbnail_url) = db_entry.image_url.clone() {
-	// 				game.set_thumbnail_url(&thumbnail_url);
-	// 			}
-
-	// 			if let Some(release_date) = db_entry.release_date {
-	// 				game.set_release_date(release_date.into());
-	// 			}
-
-	// 			callback(game.clone());
-	// 			game
-	// 		})
-	// 		.collect())
-	// }
-
-	// async fn get_remote_games<TCallback>(&self, callback: TCallback) -> Result<Vec<RemoteGame>>
-	// where
-	// 	TCallback: Fn(RemoteGame) + std::marker::Send + std::marker::Sync,
-	// {
-	// 	let remote_games: Vec<RemoteGame> =
-	// 		futures::future::join_all(self.database.iter().map(|db_entry| async {
-	// 			let mut remote_game = RemoteGame::new(*Self::ID, &db_entry.id);
-
-	// 			if let Some(cached_remote_game) = self.remote_game_cache.get(&remote_game.id) {
-	// 				callback(cached_remote_game.clone());
-	// 				return cached_remote_game.clone();
-	// 			}
-
-	// 			match pc_gaming_wiki::get_engine(&format!("GOGcom_ID HOLDS \"{}\"", db_entry.id))
-	// 				.await
-	// 			{
-	// 				Ok(Some(engine)) => {
-	// 					remote_game.set_engine(engine);
-	// 				}
-	// 				Ok(None) => {}
-	// 				Err(_) => {
-	// 					remote_game.set_skip_cache(true);
-	// 				}
-	// 			}
-
-	// 			callback(remote_game.clone());
-	// 			remote_game
-	// 		}))
-	// 		.await;
-
-	// 	Self::try_save_remote_game_cache(&remote_games);
-
-	// 	Ok(remote_games)
-	// }
 }
 
 #[serializable_struct]
