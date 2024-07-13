@@ -1,6 +1,7 @@
 import { useSetAtom, atom } from "jotai";
 import { AppEvent, EventPayload, useAppEvent } from "./use-app-event";
-import { useRef, useEffect } from "react";
+import { useRef } from "react";
+import { useThrottledCallback } from "@mantine/hooks";
 
 type PartialData<TEvent extends AppEvent> = {
 	data: Map<string, EventPayload<TEvent>>;
@@ -15,44 +16,31 @@ export function dataPartialSubscription<TEvent extends AppEvent>(
 		data: defaultValue,
 	});
 
-	let dataBuffer: EventPayload<TEvent>[] = [];
-
-	stateAtom.write;
+	let accumulatedMapTime = 0;
+	let accumulatedStateTime = 0;
 
 	function useDataSubscription() {
 		const setData = useSetAtom(stateAtom);
 		const dataRef = useRef(defaultValue);
-		const flushTimeout = useRef<number | undefined>();
+		const updateState = useThrottledCallback(() => {
+			setData({
+				data: dataRef.current,
+			});
+		}, 1000);
 
 		useAppEvent(event, (payload) => {
-			if (payload) {
-				dataBuffer.push(payload);
-				scheduleFlush();
-			}
+			let startTime = performance.now();
+			dataRef.current.set(getId(payload), payload);
+			accumulatedMapTime += performance.now() - startTime;
+			startTime = performance.now();
+			updateState();
+			accumulatedStateTime += performance.now() - startTime;
 		});
 
-		const scheduleFlush = useRef(() => {
-			if (!flushTimeout.current) {
-				flushTimeout.current = setTimeout(() => {
-					for (const bufferItem of dataBuffer) {
-						dataRef.current.set(getId(bufferItem), bufferItem);
-					}
-					dataBuffer = [];
-					setData({
-						data: dataRef.current,
-					});
-					flushTimeout.current = undefined;
-				}, 500);
-			}
-		}).current;
-
-		useEffect(() => {
-			return () => {
-				if (flushTimeout.current) {
-					clearTimeout(flushTimeout.current);
-				}
-			};
-		}, []);
+		setInterval(() => {
+			console.log(`Map time: ${accumulatedMapTime}ms`);
+			console.log(`State time: ${accumulatedStateTime}ms`);
+		}, 5000);
 
 		return stateAtom;
 	}
