@@ -16,9 +16,6 @@ export function dataPartialSubscription<TEvent extends AppEvent>(
 		data: defaultValue,
 	});
 
-	let accumulatedMapTime = 0;
-	let accumulatedStateTime = 0;
-
 	function useDataSubscription() {
 		const setData = useSetAtom(stateAtom);
 		const dataRef = useRef(defaultValue);
@@ -26,21 +23,12 @@ export function dataPartialSubscription<TEvent extends AppEvent>(
 			setData({
 				data: dataRef.current,
 			});
-		}, 1000);
+		}, 500);
 
 		useAppEvent(event, (payload) => {
-			let startTime = performance.now();
 			dataRef.current.set(getId(payload), payload);
-			accumulatedMapTime += performance.now() - startTime;
-			startTime = performance.now();
 			updateState();
-			accumulatedStateTime += performance.now() - startTime;
 		});
-
-		setInterval(() => {
-			console.log(`Map time: ${accumulatedMapTime}ms`);
-			console.log(`State time: ${accumulatedStateTime}ms`);
-		}, 5000);
 
 		return stateAtom;
 	}
