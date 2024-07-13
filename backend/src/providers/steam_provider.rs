@@ -298,10 +298,10 @@ impl ProviderActions for Steam {
 			// get owned game for this app info
 			match app_info_result {
 				Ok(app_info) => {
+					if let Some(owned_game) = self.get_owned_game(&app_info, &steam_dir) {
+						owned_callback(owned_game);
+					}
 					if let Some(dir_app) = steam_dir_app_map.get(&app_info.app_id) {
-						if let Some(owned_game) = self.get_owned_game(&app_info, &steam_dir) {
-							owned_callback(owned_game);
-						}
 						if let Some(installed_game) = self.get_installed_game(&app_info, &dir_app) {
 							installed_callback(installed_game);
 						}
