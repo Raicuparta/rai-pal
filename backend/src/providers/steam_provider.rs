@@ -1,8 +1,9 @@
 use std::{
-	collections::HashSet,
+	collections::{HashMap, HashSet},
 	fs,
 	marker::{Send, Sync},
 	path::PathBuf,
+	time::Instant,
 };
 
 use async_trait::async_trait;
@@ -16,6 +17,7 @@ use super::{
 };
 use crate::{
 	app_type::AppType,
+	debug::LoggableInstant,
 	game_engines::game_engine::GameEngine,
 	game_executable::OperatingSystem,
 	game_mode::GameMode,
@@ -53,8 +55,8 @@ impl ProviderStatic for Steam {
 impl Steam {
 	pub fn get_owned_game(
 		&self,
-		steam_dir: &SteamDir,
 		app_info: &SteamAppInfo,
+		steam_dir: &SteamDir,
 	) -> Option<OwnedGame> {
 		let mut game = OwnedGame::new(&app_info.app_id.to_string(), *Self::ID, &app_info.name);
 
@@ -149,8 +151,8 @@ impl Steam {
 
 	pub fn get_installed_game(
 		&self,
-		steam_dir: &SteamDir,
 		app_info: &SteamAppInfo,
+		dir_app: &steamlocate::SteamApp,
 	) -> Option<InstalledGame> {
 		// TODO: move these to Steam provider data.
 		let mut used_paths: HashSet<PathBuf> = HashSet::new();
@@ -162,18 +164,15 @@ impl Steam {
 			sorted_launch_options
 		};
 
-		// TODO: handle error.
-		let app = steam_dir.app(app_info.app_id).ok()??;
-
 		for launch_option in sorted_launch_options {
 			if let Some(executable_path) = launch_option.executable.as_ref() {
-				let full_path = &app.path.join(executable_path);
+				let full_path = &dir_app.path.join(executable_path);
 
 				if used_paths.contains(full_path) {
 					continue;
 				}
 
-				if let Some(name) = &app.name {
+				if let Some(name) = &dir_app.name {
 					if let Some(mut game) =
 						installed_game::InstalledGame::new(full_path, name, *Self::ID)
 					{
@@ -190,7 +189,7 @@ impl Steam {
 							game.set_discriminator(discriminator);
 						}
 
-						let app_id_string = app.app_id.to_string();
+						let app_id_string = dir_app.app_id.to_string();
 
 						game.set_provider_game_id(&app_id_string);
 						game.set_thumbnail_url(&get_steam_thumbnail(&app_id_string));
@@ -287,15 +286,25 @@ impl ProviderActions for Steam {
 		// let app_info_file = appinfo::read(steam_dir.path())?;
 		let app_info_reader = SteamAppInfoReader::new(steam_dir.path())?;
 
+		// create map of appid to steamdir app
+		let mut steam_dir_app_map: HashMap<_, _> = HashMap::new();
+		for library in (steam_dir.libraries()?).flatten() {
+			for app in library.apps().flatten() {
+				steam_dir_app_map.insert(app.app_id, app);
+			}
+		}
+
 		for app_info_result in app_info_reader {
 			// get owned game for this app info
 			match app_info_result {
 				Ok(app_info) => {
-					if let Some(owned_game) = self.get_owned_game(&steam_dir, &app_info) {
-						owned_callback(owned_game);
-					}
-					if let Some(installed_game) = self.get_installed_game(&steam_dir, &app_info) {
-						installed_callback(installed_game);
+					if let Some(dir_app) = steam_dir_app_map.get(&app_info.app_id) {
+						if let Some(owned_game) = self.get_owned_game(&app_info, &steam_dir) {
+							owned_callback(owned_game);
+						}
+						if let Some(installed_game) = self.get_installed_game(&app_info, &dir_app) {
+							installed_callback(installed_game);
+						}
 					}
 				}
 				Err(e) => {
