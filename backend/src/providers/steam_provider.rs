@@ -51,11 +51,7 @@ impl ProviderStatic for Steam {
 }
 
 impl Steam {
-	pub fn get_owned_game(
-		&self,
-		app_info: &SteamAppInfo,
-		steam_dir: &SteamDir,
-	) -> Option<OwnedGame> {
+	pub fn get_owned_game(app_info: &SteamAppInfo, steam_dir: &SteamDir) -> Option<OwnedGame> {
 		let mut game = OwnedGame::new(&app_info.app_id.to_string(), *Self::ID, &app_info.name);
 
 		let id_string = app_info.app_id.to_string();
@@ -148,7 +144,6 @@ impl Steam {
 	}
 
 	pub fn get_installed_game(
-		&self,
 		app_info: &SteamAppInfo,
 		dir_app: &steamlocate::SteamApp,
 	) -> Option<InstalledGame> {
@@ -276,14 +271,14 @@ impl ProviderActions for Steam {
 			// get owned game for this app info
 			match app_info_result {
 				Ok(app_info) => {
-					if let Some(owned_game) = self.get_owned_game(&app_info, &steam_dir) {
+					if let Some(owned_game) = Self::get_owned_game(&app_info, &steam_dir) {
 						owned_callback(owned_game);
 
 						remote_game_futures
 							.push(self.get_remote_game(app_info.clone(), &steam_games));
 					}
 					if let Some(dir_app) = steam_dir_app_map.get(&app_info.app_id) {
-						if let Some(installed_game) = self.get_installed_game(&app_info, dir_app) {
+						if let Some(installed_game) = Self::get_installed_game(&app_info, dir_app) {
 							installed_callback(installed_game);
 						}
 					}
