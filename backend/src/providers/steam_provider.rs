@@ -312,9 +312,98 @@ impl ProviderActions for Steam {
 			// get owned game for this app info
 			match app_info_result {
 				Ok(app_info) => {
-					let owned_game =
+					let mut game =
 						OwnedGame::new(&app_info.app_id.to_string(), *Self::ID, &app_info.name);
-					owned_callback(owned_game);
+
+					let id_string = app_info.app_id.to_string();
+					let os_list: HashSet<_> = app_info
+						.launch_options
+						.iter()
+						.filter_map(|launch| {
+							launch
+								.os_list
+								.as_ref()
+								.and_then(|os_list| match os_list.as_str() {
+									"linux" => Some(OperatingSystem::Linux),
+									"windows" => Some(OperatingSystem::Windows),
+									_ => None,
+								})
+						})
+						.collect();
+
+					// Games in appinfo.vdf aren't necessarily owned.
+					// Most of them are, but there are also a bunch of other games that Steam needs to reference for one reason or another.
+					// assets.vdf is another cache file, and from my (not very extensive) tests, it to really only include owned files.
+					// Free games are some times not there though, so I'm presuming that any free game found in appinfo.vdf is owned.
+					// appinfo.vdf is also still needed since most of the game data we want is there, so we can't just read everything from assets.vdf.
+					let owned = app_info.is_free
+						|| fs::read(steam_dir.path().join("appcache/librarycache/assets.vdf"))
+							.map_or(false, |assets_cache_bytes| {
+								// Would be smarter to actually parse assets.vdf and extract all the ids,
+								// but I didn't feel like figuring out how to parse another binary vdf.
+								// Maybe later. But most likely never.
+								BytesRegex::new(&id_string)
+									.map_or(false, |regex| regex.is_match(&assets_cache_bytes))
+							});
+
+					if !owned {
+						continue;
+					}
+
+					let game_mode = if app_info
+						.launch_options
+						.iter()
+						.any(|launch| launch.get_game_mode() == GameMode::VR)
+					{
+						GameMode::VR
+					} else {
+						GameMode::Flat
+					};
+
+					game.set_thumbnail_url(&get_steam_thumbnail(&id_string))
+						.set_os_list(os_list)
+						.set_game_mode(game_mode)
+						.add_provider_command(
+							ProviderCommandAction::ShowInLibrary,
+							ProviderCommand::String(format!(
+								"steam://nav/games/details/{id_string}"
+							)),
+						)
+						.add_provider_command(
+							ProviderCommandAction::ShowInStore,
+							ProviderCommand::String(format!("steam://store/{id_string}")),
+						)
+						.add_provider_command(
+							ProviderCommandAction::Install,
+							ProviderCommand::String(format!("steam://install/{id_string}")),
+						)
+						.add_provider_command(
+							ProviderCommandAction::OpenInBrowser,
+							ProviderCommand::String(format!(
+								"https://store.steampowered.com/app/{id_string}"
+							)),
+						);
+
+					if let Some(release_date) = app_info
+						.original_release_date
+						.or(app_info.steam_release_date)
+					{
+						game.set_release_date(release_date.into());
+					}
+
+					if let Some(app_type) = &app_info.app_type {
+						if app_type == "Game" {
+							game.set_app_type(AppType::Game);
+						} else if app_type == "Demo" {
+							game.set_app_type(AppType::Demo);
+						}
+					} else {
+						// We only try to guess the app type if couldn't read it from appinfo.
+						// For instance, something marked as Tool or Application shouldn't be marked as a game.
+						game.guess_app_type();
+					}
+
+					owned_callback(game);
 				}
 				Err(e) => {
 					// TODO: log error
