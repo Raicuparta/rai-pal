@@ -2,6 +2,7 @@ use std::path::{Path, PathBuf};
 
 use async_trait::async_trait;
 use chrono::DateTime;
+use futures::future;
 use log::error;
 use rai_pal_proc_macros::serializable_struct;
 use rusqlite::{Connection, OpenFlags};
@@ -18,8 +19,67 @@ use crate::{
 
 #[derive(Clone)]
 pub struct Itch {
-	database: ItchDatabase,
 	remote_game_cache: remote_game::Map,
+}
+
+impl Itch {
+	fn get_installed_game(cave: &ItchDatabaseCave) -> Option<InstalledGame> {
+		let verdict = cave.verdict.as_ref()?;
+		let exe_path = verdict.base_path.join(&verdict.candidates.first()?.path);
+		let mut game = InstalledGame::new(&exe_path, &cave.title, *Self::ID)?;
+		if let Some(cover_url) = &cave.cover_url {
+			game.set_thumbnail_url(cover_url);
+		}
+		game.set_provider_game_id(&cave.id.to_string());
+
+		Some(game)
+	}
+
+	fn get_owned_game(row: &ItchDatabaseGame) -> OwnedGame {
+		let mut game = OwnedGame::new(&row.id.to_string(), *Self::ID, &row.title);
+
+		if let Some(thumbnail_url) = &row.cover_url {
+			game.set_thumbnail_url(thumbnail_url);
+		}
+		if let Some(date_time) = row
+			.published_at
+			.as_ref()
+			.and_then(|published_at| DateTime::parse_from_rfc3339(published_at).ok())
+		{
+			game.set_release_date(date_time.timestamp());
+		}
+		game.add_provider_command(
+			ProviderCommandAction::ShowInLibrary,
+			ProviderCommand::String(format!("itch://games/{}", row.id)),
+		)
+		.add_provider_command(
+			ProviderCommandAction::Install,
+			ProviderCommand::String(format!("itch://install?game_id={}", row.id)),
+		)
+		.guess_app_type();
+
+		game
+	}
+
+	async fn get_remote_game(&self, db_item: ItchDatabaseGame) -> RemoteGame {
+		let mut remote_game = RemoteGame::new(*Self::ID, &db_item.id.to_string());
+
+		if let Some(cached_remote_game) = self.remote_game_cache.get(&remote_game.id) {
+			return cached_remote_game.clone();
+		}
+
+		match pc_gaming_wiki::get_engine_from_game_title(&db_item.title).await {
+			Ok(Some(engine)) => {
+				remote_game.set_engine(engine);
+			}
+			Ok(None) => {}
+			Err(_) => {
+				remote_game.set_skip_cache(true);
+			}
+		}
+
+		remote_game
+	}
 }
 
 impl ProviderStatic for Itch {
@@ -29,13 +89,7 @@ impl ProviderStatic for Itch {
 	where
 		Self: Sized,
 	{
-		let app_data_path = directories::BaseDirs::new()
-			.ok_or_else(Error::AppDataNotFound)?
-			.config_dir()
-			.join("itch");
-
 		Ok(Self {
-			database: get_database(&app_data_path)?,
 			remote_game_cache: Self::try_get_remote_game_cache(),
 		})
 	}
@@ -88,102 +142,37 @@ impl ProviderActions for Itch {
 		TOwnedCallback: Fn(OwnedGame) + Send + Sync,
 		TRemoteCallback: Fn(RemoteGame) + Send + Sync,
 	{
+		let app_data_path = directories::BaseDirs::new()
+			.ok_or_else(Error::AppDataNotFound)?
+			.config_dir()
+			.join("itch");
+
+		let database = get_database(&app_data_path)?;
+		let mut remote_game_futures = Vec::new();
+
+		for db_entry in database.games {
+			owned_callback(Self::get_owned_game(&db_entry));
+			remote_game_futures.push(self.get_remote_game(db_entry.clone()));
+		}
+
+		for db_entry in database.caves {
+			if let Some(installed_game) = Self::get_installed_game(&db_entry) {
+				installed_callback(installed_game);
+			}
+		}
+
+		// TODO: cache
+		future::join_all(remote_game_futures)
+			.await
+			.iter()
+			.for_each(|remote_game| {
+				remote_callback(remote_game.clone());
+				// self.remote_game_cache
+				// 	.insert(remote_game.id.clone(), remote_game.clone());
+			});
+
 		Ok(())
 	}
-
-	// fn get_installed_games<TCallback>(&self, callback: TCallback) -> Result<Vec<InstalledGame>>
-	// where
-	// 	TCallback: Fn(InstalledGame),
-	// {
-	// 	Ok(self
-	// 		.database
-	// 		.caves
-	// 		.iter()
-	// 		.filter_map(|cave| {
-	// 			let verdict = cave.verdict.as_ref()?;
-	// 			let exe_path = verdict.base_path.join(&verdict.candidates.first()?.path);
-	// 			let mut game = InstalledGame::new(&exe_path, &cave.title, *Self::ID)?;
-	// 			if let Some(cover_url) = &cave.cover_url {
-	// 				game.set_thumbnail_url(cover_url);
-	// 			}
-	// 			game.set_provider_game_id(&cave.id.to_string());
-
-	// 			callback(game.clone());
-
-	// 			Some(game)
-	// 		})
-	// 		.collect())
-	// }
-
-	// fn get_owned_games<TCallback>(&self, callback: TCallback) -> Result<Vec<OwnedGame>>
-	// where
-	// 	TCallback: Fn(OwnedGame),
-	// {
-	// 	Ok(self
-	// 		.database
-	// 		.games
-	// 		.iter()
-	// 		.map(|row| {
-	// 			let mut game = OwnedGame::new(&row.id.to_string(), *Self::ID, &row.title);
-
-	// 			if let Some(thumbnail_url) = &row.cover_url {
-	// 				game.set_thumbnail_url(thumbnail_url);
-	// 			}
-	// 			if let Some(date_time) = row
-	// 				.published_at
-	// 				.as_ref()
-	// 				.and_then(|published_at| DateTime::parse_from_rfc3339(published_at).ok())
-	// 			{
-	// 				game.set_release_date(date_time.timestamp());
-	// 			}
-	// 			game.add_provider_command(
-	// 				ProviderCommandAction::ShowInLibrary,
-	// 				ProviderCommand::String(format!("itch://games/{}", row.id)),
-	// 			)
-	// 			.add_provider_command(
-	// 				ProviderCommandAction::Install,
-	// 				ProviderCommand::String(format!("itch://install?game_id={}", row.id)),
-	// 			)
-	// 			.guess_app_type();
-
-	// 			callback(game.clone());
-	// 			game
-	// 		})
-	// 		.collect())
-	// }
-
-	// async fn get_remote_games<TCallback>(&self, callback: TCallback) -> Result<Vec<RemoteGame>>
-	// where
-	// 	TCallback: Fn(RemoteGame) + std::marker::Send + std::marker::Sync,
-	// {
-	// 	let remote_games: Vec<RemoteGame> =
-	// 		futures::future::join_all(self.database.games.iter().map(|db_item| async {
-	// 			let mut remote_game = RemoteGame::new(*Self::ID, &db_item.id.to_string());
-
-	// 			if let Some(cached_remote_game) = self.remote_game_cache.get(&remote_game.id) {
-	// 				callback(cached_remote_game.clone());
-	// 				return cached_remote_game.clone();
-	// 			}
-
-	// 			match pc_gaming_wiki::get_engine_from_game_title(&db_item.title).await {
-	// 				Ok(Some(engine)) => {
-	// 					remote_game.set_engine(engine);
-	// 				}
-	// 				Ok(None) => {}
-	// 				Err(_) => {
-	// 					remote_game.set_skip_cache(true);
-	// 				}
-	// 			}
-
-	// 			callback(remote_game.clone());
-	// 			remote_game
-	// 		}))
-	// 		.await;
-
-	// 	Self::try_save_remote_game_cache(&remote_games);
-
-	// 	Ok(remote_games)
-	// }
 }
 
 fn parse_verdict(json_option: &Option<String>) -> Option<ItchDatabaseVerdict> {
