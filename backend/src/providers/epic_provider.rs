@@ -77,7 +77,7 @@ pub struct Epic {
 
 impl Epic {
 	fn get_installed_game(manifest_path: &Path) -> Option<InstalledGame> {
-		match read_manifest(&manifest_path) {
+		match read_manifest(manifest_path) {
 			Ok(manifest) => {
 				let path =
 					PathBuf::from(manifest.install_location).join(manifest.launch_executable);
