@@ -40,46 +40,22 @@ impl ProviderActions for Manual {
 	async fn get_games<TInstalledCallback, TOwnedCallback, TRemoteCallback>(
 		&self,
 		installed_callback: TInstalledCallback,
-		owned_callback: TOwnedCallback,
-		remote_callback: TRemoteCallback,
+		_owned_callback: TOwnedCallback,
+		_remote_callback: TRemoteCallback,
 	) -> Result
 	where
 		TInstalledCallback: Fn(InstalledGame) + Send + Sync,
 		TOwnedCallback: Fn(OwnedGame) + Send + Sync,
 		TRemoteCallback: Fn(RemoteGame) + Send + Sync,
 	{
+		for path in read_games_config(&games_config_path()?).paths {
+			if let Some(installed_game) = create_game_from_path(&path) {
+				installed_callback(installed_game);
+			}
+		}
+
 		Ok(())
 	}
-
-	// fn get_installed_games<TCallback>(&self, callback: TCallback) -> Result<Vec<InstalledGame>>
-	// where
-	// 	TCallback: Fn(InstalledGame),
-	// {
-	// 	Ok(read_games_config(&games_config_path()?)
-	// 		.paths
-	// 		.iter()
-	// 		.filter_map(|path| {
-	// 			create_game_from_path(path).map(|game| {
-	// 				callback(game.clone());
-	// 				game
-	// 			})
-	// 		})
-	// 		.collect())
-	// }
-
-	// fn get_owned_games<TCallback>(&self, _: TCallback) -> Result<Vec<OwnedGame>>
-	// where
-	// 	TCallback: Fn(OwnedGame),
-	// {
-	// 	Ok(Vec::default())
-	// }
-
-	// async fn get_remote_games<TCallback>(&self, _: TCallback) -> Result<Vec<RemoteGame>>
-	// where
-	// 	TCallback: Fn(RemoteGame) + std::marker::Send,
-	// {
-	// 	Ok(Vec::default())
-	// }
 }
 
 fn create_game_from_path(path: &Path) -> Option<InstalledGame> {
