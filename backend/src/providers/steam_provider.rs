@@ -6,7 +6,7 @@ use std::{
 };
 
 use async_trait::async_trait;
-use futures::{future, StreamExt};
+use futures::StreamExt;
 use lazy_regex::BytesRegex;
 use steamlocate::SteamDir;
 
@@ -287,8 +287,8 @@ impl Steam {
 								}
 							}
 						}
-						Err(e) => {
-							// TODO: log error
+						Err(error) => {
+							log::error!("Failed to read Steam appinfo: {}", error);
 						}
 					}
 				}
