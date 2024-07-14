@@ -145,7 +145,6 @@ impl SteamAppInfoReader {
 		Ok(Self { reader, keys })
 	}
 
-	// TODO: missing the sub-games like Ynglet
 	pub fn try_next(&mut self) -> Result<Option<SteamAppInfo>> {
 		loop {
 			let app_id = self.reader.read_u32::<LittleEndian>()?;
