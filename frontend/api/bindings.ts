@@ -12,14 +12,6 @@ try {
     else return { status: "error", error: e  as any };
 }
 },
-async getInstalledGames() : Promise<Result<{ [key in string]: InstalledGame }, Error>> {
-try {
-    return { status: "ok", data: await TAURI_INVOKE("get_installed_games") };
-} catch (e) {
-    if(e instanceof Error) throw e;
-    else return { status: "error", error: e  as any };
-}
-},
 async getOwnedGames() : Promise<Result<{ [key in string]: OwnedGame }, Error>> {
 try {
     return { status: "ok", data: await TAURI_INVOKE("get_owned_games") };
@@ -36,73 +28,73 @@ try {
     else return { status: "error", error: e  as any };
 }
 },
-async openGameFolder(gameId: string) : Promise<Result<null, Error>> {
+async openGameFolder(installedGame: InstalledGame) : Promise<Result<null, Error>> {
 try {
-    return { status: "ok", data: await TAURI_INVOKE("open_game_folder", { gameId }) };
+    return { status: "ok", data: await TAURI_INVOKE("open_game_folder", { installedGame }) };
 } catch (e) {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
 }
 },
-async installMod(gameId: string, modId: string) : Promise<Result<null, Error>> {
+async installMod(installedGame: InstalledGame, modId: string) : Promise<Result<null, Error>> {
 try {
-    return { status: "ok", data: await TAURI_INVOKE("install_mod", { gameId, modId }) };
+    return { status: "ok", data: await TAURI_INVOKE("install_mod", { installedGame, modId }) };
 } catch (e) {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
 }
 },
-async configureMod(gameId: string, modId: string) : Promise<Result<null, Error>> {
+async configureMod(installedGame: InstalledGame, modId: string) : Promise<Result<null, Error>> {
 try {
-    return { status: "ok", data: await TAURI_INVOKE("configure_mod", { gameId, modId }) };
+    return { status: "ok", data: await TAURI_INVOKE("configure_mod", { installedGame, modId }) };
 } catch (e) {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
 }
 },
-async openInstalledModFolder(gameId: string, modId: string) : Promise<Result<null, Error>> {
+async openInstalledModFolder(installedGame: InstalledGame, modId: string) : Promise<Result<null, Error>> {
 try {
-    return { status: "ok", data: await TAURI_INVOKE("open_installed_mod_folder", { gameId, modId }) };
+    return { status: "ok", data: await TAURI_INVOKE("open_installed_mod_folder", { installedGame, modId }) };
 } catch (e) {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
 }
 },
-async uninstallMod(gameId: string, modId: string) : Promise<Result<null, Error>> {
+async uninstallMod(installedGame: InstalledGame, modId: string) : Promise<Result<null, Error>> {
 try {
-    return { status: "ok", data: await TAURI_INVOKE("uninstall_mod", { gameId, modId }) };
+    return { status: "ok", data: await TAURI_INVOKE("uninstall_mod", { installedGame, modId }) };
 } catch (e) {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
 }
 },
-async uninstallAllMods(gameId: string) : Promise<Result<null, Error>> {
+async uninstallAllMods(installedGame: InstalledGame) : Promise<Result<null, Error>> {
 try {
-    return { status: "ok", data: await TAURI_INVOKE("uninstall_all_mods", { gameId }) };
+    return { status: "ok", data: await TAURI_INVOKE("uninstall_all_mods", { installedGame }) };
 } catch (e) {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
 }
 },
-async openGameModsFolder(gameId: string) : Promise<Result<null, Error>> {
+async openGameModsFolder(installedGame: InstalledGame) : Promise<Result<null, Error>> {
 try {
-    return { status: "ok", data: await TAURI_INVOKE("open_game_mods_folder", { gameId }) };
+    return { status: "ok", data: await TAURI_INVOKE("open_game_mods_folder", { installedGame }) };
 } catch (e) {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
 }
 },
-async startGame(gameId: string) : Promise<Result<null, Error>> {
+async startGame(installedGame: InstalledGame) : Promise<Result<null, Error>> {
 try {
-    return { status: "ok", data: await TAURI_INVOKE("start_game", { gameId }) };
+    return { status: "ok", data: await TAURI_INVOKE("start_game", { installedGame }) };
 } catch (e) {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
 }
 },
-async startGameExe(gameId: string) : Promise<Result<null, Error>> {
+async startGameExe(installedGame: InstalledGame) : Promise<Result<null, Error>> {
 try {
-    return { status: "ok", data: await TAURI_INVOKE("start_game_exe", { gameId }) };
+    return { status: "ok", data: await TAURI_INVOKE("start_game_exe", { installedGame }) };
 } catch (e) {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
@@ -156,9 +148,9 @@ try {
     else return { status: "error", error: e  as any };
 }
 },
-async removeGame(gameId: string) : Promise<Result<null, Error>> {
+async removeGame(installedGame: InstalledGame) : Promise<Result<null, Error>> {
 try {
-    return { status: "ok", data: await TAURI_INVOKE("remove_game", { gameId }) };
+    return { status: "ok", data: await TAURI_INVOKE("remove_game", { installedGame }) };
 } catch (e) {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
@@ -212,9 +204,9 @@ try {
     else return { status: "error", error: e  as any };
 }
 },
-async refreshGame(gameId: string) : Promise<Result<null, Error>> {
+async refreshGame(installedGame: InstalledGame) : Promise<Result<null, Error>> {
 try {
-    return { status: "ok", data: await TAURI_INVOKE("refresh_game", { gameId }) };
+    return { status: "ok", data: await TAURI_INVOKE("refresh_game", { installedGame }) };
 } catch (e) {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
@@ -228,9 +220,9 @@ try {
     else return { status: "error", error: e  as any };
 }
 },
-async runProviderCommand(ownedGameId: string, commandAction: ProviderCommandAction) : Promise<Result<null, Error>> {
+async runProviderCommand(ownedGame: OwnedGame, commandAction: ProviderCommandAction) : Promise<Result<null, Error>> {
 try {
-    return { status: "ok", data: await TAURI_INVOKE("run_provider_command", { ownedGameId, commandAction }) };
+    return { status: "ok", data: await TAURI_INVOKE("run_provider_command", { ownedGame, commandAction }) };
 } catch (e) {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };

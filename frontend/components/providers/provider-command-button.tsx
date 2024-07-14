@@ -38,7 +38,7 @@ export function ProviderCommandButton(props: Props) {
 	return (
 		<CommandButton
 			leftSection={<IconComponent />}
-			onClick={() => commands.runProviderCommand(props.game.id, props.action)}
+			onClick={() => commands.runProviderCommand(props.game, props.action)}
 		>
 			{providerCommandActionName[props.action]}
 		</CommandButton>
