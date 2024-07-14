@@ -67,6 +67,8 @@ export function AddGame() {
 						<Group>
 							<IconAppWindowFilled fontSize={50} />
 							<Stack gap={0}>
+								{/* TODO: clicking does't work */}
+								{/* TODO maybe dropping does't work either */}
 								<Text>Drag and drop a game&apos;s executable file here</Text>
 								<Text>or click to select a file</Text>
 							</Stack>
