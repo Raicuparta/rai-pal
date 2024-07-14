@@ -8,7 +8,6 @@ use std::{
 use async_trait::async_trait;
 use futures::{future, StreamExt};
 use lazy_regex::BytesRegex;
-use rayon::prelude::*;
 use steamlocate::SteamDir;
 
 use super::{
@@ -251,8 +250,10 @@ impl Steam {
 		TRemoteCallback: Fn(RemoteGame) + Send + Sync,
 	{
 		let steam_dir = SteamDir::locate()?;
+		// let app_info_file = appinfo::read(steam_dir.path())?;
 		let app_info_reader = SteamAppInfoReader::new(steam_dir.path())?;
 
+		// create map of appid to steamdir app
 		let mut steam_dir_app_map: HashMap<_, _> = HashMap::new();
 		for library in (steam_dir.libraries()?).flatten() {
 			for app in library.apps().flatten() {
@@ -262,30 +263,37 @@ impl Steam {
 
 		let steam_games = id_lists::get().await?;
 
-		app_info_reader.par_bridge().for_each(|app_info_result| {
-			match app_info_result {
-				Ok(app_info) => {
-					if let Some(dir_app) = steam_dir_app_map.get(&app_info.app_id) {
-						if let Some(installed_game) = Self::get_installed_game(&app_info, dir_app) {
-							installed_callback(installed_game);
+		futures::stream::iter(app_info_reader)
+			.for_each_concurrent(Some(20), |app_info_result| {
+				async {
+					match app_info_result {
+						Ok(app_info) => {
+							if let Some(owned_game) = Self::get_owned_game(&app_info, &steam_dir) {
+								owned_callback(owned_game);
+
+								if let Some(remote_game) =
+									self.get_remote_game(app_info.clone(), &steam_games).await
+								{
+									remote_callback(remote_game);
+									// self.remote_game_cache
+									// 	.insert(remote_game.id.clone(), remote_game.clone());
+								}
+							}
+							if let Some(dir_app) = steam_dir_app_map.get(&app_info.app_id) {
+								if let Some(installed_game) =
+									Self::get_installed_game(&app_info, dir_app)
+								{
+									installed_callback(installed_game);
+								}
+							}
 						}
-					}
-
-					if let Some(owned_game) = Self::get_owned_game(&app_info, &steam_dir) {
-						owned_callback(owned_game);
-
-						if let Some(remote_game) = futures::executor::block_on(
-							self.get_remote_game(app_info.clone(), &steam_games),
-						) {
-							remote_callback(remote_game);
+						Err(e) => {
+							// TODO: log error
 						}
 					}
 				}
-				Err(e) => {
-					// TODO: log error
-				}
-			}
-		});
+			})
+			.await;
 
 		Ok(())
 	}
