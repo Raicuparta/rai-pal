@@ -6,7 +6,7 @@ use std::{
 };
 
 use async_trait::async_trait;
-use futures::future;
+use futures::{future, StreamExt};
 use lazy_regex::BytesRegex;
 use steamlocate::SteamDir;
 
@@ -237,11 +237,8 @@ impl Steam {
 
 		Some(remote_game)
 	}
-}
 
-#[async_trait]
-impl ProviderActions for Steam {
-	async fn get_games<TInstalledCallback, TOwnedCallback, TRemoteCallback>(
+	async fn get_steam_games<TInstalledCallback, TOwnedCallback, TRemoteCallback>(
 		&self,
 		installed_callback: TInstalledCallback,
 		owned_callback: TOwnedCallback,
@@ -265,43 +262,58 @@ impl ProviderActions for Steam {
 		}
 
 		let steam_games = id_lists::get().await?;
-		let mut remote_game_futures = Vec::new();
 
-		for app_info_result in app_info_reader {
-			// get owned game for this app info
-			match app_info_result {
-				Ok(app_info) => {
-					if let Some(owned_game) = Self::get_owned_game(&app_info, &steam_dir) {
-						owned_callback(owned_game);
+		futures::stream::iter(app_info_reader)
+			.for_each_concurrent(Some(20), |app_info_result| {
+				async {
+					match app_info_result {
+						Ok(app_info) => {
+							if let Some(owned_game) = Self::get_owned_game(&app_info, &steam_dir) {
+								owned_callback(owned_game);
 
-						remote_game_futures
-							.push(self.get_remote_game(app_info.clone(), &steam_games));
-					}
-					if let Some(dir_app) = steam_dir_app_map.get(&app_info.app_id) {
-						if let Some(installed_game) = Self::get_installed_game(&app_info, dir_app) {
-							installed_callback(installed_game);
+								if let Some(remote_game) =
+									self.get_remote_game(app_info.clone(), &steam_games).await
+								{
+									remote_callback(remote_game);
+									// self.remote_game_cache
+									// 	.insert(remote_game.id.clone(), remote_game.clone());
+								}
+							}
+							if let Some(dir_app) = steam_dir_app_map.get(&app_info.app_id) {
+								if let Some(installed_game) =
+									Self::get_installed_game(&app_info, dir_app)
+								{
+									installed_callback(installed_game);
+								}
+							}
+						}
+						Err(e) => {
+							// TODO: log error
 						}
 					}
 				}
-				Err(e) => {
-					// TODO: log error
-				}
-			}
-		}
-
-		// TODO: cache
-		future::join_all(remote_game_futures)
-			.await
-			.iter()
-			.for_each(|result| {
-				if let Some(remote_game) = result {
-					remote_callback(remote_game.clone());
-					// self.remote_game_cache
-					// 	.insert(remote_game.id.clone(), remote_game.clone());
-				}
-			});
+			})
+			.await;
 
 		Ok(())
+	}
+}
+
+#[async_trait]
+impl ProviderActions for Steam {
+	async fn get_games<TInstalledCallback, TOwnedCallback, TRemoteCallback>(
+		&self,
+		installed_callback: TInstalledCallback,
+		owned_callback: TOwnedCallback,
+		remote_callback: TRemoteCallback,
+	) -> Result
+	where
+		TInstalledCallback: Fn(InstalledGame) + Send + Sync,
+		TOwnedCallback: Fn(OwnedGame) + Send + Sync,
+		TRemoteCallback: Fn(RemoteGame) + Send + Sync,
+	{
+		self.get_steam_games(installed_callback, owned_callback, remote_callback)
+			.await
 	}
 }
 
