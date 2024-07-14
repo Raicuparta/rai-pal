@@ -1,32 +1,16 @@
-use std::{
-	borrow::Borrow,
-	collections::HashMap,
-	fmt::Display,
-	hash::Hash,
-	sync::Mutex,
-};
+use std::{borrow::Borrow, collections::HashMap, fmt::Display, hash::Hash, sync::Mutex};
 
 use tauri::Manager;
 
 use crate::{
-	installed_game,
-	local_mod,
-	maps::TryGettable,
-	mod_loaders::mod_loader,
-	owned_game,
-	remote_game,
-	remote_mod,
-	Error,
-	Result,
+	installed_game, local_mod, maps::TryGettable, mod_loaders::mod_loader, owned_game, remote_game,
+	remote_mod, Error, Result,
 };
 
 pub struct AppState {
-	pub installed_games: Mutex<Option<installed_game::Map>>,
-	pub owned_games: Mutex<Option<owned_game::Map>>,
 	pub mod_loaders: Mutex<Option<mod_loader::Map>>,
 	pub local_mods: Mutex<Option<local_mod::Map>>,
 	pub remote_mods: Mutex<Option<remote_mod::Map>>,
-	pub remote_games: Mutex<Option<remote_game::Map>>,
 }
 
 type TauriState<'a> = tauri::State<'a, AppState>;
