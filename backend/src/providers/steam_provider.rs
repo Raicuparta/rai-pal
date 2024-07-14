@@ -143,13 +143,13 @@ impl Steam {
 		Some(game)
 	}
 
-	pub fn get_installed_game(
+	pub fn get_installed_games(
 		app_info: &SteamAppInfo,
 		dir_app: &steamlocate::SteamApp,
-	) -> Option<InstalledGame> {
-		// TODO: move these to Steam provider data.
+	) -> Vec<InstalledGame> {
 		let mut used_paths: HashSet<PathBuf> = HashSet::new();
 		let mut used_names: HashSet<String> = HashSet::new();
+		let mut installed_games = Vec::new();
 
 		let sorted_launch_options = {
 			let mut sorted_launch_options = app_info.launch_options.clone();
@@ -195,13 +195,13 @@ impl Steam {
 
 						used_names.insert(name.clone());
 						used_paths.insert(full_path.clone());
-						return Some(game);
+						installed_games.push(game);
 					}
 				}
 			}
 		}
 
-		None
+		installed_games
 	}
 
 	pub async fn get_remote_game(
@@ -280,8 +280,7 @@ impl Steam {
 								}
 							}
 							if let Some(dir_app) = steam_dir_app_map.get(&app_info.app_id) {
-								if let Some(installed_game) =
-									Self::get_installed_game(&app_info, dir_app)
+								for installed_game in Self::get_installed_games(&app_info, dir_app)
 								{
 									installed_callback(installed_game);
 								}
