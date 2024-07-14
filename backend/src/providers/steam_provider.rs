@@ -191,8 +191,6 @@ impl Steam {
 							&discriminator_option,
 						));
 
-						// events::FoundInstalledGame(game.clone()).emit(handle)?;
-
 						used_names.insert(name.clone());
 						used_paths.insert(full_path.clone());
 						installed_games.push(game);
@@ -250,10 +248,8 @@ impl Steam {
 		TRemoteCallback: Fn(RemoteGame) + Send + Sync,
 	{
 		let steam_dir = SteamDir::locate()?;
-		// let app_info_file = appinfo::read(steam_dir.path())?;
 		let app_info_reader = SteamAppInfoReader::new(steam_dir.path())?;
 
-		// create map of appid to steamdir app
 		let mut steam_dir_app_map: HashMap<_, _> = HashMap::new();
 		for library in (steam_dir.libraries()?).flatten() {
 			for app in library.apps().flatten() {
@@ -275,6 +271,7 @@ impl Steam {
 									self.get_remote_game(app_info.clone(), &steam_games).await
 								{
 									remote_callback(remote_game);
+									// TODO: cache
 									// self.remote_game_cache
 									// 	.insert(remote_game.id.clone(), remote_game.clone());
 								}
