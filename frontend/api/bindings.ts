@@ -12,14 +12,6 @@ try {
     else return { status: "error", error: e  as any };
 }
 },
-async getOwnedGames() : Promise<Result<{ [key in string]: OwnedGame }, Error>> {
-try {
-    return { status: "ok", data: await TAURI_INVOKE("get_owned_games") };
-} catch (e) {
-    if(e instanceof Error) throw e;
-    else return { status: "error", error: e  as any };
-}
-},
 async getModLoaders() : Promise<Result<{ [key in string]: ModLoaderData }, Error>> {
 try {
     return { status: "ok", data: await TAURI_INVOKE("get_mod_loaders") };
@@ -183,14 +175,6 @@ try {
 async getRemoteMods() : Promise<Result<{ [key in string]: RemoteMod }, Error>> {
 try {
     return { status: "ok", data: await TAURI_INVOKE("get_remote_mods") };
-} catch (e) {
-    if(e instanceof Error) throw e;
-    else return { status: "error", error: e  as any };
-}
-},
-async getRemoteGames() : Promise<Result<{ [key in string]: RemoteGame }, Error>> {
-try {
-    return { status: "ok", data: await TAURI_INVOKE("get_remote_games") };
 } catch (e) {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
