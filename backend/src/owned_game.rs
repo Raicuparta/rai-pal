@@ -88,5 +88,3 @@ impl OwnedGame {
 pub fn get_id(provider: ProviderId, provider_game_id: &str) -> String {
 	format!("{provider}_{provider_game_id}")
 }
-
-pub type Map = HashMap<String, OwnedGame>;

@@ -2,10 +2,7 @@ use std::{borrow::Borrow, collections::HashMap, fmt::Display, hash::Hash, sync::
 
 use tauri::Manager;
 
-use crate::{
-	installed_game, local_mod, maps::TryGettable, mod_loaders::mod_loader, owned_game, remote_game,
-	remote_mod, Error, Result,
-};
+use crate::{local_mod, maps::TryGettable, mod_loaders::mod_loader, remote_mod, Error, Result};
 
 pub struct AppState {
 	pub mod_loaders: Mutex<Option<mod_loader::Map>>,

@@ -15,7 +15,7 @@ use log::error;
 use maps::TryGettable;
 use mod_loaders::mod_loader::{self, ModLoaderActions};
 use owned_game::OwnedGame;
-use paths::{hash_path, normalize_path};
+use paths::normalize_path;
 use providers::{
 	manual_provider,
 	provider::{self, ProviderActions},
@@ -80,13 +80,13 @@ fn update_state<TData>(data: TData, mutex: &Mutex<Option<TData>>) {
 
 #[tauri::command]
 #[specta::specta]
-async fn open_game_folder(installed_game: InstalledGame, handle: AppHandle) -> Result {
+async fn open_game_folder(installed_game: InstalledGame) -> Result {
 	installed_game.open_game_folder()
 }
 
 #[tauri::command]
 #[specta::specta]
-async fn open_game_mods_folder(installed_game: InstalledGame, handle: AppHandle) -> Result {
+async fn open_game_mods_folder(installed_game: InstalledGame) -> Result {
 	installed_game.open_mods_folder()
 }
 
@@ -157,7 +157,7 @@ async fn start_game(installed_game: InstalledGame, handle: AppHandle) -> Result 
 
 #[tauri::command]
 #[specta::specta]
-async fn start_game_exe(installed_game: InstalledGame, handle: AppHandle) -> Result {
+async fn start_game_exe(installed_game: InstalledGame) -> Result {
 	installed_game.start_exe()
 }
 

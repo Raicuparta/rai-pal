@@ -28,7 +28,6 @@ pub struct InstalledGame {
 	pub start_command: Option<ProviderCommand>,
 }
 
-pub type Map = HashMap<String, InstalledGame>;
 type InstalledModVersions = HashMap<String, String>;
 
 impl InstalledGame {
