@@ -51,7 +51,7 @@ impl ProviderStatic for Steam {
 }
 
 impl Steam {
-	pub fn get_owned_game(app_info: &SteamAppInfo, steam_dir: &SteamDir) -> Option<OwnedGame> {
+	pub fn get_owned_game(app_info: &SteamAppInfo, assets_cache_bytes: &[u8]) -> Option<OwnedGame> {
 		let mut game = OwnedGame::new(&app_info.app_id.to_string(), *Self::ID, &app_info.name);
 
 		let id_string = app_info.app_id.to_string();
@@ -75,17 +75,13 @@ impl Steam {
 		// assets.vdf is another cache file, and from my (not very extensive) tests, it to really only include owned files.
 		// Free games are some times not there though, so I'm presuming that any free game found in appinfo.vdf is owned.
 		// appinfo.vdf is also still needed since most of the game data we want is there, so we can't just read everything from assets.vdf.
-		let owned = app_info.is_free
-			|| fs::read(steam_dir.path().join("appcache/librarycache/assets.vdf")).map_or(
-				false,
-				|assets_cache_bytes| {
-					// Would be smarter to actually parse assets.vdf and extract all the ids,
-					// but I didn't feel like figuring out how to parse another binary vdf.
-					// Maybe later. But most likely never.
-					BytesRegex::new(&id_string)
-						.map_or(false, |regex| regex.is_match(&assets_cache_bytes))
-				},
-			);
+		let owned = app_info.is_free || 
+			// Would be smarter to actually parse assets.vdf and extract all the ids,
+			// but I didn't feel like figuring out how to parse another binary vdf.
+			// Maybe later. But most likely never.
+			// TODO: actually this might be causing a significant slowdown, so I should read it more smartly.
+			BytesRegex::new(&id_string)
+				.map_or(false, |regex| regex.is_match(assets_cache_bytes));
 
 		if !owned {
 			return None;
@@ -258,13 +254,14 @@ impl Steam {
 		}
 
 		let steam_games = id_lists::get().await?;
+		let assets_cache_bytes = fs::read(steam_dir.path().join("appcache/librarycache/assets.vdf"))?;
 
 		futures::stream::iter(app_info_reader)
 			.for_each_concurrent(Some(20), |app_info_result| {
 				async {
 					match app_info_result {
 						Ok(app_info) => {
-							if let Some(owned_game) = Self::get_owned_game(&app_info, &steam_dir) {
+							if let Some(owned_game) = Self::get_owned_game(&app_info, &assets_cache_bytes) {
 								owned_callback(owned_game);
 
 								if let Some(remote_game) =
