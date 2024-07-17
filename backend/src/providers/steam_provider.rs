@@ -2,12 +2,12 @@ use std::{
 	collections::{HashMap, HashSet},
 	fs,
 	marker::{Send, Sync},
-	path::PathBuf,
+	path::{Path, PathBuf},
 };
 
 use async_trait::async_trait;
 use futures::StreamExt;
-use lazy_regex::BytesRegex;
+use lazy_regex::{BytesRegex, Regex};
 use steamlocate::SteamDir;
 
 use super::{
@@ -51,10 +51,20 @@ impl ProviderStatic for Steam {
 }
 
 impl Steam {
-	pub fn get_owned_game(app_info: &SteamAppInfo, assets_cache_bytes: &[u8]) -> Option<OwnedGame> {
+	pub fn get_owned_game(
+		app_info: &SteamAppInfo,
+		ids_whitelist: &HashSet<String>,
+	) -> Option<OwnedGame> {
 		let mut game = OwnedGame::new(&app_info.app_id.to_string(), *Self::ID, &app_info.name);
 
 		let id_string = app_info.app_id.to_string();
+
+		let owned = app_info.is_free || ids_whitelist.contains(&id_string);
+
+		if !owned {
+			return None;
+		}
+
 		let os_list: HashSet<_> = app_info
 			.launch_options
 			.iter()
@@ -69,23 +79,6 @@ impl Steam {
 					})
 			})
 			.collect();
-
-		// Games in appinfo.vdf aren't necessarily owned.
-		// Most of them are, but there are also a bunch of other games that Steam needs to reference for one reason or another.
-		// assets.vdf is another cache file, and from my (not very extensive) tests, it to really only include owned files.
-		// Free games are some times not there though, so I'm presuming that any free game found in appinfo.vdf is owned.
-		// appinfo.vdf is also still needed since most of the game data we want is there, so we can't just read everything from assets.vdf.
-		let owned = app_info.is_free || 
-			// Would be smarter to actually parse assets.vdf and extract all the ids,
-			// but I didn't feel like figuring out how to parse another binary vdf.
-			// Maybe later. But most likely never.
-			// TODO: actually this might be causing a significant slowdown, so I should read it more smartly.
-			BytesRegex::new(&id_string)
-				.map_or(false, |regex| regex.is_match(assets_cache_bytes));
-
-		if !owned {
-			return None;
-		}
 
 		let game_mode = if app_info
 			.launch_options
@@ -232,6 +225,24 @@ impl Steam {
 		Some(remote_game)
 	}
 
+	fn get_owned_ids_whitelist(steam_path: &Path) -> Result<HashSet<String>> {
+		// Games in appinfo.vdf aren't necessarily owned.
+		// Most of them are, but there are also a bunch of other games that Steam needs to reference for one reason or another.
+		// assets.vdf is another cache file, and from my (not very extensive) tests, it does really only include owned files.
+		// Free games are some times not there though, so later in the code I'm presuming that any free game found in appinfo.vdf is owned.
+		// appinfo.vdf is also still needed since most of the game data we want is there, so we can't just read everything from assets.vdf.
+		let assets_cache_string = fs::read(steam_path.join("appcache/librarycache/assets.vdf"))?;
+
+		// This file has a bunch of ids, and they're always just numbers surrounded by zeros.
+		// We could have a smarter parse (this is a binary vdf), but let's just do this for now (probably forever).
+		let isolated_numbers: HashSet<String> = BytesRegex::new(r"\x00(\d+)\x00")?
+			.find_iter(&assets_cache_string)
+			.filter_map(|regex_match| String::from_utf8(regex_match.as_bytes().to_owned()).ok())
+			.collect();
+
+		Ok(isolated_numbers)
+	}
+
 	async fn get_steam_games<TInstalledCallback, TOwnedCallback, TRemoteCallback>(
 		&self,
 		installed_callback: TInstalledCallback,
@@ -253,15 +264,22 @@ impl Steam {
 			}
 		}
 
+		let owned_ids_whitelist =
+			Self::get_owned_ids_whitelist(steam_dir.path()).unwrap_or_else(|err| {
+				log::error!("Failed to read Steam assets.vdf: {}", err);
+				HashSet::new()
+			});
+
 		let steam_games = id_lists::get().await?;
-		let assets_cache_bytes = fs::read(steam_dir.path().join("appcache/librarycache/assets.vdf"))?;
 
 		futures::stream::iter(app_info_reader)
 			.for_each_concurrent(Some(20), |app_info_result| {
 				async {
 					match app_info_result {
 						Ok(app_info) => {
-							if let Some(owned_game) = Self::get_owned_game(&app_info, &assets_cache_bytes) {
+							if let Some(owned_game) =
+								Self::get_owned_game(&app_info, &owned_ids_whitelist)
+							{
 								owned_callback(owned_game);
 
 								if let Some(remote_game) =
