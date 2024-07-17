@@ -1,6 +1,8 @@
 use core::num;
 use std::{env, path::PathBuf, result};
 
+use lazy_regex::regex;
+
 #[derive(Debug, thiserror::Error, specta::Type)]
 pub enum Error {
 	#[error(transparent)]
@@ -113,6 +115,13 @@ pub enum Error {
 		#[from]
 		#[serde(skip)]
 		num::TryFromIntError,
+	),
+
+	#[error(transparent)]
+	Regex(
+		#[from]
+		#[serde(skip)]
+		regex::Error,
 	),
 
 	#[error("Invalid type `{0}` in binary vdf for key {1}")]
