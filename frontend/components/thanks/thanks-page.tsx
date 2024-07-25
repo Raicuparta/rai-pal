@@ -1,4 +1,13 @@
-import { Container, Group, Stack, Card, Image, Text } from "@mantine/core";
+import {
+	Container,
+	Group,
+	Stack,
+	Card,
+	Image,
+	Text,
+	Badge,
+	Box,
+} from "@mantine/core";
 import {
 	IconBrandGithubFilled,
 	IconBrandItch,
@@ -162,20 +171,35 @@ export function ThanksPage() {
 					w={200}
 				>
 					<ThanksLinkButton
-						size="md"
+						size="lg"
 						href="https://www.patreon.com/raivr"
 						color="pink"
-						leftSection={<IconBrandPatreonFilled />}
 					>
-						Current Patrons:
+						<Stack gap={0}>
+							<div>Patreon</div>
+							<div>Leaderboard</div>
+						</Stack>
 					</ThanksLinkButton>
 					<Card
 						h="100%"
 						style={{ overflowY: "scroll" }}
 					>
 						<Stack>
-							{patrons.activePatrons.map((patron) => (
-								<div key={patron.fullName}>{patron.fullName}</div>
+							{patrons.activePatrons.map((patron, index) => (
+								<Group key={patron.fullName}>
+									<Badge
+										variant="light"
+										color="gray"
+									>
+										{index + 1}
+									</Badge>
+									<Box
+										flex={1}
+										style={{ wordBreak: "break-word" }}
+									>
+										{patron.fullName}
+									</Box>
+								</Group>
 							))}
 						</Stack>
 					</Card>
