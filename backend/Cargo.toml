@@ -1,13 +1,17 @@
-[package]
-name = "rai-pal"
+[workspace]
+members = ["proc-macros", "rai-pal-core"]
+
+[workspace.package]
 version = "0.12.0"
 authors = ["Raicuparta"]
 license = "GPL-3.0-or-later"
 repository = "https://github.com/Raicuparta/rai-pal"
 edition = "2021"
 
-[workspace]
-members = ["proc-macros", "rai-pal-core"]
+[package]
+name = "rai-pal"
+version.workspace = true
+edition.workspace = true
 
 [build-dependencies]
 tauri-build = { version = "2.0.0-beta", features = [] }
