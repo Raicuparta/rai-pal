@@ -19,7 +19,8 @@ use crate::{
 	installed_game::InstalledGame,
 	local_mod::{LocalMod, ModKind},
 	mod_loaders::mod_loader::{ModLoaderActions, ModLoaderData},
-	paths, Error, Result,
+	paths,
+	result::{Error, Result},
 };
 
 #[serializable_struct]

@@ -1,9 +1,6 @@
-use std::{
-	fs,
-	path::Path,
-};
+use std::{fs, path::Path};
 
-use crate::Result;
+use crate::result::Result;
 
 pub fn copy_dir_all(src: impl AsRef<Path>, dst: impl AsRef<Path>) -> Result {
 	fs::create_dir_all(&dst)?;

@@ -1,6 +1,6 @@
 use std::{path::PathBuf, process::Command};
 
-use crate::{serializable_enum, Result};
+use crate::{result::Result, serializable_enum};
 
 #[derive(serde::Serialize, serde::Deserialize, specta::Type, Clone, PartialEq, Eq, Hash, Debug)]
 pub enum ProviderCommand {

@@ -22,14 +22,14 @@ use crate::{
 	installed_game::{self, InstalledGame},
 	owned_game::OwnedGame,
 	pc_gaming_wiki,
-	provider::{ProviderActions, ProviderStatic},
+	providers::provider::{ProviderActions, ProviderStatic},
 	remote_game::{self, RemoteGame},
+	result::Result,
 	steam::{
 		appinfo::{SteamAppInfo, SteamAppInfoReader, SteamLaunchOption},
 		id_lists,
 		thumbnail::get_steam_thumbnail,
 	},
-	Result,
 };
 
 #[derive(Clone)]

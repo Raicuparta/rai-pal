@@ -8,7 +8,7 @@ use reqwest::redirect::Policy;
 use crate::{
 	game_engines::{game_engine::EngineBrand, unity::UnityScriptingBackend},
 	game_mod::EngineVersionRange,
-	Result,
+	result::Result,
 };
 
 const URL_BASE: &str = "https://raicuparta.github.io/rai-pal-db/mod-db";

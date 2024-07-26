@@ -3,7 +3,7 @@ use std::collections::{HashMap, HashSet};
 use log::error;
 use rai_pal_proc_macros::serializable_struct;
 
-use crate::{game_engines::game_engine::EngineBrand, Result};
+use crate::{game_engines::game_engine::EngineBrand, result::Result};
 
 const STEAM_APP_IDS_URL_BASE: &str = "https://raicuparta.github.io/rai-pal-db/steam-ids";
 

@@ -13,7 +13,7 @@ use crate::{
 	owned_game::OwnedGame,
 	paths::{app_data_path, file_name_without_extension},
 	remote_game::RemoteGame,
-	Error, Result,
+	result::{Error, Result},
 };
 
 #[serializable_struct]

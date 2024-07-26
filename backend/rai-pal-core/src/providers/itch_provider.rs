@@ -12,9 +12,9 @@ use crate::{
 	installed_game::InstalledGame,
 	owned_game::OwnedGame,
 	pc_gaming_wiki,
-	provider::{ProviderActions, ProviderId, ProviderStatic},
+	providers::provider::{ProviderActions, ProviderId, ProviderStatic},
 	remote_game::{self, RemoteGame},
-	Error, Result,
+	result::{Error, Result},
 };
 
 #[derive(Clone)]

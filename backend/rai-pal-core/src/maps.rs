@@ -1,6 +1,6 @@
 use std::{borrow::Borrow, collections::HashMap, fmt::Display, hash::Hash};
 
-use crate::{Error, Result};
+use crate::result::{Error, Result};
 
 pub trait TryGettable<K, V> {
 	fn try_get<Q>(&self, k: &Q) -> Result<&V>
