@@ -9,12 +9,14 @@ import {
 	Avatar,
 	Divider,
 	Indicator,
+	Tooltip,
 } from "@mantine/core";
 import {
 	IconBrandGithubFilled,
 	IconBrandItch,
 	IconBrandPatreonFilled,
 	IconBrandPaypalFilled,
+	IconHelpCircleFilled,
 } from "@tabler/icons-react";
 import { ThanksLinkButton } from "./thanks-link-button";
 import patrons from "../../../test-data/patrons.json";
@@ -165,16 +167,29 @@ export function ThanksPage() {
 					h="100%"
 					w={200}
 				>
-					<ThanksLinkButton
-						size="lg"
-						href="https://www.patreon.com/raivr"
-						color="pink"
-					>
-						<Stack gap={0}>
-							<div>Patreon</div>
-							<div>Leaderboard</div>
-						</Stack>
-					</ThanksLinkButton>
+					<Group align="top">
+						<ThanksLinkButton
+							pos="relative"
+							size="lg"
+							href="https://www.patreon.com/raivr"
+							color="pink"
+							flex={1}
+						>
+							<Stack gap={0}>
+								<div>Patreon</div>
+								<div>Leaderboard</div>
+							</Stack>
+							<Box
+								pos="absolute"
+								right={0}
+								top={0}
+							>
+								<Tooltip label="Ranked by total lifetime donation amount.">
+									<IconHelpCircleFilled />
+								</Tooltip>
+							</Box>
+						</ThanksLinkButton>
+					</Group>
 					<Card
 						h="100%"
 						style={{ overflowY: "scroll" }}
