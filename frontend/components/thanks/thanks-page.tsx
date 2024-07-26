@@ -184,7 +184,13 @@ export function ThanksPage() {
 								right={0}
 								top={0}
 							>
-								<Tooltip label="Ranked by total lifetime donation amount.">
+								<Tooltip ta="center" label={<>
+									<Text>
+										Ranked by total lifetime donation amount.
+									</Text>
+									<Text>
+										If you don&apos;t see yourself here, it&apos;s because your Patreon profile is private.
+									</Text></>}>
 									<IconHelpCircleFilled />
 								</Tooltip>
 							</Box>
