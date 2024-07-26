@@ -11,7 +11,10 @@ use std::{
 use byteorder::{LittleEndian, ReadBytesExt};
 use rai_pal_proc_macros::serializable_struct;
 
-use crate::{game_mode::GameMode, Error, Result};
+use crate::{
+	game_mode::GameMode,
+	result::{Error, Result},
+};
 
 const BIN_NONE: u8 = b'\x00';
 const BIN_STRING: u8 = b'\x01';

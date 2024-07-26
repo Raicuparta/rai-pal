@@ -1,0 +1,41 @@
+[package]
+name = "rai-pal-core"
+version = "0.12.0"
+edition = "2021"
+
+[lib]
+
+[dependencies]
+glob.workspace = true
+steamlocate.workspace = true
+async-trait.workspace = true
+base64.workspace = true
+byteorder.workspace = true
+chrono.workspace = true
+directories.workspace = true
+enum_dispatch.workspace = true
+futures.workspace = true
+goblin.workspace = true
+lazy_static.workspace = true
+lazy-regex.workspace = true
+log.workspace = true
+open.workspace = true
+pelite.workspace = true
+rai-pal-proc-macros.workspace = true
+rand.workspace = true
+reqwest.workspace = true
+rusqlite.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+serde_urlencoded.workspace = true
+specta.workspace = true
+tauri.workspace = true
+tauri-plugin-log.workspace = true
+tauri-plugin-process.workspace = true
+tauri-plugin-updater.workspace = true
+tauri-plugin-window-state.workspace = true
+tauri-specta.workspace = true
+thiserror.workspace = true
+tokio.workspace = true
+uuid.workspace = true
+zip.workspace = true

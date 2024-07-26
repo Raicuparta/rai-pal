@@ -19,7 +19,7 @@ use crate::{
 	mod_loaders::mod_database::ModDatabase,
 	mod_manifest, paths,
 	remote_mod::{RemoteMod, RemoteModData},
-	Error, Result,
+	result::{Error, Result},
 };
 
 #[serializable_struct]

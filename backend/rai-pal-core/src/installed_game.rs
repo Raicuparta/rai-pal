@@ -12,7 +12,7 @@ use crate::{
 	mod_manifest, owned_game,
 	paths::{self, glob_path, hash_path},
 	providers::{provider::ProviderId, provider_command::ProviderCommand},
-	Error, Result,
+	result::{Error, Result},
 };
 
 #[serializable_struct]

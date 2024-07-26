@@ -7,52 +7,26 @@
 
 use std::{collections::HashMap, path::PathBuf, sync::Mutex};
 
-use app_state::{AppState, DataValue, StateData, StatefulHandle};
-use events::EventEmitter;
-use installed_game::InstalledGame;
-use local_mod::LocalMod;
 use log::error;
-use maps::TryGettable;
-use mod_loaders::mod_loader::{self, ModLoaderActions};
-use owned_game::OwnedGame;
-use paths::normalize_path;
-use providers::{
+use rai_pal_core::app_state::{AppState, DataValue, StateData, StatefulHandle};
+use rai_pal_core::events::{self, EventEmitter};
+use rai_pal_core::installed_game::InstalledGame;
+use rai_pal_core::local_mod::{self, LocalMod};
+use rai_pal_core::maps::TryGettable;
+use rai_pal_core::mod_loaders::mod_loader::{self, ModLoaderActions};
+use rai_pal_core::owned_game::OwnedGame;
+use rai_pal_core::paths::{self, normalize_path};
+use rai_pal_core::providers::{
 	manual_provider,
 	provider::{self, ProviderActions},
 	provider_command::ProviderCommandAction,
 };
-use remote_game::RemoteGame;
-use result::{Error, Result};
+use rai_pal_core::remote_game::RemoteGame;
+use rai_pal_core::result::{Error, Result};
+use rai_pal_core::{analytics, remote_mod, steam};
 use steamlocate::SteamDir;
 use tauri::{AppHandle, Manager};
 use tauri_plugin_log::{Target, TargetKind};
-
-mod analytics;
-mod app_state;
-mod app_type;
-mod debug;
-mod events;
-mod files;
-mod game_engines;
-mod game_executable;
-mod game_mod;
-mod game_mode;
-mod installed_game;
-mod local_mod;
-mod macros;
-mod maps;
-mod mod_loaders;
-mod mod_manifest;
-mod operating_systems;
-mod owned_game;
-mod paths;
-mod pc_gaming_wiki;
-mod providers;
-mod remote_game;
-mod remote_mod;
-mod result;
-mod steam;
-mod windows;
 
 #[tauri::command]
 #[specta::specta]

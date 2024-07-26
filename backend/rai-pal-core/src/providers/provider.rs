@@ -19,7 +19,8 @@ use crate::{
 	paths,
 	providers::{itch_provider::Itch, manual_provider::Manual, steam_provider::Steam},
 	remote_game::{self, RemoteGame},
-	serializable_enum, Result,
+	result::Result,
+	serializable_enum,
 };
 
 serializable_enum!(ProviderId {

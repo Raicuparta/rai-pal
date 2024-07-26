@@ -1,28 +1,16 @@
 use std::{
 	collections::hash_map::DefaultHasher,
 	env,
-	hash::{
-		Hash,
-		Hasher,
-	},
-	path::{
-		Path,
-		PathBuf,
-	},
+	hash::{Hash, Hasher},
+	path::{Path, PathBuf},
 };
 
 use directories::ProjectDirs;
 use glob::glob;
 use log::error;
-use tauri::{
-	path::BaseDirectory,
-	Manager,
-};
+use tauri::{path::BaseDirectory, Manager};
 
-use crate::{
-	Error,
-	Result,
-};
+use crate::result::{Error, Result};
 
 pub fn glob_path(path: &Path) -> Vec<PathBuf> {
 	match glob(path.to_string_lossy().as_ref()) {
