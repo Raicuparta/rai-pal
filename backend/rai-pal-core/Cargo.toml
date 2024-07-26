@@ -39,3 +39,6 @@ thiserror.workspace = true
 tokio.workspace = true
 uuid.workspace = true
 zip.workspace = true
+
+[lints]
+workspace = true

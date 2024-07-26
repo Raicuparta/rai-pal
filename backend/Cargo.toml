@@ -113,7 +113,7 @@ opt-level = "s"
 panic = "abort"
 strip = true
 
-[lints.clippy]
+[workspace.lints.clippy]
 all = { level = "warn", priority = -1 }
 nursery = { level = "warn", priority = -1 }
 pedantic = { level = "warn", priority = -1 }
