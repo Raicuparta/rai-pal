@@ -7,7 +7,7 @@ use std::{
 
 use directories::ProjectDirs;
 use globwalk::glob;
-use log::error;
+use log;
 
 use crate::result::{Error, Result};
 
@@ -20,7 +20,7 @@ pub fn glob_path(path: &Path) -> Vec<PathBuf> {
 			.filter_map(|glob_result| match glob_result {
 				Ok(glob_entry) => Some(glob_entry.into_path()),
 				Err(err) => {
-					error!(
+					log::error!(
 						"Failed to resolve one of the globbed paths from glob '{}'. Error: {}",
 						path.display(),
 						err
@@ -30,7 +30,7 @@ pub fn glob_path(path: &Path) -> Vec<PathBuf> {
 			})
 			.collect(),
 		Err(err) => {
-			error!("Failed to glob path `{}`. Error: {}", path.display(), err);
+			log::error!("Failed to glob path `{}`. Error: {}", path.display(), err);
 			Vec::default()
 		}
 	}
@@ -70,7 +70,7 @@ pub fn file_name_without_extension(file_path: &Path) -> Result<&str> {
 
 pub fn normalize_path(path: &Path) -> PathBuf {
 	path.canonicalize().unwrap_or_else(|err| {
-		error!(
+		log::error!(
 			"Failed to normalize path `{}`: {}",
 			path.to_string_lossy(),
 			err
@@ -92,7 +92,7 @@ fn get_program_data_path() -> Result<PathBuf> {
 
 pub fn try_get_program_data_path() -> PathBuf {
 	get_program_data_path().unwrap_or_else(|err| {
-		error!("Failed to get ProgramData path from environment: {err}");
+		log::error!("Failed to get ProgramData path from environment: {err}");
 		PathBuf::from("C:/ProgramData")
 	})
 }
