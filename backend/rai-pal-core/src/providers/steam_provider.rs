@@ -24,7 +24,7 @@ use crate::{
 	pc_gaming_wiki,
 	providers::provider::{ProviderActions, ProviderStatic},
 	remote_game::{self, RemoteGame},
-	result::Result,
+	result::{Error, Result},
 	steam::{
 		appinfo::{SteamAppInfo, SteamAppInfoReader, SteamLaunchOption},
 		id_lists,
@@ -172,7 +172,7 @@ impl Steam {
 							game.set_discriminator(discriminator);
 						}
 
-						let app_id_string = dir_app.app_id.to_string();
+						let app_id_string = dir_app.appid.to_string();
 
 						game.set_provider_game_id(&app_id_string);
 						game.set_thumbnail_url(&get_steam_thumbnail(&app_id_string));
@@ -259,18 +259,13 @@ impl Steam {
 		TOwnedCallback: Fn(OwnedGame) + Send + Sync,
 		TRemoteCallback: Fn(RemoteGame) + Send + Sync,
 	{
-		let steam_dir = SteamDir::locate()?;
-		let app_info_reader = SteamAppInfoReader::new(steam_dir.path())?;
-
-		let mut steam_dir_app_map: HashMap<_, _> = HashMap::new();
-		for library in (steam_dir.libraries()?).flatten() {
-			for app in library.apps().flatten() {
-				steam_dir_app_map.insert(app.app_id, app);
-			}
-		}
+		let mut steam_dir = SteamDir::locate().ok_or_else(Error::FailedToFindSteam)?;
+		let steam_path = steam_dir.path.clone();
+		let app_info_reader = SteamAppInfoReader::new(&steam_path)?;
+		let steam_app_map = steam_dir.apps();
 
 		let owned_ids_whitelist =
-			Self::get_owned_ids_whitelist(steam_dir.path()).unwrap_or_else(|err| {
+			Self::get_owned_ids_whitelist(&steam_path).unwrap_or_else(|err| {
 				log::error!("Failed to read Steam assets.vdf: {}", err);
 				HashSet::new()
 			});
@@ -296,7 +291,7 @@ impl Steam {
 									// 	.insert(remote_game.id.clone(), remote_game.clone());
 								}
 							}
-							if let Some(dir_app) = steam_dir_app_map.get(&app_info.app_id) {
+							if let Some(Some(dir_app)) = steam_app_map.get(&app_info.app_id) {
 								for installed_game in Self::get_installed_games(&app_info, dir_app)
 								{
 									installed_callback(installed_game);

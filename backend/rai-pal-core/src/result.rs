@@ -40,13 +40,6 @@ pub enum Error {
 		goblin::error::Error,
 	),
 
-	#[error("Failed to find Steam. **Is Steam installed**? ({0})")]
-	SteamLocate(
-		#[from]
-		#[serde(skip)]
-		steamlocate::Error,
-	),
-
 	#[error(transparent)]
 	Zip(
 		#[from]
@@ -172,6 +165,9 @@ pub enum Error {
 
 	#[error("Failed to get app resources path: `{0}`")]
 	FailedToGetResourcesPath(String),
+
+	#[error("Failed to find Steam. **Is Steam installed**?")]
+	FailedToFindSteam(),
 }
 
 impl serde::Serialize for Error {
