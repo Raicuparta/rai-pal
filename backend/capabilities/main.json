@@ -1,6 +1,5 @@
 {
-  "identifier": "migrated",
-  "description": "permissions that were migrated from v1",
+  "identifier": "main-capabilities",
   "local": true,
   "windows": [
     "main"
@@ -12,6 +11,7 @@
     "app:default",
     "resources:default",
     "menu:default",
-    "tray:default"
+    "tray:default",
+    "dialog:allow-open"
   ]
 }

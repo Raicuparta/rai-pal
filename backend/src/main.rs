@@ -553,6 +553,7 @@ fn main() {
 
 	tauri::Builder::default()
 		.plugin(tauri_plugin_window_state::Builder::default().build())
+		.plugin(tauri_plugin_dialog::init())
 		.plugin(
 			tauri_plugin_log::Builder::new()
 				.level(log::LevelFilter::Info)

@@ -11,6 +11,8 @@ use log::error;
 
 use crate::result::{Error, Result};
 
+// TODO: check errors like:
+// [2024-07-27][14:59:41][rai_pal_core::paths][ERROR] Failed to resolve one of the globbed paths from glob 'C:\Users\rai\AppData\Roaming\raicuparta\rai-pal\data\installed-mods\4642326519152971019\manifests\*.json'. Error: IO error for operation on C:\Users\rai\AppData\Roaming\raicuparta\rai-pal\data\installed-mods\4642326519152971019\manifests: The system cannot find the file specified. (os error 2)
 pub fn glob_path(path: &Path) -> Vec<PathBuf> {
 	match glob(path.to_string_lossy().as_ref()) {
 		Ok(walker) => walker
