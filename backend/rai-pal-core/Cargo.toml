@@ -6,33 +6,42 @@ edition.workspace = true
 [lib]
 
 [dependencies]
-glob.workspace = true
-steamlocate.workspace = true
-async-trait.workspace = true
-base64.workspace = true
-byteorder.workspace = true
-chrono.workspace = true
-directories.workspace = true
-enum_dispatch.workspace = true
+# Using the git version because I need a fix that isn't on the normal version,
+# although this should be the same version so I don't know what's going on.
+# The fix is this: https://github.com/rust-lang/glob/pull/112
+glob = { git = "https://github.com/rust-lang/glob", version = "0.3.1" }
+
+# Using the git version because I need a fix that isn't on the normal version.
+# Something about the way the old version parses the manifests fails for some games.
+# Also I made my own fork to remove some annoying prints.
+steamlocate = { git = "https://github.com/Raicuparta/steamlocate-rs", branch = "dev-v2.0" }
+
+async-trait = "0.1.74"
+base64 = "0.22.1"
+byteorder = "1.5.0"
+chrono = "0.4.31"
+directories = "5.0.1"
+enum_dispatch = "0.3.12"
+goblin = "0.8.2"
+lazy_static = "1.4.0"
+lazy-regex = "3.0.2"
+pelite = "0.10.0"
+rand = "0.8.5"
+reqwest = { version = "0.12.5", features = ["json"] }
+rusqlite = { version = "0.31.0", features = ["bundled"] }
+serde_urlencoded = "0.7.1"
+uuid = { version = "1.8.0", features = ["v4"] }
+zip = "0.6.6"
+
 futures.workspace = true
-goblin.workspace = true
-lazy_static.workspace = true
-lazy-regex.workspace = true
 log.workspace = true
 open.workspace = true
-pelite.workspace = true
 rai-pal-proc-macros.workspace = true
-rand.workspace = true
-reqwest.workspace = true
-rusqlite.workspace = true
-serde.workspace = true
 serde_json.workspace = true
-serde_urlencoded.workspace = true
+serde.workspace = true
 specta.workspace = true
 thiserror.workspace = true
 tokio.workspace = true
-uuid.workspace = true
-zip.workspace = true
 
 [target.'cfg(target_os = "linux")'.dependencies]
 webkit2gtk = "2.0.1"

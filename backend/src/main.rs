@@ -24,7 +24,6 @@ use rai_pal_core::providers::{
 use rai_pal_core::remote_game::RemoteGame;
 use rai_pal_core::result::{Error, Result};
 use rai_pal_core::{analytics, remote_mod, steam, windows};
-use steamlocate::SteamDir;
 use tauri::path::BaseDirectory;
 use tauri::{AppHandle, Manager};
 use tauri_plugin_log::{Target, TargetKind};
@@ -479,8 +478,7 @@ async fn run_provider_command(
 #[tauri::command]
 #[specta::specta]
 async fn delete_steam_appinfo_cache() -> Result {
-	let steam_dir = SteamDir::locate()?;
-	steam::appinfo::delete(steam_dir.path())
+	steam::appinfo::delete()
 }
 
 #[tauri::command]

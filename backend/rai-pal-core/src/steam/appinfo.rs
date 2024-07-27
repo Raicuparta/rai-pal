@@ -10,6 +10,7 @@ use std::{
 
 use byteorder::{LittleEndian, ReadBytesExt};
 use rai_pal_proc_macros::serializable_struct;
+use steamlocate::SteamDir;
 
 use crate::{
 	game_mode::GameMode,
@@ -386,6 +387,7 @@ fn get_path(steam_path: &Path) -> PathBuf {
 	steam_path.join("appcache/appinfo.vdf")
 }
 
-pub fn delete(steam_path: &Path) -> Result {
-	Ok(fs::remove_file(get_path(steam_path))?)
+pub fn delete() -> Result {
+	let steam_dir = SteamDir::locate()?;
+	Ok(fs::remove_file(get_path(steam_dir.path()))?)
 }

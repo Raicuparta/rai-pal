@@ -17,86 +17,36 @@ edition.workspace = true
 tauri-build = { version = "2.0.0-beta", features = [] }
 
 [workspace.dependencies]
-# Using the git version because I need a fix that isn't on the normal version,
-# although this should be the same version so I don't know what's going on.
-# The fix is this: https://github.com/rust-lang/glob/pull/112
-glob = { git = "https://github.com/rust-lang/glob", version = "0.3.1" }
-
-# Using the git version because I need a fix that isn't on the normal version.
-# Something about the way the old version parses the manifests fails for some games.
-# Also I made my own fork to remove some annoying prints.
-steamlocate = { git = "https://github.com/Raicuparta/steamlocate-rs", branch = "dev-v2.0" }
-
-async-trait = "0.1.74"
-base64 = "0.22.1"
-byteorder = "1.5.0"
-chrono = "0.4.31"
-directories = "5.0.1"
-enum_dispatch = "0.3.12"
 futures = "0.3.29"
-goblin = "0.8.2"
-lazy_static = "1.4.0"
-lazy-regex = "3.0.2"
 log = "0.4.20"
 open = "5.0.0"
-pelite = "0.10.0"
 rai-pal-core = { path = "./rai-pal-core" }
 rai-pal-proc-macros = { path = "./proc-macros" }
-rand = "0.8.5"
-reqwest = { version = "0.12.5", features = ["json"] }
-rusqlite = { version = "0.31.0", features = ["bundled"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0.108"
-serde_urlencoded = "0.7.1"
 specta = "2.0.0-rc.12"
-tauri-runtime = "2.0.0-beta.18"
+thiserror = "1.0.50"
+tokio = { version = "1.35.1", features = ["macros"] }
+
+[dependencies]
 tauri = { version = "2.0.0-beta", features = [] }
 tauri-plugin-log = "2.0.0-beta.6"
 tauri-plugin-process = "2.0.0-beta.6"
 tauri-plugin-updater = "2.0.0-beta.8"
 tauri-plugin-window-state = "2.0.0-beta.9"
+tauri-runtime = "2.0.0-beta.18"
 tauri-specta = { version = "2.0.0-rc.11", features = ["typescript"] }
-thiserror = "1.0.50"
-tokio = { version = "1.35.1", features = ["macros"] }
-uuid = { version = "1.8.0", features = ["v4"] }
-zip = "0.6.6"
 
-[dependencies]
-glob.workspace = true
-steamlocate.workspace = true
-async-trait.workspace = true
-base64.workspace = true
-byteorder.workspace = true
-chrono.workspace = true
-directories.workspace = true
-enum_dispatch.workspace = true
 futures.workspace = true
-goblin.workspace = true
-lazy_static.workspace = true
-lazy-regex.workspace = true
 log.workspace = true
 open.workspace = true
-pelite.workspace = true
 rai-pal-core.workspace = true
 rai-pal-proc-macros.workspace = true
-rand.workspace = true
-reqwest.workspace = true
-rusqlite.workspace = true
-serde.workspace = true
 serde_json.workspace = true
-serde_urlencoded.workspace = true
+serde.workspace = true
 specta.workspace = true
-tauri-runtime.workspace = true
-tauri.workspace = true
-tauri-plugin-log.workspace = true
-tauri-plugin-process.workspace = true
-tauri-plugin-updater.workspace = true
-tauri-plugin-window-state.workspace = true
-tauri-specta.workspace = true
 thiserror.workspace = true
 tokio.workspace = true
-uuid.workspace = true
-zip.workspace = true
 
 [target.'cfg(target_os = "linux")'.dependencies]
 webkit2gtk = "2.0.1"
