@@ -94,3 +94,13 @@ pub fn try_get_program_data_path() -> PathBuf {
 		PathBuf::from("C:/ProgramData")
 	})
 }
+
+pub fn open_folder_or_parent(path: &Path) -> Result {
+	let folder_path = if path.is_dir() {
+		path
+	} else {
+		path_parent(path)?
+	};
+
+	Ok(open::that_detached(folder_path)?)
+}

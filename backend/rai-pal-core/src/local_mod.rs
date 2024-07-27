@@ -9,7 +9,7 @@ use crate::{
 	game_engines::{game_engine::EngineBrand, unity::UnityScriptingBackend},
 	game_mod::CommonModData,
 	mod_manifest::{self, Manifest},
-	paths,
+	paths::{self, open_folder_or_parent},
 	result::Result,
 	serializable_enum,
 };
@@ -62,13 +62,7 @@ impl LocalMod {
 	}
 
 	pub fn open_folder(&self) -> Result {
-		let path = if self.data.path.is_dir() {
-			&self.data.path
-		} else {
-			paths::path_parent(&self.data.path)?
-		};
-
-		Ok(open::that_detached(path)?)
+		open_folder_or_parent(&self.data.path)
 	}
 }
 

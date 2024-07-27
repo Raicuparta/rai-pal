@@ -17,7 +17,8 @@ use crate::{
 	installed_game::InstalledGame,
 	local_mod::{self, LocalMod, ModKind},
 	mod_loaders::mod_database::ModDatabase,
-	mod_manifest, paths,
+	mod_manifest,
+	paths::{self, open_folder_or_parent},
 	remote_mod::{RemoteMod, RemoteModData},
 	result::{Error, Result},
 };
@@ -50,15 +51,7 @@ pub trait ModLoaderActions {
 	fn get_local_mods(&self) -> Result<HashMap<String, LocalMod>>;
 
 	fn open_folder(&self) -> Result {
-		// TODO cleanup code repeated from local_mod.
-		let data = self.get_data();
-		let path = if data.path.is_dir() {
-			&data.path
-		} else {
-			paths::path_parent(&data.path)?
-		};
-
-		Ok(open::that_detached(path)?)
+		open_folder_or_parent(&self.get_data().path)
 	}
 
 	async fn install_mod(&self, game: &InstalledGame, local_mod: &LocalMod) -> Result {
