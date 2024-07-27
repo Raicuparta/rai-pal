@@ -8,8 +8,8 @@
 use std::{collections::HashMap, path::PathBuf, sync::Mutex};
 
 use app_state::{AppState, DataValue, StateData, StatefulHandle};
+use events::EventEmitter;
 use log::error;
-use rai_pal_core::events::{self, EventEmitter};
 use rai_pal_core::installed_game::InstalledGame;
 use rai_pal_core::local_mod::{self, LocalMod};
 use rai_pal_core::maps::TryGettable;
@@ -29,6 +29,7 @@ use tauri::{AppHandle, Manager};
 use tauri_plugin_log::{Target, TargetKind};
 
 mod app_state;
+mod events;
 
 #[tauri::command]
 #[specta::specta]

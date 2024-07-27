@@ -1,7 +1,6 @@
 pub mod analytics;
 pub mod app_type;
 pub mod debug;
-pub mod events;
 pub mod files;
 pub mod game_engines;
 pub mod game_executable;

@@ -4,7 +4,7 @@ use rai_pal_proc_macros::serializable_event;
 use serde::Serialize;
 use tauri_specta::Event;
 
-use crate::{
+use rai_pal_core::{
 	installed_game, local_mod, mod_loaders::mod_loader, owned_game, remote_game, remote_mod,
 };
 
