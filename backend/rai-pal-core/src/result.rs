@@ -55,13 +55,6 @@ pub enum Error {
 	),
 
 	#[error(transparent)]
-	Tauri(
-		#[from]
-		#[serde(skip)]
-		tauri::Error,
-	),
-
-	#[error(transparent)]
 	Json(
 		#[from]
 		#[serde(skip)]
@@ -176,6 +169,9 @@ pub enum Error {
 
 	#[error("Can't run mod with ID `{0}` because it isn't a runnable mod.")]
 	CantRunNonRunnable(String),
+
+	#[error("Failed to get app resources path: `{0}`")]
+	FailedToGetResourcesPath(String),
 }
 
 impl serde::Serialize for Error {

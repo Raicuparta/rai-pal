@@ -22,7 +22,7 @@ use rai_pal_core::providers::{
 	provider_command::ProviderCommandAction,
 };
 use rai_pal_core::remote_game::RemoteGame;
-use rai_pal_core::result::Result;
+use rai_pal_core::result::{Error, Result};
 use rai_pal_core::{analytics, remote_mod, steam, windows};
 use steamlocate::SteamDir;
 use tauri::path::BaseDirectory;
@@ -407,7 +407,8 @@ async fn update_mods(handle: AppHandle, resources_path: PathBuf) {
 async fn update_data(handle: AppHandle) -> Result {
 	let resources_path = handle
 		.path()
-		.resolve("resources", BaseDirectory::Resource)?;
+		.resolve("resources", BaseDirectory::Resource)
+		.map_err(|err| Error::FailedToGetResourcesPath(err.to_string()))?;
 
 	let results = futures::future::join_all([
 		tokio::spawn(update_games(handle.clone())),
