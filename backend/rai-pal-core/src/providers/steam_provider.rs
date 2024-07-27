@@ -59,7 +59,8 @@ impl Steam {
 
 		let id_string = app_info.app_id.to_string();
 
-		let owned = app_info.is_free || ids_whitelist.contains(&id_string);
+		let owned =
+			app_info.is_free || ids_whitelist.is_empty() || ids_whitelist.contains(&id_string);
 
 		if !owned {
 			return None;
@@ -236,8 +237,12 @@ impl Steam {
 		// This file has a bunch of ids, and they're always just numbers surrounded by zeros.
 		// We could have a smarter parse (this is a binary vdf), but let's just do this for now (probably forever).
 		let isolated_numbers: HashSet<String> = BytesRegex::new(r"\x00(\d+)\x00")?
-			.find_iter(&assets_cache_string)
-			.filter_map(|regex_match| String::from_utf8(regex_match.as_bytes().to_owned()).ok())
+			.captures_iter(&assets_cache_string)
+			.filter_map(|captures| {
+				captures.get(1).and_then(|capture_match| {
+					String::from_utf8(capture_match.as_bytes().to_owned()).ok()
+				})
+			})
 			.collect();
 
 		Ok(isolated_numbers)
