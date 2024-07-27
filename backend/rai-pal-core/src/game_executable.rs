@@ -5,7 +5,6 @@ use std::{
 };
 
 use goblin::{elf::Elf, pe::PE};
-use log::error;
 use rai_pal_proc_macros::serializable_struct;
 
 use crate::{
@@ -33,9 +32,9 @@ pub struct GameExecutable {
 	pub scripting_backend: Option<UnityScriptingBackend>,
 }
 
-fn is64(file_path: &Path) -> Result<bool> {
+fn get_exe_architecture(exe_path: &Path) -> Result<Option<Architecture>> {
 	// Open the file
-	let mut file = File::open(file_path)?;
+	let mut file = File::open(exe_path)?;
 
 	// Read only the first 2 bytes (DOS header signature)
 	let mut buf2 = [0; 2];
@@ -53,7 +52,7 @@ fn is64(file_path: &Path) -> Result<bool> {
 		let pe_offset = u32::from_le_bytes(buf4);
 
 		// Seek to the PE header offset
-		file.seek(io::SeekFrom::Start(pe_offset as u64))?;
+		file.seek(io::SeekFrom::Start(u64::from(pe_offset)))?;
 
 		file.read_exact(&mut buf4)?;
 
@@ -68,15 +67,13 @@ fn is64(file_path: &Path) -> Result<bool> {
 
 		// Check machine type to determine 32-bit or 64-bit
 		return match machine_type {
-			0x014c => Ok(false),
-			0x8664 => Ok(true),
-			_ => Ok(false),
+			0x014c => Ok(Some(Architecture::X86)),
+			0x8664 => Ok(Some(Architecture::X64)),
+			_ => Ok(None),
 		};
-	} else {
-		println!("Not an executable file");
 	}
 
-	Ok(false)
+	Ok(None)
 }
 
 pub fn read_windows_binary(file: &[u8]) -> Result<(Option<OperatingSystem>, Option<Architecture>)> {
@@ -119,25 +116,8 @@ pub fn get_os_and_architecture(
 		}
 	}
 
-	if let Ok(is_windows_64_bit_exe) = is64(file_path) {
-		return Ok((
-			Some(OperatingSystem::Windows),
-			if is_windows_64_bit_exe {
-				Some(Architecture::X64)
-			} else {
-				Some(Architecture::X86)
-			},
-		));
-	}
-
-	let pe_result = read_windows_binary(buf);
-	if pe_result.is_ok() {
-		return pe_result;
-	}
-
-	error!("Failed to parse exe as ELF or PE");
-	if let Err(err) = pe_result {
-		error!("PE error: {err}");
+	if let Ok(architecture) = get_exe_architecture(file_path) {
+		return Ok((Some(OperatingSystem::Windows), architecture));
 	}
 
 	Ok((None, None))

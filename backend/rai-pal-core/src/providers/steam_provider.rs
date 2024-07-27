@@ -7,7 +7,7 @@ use std::{
 
 use async_trait::async_trait;
 use futures::StreamExt;
-use lazy_regex::{BytesRegex, Regex};
+use lazy_regex::BytesRegex;
 use steamlocate::SteamDir;
 
 use super::{
