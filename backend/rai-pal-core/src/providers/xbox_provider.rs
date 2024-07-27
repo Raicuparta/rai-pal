@@ -9,14 +9,13 @@ use winreg::{
 	RegKey,
 };
 
-use super::provider::ProviderId;
 use crate::{
 	installed_game::InstalledGame,
 	owned_game::OwnedGame,
 	paths::file_name_without_extension,
-	provider::{ProviderActions, ProviderStatic},
+	providers::provider::{ProviderActions, ProviderId, ProviderStatic},
 	remote_game::RemoteGame,
-	Result,
+	result::Result,
 };
 
 #[derive(Clone)]

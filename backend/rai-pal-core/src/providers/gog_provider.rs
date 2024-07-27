@@ -10,17 +10,14 @@ use rusqlite::{Connection, OpenFlags};
 use serde::Deserialize;
 use winreg::{enums::HKEY_LOCAL_MACHINE, RegKey};
 
-use super::{
-	provider::ProviderId,
-	provider_command::{ProviderCommand, ProviderCommandAction},
-};
+use super::provider_command::{ProviderCommand, ProviderCommandAction};
 use crate::{
 	installed_game::InstalledGame,
 	owned_game::OwnedGame,
 	paths, pc_gaming_wiki,
-	provider::{ProviderActions, ProviderStatic},
+	providers::provider::{ProviderActions, ProviderId, ProviderStatic},
 	remote_game::{self, RemoteGame},
-	Result,
+	result::Result,
 };
 
 #[derive(Clone)]

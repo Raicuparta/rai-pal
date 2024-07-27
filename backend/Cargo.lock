@@ -3189,6 +3189,7 @@ dependencies = [
  "tauri-plugin-process",
  "tauri-plugin-updater",
  "tauri-plugin-window-state",
+ "tauri-runtime",
  "tauri-specta",
  "thiserror",
  "tokio",
@@ -3236,6 +3237,10 @@ dependencies = [
  "thiserror",
  "tokio",
  "uuid",
+ "webkit2gtk",
+ "webview2-com 0.31.0",
+ "winapi",
+ "winreg 0.52.0",
  "zip 0.6.6",
 ]
 

@@ -40,5 +40,13 @@ tokio.workspace = true
 uuid.workspace = true
 zip.workspace = true
 
+[target.'cfg(target_os = "linux")'.dependencies]
+webkit2gtk = "2.0.1"
+webview2-com = "0.31.0" # Needed for getting the webview window on linux
+
+[target.'cfg(target_os = "windows")'.dependencies]
+winapi = { version = "0.3.9", features = ["shellapi", "winuser"] }
+winreg = "0.52.0"
+
 [lints]
 workspace = true

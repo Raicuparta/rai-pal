@@ -21,9 +21,9 @@ use crate::{
 	owned_game::OwnedGame,
 	paths::glob_path,
 	pc_gaming_wiki,
-	provider::{ProviderActions, ProviderStatic},
+	providers::provider::{ProviderActions, ProviderStatic},
 	remote_game::{self, RemoteGame},
-	Result,
+	result::Result,
 };
 
 #[serializable_struct]

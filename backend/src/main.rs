@@ -23,7 +23,7 @@ use rai_pal_core::providers::{
 };
 use rai_pal_core::remote_game::RemoteGame;
 use rai_pal_core::result::{Error, Result};
-use rai_pal_core::{analytics, remote_mod, steam};
+use rai_pal_core::{analytics, remote_mod, steam, windows};
 use steamlocate::SteamDir;
 use tauri::{AppHandle, Manager};
 use tauri_plugin_log::{Target, TargetKind};

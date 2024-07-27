@@ -19,9 +19,11 @@ import {
 	IconHelpCircleFilled,
 } from "@tabler/icons-react";
 import { ThanksLinkButton } from "./thanks-link-button";
-import patrons from "../../../test-data/patrons.json";
+import { usePatrons } from "@hooks/use-patrons";
 
 export function ThanksPage() {
+	const patrons = usePatrons();
+
 	return (
 		<Container
 			h="100%"
@@ -201,14 +203,8 @@ export function ThanksPage() {
 						style={{ overflowY: "scroll" }}
 					>
 						<Stack>
-							{patrons.activePatrons.map((patron) => (
+							{patrons.map((patron) => (
 								<Group key={patron.ranking}>
-									{/* <Badge
-										variant="light"
-										color="gray"
-									>
-										{patron.ranking}
-									</Badge> */}
 									<Indicator
 										label={patron.ranking}
 										position="top-start"
