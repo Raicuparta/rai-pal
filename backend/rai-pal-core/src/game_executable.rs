@@ -13,7 +13,7 @@ use crate::{
 		unity::{self, UnityScriptingBackend},
 		unreal,
 	},
-	paths::normalize_path,
+	paths::{file_name_without_extension, normalize_path},
 	result::Result,
 	serializable_enum,
 };
@@ -127,6 +127,17 @@ impl GameExecutable {
 	pub fn new(path: &Path) -> Option<Self> {
 		let normalized_path = normalize_path(path);
 
-		unity::get_executable(&normalized_path).or_else(|| unreal::get_executable(&normalized_path))
+		unity::get_executable(&normalized_path)
+			.or_else(|| unreal::get_executable(&normalized_path))
+			.or_else(|| {
+				Some(Self {
+					path: path.to_owned(),
+					name: file_name_without_extension(path).ok()?.to_string(),
+					engine: None,
+					architecture: None,
+					operating_system: None,
+					scripting_backend: None,
+				})
+			})
 	}
 }
