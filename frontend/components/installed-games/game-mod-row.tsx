@@ -71,8 +71,10 @@ export function GameModRow(props: Props) {
 		}
 
 		if (isLocalModOutdated) {
-			// TODO: errors are being swallowed here.
-			await downloadMod(props.mod.common.id);
+			const downloadResult = await downloadMod(props.mod.common.id);
+			if (downloadResult.status === "error") {
+				return downloadResult;
+			}
 		} else if (isInstalled && !isInstalledModOutdated) {
 			return uninstallMod(props.game, props.mod.common.id);
 		}
