@@ -8,7 +8,7 @@ use std::{
 
 use tauri::Manager;
 
-use crate::{
+use rai_pal_core::{
 	local_mod,
 	maps::TryGettable,
 	mod_loaders::mod_loader,

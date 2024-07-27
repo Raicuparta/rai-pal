@@ -7,8 +7,8 @@
 
 use std::{collections::HashMap, path::PathBuf, sync::Mutex};
 
+use app_state::{AppState, DataValue, StateData, StatefulHandle};
 use log::error;
-use rai_pal_core::app_state::{AppState, DataValue, StateData, StatefulHandle};
 use rai_pal_core::events::{self, EventEmitter};
 use rai_pal_core::installed_game::InstalledGame;
 use rai_pal_core::local_mod::{self, LocalMod};
@@ -27,6 +27,8 @@ use rai_pal_core::{analytics, remote_mod, steam, windows};
 use steamlocate::SteamDir;
 use tauri::{AppHandle, Manager};
 use tauri_plugin_log::{Target, TargetKind};
+
+mod app_state;
 
 #[tauri::command]
 #[specta::specta]

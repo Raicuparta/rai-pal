@@ -1,5 +1,4 @@
 pub mod analytics;
-pub mod app_state;
 pub mod app_type;
 pub mod debug;
 pub mod events;
