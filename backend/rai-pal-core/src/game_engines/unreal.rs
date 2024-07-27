@@ -1,39 +1,19 @@
 use std::{
-	fs::{self,},
-	path::{
-		Path,
-		PathBuf,
-	},
+	fs::{self},
+	path::{Path, PathBuf},
 };
 
-use lazy_regex::{
-	regex_captures,
-	regex_find,
-};
+use lazy_regex::{regex_captures, regex_find};
 use log::error;
 use pelite::{
-	pe32::{
-		Pe as Pe32,
-		PeFile as PeFile32,
-	},
-	pe64::{
-		Pe as Pe64,
-		PeFile as PeFile64,
-	},
+	pe32::{Pe as Pe32, PeFile as PeFile32},
+	pe64::{Pe as Pe64, PeFile as PeFile64},
 };
 
 use super::game_engine::EngineVersionNumbers;
 use crate::{
-	game_engines::game_engine::{
-		EngineBrand,
-		EngineVersion,
-		GameEngine,
-	},
-	game_executable::{
-		get_os_and_architecture,
-		Architecture,
-		GameExecutable,
-	},
+	game_engines::game_engine::{EngineBrand, EngineVersion, GameEngine},
+	game_executable::{get_os_and_architecture, Architecture, GameExecutable},
 	paths::glob_path,
 };
 
@@ -222,19 +202,14 @@ fn get_shipping_exe(game_exe_path: &Path) -> PathBuf {
 				// We know it's not "Engine", but can't exclude with the rust glob crate (we filter it below).
 				.join("*")
 				.join("Binaries")
-				// This could usually be globbed more precisely with "Win{64,32,GDK}",
-				// but the rust glob crate is stinky and does't support that syntax.
-				// So we just filter it below with is_valid_win_folder().
-				.join("Win*")
+				.join("Win{64,32,GDK}")
 				// The file name may or may not end with Shipping.exe, so we don't test for that yet.
 				.join("*.exe"),
 		);
 
 		let mut suitable_paths = globbed_paths.iter().filter(|path| {
-			// Filter for the correct Win* folders, since the glob couldn't do it above.
-			path.parent().is_some_and(is_valid_win_folder)
-					// The Engine folder can have similar structure, but it's not the one we want.
-					&& !path.starts_with(parent.join("Engine"))
+			// The Engine folder can have similar structure, but it's not the one we want.
+			!path.starts_with(parent.join("Engine"))
 		});
 
 		let first_path = suitable_paths.next();
