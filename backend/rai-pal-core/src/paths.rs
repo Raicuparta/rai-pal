@@ -8,7 +8,6 @@ use std::{
 use directories::ProjectDirs;
 use glob::glob;
 use log::error;
-use tauri::{path::BaseDirectory, Manager};
 
 use crate::result::{Error, Result};
 
@@ -56,12 +55,6 @@ pub fn open_logs_folder() -> Result {
 
 pub fn installed_mods_path() -> Result<PathBuf> {
 	Ok(app_data_path()?.join("mod-loaders"))
-}
-
-pub fn resources_path(handle: &tauri::AppHandle) -> Result<PathBuf> {
-	Ok(handle
-		.path()
-		.resolve("resources", BaseDirectory::Resource)?)
 }
 
 pub fn file_name_without_extension(file_path: &Path) -> Result<&str> {

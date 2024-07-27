@@ -25,6 +25,7 @@ use rai_pal_core::remote_game::RemoteGame;
 use rai_pal_core::result::Result;
 use rai_pal_core::{analytics, remote_mod, steam, windows};
 use steamlocate::SteamDir;
+use tauri::path::BaseDirectory;
 use tauri::{AppHandle, Manager};
 use tauri_plugin_log::{Target, TargetKind};
 
@@ -404,7 +405,9 @@ async fn update_mods(handle: AppHandle, resources_path: PathBuf) {
 #[tauri::command]
 #[specta::specta]
 async fn update_data(handle: AppHandle) -> Result {
-	let resources_path = paths::resources_path(&handle)?;
+	let resources_path = handle
+		.path()
+		.resolve("resources", BaseDirectory::Resource)?;
 
 	let results = futures::future::join_all([
 		tokio::spawn(update_games(handle.clone())),
