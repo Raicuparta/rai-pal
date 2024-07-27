@@ -13,20 +13,6 @@ pub enum Error {
 	),
 
 	#[error(transparent)]
-	GlobPattern(
-		#[serde(skip)]
-		#[from]
-		glob::PatternError,
-	),
-
-	#[error(transparent)]
-	Glob(
-		#[from]
-		#[serde(skip)]
-		glob::GlobError,
-	),
-
-	#[error(transparent)]
 	Reqwest(
 		#[from]
 		#[serde(skip)]

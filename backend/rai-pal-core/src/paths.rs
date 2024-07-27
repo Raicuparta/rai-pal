@@ -6,16 +6,17 @@ use std::{
 };
 
 use directories::ProjectDirs;
-use glob::glob;
+use globwalk::glob;
 use log::error;
 
 use crate::result::{Error, Result};
 
 pub fn glob_path(path: &Path) -> Vec<PathBuf> {
 	match glob(path.to_string_lossy().as_ref()) {
-		Ok(paths) => paths
+		Ok(walker) => walker
+			.into_iter()
 			.filter_map(|glob_result| match glob_result {
-				Ok(globbed_path) => Some(globbed_path),
+				Ok(glob_entry) => Some(glob_entry.into_path()),
 				Err(err) => {
 					error!(
 						"Failed to resolve one of the globbed paths from glob '{}'. Error: {}",

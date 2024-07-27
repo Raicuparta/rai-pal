@@ -16,17 +16,13 @@ specta.workspace = true
 thiserror.workspace = true
 tokio.workspace = true
 
-# Using the git version because I need a fix that isn't on the normal version,
-# although this should be the same version so I don't know what's going on.
-# The fix is this: https://github.com/rust-lang/glob/pull/112
-glob = { git = "https://github.com/rust-lang/glob", version = "0.3.1" }
-
 async-trait = "0.1.74"
 base64 = "0.22.1"
 byteorder = "1.5.0"
 chrono = "0.4.31"
 directories = "5.0.1"
 enum_dispatch = "0.3.12"
+globwalk = "0.9.1"
 goblin = "0.8.2"
 lazy_static = "1.4.0"
 lazy-regex = "3.0.2"

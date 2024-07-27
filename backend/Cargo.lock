@@ -311,6 +311,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "bstr"
+version = "1.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "40723b8fb387abc38f4f4a37c09073622e41dd12327033091ef8950659e6dc0c"
+dependencies = [
+ "memchr",
+ "serde",
+]
+
+[[package]]
 name = "bumpalo"
 version = "3.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -654,6 +664,25 @@ name = "crossbeam-channel"
 version = "0.5.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "33480d6946193aa8033910124896ca395333cae7e2d1113d1fef6c3272217df2"
+dependencies = [
+ "crossbeam-utils",
+]
+
+[[package]]
+name = "crossbeam-deque"
+version = "0.8.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "613f8cc01fe9cf1a3eb3d7f488fd2fa8388403e97039e2f73692932e291a770d"
+dependencies = [
+ "crossbeam-epoch",
+ "crossbeam-utils",
+]
+
+[[package]]
+name = "crossbeam-epoch"
+version = "0.9.18"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5b82ac4a3c2ca9c3460964f020e1402edd5753411d7737aa39c3714ad1b5420e"
 dependencies = [
  "crossbeam-utils",
 ]
@@ -1475,9 +1504,28 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d2fabcfbdc87f4758337ca535fb41a6d701b65693ce38287d856d1674551ec9b"
 
 [[package]]
-name = "glob"
-version = "0.3.1"
-source = "git+https://github.com/rust-lang/glob#49ee1e92bd6e8c5854c0b339634f9b4b733aba4f"
+name = "globset"
+version = "0.4.14"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "57da3b9b5b85bd66f31093f8c408b90a74431672542466497dcbdfdc02034be1"
+dependencies = [
+ "aho-corasick",
+ "bstr",
+ "log",
+ "regex-automata 0.4.7",
+ "regex-syntax 0.8.4",
+]
+
+[[package]]
+name = "globwalk"
+version = "0.9.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0bf760ebf69878d9fd8f110c89703d90ce35095324d1f1edcb595c63945ee757"
+dependencies = [
+ "bitflags 2.5.0",
+ "ignore",
+ "walkdir",
+]
 
 [[package]]
 name = "gobject-sys"
@@ -1807,6 +1855,22 @@ checksum = "634d9b1461af396cad843f47fdba5597a4f9e6ddd4bfb6ff5d85028c25cb12f6"
 dependencies = [
  "unicode-bidi",
  "unicode-normalization",
+]
+
+[[package]]
+name = "ignore"
+version = "0.4.22"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b46810df39e66e925525d6e38ce1e7f6e1d208f72dc39757880fcb66e2c58af1"
+dependencies = [
+ "crossbeam-deque",
+ "globset",
+ "log",
+ "memchr",
+ "regex-automata 0.4.7",
+ "same-file",
+ "walkdir",
+ "winapi-util",
 ]
 
 [[package]]
@@ -3180,7 +3244,7 @@ dependencies = [
  "directories",
  "enum_dispatch",
  "futures",
- "glob 0.3.1 (git+https://github.com/rust-lang/glob)",
+ "globwalk",
  "goblin",
  "lazy-regex",
  "lazy_static",
@@ -4272,7 +4336,7 @@ dependencies = [
  "embed_plist",
  "futures-util",
  "getrandom 0.2.15",
- "glob 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "glob",
  "gtk",
  "heck 0.5.0",
  "http",
@@ -4317,7 +4381,7 @@ dependencies = [
  "anyhow",
  "cargo_toml",
  "dirs-next",
- "glob 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "glob",
  "heck 0.5.0",
  "json-patch",
  "schemars",
@@ -4378,7 +4442,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7c8385fd0a4f661f5652b0d9e2d7256187d553bb174f88564d10ebcfa6a3af53"
 dependencies = [
  "anyhow",
- "glob 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "glob",
  "plist",
  "schemars",
  "serde",
@@ -4544,7 +4608,7 @@ dependencies = [
  "cargo_metadata",
  "ctor",
  "dunce",
- "glob 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "glob",
  "html5ever",
  "infer",
  "json-patch",
