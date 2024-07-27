@@ -1,4 +1,10 @@
-use std::{borrow::Borrow, collections::HashMap, fmt::Display, hash::Hash, sync::Mutex};
+use std::{
+	borrow::Borrow,
+	collections::HashMap,
+	fmt::Display,
+	hash::{BuildHasher, Hash},
+	sync::Mutex,
+};
 
 use tauri::Manager;
 
@@ -42,7 +48,7 @@ pub trait DataValue<K, V> {
 		Q: Hash + Eq + Display + ?Sized;
 }
 
-impl<K, V> DataValue<K, V> for Mutex<Option<HashMap<K, V>>>
+impl<K, V, S: BuildHasher> DataValue<K, V> for Mutex<Option<HashMap<K, V, S>>>
 where
 	K: Hash + Eq + Display + Clone,
 	V: Clone,

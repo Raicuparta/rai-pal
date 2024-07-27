@@ -1,4 +1,9 @@
-use std::{borrow::Borrow, collections::HashMap, fmt::Display, hash::Hash};
+use std::{
+	borrow::Borrow,
+	collections::HashMap,
+	fmt::Display,
+	hash::{BuildHasher, Hash},
+};
 
 use crate::result::{Error, Result};
 
@@ -9,7 +14,7 @@ pub trait TryGettable<K, V> {
 		Q: Hash + Eq + Display + ?Sized;
 }
 
-impl<K, V> TryGettable<K, V> for HashMap<K, V>
+impl<K, V, S: BuildHasher> TryGettable<K, V> for HashMap<K, V, S>
 where
 	K: Hash + Eq + Display,
 {
