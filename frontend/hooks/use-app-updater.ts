@@ -1,90 +1,79 @@
-// import { useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 
-// import {
-// 	checkUpdate,
-// 	installUpdate,
-// 	onUpdaterEvent,
-// } from "@tauri-apps/plugin-updater";
-// import { relaunch } from "@tauri-apps/plugin-process";
-// import { showAppNotification } from "@components/app-notifications";
-// import { dialog } from "@tauri-apps/api";
+import { check as checkUpdate } from "@tauri-apps/plugin-updater";
+import { relaunch } from "@tauri-apps/plugin-process";
+import { ask } from "@tauri-apps/plugin-dialog";
+import { showAppNotification } from "@components/app-notifications";
 
-// const checkIntervalMilliseconds = 120000;
+const CHECK_INTERVAL_MILLISECONDS = 120000;
 
-// export function useAppUpdater() {
-// 	// Use this ID as a way to prevent multiple checks at once.
-// 	const updateCheckId = useRef(0);
+export function useAppUpdater() {
+	// Use this ID as a way to prevent multiple checks at once.
+	const updateCheckId = useRef(0);
 
-// 	useEffect(() => {
-// 		const unlistenPromise = onUpdaterEvent(({ error, status }) => {
-// 			(error ? console.error : console.log)(error || status);
-// 		});
+	useEffect(() => {
+		let shouldSkipUpdate = false;
 
-// 		let shouldSkipUpdate = false;
+		function triggerUpdateCheck() {
+			// Increment the ID and use it for this check.
+			updateCheckId.current++;
+			const currentCheckId = updateCheckId.current;
 
-// 		function triggerUpdateCheck() {
-// 			// Increment the ID and use it for this check.
-// 			updateCheckId.current++;
-// 			const currentCheckId = updateCheckId.current;
+			checkUpdate()
+				.then(async (update) => {
+					if (currentCheckId !== updateCheckId.current) {
+						// If the IDs are different, that means a new check has started in the meantime.
+						return;
+					}
 
-// 			checkUpdate()
-// 				.then(async ({ shouldUpdate, manifest }) => {
-// 					if (currentCheckId !== updateCheckId.current) {
-// 						// If the IDs are different, that means a new check has started in the meantime.
-// 						return;
-// 					}
+					if (!update?.available || shouldSkipUpdate) return;
 
-// 					if (!shouldUpdate || shouldSkipUpdate) return;
+					console.log(
+						`Received update ${update.version}, ${update.date}, ${update.body}`,
+					);
 
-// 					if (!manifest) {
-// 						throw new Error("Update manifest not present.");
-// 					}
+					// Skip any checks that happen while this one is open.
+					shouldSkipUpdate = true;
 
-// 					console.log(
-// 						`Received update ${manifest.version}, ${manifest.date}, ${manifest.body}`,
-// 					);
+					const userAcceptedUpdate = await ask(
+						update.body || "(no changelog)",
+						{
+							kind: "info",
+							cancelLabel: "Ignore (won't ask again until you restart Rai Pal)",
+							okLabel: "Update now",
+							title: `Rai Pal Update ${update.version}`,
+						},
+					);
 
-// 					// Skip any checks that happen while this one is open.
-// 					shouldSkipUpdate = true;
+					shouldSkipUpdate = false;
 
-// 					const userAcceptedUpdate = await dialog.ask(manifest.body, {
-// 						type: "info",
-// 						cancelLabel: "Ignore (won't ask again until you restart Rai Pal)",
-// 						okLabel: "Update now",
-// 						title: `Rai Pal Update ${manifest.version}`,
-// 					});
+					if (!userAcceptedUpdate) {
+						// If the user says no, let's not bother them any longer during this session.
+						shouldSkipUpdate = true;
+						clearInterval(interval);
 
-// 					shouldSkipUpdate = false;
+						return;
+					}
 
-// 					if (!userAcceptedUpdate) {
-// 						// If the user says no, let's not bother them any longer during this session.
+					await update.downloadAndInstall();
+					await relaunch();
+				})
+				.catch((error) => {
+					showAppNotification(`Failed to get app updates: ${error}`, "error");
+				});
+		}
 
-// 						shouldSkipUpdate = true;
-// 						clearInterval(interval);
+		// Initial check on mount.
+		triggerUpdateCheck();
 
-// 						return;
-// 					}
+		// Subsequent checks every so often.
+		const interval = setInterval(
+			triggerUpdateCheck,
+			CHECK_INTERVAL_MILLISECONDS,
+		);
 
-// 					// Install the update. This will also restart the app on Windows!
-// 					await installUpdate();
-
-// 					// On macOS and Linux we need to restart manually.
-// 					await relaunch();
-// 				})
-// 				.catch((error) => {
-// 					showAppNotification(`Failed to get app updates: ${error}`, "error");
-// 				});
-// 		}
-
-// 		// Initial check on mount.
-// 		triggerUpdateCheck();
-
-// 		// Subsequent checks every so often.
-// 		const interval = setInterval(triggerUpdateCheck, checkIntervalMilliseconds);
-
-// 		return () => {
-// 			unlistenPromise.then((unlisten) => unlisten());
-// 			clearInterval(interval);
-// 		};
-// 	}, []);
-// }
+		return () => {
+			clearInterval(interval);
+		};
+	}, []);
+}

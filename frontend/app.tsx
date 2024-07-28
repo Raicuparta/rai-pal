@@ -16,7 +16,7 @@ import { ThanksPage } from "@components/thanks/thanks-page";
 import { useAtomValue } from "jotai";
 import { PageTab } from "@components/page-tab";
 import { useMemo } from "react";
-// import { useAppUpdater } from "@hooks/use-app-updater";
+import { useAppUpdater } from "@hooks/use-app-updater";
 
 const pages = {
 	installedGames: {
@@ -49,7 +49,9 @@ type TabCounts = Record<PageId, number>;
 const firstPage = Object.keys(pages)[0];
 
 function App() {
+	useAppUpdater();
 	useData();
+
 	const installedGames = useAtomValue(installedGamesAtom);
 	const ownedGames = useAtomValue(ownedGamesAtom);
 
