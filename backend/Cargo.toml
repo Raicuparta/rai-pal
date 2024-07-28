@@ -29,14 +29,21 @@ thiserror = "1.0.50"
 tokio = { version = "1.35.1", features = ["macros"] }
 
 [dependencies]
-tauri = { version = "2.0.0-beta", features = [] }
 tauri-plugin-dialog = "2.0.0-beta"
-tauri-plugin-log = "2.0.0-beta.6"
-tauri-plugin-process = "2.0.0-beta.6"
-tauri-plugin-updater = "2.0.0-beta.8"
-tauri-plugin-window-state = "2.0.0-beta.9"
-tauri-runtime = "2.0.0-beta.18"
-tauri-specta = { version = "2.0.0-rc.11", features = ["typescript"] }
+tauri-plugin-log = "2.0.0-beta"
+tauri-plugin-process = "2.0.0-beta"
+tauri-plugin-updater = "2.0.0-beta"
+tauri-plugin-window-state = "2.0.0-beta"
+
+# Using the git version for now because the cargo version depends on older Bauri betas
+# tauri-specta = { version = "2.0.0-rc.11", features = ["typescript"] }
+tauri-specta = { git = "https://github.com/oscartbeaumont/tauri-specta", branch = "main", features = [
+  "typescript",
+] }
+
+# TODO: once tauri-specta is updated, we should be able to unpin these dependencies.
+tauri = { version = "=2.0.0-beta.23", features = [] }
+tauri-runtime = "=2.0.0-beta.19"
 
 futures.workspace = true
 log.workspace = true

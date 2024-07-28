@@ -7,10 +7,10 @@
     "devUrl": "http://localhost:1420"
   },
   "bundle": {
+    "createUpdaterArtifacts": "v1Compatible",
     "active": true,
     "targets": [
-      "msi",
-      "updater"
+      "msi"
     ],
     "resources": [
       "resources/*"
