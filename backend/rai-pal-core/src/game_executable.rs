@@ -112,7 +112,7 @@ pub fn get_os_and_architecture(
 			return elf_result;
 		}
 		if let Err(err) = elf_result {
-			error!("ELF error: {err}");
+			log::error!("ELF error: {err}");
 		}
 	}
 

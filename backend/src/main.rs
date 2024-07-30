@@ -23,7 +23,9 @@ use rai_pal_core::providers::{
 };
 use rai_pal_core::remote_game::RemoteGame;
 use rai_pal_core::result::{Error, Result};
-use rai_pal_core::{analytics, remote_mod, steam, windows};
+#[cfg(target_os = "windows")]
+use rai_pal_core::windows;
+use rai_pal_core::{analytics, remote_mod, steam};
 use tauri::path::BaseDirectory;
 use tauri::{AppHandle, Manager};
 use tauri_plugin_log::{Target, TargetKind};
@@ -596,23 +598,8 @@ fn main() {
 			}
 			#[cfg(target_os = "windows")]
 			windows::error_dialog(&error.to_string());
-			// TODO handle Linux.
-		});
 
-	// match types_result {
-	// 	Ok(types) => {
-	// 		#[cfg(debug_assertions)]
-	// 		if let Err(err) = tauri_specta::ts::export_with_cfg(
-	// 			types,
-	// 			specta::ts::ExportConfiguration::default()
-	// 				.bigint(specta::ts::BigIntExportBehavior::BigInt),
-	// 			"../frontend/api/bindings.ts",
-	// 		) {
-	// 			error!("Failed to generate TypeScript bindings: {err}");
-	// 		}
-	// 	}
-	// 	Err(err) => {
-	// 		error!("Failed to generate api bindings: {err}");
-	// 	}
-	// }
+			#[cfg(target_os = "linux")]
+			log::error!("Error: {error}");
+		});
 }
