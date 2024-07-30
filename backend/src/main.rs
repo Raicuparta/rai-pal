@@ -502,10 +502,12 @@ async fn open_logs_folder() -> Result {
 fn main() {
 	// Since I'm making all exposed functions async, panics won't crash anything important, I think.
 	// So I can just catch panics here and show a system message with the error.
-	#[cfg(target_os = "windows")]
 	std::panic::set_hook(Box::new(|info| {
+		#[cfg(target_os = "windows")]
 		windows::error_dialog(&info.to_string());
-		// TODO handle Linux.
+
+		#[cfg(target_os = "linux")]
+		log::error!("Panic: {info}");
 	}));
 
 	let (invoke_handler, register_events) = {
