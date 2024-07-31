@@ -1,11 +1,12 @@
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import { event } from "@tauri-apps/api";
-import { atom } from "jotai";
+import { atom, useSetAtom } from "jotai";
 import { commands, events } from "@api/bindings";
 import { dataSubscription } from "./use-data-subscription";
 import { useUpdateData } from "./use-update-data";
 import { useAsyncCommand } from "./use-async-command";
 import { dataPartialSubscription } from "./use-data-partial-subscription";
+import { useAppEvent } from "./use-app-event";
 
 const { addGame } = commands;
 
@@ -54,14 +55,32 @@ export function useData() {
 	useRemoteModsSubscription();
 	useOwnedGamesSubscription();
 	useRemoteGameDataSubscription();
+	const setInstalledGames = useSetAtom(installedGamesAtom);
 
 	const updateData = useUpdateData();
 
 	const [executeAddGame] = useAsyncCommand(addGame);
 
+	const onGameRemoved = useCallback(
+		(gameId: string) => {
+			setInstalledGames((previousInstalledGames) => {
+				// Mutating the inner value because we're doing some cursed thing for performance.
+				previousInstalledGames.data.delete(gameId);
+
+				// But creating a new object for the outer structure, to count as a new reference.
+				return {
+					...previousInstalledGames,
+				};
+			});
+		},
+		[setInstalledGames],
+	);
+
+	useAppEvent(events.gameRemoved, onGameRemoved);
+
 	useEffect(() => {
 		const unlistenPromise = event.listen<string[]>(
-			event.TauriEvent.DROP,
+			event.TauriEvent.DRAG_DROP,
 			(event) => {
 				if (event.payload.length > 0) {
 					executeAddGame(event.payload[0]);

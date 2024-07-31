@@ -52,9 +52,5 @@ export function AppNotifications() {
 		showAppNotification(`Successfully added game "${gameName}"`, "success");
 	});
 
-	useAppEvent(events.gameRemoved, (gameName) => {
-		showAppNotification(`Removed game "${gameName}"`, "success");
-	});
-
 	return <Notifications />;
 }

@@ -454,8 +454,7 @@ async fn add_game(path: PathBuf, handle: AppHandle) -> Result {
 async fn remove_game(installed_game: InstalledGame, handle: AppHandle) -> Result {
 	manual_provider::remove_game(&installed_game.executable.path)?;
 
-	// TODO: remove game on frontend.
-	handle.emit_safe(events::GameRemoved(installed_game.name));
+	handle.emit_safe(events::GameRemoved(installed_game.id));
 
 	Ok(())
 }
