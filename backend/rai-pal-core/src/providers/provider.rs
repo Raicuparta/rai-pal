@@ -135,9 +135,9 @@ fn create_map_entry<TProvider: ProviderActions + ProviderStatic>() -> Result<(St
 where
 	Provider: From<TProvider>,
 {
-	let mod_loader: Provider = TProvider::new()?.into();
+	let provider: Provider = TProvider::new()?.into();
 
-	Ok((TProvider::ID.to_string(), mod_loader))
+	Ok((TProvider::ID.to_string(), provider))
 }
 
 fn add_entry<TProvider: ProviderActions + ProviderStatic>(map: &mut Map)
