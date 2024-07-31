@@ -26,7 +26,7 @@ use crate::{
 	remote_game::{self, RemoteGame},
 	result::{Error, Result},
 	steam::{
-		appinfo::{SteamAppInfo, SteamAppInfoReader, SteamLaunchOption},
+		appinfo::{self, SteamAppInfo, SteamAppInfoReader, SteamLaunchOption},
 		id_lists,
 		thumbnail::get_steam_thumbnail,
 	},
@@ -261,7 +261,7 @@ impl Steam {
 	{
 		let mut steam_dir = SteamDir::locate().ok_or_else(Error::FailedToFindSteam)?;
 		let steam_path = steam_dir.path.clone();
-		let app_info_reader = SteamAppInfoReader::new(&steam_path)?;
+		let app_info_reader = SteamAppInfoReader::new(&appinfo::get_path(&steam_path))?;
 		let steam_app_map = steam_dir.apps();
 
 		let owned_ids_whitelist =

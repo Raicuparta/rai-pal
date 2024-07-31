@@ -21,5 +21,7 @@ pub mod remote_game;
 pub mod remote_mod;
 pub mod result;
 pub mod steam;
-mod tests;
 pub mod windows;
+
+#[cfg(test)]
+mod tests;

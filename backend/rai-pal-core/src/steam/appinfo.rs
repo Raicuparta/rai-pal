@@ -111,8 +111,8 @@ pub struct SteamAppInfoReader {
 const OLD_APPINFO_MAX_VERSION: u32 = 0x07_56_44_28;
 
 impl SteamAppInfoReader {
-	pub fn new(steam_path: &Path) -> Result<Self> {
-		let mut reader = BufReader::new(fs::File::open(get_path(steam_path))?);
+	pub fn new(appinfo_path: &Path) -> Result<Self> {
+		let mut reader = BufReader::new(fs::File::open(appinfo_path)?);
 
 		let version = reader.read_u32::<LittleEndian>()?;
 		let _universe = reader.read_u32::<LittleEndian>()?;
@@ -383,7 +383,7 @@ fn read_string(reader: &mut BufReader<fs::File>, wide: bool) -> Result<String> {
 	}
 }
 
-fn get_path(steam_path: &Path) -> PathBuf {
+pub fn get_path(steam_path: &Path) -> PathBuf {
 	steam_path.join("appcache/appinfo.vdf")
 }
 
