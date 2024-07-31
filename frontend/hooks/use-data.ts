@@ -7,6 +7,7 @@ import { useUpdateData } from "./use-update-data";
 import { useAsyncCommand } from "./use-async-command";
 import { dataPartialSubscription } from "./use-data-partial-subscription";
 import { useAppEvent } from "./use-app-event";
+import { getCurrentWebview } from "@tauri-apps/api/webview";
 
 const { addGame } = commands;
 
@@ -79,14 +80,12 @@ export function useData() {
 	useAppEvent(events.gameRemoved, onGameRemoved);
 
 	useEffect(() => {
-		const unlistenPromise = event.listen<string[]>(
-			event.TauriEvent.DRAG_DROP,
-			(event) => {
-				if (event.payload.length > 0) {
-					executeAddGame(event.payload[0]);
-				}
-			},
-		);
+		const unlistenPromise = getCurrentWebview().onDragDropEvent((event) => {
+			console.log("drag drop event", event);
+			if (event.payload.type === "drop") {
+				executeAddGame(event.payload.paths[0]);
+			}
+		});
 
 		return () => {
 			unlistenPromise.then((unlisten) => unlisten());
