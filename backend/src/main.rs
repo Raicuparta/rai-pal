@@ -4,6 +4,8 @@
 #![allow(clippy::used_underscore_binding)]
 // Command stuff needs to be async so I can spawn tasks.
 #![allow(clippy::unused_async)]
+// This is here because tauri specta would go over whatever the default limit is.
+#![recursion_limit = "256"]
 
 use std::{collections::HashMap, path::PathBuf, sync::Mutex};
 
@@ -531,14 +533,14 @@ fn main() {
 			open_mod_loader_folder,
 			open_mods_folder,
 			refresh_game,
-			// remove_game,
-			// run_provider_command,
-			// run_runnable_without_game,
-			// start_game_exe,
-			// start_game,
-			// uninstall_all_mods,
-			// uninstall_mod,
-			// update_data,
+			remove_game,
+			run_provider_command,
+			run_runnable_without_game,
+			start_game_exe,
+			start_game,
+			uninstall_all_mods,
+			uninstall_mod,
+			update_data,
 		])
 		.events(events::collect_events());
 
