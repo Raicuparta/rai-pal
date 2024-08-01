@@ -1,5 +1,4 @@
 import { useCallback, useEffect } from "react";
-import { event } from "@tauri-apps/api";
 import { atom, useSetAtom } from "jotai";
 import { commands, events } from "@api/bindings";
 import { dataSubscription } from "./use-data-subscription";
