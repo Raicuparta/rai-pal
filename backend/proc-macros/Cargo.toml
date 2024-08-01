@@ -9,4 +9,4 @@ proc-macro = true
 
 [dependencies]
 quote = "1.0.36"
-serde = { version = "1.0", features = ["derive"] }
+serde.workspace = true

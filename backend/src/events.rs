@@ -59,11 +59,7 @@ impl EventEmitter for tauri::AppHandle {
 	}
 }
 
-pub fn collect_events() -> (
-	tauri_specta::EventCollection,
-	std::vec::Vec<tauri_specta::EventDataType>,
-	specta::TypeMap,
-) {
+pub fn collect_events() -> tauri_specta::Events {
 	tauri_specta::collect_events![
 		FoundInstalledGame,
 		FoundOwnedGame,

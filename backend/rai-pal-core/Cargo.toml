@@ -44,8 +44,5 @@ webview2-com = "0.31.0" # Needed for getting the webview window on linux
 winapi = { version = "0.3.9", features = ["shellapi", "winuser"] }
 winreg = "0.52.0"
 
-[profile.release]
-workspace = true
-
 [lints]
 workspace = true

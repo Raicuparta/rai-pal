@@ -26,9 +26,11 @@ use rai_pal_core::result::{Error, Result};
 #[cfg(target_os = "windows")]
 use rai_pal_core::windows;
 use rai_pal_core::{analytics, remote_mod, steam};
+use specta_typescript::{BigIntExportBehavior, Typescript};
 use tauri::path::BaseDirectory;
 use tauri::{AppHandle, Manager};
 use tauri_plugin_log::{Target, TargetKind};
+use tauri_specta::Builder;
 
 mod app_state;
 mod events;
@@ -509,50 +511,47 @@ fn main() {
 		log::error!("Panic: {info}");
 	}));
 
-	let (invoke_handler, register_events) = {
-		let builder = tauri_specta::ts::builder()
-			.config(
-				specta::ts::ExportConfig::default()
-					.bigint(specta::ts::BigIntExportBehavior::BigInt),
-			)
-			.commands(tauri_specta::collect_commands![
-				update_data,
-				get_mod_loaders,
-				open_game_folder,
-				install_mod,
-				configure_mod,
-				open_installed_mod_folder,
-				uninstall_mod,
-				uninstall_all_mods,
-				open_game_mods_folder,
-				start_game,
-				start_game_exe,
-				open_mod_folder,
-				download_mod,
-				run_runnable_without_game,
-				delete_mod,
-				open_mods_folder,
-				add_game,
-				remove_game,
-				delete_steam_appinfo_cache,
-				frontend_ready,
-				get_local_mods,
-				get_remote_mods,
-				open_mod_loader_folder,
-				refresh_game,
-				open_logs_folder,
-				run_provider_command,
-			])
-			.events(events::collect_events());
+	let builder = Builder::<tauri::Wry>::new()
+		.commands(tauri_specta::collect_commands![
+			add_game,
+			configure_mod,
+			delete_mod,
+			delete_steam_appinfo_cache,
+			download_mod,
+			frontend_ready,
+			get_local_mods,
+			get_mod_loaders,
+			get_remote_mods,
+			install_mod,
+			open_game_folder,
+			open_game_mods_folder,
+			open_installed_mod_folder,
+			open_logs_folder,
+			open_mod_folder,
+			open_mod_loader_folder,
+			open_mods_folder,
+			refresh_game,
+			// remove_game,
+			// run_provider_command,
+			// run_runnable_without_game,
+			// start_game_exe,
+			// start_game,
+			// uninstall_all_mods,
+			// uninstall_mod,
+			// update_data,
+		])
+		.events(events::collect_events());
 
-		#[cfg(debug_assertions)]
-		let builder = builder.path("../frontend/api/bindings.ts");
-
-		builder.build().unwrap_or_else(|err| {
+	#[cfg(debug_assertions)]
+	builder
+		.export(
+			Typescript::default().bigint(BigIntExportBehavior::BigInt),
+			"../frontend/api/bindings.ts",
+		)
+		.unwrap_or_else(|err| {
 			error!("Failed to generate TypeScript bindings: {err}");
 			std::process::exit(1);
-		})
-	};
+		});
 
 	tauri::Builder::default()
 		.plugin(tauri_plugin_window_state::Builder::default().build())
@@ -579,8 +578,9 @@ fn main() {
 			local_mods: Mutex::default(),
 			remote_mods: Mutex::default(),
 		})
-		.setup(|app| {
-			register_events(app);
+		.invoke_handler(builder.invoke_handler())
+		.setup(move |app| {
+			builder.mount_events(app);
 
 			if let Some(window) = app.get_webview_window("main") {
 				window.set_title(&format!("Rai Pal {}", env!("CARGO_PKG_VERSION")))?;
@@ -588,7 +588,6 @@ fn main() {
 
 			Ok(())
 		})
-		.invoke_handler(invoke_handler)
 		.run(tauri::generate_context!())
 		.unwrap_or_else(|error| {
 			#[cfg(target_os = "windows")]
