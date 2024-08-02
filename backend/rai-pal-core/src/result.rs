@@ -96,6 +96,13 @@ pub enum Error {
 		regex::Error,
 	),
 
+	#[error(transparent)]
+	SteamLocate(
+		#[from]
+		#[serde(skip)]
+		steamlocate::error::Error,
+	),
+
 	#[error("Invalid type `{0}` in binary vdf for key {1}")]
 	InvalidBinaryVdfType(u8, String),
 
@@ -151,9 +158,6 @@ pub enum Error {
 
 	#[error("Failed to get app resources path: `{0}`")]
 	FailedToGetResourcesPath(String),
-
-	#[error("Failed to find Steam. **Is Steam installed**?")]
-	FailedToFindSteam(),
 }
 
 impl serde::Serialize for Error {

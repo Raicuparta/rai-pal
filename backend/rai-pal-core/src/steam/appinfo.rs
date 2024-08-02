@@ -388,6 +388,6 @@ pub fn get_path(steam_path: &Path) -> PathBuf {
 }
 
 pub fn delete() -> Result {
-	let steam_dir = SteamDir::locate().ok_or_else(Error::FailedToFindSteam)?;
-	Ok(fs::remove_file(get_path(&steam_dir.path))?)
+	let steam_dir = SteamDir::locate()?;
+	Ok(fs::remove_file(get_path(steam_dir.path()))?)
 }

@@ -797,6 +797,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "crc"
+version = "3.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "69e6e4d7b33a94f0991c26729976b10ebde1d34c3ee82408fb536164fa10d636"
+dependencies = [
+ "crc-catalog",
+]
+
+[[package]]
+name = "crc-catalog"
+version = "2.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "19d374276b40fb8bbdee95aef7c7fa6b5316ec764510eb64b8dd0e2ed0d7e7f5"
+
+[[package]]
 name = "crc32fast"
 version = "1.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2259,9 +2274,9 @@ dependencies = [
 
 [[package]]
 name = "keyvalues-parser"
-version = "0.1.0"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7d990301996c856ea07a84bc291e76f1273db52683663efc05c8d355976897e5"
+checksum = "7e4c8354918309196302015ac9cae43362f1a13d0d5c5539a33b4c2fd2cd6d25"
 dependencies = [
  "pest",
  "pest_derive",
@@ -2270,14 +2285,11 @@ dependencies = [
 
 [[package]]
 name = "keyvalues-serde"
-version = "0.1.0"
+version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "da419ac133bb3ddf0dbf9c12fcc0ce01d994fcb65f6f1713faf15cc689320b5f"
+checksum = "0447866c47c00f8bd1949618e8f63017cf93e985b4684dc28d784527e2882390"
 dependencies = [
  "keyvalues-parser",
- "once_cell",
- "paste",
- "regex",
  "serde",
  "thiserror",
 ]
@@ -2612,12 +2624,6 @@ name = "nodrop"
 version = "0.1.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "72ef4a56884ca558e5ddb05a1d1e7e1bfd9a68d9ed024c21704cc98872dae1bb"
-
-[[package]]
-name = "nom"
-version = "1.2.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a5b8c256fd9471521bcb84c3cdba98921497f1a331cbc15b8030fc63b82050ce"
 
 [[package]]
 name = "nu-ansi-term"
@@ -4437,25 +4443,16 @@ checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
 
 [[package]]
 name = "steamlocate"
-version = "1.2.1"
+version = "2.0.0-beta.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4ec01c74611d14a808cb212d17c6e03f0e30736a15ed1d5736f8a53154cea3ae"
+checksum = "c3b6a4810c4e7fecb0123a9a8ba99b335c17d92e636c265ef99108ee4734c812"
 dependencies = [
+ "crc",
  "dirs",
  "keyvalues-parser",
  "keyvalues-serde",
  "serde",
- "steamy-vdf",
- "winreg 0.11.0",
-]
-
-[[package]]
-name = "steamy-vdf"
-version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "533127ad49314bfe71c3d3fd36b3ebac3d24f40618092e70e1cfe8362c7fac79"
-dependencies = [
- "nom",
+ "winreg 0.51.0",
 ]
 
 [[package]]
@@ -6104,12 +6101,12 @@ dependencies = [
 
 [[package]]
 name = "winreg"
-version = "0.11.0"
+version = "0.51.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "76a1a57ff50e9b408431e8f97d5456f2807f8eb2a2cd79b06068fc87f8ecf189"
+checksum = "937f3df7948156640f46aacef17a70db0de5917bda9c92b0f751f3a955b588fc"
 dependencies = [
  "cfg-if",
- "winapi",
+ "windows-sys 0.48.0",
 ]
 
 [[package]]

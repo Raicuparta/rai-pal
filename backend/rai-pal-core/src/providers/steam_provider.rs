@@ -24,7 +24,7 @@ use crate::{
 	pc_gaming_wiki,
 	providers::provider::{ProviderActions, ProviderStatic},
 	remote_game::{self, RemoteGame},
-	result::{Error, Result},
+	result::Result,
 	steam::{
 		appinfo::{self, SteamAppInfo, SteamAppInfoReader, SteamLaunchOption},
 		id_lists,
@@ -133,10 +133,7 @@ impl Steam {
 		Some(game)
 	}
 
-	pub fn get_installed_games(
-		app_info: &SteamAppInfo,
-		dir_app: &steamlocate::SteamApp,
-	) -> Vec<InstalledGame> {
+	pub fn get_installed_games(app_info: &SteamAppInfo, app_path: &Path) -> Vec<InstalledGame> {
 		let mut used_paths: HashSet<PathBuf> = HashSet::new();
 		let mut used_names: HashSet<String> = HashSet::new();
 		let mut installed_games = Vec::new();
@@ -149,17 +146,19 @@ impl Steam {
 
 		for launch_option in sorted_launch_options {
 			if let Some(executable_path) = launch_option.executable.as_ref() {
-				let full_path = &dir_app.path.join(executable_path);
+				let full_path = &app_path.join(executable_path);
 
 				if used_paths.contains(full_path) {
 					continue;
 				}
 
-				if let Some(name) = &dir_app.name {
-					if let Some(mut game) =
-						installed_game::InstalledGame::new(full_path, name, *Self::ID)
-					{
-						let discriminator_option = if used_names.contains(name) {
+				let app_name = app_info.name.clone();
+
+				if let Some(mut game) =
+					installed_game::InstalledGame::new(full_path, &app_name, *Self::ID)
+				{
+					let discriminator_option =
+						if used_names.contains(&app_name) {
 							Some(launch_option.description.as_ref().map_or_else(
 								|| executable_path.display().to_string(),
 								Clone::clone,
@@ -168,23 +167,22 @@ impl Steam {
 							None
 						};
 
-						if let Some(discriminator) = &discriminator_option {
-							game.set_discriminator(discriminator);
-						}
-
-						let app_id_string = dir_app.appid.to_string();
-
-						game.set_provider_game_id(&app_id_string);
-						game.set_thumbnail_url(&get_steam_thumbnail(&app_id_string));
-						game.set_start_command_string(&get_start_command(
-							&launch_option,
-							&discriminator_option,
-						));
-
-						used_names.insert(name.clone());
-						used_paths.insert(full_path.clone());
-						installed_games.push(game);
+					if let Some(discriminator) = &discriminator_option {
+						game.set_discriminator(discriminator);
 					}
+
+					let app_id_string = app_info.app_id.to_string();
+
+					game.set_provider_game_id(&app_id_string);
+					game.set_thumbnail_url(&get_steam_thumbnail(&app_id_string));
+					game.set_start_command_string(&get_start_command(
+						&launch_option,
+						&discriminator_option,
+					));
+
+					used_names.insert(app_name);
+					used_paths.insert(full_path.clone());
+					installed_games.push(game);
 				}
 			}
 		}
@@ -259,16 +257,20 @@ impl Steam {
 		TOwnedCallback: Fn(OwnedGame) + Send + Sync,
 		TRemoteCallback: Fn(RemoteGame) + Send + Sync,
 	{
-		let mut steam_dir = SteamDir::locate().ok_or_else(Error::FailedToFindSteam)?;
-		let steam_path = steam_dir.path.clone();
-		let app_info_reader = SteamAppInfoReader::new(&appinfo::get_path(&steam_path))?;
-		let steam_app_map = steam_dir.apps();
+		let steam_dir = SteamDir::locate()?;
+		let steam_path = steam_dir.path();
+		let app_info_reader = SteamAppInfoReader::new(&appinfo::get_path(steam_path))?;
+		let mut app_paths = HashMap::<u32, PathBuf>::new();
+		for library in (steam_dir.libraries()?).flatten() {
+			for app in library.apps().flatten() {
+				app_paths.insert(app.app_id, library.resolve_app_dir(&app));
+			}
+		}
 
-		let owned_ids_whitelist =
-			Self::get_owned_ids_whitelist(&steam_path).unwrap_or_else(|err| {
-				log::error!("Failed to read Steam assets.vdf: {}", err);
-				HashSet::new()
-			});
+		let owned_ids_whitelist = Self::get_owned_ids_whitelist(steam_path).unwrap_or_else(|err| {
+			log::error!("Failed to read Steam assets.vdf: {}", err);
+			HashSet::new()
+		});
 
 		let steam_games = id_lists::get().await?;
 
@@ -291,8 +293,8 @@ impl Steam {
 									// 	.insert(remote_game.id.clone(), remote_game.clone());
 								}
 							}
-							if let Some(Some(dir_app)) = steam_app_map.get(&app_info.app_id) {
-								for installed_game in Self::get_installed_games(&app_info, dir_app)
+							if let Some(app_path) = app_paths.get(&app_info.app_id) {
+								for installed_game in Self::get_installed_games(&app_info, app_path)
 								{
 									installed_callback(installed_game);
 								}

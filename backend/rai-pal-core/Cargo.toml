@@ -32,7 +32,7 @@ rand = "0.8.5"
 reqwest = { version = "0.12.5", features = ["json"] }
 rusqlite = { version = "0.31.0", features = ["bundled"] }
 serde_urlencoded = "0.7.1"
-steamlocate = "1.2.1"
+steamlocate = "2.0.0-beta.2"
 uuid = { version = "1.8.0", features = ["v4"] }
 zip = "0.6.6"
 
