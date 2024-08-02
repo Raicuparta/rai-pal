@@ -1,13 +1,7 @@
 use std::{
-	fs::{
-		self,
-		File,
-	},
+	fs::{self, File},
 	io::Read,
-	path::{
-		Path,
-		PathBuf,
-	},
+	path::{Path, PathBuf},
 };
 
 use lazy_regex::regex_captures;
@@ -15,26 +9,10 @@ use log::error;
 
 use super::game_engine::EngineVersionNumbers;
 use crate::{
-	game_engines::game_engine::{
-		EngineBrand,
-		EngineVersion,
-		GameEngine,
-	},
-	game_executable::{
-		get_os_and_architecture,
-		read_windows_binary,
-		Architecture,
-		GameExecutable,
-	},
-	operating_systems::get_current_os,
-	paths::{
-		self,
-		glob_path,
-	},
-	result::{
-		Error,
-		Result,
-	},
+	game_engines::game_engine::{EngineBrand, EngineVersion, GameEngine},
+	game_executable::{get_architecture, Architecture, GameExecutable},
+	paths::{self, glob_path},
+	result::{Error, Result},
 	serializable_enum,
 };
 
@@ -147,10 +125,8 @@ fn get_alt_architecture(game_path: &Path) -> Option<Architecture> {
 		// Here the guessing can go wrong, since it's possible a top level dll is actual x86,
 		// when the actual game is x64.
 		if let Some(first_dll) = glob_path(&game_folder.join("*.dll")).first() {
-			if let Ok(file) = fs::read(first_dll) {
-				if let Ok((_, arch)) = read_windows_binary(&file) {
-					return arch;
-				}
+			if let Ok(Some(architecture)) = get_architecture(first_dll) {
+				return Some(architecture);
 			}
 		}
 
@@ -160,13 +136,11 @@ fn get_alt_architecture(game_path: &Path) -> Option<Architecture> {
 		// so I'm leaving it for last. (mostly because my own UUVR mod drops both the
 		// x86 and x64 dlls in the folder so Unity picks the right one)
 		if let Ok(unity_data_path) = get_unity_data_path(game_path) {
-			if let Some(first_dll) =
+			if let Some(plugin_dll) =
 				glob_path(&unity_data_path.join("Plugins").join("**").join("*.dll")).first()
 			{
-				if let Ok(file) = fs::read(first_dll) {
-					if let Ok((_, arch)) = read_windows_binary(&file) {
-						return arch;
-					}
+				if let Ok(Some(architecture)) = get_architecture(plugin_dll) {
+					return Some(architecture);
 				}
 			}
 		}
@@ -177,15 +151,14 @@ fn get_alt_architecture(game_path: &Path) -> Option<Architecture> {
 
 pub fn get_executable(game_path: &Path) -> Option<GameExecutable> {
 	if is_unity_exe(game_path) {
-		let (operating_system, architecture) =
-			get_os_and_architecture(game_path).unwrap_or((None, None));
+		let architecture = get_architecture(game_path)
+			.unwrap_or(None)
+			.or_else(|| get_alt_architecture(game_path));
 
 		Some(GameExecutable {
 			path: game_path.to_path_buf(),
 			name: game_path.file_name()?.to_string_lossy().to_string(),
-			// If we can't figure out the exe OS, we just presume it's the current one.
-			operating_system: operating_system.or_else(|| Some(get_current_os())),
-			architecture: architecture.or_else(|| get_alt_architecture(game_path)),
+			architecture,
 			scripting_backend: get_scripting_backend(game_path),
 			engine: Some(GameEngine {
 				brand: EngineBrand::Unity,

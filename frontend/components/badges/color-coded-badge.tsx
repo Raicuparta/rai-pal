@@ -3,7 +3,6 @@ import {
 	Architecture,
 	EngineBrand,
 	GameMode,
-	OperatingSystem,
 	ProviderId,
 	UnityScriptingBackend,
 } from "@api/bindings";
@@ -88,14 +87,6 @@ export const ArchitectureBadge = CreateColorCodedBadge<Architecture>("-", {
 	X64: "blue",
 	X86: "teal",
 });
-
-export const OperatingSystemBadge = CreateColorCodedBadge<OperatingSystem>(
-	"Unknown",
-	{
-		Linux: "yellow",
-		Windows: "lime",
-	},
-);
 
 export const ProviderBadge = CreateColorCodedBadge<ProviderId>(
 	"Unknown",

@@ -1,10 +1,9 @@
 use std::{
-	fs::{self, File},
+	fs::File,
 	io::{self, Read, Seek},
 	path::{Path, PathBuf},
 };
 
-use goblin::{elf::Elf, pe::PE};
 use rai_pal_proc_macros::serializable_struct;
 
 use crate::{
@@ -20,19 +19,16 @@ use crate::{
 
 serializable_enum!(Architecture { X64, X86 });
 
-serializable_enum!(OperatingSystem { Linux, Windows });
-
 #[serializable_struct]
 pub struct GameExecutable {
 	pub path: PathBuf,
 	pub name: String,
 	pub engine: Option<GameEngine>,
 	pub architecture: Option<Architecture>,
-	pub operating_system: Option<OperatingSystem>,
 	pub scripting_backend: Option<UnityScriptingBackend>,
 }
 
-fn get_exe_architecture(exe_path: &Path) -> Result<Option<Architecture>> {
+pub fn get_architecture(exe_path: &Path) -> Result<Option<Architecture>> {
 	// Open the file
 	let mut file = File::open(exe_path)?;
 
@@ -76,53 +72,6 @@ fn get_exe_architecture(exe_path: &Path) -> Result<Option<Architecture>> {
 	Ok(None)
 }
 
-pub fn read_windows_binary(file: &[u8]) -> Result<(Option<OperatingSystem>, Option<Architecture>)> {
-	match PE::parse(file)?.header.coff_header.machine {
-		goblin::pe::header::COFF_MACHINE_X86_64 => {
-			Ok((Some(OperatingSystem::Windows), Some(Architecture::X64)))
-		}
-		goblin::pe::header::COFF_MACHINE_X86 => {
-			Ok((Some(OperatingSystem::Windows), Some(Architecture::X86)))
-		}
-		_ => Ok((Some(OperatingSystem::Windows), None)),
-	}
-}
-
-pub fn read_linux_binary(file: &[u8]) -> Result<(Option<OperatingSystem>, Option<Architecture>)> {
-	match Elf::parse(file)?.header.e_machine {
-		goblin::elf::header::EM_X86_64 => {
-			Ok((Some(OperatingSystem::Linux), Some(Architecture::X64)))
-		}
-		goblin::elf::header::EM_386 => Ok((Some(OperatingSystem::Linux), Some(Architecture::X86))),
-		_ => Ok((Some(OperatingSystem::Linux), None)),
-	}
-}
-
-pub fn get_os_and_architecture(
-	file_path: &Path,
-) -> Result<(Option<OperatingSystem>, Option<Architecture>)> {
-	// read only header, don't open whole file
-	let buf: &mut [u8] = &mut [0; 128];
-	fs::File::open(file_path)?.read_exact(buf)?;
-
-	#[cfg(target_os = "linux")]
-	{
-		let elf_result = read_linux_binary(buf);
-		if elf_result.is_ok() {
-			return elf_result;
-		}
-		if let Err(err) = elf_result {
-			log::error!("ELF error: {err}");
-		}
-	}
-
-	if let Ok(architecture) = get_exe_architecture(file_path) {
-		return Ok((Some(OperatingSystem::Windows), architecture));
-	}
-
-	Ok((None, None))
-}
-
 impl GameExecutable {
 	pub fn new(path: &Path) -> Option<Self> {
 		let normalized_path = normalize_path(path);
@@ -135,7 +84,6 @@ impl GameExecutable {
 					name: file_name_without_extension(path).ok()?.to_string(),
 					engine: None,
 					architecture: None,
-					operating_system: None,
 					scripting_backend: None,
 				})
 			})

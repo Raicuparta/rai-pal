@@ -64,15 +64,8 @@ impl ModLoaderActions for BepInEx {
 		);
 		let architecture_path = scripting_backend_path
 			.join(
-				game.executable
-					.operating_system
-					.ok_or_else(|| {
-						Error::ModInstallInfoInsufficient(
-							"operating_system".to_string(),
-							game.executable.path.clone(),
-						)
-					})?
-					.to_string(),
+				// Hardcoded windows platform since that's all we support for now.
+				"Windows",
 			)
 			.join(
 				game.executable
@@ -120,17 +113,6 @@ impl ModLoaderActions for BepInEx {
 				game_data_folder.to_string_lossy().as_ref(),
 			),
 		)?;
-
-		// TODO: linux stuff
-		// if let Some(operating_system) = game.executable.operating_system {
-		// 	if get_current_os() != OperatingSystem::Windows
-		// 		&& operating_system == OperatingSystem::Windows
-		// 	{
-		// 		if let Some(steam_launch) = &game.steam_launch {
-		// 			ensure_wine_will_load_bepinex(&game.executable.path, steam_launch.app_id)?;
-		// 		}
-		// 	}
-		// }
 
 		Ok(())
 	}
@@ -234,84 +216,6 @@ fn is_legacy(engine: &GameEngine) -> bool {
 			|| (version.numbers.major == 5 && version.numbers.minor.is_some_and(|minor| minor < 5))
 	})
 }
-
-// TODO: Linux stuff.
-// fn ensure_wine_will_load_bepinex(game_path: &Path, steam_app_id: u32) -> Result {
-// 	let steam_apps_folder = {
-// 		// I think since canonicalize gets rid of symbolic links then it shouldn't be possible to
-// 		// get stuck in an infinite loop, but who knows. If you're currently stuck in
-// 		// an infinite loop then I'm very sorry, hope infinity goes well for you.
-// 		let mut steam_apps_folder = game_path.canonicalize()?;
-
-// 		loop {
-// 			if steam_apps_folder.ends_with("steamapps") {
-// 				break;
-// 			}
-
-// 			steam_apps_folder = paths::path_parent(&steam_apps_folder)?.to_path_buf();
-// 		}
-// 		steam_apps_folder
-// 	};
-
-// 	let compat_data_dir = steam_apps_folder
-// 		.join("compatdata")
-// 		.join(steam_app_id.to_string());
-// 	let pfx_folder = compat_data_dir.join("pfx");
-// 	let user_reg = pfx_folder.join("user.reg");
-
-// 	let user_reg_data = fs::read_to_string(&user_reg)?;
-
-// 	let ensured_user_reg_data = reg_add_in_section(
-// 		&user_reg_data,
-// 		"[Software\\\\Wine\\\\DllOverrides]",
-// 		"winhttp",
-// 		"native,builtin",
-// 	);
-
-// 	if user_reg_data != ensured_user_reg_data {
-// 		fs::copy(&user_reg, pfx_folder.join("user.reg.bak"))?;
-// 		fs::write(&user_reg, ensured_user_reg_data)?;
-// 	}
-
-// 	Ok(())
-// }
-
-// TODO: Linux stuff.
-// fn reg_add_in_section(reg: &str, section: &str, key: &str, value: &str) -> String {
-// 	let mut split = reg.split('\n').collect::<Vec<_>>();
-
-// 	let mut begin = 0;
-
-// 	for (index, line) in split.iter().enumerate() {
-// 		if line.starts_with(section) {
-// 			begin = index + 2;
-// 			break;
-// 		}
-// 	}
-
-// 	let mut end = 0;
-
-// 	for (index, line) in split.iter().enumerate().skip(begin) {
-// 		if line.is_empty() {
-// 			end = index;
-// 			break;
-// 		}
-// 	}
-
-// 	let line_start = &format!("\"{key}\"");
-// 	let new_line = format!("{line_start}=\"{value}\"");
-
-// 	for (_, line) in split.iter_mut().enumerate().skip(begin) {
-// 		if line.starts_with(line_start) {
-// 			*line = &new_line;
-// 			return split.join("\n");
-// 		}
-// 	}
-
-// 	split.insert(end, &new_line);
-
-// 	split.join("\n")
-// }
 
 fn find_mods(
 	installed_mods_path: &Path,

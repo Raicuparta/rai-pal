@@ -12,7 +12,6 @@ pub mod macros;
 pub mod maps;
 pub mod mod_loaders;
 pub mod mod_manifest;
-pub mod operating_systems;
 pub mod owned_game;
 pub mod paths;
 pub mod pc_gaming_wiki;

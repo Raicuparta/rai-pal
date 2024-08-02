@@ -219,8 +219,7 @@ export function InstalledGameModal(props: Props) {
 						</CommandButton>
 					)}
 				</Group>
-				{(!props.game.executable.architecture ||
-					!props.game.executable.operatingSystem) && (
+				{!props.game.executable.architecture && (
 					<Alert color="red">
 						Failed to read some important information about this game. This
 						could be due to the executable being protected. Some mods might fail

@@ -17,7 +17,6 @@ use super::{
 use crate::{
 	app_type::AppType,
 	game_engines::game_engine::GameEngine,
-	game_executable::OperatingSystem,
 	game_mode::GameMode,
 	installed_game::{self, InstalledGame},
 	owned_game::OwnedGame,
@@ -66,21 +65,6 @@ impl Steam {
 			return None;
 		}
 
-		let os_list: HashSet<_> = app_info
-			.launch_options
-			.iter()
-			.filter_map(|launch| {
-				launch
-					.os_list
-					.as_ref()
-					.and_then(|os_list| match os_list.as_str() {
-						"linux" => Some(OperatingSystem::Linux),
-						"windows" => Some(OperatingSystem::Windows),
-						_ => None,
-					})
-			})
-			.collect();
-
 		let game_mode = if app_info
 			.launch_options
 			.iter()
@@ -92,7 +76,6 @@ impl Steam {
 		};
 
 		game.set_thumbnail_url(&get_steam_thumbnail(&id_string))
-			.set_os_list(os_list)
 			.set_game_mode(game_mode)
 			.add_provider_command(
 				ProviderCommandAction::ShowInLibrary,

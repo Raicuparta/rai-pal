@@ -4,7 +4,6 @@ import {
 	Architecture,
 	EngineBrand,
 	GameMode,
-	OperatingSystem,
 	ProviderId,
 	UnityScriptingBackend,
 } from "@api/bindings";
@@ -15,7 +14,6 @@ import {
 	ArchitectureBadge,
 	EngineBadge,
 	GameModeBadge,
-	OperatingSystemBadge,
 	ProviderBadge,
 	UnityBackendBadge,
 } from "@components/badges/color-coded-badge";
@@ -80,27 +78,6 @@ const provider: TableColumnBase<ProcessedInstalledGame, ProviderId> = {
 	renderCell: (game) => (
 		<Table.Td>
 			<ProviderBadge value={game.provider} />
-		</Table.Td>
-	),
-};
-
-const operatingSystem: TableColumnBase<
-	ProcessedInstalledGame,
-	OperatingSystem
-> = {
-	label: "OS",
-	width: 110,
-	center: true,
-	hidable: true,
-	getSortValue: (game) => game.executable.operatingSystem,
-	getFilterValue: (game) => game.executable.operatingSystem,
-	filterOptions: [
-		{ label: "Windows", value: "Windows" },
-		{ label: "Linux", value: "Linux" },
-	],
-	renderCell: (game) => (
-		<Table.Td>
-			<OperatingSystemBadge value={game.executable.operatingSystem} />
 		</Table.Td>
 	),
 };
@@ -211,7 +188,6 @@ const installedGamesColumnsMap = {
 	name,
 	provider,
 	gameMode,
-	operatingSystem,
 	architecture,
 	scriptingBackend,
 	engine,

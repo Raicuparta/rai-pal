@@ -13,7 +13,7 @@ use pelite::{
 use super::game_engine::EngineVersionNumbers;
 use crate::{
 	game_engines::game_engine::{EngineBrand, EngineVersion, GameEngine},
-	game_executable::{get_os_and_architecture, Architecture, GameExecutable},
+	game_executable::{get_architecture, Architecture, GameExecutable},
 	paths::glob_path,
 };
 
@@ -258,8 +258,7 @@ pub fn get_executable(launch_path: &Path) -> Option<GameExecutable> {
 	if is_unreal_exe(launch_path) {
 		let shipping_exe_path = get_shipping_exe(launch_path);
 
-		let (operating_system, architecture) =
-			get_os_and_architecture(&shipping_exe_path).unwrap_or((None, None));
+		let architecture = get_architecture(&shipping_exe_path).unwrap_or(None);
 
 		let version = get_version(
 			&shipping_exe_path,
@@ -270,7 +269,6 @@ pub fn get_executable(launch_path: &Path) -> Option<GameExecutable> {
 			path: shipping_exe_path.clone(),
 			name: shipping_exe_path.file_name()?.to_string_lossy().to_string(),
 			architecture,
-			operating_system,
 			scripting_backend: None,
 			engine: Some(GameEngine {
 				brand: EngineBrand::Unreal,

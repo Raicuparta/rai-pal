@@ -1,3 +1,4 @@
+#[allow(clippy::unwrap_used)]
 use crate::steam::appinfo::SteamAppInfoReader;
 
 use std::path::Path;
@@ -10,7 +11,7 @@ fn benchmark_thing() {
 	for item in reader {
 		match item {
 			Ok(item) => println!("item: {:?}", item.name),
-			Err(err) => println!("error: {:?}", err),
+			Err(err) => println!("error: {err:?}"),
 		}
 	}
 }

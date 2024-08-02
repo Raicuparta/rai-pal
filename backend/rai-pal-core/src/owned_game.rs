@@ -1,10 +1,9 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 
 use rai_pal_proc_macros::serializable_struct;
 
 use crate::{
 	app_type::AppType,
-	game_executable::OperatingSystem,
 	game_mode::GameMode,
 	providers::{
 		provider::ProviderId,
@@ -17,7 +16,6 @@ pub struct OwnedGame {
 	pub id: String,
 	pub provider: ProviderId,
 	pub name: String,
-	pub os_list: HashSet<OperatingSystem>,
 	pub release_date: Option<i64>,
 	pub thumbnail_url: Option<String>,
 	pub game_mode: Option<GameMode>,
@@ -32,18 +30,12 @@ impl OwnedGame {
 			id: get_id(provider, provider_game_id),
 			provider,
 			name: name.to_string(),
-			os_list: HashSet::default(),
 			provider_commands: HashMap::default(),
 			release_date: None,
 			thumbnail_url: None,
 			game_mode: None,
 			app_type: None,
 		}
-	}
-
-	pub fn set_os_list(&mut self, os_list: HashSet<OperatingSystem>) -> &mut Self {
-		self.os_list = os_list;
-		self
 	}
 
 	pub fn set_release_date(&mut self, release_date: i64) -> &mut Self {
