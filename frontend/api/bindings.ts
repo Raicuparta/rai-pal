@@ -224,8 +224,8 @@ executedProviderCommand: ExecutedProviderCommand,
 foundInstalledGame: FoundInstalledGame,
 foundOwnedGame: FoundOwnedGame,
 foundRemoteGame: FoundRemoteGame,
-gameAdded: GameAdded,
 gameRemoved: GameRemoved,
+selectInstalledGame: SelectInstalledGame,
 syncLocalMods: SyncLocalMods,
 syncModLoaders: SyncModLoaders,
 syncRemoteMods: SyncRemoteMods
@@ -235,8 +235,8 @@ executedProviderCommand: "executed-provider-command",
 foundInstalledGame: "found-installed-game",
 foundOwnedGame: "found-owned-game",
 foundRemoteGame: "found-remote-game",
-gameAdded: "game-added",
 gameRemoved: "game-removed",
+selectInstalledGame: "select-installed-game",
 syncLocalMods: "sync-local-mods",
 syncModLoaders: "sync-mod-loaders",
 syncRemoteMods: "sync-remote-mods"
@@ -261,7 +261,6 @@ export type ExecutedProviderCommand = null
 export type FoundInstalledGame = InstalledGame
 export type FoundOwnedGame = OwnedGame
 export type FoundRemoteGame = RemoteGame
-export type GameAdded = string
 export type GameEngine = { brand: EngineBrand; version: EngineVersion | null }
 export type GameExecutable = { path: string; name: string; engine: GameEngine | null; architecture: Architecture | null; operatingSystem: OperatingSystem | null; scriptingBackend: UnityScriptingBackend | null }
 export type GameMode = "VR" | "Flat"
@@ -282,6 +281,7 @@ export type RemoteGame = { id: string; engine: GameEngine | null; skipCache: boo
 export type RemoteMod = { common: CommonModData; data: RemoteModData }
 export type RemoteModData = { title: string; deprecated: boolean; author: string; sourceCode: string; description: string; latestVersion: ModDownload | null }
 export type RunnableModData = { path: string; args: string[] }
+export type SelectInstalledGame = string
 export type SyncLocalMods = { [key in string]: LocalMod }
 export type SyncModLoaders = { [key in string]: ModLoaderData }
 export type SyncRemoteMods = { [key in string]: RemoteMod }
