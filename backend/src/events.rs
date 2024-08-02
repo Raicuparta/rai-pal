@@ -30,7 +30,7 @@ pub struct SyncRemoteMods(pub remote_mod::Map);
 pub struct ExecutedProviderCommand;
 
 #[serializable_event]
-pub struct GameAdded(pub String);
+pub struct SelectInstalledGame(pub String);
 
 #[serializable_event]
 pub struct GameRemoved(pub String);
@@ -68,7 +68,7 @@ pub fn collect_events() -> tauri_specta::Events {
 		SyncLocalMods,
 		SyncRemoteMods,
 		ExecutedProviderCommand,
-		GameAdded,
+		SelectInstalledGame,
 		GameRemoved,
 		ErrorRaised,
 	]

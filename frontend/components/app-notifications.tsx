@@ -48,9 +48,5 @@ export function AppNotifications() {
 		);
 	});
 
-	useAppEvent(events.gameAdded, (gameName) => {
-		showAppNotification(`Successfully added game "${gameName}"`, "success");
-	});
-
 	return <Notifications />;
 }

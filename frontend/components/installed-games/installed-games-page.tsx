@@ -1,5 +1,5 @@
 import { Group, Stack } from "@mantine/core";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { filterGame, includesOneOf } from "../../util/filter";
 import { InstalledGameModal } from "./installed-game-modal";
 import { useFilteredList } from "@hooks/use-filtered-list";
@@ -18,6 +18,8 @@ import {
 	useProcessedInstalledGames,
 } from "@hooks/use-processed-installed-games";
 import { FilterSelect } from "@components/filters/filter-select";
+import { useAppEvent } from "@hooks/use-app-event";
+import { events } from "@api/bindings";
 
 const defaultFilter: Record<string, (string | null)[]> = {};
 
@@ -47,6 +49,12 @@ export function InstalledGamesPage() {
 	const installedGames = useProcessedInstalledGames();
 
 	const [selectedGameId, setSelectedGameId] = useState<string>();
+
+	const handleGameSelectEvent = useCallback((gameId: string) => {
+		setSelectedGameId(gameId);
+	}, []);
+
+	useAppEvent(events.gameAdded, handleGameSelectEvent);
 
 	const selectedGame = useMemo(
 		() =>

@@ -438,8 +438,8 @@ async fn add_game(path: PathBuf, handle: AppHandle) -> Result {
 	let installed_game = manual_provider::add_game(&normalized_path)?;
 	let game_name = installed_game.name.clone();
 
+	handle.emit_safe(events::SelectInstalledGame(installed_game.id.clone()));
 	handle.emit_safe(events::FoundInstalledGame(installed_game));
-	handle.emit_safe(events::GameAdded(game_name.clone()));
 
 	analytics::send_event(analytics::Event::ManuallyAddGame, &game_name).await;
 
