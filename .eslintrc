@@ -20,5 +20,6 @@
 		"react": {
 			"version": "detect"
 		}
-	}
+	},
+	"ignorePatterns": ["frontend/api/", "backend/"]
 }
