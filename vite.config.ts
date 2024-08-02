@@ -33,7 +33,7 @@ export default defineConfig(async () => ({
 		port: 1420,
 		strictPort: true,
 		watch: {
-			ignored: ["backend/**"],
+			ignored: ["backend/target/**"],
 		},
 	},
 	// 3. to make use of `TAURI_DEBUG` and other env variables
