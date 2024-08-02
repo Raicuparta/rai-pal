@@ -34,7 +34,7 @@ tauri-specta = { version = "2.0.0-rc.12", features = ["derive", "typescript"] }
 
 [dependencies]
 specta-typescript = "0.0.5"
-tauri = "=2.0.0-beta.25"
+tauri = { version = "=2.0.0-beta.25", features = [] }
 tauri-plugin-dialog = "2.0.0-beta"
 tauri-plugin-log = "2.0.0-beta"
 tauri-plugin-process = "2.0.0-beta"
