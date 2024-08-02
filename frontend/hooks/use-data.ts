@@ -77,7 +77,7 @@ export function useData() {
 		const unlistenPromise = getCurrentWebview().onDragDropEvent((event) => {
 			// TODO: this should use the "drop" event, but this version of Tauri has a bug,
 			// so that event never happened. Should change this once that's fixed.
-			if (event.payload.type === "enter") {
+			if (event.payload.type === "drop") {
 				executeAddGame(event.payload.paths[0]);
 			}
 		});
