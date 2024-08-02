@@ -435,13 +435,6 @@ async fn update_data(handle: AppHandle) -> Result {
 async fn add_game(path: PathBuf, handle: AppHandle) -> Result {
 	let normalized_path = normalize_path(&path);
 
-	// TODO: game already added
-	// let state = handle.app_state();
-	// let game_id = hash_path(&normalized_path);
-	// if state.installed_games.try_get(&game_id).is_ok() {
-	// 	return Err(Error::GameAlreadyAdded(normalized_path));
-	// }
-
 	let installed_game = manual_provider::add_game(&normalized_path)?;
 	let game_name = installed_game.name.clone();
 
@@ -563,7 +556,6 @@ fn main() {
 			tauri_plugin_log::Builder::new()
 				.level(log::LevelFilter::Info)
 				.targets([
-					// TODO: check if all of these are working.
 					Target::new(TargetKind::Stdout),
 					Target::new(paths::logs_path().map_or(
 						TargetKind::LogDir { file_name: None },
