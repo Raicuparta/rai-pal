@@ -1,5 +1,6 @@
 import { events } from "@api/bindings";
-import { useEffect, useRef } from "react";
+import { useCallbackRef } from "@mantine/hooks";
+import { useEffect } from "react";
 
 type AppEvents = typeof events;
 export type AppEvent = AppEvents[keyof AppEvents];
@@ -11,15 +12,13 @@ export function useAppEvent<TEvent extends AppEvent>(
 	event: TEvent,
 	callback: (payload: EventPayload<TEvent>) => void,
 ) {
-	const callbackRef = useRef(callback);
+	const callbackRef = useCallbackRef(callback);
 
 	useEffect(() => {
-		const unlistenPromise = event.listen((event) =>
-			callbackRef.current(event.payload),
-		);
+		const unlistenPromise = event.listen((event) => callbackRef(event.payload));
 
 		return () => {
 			unlistenPromise.then((unlisten) => unlisten());
 		};
-	}, [event]);
+	}, [event, callbackRef]);
 }

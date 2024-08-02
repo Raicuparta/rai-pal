@@ -50,11 +50,9 @@ export function InstalledGamesPage() {
 
 	const [selectedGameId, setSelectedGameId] = useState<string>();
 
-	const handleGameSelectEvent = useCallback((gameId: string) => {
+	useAppEvent(events.gameAdded, (gameId: string) => {
 		setSelectedGameId(gameId);
-	}, []);
-
-	useAppEvent(events.gameAdded, handleGameSelectEvent);
+	});
 
 	const selectedGame = useMemo(
 		() =>

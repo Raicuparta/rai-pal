@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from "react";
+import { useEffect } from "react";
 import { atom, useSetAtom } from "jotai";
 import { commands, events } from "@api/bindings";
 import { dataSubscription } from "./use-data-subscription";
@@ -61,22 +61,17 @@ export function useData() {
 
 	const [executeAddGame] = useAsyncCommand(addGame);
 
-	const onGameRemoved = useCallback(
-		(gameId: string) => {
-			setInstalledGames((previousInstalledGames) => {
-				// Mutating the inner value because we're doing some cursed thing for performance.
-				previousInstalledGames.data.delete(gameId);
+	useAppEvent(events.gameRemoved, (gameId) => {
+		setInstalledGames((previousInstalledGames) => {
+			// Mutating the inner value because we're doing some cursed thing for performance.
+			previousInstalledGames.data.delete(gameId);
 
-				// But creating a new object for the outer structure, to count as a new reference.
-				return {
-					...previousInstalledGames,
-				};
-			});
-		},
-		[setInstalledGames],
-	);
-
-	useAppEvent(events.gameRemoved, onGameRemoved);
+			// But creating a new object for the outer structure, to count as a new reference.
+			return {
+				...previousInstalledGames,
+			};
+		});
+	});
 
 	useEffect(() => {
 		const unlistenPromise = getCurrentWebview().onDragDropEvent((event) => {
