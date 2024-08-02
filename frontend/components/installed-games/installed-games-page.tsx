@@ -1,5 +1,5 @@
 import { Group, Stack } from "@mantine/core";
-import { useCallback, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { filterGame, includesOneOf } from "../../util/filter";
 import { InstalledGameModal } from "./installed-game-modal";
 import { useFilteredList } from "@hooks/use-filtered-list";
@@ -50,7 +50,7 @@ export function InstalledGamesPage() {
 
 	const [selectedGameId, setSelectedGameId] = useState<string>();
 
-	useAppEvent(events.gameAdded, (gameId: string) => {
+	useAppEvent(events.selectInstalledGame, (gameId: string) => {
 		setSelectedGameId(gameId);
 	});
 
