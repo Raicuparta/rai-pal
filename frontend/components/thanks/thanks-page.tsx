@@ -180,81 +180,83 @@ export function ThanksPage() {
 						</Stack>
 					</Stack>
 				</Card>
-				<Stack
-					h="100%"
-					w={200}
-				>
-					<Group align="top">
-						<ThanksLinkButton
-							pos="relative"
-							size="lg"
-							href="https://www.patreon.com/raivr"
-							color="pink"
-							flex={1}
-						>
-							<Stack gap={0}>
-								<div>Patreon</div>
-								<div>Leaderboard</div>
-							</Stack>
-							<Box
-								pos="absolute"
-								right={0}
-								top={0}
-							>
-								<Tooltip
-									ta="center"
-									label={
-										<>
-											<Text>Ranked by total lifetime donation amount.</Text>
-											<Text>
-												If you don&apos;t see yourself here, it&apos;s because
-												your Patreon profile is private.
-											</Text>
-										</>
-									}
-								>
-									<IconHelpCircleFilled />
-								</Tooltip>
-							</Box>
-						</ThanksLinkButton>
-					</Group>
-					<Card
+				{patrons.length > 0 && (
+					<Stack
 						h="100%"
-						style={{ overflowY: "scroll" }}
+						w={200}
 					>
-						<Stack>
-							{patrons.map((patron) => (
-								<Group
-									key={patron.ranking}
-									pos="relative"
+						<Group align="top">
+							<ThanksLinkButton
+								pos="relative"
+								size="lg"
+								href="https://www.patreon.com/raivr"
+								color="pink"
+								flex={1}
+							>
+								<Stack gap={0}>
+									<div>Patreon</div>
+									<div>Leaderboard</div>
+								</Stack>
+								<Box
+									pos="absolute"
+									right={0}
+									top={0}
 								>
-									<Box c={getRankingColor(patron.ranking)}>
-										<img
-											className={styles.patronAvatar}
-											src={patron.imageUrl}
-										/>
-									</Box>
-									{patron.ranking <= 3 && (
-										<Text
-											size="xl"
-											className={styles.patronMedal}
-										>
-											{getRankingEmoji(patron.ranking)}
-										</Text>
-									)}
-									<Text
-										flex={1}
-										className={styles.patronName}
-										fw={patron.ranking <= 3 ? "bold" : "normal"}
-										c={patron.ranking <= 3 ? "white" : undefined}
+									<Tooltip
+										ta="center"
+										label={
+											<>
+												<Text>Ranked by total lifetime donation amount.</Text>
+												<Text>
+													If you don&apos;t see yourself here, it&apos;s because
+													your Patreon profile is private.
+												</Text>
+											</>
+										}
 									>
-										{patron.name}
-									</Text>
-								</Group>
-							))}
-						</Stack>
-					</Card>
-				</Stack>
+										<IconHelpCircleFilled />
+									</Tooltip>
+								</Box>
+							</ThanksLinkButton>
+						</Group>
+						<Card
+							h="100%"
+							style={{ overflowY: "scroll" }}
+						>
+							<Stack>
+								{patrons.map((patron) => (
+									<Group
+										key={patron.ranking}
+										pos="relative"
+									>
+										<Box c={getRankingColor(patron.ranking)}>
+											<img
+												className={styles.patronAvatar}
+												src={patron.imageUrl}
+											/>
+										</Box>
+										{patron.ranking <= 3 && (
+											<Text
+												size="xl"
+												className={styles.patronMedal}
+											>
+												{getRankingEmoji(patron.ranking)}
+											</Text>
+										)}
+										<Text
+											flex={1}
+											className={styles.patronName}
+											fw={patron.ranking <= 3 ? "bold" : "normal"}
+											c={patron.ranking <= 3 ? "white" : undefined}
+										>
+											{patron.name}
+										</Text>
+									</Group>
+								))}
+							</Stack>
+						</Card>
+					</Stack>
+				)}
 			</Group>
 		</Container>
 	);
