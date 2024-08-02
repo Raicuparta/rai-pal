@@ -6,10 +6,9 @@ import {
 	Image,
 	Text,
 	Box,
-	Avatar,
 	Divider,
-	Indicator,
 	Tooltip,
+	MantineColor,
 } from "@mantine/core";
 import {
 	IconBrandGithubFilled,
@@ -20,6 +19,21 @@ import {
 } from "@tabler/icons-react";
 import { ThanksLinkButton } from "./thanks-link-button";
 import { usePatrons } from "@hooks/use-patrons";
+import styles from "./thanks.module.css";
+
+function getRankingEmoji(ranking: number) {
+	if (ranking == 1) return "🥇";
+	if (ranking == 2) return "🥈";
+	if (ranking == 3) return "🥉";
+	return null;
+}
+
+function getRankingColor(ranking: number): MantineColor {
+	if (ranking == 1) return "yellow";
+	if (ranking == 2) return "gray";
+	if (ranking == 3) return "red";
+	return "dark";
+}
 
 export function ThanksPage() {
 	const patrons = usePatrons();
@@ -42,7 +56,8 @@ export function ThanksPage() {
 								bg="dark"
 								justify="center"
 								p="sm"
-								style={{ flex: 1, borderRadius: 10 }}
+								flex={1}
+								style={{ borderRadius: 10 }}
 							>
 								<Image
 									src="/images/thanks/raicuparta.png"
@@ -56,7 +71,7 @@ export function ThanksPage() {
 									Raicuparta
 								</Text>
 							</Stack>
-							<Stack style={{ flex: 4 }}>
+							<Stack flex={4}>
 								<Text>
 									Hello. I made Rai Pal. I also made other VR mods in the past,
 									and am currently working on a universal VR mod for Unity
@@ -186,13 +201,18 @@ export function ThanksPage() {
 								right={0}
 								top={0}
 							>
-								<Tooltip ta="center" label={<>
-									<Text>
-										Ranked by total lifetime donation amount.
-									</Text>
-									<Text>
-										If you don&apos;t see yourself here, it&apos;s because your Patreon profile is private.
-									</Text></>}>
+								<Tooltip
+									ta="center"
+									label={
+										<>
+											<Text>Ranked by total lifetime donation amount.</Text>
+											<Text>
+												If you don&apos;t see yourself here, it&apos;s because
+												your Patreon profile is private.
+											</Text>
+										</>
+									}
+								>
 									<IconHelpCircleFilled />
 								</Tooltip>
 							</Box>
@@ -204,30 +224,32 @@ export function ThanksPage() {
 					>
 						<Stack>
 							{patrons.map((patron) => (
-								<Group key={patron.ranking}>
-									<Indicator
-										label={patron.ranking}
-										position="top-start"
-										processing={patron.ranking <= 3}
-										withBorder
-										color={
-											patron.ranking <= 3
-												? "red"
-												: patron.ranking <= 10
-													? "blue"
-													: "gray"
-										}
-										size="sm"
-										offset={3}
-									>
-										<Avatar src={patron.imageUrl} />
-									</Indicator>
-									<Box
+								<Group
+									key={patron.ranking}
+									pos="relative"
+								>
+									<Box c={getRankingColor(patron.ranking)}>
+										<img
+											className={styles.patronAvatar}
+											src={patron.imageUrl}
+										/>
+									</Box>
+									{patron.ranking <= 3 && (
+										<Text
+											size="xl"
+											className={styles.patronMedal}
+										>
+											{getRankingEmoji(patron.ranking)}
+										</Text>
+									)}
+									<Text
 										flex={1}
-										style={{ wordBreak: "break-word" }}
+										className={styles.patronName}
+										fw={patron.ranking <= 3 ? "bold" : "normal"}
+										c={patron.ranking <= 3 ? "white" : undefined}
 									>
 										{patron.name}
-									</Box>
+									</Text>
 								</Group>
 							))}
 						</Stack>

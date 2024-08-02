@@ -7,7 +7,6 @@ import { installedGamesAtom, ownedGamesAtom, useData } from "@hooks/use-data";
 import { AppNotifications } from "@components/app-notifications";
 import {
 	IconBooks,
-	IconHeartFilled,
 	IconList,
 	IconSettings,
 	IconTool,
@@ -17,6 +16,7 @@ import { useAtomValue } from "jotai";
 import { PageTab } from "@components/page-tab";
 import { useMemo } from "react";
 import { useAppUpdater } from "@hooks/use-app-updater";
+import { ThanksTabIcon } from "@components/thanks/thanks-tab-icon";
 
 const pages = {
 	installedGames: {
@@ -38,7 +38,7 @@ const pages = {
 	thanks: {
 		title: "Thanks",
 		component: ThanksPage,
-		icon: <IconHeartFilled style={{ color: "var(--mantine-color-red-9)" }} />,
+		icon: <ThanksTabIcon />,
 	},
 };
 
