@@ -11,8 +11,6 @@
     "window:default",
     "app:default",
     "resources:default",
-    "menu:default",
-    "tray:default",
     "dialog:allow-open",
     "dialog:allow-ask",
     "updater:allow-check"
