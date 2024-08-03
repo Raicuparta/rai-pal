@@ -14,7 +14,7 @@ version.workspace = true
 edition.workspace = true
 
 [build-dependencies]
-tauri-build = { version = "2.0.0-beta", features = [] }
+tauri-build = { version = "2.0.0-rc.0", features = [] }
 
 [workspace.dependencies]
 futures = "0.3.29"
@@ -24,23 +24,20 @@ rai-pal-core = { path = "./rai-pal-core" }
 rai-pal-proc-macros = { path = "./proc-macros" }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0.108"
-specta = "2.0.0-rc.18"
+specta = "2.0.0-rc.19"
 thiserror = "1.0.50"
 tokio = { version = "1.35.1", features = ["macros"] }
-
-# Using the git version for now because the cargo version depends on older Bauri betas
-# tauri-specta = { version = "2.0.0-rc.11", features = ["typescript"] }
-tauri-specta = { version = "2.0.0-rc.12", features = ["derive", "typescript"] }
+tauri-specta = { version = "2.0.0-rc.14", features = ["derive", "typescript"] }
 
 [dependencies]
-specta-typescript = "0.0.5"
-tauri = { version = "=2.0.0-beta.25", features = [] }
-tauri-plugin-dialog = "2.0.0-beta"
-tauri-plugin-log = "2.0.0-beta"
-tauri-plugin-process = "2.0.0-beta"
-tauri-plugin-updater = "2.0.0-beta"
-tauri-plugin-window-state = "2.0.0-beta"
-tauri-runtime = "=2.0.0-beta.21"
+specta-typescript = "0.0.6"
+tauri = { version = "2.0.0-rc.0", features = [] }
+tauri-plugin-dialog = "2.0.0-rc.0"
+tauri-plugin-log = "2.0.0-rc.0"
+tauri-plugin-process = "2.0.0-rc.0"
+tauri-plugin-updater = "2.0.0-rc.0"
+tauri-plugin-window-state = "2.0.0-rc.0"
+tauri-runtime = "2.0.0-rc.0"
 tauri-specta.workspace = true
 
 futures.workspace = true

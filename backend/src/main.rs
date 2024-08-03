@@ -533,7 +533,7 @@ fn main() {
 			start_game,
 			uninstall_all_mods,
 			uninstall_mod,
-			update_data,
+			update_data
 		])
 		.events(events::collect_events());
 

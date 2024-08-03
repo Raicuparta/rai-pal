@@ -1,4 +1,5 @@
-#[allow(clippy::unwrap_used)]
+#![allow(clippy::unwrap_used)]
+
 use crate::steam::appinfo::SteamAppInfoReader;
 
 use std::path::Path;
