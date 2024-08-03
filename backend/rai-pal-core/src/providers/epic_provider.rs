@@ -22,7 +22,7 @@ use crate::{
 	paths::glob_path,
 	pc_gaming_wiki,
 	providers::provider::{ProviderActions, ProviderStatic},
-	remote_game::{self, RemoteGame},
+	remote_game::RemoteGame,
 	result::Result,
 };
 
@@ -71,9 +71,7 @@ pub struct EpicCatalogItem {
 }
 
 #[derive(Clone)]
-pub struct Epic {
-	remote_game_cache: remote_game::Map,
-}
+pub struct Epic {}
 
 impl Epic {
 	fn get_installed_game(manifest_path: &Path) -> Option<InstalledGame> {
@@ -147,18 +145,11 @@ impl Epic {
 	async fn get_remote_game(&self, catalog_item: &EpicCatalogItem) -> RemoteGame {
 		let mut remote_game = RemoteGame::new(*Self::ID, &catalog_item.id);
 
-		if let Some(cached_remote_game) = self.remote_game_cache.get(&remote_game.id) {
-			return cached_remote_game.clone();
-		}
-
 		match pc_gaming_wiki::get_engine_from_game_title(&catalog_item.title).await {
 			Ok(Some(engine)) => {
 				remote_game.set_engine(engine);
 			}
-			Ok(None) => {}
-			Err(_) => {
-				remote_game.set_skip_cache(true);
-			}
+			Ok(None) | Err(_) => {}
 		}
 
 		remote_game
@@ -172,9 +163,7 @@ impl ProviderStatic for Epic {
 	where
 		Self: Sized,
 	{
-		let remote_game_cache = Self::try_get_remote_game_cache();
-
-		Ok(Self { remote_game_cache })
+		Ok(Self {})
 	}
 }
 

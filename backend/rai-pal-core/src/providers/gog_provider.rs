@@ -16,7 +16,7 @@ use crate::{
 	owned_game::OwnedGame,
 	paths, pc_gaming_wiki,
 	providers::provider::{ProviderActions, ProviderId, ProviderStatic},
-	remote_game::{self, RemoteGame},
+	remote_game::RemoteGame,
 	result::Result,
 };
 
@@ -91,8 +91,7 @@ impl Gog {
 			Ok(Some(engine)) => {
 				remote_game.set_engine(engine);
 			}
-			Ok(None) => {}
-			Err(_) => {}
+			Ok(None) | Err(_) => {}
 		}
 
 		remote_game
