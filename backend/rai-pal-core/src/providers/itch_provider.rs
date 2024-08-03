@@ -13,14 +13,12 @@ use crate::{
 	owned_game::OwnedGame,
 	pc_gaming_wiki,
 	providers::provider::{ProviderActions, ProviderId, ProviderStatic},
-	remote_game::{self, RemoteGame},
+	remote_game::RemoteGame,
 	result::{Error, Result},
 };
 
 #[derive(Clone)]
-pub struct Itch {
-	remote_game_cache: remote_game::Map,
-}
+pub struct Itch {}
 
 impl Itch {
 	fn get_installed_game(cave: &ItchDatabaseCave) -> Option<InstalledGame> {
@@ -64,18 +62,11 @@ impl Itch {
 	async fn get_remote_game(&self, db_item: ItchDatabaseGame) -> RemoteGame {
 		let mut remote_game = RemoteGame::new(*Self::ID, &db_item.id.to_string());
 
-		if let Some(cached_remote_game) = self.remote_game_cache.get(&remote_game.id) {
-			return cached_remote_game.clone();
-		}
-
 		match pc_gaming_wiki::get_engine_from_game_title(&db_item.title).await {
 			Ok(Some(engine)) => {
 				remote_game.set_engine(engine);
 			}
-			Ok(None) => {}
-			Err(_) => {
-				remote_game.set_skip_cache(true);
-			}
+			Ok(None) | Err(_) => {}
 		}
 
 		remote_game
@@ -89,9 +80,7 @@ impl ProviderStatic for Itch {
 	where
 		Self: Sized,
 	{
-		Ok(Self {
-			remote_game_cache: Self::try_get_remote_game_cache(),
-		})
+		Ok(Self {})
 	}
 }
 

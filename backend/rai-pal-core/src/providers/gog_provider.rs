@@ -30,9 +30,7 @@ struct GogDbEntry {
 }
 
 #[derive(Clone)]
-pub struct Gog {
-	remote_game_cache: remote_game::Map,
-}
+pub struct Gog {}
 
 impl Gog {
 	fn get_installed_game(db_entry: &GogDbEntry, launcher_path: &Path) -> Option<InstalledGame> {
@@ -89,18 +87,12 @@ impl Gog {
 	async fn get_remote_game(&self, db_entry: GogDbEntry) -> RemoteGame {
 		let mut remote_game = RemoteGame::new(*Self::ID, &db_entry.id);
 
-		if let Some(cached_remote_game) = self.remote_game_cache.get(&remote_game.id) {
-			return cached_remote_game.clone();
-		}
-
 		match pc_gaming_wiki::get_engine(&format!("GOGcom_ID HOLDS \"{}\"", db_entry.id)).await {
 			Ok(Some(engine)) => {
 				remote_game.set_engine(engine);
 			}
 			Ok(None) => {}
-			Err(_) => {
-				remote_game.set_skip_cache(true);
-			}
+			Err(_) => {}
 		}
 
 		remote_game
@@ -114,9 +106,7 @@ impl ProviderStatic for Gog {
 	where
 		Self: Sized,
 	{
-		Ok(Self {
-			remote_game_cache: Self::try_get_remote_game_cache(),
-		})
+		Ok(Self {})
 	}
 }
 

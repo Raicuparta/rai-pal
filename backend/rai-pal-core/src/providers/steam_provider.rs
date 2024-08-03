@@ -22,7 +22,7 @@ use crate::{
 	owned_game::OwnedGame,
 	pc_gaming_wiki,
 	providers::provider::{ProviderActions, ProviderStatic},
-	remote_game::{self, RemoteGame},
+	remote_game::RemoteGame,
 	result::Result,
 	steam::{
 		appinfo::{self, SteamAppInfo, SteamAppInfoReader, SteamLaunchOption},
@@ -32,9 +32,7 @@ use crate::{
 };
 
 #[derive(Clone)]
-pub struct Steam {
-	remote_game_cache: remote_game::Map,
-}
+pub struct Steam {}
 
 impl ProviderStatic for Steam {
 	const ID: &'static ProviderId = &ProviderId::Steam;
@@ -43,9 +41,7 @@ impl ProviderStatic for Steam {
 	where
 		Self: Sized,
 	{
-		let remote_game_cache = Self::try_get_remote_game_cache();
-
-		Ok(Self { remote_game_cache })
+		Ok(Self {})
 	}
 }
 
@@ -181,10 +177,6 @@ impl Steam {
 		let id_string = app_info.app_id.to_string();
 		let mut remote_game = RemoteGame::new(*Self::ID, &id_string);
 
-		if let Some(cached_remote_game) = self.remote_game_cache.get(&remote_game.id) {
-			return Some(cached_remote_game.clone());
-		}
-
 		let steam_game_option = steam_games.get(&id_string);
 
 		match pc_gaming_wiki::get_engine(&format!("Steam_AppID HOLDS \"{id_string}\"")).await {
@@ -199,9 +191,7 @@ impl Steam {
 					});
 				}
 			}
-			Err(_) => {
-				remote_game.set_skip_cache(true);
-			}
+			Err(_) => {}
 		}
 
 		Some(remote_game)

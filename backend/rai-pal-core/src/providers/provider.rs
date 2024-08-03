@@ -18,7 +18,7 @@ use crate::{
 	owned_game::OwnedGame,
 	paths,
 	providers::{itch_provider::Itch, manual_provider::Manual, steam_provider::Steam},
-	remote_game::{self, RemoteGame},
+	remote_game::RemoteGame,
 	result::Result,
 	serializable_enum,
 };
@@ -76,56 +76,6 @@ pub trait ProviderStatic: ProviderActions {
 		fs::create_dir_all(&path)?;
 
 		Ok(path)
-	}
-
-	fn get_remote_game_cache_path() -> Result<PathBuf> {
-		Ok(Self::get_folder()?.join("remote-game-cache.json"))
-	}
-
-	fn save_remote_game_cache(cache: &remote_game::Map) -> Result {
-		let json = serde_json::to_string_pretty(cache)?;
-		fs::write(Self::get_remote_game_cache_path()?, json)?;
-		Ok(())
-	}
-
-	fn try_save_remote_game_cache(remote_games: &[RemoteGame]) {
-		if let Err(err) = Self::save_remote_game_cache(
-			&remote_games
-				.iter()
-				.filter_map(|remote_game| {
-					if remote_game.skip_cache {
-						None
-					} else {
-						Some((remote_game.id.clone(), remote_game.clone()))
-					}
-				})
-				.collect(),
-		) {
-			error!(
-				"Failed to save engine cache for provider '{}'. Error: {}",
-				Self::ID,
-				err
-			);
-		}
-	}
-
-	fn get_remote_game_cache() -> Result<remote_game::Map> {
-		let json = fs::read_to_string(Self::get_remote_game_cache_path()?)?;
-		Ok(serde_json::from_str::<remote_game::Map>(&json)?)
-	}
-
-	fn try_get_remote_game_cache() -> remote_game::Map {
-		match Self::get_remote_game_cache() {
-			Ok(pc_gaming_wiki_cache) => pc_gaming_wiki_cache,
-			Err(err) => {
-				error!(
-					"Failed to get engine cache for provider '{}'. Error: {}",
-					Self::ID,
-					err
-				);
-				HashMap::default()
-			}
-		}
 	}
 }
 
