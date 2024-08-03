@@ -7,15 +7,18 @@ import { useAsyncCommand } from "./use-async-command";
 import { dataPartialSubscription } from "./use-data-partial-subscription";
 import { useAppEvent } from "./use-app-event";
 import { getCurrentWebview } from "@tauri-apps/api/webview";
+import { Store } from "@tauri-apps/plugin-store";
 
 const { addGame } = commands;
 
 export const [installedGamesAtom, useInstalledGamesSubscription] =
-	dataPartialSubscription(
-		events.foundInstalledGame,
-		(payload) => payload.id,
-		new Map(),
-	);
+	dataPartialSubscription("foundInstalledGame", (payload) => payload.id);
+
+export const [ownedGamesAtom, useOwnedGamesSubscription] =
+	dataPartialSubscription("foundOwnedGame", (payload) => payload.id);
+
+export const [remoteGamesAtom, useRemoteGameDataSubscription] =
+	dataPartialSubscription("foundRemoteGame", (payload) => payload.id);
 
 export const [modLoadersAtom, useModLoadersSubscription] = dataSubscription(
 	events.syncModLoaders,
@@ -32,21 +35,9 @@ export const [remoteModsAtom, useRemoteModsSubscription] = dataSubscription(
 	{},
 );
 
-export const [ownedGamesAtom, useOwnedGamesSubscription] =
-	dataPartialSubscription(
-		events.foundOwnedGame,
-		(payload) => payload.id,
-		new Map(),
-	);
-
-export const [remoteGamesAtom, useRemoteGameDataSubscription] =
-	dataPartialSubscription(
-		events.foundRemoteGame,
-		(payload) => payload.id,
-		new Map(),
-	);
-
 export const loadingAtom = atom<boolean>(false);
+
+export const dataCacheStore = new Store(".data-cache.dat");
 
 export function useData() {
 	useInstalledGamesSubscription();

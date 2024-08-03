@@ -1,9 +1,11 @@
-import { events } from "@api/bindings";
+import { type events } from "@api/bindings";
 import { useCallbackRef } from "@mantine/hooks";
 import { useEffect } from "react";
 
 type AppEvents = typeof events;
-export type AppEvent = AppEvents[keyof AppEvents];
+export type AppEventId = keyof AppEvents;
+export type AppEvent<TEventId extends AppEventId = AppEventId> =
+	AppEvents[TEventId];
 export type EventPayload<TEvent extends AppEvent> = Parameters<
 	Parameters<TEvent["listen"]>[0]
 >[0]["payload"];

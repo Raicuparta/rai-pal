@@ -25,9 +25,9 @@ rai-pal-proc-macros = { path = "./proc-macros" }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0.108"
 specta = "2.0.0-rc.19"
+tauri-specta = { version = "2.0.0-rc.14", features = ["derive", "typescript"] }
 thiserror = "1.0.50"
 tokio = { version = "1.35.1", features = ["macros"] }
-tauri-specta = { version = "2.0.0-rc.14", features = ["derive", "typescript"] }
 
 [dependencies]
 specta-typescript = "0.0.6"
@@ -35,10 +35,10 @@ tauri = { version = "2.0.0-rc.0", features = [] }
 tauri-plugin-dialog = "2.0.0-rc.0"
 tauri-plugin-log = "2.0.0-rc.0"
 tauri-plugin-process = "2.0.0-rc.0"
+tauri-plugin-store = "2.0.0-rc.0"
 tauri-plugin-updater = "2.0.0-rc.0"
 tauri-plugin-window-state = "2.0.0-rc.0"
 tauri-runtime = "2.0.0-rc.0"
-tauri-specta.workspace = true
 
 futures.workspace = true
 log.workspace = true
@@ -48,6 +48,7 @@ rai-pal-proc-macros.workspace = true
 serde_json.workspace = true
 serde.workspace = true
 specta.workspace = true
+tauri-specta.workspace = true
 thiserror.workspace = true
 tokio.workspace = true
 

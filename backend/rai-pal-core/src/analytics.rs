@@ -1,13 +1,7 @@
-use std::time::{
-	SystemTime,
-	UNIX_EPOCH,
-};
+use std::time::{SystemTime, UNIX_EPOCH};
 
 use lazy_static::lazy_static;
-use log::{
-	error,
-	info,
-};
+use log::{error, info};
 use reqwest::Client;
 use serde::Serialize;
 use uuid::Uuid;
