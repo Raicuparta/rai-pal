@@ -12,6 +12,7 @@ use std::{collections::HashMap, path::PathBuf, sync::Mutex};
 use app_state::{AppState, DataValue, StateData, StatefulHandle};
 use events::EventEmitter;
 use log::error;
+use rai_pal_core::game_database::{self};
 use rai_pal_core::installed_game::InstalledGame;
 use rai_pal_core::local_mod::{self, LocalMod};
 use rai_pal_core::maps::TryGettable;
@@ -487,6 +488,14 @@ async fn open_logs_folder() -> Result {
 	Ok(())
 }
 
+#[tauri::command]
+#[specta::specta]
+async fn get_game_database(handle: AppHandle) -> Result {
+	handle.emit_safe(events::SyncGameDatabase(game_database::get().await?));
+
+	Ok(())
+}
+
 fn main() {
 	// Since I'm making all exposed functions async, panics won't crash anything important, I think.
 	// So I can just catch panics here and show a system message with the error.
@@ -525,7 +534,8 @@ fn main() {
 			start_game,
 			uninstall_all_mods,
 			uninstall_mod,
-			update_data
+			update_data,
+			get_game_database
 		])
 		.events(events::collect_events());
 

@@ -3,7 +3,7 @@ import { useMemo } from "react";
 import {
 	ownedGamesAtom,
 	installedGamesAtom,
-	remoteGamesAtom,
+	gameDatabaseAtom,
 } from "./use-data";
 import {
 	InstalledGame,
@@ -23,10 +23,42 @@ type InstalledGamesByProvider = Record<
 	Record<string, InstalledGame>
 >;
 
+type DatabaseMapGroupBy = "steamId" | "epicId" | "gogId" | "title";
+
+function normalizeTitle(title: string): string {
+	return title.replace(/\W+/g, "").toLowerCase();
+}
+
 export function useProcessedOwnedGames() {
 	const ownedGames = useAtomValue(ownedGamesAtom);
-	const remoteGames = useAtomValue(remoteGamesAtom);
 	const installedGames = useAtomValue(installedGamesAtom);
+	const gameDatabase = useAtomValue(gameDatabaseAtom);
+
+	const databaseGamesByProvider = useMemo(() => {
+		const result: Record<DatabaseMapGroupBy, Record<string, RemoteGame>> = {
+			steamId: {},
+			epicId: {},
+			gogId: {},
+			title: {},
+		};
+
+		for (const gameDatabaseEntry of gameDatabase) {
+			for (const steamId of gameDatabaseEntry.steamIds ?? []) {
+				result.steamId[steamId] = gameDatabaseEntry;
+			}
+			for (const gogId of gameDatabaseEntry.gogIds ?? []) {
+				result.gogId[gogId] = gameDatabaseEntry;
+			}
+			for (const epicId of gameDatabaseEntry.epicIds ?? []) {
+				result.epicId[epicId] = gameDatabaseEntry;
+			}
+			for (const title of gameDatabaseEntry.title ?? []) {
+				result.title[normalizeTitle(title)] = gameDatabaseEntry;
+			}
+		}
+
+		return result;
+	}, [gameDatabase]);
 
 	const installedGamesByProvider: InstalledGamesByProvider = useMemo(() => {
 		const result: InstalledGamesByProvider = {
@@ -47,8 +79,28 @@ export function useProcessedOwnedGames() {
 		return result;
 	}, [installedGames]);
 
+	console.log("databaseGamesByProvider", databaseGamesByProvider);
+
 	const processedOwnedGames: ProcessedOwnedGameRecord = useMemo(() => {
 		const result: ProcessedOwnedGameRecord = {};
+
+		function getDatabaseGameMapping(ownedGame: OwnedGame) {
+			switch (ownedGame.provider) {
+				case "Steam":
+					return databaseGamesByProvider.steamId;
+				case "Epic":
+					return databaseGamesByProvider.epicId;
+				case "Gog":
+					return databaseGamesByProvider.gogId;
+				default:
+					return databaseGamesByProvider.title;
+			}
+		}
+
+		function getDatabaseGame(ownedGame: OwnedGame) {
+			const providerGameId = ownedGame.id.replace(`${ownedGame.provider}_`, "");
+			return getDatabaseGameMapping(ownedGame)[providerGameId];
+		}
 
 		for (const [gameId, ownedGame] of ownedGames.data.entries()) {
 			const installedGame =
@@ -56,13 +108,13 @@ export function useProcessedOwnedGames() {
 
 			result[gameId] = {
 				...ownedGame,
+				remoteData: getDatabaseGame(ownedGame),
 				isInstalled: Boolean(installedGame),
-				remoteData: remoteGames.data.get(ownedGame.id),
 			};
 		}
 
 		return result;
-	}, [ownedGames, installedGamesByProvider, remoteGames]);
+	}, [ownedGames.data, installedGamesByProvider, databaseGamesByProvider]);
 
 	return processedOwnedGames;
 }

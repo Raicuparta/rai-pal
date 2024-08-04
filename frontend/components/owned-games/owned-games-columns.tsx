@@ -73,21 +73,29 @@ const appType: TableColumnBase<ProcessedOwnedGame, AppType> = {
 	),
 };
 
+// TODO: somehow take into account all engines
+function getEngine(game: ProcessedOwnedGame) {
+	if (!game.remoteData) return null;
+
+	if (!game.remoteData.engines) return null;
+
+	return game.remoteData.engines[0] ?? null;
+}
+
 const engine: TableColumnBase<ProcessedOwnedGame, EngineBrand> = {
 	label: "Engine",
 	width: 150,
 	center: true,
 	hidable: true,
-	sort: (dataA, dataB) =>
-		sortGamesByEngine(dataA.remoteData?.engine, dataB.remoteData?.engine),
-	getFilterValue: (game) => game.remoteData?.engine?.brand ?? null,
+	sort: (dataA, dataB) => sortGamesByEngine(getEngine(dataA), getEngine(dataB)),
+	getFilterValue: (game) => getEngine(game)?.brand ?? null,
 	filterOptions: engineFilterOptions,
-	renderCell: ({ remoteData }) => (
+	renderCell: (game) => (
 		<Table.Td>
 			<EngineBadge
 				maw={70}
-				value={remoteData?.engine?.brand}
-				label={remoteData?.engine?.version?.display ?? "-"}
+				value={getEngine(game)?.brand}
+				label={getEngine(game)?.version?.display ?? "-"}
 			/>
 		</Table.Td>
 	),

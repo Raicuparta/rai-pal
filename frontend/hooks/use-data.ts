@@ -17,9 +17,6 @@ export const [installedGamesAtom, useInstalledGamesSubscription] =
 export const [ownedGamesAtom, useOwnedGamesSubscription] =
 	dataPartialSubscription("foundOwnedGame", (payload) => payload.id);
 
-export const [remoteGamesAtom, useRemoteGameDataSubscription] =
-	dataPartialSubscription("foundRemoteGame", (payload) => payload.id);
-
 export const [modLoadersAtom, useModLoadersSubscription] = dataSubscription(
 	events.syncModLoaders,
 	{},
@@ -35,17 +32,22 @@ export const [remoteModsAtom, useRemoteModsSubscription] = dataSubscription(
 	{},
 );
 
+export const [gameDatabaseAtom, useGameDatabaseSubscription] = dataSubscription(
+	events.syncGameDatabase,
+	[],
+);
+
 export const loadingAtom = atom<boolean>(false);
 
 export const dataCacheStore = new Store(".data-cache.dat");
 
 export function useData() {
 	useInstalledGamesSubscription();
+	useGameDatabaseSubscription();
 	useModLoadersSubscription();
 	useLocalModsSubscription();
 	useRemoteModsSubscription();
 	useOwnedGamesSubscription();
-	useRemoteGameDataSubscription();
 	const setInstalledGames = useSetAtom(installedGamesAtom);
 
 	const updateData = useUpdateData();
@@ -79,4 +81,8 @@ export function useData() {
 	useEffect(() => {
 		updateData();
 	}, [updateData]);
+
+	useEffect(() => {
+		commands.getGameDatabase();
+	}, []);
 }

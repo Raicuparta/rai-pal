@@ -212,6 +212,14 @@ async updateData() : Promise<Result<null, Error>> {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
 }
+},
+async getGameDatabase() : Promise<Result<null, Error>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("get_game_database") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
 }
 }
 
@@ -223,9 +231,9 @@ errorRaised: ErrorRaised,
 executedProviderCommand: ExecutedProviderCommand,
 foundInstalledGame: FoundInstalledGame,
 foundOwnedGame: FoundOwnedGame,
-foundRemoteGame: FoundRemoteGame,
 gameRemoved: GameRemoved,
 selectInstalledGame: SelectInstalledGame,
+syncGameDatabase: SyncGameDatabase,
 syncLocalMods: SyncLocalMods,
 syncModLoaders: SyncModLoaders,
 syncRemoteMods: SyncRemoteMods
@@ -234,9 +242,9 @@ errorRaised: "error-raised",
 executedProviderCommand: "executed-provider-command",
 foundInstalledGame: "found-installed-game",
 foundOwnedGame: "found-owned-game",
-foundRemoteGame: "found-remote-game",
 gameRemoved: "game-removed",
 selectInstalledGame: "select-installed-game",
+syncGameDatabase: "sync-game-database",
 syncLocalMods: "sync-local-mods",
 syncModLoaders: "sync-mod-loaders",
 syncRemoteMods: "sync-remote-mods"
@@ -260,7 +268,6 @@ export type ErrorRaised = string
 export type ExecutedProviderCommand = null
 export type FoundInstalledGame = InstalledGame
 export type FoundOwnedGame = OwnedGame
-export type FoundRemoteGame = RemoteGame
 export type GameEngine = { brand: EngineBrand; version: EngineVersion | null }
 export type GameExecutable = { path: string; name: string; engine: GameEngine | null; architecture: Architecture | null; scriptingBackend: UnityScriptingBackend | null }
 export type GameMode = "VR" | "Flat"
@@ -276,11 +283,12 @@ export type OwnedGame = { id: string; provider: ProviderId; name: string; releas
 export type ProviderCommand = { String: string } | { Path: [string, string[]] }
 export type ProviderCommandAction = "Install" | "ShowInLibrary" | "ShowInStore" | "Start" | "OpenInBrowser"
 export type ProviderId = "Steam" | "Manual" | "Itch" | "Epic" | "Gog" | "Xbox"
-export type RemoteGame = { id: string; engine: GameEngine | null }
+export type RemoteGame = { title: string; engines: GameEngine[] | null; steamIds: string[] | null; gogIds: string[] | null; epicIds: string[] | null }
 export type RemoteMod = { common: CommonModData; data: RemoteModData }
 export type RemoteModData = { title: string; deprecated: boolean; author: string; sourceCode: string; description: string; latestVersion: ModDownload | null }
 export type RunnableModData = { path: string; args: string[] }
 export type SelectInstalledGame = string
+export type SyncGameDatabase = RemoteGame[]
 export type SyncLocalMods = { [key in string]: LocalMod }
 export type SyncModLoaders = { [key in string]: ModLoaderData }
 export type SyncRemoteMods = { [key in string]: RemoteMod }

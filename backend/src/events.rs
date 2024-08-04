@@ -5,7 +5,8 @@ use serde::Serialize;
 use tauri_specta::Event;
 
 use rai_pal_core::{
-	installed_game, local_mod, mod_loaders::mod_loader, owned_game, remote_game, remote_mod,
+	game_database, installed_game, local_mod, mod_loaders::mod_loader, owned_game, remote_game,
+	remote_mod,
 };
 
 #[serializable_event]
@@ -15,7 +16,7 @@ pub struct FoundInstalledGame(pub installed_game::InstalledGame);
 pub struct FoundOwnedGame(pub owned_game::OwnedGame);
 
 #[serializable_event]
-pub struct FoundRemoteGame(pub remote_game::RemoteGame);
+pub struct SyncGameDatabase(pub Vec<game_database::RemoteGame>);
 
 #[serializable_event]
 pub struct SyncModLoaders(pub mod_loader::DataMap);
@@ -63,7 +64,7 @@ pub fn collect_events() -> tauri_specta::Events {
 	tauri_specta::collect_events![
 		FoundInstalledGame,
 		FoundOwnedGame,
-		FoundRemoteGame,
+		SyncGameDatabase,
 		SyncModLoaders,
 		SyncLocalMods,
 		SyncRemoteMods,
