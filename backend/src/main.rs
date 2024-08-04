@@ -23,7 +23,6 @@ use rai_pal_core::providers::{
 	provider::{self, ProviderActions},
 	provider_command::ProviderCommandAction,
 };
-use rai_pal_core::remote_game::RemoteGame;
 use rai_pal_core::result::{Error, Result};
 #[cfg(target_os = "windows")]
 use rai_pal_core::windows;
@@ -357,12 +356,6 @@ fn owned_game_callback(handle: AppHandle) -> impl Fn(OwnedGame) {
 	}
 }
 
-fn remote_game_callback(handle: AppHandle) -> impl Fn(RemoteGame) {
-	move |game: RemoteGame| {
-		handle.emit_safe(events::FoundRemoteGame(game));
-	}
-}
-
 async fn update_games(handle: AppHandle) {
 	let provider_map = provider::get_map();
 
@@ -376,7 +369,6 @@ async fn update_games(handle: AppHandle) {
 				.get_games(
 					installed_game_callback(handle_clone.clone()),
 					owned_game_callback(handle_clone.clone()),
-					remote_game_callback(handle_clone),
 				)
 				.await
 		})

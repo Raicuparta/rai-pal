@@ -18,7 +18,6 @@ use crate::{
 	owned_game::OwnedGame,
 	paths,
 	providers::{itch_provider::Itch, manual_provider::Manual, steam_provider::Steam},
-	remote_game::RemoteGame,
 	result::Result,
 	serializable_enum,
 };
@@ -49,16 +48,14 @@ pub enum Provider {
 #[async_trait]
 #[enum_dispatch(Provider)]
 pub trait ProviderActions {
-	async fn get_games<TInstalledCallback, TOwnedCallback, TRemoteCallback>(
+	async fn get_games<TInstalledCallback, TOwnedCallback>(
 		&self,
 		installed_callback: TInstalledCallback,
 		owned_callback: TOwnedCallback,
-		remote_callback: TRemoteCallback,
 	) -> Result
 	where
 		TInstalledCallback: Fn(InstalledGame) + Send + Sync,
-		TOwnedCallback: Fn(OwnedGame) + Send + Sync,
-		TRemoteCallback: Fn(RemoteGame) + Send + Sync;
+		TOwnedCallback: Fn(OwnedGame) + Send + Sync;
 }
 
 pub trait ProviderStatic: ProviderActions {

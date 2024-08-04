@@ -16,17 +16,13 @@ use super::{
 };
 use crate::{
 	app_type::AppType,
-	game_engines::game_engine::GameEngine,
 	game_mode::GameMode,
 	installed_game::{self, InstalledGame},
 	owned_game::OwnedGame,
-	pc_gaming_wiki,
 	providers::provider::{ProviderActions, ProviderStatic},
-	remote_game::RemoteGame,
 	result::Result,
 	steam::{
 		appinfo::{self, SteamAppInfo, SteamAppInfoReader, SteamLaunchOption},
-		id_lists,
 		thumbnail::get_steam_thumbnail,
 	},
 };
@@ -169,34 +165,6 @@ impl Steam {
 		installed_games
 	}
 
-	pub async fn get_remote_game(
-		&self,
-		app_info: SteamAppInfo,
-		steam_games: &HashMap<String, id_lists::SteamGame>,
-	) -> Option<RemoteGame> {
-		let id_string = app_info.app_id.to_string();
-		let mut remote_game = RemoteGame::new(*Self::ID, &id_string);
-
-		let steam_game_option = steam_games.get(&id_string);
-
-		match pc_gaming_wiki::get_engine(&format!("Steam_AppID HOLDS \"{id_string}\"")).await {
-			Ok(Some(pc_gaming_wiki_engine)) => {
-				remote_game.set_engine(pc_gaming_wiki_engine);
-			}
-			Ok(None) => {
-				if let Some(engine_brand) = steam_game_option.map(|steam_game| steam_game.engine) {
-					remote_game.set_engine(GameEngine {
-						brand: engine_brand,
-						version: None,
-					});
-				}
-			}
-			Err(_) => {}
-		}
-
-		Some(remote_game)
-	}
-
 	fn get_owned_ids_whitelist(steam_path: &Path) -> Result<HashSet<String>> {
 		// Games in appinfo.vdf aren't necessarily owned.
 		// Most of them are, but there are also a bunch of other games that Steam needs to reference for one reason or another.
@@ -219,16 +187,14 @@ impl Steam {
 		Ok(isolated_numbers)
 	}
 
-	async fn get_steam_games<TInstalledCallback, TOwnedCallback, TRemoteCallback>(
+	async fn get_steam_games<TInstalledCallback, TOwnedCallback>(
 		&self,
 		installed_callback: TInstalledCallback,
 		owned_callback: TOwnedCallback,
-		remote_callback: TRemoteCallback,
 	) -> Result
 	where
 		TInstalledCallback: Fn(InstalledGame) + Send + Sync,
 		TOwnedCallback: Fn(OwnedGame) + Send + Sync,
-		TRemoteCallback: Fn(RemoteGame) + Send + Sync,
 	{
 		let steam_dir = SteamDir::locate()?;
 		let steam_path = steam_dir.path();
@@ -245,37 +211,23 @@ impl Steam {
 			HashSet::new()
 		});
 
-		let steam_games = id_lists::get().await?;
-
 		futures::stream::iter(app_info_reader)
-			.for_each_concurrent(Some(20), |app_info_result| {
-				async {
-					match app_info_result {
-						Ok(app_info) => {
-							if let Some(owned_game) =
-								Self::get_owned_game(&app_info, &owned_ids_whitelist)
-							{
-								owned_callback(owned_game);
-
-								if let Some(remote_game) =
-									self.get_remote_game(app_info.clone(), &steam_games).await
-								{
-									remote_callback(remote_game);
-									// TODO: cache
-									// self.remote_game_cache
-									// 	.insert(remote_game.id.clone(), remote_game.clone());
-								}
-							}
-							if let Some(app_path) = app_paths.get(&app_info.app_id) {
-								for installed_game in Self::get_installed_games(&app_info, app_path)
-								{
-									installed_callback(installed_game);
-								}
+			.for_each_concurrent(Some(20), |app_info_result| async {
+				match app_info_result {
+					Ok(app_info) => {
+						if let Some(owned_game) =
+							Self::get_owned_game(&app_info, &owned_ids_whitelist)
+						{
+							owned_callback(owned_game);
+						}
+						if let Some(app_path) = app_paths.get(&app_info.app_id) {
+							for installed_game in Self::get_installed_games(&app_info, app_path) {
+								installed_callback(installed_game);
 							}
 						}
-						Err(error) => {
-							log::error!("Failed to read Steam appinfo: {}", error);
-						}
+					}
+					Err(error) => {
+						log::error!("Failed to read Steam appinfo: {}", error);
 					}
 				}
 			})
@@ -287,18 +239,16 @@ impl Steam {
 
 #[async_trait]
 impl ProviderActions for Steam {
-	async fn get_games<TInstalledCallback, TOwnedCallback, TRemoteCallback>(
+	async fn get_games<TInstalledCallback, TOwnedCallback>(
 		&self,
 		installed_callback: TInstalledCallback,
 		owned_callback: TOwnedCallback,
-		remote_callback: TRemoteCallback,
 	) -> Result
 	where
 		TInstalledCallback: Fn(InstalledGame) + Send + Sync,
 		TOwnedCallback: Fn(OwnedGame) + Send + Sync,
-		TRemoteCallback: Fn(RemoteGame) + Send + Sync,
 	{
-		self.get_steam_games(installed_callback, owned_callback, remote_callback)
+		self.get_steam_games(installed_callback, owned_callback)
 			.await
 	}
 }

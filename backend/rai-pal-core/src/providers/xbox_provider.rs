@@ -14,7 +14,6 @@ use crate::{
 	owned_game::OwnedGame,
 	paths::file_name_without_extension,
 	providers::provider::{ProviderActions, ProviderId, ProviderStatic},
-	remote_game::RemoteGame,
 	result::Result,
 };
 
@@ -34,16 +33,14 @@ impl ProviderStatic for Xbox {
 
 #[async_trait]
 impl ProviderActions for Xbox {
-	async fn get_games<TInstalledCallback, TOwnedCallback, TRemoteCallback>(
+	async fn get_games<TInstalledCallback, TOwnedCallback>(
 		&self,
 		installed_callback: TInstalledCallback,
 		_owned_callback: TOwnedCallback,
-		_remote_callback: TRemoteCallback,
 	) -> Result
 	where
 		TInstalledCallback: Fn(InstalledGame) + Send + Sync,
 		TOwnedCallback: Fn(OwnedGame) + Send + Sync,
-		TRemoteCallback: Fn(RemoteGame) + Send + Sync,
 	{
 		let gaming_services = RegKey::predef(HKEY_LOCAL_MACHINE)
 			.open_subkey("SOFTWARE\\Microsoft\\GamingServices")?;

@@ -3,7 +3,6 @@
 use std::path::{Path, PathBuf};
 
 use async_trait::async_trait;
-use futures::future;
 use log::error;
 use rai_pal_proc_macros::serializable_struct;
 use rusqlite::{Connection, OpenFlags};
@@ -14,9 +13,8 @@ use super::provider_command::{ProviderCommand, ProviderCommandAction};
 use crate::{
 	installed_game::InstalledGame,
 	owned_game::OwnedGame,
-	paths, pc_gaming_wiki,
+	paths,
 	providers::provider::{ProviderActions, ProviderId, ProviderStatic},
-	remote_game::RemoteGame,
 	result::Result,
 };
 
@@ -83,19 +81,6 @@ impl Gog {
 
 		game
 	}
-
-	async fn get_remote_game(&self, db_entry: GogDbEntry) -> RemoteGame {
-		let mut remote_game = RemoteGame::new(*Self::ID, &db_entry.id);
-
-		match pc_gaming_wiki::get_engine(&format!("GOGcom_ID HOLDS \"{}\"", db_entry.id)).await {
-			Ok(Some(engine)) => {
-				remote_game.set_engine(engine);
-			}
-			Ok(None) | Err(_) => {}
-		}
-
-		remote_game
-	}
 }
 
 impl ProviderStatic for Gog {
@@ -111,39 +96,24 @@ impl ProviderStatic for Gog {
 
 #[async_trait]
 impl ProviderActions for Gog {
-	async fn get_games<TInstalledCallback, TOwnedCallback, TRemoteCallback>(
+	async fn get_games<TInstalledCallback, TOwnedCallback>(
 		&self,
 		installed_callback: TInstalledCallback,
 		owned_callback: TOwnedCallback,
-		remote_callback: TRemoteCallback,
 	) -> Result
 	where
 		TInstalledCallback: Fn(InstalledGame) + Send + Sync,
 		TOwnedCallback: Fn(OwnedGame) + Send + Sync,
-		TRemoteCallback: Fn(RemoteGame) + Send + Sync,
 	{
 		let database = get_database()?;
 		let launcher_path = get_launcher_path()?;
-		let mut remote_game_futures = Vec::new();
 
 		for db_entry in database {
 			owned_callback(Self::get_owned_game(&db_entry, &launcher_path));
 			if let Some(installed_game) = Self::get_installed_game(&db_entry, &launcher_path) {
 				installed_callback(installed_game);
 			}
-
-			remote_game_futures.push(self.get_remote_game(db_entry.clone()));
 		}
-
-		// TODO: cache
-		future::join_all(remote_game_futures)
-			.await
-			.iter()
-			.for_each(|remote_game| {
-				remote_callback(remote_game.clone());
-				// self.remote_game_cache
-				// 	.insert(remote_game.id.clone(), remote_game.clone());
-			});
 
 		Ok(())
 	}

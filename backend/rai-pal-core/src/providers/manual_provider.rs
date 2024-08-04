@@ -12,7 +12,6 @@ use crate::{
 	installed_game::InstalledGame,
 	owned_game::OwnedGame,
 	paths::{app_data_path, file_name_without_extension},
-	remote_game::RemoteGame,
 	result::{Error, Result},
 };
 
@@ -37,16 +36,14 @@ impl ProviderStatic for Manual {
 
 #[async_trait]
 impl ProviderActions for Manual {
-	async fn get_games<TInstalledCallback, TOwnedCallback, TRemoteCallback>(
+	async fn get_games<TInstalledCallback, TOwnedCallback>(
 		&self,
 		installed_callback: TInstalledCallback,
 		_owned_callback: TOwnedCallback,
-		_remote_callback: TRemoteCallback,
 	) -> Result
 	where
 		TInstalledCallback: Fn(InstalledGame) + Send + Sync,
 		TOwnedCallback: Fn(OwnedGame) + Send + Sync,
-		TRemoteCallback: Fn(RemoteGame) + Send + Sync,
 	{
 		for path in read_games_config(&games_config_path()?).paths {
 			if let Some(installed_game) = create_game_from_path(&path) {

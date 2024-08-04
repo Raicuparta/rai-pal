@@ -20,9 +20,7 @@ use crate::{
 	installed_game::InstalledGame,
 	owned_game::OwnedGame,
 	paths::glob_path,
-	pc_gaming_wiki,
 	providers::provider::{ProviderActions, ProviderStatic},
-	remote_game::RemoteGame,
 	result::Result,
 };
 
@@ -141,19 +139,6 @@ impl Epic {
 
 		Some(game)
 	}
-
-	async fn get_remote_game(&self, catalog_item: &EpicCatalogItem) -> RemoteGame {
-		let mut remote_game = RemoteGame::new(*Self::ID, &catalog_item.id);
-
-		match pc_gaming_wiki::get_engine_from_game_title(&catalog_item.title).await {
-			Ok(Some(engine)) => {
-				remote_game.set_engine(engine);
-			}
-			Ok(None) | Err(_) => {}
-		}
-
-		remote_game
-	}
 }
 
 impl ProviderStatic for Epic {
@@ -194,16 +179,14 @@ impl EpicCatalogItem {
 
 #[async_trait]
 impl ProviderActions for Epic {
-	async fn get_games<TInstalledCallback, TOwnedCallback, TRemoteCallback>(
+	async fn get_games<TInstalledCallback, TOwnedCallback>(
 		&self,
 		installed_callback: TInstalledCallback,
 		owned_callback: TOwnedCallback,
-		remote_callback: TRemoteCallback,
 	) -> Result
 	where
 		TInstalledCallback: Fn(InstalledGame) + Send + Sync,
 		TOwnedCallback: Fn(OwnedGame) + Send + Sync,
-		TRemoteCallback: Fn(RemoteGame) + Send + Sync,
 	{
 		let app_data_path = RegKey::predef(HKEY_LOCAL_MACHINE)
 			.open_subkey(r"SOFTWARE\WOW6432Node\Epic Games\EpicGamesLauncher")
@@ -230,8 +213,6 @@ impl ProviderActions for Epic {
 			if let Some(owned_game) = Self::get_owned_game(&catalog_item) {
 				owned_callback(owned_game);
 			}
-
-			remote_callback(self.get_remote_game(&catalog_item).await);
 		}
 
 		Ok(())

@@ -2,7 +2,6 @@ use std::path::{Path, PathBuf};
 
 use async_trait::async_trait;
 use chrono::DateTime;
-use futures::future;
 use log::error;
 use rai_pal_proc_macros::serializable_struct;
 use rusqlite::{Connection, OpenFlags};
@@ -11,9 +10,7 @@ use super::provider_command::{ProviderCommand, ProviderCommandAction};
 use crate::{
 	installed_game::InstalledGame,
 	owned_game::OwnedGame,
-	pc_gaming_wiki,
 	providers::provider::{ProviderActions, ProviderId, ProviderStatic},
-	remote_game::RemoteGame,
 	result::{Error, Result},
 };
 
@@ -57,19 +54,6 @@ impl Itch {
 		.guess_app_type();
 
 		game
-	}
-
-	async fn get_remote_game(&self, db_item: ItchDatabaseGame) -> RemoteGame {
-		let mut remote_game = RemoteGame::new(*Self::ID, &db_item.id.to_string());
-
-		match pc_gaming_wiki::get_engine_from_game_title(&db_item.title).await {
-			Ok(Some(engine)) => {
-				remote_game.set_engine(engine);
-			}
-			Ok(None) | Err(_) => {}
-		}
-
-		remote_game
 	}
 }
 
@@ -120,16 +104,14 @@ pub struct ItchDatabase {
 
 #[async_trait]
 impl ProviderActions for Itch {
-	async fn get_games<TInstalledCallback, TOwnedCallback, TRemoteCallback>(
+	async fn get_games<TInstalledCallback, TOwnedCallback>(
 		&self,
 		installed_callback: TInstalledCallback,
 		owned_callback: TOwnedCallback,
-		remote_callback: TRemoteCallback,
 	) -> Result
 	where
 		TInstalledCallback: Fn(InstalledGame) + Send + Sync,
 		TOwnedCallback: Fn(OwnedGame) + Send + Sync,
-		TRemoteCallback: Fn(RemoteGame) + Send + Sync,
 	{
 		let app_data_path = directories::BaseDirs::new()
 			.ok_or_else(Error::AppDataNotFound)?
@@ -137,11 +119,9 @@ impl ProviderActions for Itch {
 			.join("itch");
 
 		let database = get_database(&app_data_path)?;
-		let mut remote_game_futures = Vec::new();
 
 		for db_entry in database.games {
 			owned_callback(Self::get_owned_game(&db_entry));
-			remote_game_futures.push(self.get_remote_game(db_entry.clone()));
 		}
 
 		for db_entry in database.caves {
@@ -149,16 +129,6 @@ impl ProviderActions for Itch {
 				installed_callback(installed_game);
 			}
 		}
-
-		// TODO: cache
-		future::join_all(remote_game_futures)
-			.await
-			.iter()
-			.for_each(|remote_game| {
-				remote_callback(remote_game.clone());
-				// self.remote_game_cache
-				// 	.insert(remote_game.id.clone(), remote_game.clone());
-			});
 
 		Ok(())
 	}
