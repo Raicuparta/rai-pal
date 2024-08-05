@@ -52,8 +52,10 @@ export function useProcessedOwnedGames() {
 			for (const epicId of gameDatabaseEntry.epicIds ?? []) {
 				result.epicId[epicId] = gameDatabaseEntry;
 			}
-			for (const title of gameDatabaseEntry.title ?? []) {
-				result.title[normalizeTitle(title)] = gameDatabaseEntry;
+
+			if (gameDatabaseEntry.title) {
+				result.title[normalizeTitle(gameDatabaseEntry.title)] =
+					gameDatabaseEntry;
 			}
 		}
 
@@ -79,8 +81,6 @@ export function useProcessedOwnedGames() {
 		return result;
 	}, [installedGames]);
 
-	console.log("databaseGamesByProvider", databaseGamesByProvider);
-
 	const processedOwnedGames: ProcessedOwnedGameRecord = useMemo(() => {
 		const result: ProcessedOwnedGameRecord = {};
 
@@ -98,8 +98,22 @@ export function useProcessedOwnedGames() {
 		}
 
 		function getDatabaseGame(ownedGame: OwnedGame) {
-			const providerGameId = ownedGame.id.replace(`${ownedGame.provider}_`, "");
-			return getDatabaseGameMapping(ownedGame)[providerGameId];
+			const map = getDatabaseGameMapping(ownedGame);
+			const key =
+				map === databaseGamesByProvider.title
+					? normalizeTitle(ownedGame.name)
+					: ownedGame.id.replace(`${ownedGame.provider}_`, "");
+
+			if (map === databaseGamesByProvider.title) {
+				console.log(
+					"map === databaseGamesByProvider.title",
+					key,
+					"and...",
+					map[key],
+				);
+			}
+
+			return map[key];
 		}
 
 		for (const [gameId, ownedGame] of ownedGames.data.entries()) {

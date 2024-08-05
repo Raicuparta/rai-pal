@@ -22,7 +22,7 @@ struct GameDatabaseEngineVersion {
 
 #[serializable_struct]
 struct GameDatabaseEntry {
-	pub title: String,
+	pub title: Option<String>,
 	pub engines: Option<Vec<GameDatabaseEngineVersion>>,
 	pub steam_ids: Option<Vec<String>>,
 	pub gog_ids: Option<Vec<String>>,
@@ -31,7 +31,7 @@ struct GameDatabaseEntry {
 
 #[serializable_struct]
 pub struct RemoteGame {
-	pub title: String,
+	pub title: Option<String>,
 	pub engines: Option<Vec<GameEngine>>,
 	pub steam_ids: Option<Vec<String>>,
 	pub gog_ids: Option<Vec<String>>,
