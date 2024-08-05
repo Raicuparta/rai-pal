@@ -18,6 +18,7 @@ use rai_pal_core::maps::TryGettable;
 use rai_pal_core::mod_loaders::mod_loader::{self, ModLoaderActions};
 use rai_pal_core::owned_game::OwnedGame;
 use rai_pal_core::paths::{self, normalize_path};
+use rai_pal_core::providers::provider::ProviderId;
 use rai_pal_core::providers::{
 	manual_provider,
 	provider::{self, ProviderActions},
@@ -357,32 +358,6 @@ fn owned_game_callback(handle: AppHandle) -> impl Fn(OwnedGame) {
 	}
 }
 
-async fn update_local_games(handle: AppHandle) {
-	let provider_map = provider::get_map();
-
-	futures::future::join_all(provider_map.values().map(|provider| {
-		let provider_clone = provider.clone();
-
-		let handle_clone = handle.clone();
-
-		tokio::spawn(async move {
-			provider_clone
-				.get_games(
-					installed_game_callback(handle_clone.clone()),
-					owned_game_callback(handle_clone.clone()),
-				)
-				.await
-		})
-	}))
-	.await
-	.into_iter()
-	.for_each(|result| {
-		if let Err(err) = result {
-			error!("Failed to get games for a provider: {err}");
-		}
-	});
-}
-
 async fn update_mods(handle: AppHandle, resources_path: PathBuf) {
 	let mod_loaders = mod_loader::get_map(&resources_path);
 
@@ -413,6 +388,21 @@ async fn update_remote_games(handle: AppHandle) {
 
 #[tauri::command]
 #[specta::specta]
+async fn get_provider_games(handle: AppHandle, provider_id: ProviderId) -> Result {
+	let provider = provider::get_provider(provider_id)?;
+
+	provider
+		.get_games(
+			installed_game_callback(handle.clone()),
+			owned_game_callback(handle.clone()),
+		)
+		.await?;
+
+	Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
 async fn update_data(handle: AppHandle) -> Result {
 	let resources_path = handle
 		.path()
@@ -420,7 +410,6 @@ async fn update_data(handle: AppHandle) -> Result {
 		.map_err(|err| Error::FailedToGetResourcesPath(err.to_string()))?;
 
 	let results = futures::future::join_all([
-		tokio::spawn(update_local_games(handle.clone())),
 		tokio::spawn(update_mods(handle.clone(), resources_path)),
 		tokio::spawn(update_remote_games(handle.clone())),
 	])
@@ -538,7 +527,8 @@ fn main() {
 			start_game,
 			uninstall_all_mods,
 			uninstall_mod,
-			update_data
+			update_data,
+			get_provider_games
 		])
 		.events(events::collect_events());
 

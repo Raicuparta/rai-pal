@@ -158,6 +158,9 @@ pub enum Error {
 
 	#[error("Failed to get app resources path: `{0}`")]
 	FailedToGetResourcesPath(String),
+
+	#[error("Provider ID {0} is invalid in this platform.")]
+	InvalidProviderId(String),
 }
 
 impl serde::Serialize for Error {

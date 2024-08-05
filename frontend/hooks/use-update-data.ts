@@ -1,32 +1,41 @@
 import { useCallback } from "react";
 import { useSetAtom } from "jotai";
-import { commands } from "@api/bindings";
-import { loadingAtom } from "./use-data";
+import { commands, Result, Error } from "@api/bindings";
+import { loadingCountAtom } from "./use-data";
 import { showAppNotification } from "@components/app-notifications";
 
 export function useUpdateData() {
-	const setIsLoading = useSetAtom(loadingAtom);
+	const setLoading = useSetAtom(loadingCountAtom);
 
 	const updateAppData = useCallback(() => {
-		setIsLoading(true);
-		commands
-			.updateData()
-			.then((result) => {
-				if (result.status === "error") {
+		function updateDataPart(promise: Promise<Result<null, Error>>) {
+			setLoading((previousLoading) => previousLoading + 1);
+			promise
+				.then((result) => {
+					if (result.status === "error") {
+						showAppNotification(
+							`Error while updating data: ${result.error}`,
+							"error",
+						);
+					}
+				})
+				.catch((error) => {
 					showAppNotification(
-						`Error while updating data: ${result.error}`,
+						`Failed to initialize data update: ${error}`,
 						"error",
 					);
-				}
-			})
-			.catch((error) => {
-				showAppNotification(
-					`Failed to initialize data update: ${error}`,
-					"error",
-				);
-			})
-			.finally(() => setIsLoading(false));
-	}, [setIsLoading]);
+				})
+				.finally(() => setLoading((previousLoading) => previousLoading - 1));
+		}
+
+		updateDataPart(commands.updateData());
+		updateDataPart(commands.getProviderGames("Steam"));
+		updateDataPart(commands.getProviderGames("Epic"));
+		updateDataPart(commands.getProviderGames("Itch"));
+		updateDataPart(commands.getProviderGames("Xbox"));
+		updateDataPart(commands.getProviderGames("Manual"));
+		updateDataPart(commands.getProviderGames("Gog"));
+	}, [setLoading]);
 
 	return updateAppData;
 }

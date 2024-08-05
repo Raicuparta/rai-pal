@@ -1,24 +1,20 @@
 use std::{
-	collections::HashMap,
 	fs,
 	marker::{Send, Sync},
 	path::PathBuf,
-	time::Instant,
 };
 
 use async_trait::async_trait;
 use enum_dispatch::enum_dispatch;
-use log::error;
 
 #[cfg(target_os = "windows")]
 use crate::providers::{epic_provider::Epic, gog_provider::Gog, xbox_provider::Xbox};
 use crate::{
-	debug::LoggableInstant,
 	installed_game::InstalledGame,
 	owned_game::OwnedGame,
 	paths,
 	providers::{itch_provider::Itch, manual_provider::Manual, steam_provider::Steam},
-	result::Result,
+	result::{Error, Result},
 	serializable_enum,
 };
 
@@ -76,52 +72,17 @@ pub trait ProviderStatic: ProviderActions {
 	}
 }
 
-pub type Map = HashMap<String, Provider>;
-
-fn create_map_entry<TProvider: ProviderActions + ProviderStatic>() -> Result<(String, Provider)>
-where
-	Provider: From<TProvider>,
-{
-	let provider: Provider = TProvider::new()?.into();
-
-	Ok((TProvider::ID.to_string(), provider))
-}
-
-fn add_entry<TProvider: ProviderActions + ProviderStatic>(map: &mut Map)
-where
-	Provider: From<TProvider>,
-{
-	match create_map_entry::<TProvider>() {
-		Ok((key, value)) => {
-			map.insert(key, value);
-		}
-		Err(error) => error!("Failed to set up provider: {error}"),
+pub fn get_provider(provider_id: ProviderId) -> Result<Provider> {
+	match provider_id {
+		ProviderId::Steam => Ok(Steam::new()?.into()),
+		ProviderId::Manual => Ok(Manual::new()?.into()),
+		ProviderId::Itch => Ok(Itch::new()?.into()),
+		#[cfg(target_os = "windows")]
+		ProviderId::Epic => Ok(Epic::new()?.into()),
+		#[cfg(target_os = "windows")]
+		ProviderId::Gog => Ok(Gog::new()?.into()),
+		#[cfg(target_os = "windows")]
+		ProviderId::Xbox => Ok(Xbox::new()?.into()),
+		_ => Err(Error::InvalidProviderId(provider_id.to_string())),
 	}
-}
-
-pub fn get_map() -> Map {
-	let mut map = Map::new();
-	let now = &mut Instant::now();
-
-	add_entry::<Steam>(&mut map);
-	now.log_next("set up provider (Steam)");
-
-	add_entry::<Itch>(&mut map);
-	now.log_next("set up provider (Itch)");
-
-	add_entry::<Manual>(&mut map);
-	now.log_next("set up provider (Manual)");
-
-	#[cfg(target_os = "windows")]
-	{
-		add_entry::<Epic>(&mut map);
-		now.log_next("set up provider (Epic)");
-
-		add_entry::<Gog>(&mut map);
-		now.log_next("set up provider (Gog)");
-
-		add_entry::<Xbox>(&mut map);
-		now.log_next("set up provider (Xbox)");
-	}
-	map
 }

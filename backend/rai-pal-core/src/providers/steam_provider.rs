@@ -28,7 +28,7 @@ use crate::{
 };
 
 #[derive(Clone)]
-pub struct Steam {}
+pub struct Steam;
 
 impl ProviderStatic for Steam {
 	const ID: &'static ProviderId = &ProviderId::Steam;

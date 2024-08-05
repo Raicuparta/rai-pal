@@ -37,7 +37,7 @@ export const [remoteGamesAtom, useRemoteGamesSubscription] = dataSubscription(
 	[],
 );
 
-export const loadingAtom = atom<boolean>(false);
+export const loadingCountAtom = atom(0);
 
 export const dataCacheStore = new Store(".data-cache.dat");
 
@@ -81,4 +81,13 @@ export function useData() {
 	useEffect(() => {
 		updateData();
 	}, [updateData]);
+
+	useEffect(() => {
+		commands.getProviderGames("Steam");
+		commands.getProviderGames("Epic");
+		commands.getProviderGames("Itch");
+		commands.getProviderGames("Xbox");
+		commands.getProviderGames("Manual");
+		commands.getProviderGames("Gog");
+	}, []);
 }

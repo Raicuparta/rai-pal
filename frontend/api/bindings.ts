@@ -212,6 +212,14 @@ async updateData() : Promise<Result<null, Error>> {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
 }
+},
+async getProviderGames(providerId: ProviderId) : Promise<Result<null, Error>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("get_provider_games", { providerId }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
 }
 }
 
@@ -255,7 +263,7 @@ export type EngineBrand = "Unity" | "Unreal" | "Godot" | "GameMaker"
 export type EngineVersion = { numbers: EngineVersionNumbers; suffix: string | null; display: string }
 export type EngineVersionNumbers = { major: number; minor: number | null; patch: number | null }
 export type EngineVersionRange = { minimum: EngineVersionNumbers | null; maximum: EngineVersionNumbers | null }
-export type Error = "Io" | "Reqwest" | "Goblin" | "Zip" | "Json" | "ChronoParse" | "SQLite" | "Env" | "TaskJoin" | "UrlEncode" | "HeaderToStr" | "TryFromInt" | "Regex" | "SteamLocate" | { InvalidBinaryVdfType: [number, string] } | { AppDataNotFound: [] } | { PathParseFailure: string } | { PathParentNotFound: string } | { EmptyFile: string } | { AppInfoNotFound: string } | { FailedToParseUnityVersionAsset: string } | { ModInstallInfoInsufficient: [string, string] } | { EmptyStateData: [] } | { FailedToAccessStateData: string } | { FailedToGetGameFromPath: string } | { GameAlreadyAdded: string } | { DataEntryNotFound: string } | { UnityBackendUnknown: string } | { ModDownloadNotAvailable: string } | { RunnableManifestNotFound: string } | { CantRunNonRunnable: string } | { FailedToGetResourcesPath: string }
+export type Error = "Io" | "Reqwest" | "Goblin" | "Zip" | "Json" | "ChronoParse" | "SQLite" | "Env" | "TaskJoin" | "UrlEncode" | "HeaderToStr" | "TryFromInt" | "Regex" | "SteamLocate" | { InvalidBinaryVdfType: [number, string] } | { AppDataNotFound: [] } | { PathParseFailure: string } | { PathParentNotFound: string } | { EmptyFile: string } | { AppInfoNotFound: string } | { FailedToParseUnityVersionAsset: string } | { ModInstallInfoInsufficient: [string, string] } | { EmptyStateData: [] } | { FailedToAccessStateData: string } | { FailedToGetGameFromPath: string } | { GameAlreadyAdded: string } | { DataEntryNotFound: string } | { UnityBackendUnknown: string } | { ModDownloadNotAvailable: string } | { RunnableManifestNotFound: string } | { CantRunNonRunnable: string } | { FailedToGetResourcesPath: string } | { InvalidProviderId: string }
 export type ErrorRaised = string
 export type ExecutedProviderCommand = null
 export type FoundInstalledGame = InstalledGame

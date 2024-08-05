@@ -2,16 +2,16 @@ import { Button } from "@mantine/core";
 import { IconRefresh } from "@tabler/icons-react";
 import { useAtomValue } from "jotai";
 import { useUpdateData } from "@hooks/use-update-data";
-import { loadingAtom } from "@hooks/use-data";
+import { loadingCountAtom } from "@hooks/use-data";
 
 export function RefreshButton() {
-	const isLoading = useAtomValue(loadingAtom);
+	const loadingCount = useAtomValue(loadingCountAtom);
 	const updateAppData = useUpdateData();
 
 	return (
 		<Button
 			leftSection={<IconRefresh />}
-			loading={isLoading}
+			loading={loadingCount > 0}
 			onClick={updateAppData}
 			variant="filled"
 		>
