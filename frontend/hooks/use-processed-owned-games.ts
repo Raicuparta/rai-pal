@@ -3,7 +3,7 @@ import { useMemo } from "react";
 import {
 	ownedGamesAtom,
 	installedGamesAtom,
-	gameDatabaseAtom,
+	remoteGamesAtom,
 } from "./use-data";
 import {
 	InstalledGame,
@@ -32,7 +32,7 @@ function normalizeTitle(title: string): string {
 export function useProcessedOwnedGames() {
 	const ownedGames = useAtomValue(ownedGamesAtom);
 	const installedGames = useAtomValue(installedGamesAtom);
-	const gameDatabase = useAtomValue(gameDatabaseAtom);
+	const remoteGames = useAtomValue(remoteGamesAtom);
 
 	const databaseGamesByProvider = useMemo(() => {
 		const result: Record<DatabaseMapGroupBy, Record<string, RemoteGame>> = {
@@ -42,25 +42,24 @@ export function useProcessedOwnedGames() {
 			title: {},
 		};
 
-		for (const gameDatabaseEntry of gameDatabase) {
-			for (const steamId of gameDatabaseEntry.steamIds ?? []) {
-				result.steamId[steamId] = gameDatabaseEntry;
+		for (const remoteGame of remoteGames) {
+			for (const steamId of remoteGame.steamIds ?? []) {
+				result.steamId[steamId] = remoteGame;
 			}
-			for (const gogId of gameDatabaseEntry.gogIds ?? []) {
-				result.gogId[gogId] = gameDatabaseEntry;
+			for (const gogId of remoteGame.gogIds ?? []) {
+				result.gogId[gogId] = remoteGame;
 			}
-			for (const epicId of gameDatabaseEntry.epicIds ?? []) {
-				result.epicId[epicId] = gameDatabaseEntry;
+			for (const epicId of remoteGame.epicIds ?? []) {
+				result.epicId[epicId] = remoteGame;
 			}
 
-			if (gameDatabaseEntry.title) {
-				result.title[normalizeTitle(gameDatabaseEntry.title)] =
-					gameDatabaseEntry;
+			if (remoteGame.title) {
+				result.title[normalizeTitle(remoteGame.title)] = remoteGame;
 			}
 		}
 
 		return result;
-	}, [gameDatabase]);
+	}, [remoteGames]);
 
 	const installedGamesByProvider: InstalledGamesByProvider = useMemo(() => {
 		const result: InstalledGamesByProvider = {

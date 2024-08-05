@@ -12,7 +12,6 @@ use std::{collections::HashMap, path::PathBuf, sync::Mutex};
 use app_state::{AppState, DataValue, StateData, StatefulHandle};
 use events::EventEmitter;
 use log::error;
-use rai_pal_core::game_database::{self};
 use rai_pal_core::installed_game::InstalledGame;
 use rai_pal_core::local_mod::{self, LocalMod};
 use rai_pal_core::maps::TryGettable;
@@ -24,6 +23,7 @@ use rai_pal_core::providers::{
 	provider::{self, ProviderActions},
 	provider_command::ProviderCommandAction,
 };
+use rai_pal_core::remote_games::{self};
 use rai_pal_core::result::{Error, Result};
 #[cfg(target_os = "windows")]
 use rai_pal_core::windows;
@@ -490,8 +490,8 @@ async fn open_logs_folder() -> Result {
 
 #[tauri::command]
 #[specta::specta]
-async fn get_game_database(handle: AppHandle) -> Result {
-	handle.emit_safe(events::SyncGameDatabase(game_database::get().await?));
+async fn get_remote_games(handle: AppHandle) -> Result {
+	handle.emit_safe(events::SyncRemoteGames(remote_games::get().await?));
 
 	Ok(())
 }
@@ -535,7 +535,7 @@ fn main() {
 			uninstall_all_mods,
 			uninstall_mod,
 			update_data,
-			get_game_database
+			get_remote_games
 		])
 		.events(events::collect_events());
 

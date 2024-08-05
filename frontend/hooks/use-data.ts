@@ -32,8 +32,8 @@ export const [remoteModsAtom, useRemoteModsSubscription] = dataSubscription(
 	{},
 );
 
-export const [gameDatabaseAtom, useGameDatabaseSubscription] = dataSubscription(
-	events.syncGameDatabase,
+export const [remoteGamesAtom, useRemoteGamesSubscription] = dataSubscription(
+	events.syncRemoteGames,
 	[],
 );
 
@@ -43,7 +43,7 @@ export const dataCacheStore = new Store(".data-cache.dat");
 
 export function useData() {
 	useInstalledGamesSubscription();
-	useGameDatabaseSubscription();
+	useRemoteGamesSubscription();
 	useModLoadersSubscription();
 	useLocalModsSubscription();
 	useRemoteModsSubscription();
@@ -83,6 +83,6 @@ export function useData() {
 	}, [updateData]);
 
 	useEffect(() => {
-		commands.getGameDatabase();
+		commands.getRemoteGames();
 	}, []);
 }
