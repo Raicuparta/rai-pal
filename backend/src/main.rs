@@ -357,7 +357,7 @@ fn owned_game_callback(handle: AppHandle) -> impl Fn(OwnedGame) {
 	}
 }
 
-async fn update_games(handle: AppHandle) {
+async fn update_local_games(handle: AppHandle) {
 	let provider_map = provider::get_map();
 
 	futures::future::join_all(provider_map.values().map(|provider| {
@@ -400,6 +400,17 @@ async fn update_mods(handle: AppHandle, resources_path: PathBuf) {
 	}
 }
 
+async fn update_remote_games(handle: AppHandle) {
+	match remote_games::get().await {
+		Ok(remote_games) => {
+			handle.emit_safe(events::SyncRemoteGames(remote_games));
+		}
+		Err(err) => {
+			handle.emit_error(format!("Failed to get remote games: {err}"));
+		}
+	}
+}
+
 #[tauri::command]
 #[specta::specta]
 async fn update_data(handle: AppHandle) -> Result {
@@ -409,8 +420,9 @@ async fn update_data(handle: AppHandle) -> Result {
 		.map_err(|err| Error::FailedToGetResourcesPath(err.to_string()))?;
 
 	let results = futures::future::join_all([
-		tokio::spawn(update_games(handle.clone())),
+		tokio::spawn(update_local_games(handle.clone())),
 		tokio::spawn(update_mods(handle.clone(), resources_path)),
+		tokio::spawn(update_remote_games(handle.clone())),
 	])
 	.await;
 
@@ -488,14 +500,6 @@ async fn open_logs_folder() -> Result {
 	Ok(())
 }
 
-#[tauri::command]
-#[specta::specta]
-async fn get_remote_games(handle: AppHandle) -> Result {
-	handle.emit_safe(events::SyncRemoteGames(remote_games::get().await?));
-
-	Ok(())
-}
-
 fn main() {
 	// Since I'm making all exposed functions async, panics won't crash anything important, I think.
 	// So I can just catch panics here and show a system message with the error.
@@ -534,8 +538,7 @@ fn main() {
 			start_game,
 			uninstall_all_mods,
 			uninstall_mod,
-			update_data,
-			get_remote_games
+			update_data
 		])
 		.events(events::collect_events());
 

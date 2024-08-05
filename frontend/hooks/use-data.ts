@@ -81,8 +81,4 @@ export function useData() {
 	useEffect(() => {
 		updateData();
 	}, [updateData]);
-
-	useEffect(() => {
-		commands.getRemoteGames();
-	}, []);
 }
