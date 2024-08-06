@@ -1,7 +1,8 @@
 use rai_pal_proc_macros::serializable_struct;
 
-use crate::game_engines::game_engine::{EngineBrand, GameEngine};
-use crate::game_engines::unity;
+use crate::game_engines::game_engine::{
+	EngineBrand, EngineVersion, EngineVersionNumbers, GameEngine,
+};
 use crate::result::Result;
 
 const URL_BASE: &str = "https://raicuparta.github.io/rai-pal-db/game-db";
@@ -36,8 +37,6 @@ pub struct RemoteGame {
 	pub epic_ids: Option<Vec<String>>,
 }
 
-// loose way to match string to brand, just needs to contain the name
-// don't worry about case or extra spaces
 fn engine_brand_from_string(brand: &str) -> Option<EngineBrand> {
 	let brand_lower = brand.to_lowercase();
 	if brand_lower.contains("unity") {
@@ -51,6 +50,28 @@ fn engine_brand_from_string(brand: &str) -> Option<EngineBrand> {
 	} else {
 		None
 	}
+}
+
+fn parse_version(version: &str) -> Option<EngineVersion> {
+	let version_numbers = version
+		.split('.')
+		.filter_map(|part| part.parse::<u32>().ok())
+		.take(2)
+		.collect::<Vec<_>>();
+
+	version_numbers.first().map(|major| EngineVersion {
+		display: version_numbers
+			.iter()
+			.map(u32::to_string)
+			.collect::<Vec<_>>()
+			.join("."),
+		numbers: EngineVersionNumbers {
+			major: *major,
+			minor: version_numbers.get(1).copied(),
+			patch: version_numbers.get(2).copied(),
+		},
+		suffix: None,
+	})
 }
 
 pub async fn get() -> Result<Vec<RemoteGame>> {
@@ -69,10 +90,12 @@ pub async fn get() -> Result<Vec<RemoteGame>> {
 					.filter_map(|engine| {
 						Some(GameEngine {
 							brand: engine_brand_from_string(&engine.brand)?,
-							// TODO: Unreal game versions can be parsed from the brand part (maybe do this in the database python code tho)
 							version: engine
 								.version
-								.and_then(|version| unity::parse_version(&version)),
+								.and_then(|version| parse_version(&version))
+								// If we can't parse the version or it wasn't provided, we can check if there's a number in the actual engine name.
+								// This is common for Unreal Engine, since it usually shows up as "Unreal Engine 4" or similar.
+								.or_else(|| parse_version(&engine.brand)),
 						})
 					})
 					.collect()
