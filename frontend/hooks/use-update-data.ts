@@ -10,7 +10,7 @@ export function useUpdateData(executeOnMount = false) {
 	const updateAppData = useCallback(() => {
 		console.log("Updating app data...");
 
-		function updateDataPart(promise: Promise<Result<null, Error>>) {
+		function handleDataPromise(promise: Promise<Result<null, Error>>) {
 			setLoading((previousLoading) => previousLoading + 1);
 			promise
 				.then((result) => {
@@ -30,14 +30,22 @@ export function useUpdateData(executeOnMount = false) {
 				.finally(() => setLoading((previousLoading) => previousLoading - 1));
 		}
 
-		updateDataPart(commands.updateLocalMods());
-		updateDataPart(commands.updateRemoteGames());
-		updateDataPart(commands.getProviderGames("Steam"));
-		updateDataPart(commands.getProviderGames("Epic"));
-		updateDataPart(commands.getProviderGames("Itch"));
-		updateDataPart(commands.getProviderGames("Xbox"));
-		updateDataPart(commands.getProviderGames("Manual"));
-		updateDataPart(commands.getProviderGames("Gog"));
+		commands.getProviderIds().then((providerIdsResult) => {
+			if (providerIdsResult.status === "error") {
+				showAppNotification(
+					`Failed to get info about available game providers: ${providerIdsResult.error}`,
+					"error",
+				);
+				return;
+			}
+
+			for (const providerId of providerIdsResult.data) {
+				handleDataPromise(commands.getProviderGames(providerId));
+			}
+
+			handleDataPromise(commands.updateLocalMods());
+			handleDataPromise(commands.updateRemoteGames());
+		});
 	}, [setLoading]);
 
 	useEffect(() => {

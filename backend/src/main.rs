@@ -403,6 +403,12 @@ async fn get_provider_games(handle: AppHandle, provider_id: ProviderId) -> Resul
 
 #[tauri::command]
 #[specta::specta]
+async fn get_provider_ids() -> Result<Vec<ProviderId>> {
+	Ok(provider::get_provider_ids())
+}
+
+#[tauri::command]
+#[specta::specta]
 async fn add_game(path: PathBuf, handle: AppHandle) -> Result {
 	let normalized_path = normalize_path(&path);
 
@@ -487,6 +493,8 @@ fn main() {
 			frontend_ready,
 			get_local_mods,
 			get_mod_loaders,
+			get_provider_games,
+			get_provider_ids,
 			get_remote_mods,
 			install_mod,
 			open_game_folder,
@@ -505,8 +513,7 @@ fn main() {
 			uninstall_all_mods,
 			uninstall_mod,
 			update_local_mods,
-			update_remote_games,
-			get_provider_games
+			update_remote_games
 		])
 		.events(events::collect_events());
 

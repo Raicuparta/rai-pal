@@ -69,6 +69,22 @@ async getModLoaders() : Promise<Result<{ [key in string]: ModLoaderData }, Error
     else return { status: "error", error: e  as any };
 }
 },
+async getProviderGames(providerId: ProviderId) : Promise<Result<null, Error>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("get_provider_games", { providerId }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async getProviderIds() : Promise<Result<ProviderId[], Error>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("get_provider_ids") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
 async getRemoteMods() : Promise<Result<{ [key in string]: RemoteMod }, Error>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("get_remote_mods") };
@@ -216,14 +232,6 @@ async updateLocalMods() : Promise<Result<null, Error>> {
 async updateRemoteGames() : Promise<Result<null, Error>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("update_remote_games") };
-} catch (e) {
-    if(e instanceof Error) throw e;
-    else return { status: "error", error: e  as any };
-}
-},
-async getProviderGames(providerId: ProviderId) : Promise<Result<null, Error>> {
-    try {
-    return { status: "ok", data: await TAURI_INVOKE("get_provider_games", { providerId }) };
 } catch (e) {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };

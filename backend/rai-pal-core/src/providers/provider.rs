@@ -86,3 +86,17 @@ pub fn get_provider(provider_id: ProviderId) -> Result<Provider> {
 		_ => Err(Error::InvalidProviderId(provider_id.to_string())),
 	}
 }
+
+pub fn get_provider_ids() -> Vec<ProviderId> {
+	vec![
+		ProviderId::Steam,
+		ProviderId::Manual,
+		ProviderId::Itch,
+		#[cfg(target_os = "windows")]
+		ProviderId::Epic,
+		#[cfg(target_os = "windows")]
+		ProviderId::Gog,
+		#[cfg(target_os = "windows")]
+		ProviderId::Xbox,
+	]
+}
