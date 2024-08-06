@@ -48,6 +48,9 @@
     ],
     "withGlobalTauri": true,
     "security": {
+      "dangerousDisableAssetCspModification": [
+        "style-src-elem"
+      ],
       "csp": {
         "img-src": [
           "'self'",
@@ -59,8 +62,8 @@
           "https://*.patreonusercontent.com",
           "https://*.patreon.com"
         ],
-        "style-src": [
-          "'unsafe-inline'"
+        "style-src-elem": [
+          "'self' 'unsafe-inline'"
         ]
       }
     }
