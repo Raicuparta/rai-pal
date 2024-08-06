@@ -81,13 +81,4 @@ export function useData() {
 	useEffect(() => {
 		updateData();
 	}, [updateData]);
-
-	useEffect(() => {
-		commands.getProviderGames("Steam");
-		commands.getProviderGames("Epic");
-		commands.getProviderGames("Itch");
-		commands.getProviderGames("Xbox");
-		commands.getProviderGames("Manual");
-		commands.getProviderGames("Gog");
-	}, []);
 }
