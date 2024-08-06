@@ -41,6 +41,19 @@ pub enum Provider {
 	Xbox,
 }
 
+type Map = [(ProviderId, fn() -> Result<Provider>)];
+const PROVIDERS: &Map = &[
+	create_map_entry::<Steam>(),
+	create_map_entry::<Manual>(),
+	create_map_entry::<Itch>(),
+	#[cfg(target_os = "windows")]
+	create_map_entry::<Epic>(),
+	#[cfg(target_os = "windows")]
+	create_map_entry::<Gog>(),
+	#[cfg(target_os = "windows")]
+	create_map_entry::<Xbox>(),
+];
+
 #[async_trait]
 #[enum_dispatch(Provider)]
 pub trait ProviderActions {
@@ -52,6 +65,14 @@ pub trait ProviderActions {
 	where
 		TInstalledCallback: Fn(InstalledGame) + Send + Sync,
 		TOwnedCallback: Fn(OwnedGame) + Send + Sync;
+}
+
+const fn create_map_entry<TProvider: ProviderActions + ProviderStatic>(
+) -> (ProviderId, fn() -> Result<Provider>)
+where
+	Provider: From<TProvider>,
+{
+	(*TProvider::ID, || Ok(TProvider::new()?.into()))
 }
 
 pub trait ProviderStatic: ProviderActions {
@@ -73,30 +94,14 @@ pub trait ProviderStatic: ProviderActions {
 }
 
 pub fn get_provider(provider_id: ProviderId) -> Result<Provider> {
-	match provider_id {
-		ProviderId::Steam => Ok(Steam::new()?.into()),
-		ProviderId::Manual => Ok(Manual::new()?.into()),
-		ProviderId::Itch => Ok(Itch::new()?.into()),
-		#[cfg(target_os = "windows")]
-		ProviderId::Epic => Ok(Epic::new()?.into()),
-		#[cfg(target_os = "windows")]
-		ProviderId::Gog => Ok(Gog::new()?.into()),
-		#[cfg(target_os = "windows")]
-		ProviderId::Xbox => Ok(Xbox::new()?.into()),
-		_ => Err(Error::InvalidProviderId(provider_id.to_string())),
+	for &(id, create_provider) in PROVIDERS {
+		if id == provider_id {
+			return create_provider();
+		}
 	}
+	Err(Error::InvalidProviderId(provider_id.to_string()))
 }
 
 pub fn get_provider_ids() -> Vec<ProviderId> {
-	vec![
-		ProviderId::Steam,
-		ProviderId::Manual,
-		ProviderId::Itch,
-		#[cfg(target_os = "windows")]
-		ProviderId::Epic,
-		#[cfg(target_os = "windows")]
-		ProviderId::Gog,
-		#[cfg(target_os = "windows")]
-		ProviderId::Xbox,
-	]
+	PROVIDERS.iter().map(|&(id, _)| id).collect()
 }
