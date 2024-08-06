@@ -52,6 +52,8 @@ fn engine_brand_from_string(brand: &str) -> Option<EngineBrand> {
 	}
 }
 
+// Version strings in PCGamingWiki can be all weird, so parsing is pretty lax here.
+// We just split by dots and take the first numbers we find.
 fn parse_version(version: &str) -> Option<EngineVersion> {
 	let version_numbers = version
 		.split('.')
