@@ -229,9 +229,9 @@ async updateLocalMods() : Promise<Result<null, Error>> {
     else return { status: "error", error: e  as any };
 }
 },
-async updateRemoteGames() : Promise<Result<null, Error>> {
+async fetchRemoteGames() : Promise<Result<RemoteGame[], Error>> {
     try {
-    return { status: "ok", data: await TAURI_INVOKE("update_remote_games") };
+    return { status: "ok", data: await TAURI_INVOKE("fetch_remote_games") };
 } catch (e) {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
@@ -251,7 +251,6 @@ gameRemoved: GameRemoved,
 selectInstalledGame: SelectInstalledGame,
 syncLocalMods: SyncLocalMods,
 syncModLoaders: SyncModLoaders,
-syncRemoteGames: SyncRemoteGames,
 syncRemoteMods: SyncRemoteMods
 }>({
 errorRaised: "error-raised",
@@ -262,7 +261,6 @@ gameRemoved: "game-removed",
 selectInstalledGame: "select-installed-game",
 syncLocalMods: "sync-local-mods",
 syncModLoaders: "sync-mod-loaders",
-syncRemoteGames: "sync-remote-games",
 syncRemoteMods: "sync-remote-mods"
 })
 
@@ -306,7 +304,6 @@ export type RunnableModData = { path: string; args: string[] }
 export type SelectInstalledGame = string
 export type SyncLocalMods = { [key in string]: LocalMod }
 export type SyncModLoaders = { [key in string]: ModLoaderData }
-export type SyncRemoteGames = RemoteGame[]
 export type SyncRemoteMods = { [key in string]: RemoteMod }
 export type UnityScriptingBackend = "Il2Cpp" | "Mono"
 

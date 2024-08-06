@@ -1,10 +1,10 @@
 import { atom } from "jotai";
-import { events } from "@api/bindings";
+import { commands, events } from "@api/bindings";
 import { dataSubscription } from "./use-data-subscription";
 import { useUpdateData } from "./use-update-data";
 import { dataPartialSubscription } from "./use-data-partial-subscription";
-import { Store } from "@tauri-apps/plugin-store";
 import { useGameDropEvent } from "./use-game-drop-event";
+import { commandData } from "./use-command-data";
 
 export const [installedGamesAtom, useInstalledGamesSubscription] =
 	dataPartialSubscription("foundInstalledGame", (payload) => payload.id);
@@ -27,14 +27,12 @@ export const [remoteModsAtom, useRemoteModsSubscription] = dataSubscription(
 	{},
 );
 
-export const [remoteGamesAtom, useRemoteGamesSubscription] = dataSubscription(
-	events.syncRemoteGames,
+export const [remoteGamesAtom, useRemoteGamesSubscription] = commandData(
+	commands.fetchRemoteGames,
 	[],
 );
 
 export const loadingCountAtom = atom(0);
-
-export const dataCacheStore = new Store(".data-cache.dat");
 
 export function useData() {
 	useInstalledGamesSubscription();

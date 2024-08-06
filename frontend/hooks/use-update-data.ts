@@ -44,7 +44,7 @@ export function useUpdateData(executeOnMount = false) {
 			}
 
 			handleDataPromise(commands.updateLocalMods());
-			handleDataPromise(commands.updateRemoteGames());
+			// handleDataPromise(commands.updateRemoteGames());
 		});
 	}, [setLoading]);
 

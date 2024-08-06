@@ -24,7 +24,7 @@ use rai_pal_core::providers::{
 	provider::{self, ProviderActions},
 	provider_command::ProviderCommandAction,
 };
-use rai_pal_core::remote_games::{self};
+use rai_pal_core::remote_games::{self, RemoteGame};
 use rai_pal_core::result::{Error, Result};
 #[cfg(target_os = "windows")]
 use rai_pal_core::windows;
@@ -382,9 +382,8 @@ async fn update_local_mods(handle: AppHandle) -> Result {
 
 #[tauri::command]
 #[specta::specta]
-async fn update_remote_games(handle: AppHandle) -> Result {
-	handle.emit_safe(events::SyncRemoteGames(remote_games::get().await?));
-	Ok(())
+async fn fetch_remote_games() -> Result<Vec<RemoteGame>> {
+	remote_games::get().await
 }
 
 #[tauri::command]
@@ -514,7 +513,7 @@ fn main() {
 			uninstall_all_mods,
 			uninstall_mod,
 			update_local_mods,
-			update_remote_games
+			fetch_remote_games
 		])
 		.events(events::collect_events());
 

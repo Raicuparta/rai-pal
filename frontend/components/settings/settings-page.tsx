@@ -1,8 +1,9 @@
 import { Button, Container, Stack, Tooltip } from "@mantine/core";
 import { resetLocalStorage } from "../../util/local-storage";
-import { IconFolderCode, IconRotateDot } from "@tabler/icons-react";
+import { IconFolderCode, IconRotateDot, IconTrash } from "@tabler/icons-react";
 import { CommandButton } from "@components/command-button";
 import { commands } from "@api/bindings";
+import { getDataCache } from "../../util/data-cache";
 
 export function SettingsPage() {
 	return (
@@ -26,6 +27,12 @@ export function SettingsPage() {
 						Reset settings to defaults
 					</Button>
 				</Tooltip>
+				<Button
+					onClick={() => getDataCache().clear}
+					leftSection={<IconTrash />}
+				>
+					Clear cached games
+				</Button>
 			</Stack>
 		</Container>
 	);
