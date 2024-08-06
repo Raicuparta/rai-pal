@@ -33,6 +33,7 @@ use specta_typescript::{BigIntExportBehavior, Typescript};
 use tauri::path::BaseDirectory;
 use tauri::{AppHandle, Manager};
 use tauri_plugin_log::{Target, TargetKind};
+use tauri_plugin_window_state::StateFlags;
 use tauri_specta::Builder;
 
 mod app_state;
@@ -530,7 +531,11 @@ fn main() {
 
 	tauri::Builder::default()
 		.plugin(tauri_plugin_store::Builder::new().build())
-		.plugin(tauri_plugin_window_state::Builder::default().build())
+		.plugin(
+			tauri_plugin_window_state::Builder::default()
+				.with_state_flags(StateFlags::POSITION | StateFlags::SIZE)
+				.build(),
+		)
 		.plugin(tauri_plugin_dialog::init())
 		.plugin(tauri_plugin_updater::Builder::default().build())
 		.plugin(

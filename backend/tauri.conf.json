@@ -42,17 +42,25 @@
         "width": 800,
         "height": 600,
         "minHeight": 300,
-        "minWidth": 800
+        "minWidth": 800,
+        "visible": false
       }
     ],
-    "withGlobalTauri": false,
+    "withGlobalTauri": true,
     "security": {
       "csp": {
         "img-src": [
-          "https://cdn1.epicgames.com",
-          "https://img.itch.zone",
-          "https://cdn.cloudflare.steamstatic.com",
-          "https://images.gog.com"
+          "'self'",
+          "http://tauri.localhost",
+          "https://*.epicgames.com",
+          "https://*.itch.zone",
+          "https://*.steamstatic.com",
+          "https://*.gog.com",
+          "https://*.patreonusercontent.com",
+          "https://*.patreon.com"
+        ],
+        "style-src": [
+          "'unsafe-inline'"
         ]
       }
     }
