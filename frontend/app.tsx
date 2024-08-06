@@ -14,9 +14,10 @@ import {
 import { ThanksPage } from "@components/thanks/thanks-page";
 import { useAtomValue } from "jotai";
 import { PageTab } from "@components/page-tab";
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { useAppUpdater } from "@hooks/use-app-updater";
 import { ThanksTabIcon } from "@components/thanks/thanks-tab-icon";
+import { usePersistedState } from "@hooks/use-persisted-state";
 
 const pages = {
 	installedGames: {
@@ -54,6 +55,10 @@ function App() {
 
 	const installedGames = useAtomValue(installedGamesAtom);
 	const ownedGames = useAtomValue(ownedGamesAtom);
+	const [selectedTab, setSelectedTab] = usePersistedState(
+		firstPage,
+		"selected-app-tab",
+	);
 
 	const counts: TabCounts = useMemo(
 		() => ({
@@ -66,11 +71,19 @@ function App() {
 		[installedGames.data.size, ownedGames.data.size],
 	);
 
+	const handleTabChange = useCallback(
+		(pageId: string | null) => {
+			setSelectedTab(pageId as PageId);
+		},
+		[setSelectedTab],
+	);
+
 	return (
 		<>
 			<AppNotifications />
 			<Tabs
-				defaultValue={firstPage}
+				value={selectedTab}
+				onChange={handleTabChange}
 				radius={0}
 			>
 				<Stack
