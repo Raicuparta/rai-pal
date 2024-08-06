@@ -28,6 +28,7 @@ export const [remoteModsAtom, useRemoteModsSubscription] = dataSubscription(
 );
 
 export const [remoteGamesAtom, useRemoteGamesSubscription] = commandData(
+	"fetchRemoteGames",
 	commands.fetchRemoteGames,
 	[],
 );
