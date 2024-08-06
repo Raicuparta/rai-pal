@@ -103,15 +103,6 @@ export function useProcessedOwnedGames() {
 					? normalizeTitle(ownedGame.name)
 					: ownedGame.id.replace(`${ownedGame.provider}_`, "");
 
-			if (map === databaseGamesByProvider.title) {
-				console.log(
-					"map === databaseGamesByProvider.title",
-					key,
-					"and...",
-					map[key],
-				);
-			}
-
 			return map[key];
 		}
 
