@@ -358,32 +358,32 @@ fn owned_game_callback(handle: AppHandle) -> impl Fn(OwnedGame) {
 	}
 }
 
-async fn update_mods(handle: AppHandle, resources_path: PathBuf) {
+#[tauri::command]
+#[specta::specta]
+async fn update_local_mods(handle: AppHandle) -> Result {
+	let resources_path = handle
+		.path()
+		.resolve("resources", BaseDirectory::Resource)
+		.map_err(|err| Error::FailedToGetResourcesPath(err.to_string()))?;
+
 	let mod_loaders = mod_loader::get_map(&resources_path);
 
-	match mod_loader::get_data_map(&mod_loaders) {
-		Ok(mod_loaders_data_map) => {
-			handle.emit_safe(events::SyncModLoaders(mod_loaders_data_map));
-			update_state(mod_loaders.clone(), &handle.app_state().mod_loaders);
+	handle.emit_safe(events::SyncModLoaders(mod_loader::get_data_map(
+		&mod_loaders,
+	)?));
+	update_state(mod_loaders.clone(), &handle.app_state().mod_loaders);
 
-			refresh_local_mods(&mod_loaders, &handle);
-			refresh_remote_mods(&mod_loaders, &handle).await;
-		}
-		Err(err) => {
-			handle.emit_error(format!("Failed to get mod loaders: {err}"));
-		}
-	}
+	refresh_local_mods(&mod_loaders, &handle);
+	refresh_remote_mods(&mod_loaders, &handle).await;
+
+	Ok(())
 }
 
-async fn update_remote_games(handle: AppHandle) {
-	match remote_games::get().await {
-		Ok(remote_games) => {
-			handle.emit_safe(events::SyncRemoteGames(remote_games));
-		}
-		Err(err) => {
-			handle.emit_error(format!("Failed to get remote games: {err}"));
-		}
-	}
+#[tauri::command]
+#[specta::specta]
+async fn update_remote_games(handle: AppHandle) -> Result {
+	handle.emit_safe(events::SyncRemoteGames(remote_games::get().await?));
+	Ok(())
 }
 
 #[tauri::command]
@@ -397,29 +397,6 @@ async fn get_provider_games(handle: AppHandle, provider_id: ProviderId) -> Resul
 			owned_game_callback(handle.clone()),
 		)
 		.await?;
-
-	Ok(())
-}
-
-#[tauri::command]
-#[specta::specta]
-async fn update_data(handle: AppHandle) -> Result {
-	let resources_path = handle
-		.path()
-		.resolve("resources", BaseDirectory::Resource)
-		.map_err(|err| Error::FailedToGetResourcesPath(err.to_string()))?;
-
-	let results = futures::future::join_all([
-		tokio::spawn(update_mods(handle.clone(), resources_path)),
-		tokio::spawn(update_remote_games(handle.clone())),
-	])
-	.await;
-
-	for result in results {
-		if let Err(err) = result {
-			handle.emit_error(format!("Error updating data: {err}"));
-		}
-	}
 
 	Ok(())
 }
@@ -527,7 +504,8 @@ fn main() {
 			start_game,
 			uninstall_all_mods,
 			uninstall_mod,
-			update_data,
+			update_local_mods,
+			update_remote_games,
 			get_provider_games
 		])
 		.events(events::collect_events());

@@ -205,9 +205,17 @@ async uninstallMod(installedGame: InstalledGame, modId: string) : Promise<Result
     else return { status: "error", error: e  as any };
 }
 },
-async updateData() : Promise<Result<null, Error>> {
+async updateLocalMods() : Promise<Result<null, Error>> {
     try {
-    return { status: "ok", data: await TAURI_INVOKE("update_data") };
+    return { status: "ok", data: await TAURI_INVOKE("update_local_mods") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async updateRemoteGames() : Promise<Result<null, Error>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("update_remote_games") };
 } catch (e) {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };

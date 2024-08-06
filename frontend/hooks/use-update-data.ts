@@ -28,7 +28,8 @@ export function useUpdateData() {
 				.finally(() => setLoading((previousLoading) => previousLoading - 1));
 		}
 
-		updateDataPart(commands.updateData());
+		updateDataPart(commands.updateLocalMods());
+		updateDataPart(commands.updateRemoteGames());
 		updateDataPart(commands.getProviderGames("Steam"));
 		updateDataPart(commands.getProviderGames("Epic"));
 		updateDataPart(commands.getProviderGames("Itch"));
