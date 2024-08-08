@@ -29,7 +29,10 @@ lazy_static = "1.4.0"
 lazy-regex = "3.0.2"
 pelite = "0.10.0"
 rand = "0.8.5"
-reqwest = { version = "0.12.5", features = ["json"] }
+reqwest = { version = "0.12.5", features = [
+  "json",
+  "gzip", # We have some large JSONs in the Rai Pal Database, so gzip is useful.
+] }
 rusqlite = { version = "0.31.0", features = ["bundled"] }
 serde_urlencoded = "0.7.1"
 steamlocate = "2.0.0-beta.2"
