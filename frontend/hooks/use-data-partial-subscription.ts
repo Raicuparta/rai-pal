@@ -46,13 +46,14 @@ export function dataPartialSubscription<
 				.then((data) => {
 					if (data) {
 						dataRef.current = new Map([...data, ...dataRef.current]) as TData;
+						updateState();
 					}
 				})
 				.catch((error) => {
 					console.error("Failed to load cached data. Clearing cache", error);
 					getDataCache().set(cacheId, []);
 				});
-		}, []);
+		}, [updateState]);
 
 		return stateAtom;
 	}
