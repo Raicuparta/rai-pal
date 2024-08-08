@@ -10,7 +10,7 @@ export const [installedGamesAtom, useInstalledGamesSubscription] =
 	dataPartialSubscription("foundInstalledGame", (payload) => payload.id);
 
 export const [ownedGamesAtom, useOwnedGamesSubscription] =
-	dataPartialSubscription("foundOwnedGame", (payload) => payload.id);
+	dataPartialSubscription("foundOwnedGame", (payload) => payload.globalId);
 
 export const [modLoadersAtom, useModLoadersSubscription] = dataSubscription(
 	events.syncModLoaders,

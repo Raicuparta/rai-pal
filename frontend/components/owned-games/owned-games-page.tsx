@@ -114,7 +114,7 @@ export function OwnedGamesPage() {
 				data={filteredGames}
 				columns={filteredColumns}
 				onChangeSort={setSort}
-				onClickItem={(game) => setSelectedGameId(game.id)}
+				onClickItem={(game) => setSelectedGameId(game.globalId)}
 				sort={sort}
 			/>
 		</Stack>

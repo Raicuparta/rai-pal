@@ -101,14 +101,14 @@ export function useProcessedOwnedGames() {
 			const key =
 				map === databaseGamesByProvider.title
 					? normalizeTitle(ownedGame.name)
-					: ownedGame.id.replace(`${ownedGame.provider}_`, "");
+					: ownedGame.providerGameId;
 
 			return map[key];
 		}
 
 		for (const [gameId, ownedGame] of ownedGames.data.entries()) {
 			const installedGame =
-				installedGamesByProvider[ownedGame.provider][ownedGame.id];
+				installedGamesByProvider[ownedGame.provider][ownedGame.globalId];
 
 			result[gameId] = {
 				...ownedGame,

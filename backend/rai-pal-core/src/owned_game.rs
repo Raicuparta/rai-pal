@@ -13,7 +13,8 @@ use crate::{
 
 #[serializable_struct]
 pub struct OwnedGame {
-	pub id: String,
+	pub global_id: String,
+	pub provider_game_id: String,
 	pub provider: ProviderId,
 	pub name: String,
 	pub release_date: Option<i64>,
@@ -27,7 +28,8 @@ pub struct OwnedGame {
 impl OwnedGame {
 	pub fn new(provider_game_id: &str, provider: ProviderId, name: &str) -> Self {
 		Self {
-			id: get_id(provider, provider_game_id),
+			global_id: get_global_id(provider, provider_game_id),
+			provider_game_id: provider_game_id.to_string(),
 			provider,
 			name: name.to_string(),
 			provider_commands: HashMap::default(),
@@ -77,6 +79,6 @@ impl OwnedGame {
 	}
 }
 
-pub fn get_id(provider: ProviderId, provider_game_id: &str) -> String {
+pub fn get_global_id(provider: ProviderId, provider_game_id: &str) -> String {
 	format!("{provider}_{provider_game_id}")
 }

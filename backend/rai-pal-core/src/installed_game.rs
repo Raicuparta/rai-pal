@@ -95,7 +95,7 @@ impl InstalledGame {
 	}
 
 	pub fn set_provider_game_id(&mut self, provider_game_id: &str) -> &Self {
-		self.owned_game_id = Some(owned_game::get_id(self.provider, provider_game_id));
+		self.owned_game_id = Some(owned_game::get_global_id(self.provider, provider_game_id));
 		self
 	}
 
