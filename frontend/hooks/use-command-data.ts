@@ -1,16 +1,14 @@
 import { useSetAtom, atom } from "jotai";
-import { atomWithStorage } from "jotai/utils";
 import { useAsyncCommand } from "./use-async-command";
 import { useEffect } from "react";
-import { type commands, Result } from "@api/bindings";
+import { Result } from "@api/bindings";
 import { loadingCountAtom } from "./use-data";
 
 export function commandData<TResultValue, TError>(
-	id: keyof typeof commands,
 	command: () => Promise<Result<TResultValue, TError>>,
 	defaultValue: TResultValue,
 ) {
-	const stateAtom = atomWithStorage<TResultValue>(id, defaultValue);
+	const stateAtom = atom<TResultValue>(defaultValue);
 
 	function useCommandData() {
 		const [asyncCommand] = useAsyncCommand(command);
