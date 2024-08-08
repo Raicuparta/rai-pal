@@ -41,18 +41,17 @@ export function dataPartialSubscription<
 		});
 
 		useEffect(() => {
-			try {
-				getDataCache()
-					.get<[string, EventPayload<TEvent>][]>(cacheId)
-					.then((data) => {
-						if (data) {
-							dataRef.current = new Map([...data, ...dataRef.current]) as TData;
-						}
-					});
-			} catch (error) {
-				console.error("Failed to load cached data. Clearing cache", error);
-				getDataCache().set(cacheId, []);
-			}
+			getDataCache()
+				.get<[string, EventPayload<TEvent>][]>(cacheId)
+				.then((data) => {
+					if (data) {
+						dataRef.current = new Map([...data, ...dataRef.current]) as TData;
+					}
+				})
+				.catch((error) => {
+					console.error("Failed to load cached data. Clearing cache", error);
+					getDataCache().set(cacheId, []);
+				});
 		}, []);
 
 		return stateAtom;
