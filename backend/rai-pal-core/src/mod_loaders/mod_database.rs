@@ -64,10 +64,8 @@ pub struct ModGithubInfo {
 }
 
 pub async fn get(mod_loader_id: &str) -> Result<ModDatabase> {
-	let random = rand::random::<u32>();
-
 	Ok(reqwest::get(format!(
-		"{URL_BASE}/{DATABASE_VERSION}/{mod_loader_id}.json?cache_avoider={random}"
+		"{URL_BASE}/{DATABASE_VERSION}/{mod_loader_id}.json"
 	))
 	.await?
 	.json::<ModDatabase>()

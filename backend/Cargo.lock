@@ -3408,7 +3408,6 @@ dependencies = [
  "open",
  "pelite",
  "rai-pal-proc-macros",
- "rand 0.8.5",
  "reqwest",
  "rusqlite",
  "serde",
