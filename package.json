@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "tauri dev",
     "build": "tauri build",
-    "build-debug": "tauri build --debug --no-bundle --verbose",
+    "build-debug": "tauri build --debug --no-bundle",
     "vite": "vite",
     "tauri": "tauri",
     "update-icons": "tauri icon backend/icons/icon-source.png",

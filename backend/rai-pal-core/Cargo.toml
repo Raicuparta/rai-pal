@@ -6,16 +6,12 @@ edition.workspace = true
 [lib]
 
 [dependencies]
-futures.workspace = true
 log.workspace = true
 open.workspace = true
 rai-pal-proc-macros.workspace = true
 serde_json.workspace = true
 serde.workspace = true
 specta.workspace = true
-tauri-specta.workspace = true
-thiserror.workspace = true
-tokio.workspace = true
 
 async-trait = "0.1.74"
 base64 = "0.22.1"
@@ -38,6 +34,9 @@ serde_urlencoded = "0.7.1"
 steamlocate = "2.0.0-beta.2"
 uuid = { version = "1.8.0", features = ["v4"] }
 zip = "0.6.6"
+tokio = { version = "1.35.1", features = ["macros"] }
+thiserror = "1.0.50"
+futures = "0.3.29"
 
 [target.'cfg(target_os = "linux")'.dependencies]
 webkit2gtk = "2.0.1"

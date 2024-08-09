@@ -3487,7 +3487,6 @@ checksum = "dc33ff2d4973d518d823d61aa239014831e521c75da58e3df4840d3f47749d09"
 name = "rai-pal"
 version = "0.13.0"
 dependencies = [
- "futures",
  "log",
  "open",
  "rai-pal-core",
@@ -3500,14 +3499,11 @@ dependencies = [
  "tauri-build",
  "tauri-plugin-dialog",
  "tauri-plugin-log",
- "tauri-plugin-process",
  "tauri-plugin-store",
  "tauri-plugin-updater",
  "tauri-plugin-window-state",
  "tauri-runtime",
  "tauri-specta",
- "thiserror",
- "tokio",
  "webkit2gtk",
  "webview2-com",
  "winapi",
@@ -3541,7 +3537,6 @@ dependencies = [
  "serde_urlencoded",
  "specta",
  "steamlocate",
- "tauri-specta",
  "thiserror",
  "tokio",
  "uuid",
@@ -4853,16 +4848,6 @@ dependencies = [
  "tauri-plugin",
  "thiserror",
  "time",
-]
-
-[[package]]
-name = "tauri-plugin-process"
-version = "2.0.0-rc.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "96d3663df0cd3e96feb37d46aad5d499d2edfcca5c62548ad34f1684e0019168"
-dependencies = [
- "tauri",
- "tauri-plugin",
 ]
 
 [[package]]

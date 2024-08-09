@@ -2209,41 +2209,6 @@
           ]
         },
         {
-          "description": "process:default -> This permission set configures which\nprocess feeatures are by default exposed.\n\n#### Granted Permissions\n\nThis enables to quit via `allow-exit` and restart via `allow-restart`\nthe application.\n",
-          "type": "string",
-          "enum": [
-            "process:default"
-          ]
-        },
-        {
-          "description": "process:allow-exit -> Enables the exit command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "process:allow-exit"
-          ]
-        },
-        {
-          "description": "process:allow-restart -> Enables the restart command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "process:allow-restart"
-          ]
-        },
-        {
-          "description": "process:deny-exit -> Denies the exit command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "process:deny-exit"
-          ]
-        },
-        {
-          "description": "process:deny-restart -> Denies the restart command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "process:deny-restart"
-          ]
-        },
-        {
           "description": "store:default -> This permission set configures what kind of\noperations are available from the store plugin.\n\n#### Granted Permissions\n\nAll operations are enabled by default.\n\n",
           "type": "string",
           "enum": [
