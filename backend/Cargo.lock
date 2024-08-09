@@ -894,9 +894,6 @@ name = "dataview"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "50eb3a329e19d78c3a3dfa4ec5a51ecb84fa3a20c06edad04be25356018218f9"
-dependencies = [
- "derive_pod",
-]
 
 [[package]]
 name = "deranged"
@@ -942,12 +939,6 @@ dependencies = [
  "rustc_version",
  "syn 2.0.72",
 ]
-
-[[package]]
-name = "derive_pod"
-version = "0.1.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c2ea6706d74fca54e15f1d40b5cf7fe7f764aaec61352a9fcec58fe27e042fc8"
 
 [[package]]
 name = "digest"
@@ -2920,10 +2911,8 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "88dccf4bd32294364aeb7bd55d749604450e9db54605887551f21baea7617685"
 dependencies = [
  "dataview",
- "libc",
  "no-std-compat",
  "pelite-macros",
- "winapi",
 ]
 
 [[package]]
