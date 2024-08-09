@@ -563,6 +563,14 @@ fn main() {
 
 			if let Some(window) = app.get_webview_window("main") {
 				window.set_title(&format!("Rai Pal {}", env!("CARGO_PKG_VERSION")))?;
+
+				// Window is created hidden in tauri.conf.json.
+				// We show it here once everything is ready, which reduces the jumping around
+				// that happens while waiting for tauri_plugin_window_state to do its thing.
+				// We could also trigger this on the frontend to reduce the white flash,
+				// but it never seems to go away, and that introduces an extra delay
+				// until something is visible, so I figure I'd just show it here.
+				window.show()?;
 			}
 
 			Ok(())

@@ -14,7 +14,6 @@
     "dialog:allow-open",
     "dialog:allow-ask",
     "updater:allow-check",
-    "store:default",
-    "core:window:allow-show"
+    "store:default"
   ]
 }

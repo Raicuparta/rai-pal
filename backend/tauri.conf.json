@@ -46,7 +46,6 @@
         "visible": false
       }
     ],
-    "withGlobalTauri": true,
     "security": {
       "dangerousDisableAssetCspModification": [
         "style-src-elem"
