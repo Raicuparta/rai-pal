@@ -15,11 +15,10 @@ specta.workspace = true
 
 base64 = "0.22.1"
 byteorder = "1.5.0"
-chrono = "0.4.31"
+chrono = { version = "0.4.31", default-features = false, features = ["std"] }
 directories = "5.0.1"
 enum_dispatch = "0.3.12"
 globwalk = "0.9.1"
-goblin = "0.8.2"
 lazy_static = "1.4.0"
 lazy-regex = "3.0.2"
 pelite = "0.10.0"

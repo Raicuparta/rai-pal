@@ -20,13 +20,6 @@ pub enum Error {
 	),
 
 	#[error(transparent)]
-	Goblin(
-		#[from]
-		#[serde(skip)]
-		goblin::error::Error,
-	),
-
-	#[error(transparent)]
 	Zip(
 		#[from]
 		#[serde(skip)]
