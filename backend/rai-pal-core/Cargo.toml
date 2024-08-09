@@ -33,10 +33,10 @@ rusqlite = { version = "0.32.1", features = ["bundled"] }
 serde_urlencoded = "0.7.1"
 steamlocate = "2.0.0-beta.2"
 uuid = { version = "1.8.0", features = ["v4"] }
-zip = "0.6.6"
 tokio = { version = "1.35.1", features = ["macros"] }
 thiserror = "1.0.50"
 futures = "0.3.29"
+zip = { version = "1.1.4", default-features = false, features = ["deflate"] }
 
 [target.'cfg(target_os = "windows")'.dependencies]
 winapi = { version = "0.3.9", features = ["winuser"] }
