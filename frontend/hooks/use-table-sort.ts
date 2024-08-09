@@ -12,7 +12,7 @@ export function useTableSort(tableId: string, defaultId?: string) {
 			id: defaultId,
 			reverse: false,
 		},
-		tableId,
+		`table-sort-${tableId}`,
 	);
 
 	const updateSort = useCallback(

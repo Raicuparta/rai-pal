@@ -20,7 +20,7 @@ export function useFilteredList<TKey extends string, TItem, TFilter>(
 	);
 	const [filter, setFilter] = usePersistedState<TFilter>(
 		defaultFilterValue,
-		id,
+		`filtered-list-${id}`,
 	);
 	const [search, setSearch] = useState("");
 
