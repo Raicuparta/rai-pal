@@ -2401,9 +2401,9 @@ dependencies = [
 
 [[package]]
 name = "libsqlite3-sys"
-version = "0.28.0"
+version = "0.30.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0c10584274047cb335c23d3e61bcef8e323adae7c5c8c760540f73610177fc3f"
+checksum = "2e99fb7a497b1e3339bc746195567ed8d3e24945ecd636e3619d20b9de9e9149"
 dependencies = [
  "cc",
  "pkg-config",
@@ -3504,10 +3504,6 @@ dependencies = [
  "tauri-plugin-window-state",
  "tauri-runtime",
  "tauri-specta",
- "webkit2gtk",
- "webview2-com",
- "winapi",
- "winreg 0.52.0",
 ]
 
 [[package]]
@@ -3540,8 +3536,6 @@ dependencies = [
  "thiserror",
  "tokio",
  "uuid",
- "webkit2gtk",
- "webview2-com",
  "winapi",
  "winreg 0.52.0",
  "zip 0.6.6",
@@ -3549,7 +3543,7 @@ dependencies = [
 
 [[package]]
 name = "rai-pal-proc-macros"
-version = "0.1.0"
+version = "0.13.0"
 dependencies = [
  "quote",
  "serde",
@@ -3851,9 +3845,9 @@ dependencies = [
 
 [[package]]
 name = "rusqlite"
-version = "0.31.0"
+version = "0.32.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b838eba278d213a8beaf485bd313fd580ca4505a00d5871caeb1457c55322cae"
+checksum = "7753b721174eb8ff87a9a0e799e2d7bc3749323e773db92e0984debb00019d6e"
 dependencies = [
  "bitflags 2.6.0",
  "fallible-iterator",
@@ -4382,9 +4376,9 @@ dependencies = [
 
 [[package]]
 name = "specta"
-version = "2.0.0-rc.19"
+version = "2.0.0-rc.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c55a15e1cd11cd8b7bb846d2770ac2870f661a3cfe0b9744acf9da4d902ad931"
+checksum = "4ccbb212565d2dc177bc15ecb7b039d66c4490da892436a4eee5b394d620c9bc"
 dependencies = [
  "paste",
  "specta-macros",
@@ -4405,9 +4399,9 @@ dependencies = [
 
 [[package]]
 name = "specta-serde"
-version = "0.0.6"
+version = "0.0.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "22c118b7369eac59b0b6e84e72b0dcc443efee3f6390f78fc5e9b2f388130b7e"
+checksum = "12260cbb21abb2e83a0375b1521867910e3aed8a7afa782206150ce552cd2e5a"
 dependencies = [
  "specta",
  "thiserror",
@@ -4415,9 +4409,9 @@ dependencies = [
 
 [[package]]
 name = "specta-typescript"
-version = "0.0.6"
+version = "0.0.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5f681a64d09d0f9a898af8b443d2d1b866b1adb350d09da6ada186e10321c4f6"
+checksum = "b1e4472229365ceb6395487e3a60d921ad8e21f9ad06eaecc396f098902c9adc"
 dependencies = [
  "specta",
  "specta-serde",
@@ -4954,9 +4948,9 @@ dependencies = [
 
 [[package]]
 name = "tauri-specta"
-version = "2.0.0-rc.14"
+version = "2.0.0-rc.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c546a51bfe005c03e10b5a71c752165bd94b46566dfe0a409f409d67e17a3361"
+checksum = "5146a4f94911b69b6086a0a700e8748b96cc18220b0504d5085dc0f856d2bec7"
 dependencies = [
  "heck 0.5.0",
  "serde",

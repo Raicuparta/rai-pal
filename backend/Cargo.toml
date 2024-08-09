@@ -27,7 +27,7 @@ specta = "2.0.0-rc.19"
 tauri-specta = { version = "2.0.0-rc.14", features = ["derive", "typescript"] }
 
 [dependencies]
-specta-typescript = "0.0.6"
+specta-typescript = "0.0.7"
 tauri = { version = "2.0.0-rc.0", features = [] }
 tauri-plugin-dialog = "2.0.0-rc.0"
 tauri-plugin-log = "2.0.0-rc.0"
@@ -44,14 +44,6 @@ serde_json.workspace = true
 serde.workspace = true
 specta.workspace = true
 tauri-specta.workspace = true
-
-[target.'cfg(target_os = "linux")'.dependencies]
-webkit2gtk = "2.0.1"
-webview2-com = "0.31.0" # Needed for getting the webview window on linux
-
-[target.'cfg(target_os = "windows")'.dependencies]
-winapi = { version = "0.3.9", features = ["shellapi", "winuser"] }
-winreg = "0.52.0"
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem

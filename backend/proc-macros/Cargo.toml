@@ -1,8 +1,7 @@
 [package]
 name = "rai-pal-proc-macros"
-version = "0.1.0"
-authors = ["Raicuparta"]
-license = "GPL-3.0-or-later"
+version.workspace = true
+edition.workspace = true
 
 [lib]
 proc-macro = true
