@@ -473,7 +473,7 @@ fn main() {
 	// So I can just catch panics here and show a system message with the error.
 	std::panic::set_hook(Box::new(|info| {
 		#[cfg(target_os = "windows")]
-		windows::error_dialog(&info.to_string());
+		windows::error_dialog(&format!("I found a panic!!!: {info}"));
 
 		#[cfg(target_os = "linux")]
 		log::error!("Panic: {info}");
@@ -567,6 +567,15 @@ fn main() {
 				// but it never seems to go away, and that introduces an extra delay
 				// until something is visible, so I figure I'd just show it here.
 				window.show()?;
+
+				window.on_window_event(|event| {
+					if let tauri::WindowEvent::Destroyed { .. } = event {
+						// Once the window is closed, we don't need to report panics anymore.
+						// I'm doing this because closing the window abruptly while events are being sent
+						// causes panics, so it was easy to trigger those messages by just closing while loading data.
+						let _ = std::panic::take_hook();
+					}
+				});
 			}
 
 			Ok(())
