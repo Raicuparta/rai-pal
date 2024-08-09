@@ -1,7 +1,5 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
-// There's some weird tauri thing making this clippy error show up everywhere.
-#![allow(clippy::used_underscore_binding)]
 // Command stuff needs to be async so I can spawn tasks.
 #![allow(clippy::unused_async)]
 
@@ -270,7 +268,7 @@ fn refresh_local_mods(mod_loaders: &mod_loader::Map, handle: &AppHandle) -> loca
 	let local_mods: HashMap<_, _> = mod_loaders
 		.values()
 		.filter_map(|mod_loader| {
-			mod_loader.get_local_mods().ok() // don't swallow error.
+			mod_loader.get_local_mods().ok() // TODO: don't swallow error.
 		})
 		.flatten()
 		.collect();
