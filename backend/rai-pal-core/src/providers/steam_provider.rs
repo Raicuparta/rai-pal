@@ -5,7 +5,6 @@ use std::{
 	path::{Path, PathBuf},
 };
 
-use async_trait::async_trait;
 use futures::StreamExt;
 use lazy_regex::BytesRegex;
 use steamlocate::SteamDir;
@@ -237,7 +236,6 @@ impl Steam {
 	}
 }
 
-#[async_trait]
 impl ProviderActions for Steam {
 	async fn get_games<TInstalledCallback, TOwnedCallback>(
 		&self,

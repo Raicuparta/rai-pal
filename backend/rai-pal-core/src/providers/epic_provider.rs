@@ -6,7 +6,6 @@ use std::{
 	path::{Path, PathBuf},
 };
 
-use async_trait::async_trait;
 use base64::engine::general_purpose;
 use log::error;
 use rai_pal_proc_macros::serializable_struct;
@@ -177,7 +176,6 @@ impl EpicCatalogItem {
 	}
 }
 
-#[async_trait]
 impl ProviderActions for Epic {
 	async fn get_games<TInstalledCallback, TOwnedCallback>(
 		&self,

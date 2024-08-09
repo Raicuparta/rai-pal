@@ -2,7 +2,6 @@
 
 use std::path::{Path, PathBuf};
 
-use async_trait::async_trait;
 use log::error;
 use rai_pal_proc_macros::serializable_struct;
 use rusqlite::{Connection, OpenFlags};
@@ -94,7 +93,6 @@ impl ProviderStatic for Gog {
 	}
 }
 
-#[async_trait]
 impl ProviderActions for Gog {
 	async fn get_games<TInstalledCallback, TOwnedCallback>(
 		&self,

@@ -2,7 +2,6 @@
 
 use std::path::PathBuf;
 
-use async_trait::async_trait;
 use log::error;
 use winreg::{
 	enums::{HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE},
@@ -31,7 +30,6 @@ impl ProviderStatic for Xbox {
 	}
 }
 
-#[async_trait]
 impl ProviderActions for Xbox {
 	async fn get_games<TInstalledCallback, TOwnedCallback>(
 		&self,

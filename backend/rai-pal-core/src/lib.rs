@@ -1,3 +1,5 @@
+#![allow(async_fn_in_trait)]
+
 pub mod analytics;
 pub mod app_type;
 pub mod debug;

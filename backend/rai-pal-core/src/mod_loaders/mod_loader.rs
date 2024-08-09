@@ -4,7 +4,6 @@ use std::{
 	path::{Path, PathBuf},
 };
 
-use async_trait::async_trait;
 use enum_dispatch::enum_dispatch;
 use log::error;
 use rai_pal_proc_macros::serializable_struct;
@@ -37,7 +36,6 @@ pub enum ModLoader {
 	RunnableLoader,
 }
 
-#[async_trait]
 #[enum_dispatch(ModLoader)]
 pub trait ModLoaderActions {
 	fn install(&self, game: &InstalledGame) -> Result;

@@ -1,6 +1,5 @@
 use std::path::{Path, PathBuf};
 
-use async_trait::async_trait;
 use chrono::DateTime;
 use log::error;
 use rai_pal_proc_macros::serializable_struct;
@@ -102,7 +101,6 @@ pub struct ItchDatabase {
 	caves: Vec<ItchDatabaseCave>,
 }
 
-#[async_trait]
 impl ProviderActions for Itch {
 	async fn get_games<TInstalledCallback, TOwnedCallback>(
 		&self,

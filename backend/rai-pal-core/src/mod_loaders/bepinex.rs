@@ -4,7 +4,6 @@ use std::{
 	path::{Path, PathBuf},
 };
 
-use async_trait::async_trait;
 use rai_pal_proc_macros::serializable_struct;
 use zip::ZipArchive;
 
@@ -44,7 +43,6 @@ impl ModLoaderStatic for BepInEx {
 	}
 }
 
-#[async_trait]
 impl ModLoaderActions for BepInEx {
 	fn get_data(&self) -> &ModLoaderData {
 		&self.data

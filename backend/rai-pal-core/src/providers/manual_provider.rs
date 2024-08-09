@@ -3,7 +3,6 @@ use std::{
 	path::{Path, PathBuf},
 };
 
-use async_trait::async_trait;
 use log::error;
 use rai_pal_proc_macros::serializable_struct;
 
@@ -34,7 +33,6 @@ impl ProviderStatic for Manual {
 	}
 }
 
-#[async_trait]
 impl ProviderActions for Manual {
 	async fn get_games<TInstalledCallback, TOwnedCallback>(
 		&self,

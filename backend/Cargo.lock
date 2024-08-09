@@ -3425,7 +3425,6 @@ dependencies = [
 name = "rai-pal-core"
 version = "0.13.0"
 dependencies = [
- "async-trait",
  "base64 0.22.1",
  "byteorder",
  "chrono",

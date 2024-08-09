@@ -4,7 +4,6 @@ use std::{
 	path::PathBuf,
 };
 
-use async_trait::async_trait;
 use enum_dispatch::enum_dispatch;
 
 #[cfg(target_os = "windows")]
@@ -54,7 +53,6 @@ const PROVIDERS: &Map = &[
 	create_map_entry::<Xbox>(),
 ];
 
-#[async_trait]
 #[enum_dispatch(Provider)]
 pub trait ProviderActions {
 	async fn get_games<TInstalledCallback, TOwnedCallback>(

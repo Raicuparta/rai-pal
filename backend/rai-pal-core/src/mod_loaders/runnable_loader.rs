@@ -3,7 +3,6 @@ use std::{
 	process::Command,
 };
 
-use async_trait::async_trait;
 use log::error;
 use rai_pal_proc_macros::serializable_struct;
 
@@ -106,7 +105,6 @@ fn replace_parameters(argument: &str, game: &InstalledGame) -> String {
 	result
 }
 
-#[async_trait]
 impl ModLoaderActions for RunnableLoader {
 	fn get_data(&self) -> &ModLoaderData {
 		&self.data
