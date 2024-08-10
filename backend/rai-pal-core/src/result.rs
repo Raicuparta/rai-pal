@@ -55,13 +55,6 @@ pub enum Error {
 	),
 
 	#[error(transparent)]
-	TaskJoin(
-		#[from]
-		#[serde(skip)]
-		tokio::task::JoinError,
-	),
-
-	#[error(transparent)]
 	UrlEncode(
 		#[from]
 		#[serde(skip)]
