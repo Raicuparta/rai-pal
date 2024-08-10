@@ -1,16 +1,21 @@
 import { Result } from "@api/bindings";
 import { showAppNotification } from "@components/app-notifications";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
+// This hook helps dealing with async commands given by the backend,
+// parsing the Result types that the backend uses.
+// It can also be used with any async function that doesn't return a
+// Result type, as a wrapper that adds loading and success states.
 export function useAsyncCommand<TResultValue, TError, TArgs = void>(
-	command: (args: TArgs) => Promise<Result<TResultValue, TError>>,
-	onSuccess?: (result: TResultValue) => void,
+	command: (
+		args: TArgs,
+	) => Promise<Result<TResultValue, TError> | TResultValue>,
 ) {
 	const [isLoading, setIsLoading] = useState(false);
 	const [success, setSuccess] = useState(false);
 	const timeout = useRef<number>();
 
-	const executeCommand = useCallback(
+	const executeCommand: (args: TArgs) => Promise<TResultValue> = useCallback(
 		async (args: TArgs) => {
 			setIsLoading(true);
 			setSuccess(false);
@@ -21,29 +26,41 @@ export function useAsyncCommand<TResultValue, TError, TArgs = void>(
 
 			return command(args)
 				.then((result) => {
-					if (result.status === "error") {
-						throw new Error(JSON.stringify(result.error));
+					if (result && typeof result === "object" && "status" in result) {
+						if (result.status === "error") {
+							throw new Error(JSON.stringify(result.error));
+						}
+
+						return result.data;
 					}
 
-					if (onSuccess) {
-						onSuccess(result.data);
-					}
+					return result;
+				})
+				.then((result) => {
 					setSuccess(true);
 
 					timeout.current = setTimeout(() => {
 						setSuccess(false);
 					}, 1000);
 
-					return result.data;
+					return result;
 				})
 				.catch((error) => {
 					showAppNotification(`Failed to execute command: ${error}`, "error");
-					return null;
+					throw error;
 				})
 				.finally(() => setIsLoading(false));
 		},
-		[command, onSuccess],
+		[command],
 	);
+
+	useEffect(() => {
+		return () => {
+			if (timeout.current) {
+				clearTimeout(timeout.current);
+			}
+		};
+	}, []);
 
 	return [executeCommand, isLoading, success] as const;
 }

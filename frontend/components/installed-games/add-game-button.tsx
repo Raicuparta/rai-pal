@@ -11,11 +11,7 @@ export function AddGame() {
 	const [isOpen, setIsOpen] = useState(false);
 	const isLoading = useAtomValue(loadingCountAtom);
 
-	const handleSuccess = useCallback(() => {
-		setIsOpen(false);
-	}, []);
-
-	const [executeAddGame] = useAsyncCommand(commands.addGame, handleSuccess);
+	const [executeAddGame] = useAsyncCommand(commands.addGame);
 
 	const handleClick = useCallback(async () => {
 		const result = await openDialog({
@@ -34,7 +30,7 @@ export function AddGame() {
 		});
 		if (!result) return;
 
-		await executeAddGame(result.path);
+		await executeAddGame(result.path).then(() => setIsOpen(false));
 	}, [executeAddGame]);
 
 	useEffect(() => {

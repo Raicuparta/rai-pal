@@ -15,8 +15,8 @@ import { usePersistedState } from "@hooks/use-persisted-state";
 import { Result } from "@api/bindings";
 
 interface Props<TResultValue, TError> extends ButtonProps {
-	readonly onClick: () => Promise<Result<TResultValue, TError>>;
-	readonly onSuccess?: () => void;
+	readonly onClick: () => Promise<Result<TResultValue, TError> | TResultValue>;
+	readonly onSuccess?: (result: TResultValue) => void;
 	readonly confirmationText?: string;
 	readonly confirmationSkipId?: string;
 }
@@ -38,18 +38,19 @@ function CommandButtonInternal<TResultValue, TError>(
 		`skip-confirm-${confirmationSkipId}`,
 	);
 	const [dontAskAgain, setDontAskAgain] = useState(false);
-	const [executeCommand, isLoading, success] = useAsyncCommand(
-		onClick,
-		onSuccess,
-	);
+	const [executeCommand, isLoading, success] = useAsyncCommand(onClick);
+
+	const executeCommandWithSuccessCallback = useCallback(() => {
+		executeCommand().then(onSuccess);
+	}, [executeCommand, onSuccess]);
 
 	const handleClick = useCallback(() => {
 		if (confirmationText && !shouldSkipConfirm) {
 			setIsConfirmationOpen(true);
 		} else {
-			executeCommand();
+			executeCommandWithSuccessCallback();
 		}
-	}, [confirmationText, shouldSkipConfirm, executeCommand]);
+	}, [confirmationText, shouldSkipConfirm, executeCommandWithSuccessCallback]);
 
 	const closeConfirmation = useCallback(() => {
 		setIsConfirmationOpen(false);
@@ -58,9 +59,14 @@ function CommandButtonInternal<TResultValue, TError>(
 
 	const confirm = useCallback(() => {
 		setShouldSkipConfirm(dontAskAgain);
-		executeCommand();
+		executeCommandWithSuccessCallback();
 		closeConfirmation();
-	}, [closeConfirmation, dontAskAgain, executeCommand, setShouldSkipConfirm]);
+	}, [
+		closeConfirmation,
+		dontAskAgain,
+		executeCommandWithSuccessCallback,
+		setShouldSkipConfirm,
+	]);
 
 	const isLongLoading = useLongLoading(isLoading);
 

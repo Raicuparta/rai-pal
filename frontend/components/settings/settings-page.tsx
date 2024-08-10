@@ -27,12 +27,12 @@ export function SettingsPage() {
 						Reset settings to defaults
 					</Button>
 				</Tooltip>
-				<Button
+				<CommandButton
 					onClick={clearDataCache}
 					leftSection={<IconTrash />}
 				>
 					Clear cached games
-				</Button>
+				</CommandButton>
 			</Stack>
 		</Container>
 	);
