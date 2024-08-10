@@ -28,7 +28,7 @@ export function SettingsPage() {
 					</Button>
 				</Tooltip>
 				<Button
-					onClick={() => getDataCache().clear}
+					onClick={() => getDataCache().clear()}
 					leftSection={<IconTrash />}
 				>
 					Clear cached games
