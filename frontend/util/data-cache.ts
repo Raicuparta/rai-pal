@@ -4,8 +4,8 @@ export function getDataCache() {
 	return new Store(".data-cache.dat");
 }
 
-export function clearDataCache() {
+export async function clearDataCache() {
 	const cache = getDataCache();
-	cache.reset();
-	cache.save();
+	await cache.reset();
+	await cache.save();
 }
