@@ -79,31 +79,30 @@ pub trait ModLoaderActions {
 			ModDatabase { mods: Vec::new() }
 		});
 
-		futures::future::join_all(database.mods.iter().map(|database_mod| async {
-			(
-				database_mod.id.clone(),
-				RemoteMod {
-					common: CommonModData {
-						id: database_mod.id.clone(),
-						engine: database_mod.engine,
-						engine_version_range: database_mod.engine_version_range.clone(),
-						unity_backend: database_mod.unity_backend,
-						loader_id: loader_id.clone(),
-					},
-					data: RemoteModData {
-						author: database_mod.author.clone(),
-						description: database_mod.description.clone(),
-						source_code: database_mod.source_code.clone(),
-						title: database_mod.title.clone(),
-						latest_version: database_mod.get_download().await,
-						deprecated: database_mod.deprecated.unwrap_or(false),
-					},
+		let mut mods_map = HashMap::new();
+
+		for database_mod in database.mods {
+			let remote_mod = RemoteMod {
+				common: CommonModData {
+					id: database_mod.id.clone(),
+					engine: database_mod.engine,
+					engine_version_range: database_mod.engine_version_range.clone(),
+					unity_backend: database_mod.unity_backend,
+					loader_id: loader_id.clone(),
 				},
-			)
-		}))
-		.await
-		.into_iter()
-		.collect()
+				data: RemoteModData {
+					author: database_mod.author.clone(),
+					description: database_mod.description.clone(),
+					source_code: database_mod.source_code.clone(),
+					title: database_mod.title.clone(),
+					latest_version: database_mod.get_download().await,
+					deprecated: database_mod.deprecated.unwrap_or(false),
+				},
+			};
+			mods_map.insert(database_mod.id.clone(), remote_mod);
+		}
+
+		mods_map
 	}
 
 	async fn download_mod(&self, remote_mod: &RemoteMod) -> Result {

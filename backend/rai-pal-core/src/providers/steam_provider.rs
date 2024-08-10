@@ -5,7 +5,6 @@ use std::{
 	path::{Path, PathBuf},
 };
 
-use futures::StreamExt;
 use lazy_regex::BytesRegex;
 use steamlocate::SteamDir;
 
@@ -185,8 +184,10 @@ impl Steam {
 
 		Ok(isolated_numbers)
 	}
+}
 
-	async fn get_steam_games<TInstalledCallback, TOwnedCallback>(
+impl ProviderActions for Steam {
+	async fn get_games<TInstalledCallback, TOwnedCallback>(
 		&self,
 		installed_callback: TInstalledCallback,
 		owned_callback: TOwnedCallback,
@@ -210,44 +211,26 @@ impl Steam {
 			HashSet::new()
 		});
 
-		futures::stream::iter(app_info_reader)
-			.for_each_concurrent(Some(20), |app_info_result| async {
-				match app_info_result {
-					Ok(app_info) => {
-						if let Some(owned_game) =
-							Self::get_owned_game(&app_info, &owned_ids_whitelist)
-						{
-							owned_callback(owned_game);
-						}
-						if let Some(app_path) = app_paths.get(&app_info.app_id) {
-							for installed_game in Self::get_installed_games(&app_info, app_path) {
-								installed_callback(installed_game);
-							}
-						}
+		for app_info_result in app_info_reader {
+			match app_info_result {
+				Ok(app_info) => {
+					if let Some(owned_game) = Self::get_owned_game(&app_info, &owned_ids_whitelist)
+					{
+						owned_callback(owned_game);
 					}
-					Err(error) => {
-						log::error!("Failed to read Steam appinfo: {}", error);
+					if let Some(app_path) = app_paths.get(&app_info.app_id) {
+						for installed_game in Self::get_installed_games(&app_info, app_path) {
+							installed_callback(installed_game);
+						}
 					}
 				}
-			})
-			.await;
+				Err(error) => {
+					log::error!("Failed to read Steam appinfo: {}", error);
+				}
+			}
+		}
 
 		Ok(())
-	}
-}
-
-impl ProviderActions for Steam {
-	async fn get_games<TInstalledCallback, TOwnedCallback>(
-		&self,
-		installed_callback: TInstalledCallback,
-		owned_callback: TOwnedCallback,
-	) -> Result
-	where
-		TInstalledCallback: Fn(InstalledGame) + Send + Sync,
-		TOwnedCallback: Fn(OwnedGame) + Send + Sync,
-	{
-		self.get_steam_games(installed_callback, owned_callback)
-			.await
 	}
 }
 
