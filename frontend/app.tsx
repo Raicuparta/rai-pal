@@ -62,13 +62,13 @@ function App() {
 
 	const counts: TabCounts = useMemo(
 		() => ({
-			installedGames: installedGames.data.size,
-			ownedGames: ownedGames.data.size,
+			installedGames: Object.entries(installedGames.data).length,
+			ownedGames: Object.entries(ownedGames.data).length,
 			mods: -1,
 			settings: -1,
 			thanks: -1,
 		}),
-		[installedGames.data.size, ownedGames.data.size],
+		[installedGames.data, ownedGames.data],
 	);
 
 	const handleTabChange = useCallback(

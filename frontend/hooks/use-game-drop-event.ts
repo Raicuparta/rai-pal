@@ -13,7 +13,7 @@ export function useGameDropEvent() {
 	useAppEvent(events.gameRemoved, (gameId) => {
 		setInstalledGames((previousInstalledGames) => {
 			// Mutating the inner value because we're doing some cursed thing for performance.
-			previousInstalledGames.data.delete(gameId);
+			delete previousInstalledGames.data[gameId];
 
 			// But creating a new object for the outer structure, to count as a new reference.
 			return {

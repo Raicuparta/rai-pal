@@ -11,16 +11,17 @@ import { events } from "@api/bindings";
 import { getDataCache } from "../util/data-cache";
 
 type PartialData<TEvent extends AppEvent> = {
-	data: Map<string, EventPayload<TEvent>>;
+	data: Record<string, EventPayload<TEvent>>;
 };
 
 export function dataPartialSubscription<
 	TEventId extends AppEventId,
 	TEvent extends AppEvent<TEventId>,
-	TData extends Map<string, EventPayload<TEvent>>,
 >(eventId: TEventId, getId: (payload: EventPayload<TEvent>) => string) {
+	type DataRecord = Record<string, EventPayload<TEvent>>;
+
 	const cacheId = `data-partial-subscription-cache-${eventId}`;
-	const defaultData = new Map() as TData;
+	const defaultData = {} as DataRecord;
 	const stateAtom = atom<PartialData<TEvent>>({
 		data: defaultData,
 	});
@@ -32,20 +33,20 @@ export function dataPartialSubscription<
 			setData({
 				data: dataRef.current,
 			});
-			getDataCache().set(cacheId, [...dataRef.current]);
+			getDataCache().set(cacheId, dataRef.current);
 		}, 500);
 
 		useAppEvent(events[eventId], (payload) => {
-			dataRef.current.set(getId(payload), payload);
+			dataRef.current[getId(payload)] = payload;
 			updateState();
 		});
 
 		useEffect(() => {
 			getDataCache()
-				.get<[string, EventPayload<TEvent>][]>(cacheId)
+				.get<DataRecord>(cacheId)
 				.then((data) => {
 					if (data) {
-						dataRef.current = new Map([...data, ...dataRef.current]) as TData;
+						dataRef.current = { ...data, ...dataRef.current };
 						updateState();
 					}
 				})
