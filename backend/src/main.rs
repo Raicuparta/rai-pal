@@ -230,7 +230,7 @@ fn refresh_game_mods_and_exe(installed_game: &InstalledGame, handle: &AppHandle)
 	new_game.refresh_installed_mods();
 	new_game.refresh_executable()?;
 
-	handle.emit_safe(events::FoundInstalledGame(new_game));
+	handle.emit_safe(events::FoundInstalledGame());
 
 	Ok(())
 }
@@ -387,12 +387,12 @@ async fn get_provider_games(handle: AppHandle, provider_id: ProviderId) -> Resul
 	let mut owned_games: HashMap<String, OwnedGame> = HashMap::new();
 
 	let installed_game_callback = |game: InstalledGame| {
-		handle.emit_safe(events::FoundInstalledGame(game.clone()));
+		handle.emit_safe(events::FoundInstalledGame());
 		installed_games.insert(game.id.clone(), game);
 	};
 
 	let owned_game_callback = |game: OwnedGame| {
-		handle.emit_safe(events::FoundOwnedGame(game.clone()));
+		handle.emit_safe(events::FoundOwnedGame());
 		owned_games.insert(game.global_id.clone(), game);
 	};
 
@@ -425,7 +425,7 @@ async fn add_game(path: PathBuf, handle: AppHandle) -> Result {
 	let game_name = installed_game.name.clone();
 
 	handle.emit_safe(events::SelectInstalledGame(installed_game.id.clone()));
-	handle.emit_safe(events::FoundInstalledGame(installed_game));
+	handle.emit_safe(events::FoundInstalledGame());
 
 	analytics::send_event(analytics::Event::ManuallyAddGame, &game_name).await;
 
