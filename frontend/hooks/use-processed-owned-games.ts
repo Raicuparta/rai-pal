@@ -1,23 +1,13 @@
 import { useAtomValue } from "jotai";
 import { useMemo } from "react";
 import { remoteGamesAtom, providerDataAtom } from "./use-data";
-import {
-	InstalledGame,
-	OwnedGame,
-	ProviderId,
-	RemoteGame,
-} from "@api/bindings";
+import { OwnedGame, RemoteGame } from "@api/bindings";
 
 type ProcessedOwnedGameRecord = Record<string, ProcessedOwnedGame>;
 export interface ProcessedOwnedGame extends OwnedGame {
 	isInstalled: boolean;
 	remoteData?: RemoteGame;
 }
-
-type InstalledGamesByProvider = Record<
-	ProviderId,
-	Record<string, InstalledGame>
->;
 
 type DatabaseMapGroupBy = "steamId" | "epicId" | "gogId" | "title";
 
@@ -56,22 +46,15 @@ export function useProcessedOwnedGames() {
 		return result;
 	}, [remoteGames]);
 
-	const installedGamesByProvider: InstalledGamesByProvider = useMemo(() => {
-		const result: InstalledGamesByProvider = {
-			Steam: {},
-			Manual: {},
-			Epic: {},
-			Gog: {},
-			Xbox: {},
-			Itch: {},
-		};
+	// Global IDs of owned games that are also installed.
+	const installedOwnedIds: Set<string> = useMemo(() => {
+		const result: Set<string> = new Set();
 
 		for (const providerData of Object.values(providerDataMap)) {
 			for (const installedGame of Object.values(providerData.installedGames)) {
 				if (!installedGame.ownedGameId) continue;
 
-				result[installedGame.provider][installedGame.ownedGameId] =
-					installedGame;
+				result.add(installedGame.ownedGameId);
 			}
 		}
 
@@ -108,19 +91,19 @@ export function useProcessedOwnedGames() {
 			for (const [gameId, ownedGame] of Object.entries(
 				providerData.ownedGames,
 			)) {
-				const installedGame =
-					installedGamesByProvider[ownedGame.provider][ownedGame.globalId];
+				const provider = providerDataMap[ownedGame.provider];
+				if (!provider) continue;
 
 				result[gameId] = {
 					...ownedGame,
 					remoteData: getDatabaseGame(ownedGame),
-					isInstalled: Boolean(installedGame),
+					isInstalled: installedOwnedIds.has(ownedGame.globalId),
 				};
 			}
 		}
 
 		return result;
-	}, [databaseGamesByProvider, providerDataMap, installedGamesByProvider]);
+	}, [databaseGamesByProvider, installedOwnedIds, providerDataMap]);
 
 	return processedOwnedGames;
 }
