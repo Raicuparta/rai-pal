@@ -1,10 +1,6 @@
 import { useAtomValue } from "jotai";
 import { useMemo } from "react";
-import {
-	ownedGamesAtom,
-	installedGamesAtom,
-	remoteGamesAtom,
-} from "./use-data";
+import { remoteGamesAtom, providerDataAtom } from "./use-data";
 import {
 	InstalledGame,
 	OwnedGame,
@@ -30,8 +26,7 @@ function normalizeTitle(title: string): string {
 }
 
 export function useProcessedOwnedGames() {
-	const ownedGames = useAtomValue(ownedGamesAtom);
-	const installedGames = useAtomValue(installedGamesAtom);
+	const providerDataMap = useAtomValue(providerDataAtom);
 	const remoteGames = useAtomValue(remoteGamesAtom);
 
 	const databaseGamesByProvider = useMemo(() => {
@@ -71,14 +66,17 @@ export function useProcessedOwnedGames() {
 			Itch: {},
 		};
 
-		for (const installedGame of Object.values(installedGames)) {
-			if (!installedGame.ownedGameId) continue;
+		for (const providerData of Object.values(providerDataMap)) {
+			for (const installedGame of Object.values(providerData.installedGames)) {
+				if (!installedGame.ownedGameId) continue;
 
-			result[installedGame.provider][installedGame.ownedGameId] = installedGame;
+				result[installedGame.provider][installedGame.ownedGameId] =
+					installedGame;
+			}
 		}
 
 		return result;
-	}, [installedGames]);
+	}, [providerDataMap]);
 
 	const processedOwnedGames: ProcessedOwnedGameRecord = useMemo(() => {
 		const result: ProcessedOwnedGameRecord = {};
@@ -106,19 +104,23 @@ export function useProcessedOwnedGames() {
 			return map[key];
 		}
 
-		for (const [gameId, ownedGame] of Object.entries(ownedGames)) {
-			const installedGame =
-				installedGamesByProvider[ownedGame.provider][ownedGame.globalId];
+		for (const providerData of Object.values(providerDataMap)) {
+			for (const [gameId, ownedGame] of Object.entries(
+				providerData.ownedGames,
+			)) {
+				const installedGame =
+					installedGamesByProvider[ownedGame.provider][ownedGame.globalId];
 
-			result[gameId] = {
-				...ownedGame,
-				remoteData: getDatabaseGame(ownedGame),
-				isInstalled: Boolean(installedGame),
-			};
+				result[gameId] = {
+					...ownedGame,
+					remoteData: getDatabaseGame(ownedGame),
+					isInstalled: Boolean(installedGame),
+				};
+			}
 		}
 
 		return result;
-	}, [ownedGames, installedGamesByProvider, databaseGamesByProvider]);
+	}, [databaseGamesByProvider, providerDataMap, installedGamesByProvider]);
 
 	return processedOwnedGames;
 }

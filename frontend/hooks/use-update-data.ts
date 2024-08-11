@@ -1,19 +1,14 @@
 import { useCallback, useEffect, useState } from "react";
 import { useSetAtom } from "jotai";
 import { commands, Result, Error, events, ProviderId } from "@api/bindings";
-import {
-	installedGamesAtom,
-	loadingCountAtom,
-	ownedGamesAtom,
-} from "./use-data";
+import { loadingCountAtom, providerDataAtom } from "./use-data";
 import { showAppNotification } from "@components/app-notifications";
 import { useAppEvent } from "./use-app-event";
 import { useThrottledCallback } from "@mantine/hooks";
 
 export function useUpdateData(executeOnMount = false) {
 	const setLoading = useSetAtom(loadingCountAtom);
-	const setInstalledGames = useSetAtom(installedGamesAtom);
-	const setOwnedGames = useSetAtom(ownedGamesAtom);
+	const setProviderData = useSetAtom(providerDataAtom);
 	const [providerIds, setProviderIds] = useState<ProviderId[]>([]);
 
 	useEffect(() => {
@@ -41,20 +36,15 @@ export function useUpdateData(executeOnMount = false) {
 					return false;
 				}
 
-				setInstalledGames((previousInstalledGames) => ({
-					...previousInstalledGames,
-					...cacheResult.data.installedGames,
-				}));
-
-				setOwnedGames((previousOwnedGames) => ({
-					...previousOwnedGames,
-					...cacheResult.data.ownedGames,
+				setProviderData((previousProviderData) => ({
+					...previousProviderData,
+					[providerId]: cacheResult.data,
 				}));
 
 				return true;
 			});
 		}
-	}, [providerIds, setInstalledGames, setOwnedGames]);
+	}, [providerIds, setProviderData]);
 
 	const throttledUpdateProviderGames = useThrottledCallback(
 		updateProviderGames,

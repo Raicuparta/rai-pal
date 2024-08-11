@@ -1,22 +1,25 @@
 import { useAtomValue } from "jotai";
 import { useMemo } from "react";
-import { installedGamesAtom, ownedGamesAtom } from "./use-data";
+import { providerDataAtom } from "./use-data";
 import { PageId } from "../pages";
 
 export type TabCounts = Record<PageId, number>;
 
 export function useDataCounts() {
-	const installedGames = useAtomValue(installedGamesAtom);
-	const ownedGames = useAtomValue(ownedGamesAtom);
+	const providerDataMap = useAtomValue(providerDataAtom);
 	const counts: TabCounts = useMemo(
 		() => ({
-			installedGames: Object.entries(installedGames).length,
-			ownedGames: Object.entries(ownedGames).length,
+			installedGames: Object.values(providerDataMap)
+				.map((data) => Object.entries(data.installedGames))
+				.flat().length,
+			ownedGames: Object.values(providerDataMap)
+				.map((data) => Object.entries(data.ownedGames))
+				.flat().length,
 			mods: -1,
 			settings: -1,
 			thanks: -1,
 		}),
-		[installedGames, ownedGames],
+		[providerDataMap],
 	);
 
 	return counts;
