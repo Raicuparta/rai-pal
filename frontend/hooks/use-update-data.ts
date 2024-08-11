@@ -27,10 +27,10 @@ export function useUpdateData(executeOnMount = false) {
 
 	const updateProviderGames = useCallback(() => {
 		for (const providerId of providerIds) {
-			commands.getProviderCache(providerId).then((cacheResult) => {
-				if (cacheResult.status === "error") {
+			commands.getProviderData(providerId).then((result) => {
+				if (result.status === "error") {
 					showAppNotification(
-						`Failed to get provider cache for ${providerId}: ${cacheResult.error}`,
+						`Failed to get provider data for ${providerId}: ${result.error}`,
 						"error",
 					);
 					return false;
@@ -38,7 +38,7 @@ export function useUpdateData(executeOnMount = false) {
 
 				setProviderData((previousProviderData) => ({
 					...previousProviderData,
-					[providerId]: cacheResult.data,
+					[providerId]: result.data,
 				}));
 
 				return true;
@@ -53,10 +53,6 @@ export function useUpdateData(executeOnMount = false) {
 
 	useAppEvent(events.foundOwnedGame, throttledUpdateProviderGames);
 	useAppEvent(events.foundInstalledGame, throttledUpdateProviderGames);
-
-	useEffect(() => {
-		updateProviderGames();
-	}, [updateProviderGames]);
 
 	const updateAppData = useCallback(() => {
 		function handleDataPromise(promise: Promise<Result<null, Error>>) {

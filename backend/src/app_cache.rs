@@ -12,14 +12,16 @@ use tauri::{AppHandle, Manager, Wry};
 use tauri_plugin_store::{with_store, StoreCollection};
 
 #[serializable_struct]
-pub struct ProviderCacheData {
+pub struct ProviderData {
 	pub installed_games: HashMap<String, InstalledGame>,
 	pub owned_games: HashMap<String, OwnedGame>,
 }
 
+pub type ProviderDataMap = HashMap<ProviderId, ProviderData>;
+
 pub struct ProviderCache {
 	path: PathBuf,
-	pub data: ProviderCacheData,
+	pub data: ProviderData,
 }
 
 impl ProviderCache {
@@ -31,7 +33,7 @@ impl ProviderCache {
 			path: PathBuf::from(Self::CACHE_FOLDER)
 				.join("providers")
 				.join(id.to_string()),
-			data: ProviderCacheData {
+			data: ProviderData {
 				installed_games: HashMap::new(),
 				owned_games: HashMap::new(),
 			},
@@ -41,7 +43,7 @@ impl ProviderCache {
 	pub fn load(&mut self, handle: &AppHandle) -> Result {
 		let stores = handle.state::<StoreCollection<Wry>>();
 
-		let mut cache_data = ProviderCacheData {
+		let mut cache_data = ProviderData {
 			installed_games: HashMap::new(),
 			owned_games: HashMap::new(),
 		};
@@ -71,7 +73,7 @@ impl ProviderCache {
 		Ok(())
 	}
 
-	pub fn set_data(&mut self, data: ProviderCacheData) -> &mut Self {
+	pub fn set_data(&mut self, data: ProviderData) -> &mut Self {
 		self.data = data;
 		self
 	}

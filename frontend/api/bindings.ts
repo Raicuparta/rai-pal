@@ -237,9 +237,9 @@ async fetchRemoteGames() : Promise<Result<RemoteGame[], Error>> {
     else return { status: "error", error: e  as any };
 }
 },
-async getProviderCache(providerId: ProviderId) : Promise<Result<ProviderCacheData, Error>> {
+async getProviderData(providerId: ProviderId) : Promise<Result<ProviderData, Error>> {
     try {
-    return { status: "ok", data: await TAURI_INVOKE("get_provider_cache", { providerId }) };
+    return { status: "ok", data: await TAURI_INVOKE("get_provider_data", { providerId }) };
 } catch (e) {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
@@ -293,7 +293,7 @@ export type EngineBrand = "Unity" | "Unreal" | "Godot" | "GameMaker"
 export type EngineVersion = { numbers: EngineVersionNumbers; suffix: string | null; display: string }
 export type EngineVersionNumbers = { major: number; minor: number | null; patch: number | null }
 export type EngineVersionRange = { minimum: EngineVersionNumbers | null; maximum: EngineVersionNumbers | null }
-export type Error = "Tauri" | "TauriPluginStore" | "Io" | "Core" | { FailedToGetResourcesPath: string }
+export type Error = "Tauri" | "TauriPluginStore" | "Io" | "Core" | { FailedToGetResourcesPath: string } | { EmptyStateData: [] } | { FailedToAccessStateData: string }
 export type ErrorRaised = string
 export type ExecutedProviderCommand = null
 export type FoundInstalledGame = []
@@ -310,9 +310,9 @@ export type ModDownload = { id: string; url: string; root: string | null; runnab
 export type ModKind = "Installable" | "Runnable"
 export type ModLoaderData = { id: string; path: string; kind: ModKind }
 export type OwnedGame = { globalId: string; providerGameId: string; provider: ProviderId; name: string; releaseDate: bigint | null; thumbnailUrl: string | null; gameMode: GameMode | null; appType: AppType | null; providerCommands: { [key in ProviderCommandAction]: ProviderCommand } }
-export type ProviderCacheData = { installedGames: { [key in string]: InstalledGame }; ownedGames: { [key in string]: OwnedGame } }
 export type ProviderCommand = { String: string } | { Path: [string, string[]] }
 export type ProviderCommandAction = "Install" | "ShowInLibrary" | "ShowInStore" | "Start" | "OpenInBrowser"
+export type ProviderData = { installedGames: { [key in string]: InstalledGame }; ownedGames: { [key in string]: OwnedGame } }
 export type ProviderId = "Steam" | "Manual" | "Itch" | "Epic" | "Gog" | "Xbox"
 export type RemoteGame = { title: string | null; engines: GameEngine[] | null; steamIds: string[] | null; gogIds: string[] | null; epicIds: string[] | null }
 export type RemoteMod = { common: CommonModData; data: RemoteModData }

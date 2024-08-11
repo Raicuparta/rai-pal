@@ -6,7 +6,7 @@
 use std::{collections::HashMap, path::PathBuf, sync::Mutex};
 
 use crate::result::{Error, Result};
-use app_cache::{ProviderCache, ProviderCacheData};
+use app_cache::{ProviderCache, ProviderData, ProviderDataMap};
 use app_state::{AppState, DataValue, StateData, StatefulHandle};
 use events::EventEmitter;
 use rai_pal_core::installed_game::InstalledGame;
@@ -381,27 +381,46 @@ async fn fetch_remote_games() -> Result<Vec<RemoteGame>> {
 #[tauri::command]
 #[specta::specta]
 async fn get_provider_games(handle: AppHandle, provider_id: ProviderId) -> Result {
+	let update_installed_games_state = |installed_games: HashMap<String, InstalledGame>| {
+		if let Some(mutex) = handle.app_state().installed_games.get(&provider_id) {
+			update_state(installed_games.clone(), mutex);
+		}
+		handle.emit_safe(events::FoundInstalledGame());
+	};
+
+	let update_owned_games_state = |owned_games: HashMap<String, OwnedGame>| {
+		if let Some(mutex) = handle.app_state().owned_games.get(&provider_id) {
+			update_state(owned_games.clone(), mutex);
+		}
+		handle.emit_safe(events::FoundOwnedGame());
+	};
+
+	let mut cache = ProviderCache::new(provider_id);
+	cache.load(&handle)?; // TODO don't fail load if cache fails
+
+	let mut installed_games = cache.data.installed_games.clone();
+	let mut owned_games = cache.data.owned_games.clone();
+
+	update_installed_games_state(installed_games.clone());
+	update_owned_games_state(owned_games.clone());
+
 	let provider = provider::get_provider(provider_id)?;
 
-	let mut installed_games: HashMap<String, InstalledGame> = HashMap::new();
-	let mut owned_games: HashMap<String, OwnedGame> = HashMap::new();
-
-	let installed_game_callback = |game: InstalledGame| {
-		handle.emit_safe(events::FoundInstalledGame());
-		installed_games.insert(game.id.clone(), game);
-	};
-
-	let owned_game_callback = |game: OwnedGame| {
-		handle.emit_safe(events::FoundOwnedGame());
-		owned_games.insert(game.global_id.clone(), game);
-	};
-
 	provider
-		.get_games(installed_game_callback, owned_game_callback)
+		.get_games(
+			|game: InstalledGame| {
+				installed_games.insert(game.id.clone(), game);
+				update_installed_games_state(installed_games.clone());
+			},
+			|game: OwnedGame| {
+				owned_games.insert(game.global_id.clone(), game);
+				update_owned_games_state(owned_games.clone());
+			},
+		)
 		.await?;
 
 	ProviderCache::new(provider_id)
-		.set_data(ProviderCacheData {
+		.set_data(ProviderData {
 			installed_games: installed_games.clone(),
 			owned_games: owned_games.clone(),
 		})
@@ -483,14 +502,20 @@ async fn open_logs_folder() -> Result {
 
 #[tauri::command]
 #[specta::specta]
-async fn get_provider_cache(
-	handle: AppHandle,
-	provider_id: ProviderId,
-) -> Result<ProviderCacheData> {
-	let mut cache = ProviderCache::new(provider_id);
-	cache.load(&handle)?;
-
-	Ok(cache.data)
+async fn get_provider_data(handle: AppHandle, provider_id: ProviderId) -> Result<ProviderData> {
+	let state = handle.app_state();
+	Ok(ProviderData {
+		installed_games: state
+			.installed_games
+			.try_get(&provider_id)?
+			.get_data()
+			.unwrap_or_default(),
+		owned_games: state
+			.owned_games
+			.try_get(&provider_id)?
+			.get_data()
+			.unwrap_or_default(),
+	})
 }
 
 #[tauri::command]
@@ -541,7 +566,7 @@ fn main() {
 			uninstall_mod,
 			update_local_mods,
 			fetch_remote_games,
-			get_provider_cache,
+			get_provider_data,
 			clear_cache,
 		])
 		.events(events::collect_events());
@@ -585,6 +610,14 @@ fn main() {
 			mod_loaders: Mutex::default(),
 			local_mods: Mutex::default(),
 			remote_mods: Mutex::default(),
+			installed_games: provider::get_provider_ids()
+				.into_iter()
+				.map(|provider_id| (provider_id, Mutex::default()))
+				.collect(),
+			owned_games: provider::get_provider_ids()
+				.into_iter()
+				.map(|provider_id| (provider_id, Mutex::default()))
+				.collect(),
 		})
 		.invoke_handler(builder.invoke_handler())
 		.setup(move |app| {

@@ -6,17 +6,18 @@ use std::{
 	sync::Mutex,
 };
 
+use crate::result::Result;
+use crate::{app_cache::ProviderData, result::Error};
 use tauri::Manager;
 
 use rai_pal_core::{
-	local_mod,
-	maps::TryGettable,
-	mod_loaders::mod_loader,
-	remote_mod,
-	result::{Error, Result},
+	installed_game::InstalledGame, local_mod, maps::TryGettable, mod_loaders::mod_loader,
+	owned_game::OwnedGame, providers::provider::ProviderId, remote_mod,
 };
 
 pub struct AppState {
+	pub installed_games: HashMap<ProviderId, Mutex<Option<HashMap<String, InstalledGame>>>>,
+	pub owned_games: HashMap<ProviderId, Mutex<Option<HashMap<String, OwnedGame>>>>,
 	pub mod_loaders: Mutex<Option<mod_loader::Map>>,
 	pub local_mods: Mutex<Option<local_mod::Map>>,
 	pub remote_mods: Mutex<Option<remote_mod::Map>>,
@@ -33,7 +34,7 @@ impl<TData: Clone> StateData<TData> for Mutex<Option<TData>> {
 	where
 		TData: Clone,
 	{
-		self.try_lock()
+		self.lock()
 			.map_err(|err| Error::FailedToAccessStateData(err.to_string()))?
 			.as_ref()
 			.ok_or(Error::EmptyStateData())
@@ -58,12 +59,13 @@ where
 		K: Borrow<Q>,
 		Q: ?Sized + Hash + Display + Eq,
 	{
-		self.try_lock()
+		Ok(self
+			.try_lock()
 			.map_err(|err| Error::FailedToAccessStateData(err.to_string()))?
 			.as_ref()
 			.ok_or(Error::EmptyStateData())?
 			.try_get(key)
-			.cloned()
+			.cloned()?)
 	}
 }
 

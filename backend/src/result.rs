@@ -32,6 +32,12 @@ pub enum Error {
 
 	#[error("Failed to get app resources path: `{0}`")]
 	FailedToGetResourcesPath(String),
+
+	#[error("State data is empty")]
+	EmptyStateData(),
+
+	#[error("Failed to access state data: `{0}`")]
+	FailedToAccessStateData(String),
 }
 
 impl serde::Serialize for Error {
