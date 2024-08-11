@@ -5,9 +5,10 @@
 
 use std::{collections::HashMap, path::PathBuf, sync::Mutex};
 
+use crate::result::{Error, Result};
+use app_cache::{ProviderCache, ProviderCacheData};
 use app_state::{AppState, DataValue, StateData, StatefulHandle};
 use events::EventEmitter;
-use log::error;
 use rai_pal_core::installed_game::InstalledGame;
 use rai_pal_core::local_mod::{self, LocalMod};
 use rai_pal_core::maps::TryGettable;
@@ -21,7 +22,6 @@ use rai_pal_core::providers::{
 	provider_command::ProviderCommandAction,
 };
 use rai_pal_core::remote_games::{self, RemoteGame};
-use rai_pal_core::result::{Error, Result};
 #[cfg(target_os = "windows")]
 use rai_pal_core::windows;
 use rai_pal_core::{analytics, remote_mod, steam};
@@ -32,25 +32,29 @@ use tauri_plugin_log::{Target, TargetKind};
 use tauri_plugin_window_state::StateFlags;
 use tauri_specta::Builder;
 
+mod app_cache;
 mod app_state;
 mod events;
+mod result;
 
 #[tauri::command]
 #[specta::specta]
 async fn get_mod_loaders(handle: AppHandle) -> Result<mod_loader::DataMap> {
-	mod_loader::get_data_map(&handle.app_state().mod_loaders.get_data()?)
+	Ok(mod_loader::get_data_map(
+		&handle.app_state().mod_loaders.get_data()?,
+	)?)
 }
 
 #[tauri::command]
 #[specta::specta]
 async fn get_local_mods(handle: AppHandle) -> Result<local_mod::Map> {
-	handle.app_state().local_mods.get_data()
+	Ok(handle.app_state().local_mods.get_data()?)
 }
 
 #[tauri::command]
 #[specta::specta]
 async fn get_remote_mods(handle: AppHandle) -> Result<remote_mod::Map> {
-	handle.app_state().remote_mods.get_data()
+	Ok(handle.app_state().remote_mods.get_data()?)
 }
 
 fn update_state<TData>(data: TData, mutex: &Mutex<Option<TData>>) {
@@ -62,13 +66,13 @@ fn update_state<TData>(data: TData, mutex: &Mutex<Option<TData>>) {
 #[tauri::command]
 #[specta::specta]
 async fn open_game_folder(installed_game: InstalledGame) -> Result {
-	installed_game.open_game_folder()
+	Ok(installed_game.open_game_folder()?)
 }
 
 #[tauri::command]
 #[specta::specta]
 async fn open_game_mods_folder(installed_game: InstalledGame) -> Result {
-	installed_game.open_mods_folder()
+	Ok(installed_game.open_mods_folder()?)
 }
 
 #[tauri::command]
@@ -80,17 +84,21 @@ async fn open_mods_folder() -> Result {
 #[tauri::command]
 #[specta::specta]
 async fn open_mod_folder(mod_id: &str, handle: AppHandle) -> Result {
-	handle.app_state().local_mods.try_get(mod_id)?.open_folder()
+	Ok(handle
+		.app_state()
+		.local_mods
+		.try_get(mod_id)?
+		.open_folder()?)
 }
 
 #[tauri::command]
 #[specta::specta]
 async fn open_mod_loader_folder(mod_loader_id: &str, handle: AppHandle) -> Result {
-	handle
+	Ok(handle
 		.app_state()
 		.mod_loaders
 		.try_get(mod_loader_id)?
-		.open_folder()
+		.open_folder()?)
 }
 
 #[tauri::command]
@@ -139,7 +147,7 @@ async fn start_game(installed_game: InstalledGame, handle: AppHandle) -> Result 
 #[tauri::command]
 #[specta::specta]
 async fn start_game_exe(installed_game: InstalledGame) -> Result {
-	installed_game.start_exe()
+	Ok(installed_game.start_exe()?)
 }
 
 #[tauri::command]
@@ -340,19 +348,7 @@ async fn refresh_and_get_local_mod(
 		}
 	};
 
-	local_mods.try_get(mod_id).cloned()
-}
-
-fn installed_game_callback(handle: AppHandle) -> impl Fn(InstalledGame) {
-	move |game: InstalledGame| {
-		handle.emit_safe(events::FoundInstalledGame(game));
-	}
-}
-
-fn owned_game_callback(handle: AppHandle) -> impl Fn(OwnedGame) {
-	move |game: OwnedGame| {
-		handle.emit_safe(events::FoundOwnedGame(game));
-	}
+	Ok(local_mods.try_get(mod_id).cloned()?)
 }
 
 #[tauri::command]
@@ -379,7 +375,7 @@ async fn update_local_mods(handle: AppHandle) -> Result {
 #[tauri::command]
 #[specta::specta]
 async fn fetch_remote_games() -> Result<Vec<RemoteGame>> {
-	remote_games::get().await
+	Ok(remote_games::get().await?)
 }
 
 #[tauri::command]
@@ -387,12 +383,29 @@ async fn fetch_remote_games() -> Result<Vec<RemoteGame>> {
 async fn get_provider_games(handle: AppHandle, provider_id: ProviderId) -> Result {
 	let provider = provider::get_provider(provider_id)?;
 
+	let mut installed_games: HashMap<String, InstalledGame> = HashMap::new();
+	let mut owned_games: HashMap<String, OwnedGame> = HashMap::new();
+
+	let installed_game_callback = |game: InstalledGame| {
+		handle.emit_safe(events::FoundInstalledGame(game.clone()));
+		installed_games.insert(game.id.clone(), game);
+	};
+
+	let owned_game_callback = |game: OwnedGame| {
+		handle.emit_safe(events::FoundOwnedGame(game.clone()));
+		owned_games.insert(game.global_id.clone(), game);
+	};
+
 	provider
-		.get_games(
-			installed_game_callback(handle.clone()),
-			owned_game_callback(handle.clone()),
-		)
+		.get_games(installed_game_callback, owned_game_callback)
 		.await?;
+
+	ProviderCache::new(provider_id)
+		.set_data(ProviderCacheData {
+			installed_games: installed_games.clone(),
+			owned_games: owned_games.clone(),
+		})
+		.save(&handle)?;
 
 	Ok(())
 }
@@ -449,7 +462,7 @@ async fn run_provider_command(
 #[tauri::command]
 #[specta::specta]
 async fn delete_steam_appinfo_cache() -> Result {
-	steam::appinfo::delete()
+	Ok(steam::appinfo::delete()?)
 }
 
 #[tauri::command]
@@ -466,6 +479,24 @@ async fn open_logs_folder() -> Result {
 	paths::open_logs_folder()?;
 
 	Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn get_provider_cache(
+	handle: AppHandle,
+	provider_id: ProviderId,
+) -> Result<ProviderCacheData> {
+	let mut cache = ProviderCache::new(provider_id);
+	cache.load(&handle)?;
+
+	Ok(cache.data)
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn clear_cache(handle: AppHandle) -> Result {
+	ProviderCache::clear_all(&handle)
 }
 
 fn main() {
@@ -510,6 +541,8 @@ fn main() {
 			uninstall_mod,
 			update_local_mods,
 			fetch_remote_games,
+			get_provider_cache,
+			clear_cache,
 		])
 		.events(events::collect_events());
 
@@ -520,7 +553,7 @@ fn main() {
 			"../frontend/api/bindings.ts",
 		)
 		.unwrap_or_else(|err| {
-			error!("Failed to generate TypeScript bindings: {err}");
+			log::error!("Failed to generate TypeScript bindings: {err}");
 			std::process::exit(1);
 		});
 

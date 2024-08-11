@@ -36,12 +36,12 @@ impl ProviderStatic for Manual {
 impl ProviderActions for Manual {
 	async fn get_games<TInstalledCallback, TOwnedCallback>(
 		&self,
-		installed_callback: TInstalledCallback,
-		_owned_callback: TOwnedCallback,
+		mut installed_callback: TInstalledCallback,
+		mut _owned_callback: TOwnedCallback,
 	) -> Result
 	where
-		TInstalledCallback: Fn(InstalledGame) + Send + Sync,
-		TOwnedCallback: Fn(OwnedGame) + Send + Sync,
+		TInstalledCallback: FnMut(InstalledGame) + Send + Sync,
+		TOwnedCallback: FnMut(OwnedGame) + Send + Sync,
 	{
 		for path in read_games_config(&games_config_path()?).paths {
 			if let Some(installed_game) = create_game_from_path(&path) {

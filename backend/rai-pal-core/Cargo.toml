@@ -12,6 +12,7 @@ rai-pal-proc-macros.workspace = true
 serde_json.workspace = true
 serde.workspace = true
 specta.workspace = true
+thiserror.workspace = true
 
 base64 = "0.22.1"
 byteorder = "1.5.0"
@@ -30,7 +31,6 @@ rusqlite = { version = "0.32.1", features = ["bundled"] }
 serde_urlencoded = "0.7.1"
 steamlocate = "2.0.0-beta.2"
 uuid = { version = "1.8.0", features = ["v4"] }
-thiserror = "1.0.50"
 zip = { version = "2.1.6", default-features = false, features = ["deflate"] }
 
 [target.'cfg(target_os = "windows")'.dependencies]

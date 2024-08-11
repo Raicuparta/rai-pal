@@ -179,12 +179,12 @@ impl EpicCatalogItem {
 impl ProviderActions for Epic {
 	async fn get_games<TInstalledCallback, TOwnedCallback>(
 		&self,
-		installed_callback: TInstalledCallback,
-		owned_callback: TOwnedCallback,
+		mut installed_callback: TInstalledCallback,
+		mut owned_callback: TOwnedCallback,
 	) -> Result
 	where
-		TInstalledCallback: Fn(InstalledGame) + Send + Sync,
-		TOwnedCallback: Fn(OwnedGame) + Send + Sync,
+		TInstalledCallback: FnMut(InstalledGame) + Send + Sync,
+		TOwnedCallback: FnMut(OwnedGame) + Send + Sync,
 	{
 		let app_data_path = RegKey::predef(HKEY_LOCAL_MACHINE)
 			.open_subkey(r"SOFTWARE\WOW6432Node\Epic Games\EpicGamesLauncher")

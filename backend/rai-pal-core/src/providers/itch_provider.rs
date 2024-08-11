@@ -104,12 +104,12 @@ pub struct ItchDatabase {
 impl ProviderActions for Itch {
 	async fn get_games<TInstalledCallback, TOwnedCallback>(
 		&self,
-		installed_callback: TInstalledCallback,
-		owned_callback: TOwnedCallback,
+		mut installed_callback: TInstalledCallback,
+		mut owned_callback: TOwnedCallback,
 	) -> Result
 	where
-		TInstalledCallback: Fn(InstalledGame) + Send + Sync,
-		TOwnedCallback: Fn(OwnedGame) + Send + Sync,
+		TInstalledCallback: FnMut(InstalledGame) + Send + Sync,
+		TOwnedCallback: FnMut(OwnedGame) + Send + Sync,
 	{
 		let app_data_path = directories::BaseDirs::new()
 			.ok_or_else(Error::AppDataNotFound)?

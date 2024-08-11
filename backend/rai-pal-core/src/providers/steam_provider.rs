@@ -189,12 +189,12 @@ impl Steam {
 impl ProviderActions for Steam {
 	async fn get_games<TInstalledCallback, TOwnedCallback>(
 		&self,
-		installed_callback: TInstalledCallback,
-		owned_callback: TOwnedCallback,
+		mut installed_callback: TInstalledCallback,
+		mut owned_callback: TOwnedCallback,
 	) -> Result
 	where
-		TInstalledCallback: Fn(InstalledGame) + Send + Sync,
-		TOwnedCallback: Fn(OwnedGame) + Send + Sync,
+		TInstalledCallback: FnMut(InstalledGame) + Send + Sync,
+		TOwnedCallback: FnMut(OwnedGame) + Send + Sync,
 	{
 		let steam_dir = SteamDir::locate()?;
 		let steam_path = steam_dir.path();

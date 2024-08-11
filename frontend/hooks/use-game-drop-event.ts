@@ -10,10 +10,11 @@ export function useGameDropEvent() {
 	const [executeAddGame] = useAsyncCommand(commands.addGame);
 	const setInstalledGames = useSetAtom(installedGamesAtom);
 
+	// TODO: might not need this once I fix cache invalidation.
 	useAppEvent(events.gameRemoved, (gameId) => {
 		setInstalledGames((previousInstalledGames) => {
 			// Mutating the inner value because we're doing some cursed thing for performance.
-			delete previousInstalledGames.data[gameId];
+			delete previousInstalledGames[gameId];
 
 			// But creating a new object for the outer structure, to count as a new reference.
 			return {

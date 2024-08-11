@@ -71,7 +71,7 @@ export function useProcessedOwnedGames() {
 			Itch: {},
 		};
 
-		for (const installedGame of Object.values(installedGames.data)) {
+		for (const installedGame of Object.values(installedGames)) {
 			if (!installedGame.ownedGameId) continue;
 
 			result[installedGame.provider][installedGame.ownedGameId] = installedGame;
@@ -106,7 +106,7 @@ export function useProcessedOwnedGames() {
 			return map[key];
 		}
 
-		for (const [gameId, ownedGame] of Object.entries(ownedGames.data)) {
+		for (const [gameId, ownedGame] of Object.entries(ownedGames)) {
 			const installedGame =
 				installedGamesByProvider[ownedGame.provider][ownedGame.globalId];
 
@@ -118,7 +118,7 @@ export function useProcessedOwnedGames() {
 		}
 
 		return result;
-	}, [ownedGames.data, installedGamesByProvider, databaseGamesByProvider]);
+	}, [ownedGames, installedGamesByProvider, databaseGamesByProvider]);
 
 	return processedOwnedGames;
 }

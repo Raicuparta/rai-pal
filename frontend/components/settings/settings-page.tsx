@@ -3,7 +3,6 @@ import { resetLocalStorage } from "../../util/local-storage";
 import { IconFolderCode, IconRotateDot, IconTrash } from "@tabler/icons-react";
 import { CommandButton } from "@components/command-button";
 import { commands } from "@api/bindings";
-import { clearDataCache } from "../../util/data-cache";
 
 export function SettingsPage() {
 	return (
@@ -28,7 +27,7 @@ export function SettingsPage() {
 					</Button>
 				</Tooltip>
 				<CommandButton
-					onClick={clearDataCache}
+					onClick={commands.clearCache}
 					leftSection={<IconTrash />}
 				>
 					Clear cached games

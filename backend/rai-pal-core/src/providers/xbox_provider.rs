@@ -33,12 +33,12 @@ impl ProviderStatic for Xbox {
 impl ProviderActions for Xbox {
 	async fn get_games<TInstalledCallback, TOwnedCallback>(
 		&self,
-		installed_callback: TInstalledCallback,
-		_owned_callback: TOwnedCallback,
+		mut installed_callback: TInstalledCallback,
+		mut _owned_callback: TOwnedCallback,
 	) -> Result
 	where
-		TInstalledCallback: Fn(InstalledGame) + Send + Sync,
-		TOwnedCallback: Fn(OwnedGame) + Send + Sync,
+		TInstalledCallback: FnMut(InstalledGame) + Send + Sync,
+		TOwnedCallback: FnMut(OwnedGame) + Send + Sync,
 	{
 		let gaming_services = RegKey::predef(HKEY_LOCAL_MACHINE)
 			.open_subkey("SOFTWARE\\Microsoft\\GamingServices")?;

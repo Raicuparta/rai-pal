@@ -236,6 +236,22 @@ async fetchRemoteGames() : Promise<Result<RemoteGame[], Error>> {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
 }
+},
+async getProviderCache(providerId: ProviderId) : Promise<Result<ProviderCacheData, Error>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("get_provider_cache", { providerId }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async clearCache() : Promise<Result<null, Error>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("clear_cache") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
 }
 }
 
@@ -277,7 +293,7 @@ export type EngineBrand = "Unity" | "Unreal" | "Godot" | "GameMaker"
 export type EngineVersion = { numbers: EngineVersionNumbers; suffix: string | null; display: string }
 export type EngineVersionNumbers = { major: number; minor: number | null; patch: number | null }
 export type EngineVersionRange = { minimum: EngineVersionNumbers | null; maximum: EngineVersionNumbers | null }
-export type Error = "Io" | "Reqwest" | "Zip" | "Json" | "ChronoParse" | "SQLite" | "Env" | "UrlEncode" | "HeaderToStr" | "TryFromInt" | "Regex" | "SteamLocate" | { InvalidBinaryVdfType: [number, string] } | { AppDataNotFound: [] } | { PathParseFailure: string } | { PathParentNotFound: string } | { EmptyFile: string } | { AppInfoNotFound: string } | { FailedToParseUnityVersionAsset: string } | { ModInstallInfoInsufficient: [string, string] } | { EmptyStateData: [] } | { FailedToAccessStateData: string } | { FailedToGetGameFromPath: string } | { GameAlreadyAdded: string } | { DataEntryNotFound: string } | { UnityBackendUnknown: string } | { ModDownloadNotAvailable: string } | { RunnableManifestNotFound: string } | { CantRunNonRunnable: string } | { FailedToGetResourcesPath: string } | { InvalidProviderId: string }
+export type Error = "Tauri" | "TauriPluginStore" | "Io" | "Core" | { FailedToGetResourcesPath: string }
 export type ErrorRaised = string
 export type ExecutedProviderCommand = null
 export type FoundInstalledGame = InstalledGame
@@ -294,6 +310,7 @@ export type ModDownload = { id: string; url: string; root: string | null; runnab
 export type ModKind = "Installable" | "Runnable"
 export type ModLoaderData = { id: string; path: string; kind: ModKind }
 export type OwnedGame = { globalId: string; providerGameId: string; provider: ProviderId; name: string; releaseDate: bigint | null; thumbnailUrl: string | null; gameMode: GameMode | null; appType: AppType | null; providerCommands: { [key in ProviderCommandAction]: ProviderCommand } }
+export type ProviderCacheData = { installedGames: { [key in string]: InstalledGame }; ownedGames: { [key in string]: OwnedGame } }
 export type ProviderCommand = { String: string } | { Path: [string, string[]] }
 export type ProviderCommandAction = "Install" | "ShowInLibrary" | "ShowInStore" | "Start" | "OpenInBrowser"
 export type ProviderId = "Steam" | "Manual" | "Itch" | "Epic" | "Gog" | "Xbox"

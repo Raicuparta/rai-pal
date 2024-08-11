@@ -61,8 +61,8 @@ pub trait ProviderActions {
 		owned_callback: TOwnedCallback,
 	) -> Result
 	where
-		TInstalledCallback: Fn(InstalledGame) + Send + Sync,
-		TOwnedCallback: Fn(OwnedGame) + Send + Sync;
+		TInstalledCallback: FnMut(InstalledGame) + Send + Sync,
+		TOwnedCallback: FnMut(OwnedGame) + Send + Sync;
 }
 
 const fn create_map_entry<TProvider: ProviderActions + ProviderStatic>(

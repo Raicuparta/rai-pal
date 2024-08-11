@@ -10,8 +10,8 @@ export function useDataCounts() {
 	const ownedGames = useAtomValue(ownedGamesAtom);
 	const counts: TabCounts = useMemo(
 		() => ({
-			installedGames: Object.entries(installedGames.data).length,
-			ownedGames: Object.entries(ownedGames.data).length,
+			installedGames: Object.entries(installedGames).length,
+			ownedGames: Object.entries(ownedGames).length,
 			mods: -1,
 			settings: -1,
 			thanks: -1,

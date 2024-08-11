@@ -3357,6 +3357,7 @@ dependencies = [
  "tauri-plugin-window-state",
  "tauri-runtime",
  "tauri-specta",
+ "thiserror",
 ]
 
 [[package]]

@@ -142,9 +142,6 @@ pub enum Error {
 	#[error("Can't run mod with ID `{0}` because it isn't a runnable mod.")]
 	CantRunNonRunnable(String),
 
-	#[error("Failed to get app resources path: `{0}`")]
-	FailedToGetResourcesPath(String),
-
 	#[error("Provider ID {0} is invalid in this platform.")]
 	InvalidProviderId(String),
 }
