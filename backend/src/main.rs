@@ -6,7 +6,7 @@
 use std::{collections::HashMap, path::PathBuf, sync::Mutex};
 
 use crate::result::{Error, Result};
-use app_cache::{ProviderCache, ProviderData, ProviderDataMap};
+use app_cache::{ProviderCache, ProviderData};
 use app_state::{AppState, DataValue, StateData, StatefulHandle};
 use events::EventEmitter;
 use rai_pal_core::installed_game::InstalledGame;
@@ -48,13 +48,13 @@ async fn get_mod_loaders(handle: AppHandle) -> Result<mod_loader::DataMap> {
 #[tauri::command]
 #[specta::specta]
 async fn get_local_mods(handle: AppHandle) -> Result<local_mod::Map> {
-	Ok(handle.app_state().local_mods.get_data()?)
+	handle.app_state().local_mods.get_data()
 }
 
 #[tauri::command]
 #[specta::specta]
 async fn get_remote_mods(handle: AppHandle) -> Result<remote_mod::Map> {
-	Ok(handle.app_state().remote_mods.get_data()?)
+	handle.app_state().remote_mods.get_data()
 }
 
 fn update_state<TData>(data: TData, mutex: &Mutex<Option<TData>>) {

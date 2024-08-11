@@ -6,8 +6,8 @@ use std::{
 	sync::Mutex,
 };
 
+use crate::result::Error;
 use crate::result::Result;
-use crate::{app_cache::ProviderData, result::Error};
 use tauri::Manager;
 
 use rai_pal_core::{

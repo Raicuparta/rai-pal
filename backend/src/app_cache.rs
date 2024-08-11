@@ -17,8 +17,6 @@ pub struct ProviderData {
 	pub owned_games: HashMap<String, OwnedGame>,
 }
 
-pub type ProviderDataMap = HashMap<ProviderId, ProviderData>;
-
 pub struct ProviderCache {
 	path: PathBuf,
 	pub data: ProviderData,
