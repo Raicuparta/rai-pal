@@ -275,8 +275,12 @@ async fn uninstall_all_mods(installed_game: InstalledGame, handle: AppHandle) ->
 fn refresh_local_mods(mod_loaders: &mod_loader::Map, handle: &AppHandle) -> local_mod::Map {
 	let local_mods: HashMap<_, _> = mod_loaders
 		.values()
-		.filter_map(|mod_loader| {
-			mod_loader.get_local_mods().ok() // TODO: don't swallow error.
+		.filter_map(|mod_loader| match mod_loader.get_local_mods() {
+			Ok(local_mods) => Some(local_mods),
+			Err(err) => {
+				log::error!("Failed to get local mods: {err}");
+				None
+			}
 		})
 		.flatten()
 		.collect();
@@ -396,13 +400,18 @@ async fn get_provider_games(handle: AppHandle, provider_id: ProviderId) -> Resul
 	};
 
 	let mut cache = ProviderCache::new(provider_id);
-	cache.load(&handle)?; // TODO don't fail load if cache fails
 
-	let mut installed_games = cache.data.installed_games.clone();
-	let mut owned_games = cache.data.owned_games.clone();
+	let mut installed_games = HashMap::<String, InstalledGame>::new();
+	let mut owned_games = HashMap::<String, OwnedGame>::new();
 
-	update_installed_games_state(installed_games.clone());
-	update_owned_games_state(owned_games.clone());
+	if let Err(err) = cache.load(&handle) {
+		log::warn!("Failed to load cache for provider {provider_id}: {err}");
+	} else {
+		installed_games = cache.data.installed_games.clone();
+		owned_games = cache.data.owned_games.clone();
+		update_installed_games_state(installed_games.clone());
+		update_owned_games_state(owned_games.clone());
+	}
 
 	let provider = provider::get_provider(provider_id)?;
 
@@ -419,7 +428,7 @@ async fn get_provider_games(handle: AppHandle, provider_id: ProviderId) -> Resul
 		)
 		.await?;
 
-	ProviderCache::new(provider_id)
+	cache
 		.set_data(ProviderData {
 			installed_games: installed_games.clone(),
 			owned_games: owned_games.clone(),
