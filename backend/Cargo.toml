@@ -60,6 +60,11 @@ opt-level = "s"
 panic = "abort"
 strip = true
 
+[profile.dev]
+debug = 0
+strip = "debuginfo"
+
+
 [workspace.lints.clippy]
 all = { level = "warn", priority = -1 }
 nursery = { level = "warn", priority = -1 }
