@@ -1,8 +1,11 @@
+use std::collections::HashMap;
+
 use rai_pal_proc_macros::serializable_struct;
 
 use crate::game_engines::game_engine::{
 	EngineBrand, EngineVersion, EngineVersionNumbers, GameEngine,
 };
+use crate::providers::provider::ProviderId;
 use crate::result::Result;
 
 const URL_BASE: &str = "https://raicuparta.github.io/rai-pal-db/game-db";
@@ -23,18 +26,14 @@ struct GameDatabaseEngineVersion {
 struct GameDatabaseEntry {
 	pub title: Option<String>,
 	pub engines: Option<Vec<GameDatabaseEngineVersion>>,
-	pub steam_ids: Option<Vec<String>>,
-	pub gog_ids: Option<Vec<String>>,
-	pub epic_ids: Option<Vec<String>>,
+	pub provider_ids: Option<HashMap<ProviderId, Vec<String>>>,
 }
 
 #[serializable_struct]
 pub struct RemoteGame {
 	pub title: Option<String>,
 	pub engines: Option<Vec<GameEngine>>,
-	pub steam_ids: Option<Vec<String>>,
-	pub gog_ids: Option<Vec<String>>,
-	pub epic_ids: Option<Vec<String>>,
+	pub provider_ids: HashMap<ProviderId, Vec<String>>,
 }
 
 fn engine_brand_from_string(brand: &str) -> Option<EngineBrand> {
@@ -84,27 +83,27 @@ pub async fn get() -> Result<Vec<RemoteGame>> {
 
 	let games = game_database
 		.into_iter()
-		.map(|entry| RemoteGame {
-			title: entry.title,
-			engines: entry.engines.map(|engines| {
-				engines
-					.into_iter()
-					.filter_map(|engine| {
-						Some(GameEngine {
-							brand: engine_brand_from_string(&engine.brand)?,
-							version: engine
-								.version
-								.and_then(|version| parse_version(&version))
-								// If we can't parse the version or it wasn't provided, we can check if there's a number in the actual engine name.
-								// This is common for Unreal Engine, since it usually shows up as "Unreal Engine 4" or similar.
-								.or_else(|| parse_version(&engine.brand)),
+		.filter_map(|entry| {
+			Some(RemoteGame {
+				title: entry.title,
+				engines: entry.engines.map(|engines| {
+					engines
+						.into_iter()
+						.filter_map(|engine| {
+							Some(GameEngine {
+								brand: engine_brand_from_string(&engine.brand)?,
+								version: engine
+									.version
+									.and_then(|version| parse_version(&version))
+									// If we can't parse the version or it wasn't provided, we can check if there's a number in the actual engine name.
+									// This is common for Unreal Engine, since it usually shows up as "Unreal Engine 4" or similar.
+									.or_else(|| parse_version(&engine.brand)),
+							})
 						})
-					})
-					.collect()
-			}),
-			steam_ids: entry.steam_ids,
-			gog_ids: entry.gog_ids,
-			epic_ids: entry.epic_ids,
+						.collect()
+				}),
+				provider_ids: entry.provider_ids?,
+			})
 		})
 		.collect();
 
