@@ -17,5 +17,5 @@ pub struct CommonModData {
 	pub engine: Option<EngineBrand>,
 	pub unity_backend: Option<UnityScriptingBackend>,
 	pub engine_version_range: Option<EngineVersionRange>,
-	pub loader_id: String, // TODO make enum
+	pub loader_id: String,
 }
