@@ -28,9 +28,6 @@ pub struct ExecutedProviderCommand;
 pub struct SelectInstalledGame(pub String);
 
 #[serializable_event]
-pub struct GameRemoved(pub String);
-
-#[serializable_event]
 pub struct ErrorRaised(pub String);
 
 pub trait EventEmitter {
@@ -63,7 +60,6 @@ pub fn collect_events() -> tauri_specta::Events {
 		SyncRemoteMods,
 		ExecutedProviderCommand,
 		SelectInstalledGame,
-		GameRemoved,
 		ErrorRaised,
 	]
 }

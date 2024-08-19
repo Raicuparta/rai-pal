@@ -263,7 +263,6 @@ errorRaised: ErrorRaised,
 executedProviderCommand: ExecutedProviderCommand,
 foundInstalledGame: FoundInstalledGame,
 foundOwnedGame: FoundOwnedGame,
-gameRemoved: GameRemoved,
 selectInstalledGame: SelectInstalledGame,
 syncLocalMods: SyncLocalMods,
 syncModLoaders: SyncModLoaders,
@@ -273,7 +272,6 @@ errorRaised: "error-raised",
 executedProviderCommand: "executed-provider-command",
 foundInstalledGame: "found-installed-game",
 foundOwnedGame: "found-owned-game",
-gameRemoved: "game-removed",
 selectInstalledGame: "select-installed-game",
 syncLocalMods: "sync-local-mods",
 syncModLoaders: "sync-mod-loaders",
@@ -301,7 +299,6 @@ export type FoundOwnedGame = []
 export type GameEngine = { brand: EngineBrand; version: EngineVersion | null }
 export type GameExecutable = { path: string; name: string; engine: GameEngine | null; architecture: Architecture | null; scriptingBackend: UnityScriptingBackend | null }
 export type GameMode = "VR" | "Flat"
-export type GameRemoved = string
 export type InstalledGame = { id: string; name: string; provider: ProviderId; executable: GameExecutable; installedModVersions: { [key in string]: string }; discriminator: string | null; thumbnailUrl: string | null; ownedGameId: string | null; startCommand: ProviderCommand | null }
 export type LocalMod = { data: LocalModData; common: CommonModData }
 export type LocalModData = { path: string; manifest: Manifest | null }

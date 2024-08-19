@@ -226,11 +226,19 @@ async fn open_installed_mod_folder(
 }
 
 fn refresh_game_mods_and_exe(installed_game: &InstalledGame, handle: &AppHandle) -> Result {
-	let mut new_game = installed_game.clone();
-	new_game.refresh_installed_mods();
-	new_game.refresh_executable()?;
+	let mut refreshed_game = installed_game.clone();
+	refreshed_game.refresh_installed_mods();
+	refreshed_game.refresh_executable()?;
 
-	handle.emit_safe(events::FoundInstalledGame());
+	if let Some(installed_games_state) = handle
+		.app_state()
+		.installed_games
+		.get(&installed_game.provider)
+	{
+		let mut installed_games = installed_games_state.get_data()?;
+		installed_games.insert(refreshed_game.id.clone(), refreshed_game.clone());
+		update_installed_games_state(handle, &installed_game.provider, installed_games);
+	}
 
 	Ok(())
 }
@@ -382,23 +390,31 @@ async fn fetch_remote_games() -> Result<Vec<RemoteGame>> {
 	Ok(remote_games::get().await?)
 }
 
+fn update_installed_games_state(
+	handle: &AppHandle,
+	provider_id: &ProviderId,
+	installed_games: HashMap<String, InstalledGame>,
+) {
+	if let Some(mutex) = handle.app_state().installed_games.get(provider_id) {
+		update_state(installed_games.clone(), mutex);
+	}
+	handle.emit_safe(events::FoundInstalledGame());
+}
+
+fn update_owned_games_state(
+	handle: &AppHandle,
+	provider_id: &ProviderId,
+	owned_games: HashMap<String, OwnedGame>,
+) {
+	if let Some(mutex) = handle.app_state().owned_games.get(provider_id) {
+		update_state(owned_games.clone(), mutex);
+	}
+	handle.emit_safe(events::FoundOwnedGame());
+}
+
 #[tauri::command]
 #[specta::specta]
 async fn get_provider_games(handle: AppHandle, provider_id: ProviderId) -> Result {
-	let update_installed_games_state = |installed_games: HashMap<String, InstalledGame>| {
-		if let Some(mutex) = handle.app_state().installed_games.get(&provider_id) {
-			update_state(installed_games.clone(), mutex);
-		}
-		handle.emit_safe(events::FoundInstalledGame());
-	};
-
-	let update_owned_games_state = |owned_games: HashMap<String, OwnedGame>| {
-		if let Some(mutex) = handle.app_state().owned_games.get(&provider_id) {
-			update_state(owned_games.clone(), mutex);
-		}
-		handle.emit_safe(events::FoundOwnedGame());
-	};
-
 	let mut cache = ProviderCache::new(provider_id);
 
 	let mut installed_games = HashMap::<String, InstalledGame>::new();
@@ -412,8 +428,8 @@ async fn get_provider_games(handle: AppHandle, provider_id: ProviderId) -> Resul
 	} else {
 		installed_games = cache.data.installed_games.clone();
 		owned_games = cache.data.owned_games.clone();
-		update_installed_games_state(installed_games.clone());
-		update_owned_games_state(owned_games.clone());
+		update_installed_games_state(&handle, &provider_id, installed_games.clone());
+		update_owned_games_state(&handle, &provider_id, owned_games.clone());
 	}
 
 	let provider = provider::get_provider(provider_id)?;
@@ -423,18 +439,18 @@ async fn get_provider_games(handle: AppHandle, provider_id: ProviderId) -> Resul
 			|game: InstalledGame| {
 				installed_games_without_cache.insert(game.id.clone(), game.clone());
 				installed_games.insert(game.id.clone(), game);
-				update_installed_games_state(installed_games.clone());
+				update_installed_games_state(&handle, &provider_id, installed_games.clone());
 			},
 			|game: OwnedGame| {
 				owned_games_without_cache.insert(game.global_id.clone(), game.clone());
 				owned_games.insert(game.global_id.clone(), game);
-				update_owned_games_state(owned_games.clone());
+				update_owned_games_state(&handle, &provider_id, owned_games.clone());
 			},
 		)
 		.await?;
 
-	update_installed_games_state(installed_games_without_cache.clone());
-	update_owned_games_state(owned_games_without_cache.clone());
+	update_installed_games_state(&handle, &provider_id, installed_games_without_cache.clone());
+	update_owned_games_state(&handle, &provider_id, owned_games_without_cache.clone());
 
 	cache
 		.set_data(ProviderData {
@@ -460,8 +476,14 @@ async fn add_game(path: PathBuf, handle: AppHandle) -> Result {
 	let installed_game = manual_provider::add_game(&normalized_path)?;
 	let game_name = installed_game.name.clone();
 
+	if let Some(installed_games_state) = handle.app_state().installed_games.get(&ProviderId::Manual)
+	{
+		let mut installed_games = installed_games_state.get_data()?;
+		installed_games.insert(installed_game.id.clone(), installed_game.clone());
+		update_installed_games_state(&handle, &installed_game.provider, installed_games);
+	}
+
 	handle.emit_safe(events::SelectInstalledGame(installed_game.id.clone()));
-	handle.emit_safe(events::FoundInstalledGame());
 
 	analytics::send_event(analytics::Event::ManuallyAddGame, &game_name).await;
 
@@ -473,7 +495,15 @@ async fn add_game(path: PathBuf, handle: AppHandle) -> Result {
 async fn remove_game(installed_game: InstalledGame, handle: AppHandle) -> Result {
 	manual_provider::remove_game(&installed_game.executable.path)?;
 
-	handle.emit_safe(events::GameRemoved(installed_game.id));
+	if let Some(installed_games_state) = handle
+		.app_state()
+		.installed_games
+		.get(&installed_game.provider)
+	{
+		let mut installed_games = installed_games_state.get_data()?;
+		installed_games.remove(&installed_game.id);
+		update_installed_games_state(&handle, &installed_game.provider, installed_games);
+	}
 
 	Ok(())
 }
