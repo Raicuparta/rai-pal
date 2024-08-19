@@ -402,7 +402,10 @@ async fn get_provider_games(handle: AppHandle, provider_id: ProviderId) -> Resul
 	let mut cache = ProviderCache::new(provider_id);
 
 	let mut installed_games = HashMap::<String, InstalledGame>::new();
+	let mut installed_games_without_cache = HashMap::<String, InstalledGame>::new();
+
 	let mut owned_games = HashMap::<String, OwnedGame>::new();
+	let mut owned_games_without_cache = HashMap::<String, OwnedGame>::new();
 
 	if let Err(err) = cache.load(&handle) {
 		log::warn!("Failed to load cache for provider {provider_id}: {err}");
@@ -418,20 +421,25 @@ async fn get_provider_games(handle: AppHandle, provider_id: ProviderId) -> Resul
 	provider
 		.get_games(
 			|game: InstalledGame| {
+				installed_games_without_cache.insert(game.id.clone(), game.clone());
 				installed_games.insert(game.id.clone(), game);
 				update_installed_games_state(installed_games.clone());
 			},
 			|game: OwnedGame| {
+				owned_games_without_cache.insert(game.global_id.clone(), game.clone());
 				owned_games.insert(game.global_id.clone(), game);
 				update_owned_games_state(owned_games.clone());
 			},
 		)
 		.await?;
 
+	update_installed_games_state(installed_games_without_cache.clone());
+	update_owned_games_state(owned_games_without_cache.clone());
+
 	cache
 		.set_data(ProviderData {
-			installed_games: installed_games.clone(),
-			owned_games: owned_games.clone(),
+			installed_games: installed_games_without_cache.clone(),
+			owned_games: owned_games_without_cache.clone(),
 		})
 		.save(&handle)?;
 
