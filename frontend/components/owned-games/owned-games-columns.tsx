@@ -73,13 +73,15 @@ const appType: TableColumnBase<ProcessedOwnedGame, AppType> = {
 	),
 };
 
-// TODO: somehow take into account all engines
 function getEngine(game: ProcessedOwnedGame) {
-	if (!game.remoteData) return null;
-
-	if (!game.remoteData.engines) return null;
-
-	return game.remoteData.engines[0] ?? null;
+	return (
+		// The remote game database can have multiple engines assigned to a game.
+		// Usually that's for games that had their engine versions change during the game's lifespan.
+		// For now we're just picking the latest one and displaying that the table,
+		// but maybe later we'll want to somehow display all versions,
+		// because for some games you can get an older version that's compatible with more mods.
+		game.remoteData?.engines?.sort(sortGamesByEngine)?.reverse()?.[0] ?? null
+	);
 }
 
 const engine: TableColumnBase<ProcessedOwnedGame, EngineBrand> = {
