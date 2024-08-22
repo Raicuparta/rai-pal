@@ -50,7 +50,7 @@ const provider: TableColumnBase<ProcessedOwnedGame, ProviderId> = {
 	getSortValue: (game) => game.provider,
 	getFilterValue: (game) => game.provider,
 	filterOptions: providerFilterOptions,
-	unavailableValues: ["Manual", "Xbox"],
+	unavailableValues: ["Manual"],
 	renderCell: (game) => (
 		<Table.Td>
 			<ProviderBadge value={game.provider} />

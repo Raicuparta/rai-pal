@@ -1,8 +1,10 @@
 #![cfg(target_os = "windows")]
 
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use log::error;
+use rai_pal_proc_macros::serializable_struct;
+use serde::{Deserialize, Serialize};
 use winreg::{
 	enums::{HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE},
 	RegKey,
@@ -30,11 +32,37 @@ impl ProviderStatic for Xbox {
 	}
 }
 
+#[serializable_struct]
+struct XboxGamepassGame {
+	product_title: String,
+	product_id: String,
+	images: Option<XboxGamepassImages>,
+	release_date: String,
+	store_page: String,
+}
+
+impl XboxGamepassGame {
+	fn get_release_date(&self) -> Option<i64> {
+		Some(
+			self.release_date
+				.parse::<chrono::DateTime<chrono::Utc>>()
+				.ok()?
+				.timestamp(),
+		)
+	}
+}
+
+#[derive(serde::Serialize, serde::Deserialize, specta::Type, Clone, Debug)]
+#[serde(rename_all = "PascalCase")]
+struct XboxGamepassImages {
+	logo: Option<Vec<String>>,
+}
+
 impl ProviderActions for Xbox {
 	async fn get_games<TInstalledCallback, TOwnedCallback>(
 		&self,
 		mut installed_callback: TInstalledCallback,
-		mut _owned_callback: TOwnedCallback,
+		mut owned_callback: TOwnedCallback,
 	) -> Result
 	where
 		TInstalledCallback: FnMut(InstalledGame) + Send + Sync,
@@ -101,6 +129,32 @@ impl ProviderActions for Xbox {
 					}
 				}
 			}
+		}
+
+		let json_path =
+			Path::new(env!("CARGO_MANIFEST_DIR")).join("../../test-data/xbox-gamepass-games.json");
+
+		//load json
+		let games: Vec<XboxGamepassGame> =
+			serde_json::from_str(&std::fs::read_to_string(json_path)?)?;
+
+		// call owned game callback for each game
+		for game in games {
+			let mut owned_game = OwnedGame::new(&game.product_id, *Self::ID, &game.product_title);
+
+			if let Some(release_date) = game.get_release_date() {
+				owned_game.set_release_date(release_date);
+			}
+
+			if let Some(image_url) = game
+				.images
+				.and_then(|images| images.logo)
+				.and_then(|logos| logos.first().cloned())
+			{
+				owned_game.set_thumbnail_url(&image_url);
+			}
+
+			owned_callback(owned_game);
 		}
 
 		Ok(())
