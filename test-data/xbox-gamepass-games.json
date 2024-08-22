@@ -5,6 +5,9 @@
     "images": {
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.51954.13709503452579203.2424d951-5f62-4cd0-816f-1d45c87c1dc3.2de5e46c-0bcf-4646-add2-15db414fd1fd"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.3242.13709503452579203.be476149-e3b1-482b-8d59-cec951aebeac.871aaa92-b00b-4133-96f6-f3305eaf7af9"
       ]
     },
     "releaseDate": "2024-02-15",
@@ -13,7 +16,11 @@
   {
     "productTitle": "A Plague Tale: Requiem - Windows",
     "productId": "9N97RC576957",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.60562.13537574391772742.e387dd56-e35c-40fb-bc0c-c0c1decef3a1.1de59474-dc66-4ad3-8050-ee622224a589"
+      ]
+    },
     "releaseDate": "2022-10-18",
     "storePage": "https://www.xbox.com/en-us/games/store/a-plague-tale-requiem-windows/9N97RC576957"
   },
@@ -23,6 +30,9 @@
     "images": {
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.62188.14385363172001343.ef67463b-a065-4ebb-ae31-992199a7c91f.dc35cf6e-81ef-420e-ac79-4203eab68205"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.42434.14385363172001343.ef67463b-a065-4ebb-ae31-992199a7c91f.10e29e9e-39f2-40fe-853d-4cba1737f00d"
       ]
     },
     "releaseDate": "2023-12-08",
@@ -31,7 +41,11 @@
   {
     "productTitle": "Age of Empires Definitive Edition",
     "productId": "9NJWTJSVGVLJ",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.61945.13672427983916579.274b1ffd-9cde-4bef-9a3e-6f37073d5ed0.edb3f732-9767-4571-8947-4bf839a08f2e"
+      ]
+    },
     "releaseDate": "2019-08-19",
     "storePage": "https://www.xbox.com/en-us/games/store/age-of-empires-definitive-edition/9NJWTJSVGVLJ"
   },
@@ -39,6 +53,9 @@
     "productTitle": "Age of Empires II: Definitive Edition",
     "productId": "9N42SSSX2MTG",
     "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.64988.13991012152837663.1297136a-f273-41f1-947f-59044c848c55.fdc562b7-3eca-4753-b608-fd91ef8a6f39"
+      ],
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.35554.13991012152837663.1297136a-f273-41f1-947f-59044c848c55.01305b76-9358-458a-9db9-f6aea8339462"
       ]
@@ -52,6 +69,9 @@
     "images": {
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.25620.13905755391310011.6681c157-530b-4476-b20e-6cf142a9a94e.1437bcbf-1390-4dd3-a14a-ebe105129422"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.20857.13905755391310011.6681c157-530b-4476-b20e-6cf142a9a94e.7a973f79-cd9c-4851-85e3-66e88fd18dd6"
       ]
     },
     "releaseDate": "2020-10-15",
@@ -65,6 +85,9 @@
         "https://store-images.s-microsoft.com/image/apps.39795.14235977975261210.592375c9-78a4-4653-8c7f-a8e510e6c26a.3005be1d-9924-42a5-8cd9-a774a33a3387",
         "https://store-images.s-microsoft.com/image/apps.44152.14235977975261210.592375c9-78a4-4653-8c7f-a8e510e6c26a.e1de87d3-0066-4302-8a56-ae186825da13",
         "https://store-images.s-microsoft.com/image/apps.53387.14235977975261210.592375c9-78a4-4653-8c7f-a8e510e6c26a.750bc72a-72f4-48ea-8e8d-3866ddaf3683"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.20558.14235977975261210.592375c9-78a4-4653-8c7f-a8e510e6c26a.f4f5408e-cd13-44d7-80c1-830ab0019d3a"
       ]
     },
     "releaseDate": "2021-10-28",
@@ -73,7 +96,11 @@
   {
     "productTitle": "Amnesia: The Bunker",
     "productId": "9PC15H56NGJK",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.11008.14112953128044526.ba95d4f9-17d4-4076-a135-073ccafc4d57.452d50b1-628a-4cb6-b06b-2da42440dad6"
+      ]
+    },
     "releaseDate": "2023-06-06",
     "storePage": "https://www.xbox.com/en-us/games/store/amnesia-the-bunker/9PC15H56NGJK"
   },
@@ -81,6 +108,9 @@
     "productTitle": "Among Us",
     "productId": "9NG07QJNK38J",
     "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.21162.13589262686196899.16e3418a-cbf2-4748-9724-1c9dc9b7a0b9.14afafe9-1b03-4df0-95ad-12e2712a3b53"
+      ],
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.16094.13589262686196899.16e3418a-cbf2-4748-9724-1c9dc9b7a0b9.476dcb12-abc8-433a-ac3c-858a44939d8f"
       ]
@@ -91,7 +121,11 @@
   {
     "productTitle": "An Elder Scrolls Legend: Battlespire",
     "productId": "9MVSRJWZBG9G",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.22619.13857302790153363.c220e79b-1a05-411e-880c-e0187d84cb85.09361148-3648-4d68-8c97-8ddb30d9ec65"
+      ]
+    },
     "releaseDate": "2022-08-18",
     "storePage": "https://www.xbox.com/en-us/games/store/an-elder-scrolls-legend-battlespire/9MVSRJWZBG9G"
   },
@@ -99,6 +133,9 @@
     "productTitle": "Another Crab's Treasure",
     "productId": "9P97ZTRTH25W",
     "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.32404.14077481160620630.1db41d01-0b54-4154-a1e1-f00cf31fab40.8c7bfed3-d183-4a98-ac33-8d9bdf0fa83f"
+      ],
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.52985.14077481160620630.1db41d01-0b54-4154-a1e1-f00cf31fab40.f4df0b06-9e1b-4eb6-9857-62fdd46ad8db"
       ]
@@ -112,6 +149,9 @@
     "images": {
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.8003.14490665772853953.a70de13a-b9d0-41e7-bac1-9ce697912658.a45024e9-dd52-4cde-bab7-9781c38075f6"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.24784.14490665772853953.a70de13a-b9d0-41e7-bac1-9ce697912658.cd557027-a57d-4cbe-957c-f421f7308950"
       ]
     },
     "releaseDate": "2022-04-21",
@@ -120,7 +160,11 @@
   {
     "productTitle": "Arcade Paradise",
     "productId": "9N2FQCGWH32D",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.19827.13957312526507243.94fe35e3-4bb7-4224-8eee-d723937ca03f.d6008586-869c-4d5e-bc81-9ead0e87c4d1"
+      ]
+    },
     "releaseDate": "2022-08-11",
     "storePage": "https://www.xbox.com/en-us/games/store/arcade-paradise/9N2FQCGWH32D"
   },
@@ -130,6 +174,9 @@
     "images": {
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.3955.14545480955348978.971a18b6-ebe3-437f-af65-4ba072de8964.7c7c9bba-d6fe-42e3-83fc-bb2f6aeff2cd"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.28808.14545480955348978.c66022f5-e4e3-4713-8508-d8bd11df0814.6790feb5-a50e-42a7-83b4-076a5c1b170e"
       ]
     },
     "releaseDate": "2023-11-21",
@@ -141,6 +188,9 @@
     "images": {
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.56109.14624535533178035.0b67d5f1-b944-4b48-abe7-9bb2f8f41684.fc9cdb42-f0e3-47fa-8d1c-23a4a8ca931c"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.14842.14624535533178035.dd996182-c788-4a1e-894e-493c31d70096.ec4feced-77b1-4210-86e9-8fca51aa6826"
       ]
     },
     "releaseDate": "2021-05-27",
@@ -149,14 +199,22 @@
   {
     "productTitle": "Arx Fatalis",
     "productId": "9NXQKPGMHH9G",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.57110.14495213989606263.a0bd1390-9948-45f8-a75b-39231ab81047.b6cfd660-b3bd-4fb5-bcd0-672d62c4eb8f"
+      ]
+    },
     "releaseDate": "2021-06-13",
     "storePage": "https://www.xbox.com/en-us/games/store/arx-fatalis/9NXQKPGMHH9G"
   },
   {
     "productTitle": "As Dusk Falls",
     "productId": "9NR7XDNVP5SW",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.46746.14387733153613072.28665954-14dc-4229-8e3c-0257e25089cb.46b89faa-6b2f-433b-aefc-16e5063ea2af"
+      ]
+    },
     "releaseDate": "2022-07-19",
     "storePage": "https://www.xbox.com/en-us/games/store/as-dusk-falls/9NR7XDNVP5SW"
   },
@@ -166,6 +224,9 @@
     "images": {
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.20495.14161170943848382.2f684838-f6f6-46ef-b508-9c52ff9b96b8.f0aea258-d005-4272-9d4c-62884ee2a084"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.39483.14161170943848382.2f684838-f6f6-46ef-b508-9c52ff9b96b8.966e86ea-7aca-42f0-ba8e-473a2ca075ee"
       ]
     },
     "releaseDate": "2022-09-13",
@@ -178,6 +239,9 @@
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.20760.13510798887933723.c3a2d497-e717-463e-a426-2c119e62b161.23ddcdac-1498-48db-b0d9-489ed87a5e33",
         "https://store-images.s-microsoft.com/image/apps.7065.13510798887933723.57e43f19-4066-429e-b1a2-caea56e427b4.062ba478-f5b0-4cf3-92ba-73edf71889e7"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.64849.13510798887933723.57e43f19-4066-429e-b1a2-caea56e427b4.860c35a4-ccbf-413e-9574-1c7c8826d6c6"
       ]
     },
     "releaseDate": "2019-02-06",
@@ -186,14 +250,22 @@
   {
     "productTitle": "Atlas Fallen: Reign of Sand (Windows)",
     "productId": "9NCGTG3KR2W9",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.40302.13563971826346196.3d957cff-bc47-48aa-b98f-be2691a13f70.1ac68b3c-a12c-4ab2-822c-8e4a5cfd6f16"
+      ]
+    },
     "releaseDate": "2024-08-22",
     "storePage": "https://www.xbox.com/en-us/games/store/atlas-fallen-reign-of-sand-windows/9NCGTG3KR2W9"
   },
   {
     "productTitle": "Atomic Heart (Windows)",
     "productId": "9N9KXP8RRPB5",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.24332.13535329055099418.082ed7bb-5194-4ea8-9fa9-c54f61a9ec1d.9d860267-4459-424b-912a-2b6b4b08e807"
+      ]
+    },
     "releaseDate": "2023-02-21",
     "storePage": "https://www.xbox.com/en-us/games/store/atomic-heart-windows/9N9KXP8RRPB5"
   },
@@ -203,6 +275,9 @@
     "images": {
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.31850.13762247899293053.a620912f-d2e0-44a1-9cd1-d02f95ffa814.a0f221c6-a620-4cf9-85f5-c6aa88bb56e7"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.24530.13762247899293053.a620912f-d2e0-44a1-9cd1-d02f95ffa814.89d9e9b4-4781-40c1-9885-93543e1401d8"
       ]
     },
     "releaseDate": "2020-06-11",
@@ -214,6 +289,9 @@
     "images": {
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.42322.14065499269907016.249670e2-cad9-48bb-aa0f-309d712ede80.974ad9ad-99b2-4d84-abfc-91a9ed643f06"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.14695.14065499269907016.670ddf59-3954-4cfa-927c-60562b664545.56c9f977-b0a8-4b8e-8644-609b768fbc51"
       ]
     },
     "releaseDate": "2020-08-20",
@@ -222,7 +300,11 @@
   {
     "productTitle": "Ben 10: Power Trip",
     "productId": "9NJWFF2KHL6H",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.30849.13672727399820228.e1322d27-4961-46da-9c7b-c310d3e28cb1.90cdc8cc-0bdd-4b06-ba46-71549ba3bf46"
+      ]
+    },
     "releaseDate": "2020-10-09",
     "storePage": "https://www.xbox.com/en-us/games/store/ben-10-power-trip/9NJWFF2KHL6H"
   },
@@ -230,6 +312,9 @@
     "productTitle": "BlazBlue: Cross Tag Battle Special Edition",
     "productId": "9NFWDRBZXDL9",
     "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.47399.13586724043256738.3809e00e-03ca-4046-bce4-167a34f4611d.681d75dc-e4a0-4262-ac44-05c2c458a394"
+      ],
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.53583.13586724043256738.3809e00e-03ca-4046-bce4-167a34f4611d.21a2671a-7184-42c5-a2ea-d84d03bcdeba"
       ]
@@ -243,6 +328,9 @@
     "images": {
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.10811.14431087147384961.13dc1a18-3532-477b-b2d2-772256efc040.87d93a78-9f25-423f-86e7-694f51d12e03"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.5290.14431087147384961.13dc1a18-3532-477b-b2d2-772256efc040.6fab8e78-8a3d-4b85-a5b1-33f32aeb8ea3"
       ]
     },
     "releaseDate": "2020-03-24",
@@ -251,14 +339,22 @@
   {
     "productTitle": "Bloodstained: Ritual of the Night",
     "productId": "9MWB2BFF0SPD",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.27614.13842595231656181.79361d33-7a18-4554-8a50-66b60d3712e6.5935dc34-dc7d-4375-95c1-c77037813383"
+      ]
+    },
     "releaseDate": "2019-09-19",
     "storePage": "https://www.xbox.com/en-us/games/store/bloodstained-ritual-of-the-night/9MWB2BFF0SPD"
   },
   {
     "productTitle": "Bluey: The Videogame",
     "productId": "9N2J0FGV30DX",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.46896.13951667472045163.3fb7085f-1bf8-4c11-9c65-272ecae540f9.6b9e6f68-3468-4e6b-af6e-bb138f574374"
+      ]
+    },
     "releaseDate": "2023-11-17",
     "storePage": "https://www.xbox.com/en-us/games/store/bluey-the-videogame/9N2J0FGV30DX"
   },
@@ -266,6 +362,9 @@
     "productTitle": "Botany Manor",
     "productId": "9PLP9LSKB6WV",
     "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.7606.14313562065097595.e2df373c-7c5d-4185-9834-210dcde167fd.fa326db7-f61e-4cd5-9634-ffc7b92db771"
+      ],
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.41526.14313562065097595.e2df373c-7c5d-4185-9834-210dcde167fd.3f955fb9-a5c4-40a6-ad3b-a1d845f4bcfc"
       ]
@@ -281,6 +380,9 @@
         "https://store-images.s-microsoft.com/image/apps.42766.14468359839778606.8334cc11-289e-49d6-9e23-c95c3d31090a.31aca589-8a6c-4646-a224-0cd0caea8f7a",
         "https://store-images.s-microsoft.com/image/apps.8680.14468359839778606.8334cc11-289e-49d6-9e23-c95c3d31090a.126b026f-761e-4820-9e28-ec1e3141cb21",
         "https://store-images.s-microsoft.com/image/apps.6736.14468359839778606.b9e6f982-23f2-4c58-a436-66ba564129a1.3a7f9a20-6844-44bf-bbb9-72ef8eb4d298"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.61871.14468359839778606.b9e6f982-23f2-4c58-a436-66ba564129a1.a2290043-5ee9-4e2d-896b-cd3b7c79c2ce"
       ]
     },
     "releaseDate": "2019-06-09",
@@ -292,6 +394,9 @@
     "images": {
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.17222.13865165192974158.ad4349c4-8b53-4bb2-98c5-d7851e817572.a6468260-1f4a-4512-8c86-16e338727b8e"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.11626.13865165192974158.d8663e1a-4fc7-48f9-8dc8-1aac98e6c023.a328448b-9ca7-4f54-932d-e6524a93fd94"
       ]
     },
     "releaseDate": "2017-06-23",
@@ -300,28 +405,44 @@
   {
     "productTitle": "Brotato",
     "productId": "9P9VNSQK1W3K",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.34767.14130976257579640.bd7a2231-2a21-4516-807a-46a50286744a.614cc94b-88ac-4943-bbbd-b73979590c69"
+      ]
+    },
     "releaseDate": "2024-01-30",
     "storePage": "https://www.xbox.com/en-us/games/store/brotato/9P9VNSQK1W3K"
   },
   {
     "productTitle": "Brothers: a Tale of Two Sons",
     "productId": "9PJ42FRWTGH1",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.21773.14219310217385892.49f83f17-40c4-462f-ad58-3e7283b37f7a.2e634bed-9d4b-4ddb-9e99-bf1a09fc3703"
+      ]
+    },
     "releaseDate": "2019-06-09",
     "storePage": "https://www.xbox.com/en-us/games/store/brothers-a-tale-of-two-sons/9PJ42FRWTGH1"
   },
   {
     "productTitle": "Call of Duty®: Modern Warfare® III - Standard Edition",
     "productId": "9P697QF6GSVV",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.33315.14623575291286193.52ecceb7-ac9f-47e8-a29f-30ab63f33131.7bc98157-0f0d-4804-b524-5ea660d3c50b"
+      ]
+    },
     "releaseDate": "2024-07-24",
     "storePage": "https://www.xbox.com/en-us/games/store/call-of-duty-modern-warfare-iii-standard-edition/9P697QF6GSVV"
   },
   {
     "productTitle": "Call of the Wild: The Angler™",
     "productId": "9NDC5LJS839S",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.40298.13546622578028181.ca6f2004-2229-49ec-83ec-b4fad4124702.4d161737-5ec7-42cb-bd11-7b026650fc46"
+      ]
+    },
     "releaseDate": "2023-08-30",
     "storePage": "https://www.xbox.com/en-us/games/store/call-of-the-wild-the-angler/9NDC5LJS839S"
   },
@@ -329,6 +450,9 @@
     "productTitle": "Car Mechanic Simulator 2021",
     "productId": "9NH019ZFFHTV",
     "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.38130.13635623008017579.c3c49040-6ffd-4834-b97d-bf656fa40ffa.6544fd7d-ac5e-4a61-98cf-f05e9ff3c106"
+      ],
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.11628.13635623008017579.c3c49040-6ffd-4834-b97d-bf656fa40ffa.2a60277d-e755-4a3d-b9bc-f729f040a7f8"
       ]
@@ -340,6 +464,9 @@
     "productTitle": "Cassette Beasts",
     "productId": "9N82SNQTZVMQ",
     "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.62701.14053398568595271.6df710ab-5b0b-4a3d-8691-4e7b0afae807.822f5b1c-c1d8-4c97-8e96-2798c10f3fa8"
+      ],
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.29648.14053398568595271.6df710ab-5b0b-4a3d-8691-4e7b0afae807.9acf59c5-6252-43d1-a1b9-b62fadc00697"
       ]
@@ -353,6 +480,9 @@
     "images": {
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.36676.71633162879241707.c31376fa-ee25-41f1-a3fa-174e27920c1e.aa1251ba-296e-470d-b0c0-9edc2a54738f"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.7117.71633162879241707.7cf18b3b-9fa5-486f-9a68-067f06d50bf1.3bb742ae-b2ed-4066-bf27-ea50d614ce8c"
       ]
     },
     "releaseDate": "2018-01-26",
@@ -361,7 +491,11 @@
   {
     "productTitle": "Chants of Sennaar (Windows)",
     "productId": "9N6FWNVHQNGD",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.43602.14019132985152487.acce0d33-e53b-464e-94c1-c4bba3e2edbd.9599f7b5-9eda-4bff-897a-1628af364bc9"
+      ]
+    },
     "releaseDate": "2024-05-15",
     "storePage": "https://www.xbox.com/en-us/games/store/chants-of-sennaar-windows/9N6FWNVHQNGD"
   },
@@ -371,6 +505,9 @@
     "images": {
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.51634.14071745200459129.f6415fab-b460-4210-a974-f5c4ed9bcf0e.b23277b9-2d4b-491c-901c-0bd035a566d2"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.51715.14071745200459129.f6415fab-b460-4210-a974-f5c4ed9bcf0e.1e14dfd5-c275-43ec-8fe1-033a88f883e0"
       ]
     },
     "releaseDate": "2021-06-08",
@@ -384,6 +521,9 @@
         "https://store-images.s-microsoft.com/image/apps.40907.14442149246756025.a14b1d5d-9c03-4960-96fe-1939536380ec.27e81689-ac74-4ba1-87bd-5c6885038b41",
         "https://store-images.s-microsoft.com/image/apps.34644.14442149246756025.c1fe1fbf-dc9a-408c-9e9b-8f66f48cc8fd.0d109c7e-7940-4e12-822b-149a47d8a9f2",
         "https://store-images.s-microsoft.com/image/apps.53780.14442149246756025.c8cd7bd6-7ead-4b47-9601-caf6e439fe94.ae31ce96-9ecb-4238-acbb-fc49be4f5770"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.26616.14442149246756025.95cc7c09-6f27-48f0-b539-fbd6dedebd08.f505a3b8-2416-4124-a5b1-481281d4e2af"
       ]
     },
     "releaseDate": "2017-05-19",
@@ -392,7 +532,11 @@
   {
     "productTitle": "Cities: Skylines II - PC Edition",
     "productId": "9PGZ346PSLN0",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.40541.14241982748923031.b7ab82d8-956b-4d85-b739-c1cd07cb25df.8996f92a-d276-4066-82cc-bee08083b900"
+      ]
+    },
     "releaseDate": "2023-10-24",
     "storePage": "https://www.xbox.com/en-us/games/store/cities-skylines-ii-pc-edition/9PGZ346PSLN0"
   },
@@ -400,6 +544,9 @@
     "productTitle": "Citizen Sleeper",
     "productId": "9N6F97F9WGL0",
     "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.40632.14019812399166283.dc5d064e-3693-46fa-896f-9287938c5df4.84bc91b9-20c2-4405-aebc-450d031b55c6"
+      ],
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.10588.14019812399166283.dc5d064e-3693-46fa-896f-9287938c5df4.9066278e-60b2-4859-bcf7-64b239159dd8"
       ]
@@ -410,21 +557,33 @@
   {
     "productTitle": "Clone Drone in the Danger Zone",
     "productId": "9NKHKBQJSSC3",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.10871.13656707570024266.6eb12281-8416-458c-8123-d1d704e3a0c1.673f1bce-d5ef-4702-ab43-747ff9ed44c2"
+      ]
+    },
     "releaseDate": "2023-11-08",
     "storePage": "https://www.xbox.com/en-us/games/store/clone-drone-in-the-danger-zone/9NKHKBQJSSC3"
   },
   {
     "productTitle": "Close to the Sun.",
     "productId": "9P4CBGC2HJG1",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.22388.14595907930500938.5be7a9d2-50a5-4db6-a29a-6f0807bbdfc1.99736f39-0af3-4f60-b054-101ac600ce9c"
+      ]
+    },
     "releaseDate": "2024-01-03",
     "storePage": "https://www.xbox.com/en-us/games/store/close-to-the-sun/9P4CBGC2HJG1"
   },
   {
     "productTitle": "Cocoon",
     "productId": "9N3FPS4LDHCR",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.30735.13933554322251706.0a9bd242-c253-4ad3-882f-a5699d708be5.259c1ea8-80a0-455a-98eb-ba1219b63577"
+      ]
+    },
     "releaseDate": "2023-09-29",
     "storePage": "https://www.xbox.com/en-us/games/store/cocoon/9N3FPS4LDHCR"
   },
@@ -432,6 +591,9 @@
     "productTitle": "Common'hood",
     "productId": "9N234330NRND",
     "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.14082.13960116824316263.0d45a6c2-7697-4178-9bb2-fc474428c6bf.634caee4-166d-4d0e-a215-cfccc3ee66c5"
+      ],
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.21244.13960116824316263.0d45a6c2-7697-4178-9bb2-fc474428c6bf.8d45b30e-18d4-4d11-b27a-b8b982d445e2"
       ]
@@ -442,42 +604,66 @@
   {
     "productTitle": "Conan Exiles",
     "productId": "C2X6ZCNKN2WR",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.3114.66261947870001438.2cfbc23b-426c-43d9-9ab1-9f2dcbb1afb6.188d91aa-c142-4455-ae41-89c6ad9493c4"
+      ]
+    },
     "releaseDate": "2018-05-08",
     "storePage": "https://www.xbox.com/en-us/games/store/conan-exiles/C2X6ZCNKN2WR"
   },
   {
     "productTitle": "Control Ultimate Edition",
     "productId": "9P7LVXNVQ6K7",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.34632.14105328782956010.49f773af-c1ba-43ab-a4d2-d9b330f79b47.e75a7d01-760e-4ed4-a908-eb0b44ecb3c5"
+      ]
+    },
     "releaseDate": "2024-03-13",
     "storePage": "https://www.xbox.com/en-us/games/store/control-ultimate-edition/9P7LVXNVQ6K7"
   },
   {
     "productTitle": "Cooking Simulator Windows",
     "productId": "9PLGBZWN65RG",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.12734.14318332024941603.bcd56dc7-63bc-4d56-bf05-e25c65cd0318.ecaeef8d-f8fb-497f-a0bb-a3c93face31c"
+      ]
+    },
     "releaseDate": "2022-08-11",
     "storePage": "https://www.xbox.com/en-us/games/store/cooking-simulator-windows/9PLGBZWN65RG"
   },
   {
     "productTitle": "Coral Island",
     "productId": "9N1T1MQ92PVS",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.29498.13965383722089887.db70e3c6-249c-431b-af22-61e3c106e18e.0276da19-7004-406e-a88b-4ea9b80cdc84"
+      ]
+    },
     "releaseDate": "2022-10-11",
     "storePage": "https://www.xbox.com/en-us/games/store/coral-island/9N1T1MQ92PVS"
   },
   {
     "productTitle": "Crackdown 3",
     "productId": "9NXR6469DM2P",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.63949.14494915233617130.8bc2d647-9563-4ed3-9081-f4a771cfa3a6.6504c19a-15a5-40a6-9231-343598749956"
+      ]
+    },
     "releaseDate": "2019-02-15",
     "storePage": "https://www.xbox.com/en-us/games/store/crackdown-3/9NXR6469DM2P"
   },
   {
     "productTitle": "Crash Bandicoot™ N. Sane Trilogy",
     "productId": "9NJ2FD5HJ7SB",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.26340.13619069964366497.5db0830a-5ca2-4c6f-9968-5e84b3538655.96717e5d-78fd-4997-915e-d6f3a7f786eb"
+      ]
+    },
     "releaseDate": "2024-05-07",
     "storePage": "https://www.xbox.com/en-us/games/store/crash-bandicoot-n-sane-trilogy/9NJ2FD5HJ7SB"
   },
@@ -487,6 +673,9 @@
     "images": {
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.7817.14400608729854013.f3e97c2f-202d-48ee-b6f7-8667ef1177d0.35bb725f-c98f-420c-b1ea-d964f53260dd"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.26874.14400608729854013.f3e97c2f-202d-48ee-b6f7-8667ef1177d0.b6ddef52-3108-42a3-99ed-e76791f5a626"
       ]
     },
     "releaseDate": "2024-08-07",
@@ -498,6 +687,9 @@
     "images": {
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.56481.13662804336614394.63dd49dd-f93b-4b67-b597-bace2d4550c2.7db77c31-f8c6-4c2a-af2b-b0d556f53a33"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.58935.13662804336614394.63dd49dd-f93b-4b67-b597-bace2d4550c2.26dbe4d6-f7d0-4e9e-a21d-d5ade4bdc93b"
       ]
     },
     "releaseDate": "2024-06-26",
@@ -506,35 +698,55 @@
   {
     "productTitle": "Crusader Kings III",
     "productId": "9N7GG222GTTH",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.30214.14065406176999862.d433bba3-dfb8-463a-bd60-0c7bd30829d8.e80712b3-f7ba-4e91-9d7f-9ef969747827"
+      ]
+    },
     "releaseDate": "2020-09-01",
     "storePage": "https://www.xbox.com/en-us/games/store/crusader-kings-iii/9N7GG222GTTH"
   },
   {
     "productTitle": "Darkest Dungeon PC",
     "productId": "9PKXZHKXNH8C",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.37617.14258054630843024.c4853382-6786-4714-bf42-f8d48a2d58e3.feff6027-f9a9-4e48-8cc6-b688d8cef05e"
+      ]
+    },
     "releaseDate": "2021-06-10",
     "storePage": "https://www.xbox.com/en-us/games/store/darkest-dungeon-pc/9PKXZHKXNH8C"
   },
   {
     "productTitle": "Day of the Tentacle Remastered",
     "productId": "9NKK6CX54183",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.18669.13659998887820416.ac97c487-e49c-4236-a48f-681c4095040e.27089192-fc55-4fcc-910d-aebc79555211"
+      ]
+    },
     "releaseDate": "2020-10-29",
     "storePage": "https://www.xbox.com/en-us/games/store/day-of-the-tentacle-remastered/9NKK6CX54183"
   },
   {
     "productTitle": "Dead by Daylight Windows",
     "productId": "9NMS4SFNBGBH",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.51458.13756572830160292.a0be61ed-4aae-47f9-8a44-c8be54b53f15.99bffbd4-1291-4b7a-b1d3-8a27e7c592d7"
+      ]
+    },
     "releaseDate": "2019-10-31",
     "storePage": "https://www.xbox.com/en-us/games/store/dead-by-daylight-windows/9NMS4SFNBGBH"
   },
   {
     "productTitle": "Dead Cells",
     "productId": "9NKVX66J0ZSK",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.28912.13719691835186674.79361d33-7a18-4554-8a50-66b60d3712e6.c6a6a941-82c2-43b3-ba3e-c53428df00a6"
+      ]
+    },
     "releaseDate": "2019-09-05",
     "storePage": "https://www.xbox.com/en-us/games/store/dead-cells/9NKVX66J0ZSK"
   },
@@ -544,6 +756,9 @@
     "images": {
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.37438.13892871097033903.6bf68087-15c2-4acb-aa8d-2a9356aea7ff.e6624c21-964f-4cd0-85bd-650a80e2b348"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.46691.13892871097033903.6bf68087-15c2-4acb-aa8d-2a9356aea7ff.27e499ae-a36b-4609-80a1-95acc4e4da90"
       ]
     },
     "releaseDate": "2021-07-20",
@@ -552,7 +767,11 @@
   {
     "productTitle": "DEATHLOOP",
     "productId": "9P5Z4530318L",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.5858.14634955238674857.649b7ff9-0dfc-4951-9b65-c5d815215da6.90208516-ba3b-47a9-a130-ef94cf860f5b"
+      ]
+    },
     "releaseDate": "2022-09-20",
     "storePage": "https://www.xbox.com/en-us/games/store/deathloop/9P5Z4530318L"
   },
@@ -564,6 +783,9 @@
         "https://store-images.s-microsoft.com/image/apps.6443.13626568325427111.5219f295-f38f-4199-b81a-6fe1b4e11f8e.a4c752e0-e0ca-425d-a406-f6dd80224cb6",
         "https://store-images.s-microsoft.com/image/apps.3401.13626568325427111.5219f295-f38f-4199-b81a-6fe1b4e11f8e.04cdaabe-3894-4fd9-9936-e42e63a0c1fb",
         "https://store-images.s-microsoft.com/image/apps.30568.13626568325427111.5219f295-f38f-4199-b81a-6fe1b4e11f8e.78dfe433-7c35-4e36-9c97-b6680a9eaae0"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.10760.13626568325427111.b79d00fc-6d85-4196-a23a-681bd2582706.2d473f1f-89ae-4ce6-b3cf-589697268fd1"
       ]
     },
     "releaseDate": "2020-05-13",
@@ -575,6 +797,9 @@
     "images": {
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.8559.14003683450151848.fb1907ac-3deb-42b0-a8a8-456541334591.73cb0279-93e8-474c-bb68-016a643567e7"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.27811.14003683450151848.fb1907ac-3deb-42b0-a8a8-456541334591.10f3670e-8429-4d48-a32c-5817385cc543"
       ]
     },
     "releaseDate": "2024-06-12",
@@ -583,7 +808,11 @@
   {
     "productTitle": "Descenders",
     "productId": "C37XBX7DCBZ0",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.22806.65934155925401073.332e7c23-85a6-43b3-a586-2f915e27a737.f779bef0-3997-4eba-94f0-7b88eb3a74b4"
+      ]
+    },
     "releaseDate": "2019-05-07",
     "storePage": "https://www.xbox.com/en-us/games/store/descenders/C37XBX7DCBZ0"
   },
@@ -595,6 +824,9 @@
         "https://store-images.s-microsoft.com/image/apps.56965.14176621031001937.302a4c64-8f4d-435d-8b6d-fcd963ff70e6.235fb5e7-53f2-4190-9a23-2128d77a706f",
         "https://store-images.s-microsoft.com/image/apps.12908.14176621031001937.302a4c64-8f4d-435d-8b6d-fcd963ff70e6.554821a2-7c2f-4bb1-90a7-ebf9faa1fb09",
         "https://store-images.s-microsoft.com/image/apps.61023.14176621031001937.302a4c64-8f4d-435d-8b6d-fcd963ff70e6.72c8260e-d75a-4581-ae25-05c5121312af"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.27476.14176621031001937.302a4c64-8f4d-435d-8b6d-fcd963ff70e6.59fb0946-5c13-432a-9412-eb3814a2f376"
       ]
     },
     "releaseDate": "2021-11-11",
@@ -606,6 +838,9 @@
     "images": {
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.18388.14216887906907763.b5352caa-b411-460d-acb5-a427d0106d4b.8e4aea4f-80ba-487d-8508-e71b5b770ca8"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.57632.14216887906907763.b5352caa-b411-460d-acb5-a427d0106d4b.6eee667c-5c9b-4fec-a070-261c100702cf"
       ]
     },
     "releaseDate": "2020-11-06",
@@ -614,28 +849,44 @@
   {
     "productTitle": "Dishonored 2",
     "productId": "9MW4RJDRSF78",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.10911.13846412966040921.9e60d32b-6c69-44a3-9f94-dcaf3d33e79c.45af2576-b58c-40e4-85d1-8efd66230aa0"
+      ]
+    },
     "releaseDate": "2019-10-03",
     "storePage": "https://www.xbox.com/en-us/games/store/dishonored-2/9MW4RJDRSF78"
   },
   {
     "productTitle": "Dishonored® Definitive Edition (PC)",
     "productId": "9P1N07XDL1D4",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.59694.14508572287351047.d9747a4e-f49b-47c0-9e3b-c3c28841843b.540d0f45-6cb5-4c1b-9452-3125f5f23d2c"
+      ]
+    },
     "releaseDate": "2021-03-12",
     "storePage": "https://www.xbox.com/en-us/games/store/dishonored-definitive-edition-pc/9P1N07XDL1D4"
   },
   {
     "productTitle": "Dishonored®: Death of the Outsider™ (PC)",
     "productId": "9MVF0PGV94F7",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.45510.13794616599414674.01dbccf9-8cab-4020-87f5-ed2a8f4d7474.91f9464f-14d9-4580-90ab-66611eae3780"
+      ]
+    },
     "releaseDate": "2021-06-13",
     "storePage": "https://www.xbox.com/en-us/games/store/dishonored-death-of-the-outsider-pc/9MVF0PGV94F7"
   },
   {
     "productTitle": "Disney Dreamlight Valley",
     "productId": "9NSF0BGH8D86",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.62890.14365104417622257.42e17a74-81d1-4e35-8c38-a935ba30ef21.80948ce2-63b2-49df-9e97-4ab247b81f10"
+      ]
+    },
     "releaseDate": "2022-09-06",
     "storePage": "https://www.xbox.com/en-us/games/store/disney-dreamlight-valley/9NSF0BGH8D86"
   },
@@ -646,6 +897,9 @@
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.36743.14005003576279990.6d131376-9483-463d-a248-92512222c6ef.9a9fc862-02c0-4cad-8c8c-e05fdc7b0159",
         "https://store-images.s-microsoft.com/image/apps.27453.14005003576279990.95d8f6e5-c971-4c8d-82b2-c4c14f380c05.8bc92089-08e1-4da1-99b8-46cc666c6d17"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.38755.14005003576279990.0e4e6d67-22da-40e5-b520-630686e37930.302b7455-6387-4813-8177-5e2844e8b61f"
       ]
     },
     "releaseDate": "2017-10-31",
@@ -654,35 +908,55 @@
   {
     "productTitle": "DOOM + DOOM II",
     "productId": "9P46M5JQ2PTF",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.65308.14594598903877048.bbb5dc7a-5386-4439-89d6-a5136ac0725b.eea5c189-9a6c-4a48-bb66-6965091e5968"
+      ]
+    },
     "releaseDate": "2024-08-08",
     "storePage": "https://www.xbox.com/en-us/games/store/doom-doom-ii/9P46M5JQ2PTF"
   },
   {
     "productTitle": "DOOM 3",
     "productId": "9NSL68D814GC",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.60652.14361385044335696.50e1eb97-e01a-40d6-839c-7082e07b25b3.470b5116-eb1e-4467-b925-703e307c0297"
+      ]
+    },
     "releaseDate": "2019-07-26",
     "storePage": "https://www.xbox.com/en-us/games/store/doom-3/9NSL68D814GC"
   },
   {
     "productTitle": "DOOM 64",
     "productId": "9MXND4PQLK3W",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.46055.13886780434132750.58497d0f-3220-4d2f-a7ff-96dcff27bc5f.4aac1ddb-3d94-42df-a4bb-cb2dc420c7fb"
+      ]
+    },
     "releaseDate": "2020-03-20",
     "storePage": "https://www.xbox.com/en-us/games/store/doom-64/9MXND4PQLK3W"
   },
   {
     "productTitle": "DOOM Eternal Standard Edition (PC)",
     "productId": "9PK09BL31FK1",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.447.14272227869653628.a5b2ad6e-df4e-4a36-a057-d3a2b0ab4d8f.d8fd679b-53ae-4d59-b01b-70776a80921c"
+      ]
+    },
     "releaseDate": "2020-12-01",
     "storePage": "https://www.xbox.com/en-us/games/store/doom-eternal-standard-edition-pc/9PK09BL31FK1"
   },
   {
     "productTitle": "Dordogne (Windows)",
     "productId": "9N3GDLVDMXG4",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.2352.13937153328708967.e0263059-dd80-41cf-9596-f8862f937254.fcf5e909-7e91-4d48-a18b-04ab0b17a937"
+      ]
+    },
     "releaseDate": "2023-06-13",
     "storePage": "https://www.xbox.com/en-us/games/store/dordogne-windows/9N3GDLVDMXG4"
   },
@@ -694,6 +968,9 @@
         "https://store-images.s-microsoft.com/image/apps.14182.13993061156496216.a99e7cae-2efa-4deb-9406-c5b487cfc7b9.1226ede8-0879-44fc-8b26-5a3c25c0d74d",
         "https://store-images.s-microsoft.com/image/apps.19171.13993061156496216.a99e7cae-2efa-4deb-9406-c5b487cfc7b9.02e1db17-970c-4ed5-a2fc-ae22313ff4f3",
         "https://store-images.s-microsoft.com/image/apps.49263.13993061156496216.a99e7cae-2efa-4deb-9406-c5b487cfc7b9.fc6ad6aa-ef4f-4bf9-b60c-caf5191bd010"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.816.13993061156496216.c5c83445-c83d-441f-8d79-a05fa134dcd7.3d0e51e4-383f-45ec-9349-4c81f6915cba"
       ]
     },
     "releaseDate": "2022-11-17",
@@ -702,7 +979,11 @@
   {
     "productTitle": "Dungeons 4 (Win)",
     "productId": "9ND9BBMDVD2C",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.14451.13548174819423968.b4d28a4d-eed0-4368-b3e6-1fa2f980e67d.0cbfb614-1cf9-4d53-916a-10bee0935dee"
+      ]
+    },
     "releaseDate": "2023-11-09",
     "storePage": "https://www.xbox.com/en-us/games/store/dungeons-4-win/9ND9BBMDVD2C"
   },
@@ -710,6 +991,9 @@
     "productTitle": "Dungeons Of Hinterberg",
     "productId": "9PGX472J0RJP",
     "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.55827.14242993966939702.499a01a3-a942-4425-8ee4-75c57cba3d55.9ccb2d88-cfe5-43de-b2c4-85ab99270fd6"
+      ],
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.15852.14242993966939702.499a01a3-a942-4425-8ee4-75c57cba3d55.cbc8a434-fe19-4287-986d-c4e5eac094b5"
       ]
@@ -721,6 +1005,9 @@
     "productTitle": "Dyson Sphere Program (Game Preview)",
     "productId": "9MTX4JNKL3FS",
     "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.51430.13804098040618061.c0d518e1-bda9-40c4-9606-e4164969da5c.31f23165-3111-44f3-af4e-9bac33130b2a"
+      ],
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.5260.13804098040618061.c0d518e1-bda9-40c4-9606-e4164969da5c.ee919cda-6aa7-4347-9be8-1ecc049c3c6b"
       ]
@@ -731,7 +1018,11 @@
   {
     "productTitle": "Eiyuden Chronicle: Hundred Heroes",
     "productId": "9N8Z1ZL33LM9",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.61711.13556919803691894.87ef516e-a908-4d0f-8db2-ac932ea8385c.272356c9-2135-4f73-aa67-eca43d9252ba"
+      ]
+    },
     "releaseDate": "2024-04-23",
     "storePage": "https://www.xbox.com/en-us/games/store/eiyuden-chronicle-hundred-heroes/9N8Z1ZL33LM9"
   },
@@ -739,6 +1030,9 @@
     "productTitle": "Escape Academy",
     "productId": "9P3NT9H51RMR",
     "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.36185.14539026038241714.3df5a7c0-8dab-4179-87d8-320dbb169675.ff1883d1-013f-48be-b132-95b25879904a"
+      ],
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.24434.14539026038241714.3df5a7c0-8dab-4179-87d8-320dbb169675.8863ffde-6cd7-433d-a36c-ff26eef2de53"
       ]
@@ -752,6 +1046,9 @@
     "images": {
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.58392.14196602045405435.162a3492-f482-45e9-8022-a849e99a6850.78818d2c-b90c-44db-b94a-f0581cd93b44"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.38476.14196602045405435.7133ef2d-c7dc-4526-8901-f6f46aa70c98.d797ae34-5c2a-4d67-b8de-75666eec376e"
       ]
     },
     "releaseDate": "2023-08-15",
@@ -760,77 +1057,121 @@
   {
     "productTitle": "Evil West (Windows)",
     "productId": "9PC49MD70881",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.4211.14176554647910182.b03fa26e-38ab-4eae-a31e-457e38d3b885.931e36a8-9260-4fcf-833a-72600108d150"
+      ]
+    },
     "releaseDate": "2024-03-21",
     "storePage": "https://www.xbox.com/en-us/games/store/evil-west-windows/9PC49MD70881"
   },
   {
     "productTitle": "Exoprimal",
     "productId": "9NMFRHJX5JCZ",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.47090.13688853552204440.93d09086-dc9f-460d-9894-9391f5f31afe.af1e49f8-80ba-4e02-bee6-1f4be2f7a2e7"
+      ]
+    },
     "releaseDate": "2023-07-14",
     "storePage": "https://www.xbox.com/en-us/games/store/exoprimal/9NMFRHJX5JCZ"
   },
   {
     "productTitle": "F1® Manager 2023",
     "productId": "9P80FVDCXJKB",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.51525.14097399029008383.aba7dcca-0477-400a-adf1-c028557c44db.bab789de-9b43-4076-8780-ef7780f8c56c"
+      ]
+    },
     "releaseDate": "2023-07-31",
     "storePage": "https://www.xbox.com/en-us/games/store/f1-manager-2023/9P80FVDCXJKB"
   },
   {
     "productTitle": "Fallout",
     "productId": "9N42CT1J5WGW",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.12360.13991296281172164.911bd54e-5f10-4b33-9849-cdf702cd4309.68d83f10-2d37-432f-b0d0-f8bdbb378116"
+      ]
+    },
     "releaseDate": "2021-06-13",
     "storePage": "https://www.xbox.com/en-us/games/store/fallout/9N42CT1J5WGW"
   },
   {
     "productTitle": "Fallout 2",
     "productId": "9P1JS86M9SXH",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.7062.14505928851806264.bdce1e6f-6028-442f-838e-6c8088bf2f93.6455dbe3-77ef-4007-9e13-ea4b5621bb70"
+      ]
+    },
     "releaseDate": "2021-06-13",
     "storePage": "https://www.xbox.com/en-us/games/store/fallout-2/9P1JS86M9SXH"
   },
   {
     "productTitle": "Fallout 3: Game of the Year Edition",
     "productId": "9NBZ9JF6TFMD",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.41379.13574127358458005.65070c14-0cf2-44ab-b4fc-c66107fdb092.cce18af1-9211-41b8-b277-30a198525bc8"
+      ]
+    },
     "releaseDate": "2021-06-13",
     "storePage": "https://www.xbox.com/en-us/games/store/fallout-3-game-of-the-year-edition/9NBZ9JF6TFMD"
   },
   {
     "productTitle": "Fallout 4 (PC)",
     "productId": "9P71MB9QCF77",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.39982.14613388726525330.ccebbfd9-01aa-43e4-b204-dee87aaf3bf7.40fd0f9a-f75c-47fa-9d13-9b349254781f"
+      ]
+    },
     "releaseDate": "2021-03-11",
     "storePage": "https://www.xbox.com/en-us/games/store/fallout-4-pc/9P71MB9QCF77"
   },
   {
     "productTitle": "Fallout 76 (PC)",
     "productId": "9NKGNMNK3K3Z",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.21164.13657086471689364.007cb2f1-112f-4f83-975e-7483972b7a5a.cc23fcd9-5df9-48e5-8a6e-7b370c6c93bd"
+      ]
+    },
     "releaseDate": "2020-07-09",
     "storePage": "https://www.xbox.com/en-us/games/store/fallout-76-pc/9NKGNMNK3K3Z"
   },
   {
     "productTitle": "Fallout Tactics",
     "productId": "9NDV7FRVD7ML",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.49983.13611473418794607.9806bdd1-c446-4376-bb6e-95bf0a16329e.4aef2efe-2dad-4531-ae5c-bc28163c885d"
+      ]
+    },
     "releaseDate": "2021-06-13",
     "storePage": "https://www.xbox.com/en-us/games/store/fallout-tactics/9NDV7FRVD7ML"
   },
   {
     "productTitle": "Fallout: New Vegas Ultimate Edition",
     "productId": "9MZR11JRF7BX",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.27780.13869736752294987.ca050464-c72a-476d-941d-c1c814c4213d.9965bd56-a20a-4fc1-86ce-73d4750a8816"
+      ]
+    },
     "releaseDate": "2021-06-13",
     "storePage": "https://www.xbox.com/en-us/games/store/fallout-new-vegas-ultimate-edition/9MZR11JRF7BX"
   },
   {
     "productTitle": "Farming Simulator 22 PC",
     "productId": "9NBBCKL3LTRH",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.5097.13516489167520418.22b76ab9-a8f0-4921-9cf6-55645b8540e5.60efc8b3-f361-4219-8348-50f6d9d136f4"
+      ]
+    },
     "releaseDate": "2022-05-19",
     "storePage": "https://www.xbox.com/en-us/games/store/farming-simulator-22-pc/9NBBCKL3LTRH"
   },
@@ -838,6 +1179,9 @@
     "productTitle": "Figment: Journey Into the Mind",
     "productId": "BS0P7HLFPPP0",
     "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.21865.69486693469012885.88f5a3fe-4612-4ba3-97cd-7004863b32a2.a2d1789a-fe31-41ac-a8dc-451335a5464a"
+      ],
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.24627.69486693469012885.88f5a3fe-4612-4ba3-97cd-7004863b32a2.b3dc333e-3a17-4388-8259-807ff20e5a45"
       ]
@@ -848,7 +1192,11 @@
   {
     "productTitle": "Firewatch",
     "productId": "BQQKG9H2STC0",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.40478.68688977722932617.c18986e0-354d-49e5-a689-33d52a7432cb.15d49e14-f3c9-4949-b807-62a02521442b"
+      ]
+    },
     "releaseDate": "2016-09-21",
     "storePage": "https://www.xbox.com/en-us/games/store/firewatch/BQQKG9H2STC0"
   },
@@ -856,6 +1204,9 @@
     "productTitle": "Firework (Windows)",
     "productId": "9P57NK5V2137",
     "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.6473.14578697293977714.1a77ecb0-1d3a-4ac5-bb7b-6bd079a70772.e71b5986-2160-4281-ac8e-4844bffb562f"
+      ],
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.50088.14578697293977714.1a77ecb0-1d3a-4ac5-bb7b-6bd079a70772.563009a4-6645-4330-8a8e-c8c601af823e"
       ]
@@ -866,7 +1217,11 @@
   {
     "productTitle": "Flintlock: The Siege of Dawn",
     "productId": "9PBBQHX6V3PJ",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.64404.14126049473853317.736749ac-218e-4bab-8add-af9a80f33804.30d308e0-abc2-411b-98e7-ad4056ae15d8"
+      ]
+    },
     "releaseDate": "2024-07-18",
     "storePage": "https://www.xbox.com/en-us/games/store/flintlock-the-siege-of-dawn/9PBBQHX6V3PJ"
   },
@@ -876,6 +1231,9 @@
     "images": {
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.45309.14020382961984479.ef4aaad0-42be-418f-ac4e-3b83d39eb75d.d671ab8b-0d29-42d3-af3c-e76ee0dc0f44"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.10733.14020382961984479.ef4aaad0-42be-418f-ac4e-3b83d39eb75d.20ab7cf3-5c69-4ffb-859b-ac90414c24b6"
       ]
     },
     "releaseDate": "2024-07-16",
@@ -884,14 +1242,22 @@
   {
     "productTitle": "Football Manager 2024",
     "productId": "9P4CZQNRXW34",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.34882.14595211424650301.3f5b9cf7-e0fe-4f44-8a6c-3a829d7a5561.e0427e76-6378-4847-88e9-1bcd9b70e805"
+      ]
+    },
     "releaseDate": "2023-11-06",
     "storePage": "https://www.xbox.com/en-us/games/store/football-manager-2024/9P4CZQNRXW34"
   },
   {
     "productTitle": "Football Manager 2024 Console",
     "productId": "9N7GJJ2WTPBZ",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.39689.14065042993795106.481a54a3-96a1-4426-85ce-63c7ba75f93d.a2c2c548-f4ff-4228-aae0-ad0053ff4994"
+      ]
+    },
     "releaseDate": "2023-11-06",
     "storePage": "https://www.xbox.com/en-us/games/store/football-manager-2024-console/9N7GJJ2WTPBZ"
   },
@@ -901,6 +1267,9 @@
     "images": {
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.51841.14633670794554222.de759f39-78b3-4b60-b445-e58e94c40e36.2015dd36-6136-44d2-a936-204b36909001"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.54794.14633670794554222.de759f39-78b3-4b60-b445-e58e94c40e36.d6339749-1d11-43fa-a4a2-a2c8313dd664"
       ]
     },
     "releaseDate": "2020-07-16",
@@ -909,21 +1278,33 @@
   {
     "productTitle": "Forza Horizon 4 Standard Edition",
     "productId": "9PNJXVCVWD4K",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.2050.14343301090572358.2000000000007864205.da7d6a7f-5e66-439b-82e9-e5c23f17f739"
+      ]
+    },
     "releaseDate": "2018-10-02",
     "storePage": "https://www.xbox.com/en-us/games/store/forza-horizon-4-standard-edition/9PNJXVCVWD4K"
   },
   {
     "productTitle": "Forza Horizon 5 Standard Edition",
     "productId": "9NKX70BBCDRN",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.18975.13718773309227929.bebdcc0e-1ed5-4778-8732-f4ef65a2f445.125d6b3b-492f-4e5f-8037-7ade230c8224"
+      ]
+    },
     "releaseDate": "2021-11-09",
     "storePage": "https://www.xbox.com/en-us/games/store/forza-horizon-5-standard-edition/9NKX70BBCDRN"
   },
   {
     "productTitle": "Forza Motorsport Standard Edition",
     "productId": "9PLKVSWR299F",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.4206.14311721322459352.08838dcd-1049-42ef-a004-b13ad1d41946.9657386a-652e-45b5-a08b-0583c5e0db8c"
+      ]
+    },
     "releaseDate": "2023-10-10",
     "storePage": "https://www.xbox.com/en-us/games/store/forza-motorsport-standard-edition/9PLKVSWR299F"
   },
@@ -933,6 +1314,10 @@
     "images": {
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.13877.13922992293403127.db53b854-7ad3-4927-b3c0-bf615d8f5828.35ef2af6-f248-4018-bdd2-b9c6eca8f60b"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.49185.13922992293403127.604ddd79-ca8b-4c63-a3a3-a1e58c3771c2.ce3ced18-8771-4c4a-a320-482435b78f66",
+        "https://store-images.s-microsoft.com/image/apps.48384.13922992293403127.604ddd79-ca8b-4c63-a3a3-a1e58c3771c2.4a26eedb-f8cf-462f-9a5b-9dfba8c38539"
       ]
     },
     "releaseDate": "2023-10-26",
@@ -942,6 +1327,9 @@
     "productTitle": "From Space",
     "productId": "9PLK75782446",
     "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.14489.14311843146455225.858b9bb0-aedd-46ab-907b-4002100e6620.55c0c783-f5f5-49e8-9063-cffebe9b4144"
+      ],
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.63601.14311843146455225.858b9bb0-aedd-46ab-907b-4002100e6620.8518d6d1-7f8a-4b1d-bbdf-5a5e5039426c"
       ]
@@ -958,6 +1346,9 @@
         "https://store-images.s-microsoft.com/image/apps.42272.14372914980969275.d331a64f-b3f1-4a83-91cf-cb9cce9ce027.5809f73b-9f62-4a84-9638-d51dd81d19d1",
         "https://store-images.s-microsoft.com/image/apps.13736.14372914980969275.d331a64f-b3f1-4a83-91cf-cb9cce9ce027.6ff1d8a5-34e5-4431-810d-79e15b0949d1",
         "https://store-images.s-microsoft.com/image/apps.13213.14372914980969275.d331a64f-b3f1-4a83-91cf-cb9cce9ce027.a0403dd8-33f7-4194-a426-ad7af55bfcbb"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.46316.14372914980969275.d331a64f-b3f1-4a83-91cf-cb9cce9ce027.3a45ff6e-5530-461f-a048-45380f6673ba"
       ]
     },
     "releaseDate": "2018-04-24",
@@ -966,7 +1357,11 @@
   {
     "productTitle": "Full Throttle Remastered",
     "productId": "9P3ZRGNQVC7D",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.7896.14598891268352765.09cb1dd7-f055-4038-983d-2721763eedbe.0bab6c1b-43ce-423d-86ae-ced85f951431"
+      ]
+    },
     "releaseDate": "2020-10-29",
     "storePage": "https://www.xbox.com/en-us/games/store/full-throttle-remastered/9P3ZRGNQVC7D"
   },
@@ -976,6 +1371,9 @@
     "images": {
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.39620.14128015953067804.7fd76ab5-1221-4cac-a680-9923f2892e8f.0714099e-c78c-4557-a26d-fdd98f91f97f"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.20186.14128015953067804.05ced0c1-bfbb-4adb-8b40-8c27d6023343.fd661ed1-d3e7-4720-a02d-276761031bf5"
       ]
     },
     "releaseDate": "2024-05-23",
@@ -985,6 +1383,9 @@
     "productTitle": "Gang Beasts",
     "productId": "BPQZT43FWD49",
     "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.27333.68150164172276526.ddc374d7-ef5e-43b9-940a-bbc04440bb33.fa908ac2-c1a8-4d1b-9652-c977565a8111"
+      ],
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.2195.68150164172276526.ddc374d7-ef5e-43b9-940a-bbc04440bb33.864a4f4c-c733-4795-99b0-feeb5c430a7d"
       ]
@@ -995,7 +1396,11 @@
   {
     "productTitle": "Gears 5 Game of the Year Edition",
     "productId": "9P4KMR76PLLQ",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.9672.14591801423393397.e1044226-28d7-42f6-a357-7102f7d1a4b3.5554c17b-3189-46a1-93fb-2005d1d08e7e"
+      ]
+    },
     "releaseDate": "2020-12-15",
     "storePage": "https://www.xbox.com/en-us/games/store/gears-5-game-of-the-year-edition/9P4KMR76PLLQ"
   },
@@ -1006,6 +1411,9 @@
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.13820.13510798887356280.a2ea1869-0646-4f51-9e83-872f8f095611.112a351e-c46e-4982-82c4-0a7f30eb5f0a",
         "https://store-images.s-microsoft.com/image/apps.44874.13510798887356280.46f5654e-693f-48f8-a3b5-07417484c87f.609a0785-8749-4b07-a598-277003f6caa6"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.27107.13510798887356280.e9581154-ba55-457f-9b5f-4285b6036ba9.852cd1b9-b6db-430f-a640-b02d32c72c05"
       ]
     },
     "releaseDate": "2016-10-11",
@@ -1018,6 +1426,9 @@
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.936.13510798884671596.4c8c9281-f2f0-4965-bceb-3aac094fbfde.535c7e2e-fdba-47cf-81ff-4ff6da934736",
         "https://store-images.s-microsoft.com/image/apps.14627.13510798884671596.9fa4dfcf-ff55-4219-8640-701060a5b394.52798d56-9ec9-41b7-b34b-ad4c533e0cb2"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.59505.13510798884671596.352e98f8-31aa-4a32-9db9-94782043e1b8.c448a596-e629-4138-9403-ff5019f870f2"
       ]
     },
     "releaseDate": "2016-02-01",
@@ -1026,14 +1437,22 @@
   {
     "productTitle": "Gears Tactics",
     "productId": "9NN3HCKW5TPC",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.2270.13750744755532010.7748d323-597f-440a-94e4-9c030198efa6.39a3aebc-6a07-4d8a-83e3-597bd117ff7b"
+      ]
+    },
     "releaseDate": "2020-11-09",
     "storePage": "https://www.xbox.com/en-us/games/store/gears-tactics/9NN3HCKW5TPC"
   },
   {
     "productTitle": "Generation Zero®",
     "productId": "C20WW4W29FQ1",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.5248.65743914527603622.b98c7b82-aeb0-44e7-8071-19a17867fd8c.23de469b-d409-404e-882b-54f1a741e3d5"
+      ]
+    },
     "releaseDate": "2019-03-26",
     "storePage": "https://www.xbox.com/en-us/games/store/generation-zero/C20WW4W29FQ1"
   },
@@ -1041,6 +1460,9 @@
     "productTitle": "Genesis Noir: Windows Edition",
     "productId": "9MWGGC7JH35B",
     "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.47660.14234812946294583.310a0a84-edb2-482c-a55c-b54922972168.5e4dc17c-f718-434b-af30-e18465dd00f1"
+      ],
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.27867.14234812946294583.310a0a84-edb2-482c-a55c-b54922972168.2b56a84c-5a52-43fc-9e4e-e70fda0c62ff"
       ]
@@ -1051,14 +1473,22 @@
   {
     "productTitle": "Ghostwire: Tokyo",
     "productId": "9PKP39CL0C8D",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.17401.14258547668150351.c20c8953-e19e-40f6-8081-ab904c694484.4265c5ba-ab6a-4b8f-b7ad-c190b0da7603"
+      ]
+    },
     "releaseDate": "2023-04-12",
     "storePage": "https://www.xbox.com/en-us/games/store/ghostwire-tokyo/9PKP39CL0C8D"
   },
   {
     "productTitle": "Go Mecha Ball",
     "productId": "9N9C9KTPXL3X",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.9990.13539888958789801.44d77d96-f9aa-4d39-a2eb-04eea51ed883.77b0f09b-36d6-4370-98b3-0c409f4440fd"
+      ]
+    },
     "releaseDate": "2024-01-25",
     "storePage": "https://www.xbox.com/en-us/games/store/go-mecha-ball/9N9C9KTPXL3X"
   },
@@ -1068,6 +1498,9 @@
     "images": {
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.17530.14148334348309617.4b019a90-50f6-4c6f-9032-f4dfa4f42e29.53d4ce5e-593a-4864-8d08-787cf2c0b682"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.36241.14148334348309617.4b019a90-50f6-4c6f-9032-f4dfa4f42e29.fbf153eb-74bf-49d8-98d0-b4fd9dacb358"
       ]
     },
     "releaseDate": "2023-12-07",
@@ -1082,6 +1515,9 @@
         "https://store-images.s-microsoft.com/image/apps.57569.13882037073203566.da1afb62-bb11-43df-b6aa-9b0deb8f35d9.2b2b6463-eeee-4036-9f2c-e11c1275c44e",
         "https://store-images.s-microsoft.com/image/apps.38067.13882037073203566.da1afb62-bb11-43df-b6aa-9b0deb8f35d9.4ab1a5bf-ab1b-4fd4-b5f2-17d9f2c41d75",
         "https://store-images.s-microsoft.com/image/apps.43069.13882037073203566.da1afb62-bb11-43df-b6aa-9b0deb8f35d9.4de2226b-1301-43ad-9ce1-c25f6616a319"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.8445.13882037073203566.da1afb62-bb11-43df-b6aa-9b0deb8f35d9.3af8252b-c1de-4414-b8ea-f9bc5962b9ea"
       ]
     },
     "releaseDate": "2018-10-25",
@@ -1095,6 +1531,9 @@
         "https://store-images.s-microsoft.com/image/apps.11186.13862246495458326.a7005640-1d45-4dba-a6e1-d326964693f6.e4e5f966-a084-46c0-9ac7-f313940a6179",
         "https://store-images.s-microsoft.com/image/apps.8970.13862246495458326.a7005640-1d45-4dba-a6e1-d326964693f6.51c20617-d896-4576-8204-77e7bdec1d3a",
         "https://store-images.s-microsoft.com/image/apps.56679.13862246495458326.a7005640-1d45-4dba-a6e1-d326964693f6.ea6f152b-4ae2-4f6c-a0ac-dfc7354948e6"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.6387.13862246495458326.cf5e01bc-715d-42eb-ae23-68f6a922a8e0.0650b279-08f6-4183-a06c-c43f24d2f2f3"
       ]
     },
     "releaseDate": "2020-07-23",
@@ -1103,14 +1542,22 @@
   {
     "productTitle": "Gotham Knights",
     "productId": "BT3611GR00CQ",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.13036.70676690581893559.a37ccc27-65ef-4e47-856a-9fcdd0c1017f.141ebcea-4b89-40c5-bdf4-8d5d7b27d2cb"
+      ]
+    },
     "releaseDate": "2022-10-21",
     "storePage": "https://www.xbox.com/en-us/games/store/gotham-knights/BT3611GR00CQ"
   },
   {
     "productTitle": "Grim Fandango Remastered",
     "productId": "9PC288TN7R8K",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.29044.14111995464148770.3579d82c-235a-4089-9783-e7a375fa5964.628e0b56-fb2b-4f29-9f67-68c5122de399"
+      ]
+    },
     "releaseDate": "2020-10-29",
     "storePage": "https://www.xbox.com/en-us/games/store/grim-fandango-remastered/9PC288TN7R8K"
   },
@@ -1118,6 +1565,9 @@
     "productTitle": "Gris",
     "productId": "9NHHP2H0ZP98",
     "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.878.13625693263060421.b5379d86-b985-4508-ad2a-8af4b40a9fcd.ddb40d9c-68c7-4271-a2f5-745346872d49"
+      ],
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.16509.13625693263060421.b5379d86-b985-4508-ad2a-8af4b40a9fcd.9f6b666c-8235-428e-877c-7a934c7b91c5"
       ]
@@ -1128,7 +1578,11 @@
   {
     "productTitle": "Grounded",
     "productId": "9PJTHRNVH62H",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.43675.14280109286674604.0f240f37-6e7f-43b4-bd81-aabc884bc103.0aabbba3-e5f5-4665-9eac-7a9c36f80430"
+      ]
+    },
     "releaseDate": "2022-09-27",
     "storePage": "https://www.xbox.com/en-us/games/store/grounded/9PJTHRNVH62H"
   },
@@ -1136,6 +1590,9 @@
     "productTitle": "Guilty Gear -Strive-",
     "productId": "9MZDL6L34KF2",
     "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.23229.13872214727680763.7401cf68-944c-4d38-9d71-4d4226492658.647cd6b0-15f4-4751-b80e-0510082498d3"
+      ],
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.24149.13872214727680763.7401cf68-944c-4d38-9d71-4d4226492658.5927ff02-cead-4082-8ec5-1a0bbcb37ae9"
       ]
@@ -1147,6 +1604,9 @@
     "productTitle": "Halo Infinite (Campaign)",
     "productId": "9NP1P1WFS0LB",
     "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.56579.13727851868390641.c9cc5f66-aff8-406c-af6b-440838730be0.0dee39b3-efb2-4425-8f1f-087c111ff9b2"
+      ],
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.53406.13727851868390641.ccc2d91d-118b-47bc-b87a-a5cc449f8e8e.7ee44eda-d274-45ab-8ac2-402528eb4fa3"
       ]
@@ -1160,6 +1620,9 @@
     "images": {
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.7936.13510798887619155.1152921504720025064.9e7079a2-4bc6-4c9a-867f-39e6b36173e5"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.6988.13510798887619155.1152921504738974806.c79207fe-4a44-4acc-81ba-2fcd916fa119"
       ]
     },
     "releaseDate": "2017-02-21",
@@ -1172,6 +1635,9 @@
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.14537.13510798886375925.9bd66dab-d786-4b2d-8430-c52a460e4c68.cf157a04-7002-406b-87c8-0c0dd7a28c01",
         "https://store-images.s-microsoft.com/image/apps.17031.13510798886375925.503ddab4-90c9-437e-8523-284e28216fa3.98a8e319-db4b-4e0e-aa97-f15db2721fc4"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.58465.13510798886375925.94ada305-93e5-4286-aed9-8433e1438065.4c5b585f-9e9b-48df-92a9-6ca0287d934c"
       ]
     },
     "releaseDate": "2017-04-20",
@@ -1183,6 +1649,9 @@
     "images": {
       "Logo": [
         "https://store-images.microsoft.com/image/apps.23036.9007199266246750.14557479-98a0-41f6-9639-0c3082dda909.2ed89777-a91a-470b-8936-16fc814d22ba"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.36305.9007199266246750.f909a15b-19f6-4a02-b196-304ded2b15b6.f39f0be0-7e9a-4342-8bfd-69eb34a4484a"
       ]
     },
     "releaseDate": "2013-07-08",
@@ -1194,6 +1663,9 @@
     "images": {
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.51077.9007199266252681.2f2dda9a-782c-43aa-a406-8488cabb6e7c.451a956b-e7de-44e1-975e-9e24712eccd7"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.47236.9007199266252681.b5374dc0-d930-4d35-9a0c-e06668602376.5155a0c1-9b4b-4106-a0c9-5354cd5b65ef"
       ]
     },
     "releaseDate": "2014-11-25",
@@ -1203,6 +1675,9 @@
     "productTitle": "Halo: The Master Chief Collection",
     "productId": "9NTM9HXNLSZX",
     "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.39962.14415742612829493.9171a818-3c53-4dc7-a187-714bc0d9631d.8ada5595-cc0a-4d72-9999-103082312e1d"
+      ],
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.25919.14011015795942652.ca67db1b-d21e-47e9-bbb4-5ece2ce3f774.c71a2431-5ef1-4c32-92fa-22cca6162053"
       ]
@@ -1216,6 +1691,9 @@
     "images": {
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.27737.14116268439808247.4e8906b5-f1d2-4d47-b73d-ad01e2b3edef.d852ade0-d913-4e6e-b48c-2bc25bfb1507"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.23612.14116268439808247.4e8906b5-f1d2-4d47-b73d-ad01e2b3edef.3440b780-aebe-47e7-bf44-6986b2fa9138"
       ]
     },
     "releaseDate": "2024-04-16",
@@ -1224,35 +1702,55 @@
   {
     "productTitle": "Hauntii",
     "productId": "9N9DVL82PR0D",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.61177.13534188749393159.6bee1793-dd42-4c8a-952d-a59bcfe8fcbd.58fe4b08-867b-4a01-bf07-16348d12dea6"
+      ]
+    },
     "releaseDate": "2024-05-23",
     "storePage": "https://www.xbox.com/en-us/games/store/hauntii/9N9DVL82PR0D"
   },
   {
     "productTitle": "Have a Nice Death",
     "productId": "9PF1ZX4HHGSW",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.55621.14213858983094140.57d02486-b6c6-428e-9161-a8d84f5e25da.f3b88029-e61e-4d4c-972f-771e29d7e28f"
+      ]
+    },
     "releaseDate": "2023-12-05",
     "storePage": "https://www.xbox.com/en-us/games/store/have-a-nice-death/9PF1ZX4HHGSW"
   },
   {
     "productTitle": "Headbangers: Rhythm Royale",
     "productId": "9NGRWJ03GR1N",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.36253.13639985217330729.c06ddd38-2ab7-494c-a273-67cbd0be856f.e2b8d1fc-2d44-4db1-a13c-0078ae685864"
+      ]
+    },
     "releaseDate": "2023-10-31",
     "storePage": "https://www.xbox.com/en-us/games/store/headbangers-rhythm-royale/9NGRWJ03GR1N"
   },
   {
     "productTitle": "Hell Let Loose",
     "productId": "9N44WK3WV2HJ",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.19909.13994037977696381.94079d2c-56ff-4fe9-b539-854106c1d064.51f7c84b-3922-45df-9282-e0faa1c7deb4"
+      ]
+    },
     "releaseDate": "2021-10-05",
     "storePage": "https://www.xbox.com/en-us/games/store/hell-let-loose/9N44WK3WV2HJ"
   },
   {
     "productTitle": "Hellblade: Senua's Sacrifice",
     "productId": "9NCLP4LV5K7Z",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.51441.13565840937352332.541ce357-b7b5-4070-802f-cc812adf891d.839b3729-56ed-4a82-b76c-858cc9e972bb"
+      ]
+    },
     "releaseDate": "2018-04-11",
     "storePage": "https://www.xbox.com/en-us/games/store/hellblade-senua-s-sacrifice/9NCLP4LV5K7Z"
   },
@@ -1260,6 +1758,9 @@
     "productTitle": "Hello Neighbor 2",
     "productId": "9N961B11FJ4W",
     "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.54060.13538643730533052.bd974e41-d70f-4894-a349-7d0e6056033d.6ac5ed6b-9551-46cc-907d-e8549abc5b34"
+      ],
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.33773.13538643730533052.bd974e41-d70f-4894-a349-7d0e6056033d.381dcaa3-dd59-4505-aca0-8da4f63533a5"
       ]
@@ -1270,7 +1771,11 @@
   {
     "productTitle": "Hi-Fi RUSH",
     "productId": "9NFTC552K3GJ",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.40606.13592675470908447.79efa8be-9602-4911-867c-3b27d26ad414.de6abfbb-a945-4397-981e-fd70713911f7"
+      ]
+    },
     "releaseDate": "2023-01-25",
     "storePage": "https://www.xbox.com/en-us/games/store/hi-fi-rush/9NFTC552K3GJ"
   },
@@ -1280,6 +1785,9 @@
     "images": {
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.45475.13847644057609868.a4a91f76-8d1c-4e19-aa78-f4d27d2818fb.6bfdce99-7440-4f6a-9bfb-2c89da4e90f6"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.47695.13847644057609868.a4a91f76-8d1c-4e19-aa78-f4d27d2818fb.090b8af1-1963-48b3-8c6d-1255f335fceb"
       ]
     },
     "releaseDate": "2018-09-25",
@@ -1288,21 +1796,33 @@
   {
     "productTitle": "Homestead Arcana",
     "productId": "9N7THWLZZBWR",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.29371.14057839366848438.3205b748-306a-493a-94f1-60de9c7722f6.db047dcc-d3f9-493e-ab0f-51ad6d33895b"
+      ]
+    },
     "releaseDate": "2023-04-21",
     "storePage": "https://www.xbox.com/en-us/games/store/homestead-arcana/9N7THWLZZBWR"
   },
   {
     "productTitle": "HOT WHEELS UNLEASHED™ 2 - Turbocharged",
     "productId": "9MWDKL3SD6D9",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.59443.13840950600028206.a6c7ff57-33c0-43b9-9c1e-32120e1b8c8d.5da101a0-265e-40ac-a472-17ab9eac6195"
+      ]
+    },
     "releaseDate": "2023-10-19",
     "storePage": "https://www.xbox.com/en-us/games/store/hot-wheels-unleashed-2-turbocharged/9MWDKL3SD6D9"
   },
   {
     "productTitle": "House Flipper",
     "productId": "9NBFGKQLMV33",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.46741.13518543789452586.33e180bb-4f0b-4a39-b1c8-cde6206c1eb3.63c679bb-4c3c-42c4-81bf-e3b3666a61b6"
+      ]
+    },
     "releaseDate": "2020-02-26",
     "storePage": "https://www.xbox.com/en-us/games/store/house-flipper/9NBFGKQLMV33"
   },
@@ -1310,6 +1830,9 @@
     "productTitle": "Human Fall Flat",
     "productId": "BSMZH25V6V46",
     "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.23210.69811231537758929.242607a4-709e-46fd-84b6-9cff16c7c474.af10e1b2-9576-42a4-968a-4aad138fafe9"
+      ],
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.39663.69811231537758929.242607a4-709e-46fd-84b6-9cff16c7c474.c80dcbaf-de9c-46e7-bbef-f9a991ce9015"
       ]
@@ -1321,6 +1844,9 @@
     "productTitle": "Humanity",
     "productId": "9PNW4CC69T4B",
     "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.20700.14340778445303609.99c3ca9e-2f2d-46b2-9909-ee0ddb61f6f4.22a27b0d-15d9-4274-9c4d-32129ce15e52"
+      ],
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.54681.14340778445303609.99c3ca9e-2f2d-46b2-9909-ee0ddb61f6f4.e2662600-b506-40f1-bc0c-943f53247714"
       ]
@@ -1331,21 +1857,33 @@
   {
     "productTitle": "HUMANKIND™",
     "productId": "9PM7HXJ92D6W",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.20087.14298769618033048.ed4e3a9c-1486-458b-9f1e-dacd2c0a4ec0.ce666a89-91f4-4e7c-a69d-1128ddcc10c1"
+      ]
+    },
     "releaseDate": "2021-08-17",
     "storePage": "https://www.xbox.com/en-us/games/store/humankind/9PM7HXJ92D6W"
   },
   {
     "productTitle": "Hypnospace Outlaw",
     "productId": "9PM3NVB3PXG0",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.33047.14305718799508027.42641e91-23d0-46ea-ba6f-12aa317fe516.cada2beb-935d-4df5-a23c-8f54d772d42f"
+      ]
+    },
     "releaseDate": "2020-08-27",
     "storePage": "https://www.xbox.com/en-us/games/store/hypnospace-outlaw/9PM3NVB3PXG0"
   },
   {
     "productTitle": "Indivisible",
     "productId": "9N3KCLT53VDZ",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.29735.13518299802182489.415b0b15-4103-48f5-9879-4173d1952a78.954db8cc-d406-45c6-be93-13b305ddf9d7"
+      ]
+    },
     "releaseDate": "2020-02-26",
     "storePage": "https://www.xbox.com/en-us/games/store/indivisible/9N3KCLT53VDZ"
   },
@@ -1357,6 +1895,9 @@
         "https://store-images.s-microsoft.com/image/apps.50533.14224988712834177.817dbe6f-fd0b-46a4-85d4-8b775d647535.e7931731-2c2e-4ae1-ab9a-5d94370191cf",
         "https://store-images.s-microsoft.com/image/apps.41641.14224988712834177.06da9e7c-b0fa-4b49-b429-b8e270b2969e.157e803c-3783-487c-b677-d91c47051655",
         "https://store-images.s-microsoft.com/image/apps.24684.14224988712834177.6a033f3a-4c67-4cfc-9306-c7084af4a455.ed601ff0-98a1-4cf3-98a8-7a89db8e0b43"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.15492.14224988712834177.73c5008d-bf51-4106-a94b-bba49a40b9ed.a4fcaa5a-e794-40ea-b4c1-f4419206f7e1"
       ]
     },
     "releaseDate": "2017-11-14",
@@ -1365,21 +1906,33 @@
   {
     "productTitle": "Inkulinati",
     "productId": "9P5D8B393ZZ4",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.41430.14571252009478417.ff58eed9-6d91-43ac-8716-737ba1947830.58cb6133-61ca-40d6-89ec-1ecd075d88d9"
+      ]
+    },
     "releaseDate": "2024-02-22",
     "storePage": "https://www.xbox.com/en-us/games/store/inkulinati/9P5D8B393ZZ4"
   },
   {
     "productTitle": "INSIDE",
     "productId": "C17GQF31D617",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.26010.65290118777571754.27f1da0f-d581-4307-9bec-41016a2e5567.7b9d8bfe-920c-447d-a3f0-fa336b8d077f"
+      ]
+    },
     "releaseDate": "2016-06-29",
     "storePage": "https://www.xbox.com/en-us/games/store/inside/C17GQF31D617"
   },
   {
     "productTitle": "Insurgency: Sandstorm (Windows)",
     "productId": "9NN46PGWPJ98",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.28821.13745572220603193.c279b153-3473-4575-83e5-85da4fd6b853.509af29d-b139-4842-960c-8b3a03e91fa4"
+      ]
+    },
     "releaseDate": "2023-07-11",
     "storePage": "https://www.xbox.com/en-us/games/store/insurgency-sandstorm-windows/9NN46PGWPJ98"
   },
@@ -1391,6 +1944,9 @@
         "https://store-images.s-microsoft.com/image/apps.22655.13787553970953610.efdae53f-3dda-407f-a5a1-c31a28f45dc1.44aedc83-c5cb-4251-82bd-401385134668",
         "https://store-images.s-microsoft.com/image/apps.53693.13787553970953610.efdae53f-3dda-407f-a5a1-c31a28f45dc1.ca5ecae9-7f69-48f8-8820-054fae6ee7e3",
         "https://store-images.s-microsoft.com/image/apps.56035.13787553970953610.efdae53f-3dda-407f-a5a1-c31a28f45dc1.da26e3f4-1245-475b-ba41-185f648148f7"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.33463.13787553970953610.efdae53f-3dda-407f-a5a1-c31a28f45dc1.5647fc3b-7ae4-49b4-8ee5-3aed50bae4db"
       ]
     },
     "releaseDate": "2024-06-13",
@@ -1399,21 +1955,33 @@
   {
     "productTitle": "Journey To The Savage Planet: Employee Of The Month",
     "productId": "9NXBGSSKG538",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.50521.14432850506259697.32c5ede7-5368-44d7-a0b8-7b8b1afff20e.86ac3a74-2789-464c-94b8-05eac3a2358a"
+      ]
+    },
     "releaseDate": "2024-07-03",
     "storePage": "https://www.xbox.com/en-us/games/store/journey-to-the-savage-planet-employee-of-the-month/9NXBGSSKG538"
   },
   {
     "productTitle": "Jurassic World Evolution 2",
     "productId": "9MWHMJ0SRBXV",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.57135.13843646153700405.faf0a0ab-da0c-4a73-a182-1b5794b3f805.a540c175-d9d9-48ce-984f-cce5ab49a2d8"
+      ]
+    },
     "releaseDate": "2021-11-09",
     "storePage": "https://www.xbox.com/en-us/games/store/jurassic-world-evolution-2/9MWHMJ0SRBXV"
   },
   {
     "productTitle": "Jusant",
     "productId": "9PJB1ZRJDCBQ",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.54677.14215108845219593.24efa074-5329-4fb7-9ee7-875398d40686.d86ecb73-9324-42b2-8023-dcec8c4783b8"
+      ]
+    },
     "releaseDate": "2023-10-31",
     "storePage": "https://www.xbox.com/en-us/games/store/jusant/9PJB1ZRJDCBQ"
   },
@@ -1423,6 +1991,9 @@
     "images": {
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.40127.13821329994604169.93645c5e-df5b-4052-8008-c8c8f59491a5.878f4dc1-aa7a-4f2b-8a55-007e9b8bcd28"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.50333.13821329994604169.93645c5e-df5b-4052-8008-c8c8f59491a5.aa6f757c-a973-492b-b09e-c04dd9074f55"
       ]
     },
     "releaseDate": "2024-06-20",
@@ -1431,7 +2002,11 @@
   {
     "productTitle": "Killer Instinct: Anniversary Edition",
     "productId": "9N04NS8TP202",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.61867.13932214703798037.01f4a336-1152-4028-a595-8468f5ffb4a1.3da3e6fa-90de-49f4-8a11-5c155dacccd1"
+      ]
+    },
     "releaseDate": "2023-11-28",
     "storePage": "https://www.xbox.com/en-us/games/store/killer-instinct-anniversary-edition/9N04NS8TP202"
   },
@@ -1439,6 +2014,9 @@
     "productTitle": "Kona II: Brume",
     "productId": "9MWG18BH5ML7",
     "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.34928.13844667147142160.362497bb-868e-416f-b78d-359043e116a5.5dd78fff-9af6-41e6-bbcd-6810d4c343b6"
+      ],
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.62716.13844667147142160.362497bb-868e-416f-b78d-359043e116a5.b3f4e3cb-dc70-495e-b8af-b12f5848ccb8"
       ]
@@ -1449,14 +2027,22 @@
   {
     "productTitle": "Kunitsu-Gami: Path of the Goddess",
     "productId": "9PCWXX0MS15S",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.51317.14165819607364549.40790d3a-f3e1-473e-81b4-61500e8b5087.a9264302-3ac6-4c93-a740-25d00ed0cf0a"
+      ]
+    },
     "releaseDate": "2024-07-19",
     "storePage": "https://www.xbox.com/en-us/games/store/kunitsu-gami-path-of-the-goddess/9PCWXX0MS15S"
   },
   {
     "productTitle": "LEGO® Star Wars™: The Skywalker Saga",
     "productId": "BRMKDCZT0C4L",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.7489.69776162813131649.5a0614cf-d90a-4580-90d2-d09e65459d75.24c8420c-5d5f-45f7-b495-59335a7ab2fb"
+      ]
+    },
     "releaseDate": "2019-07-22",
     "storePage": "https://www.xbox.com/en-us/games/store/lego-star-wars-the-skywalker-saga/BRMKDCZT0C4L"
   },
@@ -1466,6 +2052,9 @@
     "images": {
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.55678.14084512162357210.27ebb692-271e-428b-ad4f-97b26dd42942.a88540be-456e-4e1f-8052-7def4e2f0f64"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.63900.14084512162357210.0d6eea09-167f-4aad-97d7-d4d17f848799.2a1722e7-328d-4bb3-b556-0d4acae1567b"
       ]
     },
     "releaseDate": "2022-09-29",
@@ -1474,7 +2063,11 @@
   {
     "productTitle": "Lies of P",
     "productId": "9PCM4CMTPPGC",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.58819.14167207133116460.47e9afed-5648-49f3-aa78-034a762fbc26.613fed17-69cd-4ca8-bec7-7b0bd2218d78"
+      ]
+    },
     "releaseDate": "2023-09-18",
     "storePage": "https://www.xbox.com/en-us/games/store/lies-of-p/9PCM4CMTPPGC"
   },
@@ -1484,6 +2077,9 @@
     "images": {
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.32170.13610342535970070.70bc8d1f-a634-410d-bc3a-32ab84987744.d02d600e-cee6-4b66-9114-aa2b536bd1bd"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.57362.13610342535970070.fb34dfda-5ccd-4768-9a7b-0f0c468853e1.7b1adc26-e416-4946-ad25-ecb5667cb4f8"
       ]
     },
     "releaseDate": "2024-03-19",
@@ -1492,14 +2088,22 @@
   {
     "productTitle": "Like a Dragon Gaiden: The Man Who Erased His Name",
     "productId": "9PCMWNDPPBFZ",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.40291.14166593464967828.5b4d87ef-26a6-4af4-bf96-c0c37c88dbb2.d16a5606-9c67-46e1-a979-b7092b10290a"
+      ]
+    },
     "releaseDate": "2023-11-09",
     "storePage": "https://www.xbox.com/en-us/games/store/like-a-dragon-gaiden-the-man-who-erased-his-name/9PCMWNDPPBFZ"
   },
   {
     "productTitle": "Like a Dragon: Ishin!",
     "productId": "9N4BH9FLLMWD",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.36545.13986316021730261.2a69ea94-8704-4fd3-951c-3403df80be07.e2fda78a-d7d1-496e-a952-b0794fc78268"
+      ]
+    },
     "releaseDate": "2023-02-21",
     "storePage": "https://www.xbox.com/en-us/games/store/like-a-dragon-ishin/9N4BH9FLLMWD"
   },
@@ -1507,6 +2111,9 @@
     "productTitle": "Lil Gator Game",
     "productId": "9N4FHWK9HWDK",
     "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.55710.13988697165671034.93a854a2-fda8-401c-b449-b344b289e811.0bdbfb94-416a-44da-a806-40d0d32083a2"
+      ],
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.3542.13988697165671034.93a854a2-fda8-401c-b449-b344b289e811.87ab1bdf-3a11-4c71-a005-08a43d1262be"
       ]
@@ -1517,7 +2124,11 @@
   {
     "productTitle": "LIMBO",
     "productId": "9PNG83MDD6SH",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.59639.14349397584144848.e2ddb78a-7e1b-4739-8df1-9ccec4985c50.070a33cf-df42-44da-85dd-4b4ed41b2b1b"
+      ]
+    },
     "releaseDate": "2021-07-01",
     "storePage": "https://www.xbox.com/en-us/games/store/limbo/9PNG83MDD6SH"
   },
@@ -1527,6 +2138,9 @@
     "images": {
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.64698.13605545843678606.ba639605-7305-422e-9637-2411fb07e5f6.5d284d89-4bb5-4098-87e7-0df89bf04b85"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.23046.13605545843678606.ba639605-7305-422e-9637-2411fb07e5f6.bd9eb348-15e6-4bac-985b-175c9f44a105"
       ]
     },
     "releaseDate": "2024-05-09",
@@ -1536,6 +2150,9 @@
     "productTitle": "Lonely Mountains: Downhill",
     "productId": "9MV6MCVLT8GR",
     "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.53295.13794437146560212.1c2132e1-8e75-4ecb-8f54-2474cd20e67a.772f1641-c20b-43ed-8316-94d97f7527a2"
+      ],
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.12781.13794437146560212.1c2132e1-8e75-4ecb-8f54-2474cd20e67a.5919e234-9c11-4357-9878-ed4de87e7c08"
       ]
@@ -1547,6 +2164,9 @@
     "productTitle": "Loop Hero",
     "productId": "9NWNQC8H80RV",
     "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.12067.14445738564377947.babca878-ccaa-48f3-b55f-6477a548f887.23bbfaf2-fad8-4303-bd59-be0fd8f30734"
+      ],
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.35738.14445738564377947.babca878-ccaa-48f3-b55f-6477a548f887.b80befda-9a9e-4f0c-9675-62c8116a38ba"
       ]
@@ -1558,6 +2178,9 @@
     "productTitle": "Lords of the Fallen",
     "productId": "9NP4C0X8MDK7",
     "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.53902.13730158504430842.8679d8d3-c2c8-4039-88f0-2b52a1d48d71.8572654a-00a8-4f1e-9d9d-e0bdfb4796d0"
+      ],
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.5568.13730158504430842.8679d8d3-c2c8-4039-88f0-2b52a1d48d71.36f0806f-c0d6-4f42-a99d-9ac9ad280c22"
       ]
@@ -1568,7 +2191,11 @@
   {
     "productTitle": "Mafia: Definitive Edition",
     "productId": "9N24WGZTP92S",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.53490.13963071041236391.f5d71f1c-c673-43c5-ad50-1d612db83882.2c99c532-479d-453b-80f0-722456283820"
+      ]
+    },
     "releaseDate": "2024-08-13",
     "storePage": "https://www.xbox.com/en-us/games/store/mafia-definitive-edition/9N24WGZTP92S"
   },
@@ -1576,6 +2203,9 @@
     "productTitle": "Magical Delicacy",
     "productId": "9PCRBQG481Q1",
     "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.27208.14168840589167806.4bdcbd00-4f61-4a59-a056-60b8c974464e.f3fa77ba-c80a-4e08-b6d2-1171d0223b51"
+      ],
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.54876.14168840589167806.4bdcbd00-4f61-4a59-a056-60b8c974464e.4d166b88-8ca2-4797-8722-aa721059223f"
       ]
@@ -1586,7 +2216,11 @@
   {
     "productTitle": "Maneater",
     "productId": "9P5B81KVDGP1",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.16927.14572536018362984.944e7368-3c2f-4b4e-8072-fe5da70a10fa.7c793b5f-5802-41ff-a28a-09de56512b3e"
+      ]
+    },
     "releaseDate": "2020-05-22",
     "storePage": "https://www.xbox.com/en-us/games/store/maneater/9P5B81KVDGP1"
   },
@@ -1596,6 +2230,9 @@
     "images": {
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.1429.14574664570876265.471d597a-3551-49d3-8539-0d6889ee7e31.f6d656cb-455e-472f-912b-b0c840a72e32"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.56024.14574664570876265.471d597a-3551-49d3-8539-0d6889ee7e31.5b9ebe77-9630-4f00-b719-c0a464c338ce"
       ]
     },
     "releaseDate": "2023-10-25",
@@ -1604,7 +2241,11 @@
   {
     "productTitle": "Maquette",
     "productId": "9NW7M71V29DT",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.60526.14454715586223538.e79340a3-e2a9-45a0-b7a7-0b827c384715.e1c976ee-2c16-401f-9b6a-47022ee62ee2"
+      ]
+    },
     "releaseDate": "2023-07-19",
     "storePage": "https://www.xbox.com/en-us/games/store/maquette/9NW7M71V29DT"
   },
@@ -1612,6 +2253,9 @@
     "productTitle": "McPixel 3",
     "productId": "9PP2WW5TQ7MS",
     "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.39109.14336879122555401.4c30f6b3-d0ef-4997-95dd-4b1a894b1874.4156d823-b5bd-4532-a7b0-69147e4c8477"
+      ],
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.47411.14336879122555401.4c30f6b3-d0ef-4997-95dd-4b1a894b1874.d1504ef0-c644-4a5a-bc14-8de6d4275480"
       ]
@@ -1625,6 +2269,9 @@
     "images": {
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.16435.14123304312086404.5dc09435-a0e3-402c-ba22-f58dbbaccd21.d9e9842c-e315-4cfe-84a3-6dc5635b01f4"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.1453.14123304312086404.5dc09435-a0e3-402c-ba22-f58dbbaccd21.e2b9a345-d6e3-4983-ad7d-2d2c5c192d1c"
       ]
     },
     "releaseDate": "2021-05-27",
@@ -1633,7 +2280,12 @@
   {
     "productTitle": "Medieval Dynasty",
     "productId": "9PDDP6ML6XHF",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.21853.14156112272410024.305e8482-2c5b-4228-abdb-396b9bfe447c.c92a0c3a-10af-4418-a1b2-11fbfa535f66",
+        "https://store-images.s-microsoft.com/image/apps.19781.14156112272410024.561899cb-32f5-403b-8341-36a17fdec2af.3fb37ec5-0491-4633-920e-5a2ef28059b6"
+      ]
+    },
     "releaseDate": "2022-10-06",
     "storePage": "https://www.xbox.com/en-us/games/store/medieval-dynasty/9PDDP6ML6XHF"
   },
@@ -1641,6 +2293,9 @@
     "productTitle": "Merge & Blade",
     "productId": "9NW2XNZLVSWW",
     "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.48019.14453287039354162.0e8e83c6-3769-4771-93f6-cee431e621af.d8ad47b3-5b6a-47f7-b183-ebb6dd43ef80"
+      ],
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.37425.14453287039354162.0e8e83c6-3769-4771-93f6-cee431e621af.6bce7e6c-4779-4155-b12d-42429e83a792"
       ]
@@ -1651,7 +2306,11 @@
   {
     "productTitle": "Microsoft Flight Simulator Standard 40th Anniversary Edition",
     "productId": "9PMQDM08SNK9",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.37945.14293123921570736.739af26b-0b56-4d3a-8d57-149d26c2cc05.9c568e6b-ca17-4dc8-9c75-efe33e27f910"
+      ]
+    },
     "releaseDate": "2022-11-11",
     "storePage": "https://www.xbox.com/en-us/games/store/microsoft-flight-simulator-standard-40th-anniversary-edition/9PMQDM08SNK9"
   },
@@ -1664,6 +2323,9 @@
         "https://store-images.s-microsoft.com/image/apps.13360.9007199266246761.cb02291f-d0d9-48a7-8735-9a5e71951992.ab38da93-df62-4b71-9831-ddc8afb96d7b",
         "https://store-images.s-microsoft.com/image/apps.3809.9007199266246761.cb02291f-d0d9-48a7-8735-9a5e71951992.38e4cfe6-dc30-4f0e-9cb5-4f7fa3c17abf",
         "https://store-images.s-microsoft.com/image/apps.35142.9007199266246761.ca6040cb-54be-4f0a-bc9e-c59364f681cb.044ba279-4cbf-4c63-828a-e747e398b428"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.35357.9007199266246761.ea1b2c5a-a27a-446f-ade9-736e01fc0bd3.a25c0236-3fbf-4bb2-98e3-79463adcd37d"
       ]
     },
     "releaseDate": "2012-07-28",
@@ -1675,6 +2337,9 @@
     "images": {
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.11136.14146895813128195.1152921504736926530.47c08185-64bc-49ff-9bb7-67105c1618af"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.1041.14146895813128195.1152921504736932926.b3b4137c-37ed-4268-8112-002922027d5f"
       ]
     },
     "releaseDate": "2017-10-10",
@@ -1686,6 +2351,9 @@
     "images": {
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.45275.13523218592070531.6730b169-a75f-4b46-bbd7-32b2a54f767e.5c7d8539-533f-4dea-9cd0-16ae3cc9f9ae"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.33021.13523218592070531.6730b169-a75f-4b46-bbd7-32b2a54f767e.2df266b3-50c4-4c43-84d8-f58edf052206"
       ]
     },
     "releaseDate": "2021-11-02",
@@ -1695,6 +2363,9 @@
     "productTitle": "Minecraft Legends for Windows + Launcher",
     "productId": "9NM395CH685J",
     "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.43083.13695729085627777.1297136a-f273-41f1-947f-59044c848c55.96136b17-8c70-4dce-9ca0-3ef59a1fd391"
+      ],
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.62581.13695729085627777.1297136a-f273-41f1-947f-59044c848c55.3752a76f-6741-4954-a6d9-143f1fd4a540"
       ]
@@ -1709,6 +2380,9 @@
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.303.14635563885955208.abc71742-2e92-43db-a63f-168beecfbc1b.e7b60ba4-3c00-4ff5-8040-0a5a7b62ae42",
         "https://store-images.s-microsoft.com/image/apps.54746.14635563885955208.8d3b1dbf-00e2-4afb-9745-44725e0bec69.910a05e9-09ae-463b-82fe-a45de89df0da"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.59093.14635563885955208.3111e5ec-659e-41be-beec-f0dfb16dd9f1.3cd38d35-219a-424f-9a45-0a649145e1e3"
       ]
     },
     "releaseDate": "2022-02-09",
@@ -1720,6 +2394,9 @@
     "images": {
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.2726.14492077886571533.be42f4bd-887b-4430-8ed0-622341b4d2b0.b7314828-2896-431a-b863-1e3de670a5b2"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.54465.14492077886571533.be42f4bd-887b-4430-8ed0-622341b4d2b0.5054cf02-8b0f-47e2-9d15-7ddc81f63638"
       ]
     },
     "releaseDate": "2022-06-06",
@@ -1728,21 +2405,33 @@
   {
     "productTitle": "Mineko's Night Market",
     "productId": "9NBPNW2JQNCD",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.18027.13513466192535313.e3ae04a8-2387-4802-9bbe-d39ebcd92dd6.1f6b5033-bae2-4b68-bd4b-58ddb9e64994"
+      ]
+    },
     "releaseDate": "2023-10-26",
     "storePage": "https://www.xbox.com/en-us/games/store/mineko-s-night-market/9NBPNW2JQNCD"
   },
   {
     "productTitle": "Monster Hunter Rise",
     "productId": "9N1VP8WDQK4D",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.20430.13964127228191263.1e380cc1-7db3-433f-a0fb-1cfb65b83ff5.656026c4-5178-4926-ba85-728dd0bb5500"
+      ]
+    },
     "releaseDate": "2023-01-20",
     "storePage": "https://www.xbox.com/en-us/games/store/monster-hunter-rise/9N1VP8WDQK4D"
   },
   {
     "productTitle": "Monster Sanctuary (Windows Version)",
     "productId": "9PBWWQGXVMKC",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.34105.14110383629447010.17706117-8769-46af-985e-db557adb3449.f789760c-aea4-489f-bee5-c665a3cba833"
+      ]
+    },
     "releaseDate": "2020-12-08",
     "storePage": "https://www.xbox.com/en-us/games/store/monster-sanctuary-windows-version/9PBWWQGXVMKC"
   },
@@ -1754,6 +2443,9 @@
         "https://store-images.s-microsoft.com/image/apps.16047.14078999020725962.ddb83977-3b2d-4498-aa21-0a1bdeb1cddc.3c6fae59-0c13-4991-85d7-2cad65972390",
         "https://store-images.s-microsoft.com/image/apps.13741.14078999020725962.ddb83977-3b2d-4498-aa21-0a1bdeb1cddc.727fa7f1-1eea-42b3-9147-f3d4082d2abd",
         "https://store-images.s-microsoft.com/image/apps.37262.14078999020725962.ddb83977-3b2d-4498-aa21-0a1bdeb1cddc.7e5212da-ad9a-4843-88f4-4b1d7c65a62b"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.23038.14078999020725962.ddb83977-3b2d-4498-aa21-0a1bdeb1cddc.b1c79423-8a23-4943-804b-c5333d258492"
       ]
     },
     "releaseDate": "2018-05-29",
@@ -1762,7 +2454,11 @@
   {
     "productTitle": "Mortal Kombat 11",
     "productId": "BTC0L0BW6LWC",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.63277.70804610839547354.8da93c46-fd13-4b16-8ebe-e8e02c53d93e.9d395244-d5c3-4d17-a83d-2ff95537c0f6"
+      ]
+    },
     "releaseDate": "2019-04-23",
     "storePage": "https://www.xbox.com/en-us/games/store/mortal-kombat-11/BTC0L0BW6LWC"
   },
@@ -1772,6 +2468,9 @@
     "images": {
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.32729.14149597270613176.7ab8db21-d435-4f1c-8c3a-236ab836bd6b.21f8ad4a-fd25-4016-ba6f-8ce3e6a45470"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.44000.14149597270613176.7ab8db21-d435-4f1c-8c3a-236ab836bd6b.0dc1418d-4fcd-4bc7-9ae5-552f97c69e27"
       ]
     },
     "releaseDate": "2022-10-25",
@@ -1780,7 +2479,11 @@
   {
     "productTitle": "Moving Out 2",
     "productId": "9P88K6NQW12H",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.61624.14092419520193072.64e53d99-3172-4ca7-856b-dd313b69b944.4cfb64f3-ed9e-4d21-b873-244865b67ff4"
+      ]
+    },
     "releaseDate": "2023-08-15",
     "storePage": "https://www.xbox.com/en-us/games/store/moving-out-2/9P88K6NQW12H"
   },
@@ -1788,6 +2491,9 @@
     "productTitle": "My Friend Peppa Pig",
     "productId": "9NDJLXD2X2DM",
     "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.41714.13613420443671332.a6ea2e8e-4acd-4934-b589-2d8cfaba7189.2f819a75-49ec-4ddd-858c-0752a4ae517a"
+      ],
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.1107.13613420443671332.a6ea2e8e-4acd-4934-b589-2d8cfaba7189.f867a517-25f5-4493-b7e5-b437c38d5cb7"
       ]
@@ -1803,6 +2509,9 @@
         "https://store-images.s-microsoft.com/image/apps.10534.13515009775401270.15247b3d-e864-489f-8938-00dc290228fa.5fd1a78b-0493-47d8-99b5-1a81030b0b13",
         "https://store-images.s-microsoft.com/image/apps.14704.13515009775401270.15247b3d-e864-489f-8938-00dc290228fa.43051e1b-0b6a-437b-9971-0465eff1c84f",
         "https://store-images.s-microsoft.com/image/apps.50248.13515009775401270.15247b3d-e864-489f-8938-00dc290228fa.12f4b9c5-7114-40ec-b7aa-e8aaa65198d4"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.8924.13515009775401270.15247b3d-e864-489f-8938-00dc290228fa.ad129690-0dae-4df9-a39e-68bb7d8600dd"
       ]
     },
     "releaseDate": "2019-07-04",
@@ -1814,6 +2523,9 @@
     "images": {
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.60105.13907683889228979.59937977-1a57-4871-afde-66c690b605c2.19b6d7df-3cc1-4632-a596-8af5f8323ca2"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.50888.13907683889228979.59937977-1a57-4871-afde-66c690b605c2.41dc39cf-d89c-48c5-81f3-d686030eb72e"
       ]
     },
     "releaseDate": "2023-11-02",
@@ -1823,6 +2535,9 @@
     "productTitle": "Neon Abyss",
     "productId": "9PLWSGHFQ4PS",
     "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.19663.14309576365758777.173ab21c-81bd-4a31-b5cc-0d6495ab6a15.28771244-a15d-42c8-8ae9-2f252b179210"
+      ],
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.53006.14309576365758777.eb7fccef-6a93-40da-ba63-6d85df214f6b.cc2b7e42-6563-4d43-9ad7-57f02834effb"
       ]
@@ -1833,7 +2548,11 @@
   {
     "productTitle": "Neon White",
     "productId": "9MTGVHF37DFK",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.52438.13813113706771512.d189482c-40c5-41c0-8eeb-62010002ac44.b00f1ab6-5133-4574-8d5a-01ee141ef86b"
+      ]
+    },
     "releaseDate": "2024-07-11",
     "storePage": "https://www.xbox.com/en-us/games/store/neon-white/9MTGVHF37DFK"
   },
@@ -1846,6 +2565,9 @@
         "https://store-images.s-microsoft.com/image/apps.22238.13867280688858311.8624d86c-7857-440e-9303-9897a29ba67e.f9bd296d-956c-4dbe-8d7e-8ea0a6a6a66a",
         "https://store-images.s-microsoft.com/image/apps.50333.13867280688858311.8624d86c-7857-440e-9303-9897a29ba67e.d210b5ed-90b8-492c-b511-0af94cd2ee5c",
         "https://store-images.s-microsoft.com/image/apps.49611.13867280688858311.8624d86c-7857-440e-9303-9897a29ba67e.3a5dfee9-dce9-4509-83de-33538ed3e11b"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.42417.13867280688858311.8624d86c-7857-440e-9303-9897a29ba67e.42b5def2-8e7f-4ff7-a75b-72354e44d97e"
       ]
     },
     "releaseDate": "2020-08-21",
@@ -1854,56 +2576,88 @@
   {
     "productTitle": "Ni no Kuni Wrath of the White Witch™ Remastered",
     "productId": "9P7SL78VHVMF",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.57893.14101239125163632.01de9600-be68-4ca2-ad44-3bd38be94a52.4b2ed267-ccba-45eb-b8bd-97484e350d07"
+      ]
+    },
     "releaseDate": "2022-09-15",
     "storePage": "https://www.xbox.com/en-us/games/store/ni-no-kuni-wrath-of-the-white-witch-remastered/9P7SL78VHVMF"
   },
   {
     "productTitle": "Ni no Kuni™ II: Revenant Kingdom - The Prince's Edition",
     "productId": "9N732VFPMWKT",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.61464.14006829741600892.0ff866dd-53ca-4875-b82a-a1e430a3ba20.165a49e5-7b2f-4f4c-a10b-00c7ee0a8a18"
+      ]
+    },
     "releaseDate": "2023-03-21",
     "storePage": "https://www.xbox.com/en-us/games/store/ni-no-kuni-ii-revenant-kingdom-the-prince-s-edition/9N732VFPMWKT"
   },
   {
     "productTitle": "Nickelodeon All-Star Brawl 2",
     "productId": "9PN0LC4CNLPT",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.29212.14288058754217024.34c1b6b9-953f-418c-9ab0-c1ebd8ce9cbc.bc41e6ef-5fee-4474-8404-54acf0fa5a42"
+      ]
+    },
     "releaseDate": "2023-11-14",
     "storePage": "https://www.xbox.com/en-us/games/store/nickelodeon-all-star-brawl-2/9PN0LC4CNLPT"
   },
   {
     "productTitle": "NINJA GAIDEN 3: Razor's Edge",
     "productId": "9N27DBP8GNNB",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.34045.13957002730398149.0cea4e4d-b211-438d-b3fc-78fd52485184.fc4f1171-49f7-4812-b943-3ed19812f720"
+      ]
+    },
     "releaseDate": "2021-06-10",
     "storePage": "https://www.xbox.com/en-us/games/store/ninja-gaiden-3-razor-s-edge/9N27DBP8GNNB"
   },
   {
     "productTitle": "NINJA GAIDEN Σ",
     "productId": "9NZ5QW71X49G",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.19050.14486675416442203.186df2ad-99aa-4e4f-bcb4-cb37ca999946.df485081-ec17-460b-9e62-e385c1297574"
+      ]
+    },
     "releaseDate": "2021-06-10",
     "storePage": "https://www.xbox.com/en-us/games/store/ninja-gaiden/9NZ5QW71X49G"
   },
   {
     "productTitle": "NINJA GAIDEN Σ2",
     "productId": "9PGSC3PW4N8Z",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.62138.14245467679473898.001107c4-7d89-4b24-ae55-6960d7565280.fde9e16e-7907-4d7f-802e-22f2da8e8667"
+      ]
+    },
     "releaseDate": "2021-06-10",
     "storePage": "https://www.xbox.com/en-us/games/store/ninja-gaiden-2/9PGSC3PW4N8Z"
   },
   {
     "productTitle": "NINJA GAIDEN: Master Collection",
     "productId": "9NCG3X89KRLD",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.32420.13564615551113323.88b07054-b685-4f07-9cfe-222ba3ef0e25.e0794927-ed74-4388-989d-afb58a23721d"
+      ]
+    },
     "releaseDate": "2021-06-10",
     "storePage": "https://www.xbox.com/en-us/games/store/ninja-gaiden-master-collection/9NCG3X89KRLD"
   },
   {
     "productTitle": "No Man's Sky",
     "productId": "BQVQTL3PCH05",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.30284.68818099466568894.214dba37-1f8b-4311-ad6e-ed28473c3221.d2343082-5059-4f2d-90fe-e0cc7b1b32e8"
+      ]
+    },
     "releaseDate": "2018-07-24",
     "storePage": "https://www.xbox.com/en-us/games/store/no-man-s-sky/BQVQTL3PCH05"
   },
@@ -1911,6 +2665,9 @@
     "productTitle": "No More Heroes 3 Windows",
     "productId": "9P8XNG742KC9",
     "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.48625.14605058070453668.4499a7ea-181a-4664-9cf0-b22383d6e8ff.c76fc402-cd21-4618-9dd9-d93e64ec1c54"
+      ],
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.40045.14605058070453668.4499a7ea-181a-4664-9cf0-b22383d6e8ff.c65f205f-e2d2-463c-9864-21a02ee34710"
       ]
@@ -1921,7 +2678,11 @@
   {
     "productTitle": "OCTOPATH TRAVELER",
     "productId": "9N9606CC950J",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.18141.13539010844025035.cd25451c-c47c-45c8-b378-724488a9e769.8071ec1d-5580-4953-94a4-08c603c7e808"
+      ]
+    },
     "releaseDate": "2021-03-25",
     "storePage": "https://www.xbox.com/en-us/games/store/octopath-traveler/9N9606CC950J"
   },
@@ -1929,6 +2690,9 @@
     "productTitle": "OCTOPATH TRAVELER II",
     "productId": "9N2X3VZW8QNN",
     "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.40638.13943511541832179.8333d72c-e2d4-431c-934c-ef55bcf6c5f1.da6bbbfa-fb24-44b5-90fa-7067f6fc44f6"
+      ],
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.46680.13943511541832179.8333d72c-e2d4-431c-934c-ef55bcf6c5f1.82dbb158-ac97-41c6-aad2-d66dc231c6f3"
       ]
@@ -1939,7 +2703,11 @@
   {
     "productTitle": "Open Roads",
     "productId": "9NRRSLCGR62S",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.23447.14377662572858195.0cf67274-c7f3-43bc-8b24-87daf93a0fac.1f99b4c4-e10c-4291-ba47-d6e04910f759"
+      ]
+    },
     "releaseDate": "2024-03-28",
     "storePage": "https://www.xbox.com/en-us/games/store/open-roads/9NRRSLCGR62S"
   },
@@ -1951,6 +2719,9 @@
         "https://store-images.s-microsoft.com/image/apps.63869.13555606646249745.b53381a4-c873-4035-90a6-ee8aee881644.de6bc83d-3a1e-49d4-9d5a-060819c106ab",
         "https://store-images.s-microsoft.com/image/apps.10496.13555606646249745.b53381a4-c873-4035-90a6-ee8aee881644.f8fa556a-9afd-40bb-9358-3eb9cda4b22f",
         "https://store-images.s-microsoft.com/image/apps.49794.13555606646249745.b53381a4-c873-4035-90a6-ee8aee881644.77da806e-e5cf-45e0-a9ba-9776abedb579"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.6514.13555606646249745.b53381a4-c873-4035-90a6-ee8aee881644.d70f61c6-8ca8-4a0a-aa94-ede341f5a784"
       ]
     },
     "releaseDate": "2021-07-23",
@@ -1963,6 +2734,9 @@
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.27342.13510798886186647.20955cc6-ff98-4c47-a277-a39034c80e48.46c8ac27-5378-452b-a633-10a503a92d96",
         "https://store-images.s-microsoft.com/image/apps.56463.13510798886186647.e6e27e80-a0e4-4365-a31b-5c4a7b6b91a8.9b1ed462-08c2-43bc-bf97-98ce43ad61be"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.33006.13510798886186647.c0e11caa-fdaa-466b-aa26-f52ce4feba84.a944c023-cf1b-4b73-a42c-ef8948701f81"
       ]
     },
     "releaseDate": "2016-03-30",
@@ -1974,6 +2748,9 @@
     "images": {
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.19662.14047496556148589.9fda5cef-7995-4dbb-a626-66d2ab3feb4f.9868c8ea-682b-49bd-a35e-b38fd3eb0607"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.37519.14047496556148589.9fda5cef-7995-4dbb-a626-66d2ab3feb4f.c81b9aaa-f139-44ac-b9ca-0aa0dd0cbffb"
       ]
     },
     "releaseDate": "2020-03-11",
@@ -1987,6 +2764,9 @@
         "https://store-images.s-microsoft.com/image/apps.17977.14184096619580431.16c3e5f6-74be-48c7-9949-1a76b080c9d9.be69e859-f4d8-470e-8518-ecea1f8c9bb9",
         "https://store-images.s-microsoft.com/image/apps.19689.14184096619580431.16c3e5f6-74be-48c7-9949-1a76b080c9d9.a886b652-399a-4f35-ba96-537fcec2085c",
         "https://store-images.s-microsoft.com/image/apps.6816.14184096619580431.16c3e5f6-74be-48c7-9949-1a76b080c9d9.4b8e6c46-2acc-41b5-aab5-be3b9356f6c2"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.60458.14184096619580431.90f674bc-0c36-4602-85d7-e95340e27b11.11576800-4408-4d26-b761-dfd8b2f32d9d"
       ]
     },
     "releaseDate": "2020-04-02",
@@ -1995,21 +2775,33 @@
   {
     "productTitle": "Palworld (Game Preview)",
     "productId": "9NKV34XDW014",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.7175.13654268679289325.5cd9109c-5095-44b3-a4a2-0bbf822058b7.87b86677-d67d-448a-87cd-86f759b976d8"
+      ]
+    },
     "releaseDate": "2024-01-19",
     "storePage": "https://www.xbox.com/en-us/games/store/palworld-game-preview/9NKV34XDW014"
   },
   {
     "productTitle": "PAW Patrol Mighty Pups Save Adventure Bay",
     "productId": "9N3TF03KNTBD",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.3013.13996206863599819.e2c5aea7-cee9-4965-bcf2-983a449c260d.3492e484-91a4-4558-b189-66444c715f51"
+      ]
+    },
     "releaseDate": "2020-11-06",
     "storePage": "https://www.xbox.com/en-us/games/store/paw-patrol-mighty-pups-save-adventure-bay/9N3TF03KNTBD"
   },
   {
     "productTitle": "PAW Patrol World",
     "productId": "9N2VDS259QP1",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.38510.13948993858025072.92023a0f-4cb5-4ee3-8396-0122fea8fafe.ea8c8de1-7a57-40ba-9bcd-d03c77b2560c"
+      ]
+    },
     "releaseDate": "2023-09-29",
     "storePage": "https://www.xbox.com/en-us/games/store/paw-patrol-world/9N2VDS259QP1"
   },
@@ -2017,6 +2809,9 @@
     "productTitle": "PAW Patrol: Grand Prix",
     "productId": "9MWBT3HFCZ3Z",
     "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.30417.13842132658396836.fba80705-9bc9-45ad-84f9-621f75fe99ec.63412d4a-24e5-449a-9622-75435adb7a73"
+      ],
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.63863.13842132658396836.fba80705-9bc9-45ad-84f9-621f75fe99ec.7890a3e7-98b4-4d58-a917-b04dd7960388"
       ]
@@ -2027,28 +2822,44 @@
   {
     "productTitle": "PAYDAY 3",
     "productId": "9NPZVDCH73SX",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.39323.13779457877292855.4803a4b4-94cc-4b12-bf91-ad49bcb0c65c.2422005b-086c-453d-ba6b-57b2a1d25374"
+      ]
+    },
     "releaseDate": "2023-09-21",
     "storePage": "https://www.xbox.com/en-us/games/store/payday-3/9NPZVDCH73SX"
   },
   {
     "productTitle": "Pentiment",
     "productId": "9NX6K9HN4F4K",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.25502.14431229486160986.b3655366-4704-41dd-bb1b-0ea3f2425df6.c8722871-999c-4dac-8691-5a97e501dcec"
+      ]
+    },
     "releaseDate": "2022-11-15",
     "storePage": "https://www.xbox.com/en-us/games/store/pentiment/9NX6K9HN4F4K"
   },
   {
     "productTitle": "Persona 3 Reload",
     "productId": "9NKK6Z0K3RH2",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.59768.13660021874166335.cf99aaa0-1039-41d3-bafe-7239ec9e261c.219dd9bc-69b7-4f09-b013-d5e3092cf821"
+      ]
+    },
     "releaseDate": "2024-02-02",
     "storePage": "https://www.xbox.com/en-us/games/store/persona-3-reload/9NKK6Z0K3RH2"
   },
   {
     "productTitle": "Persona 5 Tactica",
     "productId": "9P07F616XR9R",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.44242.14461424539776518.be5fa828-401b-4f0c-ac86-920d7dcbfada.d932d547-ff13-4f90-9344-d1b5e6fac6cf"
+      ]
+    },
     "releaseDate": "2023-11-17",
     "storePage": "https://www.xbox.com/en-us/games/store/persona-5-tactica/9P07F616XR9R"
   },
@@ -2060,6 +2871,9 @@
         "https://store-images.s-microsoft.com/image/apps.13928.14507726714197033.ea391b48-d8cb-4724-a6cb-765168bd5161.77ebbbdb-6d75-44ac-b4b6-bcfbec78f9b5",
         "https://store-images.s-microsoft.com/image/apps.55491.14507726714197033.2905aa3c-57a0-457d-a5be-f0eea3e80cf3.0aff42ef-12ed-46f4-ae01-3423c446506b",
         "https://store-images.s-microsoft.com/image/apps.56306.14507726714197033.2905aa3c-57a0-457d-a5be-f0eea3e80cf3.cbea4fc4-0504-4fdf-8452-c8af2670d40c"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.155.14507726714197033.ea391b48-d8cb-4724-a6cb-765168bd5161.3cfc32f8-f682-490e-9e59-cd6548a4c102"
       ]
     },
     "releaseDate": "2019-12-19",
@@ -2068,21 +2882,33 @@
   {
     "productTitle": "Phoenix Wright: Ace Attorney Trilogy",
     "productId": "C4R4RB3SB1NN",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.24919.67362291782661543.eb0267ee-9235-487a-b697-5cc49c0703c1.09bceba4-8a47-408c-ae18-509fc2c3759b"
+      ]
+    },
     "releaseDate": "2019-04-09",
     "storePage": "https://www.xbox.com/en-us/games/store/phoenix-wright-ace-attorney-trilogy/C4R4RB3SB1NN"
   },
   {
     "productTitle": "Pillars of Eternity 2: Deadfire - Ultimate Edition (PC)",
     "productId": "9N8N7NZSVTG3",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.10942.14218490899188575.a8c726f9-aa48-4378-bee2-0dffc21a7089.4b82a2de-3303-4ebf-aa9e-168b159f6207"
+      ]
+    },
     "releaseDate": "2021-03-25",
     "storePage": "https://www.xbox.com/en-us/games/store/pillars-of-eternity-2-deadfire-ultimate-edition-pc/9N8N7NZSVTG3"
   },
   {
     "productTitle": "Pillars of Eternity: Definitive Edition",
     "productId": "9N1P6T7ZQ2KF",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.21764.13901718808565748.bd4d392b-4244-482f-a55e-94b9251f086f.fba7b3c6-1891-46f8-81ed-c262baa017bb"
+      ]
+    },
     "releaseDate": "2020-03-10",
     "storePage": "https://www.xbox.com/en-us/games/store/pillars-of-eternity-definitive-edition/9N1P6T7ZQ2KF"
   },
@@ -2092,6 +2918,9 @@
     "images": {
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.60012.13893421366981179.51ad56f7-1d70-465a-9fc2-517da8c59416.262a3d6d-b2cd-47a7-b308-784e913d328f"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.49482.13893421366981179.51ad56f7-1d70-465a-9fc2-517da8c59416.6412d295-de04-414c-adc0-02a0d2f35a8b"
       ]
     },
     "releaseDate": "2023-05-23",
@@ -2101,6 +2930,9 @@
     "productTitle": "PlateUp!",
     "productId": "9P2HHT3VS7MP",
     "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.6386.14557765520174668.1718d940-8154-42aa-b7e5-83e812dac193.d16628c9-c059-4d00-8535-63d2cfe4a1a5"
+      ],
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.53054.14557765520174668.1718d940-8154-42aa-b7e5-83e812dac193.d269caed-82e9-4709-a743-a84fc3aef3d5"
       ]
@@ -2111,7 +2943,11 @@
   {
     "productTitle": "PowerWash Simulator",
     "productId": "9NHDJC0NW20M",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.60360.13631853399995812.7c8d5b79-31b8-46af-9143-329dfb697258.813651fd-f64f-4d40-a513-0584c3e6d6a5"
+      ]
+    },
     "releaseDate": "2022-07-14",
     "storePage": "https://www.xbox.com/en-us/games/store/powerwash-simulator/9NHDJC0NW20M"
   },
@@ -2119,6 +2955,9 @@
     "productTitle": "Prey",
     "productId": "9PBC1QFBW563",
     "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.11350.14126121726701460.448f0d1c-b127-4b9d-b41d-b4025f0487ad.50933228-c52d-4364-8e63-1994665568ce"
+      ],
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.33621.14126121726701460.448f0d1c-b127-4b9d-b41d-b4025f0487ad.77ba10be-afdf-4d44-b0ae-376ca9940930"
       ]
@@ -2129,28 +2968,44 @@
   {
     "productTitle": "Psychonauts (Windows 10)",
     "productId": "9NCT87FKQ4GM",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.28716.13561496157760288.f7bf4326-45d3-4a39-8977-2f5f5ce39a58.c5066da9-cb57-4091-9818-6f9811c23cf7"
+      ]
+    },
     "releaseDate": "2021-05-13",
     "storePage": "https://www.xbox.com/en-us/games/store/psychonauts-windows-10/9NCT87FKQ4GM"
   },
   {
     "productTitle": "Psychonauts 2",
     "productId": "9NBR2VXT87SJ",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.17302.13578175979543723.424401c3-5602-4e35-abfc-c00f9156296a.e6d1e593-0006-4b73-886e-dd37b6626198"
+      ]
+    },
     "releaseDate": "2021-08-25",
     "storePage": "https://www.xbox.com/en-us/games/store/psychonauts-2/9NBR2VXT87SJ"
   },
   {
     "productTitle": "Quake",
     "productId": "9P1Z43KRNQD4",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.31797.14497943460299347.3ad06bb4-d442-43a2-99e0-f41399a5b03e.d1944e73-cd9b-4fd2-914c-4a4c3db63b39"
+      ]
+    },
     "releaseDate": "2021-08-19",
     "storePage": "https://www.xbox.com/en-us/games/store/quake/9P1Z43KRNQD4"
   },
   {
     "productTitle": "Quake 4",
     "productId": "9P2JXK37PFLZ",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.58635.14561296657701490.8a3c58fd-37c6-4dd1-a53f-f41ff63c20a8.22556c8a-6247-4af8-8e54-bede1c363535"
+      ]
+    },
     "releaseDate": "2022-08-18",
     "storePage": "https://www.xbox.com/en-us/games/store/quake-4/9P2JXK37PFLZ"
   },
@@ -2158,6 +3013,9 @@
     "productTitle": "Quake II",
     "productId": "9P7L9H478GGV",
     "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.18071.14105366677060737.2503bfc2-efe7-4772-9a81-c5a231a5057d.3250d552-459e-4b9c-886d-ec3bebedcc98"
+      ],
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.53217.14105366677060737.98d9bc7f-d623-4c29-b01d-326bd6f11a1a.19bc2dda-8723-4174-a91e-553cacb2a159"
       ]
@@ -2168,7 +3026,11 @@
   {
     "productTitle": "Quake III Arena",
     "productId": "9NWNLS28ZG37",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.29341.14446194801384982.3fae32b7-042d-4187-996b-b410a4650a54.56409594-243e-4827-8713-85ece1089d88"
+      ]
+    },
     "releaseDate": "2021-08-19",
     "storePage": "https://www.xbox.com/en-us/games/store/quake-iii-arena/9NWNLS28ZG37"
   },
@@ -2178,6 +3040,9 @@
     "images": {
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.58987.13510798886714035.b2865d36-6481-42f1-b535-9300f0971c58.be79ec74-9c21-4c54-804b-392877794836"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.381.13510798886714035.8e10fb20-1d7f-401b-b695-09f0851b5936.205769d8-417a-4eb8-9a7e-1546d7f0ab4f"
       ]
     },
     "releaseDate": "2016-04-05",
@@ -2186,7 +3051,11 @@
   {
     "productTitle": "RAGE 2 (PC)",
     "productId": "9P2J7WHV0K4N",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.25597.14561404876525623.2a22910b-625c-4317-ba57-221eb5b7e5b9.59ae8014-f78e-4cdf-94cc-9031c21d5e48"
+      ]
+    },
     "releaseDate": "2019-11-14",
     "storePage": "https://www.xbox.com/en-us/games/store/rage-2-pc/9P2J7WHV0K4N"
   },
@@ -2196,6 +3065,9 @@
     "images": {
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.47882.14293952320453711.7b0495b8-be6b-4fbc-9d4c-95bf880b7637.e11628b9-391e-48d0-b70b-9e82e499dc7f"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.29645.14293952320453711.7b0495b8-be6b-4fbc-9d4c-95bf880b7637.aee8335d-6c09-4147-bf12-78be5fd5ecb2"
       ]
     },
     "releaseDate": "2021-10-05",
@@ -2210,6 +3082,9 @@
         "https://store-images.s-microsoft.com/image/apps.33940.13510798886186651.318d51ee-64f7-4e1c-a7fc-377134776500.e0a2b514-cb92-4ccf-95f7-6d09171aa9c7",
         "https://store-images.s-microsoft.com/image/apps.20246.13510798886186651.52fa185c-aa0e-4455-bd24-ca7050c32d23.e272595f-5aa6-4362-b92b-94b4244af6a9",
         "https://store-images.s-microsoft.com/image/apps.8347.13510798886186651.4d9ba866-a3bb-4ec5-9791-5b5380b509df.defe5b86-8663-4638-a26c-9716b7838b82"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.34726.13510798886186651.76cfa366-2ebc-44ea-984f-6bf954e4c742.3a35291d-d9c2-451a-ab83-e043aba71471"
       ]
     },
     "releaseDate": "2016-09-13",
@@ -2218,14 +3093,22 @@
   {
     "productTitle": "Redfall",
     "productId": "9P8JRMWRQP4H",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.5939.14091188428798620.2f105d2c-1b7f-4fd0-b12e-5483087f47d1.57847b73-9461-4b45-b70e-8cb1e89da909"
+      ]
+    },
     "releaseDate": "2023-05-02",
     "storePage": "https://www.xbox.com/en-us/games/store/redfall/9P8JRMWRQP4H"
   },
   {
     "productTitle": "Remnant II® - Standard Edition",
     "productId": "9P9278ZMGQLJ",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.45590.14081014349971267.d4f5e4f0-b6a4-4b3a-a03e-37c8a633409c.66323a15-debc-4bd7-8f3c-92152e243a89"
+      ]
+    },
     "releaseDate": "2023-07-25",
     "storePage": "https://www.xbox.com/en-us/games/store/remnant-ii-standard-edition/9P9278ZMGQLJ"
   },
@@ -2233,6 +3116,9 @@
     "productTitle": "Remnant: From the Ashes",
     "productId": "9PBHXGWZTS2N",
     "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.63497.14118342467613503.328c9673-d2e4-481d-871f-02b381f9ae5e.8b86b6e7-5a71-477b-9007-98695fd56101"
+      ],
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.23721.14118342467613503.328c9673-d2e4-481d-871f-02b381f9ae5e.77290461-1e87-48ea-9546-3fab7e7d378c"
       ]
@@ -2243,21 +3129,33 @@
   {
     "productTitle": "RESIDENT EVIL 2",
     "productId": "BWMH951M3G3P",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.38246.71571739681700792.c61fa2d7-3d69-4edf-8e51-accc41d47823.9197ae9d-181d-44ff-a98d-7f64086f509e"
+      ]
+    },
     "releaseDate": "2019-01-25",
     "storePage": "https://www.xbox.com/en-us/games/store/resident-evil-2/BWMH951M3G3P"
   },
   {
     "productTitle": "RESIDENT EVIL 3 for Windows",
     "productId": "9P7T44TTDL7M",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.4880.14101200251439450.ecb966a9-f74c-4e59-85e5-40480fa1f7ad.196cb8b3-f704-471f-87d7-6cc5506a5958"
+      ]
+    },
     "releaseDate": "2024-02-13",
     "storePage": "https://www.xbox.com/en-us/games/store/resident-evil-3-for-windows/9P7T44TTDL7M"
   },
   {
     "productTitle": "Return to Castle Wolfenstein",
     "productId": "9N1WT4X26SHW",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.29278.13967749296389194.10d4dd3f-5a58-4458-be2d-7f2ad1e13b24.b7d41663-a7d5-4bb3-a2c1-4d08cca207fa"
+      ]
+    },
     "releaseDate": "2022-08-18",
     "storePage": "https://www.xbox.com/en-us/games/store/return-to-castle-wolfenstein/9N1WT4X26SHW"
   },
@@ -2265,6 +3163,9 @@
     "productTitle": "Return to Grace",
     "productId": "9MWZF0Q94B8L",
     "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.2941.13834568726702397.4f9f6429-a07d-45b4-ae57-230b11267429.e38dc25e-18f6-4e25-8a7d-16ceee2f61d7"
+      ],
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.14673.13834568726702397.4f9f6429-a07d-45b4-ae57-230b11267429.9a3b548c-ac74-4c27-b118-95bd88132385"
       ]
@@ -2276,6 +3177,9 @@
     "productTitle": "Return to Monkey Island",
     "productId": "9PC4R8N1N2T6",
     "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.41133.14176324986442763.11fa95be-f98f-4be1-a416-9571cd1286df.bbee7d3d-c543-476f-8cfe-4e58d8977b81"
+      ],
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.32252.14176324986442763.11fa95be-f98f-4be1-a416-9571cd1286df.850d22ab-9787-4dee-b0de-3e4d59b1dc35"
       ]
@@ -2290,6 +3194,9 @@
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.62608.14372382618520757.c9c606c7-aefc-4941-b075-041b8dd7e99b.9cd83749-7566-45fe-8fdf-90e0eb704ff2",
         "https://store-images.s-microsoft.com/image/apps.20096.14372382618520757.bc08dd7e-a1fe-4dab-96b6-179b7e7179a4.5aa2d2e6-e1a6-4c0c-8ab2-e1b906d1d0d4"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.36683.14372382618520757.4838e0da-8150-4c53-85e0-376821d93733.c2ae50e6-75c4-4eb9-88c7-38ca8124bb10"
       ]
     },
     "releaseDate": "2017-09-14",
@@ -2302,6 +3209,9 @@
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.45334.13510798886621078.3f3ca8cc-9e57-4af9-9251-f2ed8ba5e3ab.09c6a44c-aff8-4140-939c-e17b701d1ff8",
         "https://store-images.s-microsoft.com/image/apps.65159.13510798886621078.29b02068-cffe-4bc6-a3dd-668fc485009c.5c061555-1d91-4d6c-a2b3-b58398437fca"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.4120.13510798886621078.d9c26d6d-0bcd-412a-9ac7-49a02514c594.9cf7ffc4-fd94-4953-b05c-24c49e50a2c0"
       ]
     },
     "releaseDate": "2016-01-22",
@@ -2313,6 +3223,9 @@
     "images": {
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.61951.14105414348544973.9bef7109-ae4f-4d2d-840a-a27f3acfe32a.af473551-09b3-4c01-bca5-8bc958c55946"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.3458.14105414348544973.9bef7109-ae4f-4d2d-840a-a27f3acfe32a.21f26093-535f-4d70-ab16-aa32791369ae"
       ]
     },
     "releaseDate": "2024-06-27",
@@ -2322,6 +3235,9 @@
     "productTitle": "Roboquest",
     "productId": "9P47S7NJGWZL",
     "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.47475.14593591481307987.1e2d6495-99f7-469f-afa9-16c05216b58f.a92545a2-db22-430c-aeeb-911d568f876f"
+      ],
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.4681.14593591481307987.72e4b0a6-f3d5-43bf-bcbf-7412b16dca48.7a62f094-7b6d-499f-b2b1-99ba3cf11e5b"
       ]
@@ -2332,14 +3248,22 @@
   {
     "productTitle": "Rollerdrome",
     "productId": "9PH4TQ1T0VRZ",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.12037.14238209188187584.16998e2b-4b4b-441e-b9f8-cd3265cedfd9.e40fa62a-4a40-4343-915d-ef8422069d8f"
+      ]
+    },
     "releaseDate": "2023-11-28",
     "storePage": "https://www.xbox.com/en-us/games/store/rollerdrome/9PH4TQ1T0VRZ"
   },
   {
     "productTitle": "Rolling Hills: Make Sushi, Make Friends",
     "productId": "9N491626R5XP",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.63128.13987004839193022.e60f93d4-33b6-450a-9e73-fd2c1a2733ce.98ab9867-d965-4c1b-94d4-742f78552cff"
+      ]
+    },
     "releaseDate": "2024-06-04",
     "storePage": "https://www.xbox.com/en-us/games/store/rolling-hills-make-sushi-make-friends/9N491626R5XP"
   },
@@ -2350,6 +3274,9 @@
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.27934.14538559069860396.166f30a2-711b-4aa1-bac7-d64318783f52.1156487a-3ded-4170-b904-27f2d0596154",
         "https://store-images.s-microsoft.com/image/apps.22130.14538559069860396.3cff3543-5cdd-4262-a28f-0b1a128c2ba4.0f7d02d7-549a-418e-9c80-830fa296a6f0"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.54193.14538559069860396.375a4717-d4e1-4c14-b278-f4787b52d21a.8ccfcf77-d0bc-4895-a1e6-f70806a4a045"
       ]
     },
     "releaseDate": "2017-10-31",
@@ -2361,6 +3288,9 @@
     "images": {
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.9287.14099938228729765.8d5a9e65-d0cf-4c5b-9131-eaba39ee8b29.3fa90856-57b8-4318-a8fa-103d6125d865"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.28428.14099938228729765.8d5a9e65-d0cf-4c5b-9131-eaba39ee8b29.90e33be6-7387-474f-8995-ebf190b13c23"
       ]
     },
     "releaseDate": "2024-06-15",
@@ -2369,7 +3299,11 @@
   {
     "productTitle": "Scorn",
     "productId": "9NM3TNRPQXLR",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.51381.13699799412731780.9f7b812e-456c-430e-8cec-380f1ca9e4a2.dd9f4725-f6e0-4fe4-9484-9d5f22682786"
+      ]
+    },
     "releaseDate": "2022-10-14",
     "storePage": "https://www.xbox.com/en-us/games/store/scorn/9NM3TNRPQXLR"
   },
@@ -2377,6 +3311,9 @@
     "productTitle": "Sea of Stars",
     "productId": "9NLLTTJZH40L",
     "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.15983.13704965593711325.c8ed22ec-c56d-4ecd-bbbf-e9f6934161c4.d2575e67-38eb-47b6-a87d-b9ea9b55cfe1"
+      ],
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.21103.13704965593711325.c8ed22ec-c56d-4ecd-bbbf-e9f6934161c4.7af47ffa-9b22-44e3-a65e-3fa2aaf99fe1"
       ]
@@ -2390,6 +3327,9 @@
     "images": {
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.56766.14554784103656548.1bd22c11-ff12-4b02-9b49-1355a5fc9de6.39a78b6a-b180-4000-92eb-149e78325cb5"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.29048.14554784103656548.1bd22c11-ff12-4b02-9b49-1355a5fc9de6.b467577d-e607-4610-bbb3-282354d02586"
       ]
     },
     "releaseDate": "2018-03-20",
@@ -2398,7 +3338,11 @@
   {
     "productTitle": "Senua’s Saga: Hellblade II",
     "productId": "9PMBB7NGHV95",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.57396.14301289549560004.6fe923e6-edd9-4677-9763-5ea1512de41b.a437513f-a4ef-400b-bfd7-bc73c8ecf1af"
+      ]
+    },
     "releaseDate": "2024-05-21",
     "storePage": "https://www.xbox.com/en-us/games/store/senua-s-saga-hellblade-ii/9PMBB7NGHV95"
   },
@@ -2406,6 +3350,9 @@
     "productTitle": "Serious Sam: Siberian Mayhem",
     "productId": "9P8X7236WM5P",
     "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.64730.14549842084824317.93984916-8beb-46f0-913b-55c1288d3f80.e5252212-da42-4ff5-b7b6-e97eb001d099"
+      ],
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.37390.14549842084824317.93984916-8beb-46f0-913b-55c1288d3f80.94893e3d-a6d1-489e-a6e1-04d42954a274"
       ]
@@ -2416,42 +3363,66 @@
   {
     "productTitle": "Shadow of the Tomb Raider Definitive Edition",
     "productId": "BNQQ3WVBNZCQ",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.41412.68112460555114547.f599eff6-c432-4510-af15-bfe339796812.6c84bc32-c1a0-4a5f-bfd3-08bee3ad6365"
+      ]
+    },
     "releaseDate": "2019-11-05",
     "storePage": "https://www.xbox.com/en-us/games/store/shadow-of-the-tomb-raider-definitive-edition/BNQQ3WVBNZCQ"
   },
   {
     "productTitle": "Shadowrun Returns PC",
     "productId": "9NF0RBL8SZL6",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.55573.14009816262451240.3e3808e2-1e94-4457-b77b-8450027fa25a.12a5baa8-dec7-4fe0-ba05-3b068d35b733"
+      ]
+    },
     "releaseDate": "2023-05-09",
     "storePage": "https://www.xbox.com/en-us/games/store/shadowrun-returns-pc/9NF0RBL8SZL6"
   },
   {
     "productTitle": "Shadowrun: Dragonfall - Director's Cut PC",
     "productId": "9NMCRMS6WN78",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.13822.13694560541988629.404a1929-0139-4389-915a-08adce5378f7.0bf83dd5-d37b-48e1-80ab-8bfd7e8e5b71"
+      ]
+    },
     "releaseDate": "2023-05-09",
     "storePage": "https://www.xbox.com/en-us/games/store/shadowrun-dragonfall-director-s-cut-pc/9NMCRMS6WN78"
   },
   {
     "productTitle": "Shadowrun: Hong Kong - Extended Edition PC",
     "productId": "9NK2DT3K7DTF",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.24618.13665130616065796.259fa9cc-1e13-4a07-940b-34efb8bf3b11.fcc6e0b8-20ae-487a-8dc3-b727186e68f3"
+      ]
+    },
     "releaseDate": "2023-05-09",
     "storePage": "https://www.xbox.com/en-us/games/store/shadowrun-hong-kong-extended-edition-pc/9NK2DT3K7DTF"
   },
   {
     "productTitle": "Slay The Spire",
     "productId": "9MZQR8317S3B",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.17795.14612220527269160.ea029917-6726-4b37-a510-8449863efad4.b02e1597-5ccb-4d20-84de-4c53b702bcbb"
+      ]
+    },
     "releaseDate": "2019-06-09",
     "storePage": "https://www.xbox.com/en-us/games/store/slay-the-spire/9MZQR8317S3B"
   },
   {
     "productTitle": "Slayers X: Terminal Aftermath: Vengance of the Slayer",
     "productId": "9P2Q0J0GW1FJ",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.50045.14553231729498821.e9cc3b13-c182-473c-8a24-a1a8ef58f202.543c1532-d2f3-4bed-a711-179e967cb4ee"
+      ]
+    },
     "releaseDate": "2023-06-01",
     "storePage": "https://www.xbox.com/en-us/games/store/slayers-x-terminal-aftermath-vengance-of-the-slayer/9P2Q0J0GW1FJ"
   },
@@ -2461,6 +3432,9 @@
     "images": {
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.11126.14232893733292770.c4910fc1-e043-4370-be7c-79114ae9c0cf.e483936f-2b1f-4c66-99bd-7316b5920794"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.65089.14232893733292770.c4910fc1-e043-4370-be7c-79114ae9c0cf.d736574b-a3ed-4925-a26b-c05b56e621a5"
       ]
     },
     "releaseDate": "2022-09-22",
@@ -2470,6 +3444,9 @@
     "productTitle": "Sniper Elite 5",
     "productId": "9PP8Q82H79LC",
     "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.28227.14329012547000484.584f0993-bf4d-4047-854d-bac80c1f8bf8.e7de3480-7471-4d8b-8745-bd02162add7b"
+      ],
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.58335.14329012547000484.7cb39222-264a-4c98-a0f1-007c4e95f1e1.e2e964df-d308-4d33-9ec7-8588bc433477"
       ]
@@ -2480,21 +3457,33 @@
   {
     "productTitle": "SnowRunner (Windows 10)",
     "productId": "9NP6WL1XQDBW",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.55989.13728552621924096.0f7a693b-b178-499b-ac11-0ea8578f8480.75503e8c-6c2f-46c4-b4ac-ca13ac1c9c0f"
+      ]
+    },
     "releaseDate": "2021-05-18",
     "storePage": "https://www.xbox.com/en-us/games/store/snowrunner-windows-10/9NP6WL1XQDBW"
   },
   {
     "productTitle": "Soccer Story",
     "productId": "9PJ1045MHZJ0",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.16567.14225521066737419.4d59d91e-770c-4a84-9fda-21fa57c19bbc.a99bcfc5-804f-4e1f-8e14-e27ad70afbc4"
+      ]
+    },
     "releaseDate": "2022-11-29",
     "storePage": "https://www.xbox.com/en-us/games/store/soccer-story/9PJ1045MHZJ0"
   },
   {
     "productTitle": "Solar Ash",
     "productId": "9NWLPG23T46V",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.46590.14447139401506273.b065025b-66d2-462a-858d-58dcc2dcb52b.2f7ec4f8-98c5-4a2c-b86d-f703c20832df"
+      ]
+    },
     "releaseDate": "2023-09-14",
     "storePage": "https://www.xbox.com/en-us/games/store/solar-ash/9NWLPG23T46V"
   },
@@ -2504,6 +3493,9 @@
     "images": {
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.2904.13901545943501690.6f65c9ca-e6b9-46e0-bfef-3d4b7f211abf.19b8f144-e64c-4830-bcec-cd4b3a2bc697"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.51382.13901545943501690.6f65c9ca-e6b9-46e0-bfef-3d4b7f211abf.087d7caa-7f19-43de-8558-dd8c3c559a27"
       ]
     },
     "releaseDate": "2022-11-15",
@@ -2513,6 +3505,9 @@
     "productTitle": "Space Engineers",
     "productId": "9NLV3X229LG1",
     "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.9842.13700230312728802.7afc83a6-4afb-4b07-84b4-f40e24213a93.d1ea4d67-7604-4fa5-a7b7-fd15b875814e"
+      ],
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.2918.13700230312728802.7afc83a6-4afb-4b07-84b4-f40e24213a93.b98f6584-05fa-49ef-8ff1-bee034061ed7"
       ]
@@ -2524,6 +3519,9 @@
     "productTitle": "SpiderHeck",
     "productId": "9N0TRF57SMQH",
     "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.49869.13918689285493336.0819ed4c-c94e-42c7-bd95-af9916211f52.ee71f670-1904-4520-89fe-e3946aa7f270"
+      ],
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.21835.13918689285493336.4bf1a4e7-a4e7-44dd-bf65-ae9d46e2f2e2.86640b7f-c3a6-4078-99e1-0ffdf59fd3d4"
       ]
@@ -2535,6 +3533,9 @@
     "productTitle": "Spirit of the North: Enhanced Edition",
     "productId": "9MVL42NJFVZ2",
     "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.61959.13861734152045967.56f8a6b3-4b54-46c1-82f0-aa8892021972.2e5fbfd7-9c26-48ea-88ba-9044d55916dd"
+      ],
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.1065.13861734152045967.56f8a6b3-4b54-46c1-82f0-aa8892021972.4c293164-b69e-4ad0-bc7f-7ceda0a57e64"
       ]
@@ -2551,6 +3552,9 @@
         "https://store-images.s-microsoft.com/image/apps.27271.13581632098060782.3a95693e-c954-45c8-b6a8-bf6251679426.42bc9146-067c-4cc8-be10-7bea0e993b48",
         "https://store-images.s-microsoft.com/image/apps.65385.13581632098060782.3a95693e-c954-45c8-b6a8-bf6251679426.1908cfbc-e441-47a8-9d57-b0208938692c",
         "https://store-images.s-microsoft.com/image/apps.51598.13581632098060782.9aea914f-fc5f-474f-a052-eac22427e863.b65a9c2f-8511-4520-bfb0-b8f3cf37de41"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.11046.13581632098060782.9aea914f-fc5f-474f-a052-eac22427e863.2b12f018-928c-4244-bada-52eff11c91a7"
       ]
     },
     "releaseDate": "2020-08-18",
@@ -2559,35 +3563,55 @@
   {
     "productTitle": "Spirittea",
     "productId": "9PPK59BXLD4N",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.13831.14327532839373067.e3a24cb8-3eb5-47ad-8d1b-19797522f44c.553a1818-0cbe-4e82-be6c-e3b5ba737a78"
+      ]
+    },
     "releaseDate": "2023-11-13",
     "storePage": "https://www.xbox.com/en-us/games/store/spirittea/9PPK59BXLD4N"
   },
   {
     "productTitle": "SpongeBob SquarePants: Battle for Bikini Bottom - Rehydrated",
     "productId": "9PKQX8PCHNH2",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.5700.14261811949763403.eb7f3a90-034e-4bdf-b293-c7e2b1bfadf4.e462348b-a280-4ec5-aed9-46d2b39d9057"
+      ]
+    },
     "releaseDate": "2024-02-06",
     "storePage": "https://www.xbox.com/en-us/games/store/spongebob-squarepants-battle-for-bikini-bottom-rehydrated/9PKQX8PCHNH2"
   },
   {
     "productTitle": "Starbound",
     "productId": "9MTSBWPWPQVQ",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.4073.13802186359317829.b9acdcf9-2e05-4328-812d-253b5ab5de76.57b01b45-19b8-4cb5-aac8-10dbabcd36f8"
+      ]
+    },
     "releaseDate": "2020-12-08",
     "storePage": "https://www.xbox.com/en-us/games/store/starbound/9MTSBWPWPQVQ"
   },
   {
     "productTitle": "Stardew Valley",
     "productId": "9MWR1NC6VQ6L",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.60729.13838479673159593.08fca22c-85fe-467d-8f34-cca2715208c0.851da9d8-785c-41b3-914a-3b0888956c97"
+      ]
+    },
     "releaseDate": "2021-12-02",
     "storePage": "https://www.xbox.com/en-us/games/store/stardew-valley/9MWR1NC6VQ6L"
   },
   {
     "productTitle": "Starfield",
     "productId": "9NCJSXWZTP88",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.1647.13567343664224659.1eb6fdf9-8a0b-4344-a135-ab17dfa3c609.39331391-9de2-48f8-8643-8eb1bd964383"
+      ]
+    },
     "releaseDate": "2023-09-06",
     "storePage": "https://www.xbox.com/en-us/games/store/starfield/9NCJSXWZTP88"
   },
@@ -2597,6 +3621,9 @@
     "images": {
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.43642.14425140369408817.14846606-f5bc-4fb1-b355-26ef6a25e847.281240fb-379d-4800-9b0a-b36b5935daa7"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.62160.14425140369408817.14846606-f5bc-4fb1-b355-26ef6a25e847.e14fc031-2974-4b66-9f84-16cf8d0807e9"
       ]
     },
     "releaseDate": "2018-05-22",
@@ -2606,6 +3633,9 @@
     "productTitle": "SteamWorld Build",
     "productId": "9MVRDC1BW8TQ",
     "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.45290.13858202694912107.53904b7d-bf97-47b6-a406-1a093f06954b.b574bb06-00d6-4ef7-89be-31e3a1a3cf48"
+      ],
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.63454.13858202694912107.53904b7d-bf97-47b6-a406-1a093f06954b.0b3dc3f3-712f-4026-b33e-df76038b7d04"
       ]
@@ -2622,6 +3652,9 @@
         "https://store-images.s-microsoft.com/image/apps.61224.14599425922253294.95904bbc-623a-4bdd-83de-0dcc69babd49.39fb7745-dc89-409e-8b20-4bec528fd4ac",
         "https://store-images.s-microsoft.com/image/apps.54682.14599425922253294.95904bbc-623a-4bdd-83de-0dcc69babd49.ac2b0e7b-6e4b-468e-96de-a04143a4ba6b",
         "https://store-images.s-microsoft.com/image/apps.8433.14599425922253294.95904bbc-623a-4bdd-83de-0dcc69babd49.d0c1263d-37b9-4a0c-9809-afe66d536ba6"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.58215.14599425922253294.95904bbc-623a-4bdd-83de-0dcc69babd49.71f222da-6de4-4d02-8d6a-231a05e6b671"
       ]
     },
     "releaseDate": "2018-11-21",
@@ -2630,7 +3663,11 @@
   {
     "productTitle": "Stellaris",
     "productId": "9NXQPGMR917R",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.6834.14495165831263442.20e8e941-d5c0-4577-b5bd-c4b8a2c58715.dd0c47fa-1927-4735-913c-59412a28d084"
+      ]
+    },
     "releaseDate": "2019-10-09",
     "storePage": "https://www.xbox.com/en-us/games/store/stellaris/9NXQPGMR917R"
   },
@@ -2640,6 +3677,9 @@
     "images": {
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.9370.14049385901429569.1b471d6f-67fc-4289-a4a1-f821ac6594e6.4a82d733-4ab1-4800-a7a9-726158deca80"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.32401.14049385901429569.1b471d6f-67fc-4289-a4a1-f821ac6594e6.2e505891-64ef-4c03-b981-ec7127756146"
       ]
     },
     "releaseDate": "2024-06-18",
@@ -2651,6 +3691,9 @@
     "images": {
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.36649.13736301732248840.1e2d854a-e5e9-4c32-b8a1-2630937d19b9.f8d37f47-d33a-4408-93f2-1aa6857e771e"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.19746.13736301732248840.1e2d854a-e5e9-4c32-b8a1-2630937d19b9.70b8421f-ec86-4d13-9b7a-f61055a25868"
       ]
     },
     "releaseDate": "2018-11-16",
@@ -2662,6 +3705,9 @@
     "images": {
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.18265.14315077775214047.0aff2cf3-0ff7-4629-8ad6-722a2d8dac54.8bbbd953-eac8-44fb-ac0f-b3abffb2a7c4"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.59988.14315077775214047.1727bea1-8d3c-4f02-ba4e-ca1614c98632.199d8c4c-652f-421f-a68c-f6c285885d03"
       ]
     },
     "releaseDate": "2017-11-07",
@@ -2673,6 +3719,9 @@
     "images": {
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.3858.14383048766618347.734b0c9a-e030-4976-bf99-73f141752531.08f6c65c-abce-4c54-bd0e-ef73b94e8b17"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.24763.14383048766618347.734b0c9a-e030-4976-bf99-73f141752531.347d5269-0e81-483c-beed-f54d82584012"
       ]
     },
     "releaseDate": "2020-07-16",
@@ -2682,6 +3731,9 @@
     "productTitle": "Superliminal",
     "productId": "9NVR4ZQKNBSB",
     "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.47663.14393569011623061.24d2b16b-20df-48f4-b265-623d2c0e948a.37ffa286-743f-4c55-9e7d-7c93def066a0"
+      ],
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.13828.14393569011623061.b29fd711-0008-450d-88a9-21d006202686.f1d07399-e50d-4d80-9255-20edce3b1277"
       ]
@@ -2692,21 +3744,33 @@
   {
     "productTitle": "Tales of Arise (Windows)",
     "productId": "9PJ1T02FGC3B",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.22334.14220579343208919.30d737b4-d1cd-4f53-ae6f-df6cc7a21450.05363308-4a0b-47b5-916c-cf50ca08e960"
+      ]
+    },
     "releaseDate": "2024-02-20",
     "storePage": "https://www.xbox.com/en-us/games/store/tales-of-arise-windows/9PJ1T02FGC3B"
   },
   {
     "productTitle": "Tchia",
     "productId": "9NK4WRQX5ZC5",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.29862.13667888518526652.393ec2ec-cfcf-4c3f-9526-8f76e651c1e3.56ee0e8e-fa28-4ffd-849c-6fa5c297280e"
+      ]
+    },
     "releaseDate": "2024-07-11",
     "storePage": "https://www.xbox.com/en-us/games/store/tchia/9NK4WRQX5ZC5"
   },
   {
     "productTitle": "Techtonica (Game Preview)",
     "productId": "9NR1RVDK9T78",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.30698.13758483650312929.6e0b010e-d61b-4a3f-9188-5feb34880778.0dc3ac3d-3b2b-4ae5-a642-358d41d6f6ea"
+      ]
+    },
     "releaseDate": "2023-07-18",
     "storePage": "https://www.xbox.com/en-us/games/store/techtonica-game-preview/9NR1RVDK9T78"
   },
@@ -2716,6 +3780,9 @@
     "images": {
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.52487.14375592271313618.8101bdfc-97e9-473f-8ca0-07fc83b1846b.b47a3bfe-dbb6-497e-ae52-194d08f3ca14"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.59000.14375592271313618.c7999e35-c8d7-49d4-b3fa-e5e1009423d7.a816f588-b6ba-46c0-8f39-54ca543455cf"
       ]
     },
     "releaseDate": "2022-06-16",
@@ -2724,7 +3791,11 @@
   {
     "productTitle": "Tell Me Why: Chapters 1-3",
     "productId": "9NF83PRZK6K3",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.56500.13599353568798630.567fc0f9-a81e-456c-a9ee-55bb0bb153b5.a110b76d-abae-4dd7-a578-a796ea66ff53"
+      ]
+    },
     "releaseDate": "2020-08-27",
     "storePage": "https://www.xbox.com/en-us/games/store/tell-me-why-chapters-1-3/9NF83PRZK6K3"
   },
@@ -2732,6 +3803,9 @@
     "productTitle": "Terra Invicta (Game Preview)",
     "productId": "9PB0GLGXQZ83",
     "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.39082.14128659347127760.611a70ab-c4a0-44f5-bbe1-82cf10127bba.bbc5f4cf-8f3c-497a-aee5-394468c46fe4"
+      ],
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.4276.14128659347127760.611a70ab-c4a0-44f5-bbe1-82cf10127bba.fcb80a03-efe5-44ff-a317-4e533e7717f0"
       ]
@@ -2742,7 +3816,11 @@
   {
     "productTitle": "The Bard's Tale ARPG : Remastered and Resnarkled",
     "productId": "9PN3VDFTB5HZ",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.44758.14351919773829236.17768c0e-ff0d-4fe7-86a5-a0cdd0bfe3a6.697c7bb1-b26f-4759-a90b-d2dbac5e5b2e"
+      ]
+    },
     "releaseDate": "2020-06-18",
     "storePage": "https://www.xbox.com/en-us/games/store/the-bard-s-tale-arpg-remastered-and-resnarkled/9PN3VDFTB5HZ"
   },
@@ -2750,6 +3828,9 @@
     "productTitle": "The Bard's Tale IV: Director's Cut",
     "productId": "C2B4T86TXLRS",
     "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.34604.65351109767529701.defb4d0d-acab-4fd9-8208-7283068f991e.34d0241a-bbac-43d8-8e46-541283f89936"
+      ],
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.36316.65351109767529701.defb4d0d-acab-4fd9-8208-7283068f991e.6b97d62c-22a0-40e7-8e31-6d156a3fd775"
       ]
@@ -2761,6 +3842,9 @@
     "productTitle": "The Bard's Tale Trilogy",
     "productId": "9MVN4ND41DD3",
     "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.58193.13855942306543540.f07392fd-5f64-460d-82f5-27790455d1e0.be4aa1b8-dc12-4784-9111-96d6c245d360"
+      ],
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.55499.13855942306543540.f07392fd-5f64-460d-82f5-27790455d1e0.212ecde0-cef2-4aa2-8f20-e0b42caaaa40"
       ]
@@ -2774,6 +3858,9 @@
     "images": {
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.4418.14465388396342523.28ec13a2-04a9-4247-986a-5d1303ace16b.409cfd37-7ffa-4deb-81e1-f7e175cd192d"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.1749.14465388396342523.f3be3027-1fd8-4a1e-9cb7-5194d8be4620.121676c8-fc98-4325-a9e3-c7212008d2c1"
       ]
     },
     "releaseDate": "2021-08-31",
@@ -2783,6 +3870,9 @@
     "productTitle": "The Callisto Protocol™ for Xbox One",
     "productId": "9P33X3C755SK",
     "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.23409.13899734166918467.3f3aa4b8-07e8-448a-a5a2-f2a9dbcf9c7c.76deeaf0-0bdc-4ef6-abb2-950a71addfd3"
+      ],
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.25791.13899734166918467.3f3aa4b8-07e8-448a-a5a2-f2a9dbcf9c7c.d6195f2c-d1c6-43b1-b6c4-972e36debfb6"
       ]
@@ -2796,6 +3886,9 @@
     "images": {
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.2707.13517632720763203.9431a067-e43c-4a7c-8792-a79a71e66ccb.9843519e-7e80-48f9-80f3-a6347ef8c91c"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.37949.13517632720763203.9431a067-e43c-4a7c-8792-a79a71e66ccb.932cb718-137c-4610-ac38-5b5f62f9f9e1"
       ]
     },
     "releaseDate": "2024-07-09",
@@ -2804,42 +3897,66 @@
   {
     "productTitle": "The Elder Scrolls Adventures: Redguard",
     "productId": "9PFXKRLVWJ0B",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.51057.14196134042192885.dae518aa-30ee-48cd-90b1-dd41fe82de5d.057fd442-7717-46e6-899b-50f4fd4afad1"
+      ]
+    },
     "releaseDate": "2022-08-18",
     "storePage": "https://www.xbox.com/en-us/games/store/the-elder-scrolls-adventures-redguard/9PFXKRLVWJ0B"
   },
   {
     "productTitle": "The Elder Scrolls III: Morrowind Game of the Year Edition (PC)",
     "productId": "9PP7XSG5LDH1",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.9533.14329181907474580.fffa1d70-f0e3-45ee-b468-096880ec659e.4c8c178b-4fa3-4a88-9705-f8f16e28e8b6"
+      ]
+    },
     "releaseDate": "2021-03-12",
     "storePage": "https://www.xbox.com/en-us/games/store/the-elder-scrolls-iii-morrowind-game-of-the-year-edition-pc/9PP7XSG5LDH1"
   },
   {
     "productTitle": "The Elder Scrolls IV: Oblivion Game of the Year Edition (PC)",
     "productId": "9P2J5D12GJL5",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.23347.14561494258435094.d6315fcc-92fc-49c5-ae5f-bcfe4b00d359.d5143502-3ae6-42d5-afe1-36ded10aec4c"
+      ]
+    },
     "releaseDate": "2021-03-12",
     "storePage": "https://www.xbox.com/en-us/games/store/the-elder-scrolls-iv-oblivion-game-of-the-year-edition-pc/9P2J5D12GJL5"
   },
   {
     "productTitle": "The Elder Scrolls V: Skyrim Special Edition (PC)",
     "productId": "9P03JGQ4S1GC",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.4794.14468615562328340.fdd2a6d3-ed01-4e8e-805a-630a8e7dcd61.86ec042a-e701-477f-a9a3-3b041045512b"
+      ]
+    },
     "releaseDate": "2021-03-11",
     "storePage": "https://www.xbox.com/en-us/games/store/the-elder-scrolls-v-skyrim-special-edition-pc/9P03JGQ4S1GC"
   },
   {
     "productTitle": "The Evil Within (PC)",
     "productId": "9MX8R81JW1B5",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.49736.13894410513470682.4f7c3955-a1cd-4972-bbd3-e3440bb7249f.26cbdda6-3f47-4078-ad2f-e7927c07ffbd"
+      ]
+    },
     "releaseDate": "2021-03-12",
     "storePage": "https://www.xbox.com/en-us/games/store/the-evil-within-pc/9MX8R81JW1B5"
   },
   {
     "productTitle": "The Evil Within® 2 (PC)",
     "productId": "9NT0NT8JQMQN",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.54557.14357901597980003.4edfb4b0-c97f-4a84-b9e9-4c5d04198929.7b2c3a5f-824f-4be2-8837-7744051dc162"
+      ]
+    },
     "releaseDate": "2021-06-13",
     "storePage": "https://www.xbox.com/en-us/games/store/the-evil-within-2-pc/9NT0NT8JQMQN"
   },
@@ -2847,6 +3964,9 @@
     "productTitle": "The Gunk",
     "productId": "9P008L2LS87F",
     "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.1452.14466083566107896.f1b98327-0240-4097-b759-cc5bd89ee66e.5da87010-64a5-4dfb-9396-5e88d1630886"
+      ],
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.38178.14466083566107896.f1b98327-0240-4097-b759-cc5bd89ee66e.c08f0078-5fb3-4eaf-b154-c6c8c9a3ab6f"
       ]
@@ -2857,7 +3977,11 @@
   {
     "productTitle": "The Lamplighters League - PC Edition",
     "productId": "9PG4M7W805RB",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.8051.14192406611771095.413a2018-3c6b-4e07-a33c-5351dde0be37.26f0ca9d-9b82-4ee5-9968-32cfc9fee4bb"
+      ]
+    },
     "releaseDate": "2023-10-03",
     "storePage": "https://www.xbox.com/en-us/games/store/the-lamplighters-league-pc-edition/9PG4M7W805RB"
   },
@@ -2865,6 +3989,9 @@
     "productTitle": "The Last Case of Benedict Fox: Definitive Edition",
     "productId": "9PMNGB89CLJ2",
     "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.13802.14290343103192837.c78c2314-95c1-46e6-900b-b8b53f190827.3b4beef5-3fa4-44a0-9986-8047b7947fe4"
+      ],
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.26733.14290343103192837.c78c2314-95c1-46e6-900b-b8b53f190827.3b392fd5-9c80-421d-aff3-28addbfc4fae"
       ]
@@ -2880,6 +4007,9 @@
         "https://store-images.s-microsoft.com/image/apps.29393.13841339086540201.963451fc-271b-4371-9180-313f491b5562.2696ebda-4e41-4a47-8cfc-f2ab1e82476e",
         "https://store-images.s-microsoft.com/image/apps.25689.13841339086540201.963451fc-271b-4371-9180-313f491b5562.e6e5cfee-b6e5-443a-8c29-7c91c9404e8d",
         "https://store-images.s-microsoft.com/image/apps.17407.13841339086540201.963451fc-271b-4371-9180-313f491b5562.d93b411a-1220-4014-b2aa-2942efec3eea"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.41558.13841339086540201.963451fc-271b-4371-9180-313f491b5562.f4b7ad82-6697-4e2c-992c-87f722850f17"
       ]
     },
     "releaseDate": "2019-10-25",
@@ -2889,6 +4019,9 @@
     "productTitle": "The Rewinder",
     "productId": "9PJ2HR6WGRND",
     "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.25972.14220055173742695.54d9b731-9a91-40c2-8bc9-07801594b8df.dea1da2f-5518-4339-a902-7303b4ac87f2"
+      ],
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.5779.14220055173742695.54d9b731-9a91-40c2-8bc9-07801594b8df.dc5a023c-94a6-47a9-bb4f-6b984b1a82fd"
       ]
@@ -2904,6 +4037,9 @@
         "https://store-images.s-microsoft.com/image/apps.21157.13510798887515946.26524538-cf92-428e-87ed-0f3fd2d67fc6.757cfb00-4f34-4c0e-8b1b-c6095389ea23",
         "https://store-images.s-microsoft.com/image/apps.16092.13510798887515946.49e886bf-61bb-414c-8ee3-370d4e1f3220.47ff32ad-b531-4c88-8d1d-a3be1440270d",
         "https://store-images.s-microsoft.com/image/apps.3658.13510798887515946.177c6d77-ffd5-4e77-9cf8-a8a727c41061.9f62a0d2-8555-4130-b2ab-7063fd3f69b1"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.64194.13510798887515946.1668a199-23eb-481d-a173-7ad712869c6c.2090f7e7-5832-43be-873b-1c14beb35ebc"
       ]
     },
     "releaseDate": "2017-02-23",
@@ -2917,6 +4053,9 @@
         "https://store-images.s-microsoft.com/image/apps.19277.13510798887515952.489b3e77-0968-4440-a2db-bd3d035fcf01.0221d9d1-18ec-4c50-883a-f1f315ae6671",
         "https://store-images.s-microsoft.com/image/apps.9551.13510798887515952.8eb5b712-9b6b-4525-b71f-2b90091b04c6.f4e39eae-75d7-45ed-a2dd-0b3ad63001e2",
         "https://store-images.s-microsoft.com/image/apps.52190.13510798887515952.1d5a71a3-f079-4d0c-9ff9-addad48658fd.1b47df41-4556-40bb-9475-483318831d3d"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.34948.13510798887515952.84f00534-c6a8-4035-b383-c011f47cdfcd.d1b2f98a-b899-4525-9337-c50836933345"
       ]
     },
     "releaseDate": "2017-03-08",
@@ -2929,6 +4068,9 @@
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.18846.13715445583677913.34eb4509-87e7-4b84-95b4-f140459f5a92.0ac0fe8a-1a46-4b45-b099-cb67f97f33e1",
         "https://store-images.s-microsoft.com/image/apps.10330.13715445583677913.9255e94f-f6ef-43ee-96cc-014db1f03269.4ccf1cfa-4330-4333-b808-6d71c79f5efe"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.2945.13715445583677913.9255e94f-f6ef-43ee-96cc-014db1f03269.b12059bc-0310-44ec-81e8-7aa477f182c0"
       ]
     },
     "releaseDate": "2018-08-14",
@@ -2937,7 +4079,11 @@
   {
     "productTitle": "theHunter: Call of the Wild™ - Windows 10",
     "productId": "9NQV7C0G1040",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.62485.13762125458177399.e3dc12bf-b35c-48a4-ae96-9cd3eda2895e.425b2c07-41dc-474e-8239-2d02c451d1fd"
+      ]
+    },
     "releaseDate": "2021-11-30",
     "storePage": "https://www.xbox.com/en-us/games/store/thehunter-call-of-the-wild-windows-10/9NQV7C0G1040"
   },
@@ -2945,6 +4091,9 @@
     "productTitle": "Thirsty Suitors",
     "productId": "9PLS01JRJCWB",
     "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.61304.14307611151014007.4b05f350-c598-4742-9e65-e2a06d52c9d0.7587e44f-d555-4f1b-abb0-1c4697aba684"
+      ],
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.46663.14307611151014007.4b05f350-c598-4742-9e65-e2a06d52c9d0.aab543ea-db24-4e2d-93f6-d3ac21719096"
       ]
@@ -2956,6 +4105,9 @@
     "productTitle": "This War of Mine: Final Cut",
     "productId": "9MT6TG9CXR2H",
     "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.37303.13818178861591472.06d4cfd1-e581-4b7f-8268-7ed2cfca3f35.cd9123c5-f36e-4501-bf53-082666b3fa48"
+      ],
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.48284.13818178861591472.06d4cfd1-e581-4b7f-8268-7ed2cfca3f35.c16f3c09-e1b5-4bb2-924e-4f06235ae319"
       ]
@@ -2966,35 +4118,55 @@
   {
     "productTitle": "Those Who Remain.",
     "productId": "9NFC3G481KKQ",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.54737.13601994020140855.ad75bf96-90c8-4901-8634-e92b50e70e62.1671c3de-6056-4fe1-90cf-658f56096bf5"
+      ]
+    },
     "releaseDate": "2024-01-16",
     "storePage": "https://www.xbox.com/en-us/games/store/those-who-remain/9NFC3G481KKQ"
   },
   {
     "productTitle": "Tin Hearts",
     "productId": "9MZSWZD5TDZP",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.33152.13863817766354324.d0b7376f-2625-4548-96cd-a79d6e667bd2.686d3362-0881-4f9a-b324-e93919de575e"
+      ]
+    },
     "releaseDate": "2023-05-16",
     "storePage": "https://www.xbox.com/en-us/games/store/tin-hearts/9MZSWZD5TDZP"
   },
   {
     "productTitle": "Tomb Raider: Definitive Edition",
     "productId": "BQXTS0SX4W0N",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.62760.68847167288522183.9fdea778-258f-40d6-9f9e-fab92915bc6d.8b72a483-cc36-481c-8955-b036d99c243e"
+      ]
+    },
     "releaseDate": "2014-01-28",
     "storePage": "https://www.xbox.com/en-us/games/store/tomb-raider-definitive-edition/BQXTS0SX4W0N"
   },
   {
     "productTitle": "Torment: Tides of Numenera",
     "productId": "9NC0071DJ6XC",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.47967.13573916410389292.c37074d3-3b34-4830-9506-f6a100b0dfd2.53aff9eb-1489-488c-a2d3-f95e79ea2851"
+      ]
+    },
     "releaseDate": "2019-06-27",
     "storePage": "https://www.xbox.com/en-us/games/store/torment-tides-of-numenera/9NC0071DJ6XC"
   },
   {
     "productTitle": "Totally Accurate Battle Simulator",
     "productId": "9PC4RWP34M2D",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.25383.14176345306313891.79ca8837-5397-4838-85b6-4a8a9720856c.db23320a-e9f6-4ed3-87e5-db4a5e82a6fc"
+      ]
+    },
     "releaseDate": "2019-12-20",
     "storePage": "https://www.xbox.com/en-us/games/store/totally-accurate-battle-simulator/9PC4RWP34M2D"
   },
@@ -3004,6 +4176,9 @@
     "images": {
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.2372.14481391283536320.2e278a9d-b63d-454a-a60e-ac81b25b445c.e798630b-ee6c-4d88-b047-007f3499d117"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.57565.14481391283536320.2e278a9d-b63d-454a-a60e-ac81b25b445c.392440ba-2841-42da-9eae-3624c032300b"
       ]
     },
     "releaseDate": "2020-04-01",
@@ -3017,6 +4192,9 @@
         "https://store-images.s-microsoft.com/image/apps.17055.14364758607471359.6218d836-661b-4c35-bf90-504a0c7f3e9d.2a8bb3cb-195b-4d99-ae3b-34c98816e12c",
         "https://store-images.s-microsoft.com/image/apps.11782.14364758607471359.6218d836-661b-4c35-bf90-504a0c7f3e9d.d52009f8-d84d-4d68-92cc-d55bba2db6e9",
         "https://store-images.s-microsoft.com/image/apps.25596.14364758607471359.6218d836-661b-4c35-bf90-504a0c7f3e9d.c312ad3d-6957-4d8e-85b1-7a7d5e568f86"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.36330.14364758607471359.5497a0ed-4b70-4e20-ac65-ae6509b7e4e7.2a0a6dcc-1da1-4b74-94b5-04d22d21d0ab"
       ]
     },
     "releaseDate": "2019-09-18",
@@ -3028,6 +4206,9 @@
     "images": {
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.39322.13702044937897358.8701ab78-da18-4c36-8c1e-3d4e6dfd60c9.a0be6178-25eb-43e3-9a52-170445da58fc"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.5223.13702044937897358.8701ab78-da18-4c36-8c1e-3d4e6dfd60c9.31c8ed6f-acf1-4cf2-9863-640fe319abc3"
       ]
     },
     "releaseDate": "2022-03-16",
@@ -3037,6 +4218,9 @@
     "productTitle": "Turbo Golf Racing",
     "productId": "9N6781PMXC02",
     "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.11806.14023533452078841.712f8f21-7efa-4130-9c82-a55506b403bb.21ffd0a4-fbd3-4ffb-bebb-b92e0f183d13"
+      ],
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.13479.14023533452078841.712f8f21-7efa-4130-9c82-a55506b403bb.5ce8027d-6c76-440e-b319-adaa3c696062"
       ]
@@ -3050,6 +4234,9 @@
     "images": {
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.61861.13607962435826086.cd471fe6-3dd8-4df9-a01c-9b94312c7c3b.a2e6940c-8bb9-4485-a593-392e842e9469"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.35008.13607962435826086.cd471fe6-3dd8-4df9-a01c-9b94312c7c3b.de4afa21-6d5d-4f8d-a486-9dbd8ce67615"
       ]
     },
     "releaseDate": "2024-01-18",
@@ -3058,7 +4245,11 @@
   {
     "productTitle": "Unpacking",
     "productId": "9NH5HN11FG4M",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.1461.13636460453065260.a236863a-02a2-47fd-bfee-b7b301312a6e.adcf4c68-73b9-45a5-9304-0c3d43be83f8"
+      ]
+    },
     "releaseDate": "2021-11-02",
     "storePage": "https://www.xbox.com/en-us/games/store/unpacking/9NH5HN11FG4M"
   },
@@ -3066,6 +4257,9 @@
     "productTitle": "Valheim (Game Preview)",
     "productId": "9NCBL78CG9N7",
     "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.17630.13571084888216164.36662f68-6598-4726-a32e-049a0335e9dc.5b30b27f-c31e-48f4-b097-26de1b97bd84"
+      ],
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.45431.13571084888216164.36662f68-6598-4726-a32e-049a0335e9dc.423ac20f-fb8c-4977-a41e-8f541a29692a"
       ]
@@ -3079,6 +4273,9 @@
     "images": {
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.57401.14160661575041057.2c4811ab-1f9a-403e-9d3b-601b0ce1905e.1b317d02-7e77-4468-a6e9-29a5ab534b03"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.60062.14160661575041057.92e444db-ebb1-4665-8e17-3322a7fae71d.e4e983fc-203e-4894-87ac-a7cd35993538"
       ]
     },
     "releaseDate": "2022-10-20",
@@ -3087,7 +4284,11 @@
   {
     "productTitle": "Warhammer 40,000: Boltgun - Windows",
     "productId": "9N41VHRQ5X8N",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.32152.13723933157550422.dd3f6d8d-3fe0-4721-8bd9-d3c3d678a239.c6addb40-8693-4e0c-b525-15767ee5c2db"
+      ]
+    },
     "releaseDate": "2024-03-05",
     "storePage": "https://www.xbox.com/en-us/games/store/warhammer-40-000-boltgun-windows/9N41VHRQ5X8N"
   },
@@ -3097,6 +4298,9 @@
     "images": {
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.48074.14421726920549205.4ed1a8ed-1549-4013-8769-b57c45ca99b5.daa0830c-a776-4941-80a0-dae56f440920"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.63850.14421726920549205.4ed1a8ed-1549-4013-8769-b57c45ca99b5.3868786e-671a-4db9-9cb4-3e62b46ba619"
       ]
     },
     "releaseDate": "2023-10-04",
@@ -3110,6 +4314,9 @@
         "https://store-images.s-microsoft.com/image/apps.41667.14440655325358467.1eec354a-75c3-4191-9e5f-a63d24496e1a.49692cc8-5cdb-4588-825f-d6ca9096e5a0",
         "https://store-images.s-microsoft.com/image/apps.62118.14440655325358467.1eec354a-75c3-4191-9e5f-a63d24496e1a.50d2d518-455a-4b1e-ab42-2c96abc96f13",
         "https://store-images.s-microsoft.com/image/apps.61095.14440655325358467.1eec354a-75c3-4191-9e5f-a63d24496e1a.46b5dc82-a216-42db-b5f0-46f1978fef4f"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.57743.14440655325358467.0a9794a6-3645-4db4-a85e-c611d041111a.80dc7cd7-d40f-455f-9676-f0cf0946ae88"
       ]
     },
     "releaseDate": "2023-10-31",
@@ -3118,21 +4325,33 @@
   {
     "productTitle": "Wasteland 2: Director's Cut",
     "productId": "C521HDXRTS7F",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.44620.67543493413768448.5fe0b603-cfee-4844-b8b0-07e502111713.94dd19f4-8574-474f-a329-6de47a1d8397"
+      ]
+    },
     "releaseDate": "2015-10-13",
     "storePage": "https://www.xbox.com/en-us/games/store/wasteland-2-director-s-cut/C521HDXRTS7F"
   },
   {
     "productTitle": "Wasteland 3 (PC)",
     "productId": "9NLT5XR52ZS7",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.31983.13700876625277388.8e8fb436-9b3b-4256-a65f-36b842163d85.1a7e6764-c416-4bdc-a625-8a7f69ad5bfe"
+      ]
+    },
     "releaseDate": "2020-08-28",
     "storePage": "https://www.xbox.com/en-us/games/store/wasteland-3-pc/9NLT5XR52ZS7"
   },
   {
     "productTitle": "Wasteland Remastered",
     "productId": "9NGH1FK0RJGL",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.33255.13650100416089145.e9c63102-735a-40a7-b414-10693b469ff1.9d33c3ba-38af-4676-93e6-282f0280d212"
+      ]
+    },
     "releaseDate": "2020-02-25",
     "storePage": "https://www.xbox.com/en-us/games/store/wasteland-remastered/9NGH1FK0RJGL"
   },
@@ -3142,6 +4361,9 @@
     "images": {
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.43826.13510798887680222.3c51bb2a-c94b-499f-8ece-ee87047564ad.2b815bbb-ab5e-4c29-83df-e4f35f6ee645"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.40710.13510798887680222.3c51bb2a-c94b-499f-8ece-ee87047564ad.562d100c-0347-412e-a979-83c3b8e669e0"
       ]
     },
     "releaseDate": "2018-08-10",
@@ -3150,7 +4372,11 @@
   {
     "productTitle": "While the Iron's Hot",
     "productId": "9P2F4C1XFZJ4",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.2560.14559361984338231.8719ddd9-2cce-4bb0-b10c-9b499888b765.eac352fa-c847-4a0f-824c-a9406c64e81d"
+      ]
+    },
     "releaseDate": "2023-11-09",
     "storePage": "https://www.xbox.com/en-us/games/store/while-the-iron-s-hot/9P2F4C1XFZJ4"
   },
@@ -3158,6 +4384,9 @@
     "productTitle": "Wo Long: Fallen Dynasty",
     "productId": "9N9X9PC8V9CP",
     "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.27920.13524128328401524.c8089ad9-5e75-4246-83e8-2dac88f04afd.faaf652e-ff35-46d8-a7d2-cb548ecb56f4"
+      ],
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.46001.13524128328401524.c8089ad9-5e75-4246-83e8-2dac88f04afd.9a8d6174-1791-45bf-b366-9360daf09b20"
       ]
@@ -3168,7 +4397,11 @@
   {
     "productTitle": "Wolfenstein 3D",
     "productId": "9P7Z1D3N8KR7",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.35762.14103068553133050.2db8938c-844e-4b8f-bb62-aca2ce562342.96a79cc2-22cb-4478-9190-22ade0ee49bb"
+      ]
+    },
     "releaseDate": "2022-08-18",
     "storePage": "https://www.xbox.com/en-us/games/store/wolfenstein-3d/9P7Z1D3N8KR7"
   },
@@ -3176,6 +4409,9 @@
     "productTitle": "Wolfenstein II: Standard Edition",
     "productId": "9NDBKK9G0FHL",
     "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.2334.13547327457112687.7b875df9-17c8-48e1-985b-69b5b77ac928.b07958ce-fdc6-4387-9be1-6072dff8e439"
+      ],
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.58313.13547327457112687.7b875df9-17c8-48e1-985b-69b5b77ac928.6f02e5e5-e6ab-4794-b72a-189d236470bf"
       ]
@@ -3186,28 +4422,44 @@
   {
     "productTitle": "Wolfenstein: The New Order (PC)",
     "productId": "9P75CBJ9WT9W",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.5170.14606505701293602.99503a0d-36fd-4980-925b-c678c931b40a.3ded090e-80be-4f5c-be93-9707bbf6ab81"
+      ]
+    },
     "releaseDate": "2021-03-12",
     "storePage": "https://www.xbox.com/en-us/games/store/wolfenstein-the-new-order-pc/9P75CBJ9WT9W"
   },
   {
     "productTitle": "Wolfenstein: The Old Blood (PC)",
     "productId": "9PBB4QHMSDKR",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.20849.14122383886801714.65a75288-1d4b-4744-b3e8-5eb9e5357c0a.11ba4652-6dae-421d-aaa6-b7289c8822f5"
+      ]
+    },
     "releaseDate": "2021-03-12",
     "storePage": "https://www.xbox.com/en-us/games/store/wolfenstein-the-old-blood-pc/9PBB4QHMSDKR"
   },
   {
     "productTitle": "Wolfenstein: Youngblood (PC)",
     "productId": "9PHFTS44F99K",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.22779.14232405978199420.10006ada-af2f-43d4-ab04-4e26289ccf76.4e74bdfd-2eb7-4e57-aa1d-88718d1d7911"
+      ]
+    },
     "releaseDate": "2020-02-06",
     "storePage": "https://www.xbox.com/en-us/games/store/wolfenstein-youngblood-pc/9PHFTS44F99K"
   },
   {
     "productTitle": "World War Z: Aftermath",
     "productId": "9PBF1FL7K192",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.17991.14124816078460443.a6dec9dc-b4f7-4744-94f3-470e02e1dd63.3936d7d1-4df6-4563-ac93-3d64992d8218"
+      ]
+    },
     "releaseDate": "2021-09-21",
     "storePage": "https://www.xbox.com/en-us/games/store/world-war-z-aftermath/9PBF1FL7K192"
   },
@@ -3215,6 +4467,9 @@
     "productTitle": "Wreckfest",
     "productId": "9NG06CSMM97P",
     "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.64141.13589258961846020.5e95ec4c-44cb-4b39-8217-927890b74c94.add30f1a-d761-4638-87e4-16f77f0036a0"
+      ],
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.11207.13589258961846020.5e95ec4c-44cb-4b39-8217-927890b74c94.85c0251e-bca8-4e59-a1bc-b858f5deafef"
       ]
@@ -3225,28 +4480,44 @@
   {
     "productTitle": "Yakuza 0 for Windows 10",
     "productId": "9PD0BJRBLRJM",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.60688.14163943905070744.0448a0ad-df57-4343-bd68-4383f0e00abd.ca680055-5822-4f3a-9c57-6c85acc67c4c"
+      ]
+    },
     "releaseDate": "2020-02-26",
     "storePage": "https://www.xbox.com/en-us/games/store/yakuza-0-for-windows-10/9PD0BJRBLRJM"
   },
   {
     "productTitle": "Yakuza 3 Remastered for Windows 10",
     "productId": "9NC4QMRHCNZK",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.21577.13574959248073944.2c5d4b1c-d52a-4c7d-a874-bacdecd5c96e.2658f7c2-5a85-4825-bc19-4fa590dc32db"
+      ]
+    },
     "releaseDate": "2021-01-28",
     "storePage": "https://www.xbox.com/en-us/games/store/yakuza-3-remastered-for-windows-10/9NC4QMRHCNZK"
   },
   {
     "productTitle": "Yakuza 4 Remastered for Windows 10",
     "productId": "9NWZTB9JQG9S",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.44004.14435749885115625.73b01862-e38c-412b-8997-c5f0297b47f8.b6cabede-1743-43ff-bc31-8f99bbafcf1d"
+      ]
+    },
     "releaseDate": "2021-01-28",
     "storePage": "https://www.xbox.com/en-us/games/store/yakuza-4-remastered-for-windows-10/9NWZTB9JQG9S"
   },
   {
     "productTitle": "Yakuza 5 Remastered for Windows 10",
     "productId": "9MVX1V7W5SW8",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.3163.13850789095968477.9ae87e98-4124-4b7d-9528-25cf65807843.5ec97c8d-41d6-4ecf-845a-9e6e36573f8f"
+      ]
+    },
     "releaseDate": "2021-01-28",
     "storePage": "https://www.xbox.com/en-us/games/store/yakuza-5-remastered-for-windows-10/9MVX1V7W5SW8"
   },
@@ -3254,6 +4525,9 @@
     "productTitle": "Yakuza 6: The Song of Life for Windows 10",
     "productId": "9N9WWM5JXCBZ",
     "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.35958.13524393444409042.28107174-a805-4723-b41e-351c639200dc.61795991-9b4b-4e6c-815b-9ff7e3f7dd3b"
+      ],
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.23934.13524393444409042.28107174-a805-4723-b41e-351c639200dc.cacfecef-3017-4a32-bede-4c095b1b65b2"
       ]
@@ -3264,21 +4538,33 @@
   {
     "productTitle": "Yakuza Kiwami 2 for Windows 10",
     "productId": "9MZNFNN3XJ3F",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.62149.13871188202855056.7357988b-ca9f-46c3-93d0-c3f2d924f6b3.b344017a-ea6b-482c-8ec9-08a74e6259db"
+      ]
+    },
     "releaseDate": "2020-07-29",
     "storePage": "https://www.xbox.com/en-us/games/store/yakuza-kiwami-2-for-windows-10/9MZNFNN3XJ3F"
   },
   {
     "productTitle": "Yakuza Kiwami for Windows 10",
     "productId": "9P40SC5DQ9K0",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.3710.14598456430785461.91448404-9afb-4719-8755-cc83d023ef73.f4ba485f-e842-4ff9-bba8-315bf8bc0e5c"
+      ]
+    },
     "releaseDate": "2020-04-22",
     "storePage": "https://www.xbox.com/en-us/games/store/yakuza-kiwami-for-windows-10/9P40SC5DQ9K0"
   },
   {
     "productTitle": "Yakuza: Like a Dragon",
     "productId": "9NXCSWCQTNFG",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.30664.14427542363794747.182f58ca-3a24-4a65-93bd-cdd320a35776.d7799370-aefe-44e7-8f83-4f8a5c363354"
+      ]
+    },
     "releaseDate": "2020-11-10",
     "storePage": "https://www.xbox.com/en-us/games/store/yakuza-like-a-dragon/9NXCSWCQTNFG"
   },
@@ -3290,6 +4576,9 @@
         "https://store-images.s-microsoft.com/image/apps.30782.13565037407534311.0d8dd6b7-ba76-442e-8a83-5547f7a8f00d.28590e12-c674-4ee9-b2cc-27f882ceb1da",
         "https://store-images.s-microsoft.com/image/apps.29397.13565037407534311.0d8dd6b7-ba76-442e-8a83-5547f7a8f00d.febc89ee-56c2-40f2-b2dd-fe5189f20a40",
         "https://store-images.s-microsoft.com/image/apps.26279.13565037407534311.0d8dd6b7-ba76-442e-8a83-5547f7a8f00d.302a189f-f969-4c38-9218-83a3815fc490"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.3557.13565037407534311.0d8dd6b7-ba76-442e-8a83-5547f7a8f00d.16736ce8-70a0-4c11-a9ef-9483c9a8f275"
       ]
     },
     "releaseDate": "2022-09-14",
@@ -3298,7 +4587,11 @@
   {
     "productTitle": "Zombie Army 4: Dead War",
     "productId": "9PLSCHRN5715",
-    "images": {},
+    "images": {
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.15083.14307155302772688.6d2bb19d-e8cc-4826-bd21-920020654895.22cfc234-258a-4edf-b871-db3c9e4a7127"
+      ]
+    },
     "releaseDate": "2020-02-04",
     "storePage": "https://www.xbox.com/en-us/games/store/zombie-army-4-dead-war/9PLSCHRN5715"
   },
@@ -3308,6 +4601,9 @@
     "images": {
       "Logo": [
         "https://store-images.s-microsoft.com/image/apps.8354.14226270511206590.6a01761e-3000-4be3-a1eb-b82f4a4e5d9e.716d4869-5b12-4a47-8a21-91cc917c2c77"
+      ],
+      "BoxArt": [
+        "https://store-images.s-microsoft.com/image/apps.62724.14226270511206590.448f16df-2989-4b0e-baf3-2fba454ba5a8.6ffe63bf-d2e2-488e-adc6-729cbabf0c34"
       ]
     },
     "releaseDate": "2017-10-31",
