@@ -23,10 +23,10 @@ export function filterGame<TKey extends string, TGame>(
 	return (
 		columns.findIndex((column) => {
 			return (
-				column.getFilterValue &&
+				column.filter &&
 				hiddenValues[column.id] &&
 				hiddenValues[column.id].length > 0 &&
-				hiddenValues[column.id].includes(column.getFilterValue(game))
+				column.filter(game, hiddenValues[column.id])
 			);
 		}) === -1
 	);

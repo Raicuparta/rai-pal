@@ -13,8 +13,7 @@ use super::{
 	provider_command::{ProviderCommand, ProviderCommandAction},
 };
 use crate::{
-	app_type::AppType,
-	game_mode::GameMode,
+	game_tag::GameTag,
 	installed_game::{self, InstalledGame},
 	owned_game::OwnedGame,
 	providers::provider::{ProviderActions, ProviderStatic},
@@ -55,18 +54,7 @@ impl Steam {
 			return None;
 		}
 
-		let game_mode = if app_info
-			.launch_options
-			.iter()
-			.any(|launch| launch.get_game_mode() == GameMode::VR)
-		{
-			GameMode::VR
-		} else {
-			GameMode::Flat
-		};
-
 		game.set_thumbnail_url(&get_steam_thumbnail(&id_string))
-			.set_game_mode(game_mode)
 			.add_provider_command(
 				ProviderCommandAction::ShowInLibrary,
 				ProviderCommand::String(format!("steam://nav/games/details/{id_string}")),
@@ -84,6 +72,10 @@ impl Steam {
 				ProviderCommand::String(format!("https://store.steampowered.com/app/{id_string}")),
 			);
 
+		if app_info.launch_options.iter().any(|launch| launch.is_vr()) {
+			game.add_tag(GameTag::VR);
+		}
+
 		if let Some(release_date) = app_info
 			.original_release_date
 			.or(app_info.steam_release_date)
@@ -92,15 +84,9 @@ impl Steam {
 		}
 
 		if let Some(app_type) = &app_info.app_type {
-			if app_type == "Game" {
-				game.set_app_type(AppType::Game);
-			} else if app_type == "Demo" {
-				game.set_app_type(AppType::Demo);
+			if app_type == "Demo" {
+				game.add_tag(GameTag::Demo);
 			}
-		} else {
-			// We only try to guess the app type if couldn't read it from appinfo.
-			// For instance, something marked as Tool or Application shouldn't be marked as a game.
-			game.guess_app_type();
 		}
 
 		Some(game)

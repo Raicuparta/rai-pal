@@ -1,10 +1,9 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use rai_pal_proc_macros::serializable_struct;
 
 use crate::{
-	app_type::AppType,
-	game_mode::GameMode,
+	game_tag::GameTag,
 	game_title::GameTitle,
 	providers::{
 		provider::ProviderId,
@@ -20,24 +19,26 @@ pub struct OwnedGame {
 	pub title: GameTitle,
 	pub release_date: Option<i64>,
 	pub thumbnail_url: Option<String>,
-	pub game_mode: Option<GameMode>,
-	pub app_type: Option<AppType>,
-
+	pub tags: HashSet<GameTag>,
 	pub provider_commands: HashMap<ProviderCommandAction, ProviderCommand>,
 }
 
 impl OwnedGame {
 	pub fn new(provider_game_id: &str, provider: ProviderId, name: &str) -> Self {
+		let title = GameTitle::new(name);
+		let mut tags = HashSet::default();
+		if title.is_probably_demo() {
+			tags.insert(GameTag::Demo);
+		}
 		Self {
 			global_id: get_global_id(provider, provider_game_id),
 			provider_game_id: provider_game_id.to_string(),
 			provider,
-			title: GameTitle::new(name),
+			tags,
+			title,
 			provider_commands: HashMap::default(),
 			release_date: None,
 			thumbnail_url: None,
-			game_mode: None,
-			app_type: None,
 		}
 	}
 
@@ -51,22 +52,8 @@ impl OwnedGame {
 		self
 	}
 
-	pub fn set_game_mode(&mut self, game_mode: GameMode) -> &mut Self {
-		self.game_mode = Some(game_mode);
-		self
-	}
-
-	pub fn set_app_type(&mut self, app_type: AppType) -> &mut Self {
-		self.app_type = Some(app_type);
-		self
-	}
-
-	pub fn guess_app_type(&mut self) -> &mut Self {
-		self.app_type = Some(if self.title.is_probably_demo() {
-			AppType::Demo
-		} else {
-			AppType::Game
-		});
+	pub fn add_tag(&mut self, tag: GameTag) -> &mut Self {
+		self.tags.insert(tag);
 		self
 	}
 

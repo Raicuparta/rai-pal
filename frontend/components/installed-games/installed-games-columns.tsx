@@ -1,28 +1,25 @@
 import { Table, Tooltip } from "@mantine/core";
 import {
-	AppType,
 	Architecture,
 	EngineBrand,
-	GameMode,
+	GameTag,
 	ProviderId,
 	UnityScriptingBackend,
 } from "@api/bindings";
 import { TableColumnBase, columnMapToList } from "@components/table/table-head";
 import { ItemName } from "../item-name";
 import {
-	AppTypeBadge,
 	ArchitectureBadge,
 	EngineBadge,
-	GameModeBadge,
 	ProviderBadge,
 	UnityBackendBadge,
 } from "@components/badges/color-coded-badge";
 import { ThumbnailCell } from "@components/table/thumbnail-cell";
 import { OutdatedMarker } from "@components/outdated-marker";
 import {
-	appTypeFilterOptions,
 	engineFilterOptions,
 	providerFilterOptions,
+	tagFilterOptions,
 } from "../../util/common-filter-options";
 import styles from "../table/table.module.css";
 import { ProcessedInstalledGame } from "@hooks/use-processed-installed-games";
@@ -73,7 +70,7 @@ const provider: TableColumnBase<ProcessedInstalledGame, ProviderId> = {
 	center: true,
 	hidable: true,
 	getSortValue: (game) => game.provider,
-	getFilterValue: (game) => game.provider,
+	filter: (game, hiddenValues) => hiddenValues.includes(game.provider),
 	filterOptions: providerFilterOptions,
 	renderCell: (game) => (
 		<Table.Td>
@@ -88,7 +85,8 @@ const architecture: TableColumnBase<ProcessedInstalledGame, Architecture> = {
 	center: true,
 	hidable: true,
 	getSortValue: (game) => game.executable.architecture,
-	getFilterValue: (game) => game.executable.architecture,
+	filter: (game, hiddenValues) =>
+		hiddenValues.includes(game.executable.architecture),
 	filterOptions: [
 		{ label: "x64", value: "X64" },
 		{ label: "x86", value: "X86" },
@@ -109,7 +107,8 @@ const scriptingBackend: TableColumnBase<
 	center: true,
 	hidable: true,
 	getSortValue: (game) => game.executable.scriptingBackend,
-	getFilterValue: (game) => game.executable.scriptingBackend,
+	filter: (game, hiddenValues) =>
+		hiddenValues.includes(game.executable.scriptingBackend),
 	filterOptions: [
 		{ label: "IL2CPP", value: "Il2Cpp" },
 		{ label: "Mono", value: "Mono" },
@@ -121,39 +120,20 @@ const scriptingBackend: TableColumnBase<
 	),
 };
 
-const gameMode: TableColumnBase<ProcessedInstalledGame, GameMode> = {
-	label: "Mode",
+const gameTags: TableColumnBase<ProcessedInstalledGame, string> = {
+	label: "Tags",
 	width: 90,
 	center: true,
 	hidable: true,
-	getSortValue: (game) => game.ownedGame?.gameMode,
-	getFilterValue: (game) => game.ownedGame?.gameMode ?? null,
-	filterOptions: [
-		{ label: "Flat", value: "Flat" },
-		{ label: "VR", value: "VR" },
-	],
+	getSortValue: (game) => game.ownedGame?.tags.join(","),
+	filter: (game, hiddenValues) =>
+		hiddenValues.findIndex(
+			(hiddenValue) =>
+				game.ownedGame?.tags.indexOf(hiddenValue as GameTag) !== -1,
+		) !== -1,
+	filterOptions: tagFilterOptions,
 	renderCell: (game) => (
-		<Table.Td>
-			<GameModeBadge value={game.ownedGame?.gameMode} />
-		</Table.Td>
-	),
-};
-
-const getAppType = (game: ProcessedInstalledGame) =>
-	game.ownedGame?.appType ?? null;
-
-const appType: TableColumnBase<ProcessedInstalledGame, AppType> = {
-	label: "App Type",
-	width: 110,
-	center: true,
-	hidable: true,
-	getSortValue: (game) => getAppType(game),
-	getFilterValue: (game) => getAppType(game),
-	filterOptions: appTypeFilterOptions,
-	renderCell: (game) => (
-		<Table.Td>
-			<AppTypeBadge value={getAppType(game)}>{getAppType(game)}</AppTypeBadge>
-		</Table.Td>
+		<Table.Td>{game.ownedGame?.tags.sort().join(", ")}</Table.Td>
 	),
 };
 
@@ -164,7 +144,8 @@ const engine: TableColumnBase<ProcessedInstalledGame, EngineBrand> = {
 	hidable: true,
 	sort: (dataA, dataB) =>
 		sortGamesByEngine(dataA.executable.engine, dataB.executable.engine),
-	getFilterValue: (game) => game.executable.engine?.brand ?? null,
+	filter: (game, hiddenValues) =>
+		hiddenValues.includes(game.executable.engine?.brand ?? null),
 	unavailableValues: ["Godot", "GameMaker"],
 	filterOptions: engineFilterOptions,
 	renderCell: ({ executable: { engine } }) => (
@@ -187,11 +168,10 @@ const installedGamesColumnsMap = {
 	thumbnail,
 	name,
 	provider,
-	gameMode,
+	gameTags,
 	architecture,
 	scriptingBackend,
 	engine,
-	appType,
 };
 
 export type InstalledGameColumnsId = keyof typeof installedGamesColumnsMap;

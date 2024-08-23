@@ -12,10 +12,7 @@ use byteorder::{LittleEndian, ReadBytesExt};
 use rai_pal_proc_macros::serializable_struct;
 use steamlocate::SteamDir;
 
-use crate::{
-	game_mode::GameMode,
-	result::{Error, Result},
-};
+use crate::result::{Error, Result};
 
 const BIN_NONE: u8 = b'\x00';
 const BIN_STRING: u8 = b'\x01';
@@ -77,13 +74,13 @@ pub struct SteamLaunchOption {
 }
 
 impl SteamLaunchOption {
-	pub fn get_game_mode(&self) -> GameMode {
+	pub fn is_vr(&self) -> bool {
 		if let Some(app_type) = &self.launch_type {
 			if app_type == "vr" {
-				return GameMode::VR;
+				return true;
 			}
 		}
-		GameMode::Flat
+		return false;
 	}
 }
 

@@ -1,13 +1,12 @@
 #![allow(async_fn_in_trait)]
 
 pub mod analytics;
-pub mod app_type;
 pub mod debug;
 pub mod files;
 pub mod game_engines;
 pub mod game_executable;
 pub mod game_mod;
-pub mod game_mode;
+pub mod game_tag;
 pub mod game_title;
 pub mod installed_game;
 pub mod local_mod;

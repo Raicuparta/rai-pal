@@ -49,8 +49,7 @@ impl Itch {
 		.add_provider_command(
 			ProviderCommandAction::Install,
 			ProviderCommand::String(format!("itch://install?game_id={}", row.id)),
-		)
-		.guess_app_type();
+		);
 
 		game
 	}

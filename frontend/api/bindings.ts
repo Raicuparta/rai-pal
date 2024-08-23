@@ -284,7 +284,6 @@ syncRemoteMods: "sync-remote-mods"
 
 /** user-defined types **/
 
-export type AppType = "Game" | "Demo"
 export type Architecture = "X64" | "X86"
 export type CommonModData = { id: string; engine: EngineBrand | null; unityBackend: UnityScriptingBackend | null; engineVersionRange: EngineVersionRange | null; loaderId: string }
 export type EngineBrand = "Unity" | "Unreal" | "Godot" | "GameMaker"
@@ -298,7 +297,7 @@ export type FoundInstalledGame = []
 export type FoundOwnedGame = []
 export type GameEngine = { brand: EngineBrand; version: EngineVersion | null }
 export type GameExecutable = { path: string; name: string; engine: GameEngine | null; architecture: Architecture | null; scriptingBackend: UnityScriptingBackend | null }
-export type GameMode = "VR" | "Flat"
+export type GameTag = "VR" | "Demo"
 export type GameTitle = { display: string; normalized: string[] }
 export type InstalledGame = { id: string; title: GameTitle; provider: ProviderId; executable: GameExecutable; installedModVersions: { [key in string]: string }; discriminator: string | null; thumbnailUrl: string | null; ownedGameId: string | null; startCommand: ProviderCommand | null }
 export type LocalMod = { data: LocalModData; common: CommonModData }
@@ -307,7 +306,7 @@ export type Manifest = { title: string | null; version: string; runnable: Runnab
 export type ModDownload = { id: string; url: string; root: string | null; runnable: RunnableModData | null }
 export type ModKind = "Installable" | "Runnable"
 export type ModLoaderData = { id: string; path: string; kind: ModKind }
-export type OwnedGame = { globalId: string; providerGameId: string; provider: ProviderId; title: GameTitle; releaseDate: bigint | null; thumbnailUrl: string | null; gameMode: GameMode | null; appType: AppType | null; providerCommands: { [key in ProviderCommandAction]: ProviderCommand } }
+export type OwnedGame = { globalId: string; providerGameId: string; provider: ProviderId; title: GameTitle; releaseDate: bigint | null; thumbnailUrl: string | null; tags: GameTag[]; providerCommands: { [key in ProviderCommandAction]: ProviderCommand } }
 export type ProviderCommand = { String: string } | { Path: [string, string[]] }
 export type ProviderCommandAction = "Install" | "ShowInLibrary" | "ShowInStore" | "Start" | "OpenInBrowser"
 export type ProviderData = { installedGames: { [key in string]: InstalledGame }; ownedGames: { [key in string]: OwnedGame } }

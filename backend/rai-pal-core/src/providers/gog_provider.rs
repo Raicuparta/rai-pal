@@ -67,8 +67,7 @@ impl Gog {
 				]
 				.to_vec(),
 			),
-		)
-		.guess_app_type();
+		);
 
 		if let Some(thumbnail_url) = db_entry.image_url.clone() {
 			game.set_thumbnail_url(&thumbnail_url);

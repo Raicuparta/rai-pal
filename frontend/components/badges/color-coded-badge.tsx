@@ -1,15 +1,13 @@
 import {
-	AppType,
 	Architecture,
 	EngineBrand,
-	GameMode,
+	GameTag,
 	ProviderId,
 	UnityScriptingBackend,
 } from "@api/bindings";
 import { Badge, BadgeProps, DefaultMantineColor, Flex } from "@mantine/core";
 import styles from "./badges.module.css";
 import {
-	appTypeFilterOptions,
 	engineFilterOptions,
 	providerFilterOptions,
 } from "../../util/common-filter-options";
@@ -78,9 +76,9 @@ export const UnityBackendBadge = CreateColorCodedBadge<UnityScriptingBackend>(
 	},
 );
 
-export const GameModeBadge = CreateColorCodedBadge<GameMode>("-", {
+export const GameTagBadge = CreateColorCodedBadge<GameTag>("-", {
 	VR: "green",
-	Flat: "gray",
+	Demo: "yellow",
 });
 
 export const ArchitectureBadge = CreateColorCodedBadge<Architecture>("-", {
@@ -100,13 +98,4 @@ export const ProviderBadge = CreateColorCodedBadge<ProviderId>(
 		Ubisoft: "grape",
 	},
 	providerFilterOptions,
-);
-
-export const AppTypeBadge = CreateColorCodedBadge<AppType>(
-	"-",
-	{
-		Game: "blue",
-		Demo: "yellow",
-	},
-	appTypeFilterOptions,
 );
