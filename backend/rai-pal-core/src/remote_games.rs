@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use lazy_regex::regex;
 use rai_pal_proc_macros::serializable_struct;
 
 use crate::game_engines::game_engine::{
@@ -53,11 +54,11 @@ fn engine_brand_from_string(brand: &str) -> Option<EngineBrand> {
 }
 
 // Version strings in PCGamingWiki can be all weird, so parsing is pretty lax here.
-// We just split by dots and take the first numbers we find.
+// We just find some numbers in the string separated by something (usually periods).
 fn parse_version(version: &str) -> Option<EngineVersion> {
-	let version_numbers = version
-		.split('.')
-		.filter_map(|part| part.parse::<u32>().ok())
+	let version_numbers = regex!(r"\d+")
+		.find_iter(version)
+		.filter_map(|capture| capture.as_str().parse::<u32>().ok())
 		.take(2)
 		.collect::<Vec<_>>();
 
