@@ -1,10 +1,15 @@
 import { TableColumn } from "@components/table/table-head";
 
-export function includesIgnoreCase(term: string, text: string) {
-	return text.toLowerCase().includes(term.toLowerCase());
+export function includesIgnoreCase(term: string, text?: string) {
+	if (!text) return false;
+
+	return text.toLowerCase().trim().includes(term.trim().toLowerCase());
 }
 
-export function includesOneOf(term: string | undefined, texts: string[]) {
+export function includesOneOf(
+	term: string | undefined,
+	texts: (string | undefined)[],
+) {
 	if (!term) return true;
 
 	return Boolean(texts.find((text) => includesIgnoreCase(term, text)));

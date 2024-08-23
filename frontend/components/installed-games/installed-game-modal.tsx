@@ -143,7 +143,7 @@ export function InstalledGameModal(props: Props) {
 						)}
 					/>
 					<ItemName label={props.game.discriminator}>
-						{props.game.name}
+						{props.game.title.display}
 					</ItemName>
 					<Tooltip label="Refresh game info">
 						<CommandButton onClick={() => refreshGame(props.game)}>

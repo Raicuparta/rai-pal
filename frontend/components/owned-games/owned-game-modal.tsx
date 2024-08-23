@@ -28,7 +28,7 @@ export function OwnedGameModal(props: Props) {
 							props.game.provider,
 						)}
 					/>
-					<ItemName>{props.game.name}</ItemName>
+					<ItemName>{props.game.title.display}</ItemName>
 				</Group>
 			}
 		>

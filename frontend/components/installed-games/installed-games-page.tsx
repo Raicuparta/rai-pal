@@ -29,8 +29,11 @@ function filterInstalledGame(
 	search: string,
 ) {
 	return (
-		includesOneOf(search, [game.name]) &&
-		filterGame(game, filter, installedGamesColumns)
+		includesOneOf(search, [
+			...game.title.normalized,
+			game.title.display,
+			game.ownedGame?.providerGameId,
+		]) && filterGame(game, filter, installedGamesColumns)
 	);
 }
 

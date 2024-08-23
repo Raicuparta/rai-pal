@@ -30,8 +30,11 @@ function filterOwnedGame(
 	search: string,
 ) {
 	return (
-		includesOneOf(search, [game.name]) &&
-		filterGame(game, filter, ownedGamesColumns)
+		includesOneOf(search, [
+			game.title.display,
+			...game.title.normalized,
+			game.providerGameId,
+		]) && filterGame(game, filter, ownedGamesColumns)
 	);
 }
 

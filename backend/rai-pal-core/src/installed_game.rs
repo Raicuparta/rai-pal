@@ -9,6 +9,7 @@ use rai_pal_proc_macros::serializable_struct;
 
 use crate::{
 	game_executable::GameExecutable,
+	game_title::GameTitle,
 	mod_manifest, owned_game,
 	paths::{self, glob_path, hash_path},
 	providers::{provider::ProviderId, provider_command::ProviderCommand},
@@ -18,7 +19,7 @@ use crate::{
 #[serializable_struct]
 pub struct InstalledGame {
 	pub id: String,
-	pub name: String,
+	pub title: GameTitle,
 	pub provider: ProviderId,
 	pub executable: GameExecutable,
 	pub installed_mod_versions: InstalledModVersions,
@@ -59,7 +60,7 @@ impl InstalledGame {
 
 		let mut installed_game = Self {
 			id: game_id,
-			name: name.to_string(),
+			title: GameTitle::new(name),
 			provider: provider_id,
 			installed_mod_versions: HashMap::default(),
 			executable: GameExecutable::new(path)?,

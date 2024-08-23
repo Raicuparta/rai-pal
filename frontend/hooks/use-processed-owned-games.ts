@@ -9,10 +9,6 @@ export interface ProcessedOwnedGame extends OwnedGame {
 	remoteData?: RemoteGame;
 }
 
-function normalizeTitle(title: string): string {
-	return title.replace(/\W+/g, "").toLowerCase();
-}
-
 export function useProcessedOwnedGames() {
 	const providerDataMap = useAtomValue(providerDataAtom);
 	const remoteGames = useAtomValue(remoteGamesAtom);
@@ -32,9 +28,13 @@ export function useProcessedOwnedGames() {
 			}
 
 			if (remoteGame.title) {
-				byTitle[normalizeTitle(remoteGame.title)] = remoteGame;
+				for (const normalizedTitle of remoteGame.title.normalized) {
+					byTitle[normalizedTitle] = remoteGame;
+				}
 			}
 		}
+
+		console.log("remoteGames", remoteGames);
 
 		return [byProvider, byTitle];
 	}, [remoteGames, providerDataMap]);
@@ -57,6 +57,16 @@ export function useProcessedOwnedGames() {
 	const processedOwnedGames: ProcessedOwnedGameRecord = useMemo(() => {
 		const result: ProcessedOwnedGameRecord = {};
 
+		function getRemoteDataByTitle(ownedGame: OwnedGame) {
+			for (const normalizedTitle of ownedGame.title.normalized) {
+				if (databaseGamesByTitle[normalizedTitle]) {
+					// We use the first normalized title we have that returns a result.
+					// That means the order returned from the backend matters (first has priority).
+					return databaseGamesByTitle[normalizedTitle];
+				}
+			}
+		}
+
 		for (const providerData of Object.values(providerDataMap)) {
 			for (const [gameId, ownedGame] of Object.entries(
 				providerData.ownedGames,
@@ -67,7 +77,7 @@ export function useProcessedOwnedGames() {
 				const remoteData =
 					databaseGamesByProvider[ownedGame.provider]?.[
 						ownedGame.providerGameId
-					] ?? databaseGamesByTitle[normalizeTitle(ownedGame.name)];
+					] ?? getRemoteDataByTitle(ownedGame);
 
 				result[gameId] = {
 					...ownedGame,

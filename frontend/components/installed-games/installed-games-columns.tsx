@@ -48,7 +48,7 @@ const thumbnail: TableColumnBase<ProcessedInstalledGame> = {
 const name: TableColumnBase<ProcessedInstalledGame> = {
 	hideInDetails: true,
 	label: "Game",
-	getSortValue: (game) => game.name,
+	getSortValue: (game) => game.title.display,
 	renderCell: (game) => (
 		<Table.Td className={styles.nameCell}>
 			<Tooltip
@@ -59,7 +59,7 @@ const name: TableColumnBase<ProcessedInstalledGame> = {
 				<span>
 					<ItemName label={game.discriminator}>
 						{game.hasOutdatedMod && <OutdatedMarker />}
-						{game.name}
+						{game.title.display}
 					</ItemName>
 				</span>
 			</Tooltip>
@@ -177,7 +177,7 @@ const engine: TableColumnBase<ProcessedInstalledGame, EngineBrand> = {
 			<EngineBadge
 				maw={70}
 				value={engine?.brand}
-				label={engine ? engine.version?.display ?? "-" : undefined}
+				label={engine ? (engine.version?.display ?? "-") : undefined}
 			/>
 		</Table.Td>
 	),

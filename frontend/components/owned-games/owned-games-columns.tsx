@@ -36,9 +36,9 @@ const name: TableColumnBase<ProcessedOwnedGame> = {
 	label: "Game",
 	width: undefined,
 	hideInDetails: true,
-	getSortValue: (game) => game.name,
+	getSortValue: (game) => game.title.display,
 	renderCell: (game) => (
-		<Table.Td className={styles.nameCell}>{game.name}</Table.Td>
+		<Table.Td className={styles.nameCell}>{game.title.display}</Table.Td>
 	),
 };
 

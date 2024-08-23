@@ -8,6 +8,7 @@ pub mod game_engines;
 pub mod game_executable;
 pub mod game_mod;
 pub mod game_mode;
+pub mod game_title;
 pub mod installed_game;
 pub mod local_mod;
 pub mod macros;

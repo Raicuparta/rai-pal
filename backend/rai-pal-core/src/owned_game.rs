@@ -5,6 +5,7 @@ use rai_pal_proc_macros::serializable_struct;
 use crate::{
 	app_type::AppType,
 	game_mode::GameMode,
+	game_title::GameTitle,
 	providers::{
 		provider::ProviderId,
 		provider_command::{ProviderCommand, ProviderCommandAction},
@@ -16,7 +17,7 @@ pub struct OwnedGame {
 	pub global_id: String,
 	pub provider_game_id: String,
 	pub provider: ProviderId,
-	pub name: String,
+	pub title: GameTitle,
 	pub release_date: Option<i64>,
 	pub thumbnail_url: Option<String>,
 	pub game_mode: Option<GameMode>,
@@ -31,7 +32,7 @@ impl OwnedGame {
 			global_id: get_global_id(provider, provider_game_id),
 			provider_game_id: provider_game_id.to_string(),
 			provider,
-			name: name.to_string(),
+			title: GameTitle::new(name),
 			provider_commands: HashMap::default(),
 			release_date: None,
 			thumbnail_url: None,
@@ -61,7 +62,7 @@ impl OwnedGame {
 	}
 
 	pub fn guess_app_type(&mut self) -> &mut Self {
-		self.app_type = Some(if self.name.to_lowercase().ends_with(" demo") {
+		self.app_type = Some(if self.title.is_probably_demo() {
 			AppType::Demo
 		} else {
 			AppType::Game

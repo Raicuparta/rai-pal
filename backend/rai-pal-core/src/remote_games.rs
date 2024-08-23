@@ -5,6 +5,7 @@ use rai_pal_proc_macros::serializable_struct;
 use crate::game_engines::game_engine::{
 	EngineBrand, EngineVersion, EngineVersionNumbers, GameEngine,
 };
+use crate::game_title::GameTitle;
 use crate::providers::provider::ProviderId;
 use crate::result::Result;
 
@@ -31,7 +32,7 @@ struct GameDatabaseEntry {
 
 #[serializable_struct]
 pub struct RemoteGame {
-	pub title: Option<String>,
+	pub title: Option<GameTitle>,
 	pub engines: Option<Vec<GameEngine>>,
 	pub provider_ids: HashMap<ProviderId, Vec<String>>,
 }
@@ -85,7 +86,7 @@ pub async fn get() -> Result<Vec<RemoteGame>> {
 		.into_iter()
 		.filter_map(|entry| {
 			Some(RemoteGame {
-				title: entry.title,
+				title: entry.title.map(|title| GameTitle::new(&title)),
 				engines: entry.engines.map(|engines| {
 					engines
 						.into_iter()

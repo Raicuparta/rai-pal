@@ -474,7 +474,7 @@ async fn add_game(path: PathBuf, handle: AppHandle) -> Result {
 	let normalized_path = normalize_path(&path);
 
 	let installed_game = manual_provider::add_game(&normalized_path)?;
-	let game_name = installed_game.name.clone();
+	let game_name = installed_game.title.display.clone();
 
 	if let Some(installed_games_state) = handle.app_state().installed_games.get(&ProviderId::Manual)
 	{
