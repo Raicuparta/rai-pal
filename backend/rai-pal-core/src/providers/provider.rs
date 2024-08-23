@@ -17,6 +17,8 @@ use crate::{
 	serializable_enum,
 };
 
+use super::ubisoft_provider::Ubisoft;
+
 serializable_enum!(ProviderId {
 	Steam,
 	Manual,
@@ -24,6 +26,7 @@ serializable_enum!(ProviderId {
 	Epic,
 	Gog,
 	Xbox,
+	Ubisoft,
 });
 
 #[enum_dispatch]
@@ -38,6 +41,7 @@ pub enum Provider {
 	Gog,
 	#[cfg(target_os = "windows")]
 	Xbox,
+	Ubisoft,
 }
 
 type Map = [(ProviderId, fn() -> Result<Provider>)];
@@ -51,6 +55,7 @@ const PROVIDERS: &Map = &[
 	create_map_entry::<Gog>(),
 	#[cfg(target_os = "windows")]
 	create_map_entry::<Xbox>(),
+	create_map_entry::<Ubisoft>(),
 ];
 
 #[enum_dispatch(Provider)]

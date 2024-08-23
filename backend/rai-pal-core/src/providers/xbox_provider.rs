@@ -134,8 +134,8 @@ impl ProviderActions for Xbox {
 			}
 		}
 
-		let json_path =
-			Path::new(env!("CARGO_MANIFEST_DIR")).join("../../test-data/xbox-gamepass-games.json");
+		let json_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+			.join("../../test-data/xbox-gamepass-games-eaplay.json");
 
 		let games: Vec<XboxGamepassGame> =
 			serde_json::from_str(&std::fs::read_to_string(json_path)?)?;
