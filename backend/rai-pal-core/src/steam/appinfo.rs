@@ -75,12 +75,7 @@ pub struct SteamLaunchOption {
 
 impl SteamLaunchOption {
 	pub fn is_vr(&self) -> bool {
-		if let Some(app_type) = &self.launch_type {
-			if app_type == "vr" {
-				return true;
-			}
-		}
-		return false;
+		matches!(self.launch_type.as_deref(), Some("vr"))
 	}
 }
 
