@@ -3,7 +3,7 @@ import { useMemo } from "react";
 import { remoteGamesAtom, providerDataAtom } from "./use-data";
 import { OwnedGame, ProviderId, RemoteGame } from "@api/bindings";
 
-type ProcessedOwnedGameRecord = Record<string, ProcessedOwnedGame>;
+export type ProcessedOwnedGameRecord = Record<string, ProcessedOwnedGame>;
 export interface ProcessedOwnedGame extends OwnedGame {
 	isInstalled: boolean;
 	remoteData?: RemoteGame;

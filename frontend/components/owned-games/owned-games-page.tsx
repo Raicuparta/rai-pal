@@ -15,6 +15,7 @@ import {
 	useProcessedOwnedGames,
 } from "@hooks/use-processed-owned-games";
 import { FilterSelect } from "@components/filters/filter-select";
+import { SubscriptionsSelector } from "./subscriptions-selector";
 
 const defaultFilter: Record<string, (string | null)[]> = {};
 
@@ -89,6 +90,7 @@ export function OwnedGamesPage() {
 			) : null}
 			<Group>
 				<FixOwnedGamesButton />
+				<SubscriptionsSelector />
 				<SearchInput
 					onChange={setSearch}
 					value={search}
