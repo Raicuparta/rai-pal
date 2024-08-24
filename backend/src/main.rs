@@ -415,7 +415,7 @@ fn update_owned_games_state(
 #[tauri::command]
 #[specta::specta]
 async fn get_provider_games(handle: AppHandle, provider_id: ProviderId) -> Result {
-	let mut cache = ProviderCache::new(provider_id);
+	let mut cache = ProviderCache::new(provider_id)?;
 
 	let mut installed_games = HashMap::<String, InstalledGame>::new();
 	let mut installed_games_without_cache = HashMap::<String, InstalledGame>::new();

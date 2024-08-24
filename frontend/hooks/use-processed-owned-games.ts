@@ -33,9 +33,7 @@ export function useProcessedOwnedGames() {
 				}
 			}
 		}
-
-		console.log("remoteGames", remoteGames);
-
+		
 		return [byProvider, byTitle];
 	}, [remoteGames, providerDataMap]);
 

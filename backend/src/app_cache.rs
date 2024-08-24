@@ -1,4 +1,4 @@
-use std::{collections::HashMap, path::PathBuf};
+use std::{collections::HashMap, fs, path::PathBuf};
 
 use crate::result::Result;
 use rai_pal_core::{
@@ -26,16 +26,16 @@ impl ProviderCache {
 	const DATA_KEY: &'static str = "data";
 	const CACHE_FOLDER: &'static str = "cache";
 
-	pub fn new(id: ProviderId) -> Self {
-		Self {
-			path: PathBuf::from(Self::CACHE_FOLDER)
-				.join("providers")
-				.join(id.to_string()),
+	pub fn new(id: ProviderId) -> Result<Self> {
+		let path = PathBuf::from(Self::CACHE_FOLDER).join("providers").join(id.to_string());
+		fs::create_dir_all(&path)?;
+		Ok(Self {
+			path,
 			data: ProviderData {
 				installed_games: HashMap::new(),
 				owned_games: HashMap::new(),
 			},
-		}
+		})
 	}
 
 	pub fn load(&mut self, handle: &AppHandle) -> Result {
@@ -90,7 +90,7 @@ impl ProviderCache {
 
 	pub fn clear_all(handle: &AppHandle) -> Result {
 		for provider_id in provider::get_provider_ids() {
-			Self::new(provider_id).clear(handle)?;
+			Self::new(provider_id)?.clear(handle)?;
 		}
 
 		Ok(())

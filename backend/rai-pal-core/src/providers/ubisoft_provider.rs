@@ -74,7 +74,7 @@ impl ProviderActions for Ubisoft {
 		TOwnedCallback: FnMut(OwnedGame) + Send + Sync,
 	{
 		let json_path =
-			Path::new(env!("CARGO_MANIFEST_DIR")).join("../../test-data/Ubisoft-plus-games.json");
+			Path::new(env!("CARGO_MANIFEST_DIR")).join("../../test-data/ubisoft-plus-games.json");
 
 		let database: UbisoftPlusGameDatabase =
 			serde_json::from_str(&std::fs::read_to_string(json_path)?)?;
