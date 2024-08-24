@@ -72,7 +72,11 @@ impl Steam {
 				ProviderCommand::String(format!("https://store.steampowered.com/app/{id_string}")),
 			);
 
-		if app_info.launch_options.iter().any(|launch| launch.is_vr()) {
+		if app_info
+			.launch_options
+			.iter()
+			.any(appinfo::SteamLaunchOption::is_vr)
+		{
 			game.add_tag(GameTag::VR);
 		}
 
