@@ -6,7 +6,7 @@ import { IconCash } from "@tabler/icons-react";
 
 const subscriptions: Record<GameSubscription, string> = {
 	EaPlay: "EA Play",
-	XboxGamePass: "Game Pass",
+	XboxGamePass: "Xbox Game Pass (PC)",
 	UbisoftClassics: "Ubisoft Classics",
 	UbisoftPremium: "Ubisoft Premium",
 } as const;
