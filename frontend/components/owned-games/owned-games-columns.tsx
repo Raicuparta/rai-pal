@@ -1,4 +1,4 @@
-import { EngineBrand, GameTag, ProviderId } from "@api/bindings";
+import { EngineBrand, ProviderId } from "@api/bindings";
 import {
 	EngineBadge,
 	ProviderBadge,
@@ -11,11 +11,16 @@ import { ThumbnailCell } from "@components/table/thumbnail-cell";
 import {
 	engineFilterOptions,
 	providerFilterOptions,
-	tagFilterOptions,
 } from "../../util/common-filter-options";
 import { getThumbnailWithFallback } from "../../util/fallback-thumbnail";
 import { sortGamesByEngine } from "../../util/game-engines";
 import { ProcessedOwnedGame } from "@hooks/use-processed-owned-games";
+import {
+	filterGameTags,
+	gameTagFilterOptions,
+	getGameTagsSortValue,
+	renderGameTagsCell,
+} from "@components/game-tags";
 
 const thumbnail: TableColumnBase<ProcessedOwnedGame> = {
 	label: "Thumbnail",
@@ -89,16 +94,13 @@ const engine: TableColumnBase<ProcessedOwnedGame, EngineBrand> = {
 
 const gameTags: TableColumnBase<ProcessedOwnedGame, string> = {
 	label: "Tags",
-	width: 90,
+	width: 120,
 	center: true,
 	hidable: true,
-	getSortValue: (game) => `${game.tags.length}${game.tags.sort().join(",")}`,
-	filter: (game, hiddenValues) =>
-		hiddenValues.findIndex((hiddenValue) =>
-			game.tags.includes(hiddenValue as GameTag),
-		) !== -1,
-	filterOptions: tagFilterOptions,
-	renderCell: (game) => <Table.Td>{game.tags.sort().join(", ")}</Table.Td>,
+	getSortValue: getGameTagsSortValue,
+	filter: filterGameTags,
+	filterOptions: gameTagFilterOptions,
+	renderCell: renderGameTagsCell,
 };
 
 const installed: TableColumnBase<ProcessedOwnedGame, string> = {
@@ -135,9 +137,9 @@ const releaseDate: TableColumnBase<ProcessedOwnedGame> = {
 const ownedGamesColumnsMap = {
 	thumbnail,
 	name,
+	gameTags,
 	provider,
 	engine,
-	gameTags,
 	installed,
 	releaseDate,
 };

@@ -2,7 +2,6 @@ import { Table, Tooltip } from "@mantine/core";
 import {
 	Architecture,
 	EngineBrand,
-	GameTag,
 	ProviderId,
 	UnityScriptingBackend,
 } from "@api/bindings";
@@ -19,12 +18,17 @@ import { OutdatedMarker } from "@components/outdated-marker";
 import {
 	engineFilterOptions,
 	providerFilterOptions,
-	tagFilterOptions,
 } from "../../util/common-filter-options";
 import styles from "../table/table.module.css";
 import { ProcessedInstalledGame } from "@hooks/use-processed-installed-games";
 import { getThumbnailWithFallback } from "../../util/fallback-thumbnail";
 import { sortGamesByEngine } from "../../util/game-engines";
+import {
+	filterGameTags,
+	gameTagFilterOptions,
+	getGameTagsSortValue,
+	renderGameTagsCell,
+} from "@components/game-tags";
 
 const thumbnail: TableColumnBase<ProcessedInstalledGame> = {
 	hideInDetails: true,
@@ -122,19 +126,13 @@ const scriptingBackend: TableColumnBase<
 
 const gameTags: TableColumnBase<ProcessedInstalledGame, string> = {
 	label: "Tags",
-	width: 90,
+	width: 120,
 	center: true,
 	hidable: true,
-	getSortValue: (game) => game.ownedGame?.tags.join(","),
-	filter: (game, hiddenValues) =>
-		hiddenValues.findIndex(
-			(hiddenValue) =>
-				game.ownedGame?.tags.indexOf(hiddenValue as GameTag) !== -1,
-		) !== -1,
-	filterOptions: tagFilterOptions,
-	renderCell: (game) => (
-		<Table.Td>{game.ownedGame?.tags.sort().join(", ")}</Table.Td>
-	),
+	getSortValue: (game) => getGameTagsSortValue(game.ownedGame),
+	filter: (game, hiddenValues) => filterGameTags(game.ownedGame, hiddenValues),
+	filterOptions: gameTagFilterOptions,
+	renderCell: (game) => renderGameTagsCell(game.ownedGame),
 };
 
 const engine: TableColumnBase<ProcessedInstalledGame, EngineBrand> = {
@@ -167,8 +165,8 @@ const engine: TableColumnBase<ProcessedInstalledGame, EngineBrand> = {
 const installedGamesColumnsMap = {
 	thumbnail,
 	name,
-	provider,
 	gameTags,
+	provider,
 	architecture,
 	scriptingBackend,
 	engine,
