@@ -8,12 +8,12 @@ use enum_dispatch::enum_dispatch;
 use rai_pal_proc_macros::serializable_enum;
 
 #[cfg(target_os = "windows")]
-use crate::providers::{epic_provider::Epic, gog_provider::Gog, xbox_provider::Xbox};
+use crate::providers::{epic_provider::Epic, gog_provider::Gog};
 use crate::{
 	installed_game::InstalledGame,
 	owned_game::OwnedGame,
 	paths,
-	providers::{itch_provider::Itch, manual_provider::Manual, steam_provider::Steam},
+	providers::{itch_provider::Itch, manual_provider::Manual, steam_provider::Steam, xbox_provider::Xbox},
 	result::{Error, Result},
 };
 
@@ -40,7 +40,6 @@ pub enum Provider {
 	Epic,
 	#[cfg(target_os = "windows")]
 	Gog,
-	#[cfg(target_os = "windows")]
 	Xbox,
 	Ubisoft,
 }
@@ -50,13 +49,12 @@ const PROVIDERS: &Map = &[
 	create_map_entry::<Steam>(),
 	create_map_entry::<Manual>(),
 	create_map_entry::<Itch>(),
+	create_map_entry::<Xbox>(),
+	create_map_entry::<Ubisoft>(),
 	#[cfg(target_os = "windows")]
 	create_map_entry::<Epic>(),
 	#[cfg(target_os = "windows")]
 	create_map_entry::<Gog>(),
-	#[cfg(target_os = "windows")]
-	create_map_entry::<Xbox>(),
-	create_map_entry::<Ubisoft>(),
 ];
 
 #[enum_dispatch(Provider)]

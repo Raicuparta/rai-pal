@@ -1,20 +1,12 @@
-#![cfg(target_os = "windows")]
+use std::path::Path;
 
-use std::path::{Path, PathBuf};
-
-use log::error;
 use rai_pal_proc_macros::serializable_struct;
 use serde::{Deserialize, Serialize};
-use winreg::{
-	enums::{HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE},
-	RegKey,
-};
 
 use crate::{
 	game_subscription::GameSubscription,
 	installed_game::InstalledGame,
 	owned_game::OwnedGame,
-	paths::file_name_without_extension,
 	providers::provider::{ProviderActions, ProviderId, ProviderStatic},
 	result::Result,
 };
