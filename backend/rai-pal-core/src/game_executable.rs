@@ -4,7 +4,7 @@ use std::{
 	path::{Path, PathBuf},
 };
 
-use rai_pal_proc_macros::serializable_struct;
+use rai_pal_proc_macros::{serializable_enum, serializable_struct};
 
 use crate::{
 	game_engines::{
@@ -14,10 +14,13 @@ use crate::{
 	},
 	paths::{file_name_without_extension, normalize_path},
 	result::Result,
-	serializable_enum,
 };
 
-serializable_enum!(Architecture { X64, X86 });
+#[serializable_enum]
+pub enum Architecture {
+	X64,
+	X86,
+}
 
 #[serializable_struct]
 pub struct GameExecutable {

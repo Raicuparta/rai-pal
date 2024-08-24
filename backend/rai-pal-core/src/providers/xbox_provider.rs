@@ -11,6 +11,7 @@ use winreg::{
 };
 
 use crate::{
+	game_subscription::GameSubscription,
 	installed_game::InstalledGame,
 	owned_game::OwnedGame,
 	paths::file_name_without_extension,
@@ -162,6 +163,8 @@ impl ProviderActions for Xbox {
 			{
 				owned_game.set_thumbnail_url(&image_url);
 			}
+
+			owned_game.add_subscription(GameSubscription::XboxGamePass);
 
 			owned_callback(owned_game);
 		}

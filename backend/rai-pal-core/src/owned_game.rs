@@ -3,6 +3,7 @@ use std::collections::{HashMap, HashSet};
 use rai_pal_proc_macros::serializable_struct;
 
 use crate::{
+	game_subscription::GameSubscription,
 	game_tag::GameTag,
 	game_title::GameTitle,
 	providers::{
@@ -21,6 +22,7 @@ pub struct OwnedGame {
 	pub thumbnail_url: Option<String>,
 	pub tags: HashSet<GameTag>,
 	pub provider_commands: HashMap<ProviderCommandAction, ProviderCommand>,
+	pub from_subscriptions: HashSet<GameSubscription>,
 }
 
 impl OwnedGame {
@@ -39,6 +41,7 @@ impl OwnedGame {
 			provider_commands: HashMap::default(),
 			release_date: None,
 			thumbnail_url: None,
+			from_subscriptions: HashSet::default(),
 		}
 	}
 
@@ -54,6 +57,11 @@ impl OwnedGame {
 
 	pub fn add_tag(&mut self, tag: GameTag) -> &mut Self {
 		self.tags.insert(tag);
+		self
+	}
+
+	pub fn add_subscription(&mut self, subscription: GameSubscription) -> &mut Self {
+		self.from_subscriptions.insert(subscription);
 		self
 	}
 

@@ -1,6 +1,8 @@
 use std::{path::PathBuf, process::Command};
 
-use crate::{result::Result, serializable_enum};
+use rai_pal_proc_macros::serializable_enum;
+
+use crate::result::Result;
 
 #[derive(serde::Serialize, serde::Deserialize, specta::Type, Clone, PartialEq, Eq, Hash, Debug)]
 pub enum ProviderCommand {
@@ -8,13 +10,14 @@ pub enum ProviderCommand {
 	Path(PathBuf, Vec<String>),
 }
 
-serializable_enum!(ProviderCommandAction {
+#[serializable_enum]
+pub enum ProviderCommandAction {
 	Install,
 	ShowInLibrary,
 	ShowInStore,
 	Start,
 	OpenInBrowser,
-});
+}
 
 impl ProviderCommand {
 	pub fn run(&self) -> Result {

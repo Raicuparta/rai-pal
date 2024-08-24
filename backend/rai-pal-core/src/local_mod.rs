@@ -3,7 +3,7 @@ use std::{
 	path::{Path, PathBuf},
 };
 
-use rai_pal_proc_macros::serializable_struct;
+use rai_pal_proc_macros::{serializable_enum, serializable_struct};
 
 use crate::{
 	game_engines::{game_engine::EngineBrand, unity::UnityScriptingBackend},
@@ -11,13 +11,13 @@ use crate::{
 	mod_manifest::{self, Manifest},
 	paths::{self, open_folder_or_parent},
 	result::Result,
-	serializable_enum,
 };
 
-serializable_enum!(ModKind {
+#[serializable_enum]
+pub enum ModKind {
 	Installable,
 	Runnable,
-});
+}
 
 #[serializable_struct]
 pub struct LocalModData {

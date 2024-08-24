@@ -11,6 +11,7 @@ use winreg::{
 };
 
 use crate::{
+	game_subscription::GameSubscription,
 	installed_game::InstalledGame,
 	owned_game::OwnedGame,
 	paths::file_name_without_extension,
@@ -101,6 +102,15 @@ impl ProviderActions for Ubisoft {
 			}
 
 			owned_game.set_thumbnail_url(&game.image_link);
+
+			for subscription in game.part_of_subscription_offer {
+				if subscription.to_lowercase().contains("premium") {
+					owned_game.add_subscription(GameSubscription::UbisoftPremium);
+				}
+				if subscription.to_lowercase().contains("classics") {
+					owned_game.add_subscription(GameSubscription::UbisoftClassics);
+				}
+			}
 
 			owned_callback(owned_game);
 		}

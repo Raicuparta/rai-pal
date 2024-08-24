@@ -4,7 +4,7 @@ use std::{
 };
 
 use log::error;
-use rai_pal_proc_macros::serializable_struct;
+use rai_pal_proc_macros::{serializable_enum, serializable_struct};
 
 use super::mod_loader::{ModLoaderActions, ModLoaderData, ModLoaderStatic};
 use crate::{
@@ -16,7 +16,6 @@ use crate::{
 	providers::provider_command::ProviderCommand,
 	result::Error,
 	result::Result,
-	serializable_enum,
 };
 
 #[serializable_struct]
@@ -24,13 +23,14 @@ pub struct RunnableLoader {
 	pub data: ModLoaderData,
 }
 
-serializable_enum!(RunnableParameter {
+#[serializable_enum]
+pub enum RunnableParameter {
 	ExecutableName,
 	ExecutablePath,
 	GameJson,
 	StartCommand,
 	StartCommandArgs,
-});
+}
 
 impl ModLoaderStatic for RunnableLoader {
 	const ID: &'static str = "runnable";

@@ -6,6 +6,7 @@ use std::{
 
 use lazy_regex::regex_captures;
 use log::error;
+use rai_pal_proc_macros::serializable_enum;
 
 use super::game_engine::EngineVersionNumbers;
 use crate::{
@@ -13,10 +14,13 @@ use crate::{
 	game_executable::{get_architecture, Architecture, GameExecutable},
 	paths::{self, glob_path},
 	result::{Error, Result},
-	serializable_enum,
 };
 
-serializable_enum!(UnityScriptingBackend { Il2Cpp, Mono });
+#[serializable_enum]
+pub enum UnityScriptingBackend {
+	Il2Cpp,
+	Mono,
+}
 
 pub fn parse_version(string: &str) -> Option<EngineVersion> {
 	let (full, major, minor, patch, suffix) = regex_captures!(

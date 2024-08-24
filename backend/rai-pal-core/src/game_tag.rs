@@ -1,3 +1,7 @@
-use crate::serializable_enum;
+use rai_pal_proc_macros::serializable_enum;
 
-serializable_enum!(GameTag { VR, Demo });
+#[serializable_enum]
+pub enum GameTag {
+	VR,
+	Demo,
+}

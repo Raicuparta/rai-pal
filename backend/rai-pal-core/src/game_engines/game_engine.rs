@@ -1,13 +1,12 @@
-use rai_pal_proc_macros::serializable_struct;
+use rai_pal_proc_macros::{serializable_enum, serializable_struct};
 
-use crate::serializable_enum;
-
-serializable_enum!(EngineBrand {
+#[serializable_enum]
+pub enum EngineBrand {
 	Unity,
 	Unreal,
 	Godot,
 	GameMaker,
-});
+}
 
 #[serializable_struct]
 pub struct GameEngine {

@@ -5,6 +5,7 @@ use std::{
 };
 
 use enum_dispatch::enum_dispatch;
+use rai_pal_proc_macros::serializable_enum;
 
 #[cfg(target_os = "windows")]
 use crate::providers::{epic_provider::Epic, gog_provider::Gog, xbox_provider::Xbox};
@@ -14,12 +15,12 @@ use crate::{
 	paths,
 	providers::{itch_provider::Itch, manual_provider::Manual, steam_provider::Steam},
 	result::{Error, Result},
-	serializable_enum,
 };
 
 use super::ubisoft_provider::Ubisoft;
 
-serializable_enum!(ProviderId {
+#[serializable_enum]
+pub enum ProviderId {
 	Steam,
 	Manual,
 	Itch,
@@ -27,7 +28,7 @@ serializable_enum!(ProviderId {
 	Gog,
 	Xbox,
 	Ubisoft,
-});
+}
 
 #[enum_dispatch]
 #[derive(Clone)]
