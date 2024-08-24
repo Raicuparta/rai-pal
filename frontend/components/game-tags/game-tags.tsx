@@ -1,6 +1,7 @@
 import { GameTag, OwnedGame } from "@api/bindings";
-import { Badge, Box, Flex, Stack, Table } from "@mantine/core";
-import { FilterOption } from "./table/table-head";
+import { Table } from "@mantine/core";
+import { FilterOption } from "../table/table-head";
+import styles from "./game-tags.module.css";
 
 function getTagDisplayName(tag: GameTag) {
 	return (
@@ -11,21 +12,16 @@ function getTagDisplayName(tag: GameTag) {
 export function renderGameTagsCell(ownedGame: OwnedGame | undefined) {
 	return (
 		<Table.Td p={0}>
-			<Stack
-				gap={0}
-				align="center"
-			>
+			<div className={styles.wrapper}>
 				{ownedGame?.tags.sort().map((tag) => (
-					<Badge
+					<span
+						className={styles.tag}
 						key={tag}
-						color="gray"
-						size="xs"
-						fw={1}
 					>
 						{getTagDisplayName(tag)}
-					</Badge>
+					</span>
 				))}
-			</Stack>
+			</div>
 		</Table.Td>
 	);
 }

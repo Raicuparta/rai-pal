@@ -28,7 +28,7 @@ import {
 	gameTagFilterOptions,
 	getGameTagsSortValue,
 	renderGameTagsCell,
-} from "@components/game-tags";
+} from "@components/game-tags/game-tags";
 
 const thumbnail: TableColumnBase<ProcessedInstalledGame> = {
 	hideInDetails: true,
