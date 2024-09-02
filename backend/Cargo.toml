@@ -32,7 +32,6 @@ specta-typescript = "0.0.7"
 tauri = { version = "2.0.0-rc.0", features = [] }
 tauri-plugin-dialog = "2.0.0-rc.0"
 tauri-plugin-log = "2.0.0-rc.0"
-tauri-plugin-store = "2.0.0-rc.0"
 tauri-plugin-updater = "2.0.0-rc.0"
 tauri-plugin-window-state = "2.0.0-rc.0"
 tauri-runtime = "2.0.0-rc.0"

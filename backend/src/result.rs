@@ -10,13 +10,6 @@ pub enum Error {
 	),
 
 	#[error(transparent)]
-	TauriPluginStore(
-		#[serde(skip)]
-		#[from]
-		tauri_plugin_store::Error,
-	),
-
-	#[error(transparent)]
 	Io(
 		#[serde(skip)]
 		#[from]
@@ -28,6 +21,13 @@ pub enum Error {
 		#[serde(skip)]
 		#[from]
 		rai_pal_core::result::Error,
+	),
+
+	#[error(transparent)]
+	SerdeJson(
+		#[serde(skip)]
+		#[from]
+		serde_json::error::Error,
 	),
 
 	#[error("Failed to get app resources path: `{0}`")]

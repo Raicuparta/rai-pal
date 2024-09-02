@@ -423,7 +423,7 @@ async fn get_provider_games(handle: AppHandle, provider_id: ProviderId) -> Resul
 	let mut owned_games = HashMap::<String, OwnedGame>::new();
 	let mut owned_games_without_cache = HashMap::<String, OwnedGame>::new();
 
-	if let Err(err) = cache.load(&handle) {
+	if let Err(err) = cache.load() {
 		log::warn!("Failed to load cache for provider {provider_id}: {err}");
 	} else {
 		installed_games = cache.data.installed_games.clone();
@@ -457,7 +457,7 @@ async fn get_provider_games(handle: AppHandle, provider_id: ProviderId) -> Resul
 			installed_games: installed_games_without_cache.clone(),
 			owned_games: owned_games_without_cache.clone(),
 		})
-		.save(&handle)?;
+		.save()?;
 
 	Ok(())
 }
@@ -567,8 +567,8 @@ async fn get_provider_data(handle: AppHandle, provider_id: ProviderId) -> Result
 
 #[tauri::command]
 #[specta::specta]
-async fn clear_cache(handle: AppHandle) -> Result {
-	ProviderCache::clear_all(&handle)
+async fn clear_cache() -> Result {
+	ProviderCache::clear_all()
 }
 
 fn main() {
@@ -630,7 +630,6 @@ fn main() {
 		});
 
 	tauri::Builder::default()
-		.plugin(tauri_plugin_store::Builder::new().build())
 		.plugin(
 			tauri_plugin_window_state::Builder::default()
 				.with_state_flags(StateFlags::POSITION | StateFlags::SIZE)

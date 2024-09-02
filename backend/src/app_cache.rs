@@ -4,12 +4,10 @@ use crate::result::Result;
 use rai_pal_core::{
 	installed_game::InstalledGame,
 	owned_game::OwnedGame,
+	paths,
 	providers::provider::{self, ProviderId},
 };
 use rai_pal_proc_macros::serializable_struct;
-use serde_json::json;
-use tauri::{AppHandle, Manager, Wry};
-use tauri_plugin_store::{with_store, StoreCollection};
 
 #[serializable_struct]
 pub struct ProviderData {
@@ -27,7 +25,10 @@ impl ProviderCache {
 	const CACHE_FOLDER: &'static str = "cache";
 
 	pub fn new(id: ProviderId) -> Result<Self> {
-		let path = PathBuf::from(Self::CACHE_FOLDER).join("providers").join(id.to_string());
+		let path = paths::app_data_path()?
+			.join(Self::CACHE_FOLDER)
+			.join("providers")
+			.join(id.to_string());
 		fs::create_dir_all(&path)?;
 		Ok(Self {
 			path,
@@ -38,35 +39,17 @@ impl ProviderCache {
 		})
 	}
 
-	pub fn load(&mut self, handle: &AppHandle) -> Result {
-		let stores = handle.state::<StoreCollection<Wry>>();
-
-		let mut cache_data = ProviderData {
-			installed_games: HashMap::new(),
-			owned_games: HashMap::new(),
-		};
-
-		with_store(handle.clone(), stores, self.path.clone(), |store| {
-			if let Some(data) = store.get(Self::DATA_KEY) {
-				cache_data = serde_json::from_value(data.clone())?;
-			}
-
-			Ok(())
-		})?;
-
-		self.data = cache_data;
+	pub fn load(&mut self) -> Result {
+		self.data = serde_json::from_str(&fs::read_to_string(self.path.join(Self::DATA_KEY))?)?;
 
 		Ok(())
 	}
 
-	pub fn save(&self, handle: &AppHandle) -> Result {
-		let stores = handle.state::<StoreCollection<Wry>>();
-
-		with_store(handle.clone(), stores, self.path.clone(), |store| {
-			store.insert(Self::DATA_KEY.to_string(), json!(self.data))?;
-			store.save()?;
-			Ok(())
-		})?;
+	pub fn save(&self) -> Result {
+		fs::write(
+			self.path.join(Self::DATA_KEY),
+			serde_json::to_string(&self.data)?,
+		)?;
 
 		Ok(())
 	}
@@ -76,21 +59,19 @@ impl ProviderCache {
 		self
 	}
 
-	pub fn clear(&self, handle: &AppHandle) -> Result {
-		let stores = handle.state::<StoreCollection<Wry>>();
+	pub fn clear(&mut self) -> Result {
+		fs::remove_dir_all(&self.path)?;
+		self.data = ProviderData {
+			installed_games: HashMap::new(),
+			owned_games: HashMap::new(),
+		};
 
-		with_store(handle.clone(), stores, self.path.clone(), |store| {
-			store.clear()?;
-			store.save()?;
-
-			Ok(())
-		})?;
 		Ok(())
 	}
 
-	pub fn clear_all(handle: &AppHandle) -> Result {
+	pub fn clear_all() -> Result {
 		for provider_id in provider::get_provider_ids() {
-			Self::new(provider_id)?.clear(handle)?;
+			Self::new(provider_id)?.clear()?;
 		}
 
 		Ok(())
