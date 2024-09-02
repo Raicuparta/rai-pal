@@ -53,7 +53,7 @@ const provider: TableColumnBase<ProcessedOwnedGame, ProviderId> = {
 	getSortValue: (game) => game.provider,
 	filter: (game, hiddenValues) => hiddenValues.includes(game.provider),
 	filterOptions: providerFilterOptions,
-	unavailableValues: ["Manual"],
+	unavailableValues: ["Xbox", "Manual"],
 	renderCell: (game) => (
 		<Table.Td>
 			<ProviderBadge value={game.provider} />

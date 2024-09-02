@@ -14,6 +14,5 @@ export const providerFilterOptions: FilterOption<ProviderId>[] = [
 	{ label: "GOG", value: "Gog" },
 	{ label: "Xbox", value: "Xbox" },
 	{ label: "Itch", value: "Itch" },
-	{ label: "Ubisoft", value: "Ubisoft" },
 	{ label: "Manual", value: "Manual" },
 ];

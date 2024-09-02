@@ -1,8 +1,7 @@
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 use log::error;
 use rai_pal_proc_macros::serializable_struct;
-use serde::{Deserialize, Serialize};
 #[cfg(target_os = "windows")]
 use winreg::{
 	enums::{HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE},
@@ -10,15 +9,12 @@ use winreg::{
 };
 
 use crate::{
-	game_subscription::GameSubscription,
 	installed_game::InstalledGame,
 	owned_game::OwnedGame,
 	paths::file_name_without_extension,
 	providers::provider::{ProviderActions, ProviderId, ProviderStatic},
 	result::Result,
 };
-
-use super::provider_command::{ProviderCommand, ProviderCommandAction};
 
 #[derive(Clone)]
 pub struct Xbox {}
@@ -43,17 +39,6 @@ struct XboxGamepassGame {
 	store_page: String,
 }
 
-impl XboxGamepassGame {
-	fn get_release_date(&self) -> Option<i64> {
-		Some(
-			self.release_date
-				.parse::<chrono::DateTime<chrono::Utc>>()
-				.ok()?
-				.timestamp(),
-		)
-	}
-}
-
 #[derive(serde::Serialize, serde::Deserialize, specta::Type, Clone, Debug)]
 #[serde(rename_all = "PascalCase")]
 struct XboxGamepassImages {
@@ -65,7 +50,7 @@ impl ProviderActions for Xbox {
 	async fn get_games<TInstalledCallback, TOwnedCallback>(
 		&self,
 		mut installed_callback: TInstalledCallback,
-		mut owned_callback: TOwnedCallback,
+		mut _owned_callback: TOwnedCallback,
 	) -> Result
 	where
 		TInstalledCallback: FnMut(InstalledGame) + Send + Sync,
@@ -136,48 +121,6 @@ impl ProviderActions for Xbox {
 					}
 				}
 			}
-		}
-
-		let json_path =
-			Path::new(env!("CARGO_MANIFEST_DIR")).join("../../test-data/xbox-gamepass-games.json");
-
-		let games: Vec<XboxGamepassGame> =
-			serde_json::from_str(&std::fs::read_to_string(json_path)?)?;
-
-		for game in games {
-			let mut owned_game = OwnedGame::new(&game.product_id, *Self::ID, &game.product_title);
-
-			owned_game
-				.add_provider_command(
-					ProviderCommandAction::OpenInBrowser,
-					ProviderCommand::String(format!(
-						"https://www.microsoft.com/store/productId/{}",
-						game.product_id,
-					)),
-				)
-				.add_provider_command(
-					ProviderCommandAction::ShowInStore,
-					ProviderCommand::String(format!(
-						"msxbox://game/?productId={}",
-						game.product_id,
-					)),
-				);
-
-			if let Some(release_date) = game.get_release_date() {
-				owned_game.set_release_date(release_date);
-			}
-
-			if let Some(image_url) = game
-				.images
-				.and_then(|images| images.logo.or(images.box_art))
-				.and_then(|image_urls| image_urls.first().cloned())
-			{
-				owned_game.set_thumbnail_url(&image_url);
-			}
-
-			owned_game.add_subscription(GameSubscription::XboxGamePass);
-
-			owned_callback(owned_game);
 		}
 
 		Ok(())

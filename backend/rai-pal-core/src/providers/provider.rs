@@ -13,11 +13,11 @@ use crate::{
 	installed_game::InstalledGame,
 	owned_game::OwnedGame,
 	paths,
-	providers::{itch_provider::Itch, manual_provider::Manual, steam_provider::Steam, xbox_provider::Xbox},
+	providers::{
+		itch_provider::Itch, manual_provider::Manual, steam_provider::Steam, xbox_provider::Xbox,
+	},
 	result::{Error, Result},
 };
-
-use super::ubisoft_provider::Ubisoft;
 
 #[serializable_enum]
 pub enum ProviderId {
@@ -27,7 +27,6 @@ pub enum ProviderId {
 	Epic,
 	Gog,
 	Xbox,
-	Ubisoft,
 }
 
 #[enum_dispatch]
@@ -41,7 +40,6 @@ pub enum Provider {
 	#[cfg(target_os = "windows")]
 	Gog,
 	Xbox,
-	Ubisoft,
 }
 
 type Map = [(ProviderId, fn() -> Result<Provider>)];
@@ -50,7 +48,6 @@ const PROVIDERS: &Map = &[
 	create_map_entry::<Manual>(),
 	create_map_entry::<Itch>(),
 	create_map_entry::<Xbox>(),
-	create_map_entry::<Ubisoft>(),
 	#[cfg(target_os = "windows")]
 	create_map_entry::<Epic>(),
 	#[cfg(target_os = "windows")]
