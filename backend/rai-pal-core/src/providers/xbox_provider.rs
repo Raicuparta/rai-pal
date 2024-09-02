@@ -85,8 +85,8 @@ impl ProviderActions for Xbox {
 						if let Ok(subchild) = child.open_subkey(subkey) {
 							if let Ok(package_id) = subchild.get_value::<String, _>("Package") {
 								if let Ok(root_path) = subchild.get_value::<String, _>("Root") {
-									if let Ok(executables) =
-										game_configs.open_subkey(format!("{package_id}\\Executable"))
+									if let Ok(executables) = game_configs
+										.open_subkey(format!("{package_id}\\Executable"))
 									{
 										if let Some(Ok(first_executable_key)) =
 											executables.enum_keys().nth(0)
@@ -97,14 +97,15 @@ impl ProviderActions for Xbox {
 												if let Ok(executable_name) =
 													first_executable.get_value::<String, _>("Name")
 												{
-													let executable_path =
-														PathBuf::from(root_path).join(executable_name);
+													let executable_path = PathBuf::from(root_path)
+														.join(executable_name);
 
 													let display_name = app_packages
 														.open_subkey(&package_id)
 														.and_then(|package| {
-															package
-																.get_value::<String, _>("DisplayName")
+															package.get_value::<String, _>(
+																"DisplayName",
+															)
 														})
 														.or_else(|error| {
 															error!("Failed to find display name for Xbox game: {}", error);
@@ -137,8 +138,8 @@ impl ProviderActions for Xbox {
 			}
 		}
 
-		let json_path = Path::new(env!("CARGO_MANIFEST_DIR"))
-			.join("../../test-data/xbox-gamepass-games-eaplay.json");
+		let json_path =
+			Path::new(env!("CARGO_MANIFEST_DIR")).join("../../test-data/xbox-gamepass-games.json");
 
 		let games: Vec<XboxGamepassGame> =
 			serde_json::from_str(&std::fs::read_to_string(json_path)?)?;
@@ -146,13 +147,21 @@ impl ProviderActions for Xbox {
 		for game in games {
 			let mut owned_game = OwnedGame::new(&game.product_id, *Self::ID, &game.product_title);
 
-			owned_game.add_provider_command(
-				ProviderCommandAction::OpenInBrowser,
-				ProviderCommand::String(format!(
-					"https://www.microsoft.com/store/productId/{}",
-					game.product_id,
-				)),
-			);
+			owned_game
+				.add_provider_command(
+					ProviderCommandAction::OpenInBrowser,
+					ProviderCommand::String(format!(
+						"https://www.microsoft.com/store/productId/{}",
+						game.product_id,
+					)),
+				)
+				.add_provider_command(
+					ProviderCommandAction::ShowInStore,
+					ProviderCommand::String(format!(
+						"msxbox://game/?productId={}",
+						game.product_id,
+					)),
+				);
 
 			if let Some(release_date) = game.get_release_date() {
 				owned_game.set_release_date(release_date);
