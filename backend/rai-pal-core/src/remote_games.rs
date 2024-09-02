@@ -1,13 +1,12 @@
 use std::collections::HashMap;
 
 use lazy_regex::regex;
-use rai_pal_proc_macros::serializable_struct;
+use rai_pal_proc_macros::{serializable_enum, serializable_struct};
 
 use crate::game_engines::game_engine::{
 	EngineBrand, EngineVersion, EngineVersionNumbers, GameEngine,
 };
-use crate::game_title::GameTitle;
-use crate::providers::provider::ProviderId;
+use crate::game_subscription::GameSubscription;
 use crate::result::Result;
 
 const URL_BASE: &str = "https://raicuparta.github.io/rai-pal-db/game-db";
@@ -24,18 +23,32 @@ struct GameDatabaseEngineVersion {
 	version: Option<String>,
 }
 
+#[serializable_enum]
+pub enum IdKind {
+	Steam,
+	Manual,
+	Itch,
+	Epic,
+	Gog,
+	Xbox,
+	Ubisoft,
+	NormalizedTitle,
+}
+
 #[serializable_struct]
 struct GameDatabaseEntry {
 	pub title: Option<String>,
 	pub engines: Option<Vec<GameDatabaseEngineVersion>>,
-	pub provider_ids: Option<HashMap<ProviderId, Vec<String>>>,
+	pub ids: Option<HashMap<IdKind, Vec<String>>>,
+	pub subscriptions: Option<Vec<GameSubscription>>,
 }
 
 #[serializable_struct]
 pub struct RemoteGame {
-	pub title: Option<GameTitle>,
+	pub title: Option<String>,
 	pub engines: Option<Vec<GameEngine>>,
-	pub provider_ids: HashMap<ProviderId, Vec<String>>,
+	pub ids: HashMap<IdKind, Vec<String>>,
+	pub subscriptions: Option<Vec<GameSubscription>>,
 }
 
 fn engine_brand_from_string(brand: &str) -> Option<EngineBrand> {
@@ -87,7 +100,7 @@ pub async fn get() -> Result<Vec<RemoteGame>> {
 		.into_iter()
 		.filter_map(|entry| {
 			Some(RemoteGame {
-				title: entry.title.map(|title| GameTitle::new(&title)),
+				title: entry.title,
 				engines: entry.engines.map(|engines| {
 					engines
 						.into_iter()
@@ -104,7 +117,8 @@ pub async fn get() -> Result<Vec<RemoteGame>> {
 						})
 						.collect()
 				}),
-				provider_ids: entry.provider_ids?,
+				ids: entry.ids?,
+				subscriptions: entry.subscriptions,
 			})
 		})
 		.collect();

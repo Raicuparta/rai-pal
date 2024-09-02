@@ -22,18 +22,18 @@ export function useProcessedOwnedGames() {
 		for (const remoteGame of remoteGames) {
 			for (const providerId of providerIds) {
 				byProvider[providerId] ??= {};
-				for (const remoteGameId of remoteGame.providerIds[providerId] ?? []) {
+				for (const remoteGameId of remoteGame.ids[providerId] ?? []) {
 					byProvider[providerId][remoteGameId] = remoteGame;
 				}
 			}
 
 			if (remoteGame.title) {
-				for (const normalizedTitle of remoteGame.title.normalized) {
+				for (const normalizedTitle of remoteGame.ids.NormalizedTitle) {
 					byTitle[normalizedTitle] = remoteGame;
 				}
 			}
 		}
-		
+
 		return [byProvider, byTitle];
 	}, [remoteGames, providerDataMap]);
 
