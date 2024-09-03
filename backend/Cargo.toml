@@ -14,26 +14,26 @@ version.workspace = true
 edition.workspace = true
 
 [build-dependencies]
-tauri-build = { version = "2.0.0-rc.0", features = [] }
+tauri-build = { version = "2.0.0-rc.7", features = [] }
 
 [workspace.dependencies]
-log = "0.4.20"
+log = "0.4.22"
 rai-pal-core = { path = "./rai-pal-core" }
 rai-pal-proc-macros = { path = "./proc-macros" }
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0.108"
-specta = "2.0.0-rc.19"
-tauri-specta = { version = "2.0.0-rc.14", features = ["derive", "typescript"] }
-thiserror = "1.0.50"
+serde = { version = "1.0.209", features = ["derive"] }
+serde_json = "1.0.127"
+specta = "2.0.0-rc.20"
+tauri-specta = { version = "2.0.0-rc.18", features = ["derive", "typescript"] }
+thiserror = "1.0.63"
 
 [dependencies]
 specta-typescript = "0.0.7"
-tauri = { version = "2.0.0-rc.0", features = [] }
-tauri-plugin-dialog = "2.0.0-rc.0"
-tauri-plugin-log = "2.0.0-rc.0"
-tauri-plugin-updater = "2.0.0-rc.0"
-tauri-plugin-window-state = "2.0.0-rc.0"
-tauri-runtime = "2.0.0-rc.0"
+tauri = { version = "2.0.0-rc.8", features = [] }
+tauri-plugin-dialog = "2.0.0-rc.3"
+tauri-plugin-log = "2.0.0-rc.2"
+tauri-plugin-updater = "2.0.0-rc.2"
+tauri-plugin-window-state = "2.0.0-rc.2"
+tauri-runtime = "2.0.0-rc.7"
 
 log.workspace = true
 rai-pal-core.workspace = true

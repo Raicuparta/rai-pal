@@ -1,70 +1,62 @@
 {
-  "$schema": "../node_modules/@tauri-apps/cli/schema.json",
-  "build": {
-    "beforeDevCommand": "npm run frontend:dev",
-    "beforeBuildCommand": "npm run frontend:build",
-    "frontendDist": "../dist",
-    "devUrl": "http://localhost:1420"
-  },
-  "bundle": {
-    "createUpdaterArtifacts": "v1Compatible",
-    "active": true,
-    "targets": [
-      "msi"
-    ],
-    "resources": [
-      "resources/*"
-    ],
-    "icon": [
-      "icons/32x32.png",
-      "icons/128x128.png",
-      "icons/128x128@2x.png",
-      "icons/icon.icns",
-      "icons/icon.ico"
-    ]
-  },
-  "productName": "Rai Pal",
-  "identifier": "com.raicuparta.pal",
-  "plugins": {
-    "updater": {
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDNGMzI5QUM1RjMwMjM0OTMKUldTVE5BTHp4Wm95UDcvaWgyKzRENVkzZVc2K1JTOEhidUR4OFVENWVqemloUWRmZDllbzJGaSsK",
-      "endpoints": [
-        "https://github.com/Raicuparta/rai-pal/releases/latest/download/latest.json"
-      ]
-    }
-  },
-  "app": {
-    "windows": [
-      {
-        "fullscreen": false,
-        "resizable": true,
-        "title": "Rai Pal",
-        "width": 800,
-        "height": 600,
-        "minHeight": 300,
-        "minWidth": 800,
-        "visible": false
-      }
-    ],
-    "security": {
-      "dangerousDisableAssetCspModification": [
-        "style-src-elem"
-      ],
-      "csp": {
-        "img-src": [
-          "'self'",
-          "http://tauri.localhost",
-          "https://*.epicgames.com",
-          "https://*.itch.zone",
-          "https://*.steamstatic.com",
-          "https://*.gog.com",
-          "https://*.patreonusercontent.com",
-          "https://*.patreon.com"
-        ],
-        "style-src-elem": [
-          "'self' 'unsafe-inline'"
-        ]
-      }
-    }
-  }
+	"$schema": "../node_modules/@tauri-apps/cli/schema.json",
+	"build": {
+		"beforeDevCommand": "npm run frontend:dev",
+		"beforeBuildCommand": "npm run frontend:build",
+		"frontendDist": "../dist",
+		"devUrl": "http://localhost:1420"
+	},
+	"bundle": {
+		"createUpdaterArtifacts": "v1Compatible",
+		"active": true,
+		"targets": ["msi"],
+		"resources": ["resources/**/*"],
+		"icon": [
+			"icons/32x32.png",
+			"icons/128x128.png",
+			"icons/128x128@2x.png",
+			"icons/icon.icns",
+			"icons/icon.ico"
+		]
+	},
+	"productName": "Rai Pal",
+	"identifier": "com.raicuparta.pal",
+	"plugins": {
+		"updater": {
+			"pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDNGMzI5QUM1RjMwMjM0OTMKUldTVE5BTHp4Wm95UDcvaWgyKzRENVkzZVc2K1JTOEhidUR4OFVENWVqemloUWRmZDllbzJGaSsK",
+			"endpoints": [
+				"https://github.com/Raicuparta/rai-pal/releases/latest/download/latest.json"
+			]
+		}
+	},
+	"app": {
+		"windows": [
+			{
+				"fullscreen": false,
+				"resizable": true,
+				"title": "Rai Pal",
+				"width": 800,
+				"height": 600,
+				"minHeight": 300,
+				"minWidth": 800,
+				"visible": false
+			}
+		],
+		"security": {
+			"dangerousDisableAssetCspModification": ["style-src-elem"],
+			"csp": {
+				"img-src": [
+					"'self'",
+					"http://tauri.localhost",
+					"https://*.epicgames.com",
+					"https://*.itch.zone",
+					"https://*.steamstatic.com",
+					"https://*.gog.com",
+					"https://*.patreonusercontent.com",
+					"https://*.patreon.com"
+				],
+				"style-src-elem": ["'self' 'unsafe-inline'"]
+			}
+		}
+	}
 }
