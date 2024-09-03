@@ -10,13 +10,6 @@ pub enum Error {
 	),
 
 	#[error(transparent)]
-	Io(
-		#[serde(skip)]
-		#[from]
-		std::io::Error,
-	),
-
-	#[error(transparent)]
 	Core(
 		#[serde(skip)]
 		#[from]

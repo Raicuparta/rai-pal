@@ -18,7 +18,6 @@ tauri-build = { version = "2.0.0-rc.0", features = [] }
 
 [workspace.dependencies]
 log = "0.4.20"
-open = "5.0.0"
 rai-pal-core = { path = "./rai-pal-core" }
 rai-pal-proc-macros = { path = "./proc-macros" }
 serde = { version = "1.0", features = ["derive"] }
@@ -37,7 +36,6 @@ tauri-plugin-window-state = "2.0.0-rc.0"
 tauri-runtime = "2.0.0-rc.0"
 
 log.workspace = true
-open.workspace = true
 rai-pal-core.workspace = true
 rai-pal-proc-macros.workspace = true
 serde_json.workspace = true

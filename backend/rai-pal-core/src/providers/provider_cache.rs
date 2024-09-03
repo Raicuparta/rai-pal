@@ -1,7 +1,7 @@
 use std::{collections::HashMap, fs, path::PathBuf};
 
 use crate::result::Result;
-use rai_pal_core::{
+use crate::{
 	installed_game::InstalledGame,
 	owned_game::OwnedGame,
 	paths,
@@ -51,7 +51,7 @@ impl ProviderCache {
 
 	pub fn save(&self) -> Result {
 		if self.path.is_dir() {
-			fs::remove_dir_all(&self.path)?
+			fs::remove_dir_all(&self.path)?;
 		}
 
 		fs::write(&self.path, serde_json::to_string(&self.data)?)?;

@@ -3341,7 +3341,6 @@ name = "rai-pal"
 version = "0.13.0"
 dependencies = [
  "log",
- "open",
  "rai-pal-core",
  "rai-pal-proc-macros",
  "serde",

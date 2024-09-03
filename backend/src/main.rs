@@ -6,7 +6,6 @@
 use std::{collections::HashMap, path::PathBuf, sync::Mutex};
 
 use crate::result::{Error, Result};
-use app_cache::{ProviderCache, ProviderData};
 use app_state::{AppState, DataValue, StateData, StatefulHandle};
 use events::EventEmitter;
 use rai_pal_core::installed_game::InstalledGame;
@@ -16,6 +15,7 @@ use rai_pal_core::mod_loaders::mod_loader::{self, ModLoaderActions};
 use rai_pal_core::owned_game::OwnedGame;
 use rai_pal_core::paths::{self, normalize_path};
 use rai_pal_core::providers::provider::ProviderId;
+use rai_pal_core::providers::provider_cache::{ProviderCache, ProviderData};
 use rai_pal_core::providers::{
 	manual_provider,
 	provider::{self, ProviderActions},
@@ -32,7 +32,6 @@ use tauri_plugin_log::{Target, TargetKind};
 use tauri_plugin_window_state::StateFlags;
 use tauri_specta::Builder;
 
-mod app_cache;
 mod app_state;
 mod events;
 mod result;
@@ -78,7 +77,8 @@ async fn open_game_mods_folder(installed_game: InstalledGame) -> Result {
 #[tauri::command]
 #[specta::specta]
 async fn open_mods_folder() -> Result {
-	Ok(open::that_detached(paths::installed_mods_path()?)?)
+	paths::open_folder_or_parent(&paths::installed_mods_path()?)?;
+	Ok(())
 }
 
 #[tauri::command]
@@ -568,7 +568,8 @@ async fn get_provider_data(handle: AppHandle, provider_id: ProviderId) -> Result
 #[tauri::command]
 #[specta::specta]
 async fn clear_cache() -> Result {
-	ProviderCache::clear_all()
+	ProviderCache::clear_all()?;
+	Ok(())
 }
 
 fn main() {
