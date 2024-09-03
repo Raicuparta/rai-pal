@@ -115,16 +115,20 @@ impl ProviderActions for Itch {
 			.config_dir()
 			.join("itch");
 
-		let database = get_database(&app_data_path)?;
-
-		for db_entry in database.games {
-			owned_callback(Self::get_owned_game(&db_entry));
-		}
-
-		for db_entry in database.caves {
-			if let Some(installed_game) = Self::get_installed_game(&db_entry) {
-				installed_callback(installed_game);
+		if let Some(database) = get_database(&app_data_path)? {
+			for db_entry in database.games {
+				owned_callback(Self::get_owned_game(&db_entry));
 			}
+
+			for db_entry in database.caves {
+				if let Some(installed_game) = Self::get_installed_game(&db_entry) {
+					installed_callback(installed_game);
+				}
+			}
+		} else {
+			log::info!(
+				"Itch database file not found. Probably means user hasn't installed the Itch app."
+			);
 		}
 
 		Ok(())
@@ -142,8 +146,13 @@ fn parse_verdict(json_option: &Option<String>) -> Option<ItchDatabaseVerdict> {
 	}
 }
 
-fn get_database(app_data_path: &Path) -> Result<ItchDatabase> {
+fn get_database(app_data_path: &Path) -> Result<Option<ItchDatabase>> {
 	let db_path = app_data_path.join("db").join("butler.db");
+
+	if !db_path.is_file() {
+		return Ok(None);
+	}
+
 	let connection = Connection::open_with_flags(db_path, OpenFlags::SQLITE_OPEN_READ_ONLY)?;
 
 	let mut caves_statement = connection.prepare(
@@ -183,7 +192,7 @@ fn get_database(app_data_path: &Path) -> Result<ItchDatabase> {
 		})
 	})?;
 
-	Ok(ItchDatabase {
+	Ok(Some(ItchDatabase {
 		games: game_rows
 			.filter_map(|row| match row {
 				Ok(game) => Some(game),
@@ -202,5 +211,5 @@ fn get_database(app_data_path: &Path) -> Result<ItchDatabase> {
 				}
 			})
 			.collect(),
-	})
+	}))
 }
