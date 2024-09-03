@@ -1,5 +1,5 @@
 [workspace]
-members = ["proc-macros", "rai-pal-core", "tauri-app"]
+members = ["proc-macros", "core", "tauri-app"]
 
 [workspace.package]
 version = "0.13.0"
@@ -10,7 +10,7 @@ edition = "2021"
 
 [workspace.dependencies]
 log = "0.4.22"
-rai-pal-core = { path = "./rai-pal-core" }
+rai-pal-core = { path = "./core" }
 rai-pal-proc-macros = { path = "./proc-macros" }
 serde = { version = "1.0.209", features = ["derive"] }
 serde_json = "1.0.127"

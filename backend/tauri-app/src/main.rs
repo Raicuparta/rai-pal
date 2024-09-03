@@ -623,7 +623,7 @@ fn main() {
 	builder
 		.export(
 			Typescript::default().bigint(BigIntExportBehavior::BigInt),
-			"../frontend/api/bindings.ts",
+			"../../frontend/api/bindings.ts",
 		)
 		.unwrap_or_else(|err| {
 			log::error!("Failed to generate TypeScript bindings: {err}");

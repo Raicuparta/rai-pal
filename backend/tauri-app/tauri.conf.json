@@ -1,5 +1,5 @@
 {
-	"$schema": "../node_modules/@tauri-apps/cli/schema.json",
+	"$schema": "../../node_modules/@tauri-apps/cli/schema.json",
 	"build": {
 		"beforeDevCommand": "npm run frontend:dev",
 		"beforeBuildCommand": "npm run frontend:build",
