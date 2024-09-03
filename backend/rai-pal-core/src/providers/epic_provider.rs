@@ -190,26 +190,36 @@ impl ProviderActions for Epic {
 			.and_then(|launcher_reg| launcher_reg.get_value::<String, _>("AppDataPath"))
 			.map(PathBuf::from)?;
 
-		let mut file = File::open(app_data_path.join("Catalog").join("catcache.bin"))?;
-
-		let mut decoder = base64::read::DecoderReader::new(&mut file, &general_purpose::STANDARD);
-		let mut json = String::default();
-		decoder.read_to_string(&mut json)?;
-
-		let catalog = serde_json::from_str::<Vec<EpicCatalogItem>>(&json)?;
-
-		let manifest_paths = glob_path(&app_data_path.join("Manifests").join("*.item"));
-
-		for manifest_path in manifest_paths {
-			if let Some(installed_game) = Self::get_installed_game(&manifest_path) {
-				installed_callback(installed_game);
+		let manifests_path = app_data_path.join("Manifests");
+		if manifests_path.is_dir() {
+			let manifest_paths = glob_path(&manifests_path.join("*.item"));
+			for manifest_path in manifest_paths {
+				if let Some(installed_game) = Self::get_installed_game(&manifest_path) {
+					installed_callback(installed_game);
+				}
 			}
+		} else {
+			log::info!("Epic Games Launcher manifests folder not found. Probably means Epic Games Launcher isn't installed, or maybe user hasn't installed any games dunno.");
 		}
 
-		for catalog_item in catalog {
-			if let Some(owned_game) = Self::get_owned_game(&catalog_item) {
-				owned_callback(owned_game);
+		let catalog_path = app_data_path.join("Catalog").join("catcache.bin");
+		if catalog_path.is_file() {
+			let mut catalog_cache_file = File::open(catalog_path)?;
+			let mut decoder = base64::read::DecoderReader::new(
+				&mut catalog_cache_file,
+				&general_purpose::STANDARD,
+			);
+			let mut json = String::default();
+			decoder.read_to_string(&mut json)?;
+
+			let catalog = serde_json::from_str::<Vec<EpicCatalogItem>>(&json)?;
+			for catalog_item in catalog {
+				if let Some(owned_game) = Self::get_owned_game(&catalog_item) {
+					owned_callback(owned_game);
+				}
 			}
+		} else {
+			log::info!("Epic Games Launcher catalog cache file not found. Probably means user hasn't installed Epic Games Launcher, or the cache file hasn't been created yet.");
 		}
 
 		Ok(())
