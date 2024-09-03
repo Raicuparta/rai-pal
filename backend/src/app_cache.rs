@@ -21,17 +21,17 @@ pub struct ProviderCache {
 }
 
 impl ProviderCache {
-	const DATA_KEY: &'static str = "data";
 	const CACHE_FOLDER: &'static str = "cache";
 
 	pub fn new(id: ProviderId) -> Result<Self> {
-		let path = paths::app_data_path()?
+		let folder_path = paths::app_data_path()?
 			.join(Self::CACHE_FOLDER)
-			.join("providers")
-			.join(id.to_string());
-		fs::create_dir_all(&path)?;
+			.join("providers");
+
+		fs::create_dir_all(&folder_path)?;
+
 		Ok(Self {
-			path,
+			path: folder_path.join(id.to_string()),
 			data: ProviderData {
 				installed_games: HashMap::new(),
 				owned_games: HashMap::new(),
@@ -40,16 +40,21 @@ impl ProviderCache {
 	}
 
 	pub fn load(&mut self) -> Result {
-		self.data = serde_json::from_str(&fs::read_to_string(self.path.join(Self::DATA_KEY))?)?;
+		if !self.path.is_file() {
+			return Ok(());
+		}
+
+		self.data = serde_json::from_str(&fs::read_to_string(&self.path)?)?;
 
 		Ok(())
 	}
 
 	pub fn save(&self) -> Result {
-		fs::write(
-			self.path.join(Self::DATA_KEY),
-			serde_json::to_string(&self.data)?,
-		)?;
+		if self.path.is_dir() {
+			fs::remove_dir_all(&self.path)?
+		}
+
+		fs::write(&self.path, serde_json::to_string(&self.data)?)?;
 
 		Ok(())
 	}
@@ -60,7 +65,7 @@ impl ProviderCache {
 	}
 
 	pub fn clear(&mut self) -> Result {
-		fs::remove_dir_all(&self.path)?;
+		fs::remove_file(&self.path)?;
 		self.data = ProviderData {
 			installed_games: HashMap::new(),
 			owned_games: HashMap::new(),
