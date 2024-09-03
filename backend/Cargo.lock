@@ -3423,28 +3423,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "dc33ff2d4973d518d823d61aa239014831e521c75da58e3df4840d3f47749d09"
 
 [[package]]
-name = "rai-pal"
-version = "0.13.0"
-dependencies = [
- "log",
- "rai-pal-core",
- "rai-pal-proc-macros",
- "serde",
- "serde_json",
- "specta",
- "specta-typescript",
- "tauri",
- "tauri-build",
- "tauri-plugin-dialog",
- "tauri-plugin-log",
- "tauri-plugin-updater",
- "tauri-plugin-window-state",
- "tauri-runtime",
- "tauri-specta",
- "thiserror",
-]
-
-[[package]]
 name = "rai-pal-core"
 version = "0.13.0"
 dependencies = [
@@ -3481,6 +3459,28 @@ dependencies = [
  "quote",
  "serde",
  "syn 2.0.76",
+]
+
+[[package]]
+name = "rai-pal-tauri"
+version = "0.13.0"
+dependencies = [
+ "log",
+ "rai-pal-core",
+ "rai-pal-proc-macros",
+ "serde",
+ "serde_json",
+ "specta",
+ "specta-typescript",
+ "tauri",
+ "tauri-build",
+ "tauri-plugin-dialog",
+ "tauri-plugin-log",
+ "tauri-plugin-updater",
+ "tauri-plugin-window-state",
+ "tauri-runtime",
+ "tauri-specta",
+ "thiserror",
 ]
 
 [[package]]

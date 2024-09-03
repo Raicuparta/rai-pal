@@ -1,5 +1,5 @@
 [workspace]
-members = ["proc-macros", "rai-pal-core"]
+members = ["proc-macros", "rai-pal-core", "tauri-app"]
 
 [workspace.package]
 version = "0.13.0"
@@ -7,14 +7,6 @@ authors = ["Raicuparta"]
 license = "GPL-3.0-or-later"
 repository = "https://github.com/Raicuparta/rai-pal"
 edition = "2021"
-
-[package]
-name = "rai-pal"
-version.workspace = true
-edition.workspace = true
-
-[build-dependencies]
-tauri-build = { version = "2.0.0-rc.7", features = [] }
 
 [workspace.dependencies]
 log = "0.4.22"
@@ -25,29 +17,6 @@ serde_json = "1.0.127"
 specta = "2.0.0-rc.20"
 tauri-specta = { version = "2.0.0-rc.18", features = ["derive", "typescript"] }
 thiserror = "1.0.63"
-
-[dependencies]
-specta-typescript = "0.0.7"
-tauri = { version = "2.0.0-rc.8", features = [] }
-tauri-plugin-dialog = "2.0.0-rc.3"
-tauri-plugin-log = "2.0.0-rc.2"
-tauri-plugin-updater = "2.0.0-rc.2"
-tauri-plugin-window-state = "2.0.0-rc.2"
-tauri-runtime = "2.0.0-rc.7"
-
-log.workspace = true
-rai-pal-core.workspace = true
-rai-pal-proc-macros.workspace = true
-serde_json.workspace = true
-serde.workspace = true
-specta.workspace = true
-tauri-specta.workspace = true
-thiserror.workspace = true
-
-[features]
-# this feature is used for production builds or when `devPath` points to the filesystem
-# DO NOT REMOVE!!
-custom-protocol = ["tauri/custom-protocol"]
 
 [profile.release]
 codegen-units = 1

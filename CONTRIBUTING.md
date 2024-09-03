@@ -23,10 +23,10 @@ The project is split into two main parts:
 
 ## Backend
 
-The [`/backend`](/backend) folder contains the Rust code that does most of the heavy lifting. Has a `Cargo.toml` at the top level, defining the main Tauri project (code in `/backend/src`). This code contains anything specific to Tauri, like all the app commands and events that can be called.
+[`/backend/Cargo.toml`](/backend/Cargo.toml) is the [cargo workspace](https://doc.rust-lang.org/book/ch14-03-cargo-workspaces.html) manifest. So it's Rust settings and stuff that relates to all crates within the workspace. Those crates are:
 
-The top level crate is also the workspace containing two other sub-crates:
-- [`/backend/rai-pal-core`](/backend/rai-pal-core): Main Rai Pal logic. Shouldn't depend on anything Tauri-specific, could theoretically be split out into an isolated crate to be used by different frontends.
+- [`/backend/tauri-app`](/backend/tauri-app): Anything specific to Tauri, like all the app commands and events that can be called.
+- [`/backend/rai-pal-core`](/backend/rai-pal-core): Main Rai Pal logic. Shouldn't depend on anything Tauri-specific, could theoretically be split out into an isolated crate to be used by different frontends. The crate in `tauri-app` will reference this crate, to actually do the Rai Pal magic.
 - [`/backend/proc-macros`](/backend/proc-macros): Procedural macros ([read more](https://doc.rust-lang.org/reference/procedural-macros.html)).
 
 Dependencies that are used by multiple crates in the workspace get defined at the workspace level, on the root `Cargo.toml`. Dependencies that are only used by a specific create, get defined in that crate's `Cargo.toml`.
