@@ -102,14 +102,19 @@ impl ProviderActions for Gog {
 		TInstalledCallback: FnMut(InstalledGame) + Send + Sync,
 		TOwnedCallback: FnMut(OwnedGame) + Send + Sync,
 	{
-		let database = get_database()?;
-		let launcher_path = get_launcher_path()?;
+		if let Some(database) = get_database()? {
+			let launcher_path = get_launcher_path()?;
 
-		for db_entry in database {
-			owned_callback(Self::get_owned_game(&db_entry, &launcher_path));
-			if let Some(installed_game) = Self::get_installed_game(&db_entry, &launcher_path) {
-				installed_callback(installed_game);
+			for db_entry in database {
+				owned_callback(Self::get_owned_game(&db_entry, &launcher_path));
+				if let Some(installed_game) = Self::get_installed_game(&db_entry, &launcher_path) {
+					installed_callback(installed_game);
+				}
 			}
+		} else {
+			log::info!(
+				"GOG database file not found. Probably means user hasn't installed GOG Galaxy."
+			);
 		}
 
 		Ok(())
@@ -129,9 +134,13 @@ pub struct GogDbEntryMeta {
 	release_date: Option<i32>,
 }
 
-fn get_database() -> Result<Vec<GogDbEntry>> {
+fn get_database() -> Result<Option<Vec<GogDbEntry>>> {
 	let program_data = paths::try_get_program_data_path();
 	let database_path = program_data.join("GOG.com/Galaxy/storage/galaxy-2.0.db");
+
+	if !database_path.is_file() {
+		return Ok(None);
+	}
 
 	let connection = Connection::open_with_flags(database_path, OpenFlags::SQLITE_OPEN_READ_ONLY)?;
 
@@ -183,7 +192,7 @@ GROUP BY
 		})
 		.collect();
 
-	Ok(rows)
+	Ok(Some(rows))
 }
 
 fn try_parse_json<TData>(json: &str) -> Option<TData>
