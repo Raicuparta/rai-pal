@@ -18,25 +18,25 @@ function getAliasesFromTsconfig() {
 	return resolveAlias;
 }
 
-// https://vitejs.dev/config/
 export default defineConfig(async () => ({
 	plugins: [react()],
 	resolve: {
 		alias: getAliasesFromTsconfig(),
 	},
-	// Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
-	//
-	// 1. prevent vite from obscuring rust errors
 	clearScreen: false,
-	// 2. tauri expects a fixed port, fail if that port is not available
 	server: {
-		port: 1420,
+		// Tauri expects a fixed port, fail if that port is not available
 		strictPort: true,
+		// tauri.conf.json needs to specify the same port, under build.devUrl.
+		port: 1420,
 		watch: {
-			ignored: ["backend/target/**"],
+			// The target folder has all the backend builds, and gets huge, making the watcher super slow.
+			ignored: ["backend/target/**/*"],
 		},
 	},
 	build: {
+		// tauri.config.json needs to point to the same path, under build.frontendDist.
+		outDir: "dist",
 		rollupOptions: {
 			output: {
 				manualChunks: undefined,
@@ -44,7 +44,5 @@ export default defineConfig(async () => ({
 		},
 		chunkSizeWarningLimit: 2000,
 	},
-	// 3. to make use of `TAURI_DEBUG` and other env variables
-	// https://tauri.studio/v1/api/config#buildconfig.beforedevcommand
 	envPrefix: ["VITE_", "TAURI_ENV_"],
 }));

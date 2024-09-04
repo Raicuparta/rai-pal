@@ -48,6 +48,7 @@
 		"reqwest",
 		"runas",
 		"rusqlite",
+		"RUSTUP",
 		"shellapi",
 		"softprops",
 		"specta",

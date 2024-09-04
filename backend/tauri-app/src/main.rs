@@ -25,7 +25,6 @@ use rai_pal_core::remote_games::{self, RemoteGame};
 #[cfg(target_os = "windows")]
 use rai_pal_core::windows;
 use rai_pal_core::{analytics, remote_mod, steam};
-use specta_typescript::{BigIntExportBehavior, Typescript};
 use tauri::path::BaseDirectory;
 use tauri::{AppHandle, Manager};
 use tauri_plugin_log::{Target, TargetKind};
@@ -35,6 +34,7 @@ use tauri_specta::Builder;
 mod app_state;
 mod events;
 mod result;
+mod typescript;
 
 #[tauri::command]
 #[specta::specta]
@@ -619,16 +619,7 @@ fn main() {
 		])
 		.events(events::collect_events());
 
-	#[cfg(debug_assertions)]
-	builder
-		.export(
-			Typescript::default().bigint(BigIntExportBehavior::BigInt),
-			"../../frontend/api/bindings.ts",
-		)
-		.unwrap_or_else(|err| {
-			log::error!("Failed to generate TypeScript bindings: {err}");
-			std::process::exit(1);
-		});
+	typescript::export(&builder);
 
 	tauri::Builder::default()
 		.plugin(

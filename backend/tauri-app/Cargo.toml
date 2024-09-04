@@ -7,13 +7,13 @@ edition.workspace = true
 tauri-build = { version = "2.0.0-rc.7", features = [] }
 
 [dependencies]
-specta-typescript = "0.0.7"
 tauri = { version = "2.0.0-rc.8", features = [] }
 tauri-plugin-dialog = "2.0.0-rc.3"
 tauri-plugin-log = "2.0.0-rc.2"
 tauri-plugin-updater = "2.0.0-rc.2"
 tauri-plugin-window-state = "2.0.0-rc.2"
 tauri-runtime = "2.0.0-rc.7"
+specta-typescript = "0.0.7"
 
 log.workspace = true
 rai-pal-core.workspace = true
