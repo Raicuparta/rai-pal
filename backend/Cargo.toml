@@ -1,5 +1,6 @@
 [workspace]
 members = ["proc-macros", "core", "tauri-app"]
+resolver = "2"
 
 [workspace.package]
 version = "0.13.0"
