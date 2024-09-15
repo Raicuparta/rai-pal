@@ -1,1 +1,0 @@
-{"main-capabilities":{"identifier":"main-capabilities","description":"","local":true,"windows":["main"],"permissions":["core:path:default","core:event:default","core:window:default","core:app:default","core:resources:default","dialog:allow-open","dialog:allow-ask","updater:allow-check"]}}
