@@ -11,6 +11,7 @@
 		"core:resources:default",
 		"dialog:allow-open",
 		"dialog:allow-ask",
-		"updater:allow-check"
+		"updater:allow-check",
+		"shell:default"
 	]
 }
