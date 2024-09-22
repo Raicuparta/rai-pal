@@ -15,12 +15,12 @@ serde.workspace = true
 specta.workspace = true
 tauri-specta.workspace = true
 thiserror.workspace = true
+open.workspace = true
 
 specta-typescript = "0.0.7"
 tauri = { version = "=2.0.0-rc.15", features = [] }
 tauri-plugin-dialog = "2.0.0-rc"
 tauri-plugin-log = "2.0.0-rc"
-tauri-plugin-shell = "2.0.0-rc"
 tauri-plugin-updater = "2.0.0-rc"
 tauri-plugin-window-state = "2.0.0-rc"
 tauri-runtime = "2.0.0-rc"

@@ -567,6 +567,19 @@ async fn get_provider_data(handle: AppHandle, provider_id: ProviderId) -> Result
 
 #[tauri::command]
 #[specta::specta]
+async fn open_url(url: String) -> Result {
+	// TODO: I only need this because there's some bug with the tauri shell plugin.
+	// Without the shell plugin, clicking a link opens the url in another tauri window (which I don't want).
+	// With the shell plugin, clicking a link does open the url in the default browser,
+	// but also makes the Tauri app become unresponsive.
+	// Opening it manually like this seems to work fine though, so this is what I'm doing for now.
+	// Once that bug is fixed, I can just use the shell plugin and remove this command.
+	open::that_detached(url).unwrap();
+	Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
 async fn clear_cache() -> Result {
 	ProviderCache::clear_all()?;
 	Ok(())
@@ -586,13 +599,16 @@ fn main() {
 	let builder = Builder::<tauri::Wry>::new()
 		.commands(tauri_specta::collect_commands![
 			add_game,
+			clear_cache,
 			configure_mod,
 			delete_mod,
 			delete_steam_appinfo_cache,
 			download_mod,
+			fetch_remote_games,
 			frontend_ready,
 			get_local_mods,
 			get_mod_loaders,
+			get_provider_data,
 			get_provider_games,
 			get_provider_ids,
 			get_remote_mods,
@@ -604,6 +620,7 @@ fn main() {
 			open_mod_folder,
 			open_mod_loader_folder,
 			open_mods_folder,
+			open_url,
 			refresh_game,
 			remove_game,
 			run_provider_command,
@@ -613,16 +630,12 @@ fn main() {
 			uninstall_all_mods,
 			uninstall_mod,
 			update_local_mods,
-			fetch_remote_games,
-			get_provider_data,
-			clear_cache,
 		])
 		.events(events::collect_events());
 
 	typescript::export(&builder);
 
 	tauri::Builder::default()
-		.plugin(tauri_plugin_shell::init())
 		.plugin(
 			tauri_plugin_window_state::Builder::default()
 				.with_state_flags(StateFlags::POSITION | StateFlags::SIZE)
