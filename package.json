@@ -12,7 +12,8 @@
 		"update-icons": "tauri icon backend/icons/icon-source.png",
 		"frontend:build": "tsc && vite build",
 		"frontend:dev": "vite",
-		"lint": "prettier ./frontend --write && eslint . --ext .ts,.tsx --fix"
+		"lint": "prettier ./frontend --write && eslint . --fix",
+		"lint-only": "eslint eslint.config.mjs --fix"
 	},
 	"prettier": {
 		"useTabs": true,
@@ -23,6 +24,9 @@
 		"node": ">=20.0.0"
 	},
 	"dependencies": {
+		"@eslint/compat": "^1.1.1",
+		"@eslint/eslintrc": "^3.1.0",
+		"@eslint/js": "^9.11.0",
 		"@mantine/code-highlight": "^7.11.0",
 		"@mantine/core": "7.12.2",
 		"@mantine/hooks": "7.12.2",
@@ -42,10 +46,11 @@
 		"@vitejs/plugin-react": "^4.3.1",
 		"cross-env": "^7.0.3",
 		"eslint-config-prettier": "^9.1.0",
-		"eslint-plugin-react-hooks": "^4.6.2",
+		"eslint-plugin-react-hooks": "5.1.0-rc-fb9a90fa48-20240614",
 		"eslint-plugin-react-refresh": "0.4.12",
 		"eslint-plugin-react": "7.36.1",
-		"eslint": "8.57.1",
+		"eslint": "9.11.0",
+		"globals": "^15.9.0",
 		"jotai": "2.10.0",
 		"postcss-preset-mantine": "^1.15.0",
 		"postcss-simple-vars": "^7.0.1",

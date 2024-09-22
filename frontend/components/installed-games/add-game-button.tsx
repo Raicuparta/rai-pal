@@ -14,7 +14,7 @@ export function AddGame() {
 	const [executeAddGame] = useAsyncCommand(commands.addGame);
 
 	const handleClick = useCallback(async () => {
-		const result = await openDialog({
+		const path = await openDialog({
 			multiple: false,
 			title: "Select the game executable",
 			filters: [
@@ -28,9 +28,9 @@ export function AddGame() {
 				},
 			],
 		});
-		if (!result) return;
+		if (!path) return;
 
-		await executeAddGame(result.path).then(() => setIsOpen(false));
+		await executeAddGame(path).then(() => setIsOpen(false));
 	}, [executeAddGame]);
 
 	useEffect(() => {
