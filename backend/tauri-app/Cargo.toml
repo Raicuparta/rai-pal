@@ -29,3 +29,11 @@ tauri-runtime = "2.0.0-rc"
 # This feature is used for production builds or when `devPath` points to the filesystem.
 # DO NOT REMOVE!!
 custom-protocol = ["tauri/custom-protocol"]
+
+[[bin]]
+# This will be the installed exe name (not the installer name).
+name = "Rai-Pal"
+# This would usually already be the default path,
+# but when a custom name is defined it gets inferred from the name.
+# So we need to specify it here to override the inferred one.
+path = "src/main.rs"
