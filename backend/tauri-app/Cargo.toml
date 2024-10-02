@@ -4,10 +4,11 @@ version.workspace = true
 edition.workspace = true
 
 [build-dependencies]
-tauri-build = { version = "2.0.0-rc", features = [] }
+tauri-build = { version = "2.0.0", features = [] }
 
 [dependencies]
 log.workspace = true
+open.workspace = true
 rai-pal-core.workspace = true
 rai-pal-proc-macros.workspace = true
 serde_json.workspace = true
@@ -15,15 +16,14 @@ serde.workspace = true
 specta.workspace = true
 tauri-specta.workspace = true
 thiserror.workspace = true
-open.workspace = true
 
 specta-typescript = "0.0.7"
-tauri = { version = "=2.0.0-rc.15", features = [] }
-tauri-plugin-dialog = "2.0.0-rc"
-tauri-plugin-log = "2.0.0-rc"
-tauri-plugin-updater = "2.0.0-rc"
-tauri-plugin-window-state = "2.0.0-rc"
-tauri-runtime = "2.0.0-rc"
+tauri = { version = "2.0.0", features = [] }
+tauri-plugin-dialog = "2.0.0"
+tauri-plugin-log = "2.0.0"
+tauri-plugin-updater = "2.0.0"
+tauri-plugin-window-state = "2.0.0"
+tauri-runtime = "2.0.0"
 
 [features]
 # This feature is used for production builds or when `devPath` points to the filesystem.
