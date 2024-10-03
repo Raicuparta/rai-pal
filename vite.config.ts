@@ -31,7 +31,7 @@ export default defineConfig(async () => ({
 		port: 1420,
 		watch: {
 			// The target folder has all the backend builds, and gets huge, making the watcher super slow.
-			ignored: ["backend/target/**/*"],
+			ignored: ["backend/**"],
 		},
 	},
 	build: {
