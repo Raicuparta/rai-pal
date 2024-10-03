@@ -3,7 +3,7 @@ import {
 	getLocalStorage,
 	listenToStorageChange,
 	setLocalStorage,
-} from "../util/local-storage";
+} from "@util/local-storage";
 
 // This uses localStorage to persist state.
 // The persisted data will often randomly disappear, but localStorage is really fast to use.

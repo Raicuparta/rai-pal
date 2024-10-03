@@ -10,7 +10,7 @@ import styles from "./badges.module.css";
 import {
 	engineFilterOptions,
 	providerFilterOptions,
-} from "../../util/common-filter-options";
+} from "@util/common-filter-options";
 import { FilterOption } from "@components/table/table-head";
 
 interface Props<TValue extends string> extends BadgeProps {

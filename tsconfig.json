@@ -1,26 +1,27 @@
 {
-  "compilerOptions": {
-    "target": "ES2020",
-    "useDefineForClassFields": true,
-    "lib": ["ES2020", "DOM", "DOM.Iterable"],
-    "module": "ESNext",
-    "skipLibCheck": true,
-    "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": true,
-    "jsx": "react-jsx",
-    "strict": true,
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
-    "noFallthroughCasesInSwitch": true,
-    "paths": {
-      "@components/*": ["./frontend/components/*"],
-      "@hooks/*": ["./frontend/hooks/*"],
-      "@api/*": ["./frontend/api/*"]
-    }
-  },
-  "include": ["frontend"],
-  "references": [{ "path": "./tsconfig.node.json" }]
+	"compilerOptions": {
+		"target": "ES2020",
+		"useDefineForClassFields": true,
+		"lib": ["ES2020", "DOM", "DOM.Iterable"],
+		"module": "ESNext",
+		"skipLibCheck": true,
+		"moduleResolution": "bundler",
+		"allowImportingTsExtensions": true,
+		"resolveJsonModule": true,
+		"isolatedModules": true,
+		"noEmit": true,
+		"jsx": "react-jsx",
+		"strict": true,
+		"noUnusedLocals": false,
+		"noUnusedParameters": false,
+		"noFallthroughCasesInSwitch": true,
+		"paths": {
+			"@components/*": ["./frontend/components/*"],
+			"@hooks/*": ["./frontend/hooks/*"],
+			"@api/*": ["./frontend/api/*"],
+			"@util/*": ["./frontend/util/*"]
+		}
+	},
+	"include": ["frontend"],
+	"references": [{ "path": "./tsconfig.node.json" }]
 }

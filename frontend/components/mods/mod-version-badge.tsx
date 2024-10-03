@@ -1,5 +1,5 @@
 import { Badge, DefaultMantineColor, Stack, Tooltip } from "@mantine/core";
-import { getIsOutdated } from "../../util/is-outdated";
+import { getIsOutdated } from "@util/is-outdated";
 import { IconRefreshAlert } from "@tabler/icons-react";
 
 type Props = {

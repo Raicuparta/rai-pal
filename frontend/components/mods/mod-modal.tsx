@@ -11,7 +11,7 @@ import {
 import { DebugData } from "@components/debug-data";
 import { UnifiedMod } from "@hooks/use-unified-mods";
 import { ItemName } from "@components/item-name";
-import { getModTitle } from "../../util/game-mod";
+import { getModTitle } from "@util/game-mod";
 import { DeprecatedBadge } from "./deprecated-badge";
 
 const { deleteMod, downloadMod, openModFolder, runRunnableWithoutGame } =

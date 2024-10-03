@@ -32,7 +32,7 @@ import { ProcessedInstalledGame } from "@hooks/use-processed-installed-games";
 import { GameModRow } from "./game-mod-row";
 import { TableContainer } from "@components/table/table-container";
 import { CommandDropdown } from "@components/command-dropdown";
-import { getThumbnailWithFallback } from "../../util/fallback-thumbnail";
+import { getThumbnailWithFallback } from "@util/fallback-thumbnail";
 import { ProviderCommandButtons } from "@components/providers/provider-command-dropdown";
 import { ProviderIcon } from "@components/providers/provider-icon";
 

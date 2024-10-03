@@ -18,11 +18,11 @@ import { OutdatedMarker } from "@components/outdated-marker";
 import {
 	engineFilterOptions,
 	providerFilterOptions,
-} from "../../util/common-filter-options";
+} from "@util/common-filter-options";
 import styles from "../table/table.module.css";
 import { ProcessedInstalledGame } from "@hooks/use-processed-installed-games";
-import { getThumbnailWithFallback } from "../../util/fallback-thumbnail";
-import { sortGamesByEngine } from "../../util/game-engines";
+import { getThumbnailWithFallback } from "@util/fallback-thumbnail";
+import { sortGamesByEngine } from "@util/game-engines";
 import {
 	filterGameTags,
 	gameTagFilterOptions,

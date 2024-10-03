@@ -11,9 +11,9 @@ import { ThumbnailCell } from "@components/table/thumbnail-cell";
 import {
 	engineFilterOptions,
 	providerFilterOptions,
-} from "../../util/common-filter-options";
-import { getThumbnailWithFallback } from "../../util/fallback-thumbnail";
-import { sortGamesByEngine } from "../../util/game-engines";
+} from "@util/common-filter-options";
+import { getThumbnailWithFallback } from "@util/fallback-thumbnail";
+import { sortGamesByEngine } from "@util/game-engines";
 import { ProcessedOwnedGame } from "@hooks/use-processed-owned-games";
 import {
 	filterGameTags,
