@@ -11,7 +11,6 @@ edition = "2021"
 
 [workspace.dependencies]
 log = "0.4.22"
-open = "5.3.0"
 rai-pal-core = { path = "./core" }
 rai-pal-proc-macros = { path = "./proc-macros" }
 serde = { version = "1.0.210", features = ["derive"] }

@@ -567,19 +567,6 @@ async fn get_provider_data(handle: AppHandle, provider_id: ProviderId) -> Result
 
 #[tauri::command]
 #[specta::specta]
-async fn open_url(url: String) -> Result {
-	// TODO: I only need this because there's some bug with the tauri shell plugin.
-	// Without the shell plugin, clicking a link opens the url in another tauri window (which I don't want).
-	// With the shell plugin, clicking a link does open the url in the default browser,
-	// but also makes the Tauri app become unresponsive.
-	// Opening it manually like this seems to work fine though, so this is what I'm doing for now.
-	// Once that bug is fixed, I can just use the shell plugin and remove this command.
-	open::that_detached(url).unwrap();
-	Ok(())
-}
-
-#[tauri::command]
-#[specta::specta]
 async fn clear_cache() -> Result {
 	ProviderCache::clear_all()?;
 	Ok(())
@@ -620,7 +607,6 @@ fn main() {
 			open_mod_folder,
 			open_mod_loader_folder,
 			open_mods_folder,
-			open_url,
 			refresh_game,
 			remove_game,
 			run_provider_command,
@@ -636,6 +622,7 @@ fn main() {
 	typescript::export(&builder);
 
 	tauri::Builder::default()
+		.plugin(tauri_plugin_shell::init())
 		.plugin(
 			tauri_plugin_window_state::Builder::default()
 				.with_state_flags(StateFlags::POSITION | StateFlags::SIZE)

@@ -181,14 +181,6 @@ async openModsFolder() : Promise<Result<null, Error>> {
     else return { status: "error", error: e  as any };
 }
 },
-async openUrl(url: string) : Promise<Result<null, Error>> {
-    try {
-    return { status: "ok", data: await TAURI_INVOKE("open_url", { url }) };
-} catch (e) {
-    if(e instanceof Error) throw e;
-    else return { status: "error", error: e  as any };
-}
-},
 async refreshGame(installedGame: InstalledGame) : Promise<Result<null, Error>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("refresh_game", { installedGame }) };
