@@ -78,7 +78,7 @@ const provider: TableColumnBase<ProcessedInstalledGame, ProviderId> = {
 	filterOptions: providerFilterOptions,
 	renderCell: (game) => (
 		<Table.Td>
-			<ProviderBadge value={game.provider} />
+			<ProviderBadge value={game.provider.replace(/^Heroic/, "") as ProviderId} />
 		</Table.Td>
 	),
 };

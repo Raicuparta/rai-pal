@@ -93,9 +93,9 @@ export const ProviderBadge = CreateColorCodedBadge<ProviderId>(
 		Steam: "blue",
 		Epic: "red",
 		Gog: "violet",
+		HeroicGog: "violet",
 		Xbox: "green",
 		Itch: "teal",
-		// Ubisoft: "grape",
 	},
 	providerFilterOptions,
 );

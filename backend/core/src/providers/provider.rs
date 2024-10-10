@@ -9,6 +9,8 @@ use rai_pal_proc_macros::serializable_enum;
 
 #[cfg(target_os = "windows")]
 use crate::providers::{epic_provider::Epic, gog_provider::Gog};
+#[cfg(target_os = "linux")]
+use crate::providers::heroic_gog_provider::HeroicGog;
 use crate::{
 	installed_game::InstalledGame,
 	owned_game::OwnedGame,
@@ -27,6 +29,7 @@ pub enum ProviderId {
 	Epic,
 	Gog,
 	Xbox,
+	HeroicGog,
 }
 
 #[enum_dispatch]
@@ -40,6 +43,8 @@ pub enum Provider {
 	#[cfg(target_os = "windows")]
 	Gog,
 	Xbox,
+	#[cfg(target_os = "linux")]
+	HeroicGog,
 }
 
 type Map = [(ProviderId, fn() -> Result<Provider>)];
@@ -48,6 +53,8 @@ const PROVIDERS: &Map = &[
 	create_map_entry::<Manual>(),
 	create_map_entry::<Itch>(),
 	create_map_entry::<Xbox>(),
+	#[cfg(target_os = "linux")]
+	create_map_entry::<HeroicGog>(),
 	#[cfg(target_os = "windows")]
 	create_map_entry::<Epic>(),
 	#[cfg(target_os = "windows")]
