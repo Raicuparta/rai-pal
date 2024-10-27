@@ -43,7 +43,7 @@ impl InstalledGame {
 		// We ignore games that don't have an extension.
 		let extension = path.extension()?.to_str()?;
 
-		if !VALID_EXTENSIONS.contains(&extension.to_ascii_lowercase().as_str()) {
+		if !VALID_EXTENSIONS.contains(&extension.to_lowercase().as_str()) {
 			return None;
 		}
 
