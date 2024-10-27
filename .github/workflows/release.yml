@@ -36,10 +36,11 @@ jobs:
       - name: Build
         id: build
         run: |
-          $output = ./publish.ps1 -Changelog "${{ github.event.pull_request.body || 'no changelog provided' }}"
+          $output = ./publish.ps1
           $version = $output | Select-Object -Last 1
           "version=$version" >> $env:GITHUB_OUTPUT
         env:
+          RAI_PAL_CHANGELOG: ${{ github.event.pull_request.body }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
           ANALYTICS_API_KEY: ${{ secrets.ANALYTICS_API_KEY }}
