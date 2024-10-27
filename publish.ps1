@@ -1,7 +1,9 @@
-param (
-  [Parameter(Mandatory = $true)]
-  [string]$Changelog
-)
+# This script reads from the following environment variables:
+#
+# - TAURI_SIGNING_PRIVATE_KEY. See https://v2.tauri.app/plugin/updater/
+# - TAURI_SIGNING_PRIVATE_KEY_PASSWORD. Password for the key above.
+# - RAI_PAL_CHANGELOG. Changelog that gets included in the update json,
+# which gets shown to users whenever they get notified of an update.
 
 function CheckEnvVar {
   param (
@@ -31,10 +33,13 @@ $version = [regex]::Match($msiName, '.+_(.+)_.+_.+').Groups[1].Value
 # Read signature from sig file.
 $signature = Get-Content -Path "$msiFolder/*.sig" -Raw
 
+# Read changelog from environment variable.
+$changelog = $env:RAI_PAL_CHANGELOG -or "Someone forgot to include a changelog."
+
 # Create json that's used by Rai Pal for checking updates.
 $updaterJson = ConvertTo-Json -InputObjec @{
   version   = "${version}"
-  notes     = "${Changelog}" -replace '"', '\"'
+  notes     = "${changelog}" -replace '"', '\"'
   platforms = @{
     "windows-x86_64" = @{
       signature = "${signature}"
