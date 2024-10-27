@@ -34,6 +34,7 @@ use tauri_specta::Builder;
 mod app_state;
 mod events;
 mod result;
+#[cfg(debug_assertions)]
 mod typescript;
 
 #[tauri::command]
@@ -447,7 +448,12 @@ async fn get_provider_games(handle: AppHandle, provider_id: ProviderId) -> Resul
 				update_owned_games_state(&handle, &provider_id, owned_games.clone());
 			},
 		)
-		.await?;
+		.await
+		.unwrap_or_else(|err| {
+			// It's normal for a provider to fail here if that provider is just missing.
+			// So we log those errors here instead of throwing them up.
+			log::warn!("Failed to get games for provider {provider_id}. User might just not have it. Error: {err}");
+		});
 
 	update_installed_games_state(&handle, &provider_id, installed_games_without_cache.clone());
 	update_owned_games_state(&handle, &provider_id, owned_games_without_cache.clone());
@@ -619,6 +625,7 @@ fn main() {
 		])
 		.events(events::collect_events());
 
+	#[cfg(debug_assertions)]
 	typescript::export(&builder);
 
 	tauri::Builder::default()
