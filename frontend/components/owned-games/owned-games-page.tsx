@@ -1,6 +1,6 @@
 import { Group, Stack } from "@mantine/core";
 import { useMemo, useState } from "react";
-import { filterGame, includesOneOf } from "../../util/filter";
+import { filterGame, includesOneOf } from "@util/filter";
 import { OwnedGameModal } from "./owned-game-modal";
 import { useFilteredList } from "@hooks/use-filtered-list";
 import { FilterMenu } from "@components/filters/filter-menu";
@@ -30,8 +30,11 @@ function filterOwnedGame(
 	search: string,
 ) {
 	return (
-		includesOneOf(search, [game.name]) &&
-		filterGame(game, filter, ownedGamesColumns)
+		includesOneOf(search, [
+			game.title.display,
+			...game.title.normalized,
+			game.providerGameId,
+		]) && filterGame(game, filter, ownedGamesColumns)
 	);
 }
 
@@ -86,6 +89,8 @@ export function OwnedGamesPage() {
 			) : null}
 			<Group>
 				<FixOwnedGamesButton />
+				{/* TODO: add subscriptions selector once we figure out the database stuff */}
+				{/* <SubscriptionsSelector /> */}
 				<SearchInput
 					onChange={setSearch}
 					value={search}
@@ -114,7 +119,7 @@ export function OwnedGamesPage() {
 				data={filteredGames}
 				columns={filteredColumns}
 				onChangeSort={setSort}
-				onClickItem={(game) => setSelectedGameId(game.id)}
+				onClickItem={(game) => setSelectedGameId(game.globalId)}
 				sort={sort}
 			/>
 		</Stack>

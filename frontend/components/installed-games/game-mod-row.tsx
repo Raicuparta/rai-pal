@@ -8,15 +8,7 @@ import {
 	Group,
 	Stack,
 } from "@mantine/core";
-import {
-	ModLoaderData,
-	configureMod,
-	downloadMod,
-	installMod,
-	openInstalledModFolder,
-	openModFolder,
-	uninstallMod,
-} from "@api/bindings";
+import { ModLoaderData, commands } from "@api/bindings";
 import { CommandButton } from "@components/command-button";
 import {
 	IconCheck,
@@ -30,16 +22,25 @@ import {
 	IconTrash,
 } from "@tabler/icons-react";
 import { UnifiedMod } from "@hooks/use-unified-mods";
-import { getIsOutdated } from "../../util/is-outdated";
+import { getIsOutdated } from "@util/is-outdated";
 import { OutdatedMarker } from "@components/outdated-marker";
 import { ProcessedInstalledGame } from "@hooks/use-processed-installed-games";
 import { useCallback } from "react";
 import { ItemName } from "@components/item-name";
 import { MutedText } from "@components/muted-text";
 import { ModVersionBadge } from "@components/mods/mod-version-badge";
-import { getModTitle } from "../../util/game-mod";
+import { getModTitle } from "@util/game-mod";
 import { CommandDropdown } from "@components/command-dropdown";
 import { DeprecatedBadge } from "@components/mods/deprecated-badge";
+
+const {
+	configureMod,
+	downloadMod,
+	installMod,
+	openInstalledModFolder,
+	openModFolder,
+	uninstallMod,
+} = commands;
 
 type Props = {
 	readonly game: ProcessedInstalledGame;
@@ -66,36 +67,37 @@ export function GameModRow(props: Props) {
 			!props.mod.local &&
 			!props.mod.remote
 		) {
-			await openModFolder(props.mod.common.id);
-			return;
+			return openModFolder(props.mod.common.id);
 		}
 
 		if (isLocalModOutdated) {
-			await downloadMod(props.mod.common.id);
+			const downloadResult = await downloadMod(props.mod.common.id);
+			if (downloadResult.status === "error") {
+				return downloadResult;
+			}
 		} else if (isInstalled && !isInstalledModOutdated) {
-			await uninstallMod(props.game.id, props.mod.common.id);
-			return;
+			return uninstallMod(props.game, props.mod.common.id);
 		}
 
-		await installMod(props.game.id, props.mod.common.id);
+		return installMod(props.game, props.mod.common.id);
 	}, [
 		props.modLoader.kind,
 		props.mod.local,
 		props.mod.remote,
 		props.mod.common.id,
-		props.game.id,
+		props.game,
 		isLocalModOutdated,
 		isInstalled,
 		isInstalledModOutdated,
 	]);
 
 	const handleConfigureClick = useCallback(() => {
-		configureMod(props.game.id, props.mod.common.id);
-	}, [props.game.id, props.mod.common.id]);
+		configureMod(props.game, props.mod.common.id);
+	}, [props.game, props.mod.common.id]);
 
 	const handleOpenModFolderClick = useCallback(() => {
-		openInstalledModFolder(props.game.id, props.mod.common.id);
-	}, [props.game.id, props.mod.common.id]);
+		openInstalledModFolder(props.game, props.mod.common.id);
+	}, [props.game, props.mod.common.id]);
 
 	const { actionText, actionIcon } = (() => {
 		if (isLocalModOutdated || isInstalledModOutdated) {

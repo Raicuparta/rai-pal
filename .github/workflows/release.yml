@@ -19,8 +19,6 @@ jobs:
 
       - name: setup node
         uses: actions/setup-node@v3
-        with:
-          node-version: 16
 
       - name: install Rust stable
         uses: dtolnay/rust-toolchain@stable
@@ -30,27 +28,21 @@ jobs:
         with:
           workspaces: "./backend -> target"
 
-      - uses: pnpm/action-setup@v2
-        name: Install pnpm
-        with:
-          version: 8
-          run_install: false
-
-      - name: Get pnpm store directory
+      - name: Get npm store directory
         shell: bash
         run: |
-          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+          echo "STORE_PATH=$(npm store path --silent)" >> $GITHUB_ENV
 
       - uses: actions/cache@v3
-        name: Setup pnpm cache
+        name: Setup npm cache
         with:
           path: ${{ env.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          key: ${{ runner.os }}-npm-store-${{ hashFiles('**/package.lock.json') }}
           restore-keys: |
-            ${{ runner.os }}-pnpm-store-
+            ${{ runner.os }}-npm-store-
 
       - name: Install frontend dependencies
-        run: pnpm install
+        run: npm install
 
       - name: Build
         id: build
@@ -59,14 +51,14 @@ jobs:
           $version = $output | Select-Object -Last 1
           "version=$version" >> $env:GITHUB_OUTPUT
         env:
-          TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
-          TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
           ANALYTICS_API_KEY: ${{ secrets.ANALYTICS_API_KEY }}
 
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
-          draft: false
+          draft: true
           name: Rai Pal ${{ steps.build.outputs.version }}
           tag_name: v${{ steps.build.outputs.version }}
           body: "${{ github.event.pull_request.body }}\n\n[![Download Rai Pal for Windows](https://shields.io/badge/-Download_Rai_Pal_for_Windows-8A2BE2?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/Raicuparta/rai-pal/releases/latest/download/RaiPal.msi)"

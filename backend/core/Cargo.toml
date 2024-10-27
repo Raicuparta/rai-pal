@@ -1,0 +1,41 @@
+[package]
+name = "rai-pal-core"
+version.workspace = true
+edition.workspace = true
+
+[lib]
+
+[dependencies]
+log.workspace = true
+rai-pal-proc-macros.workspace = true
+serde_json.workspace = true
+serde.workspace = true
+specta.workspace = true
+thiserror.workspace = true
+
+open = "5.3.0"
+base64 = "0.22.1"
+byteorder = "1.5.0"
+chrono = { version = "0.4.31", default-features = false, features = ["std"] }
+directories = "5.0.1"
+enum_dispatch = "0.3.12"
+globwalk = "0.9.1"
+lazy_static = "1.4.0"
+lazy-regex = "3.0.2"
+pelite = { version = "0.10.0", features = ["std"], default-features = false }
+reqwest = { version = "0.12.5", features = [
+  "json",
+  "gzip", # We have some large JSONs in the Rai Pal Database, so gzip is useful.
+] }
+rusqlite = { version = "0.32.1", features = ["bundled"] }
+serde_urlencoded = "0.7.1"
+steamlocate = "2.0.0-beta.2"
+uuid = { version = "1.8.0", features = ["v4"] }
+zip = { version = "2.1.6", default-features = false, features = ["deflate"] }
+
+[target.'cfg(target_os = "windows")'.dependencies]
+winapi = { version = "0.3.9", features = ["winuser"] }
+winreg = "0.52.0"
+
+[lints]
+workspace = true

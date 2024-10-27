@@ -1,25 +1,17 @@
 import { useEffect, useRef } from "react";
 
-import {
-	checkUpdate,
-	installUpdate,
-	onUpdaterEvent,
-} from "@tauri-apps/api/updater";
-import { relaunch } from "@tauri-apps/api/process";
+import { check as checkUpdate } from "@tauri-apps/plugin-updater";
+import { relaunch } from "@tauri-apps/plugin-process";
+import { ask } from "@tauri-apps/plugin-dialog";
 import { showAppNotification } from "@components/app-notifications";
-import { dialog } from "@tauri-apps/api";
 
-const checkIntervalMilliseconds = 120000;
+const CHECK_INTERVAL_MILLISECONDS = 120000;
 
 export function useAppUpdater() {
 	// Use this ID as a way to prevent multiple checks at once.
 	const updateCheckId = useRef(0);
 
 	useEffect(() => {
-		const unlistenPromise = onUpdaterEvent(({ error, status }) => {
-			(error ? console.error : console.log)(error || status);
-		});
-
 		let shouldSkipUpdate = false;
 
 		function triggerUpdateCheck() {
@@ -28,47 +20,42 @@ export function useAppUpdater() {
 			const currentCheckId = updateCheckId.current;
 
 			checkUpdate()
-				.then(async ({ shouldUpdate, manifest }) => {
+				.then(async (update) => {
 					if (currentCheckId !== updateCheckId.current) {
 						// If the IDs are different, that means a new check has started in the meantime.
 						return;
 					}
 
-					if (!shouldUpdate || shouldSkipUpdate) return;
-
-					if (!manifest) {
-						throw new Error("Update manifest not present.");
-					}
+					if (!update?.available || shouldSkipUpdate) return;
 
 					console.log(
-						`Received update ${manifest.version}, ${manifest.date}, ${manifest.body}`,
+						`Received update ${update.version}, ${update.date}, ${update.body}`,
 					);
 
 					// Skip any checks that happen while this one is open.
 					shouldSkipUpdate = true;
 
-					const userAcceptedUpdate = await dialog.ask(manifest.body, {
-						type: "info",
-						cancelLabel: "Ignore (won't ask again until you restart Rai Pal)",
-						okLabel: "Update now",
-						title: `Rai Pal Update ${manifest.version}`,
-					});
+					const userAcceptedUpdate = await ask(
+						update.body || "(no changelog)",
+						{
+							kind: "info",
+							cancelLabel: "Ignore (won't ask again until you restart Rai Pal)",
+							okLabel: "Update now",
+							title: `Rai Pal Update ${update.version}`,
+						},
+					);
 
 					shouldSkipUpdate = false;
 
 					if (!userAcceptedUpdate) {
 						// If the user says no, let's not bother them any longer during this session.
-
 						shouldSkipUpdate = true;
 						clearInterval(interval);
 
 						return;
 					}
 
-					// Install the update. This will also restart the app on Windows!
-					await installUpdate();
-
-					// On macOS and Linux we need to restart manually.
+					await update.downloadAndInstall();
 					await relaunch();
 				})
 				.catch((error) => {
@@ -80,10 +67,12 @@ export function useAppUpdater() {
 		triggerUpdateCheck();
 
 		// Subsequent checks every so often.
-		const interval = setInterval(triggerUpdateCheck, checkIntervalMilliseconds);
+		const interval = setInterval(
+			triggerUpdateCheck,
+			CHECK_INTERVAL_MILLISECONDS,
+		);
 
 		return () => {
-			unlistenPromise.then((unlisten) => unlisten());
 			clearInterval(interval);
 		};
 	}, []);

@@ -1,3 +1,4 @@
+import { events } from "@api/bindings";
 import { useAppEvent } from "@hooks/use-app-event";
 import { DefaultMantineColor } from "@mantine/core";
 import { Notifications, notifications } from "@mantine/notifications";
@@ -36,23 +37,15 @@ export function showAppNotification(message: string, type: NotificationType) {
 }
 
 export function AppNotifications() {
-	useAppEvent<string>("Error", (error) => {
+	useAppEvent(events.errorRaised, (error) => {
 		showAppNotification(error, "error");
 	});
 
-	useAppEvent("ExecutedProviderCommand", () => {
+	useAppEvent(events.executedProviderCommand, () => {
 		showAppNotification(
 			"Running command... This might take a few seconds.",
 			"info",
 		);
-	});
-
-	useAppEvent<string>("GameAdded", (gameName) => {
-		showAppNotification(`Successfully added game "${gameName}"`, "success");
-	});
-
-	useAppEvent<string>("GameRemoved", (gameName) => {
-		showAppNotification(`Removed game "${gameName}"`, "success");
 	});
 
 	return <Notifications />;

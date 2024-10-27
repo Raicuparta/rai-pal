@@ -1,7 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { MantineProvider } from "@mantine/core";
-import { frontendReady } from "@api/bindings";
+import { commands } from "@api/bindings";
 import App from "./app";
 import { theme } from "./theme";
 import { registerEvents } from "./register-events";
@@ -13,7 +13,7 @@ import "./global-styles/global.css";
 import "./global-styles/mantine-overrides.css";
 import "./global-styles/scroll-bar.css";
 
-frontendReady();
+commands.frontendReady();
 registerEvents();
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(

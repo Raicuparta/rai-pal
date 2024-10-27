@@ -31,6 +31,7 @@ export function FilterButton<TFilterOption extends string>(
 					<Checkbox
 						disabled={props.isUnavailable}
 						tabIndex={-1}
+						readOnly
 						className={styles.checkbox}
 						checked={!props.isUnavailable && !props.isHidden}
 					/>

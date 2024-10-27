@@ -1,0 +1,39 @@
+[package]
+name = "rai-pal-tauri"
+version.workspace = true
+edition.workspace = true
+
+[build-dependencies]
+tauri-build = { version = "2.0.0", features = [] }
+
+[dependencies]
+log.workspace = true
+rai-pal-core.workspace = true
+rai-pal-proc-macros.workspace = true
+serde_json.workspace = true
+serde.workspace = true
+specta.workspace = true
+tauri-specta.workspace = true
+thiserror.workspace = true
+
+specta-typescript = "0.0.7"
+tauri = { version = "2.0.0", features = [] }
+tauri-plugin-dialog = "2.0.0"
+tauri-plugin-log = "2.0.0"
+tauri-plugin-shell = "2.0.0"
+tauri-plugin-updater = "2.0.1"
+tauri-plugin-window-state = "2.0.0"
+tauri-runtime = "2.0.0"
+
+[features]
+# This feature is used for production builds or when `devPath` points to the filesystem.
+# DO NOT REMOVE!!
+custom-protocol = ["tauri/custom-protocol"]
+
+[[bin]]
+# This will be the installed exe name (not the installer name).
+name = "Rai-Pal"
+# This would usually already be the default path,
+# but when a custom name is defined it gets inferred from the name.
+# So we need to specify it here to override the inferred one.
+path = "src/main.rs"

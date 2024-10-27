@@ -1,10 +1,15 @@
 import { TableColumn } from "@components/table/table-head";
 
-export function includesIgnoreCase(term: string, text: string) {
-	return text.toLowerCase().includes(term.toLowerCase());
+export function includesIgnoreCase(term: string, text?: string) {
+	if (!text) return false;
+
+	return text.toLowerCase().trim().includes(term.trim().toLowerCase());
 }
 
-export function includesOneOf(term: string | undefined, texts: string[]) {
+export function includesOneOf(
+	term: string | undefined,
+	texts: (string | undefined)[],
+) {
 	if (!term) return true;
 
 	return Boolean(texts.find((text) => includesIgnoreCase(term, text)));
@@ -18,10 +23,10 @@ export function filterGame<TKey extends string, TGame>(
 	return (
 		columns.findIndex((column) => {
 			return (
-				column.getFilterValue &&
+				column.filter &&
 				hiddenValues[column.id] &&
 				hiddenValues[column.id].length > 0 &&
-				hiddenValues[column.id].includes(column.getFilterValue(game))
+				column.filter(game, hiddenValues[column.id])
 			);
 		}) === -1
 	);

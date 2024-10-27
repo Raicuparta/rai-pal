@@ -1,25 +1,20 @@
 import { Button, Group, Modal, Stack, Text } from "@mantine/core";
 import { IconAppWindowFilled, IconPlaylistAdd } from "@tabler/icons-react";
 import { useCallback, useEffect, useState } from "react";
-import styles from "./installed-games.module.css";
-import { addGame } from "@api/bindings";
-import { dialog } from "@tauri-apps/api";
+import { commands } from "@api/bindings";
+import { open as openDialog } from "@tauri-apps/plugin-dialog";
 import { useAtomValue } from "jotai";
-import { loadingAtom } from "@hooks/use-data";
+import { loadingCountAtom } from "@hooks/use-data";
 import { useAsyncCommand } from "@hooks/use-async-command";
 
 export function AddGame() {
 	const [isOpen, setIsOpen] = useState(false);
-	const isLoading = useAtomValue(loadingAtom);
+	const isLoading = useAtomValue(loadingCountAtom);
 
-	const handleSuccess = useCallback(() => {
-		setIsOpen(false);
-	}, []);
-
-	const [executeAddGame] = useAsyncCommand(addGame, handleSuccess);
+	const [executeAddGame] = useAsyncCommand(commands.addGame);
 
 	const handleClick = useCallback(async () => {
-		const result = await dialog.open({
+		const path = await openDialog({
 			multiple: false,
 			title: "Select the game executable",
 			filters: [
@@ -33,9 +28,9 @@ export function AddGame() {
 				},
 			],
 		});
-		if (!result || Array.isArray(result)) return;
+		if (!path) return;
 
-		await executeAddGame(result);
+		await executeAddGame(path).then(() => setIsOpen(false));
 	}, [executeAddGame]);
 
 	useEffect(() => {
@@ -56,7 +51,6 @@ export function AddGame() {
 				size="lg"
 				onClose={() => setIsOpen(false)}
 				title="Add game"
-				className={styles.modal}
 			>
 				<Stack>
 					<Button

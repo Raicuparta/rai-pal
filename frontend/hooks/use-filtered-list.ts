@@ -15,11 +15,12 @@ export function useFilteredList<TKey extends string, TItem, TFilter>(
 	defaultFilterValue: TFilter,
 ) {
 	const [sort, setSort] = useTableSort(
+		id,
 		tableHeaders.find((header) => header.sort || header.getSortValue)?.id,
 	);
 	const [filter, setFilter] = usePersistedState<TFilter>(
 		defaultFilterValue,
-		id,
+		`filtered-list-${id}`,
 	);
 	const [search, setSearch] = useState("");
 

@@ -15,10 +15,10 @@ function CheckEnvVar {
   }
 }
 
-CheckEnvVar -Var "TAURI_PRIVATE_KEY"
-CheckEnvVar -Var "TAURI_KEY_PASSWORD"
+CheckEnvVar -Var "TAURI_SIGNING_PRIVATE_KEY"
+CheckEnvVar -Var "TAURI_SIGNING_PRIVATE_KEY_PASSWORD"
 
-pnpm build
+npm run build
 
 $msiFolder = "./backend/target/release/bundle/msi"
 

@@ -8,17 +8,7 @@ import {
 	Table,
 	Tooltip,
 } from "@mantine/core";
-import {
-	EngineVersion,
-	EngineVersionRange,
-	openGameFolder,
-	openGameModsFolder,
-	refreshGame,
-	removeGame,
-	startGame,
-	startGameExe,
-	uninstallAllMods,
-} from "@api/bindings";
+import { EngineVersion, EngineVersionRange, commands } from "@api/bindings";
 import { useMemo } from "react";
 import { ItemName } from "../item-name";
 import { CommandButton } from "@components/command-button";
@@ -42,7 +32,7 @@ import { ProcessedInstalledGame } from "@hooks/use-processed-installed-games";
 import { GameModRow } from "./game-mod-row";
 import { TableContainer } from "@components/table/table-container";
 import { CommandDropdown } from "@components/command-dropdown";
-import { getThumbnailWithFallback } from "../../util/fallback-thumbnail";
+import { getThumbnailWithFallback } from "@util/fallback-thumbnail";
 import { ProviderCommandButtons } from "@components/providers/provider-command-dropdown";
 import { ProviderIcon } from "@components/providers/provider-icon";
 
@@ -50,6 +40,16 @@ type Props = {
 	readonly game: ProcessedInstalledGame;
 	readonly onClose: () => void;
 };
+
+const {
+	openGameFolder,
+	openGameModsFolder,
+	refreshGame,
+	removeGame,
+	startGame,
+	startGameExe,
+	uninstallAllMods,
+} = commands;
 
 function isVersionWithinRange(
 	version: EngineVersion | null | undefined,
@@ -143,10 +143,10 @@ export function InstalledGameModal(props: Props) {
 						)}
 					/>
 					<ItemName label={props.game.discriminator}>
-						{props.game.name}
+						{props.game.title.display}
 					</ItemName>
 					<Tooltip label="Refresh game info">
-						<CommandButton onClick={() => refreshGame(props.game.id)}>
+						<CommandButton onClick={() => refreshGame(props.game)}>
 							<IconRefresh />
 						</CommandButton>
 					</Tooltip>
@@ -162,7 +162,7 @@ export function InstalledGameModal(props: Props) {
 					<Button.Group>
 						<CommandButton
 							leftSection={<IconPlayerPlay />}
-							onClick={() => startGame(props.game.id)}
+							onClick={() => startGame(props.game)}
 						>
 							Start Game
 						</CommandButton>
@@ -170,7 +170,7 @@ export function InstalledGameModal(props: Props) {
 							<CommandDropdown>
 								<CommandButton
 									leftSection={<IconAppWindow />}
-									onClick={() => startGameExe(props.game.id)}
+									onClick={() => startGameExe(props.game)}
 								>
 									Start Game Executable
 								</CommandButton>
@@ -178,7 +178,7 @@ export function InstalledGameModal(props: Props) {
 									leftSection={
 										<ProviderIcon providerId={props.game.provider} />
 									}
-									onClick={() => startGame(props.game.id)}
+									onClick={() => startGame(props.game)}
 								>
 									Start Game via {props.game.provider}
 								</CommandButton>
@@ -191,13 +191,13 @@ export function InstalledGameModal(props: Props) {
 					>
 						<CommandButton
 							leftSection={<IconFolder />}
-							onClick={() => openGameFolder(props.game.id)}
+							onClick={() => openGameFolder(props.game)}
 						>
 							Open Game Files Folder
 						</CommandButton>
 						<CommandButton
 							leftSection={<IconFolderCog />}
-							onClick={() => openGameModsFolder(props.game.id)}
+							onClick={() => openGameModsFolder(props.game)}
 						>
 							Open Installed Mods Folder
 						</CommandButton>
@@ -210,7 +210,7 @@ export function InstalledGameModal(props: Props) {
 					)}
 					{props.game.provider === "Manual" && (
 						<CommandButton
-							onClick={() => removeGame(props.game.id)}
+							onClick={() => removeGame(props.game)}
 							confirmationText="Are you sure you want to remove this game from Rai Pal?"
 							onSuccess={props.onClose}
 							leftSection={<IconTrash />}
@@ -219,8 +219,7 @@ export function InstalledGameModal(props: Props) {
 						</CommandButton>
 					)}
 				</Group>
-				{(!props.game.executable.architecture ||
-					!props.game.executable.operatingSystem) && (
+				{!props.game.executable.architecture && (
 					<Alert color="red">
 						Failed to read some important information about this game. This
 						could be due to the executable being protected. Some mods might fail
@@ -250,7 +249,7 @@ export function InstalledGameModal(props: Props) {
 				</TableContainer>
 				<CommandButton
 					confirmationText="You sure? This will delete all files in this game's mods folder. It won't delete any files from the actual game though."
-					onClick={() => uninstallAllMods(props.game.id)}
+					onClick={() => uninstallAllMods(props.game)}
 					color="red"
 					variant="light"
 					leftSection={<IconTrash />}

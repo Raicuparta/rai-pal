@@ -1,20 +1,16 @@
-import { AppEvent } from "@api/bindings";
 import { useSetAtom, atom } from "jotai";
-import { useAppEvent } from "./use-app-event";
+import { AppEvent, EventPayload, useAppEvent } from "./use-app-event";
 
-export function dataSubscription<TData>(
-	event: AppEvent,
-	apiFunction: () => Promise<TData>,
-	defaultValue: TData,
+export function dataSubscription<TEvent extends AppEvent>(
+	event: TEvent,
+	defaultValue: EventPayload<TEvent>,
 ) {
-	const stateAtom = atom<TData>(defaultValue);
+	const stateAtom = atom<EventPayload<TEvent>>(defaultValue);
 
 	function useDataSubscription() {
 		const setData = useSetAtom(stateAtom);
 
-		useAppEvent(event, () => {
-			apiFunction().then((data) => setData(data as TData));
-		});
+		useAppEvent(event, setData);
 	}
 
 	return [stateAtom, useDataSubscription] as const;

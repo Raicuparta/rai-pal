@@ -1,55 +1,38 @@
-import { InstalledGamesPage } from "./components/installed-games/installed-games-page";
-import { ModsPage } from "./components/mods/mods-page";
-import { OwnedGamesPage } from "./components/owned-games/owned-games-page";
-import { SettingsPage } from "./components/settings/settings-page";
 import { Tabs, Container, Stack } from "@mantine/core";
 import { useData } from "@hooks/use-data";
 import { AppNotifications } from "@components/app-notifications";
-import {
-	IconBooks,
-	IconHeartFilled,
-	IconList,
-	IconSettings,
-	IconTool,
-} from "@tabler/icons-react";
-import { ThanksPage } from "@components/thanks/thanks-page";
+import { PageTab } from "@components/page-tab";
+import { useCallback } from "react";
 import { useAppUpdater } from "@hooks/use-app-updater";
-
-const pages = {
-	installedGames: {
-		title: "Installed Games",
-		component: InstalledGamesPage,
-		icon: <IconList />,
-	},
-	ownedGames: {
-		title: "Owned Games",
-		component: OwnedGamesPage,
-		icon: <IconBooks />,
-	},
-	mods: { title: "Mods", component: ModsPage, icon: <IconTool /> },
-	settings: {
-		title: "Settings",
-		component: SettingsPage,
-		icon: <IconSettings />,
-	},
-	thanks: {
-		title: "Thanks",
-		component: ThanksPage,
-		icon: <IconHeartFilled style={{ color: "var(--mantine-color-red-9)" }} />,
-	},
-};
+import { usePersistedState } from "@hooks/use-persisted-state";
+import { PageId, pages } from "./pages";
+import { useDataCounts } from "@hooks/use-data-counts";
 
 const firstPage = Object.keys(pages)[0];
 
 function App() {
-	useData();
 	useAppUpdater();
+	useData();
+	const counts = useDataCounts();
+
+	const [selectedTab, setSelectedTab] = usePersistedState(
+		firstPage,
+		"selected-app-tab",
+	);
+
+	const handleTabChange = useCallback(
+		(pageId: string | null) => {
+			setSelectedTab(pageId as PageId);
+		},
+		[setSelectedTab],
+	);
 
 	return (
 		<>
 			<AppNotifications />
 			<Tabs
-				defaultValue={firstPage}
+				value={selectedTab}
+				onChange={handleTabChange}
 				radius={0}
 			>
 				<Stack
@@ -58,13 +41,12 @@ function App() {
 				>
 					<Tabs.List style={{ justifyContent: "center" }}>
 						{Object.entries(pages).map(([pageId, page]) => (
-							<Tabs.Tab
+							<PageTab
 								key={pageId}
-								value={pageId}
-								leftSection={page.icon}
-							>
-								{page.title}
-							</Tabs.Tab>
+								id={pageId}
+								page={page}
+								count={counts[pageId as PageId] ?? -1}
+							/>
 						))}
 					</Tabs.List>
 					{Object.entries(pages).map(([pageId, page]) => (

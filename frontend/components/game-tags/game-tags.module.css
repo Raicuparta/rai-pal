@@ -1,0 +1,35 @@
+.wrapper {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.2em;
+	align-items: center;
+	justify-content: center;
+	overflow-y: overlay;
+	max-height: 2.5em;
+}
+
+.wrapper::-webkit-scrollbar {
+	width: 7px;
+	padding: 0;
+	margin: 0;
+}
+
+.wrapper::-webkit-scrollbar-track {
+	border-radius: 1em;
+}
+
+.wrapper::-webkit-scrollbar-thumb {
+	border-width: 0.1em;
+	border-radius: 1em;
+}
+
+.tag {
+	font-size: 8px;
+	font-weight: 300;
+	padding: 3px;
+	line-height: 1;
+	background-color: var(--mantine-color-dark-7);
+	border-radius: 3px;
+	text-transform: uppercase;
+	white-space: nowrap;
+}

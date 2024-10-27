@@ -1,6 +1,6 @@
 import { Group, Stack } from "@mantine/core";
 import { useMemo, useState } from "react";
-import { filterGame, includesOneOf } from "../../util/filter";
+import { filterGame, includesOneOf } from "@util/filter";
 import { InstalledGameModal } from "./installed-game-modal";
 import { useFilteredList } from "@hooks/use-filtered-list";
 import { FilterMenu } from "@components/filters/filter-menu";
@@ -18,6 +18,8 @@ import {
 	useProcessedInstalledGames,
 } from "@hooks/use-processed-installed-games";
 import { FilterSelect } from "@components/filters/filter-select";
+import { useAppEvent } from "@hooks/use-app-event";
+import { events } from "@api/bindings";
 
 const defaultFilter: Record<string, (string | null)[]> = {};
 
@@ -27,8 +29,11 @@ function filterInstalledGame(
 	search: string,
 ) {
 	return (
-		includesOneOf(search, [game.name]) &&
-		filterGame(game, filter, installedGamesColumns)
+		includesOneOf(search, [
+			...game.title.normalized,
+			game.title.display,
+			game.ownedGame?.providerGameId,
+		]) && filterGame(game, filter, installedGamesColumns)
 	);
 }
 
@@ -47,6 +52,10 @@ export function InstalledGamesPage() {
 	const installedGames = useProcessedInstalledGames();
 
 	const [selectedGameId, setSelectedGameId] = useState<string>();
+
+	useAppEvent(events.selectInstalledGame, (gameId: string) => {
+		setSelectedGameId(gameId);
+	});
 
 	const selectedGame = useMemo(
 		() =>
