@@ -18,7 +18,6 @@ const providerIcons: Record<ProviderId, Icon> = {
 	Steam: IconBrandSteam,
 	Epic: IconSquareLetterE,
 	Gog: IconCircleLetterG,
-	HeroicGog: IconCircleLetterG,
 	Xbox: IconBrandXbox,
 	Itch: IconBrandItch,
 	// Ubisoft: IconCircleLetterUFilled,

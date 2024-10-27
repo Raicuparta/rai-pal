@@ -7,10 +7,10 @@ use std::{
 use enum_dispatch::enum_dispatch;
 use rai_pal_proc_macros::serializable_enum;
 
-#[cfg(target_os = "windows")]
-use crate::providers::{epic_provider::Epic, gog_provider::Gog};
 #[cfg(target_os = "linux")]
 use crate::providers::heroic_gog_provider::HeroicGog;
+#[cfg(target_os = "windows")]
+use crate::providers::{epic_provider::Epic, gog_provider::Gog};
 use crate::{
 	installed_game::InstalledGame,
 	owned_game::OwnedGame,
@@ -29,7 +29,6 @@ pub enum ProviderId {
 	Epic,
 	Gog,
 	Xbox,
-	HeroicGog,
 }
 
 #[enum_dispatch]

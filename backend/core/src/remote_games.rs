@@ -31,7 +31,6 @@ pub enum IdKind {
 	Epic,
 	Gog,
 	Xbox,
-	HeroicGog,
 	Ubisoft,
 	NormalizedTitle,
 }

@@ -56,9 +56,7 @@ const provider: TableColumnBase<ProcessedOwnedGame, ProviderId> = {
 	unavailableValues: ["Xbox", "Manual"],
 	renderCell: (game) => (
 		<Table.Td>
-			<ProviderBadge
-				value={game.provider.replace(/^Heroic/, "") as ProviderId}
-			/>
+			<ProviderBadge value={game.provider} />
 		</Table.Td>
 	),
 };

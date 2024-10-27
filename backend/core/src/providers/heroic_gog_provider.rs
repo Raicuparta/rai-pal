@@ -204,7 +204,7 @@ impl HeroicGog {
 }
 
 impl ProviderStatic for HeroicGog {
-	const ID: &'static ProviderId = &ProviderId::HeroicGog;
+	const ID: &'static ProviderId = &ProviderId::Gog;
 
 	fn new() -> GameResult<Self>
 	where
