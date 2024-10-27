@@ -22,14 +22,14 @@ import {
 	IconTrash,
 } from "@tabler/icons-react";
 import { UnifiedMod } from "@hooks/use-unified-mods";
-import { getIsOutdated } from "../../util/is-outdated";
+import { getIsOutdated } from "@util/is-outdated";
 import { OutdatedMarker } from "@components/outdated-marker";
 import { ProcessedInstalledGame } from "@hooks/use-processed-installed-games";
 import { useCallback } from "react";
 import { ItemName } from "@components/item-name";
 import { MutedText } from "@components/muted-text";
 import { ModVersionBadge } from "@components/mods/mod-version-badge";
-import { getModTitle } from "../../util/game-mod";
+import { getModTitle } from "@util/game-mod";
 import { CommandDropdown } from "@components/command-dropdown";
 import { DeprecatedBadge } from "@components/mods/deprecated-badge";
 

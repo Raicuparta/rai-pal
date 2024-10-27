@@ -34,6 +34,7 @@ use tauri_specta::Builder;
 mod app_state;
 mod events;
 mod result;
+#[cfg(debug_assertions)]
 mod typescript;
 
 #[tauri::command]
@@ -447,7 +448,12 @@ async fn get_provider_games(handle: AppHandle, provider_id: ProviderId) -> Resul
 				update_owned_games_state(&handle, &provider_id, owned_games.clone());
 			},
 		)
-		.await?;
+		.await
+		.unwrap_or_else(|err| {
+			// It's normal for a provider to fail here if that provider is just missing.
+			// So we log those errors here instead of throwing them up.
+			log::warn!("Failed to get games for provider {provider_id}. User might just not have it. Error: {err}");
+		});
 
 	update_installed_games_state(&handle, &provider_id, installed_games_without_cache.clone());
 	update_owned_games_state(&handle, &provider_id, owned_games_without_cache.clone());
@@ -567,19 +573,6 @@ async fn get_provider_data(handle: AppHandle, provider_id: ProviderId) -> Result
 
 #[tauri::command]
 #[specta::specta]
-async fn open_url(url: String) -> Result {
-	// TODO: I only need this because there's some bug with the tauri shell plugin.
-	// Without the shell plugin, clicking a link opens the url in another tauri window (which I don't want).
-	// With the shell plugin, clicking a link does open the url in the default browser,
-	// but also makes the Tauri app become unresponsive.
-	// Opening it manually like this seems to work fine though, so this is what I'm doing for now.
-	// Once that bug is fixed, I can just use the shell plugin and remove this command.
-	open::that_detached(url).unwrap();
-	Ok(())
-}
-
-#[tauri::command]
-#[specta::specta]
 async fn clear_cache() -> Result {
 	ProviderCache::clear_all()?;
 	Ok(())
@@ -620,7 +613,6 @@ fn main() {
 			open_mod_folder,
 			open_mod_loader_folder,
 			open_mods_folder,
-			open_url,
 			refresh_game,
 			remove_game,
 			run_provider_command,
@@ -633,9 +625,11 @@ fn main() {
 		])
 		.events(events::collect_events());
 
+	#[cfg(debug_assertions)]
 	typescript::export(&builder);
 
 	tauri::Builder::default()
+		.plugin(tauri_plugin_shell::init())
 		.plugin(
 			tauri_plugin_window_state::Builder::default()
 				.with_state_flags(StateFlags::POSITION | StateFlags::SIZE)

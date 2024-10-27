@@ -1,6 +1,6 @@
 import { Group, Stack } from "@mantine/core";
 import { useMemo, useState } from "react";
-import { filterGame, includesOneOf } from "../../util/filter";
+import { filterGame, includesOneOf } from "@util/filter";
 import { OwnedGameModal } from "./owned-game-modal";
 import { useFilteredList } from "@hooks/use-filtered-list";
 import { FilterMenu } from "@components/filters/filter-menu";

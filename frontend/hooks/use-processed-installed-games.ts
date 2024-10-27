@@ -2,7 +2,7 @@ import { useAtomValue } from "jotai";
 import { useMemo } from "react";
 import { providerDataAtom } from "./use-data";
 import { useUnifiedMods } from "./use-unified-mods";
-import { getIsOutdated } from "../util/is-outdated";
+import { getIsOutdated } from "@util/is-outdated";
 import { InstalledGame, OwnedGame } from "@api/bindings";
 
 type InstalledModVersions = Record<string, string | null>;

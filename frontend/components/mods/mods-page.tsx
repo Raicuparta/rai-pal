@@ -12,7 +12,7 @@ import { ModModal } from "./mod-modal";
 import { UnifiedMod, useUnifiedMods } from "@hooks/use-unified-mods";
 import { ModVersionBadge } from "./mod-version-badge";
 import { ItemName } from "@components/item-name";
-import { getModTitle } from "../../util/game-mod";
+import { getModTitle } from "@util/game-mod";
 import { DeprecatedBadge } from "./deprecated-badge";
 
 export function ModsPage() {

@@ -1,5 +1,5 @@
 import { Button, Container, Stack, Tooltip } from "@mantine/core";
-import { resetLocalStorage } from "../../util/local-storage";
+import { resetLocalStorage } from "@util/local-storage";
 import { IconFolderCode, IconRotateDot, IconTrash } from "@tabler/icons-react";
 import { CommandButton } from "@components/command-button";
 import { commands } from "@api/bindings";
