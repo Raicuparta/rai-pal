@@ -25,11 +25,6 @@ jobs:
       - name: install Rust stable
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Setup Rust Cache
-        uses: Swatinem/rust-cache@v2
-        with:
-          workspaces: "./backend -> target"
-
       - name: Install frontend dependencies
         run: npm ci
 
