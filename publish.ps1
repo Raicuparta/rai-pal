@@ -34,7 +34,7 @@ $version = [regex]::Match($msiName, '.+_(.+)_.+_.+').Groups[1].Value
 $signature = Get-Content -Path "$msiFolder/*.sig" -Raw
 
 # Read changelog from environment variable.
-$changelog = $env:RAI_PAL_CHANGELOG -or "Someone forgot to include a changelog."
+$changelog = $env:RAI_PAL_CHANGELOG ?? "Someone forgot to include a changelog."
 
 # Create json that's used by Rai Pal for checking updates.
 $updaterJson = ConvertTo-Json -InputObjec @{
