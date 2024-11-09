@@ -441,8 +441,7 @@ async fn get_provider_games(handle: AppHandle, provider_id: ProviderId) -> Resul
 	// So we send the game lists in batches!
 	const BATCH_SIZE: usize = 500;
 
-	provider
-		.get_games(
+	provider.get_games(
 			|game: InstalledGame| {
 				installed_count += 1;
 				installed_games_without_cache.insert(game.id.clone(), game.clone());
@@ -456,7 +455,6 @@ async fn get_provider_games(handle: AppHandle, provider_id: ProviderId) -> Resul
 				owned_games_without_cache.insert(game.global_id.clone(), game.clone());
 				owned_games.insert(game.global_id.clone(), game);
 				if (owned_count % BATCH_SIZE) == 0 {
-					log::info!("Found {owned_count} owned games for provider {provider_id}");
 					update_owned_games_state(&handle, &provider_id, &owned_games);
 				}
 			},
