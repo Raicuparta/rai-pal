@@ -20,9 +20,13 @@ function CheckEnvVar {
 CheckEnvVar -Var "TAURI_SIGNING_PRIVATE_KEY"
 CheckEnvVar -Var "TAURI_SIGNING_PRIVATE_KEY_PASSWORD"
 
-npm run build
-
+# Folder where the msi bundle will end up.
 $msiFolder = "./backend/target/release/bundle/msi"
+
+# Delete everything in the msi folder first.
+Remove-Item $msiFolder -Force -Recurse -ErrorAction Ignore | Out-Null
+
+npm run build
 
 # Get built msi file name.
 $msiName = (Get-ChildItem -Path $msiFolder -Filter "*.msi" | Select-Object -First 1).Name
@@ -30,8 +34,9 @@ $msiName = (Get-ChildItem -Path $msiFolder -Filter "*.msi" | Select-Object -Firs
 # Extract version number from file name.
 $version = [regex]::Match($msiName, '.+_(.+)_.+_.+').Groups[1].Value
 
-# Read signature from sig file.
-$signature = Get-Content -Path "$msiFolder/*.sig" -Raw
+# Read signature from sig file. We deleted everything in this folder before,
+# so we're pretty sure nothing other the newly created zip.sig should be found.
+$signature = Get-Content -Path "$msiFolder/*zip.sig" -Raw
 
 # Read changelog from environment variable.
 $changelog = $env:RAI_PAL_CHANGELOG ?? "Someone forgot to include a changelog."
