@@ -238,7 +238,7 @@ fn refresh_game_mods_and_exe(installed_game: &InstalledGame, handle: &AppHandle)
 	{
 		let mut installed_games = installed_games_state.get_data()?;
 		installed_games.insert(refreshed_game.id.clone(), refreshed_game.clone());
-		update_installed_games_state(handle, &installed_game.provider, installed_games);
+		update_installed_games_state(handle, &installed_game.provider, &installed_games);
 	}
 
 	Ok(())
@@ -394,7 +394,7 @@ async fn fetch_remote_games() -> Result<Vec<RemoteGame>> {
 fn update_installed_games_state(
 	handle: &AppHandle,
 	provider_id: &ProviderId,
-	installed_games: HashMap<String, InstalledGame>,
+	installed_games: &HashMap<String, InstalledGame>,
 ) {
 	if let Some(mutex) = handle.app_state().installed_games.get(provider_id) {
 		update_state(installed_games.clone(), mutex);
@@ -405,7 +405,7 @@ fn update_installed_games_state(
 fn update_owned_games_state(
 	handle: &AppHandle,
 	provider_id: &ProviderId,
-	owned_games: HashMap<String, OwnedGame>,
+	owned_games: &HashMap<String, OwnedGame>,
 ) {
 	if let Some(mutex) = handle.app_state().owned_games.get(provider_id) {
 		update_state(owned_games.clone(), mutex);
@@ -429,23 +429,34 @@ async fn get_provider_games(handle: AppHandle, provider_id: ProviderId) -> Resul
 	} else {
 		installed_games = cache.data.installed_games.clone();
 		owned_games = cache.data.owned_games.clone();
-		update_installed_games_state(&handle, &provider_id, installed_games.clone());
-		update_owned_games_state(&handle, &provider_id, owned_games.clone());
+		update_installed_games_state(&handle, &provider_id, &installed_games);
+		update_owned_games_state(&handle, &provider_id, &owned_games);
 	}
 
 	let provider = provider::get_provider(provider_id)?;
+	let mut owned_count = 0;
+	let mut installed_count = 0;
+	// Sending to frontend too often makes things slow,
+	// especially for very large libraries where I'm cloning the entire game map every time I push it.
+	// So we send the game lists in batches!
+	const BATCH_SIZE: usize = 500;
 
-	provider
-		.get_games(
+	provider.get_games(
 			|game: InstalledGame| {
+				installed_count += 1;
 				installed_games_without_cache.insert(game.id.clone(), game.clone());
 				installed_games.insert(game.id.clone(), game);
-				update_installed_games_state(&handle, &provider_id, installed_games.clone());
+				if (installed_count % BATCH_SIZE) == 0 {
+					update_installed_games_state(&handle, &provider_id, &installed_games);
+				}
 			},
 			|game: OwnedGame| {
+				owned_count += 1;
 				owned_games_without_cache.insert(game.global_id.clone(), game.clone());
 				owned_games.insert(game.global_id.clone(), game);
-				update_owned_games_state(&handle, &provider_id, owned_games.clone());
+				if (owned_count % BATCH_SIZE) == 0 {
+					update_owned_games_state(&handle, &provider_id, &owned_games);
+				}
 			},
 		)
 		.await
@@ -455,8 +466,8 @@ async fn get_provider_games(handle: AppHandle, provider_id: ProviderId) -> Resul
 			log::warn!("Failed to get games for provider {provider_id}. User might just not have it. Error: {err}");
 		});
 
-	update_installed_games_state(&handle, &provider_id, installed_games_without_cache.clone());
-	update_owned_games_state(&handle, &provider_id, owned_games_without_cache.clone());
+	update_installed_games_state(&handle, &provider_id, &installed_games_without_cache);
+	update_owned_games_state(&handle, &provider_id, &owned_games_without_cache);
 
 	cache
 		.set_data(ProviderData {
@@ -486,7 +497,7 @@ async fn add_game(path: PathBuf, handle: AppHandle) -> Result {
 	{
 		let mut installed_games = installed_games_state.get_data()?;
 		installed_games.insert(installed_game.id.clone(), installed_game.clone());
-		update_installed_games_state(&handle, &installed_game.provider, installed_games);
+		update_installed_games_state(&handle, &installed_game.provider, &installed_games);
 	}
 
 	handle.emit_safe(events::SelectInstalledGame(installed_game.id.clone()));
@@ -508,7 +519,7 @@ async fn remove_game(installed_game: InstalledGame, handle: AppHandle) -> Result
 	{
 		let mut installed_games = installed_games_state.get_data()?;
 		installed_games.remove(&installed_game.id);
-		update_installed_games_state(&handle, &installed_game.provider, installed_games);
+		update_installed_games_state(&handle, &installed_game.provider, &installed_games);
 	}
 
 	Ok(())
