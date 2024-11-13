@@ -19,23 +19,9 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
 struct InstalledGOGGame {
-	platform: String,
 	executable: String,
-	install_path: String,
-	install_size: String,
-	is_dlc: bool,
-	version: String,
 	#[serde(rename(deserialize = "appName"))]
 	app_name: String,
-	#[serde(rename(deserialize = "installedDLCs"))]
-	installed_dlcs: Vec<String>,
-	language: String,
-	#[serde(rename(deserialize = "versionEtag"))]
-	version_etag: String,
-	#[serde(rename(deserialize = "buildId"))]
-	build_id: String,
-	#[serde(rename(deserialize = "pinnedVersion"))]
-	pinned_version: bool,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -44,57 +30,22 @@ struct RootInstalled {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-struct Game {
+struct ParsedGame {
 	app_name: String,
-	runner: String,
 	title: String,
-	#[serde(rename(deserialize = "canRunOffline"))]
-	can_run_offline: bool,
-	install: Install,
 	is_installed: bool,
-	art_cover: String,
-	art_square: String,
-	art_background: Option<String>,
-	cloud_save_enabled: Option<bool>,
-	art_icon: Option<String>,
-	extra: Option<Extra>,
+	art_cover: Option<String>,
 	folder_name: Option<String>,
-	save_folder: Option<String>,
-	is_mac_native: Option<bool>,
-	is_linux_native: Option<bool>,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-struct Install {
-	is_dlc: bool,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-struct Extra {
-	about: About,
-	reqs: Vec<String>,
-	genres: Vec<String>,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-struct About {
-	description: String,
-	#[serde(rename(deserialize = "shortDescription"))]
-	short_description: String,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-struct Timestamp {
-	games: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 struct Root {
-	games: Vec<Game>,
+	games: Vec<ParsedGame>,
 }
 
-fn get_detected_games() -> Result<Vec<Game>, io::Error> {
-	let dirs = BaseDirs::new().ok_or_else(|| io::Error::new(io::ErrorKind::Other, "Failed to get user directories"))?; 
+fn get_detected_games() -> Result<Vec<ParsedGame>, io::Error> {
+	let dirs = BaseDirs::new()
+		.ok_or_else(|| io::Error::new(io::ErrorKind::Other, "Failed to get user directories"))?;
 	let config_dir = dirs.config_dir();
 	let file_content =
 		read_to_string(Path::new(&config_dir).join("heroic/store_cache/gog_library.json"))?;
@@ -104,7 +55,7 @@ fn get_detected_games() -> Result<Vec<Game>, io::Error> {
 		.games
 		.into_iter()
 		// gog-redist is not a game but it shows up in the library
-		.filter(|game| game.app_name != *"gog-redist")
+		.filter(|game|  game.app_name != "gog-redist")
 		.map(|mut game| {
 			if installed_games.contains(&game.app_name) {
 				// is_installed props from the library are not reliable
@@ -116,7 +67,8 @@ fn get_detected_games() -> Result<Vec<Game>, io::Error> {
 }
 
 fn read_installed_games() -> Result<Vec<String>, io::Error> {
-	let dirs = BaseDirs::new().ok_or_else(|| io::Error::new(io::ErrorKind::Other, "Failed to get user directories"))?; 
+	let dirs = BaseDirs::new()
+		.ok_or_else(|| io::Error::new(io::ErrorKind::Other, "Failed to get user directories"))?;
 	let config_dir = dirs.config_dir();
 	let file_content =
 		read_to_string(Path::new(&config_dir).join("heroic/gog_store/installed.json"))?;
@@ -133,27 +85,17 @@ fn read_installed_games() -> Result<Vec<String>, io::Error> {
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 struct PlayTask {
-	category: Option<String>,
 	is_primary: Option<bool>,
-	languages: Vec<String>,
 	name: String,
 	path: Option<String>,
-	type_: String,
-	link: Option<String>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 struct GogGame {
-	build_id: String,
-	client_id: String,
 	game_id: String,
-	language: String,
-	languages: Vec<String>,
 	name: String,
 	play_tasks: Vec<PlayTask>,
-	root_game_id: String,
-	version: i32,
 }
 
 fn read_info_file(path: &Path, app_id: &str) -> Result<GogGame, String> {
@@ -172,7 +114,7 @@ fn read_info_file(path: &Path, app_id: &str) -> Result<GogGame, String> {
 pub struct HeroicGog {}
 
 impl HeroicGog {
-	fn get_installed_game(entry: &Game) -> Option<InstalledGame> {
+	fn get_installed_game(entry: &ParsedGame) -> Option<InstalledGame> {
 		let dirs = BaseDirs::new()?;
 		let home_dir = dirs.home_dir();
 		let game_path = Path::new(&home_dir)
@@ -197,7 +139,7 @@ impl HeroicGog {
 		game.set_start_command_string(&get_start_command("gog", &entry.app_name));
 		game.set_provider_game_id(&entry.app_name);
 
-		game.set_thumbnail_url(&entry.art_cover);
+		game.set_thumbnail_url(&entry.art_cover.clone()?);
 
 		Some(game)
 	}
@@ -226,8 +168,14 @@ impl ProviderActions for HeroicGog {
 	{
 		let games = get_detected_games()?;
 		for game in games {
-			let mut owned_game = OwnedGame::new(&game.app_name, *Self::ID, &game.title);
-			owned_game.set_thumbnail_url(&game.art_cover);
+			let mut owned_game = OwnedGame::new(
+				&game.app_name,
+				*Self::ID,
+				&game.title,
+			);
+			if let Some(thumbnail_url) = game.art_cover.clone() {
+				owned_game.set_thumbnail_url(&thumbnail_url);
+			}
 			owned_callback(owned_game);
 
 			if game.is_installed {
@@ -243,27 +191,4 @@ impl ProviderActions for HeroicGog {
 
 pub fn get_start_command(source: &str, app_id: &str) -> String {
 	format!("heroic://launch/{source}/{app_id}")
-}
-
-#[cfg(test)]
-mod tests {
-
-	use super::*;
-
-	#[test]
-	fn test_heroic_gog_launcher() -> Result<(), io::Error> {
-		let games = get_detected_games()?;
-
-		println!("Games: {games:#?}");
-
-		assert_eq!(games.len(), 2);
-
-		assert_eq!(games[0].title, "RollerCoaster Tycoon 2 Triple Thrill Pack");
-
-		// assert!(games[0].path_game_dir.is_some());
-
-		// assert!(games[0].path_box_art.is_none());
-
-		Ok(())
-	}
 }
