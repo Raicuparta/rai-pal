@@ -3,12 +3,7 @@ import classes from "./table.module.css";
 import { IconChevronDown, IconChevronUp } from "@tabler/icons-react";
 import { TableSort } from "@hooks/use-table-sort";
 
-export type FilterOption<TFilterOption extends string> = {
-	value: TFilterOption;
-	label: string;
-};
-
-export type TableColumnBase<TItem, TFilterOption extends string = string> = {
+export type TableColumnBase<TItem> = {
 	label: string;
 	renderCell: (item: TItem) => JSX.Element;
 	width?: number;
@@ -16,29 +11,19 @@ export type TableColumnBase<TItem, TFilterOption extends string = string> = {
 	hideLabel?: boolean;
 	hidable?: boolean;
 	hideInDetails?: boolean;
-	unavailableValues?: TFilterOption[];
 	sort?: (itemA: TItem, itemB: TItem) => number;
 	getSortValue?: (item: TItem) => unknown;
-	filter?: (item: TItem, hiddenValues: (string | null)[]) => boolean;
-	filterOptions?: FilterOption<TFilterOption>[];
 };
 
-export interface TableColumn<
-	TKey extends string,
-	TItem,
-	TFilterOption extends string = string,
-> extends TableColumnBase<TItem, TFilterOption> {
+export interface TableColumn<TKey extends string, TItem>
+	extends TableColumnBase<TItem> {
 	id: TKey;
 }
 
-export function columnMapToList<
-	TItem,
-	TKey extends string,
-	TFilterOption extends string = string,
->(
-	columnMap: Record<TKey, TableColumnBase<TItem, TFilterOption>>,
-): TableColumn<TKey, TItem, TFilterOption>[] {
-	return Object.entries<TableColumnBase<TItem, TFilterOption>>(columnMap).map(
+export function columnMapToList<TItem, TKey extends string>(
+	columnMap: Record<TKey, TableColumnBase<TItem>>,
+): TableColumn<TKey, TItem>[] {
+	return Object.entries<TableColumnBase<TItem>>(columnMap).map(
 		([id, column]) => ({
 			...column,
 			id: id as TKey,
@@ -46,21 +31,15 @@ export function columnMapToList<
 	);
 }
 
-type Props<
-	TKey extends string,
-	TItem,
-	TFilterOption extends string = string,
-> = {
-	readonly columns: TableColumn<TKey, TItem, TFilterOption>[];
+type Props<TKey extends string, TItem> = {
+	readonly columns: TableColumn<TKey, TItem>[];
 	readonly onChangeSort?: (sort: string) => void;
 	readonly sort?: TableSort;
 };
 
-export function TableHead<
-	TKey extends string,
-	TItem,
-	TFilterOption extends string = string,
->(props: Props<TKey, TItem, TFilterOption>) {
+export function TableHead<TKey extends string, TItem>(
+	props: Props<TKey, TItem>,
+) {
 	return (
 		<Table.Tr>
 			{props.columns.map((column) => {

@@ -1,4 +1,3 @@
-import { EngineBrand, ProviderId } from "@api/bindings";
 import {
 	EngineBadge,
 	ProviderBadge,
@@ -8,16 +7,10 @@ import { Table } from "@mantine/core";
 import { IconCheck } from "@tabler/icons-react";
 import styles from "../table/table.module.css";
 import { ThumbnailCell } from "@components/table/thumbnail-cell";
-import {
-	engineFilterOptions,
-	providerFilterOptions,
-} from "@util/common-filter-options";
 import { getThumbnailWithFallback } from "@util/fallback-thumbnail";
 import { sortGamesByEngine } from "@util/game-engines";
 import { ProcessedOwnedGame } from "@hooks/use-processed-owned-games";
 import {
-	filterGameTags,
-	gameTagFilterOptions,
 	getGameTagsSortValue,
 	renderGameTagsCell,
 } from "@components/game-tags/game-tags";
@@ -45,15 +38,12 @@ const name: TableColumnBase<ProcessedOwnedGame> = {
 	),
 };
 
-const provider: TableColumnBase<ProcessedOwnedGame, ProviderId> = {
+const provider: TableColumnBase<ProcessedOwnedGame> = {
 	label: "Provider",
 	width: 110,
 	center: true,
 	hidable: true,
 	getSortValue: (game) => game.provider,
-	filter: (game, hiddenValues) => hiddenValues.includes(game.provider),
-	filterOptions: providerFilterOptions,
-	unavailableValues: ["Xbox", "Manual"],
 	renderCell: (game) => (
 		<Table.Td>
 			<ProviderBadge value={game.provider} />
@@ -72,15 +62,12 @@ function getEngine(game: ProcessedOwnedGame) {
 	);
 }
 
-const engine: TableColumnBase<ProcessedOwnedGame, EngineBrand> = {
+const engine: TableColumnBase<ProcessedOwnedGame> = {
 	label: "Engine",
 	width: 150,
 	center: true,
 	hidable: true,
 	sort: (dataA, dataB) => sortGamesByEngine(getEngine(dataA), getEngine(dataB)),
-	filter: (game, hiddenValues) =>
-		hiddenValues.includes(getEngine(game)?.brand ?? null),
-	filterOptions: engineFilterOptions,
 	renderCell: (game) => (
 		<Table.Td>
 			<EngineBadge
@@ -92,28 +79,21 @@ const engine: TableColumnBase<ProcessedOwnedGame, EngineBrand> = {
 	),
 };
 
-const gameTags: TableColumnBase<ProcessedOwnedGame, string> = {
+const gameTags: TableColumnBase<ProcessedOwnedGame> = {
 	label: "Tags",
 	width: 120,
 	center: true,
 	hidable: true,
 	getSortValue: getGameTagsSortValue,
-	filter: filterGameTags,
-	filterOptions: gameTagFilterOptions,
 	renderCell: renderGameTagsCell,
 };
 
-const installed: TableColumnBase<ProcessedOwnedGame, string> = {
+const installed: TableColumnBase<ProcessedOwnedGame> = {
 	label: "Installed",
 	width: 60,
 	center: true,
 	hidable: true,
 	getSortValue: (game) => game.isInstalled,
-	filter: (game, hiddenValues) => hiddenValues.includes(`${game.isInstalled}`),
-	filterOptions: [
-		{ label: "Installed", value: "true" },
-		{ label: "Not Installed", value: "false" },
-	],
 	renderCell: (game) => (
 		<Table.Td align="center">{game.isInstalled ? <IconCheck /> : ""}</Table.Td>
 	),

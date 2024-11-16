@@ -1,10 +1,4 @@
 import { Table, Tooltip } from "@mantine/core";
-import {
-	Architecture,
-	EngineBrand,
-	ProviderId,
-	UnityScriptingBackend,
-} from "@api/bindings";
 import { TableColumnBase, columnMapToList } from "@components/table/table-head";
 import { ItemName } from "../item-name";
 import {
@@ -15,17 +9,11 @@ import {
 } from "@components/badges/color-coded-badge";
 import { ThumbnailCell } from "@components/table/thumbnail-cell";
 import { OutdatedMarker } from "@components/outdated-marker";
-import {
-	engineFilterOptions,
-	providerFilterOptions,
-} from "@util/common-filter-options";
 import styles from "../table/table.module.css";
 import { ProcessedInstalledGame } from "@hooks/use-processed-installed-games";
 import { getThumbnailWithFallback } from "@util/fallback-thumbnail";
 import { sortGamesByEngine } from "@util/game-engines";
 import {
-	filterGameTags,
-	gameTagFilterOptions,
 	getGameTagsSortValue,
 	renderGameTagsCell,
 } from "@components/game-tags/game-tags";
@@ -68,14 +56,12 @@ const name: TableColumnBase<ProcessedInstalledGame> = {
 	),
 };
 
-const provider: TableColumnBase<ProcessedInstalledGame, ProviderId> = {
+const provider: TableColumnBase<ProcessedInstalledGame> = {
 	label: "Provider",
 	width: 110,
 	center: true,
 	hidable: true,
 	getSortValue: (game) => game.provider,
-	filter: (game, hiddenValues) => hiddenValues.includes(game.provider),
-	filterOptions: providerFilterOptions,
 	renderCell: (game) => (
 		<Table.Td>
 			<ProviderBadge value={game.provider} />
@@ -83,18 +69,12 @@ const provider: TableColumnBase<ProcessedInstalledGame, ProviderId> = {
 	),
 };
 
-const architecture: TableColumnBase<ProcessedInstalledGame, Architecture> = {
+const architecture: TableColumnBase<ProcessedInstalledGame> = {
 	label: "Arch",
 	width: 70,
 	center: true,
 	hidable: true,
 	getSortValue: (game) => game.executable.architecture,
-	filter: (game, hiddenValues) =>
-		hiddenValues.includes(game.executable.architecture),
-	filterOptions: [
-		{ label: "x64", value: "X64" },
-		{ label: "x86", value: "X86" },
-	],
 	renderCell: (game) => (
 		<Table.Td>
 			<ArchitectureBadge value={game.executable.architecture} />
@@ -102,21 +82,12 @@ const architecture: TableColumnBase<ProcessedInstalledGame, Architecture> = {
 	),
 };
 
-const scriptingBackend: TableColumnBase<
-	ProcessedInstalledGame,
-	UnityScriptingBackend
-> = {
+const scriptingBackend: TableColumnBase<ProcessedInstalledGame> = {
 	label: "Backend",
 	width: 90,
 	center: true,
 	hidable: true,
 	getSortValue: (game) => game.executable.scriptingBackend,
-	filter: (game, hiddenValues) =>
-		hiddenValues.includes(game.executable.scriptingBackend),
-	filterOptions: [
-		{ label: "IL2CPP", value: "Il2Cpp" },
-		{ label: "Mono", value: "Mono" },
-	],
 	renderCell: (game) => (
 		<Table.Td>
 			<UnityBackendBadge value={game.executable.scriptingBackend} />
@@ -124,28 +95,22 @@ const scriptingBackend: TableColumnBase<
 	),
 };
 
-const gameTags: TableColumnBase<ProcessedInstalledGame, string> = {
+const gameTags: TableColumnBase<ProcessedInstalledGame> = {
 	label: "Tags",
 	width: 120,
 	center: true,
 	hidable: true,
 	getSortValue: (game) => getGameTagsSortValue(game.ownedGame),
-	filter: (game, hiddenValues) => filterGameTags(game.ownedGame, hiddenValues),
-	filterOptions: gameTagFilterOptions,
 	renderCell: (game) => renderGameTagsCell(game.ownedGame),
 };
 
-const engine: TableColumnBase<ProcessedInstalledGame, EngineBrand> = {
+const engine: TableColumnBase<ProcessedInstalledGame> = {
 	label: "Engine",
 	width: 180,
 	center: true,
 	hidable: true,
 	sort: (dataA, dataB) =>
 		sortGamesByEngine(dataA.executable.engine, dataB.executable.engine),
-	filter: (game, hiddenValues) =>
-		hiddenValues.includes(game.executable.engine?.brand ?? null),
-	unavailableValues: ["Godot", "GameMaker"],
-	filterOptions: engineFilterOptions,
 	renderCell: ({ executable: { engine } }) => (
 		<Table.Td
 			// A bit annoying that I'm defining the column width in two places (see engineColumn.width),
