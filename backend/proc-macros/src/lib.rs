@@ -3,6 +3,7 @@ extern crate quote;
 
 use proc_macro::TokenStream;
 use quote::quote;
+use syn::{parse_macro_input, Data, DataEnum, DeriveInput};
 
 #[proc_macro_attribute]
 pub fn serializable_event(_args: TokenStream, input: TokenStream) -> TokenStream {
@@ -42,7 +43,7 @@ pub fn serializable_enum(_args: TokenStream, input: TokenStream) -> TokenStream 
 
 	// Generate the output tokens
 	let output = quote! {
-		#[derive(serde::Serialize, serde::Deserialize, specta::Type, Clone, PartialEq, Eq, Hash, Debug, Copy)]
+		#[derive(serde::Serialize, serde::Deserialize, specta::Type, Clone, PartialEq, Eq, Hash, Debug, Copy, rai_pal_proc_macros::EnumVariants)]
 		#input
 
 		#display_impl
@@ -50,4 +51,29 @@ pub fn serializable_enum(_args: TokenStream, input: TokenStream) -> TokenStream 
 
 	// Convert the output tokens into a TokenStream
 	TokenStream::from(output)
+}
+
+#[proc_macro_derive(EnumVariants)]
+pub fn enum_variants(input: TokenStream) -> TokenStream {
+	let input = parse_macro_input!(input as DeriveInput);
+	let enum_name = &input.ident;
+
+	// Ensure it's an enum and collect variant names
+	let variants: Vec<_> = match input.data {
+		Data::Enum(DataEnum { variants, .. }) => variants.iter().map(|v| v.ident.clone()).collect(),
+		_ => panic!("#[derive(EnumVariants)] can only be used on enums"),
+	};
+
+	// Generate the implementation
+	let output = quote! {
+		impl #enum_name {
+			pub fn variants() -> std::collections::HashSet<#enum_name> {
+				std::collections::HashSet::from([
+					#(Self::#variants),*
+				])
+			}
+		}
+	};
+
+	output.into()
 }

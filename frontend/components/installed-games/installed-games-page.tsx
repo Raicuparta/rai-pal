@@ -1,5 +1,5 @@
 import { Group, Stack } from "@mantine/core";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { filterGame, includesOneOf } from "@util/filter";
 import { InstalledGameModal } from "./installed-game-modal";
 import { useFilteredList } from "@hooks/use-filtered-list";
@@ -19,7 +19,8 @@ import {
 } from "@hooks/use-processed-installed-games";
 import { FilterSelect } from "@components/filters/filter-select";
 import { useAppEvent } from "@hooks/use-app-event";
-import { events } from "@api/bindings";
+import { commands, events, InstalledGamesFilter } from "@api/bindings";
+import { DebugData } from "@components/debug-data";
 
 const defaultFilter: Record<string, (string | null)[]> = {};
 
@@ -97,6 +98,17 @@ export function InstalledGamesPage() {
 		Object.values(hiddenValues).filter((filterValue) => filterValue.length > 0)
 			.length > 0;
 
+	const [possibleFilters, setPossibleFilters] =
+		useState<InstalledGamesFilter>();
+	useEffect(() => {
+		commands.getAllInstalledGamesFilters().then((result) => {
+			console.log(result);
+			if (result.status === "ok") {
+				setPossibleFilters(result.data);
+			}
+		});
+	}, []);
+
 	return (
 		<Stack h="100%">
 			<Group>
@@ -110,18 +122,20 @@ export function InstalledGamesPage() {
 					setFilter={setHiddenValues}
 					active={isFilterActive}
 				>
-					{installedGamesColumns.map((column) => (
-						<FilterSelect
-							key={column.id}
-							column={column}
-							visibleColumns={visibleColumnIds}
-							onChangeVisibleColumns={setVisibleColumnIds}
-							hiddenValues={hiddenValues[column.id]}
-							onChange={(selectedValues) =>
-								setHiddenValues({ [column.id]: selectedValues })
-							}
-						/>
-					))}
+					{Object.entries(possibleFilters ?? {}).map(
+						([columnId, possibleValues]) => (
+							<FilterSelect
+								key={columnId}
+								possibleValues={possibleValues}
+								visibleColumns={visibleColumnIds}
+								onChangeVisibleColumns={setVisibleColumnIds}
+								hiddenValues={[]}
+								onChange={(selectedValues) =>
+									setHiddenValues({ [column.id]: selectedValues })
+								}
+							/>
+						),
+					)}
 				</FilterMenu>
 				<RefreshButton />
 			</Group>

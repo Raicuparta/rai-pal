@@ -3,12 +3,17 @@
 // Command stuff needs to be async so I can spawn tasks.
 #![allow(clippy::unused_async)]
 
+use std::collections::HashSet;
 use std::{collections::HashMap, path::PathBuf, sync::Mutex};
 
 use crate::result::{Error, Result};
 use app_state::{AppState, DataValue, StateData, StatefulHandle};
 use events::EventEmitter;
-use rai_pal_core::installed_game::InstalledGame;
+use rai_pal_core::game_engines::game_engine::EngineBrand;
+use rai_pal_core::game_engines::unity::UnityScriptingBackend;
+use rai_pal_core::game_executable::Architecture;
+use rai_pal_core::game_tag::GameTag;
+use rai_pal_core::installed_game::{InstalledGame, InstalledGamesFilter};
 use rai_pal_core::local_mod::{self, LocalMod};
 use rai_pal_core::maps::TryGettable;
 use rai_pal_core::mod_loaders::mod_loader::{self, ModLoaderActions};
@@ -589,6 +594,32 @@ async fn clear_cache() -> Result {
 	Ok(())
 }
 
+#[tauri::command]
+#[specta::specta]
+async fn set_installed_games_filter(handle: AppHandle, filter: InstalledGamesFilter) -> Result {
+	update_state(filter, &handle.app_state().installed_games_filter);
+
+	Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn get_installed_games_filter(handle: AppHandle) -> Result<InstalledGamesFilter> {
+	handle.app_state().installed_games_filter.get_data()
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn get_all_installed_games_filters() -> Result<InstalledGamesFilter> {
+	Ok(InstalledGamesFilter {
+		architectures: Architecture::variants(),
+		engines: EngineBrand::variants(),
+		providers: ProviderId::variants(),
+		tags: GameTag::variants(),
+		unity_scripting_backends: UnityScriptingBackend::variants(),
+	})
+}
+
 fn main() {
 	// Since I'm making all exposed functions async, panics won't crash anything important, I think.
 	// So I can just catch panics here and show a system message with the error.
@@ -633,6 +664,9 @@ fn main() {
 			uninstall_all_mods,
 			uninstall_mod,
 			update_local_mods,
+			set_installed_games_filter,
+			get_installed_games_filter,
+			get_all_installed_games_filters,
 		])
 		.events(events::collect_events());
 
@@ -675,6 +709,7 @@ fn main() {
 				.into_iter()
 				.map(|provider_id| (provider_id, Mutex::default()))
 				.collect(),
+			installed_games_filter: Mutex::default(),
 		})
 		.invoke_handler(builder.invoke_handler())
 		.setup(move |app| {

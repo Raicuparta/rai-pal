@@ -252,6 +252,30 @@ async updateLocalMods() : Promise<Result<null, Error>> {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
 }
+},
+async setInstalledGamesFilter(filter: InstalledGamesFilter) : Promise<Result<null, Error>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("set_installed_games_filter", { filter }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async getInstalledGamesFilter() : Promise<Result<InstalledGamesFilter, Error>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("get_installed_games_filter") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async getAllInstalledGamesFilters() : Promise<Result<InstalledGamesFilter, Error>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("get_all_installed_games_filters") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
 }
 }
 
@@ -302,6 +326,7 @@ export type GameTag = "VR" | "Demo"
 export type GameTitle = { display: string; normalized: string[] }
 export type IdKind = "Steam" | "Manual" | "Itch" | "Epic" | "Gog" | "Xbox" | "Ubisoft" | "NormalizedTitle"
 export type InstalledGame = { id: string; title: GameTitle; provider: ProviderId; executable: GameExecutable; installedModVersions: { [key in string]: string }; discriminator: string | null; thumbnailUrl: string | null; ownedGameId: string | null; startCommand: ProviderCommand | null }
+export type InstalledGamesFilter = { providers: ProviderId[]; tags: GameTag[]; architectures: Architecture[]; unityScriptingBackends: UnityScriptingBackend[]; engines: EngineBrand[] }
 export type LocalMod = { data: LocalModData; common: CommonModData }
 export type LocalModData = { path: string; manifest: Manifest | null }
 export type Manifest = { title: string | null; version: string; runnable: RunnableModData | null; engine: EngineBrand | null; engineVersionRange: EngineVersionRange | null; unityBackend: UnityScriptingBackend | null }

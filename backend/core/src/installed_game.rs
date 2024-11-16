@@ -1,5 +1,5 @@
 use std::{
-	collections::HashMap,
+	collections::{HashMap, HashSet},
 	fs::{self},
 	path::{Path, PathBuf},
 };
@@ -8,7 +8,9 @@ use log::error;
 use rai_pal_proc_macros::serializable_struct;
 
 use crate::{
-	game_executable::GameExecutable,
+	game_engines::{game_engine::EngineBrand, unity::UnityScriptingBackend},
+	game_executable::{Architecture, GameExecutable},
+	game_tag::GameTag,
 	game_title::GameTitle,
 	mod_manifest, owned_game,
 	paths::{self, glob_path, hash_path},
@@ -27,6 +29,15 @@ pub struct InstalledGame {
 	pub thumbnail_url: Option<String>,
 	pub owned_game_id: Option<String>,
 	pub start_command: Option<ProviderCommand>,
+}
+
+#[serializable_struct]
+pub struct InstalledGamesFilter {
+	pub providers: HashSet<ProviderId>,
+	pub tags: HashSet<GameTag>,
+	pub architectures: HashSet<Architecture>,
+	pub unity_scripting_backends: HashSet<UnityScriptingBackend>,
+	pub engines: HashSet<EngineBrand>,
 }
 
 type InstalledModVersions = HashMap<String, String>;

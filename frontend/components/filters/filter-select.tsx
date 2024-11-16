@@ -4,15 +4,9 @@ import { IconEye, IconEyeClosed, IconRestore } from "@tabler/icons-react";
 import { useCallback, useMemo } from "react";
 import { FilterButton } from "./filter-button";
 
-const unknownOption = {
-	value: null,
-	label: "Unknown",
-};
-
-export type UnknownFilterOption = typeof unknownOption;
-
 type Props<TKey extends string, TItem, TFilterOption extends string> = {
 	readonly column: TableColumn<TKey, TItem, TFilterOption>;
+	readonly possibleValues: TFilterOption[];
 	readonly visibleColumns: TKey[];
 	readonly onChangeVisibleColumns: (visibleColumns: TKey[]) => void;
 	readonly hiddenValues?: (TFilterOption | null)[];
@@ -26,15 +20,15 @@ export function FilterSelect<
 	TItem,
 	TFilterOption extends string,
 >({
-	column,
+	possibleValues,
 	onChange,
 	onChangeVisibleColumns,
 	visibleColumns,
 	hiddenValues = defaultHiddenValues as TFilterOption[],
 }: Props<TKey, TItem, TFilterOption>) {
 	const optionsWithUnknown = useMemo(
-		() => [unknownOption, ...(column.filterOptions ?? [])],
-		[column.filterOptions],
+		() => [null, ...(possibleValues ?? [])],
+		[possibleValues],
 	);
 
 	const handleFilterClick = useCallback(
@@ -55,13 +49,13 @@ export function FilterSelect<
 		onChange([]);
 	};
 
-	if (!column.hidable) return null;
+	// if (!column.hidable) return null;
 
-	const isColumnVisible = visibleColumns.includes(column.id);
+	// const isColumnVisible = visibleColumns.includes(column.id);
 
 	return (
 		<Stack gap="xs">
-			<Tooltip
+			{/* <Tooltip
 				openDelay={500}
 				label="Toggle table column visibility"
 			>
@@ -78,20 +72,21 @@ export function FilterSelect<
 				>
 					<Group gap="xs">{column.label}</Group>
 				</Button>
-			</Tooltip>
-			{column.filterOptions && (
+			</Tooltip> */}
+			{optionsWithUnknown && (
 				<>
 					<Button.Group orientation="vertical">
 						{optionsWithUnknown.map((filterOption) => (
 							<FilterButton
 								filterOption={filterOption}
 								onClick={handleFilterClick}
-								isHidden={hiddenValues.includes(filterOption.value)}
-								isUnavailable={Boolean(
-									filterOption.value &&
-										column.unavailableValues?.includes(filterOption.value),
-								)}
-								key={filterOption.value}
+								isHidden={hiddenValues.includes(filterOption)}
+								// isUnavailable={Boolean(
+								// 	filterOption &&
+								// 		column.unavailableValues?.includes(filterOption),
+								// )}
+								isUnavailable={false}
+								key={filterOption}
 							/>
 						))}
 					</Button.Group>

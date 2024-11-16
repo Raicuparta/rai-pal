@@ -11,8 +11,13 @@ use crate::result::Result;
 use tauri::Manager;
 
 use rai_pal_core::{
-	installed_game::InstalledGame, local_mod, maps::TryGettable, mod_loaders::mod_loader,
-	owned_game::OwnedGame, providers::provider::ProviderId, remote_mod,
+	installed_game::{InstalledGame, InstalledGamesFilter},
+	local_mod,
+	maps::TryGettable,
+	mod_loaders::mod_loader,
+	owned_game::OwnedGame,
+	providers::provider::ProviderId,
+	remote_mod,
 };
 
 pub struct AppState {
@@ -21,6 +26,7 @@ pub struct AppState {
 	pub mod_loaders: Mutex<Option<mod_loader::Map>>,
 	pub local_mods: Mutex<Option<local_mod::Map>>,
 	pub remote_mods: Mutex<Option<remote_mod::Map>>,
+	pub installed_games_filter: Mutex<Option<InstalledGamesFilter>>,
 }
 
 type TauriState<'a> = tauri::State<'a, AppState>;
