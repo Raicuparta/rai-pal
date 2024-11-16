@@ -3,6 +3,8 @@ import { Table } from "@mantine/core";
 import { useEffect, useState } from "react";
 import { installedGamesColumns } from "./installed-games-columns";
 import { useTableRowContent } from "@components/table/use-table-row-content";
+import { ThumbnailCell } from "@components/table/thumbnail-cell";
+import { getThumbnailWithFallback } from "@util/fallback-thumbnail";
 
 type Props = {
 	readonly game_id: string;
@@ -25,12 +27,19 @@ export function InstalledGameRow(props: Props) {
 	}, [props.game_id, props.provider_id]);
 
 	if (!game) {
-		return null;
+		return (
+			<>
+				<Table.Td></Table.Td>
+				<Table.Td>...</Table.Td>
+			</>
+		);
 	}
 
 	return (
 		<>
-			<Table.Td></Table.Td>
+			<ThumbnailCell
+				src={getThumbnailWithFallback(game.thumbnailUrl, props.provider_id)}
+			/>
 			<Table.Td>{game.title.display}</Table.Td>
 			<Table.Td></Table.Td>
 			<Table.Td>{game.provider}</Table.Td>
