@@ -40,6 +40,59 @@ pub struct InstalledGamesFilter {
 	pub engines: HashMap<EngineBrand, bool>,
 }
 
+impl InstalledGamesFilter {
+	pub fn matches(&self, game: &InstalledGame) -> bool {
+		if !self.providers.get(&game.provider).unwrap_or(&true) {
+			return false;
+		}
+
+		// if !self.tags.iter().any(|(tag, enabled)| {
+		// 	*enabled && game.title.tags.contains(tag)
+		// }) {
+		// 	matches = false;
+		// }
+
+		let mut architectures = self.architectures.iter();
+		if architectures.any(|(_, enabled)| !enabled)
+			&& !self.architectures.iter().any(|(architecture, enabled)| {
+				*enabled
+					&& game
+						.executable
+						.architecture
+						.is_some_and(|a| a == *architecture)
+			}) {
+			return false;
+		}
+
+		let mut engines = self.engines.iter();
+		if engines.any(|(_, enabled)| !enabled)
+			&& !engines.any(|(engine, enabled)| {
+				*enabled
+					&& game
+						.executable
+						.engine
+						.as_ref()
+						.is_some_and(|e| e.brand == *engine)
+			}) {
+			return false;
+		}
+
+		let mut scripting_backends = self.unity_scripting_backends.iter();
+		if scripting_backends.any(|(_, enabled)| !enabled)
+			&& !scripting_backends.any(|(backend, enabled)| {
+				*enabled
+					&& game
+						.executable
+						.scripting_backend
+						.is_some_and(|b| b == *backend)
+			}) {
+			return false;
+		}
+
+		true
+	}
+}
+
 impl Default for InstalledGamesFilter {
 	fn default() -> Self {
 		Self {

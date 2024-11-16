@@ -573,6 +573,9 @@ async fn open_logs_folder() -> Result {
 #[specta::specta]
 async fn get_provider_data(handle: AppHandle, provider_id: ProviderId) -> Result<ProviderDataIds> {
 	let state = handle.app_state();
+
+	let installed_games_filter = state.installed_games_filter.get_data()?;
+
 	Ok(ProviderDataIds {
 		installed_games: state
 			.installed_games
@@ -580,6 +583,7 @@ async fn get_provider_data(handle: AppHandle, provider_id: ProviderId) -> Result
 			.get_data()
 			.unwrap_or_default()
 			.into_values()
+			.filter(|game| installed_games_filter.matches(game))
 			.map(|game| game.id)
 			.collect(),
 		owned_games: state

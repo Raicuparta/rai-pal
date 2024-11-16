@@ -27,7 +27,7 @@ export function FilterSelect<TFilterOption extends string>({
 							<FilterButton
 								filterOption={filterOption}
 								onClick={() => onClick(id, filterOption as TFilterOption)}
-								isHidden={isSelected as boolean}
+								isHidden={!isSelected as boolean}
 								// isUnavailable={Boolean(
 								// 	filterOption &&
 								// 		column.unavailableValues?.includes(filterOption),
