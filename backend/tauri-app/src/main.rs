@@ -612,11 +612,26 @@ async fn get_installed_games_filter(handle: AppHandle) -> Result<InstalledGamesF
 #[specta::specta]
 async fn get_all_installed_games_filters() -> Result<InstalledGamesFilter> {
 	Ok(InstalledGamesFilter {
-		architectures: Architecture::variants(),
-		engines: EngineBrand::variants(),
-		providers: ProviderId::variants(),
-		tags: GameTag::variants(),
-		unity_scripting_backends: UnityScriptingBackend::variants(),
+		architectures: Architecture::variants()
+			.into_iter()
+			.map(|variant| (variant, true))
+			.collect(),
+		engines: EngineBrand::variants()
+			.into_iter()
+			.map(|variant| (variant, true))
+			.collect(),
+		providers: ProviderId::variants()
+			.into_iter()
+			.map(|variant| (variant, true))
+			.collect(),
+		tags: GameTag::variants()
+			.into_iter()
+			.map(|variant| (variant, true))
+			.collect(),
+		unity_scripting_backends: UnityScriptingBackend::variants()
+			.into_iter()
+			.map(|variant| (variant, true))
+			.collect(),
 	})
 }
 

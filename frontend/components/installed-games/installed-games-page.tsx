@@ -98,17 +98,6 @@ export function InstalledGamesPage() {
 		Object.values(hiddenValues).filter((filterValue) => filterValue.length > 0)
 			.length > 0;
 
-	const [possibleFilters, setPossibleFilters] =
-		useState<InstalledGamesFilter>();
-	useEffect(() => {
-		commands.getAllInstalledGamesFilters().then((result) => {
-			console.log(result);
-			if (result.status === "ok") {
-				setPossibleFilters(result.data);
-			}
-		});
-	}, []);
-
 	return (
 		<Stack h="100%">
 			<Group>
@@ -121,22 +110,7 @@ export function InstalledGamesPage() {
 				<FilterMenu
 					setFilter={setHiddenValues}
 					active={isFilterActive}
-				>
-					{Object.entries(possibleFilters ?? {}).map(
-						([columnId, possibleValues]) => (
-							<FilterSelect
-								key={columnId}
-								possibleValues={possibleValues}
-								visibleColumns={visibleColumnIds}
-								onChangeVisibleColumns={setVisibleColumnIds}
-								hiddenValues={[]}
-								onChange={(selectedValues) =>
-									setHiddenValues({ [column.id]: selectedValues })
-								}
-							/>
-						),
-					)}
-				</FilterMenu>
+				/>
 				<RefreshButton />
 			</Group>
 			{selectedGame ? (

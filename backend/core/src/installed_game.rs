@@ -33,11 +33,11 @@ pub struct InstalledGame {
 
 #[serializable_struct]
 pub struct InstalledGamesFilter {
-	pub providers: HashSet<ProviderId>,
-	pub tags: HashSet<GameTag>,
-	pub architectures: HashSet<Architecture>,
-	pub unity_scripting_backends: HashSet<UnityScriptingBackend>,
-	pub engines: HashSet<EngineBrand>,
+	pub providers: HashMap<ProviderId, bool>,
+	pub tags: HashMap<GameTag, bool>,
+	pub architectures: HashMap<Architecture, bool>,
+	pub unity_scripting_backends: HashMap<UnityScriptingBackend, bool>,
+	pub engines: HashMap<EngineBrand, bool>,
 }
 
 type InstalledModVersions = HashMap<String, String>;

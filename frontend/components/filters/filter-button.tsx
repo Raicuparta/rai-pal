@@ -36,7 +36,7 @@ export function FilterButton<TFilterOption extends string>(
 				}
 				onClick={handleClick}
 			>
-				{props.filterOption}
+				{props.filterOption ?? "Unknown"}
 			</Button>
 		</Tooltip>
 	);

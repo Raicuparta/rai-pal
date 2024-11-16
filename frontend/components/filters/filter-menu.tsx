@@ -1,14 +1,31 @@
 import { Button, Group, Indicator, Popover } from "@mantine/core";
 import { IconFilter, IconX } from "@tabler/icons-react";
 import styles from "./filters.module.css";
+import { useCallback, useEffect, useState } from "react";
+import { commands, InstalledGamesFilter } from "@api/bindings";
+import { FilterSelect } from "./filter-select";
 
 type Props = {
-	readonly children: React.ReactNode;
 	readonly active: boolean;
 	readonly setFilter: (filter: undefined) => void;
 };
 
 export function FilterMenu(props: Props) {
+	const [currentFilter, setCurrentFilter] = useState<InstalledGamesFilter>();
+
+	const updateFilters = useCallback(() => {
+		commands.getInstalledGamesFilter().then((result) => {
+			console.log("result here ", result);
+			if (result.status === "ok") {
+				setCurrentFilter(result.data);
+			}
+		});
+	}, []);
+
+	useEffect(() => {
+		updateFilters();
+	}, [updateFilters]);
+
 	return (
 		<Indicator
 			disabled={!props.active}
@@ -41,7 +58,27 @@ export function FilterMenu(props: Props) {
 							align="start"
 							wrap="nowrap"
 						>
-							{props.children}
+							{Object.entries(currentFilter ?? {}).map(
+								([filterId, filterOptions]) => (
+									<FilterSelect
+										key={filterId}
+										id={filterId}
+										filterOptions={filterOptions}
+										// onChangeVisibleColumns={setVisibleColumnIds}
+										onClick={(id, value) => {
+											commands.setInstalledGamesFilter({
+												...currentFilter,
+												[id]: {
+													...currentFilter?.[id],
+													[value]: !currentFilter?.[id]?.[value],
+												},
+											});
+
+											updateFilters();
+										}}
+									/>
+								),
+							)}
 						</Group>
 					</Popover.Dropdown>
 				</Popover>
