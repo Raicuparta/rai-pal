@@ -19,7 +19,7 @@ export const pages = {
 	},
 	ownedGames: {
 		title: "Owned Games",
-		component: OwnedGamesPage,
+		component: InstalledGamesPage,
 		icon: <IconBooks />,
 	},
 	mods: { title: "Mods", component: ModsPage, icon: <IconTool /> },

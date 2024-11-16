@@ -15,6 +15,12 @@ pub struct ProviderData {
 	pub owned_games: HashMap<String, OwnedGame>,
 }
 
+#[serializable_struct]
+pub struct ProviderDataIds {
+	pub installed_games: Vec<String>,
+	pub owned_games: Vec<String>,
+}
+
 pub struct ProviderCache {
 	path: PathBuf,
 	pub data: ProviderData,

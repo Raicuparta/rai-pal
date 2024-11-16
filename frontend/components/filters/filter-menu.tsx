@@ -8,17 +8,13 @@ import { FilterSelect } from "./filter-select";
 type Filter = Record<string, Record<string, boolean>>;
 
 type Props<TFilter extends Filter> = {
-	readonly active: boolean;
-	readonly setFilter: (filter: undefined) => void;
 	readonly setterCommand: (filter: TFilter) => Promise<Result<null, Error>>;
 	readonly getterCommand: () => Promise<Result<TFilter, Error>>;
 };
 
 export function FilterMenu<TFilter extends Filter>({
 	setterCommand,
-	active,
 	getterCommand,
-	setFilter,
 }: Props<TFilter>) {
 	const [currentFilter, setCurrentFilter] = useState<TFilter>();
 
@@ -49,6 +45,8 @@ export function FilterMenu<TFilter extends Filter>({
 		updateFilters();
 	}, [updateFilters]);
 
+	const active = false;
+
 	return (
 		<Indicator
 			disabled={!active}
@@ -57,7 +55,7 @@ export function FilterMenu<TFilter extends Filter>({
 			<Button.Group>
 				{active && (
 					<Button
-						onClick={() => setFilter(undefined)}
+						// onClick={() => setFilter(undefined)}
 						px={5}
 					>
 						<IconX />

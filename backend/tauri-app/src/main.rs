@@ -20,7 +20,7 @@ use rai_pal_core::mod_loaders::mod_loader::{self, ModLoaderActions};
 use rai_pal_core::owned_game::OwnedGame;
 use rai_pal_core::paths::{self, normalize_path};
 use rai_pal_core::providers::provider::ProviderId;
-use rai_pal_core::providers::provider_cache::{ProviderCache, ProviderData};
+use rai_pal_core::providers::provider_cache::{ProviderCache, ProviderData, ProviderDataIds};
 use rai_pal_core::providers::{
 	manual_provider,
 	provider::{self, ProviderActions},
@@ -571,20 +571,41 @@ async fn open_logs_folder() -> Result {
 
 #[tauri::command]
 #[specta::specta]
-async fn get_provider_data(handle: AppHandle, provider_id: ProviderId) -> Result<ProviderData> {
+async fn get_provider_data(handle: AppHandle, provider_id: ProviderId) -> Result<ProviderDataIds> {
 	let state = handle.app_state();
-	Ok(ProviderData {
+	Ok(ProviderDataIds {
 		installed_games: state
 			.installed_games
 			.try_get(&provider_id)?
 			.get_data()
-			.unwrap_or_default(),
+			.unwrap_or_default()
+			.into_values()
+			.map(|game| game.id)
+			.collect(),
 		owned_games: state
 			.owned_games
 			.try_get(&provider_id)?
 			.get_data()
-			.unwrap_or_default(),
+			.unwrap_or_default()
+			.into_values()
+			.map(|game| game.global_id)
+			.collect(),
 	})
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn get_installed_game(
+	handle: AppHandle,
+	provider_id: ProviderId,
+	game_id: String,
+) -> Result<InstalledGame> {
+	let state = handle.app_state();
+	Ok(state
+		.installed_games
+		.try_get(&provider_id)?
+		.try_get(&game_id)?
+		.clone())
 }
 
 #[tauri::command]
@@ -682,6 +703,7 @@ fn main() {
 			set_installed_games_filter,
 			get_installed_games_filter,
 			get_all_installed_games_filters,
+			get_installed_game,
 		])
 		.events(events::collect_events());
 

@@ -30,6 +30,9 @@ export function getTableComponents<TItem, TContext = any>(
 		// eslint-disable-next-line react/display-name
 		TableRow: (props) => (
 			<Table.Tr
+				style={{
+					height: 33,
+				}}
 				onClick={() => onClickItem(props.item)}
 				{...props}
 			/>
