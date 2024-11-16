@@ -20,6 +20,7 @@ export function FilterMenu<TFilter extends Filter>({
 
 	const updateFilters = useCallback(() => {
 		getterCommand().then((result) => {
+			console.log("aa?", result);
 			if (result.status === "ok") {
 				setCurrentFilter(result.data);
 			}

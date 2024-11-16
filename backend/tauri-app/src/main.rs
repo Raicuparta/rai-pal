@@ -626,34 +626,19 @@ async fn set_installed_games_filter(handle: AppHandle, filter: InstalledGamesFil
 #[tauri::command]
 #[specta::specta]
 async fn get_installed_games_filter(handle: AppHandle) -> Result<InstalledGamesFilter> {
-	handle.app_state().installed_games_filter.get_data()
-}
-
-#[tauri::command]
-#[specta::specta]
-async fn get_all_installed_games_filters() -> Result<InstalledGamesFilter> {
-	Ok(InstalledGamesFilter {
-		architectures: Architecture::variants()
-			.into_iter()
-			.map(|variant| (variant, true))
-			.collect(),
-		engines: EngineBrand::variants()
-			.into_iter()
-			.map(|variant| (variant, true))
-			.collect(),
-		providers: ProviderId::variants()
-			.into_iter()
-			.map(|variant| (variant, true))
-			.collect(),
-		tags: GameTag::variants()
-			.into_iter()
-			.map(|variant| (variant, true))
-			.collect(),
-		unity_scripting_backends: UnityScriptingBackend::variants()
-			.into_iter()
-			.map(|variant| (variant, true))
-			.collect(),
-	})
+	handle
+		.app_state()
+		.installed_games_filter
+		.get_data()
+		.map_or_else(
+			|error| {
+				log::info!(
+					"Failed to get installed games filter, falling back to default. Error: {error}"
+				);
+				Ok(InstalledGamesFilter::default())
+			},
+			Ok,
+		)
 }
 
 fn main() {
@@ -702,7 +687,6 @@ fn main() {
 			update_local_mods,
 			set_installed_games_filter,
 			get_installed_games_filter,
-			get_all_installed_games_filters,
 			get_installed_game,
 		])
 		.events(events::collect_events());
@@ -746,7 +730,7 @@ fn main() {
 				.into_iter()
 				.map(|provider_id| (provider_id, Mutex::default()))
 				.collect(),
-			installed_games_filter: Mutex::default(),
+			installed_games_filter: Mutex::new(Some(InstalledGamesFilter::default())),
 		})
 		.invoke_handler(builder.invoke_handler())
 		.setup(move |app| {

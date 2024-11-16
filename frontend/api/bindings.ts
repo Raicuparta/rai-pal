@@ -269,14 +269,6 @@ async getInstalledGamesFilter() : Promise<Result<InstalledGamesFilter, Error>> {
     else return { status: "error", error: e  as any };
 }
 },
-async getAllInstalledGamesFilters() : Promise<Result<InstalledGamesFilter, Error>> {
-    try {
-    return { status: "ok", data: await TAURI_INVOKE("get_all_installed_games_filters") };
-} catch (e) {
-    if(e instanceof Error) throw e;
-    else return { status: "error", error: e  as any };
-}
-},
 async getInstalledGame(providerId: ProviderId, gameId: string) : Promise<Result<InstalledGame, Error>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("get_installed_game", { providerId, gameId }) };

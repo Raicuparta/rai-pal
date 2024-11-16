@@ -40,6 +40,33 @@ pub struct InstalledGamesFilter {
 	pub engines: HashMap<EngineBrand, bool>,
 }
 
+impl Default for InstalledGamesFilter {
+	fn default() -> Self {
+		Self {
+			architectures: Architecture::variants()
+				.into_iter()
+				.map(|variant| (variant, true))
+				.collect(),
+			engines: EngineBrand::variants()
+				.into_iter()
+				.map(|variant| (variant, true))
+				.collect(),
+			providers: ProviderId::variants()
+				.into_iter()
+				.map(|variant| (variant, true))
+				.collect(),
+			tags: GameTag::variants()
+				.into_iter()
+				.map(|variant| (variant, true))
+				.collect(),
+			unity_scripting_backends: UnityScriptingBackend::variants()
+				.into_iter()
+				.map(|variant| (variant, true))
+				.collect(),
+		}
+	}
+}
+
 type InstalledModVersions = HashMap<String, String>;
 
 impl InstalledGame {
