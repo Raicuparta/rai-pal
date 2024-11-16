@@ -110,6 +110,8 @@ export function InstalledGamesPage() {
 				<FilterMenu
 					setFilter={setHiddenValues}
 					active={isFilterActive}
+					setterCommand={commands.setInstalledGamesFilter}
+					getterCommand={commands.getInstalledGamesFilter}
 				/>
 				<RefreshButton />
 			</Group>

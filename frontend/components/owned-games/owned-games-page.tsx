@@ -96,7 +96,7 @@ export function OwnedGamesPage() {
 					value={search}
 					count={filteredGames.length}
 				/>
-				<FilterMenu
+				{/* <FilterMenu
 					setFilter={setHiddenValues}
 					active={isFilterActive}
 				>
@@ -112,7 +112,7 @@ export function OwnedGamesPage() {
 							}
 						/>
 					))}
-				</FilterMenu>
+				</FilterMenu> */}
 				<RefreshButton />
 			</Group>
 			<VirtualizedTable

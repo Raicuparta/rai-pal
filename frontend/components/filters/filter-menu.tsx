@@ -2,25 +2,48 @@ import { Button, Group, Indicator, Popover } from "@mantine/core";
 import { IconFilter, IconX } from "@tabler/icons-react";
 import styles from "./filters.module.css";
 import { useCallback, useEffect, useState } from "react";
-import { commands, InstalledGamesFilter } from "@api/bindings";
+import { type Result, type Error } from "@api/bindings";
 import { FilterSelect } from "./filter-select";
 
-type Props = {
+type Filter = Record<string, Record<string, boolean>>;
+
+type Props<TFilter extends Filter> = {
 	readonly active: boolean;
 	readonly setFilter: (filter: undefined) => void;
+	readonly setterCommand: (filter: TFilter) => Promise<Result<null, Error>>;
+	readonly getterCommand: () => Promise<Result<TFilter, Error>>;
 };
 
-export function FilterMenu(props: Props) {
-	const [currentFilter, setCurrentFilter] = useState<InstalledGamesFilter>();
+export function FilterMenu<TFilter extends Filter>({
+	setterCommand,
+	active,
+	getterCommand,
+	setFilter,
+}: Props<TFilter>) {
+	const [currentFilter, setCurrentFilter] = useState<TFilter>();
 
 	const updateFilters = useCallback(() => {
-		commands.getInstalledGamesFilter().then((result) => {
-			console.log("result here ", result);
+		getterCommand().then((result) => {
 			if (result.status === "ok") {
 				setCurrentFilter(result.data);
 			}
 		});
-	}, []);
+	}, [getterCommand]);
+
+	const handleFilterOptionClick = useCallback(
+		(id: string, value: string) => {
+			setterCommand({
+				...currentFilter,
+				[id]: {
+					...currentFilter?.[id],
+					[value]: !currentFilter?.[id]?.[value],
+				},
+			} as TFilter);
+
+			updateFilters();
+		},
+		[currentFilter, setterCommand, updateFilters],
+	);
 
 	useEffect(() => {
 		updateFilters();
@@ -28,13 +51,13 @@ export function FilterMenu(props: Props) {
 
 	return (
 		<Indicator
-			disabled={!props.active}
+			disabled={!active}
 			offset={8}
 		>
 			<Button.Group>
-				{props.active && (
+				{active && (
 					<Button
-						onClick={() => props.setFilter(undefined)}
+						onClick={() => setFilter(undefined)}
 						px={5}
 					>
 						<IconX />
@@ -65,17 +88,7 @@ export function FilterMenu(props: Props) {
 										id={filterId}
 										filterOptions={filterOptions}
 										// onChangeVisibleColumns={setVisibleColumnIds}
-										onClick={(id, value) => {
-											commands.setInstalledGamesFilter({
-												...currentFilter,
-												[id]: {
-													...currentFilter?.[id],
-													[value]: !currentFilter?.[id]?.[value],
-												},
-											});
-
-											updateFilters();
-										}}
+										onClick={handleFilterOptionClick}
 									/>
 								),
 							)}

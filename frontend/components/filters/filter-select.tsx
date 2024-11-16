@@ -1,13 +1,11 @@
-import { Button, Group, Stack, Tooltip } from "@mantine/core";
-import { TableColumn } from "../table/table-head";
-import { IconEye, IconEyeClosed, IconRestore } from "@tabler/icons-react";
-import { useCallback, useMemo } from "react";
+import { Button, Stack } from "@mantine/core";
+import { useMemo } from "react";
 import { FilterButton } from "./filter-button";
 
 type Props<TFilterOption extends string> = {
 	readonly id: string;
 	readonly filterOptions: Record<TFilterOption, boolean>;
-	readonly onClick: (id: string, value: TFilterOption | null) => void;
+	readonly onClick: (id: string, value: TFilterOption) => void;
 };
 
 export function FilterSelect<TFilterOption extends string>({
@@ -28,7 +26,7 @@ export function FilterSelect<TFilterOption extends string>({
 						{sortedEntries.map(([filterOption, isSelected]) => (
 							<FilterButton
 								filterOption={filterOption}
-								onClick={(value) => onClick(id, filterOption as TFilterOption)}
+								onClick={() => onClick(id, filterOption as TFilterOption)}
 								isHidden={isSelected as boolean}
 								// isUnavailable={Boolean(
 								// 	filterOption &&
