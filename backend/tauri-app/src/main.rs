@@ -623,7 +623,7 @@ async fn clear_cache() -> Result {
 #[specta::specta]
 async fn set_installed_games_filter(handle: AppHandle, filter: InstalledGamesFilter) -> Result {
 	update_state(filter, &handle.app_state().installed_games_filter);
-
+	handle.emit_safe(events::FoundInstalledGame());
 	Ok(())
 }
 
