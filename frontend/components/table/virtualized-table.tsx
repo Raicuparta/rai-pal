@@ -4,7 +4,6 @@ import { TableHead, TableColumn } from "./table-head";
 import { TableSort } from "@hooks/use-table-sort";
 import { getTableComponents } from "./table-components";
 import { TableContainer } from "./table-container";
-import { useTableRowContent } from "./use-table-row-content";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 interface Props<TKey extends string, TItem, Context = any>
@@ -43,16 +42,16 @@ export function VirtualizedTable<
 		[onClickItem],
 	);
 
-	const itemContent = useTableRowContent(columns);
-
 	return (
 		<TableContainer>
 			<TableVirtuoso
 				style={{ overflowY: "scroll" }}
 				components={tableComponents}
-				itemContent={itemContent}
 				fixedHeaderContent={renderHeaders}
 				defaultItemHeight={33}
+				onClick={(e) => {
+					console.log(e);
+				}}
 				{...props}
 			/>
 		</TableContainer>

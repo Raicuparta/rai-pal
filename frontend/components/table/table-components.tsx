@@ -27,13 +27,9 @@ export function getTableComponents<TItem, TContext = any>(
 				ref={ref}
 			/>
 		)),
-		// eslint-disable-next-line react/display-name
 		TableRow: (props) => (
 			<Table.Tr
-				style={{
-					height: 33,
-				}}
-				onClick={() => onClickItem(props.item)}
+				onClick={() => onClickItem(props["data-index"])}
 				{...props}
 			/>
 		),

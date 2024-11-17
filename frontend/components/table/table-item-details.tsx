@@ -5,7 +5,7 @@ import { TableContainer } from "./table-container";
 
 type Props<TKey extends string, TData> = {
 	readonly columns: TableColumn<TKey, TData>[];
-	readonly item: TData;
+	readonly item?: TData;
 };
 
 export function TableItemDetails<TKey extends string, TData>(
@@ -23,7 +23,8 @@ export function TableItemDetails<TKey extends string, TData>(
 					<Table.Tr>
 						{columns.map(
 							(column) =>
-								!column.hideInDetails && (
+								!column.hideInDetails &&
+								props.item && (
 									<React.Fragment key={column.id}>
 										{column.renderCell(props.item)}
 									</React.Fragment>

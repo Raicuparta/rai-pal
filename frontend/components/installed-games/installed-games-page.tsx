@@ -28,17 +28,20 @@ const defaultColumns: InstalledGameColumnsId[] = [
 	"provider",
 ];
 
+type GameTuple = [ProviderId, string];
+
 export function InstalledGamesPage() {
 	const providerData = useAtomValue(providerDataAtom);
 
-	const [selectedGameId, setSelectedGameId] = useState<string>();
+	const [selectedGame, setSelectedGame] = useState<GameTuple>();
 
 	useAppEvent(events.selectInstalledGame, (gameId: string) => {
-		setSelectedGameId(gameId);
+		// TODO: handle this.
+		// selectedGame(gameId);
 	});
 
 	const installedGames = useMemo(() => {
-		const result: [ProviderId, string][] = [];
+		const result: GameTuple[] = [];
 		for (const providerId of Object.keys(providerData) as ProviderId[]) {
 			const installedGames = providerData[providerId]?.installedGames;
 			if (!installedGames) continue;
@@ -50,14 +53,6 @@ export function InstalledGamesPage() {
 
 		return result;
 	}, [providerData]);
-
-	const selectedGame = useMemo(
-		() =>
-			installedGames && selectedGameId
-				? installedGames[selectedGameId]
-				: undefined,
-		[installedGames, selectedGameId],
-	);
 
 	const [visibleColumnIds, setVisibleColumnIds] = usePersistedState<
 		InstalledGameColumnsId[]
@@ -83,8 +78,9 @@ export function InstalledGamesPage() {
 			</Group>
 			{selectedGame ? (
 				<InstalledGameModal
-					game={selectedGame}
-					onClose={() => setSelectedGameId(undefined)}
+					gameId={selectedGame[1]}
+					providerId={selectedGame[0]}
+					onClose={() => setSelectedGame(undefined)}
 				/>
 			) : null}
 			<VirtualizedTable
@@ -98,7 +94,7 @@ export function InstalledGamesPage() {
 				)}
 				columns={filteredColumns}
 				// onChangeSort={setSort}
-				// onClickItem={(game) => setSelectedGameId(game.id)}
+				onClickItem={(index) => setSelectedGame(installedGames[index])}
 				// sort={sort}
 			/>
 		</Stack>
