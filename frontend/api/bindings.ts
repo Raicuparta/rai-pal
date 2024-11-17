@@ -253,7 +253,7 @@ async updateLocalMods() : Promise<Result<null, Error>> {
     else return { status: "error", error: e  as any };
 }
 },
-async setInstalledGamesFilter(filter: InstalledGamesFilter) : Promise<Result<null, Error>> {
+async setInstalledGamesFilter(filter: InstalledGamesFilter | null) : Promise<Result<null, Error>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("set_installed_games_filter", { filter }) };
 } catch (e) {

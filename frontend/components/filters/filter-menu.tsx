@@ -12,7 +12,9 @@ type Filter = {
 };
 
 type Props<TFilter extends Filter> = {
-	readonly setterCommand: (filter: TFilter) => Promise<Result<null, Error>>;
+	readonly setterCommand: (
+		filter: TFilter | null,
+	) => Promise<Result<null, Error>>;
 	readonly getterCommand: () => Promise<Result<TFilter, Error>>;
 };
 
@@ -31,7 +33,7 @@ export function FilterMenu<TFilter extends Filter>({
 		});
 	}, [getterCommand]);
 
-	const handleFilterOptionClick = useCallback(
+	const handleToggleClick = useCallback(
 		(id: string, value: string) => {
 			setterCommand({
 				...currentFilter,
@@ -49,6 +51,11 @@ export function FilterMenu<TFilter extends Filter>({
 		[currentFilter, setterCommand, updateFilters],
 	);
 
+	const handleReset = useCallback(() => {
+		setCurrentSearch("");
+		setterCommand(null).then(updateFilters);
+	}, [setterCommand, updateFilters]);
+
 	const handleSearchChange = useCallback(
 		(search: string) => {
 			setCurrentSearch(search);
@@ -65,7 +72,12 @@ export function FilterMenu<TFilter extends Filter>({
 		updateFilters();
 	}, [updateFilters]);
 
-	const active = false;
+	// active if has search or any toggle is set to false:
+	const active =
+		Boolean(currentSearch) ||
+		Object.values(currentFilter?.toggles ?? {}).some((toggleGroup) =>
+			Object.values(toggleGroup).some((value) => !value),
+		);
 
 	return (
 		<>
@@ -81,7 +93,7 @@ export function FilterMenu<TFilter extends Filter>({
 				<Button.Group>
 					{active && (
 						<Button
-							// onClick={() => setFilter(undefined)}
+							onClick={handleReset}
 							px={5}
 						>
 							<IconX />
@@ -111,7 +123,7 @@ export function FilterMenu<TFilter extends Filter>({
 											key={filterId}
 											id={filterId}
 											filterOptions={filterOptions}
-											onClick={handleFilterOptionClick}
+											onClick={handleToggleClick}
 										/>
 									),
 								)}
