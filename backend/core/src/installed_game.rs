@@ -1,5 +1,5 @@
 use std::{
-	collections::{HashMap, HashSet},
+	collections::HashMap,
 	fs::{self},
 	path::{Path, PathBuf},
 };
@@ -16,6 +16,7 @@ use crate::{
 	paths::{self, glob_path, hash_path},
 	providers::{provider::ProviderId, provider_command::ProviderCommand},
 	result::{Error, Result},
+	string_includes::any_contains,
 };
 
 #[serializable_struct]
@@ -32,7 +33,14 @@ pub struct InstalledGame {
 }
 
 #[serializable_struct]
+#[derive(Default)]
 pub struct InstalledGamesFilter {
+	pub toggles: InstalledGamesFilterToggles,
+	pub search: String,
+}
+
+#[serializable_struct]
+pub struct InstalledGamesFilterToggles {
 	pub providers: HashMap<ProviderId, bool>,
 	pub tags: HashMap<GameTag, bool>,
 	pub architectures: HashMap<Architecture, bool>,
@@ -42,19 +50,21 @@ pub struct InstalledGamesFilter {
 
 impl InstalledGamesFilter {
 	pub fn matches(&self, game: &InstalledGame) -> bool {
-		if !self.providers.get(&game.provider).unwrap_or(&true) {
+		let toggles = &self.toggles;
+		if !toggles.providers.get(&game.provider).unwrap_or(&true) {
 			return false;
 		}
 
-		// if !self.tags.iter().any(|(tag, enabled)| {
+		// TODO: tags need to be merged from owned games.
+		// if !toggles.tags.iter().any(|(tag, enabled)| {
 		// 	*enabled && game.title.tags.contains(tag)
 		// }) {
 		// 	matches = false;
 		// }
 
-		let mut architectures = self.architectures.iter();
+		let mut architectures = toggles.architectures.iter();
 		if architectures.any(|(_, enabled)| !enabled)
-			&& !self.architectures.iter().any(|(architecture, enabled)| {
+			&& !toggles.architectures.iter().any(|(architecture, enabled)| {
 				*enabled
 					&& game
 						.executable
@@ -64,7 +74,7 @@ impl InstalledGamesFilter {
 			return false;
 		}
 
-		let mut engines = self.engines.iter();
+		let mut engines = toggles.engines.iter();
 		if engines.any(|(_, enabled)| !enabled)
 			&& !engines.any(|(engine, enabled)| {
 				*enabled
@@ -77,7 +87,7 @@ impl InstalledGamesFilter {
 			return false;
 		}
 
-		let mut scripting_backends = self.unity_scripting_backends.iter();
+		let mut scripting_backends = toggles.unity_scripting_backends.iter();
 		if scripting_backends.any(|(_, enabled)| !enabled)
 			&& !scripting_backends.any(|(backend, enabled)| {
 				*enabled
@@ -89,11 +99,20 @@ impl InstalledGamesFilter {
 			return false;
 		}
 
+		if !self.search.is_empty() {
+			// We'll try to match the search term to a bunch of different strings related to this game.
+			let mut candidates: Vec<&str> = vec![&game.title.display, &game.executable.name];
+			candidates.extend(game.title.normalized.iter().map(String::as_str));
+			if !any_contains(&candidates, &self.search) {
+				return false;
+			}
+		}
+
 		true
 	}
 }
 
-impl Default for InstalledGamesFilter {
+impl Default for InstalledGamesFilterToggles {
 	fn default() -> Self {
 		Self {
 			architectures: Architecture::variants()

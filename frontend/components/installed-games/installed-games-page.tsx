@@ -1,11 +1,9 @@
-import { Group, Stack, Table } from "@mantine/core";
-import { useEffect, useMemo, useState } from "react";
+import { Group, Stack } from "@mantine/core";
+import { useMemo, useState } from "react";
 import { InstalledGameModal } from "./installed-game-modal";
-import { useFilteredList } from "@hooks/use-filtered-list";
 import { FilterMenu } from "@components/filters/filter-menu";
 import { VirtualizedTable } from "@components/table/virtualized-table";
 import { RefreshButton } from "@components/refresh-button";
-import { SearchInput } from "@components/search-input";
 import {
 	InstalledGameColumnsId,
 	installedGamesColumns,
@@ -77,11 +75,6 @@ export function InstalledGamesPage() {
 		<Stack h="100%">
 			<Group>
 				<AddGame />
-				{/* <SearchInput
-					onChange={setSearch}
-					value={search}
-					count={filteredGames.length}
-				/> */}
 				<FilterMenu
 					setterCommand={commands.setInstalledGamesFilter}
 					getterCommand={commands.getInstalledGamesFilter}
