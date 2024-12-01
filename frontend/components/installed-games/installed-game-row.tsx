@@ -1,4 +1,4 @@
-import { commands, InstalledGame, ProviderId } from "@api/bindings";
+import { commands, InstalledGame } from "@api/bindings";
 import { Table } from "@mantine/core";
 import { useEffect, useState } from "react";
 import { installedGamesColumns } from "./installed-games-columns";

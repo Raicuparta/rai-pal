@@ -11,7 +11,7 @@ import { usePersistedState } from "@hooks/use-persisted-state";
 import { AddGame } from "./add-game-button";
 import { useAppEvent } from "@hooks/use-app-event";
 import { commands, events, InstalledGame, ProviderId } from "@api/bindings";
-import { useAtomValue } from "jotai";
+import { useAtom, useAtomValue } from "jotai";
 import { providerDataAtom } from "@hooks/use-data";
 import { selectedInstalledGameAtom } from "./selected-installed-game";
 import { TableContainer } from "@components/table/table-container";
@@ -38,11 +38,10 @@ export type InstalledGameId = {
 export function InstalledGamesPage() {
 	const providerData = useAtomValue(providerDataAtom);
 
-	const selectedGame = useAtomValue(selectedInstalledGameAtom);
+	const [selectedGame, setSelectedGame] = useAtom(selectedInstalledGameAtom);
 
-	useAppEvent(events.selectInstalledGame, (gameId: string) => {
-		// TODO: handle this.
-		// selectedGame(gameId);
+	useAppEvent(events.selectInstalledGame, (game) => {
+		setSelectedGame(game);
 	});
 
 	const installedGames = useMemo(() => {
