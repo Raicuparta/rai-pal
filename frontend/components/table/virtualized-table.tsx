@@ -46,12 +46,14 @@ export function VirtualizedTable<
 		<TableContainer>
 			<TableVirtuoso
 				style={{ overflowY: "scroll" }}
-				components={tableComponents}
+				components={{
+					...tableComponents,
+				}}
 				fixedHeaderContent={renderHeaders}
 				defaultItemHeight={33}
-				onClick={(e) => {
-					console.log(e);
-				}}
+				// onClick={(e) => {
+				// 	console.log(e);
+				// }}
 				{...props}
 			/>
 		</TableContainer>

@@ -13,9 +13,10 @@ import { AddGame } from "./add-game-button";
 import { ProcessedInstalledGame } from "@hooks/use-processed-installed-games";
 import { useAppEvent } from "@hooks/use-app-event";
 import { commands, events, ProviderId } from "@api/bindings";
-import { useAtomValue } from "jotai";
+import { useAtomValue, useSetAtom } from "jotai";
 import { providerDataAtom } from "@hooks/use-data";
 import { InstalledGameRow } from "./installed-game-row";
+import { selectedInstalledGameAtom } from "./selected-installed-game";
 
 export type TableSortMethod = (
 	gameA: ProcessedInstalledGame,
@@ -28,12 +29,12 @@ const defaultColumns: InstalledGameColumnsId[] = [
 	"provider",
 ];
 
-type GameTuple = [ProviderId, string];
+export type InstalledGameTuple = [ProviderId, string];
 
 export function InstalledGamesPage() {
 	const providerData = useAtomValue(providerDataAtom);
 
-	const [selectedGame, setSelectedGame] = useState<GameTuple>();
+	const selectedGame = useAtomValue(selectedInstalledGameAtom);
 
 	useAppEvent(events.selectInstalledGame, (gameId: string) => {
 		// TODO: handle this.
@@ -41,7 +42,7 @@ export function InstalledGamesPage() {
 	});
 
 	const installedGames = useMemo(() => {
-		const result: GameTuple[] = [];
+		const result: InstalledGameTuple[] = [];
 		for (const providerId of Object.keys(providerData) as ProviderId[]) {
 			const installedGames = providerData[providerId]?.installedGames;
 			if (!installedGames) continue;
@@ -76,15 +77,9 @@ export function InstalledGamesPage() {
 				/>
 				<RefreshButton />
 			</Group>
-			{selectedGame ? (
-				<InstalledGameModal
-					gameId={selectedGame[1]}
-					providerId={selectedGame[0]}
-					onClose={() => setSelectedGame(undefined)}
-				/>
-			) : null}
+			{selectedGame ? <InstalledGameModal game={selectedGame} /> : null}
 			<VirtualizedTable
-				// data={installedGames}
+				data={installedGames}
 				totalCount={installedGames.length}
 				itemContent={(index) => (
 					<InstalledGameRow
@@ -94,7 +89,6 @@ export function InstalledGamesPage() {
 				)}
 				columns={filteredColumns}
 				// onChangeSort={setSort}
-				onClickItem={(index) => setSelectedGame(installedGames[index])}
 				// sort={sort}
 			/>
 		</Stack>

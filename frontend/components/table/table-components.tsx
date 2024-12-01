@@ -1,3 +1,4 @@
+import { InstalledGameRow } from "@components/installed-games/installed-game-row";
 import { Table } from "@mantine/core";
 import React from "react";
 import { TableComponents } from "react-virtuoso";
@@ -27,11 +28,6 @@ export function getTableComponents<TItem, TContext = any>(
 				ref={ref}
 			/>
 		)),
-		TableRow: (props) => (
-			<Table.Tr
-				onClick={() => onClickItem(props["data-index"])}
-				{...props}
-			/>
-		),
+		TableRow: InstalledGameRow,
 	};
 }
