@@ -17,12 +17,21 @@ export const OwnedGameRow = React.forwardRef(function OwnedGameRow(
 
 	return (
 		<>
-			{game && selectedGame && selectedGame.id === game.id && (
-				<OwnedGameModal game={game} />
-			)}
+			{game &&
+				selectedGame &&
+				selectedGame.provider === game.provider &&
+				selectedGame.id === game.providerGameId && (
+					<OwnedGameModal game={game} />
+				)}
 			<Table.Tr
 				ref={ref}
-				onClick={() => game && setSelectedGame(game)}
+				onClick={() =>
+					game &&
+					setSelectedGame({
+						id: game.providerGameId,
+						provider: game.provider,
+					})
+				}
 			>
 				{ownedGamesColumns.map((column) => (
 					<React.Fragment key={column.id}>

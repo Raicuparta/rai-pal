@@ -7,16 +7,22 @@ import { ItemName } from "@components/item-name";
 import { getThumbnailWithFallback } from "@util/fallback-thumbnail";
 import { ProviderCommandButtons } from "../providers/provider-command-dropdown";
 import { OwnedGame } from "@api/bindings";
+import { selectedOwnedGameAtom } from "./selected-owned-game";
+import { useSetAtom } from "jotai";
 
 type Props = {
 	readonly game: OwnedGame;
 };
 
 export function OwnedGameModal(props: Props) {
+	const setSelectedGame = useSetAtom(selectedOwnedGameAtom);
+
+	const close = () => setSelectedGame(null);
+
 	return (
 		<Modal
 			centered
-			onClose={props.onClose}
+			onClose={close}
 			opened
 			size="xl"
 			title={
