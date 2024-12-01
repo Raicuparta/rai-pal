@@ -2,11 +2,6 @@ import { Group, Stack } from "@mantine/core";
 import { useCallback, useMemo } from "react";
 import { FilterMenu } from "@components/filters/filter-menu";
 import { RefreshButton } from "@components/refresh-button";
-import {
-	InstalledGameColumnsId,
-	installedGamesColumns,
-} from "./installed-games-columns";
-import { usePersistedState } from "@hooks/use-persisted-state";
 import { AddGame } from "./add-game-button";
 import { useAppEvent } from "@hooks/use-app-event";
 import { commands, events, InstalledGame, ProviderId } from "@api/bindings";
@@ -26,12 +21,6 @@ export type TableSortMethod = (
 	gameA: InstalledGame,
 	gameB: InstalledGame,
 ) => number;
-
-const defaultColumns: InstalledGameColumnsId[] = [
-	"thumbnail",
-	"engine",
-	"provider",
-];
 
 export type InstalledGameId = {
 	readonly provider: ProviderId;
