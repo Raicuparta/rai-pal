@@ -3,12 +3,12 @@ import { Table } from "@mantine/core";
 import { useEffect, useState } from "react";
 import { installedGamesColumns } from "./installed-games-columns";
 import React from "react";
-import { InstalledGameTuple } from "./installed-games-page";
 import { useSetAtom } from "jotai";
 import { selectedInstalledGameAtom } from "./selected-installed-game";
+import { InstalledGameId } from "./installed-games-page";
 
 type Props = {
-	readonly item: InstalledGameTuple;
+	readonly item: InstalledGameId;
 };
 
 export function InstalledGameRow(props: Props) {
@@ -16,11 +16,13 @@ export function InstalledGameRow(props: Props) {
 	const setSelectedGame = useSetAtom(selectedInstalledGameAtom);
 
 	useEffect(() => {
-		commands.getInstalledGame(props.item[0], props.item[1]).then((result) => {
-			if (result.status === "ok") {
-				setGame(result.data);
-			}
-		});
+		commands
+			.getInstalledGame(props.item.provider, props.item.id)
+			.then((result) => {
+				if (result.status === "ok") {
+					setGame(result.data);
+				}
+			});
 	}, [props.item]);
 
 	return (

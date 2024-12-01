@@ -4,11 +4,13 @@ import { TableHead, TableColumn } from "./table-head";
 import { TableSort } from "@hooks/use-table-sort";
 import { getTableComponents } from "./table-components";
 import { TableContainer } from "./table-container";
+import { useVirtuosoHeaderContent } from "@hooks/use-virtuoso-header-content";
+import { useVirtuosoTableComponents } from "@hooks/use-virtuoso-table-components";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 interface Props<TKey extends string, TItem, Context = any>
 	extends TableVirtuosoProps<TItem, Context> {
-	readonly columns: TableColumn<TKey, TItem>[];
+	readonly columns: TableColumn<TKey, unknown>[];
 	readonly onChangeSort?: (sort: string) => void;
 	readonly sort?: TableSort;
 	readonly onClickItem: (item: TItem) => void;
@@ -16,7 +18,6 @@ interface Props<TKey extends string, TItem, Context = any>
 
 export function VirtualizedTable<
 	TKey extends string,
-	TItem,
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	Context = any,
 >({
@@ -25,35 +26,18 @@ export function VirtualizedTable<
 	onChangeSort,
 	onClickItem,
 	...props
-}: Props<TKey, TItem, Context>) {
-	const renderHeaders = useCallback(
-		() => (
-			<TableHead
-				columns={columns}
-				onChangeSort={onChangeSort}
-				sort={sort}
-			/>
-		),
-		[columns, sort, onChangeSort],
-	);
+}: Props<TKey, Context>) {
+	const renderHeaders = useVirtuosoHeaderContent(columns, onChangeSort, sort);
 
-	const tableComponents = useMemo(
-		() => getTableComponents(onClickItem),
-		[onClickItem],
-	);
+	const tableComponents = useVirtuosoTableComponents();
 
 	return (
 		<TableContainer>
 			<TableVirtuoso
 				style={{ overflowY: "scroll" }}
-				components={{
-					...tableComponents,
-				}}
+				components={tableComponents}
 				fixedHeaderContent={renderHeaders}
 				defaultItemHeight={33}
-				// onClick={(e) => {
-				// 	console.log(e);
-				// }}
 				{...props}
 			/>
 		</TableContainer>

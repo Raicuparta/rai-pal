@@ -1,8 +1,7 @@
 import { Group, Stack } from "@mantine/core";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import { InstalledGameModal } from "./installed-game-modal";
 import { FilterMenu } from "@components/filters/filter-menu";
-import { VirtualizedTable } from "@components/table/virtualized-table";
 import { RefreshButton } from "@components/refresh-button";
 import {
 	InstalledGameColumnsId,
@@ -13,10 +12,13 @@ import { AddGame } from "./add-game-button";
 import { ProcessedInstalledGame } from "@hooks/use-processed-installed-games";
 import { useAppEvent } from "@hooks/use-app-event";
 import { commands, events, ProviderId } from "@api/bindings";
-import { useAtomValue, useSetAtom } from "jotai";
+import { useAtomValue } from "jotai";
 import { providerDataAtom } from "@hooks/use-data";
-import { InstalledGameRow } from "./installed-game-row";
 import { selectedInstalledGameAtom } from "./selected-installed-game";
+import { TableContainer } from "@components/table/table-container";
+import { TableVirtuoso } from "react-virtuoso";
+import { useVirtuosoHeaderContent } from "@hooks/use-virtuoso-header-content";
+import { useVirtuosoTableComponents } from "@hooks/use-virtuoso-table-components";
 
 export type TableSortMethod = (
 	gameA: ProcessedInstalledGame,
@@ -29,7 +31,10 @@ const defaultColumns: InstalledGameColumnsId[] = [
 	"provider",
 ];
 
-export type InstalledGameTuple = [ProviderId, string];
+export type InstalledGameId = {
+	readonly id: string;
+	readonly provider: ProviderId;
+};
 
 export function InstalledGamesPage() {
 	const providerData = useAtomValue(providerDataAtom);
@@ -42,13 +47,16 @@ export function InstalledGamesPage() {
 	});
 
 	const installedGames = useMemo(() => {
-		const result: InstalledGameTuple[] = [];
+		const result: InstalledGameId[] = [];
 		for (const providerId of Object.keys(providerData) as ProviderId[]) {
-			const installedGames = providerData[providerId]?.installedGames;
-			if (!installedGames) continue;
+			const installedGameIds = providerData[providerId]?.installedGames;
+			if (!installedGameIds) continue;
 
-			for (const installedGame of installedGames) {
-				result.push([providerId, installedGame]);
+			for (const installedGameId of installedGameIds) {
+				result.push({
+					id: installedGameId,
+					provider: providerId,
+				});
 			}
 		}
 
@@ -67,6 +75,20 @@ export function InstalledGamesPage() {
 		[visibleColumnIds],
 	);
 
+	const onChangeSort = useCallback(() => {
+		console.log("Not implemented");
+	}, []);
+
+	const sort = undefined;
+
+	const renderHeaders = useVirtuosoHeaderContent(
+		filteredColumns,
+		onChangeSort,
+		sort,
+	);
+
+	const tableComponents = useVirtuosoTableComponents();
+
 	return (
 		<Stack h="100%">
 			<Group>
@@ -78,19 +100,16 @@ export function InstalledGamesPage() {
 				<RefreshButton />
 			</Group>
 			{selectedGame ? <InstalledGameModal game={selectedGame} /> : null}
-			<VirtualizedTable
-				data={installedGames}
-				totalCount={installedGames.length}
-				itemContent={(index) => (
-					<InstalledGameRow
-						provider_id={installedGames[index][0]}
-						game_id={installedGames[index][1]}
-					/>
-				)}
-				columns={filteredColumns}
-				// onChangeSort={setSort}
-				// sort={sort}
-			/>
+			<TableContainer>
+				<TableVirtuoso
+					style={{ overflowY: "scroll" }}
+					components={tableComponents}
+					fixedHeaderContent={renderHeaders}
+					totalCount={installedGames.length}
+					data={installedGames}
+					defaultItemHeight={33}
+				/>
+			</TableContainer>
 		</Stack>
 	);
 }
