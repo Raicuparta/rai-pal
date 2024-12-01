@@ -2,8 +2,8 @@ import { TableColumn, TableHead } from "@components/table/table-head";
 import { useCallback } from "react";
 import { TableSort } from "./use-table-sort";
 
-export function useVirtuosoHeaderContent<TKey extends string>(
-	columns: TableColumn<TKey, unknown>[],
+export function useVirtuosoHeaderContent<TKey extends string, TItem>(
+	columns: TableColumn<TKey, TItem>[],
 	onChangeSort?: (sort: string) => void,
 	sort?: TableSort,
 ) {

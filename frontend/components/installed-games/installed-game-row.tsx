@@ -24,15 +24,11 @@ export const InstalledGameRow = React.forwardRef(function InstalledGameRow(
 				ref={ref}
 				onClick={() => game && setSelectedGame(game)}
 			>
-				{game ? (
-					installedGamesColumns.map((column) => (
-						<React.Fragment key={column.id}>
-							{column.renderCell(game)}
-						</React.Fragment>
-					))
-				) : (
-					<Table.Td>...</Table.Td>
-				)}
+				{installedGamesColumns.map((column) => (
+					<React.Fragment key={column.id}>
+						{game ? column.renderCell(game) : <Table.Td>...</Table.Td>}
+					</React.Fragment>
+				))}
 			</Table.Tr>
 		</>
 	);
