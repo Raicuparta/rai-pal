@@ -648,6 +648,23 @@ async fn get_installed_game(
 
 #[tauri::command]
 #[specta::specta]
+async fn get_owned_game(
+	handle: AppHandle,
+	provider_id: ProviderId,
+	game_id: String,
+) -> Result<OwnedGame> {
+	let state = handle.app_state();
+	let mut owned_game = state
+		.owned_games
+		.try_get(&provider_id)?
+		.try_get(&game_id)?
+		.clone();
+
+	Ok(owned_game.clone())
+}
+
+#[tauri::command]
+#[specta::specta]
 async fn clear_cache() -> Result {
 	ProviderCache::clear_all()?;
 	Ok(())
@@ -732,6 +749,7 @@ fn main() {
 			set_installed_games_filter,
 			get_installed_games_filter,
 			get_installed_game,
+			get_owned_game,
 		])
 		.events(events::collect_events());
 

@@ -10,10 +10,7 @@ import { ThumbnailCell } from "@components/table/thumbnail-cell";
 import { getThumbnailWithFallback } from "@util/fallback-thumbnail";
 import { sortGamesByEngine } from "@util/game-engines";
 import { ProcessedOwnedGame } from "@hooks/use-processed-owned-games";
-import {
-	getGameTagsSortValue,
-	renderGameTagsCell,
-} from "@components/game-tags/game-tags";
+import { renderGameTagsCell } from "@components/game-tags/game-tags";
 
 const thumbnail: TableColumnBase<ProcessedOwnedGame> = {
 	label: "Thumbnail",
@@ -32,7 +29,6 @@ const name: TableColumnBase<ProcessedOwnedGame> = {
 	label: "Game",
 	width: undefined,
 	hideInDetails: true,
-	getSortValue: (game) => game.title.display,
 	renderCell: (game) => (
 		<Table.Td className={styles.nameCell}>{game.title.display}</Table.Td>
 	),
@@ -43,7 +39,6 @@ const provider: TableColumnBase<ProcessedOwnedGame> = {
 	width: 110,
 	center: true,
 	hidable: true,
-	getSortValue: (game) => game.provider,
 	renderCell: (game) => (
 		<Table.Td>
 			<ProviderBadge value={game.provider} />
@@ -67,7 +62,6 @@ const engine: TableColumnBase<ProcessedOwnedGame> = {
 	width: 150,
 	center: true,
 	hidable: true,
-	sort: (dataA, dataB) => sortGamesByEngine(getEngine(dataA), getEngine(dataB)),
 	renderCell: (game) => (
 		<Table.Td>
 			<EngineBadge
@@ -84,7 +78,6 @@ const gameTags: TableColumnBase<ProcessedOwnedGame> = {
 	width: 120,
 	center: true,
 	hidable: true,
-	getSortValue: getGameTagsSortValue,
 	renderCell: renderGameTagsCell,
 };
 
@@ -93,7 +86,6 @@ const installed: TableColumnBase<ProcessedOwnedGame> = {
 	width: 60,
 	center: true,
 	hidable: true,
-	getSortValue: (game) => game.isInstalled,
 	renderCell: (game) => (
 		<Table.Td align="center">{game.isInstalled ? <IconCheck /> : ""}</Table.Td>
 	),
@@ -104,7 +96,6 @@ const releaseDate: TableColumnBase<ProcessedOwnedGame> = {
 	width: 130,
 	center: true,
 	hidable: true,
-	getSortValue: (game) => game.releaseDate,
 	renderCell: (game) => (
 		<Table.Td align="center">
 			{game.releaseDate

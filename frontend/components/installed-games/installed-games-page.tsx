@@ -34,6 +34,7 @@ export type InstalledGameId = {
 	readonly provider: ProviderId;
 	readonly id: string;
 };
+
 export function InstalledGamesPage() {
 	const providerData = useAtomValue(providerDataAtom);
 	const setSelectedGame = useSetAtom(selectedInstalledGameAtom);

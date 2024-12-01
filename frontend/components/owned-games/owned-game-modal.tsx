@@ -5,12 +5,11 @@ import { TableItemDetails } from "@components/table/table-item-details";
 import { ownedGamesColumns } from "./owned-games-columns";
 import { ItemName } from "@components/item-name";
 import { getThumbnailWithFallback } from "@util/fallback-thumbnail";
-import { ProcessedOwnedGame } from "@hooks/use-processed-owned-games";
 import { ProviderCommandButtons } from "../providers/provider-command-dropdown";
+import { OwnedGame } from "@api/bindings";
 
 type Props = {
-	readonly game: ProcessedOwnedGame;
-	readonly onClose: () => void;
+	readonly game: OwnedGame;
 };
 
 export function OwnedGameModal(props: Props) {

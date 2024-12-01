@@ -276,6 +276,14 @@ async getInstalledGame(providerId: ProviderId, gameId: string) : Promise<Result<
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
 }
+},
+async getOwnedGame(providerId: ProviderId, gameId: string) : Promise<Result<OwnedGame, Error>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("get_owned_game", { providerId, gameId }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
 }
 }
 
