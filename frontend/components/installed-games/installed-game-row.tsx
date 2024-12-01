@@ -1,8 +1,10 @@
 import { Table } from "@mantine/core";
-import { installedGamesColumns } from "./installed-games-columns";
 import React from "react";
 import { useAtom } from "jotai";
-import { selectedInstalledGameAtom } from "./selected-installed-game";
+import {
+	selectedInstalledGameAtom,
+	useVisibleInstalledGameColumns,
+} from "./installed-games-state";
 import { InstalledGameId } from "./installed-games-page";
 import { useInstalledGame } from "@hooks/use-installed-game";
 import { InstalledGameModal } from "./installed-game-modal";
@@ -15,6 +17,8 @@ export const InstalledGameRow = React.forwardRef(function InstalledGameRow(
 	const game = useInstalledGame(props.item.provider, props.item.id);
 	const [selectedGame, setSelectedGame] = useAtom(selectedInstalledGameAtom);
 
+	const columns = useVisibleInstalledGameColumns();
+
 	return (
 		<>
 			{game && selectedGame && selectedGame.id === game.id && (
@@ -24,7 +28,7 @@ export const InstalledGameRow = React.forwardRef(function InstalledGameRow(
 				ref={ref}
 				onClick={() => game && setSelectedGame(game)}
 			>
-				{installedGamesColumns.map((column) => (
+				{columns.map((column) => (
 					<React.Fragment key={column.id}>
 						{game ? column.renderCell(game) : <Table.Td>...</Table.Td>}
 					</React.Fragment>

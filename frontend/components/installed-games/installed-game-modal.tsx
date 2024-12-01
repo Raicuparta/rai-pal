@@ -42,7 +42,7 @@ import {
 } from "@util/fallback-thumbnail";
 import { ProviderCommandButtons } from "@components/providers/provider-command-dropdown";
 import { ProviderIcon } from "@components/providers/provider-icon";
-import { selectedInstalledGameAtom } from "./selected-installed-game";
+import { selectedInstalledGameAtom } from "./installed-games-state";
 
 type Props = {
 	readonly game: InstalledGame;

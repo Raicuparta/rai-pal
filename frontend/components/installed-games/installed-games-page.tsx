@@ -12,7 +12,10 @@ import { useAppEvent } from "@hooks/use-app-event";
 import { commands, events, InstalledGame, ProviderId } from "@api/bindings";
 import { useAtomValue, useSetAtom } from "jotai";
 import { providerDataAtom } from "@hooks/use-data";
-import { selectedInstalledGameAtom } from "./selected-installed-game";
+import {
+	selectedInstalledGameAtom,
+	useVisibleInstalledGameColumns,
+} from "./installed-games-state";
 import { TableContainer } from "@components/table/table-container";
 import { TableVirtuoso } from "react-virtuoso";
 import { useVirtuosoHeaderContent } from "@hooks/use-virtuoso-header-content";
@@ -63,17 +66,7 @@ export function InstalledGamesPage() {
 		return result;
 	}, [providerData]);
 
-	const [visibleColumnIds, setVisibleColumnIds] = usePersistedState<
-		InstalledGameColumnsId[]
-	>(defaultColumns, "installed-visible-columns");
-
-	const filteredColumns = useMemo(
-		() =>
-			installedGamesColumns.filter(
-				(column) => !column.hidable || visibleColumnIds.includes(column.id),
-			),
-		[visibleColumnIds],
-	);
+	const columns = useVisibleInstalledGameColumns();
 
 	const onChangeSort = useCallback(() => {
 		console.log("Not implemented");
@@ -81,11 +74,7 @@ export function InstalledGamesPage() {
 
 	const sort = undefined;
 
-	const renderHeaders = useVirtuosoHeaderContent(
-		filteredColumns,
-		onChangeSort,
-		sort,
-	);
+	const renderHeaders = useVirtuosoHeaderContent(columns, onChangeSort, sort);
 
 	const tableComponents = useVirtuosoTableComponents(InstalledGameRow);
 
