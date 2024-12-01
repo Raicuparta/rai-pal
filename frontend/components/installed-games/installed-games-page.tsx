@@ -17,6 +17,7 @@ import { TableContainer } from "@components/table/table-container";
 import { TableVirtuoso } from "react-virtuoso";
 import { useVirtuosoHeaderContent } from "@hooks/use-virtuoso-header-content";
 import { useVirtuosoTableComponents } from "@hooks/use-virtuoso-table-components";
+import { InstalledGameRow } from "./installed-game-row";
 
 export type TableSortMethod = (
 	gameA: InstalledGame,
@@ -33,7 +34,6 @@ export type InstalledGameId = {
 	readonly provider: ProviderId;
 	readonly id: string;
 };
-
 export function InstalledGamesPage() {
 	const providerData = useAtomValue(providerDataAtom);
 	const setSelectedGame = useSetAtom(selectedInstalledGameAtom);
@@ -86,7 +86,7 @@ export function InstalledGamesPage() {
 		sort,
 	);
 
-	const tableComponents = useVirtuosoTableComponents();
+	const tableComponents = useVirtuosoTableComponents(InstalledGameRow);
 
 	return (
 		<Stack h="100%">

@@ -1,13 +1,6 @@
 import { GameTag, OwnedGame } from "@api/bindings";
 import { Table } from "@mantine/core";
-import { FilterOption } from "../table/table-head";
 import styles from "./game-tags.module.css";
-
-function getTagDisplayName(tag: GameTag) {
-	return (
-		gameTagFilterOptions.find((option) => option.value === tag)?.label || tag
-	);
-}
 
 export function renderGameTagsCell(ownedGame: OwnedGame | null) {
 	return (
@@ -18,18 +11,13 @@ export function renderGameTagsCell(ownedGame: OwnedGame | null) {
 						className={styles.tag}
 						key={tag}
 					>
-						{getTagDisplayName(tag)}
+						{tag}
 					</span>
 				))}
 			</div>
 		</Table.Td>
 	);
 }
-
-export const gameTagFilterOptions: FilterOption<GameTag>[] = [
-	{ label: "Native VR", value: "VR" },
-	{ label: "Demo", value: "Demo" },
-];
 
 export function filterGameTags(
 	ownedGame: OwnedGame | undefined,

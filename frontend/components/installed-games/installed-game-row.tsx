@@ -6,12 +6,12 @@ import { selectedInstalledGameAtom } from "./selected-installed-game";
 import { InstalledGameId } from "./installed-games-page";
 import { useInstalledGame } from "@hooks/use-installed-game";
 import { InstalledGameModal } from "./installed-game-modal";
+import { ItemProps } from "react-virtuoso";
 
-type Props = {
-	readonly item: InstalledGameId;
-};
-
-export function InstalledGameRow(props: Props) {
+export const InstalledGameRow = React.forwardRef(function InstalledGameRow(
+	props: ItemProps<InstalledGameId>,
+	ref: React.ForwardedRef<HTMLTableRowElement>,
+) {
 	const game = useInstalledGame(props.item.provider, props.item.id);
 	const [selectedGame, setSelectedGame] = useAtom(selectedInstalledGameAtom);
 
@@ -20,7 +20,10 @@ export function InstalledGameRow(props: Props) {
 			{game && selectedGame && selectedGame.id === game.id && (
 				<InstalledGameModal game={game} />
 			)}
-			<Table.Tr onClick={() => game && setSelectedGame(game)}>
+			<Table.Tr
+				ref={ref}
+				onClick={() => game && setSelectedGame(game)}
+			>
 				{game ? (
 					installedGamesColumns.map((column) => (
 						<React.Fragment key={column.id}>
@@ -33,4 +36,4 @@ export function InstalledGameRow(props: Props) {
 			</Table.Tr>
 		</>
 	);
-}
+});
