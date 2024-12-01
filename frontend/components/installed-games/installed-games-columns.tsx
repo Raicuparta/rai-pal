@@ -11,11 +11,7 @@ import { ThumbnailCell } from "@components/table/thumbnail-cell";
 import { OutdatedMarker } from "@components/outdated-marker";
 import styles from "../table/table.module.css";
 import { getThumbnailWithFallback } from "@util/fallback-thumbnail";
-import { sortGamesByEngine } from "@util/game-engines";
-import {
-	getGameTagsSortValue,
-	renderGameTagsCell,
-} from "@components/game-tags/game-tags";
+import { renderGameTagsCell } from "@components/game-tags/game-tags";
 import { InstalledGame } from "@api/bindings";
 
 const thumbnail: TableColumnBase<InstalledGame> = {
@@ -37,7 +33,6 @@ const thumbnail: TableColumnBase<InstalledGame> = {
 const name: TableColumnBase<InstalledGame> = {
 	hideInDetails: true,
 	label: "Game",
-	getSortValue: (game) => game.title.display,
 	renderCell: (game) => (
 		<Table.Td className={styles.nameCell}>
 			<Tooltip
@@ -61,7 +56,6 @@ const provider: TableColumnBase<InstalledGame> = {
 	width: 110,
 	center: true,
 	hidable: true,
-	getSortValue: (game) => game.provider,
 	renderCell: (game) => (
 		<Table.Td>
 			<ProviderBadge value={game.provider} />
@@ -74,7 +68,6 @@ const architecture: TableColumnBase<InstalledGame> = {
 	width: 70,
 	center: true,
 	hidable: true,
-	getSortValue: (game) => game.executable.architecture,
 	renderCell: (game) => (
 		<Table.Td>
 			<ArchitectureBadge value={game.executable.architecture} />
@@ -87,7 +80,6 @@ const scriptingBackend: TableColumnBase<InstalledGame> = {
 	width: 90,
 	center: true,
 	hidable: true,
-	getSortValue: (game) => game.executable.scriptingBackend,
 	renderCell: (game) => (
 		<Table.Td>
 			<UnityBackendBadge value={game.executable.scriptingBackend} />
@@ -100,7 +92,6 @@ const gameTags: TableColumnBase<InstalledGame> = {
 	width: 120,
 	center: true,
 	hidable: true,
-	getSortValue: (game) => getGameTagsSortValue(game.ownedGame),
 	renderCell: (game) => renderGameTagsCell(game.ownedGame),
 };
 
@@ -109,14 +100,12 @@ const engine: TableColumnBase<InstalledGame> = {
 	width: 180,
 	center: true,
 	hidable: true,
-	sort: (dataA, dataB) =>
-		sortGamesByEngine(dataA.executable.engine, dataB.executable.engine),
 	renderCell: ({ executable: { engine } }) => (
 		<Table.Td
-			// A bit annoying that I'm defining the column width in two places (see engineColumn.width),
-			// but it's to prevent this one from being squished and hiding the version number.
-			// Maybe I shouldn't be using a regular table component at all for this...
-			miw={170}
+		// A bit annoying that I'm defining the column width in two places (see engineColumn.width),
+		// but it's to prevent this one from being squished and hiding the version number.
+		// Maybe I shouldn't be using a regular table component at all for this...
+		// miw={170}
 		>
 			<EngineBadge
 				maw={70}

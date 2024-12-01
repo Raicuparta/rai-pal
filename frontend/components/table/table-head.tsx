@@ -11,8 +11,6 @@ export type TableColumnBase<TItem> = {
 	hideLabel?: boolean;
 	hidable?: boolean;
 	hideInDetails?: boolean;
-	sort?: (itemA: TItem, itemB: TItem) => number;
-	getSortValue?: (item: TItem) => unknown;
 };
 
 export interface TableColumn<TKey extends string, TItem>
@@ -43,7 +41,7 @@ export function TableHead<TKey extends string, TItem>(
 	return (
 		<Table.Tr>
 			{props.columns.map((column) => {
-				const isSortable = Boolean(column.sort || column.getSortValue);
+				const isSortable = true; // TODO.
 				return (
 					<Table.Th
 						className={
