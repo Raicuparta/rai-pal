@@ -23,6 +23,7 @@ export function FilterSelect<TFilterOption extends string>({
 			{filterOptions && (
 				<>
 					<Button.Group orientation="vertical">
+						<Button disabled>{id}</Button>
 						{sortedEntries.map(([filterOption, isSelected]) => (
 							<FilterButton
 								filterOption={filterOption}
