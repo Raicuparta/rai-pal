@@ -4,7 +4,9 @@ use rai_pal_proc_macros::serializable_event;
 use serde::Serialize;
 use tauri_specta::Event;
 
-use rai_pal_core::{installed_game::InstalledGame, local_mod, mod_loaders::mod_loader, remote_mod};
+use rai_pal_core::{
+	local_mod, mod_loaders::mod_loader, providers::provider::ProviderId, remote_mod,
+};
 
 #[serializable_event]
 pub struct FoundInstalledGame();
@@ -25,7 +27,7 @@ pub struct SyncRemoteMods(pub remote_mod::Map);
 pub struct ExecutedProviderCommand;
 
 #[serializable_event]
-pub struct SelectInstalledGame(pub InstalledGame);
+pub struct SelectInstalledGame(pub ProviderId, pub String);
 
 #[serializable_event]
 pub struct ErrorRaised(pub String);

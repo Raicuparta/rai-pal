@@ -1,6 +1,5 @@
 import { Group, Stack } from "@mantine/core";
 import { useCallback, useMemo } from "react";
-import { InstalledGameModal } from "./installed-game-modal";
 import { FilterMenu } from "@components/filters/filter-menu";
 import { RefreshButton } from "@components/refresh-button";
 import {
@@ -11,7 +10,7 @@ import { usePersistedState } from "@hooks/use-persisted-state";
 import { AddGame } from "./add-game-button";
 import { useAppEvent } from "@hooks/use-app-event";
 import { commands, events, InstalledGame, ProviderId } from "@api/bindings";
-import { useAtom, useAtomValue } from "jotai";
+import { useAtomValue, useSetAtom } from "jotai";
 import { providerDataAtom } from "@hooks/use-data";
 import { selectedInstalledGameAtom } from "./selected-installed-game";
 import { TableContainer } from "@components/table/table-container";
@@ -31,17 +30,19 @@ const defaultColumns: InstalledGameColumnsId[] = [
 ];
 
 export type InstalledGameId = {
-	readonly id: string;
 	readonly provider: ProviderId;
+	readonly id: string;
 };
 
 export function InstalledGamesPage() {
 	const providerData = useAtomValue(providerDataAtom);
+	const setSelectedGame = useSetAtom(selectedInstalledGameAtom);
 
-	const [selectedGame, setSelectedGame] = useAtom(selectedInstalledGameAtom);
-
-	useAppEvent(events.selectInstalledGame, (game) => {
-		setSelectedGame(game);
+	useAppEvent(events.selectInstalledGame, ([provider, id]) => {
+		setSelectedGame({
+			provider,
+			id,
+		});
 	});
 
 	const installedGames = useMemo(() => {
@@ -97,7 +98,6 @@ export function InstalledGamesPage() {
 				/>
 				<RefreshButton />
 			</Group>
-			{selectedGame ? <InstalledGameModal game={selectedGame} /> : null}
 			<TableContainer>
 				<TableVirtuoso
 					style={{ overflowY: "scroll" }}

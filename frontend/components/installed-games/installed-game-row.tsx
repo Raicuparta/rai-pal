@@ -1,41 +1,36 @@
-import { commands, InstalledGame } from "@api/bindings";
 import { Table } from "@mantine/core";
-import { useEffect, useState } from "react";
 import { installedGamesColumns } from "./installed-games-columns";
 import React from "react";
-import { useSetAtom } from "jotai";
+import { useAtom } from "jotai";
 import { selectedInstalledGameAtom } from "./selected-installed-game";
 import { InstalledGameId } from "./installed-games-page";
+import { useInstalledGame } from "@hooks/use-installed-game";
+import { InstalledGameModal } from "./installed-game-modal";
 
 type Props = {
 	readonly item: InstalledGameId;
 };
 
 export function InstalledGameRow(props: Props) {
-	const [game, setGame] = useState<InstalledGame>();
-	const setSelectedGame = useSetAtom(selectedInstalledGameAtom);
-
-	useEffect(() => {
-		commands
-			.getInstalledGame(props.item.provider, props.item.id)
-			.then((result) => {
-				if (result.status === "ok") {
-					setGame(result.data);
-				}
-			});
-	}, [props.item]);
+	const game = useInstalledGame(props.item.provider, props.item.id);
+	const [selectedGame, setSelectedGame] = useAtom(selectedInstalledGameAtom);
 
 	return (
-		<Table.Tr onClick={() => game && setSelectedGame(game)}>
-			{game ? (
-				installedGamesColumns.map((column) => (
-					<React.Fragment key={column.id}>
-						{column.renderCell(game)}
-					</React.Fragment>
-				))
-			) : (
-				<Table.Td>...</Table.Td>
+		<>
+			{game && selectedGame && selectedGame.id === game.id && (
+				<InstalledGameModal game={game} />
 			)}
-		</Table.Tr>
+			<Table.Tr onClick={() => game && setSelectedGame(game)}>
+				{game ? (
+					installedGamesColumns.map((column) => (
+						<React.Fragment key={column.id}>
+							{column.renderCell(game)}
+						</React.Fragment>
+					))
+				) : (
+					<Table.Td>...</Table.Td>
+				)}
+			</Table.Tr>
+		</>
 	);
 }

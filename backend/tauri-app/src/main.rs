@@ -505,7 +505,10 @@ async fn add_game(path: PathBuf, handle: AppHandle) -> Result {
 		update_installed_games_state(&handle, &installed_game.provider, &installed_games);
 	}
 
-	handle.emit_safe(events::SelectInstalledGame(installed_game.clone()));
+	handle.emit_safe(events::SelectInstalledGame(
+		installed_game.provider,
+		installed_game.id.clone(),
+	));
 
 	analytics::send_event(analytics::Event::ManuallyAddGame, &game_name).await;
 

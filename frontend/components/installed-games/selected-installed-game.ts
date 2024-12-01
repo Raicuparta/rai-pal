@@ -1,4 +1,4 @@
-import { type InstalledGame } from "@api/bindings";
 import { atom } from "jotai";
+import { InstalledGameId } from "./installed-games-page";
 
-export const selectedInstalledGameAtom = atom<InstalledGame | null>(null);
+export const selectedInstalledGameAtom = atom<InstalledGameId | null>(null);
