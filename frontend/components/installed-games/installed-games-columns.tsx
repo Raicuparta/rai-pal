@@ -17,6 +17,7 @@ import {
 	renderGameTagsCell,
 } from "@components/game-tags/game-tags";
 import { InstalledGame } from "@api/bindings";
+import { getIsOutdated } from "@util/is-outdated";
 
 const thumbnail: TableColumnBase<InstalledGame> = {
 	hideInDetails: true,

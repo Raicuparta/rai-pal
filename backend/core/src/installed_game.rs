@@ -32,6 +32,7 @@ pub struct InstalledGame {
 	pub owned_game_id: Option<String>,
 	pub owned_game: Option<OwnedGame>,
 	pub start_command: Option<ProviderCommand>,
+	pub has_outdated_mod: bool,
 }
 
 #[serializable_struct]
@@ -181,6 +182,7 @@ impl InstalledGame {
 			start_command: None,
 			owned_game_id: None,
 			owned_game: None,
+			has_outdated_mod: false,
 		};
 
 		installed_game.refresh_installed_mods();

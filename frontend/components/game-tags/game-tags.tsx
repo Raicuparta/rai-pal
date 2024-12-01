@@ -9,7 +9,7 @@ function getTagDisplayName(tag: GameTag) {
 	);
 }
 
-export function renderGameTagsCell(ownedGame: OwnedGame | undefined) {
+export function renderGameTagsCell(ownedGame: OwnedGame | null) {
 	return (
 		<Table.Td p={0}>
 			<div className={styles.wrapper}>
@@ -42,7 +42,7 @@ export function filterGameTags(
 	);
 }
 
-export function getGameTagsSortValue(ownedGame: OwnedGame | undefined) {
+export function getGameTagsSortValue(ownedGame: OwnedGame | null) {
 	return ownedGame
 		? `${ownedGame.tags.length}${ownedGame.tags.sort().join(",")}`
 		: "";

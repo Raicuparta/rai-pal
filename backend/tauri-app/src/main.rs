@@ -625,6 +625,21 @@ async fn get_installed_game(
 		installed_game.set_owned_game(&owned_game);
 	}
 
+	if let Ok(mods) = state.remote_mods.get_data() {
+		installed_game.has_outdated_mod =
+			installed_game
+				.installed_mod_versions
+				.iter()
+				.any(|(mod_id, version)| {
+					mods.contains_key(mod_id)
+						&& mods[mod_id]
+							.data
+							.latest_version
+							.as_ref()
+							.is_some_and(|latest_version| latest_version.id != *version)
+				});
+	}
+
 	Ok(installed_game.clone())
 }
 
