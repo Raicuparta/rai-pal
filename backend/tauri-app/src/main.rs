@@ -605,11 +605,27 @@ async fn get_installed_game(
 	game_id: String,
 ) -> Result<InstalledGame> {
 	let state = handle.app_state();
-	Ok(state
+	let mut installed_game = state
 		.installed_games
 		.try_get(&provider_id)?
 		.try_get(&game_id)?
-		.clone())
+		.clone();
+
+	if let Some(owned_game) = installed_game
+		.owned_game_id
+		.as_ref()
+		.and_then(|owned_game_id| {
+			state
+				.owned_games
+				.try_get(&provider_id)
+				.ok()?
+				.try_get(owned_game_id)
+				.ok()
+		}) {
+		installed_game.set_owned_game(&owned_game);
+	}
+
+	Ok(installed_game.clone())
 }
 
 #[tauri::command]

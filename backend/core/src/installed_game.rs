@@ -12,7 +12,8 @@ use crate::{
 	game_executable::{Architecture, GameExecutable},
 	game_tag::GameTag,
 	game_title::GameTitle,
-	mod_manifest, owned_game,
+	mod_manifest,
+	owned_game::{self, OwnedGame},
 	paths::{self, glob_path, hash_path},
 	providers::{provider::ProviderId, provider_command::ProviderCommand},
 	result::{Error, Result},
@@ -29,6 +30,7 @@ pub struct InstalledGame {
 	pub discriminator: Option<String>,
 	pub thumbnail_url: Option<String>,
 	pub owned_game_id: Option<String>,
+	pub owned_game: Option<OwnedGame>,
 	pub start_command: Option<ProviderCommand>,
 }
 
@@ -178,6 +180,7 @@ impl InstalledGame {
 			thumbnail_url: None,
 			start_command: None,
 			owned_game_id: None,
+			owned_game: None,
 		};
 
 		installed_game.refresh_installed_mods();
@@ -207,6 +210,11 @@ impl InstalledGame {
 
 	pub fn set_provider_game_id(&mut self, provider_game_id: &str) -> &Self {
 		self.owned_game_id = Some(owned_game::get_global_id(self.provider, provider_game_id));
+		self
+	}
+
+	pub fn set_owned_game(&mut self, owned_game: &OwnedGame) -> &Self {
+		self.owned_game = Some(owned_game.clone());
 		self
 	}
 

@@ -9,9 +9,8 @@ import {
 } from "./installed-games-columns";
 import { usePersistedState } from "@hooks/use-persisted-state";
 import { AddGame } from "./add-game-button";
-import { ProcessedInstalledGame } from "@hooks/use-processed-installed-games";
 import { useAppEvent } from "@hooks/use-app-event";
-import { commands, events, ProviderId } from "@api/bindings";
+import { commands, events, InstalledGame, ProviderId } from "@api/bindings";
 import { useAtomValue } from "jotai";
 import { providerDataAtom } from "@hooks/use-data";
 import { selectedInstalledGameAtom } from "./selected-installed-game";
@@ -21,8 +20,8 @@ import { useVirtuosoHeaderContent } from "@hooks/use-virtuoso-header-content";
 import { useVirtuosoTableComponents } from "@hooks/use-virtuoso-table-components";
 
 export type TableSortMethod = (
-	gameA: ProcessedInstalledGame,
-	gameB: ProcessedInstalledGame,
+	gameA: InstalledGame,
+	gameB: InstalledGame,
 ) => number;
 
 const defaultColumns: InstalledGameColumnsId[] = [

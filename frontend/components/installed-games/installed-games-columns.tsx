@@ -10,15 +10,15 @@ import {
 import { ThumbnailCell } from "@components/table/thumbnail-cell";
 import { OutdatedMarker } from "@components/outdated-marker";
 import styles from "../table/table.module.css";
-import { ProcessedInstalledGame } from "@hooks/use-processed-installed-games";
 import { getThumbnailWithFallback } from "@util/fallback-thumbnail";
 import { sortGamesByEngine } from "@util/game-engines";
 import {
 	getGameTagsSortValue,
 	renderGameTagsCell,
 } from "@components/game-tags/game-tags";
+import { InstalledGame } from "@api/bindings";
 
-const thumbnail: TableColumnBase<ProcessedInstalledGame> = {
+const thumbnail: TableColumnBase<InstalledGame> = {
 	hideInDetails: true,
 	label: "Thumbnail",
 	hideLabel: true,
@@ -34,7 +34,7 @@ const thumbnail: TableColumnBase<ProcessedInstalledGame> = {
 	),
 };
 
-const name: TableColumnBase<ProcessedInstalledGame> = {
+const name: TableColumnBase<InstalledGame> = {
 	hideInDetails: true,
 	label: "Game",
 	getSortValue: (game) => game.title.display,
@@ -56,7 +56,7 @@ const name: TableColumnBase<ProcessedInstalledGame> = {
 	),
 };
 
-const provider: TableColumnBase<ProcessedInstalledGame> = {
+const provider: TableColumnBase<InstalledGame> = {
 	label: "Provider",
 	width: 110,
 	center: true,
@@ -69,7 +69,7 @@ const provider: TableColumnBase<ProcessedInstalledGame> = {
 	),
 };
 
-const architecture: TableColumnBase<ProcessedInstalledGame> = {
+const architecture: TableColumnBase<InstalledGame> = {
 	label: "Arch",
 	width: 70,
 	center: true,
@@ -82,7 +82,7 @@ const architecture: TableColumnBase<ProcessedInstalledGame> = {
 	),
 };
 
-const scriptingBackend: TableColumnBase<ProcessedInstalledGame> = {
+const scriptingBackend: TableColumnBase<InstalledGame> = {
 	label: "Backend",
 	width: 90,
 	center: true,
@@ -95,7 +95,7 @@ const scriptingBackend: TableColumnBase<ProcessedInstalledGame> = {
 	),
 };
 
-const gameTags: TableColumnBase<ProcessedInstalledGame> = {
+const gameTags: TableColumnBase<InstalledGame> = {
 	label: "Tags",
 	width: 120,
 	center: true,
@@ -104,7 +104,7 @@ const gameTags: TableColumnBase<ProcessedInstalledGame> = {
 	renderCell: (game) => renderGameTagsCell(game.ownedGame),
 };
 
-const engine: TableColumnBase<ProcessedInstalledGame> = {
+const engine: TableColumnBase<InstalledGame> = {
 	label: "Engine",
 	width: 180,
 	center: true,
