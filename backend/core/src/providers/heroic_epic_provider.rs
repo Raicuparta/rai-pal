@@ -41,16 +41,16 @@ struct ParsedGame {
 
 #[derive(Debug, Serialize, Deserialize)]
 struct Install {
-	executable: String,
-	install_path: String,
+	executable: Option<String>,
+	install_path: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 struct Root {
-	library: Vec<ParsedGame>,
+	library: Option<Vec<ParsedGame>>,
 }
 
-fn get_detected_games() -> Result<Vec<ParsedGame>, io::Error> {
+fn get_detected_games() -> Result<Option<Vec<ParsedGame>>, io::Error> {
 	let dirs = BaseDirs::new()
 		.ok_or_else(|| io::Error::new(io::ErrorKind::Other, "Failed to get user directories"))?;
 	let config_dir = dirs.config_dir();
@@ -87,20 +87,22 @@ impl HeroicEpic {
 			.join("Games/Heroic")
 			.join(&entry.folder_name.clone()?);
 
-		let executable_name = &entry.install.executable;
+		if let Some(executable_name) = &entry.install.executable {
+			let mut game = InstalledGame::new(
+				game_path.join(executable_name).as_path(),
+				&entry.title,
+				Self::ID.to_owned(),
+			)?;
 
-		let mut game = InstalledGame::new(
-			game_path.join(executable_name).as_path(),
-			&entry.title,
-			Self::ID.to_owned(),
-		)?;
+			game.set_start_command_string(&get_start_command(&entry.app_name));
+			game.set_provider_game_id(&entry.app_name);
 
-		game.set_start_command_string(&get_start_command(&entry.app_name));
-		game.set_provider_game_id(&entry.app_name);
+			game.set_thumbnail_url(&entry.art_cover);
 
-		game.set_thumbnail_url(&entry.art_cover);
+			return Some(game);
+		}
 
-		Some(game)
+		None
 	}
 }
 
@@ -125,19 +127,19 @@ impl ProviderActions for HeroicEpic {
 		TInstalledCallback: FnMut(InstalledGame) + Send + Sync,
 		TOwnedCallback: FnMut(OwnedGame) + Send + Sync,
 	{
-		let games = get_detected_games()?;
-		for game in games {
-			let mut owned_game = OwnedGame::new(&game.app_name, *Self::ID, &game.title);
-			owned_game.set_thumbnail_url(&game.art_cover);
-			owned_callback(owned_game);
+		if let Some(games) = get_detected_games()? {
+			for game in games {
+				let mut owned_game = OwnedGame::new(&game.app_name, *Self::ID, &game.title);
+				owned_game.set_thumbnail_url(&game.art_cover);
+				owned_callback(owned_game);
 
-			if game.is_installed {
-				if let Some(installed_game) = Self::get_installed_game(&game) {
-					installed_callback(installed_game);
+				if game.is_installed {
+					if let Some(installed_game) = Self::get_installed_game(&game) {
+						installed_callback(installed_game);
+					}
 				}
 			}
 		}
-
 		Ok(())
 	}
 }
