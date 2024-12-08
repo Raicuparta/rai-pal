@@ -253,7 +253,7 @@ async updateLocalMods() : Promise<Result<null, Error>> {
     else return { status: "error", error: e  as any };
 }
 },
-async setInstalledGamesFilter(filter: InstalledGamesFilter | null) : Promise<Result<null, Error>> {
+async setInstalledGamesFilter(filter: DataQuery | null) : Promise<Result<null, Error>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("set_installed_games_filter", { filter }) };
 } catch (e) {
@@ -261,7 +261,7 @@ async setInstalledGamesFilter(filter: InstalledGamesFilter | null) : Promise<Res
     else return { status: "error", error: e  as any };
 }
 },
-async getInstalledGamesFilter() : Promise<Result<InstalledGamesFilter, Error>> {
+async getInstalledGamesFilter() : Promise<Result<DataQuery, Error>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("get_installed_games_filter") };
 } catch (e) {
@@ -318,6 +318,7 @@ syncRemoteMods: "sync-remote-mods"
 
 export type Architecture = "X64" | "X86"
 export type CommonModData = { id: string; engine: EngineBrand | null; unityBackend: UnityScriptingBackend | null; engineVersionRange: EngineVersionRange | null; loaderId: string }
+export type DataQuery = { toggles: InstalledGamesFilterToggles; search: string; sortBy: InstalledGameSortBy; sortDescending: boolean }
 export type EngineBrand = "Unity" | "Unreal" | "Godot" | "GameMaker"
 export type EngineVersion = { numbers: EngineVersionNumbers; suffix: string | null; display: string }
 export type EngineVersionNumbers = { major: number; minor: number | null; patch: number | null }
@@ -334,7 +335,7 @@ export type GameTag = "VR" | "Demo"
 export type GameTitle = { display: string; normalized: string[] }
 export type IdKind = "Steam" | "Manual" | "Itch" | "Epic" | "Gog" | "Xbox" | "Ubisoft" | "NormalizedTitle"
 export type InstalledGame = { id: string; title: GameTitle; provider: ProviderId; executable: GameExecutable; installedModVersions: { [key in string]: string }; discriminator: string | null; thumbnailUrl: string | null; ownedGameId: string | null; ownedGame: OwnedGame | null; startCommand: ProviderCommand | null; hasOutdatedMod: boolean }
-export type InstalledGamesFilter = { toggles: InstalledGamesFilterToggles; search: string }
+export type InstalledGameSortBy = "Title" | "Tags" | "Provider" | "Architecture" | "ScriptingBackend" | "Engine"
 export type InstalledGamesFilterToggles = { providers: { [key in ProviderId]: boolean }; tags: { [key in GameTag]: boolean }; architectures: { [key in Architecture]: boolean }; unityScriptingBackends: { [key in UnityScriptingBackend]: boolean }; engines: { [key in EngineBrand]: boolean } }
 export type LocalMod = { data: LocalModData; common: CommonModData }
 export type LocalModData = { path: string; manifest: Manifest | null }

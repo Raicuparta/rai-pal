@@ -1,11 +1,11 @@
 import { TableColumn, TableHead } from "@components/table/table-head";
 import { useCallback } from "react";
-import { TableSort } from "./use-table-sort";
+import { InstalledGameSortBy } from "@api/bindings";
 
 export function useVirtuosoHeaderContent<TKey extends string, TItem>(
 	columns: TableColumn<TKey, TItem>[],
-	onChangeSort?: (sort: string) => void,
-	sort?: TableSort,
+	onChangeSort?: (sort: InstalledGameSortBy) => void,
+	sort?: InstalledGameSortBy,
 ) {
 	return useCallback(
 		() => (

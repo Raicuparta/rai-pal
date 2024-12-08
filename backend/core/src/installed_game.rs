@@ -1,11 +1,12 @@
 use std::{
+	cmp::Ordering,
 	collections::HashMap,
 	fs::{self},
 	path::{Path, PathBuf},
 };
 
 use log::error;
-use rai_pal_proc_macros::serializable_struct;
+use rai_pal_proc_macros::{serializable_enum, serializable_struct};
 
 use crate::{
 	game_engines::{game_engine::EngineBrand, unity::UnityScriptingBackend},
@@ -37,9 +38,11 @@ pub struct InstalledGame {
 
 #[serializable_struct]
 #[derive(Default)]
-pub struct InstalledGamesFilter {
+pub struct DataQuery {
 	pub toggles: InstalledGamesFilterToggles,
 	pub search: String,
+	pub sort_by: InstalledGameSortBy,
+	pub sort_descending: bool,
 }
 
 #[serializable_struct]
@@ -51,7 +54,23 @@ pub struct InstalledGamesFilterToggles {
 	pub engines: HashMap<EngineBrand, bool>,
 }
 
-impl InstalledGamesFilter {
+#[serializable_enum]
+pub enum InstalledGameSortBy {
+	Title,
+	Tags,
+	Provider,
+	Architecture,
+	ScriptingBackend,
+	Engine,
+}
+
+impl Default for InstalledGameSortBy {
+	fn default() -> Self {
+		Self::Title
+	}
+}
+
+impl DataQuery {
 	pub fn matches(&self, game: &InstalledGame) -> bool {
 		let toggles = &self.toggles;
 		if !toggles.providers.get(&game.provider).unwrap_or(&true) {
@@ -112,6 +131,51 @@ impl InstalledGamesFilter {
 		}
 
 		true
+	}
+
+	pub fn sort(&self, a: &InstalledGame, b: &InstalledGame) -> std::cmp::Ordering {
+		let order = if self.sort_descending {
+			std::cmp::Ordering::Less
+		} else {
+			std::cmp::Ordering::Greater
+		};
+
+		match self.sort_by {
+			InstalledGameSortBy::Title => a.title.display.cmp(&b.title.display),
+			InstalledGameSortBy::Tags => Ordering::Equal,
+			InstalledGameSortBy::Provider => a.provider.to_string().cmp(&b.provider.to_string()),
+			InstalledGameSortBy::Architecture => a
+				.executable
+				.architecture
+				.and_then(|architecture_a| {
+					b.executable.architecture.map(|architecture_b| {
+						architecture_a.to_string().cmp(&architecture_b.to_string())
+					})
+				})
+				.unwrap_or(Ordering::Equal),
+			InstalledGameSortBy::ScriptingBackend => a
+				.executable
+				.scripting_backend
+				.and_then(|scripting_backend_a| {
+					b.executable.scripting_backend.map(|scripting_backend_b| {
+						scripting_backend_a
+							.to_string()
+							.cmp(&scripting_backend_b.to_string())
+					})
+				})
+				.unwrap_or(Ordering::Equal),
+			InstalledGameSortBy::Engine => {
+				a.executable
+					.engine
+					.as_ref()
+					.and_then(|engine_a| {
+						b.executable.engine.as_ref().map(|engine_b| {
+							engine_a.brand.to_string().cmp(&engine_b.brand.to_string())
+						})
+					})
+					.unwrap_or(Ordering::Equal)
+			}
+		}
 	}
 }
 

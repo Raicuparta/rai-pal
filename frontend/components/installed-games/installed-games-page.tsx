@@ -4,7 +4,13 @@ import { FilterMenu } from "@components/filters/filter-menu";
 import { RefreshButton } from "@components/refresh-button";
 import { AddGame } from "./add-game-button";
 import { useAppEvent } from "@hooks/use-app-event";
-import { commands, events, InstalledGame, ProviderId } from "@api/bindings";
+import {
+	commands,
+	events,
+	InstalledGame,
+	InstalledGameSortBy,
+	ProviderId,
+} from "@api/bindings";
 import { useAtomValue, useSetAtom } from "jotai";
 import { providerDataAtom } from "@hooks/use-data";
 import {
@@ -16,6 +22,7 @@ import { TableVirtuoso } from "react-virtuoso";
 import { useVirtuosoHeaderContent } from "@hooks/use-virtuoso-header-content";
 import { useVirtuosoTableComponents } from "@hooks/use-virtuoso-table-components";
 import { InstalledGameRow } from "./installed-game-row";
+import { useDataQuery } from "@hooks/use-data-query";
 
 export type TableSortMethod = (
 	gameA: InstalledGame,
@@ -30,6 +37,10 @@ export type InstalledGameId = {
 export function InstalledGamesPage() {
 	const providerData = useAtomValue(providerDataAtom);
 	const setSelectedGame = useSetAtom(selectedInstalledGameAtom);
+	const [dataQuery, setDataQuery] = useDataQuery(
+		commands.setInstalledGamesFilter,
+		commands.getInstalledGamesFilter,
+	);
 
 	useAppEvent(events.selectInstalledGame, ([provider, id]) => {
 		setSelectedGame({
@@ -57,9 +68,14 @@ export function InstalledGamesPage() {
 
 	const columns = useVisibleInstalledGameColumns();
 
-	const onChangeSort = useCallback(() => {
-		console.log("Not implemented");
-	}, []);
+	const onChangeSort = useCallback(
+		(sortBy: InstalledGameSortBy) => {
+			setDataQuery({
+				sortBy,
+			});
+		},
+		[setDataQuery],
+	);
 
 	const sort = undefined;
 

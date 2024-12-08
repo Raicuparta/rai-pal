@@ -12,9 +12,11 @@ import { OutdatedMarker } from "@components/outdated-marker";
 import styles from "../table/table.module.css";
 import { getThumbnailWithFallback } from "@util/fallback-thumbnail";
 import { renderGameTagsCell } from "@components/game-tags/game-tags";
-import { InstalledGame } from "@api/bindings";
+import { InstalledGame, InstalledGameSortBy } from "@api/bindings";
 
-const thumbnail: TableColumnBase<InstalledGame> = {
+type InstalledGameColumn = TableColumnBase<InstalledGame, InstalledGameSortBy>;
+
+const thumbnail: InstalledGameColumn = {
 	hideInDetails: true,
 	label: "Thumbnail",
 	hideLabel: true,
@@ -30,9 +32,10 @@ const thumbnail: TableColumnBase<InstalledGame> = {
 	),
 };
 
-const name: TableColumnBase<InstalledGame> = {
+const name: InstalledGameColumn = {
 	hideInDetails: true,
 	label: "Game",
+	sort: "Title",
 	renderCell: (game) => (
 		<Table.Td className={styles.nameCell}>
 			<Tooltip
@@ -51,8 +54,9 @@ const name: TableColumnBase<InstalledGame> = {
 	),
 };
 
-const provider: TableColumnBase<InstalledGame> = {
+const provider: InstalledGameColumn = {
 	label: "Provider",
+	sort: "Provider",
 	width: 110,
 	center: true,
 	hidable: true,
@@ -63,7 +67,7 @@ const provider: TableColumnBase<InstalledGame> = {
 	),
 };
 
-const architecture: TableColumnBase<InstalledGame> = {
+const architecture: InstalledGameColumn = {
 	label: "Arch",
 	width: 70,
 	center: true,
@@ -75,7 +79,7 @@ const architecture: TableColumnBase<InstalledGame> = {
 	),
 };
 
-const scriptingBackend: TableColumnBase<InstalledGame> = {
+const scriptingBackend: InstalledGameColumn = {
 	label: "Backend",
 	width: 90,
 	center: true,
@@ -87,7 +91,7 @@ const scriptingBackend: TableColumnBase<InstalledGame> = {
 	),
 };
 
-const gameTags: TableColumnBase<InstalledGame> = {
+const gameTags: InstalledGameColumn = {
 	label: "Tags",
 	width: 120,
 	center: true,
@@ -95,8 +99,9 @@ const gameTags: TableColumnBase<InstalledGame> = {
 	renderCell: (game) => renderGameTagsCell(game.ownedGame),
 };
 
-const engine: TableColumnBase<InstalledGame> = {
+const engine: InstalledGameColumn = {
 	label: "Engine",
+	sort: "Engine",
 	width: 180,
 	center: true,
 	hidable: true,

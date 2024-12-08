@@ -13,7 +13,7 @@ use rai_pal_core::game_engines::game_engine::EngineBrand;
 use rai_pal_core::game_engines::unity::UnityScriptingBackend;
 use rai_pal_core::game_executable::Architecture;
 use rai_pal_core::game_tag::GameTag;
-use rai_pal_core::installed_game::{InstalledGame, InstalledGamesFilter};
+use rai_pal_core::installed_game::{DataQuery, InstalledGame};
 use rai_pal_core::local_mod::{self, LocalMod};
 use rai_pal_core::maps::TryGettable;
 use rai_pal_core::mod_loaders::mod_loader::{self, ModLoaderActions};
@@ -577,18 +577,25 @@ async fn open_logs_folder() -> Result {
 async fn get_provider_data(handle: AppHandle, provider_id: ProviderId) -> Result<ProviderDataIds> {
 	let state = handle.app_state();
 
-	let installed_games_filter = state.installed_games_filter.get_data()?;
+	let data_query = state.data_query.get_data()?;
+
+	let mut installed_games = state
+		.installed_games
+		.try_get(&provider_id)?
+		.get_data()
+		.unwrap_or_default()
+		.into_values()
+		.filter(|game| data_query.matches(game))
+		.collect::<Vec<_>>();
+
+	log::info!(
+		"Sorting installed games by {}",
+		data_query.sort_by.to_string()
+	);
+	installed_games.sort_by(|a, b| data_query.sort(a, b));
 
 	Ok(ProviderDataIds {
-		installed_games: state
-			.installed_games
-			.try_get(&provider_id)?
-			.get_data()
-			.unwrap_or_default()
-			.into_values()
-			.filter(|game| installed_games_filter.matches(game))
-			.map(|game| game.id)
-			.collect(),
+		installed_games: installed_games.iter().map(|game| game.id.clone()).collect(),
 		owned_games: state
 			.owned_games
 			.try_get(&provider_id)?
@@ -672,34 +679,24 @@ async fn clear_cache() -> Result {
 
 #[tauri::command]
 #[specta::specta]
-async fn set_installed_games_filter(
-	handle: AppHandle,
-	filter: Option<InstalledGamesFilter>,
-) -> Result {
-	update_state(
-		filter.unwrap_or_default(),
-		&handle.app_state().installed_games_filter,
-	);
+async fn set_installed_games_filter(handle: AppHandle, filter: Option<DataQuery>) -> Result {
+	update_state(filter.unwrap_or_default(), &handle.app_state().data_query);
 	handle.emit_safe(events::FoundInstalledGame());
 	Ok(())
 }
 
 #[tauri::command]
 #[specta::specta]
-async fn get_installed_games_filter(handle: AppHandle) -> Result<InstalledGamesFilter> {
-	handle
-		.app_state()
-		.installed_games_filter
-		.get_data()
-		.map_or_else(
-			|error| {
-				log::info!(
-					"Failed to get installed games filter, falling back to default. Error: {error}"
-				);
-				Ok(InstalledGamesFilter::default())
-			},
-			Ok,
-		)
+async fn get_installed_games_filter(handle: AppHandle) -> Result<DataQuery> {
+	handle.app_state().data_query.get_data().map_or_else(
+		|error| {
+			log::info!(
+				"Failed to get installed games filter, falling back to default. Error: {error}"
+			);
+			Ok(DataQuery::default())
+		},
+		Ok,
+	)
 }
 
 fn main() {
@@ -792,7 +789,7 @@ fn main() {
 				.into_iter()
 				.map(|provider_id| (provider_id, Mutex::default()))
 				.collect(),
-			installed_games_filter: Mutex::new(Some(InstalledGamesFilter::default())),
+			data_query: Mutex::new(Some(DataQuery::default())),
 		})
 		.invoke_handler(builder.invoke_handler())
 		.setup(move |app| {

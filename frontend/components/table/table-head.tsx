@@ -1,9 +1,9 @@
 import { Box, Flex, Table } from "@mantine/core";
 import classes from "./table.module.css";
 import { IconChevronDown, IconChevronUp } from "@tabler/icons-react";
-import { TableSort } from "@hooks/use-table-sort";
+import { InstalledGameSortBy } from "@api/bindings";
 
-export type TableColumnBase<TItem> = {
+export type TableColumnBase<TItem, TSort> = {
 	label: string;
 	renderCell: (item: TItem) => JSX.Element;
 	width?: number;
@@ -11,17 +11,18 @@ export type TableColumnBase<TItem> = {
 	hideLabel?: boolean;
 	hidable?: boolean;
 	hideInDetails?: boolean;
+	sort?: TSort;
 };
 
-export interface TableColumn<TKey extends string, TItem>
-	extends TableColumnBase<TItem> {
+export interface TableColumn<TKey extends string, TItem, TSort>
+	extends TableColumnBase<TItem, TSort> {
 	id: TKey;
 }
 
-export function columnMapToList<TItem, TKey extends string>(
-	columnMap: Record<TKey, TableColumnBase<TItem>>,
-): TableColumn<TKey, TItem>[] {
-	return Object.entries<TableColumnBase<TItem>>(columnMap).map(
+export function columnMapToList<TItem, TKey extends string, TSort>(
+	columnMap: Record<TKey, TableColumnBase<TItem, TSort>>,
+): TableColumn<TKey, TItem, TSort>[] {
+	return Object.entries<TableColumnBase<TItem, TSort>>(columnMap).map(
 		([id, column]) => ({
 			...column,
 			id: id as TKey,
@@ -29,30 +30,30 @@ export function columnMapToList<TItem, TKey extends string>(
 	);
 }
 
-type Props<TKey extends string, TItem> = {
-	readonly columns: TableColumn<TKey, TItem>[];
-	readonly onChangeSort?: (sort: string) => void;
-	readonly sort?: TableSort;
+type Props<TKey extends string, TItem, TSort> = {
+	readonly columns: TableColumn<TKey, TItem, TSort>[];
+	readonly onChangeSort?: (sort: TSort) => void;
+	readonly sort?: InstalledGameSortBy;
+	readonly sortDescending?: boolean;
 };
 
-export function TableHead<TKey extends string, TItem>(
-	props: Props<TKey, TItem>,
+export function TableHead<TKey extends string, TItem, TSort>(
+	props: Props<TKey, TItem, TSort>,
 ) {
 	return (
 		<Table.Tr>
 			{props.columns.map((column) => {
-				const isSortable = true; // TODO.
 				return (
 					<Table.Th
 						className={
-							props.onChangeSort && isSortable ? classes.sortable : undefined
+							props.onChangeSort && column.sort ? classes.sortable : undefined
 						}
 						key={String(column.id)}
 						onClick={
-							isSortable
+							column.sort
 								? () =>
-										props.onChangeSort
-											? props.onChangeSort(column.id)
+										props.onChangeSort && column.sort
+											? props.onChangeSort(column.sort)
 											: undefined
 								: undefined
 						}
@@ -67,8 +68,9 @@ export function TableHead<TKey extends string, TItem>(
 								w={0}
 								fs="xs"
 							>
-								{props.sort?.id === column.id &&
-									(props.sort.reverse ? (
+								{props.sort &&
+									props.sort === column.sort &&
+									(props.sortDescending ? (
 										<IconChevronDown />
 									) : (
 										<IconChevronUp />
