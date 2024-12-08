@@ -9,12 +9,8 @@ export function useDataCounts() {
 	const providerDataMap = useAtomValue(providerDataAtom);
 	const counts: TabCounts = useMemo(
 		() => ({
-			installedGames: Object.values(providerDataMap)
-				.map((data) => Object.entries(data.installedGames))
-				.flat().length,
-			ownedGames: Object.values(providerDataMap)
-				.map((data) => Object.entries(data.ownedGames))
-				.flat().length,
+			installedGames: providerDataMap.installedGames.length,
+			ownedGames: providerDataMap.ownedGames.length,
 			mods: -1,
 			settings: -1,
 			thanks: -1,

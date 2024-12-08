@@ -3,16 +3,11 @@
 // Command stuff needs to be async so I can spawn tasks.
 #![allow(clippy::unused_async)]
 
-use std::collections::HashSet;
 use std::{collections::HashMap, path::PathBuf, sync::Mutex};
 
 use crate::result::{Error, Result};
-use app_state::{AppState, DataValue, StateData, StatefulHandle};
+use app_state::{AppState, DataValue, GameId, GameIds, StateData, StatefulHandle};
 use events::EventEmitter;
-use rai_pal_core::game_engines::game_engine::EngineBrand;
-use rai_pal_core::game_engines::unity::UnityScriptingBackend;
-use rai_pal_core::game_executable::Architecture;
-use rai_pal_core::game_tag::GameTag;
 use rai_pal_core::installed_game::{DataQuery, InstalledGame};
 use rai_pal_core::local_mod::{self, LocalMod};
 use rai_pal_core::maps::TryGettable;
@@ -20,7 +15,7 @@ use rai_pal_core::mod_loaders::mod_loader::{self, ModLoaderActions};
 use rai_pal_core::owned_game::OwnedGame;
 use rai_pal_core::paths::{self, normalize_path};
 use rai_pal_core::providers::provider::ProviderId;
-use rai_pal_core::providers::provider_cache::{ProviderCache, ProviderData, ProviderDataIds};
+use rai_pal_core::providers::provider_cache::{ProviderCache, ProviderData};
 use rai_pal_core::providers::{
 	manual_provider,
 	provider::{self, ProviderActions},
@@ -574,19 +569,27 @@ async fn open_logs_folder() -> Result {
 
 #[tauri::command]
 #[specta::specta]
-async fn get_provider_data(handle: AppHandle, provider_id: ProviderId) -> Result<ProviderDataIds> {
+async fn get_data(handle: AppHandle) -> Result<GameIds> {
 	let state = handle.app_state();
 
 	let data_query = state.data_query.get_data()?;
 
-	let mut installed_games = state
-		.installed_games
-		.try_get(&provider_id)?
-		.get_data()
-		.unwrap_or_default()
-		.into_values()
-		.filter(|game| data_query.matches(game))
-		.collect::<Vec<_>>();
+	let all_providers = provider::get_provider_ids();
+
+	let mut installed_games: Vec<InstalledGame> = Vec::new();
+
+	for provider_id in all_providers {
+		let mut oter_installed_games = state
+			.installed_games
+			.try_get(&provider_id)?
+			.get_data()
+			.unwrap_or_default()
+			.into_values()
+			.filter(|game| data_query.matches(game))
+			.collect::<Vec<_>>();
+
+		installed_games.append(&mut oter_installed_games);
+	}
 
 	log::info!(
 		"Sorting installed games by {}",
@@ -594,16 +597,23 @@ async fn get_provider_data(handle: AppHandle, provider_id: ProviderId) -> Result
 	);
 	installed_games.sort_by(|a, b| data_query.sort(a, b));
 
-	Ok(ProviderDataIds {
-		installed_games: installed_games.iter().map(|game| game.id.clone()).collect(),
-		owned_games: state
-			.owned_games
-			.try_get(&provider_id)?
-			.get_data()
-			.unwrap_or_default()
-			.into_values()
-			.map(|game| game.global_id)
+	Ok(GameIds {
+		installed_games: installed_games
+			.iter()
+			.map(|game| GameId {
+				game_id: game.id.clone(),
+				provider_id: game.provider,
+			})
 			.collect(),
+		owned_games: Vec::new(),
+		// owned_games: state
+		// 	.owned_games
+		// 	.try_get(&provider_id)?
+		// 	.get_data()
+		// 	.unwrap_or_default()
+		// 	.into_values()
+		// 	.map(|game| game.global_id)
+		// 	.collect(),
 	})
 }
 
@@ -722,7 +732,7 @@ fn main() {
 			frontend_ready,
 			get_local_mods,
 			get_mod_loaders,
-			get_provider_data,
+			get_data,
 			get_provider_games,
 			get_provider_ids,
 			get_remote_mods,

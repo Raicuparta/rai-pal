@@ -85,9 +85,9 @@ async getModLoaders() : Promise<Result<{ [key in string]: ModLoaderData }, Error
     else return { status: "error", error: e  as any };
 }
 },
-async getProviderData(providerId: ProviderId) : Promise<Result<ProviderDataIds, Error>> {
+async getData() : Promise<Result<GameIds, Error>> {
     try {
-    return { status: "ok", data: await TAURI_INVOKE("get_provider_data", { providerId }) };
+    return { status: "ok", data: await TAURI_INVOKE("get_data") };
 } catch (e) {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
@@ -330,6 +330,8 @@ export type FoundInstalledGame = []
 export type FoundOwnedGame = []
 export type GameEngine = { brand: EngineBrand; version: EngineVersion | null }
 export type GameExecutable = { path: string; name: string; engine: GameEngine | null; architecture: Architecture | null; scriptingBackend: UnityScriptingBackend | null }
+export type GameId = { providerId: ProviderId; gameId: string }
+export type GameIds = { installedGames: GameId[]; ownedGames: GameId[] }
 export type GameSubscription = "UbisoftClassics" | "UbisoftPremium" | "XboxGamePass" | "EaPlay"
 export type GameTag = "VR" | "Demo"
 export type GameTitle = { display: string; normalized: string[] }
@@ -346,7 +348,6 @@ export type ModLoaderData = { id: string; path: string; kind: ModKind }
 export type OwnedGame = { globalId: string; providerGameId: string; provider: ProviderId; title: GameTitle; releaseDate: bigint | null; thumbnailUrl: string | null; tags: GameTag[]; providerCommands: { [key in ProviderCommandAction]: ProviderCommand }; fromSubscriptions: GameSubscription[] }
 export type ProviderCommand = { String: string } | { Path: [string, string[]] }
 export type ProviderCommandAction = "Install" | "ShowInLibrary" | "ShowInStore" | "Start" | "OpenInBrowser"
-export type ProviderDataIds = { installedGames: string[]; ownedGames: string[] }
 export type ProviderId = "Steam" | "Manual" | "Itch" | "Epic" | "Gog" | "Xbox"
 export type RemoteGame = { title: string | null; engines: GameEngine[] | null; ids: { [key in IdKind]: string[] }; subscriptions: GameSubscription[] | null }
 export type RemoteMod = { common: CommonModData; data: RemoteModData }

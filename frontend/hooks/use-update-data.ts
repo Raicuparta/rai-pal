@@ -26,25 +26,17 @@ export function useUpdateData(executeOnMount = false) {
 	}, []);
 
 	const updateProviderGames = useCallback(() => {
-		for (const providerId of providerIds) {
-			commands.getProviderData(providerId).then((result) => {
-				if (result.status === "error") {
-					showAppNotification(
-						`Failed to get provider data for ${providerId}: ${result.error}`,
-						"error",
-					);
-					return false;
-				}
+		commands.getData().then((result) => {
+			if (result.status === "error") {
+				showAppNotification(`Failed to get app data: ${result.error}`, "error");
+				return false;
+			}
 
-				setProviderData((previousProviderData) => ({
-					...previousProviderData,
-					[providerId]: result.data,
-				}));
+			setProviderData(result.data);
 
-				return true;
-			});
-		}
-	}, [providerIds, setProviderData]);
+			return true;
+		});
+	}, [setProviderData]);
 
 	const throttledUpdateProviderGames = useThrottledCallback(
 		updateProviderGames,

@@ -51,16 +51,13 @@ export function InstalledGamesPage() {
 
 	const installedGames = useMemo(() => {
 		const result: InstalledGameId[] = [];
-		for (const providerId of Object.keys(providerData) as ProviderId[]) {
-			const installedGameIds = providerData[providerId]?.installedGames;
-			if (!installedGameIds) continue;
+		const installedGameIds = providerData.installedGames;
 
-			for (const installedGameId of installedGameIds) {
-				result.push({
-					id: installedGameId,
-					provider: providerId,
-				});
-			}
+		for (const installedGameId of installedGameIds) {
+			result.push({
+				id: installedGameId.gameId,
+				provider: installedGameId.providerId,
+			});
 		}
 
 		return result;

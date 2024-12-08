@@ -8,6 +8,7 @@ use std::{
 
 use crate::result::Error;
 use crate::result::Result;
+use rai_pal_proc_macros::serializable_struct;
 use tauri::Manager;
 
 use rai_pal_core::{
@@ -27,6 +28,18 @@ pub struct AppState {
 	pub local_mods: Mutex<Option<local_mod::Map>>,
 	pub remote_mods: Mutex<Option<remote_mod::Map>>,
 	pub data_query: Mutex<Option<DataQuery>>,
+}
+
+#[serializable_struct]
+pub struct GameIds {
+	pub installed_games: Vec<GameId>,
+	pub owned_games: Vec<GameId>,
+}
+
+#[serializable_struct]
+pub struct GameId {
+	pub provider_id: ProviderId,
+	pub game_id: String,
 }
 
 type TauriState<'a> = tauri::State<'a, AppState>;
