@@ -20,3 +20,11 @@ div.labelledBadge {
 	font-size: 0.5rem;
 	padding: 0;
 }
+
+:global(.linux) div.labelledBadge :global(.mantine-Badge-label) {
+	padding-top: 2px;
+}
+
+:global(.linux .mantine-Badge-label) {
+	padding-top: 5px;
+}

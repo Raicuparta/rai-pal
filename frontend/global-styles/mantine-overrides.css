@@ -27,3 +27,13 @@
 	I don't want that */
 	display: flex;
 }
+
+.linux {
+	.mantine-Button-label {
+		padding-top: 3px;
+	}
+
+	.mantine-Table-th > .mantine-Flex-root {
+		padding-top: 3px;
+	}
+}

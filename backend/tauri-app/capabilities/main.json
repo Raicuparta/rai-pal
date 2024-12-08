@@ -1,18 +1,21 @@
 {
-	"$schema": "../gen/schemas/desktop-schema.json",
-	"identifier": "main-capabilities",
-	"local": true,
-	"windows": ["main"],
-	"permissions": [
-		"core:path:default",
-		"core:event:default",
-		"core:window:default",
-		"core:app:default",
-		"core:resources:default",
-		"dialog:allow-open",
-		"dialog:allow-ask",
-		"updater:allow-check",
-		"shell:default",
-		"updater:default"
-	]
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "main-capabilities",
+  "local": true,
+  "windows": [
+    "main"
+  ],
+  "permissions": [
+    "core:path:default",
+    "core:event:default",
+    "core:window:default",
+    "core:app:default",
+    "core:resources:default",
+    "dialog:allow-open",
+    "dialog:allow-ask",
+    "updater:allow-check",
+    "shell:default",
+    "updater:default",
+    "os:default"
+  ]
 }
