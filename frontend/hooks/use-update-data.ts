@@ -4,7 +4,6 @@ import { commands, Result, Error, events, ProviderId } from "@api/bindings";
 import { loadingCountAtom, providerDataAtom } from "./use-data";
 import { showAppNotification } from "@components/app-notifications";
 import { useAppEvent } from "./use-app-event";
-import { useThrottledCallback } from "@mantine/hooks";
 
 export function useUpdateData(executeOnMount = false) {
 	const setLoading = useSetAtom(loadingCountAtom);
@@ -38,13 +37,8 @@ export function useUpdateData(executeOnMount = false) {
 		});
 	}, [setProviderData]);
 
-	const throttledUpdateProviderGames = useThrottledCallback(
-		updateProviderGames,
-		1000,
-	);
-
-	useAppEvent(events.foundOwnedGame, throttledUpdateProviderGames);
-	useAppEvent(events.foundInstalledGame, throttledUpdateProviderGames);
+	useAppEvent(events.foundOwnedGame, updateProviderGames);
+	useAppEvent(events.foundInstalledGame, updateProviderGames);
 
 	const updateAppData = useCallback(() => {
 		function handleDataPromise(promise: Promise<Result<null, Error>>) {
