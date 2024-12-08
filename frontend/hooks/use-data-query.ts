@@ -1,13 +1,6 @@
 import { type Result, type Error } from "@api/bindings";
 import { useCallback, useEffect, useState } from "react";
 
-type DataQuery = {
-	toggles: Record<string, Record<string, boolean>>;
-	search: string;
-	sort: string;
-	sortDescending: boolean;
-};
-
 export function useDataQuery<TQuery>(
 	setterCommand: (filter: TQuery | null) => Promise<Result<null, Error>>,
 	getterCommand: () => Promise<Result<TQuery, Error>>,

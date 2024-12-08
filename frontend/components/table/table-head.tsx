@@ -32,8 +32,8 @@ export function columnMapToList<TItem, TKey extends string, TSort>(
 
 type Props<TKey extends string, TItem, TSort> = {
 	readonly columns: TableColumn<TKey, TItem, TSort>[];
-	readonly onChangeSort?: (sort: TSort) => void;
-	readonly sort?: InstalledGameSortBy;
+	readonly onChangeSort?: (sortBy: TSort) => void;
+	readonly sortBy?: InstalledGameSortBy;
 	readonly sortDescending?: boolean;
 };
 
@@ -68,8 +68,8 @@ export function TableHead<TKey extends string, TItem, TSort>(
 								w={0}
 								fs="xs"
 							>
-								{props.sort &&
-									props.sort === column.sort &&
+								{props.sortBy &&
+									props.sortBy === column.sort &&
 									(props.sortDescending ? (
 										<IconChevronDown />
 									) : (

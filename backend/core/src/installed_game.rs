@@ -134,13 +134,7 @@ impl DataQuery {
 	}
 
 	pub fn sort(&self, a: &InstalledGame, b: &InstalledGame) -> std::cmp::Ordering {
-		let order = if self.sort_descending {
-			std::cmp::Ordering::Less
-		} else {
-			std::cmp::Ordering::Greater
-		};
-
-		match self.sort_by {
+		let ordering = match self.sort_by {
 			InstalledGameSortBy::Title => a.title.display.cmp(&b.title.display),
 			InstalledGameSortBy::Tags => Ordering::Equal,
 			InstalledGameSortBy::Provider => a.provider.to_string().cmp(&b.provider.to_string()),
@@ -175,6 +169,12 @@ impl DataQuery {
 					})
 					.unwrap_or(Ordering::Equal)
 			}
+		};
+
+		if self.sort_descending {
+			ordering.reverse()
+		} else {
+			ordering
 		}
 	}
 }

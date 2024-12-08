@@ -70,16 +70,23 @@ export function InstalledGamesPage() {
 
 	const onChangeSort = useCallback(
 		(sortBy: InstalledGameSortBy) => {
+			const sortDescending =
+				sortBy === dataQuery?.sortBy && !dataQuery?.sortDescending;
+
 			setDataQuery({
 				sortBy,
+				sortDescending,
 			});
 		},
-		[setDataQuery],
+		[dataQuery, setDataQuery],
 	);
 
-	const sort = undefined;
-
-	const renderHeaders = useVirtuosoHeaderContent(columns, onChangeSort, sort);
+	const renderHeaders = useVirtuosoHeaderContent(
+		columns,
+		onChangeSort,
+		dataQuery?.sortBy,
+		dataQuery?.sortDescending,
+	);
 
 	const tableComponents = useVirtuosoTableComponents(InstalledGameRow);
 

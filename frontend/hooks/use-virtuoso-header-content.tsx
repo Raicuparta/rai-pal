@@ -2,19 +2,21 @@ import { TableColumn, TableHead } from "@components/table/table-head";
 import { useCallback } from "react";
 import { InstalledGameSortBy } from "@api/bindings";
 
-export function useVirtuosoHeaderContent<TKey extends string, TItem>(
-	columns: TableColumn<TKey, TItem>[],
-	onChangeSort?: (sort: InstalledGameSortBy) => void,
+export function useVirtuosoHeaderContent<TKey extends string, TItem, TSort>(
+	columns: TableColumn<TKey, TItem, TSort>[],
+	onChangeSort?: (sort: TSort) => void,
 	sort?: InstalledGameSortBy,
+	sortDescending?: boolean,
 ) {
 	return useCallback(
 		() => (
 			<TableHead
 				columns={columns}
 				onChangeSort={onChangeSort}
-				sort={sort}
+				sortBy={sort}
+				sortDescending={sortDescending}
 			/>
 		),
-		[columns, sort, onChangeSort],
+		[columns, onChangeSort, sort, sortDescending],
 	);
 }
