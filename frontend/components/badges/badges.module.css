@@ -20,3 +20,8 @@ div.labelledBadge {
 	font-size: 0.5rem;
 	padding: 0;
 }
+
+/* Linux-specific fixes (this might need to be removed if the rendering engine changes on Linux) */
+:global(.linux) div.labelledBadge :global(.mantine-Badge-label) {
+	padding-top: 2px;
+}
