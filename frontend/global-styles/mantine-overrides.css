@@ -36,4 +36,8 @@
 	.mantine-Table-th > .mantine-Flex-root {
 		padding-top: 3px;
 	}
+
+	.mantine-Badge-label {
+		padding-top: 5px;
+	}
 }
