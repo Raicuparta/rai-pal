@@ -24,7 +24,6 @@ tauri-plugin-shell = "2.0.0"
 tauri-plugin-updater = "2.0.1"
 tauri-plugin-window-state = "2.0.0"
 tauri-runtime = "2.0.0"
-tauri-plugin-os = "2.0.0"
 
 [features]
 # This feature is used for production builds or when `devPath` points to the filesystem.

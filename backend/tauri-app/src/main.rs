@@ -640,7 +640,6 @@ fn main() {
 	typescript::export(&builder);
 
 	tauri::Builder::default()
-		.plugin(tauri_plugin_os::init())
 		.plugin(tauri_plugin_shell::init())
 		.plugin(
 			tauri_plugin_window_state::Builder::default()
