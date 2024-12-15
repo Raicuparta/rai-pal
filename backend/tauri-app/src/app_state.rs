@@ -3,7 +3,7 @@ use std::{
 	collections::HashMap,
 	fmt::Display,
 	hash::{BuildHasher, Hash},
-	sync::Mutex,
+	sync::{Mutex, RwLock},
 };
 
 use crate::result::Error;
@@ -25,7 +25,7 @@ use rai_pal_core::{
 pub struct AppState {
 	pub installed_games: HashMap<ProviderId, Mutex<Option<HashMap<String, InstalledGame>>>>,
 	pub owned_games: HashMap<ProviderId, Mutex<Option<HashMap<String, OwnedGame>>>>,
-	pub games: HashMap<ProviderId, Mutex<Option<Vec<Game>>>>,
+	pub games: HashMap<ProviderId, RwLock<Option<Vec<Game>>>>,
 	pub mod_loaders: Mutex<Option<mod_loader::Map>>,
 	pub local_mods: Mutex<Option<local_mod::Map>>,
 	pub remote_mods: Mutex<Option<remote_mod::Map>>,
@@ -50,6 +50,19 @@ impl<TData: Clone> StateData<TData> for Mutex<Option<TData>> {
 		TData: Clone,
 	{
 		self.lock()
+			.map_err(|err| Error::FailedToAccessStateData(err.to_string()))?
+			.as_ref()
+			.ok_or(Error::EmptyStateData())
+			.cloned()
+	}
+}
+
+impl<TData: Clone> StateData<TData> for RwLock<Option<TData>> {
+	fn get_data(&self) -> Result<TData>
+	where
+		TData: Clone,
+	{
+		self.read()
 			.map_err(|err| Error::FailedToAccessStateData(err.to_string()))?
 			.as_ref()
 			.ok_or(Error::EmptyStateData())

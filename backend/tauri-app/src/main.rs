@@ -3,6 +3,7 @@
 // Command stuff needs to be async so I can spawn tasks.
 #![allow(clippy::unused_async)]
 
+use std::sync::RwLock;
 use std::{collections::HashMap, path::PathBuf, sync::Mutex};
 
 use crate::result::{Error, Result};
@@ -404,8 +405,10 @@ fn update_installed_games_state(
 }
 
 fn update_games_state(handle: &AppHandle, provider_id: &ProviderId, games: &Vec<Game>) {
-	if let Some(mutex) = handle.app_state().games.get(provider_id) {
-		update_state(games.clone(), mutex);
+	if let Some(rw_lock) = handle.app_state().games.get(provider_id) {
+		if let Ok(mut write_guard) = rw_lock.write() {
+			*write_guard = Some(games.clone());
+		}
 	}
 	handle.emit_safe(events::FoundInstalledGame());
 }
@@ -792,7 +795,7 @@ fn main() {
 				.collect(),
 			games: provider::get_provider_ids()
 				.into_iter()
-				.map(|provider_id| (provider_id, Mutex::default()))
+				.map(|provider_id| (provider_id, RwLock::default()))
 				.collect(),
 			data_query: Mutex::new(Some(DataQuery::default())),
 		})
