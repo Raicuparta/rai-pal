@@ -4,12 +4,7 @@ import { FilterMenu } from "@components/filters/filter-menu";
 import { RefreshButton } from "@components/refresh-button";
 import { AddGame } from "./add-game-button";
 import { useAppEvent } from "@hooks/use-app-event";
-import {
-	commands,
-	events,
-	InstalledGame,
-	InstalledGameSortBy,
-} from "@api/bindings";
+import { commands, events, InstalledGameSortBy } from "@api/bindings";
 import { useAtomValue, useSetAtom } from "jotai";
 import { gameIdsAtom } from "@hooks/use-data";
 import {
@@ -22,11 +17,6 @@ import { useVirtuosoHeaderContent } from "@hooks/use-virtuoso-header-content";
 import { useVirtuosoTableComponents } from "@hooks/use-virtuoso-table-components";
 import { InstalledGameRow } from "./installed-game-row";
 import { useDataQuery } from "@hooks/use-data-query";
-
-export type TableSortMethod = (
-	gameA: InstalledGame,
-	gameB: InstalledGame,
-) => number;
 
 export function InstalledGamesPage() {
 	const gameIds = useAtomValue(gameIdsAtom);

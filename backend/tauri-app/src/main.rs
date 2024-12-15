@@ -17,7 +17,7 @@ use rai_pal_core::mod_loaders::mod_loader::{self, ModLoaderActions};
 use rai_pal_core::owned_game::{self, OwnedGame};
 use rai_pal_core::paths::{self, normalize_path};
 use rai_pal_core::providers::provider::ProviderId;
-use rai_pal_core::providers::provider_cache::{ProviderCache, ProviderData};
+use rai_pal_core::providers::provider_cache::ProviderCache;
 use rai_pal_core::providers::{
 	manual_provider,
 	provider::{self, ProviderActions},

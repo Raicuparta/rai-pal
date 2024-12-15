@@ -10,6 +10,7 @@ import { InstalledGameModal } from "./installed-game-modal";
 import { ItemProps } from "react-virtuoso";
 import { GameId } from "@api/bindings";
 import styles from "./game-row.module.css";
+import { OwnedGameModal } from "@components/owned-games/owned-game-modal";
 
 export const InstalledGameRow = React.forwardRef(function InstalledGameRow(
 	props: ItemProps<GameId>,
@@ -21,15 +22,20 @@ export const InstalledGameRow = React.forwardRef(function InstalledGameRow(
 	const columns = useVisibleInstalledGameColumns();
 	const isInstalled = (game?.installedGames.length ?? 0) > 0;
 
+	const isSelected =
+		!!game &&
+		!!selectedGame &&
+		selectedGame.gameId === game.id &&
+		selectedGame.providerId == game.providerId;
+
 	return (
 		<>
-			{game &&
-				selectedGame &&
-				selectedGame.gameId === game.id &&
-				selectedGame.providerId == game.providerId &&
-				game.installedGames[0] && (
+			{isSelected &&
+				(game.installedGames[0] ? (
 					<InstalledGameModal game={game.installedGames[0]} />
-				)}
+				) : (
+					game.ownedGame && <OwnedGameModal game={game.ownedGame} />
+				))}
 			<Table.Tr
 				ref={ref}
 				className={isInstalled ? styles.installed : styles.owned}

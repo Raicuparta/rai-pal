@@ -7,15 +7,15 @@ import { ItemName } from "@components/item-name";
 import { getThumbnailWithFallback } from "@util/fallback-thumbnail";
 import { ProviderCommandButtons } from "../providers/provider-command-dropdown";
 import { OwnedGame } from "@api/bindings";
-import { selectedOwnedGameAtom } from "./selected-owned-game";
 import { useSetAtom } from "jotai";
+import { selectedInstalledGameAtom } from "@components/installed-games/installed-games-state";
 
 type Props = {
 	readonly game: OwnedGame;
 };
 
 export function OwnedGameModal(props: Props) {
-	const setSelectedGame = useSetAtom(selectedOwnedGameAtom);
+	const setSelectedGame = useSetAtom(selectedInstalledGameAtom);
 
 	const close = () => setSelectedGame(null);
 
