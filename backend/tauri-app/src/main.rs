@@ -576,8 +576,10 @@ async fn get_data(handle: AppHandle) -> Result<Vec<GameId>> {
 			.games
 			.try_get(&provider_id)?
 			.get_data()
-			.unwrap_or_default();
-		// .filter(|game| data_query.matches(game))
+			.unwrap_or_default()
+			.into_iter()
+			.filter(|game| data_query.matches(game))
+			.collect();
 
 		games.append(&mut provider_games);
 	}

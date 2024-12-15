@@ -9,6 +9,7 @@ use log::error;
 use rai_pal_proc_macros::{serializable_enum, serializable_struct};
 
 use crate::{
+	game::Game,
 	game_engines::{game_engine::EngineBrand, unity::UnityScriptingBackend},
 	game_executable::{Architecture, GameExecutable},
 	game_tag::GameTag,
@@ -69,9 +70,9 @@ impl Default for InstalledGameSortBy {
 }
 
 impl DataQuery {
-	pub fn matches(&self, game: &InstalledGame) -> bool {
+	pub fn matches(&self, game: &Game) -> bool {
 		let toggles = &self.toggles;
-		if !toggles.providers.get(&game.provider).unwrap_or(&true) {
+		if !toggles.providers.get(&game.provider_id).unwrap_or(&true) {
 			return false;
 		}
 
@@ -82,51 +83,51 @@ impl DataQuery {
 		// 	matches = false;
 		// }
 
-		let mut architectures = toggles.architectures.iter();
-		if architectures.any(|(_, enabled)| !enabled)
-			&& !toggles.architectures.iter().any(|(architecture, enabled)| {
-				*enabled
-					&& game
-						.executable
-						.architecture
-						.is_some_and(|a| a == *architecture)
-			}) {
-			return false;
-		}
+		// let mut architectures = toggles.architectures.iter();
+		// if architectures.any(|(_, enabled)| !enabled)
+		// 	&& !toggles.architectures.iter().any(|(architecture, enabled)| {
+		// 		*enabled
+		// 			&& game
+		// 				.executable
+		// 				.architecture
+		// 				.is_some_and(|a| a == *architecture)
+		// 	}) {
+		// 	return false;
+		// }
 
-		let mut engines = toggles.engines.iter();
-		if engines.any(|(_, enabled)| !enabled)
-			&& !engines.any(|(engine, enabled)| {
-				*enabled
-					&& game
-						.executable
-						.engine
-						.as_ref()
-						.is_some_and(|e| e.brand == *engine)
-			}) {
-			return false;
-		}
+		// let mut engines = toggles.engines.iter();
+		// if engines.any(|(_, enabled)| !enabled)
+		// 	&& !engines.any(|(engine, enabled)| {
+		// 		*enabled
+		// 			&& game
+		// 				.executable
+		// 				.engine
+		// 				.as_ref()
+		// 				.is_some_and(|e| e.brand == *engine)
+		// 	}) {
+		// 	return false;
+		// }
 
-		let mut scripting_backends = toggles.unity_scripting_backends.iter();
-		if scripting_backends.any(|(_, enabled)| !enabled)
-			&& !scripting_backends.any(|(backend, enabled)| {
-				*enabled
-					&& game
-						.executable
-						.scripting_backend
-						.is_some_and(|b| b == *backend)
-			}) {
-			return false;
-		}
+		// let mut scripting_backends = toggles.unity_scripting_backends.iter();
+		// if scripting_backends.any(|(_, enabled)| !enabled)
+		// 	&& !scripting_backends.any(|(backend, enabled)| {
+		// 		*enabled
+		// 			&& game
+		// 				.executable
+		// 				.scripting_backend
+		// 				.is_some_and(|b| b == *backend)
+		// 	}) {
+		// 	return false;
+		// }
 
-		if !self.search.is_empty() {
-			// We'll try to match the search term to a bunch of different strings related to this game.
-			let mut candidates: Vec<&str> = vec![&game.title.display, &game.executable.name];
-			candidates.extend(game.title.normalized.iter().map(String::as_str));
-			if !any_contains(&candidates, &self.search) {
-				return false;
-			}
-		}
+		// if !self.search.is_empty() {
+		// 	// We'll try to match the search term to a bunch of different strings related to this game.
+		// 	let mut candidates: Vec<&str> = vec![&game.title.display, &game.executable.name];
+		// 	candidates.extend(game.title.normalized.iter().map(String::as_str));
+		// 	if !any_contains(&candidates, &self.search) {
+		// 		return false;
+		// 	}
+		// }
 
 		true
 	}
