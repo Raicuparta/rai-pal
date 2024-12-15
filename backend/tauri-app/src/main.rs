@@ -569,7 +569,7 @@ async fn get_data(handle: AppHandle) -> Result<Vec<GameId>> {
 
 	let all_providers = provider::get_provider_ids();
 
-	let mut games: Vec<Game> = Vec::new();
+	let mut games: Vec<(usize, Game)> = Vec::new();
 
 	for provider_id in all_providers {
 		let mut provider_games = state
@@ -578,7 +578,10 @@ async fn get_data(handle: AppHandle) -> Result<Vec<GameId>> {
 			.get_data()
 			.unwrap_or_default()
 			.into_iter()
-			.filter(|game| data_query.matches(game))
+			// Add the indexes to the list *before* filtering and sorting,
+			// so we can use those indexes later as IDs to request the same data.
+			.enumerate()
+			.filter(|(_index, game)| data_query.matches(game))
 			.collect();
 
 		games.append(&mut provider_games);
@@ -593,13 +596,10 @@ async fn get_data(handle: AppHandle) -> Result<Vec<GameId>> {
 	// return a vec of all the indexes
 
 	Ok(games
-		.iter()
-		.enumerate()
-		.flat_map(|(index, game)| {
-			Some(GameId {
-				index,
-				provider_id: game.provider_id,
-			})
+		.into_iter()
+		.map(|(index, game)| GameId {
+			index,
+			provider_id: game.provider_id,
 		})
 		.collect())
 }

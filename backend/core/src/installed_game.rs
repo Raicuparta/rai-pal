@@ -83,30 +83,34 @@ impl DataQuery {
 		// 	matches = false;
 		// }
 
-		// let mut architectures = toggles.architectures.iter();
-		// if architectures.any(|(_, enabled)| !enabled)
-		// 	&& !toggles.architectures.iter().any(|(architecture, enabled)| {
-		// 		*enabled
-		// 			&& game
-		// 				.executable
-		// 				.architecture
-		// 				.is_some_and(|a| a == *architecture)
-		// 	}) {
-		// 	return false;
-		// }
+		let mut architectures = toggles.architectures.iter();
+		if architectures.any(|(_, enabled)| !enabled)
+			&& !toggles.architectures.iter().any(|(architecture, enabled)| {
+				*enabled
+					&& game.installed_game.as_ref().is_some_and(|installed_game| {
+						installed_game
+							.executable
+							.architecture
+							.is_some_and(|a| a == *architecture)
+					})
+			}) {
+			return false;
+		}
 
-		// let mut engines = toggles.engines.iter();
-		// if engines.any(|(_, enabled)| !enabled)
-		// 	&& !engines.any(|(engine, enabled)| {
-		// 		*enabled
-		// 			&& game
-		// 				.executable
-		// 				.engine
-		// 				.as_ref()
-		// 				.is_some_and(|e| e.brand == *engine)
-		// 	}) {
-		// 	return false;
-		// }
+		let mut engines = toggles.engines.iter();
+		if engines.any(|(_, enabled)| !enabled)
+			&& !engines.any(|(engine, enabled)| {
+				*enabled
+					&& game.installed_game.as_ref().is_some_and(|installed_game| {
+						installed_game
+							.executable
+							.engine
+							.as_ref()
+							.is_some_and(|e| e.brand == *engine)
+					})
+			}) {
+			return false;
+		}
 
 		// let mut scripting_backends = toggles.unity_scripting_backends.iter();
 		// if scripting_backends.any(|(_, enabled)| !enabled)
