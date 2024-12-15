@@ -617,20 +617,6 @@ async fn get_installed_game(
 		.try_get(&game_id)?
 		.clone();
 
-	if let Some(owned_game) = installed_game
-		.owned_game_id
-		.as_ref()
-		.and_then(|owned_game_id| {
-			state
-				.owned_games
-				.try_get(&provider_id)
-				.ok()?
-				.try_get(owned_game_id)
-				.ok()
-		}) {
-		installed_game.set_owned_game(&owned_game);
-	}
-
 	if let Ok(mods) = state.remote_mods.get_data() {
 		installed_game.has_outdated_mod =
 			installed_game

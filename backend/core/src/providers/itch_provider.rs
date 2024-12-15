@@ -25,7 +25,6 @@ impl Itch {
 		if let Some(cover_url) = &cave.cover_url {
 			game.set_thumbnail_url(cover_url);
 		}
-		game.set_provider_game_id(&cave.id.to_string());
 
 		Some(game)
 	}

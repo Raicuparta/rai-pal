@@ -46,7 +46,6 @@ impl Gog {
 			]
 			.to_vec(),
 		);
-		game.set_provider_game_id(&db_entry.id);
 
 		if let Some(image_url) = &db_entry.image_url {
 			game.set_thumbnail_url(image_url);

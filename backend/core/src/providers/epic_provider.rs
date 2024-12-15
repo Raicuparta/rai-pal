@@ -84,7 +84,6 @@ impl Epic {
 					"com.epicgames.launcher://apps/{}?action=launch&silent=true",
 					manifest.app_name
 				));
-				game.set_provider_game_id(&manifest.catalog_item_id);
 
 				Some(game)
 			}

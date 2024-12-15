@@ -30,8 +30,6 @@ pub struct InstalledGame {
 	pub installed_mod_versions: InstalledModVersions,
 	pub discriminator: Option<String>,
 	pub thumbnail_url: Option<String>,
-	pub owned_game_id: Option<String>,
-	pub owned_game: Option<OwnedGame>,
 	pub start_command: Option<ProviderCommand>,
 	pub has_outdated_mod: bool,
 }
@@ -244,8 +242,6 @@ impl InstalledGame {
 			discriminator: None,
 			thumbnail_url: None,
 			start_command: None,
-			owned_game_id: None,
-			owned_game: None,
 			has_outdated_mod: false,
 		};
 
@@ -271,16 +267,6 @@ impl InstalledGame {
 
 	pub fn set_start_command_path(&mut self, path: &Path, args: Vec<String>) -> &Self {
 		self.start_command = Some(ProviderCommand::Path(path.to_path_buf(), args));
-		self
-	}
-
-	pub fn set_provider_game_id(&mut self, provider_game_id: &str) -> &Self {
-		self.owned_game_id = Some(owned_game::get_global_id(self.provider, provider_game_id));
-		self
-	}
-
-	pub fn set_owned_game(&mut self, owned_game: &OwnedGame) -> &Self {
-		self.owned_game = Some(owned_game.clone());
 		self
 	}
 
