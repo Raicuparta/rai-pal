@@ -89,7 +89,7 @@ const scriptingBackend: InstalledGameColumn = {
 	renderCell: (game) => (
 		<Table.Td>
 			<UnityBackendBadge
-				value={game.installedGames[0].executable.scriptingBackend}
+				value={game.installedGames[0]?.executable.scriptingBackend}
 			/>
 		</Table.Td>
 	),
