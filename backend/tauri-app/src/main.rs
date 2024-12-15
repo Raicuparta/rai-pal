@@ -649,7 +649,10 @@ async fn get_game(
 	let game = state
 		.games
 		.try_get(&provider_id)?
-		.get_data()?
+		.read()
+		.map_err(|err| Error::FailedToAccessStateData(err.to_string()))?
+		.as_ref()
+		.ok_or(Error::EmptyStateData())?
 		.get(index)
 		.cloned();
 
