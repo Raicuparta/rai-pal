@@ -9,6 +9,7 @@ import { useGame } from "@hooks/use-game";
 import { InstalledGameModal } from "./installed-game-modal";
 import { ItemProps } from "react-virtuoso";
 import { GameId } from "@api/bindings";
+import styles from "./game-row.module.css";
 
 export const InstalledGameRow = React.forwardRef(function InstalledGameRow(
 	props: ItemProps<GameId>,
@@ -18,6 +19,7 @@ export const InstalledGameRow = React.forwardRef(function InstalledGameRow(
 	const [selectedGame, setSelectedGame] = useAtom(selectedInstalledGameAtom);
 
 	const columns = useVisibleInstalledGameColumns();
+	const isInstalled = (game?.installedGames.length ?? 0) > 0;
 
 	return (
 		<>
@@ -30,6 +32,7 @@ export const InstalledGameRow = React.forwardRef(function InstalledGameRow(
 				)}
 			<Table.Tr
 				ref={ref}
+				className={isInstalled ? styles.installed : styles.owned}
 				onClick={() =>
 					game &&
 					setSelectedGame({
