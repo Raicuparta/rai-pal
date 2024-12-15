@@ -36,10 +36,10 @@ export function InstalledGamesPage() {
 		commands.getInstalledGamesFilter,
 	);
 
-	useAppEvent(events.selectInstalledGame, ([provider, id]) => {
+	useAppEvent(events.selectInstalledGame, ([providerId, gameId]) => {
 		setSelectedGame({
-			provider,
-			id,
+			providerId,
+			gameId,
 		});
 	});
 
