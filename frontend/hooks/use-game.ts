@@ -8,6 +8,7 @@ export function useGame(provider: ProviderId, index: bigint) {
 	const updateData = useCallback(() => {
 		commands.getGame(provider, index).then((result) => {
 			if (result.status === "ok" && result.data) {
+				console.log("got game", result.data.ownedGame?.title.display);
 				setGame(result.data);
 			}
 		});
@@ -15,7 +16,7 @@ export function useGame(provider: ProviderId, index: bigint) {
 
 	useEffect(updateData, [updateData]);
 
-	useAppEvent(events.foundInstalledGame, updateData);
+	useAppEvent(events.foundGame, updateData);
 
 	return game;
 }

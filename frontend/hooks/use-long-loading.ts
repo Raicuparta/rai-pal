@@ -13,6 +13,8 @@ export function useLongLoading(isLoading: boolean) {
 		setIsLongLoading(false);
 		if (!isLoading) return;
 
+		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+		// @ts-expect-error
 		timeout.current = setTimeout(timeoutCallback, 500);
 
 		return () => clearTimeout(timeout.current);

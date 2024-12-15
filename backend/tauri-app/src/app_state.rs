@@ -23,8 +23,6 @@ use rai_pal_core::{
 };
 
 pub struct AppState {
-	pub installed_games: HashMap<ProviderId, Mutex<Option<HashMap<String, InstalledGame>>>>,
-	pub owned_games: HashMap<ProviderId, Mutex<Option<HashMap<String, OwnedGame>>>>,
 	pub games: HashMap<ProviderId, RwLock<Option<Vec<Game>>>>,
 	pub mod_loaders: Mutex<Option<mod_loader::Map>>,
 	pub local_mods: Mutex<Option<local_mod::Map>>,

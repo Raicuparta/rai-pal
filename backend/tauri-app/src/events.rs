@@ -9,13 +9,7 @@ use rai_pal_core::{
 };
 
 #[serializable_event]
-pub struct FoundInstalledGame();
-
-#[serializable_event]
 pub struct FoundGame();
-
-#[serializable_event]
-pub struct FoundOwnedGame();
 
 #[serializable_event]
 pub struct SyncModLoaders(pub mod_loader::DataMap);
@@ -58,8 +52,7 @@ impl EventEmitter for tauri::AppHandle {
 
 pub fn collect_events() -> tauri_specta::Events {
 	tauri_specta::collect_events![
-		FoundInstalledGame,
-		FoundOwnedGame,
+		FoundGame,
 		SyncModLoaders,
 		SyncLocalMods,
 		SyncRemoteMods,

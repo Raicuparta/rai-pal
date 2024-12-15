@@ -229,19 +229,21 @@ async fn open_installed_mod_folder(
 }
 
 fn refresh_game_mods_and_exe(installed_game: &InstalledGame, handle: &AppHandle) -> Result {
-	let mut refreshed_game = installed_game.clone();
-	refreshed_game.refresh_installed_mods();
-	refreshed_game.refresh_executable()?;
+	// TODO
 
-	if let Some(installed_games_state) = handle
-		.app_state()
-		.installed_games
-		.get(&installed_game.provider)
-	{
-		let mut installed_games = installed_games_state.get_data()?;
-		installed_games.insert(refreshed_game.id.clone(), refreshed_game.clone());
-		update_installed_games_state(handle, &installed_game.provider, &installed_games);
-	}
+	// let mut refreshed_game = installed_game.clone();
+	// refreshed_game.refresh_installed_mods();
+	// refreshed_game.refresh_executable()?;
+
+	// if let Some(installed_games_state) = handle
+	// 	.app_state()
+	// 	.installed_games
+	// 	.get(&installed_game.provider)
+	// {
+	// 	let mut installed_games = installed_games_state.get_data()?;
+	// 	installed_games.insert(refreshed_game.id.clone(), refreshed_game.clone());
+	// 	update_installed_games_state(handle, &installed_game.provider, &installed_games);
+	// }
 
 	Ok(())
 }
@@ -393,35 +395,13 @@ async fn fetch_remote_games() -> Result<Vec<RemoteGame>> {
 	Ok(remote_games::get().await?)
 }
 
-fn update_installed_games_state(
-	handle: &AppHandle,
-	provider_id: &ProviderId,
-	installed_games: &HashMap<String, InstalledGame>,
-) {
-	if let Some(mutex) = handle.app_state().installed_games.get(provider_id) {
-		update_state(installed_games.clone(), mutex);
-	}
-	handle.emit_safe(events::FoundInstalledGame());
-}
-
 fn update_games_state(handle: &AppHandle, provider_id: &ProviderId, games: &Vec<Game>) {
 	if let Some(rw_lock) = handle.app_state().games.get(provider_id) {
 		if let Ok(mut write_guard) = rw_lock.write() {
 			*write_guard = Some(games.clone());
 		}
 	}
-	handle.emit_safe(events::FoundInstalledGame());
-}
-
-fn update_owned_games_state(
-	handle: &AppHandle,
-	provider_id: &ProviderId,
-	owned_games: &HashMap<String, OwnedGame>,
-) {
-	if let Some(mutex) = handle.app_state().owned_games.get(provider_id) {
-		update_state(owned_games.clone(), mutex);
-	}
-	handle.emit_safe(events::FoundOwnedGame());
+	handle.emit_safe(events::FoundGame());
 }
 
 #[tauri::command]
@@ -478,48 +458,48 @@ async fn get_provider_ids() -> Result<Vec<ProviderId>> {
 	Ok(provider::get_provider_ids())
 }
 
-#[tauri::command]
-#[specta::specta]
-async fn add_game(path: PathBuf, handle: AppHandle) -> Result {
-	let normalized_path = normalize_path(&path);
+// #[tauri::command]
+// #[specta::specta]
+// async fn add_game(path: PathBuf, handle: AppHandle) -> Result {
+// 	let normalized_path = normalize_path(&path);
 
-	let installed_game = manual_provider::add_game(&normalized_path)?;
-	let game_name = installed_game.title.display.clone();
+// 	let installed_game = manual_provider::add_game(&normalized_path)?;
+// 	let game_name = installed_game.title.display.clone();
 
-	if let Some(installed_games_state) = handle.app_state().installed_games.get(&ProviderId::Manual)
-	{
-		let mut installed_games = installed_games_state.get_data()?;
-		installed_games.insert(installed_game.id.clone(), installed_game.clone());
-		update_installed_games_state(&handle, &installed_game.provider, &installed_games);
-	}
+// 	if let Some(installed_games_state) = handle.app_state().installed_games.get(&ProviderId::Manual)
+// 	{
+// 		let mut installed_games = installed_games_state.get_data()?;
+// 		installed_games.insert(installed_game.id.clone(), installed_game.clone());
+// 		update_installed_games_state(&handle, &installed_game.provider, &installed_games);
+// 	}
 
-	handle.emit_safe(events::SelectInstalledGame(
-		installed_game.provider,
-		installed_game.id.clone(),
-	));
+// 	handle.emit_safe(events::SelectInstalledGame(
+// 		installed_game.provider,
+// 		installed_game.id.clone(),
+// 	));
 
-	analytics::send_event(analytics::Event::ManuallyAddGame, &game_name).await;
+// 	analytics::send_event(analytics::Event::ManuallyAddGame, &game_name).await;
 
-	Ok(())
-}
+// 	Ok(())
+// }
 
-#[tauri::command]
-#[specta::specta]
-async fn remove_game(installed_game: InstalledGame, handle: AppHandle) -> Result {
-	manual_provider::remove_game(&installed_game.executable.path)?;
+// #[tauri::command]
+// #[specta::specta]
+// async fn remove_game(installed_game: InstalledGame, handle: AppHandle) -> Result {
+// 	manual_provider::remove_game(&installed_game.executable.path)?;
 
-	if let Some(installed_games_state) = handle
-		.app_state()
-		.installed_games
-		.get(&installed_game.provider)
-	{
-		let mut installed_games = installed_games_state.get_data()?;
-		installed_games.remove(&installed_game.id);
-		update_installed_games_state(&handle, &installed_game.provider, &installed_games);
-	}
+// 	if let Some(installed_games_state) = handle
+// 		.app_state()
+// 		.installed_games
+// 		.get(&installed_game.provider)
+// 	{
+// 		let mut installed_games = installed_games_state.get_data()?;
+// 		installed_games.remove(&installed_game.id);
+// 		update_installed_games_state(&handle, &installed_game.provider, &installed_games);
+// 	}
 
-	Ok(())
-}
+// 	Ok(())
+// }
 
 #[tauri::command]
 #[specta::specta]
@@ -606,45 +586,13 @@ async fn get_data(handle: AppHandle) -> Result<Vec<GameId>> {
 
 #[tauri::command]
 #[specta::specta]
-async fn get_installed_game(
-	handle: AppHandle,
-	provider_id: ProviderId,
-	game_id: String,
-) -> Result<InstalledGame> {
-	let state = handle.app_state();
-	let mut installed_game = state
-		.installed_games
-		.try_get(&provider_id)?
-		.try_get(&game_id)?
-		.clone();
-
-	if let Ok(mods) = state.remote_mods.get_data() {
-		installed_game.has_outdated_mod =
-			installed_game
-				.installed_mod_versions
-				.iter()
-				.any(|(mod_id, version)| {
-					mods.contains_key(mod_id)
-						&& mods[mod_id]
-							.data
-							.latest_version
-							.as_ref()
-							.is_some_and(|latest_version| latest_version.id != *version)
-				});
-	}
-
-	Ok(installed_game.clone())
-}
-
-#[tauri::command]
-#[specta::specta]
 async fn get_game(
 	handle: AppHandle,
 	provider_id: ProviderId,
 	index: usize,
 ) -> Result<Option<Game>> {
-	let state = handle.app_state();
-	let game = state
+	Ok(handle
+		.app_state()
 		.games
 		.try_get(&provider_id)?
 		.read()
@@ -652,26 +600,7 @@ async fn get_game(
 		.as_ref()
 		.ok_or(Error::EmptyStateData())?
 		.get(index)
-		.cloned();
-
-	Ok(game)
-}
-
-#[tauri::command]
-#[specta::specta]
-async fn get_owned_game(
-	handle: AppHandle,
-	provider_id: ProviderId,
-	game_id: String,
-) -> Result<OwnedGame> {
-	let state = handle.app_state();
-	let mut owned_game = state
-		.owned_games
-		.try_get(&provider_id)?
-		.try_get(&game_id)?
-		.clone();
-
-	Ok(owned_game.clone())
+		.cloned())
 }
 
 #[tauri::command]
@@ -685,7 +614,7 @@ async fn clear_cache() -> Result {
 #[specta::specta]
 async fn set_installed_games_filter(handle: AppHandle, filter: Option<DataQuery>) -> Result {
 	update_state(filter.unwrap_or_default(), &handle.app_state().data_query);
-	handle.emit_safe(events::FoundInstalledGame());
+	handle.emit_safe(events::FoundGame());
 	Ok(())
 }
 
@@ -716,7 +645,7 @@ fn main() {
 
 	let builder = Builder::<tauri::Wry>::new()
 		.commands(tauri_specta::collect_commands![
-			add_game,
+			// add_game,
 			clear_cache,
 			configure_mod,
 			delete_mod,
@@ -739,7 +668,7 @@ fn main() {
 			open_mod_loader_folder,
 			open_mods_folder,
 			refresh_game,
-			remove_game,
+			// remove_game,
 			run_provider_command,
 			run_runnable_without_game,
 			start_game_exe,
@@ -749,8 +678,6 @@ fn main() {
 			update_local_mods,
 			set_installed_games_filter,
 			get_installed_games_filter,
-			get_installed_game,
-			get_owned_game,
 			get_game,
 		])
 		.events(events::collect_events());
@@ -786,14 +713,6 @@ fn main() {
 			mod_loaders: Mutex::default(),
 			local_mods: Mutex::default(),
 			remote_mods: Mutex::default(),
-			installed_games: provider::get_provider_ids()
-				.into_iter()
-				.map(|provider_id| (provider_id, Mutex::default()))
-				.collect(),
-			owned_games: provider::get_provider_ids()
-				.into_iter()
-				.map(|provider_id| (provider_id, Mutex::default()))
-				.collect(),
 			games: provider::get_provider_ids()
 				.into_iter()
 				.map(|provider_id| (provider_id, RwLock::default()))

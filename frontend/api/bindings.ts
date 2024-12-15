@@ -5,14 +5,6 @@
 
 
 export const commands = {
-async addGame(path: string) : Promise<Result<null, Error>> {
-    try {
-    return { status: "ok", data: await TAURI_INVOKE("add_game", { path }) };
-} catch (e) {
-    if(e instanceof Error) throw e;
-    else return { status: "error", error: e  as any };
-}
-},
 async clearCache() : Promise<Result<null, Error>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("clear_cache") };
@@ -189,14 +181,6 @@ async refreshGame(installedGame: InstalledGame) : Promise<Result<null, Error>> {
     else return { status: "error", error: e  as any };
 }
 },
-async removeGame(installedGame: InstalledGame) : Promise<Result<null, Error>> {
-    try {
-    return { status: "ok", data: await TAURI_INVOKE("remove_game", { installedGame }) };
-} catch (e) {
-    if(e instanceof Error) throw e;
-    else return { status: "error", error: e  as any };
-}
-},
 async runProviderCommand(ownedGame: OwnedGame, commandAction: ProviderCommandAction) : Promise<Result<null, Error>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("run_provider_command", { ownedGame, commandAction }) };
@@ -269,22 +253,6 @@ async getInstalledGamesFilter() : Promise<Result<DataQuery, Error>> {
     else return { status: "error", error: e  as any };
 }
 },
-async getInstalledGame(providerId: ProviderId, gameId: string) : Promise<Result<InstalledGame, Error>> {
-    try {
-    return { status: "ok", data: await TAURI_INVOKE("get_installed_game", { providerId, gameId }) };
-} catch (e) {
-    if(e instanceof Error) throw e;
-    else return { status: "error", error: e  as any };
-}
-},
-async getOwnedGame(providerId: ProviderId, gameId: string) : Promise<Result<OwnedGame, Error>> {
-    try {
-    return { status: "ok", data: await TAURI_INVOKE("get_owned_game", { providerId, gameId }) };
-} catch (e) {
-    if(e instanceof Error) throw e;
-    else return { status: "error", error: e  as any };
-}
-},
 async getGame(providerId: ProviderId, index: bigint) : Promise<Result<Game | null, Error>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("get_game", { providerId, index }) };
@@ -301,8 +269,7 @@ async getGame(providerId: ProviderId, index: bigint) : Promise<Result<Game | nul
 export const events = __makeEvents__<{
 errorRaised: ErrorRaised,
 executedProviderCommand: ExecutedProviderCommand,
-foundInstalledGame: FoundInstalledGame,
-foundOwnedGame: FoundOwnedGame,
+foundGame: FoundGame,
 selectInstalledGame: SelectInstalledGame,
 syncLocalMods: SyncLocalMods,
 syncModLoaders: SyncModLoaders,
@@ -310,8 +277,7 @@ syncRemoteMods: SyncRemoteMods
 }>({
 errorRaised: "error-raised",
 executedProviderCommand: "executed-provider-command",
-foundInstalledGame: "found-installed-game",
-foundOwnedGame: "found-owned-game",
+foundGame: "found-game",
 selectInstalledGame: "select-installed-game",
 syncLocalMods: "sync-local-mods",
 syncModLoaders: "sync-mod-loaders",
@@ -334,8 +300,7 @@ export type EngineVersionRange = { minimum: EngineVersionNumbers | null; maximum
 export type Error = "Tauri" | "Core" | "SerdeJson" | { FailedToGetResourcesPath: string } | { EmptyStateData: [] } | { FailedToAccessStateData: string }
 export type ErrorRaised = string
 export type ExecutedProviderCommand = null
-export type FoundInstalledGame = []
-export type FoundOwnedGame = []
+export type FoundGame = []
 export type Game = { id: string; providerId: ProviderId; installedGame: InstalledGame | null; ownedGame: OwnedGame | null }
 export type GameEngine = { brand: EngineBrand; version: EngineVersion | null }
 export type GameExecutable = { path: string; name: string; engine: GameEngine | null; architecture: Architecture | null; scriptingBackend: UnityScriptingBackend | null }

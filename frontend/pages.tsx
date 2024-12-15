@@ -6,7 +6,7 @@ import { ThanksTabIcon } from "@components/thanks/thanks-tab-icon";
 import { IconBooks, IconTool, IconSettings } from "@tabler/icons-react";
 
 export const pages = {
-	installedGames: {
+	games: {
 		title: "Games",
 		component: InstalledGamesPage,
 		icon: <IconBooks />,

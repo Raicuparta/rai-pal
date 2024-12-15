@@ -37,9 +37,7 @@ export function useUpdateData(executeOnMount = false) {
 		});
 	}, [setGameIds]);
 
-	useAppEvent(events.foundOwnedGame, updateProviderGames);
-	useAppEvent(events.foundInstalledGame, updateProviderGames);
-	useAppEvent(events.foundOwnedGame, updateProviderGames);
+	useAppEvent(events.foundGame, updateProviderGames);
 
 	const updateAppData = useCallback(() => {
 		function handleDataPromise(promise: Promise<Result<null, Error>>) {

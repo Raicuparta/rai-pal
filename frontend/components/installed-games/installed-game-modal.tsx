@@ -40,7 +40,6 @@ import {
 	getFallbackThumbnail,
 	getThumbnailWithFallback,
 } from "@util/fallback-thumbnail";
-import { ProviderCommandButtons } from "@components/providers/provider-command-dropdown";
 import { ProviderIcon } from "@components/providers/provider-icon";
 import { selectedInstalledGameAtom } from "./installed-games-state";
 
@@ -140,10 +139,7 @@ export function InstalledGameModal({ game }: Props) {
 					<ModalImage
 						src={
 							game
-								? getThumbnailWithFallback(
-										game.thumbnailUrl ?? game.ownedGame?.thumbnailUrl,
-										game.provider,
-									)
+								? getThumbnailWithFallback(game.thumbnailUrl, game.provider)
 								: getFallbackThumbnail("Manual")
 						}
 					/>
@@ -163,7 +159,7 @@ export function InstalledGameModal({ game }: Props) {
 						item={{
 							id: game.id,
 							providerId: game.provider,
-							installedGames: [game],
+							installedGame: game,
 							ownedGame: null,
 						}}
 					/>
@@ -209,12 +205,13 @@ export function InstalledGameModal({ game }: Props) {
 								Open Installed Mods Folder
 							</CommandButton>
 						</CommandDropdown>
-						{game.ownedGame && (
+						{/* TODO: owned game stuff */}
+						{/* {game.ownedGame && (
 							<ProviderCommandButtons
 								game={game.ownedGame}
 								isInstalled={true}
 							/>
-						)}
+						)} */}
 						{game.provider === "Manual" && (
 							<CommandButton
 								onClick={() => removeGame(game)}

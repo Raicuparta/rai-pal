@@ -41,7 +41,7 @@ export function useAsyncCommand<TResultValue, TError, TArgs = void>(
 
 					timeout.current = setTimeout(() => {
 						setSuccess(false);
-					}, 1000);
+					}, 1000) as unknown as number;
 
 					return result;
 				})
