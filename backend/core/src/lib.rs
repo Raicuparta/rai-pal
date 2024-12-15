@@ -3,6 +3,7 @@
 pub mod analytics;
 pub mod debug;
 pub mod files;
+pub mod game;
 pub mod game_engines;
 pub mod game_executable;
 pub mod game_mod;

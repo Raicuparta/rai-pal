@@ -85,7 +85,7 @@ async getModLoaders() : Promise<Result<{ [key in string]: ModLoaderData }, Error
     else return { status: "error", error: e  as any };
 }
 },
-async getData() : Promise<Result<GameIds, Error>> {
+async getData() : Promise<Result<GameId[], Error>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("get_data") };
 } catch (e) {
@@ -284,6 +284,14 @@ async getOwnedGame(providerId: ProviderId, gameId: string) : Promise<Result<Owne
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
 }
+},
+async getGame(providerId: ProviderId, index: bigint) : Promise<Result<Game | null, Error>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("get_game", { providerId, index }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
 }
 }
 
@@ -328,10 +336,10 @@ export type ErrorRaised = string
 export type ExecutedProviderCommand = null
 export type FoundInstalledGame = []
 export type FoundOwnedGame = []
+export type Game = { id: string; providerId: ProviderId; installedGames: InstalledGame[]; ownedGame: OwnedGame | null }
 export type GameEngine = { brand: EngineBrand; version: EngineVersion | null }
 export type GameExecutable = { path: string; name: string; engine: GameEngine | null; architecture: Architecture | null; scriptingBackend: UnityScriptingBackend | null }
-export type GameId = { providerId: ProviderId; gameId: string }
-export type GameIds = { installedGames: GameId[]; ownedGames: GameId[] }
+export type GameId = { providerId: ProviderId; index: bigint }
 export type GameSubscription = "UbisoftClassics" | "UbisoftPremium" | "XboxGamePass" | "EaPlay"
 export type GameTag = "VR" | "Demo"
 export type GameTitle = { display: string; normalized: string[] }

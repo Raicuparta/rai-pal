@@ -7,7 +7,7 @@ import { usePersistedState } from "@hooks/use-persisted-state";
 import { useAppEvent } from "@hooks/use-app-event";
 import { commands, events, InstalledGame, ProviderId } from "@api/bindings";
 import { useAtomValue, useSetAtom } from "jotai";
-import { providerDataAtom } from "@hooks/use-data";
+import { gameIdsAtom } from "@hooks/use-data";
 import { TableContainer } from "@components/table/table-container";
 import { TableVirtuoso } from "react-virtuoso";
 import { useVirtuosoHeaderContent } from "@hooks/use-virtuoso-header-content";
@@ -33,7 +33,7 @@ export type OwnedGameId = {
 };
 
 export function OwnedGamesPage() {
-	const providerData = useAtomValue(providerDataAtom);
+	const providerData = useAtomValue(gameIdsAtom);
 	const setSelectedGame = useSetAtom(selectedOwnedGameAtom);
 
 	useAppEvent(events.selectInstalledGame, ([provider, id]) => {

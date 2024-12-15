@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
 import { useSetAtom } from "jotai";
 import { commands, Result, Error, events, ProviderId } from "@api/bindings";
-import { loadingCountAtom, providerDataAtom } from "./use-data";
+import { loadingCountAtom, gameIdsAtom } from "./use-data";
 import { showAppNotification } from "@components/app-notifications";
 import { useAppEvent } from "./use-app-event";
 
 export function useUpdateData(executeOnMount = false) {
 	const setLoading = useSetAtom(loadingCountAtom);
-	const setProviderData = useSetAtom(providerDataAtom);
+	const setGameIds = useSetAtom(gameIdsAtom);
 	const [providerIds, setProviderIds] = useState<ProviderId[]>([]);
 
 	useEffect(() => {
@@ -31,14 +31,15 @@ export function useUpdateData(executeOnMount = false) {
 				return false;
 			}
 
-			setProviderData(result.data);
+			setGameIds(result.data);
 
 			return true;
 		});
-	}, [setProviderData]);
+	}, [setGameIds]);
 
 	useAppEvent(events.foundOwnedGame, updateProviderGames);
 	useAppEvent(events.foundInstalledGame, updateProviderGames);
+	useAppEvent(events.foundOwnedGame, updateProviderGames);
 
 	const updateAppData = useCallback(() => {
 		function handleDataPromise(promise: Promise<Result<null, Error>>) {

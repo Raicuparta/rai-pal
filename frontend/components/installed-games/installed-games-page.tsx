@@ -1,5 +1,5 @@
 import { Group, Stack } from "@mantine/core";
-import { useCallback, useMemo } from "react";
+import { useCallback } from "react";
 import { FilterMenu } from "@components/filters/filter-menu";
 import { RefreshButton } from "@components/refresh-button";
 import { AddGame } from "./add-game-button";
@@ -9,10 +9,9 @@ import {
 	events,
 	InstalledGame,
 	InstalledGameSortBy,
-	ProviderId,
 } from "@api/bindings";
 import { useAtomValue, useSetAtom } from "jotai";
-import { providerDataAtom } from "@hooks/use-data";
+import { gameIdsAtom } from "@hooks/use-data";
 import {
 	selectedInstalledGameAtom,
 	useVisibleInstalledGameColumns,
@@ -29,13 +28,8 @@ export type TableSortMethod = (
 	gameB: InstalledGame,
 ) => number;
 
-export type InstalledGameId = {
-	readonly provider: ProviderId;
-	readonly id: string;
-};
-
 export function InstalledGamesPage() {
-	const providerData = useAtomValue(providerDataAtom);
+	const gameIds = useAtomValue(gameIdsAtom);
 	const setSelectedGame = useSetAtom(selectedInstalledGameAtom);
 	const [dataQuery, setDataQuery] = useDataQuery(
 		commands.setInstalledGamesFilter,
@@ -48,20 +42,6 @@ export function InstalledGamesPage() {
 			id,
 		});
 	});
-
-	const installedGames = useMemo(() => {
-		const result: InstalledGameId[] = [];
-		const installedGameIds = providerData.installedGames;
-
-		for (const installedGameId of installedGameIds) {
-			result.push({
-				id: installedGameId.gameId,
-				provider: installedGameId.providerId,
-			});
-		}
-
-		return result;
-	}, [providerData]);
 
 	const columns = useVisibleInstalledGameColumns();
 
@@ -102,8 +82,8 @@ export function InstalledGamesPage() {
 					style={{ overflowY: "scroll" }}
 					components={tableComponents}
 					fixedHeaderContent={renderHeaders}
-					totalCount={installedGames.length}
-					data={installedGames}
+					totalCount={gameIds.length}
+					data={gameIds}
 					defaultItemHeight={33}
 				/>
 			</TableContainer>

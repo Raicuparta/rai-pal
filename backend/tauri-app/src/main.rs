@@ -6,13 +6,14 @@
 use std::{collections::HashMap, path::PathBuf, sync::Mutex};
 
 use crate::result::{Error, Result};
-use app_state::{AppState, DataValue, GameId, GameIds, StateData, StatefulHandle};
+use app_state::{AppState, DataValue, GameId, StateData, StatefulHandle};
 use events::EventEmitter;
+use rai_pal_core::game::Game;
 use rai_pal_core::installed_game::{DataQuery, InstalledGame};
 use rai_pal_core::local_mod::{self, LocalMod};
 use rai_pal_core::maps::TryGettable;
 use rai_pal_core::mod_loaders::mod_loader::{self, ModLoaderActions};
-use rai_pal_core::owned_game::OwnedGame;
+use rai_pal_core::owned_game::{self, OwnedGame};
 use rai_pal_core::paths::{self, normalize_path};
 use rai_pal_core::providers::provider::ProviderId;
 use rai_pal_core::providers::provider_cache::{ProviderCache, ProviderData};
@@ -402,6 +403,13 @@ fn update_installed_games_state(
 	handle.emit_safe(events::FoundInstalledGame());
 }
 
+fn update_games_state(handle: &AppHandle, provider_id: &ProviderId, games: &Vec<Game>) {
+	if let Some(mutex) = handle.app_state().games.get(provider_id) {
+		update_state(games.clone(), mutex);
+	}
+	handle.emit_safe(events::FoundInstalledGame());
+}
+
 fn update_owned_games_state(
 	handle: &AppHandle,
 	provider_id: &ProviderId,
@@ -416,65 +424,47 @@ fn update_owned_games_state(
 #[tauri::command]
 #[specta::specta]
 async fn get_provider_games(handle: AppHandle, provider_id: ProviderId) -> Result {
-	let mut cache = ProviderCache::new(provider_id)?;
+	// let mut cache = ProviderCache::new(provider_id)?;
 
-	let mut installed_games = HashMap::<String, InstalledGame>::new();
-	let mut installed_games_without_cache = HashMap::<String, InstalledGame>::new();
-
-	let mut owned_games = HashMap::<String, OwnedGame>::new();
-	let mut owned_games_without_cache = HashMap::<String, OwnedGame>::new();
-
-	if let Err(err) = cache.load() {
-		log::warn!("Failed to load cache for provider {provider_id}: {err}");
-	} else {
-		installed_games = cache.data.installed_games.clone();
-		owned_games = cache.data.owned_games.clone();
-		update_installed_games_state(&handle, &provider_id, &installed_games);
-		update_owned_games_state(&handle, &provider_id, &owned_games);
-	}
+	// if let Err(err) = cache.load() {
+	// 	log::warn!("Failed to load cache for provider {provider_id}: {err}");
+	// } else {
+	// 	installed_games = cache.data.installed_games.clone();
+	// 	owned_games = cache.data.owned_games.clone();
+	// 	update_installed_games_state(&handle, &provider_id, &installed_games);
+	// 	update_owned_games_state(&handle, &provider_id, &owned_games);
+	// }
 
 	let provider = provider::get_provider(provider_id)?;
-	let mut owned_count = 0;
-	let mut installed_count = 0;
+	let mut game_count = 0;
 	// Sending to frontend too often makes things slow,
 	// especially for very large libraries where I'm cloning the entire game map every time I push it.
 	// So we send the game lists in batches!
 	const BATCH_SIZE: usize = 500;
 
-	provider.get_games(
-			|game: InstalledGame| {
-				installed_count += 1;
-				installed_games_without_cache.insert(game.id.clone(), game.clone());
-				installed_games.insert(game.id.clone(), game);
-				if (installed_count % BATCH_SIZE) == 0 {
-					update_installed_games_state(&handle, &provider_id, &installed_games);
-				}
-			},
-			|game: OwnedGame| {
-				owned_count += 1;
-				owned_games_without_cache.insert(game.global_id.clone(), game.clone());
-				owned_games.insert(game.global_id.clone(), game);
-				if (owned_count % BATCH_SIZE) == 0 {
-					update_owned_games_state(&handle, &provider_id, &owned_games);
-				}
-			},
-		)
-		.await
-		.unwrap_or_else(|err| {
-			// It's normal for a provider to fail here if that provider is just missing.
-			// So we log those errors here instead of throwing them up.
-			log::warn!("Failed to get games for provider {provider_id}. User might just not have it. Error: {err}");
-		});
+	let mut games = Vec::<Game>::new();
 
-	update_installed_games_state(&handle, &provider_id, &installed_games_without_cache);
-	update_owned_games_state(&handle, &provider_id, &owned_games_without_cache);
+	provider.get_games_new(|game: Game| {
+		game_count += 1;
+		games.push(game);
+		if (game_count % BATCH_SIZE) == 0 {
+			update_games_state(&handle, &provider_id, &games);
+		}
 
-	cache
-		.set_data(ProviderData {
-			installed_games: installed_games_without_cache.clone(),
-			owned_games: owned_games_without_cache.clone(),
-		})
-		.save()?;
+	}).await.unwrap_or_else(|err| {
+		// It's normal for a provider to fail here if that provider is just missing.
+		// So we log those errors here instead of throwing them up.
+		log::warn!("Failed to get games for provider {provider_id}. User might just not have it. Error: {err}");
+	});
+
+	update_games_state(&handle, &provider_id, &games);
+
+	// cache
+	// 	.set_data(ProviderData {
+	// 		installed_games: installed_games_without_cache.clone(),
+	// 		owned_games: owned_games_without_cache.clone(),
+	// 	})
+	// 	.save()?;
 
 	Ok(())
 }
@@ -569,52 +559,48 @@ async fn open_logs_folder() -> Result {
 
 #[tauri::command]
 #[specta::specta]
-async fn get_data(handle: AppHandle) -> Result<GameIds> {
+async fn get_data(handle: AppHandle) -> Result<Vec<GameId>> {
 	let state = handle.app_state();
 
 	let data_query = state.data_query.get_data()?;
 
 	let all_providers = provider::get_provider_ids();
 
-	let mut installed_games: Vec<InstalledGame> = Vec::new();
+	let mut games: Vec<Game> = Vec::new();
 
 	for provider_id in all_providers {
-		let mut oter_installed_games = state
-			.installed_games
+		let mut provider_games = state
+			.games
 			.try_get(&provider_id)?
 			.get_data()
-			.unwrap_or_default()
-			.into_values()
-			.filter(|game| data_query.matches(game))
-			.collect::<Vec<_>>();
+			.unwrap_or_default();
+		// .filter(|game| data_query.matches(game))
 
-		installed_games.append(&mut oter_installed_games);
+		games.append(&mut provider_games);
 	}
 
 	log::info!(
 		"Sorting installed games by {}",
 		data_query.sort_by.to_string()
 	);
-	installed_games.sort_by(|a, b| data_query.sort(a, b));
+	// games.sort_by(|a, b| data_query.sort(a, b));
 
-	Ok(GameIds {
-		installed_games: installed_games
-			.iter()
-			.map(|game| GameId {
-				game_id: game.id.clone(),
-				provider_id: game.provider,
+	// return a vec of all the indexes
+
+	Ok(games
+		.iter()
+		.enumerate()
+		.flat_map(|(index, game)| {
+			Some(GameId {
+				index,
+				provider_id: game
+					.installed_games
+					.first()
+					.map(|ig| ig.provider)
+					.or_else(|| game.owned_game.as_ref().map(|og| og.provider))?,
 			})
-			.collect(),
-		owned_games: Vec::new(),
-		// owned_games: state
-		// 	.owned_games
-		// 	.try_get(&provider_id)?
-		// 	.get_data()
-		// 	.unwrap_or_default()
-		// 	.into_values()
-		// 	.map(|game| game.global_id)
-		// 	.collect(),
-	})
+		})
+		.collect())
 }
 
 #[tauri::command]
@@ -661,6 +647,24 @@ async fn get_installed_game(
 	}
 
 	Ok(installed_game.clone())
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn get_game(
+	handle: AppHandle,
+	provider_id: ProviderId,
+	index: usize,
+) -> Result<Option<Game>> {
+	let state = handle.app_state();
+	let game = state
+		.games
+		.try_get(&provider_id)?
+		.get_data()?
+		.get(index)
+		.cloned();
+
+	Ok(game)
 }
 
 #[tauri::command]
@@ -757,6 +761,7 @@ fn main() {
 			get_installed_games_filter,
 			get_installed_game,
 			get_owned_game,
+			get_game,
 		])
 		.events(events::collect_events());
 
@@ -796,6 +801,10 @@ fn main() {
 				.map(|provider_id| (provider_id, Mutex::default()))
 				.collect(),
 			owned_games: provider::get_provider_ids()
+				.into_iter()
+				.map(|provider_id| (provider_id, Mutex::default()))
+				.collect(),
+			games: provider::get_provider_ids()
 				.into_iter()
 				.map(|provider_id| (provider_id, Mutex::default()))
 				.collect(),

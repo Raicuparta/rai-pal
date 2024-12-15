@@ -12,6 +12,9 @@ use rai_pal_core::{
 pub struct FoundInstalledGame();
 
 #[serializable_event]
+pub struct FoundGame();
+
+#[serializable_event]
 pub struct FoundOwnedGame();
 
 #[serializable_event]

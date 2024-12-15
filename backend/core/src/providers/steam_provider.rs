@@ -13,6 +13,7 @@ use super::{
 	provider_command::{ProviderCommand, ProviderCommandAction},
 };
 use crate::{
+	game::Game,
 	game_tag::GameTag,
 	installed_game::{self, InstalledGame},
 	owned_game::OwnedGame,
@@ -212,6 +213,50 @@ impl ProviderActions for Steam {
 						for installed_game in Self::get_installed_games(&app_info, app_path) {
 							installed_callback(installed_game);
 						}
+					}
+				}
+				Err(error) => {
+					log::error!("Failed to read Steam appinfo: {}", error);
+				}
+			}
+		}
+
+		Ok(())
+	}
+
+	async fn get_games_new<TCallback>(&self, mut callback: TCallback) -> Result
+	where
+		TCallback: FnMut(Game) + Send + Sync,
+	{
+		let steam_dir = SteamDir::locate()?;
+		let steam_path = steam_dir.path();
+		let app_info_reader = SteamAppInfoReader::new(&appinfo::get_path(steam_path))?;
+		let mut app_paths = HashMap::<u32, PathBuf>::new();
+		for library in (steam_dir.libraries()?).flatten() {
+			for app in library.apps().flatten() {
+				app_paths.insert(app.app_id, library.resolve_app_dir(&app));
+			}
+		}
+
+		let owned_ids_whitelist = Self::get_owned_ids_whitelist(steam_path).unwrap_or_else(|err| {
+			log::error!("Failed to read Steam assets.vdf: {}", err);
+			HashSet::new()
+		});
+
+		for app_info_result in app_info_reader {
+			match app_info_result {
+				Ok(app_info) => {
+					if let Some(owned_game) = Self::get_owned_game(&app_info, &owned_ids_whitelist)
+					{
+						callback(Game {
+							provider_id: *Self::ID,
+							id: owned_game.provider_game_id.clone(),
+							installed_games: app_paths
+								.get(&app_info.app_id)
+								.map(|app_path| Self::get_installed_games(&app_info, app_path))
+								.unwrap_or_default(),
+							owned_game: Some(owned_game),
+						});
 					}
 				}
 				Err(error) => {

@@ -9,6 +9,7 @@ use winreg::{
 };
 
 use crate::{
+	game::Game,
 	installed_game::InstalledGame,
 	owned_game::OwnedGame,
 	paths::file_name_without_extension,
@@ -63,6 +64,13 @@ impl ProviderActions for Xbox {
 			}
 		}
 
+		Ok(())
+	}
+
+	async fn get_games_new<TCallback>(&self, callback: TCallback) -> Result
+	where
+		TCallback: FnMut(Game) + Send + Sync,
+	{
 		Ok(())
 	}
 }

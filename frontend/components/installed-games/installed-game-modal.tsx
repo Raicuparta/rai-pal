@@ -160,7 +160,12 @@ export function InstalledGameModal({ game }: Props) {
 				<>
 					<TableItemDetails
 						columns={installedGamesColumns}
-						item={game}
+						item={{
+							id: game.id,
+							providerId: game.provider,
+							installedGames: [game],
+							ownedGame: null,
+						}}
 					/>
 					<Group>
 						<Button.Group>

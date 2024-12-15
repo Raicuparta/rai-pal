@@ -10,6 +10,7 @@ use rai_pal_proc_macros::serializable_enum;
 #[cfg(target_os = "windows")]
 use crate::providers::{epic_provider::Epic, gog_provider::Gog};
 use crate::{
+	game::Game,
 	installed_game::InstalledGame,
 	owned_game::OwnedGame,
 	paths,
@@ -64,6 +65,10 @@ pub trait ProviderActions {
 	where
 		TInstalledCallback: FnMut(InstalledGame) + Send + Sync,
 		TOwnedCallback: FnMut(OwnedGame) + Send + Sync;
+
+	async fn get_games_new<TCallback>(&self, callback: TCallback) -> Result
+	where
+		TCallback: FnMut(Game) + Send + Sync;
 }
 
 const fn create_map_entry<TProvider: ProviderActions + ProviderStatic>(

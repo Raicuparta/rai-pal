@@ -16,6 +16,7 @@ use super::{
 	provider_command::{ProviderCommand, ProviderCommandAction},
 };
 use crate::{
+	game::Game,
 	installed_game::InstalledGame,
 	owned_game::OwnedGame,
 	paths::glob_path,
@@ -222,6 +223,13 @@ impl ProviderActions for Epic {
 			log::info!("Epic Games Launcher catalog cache file not found. Probably means user hasn't installed Epic Games Launcher, or the cache file hasn't been created yet.");
 		}
 
+		Ok(())
+	}
+
+	async fn get_games_new<TCallback>(&self, callback: TCallback) -> Result
+	where
+		TCallback: FnMut(Game) + Send + Sync,
+	{
 		Ok(())
 	}
 }

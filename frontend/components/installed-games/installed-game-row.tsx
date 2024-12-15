@@ -5,32 +5,36 @@ import {
 	selectedInstalledGameAtom,
 	useVisibleInstalledGameColumns,
 } from "./installed-games-state";
-import { InstalledGameId } from "./installed-games-page";
-import { useInstalledGame } from "@hooks/use-installed-game";
+import { useGame } from "@hooks/use-game";
 import { InstalledGameModal } from "./installed-game-modal";
 import { ItemProps } from "react-virtuoso";
+import { GameId } from "@api/bindings";
 
 export const InstalledGameRow = React.forwardRef(function InstalledGameRow(
-	props: ItemProps<InstalledGameId>,
+	props: ItemProps<GameId>,
 	ref: React.ForwardedRef<HTMLTableRowElement>,
 ) {
-	const game = useInstalledGame(props.item.provider, props.item.id);
+	const game = useGame(props.item.providerId, props.item.index);
 	const [selectedGame, setSelectedGame] = useAtom(selectedInstalledGameAtom);
 
 	const columns = useVisibleInstalledGameColumns();
 
 	return (
 		<>
-			{game && selectedGame && selectedGame.id === game.id && (
-				<InstalledGameModal game={game} />
-			)}
+			{game &&
+				selectedGame &&
+				selectedGame.gameId === game.id &&
+				selectedGame.providerId == game.providerId &&
+				game.installedGames[0] && (
+					<InstalledGameModal game={game.installedGames[0]} />
+				)}
 			<Table.Tr
 				ref={ref}
 				onClick={() =>
 					game &&
 					setSelectedGame({
-						id: game.id,
-						provider: game.provider,
+						gameId: game.id,
+						providerId: game.providerId,
 					})
 				}
 			>

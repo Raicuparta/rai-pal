@@ -10,6 +10,7 @@ use winreg::{enums::HKEY_LOCAL_MACHINE, RegKey};
 
 use super::provider_command::{ProviderCommand, ProviderCommandAction};
 use crate::{
+	game::Game,
 	installed_game::InstalledGame,
 	owned_game::OwnedGame,
 	paths,
@@ -117,6 +118,13 @@ impl ProviderActions for Gog {
 			);
 		}
 
+		Ok(())
+	}
+
+	async fn get_games_new<TCallback>(&self, callback: TCallback) -> Result
+	where
+		TCallback: FnMut(Game) + Send + Sync,
+	{
 		Ok(())
 	}
 }

@@ -8,6 +8,7 @@ use rai_pal_proc_macros::serializable_struct;
 
 use super::provider::{ProviderActions, ProviderId, ProviderStatic};
 use crate::{
+	game::Game,
 	installed_game::InstalledGame,
 	owned_game::OwnedGame,
 	paths::{app_data_path, file_name_without_extension},
@@ -49,6 +50,13 @@ impl ProviderActions for Manual {
 			}
 		}
 
+		Ok(())
+	}
+
+	async fn get_games_new<TCallback>(&self, callback: TCallback) -> Result
+	where
+		TCallback: FnMut(Game) + Send + Sync,
+	{
 		Ok(())
 	}
 }

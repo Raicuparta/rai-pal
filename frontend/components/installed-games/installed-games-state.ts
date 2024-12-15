@@ -1,11 +1,14 @@
 import { atom, useAtomValue } from "jotai";
-import { InstalledGameId } from "./installed-games-page";
 import {
 	InstalledGameColumnsId,
 	installedGamesColumns,
 } from "./installed-games-columns";
+import { ProviderId } from "@api/bindings";
 
-export const selectedInstalledGameAtom = atom<InstalledGameId | null>(null);
+export const selectedInstalledGameAtom = atom<{
+	gameId: string;
+	providerId: ProviderId;
+} | null>(null);
 
 export const visibleInstalledGameColumnsAtom = atom<InstalledGameColumnsId[]>([
 	"thumbnail",
