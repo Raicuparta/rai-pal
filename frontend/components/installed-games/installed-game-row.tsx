@@ -20,7 +20,6 @@ export const InstalledGameRow = React.forwardRef(function InstalledGameRow(
 	const [selectedGame, setSelectedGame] = useAtom(selectedInstalledGameAtom);
 
 	const columns = useVisibleInstalledGameColumns();
-	const isInstalled = (game?.installedGames.length ?? 0) > 0;
 
 	const isSelected =
 		!!game &&
@@ -31,14 +30,14 @@ export const InstalledGameRow = React.forwardRef(function InstalledGameRow(
 	return (
 		<>
 			{isSelected &&
-				(game.installedGames[0] ? (
-					<InstalledGameModal game={game.installedGames[0]} />
+				(game.installedGame ? (
+					<InstalledGameModal game={game.installedGame} />
 				) : (
 					game.ownedGame && <OwnedGameModal game={game.ownedGame} />
 				))}
 			<Table.Tr
 				ref={ref}
-				className={isInstalled ? styles.installed : styles.owned}
+				className={game?.installedGame ? styles.installed : styles.owned}
 				onClick={() =>
 					game &&
 					setSelectedGame({

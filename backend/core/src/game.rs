@@ -8,6 +8,6 @@ use crate::{
 pub struct Game {
 	pub id: String,
 	pub provider_id: ProviderId,
-	pub installed_games: Vec<InstalledGame>,
+	pub installed_game: Option<InstalledGame>,
 	pub owned_game: Option<OwnedGame>,
 }

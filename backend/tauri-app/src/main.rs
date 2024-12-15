@@ -598,11 +598,7 @@ async fn get_data(handle: AppHandle) -> Result<Vec<GameId>> {
 		.flat_map(|(index, game)| {
 			Some(GameId {
 				index,
-				provider_id: game
-					.installed_games
-					.first()
-					.map(|ig| ig.provider)
-					.or_else(|| game.owned_game.as_ref().map(|og| og.provider))?,
+				provider_id: game.provider_id,
 			})
 		})
 		.collect())

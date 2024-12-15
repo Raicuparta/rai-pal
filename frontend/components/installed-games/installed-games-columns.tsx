@@ -25,7 +25,7 @@ const thumbnail: InstalledGameColumn = {
 	renderCell: (game) => (
 		<ThumbnailCell
 			src={getThumbnailWithFallback(
-				game.installedGames[0]?.thumbnailUrl || game.ownedGame?.thumbnailUrl,
+				game.installedGame?.thumbnailUrl || game.ownedGame?.thumbnailUrl,
 				game.providerId,
 			)}
 		/>
@@ -39,13 +39,13 @@ const name: InstalledGameColumn = {
 	renderCell: (game) => (
 		<Table.Td className={styles.nameCell}>
 			<Tooltip
-				disabled={!game.installedGames[0]?.hasOutdatedMod}
+				disabled={!game.installedGame?.hasOutdatedMod}
 				label="One of the mods installed in this game is outdated."
 				position="bottom"
 			>
 				<span>
-					<ItemName label={game.installedGames[0]?.discriminator}>
-						{game.installedGames[0]?.hasOutdatedMod && <OutdatedMarker />}
+					<ItemName label={game.installedGame?.discriminator}>
+						{game.installedGame?.hasOutdatedMod && <OutdatedMarker />}
 						{game.ownedGame?.title.display}
 					</ItemName>
 				</span>
@@ -74,9 +74,7 @@ const architecture: InstalledGameColumn = {
 	hidable: true,
 	renderCell: (game) => (
 		<Table.Td>
-			<ArchitectureBadge
-				value={game.installedGames[0]?.executable.architecture}
-			/>
+			<ArchitectureBadge value={game.installedGame?.executable.architecture} />
 		</Table.Td>
 	),
 };
@@ -89,7 +87,7 @@ const scriptingBackend: InstalledGameColumn = {
 	renderCell: (game) => (
 		<Table.Td>
 			<UnityBackendBadge
-				value={game.installedGames[0]?.executable.scriptingBackend}
+				value={game.installedGame?.executable.scriptingBackend}
 			/>
 		</Table.Td>
 	),
@@ -110,7 +108,7 @@ const engine: InstalledGameColumn = {
 	center: true,
 	hidable: true,
 	renderCell: (game) => {
-		const engine = game.installedGames[0]?.executable?.engine;
+		const engine = game.installedGame?.executable?.engine;
 		return (
 			<Table.Td
 			// A bit annoying that I'm defining the column width in two places (see engineColumn.width),

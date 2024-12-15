@@ -247,15 +247,28 @@ impl ProviderActions for Steam {
 				Ok(app_info) => {
 					if let Some(owned_game) = Self::get_owned_game(&app_info, &owned_ids_whitelist)
 					{
-						callback(Game {
-							provider_id: *Self::ID,
-							id: owned_game.provider_game_id.clone(),
-							installed_games: app_paths
-								.get(&app_info.app_id)
-								.map(|app_path| Self::get_installed_games(&app_info, app_path))
-								.unwrap_or_default(),
-							owned_game: Some(owned_game),
-						});
+						let installed_games = app_paths
+							.get(&app_info.app_id)
+							.map(|app_path| Self::get_installed_games(&app_info, app_path))
+							.unwrap_or_default();
+
+						if installed_games.is_empty() {
+							callback(Game {
+								provider_id: *Self::ID,
+								id: owned_game.provider_game_id.clone(),
+								installed_game: None,
+								owned_game: Some(owned_game),
+							});
+						} else {
+							for installed_game in installed_games {
+								callback(Game {
+									provider_id: *Self::ID,
+									id: installed_game.id.clone(),
+									installed_game: Some(installed_game),
+									owned_game: Some(owned_game.clone()),
+								});
+							}
+						}
 					}
 				}
 				Err(error) => {
