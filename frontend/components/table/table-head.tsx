@@ -5,7 +5,7 @@ import { InstalledGameSortBy } from "@api/bindings";
 
 export type TableColumnBase<TItem, TSort> = {
 	label: string;
-	renderCell: (item: TItem) => JSX.Element;
+	component: React.ComponentType<{ item: TItem }>;
 	width?: number;
 	center?: boolean;
 	hideLabel?: boolean;

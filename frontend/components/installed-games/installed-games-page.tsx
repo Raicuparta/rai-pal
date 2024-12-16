@@ -75,6 +75,7 @@ export function InstalledGamesPage() {
 					totalCount={gameIds.length}
 					data={gameIds}
 					defaultItemHeight={33}
+					overscan={10}
 				/>
 			</TableContainer>
 		</Stack>

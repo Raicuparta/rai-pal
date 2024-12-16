@@ -26,7 +26,7 @@ export function TableItemDetails<TKey extends string, TData, TSort>(
 								!column.hideInDetails &&
 								props.item && (
 									<React.Fragment key={column.id}>
-										{column.renderCell(props.item)}
+										<column.component item={props.item} />
 									</React.Fragment>
 								),
 						)}

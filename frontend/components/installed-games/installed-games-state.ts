@@ -15,13 +15,15 @@ export const visibleInstalledGameColumnsAtom = atom<InstalledGameColumnsId[]>([
 	"name",
 	"engine",
 	"provider",
+	"architecture",
+	"gameTags",
 ]);
 
 export const useVisibleInstalledGameColumns = () => {
 	const visibleColumnIds = useAtomValue(visibleInstalledGameColumnsAtom);
 	// TODO filter columns.
-	return installedGamesColumns;
-	// return installedGamesColumns.filter((column) =>
-	// 	visibleColumnIds.includes(column.id),
-	// );
+	// return installedGamesColumns;
+	return installedGamesColumns.filter((column) =>
+		visibleColumnIds.includes(column.id),
+	);
 };

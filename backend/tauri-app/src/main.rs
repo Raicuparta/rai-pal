@@ -3,12 +3,13 @@
 // Command stuff needs to be async so I can spawn tasks.
 #![allow(clippy::unused_async)]
 
-use std::sync::RwLock;
+use std::sync::{Arc, RwLock};
 use std::{collections::HashMap, path::PathBuf, sync::Mutex};
 
 use crate::result::{Error, Result};
 use app_state::{AppState, DataValue, GameId, StateData, StatefulHandle};
 use events::EventEmitter;
+use rai_pal_core::debug::LoggableInstant;
 use rai_pal_core::game::Game;
 use rai_pal_core::installed_game::{DataQuery, InstalledGame};
 use rai_pal_core::local_mod::{self, LocalMod};
@@ -396,11 +397,9 @@ async fn fetch_remote_games() -> Result<Vec<RemoteGame>> {
 }
 
 fn update_games_state(handle: &AppHandle, provider_id: &ProviderId, games: &Vec<Game>) {
-	if let Some(rw_lock) = handle.app_state().games.get(provider_id) {
-		if let Ok(mut write_guard) = rw_lock.write() {
-			*write_guard = Some(games.clone());
-		}
-	}
+	let state = handle.app_state();
+	let mut write_guard = state.games.write().unwrap();
+	write_guard.insert(*provider_id, games.clone());
 	handle.emit_safe(events::FoundGame());
 }
 
@@ -458,48 +457,48 @@ async fn get_provider_ids() -> Result<Vec<ProviderId>> {
 	Ok(provider::get_provider_ids())
 }
 
-// #[tauri::command]
-// #[specta::specta]
-// async fn add_game(path: PathBuf, handle: AppHandle) -> Result {
-// 	let normalized_path = normalize_path(&path);
+#[tauri::command]
+#[specta::specta]
+async fn add_game(path: PathBuf, handle: AppHandle) -> Result {
+	// let normalized_path = normalize_path(&path);
 
-// 	let installed_game = manual_provider::add_game(&normalized_path)?;
-// 	let game_name = installed_game.title.display.clone();
+	// let installed_game = manual_provider::add_game(&normalized_path)?;
+	// let game_name = installed_game.title.display.clone();
 
-// 	if let Some(installed_games_state) = handle.app_state().installed_games.get(&ProviderId::Manual)
-// 	{
-// 		let mut installed_games = installed_games_state.get_data()?;
-// 		installed_games.insert(installed_game.id.clone(), installed_game.clone());
-// 		update_installed_games_state(&handle, &installed_game.provider, &installed_games);
-// 	}
+	// if let Some(installed_games_state) = handle.app_state().installed_games.get(&ProviderId::Manual)
+	// {
+	// 	let mut installed_games = installed_games_state.get_data()?;
+	// 	installed_games.insert(installed_game.id.clone(), installed_game.clone());
+	// 	update_installed_games_state(&handle, &installed_game.provider, &installed_games);
+	// }
 
-// 	handle.emit_safe(events::SelectInstalledGame(
-// 		installed_game.provider,
-// 		installed_game.id.clone(),
-// 	));
+	// handle.emit_safe(events::SelectInstalledGame(
+	// 	installed_game.provider,
+	// 	installed_game.id.clone(),
+	// ));
 
-// 	analytics::send_event(analytics::Event::ManuallyAddGame, &game_name).await;
+	// analytics::send_event(analytics::Event::ManuallyAddGame, &game_name).await;
 
-// 	Ok(())
-// }
+	Ok(())
+}
 
-// #[tauri::command]
-// #[specta::specta]
-// async fn remove_game(installed_game: InstalledGame, handle: AppHandle) -> Result {
-// 	manual_provider::remove_game(&installed_game.executable.path)?;
+#[tauri::command]
+#[specta::specta]
+async fn remove_game(installed_game: InstalledGame, handle: AppHandle) -> Result {
+	// manual_provider::remove_game(&installed_game.executable.path)?;
 
-// 	if let Some(installed_games_state) = handle
-// 		.app_state()
-// 		.installed_games
-// 		.get(&installed_game.provider)
-// 	{
-// 		let mut installed_games = installed_games_state.get_data()?;
-// 		installed_games.remove(&installed_game.id);
-// 		update_installed_games_state(&handle, &installed_game.provider, &installed_games);
-// 	}
+	// if let Some(installed_games_state) = handle
+	// 	.app_state()
+	// 	.installed_games
+	// 	.get(&installed_game.provider)
+	// {
+	// 	let mut installed_games = installed_games_state.get_data()?;
+	// 	installed_games.remove(&installed_game.id);
+	// 	update_installed_games_state(&handle, &installed_game.provider, &installed_games);
+	// }
 
-// 	Ok(())
-// }
+	Ok(())
+}
 
 #[tauri::command]
 #[specta::specta]
@@ -547,41 +546,25 @@ async fn get_data(handle: AppHandle) -> Result<Vec<GameId>> {
 
 	let data_query = state.data_query.get_data()?;
 
-	let all_providers = provider::get_provider_ids();
-
-	let mut games: Vec<(usize, Game)> = Vec::new();
-
-	for provider_id in all_providers {
-		let mut provider_games = state
-			.games
-			.try_get(&provider_id)?
-			.get_data()
-			.unwrap_or_default()
-			.into_iter()
-			// Add the indexes to the list *before* filtering and sorting,
-			// so we can use those indexes later as IDs to request the same data.
-			.enumerate()
-			.filter(|(_index, game)| data_query.matches(game))
-			.collect();
-
-		games.append(&mut provider_games);
-	}
-
-	log::info!(
-		"Sorting installed games by {}",
-		data_query.sort_by.to_string()
-	);
-	// games.sort_by(|a, b| data_query.sort(a, b));
-
-	// return a vec of all the indexes
-
-	Ok(games
-		.into_iter()
+	let games: Vec<_> = state
+		.games
+		.read()
+		.unwrap()
+		.values()
+		.flat_map(|games| games.iter())
+		.enumerate()
+		.filter(|(_index, game)| data_query.matches(game))
 		.map(|(index, game)| GameId {
 			index,
 			provider_id: game.provider_id,
 		})
-		.collect())
+		.collect();
+
+	// games.sort_by(|a, b| data_query.sort(a, b));
+
+	// return a vec of all the indexes
+
+	Ok(games)
 }
 
 #[tauri::command]
@@ -594,11 +577,13 @@ async fn get_game(
 	Ok(handle
 		.app_state()
 		.games
+		.try_read()
+		.unwrap()
+		.clone()
 		.try_get(&provider_id)?
-		.read()
-		.map_err(|err| Error::FailedToAccessStateData(err.to_string()))?
-		.as_ref()
-		.ok_or(Error::EmptyStateData())?
+		// .map_err(|err| Error::FailedToAccessStateData(err.to_string()))?
+		// .as_ref()
+		// .ok_or(Error::EmptyStateData())?
 		.get(index)
 		.cloned())
 }
@@ -645,7 +630,7 @@ fn main() {
 
 	let builder = Builder::<tauri::Wry>::new()
 		.commands(tauri_specta::collect_commands![
-			// add_game,
+			add_game,
 			clear_cache,
 			configure_mod,
 			delete_mod,
@@ -668,7 +653,7 @@ fn main() {
 			open_mod_loader_folder,
 			open_mods_folder,
 			refresh_game,
-			// remove_game,
+			remove_game,
 			run_provider_command,
 			run_runnable_without_game,
 			start_game_exe,
@@ -713,10 +698,7 @@ fn main() {
 			mod_loaders: Mutex::default(),
 			local_mods: Mutex::default(),
 			remote_mods: Mutex::default(),
-			games: provider::get_provider_ids()
-				.into_iter()
-				.map(|provider_id| (provider_id, RwLock::default()))
-				.collect(),
+			games: Arc::new(RwLock::default()),
 			data_query: Mutex::new(Some(DataQuery::default())),
 		})
 		.invoke_handler(builder.invoke_handler())

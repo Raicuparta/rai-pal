@@ -5,6 +5,14 @@
 
 
 export const commands = {
+async addGame(path: string) : Promise<Result<null, Error>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("add_game", { path }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
 async clearCache() : Promise<Result<null, Error>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("clear_cache") };
@@ -176,6 +184,14 @@ async openModsFolder() : Promise<Result<null, Error>> {
 async refreshGame(installedGame: InstalledGame) : Promise<Result<null, Error>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("refresh_game", { installedGame }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async removeGame(installedGame: InstalledGame) : Promise<Result<null, Error>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("remove_game", { installedGame }) };
 } catch (e) {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };

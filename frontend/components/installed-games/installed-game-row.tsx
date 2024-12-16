@@ -48,7 +48,7 @@ export const InstalledGameRow = React.forwardRef(function InstalledGameRow(
 			>
 				{columns.map((column) => (
 					<React.Fragment key={column.id}>
-						{game ? column.renderCell(game) : <Table.Td>...</Table.Td>}
+						<column.component item={game} />
 					</React.Fragment>
 				))}
 			</Table.Tr>

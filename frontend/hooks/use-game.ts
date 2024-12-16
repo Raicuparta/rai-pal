@@ -1,22 +1,23 @@
-import { commands, events, Game, ProviderId } from "@api/bindings";
-import { useCallback, useEffect, useState } from "react";
-import { useAppEvent } from "./use-app-event";
+import { commands, Game, ProviderId } from "@api/bindings";
+import { useEffect, useMemo, useState } from "react";
 
-export function useGame(provider: ProviderId, index: bigint) {
-	const [game, setGame] = useState<Game>();
+export function useGame(providerId: ProviderId, index: bigint) {
+	const defaultGame: Game = useMemo(
+		() => ({ id: "", providerId, installedGame: null, ownedGame: null }),
+		[providerId],
+	);
 
-	const updateData = useCallback(() => {
-		commands.getGame(provider, index).then((result) => {
+	const [game, setGame] = useState<Game>(defaultGame);
+
+	useEffect(() => {
+		commands.getGame(providerId, index).then((result) => {
 			if (result.status === "ok" && result.data) {
-				console.log("got game", result.data.ownedGame?.title.display);
 				setGame(result.data);
 			}
 		});
-	}, [index, provider]);
+	}, [index, providerId]);
 
-	useEffect(updateData, [updateData]);
-
-	useAppEvent(events.foundGame, updateData);
+	// useAppEvent(events.foundGame, updateData); // TODO
 
 	return game;
 }
