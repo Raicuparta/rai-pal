@@ -9,7 +9,6 @@ use std::{collections::HashMap, path::PathBuf, sync::Mutex};
 use crate::result::{Error, Result};
 use app_state::{AppState, DataValue, GameId, StateData, StatefulHandle};
 use events::EventEmitter;
-use rai_pal_core::debug::LoggableInstant;
 use rai_pal_core::game::Game;
 use rai_pal_core::installed_game::{DataQuery, InstalledGame};
 use rai_pal_core::local_mod::{self, LocalMod};
@@ -396,13 +395,6 @@ async fn fetch_remote_games() -> Result<Vec<RemoteGame>> {
 	Ok(remote_games::get().await?)
 }
 
-fn update_games_state(handle: &AppHandle, provider_id: &ProviderId, games: &Vec<Game>) {
-	let state = handle.app_state();
-	let mut write_guard = state.games.write().unwrap();
-	write_guard.insert(*provider_id, games.clone());
-	handle.emit_safe(events::FoundGame());
-}
-
 #[tauri::command]
 #[specta::specta]
 async fn get_provider_games(handle: AppHandle, provider_id: ProviderId) -> Result {
@@ -418,28 +410,24 @@ async fn get_provider_games(handle: AppHandle, provider_id: ProviderId) -> Resul
 	// }
 
 	let provider = provider::get_provider(provider_id)?;
-	let mut game_count = 0;
-	// Sending to frontend too often makes things slow,
-	// especially for very large libraries where I'm cloning the entire game map every time I push it.
-	// So we send the game lists in batches!
-	const BATCH_SIZE: usize = 500;
-
-	let mut games = Vec::<Game>::new();
 
 	provider.get_games_new(|game: Game| {
-		game_count += 1;
-		games.push(game);
-		if (game_count % BATCH_SIZE) == 0 {
-			update_games_state(&handle, &provider_id, &games);
-		}
-
+		handle
+			.app_state()
+			.games
+			.write()
+			.unwrap()
+			.entry(provider_id)
+			.or_default()
+			.push(game);
+		handle.emit_safe(events::FoundGame());
 	}).await.unwrap_or_else(|err| {
 		// It's normal for a provider to fail here if that provider is just missing.
 		// So we log those errors here instead of throwing them up.
 		log::warn!("Failed to get games for provider {provider_id}. User might just not have it. Error: {err}");
 	});
 
-	update_games_state(&handle, &provider_id, &games);
+	// update_games_state(&handle, &provider_id, &games);
 
 	// cache
 	// 	.set_data(ProviderData {
@@ -577,7 +565,7 @@ async fn get_game(
 	Ok(handle
 		.app_state()
 		.games
-		.try_read()
+		.read()
 		.unwrap()
 		.clone()
 		.try_get(&provider_id)?
