@@ -14,7 +14,6 @@ use rai_pal_core::installed_game::{DataQuery, InstalledGame};
 use rai_pal_core::local_mod::{self, LocalMod};
 use rai_pal_core::maps::TryGettable;
 use rai_pal_core::mod_loaders::mod_loader::{self, ModLoaderActions};
-use rai_pal_core::owned_game::{self, OwnedGame};
 use rai_pal_core::paths::{self, normalize_path};
 use rai_pal_core::providers::provider::ProviderId;
 use rai_pal_core::providers::provider_cache::ProviderCache;
@@ -491,14 +490,11 @@ async fn remove_game(installed_game: InstalledGame, handle: AppHandle) -> Result
 #[tauri::command]
 #[specta::specta]
 async fn run_provider_command(
-	owned_game: OwnedGame,
+	game: Game,
 	command_action: ProviderCommandAction,
 	handle: AppHandle,
 ) -> Result {
-	owned_game
-		.provider_commands
-		.try_get(&command_action)?
-		.run()?;
+	game.provider_commands.try_get(&command_action)?.run()?;
 
 	handle.emit_safe(events::ExecutedProviderCommand);
 

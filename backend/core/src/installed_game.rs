@@ -15,18 +15,14 @@ use crate::{
 	game_tag::GameTag,
 	game_title::GameTitle,
 	mod_manifest,
-	owned_game::{self, OwnedGame},
 	paths::{self, glob_path, hash_path},
 	providers::{provider::ProviderId, provider_command::ProviderCommand},
 	result::{Error, Result},
-	string_includes::any_contains,
 };
 
 #[serializable_struct]
 pub struct InstalledGame {
 	pub id: String,
-	pub title: GameTitle,
-	pub provider: ProviderId,
 	pub executable: GameExecutable,
 	pub installed_mod_versions: InstalledModVersions,
 	pub discriminator: Option<String>,
@@ -136,50 +132,50 @@ impl DataQuery {
 		true
 	}
 
-	pub fn sort(&self, a: &InstalledGame, b: &InstalledGame) -> std::cmp::Ordering {
-		let ordering = match self.sort_by {
-			InstalledGameSortBy::Title => a.title.display.cmp(&b.title.display),
-			InstalledGameSortBy::Tags => Ordering::Equal,
-			InstalledGameSortBy::Provider => a.provider.to_string().cmp(&b.provider.to_string()),
-			InstalledGameSortBy::Architecture => a
-				.executable
-				.architecture
-				.and_then(|architecture_a| {
-					b.executable.architecture.map(|architecture_b| {
-						architecture_a.to_string().cmp(&architecture_b.to_string())
-					})
-				})
-				.unwrap_or(Ordering::Equal),
-			InstalledGameSortBy::ScriptingBackend => a
-				.executable
-				.scripting_backend
-				.and_then(|scripting_backend_a| {
-					b.executable.scripting_backend.map(|scripting_backend_b| {
-						scripting_backend_a
-							.to_string()
-							.cmp(&scripting_backend_b.to_string())
-					})
-				})
-				.unwrap_or(Ordering::Equal),
-			InstalledGameSortBy::Engine => {
-				a.executable
-					.engine
-					.as_ref()
-					.and_then(|engine_a| {
-						b.executable.engine.as_ref().map(|engine_b| {
-							engine_a.brand.to_string().cmp(&engine_b.brand.to_string())
-						})
-					})
-					.unwrap_or(Ordering::Equal)
-			}
-		};
+	// pub fn sort(&self, a: &InstalledGame, b: &InstalledGame) -> std::cmp::Ordering {
+	// 	let ordering = match self.sort_by {
+	// 		InstalledGameSortBy::Title => a.title.display.cmp(&b.title.display),
+	// 		InstalledGameSortBy::Tags => Ordering::Equal,
+	// 		InstalledGameSortBy::Provider => a.provider.to_string().cmp(&b.provider.to_string()),
+	// 		InstalledGameSortBy::Architecture => a
+	// 			.executable
+	// 			.architecture
+	// 			.and_then(|architecture_a| {
+	// 				b.executable.architecture.map(|architecture_b| {
+	// 					architecture_a.to_string().cmp(&architecture_b.to_string())
+	// 				})
+	// 			})
+	// 			.unwrap_or(Ordering::Equal),
+	// 		InstalledGameSortBy::ScriptingBackend => a
+	// 			.executable
+	// 			.scripting_backend
+	// 			.and_then(|scripting_backend_a| {
+	// 				b.executable.scripting_backend.map(|scripting_backend_b| {
+	// 					scripting_backend_a
+	// 						.to_string()
+	// 						.cmp(&scripting_backend_b.to_string())
+	// 				})
+	// 			})
+	// 			.unwrap_or(Ordering::Equal),
+	// 		InstalledGameSortBy::Engine => {
+	// 			a.executable
+	// 				.engine
+	// 				.as_ref()
+	// 				.and_then(|engine_a| {
+	// 					b.executable.engine.as_ref().map(|engine_b| {
+	// 						engine_a.brand.to_string().cmp(&engine_b.brand.to_string())
+	// 					})
+	// 				})
+	// 				.unwrap_or(Ordering::Equal)
+	// 		}
+	// 	};
 
-		if self.sort_descending {
-			ordering.reverse()
-		} else {
-			ordering
-		}
-	}
+	// 	if self.sort_descending {
+	// 		ordering.reverse()
+	// 	} else {
+	// 		ordering
+	// 	}
+	// }
 }
 
 impl Default for InstalledGamesFilterToggles {
@@ -240,8 +236,6 @@ impl InstalledGame {
 
 		let mut installed_game = Self {
 			id: game_id,
-			title: GameTitle::new(name),
-			provider: provider_id,
 			installed_mod_versions: HashMap::default(),
 			executable: GameExecutable::new(path)?,
 			discriminator: None,

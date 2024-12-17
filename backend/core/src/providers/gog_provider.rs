@@ -12,7 +12,6 @@ use super::provider_command::{ProviderCommand, ProviderCommandAction};
 use crate::{
 	game::Game,
 	installed_game::InstalledGame,
-	owned_game::OwnedGame,
 	paths,
 	providers::provider::{ProviderActions, ProviderId, ProviderStatic},
 	result::Result,
@@ -54,31 +53,31 @@ impl Gog {
 		Some(game)
 	}
 
-	fn get_owned_game(db_entry: &GogDbEntry, launcher_path: &Path) -> OwnedGame {
-		let mut game = OwnedGame::new(&db_entry.id, *Self::ID, &db_entry.title);
+	// fn get_owned_game(db_entry: &GogDbEntry, launcher_path: &Path) -> OwnedGame {
+	// 	let mut game = OwnedGame::new(&db_entry.id, *Self::ID, &db_entry.title);
 
-		game.add_provider_command(
-			ProviderCommandAction::ShowInLibrary,
-			ProviderCommand::Path(
-				launcher_path.to_owned(),
-				[
-					"/command=launch".to_string(),
-					format!("/gameId={}", db_entry.id),
-				]
-				.to_vec(),
-			),
-		);
+	// 	game.add_provider_command(
+	// 		ProviderCommandAction::ShowInLibrary,
+	// 		ProviderCommand::Path(
+	// 			launcher_path.to_owned(),
+	// 			[
+	// 				"/command=launch".to_string(),
+	// 				format!("/gameId={}", db_entry.id),
+	// 			]
+	// 			.to_vec(),
+	// 		),
+	// 	);
 
-		if let Some(thumbnail_url) = db_entry.image_url.clone() {
-			game.set_thumbnail_url(&thumbnail_url);
-		}
+	// 	if let Some(thumbnail_url) = db_entry.image_url.clone() {
+	// 		game.set_thumbnail_url(&thumbnail_url);
+	// 	}
 
-		if let Some(release_date) = db_entry.release_date {
-			game.set_release_date(release_date.into());
-		}
+	// 	if let Some(release_date) = db_entry.release_date {
+	// 		game.set_release_date(release_date.into());
+	// 	}
 
-		game
-	}
+	// 	game
+	// }
 }
 
 impl ProviderStatic for Gog {
@@ -93,32 +92,32 @@ impl ProviderStatic for Gog {
 }
 
 impl ProviderActions for Gog {
-	async fn get_games<TInstalledCallback, TOwnedCallback>(
-		&self,
-		mut installed_callback: TInstalledCallback,
-		mut owned_callback: TOwnedCallback,
-	) -> Result
-	where
-		TInstalledCallback: FnMut(InstalledGame) + Send + Sync,
-		TOwnedCallback: FnMut(OwnedGame) + Send + Sync,
-	{
-		if let Some(database) = get_database()? {
-			let launcher_path = get_launcher_path()?;
+	// async fn get_games<TInstalledCallback, TOwnedCallback>(
+	// 	&self,
+	// 	mut installed_callback: TInstalledCallback,
+	// 	mut owned_callback: TOwnedCallback,
+	// ) -> Result
+	// where
+	// 	TInstalledCallback: FnMut(InstalledGame) + Send + Sync,
+	// 	TOwnedCallback: FnMut(OwnedGame) + Send + Sync,
+	// {
+	// 	if let Some(database) = get_database()? {
+	// 		let launcher_path = get_launcher_path()?;
 
-			for db_entry in database {
-				owned_callback(Self::get_owned_game(&db_entry, &launcher_path));
-				if let Some(installed_game) = Self::get_installed_game(&db_entry, &launcher_path) {
-					installed_callback(installed_game);
-				}
-			}
-		} else {
-			log::info!(
-				"GOG database file not found. Probably means user hasn't installed GOG Galaxy."
-			);
-		}
+	// 		for db_entry in database {
+	// 			owned_callback(Self::get_owned_game(&db_entry, &launcher_path));
+	// 			if let Some(installed_game) = Self::get_installed_game(&db_entry, &launcher_path) {
+	// 				installed_callback(installed_game);
+	// 			}
+	// 		}
+	// 	} else {
+	// 		log::info!(
+	// 			"GOG database file not found. Probably means user hasn't installed GOG Galaxy."
+	// 		);
+	// 	}
 
-		Ok(())
-	}
+	// 	Ok(())
+	// }
 
 	async fn get_games_new<TCallback>(&self, callback: TCallback) -> Result
 	where

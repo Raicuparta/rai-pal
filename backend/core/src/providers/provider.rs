@@ -11,8 +11,6 @@ use rai_pal_proc_macros::serializable_enum;
 use crate::providers::{epic_provider::Epic, gog_provider::Gog};
 use crate::{
 	game::Game,
-	installed_game::InstalledGame,
-	owned_game::OwnedGame,
 	paths,
 	providers::{
 		itch_provider::Itch, manual_provider::Manual, steam_provider::Steam, xbox_provider::Xbox,
@@ -57,15 +55,6 @@ const PROVIDERS: &Map = &[
 
 #[enum_dispatch(Provider)]
 pub trait ProviderActions {
-	async fn get_games<TInstalledCallback, TOwnedCallback>(
-		&self,
-		installed_callback: TInstalledCallback,
-		owned_callback: TOwnedCallback,
-	) -> Result
-	where
-		TInstalledCallback: FnMut(InstalledGame) + Send + Sync,
-		TOwnedCallback: FnMut(OwnedGame) + Send + Sync;
-
 	async fn get_games_new<TCallback>(&self, callback: TCallback) -> Result
 	where
 		TCallback: FnMut(Game) + Send + Sync;

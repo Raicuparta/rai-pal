@@ -3,7 +3,21 @@ import { useEffect, useMemo, useState } from "react";
 
 export function useGame(providerId: ProviderId, index: bigint) {
 	const defaultGame: Game = useMemo(
-		() => ({ id: "", providerId, installedGame: null, ownedGame: null }),
+		() => ({
+			id: "",
+			providerId,
+			installedGame: null,
+			ownedGame: null,
+			fromSubscriptions: [],
+			providerCommands: {},
+			releaseDate: null,
+			tags: [],
+			thumbnailUrl: null,
+			title: {
+				display: "...",
+				normalized: ["..."],
+			},
+		}),
 		[providerId],
 	);
 

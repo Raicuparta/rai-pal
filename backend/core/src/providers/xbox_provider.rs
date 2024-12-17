@@ -11,7 +11,6 @@ use winreg::{
 use crate::{
 	game::Game,
 	installed_game::InstalledGame,
-	owned_game::OwnedGame,
 	paths::file_name_without_extension,
 	providers::provider::{ProviderActions, ProviderId, ProviderStatic},
 	result::Result,
@@ -48,24 +47,24 @@ struct XboxGamepassImages {
 }
 
 impl ProviderActions for Xbox {
-	async fn get_games<TInstalledCallback, TOwnedCallback>(
-		&self,
-		mut installed_callback: TInstalledCallback,
-		mut _owned_callback: TOwnedCallback,
-	) -> Result
-	where
-		TInstalledCallback: FnMut(InstalledGame) + Send + Sync,
-		TOwnedCallback: FnMut(OwnedGame) + Send + Sync,
-	{
-		if let Err(error) = find_installed_games(&mut installed_callback) {
-			if error.kind() == std::io::ErrorKind::NotFound {
-				log::info!("Failed to find installed Xbox PC games. This probably means the Xbox PC app isn't installed, or there are no Windows Store games or something. Error: {}", error);
-				return Ok(());
-			}
-		}
+	// async fn get_games<TInstalledCallback, TOwnedCallback>(
+	// 	&self,
+	// 	mut installed_callback: TInstalledCallback,
+	// 	mut _owned_callback: TOwnedCallback,
+	// ) -> Result
+	// where
+	// 	TInstalledCallback: FnMut(InstalledGame) + Send + Sync,
+	// 	TOwnedCallback: FnMut(OwnedGame) + Send + Sync,
+	// {
+	// 	if let Err(error) = find_installed_games(&mut installed_callback) {
+	// 		if error.kind() == std::io::ErrorKind::NotFound {
+	// 			log::info!("Failed to find installed Xbox PC games. This probably means the Xbox PC app isn't installed, or there are no Windows Store games or something. Error: {}", error);
+	// 			return Ok(());
+	// 		}
+	// 	}
 
-		Ok(())
-	}
+	// 	Ok(())
+	// }
 
 	async fn get_games_new<TCallback>(&self, callback: TCallback) -> Result
 	where

@@ -36,12 +36,10 @@ import { TableItemDetails } from "@components/table/table-item-details";
 import { GameModRow } from "./game-mod-row";
 import { TableContainer } from "@components/table/table-container";
 import { CommandDropdown } from "@components/command-dropdown";
-import {
-	getFallbackThumbnail,
-	getThumbnailWithFallback,
-} from "@util/fallback-thumbnail";
+import { getThumbnailWithFallback } from "@util/fallback-thumbnail";
 import { ProviderIcon } from "@components/providers/provider-icon";
 import { selectedInstalledGameAtom } from "./installed-games-state";
+import { ProviderCommandButtons } from "@components/providers/provider-command-dropdown";
 
 type Props = {
 	readonly game: Game;
@@ -144,17 +142,10 @@ export function InstalledGameModal({ game }: Props) {
 			title={
 				<Group>
 					<ModalImage
-						src={
-							installedGame
-								? getThumbnailWithFallback(
-										installedGame.thumbnailUrl,
-										installedGame.provider,
-									)
-								: getFallbackThumbnail("Manual")
-						}
+						src={getThumbnailWithFallback(game.thumbnailUrl, game.providerId)}
 					/>
 					<ItemName label={installedGame?.discriminator}>
-						{installedGame?.title.display}
+						{game.title.display}
 					</ItemName>
 					{installedGame && (
 						<Tooltip label="Refresh game info">
@@ -173,57 +164,58 @@ export function InstalledGameModal({ game }: Props) {
 						item={game}
 					/>
 					<Group>
-						<Button.Group>
-							<CommandButton
-								leftSection={<IconPlayerPlay />}
-								onClick={() => startGame(installedGame)}
-							>
-								Start Game
-							</CommandButton>
-							{installedGame?.startCommand && (
-								<CommandDropdown>
+						{installedGame && (
+							<>
+								<Button.Group>
 									<CommandButton
-										leftSection={<IconAppWindow />}
-										onClick={() => startGameExe(installedGame)}
-									>
-										Start Game Executable
-									</CommandButton>
-									<CommandButton
-										leftSection={
-											<ProviderIcon providerId={installedGame.provider} />
-										}
+										leftSection={<IconPlayerPlay />}
 										onClick={() => startGame(installedGame)}
 									>
-										Start Game via {installedGame.provider}
+										Start Game
+									</CommandButton>
+									{installedGame?.startCommand && (
+										<CommandDropdown>
+											<CommandButton
+												leftSection={<IconAppWindow />}
+												onClick={() => startGameExe(installedGame)}
+											>
+												Start Game Executable
+											</CommandButton>
+											<CommandButton
+												leftSection={
+													<ProviderIcon providerId={game.providerId} />
+												}
+												onClick={() => startGame(installedGame)}
+											>
+												Start Game via {game.providerId}
+											</CommandButton>
+										</CommandDropdown>
+									)}
+								</Button.Group>
+								<CommandDropdown
+									label="Folders"
+									icon={<IconFolderOpen />}
+								>
+									<CommandButton
+										leftSection={<IconFolder />}
+										onClick={() => openGameFolder(installedGame)}
+									>
+										Open Game Files Folder
+									</CommandButton>
+									<CommandButton
+										leftSection={<IconFolderCog />}
+										onClick={() => openGameModsFolder(installedGame)}
+									>
+										Open Installed Mods Folder
 									</CommandButton>
 								</CommandDropdown>
-							)}
-						</Button.Group>
-						<CommandDropdown
-							label="Folders"
-							icon={<IconFolderOpen />}
-						>
-							<CommandButton
-								leftSection={<IconFolder />}
-								onClick={() => openGameFolder(installedGame)}
-							>
-								Open Game Files Folder
-							</CommandButton>
-							<CommandButton
-								leftSection={<IconFolderCog />}
-								onClick={() => openGameModsFolder(installedGame)}
-							>
-								Open Installed Mods Folder
-							</CommandButton>
-						</CommandDropdown>
-						{/* TODO: owned game stuff */}
-						{/* {game.ownedGame && (
-							<ProviderCommandButtons
-								game={game.ownedGame}
-								isInstalled={true}
-							/>
-						)} */}
-						{game.providerId === "Manual" && (
+							</>
+						)}
+						<ProviderCommandButtons
+							game={game}
+							isInstalled={true}
+						/>
+						{game.providerId === "Manual" && installedGame && (
 							<CommandButton
 								onClick={() => removeGame(installedGame)}
 								confirmationText="Are you sure you want to remove this game from Rai Pal?"
@@ -247,31 +239,35 @@ export function InstalledGameModal({ game }: Props) {
 							to install.
 						</Alert>
 					)}
-					<Divider label="Mods" />
-					<TableContainer bg="dark">
-						<Table>
-							<Table.Tbody>
-								{filteredMods.map((mod) => (
-									<GameModRow
-										key={mod.common.id}
-										game={installedGame}
-										mod={mod}
-										modLoader={modLoaderMap[mod.common.loaderId]}
-									/>
-								))}
-							</Table.Tbody>
-						</Table>
-					</TableContainer>
-					<CommandButton
-						confirmationText="You sure? This will delete all files in this game's mods folder. It won't delete any files from the actual game though."
-						onClick={() => uninstallAllMods(installedGame)}
-						color="red"
-						variant="light"
-						leftSection={<IconTrash />}
-					>
-						Uninstall all mods
-					</CommandButton>
-					<DebugData data={installedGame} />
+					{installedGame && (
+						<>
+							<Divider label="Mods" />
+							<TableContainer bg="dark">
+								<Table>
+									<Table.Tbody>
+										{filteredMods.map((mod) => (
+											<GameModRow
+												key={mod.common.id}
+												game={installedGame}
+												mod={mod}
+												modLoader={modLoaderMap[mod.common.loaderId]}
+											/>
+										))}
+									</Table.Tbody>
+								</Table>
+							</TableContainer>
+							<CommandButton
+								confirmationText="You sure? This will delete all files in this game's mods folder. It won't delete any files from the actual game though."
+								onClick={() => uninstallAllMods(installedGame)}
+								color="red"
+								variant="light"
+								leftSection={<IconTrash />}
+							>
+								Uninstall all mods
+							</CommandButton>
+						</>
+					)}
+					<DebugData data={game} />
 				</>
 			</Stack>
 		</Modal>

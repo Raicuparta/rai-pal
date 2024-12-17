@@ -20,7 +20,7 @@ type CellProps = { readonly item: Game };
 const ThumbnailComponent = ({ item }: CellProps) => (
 	<ThumbnailCell
 		src={getThumbnailWithFallback(
-			item.installedGame?.thumbnailUrl || item.ownedGame?.thumbnailUrl,
+			item.installedGame?.thumbnailUrl || item?.thumbnailUrl,
 			item.providerId,
 		)}
 	/>
@@ -45,7 +45,7 @@ const NameCell = ({ item }: CellProps) => (
 			<span>
 				<ItemName label={item.installedGame?.discriminator}>
 					{item.installedGame?.hasOutdatedMod && <OutdatedMarker />}
-					{item.ownedGame?.title.display}
+					{item?.title.display}
 				</ItemName>
 			</span>
 		</Tooltip>
@@ -102,7 +102,7 @@ export function GameTagsCell({ item }: { readonly item: Game }) {
 	return (
 		<Table.Td p={0}>
 			<div className={styles.wrapper}>
-				{item.ownedGame?.tags.sort().map((tag) => (
+				{item?.tags.sort().map((tag) => (
 					<span
 						className={styles.tag}
 						key={tag}

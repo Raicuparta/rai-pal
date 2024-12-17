@@ -15,7 +15,6 @@ pub mod local_mod;
 pub mod maps;
 pub mod mod_loaders;
 pub mod mod_manifest;
-pub mod owned_game;
 pub mod paths;
 pub mod providers;
 pub mod remote_games;

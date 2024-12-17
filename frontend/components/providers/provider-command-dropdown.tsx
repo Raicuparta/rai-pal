@@ -1,10 +1,10 @@
-import { ProviderCommandAction, OwnedGame } from "@api/bindings";
+import { Game, ProviderCommandAction } from "@api/bindings";
 import { CommandDropdown } from "@components/command-dropdown";
 import { ProviderIcon } from "@components/providers/provider-icon";
 import { ProviderCommandButton } from "./provider-command-button";
 
 type Props = {
-	readonly game: OwnedGame;
+	readonly game: Game;
 	readonly isInstalled?: boolean;
 };
 
@@ -22,8 +22,8 @@ export function ProviderCommandButtons(props: Props) {
 
 	return (
 		<CommandDropdown
-			label={props.game.provider}
-			icon={<ProviderIcon providerId={props.game.provider} />}
+			label={props.game.providerId}
+			icon={<ProviderIcon providerId={props.game.providerId} />}
 		>
 			{providerCommandActions.map((providerCommandAction) => (
 				<ProviderCommandButton
