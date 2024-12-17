@@ -10,7 +10,6 @@ import { InstalledGameModal } from "./installed-game-modal";
 import { ItemProps } from "react-virtuoso";
 import { GameId } from "@api/bindings";
 import styles from "./game-row.module.css";
-import { OwnedGameModal } from "@components/owned-games/owned-game-modal";
 
 export const InstalledGameRow = React.forwardRef(function InstalledGameRow(
 	props: ItemProps<GameId>,
@@ -29,12 +28,7 @@ export const InstalledGameRow = React.forwardRef(function InstalledGameRow(
 
 	return (
 		<>
-			{isSelected &&
-				(game.installedGame ? (
-					<InstalledGameModal game={game.installedGame} />
-				) : (
-					game.ownedGame && <OwnedGameModal game={game.ownedGame} />
-				))}
+			{isSelected && <InstalledGameModal game={game} />}
 			<Table.Tr
 				ref={ref}
 				className={game?.installedGame ? styles.installed : styles.owned}
