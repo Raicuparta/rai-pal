@@ -567,11 +567,7 @@ async fn get_game(
 		.games
 		.read()
 		.unwrap()
-		.clone()
 		.try_get(&provider_id)?
-		// .map_err(|err| Error::FailedToAccessStateData(err.to_string()))?
-		// .as_ref()
-		// .ok_or(Error::EmptyStateData())?
 		.get(index)
 		.cloned())
 }
