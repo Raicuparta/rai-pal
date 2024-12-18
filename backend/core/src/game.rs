@@ -6,6 +6,7 @@ use crate::{
 	game_subscription::GameSubscription,
 	game_tag::GameTag,
 	game_title::GameTitle,
+	installed_game::InstalledGame,
 	providers::{
 		provider::ProviderId,
 		provider_command::{ProviderCommand, ProviderCommandAction},
@@ -13,40 +14,41 @@ use crate::{
 };
 
 #[serializable_struct]
-pub struct OwnedGame {
-	pub global_id: String,
-	pub provider_game_id: String,
-	pub provider: ProviderId,
-	pub title: GameTitle,
-	pub release_date: Option<i64>,
-	pub thumbnail_url: Option<String>,
+pub struct Game {
+	pub id: String,
+	pub provider_id: ProviderId,
 	pub tags: HashSet<GameTag>,
+	pub installed_game: Option<InstalledGame>,
+	pub title: GameTitle,
+	pub thumbnail_url: Option<String>,
+	pub release_date: Option<i64>,
 	pub provider_commands: HashMap<ProviderCommandAction, ProviderCommand>,
 	pub from_subscriptions: HashSet<GameSubscription>,
 }
 
-impl OwnedGame {
-	pub fn new(provider_game_id: &str, provider: ProviderId, name: &str) -> Self {
-		let title = GameTitle::new(name);
+impl Game {
+	pub fn new(id: &str, provider_id: ProviderId, title: &str) -> Self {
+		let title = GameTitle::new(title);
 		let mut tags = HashSet::default();
 		if title.is_probably_demo() {
 			tags.insert(GameTag::Demo);
 		}
+
 		Self {
-			global_id: get_global_id(provider, provider_game_id),
-			provider_game_id: provider_game_id.to_string(),
-			provider,
+			id: id.to_string(),
+			provider_id,
 			tags,
+			installed_game: None,
 			title,
-			provider_commands: HashMap::default(),
-			release_date: None,
 			thumbnail_url: None,
+			release_date: None,
+			provider_commands: HashMap::default(),
 			from_subscriptions: HashSet::default(),
 		}
 	}
 
-	pub fn set_release_date(&mut self, release_date: i64) -> &mut Self {
-		self.release_date = Some(release_date);
+	pub fn add_tag(&mut self, tag: GameTag) -> &mut Self {
+		self.tags.insert(tag);
 		self
 	}
 
@@ -55,8 +57,8 @@ impl OwnedGame {
 		self
 	}
 
-	pub fn add_tag(&mut self, tag: GameTag) -> &mut Self {
-		self.tags.insert(tag);
+	pub fn set_release_date(&mut self, release_date: i64) -> &mut Self {
+		self.release_date = Some(release_date);
 		self
 	}
 
@@ -73,8 +75,4 @@ impl OwnedGame {
 		self.provider_commands.insert(command_action, command);
 		self
 	}
-}
-
-pub fn get_global_id(provider: ProviderId, provider_game_id: &str) -> String {
-	format!("{provider}_{provider_game_id}")
 }

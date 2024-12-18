@@ -8,7 +8,12 @@ import {
 	Table,
 	Tooltip,
 } from "@mantine/core";
-import { EngineVersion, EngineVersionRange, commands } from "@api/bindings";
+import {
+	EngineVersion,
+	EngineVersionRange,
+	Game,
+	commands,
+} from "@api/bindings";
 import { useMemo } from "react";
 import { ItemName } from "../item-name";
 import { CommandButton } from "@components/command-button";
@@ -22,23 +27,22 @@ import {
 	IconTrash,
 } from "@tabler/icons-react";
 import { ModalImage } from "@components/modal-image";
-import { useAtomValue } from "jotai";
+import { useAtomValue, useSetAtom } from "jotai";
 import { modLoadersAtom } from "@hooks/use-data";
 import { DebugData } from "@components/debug-data";
 import { useUnifiedMods } from "@hooks/use-unified-mods";
 import { installedGamesColumns } from "./installed-games-columns";
 import { TableItemDetails } from "@components/table/table-item-details";
-import { ProcessedInstalledGame } from "@hooks/use-processed-installed-games";
 import { GameModRow } from "./game-mod-row";
 import { TableContainer } from "@components/table/table-container";
 import { CommandDropdown } from "@components/command-dropdown";
 import { getThumbnailWithFallback } from "@util/fallback-thumbnail";
-import { ProviderCommandButtons } from "@components/providers/provider-command-dropdown";
 import { ProviderIcon } from "@components/providers/provider-icon";
+import { selectedInstalledGameAtom } from "./installed-games-state";
+import { ProviderCommandButtons } from "@components/providers/provider-command-dropdown";
 
 type Props = {
-	readonly game: ProcessedInstalledGame;
-	readonly onClose: () => void;
+	readonly game: Game;
 };
 
 const {
@@ -100,163 +104,171 @@ function isVersionWithinRange(
 	return true;
 }
 
-export function InstalledGameModal(props: Props) {
+export function InstalledGameModal({ game }: Props) {
+	const { installedGame } = game;
 	const modLoaderMap = useAtomValue(modLoadersAtom);
 	const mods = useUnifiedMods();
+	const setSelectedGame = useSetAtom(selectedInstalledGameAtom);
+
+	const close = () => setSelectedGame(null);
 
 	const filteredMods = useMemo(() => {
-		return Object.values(mods).filter(
-			(mod) =>
-				(!mod.common.engine ||
-					mod.common.engine === props.game.executable.engine?.brand) &&
-				(!mod.common.unityBackend ||
-					mod.common.unityBackend === props.game.executable.scriptingBackend) &&
-				isVersionWithinRange(
-					props.game.executable.engine?.version,
-					mod.common.engineVersionRange,
-				) &&
-				!(
-					mod.remote?.deprecated &&
-					!props.game.installedModVersions[mod.common.id]
-				),
-		);
-	}, [
-		mods,
-		props.game.executable.engine?.brand,
-		props.game.executable.engine?.version,
-		props.game.executable.scriptingBackend,
-		props.game.installedModVersions,
-	]);
+		return installedGame
+			? Object.values(mods).filter(
+					(mod) =>
+						(!mod.common.engine ||
+							mod.common.engine === installedGame.executable.engine?.brand) &&
+						(!mod.common.unityBackend ||
+							mod.common.unityBackend ===
+								installedGame.executable.scriptingBackend) &&
+						isVersionWithinRange(
+							installedGame.executable.engine?.version,
+							mod.common.engineVersionRange,
+						) &&
+						!(
+							mod.remote?.deprecated &&
+							!installedGame.installedModVersions[mod.common.id]
+						),
+				)
+			: [];
+	}, [mods, installedGame]);
 
 	return (
 		<Modal
 			centered
-			onClose={props.onClose}
+			onClose={close}
 			opened
 			size="xl"
 			title={
 				<Group>
 					<ModalImage
-						src={getThumbnailWithFallback(
-							props.game.thumbnailUrl ?? props.game.ownedGame?.thumbnailUrl,
-							props.game.provider,
-						)}
+						src={getThumbnailWithFallback(game.thumbnailUrl, game.providerId)}
 					/>
-					<ItemName label={props.game.discriminator}>
-						{props.game.title.display}
+					<ItemName label={installedGame?.discriminator}>
+						{game.title.display}
 					</ItemName>
-					<Tooltip label="Refresh game info">
-						<CommandButton onClick={() => refreshGame(props.game)}>
-							<IconRefresh />
-						</CommandButton>
-					</Tooltip>
+					{installedGame && (
+						<Tooltip label="Refresh game info">
+							<CommandButton onClick={() => refreshGame(installedGame)}>
+								<IconRefresh />
+							</CommandButton>
+						</Tooltip>
+					)}
 				</Group>
 			}
 		>
 			<Stack>
-				<TableItemDetails
-					columns={installedGamesColumns}
-					item={props.game}
-				/>
-				<Group>
-					<Button.Group>
-						<CommandButton
-							leftSection={<IconPlayerPlay />}
-							onClick={() => startGame(props.game)}
-						>
-							Start Game
-						</CommandButton>
-						{props.game.startCommand && (
-							<CommandDropdown>
-								<CommandButton
-									leftSection={<IconAppWindow />}
-									onClick={() => startGameExe(props.game)}
+				<>
+					<TableItemDetails
+						columns={installedGamesColumns}
+						item={game}
+					/>
+					<Group>
+						{installedGame && (
+							<>
+								<Button.Group>
+									<CommandButton
+										leftSection={<IconPlayerPlay />}
+										onClick={() => startGame(installedGame)}
+									>
+										Start Game
+									</CommandButton>
+									{installedGame?.startCommand && (
+										<CommandDropdown>
+											<CommandButton
+												leftSection={<IconAppWindow />}
+												onClick={() => startGameExe(installedGame)}
+											>
+												Start Game Executable
+											</CommandButton>
+											<CommandButton
+												leftSection={
+													<ProviderIcon providerId={game.providerId} />
+												}
+												onClick={() => startGame(installedGame)}
+											>
+												Start Game via {game.providerId}
+											</CommandButton>
+										</CommandDropdown>
+									)}
+								</Button.Group>
+								<CommandDropdown
+									label="Folders"
+									icon={<IconFolderOpen />}
 								>
-									Start Game Executable
-								</CommandButton>
-								<CommandButton
-									leftSection={
-										<ProviderIcon providerId={props.game.provider} />
-									}
-									onClick={() => startGame(props.game)}
-								>
-									Start Game via {props.game.provider}
-								</CommandButton>
-							</CommandDropdown>
+									<CommandButton
+										leftSection={<IconFolder />}
+										onClick={() => openGameFolder(installedGame)}
+									>
+										Open Game Files Folder
+									</CommandButton>
+									<CommandButton
+										leftSection={<IconFolderCog />}
+										onClick={() => openGameModsFolder(installedGame)}
+									>
+										Open Installed Mods Folder
+									</CommandButton>
+								</CommandDropdown>
+							</>
 						)}
-					</Button.Group>
-					<CommandDropdown
-						label="Folders"
-						icon={<IconFolderOpen />}
-					>
-						<CommandButton
-							leftSection={<IconFolder />}
-							onClick={() => openGameFolder(props.game)}
-						>
-							Open Game Files Folder
-						</CommandButton>
-						<CommandButton
-							leftSection={<IconFolderCog />}
-							onClick={() => openGameModsFolder(props.game)}
-						>
-							Open Installed Mods Folder
-						</CommandButton>
-					</CommandDropdown>
-					{props.game.ownedGame && (
 						<ProviderCommandButtons
-							game={props.game.ownedGame}
+							game={game}
 							isInstalled={true}
 						/>
+						{game.providerId === "Manual" && installedGame && (
+							<CommandButton
+								onClick={() => removeGame(installedGame)}
+								confirmationText="Are you sure you want to remove this game from Rai Pal?"
+								onSuccess={close}
+								leftSection={<IconTrash />}
+							>
+								Remove from Rai Pal
+							</CommandButton>
+						)}
+					</Group>
+					{!installedGame?.executable.architecture && (
+						<Alert color="red">
+							Failed to read some important information about this game. This
+							could be due to the executable being protected. Some mods might
+							fail to install.
+						</Alert>
 					)}
-					{props.game.provider === "Manual" && (
-						<CommandButton
-							onClick={() => removeGame(props.game)}
-							confirmationText="Are you sure you want to remove this game from Rai Pal?"
-							onSuccess={props.onClose}
-							leftSection={<IconTrash />}
-						>
-							Remove from Rai Pal
-						</CommandButton>
+					{!installedGame?.executable.engine && (
+						<Alert color="red">
+							Failed to determine the engine for this game. Some mods might fail
+							to install.
+						</Alert>
 					)}
-				</Group>
-				{!props.game.executable.architecture && (
-					<Alert color="red">
-						Failed to read some important information about this game. This
-						could be due to the executable being protected. Some mods might fail
-						to install.
-					</Alert>
-				)}
-				{!props.game.executable.engine && (
-					<Alert color="red">
-						Failed to determine the engine for this game. Some mods might fail
-						to install.
-					</Alert>
-				)}
-				<Divider label="Mods" />
-				<TableContainer bg="dark">
-					<Table>
-						<Table.Tbody>
-							{filteredMods.map((mod) => (
-								<GameModRow
-									key={mod.common.id}
-									game={props.game}
-									mod={mod}
-									modLoader={modLoaderMap[mod.common.loaderId]}
-								/>
-							))}
-						</Table.Tbody>
-					</Table>
-				</TableContainer>
-				<CommandButton
-					confirmationText="You sure? This will delete all files in this game's mods folder. It won't delete any files from the actual game though."
-					onClick={() => uninstallAllMods(props.game)}
-					color="red"
-					variant="light"
-					leftSection={<IconTrash />}
-				>
-					Uninstall all mods
-				</CommandButton>
-				<DebugData data={props.game} />
+					{installedGame && (
+						<>
+							<Divider label="Mods" />
+							<TableContainer bg="dark">
+								<Table>
+									<Table.Tbody>
+										{filteredMods.map((mod) => (
+											<GameModRow
+												key={mod.common.id}
+												game={installedGame}
+												mod={mod}
+												modLoader={modLoaderMap[mod.common.loaderId]}
+											/>
+										))}
+									</Table.Tbody>
+								</Table>
+							</TableContainer>
+							<CommandButton
+								confirmationText="You sure? This will delete all files in this game's mods folder. It won't delete any files from the actual game though."
+								onClick={() => uninstallAllMods(installedGame)}
+								color="red"
+								variant="light"
+								leftSection={<IconTrash />}
+							>
+								Uninstall all mods
+							</CommandButton>
+						</>
+					)}
+					<DebugData data={game} />
+				</>
 			</Stack>
 		</Modal>
 	);

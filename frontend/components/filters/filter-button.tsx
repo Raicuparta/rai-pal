@@ -1,23 +1,14 @@
-import { FilterOption } from "@components/table/table-head";
 import { Button, Checkbox, Tooltip } from "@mantine/core";
-import { useCallback } from "react";
-import { UnknownFilterOption } from "./filter-select";
 import styles from "./filters.module.css";
 
-type Props<TFilterOption extends string> = {
+type Props = {
 	readonly isHidden: boolean;
 	readonly isUnavailable: boolean;
-	readonly onClick: (value: TFilterOption | null) => void;
-	readonly filterOption: UnknownFilterOption | FilterOption<TFilterOption>;
+	readonly onClick: () => void;
+	readonly filterOption: string;
 };
 
-export function FilterButton<TFilterOption extends string>(
-	props: Props<TFilterOption>,
-) {
-	const handleClick = useCallback(() => {
-		props.onClick(props.filterOption.value);
-	}, [props]);
-
+export function FilterButton(props: Props) {
 	return (
 		<Tooltip
 			label="Not implemented"
@@ -36,9 +27,9 @@ export function FilterButton<TFilterOption extends string>(
 						checked={!props.isUnavailable && !props.isHidden}
 					/>
 				}
-				onClick={handleClick}
+				onClick={props.onClick}
 			>
-				{props.filterOption.label || props.filterOption.value}
+				{props.filterOption}
 			</Button>
 		</Tooltip>
 	);

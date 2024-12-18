@@ -13,9 +13,9 @@ use super::{
 	provider_command::{ProviderCommand, ProviderCommandAction},
 };
 use crate::{
+	game::Game,
 	game_tag::GameTag,
 	installed_game::{self, InstalledGame},
-	owned_game::OwnedGame,
 	providers::provider::{ProviderActions, ProviderStatic},
 	result::Result,
 	steam::{
@@ -39,11 +39,8 @@ impl ProviderStatic for Steam {
 }
 
 impl Steam {
-	pub fn get_owned_game(
-		app_info: &SteamAppInfo,
-		ids_whitelist: &HashSet<String>,
-	) -> Option<OwnedGame> {
-		let mut game = OwnedGame::new(&app_info.app_id.to_string(), *Self::ID, &app_info.name);
+	pub fn get_game(app_info: &SteamAppInfo, ids_whitelist: &HashSet<String>) -> Option<Game> {
+		let mut game = Game::new(&app_info.app_id.to_string(), *Self::ID, &app_info.name);
 
 		let id_string = app_info.app_id.to_string();
 
@@ -136,7 +133,6 @@ impl Steam {
 
 					let app_id_string = app_info.app_id.to_string();
 
-					game.set_provider_game_id(&app_id_string);
 					game.set_thumbnail_url(&get_steam_thumbnail(&app_id_string));
 					game.set_start_command_string(&get_start_command(
 						&launch_option,
@@ -177,14 +173,9 @@ impl Steam {
 }
 
 impl ProviderActions for Steam {
-	async fn get_games<TInstalledCallback, TOwnedCallback>(
-		&self,
-		mut installed_callback: TInstalledCallback,
-		mut owned_callback: TOwnedCallback,
-	) -> Result
+	async fn get_games_new<TCallback>(&self, mut callback: TCallback) -> Result
 	where
-		TInstalledCallback: FnMut(InstalledGame) + Send + Sync,
-		TOwnedCallback: FnMut(OwnedGame) + Send + Sync,
+		TCallback: FnMut(Game) + Send + Sync,
 	{
 		let steam_dir = SteamDir::locate()?;
 		let steam_path = steam_dir.path();
@@ -204,13 +195,21 @@ impl ProviderActions for Steam {
 		for app_info_result in app_info_reader {
 			match app_info_result {
 				Ok(app_info) => {
-					if let Some(owned_game) = Self::get_owned_game(&app_info, &owned_ids_whitelist)
-					{
-						owned_callback(owned_game);
-					}
-					if let Some(app_path) = app_paths.get(&app_info.app_id) {
-						for installed_game in Self::get_installed_games(&app_info, app_path) {
-							installed_callback(installed_game);
+					if let Some(game) = Self::get_game(&app_info, &owned_ids_whitelist) {
+						let installed_games = app_paths
+							.get(&app_info.app_id)
+							.map(|app_path| Self::get_installed_games(&app_info, app_path))
+							.unwrap_or_default();
+
+						if installed_games.is_empty() {
+							callback(game);
+						} else {
+							for installed_game in installed_games {
+								// TODO: make sure ids are different between multiple installed games.
+								let mut game_with_installed = game.clone();
+								game_with_installed.installed_game = Some(installed_game);
+								callback(game_with_installed);
+							}
 						}
 					}
 				}

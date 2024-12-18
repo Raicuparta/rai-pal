@@ -8,7 +8,7 @@ import {
 	Group,
 	Stack,
 } from "@mantine/core";
-import { ModLoaderData, commands } from "@api/bindings";
+import { InstalledGame, ModLoaderData, commands } from "@api/bindings";
 import { CommandButton } from "@components/command-button";
 import {
 	IconCheck,
@@ -24,7 +24,6 @@ import {
 import { UnifiedMod } from "@hooks/use-unified-mods";
 import { getIsOutdated } from "@util/is-outdated";
 import { OutdatedMarker } from "@components/outdated-marker";
-import { ProcessedInstalledGame } from "@hooks/use-processed-installed-games";
 import { useCallback } from "react";
 import { ItemName } from "@components/item-name";
 import { MutedText } from "@components/muted-text";
@@ -43,7 +42,7 @@ const {
 } = commands;
 
 type Props = {
-	readonly game: ProcessedInstalledGame;
+	readonly game: InstalledGame;
 	readonly mod: UnifiedMod;
 	readonly modLoader: ModLoaderData;
 };

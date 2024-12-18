@@ -1,44 +1,28 @@
 import { Box, Flex, Table } from "@mantine/core";
 import classes from "./table.module.css";
 import { IconChevronDown, IconChevronUp } from "@tabler/icons-react";
-import { TableSort } from "@hooks/use-table-sort";
+import { InstalledGameSortBy } from "@api/bindings";
 
-export type FilterOption<TFilterOption extends string> = {
-	value: TFilterOption;
+export type TableColumnBase<TItem, TSort> = {
 	label: string;
-};
-
-export type TableColumnBase<TItem, TFilterOption extends string = string> = {
-	label: string;
-	renderCell: (item: TItem) => JSX.Element;
+	component: React.ComponentType<{ item: TItem }>;
 	width?: number;
 	center?: boolean;
 	hideLabel?: boolean;
 	hidable?: boolean;
 	hideInDetails?: boolean;
-	unavailableValues?: TFilterOption[];
-	sort?: (itemA: TItem, itemB: TItem) => number;
-	getSortValue?: (item: TItem) => unknown;
-	filter?: (item: TItem, hiddenValues: (string | null)[]) => boolean;
-	filterOptions?: FilterOption<TFilterOption>[];
+	sort?: TSort;
 };
 
-export interface TableColumn<
-	TKey extends string,
-	TItem,
-	TFilterOption extends string = string,
-> extends TableColumnBase<TItem, TFilterOption> {
+export interface TableColumn<TKey extends string, TItem, TSort>
+	extends TableColumnBase<TItem, TSort> {
 	id: TKey;
 }
 
-export function columnMapToList<
-	TItem,
-	TKey extends string,
-	TFilterOption extends string = string,
->(
-	columnMap: Record<TKey, TableColumnBase<TItem, TFilterOption>>,
-): TableColumn<TKey, TItem, TFilterOption>[] {
-	return Object.entries<TableColumnBase<TItem, TFilterOption>>(columnMap).map(
+export function columnMapToList<TItem, TKey extends string, TSort>(
+	columnMap: Record<TKey, TableColumnBase<TItem, TSort>>,
+): TableColumn<TKey, TItem, TSort>[] {
+	return Object.entries<TableColumnBase<TItem, TSort>>(columnMap).map(
 		([id, column]) => ({
 			...column,
 			id: id as TKey,
@@ -46,36 +30,30 @@ export function columnMapToList<
 	);
 }
 
-type Props<
-	TKey extends string,
-	TItem,
-	TFilterOption extends string = string,
-> = {
-	readonly columns: TableColumn<TKey, TItem, TFilterOption>[];
-	readonly onChangeSort?: (sort: string) => void;
-	readonly sort?: TableSort;
+type Props<TKey extends string, TItem, TSort> = {
+	readonly columns: TableColumn<TKey, TItem, TSort>[];
+	readonly onChangeSort?: (sortBy: TSort) => void;
+	readonly sortBy?: InstalledGameSortBy;
+	readonly sortDescending?: boolean;
 };
 
-export function TableHead<
-	TKey extends string,
-	TItem,
-	TFilterOption extends string = string,
->(props: Props<TKey, TItem, TFilterOption>) {
+export function TableHead<TKey extends string, TItem, TSort>(
+	props: Props<TKey, TItem, TSort>,
+) {
 	return (
 		<Table.Tr>
 			{props.columns.map((column) => {
-				const isSortable = Boolean(column.sort || column.getSortValue);
 				return (
 					<Table.Th
 						className={
-							props.onChangeSort && isSortable ? classes.sortable : undefined
+							props.onChangeSort && column.sort ? classes.sortable : undefined
 						}
 						key={String(column.id)}
 						onClick={
-							isSortable
+							column.sort
 								? () =>
-										props.onChangeSort
-											? props.onChangeSort(column.id)
+										props.onChangeSort && column.sort
+											? props.onChangeSort(column.sort)
 											: undefined
 								: undefined
 						}
@@ -90,8 +68,9 @@ export function TableHead<
 								w={0}
 								fs="xs"
 							>
-								{props.sort?.id === column.id &&
-									(props.sort.reverse ? (
+								{props.sortBy &&
+									props.sortBy === column.sort &&
+									(props.sortDescending ? (
 										<IconChevronDown />
 									) : (
 										<IconChevronUp />

@@ -3,24 +3,31 @@ use std::{
 	collections::HashMap,
 	fmt::Display,
 	hash::{BuildHasher, Hash},
-	sync::Mutex,
+	sync::{Arc, Mutex, RwLock},
 };
 
 use crate::result::Error;
 use crate::result::Result;
+use rai_pal_proc_macros::serializable_struct;
 use tauri::Manager;
 
 use rai_pal_core::{
-	installed_game::InstalledGame, local_mod, maps::TryGettable, mod_loaders::mod_loader,
-	owned_game::OwnedGame, providers::provider::ProviderId, remote_mod,
+	game::Game, installed_game::DataQuery, local_mod, maps::TryGettable, mod_loaders::mod_loader,
+	providers::provider::ProviderId, remote_mod,
 };
 
 pub struct AppState {
-	pub installed_games: HashMap<ProviderId, Mutex<Option<HashMap<String, InstalledGame>>>>,
-	pub owned_games: HashMap<ProviderId, Mutex<Option<HashMap<String, OwnedGame>>>>,
+	pub games: Arc<RwLock<HashMap<ProviderId, Vec<Game>>>>,
 	pub mod_loaders: Mutex<Option<mod_loader::Map>>,
 	pub local_mods: Mutex<Option<local_mod::Map>>,
 	pub remote_mods: Mutex<Option<remote_mod::Map>>,
+	pub data_query: Mutex<Option<DataQuery>>,
+}
+
+#[serializable_struct]
+pub struct GameId {
+	pub provider_id: ProviderId,
+	pub index: usize,
 }
 
 type TauriState<'a> = tauri::State<'a, AppState>;
@@ -35,6 +42,19 @@ impl<TData: Clone> StateData<TData> for Mutex<Option<TData>> {
 		TData: Clone,
 	{
 		self.lock()
+			.map_err(|err| Error::FailedToAccessStateData(err.to_string()))?
+			.as_ref()
+			.ok_or(Error::EmptyStateData())
+			.cloned()
+	}
+}
+
+impl<TData: Clone> StateData<TData> for RwLock<Option<TData>> {
+	fn get_data(&self) -> Result<TData>
+	where
+		TData: Clone,
+	{
+		self.read()
 			.map_err(|err| Error::FailedToAccessStateData(err.to_string()))?
 			.as_ref()
 			.ok_or(Error::EmptyStateData())

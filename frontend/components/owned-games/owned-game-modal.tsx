@@ -1,23 +1,26 @@
 import { Group, Modal, Stack } from "@mantine/core";
 import { ModalImage } from "@components/modal-image";
 import { DebugData } from "@components/debug-data";
-import { TableItemDetails } from "@components/table/table-item-details";
-import { ownedGamesColumns } from "./owned-games-columns";
 import { ItemName } from "@components/item-name";
 import { getThumbnailWithFallback } from "@util/fallback-thumbnail";
-import { ProcessedOwnedGame } from "@hooks/use-processed-owned-games";
 import { ProviderCommandButtons } from "../providers/provider-command-dropdown";
+import { OwnedGame } from "@api/bindings";
+import { useSetAtom } from "jotai";
+import { selectedInstalledGameAtom } from "@components/installed-games/installed-games-state";
 
 type Props = {
-	readonly game: ProcessedOwnedGame;
-	readonly onClose: () => void;
+	readonly game: OwnedGame;
 };
 
 export function OwnedGameModal(props: Props) {
+	const setSelectedGame = useSetAtom(selectedInstalledGameAtom);
+
+	const close = () => setSelectedGame(null);
+
 	return (
 		<Modal
 			centered
-			onClose={props.onClose}
+			onClose={close}
 			opened
 			size="xl"
 			title={
@@ -33,13 +36,14 @@ export function OwnedGameModal(props: Props) {
 			}
 		>
 			<Stack>
-				<TableItemDetails
+				{/* TODO probably gonna move all this into a single modal anyway */}
+				{/* <TableItemDetails
 					columns={ownedGamesColumns}
 					item={props.game}
-				/>
+				/> */}
 				<ProviderCommandButtons
 					game={props.game}
-					isInstalled={props.game.isInstalled}
+					isInstalled={false} // TODO
 				/>
 				<DebugData data={props.game} />
 			</Stack>
