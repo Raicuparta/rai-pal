@@ -12,6 +12,7 @@ import { OutdatedMarker } from "@components/outdated-marker";
 import styles from "../table/table.module.css";
 import { getThumbnailWithFallback } from "@util/fallback-thumbnail";
 import { Game, GamesSortBy } from "@api/bindings";
+import { GameTagsCell } from "@components/game-tags/game-tags";
 
 type InstalledGameColumn = TableColumnBase<Game, GamesSortBy>;
 
@@ -74,6 +75,7 @@ const provider: InstalledGameColumn = {
 
 const architecture: InstalledGameColumn = {
 	label: "Arch",
+	sort: "Architecture",
 	width: 70,
 	center: true,
 	hidable: true,
@@ -86,6 +88,7 @@ const architecture: InstalledGameColumn = {
 
 const scriptingBackend: InstalledGameColumn = {
 	label: "Backend",
+	sort: "ScriptingBackend",
 	width: 90,
 	center: true,
 	hidable: true,
@@ -98,25 +101,9 @@ const scriptingBackend: InstalledGameColumn = {
 	),
 };
 
-export function GameTagsCell({ item }: { readonly item: Game }) {
-	return (
-		<Table.Td p={0}>
-			<div className={styles.wrapper}>
-				{item?.tags.sort().map((tag) => (
-					<span
-						className={styles.tag}
-						key={tag}
-					>
-						{tag}
-					</span>
-				))}
-			</div>
-		</Table.Td>
-	);
-}
-
 const gameTags: InstalledGameColumn = {
 	label: "Tags",
+	sort: "Tags",
 	width: 120,
 	center: true,
 	hidable: true,

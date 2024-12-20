@@ -1,4 +1,4 @@
-use std::{cmp::Ordering, collections::HashMap};
+use std::{cmp::Ordering, collections::HashMap, string};
 
 use rai_pal_proc_macros::{serializable_enum, serializable_struct};
 
@@ -166,7 +166,32 @@ impl GamesQuery {
 	pub fn sort(&self, game_a: &Game, game_b: &Game) -> Ordering {
 		let ordering = match self.sort_by {
 			GamesSortBy::Title => game_a.title.display.cmp(&game_b.title.display),
-			GamesSortBy::Tags => Ordering::Equal,
+			GamesSortBy::Tags => {
+				// We start with the tag count to make games with more tags show up first.
+				// TODO: reduce repetition in those whole sort function.
+				// TODO: also, should probably sort the tags themselves so this is more stable.
+				let string_a = format!(
+					"{}{}",
+					game_a.tags.len(),
+					game_a
+						.tags
+						.iter()
+						.map(string::ToString::to_string)
+						.collect::<String>()
+				);
+
+				let string_b = format!(
+					"{}{}",
+					game_b.tags.len(),
+					game_b
+						.tags
+						.iter()
+						.map(string::ToString::to_string)
+						.collect::<String>()
+				);
+
+				string_a.cmp(&string_b)
+			}
 			GamesSortBy::Provider => game_a
 				.provider_id
 				.to_string()

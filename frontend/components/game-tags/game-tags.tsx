@@ -1,18 +1,20 @@
-import { GameTag, OwnedGame } from "@api/bindings";
+import { Game } from "@api/bindings";
+import { Table } from "@mantine/core";
+import styles from "./game-tags.module.css";
 
-export function filterGameTags(
-	ownedGame: OwnedGame | undefined,
-	hiddenValues: (string | null)[],
-) {
+export function GameTagsCell({ item }: { readonly item: Game }) {
 	return (
-		hiddenValues.findIndex(
-			(hiddenValue) => ownedGame?.tags.indexOf(hiddenValue as GameTag) !== -1,
-		) !== -1
+		<Table.Td p={0}>
+			<div className={styles.wrapper}>
+				{item?.tags.sort().map((tag) => (
+					<span
+						className={styles.tag}
+						key={tag}
+					>
+						{tag}
+					</span>
+				))}
+			</div>
+		</Table.Td>
 	);
-}
-
-export function getGameTagsSortValue(ownedGame: OwnedGame | null) {
-	return ownedGame
-		? `${ownedGame.tags.length}${ownedGame.tags.sort().join(",")}`
-		: "";
 }
