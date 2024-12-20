@@ -165,12 +165,12 @@ impl GamesQuery {
 
 	pub fn sort(&self, game_a: &Game, game_b: &Game) -> Ordering {
 		let ordering = match self.sort_by {
-			GamesSortBy::Title => game_a.title.display.cmp(&game_a.title.display),
+			GamesSortBy::Title => game_a.title.display.cmp(&game_b.title.display),
 			GamesSortBy::Tags => Ordering::Equal,
 			GamesSortBy::Provider => game_a
 				.provider_id
 				.to_string()
-				.cmp(&game_a.provider_id.to_string()),
+				.cmp(&game_b.provider_id.to_string()),
 			GamesSortBy::Architecture => {
 				let a = game_a
 					.installed_game
