@@ -7,7 +7,7 @@ import { FilterSelect } from "./filter-select";
 import { SearchInput } from "@components/search-input";
 
 type Filter = {
-	toggles: Record<string, Record<string, boolean>>;
+	filter: Record<string, Record<string, boolean>>;
 	search: string;
 };
 
@@ -37,11 +37,11 @@ export function FilterMenu<TFilter extends Filter>({
 		(id: string, value: string) => {
 			setterCommand({
 				...currentFilter,
-				toggles: {
-					...currentFilter?.toggles,
+				filter: {
+					...currentFilter?.filter,
 					[id]: {
-						...currentFilter?.toggles?.[id],
-						[value]: !currentFilter?.toggles?.[id]?.[value],
+						...currentFilter?.filter?.[id],
+						[value]: !currentFilter?.filter?.[id]?.[value],
 					},
 				},
 			} as TFilter);
@@ -75,7 +75,7 @@ export function FilterMenu<TFilter extends Filter>({
 	// active if has search or any toggle is set to false:
 	const active =
 		Boolean(currentSearch) ||
-		Object.values(currentFilter?.toggles ?? {}).some((toggleGroup) =>
+		Object.values(currentFilter?.filter ?? {}).some((toggleGroup) =>
 			Object.values(toggleGroup).some((value) => !value),
 		);
 
@@ -117,7 +117,7 @@ export function FilterMenu<TFilter extends Filter>({
 								align="start"
 								wrap="nowrap"
 							>
-								{Object.entries(currentFilter?.toggles ?? {}).map(
+								{Object.entries(currentFilter?.filter ?? {}).map(
 									([filterId, filterOptions]) => (
 										<FilterSelect
 											key={filterId}

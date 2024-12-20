@@ -14,6 +14,7 @@ use crate::{
 		provider::ProviderId,
 		provider_command::{ProviderCommand, ProviderCommandAction},
 	},
+	string_includes::any_contains,
 };
 
 #[serializable_struct]
@@ -83,7 +84,7 @@ impl Game {
 #[serializable_struct]
 #[derive(Default)]
 pub struct DataQuery {
-	pub toggles: GamesFilter,
+	pub filter: GamesFilter,
 	pub search: String,
 	pub sort_by: GamesSortBy,
 	pub sort_descending: bool,
@@ -91,21 +92,21 @@ pub struct DataQuery {
 
 impl DataQuery {
 	pub fn matches(&self, game: &Game) -> bool {
-		let toggles = &self.toggles;
-		if !toggles.providers.get(&game.provider_id).unwrap_or(&true) {
+		let filter = &self.filter;
+		if !filter.providers.get(&game.provider_id).unwrap_or(&true) {
 			return false;
 		}
 
-		// TODO: tags need to be merged from owned games.
-		// if !toggles.tags.iter().any(|(tag, enabled)| {
-		// 	*enabled && game.title.tags.contains(tag)
-		// }) {
-		// 	matches = false;
-		// }
+		let mut tags = filter.tags.iter();
+		if tags.any(|(_, enabled)| !enabled)
+			&& !tags.any(|(tag, enabled)| *enabled && game.tags.contains(tag))
+		{
+			return false;
+		}
 
-		let mut architectures = toggles.architectures.iter();
+		let mut architectures = filter.architectures.iter();
 		if architectures.any(|(_, enabled)| !enabled)
-			&& !toggles.architectures.iter().any(|(architecture, enabled)| {
+			&& !architectures.any(|(architecture, enabled)| {
 				*enabled
 					&& game.installed_game.as_ref().is_some_and(|installed_game| {
 						installed_game
@@ -117,7 +118,7 @@ impl DataQuery {
 			return false;
 		}
 
-		let mut engines = toggles.engines.iter();
+		let mut engines = filter.engines.iter();
 		if engines.any(|(_, enabled)| !enabled)
 			&& !engines.any(|(engine, enabled)| {
 				*enabled
@@ -144,14 +145,19 @@ impl DataQuery {
 		// 	return false;
 		// }
 
-		// if !self.search.is_empty() {
-		// 	// We'll try to match the search term to a bunch of different strings related to this game.
-		// 	let mut candidates: Vec<&str> = vec![&game.title.display, &game.executable.name];
-		// 	candidates.extend(game.title.normalized.iter().map(String::as_str));
-		// 	if !any_contains(&candidates, &self.search) {
-		// 		return false;
-		// 	}
-		// }
+		if !self.search.is_empty() {
+			// We'll try to match the search term to a bunch of different strings related to this game.
+			let mut candidates: Vec<&str> = vec![&game.title.display];
+			candidates.extend(game.title.normalized.iter().map(String::as_str));
+
+			if let Some(installed_game) = game.installed_game.as_ref() {
+				candidates.push(&installed_game.executable.name);
+			}
+
+			if !any_contains(&candidates, &self.search) {
+				return false;
+			}
+		}
 
 		true
 	}

@@ -308,7 +308,7 @@ syncRemoteMods: "sync-remote-mods"
 
 export type Architecture = "X64" | "X86"
 export type CommonModData = { id: string; engine: EngineBrand | null; unityBackend: UnityScriptingBackend | null; engineVersionRange: EngineVersionRange | null; loaderId: string }
-export type DataQuery = { toggles: GamesFilter; search: string; sortBy: GamesSortBy; sortDescending: boolean }
+export type DataQuery = { filter: GamesFilter; search: string; sortBy: GamesSortBy; sortDescending: boolean }
 export type EngineBrand = "Unity" | "Unreal" | "Godot" | "GameMaker"
 export type EngineVersion = { numbers: EngineVersionNumbers; suffix: string | null; display: string }
 export type EngineVersionNumbers = { major: number; minor: number | null; patch: number | null }
