@@ -410,6 +410,8 @@ async fn get_provider_games(handle: AppHandle, provider_id: ProviderId) -> Resul
 
 	let provider = provider::get_provider(provider_id)?;
 
+	handle.app_state().games.write().unwrap().clear();
+
 	provider.get_games_new(|game: Game| {
 		handle
 			.app_state()
