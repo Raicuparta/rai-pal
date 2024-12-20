@@ -1,18 +1,17 @@
 use std::{collections::HashMap, fs, path::PathBuf};
 
+use crate::game::Game;
 use crate::result::Result;
 use crate::{
-	installed_game::InstalledGame,
-	owned_game::OwnedGame,
 	paths,
 	providers::provider::{self, ProviderId},
 };
 use rai_pal_proc_macros::serializable_struct;
 
 #[serializable_struct]
+#[derive(Default)]
 pub struct ProviderData {
-	pub installed_games: HashMap<String, InstalledGame>,
-	pub owned_games: HashMap<String, OwnedGame>,
+	pub games: HashMap<String, Game>,
 }
 
 pub struct ProviderCache {
@@ -32,10 +31,7 @@ impl ProviderCache {
 
 		Ok(Self {
 			path: folder_path.join(id.to_string()),
-			data: ProviderData {
-				installed_games: HashMap::new(),
-				owned_games: HashMap::new(),
-			},
+			data: ProviderData::default(),
 		})
 	}
 
@@ -66,10 +62,7 @@ impl ProviderCache {
 
 	pub fn clear(&mut self) -> Result {
 		fs::remove_file(&self.path)?;
-		self.data = ProviderData {
-			installed_games: HashMap::new(),
-			owned_games: HashMap::new(),
-		};
+		self.data = ProviderData::default();
 
 		Ok(())
 	}

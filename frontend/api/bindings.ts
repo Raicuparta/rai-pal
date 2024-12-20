@@ -85,9 +85,9 @@ async getModLoaders() : Promise<Result<{ [key in string]: ModLoaderData }, Error
     else return { status: "error", error: e  as any };
 }
 },
-async getProviderData(providerId: ProviderId) : Promise<Result<ProviderData, Error>> {
+async getData(dataQuery: GamesQuery | null) : Promise<Result<GameId[], Error>> {
     try {
-    return { status: "ok", data: await TAURI_INVOKE("get_provider_data", { providerId }) };
+    return { status: "ok", data: await TAURI_INVOKE("get_data", { dataQuery }) };
 } catch (e) {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
@@ -197,9 +197,9 @@ async removeGame(installedGame: InstalledGame) : Promise<Result<null, Error>> {
     else return { status: "error", error: e  as any };
 }
 },
-async runProviderCommand(ownedGame: OwnedGame, commandAction: ProviderCommandAction) : Promise<Result<null, Error>> {
+async runProviderCommand(game: Game, commandAction: ProviderCommandAction) : Promise<Result<null, Error>> {
     try {
-    return { status: "ok", data: await TAURI_INVOKE("run_provider_command", { ownedGame, commandAction }) };
+    return { status: "ok", data: await TAURI_INVOKE("run_provider_command", { game, commandAction }) };
 } catch (e) {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
@@ -252,6 +252,30 @@ async updateLocalMods() : Promise<Result<null, Error>> {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
 }
+},
+async setGamesQuery(filter: GamesQuery | null) : Promise<Result<null, Error>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("set_games_query", { filter }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async getGamesQuery() : Promise<Result<GamesQuery, Error>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("get_games_query") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async getGame(providerId: ProviderId, index: bigint) : Promise<Result<Game | null, Error>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("get_game", { providerId, index }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
 }
 }
 
@@ -261,8 +285,7 @@ async updateLocalMods() : Promise<Result<null, Error>> {
 export const events = __makeEvents__<{
 errorRaised: ErrorRaised,
 executedProviderCommand: ExecutedProviderCommand,
-foundInstalledGame: FoundInstalledGame,
-foundOwnedGame: FoundOwnedGame,
+foundGame: FoundGame,
 selectInstalledGame: SelectInstalledGame,
 syncLocalMods: SyncLocalMods,
 syncModLoaders: SyncModLoaders,
@@ -270,8 +293,7 @@ syncRemoteMods: SyncRemoteMods
 }>({
 errorRaised: "error-raised",
 executedProviderCommand: "executed-provider-command",
-foundInstalledGame: "found-installed-game",
-foundOwnedGame: "found-owned-game",
+foundGame: "found-game",
 selectInstalledGame: "select-installed-game",
 syncLocalMods: "sync-local-mods",
 syncModLoaders: "sync-mod-loaders",
@@ -293,31 +315,34 @@ export type EngineVersionRange = { minimum: EngineVersionNumbers | null; maximum
 export type Error = "Tauri" | "Core" | "SerdeJson" | { FailedToGetResourcesPath: string } | { EmptyStateData: [] } | { FailedToAccessStateData: string }
 export type ErrorRaised = string
 export type ExecutedProviderCommand = null
-export type FoundInstalledGame = []
-export type FoundOwnedGame = []
+export type FoundGame = []
+export type Game = { id: string; providerId: ProviderId; tags: GameTag[]; installedGame: InstalledGame | null; title: GameTitle; thumbnailUrl: string | null; releaseDate: bigint | null; providerCommands: { [key in ProviderCommandAction]: ProviderCommand }; fromSubscriptions: GameSubscription[] }
 export type GameEngine = { brand: EngineBrand; version: EngineVersion | null }
 export type GameExecutable = { path: string; name: string; engine: GameEngine | null; architecture: Architecture | null; scriptingBackend: UnityScriptingBackend | null }
+export type GameId = { providerId: ProviderId; index: bigint }
 export type GameSubscription = "UbisoftClassics" | "UbisoftPremium" | "XboxGamePass" | "EaPlay"
 export type GameTag = "VR" | "Demo"
 export type GameTitle = { display: string; normalized: string[] }
+export type GamesFilter = { providers: { [key in ProviderId]: boolean }; tags: { [key in GameTag]: boolean }; architectures: { [key in Architecture]: boolean }; unityScriptingBackends: { [key in UnityScriptingBackend]: boolean }; engines: { [key in EngineBrand]: boolean }; installed: { [key in InstallState]: boolean } }
+export type GamesQuery = { filter: GamesFilter; search: string; sortBy: GamesSortBy; sortDescending: boolean }
+export type GamesSortBy = "Title" | "Tags" | "Provider" | "Architecture" | "ScriptingBackend" | "Engine"
 export type IdKind = "Steam" | "Manual" | "Itch" | "Epic" | "Gog" | "Xbox" | "Ubisoft" | "NormalizedTitle"
-export type InstalledGame = { id: string; title: GameTitle; provider: ProviderId; executable: GameExecutable; installedModVersions: { [key in string]: string }; discriminator: string | null; thumbnailUrl: string | null; ownedGameId: string | null; startCommand: ProviderCommand | null }
+export type InstallState = "Installed" | "NotInstalled"
+export type InstalledGame = { id: string; executable: GameExecutable; installedModVersions: { [key in string]: string }; discriminator: string | null; thumbnailUrl: string | null; startCommand: ProviderCommand | null; hasOutdatedMod: boolean }
 export type LocalMod = { data: LocalModData; common: CommonModData }
 export type LocalModData = { path: string; manifest: Manifest | null }
 export type Manifest = { title: string | null; version: string; runnable: RunnableModData | null; engine: EngineBrand | null; engineVersionRange: EngineVersionRange | null; unityBackend: UnityScriptingBackend | null }
 export type ModDownload = { id: string; url: string; root: string | null; runnable: RunnableModData | null }
 export type ModKind = "Installable" | "Runnable"
 export type ModLoaderData = { id: string; path: string; kind: ModKind }
-export type OwnedGame = { globalId: string; providerGameId: string; provider: ProviderId; title: GameTitle; releaseDate: bigint | null; thumbnailUrl: string | null; tags: GameTag[]; providerCommands: { [key in ProviderCommandAction]: ProviderCommand }; fromSubscriptions: GameSubscription[] }
 export type ProviderCommand = { String: string } | { Path: [string, string[]] }
 export type ProviderCommandAction = "Install" | "ShowInLibrary" | "ShowInStore" | "Start" | "OpenInBrowser"
-export type ProviderData = { installedGames: { [key in string]: InstalledGame }; ownedGames: { [key in string]: OwnedGame } }
 export type ProviderId = "Steam" | "Manual" | "Itch" | "Epic" | "Gog" | "Xbox"
 export type RemoteGame = { title: string | null; engines: GameEngine[] | null; ids: { [key in IdKind]: string[] }; subscriptions: GameSubscription[] | null }
 export type RemoteMod = { common: CommonModData; data: RemoteModData }
 export type RemoteModData = { title: string; deprecated: boolean; author: string; sourceCode: string; description: string; latestVersion: ModDownload | null }
 export type RunnableModData = { path: string; args: string[] }
-export type SelectInstalledGame = string
+export type SelectInstalledGame = [ProviderId, string]
 export type SyncLocalMods = { [key in string]: LocalMod }
 export type SyncModLoaders = { [key in string]: ModLoaderData }
 export type SyncRemoteMods = { [key in string]: RemoteMod }

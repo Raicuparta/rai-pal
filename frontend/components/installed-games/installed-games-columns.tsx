@@ -1,10 +1,4 @@
 import { Table, Tooltip } from "@mantine/core";
-import {
-	Architecture,
-	EngineBrand,
-	ProviderId,
-	UnityScriptingBackend,
-} from "@api/bindings";
 import { TableColumnBase, columnMapToList } from "@components/table/table-head";
 import { ItemName } from "../item-name";
 import {
@@ -15,151 +9,130 @@ import {
 } from "@components/badges/color-coded-badge";
 import { ThumbnailCell } from "@components/table/thumbnail-cell";
 import { OutdatedMarker } from "@components/outdated-marker";
-import {
-	engineFilterOptions,
-	providerFilterOptions,
-} from "@util/common-filter-options";
 import styles from "../table/table.module.css";
-import { ProcessedInstalledGame } from "@hooks/use-processed-installed-games";
 import { getThumbnailWithFallback } from "@util/fallback-thumbnail";
-import { sortGamesByEngine } from "@util/game-engines";
-import {
-	filterGameTags,
-	gameTagFilterOptions,
-	getGameTagsSortValue,
-	renderGameTagsCell,
-} from "@components/game-tags/game-tags";
+import { Game, GamesSortBy } from "@api/bindings";
+import { GameTagsCell } from "@components/game-tags/game-tags";
 
-const thumbnail: TableColumnBase<ProcessedInstalledGame> = {
+type InstalledGameColumn = TableColumnBase<Game, GamesSortBy>;
+
+type CellProps = { readonly item: Game };
+
+const ThumbnailComponent = ({ item }: CellProps) => (
+	<ThumbnailCell
+		src={getThumbnailWithFallback(
+			item.installedGame?.thumbnailUrl || item?.thumbnailUrl,
+			item.providerId,
+		)}
+	/>
+);
+
+const thumbnail: InstalledGameColumn = {
 	hideInDetails: true,
 	label: "Thumbnail",
 	hideLabel: true,
 	hidable: true,
 	width: 100,
-	renderCell: (game) => (
-		<ThumbnailCell
-			src={getThumbnailWithFallback(
-				game.thumbnailUrl || game.ownedGame?.thumbnailUrl,
-				game.provider,
-			)}
-		/>
-	),
+	component: ThumbnailComponent,
 };
 
-const name: TableColumnBase<ProcessedInstalledGame> = {
+const NameCell = ({ item }: CellProps) => (
+	<Table.Td className={styles.nameCell}>
+		<Tooltip
+			disabled={!item.installedGame?.hasOutdatedMod}
+			label="One of the mods installed in this game is outdated."
+			position="bottom"
+		>
+			<span>
+				<ItemName label={item.installedGame?.discriminator}>
+					{item.installedGame?.hasOutdatedMod && <OutdatedMarker />}
+					{item?.title.display}
+				</ItemName>
+			</span>
+		</Tooltip>
+	</Table.Td>
+);
+
+const name: InstalledGameColumn = {
 	hideInDetails: true,
 	label: "Game",
-	getSortValue: (game) => game.title.display,
-	renderCell: (game) => (
-		<Table.Td className={styles.nameCell}>
-			<Tooltip
-				disabled={!game.hasOutdatedMod}
-				label="One of the mods installed in this game is outdated."
-				position="bottom"
-			>
-				<span>
-					<ItemName label={game.discriminator}>
-						{game.hasOutdatedMod && <OutdatedMarker />}
-						{game.title.display}
-					</ItemName>
-				</span>
-			</Tooltip>
-		</Table.Td>
-	),
+	sort: "Title",
+	component: NameCell,
 };
 
-const provider: TableColumnBase<ProcessedInstalledGame, ProviderId> = {
+const provider: InstalledGameColumn = {
 	label: "Provider",
+	sort: "Provider",
 	width: 110,
 	center: true,
 	hidable: true,
-	getSortValue: (game) => game.provider,
-	filter: (game, hiddenValues) => hiddenValues.includes(game.provider),
-	filterOptions: providerFilterOptions,
-	renderCell: (game) => (
+	component: ({ item }: CellProps) => (
 		<Table.Td>
-			<ProviderBadge value={game.provider} />
+			<ProviderBadge value={item.providerId} />
 		</Table.Td>
 	),
 };
 
-const architecture: TableColumnBase<ProcessedInstalledGame, Architecture> = {
+const architecture: InstalledGameColumn = {
 	label: "Arch",
+	sort: "Architecture",
 	width: 70,
 	center: true,
 	hidable: true,
-	getSortValue: (game) => game.executable.architecture,
-	filter: (game, hiddenValues) =>
-		hiddenValues.includes(game.executable.architecture),
-	filterOptions: [
-		{ label: "x64", value: "X64" },
-		{ label: "x86", value: "X86" },
-	],
-	renderCell: (game) => (
+	component: ({ item }: CellProps) => (
 		<Table.Td>
-			<ArchitectureBadge value={game.executable.architecture} />
+			<ArchitectureBadge value={item.installedGame?.executable.architecture} />
 		</Table.Td>
 	),
 };
 
-const scriptingBackend: TableColumnBase<
-	ProcessedInstalledGame,
-	UnityScriptingBackend
-> = {
+const scriptingBackend: InstalledGameColumn = {
 	label: "Backend",
+	sort: "ScriptingBackend",
 	width: 90,
 	center: true,
 	hidable: true,
-	getSortValue: (game) => game.executable.scriptingBackend,
-	filter: (game, hiddenValues) =>
-		hiddenValues.includes(game.executable.scriptingBackend),
-	filterOptions: [
-		{ label: "IL2CPP", value: "Il2Cpp" },
-		{ label: "Mono", value: "Mono" },
-	],
-	renderCell: (game) => (
+	component: ({ item }: CellProps) => (
 		<Table.Td>
-			<UnityBackendBadge value={game.executable.scriptingBackend} />
-		</Table.Td>
-	),
-};
-
-const gameTags: TableColumnBase<ProcessedInstalledGame, string> = {
-	label: "Tags",
-	width: 120,
-	center: true,
-	hidable: true,
-	getSortValue: (game) => getGameTagsSortValue(game.ownedGame),
-	filter: (game, hiddenValues) => filterGameTags(game.ownedGame, hiddenValues),
-	filterOptions: gameTagFilterOptions,
-	renderCell: (game) => renderGameTagsCell(game.ownedGame),
-};
-
-const engine: TableColumnBase<ProcessedInstalledGame, EngineBrand> = {
-	label: "Engine",
-	width: 180,
-	center: true,
-	hidable: true,
-	sort: (dataA, dataB) =>
-		sortGamesByEngine(dataA.executable.engine, dataB.executable.engine),
-	filter: (game, hiddenValues) =>
-		hiddenValues.includes(game.executable.engine?.brand ?? null),
-	unavailableValues: ["Godot", "GameMaker"],
-	filterOptions: engineFilterOptions,
-	renderCell: ({ executable: { engine } }) => (
-		<Table.Td
-			// A bit annoying that I'm defining the column width in two places (see engineColumn.width),
-			// but it's to prevent this one from being squished and hiding the version number.
-			// Maybe I shouldn't be using a regular table component at all for this...
-			miw={170}
-		>
-			<EngineBadge
-				maw={70}
-				value={engine?.brand}
-				label={engine ? (engine.version?.display ?? "-") : undefined}
+			<UnityBackendBadge
+				value={item.installedGame?.executable.scriptingBackend}
 			/>
 		</Table.Td>
 	),
+};
+
+const gameTags: InstalledGameColumn = {
+	label: "Tags",
+	sort: "Tags",
+	width: 120,
+	center: true,
+	hidable: true,
+	component: GameTagsCell,
+};
+
+const engine: InstalledGameColumn = {
+	label: "Engine",
+	sort: "Engine",
+	width: 180,
+	center: true,
+	hidable: true,
+	component: ({ item }: CellProps) => {
+		const engine = item.installedGame?.executable?.engine;
+		return (
+			<Table.Td
+			// A bit annoying that I'm defining the column width in two places (see engineColumn.width),
+			// but it's to prevent this one from being squished and hiding the version number.
+			// Maybe I shouldn't be using a regular table component at all for this...
+			// miw={170}
+			>
+				<EngineBadge
+					maw={70}
+					value={engine?.brand}
+					label={engine ? (engine.version?.display ?? "-") : undefined}
+				/>
+			</Table.Td>
+		);
+	},
 };
 
 const installedGamesColumnsMap = {

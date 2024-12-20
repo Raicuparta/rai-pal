@@ -1,16 +1,20 @@
 use std::{
+	cmp::Ordering,
 	collections::HashMap,
 	fs::{self},
 	path::{Path, PathBuf},
 };
 
 use log::error;
-use rai_pal_proc_macros::serializable_struct;
+use rai_pal_proc_macros::{serializable_enum, serializable_struct};
 
 use crate::{
-	game_executable::GameExecutable,
+	game::Game,
+	game_engines::{game_engine::EngineBrand, unity::UnityScriptingBackend},
+	game_executable::{Architecture, GameExecutable},
+	game_tag::GameTag,
 	game_title::GameTitle,
-	mod_manifest, owned_game,
+	mod_manifest,
 	paths::{self, glob_path, hash_path},
 	providers::{provider::ProviderId, provider_command::ProviderCommand},
 	result::{Error, Result},
@@ -19,14 +23,12 @@ use crate::{
 #[serializable_struct]
 pub struct InstalledGame {
 	pub id: String,
-	pub title: GameTitle,
-	pub provider: ProviderId,
 	pub executable: GameExecutable,
 	pub installed_mod_versions: InstalledModVersions,
 	pub discriminator: Option<String>,
 	pub thumbnail_url: Option<String>,
-	pub owned_game_id: Option<String>,
 	pub start_command: Option<ProviderCommand>,
+	pub has_outdated_mod: bool,
 }
 
 type InstalledModVersions = HashMap<String, String>;
@@ -60,14 +62,12 @@ impl InstalledGame {
 
 		let mut installed_game = Self {
 			id: game_id,
-			title: GameTitle::new(name),
-			provider: provider_id,
 			installed_mod_versions: HashMap::default(),
 			executable: GameExecutable::new(path)?,
 			discriminator: None,
 			thumbnail_url: None,
 			start_command: None,
-			owned_game_id: None,
+			has_outdated_mod: false,
 		};
 
 		installed_game.refresh_installed_mods();
@@ -92,11 +92,6 @@ impl InstalledGame {
 
 	pub fn set_start_command_path(&mut self, path: &Path, args: Vec<String>) -> &Self {
 		self.start_command = Some(ProviderCommand::Path(path.to_path_buf(), args));
-		self
-	}
-
-	pub fn set_provider_game_id(&mut self, provider_game_id: &str) -> &Self {
-		self.owned_game_id = Some(owned_game::get_global_id(self.provider, provider_game_id));
 		self
 	}
 

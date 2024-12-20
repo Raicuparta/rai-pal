@@ -8,8 +8,8 @@ use rai_pal_proc_macros::serializable_struct;
 
 use super::provider::{ProviderActions, ProviderId, ProviderStatic};
 use crate::{
+	game::Game,
 	installed_game::InstalledGame,
-	owned_game::OwnedGame,
 	paths::{app_data_path, file_name_without_extension},
 	result::{Error, Result},
 };
@@ -34,21 +34,28 @@ impl ProviderStatic for Manual {
 }
 
 impl ProviderActions for Manual {
-	async fn get_games<TInstalledCallback, TOwnedCallback>(
-		&self,
-		mut installed_callback: TInstalledCallback,
-		mut _owned_callback: TOwnedCallback,
-	) -> Result
-	where
-		TInstalledCallback: FnMut(InstalledGame) + Send + Sync,
-		TOwnedCallback: FnMut(OwnedGame) + Send + Sync,
-	{
-		for path in read_games_config(&games_config_path()?).paths {
-			if let Some(installed_game) = create_game_from_path(&path) {
-				installed_callback(installed_game);
-			}
-		}
+	// async fn get_games<TInstalledCallback, TOwnedCallback>(
+	// 	&self,
+	// 	mut installed_callback: TInstalledCallback,
+	// 	mut _owned_callback: TOwnedCallback,
+	// ) -> Result
+	// where
+	// 	TInstalledCallback: FnMut(InstalledGame) + Send + Sync,
+	// 	TOwnedCallback: FnMut(OwnedGame) + Send + Sync,
+	// {
+	// 	for path in read_games_config(&games_config_path()?).paths {
+	// 		if let Some(installed_game) = create_game_from_path(&path) {
+	// 			installed_callback(installed_game);
+	// 		}
+	// 	}
 
+	// 	Ok(())
+	// }
+
+	async fn get_games_new<TCallback>(&self, callback: TCallback) -> Result
+	where
+		TCallback: FnMut(Game) + Send + Sync,
+	{
 		Ok(())
 	}
 }

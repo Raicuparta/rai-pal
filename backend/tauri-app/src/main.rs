@@ -3,19 +3,21 @@
 // Command stuff needs to be async so I can spawn tasks.
 #![allow(clippy::unused_async)]
 
+use std::sync::{Arc, RwLock};
 use std::{collections::HashMap, path::PathBuf, sync::Mutex};
 
 use crate::result::{Error, Result};
-use app_state::{AppState, DataValue, StateData, StatefulHandle};
+use app_state::{AppState, DataValue, GameId, StateData, StatefulHandle};
 use events::EventEmitter;
+use rai_pal_core::game::Game;
+use rai_pal_core::games_query::GamesQuery;
 use rai_pal_core::installed_game::InstalledGame;
 use rai_pal_core::local_mod::{self, LocalMod};
 use rai_pal_core::maps::TryGettable;
 use rai_pal_core::mod_loaders::mod_loader::{self, ModLoaderActions};
-use rai_pal_core::owned_game::OwnedGame;
 use rai_pal_core::paths::{self, normalize_path};
 use rai_pal_core::providers::provider::ProviderId;
-use rai_pal_core::providers::provider_cache::{ProviderCache, ProviderData};
+use rai_pal_core::providers::provider_cache::ProviderCache;
 use rai_pal_core::providers::{
 	manual_provider,
 	provider::{self, ProviderActions},
@@ -227,19 +229,21 @@ async fn open_installed_mod_folder(
 }
 
 fn refresh_game_mods_and_exe(installed_game: &InstalledGame, handle: &AppHandle) -> Result {
-	let mut refreshed_game = installed_game.clone();
-	refreshed_game.refresh_installed_mods();
-	refreshed_game.refresh_executable()?;
+	// TODO
 
-	if let Some(installed_games_state) = handle
-		.app_state()
-		.installed_games
-		.get(&installed_game.provider)
-	{
-		let mut installed_games = installed_games_state.get_data()?;
-		installed_games.insert(refreshed_game.id.clone(), refreshed_game.clone());
-		update_installed_games_state(handle, &installed_game.provider, &installed_games);
-	}
+	// let mut refreshed_game = installed_game.clone();
+	// refreshed_game.refresh_installed_mods();
+	// refreshed_game.refresh_executable()?;
+
+	// if let Some(installed_games_state) = handle
+	// 	.app_state()
+	// 	.installed_games
+	// 	.get(&installed_game.provider)
+	// {
+	// 	let mut installed_games = installed_games_state.get_data()?;
+	// 	installed_games.insert(refreshed_game.id.clone(), refreshed_game.clone());
+	// 	update_installed_games_state(handle, &installed_game.provider, &installed_games);
+	// }
 
 	Ok(())
 }
@@ -391,90 +395,48 @@ async fn fetch_remote_games() -> Result<Vec<RemoteGame>> {
 	Ok(remote_games::get().await?)
 }
 
-fn update_installed_games_state(
-	handle: &AppHandle,
-	provider_id: &ProviderId,
-	installed_games: &HashMap<String, InstalledGame>,
-) {
-	if let Some(mutex) = handle.app_state().installed_games.get(provider_id) {
-		update_state(installed_games.clone(), mutex);
-	}
-	handle.emit_safe(events::FoundInstalledGame());
-}
-
-fn update_owned_games_state(
-	handle: &AppHandle,
-	provider_id: &ProviderId,
-	owned_games: &HashMap<String, OwnedGame>,
-) {
-	if let Some(mutex) = handle.app_state().owned_games.get(provider_id) {
-		update_state(owned_games.clone(), mutex);
-	}
-	handle.emit_safe(events::FoundOwnedGame());
-}
-
 #[tauri::command]
 #[specta::specta]
 async fn get_provider_games(handle: AppHandle, provider_id: ProviderId) -> Result {
-	let mut cache = ProviderCache::new(provider_id)?;
+	// let mut cache = ProviderCache::new(provider_id)?;
 
-	let mut installed_games = HashMap::<String, InstalledGame>::new();
-	let mut installed_games_without_cache = HashMap::<String, InstalledGame>::new();
-
-	let mut owned_games = HashMap::<String, OwnedGame>::new();
-	let mut owned_games_without_cache = HashMap::<String, OwnedGame>::new();
-
-	if let Err(err) = cache.load() {
-		log::warn!("Failed to load cache for provider {provider_id}: {err}");
-	} else {
-		installed_games = cache.data.installed_games.clone();
-		owned_games = cache.data.owned_games.clone();
-		update_installed_games_state(&handle, &provider_id, &installed_games);
-		update_owned_games_state(&handle, &provider_id, &owned_games);
-	}
+	// if let Err(err) = cache.load() {
+	// 	log::warn!("Failed to load cache for provider {provider_id}: {err}");
+	// } else {
+	// 	installed_games = cache.data.installed_games.clone();
+	// 	owned_games = cache.data.owned_games.clone();
+	// 	update_installed_games_state(&handle, &provider_id, &installed_games);
+	// 	update_owned_games_state(&handle, &provider_id, &owned_games);
+	// }
 
 	let provider = provider::get_provider(provider_id)?;
-	let mut owned_count = 0;
-	let mut installed_count = 0;
-	// Sending to frontend too often makes things slow,
-	// especially for very large libraries where I'm cloning the entire game map every time I push it.
-	// So we send the game lists in batches!
-	const BATCH_SIZE: usize = 500;
 
-	provider.get_games(
-			|game: InstalledGame| {
-				installed_count += 1;
-				installed_games_without_cache.insert(game.id.clone(), game.clone());
-				installed_games.insert(game.id.clone(), game);
-				if (installed_count % BATCH_SIZE) == 0 {
-					update_installed_games_state(&handle, &provider_id, &installed_games);
-				}
-			},
-			|game: OwnedGame| {
-				owned_count += 1;
-				owned_games_without_cache.insert(game.global_id.clone(), game.clone());
-				owned_games.insert(game.global_id.clone(), game);
-				if (owned_count % BATCH_SIZE) == 0 {
-					update_owned_games_state(&handle, &provider_id, &owned_games);
-				}
-			},
-		)
-		.await
-		.unwrap_or_else(|err| {
-			// It's normal for a provider to fail here if that provider is just missing.
-			// So we log those errors here instead of throwing them up.
-			log::warn!("Failed to get games for provider {provider_id}. User might just not have it. Error: {err}");
-		});
+	handle.app_state().games.write().unwrap().clear();
 
-	update_installed_games_state(&handle, &provider_id, &installed_games_without_cache);
-	update_owned_games_state(&handle, &provider_id, &owned_games_without_cache);
+	provider.get_games_new(|game: Game| {
+		handle
+			.app_state()
+			.games
+			.write()
+			.unwrap()
+			.entry(provider_id)
+			.or_default()
+			.push(game);
+		handle.emit_safe(events::FoundGame());
+	}).await.unwrap_or_else(|err| {
+		// It's normal for a provider to fail here if that provider is just missing.
+		// So we log those errors here instead of throwing them up.
+		log::warn!("Failed to get games for provider {provider_id}. User might just not have it. Error: {err}");
+	});
 
-	cache
-		.set_data(ProviderData {
-			installed_games: installed_games_without_cache.clone(),
-			owned_games: owned_games_without_cache.clone(),
-		})
-		.save()?;
+	// update_games_state(&handle, &provider_id, &games);
+
+	// cache
+	// 	.set_data(ProviderData {
+	// 		installed_games: installed_games_without_cache.clone(),
+	// 		owned_games: owned_games_without_cache.clone(),
+	// 	})
+	// 	.save()?;
 
 	Ok(())
 }
@@ -488,21 +450,24 @@ async fn get_provider_ids() -> Result<Vec<ProviderId>> {
 #[tauri::command]
 #[specta::specta]
 async fn add_game(path: PathBuf, handle: AppHandle) -> Result {
-	let normalized_path = normalize_path(&path);
+	// let normalized_path = normalize_path(&path);
 
-	let installed_game = manual_provider::add_game(&normalized_path)?;
-	let game_name = installed_game.title.display.clone();
+	// let installed_game = manual_provider::add_game(&normalized_path)?;
+	// let game_name = installed_game.title.display.clone();
 
-	if let Some(installed_games_state) = handle.app_state().installed_games.get(&ProviderId::Manual)
-	{
-		let mut installed_games = installed_games_state.get_data()?;
-		installed_games.insert(installed_game.id.clone(), installed_game.clone());
-		update_installed_games_state(&handle, &installed_game.provider, &installed_games);
-	}
+	// if let Some(installed_games_state) = handle.app_state().installed_games.get(&ProviderId::Manual)
+	// {
+	// 	let mut installed_games = installed_games_state.get_data()?;
+	// 	installed_games.insert(installed_game.id.clone(), installed_game.clone());
+	// 	update_installed_games_state(&handle, &installed_game.provider, &installed_games);
+	// }
 
-	handle.emit_safe(events::SelectInstalledGame(installed_game.id.clone()));
+	// handle.emit_safe(events::SelectInstalledGame(
+	// 	installed_game.provider,
+	// 	installed_game.id.clone(),
+	// ));
 
-	analytics::send_event(analytics::Event::ManuallyAddGame, &game_name).await;
+	// analytics::send_event(analytics::Event::ManuallyAddGame, &game_name).await;
 
 	Ok(())
 }
@@ -510,17 +475,17 @@ async fn add_game(path: PathBuf, handle: AppHandle) -> Result {
 #[tauri::command]
 #[specta::specta]
 async fn remove_game(installed_game: InstalledGame, handle: AppHandle) -> Result {
-	manual_provider::remove_game(&installed_game.executable.path)?;
+	// manual_provider::remove_game(&installed_game.executable.path)?;
 
-	if let Some(installed_games_state) = handle
-		.app_state()
-		.installed_games
-		.get(&installed_game.provider)
-	{
-		let mut installed_games = installed_games_state.get_data()?;
-		installed_games.remove(&installed_game.id);
-		update_installed_games_state(&handle, &installed_game.provider, &installed_games);
-	}
+	// if let Some(installed_games_state) = handle
+	// 	.app_state()
+	// 	.installed_games
+	// 	.get(&installed_game.provider)
+	// {
+	// 	let mut installed_games = installed_games_state.get_data()?;
+	// 	installed_games.remove(&installed_game.id);
+	// 	update_installed_games_state(&handle, &installed_game.provider, &installed_games);
+	// }
 
 	Ok(())
 }
@@ -528,14 +493,11 @@ async fn remove_game(installed_game: InstalledGame, handle: AppHandle) -> Result
 #[tauri::command]
 #[specta::specta]
 async fn run_provider_command(
-	owned_game: OwnedGame,
+	game: Game,
 	command_action: ProviderCommandAction,
 	handle: AppHandle,
 ) -> Result {
-	owned_game
-		.provider_commands
-		.try_get(&command_action)?
-		.run()?;
+	game.provider_commands.try_get(&command_action)?.run()?;
 
 	handle.emit_safe(events::ExecutedProviderCommand);
 
@@ -566,20 +528,63 @@ async fn open_logs_folder() -> Result {
 
 #[tauri::command]
 #[specta::specta]
-async fn get_provider_data(handle: AppHandle, provider_id: ProviderId) -> Result<ProviderData> {
+async fn get_data(handle: AppHandle, data_query: Option<GamesQuery>) -> Result<Vec<GameId>> {
 	let state = handle.app_state();
-	Ok(ProviderData {
-		installed_games: state
-			.installed_games
-			.try_get(&provider_id)?
-			.get_data()
-			.unwrap_or_default(),
-		owned_games: state
-			.owned_games
-			.try_get(&provider_id)?
-			.get_data()
-			.unwrap_or_default(),
-	})
+
+	let read_guard = state.games.read().unwrap();
+
+	let games_iter = read_guard
+		.values()
+		.flat_map(|games| games.iter())
+		.enumerate();
+
+	let total_games_count = games_iter.clone().count();
+
+	let games: Vec<_> = if let Some(query) = data_query.as_ref() {
+		// stringify query
+		let query_string = serde_json::to_string_pretty(query).unwrap();
+		log::info!("Query: {query_string}");
+
+		let mut games: Vec<_> = games_iter
+			.filter(|(_index, game)| query.matches(game))
+			.collect();
+		games.sort_by(|(_index_a, game_a), (_index_b, game_b)| query.sort(game_a, game_b));
+		log::info!(
+			"Found {} filtered games out of {}",
+			games.len(),
+			total_games_count
+		);
+		games
+	} else {
+		let games: Vec<_> = games_iter.collect();
+		log::info!("Found {} unfiltered games", games.len());
+		games
+	};
+
+	Ok(games
+		.into_iter()
+		.map(|(index, game)| GameId {
+			index,
+			provider_id: game.provider_id,
+		})
+		.collect())
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn get_game(
+	handle: AppHandle,
+	provider_id: ProviderId,
+	index: usize,
+) -> Result<Option<Game>> {
+	Ok(handle
+		.app_state()
+		.games
+		.read()
+		.unwrap()
+		.try_get(&provider_id)?
+		.get(index)
+		.cloned())
 }
 
 #[tauri::command]
@@ -587,6 +592,28 @@ async fn get_provider_data(handle: AppHandle, provider_id: ProviderId) -> Result
 async fn clear_cache() -> Result {
 	ProviderCache::clear_all()?;
 	Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn set_games_query(handle: AppHandle, filter: Option<GamesQuery>) -> Result {
+	update_state(filter.unwrap_or_default(), &handle.app_state().data_query);
+	handle.emit_safe(events::FoundGame());
+	Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn get_games_query(handle: AppHandle) -> Result<GamesQuery> {
+	handle.app_state().data_query.get_data().map_or_else(
+		|error| {
+			log::info!(
+				"Failed to get installed games filter, falling back to default. Error: {error}"
+			);
+			Ok(GamesQuery::default())
+		},
+		Ok,
+	)
 }
 
 fn main() {
@@ -612,7 +639,7 @@ fn main() {
 			frontend_ready,
 			get_local_mods,
 			get_mod_loaders,
-			get_provider_data,
+			get_data,
 			get_provider_games,
 			get_provider_ids,
 			get_remote_mods,
@@ -633,6 +660,9 @@ fn main() {
 			uninstall_all_mods,
 			uninstall_mod,
 			update_local_mods,
+			set_games_query,
+			get_games_query,
+			get_game,
 		])
 		.events(events::collect_events());
 
@@ -667,14 +697,8 @@ fn main() {
 			mod_loaders: Mutex::default(),
 			local_mods: Mutex::default(),
 			remote_mods: Mutex::default(),
-			installed_games: provider::get_provider_ids()
-				.into_iter()
-				.map(|provider_id| (provider_id, Mutex::default()))
-				.collect(),
-			owned_games: provider::get_provider_ids()
-				.into_iter()
-				.map(|provider_id| (provider_id, Mutex::default()))
-				.collect(),
+			games: Arc::new(RwLock::default()),
+			data_query: Mutex::new(Some(GamesQuery::default())),
 		})
 		.invoke_handler(builder.invoke_handler())
 		.setup(move |app| {

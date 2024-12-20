@@ -4,13 +4,12 @@ use rai_pal_proc_macros::serializable_event;
 use serde::Serialize;
 use tauri_specta::Event;
 
-use rai_pal_core::{local_mod, mod_loaders::mod_loader, remote_mod};
+use rai_pal_core::{
+	local_mod, mod_loaders::mod_loader, providers::provider::ProviderId, remote_mod,
+};
 
 #[serializable_event]
-pub struct FoundInstalledGame();
-
-#[serializable_event]
-pub struct FoundOwnedGame();
+pub struct FoundGame();
 
 #[serializable_event]
 pub struct SyncModLoaders(pub mod_loader::DataMap);
@@ -25,7 +24,7 @@ pub struct SyncRemoteMods(pub remote_mod::Map);
 pub struct ExecutedProviderCommand;
 
 #[serializable_event]
-pub struct SelectInstalledGame(pub String);
+pub struct SelectInstalledGame(pub ProviderId, pub String);
 
 #[serializable_event]
 pub struct ErrorRaised(pub String);
@@ -53,8 +52,7 @@ impl EventEmitter for tauri::AppHandle {
 
 pub fn collect_events() -> tauri_specta::Events {
 	tauri_specta::collect_events![
-		FoundInstalledGame,
-		FoundOwnedGame,
+		FoundGame,
 		SyncModLoaders,
 		SyncLocalMods,
 		SyncRemoteMods,

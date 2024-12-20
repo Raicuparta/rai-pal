@@ -1,15 +1,17 @@
-import { useCallback, useEffect, useState } from "react";
-import { useSetAtom } from "jotai";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useAtomValue, useSetAtom } from "jotai";
 import { commands, Result, Error, events, ProviderId } from "@api/bindings";
-import { loadingCountAtom, providerDataAtom } from "./use-data";
+import { loadingCountAtom, gameIdsAtom } from "./use-data";
 import { showAppNotification } from "@components/app-notifications";
 import { useAppEvent } from "./use-app-event";
-import { useThrottledCallback } from "@mantine/hooks";
+import { gamesQueryAtom } from "./use-data-query";
 
 export function useUpdateData(executeOnMount = false) {
 	const setLoading = useSetAtom(loadingCountAtom);
-	const setProviderData = useSetAtom(providerDataAtom);
+	const setGameIds = useSetAtom(gameIdsAtom);
+	const gamesQuery = useAtomValue(gamesQueryAtom);
 	const [providerIds, setProviderIds] = useState<ProviderId[]>([]);
+	const fetchCount = useRef(0);
 
 	useEffect(() => {
 		commands.getProviderIds().then((providerIdsResult) => {
@@ -26,33 +28,32 @@ export function useUpdateData(executeOnMount = false) {
 	}, []);
 
 	const updateProviderGames = useCallback(() => {
-		for (const providerId of providerIds) {
-			commands.getProviderData(providerId).then((result) => {
-				if (result.status === "error") {
-					showAppNotification(
-						`Failed to get provider data for ${providerId}: ${result.error}`,
-						"error",
-					);
-					return false;
-				}
+		fetchCount.current++;
+		const thisFetchCount = fetchCount.current;
+		commands.getData(gamesQuery).then((result) => {
+			if (thisFetchCount !== fetchCount.current) {
+				console.log(
+					"Cancelling this fetch since another one happened in the meantime.",
+				);
+				return false;
+			}
 
-				setProviderData((previousProviderData) => ({
-					...previousProviderData,
-					[providerId]: result.data,
-				}));
+			if (result.status === "error") {
+				showAppNotification(`Failed to get app data: ${result.error}`, "error");
+				return false;
+			}
 
-				return true;
-			});
-		}
-	}, [providerIds, setProviderData]);
+			setGameIds(result.data);
 
-	const throttledUpdateProviderGames = useThrottledCallback(
-		updateProviderGames,
-		1000,
-	);
+			return true;
+		});
+	}, [gamesQuery, setGameIds]);
 
-	useAppEvent(events.foundOwnedGame, throttledUpdateProviderGames);
-	useAppEvent(events.foundInstalledGame, throttledUpdateProviderGames);
+	useEffect(() => {
+		updateProviderGames();
+	}, [updateProviderGames]);
+
+	useAppEvent(events.foundGame, updateProviderGames);
 
 	const updateAppData = useCallback(() => {
 		function handleDataPromise(promise: Promise<Result<null, Error>>) {
