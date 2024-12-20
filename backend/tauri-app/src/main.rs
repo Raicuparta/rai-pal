@@ -9,7 +9,8 @@ use std::{collections::HashMap, path::PathBuf, sync::Mutex};
 use crate::result::{Error, Result};
 use app_state::{AppState, DataValue, GameId, StateData, StatefulHandle};
 use events::EventEmitter;
-use rai_pal_core::game::{DataQuery, Game};
+use rai_pal_core::game::Game;
+use rai_pal_core::games_query::GamesQuery;
 use rai_pal_core::installed_game::InstalledGame;
 use rai_pal_core::local_mod::{self, LocalMod};
 use rai_pal_core::maps::TryGettable;
@@ -577,7 +578,7 @@ async fn clear_cache() -> Result {
 
 #[tauri::command]
 #[specta::specta]
-async fn set_games_query(handle: AppHandle, filter: Option<DataQuery>) -> Result {
+async fn set_games_query(handle: AppHandle, filter: Option<GamesQuery>) -> Result {
 	update_state(filter.unwrap_or_default(), &handle.app_state().data_query);
 	handle.emit_safe(events::FoundGame());
 	Ok(())
@@ -585,13 +586,13 @@ async fn set_games_query(handle: AppHandle, filter: Option<DataQuery>) -> Result
 
 #[tauri::command]
 #[specta::specta]
-async fn get_games_query(handle: AppHandle) -> Result<DataQuery> {
+async fn get_games_query(handle: AppHandle) -> Result<GamesQuery> {
 	handle.app_state().data_query.get_data().map_or_else(
 		|error| {
 			log::info!(
 				"Failed to get installed games filter, falling back to default. Error: {error}"
 			);
-			Ok(DataQuery::default())
+			Ok(GamesQuery::default())
 		},
 		Ok,
 	)
@@ -679,7 +680,7 @@ fn main() {
 			local_mods: Mutex::default(),
 			remote_mods: Mutex::default(),
 			games: Arc::new(RwLock::default()),
-			data_query: Mutex::new(Some(DataQuery::default())),
+			data_query: Mutex::new(Some(GamesQuery::default())),
 		})
 		.invoke_handler(builder.invoke_handler())
 		.setup(move |app| {

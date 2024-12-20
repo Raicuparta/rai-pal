@@ -10,6 +10,7 @@ pub mod game_mod;
 pub mod game_subscription;
 pub mod game_tag;
 pub mod game_title;
+pub mod games_query;
 pub mod installed_game;
 pub mod local_mod;
 pub mod maps;

@@ -1,7 +1,4 @@
-use std::{
-	cmp::Ordering,
-	collections::{HashMap, HashSet},
-};
+use std::collections::{HashMap, HashSet};
 
 use rai_pal_proc_macros::serializable_struct;
 
@@ -9,12 +6,11 @@ use crate::{
 	game_subscription::GameSubscription,
 	game_tag::GameTag,
 	game_title::GameTitle,
-	installed_game::{GamesFilter, GamesSortBy, InstalledGame},
+	installed_game::InstalledGame,
 	providers::{
 		provider::ProviderId,
 		provider_command::{ProviderCommand, ProviderCommandAction},
 	},
-	string_includes::any_contains,
 };
 
 #[serializable_struct]
@@ -78,145 +74,5 @@ impl Game {
 	) -> &mut Self {
 		self.provider_commands.insert(command_action, command);
 		self
-	}
-}
-
-#[serializable_struct]
-#[derive(Default)]
-pub struct DataQuery {
-	pub filter: GamesFilter,
-	pub search: String,
-	pub sort_by: GamesSortBy,
-	pub sort_descending: bool,
-}
-
-impl DataQuery {
-	pub fn matches(&self, game: &Game) -> bool {
-		let filter = &self.filter;
-		if !filter.providers.get(&game.provider_id).unwrap_or(&true) {
-			return false;
-		}
-
-		let mut tags = filter.tags.iter();
-		if tags.any(|(_, enabled)| !enabled)
-			&& !tags.any(|(tag, enabled)| *enabled && game.tags.contains(tag))
-		{
-			return false;
-		}
-
-		let mut architectures = filter.architectures.iter();
-		if architectures.any(|(_, enabled)| !enabled)
-			&& !architectures.any(|(architecture, enabled)| {
-				*enabled
-					&& game.installed_game.as_ref().is_some_and(|installed_game| {
-						installed_game
-							.executable
-							.architecture
-							.is_some_and(|a| a == *architecture)
-					})
-			}) {
-			return false;
-		}
-
-		let mut engines = filter.engines.iter();
-		if engines.any(|(_, enabled)| !enabled)
-			&& !engines.any(|(engine, enabled)| {
-				*enabled
-					&& game.installed_game.as_ref().is_some_and(|installed_game| {
-						installed_game
-							.executable
-							.engine
-							.as_ref()
-							.is_some_and(|e| e.brand == *engine)
-					})
-			}) {
-			return false;
-		}
-
-		// let mut scripting_backends = toggles.unity_scripting_backends.iter();
-		// if scripting_backends.any(|(_, enabled)| !enabled)
-		// 	&& !scripting_backends.any(|(backend, enabled)| {
-		// 		*enabled
-		// 			&& game
-		// 				.executable
-		// 				.scripting_backend
-		// 				.is_some_and(|b| b == *backend)
-		// 	}) {
-		// 	return false;
-		// }
-
-		if !self.search.is_empty() {
-			// We'll try to match the search term to a bunch of different strings related to this game.
-			let mut candidates: Vec<&str> = vec![&game.title.display];
-			candidates.extend(game.title.normalized.iter().map(String::as_str));
-
-			if let Some(installed_game) = game.installed_game.as_ref() {
-				candidates.push(&installed_game.executable.name);
-			}
-
-			if !any_contains(&candidates, &self.search) {
-				return false;
-			}
-		}
-
-		true
-	}
-
-	pub fn sort(&self, game_a: &Game, game_b: &Game) -> Ordering {
-		if game_a.installed_game.is_none() {
-			return Ordering::Equal;
-		}
-		if game_b.installed_game.is_none() {
-			return Ordering::Equal;
-		}
-
-		let a = game_a.installed_game.as_ref().unwrap();
-		let b = game_b.installed_game.as_ref().unwrap();
-
-		let ordering = match self.sort_by {
-			GamesSortBy::Title => game_a.title.display.cmp(&game_a.title.display),
-			GamesSortBy::Tags => Ordering::Equal,
-			GamesSortBy::Provider => game_a
-				.provider_id
-				.to_string()
-				.cmp(&game_a.provider_id.to_string()),
-			GamesSortBy::Architecture => a
-				.executable
-				.architecture
-				.and_then(|architecture_a| {
-					b.executable.architecture.map(|architecture_b| {
-						architecture_a.to_string().cmp(&architecture_b.to_string())
-					})
-				})
-				.unwrap_or(Ordering::Equal),
-			GamesSortBy::ScriptingBackend => a
-				.executable
-				.scripting_backend
-				.and_then(|scripting_backend_a| {
-					b.executable.scripting_backend.map(|scripting_backend_b| {
-						scripting_backend_a
-							.to_string()
-							.cmp(&scripting_backend_b.to_string())
-					})
-				})
-				.unwrap_or(Ordering::Equal),
-			GamesSortBy::Engine => {
-				a.executable
-					.engine
-					.as_ref()
-					.and_then(|engine_a| {
-						b.executable.engine.as_ref().map(|engine_b| {
-							engine_a.brand.to_string().cmp(&engine_b.brand.to_string())
-						})
-					})
-					.unwrap_or(Ordering::Equal)
-			}
-		};
-
-		if self.sort_descending {
-			ordering.reverse()
-		} else {
-			ordering
-		}
 	}
 }

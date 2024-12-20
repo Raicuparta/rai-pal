@@ -12,7 +12,7 @@ use rai_pal_proc_macros::serializable_struct;
 use tauri::Manager;
 
 use rai_pal_core::{
-	game::DataQuery, game::Game, local_mod, maps::TryGettable, mod_loaders::mod_loader,
+	game::Game, games_query::GamesQuery, local_mod, maps::TryGettable, mod_loaders::mod_loader,
 	providers::provider::ProviderId, remote_mod,
 };
 
@@ -21,7 +21,7 @@ pub struct AppState {
 	pub mod_loaders: Mutex<Option<mod_loader::Map>>,
 	pub local_mods: Mutex<Option<local_mod::Map>>,
 	pub remote_mods: Mutex<Option<remote_mod::Map>>,
-	pub data_query: Mutex<Option<DataQuery>>,
+	pub data_query: Mutex<Option<GamesQuery>>,
 }
 
 #[serializable_struct]

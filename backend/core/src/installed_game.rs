@@ -31,58 +31,6 @@ pub struct InstalledGame {
 	pub has_outdated_mod: bool,
 }
 
-#[serializable_struct]
-pub struct GamesFilter {
-	pub providers: HashMap<ProviderId, bool>,
-	pub tags: HashMap<GameTag, bool>,
-	pub architectures: HashMap<Architecture, bool>,
-	pub unity_scripting_backends: HashMap<UnityScriptingBackend, bool>,
-	pub engines: HashMap<EngineBrand, bool>,
-}
-
-#[serializable_enum]
-pub enum GamesSortBy {
-	Title,
-	Tags,
-	Provider,
-	Architecture,
-	ScriptingBackend,
-	Engine,
-}
-
-impl Default for GamesSortBy {
-	fn default() -> Self {
-		Self::Title
-	}
-}
-
-impl Default for GamesFilter {
-	fn default() -> Self {
-		Self {
-			architectures: Architecture::variants()
-				.into_iter()
-				.map(|variant| (variant, true))
-				.collect(),
-			engines: EngineBrand::variants()
-				.into_iter()
-				.map(|variant| (variant, true))
-				.collect(),
-			providers: ProviderId::variants()
-				.into_iter()
-				.map(|variant| (variant, true))
-				.collect(),
-			tags: GameTag::variants()
-				.into_iter()
-				.map(|variant| (variant, true))
-				.collect(),
-			unity_scripting_backends: UnityScriptingBackend::variants()
-				.into_iter()
-				.map(|variant| (variant, true))
-				.collect(),
-		}
-	}
-}
-
 type InstalledModVersions = HashMap<String, String>;
 
 impl InstalledGame {

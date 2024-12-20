@@ -253,7 +253,7 @@ async updateLocalMods() : Promise<Result<null, Error>> {
     else return { status: "error", error: e  as any };
 }
 },
-async setGamesQuery(filter: DataQuery | null) : Promise<Result<null, Error>> {
+async setGamesQuery(filter: GamesQuery | null) : Promise<Result<null, Error>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("set_games_query", { filter }) };
 } catch (e) {
@@ -261,7 +261,7 @@ async setGamesQuery(filter: DataQuery | null) : Promise<Result<null, Error>> {
     else return { status: "error", error: e  as any };
 }
 },
-async getGamesQuery() : Promise<Result<DataQuery, Error>> {
+async getGamesQuery() : Promise<Result<GamesQuery, Error>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("get_games_query") };
 } catch (e) {
@@ -308,7 +308,6 @@ syncRemoteMods: "sync-remote-mods"
 
 export type Architecture = "X64" | "X86"
 export type CommonModData = { id: string; engine: EngineBrand | null; unityBackend: UnityScriptingBackend | null; engineVersionRange: EngineVersionRange | null; loaderId: string }
-export type DataQuery = { filter: GamesFilter; search: string; sortBy: GamesSortBy; sortDescending: boolean }
 export type EngineBrand = "Unity" | "Unreal" | "Godot" | "GameMaker"
 export type EngineVersion = { numbers: EngineVersionNumbers; suffix: string | null; display: string }
 export type EngineVersionNumbers = { major: number; minor: number | null; patch: number | null }
@@ -325,6 +324,7 @@ export type GameSubscription = "UbisoftClassics" | "UbisoftPremium" | "XboxGameP
 export type GameTag = "VR" | "Demo"
 export type GameTitle = { display: string; normalized: string[] }
 export type GamesFilter = { providers: { [key in ProviderId]: boolean }; tags: { [key in GameTag]: boolean }; architectures: { [key in Architecture]: boolean }; unityScriptingBackends: { [key in UnityScriptingBackend]: boolean }; engines: { [key in EngineBrand]: boolean } }
+export type GamesQuery = { filter: GamesFilter; search: string; sortBy: GamesSortBy; sortDescending: boolean }
 export type GamesSortBy = "Title" | "Tags" | "Provider" | "Architecture" | "ScriptingBackend" | "Engine"
 export type IdKind = "Steam" | "Manual" | "Itch" | "Epic" | "Gog" | "Xbox" | "Ubisoft" | "NormalizedTitle"
 export type InstalledGame = { id: string; executable: GameExecutable; installedModVersions: { [key in string]: string }; discriminator: string | null; thumbnailUrl: string | null; startCommand: ProviderCommand | null; hasOutdatedMod: boolean }
