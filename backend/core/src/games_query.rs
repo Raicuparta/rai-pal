@@ -80,53 +80,51 @@ impl GamesQuery {
 			return false;
 		}
 
-		let mut tags = filter.tags.iter();
-		if tags.any(|(_, enabled)| !enabled)
-			&& tags.any(|(tag, enabled)| !enabled && game.tags.contains(tag))
+		if filter
+			.tags
+			.iter()
+			.any(|(tag, enabled)| !enabled && game.tags.contains(tag))
 		{
 			return false;
 		}
 
-		let mut architectures = filter.architectures.iter();
-		if architectures.any(|(_, enabled)| !enabled)
-			&& !architectures.any(|(architecture, enabled)| {
-				*enabled
-					&& game.installed_game.as_ref().is_some_and(|installed_game| {
-						installed_game
-							.executable
-							.architecture
-							.is_some_and(|a| a == *architecture)
-					})
-			}) {
+		if filter.architectures.iter().any(|(filter_arch, enabled)| {
+			!enabled
+				&& game
+					.installed_game
+					.as_ref()
+					.and_then(|installed_game| installed_game.executable.architecture.as_ref())
+					.is_some_and(|game_arch| game_arch == filter_arch)
+		}) {
 			return false;
 		}
 
-		let mut engines = filter.engines.iter();
-		if engines.any(|(_, enabled)| !enabled)
-			&& !engines.any(|(engine, enabled)| {
-				*enabled
-					&& game.installed_game.as_ref().is_some_and(|installed_game| {
-						installed_game
-							.executable
-							.engine
-							.as_ref()
-							.is_some_and(|e| e.brand == *engine)
-					})
-			}) {
+		if filter.engines.iter().any(|(engine_brand, enabled)| {
+			!enabled
+				&& game
+					.installed_game
+					.as_ref()
+					.and_then(|installed_game| installed_game.executable.engine.as_ref())
+					.is_some_and(|engine| engine.brand == *engine_brand)
+		}) {
 			return false;
 		}
 
-		// let mut scripting_backends = toggles.unity_scripting_backends.iter();
-		// if scripting_backends.any(|(_, enabled)| !enabled)
-		// 	&& !scripting_backends.any(|(backend, enabled)| {
-		// 		*enabled
-		// 			&& game
-		// 				.executable
-		// 				.scripting_backend
-		// 				.is_some_and(|b| b == *backend)
-		// 	}) {
-		// 	return false;
-		// }
+		if filter
+			.unity_scripting_backends
+			.iter()
+			.any(|(filter_backend, enabled)| {
+				!enabled
+					&& game
+						.installed_game
+						.as_ref()
+						.and_then(|installed_game| {
+							installed_game.executable.scripting_backend.as_ref()
+						})
+						.is_some_and(|game_backend| game_backend == filter_backend)
+			}) {
+			return false;
+		}
 
 		if !self.search.is_empty() {
 			// We'll try to match the search term to a bunch of different strings related to this game.

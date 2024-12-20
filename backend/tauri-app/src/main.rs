@@ -538,16 +538,27 @@ async fn get_data(handle: AppHandle, data_query: Option<GamesQuery>) -> Result<V
 		.flat_map(|games| games.iter())
 		.enumerate();
 
+	let total_games_count = games_iter.clone().count();
+
 	let games: Vec<_> = if let Some(query) = data_query.as_ref() {
-		log::info!("Filtering games with query");
+		// stringify query
+		let query_string = serde_json::to_string_pretty(query).unwrap();
+		log::info!("Query: {query_string}");
+
 		let mut games: Vec<_> = games_iter
 			.filter(|(_index, game)| query.matches(game))
 			.collect();
 		games.sort_by(|(_index_a, game_a), (_index_b, game_b)| query.sort(game_a, game_b));
+		log::info!(
+			"Found {} filtered games out of {}",
+			games.len(),
+			total_games_count
+		);
 		games
 	} else {
-		log::info!("Filtering games WITHOUT query");
-		games_iter.collect()
+		let games: Vec<_> = games_iter.collect();
+		log::info!("Found {} unfiltered games", games.len());
+		games
 	};
 
 	Ok(games
