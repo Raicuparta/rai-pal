@@ -172,55 +172,57 @@ impl GamesQuery {
 				.to_string()
 				.cmp(&game_b.provider_id.to_string()),
 			GamesSortBy::Architecture => {
-				let a = game_a
+				let string_a = game_a
 					.installed_game
 					.as_ref()
-					.and_then(|installed_game_a| installed_game_a.executable.architecture);
-				let b = game_b
-					.installed_game
-					.as_ref()
-					.and_then(|installed_game_b| installed_game_b.executable.architecture);
+					.and_then(|installed_game_a| installed_game_a.executable.architecture)
+					.map(|architecture_a| architecture_a.to_string())
+					.unwrap_or_default();
 
-				a.and_then(|architecture_a| {
-					b.map(|architecture_b| {
-						architecture_a.to_string().cmp(&architecture_b.to_string())
-					})
-				})
-				.unwrap_or(Ordering::Equal)
+				let string_b = game_b
+					.installed_game
+					.as_ref()
+					.and_then(|installed_game_b| installed_game_b.executable.architecture)
+					.map(|architecture_b| architecture_b.to_string())
+					.unwrap_or_default();
+
+				string_a.cmp(&string_b)
 			}
 			GamesSortBy::ScriptingBackend => {
-				let a = game_a
+				let string_a = game_a
 					.installed_game
 					.as_ref()
-					.and_then(|installed_game_a| installed_game_a.executable.scripting_backend);
-				let b = game_b
-					.installed_game
-					.as_ref()
-					.and_then(|installed_game_b| installed_game_b.executable.scripting_backend);
+					.and_then(|installed_game_a| installed_game_a.executable.scripting_backend)
+					.map(|scripting_backend_a| scripting_backend_a.to_string())
+					.unwrap_or_default();
 
-				a.and_then(|scripting_backend_a| {
-					b.map(|scripting_backend_b| {
-						scripting_backend_a
-							.to_string()
-							.cmp(&scripting_backend_b.to_string())
-					})
-				})
-				.unwrap_or(Ordering::Equal)
+				let string_b = game_b
+					.installed_game
+					.as_ref()
+					.and_then(|installed_game_b| installed_game_b.executable.scripting_backend)
+					.map(|scripting_backend_b| scripting_backend_b.to_string())
+					.unwrap_or_default();
+
+				string_a.cmp(&string_b)
 			}
 			GamesSortBy::Engine => {
-				let a = game_a
-					.installed_game
-					.as_ref()
-					.and_then(|installed_game_a| installed_game_a.executable.engine.as_ref());
-				let b = game_b
-					.installed_game
-					.as_ref()
-					.and_then(|installed_game_b| installed_game_b.executable.engine.as_ref());
+				// TODO: sort by engine version too.
 
-				a.and_then(|engine_a| {
-					b.map(|engine_b| engine_a.brand.to_string().cmp(&engine_b.brand.to_string()))
-				})
-				.unwrap_or(Ordering::Equal)
+				let string_a = game_a
+					.installed_game
+					.as_ref()
+					.and_then(|installed_game_a| installed_game_a.executable.engine.as_ref())
+					.map(|engine_a| engine_a.brand.to_string())
+					.unwrap_or_default();
+
+				let string_b = game_b
+					.installed_game
+					.as_ref()
+					.and_then(|installed_game_b| installed_game_b.executable.engine.as_ref())
+					.map(|engine_b| engine_b.brand.to_string())
+					.unwrap_or_default();
+
+				string_a.cmp(&string_b)
 			}
 		};
 
