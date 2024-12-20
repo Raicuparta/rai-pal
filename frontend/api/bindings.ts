@@ -85,9 +85,9 @@ async getModLoaders() : Promise<Result<{ [key in string]: ModLoaderData }, Error
     else return { status: "error", error: e  as any };
 }
 },
-async getData() : Promise<Result<GameId[], Error>> {
+async getData(dataQuery: GamesQuery | null) : Promise<Result<GameId[], Error>> {
     try {
-    return { status: "ok", data: await TAURI_INVOKE("get_data") };
+    return { status: "ok", data: await TAURI_INVOKE("get_data", { dataQuery }) };
 } catch (e) {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };

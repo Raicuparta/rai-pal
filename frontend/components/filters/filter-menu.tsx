@@ -1,81 +1,47 @@
 import { Button, Group, Indicator, Popover } from "@mantine/core";
 import { IconFilter, IconX } from "@tabler/icons-react";
 import styles from "./filters.module.css";
-import { useCallback, useEffect, useState } from "react";
-import { type Result, type Error } from "@api/bindings";
+import { useCallback } from "react";
 import { FilterSelect } from "./filter-select";
 import { SearchInput } from "@components/search-input";
+import { GamesFilter, GamesQuery } from "@api/bindings";
+import { useDataQuery } from "@hooks/use-data-query";
 
-type Filter = {
-	filter: Record<string, Record<string, boolean>>;
-	search: string;
-};
-
-type Props<TFilter extends Filter> = {
-	readonly setterCommand: (
-		filter: TFilter | null,
-	) => Promise<Result<null, Error>>;
-	readonly getterCommand: () => Promise<Result<TFilter, Error>>;
-};
-
-export function FilterMenu<TFilter extends Filter>({
-	setterCommand,
-	getterCommand,
-}: Props<TFilter>) {
-	const [currentFilter, setCurrentFilter] = useState<TFilter>();
-	const [currentSearch, setCurrentSearch] = useState<string>("");
-
-	const updateFilters = useCallback(() => {
-		getterCommand().then((result) => {
-			if (result.status === "ok") {
-				setCurrentFilter(result.data);
-			}
-		});
-	}, [getterCommand]);
+export function FilterMenu() {
+	const [dataQuery, setDataQuery] = useDataQuery();
 
 	const handleToggleClick = useCallback(
-		(id: string, value: string) => {
-			setterCommand({
-				...currentFilter,
+		(id: keyof GamesFilter, value: string) => {
+			setDataQuery({
 				filter: {
-					...currentFilter?.filter,
+					...dataQuery?.filter,
 					[id]: {
-						...currentFilter?.filter?.[id],
-						[value]: !currentFilter?.filter?.[id]?.[value],
+						...dataQuery?.filter?.[id],
+						[value]: !dataQuery?.filter?.[id]?.[value],
 					},
 				},
-			} as TFilter);
-
-			updateFilters();
+			} as GamesQuery);
 		},
-		[currentFilter, setterCommand, updateFilters],
+		[dataQuery?.filter, setDataQuery],
 	);
 
 	const handleReset = useCallback(() => {
-		setCurrentSearch("");
-		setterCommand(null).then(updateFilters);
-	}, [setterCommand, updateFilters]);
+		setDataQuery(null);
+	}, [setDataQuery]);
 
 	const handleSearchChange = useCallback(
 		(search: string) => {
-			setCurrentSearch(search);
-
-			setterCommand({
-				...currentFilter,
+			setDataQuery({
 				search,
-			} as TFilter).then(updateFilters);
+			});
 		},
-		[currentFilter, setterCommand, updateFilters],
+		[setDataQuery],
 	);
-
-	useEffect(() => {
-		updateFilters();
-	}, [updateFilters]);
 
 	// active if has search or any toggle is set to false:
 	const active =
-		Boolean(currentSearch) ||
-		Object.values(currentFilter?.filter ?? {}).some((toggleGroup) =>
+		Boolean(dataQuery?.search) ||
+		Object.values(dataQuery?.filter ?? {}).some((toggleGroup) =>
 			Object.values(toggleGroup).some((value) => !value),
 		);
 
@@ -83,7 +49,7 @@ export function FilterMenu<TFilter extends Filter>({
 		<>
 			<SearchInput
 				onChange={handleSearchChange}
-				value={currentSearch}
+				value={dataQuery?.search ?? ""}
 				count={999}
 			/>
 			<Indicator
@@ -117,7 +83,7 @@ export function FilterMenu<TFilter extends Filter>({
 								align="start"
 								wrap="nowrap"
 							>
-								{Object.entries(currentFilter?.filter ?? {}).map(
+								{Object.entries(dataQuery?.filter ?? {}).map(
 									([filterId, filterOptions]) => (
 										<FilterSelect
 											key={filterId}

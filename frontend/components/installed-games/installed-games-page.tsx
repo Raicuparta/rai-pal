@@ -4,7 +4,7 @@ import { FilterMenu } from "@components/filters/filter-menu";
 import { RefreshButton } from "@components/refresh-button";
 import { AddGame } from "./add-game-button";
 import { useAppEvent } from "@hooks/use-app-event";
-import { commands, events, GamesSortBy } from "@api/bindings";
+import { events, GamesSortBy } from "@api/bindings";
 import { useAtomValue, useSetAtom } from "jotai";
 import { gameIdsAtom } from "@hooks/use-data";
 import {
@@ -21,10 +21,7 @@ import { useDataQuery } from "@hooks/use-data-query";
 export function InstalledGamesPage() {
 	const gameIds = useAtomValue(gameIdsAtom);
 	const setSelectedGame = useSetAtom(selectedInstalledGameAtom);
-	const [dataQuery, setDataQuery] = useDataQuery(
-		commands.setGamesQuery,
-		commands.getGamesQuery,
-	);
+	const [dataQuery, setDataQuery] = useDataQuery();
 
 	useAppEvent(events.selectInstalledGame, ([providerId, gameId]) => {
 		setSelectedGame({
@@ -61,10 +58,7 @@ export function InstalledGamesPage() {
 		<Stack h="100%">
 			<Group>
 				<AddGame />
-				<FilterMenu
-					setterCommand={commands.setGamesQuery}
-					getterCommand={commands.getGamesQuery}
-				/>
+				<FilterMenu />
 				<RefreshButton />
 			</Group>
 			<TableContainer>

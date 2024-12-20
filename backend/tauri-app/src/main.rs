@@ -528,20 +528,27 @@ async fn open_logs_folder() -> Result {
 
 #[tauri::command]
 #[specta::specta]
-async fn get_data(handle: AppHandle) -> Result<Vec<GameId>> {
+async fn get_data(handle: AppHandle, data_query: Option<GamesQuery>) -> Result<Vec<GameId>> {
 	let state = handle.app_state();
 
-	let data_query = state.data_query.get_data()?;
 	let read_guard = state.games.read().unwrap();
 
-	let mut games: Vec<_> = read_guard
+	let games_iter = read_guard
 		.values()
 		.flat_map(|games| games.iter())
-		.enumerate()
-		.filter(|(_index, game)| data_query.matches(game))
-		.collect();
+		.enumerate();
 
-	games.sort_by(|(_index_a, game_a), (_index_b, game_b)| data_query.sort(game_a, game_b));
+	let games: Vec<_> = if let Some(query) = data_query.as_ref() {
+		log::info!("Filtering games with query");
+		let mut games: Vec<_> = games_iter
+			.filter(|(_index, game)| query.matches(game))
+			.collect();
+		games.sort_by(|(_index_a, game_a), (_index_b, game_b)| query.sort(game_a, game_b));
+		games
+	} else {
+		log::info!("Filtering games WITHOUT query");
+		games_iter.collect()
+	};
 
 	Ok(games
 		.into_iter()
