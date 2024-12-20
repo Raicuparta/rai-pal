@@ -11,9 +11,9 @@ import { ThumbnailCell } from "@components/table/thumbnail-cell";
 import { OutdatedMarker } from "@components/outdated-marker";
 import styles from "../table/table.module.css";
 import { getThumbnailWithFallback } from "@util/fallback-thumbnail";
-import { Game, InstalledGameSortBy } from "@api/bindings";
+import { Game, GamesSortBy } from "@api/bindings";
 
-type InstalledGameColumn = TableColumnBase<Game, InstalledGameSortBy>;
+type InstalledGameColumn = TableColumnBase<Game, GamesSortBy>;
 
 type CellProps = { readonly item: Game };
 

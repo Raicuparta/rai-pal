@@ -1,4 +1,7 @@
-use std::collections::{HashMap, HashSet};
+use std::{
+	cmp::Ordering,
+	collections::{HashMap, HashSet},
+};
 
 use rai_pal_proc_macros::serializable_struct;
 
@@ -6,7 +9,7 @@ use crate::{
 	game_subscription::GameSubscription,
 	game_tag::GameTag,
 	game_title::GameTitle,
-	installed_game::{GamesFilterToggles, GamesSortBy, InstalledGame},
+	installed_game::{GamesFilter, GamesSortBy, InstalledGame},
 	providers::{
 		provider::ProviderId,
 		provider_command::{ProviderCommand, ProviderCommandAction},
@@ -80,7 +83,7 @@ impl Game {
 #[serializable_struct]
 #[derive(Default)]
 pub struct DataQuery {
-	pub toggles: GamesFilterToggles,
+	pub toggles: GamesFilter,
 	pub search: String,
 	pub sort_by: GamesSortBy,
 	pub sort_descending: bool,
@@ -153,48 +156,61 @@ impl DataQuery {
 		true
 	}
 
-	// pub fn sort(&self, a: &InstalledGame, b: &InstalledGame) -> std::cmp::Ordering {
-	// 	let ordering = match self.sort_by {
-	// 		InstalledGameSortBy::Title => a.title.display.cmp(&b.title.display),
-	// 		InstalledGameSortBy::Tags => Ordering::Equal,
-	// 		InstalledGameSortBy::Provider => a.provider.to_string().cmp(&b.provider.to_string()),
-	// 		InstalledGameSortBy::Architecture => a
-	// 			.executable
-	// 			.architecture
-	// 			.and_then(|architecture_a| {
-	// 				b.executable.architecture.map(|architecture_b| {
-	// 					architecture_a.to_string().cmp(&architecture_b.to_string())
-	// 				})
-	// 			})
-	// 			.unwrap_or(Ordering::Equal),
-	// 		InstalledGameSortBy::ScriptingBackend => a
-	// 			.executable
-	// 			.scripting_backend
-	// 			.and_then(|scripting_backend_a| {
-	// 				b.executable.scripting_backend.map(|scripting_backend_b| {
-	// 					scripting_backend_a
-	// 						.to_string()
-	// 						.cmp(&scripting_backend_b.to_string())
-	// 				})
-	// 			})
-	// 			.unwrap_or(Ordering::Equal),
-	// 		InstalledGameSortBy::Engine => {
-	// 			a.executable
-	// 				.engine
-	// 				.as_ref()
-	// 				.and_then(|engine_a| {
-	// 					b.executable.engine.as_ref().map(|engine_b| {
-	// 						engine_a.brand.to_string().cmp(&engine_b.brand.to_string())
-	// 					})
-	// 				})
-	// 				.unwrap_or(Ordering::Equal)
-	// 		}
-	// 	};
+	pub fn sort(&self, game_a: &Game, game_b: &Game) -> Ordering {
+		if game_a.installed_game.is_none() {
+			return Ordering::Equal;
+		}
+		if game_b.installed_game.is_none() {
+			return Ordering::Equal;
+		}
 
-	// 	if self.sort_descending {
-	// 		ordering.reverse()
-	// 	} else {
-	// 		ordering
-	// 	}
-	// }
+		let a = game_a.installed_game.as_ref().unwrap();
+		let b = game_b.installed_game.as_ref().unwrap();
+
+		let ordering = match self.sort_by {
+			GamesSortBy::Title => game_a.title.display.cmp(&game_a.title.display),
+			GamesSortBy::Tags => Ordering::Equal,
+			GamesSortBy::Provider => game_a
+				.provider_id
+				.to_string()
+				.cmp(&game_a.provider_id.to_string()),
+			GamesSortBy::Architecture => a
+				.executable
+				.architecture
+				.and_then(|architecture_a| {
+					b.executable.architecture.map(|architecture_b| {
+						architecture_a.to_string().cmp(&architecture_b.to_string())
+					})
+				})
+				.unwrap_or(Ordering::Equal),
+			GamesSortBy::ScriptingBackend => a
+				.executable
+				.scripting_backend
+				.and_then(|scripting_backend_a| {
+					b.executable.scripting_backend.map(|scripting_backend_b| {
+						scripting_backend_a
+							.to_string()
+							.cmp(&scripting_backend_b.to_string())
+					})
+				})
+				.unwrap_or(Ordering::Equal),
+			GamesSortBy::Engine => {
+				a.executable
+					.engine
+					.as_ref()
+					.and_then(|engine_a| {
+						b.executable.engine.as_ref().map(|engine_b| {
+							engine_a.brand.to_string().cmp(&engine_b.brand.to_string())
+						})
+					})
+					.unwrap_or(Ordering::Equal)
+			}
+		};
+
+		if self.sort_descending {
+			ordering.reverse()
+		} else {
+			ordering
+		}
+	}
 }

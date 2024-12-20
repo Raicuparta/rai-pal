@@ -4,7 +4,7 @@ import { FilterMenu } from "@components/filters/filter-menu";
 import { RefreshButton } from "@components/refresh-button";
 import { AddGame } from "./add-game-button";
 import { useAppEvent } from "@hooks/use-app-event";
-import { commands, events, InstalledGameSortBy } from "@api/bindings";
+import { commands, events, GamesSortBy } from "@api/bindings";
 import { useAtomValue, useSetAtom } from "jotai";
 import { gameIdsAtom } from "@hooks/use-data";
 import {
@@ -22,8 +22,8 @@ export function InstalledGamesPage() {
 	const gameIds = useAtomValue(gameIdsAtom);
 	const setSelectedGame = useSetAtom(selectedInstalledGameAtom);
 	const [dataQuery, setDataQuery] = useDataQuery(
-		commands.setInstalledGamesFilter,
-		commands.getInstalledGamesFilter,
+		commands.setGamesQuery,
+		commands.getGamesQuery,
 	);
 
 	useAppEvent(events.selectInstalledGame, ([providerId, gameId]) => {
@@ -36,7 +36,7 @@ export function InstalledGamesPage() {
 	const columns = useVisibleInstalledGameColumns();
 
 	const onChangeSort = useCallback(
-		(sortBy: InstalledGameSortBy) => {
+		(sortBy: GamesSortBy) => {
 			const sortDescending =
 				sortBy === dataQuery?.sortBy && !dataQuery?.sortDescending;
 
@@ -62,8 +62,8 @@ export function InstalledGamesPage() {
 			<Group>
 				<AddGame />
 				<FilterMenu
-					setterCommand={commands.setInstalledGamesFilter}
-					getterCommand={commands.getInstalledGamesFilter}
+					setterCommand={commands.setGamesQuery}
+					getterCommand={commands.getGamesQuery}
 				/>
 				<RefreshButton />
 			</Group>

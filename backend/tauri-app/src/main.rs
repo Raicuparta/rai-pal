@@ -529,26 +529,24 @@ async fn get_data(handle: AppHandle) -> Result<Vec<GameId>> {
 	let state = handle.app_state();
 
 	let data_query = state.data_query.get_data()?;
+	let read_guard = state.games.read().unwrap();
 
-	let games: Vec<_> = state
-		.games
-		.read()
-		.unwrap()
+	let mut games: Vec<_> = read_guard
 		.values()
 		.flat_map(|games| games.iter())
 		.enumerate()
 		.filter(|(_index, game)| data_query.matches(game))
+		.collect();
+
+	games.sort_by(|(_index_a, game_a), (_index_b, game_b)| data_query.sort(game_a, game_b));
+
+	Ok(games
+		.into_iter()
 		.map(|(index, game)| GameId {
 			index,
 			provider_id: game.provider_id,
 		})
-		.collect();
-
-	// games.sort_by(|a, b| data_query.sort(a, b));
-
-	// return a vec of all the indexes
-
-	Ok(games)
+		.collect())
 }
 
 #[tauri::command]
@@ -577,7 +575,7 @@ async fn clear_cache() -> Result {
 
 #[tauri::command]
 #[specta::specta]
-async fn set_installed_games_filter(handle: AppHandle, filter: Option<DataQuery>) -> Result {
+async fn set_games_query(handle: AppHandle, filter: Option<DataQuery>) -> Result {
 	update_state(filter.unwrap_or_default(), &handle.app_state().data_query);
 	handle.emit_safe(events::FoundGame());
 	Ok(())
@@ -585,7 +583,7 @@ async fn set_installed_games_filter(handle: AppHandle, filter: Option<DataQuery>
 
 #[tauri::command]
 #[specta::specta]
-async fn get_installed_games_filter(handle: AppHandle) -> Result<DataQuery> {
+async fn get_games_query(handle: AppHandle) -> Result<DataQuery> {
 	handle.app_state().data_query.get_data().map_or_else(
 		|error| {
 			log::info!(
@@ -641,8 +639,8 @@ fn main() {
 			uninstall_all_mods,
 			uninstall_mod,
 			update_local_mods,
-			set_installed_games_filter,
-			get_installed_games_filter,
+			set_games_query,
+			get_games_query,
 			get_game,
 		])
 		.events(events::collect_events());

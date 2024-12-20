@@ -32,7 +32,7 @@ pub struct InstalledGame {
 }
 
 #[serializable_struct]
-pub struct GamesFilterToggles {
+pub struct GamesFilter {
 	pub providers: HashMap<ProviderId, bool>,
 	pub tags: HashMap<GameTag, bool>,
 	pub architectures: HashMap<Architecture, bool>,
@@ -56,7 +56,7 @@ impl Default for GamesSortBy {
 	}
 }
 
-impl Default for GamesFilterToggles {
+impl Default for GamesFilter {
 	fn default() -> Self {
 		Self {
 			architectures: Architecture::variants()
