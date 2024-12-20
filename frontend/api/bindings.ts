@@ -308,7 +308,7 @@ syncRemoteMods: "sync-remote-mods"
 
 export type Architecture = "X64" | "X86"
 export type CommonModData = { id: string; engine: EngineBrand | null; unityBackend: UnityScriptingBackend | null; engineVersionRange: EngineVersionRange | null; loaderId: string }
-export type DataQuery = { toggles: InstalledGamesFilterToggles; search: string; sortBy: InstalledGameSortBy; sortDescending: boolean }
+export type DataQuery = { toggles: GamesFilterToggles; search: string; sortBy: GamesSortBy; sortDescending: boolean }
 export type EngineBrand = "Unity" | "Unreal" | "Godot" | "GameMaker"
 export type EngineVersion = { numbers: EngineVersionNumbers; suffix: string | null; display: string }
 export type EngineVersionNumbers = { major: number; minor: number | null; patch: number | null }
@@ -324,10 +324,10 @@ export type GameId = { providerId: ProviderId; index: bigint }
 export type GameSubscription = "UbisoftClassics" | "UbisoftPremium" | "XboxGamePass" | "EaPlay"
 export type GameTag = "VR" | "Demo"
 export type GameTitle = { display: string; normalized: string[] }
+export type GamesFilterToggles = { providers: { [key in ProviderId]: boolean }; tags: { [key in GameTag]: boolean }; architectures: { [key in Architecture]: boolean }; unityScriptingBackends: { [key in UnityScriptingBackend]: boolean }; engines: { [key in EngineBrand]: boolean } }
+export type GamesSortBy = "Title" | "Tags" | "Provider" | "Architecture" | "ScriptingBackend" | "Engine"
 export type IdKind = "Steam" | "Manual" | "Itch" | "Epic" | "Gog" | "Xbox" | "Ubisoft" | "NormalizedTitle"
 export type InstalledGame = { id: string; executable: GameExecutable; installedModVersions: { [key in string]: string }; discriminator: string | null; thumbnailUrl: string | null; startCommand: ProviderCommand | null; hasOutdatedMod: boolean }
-export type InstalledGameSortBy = "Title" | "Tags" | "Provider" | "Architecture" | "ScriptingBackend" | "Engine"
-export type InstalledGamesFilterToggles = { providers: { [key in ProviderId]: boolean }; tags: { [key in GameTag]: boolean }; architectures: { [key in Architecture]: boolean }; unityScriptingBackends: { [key in UnityScriptingBackend]: boolean }; engines: { [key in EngineBrand]: boolean } }
 export type LocalMod = { data: LocalModData; common: CommonModData }
 export type LocalModData = { path: string; manifest: Manifest | null }
 export type Manifest = { title: string | null; version: string; runnable: RunnableModData | null; engine: EngineBrand | null; engineVersionRange: EngineVersionRange | null; unityBackend: UnityScriptingBackend | null }

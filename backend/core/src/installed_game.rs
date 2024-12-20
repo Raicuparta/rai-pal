@@ -32,16 +32,7 @@ pub struct InstalledGame {
 }
 
 #[serializable_struct]
-#[derive(Default)]
-pub struct DataQuery {
-	pub toggles: InstalledGamesFilterToggles,
-	pub search: String,
-	pub sort_by: InstalledGameSortBy,
-	pub sort_descending: bool,
-}
-
-#[serializable_struct]
-pub struct InstalledGamesFilterToggles {
+pub struct GamesFilterToggles {
 	pub providers: HashMap<ProviderId, bool>,
 	pub tags: HashMap<GameTag, bool>,
 	pub architectures: HashMap<Architecture, bool>,
@@ -50,7 +41,7 @@ pub struct InstalledGamesFilterToggles {
 }
 
 #[serializable_enum]
-pub enum InstalledGameSortBy {
+pub enum GamesSortBy {
 	Title,
 	Tags,
 	Provider,
@@ -59,126 +50,13 @@ pub enum InstalledGameSortBy {
 	Engine,
 }
 
-impl Default for InstalledGameSortBy {
+impl Default for GamesSortBy {
 	fn default() -> Self {
 		Self::Title
 	}
 }
 
-impl DataQuery {
-	pub fn matches(&self, game: &Game) -> bool {
-		let toggles = &self.toggles;
-		if !toggles.providers.get(&game.provider_id).unwrap_or(&true) {
-			return false;
-		}
-
-		// TODO: tags need to be merged from owned games.
-		// if !toggles.tags.iter().any(|(tag, enabled)| {
-		// 	*enabled && game.title.tags.contains(tag)
-		// }) {
-		// 	matches = false;
-		// }
-
-		let mut architectures = toggles.architectures.iter();
-		if architectures.any(|(_, enabled)| !enabled)
-			&& !toggles.architectures.iter().any(|(architecture, enabled)| {
-				*enabled
-					&& game.installed_game.as_ref().is_some_and(|installed_game| {
-						installed_game
-							.executable
-							.architecture
-							.is_some_and(|a| a == *architecture)
-					})
-			}) {
-			return false;
-		}
-
-		let mut engines = toggles.engines.iter();
-		if engines.any(|(_, enabled)| !enabled)
-			&& !engines.any(|(engine, enabled)| {
-				*enabled
-					&& game.installed_game.as_ref().is_some_and(|installed_game| {
-						installed_game
-							.executable
-							.engine
-							.as_ref()
-							.is_some_and(|e| e.brand == *engine)
-					})
-			}) {
-			return false;
-		}
-
-		// let mut scripting_backends = toggles.unity_scripting_backends.iter();
-		// if scripting_backends.any(|(_, enabled)| !enabled)
-		// 	&& !scripting_backends.any(|(backend, enabled)| {
-		// 		*enabled
-		// 			&& game
-		// 				.executable
-		// 				.scripting_backend
-		// 				.is_some_and(|b| b == *backend)
-		// 	}) {
-		// 	return false;
-		// }
-
-		// if !self.search.is_empty() {
-		// 	// We'll try to match the search term to a bunch of different strings related to this game.
-		// 	let mut candidates: Vec<&str> = vec![&game.title.display, &game.executable.name];
-		// 	candidates.extend(game.title.normalized.iter().map(String::as_str));
-		// 	if !any_contains(&candidates, &self.search) {
-		// 		return false;
-		// 	}
-		// }
-
-		true
-	}
-
-	// pub fn sort(&self, a: &InstalledGame, b: &InstalledGame) -> std::cmp::Ordering {
-	// 	let ordering = match self.sort_by {
-	// 		InstalledGameSortBy::Title => a.title.display.cmp(&b.title.display),
-	// 		InstalledGameSortBy::Tags => Ordering::Equal,
-	// 		InstalledGameSortBy::Provider => a.provider.to_string().cmp(&b.provider.to_string()),
-	// 		InstalledGameSortBy::Architecture => a
-	// 			.executable
-	// 			.architecture
-	// 			.and_then(|architecture_a| {
-	// 				b.executable.architecture.map(|architecture_b| {
-	// 					architecture_a.to_string().cmp(&architecture_b.to_string())
-	// 				})
-	// 			})
-	// 			.unwrap_or(Ordering::Equal),
-	// 		InstalledGameSortBy::ScriptingBackend => a
-	// 			.executable
-	// 			.scripting_backend
-	// 			.and_then(|scripting_backend_a| {
-	// 				b.executable.scripting_backend.map(|scripting_backend_b| {
-	// 					scripting_backend_a
-	// 						.to_string()
-	// 						.cmp(&scripting_backend_b.to_string())
-	// 				})
-	// 			})
-	// 			.unwrap_or(Ordering::Equal),
-	// 		InstalledGameSortBy::Engine => {
-	// 			a.executable
-	// 				.engine
-	// 				.as_ref()
-	// 				.and_then(|engine_a| {
-	// 					b.executable.engine.as_ref().map(|engine_b| {
-	// 						engine_a.brand.to_string().cmp(&engine_b.brand.to_string())
-	// 					})
-	// 				})
-	// 				.unwrap_or(Ordering::Equal)
-	// 		}
-	// 	};
-
-	// 	if self.sort_descending {
-	// 		ordering.reverse()
-	// 	} else {
-	// 		ordering
-	// 	}
-	// }
-}
-
-impl Default for InstalledGamesFilterToggles {
+impl Default for GamesFilterToggles {
 	fn default() -> Self {
 		Self {
 			architectures: Architecture::variants()

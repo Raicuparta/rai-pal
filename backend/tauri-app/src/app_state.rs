@@ -12,7 +12,7 @@ use rai_pal_proc_macros::serializable_struct;
 use tauri::Manager;
 
 use rai_pal_core::{
-	game::Game, installed_game::DataQuery, local_mod, maps::TryGettable, mod_loaders::mod_loader,
+	game::DataQuery, game::Game, local_mod, maps::TryGettable, mod_loaders::mod_loader,
 	providers::provider::ProviderId, remote_mod,
 };
 
