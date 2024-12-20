@@ -33,6 +33,10 @@ const defaultQuery: GamesQuery = {
 			Il2Cpp: true,
 			Mono: true,
 		},
+		installed: {
+			Installed: true,
+			NotInstalled: true,
+		},
 	},
 };
 

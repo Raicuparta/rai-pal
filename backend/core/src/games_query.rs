@@ -11,6 +11,12 @@ use crate::{
 	string_includes::any_contains,
 };
 
+#[serializable_enum]
+pub enum InstallState {
+	Installed,
+	NotInstalled,
+}
+
 #[serializable_struct]
 pub struct GamesFilter {
 	pub providers: HashMap<ProviderId, bool>,
@@ -18,6 +24,7 @@ pub struct GamesFilter {
 	pub architectures: HashMap<Architecture, bool>,
 	pub unity_scripting_backends: HashMap<UnityScriptingBackend, bool>,
 	pub engines: HashMap<EngineBrand, bool>,
+	pub installed: HashMap<InstallState, bool>,
 }
 
 #[serializable_enum]
@@ -65,6 +72,10 @@ impl Default for GamesFilter {
 				.map(|variant| (variant, true))
 				.collect(),
 			unity_scripting_backends: UnityScriptingBackend::variants()
+				.into_iter()
+				.map(|variant| (variant, true))
+				.collect(),
+			installed: InstallState::variants()
 				.into_iter()
 				.map(|variant| (variant, true))
 				.collect(),
@@ -123,6 +134,15 @@ impl GamesQuery {
 						})
 						.is_some_and(|game_backend| game_backend == filter_backend)
 			}) {
+			return false;
+		}
+
+		let game_installed_state = if game.installed_game.is_some() {
+			InstallState::Installed
+		} else {
+			InstallState::NotInstalled
+		};
+		if filter.installed.get(&game_installed_state).unwrap_or(&true) == &false {
 			return false;
 		}
 
