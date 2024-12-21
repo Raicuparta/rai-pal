@@ -35,6 +35,7 @@ pub enum GamesSortBy {
 	Architecture,
 	ScriptingBackend,
 	Engine,
+	Installed,
 }
 
 #[serializable_struct]
@@ -249,6 +250,10 @@ impl GamesQuery {
 
 				string_a.cmp(&string_b)
 			}
+			GamesSortBy::Installed => game_a
+				.installed_game
+				.is_some()
+				.cmp(&game_b.installed_game.is_some()),
 		};
 
 		if self.sort_descending {

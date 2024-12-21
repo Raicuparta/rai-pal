@@ -11,6 +11,7 @@ use crate::{
 		provider::ProviderId,
 		provider_command::{ProviderCommand, ProviderCommandAction},
 	},
+	remote_games::RemoteGame,
 };
 
 #[serializable_struct]
@@ -19,6 +20,7 @@ pub struct Game {
 	pub provider_id: ProviderId,
 	pub tags: HashSet<GameTag>,
 	pub installed_game: Option<InstalledGame>,
+	pub remote_game: Option<RemoteGame>,
 	pub title: GameTitle,
 	pub thumbnail_url: Option<String>,
 	pub release_date: Option<i64>,
@@ -39,6 +41,7 @@ impl Game {
 			provider_id,
 			tags,
 			installed_game: None,
+			remote_game: None,
 			title,
 			thumbnail_url: None,
 			release_date: None,

@@ -6,7 +6,6 @@ import { useGame } from "@hooks/use-game";
 import { GameModal } from "./game-modal";
 import { ItemProps } from "react-virtuoso";
 import { GameId } from "@api/bindings";
-import styles from "./game-row.module.css";
 
 export const GameRow = React.forwardRef(function GameRow(
 	props: ItemProps<GameId>,
@@ -28,7 +27,6 @@ export const GameRow = React.forwardRef(function GameRow(
 			{isSelected && <GameModal game={game} />}
 			<Table.Tr
 				ref={ref}
-				className={game?.installedGame ? styles.installed : styles.owned}
 				onClick={() =>
 					game &&
 					setSelectedGame({

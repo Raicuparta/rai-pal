@@ -436,27 +436,8 @@ async fn get_provider_games(handle: AppHandle, provider_id: ProviderId) -> Resul
 
 	handle.app_state().games.write().unwrap().clear();
 
-	provider.get_games_new(|game: Game| {
-		let mut new_game = game.clone();
-		if game.installed_game.is_none() {
-			new_game.installed_game = Some(InstalledGame {
-				id: game.id.clone(),
-				installed_mod_versions: HashMap::default(),
-				start_command: None,
-				has_outdated_mod: false,
-				discriminator: None,
-				thumbnail_url: None,
-				executable: GameExecutable {
-					architecture: None,
-					engine: remote_games_by_provider.get(&IdKind::Steam).and_then(|games| {
-						games.get(&game.id).and_then(|remote_game| remote_game.engines.as_ref()).and_then(|remote_engines| {remote_engines.first().cloned()})
-					}),
-					name: game.title.display.clone(),
-					path: PathBuf::new(),
-					scripting_backend: None,
-				}
-			});
-		}
+	provider.get_games_new(move |mut game: Game| {
+		game.remote_game = remote_games_by_provider.get(&IdKind::Steam).and_then(|games| games.get(&game.id)).cloned();
 
 		handle
 			.app_state()
@@ -465,7 +446,7 @@ async fn get_provider_games(handle: AppHandle, provider_id: ProviderId) -> Resul
 			.unwrap()
 			.entry(provider_id)
 			.or_default()
-			.push(new_game);
+			.push(game);
 		handle.emit_safe(events::FoundGame());
 	}).await.unwrap_or_else(|err| {
 		// It's normal for a provider to fail here if that provider is just missing.

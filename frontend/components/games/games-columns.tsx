@@ -1,4 +1,4 @@
-import { Table, Tooltip } from "@mantine/core";
+import { Table, ThemeIcon, Tooltip } from "@mantine/core";
 import { TableColumnBase, columnMapToList } from "@components/table/table-head";
 import { ItemName } from "../item-name";
 import {
@@ -13,6 +13,7 @@ import styles from "../table/table.module.css";
 import { getThumbnailWithFallback } from "@util/fallback-thumbnail";
 import { Game, GamesSortBy } from "@api/bindings";
 import { GameTagsCell } from "@components/game-tags/game-tags";
+import { IconCloud, IconDeviceDesktop } from "@tabler/icons-react";
 
 type GamesColumn = TableColumnBase<Game, GamesSortBy>;
 
@@ -117,7 +118,9 @@ const engine: GamesColumn = {
 	center: true,
 	hidable: true,
 	component: ({ item }: CellProps) => {
-		const engine = item.installedGame?.executable?.engine;
+		// TODO somehow take into account the other remote engines too? Might also need to sort them.
+		const engine =
+			item.installedGame?.executable?.engine ?? item.remoteGame?.engines?.[0];
 		return (
 			<Table.Td
 			// A bit annoying that I'm defining the column width in two places (see engineColumn.width),
@@ -135,6 +138,26 @@ const engine: GamesColumn = {
 	},
 };
 
+const status: GamesColumn = {
+	label: "Status",
+	sort: "Installed",
+	width: 75,
+	center: true,
+	hidable: true,
+	component: ({ item }: CellProps) => (
+		<Table.Td align="center">
+			<Tooltip label={item.installedGame ? "Installed" : "Not installed"}>
+				<ThemeIcon
+					variant="light"
+					color={item.installedGame ? "green" : "gray"}
+				>
+					{item.installedGame ? <IconDeviceDesktop /> : <IconCloud />}
+				</ThemeIcon>
+			</Tooltip>
+		</Table.Td>
+	),
+};
+
 const gamesColumnsMap = {
 	thumbnail,
 	name,
@@ -143,6 +166,7 @@ const gamesColumnsMap = {
 	architecture,
 	scriptingBackend,
 	engine,
+	installed: status,
 };
 
 export type GamesColumnId = keyof typeof gamesColumnsMap;
