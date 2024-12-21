@@ -253,22 +253,6 @@ async updateLocalMods() : Promise<Result<null, Error>> {
     else return { status: "error", error: e  as any };
 }
 },
-async setGamesQuery(filter: GamesQuery | null) : Promise<Result<null, Error>> {
-    try {
-    return { status: "ok", data: await TAURI_INVOKE("set_games_query", { filter }) };
-} catch (e) {
-    if(e instanceof Error) throw e;
-    else return { status: "error", error: e  as any };
-}
-},
-async getGamesQuery() : Promise<Result<GamesQuery, Error>> {
-    try {
-    return { status: "ok", data: await TAURI_INVOKE("get_games_query") };
-} catch (e) {
-    if(e instanceof Error) throw e;
-    else return { status: "error", error: e  as any };
-}
-},
 async getGame(providerId: ProviderId, index: bigint) : Promise<Result<Game | null, Error>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("get_game", { providerId, index }) };

@@ -583,28 +583,6 @@ async fn clear_cache() -> Result {
 	Ok(())
 }
 
-#[tauri::command]
-#[specta::specta]
-async fn set_games_query(handle: AppHandle, filter: Option<GamesQuery>) -> Result {
-	update_state(filter.unwrap_or_default(), &handle.app_state().data_query);
-	handle.emit_safe(events::FoundGame());
-	Ok(())
-}
-
-#[tauri::command]
-#[specta::specta]
-async fn get_games_query(handle: AppHandle) -> Result<GamesQuery> {
-	handle.app_state().data_query.get_data().map_or_else(
-		|error| {
-			log::info!(
-				"Failed to get installed games filter, falling back to default. Error: {error}"
-			);
-			Ok(GamesQuery::default())
-		},
-		Ok,
-	)
-}
-
 fn main() {
 	// Since I'm making all exposed functions async, panics won't crash anything important, I think.
 	// So I can just catch panics here and show a system message with the error.
@@ -649,8 +627,6 @@ fn main() {
 			uninstall_all_mods,
 			uninstall_mod,
 			update_local_mods,
-			set_games_query,
-			get_games_query,
 			get_game,
 		])
 		.events(events::collect_events());
@@ -687,7 +663,6 @@ fn main() {
 			local_mods: Mutex::default(),
 			remote_mods: Mutex::default(),
 			games: Arc::new(RwLock::default()),
-			data_query: Mutex::new(Some(GamesQuery::default())),
 		})
 		.invoke_handler(builder.invoke_handler())
 		.setup(move |app| {
