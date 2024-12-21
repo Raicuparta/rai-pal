@@ -141,7 +141,7 @@ const engine: GamesColumn = {
 const status: GamesColumn = {
 	label: "Status",
 	sort: "Installed",
-	width: 75,
+	width: 90,
 	center: true,
 	hidable: true,
 	component: ({ item }: CellProps) => (

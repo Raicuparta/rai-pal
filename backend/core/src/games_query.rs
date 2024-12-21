@@ -114,9 +114,7 @@ impl GamesQuery {
 		if filter.engines.iter().any(|(engine_brand, enabled)| {
 			!enabled
 				&& game
-					.installed_game
-					.as_ref()
-					.and_then(|installed_game| installed_game.executable.engine.as_ref())
+					.get_engine()
 					.is_some_and(|engine| engine.brand == *engine_brand)
 		}) {
 			return false;
@@ -235,16 +233,12 @@ impl GamesQuery {
 				// TODO: sort by engine version too.
 
 				let string_a = game_a
-					.installed_game
-					.as_ref()
-					.and_then(|installed_game_a| installed_game_a.executable.engine.as_ref())
+					.get_engine()
 					.map(|engine_a| engine_a.brand.to_string())
 					.unwrap_or_default();
 
 				let string_b = game_b
-					.installed_game
-					.as_ref()
-					.and_then(|installed_game_b| installed_game_b.executable.engine.as_ref())
+					.get_engine()
 					.map(|engine_b| engine_b.brand.to_string())
 					.unwrap_or_default();
 

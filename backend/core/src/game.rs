@@ -3,6 +3,7 @@ use std::collections::{HashMap, HashSet};
 use rai_pal_proc_macros::serializable_struct;
 
 use crate::{
+	game_engines::game_engine::GameEngine,
 	game_subscription::GameSubscription,
 	game_tag::GameTag,
 	game_title::GameTitle,
@@ -77,5 +78,25 @@ impl Game {
 	) -> &mut Self {
 		self.provider_commands.insert(command_action, command);
 		self
+	}
+
+	pub fn get_engine(&self) -> Option<&GameEngine> {
+		if let Some(installed_game) = &self.installed_game {
+			if let Some(engine) = installed_game.executable.engine.as_ref() {
+				return Some(engine);
+			}
+		}
+
+		if let Some(remote_game) = &self.remote_game {
+			if let Some(engine) = remote_game
+				.engines
+				.as_ref()
+				.and_then(|engines| engines.first())
+			{
+				return Some(engine);
+			}
+		}
+
+		None
 	}
 }
