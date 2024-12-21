@@ -31,14 +31,14 @@ import { useAtomValue, useSetAtom } from "jotai";
 import { modLoadersAtom } from "@hooks/use-data";
 import { DebugData } from "@components/debug-data";
 import { useUnifiedMods } from "@hooks/use-unified-mods";
-import { installedGamesColumns } from "./installed-games-columns";
+import { gamesColumns } from "./games-columns";
 import { TableItemDetails } from "@components/table/table-item-details";
 import { GameModRow } from "./game-mod-row";
 import { TableContainer } from "@components/table/table-container";
 import { CommandDropdown } from "@components/command-dropdown";
 import { getThumbnailWithFallback } from "@util/fallback-thumbnail";
 import { ProviderIcon } from "@components/providers/provider-icon";
-import { selectedInstalledGameAtom } from "./installed-games-state";
+import { selectedGameAtom } from "./games-state";
 import { ProviderCommandButtons } from "@components/providers/provider-command-dropdown";
 
 type Props = {
@@ -104,11 +104,11 @@ function isVersionWithinRange(
 	return true;
 }
 
-export function InstalledGameModal({ game }: Props) {
+export function GameModal({ game }: Props) {
 	const { installedGame } = game;
 	const modLoaderMap = useAtomValue(modLoadersAtom);
 	const mods = useUnifiedMods();
-	const setSelectedGame = useSetAtom(selectedInstalledGameAtom);
+	const setSelectedGame = useSetAtom(selectedGameAtom);
 
 	const close = () => setSelectedGame(null);
 
@@ -160,7 +160,7 @@ export function InstalledGameModal({ game }: Props) {
 			<Stack>
 				<>
 					<TableItemDetails
-						columns={installedGamesColumns}
+						columns={gamesColumns}
 						item={game}
 					/>
 					<Group>

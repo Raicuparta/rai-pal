@@ -1,4 +1,4 @@
-import { InstalledGamesPage } from "@components/installed-games/installed-games-page";
+import { GamesPage } from "@components/games/games-page";
 import { ModsPage } from "@components/mods/mods-page";
 import { SettingsPage } from "@components/settings/settings-page";
 import { ThanksPage } from "@components/thanks/thanks-page";
@@ -8,7 +8,7 @@ import { IconBooks, IconTool, IconSettings } from "@tabler/icons-react";
 export const pages = {
 	games: {
 		title: "Games",
-		component: InstalledGamesPage,
+		component: GamesPage,
 		icon: <IconBooks />,
 	},
 	mods: { title: "Mods", component: ModsPage, icon: <IconTool /> },

@@ -14,7 +14,7 @@ import { getThumbnailWithFallback } from "@util/fallback-thumbnail";
 import { Game, GamesSortBy } from "@api/bindings";
 import { GameTagsCell } from "@components/game-tags/game-tags";
 
-type InstalledGameColumn = TableColumnBase<Game, GamesSortBy>;
+type GamesColumn = TableColumnBase<Game, GamesSortBy>;
 
 type CellProps = { readonly item: Game };
 
@@ -27,7 +27,7 @@ const ThumbnailComponent = ({ item }: CellProps) => (
 	/>
 );
 
-const thumbnail: InstalledGameColumn = {
+const thumbnail: GamesColumn = {
 	hideInDetails: true,
 	label: "Thumbnail",
 	hideLabel: true,
@@ -53,14 +53,14 @@ const NameCell = ({ item }: CellProps) => (
 	</Table.Td>
 );
 
-const name: InstalledGameColumn = {
+const name: GamesColumn = {
 	hideInDetails: true,
 	label: "Game",
 	sort: "Title",
 	component: NameCell,
 };
 
-const provider: InstalledGameColumn = {
+const provider: GamesColumn = {
 	label: "Provider",
 	sort: "Provider",
 	width: 110,
@@ -73,7 +73,7 @@ const provider: InstalledGameColumn = {
 	),
 };
 
-const architecture: InstalledGameColumn = {
+const architecture: GamesColumn = {
 	label: "Arch",
 	sort: "Architecture",
 	width: 70,
@@ -86,7 +86,7 @@ const architecture: InstalledGameColumn = {
 	),
 };
 
-const scriptingBackend: InstalledGameColumn = {
+const scriptingBackend: GamesColumn = {
 	label: "Backend",
 	sort: "ScriptingBackend",
 	width: 90,
@@ -101,7 +101,7 @@ const scriptingBackend: InstalledGameColumn = {
 	),
 };
 
-const gameTags: InstalledGameColumn = {
+const gameTags: GamesColumn = {
 	label: "Tags",
 	sort: "Tags",
 	width: 120,
@@ -110,7 +110,7 @@ const gameTags: InstalledGameColumn = {
 	component: GameTagsCell,
 };
 
-const engine: InstalledGameColumn = {
+const engine: GamesColumn = {
 	label: "Engine",
 	sort: "Engine",
 	width: 180,
@@ -135,7 +135,7 @@ const engine: InstalledGameColumn = {
 	},
 };
 
-const installedGamesColumnsMap = {
+const gamesColumnsMap = {
 	thumbnail,
 	name,
 	gameTags,
@@ -145,6 +145,6 @@ const installedGamesColumnsMap = {
 	engine,
 };
 
-export type InstalledGameColumnsId = keyof typeof installedGamesColumnsMap;
+export type GamesColumnId = keyof typeof gamesColumnsMap;
 
-export const installedGamesColumns = columnMapToList(installedGamesColumnsMap);
+export const gamesColumns = columnMapToList(gamesColumnsMap);

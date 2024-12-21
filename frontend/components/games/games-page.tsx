@@ -7,20 +7,17 @@ import { useAppEvent } from "@hooks/use-app-event";
 import { events, GamesSortBy } from "@api/bindings";
 import { useAtomValue, useSetAtom } from "jotai";
 import { gameIdsAtom } from "@hooks/use-data";
-import {
-	selectedInstalledGameAtom,
-	useVisibleInstalledGameColumns,
-} from "./installed-games-state";
+import { selectedGameAtom, useVisibleGamesColumns } from "./games-state";
 import { TableContainer } from "@components/table/table-container";
 import { TableVirtuoso } from "react-virtuoso";
 import { useVirtuosoHeaderContent } from "@hooks/use-virtuoso-header-content";
 import { useVirtuosoTableComponents } from "@hooks/use-virtuoso-table-components";
-import { InstalledGameRow } from "./installed-game-row";
+import { GameRow } from "./game-row";
 import { useDataQuery } from "@hooks/use-data-query";
 
-export function InstalledGamesPage() {
+export function GamesPage() {
 	const gameIds = useAtomValue(gameIdsAtom);
-	const setSelectedGame = useSetAtom(selectedInstalledGameAtom);
+	const setSelectedGame = useSetAtom(selectedGameAtom);
 	const [dataQuery, setDataQuery] = useDataQuery();
 
 	useAppEvent(events.selectInstalledGame, ([providerId, gameId]) => {
@@ -30,7 +27,7 @@ export function InstalledGamesPage() {
 		});
 	});
 
-	const columns = useVisibleInstalledGameColumns();
+	const columns = useVisibleGamesColumns();
 
 	const onChangeSort = useCallback(
 		(sortBy: GamesSortBy) => {
@@ -52,7 +49,7 @@ export function InstalledGamesPage() {
 		dataQuery?.sortDescending,
 	);
 
-	const tableComponents = useVirtuosoTableComponents(InstalledGameRow);
+	const tableComponents = useVirtuosoTableComponents(GameRow);
 
 	return (
 		<Stack h="100%">
