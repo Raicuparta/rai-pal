@@ -53,7 +53,7 @@ async downloadMod(modId: string) : Promise<Result<null, Error>> {
     else return { status: "error", error: e  as any };
 }
 },
-async fetchRemoteGames() : Promise<Result<RemoteGame[], Error>> {
+async fetchRemoteGames() : Promise<Result<null, Error>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("fetch_remote_games") };
 } catch (e) {
@@ -310,7 +310,6 @@ export type GameTitle = { display: string; normalized: string[] }
 export type GamesFilter = { providers: { [key in ProviderId]: boolean }; tags: { [key in GameTag]: boolean }; architectures: { [key in Architecture]: boolean }; unityScriptingBackends: { [key in UnityScriptingBackend]: boolean }; engines: { [key in EngineBrand]: boolean }; installed: { [key in InstallState]: boolean } }
 export type GamesQuery = { filter: GamesFilter; search: string; sortBy: GamesSortBy; sortDescending: boolean }
 export type GamesSortBy = "Title" | "Tags" | "Provider" | "Architecture" | "ScriptingBackend" | "Engine"
-export type IdKind = "Steam" | "Manual" | "Itch" | "Epic" | "Gog" | "Xbox" | "Ubisoft" | "NormalizedTitle"
 export type InstallState = "Installed" | "NotInstalled"
 export type InstalledGame = { id: string; executable: GameExecutable; installedModVersions: { [key in string]: string }; discriminator: string | null; thumbnailUrl: string | null; startCommand: ProviderCommand | null; hasOutdatedMod: boolean }
 export type LocalMod = { data: LocalModData; common: CommonModData }
@@ -322,7 +321,6 @@ export type ModLoaderData = { id: string; path: string; kind: ModKind }
 export type ProviderCommand = { String: string } | { Path: [string, string[]] }
 export type ProviderCommandAction = "Install" | "ShowInLibrary" | "ShowInStore" | "Start" | "OpenInBrowser"
 export type ProviderId = "Steam" | "Manual" | "Itch" | "Epic" | "Gog" | "Xbox"
-export type RemoteGame = { title: string | null; engines: GameEngine[] | null; ids: { [key in IdKind]: string[] }; subscriptions: GameSubscription[] | null }
 export type RemoteMod = { common: CommonModData; data: RemoteModData }
 export type RemoteModData = { title: string; deprecated: boolean; author: string; sourceCode: string; description: string; latestVersion: ModDownload | null }
 export type RunnableModData = { path: string; args: string[] }

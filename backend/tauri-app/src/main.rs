@@ -10,6 +10,7 @@ use crate::result::{Error, Result};
 use app_state::{AppState, DataValue, GameId, StateData, StatefulHandle};
 use events::EventEmitter;
 use rai_pal_core::game::Game;
+use rai_pal_core::game_executable::GameExecutable;
 use rai_pal_core::games_query::GamesQuery;
 use rai_pal_core::installed_game::InstalledGame;
 use rai_pal_core::local_mod::{self, LocalMod};
@@ -23,7 +24,7 @@ use rai_pal_core::providers::{
 	provider::{self, ProviderActions},
 	provider_command::ProviderCommandAction,
 };
-use rai_pal_core::remote_games::{self, RemoteGame};
+use rai_pal_core::remote_games::{self, IdKind, RemoteGame};
 #[cfg(target_os = "windows")]
 use rai_pal_core::windows;
 use rai_pal_core::{analytics, remote_mod, steam};
@@ -391,13 +392,35 @@ async fn update_local_mods(handle: AppHandle) -> Result {
 
 #[tauri::command]
 #[specta::specta]
-async fn fetch_remote_games() -> Result<Vec<RemoteGame>> {
-	Ok(remote_games::get().await?)
+async fn fetch_remote_games(handle: AppHandle) -> Result {
+	let state = handle.app_state();
+	update_state(remote_games::get().await?, &state.remote_games);
+	// let mut state_remote_games = state.remote_games.lock().unwrap();
+	// let games = remote_games::get().await?;
+	// *state_remote_games = Some(games);
+
+	Ok(())
 }
 
 #[tauri::command]
 #[specta::specta]
 async fn get_provider_games(handle: AppHandle, provider_id: ProviderId) -> Result {
+	let state = handle.app_state();
+	let remote_games = state.remote_games.get_data()?;
+	let remote_games_by_provider: HashMap<IdKind, HashMap<String, RemoteGame>> = remote_games
+		.iter()
+		.flat_map(|remote_game| {
+			remote_game.ids.iter().map(move |(id_kind, ids)| {
+				ids.iter()
+					.map(move |id| (*id_kind, id.clone(), remote_game.clone()))
+			})
+		})
+		.flatten()
+		.fold(HashMap::new(), |mut map, (id_kind, id, remote_game)| {
+			map.entry(id_kind).or_default().insert(id, remote_game);
+			map
+		});
+
 	// let mut cache = ProviderCache::new(provider_id)?;
 
 	// if let Err(err) = cache.load() {
@@ -414,6 +437,27 @@ async fn get_provider_games(handle: AppHandle, provider_id: ProviderId) -> Resul
 	handle.app_state().games.write().unwrap().clear();
 
 	provider.get_games_new(|game: Game| {
+		let mut new_game = game.clone();
+		if game.installed_game.is_none() {
+			new_game.installed_game = Some(InstalledGame {
+				id: game.id.clone(),
+				installed_mod_versions: HashMap::default(),
+				start_command: None,
+				has_outdated_mod: false,
+				discriminator: None,
+				thumbnail_url: None,
+				executable: GameExecutable {
+					architecture: None,
+					engine: remote_games_by_provider.get(&IdKind::Steam).and_then(|games| {
+						games.get(&game.id).and_then(|remote_game| remote_game.engines.as_ref()).and_then(|remote_engines| {remote_engines.first().cloned()})
+					}),
+					name: game.title.display.clone(),
+					path: PathBuf::new(),
+					scripting_backend: None,
+				}
+			});
+		}
+
 		handle
 			.app_state()
 			.games
@@ -421,7 +465,7 @@ async fn get_provider_games(handle: AppHandle, provider_id: ProviderId) -> Resul
 			.unwrap()
 			.entry(provider_id)
 			.or_default()
-			.push(game);
+			.push(new_game);
 		handle.emit_safe(events::FoundGame());
 	}).await.unwrap_or_else(|err| {
 		// It's normal for a provider to fail here if that provider is just missing.
@@ -662,6 +706,7 @@ fn main() {
 			mod_loaders: Mutex::default(),
 			local_mods: Mutex::default(),
 			remote_mods: Mutex::default(),
+			remote_games: Mutex::default(),
 			games: Arc::new(RwLock::default()),
 		})
 		.invoke_handler(builder.invoke_handler())

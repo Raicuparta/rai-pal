@@ -13,11 +13,12 @@ use tauri::Manager;
 
 use rai_pal_core::{
 	game::Game, local_mod, maps::TryGettable, mod_loaders::mod_loader,
-	providers::provider::ProviderId, remote_mod,
+	providers::provider::ProviderId, remote_games::RemoteGame, remote_mod,
 };
 
 pub struct AppState {
 	pub games: Arc<RwLock<HashMap<ProviderId, Vec<Game>>>>,
+	pub remote_games: Mutex<Option<Vec<RemoteGame>>>,
 	pub mod_loaders: Mutex<Option<mod_loader::Map>>,
 	pub local_mods: Mutex<Option<local_mod::Map>>,
 	pub remote_mods: Mutex<Option<remote_mod::Map>>,
