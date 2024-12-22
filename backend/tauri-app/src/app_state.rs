@@ -22,8 +22,8 @@ use rai_pal_core::{
 };
 
 pub struct AppState {
-	pub games: Arc<RwLock<HashMap<ProviderId, Vec<Game>>>>,
-	pub remote_games: RwLock<Option<HashMap<IdKind, HashMap<String, RemoteGame>>>>,
+	pub games: RwLock<HashMap<ProviderId, Vec<Game>>>,
+	pub remote_games: RwLock<HashMap<IdKind, HashMap<String, RemoteGame>>>,
 	pub mod_loaders: Mutex<Option<mod_loader::Map>>,
 	pub local_mods: Mutex<Option<local_mod::Map>>,
 	pub remote_mods: Mutex<Option<remote_mod::Map>>,

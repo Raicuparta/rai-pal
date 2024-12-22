@@ -421,7 +421,7 @@ async fn fetch_remote_games(handle: AppHandle) -> Result {
 		})
 	});
 	let mut remote_games_write_lock = state.remote_games.write().unwrap();
-	*remote_games_write_lock = Some(remote_games_by_provider);
+	*remote_games_write_lock = remote_games_by_provider;
 
 	Ok(())
 }
@@ -448,14 +448,12 @@ async fn get_provider_games(handle: AppHandle, provider_id: ProviderId) -> Resul
 
 	let remote_games = state.remote_games.read().unwrap().clone();
 	provider.get_games_new(|mut game: Game| {
-		if let Some(remote_games) = &remote_games {
 			// Assign the remote game here as we find the new game.
 			// This is for when the remote games are fetched *before* games are found locally.
-			game.remote_game = remote_games
+		game.remote_game = remote_games
 			.get(&IdKind::Steam)
 			.and_then(|provider_remote_games| provider_remote_games.get(&game.id))
 			.cloned();
-		}
 
 		handle
 			.app_state()
@@ -705,8 +703,8 @@ fn main() {
 			mod_loaders: Mutex::default(),
 			local_mods: Mutex::default(),
 			remote_mods: Mutex::default(),
-			remote_games: RwLock::new(Some(HashMap::default())),
-			games: Arc::new(RwLock::default()),
+			remote_games: RwLock::default(),
+			games: RwLock::default(),
 		})
 		.invoke_handler(builder.invoke_handler())
 		.setup(move |app| {
