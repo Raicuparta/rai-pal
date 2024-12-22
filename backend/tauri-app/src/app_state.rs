@@ -12,13 +12,18 @@ use rai_pal_proc_macros::serializable_struct;
 use tauri::Manager;
 
 use rai_pal_core::{
-	game::Game, local_mod, maps::TryGettable, mod_loaders::mod_loader,
-	providers::provider::ProviderId, remote_games::RemoteGame, remote_mod,
+	game::Game,
+	local_mod,
+	maps::TryGettable,
+	mod_loaders::mod_loader,
+	providers::provider::ProviderId,
+	remote_games::{IdKind, RemoteGame},
+	remote_mod,
 };
 
 pub struct AppState {
 	pub games: Arc<RwLock<HashMap<ProviderId, Vec<Game>>>>,
-	pub remote_games: Mutex<Option<Vec<RemoteGame>>>,
+	pub remote_games: RwLock<Option<HashMap<IdKind, HashMap<String, RemoteGame>>>>,
 	pub mod_loaders: Mutex<Option<mod_loader::Map>>,
 	pub local_mods: Mutex<Option<local_mod::Map>>,
 	pub remote_mods: Mutex<Option<remote_mod::Map>>,

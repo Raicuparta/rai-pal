@@ -394,19 +394,7 @@ async fn update_local_mods(handle: AppHandle) -> Result {
 #[specta::specta]
 async fn fetch_remote_games(handle: AppHandle) -> Result {
 	let state = handle.app_state();
-	update_state(remote_games::get().await?, &state.remote_games);
-	// let mut state_remote_games = state.remote_games.lock().unwrap();
-	// let games = remote_games::get().await?;
-	// *state_remote_games = Some(games);
-
-	Ok(())
-}
-
-#[tauri::command]
-#[specta::specta]
-async fn get_provider_games(handle: AppHandle, provider_id: ProviderId) -> Result {
-	let state = handle.app_state();
-	let remote_games = state.remote_games.get_data()?;
+	let remote_games = remote_games::get().await?;
 	let remote_games_by_provider: HashMap<IdKind, HashMap<String, RemoteGame>> = remote_games
 		.iter()
 		.flat_map(|remote_game| {
@@ -421,6 +409,26 @@ async fn get_provider_games(handle: AppHandle, provider_id: ProviderId) -> Resul
 			map
 		});
 
+	let mut games = state.games.write().unwrap();
+	games.iter_mut().for_each(|(_provider_id, provider_games)| {
+		provider_games.iter_mut().for_each(|game| {
+			game.remote_game = remote_games_by_provider
+				.get(&IdKind::Steam)
+				.and_then(|provider_remote_games| provider_remote_games.get(&game.id))
+				.cloned()
+		})
+	});
+	let mut remote_games_write_lock = state.remote_games.write().unwrap();
+	*remote_games_write_lock = Some(remote_games_by_provider);
+
+	Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn get_provider_games(handle: AppHandle, provider_id: ProviderId) -> Result {
+	let state = handle.app_state();
+
 	// let mut cache = ProviderCache::new(provider_id)?;
 
 	// if let Err(err) = cache.load() {
@@ -434,10 +442,16 @@ async fn get_provider_games(handle: AppHandle, provider_id: ProviderId) -> Resul
 
 	let provider = provider::get_provider(provider_id)?;
 
-	handle.app_state().games.write().unwrap().clear();
+	state.games.write().unwrap().clear();
 
-	provider.get_games_new(move |mut game: Game| {
-		game.remote_game = remote_games_by_provider.get(&IdKind::Steam).and_then(|games| games.get(&game.id)).cloned();
+	let remote_games = state.remote_games.read().unwrap().clone();
+	provider.get_games_new(|mut game: Game| {
+		if let Some(remote_games) = &remote_games {
+			game.remote_game = remote_games
+			.get(&IdKind::Steam)
+			.and_then(|provider_remote_games| provider_remote_games.get(&game.id))
+			.cloned();
+		}
 
 		handle
 			.app_state()
@@ -687,7 +701,7 @@ fn main() {
 			mod_loaders: Mutex::default(),
 			local_mods: Mutex::default(),
 			remote_mods: Mutex::default(),
-			remote_games: Mutex::default(),
+			remote_games: RwLock::new(Some(HashMap::default())),
 			games: Arc::new(RwLock::default()),
 		})
 		.invoke_handler(builder.invoke_handler())
