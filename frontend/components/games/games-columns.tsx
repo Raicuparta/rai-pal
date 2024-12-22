@@ -1,4 +1,4 @@
-import { Table, ThemeIcon, Tooltip } from "@mantine/core";
+import { Flex, Table, ThemeIcon, Tooltip } from "@mantine/core";
 import { TableColumnBase, columnMapToList } from "@components/table/table-head";
 import { ItemName } from "../item-name";
 import {
@@ -44,12 +44,22 @@ const NameCell = ({ item }: CellProps) => (
 			label="One of the mods installed in this game is outdated."
 			position="bottom"
 		>
-			<span>
+			<Flex gap={3}>
 				<ItemName label={item.installedGame?.discriminator}>
 					{item.installedGame?.hasOutdatedMod && <OutdatedMarker />}
+
+					<Tooltip label={item.installedGame ? "Installed" : "Not installed"}>
+						<ThemeIcon
+							size="sm"
+							variant="light"
+							color={item.installedGame ? "green" : "gray"}
+						>
+							{item.installedGame ? <IconDeviceDesktop /> : <IconCloud />}
+						</ThemeIcon>
+					</Tooltip>
 					{item?.title.display}
 				</ItemName>
-			</span>
+			</Flex>
 		</Tooltip>
 	</Table.Td>
 );
@@ -138,26 +148,6 @@ const engine: GamesColumn = {
 	},
 };
 
-const status: GamesColumn = {
-	label: "Status",
-	sort: "Installed",
-	width: 90,
-	center: true,
-	hidable: true,
-	component: ({ item }: CellProps) => (
-		<Table.Td align="center">
-			<Tooltip label={item.installedGame ? "Installed" : "Not installed"}>
-				<ThemeIcon
-					variant="light"
-					color={item.installedGame ? "green" : "gray"}
-				>
-					{item.installedGame ? <IconDeviceDesktop /> : <IconCloud />}
-				</ThemeIcon>
-			</Tooltip>
-		</Table.Td>
-	),
-};
-
 const gamesColumnsMap = {
 	thumbnail,
 	name,
@@ -166,7 +156,6 @@ const gamesColumnsMap = {
 	architecture,
 	scriptingBackend,
 	engine,
-	installed: status,
 };
 
 export type GamesColumnId = keyof typeof gamesColumnsMap;
