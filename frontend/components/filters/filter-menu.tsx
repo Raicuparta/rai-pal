@@ -1,7 +1,13 @@
 import { Button, Group, Indicator, Popover } from "@mantine/core";
 import { IconFilter, IconX } from "@tabler/icons-react";
 import styles from "./filters.module.css";
-import { useCallback } from "react";
+import {
+	startTransition,
+	useCallback,
+	useDeferredValue,
+	useState,
+	useTransition,
+} from "react";
 import { FilterSelect } from "./filter-select";
 import { SearchInput } from "@components/search-input";
 import { GamesFilter, GamesQuery } from "@api/bindings";
@@ -9,6 +15,8 @@ import { useDataQuery } from "@hooks/use-data-query";
 
 export function FilterMenu() {
 	const [dataQuery, setDataQuery] = useDataQuery();
+	const [search, setSearch] = useState("");
+	const [isPending, startTransition] = useTransition();
 
 	const handleToggleClick = useCallback(
 		(id: keyof GamesFilter, value: string) => {
@@ -31,8 +39,11 @@ export function FilterMenu() {
 
 	const handleSearchChange = useCallback(
 		(search: string) => {
-			setDataQuery({
-				search,
+			setSearch(search);
+			startTransition(() => {
+				setDataQuery({
+					search,
+				});
 			});
 		},
 		[setDataQuery],
@@ -49,8 +60,8 @@ export function FilterMenu() {
 		<>
 			<SearchInput
 				onChange={handleSearchChange}
-				value={dataQuery?.search ?? ""}
-				count={999}
+				value={search}
+				count={999} // TODO
 			/>
 			<Indicator
 				disabled={!active}
