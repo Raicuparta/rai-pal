@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+	useCallback,
+	useDeferredValue,
+	useEffect,
+	useRef,
+	useState,
+} from "react";
 import { useAtomValue, useSetAtom } from "jotai";
 import { commands, Result, Error, events, ProviderId } from "@api/bindings";
 import { loadingCountAtom, gameIdsAtom } from "./use-data";
@@ -10,6 +16,7 @@ export function useUpdateData(executeOnMount = false) {
 	const setLoading = useSetAtom(loadingCountAtom);
 	const setGameIds = useSetAtom(gameIdsAtom);
 	const gamesQuery = useAtomValue(gamesQueryAtom);
+	const deferredGamesQuery = useDeferredValue(gamesQuery);
 	const [providerIds, setProviderIds] = useState<ProviderId[]>([]);
 	const fetchCount = useRef(0);
 
@@ -30,7 +37,7 @@ export function useUpdateData(executeOnMount = false) {
 	const updateProviderGames = useCallback(() => {
 		fetchCount.current++;
 		const thisFetchCount = fetchCount.current;
-		commands.getData(gamesQuery).then((result) => {
+		commands.getData(deferredGamesQuery).then((result) => {
 			if (thisFetchCount !== fetchCount.current) {
 				console.log(
 					"Cancelling this fetch since another one happened in the meantime.",
@@ -47,7 +54,7 @@ export function useUpdateData(executeOnMount = false) {
 
 			return true;
 		});
-	}, [gamesQuery, setGameIds]);
+	}, [deferredGamesQuery, setGameIds]);
 
 	useEffect(() => {
 		updateProviderGames();
