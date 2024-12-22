@@ -1,6 +1,7 @@
 use std::{
 	collections::HashMap,
 	fs::{self, File},
+	ops::Deref,
 	path::{Path, PathBuf},
 };
 
@@ -210,6 +211,7 @@ pub fn get_map(resources_path: &Path) -> Map {
 	map
 }
 
+// TODO: changing this signature should reduce the need for cloning when reading from tauri state.
 pub fn get_data_map(map: &Map) -> Result<DataMap> {
 	map.values()
 		.map(|mod_loader| {

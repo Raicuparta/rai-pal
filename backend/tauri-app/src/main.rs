@@ -7,7 +7,7 @@ use std::sync::RwLock;
 use std::{collections::HashMap, path::PathBuf, sync::Mutex};
 
 use crate::result::{Error, Result};
-use app_state::{AppState, DataValue, GameId, StateData, StatefulHandle};
+use app_state::{AppState, GameId, StateData, StatefulHandle};
 use events::EventEmitter;
 use rai_pal_core::game::Game;
 use rai_pal_core::games_query::GamesQuery;
@@ -27,7 +27,7 @@ use rai_pal_core::providers::{
 use rai_pal_core::windows;
 use rai_pal_core::{analytics, remote_game, remote_mod, steam};
 use tauri::path::BaseDirectory;
-use tauri::{AppHandle, Emitter, Manager};
+use tauri::{AppHandle, Manager};
 use tauri_plugin_log::{Target, TargetKind};
 use tauri_plugin_window_state::StateFlags;
 use tauri_specta::Builder;
@@ -41,27 +41,22 @@ mod typescript;
 #[tauri::command]
 #[specta::specta]
 async fn get_mod_loaders(handle: AppHandle) -> Result<mod_loader::DataMap> {
-	Ok(mod_loader::get_data_map(
-		&handle.app_state().mod_loaders.get_data()?,
-	)?)
+	let state = handle.app_state();
+	let data_map = mod_loader::get_data_map(&state.mod_loaders.read_state()?.clone())?;
+
+	Ok(data_map)
 }
 
 #[tauri::command]
 #[specta::specta]
 async fn get_local_mods(handle: AppHandle) -> Result<local_mod::Map> {
-	handle.app_state().local_mods.get_data()
+	Ok(handle.app_state().local_mods.read_state()?.clone())
 }
 
 #[tauri::command]
 #[specta::specta]
 async fn get_remote_mods(handle: AppHandle) -> Result<remote_mod::Map> {
-	handle.app_state().remote_mods.get_data()
-}
-
-fn update_state<TData>(data: TData, mutex: &Mutex<Option<TData>>) {
-	if let Ok(mut mutex_guard) = mutex.lock() {
-		*mutex_guard = Some(data);
-	}
+	Ok(handle.app_state().remote_mods.read_state()?.clone())
 }
 
 #[tauri::command]
@@ -89,6 +84,7 @@ async fn open_mod_folder(mod_id: &str, handle: AppHandle) -> Result {
 	Ok(handle
 		.app_state()
 		.local_mods
+		.read_state()?
 		.try_get(mod_id)?
 		.open_folder()?)
 }
@@ -99,6 +95,7 @@ async fn open_mod_loader_folder(mod_loader_id: &str, handle: AppHandle) -> Resul
 	Ok(handle
 		.app_state()
 		.mod_loaders
+		.read_state()?
 		.try_get(mod_loader_id)?
 		.open_folder()?)
 }
@@ -107,8 +104,9 @@ async fn open_mod_loader_folder(mod_loader_id: &str, handle: AppHandle) -> Resul
 #[specta::specta]
 async fn download_mod(mod_id: &str, handle: AppHandle) -> Result {
 	let state = handle.app_state();
-	let remote_mod = state.remote_mods.try_get(mod_id)?;
-	let mod_loaders = state.mod_loaders.get_data()?;
+	let remote_mods = state.remote_mods.read_state()?.clone();
+	let remote_mod = remote_mods.try_get(mod_id)?;
+	let mod_loaders = state.mod_loaders.read_state()?.clone();
 
 	mod_loaders
 		.try_get(&remote_mod.common.loader_id)?
@@ -124,8 +122,9 @@ async fn download_mod(mod_id: &str, handle: AppHandle) -> Result {
 #[specta::specta]
 async fn delete_mod(mod_id: &str, handle: AppHandle) -> Result {
 	let state = handle.app_state();
-	let local_mod = state.local_mods.try_get(mod_id)?;
-	let mod_loaders = state.mod_loaders.get_data()?;
+	let local_mods = state.local_mods.read_state()?;
+	let local_mod = local_mods.try_get(mod_id)?;
+	let mod_loaders = state.mod_loaders.read_state()?;
 
 	mod_loaders
 		.try_get(&local_mod.common.loader_id)?
@@ -157,7 +156,7 @@ async fn start_game_exe(installed_game: InstalledGame) -> Result {
 async fn install_mod(installed_game: InstalledGame, mod_id: &str, handle: AppHandle) -> Result {
 	let state = handle.app_state();
 
-	let mod_loaders = state.mod_loaders.get_data()?;
+	let mod_loaders = state.mod_loaders.read_state()?.clone();
 
 	let local_mod = refresh_and_get_local_mod(mod_id, &mod_loaders, &handle).await?;
 
@@ -182,7 +181,7 @@ async fn install_mod(installed_game: InstalledGame, mod_id: &str, handle: AppHan
 async fn run_runnable_without_game(mod_id: &str, handle: AppHandle) -> Result {
 	let state = handle.app_state();
 
-	let mod_loaders = state.mod_loaders.get_data()?;
+	let mod_loaders = state.mod_loaders.read_state()?.clone();
 	let local_mod = refresh_and_get_local_mod(mod_id, &mod_loaders, &handle).await?;
 	let mod_loader = mod_loaders.try_get(&local_mod.common.loader_id)?;
 
@@ -198,7 +197,7 @@ async fn run_runnable_without_game(mod_id: &str, handle: AppHandle) -> Result {
 async fn configure_mod(installed_game: InstalledGame, mod_id: &str, handle: AppHandle) -> Result {
 	let state = handle.app_state();
 
-	let mod_loaders = state.mod_loaders.get_data()?;
+	let mod_loaders = state.mod_loaders.read_state()?.clone();
 	let local_mod = refresh_and_get_local_mod(mod_id, &mod_loaders, &handle).await?;
 
 	let mod_loader = mod_loaders.try_get(&local_mod.common.loader_id)?;
@@ -217,7 +216,7 @@ async fn open_installed_mod_folder(
 ) -> Result {
 	let state = handle.app_state();
 
-	let mod_loaders = state.mod_loaders.get_data()?;
+	let mod_loaders = state.mod_loaders.read_state()?.clone();
 	let local_mod = refresh_and_get_local_mod(mod_id, &mod_loaders, &handle).await?;
 
 	let mod_loader = mod_loaders.try_get(&local_mod.common.loader_id)?;
@@ -258,7 +257,7 @@ async fn refresh_game(installed_game: InstalledGame, handle: AppHandle) -> Resul
 async fn uninstall_mod(installed_game: InstalledGame, mod_id: &str, handle: AppHandle) -> Result {
 	let state = handle.app_state();
 
-	let mod_loaders = state.mod_loaders.get_data()?;
+	let mod_loaders = state.mod_loaders.read_state()?.clone();
 
 	let local_mod = refresh_and_get_local_mod(mod_id, &mod_loaders, &handle).await?;
 
@@ -299,7 +298,10 @@ fn refresh_local_mods(mod_loaders: &mod_loader::Map, handle: &AppHandle) -> loca
 
 	handle.emit_safe(events::SyncLocalMods(local_mods.clone()));
 
-	update_state(local_mods.clone(), &handle.app_state().local_mods);
+	handle
+		.app_state()
+		.local_mods
+		.write_state(local_mods.clone());
 
 	local_mods
 }
@@ -320,7 +322,10 @@ async fn refresh_remote_mods(mod_loaders: &mod_loader::Map, handle: &AppHandle) 
 
 	handle.emit_safe(events::SyncRemoteMods(remote_mods.clone()));
 
-	update_state(remote_mods.clone(), &handle.app_state().remote_mods);
+	handle
+		.app_state()
+		.remote_mods
+		.write_state(remote_mods.clone());
 
 	remote_mods
 }
@@ -333,7 +338,7 @@ async fn refresh_and_get_local_mod(
 	let local_mods = {
 		let state = handle.app_state();
 
-		let state_local_mods = state.local_mods.get_data()?;
+		let state_local_mods = state.local_mods.read_state()?.clone();
 		if state_local_mods.contains_key(mod_id) {
 			state_local_mods
 		} else {
@@ -344,14 +349,15 @@ async fn refresh_and_get_local_mod(
 			if state_local_mods.contains_key(mod_id) {
 				disk_local_mods
 			} else {
-				let remote_mod = state.remote_mods.try_get(mod_id)?;
+				let remote_mods = state.remote_mods.read_state()?.clone();
+				let remote_mod = remote_mods.try_get(mod_id)?;
 				let mod_loader = mod_loaders.try_get(&remote_mod.common.loader_id)?;
 
 				if remote_mod.data.latest_version.is_some() {
 					// If local mod still can't be found on disk,
 					// we try to download it from the database.
 					mod_loader
-						.download_mod(&state.remote_mods.try_get(mod_id)?)
+						.download_mod(remote_mods.try_get(mod_id)?)
 						.await?;
 				} else {
 					// If downloading from the database isn't possible,
@@ -380,7 +386,11 @@ async fn update_local_mods(handle: AppHandle) -> Result {
 	handle.emit_safe(events::SyncModLoaders(mod_loader::get_data_map(
 		&mod_loaders,
 	)?));
-	update_state(mod_loaders.clone(), &handle.app_state().mod_loaders);
+
+	&handle
+		.app_state()
+		.mod_loaders
+		.write_state(mod_loaders.clone());
 
 	refresh_local_mods(&mod_loaders, &handle);
 	refresh_remote_mods(&mod_loaders, &handle).await;
@@ -688,9 +698,9 @@ fn main() {
 				.build(),
 		)
 		.manage(AppState {
-			mod_loaders: Mutex::default(),
-			local_mods: Mutex::default(),
-			remote_mods: Mutex::default(),
+			mod_loaders: RwLock::default(),
+			local_mods: RwLock::default(),
+			remote_mods: RwLock::default(),
 			remote_games: RwLock::default(),
 			games: RwLock::default(),
 		})
