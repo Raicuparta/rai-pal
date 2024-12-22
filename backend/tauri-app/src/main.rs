@@ -412,6 +412,8 @@ async fn fetch_remote_games(handle: AppHandle) -> Result {
 	let mut games = state.games.write().unwrap();
 	games.iter_mut().for_each(|(_provider_id, provider_games)| {
 		provider_games.iter_mut().for_each(|game| {
+			// Assign remote game to any existing game.
+			// This is for when the remote games are fetched *after* games are found locally.
 			game.remote_game = remote_games_by_provider
 				.get(&IdKind::Steam)
 				.and_then(|provider_remote_games| provider_remote_games.get(&game.id))
@@ -447,6 +449,8 @@ async fn get_provider_games(handle: AppHandle, provider_id: ProviderId) -> Resul
 	let remote_games = state.remote_games.read().unwrap().clone();
 	provider.get_games_new(|mut game: Game| {
 		if let Some(remote_games) = &remote_games {
+			// Assign the remote game here as we find the new game.
+			// This is for when the remote games are fetched *before* games are found locally.
 			game.remote_game = remote_games
 			.get(&IdKind::Steam)
 			.and_then(|provider_remote_games| provider_remote_games.get(&game.id))
