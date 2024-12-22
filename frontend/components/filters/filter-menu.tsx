@@ -11,18 +11,18 @@ export function FilterMenu() {
 	const [dataQuery, setDataQuery] = useDataQuery();
 
 	const handleToggleClick = useCallback(
-		(id: keyof GamesFilter, value: string) => {
+		(id: keyof GamesFilter, value: keyof GamesFilter[typeof id]) => {
 			setDataQuery({
 				filter: {
 					...dataQuery?.filter,
 					[id]: {
-						...dataQuery?.filter?.[id],
-						[value]: !dataQuery?.filter?.[id]?.[value],
+						...dataQuery.filter[id],
+						[value]: !dataQuery.filter[id]?.[value],
 					},
 				},
 			} as GamesQuery);
 		},
-		[dataQuery?.filter, setDataQuery],
+		[dataQuery, setDataQuery],
 	);
 
 	const handleReset = useCallback(() => {
@@ -83,16 +83,13 @@ export function FilterMenu() {
 								align="start"
 								wrap="nowrap"
 							>
-								{Object.entries(dataQuery?.filter ?? {}).map(
-									([filterId, filterOptions]) => (
-										<FilterSelect
-											key={filterId}
-											id={filterId}
-											filterOptions={filterOptions}
-											onClick={handleToggleClick}
-										/>
-									),
-								)}
+								{Object.keys(dataQuery?.filter ?? {}).map((filterId) => (
+									<FilterSelect
+										key={filterId}
+										id={filterId as keyof GamesFilter}
+										onClick={handleToggleClick}
+									/>
+								))}
 							</Group>
 						</Popover.Dropdown>
 					</Popover>

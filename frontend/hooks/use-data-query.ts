@@ -24,6 +24,8 @@ const defaultQuery: GamesQuery = {
 			Steam: true,
 			Manual: true,
 			Xbox: true,
+			Ea: true, // TODO needs to exist but hidden.
+			Ubisoft: true, // TODO needs to exist but hidden.
 		},
 		tags: {
 			Demo: true,
