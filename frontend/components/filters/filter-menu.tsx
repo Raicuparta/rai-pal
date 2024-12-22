@@ -1,7 +1,7 @@
 import { Button, Group, Indicator, Popover } from "@mantine/core";
 import { IconFilter, IconX } from "@tabler/icons-react";
 import styles from "./filters.module.css";
-import { useCallback, useTransition } from "react";
+import { useCallback } from "react";
 import { FilterSelect } from "./filter-select";
 import { SearchInput } from "@components/search-input";
 import { GamesFilter, GamesQuery } from "@api/bindings";
@@ -9,7 +9,6 @@ import { useDataQuery } from "@hooks/use-data-query";
 
 export function FilterMenu() {
 	const [dataQuery, setDataQuery] = useDataQuery();
-	const [isPending, startTransition] = useTransition();
 
 	const handleToggleClick = useCallback(
 		(id: keyof GamesFilter, value: string) => {
@@ -32,10 +31,8 @@ export function FilterMenu() {
 
 	const handleSearchChange = useCallback(
 		(search: string) => {
-			startTransition(() => {
-				setDataQuery({
-					search,
-				});
+			setDataQuery({
+				search,
 			});
 		},
 		[setDataQuery],
