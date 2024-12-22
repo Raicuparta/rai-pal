@@ -7,6 +7,8 @@ import {
 	IconCircleLetterG,
 	IconBrandXbox,
 	IconBrandItch,
+	IconCircleLetterUFilled,
+	IconBrandElectronicArts,
 } from "@tabler/icons-react";
 
 type Props = {
@@ -20,7 +22,8 @@ const providerIcons: Record<ProviderId, Icon> = {
 	Gog: IconCircleLetterG,
 	Xbox: IconBrandXbox,
 	Itch: IconBrandItch,
-	// Ubisoft: IconCircleLetterUFilled,
+	Ubisoft: IconCircleLetterUFilled,
+	Ea: IconBrandElectronicArts,
 };
 
 export function ProviderIcon(props: Props) {

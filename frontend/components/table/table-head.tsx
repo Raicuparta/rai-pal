@@ -1,7 +1,7 @@
 import { Box, Flex, Table } from "@mantine/core";
 import classes from "./table.module.css";
 import { IconChevronDown, IconChevronUp } from "@tabler/icons-react";
-import { InstalledGameSortBy } from "@api/bindings";
+import { GamesSortBy } from "@api/bindings";
 
 export type TableColumnBase<TItem, TSort> = {
 	label: string;
@@ -33,7 +33,7 @@ export function columnMapToList<TItem, TKey extends string, TSort>(
 type Props<TKey extends string, TItem, TSort> = {
 	readonly columns: TableColumn<TKey, TItem, TSort>[];
 	readonly onChangeSort?: (sortBy: TSort) => void;
-	readonly sortBy?: InstalledGameSortBy;
+	readonly sortBy?: GamesSortBy;
 	readonly sortDescending?: boolean;
 };
 

@@ -1,4 +1,4 @@
-import { OwnedGame, ProviderCommandAction, commands } from "@api/bindings";
+import { Game, ProviderCommandAction, commands } from "@api/bindings";
 import { CommandButton } from "@components/command-button";
 import {
 	Icon,
@@ -11,7 +11,7 @@ import {
 } from "@tabler/icons-react";
 
 type Props = {
-	readonly game: OwnedGame;
+	readonly game: Game;
 	readonly action: ProviderCommandAction;
 };
 

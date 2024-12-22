@@ -78,5 +78,6 @@ export const ProviderBadge = CreateColorCodedBadge<ProviderId>("Unknown", {
 	Gog: "violet",
 	Xbox: "green",
 	Itch: "teal",
-	// Ubisoft: "grape",
+	Ubisoft: "grape",
+	Ea: "yellow",
 });
