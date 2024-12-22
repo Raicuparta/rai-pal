@@ -1,12 +1,13 @@
 use std::collections::HashMap;
 
 use lazy_regex::regex;
-use rai_pal_proc_macros::{serializable_enum, serializable_struct};
+use rai_pal_proc_macros::serializable_struct;
 
 use crate::game_engines::game_engine::{
 	EngineBrand, EngineVersion, EngineVersionNumbers, GameEngine,
 };
 use crate::game_subscription::GameSubscription;
+use crate::providers::provider::ProviderId;
 use crate::result::Result;
 
 const URL_BASE: &str = "https://raicuparta.github.io/rai-pal-db/game-db";
@@ -15,7 +16,7 @@ const URL_BASE: &str = "https://raicuparta.github.io/rai-pal-db/game-db";
 // This way we prevent old versions of Rai Pal from breaking unless we want them to.
 // So when you need to change the database in a backwards-incompatible way,
 // you would create a new folder in the database repository and change this number to match the folder.
-const DATABASE_VERSION: i32 = 0;
+const DATABASE_VERSION: i32 = 1;
 
 #[serializable_struct]
 struct GameDatabaseEngineVersion {
@@ -23,23 +24,11 @@ struct GameDatabaseEngineVersion {
 	version: Option<String>,
 }
 
-#[serializable_enum]
-pub enum IdKind {
-	Steam,
-	Manual,
-	Itch,
-	Epic,
-	Gog,
-	Xbox,
-	Ubisoft,
-	NormalizedTitle,
-}
-
 #[serializable_struct]
 struct GameDatabaseEntry {
 	pub title: Option<String>,
 	pub engines: Option<Vec<GameDatabaseEngineVersion>>,
-	pub ids: Option<HashMap<IdKind, Vec<String>>>,
+	pub ids: Option<HashMap<ProviderId, Vec<String>>>,
 	pub subscriptions: Option<Vec<GameSubscription>>,
 }
 
@@ -47,7 +36,7 @@ struct GameDatabaseEntry {
 pub struct RemoteGame {
 	pub title: Option<String>,
 	pub engines: Option<Vec<GameEngine>>,
-	pub ids: HashMap<IdKind, Vec<String>>,
+	pub ids: HashMap<ProviderId, Vec<String>>,
 	pub subscriptions: Option<Vec<GameSubscription>>,
 }
 
@@ -90,13 +79,15 @@ fn parse_version(version: &str) -> Option<EngineVersion> {
 	})
 }
 
-pub async fn get() -> Result<Vec<RemoteGame>> {
+pub type Map = HashMap<ProviderId, HashMap<String, RemoteGame>>;
+
+pub async fn get() -> Result<Map> {
 	let url = format!("{URL_BASE}/{DATABASE_VERSION}/games.json");
 	let response = reqwest::get(&url).await?;
 
 	let game_database: Vec<GameDatabaseEntry> = response.json().await?;
 
-	let games = game_database
+	let games: Vec<_> = game_database
 		.into_iter()
 		.filter_map(|entry| {
 			Some(RemoteGame {
@@ -123,5 +114,19 @@ pub async fn get() -> Result<Vec<RemoteGame>> {
 		})
 		.collect();
 
-	Ok(games)
+	let game_map: Map = games
+		.iter()
+		.flat_map(|remote_game| {
+			remote_game.ids.iter().map(move |(id_kind, ids)| {
+				ids.iter()
+					.map(move |id| (*id_kind, id.clone(), remote_game.clone()))
+			})
+		})
+		.flatten()
+		.fold(HashMap::new(), |mut map, (id_kind, id, remote_game)| {
+			map.entry(id_kind).or_default().insert(id, remote_game);
+			map
+		});
+
+	Ok(game_map)
 }

@@ -3,14 +3,13 @@
 // Command stuff needs to be async so I can spawn tasks.
 #![allow(clippy::unused_async)]
 
-use std::sync::{Arc, RwLock};
+use std::sync::RwLock;
 use std::{collections::HashMap, path::PathBuf, sync::Mutex};
 
 use crate::result::{Error, Result};
 use app_state::{AppState, DataValue, GameId, StateData, StatefulHandle};
 use events::EventEmitter;
 use rai_pal_core::game::Game;
-use rai_pal_core::game_executable::GameExecutable;
 use rai_pal_core::games_query::GamesQuery;
 use rai_pal_core::installed_game::InstalledGame;
 use rai_pal_core::local_mod::{self, LocalMod};
@@ -24,12 +23,11 @@ use rai_pal_core::providers::{
 	provider::{self, ProviderActions},
 	provider_command::ProviderCommandAction,
 };
-use rai_pal_core::remote_games::{self, IdKind, RemoteGame};
 #[cfg(target_os = "windows")]
 use rai_pal_core::windows;
-use rai_pal_core::{analytics, remote_mod, steam};
+use rai_pal_core::{analytics, remote_game, remote_mod, steam};
 use tauri::path::BaseDirectory;
-use tauri::{AppHandle, Manager};
+use tauri::{AppHandle, Emitter, Manager};
 use tauri_plugin_log::{Target, TargetKind};
 use tauri_plugin_window_state::StateFlags;
 use tauri_specta::Builder;
@@ -394,34 +392,24 @@ async fn update_local_mods(handle: AppHandle) -> Result {
 #[specta::specta]
 async fn fetch_remote_games(handle: AppHandle) -> Result {
 	let state = handle.app_state();
-	let remote_games = remote_games::get().await?;
-	let remote_games_by_provider: HashMap<IdKind, HashMap<String, RemoteGame>> = remote_games
-		.iter()
-		.flat_map(|remote_game| {
-			remote_game.ids.iter().map(move |(id_kind, ids)| {
-				ids.iter()
-					.map(move |id| (*id_kind, id.clone(), remote_game.clone()))
-			})
-		})
-		.flatten()
-		.fold(HashMap::new(), |mut map, (id_kind, id, remote_game)| {
-			map.entry(id_kind).or_default().insert(id, remote_game);
-			map
-		});
+	let remote_games = remote_game::get().await?;
 
 	let mut games = state.games.write().unwrap();
 	games.iter_mut().for_each(|(_provider_id, provider_games)| {
 		provider_games.iter_mut().for_each(|game| {
 			// Assign remote game to any existing game.
 			// This is for when the remote games are fetched *after* games are found locally.
-			game.remote_game = remote_games_by_provider
-				.get(&IdKind::Steam)
+			game.remote_game = remote_games
+				.get(&game.provider_id)
 				.and_then(|provider_remote_games| provider_remote_games.get(&game.id))
 				.cloned()
 		})
 	});
+
+	handle.emit_safe(events::FoundGame());
+
 	let mut remote_games_write_lock = state.remote_games.write().unwrap();
-	*remote_games_write_lock = remote_games_by_provider;
+	*remote_games_write_lock = remote_games;
 
 	Ok(())
 }
@@ -451,7 +439,7 @@ async fn get_provider_games(handle: AppHandle, provider_id: ProviderId) -> Resul
 			// Assign the remote game here as we find the new game.
 			// This is for when the remote games are fetched *before* games are found locally.
 		game.remote_game = remote_games
-			.get(&IdKind::Steam)
+			.get(&provider_id)
 			.and_then(|provider_remote_games| provider_remote_games.get(&game.id))
 			.cloned();
 

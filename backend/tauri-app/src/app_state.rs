@@ -3,7 +3,7 @@ use std::{
 	collections::HashMap,
 	fmt::Display,
 	hash::{BuildHasher, Hash},
-	sync::{Arc, Mutex, RwLock},
+	sync::{Mutex, RwLock},
 };
 
 use crate::result::Error;
@@ -12,18 +12,13 @@ use rai_pal_proc_macros::serializable_struct;
 use tauri::Manager;
 
 use rai_pal_core::{
-	game::Game,
-	local_mod,
-	maps::TryGettable,
-	mod_loaders::mod_loader,
-	providers::provider::ProviderId,
-	remote_games::{IdKind, RemoteGame},
-	remote_mod,
+	game::Game, local_mod, maps::TryGettable, mod_loaders::mod_loader,
+	providers::provider::ProviderId, remote_game, remote_mod,
 };
 
 pub struct AppState {
 	pub games: RwLock<HashMap<ProviderId, Vec<Game>>>,
-	pub remote_games: RwLock<HashMap<IdKind, HashMap<String, RemoteGame>>>,
+	pub remote_games: RwLock<remote_game::Map>,
 	pub mod_loaders: Mutex<Option<mod_loader::Map>>,
 	pub local_mods: Mutex<Option<local_mod::Map>>,
 	pub remote_mods: Mutex<Option<remote_mod::Map>>,

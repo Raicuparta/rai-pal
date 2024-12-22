@@ -18,13 +18,16 @@ use crate::{
 	result::{Error, Result},
 };
 
+// These IDs need to match the ones in rai-pal-db.
 #[serializable_enum]
 pub enum ProviderId {
-	Steam,
-	Manual,
-	Itch,
+	Ea,
 	Epic,
 	Gog,
+	Itch,
+	Manual,
+	Steam,
+	Ubisoft,
 	Xbox,
 }
 

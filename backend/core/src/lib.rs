@@ -18,7 +18,7 @@ pub mod mod_loaders;
 pub mod mod_manifest;
 pub mod paths;
 pub mod providers;
-pub mod remote_games;
+pub mod remote_game;
 pub mod remote_mod;
 pub mod result;
 pub mod steam;

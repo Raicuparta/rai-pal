@@ -12,12 +12,12 @@ use crate::{
 		provider::ProviderId,
 		provider_command::{ProviderCommand, ProviderCommandAction},
 	},
-	remote_games::RemoteGame,
+	remote_game::RemoteGame,
 };
 
 #[serializable_struct]
 pub struct Game {
-	pub id: String,
+	pub id: String, // TODO probably need to split this into an ID from provider, and a global unique ID?
 	pub provider_id: ProviderId,
 	pub tags: HashSet<GameTag>,
 	pub installed_game: Option<InstalledGame>,
