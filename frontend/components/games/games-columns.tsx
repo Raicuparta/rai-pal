@@ -47,17 +47,18 @@ const NameCell = ({ item }: CellProps) => (
 			<Flex gap={3}>
 				<ItemName label={item.installedGame?.discriminator}>
 					{item.installedGame?.hasOutdatedMod && <OutdatedMarker />}
-
-					<Tooltip label={item.installedGame ? "Installed" : "Not installed"}>
-						<ThemeIcon
-							size="sm"
-							variant="light"
-							color={item.installedGame ? "green" : "gray"}
-						>
-							{item.installedGame ? <IconDeviceDesktop /> : <IconCloud />}
-						</ThemeIcon>
-					</Tooltip>
-					{item?.title.display}
+					<Flex gap="xs">
+						<Tooltip label={item.installedGame ? "Installed" : "Not installed"}>
+							<ThemeIcon
+								size="sm"
+								variant="light"
+								color={item.installedGame ? "green" : "gray"}
+							>
+								{item.installedGame ? <IconDeviceDesktop /> : <IconCloud />}
+							</ThemeIcon>
+						</Tooltip>
+						{item?.title.display}
+					</Flex>
 				</ItemName>
 			</Flex>
 		</Tooltip>
