@@ -43,11 +43,13 @@ export function FilterMenu() {
 		[setDataQuery],
 	);
 
-	// active if has search or any toggle is set to false:
+	// active if has search or any filter has length smaller than default
 	const active =
-		Boolean(dataQuery?.search) ||
-		Object.values(dataQuery?.filter ?? {}).some((toggleGroup) =>
-			Object.values(toggleGroup).some((value) => !value),
+		dataQuery.search.length > 0 ||
+		Object.keys(dataQuery.filter).some(
+			(filterId) =>
+				dataQuery.filter[filterId as keyof GamesFilter].length <
+				defaultQuery.filter[filterId as keyof GamesFilter].length,
 		);
 
 	return (
