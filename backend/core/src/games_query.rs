@@ -1,4 +1,4 @@
-use std::{cmp::Ordering, collections::HashMap, string};
+use std::{cmp::Ordering, collections::HashSet, string};
 
 use rai_pal_proc_macros::{serializable_enum, serializable_struct};
 
@@ -19,12 +19,12 @@ pub enum InstallState {
 
 #[serializable_struct]
 pub struct GamesFilter {
-	pub providers: HashMap<ProviderId, bool>,
-	pub tags: HashMap<GameTag, bool>,
-	pub architectures: HashMap<Architecture, bool>,
-	pub unity_scripting_backends: HashMap<UnityScriptingBackend, bool>,
-	pub engines: HashMap<EngineBrand, bool>,
-	pub installed: HashMap<InstallState, bool>,
+	pub providers: HashSet<Option<ProviderId>>,
+	pub tags: HashSet<Option<GameTag>>,
+	pub architectures: HashSet<Option<Architecture>>,
+	pub unity_scripting_backends: HashSet<Option<UnityScriptingBackend>>,
+	pub engines: HashSet<Option<EngineBrand>>,
+	pub installed: HashSet<Option<InstallState>>,
 }
 
 #[serializable_enum]
@@ -56,30 +56,15 @@ impl Default for GamesSortBy {
 impl Default for GamesFilter {
 	fn default() -> Self {
 		Self {
-			architectures: Architecture::variants()
-				.into_iter()
-				.map(|variant| (variant, true))
-				.collect(),
-			engines: EngineBrand::variants()
-				.into_iter()
-				.map(|variant| (variant, true))
-				.collect(),
-			providers: ProviderId::variants()
-				.into_iter()
-				.map(|variant| (variant, true))
-				.collect(),
-			tags: GameTag::variants()
-				.into_iter()
-				.map(|variant| (variant, true))
-				.collect(),
+			architectures: Architecture::variants().into_iter().map(Some).collect(),
+			engines: EngineBrand::variants().into_iter().map(Some).collect(),
+			providers: ProviderId::variants().into_iter().map(Some).collect(),
+			tags: GameTag::variants().into_iter().map(Some).collect(),
 			unity_scripting_backends: UnityScriptingBackend::variants()
 				.into_iter()
-				.map(|variant| (variant, true))
+				.map(Some)
 				.collect(),
-			installed: InstallState::variants()
-				.into_iter()
-				.map(|variant| (variant, true))
-				.collect(),
+			installed: InstallState::variants().into_iter().map(Some).collect(),
 		}
 	}
 }
@@ -88,60 +73,57 @@ impl GamesQuery {
 	pub fn matches(&self, game: &Game) -> bool {
 		let filter = &self.filter;
 
-		if !filter.providers.get(&game.provider_id).unwrap_or(&true) {
+		if !filter.providers.contains(&Some(game.provider_id)) {
 			return false;
 		}
 
-		if filter
-			.tags
-			.iter()
-			.any(|(tag, enabled)| !enabled && game.tags.contains(tag))
+		// filter by tags. If the game has any of the tags, it's a match.
+		// If the game has no tags and the None tag is in the filter, that's a match.
+		// If the game has any tag that's in the filter tags, that's a match.
+		if !filter.tags.is_empty() {
+			if game.tags.is_empty() {
+				if !filter.tags.contains(&None) {
+					return false;
+				}
+			} else if !game
+				.tags
+				.iter()
+				.any(|tag| filter.tags.contains(&Some(*tag)))
+			{
+				return false;
+			}
+		}
+
+		if !filter.architectures.contains(
+			&game
+				.installed_game
+				.as_ref()
+				.and_then(|installed_game| installed_game.executable.architecture),
+		) {
+			return false;
+		}
+
+		if !filter
+			.engines
+			.contains(&game.get_engine().map(|engine| engine.brand))
 		{
 			return false;
 		}
 
-		if filter.architectures.iter().any(|(filter_arch, enabled)| {
-			!enabled
-				&& game
-					.installed_game
-					.as_ref()
-					.and_then(|installed_game| installed_game.executable.architecture.as_ref())
-					.is_some_and(|game_arch| game_arch == filter_arch)
-		}) {
+		if !filter.unity_scripting_backends.contains(
+			&game
+				.installed_game
+				.as_ref()
+				.and_then(|installed_game| installed_game.executable.scripting_backend),
+		) {
 			return false;
 		}
 
-		if filter.engines.iter().any(|(engine_brand, enabled)| {
-			!enabled
-				&& game
-					.get_engine()
-					.is_some_and(|engine| engine.brand == *engine_brand)
-		}) {
-			return false;
-		}
-
-		if filter
-			.unity_scripting_backends
-			.iter()
-			.any(|(filter_backend, enabled)| {
-				!enabled
-					&& game
-						.installed_game
-						.as_ref()
-						.and_then(|installed_game| {
-							installed_game.executable.scripting_backend.as_ref()
-						})
-						.is_some_and(|game_backend| game_backend == filter_backend)
-			}) {
-			return false;
-		}
-
-		let game_installed_state = if game.installed_game.is_some() {
-			InstallState::Installed
+		if !filter.installed.contains(if game.installed_game.is_some() {
+			&Some(InstallState::Installed)
 		} else {
-			InstallState::NotInstalled
-		};
-		if filter.installed.get(&game_installed_state).unwrap_or(&true) == &false {
+			&Some(InstallState::NotInstalled)
+		}) {
 			return false;
 		}
 

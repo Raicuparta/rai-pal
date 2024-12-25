@@ -1,44 +1,28 @@
 import { GamesQuery } from "@api/bindings";
 import { atom, useAtom } from "jotai";
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 
-const defaultQuery: GamesQuery = {
+export const defaultQuery: GamesQuery = {
 	sortBy: "Title",
 	search: "",
 	sortDescending: false,
 	filter: {
-		architectures: {
-			X64: true,
-			X86: true,
-		},
-		engines: {
-			GameMaker: true,
-			Unity: true,
-			Godot: true,
-			Unreal: true,
-		},
-		providers: {
-			Epic: true,
-			Gog: true,
-			Itch: true,
-			Steam: true,
-			Manual: true,
-			Xbox: true,
-			Ea: true, // TODO needs to exist but hidden.
-			Ubisoft: true, // TODO needs to exist but hidden.
-		},
-		tags: {
-			Demo: true,
-			VR: true,
-		},
-		unityScriptingBackends: {
-			Il2Cpp: true,
-			Mono: true,
-		},
-		installed: {
-			Installed: true,
-			NotInstalled: true,
-		},
+		architectures: ["X64", "X86", null],
+		engines: ["GameMaker", "Unity", "Godot", "Unreal", null],
+		providers: [
+			"Epic",
+			"Gog",
+			"Itch",
+			"Steam",
+			"Manual",
+			"Xbox",
+			"Ea", // TODO needs to exist but hidden.
+			"Ubisoft", // TODO needs to exist but hidden.
+			null,
+		],
+		tags: ["Demo", "VR", null],
+		unityScriptingBackends: ["Il2Cpp", "Mono", null],
+		installed: ["Installed", "NotInstalled", null],
 	},
 };
 
@@ -64,6 +48,10 @@ export function useDataQuery() {
 		},
 		[setQuery],
 	);
+
+	useEffect(() => {
+		setQuery(defaultQuery);
+	}, [setQuery]);
 
 	return [query, setQueryExternal] as const;
 }
