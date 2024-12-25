@@ -66,7 +66,6 @@ export function GamesPage() {
 					totalCount={gameIds.length}
 					data={gameIds}
 					defaultItemHeight={75}
-					overscan={200}
 					increaseViewportBy={200}
 				/>
 			</TableContainer>
