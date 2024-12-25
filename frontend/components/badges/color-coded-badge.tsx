@@ -5,13 +5,7 @@ import {
 	ProviderId,
 	UnityScriptingBackend,
 } from "@api/bindings";
-import {
-	Badge,
-	BadgeProps,
-	DefaultMantineColor,
-	Flex,
-	Stack,
-} from "@mantine/core";
+import { Badge, BadgeProps, DefaultMantineColor, Stack } from "@mantine/core";
 import styles from "./badges.module.css";
 interface Props<TValue extends string> extends BadgeProps {
 	readonly value?: TValue | null;
@@ -35,9 +29,6 @@ function CreateColorCodedBadge<TValue extends string>(
 			>
 				<Badge
 					color={color}
-					className={
-						props.value && props.label ? styles.labelledBadge : undefined
-					}
 					{...props}
 				>
 					{props.value ?? fallbackText}
