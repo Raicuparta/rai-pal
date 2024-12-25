@@ -13,7 +13,6 @@ export const visibleGamesColumnsAtom = atom<GamesColumnId[]>([
 	"engine",
 	"provider",
 	"architecture",
-	"gameTags",
 ]);
 
 export const useVisibleGamesColumns = () => {

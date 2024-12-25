@@ -12,8 +12,8 @@ import { OutdatedMarker } from "@components/outdated-marker";
 import styles from "../table/table.module.css";
 import { getThumbnailWithFallback } from "@util/fallback-thumbnail";
 import { Game, GamesSortBy } from "@api/bindings";
-import { GameTagsCell } from "@components/game-tags/game-tags";
 import { IconCloud, IconDeviceDesktop } from "@tabler/icons-react";
+import { GameTags } from "@components/game-tags/game-tags";
 
 type GamesColumn = TableColumnBase<Game, GamesSortBy>;
 
@@ -58,6 +58,7 @@ const NameCell = ({ item }: CellProps) => (
 							</ThemeIcon>
 						</Tooltip>
 						{item?.title.display}
+						<GameTags game={item} />
 					</Flex>
 				</ItemName>
 			</Flex>
@@ -113,15 +114,6 @@ const scriptingBackend: GamesColumn = {
 	),
 };
 
-const gameTags: GamesColumn = {
-	label: "Tags",
-	sort: "Tags",
-	width: 120,
-	center: true,
-	hidable: true,
-	component: GameTagsCell,
-};
-
 const engine: GamesColumn = {
 	label: "Engine",
 	sort: "Engine",
@@ -151,7 +143,6 @@ const engine: GamesColumn = {
 const gamesColumnsMap = {
 	thumbnail,
 	name,
-	gameTags,
 	provider,
 	architecture,
 	scriptingBackend,
