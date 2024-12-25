@@ -140,9 +140,8 @@ const engine: GamesColumn = {
 			// miw={170}
 			>
 				<EngineBadge
-					maw={70}
 					value={engine?.brand}
-					label={engine ? (engine.version?.display ?? "-") : undefined}
+					label={engine ? engine.version?.display : undefined}
 				/>
 			</Table.Td>
 		);

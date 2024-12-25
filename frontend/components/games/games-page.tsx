@@ -65,7 +65,7 @@ export function GamesPage() {
 					fixedHeaderContent={renderHeaders}
 					totalCount={gameIds.length}
 					data={gameIds}
-					defaultItemHeight={33}
+					defaultItemHeight={75}
 					overscan={200}
 					increaseViewportBy={200}
 				/>

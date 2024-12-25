@@ -5,7 +5,13 @@ import {
 	ProviderId,
 	UnityScriptingBackend,
 } from "@api/bindings";
-import { Badge, BadgeProps, DefaultMantineColor, Flex } from "@mantine/core";
+import {
+	Badge,
+	BadgeProps,
+	DefaultMantineColor,
+	Flex,
+	Stack,
+} from "@mantine/core";
 import styles from "./badges.module.css";
 interface Props<TValue extends string> extends BadgeProps {
 	readonly value?: TValue | null;
@@ -22,7 +28,11 @@ function CreateColorCodedBadge<TValue extends string>(
 		const color = props.value ? colorMap[props.value] : "white";
 
 		return (
-			<Flex className={styles.wrapper}>
+			<Stack
+				align="center"
+				justify="center"
+				gap="xs"
+			>
 				<Badge
 					color={color}
 					className={
@@ -35,13 +45,13 @@ function CreateColorCodedBadge<TValue extends string>(
 				{props.label && props.value && (
 					<Badge
 						color="dark"
-						variant="filled"
+						variant="default"
 						className={styles.label}
 					>
 						{props.label}
 					</Badge>
 				)}
-			</Flex>
+			</Stack>
 		);
 	};
 }

@@ -27,6 +27,9 @@ export const GameRow = React.forwardRef(function GameRow(
 			{isSelected && <GameModal game={game} />}
 			<Table.Tr
 				ref={ref}
+				style={{
+					height: 75,
+				}}
 				onClick={() =>
 					game &&
 					setSelectedGame({
