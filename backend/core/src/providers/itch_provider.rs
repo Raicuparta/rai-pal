@@ -17,16 +17,16 @@ use crate::{
 pub struct Itch {}
 
 impl Itch {
-	fn get_installed_game(cave: &ItchDatabaseCave) -> Option<InstalledGame> {
-		let verdict = cave.verdict.as_ref()?;
-		let exe_path = verdict.base_path.join(&verdict.candidates.first()?.path);
-		let mut game = InstalledGame::new(&exe_path, &cave.title, *Self::ID)?;
-		if let Some(cover_url) = &cave.cover_url {
-			game.set_thumbnail_url(cover_url);
-		}
+	// fn get_installed_game(cave: &ItchDatabaseCave) -> Option<InstalledGame> {
+	// 	let verdict = cave.verdict.as_ref()?;
+	// 	let exe_path = verdict.base_path.join(&verdict.candidates.first()?.path);
+	// 	let mut game = InstalledGame::new(&exe_path, &cave.title, *Self::ID)?;
+	// 	if let Some(cover_url) = &cave.cover_url {
+	// 		game.set_thumbnail_url(cover_url);
+	// 	}
 
-		Some(game)
-	}
+	// 	Some(game)
+	// }
 
 	// fn get_owned_game(row: &ItchDatabaseGame) -> OwnedGame {
 	// 	let mut game = OwnedGame::new(&row.id.to_string(), *Self::ID, &row.title);

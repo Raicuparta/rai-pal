@@ -25,10 +25,7 @@ const ThumbnailComponent = ({ item }: CellProps) => (
 	>
 		<Image
 			fallbackSrc="images/thumbnails/Manual.png"
-			src={getThumbnailWithFallback(
-				item.installedGame?.thumbnailUrl || item?.thumbnailUrl,
-				item.providerId,
-			)}
+			src={getThumbnailWithFallback(item.thumbnailUrl, item.providerId)}
 		/>
 	</Table.Td>
 );

@@ -114,9 +114,7 @@ impl Steam {
 
 				let app_name = app_info.name.clone();
 
-				if let Some(mut game) =
-					installed_game::InstalledGame::new(full_path, &app_name, *Self::ID)
-				{
+				if let Some(mut game) = installed_game::InstalledGame::new(full_path) {
 					let discriminator_option =
 						if used_names.contains(&app_name) {
 							Some(launch_option.description.as_ref().map_or_else(
@@ -131,9 +129,6 @@ impl Steam {
 						game.set_discriminator(discriminator);
 					}
 
-					let app_id_string = app_info.app_id.to_string();
-
-					game.set_thumbnail_url(&get_steam_thumbnail(&app_id_string));
 					game.set_start_command_string(&get_start_command(
 						&launch_option,
 						&discriminator_option,

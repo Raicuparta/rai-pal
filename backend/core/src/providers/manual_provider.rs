@@ -60,10 +60,6 @@ impl ProviderActions for Manual {
 	}
 }
 
-fn create_game_from_path(path: &Path) -> Option<InstalledGame> {
-	InstalledGame::new(path, file_name_without_extension(path).ok()?, *Manual::ID)
-}
-
 fn games_config_path() -> Result<PathBuf> {
 	Ok(app_data_path()?.join("games.json"))
 }
@@ -84,7 +80,7 @@ fn read_games_config(games_config_path: &Path) -> GamesConfig {
 
 pub fn add_game(path: &Path) -> Result<InstalledGame> {
 	let game =
-		create_game_from_path(path).ok_or(Error::FailedToGetGameFromPath(path.to_path_buf()))?;
+		InstalledGame::new(path).ok_or(Error::FailedToGetGameFromPath(path.to_path_buf()))?;
 
 	let config_path = games_config_path()?;
 

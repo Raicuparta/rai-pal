@@ -1,22 +1,17 @@
 use std::{
-	cmp::Ordering,
 	collections::HashMap,
 	fs::{self},
 	path::{Path, PathBuf},
 };
 
 use log::error;
-use rai_pal_proc_macros::{serializable_enum, serializable_struct};
+use rai_pal_proc_macros::serializable_struct;
 
 use crate::{
-	game::Game,
-	game_engines::{game_engine::EngineBrand, unity::UnityScriptingBackend},
-	game_executable::{Architecture, GameExecutable},
-	game_tag::GameTag,
-	game_title::GameTitle,
+	game_executable::GameExecutable,
 	mod_manifest,
 	paths::{self, glob_path, hash_path},
-	providers::{provider::ProviderId, provider_command::ProviderCommand},
+	providers::provider_command::ProviderCommand,
 	result::{Error, Result},
 };
 
@@ -26,7 +21,6 @@ pub struct InstalledGame {
 	pub executable: GameExecutable,
 	pub installed_mod_versions: InstalledModVersions,
 	pub discriminator: Option<String>,
-	pub thumbnail_url: Option<String>,
 	pub start_command: Option<ProviderCommand>,
 	pub has_outdated_mod: bool,
 }
@@ -34,7 +28,7 @@ pub struct InstalledGame {
 type InstalledModVersions = HashMap<String, String>;
 
 impl InstalledGame {
-	pub fn new(path: &Path, name: &str, provider_id: ProviderId) -> Option<Self> {
+	pub fn new(path: &Path) -> Option<Self> {
 		// Games exported by Unity always have one of these extensions.
 		const VALID_EXTENSIONS: [&str; 3] = ["exe", "x86_64", "x86"];
 
@@ -65,7 +59,6 @@ impl InstalledGame {
 			installed_mod_versions: HashMap::default(),
 			executable: GameExecutable::new(path)?,
 			discriminator: None,
-			thumbnail_url: None,
 			start_command: None,
 			has_outdated_mod: false,
 		};
@@ -77,11 +70,6 @@ impl InstalledGame {
 
 	pub fn set_discriminator(&mut self, discriminator: &str) -> &Self {
 		self.discriminator = Some(discriminator.to_string());
-		self
-	}
-
-	pub fn set_thumbnail_url(&mut self, thumbnail_url: &str) -> &Self {
-		self.thumbnail_url = Some(thumbnail_url.to_string());
 		self
 	}
 
