@@ -27,3 +27,18 @@
 	I don't want that */
 	display: flex;
 }
+
+/* Linux-specific fixes (this might need to be removed if the rendering engine changes on Linux) */
+.linux {
+	.mantine-Button-label {
+		padding-top: 3px;
+	}
+
+	.mantine-Table-th > .mantine-Flex-root {
+		padding-top: 3px;
+	}
+
+	.mantine-Badge-label {
+		padding-top: 5px;
+	}
+}

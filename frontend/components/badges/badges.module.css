@@ -2,3 +2,8 @@ div.label {
 	opacity: 0.75;
 	font-size: 0.55rem;
 }
+
+/* Linux-specific fixes (this might need to be removed if the rendering engine changes on Linux) */
+:global(.linux) div.labelledBadge :global(.mantine-Badge-label) {
+	padding-top: 2px;
+}
