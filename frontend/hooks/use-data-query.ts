@@ -1,6 +1,6 @@
 import { GamesQuery } from "@api/bindings";
 import { atom, useAtom } from "jotai";
-import { useCallback, useEffect } from "react";
+import { useCallback } from "react";
 
 export const defaultQuery: GamesQuery = {
 	sortBy: "Title",
@@ -48,10 +48,6 @@ export function useDataQuery() {
 		},
 		[setQuery],
 	);
-
-	useEffect(() => {
-		setQuery(defaultQuery);
-	}, [setQuery]);
 
 	return [query, setQueryExternal] as const;
 }
