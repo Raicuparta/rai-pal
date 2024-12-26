@@ -66,7 +66,7 @@ impl ProviderActions for Xbox {
 	// 	Ok(())
 	// }
 
-	async fn get_games_new<TCallback>(&self, callback: TCallback) -> Result
+	async fn get_games<TCallback>(&self, callback: TCallback) -> Result
 	where
 		TCallback: FnMut(Game) + Send + Sync,
 	{

@@ -454,7 +454,7 @@ async fn get_provider_games(handle: AppHandle, provider_id: ProviderId) -> Resul
 	state.games.write().unwrap().clear();
 
 	let remote_games = state.remote_games.read().unwrap().clone();
-	provider.get_games_new(|mut game: Game| {
+	provider.get_games(|mut game: Game| {
 		// Assign the remote game here as we find the new game.
 		// This is for when the remote games are fetched *before* games are found locally.
 		game.remote_game = remote_games

@@ -99,7 +99,7 @@ pub struct ItchDatabase {
 }
 
 impl ProviderActions for Itch {
-	async fn get_games_new<TCallback>(&self, mut callback: TCallback) -> Result
+	async fn get_games<TCallback>(&self, mut callback: TCallback) -> Result
 	where
 		TCallback: FnMut(Game) + Send + Sync,
 	{

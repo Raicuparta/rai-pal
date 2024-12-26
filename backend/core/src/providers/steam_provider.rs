@@ -168,7 +168,7 @@ impl Steam {
 }
 
 impl ProviderActions for Steam {
-	async fn get_games_new<TCallback>(&self, mut callback: TCallback) -> Result
+	async fn get_games<TCallback>(&self, mut callback: TCallback) -> Result
 	where
 		TCallback: FnMut(Game) + Send + Sync,
 	{
