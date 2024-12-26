@@ -25,6 +25,7 @@ const ThumbnailComponent = ({ item }: CellProps) => (
 	>
 		<Image
 			fallbackSrc="images/thumbnails/Manual.png"
+			mah={75}
 			src={getThumbnailWithFallback(item.thumbnailUrl, item.providerId)}
 		/>
 	</Table.Td>
@@ -35,7 +36,7 @@ const thumbnail: GamesColumn = {
 	label: "Thumbnail",
 	hideLabel: true,
 	hidable: true,
-	width: 100,
+	width: 150,
 	component: ThumbnailComponent,
 };
 
