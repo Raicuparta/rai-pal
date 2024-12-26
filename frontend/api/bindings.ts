@@ -253,9 +253,9 @@ async updateLocalMods() : Promise<Result<null, Error>> {
     else return { status: "error", error: e  as any };
 }
 },
-async getGame(providerId: ProviderId, index: bigint) : Promise<Result<Game | null, Error>> {
+async getGame(providerId: ProviderId, id: string) : Promise<Result<Game | null, Error>> {
     try {
-    return { status: "ok", data: await TAURI_INVOKE("get_game", { providerId, index }) };
+    return { status: "ok", data: await TAURI_INVOKE("get_game", { providerId, id }) };
 } catch (e) {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
@@ -303,7 +303,7 @@ export type FoundGame = []
 export type Game = { id: string; providerId: ProviderId; tags: GameTag[]; installedGame: InstalledGame | null; remoteGame: RemoteGame | null; title: GameTitle; thumbnailUrl: string | null; releaseDate: bigint | null; providerCommands: { [key in ProviderCommandAction]: ProviderCommand }; fromSubscriptions: GameSubscription[] }
 export type GameEngine = { brand: EngineBrand; version: EngineVersion | null }
 export type GameExecutable = { path: string; name: string; engine: GameEngine | null; architecture: Architecture | null; scriptingBackend: UnityScriptingBackend | null }
-export type GameId = { providerId: ProviderId; index: bigint }
+export type GameId = { providerId: ProviderId; gameId: string }
 export type GameSubscription = "UbisoftClassics" | "UbisoftPremium" | "XboxGamePass" | "EaPlay"
 export type GameTag = "VR" | "Demo"
 export type GameTitle = { display: string; normalized: string[] }

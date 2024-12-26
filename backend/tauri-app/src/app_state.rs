@@ -11,7 +11,7 @@ use rai_pal_core::{
 };
 
 pub struct AppState {
-	pub games: RwLock<HashMap<ProviderId, Vec<Game>>>,
+	pub games: RwLock<HashMap<ProviderId, HashMap<String, Game>>>,
 	pub remote_games: RwLock<remote_game::Map>,
 	pub mod_loaders: RwLock<mod_loader::Map>,
 	pub local_mods: RwLock<local_mod::Map>,
@@ -21,7 +21,7 @@ pub struct AppState {
 #[serializable_struct]
 pub struct GameId {
 	pub provider_id: ProviderId,
-	pub index: usize,
+	pub game_id: String,
 }
 
 type TauriState<'a> = tauri::State<'a, AppState>;

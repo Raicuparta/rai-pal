@@ -1,7 +1,7 @@
 import { commands, Game, ProviderId } from "@api/bindings";
 import { useEffect, useMemo, useState } from "react";
 
-export function useGame(providerId: ProviderId, index: bigint) {
+export function useGame(providerId: ProviderId, gameId: string) {
 	const defaultGame: Game = useMemo(
 		() =>
 			({
@@ -26,12 +26,19 @@ export function useGame(providerId: ProviderId, index: bigint) {
 	const [game, setGame] = useState<Game>(defaultGame);
 
 	useEffect(() => {
-		commands.getGame(providerId, index).then((result) => {
+		console.log(`fetching game ${gameId}`);
+		commands.getGame(providerId, gameId).then((result) => {
+			console.log("it ended", result);
 			if (result.status === "ok" && result.data) {
+				if (`${gameId}` === "1452") {
+					console.log(`fetched game ${result.data}`);
+				}
 				setGame(result.data);
+			} else if (result.status === "error") {
+				console.error(`Failed to fetch game: ${result.error}`);
 			}
 		});
-	}, [index, providerId]);
+	}, [gameId, providerId]);
 
 	// useAppEvent(events.foundGame, updateData); // TODO
 

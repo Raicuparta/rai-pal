@@ -110,7 +110,7 @@ async fn download_mod(mod_id: &str, handle: AppHandle) -> Result {
 
 	mod_loaders
 		.try_get(&remote_mod.common.loader_id)?
-		.download_mod(&remote_mod)
+		.download_mod(remote_mod)
 		.await?;
 
 	refresh_local_mods(&mod_loaders, &handle);
@@ -128,7 +128,7 @@ async fn delete_mod(mod_id: &str, handle: AppHandle) -> Result {
 
 	mod_loaders
 		.try_get(&local_mod.common.loader_id)?
-		.delete_mod(&local_mod)?;
+		.delete_mod(local_mod)?;
 
 	refresh_local_mods(&mod_loaders, &handle);
 
@@ -406,12 +406,12 @@ async fn fetch_remote_games(handle: AppHandle) -> Result {
 
 	let mut games = state.games.write().unwrap();
 	games.iter_mut().for_each(|(_provider_id, provider_games)| {
-		provider_games.iter_mut().for_each(|game| {
+		provider_games.iter_mut().for_each(|(game_id, game)| {
 			// Assign remote game to any existing game.
 			// This is for when the remote games are fetched *after* games are found locally.
 			game.remote_game = remote_games
 				.get(&game.provider_id)
-				.and_then(|provider_remote_games| provider_remote_games.get(&game.id))
+				.and_then(|provider_remote_games| provider_remote_games.get(game_id))
 				.or_else(|| {
 					remote_games
 						.get(&ProviderId::Manual)
@@ -478,7 +478,7 @@ async fn get_provider_games(handle: AppHandle, provider_id: ProviderId) -> Resul
 			.unwrap()
 			.entry(provider_id)
 			.or_default()
-			.push(game);
+			.insert(game.id.clone(), game);
 		handle.emit_safe(events::FoundGame());
 	}).await.unwrap_or_else(|err| {
 		// It's normal for a provider to fail here if that provider is just missing.
@@ -590,16 +590,13 @@ async fn get_data(handle: AppHandle, data_query: Option<GamesQuery>) -> Result<V
 
 	let read_guard = state.games.read().unwrap();
 
-	let games_iter = read_guard
-		.values()
-		.flat_map(|games| games.iter())
-		.enumerate();
+	let games_iter = read_guard.values().flat_map(|games| games.iter());
 
 	let games: Vec<_> = if let Some(query) = data_query.as_ref() {
 		let mut games: Vec<_> = games_iter
-			.filter(|(_index, game)| query.matches(game))
+			.filter(|(_id, game)| query.matches(game))
 			.collect();
-		games.sort_by(|(_index_a, game_a), (_index_b, game_b)| query.sort(game_a, game_b));
+		games.sort_by(|(_id_a, game_a), (_id_b, game_b)| query.sort(game_a, game_b));
 
 		games
 	} else {
@@ -609,28 +606,33 @@ async fn get_data(handle: AppHandle, data_query: Option<GamesQuery>) -> Result<V
 
 	Ok(games
 		.into_iter()
-		.map(|(index, game)| GameId {
-			index,
+		.map(|(id, game)| GameId {
 			provider_id: game.provider_id,
+			game_id: id.clone(),
 		})
 		.collect())
 }
 
 #[tauri::command]
 #[specta::specta]
-async fn get_game(
-	handle: AppHandle,
-	provider_id: ProviderId,
-	index: usize,
-) -> Result<Option<Game>> {
-	Ok(handle
+async fn get_game(handle: AppHandle, provider_id: ProviderId, id: String) -> Result<Option<Game>> {
+	let game = handle
 		.app_state()
 		.games
 		.read()
 		.unwrap()
 		.try_get(&provider_id)?
-		.get(index)
-		.cloned())
+		.get(&id)
+		.cloned();
+
+	log::info!(
+		"get game {}",
+		game.as_ref()
+			.map(|g| &g.id)
+			.unwrap_or(&"## NONE ##".to_string())
+	);
+
+	Ok(game)
 }
 
 #[tauri::command]

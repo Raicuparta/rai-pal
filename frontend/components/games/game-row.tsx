@@ -11,7 +11,7 @@ export const GameRow = React.forwardRef(function GameRow(
 	props: ItemProps<GameId>,
 	ref: React.ForwardedRef<HTMLTableRowElement>,
 ) {
-	const game = useGame(props.item.providerId, props.item.index);
+	const game = useGame(props.item.providerId, props.item.gameId);
 	const [selectedGame, setSelectedGame] = useAtom(selectedGameAtom);
 
 	const columns = useVisibleGamesColumns();
