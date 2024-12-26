@@ -412,6 +412,15 @@ async fn fetch_remote_games(handle: AppHandle) -> Result {
 			game.remote_game = remote_games
 				.get(&game.provider_id)
 				.and_then(|provider_remote_games| provider_remote_games.get(&game.id))
+				.or_else(|| {
+					remote_games
+						.get(&ProviderId::Manual)
+						.and_then(|provider_remote_games| {
+							game.title.normalized.first().and_then(|normalized_title| {
+								provider_remote_games.get(normalized_title)
+							})
+						})
+				})
 				.cloned()
 		})
 	});
@@ -446,11 +455,20 @@ async fn get_provider_games(handle: AppHandle, provider_id: ProviderId) -> Resul
 
 	let remote_games = state.remote_games.read().unwrap().clone();
 	provider.get_games_new(|mut game: Game| {
-			// Assign the remote game here as we find the new game.
-			// This is for when the remote games are fetched *before* games are found locally.
+		// Assign the remote game here as we find the new game.
+		// This is for when the remote games are fetched *before* games are found locally.
 		game.remote_game = remote_games
-			.get(&provider_id)
+			.get(&game.provider_id)
 			.and_then(|provider_remote_games| provider_remote_games.get(&game.id))
+			.or_else(|| {
+				remote_games
+					.get(&ProviderId::Manual)
+					.and_then(|provider_remote_games| {
+						game.title.normalized.first().and_then(|normalized_title| {
+							provider_remote_games.get(normalized_title)
+						})
+					})
+			})
 			.cloned();
 
 		handle

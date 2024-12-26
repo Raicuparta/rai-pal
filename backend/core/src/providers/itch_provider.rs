@@ -1,4 +1,7 @@
-use std::path::{Path, PathBuf};
+use std::{
+	collections::HashMap,
+	path::{Path, PathBuf},
+};
 
 use chrono::DateTime;
 use log::error;
@@ -17,41 +20,37 @@ use crate::{
 pub struct Itch {}
 
 impl Itch {
-	// fn get_installed_game(cave: &ItchDatabaseCave) -> Option<InstalledGame> {
-	// 	let verdict = cave.verdict.as_ref()?;
-	// 	let exe_path = verdict.base_path.join(&verdict.candidates.first()?.path);
-	// 	let mut game = InstalledGame::new(&exe_path, &cave.title, *Self::ID)?;
-	// 	if let Some(cover_url) = &cave.cover_url {
-	// 		game.set_thumbnail_url(cover_url);
-	// 	}
+	fn get_installed_game(cave: &ItchDatabaseCave) -> Option<InstalledGame> {
+		let verdict = cave.verdict.as_ref()?;
+		let exe_path = verdict.base_path.join(&verdict.candidates.first()?.path);
+		InstalledGame::new(&exe_path)
+	}
 
-	// 	Some(game)
-	// }
+	fn get_game(row: &ItchDatabaseGame) -> Game {
+		let mut game = Game::new(&row.id.to_string(), *Self::ID, &row.title);
+		log::info!("itch game {}", game.id);
 
-	// fn get_owned_game(row: &ItchDatabaseGame) -> OwnedGame {
-	// 	let mut game = OwnedGame::new(&row.id.to_string(), *Self::ID, &row.title);
+		if let Some(thumbnail_url) = &row.cover_url {
+			game.set_thumbnail_url(thumbnail_url);
+		}
+		if let Some(date_time) = row
+			.published_at
+			.as_ref()
+			.and_then(|published_at| DateTime::parse_from_rfc3339(published_at).ok())
+		{
+			game.set_release_date(date_time.timestamp());
+		}
+		game.add_provider_command(
+			ProviderCommandAction::ShowInLibrary,
+			ProviderCommand::String(format!("itch://games/{}", row.id)),
+		)
+		.add_provider_command(
+			ProviderCommandAction::Install,
+			ProviderCommand::String(format!("itch://install?game_id={}", row.id)),
+		);
 
-	// 	if let Some(thumbnail_url) = &row.cover_url {
-	// 		game.set_thumbnail_url(thumbnail_url);
-	// 	}
-	// 	if let Some(date_time) = row
-	// 		.published_at
-	// 		.as_ref()
-	// 		.and_then(|published_at| DateTime::parse_from_rfc3339(published_at).ok())
-	// 	{
-	// 		game.set_release_date(date_time.timestamp());
-	// 	}
-	// 	game.add_provider_command(
-	// 		ProviderCommandAction::ShowInLibrary,
-	// 		ProviderCommand::String(format!("itch://games/{}", row.id)),
-	// 	)
-	// 	.add_provider_command(
-	// 		ProviderCommandAction::Install,
-	// 		ProviderCommand::String(format!("itch://install?game_id={}", row.id)),
-	// 	);
-
-	// 	game
-	// }
+		game
+	}
 }
 
 impl ProviderStatic for Itch {
@@ -100,49 +99,41 @@ pub struct ItchDatabase {
 }
 
 impl ProviderActions for Itch {
-	// async fn get_games<TInstalledCallback, TOwnedCallback>(
-	// 	&self,
-	// 	mut installed_callback: TInstalledCallback,
-	// 	mut owned_callback: TOwnedCallback,
-	// ) -> Result
-	// where
-	// 	TInstalledCallback: FnMut(InstalledGame) + Send + Sync,
-	// 	TOwnedCallback: FnMut(OwnedGame) + Send + Sync,
-	// {
-	// 	let app_data_path = directories::BaseDirs::new()
-	// 		.ok_or_else(Error::AppDataNotFound)?
-	// 		.config_dir()
-	// 		.join("itch");
-
-	// 	if let Some(database) = get_database(&app_data_path)? {
-	// 		for db_entry in database.games {
-	// 			owned_callback(Self::get_owned_game(&db_entry));
-	// 		}
-
-	// 		for db_entry in database.caves {
-	// 			if let Some(installed_game) = Self::get_installed_game(&db_entry) {
-	// 				installed_callback(installed_game);
-	// 			}
-	// 		}
-	// 	} else {
-	// 		log::info!(
-	// 			"Itch database file not found. Probably means user hasn't installed the Itch app."
-	// 		);
-	// 	}
-
-	// 	Ok(())
-	// }
-
-	async fn get_games_new<TCallback>(&self, callback: TCallback) -> Result
+	async fn get_games_new<TCallback>(&self, mut callback: TCallback) -> Result
 	where
 		TCallback: FnMut(Game) + Send + Sync,
 	{
+		let app_data_path = directories::BaseDirs::new()
+			.ok_or_else(Error::AppDataNotFound)?
+			.config_dir()
+			.join("itch");
+
+		if let Some(database) = get_database(&app_data_path)? {
+			let caves_map: HashMap<_, _> = database
+				.caves
+				.into_iter()
+				.map(|cave| (cave.id, cave))
+				.collect();
+
+			for db_entry in database.games {
+				let mut game = Self::get_game(&db_entry);
+				if let Some(cave) = caves_map.get(&db_entry.id) {
+					game.installed_game = Self::get_installed_game(cave);
+				}
+				callback(game);
+			}
+		} else {
+			log::info!(
+				"Itch database file not found. Probably means user hasn't installed the Itch app."
+			);
+		}
+
 		Ok(())
 	}
 }
 
-fn parse_verdict(json_option: &Option<String>) -> Option<ItchDatabaseVerdict> {
-	let json = json_option.as_ref()?;
+fn parse_verdict(json_option: Option<&String>) -> Option<ItchDatabaseVerdict> {
+	let json = json_option?;
 	match serde_json::from_str(json) {
 		Ok(verdict) => Some(verdict),
 		Err(err) => {
@@ -174,7 +165,7 @@ fn get_database(app_data_path: &Path) -> Result<Option<ItchDatabase>> {
 		Ok(ItchDatabaseCave {
 			id: row.get("game_id")?,
 			title: row.get("title")?,
-			verdict: parse_verdict(&row.get("verdict").ok()),
+			verdict: parse_verdict(row.get("verdict").ok().as_ref()),
 			cover_url: row.get("cover_url").ok(),
 		})
 	})?;
