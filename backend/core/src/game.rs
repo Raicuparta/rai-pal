@@ -17,7 +17,12 @@ use crate::{
 
 #[serializable_struct]
 pub struct Game {
-	pub id: String, // TODO probably need to split this into an ID from provider, and a global unique ID?
+	// ID used to find this game in provider APIs and stuff.
+	pub external_id: String,
+
+	// ID used to uniquely identify this game in Rai Pal, among all games of the same provider.
+	pub unique_id: String,
+
 	pub provider_id: ProviderId,
 	pub tags: HashSet<GameTag>,
 	pub installed_game: Option<InstalledGame>,
@@ -30,7 +35,7 @@ pub struct Game {
 }
 
 impl Game {
-	pub fn new(id: &str, provider_id: ProviderId, title: &str) -> Self {
+	pub fn new(external_id: &str, provider_id: ProviderId, title: &str) -> Self {
 		let title = GameTitle::new(title);
 		let mut tags = HashSet::default();
 		if title.is_probably_demo() {
@@ -38,7 +43,8 @@ impl Game {
 		}
 
 		Self {
-			id: id.to_string(),
+			external_id: external_id.to_string(),
+			unique_id: external_id.to_string(),
 			provider_id,
 			tags,
 			installed_game: None,

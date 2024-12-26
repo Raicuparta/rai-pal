@@ -28,7 +28,6 @@ impl Itch {
 
 	fn get_game(row: &ItchDatabaseGame) -> Game {
 		let mut game = Game::new(&row.id.to_string(), *Self::ID, &row.title);
-		log::info!("itch game {}", game.id);
 
 		if let Some(thumbnail_url) = &row.cover_url {
 			game.set_thumbnail_url(thumbnail_url);

@@ -459,7 +459,7 @@ async fn get_provider_games(handle: AppHandle, provider_id: ProviderId) -> Resul
 		// This is for when the remote games are fetched *before* games are found locally.
 		game.remote_game = remote_games
 			.get(&game.provider_id)
-			.and_then(|provider_remote_games| provider_remote_games.get(&game.id))
+			.and_then(|provider_remote_games| provider_remote_games.get(&game.external_id))
 			.or_else(|| {
 				remote_games
 					.get(&ProviderId::Manual)
@@ -478,7 +478,8 @@ async fn get_provider_games(handle: AppHandle, provider_id: ProviderId) -> Resul
 			.unwrap()
 			.entry(provider_id)
 			.or_default()
-			.insert(game.id.clone(), game);
+			.insert(game.unique_id.clone(), game);
+
 		handle.emit_safe(events::FoundGame());
 	}).await.unwrap_or_else(|err| {
 		// It's normal for a provider to fail here if that provider is just missing.
@@ -624,13 +625,6 @@ async fn get_game(handle: AppHandle, provider_id: ProviderId, id: String) -> Res
 		.try_get(&provider_id)?
 		.get(&id)
 		.cloned();
-
-	log::info!(
-		"get game {}",
-		game.as_ref()
-			.map(|g| &g.id)
-			.unwrap_or(&"## NONE ##".to_string())
-	);
 
 	Ok(game)
 }
