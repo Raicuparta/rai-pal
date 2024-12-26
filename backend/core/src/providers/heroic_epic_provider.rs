@@ -8,8 +8,8 @@ use std::{
 };
 
 use crate::{
+	game::Game,
 	installed_game::InstalledGame,
-	owned_game::OwnedGame,
 	providers::provider::{ProviderActions, ProviderId, ProviderStatic},
 	result::Result as GameResult,
 };
@@ -88,16 +88,9 @@ impl HeroicEpic {
 			.join(&entry.folder_name.clone()?);
 
 		if let Some(executable_name) = &entry.install.executable {
-			let mut game = InstalledGame::new(
-				game_path.join(executable_name).as_path(),
-				&entry.title,
-				Self::ID.to_owned(),
-			)?;
+			let mut game = InstalledGame::new(game_path.join(executable_name).as_path())?;
 
 			game.set_start_command_string(&get_start_command(&entry.app_name));
-			game.set_provider_game_id(&entry.app_name);
-
-			game.set_thumbnail_url(&entry.art_cover);
 
 			return Some(game);
 		}
@@ -118,26 +111,16 @@ impl ProviderStatic for HeroicEpic {
 }
 
 impl ProviderActions for HeroicEpic {
-	async fn get_games<TInstalledCallback, TOwnedCallback>(
-		&self,
-		mut installed_callback: TInstalledCallback,
-		mut owned_callback: TOwnedCallback,
-	) -> GameResult
+	async fn get_games<TCallback>(&self, mut callback: TCallback) -> GameResult
 	where
-		TInstalledCallback: FnMut(InstalledGame) + Send + Sync,
-		TOwnedCallback: FnMut(OwnedGame) + Send + Sync,
+		TCallback: FnMut(Game) + Send + Sync,
 	{
-		if let Some(games) = get_detected_games()? {
-			for game in games {
-				let mut owned_game = OwnedGame::new(&game.app_name, *Self::ID, &game.title);
-				owned_game.set_thumbnail_url(&game.art_cover);
-				owned_callback(owned_game);
-
-				if game.is_installed {
-					if let Some(installed_game) = Self::get_installed_game(&game) {
-						installed_callback(installed_game);
-					}
-				}
+		if let Some(parsed_games) = get_detected_games()? {
+			for parsed_game in parsed_games {
+				let mut game = Game::new(&parsed_game.app_name, *Self::ID, &parsed_game.title);
+				game.set_thumbnail_url(&parsed_game.art_cover);
+				game.installed_game = Self::get_installed_game(&parsed_game);
+				callback(game);
 			}
 		}
 		Ok(())

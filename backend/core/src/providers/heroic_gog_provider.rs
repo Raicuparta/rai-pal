@@ -8,8 +8,8 @@ use std::{
 };
 
 use crate::{
+	game::Game,
 	installed_game::InstalledGame,
-	owned_game::OwnedGame,
 	providers::provider::{ProviderActions, ProviderId, ProviderStatic},
 	result::Result as GameResult,
 };
@@ -55,7 +55,7 @@ fn get_detected_games() -> Result<Vec<ParsedGame>, io::Error> {
 		.games
 		.into_iter()
 		// gog-redist is not a game but it shows up in the library
-		.filter(|game|  game.app_name != "gog-redist")
+		.filter(|game| game.app_name != "gog-redist")
 		.map(|mut game| {
 			if installed_games.contains(&game.app_name) {
 				// is_installed props from the library are not reliable
@@ -130,16 +130,9 @@ impl HeroicGog {
 			}
 		})?;
 
-		let mut game = InstalledGame::new(
-			game_path.join(executable_name).as_path(),
-			&entry.title,
-			Self::ID.to_owned(),
-		)?;
+		let mut game = InstalledGame::new(game_path.join(executable_name).as_path())?;
 
 		game.set_start_command_string(&get_start_command("gog", &entry.app_name));
-		game.set_provider_game_id(&entry.app_name);
-
-		game.set_thumbnail_url(&entry.art_cover.clone()?);
 
 		Some(game)
 	}
@@ -157,32 +150,18 @@ impl ProviderStatic for HeroicGog {
 }
 
 impl ProviderActions for HeroicGog {
-	async fn get_games<TInstalledCallback, TOwnedCallback>(
-		&self,
-		mut installed_callback: TInstalledCallback,
-		mut owned_callback: TOwnedCallback,
-	) -> GameResult
+	async fn get_games<TCallback>(&self, mut callback: TCallback) -> GameResult
 	where
-		TInstalledCallback: FnMut(InstalledGame) + Send + Sync,
-		TOwnedCallback: FnMut(OwnedGame) + Send + Sync,
+		TCallback: FnMut(Game) + Send + Sync,
 	{
-		let games = get_detected_games()?;
-		for game in games {
-			let mut owned_game = OwnedGame::new(
-				&game.app_name,
-				*Self::ID,
-				&game.title,
-			);
-			if let Some(thumbnail_url) = game.art_cover.clone() {
-				owned_game.set_thumbnail_url(&thumbnail_url);
+		let parsed_games = get_detected_games()?;
+		for parsed_game in parsed_games {
+			let mut game = Game::new(&parsed_game.app_name, *Self::ID, &parsed_game.title);
+			if let Some(thumbnail_url) = parsed_game.art_cover.clone() {
+				game.set_thumbnail_url(&thumbnail_url);
 			}
-			owned_callback(owned_game);
-
-			if game.is_installed {
-				if let Some(installed_game) = Self::get_installed_game(&game) {
-					installed_callback(installed_game);
-				}
-			}
+			game.installed_game = Self::get_installed_game(&parsed_game);
+			callback(game);
 		}
 
 		Ok(())
