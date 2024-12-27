@@ -56,14 +56,15 @@ export function useUpdateData(executeOnMount = false) {
 			return true;
 		});
 	}, [deferredGamesQuery, setGameIds]);
+
 	const throttledUpdateProviderGames = useThrottledCallback(
 		updateProviderGames,
 		1000,
 	);
 
 	useEffect(() => {
-		throttledUpdateProviderGames();
-	}, [throttledUpdateProviderGames]);
+		updateProviderGames();
+	}, [updateProviderGames]);
 
 	useAppEvent(events.foundGame, throttledUpdateProviderGames);
 
