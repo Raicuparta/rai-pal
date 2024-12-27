@@ -2,23 +2,23 @@ import { Button, Group, Indicator, Popover } from "@mantine/core";
 import { IconFilter, IconX } from "@tabler/icons-react";
 import styles from "./filters.module.css";
 import { useCallback } from "react";
-import { FilterSelect } from "./filter-select";
+import { FilterKey, FilterSelect, FilterValue } from "./filter-select";
 import { SearchInput } from "@components/search-input";
 import { GamesFilter, GamesQuery } from "@api/bindings";
 import { defaultQuery, useDataQuery } from "@hooks/use-data-query";
-
-type FilterKey = keyof GamesFilter;
-type FilterValue = GamesFilter[FilterKey][number];
 
 export function FilterMenu() {
 	const [dataQuery, setDataQuery] = useDataQuery();
 
 	const handleToggleClick = useCallback(
-		(id: string, value: string | null) => {
-			const newFilter = [...dataQuery.filter[id as keyof GamesFilter]];
-			const index = newFilter.indexOf(value as FilterValue);
+		function <TFilterKey extends FilterKey>(
+			id: TFilterKey,
+			value: string | null,
+		) {
+			const newFilter = [...dataQuery.filter[id]];
+			const index = newFilter.indexOf(value as FilterValue<TFilterKey>);
 			if (index === -1) {
-				newFilter.push(value as FilterValue);
+				newFilter.push(value as FilterValue<TFilterKey>);
 			} else {
 				newFilter.splice(index, 1);
 			}
@@ -93,19 +93,17 @@ export function FilterMenu() {
 								align="start"
 								wrap="nowrap"
 							>
-								{Object.keys(defaultQuery.filter).map((filterId) => (
-									<FilterSelect
-										key={filterId}
-										id={filterId}
-										possibleValues={
-											defaultQuery.filter[filterId as keyof GamesFilter]
-										}
-										currentValues={
-											dataQuery.filter[filterId as keyof GamesFilter]
-										}
-										onClick={handleToggleClick}
-									/>
-								))}
+								{(Object.keys(defaultQuery.filter) as Array<FilterKey>).map(
+									(filterId) => (
+										<FilterSelect
+											key={filterId}
+											id={filterId}
+											possibleValues={defaultQuery.filter[filterId]}
+											currentValues={dataQuery.filter[filterId]}
+											onClick={handleToggleClick}
+										/>
+									),
+								)}
 							</Group>
 						</Popover.Dropdown>
 					</Popover>

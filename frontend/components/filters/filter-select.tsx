@@ -1,19 +1,24 @@
 import { Button, Stack } from "@mantine/core";
 import { FilterButton } from "./filter-button";
+import { GamesFilter } from "@api/bindings";
 
-type Props = {
-	readonly id: string;
-	readonly possibleValues: (string | null)[];
-	readonly currentValues: (string | null)[];
-	readonly onClick: (id: string, value: string | null) => void;
+export type FilterKey = keyof GamesFilter;
+export type FilterValue<TFilterKey extends FilterKey> =
+	GamesFilter[TFilterKey][number];
+
+type Props<TFilterKey extends keyof GamesFilter> = {
+	readonly id: TFilterKey;
+	readonly possibleValues: Array<FilterValue<TFilterKey>>;
+	readonly currentValues: Array<FilterValue<TFilterKey>>;
+	readonly onClick: (id: TFilterKey, value: FilterValue<TFilterKey>) => void;
 };
 
-export function FilterSelect({
+export function FilterSelect<TFilterKey extends FilterKey>({
 	id,
 	possibleValues,
 	currentValues,
 	onClick,
-}: Props) {
+}: Props<TFilterKey>) {
 	return (
 		<Stack gap="xs">
 			<Button.Group orientation="vertical">
