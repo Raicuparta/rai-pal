@@ -465,9 +465,9 @@ async fn get_provider_games(handle: AppHandle, provider_id: ProviderId) -> Resul
 
 	let provider = provider::get_provider(provider_id)?;
 
-	state.games.write().unwrap().clear();
+	// TODO: remove stale games after getting new ones.
 
-	let remote_games = state.remote_games.read().unwrap().clone();
+	let remote_games = state.remote_games.read_state()?.clone();
 	provider.get_games(|mut game: Game| {
 		// Assign the remote game here as we find the new game.
 		// This is for when the remote games are fetched *before* games are found locally.
