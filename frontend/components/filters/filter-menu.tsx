@@ -7,15 +7,18 @@ import { SearchInput } from "@components/search-input";
 import { GamesFilter, GamesQuery } from "@api/bindings";
 import { defaultQuery, useDataQuery } from "@hooks/use-data-query";
 
+type FilterKey = keyof GamesFilter;
+type FilterValue = GamesFilter[FilterKey][number];
+
 export function FilterMenu() {
 	const [dataQuery, setDataQuery] = useDataQuery();
 
 	const handleToggleClick = useCallback(
-		(id: keyof GamesFilter, value: GamesFilter[typeof id][number]) => {
-			const newFilter = [...dataQuery.filter[id]];
-			const index = newFilter.indexOf(value);
+		(id: string, value: string | null) => {
+			const newFilter = [...dataQuery.filter[id as keyof GamesFilter]];
+			const index = newFilter.indexOf(value as FilterValue);
 			if (index === -1) {
-				newFilter.push(value);
+				newFilter.push(value as FilterValue);
 			} else {
 				newFilter.splice(index, 1);
 			}
@@ -93,7 +96,13 @@ export function FilterMenu() {
 								{Object.keys(defaultQuery.filter).map((filterId) => (
 									<FilterSelect
 										key={filterId}
-										id={filterId as keyof GamesFilter}
+										id={filterId}
+										possibleValues={
+											defaultQuery.filter[filterId as keyof GamesFilter]
+										}
+										currentValues={
+											dataQuery.filter[filterId as keyof GamesFilter]
+										}
 										onClick={handleToggleClick}
 									/>
 								))}

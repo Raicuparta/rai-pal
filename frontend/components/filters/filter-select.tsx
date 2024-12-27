@@ -1,34 +1,34 @@
 import { Button, Stack } from "@mantine/core";
 import { FilterButton } from "./filter-button";
-import { GamesFilter } from "@api/bindings";
-import { defaultQuery, useDataQuery } from "@hooks/use-data-query";
 
 type Props = {
-	readonly id: keyof GamesFilter;
-	readonly onClick: (
-		id: keyof GamesFilter,
-		value: GamesFilter[typeof id][number],
-	) => void;
+	readonly id: string;
+	readonly possibleValues: (string | null)[];
+	readonly currentValues: (string | null)[];
+	readonly onClick: (id: string, value: string | null) => void;
 };
 
-export function FilterSelect({ id, onClick }: Props) {
-	const [dataQuery] = useDataQuery();
-
+export function FilterSelect({
+	id,
+	possibleValues,
+	currentValues,
+	onClick,
+}: Props) {
 	return (
 		<Stack gap="xs">
 			<Button.Group orientation="vertical">
 				<Button disabled>{id}</Button>
-				{defaultQuery.filter[id].map((option) => (
+				{possibleValues.map((possibleValue) => (
 					<FilterButton
-						filterOption={option ?? "Unknown"}
-						onClick={() => onClick(id, option)}
-						isVisible={dataQuery.filter[id].includes(option)}
+						filterOption={possibleValue ?? "Unknown"}
+						onClick={() => onClick(id, possibleValue)}
+						isVisible={currentValues.includes(possibleValue)}
 						// isUnavailable={Boolean(
 						// 	filterOption &&
 						// 		column.unavailableValues?.includes(filterOption),
 						// )}
 						isUnavailable={false} // TODO isUnavailable
-						key={option}
+						key={possibleValue}
 					/>
 				))}
 			</Button.Group>
