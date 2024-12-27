@@ -248,8 +248,22 @@ fn refresh_game_mods_and_exe(installed_game: &InstalledGame, handle: &AppHandle)
 
 #[tauri::command]
 #[specta::specta]
-async fn refresh_game(installed_game: InstalledGame, handle: AppHandle) -> Result {
-	refresh_game_mods_and_exe(&installed_game, &handle)
+async fn refresh_game(id: GameId, handle: AppHandle) -> Result {
+	let state = handle.app_state();
+	let mut games = state.games.write_state()?;
+
+	let game = games
+		.try_get_mut(&id.provider_id)?
+		.try_get_mut(&id.game_id)?;
+
+	if let Some(installed_game) = game.installed_game.as_mut() {
+		installed_game.refresh_installed_mods();
+		installed_game.refresh_executable()?;
+	}
+
+	handle.emit_safe(events::FoundGame());
+
+	Ok(())
 }
 
 #[tauri::command]
@@ -301,7 +315,7 @@ fn refresh_local_mods(mod_loaders: &mod_loader::Map, handle: &AppHandle) -> loca
 	handle
 		.app_state()
 		.local_mods
-		.write_state(local_mods.clone());
+		.write_state_value(local_mods.clone());
 
 	local_mods
 }
@@ -325,7 +339,7 @@ async fn refresh_remote_mods(mod_loaders: &mod_loader::Map, handle: &AppHandle) 
 	handle
 		.app_state()
 		.remote_mods
-		.write_state(remote_mods.clone());
+		.write_state_value(remote_mods.clone());
 
 	remote_mods
 }
@@ -390,7 +404,7 @@ async fn update_local_mods(handle: AppHandle) -> Result {
 	&handle
 		.app_state()
 		.mod_loaders
-		.write_state(mod_loaders.clone());
+		.write_state_value(mod_loaders.clone());
 
 	refresh_local_mods(&mod_loaders, &handle);
 	refresh_remote_mods(&mod_loaders, &handle).await;
@@ -616,17 +630,14 @@ async fn get_data(handle: AppHandle, data_query: Option<GamesQuery>) -> Result<V
 
 #[tauri::command]
 #[specta::specta]
-async fn get_game(handle: AppHandle, provider_id: ProviderId, id: String) -> Result<Option<Game>> {
-	let game = handle
+async fn get_game(id: GameId, handle: AppHandle) -> Result<Game> {
+	Ok(handle
 		.app_state()
 		.games
-		.read()
-		.unwrap()
-		.try_get(&provider_id)?
-		.get(&id)
-		.cloned();
-
-	Ok(game)
+		.read_state()?
+		.try_get(&id.provider_id)?
+		.try_get(&id.game_id)?
+		.clone())
 }
 
 #[tauri::command]

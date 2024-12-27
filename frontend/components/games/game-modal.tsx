@@ -149,7 +149,14 @@ export function GameModal({ game }: Props) {
 					</ItemName>
 					{installedGame && (
 						<Tooltip label="Refresh game info">
-							<CommandButton onClick={() => refreshGame(installedGame)}>
+							<CommandButton
+								onClick={() =>
+									refreshGame({
+										gameId: game.uniqueId,
+										providerId: game.providerId,
+									})
+								}
+							>
 								<IconRefresh />
 							</CommandButton>
 						</Tooltip>

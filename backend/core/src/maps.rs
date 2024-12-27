@@ -12,6 +12,11 @@ pub trait TryGettable<K, V> {
 	where
 		K: Borrow<Q> + Display,
 		Q: Hash + Eq + Display + ?Sized;
+
+	fn try_get_mut<Q>(&mut self, k: &Q) -> Result<&mut V>
+	where
+		K: Borrow<Q> + Display,
+		Q: Hash + Eq + Display + ?Sized;
 }
 
 impl<K, V, S: BuildHasher> TryGettable<K, V> for HashMap<K, V, S>
@@ -24,6 +29,15 @@ where
 		Q: Hash + Eq + Display + ?Sized,
 	{
 		self.get(key)
+			.ok_or_else(|| Error::DataEntryNotFound(key.to_string()))
+	}
+
+	fn try_get_mut<Q>(&mut self, key: &Q) -> Result<&mut V>
+	where
+		K: Borrow<Q> + Display,
+		Q: Hash + Eq + Display + ?Sized,
+	{
+		self.get_mut(key)
 			.ok_or_else(|| Error::DataEntryNotFound(key.to_string()))
 	}
 }

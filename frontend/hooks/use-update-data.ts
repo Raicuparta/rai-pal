@@ -11,6 +11,7 @@ import { loadingCountAtom, gameIdsAtom } from "./use-data";
 import { showAppNotification } from "@components/app-notifications";
 import { useAppEvent } from "./use-app-event";
 import { gamesQueryAtom } from "./use-data-query";
+import { useThrottledCallback } from "@mantine/hooks";
 
 export function useUpdateData(executeOnMount = false) {
 	const setLoading = useSetAtom(loadingCountAtom);
@@ -55,12 +56,16 @@ export function useUpdateData(executeOnMount = false) {
 			return true;
 		});
 	}, [deferredGamesQuery, setGameIds]);
+	const throttledUpdateProviderGames = useThrottledCallback(
+		updateProviderGames,
+		1000,
+	);
 
 	useEffect(() => {
-		updateProviderGames();
-	}, [updateProviderGames]);
+		throttledUpdateProviderGames();
+	}, [throttledUpdateProviderGames]);
 
-	useAppEvent(events.foundGame, updateProviderGames);
+	useAppEvent(events.foundGame, throttledUpdateProviderGames);
 
 	const updateAppData = useCallback(() => {
 		function handleDataPromise(promise: Promise<Result<null, Error>>) {

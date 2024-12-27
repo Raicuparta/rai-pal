@@ -181,9 +181,9 @@ async openModsFolder() : Promise<Result<null, Error>> {
     else return { status: "error", error: e  as any };
 }
 },
-async refreshGame(installedGame: InstalledGame) : Promise<Result<null, Error>> {
+async refreshGame(id: GameId) : Promise<Result<null, Error>> {
     try {
-    return { status: "ok", data: await TAURI_INVOKE("refresh_game", { installedGame }) };
+    return { status: "ok", data: await TAURI_INVOKE("refresh_game", { id }) };
 } catch (e) {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
@@ -253,9 +253,9 @@ async updateLocalMods() : Promise<Result<null, Error>> {
     else return { status: "error", error: e  as any };
 }
 },
-async getGame(providerId: ProviderId, id: string) : Promise<Result<Game | null, Error>> {
+async getGame(id: GameId) : Promise<Result<Game, Error>> {
     try {
-    return { status: "ok", data: await TAURI_INVOKE("get_game", { providerId, id }) };
+    return { status: "ok", data: await TAURI_INVOKE("get_game", { id }) };
 } catch (e) {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };

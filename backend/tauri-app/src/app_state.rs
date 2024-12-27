@@ -1,4 +1,6 @@
-use std::{collections::HashMap, ops::Deref, sync::RwLock};
+use std::ops::DerefMut;
+use std::sync::RwLock;
+use std::{collections::HashMap, ops::Deref};
 
 use crate::result::Error;
 use crate::result::Result;
@@ -28,7 +30,8 @@ type TauriState<'a> = tauri::State<'a, AppState>;
 
 pub trait StateData<TData> {
 	fn read_state(&self) -> Result<impl Deref<Target = TData>>;
-	fn write_state(&self, data: TData) -> Result;
+	fn write_state(&self) -> Result<impl DerefMut<Target = TData>>;
+	fn write_state_value(&self, data: TData) -> Result;
 }
 
 impl<TData: Clone> StateData<TData> for RwLock<TData> {
@@ -37,7 +40,12 @@ impl<TData: Clone> StateData<TData> for RwLock<TData> {
 			.map_err(|err| Error::FailedToAccessStateData(err.to_string()))
 	}
 
-	fn write_state(&self, data: TData) -> Result {
+	fn write_state(&self) -> Result<impl DerefMut<Target = TData>> {
+		self.write()
+			.map_err(|err| Error::FailedToAccessStateData(err.to_string()))
+	}
+
+	fn write_state_value(&self, data: TData) -> Result {
 		*self
 			.write()
 			.map_err(|err| Error::FailedToAccessStateData(err.to_string()))? = data;

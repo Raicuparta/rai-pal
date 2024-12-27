@@ -1,7 +1,10 @@
-import { commands, Game, ProviderId } from "@api/bindings";
-import { useEffect, useMemo, useState } from "react";
+import { commands, events, Game, ProviderId } from "@api/bindings";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useAppEvent } from "./use-app-event";
+import { useAsyncCommand } from "./use-async-command";
 
 export function useGame(providerId: ProviderId, gameId: string) {
+	const [getGame] = useAsyncCommand(commands.getGame);
 	const defaultGame: Game = useMemo(
 		() =>
 			({
@@ -25,22 +28,18 @@ export function useGame(providerId: ProviderId, gameId: string) {
 
 	const [game, setGame] = useState<Game>(defaultGame);
 
-	useEffect(() => {
-		console.log(`fetching game ${gameId}`);
-		commands.getGame(providerId, gameId).then((result) => {
-			console.log("it ended", result);
-			if (result.status === "ok" && result.data) {
-				if (`${gameId}` === "1452") {
-					console.log(`fetched game ${result.data}`);
-				}
-				setGame(result.data);
-			} else if (result.status === "error") {
-				console.error(`Failed to fetch game: ${result.error}`);
-			}
-		});
-	}, [gameId, providerId]);
+	const updateData = useCallback(() => {
+		getGame({ providerId, gameId }).then(setGame);
+	}, [gameId, providerId, getGame]);
 
-	// useAppEvent(events.foundGame, updateData); // TODO
+	useEffect(() => {
+		console.log(`update data becasu ${gameId}`);
+		updateData();
+	}, [updateData]);
+
+	// TODO: this makes the app super slow due to subscribing to events too often.
+	// We need to make a single top level frontend event that handles all this.
+	// useAppEvent(events.foundGame, updateData);
 
 	return game;
 }
