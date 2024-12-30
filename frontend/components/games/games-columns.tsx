@@ -10,7 +10,6 @@ import {
 } from "@mantine/core";
 import { TableColumnBase, columnMapToList } from "@components/table/table-head";
 import { ItemName } from "../item-name";
-import { ArchitectureBadge } from "@components/badges/color-coded-badge";
 import { OutdatedMarker } from "@components/outdated-marker";
 import styles from "../table/table.module.css";
 import { Game, GamesSortBy } from "@api/bindings";

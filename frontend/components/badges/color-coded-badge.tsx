@@ -1,10 +1,4 @@
-import {
-	Architecture,
-	EngineBrand,
-	GameTag,
-	ProviderId,
-	UnityScriptingBackend,
-} from "@api/bindings";
+import { EngineBrand, UnityScriptingBackend } from "@api/bindings";
 import { Badge, BadgeProps, DefaultMantineColor } from "@mantine/core";
 interface Props<TValue extends string> extends BadgeProps {
 	readonly value?: TValue | null;
@@ -44,24 +38,3 @@ export const UnityBackendBadge = CreateColorCodedBadge<UnityScriptingBackend>(
 		Mono: "cyan",
 	},
 );
-
-export const GameTagBadge = CreateColorCodedBadge<GameTag>("-", {
-	VR: "green",
-	Demo: "yellow",
-});
-
-export const ArchitectureBadge = CreateColorCodedBadge<Architecture>("-", {
-	X64: "blue",
-	X86: "teal",
-});
-
-export const ProviderBadge = CreateColorCodedBadge<ProviderId>("Unknown", {
-	Manual: "gray",
-	Steam: "blue",
-	Epic: "red",
-	Gog: "violet",
-	Xbox: "green",
-	Itch: "teal",
-	Ubisoft: "grape",
-	Ea: "yellow",
-});
