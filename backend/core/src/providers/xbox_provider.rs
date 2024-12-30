@@ -47,38 +47,24 @@ struct XboxGamepassImages {
 }
 
 impl ProviderActions for Xbox {
-	// async fn get_games<TInstalledCallback, TOwnedCallback>(
-	// 	&self,
-	// 	mut installed_callback: TInstalledCallback,
-	// 	mut _owned_callback: TOwnedCallback,
-	// ) -> Result
-	// where
-	// 	TInstalledCallback: FnMut(InstalledGame) + Send + Sync,
-	// 	TOwnedCallback: FnMut(OwnedGame) + Send + Sync,
-	// {
-	// 	if let Err(error) = find_installed_games(&mut installed_callback) {
-	// 		if error.kind() == std::io::ErrorKind::NotFound {
-	// 			log::info!("Failed to find installed Xbox PC games. This probably means the Xbox PC app isn't installed, or there are no Windows Store games or something. Error: {}", error);
-	// 			return Ok(());
-	// 		}
-	// 	}
-
-	// 	Ok(())
-	// }
-
-	async fn get_games<TCallback>(&self, callback: TCallback) -> Result
+	async fn get_games<TCallback>(&self, mut callback: TCallback) -> Result
 	where
 		TCallback: FnMut(Game) + Send + Sync,
 	{
+		if let Err(error) = get_games(&mut callback) {
+			if error.kind() == io::ErrorKind::NotFound {
+				log::info!("Failed to find installed Xbox PC games. This probably means the Xbox PC app isn't installed, or there are no Windows Store games or something. Error: {}", error);
+				return Ok(());
+			}
+		}
+
 		Ok(())
 	}
 }
 
-fn find_installed_games<TInstalledCallback>(
-	mut installed_callback: TInstalledCallback,
-) -> io::Result<()>
+fn get_games<TCallback>(mut callback: TCallback) -> io::Result<()>
 where
-	TInstalledCallback: FnMut(InstalledGame) + Send + Sync,
+	TCallback: FnMut(Game) + Send + Sync,
 {
 	#[cfg(target_os = "windows")]
 	{
@@ -130,13 +116,16 @@ where
 														"[Name Not Found]".to_string()
 													});
 
-												if let Some(game) = InstalledGame::new(
-													&executable_path,
+												let mut game = Game::new(
+													&package_id,
+													ProviderId::Xbox,
 													&display_name,
-													*Xbox::ID,
-												) {
-													installed_callback(game.clone());
-												}
+												);
+
+												game.installed_game =
+													InstalledGame::new(&executable_path);
+
+												callback(game);
 											}
 										}
 									}
