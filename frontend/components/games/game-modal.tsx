@@ -26,7 +26,7 @@ import {
 	IconRefresh,
 	IconTrash,
 } from "@tabler/icons-react";
-import { ModalImage } from "@components/modal-image";
+import { GameImage } from "@components/game-image";
 import { useAtomValue, useSetAtom } from "jotai";
 import { modLoadersAtom } from "@hooks/use-data";
 import { DebugData } from "@components/debug-data";
@@ -36,7 +36,6 @@ import { TableItemDetails } from "@components/table/table-item-details";
 import { GameModRow } from "./game-mod-row";
 import { TableContainer } from "@components/table/table-container";
 import { CommandDropdown } from "@components/command-dropdown";
-import { getThumbnailWithFallback } from "@util/fallback-thumbnail";
 import { ProviderIcon } from "@components/providers/provider-icon";
 import { selectedGameAtom } from "./games-state";
 import { ProviderCommandButtons } from "@components/providers/provider-command-dropdown";
@@ -141,8 +140,12 @@ export function GameModal({ game }: Props) {
 			size="xl"
 			title={
 				<Group>
-					<ModalImage
-						src={getThumbnailWithFallback(game.thumbnailUrl, game.providerId)}
+					<GameImage
+						src={game.thumbnailUrl}
+						bg="dark"
+						radius="md"
+						fit="contain"
+						h={50}
 					/>
 					<ItemName label={installedGame?.discriminator}>
 						{game.title.display}

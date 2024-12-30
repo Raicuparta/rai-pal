@@ -1,4 +1,4 @@
-import { Flex, Table, ThemeIcon, Tooltip, Image } from "@mantine/core";
+import { Flex, Table, ThemeIcon, Tooltip } from "@mantine/core";
 import { TableColumnBase, columnMapToList } from "@components/table/table-head";
 import { ItemName } from "../item-name";
 import {
@@ -9,10 +9,10 @@ import {
 } from "@components/badges/color-coded-badge";
 import { OutdatedMarker } from "@components/outdated-marker";
 import styles from "../table/table.module.css";
-import { getThumbnailWithFallback } from "@util/fallback-thumbnail";
 import { Game, GamesSortBy } from "@api/bindings";
 import { IconCloud, IconDeviceDesktop } from "@tabler/icons-react";
 import { GameTags } from "@components/game-tags/game-tags";
+import { GameImage } from "@components/game-image";
 
 type GamesColumn = TableColumnBase<Game, GamesSortBy>;
 
@@ -23,10 +23,9 @@ const ThumbnailComponent = ({ item }: CellProps) => (
 		p={0}
 		bg="dark"
 	>
-		<Image
-			fallbackSrc="images/thumbnails/Manual.png"
+		<GameImage
 			mah={75}
-			src={getThumbnailWithFallback(item.thumbnailUrl, item.providerId)}
+			src={item.thumbnailUrl}
 		/>
 	</Table.Td>
 );
