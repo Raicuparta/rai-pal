@@ -1,10 +1,9 @@
-import { Flex, Table, ThemeIcon, Tooltip } from "@mantine/core";
+import { Flex, Paper, Stack, Table, Tooltip } from "@mantine/core";
 import { TableColumnBase, columnMapToList } from "@components/table/table-head";
 import { ItemName } from "../item-name";
 import {
 	ArchitectureBadge,
 	EngineBadge,
-	ProviderBadge,
 	UnityBackendBadge,
 } from "@components/badges/color-coded-badge";
 import { OutdatedMarker } from "@components/outdated-marker";
@@ -13,6 +12,7 @@ import { Game, GamesSortBy } from "@api/bindings";
 import { IconCloud, IconDeviceDesktop } from "@tabler/icons-react";
 import { GameTags } from "@components/game-tags/game-tags";
 import { GameImage } from "@components/game-image";
+import { ProviderIcon } from "@components/providers/provider-icon";
 
 type GamesColumn = TableColumnBase<Game, GamesSortBy>;
 
@@ -46,18 +46,33 @@ const NameCell = ({ item }: CellProps) => (
 			label="One of the mods installed in this game is outdated."
 			position="bottom"
 		>
-			<Flex gap={3}>
+			<Flex
+				gap={3}
+				align="center"
+			>
 				<ItemName label={item.installedGame?.discriminator}>
 					{item.installedGame?.hasOutdatedMod && <OutdatedMarker />}
-					<Flex gap="xs">
-						<Tooltip label={item.installedGame ? "Installed" : "Not installed"}>
-							<ThemeIcon
-								size="sm"
+					<Flex
+						gap="xs"
+						align="center"
+					>
+						<Tooltip
+							label={
+								item.installedGame
+									? `Installed on ${item.providerId}`
+									: `Owned on ${item.providerId}, not installed`
+							}
+						>
+							<Paper
+								bg={item.installedGame ? "green.9" : "dark.7"}
 								variant="light"
-								color={item.installedGame ? "green" : "gray"}
+								p="xs"
 							>
-								{item.installedGame ? <IconDeviceDesktop /> : <IconCloud />}
-							</ThemeIcon>
+								<Stack>
+									<ProviderIcon providerId={item.providerId} />
+									{item.installedGame ? <IconDeviceDesktop /> : <IconCloud />}
+								</Stack>
+							</Paper>
 						</Tooltip>
 						{item?.title.display}
 						<GameTags game={item} />
@@ -73,19 +88,6 @@ const name: GamesColumn = {
 	label: "Game",
 	sort: "Title",
 	component: NameCell,
-};
-
-const provider: GamesColumn = {
-	label: "Provider",
-	sort: "Provider",
-	width: 110,
-	center: true,
-	hidable: true,
-	component: ({ item }: CellProps) => (
-		<Table.Td>
-			<ProviderBadge value={item.providerId} />
-		</Table.Td>
-	),
 };
 
 const architecture: GamesColumn = {
@@ -145,7 +147,6 @@ const engine: GamesColumn = {
 const gamesColumnsMap = {
 	thumbnail,
 	name,
-	provider,
 	architecture,
 	scriptingBackend,
 	engine,

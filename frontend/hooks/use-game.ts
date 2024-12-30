@@ -38,7 +38,7 @@ export function useGame(providerId: ProviderId, gameId: string) {
 
 	// TODO: this makes the app super slow due to subscribing to events too often.
 	// We need to make a single top level frontend event that handles all this.
-	useAppEvent(events.foundGame, updateData);
+	// useAppEvent(events.foundGame, updateData);
 
 	return game;
 }

@@ -11,7 +11,6 @@ export const visibleGamesColumnsAtom = atom<GamesColumnId[]>([
 	"thumbnail",
 	"name",
 	"engine",
-	"provider",
 	"architecture",
 ]);
 
