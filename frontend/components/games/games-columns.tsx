@@ -1,11 +1,16 @@
-import { Badge, Flex, Paper, Stack, Table, Tooltip } from "@mantine/core";
+import {
+	Flex,
+	Grid,
+	GridCol,
+	Paper,
+	Stack,
+	Table,
+	Text,
+	Tooltip,
+} from "@mantine/core";
 import { TableColumnBase, columnMapToList } from "@components/table/table-head";
 import { ItemName } from "../item-name";
-import {
-	ArchitectureBadge,
-	EngineBadge,
-	UnityBackendBadge,
-} from "@components/badges/color-coded-badge";
+import { ArchitectureBadge } from "@components/badges/color-coded-badge";
 import { OutdatedMarker } from "@components/outdated-marker";
 import styles from "../table/table.module.css";
 import { Game, GamesSortBy } from "@api/bindings";
@@ -90,17 +95,11 @@ const name: GamesColumn = {
 	component: NameCell,
 };
 
-const architecture: GamesColumn = {
-	label: "Arch",
-	sort: "Architecture",
-	width: 70,
-	center: true,
-	hidable: true,
-	component: ({ item }: CellProps) => (
-		<Table.Td>
-			<ArchitectureBadge value={item.installedGame?.executable.architecture} />
-		</Table.Td>
-	),
+const engineColors = {
+	Unity: "blue",
+	Unreal: "red",
+	Godot: "violet",
+	GameMaker: "teal",
 };
 
 const engine: GamesColumn = {
@@ -114,7 +113,11 @@ const engine: GamesColumn = {
 		const engine =
 			item.installedGame?.executable.engine ?? item.remoteGame?.engines?.[0];
 
+		const engineColor = engine ? engineColors[engine.brand] : "gray";
+
 		const scriptingBackend = item.installedGame?.executable.scriptingBackend;
+		const architecture = item.installedGame?.executable.architecture;
+
 		return (
 			<Table.Td
 			// A bit annoying that I'm defining the column width in two places (see engineColumn.width),
@@ -122,36 +125,62 @@ const engine: GamesColumn = {
 			// Maybe I shouldn't be using a regular table component at all for this...
 			// miw={170}
 			>
-				<Stack
-					align="center"
-					justify="center"
-					gap="xs"
+				<Paper
+					style={{ overflow: "hidden" }}
+					bg={`var(--mantine-color-${engineColor}-light)`}
+					fz="xs"
 				>
-					<Flex
-						gap="xs"
+					<Grid
+						gutter={0}
+						justify="center"
 						align="center"
 					>
-						<EngineBadge value={engine?.brand} />
-						{scriptingBackend && (
-							<UnityBackendBadge
-								size="xs"
-								value={scriptingBackend}
-								variant="light"
-								opacity={0.75}
-							/>
-						)}
-					</Flex>
-					{engine?.version?.display && (
-						<Badge
-							color="dark"
-							variant="filled"
-							size="sm"
-							opacity={0.6}
+						<GridCol
+							ta="center"
+							span={scriptingBackend ? 8 : 12}
+							c={`var(--mantine-color-${engineColor}-light-color)`}
+							fw="bold"
 						>
-							{engine.version.display}
-						</Badge>
-					)}
-				</Stack>
+							{engine?.brand.toUpperCase()}
+						</GridCol>
+						{/* <EngineBadge value={engine?.brand} /> */}
+						{scriptingBackend && (
+							<GridCol
+								ta="center"
+								bg="rgba(0, 0, 0, 0.3)"
+								span={4}
+								opacity={0.75}
+							>
+								{scriptingBackend.toUpperCase()}
+							</GridCol>
+							// <UnityBackendBadge
+							// 	size="xs"
+							// 	value={scriptingBackend}
+							// 	variant="light"
+							// 	opacity={0.75}
+							// />
+						)}
+						{engine?.version?.display && (
+							<GridCol
+								ta="center"
+								bg="dark"
+								span={12}
+							>
+								{engine.version.display}
+								{architecture && (
+									<Text
+										component="span"
+										size="xs"
+										c="dark.3"
+									>
+										{" "}
+										({architecture.toLowerCase()})
+									</Text>
+								)}
+							</GridCol>
+						)}
+					</Grid>
+				</Paper>
 			</Table.Td>
 		);
 	},
@@ -160,7 +189,6 @@ const engine: GamesColumn = {
 const gamesColumnsMap = {
 	thumbnail,
 	name,
-	architecture,
 	engine,
 };
 
