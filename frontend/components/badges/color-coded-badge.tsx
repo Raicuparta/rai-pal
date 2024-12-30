@@ -5,11 +5,9 @@ import {
 	ProviderId,
 	UnityScriptingBackend,
 } from "@api/bindings";
-import { Badge, BadgeProps, DefaultMantineColor, Stack } from "@mantine/core";
-import styles from "./badges.module.css";
+import { Badge, BadgeProps, DefaultMantineColor } from "@mantine/core";
 interface Props<TValue extends string> extends BadgeProps {
 	readonly value?: TValue | null;
-	readonly label?: string;
 }
 
 type ColorRecord<TValue extends string> = Record<TValue, DefaultMantineColor>;
@@ -22,27 +20,12 @@ function CreateColorCodedBadge<TValue extends string>(
 		const color = props.value ? colorMap[props.value] : "white";
 
 		return (
-			<Stack
-				align="center"
-				justify="center"
-				gap="xs"
+			<Badge
+				color={color}
+				{...props}
 			>
-				<Badge
-					color={color}
-					{...props}
-				>
-					{props.value ?? fallbackText}
-				</Badge>
-				{props.label && props.value && (
-					<Badge
-						color="dark"
-						variant="default"
-						className={styles.label}
-					>
-						{props.label}
-					</Badge>
-				)}
-			</Stack>
+				{props.value ?? fallbackText}
+			</Badge>
 		);
 	};
 }
@@ -57,8 +40,8 @@ export const EngineBadge = CreateColorCodedBadge<EngineBrand>("-", {
 export const UnityBackendBadge = CreateColorCodedBadge<UnityScriptingBackend>(
 	"-",
 	{
-		Il2Cpp: "red",
-		Mono: "grape",
+		Il2Cpp: "grape",
+		Mono: "cyan",
 	},
 );
 

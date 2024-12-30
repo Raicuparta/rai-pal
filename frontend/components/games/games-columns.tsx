@@ -1,4 +1,4 @@
-import { Flex, Paper, Stack, Table, Tooltip } from "@mantine/core";
+import { Badge, Flex, Paper, Stack, Table, Tooltip } from "@mantine/core";
 import { TableColumnBase, columnMapToList } from "@components/table/table-head";
 import { ItemName } from "../item-name";
 import {
@@ -103,21 +103,6 @@ const architecture: GamesColumn = {
 	),
 };
 
-const scriptingBackend: GamesColumn = {
-	label: "Backend",
-	sort: "ScriptingBackend",
-	width: 90,
-	center: true,
-	hidable: true,
-	component: ({ item }: CellProps) => (
-		<Table.Td>
-			<UnityBackendBadge
-				value={item.installedGame?.executable.scriptingBackend}
-			/>
-		</Table.Td>
-	),
-};
-
 const engine: GamesColumn = {
 	label: "Engine",
 	sort: "Engine",
@@ -127,7 +112,9 @@ const engine: GamesColumn = {
 	component: ({ item }: CellProps) => {
 		// TODO somehow take into account the other remote engines too? Might also need to sort them.
 		const engine =
-			item.installedGame?.executable?.engine ?? item.remoteGame?.engines?.[0];
+			item.installedGame?.executable.engine ?? item.remoteGame?.engines?.[0];
+
+		const scriptingBackend = item.installedGame?.executable.scriptingBackend;
 		return (
 			<Table.Td
 			// A bit annoying that I'm defining the column width in two places (see engineColumn.width),
@@ -135,10 +122,36 @@ const engine: GamesColumn = {
 			// Maybe I shouldn't be using a regular table component at all for this...
 			// miw={170}
 			>
-				<EngineBadge
-					value={engine?.brand}
-					label={engine ? engine.version?.display : undefined}
-				/>
+				<Stack
+					align="center"
+					justify="center"
+					gap="xs"
+				>
+					<Flex
+						gap="xs"
+						align="center"
+					>
+						<EngineBadge value={engine?.brand} />
+						{scriptingBackend && (
+							<UnityBackendBadge
+								size="xs"
+								value={scriptingBackend}
+								variant="light"
+								opacity={0.75}
+							/>
+						)}
+					</Flex>
+					{engine?.version?.display && (
+						<Badge
+							color="dark"
+							variant="filled"
+							size="sm"
+							opacity={0.6}
+						>
+							{engine.version.display}
+						</Badge>
+					)}
+				</Stack>
 			</Table.Td>
 		);
 	},
@@ -148,7 +161,6 @@ const gamesColumnsMap = {
 	thumbnail,
 	name,
 	architecture,
-	scriptingBackend,
 	engine,
 };
 

@@ -7,13 +7,14 @@ import { useAppEvent } from "@hooks/use-app-event";
 import { events, GamesSortBy } from "@api/bindings";
 import { useAtomValue, useSetAtom } from "jotai";
 import { gameIdsAtom } from "@hooks/use-data";
-import { selectedGameAtom, useVisibleGamesColumns } from "./games-state";
+import { selectedGameAtom } from "./games-state";
 import { TableContainer } from "@components/table/table-container";
 import { TableVirtuoso } from "react-virtuoso";
 import { useVirtuosoHeaderContent } from "@hooks/use-virtuoso-header-content";
 import { useVirtuosoTableComponents } from "@hooks/use-virtuoso-table-components";
 import { GameRow } from "./game-row";
 import { useDataQuery } from "@hooks/use-data-query";
+import { gamesColumns } from "./games-columns";
 
 export function GamesPage() {
 	const gameIds = useAtomValue(gameIdsAtom);
@@ -26,8 +27,6 @@ export function GamesPage() {
 			gameId,
 		});
 	});
-
-	const columns = useVisibleGamesColumns();
 
 	const onChangeSort = useCallback(
 		(sortBy: GamesSortBy) => {
@@ -43,7 +42,7 @@ export function GamesPage() {
 	);
 
 	const renderHeaders = useVirtuosoHeaderContent(
-		columns,
+		gamesColumns,
 		onChangeSort,
 		dataQuery?.sortBy,
 		dataQuery?.sortDescending,

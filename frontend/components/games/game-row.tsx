@@ -1,11 +1,12 @@
 import { Table } from "@mantine/core";
 import React from "react";
 import { useAtom } from "jotai";
-import { selectedGameAtom, useVisibleGamesColumns } from "./games-state";
+import { selectedGameAtom } from "./games-state";
 import { useGame } from "@hooks/use-game";
 import { GameModal } from "./game-modal";
 import { ItemProps } from "react-virtuoso";
 import { GameId } from "@api/bindings";
+import { gamesColumns } from "./games-columns";
 
 export const GameRow = React.forwardRef(function GameRow(
 	props: ItemProps<GameId>,
@@ -13,8 +14,6 @@ export const GameRow = React.forwardRef(function GameRow(
 ) {
 	const game = useGame(props.item.providerId, props.item.gameId);
 	const [selectedGame, setSelectedGame] = useAtom(selectedGameAtom);
-
-	const columns = useVisibleGamesColumns();
 
 	const isSelected =
 		!!game &&
@@ -38,7 +37,7 @@ export const GameRow = React.forwardRef(function GameRow(
 					})
 				}
 			>
-				{columns.map((column) => (
+				{gamesColumns.map((column) => (
 					<React.Fragment key={column.id}>
 						<column.component item={game} />
 					</React.Fragment>
