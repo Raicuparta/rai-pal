@@ -113,7 +113,7 @@ async fn download_mod(mod_id: &str, handle: AppHandle) -> Result {
 		.download_mod(remote_mod)
 		.await?;
 
-	refresh_local_mods(&mod_loaders, &handle);
+	refresh_local_mods(&mod_loaders, &handle)?;
 
 	Ok(())
 }
@@ -130,7 +130,7 @@ async fn delete_mod(mod_id: &str, handle: AppHandle) -> Result {
 		.try_get(&local_mod.common.loader_id)?
 		.delete_mod(local_mod)?;
 
-	refresh_local_mods(&mod_loaders, &handle);
+	refresh_local_mods(&mod_loaders, &handle)?;
 
 	Ok(())
 }
@@ -295,7 +295,7 @@ async fn uninstall_all_mods(installed_game: InstalledGame, handle: AppHandle) ->
 	Ok(())
 }
 
-fn refresh_local_mods(mod_loaders: &mod_loader::Map, handle: &AppHandle) -> local_mod::Map {
+fn refresh_local_mods(mod_loaders: &mod_loader::Map, handle: &AppHandle) -> Result<local_mod::Map> {
 	let local_mods: HashMap<_, _> = mod_loaders
 		.values()
 		.filter_map(|mod_loader| match mod_loader.get_local_mods() {
@@ -313,12 +313,15 @@ fn refresh_local_mods(mod_loaders: &mod_loader::Map, handle: &AppHandle) -> loca
 	handle
 		.app_state()
 		.local_mods
-		.write_state_value(local_mods.clone());
+		.write_state_value(local_mods.clone())?;
 
-	local_mods
+	Ok(local_mods)
 }
 
-async fn refresh_remote_mods(mod_loaders: &mod_loader::Map, handle: &AppHandle) -> remote_mod::Map {
+async fn refresh_remote_mods(
+	mod_loaders: &mod_loader::Map,
+	handle: &AppHandle,
+) -> Result<remote_mod::Map> {
 	let mut remote_mods = remote_mod::Map::default();
 
 	for mod_loader in mod_loaders.values() {
@@ -337,9 +340,9 @@ async fn refresh_remote_mods(mod_loaders: &mod_loader::Map, handle: &AppHandle) 
 	handle
 		.app_state()
 		.remote_mods
-		.write_state_value(remote_mods.clone());
+		.write_state_value(remote_mods.clone())?;
 
-	remote_mods
+	Ok(remote_mods)
 }
 
 async fn refresh_and_get_local_mod(
@@ -352,7 +355,7 @@ async fn refresh_and_get_local_mod(
 
 		let state_local_mods = state.local_mods.read_state()?.clone();
 		if state_local_mods.contains_key(mod_id) {
-			state_local_mods
+			Ok(state_local_mods)
 		} else {
 			// Local mod wasn't in app state,
 			// so let's sync app state to local files in case some file was manually changed.
@@ -380,7 +383,7 @@ async fn refresh_and_get_local_mod(
 				refresh_local_mods(mod_loaders, handle)
 			}
 		}
-	};
+	}?;
 
 	Ok(local_mods.try_get(mod_id).cloned()?)
 }
@@ -399,13 +402,13 @@ async fn update_local_mods(handle: AppHandle) -> Result {
 		&mod_loaders,
 	)?));
 
-	&handle
+	handle
 		.app_state()
 		.mod_loaders
-		.write_state_value(mod_loaders.clone());
+		.write_state_value(mod_loaders.clone())?;
 
-	refresh_local_mods(&mod_loaders, &handle);
-	refresh_remote_mods(&mod_loaders, &handle).await;
+	refresh_local_mods(&mod_loaders, &handle)?;
+	refresh_remote_mods(&mod_loaders, &handle).await?;
 
 	Ok(())
 }
@@ -420,33 +423,35 @@ async fn fetch_remote_games(handle: AppHandle) -> Result {
 		.games
 		.iter()
 		.for_each(|(_provider_id, provider_games)| {
-			provider_games
-				.write()
-				.unwrap()
-				.iter_mut()
-				.for_each(|(game_id, game)| {
-					// Assign remote game to any existing game.
-					// This is for when the remote games are fetched *after* games are found locally.
-					game.remote_game = remote_games
-						.get(&game.provider_id)
-						.and_then(|provider_remote_games| provider_remote_games.get(game_id))
-						.or_else(|| {
-							remote_games.get(&ProviderId::Manual).and_then(
-								|provider_remote_games| {
-									game.title.normalized.first().and_then(|normalized_title| {
-										provider_remote_games.get(normalized_title)
-									})
-								},
-							)
-						})
-						.cloned()
-				})
+			match provider_games.write_state() {
+				Ok(mut provider_games_write) => {
+					provider_games_write.iter_mut().for_each(|(game_id, game)| {
+						// Assign remote game to any existing game.
+						// This is for when the remote games are fetched *after* games are found locally.
+						game.remote_game = remote_games
+							.get(&game.provider_id)
+							.and_then(|provider_remote_games| provider_remote_games.get(game_id))
+							.or_else(|| {
+								remote_games.get(&ProviderId::Manual).and_then(
+									|provider_remote_games| {
+										game.title.normalized.first().and_then(|normalized_title| {
+											provider_remote_games.get(normalized_title)
+										})
+									},
+								)
+							})
+							.cloned()
+					})
+				}
+				Err(err) => {
+					log::error!("Failed to write provider games state: {err}");
+				}
+			}
 		});
 
 	handle.emit_safe(events::FoundGame());
 
-	let mut remote_games_write_lock = state.remote_games.write().unwrap();
-	*remote_games_write_lock = remote_games;
+	state.remote_games.write_state_value(remote_games)?;
 
 	Ok(())
 }
