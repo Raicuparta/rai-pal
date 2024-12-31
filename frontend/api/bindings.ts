@@ -189,9 +189,9 @@ async refreshGame(id: GameId) : Promise<Result<null, Error>> {
     else return { status: "error", error: e  as any };
 }
 },
-async removeGame(installedGame: InstalledGame) : Promise<Result<null, Error>> {
+async removeGame(path: string) : Promise<Result<null, Error>> {
     try {
-    return { status: "ok", data: await TAURI_INVOKE("remove_game", { installedGame }) };
+    return { status: "ok", data: await TAURI_INVOKE("remove_game", { path }) };
 } catch (e) {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };

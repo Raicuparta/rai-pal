@@ -39,14 +39,12 @@ impl ProviderActions for Manual {
 		TCallback: FnMut(Game) + Send + Sync,
 	{
 		for path in read_games_config(&games_config_path()?).paths {
-			if let Some(installed_game) = InstalledGame::new(&path) {
-				let mut game = Game::new(
-					&installed_game.id,
-					ProviderId::Manual,
-					file_name_without_extension(&path)?,
-				);
-				game.installed_game = Some(installed_game);
-				callback(game);
+			match get_game_from_path(&path) {
+				Ok(game) => callback(game),
+				Err(error) => {
+					error!("Failed to get game from path '{}'. Will remove this path from the config. Error: {}", path.display(), error);
+					remove_game(&path)?;
+				}
 			}
 		}
 
@@ -72,9 +70,20 @@ fn read_games_config(games_config_path: &Path) -> GamesConfig {
 	}
 }
 
-pub fn add_game(path: &Path) -> Result<InstalledGame> {
-	let game =
+fn get_game_from_path(path: &Path) -> Result<Game> {
+	let installed_game =
 		InstalledGame::new(path).ok_or(Error::FailedToGetGameFromPath(path.to_path_buf()))?;
+	let mut game = Game::new(
+		&installed_game.id,
+		ProviderId::Manual,
+		file_name_without_extension(path)?,
+	);
+	game.installed_game = Some(installed_game);
+	Ok(game)
+}
+
+pub fn add_game(path: &Path) -> Result<Game> {
+	let game = get_game_from_path(path)?;
 
 	let config_path = games_config_path()?;
 

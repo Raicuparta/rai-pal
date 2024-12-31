@@ -469,9 +469,10 @@ async fn get_provider_games(handle: AppHandle, provider_id: ProviderId) -> Resul
 
 	let provider = provider::get_provider(provider_id)?;
 
-	// TODO: remove stale games after getting new ones.
-
 	let remote_games = state.remote_games.read_state()?.clone();
+
+	let mut fresh_games: HashMap<String, Game> = HashMap::default();
+
 	provider.get_games(|mut game: Game| {
 		// Assign the remote game here as we find the new game.
 		// This is for when the remote games are fetched *before* games are found locally.
@@ -496,16 +497,20 @@ async fn get_provider_games(handle: AppHandle, provider_id: ProviderId) -> Resul
 			.unwrap()
 			.write()
 			.unwrap()
-			.insert(game.unique_id.clone(), game);
+			.insert(game.unique_id.clone(), game.clone());
 
 		handle.emit_safe(events::FoundGame());
+
+		fresh_games.insert(game.unique_id.clone(), game);
 	}).await.unwrap_or_else(|err| {
 		// It's normal for a provider to fail here if that provider is just missing.
 		// So we log those errors here instead of throwing them up.
 		log::warn!("Failed to get games for provider {provider_id}. User might just not have it. Error: {err}");
 	});
 
-	// update_games_state(&handle, &provider_id, &games);
+	// After all is done, write again with fresh games, to get rid of the stale ones.
+	let mut games_write = state.games.try_get(&provider_id)?.write_state()?;
+	*games_write = fresh_games;
 
 	// cache
 	// 	.set_data(ProviderData {
@@ -526,44 +531,37 @@ async fn get_provider_ids() -> Result<Vec<ProviderId>> {
 #[tauri::command]
 #[specta::specta]
 async fn add_game(path: PathBuf, handle: AppHandle) -> Result {
-	// let normalized_path = normalize_path(&path);
+	let normalized_path = normalize_path(&path);
 
-	// let installed_game = manual_provider::add_game(&normalized_path)?;
-	// let game_name = installed_game.title.display.clone();
+	let game = manual_provider::add_game(&normalized_path)?;
+	let game_name = game.title.display.clone();
 
-	// if let Some(installed_games_state) = handle.app_state().installed_games.get(&ProviderId::Manual)
-	// {
-	// 	let mut installed_games = installed_games_state.get_data()?;
-	// 	installed_games.insert(installed_game.id.clone(), installed_game.clone());
-	// 	update_installed_games_state(&handle, &installed_game.provider, &installed_games);
-	// }
+	let state = handle.app_state();
 
-	// handle.emit_safe(events::SelectInstalledGame(
-	// 	installed_game.provider,
-	// 	installed_game.id.clone(),
-	// ));
+	state
+		.games
+		.get(&ProviderId::Manual)
+		.unwrap()
+		.write()
+		.unwrap()
+		.insert(game.unique_id.clone(), game.clone());
 
-	// analytics::send_event(analytics::Event::ManuallyAddGame, &game_name).await;
+	handle.emit_safe(events::SelectInstalledGame(
+		ProviderId::Manual,
+		game.unique_id.clone(),
+	));
+
+	analytics::send_event(analytics::Event::ManuallyAddGame, &game_name).await;
 
 	Ok(())
 }
 
 #[tauri::command]
 #[specta::specta]
-async fn remove_game(installed_game: InstalledGame, handle: AppHandle) -> Result {
-	// manual_provider::remove_game(&installed_game.executable.path)?;
+async fn remove_game(path: PathBuf, handle: AppHandle) -> Result {
+	manual_provider::remove_game(&path)?;
 
-	// if let Some(installed_games_state) = handle
-	// 	.app_state()
-	// 	.installed_games
-	// 	.get(&installed_game.provider)
-	// {
-	// 	let mut installed_games = installed_games_state.get_data()?;
-	// 	installed_games.remove(&installed_game.id);
-	// 	update_installed_games_state(&handle, &installed_game.provider, &installed_games);
-	// }
-
-	Ok(())
+	get_provider_games(handle, ProviderId::Manual).await
 }
 
 #[tauri::command]
