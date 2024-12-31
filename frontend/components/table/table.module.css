@@ -17,6 +17,10 @@ div.table {
 			cursor: pointer;
 		}
 	}
+
+	tr {
+		border-bottom: 2px solid var(--mantine-color-dark-7);
+	}
 }
 
 .sortable {

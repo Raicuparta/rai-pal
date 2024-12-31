@@ -1,9 +1,6 @@
 import {
-	BackgroundImage,
 	DefaultMantineColor,
 	Flex,
-	Grid,
-	GridCol,
 	Paper,
 	Stack,
 	Table,
@@ -26,21 +23,39 @@ type GamesColumn = TableColumnBase<Game, GamesSortBy>;
 type CellProps = { readonly item: Game };
 
 const ThumbnailComponent = ({ item }: CellProps) => (
-	<BackgroundImage
-		src={item.thumbnailUrl ?? "images/fallback-thumbnail.png"}
-		component={Table.Td}
+	<Table.Td
 		bg="dark"
-		h={gameRowHeight}
 		p={0}
+		pos="relative"
+		h={gameRowHeight}
+		style={{
+			overflow: "hidden",
+			borderRight: "2px solid var(--mantine-color-dark-7)",
+		}}
 	>
 		<GameImage
 			src={item.thumbnailUrl}
 			h="100%"
+			fit="fill"
+			pos="absolute"
+			top={0}
+			left={0}
 			style={{
-				backdropFilter: "blur(5px)",
+				filter: "blur(10px)",
+				zIndex: 0,
 			}}
 		/>
-	</BackgroundImage>
+		<GameImage
+			pos="absolute"
+			top={0}
+			left={0}
+			src={item.thumbnailUrl}
+			h="100%"
+			style={{
+				zIndex: 1,
+			}}
+		/>
+	</Table.Td>
 );
 
 const thumbnail: GamesColumn = {
@@ -68,6 +83,9 @@ const StatusCell = ({ item }: CellProps) => (
 		p={0}
 		bg={`var(--mantine-color-${providerColors[item.providerId]}-light)`}
 		opacity={item.installedGame ? 1 : 0.5}
+		style={{
+			borderRight: "2px solid var(--mantine-color-dark-7)",
+		}}
 	>
 		<Tooltip
 			label={
@@ -145,7 +163,7 @@ const engineColors: Record<EngineBrand, DefaultMantineColor> = {
 const engine: GamesColumn = {
 	label: "Engine",
 	sort: "Engine",
-	width: 180,
+	width: 160,
 	center: true,
 	hidable: true,
 	component: ({ item }: CellProps) => {
@@ -160,59 +178,63 @@ const engine: GamesColumn = {
 
 		return (
 			<Table.Td
-			// A bit annoying that I'm defining the column width in two places (see engineColumn.width),
-			// but it's to prevent this one from being squished and hiding the version number.
-			// Maybe I shouldn't be using a regular table component at all for this...
-			// miw={170}
+				h={gameRowHeight}
+				fz="xs"
 			>
 				<Paper
+					component={Stack}
+					gap={0}
+					bg={engine ? `var(--mantine-color-${engineColor}-light)` : undefined}
 					style={{ overflow: "hidden" }}
-					bg={`var(--mantine-color-${engineColor}-light)`}
-					fz="xs"
 				>
-					<Grid
-						gutter={0}
-						justify="center"
-						align="center"
-					>
-						<GridCol
-							ta="center"
-							span={scriptingBackend ? 8 : 12}
+					<Flex flex={1}>
+						<Flex
+							justify="center"
+							align="center"
+							flex={4}
 							c={`var(--mantine-color-${engineColor}-light-color)`}
 							fw="bold"
 						>
 							{engine?.brand.toUpperCase()}
-						</GridCol>
+						</Flex>
 						{scriptingBackend && (
-							<GridCol
-								ta="center"
-								bg="rgba(0, 0, 0, 0.3)"
-								span={4}
-								opacity={0.75}
+							<Flex
+								justify="center"
+								align="center"
+								// flex={2}
+								px={5}
+								bg="rgba(0, 0, 0, 0.2)"
 							>
-								{scriptingBackend.toUpperCase()}
-							</GridCol>
+								<Text
+									fz={8}
+									opacity={0.5}
+								>
+									{scriptingBackend.toUpperCase()}
+								</Text>
+							</Flex>
 						)}
-						{engine?.version?.display && (
-							<GridCol
-								ta="center"
-								bg="dark"
-								span={12}
-							>
-								{engine.version.display}
-								{architecture && (
-									<Text
-										component="span"
-										size="xs"
-										c="dark.3"
-									>
-										{" "}
-										({architecture.toLowerCase()})
-									</Text>
-								)}
-							</GridCol>
-						)}
-					</Grid>
+					</Flex>
+					{engine?.version?.display && (
+						<Flex
+							ta="center"
+							bg="rgba(0, 0, 0, 0.5)"
+							flex={1}
+							justify="center"
+							align="center"
+							gap="xs"
+							ff="monospace"
+						>
+							<Text fz="xs">{engine.version.display}</Text>
+							{architecture && (
+								<Text
+									fz={10}
+									opacity={0.5}
+								>
+									{architecture.toLowerCase()}
+								</Text>
+							)}
+						</Flex>
+					)}
 				</Paper>
 			</Table.Td>
 		);
