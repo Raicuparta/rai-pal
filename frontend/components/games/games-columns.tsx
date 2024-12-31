@@ -1,4 +1,5 @@
 import {
+	DefaultMantineColor,
 	Flex,
 	Grid,
 	GridCol,
@@ -12,7 +13,7 @@ import { TableColumnBase, columnMapToList } from "@components/table/table-head";
 import { ItemName } from "../item-name";
 import { OutdatedMarker } from "@components/outdated-marker";
 import styles from "../table/table.module.css";
-import { Game, GamesSortBy } from "@api/bindings";
+import { EngineBrand, Game, GamesSortBy } from "@api/bindings";
 import { IconCloud, IconDeviceDesktop } from "@tabler/icons-react";
 import { GameTags } from "@components/game-tags/game-tags";
 import { GameImage } from "@components/game-image";
@@ -94,12 +95,12 @@ const name: GamesColumn = {
 	component: NameCell,
 };
 
-const engineColors = {
+const engineColors: Record<EngineBrand, DefaultMantineColor> = {
 	Unity: "blue",
 	Unreal: "red",
 	Godot: "violet",
 	GameMaker: "teal",
-};
+} as const;
 
 const engine: GamesColumn = {
 	label: "Engine",
