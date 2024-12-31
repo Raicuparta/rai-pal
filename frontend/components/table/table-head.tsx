@@ -10,7 +10,6 @@ export type TableColumnBase<TItem, TSort> = {
 	center?: boolean;
 	hideLabel?: boolean;
 	hidable?: boolean;
-	hideInDetails?: boolean;
 	sort?: TSort;
 };
 

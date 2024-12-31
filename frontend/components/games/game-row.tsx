@@ -5,7 +5,7 @@ import { selectedGameAtom } from "./games-state";
 import { useGame } from "@hooks/use-game";
 import { GameModal } from "./game-modal";
 import { ItemProps } from "react-virtuoso";
-import { GameId } from "@api/bindings";
+import { Game, GameId } from "@api/bindings";
 import { gamesColumns } from "./games-columns";
 
 export const gameRowHeight = 76;
@@ -26,9 +26,9 @@ export const GameRow = React.forwardRef(function GameRow(
 	return (
 		<>
 			{isSelected && <GameModal game={game} />}
-			<Table.Tr
+			<GameRowInner
+				game={game}
 				ref={ref}
-				h={gameRowHeight}
 				onClick={() =>
 					game &&
 					setSelectedGame({
@@ -36,13 +36,28 @@ export const GameRow = React.forwardRef(function GameRow(
 						providerId: game.providerId,
 					})
 				}
-			>
-				{gamesColumns.map((column) => (
-					<React.Fragment key={column.id}>
-						<column.component item={game} />
-					</React.Fragment>
-				))}
-			</Table.Tr>
+			/>
 		</>
+	);
+});
+
+type Props = { readonly game: Game; readonly onClick?: () => void };
+
+export const GameRowInner = React.forwardRef(function GameRowInner(
+	props: Props,
+	ref: React.ForwardedRef<HTMLTableRowElement>,
+) {
+	return (
+		<Table.Tr
+			ref={ref}
+			h={gameRowHeight}
+			onClick={props.onClick}
+		>
+			{gamesColumns.map((column) => (
+				<React.Fragment key={column.id}>
+					<column.component item={props.game} />
+				</React.Fragment>
+			))}
+		</Table.Tr>
 	);
 });

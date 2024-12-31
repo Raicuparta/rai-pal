@@ -59,7 +59,6 @@ const ThumbnailComponent = ({ item }: CellProps) => (
 );
 
 const thumbnail: GamesColumn = {
-	hideInDetails: true,
 	label: "Thumbnail",
 	hideLabel: true,
 	hidable: true,
@@ -147,7 +146,6 @@ const NameCell = ({ item }: CellProps) => (
 );
 
 const name: GamesColumn = {
-	hideInDetails: true,
 	label: "Game",
 	sort: "Title",
 	component: NameCell,
