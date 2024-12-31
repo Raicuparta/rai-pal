@@ -4,7 +4,7 @@
 #![allow(clippy::unused_async)]
 
 use std::sync::RwLock;
-use std::{collections::HashMap, path::PathBuf, sync::Mutex};
+use std::{collections::HashMap, path::PathBuf};
 
 use crate::result::{Error, Result};
 use app_state::{AppState, GameId, StateData, StatefulHandle};
@@ -250,11 +250,9 @@ fn refresh_game_mods_and_exe(installed_game: &InstalledGame, handle: &AppHandle)
 #[specta::specta]
 async fn refresh_game(id: GameId, handle: AppHandle) -> Result {
 	let state = handle.app_state();
-	let mut games = state.games.write_state()?;
+	let mut games = state.games.try_get(&id.provider_id)?.write_state()?;
 
-	let game = games
-		.try_get_mut(&id.provider_id)?
-		.try_get_mut(&id.game_id)?;
+	let game = games.try_get_mut(&id.game_id)?;
 
 	if let Some(installed_game) = game.installed_game.as_mut() {
 		installed_game.refresh_installed_mods();
@@ -418,26 +416,32 @@ async fn fetch_remote_games(handle: AppHandle) -> Result {
 	let state = handle.app_state();
 	let remote_games = remote_game::get().await?;
 
-	let mut games = state.games.write().unwrap();
-	games.iter_mut().for_each(|(_provider_id, provider_games)| {
-		provider_games.iter_mut().for_each(|(game_id, game)| {
-			// Assign remote game to any existing game.
-			// This is for when the remote games are fetched *after* games are found locally.
-			game.remote_game = remote_games
-				.get(&game.provider_id)
-				.and_then(|provider_remote_games| provider_remote_games.get(game_id))
-				.or_else(|| {
-					remote_games
-						.get(&ProviderId::Manual)
-						.and_then(|provider_remote_games| {
-							game.title.normalized.first().and_then(|normalized_title| {
-								provider_remote_games.get(normalized_title)
-							})
+	state
+		.games
+		.iter()
+		.for_each(|(_provider_id, provider_games)| {
+			provider_games
+				.write()
+				.unwrap()
+				.iter_mut()
+				.for_each(|(game_id, game)| {
+					// Assign remote game to any existing game.
+					// This is for when the remote games are fetched *after* games are found locally.
+					game.remote_game = remote_games
+						.get(&game.provider_id)
+						.and_then(|provider_remote_games| provider_remote_games.get(game_id))
+						.or_else(|| {
+							remote_games.get(&ProviderId::Manual).and_then(
+								|provider_remote_games| {
+									game.title.normalized.first().and_then(|normalized_title| {
+										provider_remote_games.get(normalized_title)
+									})
+								},
+							)
 						})
+						.cloned()
 				})
-				.cloned()
-		})
-	});
+		});
 
 	handle.emit_safe(events::FoundGame());
 
@@ -488,10 +492,10 @@ async fn get_provider_games(handle: AppHandle, provider_id: ProviderId) -> Resul
 		handle
 			.app_state()
 			.games
+			.get(&provider_id)
+			.unwrap()
 			.write()
 			.unwrap()
-			.entry(provider_id)
-			.or_default()
 			.insert(game.unique_id.clone(), game);
 
 		handle.emit_safe(events::FoundGame());
@@ -603,9 +607,10 @@ async fn open_logs_folder() -> Result {
 async fn get_data(handle: AppHandle, data_query: Option<GamesQuery>) -> Result<Vec<GameId>> {
 	let state = handle.app_state();
 
-	let read_guard = state.games.read().unwrap();
-
-	let games_iter = read_guard.values().flat_map(|games| games.iter());
+	let games_iter = state
+		.games
+		.values()
+		.flat_map(|provider_games| provider_games.read().unwrap().clone());
 
 	let games: Vec<_> = if let Some(query) = data_query.as_ref() {
 		let mut games: Vec<_> = games_iter
@@ -634,8 +639,8 @@ async fn get_game(id: GameId, handle: AppHandle) -> Result<Game> {
 	Ok(handle
 		.app_state()
 		.games
-		.read_state()?
 		.try_get(&id.provider_id)?
+		.read_state()?
 		.try_get(&id.game_id)?
 		.clone())
 }
@@ -727,7 +732,11 @@ fn main() {
 			local_mods: RwLock::default(),
 			remote_mods: RwLock::default(),
 			remote_games: RwLock::default(),
-			games: RwLock::default(),
+			games: HashMap::from_iter(
+				provider::get_provider_ids()
+					.iter()
+					.map(|&id| (id, RwLock::default())),
+			),
 		})
 		.invoke_handler(builder.invoke_handler())
 		.setup(move |app| {
