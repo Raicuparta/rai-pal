@@ -34,28 +34,22 @@ impl ProviderStatic for Manual {
 }
 
 impl ProviderActions for Manual {
-	// async fn get_games<TInstalledCallback, TOwnedCallback>(
-	// 	&self,
-	// 	mut installed_callback: TInstalledCallback,
-	// 	mut _owned_callback: TOwnedCallback,
-	// ) -> Result
-	// where
-	// 	TInstalledCallback: FnMut(InstalledGame) + Send + Sync,
-	// 	TOwnedCallback: FnMut(OwnedGame) + Send + Sync,
-	// {
-	// 	for path in read_games_config(&games_config_path()?).paths {
-	// 		if let Some(installed_game) = create_game_from_path(&path) {
-	// 			installed_callback(installed_game);
-	// 		}
-	// 	}
-
-	// 	Ok(())
-	// }
-
-	async fn get_games<TCallback>(&self, callback: TCallback) -> Result
+	async fn get_games<TCallback>(&self, mut callback: TCallback) -> Result
 	where
 		TCallback: FnMut(Game) + Send + Sync,
 	{
+		for path in read_games_config(&games_config_path()?).paths {
+			if let Some(installed_game) = InstalledGame::new(&path) {
+				let mut game = Game::new(
+					&installed_game.id,
+					ProviderId::Manual,
+					file_name_without_extension(&path)?,
+				);
+				game.installed_game = Some(installed_game);
+				callback(game);
+			}
+		}
+
 		Ok(())
 	}
 }
