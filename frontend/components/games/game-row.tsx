@@ -8,6 +8,8 @@ import { ItemProps } from "react-virtuoso";
 import { GameId } from "@api/bindings";
 import { gamesColumns } from "./games-columns";
 
+export const gameRowHeight = 76;
+
 export const GameRow = React.forwardRef(function GameRow(
 	props: ItemProps<GameId>,
 	ref: React.ForwardedRef<HTMLTableRowElement>,
@@ -26,9 +28,7 @@ export const GameRow = React.forwardRef(function GameRow(
 			{isSelected && <GameModal game={game} />}
 			<Table.Tr
 				ref={ref}
-				style={{
-					height: 75,
-				}}
+				h={gameRowHeight}
 				onClick={() =>
 					game &&
 					setSelectedGame({

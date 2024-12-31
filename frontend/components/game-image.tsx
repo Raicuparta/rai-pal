@@ -5,6 +5,7 @@ export function GameImage({ src, ...props }: ImageProps) {
 		<Image
 			fallbackSrc="images/fallback-thumbnail.png"
 			src={src || "images/fallback-thumbnail.png"}
+			fit="contain"
 			{...props}
 		/>
 	);

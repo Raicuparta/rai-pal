@@ -1,4 +1,5 @@
 import {
+	BackgroundImage,
 	DefaultMantineColor,
 	Flex,
 	Grid,
@@ -18,21 +19,28 @@ import { IconCloud, IconDeviceDesktop } from "@tabler/icons-react";
 import { GameTags } from "@components/game-tags/game-tags";
 import { GameImage } from "@components/game-image";
 import { ProviderIcon } from "@components/providers/provider-icon";
+import { gameRowHeight } from "./game-row";
 
 type GamesColumn = TableColumnBase<Game, GamesSortBy>;
 
 type CellProps = { readonly item: Game };
 
 const ThumbnailComponent = ({ item }: CellProps) => (
-	<Table.Td
-		p={0}
+	<BackgroundImage
+		src={item.thumbnailUrl ?? "images/fallback-thumbnail.png"}
+		component={Table.Td}
 		bg="dark"
+		h={gameRowHeight}
+		p={0}
 	>
 		<GameImage
-			mah={75}
 			src={item.thumbnailUrl}
+			h="100%"
+			style={{
+				backdropFilter: "blur(5px)",
+			}}
 		/>
-	</Table.Td>
+	</BackgroundImage>
 );
 
 const thumbnail: GamesColumn = {
@@ -40,12 +48,15 @@ const thumbnail: GamesColumn = {
 	label: "Thumbnail",
 	hideLabel: true,
 	hidable: true,
-	width: 150,
+	width: 100,
 	component: ThumbnailComponent,
 };
 
 const NameCell = ({ item }: CellProps) => (
-	<Table.Td className={styles.nameCell}>
+	<Table.Td
+		p={0}
+		className={styles.nameCell}
+	>
 		<Tooltip
 			disabled={!item.installedGame?.hasOutdatedMod}
 			label="One of the mods installed in this game is outdated."
@@ -54,6 +65,12 @@ const NameCell = ({ item }: CellProps) => (
 			<Flex
 				gap={3}
 				align="center"
+				h={gameRowHeight}
+				p="xs"
+				style={{
+					overflow: "hidden",
+					textOverflow: "ellipsis",
+				}}
 			>
 				<ItemName label={item.installedGame?.discriminator}>
 					{item.installedGame?.hasOutdatedMod && <OutdatedMarker />}
