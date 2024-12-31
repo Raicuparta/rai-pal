@@ -14,7 +14,7 @@ import { TableColumnBase, columnMapToList } from "@components/table/table-head";
 import { ItemName } from "../item-name";
 import { OutdatedMarker } from "@components/outdated-marker";
 import styles from "../table/table.module.css";
-import { EngineBrand, Game, GamesSortBy } from "@api/bindings";
+import { EngineBrand, Game, GamesSortBy, ProviderId } from "@api/bindings";
 import { IconCloud, IconDeviceDesktop } from "@tabler/icons-react";
 import { GameTags } from "@components/game-tags/game-tags";
 import { GameImage } from "@components/game-image";
@@ -52,6 +52,52 @@ const thumbnail: GamesColumn = {
 	component: ThumbnailComponent,
 };
 
+const providerColors: Record<ProviderId, DefaultMantineColor> = {
+	Manual: "gray",
+	Steam: "blue",
+	Epic: "red",
+	Gog: "violet",
+	Xbox: "green",
+	Itch: "pink",
+	Ubisoft: "grape",
+	Ea: "cyan",
+} as const;
+
+const StatusCell = ({ item }: CellProps) => (
+	<Table.Td
+		p={0}
+		bg={`var(--mantine-color-${providerColors[item.providerId]}-light)`}
+		opacity={item.installedGame ? 1 : 0.5}
+	>
+		<Tooltip
+			label={
+				item.installedGame
+					? `Installed on ${item.providerId}`
+					: `Owned on ${item.providerId}, not installed`
+			}
+		>
+			<Stack
+				justify="center"
+				align="center"
+			>
+				<ProviderIcon
+					providerId={item.providerId}
+					color={`var(--mantine-color-${providerColors[item.providerId]}-light-color)`}
+				/>
+				{item.installedGame ? <IconDeviceDesktop /> : <IconCloud />}
+			</Stack>
+		</Tooltip>
+	</Table.Td>
+);
+
+const status: GamesColumn = {
+	label: "Status",
+	hideLabel: true,
+	hidable: true,
+	width: 30,
+	component: StatusCell,
+};
+
 const NameCell = ({ item }: CellProps) => (
 	<Table.Td
 		p={0}
@@ -74,31 +120,8 @@ const NameCell = ({ item }: CellProps) => (
 			>
 				<ItemName label={item.installedGame?.discriminator}>
 					{item.installedGame?.hasOutdatedMod && <OutdatedMarker />}
-					<Flex
-						gap="xs"
-						align="center"
-					>
-						<Tooltip
-							label={
-								item.installedGame
-									? `Installed on ${item.providerId}`
-									: `Owned on ${item.providerId}, not installed`
-							}
-						>
-							<Paper
-								bg={item.installedGame ? "green.9" : "dark.7"}
-								variant="light"
-								p="xs"
-							>
-								<Stack>
-									<ProviderIcon providerId={item.providerId} />
-									{item.installedGame ? <IconDeviceDesktop /> : <IconCloud />}
-								</Stack>
-							</Paper>
-						</Tooltip>
-						{item?.title.display}
-						<GameTags game={item} />
-					</Flex>
+					{item?.title.display}
+					<GameTags game={item} />
 				</ItemName>
 			</Flex>
 		</Tooltip>
@@ -160,7 +183,6 @@ const engine: GamesColumn = {
 						>
 							{engine?.brand.toUpperCase()}
 						</GridCol>
-						{/* <EngineBadge value={engine?.brand} /> */}
 						{scriptingBackend && (
 							<GridCol
 								ta="center"
@@ -170,12 +192,6 @@ const engine: GamesColumn = {
 							>
 								{scriptingBackend.toUpperCase()}
 							</GridCol>
-							// <UnityBackendBadge
-							// 	size="xs"
-							// 	value={scriptingBackend}
-							// 	variant="light"
-							// 	opacity={0.75}
-							// />
 						)}
 						{engine?.version?.display && (
 							<GridCol
@@ -204,6 +220,7 @@ const engine: GamesColumn = {
 };
 
 const gamesColumnsMap = {
+	status,
 	thumbnail,
 	name,
 	engine,

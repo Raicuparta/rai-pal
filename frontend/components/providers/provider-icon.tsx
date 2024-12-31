@@ -10,10 +10,11 @@ import {
 	IconCircleLetterUFilled,
 	IconBrandElectronicArts,
 } from "@tabler/icons-react";
+import { ComponentProps } from "react";
 
-type Props = {
+interface Props extends ComponentProps<typeof IconDeviceGamepad> {
 	readonly providerId: ProviderId;
-};
+}
 
 const providerIcons: Record<ProviderId, Icon> = {
 	Manual: IconDeviceGamepad,
@@ -26,7 +27,7 @@ const providerIcons: Record<ProviderId, Icon> = {
 	Ea: IconBrandElectronicArts,
 };
 
-export function ProviderIcon(props: Props) {
-	const IconComponent = providerIcons[props.providerId] ?? IconDeviceGamepad;
-	return <IconComponent />;
+export function ProviderIcon({ providerId, ...props }: Props) {
+	const IconComponent = providerIcons[providerId] ?? IconDeviceGamepad;
+	return <IconComponent {...props} />;
 }
