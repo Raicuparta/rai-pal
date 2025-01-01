@@ -21,9 +21,9 @@ async clearCache() : Promise<Result<null, Error>> {
     else return { status: "error", error: e  as any };
 }
 },
-async configureMod(installedGame: InstalledGame, modId: string) : Promise<Result<null, Error>> {
+async configureMod(gameId: GameId, modId: string) : Promise<Result<null, Error>> {
     try {
-    return { status: "ok", data: await TAURI_INVOKE("configure_mod", { installedGame, modId }) };
+    return { status: "ok", data: await TAURI_INVOKE("configure_mod", { gameId, modId }) };
 } catch (e) {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
@@ -141,9 +141,9 @@ async openGameModsFolder(installedGame: InstalledGame) : Promise<Result<null, Er
     else return { status: "error", error: e  as any };
 }
 },
-async openInstalledModFolder(installedGame: InstalledGame, modId: string) : Promise<Result<null, Error>> {
+async openInstalledModFolder(gameId: GameId, modId: string) : Promise<Result<null, Error>> {
     try {
-    return { status: "ok", data: await TAURI_INVOKE("open_installed_mod_folder", { installedGame, modId }) };
+    return { status: "ok", data: await TAURI_INVOKE("open_installed_mod_folder", { gameId, modId }) };
 } catch (e) {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
@@ -296,7 +296,7 @@ export type EngineBrand = "Unity" | "Unreal" | "Godot" | "GameMaker"
 export type EngineVersion = { numbers: EngineVersionNumbers; suffix: string | null; display: string }
 export type EngineVersionNumbers = { major: number; minor: number | null; patch: number | null }
 export type EngineVersionRange = { minimum: EngineVersionNumbers | null; maximum: EngineVersionNumbers | null }
-export type Error = "Tauri" | "Core" | "SerdeJson" | { FailedToGetResourcesPath: string } | { EmptyStateData: [] } | { FailedToAccessStateData: string }
+export type Error = "Tauri" | "Core" | "SerdeJson" | { FailedToGetResourcesPath: string } | { FailedToAccessStateData: string }
 export type ErrorRaised = string
 export type ExecutedProviderCommand = null
 export type FoundGame = []

@@ -62,6 +62,7 @@ async fn get_remote_mods(handle: AppHandle) -> Result<remote_mod::Map> {
 #[tauri::command]
 #[specta::specta]
 async fn open_game_folder(installed_game: InstalledGame) -> Result {
+	// TODO: this doesn't work for Xbox games apparently?
 	Ok(installed_game.open_game_folder()?)
 }
 
@@ -213,8 +214,14 @@ async fn run_runnable_without_game(mod_id: &str, handle: AppHandle) -> Result {
 
 #[tauri::command]
 #[specta::specta]
-async fn configure_mod(installed_game: InstalledGame, mod_id: &str, handle: AppHandle) -> Result {
+async fn configure_mod(game_id: GameId, mod_id: &str, handle: AppHandle) -> Result {
 	let state = handle.app_state();
+
+	let installed_game = {
+		let games = state.games.try_get(&game_id.provider_id)?.read_state()?;
+		let game = games.try_get(&game_id.game_id)?;
+		game.try_get_installed_game()?.clone()
+	};
 
 	let mod_loaders = state.mod_loaders.read_state()?.clone();
 	let local_mod = refresh_and_get_local_mod(mod_id, &mod_loaders, &handle).await?;
@@ -228,11 +235,7 @@ async fn configure_mod(installed_game: InstalledGame, mod_id: &str, handle: AppH
 
 #[tauri::command]
 #[specta::specta]
-async fn open_installed_mod_folder(
-	installed_game: InstalledGame,
-	mod_id: &str,
-	handle: AppHandle,
-) -> Result {
+async fn open_installed_mod_folder(game_id: GameId, mod_id: &str, handle: AppHandle) -> Result {
 	let state = handle.app_state();
 
 	let mod_loaders = state.mod_loaders.read_state()?.clone();
@@ -240,6 +243,11 @@ async fn open_installed_mod_folder(
 
 	let mod_loader = mod_loaders.try_get(&local_mod.common.loader_id)?;
 
+	let installed_game = {
+		let games = state.games.try_get(&game_id.provider_id)?.read_state()?;
+		let game = games.try_get(&game_id.game_id)?;
+		game.try_get_installed_game()?.clone()
+	};
 	mod_loader.open_installed_mod_folder(&installed_game, &local_mod)?;
 
 	Ok(())

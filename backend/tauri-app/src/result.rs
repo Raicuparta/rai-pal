@@ -1,9 +1,4 @@
-use std::{
-	result,
-	sync::{self, LockResult, RwLockReadGuard},
-};
-
-use rai_pal_core::mod_loaders::mod_loader;
+use std::result;
 
 #[derive(Debug, thiserror::Error, specta::Type)]
 pub enum Error {
@@ -30,9 +25,6 @@ pub enum Error {
 
 	#[error("Failed to get app resources path: `{0}`")]
 	FailedToGetResourcesPath(String),
-
-	#[error("State data is empty")]
-	EmptyStateData(),
 
 	#[error("Failed to access state data: `{0}`")]
 	FailedToAccessStateData(String),

@@ -32,15 +32,6 @@ import { getModTitle } from "@util/game-mod";
 import { CommandDropdown } from "@components/command-dropdown";
 import { DeprecatedBadge } from "@components/mods/deprecated-badge";
 
-const {
-	configureMod,
-	downloadMod,
-	installMod,
-	openInstalledModFolder,
-	openModFolder,
-	uninstallMod,
-} = commands;
-
 type Props = {
 	readonly game: Game;
 	readonly mod: UnifiedMod;
@@ -66,19 +57,19 @@ export function GameModRow({ game, mod, modLoader }: Props) {
 
 	const handleInstallClick = useCallback(async () => {
 		if (modLoader.kind === "Runnable" && !mod.local && !mod.remote) {
-			return openModFolder(mod.common.id);
+			return commands.openModFolder(mod.common.id);
 		}
 
 		if (isLocalModOutdated) {
-			const downloadResult = await downloadMod(mod.common.id);
+			const downloadResult = await commands.downloadMod(mod.common.id);
 			if (downloadResult.status === "error") {
 				return downloadResult;
 			}
 		} else if (isInstalled && !isInstalledModOutdated) {
-			return uninstallMod(game.id, mod.common.id);
+			return commands.uninstallMod(game.id, mod.common.id);
 		}
 
-		return installMod(game.id, mod.common.id);
+		return commands.installMod(game.id, mod.common.id);
 	}, [
 		modLoader.kind,
 		mod.local,
@@ -91,13 +82,11 @@ export function GameModRow({ game, mod, modLoader }: Props) {
 	]);
 
 	const handleConfigureClick = useCallback(() => {
-		if (!game.installedGame) return;
-		configureMod(game.installedGame, mod.common.id);
+		commands.configureMod(game.id, mod.common.id);
 	}, [game, mod.common.id]);
 
 	const handleOpenModFolderClick = useCallback(() => {
-		if (!game.installedGame) return;
-		openInstalledModFolder(game.installedGame, mod.common.id);
+		commands.openInstalledModFolder(game.id, mod.common.id);
 	}, [game, mod.common.id]);
 
 	const { actionText, actionIcon } = (() => {

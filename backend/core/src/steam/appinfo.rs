@@ -371,7 +371,8 @@ fn read_string(reader: &mut BufReader<fs::File>, wide: bool) -> Result<String> {
 			}
 			buf.push(c);
 		}
-		return Ok(std::string::String::from_utf8_lossy(&buf).to_string());
+
+		Ok(std::string::String::from_utf8_lossy(&buf).to_string())
 	}
 }
 
