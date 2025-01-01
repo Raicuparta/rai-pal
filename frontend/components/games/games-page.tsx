@@ -12,7 +12,7 @@ import { TableContainer } from "@components/table/table-container";
 import { TableVirtuoso } from "react-virtuoso";
 import { useVirtuosoHeaderContent } from "@hooks/use-virtuoso-header-content";
 import { useVirtuosoTableComponents } from "@hooks/use-virtuoso-table-components";
-import { GameRow } from "./game-row";
+import { GameRow, gameRowHeight } from "./game-row";
 import { useDataQuery } from "@hooks/use-data-query";
 import { gamesColumns } from "./games-columns";
 
@@ -64,7 +64,8 @@ export function GamesPage() {
 					fixedHeaderContent={renderHeaders}
 					totalCount={gameIds.length}
 					data={gameIds}
-					fixedItemHeight={75}
+					fixedItemHeight={gameRowHeight}
+					overscan={50}
 					increaseViewportBy={200}
 				/>
 			</TableContainer>

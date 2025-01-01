@@ -1,6 +1,5 @@
-import { commands, events, Game, ProviderId } from "@api/bindings";
+import { commands, Game, ProviderId } from "@api/bindings";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useAppEvent } from "./use-app-event";
 import { useAsyncCommand } from "./use-async-command";
 
 export function useGame(providerId: ProviderId, gameId: string) {
@@ -29,8 +28,10 @@ export function useGame(providerId: ProviderId, gameId: string) {
 	const [game, setGame] = useState<Game>(defaultGame);
 
 	const updateData = useCallback(() => {
-		getGame({ providerId, gameId }).then(setGame);
-	}, [gameId, providerId, getGame]);
+		getGame({ providerId, gameId }).then((game) => {
+			setGame(game);
+		});
+	}, [gameId, getGame, providerId]);
 
 	useEffect(() => {
 		updateData();
