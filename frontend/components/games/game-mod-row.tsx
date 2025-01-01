@@ -8,7 +8,7 @@ import {
 	Group,
 	Stack,
 } from "@mantine/core";
-import { InstalledGame, ModLoaderData, commands } from "@api/bindings";
+import { Game, ModLoaderData, commands } from "@api/bindings";
 import { CommandButton } from "@components/command-button";
 import {
 	IconCheck,
@@ -42,61 +42,63 @@ const {
 } = commands;
 
 type Props = {
-	readonly game: InstalledGame;
+	readonly game: Game;
 	readonly mod: UnifiedMod;
 	readonly modLoader: ModLoaderData;
 };
 
-export function GameModRow(props: Props) {
-	const installedVersion = props.game.installedModVersions[props.mod.common.id];
+export function GameModRow({ game, mod, modLoader }: Props) {
+	const installedVersion =
+		game.installedGame?.installedModVersions[mod.common.id];
+
 	const isInstalledModOutdated = getIsOutdated(
 		installedVersion,
-		props.mod.remote?.latestVersion?.id,
+		mod.remote?.latestVersion?.id,
 	);
+
 	const isLocalModOutdated = getIsOutdated(
-		props.mod.local?.manifest?.version,
-		props.mod.remote?.latestVersion?.id,
+		mod.local?.manifest?.version,
+		mod.remote?.latestVersion?.id,
 	);
+
 	const isInstalled = Boolean(installedVersion);
-	const isReadyRunnable = props.mod.local && props.modLoader.kind == "Runnable";
+	const isReadyRunnable = mod.local && modLoader.kind == "Runnable";
 
 	const handleInstallClick = useCallback(async () => {
-		if (
-			props.modLoader.kind === "Runnable" &&
-			!props.mod.local &&
-			!props.mod.remote
-		) {
-			return openModFolder(props.mod.common.id);
+		if (modLoader.kind === "Runnable" && !mod.local && !mod.remote) {
+			return openModFolder(mod.common.id);
 		}
 
 		if (isLocalModOutdated) {
-			const downloadResult = await downloadMod(props.mod.common.id);
+			const downloadResult = await downloadMod(mod.common.id);
 			if (downloadResult.status === "error") {
 				return downloadResult;
 			}
 		} else if (isInstalled && !isInstalledModOutdated) {
-			return uninstallMod(props.game, props.mod.common.id);
+			return uninstallMod(game.id, mod.common.id);
 		}
 
-		return installMod(props.game, props.mod.common.id);
+		return installMod(game.id, mod.common.id);
 	}, [
-		props.modLoader.kind,
-		props.mod.local,
-		props.mod.remote,
-		props.mod.common.id,
-		props.game,
+		modLoader.kind,
+		mod.local,
+		mod.remote,
+		mod.common.id,
+		game,
 		isLocalModOutdated,
 		isInstalled,
 		isInstalledModOutdated,
 	]);
 
 	const handleConfigureClick = useCallback(() => {
-		configureMod(props.game, props.mod.common.id);
-	}, [props.game, props.mod.common.id]);
+		if (!game.installedGame) return;
+		configureMod(game.installedGame, mod.common.id);
+	}, [game, mod.common.id]);
 
 	const handleOpenModFolderClick = useCallback(() => {
-		openInstalledModFolder(props.game, props.mod.common.id);
-	}, [props.game, props.mod.common.id]);
+		if (!game.installedGame) return;
+		openInstalledModFolder(game.installedGame, mod.common.id);
+	}, [game, mod.common.id]);
 
 	const { actionText, actionIcon } = (() => {
 		if (isLocalModOutdated || isInstalledModOutdated) {
@@ -107,11 +109,11 @@ export function GameModRow(props: Props) {
 			return { actionText: "Uninstall", actionIcon: <IconTrash /> };
 		}
 
-		if (props.modLoader.kind === "Installable") {
+		if (modLoader.kind === "Installable") {
 			return { actionText: "Install", actionIcon: <IconCirclePlus /> };
 		}
 
-		if (!props.mod.remote && !props.mod.local) {
+		if (!mod.remote && !mod.local) {
 			return { actionText: "Open mod folder", actionIcon: <IconFolderOpen /> };
 		}
 
@@ -142,25 +144,25 @@ export function GameModRow(props: Props) {
 	})();
 
 	return (
-		<Table.Tr key={props.mod.common.id}>
+		<Table.Tr key={mod.common.id}>
 			<Table.Td ta="left">
-				<ItemName label={`by ${props.mod.remote?.author}`}>
+				<ItemName label={`by ${mod.remote?.author}`}>
 					<ThemeIcon
 						color={statusColor}
 						size="sm"
 					>
 						{statusIcon}
 					</ThemeIcon>
-					{getModTitle(props.mod)}
+					{getModTitle(mod)}
 					<ModVersionBadge
 						localVersion={installedVersion}
-						remoteVersion={props.mod.remote?.latestVersion?.id}
+						remoteVersion={mod.remote?.latestVersion?.id}
 					/>
 				</ItemName>
 				<Stack gap={0}>
-					{props.mod.remote?.deprecated && <DeprecatedBadge mt={5} />}
-					{props.mod.remote?.description && (
-						<MutedText>{props.mod.remote.description}</MutedText>
+					{mod.remote?.deprecated && <DeprecatedBadge mt={5} />}
+					{mod.remote?.description && (
+						<MutedText>{mod.remote.description}</MutedText>
 					)}
 				</Stack>
 			</Table.Td>

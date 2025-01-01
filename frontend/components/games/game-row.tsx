@@ -20,7 +20,7 @@ export const GameRow = React.forwardRef(function GameRow(
 	const isSelected =
 		!!game &&
 		!!selectedGame &&
-		selectedGame.gameId === game.uniqueId &&
+		selectedGame.gameId === game.id.gameId &&
 		selectedGame.providerId == game.providerId;
 
 	return (
@@ -29,13 +29,7 @@ export const GameRow = React.forwardRef(function GameRow(
 			<GameRowInner
 				game={game}
 				ref={ref}
-				onClick={() =>
-					game &&
-					setSelectedGame({
-						gameId: game.uniqueId,
-						providerId: game.providerId,
-					})
-				}
+				onClick={() => game && setSelectedGame(game.id)}
 			/>
 		</>
 	);

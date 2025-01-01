@@ -7,9 +7,9 @@ use std::sync::RwLock;
 use std::{collections::HashMap, path::PathBuf};
 
 use crate::result::{Error, Result};
-use app_state::{AppState, GameId, StateData, StatefulHandle};
+use app_state::{AppState, StateData, StatefulHandle};
 use events::EventEmitter;
-use rai_pal_core::game::Game;
+use rai_pal_core::game::{Game, GameId};
 use rai_pal_core::games_query::GamesQuery;
 use rai_pal_core::installed_game::InstalledGame;
 use rai_pal_core::local_mod::{self, LocalMod};
@@ -151,9 +151,21 @@ async fn start_game_exe(installed_game: InstalledGame) -> Result {
 	Ok(installed_game.start_exe()?)
 }
 
+fn refresh_game_mods(game_id: &GameId, handle: &AppHandle) -> Result {
+	let state = handle.app_state();
+	let mut games = state.games.try_get(&game_id.provider_id)?.write_state()?;
+	let game = games.try_get_mut(&game_id.game_id)?;
+	let installed_game = game.try_get_installed_game_mut()?;
+	installed_game.refresh_installed_mods();
+
+	handle.emit_safe(events::FoundGame());
+
+	Ok(())
+}
+
 #[tauri::command]
 #[specta::specta]
-async fn install_mod(installed_game: InstalledGame, mod_id: &str, handle: AppHandle) -> Result {
+async fn install_mod(game_id: GameId, mod_id: &str, handle: AppHandle) -> Result {
 	let state = handle.app_state();
 
 	let mod_loaders = state.mod_loaders.read_state()?.clone();
@@ -162,6 +174,12 @@ async fn install_mod(installed_game: InstalledGame, mod_id: &str, handle: AppHan
 
 	let mod_loader = mod_loaders.try_get(&local_mod.common.loader_id)?;
 
+	let installed_game = {
+		let games = state.games.try_get(&game_id.provider_id)?.read_state()?;
+		let game = games.try_get(&game_id.game_id)?;
+		game.try_get_installed_game()?.clone()
+	};
+
 	// Uninstall mod if it already exists, in case there are conflicting leftover files when updating.
 	mod_loader
 		.uninstall_mod(&installed_game, &local_mod)
@@ -169,9 +187,10 @@ async fn install_mod(installed_game: InstalledGame, mod_id: &str, handle: AppHan
 
 	mod_loader.install_mod(&installed_game, &local_mod).await?;
 
-	refresh_game_mods_and_exe(&installed_game, &handle)?;
-
+	// TODO figure this out, I want this to happen only at the very end.
 	analytics::send_event(analytics::Event::InstallOrRunMod, mod_id).await;
+
+	refresh_game_mods(&game_id, &handle)?;
 
 	Ok(())
 }
@@ -226,33 +245,13 @@ async fn open_installed_mod_folder(
 	Ok(())
 }
 
-fn refresh_game_mods_and_exe(installed_game: &InstalledGame, handle: &AppHandle) -> Result {
-	// TODO
-
-	// let mut refreshed_game = installed_game.clone();
-	// refreshed_game.refresh_installed_mods();
-	// refreshed_game.refresh_executable()?;
-
-	// if let Some(installed_games_state) = handle
-	// 	.app_state()
-	// 	.installed_games
-	// 	.get(&installed_game.provider)
-	// {
-	// 	let mut installed_games = installed_games_state.get_data()?;
-	// 	installed_games.insert(refreshed_game.id.clone(), refreshed_game.clone());
-	// 	update_installed_games_state(handle, &installed_game.provider, &installed_games);
-	// }
-
-	Ok(())
-}
-
 #[tauri::command]
 #[specta::specta]
-async fn refresh_game(id: GameId, handle: AppHandle) -> Result {
+async fn refresh_game(game_id: GameId, handle: AppHandle) -> Result {
 	let state = handle.app_state();
-	let mut games = state.games.try_get(&id.provider_id)?.write_state()?;
+	let mut games = state.games.try_get(&game_id.provider_id)?.write_state()?;
 
-	let game = games.try_get_mut(&id.game_id)?;
+	let game = games.try_get_mut(&game_id.game_id)?;
 
 	if let Some(installed_game) = game.installed_game.as_mut() {
 		installed_game.refresh_installed_mods();
@@ -266,7 +265,7 @@ async fn refresh_game(id: GameId, handle: AppHandle) -> Result {
 
 #[tauri::command]
 #[specta::specta]
-async fn uninstall_mod(installed_game: InstalledGame, mod_id: &str, handle: AppHandle) -> Result {
+async fn uninstall_mod(game_id: GameId, mod_id: &str, handle: AppHandle) -> Result {
 	let state = handle.app_state();
 
 	let mod_loaders = state.mod_loaders.read_state()?.clone();
@@ -275,22 +274,35 @@ async fn uninstall_mod(installed_game: InstalledGame, mod_id: &str, handle: AppH
 
 	let mod_loader = mod_loaders.try_get(&local_mod.common.loader_id)?;
 
+	let installed_game = {
+		let games = state.games.try_get(&game_id.provider_id)?.read_state()?;
+		let game = games.try_get(&game_id.game_id)?;
+		game.try_get_installed_game()?.clone()
+	};
+
 	// Uninstall mod if it already exists, in case there are conflicting leftover files when updating.
 	mod_loader
 		.uninstall_mod(&installed_game, &local_mod)
 		.await?;
 
-	refresh_game_mods_and_exe(&installed_game, &handle)?;
+	refresh_game_mods(&game_id, &handle)?;
 
 	Ok(())
 }
 
 #[tauri::command]
 #[specta::specta]
-async fn uninstall_all_mods(installed_game: InstalledGame, handle: AppHandle) -> Result {
+async fn uninstall_all_mods(game_id: GameId, handle: AppHandle) -> Result {
+	let state = handle.app_state();
+	let installed_game = {
+		let games = state.games.try_get(&game_id.provider_id)?.read_state()?;
+		let game = games.try_get(&game_id.game_id)?;
+		game.try_get_installed_game()?.clone()
+	};
+
 	installed_game.uninstall_all_mods()?;
 
-	refresh_game_mods_and_exe(&installed_game, &handle)?;
+	refresh_game_mods(&game_id, &handle)?;
 
 	Ok(())
 }
@@ -425,12 +437,14 @@ async fn fetch_remote_games(handle: AppHandle) -> Result {
 		.for_each(|(_provider_id, provider_games)| {
 			match provider_games.write_state() {
 				Ok(mut provider_games_write) => {
-					provider_games_write.iter_mut().for_each(|(game_id, game)| {
+					provider_games_write.iter_mut().for_each(|(_, game)| {
 						// Assign remote game to any existing game.
 						// This is for when the remote games are fetched *after* games are found locally.
 						game.remote_game = remote_games
 							.get(&game.provider_id)
-							.and_then(|provider_remote_games| provider_remote_games.get(game_id))
+							.and_then(|provider_remote_games| {
+								provider_remote_games.get(&game.external_id)
+							})
 							.or_else(|| {
 								remote_games.get(&ProviderId::Manual).and_then(
 									|provider_remote_games| {
@@ -502,11 +516,11 @@ async fn get_provider_games(handle: AppHandle, provider_id: ProviderId) -> Resul
 			.unwrap()
 			.write()
 			.unwrap()
-			.insert(game.unique_id.clone(), game.clone());
+			.insert(game.id.game_id.clone(), game.clone());
 
 		handle.emit_safe(events::FoundGame());
 
-		fresh_games.insert(game.unique_id.clone(), game);
+		fresh_games.insert(game.id.game_id.clone(), game);
 	}).await.unwrap_or_else(|err| {
 		// It's normal for a provider to fail here if that provider is just missing.
 		// So we log those errors here instead of throwing them up.
@@ -549,11 +563,11 @@ async fn add_game(path: PathBuf, handle: AppHandle) -> Result {
 		.unwrap()
 		.write()
 		.unwrap()
-		.insert(game.unique_id.clone(), game.clone());
+		.insert(game.id.game_id.clone(), game.clone());
 
 	handle.emit_safe(events::SelectInstalledGame(
 		ProviderId::Manual,
-		game.unique_id.clone(),
+		game.id.game_id.clone(),
 	));
 
 	analytics::send_event(analytics::Event::ManuallyAddGame, &game_name).await;

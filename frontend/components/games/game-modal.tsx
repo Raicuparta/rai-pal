@@ -170,12 +170,7 @@ export function GameModal({ game }: Props) {
 					{installedGame && (
 						<>
 							<CommandButton
-								onClick={() =>
-									refreshGame({
-										gameId: game.uniqueId,
-										providerId: game.providerId,
-									})
-								}
+								onClick={() => refreshGame(game.id)}
 								leftSection={<IconRefresh />}
 							>
 								Refresh
@@ -262,7 +257,7 @@ export function GameModal({ game }: Props) {
 									{filteredMods.map((mod) => (
 										<GameModRow
 											key={mod.common.id}
-											game={installedGame}
+											game={game}
 											mod={mod}
 											modLoader={modLoaderMap[mod.common.loaderId]}
 										/>
@@ -272,7 +267,7 @@ export function GameModal({ game }: Props) {
 						</TableContainer>
 						<CommandButton
 							confirmationText="You sure? This will delete all files in this game's mods folder. It won't delete any files from the actual game though."
-							onClick={() => uninstallAllMods(installedGame)}
+							onClick={() => uninstallAllMods(game.id)}
 							color="red"
 							variant="light"
 							leftSection={<IconTrash />}

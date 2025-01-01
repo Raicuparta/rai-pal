@@ -138,6 +138,11 @@ pub enum Error {
 
 	#[error("Provider ID {0} is invalid in this platform.")]
 	InvalidProviderId(String),
+
+	#[error(
+		"This operation requires game `{0}` to be installed, but the installed game wasn't found."
+	)]
+	GameNotInstalled(String),
 }
 
 impl serde::Serialize for Error {

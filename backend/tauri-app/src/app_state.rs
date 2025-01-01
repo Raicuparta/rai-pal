@@ -4,7 +4,6 @@ use std::{collections::HashMap, ops::Deref};
 
 use crate::result::Error;
 use crate::result::Result;
-use rai_pal_proc_macros::serializable_struct;
 use tauri::Manager;
 
 use rai_pal_core::{
@@ -18,12 +17,6 @@ pub struct AppState {
 	pub mod_loaders: RwLock<mod_loader::Map>,
 	pub local_mods: RwLock<local_mod::Map>,
 	pub remote_mods: RwLock<remote_mod::Map>,
-}
-
-#[serializable_struct]
-pub struct GameId {
-	pub provider_id: ProviderId,
-	pub game_id: String,
 }
 
 type TauriState<'a> = tauri::State<'a, AppState>;

@@ -13,15 +13,22 @@ use crate::{
 		provider_command::{ProviderCommand, ProviderCommandAction},
 	},
 	remote_game::RemoteGame,
+	result::{Error, Result},
 };
 
 #[serializable_struct]
+pub struct GameId {
+	pub provider_id: ProviderId,
+	pub game_id: String,
+}
+
+#[serializable_struct]
 pub struct Game {
+	// ID used to uniquely identify this game in Rai Pal.
+	pub id: GameId,
+
 	// ID used to find this game in provider APIs and stuff.
 	pub external_id: String,
-
-	// ID used to uniquely identify this game in Rai Pal, among all games of the same provider.
-	pub unique_id: String,
 
 	pub provider_id: ProviderId,
 	pub tags: HashSet<GameTag>,
@@ -35,6 +42,8 @@ pub struct Game {
 }
 
 impl Game {
+	// TODO: this should probably be the other way around? so unique ID is given and external id is optional or something?
+	// Steam makes it annoying but should be doable.
 	pub fn new(external_id: &str, provider_id: ProviderId, title: &str) -> Self {
 		let title = GameTitle::new(title);
 		let mut tags = HashSet::default();
@@ -43,8 +52,11 @@ impl Game {
 		}
 
 		Self {
+			id: GameId {
+				provider_id,
+				game_id: external_id.to_string(),
+			},
 			external_id: external_id.to_string(),
-			unique_id: external_id.to_string(),
 			provider_id,
 			tags,
 			installed_game: None,
@@ -104,5 +116,17 @@ impl Game {
 		}
 
 		None
+	}
+
+	pub fn try_get_installed_game(&self) -> Result<&InstalledGame> {
+		self.installed_game
+			.as_ref()
+			.ok_or_else(|| Error::GameNotInstalled(self.title.display.clone()))
+	}
+
+	pub fn try_get_installed_game_mut(&mut self) -> Result<&mut InstalledGame> {
+		self.installed_game
+			.as_mut()
+			.ok_or_else(|| Error::GameNotInstalled(self.title.display.clone()))
 	}
 }
