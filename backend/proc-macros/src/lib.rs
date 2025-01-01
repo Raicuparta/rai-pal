@@ -43,7 +43,7 @@ pub fn serializable_enum(_args: TokenStream, input: TokenStream) -> TokenStream 
 
 	// Generate the output tokens
 	let output = quote! {
-		#[derive(serde::Serialize, serde::Deserialize, specta::Type, Clone, PartialEq, Eq, Hash, Debug, Copy, rai_pal_proc_macros::EnumVariants)]
+		#[derive(serde::Serialize, serde::Deserialize, specta::Type, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Copy, rai_pal_proc_macros::EnumVariants)]
 		#input
 
 		#display_impl

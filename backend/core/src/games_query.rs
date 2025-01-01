@@ -148,11 +148,11 @@ impl GamesQuery {
 		let ordering = match self.sort_by {
 			GamesSortBy::Title => game_a.title.display.cmp(&game_b.title.display),
 			GamesSortBy::Tags => {
-				// We start with the tag count to make games with more tags show up first.
 				// TODO: reduce repetition in those whole sort function.
 				// TODO: also, should probably sort the tags themselves so this is more stable.
 				let string_a = format!(
 					"{}{}",
+					// We start with the tag count to make games with more tags show up first.
 					game_a.tags.len(),
 					game_a
 						.tags
@@ -173,58 +173,41 @@ impl GamesQuery {
 
 				string_a.cmp(&string_b)
 			}
-			GamesSortBy::Provider => game_a
-				.provider_id
-				.to_string()
-				.cmp(&game_b.provider_id.to_string()),
+			GamesSortBy::Provider => game_a.provider_id.cmp(&game_b.provider_id),
 			GamesSortBy::Architecture => {
-				let string_a = game_a
+				let architecture_a = game_a
 					.installed_game
 					.as_ref()
-					.and_then(|installed_game_a| installed_game_a.executable.architecture)
-					.map(|architecture_a| architecture_a.to_string())
-					.unwrap_or_default();
+					.and_then(|installed_game_a| installed_game_a.executable.architecture);
 
-				let string_b = game_b
+				let architecture_b = game_b
 					.installed_game
 					.as_ref()
-					.and_then(|installed_game_b| installed_game_b.executable.architecture)
-					.map(|architecture_b| architecture_b.to_string())
-					.unwrap_or_default();
+					.and_then(|installed_game_b| installed_game_b.executable.architecture);
 
-				string_a.cmp(&string_b)
+				architecture_a.cmp(&architecture_b)
 			}
 			GamesSortBy::ScriptingBackend => {
-				let string_a = game_a
+				let unity_backend_a = game_a
 					.installed_game
 					.as_ref()
-					.and_then(|installed_game_a| installed_game_a.executable.scripting_backend)
-					.map(|scripting_backend_a| scripting_backend_a.to_string())
-					.unwrap_or_default();
+					.and_then(|installed_game_a| installed_game_a.executable.scripting_backend);
 
-				let string_b = game_b
+				let unity_backend_b = game_b
 					.installed_game
 					.as_ref()
-					.and_then(|installed_game_b| installed_game_b.executable.scripting_backend)
-					.map(|scripting_backend_b| scripting_backend_b.to_string())
-					.unwrap_or_default();
+					.and_then(|installed_game_b| installed_game_b.executable.scripting_backend);
 
-				string_a.cmp(&string_b)
+				unity_backend_a.cmp(&unity_backend_b)
 			}
 			GamesSortBy::Engine => {
 				// TODO: sort by engine version too.
 
-				let string_a = game_a
-					.get_engine()
-					.map(|engine_a| engine_a.brand.to_string())
-					.unwrap_or_default();
+				let engine_a = game_a.get_engine().map(|engine_a| engine_a.brand);
 
-				let string_b = game_b
-					.get_engine()
-					.map(|engine_b| engine_b.brand.to_string())
-					.unwrap_or_default();
+				let engine_b = game_b.get_engine().map(|engine_b| engine_b.brand);
 
-				string_a.cmp(&string_b)
+				engine_a.cmp(&engine_b)
 			}
 			GamesSortBy::Installed => game_a
 				.installed_game

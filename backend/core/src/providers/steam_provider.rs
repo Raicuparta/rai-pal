@@ -200,7 +200,6 @@ impl ProviderActions for Steam {
 							callback(game);
 						} else {
 							for installed_game in installed_games {
-								// TODO: make sure ids are different between multiple installed games.
 								let mut game_with_installed = game.clone();
 								game_with_installed.id = GameId {
 									game_id: format!(
