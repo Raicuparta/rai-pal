@@ -44,7 +44,6 @@ export const GameRowInner = React.forwardRef(function GameRowInner(
 	return (
 		<Table.Tr
 			ref={ref}
-			h={gameRowHeight}
 			onClick={props.onClick}
 		>
 			{gamesColumns.map((column) => (

@@ -21,6 +21,14 @@ div.table {
 	tr {
 		border-bottom: 2px solid var(--mantine-color-dark-7);
 	}
+
+	tbody {
+		tr {
+			height: 76px;
+			max-height: 76px;
+			min-height: 76px;
+		}
+	}
 }
 
 .sortable {
