@@ -1,8 +1,6 @@
 import {
-	ActionIcon,
 	Alert,
 	Button,
-	CloseIcon,
 	Divider,
 	Group,
 	Modal,
@@ -124,15 +122,11 @@ export function GameModal({ game }: Props) {
 		<Modal
 			centered
 			onClose={close}
-			withCloseButton={false}
 			opened
 			size="xl"
-			styles={{
-				title: {
-					width: "100%",
-				},
-			}}
-			title={
+			title={game.title.display}
+		>
+			<Stack>
 				<Group align="start">
 					<TableContainer>
 						<Table>
@@ -144,16 +138,7 @@ export function GameModal({ game }: Props) {
 							</Table.Tbody>
 						</Table>
 					</TableContainer>
-					<ActionIcon
-						onClick={close}
-						variant="default"
-					>
-						<CloseIcon />
-					</ActionIcon>
 				</Group>
-			}
-		>
-			<Stack>
 				<Group>
 					{installedGame && (
 						<>
