@@ -6,7 +6,7 @@ import {
 	useState,
 } from "react";
 import { useAtomValue, useSetAtom } from "jotai";
-import { commands, Result, Error, events, ProviderId } from "@api/bindings";
+import { commands, Result, Error, ProviderId } from "@api/bindings";
 import { loadingCountAtom, gameIdsAtom } from "./use-data";
 import { showAppNotification } from "@components/app-notifications";
 import { useAppEvent } from "./use-app-event";
@@ -66,7 +66,7 @@ export function useUpdateData(executeOnMount = false) {
 		updateProviderGames();
 	}, [updateProviderGames]);
 
-	useAppEvent(events.foundGame, throttledUpdateProviderGames);
+	useAppEvent("foundGame", throttledUpdateProviderGames);
 
 	const updateAppData = useCallback(() => {
 		function handleDataPromise(promise: Promise<Result<null, Error>>) {

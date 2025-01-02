@@ -1,4 +1,3 @@
-import { events } from "@api/bindings";
 import { useAppEvent } from "@hooks/use-app-event";
 import { DefaultMantineColor } from "@mantine/core";
 import { Notifications, notifications } from "@mantine/notifications";
@@ -37,11 +36,11 @@ export function showAppNotification(message: string, type: NotificationType) {
 }
 
 export function AppNotifications() {
-	useAppEvent(events.errorRaised, (error) => {
+	useAppEvent("errorRaised", (error) => {
 		showAppNotification(error, "error");
 	});
 
-	useAppEvent(events.executedProviderCommand, () => {
+	useAppEvent("executedProviderCommand", () => {
 		showAppNotification(
 			"Running command... This might take a few seconds.",
 			"info",

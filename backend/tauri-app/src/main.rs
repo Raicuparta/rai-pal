@@ -328,6 +328,7 @@ fn refresh_local_mods(mod_loaders: &mod_loader::Map, handle: &AppHandle) -> Resu
 		.flatten()
 		.collect();
 
+	log::info!("Found {} local mods.", { local_mods.len() });
 	handle.emit_safe(events::SyncLocalMods(local_mods.clone()));
 
 	handle

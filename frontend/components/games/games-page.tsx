@@ -4,7 +4,7 @@ import { FilterMenu } from "@components/filters/filter-menu";
 import { RefreshButton } from "@components/refresh-button";
 import { AddGame } from "./add-game-button";
 import { useAppEvent } from "@hooks/use-app-event";
-import { events, GamesSortBy } from "@api/bindings";
+import { GamesSortBy } from "@api/bindings";
 import { useAtomValue, useSetAtom } from "jotai";
 import { gameIdsAtom } from "@hooks/use-data";
 import { selectedGameAtom } from "./games-state";
@@ -21,7 +21,7 @@ export function GamesPage() {
 	const setSelectedGame = useSetAtom(selectedGameAtom);
 	const [dataQuery, setDataQuery] = useDataQuery();
 
-	useAppEvent(events.selectInstalledGame, ([providerId, gameId]) => {
+	useAppEvent("selectInstalledGame", ([providerId, gameId]) => {
 		setSelectedGame({
 			providerId,
 			gameId,
@@ -66,8 +66,8 @@ export function GamesPage() {
 					data={gameIds}
 					// 2px for the bottom border in table.module.css
 					fixedItemHeight={gameRowHeight + 2}
-					overscan={50}
-					increaseViewportBy={100}
+					// overscan={500}
+					// increaseViewportBy={100}
 				/>
 			</TableContainer>
 		</Stack>

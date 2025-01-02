@@ -1,5 +1,5 @@
 import { atom } from "jotai";
-import { commands, events, GameId } from "@api/bindings";
+import { commands, GameId } from "@api/bindings";
 import { dataSubscription } from "./use-data-subscription";
 import { useUpdateData } from "./use-update-data";
 import { useGameDropEvent } from "./use-game-drop-event";
@@ -8,17 +8,17 @@ import { commandData } from "./use-command-data";
 export const gameIdsAtom = atom<GameId[]>([]);
 
 export const [modLoadersAtom, useModLoadersSubscription] = dataSubscription(
-	events.syncModLoaders,
+	"syncModLoaders",
 	{},
 );
 
 export const [localModsAtom, useLocalModsSubscription] = dataSubscription(
-	events.syncLocalMods,
+	"syncLocalMods",
 	{},
 );
 
 export const [remoteModsAtom, useRemoteModsSubscription] = dataSubscription(
-	events.syncRemoteMods,
+	"syncRemoteMods",
 	{},
 );
 

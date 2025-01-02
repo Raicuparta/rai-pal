@@ -1,6 +1,7 @@
 import { commands, Game, ProviderId } from "@api/bindings";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAsyncCommand } from "./use-async-command";
+import { useAppEvent } from "./use-app-event";
 
 export function useGame(providerId: ProviderId, gameId: string) {
 	const [getGame] = useAsyncCommand(commands.getGame);
@@ -37,9 +38,7 @@ export function useGame(providerId: ProviderId, gameId: string) {
 		updateData();
 	}, [updateData]);
 
-	// TODO: this makes the app super slow due to subscribing to events too often.
-	// We need to make a single top level frontend event that handles all this.
-	// useAppEvent(events.foundGame, updateData);
+	useAppEvent("foundGame", updateData);
 
 	return game;
 }
