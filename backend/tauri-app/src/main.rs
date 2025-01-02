@@ -61,14 +61,21 @@ async fn get_remote_mods(handle: AppHandle) -> Result<remote_mod::Map> {
 
 #[tauri::command]
 #[specta::specta]
-async fn open_game_folder(installed_game: InstalledGame) -> Result {
-	// TODO: this doesn't work for Xbox games apparently?
+async fn open_game_folder(handle: AppHandle, game_id: GameId) -> Result {
+	let state = handle.app_state();
+	let games = state.games.try_get(&game_id.provider_id)?.read_state()?;
+	let installed_game = games.try_get(&game_id.game_id)?.try_get_installed_game()?;
+
 	Ok(installed_game.open_game_folder()?)
 }
 
 #[tauri::command]
 #[specta::specta]
-async fn open_game_mods_folder(installed_game: InstalledGame) -> Result {
+async fn open_game_mods_folder(handle: AppHandle, game_id: GameId) -> Result {
+	let state = handle.app_state();
+	let games = state.games.try_get(&game_id.provider_id)?.read_state()?;
+	let installed_game = games.try_get(&game_id.game_id)?.try_get_installed_game()?;
+
 	Ok(installed_game.open_mods_folder()?)
 }
 

@@ -125,17 +125,17 @@ async installMod(gameId: GameId, modId: string) : Promise<Result<null, Error>> {
     else return { status: "error", error: e  as any };
 }
 },
-async openGameFolder(installedGame: InstalledGame) : Promise<Result<null, Error>> {
+async openGameFolder(gameId: GameId) : Promise<Result<null, Error>> {
     try {
-    return { status: "ok", data: await TAURI_INVOKE("open_game_folder", { installedGame }) };
+    return { status: "ok", data: await TAURI_INVOKE("open_game_folder", { gameId }) };
 } catch (e) {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
 }
 },
-async openGameModsFolder(installedGame: InstalledGame) : Promise<Result<null, Error>> {
+async openGameModsFolder(gameId: GameId) : Promise<Result<null, Error>> {
     try {
-    return { status: "ok", data: await TAURI_INVOKE("open_game_mods_folder", { installedGame }) };
+    return { status: "ok", data: await TAURI_INVOKE("open_game_mods_folder", { gameId }) };
 } catch (e) {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };

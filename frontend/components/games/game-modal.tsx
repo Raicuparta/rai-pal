@@ -44,16 +44,6 @@ type Props = {
 	readonly game: Game;
 };
 
-const {
-	openGameFolder,
-	openGameModsFolder,
-	refreshGame,
-	removeGame,
-	startGame,
-	startGameExe,
-	uninstallAllMods,
-} = commands;
-
 function isVersionWithinRange(
 	version: EngineVersion | null | undefined,
 	range: EngineVersionRange | null,
@@ -170,7 +160,7 @@ export function GameModal({ game }: Props) {
 					{installedGame && (
 						<>
 							<CommandButton
-								onClick={() => refreshGame(game.id)}
+								onClick={() => commands.refreshGame(game.id)}
 								leftSection={<IconRefresh />}
 							>
 								Refresh
@@ -178,7 +168,7 @@ export function GameModal({ game }: Props) {
 							<Button.Group>
 								<CommandButton
 									leftSection={<IconPlayerPlay />}
-									onClick={() => startGame(installedGame)}
+									onClick={() => commands.startGame(installedGame)}
 								>
 									Start Game
 								</CommandButton>
@@ -186,7 +176,7 @@ export function GameModal({ game }: Props) {
 									<CommandDropdown>
 										<CommandButton
 											leftSection={<IconAppWindow />}
-											onClick={() => startGameExe(installedGame)}
+											onClick={() => commands.startGameExe(installedGame)}
 										>
 											Start Game Executable
 										</CommandButton>
@@ -194,7 +184,7 @@ export function GameModal({ game }: Props) {
 											leftSection={
 												<ProviderIcon providerId={game.id.providerId} />
 											}
-											onClick={() => startGame(installedGame)}
+											onClick={() => commands.startGame(installedGame)}
 										>
 											Start Game via {game.id.providerId}
 										</CommandButton>
@@ -207,13 +197,13 @@ export function GameModal({ game }: Props) {
 							>
 								<CommandButton
 									leftSection={<IconFolder />}
-									onClick={() => openGameFolder(installedGame)}
+									onClick={() => commands.openGameFolder(game.id)}
 								>
 									Open Game Files Folder
 								</CommandButton>
 								<CommandButton
 									leftSection={<IconFolderCog />}
-									onClick={() => openGameModsFolder(installedGame)}
+									onClick={() => commands.openGameModsFolder(game.id)}
 								>
 									Open Installed Mods Folder
 								</CommandButton>
@@ -226,7 +216,7 @@ export function GameModal({ game }: Props) {
 					/>
 					{game.id.providerId === "Manual" && installedGame && (
 						<CommandButton
-							onClick={() => removeGame(installedGame.executable.path)}
+							onClick={() => commands.removeGame(installedGame.executable.path)}
 							confirmationText="Are you sure you want to remove this game from Rai Pal?"
 							onSuccess={close}
 							leftSection={<IconTrash />}
@@ -267,7 +257,7 @@ export function GameModal({ game }: Props) {
 						</TableContainer>
 						<CommandButton
 							confirmationText="You sure? This will delete all files in this game's mods folder. It won't delete any files from the actual game though."
-							onClick={() => uninstallAllMods(game.id)}
+							onClick={() => commands.uninstallAllMods(game.id)}
 							color="red"
 							variant="light"
 							leftSection={<IconTrash />}
