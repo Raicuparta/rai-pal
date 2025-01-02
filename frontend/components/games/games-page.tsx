@@ -68,6 +68,10 @@ export function GamesPage() {
 					fixedItemHeight={gameRowHeight + 2}
 					overscan={50}
 					increaseViewportBy={100}
+					scrollSeekConfiguration={{
+						enter: (velocity) => Math.abs(velocity) > 500,
+						exit: (velocity) => Math.abs(velocity) < 400,
+					}}
 				/>
 			</TableContainer>
 		</Stack>

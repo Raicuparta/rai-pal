@@ -1,6 +1,25 @@
+import { Game } from "@api/bindings";
+import { GameRowInner } from "@components/games/game-row";
 import { Table } from "@mantine/core";
 import React, { useMemo } from "react";
 import { TableComponents } from "react-virtuoso";
+
+const defaultGame: Game = {
+	id: "",
+	providerId: "Manual",
+	installedGame: null,
+	ownedGame: null,
+	remoteGame: null,
+	fromSubscriptions: [],
+	providerCommands: {},
+	releaseDate: null,
+	tags: [],
+	thumbnailUrl: null,
+	title: {
+		display: "...",
+		normalized: ["..."],
+	},
+} as unknown as Game;
 
 export function useVirtuosoTableComponents<TItem>(
 	rowComponent: TableComponents<TItem, unknown>["TableRow"],
@@ -30,6 +49,7 @@ export function useVirtuosoTableComponents<TItem>(
 				);
 			}),
 			TableRow: rowComponent,
+			ScrollSeekPlaceholder: () => <GameRowInner game={defaultGame} />,
 		}),
 		[rowComponent],
 	);
