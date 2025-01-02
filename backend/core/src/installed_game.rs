@@ -98,13 +98,11 @@ impl InstalledGame {
 	}
 
 	pub fn open_game_folder(&self) -> Result {
-		Ok(open::that_detached(paths::path_parent(
-			&self.executable.path,
-		)?)?)
+		paths::open_folder_or_parent(&self.executable.path)
 	}
 
 	pub fn open_mods_folder(&self) -> Result {
-		Ok(open::that_detached(self.get_installed_mods_folder()?)?)
+		paths::open_folder_or_parent(&self.get_installed_mods_folder()?)
 	}
 
 	pub fn uninstall_all_mods(&self) -> Result {
