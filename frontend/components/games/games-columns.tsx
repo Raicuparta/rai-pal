@@ -27,7 +27,6 @@ const ThumbnailComponent = ({ item }: CellProps) => (
 		bg="dark"
 		p={0}
 		pos="relative"
-		h={gameRowHeight}
 		style={{
 			overflow: "hidden",
 			borderRight: "2px solid var(--mantine-color-dark-7)",
@@ -127,12 +126,10 @@ const NameCell = ({ item }: CellProps) => (
 		>
 			<Flex
 				gap={3}
-				align="center"
-				h={gameRowHeight}
 				p="xs"
 				style={{
+					maxHeight: gameRowHeight,
 					overflow: "hidden",
-					textOverflow: "ellipsis",
 				}}
 			>
 				<ItemName label={item.installedGame?.discriminator}>
@@ -175,10 +172,7 @@ const engine: GamesColumn = {
 		const architecture = item.installedGame?.executable.architecture;
 
 		return (
-			<Table.Td
-				h={gameRowHeight}
-				fz="xs"
-			>
+			<Table.Td fz="xs">
 				<Paper
 					component={Stack}
 					gap={0}

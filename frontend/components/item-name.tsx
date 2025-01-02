@@ -8,7 +8,10 @@ type Props = {
 
 export function ItemName(props: Props) {
 	return (
-		<Flex className={styles.gameName}>
+		<Flex
+			gap={3}
+			className={styles.gameName}
+		>
 			{props.children}
 			{props.label && <Code opacity={0.5}>{props.label}</Code>}
 		</Flex>
