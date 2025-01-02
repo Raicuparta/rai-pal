@@ -535,6 +535,7 @@ async fn get_provider_games(handle: AppHandle, provider_id: ProviderId) -> Resul
 			.insert(game.id.game_id.clone(), game.clone());
 
 		handle.emit_safe(events::FoundGame(game.id.clone()));
+		handle.emit_safe(events::GamesChanged());
 
 		fresh_games.insert(game.id.game_id.clone(), game);
 	}).await.unwrap_or_else(|err| {
