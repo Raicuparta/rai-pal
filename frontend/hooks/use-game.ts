@@ -43,7 +43,11 @@ export function useGame(gameId: GameId) {
 		"foundGame",
 		useCallback(
 			(foundGameId) => {
-				if (foundGameId !== gameId) return;
+				if (
+					foundGameId.providerId !== gameId.providerId ||
+					foundGameId.gameId !== gameId.gameId
+				)
+					return;
 				updateData();
 			},
 			[gameId, updateData],
