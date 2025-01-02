@@ -1,0 +1,11 @@
+.table {
+	tbody {
+		tr,
+		td {
+			/* Needs to be consistent with height set in game-row.tsx ugh. TODO: fix that. */
+			height: 76px;
+			max-height: 76px;
+			min-height: 76px;
+		}
+	}
+}
