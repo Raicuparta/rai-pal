@@ -270,6 +270,7 @@ export const events = __makeEvents__<{
 errorRaised: ErrorRaised,
 executedProviderCommand: ExecutedProviderCommand,
 foundGame: FoundGame,
+gamesChanged: GamesChanged,
 selectInstalledGame: SelectInstalledGame,
 syncLocalMods: SyncLocalMods,
 syncModLoaders: SyncModLoaders,
@@ -278,6 +279,7 @@ syncRemoteMods: SyncRemoteMods
 errorRaised: "error-raised",
 executedProviderCommand: "executed-provider-command",
 foundGame: "found-game",
+gamesChanged: "games-changed",
 selectInstalledGame: "select-installed-game",
 syncLocalMods: "sync-local-mods",
 syncModLoaders: "sync-mod-loaders",
@@ -299,14 +301,15 @@ export type EngineVersionRange = { minimum: EngineVersionNumbers | null; maximum
 export type Error = "Tauri" | "Core" | "SerdeJson" | { FailedToGetResourcesPath: string } | { FailedToAccessStateData: string }
 export type ErrorRaised = string
 export type ExecutedProviderCommand = null
-export type FoundGame = []
-export type Game = { id: GameId; externalId: string; providerId: ProviderId; tags: GameTag[]; installedGame: InstalledGame | null; remoteGame: RemoteGame | null; title: GameTitle; thumbnailUrl: string | null; releaseDate: bigint | null; providerCommands: { [key in ProviderCommandAction]: ProviderCommand }; fromSubscriptions: GameSubscription[] }
+export type FoundGame = GameId
+export type Game = { id: GameId; externalId: string; tags: GameTag[]; installedGame: InstalledGame | null; remoteGame: RemoteGame | null; title: GameTitle; thumbnailUrl: string | null; releaseDate: bigint | null; providerCommands: { [key in ProviderCommandAction]: ProviderCommand }; fromSubscriptions: GameSubscription[] }
 export type GameEngine = { brand: EngineBrand; version: EngineVersion | null }
 export type GameExecutable = { path: string; name: string; engine: GameEngine | null; architecture: Architecture | null; scriptingBackend: UnityScriptingBackend | null }
 export type GameId = { providerId: ProviderId; gameId: string }
 export type GameSubscription = "UbisoftClassics" | "UbisoftPremium" | "XboxGamePass" | "EaPlay"
 export type GameTag = "VR" | "Demo"
 export type GameTitle = { display: string; normalized: string[] }
+export type GamesChanged = []
 export type GamesFilter = { providers: (ProviderId | null)[]; tags: (GameTag | null)[]; architectures: (Architecture | null)[]; unityScriptingBackends: (UnityScriptingBackend | null)[]; engines: (EngineBrand | null)[]; installed: (InstallState | null)[] }
 export type GamesQuery = { filter: GamesFilter; search: string; sortBy: GamesSortBy; sortDescending: boolean }
 export type GamesSortBy = "Title" | "Tags" | "Provider" | "Architecture" | "ScriptingBackend" | "Engine" | "Installed"

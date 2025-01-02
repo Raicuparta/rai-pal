@@ -30,7 +30,6 @@ pub struct Game {
 	// ID used to find this game in provider APIs and stuff.
 	pub external_id: String,
 
-	pub provider_id: ProviderId,
 	pub tags: HashSet<GameTag>,
 	pub installed_game: Option<InstalledGame>,
 	pub remote_game: Option<RemoteGame>,
@@ -57,7 +56,6 @@ impl Game {
 				game_id: external_id.to_string(),
 			},
 			external_id: external_id.to_string(),
-			provider_id,
 			tags,
 			installed_game: None,
 			remote_game: None,

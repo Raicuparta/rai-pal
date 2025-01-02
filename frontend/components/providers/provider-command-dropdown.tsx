@@ -22,8 +22,8 @@ export function ProviderCommandButtons(props: Props) {
 
 	return (
 		<CommandDropdown
-			label={props.game.providerId}
-			icon={<ProviderIcon providerId={props.game.providerId} />}
+			label={props.game.id.providerId}
+			icon={<ProviderIcon providerId={props.game.id.providerId} />}
 		>
 			{providerCommandActions.map((providerCommandAction) => (
 				<ProviderCommandButton

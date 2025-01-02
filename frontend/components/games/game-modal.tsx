@@ -192,11 +192,11 @@ export function GameModal({ game }: Props) {
 										</CommandButton>
 										<CommandButton
 											leftSection={
-												<ProviderIcon providerId={game.providerId} />
+												<ProviderIcon providerId={game.id.providerId} />
 											}
 											onClick={() => startGame(installedGame)}
 										>
-											Start Game via {game.providerId}
+											Start Game via {game.id.providerId}
 										</CommandButton>
 									</CommandDropdown>
 								)}
@@ -224,7 +224,7 @@ export function GameModal({ game }: Props) {
 						game={game}
 						isInstalled={true}
 					/>
-					{game.providerId === "Manual" && installedGame && (
+					{game.id.providerId === "Manual" && installedGame && (
 						<CommandButton
 							onClick={() => removeGame(installedGame.executable.path)}
 							confirmationText="Are you sure you want to remove this game from Rai Pal?"

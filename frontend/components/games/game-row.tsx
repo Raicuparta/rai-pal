@@ -15,14 +15,14 @@ export const GameRow = React.forwardRef(function GameRow(
 	props: ItemProps<GameId>,
 	ref: React.ForwardedRef<HTMLTableRowElement>,
 ) {
-	const game = useGame(props.item.providerId, props.item.gameId);
+	const game = useGame(props.item);
 	const [selectedGame, setSelectedGame] = useAtom(selectedGameAtom);
 
 	const isSelected =
 		!!game &&
 		!!selectedGame &&
 		selectedGame.gameId === game.id.gameId &&
-		selectedGame.providerId == game.providerId;
+		selectedGame.providerId == game.id.providerId;
 
 	return (
 		<>

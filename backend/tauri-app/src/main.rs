@@ -159,7 +159,7 @@ fn refresh_game_mods(game_id: &GameId, handle: &AppHandle) -> Result {
 	let installed_game = game.try_get_installed_game_mut()?;
 	installed_game.refresh_installed_mods();
 
-	handle.emit_safe(events::FoundGame());
+	handle.emit_safe(events::FoundGame(game_id.clone()));
 
 	Ok(())
 }
@@ -266,7 +266,7 @@ async fn refresh_game(game_id: GameId, handle: AppHandle) -> Result {
 		installed_game.refresh_executable()?;
 	}
 
-	handle.emit_safe(events::FoundGame());
+	handle.emit_safe(events::FoundGame(game_id));
 
 	Ok(())
 }
@@ -450,7 +450,7 @@ async fn fetch_remote_games(handle: AppHandle) -> Result {
 						// Assign remote game to any existing game.
 						// This is for when the remote games are fetched *after* games are found locally.
 						game.remote_game = remote_games
-							.get(&game.provider_id)
+							.get(&game.id.provider_id)
 							.and_then(|provider_remote_games| {
 								provider_remote_games.get(&game.external_id)
 							})
@@ -472,7 +472,7 @@ async fn fetch_remote_games(handle: AppHandle) -> Result {
 			}
 		});
 
-	handle.emit_safe(events::FoundGame());
+	handle.emit_safe(events::GamesChanged());
 
 	state.remote_games.write_state_value(remote_games)?;
 
@@ -505,7 +505,7 @@ async fn get_provider_games(handle: AppHandle, provider_id: ProviderId) -> Resul
 		// Assign the remote game here as we find the new game.
 		// This is for when the remote games are fetched *before* games are found locally.
 		game.remote_game = remote_games
-			.get(&game.provider_id)
+			.get(&game.id.provider_id)
 			.and_then(|provider_remote_games| provider_remote_games.get(&game.external_id))
 			.or_else(|| {
 				remote_games
@@ -527,7 +527,7 @@ async fn get_provider_games(handle: AppHandle, provider_id: ProviderId) -> Resul
 			.unwrap()
 			.insert(game.id.game_id.clone(), game.clone());
 
-		handle.emit_safe(events::FoundGame());
+		handle.emit_safe(events::FoundGame(game.id.clone()));
 
 		fresh_games.insert(game.id.game_id.clone(), game);
 	}).await.unwrap_or_else(|err| {
@@ -636,13 +636,11 @@ async fn get_data(handle: AppHandle, data_query: Option<GamesQuery>) -> Result<V
 	let games_iter = state
 		.games
 		.values()
-		.flat_map(|provider_games| provider_games.read().unwrap().clone());
+		.flat_map(|provider_games| provider_games.read().unwrap().clone().into_values());
 
 	let games: Vec<_> = if let Some(query) = data_query.as_ref() {
-		let mut games: Vec<_> = games_iter
-			.filter(|(_id, game)| query.matches(game))
-			.collect();
-		games.sort_by(|(_id_a, game_a), (_id_b, game_b)| query.sort(game_a, game_b));
+		let mut games: Vec<_> = games_iter.filter(|game| query.matches(game)).collect();
+		games.sort_by(|game_a, game_b| query.sort(game_a, game_b));
 
 		games
 	} else {
@@ -650,13 +648,7 @@ async fn get_data(handle: AppHandle, data_query: Option<GamesQuery>) -> Result<V
 		games
 	};
 
-	Ok(games
-		.into_iter()
-		.map(|(id, game)| GameId {
-			provider_id: game.provider_id,
-			game_id: id.clone(),
-		})
-		.collect())
+	Ok(games.into_iter().map(|game| game.id).collect())
 }
 
 #[tauri::command]

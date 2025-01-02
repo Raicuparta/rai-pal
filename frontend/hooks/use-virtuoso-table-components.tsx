@@ -5,13 +5,15 @@ import React, { useMemo } from "react";
 import { TableComponents } from "react-virtuoso";
 
 const defaultGame: Game = {
-	id: "",
-	providerId: "Manual",
+	id: {
+		gameId: "",
+		providerId: "Manual",
+	},
+	externalId: "",
 	installedGame: null,
-	ownedGame: null,
 	remoteGame: null,
 	fromSubscriptions: [],
-	providerCommands: {},
+	providerCommands: {} as Game["providerCommands"],
 	releaseDate: null,
 	tags: [],
 	thumbnailUrl: null,
@@ -19,7 +21,7 @@ const defaultGame: Game = {
 		display: "...",
 		normalized: ["..."],
 	},
-} as unknown as Game;
+};
 
 export function useVirtuosoTableComponents<TItem>(
 	rowComponent: TableComponents<TItem, unknown>["TableRow"],

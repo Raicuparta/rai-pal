@@ -73,7 +73,7 @@ impl GamesQuery {
 	pub fn matches(&self, game: &Game) -> bool {
 		let filter = &self.filter;
 
-		if !filter.providers.contains(&Some(game.provider_id)) {
+		if !filter.providers.contains(&Some(game.id.provider_id)) {
 			return false;
 		}
 
@@ -173,7 +173,7 @@ impl GamesQuery {
 
 				string_a.cmp(&string_b)
 			}
-			GamesSortBy::Provider => game_a.provider_id.cmp(&game_b.provider_id),
+			GamesSortBy::Provider => game_a.id.provider_id.cmp(&game_b.id.provider_id),
 			GamesSortBy::Architecture => {
 				let architecture_a = game_a
 					.installed_game

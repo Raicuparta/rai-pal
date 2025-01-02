@@ -79,7 +79,7 @@ const providerColors: Record<ProviderId, DefaultMantineColor> = {
 const StatusCell = ({ item }: CellProps) => (
 	<Table.Td
 		p={0}
-		bg={`var(--mantine-color-${providerColors[item.providerId]}-light)`}
+		bg={`var(--mantine-color-${providerColors[item.id.providerId]}-light)`}
 		opacity={item.installedGame ? 1 : 0.5}
 		style={{
 			borderRight: "2px solid var(--mantine-color-dark-7)",
@@ -88,8 +88,8 @@ const StatusCell = ({ item }: CellProps) => (
 		<Tooltip
 			label={
 				item.installedGame
-					? `Installed on ${item.providerId}`
-					: `Owned on ${item.providerId}, not installed`
+					? `Installed on ${item.id.providerId}`
+					: `Owned on ${item.id.providerId}, not installed`
 			}
 		>
 			<Stack
@@ -97,8 +97,8 @@ const StatusCell = ({ item }: CellProps) => (
 				align="center"
 			>
 				<ProviderIcon
-					providerId={item.providerId}
-					color={`var(--mantine-color-${providerColors[item.providerId]}-light-color)`}
+					providerId={item.id.providerId}
+					color={`var(--mantine-color-${providerColors[item.id.providerId]}-light-color)`}
 				/>
 				{item.installedGame ? <IconDeviceDesktop /> : <IconCloud />}
 			</Stack>
