@@ -78,7 +78,7 @@ const providerColors: Record<ProviderId, DefaultMantineColor> = {
 
 const StatusCell = ({ item }: CellProps) => (
 	<Table.Td
-		p={0}
+		p="xs"
 		bg={`var(--mantine-color-${providerColors[item.id.providerId]}-light)`}
 		opacity={item.installedGame ? 1 : 0.5}
 		style={{

@@ -66,8 +66,7 @@ export function GamesPage() {
 					fixedHeaderContent={renderHeaders}
 					totalCount={gameIds.length}
 					data={gameIds}
-					// 2px for the bottom border in table.module.css
-					fixedItemHeight={gameRowHeight + 2}
+					fixedItemHeight={gameRowHeight}
 					overscan={50}
 					increaseViewportBy={100}
 				/>
