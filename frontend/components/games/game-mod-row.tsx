@@ -157,43 +157,45 @@ export function GameModRow({ game, mod, modLoader }: Props) {
 			</Table.Td>
 			<Table.Td maw={200}>
 				<Group justify="right">
-					<ButtonGroup>
-						<CommandButton
-							color={buttonColor}
-							size="xs"
-							leftSection={actionIcon}
-							variant={isInstalled ? "light" : "default"}
-							confirmationText={
-								isInstalled
-									? undefined
-									: "Attention: be careful when installing mods on multiplayer games! Anticheat can detect some mods and get you banned, even if the mods seem harmless."
-							}
-							confirmationSkipId={
-								isInstalled ? undefined : "install-mod-confirm"
-							}
-							onClick={handleInstallClick}
-						>
-							<Box style={{ textOverflow: "ellipsis", overflow: "hidden" }}>
-								{actionText}
-							</Box>
-						</CommandButton>
-						<CommandDropdown icon={<IconDotsVertical />}>
-							<Button
-								disabled={!isInstalled && !isReadyRunnable}
-								onClick={handleConfigureClick}
-								leftSection={<IconSettings />}
+					{game.installedGame && (
+						<ButtonGroup>
+							<CommandButton
+								color={buttonColor}
+								size="xs"
+								leftSection={actionIcon}
+								variant={isInstalled ? "light" : "default"}
+								confirmationText={
+									isInstalled
+										? undefined
+										: "Attention: be careful when installing mods on multiplayer games! Anticheat can detect some mods and get you banned, even if the mods seem harmless."
+								}
+								confirmationSkipId={
+									isInstalled ? undefined : "install-mod-confirm"
+								}
+								onClick={handleInstallClick}
 							>
-								Mod Settings
-							</Button>
-							<Button
-								disabled={!isInstalled && !isReadyRunnable}
-								onClick={handleOpenModFolderClick}
-								leftSection={<IconFolderOpen />}
-							>
-								Open Mod Folder
-							</Button>
-						</CommandDropdown>
-					</ButtonGroup>
+								<Box style={{ textOverflow: "ellipsis", overflow: "hidden" }}>
+									{actionText}
+								</Box>
+							</CommandButton>
+							<CommandDropdown icon={<IconDotsVertical />}>
+								<Button
+									disabled={!isInstalled && !isReadyRunnable}
+									onClick={handleConfigureClick}
+									leftSection={<IconSettings />}
+								>
+									Mod Settings
+								</Button>
+								<Button
+									disabled={!isInstalled && !isReadyRunnable}
+									onClick={handleOpenModFolderClick}
+									leftSection={<IconFolderOpen />}
+								>
+									Open Mod Folder
+								</Button>
+							</CommandDropdown>
+						</ButtonGroup>
+					)}
 				</Group>
 			</Table.Td>
 		</Table.Tr>

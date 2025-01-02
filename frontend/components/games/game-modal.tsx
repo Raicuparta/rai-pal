@@ -102,25 +102,23 @@ export function GameModal({ game }: Props) {
 	const close = () => setSelectedGame(null);
 
 	const filteredMods = useMemo(() => {
-		return installedGame
-			? Object.values(mods).filter(
-					(mod) =>
-						(!mod.common.engine ||
-							mod.common.engine === installedGame.executable.engine?.brand) &&
-						(!mod.common.unityBackend ||
-							mod.common.unityBackend ===
-								installedGame.executable.scriptingBackend) &&
-						isVersionWithinRange(
-							installedGame.executable.engine?.version,
-							mod.common.engineVersionRange,
-						) &&
-						!(
-							mod.remote?.deprecated &&
-							!installedGame.installedModVersions[mod.common.id]
-						),
-				)
-			: [];
-	}, [mods, installedGame]);
+		const engine =
+			installedGame?.executable.engine ?? game.remoteGame?.engines?.[0]; // TODO include all remote engines?
+
+		return Object.values(mods).filter(
+			(mod) =>
+				(!mod.common.engine || mod.common.engine === engine?.brand) &&
+				(!mod.common.unityBackend ||
+					!installedGame?.executable.scriptingBackend ||
+					mod.common.unityBackend ===
+						installedGame.executable.scriptingBackend) &&
+				isVersionWithinRange(engine?.version, mod.common.engineVersionRange) &&
+				!(
+					mod.remote?.deprecated &&
+					!installedGame?.installedModVersions[mod.common.id]
+				),
+		);
+	}, [installedGame, game.remoteGame?.engines, mods]);
 
 	return (
 		<Modal
@@ -227,20 +225,32 @@ export function GameModal({ game }: Props) {
 				</Group>
 				{installedGame && (
 					<>
-						{!installedGame.executable.architecture && (
-							<Alert color="red">
-								Failed to read some important information about this game. This
-								could be due to the executable being protected. Some mods might
-								fail to install.
-							</Alert>
-						)}
+						{installedGame.executable.engine &&
+							!installedGame?.executable.architecture && (
+								<Alert color="red">
+									Failed to read some important information about this game.
+									This could be due to the executable being protected. Some mods
+									might fail to install.
+								</Alert>
+							)}
 						{!installedGame.executable.engine && (
 							<Alert color="red">
 								Failed to determine the engine for this game. Some mods might
 								fail to install.
 							</Alert>
 						)}
+					</>
+				)}
+				{filteredMods.length > 0 && (
+					<>
 						<Divider label="Mods" />
+						{!installedGame && (
+							<Alert color="orange">
+								This game isn&apos;t installed, so I&apos;m not 100% sure which
+								mods are compatible. The ones you see below might work. If you
+								install the game, I&apos;ll show you more accurate information.
+							</Alert>
+						)}
 						<TableContainer bg="dark">
 							<Table>
 								<Table.Tbody>
@@ -255,15 +265,17 @@ export function GameModal({ game }: Props) {
 								</Table.Tbody>
 							</Table>
 						</TableContainer>
-						<CommandButton
-							confirmationText="You sure? This will delete all files in this game's mods folder. It won't delete any files from the actual game though."
-							onClick={() => commands.uninstallAllMods(game.id)}
-							color="red"
-							variant="light"
-							leftSection={<IconTrash />}
-						>
-							Uninstall all mods
-						</CommandButton>
+						{installedGame && (
+							<CommandButton
+								confirmationText="You sure? This will delete all files in this game's mods folder. It won't delete any files from the actual game though."
+								onClick={() => commands.uninstallAllMods(game.id)}
+								color="red"
+								variant="light"
+								leftSection={<IconTrash />}
+							>
+								Uninstall all mods
+							</CommandButton>
+						)}
 					</>
 				)}
 				<DebugData data={game} />
