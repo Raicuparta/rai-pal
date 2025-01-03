@@ -1,5 +1,4 @@
-use core::num;
-use std::{env, path::PathBuf, result};
+use std::{env, num, path::PathBuf, result};
 
 use lazy_regex::regex;
 

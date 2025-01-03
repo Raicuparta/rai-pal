@@ -34,8 +34,8 @@ pub fn serializable_enum(_args: TokenStream, input: TokenStream) -> TokenStream 
 
 	// Generate the impl Display block
 	let display_impl = quote! {
-		impl core::fmt::Display for #enum_name {
-			fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
+		impl std::fmt::Display for #enum_name {
+			fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
 				write!(f, "{:?}", self)
 			}
 		}
