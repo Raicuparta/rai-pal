@@ -17,7 +17,8 @@ const compat = new FlatCompat({
 
 export default [{
     files: ["**/*.ts", "**/*.tsx"],
-    ignores: ["frontend/api/**/*", "**/backend/"],
+}, {
+    ignores: ["frontend/api/**/*", "backend/**/*"],
 }, ...fixupConfigRules(compat.extends(
     "eslint:recommended",
     "plugin:react/recommended",
