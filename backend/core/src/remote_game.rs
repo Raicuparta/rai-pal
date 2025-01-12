@@ -93,7 +93,7 @@ pub async fn get() -> Result<Map> {
 			Some(RemoteGame {
 				title: entry.title,
 				engines: entry.engines.map(|engines| {
-					engines
+					let mut engines: Vec<GameEngine> = engines
 						.into_iter()
 						.filter_map(|engine| {
 							Some(GameEngine {
@@ -106,7 +106,14 @@ pub async fn get() -> Result<Map> {
 									.or_else(|| parse_version(&engine.brand)),
 							})
 						})
-						.collect()
+						.collect();
+
+					// For now we're only using the first engine for most things, so the order is important.
+					// We want the most recent engine version at the top, since that's probably the one most people will get.
+					engines.sort();
+					engines.reverse();
+
+					engines
 				}),
 				ids: entry.ids?,
 				subscriptions: entry.subscriptions,
