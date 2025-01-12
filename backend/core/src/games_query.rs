@@ -1,4 +1,4 @@
-use std::{cmp::Ordering, collections::HashSet, string};
+use std::{cmp::Ordering, collections::HashSet};
 
 use rai_pal_proc_macros::{serializable_enum, serializable_struct};
 
@@ -30,12 +30,7 @@ pub struct GamesFilter {
 #[serializable_enum]
 pub enum GamesSortBy {
 	Title,
-	Tags,
-	Provider,
-	Architecture,
-	ScriptingBackend,
 	Engine,
-	Installed,
 }
 
 #[serializable_struct]
@@ -144,64 +139,7 @@ impl GamesQuery {
 	pub fn sort(&self, game_a: &Game, game_b: &Game) -> Ordering {
 		let ordering = match self.sort_by {
 			GamesSortBy::Title => game_a.title.display.cmp(&game_b.title.display),
-			GamesSortBy::Tags => {
-				// TODO: reduce repetition in those whole sort function.
-				// TODO: also, should probably sort the tags themselves so this is more stable.
-				let string_a = format!(
-					"{}{}",
-					// We start with the tag count to make games with more tags show up first.
-					game_a.tags.len(),
-					game_a
-						.tags
-						.iter()
-						.map(string::ToString::to_string)
-						.collect::<String>()
-				);
-
-				let string_b = format!(
-					"{}{}",
-					game_b.tags.len(),
-					game_b
-						.tags
-						.iter()
-						.map(string::ToString::to_string)
-						.collect::<String>()
-				);
-
-				string_a.cmp(&string_b)
-			}
-			GamesSortBy::Provider => game_a.id.provider_id.cmp(&game_b.id.provider_id),
-			GamesSortBy::Architecture => {
-				let architecture_a = game_a
-					.installed_game
-					.as_ref()
-					.and_then(|installed_game_a| installed_game_a.executable.architecture);
-
-				let architecture_b = game_b
-					.installed_game
-					.as_ref()
-					.and_then(|installed_game_b| installed_game_b.executable.architecture);
-
-				architecture_a.cmp(&architecture_b)
-			}
-			GamesSortBy::ScriptingBackend => {
-				let unity_backend_a = game_a
-					.installed_game
-					.as_ref()
-					.and_then(|installed_game_a| installed_game_a.executable.scripting_backend);
-
-				let unity_backend_b = game_b
-					.installed_game
-					.as_ref()
-					.and_then(|installed_game_b| installed_game_b.executable.scripting_backend);
-
-				unity_backend_a.cmp(&unity_backend_b)
-			}
 			GamesSortBy::Engine => game_a.get_engine().cmp(&game_b.get_engine()),
-			GamesSortBy::Installed => game_a
-				.installed_game
-				.is_some()
-				.cmp(&game_b.installed_game.is_some()),
 		};
 
 		if self.sort_descending {
