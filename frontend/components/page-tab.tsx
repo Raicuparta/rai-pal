@@ -8,8 +8,8 @@ export type Page = {
 
 type Props = {
 	readonly id: string;
-	readonly count: number;
 	readonly page: Page;
+	readonly label?: string;
 };
 
 export function PageTab(props: Props) {
@@ -23,14 +23,14 @@ export function PageTab(props: Props) {
 				align="center"
 			>
 				<span>{props.page.title}</span>
-				{props.count > -1 && (
+				{props.label && (
 					<Text
 						size="9px"
 						opacity={0.5}
 						pos="absolute"
 						bottom={1.5}
 					>
-						({props.count})
+						{props.label}
 					</Text>
 				)}
 			</Stack>

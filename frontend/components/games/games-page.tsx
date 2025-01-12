@@ -6,7 +6,7 @@ import { AddGame } from "./add-game-button";
 import { useAppEvent } from "@hooks/use-app-event";
 import { GamesSortBy } from "@api/bindings";
 import { useAtomValue, useSetAtom } from "jotai";
-import { gameIdsAtom } from "@hooks/use-data";
+import { gameDataAtom } from "@hooks/use-data";
 import { selectedGameAtom } from "./games-state";
 import { TableContainer } from "@components/table/table-container";
 import { TableVirtuoso } from "react-virtuoso";
@@ -18,7 +18,7 @@ import { gamesColumns } from "./games-columns";
 import styles from "./games.module.css";
 
 export function GamesPage() {
-	const gameIds = useAtomValue(gameIdsAtom);
+	const gameData = useAtomValue(gameDataAtom);
 	const setSelectedGame = useSetAtom(selectedGameAtom);
 	const [dataQuery, setDataQuery] = useDataQuery();
 
@@ -64,8 +64,8 @@ export function GamesPage() {
 					style={{ overflowY: "scroll" }}
 					components={tableComponents}
 					fixedHeaderContent={renderHeaders}
-					totalCount={gameIds.length}
-					data={gameIds}
+					totalCount={gameData.gameIds.length}
+					data={gameData.gameIds}
 					fixedItemHeight={gameRowHeight}
 					overscan={50}
 					increaseViewportBy={100}

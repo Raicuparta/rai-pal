@@ -85,7 +85,7 @@ async getModLoaders() : Promise<Result<{ [key in string]: ModLoaderData }, Error
     else return { status: "error", error: e  as any };
 }
 },
-async getData(dataQuery: GamesQuery | null) : Promise<Result<GameId[], Error>> {
+async getData(dataQuery: GamesQuery | null) : Promise<Result<GameData, Error>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("get_data", { dataQuery }) };
 } catch (e) {
@@ -303,6 +303,7 @@ export type ErrorRaised = string
 export type ExecutedProviderCommand = null
 export type FoundGame = GameId
 export type Game = { id: GameId; externalId: string; tags: GameTag[]; installedGame: InstalledGame | null; remoteGame: RemoteGame | null; title: GameTitle; thumbnailUrl: string | null; releaseDate: bigint | null; providerCommands: { [key in ProviderCommandAction]: ProviderCommand }; fromSubscriptions: GameSubscription[] }
+export type GameData = { gameIds: GameId[]; totalCount: bigint }
 export type GameEngine = { brand: EngineBrand; version: EngineVersion | null }
 export type GameExecutable = { path: string; name: string; engine: GameEngine | null; architecture: Architecture | null; scriptingBackend: UnityScriptingBackend | null }
 export type GameId = { providerId: ProviderId; gameId: string }

@@ -1,11 +1,14 @@
 import { atom } from "jotai";
-import { commands, GameId } from "@api/bindings";
+import { commands, GameData } from "@api/bindings";
 import { dataSubscription } from "./use-data-subscription";
 import { useUpdateData } from "./use-update-data";
 import { useGameDropEvent } from "./use-game-drop-event";
 import { commandData } from "./use-command-data";
 
-export const gameIdsAtom = atom<GameId[]>([]);
+export const gameDataAtom = atom<GameData>({
+	gameIds: [],
+	totalCount: BigInt(0),
+});
 
 export const [modLoadersAtom, useModLoadersSubscription] = dataSubscription(
 	"syncModLoaders",

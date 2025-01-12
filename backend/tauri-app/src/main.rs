@@ -26,6 +26,7 @@ use rai_pal_core::providers::{
 #[cfg(target_os = "windows")]
 use rai_pal_core::windows;
 use rai_pal_core::{analytics, remote_game, remote_mod, steam};
+use rai_pal_proc_macros::serializable_struct;
 use tauri::path::BaseDirectory;
 use tauri::{AppHandle, Manager};
 use tauri_plugin_log::{Target, TargetKind};
@@ -37,6 +38,12 @@ mod events;
 mod result;
 #[cfg(debug_assertions)]
 mod typescript;
+
+#[serializable_struct]
+struct GameData {
+	game_ids: Vec<GameId>,
+	total_count: usize,
+}
 
 #[tauri::command]
 #[specta::specta]
@@ -638,13 +645,16 @@ async fn open_logs_folder() -> Result {
 
 #[tauri::command]
 #[specta::specta]
-async fn get_data(handle: AppHandle, data_query: Option<GamesQuery>) -> Result<Vec<GameId>> {
+async fn get_data(handle: AppHandle, data_query: Option<GamesQuery>) -> Result<GameData> {
 	let state = handle.app_state();
 
-	let games_iter = state
-		.games
-		.values()
-		.flat_map(|provider_games| provider_games.read().unwrap().clone().into_values());
+	let mut total_count: usize = 0;
+
+	let games_iter = state.games.values().flat_map(|provider_games_lock| {
+		let provider_games = provider_games_lock.read().unwrap();
+		total_count += provider_games.len();
+		provider_games.clone().into_values()
+	});
 
 	let games: Vec<_> = if let Some(query) = data_query.as_ref() {
 		let mut games: Vec<_> = games_iter.filter(|game| query.matches(game)).collect();
@@ -656,7 +666,10 @@ async fn get_data(handle: AppHandle, data_query: Option<GamesQuery>) -> Result<V
 		games
 	};
 
-	Ok(games.into_iter().map(|game| game.id).collect())
+	Ok(GameData {
+		game_ids: games.into_iter().map(|game| game.id).collect(),
+		total_count,
+	})
 }
 
 #[tauri::command]

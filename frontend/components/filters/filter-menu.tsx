@@ -60,7 +60,6 @@ export function FilterMenu() {
 			<SearchInput
 				onChange={handleSearchChange}
 				value={dataQuery.search}
-				count={999} // TODO
 			/>
 			<Indicator
 				disabled={!active}

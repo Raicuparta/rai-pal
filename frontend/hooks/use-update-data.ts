@@ -7,7 +7,7 @@ import {
 } from "react";
 import { useAtomValue, useSetAtom } from "jotai";
 import { commands, Result, Error, ProviderId } from "@api/bindings";
-import { loadingCountAtom, gameIdsAtom } from "./use-data";
+import { loadingCountAtom, gameDataAtom } from "./use-data";
 import { showAppNotification } from "@components/app-notifications";
 import { useAppEvent } from "./use-app-event";
 import { gamesQueryAtom } from "./use-data-query";
@@ -15,7 +15,7 @@ import { useThrottledCallback } from "@mantine/hooks";
 
 export function useUpdateData(executeOnMount = false) {
 	const setLoading = useSetAtom(loadingCountAtom);
-	const setGameIds = useSetAtom(gameIdsAtom);
+	const setGameData = useSetAtom(gameDataAtom);
 	const gamesQuery = useAtomValue(gamesQueryAtom);
 	const deferredGamesQuery = useDeferredValue(gamesQuery);
 	const [providerIds, setProviderIds] = useState<ProviderId[]>([]);
@@ -51,11 +51,11 @@ export function useUpdateData(executeOnMount = false) {
 				return false;
 			}
 
-			setGameIds(result.data);
+			setGameData(result.data);
 
 			return true;
 		});
-	}, [deferredGamesQuery, setGameIds]);
+	}, [deferredGamesQuery, setGameData]);
 
 	const throttledUpdateProviderGames = useThrottledCallback(
 		updateProviderGames,
