@@ -200,15 +200,7 @@ impl GamesQuery {
 
 				unity_backend_a.cmp(&unity_backend_b)
 			}
-			GamesSortBy::Engine => {
-				// TODO: sort by engine version too.
-
-				let engine_a = game_a.get_engine().map(|engine_a| engine_a.brand);
-
-				let engine_b = game_b.get_engine().map(|engine_b| engine_b.brand);
-
-				engine_a.cmp(&engine_b)
-			}
+			GamesSortBy::Engine => game_a.get_engine().cmp(&game_b.get_engine()),
 			GamesSortBy::Installed => game_a
 				.installed_game
 				.is_some()
