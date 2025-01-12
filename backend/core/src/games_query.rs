@@ -77,9 +77,6 @@ impl GamesQuery {
 			return false;
 		}
 
-		// filter by tags. If the game has any of the tags, it's a match.
-		// If the game has no tags and the None tag is in the filter, that's a match.
-		// If the game has any tag that's in the filter tags, that's a match.
 		if !filter.tags.is_empty() {
 			if game.tags.is_empty() {
 				if !filter.tags.contains(&None) {
