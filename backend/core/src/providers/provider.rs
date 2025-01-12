@@ -8,9 +8,9 @@ use enum_dispatch::enum_dispatch;
 use rai_pal_proc_macros::serializable_enum;
 
 #[cfg(target_os = "linux")]
-use crate::providers::heroic_gog_provider::HeroicGog;
-#[cfg(target_os = "linux")]
 use crate::providers::heroic_epic_provider::HeroicEpic;
+#[cfg(target_os = "linux")]
+use crate::providers::heroic_gog_provider::HeroicGog;
 #[cfg(target_os = "windows")]
 use crate::providers::{epic_provider::Epic, gog_provider::Gog};
 use crate::{

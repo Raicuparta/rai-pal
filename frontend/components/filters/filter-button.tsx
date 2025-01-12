@@ -3,34 +3,35 @@ import styles from "./filters.module.css";
 
 type Props = {
 	readonly isVisible: boolean;
-	readonly isUnavailable: boolean;
 	readonly onClick: () => void;
-	readonly filterOption: string;
+	readonly filterOption?: string;
+	readonly note?: string;
 };
 
 export function FilterButton(props: Props) {
 	return (
-		<Tooltip
-			label="Not implemented"
-			disabled={!props.isUnavailable}
-		>
-			<Button
-				disabled={props.isUnavailable}
-				fullWidth
-				justify="start"
-				leftSection={
-					<Checkbox
-						disabled={props.isUnavailable}
-						tabIndex={-1}
-						readOnly
-						className={styles.checkbox}
-						checked={!props.isUnavailable && props.isVisible}
-					/>
-				}
-				onClick={props.onClick}
+		props.filterOption && (
+			<Tooltip
+				label={props.note}
+				disabled={!props.note}
 			>
-				{props.filterOption}
-			</Button>
-		</Tooltip>
+				<Button
+					fullWidth
+					justify="start"
+					leftSection={
+						<Checkbox
+							tabIndex={-1}
+							readOnly
+							className={styles.checkbox}
+							checked={props.isVisible}
+						/>
+					}
+					onClick={props.onClick}
+				>
+					{props.filterOption}
+					{props.note && " *"}
+				</Button>
+			</Tooltip>
+		)
 	);
 }

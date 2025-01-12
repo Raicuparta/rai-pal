@@ -1,4 +1,4 @@
-import type { MantineThemeOverride } from "@mantine/core";
+import { type MantineThemeOverride } from "@mantine/core";
 
 export const theme: MantineThemeOverride = {
 	defaultRadius: "md",
@@ -48,6 +48,11 @@ export const theme: MantineThemeOverride = {
 		Notification: {
 			defaultProps: {
 				withBorder: true,
+			},
+		},
+		Tooltip: {
+			defaultProps: {
+				openDelay: 200,
 			},
 		},
 	},

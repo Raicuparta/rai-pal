@@ -16,8 +16,8 @@ export const defaultQuery: GamesQuery = {
 			"Steam",
 			"Manual",
 			"Xbox",
-			"Ea", // TODO needs to exist but hidden.
-			"Ubisoft", // TODO needs to exist but hidden.
+			// "Ea", // TODO not yet implemented in backend.
+			// "Ubisoft", // TODO not yet implemented in backend.
 			null,
 		],
 		tags: ["Demo", "VR", null],
