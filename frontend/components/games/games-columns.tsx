@@ -162,7 +162,7 @@ const engine: GamesColumn = {
 	center: true,
 	hidable: true,
 	component: ({ item }: CellProps) => {
-		// TODO somehow take into account the other remote engines too? Might also need to sort them.
+		// TODO somehow take into account the other remote engines too?
 		const engine =
 			item.installedGame?.executable.engine ?? item.remoteGame?.engines?.[0];
 
