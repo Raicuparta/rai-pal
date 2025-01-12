@@ -58,7 +58,6 @@ export function AppTabs() {
 			value={selectedTab}
 			onChange={handleTabChange}
 			radius={0}
-			keepMounted={false}
 		>
 			<Stack
 				gap={0}
