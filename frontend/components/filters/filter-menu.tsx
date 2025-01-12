@@ -2,7 +2,7 @@ import { Button, Group, Indicator, Popover } from "@mantine/core";
 import { IconFilter, IconX } from "@tabler/icons-react";
 import styles from "./filters.module.css";
 import { useCallback } from "react";
-import { FilterKey, FilterSelect, FilterValue } from "./filter-select";
+import { FilterChangeCallback, FilterKey, FilterSelect } from "./filter-select";
 import { SearchInput } from "@components/search-input";
 import { GamesFilter, GamesQuery } from "@api/bindings";
 import { defaultQuery, useDataQuery } from "@hooks/use-data-query";
@@ -10,23 +10,12 @@ import { defaultQuery, useDataQuery } from "@hooks/use-data-query";
 export function FilterMenu() {
 	const [dataQuery, setDataQuery] = useDataQuery();
 
-	const handleToggleClick = useCallback(
-		function <TFilterKey extends FilterKey>(
-			id: TFilterKey,
-			value: string | null,
-		) {
-			const newFilter = [...dataQuery.filter[id]];
-			const index = newFilter.indexOf(value as FilterValue<TFilterKey>);
-			if (index === -1) {
-				newFilter.push(value as FilterValue<TFilterKey>);
-			} else {
-				newFilter.splice(index, 1);
-			}
-
+	const handleToggleClick = useCallback<FilterChangeCallback>(
+		(id, values) => {
 			setDataQuery({
 				filter: {
 					...dataQuery?.filter,
-					[id]: newFilter,
+					[id]: values,
 				},
 			} as GamesQuery);
 		},
@@ -99,7 +88,7 @@ export function FilterMenu() {
 											id={filterId}
 											possibleValues={defaultQuery.filter[filterId]}
 											currentValues={dataQuery.filter[filterId]}
-											onClick={handleToggleClick}
+											onChange={handleToggleClick}
 										/>
 									),
 								)}
