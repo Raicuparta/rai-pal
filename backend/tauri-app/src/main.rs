@@ -17,7 +17,7 @@ use rai_pal_core::maps::TryGettable;
 use rai_pal_core::mod_loaders::mod_loader::{self, ModLoaderActions};
 use rai_pal_core::paths::{self, normalize_path};
 use rai_pal_core::providers::provider::ProviderId;
-use rai_pal_core::providers::provider_cache::ProviderCache;
+use rai_pal_core::providers::provider_cache::{ProviderCache, ProviderData};
 use rai_pal_core::providers::{
 	manual_provider,
 	provider::{self, ProviderActions},
@@ -498,16 +498,15 @@ async fn fetch_remote_games(handle: AppHandle) -> Result {
 async fn get_provider_games(handle: AppHandle, provider_id: ProviderId) -> Result {
 	let state = handle.app_state();
 
-	// let mut cache = ProviderCache::new(provider_id)?;
+	let mut cache = ProviderCache::new(provider_id)?;
 
-	// if let Err(err) = cache.load() {
-	// 	log::warn!("Failed to load cache for provider {provider_id}: {err}");
-	// } else {
-	// 	installed_games = cache.data.installed_games.clone();
-	// 	owned_games = cache.data.owned_games.clone();
-	// 	update_installed_games_state(&handle, &provider_id, &installed_games);
-	// 	update_owned_games_state(&handle, &provider_id, &owned_games);
-	// }
+	if let Err(err) = cache.load() {
+		log::warn!("Failed to load cache for provider {provider_id}: {err}");
+	} else {
+		let mut games_write = state.games.try_get(&provider_id)?.write_state()?;
+		*games_write = cache.data.games.clone();
+		handle.emit_safe(events::GamesChanged());
+	}
 
 	let provider = provider::get_provider(provider_id)?;
 
@@ -553,14 +552,9 @@ async fn get_provider_games(handle: AppHandle, provider_id: ProviderId) -> Resul
 
 	// After all is done, write again with fresh games, to get rid of the stale ones.
 	let mut games_write = state.games.try_get(&provider_id)?.write_state()?;
-	*games_write = fresh_games;
+	*games_write = fresh_games.clone();
 
-	// cache
-	// 	.set_data(ProviderData {
-	// 		installed_games: installed_games_without_cache.clone(),
-	// 		owned_games: owned_games_without_cache.clone(),
-	// 	})
-	// 	.save()?;
+	cache.set_data(ProviderData { games: fresh_games }).save()?;
 
 	Ok(())
 }
