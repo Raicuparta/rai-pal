@@ -767,7 +767,11 @@ fn main() {
 			builder.mount_events(app);
 
 			if let Some(window) = app.get_webview_window("main") {
-				window.set_title(&format!("Rai Pal {}", env!("CARGO_PKG_VERSION")))?;
+				let mut title = format!("Rai Pal {}", env!("CARGO_PKG_VERSION"));
+				if cfg!(debug_assertions) {
+					title += " DEV";
+				}
+				window.set_title(&title)?;
 
 				// Window is created hidden in tauri.conf.json.
 				// We show it here once everything is ready, which reduces the jumping around
