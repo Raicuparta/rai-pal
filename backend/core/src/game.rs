@@ -16,6 +16,8 @@ use crate::{
 	result::{Error, Result},
 };
 
+pub type Map = HashMap<String, Game>;
+
 #[serializable_struct]
 pub struct GameId {
 	pub provider_id: ProviderId,

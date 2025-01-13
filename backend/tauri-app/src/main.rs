@@ -9,7 +9,7 @@ use std::{collections::HashMap, path::PathBuf};
 use crate::result::{Error, Result};
 use app_state::{AppState, StateData, StatefulHandle};
 use events::EventEmitter;
-use rai_pal_core::game::{Game, GameId};
+use rai_pal_core::game::{self, Game, GameId};
 use rai_pal_core::games_query::GamesQuery;
 use rai_pal_core::installed_game::InstalledGame;
 use rai_pal_core::local_mod::{self, LocalMod};
@@ -17,7 +17,7 @@ use rai_pal_core::maps::TryGettable;
 use rai_pal_core::mod_loaders::mod_loader::{self, ModLoaderActions};
 use rai_pal_core::paths::{self, normalize_path};
 use rai_pal_core::providers::provider::ProviderId;
-use rai_pal_core::providers::provider_cache::{ProviderCache, ProviderData};
+use rai_pal_core::providers::provider_cache;
 use rai_pal_core::providers::{
 	manual_provider,
 	provider::{self, ProviderActions},
@@ -498,21 +498,11 @@ async fn fetch_remote_games(handle: AppHandle) -> Result {
 async fn get_provider_games(handle: AppHandle, provider_id: ProviderId) -> Result {
 	let state = handle.app_state();
 
-	let mut cache = ProviderCache::new(provider_id)?;
-
-	if let Err(err) = cache.load() {
-		log::warn!("Failed to load cache for provider {provider_id}: {err}");
-	} else {
-		let mut games_write = state.games.try_get(&provider_id)?.write_state()?;
-		*games_write = cache.data.games.clone();
-		handle.emit_safe(events::GamesChanged());
-	}
-
 	let provider = provider::get_provider(provider_id)?;
 
 	let remote_games = state.remote_games.read_state()?.clone();
 
-	let mut fresh_games: HashMap<String, Game> = HashMap::default();
+	let mut fresh_games = game::Map::default();
 
 	provider.get_games(|mut game: Game| {
 		// Assign the remote game here as we find the new game.
@@ -554,7 +544,7 @@ async fn get_provider_games(handle: AppHandle, provider_id: ProviderId) -> Resul
 	let mut games_write = state.games.try_get(&provider_id)?.write_state()?;
 	*games_write = fresh_games.clone();
 
-	cache.set_data(ProviderData { games: fresh_games }).save()?;
+	provider_cache::write(provider_id, &fresh_games);
 
 	Ok(())
 }
@@ -681,7 +671,7 @@ async fn get_game(id: GameId, handle: AppHandle) -> Result<Game> {
 #[tauri::command]
 #[specta::specta]
 async fn clear_cache() -> Result {
-	ProviderCache::clear_all()?;
+	provider_cache::clear()?;
 	Ok(())
 }
 
@@ -765,11 +755,12 @@ fn main() {
 			local_mods: RwLock::default(),
 			remote_mods: RwLock::default(),
 			remote_games: RwLock::default(),
-			games: HashMap::from_iter(
-				provider::get_provider_ids()
-					.iter()
-					.map(|&id| (id, RwLock::default())),
-			),
+			games: HashMap::from_iter(provider::get_provider_ids().iter().map(|&id| {
+				(
+					id,
+					RwLock::new(provider_cache::read(id).unwrap_or_default()),
+				)
+			})),
 		})
 		.invoke_handler(builder.invoke_handler())
 		.setup(move |app| {

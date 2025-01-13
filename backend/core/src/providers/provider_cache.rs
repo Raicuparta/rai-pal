@@ -1,77 +1,57 @@
-use std::{collections::HashMap, fs, path::PathBuf};
+use std::{fs, path::PathBuf};
 
-use crate::game::Game;
+use crate::game;
 use crate::result::Result;
-use crate::{
-	paths,
-	providers::provider::{self, ProviderId},
-};
-use rai_pal_proc_macros::serializable_struct;
+use crate::{paths, providers::provider::ProviderId};
 
-#[serializable_struct]
-#[derive(Default)]
-pub struct ProviderData {
-	pub games: HashMap<String, Game>,
+const CACHE_FOLDER: &str = "cache";
+
+fn get_folder_path() -> Result<PathBuf> {
+	Ok(paths::app_data_path()?.join(CACHE_FOLDER).join("providers"))
 }
 
-pub struct ProviderCache {
-	path: PathBuf,
-	pub data: ProviderData,
+fn get_provider_path(provider_id: ProviderId) -> Result<PathBuf> {
+	Ok(get_folder_path()?.join(provider_id.to_string()))
 }
 
-impl ProviderCache {
-	const CACHE_FOLDER: &'static str = "cache";
-
-	pub fn new(id: ProviderId) -> Result<Self> {
-		let folder_path = paths::app_data_path()?
-			.join(Self::CACHE_FOLDER)
-			.join("providers");
-
-		fs::create_dir_all(&folder_path)?;
-
-		Ok(Self {
-			path: folder_path.join(id.to_string()),
-			data: ProviderData::default(),
-		})
+fn try_read(provider_id: ProviderId) -> Result<Option<game::Map>> {
+	let path = get_provider_path(provider_id)?;
+	if !path.is_file() {
+		return Ok(None);
 	}
 
-	pub fn load(&mut self) -> Result {
-		if !self.path.is_file() {
-			return Ok(());
-		}
+	let data = serde_json::from_str(&fs::read_to_string(&path)?)?;
 
-		self.data = serde_json::from_str(&fs::read_to_string(&self.path)?)?;
+	Ok(Some(data))
+}
 
-		Ok(())
+fn try_write(provider_id: ProviderId, games: &game::Map) -> Result {
+	let path = get_provider_path(provider_id)?;
+
+	if path.is_dir() {
+		fs::remove_dir_all(&path)?;
 	}
 
-	pub fn save(&self) -> Result {
-		if self.path.is_dir() {
-			fs::remove_dir_all(&self.path)?;
-		}
+	fs::write(&path, serde_json::to_string(games)?)?;
 
-		fs::write(&self.path, serde_json::to_string(&self.data)?)?;
+	Ok(())
+}
 
-		Ok(())
+pub fn read(provider_id: ProviderId) -> Option<game::Map> {
+	try_read(provider_id).unwrap_or_else(|err| {
+		log::error!("Failed to read provider cache for provider {provider_id}: {err}");
+		None
+	})
+}
+
+pub fn write(provider_id: ProviderId, games: &game::Map) {
+	if let Err(err) = try_write(provider_id, games) {
+		log::error!("Failed to write provider cache for provider {provider_id}: {err}");
 	}
+}
 
-	pub fn set_data(&mut self, data: ProviderData) -> &mut Self {
-		self.data = data;
-		self
-	}
+pub fn clear() -> Result {
+	fs::remove_dir_all(get_folder_path()?)?;
 
-	pub fn clear(&mut self) -> Result {
-		fs::remove_file(&self.path)?;
-		self.data = ProviderData::default();
-
-		Ok(())
-	}
-
-	pub fn clear_all() -> Result {
-		for provider_id in provider::get_provider_ids() {
-			Self::new(provider_id)?.clear()?;
-		}
-
-		Ok(())
-	}
+	Ok(())
 }

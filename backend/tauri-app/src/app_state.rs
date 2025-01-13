@@ -7,12 +7,12 @@ use crate::result::Result;
 use tauri::Manager;
 
 use rai_pal_core::{
-	game::Game, local_mod, mod_loaders::mod_loader, providers::provider::ProviderId, remote_game,
+	game, local_mod, mod_loaders::mod_loader, providers::provider::ProviderId, remote_game,
 	remote_mod,
 };
 
 pub struct AppState {
-	pub games: HashMap<ProviderId, RwLock<HashMap<String, Game>>>,
+	pub games: HashMap<ProviderId, RwLock<game::Map>>,
 	pub remote_games: RwLock<remote_game::Map>,
 	pub mod_loaders: RwLock<mod_loader::Map>,
 	pub local_mods: RwLock<local_mod::Map>,
