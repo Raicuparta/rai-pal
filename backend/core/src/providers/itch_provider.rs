@@ -10,7 +10,7 @@ use rusqlite::{Connection, OpenFlags};
 
 use super::provider_command::{ProviderCommand, ProviderCommandAction};
 use crate::{
-	game::Game,
+	game::{Game, GameId},
 	installed_game::InstalledGame,
 	providers::provider::{ProviderActions, ProviderId, ProviderStatic},
 	result::{Error, Result},
@@ -27,7 +27,13 @@ impl Itch {
 	}
 
 	fn get_game(row: &ItchDatabaseGame) -> Game {
-		let mut game = Game::new(&row.id.to_string(), *Self::ID, &row.title);
+		let mut game = Game::new(
+			GameId {
+				game_id: row.id.to_string(),
+				provider_id: *Self::ID,
+			},
+			&row.title,
+		);
 
 		if let Some(thumbnail_url) = &row.cover_url {
 			game.set_thumbnail_url(thumbnail_url);

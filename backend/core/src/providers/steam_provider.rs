@@ -39,60 +39,6 @@ impl ProviderStatic for Steam {
 }
 
 impl Steam {
-	pub fn get_game(app_info: &SteamAppInfo, ids_whitelist: &HashSet<String>) -> Option<Game> {
-		let mut game = Game::new(&app_info.app_id.to_string(), *Self::ID, &app_info.name);
-
-		let id_string = app_info.app_id.to_string();
-
-		let owned =
-			app_info.is_free || ids_whitelist.is_empty() || ids_whitelist.contains(&id_string);
-
-		if !owned {
-			return None;
-		}
-
-		game.set_thumbnail_url(&get_steam_thumbnail(&id_string))
-			.add_provider_command(
-				ProviderCommandAction::ShowInLibrary,
-				ProviderCommand::String(format!("steam://nav/games/details/{id_string}")),
-			)
-			.add_provider_command(
-				ProviderCommandAction::ShowInStore,
-				ProviderCommand::String(format!("steam://store/{id_string}")),
-			)
-			.add_provider_command(
-				ProviderCommandAction::Install,
-				ProviderCommand::String(format!("steam://install/{id_string}")),
-			)
-			.add_provider_command(
-				ProviderCommandAction::OpenInBrowser,
-				ProviderCommand::String(format!("https://store.steampowered.com/app/{id_string}")),
-			);
-
-		if app_info
-			.launch_options
-			.iter()
-			.any(appinfo::SteamLaunchOption::is_vr)
-		{
-			game.add_tag(GameTag::VR);
-		}
-
-		if let Some(release_date) = app_info
-			.original_release_date
-			.or(app_info.steam_release_date)
-		{
-			game.set_release_date(release_date.into());
-		}
-
-		if let Some(app_type) = &app_info.app_type {
-			if app_type == "Demo" {
-				game.add_tag(GameTag::Demo);
-			}
-		}
-
-		Some(game)
-	}
-
 	pub fn get_installed_games(app_info: &SteamAppInfo, app_path: &Path) -> Vec<InstalledGame> {
 		let mut used_paths: HashSet<PathBuf> = HashSet::new();
 		let mut used_names: HashSet<String> = HashSet::new();
@@ -190,27 +136,85 @@ impl ProviderActions for Steam {
 		for app_info_result in app_info_reader {
 			match app_info_result {
 				Ok(app_info) => {
-					if let Some(game) = Self::get_game(&app_info, &owned_ids_whitelist) {
-						let installed_games = app_paths
-							.get(&app_info.app_id)
-							.map(|app_path| Self::get_installed_games(&app_info, app_path))
-							.unwrap_or_default();
+					let external_id = app_info.app_id.to_string();
 
-						if installed_games.is_empty() {
-							callback(game);
-						} else {
-							for installed_game in installed_games {
-								let mut game_with_installed = game.clone();
-								game_with_installed.id = GameId {
-									game_id: format!(
-										"{}_{}",
-										&game_with_installed.external_id, &installed_game.id
-									),
-									provider_id: *Self::ID,
-								};
-								game_with_installed.installed_game = Some(installed_game);
-								callback(game_with_installed);
-							}
+					if !app_info.is_free
+						|| owned_ids_whitelist.is_empty()
+						|| owned_ids_whitelist.contains(&external_id)
+					{
+						continue;
+					}
+
+					let installed_games = app_paths
+						.get(&app_info.app_id)
+						.map(|app_path| Self::get_installed_games(&app_info, app_path))
+						.unwrap_or_default();
+
+					let mut game = Game::new(
+						GameId {
+							game_id: external_id.clone(),
+							provider_id: *Self::ID,
+						},
+						&app_info.name,
+					);
+
+					game.set_thumbnail_url(&get_steam_thumbnail(&external_id))
+						.add_provider_command(
+							ProviderCommandAction::ShowInLibrary,
+							ProviderCommand::String(format!(
+								"steam://nav/games/details/{external_id}"
+							)),
+						)
+						.add_provider_command(
+							ProviderCommandAction::ShowInStore,
+							ProviderCommand::String(format!("steam://store/{external_id}")),
+						)
+						.add_provider_command(
+							ProviderCommandAction::Install,
+							ProviderCommand::String(format!("steam://install/{external_id}")),
+						)
+						.add_provider_command(
+							ProviderCommandAction::OpenInBrowser,
+							ProviderCommand::String(format!(
+								"https://store.steampowered.com/app/{external_id}"
+							)),
+						);
+
+					if app_info
+						.launch_options
+						.iter()
+						.any(appinfo::SteamLaunchOption::is_vr)
+					{
+						game.add_tag(GameTag::VR);
+					}
+
+					if let Some(release_date) = app_info
+						.original_release_date
+						.or(app_info.steam_release_date)
+					{
+						game.set_release_date(release_date.into());
+					}
+
+					if let Some(app_type) = &app_info.app_type {
+						if app_type == "Demo" {
+							game.add_tag(GameTag::Demo);
+						}
+					}
+
+					if installed_games.is_empty() {
+						callback(game);
+					} else {
+						for installed_game in installed_games {
+							let mut game_with_installed = game.clone();
+							game_with_installed.id = GameId {
+								game_id: format!(
+									"{}_{}",
+									&game_with_installed.external_id, &installed_game.id
+								),
+								provider_id: *Self::ID,
+							};
+							game_with_installed.installed_game = Some(installed_game);
+							callback(game_with_installed);
 						}
 					}
 				}

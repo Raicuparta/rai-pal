@@ -17,7 +17,7 @@ use super::{
 	provider_command::{ProviderCommand, ProviderCommandAction},
 };
 use crate::{
-	game::Game,
+	game::{Game, GameId},
 	installed_game::InstalledGame,
 	paths::glob_path,
 	providers::provider::{ProviderActions, ProviderStatic},
@@ -81,7 +81,13 @@ impl Epic {
 			return None;
 		}
 
-		let mut game = Game::new(&catalog_item.id, *Self::ID, &catalog_item.title);
+		let mut game = Game::new(
+			GameId {
+				game_id: catalog_item.id.clone(),
+				provider_id: *Self::ID,
+			},
+			&catalog_item.title,
+		);
 
 		game.add_provider_command(
 			ProviderCommandAction::Install,

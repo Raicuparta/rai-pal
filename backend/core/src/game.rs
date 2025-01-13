@@ -43,9 +43,7 @@ pub struct Game {
 }
 
 impl Game {
-	// TODO: this should probably be the other way around? so unique ID is given and external id is optional or something?
-	// Steam makes it annoying but should be doable.
-	pub fn new(external_id: &str, provider_id: ProviderId, title: &str) -> Self {
+	pub fn new(id: GameId, title: &str) -> Self {
 		let title = GameTitle::new(title);
 		let mut tags = HashSet::default();
 		if title.is_probably_demo() {
@@ -53,11 +51,9 @@ impl Game {
 		}
 
 		Self {
-			id: GameId {
-				provider_id,
-				game_id: external_id.to_string(),
-			},
-			external_id: external_id.to_string(),
+			// We presume the provided ID is also the external ID, but that can be changed after creation.
+			external_id: id.game_id.clone(),
+			id,
 			tags,
 			installed_game: None,
 			remote_game: None,

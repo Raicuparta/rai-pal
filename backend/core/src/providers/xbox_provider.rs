@@ -9,7 +9,7 @@ use winreg::{
 };
 
 use crate::{
-	game::Game,
+	game::{Game, GameId},
 	installed_game::InstalledGame,
 	paths::file_name_without_extension,
 	providers::provider::{ProviderActions, ProviderId, ProviderStatic},
@@ -117,8 +117,10 @@ where
 													});
 
 												let mut game = Game::new(
-													&package_id,
-													ProviderId::Xbox,
+													GameId {
+														game_id: package_id,
+														provider_id: ProviderId::Xbox,
+													},
 													&display_name,
 												);
 

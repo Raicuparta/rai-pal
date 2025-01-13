@@ -8,7 +8,7 @@ use rai_pal_proc_macros::serializable_struct;
 
 use super::provider::{ProviderActions, ProviderId, ProviderStatic};
 use crate::{
-	game::Game,
+	game::{Game, GameId},
 	installed_game::InstalledGame,
 	paths::{app_data_path, file_name_without_extension},
 	result::{Error, Result},
@@ -74,8 +74,10 @@ fn get_game_from_path(path: &Path) -> Result<Game> {
 	let installed_game =
 		InstalledGame::new(path).ok_or(Error::FailedToGetGameFromPath(path.to_path_buf()))?;
 	let mut game = Game::new(
-		&installed_game.id,
-		ProviderId::Manual,
+		GameId {
+			game_id: installed_game.id.clone(),
+			provider_id: ProviderId::Manual,
+		},
 		file_name_without_extension(path)?,
 	);
 	game.installed_game = Some(installed_game);

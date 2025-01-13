@@ -10,7 +10,7 @@ use winreg::{enums::HKEY_LOCAL_MACHINE, RegKey};
 
 use super::provider_command::{ProviderCommand, ProviderCommandAction};
 use crate::{
-	game::Game,
+	game::{Game, GameId},
 	installed_game::InstalledGame,
 	paths,
 	providers::provider::{ProviderActions, ProviderId, ProviderStatic},
@@ -46,7 +46,13 @@ impl Gog {
 	}
 
 	fn get_game(db_entry: &GogDbEntry, launcher_path: &Path) -> Game {
-		let mut game = Game::new(&db_entry.id, *Self::ID, &db_entry.title);
+		let mut game = Game::new(
+			GameId {
+				game_id: db_entry.id.clone(),
+				provider_id: *Self::ID,
+			},
+			&db_entry.title,
+		);
 
 		game.add_provider_command(
 			ProviderCommandAction::ShowInLibrary,
