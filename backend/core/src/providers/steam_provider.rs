@@ -139,8 +139,8 @@ impl ProviderActions for Steam {
 					let external_id = app_info.app_id.to_string();
 
 					if !app_info.is_free
-						|| owned_ids_whitelist.is_empty()
-						|| owned_ids_whitelist.contains(&external_id)
+						&& !owned_ids_whitelist.is_empty()
+						&& !owned_ids_whitelist.contains(&external_id)
 					{
 						continue;
 					}
