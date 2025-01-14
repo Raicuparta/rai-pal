@@ -53,9 +53,9 @@ async downloadMod(modId: string) : Promise<Result<null, Error>> {
     else return { status: "error", error: e  as any };
 }
 },
-async fetchRemoteGames() : Promise<Result<null, Error>> {
+async refreshRemoteGames() : Promise<Result<null, Error>> {
     try {
-    return { status: "ok", data: await TAURI_INVOKE("fetch_remote_games") };
+    return { status: "ok", data: await TAURI_INVOKE("refresh_remote_games") };
 } catch (e) {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
@@ -77,25 +77,17 @@ async getLocalMods() : Promise<Result<{ [key in string]: LocalMod }, Error>> {
     else return { status: "error", error: e  as any };
 }
 },
-async getModLoaders() : Promise<Result<{ [key in string]: ModLoaderData }, Error>> {
+async getGameIds(dataQuery: GamesQuery | null) : Promise<Result<GameIdsResponse, Error>> {
     try {
-    return { status: "ok", data: await TAURI_INVOKE("get_mod_loaders") };
+    return { status: "ok", data: await TAURI_INVOKE("get_game_ids", { dataQuery }) };
 } catch (e) {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
 }
 },
-async getData(dataQuery: GamesQuery | null) : Promise<Result<GameData, Error>> {
+async refreshGames(providerId: ProviderId) : Promise<Result<null, Error>> {
     try {
-    return { status: "ok", data: await TAURI_INVOKE("get_data", { dataQuery }) };
-} catch (e) {
-    if(e instanceof Error) throw e;
-    else return { status: "error", error: e  as any };
-}
-},
-async getProviderGames(providerId: ProviderId) : Promise<Result<null, Error>> {
-    try {
-    return { status: "ok", data: await TAURI_INVOKE("get_provider_games", { providerId }) };
+    return { status: "ok", data: await TAURI_INVOKE("refresh_games", { providerId }) };
 } catch (e) {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
@@ -245,9 +237,9 @@ async uninstallMod(gameId: GameId, modId: string) : Promise<Result<null, Error>>
     else return { status: "error", error: e  as any };
 }
 },
-async updateLocalMods() : Promise<Result<null, Error>> {
+async refreshMods() : Promise<Result<null, Error>> {
     try {
-    return { status: "ok", data: await TAURI_INVOKE("update_local_mods") };
+    return { status: "ok", data: await TAURI_INVOKE("refresh_mods") };
 } catch (e) {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
@@ -303,10 +295,10 @@ export type ErrorRaised = string
 export type ExecutedProviderCommand = null
 export type FoundGame = GameId
 export type Game = { id: GameId; externalId: string; tags: GameTag[]; installedGame: InstalledGame | null; remoteGame: RemoteGame | null; title: GameTitle; thumbnailUrl: string | null; releaseDate: bigint | null; providerCommands: { [key in ProviderCommandAction]: ProviderCommand }; fromSubscriptions: GameSubscription[] }
-export type GameData = { gameIds: GameId[]; totalCount: bigint }
 export type GameEngine = { brand: EngineBrand; version: EngineVersion | null }
 export type GameExecutable = { path: string; name: string; engine: GameEngine | null; architecture: Architecture | null; scriptingBackend: UnityScriptingBackend | null }
 export type GameId = { providerId: ProviderId; gameId: string }
+export type GameIdsResponse = { gameIds: GameId[]; totalCount: bigint }
 export type GameSubscription = "UbisoftClassics" | "UbisoftPremium" | "XboxGamePass" | "EaPlay"
 export type GameTag = "VR" | "Demo"
 export type GameTitle = { display: string; normalized: string[] }

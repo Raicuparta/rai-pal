@@ -38,7 +38,7 @@ export function useUpdateData(executeOnMount = false) {
 	const updateProviderGames = useCallback(() => {
 		fetchCount.current++;
 		const thisFetchCount = fetchCount.current;
-		commands.getData(deferredGamesQuery).then((result) => {
+		commands.getGameIds(deferredGamesQuery).then((result) => {
 			if (thisFetchCount !== fetchCount.current) {
 				console.log(
 					"Cancelling this fetch since another one happened in the meantime.",
@@ -90,11 +90,11 @@ export function useUpdateData(executeOnMount = false) {
 		}
 
 		for (const providerId of providerIds) {
-			handleDataPromise(commands.getProviderGames(providerId));
+			handleDataPromise(commands.refreshGames(providerId));
 		}
 
-		handleDataPromise(commands.updateLocalMods());
-		handleDataPromise(commands.fetchRemoteGames());
+		handleDataPromise(commands.refreshMods());
+		handleDataPromise(commands.refreshRemoteGames());
 	}, [providerIds, setLoading]);
 
 	useEffect(() => {

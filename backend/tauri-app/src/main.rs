@@ -40,18 +40,9 @@ mod result;
 mod typescript;
 
 #[serializable_struct]
-struct GameData {
+struct GameIdsResponse {
 	game_ids: Vec<GameId>,
 	total_count: usize,
-}
-
-#[tauri::command]
-#[specta::specta]
-async fn get_mod_loaders(handle: AppHandle) -> Result<mod_loader::DataMap> {
-	let state = handle.app_state();
-	let data_map = mod_loader::get_data_map(&state.mod_loaders.read_state()?.clone())?;
-
-	Ok(data_map)
 }
 
 #[tauri::command]
@@ -424,7 +415,7 @@ async fn refresh_and_get_local_mod(
 
 #[tauri::command]
 #[specta::specta]
-async fn update_local_mods(handle: AppHandle) -> Result {
+async fn refresh_mods(handle: AppHandle) -> Result {
 	let resources_path = handle
 		.path()
 		.resolve("resources", BaseDirectory::Resource)
@@ -449,7 +440,7 @@ async fn update_local_mods(handle: AppHandle) -> Result {
 
 #[tauri::command]
 #[specta::specta]
-async fn fetch_remote_games(handle: AppHandle) -> Result {
+async fn refresh_remote_games(handle: AppHandle) -> Result {
 	let state = handle.app_state();
 	let remote_games = remote_game::get().await?;
 
@@ -494,7 +485,7 @@ async fn fetch_remote_games(handle: AppHandle) -> Result {
 
 #[tauri::command]
 #[specta::specta]
-async fn get_provider_games(handle: AppHandle, provider_id: ProviderId) -> Result {
+async fn refresh_games(handle: AppHandle, provider_id: ProviderId) -> Result {
 	let state = handle.app_state();
 
 	let provider = provider::get_provider(provider_id)?;
@@ -587,7 +578,7 @@ async fn add_game(path: PathBuf, handle: AppHandle) -> Result {
 async fn remove_game(path: PathBuf, handle: AppHandle) -> Result {
 	manual_provider::remove_game(&path)?;
 
-	get_provider_games(handle, ProviderId::Manual).await
+	refresh_games(handle, ProviderId::Manual).await
 }
 
 #[tauri::command]
@@ -628,7 +619,10 @@ async fn open_logs_folder() -> Result {
 
 #[tauri::command]
 #[specta::specta]
-async fn get_data(handle: AppHandle, data_query: Option<GamesQuery>) -> Result<GameData> {
+async fn get_game_ids(
+	handle: AppHandle,
+	data_query: Option<GamesQuery>,
+) -> Result<GameIdsResponse> {
 	let state = handle.app_state();
 
 	let mut total_count: usize = 0;
@@ -649,7 +643,7 @@ async fn get_data(handle: AppHandle, data_query: Option<GamesQuery>) -> Result<G
 		games
 	};
 
-	Ok(GameData {
+	Ok(GameIdsResponse {
 		game_ids: games.into_iter().map(|game| game.id).collect(),
 		total_count,
 	})
@@ -693,12 +687,10 @@ fn main() {
 			delete_mod,
 			delete_steam_appinfo_cache,
 			download_mod,
-			fetch_remote_games,
 			frontend_ready,
+			get_game_ids,
+			get_game,
 			get_local_mods,
-			get_mod_loaders,
-			get_data,
-			get_provider_games,
 			get_provider_ids,
 			get_remote_mods,
 			install_mod,
@@ -710,6 +702,9 @@ fn main() {
 			open_mod_loader_folder,
 			open_mods_folder,
 			refresh_game,
+			refresh_games,
+			refresh_mods,
+			refresh_remote_games,
 			remove_game,
 			run_provider_command,
 			run_runnable_without_game,
@@ -717,8 +712,6 @@ fn main() {
 			start_game,
 			uninstall_all_mods,
 			uninstall_mod,
-			update_local_mods,
-			get_game,
 		])
 		.events(events::collect_events());
 

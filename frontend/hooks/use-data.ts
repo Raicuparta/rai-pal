@@ -1,10 +1,10 @@
 import { atom } from "jotai";
-import { GameData } from "@api/bindings";
+import { GameIdsResponse } from "@api/bindings";
 import { dataSubscription } from "./use-data-subscription";
 import { useUpdateData } from "./use-update-data";
 import { useGameDropEvent } from "./use-game-drop-event";
 
-export const gameDataAtom = atom<GameData>({
+export const gameDataAtom = atom<GameIdsResponse>({
 	gameIds: [],
 	totalCount: BigInt(0),
 });
