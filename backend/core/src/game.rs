@@ -94,7 +94,7 @@ impl Game {
 		self
 	}
 
-	pub fn get_engine(&self) -> Option<&GameEngine> {
+	pub const fn get_engine(&self) -> Option<&GameEngine> {
 		if let Some(installed_game) = &self.installed_game {
 			if let Some(engine) = installed_game.executable.engine.as_ref() {
 				return Some(engine);
@@ -102,13 +102,7 @@ impl Game {
 		}
 
 		if let Some(remote_game) = &self.remote_game {
-			if let Some(engine) = remote_game
-				.engines
-				.as_ref()
-				.and_then(|engines| engines.first())
-			{
-				return Some(engine);
-			}
+			return remote_game.engine.as_ref();
 		}
 
 		None

@@ -100,8 +100,7 @@ export function GameModal({ game }: Props) {
 	const close = () => setSelectedGame(null);
 
 	const filteredMods = useMemo(() => {
-		const engine =
-			installedGame?.executable.engine ?? game.remoteGame?.engines?.[0]; // TODO include all remote engines?
+		const engine = installedGame?.executable.engine ?? game.remoteGame?.engine;
 
 		return Object.values(mods).filter(
 			(mod) =>
@@ -116,7 +115,7 @@ export function GameModal({ game }: Props) {
 					!installedGame?.installedModVersions[mod.common.id]
 				),
 		);
-	}, [installedGame, game.remoteGame?.engines, mods]);
+	}, [installedGame, game, mods]);
 
 	return (
 		<Modal

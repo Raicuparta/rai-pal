@@ -35,7 +35,7 @@ struct GameDatabaseEntry {
 #[serializable_struct]
 pub struct RemoteGame {
 	pub title: Option<String>,
-	pub engines: Option<Vec<GameEngine>>,
+	pub engine: Option<GameEngine>,
 	pub ids: HashMap<ProviderId, Vec<String>>,
 	pub subscriptions: Option<Vec<GameSubscription>>,
 }
@@ -92,8 +92,8 @@ pub async fn get() -> Result<Map> {
 		.filter_map(|entry| {
 			Some(RemoteGame {
 				title: entry.title,
-				engines: entry.engines.map(|engines| {
-					let mut engines: Vec<GameEngine> = engines
+				engine: entry.engines.and_then(|engines| {
+					engines
 						.into_iter()
 						.filter_map(|engine| {
 							Some(GameEngine {
@@ -106,14 +106,10 @@ pub async fn get() -> Result<Map> {
 									.or_else(|| parse_version(&engine.brand)),
 							})
 						})
-						.collect();
-
-					// For now we're only using the first engine for most things, so the order is important.
-					// We want the most recent engine version at the top, since that's probably the one most people will get.
-					engines.sort();
-					engines.reverse();
-
-					engines
+						// The remote game database can have multiple engines for the same game,
+						// like when PCGamingWiki lists engines for old versions.
+						// To keep things simply we only take into account the most recent version for now.
+						.max()
 				}),
 				ids: entry.ids?,
 				subscriptions: entry.subscriptions,
