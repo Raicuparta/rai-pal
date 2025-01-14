@@ -94,6 +94,7 @@ export function useUpdateData(executeOnMount = false) {
 		}
 
 		handleDataPromise(commands.updateLocalMods());
+		handleDataPromise(commands.fetchRemoteGames());
 	}, [providerIds, setLoading]);
 
 	useEffect(() => {
