@@ -202,10 +202,9 @@ async fn install_mod(game_id: GameId, mod_id: &str, handle: AppHandle) -> Result
 
 	mod_loader.install_mod(&installed_game, &local_mod).await?;
 
-	// TODO figure this out, I want this to happen only at the very end.
-	analytics::send_event(analytics::Event::InstallOrRunMod, mod_id).await;
-
 	refresh_game_mods(&game_id, &handle)?;
+
+	analytics::send_event(analytics::Event::InstallOrRunMod, mod_id).await;
 
 	Ok(())
 }
