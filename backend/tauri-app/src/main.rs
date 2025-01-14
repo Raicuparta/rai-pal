@@ -427,13 +427,13 @@ async fn refresh_mods(handle: AppHandle) -> Result {
 		&mod_loaders,
 	)?));
 
+	refresh_local_mods(&mod_loaders, &handle)?;
+	refresh_remote_mods(&mod_loaders, &handle).await?;
+
 	handle
 		.app_state()
 		.mod_loaders
-		.write_state_value(mod_loaders.clone())?;
-
-	refresh_local_mods(&mod_loaders, &handle)?;
-	refresh_remote_mods(&mod_loaders, &handle).await?;
+		.write_state_value(mod_loaders)?;
 
 	Ok(())
 }
