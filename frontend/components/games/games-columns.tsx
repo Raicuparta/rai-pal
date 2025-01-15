@@ -100,7 +100,11 @@ const StatusCell = ({ item }: CellProps) => (
 					providerId={item.id.providerId}
 					color={`var(--mantine-color-${providerColors[item.id.providerId]}-light-color)`}
 				/>
-				{item.installedGame ? <IconDeviceDesktop /> : <IconCloud />}
+				{item.installedGame ? (
+					<IconDeviceDesktop color="white" />
+				) : (
+					<IconCloud />
+				)}
 			</Stack>
 		</Tooltip>
 	</Table.Td>
@@ -127,6 +131,8 @@ const NameCell = ({ item }: CellProps) => (
 			<Flex
 				gap={3}
 				p="xs"
+				fw="bold"
+				c={item.installedGame ? "white" : "grey"}
 				style={{
 					maxHeight: gameRowHeight,
 					overflow: "hidden",
