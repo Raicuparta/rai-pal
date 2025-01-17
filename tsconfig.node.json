@@ -1,11 +1,12 @@
 {
-  "compilerOptions": {
-    "composite": true,
-    "skipLibCheck": true,
-    "module": "ESNext",
-    "lib": ["ES2020"],
-    "moduleResolution": "bundler",
-    "allowSyntheticDefaultImports": true
-  },
-  "include": ["vite.config.ts", "tsconfig.json"]
+	"compilerOptions": {
+		"composite": true,
+		"skipLibCheck": true,
+		"module": "ESNext",
+		"lib": ["ES2020"],
+		"moduleResolution": "bundler",
+		"allowSyntheticDefaultImports": true,
+		"types": ["node"],
+	},
+	"include": ["vite.config.ts", "tsconfig.json"]
 }
