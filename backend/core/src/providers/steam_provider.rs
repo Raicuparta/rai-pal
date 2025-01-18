@@ -96,7 +96,13 @@ impl Steam {
 		// assets.vdf is another cache file, and from my (not very extensive) tests, it does really only include owned files.
 		// Free games are some times not there though, so later in the code I'm presuming that any free game found in appinfo.vdf is owned.
 		// appinfo.vdf is also still needed since most of the game data we want is there, so we can't just read everything from assets.vdf.
-		let assets_cache_string = fs::read(steam_path.join("appcache/librarycache/assets.vdf"))?;
+		let assets_cache_path = steam_path.join("appcache/librarycache/assetcache.vdf");
+		let assets_cache_string = if assets_cache_path.exists() {
+				fs::read(assets_cache_path)?
+		} else {
+				// I think Steam renamed this file at some point. This is the old name.
+				fs::read(steam_path.join("appcache/librarycache/assets.vdf"))?
+		};
 
 		// This file has a bunch of ids, and they're always just numbers surrounded by zeros.
 		// We could have a smarter parse (this is a binary vdf), but let's just do this for now (probably forever).
@@ -129,7 +135,7 @@ impl ProviderActions for Steam {
 		}
 
 		let owned_ids_whitelist = Self::get_owned_ids_whitelist(steam_path).unwrap_or_else(|err| {
-			log::error!("Failed to read Steam assets.vdf: {}", err);
+			log::error!("Failed to read Steam assets cache: {}", err);
 			HashSet::new()
 		});
 
