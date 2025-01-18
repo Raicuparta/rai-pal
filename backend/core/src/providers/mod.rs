@@ -7,5 +7,5 @@ pub mod manual_provider;
 pub mod provider;
 pub mod provider_cache;
 pub mod provider_command;
-pub mod steam_provider;
 pub mod xbox_provider;
+pub mod steam;

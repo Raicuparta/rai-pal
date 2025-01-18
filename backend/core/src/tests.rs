@@ -1,8 +1,8 @@
 #![allow(clippy::unwrap_used)]
 
-use crate::steam::appinfo::SteamAppInfoReader;
-
 use std::path::Path;
+
+use crate::providers::steam::appinfo::SteamAppInfoReader;
 
 #[test]
 fn benchmark_thing() {

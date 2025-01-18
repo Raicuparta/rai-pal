@@ -18,6 +18,7 @@ use rai_pal_core::mod_loaders::mod_loader::{self, ModLoaderActions};
 use rai_pal_core::paths::{self, normalize_path};
 use rai_pal_core::providers::provider::ProviderId;
 use rai_pal_core::providers::provider_cache;
+use rai_pal_core::providers::steam::steam_provider::Steam;
 use rai_pal_core::providers::{
 	manual_provider,
 	provider::{self, ProviderActions},
@@ -25,7 +26,7 @@ use rai_pal_core::providers::{
 };
 #[cfg(target_os = "windows")]
 use rai_pal_core::windows;
-use rai_pal_core::{analytics, remote_game, remote_mod, steam};
+use rai_pal_core::{analytics, remote_game, remote_mod};
 use rai_pal_proc_macros::serializable_struct;
 use tauri::path::BaseDirectory;
 use tauri::{AppHandle, Manager};
@@ -597,8 +598,8 @@ async fn run_provider_command(
 
 #[tauri::command]
 #[specta::specta]
-async fn delete_steam_appinfo_cache() -> Result {
-	Ok(steam::appinfo::delete()?)
+async fn reset_steam_cache() -> Result {
+	Ok(Steam::delete_cache()?)
 }
 
 #[tauri::command]
@@ -685,7 +686,7 @@ fn main() {
 			clear_cache,
 			configure_mod,
 			delete_mod,
-			delete_steam_appinfo_cache,
+			reset_steam_cache,
 			download_mod,
 			frontend_ready,
 			get_game_ids,

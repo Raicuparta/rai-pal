@@ -13,16 +13,14 @@ export function useAsyncCommand<TResultValue, TError, TArgs = void>(
 ) {
 	const [isLoading, setIsLoading] = useState(false);
 	const [success, setSuccess] = useState(false);
-	const timeout = useRef<number>();
+	const timeout = useRef<number>(undefined);
 
 	const executeCommand: (args: TArgs) => Promise<TResultValue> = useCallback(
 		async (args: TArgs) => {
 			setIsLoading(true);
 			setSuccess(false);
 
-			if (timeout.current) {
-				clearTimeout(timeout.current);
-			}
+			clearTimeout(timeout.current);
 
 			return command(args)
 				.then((result) => {
@@ -56,9 +54,7 @@ export function useAsyncCommand<TResultValue, TError, TArgs = void>(
 
 	useEffect(() => {
 		return () => {
-			if (timeout.current) {
-				clearTimeout(timeout.current);
-			}
+			clearTimeout(timeout.current);
 		};
 	}, []);
 

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 export function useLongLoading(isLoading: boolean) {
 	const [isLongLoading, setIsLongLoading] = useState(false);
-	const timeout = useRef<number>();
+	const timeout = useRef<number>(undefined);
 
 	const timeoutCallback = useCallback(() => {
 		if (!isLoading) return;

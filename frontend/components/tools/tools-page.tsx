@@ -3,8 +3,9 @@ import { resetLocalStorage } from "@util/local-storage";
 import { IconFolderCode, IconRotateDot, IconTrash } from "@tabler/icons-react";
 import { CommandButton } from "@components/command-button";
 import { commands } from "@api/bindings";
+import { SteamCacheButton } from "./steam-cache-button";
 
-export function SettingsPage() {
+export function ToolsPage() {
 	return (
 		<Container size="xs">
 			<Stack>
@@ -32,6 +33,7 @@ export function SettingsPage() {
 				>
 					Clear cached games
 				</CommandButton>
+				<SteamCacheButton />
 			</Stack>
 		</Container>
 	);

@@ -17,7 +17,7 @@ use crate::{
 	game::Game,
 	paths,
 	providers::{
-		itch_provider::Itch, manual_provider::Manual, steam_provider::Steam, xbox_provider::Xbox,
+		itch_provider::Itch, manual_provider::Manual, steam::steam_provider::Steam, xbox_provider::Xbox,
 	},
 	result::{Error, Result},
 };

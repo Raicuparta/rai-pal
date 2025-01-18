@@ -5,7 +5,7 @@ import { usePersistedState } from "@hooks/use-persisted-state";
 import { IconBooks, IconTool, IconSettings } from "@tabler/icons-react";
 import { GamesPage } from "./games/games-page";
 import { ModsPage } from "./mods/mods-page";
-import { SettingsPage } from "./settings/settings-page";
+import { ToolsPage } from "./tools/tools-page";
 import { ThanksPage } from "./thanks/thanks-page";
 import { ThanksTabIcon } from "./thanks/thanks-tab-icon";
 import { useAtomValue } from "jotai";
@@ -18,9 +18,9 @@ const pages = {
 		icon: <IconBooks />,
 	},
 	mods: { title: "Mods", component: ModsPage, icon: <IconTool /> },
-	settings: {
-		title: "Settings",
-		component: SettingsPage,
+	tools: {
+		title: "Tools",
+		component: ToolsPage,
 		icon: <IconSettings />,
 	},
 	thanks: {

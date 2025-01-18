@@ -6,19 +6,21 @@ use std::{
 
 use steamlocate::SteamDir;
 
-use super::{
-	provider::ProviderId,
-	provider_command::{ProviderCommand, ProviderCommandAction},
-};
 use crate::{
 	game::{Game, GameId},
 	game_tag::GameTag,
 	installed_game::{self, InstalledGame},
-	providers::provider::{ProviderActions, ProviderStatic},
-	result::Result,
-	steam::{
-		appinfo::{self, SteamAppInfo, SteamAppInfoReader, SteamLaunchOption}, packageinfo::PackageInfo
+	providers::{
+		provider::{ProviderActions, ProviderId, ProviderStatic},
+		provider_command::{ProviderCommand, ProviderCommandAction},
+		steam::appinfo::{self, SteamAppInfoReader},
 	},
+	result::Result,
+};
+
+use super::{
+	appinfo::{SteamAppInfo, SteamLaunchOption},
+	packageinfo::PackageInfo,
 };
 
 #[derive(Clone)]
@@ -93,9 +95,34 @@ impl Steam {
 		// packageinfo.vdf is another cache file, and from my (not very extensive) tests, it does really only include owned packages.
 		// appinfo.vdf is also still needed since most of the game data we want is there.
 
-		let package_info = PackageInfo::read(&steam_path.join("appcache/packageinfo.vdf"))?;
+		let package_info = PackageInfo::read(&Self::get_appinfo_path(steam_path))?;
 
 		Ok(package_info.get_app_ids())
+	}
+
+	pub fn get_appinfo_path(steam_path: &Path) -> PathBuf {
+		steam_path.join("appcache/appinfo.vdf")
+	}
+
+	pub fn get_packageinfo_path(steam_path: &Path) -> PathBuf {
+		steam_path.join("appcache/packageinfo.vdf")
+	}
+
+	pub fn delete_cache() -> Result {
+		let steam_dir = SteamDir::locate()?;
+		let steam_path = steam_dir.path();
+		let appinfo_path = Self::get_appinfo_path(steam_path);
+		let packageinfo_path = Self::get_packageinfo_path(steam_path);
+
+		if appinfo_path.exists() {
+			std::fs::remove_file(appinfo_path)?;
+		}
+
+		if packageinfo_path.exists() {
+			std::fs::remove_file(packageinfo_path)?;
+		}
+
+		Ok(())
 	}
 }
 
@@ -106,7 +133,7 @@ impl ProviderActions for Steam {
 	{
 		let steam_dir = SteamDir::locate()?;
 		let steam_path = steam_dir.path();
-		let app_info_reader = SteamAppInfoReader::new(&appinfo::get_path(steam_path))?;
+		let app_info_reader = SteamAppInfoReader::new(&Self::get_appinfo_path(steam_path))?;
 		let mut app_paths = HashMap::<u32, PathBuf>::new();
 		for library in (steam_dir.libraries()?).flatten() {
 			for app in library.apps().flatten() {

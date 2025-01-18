@@ -2,8 +2,8 @@ import { Tabs, Stack, Text } from "@mantine/core";
 
 export type Page = {
 	title: string;
-	component: () => JSX.Element;
-	icon: JSX.Element;
+	component: () => React.JSX.Element;
+	icon: React.JSX.Element;
 };
 
 type Props = {
