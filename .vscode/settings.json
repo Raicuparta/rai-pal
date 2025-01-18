@@ -83,5 +83,6 @@
 		"winreg",
 		"winuser",
 		"YESNO"
-	]
+	],
+	"dependi.npm.lockFileEnabled": true
 }
