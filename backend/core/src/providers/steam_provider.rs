@@ -1,11 +1,9 @@
 use std::{
 	collections::{HashMap, HashSet},
-	fs,
 	marker::{Send, Sync},
 	path::{Path, PathBuf},
 };
 
-use lazy_regex::BytesRegex;
 use steamlocate::SteamDir;
 
 use super::{
@@ -93,29 +91,12 @@ impl Steam {
 	fn get_owned_ids_whitelist(steam_path: &Path) -> Result<HashSet<String>> {
 		// Games in appinfo.vdf aren't necessarily owned.
 		// Most of them are, but there are also a bunch of other games that Steam needs to reference for one reason or another.
-		// assets.vdf is another cache file, and from my (not very extensive) tests, it does really only include owned files.
-		// Free games are some times not there though, so later in the code I'm presuming that any free game found in appinfo.vdf is owned.
-		// appinfo.vdf is also still needed since most of the game data we want is there, so we can't just read everything from assets.vdf.
-		let assets_cache_path = steam_path.join("appcache/librarycache/assetcache.vdf");
-		let assets_cache_string = if assets_cache_path.exists() {
-				fs::read(assets_cache_path)?
-		} else {
-				// I think Steam renamed this file at some point. This is the old name.
-				fs::read(steam_path.join("appcache/librarycache/assets.vdf"))?
-		};
+		// packageinfo.vdf is another cache file, and from my (not very extensive) tests, it does really only include owned packages.
+		// appinfo.vdf is also still needed since most of the game data we want is there.
 
-		// This file has a bunch of ids, and they're always just numbers surrounded by zeros.
-		// We could have a smarter parse (this is a binary vdf), but let's just do this for now (probably forever).
-		let isolated_numbers: HashSet<String> = BytesRegex::new(r"\x00(\d+)\x00")?
-			.captures_iter(&assets_cache_string)
-			.filter_map(|captures| {
-				captures.get(1).and_then(|capture_match| {
-					String::from_utf8(capture_match.as_bytes().to_owned()).ok()
-				})
-			})
-			.collect();
+		let package_info = appinfo::PackageInfo::read(&steam_path.join("appcache/packageinfo.vdf"))?;
 
-		Ok(isolated_numbers)
+		Ok(package_info.get_app_ids())
 	}
 }
 
@@ -138,6 +119,8 @@ impl ProviderActions for Steam {
 			log::error!("Failed to read Steam assets cache: {}", err);
 			HashSet::new()
 		});
+
+		log::info!("whitelist size: {}", owned_ids_whitelist.len());
 
 		for app_info_result in app_info_reader {
 			match app_info_result {
