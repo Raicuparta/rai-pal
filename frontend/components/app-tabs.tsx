@@ -2,7 +2,7 @@ import { Tabs, Container, Stack } from "@mantine/core";
 import { PageTab } from "@components/page-tab";
 import { useCallback } from "react";
 import { usePersistedState } from "@hooks/use-persisted-state";
-import { IconBooks, IconTool, IconSettings } from "@tabler/icons-react";
+import { IconBox, IconDeviceGamepad, IconHammer } from "@tabler/icons-react";
 import { GamesPage } from "./games/games-page";
 import { ModsPage } from "./mods/mods-page";
 import { ToolsPage } from "./tools/tools-page";
@@ -15,13 +15,13 @@ const pages = {
 	games: {
 		title: "Games",
 		component: GamesPage,
-		icon: <IconBooks />,
+		icon: <IconDeviceGamepad />,
 	},
-	mods: { title: "Mods", component: ModsPage, icon: <IconTool /> },
+	mods: { title: "Mods", component: ModsPage, icon: <IconBox /> },
 	tools: {
 		title: "Tools",
 		component: ToolsPage,
-		icon: <IconSettings />,
+		icon: <IconHammer />,
 	},
 	thanks: {
 		title: "Thanks",

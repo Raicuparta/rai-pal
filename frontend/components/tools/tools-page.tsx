@@ -24,15 +24,20 @@ export function ToolsPage() {
 						onClick={resetLocalStorage}
 						leftSection={<IconRotateDot />}
 					>
-						Reset settings to defaults
+						Reset Rai Pal settings
 					</Button>
 				</Tooltip>
-				<CommandButton
-					onClick={commands.clearCache}
-					leftSection={<IconTrash />}
+				<Tooltip
+					label="Clears the game list cache used by Rai Pal."
+					position="bottom"
 				>
-					Clear cached games
-				</CommandButton>
+					<CommandButton
+						onClick={commands.clearCache}
+						leftSection={<IconTrash />}
+					>
+						Reset Rai Pal cache
+					</CommandButton>
+				</Tooltip>
 				<SteamCacheButton />
 			</Stack>
 		</Container>
