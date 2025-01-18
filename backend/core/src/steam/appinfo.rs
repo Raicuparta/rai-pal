@@ -213,7 +213,7 @@ impl SteamAppInfoReader {
 				value_to_i32(app.get(&["appinfo", "common", "original_release_date"]));
 
 			let app_type_option = value_to_string(app.get(&["appinfo", "common", "type"]));
-			let is_free = value_to_string(app.get(&["appinfo", "extended", "isfreeapp"])).is_some()
+			let is_free = app.get(&["appinfo", "extended", "isfreeapp"]).is_some()
 				|| app_type_option
 					.as_ref()
 					.is_some_and(|app_type| app_type == "Demo");
