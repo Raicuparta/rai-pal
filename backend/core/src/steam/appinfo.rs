@@ -418,7 +418,7 @@ impl PackageInfo {
 		loop {
 			let package_id = reader.read_u32::<LittleEndian>()?;
 
-			if package_id == 0xffffffff {
+			if package_id == 0xffff_ffff {
 				break;
 			}
 
@@ -459,19 +459,23 @@ impl Package {
 	}
 
 	pub fn get_app_ids(&self) -> HashSet<String> {
-		if let Some(ValueType::KeyValue(first_value)) = self.key_values.values().next() {
-			if let Some(ValueType::KeyValue(app_ids)) = first_value.get("appids") {
-				log::info!("## package app_ids: {}", app_ids.len());
-				return app_ids.values().filter_map(|value| {
-					if let ValueType::Int32(app_id) = value {
-						Some(app_id.to_string())
-					} else {
-						None
-					}
-				}).collect();
-			}
-		}
-
-		HashSet::default()
+		// As far as I can tell, there's always just a single item here.
+		// But just to be safe, I'm mapping over the map, just in case there are more.
+		self.key_values
+			.values()
+			.filter_map(|value| match value {
+				ValueType::KeyValue(root_value) => root_value.get("appids"),
+				_ => None,
+			})
+			.filter_map(|app_ids| match app_ids {
+				ValueType::KeyValue(app_ids) => Some(app_ids),
+				_ => None,
+			})
+			.flat_map(|app_ids| app_ids.values())
+			.filter_map(|app_id_value| match app_id_value {
+				ValueType::Int32(app_id) => Some(app_id.to_string()),
+				_ => None,
+			})
+			.collect()
 	}
 }
