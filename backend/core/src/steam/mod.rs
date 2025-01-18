@@ -1,2 +1,3 @@
 pub mod appinfo;
-pub mod thumbnail;
+pub mod vdf;
+pub mod packageinfo;

@@ -17,8 +17,7 @@ use crate::{
 	providers::provider::{ProviderActions, ProviderStatic},
 	result::Result,
 	steam::{
-		appinfo::{self, SteamAppInfo, SteamAppInfoReader, SteamLaunchOption},
-		thumbnail::get_steam_thumbnail,
+		appinfo::{self, SteamAppInfo, SteamAppInfoReader, SteamLaunchOption}, packageinfo::PackageInfo
 	},
 };
 
@@ -94,7 +93,7 @@ impl Steam {
 		// packageinfo.vdf is another cache file, and from my (not very extensive) tests, it does really only include owned packages.
 		// appinfo.vdf is also still needed since most of the game data we want is there.
 
-		let package_info = appinfo::PackageInfo::read(&steam_path.join("appcache/packageinfo.vdf"))?;
+		let package_info = PackageInfo::read(&steam_path.join("appcache/packageinfo.vdf"))?;
 
 		Ok(package_info.get_app_ids())
 	}
@@ -147,7 +146,7 @@ impl ProviderActions for Steam {
 						&app_info.name,
 					);
 
-					game.set_thumbnail_url(&get_steam_thumbnail(&external_id))
+					game.set_thumbnail_url(&format!("https://cdn.cloudflare.steamstatic.com/steam/apps/{external_id}/capsule_231x87.jpg"))
 						.add_provider_command(
 							ProviderCommandAction::ShowInLibrary,
 							ProviderCommand::String(format!(
