@@ -37,15 +37,15 @@ pub enum ValueType {
 	UInt64(u64),
 	Int64(i64),
 	Float32(f32),
-	KeyValue(KeyValue),
+	KeyValue(KeyValues),
 }
 
-type KeyValue = HashMap<String, ValueType>;
+type KeyValues = HashMap<String, ValueType>;
 
 // Recursively search for the specified sequence of keys in the key-value data.
 // The order of the keys dictates the hierarchy, with all except the last having
 // to be a Value::KeyValueType.
-pub fn find_keys<'a>(key_value: &'a KeyValue, keys: &[&str]) -> Option<&'a ValueType> {
+pub fn find_keys<'a>(key_value: &'a KeyValues, keys: &[&str]) -> Option<&'a ValueType> {
 	if keys.is_empty() {
 		return None;
 	}
@@ -81,7 +81,7 @@ impl SteamLaunchOption {
 
 #[derive(Debug)]
 pub struct App {
-	pub key_values: KeyValue,
+	pub key_values: KeyValues,
 }
 
 #[derive(Debug, Clone)]
@@ -212,9 +212,11 @@ impl SteamAppInfoReader {
 			let original_release_date =
 				value_to_i32(app.get(&["appinfo", "common", "original_release_date"]));
 
-			let is_free = value_to_string(app.get(&["appinfo", "extended", "isfreeapp"])).is_some();
-
 			let app_type_option = value_to_string(app.get(&["appinfo", "common", "type"]));
+			let is_free = value_to_string(app.get(&["appinfo", "extended", "isfreeapp"])).is_some()
+				|| app_type_option
+					.as_ref()
+					.is_some_and(|app_type| app_type == "Demo");
 
 			if app_type_option
 				.clone()
@@ -274,7 +276,7 @@ fn value_to_path(value: Option<&ValueType>) -> Option<PathBuf> {
 	}
 }
 
-const fn value_to_kv(value: Option<&ValueType>) -> Option<&KeyValue> {
+const fn value_to_kv(value: Option<&ValueType>) -> Option<&KeyValues> {
 	match value {
 		Some(ValueType::KeyValue(kv_value)) => Some(kv_value),
 		_ => None,
@@ -291,10 +293,10 @@ fn read_kv(
 	reader: &mut BufReader<fs::File>,
 	alt_format: bool,
 	keys_option: Option<&Vec<String>>,
-) -> Result<KeyValue> {
+) -> Result<KeyValues> {
 	let current_bin_end = if alt_format { BIN_END_ALT } else { BIN_END };
 
-	let mut node = KeyValue::new();
+	let mut node = KeyValues::new();
 
 	loop {
 		let t = reader.read_u8()?;
