@@ -61,8 +61,14 @@ impl Eq for GameEngine {}
 impl PartialEq for GameEngine {
 	fn eq(&self, other: &Self) -> bool {
 		self.brand == other.brand
-			&& self.version.as_ref().map(|version| &version.display)
-				== other.version.as_ref().map(|version| &version.display)
+			&& self
+				.version
+				.as_ref()
+				.map(|version| version.display.to_lowercase())
+				== other
+					.version
+					.as_ref()
+					.map(|version| version.display.to_lowercase())
 	}
 }
 

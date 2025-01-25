@@ -139,7 +139,11 @@ impl GamesQuery {
 
 	pub fn sort(&self, game_a: &Game, game_b: &Game) -> Ordering {
 		let ordering = match self.sort_by {
-			GamesSortBy::Title => game_a.title.display.cmp(&game_b.title.display),
+			GamesSortBy::Title => game_a
+				.title
+				.display
+				.to_lowercase()
+				.cmp(&game_b.title.display.to_lowercase()),
 			GamesSortBy::Engine => game_a.get_engine().cmp(&game_b.get_engine()),
 		};
 
