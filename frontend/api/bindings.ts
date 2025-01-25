@@ -37,9 +37,9 @@ async deleteMod(modId: string) : Promise<Result<null, Error>> {
     else return { status: "error", error: e  as any };
 }
 },
-async deleteSteamAppinfoCache() : Promise<Result<null, Error>> {
+async resetSteamCache() : Promise<Result<null, Error>> {
     try {
-    return { status: "ok", data: await TAURI_INVOKE("delete_steam_appinfo_cache") };
+    return { status: "ok", data: await TAURI_INVOKE("reset_steam_cache") };
 } catch (e) {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
