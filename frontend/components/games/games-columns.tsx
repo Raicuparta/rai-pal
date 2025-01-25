@@ -251,6 +251,7 @@ const releaseDate: GamesColumn = {
 					gap={0}
 					justify="center"
 					align="center"
+					opacity={0.75}
 				>
 					{parts.map((datePart, datePartIndex) => (
 						<Text
