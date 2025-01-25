@@ -1,5 +1,5 @@
 import { Group, Stack } from "@mantine/core";
-import { useCallback } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { FilterMenu } from "@components/filters/filter-menu";
 import { RefreshButton } from "@components/refresh-button";
 import { AddGame } from "./add-game-button";
@@ -9,7 +9,7 @@ import { useAtomValue, useSetAtom } from "jotai";
 import { gameDataAtom } from "@hooks/use-data";
 import { selectedGameAtom } from "./games-state";
 import { TableContainer } from "@components/table/table-container";
-import { TableVirtuoso } from "react-virtuoso";
+import { TableVirtuoso, TableVirtuosoHandle } from "react-virtuoso";
 import { useVirtuosoHeaderContent } from "@hooks/use-virtuoso-header-content";
 import { useVirtuosoTableComponents } from "@hooks/use-virtuoso-table-components";
 import { GameRow, gameRowHeight } from "./game-row";
@@ -21,6 +21,7 @@ export function GamesPage() {
 	const gameData = useAtomValue(gameDataAtom);
 	const setSelectedGame = useSetAtom(selectedGameAtom);
 	const [dataQuery, setDataQuery] = useDataQuery();
+	const tableRef = useRef<TableVirtuosoHandle>(null);
 
 	useAppEvent("selectInstalledGame", ([providerId, gameId]) => {
 		setSelectedGame({
@@ -51,6 +52,12 @@ export function GamesPage() {
 
 	const tableComponents = useVirtuosoTableComponents(GameRow);
 
+	useEffect(() => {
+		if (tableRef.current) {
+			tableRef.current.scrollToIndex(0);
+		}
+	}, [dataQuery]);
+
 	return (
 		<Stack h="100%">
 			<Group>
@@ -60,6 +67,7 @@ export function GamesPage() {
 			</Group>
 			<TableContainer>
 				<TableVirtuoso
+					ref={tableRef}
 					className={styles.table}
 					style={{ overflowY: "scroll" }}
 					components={tableComponents}
