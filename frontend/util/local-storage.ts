@@ -1,7 +1,16 @@
+import { app } from "@tauri-apps/api";
 import { showAppNotification } from "@components/app-notifications";
 
 const STORAGE_RESET_EVENT_NAME = "storage-reset";
 const STORAGE_CHANGE_EVENT_NAME_PREFIX = "storage-changed";
+
+// We append the app version to the storage keys,
+// to invalidate every time we update, just in case.
+const appVersion = await app.getVersion();
+
+function getVersionedKey(key: string) {
+	return `${key}-v${appVersion}`;
+}
 
 function getEventId(key: string) {
 	return `${STORAGE_CHANGE_EVENT_NAME_PREFIX}-${key}`;
@@ -9,9 +18,9 @@ function getEventId(key: string) {
 
 export function setLocalStorage<TValue>(key: string, value: TValue) {
 	if (!value) {
-		localStorage.removeItem(key);
+		localStorage.removeItem(getVersionedKey(key));
 	} else {
-		localStorage.setItem(key, JSON.stringify(value));
+		localStorage.setItem(getVersionedKey(key), JSON.stringify(value));
 	}
 
 	window.dispatchEvent(new Event(getEventId(key)));
@@ -41,7 +50,7 @@ export function getLocalStorage<TValue>(
 	key: string,
 	defaultValue: TValue,
 ): TValue {
-	const storageValue = localStorage.getItem(key);
+	const storageValue = localStorage.getItem(getVersionedKey(key));
 	return storageValue ? JSON.parse(storageValue) : defaultValue;
 }
 
