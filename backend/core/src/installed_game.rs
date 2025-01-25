@@ -22,7 +22,6 @@ pub struct InstalledGame {
 	pub installed_mod_versions: InstalledModVersions,
 	pub discriminator: Option<String>,
 	pub start_command: Option<ProviderCommand>,
-	pub has_outdated_mod: bool,
 }
 
 type InstalledModVersions = HashMap<String, String>;
@@ -60,7 +59,6 @@ impl InstalledGame {
 			executable: GameExecutable::new(path)?,
 			discriminator: None,
 			start_command: None,
-			has_outdated_mod: false,
 		};
 
 		installed_game.refresh_installed_mods();

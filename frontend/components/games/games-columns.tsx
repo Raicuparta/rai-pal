@@ -9,7 +9,6 @@ import {
 } from "@mantine/core";
 import { TableColumnBase, columnMapToList } from "@components/table/table-head";
 import { ItemName } from "../item-name";
-import { OutdatedMarker } from "@components/outdated-marker";
 import styles from "../table/table.module.css";
 import { EngineBrand, Game, GamesSortBy, ProviderId } from "@api/bindings";
 import { IconCloud, IconDeviceDesktop } from "@tabler/icons-react";
@@ -123,28 +122,21 @@ const NameCell = ({ item }: CellProps) => (
 		p={0}
 		className={styles.nameCell}
 	>
-		<Tooltip
-			disabled={!item.installedGame?.hasOutdatedMod}
-			label="One of the mods installed in this game is outdated."
-			position="bottom"
+		<Flex
+			gap={3}
+			p="xs"
+			fw="bold"
+			c={item.installedGame ? "white" : "grey"}
+			style={{
+				maxHeight: gameRowHeight,
+				overflow: "hidden",
+			}}
 		>
-			<Flex
-				gap={3}
-				p="xs"
-				fw="bold"
-				c={item.installedGame ? "white" : "grey"}
-				style={{
-					maxHeight: gameRowHeight,
-					overflow: "hidden",
-				}}
-			>
-				<ItemName label={item.installedGame?.discriminator}>
-					{item.installedGame?.hasOutdatedMod && <OutdatedMarker />}
-					{item?.title.display}
-					<GameTags game={item} />
-				</ItemName>
-			</Flex>
-		</Tooltip>
+			<ItemName label={item.installedGame?.discriminator}>
+				{item?.title.display}
+				<GameTags game={item} />
+			</ItemName>
+		</Flex>
 	</Table.Td>
 );
 
