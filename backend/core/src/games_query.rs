@@ -31,6 +31,7 @@ pub struct GamesFilter {
 pub enum GamesSortBy {
 	Title,
 	Engine,
+	ReleaseDate,
 }
 
 #[serializable_struct]
@@ -145,6 +146,7 @@ impl GamesQuery {
 				.to_lowercase()
 				.cmp(&game_b.title.display.to_lowercase()),
 			GamesSortBy::Engine => game_a.get_engine().cmp(&game_b.get_engine()),
+			GamesSortBy::ReleaseDate => game_a.release_date.cmp(&game_b.release_date),
 		};
 
 		if self.sort_descending {

@@ -230,11 +230,48 @@ const engine: GamesColumn = {
 	},
 };
 
+const releaseDate: GamesColumn = {
+	label: "Release",
+	width: 75,
+	sort: "ReleaseDate",
+	component: ({ item }: CellProps) => {
+		const date = item.releaseDate
+			? new Date(Number(item.releaseDate) * 1000)
+			: null;
+		const parts = date
+			? [
+					date.toLocaleString("default", { year: "numeric" }),
+					date.toLocaleString("default", { month: "short" }),
+					date.toLocaleString("default", { day: "2-digit" }),
+				]
+			: ["-"];
+		return (
+			<Table.Td>
+				<Stack
+					gap={0}
+					justify="center"
+					align="center"
+				>
+					{parts.map((datePart, datePartIndex) => (
+						<Text
+							key={datePartIndex}
+							fz="xs"
+						>
+							{datePart}
+						</Text>
+					))}
+				</Stack>
+			</Table.Td>
+		);
+	},
+};
+
 const gamesColumnsMap = {
 	status,
 	thumbnail,
 	name,
 	engine,
+	releaseDate,
 };
 
 export type GamesColumnId = keyof typeof gamesColumnsMap;
