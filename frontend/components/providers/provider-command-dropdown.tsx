@@ -5,14 +5,13 @@ import { ProviderCommandButton } from "./provider-command-button";
 
 type Props = {
 	readonly game: Game;
-	readonly isInstalled?: boolean;
 };
 
 export function ProviderCommandButtons(props: Props) {
 	let providerCommandActions = Object.keys(
 		props.game.providerCommands,
 	) as ProviderCommandAction[];
-	if (props.isInstalled) {
+	if (props.game.installedGame) {
 		providerCommandActions = providerCommandActions.filter(
 			(action) => (action as ProviderCommandAction) != "Install",
 		);
