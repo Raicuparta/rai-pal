@@ -77,6 +77,9 @@ export function GamesPage() {
 					fixedItemHeight={gameRowHeight}
 					overscan={50}
 					increaseViewportBy={100}
+					computeItemKey={(index) =>
+						`${gameData.gameIds[index].providerId}${gameData.gameIds[index].gameId}`
+					}
 				/>
 			</TableContainer>
 		</Stack>
