@@ -95,7 +95,7 @@ impl Steam {
 		// packageinfo.vdf is another cache file, and from my (not very extensive) tests, it does really only include owned packages.
 		// appinfo.vdf is also still needed since most of the game data we want is there.
 
-		let package_info = PackageInfo::read(&Self::get_appinfo_path(steam_path))?;
+		let package_info = PackageInfo::read(&Self::get_packageinfo_path(steam_path))?;
 
 		Ok(package_info.get_app_ids())
 	}
