@@ -3,12 +3,12 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAsyncCommand } from "./use-async-command";
 import { useAppEvent } from "./use-app-event";
 
-export function useGame(gameId: GameId) {
+export function useGame({ providerId, gameId }: GameId) {
 	const [getGame] = useAsyncCommand(commands.getGame);
 	const defaultGame: Game = useMemo(
 		() => ({
-			id: gameId,
-			externalId: gameId.gameId,
+			id: { gameId, providerId },
+			externalId: gameId,
 			installedGame: null,
 			ownedGame: null,
 			remoteGame: null,
@@ -24,35 +24,29 @@ export function useGame(gameId: GameId) {
 			// TODO this "as" won't be needed after specta makes maps Partial.
 			providerCommands: {} as Game["providerCommands"],
 		}),
-		[gameId],
+		[gameId, providerId],
 	);
 
 	const [game, setGame] = useState<Game>(defaultGame);
 
 	const updateData = useCallback(() => {
-		getGame(gameId).then((game) => {
-			setGame(game);
-		});
-	}, [getGame, gameId]);
+		getGame({ providerId, gameId }).then(setGame);
+	}, [getGame, providerId, gameId]);
 
 	useEffect(() => {
 		updateData();
 	}, [updateData]);
 
-	useAppEvent(
-		"foundGame",
-		useCallback(
-			(foundGameId) => {
-				if (
-					foundGameId.providerId !== gameId.providerId ||
-					foundGameId.gameId !== gameId.gameId
-				)
-					return;
-				updateData();
-			},
-			[gameId, updateData],
-		),
+	const foundGameCallback = useCallback(
+		(foundId: GameId) => {
+			if (foundId.providerId !== providerId || foundId.gameId !== gameId)
+				return;
+			updateData();
+		},
+		[gameId, providerId, updateData],
 	);
+
+	useAppEvent("foundGame", `${providerId}:${gameId}`, foundGameCallback);
 
 	return game;
 }

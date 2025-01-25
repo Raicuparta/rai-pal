@@ -36,11 +36,11 @@ export function showAppNotification(message: string, type: NotificationType) {
 }
 
 export function AppNotifications() {
-	useAppEvent("errorRaised", (error) => {
+	useAppEvent("errorRaised", "app-notifications", (error) => {
 		showAppNotification(error, "error");
 	});
 
-	useAppEvent("executedProviderCommand", () => {
+	useAppEvent("executedProviderCommand", "app-notifications", () => {
 		showAppNotification(
 			"Running command... This might take a few seconds.",
 			"info",

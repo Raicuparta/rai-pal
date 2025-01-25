@@ -18,7 +18,7 @@ export function dataSubscription<TEventId extends AppEventId>(
 			[setData],
 		);
 
-		useAppEvent(eventId, eventCallback);
+		useAppEvent(eventId, "data-subscription", eventCallback);
 	}
 
 	return [stateAtom, useDataSubscription] as const;

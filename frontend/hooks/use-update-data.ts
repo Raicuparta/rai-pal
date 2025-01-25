@@ -50,7 +50,6 @@ export function useUpdateData(executeOnMount = false) {
 				showAppNotification(`Failed to get app data: ${result.error}`, "error");
 				return false;
 			}
-
 			setGameData(result.data);
 
 			return true;
@@ -66,7 +65,7 @@ export function useUpdateData(executeOnMount = false) {
 		updateProviderGames();
 	}, [updateProviderGames]);
 
-	useAppEvent("gamesChanged", throttledUpdateProviderGames);
+	useAppEvent("gamesChanged", "update-data", throttledUpdateProviderGames);
 
 	const updateAppData = useCallback(() => {
 		function handleDataPromise(promise: Promise<Result<null, Error>>) {

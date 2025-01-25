@@ -12,20 +12,19 @@ export type EventPayload<TEventId extends AppEventId> = Parameters<
 	Parameters<AppEvent<TEventId>["listen"]>[0]
 >[0]["payload"];
 
+type CallbackMap = Map<string, EventCallback<AppEventId>>;
+
 // Apparently, calling Tauri's `listen` very frequently (like many times per second)
 // can cause the frontend to slow to a crawl. So we need to cache these listeners.
-const eventCallbacks: Map<
-	AppEventId,
-	Array<EventCallback<AppEventId>>
-> = new Map();
+const eventCallbacks: Map<AppEventId, CallbackMap> = new Map();
 
 function getCallbacks(eventId: AppEventId) {
-	let callbacks = eventCallbacks.get(eventId);
+	let callbacks: CallbackMap | undefined = eventCallbacks.get(eventId);
 	if (!callbacks) {
-		callbacks = [];
+		callbacks = new Map();
 		eventCallbacks.set(eventId, callbacks);
 		events[eventId].listen((eventObject) => {
-			for (const callback of eventCallbacks.get(eventId) ?? []) {
+			for (const callback of eventCallbacks.get(eventId)?.values() ?? []) {
 				callback(eventObject.payload);
 			}
 		});
@@ -35,14 +34,15 @@ function getCallbacks(eventId: AppEventId) {
 
 export function useAppEvent<TEventId extends AppEventId>(
 	eventId: TEventId,
+	key: string,
 	callback: EventCallback<TEventId>,
 ) {
 	useEffect(() => {
 		const callbacks = getCallbacks(eventId);
-		const index = callbacks.push(callback);
+		callbacks.set(key, callback);
 
 		return () => {
-			callbacks.splice(index - 1, 1);
+			callbacks.delete(key);
 		};
-	}, [eventId, callback]);
+	}, [eventId, callback, key]);
 }

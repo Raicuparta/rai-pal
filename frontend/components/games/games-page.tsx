@@ -23,7 +23,7 @@ export function GamesPage() {
 	const [dataQuery, setDataQuery] = useDataQuery();
 	const tableRef = useRef<TableVirtuosoHandle>(null);
 
-	useAppEvent("selectInstalledGame", ([providerId, gameId]) => {
+	useAppEvent("selectInstalledGame", "games-page", ([providerId, gameId]) => {
 		setSelectedGame({
 			providerId,
 			gameId,
@@ -72,7 +72,6 @@ export function GamesPage() {
 					style={{ overflowY: "scroll" }}
 					components={tableComponents}
 					fixedHeaderContent={renderHeaders}
-					totalCount={gameData.gameIds.length}
 					data={gameData.gameIds}
 					fixedItemHeight={gameRowHeight}
 					overscan={50}
