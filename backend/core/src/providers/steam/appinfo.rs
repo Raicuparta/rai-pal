@@ -185,7 +185,10 @@ impl SteamAppInfoReader {
 			}
 
 			if let Some(launch_options) = app_launch {
-				if let Some(name) = value_to_string(app.get(&["appinfo", "common", "name"])) {
+				if let Some(name) = value_to_string(
+					app.get(&["appinfo", "common", "name_localized", "english"])
+						.or_else(|| app.get(&["appinfo", "common", "name"])),
+				) {
 					return Ok(Some(SteamAppInfo {
 						app_id,
 						launch_options,
