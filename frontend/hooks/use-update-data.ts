@@ -5,18 +5,18 @@ import {
 	useRef,
 	useState,
 } from "react";
-import { useAtomValue, useSetAtom } from "jotai";
+import { useSetAtom } from "jotai";
 import { commands, Result, Error, ProviderId } from "@api/bindings";
 import { loadingCountAtom, gameDataAtom } from "./use-data";
 import { showAppNotification } from "@components/app-notifications";
 import { useAppEvent } from "./use-app-event";
-import { gamesQueryAtom } from "./use-data-query";
 import { useThrottledCallback } from "@mantine/hooks";
+import { useDataQuery } from "./use-data-query";
 
 export function useUpdateData(executeOnMount = false) {
 	const setLoading = useSetAtom(loadingCountAtom);
 	const setGameData = useSetAtom(gameDataAtom);
-	const gamesQuery = useAtomValue(gamesQueryAtom);
+	const [gamesQuery] = useDataQuery();
 	const deferredGamesQuery = useDeferredValue(gamesQuery);
 	const [providerIds, setProviderIds] = useState<ProviderId[]>([]);
 	const fetchCount = useRef(0);

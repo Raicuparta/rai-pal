@@ -1,15 +1,13 @@
-import { app } from "@tauri-apps/api";
 import { showAppNotification } from "@components/app-notifications";
 
 const STORAGE_RESET_EVENT_NAME = "storage-reset";
 const STORAGE_CHANGE_EVENT_NAME_PREFIX = "storage-changed";
 
-// We append the app version to the storage keys,
-// to invalidate every time we update, just in case.
-const appVersion = await app.getVersion();
+// Increment this to invalidate previous incompatible versions.
+const storageVersion = 1;
 
 function getVersionedKey(key: string) {
-	return `${key}-v${appVersion}`;
+	return `${key}-v${storageVersion}`;
 }
 
 function getEventId(key: string) {
@@ -50,8 +48,16 @@ export function getLocalStorage<TValue>(
 	key: string,
 	defaultValue: TValue,
 ): TValue {
-	const storageValue = localStorage.getItem(getVersionedKey(key));
-	return storageValue ? JSON.parse(storageValue) : defaultValue;
+	try {
+		const storageValue = localStorage.getItem(getVersionedKey(key));
+		return storageValue ? JSON.parse(storageValue) : defaultValue;
+	} catch (error) {
+		console.error(
+			`Failed to parse local storage JSON for key "${key}":`,
+			error,
+		);
+		return defaultValue;
+	}
 }
 
 export function resetLocalStorage() {

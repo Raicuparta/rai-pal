@@ -1,6 +1,6 @@
 import { GamesQuery } from "@api/bindings";
+import { getLocalStorage, setLocalStorage } from "@util/local-storage";
 import { atom, useAtom } from "jotai";
-import { useCallback } from "react";
 
 export const defaultQuery: GamesQuery = {
 	sortBy: "Title",
@@ -26,28 +26,23 @@ export const defaultQuery: GamesQuery = {
 	},
 };
 
-export const gamesQueryAtom = atom<GamesQuery>(defaultQuery);
+const storageKey = "games-query";
+const gamesQueryAtom = atom<GamesQuery>(
+	getLocalStorage(storageKey, defaultQuery),
+);
+const gamesQueryAtomWithPersistence = atom(
+	(get) => get(gamesQueryAtom),
+	(get, set, partialQuery: Partial<GamesQuery> | null) => {
+		const previousQuery = get(gamesQueryAtom);
+		const newQuery = partialQuery
+			? { ...previousQuery, ...partialQuery }
+			: defaultQuery;
+		set(gamesQueryAtom, newQuery);
+		setLocalStorage(storageKey, newQuery);
+	},
+);
 
 export function useDataQuery() {
-	const [query, setQuery] = useAtom(gamesQueryAtom);
-
-	const setQueryExternal = useCallback(
-		(partialQuery: Partial<GamesQuery> | null) => {
-			setQuery(
-				partialQuery
-					? (previousQuery) => {
-							const newQuery: GamesQuery = {
-								...previousQuery,
-								...partialQuery,
-							};
-
-							return newQuery;
-						}
-					: defaultQuery,
-			);
-		},
-		[setQuery],
-	);
-
-	return [query, setQueryExternal] as const;
+	const [query, setQuery] = useAtom(gamesQueryAtomWithPersistence);
+	return [query, setQuery] as const;
 }
