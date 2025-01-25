@@ -123,6 +123,7 @@ impl GamesQuery {
 			// We'll try to match the search term to a bunch of different strings related to this game.
 			let mut candidates: Vec<&str> = vec![&game.title.display];
 			candidates.extend(game.title.normalized.iter().map(String::as_str));
+			candidates.push(game.external_id.as_str());
 
 			if let Some(installed_game) = game.installed_game.as_ref() {
 				candidates.push(&installed_game.executable.name);
