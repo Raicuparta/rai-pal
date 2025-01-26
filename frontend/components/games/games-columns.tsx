@@ -1,20 +1,14 @@
-import {
-	DefaultMantineColor,
-	Flex,
-	Paper,
-	Stack,
-	Table,
-	Text,
-} from "@mantine/core";
+import { DefaultMantineColor, Flex, Stack, Table } from "@mantine/core";
 import { TableColumnBase, columnMapToList } from "@components/table/table-head";
 import { ItemName } from "../item-name";
 import styles from "../table/table.module.css";
-import { EngineBrand, Game, GamesSortBy, ProviderId } from "@api/bindings";
+import { Game, GamesSortBy, ProviderId } from "@api/bindings";
 import { IconCloud, IconDeviceDesktop } from "@tabler/icons-react";
 import { GameTags } from "@components/game-tags/game-tags";
 import { GameImage } from "@components/game-image";
 import { ProviderIcon } from "@components/providers/provider-icon";
 import { gameRowHeight } from "./game-row";
+import { EngineBadge } from "@components/engine-badge/engine-badge";
 
 type GamesColumn = TableColumnBase<Game, GamesSortBy>;
 
@@ -134,88 +128,17 @@ const name: GamesColumn = {
 	component: NameCell,
 };
 
-const engineColors: Record<EngineBrand, DefaultMantineColor> = {
-	Unity: "blue",
-	Unreal: "red",
-	Godot: "violet",
-	GameMaker: "teal",
-} as const;
-
 const engine: GamesColumn = {
 	label: "Engine",
 	sort: "Engine",
 	width: 160,
 	center: true,
 	hidable: true,
-	component: ({ item }: CellProps) => {
-		const engine =
-			item.installedGame?.executable.engine ?? item.remoteGame?.engine;
-
-		const engineColor = engine ? engineColors[engine.brand] : "gray";
-
-		const scriptingBackend = item.installedGame?.executable.scriptingBackend;
-		const architecture = item.installedGame?.executable.architecture;
-
-		return (
-			<Table.Td fz="xs">
-				<Paper
-					component={Stack}
-					gap={0}
-					bg={engine ? `var(--mantine-color-${engineColor}-light)` : undefined}
-					style={{ overflow: "hidden" }}
-				>
-					<Flex flex={1}>
-						<Flex
-							justify="center"
-							align="center"
-							flex={4}
-							c={`var(--mantine-color-${engineColor}-light-color)`}
-							fw="bold"
-						>
-							{engine?.brand.toUpperCase()}
-						</Flex>
-						{scriptingBackend && (
-							<Flex
-								justify="center"
-								align="center"
-								// flex={2}
-								px={5}
-								bg="rgba(0, 0, 0, 0.2)"
-							>
-								<Text
-									fz={8}
-									opacity={0.5}
-								>
-									{scriptingBackend.toUpperCase()}
-								</Text>
-							</Flex>
-						)}
-					</Flex>
-					{engine?.version?.display && (
-						<Flex
-							ta="center"
-							bg="rgba(0, 0, 0, 0.5)"
-							flex={1}
-							justify="center"
-							align="center"
-							gap="xs"
-							ff="monospace"
-						>
-							<Text fz="xs">{engine.version.display}</Text>
-							{architecture && (
-								<Text
-									fz={10}
-									opacity={0.5}
-								>
-									{architecture.toLowerCase()}
-								</Text>
-							)}
-						</Flex>
-					)}
-				</Paper>
-			</Table.Td>
-		);
-	},
+	component: ({ item }: CellProps) => (
+		<Table.Td>
+			<EngineBadge game={item} />
+		</Table.Td>
+	),
 };
 
 const dateFormatter = Intl.DateTimeFormat("default", {
@@ -239,6 +162,7 @@ const releaseDate: GamesColumn = {
 			<Table.Td
 				ta="center"
 				fz="xs"
+				opacity={0.75}
 			>
 				{formattedDate}
 			</Table.Td>
