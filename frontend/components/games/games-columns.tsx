@@ -5,7 +5,6 @@ import {
 	Stack,
 	Table,
 	Text,
-	Tooltip,
 } from "@mantine/core";
 import { TableColumnBase, columnMapToList } from "@components/table/table-head";
 import { ItemName } from "../item-name";
@@ -84,28 +83,17 @@ const StatusCell = ({ item }: CellProps) => (
 			borderRight: "2px solid var(--mantine-color-dark-7)",
 		}}
 	>
-		<Tooltip
-			label={
-				item.installedGame
-					? `Installed on ${item.id.providerId}`
-					: `Owned on ${item.id.providerId}, not installed`
-			}
+		{/* TODO: custom tooltips. Mantine tooltips bad for performance. */}
+		<Stack
+			justify="center"
+			align="center"
 		>
-			<Stack
-				justify="center"
-				align="center"
-			>
-				<ProviderIcon
-					providerId={item.id.providerId}
-					color={`var(--mantine-color-${providerColors[item.id.providerId]}-light-color)`}
-				/>
-				{item.installedGame ? (
-					<IconDeviceDesktop color="white" />
-				) : (
-					<IconCloud />
-				)}
-			</Stack>
-		</Tooltip>
+			<ProviderIcon
+				providerId={item.id.providerId}
+				color={`var(--mantine-color-${providerColors[item.id.providerId]}-light-color)`}
+			/>
+			{item.installedGame ? <IconDeviceDesktop color="white" /> : <IconCloud />}
+		</Stack>
 	</Table.Td>
 );
 
