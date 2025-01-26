@@ -38,7 +38,7 @@ export function ModsPage() {
 	}, [selectedModId, filteredMods]);
 
 	return (
-		<Stack>
+		<Stack h="100%">
 			{selectedMod ? (
 				<ModModal
 					onClose={() => setSelectedId(undefined)}
@@ -54,9 +54,9 @@ export function ModsPage() {
 				</Button>
 				<RefreshButton />
 			</Group>
-			<TableContainer>
+			<TableContainer style={{ overflowY: "scroll" }}>
 				<Table highlightOnHover>
-					<Table.Thead>
+					<Table.Thead pos="sticky">
 						<Table.Tr>
 							<Table.Th>Mod</Table.Th>
 							<Table.Th ta="center">Version</Table.Th>
