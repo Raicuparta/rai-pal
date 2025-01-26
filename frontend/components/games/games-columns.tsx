@@ -218,6 +218,12 @@ const engine: GamesColumn = {
 	},
 };
 
+const dateFormatter = Intl.DateTimeFormat("default", {
+	year: "numeric",
+	month: "short",
+	day: "numeric",
+});
+
 const releaseDate: GamesColumn = {
 	label: "Release",
 	width: 75,
@@ -226,30 +232,15 @@ const releaseDate: GamesColumn = {
 		const date = item.releaseDate
 			? new Date(Number(item.releaseDate) * 1000)
 			: null;
-		const parts = date
-			? [
-					date.toLocaleString("default", { year: "numeric" }),
-					date.toLocaleString("default", { month: "short" }),
-					date.toLocaleString("default", { day: "2-digit" }),
-				]
-			: ["-"];
+
+		const formattedDate = date ? dateFormatter.format(date) : "-";
+
 		return (
-			<Table.Td>
-				<Stack
-					gap={0}
-					justify="center"
-					align="center"
-					opacity={0.75}
-				>
-					{parts.map((datePart, datePartIndex) => (
-						<Text
-							key={datePartIndex}
-							fz="xs"
-						>
-							{datePart}
-						</Text>
-					))}
-				</Stack>
+			<Table.Td
+				ta="center"
+				fz="xs"
+			>
+				{formattedDate}
 			</Table.Td>
 		);
 	},
