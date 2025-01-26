@@ -8,4 +8,5 @@
 			min-height: 76px;
 		}
 	}
+	overflow-y: scroll;
 }

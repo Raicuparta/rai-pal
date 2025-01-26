@@ -69,7 +69,6 @@ export function GamesPage() {
 				<TableVirtuoso
 					ref={tableRef}
 					className={styles.table}
-					style={{ overflowY: "scroll" }}
 					components={tableComponents}
 					fixedHeaderContent={renderHeaders}
 					data={gameData.gameIds}
