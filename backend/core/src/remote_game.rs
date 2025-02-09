@@ -10,7 +10,8 @@ use crate::game_subscription::GameSubscription;
 use crate::providers::provider::ProviderId;
 use crate::result::Result;
 
-const URL_BASE: &str = "https://raicuparta.github.io/rai-pal-db/game-db";
+// TODO: fall back to github if this one fails.
+const URL_BASE: &str = "https://rai-pal.pages.dev/game-db";
 
 // The repository over at github.com/Raicuparta/rai-pal-db can have multiple versions of the database.
 // This way we prevent old versions of Rai Pal from breaking unless we want them to.
@@ -83,8 +84,12 @@ pub type Map = HashMap<ProviderId, HashMap<String, RemoteGame>>;
 
 pub async fn get() -> Result<Map> {
 	let url = format!("{URL_BASE}/{DATABASE_VERSION}/games.json");
+
+	// TODO: add timeout to this (reuse one from mod database).
+	log::info!("Fetching remote game database from {url}...");
 	let response = reqwest::get(&url).await?;
 
+	log::info!("Parsing remote game database...");
 	let game_database: Vec<GameDatabaseEntry> = response.json().await?;
 
 	let games: Vec<_> = game_database
@@ -130,6 +135,8 @@ pub async fn get() -> Result<Map> {
 			map.entry(id_kind).or_default().insert(id, remote_game);
 			map
 		});
+
+	log::info!("Remote game database downloaded and parsed successfully.");
 
 	Ok(game_map)
 }

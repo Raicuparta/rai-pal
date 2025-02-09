@@ -428,9 +428,15 @@ async fn refresh_mods(handle: AppHandle) -> Result {
 		&mod_loaders,
 	)?));
 
+	log::info!("Found {} mod loaders. Refreshing local mods...", {
+		mod_loaders.len()
+	});
 	refresh_local_mods(&mod_loaders, &handle)?;
+
+	log::info!("Refreshing remote mods...");
 	refresh_remote_mods(&mod_loaders, &handle).await?;
 
+	log::info!("Saving mods to state.");
 	handle
 		.app_state()
 		.mod_loaders

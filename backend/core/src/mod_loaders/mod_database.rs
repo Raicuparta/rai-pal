@@ -1,17 +1,18 @@
-use std::path::PathBuf;
+use std::{path::PathBuf, time::Duration};
 
 use lazy_regex::regex_captures;
 use log::error;
 use rai_pal_proc_macros::serializable_struct;
-use reqwest::redirect::Policy;
+use reqwest::{redirect::Policy, Client};
 
 use crate::{
 	game_engines::{game_engine::EngineBrand, unity::UnityScriptingBackend},
 	game_mod::EngineVersionRange,
-	result::Result,
+	result::{Error, Result},
 };
 
-const URL_BASE: &str = "https://raicuparta.github.io/rai-pal-db/mod-db";
+// TODO: fall back to github if this one fails.
+const URL_BASE: &str = "https://rai-pal.pages.dev/mod-db";
 
 // The repository over at github.com/Raicuparta/rai-pal-db can have multiple versions of the database.
 // This way we prevent old versions of Rai Pal from breaking unless we want them to.
@@ -64,12 +65,35 @@ pub struct ModGithubInfo {
 }
 
 pub async fn get(mod_loader_id: &str) -> Result<ModDatabase> {
-	Ok(reqwest::get(format!(
-		"{URL_BASE}/{DATABASE_VERSION}/{mod_loader_id}.json"
-	))
-	.await?
-	.json::<ModDatabase>()
-	.await?)
+	let client = Client::builder()
+		// Every once in a while these requests will randomly take longer.
+		// I'm hardcoding a 10 second timeout to prevent it being locked forever,
+		// but it should probably be configurable.
+		.timeout(Duration::from_secs(10))
+		.build()?;
+
+	let response = client
+		.get(format!(
+			"{URL_BASE}/{DATABASE_VERSION}/{mod_loader_id}.json"
+		))
+		.send()
+		.await;
+
+	match response {
+		Ok(resp) => {
+			log::info!("Got response for mod_loader_id: {}", mod_loader_id);
+			Ok(resp.json::<ModDatabase>().await?)
+		}
+		Err(err) => {
+			if err.is_timeout() {
+				log::warn!("Request timed out for mod_loader_id: {}", mod_loader_id);
+
+				Err(Error::NetworkRequestTimeout(mod_loader_id.to_string()))
+			} else {
+				Err(err.into())
+			}
+		}
+	}
 }
 
 impl DatabaseEntry {

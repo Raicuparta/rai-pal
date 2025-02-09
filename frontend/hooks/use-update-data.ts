@@ -1,12 +1,6 @@
-import {
-	useCallback,
-	useDeferredValue,
-	useEffect,
-	useRef,
-	useState,
-} from "react";
+import { useCallback, useDeferredValue, useEffect, useRef } from "react";
 import { useSetAtom } from "jotai";
-import { commands, Result, Error, ProviderId } from "@api/bindings";
+import { commands, Result, Error } from "@api/bindings";
 import { loadingTasksAtom, gameDataAtom } from "./use-data";
 import { showAppNotification } from "@components/app-notifications";
 import { useAppEvent } from "./use-app-event";
@@ -18,23 +12,8 @@ export function useUpdateData(executeOnMount = false) {
 	const setGameData = useSetAtom(gameDataAtom);
 	const [gamesQuery] = useDataQuery();
 	const deferredGamesQuery = useDeferredValue(gamesQuery);
-	const [providerIds, setProviderIds] = useState<ProviderId[]>([]);
 	const fetchCount = useRef(0);
 	const loadingTaskCount = useRef(0);
-
-	useEffect(() => {
-		commands.getProviderIds().then((providerIdsResult) => {
-			if (providerIdsResult.status === "error") {
-				showAppNotification(
-					`Failed to get info about available game providers: ${providerIdsResult.error}`,
-					"error",
-				);
-				return;
-			}
-
-			setProviderIds(providerIdsResult.data);
-		});
-	}, []);
 
 	const updateProviderGames = useCallback(() => {
 		fetchCount.current++;
@@ -68,7 +47,26 @@ export function useUpdateData(executeOnMount = false) {
 
 	useAppEvent("gamesChanged", "update-data", throttledUpdateProviderGames);
 
-	const updateAppData = useCallback(() => {
+	const updateAppData = useCallback(async () => {
+		const providerIds = await commands
+			.getProviderIds()
+			.then((providerIdsResult) => {
+				if (providerIdsResult.status === "error") {
+					showAppNotification(
+						`Failed to get info about available game providers: ${providerIdsResult.error}`,
+						"error",
+					);
+					return [];
+				}
+
+				return providerIdsResult.data;
+			});
+
+		if (providerIds.length === 0) {
+			console.log("No providers available, skipping data update.");
+			return;
+		}
+
 		function handleDataPromise(
 			promise: Promise<Result<null, Error>>,
 			taskName: string,
@@ -107,7 +105,7 @@ export function useUpdateData(executeOnMount = false) {
 
 		handleDataPromise(commands.refreshMods(), "mods");
 		handleDataPromise(commands.refreshRemoteGames(), "remote data");
-	}, [providerIds, setLoading]);
+	}, [setLoading]);
 
 	useEffect(() => {
 		if (executeOnMount) {
