@@ -32,6 +32,8 @@ fn try_write(provider_id: ProviderId, games: &game::Map) -> Result {
 		fs::remove_dir_all(&path)?;
 	}
 
+	fs::create_dir_all(paths::path_parent(&path)?)?;
+
 	fs::write(&path, serde_json::to_string(games)?)?;
 
 	Ok(())
