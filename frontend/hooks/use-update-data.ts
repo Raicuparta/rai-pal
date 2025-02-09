@@ -7,19 +7,20 @@ import {
 } from "react";
 import { useSetAtom } from "jotai";
 import { commands, Result, Error, ProviderId } from "@api/bindings";
-import { loadingCountAtom, gameDataAtom } from "./use-data";
+import { loadingTasksAtom, gameDataAtom } from "./use-data";
 import { showAppNotification } from "@components/app-notifications";
 import { useAppEvent } from "./use-app-event";
 import { useThrottledCallback } from "@mantine/hooks";
 import { useDataQuery } from "./use-data-query";
 
 export function useUpdateData(executeOnMount = false) {
-	const setLoading = useSetAtom(loadingCountAtom);
+	const setLoading = useSetAtom(loadingTasksAtom);
 	const setGameData = useSetAtom(gameDataAtom);
 	const [gamesQuery] = useDataQuery();
 	const deferredGamesQuery = useDeferredValue(gamesQuery);
 	const [providerIds, setProviderIds] = useState<ProviderId[]>([]);
 	const fetchCount = useRef(0);
+	const loadingTaskCount = useRef(0);
 
 	useEffect(() => {
 		commands.getProviderIds().then((providerIdsResult) => {
@@ -68,8 +69,16 @@ export function useUpdateData(executeOnMount = false) {
 	useAppEvent("gamesChanged", "update-data", throttledUpdateProviderGames);
 
 	const updateAppData = useCallback(() => {
-		function handleDataPromise(promise: Promise<Result<null, Error>>) {
-			setLoading((previousLoading) => previousLoading + 1);
+		function handleDataPromise(
+			promise: Promise<Result<null, Error>>,
+			taskName: string,
+		) {
+			loadingTaskCount.current += 1;
+			const taskIndex = loadingTaskCount.current;
+			setLoading((previousLoadingTasks) => [
+				...previousLoadingTasks,
+				{ name: taskName, index: taskIndex },
+			]);
 			promise
 				.then((result) => {
 					if (result.status === "error") {
@@ -85,15 +94,19 @@ export function useUpdateData(executeOnMount = false) {
 						"error",
 					);
 				})
-				.finally(() => setLoading((previousLoading) => previousLoading - 1));
+				.finally(() =>
+					setLoading((previousLoadingTasks) =>
+						previousLoadingTasks.filter((task) => task.index !== taskIndex),
+					),
+				);
 		}
 
 		for (const providerId of providerIds) {
-			handleDataPromise(commands.refreshGames(providerId));
+			handleDataPromise(commands.refreshGames(providerId), providerId);
 		}
 
-		handleDataPromise(commands.refreshMods());
-		handleDataPromise(commands.refreshRemoteGames());
+		handleDataPromise(commands.refreshMods(), "mods");
+		handleDataPromise(commands.refreshRemoteGames(), "remote data");
 	}, [providerIds, setLoading]);
 
 	useEffect(() => {

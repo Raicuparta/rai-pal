@@ -598,8 +598,12 @@ async fn run_provider_command(
 
 #[tauri::command]
 #[specta::specta]
-async fn reset_steam_cache() -> Result {
-	Ok(Steam::delete_cache()?)
+async fn reset_steam_cache(handle: AppHandle) -> Result {
+	Steam::delete_cache()?;
+
+	refresh_games(handle, ProviderId::Steam).await?;
+
+	Ok(())
 }
 
 #[tauri::command]

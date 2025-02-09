@@ -24,7 +24,12 @@ export const [remoteModsAtom, useRemoteModsSubscription] = dataSubscription(
 	{},
 );
 
-export const loadingCountAtom = atom(0);
+type LoadingTask = {
+	index: number;
+	name: string;
+};
+
+export const loadingTasksAtom = atom<LoadingTask[]>([]);
 
 export function useData() {
 	useModLoadersSubscription();

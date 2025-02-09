@@ -1,21 +1,35 @@
-import { Button } from "@mantine/core";
+import { Box, Button } from "@mantine/core";
 import { IconRefresh } from "@tabler/icons-react";
 import { useAtomValue } from "jotai";
 import { useUpdateData } from "@hooks/use-update-data";
-import { loadingCountAtom } from "@hooks/use-data";
+import { loadingTasksAtom } from "@hooks/use-data";
 
 export function RefreshButton() {
-	const loadingCount = useAtomValue(loadingCountAtom);
+	const loadingTasks = useAtomValue(loadingTasksAtom);
 	const updateAppData = useUpdateData();
 
 	return (
-		<Button
-			leftSection={<IconRefresh />}
-			loading={loadingCount > 0}
-			onClick={updateAppData}
-			variant="filled"
-		>
-			Refresh
-		</Button>
+		<Box pos="relative">
+			<Button
+				leftSection={<IconRefresh />}
+				loading={loadingTasks.length > 0}
+				onClick={updateAppData}
+				variant="filled"
+				w={200}
+			>
+				Refresh
+			</Button>
+			{loadingTasks.length > 0 && (
+				<Box
+					pos="absolute"
+					bottom={0}
+					left={10}
+					fz={10}
+					opacity={0.5}
+				>
+					Loading {loadingTasks.map((task) => task.name).join(", ")}...
+				</Box>
+			)}
+		</Box>
 	);
 }

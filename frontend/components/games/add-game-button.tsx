@@ -4,12 +4,12 @@ import { useCallback, useEffect, useState } from "react";
 import { commands } from "@api/bindings";
 import { open as openDialog } from "@tauri-apps/plugin-dialog";
 import { useAtomValue } from "jotai";
-import { loadingCountAtom } from "@hooks/use-data";
+import { loadingTasksAtom } from "@hooks/use-data";
 import { useAsyncCommand } from "@hooks/use-async-command";
 
 export function AddGame() {
 	const [isOpen, setIsOpen] = useState(false);
-	const isLoading = useAtomValue(loadingCountAtom);
+	const isLoading = useAtomValue(loadingTasksAtom);
 
 	const [executeAddGame] = useAsyncCommand(commands.addGame);
 
