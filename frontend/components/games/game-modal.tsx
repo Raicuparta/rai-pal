@@ -232,7 +232,7 @@ export function GameModal({ game }: Props) {
 								install the game, I&apos;ll show you more accurate information.
 							</Alert>
 						)}
-						<TableContainer bg="dark">
+						<TableContainer>
 							<Table>
 								<Table.Tbody>
 									{filteredMods.map((mod) => (

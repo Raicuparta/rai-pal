@@ -20,7 +20,8 @@
 			"@components/*": ["./frontend/components/*"],
 			"@hooks/*": ["./frontend/hooks/*"],
 			"@api/*": ["./frontend/api/*"],
-			"@util/*": ["./frontend/util/*"]
+			"@util/*": ["./frontend/util/*"],
+			"@styled-system/*": ["./frontend/styled-system/*"]
 		}
 	},
 	"include": ["frontend"],

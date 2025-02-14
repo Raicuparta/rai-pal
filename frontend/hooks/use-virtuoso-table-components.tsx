@@ -1,6 +1,6 @@
 import { Game } from "@api/bindings";
 import { GameRowInner } from "@components/games/game-row";
-import { Table } from "@mantine/core";
+import { css } from "@styled-system/css";
 import React, { useMemo } from "react";
 import { TableComponents } from "react-virtuoso";
 
@@ -30,21 +30,27 @@ export function useVirtuosoTableComponents<TItem>(
 		() => ({
 			TableBody: React.forwardRef(function TableBody(props, ref) {
 				return (
-					<Table.Tbody
+					<tbody
 						{...props}
 						ref={ref}
 					/>
 				);
 			}),
 			Table: (props) => (
-				<Table
+				<table
+					className={css({
+						tableLayout: "fixed",
+						width: "100%",
+					})}
 					{...props}
-					highlightOnHover
 				/>
 			),
 			TableHead: React.forwardRef(function TableHead(props, ref) {
 				return (
-					<Table.Thead
+					<thead
+						className={css({
+							backgroundColor: "dark.800",
+						})}
 						{...props}
 						ref={ref}
 					/>

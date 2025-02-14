@@ -24,3 +24,7 @@ publish
 *.njsproj
 *.sln
 *.sw?
+
+## Panda
+frontend/styled-system
+frontend/styled-system-studio

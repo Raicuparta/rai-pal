@@ -13,7 +13,8 @@
 		"frontend:build": "tsc && vite build",
 		"frontend:dev": "vite",
 		"lint": "prettier ./frontend --write && eslint . --fix",
-		"lint-only": "eslint eslint.config.mjs --fix"
+		"lint-only": "eslint eslint.config.mjs --fix",
+		"prepare": "panda codegen"
 	},
 	"prettier": {
 		"useTabs": true,
@@ -40,27 +41,30 @@
 		"@tauri-apps/plugin-store": "2.2.0",
 		"@tauri-apps/plugin-updater": "2.3.1",
 		"@types/node": "22.10.7",
-		"@types/react-dom": "19.0.3",
 		"@types/react": "19.0.7",
+		"@types/react-dom": "19.0.3",
 		"@typescript-eslint/eslint-plugin": "8.20.0",
 		"@typescript-eslint/parser": "8.20.0",
 		"@vitejs/plugin-react": "4.3.4",
 		"cross-env": "7.0.3",
+		"eslint": "9.18.0",
 		"eslint-config-prettier": "10.0.1",
+		"eslint-plugin-react": "7.37.4",
 		"eslint-plugin-react-hooks": "5.1.0",
 		"eslint-plugin-react-refresh": "0.4.18",
-		"eslint-plugin-react": "7.37.4",
-		"eslint": "9.18.0",
 		"globals": "15.14.0",
 		"jotai": "2.11.0",
+		"postcss": "8.5.1",
 		"postcss-preset-mantine": "1.17.0",
 		"postcss-simple-vars": "7.0.1",
-		"postcss": "8.5.1",
 		"prettier": "3.4.2",
+		"react": "19.0.0",
 		"react-dom": "19.0.0",
 		"react-virtuoso": "4.12.3",
-		"react": "19.0.0",
 		"typescript": "5.7.3",
 		"vite": "6.0.7"
+	},
+	"devDependencies": {
+		"@pandacss/dev": "^0.53.0"
 	}
 }

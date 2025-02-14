@@ -3,7 +3,6 @@ import { type MantineThemeOverride } from "@mantine/core";
 export const theme: MantineThemeOverride = {
 	defaultRadius: "md",
 	primaryColor: "violet",
-	scale: 0.9,
 	colors: {
 		dark: [
 			"#C1C2C5",
