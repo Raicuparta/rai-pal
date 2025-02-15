@@ -9,7 +9,7 @@ import { Game, GameId } from "@api/bindings";
 import { gamesColumns } from "./games-columns";
 
 // Needs to be consistent with height set in table.module.css ugh. TODO: fix that.
-export const gameRowHeight = 76;
+export const gameRowHeight = 60;
 
 export const GameRow = React.forwardRef(function GameRow(
 	props: ItemProps<GameId>,

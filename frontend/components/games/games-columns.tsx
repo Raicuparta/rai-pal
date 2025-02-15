@@ -1,60 +1,55 @@
-import { DefaultMantineColor, Flex, Stack, Table } from "@mantine/core";
+import { Box, DefaultMantineColor, Flex, Stack, Table } from "@mantine/core";
 import { TableColumnBase, columnMapToList } from "@components/table/table-head";
 import { ItemName } from "../item-name";
-import styles from "../table/table.module.css";
-import { Game, GamesSortBy, ProviderId } from "@api/bindings";
+import styles from "./games.module.css";
+import { EngineBrand, Game, GamesSortBy, ProviderId } from "@api/bindings";
 import { IconCloud, IconDeviceDesktop } from "@tabler/icons-react";
-import { GameTags } from "@components/game-tags/game-tags";
 import { GameImage } from "@components/game-image";
 import { ProviderIcon } from "@components/providers/provider-icon";
 import { gameRowHeight } from "./game-row";
-import { EngineBadge } from "@components/engine-badge/engine-badge";
 
 type GamesColumn = TableColumnBase<Game, GamesSortBy>;
 
 type CellProps = { readonly item: Game };
-
-const ThumbnailComponent = ({ item }: CellProps) => (
-	<Table.Td
-		bg="dark"
-		p={0}
-		pos="relative"
-		style={{
-			overflow: "hidden",
-			borderRight: "2px solid var(--mantine-color-dark-7)",
-		}}
-	>
-		<GameImage
-			src={item.thumbnailUrl}
-			h="100%"
-			fit="fill"
-			pos="absolute"
-			top={0}
-			left={0}
-			style={{
-				filter: "blur(10px)",
-				zIndex: 0,
-			}}
-		/>
-		<GameImage
-			pos="absolute"
-			top={0}
-			left={0}
-			src={item.thumbnailUrl}
-			h="100%"
-			style={{
-				zIndex: 1,
-			}}
-		/>
-	</Table.Td>
-);
 
 const thumbnail: GamesColumn = {
 	label: "Thumbnail",
 	hideLabel: true,
 	hidable: true,
 	width: 100,
-	component: ThumbnailComponent,
+	component: ({ item }: CellProps) => (
+		<Table.Td
+			bg="dark"
+			p={0}
+			pos="relative"
+			style={{
+				overflow: "hidden",
+			}}
+		>
+			<GameImage
+				src={item.thumbnailUrl}
+				h="100%"
+				fit="fill"
+				pos="absolute"
+				top={0}
+				left={0}
+				style={{
+					filter: "blur(10px)",
+					zIndex: 0,
+				}}
+			/>
+			<GameImage
+				pos="absolute"
+				top={0}
+				left={0}
+				src={item.thumbnailUrl}
+				h="100%"
+				style={{
+					zIndex: 1,
+				}}
+			/>
+		</Table.Td>
+	),
 };
 
 const providerColors: Record<ProviderId, DefaultMantineColor> = {
@@ -68,76 +63,120 @@ const providerColors: Record<ProviderId, DefaultMantineColor> = {
 	Ea: "cyan",
 } as const;
 
-const StatusCell = ({ item }: CellProps) => (
-	<Table.Td
-		p="xs"
-		bg={`var(--mantine-color-${providerColors[item.id.providerId]}-light)`}
-		opacity={item.installedGame ? 1 : 0.5}
-		style={{
-			borderRight: "2px solid var(--mantine-color-dark-7)",
-		}}
-	>
-		<Stack
-			justify="center"
-			align="center"
-		>
-			<ProviderIcon
-				providerId={item.id.providerId}
-				color={`var(--mantine-color-${providerColors[item.id.providerId]}-light-color)`}
-			/>
-			{item.installedGame ? <IconDeviceDesktop color="white" /> : <IconCloud />}
-		</Stack>
-	</Table.Td>
-);
-
 const status: GamesColumn = {
 	label: "Status",
 	hideLabel: true,
 	hidable: true,
 	width: 30,
-	component: StatusCell,
-};
-
-const NameCell = ({ item }: CellProps) => (
-	<Table.Td
-		p={0}
-		className={styles.nameCell}
-	>
-		<Flex
-			gap={3}
+	component: ({ item }: CellProps) => (
+		<Table.Td
 			p="xs"
-			fw="bold"
-			c={item.installedGame ? "white" : "grey"}
-			style={{
-				maxHeight: gameRowHeight,
-				overflow: "hidden",
-			}}
+			bg={`var(--mantine-color-${providerColors[item.id.providerId]}-light)`}
+			opacity={item.installedGame ? 1 : 0.5}
 		>
-			<ItemName label={item.installedGame?.discriminator}>
-				{item?.title.display}
-				<GameTags game={item} />
-			</ItemName>
-		</Flex>
-	</Table.Td>
-);
+			<Stack
+				justify="center"
+				align="center"
+			>
+				<ProviderIcon
+					providerId={item.id.providerId}
+					color={`var(--mantine-color-${providerColors[item.id.providerId]}-light-color)`}
+				/>
+				{item.installedGame ? (
+					<IconDeviceDesktop color="white" />
+				) : (
+					<IconCloud />
+				)}
+			</Stack>
+		</Table.Td>
+	),
+};
 
 const name: GamesColumn = {
 	label: "Game",
 	sort: "Title",
-	component: NameCell,
+	component: ({ item }: CellProps) => (
+		<Table.Td
+			p={0}
+			className={styles.nameCell}
+		>
+			<Flex
+				gap={3}
+				p="xs"
+				fw="bold"
+				c={item.installedGame ? "white" : "grey"}
+				style={{
+					maxHeight: gameRowHeight,
+					overflow: "hidden",
+				}}
+			>
+				<ItemName label={item.installedGame?.discriminator}>
+					{item?.title.display}
+					<div className={styles.tags}>
+						{item.tags.sort().map((tag) => (
+							<span
+								className={styles.tag}
+								key={tag}
+							>
+								{tag}
+							</span>
+						))}
+					</div>
+				</ItemName>
+			</Flex>
+		</Table.Td>
+	),
 };
+
+const engineColors: Record<EngineBrand, DefaultMantineColor> = {
+	Unity: "blue",
+	Unreal: "red",
+	Godot: "violet",
+	GameMaker: "teal",
+} as const;
 
 const engine: GamesColumn = {
 	label: "Engine",
 	sort: "Engine",
-	width: 160,
+	width: 130,
 	center: true,
 	hidable: true,
-	component: ({ item }: CellProps) => (
-		<Table.Td>
-			<EngineBadge game={item} />
-		</Table.Td>
-	),
+	component: ({ item }: CellProps) => {
+		const engine =
+			item.installedGame?.executable.engine ?? item.remoteGame?.engine;
+
+		const engineColor = engine ? engineColors[engine.brand] : "gray";
+
+		const scriptingBackend = item.installedGame?.executable.scriptingBackend;
+
+		const architecture = item.installedGame?.executable.architecture;
+
+		const detailsText =
+			scriptingBackend && architecture
+				? `${scriptingBackend} ${architecture}`
+				: architecture;
+
+		return (
+			<Table.Td
+				bg={engine ? `var(--mantine-color-${engineColor}-light)` : undefined}
+				className={styles.engineWrapper}
+				p={0}
+			>
+				<Box
+					c={`var(--mantine-color-${engineColor}-light-color)`}
+					className={styles.engineBrand}
+				>
+					{engine?.brand}
+				</Box>
+				{engine?.version?.display && (
+					<Box className={styles.engineVersion}>{engine.version.display}</Box>
+				)}
+				{detailsText && (
+					<Box className={styles.engineDetails}>{detailsText}</Box>
+				)}
+			</Table.Td>
+		);
+	},
 };
 
 const dateFormatter = Intl.DateTimeFormat("default", {

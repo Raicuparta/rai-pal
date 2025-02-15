@@ -32,8 +32,3 @@ div.table {
 		);
 	}
 }
-
-.nameCell {
-	min-width: 10em;
-	word-break: break-word;
-}

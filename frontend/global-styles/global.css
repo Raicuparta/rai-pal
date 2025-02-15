@@ -19,4 +19,5 @@ html {
 		Setting the html background color means we get the correct color earlier.
 	*/
 	background-color: var(--mantine-color-body);
+	font-size: 0.9rem;
 }

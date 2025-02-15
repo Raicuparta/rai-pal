@@ -3,10 +3,60 @@
 		tr,
 		td {
 			/* Needs to be consistent with height set in game-row.tsx ugh. TODO: fix that. */
-			height: 76px;
-			max-height: 76px;
-			min-height: 76px;
+			height: 60px;
+			max-height: 60px;
+			min-height: 60px;
 		}
 	}
 	overflow-y: scroll;
+}
+
+.engineWrapper {
+	overflow: hidden;
+	text-align: center;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+}
+
+.engineBrand {
+	font-weight: bold;
+	text-transform: uppercase;
+}
+
+.engineVersion {
+	font-family: monospace;
+	font-size: var(--mantine-font-size-xs);
+	text-transform: lowercase;
+}
+
+.engineDetails {
+	font-size: 10px;
+	opacity: 0.5;
+	text-transform: lowercase;
+}
+
+.nameCell {
+	min-width: 10em;
+	word-break: break-word;
+}
+
+.tags {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.2em;
+	align-items: center;
+	justify-content: center;
+	max-height: 2.5em;
+}
+
+.tag {
+	font-size: 8px;
+	font-weight: 300;
+	padding: 3px;
+	line-height: 1;
+	background-color: var(--mantine-color-dark-7);
+	border-radius: 3px;
+	text-transform: uppercase;
+	white-space: nowrap;
 }
