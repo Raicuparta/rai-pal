@@ -1,6 +1,7 @@
-import { DefaultMantineColor, Flex, Stack } from "@mantine/core";
+import { DefaultMantineColor, Flex, Stack, Table } from "@mantine/core";
 import { TableColumnBase, columnMapToList } from "@components/table/table-head";
 import { ItemName } from "../item-name";
+import styles from "../table/table.module.css";
 import { Game, GamesSortBy, ProviderId } from "@api/bindings";
 import { IconCloud, IconDeviceDesktop } from "@tabler/icons-react";
 import { GameTags } from "@components/game-tags/game-tags";
@@ -8,20 +9,16 @@ import { GameImage } from "@components/game-image";
 import { ProviderIcon } from "@components/providers/provider-icon";
 import { gameRowHeight } from "./game-row";
 import { EngineBadge } from "@components/engine-badge/engine-badge";
-import { css } from "@styled-system/css";
 
 type GamesColumn = TableColumnBase<Game, GamesSortBy>;
 
 type CellProps = { readonly item: Game };
 
 const ThumbnailComponent = ({ item }: CellProps) => (
-	<td
-		className={css({
-			overflow: "hidden",
-			borderRight: "2px solid dark.800",
-			backgroundColor: "dark.800",
-			position: "relative",
-		})}
+	<Table.Td
+		bg="dark"
+		p={0}
+		pos="relative"
 		style={{
 			overflow: "hidden",
 			borderRight: "2px solid var(--mantine-color-dark-7)",
@@ -49,7 +46,7 @@ const ThumbnailComponent = ({ item }: CellProps) => (
 				zIndex: 1,
 			}}
 		/>
-	</td>
+	</Table.Td>
 );
 
 const thumbnail: GamesColumn = {
@@ -72,17 +69,13 @@ const providerColors: Record<ProviderId, DefaultMantineColor> = {
 } as const;
 
 const StatusCell = ({ item }: CellProps) => (
-	<td
+	<Table.Td
+		p="xs"
+		bg={`var(--mantine-color-${providerColors[item.id.providerId]}-light)`}
+		opacity={item.installedGame ? 1 : 0.5}
 		style={{
-			backgroundColor: `var(--mantine-color-${providerColors[item.id.providerId]}-light)`, // TODO
+			borderRight: "2px solid var(--mantine-color-dark-7)",
 		}}
-		className={css({
-			padding: 1,
-			opacity: item.installedGame ? 1 : 0.5,
-			borderRight: "2px solid",
-			borderColor: "dark.800",
-			fontSize: "xs",
-		})}
 	>
 		{/* TODO: custom tooltips. Mantine tooltips bad for performance. */}
 		<Stack
@@ -95,7 +88,7 @@ const StatusCell = ({ item }: CellProps) => (
 			/>
 			{item.installedGame ? <IconDeviceDesktop color="white" /> : <IconCloud />}
 		</Stack>
-	</td>
+	</Table.Td>
 );
 
 const status: GamesColumn = {
@@ -107,15 +100,13 @@ const status: GamesColumn = {
 };
 
 const NameCell = ({ item }: CellProps) => (
-	<td
-		className={css({
-			minWidth: "10em",
-			wordBreak: "break-word",
-			padding: 1,
-		})}
+	<Table.Td
+		p={0}
+		className={styles.nameCell}
 	>
 		<Flex
 			gap={3}
+			p="xs"
 			fw="bold"
 			c={item.installedGame ? "white" : "grey"}
 			style={{
@@ -128,7 +119,7 @@ const NameCell = ({ item }: CellProps) => (
 				<GameTags game={item} />
 			</ItemName>
 		</Flex>
-	</td>
+	</Table.Td>
 );
 
 const name: GamesColumn = {
@@ -144,9 +135,9 @@ const engine: GamesColumn = {
 	center: true,
 	hidable: true,
 	component: ({ item }: CellProps) => (
-		<td>
+		<Table.Td>
 			<EngineBadge game={item} />
-		</td>
+		</Table.Td>
 	),
 };
 
@@ -157,8 +148,8 @@ const dateFormatter = Intl.DateTimeFormat("default", {
 });
 
 const releaseDate: GamesColumn = {
-	label: "📅",
-	width: 50,
+	label: "Release",
+	width: 75,
 	sort: "ReleaseDate",
 	component: ({ item }: CellProps) => {
 		const date = item.releaseDate
@@ -168,16 +159,13 @@ const releaseDate: GamesColumn = {
 		const formattedDate = date ? dateFormatter.format(date) : "-";
 
 		return (
-			<td
-				className={css({
-					textAlign: "center",
-					fontSize: "xs",
-					padding: 1,
-					opacity: 0.75,
-				})}
+			<Table.Td
+				ta="center"
+				fz="xs"
+				opacity={0.75}
 			>
 				{formattedDate}
-			</td>
+			</Table.Td>
 		);
 	},
 };

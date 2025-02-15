@@ -1,0 +1,39 @@
+div.table {
+	padding: 0;
+	flex: 1;
+	user-select: none;
+
+	thead {
+		background: var(--background-dark);
+		white-space: nowrap;
+	}
+
+	code {
+		font-size: 0.8em;
+	}
+
+	[data-hover="true"] {
+		td {
+			cursor: pointer;
+		}
+	}
+
+	tr {
+		border-bottom: 2px solid var(--mantine-color-dark-7);
+	}
+}
+
+.sortable {
+	cursor: pointer;
+	&:hover {
+		background: light-dark(
+			var(--mantine-color-gray-3),
+			var(--mantine-color-dark-7)
+		);
+	}
+}
+
+.nameCell {
+	min-width: 10em;
+	word-break: break-word;
+}

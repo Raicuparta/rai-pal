@@ -15,7 +15,7 @@ import { useVirtuosoTableComponents } from "@hooks/use-virtuoso-table-components
 import { GameRow, gameRowHeight } from "./game-row";
 import { useDataQuery } from "@hooks/use-data-query";
 import { gamesColumns } from "./games-columns";
-import { css } from "@styled-system/css";
+import styles from "./games.module.css";
 
 export function GamesPage() {
 	const gameData = useAtomValue(gameDataAtom);
@@ -68,9 +68,7 @@ export function GamesPage() {
 			<TableContainer>
 				<TableVirtuoso
 					ref={tableRef}
-					className={css({
-						overflowY: "scroll",
-					})}
+					className={styles.table}
 					components={tableComponents}
 					fixedHeaderContent={renderHeaders}
 					data={gameData.gameIds}

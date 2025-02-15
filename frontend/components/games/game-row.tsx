@@ -1,3 +1,4 @@
+import { Table } from "@mantine/core";
 import React from "react";
 import { useAtom } from "jotai";
 import { selectedGameAtom } from "./games-state";
@@ -6,8 +7,8 @@ import { GameModal } from "./game-modal";
 import { ItemProps } from "react-virtuoso";
 import { Game, GameId } from "@api/bindings";
 import { gamesColumns } from "./games-columns";
-import { css } from "@styled-system/css";
 
+// Needs to be consistent with height set in table.module.css ugh. TODO: fix that.
 export const gameRowHeight = 76;
 
 export const GameRow = React.forwardRef(function GameRow(
@@ -42,28 +43,15 @@ export const GameRowInner = React.forwardRef(function GameRowInner(
 	ref: React.ForwardedRef<HTMLTableRowElement>,
 ) {
 	return (
-		<tr
+		<Table.Tr
 			ref={ref}
 			onClick={props.onClick}
-			className={css({
-				height: gameRowHeight,
-				maxHeight: gameRowHeight,
-				minHeight: gameRowHeight,
-				backgroundColor: "dark.600",
-				borderStyle: "solid",
-				borderBottomWidth: 2,
-				borderColor: "dark.700",
-				cursor: props.onClick && "pointer",
-				_hover: props.onClick && {
-					backgroundColor: "dark.500",
-				},
-			})}
 		>
 			{gamesColumns.map((column) => (
 				<React.Fragment key={column.id}>
 					<column.component item={props.game} />
 				</React.Fragment>
 			))}
-		</tr>
+		</Table.Tr>
 	);
 });

@@ -1,21 +1,10 @@
-import { css, cx } from "@styled-system/css";
-import { PropsStylableWithChildren } from "@util/style-types";
+import classes from "./table.module.css";
+import { Card, CardProps } from "@mantine/core";
 
-export function TableContainer({
-	className,
-	...props
-}: PropsStylableWithChildren) {
+export function TableContainer(props: CardProps) {
 	return (
-		<div
-			className={cx(
-				css({
-					flex: 1,
-					borderRadius: "md",
-					overflow: "hidden",
-					backgroundColor: "dark.700",
-				}),
-				className,
-			)}
+		<Card
+			className={classes.table}
 			{...props}
 		/>
 	);

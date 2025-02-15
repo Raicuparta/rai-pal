@@ -14,7 +14,6 @@ import { ModVersionBadge } from "./mod-version-badge";
 import { ItemName } from "@components/item-name";
 import { getModTitle } from "@util/game-mod";
 import { DeprecatedBadge } from "./deprecated-badge";
-import { css } from "@styled-system/css";
 
 export function ModsPage() {
 	const [selectedModId, setSelectedId] = useState<string>();
@@ -55,7 +54,7 @@ export function ModsPage() {
 				</Button>
 				<RefreshButton />
 			</Group>
-			<TableContainer className={css({ overflowY: "scroll" })}>
+			<TableContainer style={{ overflowY: "scroll" }}>
 				<Table highlightOnHover>
 					<Table.Thead pos="sticky">
 						<Table.Tr>

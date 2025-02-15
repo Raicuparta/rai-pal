@@ -3,7 +3,6 @@ import { IconRefresh } from "@tabler/icons-react";
 import { useAtomValue } from "jotai";
 import { useUpdateData } from "@hooks/use-update-data";
 import { loadingTasksAtom } from "@hooks/use-data";
-import { css } from "@styled-system/css";
 
 export function RefreshButton() {
 	const loadingTasks = useAtomValue(loadingTasksAtom);
@@ -21,18 +20,15 @@ export function RefreshButton() {
 				Refresh
 			</Button>
 			{loadingTasks.length > 0 && (
-				<div
-					className={css({
-						pointerEvents: "none",
-						position: "absolute",
-						bottom: 0,
-						left: 2,
-						fontSize: "xx-small",
-						opacity: 0.5,
-					})}
+				<Box
+					pos="absolute"
+					bottom={0}
+					left={10}
+					fz={10}
+					opacity={0.5}
 				>
 					Loading {loadingTasks.map((task) => task.name).join(", ")}...
-				</div>
+				</Box>
 			)}
 		</Box>
 	);

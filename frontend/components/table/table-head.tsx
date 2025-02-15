@@ -1,7 +1,7 @@
-import { Box, Flex } from "@mantine/core";
+import { Box, Flex, Table } from "@mantine/core";
+import classes from "./table.module.css";
 import { IconChevronDown, IconChevronUp } from "@tabler/icons-react";
 import { GamesSortBy } from "@api/bindings";
-import { css } from "@styled-system/css";
 
 export type TableColumnBase<TItem, TSort> = {
 	label: string;
@@ -40,23 +40,14 @@ export function TableHead<TKey extends string, TItem, TSort>(
 	props: Props<TKey, TItem, TSort>,
 ) {
 	return (
-		<tr>
+		<Table.Tr>
 			{props.columns.map((column) => {
 				return (
-					<th
+					<Table.Th
+						className={
+							props.onChangeSort && column.sort ? classes.sortable : undefined
+						}
 						key={String(column.id)}
-						className={css({
-							cursor: column.sort && props.onChangeSort && "pointer",
-							_hover: column.sort &&
-								props.onChangeSort && {
-									background:
-										"light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-7))",
-								},
-							padding: 1,
-						})}
-						style={{
-							width: column.width,
-						}}
 						onClick={
 							column.sort
 								? () =>
@@ -65,6 +56,9 @@ export function TableHead<TKey extends string, TItem, TSort>(
 											: undefined
 								: undefined
 						}
+						w={column.width}
+						maw={column.width}
+						miw={column.width}
 					>
 						<Flex justify={column.center ? "center" : undefined}>
 							{column.hideLabel ? "" : column.label}
@@ -82,9 +76,9 @@ export function TableHead<TKey extends string, TItem, TSort>(
 									))}
 							</Box>
 						</Flex>
-					</th>
+					</Table.Th>
 				);
 			})}
-		</tr>
+		</Table.Tr>
 	);
 }
