@@ -148,8 +148,8 @@ const dateFormatter = Intl.DateTimeFormat("default", {
 });
 
 const releaseDate: GamesColumn = {
-	label: "Release",
-	width: 75,
+	label: "📅",
+	width: 60,
 	sort: "ReleaseDate",
 	component: ({ item }: CellProps) => {
 		const date = item.releaseDate
