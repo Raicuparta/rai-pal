@@ -77,7 +77,6 @@ const StatusCell = ({ item }: CellProps) => (
 			borderRight: "2px solid var(--mantine-color-dark-7)",
 		}}
 	>
-		{/* TODO: custom tooltips. Mantine tooltips bad for performance. */}
 		<Stack
 			justify="center"
 			align="center"
