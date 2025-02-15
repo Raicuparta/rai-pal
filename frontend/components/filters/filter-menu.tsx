@@ -15,7 +15,7 @@ export function FilterMenu() {
 			setDataQuery({
 				filter: {
 					...dataQuery?.filter,
-					[id]: values,
+					[id]: values.length > 0 ? values : defaultQuery.filter[id],
 				},
 			} as GamesQuery);
 		},
