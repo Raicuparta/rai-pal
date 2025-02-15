@@ -158,16 +158,19 @@ const engine: GamesColumn = {
 
 		return (
 			<Table.Td
-				bg={engine ? `var(--mantine-color-${engineColor}-light)` : undefined}
+				bg={engine ? `var(--mantine-color-${engineColor}-light)` : "dark.4"}
 				className={styles.engineWrapper}
 				p={0}
 			>
-				<Box
-					c={`var(--mantine-color-${engineColor}-light-color)`}
-					className={styles.engineBrand}
-				>
-					{engine?.brand}
-				</Box>
+				{engine && (
+					<Box
+						c={`var(--mantine-color-${engineColor}-light-color)`}
+						className={styles.engineBrand}
+					>
+						{engine?.brand}
+					</Box>
+				)}
+				{!engine && <div>-</div>}
 				{engine?.version?.display && (
 					<Box className={styles.engineVersion}>{engine.version.display}</Box>
 				)}
