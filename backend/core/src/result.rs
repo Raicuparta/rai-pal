@@ -142,9 +142,6 @@ pub enum Error {
 		"This operation requires game `{0}` to be installed, but the installed game wasn't found."
 	)]
 	GameNotInstalled(String),
-
-	#[error("Network request timed out while fetching `{0}`. Try again.")]
-	NetworkRequestTimeout(String),
 }
 
 impl serde::Serialize for Error {
