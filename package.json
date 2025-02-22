@@ -4,7 +4,7 @@
 	"version": "0.0.0",
 	"type": "module",
 	"scripts": {
-		"dev": "cross-env RUSTUP_TOOLCHAIN=nightly tauri dev",
+		"dev": "tauri dev",
 		"build": "tauri build",
 		"build-debug": "cross-env CARGO_TARGET_DIR=target/debug/standalone-build tauri build --debug --no-bundle",
 		"vite": "vite",
