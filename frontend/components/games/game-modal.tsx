@@ -141,12 +141,6 @@ export function GameModal({ game }: Props) {
 				<Group>
 					{installedGame && (
 						<>
-							<CommandButton
-								onClick={() => commands.refreshGame(game.id)}
-								leftSection={<IconRefresh />}
-							>
-								Refresh
-							</CommandButton>
 							<Button.Group>
 								<CommandButton
 									leftSection={<IconPlayerPlay />}
@@ -201,6 +195,14 @@ export function GameModal({ game }: Props) {
 							leftSection={<IconTrash />}
 						>
 							Remove from Rai Pal
+						</CommandButton>
+					)}
+					{installedGame && (
+						<CommandButton
+							onClick={() => commands.refreshGame(game.id)}
+							leftSection={<IconRefresh />}
+						>
+							Refresh
 						</CommandButton>
 					)}
 				</Group>

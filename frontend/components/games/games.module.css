@@ -14,9 +14,6 @@
 .engineWrapper {
 	overflow: hidden;
 	text-align: center;
-	display: flex;
-	flex-direction: column;
-	justify-content: center;
 }
 
 .engineBrand {
