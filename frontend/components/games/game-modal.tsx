@@ -237,14 +237,20 @@ export function GameModal({ game }: Props) {
 						<TableContainer bg="dark">
 							<Table>
 								<Table.Tbody>
-									{filteredMods.map((mod) => (
-										<GameModRow
-											key={mod.common.id}
-											game={game}
-											mod={mod}
-											modLoader={modLoaderMap[mod.common.loaderId]}
-										/>
-									))}
+									{filteredMods.map((mod) => {
+										const modLoader = modLoaderMap[mod.common.loaderId];
+
+										return (
+											modLoader && (
+												<GameModRow
+													key={mod.common.id}
+													game={game}
+													mod={mod}
+													modLoader={modLoader}
+												/>
+											)
+										);
+									})}
 								</Table.Tbody>
 							</Table>
 						</TableContainer>
