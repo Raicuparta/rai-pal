@@ -73,17 +73,22 @@ impl GamesQuery {
 			return false;
 		}
 
+		// Tags filtering is a bit different, because games can have multiple tags.
+		// Since filters are only checkboxes, we have to make a decision on what the checks mean.
+		// Since players are more likely to want to hide games with specific tags, we make it so
+		// if a game includes any tag that's unchecked, that game gets filtered out.
+		// This means that currently there's no way to find for instance games that have both
+		// tag A and tag B.
 		if !filter.tags.is_empty() {
 			if game.tags.is_empty() {
 				if !filter.tags.contains(&None) {
 					return false;
 				}
-			} else if !game
-				.tags
-				.iter()
-				.any(|tag| filter.tags.contains(&Some(*tag)))
-			{
-				return false;
+			} else {
+				let enabled_tags: HashSet<_> = filter.tags.iter().filter_map(|tag| *tag).collect();
+				if !game.tags.iter().all(|tag| enabled_tags.contains(tag)) {
+					return false;
+				}
 			}
 		}
 
