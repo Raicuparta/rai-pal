@@ -20,9 +20,7 @@ export function useGame({ providerId, gameId }: GameId) {
 				display: "...",
 				normalized: ["..."],
 			},
-
-			// TODO this "as" won't be needed after specta makes maps Partial.
-			providerCommands: {} as Game["providerCommands"],
+			providerCommands: {},
 		}),
 		[gameId, providerId],
 	);

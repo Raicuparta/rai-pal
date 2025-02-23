@@ -77,7 +77,7 @@ async getGame(id: GameId) : Promise<Result<Game, Error>> {
     else return { status: "error", error: e  as any };
 }
 },
-async getLocalMods() : Promise<Result<{ [key in string]: LocalMod }, Error>> {
+async getLocalMods() : Promise<Result<Partial<{ [key in string]: LocalMod }>, Error>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("get_local_mods") };
 } catch (e) {
@@ -93,7 +93,7 @@ async getProviderIds() : Promise<Result<ProviderId[], Error>> {
     else return { status: "error", error: e  as any };
 }
 },
-async getRemoteMods() : Promise<Result<{ [key in string]: RemoteMod }, Error>> {
+async getRemoteMods() : Promise<Result<Partial<{ [key in string]: RemoteMod }>, Error>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("get_remote_mods") };
 } catch (e) {
@@ -294,7 +294,7 @@ export type Error = "Tauri" | "Core" | "SerdeJson" | { FailedToGetResourcesPath:
 export type ErrorRaised = string
 export type ExecutedProviderCommand = null
 export type FoundGame = GameId
-export type Game = { id: GameId; externalId: string; tags: GameTag[]; installedGame: InstalledGame | null; remoteGame: RemoteGame | null; title: GameTitle; thumbnailUrl: string | null; releaseDate: bigint | null; providerCommands: { [key in ProviderCommandAction]: ProviderCommand }; fromSubscriptions: GameSubscription[] }
+export type Game = { id: GameId; externalId: string; tags: GameTag[]; installedGame: InstalledGame | null; remoteGame: RemoteGame | null; title: GameTitle; thumbnailUrl: string | null; releaseDate: bigint | null; providerCommands: Partial<{ [key in ProviderCommandAction]: ProviderCommand }>; fromSubscriptions: GameSubscription[] }
 export type GameEngine = { brand: EngineBrand; version: EngineVersion | null }
 export type GameExecutable = { path: string; name: string; engine: GameEngine | null; architecture: Architecture | null; scriptingBackend: UnityScriptingBackend | null }
 export type GameId = { providerId: ProviderId; gameId: string }
@@ -307,7 +307,7 @@ export type GamesFilter = { providers: (ProviderId | null)[]; tags: (GameTag | n
 export type GamesQuery = { filter: GamesFilter; search: string; sortBy: GamesSortBy; sortDescending: boolean }
 export type GamesSortBy = "Title" | "Engine" | "ReleaseDate"
 export type InstallState = "Installed" | "NotInstalled"
-export type InstalledGame = { id: string; executable: GameExecutable; installedModVersions: { [key in string]: string }; discriminator: string | null; startCommand: ProviderCommand | null }
+export type InstalledGame = { id: string; executable: GameExecutable; installedModVersions: Partial<{ [key in string]: string }>; discriminator: string | null; startCommand: ProviderCommand | null }
 export type LocalMod = { data: LocalModData; common: CommonModData }
 export type LocalModData = { path: string; manifest: Manifest | null }
 export type Manifest = { title: string | null; version: string; runnable: RunnableModData | null; engine: EngineBrand | null; engineVersionRange: EngineVersionRange | null; unityBackend: UnityScriptingBackend | null }
@@ -317,14 +317,14 @@ export type ModLoaderData = { id: string; path: string; kind: ModKind }
 export type ProviderCommand = { String: string } | { Path: [string, string[]] }
 export type ProviderCommandAction = "Install" | "ShowInLibrary" | "ShowInStore" | "Start" | "OpenInBrowser"
 export type ProviderId = "Ea" | "Epic" | "Gog" | "Itch" | "Manual" | "Steam" | "Ubisoft" | "Xbox"
-export type RemoteGame = { title: string | null; engine: GameEngine | null; ids: { [key in ProviderId]: string[] }; subscriptions: GameSubscription[] | null }
+export type RemoteGame = { title: string | null; engine: GameEngine | null; ids: Partial<{ [key in ProviderId]: string[] }>; subscriptions: GameSubscription[] | null }
 export type RemoteMod = { common: CommonModData; data: RemoteModData }
 export type RemoteModData = { title: string; deprecated: boolean; author: string; sourceCode: string; description: string; latestVersion: ModDownload | null }
 export type RunnableModData = { path: string; args: string[] }
 export type SelectInstalledGame = [ProviderId, string]
-export type SyncLocalMods = { [key in string]: LocalMod }
-export type SyncModLoaders = { [key in string]: ModLoaderData }
-export type SyncRemoteMods = { [key in string]: RemoteMod }
+export type SyncLocalMods = Partial<{ [key in string]: LocalMod }>
+export type SyncModLoaders = Partial<{ [key in string]: ModLoaderData }>
+export type SyncRemoteMods = Partial<{ [key in string]: RemoteMod }>
 export type UnityScriptingBackend = "Il2Cpp" | "Mono"
 
 /** tauri-specta globals **/

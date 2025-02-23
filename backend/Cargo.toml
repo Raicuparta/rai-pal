@@ -3,11 +3,11 @@ members = ["proc-macros", "core", "tauri-app"]
 resolver = "2"
 
 [workspace.package]
-version = "0.14.0"
+version = "0.15.0"
 authors = ["Raicuparta"]
 license = "GPL-3.0-or-later"
 repository = "https://github.com/Raicuparta/rai-pal"
-edition = "2021"
+edition = "2024"
 
 [workspace.dependencies]
 log = "0.4.22"
@@ -17,7 +17,7 @@ serde = { version = "1.0.210", features = ["derive"] }
 serde_json = "1.0.128"
 specta = "2.0.0-rc"
 tauri-specta = { version = "2.0.0-rc.20", features = ["derive", "typescript"] }
-thiserror = "2.0.7"
+thiserror = "2.0.11"
 
 [profile.release]
 codegen-units = 1
@@ -33,12 +33,25 @@ strip = "debuginfo"
 
 
 [workspace.lints.clippy]
+# Categories that have mostly useful lints.
+# Priority is -1 so that they get overridden by priority 0 lints.
+# If Clippy gets updated with new rules on these categories, they get automatically applied.
 all = { level = "warn", priority = -1 }
 nursery = { level = "warn", priority = -1 }
 pedantic = { level = "warn", priority = -1 }
+cargo = { level = "warn", priority = -1 }
+
+# Specific lints to override. Priority defaults to 0.
+too_many_lines = "allow"
+must_use_candidate = "allow"
+missing_errors_doc = "allow"
+cargo_common_metadata = "allow"
+multiple_crate_versions = "allow"
+
+# Restriction rules are too restrictive, so we allow by default.
 restriction = { level = "allow", priority = -1 }
 
-# Restriction level lints:
+# Restriction rules to override. Priority defaults to 0.
 as_conversions = "warn"
 as_underscore = "warn"
 box_collection = "warn"
@@ -51,9 +64,3 @@ expect_used = "warn"
 shadow_unrelated = "warn"
 unwrap_used = "warn"
 verbose_file_reads = "warn"
-
-# Pedantic level lints:
-too_many_lines = "allow"
-module_name_repetitions = "allow"
-must_use_candidate = "allow"
-missing_errors_doc = "allow"
