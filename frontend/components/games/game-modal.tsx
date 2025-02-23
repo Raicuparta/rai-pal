@@ -141,12 +141,6 @@ export function GameModal({ game }: Props) {
 				<Group>
 					{installedGame && (
 						<>
-							<CommandButton
-								onClick={() => commands.refreshGame(game.id)}
-								leftSection={<IconRefresh />}
-							>
-								Refresh
-							</CommandButton>
 							<Button.Group>
 								<CommandButton
 									leftSection={<IconPlayerPlay />}
@@ -203,6 +197,14 @@ export function GameModal({ game }: Props) {
 							Remove from Rai Pal
 						</CommandButton>
 					)}
+					{installedGame && (
+						<CommandButton
+							onClick={() => commands.refreshGame(game.id)}
+							leftSection={<IconRefresh />}
+						>
+							Refresh
+						</CommandButton>
+					)}
 				</Group>
 				{installedGame && (
 					<>
@@ -235,14 +237,20 @@ export function GameModal({ game }: Props) {
 						<TableContainer bg="dark">
 							<Table>
 								<Table.Tbody>
-									{filteredMods.map((mod) => (
-										<GameModRow
-											key={mod.common.id}
-											game={game}
-											mod={mod}
-											modLoader={modLoaderMap[mod.common.loaderId]}
-										/>
-									))}
+									{filteredMods.map((mod) => {
+										const modLoader = modLoaderMap[mod.common.loaderId];
+
+										return (
+											modLoader && (
+												<GameModRow
+													key={mod.common.id}
+													game={game}
+													mod={mod}
+													modLoader={modLoader}
+												/>
+											)
+										);
+									})}
 								</Table.Tbody>
 							</Table>
 						</TableContainer>

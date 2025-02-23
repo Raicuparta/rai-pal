@@ -3,3 +3,12 @@
 	flex-wrap: wrap;
 	align-items: center;
 }
+
+.refreshProgress {
+	position: absolute;
+	bottom: 0;
+	left: 0.3rem;
+	font-size: 0.55rem;
+	opacity: 0.5;
+	pointer-events: none;
+}

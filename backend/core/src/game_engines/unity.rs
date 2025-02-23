@@ -110,8 +110,7 @@ fn get_scripting_backend(path: &Path) -> Option<UnityScriptingBackend> {
 }
 
 fn is_unity_exe(game_path: &Path) -> bool {
-	game_path.is_file()
-		&& get_unity_data_path(game_path).map_or(false, |data_path| data_path.is_dir())
+	game_path.is_file() && get_unity_data_path(game_path).is_ok_and(|data_path| data_path.is_dir())
 }
 
 // If we can't figure out the architecture by reading the executable,

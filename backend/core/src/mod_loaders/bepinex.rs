@@ -87,7 +87,7 @@ impl ModLoaderActions for BepInEx {
 
 		copy_dir_all(folder_to_copy_to_game, game_folder)?;
 
-		let is_legacy = game.executable.engine.as_ref().map_or(false, is_legacy);
+		let is_legacy = game.executable.engine.as_ref().is_some_and(is_legacy);
 
 		let config_origin_path = &self.data.path.join("config").join(if is_legacy {
 			"BepInEx-legacy.cfg"
@@ -209,7 +209,7 @@ impl ModLoaderActions for BepInEx {
 }
 
 fn is_legacy(engine: &GameEngine) -> bool {
-	engine.version.as_ref().map_or(false, |version| {
+	engine.version.as_ref().is_some_and(|version| {
 		version.numbers.major < 5
 			|| (version.numbers.major == 5 && version.numbers.minor.is_some_and(|minor| minor < 5))
 	})

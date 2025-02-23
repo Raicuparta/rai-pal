@@ -18,11 +18,10 @@ export const defaultQuery: GamesQuery = {
 			"Xbox",
 			// "Ea", // TODO not yet implemented in backend.
 			// "Ubisoft", // TODO not yet implemented in backend.
-			null,
 		],
 		tags: ["Demo", "VR", null],
 		unityScriptingBackends: ["Il2Cpp", "Mono", null],
-		installed: ["Installed", "NotInstalled", null],
+		installed: ["Installed", "NotInstalled"],
 	},
 };
 

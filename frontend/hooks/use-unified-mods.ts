@@ -22,7 +22,15 @@ export function useUnifiedMods() {
 			const localMod = localMods[key];
 			const remoteMod = remoteMods[key];
 
-			if (!localMod?.common && !remoteMod?.common) continue;
+			if (!localMod && !remoteMod) continue;
+
+			// local common but without any nulls or undefined values,
+			// to avoid overriding remote common values.
+			const cleanedUpLocalCommon = Object.fromEntries(
+				Object.entries(localMod?.common ?? {}).filter(
+					([, value]) => value != null,
+				),
+			) as CommonModData;
 
 			// When a mod is downloaded, the database information is stored in the local manifest.
 			// But there can be cases where the information isn't the same on both ends.
@@ -32,11 +40,7 @@ export function useUnifiedMods() {
 			// with mods for dev purposes, I think it's ok.
 			const common = {
 				...remoteMod?.common,
-				...Object.fromEntries(
-					Object.entries(localMod?.common || {}).filter(
-						([, value]) => value != null && value != undefined,
-					),
-				),
+				...cleanedUpLocalCommon,
 			};
 
 			modMap[key] = {
