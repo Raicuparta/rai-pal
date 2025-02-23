@@ -497,41 +497,48 @@ async fn refresh_games(handle: AppHandle, provider_id: ProviderId) -> Result {
 
 	let provider = provider::get_provider(provider_id)?;
 
-	let remote_games = state.remote_games.read_state()?.clone();
-
 	let mut fresh_games = game::Map::default();
 
 	provider
 		.get_games(|mut game: Game| {
-			// Assign the remote game here as we find the new game.
-			// This is for when the remote games are fetched *before* games are found locally.
-			game.remote_game = remote_games
-				.get(&game.id.provider_id)
-				.and_then(|provider_remote_games| provider_remote_games.get(&game.external_id))
-				.or_else(|| {
-					remote_games
-						.get(&ProviderId::Manual)
+			match state.remote_games.read() {
+				Ok(remote_games) => {
+					// Assign the remote game here as we find the new game.
+					// This is for when the remote games are fetched *before* games are found locally.
+					game.remote_game = remote_games
+						.get(&game.id.provider_id)
 						.and_then(|provider_remote_games| {
-							game.title.normalized.first().and_then(|normalized_title| {
-								provider_remote_games.get(normalized_title)
-							})
+							provider_remote_games.get(&game.external_id)
 						})
-				})
-				.cloned();
+						.or_else(|| {
+							remote_games.get(&ProviderId::Manual).and_then(
+								|provider_remote_games| {
+									game.title.normalized.first().and_then(|normalized_title| {
+										provider_remote_games.get(normalized_title)
+									})
+								},
+							)
+						})
+						.cloned();
+				}
+				Err(err) => {
+					log::error!("Failed to read remote games state: {err}");
+				}
+			}
 
-			handle
-				.app_state()
-				.games
-				.get(&provider_id)
-				.unwrap()
-				.write()
-				.unwrap()
-				.insert(game.id.game_id.clone(), game.clone());
-
-			handle.emit_safe(events::FoundGame(game.id.clone()));
-			handle.emit_safe(events::GamesChanged());
-
-			fresh_games.insert(game.id.game_id.clone(), game);
+			if let Some(provider_games) = handle.app_state().games.get(&provider_id) {
+				match provider_games.write() {
+					Ok(mut provider_games_write) => {
+						provider_games_write.insert(game.id.game_id.clone(), game.clone());
+						handle.emit_safe(events::FoundGame(game.id.clone()));
+						handle.emit_safe(events::GamesChanged());
+						fresh_games.insert(game.id.game_id.clone(), game);
+					}
+					Err(err) => {
+						log::error!("Failed to write games state: {err}");
+					}
+				}
+			}
 		})
 		.await
 		.unwrap_or_else(|err| {
@@ -569,10 +576,8 @@ async fn add_game(path: PathBuf, handle: AppHandle) -> Result {
 
 	state
 		.games
-		.get(&ProviderId::Manual)
-		.unwrap()
-		.write()
-		.unwrap()
+		.try_get(&ProviderId::Manual)?
+		.write_state()?
 		.insert(game.id.game_id.clone(), game.clone());
 
 	handle.emit_safe(events::FoundGame(game.id.clone()));
@@ -647,11 +652,19 @@ async fn get_game_ids(
 
 	let mut total_count: usize = 0;
 
-	let games_iter = state.games.values().flat_map(|provider_games_lock| {
-		let provider_games = provider_games_lock.read().unwrap();
-		total_count += provider_games.len();
-		provider_games.clone().into_values()
-	});
+	let games_iter = state
+		.games
+		.values()
+		.flat_map(|provider_games_lock| match provider_games_lock.read() {
+			Ok(provider_games) => {
+				total_count += provider_games.len();
+				provider_games.clone().into_values()
+			}
+			Err(err) => {
+				log::error!("Failed to read provider games state: {err}");
+				Default::default()
+			}
+		});
 
 	let games: Vec<_> = if let Some(query) = data_query.as_ref() {
 		let mut games: Vec<_> = games_iter.filter(|game| query.matches(game)).collect();
