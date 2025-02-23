@@ -501,41 +501,46 @@ async fn refresh_games(handle: AppHandle, provider_id: ProviderId) -> Result {
 
 	let mut fresh_games = game::Map::default();
 
-	provider.get_games(|mut game: Game| {
-		// Assign the remote game here as we find the new game.
-		// This is for when the remote games are fetched *before* games are found locally.
-		game.remote_game = remote_games
-			.get(&game.id.provider_id)
-			.and_then(|provider_remote_games| provider_remote_games.get(&game.external_id))
-			.or_else(|| {
-				remote_games
-					.get(&ProviderId::Manual)
-					.and_then(|provider_remote_games| {
-						game.title.normalized.first().and_then(|normalized_title| {
-							provider_remote_games.get(normalized_title)
+	provider
+		.get_games(|mut game: Game| {
+			// Assign the remote game here as we find the new game.
+			// This is for when the remote games are fetched *before* games are found locally.
+			game.remote_game = remote_games
+				.get(&game.id.provider_id)
+				.and_then(|provider_remote_games| provider_remote_games.get(&game.external_id))
+				.or_else(|| {
+					remote_games
+						.get(&ProviderId::Manual)
+						.and_then(|provider_remote_games| {
+							game.title.normalized.first().and_then(|normalized_title| {
+								provider_remote_games.get(normalized_title)
+							})
 						})
-					})
-			})
-			.cloned();
+				})
+				.cloned();
 
-		handle
-			.app_state()
-			.games
-			.get(&provider_id)
-			.unwrap()
-			.write()
-			.unwrap()
-			.insert(game.id.game_id.clone(), game.clone());
+			handle
+				.app_state()
+				.games
+				.get(&provider_id)
+				.unwrap()
+				.write()
+				.unwrap()
+				.insert(game.id.game_id.clone(), game.clone());
 
-		handle.emit_safe(events::FoundGame(game.id.clone()));
-		handle.emit_safe(events::GamesChanged());
+			handle.emit_safe(events::FoundGame(game.id.clone()));
+			handle.emit_safe(events::GamesChanged());
 
-		fresh_games.insert(game.id.game_id.clone(), game);
-	}).await.unwrap_or_else(|err| {
-		// It's normal for a provider to fail here if that provider is just missing.
-		// So we log those errors here instead of throwing them up.
-		log::warn!("Failed to get games for provider {provider_id}. User might just not have it. Error: {err}");
-	});
+			fresh_games.insert(game.id.game_id.clone(), game);
+		})
+		.await
+		.unwrap_or_else(|err| {
+			// It's normal for a provider to fail here if that provider is just missing.
+			// So we log those errors here instead of throwing them up.
+			log::warn!(
+				"Failed to get games for provider {provider_id}. User might just not have it. Error: {err}"
+			);
+		});
 
 	// After all is done, write again with fresh games, to get rid of the stale ones.
 	let mut games_write = state.games.try_get(&provider_id)?.write_state()?;
@@ -569,6 +574,10 @@ async fn add_game(path: PathBuf, handle: AppHandle) -> Result {
 		.write()
 		.unwrap()
 		.insert(game.id.game_id.clone(), game.clone());
+
+	handle.emit_safe(events::FoundGame(game.id.clone()));
+
+	handle.emit_safe(events::GamesChanged());
 
 	handle.emit_safe(events::SelectInstalledGame(
 		ProviderId::Manual,
