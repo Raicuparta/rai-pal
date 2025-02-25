@@ -8,7 +8,7 @@ use std::{
 };
 
 use crate::{
-	game::Game,
+	game::{Game, GameId},
 	installed_game::InstalledGame,
 	providers::provider::{ProviderActions, ProviderId, ProviderStatic},
 	result::Result as GameResult,
@@ -156,7 +156,13 @@ impl ProviderActions for HeroicGog {
 	{
 		let parsed_games = get_detected_games()?;
 		for parsed_game in parsed_games {
-			let mut game = Game::new(&parsed_game.app_name, *Self::ID, &parsed_game.title);
+			let mut game = Game::new(
+				GameId {
+					game_id: parsed_game.app_name.clone(),
+					provider_id: *Self::ID,
+				},
+				&parsed_game.title,
+			);
 			if let Some(thumbnail_url) = parsed_game.art_cover.clone() {
 				game.set_thumbnail_url(&thumbnail_url);
 			}
