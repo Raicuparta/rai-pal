@@ -1,11 +1,12 @@
+#![cfg(target_os = "windows")]
+
 use std::{io, path::PathBuf};
 
 use log::error;
 use rai_pal_proc_macros::serializable_struct;
-#[cfg(target_os = "windows")]
 use winreg::{
-	enums::{HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE},
 	RegKey,
+	enums::{HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE},
 };
 
 use crate::{
@@ -53,7 +54,10 @@ impl ProviderActions for Xbox {
 	{
 		if let Err(error) = get_games(&mut callback) {
 			if error.kind() == io::ErrorKind::NotFound {
-				log::info!("Failed to find installed Xbox PC games. This probably means the Xbox PC app isn't installed, or there are no Windows Store games or something. Error: {}", error);
+				log::info!(
+					"Failed to find installed Xbox PC games. This probably means the Xbox PC app isn't installed, or there are no Windows Store games or something. Error: {}",
+					error
+				);
 				return Ok(());
 			}
 		}
@@ -66,7 +70,6 @@ fn get_games<TCallback>(mut callback: TCallback) -> io::Result<()>
 where
 	TCallback: FnMut(Game) + Send + Sync,
 {
-	#[cfg(target_os = "windows")]
 	{
 		let gaming_services = RegKey::predef(HKEY_LOCAL_MACHINE)
 			.open_subkey("SOFTWARE\\Microsoft\\GamingServices")?;
@@ -102,7 +105,10 @@ where
 															.get_value::<String, _>("DisplayName")
 													})
 													.or_else(|error| {
-														error!("Failed to find display name for Xbox game: {}", error);
+														error!(
+															"Failed to find display name for Xbox game: {}",
+															error
+														);
 														file_name_without_extension(
 															&executable_path,
 														)
@@ -110,9 +116,9 @@ where
 													})
 													.unwrap_or_else(|error| {
 														error!(
-														"Failed to get game name from exe path: {}",
-														error
-													);
+															"Failed to get game name from exe path: {}",
+															error
+														);
 														"[Name Not Found]".to_string()
 													});
 

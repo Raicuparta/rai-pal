@@ -12,13 +12,11 @@ use crate::providers::heroic_epic_provider::HeroicEpic;
 #[cfg(target_os = "linux")]
 use crate::providers::heroic_gog_provider::HeroicGog;
 #[cfg(target_os = "windows")]
-use crate::providers::{epic_provider::Epic, gog_provider::Gog};
+use crate::providers::{epic_provider::Epic, gog_provider::Gog, xbox_provider::Xbox};
 use crate::{
 	game::Game,
 	paths,
-	providers::{
-		itch_provider::Itch, manual_provider::Manual, steam::steam_provider::Steam, xbox_provider::Xbox,
-	},
+	providers::{itch_provider::Itch, manual_provider::Manual, steam::steam_provider::Steam},
 	result::{Error, Result},
 };
 
@@ -45,6 +43,7 @@ pub enum Provider {
 	Epic,
 	#[cfg(target_os = "windows")]
 	Gog,
+	#[cfg(target_os = "windows")]
 	Xbox,
 	#[cfg(target_os = "linux")]
 	HeroicEpic,
@@ -57,7 +56,6 @@ const PROVIDERS: &Map = &[
 	create_map_entry::<Steam>(),
 	create_map_entry::<Manual>(),
 	create_map_entry::<Itch>(),
-	create_map_entry::<Xbox>(),
 	#[cfg(target_os = "linux")]
 	create_map_entry::<HeroicEpic>(),
 	#[cfg(target_os = "linux")]
@@ -66,6 +64,8 @@ const PROVIDERS: &Map = &[
 	create_map_entry::<Epic>(),
 	#[cfg(target_os = "windows")]
 	create_map_entry::<Gog>(),
+	#[cfg(target_os = "windows")]
+	create_map_entry::<Xbox>(),
 ];
 
 #[enum_dispatch(Provider)]
@@ -75,8 +75,8 @@ pub trait ProviderActions {
 		TCallback: FnMut(Game) + Send + Sync;
 }
 
-const fn create_map_entry<TProvider: ProviderActions + ProviderStatic>(
-) -> (ProviderId, fn() -> Result<Provider>)
+const fn create_map_entry<TProvider: ProviderActions + ProviderStatic>()
+-> (ProviderId, fn() -> Result<Provider>)
 where
 	Provider: From<TProvider>,
 {
