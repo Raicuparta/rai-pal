@@ -8,8 +8,8 @@ export const enUs = {
 	simple: "Simple",
 } as const;
 
-type EnUsTranslation = typeof enUs;
-type TranslationKey = keyof EnUsTranslation;
+type BaseTranslation = typeof enUs;
+type TranslationKey = keyof BaseTranslation;
 
 // Takes a translated string with {parameters}, returns a Record<[Parameter], string>.
 // Example: ExtractParams<"Hello, {name}!"> => { name: string }
@@ -19,14 +19,13 @@ type ExtractParams<TTranslatedString extends string> =
 		: undefined;
 
 // Takes a TranslationKey, returns the args to be passed to translation functions.
-// Uses en-us language as the source of truth.
 // Empty array if no parameters are needed, so that we can spread them.
 // Example: TranslationArgs<"hello"> => [{ name: string }]
 // Example: TranslationArgs<"simple"> => []
 type TranslationArgs<TKey extends TranslationKey> =
-	ExtractParams<EnUsTranslation[TKey]> extends undefined
+	ExtractParams<BaseTranslation[TKey]> extends undefined
 		? []
-		: [params: ExtractParams<EnUsTranslation[TKey]>];
+		: [params: ExtractParams<BaseTranslation[TKey]>];
 
 // Translation files are flat objects with string values, parsed from JSON.
 function isTranslationValid(
