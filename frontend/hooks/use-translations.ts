@@ -1,5 +1,6 @@
 import { enUs } from "./en-us";
 import { ptPt } from "./pt-pt";
+import { zhCn } from "./zh-cn";
 
 // en-us is the only language defined in TS, used as the source of truth.
 // Other language defined in JSON, modifiable at runtime.
@@ -87,6 +88,6 @@ export function useGetTranslated<TCategory extends TranslationCategory>(
 	) {
 		if (!key) return undefined;
 
-		return getTranslation(ptPt, category, key, ...args);
+		return getTranslation(zhCn, category, key, ...args);
 	};
 }
