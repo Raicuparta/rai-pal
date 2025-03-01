@@ -132,6 +132,17 @@ export const enUs = {
 		modByAuthor: "by {authorName}",
 	},
 
+	modModal: {
+		runMod: "Run",
+		openModFolder: "Open mod folder",
+		updateMod: "Update mod",
+		downloadMod: "Download mod",
+		deleteMod: "Delete mod",
+		deleteModConfirmation:
+			"You sure? Any files inside the mod's folder will be lost.",
+		byAuthor: "by {authorName}",
+	},
+
 	toolsPage: {
 		openLogsFolderButton: "Open Logs Folder",
 		resetRaiPalSettingsButton: "Reset Rai Pal settings",
