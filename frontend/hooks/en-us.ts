@@ -146,7 +146,10 @@ export const enUs = {
 	toolsPage: {
 		openLogsFolderButton: "Open Logs Folder",
 		resetRaiPalSettingsButton: "Reset Rai Pal settings",
+		resetRaiPalSettingsTooltip:
+			"Will reset filters, confirmation dialogs, probably other stuff.",
 		clearCacheButton: "Clear Rai Pal cache",
+		clearCacheTooltip: "Clears the game list cache used by Rai Pal.",
 	},
 
 	steamCache: {

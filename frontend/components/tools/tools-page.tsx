@@ -20,7 +20,7 @@ export function ToolsPage() {
 					{t("openLogsFolderButton")}
 				</CommandButton>
 				<Tooltip
-					label="Will reset filters, confirmation dialogs, probably other stuff."
+					label={t("resetRaiPalSettingsTooltip")}
 					position="bottom"
 				>
 					<Button
@@ -31,7 +31,7 @@ export function ToolsPage() {
 					</Button>
 				</Tooltip>
 				<Tooltip
-					label="Clears the game list cache used by Rai Pal."
+					label={t("clearCacheTooltip")}
 					position="bottom"
 				>
 					<CommandButton
