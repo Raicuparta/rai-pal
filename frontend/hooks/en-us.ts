@@ -131,4 +131,19 @@ export const enUs = {
 		tableColumnUnityBackend: "Backend",
 		modByAuthor: "by {authorName}",
 	},
+
+	toolsPage: {
+		openLogsFolderButton: "Open Logs Folder",
+		resetRaiPalSettingsButton: "Reset Rai Pal settings",
+		clearCacheButton: "Clear Rai Pal cache",
+	},
+
+	steamCache: {
+		resetSteamCacheButton: "Reset Steam cache",
+		resetSteamCacheModalTitle: "Reset Steam cache",
+		resetSteamCacheDescription:
+			"Use this if Rai Pal is showing games you don't actually own on Steam. This will reset Steam's cache, and then you'll have to restart Steam. You'll get an error if the file has already been deleted.",
+		resetSteamCacheSuccess:
+			"The cache file has been deleted. Please restart Steam, wait a few seconds, and then press the refresh button on Rai Pal.",
+	},
 } as const;

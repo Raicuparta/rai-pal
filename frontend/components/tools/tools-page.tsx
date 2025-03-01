@@ -4,8 +4,11 @@ import { IconFolderCode, IconRotateDot, IconTrash } from "@tabler/icons-react";
 import { CommandButton } from "@components/command-button";
 import { commands } from "@api/bindings";
 import { SteamCacheButton } from "./steam-cache-button";
+import { useGetTranslated } from "@hooks/use-translations";
 
 export function ToolsPage() {
+	const t = useGetTranslated("toolsPage");
+
 	return (
 		<Container size="xs">
 			<Stack>
@@ -14,7 +17,7 @@ export function ToolsPage() {
 					leftSection={<IconFolderCode />}
 					justify="center"
 				>
-					Open Logs Folder
+					{t("openLogsFolderButton")}
 				</CommandButton>
 				<Tooltip
 					label="Will reset filters, confirmation dialogs, probably other stuff."
@@ -24,7 +27,7 @@ export function ToolsPage() {
 						onClick={resetLocalStorage}
 						leftSection={<IconRotateDot />}
 					>
-						Reset Rai Pal settings
+						{t("resetRaiPalSettingsButton")}
 					</Button>
 				</Tooltip>
 				<Tooltip
@@ -35,7 +38,7 @@ export function ToolsPage() {
 						onClick={commands.clearCache}
 						leftSection={<IconTrash />}
 					>
-						Reset Rai Pal cache
+						{t("clearCacheButton")}
 					</CommandButton>
 				</Tooltip>
 				<SteamCacheButton />
