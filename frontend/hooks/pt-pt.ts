@@ -10,8 +10,8 @@ export const ptPt = {
 		button: "Adicionar jogo",
 		title: "Adicionar jogo",
 		dropField:
-			"Arrasta e larga um executável de jogo aqui, ou clica para selecionar um ficheiro.",
-		note: "Nota: podes largar executáveis de jogo em qualquer parte da janela do Rai Pal sem abrir este diálogo.",
+			"Arrasta e larga um executável de jogo aqui ou clica para selecionar um ficheiro.",
+		note: "Nota: podes largar ficheiros executáveis de jogos em qualquer lugar na janela do Rai Pal para os adicionar à lista de jogos instalados sem abrir este diálogo.",
 	},
 
 	refresh: {
@@ -26,10 +26,10 @@ export const ptPt = {
 	},
 
 	filterProperty: {
-		provider: "Provedor",
+		provider: "Fornecedor",
 		tags: "Etiqueta",
 		architecture: "Arquitetura",
-		unityScriptingBackend: "Backend Unity",
+		unityScriptingBackend: "Backend do Unity",
 		engine: "Motor",
 		status: "Estado",
 	},
@@ -62,11 +62,11 @@ export const ptPt = {
 
 	filterValueNote: {
 		providerXboxOnlyInstalled:
-			"Os jogos do Xbox PC só aparecem no Rai Pal depois de instalados.",
+			"Os jogos Xbox para PC só aparecem no Rai Pal depois de serem instalados.",
 		engineGodotNotFullySupported:
-			"Os jogos Godot não são totalmente suportados ainda.",
+			"Os jogos Godot ainda não são totalmente suportados.",
 		engineGameMakerNotFullySupported:
-			"Os jogos GameMaker não são totalmente suportados ainda.",
+			"Os jogos GameMaker ainda não são totalmente suportados.",
 	},
 
 	providerCommand: {
@@ -79,25 +79,25 @@ export const ptPt = {
 
 	gameModal: {
 		startGameButton: "Iniciar Jogo",
-		startGameExecutable: "Executável do Jogo",
+		startGameExecutable: "Iniciar Executável do Jogo",
 		startGameViaProvider: "Iniciar Jogo via {provider}",
 		foldersDropdown: "Pastas",
 		openGameFilesFolder: "Abrir Pasta de Ficheiros do Jogo",
 		openInstalledModsFolder: "Abrir Pasta de Mods Instalados",
+		removeFromRaiPal: "Remover do Rai Pal",
 		removeGameConfirmation:
 			"Tens a certeza de que queres remover este jogo do Rai Pal?",
-		removeFromRaiPal: "Remover do Rai Pal",
 		refreshGame: "Atualizar",
 		failedToReadGameInfo:
-			"Falhou a leitura de informações importantes sobre este jogo. Pode ser devido a ficheiros protegidos. Alguns mods podem falhar na instalação.",
+			"Falha ao ler informações importantes sobre este jogo. O executável pode estar protegido. Alguns mods podem não conseguir ser instalados.",
 		failedToDetermineEngine:
-			"Falhou a deteção do motor deste jogo. Alguns mods podem falhar na instalação.",
+			"Falha ao determinar o motor deste jogo. Alguns mods podem não funcionar.",
 		gameModsLabel: "Mods",
 		gameNotInstalledWarning:
-			"Este jogo não está instalado; não consigo ter 100% de certeza de quais mods são compatíveis. Se o instalares, vou conseguir mostrar-te informações mais exatas.",
-		uninstallAllModsConfirmation:
-			"Tens a certeza? Isto vai eliminar todos os ficheiros na pasta de mods deste jogo. Não elimina ficheiros do próprio jogo.",
+			"Este jogo não está instalado, por isso não tenho 100% de certeza sobre a compatibilidade dos mods. Os que vês abaixo podem funcionar. Se instalares o jogo, poderei mostrar informações mais precisas.",
 		uninstallAllModsButton: "Desinstalar todos os mods",
+		uninstallAllModsConfirmation:
+			"Tens a certeza? Isto apagará todos os ficheiros na pasta de mods deste jogo. No entanto, não removerá ficheiros do próprio jogo.",
 	},
 
 	gamesTableColumn: {
@@ -110,13 +110,13 @@ export const ptPt = {
 		openModsFolderButton: "Abrir Pasta de Mods",
 		tableColumnMod: "Mod",
 		tableColumnVersion: "Versão",
-		tableColumnModLoader: "Carregador",
+		tableColumnModLoader: "Loader",
 		tableColumnGameEngine: "Motor",
 		tableColumnUnityBackend: "Backend",
 		modByAuthor: "por {authorName}",
-		modDeprecated: "Descontinuado",
+		modDeprecated: "Obsoleto",
 		modDeprecatedTooltip:
-			"Este mod está descontinuado. Deves desinstalá-lo e instalar uma alternativa mais recente.",
+			"Este mod está obsoleto. Deves desinstalá-lo e instalar uma alternativa mais recente.",
 		modOutdated: "Mod desatualizado",
 	},
 
@@ -124,10 +124,10 @@ export const ptPt = {
 		runMod: "Executar",
 		openModFolder: "Abrir pasta do mod",
 		updateMod: "Atualizar mod",
-		downloadMod: "Transferir mod",
+		downloadMod: "Descarregar mod",
 		deleteMod: "Eliminar mod",
 		deleteModConfirmation:
-			"Tens a certeza? Todos os ficheiros na pasta deste mod vão perder-se.",
+			"Tens a certeza? Todos os ficheiros dentro da pasta do mod serão apagados.",
 		byAuthor: "por {authorName}",
 	},
 
@@ -135,7 +135,7 @@ export const ptPt = {
 		openLogsFolderButton: "Abrir Pasta de Registos",
 		resetRaiPalSettingsButton: "Repor definições do Rai Pal",
 		resetRaiPalSettingsTooltip:
-			"Vai repor filtros, caixas de confirmação e possivelmente outras definições.",
+			"Irá repor filtros, diálogos de confirmação e outras definições.",
 		clearCacheButton: "Limpar cache do Rai Pal",
 		clearCacheTooltip: "Limpa a cache da lista de jogos usada pelo Rai Pal.",
 	},
@@ -144,33 +144,32 @@ export const ptPt = {
 		resetSteamCacheButton: "Repor cache da Steam",
 		resetSteamCacheModalTitle: "Repor cache da Steam",
 		resetSteamCacheDescription:
-			"Usa isto se o Rai Pal está a mostrar jogos que não possuis na Steam. Isto vai repor a cache da Steam e depois terás de reiniciar a Steam. Vais receber um erro se o ficheiro já tiver sido eliminado.",
+			"Usa isto se o Rai Pal estiver a mostrar jogos que não possuis na Steam. Isto irá repor a cache da Steam e terás de a reiniciar. Irás receber um erro se o ficheiro já tiver sido apagado.",
 		resetSteamCacheSuccess:
-			"O ficheiro de cache foi eliminado. Reinicia a Steam, espera uns segundos e carrega no botão de atualizar no Rai Pal.",
+			"O ficheiro de cache foi apagado. Reinicia a Steam, espera alguns segundos e depois clica no botão de atualização no Rai Pal.",
 	},
 
 	debugData: {
-		debugDataTitle: "Dados de depuração",
+		debugDataTitle: "Dados de Depuração",
 		debugDataCopy: "Copiar dados de depuração",
 	},
 
 	thanksPage: {
 		intro:
-			"Olá. Eu criei o Rai Pal. Também criei outros mods de VR e neste momento estou a trabalhar num mod universal de VR para jogos Unity. Se gostas do que faço e queres ver mais, considera fazer uma doação! Podes apoiar-me também comprando um dos meus mods gratuitos no itch.io.",
+			"Olá. Eu fiz o Rai Pal. Também fiz outros mods VR no passado e estou a trabalhar num mod VR universal para jogos Unity. Se gostas do que faço e queres ver mais, considera doar! Também podes apoiar-me comprando um dos meus mods gratuitos no itch.io.",
 		starRaiPalOnGitHub: "Dá uma estrela ao Rai Pal no GitHub",
-		otherModdersTitle: "Outros criadores de mods",
+		otherModdersTitle: "Outros modders",
 		otherModdersDescription:
-			"O Rai Pal ajuda-te a gerir mods de jogos e não seria possível sem as ferramentas que outros criadores desenvolveram. Alguns não têm links de doação, mas estou muito grato pelo seu trabalho.",
-		modderOnWebsite: "{modderName} em {website}",
-		patreonLeaderboard: "Ranking de Patreon",
-		rankedByPatreonDonationAmount:
-			"Classificado pelo valor total de doações no Patreon.",
+			"O Rai Pal ajuda-te a gerir mods, e não seria possível sem as ferramentas de outros programadores. Alguns não têm links de doação, mas estou extremamente grato pelo seu trabalho.",
+		modderOnWebsite: "{modderName} no {website}",
+		patreonLeaderboard: "Ranking do Patreon",
+		rankedByPatreonDonationAmount: "Ordenado pelo montante total doado.",
 		patreonProfilePrivateNotice:
 			"Se não te vês aqui, é porque o teu perfil no Patreon é privado.",
 	},
 
 	commandButton: {
 		cancel: "Cancelar",
-		dontAskAgain: "Não voltar a perguntar",
+		dontAskAgain: "Não perguntar novamente",
 	},
-} as const;
+};
