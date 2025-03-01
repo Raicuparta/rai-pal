@@ -6,8 +6,10 @@ import { open as openDialog } from "@tauri-apps/plugin-dialog";
 import { useAtomValue } from "jotai";
 import { loadingTasksAtom } from "@hooks/use-data";
 import { useAsyncCommand } from "@hooks/use-async-command";
+import { useGetTranslated } from "@hooks/use-translations";
 
 export function AddGame() {
+	const t = useGetTranslated("addGame");
 	const [isOpen, setIsOpen] = useState(false);
 	const isLoading = useAtomValue(loadingTasksAtom);
 
@@ -43,14 +45,14 @@ export function AddGame() {
 				onClick={() => setIsOpen(true)}
 				leftSection={<IconPlaylistAdd />}
 			>
-				Add game
+				{t("button")}
 			</Button>
 			<Modal
 				opened={isOpen}
 				centered
 				size="lg"
 				onClose={() => setIsOpen(false)}
-				title="Add game"
+				title={t("title")}
 			>
 				<Stack>
 					<Button
@@ -60,17 +62,10 @@ export function AddGame() {
 					>
 						<Group>
 							<IconAppWindowFilled fontSize={50} />
-							<Stack gap={0}>
-								<Text>Drag and drop a game&apos;s executable file here</Text>
-								<Text>or click to select a file</Text>
-							</Stack>
+							<Text>{t("dropField")}</Text>
 						</Group>
 					</Button>
-					<Text>
-						Note: you can drop game executable files anywhere on Rai Pal&apos;s
-						window to add them to the installed game list without opening this
-						dialog.
-					</Text>
+					<Text>{t("note")}</Text>
 				</Stack>
 			</Modal>
 		</>
