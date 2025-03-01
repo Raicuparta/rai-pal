@@ -157,4 +157,9 @@ export const enUs = {
 		resetSteamCacheSuccess:
 			"The cache file has been deleted. Please restart Steam, wait a few seconds, and then press the refresh button on Rai Pal.",
 	},
+
+	debugData: {
+		debugDataTitle: "Debug data",
+		debugDataCopy: "Copy debug data",
+	},
 } as const;
