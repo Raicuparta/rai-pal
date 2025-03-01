@@ -183,4 +183,9 @@ export const enUs = {
 		patreonProfilePrivateNotice:
 			"If you don't see yourself here, it's because your Patreon profile is private.",
 	},
+
+	commandButton: {
+		cancel: "Cancel",
+		dontAskAgain: "Don't ask again",
+	},
 } as const;

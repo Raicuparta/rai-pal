@@ -13,6 +13,7 @@ import { forwardRef, useCallback, useState } from "react";
 import { IconArrowBack, IconCheck } from "@tabler/icons-react";
 import { usePersistedState } from "@hooks/use-persisted-state";
 import { Result } from "@api/bindings";
+import { useGetTranslated } from "@hooks/use-translations";
 
 interface Props<TResultValue, TError> extends ButtonProps {
 	readonly onClick: () => Promise<Result<TResultValue, TError> | TResultValue>;
@@ -32,6 +33,7 @@ function CommandButtonInternal<TResultValue, TError>(
 	}: Props<TResultValue, TError>,
 	ref: React.ForwardedRef<HTMLButtonElement>,
 ) {
+	const t = useGetTranslated("commandButton");
 	const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
 	const [shouldSkipConfirm, setShouldSkipConfirm] = usePersistedState(
 		false,
@@ -106,7 +108,7 @@ function CommandButtonInternal<TResultValue, TError>(
 								leftSection={<IconArrowBack />}
 								onClick={closeConfirmation}
 							>
-								Cancel
+								{t("cancel")}
 							</Button>
 							<Button
 								leftSection={<IconCheck />}
@@ -121,7 +123,7 @@ function CommandButtonInternal<TResultValue, TError>(
 								onChange={(event) =>
 									setDontAskAgain(event.currentTarget.checked)
 								}
-								label="Don't ask again"
+								label={t("dontAskAgain")}
 							/>
 						)}
 					</Stack>
