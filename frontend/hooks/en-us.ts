@@ -92,4 +92,27 @@ export const enUs = {
 		startGame: "Start Game",
 		openGamePageInBrowser: "Open In Browser",
 	},
+
+	gameModal: {
+		startGameButton: "Start Game",
+		startGameExecutable: "Start Game Executable",
+		startGameViaProvider: "Start Game via {provider}",
+		foldersDropdown: "Folders",
+		openGameFilesFolder: "Open Game Files Folder",
+		openInstalledModsFolder: "Open Installed Mods Folder",
+		removeGameConfirmation:
+			"Are you sure you want to remove this game from Rai Pal?",
+		removeFromRaiPal: "Remove from Rai Pal",
+		refreshGame: "Refresh",
+		failedToReadGameInfo:
+			"Failed to read some important information about this game. This could be due to the executable being protected. Some mods might fail to install.",
+		failedToDetermineEngine:
+			"Failed to determine the engine for this game. Some mods might fail to install.",
+		gameModsLabel: "Mods",
+		gameNotInstalledWarning:
+			"This game isn't installed, so I'm not 100% sure which mods are compatible. The ones you see below might work. If you install the game, I'll show you more accurate information.",
+		uninstallAllModsConfirmation:
+			"You sure? This will delete all files in this game's mods folder. It won't delete any files from the actual game though.",
+		uninstallAllModsButton: "Uninstall all mods",
+	},
 } as const;
