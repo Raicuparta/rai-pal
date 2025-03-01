@@ -130,6 +130,10 @@ export const enUs = {
 		tableColumnGameEngine: "Engine",
 		tableColumnUnityBackend: "Backend",
 		modByAuthor: "by {authorName}",
+		modDeprecated: "Deprecated",
+		modDeprecatedTooltip:
+			"This mod is deprecated. You should uninstall it and install a newer alternative.",
+		modOutdated: "Mod outdated",
 	},
 
 	modModal: {
