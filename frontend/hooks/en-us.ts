@@ -84,4 +84,12 @@ export const enUs = {
 		engineGameMakerNotFullySupported:
 			"GameMaker games are not fully supported yet.",
 	},
+
+	providerCommand: {
+		installGame: "Install",
+		showGameInLibrary: "Show In Library",
+		showGameInStore: "Open Store Page",
+		startGame: "Start Game",
+		openGamePageInBrowser: "Open In Browser",
+	},
 } as const;
