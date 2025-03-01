@@ -5,7 +5,7 @@ import { GamesSortBy } from "@api/bindings";
 import { TranslationKey, useGetTranslated } from "@hooks/use-translations";
 
 export type TableColumnBase<TItem, TSort> = {
-	translationKey?: TranslationKey<"gamesTableHeader">;
+	translationKey?: TranslationKey<"gamesTableColumn">;
 	component: React.ComponentType<{ item: TItem }>;
 	width?: number;
 	center?: boolean;
@@ -39,7 +39,7 @@ type Props<TKey extends string, TItem, TSort> = {
 export function TableHead<TKey extends string, TItem, TSort>(
 	props: Props<TKey, TItem, TSort>,
 ) {
-	const t = useGetTranslated("gamesTableHeader");
+	const t = useGetTranslated("gamesTableColumn");
 
 	return (
 		<Table.Tr>

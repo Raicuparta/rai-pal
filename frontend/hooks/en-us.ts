@@ -116,9 +116,19 @@ export const enUs = {
 		uninstallAllModsButton: "Uninstall all mods",
 	},
 
-	gamesTableHeader: {
+	gamesTableColumn: {
 		game: "Game",
 		engine: "Engine",
 		date: "Date",
+	},
+
+	modsPage: {
+		openModsFolderButton: "Open Mods Folder",
+		tableColumnMod: "Mod",
+		tableColumnVersion: "Version",
+		tableColumnModLoader: "Loader",
+		tableColumnGameEngine: "Engine",
+		tableColumnUnityBackend: "Backend",
+		modByAuthor: "by {authorName}",
 	},
 } as const;
