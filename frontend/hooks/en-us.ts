@@ -1,5 +1,5 @@
 export const enUs = {
-	tabs: {
+	tab: {
 		// Name of the tab that shows the user's games from all providers.
 		games: "Games",
 
@@ -34,5 +34,54 @@ export const enUs = {
 
 		// Small text that shows inside the refresh button, while stuff is loading. {items} is a comma-separated list.
 		loading: "Loading {items}...",
+	},
+
+	filterMenu: {
+		button: "Filter",
+		resetButton: "Reset",
+		searchPlaceholder: "Search...",
+	},
+
+	filterProperty: {
+		provider: "Provider",
+		tags: "Tag",
+		architecture: "Architecture",
+		unityScriptingBackend: "Unity Backend",
+		engine: "Engine",
+		status: "Status",
+	},
+
+	filterValue: {
+		unknown: "Unknown",
+		arch64: "64-bit",
+		arch32: "32-bit",
+		engineGodot: "Godot",
+		engineGameMaker: "GameMaker",
+		engineUnity: "Unity",
+		engineUnreal: "Unreal",
+		unityBackendIl2Cpp: "IL2CPP",
+		unityBackendMono: "Mono",
+		tagDemo: "Demo",
+		tagVr: "Native VR",
+		tagUntagged: "Untagged",
+		statusInstalled: "Installed",
+		statusNotInstalled: "Not installed",
+		providerSteam: "Steam",
+		providerGog: "GOG",
+		providerEpic: "Epic",
+		providerItch: "itch.io",
+		providerOrigin: "Origin",
+		providerManual: "Manual",
+		providerXbox: "Xbox",
+		providerEa: "EA",
+		providerUbisoft: "Ubisoft",
+	},
+
+	filterValueNote: {
+		providerXboxOnlyInstalled:
+			"Xbox PC games only show on Rai Pal once they're installed.",
+		engineGodotNotFullySupported: "Godot games are not fully supported yet.",
+		engineGameMakerNotFullySupported:
+			"GameMaker games are not fully supported yet.",
 	},
 } as const;

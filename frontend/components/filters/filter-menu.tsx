@@ -6,9 +6,11 @@ import { FilterChangeCallback, FilterKey, FilterSelect } from "./filter-select";
 import { SearchInput } from "@components/search-input";
 import { GamesFilter, GamesQuery } from "@api/bindings";
 import { defaultQuery, useDataQuery } from "@hooks/use-data-query";
+import { useGetTranslated } from "@hooks/use-translations";
 
 export function FilterMenu() {
 	const [dataQuery, setDataQuery] = useDataQuery();
+	const t = useGetTranslated("filterMenu");
 
 	const handleToggleClick = useCallback<FilterChangeCallback>(
 		(id, values) => {
@@ -68,7 +70,7 @@ export function FilterMenu() {
 						position="bottom-end"
 					>
 						<Popover.Target>
-							<Button leftSection={<IconFilter />}>Filter</Button>
+							<Button leftSection={<IconFilter />}>{t("button")}</Button>
 						</Popover.Target>
 						<Popover.Dropdown
 							bg="dark"

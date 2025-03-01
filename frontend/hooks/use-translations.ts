@@ -81,9 +81,11 @@ export function useGetTranslated<TCategory extends TranslationCategory>(
 	category: TCategory,
 ) {
 	return function t<TKey extends TranslationKey<TCategory>>(
-		key: TKey,
+		key?: TKey,
 		...args: TranslationArgs<TCategory, TKey>
 	) {
+		if (!key) return undefined;
+
 		return getTranslation(enUs, category, key, ...args);
 	};
 }

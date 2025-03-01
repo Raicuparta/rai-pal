@@ -2,6 +2,7 @@ import { Button, Checkbox, Stack, Tooltip } from "@mantine/core";
 import { GamesFilter } from "@api/bindings";
 import { IconRestore } from "@tabler/icons-react";
 import styles from "./filters.module.css";
+import { TranslationKey, useGetTranslated } from "@hooks/use-translations";
 
 export type FilterKey = keyof GamesFilter;
 export type FilterValue<TFilterKey extends FilterKey> =
@@ -20,115 +21,115 @@ type Props<TFilterKey extends keyof GamesFilter> = {
 };
 
 type ValueDetails = {
-	notes?: string;
-	display?: string;
+	noteTranslationKey?: TranslationKey<"filterValueNote">;
+	translationKey?: TranslationKey<"filterValue">;
 };
 
 type FilterDetails<TKey extends keyof GamesFilter> = {
-	title: string;
+	translationKey: TranslationKey<"filterProperty">;
 
 	// Text that shows for each filter type for the "empty value" option.
 	// If not defined, the empty option is hidden from the filter menu.
-	emptyOption?: string;
+	emptyTranslationKey?: TranslationKey<"filterValue">;
 
 	valueDetails: Record<NonNullable<FilterValue<TKey>>, ValueDetails>;
 };
 
 const filterDetails: { [key in keyof GamesFilter]: FilterDetails<key> } = {
 	architectures: {
-		title: "Architecture",
-		emptyOption: "Unknown",
+		translationKey: "architecture",
+		emptyTranslationKey: "unknown",
 		valueDetails: {
 			X64: {
-				display: "64-bit",
+				translationKey: "arch64",
 			},
 			X86: {
-				display: "32-bit",
+				translationKey: "arch32",
 			},
 		},
 	},
 	engines: {
-		title: "Engine",
-		emptyOption: "Unknown",
+		translationKey: "engine",
+		emptyTranslationKey: "unknown",
 		valueDetails: {
 			Godot: {
-				display: "Godot",
-				notes: "Rai Pal doesn't fully support Godot yet.",
+				translationKey: "engineGodot",
+				noteTranslationKey: "engineGodotNotFullySupported",
 			},
 			GameMaker: {
-				display: "GameMaker",
-				notes: "Rai Pal doesn't fully support GameMaker yet.",
+				translationKey: "engineGameMaker",
+				noteTranslationKey: "engineGameMakerNotFullySupported",
 			},
 			Unity: {
-				display: "Unity",
+				translationKey: "engineUnity",
 			},
 			Unreal: {
-				display: "Unreal",
+				translationKey: "engineUnreal",
 			},
 		},
 	},
 	unityScriptingBackends: {
-		title: "Unity Backend",
-		emptyOption: "Unknown",
+		translationKey: "unityScriptingBackend",
+		emptyTranslationKey: "unknown",
 		valueDetails: {
 			Il2Cpp: {
-				display: "IL2CPP",
+				translationKey: "unityBackendIl2Cpp",
 			},
 			Mono: {
-				display: "Mono",
+				translationKey: "unityBackendMono",
 			},
 		},
 	},
 	tags: {
-		title: "Tags",
-		emptyOption: "Untagged",
+		translationKey: "tags",
+		emptyTranslationKey: "tagUntagged",
 		valueDetails: {
 			Demo: {
-				display: "Demo",
+				translationKey: "tagDemo",
 			},
 			VR: {
-				display: "Native VR",
+				translationKey: "tagVr",
 			},
 		},
 	},
 	installed: {
-		title: "Status",
+		translationKey: "status",
 		valueDetails: {
 			Installed: {
-				display: "Installed",
+				translationKey: "statusInstalled",
 			},
 			NotInstalled: {
-				display: "Not Installed",
+				translationKey: "statusNotInstalled",
 			},
 		},
 	},
 	providers: {
-		title: "Provider",
+		translationKey: "provider",
 		valueDetails: {
 			Ea: {
-				display: "EA",
+				translationKey: "providerEa",
 			},
 			Epic: {
-				display: "Epic",
+				translationKey: "providerEpic",
 			},
 			Gog: {
-				display: "GOG",
+				translationKey: "providerGog",
 			},
 			Itch: {
-				display: "Itch.io",
+				translationKey: "providerItch",
 			},
 			Manual: {
-				display: "Manual",
+				translationKey: "providerManual",
 			},
 			Steam: {
-				display: "Steam",
+				translationKey: "providerSteam",
 			},
 			Ubisoft: {
-				display: "Ubisoft",
+				translationKey: "providerUbisoft",
 			},
 			Xbox: {
-				display: "Xbox",
-				notes: "Xbox PC games only show on Rai Pal once they're installed.",
+				translationKey: "providerXbox",
+				noteTranslationKey: "providerXboxOnlyInstalled",
 			},
 		},
 	},
@@ -140,6 +141,11 @@ export function FilterSelect<TFilterKey extends FilterKey>({
 	currentValues,
 	onChange,
 }: Props<TFilterKey>) {
+	const tMenu = useGetTranslated("filterMenu");
+	const tProperty = useGetTranslated("filterProperty");
+	const tValue = useGetTranslated("filterValue");
+	const tValueNote = useGetTranslated("filterValueNote");
+
 	function handleFilterClick(id: TFilterKey, value: string | null) {
 		const newValues = [...currentValues];
 		const index = newValues.indexOf(value as FilterValue<TFilterKey>);
@@ -159,7 +165,7 @@ export function FilterSelect<TFilterKey extends FilterKey>({
 	return (
 		<Stack gap="xs">
 			<Button.Group orientation="vertical">
-				<Button disabled>{filterDetails[id].title}</Button>
+				<Button disabled>{tProperty(filterDetails[id].translationKey)}</Button>
 				{possibleValues.map((possibleValue) => {
 					const valueDetails =
 						possibleValue !== null
@@ -168,8 +174,8 @@ export function FilterSelect<TFilterKey extends FilterKey>({
 					return (
 						<Tooltip
 							key={possibleValue}
-							label={valueDetails?.notes}
-							disabled={!valueDetails?.notes}
+							label={tValueNote(valueDetails?.noteTranslationKey)}
+							disabled={!valueDetails?.noteTranslationKey}
 						>
 							<Button
 								fullWidth
@@ -184,10 +190,10 @@ export function FilterSelect<TFilterKey extends FilterKey>({
 								}
 								onClick={() => handleFilterClick(id, possibleValue)}
 							>
-								{valueDetails?.display ??
-									filterDetails[id].emptyOption ??
+								{tValue(valueDetails?.translationKey) ??
+									tValue(filterDetails[id].emptyTranslationKey) ??
 									possibleValue}
-								{valueDetails?.notes && " *"}
+								{valueDetails?.noteTranslationKey && " *"}
 							</Button>
 						</Tooltip>
 					);
@@ -198,7 +204,7 @@ export function FilterSelect<TFilterKey extends FilterKey>({
 				leftSection={<IconRestore fontSize={10} />}
 				disabled={(currentValues?.length || 0) === possibleValues.length}
 			>
-				Reset
+				{tMenu("resetButton")}
 			</Button>
 		</Stack>
 	);

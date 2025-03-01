@@ -2,7 +2,7 @@ import { TranslationKey, useGetTranslated } from "@hooks/use-translations";
 import { Tabs, Stack, Text } from "@mantine/core";
 
 export type Page = {
-	readonly translationKey: TranslationKey<"tabs">;
+	readonly translationKey: TranslationKey<"tab">;
 	readonly component: () => React.JSX.Element;
 	readonly icon: React.JSX.Element;
 };
@@ -13,7 +13,7 @@ type Props = {
 };
 
 export function PageTab(props: Props) {
-	const t = useGetTranslated("tabs");
+	const t = useGetTranslated("tab");
 
 	return (
 		<Tabs.Tab
