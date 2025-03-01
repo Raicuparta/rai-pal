@@ -13,8 +13,6 @@ type GamesColumn = TableColumnBase<Game, GamesSortBy>;
 type CellProps = { readonly item: Game };
 
 const thumbnail: GamesColumn = {
-	label: "Thumbnail",
-	hideLabel: true,
 	hidable: true,
 	width: 100,
 	component: ({ item }: CellProps) => (
@@ -64,8 +62,6 @@ const providerColors: Record<ProviderId, DefaultMantineColor> = {
 } as const;
 
 const status: GamesColumn = {
-	label: "Status",
-	hideLabel: true,
 	hidable: true,
 	width: 30,
 	component: ({ item }: CellProps) => (
@@ -93,7 +89,7 @@ const status: GamesColumn = {
 };
 
 const name: GamesColumn = {
-	label: "Game",
+	translationKey: "game",
 	sort: "Title",
 	component: ({ item }: CellProps) => (
 		<Table.Td
@@ -136,7 +132,7 @@ const engineColors: Record<EngineBrand, DefaultMantineColor> = {
 } as const;
 
 const engine: GamesColumn = {
-	label: "Engine",
+	translationKey: "engine",
 	sort: "Engine",
 	width: 130,
 	center: true,
@@ -189,7 +185,7 @@ const dateFormatter = Intl.DateTimeFormat("default", {
 });
 
 const releaseDate: GamesColumn = {
-	label: "📅",
+	translationKey: "date",
 	width: 60,
 	sort: "ReleaseDate",
 	component: ({ item }: CellProps) => {

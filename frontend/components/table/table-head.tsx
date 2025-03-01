@@ -2,13 +2,13 @@ import { Box, Flex, Table } from "@mantine/core";
 import classes from "./table.module.css";
 import { IconChevronDown, IconChevronUp } from "@tabler/icons-react";
 import { GamesSortBy } from "@api/bindings";
+import { TranslationKey, useGetTranslated } from "@hooks/use-translations";
 
 export type TableColumnBase<TItem, TSort> = {
-	label: string;
+	translationKey?: TranslationKey<"gamesTableHeader">;
 	component: React.ComponentType<{ item: TItem }>;
 	width?: number;
 	center?: boolean;
-	hideLabel?: boolean;
 	hidable?: boolean;
 	sort?: TSort;
 };
@@ -39,6 +39,8 @@ type Props<TKey extends string, TItem, TSort> = {
 export function TableHead<TKey extends string, TItem, TSort>(
 	props: Props<TKey, TItem, TSort>,
 ) {
+	const t = useGetTranslated("gamesTableHeader");
+
 	return (
 		<Table.Tr>
 			{props.columns.map((column) => {
@@ -61,7 +63,7 @@ export function TableHead<TKey extends string, TItem, TSort>(
 						miw={column.width}
 					>
 						<Flex justify={column.center ? "center" : undefined}>
-							{column.hideLabel ? "" : column.label}
+							{t(column.translationKey)}
 							<Box
 								h={0}
 								w={0}

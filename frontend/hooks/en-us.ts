@@ -115,4 +115,10 @@ export const enUs = {
 			"You sure? This will delete all files in this game's mods folder. It won't delete any files from the actual game though.",
 		uninstallAllModsButton: "Uninstall all mods",
 	},
+
+	gamesTableHeader: {
+		game: "Game",
+		engine: "Engine",
+		date: "Date",
+	},
 } as const;
