@@ -2,14 +2,15 @@ import { enUs } from "./en-us";
 
 // en-us is the only language defined in TS, used as the source of truth.
 // Other language defined in JSON, modifiable at runtime.
-export const enUs = {
-	hello: "Hello, {name}!",
-	goodbye: "Goodbye, {otherName}, {pipi}!",
-	simple: "Simple",
-} as const;
-
 type BaseTranslation = typeof enUs;
-type TranslationKey = keyof BaseTranslation;
+
+// Categories are the root-level keys in the translation object.
+export type TranslationCategory = keyof BaseTranslation;
+
+// Keys are the leafs. Translation objects don't go any deeper than that.
+// The `& string` part is a bit of a hack because TS was having trouble realizing these can only be strings.
+export type TranslationKey<TCategory extends TranslationCategory> =
+	keyof BaseTranslation[TCategory] & string;
 
 // Takes a translated string with {parameters}, returns a Record<[Parameter], string>.
 // Example: ExtractParams<"Hello, {name}!"> => { name: string }
@@ -18,31 +19,42 @@ type ExtractParams<TTranslatedString extends string> =
 		? { [K in TParameters | keyof ExtractParams<TRest>]: string }
 		: undefined;
 
-// Takes a TranslationKey, returns the args to be passed to translation functions.
+// Takes a Category and a Key, returns the args to be passed to translation functions.
 // Empty array if no parameters are needed, so that we can spread them.
-// Example: TranslationArgs<"hello"> => [{ name: string }]
-// Example: TranslationArgs<"simple"> => []
-type TranslationArgs<TKey extends TranslationKey> =
-	ExtractParams<BaseTranslation[TKey]> extends undefined
+// The `& string` part is a bit of a hack because TS was having trouble realizing these can only be strings.
+type TranslationArgs<
+	TCategory extends TranslationCategory,
+	TKey extends TranslationKey<TCategory>,
+> =
+	ExtractParams<BaseTranslation[TCategory][TKey] & string> extends undefined
 		? []
-		: [params: ExtractParams<BaseTranslation[TKey]>];
+		: [params: ExtractParams<BaseTranslation[TCategory][TKey] & string>];
 
-// Translation files are flat objects with string values, parsed from JSON.
+// Translation files are objects with two levels: categories at the root, and key-value pairs at the second level.
+// Parsed from JSON.
 function isTranslationValid(
 	language: unknown,
-): language is Record<string, string> {
+): language is Record<string, Record<string, string>> {
 	return (
 		typeof language === "object" &&
 		language !== null &&
 		!Array.isArray(language) &&
-		Object.values(language).every((value) => typeof value === "string")
+		Object.values(language).every((value) => typeof value === "object") &&
+		Object.values(language).every((value) => !Array.isArray(value)) &&
+		Object.values(language).every((value) =>
+			Object.values(value).every((value) => typeof value === "string"),
+		)
 	);
 }
 
-export function getTranslation<TKey extends TranslationKey>(
+function getTranslation<
+	TCategory extends TranslationCategory,
+	TKey extends TranslationKey<TCategory>,
+>(
 	language: unknown,
+	category: TCategory,
 	key: TKey,
-	...args: TranslationArgs<TKey>
+	...args: TranslationArgs<TCategory, TKey>
 ): string {
 	if (!isTranslationValid(language)) {
 		console.error("Invalid language object, must be a Record<string, string>");
@@ -50,7 +62,7 @@ export function getTranslation<TKey extends TranslationKey>(
 	}
 
 	const params = args[0];
-	let translation = language[key];
+	let translation = language[category][key];
 
 	if (translation === undefined) {
 		console.error(`Missing translation for key: ${key}`);
@@ -65,8 +77,13 @@ export function getTranslation<TKey extends TranslationKey>(
 	return translation;
 }
 
-const frFr = {};
-
-getTranslation(enUs, "goodbye", { otherName: "John", pipi: "pipi" });
-getTranslation(frFr, "hello", { name: "Fr" });
-getTranslation(frFr, "simple");
+export function useGetTranslated<TCategory extends TranslationCategory>(
+	category: TCategory,
+) {
+	return function t<TKey extends TranslationKey<TCategory>>(
+		key: TKey,
+		...args: TranslationArgs<TCategory, TKey>
+	) {
+		return getTranslation(enUs, category, key, ...args);
+	};
+}

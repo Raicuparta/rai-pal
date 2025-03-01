@@ -1,28 +1,30 @@
+import { TranslationKey, useGetTranslated } from "@hooks/use-translations";
 import { Tabs, Stack, Text } from "@mantine/core";
 
 export type Page = {
-	title: string;
-	component: () => React.JSX.Element;
-	icon: React.JSX.Element;
+	readonly translationKey: TranslationKey<"tabs">;
+	readonly component: () => React.JSX.Element;
+	readonly icon: React.JSX.Element;
 };
 
 type Props = {
-	readonly id: string;
 	readonly page: Page;
 	readonly label?: string;
 };
 
 export function PageTab(props: Props) {
+	const t = useGetTranslated("tabs");
+
 	return (
 		<Tabs.Tab
-			value={props.id}
+			value={props.page.translationKey}
 			leftSection={props.page.icon}
 		>
 			<Stack
 				gap={0}
 				align="center"
 			>
-				<span>{props.page.title}</span>
+				<span>{t(props.page.translationKey)}</span>
 				{props.label && (
 					<Text
 						size="9px"

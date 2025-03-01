@@ -1,5 +1,5 @@
 import { Tabs, Container, Stack } from "@mantine/core";
-import { PageTab } from "@components/page-tab";
+import { Page, PageTab } from "@components/page-tab";
 import { useCallback } from "react";
 import { usePersistedState } from "@hooks/use-persisted-state";
 import { IconBox, IconDeviceGamepad, IconHammer } from "@tabler/icons-react";
@@ -11,20 +11,20 @@ import { ThanksTabIcon } from "./thanks/thanks-tab-icon";
 import { useAtomValue } from "jotai";
 import { gameDataAtom } from "@hooks/use-data";
 
-const pages = {
+const pages: Record<string, Page> = {
 	games: {
-		title: "Games",
+		translationKey: "games",
 		component: GamesPage,
 		icon: <IconDeviceGamepad />,
 	},
-	mods: { title: "Mods", component: ModsPage, icon: <IconBox /> },
+	mods: { translationKey: "mods", component: ModsPage, icon: <IconBox /> },
 	tools: {
-		title: "Tools",
+		translationKey: "tools",
 		component: ToolsPage,
 		icon: <IconHammer />,
 	},
 	thanks: {
-		title: "Thanks",
+		translationKey: "thanks",
 		component: ThanksPage,
 		icon: <ThanksTabIcon />,
 	},
@@ -67,7 +67,6 @@ export function AppTabs() {
 					{Object.entries(pages).map(([pageId, page]) => (
 						<PageTab
 							key={pageId}
-							id={pageId}
 							page={page}
 							label={page === pages.games ? gamesCountLabel : undefined}
 						/>
