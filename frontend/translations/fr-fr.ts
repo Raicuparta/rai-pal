@@ -1,4 +1,6 @@
-export const frFr = {
+import { Translation } from "./translations";
+
+export const frFr: Translation = {
 	tab: {
 		games: "Jeux",
 		mods: "Mods",
@@ -38,26 +40,12 @@ export const frFr = {
 		unknown: "Inconnu",
 		arch64: "64 bits",
 		arch32: "32 bits",
-		engineGodot: "Godot",
-		engineGameMaker: "GameMaker",
-		engineUnity: "Unity",
-		engineUnreal: "Unreal",
-		unityBackendIl2Cpp: "IL2CPP",
-		unityBackendMono: "Mono",
 		tagDemo: "Démo",
 		tagVr: "VR native",
 		tagUntagged: "Non étiqueté",
 		statusInstalled: "Installé",
 		statusNotInstalled: "Non installé",
-		providerSteam: "Steam",
-		providerGog: "GOG",
-		providerEpic: "Epic",
-		providerItch: "itch.io",
-		providerOrigin: "Origin",
 		providerManual: "Manuel",
-		providerXbox: "Xbox",
-		providerEa: "EA",
-		providerUbisoft: "Ubisoft",
 	},
 
 	filterValueNote: {

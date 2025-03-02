@@ -1,4 +1,6 @@
-export const koKr = {
+import { Translation } from "./translations";
+
+export const koKr: Translation = {
 	tab: {
 		games: "게임",
 		mods: "모드",
@@ -38,26 +40,12 @@ export const koKr = {
 		unknown: "알 수 없음",
 		arch64: "64비트",
 		arch32: "32비트",
-		engineGodot: "Godot",
-		engineGameMaker: "GameMaker",
-		engineUnity: "Unity",
-		engineUnreal: "Unreal",
-		unityBackendIl2Cpp: "IL2CPP",
-		unityBackendMono: "Mono",
 		tagDemo: "데모",
 		tagVr: "네이티브 VR",
 		tagUntagged: "태그 없음",
 		statusInstalled: "설치됨",
 		statusNotInstalled: "미설치",
-		providerSteam: "Steam",
-		providerGog: "GOG",
-		providerEpic: "Epic",
-		providerItch: "itch.io",
-		providerOrigin: "Origin",
 		providerManual: "수동",
-		providerXbox: "Xbox",
-		providerEa: "EA",
-		providerUbisoft: "Ubisoft",
 	},
 
 	filterValueNote: {

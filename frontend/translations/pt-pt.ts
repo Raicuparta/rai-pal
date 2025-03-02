@@ -1,4 +1,6 @@
-export const ptPt = {
+import { Translation } from "./translations";
+
+export const ptPt: Translation = {
 	tab: {
 		games: "Jogos",
 		mods: "Mods",
@@ -38,26 +40,12 @@ export const ptPt = {
 		unknown: "Desconhecido",
 		arch64: "64-bit",
 		arch32: "32-bit",
-		engineGodot: "Godot",
-		engineGameMaker: "GameMaker",
-		engineUnity: "Unity",
-		engineUnreal: "Unreal",
-		unityBackendIl2Cpp: "IL2CPP",
-		unityBackendMono: "Mono",
 		tagDemo: "Demo",
 		tagVr: "VR Nativo",
 		tagUntagged: "Sem etiqueta",
 		statusInstalled: "Instalado",
 		statusNotInstalled: "Não instalado",
-		providerSteam: "Steam",
-		providerGog: "GOG",
-		providerEpic: "Epic",
-		providerItch: "itch.io",
-		providerOrigin: "Origin",
 		providerManual: "Manual",
-		providerXbox: "Xbox",
-		providerEa: "EA",
-		providerUbisoft: "Ubisoft",
 	},
 
 	filterValueNote: {

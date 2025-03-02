@@ -1,4 +1,6 @@
-export const deDe = {
+import { Translation } from "./translations";
+
+export const deDe: Translation = {
 	tab: {
 		games: "Spiele",
 		mods: "Mods",
@@ -38,26 +40,12 @@ export const deDe = {
 		unknown: "Unbekannt",
 		arch64: "64-Bit",
 		arch32: "32-Bit",
-		engineGodot: "Godot",
-		engineGameMaker: "GameMaker",
-		engineUnity: "Unity",
-		engineUnreal: "Unreal",
-		unityBackendIl2Cpp: "IL2CPP",
-		unityBackendMono: "Mono",
 		tagDemo: "Demo",
 		tagVr: "Native VR",
 		tagUntagged: "Ohne Tag",
 		statusInstalled: "Installiert",
 		statusNotInstalled: "Nicht installiert",
-		providerSteam: "Steam",
-		providerGog: "GOG",
-		providerEpic: "Epic",
-		providerItch: "itch.io",
-		providerOrigin: "Origin",
 		providerManual: "Manuell",
-		providerXbox: "Xbox",
-		providerEa: "EA",
-		providerUbisoft: "Ubisoft",
 	},
 
 	filterValueNote: {
@@ -162,6 +150,9 @@ export const deDe = {
 			"Rai Pal unterstützt Mods, dank vieler Entwickler...",
 		modderOnWebsite: "{modderName} auf {website}",
 		patreonLeaderboard: "Patreon-Bestenliste",
+		rankedByPatreonDonationAmount: "Sortiert nach Patreon-Spendenbetrag",
+		patreonProfilePrivateNotice:
+			"Patreon-Profile mit privaten Einstellungen werden hier möglicherweise nicht angezeigt",
 	},
 
 	commandButton: {

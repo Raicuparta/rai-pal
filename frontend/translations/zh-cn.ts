@@ -1,4 +1,6 @@
-export const zhCn = {
+import { Translation } from "./translations";
+
+export const zhCn: Translation = {
 	tab: {
 		games: "游戏",
 		mods: "模组",
@@ -32,26 +34,12 @@ export const zhCn = {
 		unknown: "未知",
 		arch64: "64 位",
 		arch32: "32 位",
-		engineGodot: "Godot",
-		engineGameMaker: "GameMaker",
-		engineUnity: "Unity",
-		engineUnreal: "虚幻",
-		unityBackendIl2Cpp: "IL2CPP",
-		unityBackendMono: "Mono",
 		tagDemo: "演示版",
 		tagVr: "原生 VR",
 		tagUntagged: "未标记",
 		statusInstalled: "已安装",
 		statusNotInstalled: "未安装",
-		providerSteam: "Steam",
-		providerGog: "GOG",
-		providerEpic: "Epic",
-		providerItch: "itch.io",
-		providerOrigin: "Origin",
 		providerManual: "手动",
-		providerXbox: "Xbox",
-		providerEa: "EA",
-		providerUbisoft: "育碧",
 	},
 	filterValueNote: {
 		providerXboxOnlyInstalled:

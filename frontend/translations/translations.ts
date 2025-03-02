@@ -29,3 +29,11 @@ export const isLanguageCode = (
 };
 
 export type LanguageCode = keyof typeof translations;
+
+type BaseTranslation = typeof enUs;
+
+export type Translation = {
+	[category in keyof BaseTranslation]: {
+		[translationKey in keyof BaseTranslation[category]]: string;
+	};
+};

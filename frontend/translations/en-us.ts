@@ -78,16 +78,6 @@ export const enUs = {
 		arch64: "64-bit",
 		arch32: "32-bit",
 
-		// Game engines
-		engineGodot: "Godot",
-		engineGameMaker: "GameMaker",
-		engineUnity: "Unity",
-		engineUnreal: "Unreal",
-
-		// Unity scripting backends
-		unityBackendIl2Cpp: "IL2CPP",
-		unityBackendMono: "Mono",
-
 		// Game tags
 		tagDemo: "Demo",
 		tagVr: "Native VR",
@@ -97,16 +87,8 @@ export const enUs = {
 		statusInstalled: "Installed",
 		statusNotInstalled: "Not installed",
 
-		// Game providers
-		providerSteam: "Steam",
-		providerGog: "GOG",
-		providerEpic: "Epic",
-		providerItch: "itch.io",
-		providerOrigin: "Origin",
+		// Game provider for games that the user added manually to Rai Pal.
 		providerManual: "Manual",
-		providerXbox: "Xbox",
-		providerEa: "EA",
-		providerUbisoft: "Ubisoft",
 	},
 
 	// Some filter values show extra notes when the user hovers that value.

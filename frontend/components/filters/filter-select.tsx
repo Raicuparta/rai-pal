@@ -23,6 +23,7 @@ type Props<TFilterKey extends keyof GamesFilter> = {
 type ValueDetails = {
 	noteTranslationKey?: TranslationKey<"filterValueNote">;
 	translationKey?: TranslationKey<"filterValue">;
+	staticDisplayText?: string;
 };
 
 type FilterDetails<TKey extends keyof GamesFilter> = {
@@ -53,18 +54,18 @@ const filterDetails: { [key in keyof GamesFilter]: FilterDetails<key> } = {
 		emptyTranslationKey: "unknown",
 		valueDetails: {
 			Godot: {
-				translationKey: "engineGodot",
+				staticDisplayText: "Godot",
 				noteTranslationKey: "engineGodotNotFullySupported",
 			},
 			GameMaker: {
-				translationKey: "engineGameMaker",
+				staticDisplayText: "GameMaker",
 				noteTranslationKey: "engineGameMakerNotFullySupported",
 			},
 			Unity: {
-				translationKey: "engineUnity",
+				staticDisplayText: "Unity",
 			},
 			Unreal: {
-				translationKey: "engineUnreal",
+				staticDisplayText: "Unreal",
 			},
 		},
 	},
@@ -73,10 +74,10 @@ const filterDetails: { [key in keyof GamesFilter]: FilterDetails<key> } = {
 		emptyTranslationKey: "unknown",
 		valueDetails: {
 			Il2Cpp: {
-				translationKey: "unityBackendIl2Cpp",
+				staticDisplayText: "IL2CPP",
 			},
 			Mono: {
-				translationKey: "unityBackendMono",
+				staticDisplayText: "Mono",
 			},
 		},
 	},
@@ -107,28 +108,28 @@ const filterDetails: { [key in keyof GamesFilter]: FilterDetails<key> } = {
 		translationKey: "provider",
 		valueDetails: {
 			Ea: {
-				translationKey: "providerEa",
+				staticDisplayText: "EA",
 			},
 			Epic: {
-				translationKey: "providerEpic",
+				staticDisplayText: "Epic",
 			},
 			Gog: {
-				translationKey: "providerGog",
+				staticDisplayText: "GOG",
 			},
 			Itch: {
-				translationKey: "providerItch",
+				staticDisplayText: "itch.io",
 			},
 			Manual: {
 				translationKey: "providerManual",
 			},
 			Steam: {
-				translationKey: "providerSteam",
+				staticDisplayText: "Steam",
 			},
 			Ubisoft: {
-				translationKey: "providerUbisoft",
+				staticDisplayText: "Ubisoft",
 			},
 			Xbox: {
-				translationKey: "providerXbox",
+				staticDisplayText: "Xbox",
 				noteTranslationKey: "providerXboxOnlyInstalled",
 			},
 		},
@@ -190,9 +191,11 @@ export function FilterSelect<TFilterKey extends FilterKey>({
 								}
 								onClick={() => handleFilterClick(id, possibleValue)}
 							>
-								{tValue(valueDetails?.translationKey) ??
-									tValue(filterDetails[id].emptyTranslationKey) ??
-									possibleValue}
+								{possibleValue === null
+									? tValue(filterDetails[id].emptyTranslationKey)
+									: (valueDetails?.staticDisplayText ??
+										tValue(valueDetails?.translationKey) ??
+										possibleValue)}
 								{valueDetails?.noteTranslationKey && " *"}
 							</Button>
 						</Tooltip>

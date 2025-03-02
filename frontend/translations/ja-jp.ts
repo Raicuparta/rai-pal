@@ -1,4 +1,6 @@
-export const jaJp = {
+import { Translation } from "./translations";
+
+export const jaJp: Translation = {
 	tab: {
 		games: "ゲーム",
 		mods: "Mod",
@@ -38,26 +40,12 @@ export const jaJp = {
 		unknown: "不明",
 		arch64: "64ビット",
 		arch32: "32ビット",
-		engineGodot: "Godot",
-		engineGameMaker: "GameMaker",
-		engineUnity: "Unity",
-		engineUnreal: "Unreal",
-		unityBackendIl2Cpp: "IL2CPP",
-		unityBackendMono: "Mono",
 		tagDemo: "デモ",
 		tagVr: "ネイティブVR",
 		tagUntagged: "タグなし",
 		statusInstalled: "インストール済み",
 		statusNotInstalled: "未インストール",
-		providerSteam: "Steam",
-		providerGog: "GOG",
-		providerEpic: "Epic",
-		providerItch: "itch.io",
-		providerOrigin: "Origin",
 		providerManual: "手動",
-		providerXbox: "Xbox",
-		providerEa: "EA",
-		providerUbisoft: "Ubisoft",
 	},
 
 	filterValueNote: {
@@ -129,6 +117,45 @@ export const jaJp = {
 		deleteModConfirmation:
 			"本当に削除しますか？Mod フォルダー内のすべてのファイルが失われます。",
 		byAuthor: "{authorName} 作",
+	},
+
+	toolsPage: {
+		openLogsFolderButton: "ログフォルダーを開く",
+		resetRaiPalSettingsButton: "Rai Pal の設定をリセット",
+		resetRaiPalSettingsTooltip:
+			"フィルター、確認ダイアログ、その他の設定をリセットします。",
+		clearCacheButton: "Rai Pal のキャッシュをクリア",
+		clearCacheTooltip:
+			"Rai Pal が使用しているゲームリストのキャッシュを削除します。",
+	},
+
+	steamCache: {
+		resetSteamCacheButton: "Steam キャッシュをリセット",
+		resetSteamCacheModalTitle: "Steam キャッシュをリセット",
+		resetSteamCacheDescription:
+			"Rai Pal に所持していない Steam ゲームが表示される場合に使用します。キャッシュをリセット後、Steam を再起動してください。既に削除されている場合はエラーが表示されます。",
+		resetSteamCacheSuccess:
+			"キャッシュファイルが削除されました。Steam を再起動し、数秒待ってから Rai Pal の更新ボタンを押してください。",
+	},
+
+	debugData: {
+		debugDataTitle: "デバッグ データ",
+		debugDataCopy: "デバッグ データをコピー",
+	},
+
+	thanksPage: {
+		intro:
+			"こんにちは。Rai Pal を作りました。過去に VR 向けの mod を作成しており、現在 Unity ゲーム向けの汎用 VR mod を開発しています。もし気に入っていただけましたら、寄付をご検討ください。また、Itch.io で公開している無料の mod を入手してサポートすることもできます。",
+		starRaiPalOnGitHub: "GitHub で Rai Pal にスターを付ける",
+		otherModdersTitle: "他のモッダー",
+		otherModdersDescription:
+			"Rai Pal はゲームの mod 管理を支援するために作られていますが、他の開発者のツールがなければ実現できません。",
+		modderOnWebsite: "{modderName} さんの {website} ページ",
+		patreonLeaderboard: "Patreon ランキング",
+		rankedByPatreonDonationAmount:
+			"累計寄付額に基づいてランク付けされています。",
+		patreonProfilePrivateNotice:
+			"ここに表示されていない場合、Patreon プロフィールが非公開の可能性があります。",
 	},
 
 	commandButton: {

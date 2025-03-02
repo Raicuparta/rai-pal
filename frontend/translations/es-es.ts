@@ -1,4 +1,6 @@
-export const esEs = {
+import { Translation } from "./translations";
+
+export const esEs: Translation = {
 	tab: {
 		games: "Juegos",
 		mods: "Mods",
@@ -38,26 +40,12 @@ export const esEs = {
 		unknown: "Desconocido",
 		arch64: "64 bits",
 		arch32: "32 bits",
-		engineGodot: "Godot",
-		engineGameMaker: "GameMaker",
-		engineUnity: "Unity",
-		engineUnreal: "Unreal",
-		unityBackendIl2Cpp: "IL2CPP",
-		unityBackendMono: "Mono",
 		tagDemo: "Demo",
 		tagVr: "VR Nativo",
 		tagUntagged: "Sin etiqueta",
 		statusInstalled: "Instalado",
 		statusNotInstalled: "No instalado",
-		providerSteam: "Steam",
-		providerGog: "GOG",
-		providerEpic: "Epic",
-		providerItch: "itch.io",
-		providerOrigin: "Origin",
 		providerManual: "Manual",
-		providerXbox: "Xbox",
-		providerEa: "EA",
-		providerUbisoft: "Ubisoft",
 	},
 
 	filterValueNote: {
@@ -161,7 +149,13 @@ export const esEs = {
 		starRaiPalOnGitHub: "Dale una estrella a Rai Pal en GitHub",
 		otherModdersTitle: "Otros modders",
 		otherModdersDescription:
-			"Rai Pal está diseñado para ayudarte a gestionar mods de juegos, y no podríamos hacerlo sin las herramientas que otros desarrolladores han creado.",
+			"Rai Pal está diseñado para ayudarte a gestionar mods de juegos, y no podríamos hacerlo sin las herramientas que otros desarrolladores han creado. Algunos de estos desarrolladores no tienen enlaces de donación, pero estoy muy agradecido por su trabajo.",
+		modderOnWebsite: "{modderName} en {website}",
+		patreonLeaderboard: "Tabla de líderes de Patreon",
+		rankedByPatreonDonationAmount:
+			"Clasificado por la cantidad total de donaciones de por vida.",
+		patreonProfilePrivateNotice:
+			"Si no te ves aquí, es porque tu perfil de Patreon es privado.",
 	},
 
 	commandButton: {
