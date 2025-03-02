@@ -5,7 +5,10 @@ import { jaJp } from "./ja-jp";
 import { koKr } from "./ko-kr";
 import { ptPt } from "./pt-pt";
 import { zhCn } from "./zh-cn";
+import { frFr } from "./fr-fr";
 
+// The keys for this object need to match the language codes returned by tauri-plugin-os.
+// By language codes I mean the first part of the BCP47 locale string. Example for en-US: "en".
 export const translations = {
 	en: enUs,
 	pt: ptPt,
@@ -14,6 +17,7 @@ export const translations = {
 	ko: koKr,
 	es: esEs,
 	zh: zhCn,
+	fr: frFr,
 };
 
 export const isLanguageCode = (

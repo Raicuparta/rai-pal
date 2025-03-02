@@ -148,4 +148,4 @@ export const zhCn = {
 		cancel: "取消",
 		dontAskAgain: "不再询问",
 	},
-} as const;
+};

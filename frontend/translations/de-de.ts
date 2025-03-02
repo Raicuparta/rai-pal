@@ -168,4 +168,4 @@ export const deDe = {
 		cancel: "Abbrechen",
 		dontAskAgain: "Nicht erneut fragen",
 	},
-} as const;
+};

@@ -168,4 +168,4 @@ export const esEs = {
 		cancel: "Cancelar",
 		dontAskAgain: "No preguntar de nuevo",
 	},
-} as const;
+};

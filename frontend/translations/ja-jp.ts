@@ -135,4 +135,4 @@ export const jaJp = {
 		cancel: "キャンセル",
 		dontAskAgain: "次回から確認しない",
 	},
-} as const;
+};

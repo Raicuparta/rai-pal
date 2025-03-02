@@ -170,4 +170,4 @@ export const koKr = {
 		cancel: "취소",
 		dontAskAgain: "다시 묻지 않기",
 	},
-} as const;
+};
