@@ -180,28 +180,33 @@ const engine: GamesColumn = {
 
 const dateFormatter = Intl.DateTimeFormat("default", {
 	year: "numeric",
-	month: "short",
-	day: "numeric",
+	month: "long",
+	day: "2-digit",
 });
 
 const releaseDate: GamesColumn = {
 	translationKey: "date",
-	width: 60,
+	width: 80,
+	center: true,
 	sort: "ReleaseDate",
 	component: ({ item }: CellProps) => {
 		const date = item.releaseDate
 			? new Date(Number(item.releaseDate) * 1000)
 			: null;
 
-		const formattedDate = date ? dateFormatter.format(date) : "-";
+		const formattedDate = date ? dateFormatter.formatToParts(date) : [];
 
 		return (
 			<Table.Td
-				ta="center"
-				fz="xs"
-				opacity={0.75}
+				p={0}
+				className={styles.dateCell}
 			>
-				{formattedDate}
+				{formattedDate.map(
+					(part) =>
+						part.type !== "literal" && (
+							<div key={`${part.type}${part.value}`}>{part.value}</div>
+						),
+				)}
 			</Table.Td>
 		);
 	},

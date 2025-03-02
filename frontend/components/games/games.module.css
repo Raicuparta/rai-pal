@@ -57,3 +57,9 @@
 	text-transform: uppercase;
 	white-space: nowrap;
 }
+
+.dateCell {
+	text-align: center;
+	font-size: 0.75em;
+	opacity: 0.75;
+}
