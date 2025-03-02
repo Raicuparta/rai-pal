@@ -39,6 +39,7 @@
 		"@tauri-apps/plugin-shell": "2.2.0",
 		"@tauri-apps/plugin-store": "2.2.0",
 		"@tauri-apps/plugin-updater": "2.5.0",
+		"@tauri-apps/plugin-os": "2.0.0",
 		"@types/node": "22.13.5",
 		"@types/react-dom": "19.0.4",
 		"@types/react": "19.0.10",
@@ -60,7 +61,7 @@
 		"react-dom": "19.0.0",
 		"react-virtuoso": "4.12.5",
 		"react": "19.0.0",
-		"typescript": "5.8.2",
+		"typescript": "5.7.3",
 		"vite": "6.1.1"
 	}
 }

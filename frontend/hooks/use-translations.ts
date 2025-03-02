@@ -1,6 +1,6 @@
-import { enUs } from "./en-us";
-import { ptPt } from "./pt-pt";
-import { zhCn } from "./zh-cn";
+import { createContext, useContext } from "react";
+import { LanguageCode, translations } from "../translations/translations";
+import { enUs } from "../translations/en-us";
 
 // en-us is the only language defined in TS, used as the source of truth.
 // Other language defined in JSON, modifiable at runtime.
@@ -82,12 +82,16 @@ function getTranslation<
 export function useGetTranslated<TCategory extends TranslationCategory>(
 	category: TCategory,
 ) {
+	const language = useContext(TranslationContext);
+
 	return function t<TKey extends TranslationKey<TCategory>>(
 		key?: TKey,
 		...args: TranslationArgs<TCategory, TKey>
 	) {
 		if (!key) return undefined;
 
-		return getTranslation(zhCn, category, key, ...args);
+		return getTranslation(translations[language], category, key, ...args);
 	};
 }
+
+export const TranslationContext = createContext<LanguageCode>("en");
