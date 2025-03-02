@@ -60,7 +60,7 @@
 		"react-dom": "19.0.0",
 		"react-virtuoso": "4.12.5",
 		"react": "19.0.0",
-		"typescript": "5.7.3",
+		"typescript": "5.8.2",
 		"vite": "6.1.1"
 	}
 }
