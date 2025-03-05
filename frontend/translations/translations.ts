@@ -32,20 +32,13 @@ export type LanguageCode = keyof typeof translations;
 
 type BaseTranslation = typeof enUs;
 
-type ExtractParams<
-	T extends string
-> =
-	T extends `${string}{${infer Key}}${infer Rest}`
-		? [Key, ...ExtractParams<Rest>]
-		: []
-
-type StringWithParamsFromTuple<TTuple extends string[]> =
-  TTuple extends [infer K extends string, ...infer Rest extends string[]]
-    ? `${string}{${K}}${string}` & StringWithParamsFromTuple<Rest>
+type ParametrizedString<T> =
+  T extends `${string}{${infer Key}}${infer Rest}`
+    ? `${string}{${Key}}${string}` & ParametrizedString<Rest>
     : string;
 
 export type Translation = {
 	[category in keyof BaseTranslation]: {
-		[translationKey in keyof BaseTranslation[category]]: StringWithParamsFromTuple<ExtractParams<BaseTranslation[category][translationKey] & string>>;
+		[translationKey in keyof BaseTranslation[category]]: ParametrizedString<BaseTranslation[category][translationKey]>;
 	};
 };
