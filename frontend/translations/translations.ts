@@ -30,13 +30,19 @@ export const isLanguageCode = (
 
 export type LanguageCode = keyof typeof translations;
 
+// en-US is used as the source of truth for translation format.
 type BaseTranslation = typeof enUs;
 
-type ParametrizedString<T> =
-  T extends `${string}{${infer Key}}${infer Rest}`
+// A string of this type must have the same {parameter}s as the string type in TBaseText.
+// If TBaseText has no parameters, any string is valid.
+// This does not unfortunately validate whether unknown parameters are in the string.
+type ParametrizedString<TBaseText> =
+  TBaseText extends `${string}{${infer Key}}${infer Rest}`
     ? `${string}{${Key}}${string}` & ParametrizedString<Rest>
     : string;
 
+// This is the type to give to any non-base translations.
+// This will validate that all translations have the right keys and parameters.
 export type Translation = {
 	[category in keyof BaseTranslation]: {
 		[translationKey in keyof BaseTranslation[category]]: ParametrizedString<BaseTranslation[category][translationKey]>;
