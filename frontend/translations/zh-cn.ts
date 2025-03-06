@@ -1,6 +1,9 @@
 import { Translation } from "./translations";
 
 export const zhCn: Translation = {
+	meta: {
+		nativeName: "简体中文",
+	},
 	tab: {
 		games: "游戏",
 		mods: "模组",

@@ -1,4 +1,7 @@
 export const enUs = {
+	meta: {
+		nativeName: "English (US)",
+	},
 	tab: {
 		// Name of the tab that shows the user's games from all providers.
 		games: "Games",

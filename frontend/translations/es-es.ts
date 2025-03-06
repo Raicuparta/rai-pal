@@ -1,6 +1,9 @@
 import { Translation } from "./translations";
 
 export const esEs: Translation = {
+	meta: {
+		nativeName: "Español (España)",
+	},
 	tab: {
 		games: "Juegos",
 		mods: "Mods",

@@ -1,6 +1,9 @@
 import { Translation } from "./translations";
 
 export const koKr: Translation = {
+	meta: {
+		nativeName: "한국어",
+	},
 	tab: {
 		games: "게임",
 		mods: "모드",

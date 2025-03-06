@@ -1,6 +1,9 @@
 import { Translation } from "./translations";
 
 export const jaJp: Translation = {
+	meta: {
+		nativeName: "日本語",
+	},
 	tab: {
 		games: "ゲーム",
 		mods: "Mod",

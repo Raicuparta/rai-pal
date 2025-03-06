@@ -1,6 +1,7 @@
 import { Locale } from "@api/bindings";
 import { useAppSettings } from "@hooks/use-app-settings";
 import { Select, Stack, Switch } from "@mantine/core";
+import { localeToTranslation } from "../../translations/translations";
 
 const locales: Locale[] = [
   "DeDe",
@@ -32,12 +33,12 @@ export function AppSettings() {
       },
       ...locales.map(locale => ({
         value: locale,
-        label: locale,
+        label: localeToTranslation[locale].meta.nativeName,
       }))
       ]} onChange={(value) => {
         setSettings({
           ...settings,
-          overrideLanguage: value as Locale | null,
+          overrideLanguage: (value || null) as Locale | null,
         })
       }} />
   </Stack>

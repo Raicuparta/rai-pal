@@ -6,10 +6,22 @@ import { koKr } from "./ko-kr";
 import { ptPt } from "./pt-pt";
 import { zhCn } from "./zh-cn";
 import { frFr } from "./fr-fr";
+import { Locale } from "@api/bindings";
 
 // The keys for this object need to match the language codes returned by tauri-plugin-os.
 // By language codes I mean the first part of the BCP47 locale string. Example for en-US: "en".
-export const languageToTranslation = {
+export const localeToTranslation: Record<Locale, Translation> = {
+	EnUs: enUs,
+	PtPt: ptPt,
+	DeDe: deDe,
+	EsEs: jaJp,
+	FrFr: koKr,
+	JaJp: esEs,
+	KoKr: zhCn,
+	ZhCh: frFr,
+};
+
+export const languageCodeToTranslation = {
 	en: enUs,
 	pt: ptPt,
 	de: deDe,
@@ -25,10 +37,10 @@ export const isLanguageCode = (
 ): code is LanguageCode => {
 	if (!code) return false;
 
-	return code in languageToTranslation;
+	return code in languageCodeToTranslation;
 };
 
-export type LanguageCode = keyof typeof languageToTranslation;
+export type LanguageCode = keyof typeof languageCodeToTranslation;
 
 // en-US is used as the source of truth for translation format.
 type BaseTranslation = typeof enUs;
