@@ -37,14 +37,6 @@ async deleteMod(modId: string) : Promise<Result<null, Error>> {
     else return { status: "error", error: e  as any };
 }
 },
-async resetSteamCache() : Promise<Result<null, Error>> {
-    try {
-    return { status: "ok", data: await TAURI_INVOKE("reset_steam_cache") };
-} catch (e) {
-    if(e instanceof Error) throw e;
-    else return { status: "error", error: e  as any };
-}
-},
 async downloadMod(modId: string) : Promise<Result<null, Error>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("download_mod", { modId }) };
@@ -56,6 +48,14 @@ async downloadMod(modId: string) : Promise<Result<null, Error>> {
 async frontendReady() : Promise<Result<null, Error>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("frontend_ready") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async getAppSettings() : Promise<Result<AppSettings, Error>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("get_app_settings") };
 } catch (e) {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
@@ -205,6 +205,14 @@ async removeGame(path: string) : Promise<Result<null, Error>> {
     else return { status: "error", error: e  as any };
 }
 },
+async resetSteamCache() : Promise<Result<null, Error>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("reset_steam_cache") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
 async runProviderCommand(game: Game, commandAction: ProviderCommandAction) : Promise<Result<null, Error>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("run_provider_command", { game, commandAction }) };
@@ -216,6 +224,14 @@ async runProviderCommand(game: Game, commandAction: ProviderCommandAction) : Pro
 async runRunnableWithoutGame(modId: string) : Promise<Result<null, Error>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("run_runnable_without_game", { modId }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async saveAppSettings(settings: AppSettings) : Promise<Result<null, Error>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("save_app_settings", { settings }) };
 } catch (e) {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
@@ -284,13 +300,14 @@ syncRemoteMods: "sync-remote-mods"
 
 /** user-defined types **/
 
+export type AppSettings = { hideGameThumbnails: boolean; overrideLanguage: Locale | null }
 export type Architecture = "X64" | "X86"
 export type CommonModData = { id: string; engine: EngineBrand | null; unityBackend: UnityScriptingBackend | null; engineVersionRange: EngineVersionRange | null; loaderId: string }
 export type EngineBrand = "Unity" | "Unreal" | "Godot" | "GameMaker"
 export type EngineVersion = { numbers: EngineVersionNumbers; suffix: string | null; display: string }
 export type EngineVersionNumbers = { major: number; minor: number | null; patch: number | null }
 export type EngineVersionRange = { minimum: EngineVersionNumbers | null; maximum: EngineVersionNumbers | null }
-export type Error = "Tauri" | "Core" | "SerdeJson" | { FailedToGetResourcesPath: string } | { FailedToAccessStateData: string }
+export type Error = "Tauri" | "Core" | "Io" | "SerdeJson" | { FailedToGetResourcesPath: string } | { FailedToAccessStateData: string }
 export type ErrorRaised = string
 export type ExecutedProviderCommand = null
 export type FoundGame = GameId
@@ -310,6 +327,7 @@ export type InstallState = "Installed" | "NotInstalled"
 export type InstalledGame = { id: string; executable: GameExecutable; installedModVersions: Partial<{ [key in string]: string }>; discriminator: string | null; startCommand: ProviderCommand | null }
 export type LocalMod = { data: LocalModData; common: CommonModData }
 export type LocalModData = { path: string; manifest: Manifest | null }
+export type Locale = "EnUs" | "EsEs" | "FrFr" | "DeDe" | "PtPt" | "ZhCh" | "JaJp" | "KoKr"
 export type Manifest = { title: string | null; version: string; runnable: RunnableModData | null; engine: EngineBrand | null; engineVersionRange: EngineVersionRange | null; unityBackend: UnityScriptingBackend | null }
 export type ModDownload = { id: string; url: string; root: string | null; runnable: RunnableModData | null }
 export type ModKind = "Installable" | "Runnable"

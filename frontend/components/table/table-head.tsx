@@ -3,6 +3,7 @@ import classes from "./table.module.css";
 import { IconChevronDown, IconChevronUp } from "@tabler/icons-react";
 import { GamesSortBy } from "@api/bindings";
 import { TranslationKey, useGetTranslated } from "@hooks/use-translations";
+import { useAppSettings } from "@hooks/use-app-settings";
 
 export type TableColumnBase<TItem, TSort> = {
 	translationKey?: TranslationKey<"gamesTableColumn">;
@@ -40,11 +41,12 @@ export function TableHead<TKey extends string, TItem, TSort>(
 	props: Props<TKey, TItem, TSort>,
 ) {
 	const t = useGetTranslated("gamesTableColumn");
+	const [settings] = useAppSettings();
 
 	return (
 		<Table.Tr>
 			{props.columns.map((column) => {
-				return (
+				return (!settings.hideGameThumbnails || column.id !== "thumbnail") && (
 					<Table.Th
 						className={
 							props.onChangeSort && column.sort ? classes.sortable : undefined

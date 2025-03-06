@@ -1,10 +1,11 @@
-import { Button, Container, Stack, Tooltip } from "@mantine/core";
+import { Button, Container, Divider, Stack, Tooltip } from "@mantine/core";
 import { resetLocalStorage } from "@util/local-storage";
 import { IconFolderCode, IconRotateDot, IconTrash } from "@tabler/icons-react";
 import { CommandButton } from "@components/command-button";
 import { commands } from "@api/bindings";
 import { SteamCacheButton } from "./steam-cache-button";
 import { useGetTranslated } from "@hooks/use-translations";
+import { AppSettings } from "./app-settings";
 
 export function ToolsPage() {
 	const t = useGetTranslated("toolsPage");
@@ -42,6 +43,8 @@ export function ToolsPage() {
 					</CommandButton>
 				</Tooltip>
 				<SteamCacheButton />
+				<Divider />
+				<AppSettings />
 			</Stack>
 		</Container>
 	);

@@ -7,6 +7,7 @@ use std::sync::RwLock;
 use std::{collections::HashMap, path::PathBuf};
 
 use crate::result::{Error, Result};
+use app_settings::AppSettings;
 use app_state::{AppState, StateData, StatefulHandle};
 use events::EventEmitter;
 use rai_pal_core::game::{self, Game, GameId};
@@ -39,6 +40,7 @@ mod events;
 mod result;
 #[cfg(debug_assertions)]
 mod typescript;
+mod app_settings;
 
 #[serializable_struct]
 struct GameIdsResponse {
@@ -701,6 +703,18 @@ async fn clear_cache() -> Result {
 	Ok(())
 }
 
+#[tauri::command]
+#[specta::specta]
+async fn get_app_settings() -> Result<AppSettings> {
+	Ok(AppSettings::read())
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn save_app_settings(settings: AppSettings) -> Result {
+	settings.try_write()
+}
+
 fn main() {
 	// Since I'm making all exposed functions async, panics won't crash anything important, I think.
 	// So I can just catch panics here and show a system message with the error.
@@ -718,9 +732,9 @@ fn main() {
 			clear_cache,
 			configure_mod,
 			delete_mod,
-			reset_steam_cache,
 			download_mod,
 			frontend_ready,
+			get_app_settings,
 			get_game_ids,
 			get_game,
 			get_local_mods,
@@ -739,8 +753,10 @@ fn main() {
 			refresh_mods,
 			refresh_remote_games,
 			remove_game,
+			reset_steam_cache,
 			run_provider_command,
 			run_runnable_without_game,
+			save_app_settings,
 			start_game_exe,
 			start_game,
 			uninstall_all_mods,
