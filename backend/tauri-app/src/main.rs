@@ -35,12 +35,12 @@ use tauri_plugin_log::{Target, TargetKind};
 use tauri_plugin_window_state::StateFlags;
 use tauri_specta::Builder;
 
+mod app_settings;
 mod app_state;
 mod events;
 mod result;
 #[cfg(debug_assertions)]
 mod typescript;
-mod app_settings;
 
 #[serializable_struct]
 struct GameIdsResponse {

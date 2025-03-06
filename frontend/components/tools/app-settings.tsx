@@ -1,45 +1,60 @@
-import { Locale } from "@api/bindings";
+import { AppLocale } from "@api/bindings";
 import { useAppSettings } from "@hooks/use-app-settings";
 import { Select, Stack, Switch } from "@mantine/core";
-import { localeToTranslation } from "../../translations/translations";
+import { translations } from "../../translations/translations";
+import { useAtomValue } from "jotai";
+import { detectedLocaleAtom } from "@hooks/use-translations";
 
-const locales: Locale[] = [
-  "DeDe",
-  "EnUs",
-  "EsEs",
-  "FrFr",
-  "JaJp",
-  "KoKr",
-  "PtPt",
-  "ZhCh",
+const locales: AppLocale[] = [
+	"DeDe",
+	"EnUs",
+	"EsEs",
+	"FrFr",
+	"JaJp",
+	"KoKr",
+	"PtPt",
+	"ZhCn",
 ];
 
-const current = ""
-
 export function AppSettings() {
-  const [settings, setSettings] = useAppSettings();
+	const [settings, setSettings] = useAppSettings();
+	const detectedLocale = useAtomValue(detectedLocaleAtom);
 
-  return <Stack>
-    <Switch label="Show game thumbnails on list" checked={!settings.hideGameThumbnails} onChange={(event) => {
-      setSettings({
-        ...settings,
-        hideGameThumbnails: !event.currentTarget.checked,
-      })
-    }} />
-    <Select label="Language" value={settings.overrideLanguage ?? ""} data={[
-      {
-        value: "",
-        label: `Auto-detect (${current})`,
-      },
-      ...locales.map(locale => ({
-        value: locale,
-        label: localeToTranslation[locale].meta.nativeName,
-      }))
-      ]} onChange={(value) => {
-        setSettings({
-          ...settings,
-          overrideLanguage: (value || null) as Locale | null,
-        })
-      }} />
-  </Stack>
+	const localeSelectValues = locales.sort().map((locale) => ({
+		value: locale as string,
+		label: translations[locale].meta.nativeName,
+	}));
+
+	if (detectedLocale) {
+		localeSelectValues.unshift({
+			value: "",
+			label: `Auto-detected (${translations[detectedLocale].meta.nativeName})`,
+		});
+	}
+
+	return (
+		<Stack>
+			<Switch
+				label="Show game thumbnails on list"
+				checked={!settings.hideGameThumbnails}
+				onChange={(event) => {
+					setSettings({
+						...settings,
+						hideGameThumbnails: !event.currentTarget.checked,
+					});
+				}}
+			/>
+			<Select
+				label="Language"
+				value={settings.overrideLanguage ?? ""}
+				data={localeSelectValues}
+				onChange={(value) => {
+					setSettings({
+						...settings,
+						overrideLanguage: (value || null) as AppLocale | null,
+					});
+				}}
+			/>
+		</Stack>
+	);
 }

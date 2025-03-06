@@ -1,6 +1,10 @@
-import { createContext, useContext } from "react";
-import { LanguageCode, languageCodeToTranslation } from "../translations/translations";
+import { translations } from "../translations/translations";
 import { enUs } from "../translations/en-us";
+import { AppLocale } from "@api/bindings";
+import { atom, useAtom } from "jotai";
+import { useEffect, useCallback } from "react";
+import { locale } from "@tauri-apps/plugin-os";
+import { useAppSettings } from "./use-app-settings";
 
 // en-us is the only language defined in TS, used as the source of truth.
 // Other language defined in JSON, modifiable at runtime.
@@ -79,19 +83,70 @@ function getTranslation<
 	return translation;
 }
 
+export const detectedLocaleAtom = atom<AppLocale | null>(null);
+
+// At the time of writing this comment, Rai Pal only supports one language per locale.
+// So en-GB would map to EnUs, pt-BR to PtPt, etc.
+// If we ever need to use more specific translations, we'll need to change this logic.
+const languageCodeToAppLocale: Record<string, AppLocale> = {
+	en: "EnUs",
+	pt: "PtPt",
+	de: "DeDe",
+	es: "EsEs",
+	fr: "FrFr",
+	ja: "JaJp",
+	ko: "KoKr",
+	zh: "ZhCn",
+};
+
 export function useGetTranslated<TCategory extends TranslationCategory>(
 	category: TCategory,
 ) {
-	const language = useContext(TranslationContext);
+	const [detectedLocale, setDetectedLocale] = useAtom(detectedLocaleAtom);
+	const [appSettings] = useAppSettings();
 
-	return function t<TKey extends TranslationKey<TCategory>>(
-		key?: TKey,
-		...args: TranslationArgs<TCategory, TKey>
-	) {
-		if (!key) return undefined;
+	const effectiveLocale =
+		appSettings.overrideLanguage ?? detectedLocale ?? "EnUs";
 
-		return getTranslation(languageCodeToTranslation[language], category, key, ...args);
-	};
+	useEffect(() => {
+		if (!detectedLocale) {
+			locale().then((localeString) => {
+				const languageCode = localeString?.split("-")[0];
+				if (!languageCode) {
+					console.error(
+						`Invalid locale '${localeString}', couldn't get a language code out of it`,
+					);
+					return;
+				}
+
+				const appLocale = languageCodeToAppLocale[languageCode];
+
+				if (!appLocale) {
+					console.error(
+						`Couldn't find a translation for the language code ${languageCode}, extracted from locale string ${localeString}`,
+					);
+					return;
+				}
+
+				setDetectedLocale(appLocale);
+			});
+		}
+	}, [detectedLocale, setDetectedLocale]);
+
+	return useCallback(
+		<TKey extends TranslationKey<TCategory>>(
+			key?: TKey,
+			...args: TranslationArgs<TCategory, TKey>
+		) => {
+			if (!key) return undefined;
+
+			return getTranslation(
+				translations[effectiveLocale],
+				category,
+				key,
+				...args,
+			);
+		},
+		[effectiveLocale, category],
+	);
 }
-
-export const TranslationContext = createContext<LanguageCode>("en");

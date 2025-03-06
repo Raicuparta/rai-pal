@@ -300,7 +300,8 @@ syncRemoteMods: "sync-remote-mods"
 
 /** user-defined types **/
 
-export type AppSettings = { hideGameThumbnails: boolean; overrideLanguage: Locale | null }
+export type AppLocale = "EnUs" | "EsEs" | "FrFr" | "DeDe" | "PtPt" | "ZhCn" | "JaJp" | "KoKr"
+export type AppSettings = { hideGameThumbnails: boolean; overrideLanguage: AppLocale | null }
 export type Architecture = "X64" | "X86"
 export type CommonModData = { id: string; engine: EngineBrand | null; unityBackend: UnityScriptingBackend | null; engineVersionRange: EngineVersionRange | null; loaderId: string }
 export type EngineBrand = "Unity" | "Unreal" | "Godot" | "GameMaker"
@@ -327,7 +328,6 @@ export type InstallState = "Installed" | "NotInstalled"
 export type InstalledGame = { id: string; executable: GameExecutable; installedModVersions: Partial<{ [key in string]: string }>; discriminator: string | null; startCommand: ProviderCommand | null }
 export type LocalMod = { data: LocalModData; common: CommonModData }
 export type LocalModData = { path: string; manifest: Manifest | null }
-export type Locale = "EnUs" | "EsEs" | "FrFr" | "DeDe" | "PtPt" | "ZhCh" | "JaJp" | "KoKr"
 export type Manifest = { title: string | null; version: string; runnable: RunnableModData | null; engine: EngineBrand | null; engineVersionRange: EngineVersionRange | null; unityBackend: UnityScriptingBackend | null }
 export type ModDownload = { id: string; url: string; root: string | null; runnable: RunnableModData | null }
 export type ModKind = "Installable" | "Runnable"
