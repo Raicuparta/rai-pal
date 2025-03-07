@@ -9,15 +9,43 @@
 	"bundle": {
 		"createUpdaterArtifacts": "v1Compatible",
 		"active": true,
-		"targets": ["msi"],
+		"targets": ["nsis"],
 		"resources": ["resources/**/*"],
 		"icon": [
-			"icons/32x32.png",
-			"icons/128x128.png",
-			"icons/128x128@2x.png",
-			"icons/icon.icns",
-			"icons/icon.ico"
-		]
+			"graphics/32x32.png",
+			"graphics/128x128.png",
+			"graphics/128x128@2x.png",
+			"graphics/icon.icns",
+			"graphics/icon.ico"
+		],
+		"windows": {
+			"nsis": {
+				"installerIcon": "graphics/icon.ico",
+				"sidebarImage": "graphics/installer-sidebar.bmp",
+				"installMode": "both",
+				"languages": [
+					"Arabic",
+					"Bulgarian",
+					"Dutch",
+					"English",
+					"French",
+					"German",
+					"Italian",
+					"Japanese",
+					"Korean",
+					"Portuguese",
+					"PortugueseBR",
+					"Russian",
+					"SimpChinese",
+					"Spanish",
+					"SpanishInternational",
+					"Swedish",
+					"TradChinese",
+					"Turkish",
+					"Ukrainian"
+				]
+			}
+		}
 	},
 	"productName": "Rai Pal",
 	"identifier": "com.raicuparta.pal",

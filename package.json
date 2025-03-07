@@ -9,7 +9,7 @@
 		"build-debug": "cross-env CARGO_TARGET_DIR=target/debug/standalone-build tauri build --debug --no-bundle",
 		"vite": "vite",
 		"tauri": "tauri",
-		"update-icons": "tauri icon backend/icons/icon-source.png",
+		"update-icons": "tauri icon backend/graphics/icon-source.png",
 		"frontend:build": "tsc && vite build",
 		"frontend:dev": "vite",
 		"lint": "prettier ./frontend --write && eslint . --fix",
