@@ -129,6 +129,12 @@ export const koKr: Translation = {
 		clearCacheTooltip: "Rai Pal이 사용하는 게임 목록 캐시를 삭제합니다.",
 	},
 
+	appSettings: {
+		showGameThumbnails: "게임 목록에서 이미지 표시",
+		language: "언어",
+		autoDetectedLanguage: "자동 감지 - {languageName}",
+	},
+
 	steamCache: {
 		resetSteamCacheButton: "Steam 캐시 초기화",
 		resetSteamCacheModalTitle: "Steam 캐시 초기화",

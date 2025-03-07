@@ -131,6 +131,12 @@ export const frFr: Translation = {
 		clearCacheTooltip: "Vide la liste de jeux mise en cache par Rai Pal.",
 	},
 
+	appSettings: {
+		showGameThumbnails: "Afficher les images dans la liste de jeux",
+		language: "Langue",
+		autoDetectedLanguage: "Auto-détecté - {languageName}",
+	},
+
 	steamCache: {
 		resetSteamCacheButton: "Réinitialiser le cache Steam",
 		resetSteamCacheModalTitle: "Réinitialiser le cache Steam",

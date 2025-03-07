@@ -132,6 +132,12 @@ export const esEs: Translation = {
 			"Limpia la caché de la lista de juegos usada por Rai Pal.",
 	},
 
+	appSettings: {
+		showGameThumbnails: "Mostrar imágenes en la lista de juegos",
+		language: "Idioma",
+		autoDetectedLanguage: "Auto-detectado - {languageName}",
+	},
+
 	steamCache: {
 		resetSteamCacheButton: "Restablecer caché de Steam",
 		resetSteamCacheModalTitle: "Restablecer caché de Steam",

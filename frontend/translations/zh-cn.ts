@@ -110,6 +110,11 @@ export const zhCn: Translation = {
 		clearCacheButton: "清除 Rai Pal 缓存",
 		clearCacheTooltip: "清除 Rai Pal 使用的游戏列表缓存。",
 	},
+	appSettings: {
+		showGameThumbnails: "显示游戏缩略图",
+		language: "语言",
+		autoDetectedLanguage: "自动检测 - {languageName}",
+	},
 	steamCache: {
 		resetSteamCacheButton: "重置 Steam 缓存",
 		resetSteamCacheModalTitle: "重置 Steam 缓存",

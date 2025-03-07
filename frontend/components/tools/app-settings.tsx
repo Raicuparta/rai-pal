@@ -1,13 +1,14 @@
 import { AppLocale } from "@api/bindings";
 import { useAppSettings } from "@hooks/use-app-settings";
-import { Select, Stack, Switch } from "@mantine/core";
+import { NativeSelect, Stack, Switch, Group, Box } from "@mantine/core";
 import { translations } from "../../translations/translations";
 import { useAtomValue } from "jotai";
-import { detectedLocaleAtom } from "@hooks/use-translations";
+import { detectedLocaleAtom, useGetTranslated } from "@hooks/use-translations";
+import { IconLanguage } from "@tabler/icons-react";
 
 const locales: AppLocale[] = [
-	"DeDe",
 	"EnUs",
+	"DeDe",
 	"EsEs",
 	"FrFr",
 	"JaJp",
@@ -17,25 +18,19 @@ const locales: AppLocale[] = [
 ];
 
 export function AppSettings() {
+	const t = useGetTranslated("appSettings");
 	const [settings, setSettings] = useAppSettings();
 	const detectedLocale = useAtomValue(detectedLocaleAtom);
 
-	const localeSelectValues = locales.sort().map((locale) => ({
+	const localeSelectValues = locales.map((locale) => ({
 		value: locale as string,
 		label: translations[locale].meta.nativeName,
 	}));
 
-	if (detectedLocale) {
-		localeSelectValues.unshift({
-			value: "",
-			label: `Auto-detected (${translations[detectedLocale].meta.nativeName})`,
-		});
-	}
-
 	return (
 		<Stack>
 			<Switch
-				label="Show game thumbnails on list"
+				label={t("showGameThumbnails")}
 				checked={!settings.hideGameThumbnails}
 				onChange={(event) => {
 					setSettings({
@@ -44,17 +39,40 @@ export function AppSettings() {
 					});
 				}}
 			/>
-			<Select
-				label="Language"
+			<NativeSelect
+				label={
+					<Group>
+						<span>{t("language")}</span>
+						<IconLanguage />
+						<Box opacity={0.5}>Language</Box>
+					</Group>
+				}
 				value={settings.overrideLanguage ?? ""}
 				data={localeSelectValues}
-				onChange={(value) => {
+				onChange={(event) => {
 					setSettings({
 						...settings,
-						overrideLanguage: (value || null) as AppLocale | null,
+						overrideLanguage: (event.currentTarget.value ||
+							null) as AppLocale | null,
 					});
 				}}
-			/>
+			>
+				{detectedLocale && (
+					<option value="">
+						{t("autoDetectedLanguage", {
+							languageName: translations[detectedLocale].meta.nativeName,
+						})}
+					</option>
+				)}
+				{locales.map((locale) => (
+					<option
+						key={locale}
+						value={locale}
+					>
+						{translations[locale].meta.nativeName}
+					</option>
+				))}
+			</NativeSelect>
 		</Stack>
 	);
 }

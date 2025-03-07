@@ -264,6 +264,17 @@ export const enUs = {
 		clearCacheTooltip: "Clears the game list cache used by Rai Pal.",
 	},
 
+	appSettings: {
+		// Checkbox label that toggles showing thumbnails on the game list.
+		showGameThumbnails: "Show game thumbnails on list",
+
+		// Label on the dropdown for changing the app's language.
+		language: "Language",
+
+		// Display name for the language option that automatically detects the user's language.
+		autoDetectedLanguage: "Auto-detected - {languageName}",
+	},
+
 	// Button and modal for resetting Steam's cache.
 	steamCache: {
 		// Button for resetting Steam's cache.

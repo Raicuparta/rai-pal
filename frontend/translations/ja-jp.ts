@@ -132,6 +132,12 @@ export const jaJp: Translation = {
 			"Rai Pal が使用しているゲームリストのキャッシュを削除します。",
 	},
 
+	appSettings: {
+		showGameThumbnails: "ゲームリストに画像を表示",
+		language: "言語",
+		autoDetectedLanguage: "自動検出 - {languageName}",
+	},
+
 	steamCache: {
 		resetSteamCacheButton: "Steam キャッシュをリセット",
 		resetSteamCacheModalTitle: "Steam キャッシュをリセット",

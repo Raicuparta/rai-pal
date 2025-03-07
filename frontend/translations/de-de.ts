@@ -131,6 +131,12 @@ export const deDe: Translation = {
 		clearCacheTooltip: "Löscht den von Rai Pal verwendeten Spielelisten-Cache.",
 	},
 
+	appSettings: {
+		showGameThumbnails: "Bilder in der Spieleliste anzeigen",
+		language: "Sprache",
+		autoDetectedLanguage: "Auto-erkannt - {languageName}",
+	},
+
 	steamCache: {
 		resetSteamCacheButton: "Steam-Cache zurücksetzen",
 		resetSteamCacheModalTitle: "Steam-Cache zurücksetzen",
