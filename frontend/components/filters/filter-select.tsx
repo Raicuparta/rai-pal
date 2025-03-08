@@ -2,7 +2,8 @@ import { Button, Checkbox, Stack, Tooltip } from "@mantine/core";
 import { GamesFilter } from "@api/bindings";
 import { IconRestore } from "@tabler/icons-react";
 import styles from "./filters.module.css";
-import { TranslationKey, useGetTranslated } from "@hooks/use-translations";
+import { useLocalization } from "@hooks/use-localization";
+import { LocalizationKey } from "@localizations/localizations";
 
 export type FilterKey = keyof GamesFilter;
 export type FilterValue<TFilterKey extends FilterKey> =
@@ -21,45 +22,45 @@ type Props<TFilterKey extends keyof GamesFilter> = {
 };
 
 type ValueDetails = {
-	noteTranslationKey?: TranslationKey<"filterValueNote">;
-	translationKey?: TranslationKey<"filterValue">;
+	noteLocalizationKey?: LocalizationKey<"filterValueNote">;
+	localizationKey?: LocalizationKey<"filterValue">;
 	staticDisplayText?: string;
 };
 
 type FilterDetails<TKey extends keyof GamesFilter> = {
-	translationKey: TranslationKey<"filterProperty">;
+	localizationKey: LocalizationKey<"filterProperty">;
 
 	// Text that shows for each filter type for the "empty value" option.
 	// If not defined, the empty option is hidden from the filter menu.
-	emptyTranslationKey?: TranslationKey<"filterValue">;
+	emptyLocalizationKey?: LocalizationKey<"filterValue">;
 
 	valueDetails: Record<NonNullable<FilterValue<TKey>>, ValueDetails>;
 };
 
 const filterDetails: { [key in keyof GamesFilter]: FilterDetails<key> } = {
 	architectures: {
-		translationKey: "architecture",
-		emptyTranslationKey: "unknown",
+		localizationKey: "architecture",
+		emptyLocalizationKey: "unknown",
 		valueDetails: {
 			X64: {
-				translationKey: "arch64",
+				localizationKey: "arch64",
 			},
 			X86: {
-				translationKey: "arch32",
+				localizationKey: "arch32",
 			},
 		},
 	},
 	engines: {
-		translationKey: "engine",
-		emptyTranslationKey: "unknown",
+		localizationKey: "engine",
+		emptyLocalizationKey: "unknown",
 		valueDetails: {
 			Godot: {
 				staticDisplayText: "Godot",
-				noteTranslationKey: "engineGodotNotFullySupported",
+				noteLocalizationKey: "engineGodotNotFullySupported",
 			},
 			GameMaker: {
 				staticDisplayText: "GameMaker",
-				noteTranslationKey: "engineGameMakerNotFullySupported",
+				noteLocalizationKey: "engineGameMakerNotFullySupported",
 			},
 			Unity: {
 				staticDisplayText: "Unity",
@@ -70,8 +71,8 @@ const filterDetails: { [key in keyof GamesFilter]: FilterDetails<key> } = {
 		},
 	},
 	unityScriptingBackends: {
-		translationKey: "unityScriptingBackend",
-		emptyTranslationKey: "unknown",
+		localizationKey: "unityScriptingBackend",
+		emptyLocalizationKey: "unknown",
 		valueDetails: {
 			Il2Cpp: {
 				staticDisplayText: "IL2CPP",
@@ -82,30 +83,30 @@ const filterDetails: { [key in keyof GamesFilter]: FilterDetails<key> } = {
 		},
 	},
 	tags: {
-		translationKey: "tags",
-		emptyTranslationKey: "tagUntagged",
+		localizationKey: "tags",
+		emptyLocalizationKey: "tagUntagged",
 		valueDetails: {
 			Demo: {
-				translationKey: "tagDemo",
+				localizationKey: "tagDemo",
 			},
 			VR: {
-				translationKey: "tagVr",
+				localizationKey: "tagVr",
 			},
 		},
 	},
 	installed: {
-		translationKey: "status",
+		localizationKey: "status",
 		valueDetails: {
 			Installed: {
-				translationKey: "statusInstalled",
+				localizationKey: "statusInstalled",
 			},
 			NotInstalled: {
-				translationKey: "statusNotInstalled",
+				localizationKey: "statusNotInstalled",
 			},
 		},
 	},
 	providers: {
-		translationKey: "provider",
+		localizationKey: "provider",
 		valueDetails: {
 			Ea: {
 				staticDisplayText: "EA",
@@ -120,7 +121,7 @@ const filterDetails: { [key in keyof GamesFilter]: FilterDetails<key> } = {
 				staticDisplayText: "itch.io",
 			},
 			Manual: {
-				translationKey: "providerManual",
+				localizationKey: "providerManual",
 			},
 			Steam: {
 				staticDisplayText: "Steam",
@@ -130,7 +131,7 @@ const filterDetails: { [key in keyof GamesFilter]: FilterDetails<key> } = {
 			},
 			Xbox: {
 				staticDisplayText: "Xbox",
-				noteTranslationKey: "providerXboxOnlyInstalled",
+				noteLocalizationKey: "providerXboxOnlyInstalled",
 			},
 		},
 	},
@@ -142,10 +143,10 @@ export function FilterSelect<TFilterKey extends FilterKey>({
 	currentValues,
 	onChange,
 }: Props<TFilterKey>) {
-	const tMenu = useGetTranslated("filterMenu");
-	const tProperty = useGetTranslated("filterProperty");
-	const tValue = useGetTranslated("filterValue");
-	const tValueNote = useGetTranslated("filterValueNote");
+	const tMenu = useLocalization("filterMenu");
+	const tProperty = useLocalization("filterProperty");
+	const tValue = useLocalization("filterValue");
+	const tValueNote = useLocalization("filterValueNote");
 
 	function handleFilterClick(id: TFilterKey, value: string | null) {
 		const newValues = [...currentValues];
@@ -166,7 +167,7 @@ export function FilterSelect<TFilterKey extends FilterKey>({
 	return (
 		<Stack gap="xs">
 			<Button.Group orientation="vertical">
-				<Button disabled>{tProperty(filterDetails[id].translationKey)}</Button>
+				<Button disabled>{tProperty(filterDetails[id].localizationKey)}</Button>
 				{possibleValues.map((possibleValue) => {
 					const valueDetails =
 						possibleValue !== null
@@ -175,8 +176,8 @@ export function FilterSelect<TFilterKey extends FilterKey>({
 					return (
 						<Tooltip
 							key={possibleValue}
-							label={tValueNote(valueDetails?.noteTranslationKey)}
-							disabled={!valueDetails?.noteTranslationKey}
+							label={tValueNote(valueDetails?.noteLocalizationKey)}
+							disabled={!valueDetails?.noteLocalizationKey}
 						>
 							<Button
 								fullWidth
@@ -192,11 +193,11 @@ export function FilterSelect<TFilterKey extends FilterKey>({
 								onClick={() => handleFilterClick(id, possibleValue)}
 							>
 								{possibleValue === null
-									? tValue(filterDetails[id].emptyTranslationKey)
+									? tValue(filterDetails[id].emptyLocalizationKey)
 									: (valueDetails?.staticDisplayText ??
-										tValue(valueDetails?.translationKey) ??
+										tValue(valueDetails?.localizationKey) ??
 										possibleValue)}
-								{valueDetails?.noteTranslationKey && " *"}
+								{valueDetails?.noteLocalizationKey && " *"}
 							</Button>
 						</Tooltip>
 					);

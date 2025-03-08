@@ -89,7 +89,7 @@ const status: GamesColumn = {
 };
 
 const name: GamesColumn = {
-	translationKey: "game",
+	localizationKey: "game",
 	sort: "Title",
 	component: ({ item }: CellProps) => (
 		<Table.Td
@@ -132,7 +132,7 @@ const engineColors: Record<EngineBrand, DefaultMantineColor> = {
 } as const;
 
 const engine: GamesColumn = {
-	translationKey: "engine",
+	localizationKey: "engine",
 	sort: "Engine",
 	width: 130,
 	center: true,
@@ -185,7 +185,7 @@ const dateFormatter = Intl.DateTimeFormat("default", {
 });
 
 const releaseDate: GamesColumn = {
-	translationKey: "date",
+	localizationKey: "date",
 	width: 80,
 	center: true,
 	sort: "ReleaseDate",

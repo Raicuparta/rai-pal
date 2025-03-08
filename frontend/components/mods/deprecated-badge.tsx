@@ -1,9 +1,9 @@
-import { useGetTranslated } from "@hooks/use-translations";
+import { useLocalization } from "@hooks/use-localization";
 import { Badge, BadgeProps, Tooltip } from "@mantine/core";
 import { IconAlertTriangleFilled } from "@tabler/icons-react";
 
 export const DeprecatedBadge = (props: BadgeProps) => {
-	const t = useGetTranslated("modsPage");
+	const t = useLocalization("modsPage");
 	return (
 		<Tooltip label={t("modDeprecatedTooltip")}>
 			<Badge

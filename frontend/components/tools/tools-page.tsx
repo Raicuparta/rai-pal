@@ -4,11 +4,11 @@ import { IconFolderCode, IconRotateDot, IconTrash } from "@tabler/icons-react";
 import { CommandButton } from "@components/command-button";
 import { commands } from "@api/bindings";
 import { SteamCacheButton } from "./steam-cache-button";
-import { useGetTranslated } from "@hooks/use-translations";
+import { useLocalization } from "@hooks/use-localization";
 import { AppSettings } from "./app-settings";
 
 export function ToolsPage() {
-	const t = useGetTranslated("toolsPage");
+	const t = useLocalization("toolsPage");
 
 	return (
 		<Container size="xs">

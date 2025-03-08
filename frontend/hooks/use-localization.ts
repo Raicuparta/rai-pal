@@ -1,44 +1,33 @@
-import { translations } from "../translations/translations";
-import { enUs } from "../translations/en-us";
+import {
+	BaseLocalization,
+	LocalizationCategory,
+	LocalizationKey,
+	LocalizationParameter,
+	localizations,
+} from "@localizations/localizations";
 import { AppLocale } from "@api/bindings";
 import { atom, useAtom } from "jotai";
 import { useEffect, useCallback } from "react";
 import { locale } from "@tauri-apps/plugin-os";
 import { useAppSettings } from "./use-app-settings";
 
-// en-us is the only language defined in TS, used as the source of truth.
-// Other language defined in JSON, modifiable at runtime.
-type BaseTranslation = typeof enUs;
-
-// Categories are the root-level keys in the translation object.
-export type TranslationCategory = keyof BaseTranslation;
-
-// Keys are the leafs. Translation objects don't go any deeper than that.
-// The `& string` part is a bit of a hack because TS was having trouble realizing these can only be strings.
-export type TranslationKey<TCategory extends TranslationCategory> =
-	keyof BaseTranslation[TCategory] & string;
-
-// Takes a translated string with {parameters}, returns a Record<[Parameter], string>.
+// Takes a localized string with {parameters}, returns a Record<[Parameter], string>.
 // Example: ExtractParams<"Hello, {name}!"> => { name: string }
-type ExtractParams<TTranslatedString extends string> =
-	TTranslatedString extends `${string}{${infer TParameters}}${infer TRest}`
-		? { [K in TParameters | keyof ExtractParams<TRest>]: string }
+type LocalizationParamsObject<TLocalizedString> =
+	TLocalizedString extends `${string}${LocalizationParameter<infer TParameters>}${infer TRest}`
+		? { [K in TParameters | keyof LocalizationParamsObject<TRest>]: string }
 		: undefined;
 
-// Takes a Category and a Key, returns the args to be passed to translation functions.
-// Empty array if no parameters are needed, so that we can spread them.
+// Takes a Category and a Key, returns the args to be passed to localization functions.
+// Empty array if no parameters are needed, so that we can spread them and make them optional.
 // The `& string` part is a bit of a hack because TS was having trouble realizing these can only be strings.
-type TranslationArgs<
-	TCategory extends TranslationCategory,
-	TKey extends TranslationKey<TCategory>,
-> =
-	ExtractParams<BaseTranslation[TCategory][TKey] & string> extends undefined
-		? []
-		: [params: ExtractParams<BaseTranslation[TCategory][TKey] & string>];
+type LocalizationFunctionArgs<TLocalizedString> =
+	LocalizationParamsObject<TLocalizedString> extends infer Params extends object
+		? [params: Params]
+		: [];
 
-// Translation files are objects with two levels: categories at the root, and key-value pairs at the second level.
-// Parsed from JSON.
-function isTranslationValid(
+// Localization files are objects with two levels: categories at the root, and key-value pairs at the second level.
+function isLocalizationValid(
 	language: unknown,
 ): language is Record<string, Record<string, string>> {
 	return (
@@ -53,41 +42,41 @@ function isTranslationValid(
 	);
 }
 
-function getTranslation<
-	TCategory extends TranslationCategory,
-	TKey extends TranslationKey<TCategory>,
+function getLocalization<
+	TCategory extends LocalizationCategory,
+	TKey extends LocalizationKey<TCategory>,
 >(
 	language: unknown,
 	category: TCategory,
 	key: TKey,
-	...args: TranslationArgs<TCategory, TKey>
+	...args: LocalizationFunctionArgs<BaseLocalization[TCategory][TKey]>
 ): string {
-	if (!isTranslationValid(language)) {
+	if (!isLocalizationValid(language)) {
 		console.error("Invalid language object, must be a Record<string, string>");
 		return `{${key}}`;
 	}
 
 	const params = args[0];
-	let translation = language[category][key];
+	let localization = language[category][key];
 
-	if (translation === undefined) {
-		console.error(`Missing translation for key: ${key}`);
+	if (localization === undefined) {
+		console.error(`Missing localization for key: ${key}`);
 		return `{${key}}`;
 	}
 
 	if (params) {
 		for (const [param, value] of Object.entries(params)) {
-			translation = translation.replace(`{${param}}`, value);
+			localization = localization.replace(`{${param}}`, value);
 		}
 	}
-	return translation;
+	return localization;
 }
 
 export const detectedLocaleAtom = atom<AppLocale | null>(null);
 
 // At the time of writing this comment, Rai Pal only supports one language per locale.
 // So en-GB would map to EnUs, pt-BR to PtPt, etc.
-// If we ever need to use more specific translations, we'll need to change this logic.
+// If we ever need to use more specific localizations, we'll need to change this logic.
 const languageCodeToAppLocale: Record<string, AppLocale> = {
 	en: "EnUs",
 	pt: "PtPt",
@@ -99,7 +88,7 @@ const languageCodeToAppLocale: Record<string, AppLocale> = {
 	zh: "ZhCn",
 };
 
-export function useGetTranslated<TCategory extends TranslationCategory>(
+export function useLocalization<TCategory extends LocalizationCategory>(
 	category: TCategory,
 ) {
 	const [detectedLocale, setDetectedLocale] = useAtom(detectedLocaleAtom);
@@ -123,7 +112,7 @@ export function useGetTranslated<TCategory extends TranslationCategory>(
 
 				if (!appLocale) {
 					console.error(
-						`Couldn't find a translation for the language code ${languageCode}, extracted from locale string ${localeString}`,
+						`Couldn't find a localization for the language code ${languageCode}, extracted from locale string ${localeString}`,
 					);
 					return;
 				}
@@ -134,14 +123,14 @@ export function useGetTranslated<TCategory extends TranslationCategory>(
 	}, [detectedLocale, setDetectedLocale]);
 
 	return useCallback(
-		<TKey extends TranslationKey<TCategory>>(
+		<TKey extends LocalizationKey<TCategory>>(
 			key?: TKey,
-			...args: TranslationArgs<TCategory, TKey>
+			...args: LocalizationFunctionArgs<BaseLocalization[TCategory][TKey]>
 		) => {
 			if (!key) return undefined;
 
-			return getTranslation(
-				translations[effectiveLocale],
+			return getLocalization(
+				localizations[effectiveLocale],
 				category,
 				key,
 				...args,

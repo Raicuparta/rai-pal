@@ -1,6 +1,6 @@
-import { Translation } from "./translations";
+import { Localization } from "./localizations";
 
-export const zhCn: Translation = {
+export const zhCn: Localization = {
 	meta: {
 		nativeName: "简体中文",
 	},

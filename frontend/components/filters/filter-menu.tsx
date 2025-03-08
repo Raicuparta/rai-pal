@@ -6,11 +6,11 @@ import { FilterChangeCallback, FilterKey, FilterSelect } from "./filter-select";
 import { SearchInput } from "@components/search-input";
 import { GamesFilter, GamesQuery } from "@api/bindings";
 import { defaultQuery, useDataQuery } from "@hooks/use-data-query";
-import { useGetTranslated } from "@hooks/use-translations";
+import { useLocalization } from "@hooks/use-localization";
 
 export function FilterMenu() {
 	const [dataQuery, setDataQuery] = useDataQuery();
-	const t = useGetTranslated("filterMenu");
+	const t = useLocalization("filterMenu");
 
 	const handleToggleClick = useCallback<FilterChangeCallback>(
 		(id, values) => {

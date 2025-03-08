@@ -1,12 +1,12 @@
 import { commands } from "@api/bindings";
 import { CommandButton } from "@components/command-button";
-import { useGetTranslated } from "@hooks/use-translations";
+import { useLocalization } from "@hooks/use-localization";
 import { Button, Flex, Modal, Stack } from "@mantine/core";
 import { IconHammer } from "@tabler/icons-react";
 import { useCallback, useState } from "react";
 
 export function SteamCacheButton() {
-	const t = useGetTranslated("steamCache");
+	const t = useLocalization("steamCache");
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [showSteamRestartPrompt, setShowSteamRestartPrompt] = useState(false);
 

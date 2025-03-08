@@ -13,18 +13,18 @@ import { gameDataAtom } from "@hooks/use-data";
 
 const pages: Record<string, Page> = {
 	games: {
-		translationKey: "games",
+		localizationKey: "games",
 		component: GamesPage,
 		icon: <IconDeviceGamepad />,
 	},
-	mods: { translationKey: "mods", component: ModsPage, icon: <IconBox /> },
+	mods: { localizationKey: "mods", component: ModsPage, icon: <IconBox /> },
 	tools: {
-		translationKey: "tools",
+		localizationKey: "tools",
 		component: ToolsPage,
 		icon: <IconHammer />,
 	},
 	thanks: {
-		translationKey: "thanks",
+		localizationKey: "thanks",
 		component: ThanksPage,
 		icon: <ThanksTabIcon />,
 	},

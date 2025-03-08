@@ -20,7 +20,7 @@ import {
 import { ThanksLinkButton } from "./thanks-link-button";
 import { usePatrons } from "@hooks/use-patrons";
 import styles from "./thanks.module.css";
-import { useGetTranslated } from "@hooks/use-translations";
+import { useLocalization } from "@hooks/use-localization";
 
 function getRankingEmoji(ranking: number) {
 	if (ranking == 1) return "🥇";
@@ -37,7 +37,7 @@ function getRankingColor(ranking: number): MantineColor {
 }
 
 export function ThanksPage() {
-	const t = useGetTranslated("thanksPage");
+	const t = useLocalization("thanksPage");
 	const patrons = usePatrons();
 
 	return (

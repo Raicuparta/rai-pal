@@ -4,12 +4,12 @@ import { useAtomValue } from "jotai";
 import { useUpdateData } from "@hooks/use-update-data";
 import { loadingTasksAtom } from "@hooks/use-data";
 import styles from "./components.module.css";
-import { useGetTranslated } from "@hooks/use-translations";
+import { useLocalization } from "@hooks/use-localization";
 
 export function RefreshButton() {
 	const loadingTasks = useAtomValue(loadingTasksAtom);
 	const updateAppData = useUpdateData();
-	const t = useGetTranslated("refresh");
+	const t = useLocalization("refresh");
 
 	return (
 		<Box pos="relative">

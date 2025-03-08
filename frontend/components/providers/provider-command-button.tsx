@@ -1,6 +1,7 @@
 import { Game, ProviderCommandAction, commands } from "@api/bindings";
 import { CommandButton } from "@components/command-button";
-import { TranslationKey, useGetTranslated } from "@hooks/use-translations";
+import { useLocalization } from "@hooks/use-localization";
+import { LocalizationKey } from "@localizations/localizations";
 import {
 	Icon,
 	IconDeviceGamepad,
@@ -16,9 +17,9 @@ type Props = {
 	readonly action: ProviderCommandAction;
 };
 
-const providerCommandTranslationKey: Record<
+const providerCommandLocalizationKey: Record<
 	ProviderCommandAction,
-	TranslationKey<"providerCommand">
+	LocalizationKey<"providerCommand">
 > = {
 	Install: "installGame",
 	ShowInLibrary: "showGameInLibrary",
@@ -36,7 +37,7 @@ const providerCommandActionIcon: Record<ProviderCommandAction, Icon> = {
 };
 
 export function ProviderCommandButton(props: Props) {
-	const t = useGetTranslated("providerCommand");
+	const t = useLocalization("providerCommand");
 	const IconComponent =
 		providerCommandActionIcon[props.action] ?? IconDeviceGamepad;
 
@@ -45,7 +46,7 @@ export function ProviderCommandButton(props: Props) {
 			leftSection={<IconComponent />}
 			onClick={() => commands.runProviderCommand(props.game, props.action)}
 		>
-			{t(providerCommandTranslationKey[props.action])}
+			{t(providerCommandLocalizationKey[props.action])}
 		</CommandButton>
 	);
 }

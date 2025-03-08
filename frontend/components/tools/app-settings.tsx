@@ -1,10 +1,10 @@
 import { AppLocale } from "@api/bindings";
 import { useAppSettings } from "@hooks/use-app-settings";
 import { NativeSelect, Stack, Switch, Group, Box } from "@mantine/core";
-import { translations } from "../../translations/translations";
 import { useAtomValue } from "jotai";
-import { detectedLocaleAtom, useGetTranslated } from "@hooks/use-translations";
+import { detectedLocaleAtom, useLocalization } from "@hooks/use-localization";
 import { IconLanguage } from "@tabler/icons-react";
+import { localizations } from "@localizations/localizations";
 
 const locales: AppLocale[] = [
 	"EnUs",
@@ -18,13 +18,13 @@ const locales: AppLocale[] = [
 ];
 
 export function AppSettings() {
-	const t = useGetTranslated("appSettings");
+	const t = useLocalization("appSettings");
 	const [settings, setSettings] = useAppSettings();
 	const detectedLocale = useAtomValue(detectedLocaleAtom);
 
 	const localeSelectValues = locales.map((locale) => ({
 		value: locale as string,
-		label: translations[locale].meta.nativeName,
+		label: localizations[locale].meta.nativeName,
 	}));
 
 	return (
@@ -60,7 +60,7 @@ export function AppSettings() {
 				{detectedLocale && (
 					<option value="">
 						{t("autoDetectedLanguage", {
-							languageName: translations[detectedLocale].meta.nativeName,
+							languageName: localizations[detectedLocale].meta.nativeName,
 						})}
 					</option>
 				)}
@@ -69,7 +69,7 @@ export function AppSettings() {
 						key={locale}
 						value={locale}
 					>
-						{translations[locale].meta.nativeName}
+						{localizations[locale].meta.nativeName}
 					</option>
 				))}
 			</NativeSelect>

@@ -1,7 +1,7 @@
 import { Badge, DefaultMantineColor, Stack, Tooltip } from "@mantine/core";
 import { getIsOutdated } from "@util/is-outdated";
 import { IconRefreshAlert } from "@tabler/icons-react";
-import { useGetTranslated } from "@hooks/use-translations";
+import { useLocalization } from "@hooks/use-localization";
 
 type Props = {
 	readonly localVersion?: string;
@@ -15,7 +15,7 @@ function getColor(props: Props): DefaultMantineColor {
 }
 
 export function ModVersionBadge(props: Props) {
-	const t = useGetTranslated("modsPage");
+	const t = useLocalization("modsPage");
 	const isOutdated = getIsOutdated(props.localVersion, props.remoteVersion);
 
 	const versionText = (props.localVersion || props.remoteVersion || "-").split(

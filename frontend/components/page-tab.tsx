@@ -1,8 +1,9 @@
-import { TranslationKey, useGetTranslated } from "@hooks/use-translations";
+import { useLocalization } from "@hooks/use-localization";
+import { LocalizationKey } from "@localizations/localizations";
 import { Tabs, Stack, Text } from "@mantine/core";
 
 export type Page = {
-	readonly translationKey: TranslationKey<"tab">;
+	readonly localizationKey: LocalizationKey<"tab">;
 	readonly component: () => React.JSX.Element;
 	readonly icon: React.JSX.Element;
 };
@@ -13,18 +14,18 @@ type Props = {
 };
 
 export function PageTab(props: Props) {
-	const t = useGetTranslated("tab");
+	const t = useLocalization("tab");
 
 	return (
 		<Tabs.Tab
-			value={props.page.translationKey}
+			value={props.page.localizationKey}
 			leftSection={props.page.icon}
 		>
 			<Stack
 				gap={0}
 				align="center"
 			>
-				<span>{t(props.page.translationKey)}</span>
+				<span>{t(props.page.localizationKey)}</span>
 				{props.label && (
 					<Text
 						size="9px"

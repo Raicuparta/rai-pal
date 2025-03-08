@@ -1,4 +1,4 @@
-import { useGetTranslated } from "@hooks/use-translations";
+import { useLocalization } from "@hooks/use-localization";
 import { CodeHighlight } from "@mantine/code-highlight";
 import { Divider, Stack } from "@mantine/core";
 import { useMemo } from "react";
@@ -8,7 +8,7 @@ type Props<TData> = {
 };
 
 export function DebugData<TData>(props: Props<TData>) {
-	const t = useGetTranslated("debugData");
+	const t = useLocalization("debugData");
 	const debugText = useMemo(
 		() => JSON.stringify(props.data, null, 2) ?? "",
 		[props.data],

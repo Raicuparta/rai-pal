@@ -1,6 +1,6 @@
-import { Translation } from "./translations";
+import { Localization } from "./localizations";
 
-export const ptPt: Translation = {
+export const ptPt: Localization = {
 	meta: {
 		nativeName: "Português (Portugal)",
 	},

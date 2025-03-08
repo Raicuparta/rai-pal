@@ -37,7 +37,7 @@ import { ProviderCommandButtons } from "@components/providers/provider-command-d
 import { GameRowInner } from "./game-row";
 import { TableHead } from "@components/table/table-head";
 import { gamesColumns } from "./games-columns";
-import { useGetTranslated } from "@hooks/use-translations";
+import { useLocalization } from "@hooks/use-localization";
 
 type Props = {
 	readonly game: Game;
@@ -93,7 +93,7 @@ function isVersionWithinRange(
 }
 
 export function GameModal({ game }: Props) {
-	const t = useGetTranslated("gameModal");
+	const t = useLocalization("gameModal");
 	const { installedGame } = game;
 	const modLoaderMap = useAtomValue(modLoadersAtom);
 	const mods = useUnifiedMods();

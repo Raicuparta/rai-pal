@@ -13,7 +13,7 @@ import { UnifiedMod } from "@hooks/use-unified-mods";
 import { ItemName } from "@components/item-name";
 import { getModTitle } from "@util/game-mod";
 import { DeprecatedBadge } from "./deprecated-badge";
-import { useGetTranslated } from "@hooks/use-translations";
+import { useLocalization } from "@hooks/use-localization";
 
 type Props = {
 	readonly mod: UnifiedMod;
@@ -21,7 +21,7 @@ type Props = {
 };
 
 export function ModModal(props: Props) {
-	const t = useGetTranslated("modModal");
+	const t = useLocalization("modModal");
 	const isDownloadAvailable = Boolean(props.mod.remote?.latestVersion?.url);
 	const localVersion = props.mod.local?.manifest?.version;
 	const remoteVersion = props.mod.remote?.latestVersion?.id;

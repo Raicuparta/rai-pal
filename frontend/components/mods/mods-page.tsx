@@ -14,10 +14,10 @@ import { ModVersionBadge } from "./mod-version-badge";
 import { ItemName } from "@components/item-name";
 import { getModTitle } from "@util/game-mod";
 import { DeprecatedBadge } from "./deprecated-badge";
-import { useGetTranslated } from "@hooks/use-translations";
+import { useLocalization } from "@hooks/use-localization";
 
 export function ModsPage() {
-	const t = useGetTranslated("modsPage");
+	const t = useLocalization("modsPage");
 	const [selectedModId, setSelectedId] = useState<string>();
 
 	const mods = useUnifiedMods();

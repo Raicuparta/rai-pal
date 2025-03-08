@@ -13,7 +13,7 @@ import { forwardRef, useCallback, useState } from "react";
 import { IconArrowBack, IconCheck } from "@tabler/icons-react";
 import { usePersistedState } from "@hooks/use-persisted-state";
 import { Result } from "@api/bindings";
-import { useGetTranslated } from "@hooks/use-translations";
+import { useLocalization } from "@hooks/use-localization";
 
 interface Props<TResultValue, TError> extends ButtonProps {
 	readonly onClick: () => Promise<Result<TResultValue, TError> | TResultValue>;
@@ -33,7 +33,7 @@ function CommandButtonInternal<TResultValue, TError>(
 	}: Props<TResultValue, TError>,
 	ref: React.ForwardedRef<HTMLButtonElement>,
 ) {
-	const t = useGetTranslated("commandButton");
+	const t = useLocalization("commandButton");
 	const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
 	const [shouldSkipConfirm, setShouldSkipConfirm] = usePersistedState(
 		false,

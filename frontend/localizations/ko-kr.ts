@@ -1,6 +1,6 @@
-import { Translation } from "./translations";
+import { Localization } from "./localizations";
 
-export const koKr: Translation = {
+export const koKr: Localization = {
 	meta: {
 		nativeName: "한국어",
 	},

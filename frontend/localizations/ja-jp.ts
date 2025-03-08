@@ -1,6 +1,6 @@
-import { Translation } from "./translations";
+import { Localization } from "./localizations";
 
-export const jaJp: Translation = {
+export const jaJp: Localization = {
 	meta: {
 		nativeName: "日本語",
 	},

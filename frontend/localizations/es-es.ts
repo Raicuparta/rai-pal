@@ -1,6 +1,6 @@
-import { Translation } from "./translations";
+import { Localization } from "./localizations";
 
-export const esEs: Translation = {
+export const esEs: Localization = {
 	meta: {
 		nativeName: "Español (España)",
 	},

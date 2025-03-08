@@ -6,10 +6,10 @@ import { open as openDialog } from "@tauri-apps/plugin-dialog";
 import { useAtomValue } from "jotai";
 import { loadingTasksAtom } from "@hooks/use-data";
 import { useAsyncCommand } from "@hooks/use-async-command";
-import { useGetTranslated } from "@hooks/use-translations";
+import { useLocalization } from "@hooks/use-localization";
 
 export function AddGame() {
-	const t = useGetTranslated("addGame");
+	const t = useLocalization("addGame");
 	const [isOpen, setIsOpen] = useState(false);
 	const isLoading = useAtomValue(loadingTasksAtom);
 

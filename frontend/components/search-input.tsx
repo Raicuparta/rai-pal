@@ -1,4 +1,4 @@
-import { useGetTranslated } from "@hooks/use-translations";
+import { useLocalization } from "@hooks/use-localization";
 import { CloseButton, Input } from "@mantine/core";
 
 type Props = {
@@ -7,7 +7,7 @@ type Props = {
 };
 
 export function SearchInput(props: Props) {
-	const t = useGetTranslated("filterMenu");
+	const t = useLocalization("filterMenu");
 	return (
 		<Input
 			onChange={(event) => props.onChange(event.target.value)}
