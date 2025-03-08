@@ -300,7 +300,7 @@ syncRemoteMods: "sync-remote-mods"
 
 /** user-defined types **/
 
-export type AppLocale = "EnUs" | "EsEs" | "FrFr" | "DeDe" | "PtPt" | "ZhCn" | "JaJp" | "KoKr"
+export type AppLocale = "EnUs" | "EsEs" | "FrFr" | "DeDe" | "PtPt" | "ZhCn" | "JaJp" | "KoKr" | "WaWa"
 export type AppSettings = { hideGameThumbnails: boolean; overrideLanguage: AppLocale | null }
 export type Architecture = "X64" | "X86"
 export type CommonModData = { id: string; engine: EngineBrand | null; unityBackend: UnityScriptingBackend | null; engineVersionRange: EngineVersionRange | null; loaderId: string }

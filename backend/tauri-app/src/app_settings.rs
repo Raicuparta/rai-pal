@@ -14,6 +14,7 @@ pub enum AppLocale {
 	ZhCn,
 	JaJp,
 	KoKr,
+	WaWa,
 }
 
 #[serializable_struct]

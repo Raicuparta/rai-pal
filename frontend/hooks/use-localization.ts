@@ -42,13 +42,14 @@ function isLocalizationValid(
 	);
 }
 
-function getLocalization<
+function getLocalizedText<
 	TCategory extends LocalizationCategory,
 	TKey extends LocalizationKey<TCategory>,
 >(
 	language: unknown,
 	category: TCategory,
 	key: TKey,
+	doFunnyWario: boolean,
 	...args: LocalizationFunctionArgs<BaseLocalization[TCategory][TKey]>
 ): string {
 	if (!isLocalizationValid(language)) {
@@ -64,11 +65,36 @@ function getLocalization<
 		return `{${key}}`;
 	}
 
+	if (doFunnyWario) {
+		const wahTextParts: string[] = [];
+		const textParts = localization.split(" ");
+		for (let i = 0; i < textParts.length; i++) {
+			const isParam = textParts[i].includes("{") || textParts[i].includes("}");
+
+			if (isParam || textParts[i].length < 3) {
+				wahTextParts.push(textParts[i]);
+				continue;
+			}
+
+			const start = i === 0 ? "W" : "w";
+			const end = i < textParts.length - 1 ? "h" : "h!";
+			const middle = Array.from(
+				{ length: textParts[i].length - 2 },
+				() => "a",
+			).join("");
+
+			wahTextParts.push(`${start}${middle}${end}`);
+		}
+
+		localization = wahTextParts.join(" ");
+	}
+
 	if (params) {
 		for (const [param, value] of Object.entries(params)) {
 			localization = localization.replace(`{${param}}`, value);
 		}
 	}
+
 	return localization;
 }
 
@@ -129,10 +155,11 @@ export function useLocalization<TCategory extends LocalizationCategory>(
 		) => {
 			if (!key) return undefined;
 
-			return getLocalization(
+			return getLocalizedText(
 				localizations[effectiveLocale],
 				category,
 				key,
+				effectiveLocale === "WaWa",
 				...args,
 			);
 		},

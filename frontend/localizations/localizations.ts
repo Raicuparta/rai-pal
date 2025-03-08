@@ -19,6 +19,7 @@ export const localizations: Record<AppLocale, Localization> = {
 	JaJp: jaJp,
 	KoKr: koKr,
 	ZhCn: zhCn,
+	WaWa: enUs,
 };
 
 // en-US is used as the source of truth for localization format.
@@ -54,3 +55,11 @@ export type Localization = {
 		>;
 	};
 };
+
+export function getNativeLocaleName(locale: AppLocale): string {
+	if (locale === "WaWa") {
+		return "Wario (Waah!)";
+	}
+
+	return localizations[locale].meta.nativeName;
+}

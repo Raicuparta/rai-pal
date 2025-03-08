@@ -4,7 +4,10 @@ import { NativeSelect, Stack, Switch, Group, Box } from "@mantine/core";
 import { useAtomValue } from "jotai";
 import { detectedLocaleAtom, useLocalization } from "@hooks/use-localization";
 import { IconLanguage } from "@tabler/icons-react";
-import { localizations } from "@localizations/localizations";
+import {
+	getNativeLocaleName,
+	localizations,
+} from "@localizations/localizations";
 
 const locales: AppLocale[] = [
 	"EnUs",
@@ -15,6 +18,7 @@ const locales: AppLocale[] = [
 	"KoKr",
 	"PtPt",
 	"ZhCn",
+	"WaWa",
 ];
 
 export function AppSettings() {
@@ -60,7 +64,7 @@ export function AppSettings() {
 				{detectedLocale && (
 					<option value="">
 						{t("autoDetectedLanguage", {
-							languageName: localizations[detectedLocale].meta.nativeName,
+							languageName: getNativeLocaleName(detectedLocale),
 						})}
 					</option>
 				)}
@@ -69,7 +73,7 @@ export function AppSettings() {
 						key={locale}
 						value={locale}
 					>
-						{localizations[locale].meta.nativeName}
+						{getNativeLocaleName(locale)}
 					</option>
 				))}
 			</NativeSelect>
