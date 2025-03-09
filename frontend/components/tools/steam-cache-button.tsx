@@ -1,10 +1,12 @@
 import { commands } from "@api/bindings";
 import { CommandButton } from "@components/command-button";
+import { useLocalization } from "@hooks/use-localization";
 import { Button, Flex, Modal, Stack } from "@mantine/core";
 import { IconHammer } from "@tabler/icons-react";
 import { useCallback, useState } from "react";
 
 export function SteamCacheButton() {
+	const t = useLocalization("steamCache");
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [showSteamRestartPrompt, setShowSteamRestartPrompt] = useState(false);
 
@@ -23,41 +25,26 @@ export function SteamCacheButton() {
 				onClick={handleOpen}
 				leftSection={<IconHammer />}
 			>
-				Reset Steam cache
+				{t("resetSteamCacheButton")}
 			</Button>
 			<Modal
 				centered
 				opened={isModalOpen}
 				onClose={handleClose}
-				title="Reset Steam cache"
+				title={t("resetSteamCacheModalTitle")}
 			>
 				<Stack>
-					<span>
-						Use this if Rai Pal is showing games you don&apos;t actually own on
-						Steam.
-					</span>
-					<span>
-						This will reset Steam&apos;s cache, and then you&apos;ll have to
-						restart Steam.
-					</span>
-					<span>
-						You&apos;ll get an error if the file has already been deleted.
-					</span>
+					<span>{t("resetSteamCacheDescription")}</span>
 					<Flex justify="center">
 						<CommandButton
 							onClick={commands.resetSteamCache}
 							onSuccess={() => setShowSteamRestartPrompt(true)}
 							leftSection={<IconHammer />}
 						>
-							Reset Steam cache
+							{t("resetSteamCacheButton")}
 						</CommandButton>
 					</Flex>
-					{showSteamRestartPrompt && (
-						<Stack>
-							The cache file has been deleted. Please restart Steam, wait a few
-							seconds, and then press the refresh button on Rai Pal.
-						</Stack>
-					)}
+					{showSteamRestartPrompt && <span>{t("resetSteamCacheSuccess")}</span>}
 				</Stack>
 			</Modal>
 		</>

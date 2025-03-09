@@ -37,6 +37,7 @@
 		"globwalk",
 		"goggame",
 		"hasher",
+		"hehe",
 		"HKEY",
 		"icns",
 		"ICONERROR",
@@ -49,8 +50,12 @@
 		"librarycache",
 		"Loggable",
 		"mantine",
+		"modder",
+		"Modders",
+		"MSIS",
 		"msxbox",
 		"needsadmin",
+		"nsis",
 		"osarch",
 		"oslist",
 		"otherinstallcmd",
@@ -88,6 +93,8 @@
 		"unlisten",
 		"ureq",
 		"UUVR",
+		"Waah",
+		"Wario",
 		"WIDESTRING",
 		"winapi",
 		"windowsonlinerepair",
@@ -95,5 +102,6 @@
 		"winuser",
 		"YESNO"
 	],
-	"dependi.npm.lockFileEnabled": true
+	"dependi.npm.lockFileEnabled": true,
+	"typescript.tsdk": "node_modules\\typescript\\lib"
 }

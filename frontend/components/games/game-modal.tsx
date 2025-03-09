@@ -37,6 +37,7 @@ import { ProviderCommandButtons } from "@components/providers/provider-command-d
 import { GameRowInner } from "./game-row";
 import { TableHead } from "@components/table/table-head";
 import { gamesColumns } from "./games-columns";
+import { useLocalization } from "@hooks/use-localization";
 
 type Props = {
 	readonly game: Game;
@@ -92,6 +93,7 @@ function isVersionWithinRange(
 }
 
 export function GameModal({ game }: Props) {
+	const t = useLocalization("gameModal");
 	const { installedGame } = game;
 	const modLoaderMap = useAtomValue(modLoadersAtom);
 	const mods = useUnifiedMods();
@@ -146,7 +148,7 @@ export function GameModal({ game }: Props) {
 									leftSection={<IconPlayerPlay />}
 									onClick={() => commands.startGame(installedGame)}
 								>
-									Start Game
+									{t("startGameButton")}
 								</CommandButton>
 								{installedGame.startCommand && (
 									<CommandDropdown>
@@ -154,7 +156,7 @@ export function GameModal({ game }: Props) {
 											leftSection={<IconAppWindow />}
 											onClick={() => commands.startGameExe(installedGame)}
 										>
-											Start Game Executable
+											{t("startGameExecutable")}
 										</CommandButton>
 										<CommandButton
 											leftSection={
@@ -162,26 +164,28 @@ export function GameModal({ game }: Props) {
 											}
 											onClick={() => commands.startGame(installedGame)}
 										>
-											Start Game via {game.id.providerId}
+											{t("startGameViaProvider", {
+												provider: game.id.providerId,
+											})}
 										</CommandButton>
 									</CommandDropdown>
 								)}
 							</Button.Group>
 							<CommandDropdown
-								label="Folders"
+								label={t("foldersDropdown")}
 								icon={<IconFolderOpen />}
 							>
 								<CommandButton
 									leftSection={<IconFolder />}
 									onClick={() => commands.openGameFolder(game.id)}
 								>
-									Open Game Files Folder
+									{t("openGameFilesFolder")}
 								</CommandButton>
 								<CommandButton
 									leftSection={<IconFolderCog />}
 									onClick={() => commands.openGameModsFolder(game.id)}
 								>
-									Open Installed Mods Folder
+									{t("openInstalledModsFolder")}
 								</CommandButton>
 							</CommandDropdown>
 						</>
@@ -190,11 +194,11 @@ export function GameModal({ game }: Props) {
 					{game.id.providerId === "Manual" && installedGame && (
 						<CommandButton
 							onClick={() => commands.removeGame(installedGame.executable.path)}
-							confirmationText="Are you sure you want to remove this game from Rai Pal?"
+							confirmationText={t("removeGameConfirmation")}
 							onSuccess={close}
 							leftSection={<IconTrash />}
 						>
-							Remove from Rai Pal
+							{t("removeFromRaiPal")}
 						</CommandButton>
 					)}
 					{installedGame && (
@@ -202,7 +206,7 @@ export function GameModal({ game }: Props) {
 							onClick={() => commands.refreshGame(game.id)}
 							leftSection={<IconRefresh />}
 						>
-							Refresh
+							{t("refreshGame")}
 						</CommandButton>
 					)}
 				</Group>
@@ -210,29 +214,18 @@ export function GameModal({ game }: Props) {
 					<>
 						{installedGame.executable.engine &&
 							!installedGame?.executable.architecture && (
-								<Alert color="red">
-									Failed to read some important information about this game.
-									This could be due to the executable being protected. Some mods
-									might fail to install.
-								</Alert>
+								<Alert color="red">{t("failedToReadGameInfo")}</Alert>
 							)}
 						{!installedGame.executable.engine && (
-							<Alert color="red">
-								Failed to determine the engine for this game. Some mods might
-								fail to install.
-							</Alert>
+							<Alert color="red">{t("failedToDetermineEngine")}</Alert>
 						)}
 					</>
 				)}
 				{filteredMods.length > 0 && (
 					<>
-						<Divider label="Mods" />
+						<Divider label={t("gameModsLabel")} />
 						{!installedGame && (
-							<Alert color="orange">
-								This game isn&apos;t installed, so I&apos;m not 100% sure which
-								mods are compatible. The ones you see below might work. If you
-								install the game, I&apos;ll show you more accurate information.
-							</Alert>
+							<Alert color="orange">{t("gameNotInstalledWarning")}</Alert>
 						)}
 						<TableContainer bg="dark">
 							<Table>
@@ -256,13 +249,13 @@ export function GameModal({ game }: Props) {
 						</TableContainer>
 						{installedGame && (
 							<CommandButton
-								confirmationText="You sure? This will delete all files in this game's mods folder. It won't delete any files from the actual game though."
+								confirmationText={t("uninstallAllModsConfirmation")}
 								onClick={() => commands.uninstallAllMods(game.id)}
 								color="red"
 								variant="light"
 								leftSection={<IconTrash />}
 							>
-								Uninstall all mods
+								{t("uninstallAllModsButton")}
 							</CommandButton>
 						)}
 					</>

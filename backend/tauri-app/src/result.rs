@@ -17,6 +17,13 @@ pub enum Error {
 	),
 
 	#[error(transparent)]
+	Io(
+		#[serde(skip)]
+		#[from]
+		std::io::Error,
+	),
+
+	#[error(transparent)]
 	SerdeJson(
 		#[serde(skip)]
 		#[from]

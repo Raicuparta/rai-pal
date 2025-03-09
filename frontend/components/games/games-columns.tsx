@@ -13,8 +13,6 @@ type GamesColumn = TableColumnBase<Game, GamesSortBy>;
 type CellProps = { readonly item: Game };
 
 const thumbnail: GamesColumn = {
-	label: "Thumbnail",
-	hideLabel: true,
 	hidable: true,
 	width: 100,
 	component: ({ item }: CellProps) => (
@@ -64,8 +62,6 @@ const providerColors: Record<ProviderId, DefaultMantineColor> = {
 } as const;
 
 const status: GamesColumn = {
-	label: "Status",
-	hideLabel: true,
 	hidable: true,
 	width: 30,
 	component: ({ item }: CellProps) => (
@@ -93,7 +89,7 @@ const status: GamesColumn = {
 };
 
 const name: GamesColumn = {
-	label: "Game",
+	localizationKey: "game",
 	sort: "Title",
 	component: ({ item }: CellProps) => (
 		<Table.Td
@@ -136,7 +132,7 @@ const engineColors: Record<EngineBrand, DefaultMantineColor> = {
 } as const;
 
 const engine: GamesColumn = {
-	label: "Engine",
+	localizationKey: "engine",
 	sort: "Engine",
 	width: 130,
 	center: true,
@@ -184,28 +180,33 @@ const engine: GamesColumn = {
 
 const dateFormatter = Intl.DateTimeFormat("default", {
 	year: "numeric",
-	month: "short",
-	day: "numeric",
+	month: "long",
+	day: "2-digit",
 });
 
 const releaseDate: GamesColumn = {
-	label: "📅",
-	width: 60,
+	localizationKey: "date",
+	width: 80,
+	center: true,
 	sort: "ReleaseDate",
 	component: ({ item }: CellProps) => {
 		const date = item.releaseDate
 			? new Date(Number(item.releaseDate) * 1000)
 			: null;
 
-		const formattedDate = date ? dateFormatter.format(date) : "-";
+		const formattedDate = date ? dateFormatter.formatToParts(date) : [];
 
 		return (
 			<Table.Td
-				ta="center"
-				fz="xs"
-				opacity={0.75}
+				p={0}
+				className={styles.dateCell}
 			>
-				{formattedDate}
+				{formattedDate.map(
+					(part) =>
+						part.type !== "literal" && (
+							<div key={`${part.type}${part.value}`}>{part.value}</div>
+						),
+				)}
 			</Table.Td>
 		);
 	},

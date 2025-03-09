@@ -2,6 +2,8 @@ import { Button, Checkbox, Stack, Tooltip } from "@mantine/core";
 import { GamesFilter } from "@api/bindings";
 import { IconRestore } from "@tabler/icons-react";
 import styles from "./filters.module.css";
+import { useLocalization } from "@hooks/use-localization";
+import { LocalizationKey } from "@localizations/localizations";
 
 export type FilterKey = keyof GamesFilter;
 export type FilterValue<TFilterKey extends FilterKey> =
@@ -20,115 +22,116 @@ type Props<TFilterKey extends keyof GamesFilter> = {
 };
 
 type ValueDetails = {
-	notes?: string;
-	display?: string;
+	noteLocalizationKey?: LocalizationKey<"filterValueNote">;
+	localizationKey?: LocalizationKey<"filterValue">;
+	staticDisplayText?: string;
 };
 
 type FilterDetails<TKey extends keyof GamesFilter> = {
-	title: string;
+	localizationKey: LocalizationKey<"filterProperty">;
 
 	// Text that shows for each filter type for the "empty value" option.
 	// If not defined, the empty option is hidden from the filter menu.
-	emptyOption?: string;
+	emptyLocalizationKey?: LocalizationKey<"filterValue">;
 
 	valueDetails: Record<NonNullable<FilterValue<TKey>>, ValueDetails>;
 };
 
 const filterDetails: { [key in keyof GamesFilter]: FilterDetails<key> } = {
 	architectures: {
-		title: "Architecture",
-		emptyOption: "Unknown",
+		localizationKey: "architecture",
+		emptyLocalizationKey: "unknown",
 		valueDetails: {
 			X64: {
-				display: "64-bit",
+				localizationKey: "arch64",
 			},
 			X86: {
-				display: "32-bit",
+				localizationKey: "arch32",
 			},
 		},
 	},
 	engines: {
-		title: "Engine",
-		emptyOption: "Unknown",
+		localizationKey: "engine",
+		emptyLocalizationKey: "unknown",
 		valueDetails: {
 			Godot: {
-				display: "Godot",
-				notes: "Rai Pal doesn't fully support Godot yet.",
+				staticDisplayText: "Godot",
+				noteLocalizationKey: "engineGodotNotFullySupported",
 			},
 			GameMaker: {
-				display: "GameMaker",
-				notes: "Rai Pal doesn't fully support GameMaker yet.",
+				staticDisplayText: "GameMaker",
+				noteLocalizationKey: "engineGameMakerNotFullySupported",
 			},
 			Unity: {
-				display: "Unity",
+				staticDisplayText: "Unity",
 			},
 			Unreal: {
-				display: "Unreal",
+				staticDisplayText: "Unreal",
 			},
 		},
 	},
 	unityScriptingBackends: {
-		title: "Unity Backend",
-		emptyOption: "Unknown",
+		localizationKey: "unityScriptingBackend",
+		emptyLocalizationKey: "unknown",
 		valueDetails: {
 			Il2Cpp: {
-				display: "IL2CPP",
+				staticDisplayText: "IL2CPP",
 			},
 			Mono: {
-				display: "Mono",
+				staticDisplayText: "Mono",
 			},
 		},
 	},
 	tags: {
-		title: "Tags",
-		emptyOption: "Untagged",
+		localizationKey: "tags",
+		emptyLocalizationKey: "tagUntagged",
 		valueDetails: {
 			Demo: {
-				display: "Demo",
+				localizationKey: "tagDemo",
 			},
 			VR: {
-				display: "Native VR",
+				localizationKey: "tagVr",
 			},
 		},
 	},
 	installed: {
-		title: "Status",
+		localizationKey: "status",
 		valueDetails: {
 			Installed: {
-				display: "Installed",
+				localizationKey: "statusInstalled",
 			},
 			NotInstalled: {
-				display: "Not Installed",
+				localizationKey: "statusNotInstalled",
 			},
 		},
 	},
 	providers: {
-		title: "Provider",
+		localizationKey: "provider",
 		valueDetails: {
 			Ea: {
-				display: "EA",
+				staticDisplayText: "EA",
 			},
 			Epic: {
-				display: "Epic",
+				staticDisplayText: "Epic",
 			},
 			Gog: {
-				display: "GOG",
+				staticDisplayText: "GOG",
 			},
 			Itch: {
-				display: "Itch.io",
+				staticDisplayText: "itch.io",
 			},
 			Manual: {
-				display: "Manual",
+				localizationKey: "providerManual",
 			},
 			Steam: {
-				display: "Steam",
+				staticDisplayText: "Steam",
 			},
 			Ubisoft: {
-				display: "Ubisoft",
+				staticDisplayText: "Ubisoft",
 			},
 			Xbox: {
-				display: "Xbox",
-				notes: "Xbox PC games only show on Rai Pal once they're installed.",
+				staticDisplayText: "Xbox",
+				noteLocalizationKey: "providerXboxOnlyInstalled",
 			},
 		},
 	},
@@ -140,6 +143,11 @@ export function FilterSelect<TFilterKey extends FilterKey>({
 	currentValues,
 	onChange,
 }: Props<TFilterKey>) {
+	const tMenu = useLocalization("filterMenu");
+	const tProperty = useLocalization("filterProperty");
+	const tValue = useLocalization("filterValue");
+	const tValueNote = useLocalization("filterValueNote");
+
 	function handleFilterClick(id: TFilterKey, value: string | null) {
 		const newValues = [...currentValues];
 		const index = newValues.indexOf(value as FilterValue<TFilterKey>);
@@ -159,7 +167,7 @@ export function FilterSelect<TFilterKey extends FilterKey>({
 	return (
 		<Stack gap="xs">
 			<Button.Group orientation="vertical">
-				<Button disabled>{filterDetails[id].title}</Button>
+				<Button disabled>{tProperty(filterDetails[id].localizationKey)}</Button>
 				{possibleValues.map((possibleValue) => {
 					const valueDetails =
 						possibleValue !== null
@@ -168,8 +176,8 @@ export function FilterSelect<TFilterKey extends FilterKey>({
 					return (
 						<Tooltip
 							key={possibleValue}
-							label={valueDetails?.notes}
-							disabled={!valueDetails?.notes}
+							label={tValueNote(valueDetails?.noteLocalizationKey)}
+							disabled={!valueDetails?.noteLocalizationKey}
 						>
 							<Button
 								fullWidth
@@ -184,10 +192,12 @@ export function FilterSelect<TFilterKey extends FilterKey>({
 								}
 								onClick={() => handleFilterClick(id, possibleValue)}
 							>
-								{valueDetails?.display ??
-									filterDetails[id].emptyOption ??
-									possibleValue}
-								{valueDetails?.notes && " *"}
+								{possibleValue === null
+									? tValue(filterDetails[id].emptyLocalizationKey)
+									: (valueDetails?.staticDisplayText ??
+										tValue(valueDetails?.localizationKey) ??
+										possibleValue)}
+								{valueDetails?.noteLocalizationKey && " *"}
 							</Button>
 						</Tooltip>
 					);
@@ -198,7 +208,7 @@ export function FilterSelect<TFilterKey extends FilterKey>({
 				leftSection={<IconRestore fontSize={10} />}
 				disabled={(currentValues?.length || 0) === possibleValues.length}
 			>
-				Reset
+				{tMenu("resetButton")}
 			</Button>
 		</Stack>
 	);

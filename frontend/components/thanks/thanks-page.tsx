@@ -20,6 +20,7 @@ import {
 import { ThanksLinkButton } from "./thanks-link-button";
 import { usePatrons } from "@hooks/use-patrons";
 import styles from "./thanks.module.css";
+import { useLocalization } from "@hooks/use-localization";
 
 function getRankingEmoji(ranking: number) {
 	if (ranking == 1) return "🥇";
@@ -36,6 +37,7 @@ function getRankingColor(ranking: number): MantineColor {
 }
 
 export function ThanksPage() {
+	const t = useLocalization("thanksPage");
 	const patrons = usePatrons();
 
 	return (
@@ -72,13 +74,7 @@ export function ThanksPage() {
 								</Text>
 							</Stack>
 							<Stack flex={4}>
-								<Text>
-									Hello. I made Rai Pal. I also made other VR mods in the past,
-									and am currently working on a universal VR mod for Unity
-									games. If you like what I do, and would like to see more,
-									please consider donating! You can also support me by buying
-									one of my free mods on itch.io.
-								</Text>
+								<Text>{t("intro")}</Text>
 							</Stack>
 						</Group>
 						<Group>
@@ -87,7 +83,7 @@ export function ThanksPage() {
 								href="https://github.com/raicuparta/rai-pal"
 								leftSection={<IconBrandGithubFilled />}
 							>
-								Star Rai Pal on GitHub
+								{t("starRaiPalOnGitHub")}
 							</ThanksLinkButton>
 							<ThanksLinkButton
 								href="https://raicuparta.com"
@@ -132,14 +128,9 @@ export function ThanksPage() {
 								fw={500}
 								size="xl"
 							>
-								Other modders
+								{t("otherModdersTitle")}
 							</Text>
-							<Text>
-								Rai Pal is meant to help you manage game modding, and we
-								can&apos;t do that without the tools that other developers have
-								created. Some of these people don&apos;t have donation links,
-								but I&apos;m extremely grateful for their work.
-							</Text>
+							<Text>{t("otherModdersDescription")}</Text>
 						</Stack>
 						<Stack>
 							<ThanksLinkButton
@@ -147,35 +138,50 @@ export function ThanksPage() {
 								color="pink"
 								leftSection={<IconBrandPatreonFilled />}
 							>
-								praydog on Patreon
+								{t("modderOnWebsite", {
+									modderName: "praydog",
+									website: "Patreon",
+								})}
 							</ThanksLinkButton>
 							<ThanksLinkButton
 								href="https://github.com/BepInEx"
 								color="blue"
 								leftSection={<IconBrandGithubFilled />}
 							>
-								BepInEx on GitHub
+								{t("modderOnWebsite", {
+									modderName: "BepInEx",
+									website: "GitHub",
+								})}
 							</ThanksLinkButton>
 							<ThanksLinkButton
 								href="https://www.patreon.com/pardeike"
 								color="pink"
 								leftSection={<IconBrandPatreonFilled />}
 							>
-								Andreas Pardeike on Patreon
+								{t("modderOnWebsite", {
+									modderName: "Andreas Pardeike",
+									website: "Patreon",
+								})}
 							</ThanksLinkButton>
 							<ThanksLinkButton
 								href="https://github.com/sinai-dev"
 								color="blue"
 								leftSection={<IconBrandGithubFilled />}
 							>
-								sinai on GitHub
+								{t("modderOnWebsite", {
+									modderName: "sinai",
+									website: "GitHub",
+								})}
 							</ThanksLinkButton>
 							<ThanksLinkButton
 								href="https://www.patreon.com/ManlyMarco"
 								color="pink"
 								leftSection={<IconBrandPatreonFilled />}
 							>
-								ManlyMarco on Patreon
+								{t("modderOnWebsite", {
+									modderName: "ManlyMarco",
+									website: "Patreon",
+								})}
 							</ThanksLinkButton>
 						</Stack>
 					</Stack>
@@ -193,10 +199,9 @@ export function ThanksPage() {
 								color="pink"
 								flex={1}
 							>
-								<Stack gap={0}>
-									<div>Patreon</div>
-									<div>Leaderboard</div>
-								</Stack>
+								<Box style={{ textWrap: "wrap" }}>
+									{t("patreonLeaderboard")}
+								</Box>
 								<Box
 									pos="absolute"
 									right={0}
@@ -206,11 +211,8 @@ export function ThanksPage() {
 										ta="center"
 										label={
 											<>
-												<Text>Ranked by total lifetime donation amount.</Text>
-												<Text>
-													If you don&apos;t see yourself here, it&apos;s because
-													your Patreon profile is private.
-												</Text>
+												<Text>{t("rankedByPatreonDonationAmount")}</Text>
+												<Text>{t("patreonProfilePrivateNotice")}</Text>
 											</>
 										}
 									>

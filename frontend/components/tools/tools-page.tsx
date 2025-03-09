@@ -1,11 +1,15 @@
-import { Button, Container, Stack, Tooltip } from "@mantine/core";
+import { Button, Container, Divider, Stack, Tooltip } from "@mantine/core";
 import { resetLocalStorage } from "@util/local-storage";
 import { IconFolderCode, IconRotateDot, IconTrash } from "@tabler/icons-react";
 import { CommandButton } from "@components/command-button";
 import { commands } from "@api/bindings";
 import { SteamCacheButton } from "./steam-cache-button";
+import { useLocalization } from "@hooks/use-localization";
+import { AppSettings } from "./app-settings";
 
 export function ToolsPage() {
+	const t = useLocalization("toolsPage");
+
 	return (
 		<Container size="xs">
 			<Stack>
@@ -14,31 +18,33 @@ export function ToolsPage() {
 					leftSection={<IconFolderCode />}
 					justify="center"
 				>
-					Open Logs Folder
+					{t("openLogsFolderButton")}
 				</CommandButton>
 				<Tooltip
-					label="Will reset filters, confirmation dialogs, probably other stuff."
+					label={t("resetRaiPalSettingsTooltip")}
 					position="bottom"
 				>
 					<Button
 						onClick={resetLocalStorage}
 						leftSection={<IconRotateDot />}
 					>
-						Reset Rai Pal settings
+						{t("resetRaiPalSettingsButton")}
 					</Button>
 				</Tooltip>
 				<Tooltip
-					label="Clears the game list cache used by Rai Pal."
+					label={t("clearCacheTooltip")}
 					position="bottom"
 				>
 					<CommandButton
 						onClick={commands.clearCache}
 						leftSection={<IconTrash />}
 					>
-						Reset Rai Pal cache
+						{t("clearCacheButton")}
 					</CommandButton>
 				</Tooltip>
 				<SteamCacheButton />
+				<Divider />
+				<AppSettings />
 			</Stack>
 		</Container>
 	);

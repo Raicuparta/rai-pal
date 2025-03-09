@@ -7,6 +7,7 @@ import { GameModal } from "./game-modal";
 import { ItemProps } from "react-virtuoso";
 import { Game, GameId } from "@api/bindings";
 import { gamesColumns } from "./games-columns";
+import { useAppSettings } from "@hooks/use-app-settings";
 
 // Needs to be consistent with height set in table.module.css ugh. TODO: fix that.
 export const gameRowHeight = 60;
@@ -42,12 +43,14 @@ export const GameRowInner = React.forwardRef(function GameRowInner(
 	props: Props,
 	ref: React.ForwardedRef<HTMLTableRowElement>,
 ) {
+	const [settings] = useAppSettings();
+
 	return (
 		<Table.Tr
 			ref={ref}
 			onClick={props.onClick}
 		>
-			{gamesColumns.map((column) => (
+			{gamesColumns.map((column) => (!settings.hideGameThumbnails || column.id !== "thumbnail") && (
 				<React.Fragment key={column.id}>
 					<column.component item={props.game} />
 				</React.Fragment>

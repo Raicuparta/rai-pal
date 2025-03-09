@@ -1,3 +1,4 @@
+import { useLocalization } from "@hooks/use-localization";
 import { CloseButton, Input } from "@mantine/core";
 
 type Props = {
@@ -6,16 +7,16 @@ type Props = {
 };
 
 export function SearchInput(props: Props) {
+	const t = useLocalization("filterMenu");
 	return (
 		<Input
 			onChange={(event) => props.onChange(event.target.value)}
-			placeholder="Search"
+			placeholder={t("searchPlaceholder")}
 			style={{ flex: 1 }}
 			value={props.value}
 			rightSectionPointerEvents="all"
 			rightSection={
 				<CloseButton
-					aria-label="Reset search field"
 					onClick={() => props.onChange("")}
 					style={{ display: props.value ? undefined : "none" }}
 				/>

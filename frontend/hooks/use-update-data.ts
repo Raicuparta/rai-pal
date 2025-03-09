@@ -108,7 +108,7 @@ export function useUpdateData(executeOnMount = false) {
 	}, [setLoading]);
 
 	useEffect(() => {
-		if (executeOnMount) {
+		if (executeOnMount && fetchCount.current === 0) {
 			updateAppData();
 		}
 	}, [executeOnMount, updateAppData]);
