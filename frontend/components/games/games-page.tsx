@@ -76,7 +76,7 @@ export function GamesPage() {
 					overscan={50}
 					increaseViewportBy={100}
 					computeItemKey={(index) =>
-						`${gameData.gameIds[index].providerId}${gameData.gameIds[index].gameId}`
+						`${gameData.gameIds[index]?.providerId}${gameData.gameIds[index]?.gameId}`
 					}
 				/>
 			</TableContainer>

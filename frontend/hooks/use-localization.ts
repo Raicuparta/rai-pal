@@ -47,19 +47,20 @@ function doFunnyWario(localization: string): string {
 	const wahTextParts: string[] = [];
 	const textParts = localization.split(" ");
 	for (let i = 0; i < textParts.length; i++) {
-		const isParam = textParts[i].includes("{") || textParts[i].includes("}");
+		const textPart = textParts[i];
+		if (!textPart) continue;
+		const isParam = textPart.includes("{") || textPart.includes("}");
 
-		if (isParam || textParts[i].length < 3) {
-			wahTextParts.push(textParts[i]);
+		if (isParam || textPart.length < 3) {
+			wahTextParts.push(textPart);
 			continue;
 		}
 
 		const start = i === 0 ? "W" : "w";
 		const end = i < textParts.length - 1 ? "h" : "h!";
-		const middle = Array.from(
-			{ length: textParts[i].length - 2 },
-			() => "a",
-		).join("");
+		const middle = Array.from({ length: textPart.length - 2 }, () => "a").join(
+			"",
+		);
 
 		wahTextParts.push(`${start}${middle}${end}`);
 	}
