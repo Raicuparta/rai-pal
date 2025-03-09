@@ -59,5 +59,15 @@ export const theme: MantineThemeOverride = {
 				openDelay: 200,
 			},
 		},
+		Menu: {
+			defaultProps: {
+				shadow: "md",
+			},
+		},
+		Popover: {
+			defaultProps: {
+				shadow: "md",
+			},
+		},
 	},
 };
