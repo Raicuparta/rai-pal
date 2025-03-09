@@ -15,9 +15,8 @@ import { ItemName } from "@components/item-name";
 import { getModTitle } from "@util/game-mod";
 import { DeprecatedBadge } from "./deprecated-badge";
 import { useLocalization } from "@hooks/use-localization";
-import React from "react";
 
-export const ModsPage = React.memo(function ModsPage() {
+export function ModsPage() {
 	const t = useLocalization("modsPage");
 	const [selectedModId, setSelectedId] = useState<string>();
 
@@ -129,4 +128,4 @@ export const ModsPage = React.memo(function ModsPage() {
 			</TableContainer>
 		</Stack>
 	);
-});
+}

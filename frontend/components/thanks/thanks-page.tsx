@@ -37,7 +37,7 @@ function getRankingColor(ranking: number): MantineColor {
 	return "dark";
 }
 
-export const ThanksPage = React.memo(function ThanksPage() {
+export function ThanksPage() {
 	const t = useLocalization("thanksPage");
 	const patrons = usePatrons();
 
@@ -264,4 +264,4 @@ export const ThanksPage = React.memo(function ThanksPage() {
 			</Group>
 		</Container>
 	);
-});
+}
