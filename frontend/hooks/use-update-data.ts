@@ -1,4 +1,4 @@
-import { useCallback, useDeferredValue, useEffect, useRef } from "react";
+import { useDeferredValue, useEffect, useRef } from "react";
 import { useSetAtom } from "jotai";
 import { commands, Result, Error } from "@api/bindings";
 import { loadingTasksAtom, gameDataAtom } from "./use-data";
@@ -16,7 +16,7 @@ export function useUpdateData(executeOnMount = false) {
 	const loadingTaskCount = useRef(0);
 	const hasExecutedOnMount = useRef(false);
 
-	const updateProviderGames = useCallback(() => {
+	const updateProviderGames = () => {
 		fetchCount.current++;
 		const thisFetchCount = fetchCount.current;
 		commands.getGameIds(deferredGamesQuery).then((result) => {
@@ -35,7 +35,7 @@ export function useUpdateData(executeOnMount = false) {
 
 			return true;
 		});
-	}, [deferredGamesQuery, setGameData]);
+	};
 
 	const throttledUpdateProviderGames = useThrottledCallback(
 		updateProviderGames,
@@ -48,7 +48,7 @@ export function useUpdateData(executeOnMount = false) {
 
 	useAppEvent("gamesChanged", "update-data", throttledUpdateProviderGames);
 
-	const updateAppData = useCallback(async () => {
+	const updateAppData = async () => {
 		const providerIds = await commands
 			.getProviderIds()
 			.then((providerIdsResult) => {
@@ -106,7 +106,7 @@ export function useUpdateData(executeOnMount = false) {
 
 		handleDataPromise(commands.refreshMods(), "mods");
 		handleDataPromise(commands.refreshRemoteGames(), "remote data");
-	}, [setLoading]);
+	};
 
 	useEffect(() => {
 		if (executeOnMount && !hasExecutedOnMount.current) {

@@ -1,6 +1,5 @@
 import { Tabs, Container, Stack } from "@mantine/core";
 import { Page, PageTab } from "@components/page-tab";
-import { useCallback } from "react";
 import { usePersistedState } from "@hooks/use-persisted-state";
 import { IconBox, IconDeviceGamepad } from "@tabler/icons-react";
 import { GamesPage } from "./games/games-page";
@@ -35,13 +34,10 @@ export function AppTabs() {
 		"selected-app-tab",
 	);
 
-	const handleTabChange = useCallback(
-		(pageId: string | null) => {
-			if (pageId === null || !(pageId in pages)) return;
-			setSelectedTab(pageId);
-		},
-		[setSelectedTab],
-	);
+	const handleTabChange = (pageId: string | null) => {
+		if (pageId === null || !(pageId in pages)) return;
+		setSelectedTab(pageId);
+	};
 
 	const gamesCountLabel =
 		gamesData.gameIds.length === Number(gamesData.totalCount)

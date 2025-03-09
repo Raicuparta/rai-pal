@@ -1,5 +1,4 @@
 import { TableColumn, TableHead } from "@components/table/table-head";
-import { useCallback } from "react";
 import { GamesSortBy } from "@api/bindings";
 
 export function useVirtuosoHeaderContent<TKey extends string, TItem, TSort>(
@@ -8,15 +7,14 @@ export function useVirtuosoHeaderContent<TKey extends string, TItem, TSort>(
 	sort?: GamesSortBy,
 	sortDescending?: boolean,
 ) {
-	return useCallback(
-		() => (
-			<TableHead
-				columns={columns}
-				onChangeSort={onChangeSort}
-				sortBy={sort}
-				sortDescending={sortDescending}
-			/>
-		),
-		[columns, onChangeSort, sort, sortDescending],
+	const VirtuosoHeaderContent = () => (
+		<TableHead
+			columns={columns}
+			onChangeSort={onChangeSort}
+			sortBy={sort}
+			sortDescending={sortDescending}
+		/>
 	);
+
+	return VirtuosoHeaderContent;
 }

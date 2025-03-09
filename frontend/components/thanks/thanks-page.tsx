@@ -21,7 +21,6 @@ import { ThanksLinkButton } from "./thanks-link-button";
 import { usePatrons } from "@hooks/use-patrons";
 import styles from "./thanks.module.css";
 import { useLocalization } from "@hooks/use-localization";
-import React from "react";
 
 function getRankingEmoji(ranking: number) {
 	if (ranking == 1) return "🥇";

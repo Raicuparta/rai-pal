@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
 	getLocalStorage,
 	listenToStorageChange,
@@ -36,19 +36,18 @@ export function usePersistedState<TState>(defaultState: TState, key?: string) {
 		};
 	}, [defaultState, key]);
 
-	const setPersistedState = useCallback(
-		(stateSetParam: TState | ((previousState: TState) => TState)) => {
-			if (!key) return;
+	const setPersistedState = (
+		stateSetParam: TState | ((previousState: TState) => TState),
+	) => {
+		if (!key) return;
 
-			const newState =
-				typeof stateSetParam === "function"
-					? (stateSetParam as (newState: TState) => TState)(state)
-					: (stateSetParam as TState);
+		const newState =
+			typeof stateSetParam === "function"
+				? (stateSetParam as (newState: TState) => TState)(state)
+				: (stateSetParam as TState);
 
-			setLocalStorage(key, newState);
-		},
-		[key, state],
-	);
+		setLocalStorage(key, newState);
+	};
 
 	return [state, setPersistedState] as const;
 }

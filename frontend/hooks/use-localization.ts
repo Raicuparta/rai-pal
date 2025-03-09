@@ -7,7 +7,7 @@ import {
 } from "@localizations/localizations";
 import { AppLocale } from "@api/bindings";
 import { atom, useAtom } from "jotai";
-import { useEffect, useCallback } from "react";
+import { useEffect } from "react";
 import { locale } from "@tauri-apps/plugin-os";
 import { useAppSettings } from "./use-app-settings";
 
@@ -154,21 +154,18 @@ export function useLocalization<TCategory extends LocalizationCategory>(
 		}
 	}, [detectedLocale, setDetectedLocale]);
 
-	return useCallback(
-		<TKey extends LocalizationKey<TCategory>>(
-			key?: TKey,
-			...args: LocalizationFunctionArgs<BaseLocalization[TCategory][TKey]>
-		) => {
-			if (!key) return undefined;
+	return function <TKey extends LocalizationKey<TCategory>>(
+		key?: TKey,
+		...args: LocalizationFunctionArgs<BaseLocalization[TCategory][TKey]>
+	) {
+		if (!key) return undefined;
 
-			return getLocalizedText(
-				localizations[effectiveLocale],
-				category,
-				key,
-				effectiveLocale === "WaWa",
-				...args,
-			);
-		},
-		[effectiveLocale, category],
-	);
+		return getLocalizedText(
+			localizations[effectiveLocale],
+			category,
+			key,
+			effectiveLocale === "WaWa",
+			...args,
+		);
+	};
 }

@@ -3,26 +3,17 @@ import { CommandButton } from "@components/command-button";
 import { useLocalization } from "@hooks/use-localization";
 import { Flex, Menu, Modal, Stack } from "@mantine/core";
 import { IconBrandSteam, IconHammer } from "@tabler/icons-react";
-import { useCallback, useState } from "react";
+import { useState } from "react";
 
 export function SteamCacheButton() {
 	const t = useLocalization("steamCache");
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [showSteamRestartPrompt, setShowSteamRestartPrompt] = useState(false);
 
-	const handleOpen = useCallback(() => {
-		setIsModalOpen(true);
-	}, []);
-
-	const handleClose = useCallback(() => {
-		setIsModalOpen(false);
-		setShowSteamRestartPrompt(false);
-	}, []);
-
 	return (
 		<>
 			<Menu.Item
-				onClick={handleOpen}
+				onClick={() => setIsModalOpen(true)}
 				leftSection={<IconBrandSteam />}
 			>
 				{t("resetSteamCacheButtonOpenModal")}
@@ -30,7 +21,10 @@ export function SteamCacheButton() {
 			<Modal
 				centered
 				opened={isModalOpen}
-				onClose={handleClose}
+				onClose={() => {
+					setIsModalOpen(false);
+					setShowSteamRestartPrompt(false);
+				}}
 				title={t("resetSteamCacheModalTitle")}
 			>
 				<Stack>

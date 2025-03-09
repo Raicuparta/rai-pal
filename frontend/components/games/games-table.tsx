@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { GamesSortBy } from "@api/bindings";
 import { useAtomValue } from "jotai";
 import { gameDataAtom } from "@hooks/use-data";
@@ -16,18 +16,15 @@ export function GamesTable() {
 	const [dataQuery, setDataQuery] = useDataQuery();
 	const tableRef = useRef<TableVirtuosoHandle>(null);
 
-	const onChangeSort = useCallback(
-		(sortBy: GamesSortBy) => {
-			const sortDescending =
-				sortBy === dataQuery?.sortBy && !dataQuery?.sortDescending;
+	const onChangeSort = (sortBy: GamesSortBy) => {
+		const sortDescending =
+			sortBy === dataQuery?.sortBy && !dataQuery?.sortDescending;
 
-			setDataQuery({
-				sortBy,
-				sortDescending,
-			});
-		},
-		[dataQuery, setDataQuery],
-	);
+		setDataQuery({
+			sortBy,
+			sortDescending,
+		});
+	};
 
 	const renderHeaders = useVirtuosoHeaderContent(
 		gamesColumns,

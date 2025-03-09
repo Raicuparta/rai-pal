@@ -24,7 +24,6 @@ import {
 import { UnifiedMod } from "@hooks/use-unified-mods";
 import { getIsOutdated } from "@util/is-outdated";
 import { OutdatedMarker } from "@components/outdated-marker";
-import { useCallback } from "react";
 import { ItemName } from "@components/item-name";
 import { MutedText } from "@components/muted-text";
 import { ModVersionBadge } from "@components/mods/mod-version-badge";
@@ -55,7 +54,7 @@ export function GameModRow({ game, mod, modLoader }: Props) {
 	const isInstalled = Boolean(installedVersion);
 	const isReadyRunnable = mod.local && modLoader.kind == "Runnable";
 
-	const handleInstallClick = useCallback(async () => {
+	const handleInstallClick = async () => {
 		if (modLoader.kind === "Runnable" && !mod.local && !mod.remote) {
 			return commands.openModFolder(mod.common.id);
 		}
@@ -70,25 +69,7 @@ export function GameModRow({ game, mod, modLoader }: Props) {
 		}
 
 		return commands.installMod(game.id, mod.common.id);
-	}, [
-		modLoader.kind,
-		mod.local,
-		mod.remote,
-		mod.common.id,
-		game,
-		isLocalModOutdated,
-		isInstalled,
-		isInstalledModOutdated,
-	]);
-
-	const handleConfigureClick = useCallback(() => {
-		commands.configureMod(game.id, mod.common.id);
-	}, [game, mod.common.id]);
-
-	const handleOpenModFolderClick = useCallback(() => {
-		commands.openInstalledModFolder(game.id, mod.common.id);
-	}, [game, mod.common.id]);
-
+	};
 	const { actionText, actionIcon } = (() => {
 		if (isLocalModOutdated || isInstalledModOutdated) {
 			return { actionText: "Update", actionIcon: <IconRefreshAlert /> };
@@ -181,14 +162,16 @@ export function GameModRow({ game, mod, modLoader }: Props) {
 							<CommandDropdown icon={<IconDotsVertical />}>
 								<Button
 									disabled={!isInstalled && !isReadyRunnable}
-									onClick={handleConfigureClick}
+									onClick={() => commands.configureMod(game.id, mod.common.id)}
 									leftSection={<IconSettings />}
 								>
 									Mod Settings
 								</Button>
 								<Button
 									disabled={!isInstalled && !isReadyRunnable}
-									onClick={handleOpenModFolderClick}
+									onClick={() =>
+										commands.openInstalledModFolder(game.id, mod.common.id)
+									}
 									leftSection={<IconFolderOpen />}
 								>
 									Open Mod Folder

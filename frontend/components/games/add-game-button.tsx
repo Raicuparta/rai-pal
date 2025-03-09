@@ -1,6 +1,6 @@
 import { Button, Group, Modal, Stack, Text } from "@mantine/core";
 import { IconAppWindowFilled, IconPlaylistAdd } from "@tabler/icons-react";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { commands } from "@api/bindings";
 import { open as openDialog } from "@tauri-apps/plugin-dialog";
 import { useAtomValue } from "jotai";
@@ -15,7 +15,7 @@ export function AddGame() {
 
 	const [executeAddGame] = useAsyncCommand(commands.addGame);
 
-	const handleClick = useCallback(async () => {
+	const handleClick = async () => {
 		const path = await openDialog({
 			multiple: false,
 			title: "Select the game executable",
@@ -33,7 +33,7 @@ export function AddGame() {
 		if (!path) return;
 
 		await executeAddGame(path).then(() => setIsOpen(false));
-	}, [executeAddGame]);
+	};
 
 	useEffect(() => {
 		if (isLoading) setIsOpen(false);
