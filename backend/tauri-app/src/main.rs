@@ -3,6 +3,7 @@
 // Command stuff needs to be async so I can spawn tasks.
 #![allow(clippy::unused_async)]
 
+use std::collections::HashSet;
 use std::sync::RwLock;
 use std::{collections::HashMap, path::PathBuf};
 
@@ -452,35 +453,59 @@ async fn refresh_mods(handle: AppHandle) -> Result {
 async fn refresh_remote_games(handle: AppHandle) -> Result {
 	let state = handle.app_state();
 	let remote_games = remote_game::get().await?;
+	let manual_remote_games = remote_games.get(&ProviderId::Manual);
 
 	state
 		.games
 		.iter()
-		.for_each(|(_provider_id, provider_games)| {
-			match provider_games.write_state() {
-				Ok(mut provider_games_write) => {
-					provider_games_write.iter_mut().for_each(|(_, game)| {
-						// Assign remote game to any existing game.
-						// This is for when the remote games are fetched *after* games are found locally.
-						game.remote_game = remote_games
-							.get(&game.id.provider_id)
-							.and_then(|provider_remote_games| {
-								provider_remote_games.get(&game.external_id)
-							})
-							.or_else(|| {
-								remote_games.get(&ProviderId::Manual).and_then(
-									|provider_remote_games| {
+		.for_each(|(provider_id, provider_games)| {
+			if let Some(provider_remote_games) =
+				remote_games.get(provider_id).or(manual_remote_games)
+			{
+				match provider_games.write_state() {
+					Ok(mut provider_games_write) => {
+						provider_games_write.iter_mut().for_each(|(_, game)| {
+							// Assign remote game to any existing game.
+							// This is for when the remote games are fetched *after* games are found locally.
+							game.remote_game = provider_remote_games
+								.get(&game.external_id)
+								.or_else(|| {
+									manual_remote_games.and_then(|provider_remote_games| {
+										// TODO also use other title normalizations.
 										game.title.normalized.first().and_then(|normalized_title| {
 											provider_remote_games.get(normalized_title)
 										})
-									},
-								)
-							})
-							.cloned()
-					})
-				}
-				Err(err) => {
-					log::error!("Failed to write provider games state: {err}");
+									})
+								})
+								.cloned()
+						});
+
+						provider_remote_games.values().for_each(|remote_game| {
+							if let Some(subscriptions) = remote_game.subscriptions.as_ref() {
+								if let Some(remote_game_title) = remote_game.title.as_ref() {
+									if let Some(ids) = remote_game.ids.get(provider_id) {
+										ids.iter().for_each(|remote_game_id| {
+											let game_id = GameId {
+												game_id: remote_game_id.clone(),
+												provider_id: *provider_id,
+											};
+
+											let mut game = Game::new(game_id, remote_game_title);
+											game.from_subscriptions = subscriptions.clone();
+											game.remote_game = Some(remote_game.clone());
+
+											provider_games_write
+												.insert(remote_game_id.clone(), game);
+										});
+									}
+								}
+							}
+						});
+					}
+
+					Err(err) => {
+						log::error!("Failed to write provider games state: {err}");
+					}
 				}
 			}
 		});

@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use lazy_regex::regex;
 use rai_pal_proc_macros::serializable_struct;
@@ -29,7 +29,7 @@ struct GameDatabaseEntry {
 	pub title: Option<String>,
 	pub engines: Option<Vec<GameDatabaseEngineVersion>>,
 	pub ids: Option<HashMap<ProviderId, Vec<String>>>,
-	pub subscriptions: Option<Vec<GameSubscription>>,
+	pub subscriptions: Option<HashSet<GameSubscription>>,
 }
 
 #[serializable_struct]
@@ -37,7 +37,7 @@ pub struct RemoteGame {
 	pub title: Option<String>,
 	pub engine: Option<GameEngine>,
 	pub ids: HashMap<ProviderId, Vec<String>>,
-	pub subscriptions: Option<Vec<GameSubscription>>,
+	pub subscriptions: Option<HashSet<GameSubscription>>,
 }
 
 fn engine_brand_from_string(brand: &str) -> Option<EngineBrand> {
