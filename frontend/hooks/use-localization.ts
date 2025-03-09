@@ -83,7 +83,7 @@ function getLocalizedText<
 	}
 
 	const params = args[0];
-	let localization = language[category][key];
+	let localization = language[category]?.[key];
 
 	if (localization === undefined) {
 		console.error(`Missing localization for key: ${key}`);
