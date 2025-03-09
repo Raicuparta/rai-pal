@@ -1,3 +1,10 @@
+// This is the source of truth for translations.
+// All other translations need to match the keys in this one, and must have the same arguments too.
+// Comments are included here to give context to each string, which is especially useful for evil AI translations.
+
+// When significantly changing the meaning of a string, it's best to also change its localization key.
+// This way we can ensure that all translations get updated to reflect the new meaning.
+
 export const enUs = {
 	meta: {
 		nativeName: "English (US)",
@@ -96,8 +103,10 @@ export const enUs = {
 
 	// Some filter values show extra notes when the user hovers that value.
 	filterValueNote: {
-		providerXboxOnlyInstalled:
-			"Xbox PC games only show on Rai Pal once they're installed.",
+		providerXboxOnlyInstalledAndSubscription:
+			"Only shows PC Xbox games if they're installed, or if you own them as part of the PC Game Pass subscription.",
+		providerUbisoftOnlySubscription:
+			"Only shows Ubisoft games if you own them as part of the Ubisoft+ subscription.",
 		engineGodotNotFullySupported: "Godot games are not fully supported yet.",
 		engineGameMakerNotFullySupported:
 			"GameMaker games are not fully supported yet.",
