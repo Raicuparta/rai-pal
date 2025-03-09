@@ -1,8 +1,8 @@
 import { commands } from "@api/bindings";
 import { CommandButton } from "@components/command-button";
 import { useLocalization } from "@hooks/use-localization";
-import { Button, Flex, Modal, Stack } from "@mantine/core";
-import { IconHammer } from "@tabler/icons-react";
+import { Flex, Menu, Modal, Stack } from "@mantine/core";
+import { IconBrandSteam, IconHammer } from "@tabler/icons-react";
 import { useCallback, useState } from "react";
 
 export function SteamCacheButton() {
@@ -21,12 +21,12 @@ export function SteamCacheButton() {
 
 	return (
 		<>
-			<Button
+			<Menu.Item
 				onClick={handleOpen}
-				leftSection={<IconHammer />}
+				leftSection={<IconBrandSteam />}
 			>
-				{t("resetSteamCacheButton")}
-			</Button>
+				{t("resetSteamCacheButtonOpenModal")}
+			</Menu.Item>
 			<Modal
 				centered
 				opened={isModalOpen}
@@ -40,8 +40,9 @@ export function SteamCacheButton() {
 							onClick={commands.resetSteamCache}
 							onSuccess={() => setShowSteamRestartPrompt(true)}
 							leftSection={<IconHammer />}
+							confirmationText={t("resetSteamCacheDescription")}
 						>
-							{t("resetSteamCacheButton")}
+							{t("resetSteamCacheButtonOpenModal")}
 						</CommandButton>
 					</Flex>
 					{showSteamRestartPrompt && <span>{t("resetSteamCacheSuccess")}</span>}

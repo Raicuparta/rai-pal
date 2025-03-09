@@ -16,9 +16,6 @@ export const enUs = {
 		// Name of the tab that shows all the available mods.
 		mods: "Mods",
 
-		// Name of the tab that shows tools and settings.
-		tools: "Tools",
-
 		// Name of the tab that shows credits and donation links.
 		thanks: "Thanks",
 	},
@@ -254,26 +251,8 @@ export const enUs = {
 		byAuthor: "by {authorName}",
 	},
 
-	// Page that shows tools and settings.
-	toolsPage: {
-		// Button for opening the folder where Rai Pal stores its debug logs.
-		openLogsFolderButton: "Open Logs Folder",
-
-		// Button for resetting Rai Pal's settings.
-		resetRaiPalSettingsButton: "Reset Rai Pal settings",
-
-		// Tooltip for the button that resets Rai Pal's settings.
-		resetRaiPalSettingsTooltip:
-			"Will reset filters, confirmation dialogs, probably other stuff.",
-
-		// Button for clearing Rai Pal's local game database cache.
-		clearCacheButton: "Clear Rai Pal cache",
-
-		// Tooltip for the button that clears Rai Pal's local game database cache.
-		clearCacheTooltip: "Clears the game list cache used by Rai Pal.",
-	},
-
-	appSettings: {
+	// Text in the dropdown menu for tools and settings.
+	appDropdownMenu: {
 		// Checkbox label that toggles showing thumbnails on the game list.
 		showGameThumbnails: "Show game thumbnails on list",
 
@@ -282,12 +261,28 @@ export const enUs = {
 
 		// Display name for the language option that automatically detects the user's language.
 		autoDetectedLanguage: "Auto-detected - {languageName}",
+
+		// Button for resetting Rai Pal's settings.
+		resetRaiPalSettingsButton: "Reset Rai Pal settings",
+
+		// Tooltip for the button that resets Rai Pal's settings.
+		resetRaiPalSettingsTooltip:
+			"Will reset filters, confirmation dialogs, probably other stuff.",
+
+		// Button for opening the folder where Rai Pal stores its debug logs.
+		openLogsFolderButton: "Open Logs Folder",
+
+		// Button for clearing Rai Pal's local game database cache. The ellipsis indicates that a modal will open.
+		clearRaiPalCacheOpenModal: "Clear Rai Pal cache...",
+
+		// Tooltip for the button that clears Rai Pal's local game database cache.
+		clearRaiPalCacheTooltip: "Clears the game list cache used by Rai Pal.",
 	},
 
 	// Button and modal for resetting Steam's cache.
 	steamCache: {
-		// Button for resetting Steam's cache.
-		resetSteamCacheButton: "Reset Steam cache",
+		// Button for resetting Steam's cache. The ellipsis indicates that a modal will open.
+		resetSteamCacheButtonOpenModal: "Reset Steam cache...",
 
 		// Title of the modal that opens after clicking the reset Steam cache button.
 		resetSteamCacheModalTitle: "Reset Steam cache",

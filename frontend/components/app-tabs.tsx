@@ -2,14 +2,14 @@ import { Tabs, Container, Stack } from "@mantine/core";
 import { Page, PageTab } from "@components/page-tab";
 import { useCallback } from "react";
 import { usePersistedState } from "@hooks/use-persisted-state";
-import { IconBox, IconDeviceGamepad, IconHammer } from "@tabler/icons-react";
+import { IconBox, IconDeviceGamepad } from "@tabler/icons-react";
 import { GamesPage } from "./games/games-page";
 import { ModsPage } from "./mods/mods-page";
-import { ToolsPage } from "./tools/tools-page";
 import { ThanksPage } from "./thanks/thanks-page";
 import { ThanksTabIcon } from "./thanks/thanks-tab-icon";
 import { useAtomValue } from "jotai";
 import { gameDataAtom } from "@hooks/use-data";
+import { AppSettings } from "./tools/app-settings";
 
 const pages: Record<string, Page> = {
 	games: {
@@ -18,11 +18,6 @@ const pages: Record<string, Page> = {
 		icon: <IconDeviceGamepad />,
 	},
 	mods: { localizationKey: "mods", component: ModsPage, icon: <IconBox /> },
-	tools: {
-		localizationKey: "tools",
-		component: ToolsPage,
-		icon: <IconHammer />,
-	},
 	thanks: {
 		localizationKey: "thanks",
 		component: ThanksPage,
@@ -42,7 +37,7 @@ export function AppTabs() {
 
 	const handleTabChange = useCallback(
 		(pageId: string | null) => {
-			if (pageId === null) return;
+			if (pageId === null || !(pageId in pages)) return;
 			setSelectedTab(pageId);
 		},
 		[setSelectedTab],
@@ -63,7 +58,7 @@ export function AppTabs() {
 				gap={0}
 				style={{ height: "100vh" }}
 			>
-				<Tabs.List style={{ justifyContent: "center" }}>
+				<Tabs.List>
 					{Object.entries(pages).map(([pageId, page]) => (
 						<PageTab
 							key={pageId}
@@ -71,7 +66,9 @@ export function AppTabs() {
 							label={page === pages.games ? gamesCountLabel : undefined}
 						/>
 					))}
+					<AppSettings />
 				</Tabs.List>
+
 				{Object.entries(pages).map(([pageId, page]) => (
 					<Tabs.Panel
 						key={pageId}
