@@ -45,45 +45,46 @@ export function AppTabs() {
 			: `${gamesData.gameIds.length} / ${gamesData.totalCount}`;
 
 	return (
-		<Tabs
-			value={selectedTab}
-			onChange={handleTabChange}
-			radius={0}
-		>
-			<Stack
-				gap={0}
-				style={{ height: "100vh" }}
+		<Container p={0}>
+			<Tabs
+				value={selectedTab}
+				onChange={handleTabChange}
+				radius={0}
 			>
-				<Tabs.List>
-					{Object.entries(pages).map(([pageId, page]) => (
-						<PageTab
-							key={pageId}
-							page={page}
-							label={page === pages.games ? gamesCountLabel : undefined}
-						/>
-					))}
-					<AppSettings />
-				</Tabs.List>
+				<Stack
+					gap={0}
+					style={{ height: "100vh" }}
+				>
+					<Tabs.List>
+						{Object.entries(pages).map(([pageId, page]) => (
+							<PageTab
+								key={pageId}
+								page={page}
+								label={page === pages.games ? gamesCountLabel : undefined}
+							/>
+						))}
+						<AppSettings />
+					</Tabs.List>
 
-				{Object.entries(pages).map(([pageId, page]) => (
-					<Tabs.Panel
-						key={pageId}
-						style={{
-							overflowY: "auto",
-							flex: 1,
-						}}
-						value={pageId}
-					>
-						<Container
-							h="100%"
-							py="xs"
-							size="lg"
+					{Object.entries(pages).map(([pageId, page]) => (
+						<Tabs.Panel
+							key={pageId}
+							style={{
+								overflowY: "auto",
+								flex: 1,
+							}}
+							value={pageId}
 						>
-							<page.component />
-						</Container>
-					</Tabs.Panel>
-				))}
-			</Stack>
-		</Tabs>
+							<Container
+								h="100%"
+								py="xs"
+							>
+								<page.component />
+							</Container>
+						</Tabs.Panel>
+					))}
+				</Stack>
+			</Tabs>
+		</Container>
 	);
 }
