@@ -9,16 +9,7 @@ export const defaultQuery: GamesQuery = {
 	filter: {
 		architectures: ["X64", "X86", null],
 		engines: ["GameMaker", "Unity", "Godot", "Unreal", null],
-		providers: [
-			"Epic",
-			"Gog",
-			"Itch",
-			"Steam",
-			"Manual",
-			"Xbox",
-			// "Ea", // TODO not yet implemented in backend.
-			// "Ubisoft", // TODO not yet implemented in backend.
-		],
+		providers: ["Epic", "Gog", "Itch", "Steam", "Manual", "Xbox", "Ubisoft"],
 		tags: ["Demo", "VR", null],
 		unityScriptingBackends: ["Il2Cpp", "Mono", null],
 		installed: ["Installed", "NotInstalled"],

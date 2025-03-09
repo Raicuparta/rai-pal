@@ -16,7 +16,10 @@ use crate::providers::{epic_provider::Epic, gog_provider::Gog, xbox_provider::Xb
 use crate::{
 	game::Game,
 	paths,
-	providers::{itch_provider::Itch, manual_provider::Manual, steam::steam_provider::Steam},
+	providers::{
+		itch_provider::Itch, manual_provider::Manual, steam::steam_provider::Steam,
+		ubisoft_provider::Ubisoft,
+	},
 	result::{Error, Result},
 };
 
@@ -39,6 +42,7 @@ pub enum Provider {
 	Steam,
 	Manual,
 	Itch,
+	Ubisoft,
 	#[cfg(target_os = "windows")]
 	Epic,
 	#[cfg(target_os = "windows")]
@@ -56,6 +60,7 @@ const PROVIDERS: &Map = &[
 	create_map_entry::<Steam>(),
 	create_map_entry::<Manual>(),
 	create_map_entry::<Itch>(),
+	create_map_entry::<Ubisoft>(),
 	#[cfg(target_os = "linux")]
 	create_map_entry::<HeroicEpic>(),
 	#[cfg(target_os = "linux")]
