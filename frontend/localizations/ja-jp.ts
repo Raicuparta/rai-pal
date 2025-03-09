@@ -4,10 +4,10 @@ export const jaJp: Localization = {
 	meta: {
 		nativeName: "日本語",
 	},
+
 	tab: {
 		games: "ゲーム",
-		mods: "Mod",
-		tools: "ツール",
+		mods: "モッド",
 		thanks: "感謝",
 	},
 
@@ -16,12 +16,12 @@ export const jaJp: Localization = {
 		title: "ゲームを追加",
 		dropField:
 			"ここにゲームの実行ファイルをドラッグ＆ドロップするか、クリックしてファイルを選択してください。",
-		note: "注: Rai Pal のウィンドウ内のどこにでもゲームの実行ファイルをドロップすると、このダイアログを開かずにインストール済みゲームリストに追加できます。",
+		note: "注: Rai Palのウィンドウ内のどこにでもゲームの実行ファイルをドロップして、ダイアログを開かずにインストール済みゲームリストに追加できます。",
 	},
 
 	refresh: {
 		button: "更新",
-		loading: "{items} を読み込み中...",
+		loading: "{items}を読み込み中...",
 	},
 
 	filterMenu: {
@@ -52,12 +52,14 @@ export const jaJp: Localization = {
 	},
 
 	filterValueNote: {
-		providerXboxOnlyInstalled:
-			"Xbox PCゲームはインストールされている場合のみ Rai Pal に表示されます。",
+		providerXboxOnlyInstalledAndSubscription:
+			"インストールされているPC Xboxゲーム、またはPC Game Passサブスクリプションの一部として所有しているゲームのみを表示します。",
+		providerUbisoftOnlySubscription:
+			"Ubisoft+サブスクリプションの一部として所有しているUbisoftゲームのみを表示します。",
 		engineGodotNotFullySupported:
-			"Godot ゲームはまだ完全にはサポートされていません。",
+			"Godotゲームはまだ完全にはサポートされていません。",
 		engineGameMakerNotFullySupported:
-			"GameMaker ゲームはまだ完全にはサポートされていません。",
+			"GameMakerゲームはまだ完全にはサポートされていません。",
 	},
 
 	providerCommand: {
@@ -70,25 +72,24 @@ export const jaJp: Localization = {
 
 	gameModal: {
 		startGameButton: "ゲームを開始",
-		startGameExecutable: "実行ファイルで開始",
-		startGameViaProvider: "{provider} 経由で開始",
+		startGameExecutable: "実行ファイルでゲームを開始",
+		startGameViaProvider: "{provider}でゲームを開始",
 		foldersDropdown: "フォルダー",
-		openGameFilesFolder: "ゲームファイルのフォルダーを開く",
-		openInstalledModsFolder: "インストール済み Mod フォルダーを開く",
-		removeFromRaiPal: "Rai Pal から削除",
-		removeGameConfirmation:
-			"このゲームを Rai Pal から削除してもよろしいですか？",
+		openGameFilesFolder: "ゲームファイルフォルダーを開く",
+		openInstalledModsFolder: "インストール済みモッドフォルダーを開く",
+		removeFromRaiPal: "Rai Palから削除",
+		removeGameConfirmation: "このゲームをRai Palから削除してもよろしいですか？",
 		refreshGame: "更新",
 		failedToReadGameInfo:
-			"このゲームの重要な情報を読み取れませんでした。実行ファイルが保護されている可能性があります。一部の Mod がインストールできない場合があります。",
+			"このゲームに関する重要な情報の一部を読み取ることができませんでした。実行ファイルが保護されている可能性があります。一部のモッドがインストールに失敗する可能性があります。",
 		failedToDetermineEngine:
-			"このゲームのエンジンを特定できませんでした。一部の Mod がインストールできない場合があります。",
-		gameModsLabel: "Mod",
+			"このゲームのエンジンを特定できませんでした。一部のモッドがインストールに失敗する可能性があります。",
+		gameModsLabel: "モッド",
 		gameNotInstalledWarning:
-			"このゲームはインストールされていないため、互換性のある Mod を正確に判定できません。インストールすれば、より正確な情報を表示できます。",
-		uninstallAllModsButton: "すべての Mod をアンインストール",
+			"このゲームはインストールされていないため、どのモッドが互換性があるか100％確信できません。以下に表示されるモッドは動作する可能性があります。ゲームをインストールすると、より正確な情報を表示します。",
+		uninstallAllModsButton: "すべてのモッドをアンインストール",
 		uninstallAllModsConfirmation:
-			"本当に削除しますか？このゲームの Mod フォルダー内のすべてのファイルが削除されますが、ゲーム本体のファイルは削除されません。",
+			"本当に？これにより、このゲームのモッドフォルダー内のすべてのファイルが削除されます。ただし、実際のゲームのファイルは削除されません。",
 	},
 
 	gamesTableColumn: {
@@ -98,8 +99,8 @@ export const jaJp: Localization = {
 	},
 
 	modsPage: {
-		openModsFolderButton: "Mod フォルダーを開く",
-		tableColumnMod: "Mod",
+		openModsFolderButton: "モッドフォルダーを開く",
+		tableColumnMod: "モッド",
 		tableColumnVersion: "バージョン",
 		tableColumnModLoader: "ローダー",
 		tableColumnGameEngine: "エンジン",
@@ -107,68 +108,64 @@ export const jaJp: Localization = {
 		modByAuthor: "{authorName} 作",
 		modDeprecated: "非推奨",
 		modDeprecatedTooltip:
-			"この Mod は非推奨です。アンインストールして、新しい代替 Mod を使用してください。",
-		modOutdated: "Mod が古い",
+			"このモッドは非推奨です。アンインストールして新しい代替品をインストールすることをお勧めします。",
+		modOutdated: "モッドが古い",
 	},
 
 	modModal: {
 		runMod: "実行",
-		openModFolder: "Mod フォルダーを開く",
-		updateMod: "Mod を更新",
-		downloadMod: "Mod をダウンロード",
-		deleteMod: "Mod を削除",
+		openModFolder: "モッドフォルダーを開く",
+		updateMod: "モッドを更新",
+		downloadMod: "モッドをダウンロード",
+		deleteMod: "モッドを削除",
 		deleteModConfirmation:
-			"本当に削除しますか？Mod フォルダー内のすべてのファイルが失われます。",
+			"本当に？モッドフォルダー内のファイルはすべて失われます。",
 		byAuthor: "{authorName} 作",
 	},
 
-	toolsPage: {
-		openLogsFolderButton: "ログフォルダーを開く",
-		resetRaiPalSettingsButton: "Rai Pal の設定をリセット",
-		resetRaiPalSettingsTooltip:
-			"フィルター、確認ダイアログ、その他の設定をリセットします。",
-		clearCacheButton: "Rai Pal のキャッシュをクリア",
-		clearCacheTooltip:
-			"Rai Pal が使用しているゲームリストのキャッシュを削除します。",
-	},
-
-	appSettings: {
-		showGameThumbnails: "ゲームリストに画像を表示",
+	appDropdownMenu: {
+		showGameThumbnails: "リストにゲームのサムネイルを表示",
 		language: "言語",
 		autoDetectedLanguage: "自動検出 - {languageName}",
+		resetRaiPalSettingsButton: "Rai Palの設定をリセット",
+		resetRaiPalSettingsTooltip:
+			"フィルター、確認ダイアログ、おそらく他の設定をリセットします。",
+		openLogsFolderButton: "ログフォルダーを開く",
+		clearRaiPalCacheOpenModal: "Rai Palのキャッシュをクリア...",
+		clearRaiPalCacheTooltip:
+			"Rai Palが使用するゲームリストキャッシュをクリアします。",
 	},
 
 	steamCache: {
-		resetSteamCacheButton: "Steam キャッシュをリセット",
-		resetSteamCacheModalTitle: "Steam キャッシュをリセット",
+		resetSteamCacheButtonOpenModal: "Steamのキャッシュをリセット...",
+		resetSteamCacheModalTitle: "Steamのキャッシュをリセット",
 		resetSteamCacheDescription:
-			"Rai Pal に所持していない Steam ゲームが表示される場合に使用します。キャッシュをリセット後、Steam を再起動してください。既に削除されている場合はエラーが表示されます。",
+			"Rai Palが実際に所有していないSteamのゲームを表示している場合に使用します。これによりSteamのキャッシュがリセットされ、Steamを再起動する必要があります。ファイルが既に削除されている場合はエラーが発生します。",
 		resetSteamCacheSuccess:
-			"キャッシュファイルが削除されました。Steam を再起動し、数秒待ってから Rai Pal の更新ボタンを押してください。",
+			"キャッシュファイルが削除されました。Steamを再起動し、数秒待ってからRai Palの更新ボタンを押してください。",
 	},
 
 	debugData: {
-		debugDataTitle: "デバッグ データ",
-		debugDataCopy: "デバッグ データをコピー",
+		debugDataTitle: "デバッグデータ",
+		debugDataCopy: "デバッグデータをコピー",
 	},
 
 	thanksPage: {
 		intro:
-			"こんにちは。Rai Pal を作りました。過去に VR 向けの mod を作成しており、現在 Unity ゲーム向けの汎用 VR mod を開発しています。もし気に入っていただけましたら、寄付をご検討ください。また、Itch.io で公開している無料の mod を入手してサポートすることもできます。",
-		starRaiPalOnGitHub: "GitHub で Rai Pal にスターを付ける",
+			"こんにちは。私はRai Palを作りました。過去には他のVRモッドも作成しており、現在はUnityゲーム用のユニバーサルVRモッドに取り組んでいます。私の活動を気に入っていただけたら、寄付を検討してください。また、itch.ioで私の無料モッドの1つを購入してサポートすることもできます。",
+		starRaiPalOnGitHub: "GitHubでRai Palにスターを付ける",
 		otherModdersTitle: "他のモッダー",
 		otherModdersDescription:
-			"Rai Pal はゲームの mod 管理を支援するために作られていますが、他の開発者のツールがなければ実現できません。",
-		modderOnWebsite: "{modderName} さんの {website} ページ",
-		patreonLeaderboard: "Patreon ランキング",
-		rankedByPatreonDonationAmount:
-			"累計寄付額に基づいてランク付けされています。",
+			"Rai Palはゲームのモッディングを支援することを目的としており、他の開発者が作成したツールなしではそれを実現できません。これらの人々の中には寄付リンクを持っていない人もいますが、彼らの仕事に非常に感謝しています。",
+		modderOnWebsite: "{modderName} の {website}",
+		patreonLeaderboard: "Patreonリーダーボード",
+		rankedByPatreonDonationAmount: "総生涯寄付額によるランキング。",
 		patreonProfilePrivateNotice:
-			"ここに表示されていない場合、Patreon プロフィールが非公開の可能性があります。",
+			"ここに表示されない場合は、Patreonプロファイルが非公開であるためです。",
 	},
 
 	commandButton: {
 		cancel: "キャンセル",
-		dontAskAgain: "次回から確認しない",
+		dontAskAgain: "今後確認しない",
 	},
-};
+} as const;

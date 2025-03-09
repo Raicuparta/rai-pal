@@ -9,6 +9,7 @@ export const enUs = {
 	meta: {
 		nativeName: "English (US)",
 	},
+
 	tab: {
 		// Name of the tab that shows the user's games from all providers.
 		games: "Games",
@@ -253,7 +254,7 @@ export const enUs = {
 
 	// Text in the dropdown menu for tools and settings.
 	appDropdownMenu: {
-		// Checkbox label that toggles showing thumbnails on the game list.
+		// Label for the checkbox that toggles visibility of game images.
 		showGameThumbnails: "Show game thumbnails on list",
 
 		// Label on the dropdown for changing the app's language.
