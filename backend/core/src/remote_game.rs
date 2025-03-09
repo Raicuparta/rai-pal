@@ -40,6 +40,20 @@ pub struct RemoteGame {
 	pub subscriptions: Option<HashSet<GameSubscription>>,
 }
 
+impl RemoteGame {
+	//
+	pub fn get_url(&self, provider_id: &ProviderId) -> Option<String> {
+		self.ids
+			.get(provider_id)
+			.and_then(|ids| ids.first())
+			.and_then(|id| match provider_id {
+				ProviderId::Xbox => Some(format!("https://www.xbox.com/games/store/a/{id}")),
+				ProviderId::Ubisoft => Some(format!("https://store.ubisoft.com/a/{id}.html")),
+				_ => None,
+			})
+	}
+}
+
 fn engine_brand_from_string(brand: &str) -> Option<EngineBrand> {
 	let brand_lower = brand.to_lowercase();
 	if brand_lower.contains("unity") {

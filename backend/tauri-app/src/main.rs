@@ -20,6 +20,7 @@ use rai_pal_core::mod_loaders::mod_loader::{self, ModLoaderActions};
 use rai_pal_core::paths::{self, normalize_path};
 use rai_pal_core::providers::provider::ProviderId;
 use rai_pal_core::providers::provider_cache;
+use rai_pal_core::providers::provider_command::ProviderCommand;
 use rai_pal_core::providers::steam::steam_provider::Steam;
 use rai_pal_core::providers::{
 	manual_provider,
@@ -497,6 +498,15 @@ async fn refresh_remote_games(handle: AppHandle) -> Result {
 											let mut game = Game::new(game_id, remote_game_title);
 											game.from_subscriptions = subscriptions.clone();
 											game.remote_game = Some(remote_game.clone());
+
+											if let Some(remote_game_url) =
+												remote_game.get_url(provider_id)
+											{
+												game.add_provider_command(
+													ProviderCommandAction::OpenInBrowser,
+													ProviderCommand::String(remote_game_url),
+												);
+											}
 
 											provider_games_write
 												.insert(remote_game_id.clone(), game);
