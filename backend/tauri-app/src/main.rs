@@ -3,7 +3,6 @@
 // Command stuff needs to be async so I can spawn tasks.
 #![allow(clippy::unused_async)]
 
-use std::collections::HashSet;
 use std::sync::RwLock;
 use std::{collections::HashMap, path::PathBuf};
 
