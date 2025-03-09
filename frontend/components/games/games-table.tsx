@@ -1,15 +1,46 @@
 import { useEffect, useRef } from "react";
-import { GamesSortBy } from "@api/bindings";
+import { GameId, GamesSortBy } from "@api/bindings";
 import { useAtomValue } from "jotai";
 import { gameDataAtom } from "@hooks/use-data";
 import { TableContainer } from "@components/table/table-container";
-import { TableVirtuoso, TableVirtuosoHandle } from "react-virtuoso";
-import { useVirtuosoHeaderContent } from "@hooks/use-virtuoso-header-content";
-import { useVirtuosoTableComponents } from "@hooks/use-virtuoso-table-components";
+import {
+	TableComponents,
+	TableVirtuoso,
+	TableVirtuosoHandle,
+} from "react-virtuoso";
 import { GameRow, gameRowHeight } from "./game-row";
 import { useDataQuery } from "@hooks/use-data-query";
 import { gamesColumns } from "./games-columns";
 import styles from "./games.module.css";
+import { Table } from "@mantine/core";
+import React from "react";
+import { TableHead } from "@components/table/table-head";
+
+const tableComponents: TableComponents<GameId, unknown> = {
+	TableBody: React.forwardRef(function TableBody(props, ref) {
+		return (
+			<Table.Tbody
+				{...props}
+				ref={ref}
+			/>
+		);
+	}),
+	Table: (props) => (
+		<Table
+			{...props}
+			highlightOnHover
+		/>
+	),
+	TableHead: React.forwardRef(function TableHead(props, ref) {
+		return (
+			<Table.Thead
+				{...props}
+				ref={ref}
+			/>
+		);
+	}),
+	TableRow: GameRow,
+};
 
 export function GamesTable() {
 	const gameData = useAtomValue(gameDataAtom);
@@ -26,14 +57,14 @@ export function GamesTable() {
 		});
 	};
 
-	const renderHeaders = useVirtuosoHeaderContent(
-		gamesColumns,
-		onChangeSort,
-		dataQuery?.sortBy,
-		dataQuery?.sortDescending,
+	const fixedHeaderContent = () => (
+		<TableHead
+			columns={gamesColumns}
+			onChangeSort={onChangeSort}
+			sortBy={dataQuery?.sortBy}
+			sortDescending={dataQuery?.sortDescending}
+		/>
 	);
-
-	const tableComponents = useVirtuosoTableComponents(GameRow);
 
 	useEffect(() => {
 		if (tableRef.current) {
@@ -47,7 +78,7 @@ export function GamesTable() {
 				ref={tableRef}
 				className={styles.table}
 				components={tableComponents}
-				fixedHeaderContent={renderHeaders}
+				fixedHeaderContent={fixedHeaderContent}
 				data={gameData.gameIds}
 				fixedItemHeight={gameRowHeight}
 				overscan={50}

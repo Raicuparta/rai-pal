@@ -1,18 +1,14 @@
 import { useLocalization } from "@hooks/use-localization";
 import { CodeHighlight } from "@mantine/code-highlight";
 import { Divider, Stack } from "@mantine/core";
-import { useMemo } from "react";
 
 type Props<TData> = {
 	readonly data: TData;
 };
 
-export function DebugData<TData>(props: Props<TData>) {
+export function DebugData<TData>({ data }: Props<TData>) {
 	const t = useLocalization("debugData");
-	const debugText = useMemo(
-		() => JSON.stringify(props.data, null, 2) ?? "",
-		[props.data],
-	);
+	const debugText = JSON.stringify(data, null, 2) ?? "";
 
 	return (
 		<Stack gap="xs">
