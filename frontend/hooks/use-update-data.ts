@@ -14,6 +14,7 @@ export function useUpdateData(executeOnMount = false) {
 	const deferredGamesQuery = useDeferredValue(gamesQuery);
 	const fetchCount = useRef(0);
 	const loadingTaskCount = useRef(0);
+	const hasExecutedOnMount = useRef(false);
 
 	const updateProviderGames = useCallback(() => {
 		fetchCount.current++;
@@ -108,8 +109,9 @@ export function useUpdateData(executeOnMount = false) {
 	}, [setLoading]);
 
 	useEffect(() => {
-		if (executeOnMount && fetchCount.current === 0) {
+		if (executeOnMount && !hasExecutedOnMount.current) {
 			updateAppData();
+			hasExecutedOnMount.current = true;
 		}
 	}, [executeOnMount, updateAppData]);
 
