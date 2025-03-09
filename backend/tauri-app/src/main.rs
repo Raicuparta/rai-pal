@@ -459,6 +459,10 @@ async fn refresh_remote_games(handle: AppHandle) -> Result {
 		.games
 		.iter()
 		.for_each(|(provider_id, provider_games)| {
+			if provider_id == &ProviderId::Manual {
+				return;
+			}
+
 			if let Some(provider_remote_games) =
 				remote_games.get(provider_id).or(manual_remote_games)
 			{
@@ -480,8 +484,6 @@ async fn refresh_remote_games(handle: AppHandle) -> Result {
 								.cloned()
 						});
 
-						// TODO: ea ones should be xbox I guess?
-						// avoid re-submitting as manual
 						provider_remote_games.values().for_each(|remote_game| {
 							if let Some(subscriptions) = remote_game.subscriptions.as_ref() {
 								if let Some(remote_game_title) = remote_game.title.as_ref() {
