@@ -7,7 +7,6 @@ export const ptPt: Localization = {
 	tab: {
 		games: "Jogos",
 		mods: "Mods",
-		tools: "Ferramentas",
 		thanks: "Agradecimentos",
 	},
 
@@ -52,8 +51,10 @@ export const ptPt: Localization = {
 	},
 
 	filterValueNote: {
-		providerXboxOnlyInstalled:
-			"Os jogos Xbox para PC só aparecem no Rai Pal depois de serem instalados.",
+		providerXboxOnlyInstalledAndSubscription:
+			"Os jogos Xbox para PC só aparecem no Rai Pal depois de serem instalados ou se forem parte duma subscrição.",
+		providerUbisoftOnlySubscription:
+			"Os jogos da Ubisoft só aparecem no Rai Pal se forem parte duma subscrição.",
 		engineGodotNotFullySupported:
 			"Os jogos Godot ainda não são totalmente suportados.",
 		engineGameMakerNotFullySupported:
@@ -122,23 +123,21 @@ export const ptPt: Localization = {
 		byAuthor: "por {authorName}",
 	},
 
-	toolsPage: {
+	appDropdownMenu: {
+		showGameThumbnails: "Mostrar imagens na lista de jogos",
+		language: "Idioma",
+		autoDetectedLanguage: "Auto-detetado - {languageName}",
 		openLogsFolderButton: "Abrir Pasta de Registos",
 		resetRaiPalSettingsButton: "Repor definições do Rai Pal",
 		resetRaiPalSettingsTooltip:
 			"Irá repor filtros, diálogos de confirmação e outras definições.",
-		clearCacheButton: "Limpar cache do Rai Pal",
-		clearCacheTooltip: "Limpa a cache da lista de jogos usada pelo Rai Pal.",
-	},
-
-	appSettings: {
-		showGameThumbnails: "Mostrar imagens na lista de jogos",
-		language: "Idioma",
-		autoDetectedLanguage: "Auto-detetado - {languageName}",
+		clearRaiPalCacheOpenModal: "Limpar cache do Rai Pal...",
+		clearRaiPalCacheTooltip:
+			"Limpa a cache da lista de jogos usada pelo Rai Pal.",
 	},
 
 	steamCache: {
-		resetSteamCacheButton: "Repor cache da Steam",
+		resetSteamCacheButtonOpenModal: "Repor cache da Steam...",
 		resetSteamCacheModalTitle: "Repor cache da Steam",
 		resetSteamCacheDescription:
 			"Usa isto se o Rai Pal estiver a mostrar jogos que não possuis na Steam. Isto irá repor a cache da Steam e terás de a reiniciar. Irás receber um erro se o ficheiro já tiver sido apagado.",
