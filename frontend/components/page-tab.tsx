@@ -4,8 +4,8 @@ import { Tabs, Stack, Text } from "@mantine/core";
 
 export type Page = {
 	readonly localizationKey: LocalizationKey<"tab">;
-	readonly component: () => React.JSX.Element;
-	readonly icon: React.JSX.Element;
+	readonly component: React.ComponentType;
+	readonly icon: React.ComponentType;
 };
 
 type Props = {
@@ -19,7 +19,7 @@ export function PageTab(props: Props) {
 	return (
 		<Tabs.Tab
 			value={props.page.localizationKey}
-			leftSection={props.page.icon}
+			leftSection={<props.page.icon />}
 		>
 			<Stack
 				gap={0}

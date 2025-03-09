@@ -10,24 +10,25 @@ import { ThanksTabIcon } from "./thanks/thanks-tab-icon";
 import { useAtomValue } from "jotai";
 import { gameDataAtom } from "@hooks/use-data";
 import { AppSettings } from "./tools/app-settings";
+import React from "react";
 
 const pages: Record<string, Page> = {
 	games: {
 		localizationKey: "games",
 		component: GamesPage,
-		icon: <IconDeviceGamepad />,
+		icon: IconDeviceGamepad,
 	},
-	mods: { localizationKey: "mods", component: ModsPage, icon: <IconBox /> },
+	mods: { localizationKey: "mods", component: ModsPage, icon: IconBox },
 	thanks: {
 		localizationKey: "thanks",
 		component: ThanksPage,
-		icon: <ThanksTabIcon />,
+		icon: ThanksTabIcon,
 	},
 } as const;
 
 const firstPage = Object.keys(pages)[0];
 
-export function AppTabs() {
+export const AppTabs = React.memo(function AppTabs() {
 	const gamesData = useAtomValue(gameDataAtom);
 
 	const [selectedTab, setSelectedTab] = usePersistedState(
@@ -90,4 +91,4 @@ export function AppTabs() {
 			</Stack>
 		</Tabs>
 	);
-}
+});

@@ -21,6 +21,7 @@ import { ThanksLinkButton } from "./thanks-link-button";
 import { usePatrons } from "@hooks/use-patrons";
 import styles from "./thanks.module.css";
 import { useLocalization } from "@hooks/use-localization";
+import React from "react";
 
 function getRankingEmoji(ranking: number) {
 	if (ranking == 1) return "🥇";
@@ -36,7 +37,7 @@ function getRankingColor(ranking: number): MantineColor {
 	return "dark";
 }
 
-export function ThanksPage() {
+export const ThanksPage = React.memo(function ThanksPage() {
 	const t = useLocalization("thanksPage");
 	const patrons = usePatrons();
 
@@ -263,4 +264,4 @@ export function ThanksPage() {
 			</Group>
 		</Container>
 	);
-}
+});
