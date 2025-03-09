@@ -10,7 +10,6 @@ use crate::game_subscription::GameSubscription;
 use crate::providers::provider::ProviderId;
 use crate::result::Result;
 
-// TODO: fall back to github if this one fails.
 const URL_BASE: &str = "https://raicuparta.github.io/rai-pal-db/game-db";
 
 // The repository over at github.com/Raicuparta/rai-pal-db can have multiple versions of the database.
