@@ -42,6 +42,31 @@ function isLocalizationValid(
 	);
 }
 
+// Stupid joke that makes all text become waah.
+function doFunnyWario(localization: string): string {
+	const wahTextParts: string[] = [];
+	const textParts = localization.split(" ");
+	for (let i = 0; i < textParts.length; i++) {
+		const isParam = textParts[i].includes("{") || textParts[i].includes("}");
+
+		if (isParam || textParts[i].length < 3) {
+			wahTextParts.push(textParts[i]);
+			continue;
+		}
+
+		const start = i === 0 ? "W" : "w";
+		const end = i < textParts.length - 1 ? "h" : "h!";
+		const middle = Array.from(
+			{ length: textParts[i].length - 2 },
+			() => "a",
+		).join("");
+
+		wahTextParts.push(`${start}${middle}${end}`);
+	}
+
+	return wahTextParts.join(" ");
+}
+
 function getLocalizedText<
 	TCategory extends LocalizationCategory,
 	TKey extends LocalizationKey<TCategory>,
@@ -49,7 +74,7 @@ function getLocalizedText<
 	language: unknown,
 	category: TCategory,
 	key: TKey,
-	doFunnyWario: boolean,
+	isWario: boolean,
 	...args: LocalizationFunctionArgs<BaseLocalization[TCategory][TKey]>
 ): string {
 	if (!isLocalizationValid(language)) {
@@ -65,28 +90,8 @@ function getLocalizedText<
 		return `{${key}}`;
 	}
 
-	if (doFunnyWario) {
-		const wahTextParts: string[] = [];
-		const textParts = localization.split(" ");
-		for (let i = 0; i < textParts.length; i++) {
-			const isParam = textParts[i].includes("{") || textParts[i].includes("}");
-
-			if (isParam || textParts[i].length < 3) {
-				wahTextParts.push(textParts[i]);
-				continue;
-			}
-
-			const start = i === 0 ? "W" : "w";
-			const end = i < textParts.length - 1 ? "h" : "h!";
-			const middle = Array.from(
-				{ length: textParts[i].length - 2 },
-				() => "a",
-			).join("");
-
-			wahTextParts.push(`${start}${middle}${end}`);
-		}
-
-		localization = wahTextParts.join(" ");
+	if (isWario) {
+		localization = doFunnyWario(localization);
 	}
 
 	if (params) {
