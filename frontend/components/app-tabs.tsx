@@ -1,32 +1,26 @@
 import { Tabs, Container, Stack } from "@mantine/core";
 import { Page, PageTab } from "@components/page-tab";
-import { useCallback } from "react";
 import { usePersistedState } from "@hooks/use-persisted-state";
-import { IconBox, IconDeviceGamepad, IconHammer } from "@tabler/icons-react";
+import { IconBox, IconDeviceGamepad } from "@tabler/icons-react";
 import { GamesPage } from "./games/games-page";
 import { ModsPage } from "./mods/mods-page";
-import { ToolsPage } from "./tools/tools-page";
 import { ThanksPage } from "./thanks/thanks-page";
 import { ThanksTabIcon } from "./thanks/thanks-tab-icon";
 import { useAtomValue } from "jotai";
 import { gameDataAtom } from "@hooks/use-data";
+import { AppSettings } from "./tools/app-settings";
 
 const pages: Record<string, Page> = {
 	games: {
 		localizationKey: "games",
 		component: GamesPage,
-		icon: <IconDeviceGamepad />,
+		icon: IconDeviceGamepad,
 	},
-	mods: { localizationKey: "mods", component: ModsPage, icon: <IconBox /> },
-	tools: {
-		localizationKey: "tools",
-		component: ToolsPage,
-		icon: <IconHammer />,
-	},
+	mods: { localizationKey: "mods", component: ModsPage, icon: IconBox },
 	thanks: {
 		localizationKey: "thanks",
 		component: ThanksPage,
-		icon: <ThanksTabIcon />,
+		icon: ThanksTabIcon,
 	},
 } as const;
 
@@ -40,13 +34,10 @@ export function AppTabs() {
 		"selected-app-tab",
 	);
 
-	const handleTabChange = useCallback(
-		(pageId: string | null) => {
-			if (pageId === null) return;
-			setSelectedTab(pageId);
-		},
-		[setSelectedTab],
-	);
+	const handleTabChange = (pageId: string | null) => {
+		if (pageId === null || !(pageId in pages)) return;
+		setSelectedTab(pageId);
+	};
 
 	const gamesCountLabel =
 		gamesData.gameIds.length === Number(gamesData.totalCount)
@@ -54,43 +45,46 @@ export function AppTabs() {
 			: `${gamesData.gameIds.length} / ${gamesData.totalCount}`;
 
 	return (
-		<Tabs
-			value={selectedTab}
-			onChange={handleTabChange}
-			radius={0}
-		>
-			<Stack
-				gap={0}
-				style={{ height: "100vh" }}
+		<Container p={0}>
+			<Tabs
+				value={selectedTab}
+				onChange={handleTabChange}
+				radius={0}
 			>
-				<Tabs.List style={{ justifyContent: "center" }}>
+				<Stack
+					gap={0}
+					style={{ height: "100vh" }}
+				>
+					<Tabs.List>
+						{Object.entries(pages).map(([pageId, page]) => (
+							<PageTab
+								key={pageId}
+								page={page}
+								label={page === pages.games ? gamesCountLabel : undefined}
+							/>
+						))}
+						<AppSettings />
+					</Tabs.List>
+
 					{Object.entries(pages).map(([pageId, page]) => (
-						<PageTab
+						<Tabs.Panel
 							key={pageId}
-							page={page}
-							label={page === pages.games ? gamesCountLabel : undefined}
-						/>
-					))}
-				</Tabs.List>
-				{Object.entries(pages).map(([pageId, page]) => (
-					<Tabs.Panel
-						key={pageId}
-						style={{
-							overflowY: "auto",
-							flex: 1,
-						}}
-						value={pageId}
-					>
-						<Container
-							h="100%"
-							py="xs"
-							size="lg"
+							style={{
+								overflowY: "auto",
+								flex: 1,
+							}}
+							value={pageId}
 						>
-							<page.component />
-						</Container>
-					</Tabs.Panel>
-				))}
-			</Stack>
-		</Tabs>
+							<Container
+								h="100%"
+								py="xs"
+							>
+								<page.component />
+							</Container>
+						</Tabs.Panel>
+					))}
+				</Stack>
+			</Tabs>
+		</Container>
 	);
 }

@@ -4,19 +4,19 @@ export const esEs: Localization = {
 	meta: {
 		nativeName: "Español (España)",
 	},
+
 	tab: {
 		games: "Juegos",
 		mods: "Mods",
-		tools: "Herramientas",
 		thanks: "Agradecimientos",
 	},
 
 	addGame: {
-		button: "Añadir juego",
-		title: "Añadir juego",
+		button: "Agregar juego",
+		title: "Agregar juego",
 		dropField:
 			"Arrastra y suelta un ejecutable de juego aquí, o haz clic para seleccionar un archivo.",
-		note: "Nota: puedes soltar archivos ejecutables de juegos en cualquier parte de la ventana de Rai Pal para añadirlos a la lista de juegos instalados sin abrir este diálogo.",
+		note: "Nota: puedes soltar archivos ejecutables de juegos en cualquier parte de la ventana de Rai Pal para agregarlos a la lista de juegos instalados sin abrir este diálogo.",
 	},
 
 	refresh: {
@@ -41,8 +41,8 @@ export const esEs: Localization = {
 
 	filterValue: {
 		unknown: "Desconocido",
-		arch64: "64 bits",
-		arch32: "32 bits",
+		arch64: "64-bit",
+		arch32: "32-bit",
 		tagDemo: "Demo",
 		tagVr: "VR Nativo",
 		tagUntagged: "Sin etiqueta",
@@ -52,8 +52,10 @@ export const esEs: Localization = {
 	},
 
 	filterValueNote: {
-		providerXboxOnlyInstalled:
-			"Los juegos de Xbox para PC solo aparecen en Rai Pal cuando están instalados.",
+		providerXboxOnlyInstalledAndSubscription:
+			"Solo muestra juegos de Xbox para PC si están instalados, o si los posees como parte de la suscripción de PC Game Pass.",
+		providerUbisoftOnlySubscription:
+			"Solo muestra juegos de Ubisoft si los posees como parte de la suscripción de Ubisoft+.",
 		engineGodotNotFullySupported:
 			"Los juegos de Godot no están totalmente soportados aún.",
 		engineGameMakerNotFullySupported:
@@ -62,10 +64,10 @@ export const esEs: Localization = {
 
 	providerCommand: {
 		installGame: "Instalar",
-		showGameInLibrary: "Mostrar en Biblioteca",
-		showGameInStore: "Abrir página de tienda",
+		showGameInLibrary: "Mostrar en la biblioteca",
+		showGameInStore: "Abrir página de la tienda",
 		startGame: "Iniciar juego",
-		openGamePageInBrowser: "Abrir en navegador",
+		openGamePageInBrowser: "Abrir en el navegador",
 	},
 
 	gameModal: {
@@ -77,18 +79,18 @@ export const esEs: Localization = {
 		openInstalledModsFolder: "Abrir carpeta de mods instalados",
 		removeFromRaiPal: "Eliminar de Rai Pal",
 		removeGameConfirmation:
-			"¿Seguro que quieres eliminar este juego de Rai Pal?",
+			"¿Estás seguro de que quieres eliminar este juego de Rai Pal?",
 		refreshGame: "Actualizar",
 		failedToReadGameInfo:
-			"No se pudo leer información importante sobre este juego. Podría deberse a que el ejecutable está protegido. Algunos mods podrían fallar al instalarse.",
+			"No se pudo leer información importante sobre este juego. Esto podría deberse a que el ejecutable está protegido. Algunos mods podrían fallar al instalarse.",
 		failedToDetermineEngine:
 			"No se pudo determinar el motor de este juego. Algunos mods podrían fallar al instalarse.",
 		gameModsLabel: "Mods",
 		gameNotInstalledWarning:
-			"Este juego no está instalado, por lo que no estoy 100% seguro de qué mods son compatibles. Los que ves abajo podrían funcionar. Si instalas el juego, te mostraré información más precisa.",
+			"Este juego no está instalado, así que no estoy 100% seguro de qué mods son compatibles. Los que ves a continuación podrían funcionar. Si instalas el juego, te mostraré información más precisa.",
 		uninstallAllModsButton: "Desinstalar todos los mods",
 		uninstallAllModsConfirmation:
-			"¿Seguro? Esto eliminará todos los archivos en la carpeta de mods de este juego. No eliminará ningún archivo del juego en sí.",
+			"¿Estás seguro? Esto eliminará todos los archivos en la carpeta de mods de este juego. Sin embargo, no eliminará ningún archivo del juego en sí.",
 	},
 
 	gamesTableColumn: {
@@ -118,33 +120,30 @@ export const esEs: Localization = {
 		downloadMod: "Descargar mod",
 		deleteMod: "Eliminar mod",
 		deleteModConfirmation:
-			"¿Seguro? Se perderán todos los archivos dentro de la carpeta del mod.",
+			"¿Estás seguro? Se perderán todos los archivos dentro de la carpeta del mod.",
 		byAuthor: "por {authorName}",
 	},
 
-	toolsPage: {
-		openLogsFolderButton: "Abrir carpeta de registros",
-		resetRaiPalSettingsButton: "Restablecer configuración de Rai Pal",
-		resetRaiPalSettingsTooltip:
-			"Restablecerá filtros, diálogos de confirmación y probablemente otras cosas.",
-		clearCacheButton: "Limpiar caché de Rai Pal",
-		clearCacheTooltip:
-			"Limpia la caché de la lista de juegos usada por Rai Pal.",
-	},
-
-	appSettings: {
-		showGameThumbnails: "Mostrar imágenes en la lista de juegos",
+	appDropdownMenu: {
+		showGameThumbnails: "Mostrar miniaturas de juegos en la lista",
 		language: "Idioma",
 		autoDetectedLanguage: "Auto-detectado - {languageName}",
+		resetRaiPalSettingsButton: "Restablecer configuración de Rai Pal",
+		resetRaiPalSettingsTooltip:
+			"Restablecerá filtros, diálogos de confirmación, probablemente otras cosas.",
+		openLogsFolderButton: "Abrir carpeta de registros",
+		clearRaiPalCacheOpenModal: "Borrar caché de Rai Pal...",
+		clearRaiPalCacheTooltip:
+			"Borra la caché de la lista de juegos utilizada por Rai Pal.",
 	},
 
 	steamCache: {
-		resetSteamCacheButton: "Restablecer caché de Steam",
+		resetSteamCacheButtonOpenModal: "Restablecer caché de Steam...",
 		resetSteamCacheModalTitle: "Restablecer caché de Steam",
 		resetSteamCacheDescription:
-			"Usa esto si Rai Pal muestra juegos que realmente no posees en Steam. Esto restablecerá la caché de Steam y luego tendrás que reiniciar Steam. Recibirás un error si el archivo ya ha sido eliminado.",
+			"Usa esto si Rai Pal está mostrando juegos que no posees realmente en Steam. Esto restablecerá la caché de Steam, y luego tendrás que reiniciar Steam. Recibirás un error si el archivo ya ha sido eliminado.",
 		resetSteamCacheSuccess:
-			"El archivo de caché ha sido eliminado. Reinicia Steam, espera unos segundos y luego presiona el botón de actualización en Rai Pal.",
+			"El archivo de caché ha sido eliminado. Por favor, reinicia Steam, espera unos segundos y luego presiona el botón de actualizar en Rai Pal.",
 	},
 
 	debugData: {
@@ -154,11 +153,11 @@ export const esEs: Localization = {
 
 	thanksPage: {
 		intro:
-			"Hola. Hice Rai Pal. También hice otros mods de VR en el pasado y actualmente estoy trabajando en un mod de VR universal para juegos de Unity. Si te gusta lo que hago y quieres ver más, ¡considera hacer una donación! También puedes apoyarme comprando uno de mis mods gratuitos en itch.io.",
+			"Hola. Hice Rai Pal. También hice otros mods de VR en el pasado, y actualmente estoy trabajando en un mod universal de VR para juegos de Unity. Si te gusta lo que hago y te gustaría ver más, por favor considera donar. También puedes apoyarme comprando uno de mis mods gratuitos en itch.io.",
 		starRaiPalOnGitHub: "Dale una estrella a Rai Pal en GitHub",
 		otherModdersTitle: "Otros modders",
 		otherModdersDescription:
-			"Rai Pal está diseñado para ayudarte a gestionar mods de juegos, y no podríamos hacerlo sin las herramientas que otros desarrolladores han creado. Algunos de estos desarrolladores no tienen enlaces de donación, pero estoy muy agradecido por su trabajo.",
+			"Rai Pal está destinado a ayudarte a gestionar la modificación de juegos, y no podemos hacerlo sin las herramientas que otros desarrolladores han creado. Algunas de estas personas no tienen enlaces de donación, pero estoy extremadamente agradecido por su trabajo.",
 		modderOnWebsite: "{modderName} en {website}",
 		patreonLeaderboard: "Tabla de líderes de Patreon",
 		rankedByPatreonDonationAmount:
@@ -171,4 +170,4 @@ export const esEs: Localization = {
 		cancel: "Cancelar",
 		dontAskAgain: "No preguntar de nuevo",
 	},
-};
+} as const;

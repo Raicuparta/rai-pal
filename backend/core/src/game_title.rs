@@ -12,6 +12,8 @@ pub struct GameTitle {
 static DEMO_REGEX: &lazy_regex::Lazy<regex::Regex> = regex!(r"(?i)[\((\s+)]demo\)?$");
 static BRACKETS_REGEX: &lazy_regex::Lazy<regex::Regex> = regex!(r"\[.*?\]|\(.*?\)|\{.*?\}|<.*?>");
 static SEPARATORS_REGEX: &lazy_regex::Lazy<regex::Regex> = regex!(r"\s-\s.+");
+static EDITION_REGEX: &lazy_regex::Lazy<regex::Regex> =
+	regex!(r"\b(?:standard|pc|deluxe|collectors|ultimate|definitive)\s+edition.*$");
 
 impl GameTitle {
 	pub fn new(display: &str) -> Self {
@@ -38,6 +40,7 @@ fn get_normalized_titles(title: &str) -> Vec<String> {
 		normalize_title(&DEMO_REGEX.replace_all(title, "")),
 		normalize_title(&BRACKETS_REGEX.replace_all(title, "")),
 		normalize_title(&SEPARATORS_REGEX.replace_all(title, "")),
+		normalize_title(&EDITION_REGEX.replace_all(title, "")),
 	];
 
 	let mut seen = HashSet::new();

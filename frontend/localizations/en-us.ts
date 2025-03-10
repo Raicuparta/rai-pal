@@ -1,16 +1,21 @@
+// This is the source of truth for translations.
+// All other translations need to match the keys in this one, and must have the same arguments too.
+// Comments are included here to give context to each string, which is especially useful for evil AI translations.
+
+// When significantly changing the meaning of a string, it's best to also change its localization key.
+// This way we can ensure that all translations get updated to reflect the new meaning.
+
 export const enUs = {
 	meta: {
 		nativeName: "English (US)",
 	},
+
 	tab: {
 		// Name of the tab that shows the user's games from all providers.
 		games: "Games",
 
 		// Name of the tab that shows all the available mods.
 		mods: "Mods",
-
-		// Name of the tab that shows tools and settings.
-		tools: "Tools",
 
 		// Name of the tab that shows credits and donation links.
 		thanks: "Thanks",
@@ -96,8 +101,10 @@ export const enUs = {
 
 	// Some filter values show extra notes when the user hovers that value.
 	filterValueNote: {
-		providerXboxOnlyInstalled:
-			"Xbox PC games only show on Rai Pal once they're installed.",
+		providerXboxOnlyInstalledAndSubscription:
+			"Only shows PC Xbox games if they're installed, or if you own them as part of the PC Game Pass subscription.",
+		providerUbisoftOnlySubscription:
+			"Only shows Ubisoft games if you own them as part of the Ubisoft+ subscription.",
 		engineGodotNotFullySupported: "Godot games are not fully supported yet.",
 		engineGameMakerNotFullySupported:
 			"GameMaker games are not fully supported yet.",
@@ -245,10 +252,16 @@ export const enUs = {
 		byAuthor: "by {authorName}",
 	},
 
-	// Page that shows tools and settings.
-	toolsPage: {
-		// Button for opening the folder where Rai Pal stores its debug logs.
-		openLogsFolderButton: "Open Logs Folder",
+	// Text in the dropdown menu for tools and settings.
+	appDropdownMenu: {
+		// Label for the checkbox that toggles visibility of game images.
+		showGameThumbnails: "Show game thumbnails on list",
+
+		// Label on the dropdown for changing the app's language.
+		language: "Language",
+
+		// Display name for the language option that automatically detects the user's language.
+		autoDetectedLanguage: "Auto-detected - {languageName}",
 
 		// Button for resetting Rai Pal's settings.
 		resetRaiPalSettingsButton: "Reset Rai Pal settings",
@@ -257,28 +270,20 @@ export const enUs = {
 		resetRaiPalSettingsTooltip:
 			"Will reset filters, confirmation dialogs, probably other stuff.",
 
-		// Button for clearing Rai Pal's local game database cache.
-		clearCacheButton: "Clear Rai Pal cache",
+		// Button for opening the folder where Rai Pal stores its debug logs.
+		openLogsFolderButton: "Open Logs Folder",
+
+		// Button for clearing Rai Pal's local game database cache. The ellipsis indicates that a modal will open.
+		clearRaiPalCacheOpenModal: "Clear Rai Pal cache...",
 
 		// Tooltip for the button that clears Rai Pal's local game database cache.
-		clearCacheTooltip: "Clears the game list cache used by Rai Pal.",
-	},
-
-	appSettings: {
-		// Checkbox label that toggles showing thumbnails on the game list.
-		showGameThumbnails: "Show game thumbnails on list",
-
-		// Label on the dropdown for changing the app's language.
-		language: "Language",
-
-		// Display name for the language option that automatically detects the user's language.
-		autoDetectedLanguage: "Auto-detected - {languageName}",
+		clearRaiPalCacheTooltip: "Clears the game list cache used by Rai Pal.",
 	},
 
 	// Button and modal for resetting Steam's cache.
 	steamCache: {
-		// Button for resetting Steam's cache.
-		resetSteamCacheButton: "Reset Steam cache",
+		// Button for resetting Steam's cache. The ellipsis indicates that a modal will open.
+		resetSteamCacheButtonOpenModal: "Reset Steam cache...",
 
 		// Title of the modal that opens after clicking the reset Steam cache button.
 		resetSteamCacheModalTitle: "Reset Steam cache",

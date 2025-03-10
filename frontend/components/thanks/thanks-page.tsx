@@ -44,6 +44,7 @@ export function ThanksPage() {
 		<Container
 			h="100%"
 			size="sm"
+			p={0}
 		>
 			<Group h="100%">
 				<Card
