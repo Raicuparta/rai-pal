@@ -15,39 +15,43 @@ type CellProps = { readonly item: Game };
 const thumbnail: GamesColumn = {
 	hidable: true,
 	width: 100,
-	component: ({ item }: CellProps) => (
-		<Table.Td
-			bg="dark"
-			p={0}
-			pos="relative"
-			style={{
-				overflow: "hidden",
-			}}
-		>
-			<GameImage
-				src={item.thumbnailUrl}
-				h="100%"
-				fit="fill"
-				pos="absolute"
-				top={0}
-				left={0}
+	component: ({ item }: CellProps) => {
+		const thumbnailUrl = `https://raicuparta.com/cdn-cgi/image/width=80,quality=75,anim=false,format=webp/${item.thumbnailUrl}`;
+
+		return (
+			<Table.Td
+				bg="dark"
+				p={0}
+				pos="relative"
 				style={{
-					filter: "blur(10px)",
-					zIndex: 0,
+					overflow: "hidden",
 				}}
-			/>
-			<GameImage
-				pos="absolute"
-				top={0}
-				left={0}
-				src={item.thumbnailUrl}
-				h="100%"
-				style={{
-					zIndex: 1,
-				}}
-			/>
-		</Table.Td>
-	),
+			>
+				<GameImage
+					src={thumbnailUrl}
+					h="100%"
+					fit="fill"
+					pos="absolute"
+					top={0}
+					left={0}
+					style={{
+						filter: "blur(10px)",
+						zIndex: 0,
+					}}
+				/>
+				<GameImage
+					pos="absolute"
+					top={0}
+					left={0}
+					src={thumbnailUrl}
+					h="100%"
+					style={{
+						zIndex: 1,
+					}}
+				/>
+			</Table.Td>
+		);
+	},
 };
 
 const providerColors: Record<ProviderId, DefaultMantineColor> = {

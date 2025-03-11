@@ -93,5 +93,6 @@ img-src = [
   "https://*.gog.com",
   "https://*.patreonusercontent.com",
   "https://*.patreon.com",
+  "https://*.raicuparta.com",
 ]
 style-src-elem = ["'self' 'unsafe-inline'"]
