@@ -35,9 +35,6 @@ async getGame(id: GameId) : Promise<Game> {
 async getLocalMods() : Promise<Partial<{ [key in string]: LocalMod }>> {
     return await TAURI_INVOKE("get_local_mods");
 },
-async getProviderIds() : Promise<ProviderId[]> {
-    return await TAURI_INVOKE("get_provider_ids");
-},
 async getRemoteMods() : Promise<Partial<{ [key in string]: RemoteMod }>> {
     return await TAURI_INVOKE("get_remote_mods");
 },
@@ -131,7 +128,7 @@ syncRemoteMods: "sync-remote-mods"
 
 /** user-defined constants **/
 
-
+export const PROVIDER_IDS = ["Manual","Xbox","Steam","Ubisoft","Gog","Epic","Ea","Itch"] as const;
 
 /** user-defined types **/
 

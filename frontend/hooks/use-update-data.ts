@@ -1,6 +1,6 @@
 import { useCallback, useDeferredValue, useEffect, useRef } from "react";
 import { useSetAtom } from "jotai";
-import { commands } from "@api/bindings";
+import { commands, PROVIDER_IDS } from "@api/bindings";
 import { loadingTasksAtom, gameDataAtom } from "./use-data";
 import { showAppNotification } from "@components/app-notifications";
 import { useAppEvent } from "./use-app-event";
@@ -48,19 +48,6 @@ export function useUpdateData(executeOnMount = false) {
 	useAppEvent("gamesChanged", "update-data", throttledUpdateProviderGames);
 
 	const updateAppData = useCallback(async () => {
-		const providerIds = await commands.getProviderIds().catch((error) => {
-			showAppNotification(
-				`Failed to get info about available game providers: ${error}`,
-				"error",
-			);
-			return null;
-		});
-
-		if (!providerIds) {
-			console.error("No providers available, skipping data update.");
-			return;
-		}
-
 		function handleDataPromise(promise: Promise<null>, taskName: string) {
 			loadingTaskCount.current += 1;
 			const taskIndex = loadingTaskCount.current;
@@ -82,7 +69,7 @@ export function useUpdateData(executeOnMount = false) {
 				);
 		}
 
-		for (const providerId of providerIds) {
+		for (const providerId of PROVIDER_IDS) {
 			handleDataPromise(commands.refreshGames(providerId), providerId);
 		}
 

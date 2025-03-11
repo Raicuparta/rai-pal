@@ -600,12 +600,6 @@ async fn refresh_games(handle: AppHandle, provider_id: ProviderId) -> Result {
 
 #[tauri::command]
 #[specta::specta]
-async fn get_provider_ids() -> Result<Vec<ProviderId>> {
-	Ok(provider::get_provider_ids())
-}
-
-#[tauri::command]
-#[specta::specta]
 async fn add_game(path: PathBuf, handle: AppHandle) -> Result {
 	let normalized_path = normalize_path(&path);
 
@@ -776,7 +770,6 @@ fn main() {
 			get_game_ids,
 			get_game,
 			get_local_mods,
-			get_provider_ids,
 			get_remote_mods,
 			install_mod,
 			open_game_folder,
@@ -801,6 +794,7 @@ fn main() {
 			uninstall_mod,
 		])
 		.events(events::collect_events())
+		.constant("PROVIDER_IDS", ProviderId::variants())
 		.error_handling(tauri_specta::ErrorHandlingMode::Throw);
 
 	#[cfg(debug_assertions)]
@@ -836,7 +830,7 @@ fn main() {
 			local_mods: RwLock::default(),
 			remote_mods: RwLock::default(),
 			remote_games: RwLock::default(),
-			games: HashMap::from_iter(provider::get_provider_ids().iter().map(|&id| {
+			games: HashMap::from_iter(ProviderId::variants().iter().map(|&id| {
 				(
 					id,
 					RwLock::new(provider_cache::read(id).unwrap_or_default()),

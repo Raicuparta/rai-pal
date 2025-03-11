@@ -114,7 +114,3 @@ pub fn get_provider(provider_id: ProviderId) -> Result<Provider> {
 	}
 	Err(Error::InvalidProviderId(provider_id.to_string()))
 }
-
-pub fn get_provider_ids() -> Vec<ProviderId> {
-	PROVIDERS.iter().map(|&(id, _)| id).collect()
-}
