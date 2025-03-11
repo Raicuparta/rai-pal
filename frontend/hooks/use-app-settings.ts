@@ -18,18 +18,14 @@ export function useAppSettings() {
 	useEffect(() => {
 		if (settings.isInitialized) return;
 
-		commands.getAppSettings().then((result) => {
-			if (result.status === "ok") {
-				setSettingsInternal({ isInitialized: true, settings: result.data });
-			}
+		commands.getAppSettings().then((initialSettings) => {
+			setSettingsInternal({ isInitialized: true, settings: initialSettings });
 		});
 	}, [setSettingsInternal, settings]);
 
 	const setSettings = (newSettings: AppSettings) => {
-		commands.saveAppSettings(newSettings).then((result) => {
-			if (result.status === "ok") {
-				setSettingsInternal({ isInitialized: true, settings: newSettings });
-			}
+		commands.saveAppSettings(newSettings).then(() => {
+			setSettingsInternal({ isInitialized: true, settings: newSettings });
 		});
 	};
 

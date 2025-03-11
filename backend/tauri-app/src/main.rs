@@ -800,7 +800,8 @@ fn main() {
 			uninstall_all_mods,
 			uninstall_mod,
 		])
-		.events(events::collect_events());
+		.events(events::collect_events())
+		.error_handling(tauri_specta::ErrorHandlingMode::Throw);
 
 	#[cfg(debug_assertions)]
 	typescript::export(&builder);

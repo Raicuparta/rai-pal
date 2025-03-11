@@ -12,17 +12,16 @@ import {
 import { forwardRef, useState } from "react";
 import { IconArrowBack, IconCheck } from "@tabler/icons-react";
 import { usePersistedState } from "@hooks/use-persisted-state";
-import { Result } from "@api/bindings";
 import { useLocalization } from "@hooks/use-localization";
 
-interface Props<TResultValue, TError> extends ButtonProps {
-	readonly onClick: () => Promise<Result<TResultValue, TError> | TResultValue>;
+interface Props<TResultValue> extends ButtonProps {
+	readonly onClick: () => Promise<TResultValue>;
 	readonly onSuccess?: (result: TResultValue) => void;
 	readonly confirmationText?: string;
 	readonly confirmationSkipId?: string;
 }
 
-function CommandButtonInternal<TResultValue, TError>(
+function CommandButtonInternal<TResultValue>(
 	{
 		onClick,
 		onSuccess,
@@ -30,7 +29,7 @@ function CommandButtonInternal<TResultValue, TError>(
 		confirmationSkipId,
 		children,
 		...props
-	}: Props<TResultValue, TError>,
+	}: Props<TResultValue>,
 	ref: React.ForwardedRef<HTMLButtonElement>,
 ) {
 	const t = useLocalization("commandButton");
