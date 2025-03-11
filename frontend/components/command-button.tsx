@@ -9,20 +9,19 @@ import {
 	Popover,
 	Stack,
 } from "@mantine/core";
-import { forwardRef, useCallback, useState } from "react";
+import { forwardRef, useState } from "react";
 import { IconArrowBack, IconCheck } from "@tabler/icons-react";
 import { usePersistedState } from "@hooks/use-persisted-state";
-import { Result } from "@api/bindings";
 import { useLocalization } from "@hooks/use-localization";
 
-interface Props<TResultValue, TError> extends ButtonProps {
-	readonly onClick: () => Promise<Result<TResultValue, TError> | TResultValue>;
+interface Props<TResultValue> extends ButtonProps {
+	readonly onClick: () => Promise<TResultValue>;
 	readonly onSuccess?: (result: TResultValue) => void;
 	readonly confirmationText?: string;
 	readonly confirmationSkipId?: string;
 }
 
-function CommandButtonInternal<TResultValue, TError>(
+function CommandButtonInternal<TResultValue>(
 	{
 		onClick,
 		onSuccess,
@@ -30,7 +29,7 @@ function CommandButtonInternal<TResultValue, TError>(
 		confirmationSkipId,
 		children,
 		...props
-	}: Props<TResultValue, TError>,
+	}: Props<TResultValue>,
 	ref: React.ForwardedRef<HTMLButtonElement>,
 ) {
 	const t = useLocalization("commandButton");
@@ -42,33 +41,27 @@ function CommandButtonInternal<TResultValue, TError>(
 	const [dontAskAgain, setDontAskAgain] = useState(false);
 	const [executeCommand, isLoading, success] = useAsyncCommand(onClick);
 
-	const executeCommandWithSuccessCallback = useCallback(() => {
+	const executeCommandWithSuccessCallback = () =>
 		executeCommand().then(onSuccess);
-	}, [executeCommand, onSuccess]);
 
-	const handleClick = useCallback(() => {
+	const handleClick = () => {
 		if (confirmationText && !shouldSkipConfirm) {
 			setIsConfirmationOpen(true);
 		} else {
 			executeCommandWithSuccessCallback();
 		}
-	}, [confirmationText, shouldSkipConfirm, executeCommandWithSuccessCallback]);
+	};
 
-	const closeConfirmation = useCallback(() => {
+	const closeConfirmation = () => {
 		setIsConfirmationOpen(false);
 		setDontAskAgain(false);
-	}, []);
+	};
 
-	const confirm = useCallback(() => {
+	const confirm = () => {
 		setShouldSkipConfirm(dontAskAgain);
 		executeCommandWithSuccessCallback();
 		closeConfirmation();
-	}, [
-		closeConfirmation,
-		dontAskAgain,
-		executeCommandWithSuccessCallback,
-		setShouldSkipConfirm,
-	]);
+	};
 
 	const isLongLoading = useLongLoading(isLoading);
 

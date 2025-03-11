@@ -128,10 +128,11 @@ const filterDetails: { [key in keyof GamesFilter]: FilterDetails<key> } = {
 			},
 			Ubisoft: {
 				staticDisplayText: "Ubisoft",
+				noteLocalizationKey: "providerUbisoftOnlySubscription",
 			},
 			Xbox: {
 				staticDisplayText: "Xbox",
-				noteLocalizationKey: "providerXboxOnlyInstalled",
+				noteLocalizationKey: "providerXboxOnlyInstalledAndSubscription",
 			},
 		},
 	},

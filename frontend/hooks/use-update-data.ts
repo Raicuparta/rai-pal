@@ -1,6 +1,6 @@
 import { useCallback, useDeferredValue, useEffect, useRef } from "react";
 import { useSetAtom } from "jotai";
-import { commands, Result, Error } from "@api/bindings";
+import { commands } from "@api/bindings";
 import { loadingTasksAtom, gameDataAtom } from "./use-data";
 import { showAppNotification } from "@components/app-notifications";
 import { useAppEvent } from "./use-app-event";
@@ -19,22 +19,21 @@ export function useUpdateData(executeOnMount = false) {
 	const updateProviderGames = useCallback(() => {
 		fetchCount.current++;
 		const thisFetchCount = fetchCount.current;
-		commands.getGameIds(deferredGamesQuery).then((result) => {
-			if (thisFetchCount !== fetchCount.current) {
-				console.log(
-					"Cancelling this fetch since another one happened in the meantime.",
-				);
-				return false;
-			}
+		commands
+			.getGameIds(deferredGamesQuery)
+			.then((data) => {
+				if (thisFetchCount !== fetchCount.current) {
+					console.log(
+						"Cancelling this fetch since another one happened in the meantime.",
+					);
+					return;
+				}
 
-			if (result.status === "error") {
-				showAppNotification(`Failed to get app data: ${result.error}`, "error");
-				return false;
-			}
-			setGameData(result.data);
-
-			return true;
-		});
+				setGameData(data);
+			})
+			.catch((error) => {
+				showAppNotification(`Failed to get app data: ${error}`, "error");
+			});
 	}, [deferredGamesQuery, setGameData]);
 
 	const throttledUpdateProviderGames = useThrottledCallback(
@@ -49,29 +48,20 @@ export function useUpdateData(executeOnMount = false) {
 	useAppEvent("gamesChanged", "update-data", throttledUpdateProviderGames);
 
 	const updateAppData = useCallback(async () => {
-		const providerIds = await commands
-			.getProviderIds()
-			.then((providerIdsResult) => {
-				if (providerIdsResult.status === "error") {
-					showAppNotification(
-						`Failed to get info about available game providers: ${providerIdsResult.error}`,
-						"error",
-					);
-					return [];
-				}
+		const providerIds = await commands.getProviderIds().catch((error) => {
+			showAppNotification(
+				`Failed to get info about available game providers: ${error}`,
+				"error",
+			);
+			return null;
+		});
 
-				return providerIdsResult.data;
-			});
-
-		if (providerIds.length === 0) {
-			console.log("No providers available, skipping data update.");
+		if (!providerIds) {
+			console.error("No providers available, skipping data update.");
 			return;
 		}
 
-		function handleDataPromise(
-			promise: Promise<Result<null, Error>>,
-			taskName: string,
-		) {
+		function handleDataPromise(promise: Promise<null>, taskName: string) {
 			loadingTaskCount.current += 1;
 			const taskIndex = loadingTaskCount.current;
 			setLoading((previousLoadingTasks) => [
@@ -79,14 +69,6 @@ export function useUpdateData(executeOnMount = false) {
 				{ name: taskName, index: taskIndex },
 			]);
 			promise
-				.then((result) => {
-					if (result.status === "error") {
-						showAppNotification(
-							`Error while updating data: ${result.error}`,
-							"error",
-						);
-					}
-				})
 				.catch((error) => {
 					showAppNotification(
 						`Failed to initialize data update: ${error}`,

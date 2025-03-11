@@ -80,11 +80,6 @@ impl Game {
 		self
 	}
 
-	pub fn add_subscription(&mut self, subscription: GameSubscription) -> &mut Self {
-		self.from_subscriptions.insert(subscription);
-		self
-	}
-
 	pub fn add_provider_command(
 		&mut self,
 		command_action: ProviderCommandAction,

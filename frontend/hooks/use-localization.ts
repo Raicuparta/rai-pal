@@ -7,7 +7,7 @@ import {
 } from "@localizations/localizations";
 import { AppLocale } from "@api/bindings";
 import { atom, useAtom } from "jotai";
-import { useEffect, useCallback } from "react";
+import { useEffect } from "react";
 import { locale } from "@tauri-apps/plugin-os";
 import { useAppSettings } from "./use-app-settings";
 
@@ -47,19 +47,20 @@ function doFunnyWario(localization: string): string {
 	const wahTextParts: string[] = [];
 	const textParts = localization.split(" ");
 	for (let i = 0; i < textParts.length; i++) {
-		const isParam = textParts[i].includes("{") || textParts[i].includes("}");
+		const textPart = textParts[i];
+		if (!textPart) continue;
+		const isParam = textPart.includes("{") || textPart.includes("}");
 
-		if (isParam || textParts[i].length < 3) {
-			wahTextParts.push(textParts[i]);
+		if (isParam || textPart.length < 3) {
+			wahTextParts.push(textPart);
 			continue;
 		}
 
 		const start = i === 0 ? "W" : "w";
 		const end = i < textParts.length - 1 ? "h" : "h!";
-		const middle = Array.from(
-			{ length: textParts[i].length - 2 },
-			() => "a",
-		).join("");
+		const middle = Array.from({ length: textPart.length - 2 }, () => "a").join(
+			"",
+		);
 
 		wahTextParts.push(`${start}${middle}${end}`);
 	}
@@ -83,7 +84,7 @@ function getLocalizedText<
 	}
 
 	const params = args[0];
-	let localization = language[category][key];
+	let localization = language[category]?.[key];
 
 	if (localization === undefined) {
 		console.error(`Missing localization for key: ${key}`);
@@ -153,21 +154,18 @@ export function useLocalization<TCategory extends LocalizationCategory>(
 		}
 	}, [detectedLocale, setDetectedLocale]);
 
-	return useCallback(
-		<TKey extends LocalizationKey<TCategory>>(
-			key?: TKey,
-			...args: LocalizationFunctionArgs<BaseLocalization[TCategory][TKey]>
-		) => {
-			if (!key) return undefined;
+	return function <TKey extends LocalizationKey<TCategory>>(
+		key?: TKey,
+		...args: LocalizationFunctionArgs<BaseLocalization[TCategory][TKey]>
+	) {
+		if (!key) return undefined;
 
-			return getLocalizedText(
-				localizations[effectiveLocale],
-				category,
-				key,
-				effectiveLocale === "WaWa",
-				...args,
-			);
-		},
-		[effectiveLocale, category],
-	);
+		return getLocalizedText(
+			localizations[effectiveLocale],
+			category,
+			key,
+			effectiveLocale === "WaWa",
+			...args,
+		);
+	};
 }

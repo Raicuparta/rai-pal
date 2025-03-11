@@ -4,10 +4,10 @@ export const frFr: Localization = {
 	meta: {
 		nativeName: "Français (France)",
 	},
+
 	tab: {
 		games: "Jeux",
 		mods: "Mods",
-		tools: "Outils",
 		thanks: "Remerciements",
 	},
 
@@ -15,8 +15,8 @@ export const frFr: Localization = {
 		button: "Ajouter un jeu",
 		title: "Ajouter un jeu",
 		dropField:
-			"Glissez-déposez un exécutable de jeu ici, ou cliquez pour sélectionner un fichier.",
-		note: "Remarque : vous pouvez déposer des fichiers exécutables du jeu n'importe où dans la fenêtre de Rai Pal pour les ajouter à la liste des jeux installés sans ouvrir ce dialogue.",
+			"Glissez et déposez un exécutable de jeu ici, ou cliquez pour sélectionner un fichier.",
+		note: "Remarque : vous pouvez déposer des fichiers exécutables de jeu n'importe où dans la fenêtre de Rai Pal pour les ajouter à la liste des jeux installés sans ouvrir ce dialogue.",
 	},
 
 	refresh: {
@@ -32,7 +32,7 @@ export const frFr: Localization = {
 
 	filterProperty: {
 		provider: "Fournisseur",
-		tags: "Étiquette",
+		tags: "Tag",
 		architecture: "Architecture",
 		unityScriptingBackend: "Backend Unity",
 		engine: "Moteur",
@@ -45,15 +45,17 @@ export const frFr: Localization = {
 		arch32: "32 bits",
 		tagDemo: "Démo",
 		tagVr: "VR native",
-		tagUntagged: "Non étiqueté",
+		tagUntagged: "Non tagué",
 		statusInstalled: "Installé",
 		statusNotInstalled: "Non installé",
 		providerManual: "Manuel",
 	},
 
 	filterValueNote: {
-		providerXboxOnlyInstalled:
-			"Les jeux Xbox PC s'affichent uniquement dans Rai Pal une fois installés.",
+		providerXboxOnlyInstalledAndSubscription:
+			"Affiche uniquement les jeux Xbox PC s'ils sont installés, ou si vous les possédez dans le cadre de l'abonnement PC Game Pass.",
+		providerUbisoftOnlySubscription:
+			"Affiche uniquement les jeux Ubisoft si vous les possédez dans le cadre de l'abonnement Ubisoft+.",
 		engineGodotNotFullySupported:
 			"Les jeux Godot ne sont pas encore entièrement pris en charge.",
 		engineGameMakerNotFullySupported:
@@ -63,15 +65,15 @@ export const frFr: Localization = {
 	providerCommand: {
 		installGame: "Installer",
 		showGameInLibrary: "Afficher dans la bibliothèque",
-		showGameInStore: "Ouvrir la page de la boutique",
-		startGame: "Démarrer le jeu",
+		showGameInStore: "Ouvrir la page du magasin",
+		startGame: "Lancer le jeu",
 		openGamePageInBrowser: "Ouvrir dans le navigateur",
 	},
 
 	gameModal: {
-		startGameButton: "Démarrer le jeu",
-		startGameExecutable: "Démarrer l'exécutable du jeu",
-		startGameViaProvider: "Démarrer le jeu via {provider}",
+		startGameButton: "Lancer le jeu",
+		startGameExecutable: "Lancer l'exécutable du jeu",
+		startGameViaProvider: "Lancer le jeu via {provider}",
 		foldersDropdown: "Dossiers",
 		openGameFilesFolder: "Ouvrir le dossier des fichiers du jeu",
 		openInstalledModsFolder: "Ouvrir le dossier des mods installés",
@@ -80,15 +82,15 @@ export const frFr: Localization = {
 			"Êtes-vous sûr de vouloir retirer ce jeu de Rai Pal ?",
 		refreshGame: "Rafraîchir",
 		failedToReadGameInfo:
-			"Impossible de lire certaines informations importantes sur ce jeu. Cela peut être dû à la protection de l'exécutable. Certains mods pourraient échouer à s'installer.",
+			"Impossible de lire certaines informations importantes sur ce jeu. Cela peut être dû à la protection de l'exécutable. Certains mods peuvent échouer à s'installer.",
 		failedToDetermineEngine:
-			"Impossible de déterminer le moteur de ce jeu. Certains mods pourraient ne pas s'installer.",
+			"Impossible de déterminer le moteur de ce jeu. Certains mods peuvent échouer à s'installer.",
 		gameModsLabel: "Mods",
 		gameNotInstalledWarning:
-			"Ce jeu n'est pas installé, donc je ne suis pas sûr à 100% de la compatibilité des mods. Ceux que vous voyez ci-dessous pourraient fonctionner. Si vous installez le jeu, je vous fournirai des informations plus précises.",
+			"Ce jeu n'est pas installé, donc je ne suis pas sûr à 100% de quels mods sont compatibles. Ceux que vous voyez ci-dessous pourraient fonctionner. Si vous installez le jeu, je vous montrerai des informations plus précises.",
 		uninstallAllModsButton: "Désinstaller tous les mods",
 		uninstallAllModsConfirmation:
-			"Êtes-vous sûr ? Cela supprimera tous les fichiers dans le dossier des mods de ce jeu. Cela ne supprimera pas les fichiers du jeu lui-même.",
+			"Êtes-vous sûr ? Cela supprimera tous les fichiers dans le dossier des mods de ce jeu. Cela ne supprimera aucun fichier du jeu lui-même.",
 	},
 
 	gamesTableColumn: {
@@ -122,28 +124,26 @@ export const frFr: Localization = {
 		byAuthor: "par {authorName}",
 	},
 
-	toolsPage: {
-		openLogsFolderButton: "Ouvrir le dossier des journaux",
+	appDropdownMenu: {
+		showGameThumbnails: "Afficher les vignettes des jeux dans la liste",
+		language: "Langue",
+		autoDetectedLanguage: "Détecté automatiquement - {languageName}",
 		resetRaiPalSettingsButton: "Réinitialiser les paramètres de Rai Pal",
 		resetRaiPalSettingsTooltip:
-			"Réinitialisera les filtres, les boîtes de dialogue de confirmation et sans doute d'autres paramètres.",
-		clearCacheButton: "Vider le cache de Rai Pal",
-		clearCacheTooltip: "Vide la liste de jeux mise en cache par Rai Pal.",
-	},
-
-	appSettings: {
-		showGameThumbnails: "Afficher les images dans la liste de jeux",
-		language: "Langue",
-		autoDetectedLanguage: "Auto-détecté - {languageName}",
+			"Réinitialisera les filtres, les dialogues de confirmation, probablement d'autres choses.",
+		openLogsFolderButton: "Ouvrir le dossier des journaux",
+		clearRaiPalCacheOpenModal: "Effacer le cache de Rai Pal...",
+		clearRaiPalCacheTooltip:
+			"Efface le cache de la liste des jeux utilisé par Rai Pal.",
 	},
 
 	steamCache: {
-		resetSteamCacheButton: "Réinitialiser le cache Steam",
+		resetSteamCacheButtonOpenModal: "Réinitialiser le cache Steam...",
 		resetSteamCacheModalTitle: "Réinitialiser le cache Steam",
 		resetSteamCacheDescription:
-			"Utilisez ceci si Rai Pal affiche des jeux que vous ne possédez pas réellement sur Steam. Cela réinitialisera le cache Steam, et vous devrez redémarrer Steam. Vous obtiendrez une erreur si le fichier a déjà été supprimé.",
+			"Utilisez ceci si Rai Pal affiche des jeux que vous ne possédez pas réellement sur Steam. Cela réinitialisera le cache de Steam, puis vous devrez redémarrer Steam. Vous obtiendrez une erreur si le fichier a déjà été supprimé.",
 		resetSteamCacheSuccess:
-			"Le fichier de cache a été supprimé. Redémarrez Steam, attendez quelques secondes, puis appuyez sur le bouton de rafraîchissement de Rai Pal.",
+			"Le fichier de cache a été supprimé. Veuillez redémarrer Steam, attendre quelques secondes, puis appuyer sur le bouton de rafraîchissement de Rai Pal.",
 	},
 
 	debugData: {
@@ -153,15 +153,14 @@ export const frFr: Localization = {
 
 	thanksPage: {
 		intro:
-			"Bonjour. J'ai créé Rai Pal. J'ai aussi créé d'autres mods VR auparavant, et je travaille actuellement sur un mod VR universel pour les jeux Unity. Si vous appréciez mon travail et souhaitez en voir plus, merci de me soutenir ! Vous pouvez également m'aider en achetant l'un de mes mods gratuits sur itch.io.",
-		starRaiPalOnGitHub: "Donnez une étoile à Rai Pal sur GitHub",
+			"Bonjour. J'ai créé Rai Pal. J'ai également créé d'autres mods VR dans le passé, et je travaille actuellement sur un mod VR universel pour les jeux Unity. Si vous aimez ce que je fais et que vous souhaitez en voir plus, veuillez envisager de faire un don ! Vous pouvez également me soutenir en achetant un de mes mods gratuits sur itch.io.",
+		starRaiPalOnGitHub: "Étoile Rai Pal sur GitHub",
 		otherModdersTitle: "Autres moddeurs",
 		otherModdersDescription:
-			"Rai Pal est conçu pour vous aider à gérer la modding de jeux, et nous ne pouvons pas le faire sans les outils créés par d'autres développeurs. Certains n'ont pas de liens de dons, mais je leur suis extrêmement reconnaissant pour leur travail.",
+			"Rai Pal est conçu pour vous aider à gérer le modding de jeux, et nous ne pouvons pas le faire sans les outils créés par d'autres développeurs. Certaines de ces personnes n'ont pas de liens de donation, mais je suis extrêmement reconnaissant pour leur travail.",
 		modderOnWebsite: "{modderName} sur {website}",
 		patreonLeaderboard: "Classement Patreon",
-		rankedByPatreonDonationAmount:
-			"Classé selon le montant total des dons à vie.",
+		rankedByPatreonDonationAmount: "Classé par montant total des dons à vie.",
 		patreonProfilePrivateNotice:
 			"Si vous ne vous voyez pas ici, c'est parce que votre profil Patreon est privé.",
 	},
@@ -170,4 +169,4 @@ export const frFr: Localization = {
 		cancel: "Annuler",
 		dontAskAgain: "Ne plus demander",
 	},
-};
+} as const;

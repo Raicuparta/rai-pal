@@ -173,27 +173,27 @@ impl ProviderActions for Steam {
 						&app_info.name,
 					);
 
-					game.set_thumbnail_url(&format!("https://cdn.cloudflare.steamstatic.com/steam/apps/{external_id}/capsule_231x87.jpg"))
-						.add_provider_command(
-							ProviderCommandAction::ShowInLibrary,
-							ProviderCommand::String(format!(
-								"steam://nav/games/details/{external_id}"
-							)),
-						)
-						.add_provider_command(
-							ProviderCommandAction::ShowInStore,
-							ProviderCommand::String(format!("steam://store/{external_id}")),
-						)
-						.add_provider_command(
-							ProviderCommandAction::Install,
-							ProviderCommand::String(format!("steam://install/{external_id}")),
-						)
-						.add_provider_command(
-							ProviderCommandAction::OpenInBrowser,
-							ProviderCommand::String(format!(
-								"https://store.steampowered.com/app/{external_id}"
-							)),
-						);
+					game.set_thumbnail_url(&format!(
+						"https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/{external_id}/header.jpg"
+					))
+					.add_provider_command(
+						ProviderCommandAction::ShowInLibrary,
+						ProviderCommand::String(format!("steam://nav/games/details/{external_id}")),
+					)
+					.add_provider_command(
+						ProviderCommandAction::ShowInStore,
+						ProviderCommand::String(format!("steam://store/{external_id}")),
+					)
+					.add_provider_command(
+						ProviderCommandAction::Install,
+						ProviderCommand::String(format!("steam://install/{external_id}")),
+					)
+					.add_provider_command(
+						ProviderCommandAction::OpenInBrowser,
+						ProviderCommand::String(format!(
+							"https://store.steampowered.com/app/{external_id}"
+						)),
+					);
 
 					if app_info
 						.launch_options
