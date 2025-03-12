@@ -128,7 +128,7 @@ syncRemoteMods: "sync-remote-mods"
 
 /** user-defined constants **/
 
-export const PROVIDER_IDS = ["Manual","Xbox","Steam","Ubisoft","Gog","Epic","Ea","Itch"] as const;
+export const PROVIDER_IDS = ["Ea","Epic","Gog","Itch","Manual","Steam","Ubisoft","Xbox"] as const;
 
 /** user-defined types **/
 

@@ -3,7 +3,7 @@ extern crate quote;
 
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::{parse_macro_input, Data, DataEnum, DeriveInput};
+use syn::{Data, DataEnum, DeriveInput, parse_macro_input};
 
 #[proc_macro_attribute]
 pub fn serializable_event(_args: TokenStream, input: TokenStream) -> TokenStream {
@@ -67,10 +67,10 @@ pub fn enum_variants(input: TokenStream) -> TokenStream {
 	// Generate the implementation
 	let output = quote! {
 		impl #enum_name {
-			pub fn variants() -> std::collections::HashSet<#enum_name> {
-				std::collections::HashSet::from([
+			pub fn variants() -> Vec<#enum_name> {
+				vec![
 					#(Self::#variants),*
-				])
+				]
 			}
 		}
 	};
