@@ -49,5 +49,9 @@ export function useAppSettings() {
 		[setSettingsInternal],
 	);
 
-	return [settings.settings, setSettings] as const;
+	const reset = useCallback(() => {
+		setSettings(defaultSettings);
+	}, [setSettings]);
+
+	return [settings.settings, setSettings, reset] as const;
 }
