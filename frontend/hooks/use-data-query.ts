@@ -1,6 +1,6 @@
 import { GamesQuery } from "@api/bindings";
-import { getLocalStorage, setLocalStorage } from "@util/local-storage";
-import { atom, useAtom } from "jotai";
+import { useAppSettingSingle } from "./use-app-setting-single";
+import { useEffect, useRef } from "react";
 
 export const defaultQuery: GamesQuery = {
 	sortBy: "Title",
@@ -16,23 +16,20 @@ export const defaultQuery: GamesQuery = {
 	},
 };
 
-const storageKey = "games-query";
-const gamesQueryAtom = atom<GamesQuery>(
-	getLocalStorage(storageKey, defaultQuery),
-);
-const gamesQueryAtomWithPersistence = atom(
-	(get) => get(gamesQueryAtom),
-	(get, set, partialQuery: Partial<GamesQuery> | null) => {
-		const previousQuery = get(gamesQueryAtom);
-		const newQuery = partialQuery
-			? { ...previousQuery, ...partialQuery }
-			: defaultQuery;
-		set(gamesQueryAtom, newQuery);
-		setLocalStorage(storageKey, newQuery);
-	},
-);
-
 export function useDataQuery() {
-	const [query, setQuery] = useAtom(gamesQueryAtomWithPersistence);
-	return [query, setQuery] as const;
+	const [query, setQuery] = useAppSettingSingle("gamesQuery");
+	const queryRef = useRef(query || defaultQuery);
+
+	useEffect(() => {
+		queryRef.current = query || defaultQuery;
+	}, [query]);
+
+	const setQueryPartial = (partialQuery: Partial<GamesQuery> | null) => {
+		const newQuery = partialQuery
+			? { ...queryRef.current, ...partialQuery }
+			: defaultQuery;
+		setQuery(newQuery);
+	};
+
+	return [query || defaultQuery, setQueryPartial] as const;
 }

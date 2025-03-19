@@ -1,6 +1,5 @@
 import { useLocalization } from "@hooks/use-localization";
 import { CloseButton, Input } from "@mantine/core";
-import { useEffect } from "react";
 
 type Props = {
 	readonly onChange: (search: string) => void;
@@ -9,10 +8,6 @@ type Props = {
 
 export function SearchInput(props: Props) {
 	const t = useLocalization("filterMenu");
-
-	useEffect(() => {
-		console.log("onChange changed!");
-	}, [props.onChange]);
 
 	return (
 		<Input
