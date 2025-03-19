@@ -132,7 +132,7 @@ export const frFr: Localization = {
 		resetRaiPalSettingsTooltip:
 			"Réinitialisera les filtres, les dialogues de confirmation, probablement d'autres choses.",
 		openLogsFolderButton: "Ouvrir le dossier des journaux",
-		clearRaiPalCacheOpenModal: "Effacer le cache de Rai Pal...",
+		clearRaiPalCacheOpenModal: "Effacer le cache de Rai Pal",
 		clearRaiPalCacheTooltip:
 			"Efface le cache de la liste des jeux utilisé par Rai Pal.",
 	},

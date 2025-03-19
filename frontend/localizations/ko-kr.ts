@@ -129,7 +129,7 @@ export const koKr: Localization = {
 		resetRaiPalSettingsTooltip:
 			"필터, 확인 대화 상자 및 기타 설정을 재설정합니다.",
 		openLogsFolderButton: "로그 폴더 열기",
-		clearRaiPalCacheOpenModal: "Rai Pal 캐시 지우기...",
+		clearRaiPalCacheOpenModal: "Rai Pal 캐시 지우기",
 		clearRaiPalCacheTooltip: "Rai Pal이 사용하는 게임 목록 캐시를 지웁니다.",
 	},
 

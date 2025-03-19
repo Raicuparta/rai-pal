@@ -132,7 +132,7 @@ export const deDe: Localization = {
 		resetRaiPalSettingsTooltip:
 			"Setzt Filter, Bestätigungsdialoge und wahrscheinlich andere Dinge zurück.",
 		openLogsFolderButton: "Logs-Ordner öffnen",
-		clearRaiPalCacheOpenModal: "Rai Pal-Cache leeren...",
+		clearRaiPalCacheOpenModal: "Rai Pal-Cache leeren",
 		clearRaiPalCacheTooltip:
 			"Löscht den von Rai Pal verwendeten Spielelisten-Cache.",
 	},

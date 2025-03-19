@@ -124,7 +124,7 @@ export const zhCn: Localization = {
 		resetRaiPalSettingsButton: "重置 Rai Pal 设置",
 		resetRaiPalSettingsTooltip: "将重置筛选器、确认对话框，可能还有其他内容。",
 		openLogsFolderButton: "打开日志文件夹",
-		clearRaiPalCacheOpenModal: "清除 Rai Pal 缓存...",
+		clearRaiPalCacheOpenModal: "清除 Rai Pal 缓存",
 		clearRaiPalCacheTooltip: "清除 Rai Pal 使用的游戏列表缓存。",
 	},
 

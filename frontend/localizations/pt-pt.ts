@@ -137,7 +137,7 @@ export const ptPt: Localization = {
 	},
 
 	steamCache: {
-		resetSteamCacheButtonOpenModal: "Repor cache da Steam...",
+		resetSteamCacheButtonOpenModal: "Repor cache da Steam",
 		resetSteamCacheModalTitle: "Repor cache da Steam",
 		resetSteamCacheDescription:
 			"Usa isto se o Rai Pal estiver a mostrar jogos que não possuis na Steam. Isto irá repor a cache da Steam e terás de a reiniciar. Irás receber um erro se o ficheiro já tiver sido apagado.",

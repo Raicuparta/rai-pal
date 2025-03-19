@@ -131,7 +131,7 @@ export const jaJp: Localization = {
 		resetRaiPalSettingsTooltip:
 			"フィルター、確認ダイアログ、おそらく他の設定をリセットします。",
 		openLogsFolderButton: "ログフォルダーを開く",
-		clearRaiPalCacheOpenModal: "Rai Palのキャッシュをクリア...",
+		clearRaiPalCacheOpenModal: "Rai Palのキャッシュをクリア",
 		clearRaiPalCacheTooltip:
 			"Rai Palが使用するゲームリストキャッシュをクリアします。",
 	},

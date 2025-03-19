@@ -274,7 +274,7 @@ export const enUs = {
 		openLogsFolderButton: "Open Logs Folder",
 
 		// Button for clearing Rai Pal's local game database cache. The ellipsis indicates that a modal will open.
-		clearRaiPalCacheOpenModal: "Clear Rai Pal cache...",
+		clearRaiPalCacheOpenModal: "Clear Rai Pal cache",
 
 		// Tooltip for the button that clears Rai Pal's local game database cache.
 		clearRaiPalCacheTooltip: "Clears the game list cache used by Rai Pal.",
