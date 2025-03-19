@@ -1,4 +1,4 @@
-import { Tabs, Container, Stack } from "@mantine/core";
+import { Tabs, Container, Stack, Group } from "@mantine/core";
 import { Page, PageTab } from "@components/page-tab";
 import { IconBox, IconDeviceGamepad } from "@tabler/icons-react";
 import { GamesPage } from "./games/games-page";
@@ -42,47 +42,52 @@ export function AppTabs() {
 			: `${gamesData.gameIds.length} / ${gamesData.totalCount}`;
 
 	return (
-		<Container p={0}>
-			<Tabs
-				value={selectedTab}
-				onChange={handleTabChange}
-				radius={0}
+		<Tabs
+			value={selectedTab}
+			onChange={handleTabChange}
+			radius={0}
+		>
+			<Stack
+				gap={0}
+				style={{ height: "100vh" }}
 			>
-				<Stack
-					gap={0}
-					style={{ height: "100vh" }}
-				>
-					<Tabs.List>
-						{Object.entries(pages).map(([pageId, page]) => (
-							<PageTab
-								id={pageId as TabId}
-								key={pageId}
-								page={page}
-								label={page === pages.Games ? gamesCountLabel : undefined}
-							/>
-						))}
-						<AppSettings />
-					</Tabs.List>
+				<Tabs.List bg="dark">
+					<Container
+						p={0}
+						flex={1}
+					>
+						<Group>
+							{Object.entries(pages).map(([pageId, page]) => (
+								<PageTab
+									id={pageId as TabId}
+									key={pageId}
+									page={page}
+									label={page === pages.Games ? gamesCountLabel : undefined}
+								/>
+							))}
+							<AppSettings />
+						</Group>
+					</Container>
+				</Tabs.List>
 
-					{Object.entries(pages).map(([pageId, page]) => (
-						<Tabs.Panel
-							key={pageId}
-							style={{
-								overflowY: "auto",
-								flex: 1,
-							}}
-							value={pageId}
+				{Object.entries(pages).map(([pageId, page]) => (
+					<Tabs.Panel
+						key={pageId}
+						style={{
+							overflowY: "auto",
+							flex: 1,
+						}}
+						value={pageId}
+					>
+						<Container
+							h="100%"
+							py="xs"
 						>
-							<Container
-								h="100%"
-								py="xs"
-							>
-								<page.component />
-							</Container>
-						</Tabs.Panel>
-					))}
-				</Stack>
-			</Tabs>
-		</Container>
+							<page.component />
+						</Container>
+					</Tabs.Panel>
+				))}
+			</Stack>
+		</Tabs>
 	);
 }

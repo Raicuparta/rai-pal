@@ -52,7 +52,6 @@ export function AppSettings() {
 			closeOnItemClick={true}
 			withinPortal={false}
 			keepMounted={true}
-			shadow="md"
 		>
 			<Menu.Target>
 				<Tabs.Tab
