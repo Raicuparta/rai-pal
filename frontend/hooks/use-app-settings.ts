@@ -1,10 +1,13 @@
 import { AppSettings, commands } from "@api/bindings";
 import { atom, useAtom } from "jotai";
-import { useEffect } from "react";
+import { useCallback, useEffect, useRef } from "react";
 
 const defaultSettings: AppSettings = {
 	hideGameThumbnails: false,
 	overrideLanguage: null,
+	gamesQuery: null,
+	selectedTab: "Games",
+	skipConfirmDialogs: [],
 };
 
 const appSettingsAtom = atom({
@@ -14,6 +17,7 @@ const appSettingsAtom = atom({
 
 export function useAppSettings() {
 	const [settings, setSettingsInternal] = useAtom(appSettingsAtom);
+	const settingsRef = useRef(settings);
 
 	useEffect(() => {
 		if (settings.isInitialized) return;
@@ -23,11 +27,27 @@ export function useAppSettings() {
 		});
 	}, [setSettingsInternal, settings]);
 
-	const setSettings = (newSettings: AppSettings) => {
-		commands.saveAppSettings(newSettings).then(() => {
-			setSettingsInternal({ isInitialized: true, settings: newSettings });
-		});
-	};
+	useEffect(() => {
+		settingsRef.current = settings;
+	}, [settings]);
+
+	const setSettings = useCallback(
+		(
+			newSettingsGetter:
+				| AppSettings
+				| ((prevSettings: AppSettings) => AppSettings),
+		) => {
+			const newSettings =
+				typeof newSettingsGetter === "function"
+					? newSettingsGetter(settingsRef.current.settings)
+					: newSettingsGetter;
+
+			commands.saveAppSettings(newSettings).then(() => {
+				setSettingsInternal({ isInitialized: true, settings: newSettings });
+			});
+		},
+		[setSettingsInternal],
+	);
 
 	return [settings.settings, setSettings] as const;
 }

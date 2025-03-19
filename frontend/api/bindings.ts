@@ -133,7 +133,7 @@ export const PROVIDER_IDS = ["Ea","Epic","Gog","Itch","Manual","Steam","Ubisoft"
 /** user-defined types **/
 
 export type AppLocale = "EnUs" | "EsEs" | "FrFr" | "DeDe" | "PtPt" | "ZhCn" | "JaJp" | "KoKr" | "WaWa"
-export type AppSettings = { hideGameThumbnails: boolean; overrideLanguage: AppLocale | null }
+export type AppSettings = { hideGameThumbnails: boolean; overrideLanguage: AppLocale | null; gamesQuery: GamesQuery | null; selectedTab: TabId; skipConfirmDialogs: string[] }
 export type Architecture = "X64" | "X86"
 export type CommonModData = { id: string; engine: EngineBrand | null; unityBackend: UnityScriptingBackend | null; engineVersionRange: EngineVersionRange | null; loaderId: string }
 export type EngineBrand = "Unity" | "Unreal" | "Godot" | "GameMaker"
@@ -175,6 +175,7 @@ export type SelectInstalledGame = [ProviderId, string]
 export type SyncLocalMods = Partial<{ [key in string]: LocalMod }>
 export type SyncModLoaders = Partial<{ [key in string]: ModLoaderData }>
 export type SyncRemoteMods = Partial<{ [key in string]: RemoteMod }>
+export type TabId = "Games" | "Mods" | "Thanks"
 export type UnityScriptingBackend = "Il2Cpp" | "Mono"
 
 /** tauri-specta globals **/

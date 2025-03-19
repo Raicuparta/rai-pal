@@ -1,3 +1,4 @@
+import { TabId } from "@api/bindings";
 import { useLocalization } from "@hooks/use-localization";
 import { LocalizationKey } from "@localizations/localizations";
 import { Tabs, Stack, Text } from "@mantine/core";
@@ -9,6 +10,7 @@ export type Page = {
 };
 
 type Props = {
+	readonly id: TabId;
 	readonly page: Page;
 	readonly label?: string;
 };
@@ -18,7 +20,7 @@ export function PageTab(props: Props) {
 
 	return (
 		<Tabs.Tab
-			value={props.page.localizationKey}
+			value={props.id}
 			leftSection={<props.page.icon />}
 		>
 			<Stack

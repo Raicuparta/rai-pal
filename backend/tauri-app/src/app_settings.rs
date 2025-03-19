@@ -1,7 +1,7 @@
-use std::{fs, path::PathBuf};
+use std::{collections::HashSet, fs, path::PathBuf};
 
 use crate::result::Result;
-use rai_pal_core::paths;
+use rai_pal_core::{games_query::GamesQuery, paths};
 use rai_pal_proc_macros::{serializable_enum, serializable_struct};
 
 #[serializable_enum]
@@ -17,11 +17,23 @@ pub enum AppLocale {
 	WaWa,
 }
 
+#[serializable_enum]
+#[derive(Default)]
+pub enum TabId {
+	#[default]
+	Games,
+	Mods,
+	Thanks,
+}
+
 #[serializable_struct]
 #[derive(Default)]
 pub struct AppSettings {
 	pub hide_game_thumbnails: bool,
 	pub override_language: Option<AppLocale>,
+	pub games_query: Option<GamesQuery>,
+	pub selected_tab: TabId,
+	pub skip_confirm_dialogs: HashSet<String>,
 }
 
 impl AppSettings {
