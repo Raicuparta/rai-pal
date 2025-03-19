@@ -11,8 +11,8 @@ import {
 } from "@mantine/core";
 import { forwardRef, useState } from "react";
 import { IconArrowBack, IconCheck } from "@tabler/icons-react";
-import { usePersistedState } from "@hooks/use-persisted-state";
 import { useLocalization } from "@hooks/use-localization";
+import { useAppSettingSingle } from "@hooks/use-app-setting-single";
 
 interface Props<TResultValue> extends ButtonProps {
 	readonly onClick: () => Promise<TResultValue>;
@@ -34,10 +34,11 @@ function CommandButtonInternal<TResultValue>(
 ) {
 	const t = useLocalization("commandButton");
 	const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
-	const [shouldSkipConfirm, setShouldSkipConfirm] = usePersistedState(
-		false,
-		`skip-confirm-${confirmationSkipId}`,
-	);
+	const [skipConfirmDialogs, setSkipConfirmDialogs] =
+		useAppSettingSingle("skipConfirmDialogs");
+	const confirmDialogId = `skip-confirm-${confirmationSkipId}`;
+	const shouldSkipConfirm = skipConfirmDialogs.includes(confirmDialogId);
+
 	const [dontAskAgain, setDontAskAgain] = useState(false);
 	const [executeCommand, isLoading, success] = useAsyncCommand(onClick);
 
@@ -58,7 +59,12 @@ function CommandButtonInternal<TResultValue>(
 	};
 
 	const confirm = () => {
-		setShouldSkipConfirm(dontAskAgain);
+		if (dontAskAgain) {
+			setSkipConfirmDialogs((prev) => {
+				if (prev.includes(confirmDialogId)) return prev;
+				return [...prev, confirmDialogId];
+			});
+		}
 		executeCommandWithSuccessCallback();
 		closeConfirmation();
 	};
