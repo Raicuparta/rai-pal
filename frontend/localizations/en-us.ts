@@ -278,6 +278,9 @@ export const enUs = {
 
 		// Tooltip for the button that clears Rai Pal's local game database cache.
 		clearRaiPalCacheTooltip: "Clears the game list cache used by Rai Pal.",
+
+		// Title of the section that lists possible game subscriptions that the user can mark as owned.
+		ownedSubscriptions: "Owned subscriptions",
 	},
 
 	// Button and modal for resetting Steam's cache.

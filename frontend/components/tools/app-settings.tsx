@@ -1,4 +1,4 @@
-import { AppLocale, commands } from "@api/bindings";
+import { AppLocale, commands, GameSubscription } from "@api/bindings";
 import { useAppSettings } from "@hooks/use-app-settings";
 import {
 	NativeSelect,
@@ -8,6 +8,9 @@ import {
 	Tabs,
 	Stack,
 	Tooltip,
+	Divider,
+	InputLabel,
+	Card,
 } from "@mantine/core";
 import { useAtomValue } from "jotai";
 import { detectedLocaleAtom, useLocalization } from "@hooks/use-localization";
@@ -37,6 +40,13 @@ const locales: AppLocale[] = [
 	"WaWa",
 ];
 
+const subscriptions: GameSubscription[] = [
+	"XboxGamePass",
+	"EaPlay",
+	"UbisoftPremium",
+	"UbisoftClassics",
+];
+
 export function AppSettings() {
 	const t = useLocalization("appDropdownMenu");
 	const [settings, setSettings, resetSettings] = useAppSettings();
@@ -58,9 +68,6 @@ export function AppSettings() {
 					value="_" // This isn't a real tab, so random value here.
 					ml="auto"
 					leftSection={<IconMenu2 />}
-					onClick={(e) => {
-						e.stopPropagation();
-					}}
 				/>
 			</Menu.Target>
 			<Menu.Dropdown p="xs">
@@ -106,6 +113,8 @@ export function AppSettings() {
 						{t("resetRaiPalSettingsButton")}
 					</Menu.Item>
 				</Tooltip>
+
+				<Divider my="xs" />
 				<NativeSelect
 					label={
 						<Group>
@@ -140,6 +149,31 @@ export function AppSettings() {
 						</option>
 					))}
 				</NativeSelect>
+				<Divider my="xs" />
+				<InputLabel>{t("ownedSubscriptions")}</InputLabel>
+				<Card
+					withBorder
+					p={0}
+				>
+					{subscriptions.map((subscription) => (
+						<SwitchButton
+							key={subscription}
+							value={settings.ownedSubscriptions.includes(subscription)}
+							onChange={(checked) => {
+								setSettings({
+									...settings,
+									ownedSubscriptions: checked
+										? [...settings.ownedSubscriptions, subscription]
+										: settings.ownedSubscriptions.filter(
+												(s) => s !== subscription,
+											),
+								});
+							}}
+						>
+							{subscription}
+						</SwitchButton>
+					))}
+				</Card>
 			</Menu.Dropdown>
 		</Menu>
 	);

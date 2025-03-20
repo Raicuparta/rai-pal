@@ -8,6 +8,7 @@ interface Props extends MenuItemProps {
 export function SwitchButton({ value, onChange, ...props }: Props) {
 	return (
 		<Menu.Item
+			closeMenuOnClick={false}
 			leftSection={
 				<Switch
 					checked={value}
