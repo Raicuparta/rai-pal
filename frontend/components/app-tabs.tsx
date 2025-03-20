@@ -31,7 +31,6 @@ export function AppTabs() {
 	const [selectedTab, setSelectedTab] = useAppSettingSingle("selectedTab");
 
 	const handleTabChange = (pageId: string | null) => {
-		console.log("tab changed", pageId);
 		if (pageId === null || !(pageId in pages)) return;
 		setSelectedTab(pageId as TabId);
 	};

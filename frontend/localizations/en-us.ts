@@ -21,6 +21,16 @@ export const enUs = {
 		thanks: "Thanks",
 	},
 
+	gamesPage: {
+		// Message that shows when the filters applied to the game list make it return zero games.
+		emptyGamesList:
+			"Rai Pal didn't find any games at all. Remember Rai Pal needs to find installed apps from other game providers, like Steam, Epic, etc.",
+
+		// Message that shows when Rai Pal didn't find any games at all.
+		emptyFilteredGamesList:
+			"Nothing! All of your games are hidden because of the filters you selected. Clear your filters to see your beautiful games again.",
+	},
+
 	addGame: {
 		// Button for adding a game to Rai Pal.
 		button: "Add game",

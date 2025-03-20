@@ -12,9 +12,10 @@ import { GameRow, gameRowHeight } from "./game-row";
 import { useDataQuery } from "@hooks/use-data-query";
 import { gamesColumns } from "./games-columns";
 import styles from "./games.module.css";
-import { Table } from "@mantine/core";
+import { Alert, Table } from "@mantine/core";
 import React from "react";
 import { TableHead } from "@components/table/table-head";
+import { useLocalization } from "@hooks/use-localization";
 
 const tableComponents: TableComponents<GameId, unknown> = {
 	TableBody: React.forwardRef(function TableBody(props, ref) {
@@ -46,6 +47,7 @@ export function GamesTable() {
 	const gameData = useAtomValue(gameDataAtom);
 	const [dataQuery, setDataQuery] = useDataQuery();
 	const tableRef = useRef<TableVirtuosoHandle>(null);
+	const t = useLocalization("gamesPage");
 
 	const onChangeSort = (sortBy: GamesSortBy) => {
 		const sortDescending =
@@ -71,6 +73,14 @@ export function GamesTable() {
 			tableRef.current.scrollToIndex(0);
 		}
 	}, [dataQuery]);
+
+	if (gameData.totalCount === BigInt(0)) {
+		return <Alert>{t("emptyGamesList")}</Alert>;
+	}
+
+	if (gameData.gameIds.length === 0) {
+		return <Alert>{t("emptyFilteredGamesList")}</Alert>;
+	}
 
 	return (
 		<TableContainer>
