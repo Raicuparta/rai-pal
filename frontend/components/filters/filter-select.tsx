@@ -1,9 +1,9 @@
-import { Button, Checkbox, Stack, Tooltip } from "@mantine/core";
+import { Button, InputLabel, Stack } from "@mantine/core";
 import { GamesFilter } from "@api/bindings";
 import { IconRestore } from "@tabler/icons-react";
-import styles from "./filters.module.css";
 import { useLocalization } from "@hooks/use-localization";
 import { LocalizationKey } from "@localizations/localizations";
+import { CheckboxButton } from "@components/checkbox-button";
 
 export type FilterKey = keyof GamesFilter;
 export type FilterValue<TFilterKey extends FilterKey> =
@@ -150,6 +150,7 @@ export function FilterSelect<TFilterKey extends FilterKey>({
 	const tValueNote = useLocalization("filterValueNote");
 
 	function handleFilterClick(id: TFilterKey, value: string | null) {
+		console.log("wtf");
 		const newValues = [...currentValues];
 		const index = newValues.indexOf(value as FilterValue<TFilterKey>);
 		if (index === -1) {
@@ -166,44 +167,35 @@ export function FilterSelect<TFilterKey extends FilterKey>({
 	}
 
 	return (
-		<Stack gap="xs">
-			<Button.Group orientation="vertical">
-				<Button disabled>{tProperty(filterDetails[id].localizationKey)}</Button>
-				{possibleValues.map((possibleValue) => {
-					const valueDetails =
-						possibleValue !== null
-							? filterDetails[id].valueDetails[possibleValue]
-							: undefined;
-					return (
-						<Tooltip
-							key={possibleValue}
-							label={tValueNote(valueDetails?.noteLocalizationKey)}
-							disabled={!valueDetails?.noteLocalizationKey}
-						>
-							<Button
-								fullWidth
-								justify="start"
-								leftSection={
-									<Checkbox
-										tabIndex={-1}
-										readOnly
-										className={styles.checkbox}
-										checked={currentValues.includes(possibleValue)}
-									/>
-								}
-								onClick={() => handleFilterClick(id, possibleValue)}
+		<Stack>
+			<Stack
+				gap={0}
+				align="center"
+			>
+				<InputLabel>{tProperty(filterDetails[id].localizationKey)}</InputLabel>
+				<Button.Group orientation="vertical">
+					{possibleValues.map((possibleValue) => {
+						const valueDetails =
+							possibleValue !== null
+								? filterDetails[id].valueDetails[possibleValue]
+								: undefined;
+						return (
+							<CheckboxButton
+								key={possibleValue}
+								tooltip={tValueNote(valueDetails?.noteLocalizationKey)}
+								checked={currentValues.includes(possibleValue)}
+								onChange={() => handleFilterClick(id, possibleValue)}
 							>
 								{possibleValue === null
 									? tValue(filterDetails[id].emptyLocalizationKey)
 									: (valueDetails?.staticDisplayText ??
 										tValue(valueDetails?.localizationKey) ??
 										possibleValue)}
-								{valueDetails?.noteLocalizationKey && " *"}
-							</Button>
-						</Tooltip>
-					);
-				})}
-			</Button.Group>
+							</CheckboxButton>
+						);
+					})}
+				</Button.Group>
+			</Stack>
 			<Button
 				onClick={handleResetClick}
 				leftSection={<IconRestore fontSize={10} />}

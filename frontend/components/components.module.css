@@ -12,3 +12,7 @@
 	opacity: 0.5;
 	pointer-events: none;
 }
+
+.buttonCheckbox {
+	pointer-events: none;
+}

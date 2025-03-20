@@ -10,7 +10,7 @@ import {
 	Tooltip,
 	Divider,
 	InputLabel,
-	Card,
+	Button,
 } from "@mantine/core";
 import { useAtomValue } from "jotai";
 import { detectedLocaleAtom, useLocalization } from "@hooks/use-localization";
@@ -27,6 +27,7 @@ import {
 } from "@localizations/localizations";
 import { SwitchButton } from "@components/switch-button";
 import { SteamCacheButton } from "./steam-cache-button";
+import { CheckboxButton } from "@components/checkbox-button";
 
 const locales: AppLocale[] = [
 	"EnUs",
@@ -70,7 +71,10 @@ export function AppSettings() {
 					leftSection={<IconMenu2 />}
 				/>
 			</Menu.Target>
-			<Menu.Dropdown p="xs">
+			<Menu.Dropdown
+				p="xs"
+				bg="dark"
+			>
 				<Stack>
 					<SwitchButton
 						value={!settings.hideGameThumbnails}
@@ -151,15 +155,13 @@ export function AppSettings() {
 				</NativeSelect>
 				<Divider my="xs" />
 				<InputLabel>{t("ownedSubscriptions")}</InputLabel>
-				<Card
-					withBorder
-					p={0}
-				>
+				<Button.Group orientation="vertical">
 					{/* TODO: trigger a re-fetch if these change */}
 					{subscriptions.map((subscription) => (
-						<SwitchButton
+						<CheckboxButton
+							checked={settings.ownedSubscriptions.includes(subscription)}
 							key={subscription}
-							value={settings.ownedSubscriptions.includes(subscription)}
+							// value={settings.ownedSubscriptions.includes(subscription)}
 							onChange={(checked) => {
 								setSettings({
 									...settings,
@@ -172,9 +174,9 @@ export function AppSettings() {
 							}}
 						>
 							{subscription}
-						</SwitchButton>
+						</CheckboxButton>
 					))}
-				</Card>
+				</Button.Group>
 			</Menu.Dropdown>
 		</Menu>
 	);
