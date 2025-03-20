@@ -16,7 +16,9 @@ const thumbnail: GamesColumn = {
 	hidable: true,
 	width: 100,
 	component: ({ item }: CellProps) => {
-		const thumbnailUrl = `https://raicuparta.com/cdn-cgi/image/width=80,quality=75,anim=false,format=webp/${item.thumbnailUrl}`;
+		const thumbnailUrl = item.thumbnailUrl
+			? `https://raicuparta.com/cdn-cgi/image/width=80,quality=75,anim=false,format=webp/${item.thumbnailUrl}`
+			: undefined;
 
 		return (
 			<Table.Td
