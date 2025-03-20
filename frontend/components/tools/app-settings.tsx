@@ -5,7 +5,6 @@ import {
 	Group,
 	Box,
 	Menu,
-	Tabs,
 	Stack,
 	Tooltip,
 	Divider,
@@ -65,11 +64,14 @@ export function AppSettings() {
 			keepMounted={true}
 		>
 			<Menu.Target>
-				<Tabs.Tab
-					value="_" // This isn't a real tab, so random value here.
+				<Button
+					variant="filled"
+					color="dark"
 					ml="auto"
-					leftSection={<IconMenu2 />}
-				/>
+					fz="md"
+				>
+					<IconMenu2 />
+				</Button>
 			</Menu.Target>
 			<Menu.Dropdown
 				p="xs"
