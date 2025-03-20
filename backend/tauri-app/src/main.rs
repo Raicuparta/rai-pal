@@ -454,6 +454,7 @@ async fn refresh_remote_games(handle: AppHandle) -> Result {
 	let state = handle.app_state();
 	let remote_games = remote_game::get().await?;
 	let manual_remote_games = remote_games.get(&ProviderId::Manual);
+	let app_settings = AppSettings::read();
 
 	state
 		.games
@@ -486,6 +487,14 @@ async fn refresh_remote_games(handle: AppHandle) -> Result {
 
 						provider_remote_games.values().for_each(|remote_game| {
 							if let Some(subscriptions) = remote_game.subscriptions.as_ref() {
+								if !subscriptions.iter().any(|remote_game_subscription| {
+									app_settings
+										.owned_subscriptions
+										.contains(remote_game_subscription)
+								}) {
+									return;
+								}
+
 								if let Some(remote_game_title) = remote_game.title.as_ref() {
 									if let Some(ids) = remote_game.ids.get(provider_id) {
 										ids.iter().for_each(|remote_game_id| {

@@ -155,6 +155,7 @@ export function AppSettings() {
 					withBorder
 					p={0}
 				>
+					{/* TODO: trigger a re-fetch if these change */}
 					{subscriptions.map((subscription) => (
 						<SwitchButton
 							key={subscription}
