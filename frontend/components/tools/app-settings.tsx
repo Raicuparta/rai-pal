@@ -1,4 +1,4 @@
-import { AppLocale, commands, GameSubscription } from "@api/bindings";
+import { AppLocale, commands } from "@api/bindings";
 import { useAppSettings } from "@hooks/use-app-settings";
 import {
 	NativeSelect,
@@ -26,7 +26,7 @@ import {
 } from "@localizations/localizations";
 import { SwitchButton } from "@components/switch-button";
 import { SteamCacheButton } from "./steam-cache-button";
-import { CheckboxButton } from "@components/checkbox-button";
+import { SubscriptionSelector } from "./subscription-selector";
 
 const locales: AppLocale[] = [
 	"EnUs",
@@ -38,13 +38,6 @@ const locales: AppLocale[] = [
 	"PtPt",
 	"ZhCn",
 	"WaWa",
-];
-
-const subscriptions: GameSubscription[] = [
-	"XboxGamePass",
-	"EaPlay",
-	"UbisoftPremium",
-	"UbisoftClassics",
 ];
 
 export function AppSettings() {
@@ -157,28 +150,7 @@ export function AppSettings() {
 				</NativeSelect>
 				<Divider my="xs" />
 				<InputLabel>{t("ownedSubscriptions")}</InputLabel>
-				<Button.Group orientation="vertical">
-					{/* TODO: trigger a re-fetch if these change */}
-					{subscriptions.map((subscription) => (
-						<CheckboxButton
-							checked={settings.ownedSubscriptions.includes(subscription)}
-							key={subscription}
-							// value={settings.ownedSubscriptions.includes(subscription)}
-							onChange={(checked) => {
-								setSettings({
-									...settings,
-									ownedSubscriptions: checked
-										? [...settings.ownedSubscriptions, subscription]
-										: settings.ownedSubscriptions.filter(
-												(s) => s !== subscription,
-											),
-								});
-							}}
-						>
-							{subscription}
-						</CheckboxButton>
-					))}
-				</Button.Group>
+				<SubscriptionSelector />
 			</Menu.Dropdown>
 		</Menu>
 	);

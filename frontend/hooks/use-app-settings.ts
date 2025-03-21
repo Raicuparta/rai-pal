@@ -43,7 +43,7 @@ export function useAppSettings() {
 					? newSettingsGetter(settingsRef.current.settings)
 					: newSettingsGetter;
 
-			commands.saveAppSettings(newSettings).then(() => {
+			return commands.saveAppSettings(newSettings).then(() => {
 				setSettingsInternal({ isInitialized: true, settings: newSettings });
 			});
 		},

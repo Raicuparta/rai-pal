@@ -9,7 +9,6 @@ export const gameDataAtom = atom<GameIdsResponse>({
 	totalCount: BigInt(0),
 });
 
-
 export const [modLoadersAtom, useModLoadersSubscription] = dataSubscription(
 	"syncModLoaders",
 	{},
