@@ -1,5 +1,5 @@
 import { useCallback, useDeferredValue, useEffect, useRef } from "react";
-import { useSetAtom } from "jotai";
+import { useAtom, useSetAtom } from "jotai";
 import { commands, PROVIDER_IDS } from "@api/bindings";
 import { loadingTasksAtom, gameDataAtom } from "./use-data";
 import { showAppNotification } from "@components/app-notifications";
@@ -8,21 +8,23 @@ import { useThrottledCallback } from "@mantine/hooks";
 import { useDataQuery } from "./use-data-query";
 
 export function useUpdateData(executeOnMount = false) {
-	const setLoading = useSetAtom(loadingTasksAtom);
+	const [loadingTasks, setLoadingTasks] = useAtom(loadingTasksAtom);
 	const setGameData = useSetAtom(gameDataAtom);
 	const [gamesQuery] = useDataQuery();
 	const deferredGamesQuery = useDeferredValue(gamesQuery);
-	const fetchCount = useRef(0);
-	const loadingTaskCount = useRef(0);
+	const totalFetchCount = useRef(0);
+	const totalLoadingTaskCount = useRef(0);
 	const hasExecutedOnMount = useRef(false);
+	const isLoading = useRef(false);
+	const refreshWhenLoadingDone = useRef(false);
 
 	const updateProviderGames = useCallback(() => {
-		fetchCount.current++;
-		const thisFetchCount = fetchCount.current;
+		totalFetchCount.current++;
+		const thisFetchCount = totalFetchCount.current;
 		commands
 			.getGameIds(deferredGamesQuery)
 			.then((data) => {
-				if (thisFetchCount !== fetchCount.current) {
+				if (thisFetchCount !== totalFetchCount.current) {
 					console.log(
 						"Cancelling this fetch since another one happened in the meantime.",
 					);
@@ -48,10 +50,18 @@ export function useUpdateData(executeOnMount = false) {
 	useAppEvent("gamesChanged", "update-data", throttledUpdateProviderGames);
 
 	const updateAppData = useCallback(async () => {
+		if (isLoading.current) {
+			console.log(
+				"Loading tasks are in progress, will refresh once loading is done.",
+			);
+			refreshWhenLoadingDone.current = true;
+			return;
+		}
+
 		function handleDataPromise(promise: Promise<null>, taskName: string) {
-			loadingTaskCount.current += 1;
-			const taskIndex = loadingTaskCount.current;
-			setLoading((previousLoadingTasks) => [
+			totalLoadingTaskCount.current += 1;
+			const taskIndex = totalLoadingTaskCount.current;
+			setLoadingTasks((previousLoadingTasks) => [
 				...previousLoadingTasks,
 				{ name: taskName, index: taskIndex },
 			]);
@@ -63,7 +73,7 @@ export function useUpdateData(executeOnMount = false) {
 					);
 				})
 				.finally(() =>
-					setLoading((previousLoadingTasks) =>
+					setLoadingTasks((previousLoadingTasks) =>
 						previousLoadingTasks.filter((task) => task.index !== taskIndex),
 					),
 				);
@@ -75,7 +85,7 @@ export function useUpdateData(executeOnMount = false) {
 
 		handleDataPromise(commands.refreshMods(), "mods");
 		handleDataPromise(commands.refreshRemoteGames(), "remote data");
-	}, [setLoading]);
+	}, [setLoadingTasks]);
 
 	useEffect(() => {
 		if (executeOnMount && !hasExecutedOnMount.current) {
@@ -83,6 +93,14 @@ export function useUpdateData(executeOnMount = false) {
 			hasExecutedOnMount.current = true;
 		}
 	}, [executeOnMount, updateAppData]);
+
+	useEffect(() => {
+		isLoading.current = loadingTasks.length > 0;
+		if (refreshWhenLoadingDone.current) {
+			refreshWhenLoadingDone.current = false;
+			updateAppData();
+		}
+	}, [loadingTasks.length, updateAppData]);
 
 	return updateAppData;
 }

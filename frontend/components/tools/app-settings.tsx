@@ -1,4 +1,4 @@
-import { AppLocale, commands } from "@api/bindings";
+import { AppLocale, commands, GameSubscription } from "@api/bindings";
 import { useAppSettings } from "@hooks/use-app-settings";
 import {
 	NativeSelect,
@@ -26,7 +26,9 @@ import {
 } from "@localizations/localizations";
 import { SwitchButton } from "@components/switch-button";
 import { SteamCacheButton } from "./steam-cache-button";
-import { SubscriptionSelector } from "./subscription-selector";
+import { CheckboxButton } from "@components/checkbox-button";
+import { useUpdateData } from "@hooks/use-update-data";
+import { useState } from "react";
 
 const locales: AppLocale[] = [
 	"EnUs",
@@ -40,10 +42,20 @@ const locales: AppLocale[] = [
 	"WaWa",
 ];
 
+const subscriptions: GameSubscription[] = [
+	"XboxGamePass",
+	"EaPlay",
+	"UbisoftPremium",
+	"UbisoftClassics",
+];
+
 export function AppSettings() {
 	const t = useLocalization("appDropdownMenu");
 	const [settings, setSettings, resetSettings] = useAppSettings();
 	const detectedLocale = useAtomValue(detectedLocaleAtom);
+	const updateAppData = useUpdateData();
+	const [gamesNeedRefreshing, setGamesNeedRefreshing] =
+		useState<boolean>(false);
 
 	const localeSelectValues = locales.map((locale) => ({
 		value: locale as string,
@@ -55,6 +67,13 @@ export function AppSettings() {
 			closeOnItemClick={true}
 			withinPortal={false}
 			keepMounted={true}
+			withOverlay={true}
+			onClose={() => {
+				if (gamesNeedRefreshing) {
+					setGamesNeedRefreshing(false);
+					updateAppData();
+				}
+			}}
 		>
 			<Menu.Target>
 				<Button
@@ -119,6 +138,13 @@ export function AppSettings() {
 						<Group>
 							<span>{t("language")}</span>
 							<IconLanguage />
+
+							{/* 
+							The text below is purposely left untranslated to make it easier to find,
+							in case the user doesn't speak the currently selected language.
+							I also included that icon that google uses for Translate,
+							but I feel like nobody actually identifies that as a "language" icon. Eh.
+							*/}
 							<Box opacity={0.5}>Language</Box>
 						</Group>
 					}
@@ -150,7 +176,27 @@ export function AppSettings() {
 				</NativeSelect>
 				<Divider my="xs" />
 				<InputLabel>{t("ownedSubscriptions")}</InputLabel>
-				<SubscriptionSelector />
+				<Button.Group orientation="vertical">
+					{subscriptions.map((subscription) => (
+						<CheckboxButton
+							checked={settings.ownedSubscriptions.includes(subscription)}
+							key={subscription}
+							onChange={(checked) => {
+								const newSubscriptions = checked
+									? [...settings.ownedSubscriptions, subscription]
+									: settings.ownedSubscriptions.filter(
+											(s) => s !== subscription,
+										);
+								setSettings({
+									...settings,
+									ownedSubscriptions: newSubscriptions,
+								}).finally(() => setGamesNeedRefreshing(true));
+							}}
+						>
+							{subscription}
+						</CheckboxButton>
+					))}
+				</Button.Group>
 			</Menu.Dropdown>
 		</Menu>
 	);
