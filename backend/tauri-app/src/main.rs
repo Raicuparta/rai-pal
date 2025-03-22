@@ -11,6 +11,7 @@ use app_settings::AppSettings;
 use app_state::{AppState, StateData, StatefulHandle};
 use events::EventEmitter;
 use rai_pal_core::game::{self, Game, GameId};
+use rai_pal_core::game_title::GameTitle;
 use rai_pal_core::games_query::GamesQuery;
 use rai_pal_core::installed_game::InstalledGame;
 use rai_pal_core::local_mod::{self, LocalMod};
@@ -779,13 +780,24 @@ async fn get_game_ids(
 #[tauri::command]
 #[specta::specta]
 async fn get_game(id: GameId, handle: AppHandle) -> Result<Game> {
-	Ok(handle
-		.app_state()
-		.games
-		.try_get(&id.provider_id)?
-		.read_state()?
-		.try_get(&id.game_id)?
-		.clone())
+    let state = handle.app_state();
+    let pool = state.database_pool.read_state()?.clone();
+
+    let row = sqlx::query(
+        r#"
+        SELECT provider_id, game_id, external_id, display_title, normalized_titles
+        FROM games
+        WHERE provider_id = ? AND game_id = ?
+        "#
+    )
+    .bind(id.provider_id)
+    .bind(&id.game_id)
+    .fetch_one(&pool)
+    .await?;
+
+    let game = Game::new(id.clone(), row.get("display_title"));
+
+    Ok(game)
 }
 
 #[tauri::command]
