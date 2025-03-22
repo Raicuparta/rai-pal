@@ -50,6 +50,8 @@ export const enUs = {
 		// Button for refreshing games and mods.
 		button: "Refresh",
 
+		buttonUpdateRemoteDatabases: "Update remote databases",
+
 		// Small text that shows inside the refresh button, while stuff is loading. {items} is a comma-separated list.
 		loading: "Loading {items}...",
 	},

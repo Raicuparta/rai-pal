@@ -60,7 +60,6 @@ export function FilterMenu() {
 							<Button leftSection={<IconFilter />}>{t("button")}</Button>
 						</Popover.Target>
 						<Popover.Dropdown
-							bg="dark"
 							p={0}
 							className={styles.dropdown}
 						>

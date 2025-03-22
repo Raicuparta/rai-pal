@@ -68,6 +68,13 @@ export const theme: MantineThemeOverride = {
 		Popover: {
 			defaultProps: {
 				shadow: "md",
+				withArrow: true,
+			},
+		},
+		PopoverDropdown: {
+			defaultProps: {
+				p: "xs",
+				bg: "dark",
 			},
 		},
 	},

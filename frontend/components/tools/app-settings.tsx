@@ -71,7 +71,7 @@ export function AppSettings() {
 			onClose={() => {
 				if (gamesNeedRefreshing) {
 					setGamesNeedRefreshing(false);
-					updateAppData();
+					updateAppData(false);
 				}
 			}}
 		>

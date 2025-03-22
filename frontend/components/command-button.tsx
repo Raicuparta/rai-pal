@@ -74,8 +74,6 @@ function CommandButtonInternal<TResultValue>(
 	return (
 		<Popover
 			trapFocus
-			withArrow
-			shadow="md"
 			opened={isConfirmationOpen}
 			onClose={closeConfirmation}
 			disabled={!confirmationText || shouldSkipConfirm}

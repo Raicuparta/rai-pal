@@ -49,47 +49,52 @@ export function useUpdateData(executeOnMount = false) {
 
 	useAppEvent("gamesChanged", "update-data", throttledUpdateProviderGames);
 
-	const updateAppData = useCallback(async () => {
-		if (isLoading.current) {
-			console.log(
-				"Loading tasks are in progress, will refresh once loading is done.",
-			);
-			refreshWhenLoadingDone.current = true;
-			return;
-		}
-
-		function handleDataPromise(promise: Promise<null>, taskName: string) {
-			totalLoadingTaskCount.current += 1;
-			const taskIndex = totalLoadingTaskCount.current;
-			setLoadingTasks((previousLoadingTasks) => [
-				...previousLoadingTasks,
-				{ name: taskName, index: taskIndex },
-			]);
-			promise
-				.catch((error) => {
-					showAppNotification(
-						`Failed to initialize data update: ${error}`,
-						"error",
-					);
-				})
-				.finally(() =>
-					setLoadingTasks((previousLoadingTasks) =>
-						previousLoadingTasks.filter((task) => task.index !== taskIndex),
-					),
+	const updateAppData = useCallback(
+		async (refreshDatabases: boolean) => {
+			if (isLoading.current) {
+				console.log(
+					"Loading tasks are in progress, will refresh once loading is done.",
 				);
-		}
+				refreshWhenLoadingDone.current = true;
+				return;
+			}
 
-		for (const providerId of PROVIDER_IDS) {
-			handleDataPromise(commands.refreshGames(providerId), providerId);
-		}
+			function handleDataPromise(promise: Promise<null>, taskName: string) {
+				totalLoadingTaskCount.current += 1;
+				const taskIndex = totalLoadingTaskCount.current;
+				setLoadingTasks((previousLoadingTasks) => [
+					...previousLoadingTasks,
+					{ name: taskName, index: taskIndex },
+				]);
+				promise
+					.catch((error) => {
+						showAppNotification(
+							`Failed to initialize data update: ${error}`,
+							"error",
+						);
+					})
+					.finally(() =>
+						setLoadingTasks((previousLoadingTasks) =>
+							previousLoadingTasks.filter((task) => task.index !== taskIndex),
+						),
+					);
+			}
 
-		handleDataPromise(commands.refreshMods(), "mods");
-		handleDataPromise(commands.refreshRemoteGames(), "remote data");
-	}, [setLoadingTasks]);
+			for (const providerId of PROVIDER_IDS) {
+				handleDataPromise(commands.refreshGames(providerId), providerId);
+			}
+
+			if (refreshDatabases) {
+				handleDataPromise(commands.refreshMods(), "mods");
+				handleDataPromise(commands.refreshRemoteGames(), "remote data");
+			}
+		},
+		[setLoadingTasks],
+	);
 
 	useEffect(() => {
 		if (executeOnMount && !hasExecutedOnMount.current) {
-			updateAppData();
+			updateAppData(true);
 			hasExecutedOnMount.current = true;
 		}
 	}, [executeOnMount, updateAppData]);
@@ -98,7 +103,7 @@ export function useUpdateData(executeOnMount = false) {
 		isLoading.current = loadingTasks.length > 0;
 		if (refreshWhenLoadingDone.current) {
 			refreshWhenLoadingDone.current = false;
-			updateAppData();
+			updateAppData(false);
 		}
 	}, [loadingTasks.length, updateAppData]);
 
