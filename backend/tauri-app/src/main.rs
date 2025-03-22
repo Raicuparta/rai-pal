@@ -754,13 +754,17 @@ async fn get_game_ids(
 ) -> Result<GameIdsResponse> {
     let state = handle.app_state();
     let pool = state.database_pool.read_state()?.clone();
+	let search = data_query.map(|q| q.search).unwrap_or_default();
 
     let rows = sqlx::query(
         r#"
-        SELECT provider_id, game_id, COUNT(*) OVER() AS total_count
+        SELECT provider_id, game_id, display_title, normalized_titles, COUNT(*) OVER() AS total_count
         FROM games
+				WHERE display_title LIKE '%' || $1 || '%'
+				OR normalized_titles LIKE '%' || $1 || '%'
         "#
     )
+		.bind(search.trim())
     .fetch_all(&pool)
     .await?;
 
