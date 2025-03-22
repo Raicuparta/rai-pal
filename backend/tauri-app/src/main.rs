@@ -11,7 +11,6 @@ use app_settings::AppSettings;
 use app_state::{AppState, StateData, StatefulHandle};
 use events::EventEmitter;
 use rai_pal_core::game::{self, Game, GameId};
-use rai_pal_core::game_title::GameTitle;
 use rai_pal_core::games_query::GamesQuery;
 use rai_pal_core::installed_game::InstalledGame;
 use rai_pal_core::local_mod::{self, LocalMod};
@@ -31,9 +30,8 @@ use rai_pal_core::providers::{
 use rai_pal_core::windows;
 use rai_pal_core::{analytics, remote_game, remote_mod};
 use rai_pal_proc_macros::serializable_struct;
-use serde::Deserialize;
 use sqlx::sqlite::SqlitePoolOptions;
-use sqlx::{Executor, Pool, Row, Sqlite, SqlitePool, query};
+use sqlx::{Executor, Pool, Row, Sqlite};
 use tauri::path::BaseDirectory;
 use tauri::{AppHandle, Manager};
 use tauri_plugin_log::{Target, TargetKind};
@@ -547,7 +545,8 @@ pub async fn setup_database() -> Result<Pool<Sqlite>> {
 	let mut config = sqlx::sqlite::SqliteConnectOptions::new();
 	config = config.filename(paths::app_data_path()?.join("sqlite.db"));
 	config = config.create_if_missing(true);
-
+	config = config.journal_mode(sqlx::sqlite::SqliteJournalMode::Wal);
+	
 	let pool = SqlitePoolOptions::new().max_connections(20).connect_with(config).await?;
 
 	// Run the initial migration
