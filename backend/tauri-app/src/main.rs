@@ -30,8 +30,9 @@ use rai_pal_core::providers::{
 use rai_pal_core::windows;
 use rai_pal_core::{analytics, remote_game, remote_mod};
 use rai_pal_proc_macros::serializable_struct;
+use serde::Deserialize;
 use sqlx::sqlite::SqlitePoolOptions;
-use sqlx::{Executor, Pool, Sqlite, SqlitePool, query};
+use sqlx::{Executor, Pool, Row, Sqlite, SqlitePool, query};
 use tauri::path::BaseDirectory;
 use tauri::{AppHandle, Manager};
 use tauri_plugin_log::{Target, TargetKind};
@@ -587,8 +588,8 @@ async fn refresh_games(handle: AppHandle, provider_id: ProviderId) -> Result {
 						"INSERT OR REPLACE INTO games (provider_id, game_id, external_id, display_title, normalized_titles) 
 						 VALUES (?, ?, ?, ?, ?)"
 					)
-					.bind(game_clone.id.provider_id.to_string())
-					.bind(game_clone.id.game_id.to_string())
+					.bind(game_clone.id.provider_id)
+					.bind(game_clone.id.game_id.clone())
 					.bind(game_clone.external_id.clone())
 					.bind(game_clone.title.display.clone())
 					.bind(game_clone.title.normalized.join(","));
@@ -743,41 +744,36 @@ async fn open_logs_folder() -> Result {
 #[tauri::command]
 #[specta::specta]
 async fn get_game_ids(
-	handle: AppHandle,
-	data_query: Option<GamesQuery>,
+    handle: AppHandle,
+    data_query: Option<GamesQuery>,
 ) -> Result<GameIdsResponse> {
-	let state = handle.app_state();
+    let state = handle.app_state();
+    let pool = state.database_pool.read_state()?.clone();
 
-	let mut total_count: usize = 0;
+    let rows = sqlx::query(
+        r#"
+        SELECT provider_id, game_id, COUNT(*) OVER() AS total_count
+        FROM games
+        "#
+    )
+    .fetch_all(&pool)
+    .await?;
 
-	let games_iter = state
-		.games
-		.values()
-		.flat_map(|provider_games_lock| match provider_games_lock.read() {
-			Ok(provider_games) => {
-				total_count += provider_games.len();
-				provider_games.clone().into_values()
-			}
-			Err(err) => {
-				log::error!("Failed to read provider games state: {err}");
-				Default::default()
-			}
-		});
+    let game_ids: Vec<GameId> = rows
+        .iter()
+        .map(|row| {					
+					GameId {
+					provider_id: row.get("provider_id"),
+					game_id: row.get("game_id"),
+        }})
+        .collect();
 
-	let games: Vec<_> = if let Some(query) = data_query.as_ref() {
-		let mut games: Vec<_> = games_iter.filter(|game| query.matches(game)).collect();
-		games.sort_by(|game_a, game_b| query.sort(game_a, game_b));
+    let total_count = rows.first().map_or(0, |row| row.get::<i64, _>("total_count") as usize);
 
-		games
-	} else {
-		let games: Vec<_> = games_iter.collect();
-		games
-	};
-
-	Ok(GameIdsResponse {
-		game_ids: games.into_iter().map(|game| game.id).collect(),
-		total_count,
-	})
+    Ok(GameIdsResponse {
+        game_ids,
+        total_count,
+    })
 }
 
 #[tauri::command]
@@ -818,7 +814,6 @@ fn main() {
 		#[cfg(target_os = "windows")]
 		windows::error_dialog(&format!("I found a panic!!!: {info}"));
 
-		#[cfg(target_os = "linux")]
 		log::error!("Panic: {info}");
 	}));
 
