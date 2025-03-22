@@ -79,6 +79,7 @@
 		"shellapi",
 		"softprops",
 		"specta",
+		"sqlx",
 		"steamlocate",
 		"subchild",
 		"subkey",

@@ -40,10 +40,10 @@ pub enum Error {
 	),
 
 	#[error(transparent)]
-	SQLite(
+	SQL(
 		#[from]
 		#[serde(skip)]
-		rusqlite::Error,
+		sqlx::Error,
 	),
 
 	#[error(transparent)]
@@ -111,7 +111,9 @@ pub enum Error {
 	#[error("Failed to retrieve Unity version from asset `{0}`")]
 	FailedToParseUnityVersionAsset(PathBuf),
 
-	#[error("Failed to install mod, because the known game information is insufficient. Missing information: `{0}`. Game: `{1}`")]
+	#[error(
+		"Failed to install mod, because the known game information is insufficient. Missing information: `{0}`. Game: `{1}`"
+	)]
 	ModInstallInfoInsufficient(String, PathBuf),
 
 	#[error("Failed to get game data from path `{0}`")]
@@ -129,7 +131,9 @@ pub enum Error {
 	#[error("Download not available for mod `{0}`")]
 	ModDownloadNotAvailable(String),
 
-	#[error("Operation can't be completed without a `runnable` section in the mod manifest (rai-pal-manifest.json) `{0}`")]
+	#[error(
+		"Operation can't be completed without a `runnable` section in the mod manifest (rai-pal-manifest.json) `{0}`"
+	)]
 	RunnableManifestNotFound(String),
 
 	#[error("Can't run mod with ID `{0}` because it isn't a runnable mod.")]

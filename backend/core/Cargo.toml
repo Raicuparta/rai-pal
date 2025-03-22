@@ -27,11 +27,11 @@ reqwest = { version = "0.12.15", features = [
   "json",
   "gzip", # We have some large JSONs in the Rai Pal Database, so gzip is useful.
 ] }
-rusqlite = { version = "0.34.0", features = ["bundled"] }
 serde_urlencoded = "0.7.1"
 steamlocate = "2.0.1"
 uuid = { version = "1.16.0", features = ["v4"] }
 zip = { version = "2.4.2", default-features = false, features = ["deflate"] }
+sqlx = { version = "0.8", features = ["runtime-tokio", "sqlite"] }
 
 [target.'cfg(target_os = "windows")'.dependencies]
 winapi = { version = "0.3.9", features = ["winuser"] }

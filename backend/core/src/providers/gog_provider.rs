@@ -4,9 +4,9 @@ use std::path::{Path, PathBuf};
 
 use log::error;
 use rai_pal_proc_macros::serializable_struct;
-use rusqlite::{Connection, OpenFlags};
 use serde::Deserialize;
-use winreg::{enums::HKEY_LOCAL_MACHINE, RegKey};
+use sqlx::{Row, sqlite::SqlitePoolOptions};
+use winreg::{RegKey, enums::HKEY_LOCAL_MACHINE};
 
 use super::provider_command::{ProviderCommand, ProviderCommandAction};
 use crate::{
@@ -94,7 +94,7 @@ impl ProviderActions for Gog {
 	where
 		TCallback: FnMut(Game) + Send + Sync,
 	{
-		if let Some(database) = get_database()? {
+		if let Some(database) = get_database().await? {
 			let launcher_path = get_launcher_path()?;
 
 			for db_entry in database {
@@ -125,7 +125,7 @@ pub struct GogDbEntryMeta {
 	release_date: Option<i32>,
 }
 
-fn get_database() -> Result<Option<Vec<GogDbEntry>>> {
+async fn get_database() -> Result<Option<Vec<GogDbEntry>>> {
 	let program_data = paths::try_get_program_data_path();
 	let database_path = program_data.join("GOG.com/Galaxy/storage/galaxy-2.0.db");
 
@@ -133,9 +133,12 @@ fn get_database() -> Result<Option<Vec<GogDbEntry>>> {
 		return Ok(None);
 	}
 
-	let connection = Connection::open_with_flags(database_path, OpenFlags::SQLITE_OPEN_READ_ONLY)?;
+	let pool = SqlitePoolOptions::new()
+		.max_connections(5)
+		.connect(&format!("sqlite://{}", database_path.display()))
+		.await?;
 
-	let mut statement = connection.prepare(
+	let rows = sqlx::query(
 		r"SELECT 
 	Builds.productId AS id,
 	MAX(CASE WHEN GamePieceTypes.type = 'originalTitle' THEN GamePieces.value END) AS title,
@@ -154,36 +157,35 @@ JOIN
 	GamePieceTypes ON GamePieces.gamePieceTypeId = GamePieceTypes.id
 GROUP BY 
 	Builds.productId;",
-	)?;
+	)
+	.fetch_all(&pool)
+	.await?;
 
-	let rows: Vec<GogDbEntry> = statement
-		.query_map([], |row| {
-			let id: i32 = row.get("id")?;
-			let executable_path: Option<String> = try_get_string(row, "executablePath");
-			let title = try_get_json::<GogDbEntryTitle>(row, "title").and_then(|title| title.title);
+	let entries: Vec<GogDbEntry> = rows
+		.into_iter()
+		.filter_map(|row| {
+			let id: i32 = row.get("id");
+			let executable_path: Option<String> = row.try_get("executablePath").ok();
+			let title = try_parse_json::<GogDbEntryTitle>(&row.try_get::<String, _>("title").ok()?)
+				.and_then(|title| title.title);
 			let release_date =
-				try_get_json::<GogDbEntryMeta>(row, "meta").and_then(|meta| meta.release_date);
-			let image_url = try_get_json::<GogDbEntryImages>(row, "images")
-				.and_then(|images| images.square_icon);
+				try_parse_json::<GogDbEntryMeta>(&row.try_get::<String, _>("meta").ok()?)
+					.and_then(|meta| meta.release_date);
+			let image_url =
+				try_parse_json::<GogDbEntryImages>(&row.try_get::<String, _>("images").ok()?)
+					.and_then(|images| images.square_icon);
 
-			Ok(GogDbEntry {
+			Some(GogDbEntry {
 				id: id.to_string(),
 				title: title.unwrap_or_else(|| id.to_string()),
 				image_url,
 				release_date,
 				executable_path: executable_path.map(PathBuf::from),
 			})
-		})?
-		.filter_map(|row_result| match row_result {
-			Ok(row) => Some(row),
-			Err(err) => {
-				error!("Failed to read GOG database row: {err}");
-				None
-			}
 		})
 		.collect();
 
-	Ok(Some(rows))
+	Ok(Some(entries))
 }
 
 fn try_parse_json<TData>(json: &str) -> Option<TData>
@@ -197,24 +199,6 @@ where
 			None
 		}
 	}
-}
-
-fn try_get_string(row: &rusqlite::Row, id: &str) -> Option<String> {
-	match row.get::<&str, Option<String>>(id) {
-		Ok(value) => value,
-		Err(err) => {
-			error!("Failed to read GOG database value `{id}`. Error: {err}");
-			None
-		}
-	}
-}
-
-fn try_get_json<TData>(row: &rusqlite::Row, id: &str) -> Option<TData>
-where
-	TData: for<'a> Deserialize<'a>,
-{
-	let json = try_get_string(row, id)?;
-	try_parse_json(&json)
 }
 
 fn get_launcher_path() -> Result<PathBuf> {
