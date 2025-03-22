@@ -30,6 +30,8 @@ use rai_pal_core::providers::{
 use rai_pal_core::windows;
 use rai_pal_core::{analytics, remote_game, remote_mod};
 use rai_pal_proc_macros::serializable_struct;
+use sqlx::sqlite::SqlitePoolOptions;
+use sqlx::{Executor, Pool, Sqlite, SqlitePool};
 use tauri::path::BaseDirectory;
 use tauri::{AppHandle, Manager};
 use tauri_plugin_log::{Target, TargetKind};
@@ -539,6 +541,31 @@ async fn refresh_remote_games(handle: AppHandle) -> Result {
 	Ok(())
 }
 
+pub async fn setup_database() -> Result<Pool<Sqlite>> {
+	let mut config = sqlx::sqlite::SqliteConnectOptions::new();
+	config = config.filename(paths::app_data_path()?.join("sqlite.db"));
+	config = config.create_if_missing(true);
+
+	let pool = SqlitePool::connect_with(config).await?;
+
+	// Run the initial migration
+	pool.execute(
+		r#"
+        CREATE TABLE IF NOT EXISTS games (
+            provider_id TEXT NOT NULL,
+            game_id TEXT NOT NULL,
+            external_id TEXT NOT NULL,
+            display_title TEXT NOT NULL,
+            normalized_titles TEXT NOT NULL,
+            PRIMARY KEY (provider_id, game_id)
+        );
+        "#,
+	)
+	.await?;
+
+	Ok(pool)
+}
+
 #[tauri::command]
 #[specta::specta]
 async fn refresh_games(handle: AppHandle, provider_id: ProviderId) -> Result {
@@ -767,6 +794,16 @@ fn main() {
 		log::error!("Panic: {info}");
 	}));
 
+	let database_pool = tauri::async_runtime::block_on(setup_database()).unwrap_or_else(|err| {
+		#[cfg(target_os = "windows")]
+		windows::error_dialog(&format!("Failed to setup database: {err}"));
+
+		#[cfg(target_os = "linux")]
+		log::error!("Failed to setup database: {err}");
+
+		std::process::exit(1);
+	});
+
 	let builder = Builder::<tauri::Wry>::new()
 		.commands(tauri_specta::collect_commands![
 			add_game,
@@ -846,6 +883,7 @@ fn main() {
 					RwLock::new(provider_cache::read(id).unwrap_or_default()),
 				)
 			})),
+			database_pool: RwLock::new(database_pool),
 		})
 		.invoke_handler(builder.invoke_handler())
 		.setup(move |app| {

@@ -15,6 +15,7 @@ serde.workspace = true
 specta.workspace = true
 tauri-specta.workspace = true
 thiserror.workspace = true
+sqlx.workspace = true
 
 specta-typescript = "0.0.9"
 tauri = { version = "2.3.1", features = ["config-toml"] }

@@ -24,6 +24,13 @@ pub enum Error {
 	),
 
 	#[error(transparent)]
+	SQL(
+		#[from]
+		#[serde(skip)]
+		sqlx::Error,
+	),
+
+	#[error(transparent)]
 	SerdeJson(
 		#[serde(skip)]
 		#[from]

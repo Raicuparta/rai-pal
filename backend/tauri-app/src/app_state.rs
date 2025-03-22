@@ -4,6 +4,7 @@ use std::{collections::HashMap, ops::Deref};
 
 use crate::result::Error;
 use crate::result::Result;
+use sqlx::{Pool, Sqlite};
 use tauri::Manager;
 
 use rai_pal_core::{
@@ -17,6 +18,7 @@ pub struct AppState {
 	pub mod_loaders: RwLock<mod_loader::Map>,
 	pub local_mods: RwLock<local_mod::Map>,
 	pub remote_mods: RwLock<remote_mod::Map>,
+	pub database_pool: RwLock<Pool<Sqlite>>,
 }
 
 type TauriState<'a> = tauri::State<'a, AppState>;
