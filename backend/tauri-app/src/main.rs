@@ -558,6 +558,9 @@ pub async fn setup_database() -> Result<Pool<Sqlite>> {
             external_id TEXT NOT NULL,
             display_title TEXT NOT NULL,
             normalized_titles TEXT NOT NULL,
+						thumbnail_url TEXT,
+						tags TEXT,
+						release_date INTEGER,
             PRIMARY KEY (provider_id, game_id)
         );
         "#,
@@ -585,14 +588,16 @@ async fn refresh_games(handle: AppHandle, provider_id: ProviderId) -> Result {
 				let game_clone = game.clone();
 				tauri::async_runtime::spawn_blocking(move || {
 					let query = sqlx::query::<Sqlite>(
-						"INSERT OR REPLACE INTO games (provider_id, game_id, external_id, display_title, normalized_titles) 
-						 VALUES (?, ?, ?, ?, ?)"
+						"INSERT OR REPLACE INTO games (provider_id, game_id, external_id, display_title, normalized_titles, thumbnail_url, release_date) 
+						 VALUES (?, ?, ?, ?, ?, ?, ?)"
 					)
 					.bind(game_clone.id.provider_id)
 					.bind(game_clone.id.game_id.clone())
 					.bind(game_clone.external_id.clone())
 					.bind(game_clone.title.display.clone())
-					.bind(game_clone.title.normalized.join(","));
+					.bind(game_clone.title.normalized.join(","))
+					.bind(game_clone.thumbnail_url.clone())
+					.bind(game_clone.release_date);
 
 					tauri::async_runtime::block_on(async {
 						if let Err(err) = pool.execute(query).await {
@@ -784,7 +789,7 @@ async fn get_game(id: GameId, handle: AppHandle) -> Result<Game> {
 
     let row = sqlx::query(
         r#"
-        SELECT provider_id, game_id, external_id, display_title, normalized_titles
+        SELECT provider_id, game_id, external_id, display_title, normalized_titles, thumbnail_url, tags, release_date
         FROM games
         WHERE provider_id = ? AND game_id = ?
         "#
@@ -794,7 +799,11 @@ async fn get_game(id: GameId, handle: AppHandle) -> Result<Game> {
     .fetch_one(&pool)
     .await?;
 
-    let game = Game::new(id.clone(), row.get("display_title"));
+    let mut game = Game::new(id.clone(), row.get("display_title"));
+		game.release_date = row.get("release_date");
+		game.thumbnail_url = row.get("thumbnail_url");
+		// let tags_str: &str = row.get("tags");
+		// game.tags = tags_str.split(',').map(|s| s.trim().to_string()).collect();
 
     Ok(game)
 }

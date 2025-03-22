@@ -26,7 +26,7 @@ use crate::{
 // These IDs need to match the ones in rai-pal-db.
 #[serializable_enum]
 #[derive(sqlx::Type)]
-#[sqlx(type_name = "provider_id", rename_all = "lowercase")]
+#[sqlx(type_name = "provider_id")]
 pub enum ProviderId {
 	Ea,
 	Epic,
