@@ -31,7 +31,7 @@ use rai_pal_core::windows;
 use rai_pal_core::{analytics, remote_game, remote_mod};
 use rai_pal_proc_macros::serializable_struct;
 use sqlx::sqlite::SqlitePoolOptions;
-use sqlx::{Executor, Pool, Sqlite, SqlitePool};
+use sqlx::{Executor, Pool, Sqlite, SqlitePool, query};
 use tauri::path::BaseDirectory;
 use tauri::{AppHandle, Manager};
 use tauri_plugin_log::{Target, TargetKind};
@@ -577,6 +577,34 @@ async fn refresh_games(handle: AppHandle, provider_id: ProviderId) -> Result {
 
 	provider
 		.get_games(|mut game: Game| {
+			
+		match state.database_pool.read_state() {
+			Ok(pool) => {
+				let pool = pool.clone();
+				let game_clone = game.clone();
+				tauri::async_runtime::spawn_blocking(move || {
+					let query = sqlx::query::<Sqlite>(
+						"INSERT OR REPLACE INTO games (provider_id, game_id, external_id, display_title, normalized_titles) 
+						 VALUES (?, ?, ?, ?, ?)"
+					)
+					.bind(game_clone.id.provider_id.to_string())
+					.bind(game_clone.id.game_id.to_string())
+					.bind(game_clone.external_id.clone())
+					.bind(game_clone.title.display.clone())
+					.bind(game_clone.title.normalized.join(","));
+
+					tauri::async_runtime::block_on(async {
+						if let Err(err) = pool.execute(query).await {
+							log::error!("Failed to execute query: {err}");
+						}
+					});
+				});
+			}
+			Err(err) => {
+				log::error!("Failed to read database pool: {err}");
+			}
+		}
+
 			match state.remote_games.read() {
 				Ok(remote_games) => {
 					// Assign the remote game here as we find the new game.
