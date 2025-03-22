@@ -547,7 +547,7 @@ pub async fn setup_database() -> Result<Pool<Sqlite>> {
 	config = config.filename(paths::app_data_path()?.join("sqlite.db"));
 	config = config.create_if_missing(true);
 
-	let pool = SqlitePool::connect_with(config).await?;
+	let pool = SqlitePoolOptions::new().max_connections(20).connect_with(config).await?;
 
 	// Run the initial migration
 	pool.execute(
