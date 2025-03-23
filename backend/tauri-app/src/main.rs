@@ -12,7 +12,7 @@ use app_state::{AppState, StateData, StatefulHandle};
 use events::EventEmitter;
 use rai_pal_core::game::{self, Game, GameId};
 use rai_pal_core::game_executable::GameExecutable;
-use rai_pal_core::games_query::GamesQuery;
+use rai_pal_core::games_query::{GamesQuery, GamesSortBy};
 use rai_pal_core::installed_game::InstalledGame;
 use rai_pal_core::local_mod::{self, LocalMod};
 use rai_pal_core::maps::TryGettable;
@@ -789,15 +789,23 @@ async fn get_game_ids(
 ) -> Result<GameIdsResponse> {
 	let state = handle.app_state();
 	let pool = state.database_pool.read_state()?.clone();
-	let search = data_query.map(|q| q.search).unwrap_or_default();
+	let search = data_query.as_ref().map(|q| q.search.clone()).unwrap_or_default();
 
 	let game_ids: Vec<_> = sqlx::query(
-		r#"
+		&format!(r#"
 			SELECT provider_id, game_id, display_title, normalized_titles
 			FROM games
 			WHERE display_title LIKE '%' || $1 || '%'
 			OR normalized_titles LIKE '%' || $1 || '%'
-			"#,
+			ORDER BY {} {}
+			"#, match data_query.as_ref().map(|q| q.sort_by) {
+					Some(GamesSortBy::Title) => "display_title",
+					_ => "display_title",
+				}, if data_query.as_ref().is_some_and(|q| q.sort_descending) {
+				"DESC"
+			} else {
+				"ASC"
+			}),
 	)
 	.bind(search.trim())
 	.fetch_all(&pool)
