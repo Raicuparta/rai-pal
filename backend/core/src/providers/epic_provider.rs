@@ -10,7 +10,7 @@ use std::{
 use base64::engine::general_purpose;
 use log::error;
 use rai_pal_proc_macros::serializable_struct;
-use winreg::{enums::HKEY_LOCAL_MACHINE, RegKey};
+use winreg::{RegKey, enums::HKEY_LOCAL_MACHINE};
 
 use super::{
 	provider::ProviderId,
@@ -195,7 +195,9 @@ impl ProviderActions for Epic {
 				}
 			}
 		} else {
-			log::info!("Epic Games Launcher manifests folder not found. Probably means Epic Games Launcher isn't installed, or maybe user hasn't installed any games dunno.");
+			log::info!(
+				"Epic Games Launcher manifests folder not found. Probably means Epic Games Launcher isn't installed, or maybe user hasn't installed any games dunno."
+			);
 		}
 
 		let catalog_path = app_data_path.join("Catalog").join("catcache.bin");
@@ -216,7 +218,9 @@ impl ProviderActions for Epic {
 				}
 			}
 		} else {
-			log::info!("Epic Games Launcher catalog cache file not found. Probably means user hasn't installed Epic Games Launcher, or the cache file hasn't been created yet.");
+			log::info!(
+				"Epic Games Launcher catalog cache file not found. Probably means user hasn't installed Epic Games Launcher, or the cache file hasn't been created yet."
+			);
 		}
 
 		Ok(())

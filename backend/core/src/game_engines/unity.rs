@@ -11,7 +11,7 @@ use rai_pal_proc_macros::serializable_enum;
 use super::game_engine::EngineVersionNumbers;
 use crate::{
 	game_engines::game_engine::{EngineBrand, EngineVersion, GameEngine},
-	game_executable::{get_architecture, Architecture, GameExecutable},
+	game_executable::{Architecture, GameExecutable, get_architecture},
 	paths::{self, glob_path},
 	result::{Error, Result},
 };

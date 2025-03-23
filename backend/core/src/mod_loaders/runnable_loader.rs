@@ -65,7 +65,9 @@ fn replace_parameter_value<TValue: AsRef<str>, TGetValue: Fn() -> Result<TValue>
 	match get_value() {
 		Ok(value) => argument.replace(&get_parameter_token(parameter), value.as_ref()),
 		Err(error) => {
-			error!("Failed get value to replace parameter `{parameter}` in runnable argument `{argument}`. Error: {error}");
+			error!(
+				"Failed get value to replace parameter `{parameter}` in runnable argument `{argument}`. Error: {error}"
+			);
 			argument.to_string()
 		}
 	}

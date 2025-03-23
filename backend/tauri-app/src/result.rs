@@ -24,7 +24,7 @@ pub enum Error {
 	),
 
 	#[error(transparent)]
-	SQL(
+	Sql(
 		#[from]
 		#[serde(skip)]
 		sqlx::Error,

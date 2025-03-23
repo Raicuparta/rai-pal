@@ -48,7 +48,7 @@ mod typescript;
 #[serializable_struct]
 struct GameIdsResponse {
 	game_ids: Vec<GameId>,
-	total_count: usize,
+	total_count: i64,
 }
 
 #[tauri::command]
@@ -546,8 +546,11 @@ pub async fn setup_database() -> Result<Pool<Sqlite>> {
 	config = config.filename(paths::app_data_path()?.join("sqlite.db"));
 	config = config.create_if_missing(true);
 	config = config.journal_mode(sqlx::sqlite::SqliteJournalMode::Wal);
-	
-	let pool = SqlitePoolOptions::new().max_connections(20).connect_with(config).await?;
+
+	let pool = SqlitePoolOptions::new()
+		.max_connections(20)
+		.connect_with(config)
+		.await?;
 
 	// Run the initial migration
 	pool.execute(
@@ -749,49 +752,54 @@ async fn open_logs_folder() -> Result {
 #[tauri::command]
 #[specta::specta]
 async fn get_game_ids(
-    handle: AppHandle,
-    data_query: Option<GamesQuery>,
+	handle: AppHandle,
+	data_query: Option<GamesQuery>,
 ) -> Result<GameIdsResponse> {
-    let state = handle.app_state();
-    let pool = state.database_pool.read_state()?.clone();
+	let state = handle.app_state();
+	let pool = state.database_pool.read_state()?.clone();
 	let search = data_query.map(|q| q.search).unwrap_or_default();
 
-    let rows = sqlx::query(
-        r#"
-        SELECT provider_id, game_id, display_title, normalized_titles, COUNT(*) OVER() AS total_count
-        FROM games
-				WHERE display_title LIKE '%' || $1 || '%'
-				OR normalized_titles LIKE '%' || $1 || '%'
-        "#
-    )
-		.bind(search.trim())
-    .fetch_all(&pool)
-    .await?;
+	let game_ids: Vec<_> = sqlx::query(
+		r#"
+			SELECT provider_id, game_id, display_title, normalized_titles
+			FROM games
+			WHERE display_title LIKE '%' || $1 || '%'
+			OR normalized_titles LIKE '%' || $1 || '%'
+			"#,
+	)
+	.bind(search.trim())
+	.fetch_all(&pool)
+	.await?
+	.iter()
+	.map(|row| GameId {
+		provider_id: row.get("provider_id"),
+		game_id: row.get("game_id"),
+	})
+	.collect();
 
-    let game_ids: Vec<GameId> = rows
-        .iter()
-        .map(|row| {					
-					GameId {
-					provider_id: row.get("provider_id"),
-					game_id: row.get("game_id"),
-        }})
-        .collect();
+	let total_count: i64 = sqlx::query(
+		r#"
+				SELECT COUNT(*)
+				FROM games
+				"#,
+	)
+	.fetch_one(&pool)
+	.await?
+	.try_get(0)?;
 
-    let total_count = rows.first().map_or(0, |row| row.get::<i64, _>("total_count") as usize);
-
-    Ok(GameIdsResponse {
-        game_ids,
-        total_count,
-    })
+	Ok(GameIdsResponse {
+		game_ids,
+		total_count,
+	})
 }
 
 #[tauri::command]
 #[specta::specta]
 async fn get_game(id: GameId, handle: AppHandle) -> Result<Game> {
-    let state = handle.app_state();
-    let pool = state.database_pool.read_state()?.clone();
+	let state = handle.app_state();
+	let pool = state.database_pool.read_state()?.clone();
 
-    let row = sqlx::query(
+	let row = sqlx::query(
         r#"
         SELECT provider_id, game_id, external_id, display_title, normalized_titles, thumbnail_url, tags, release_date
         FROM games
@@ -803,13 +811,13 @@ async fn get_game(id: GameId, handle: AppHandle) -> Result<Game> {
     .fetch_one(&pool)
     .await?;
 
-    let mut game = Game::new(id.clone(), row.get("display_title"));
-		game.release_date = row.get("release_date");
-		game.thumbnail_url = row.get("thumbnail_url");
-		// let tags_str: &str = row.get("tags");
-		// game.tags = tags_str.split(',').map(|s| s.trim().to_string()).collect();
+	let mut game = Game::new(id.clone(), row.get("display_title"));
+	game.release_date = row.get("release_date");
+	game.thumbnail_url = row.get("thumbnail_url");
+	// let tags_str: &str = row.get("tags");
+	// game.tags = tags_str.split(',').map(|s| s.trim().to_string()).collect();
 
-    Ok(game)
+	Ok(game)
 }
 
 #[tauri::command]

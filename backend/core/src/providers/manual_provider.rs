@@ -42,7 +42,11 @@ impl ProviderActions for Manual {
 			match get_game_from_path(&path) {
 				Ok(game) => callback(game),
 				Err(error) => {
-					error!("Failed to get game from path '{}'. Will remove this path from the config. Error: {}", path.display(), error);
+					error!(
+						"Failed to get game from path '{}'. Will remove this path from the config. Error: {}",
+						path.display(),
+						error
+					);
 					remove_game(&path)?;
 				}
 			}

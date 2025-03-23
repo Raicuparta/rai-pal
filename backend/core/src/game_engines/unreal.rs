@@ -13,7 +13,7 @@ use pelite::{
 use super::game_engine::EngineVersionNumbers;
 use crate::{
 	game_engines::game_engine::{EngineBrand, EngineVersion, GameEngine},
-	game_executable::{get_architecture, Architecture, GameExecutable},
+	game_executable::{Architecture, GameExecutable, get_architecture},
 	paths::glob_path,
 };
 

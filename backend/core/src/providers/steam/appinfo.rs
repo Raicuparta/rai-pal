@@ -14,8 +14,8 @@ use steamlocate::SteamDir;
 use crate::result::Result;
 
 use super::vdf::{
-	find_keys, read_kv, read_string, value_to_i32, value_to_kv, value_to_path, value_to_string,
-	KeyValues, ValueType,
+	KeyValues, ValueType, find_keys, read_kv, read_string, value_to_i32, value_to_kv,
+	value_to_path, value_to_string,
 };
 
 #[serializable_struct]
