@@ -542,13 +542,17 @@ async fn refresh_remote_games(handle: AppHandle) -> Result {
 }
 
 pub async fn setup_database() -> Result<Pool<Sqlite>> {
-	let mut config = sqlx::sqlite::SqliteConnectOptions::new();
-	config = config.filename(paths::app_data_path()?.join("sqlite.db"));
-	config = config.create_if_missing(true);
-	config = config.journal_mode(sqlx::sqlite::SqliteJournalMode::Wal);
+	let path = paths::app_data_path()?.join("sqlite.db");
+	if path.is_file() {
+		std::fs::remove_file(&path)?;
+	}
+
+	let config = sqlx::sqlite::SqliteConnectOptions::new()
+		.filename("file::memory:?cache=shared")
+		.journal_mode(sqlx::sqlite::SqliteJournalMode::Wal)
+		.in_memory(true);
 
 	let pool = SqlitePoolOptions::new()
-		.max_connections(20)
 		.connect_with(config)
 		.await?;
 
@@ -561,9 +565,9 @@ pub async fn setup_database() -> Result<Pool<Sqlite>> {
             external_id TEXT NOT NULL,
             display_title TEXT NOT NULL,
             normalized_titles TEXT NOT NULL,
-						thumbnail_url TEXT,
-						tags TEXT,
-						release_date INTEGER,
+            thumbnail_url TEXT,
+            tags TEXT,
+            release_date INTEGER,
             PRIMARY KEY (provider_id, game_id)
         );
         "#,
