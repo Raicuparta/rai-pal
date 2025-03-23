@@ -771,10 +771,10 @@ async fn get_game_ids(
 	.fetch_all(&pool)
 	.await?
 	.iter()
-	.map(|row| GameId {
-		provider_id: row.get("provider_id"),
-		game_id: row.get("game_id"),
-	})
+	.filter_map(|row| Some(GameId {
+		provider_id: row.try_get("provider_id").ok()?, // TODO don't swallow error.
+		game_id: row.try_get("game_id").ok()?, // TODO don't swallow error.
+	}))
 	.collect();
 
 	let total_count: i64 = sqlx::query(
