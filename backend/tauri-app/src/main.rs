@@ -11,6 +11,7 @@ use app_settings::AppSettings;
 use app_state::{AppState, StateData, StatefulHandle};
 use events::EventEmitter;
 use rai_pal_core::game::{self, Game, GameId};
+use rai_pal_core::game_engines::game_engine::{EngineBrand, EngineVersion, EngineVersionNumbers, GameEngine};
 use rai_pal_core::game_executable::GameExecutable;
 use rai_pal_core::games_query::{GamesQuery, GamesSortBy};
 use rai_pal_core::installed_game::InstalledGame;
@@ -784,53 +785,60 @@ async fn open_logs_folder() -> Result {
 #[tauri::command]
 #[specta::specta]
 async fn get_game_ids(
-	handle: AppHandle,
-	data_query: Option<GamesQuery>,
+    handle: AppHandle,
+    data_query: Option<GamesQuery>,
 ) -> Result<GameIdsResponse> {
-	let state = handle.app_state();
-	let pool = state.database_pool.read_state()?.clone();
-	let search = data_query.as_ref().map(|q| q.search.clone()).unwrap_or_default();
+    let state = handle.app_state();
+    let pool = state.database_pool.read_state()?.clone();
+    let search = data_query.as_ref().map(|q| q.search.clone()).unwrap_or_default();
 
-	let game_ids: Vec<_> = sqlx::query(
-		&format!(r#"
-			SELECT provider_id, game_id, display_title, normalized_titles
-			FROM games
-			WHERE display_title LIKE '%' || $1 || '%'
-			OR normalized_titles LIKE '%' || $1 || '%'
-			ORDER BY {} {}
-			"#, match data_query.as_ref().map(|q| q.sort_by) {
-					Some(GamesSortBy::Title) => "display_title",
-					_ => "display_title",
-				}, if data_query.as_ref().is_some_and(|q| q.sort_descending) {
-				"DESC"
-			} else {
-				"ASC"
-			}),
-	)
-	.bind(search.trim())
-	.fetch_all(&pool)
-	.await?
-	.iter()
-	.filter_map(|row| Some(GameId {
-		provider_id: row.try_get("provider_id").ok()?, // TODO don't swallow error.
-		game_id: row.try_get("game_id").ok()?, // TODO don't swallow error.
-	}))
-	.collect();
+    let sort_columns = match data_query.as_ref().map(|q| q.sort_by) {
+        Some(GamesSortBy::Title) => vec!["g.display_title"],
+        Some(GamesSortBy::ReleaseDate) => vec!["g.release_date"],
+        Some(GamesSortBy::Engine) => vec!["ig.engine_brand", "ig.engine_version"],
+        _ => vec!["g.display_title"],
+    };
 
-	let total_count: i64 = sqlx::query(
-		r#"
-				SELECT COUNT(*)
-				FROM games
-				"#,
-	)
-	.fetch_one(&pool)
-	.await?
-	.try_get(0)?;
+    let sort_order = if data_query.as_ref().is_some_and(|q| q.sort_descending) {
+        "DESC"
+    } else {
+        "ASC"
+    };
 
-	Ok(GameIdsResponse {
-		game_ids,
-		total_count,
-	})
+    let game_ids: Vec<_> = sqlx::query(
+        &format!(r#"
+            SELECT g.provider_id, g.game_id, g.display_title, g.normalized_titles
+            FROM games g
+            LEFT JOIN installed_games ig ON g.installed_game = ig.id
+            WHERE g.display_title LIKE '%' || $1 || '%'
+            OR g.normalized_titles LIKE '%' || $1 || '%'
+            ORDER BY {}
+            "#, sort_columns.iter().map(|col| format!("{col} {sort_order}")).collect::<Vec<_>>().join(", "))
+    )
+    .bind(search.trim())
+    .fetch_all(&pool)
+    .await?
+    .iter()
+    .filter_map(|row| Some(GameId {
+        provider_id: row.try_get("provider_id").ok()?, // TODO don't swallow error.
+        game_id: row.try_get("game_id").ok()?, // TODO don't swallow error.
+    }))
+    .collect();
+
+    let total_count: i64 = sqlx::query(
+        r#"
+                SELECT COUNT(*)
+                FROM games
+                "#,
+    )
+    .fetch_one(&pool)
+    .await?
+    .try_get(0)?;
+
+    Ok(GameIdsResponse {
+        game_ids,
+        total_count,
+    })
 }
 
 #[tauri::command]
@@ -877,7 +885,19 @@ async fn get_game(id: GameId, handle: AppHandle) -> Result<Game> {
 		start_command: None,
 		executable: GameExecutable {
 			architecture: None,
-			engine: None,
+			engine: row.get::<Option<EngineBrand>, _>("engine_brand").map(|engine_brand| GameEngine {
+				brand: engine_brand,
+				// TODO: properly store entire version information.
+				version: row.get::<Option<&str>, _>("engine_version").map(|engine_version| EngineVersion {
+					display: engine_version.to_string(),
+					suffix: None,
+					numbers: EngineVersionNumbers {
+						major: 0,
+						minor: None,
+						patch: None,
+					},
+				}),
+			}),
 			name: row.get("exe_name"),
 			path: PathBuf::from(row.get::<&str, _>("exe_path")),
 			scripting_backend: None,
