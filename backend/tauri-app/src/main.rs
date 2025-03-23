@@ -633,6 +633,7 @@ async fn refresh_games(handle: AppHandle, provider_id: ProviderId) -> Result {
 					);
 
 					tauri::async_runtime::block_on(async {
+						// TODO transaction
 						if let Some(installed_game_query) = installed_game_query {
 							installed_game_query.execute(&pool).await;
 						}
