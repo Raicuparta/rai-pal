@@ -3,7 +3,7 @@ use std::collections::{HashMap, HashSet};
 use rai_pal_proc_macros::serializable_struct;
 
 use crate::{
-	game_engines::game_engine::GameEngine,
+	game_engines::game_engine::{EngineBrand, GameEngine},
 	game_subscription::GameSubscription,
 	game_tag::GameTag,
 	game_title::GameTitle,
@@ -22,6 +22,22 @@ pub type Map = HashMap<String, Game>;
 pub struct GameId {
 	pub provider_id: ProviderId,
 	pub game_id: String,
+}
+
+#[serializable_struct]
+#[derive(sqlx::Type, sqlx::FromRow, sqlx::Decode)]
+#[sqlx(type_name = "game")]
+pub struct DbGame {
+	pub provider_id: String,
+	pub game_id: String,
+	pub external_id: String,
+	pub display_title: String,
+	pub normalized_titles: String,
+	pub thumbnail_url: Option<String>,
+	pub release_date: Option<i64>,
+	pub exe_path: Option<String>,
+	pub engine_brand: Option<EngineBrand>,
+	pub engine_version: Option<String>,
 }
 
 #[serializable_struct]

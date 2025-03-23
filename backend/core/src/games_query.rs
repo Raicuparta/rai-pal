@@ -131,9 +131,9 @@ impl GamesQuery {
 			candidates.extend(game.title.normalized.iter().map(String::as_str));
 			candidates.push(game.external_id.as_str());
 
-			if let Some(installed_game) = game.installed_game.as_ref() {
-				candidates.push(&installed_game.executable.name);
-			}
+			// if let Some(installed_game) = game.installed_game.as_ref() {
+			// 	candidates.push(&installed_game.executable.name);
+			// }
 
 			if !any_contains(&candidates, &self.search) {
 				return false;

@@ -160,7 +160,7 @@ pub fn get_executable(game_path: &Path) -> Option<GameExecutable> {
 
 		Some(GameExecutable {
 			path: game_path.to_path_buf(),
-			name: game_path.file_name()?.to_string_lossy().to_string(),
+			// name: game_path.file_name()?.to_string_lossy().to_string(),
 			architecture,
 			scripting_backend: get_scripting_backend(game_path),
 			engine: Some(GameEngine {

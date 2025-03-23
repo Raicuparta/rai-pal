@@ -76,9 +76,10 @@ fn replace_parameter_value<TValue: AsRef<str>, TGetValue: Fn() -> Result<TValue>
 fn replace_parameters(argument: &str, game: &InstalledGame) -> String {
 	let mut result = argument.to_string();
 
-	result = replace_parameter_value(&result, RunnableParameter::ExecutableName, || {
-		Ok(&game.executable.name)
-	});
+	// TODO
+	// result = replace_parameter_value(&result, RunnableParameter::ExecutableName, || {
+	// 	Ok(&game.executable.name)
+	// });
 	result = replace_parameter_value(&result, RunnableParameter::ExecutablePath, || {
 		Ok(game.executable.path.to_string_lossy())
 	});

@@ -10,11 +10,11 @@ use crate::result::{Error, Result};
 use app_settings::AppSettings;
 use app_state::{AppState, StateData, StatefulHandle};
 use events::EventEmitter;
-use rai_pal_core::game::{self, Game, GameId};
+use rai_pal_core::game::{self, DbGame, Game, GameId};
 use rai_pal_core::game_engines::game_engine::{EngineBrand, EngineVersion, EngineVersionNumbers, GameEngine};
 use rai_pal_core::game_executable::GameExecutable;
 use rai_pal_core::games_query::{GamesQuery, GamesSortBy};
-use rai_pal_core::installed_game::InstalledGame;
+use rai_pal_core::installed_game::{InstalledGame};
 use rai_pal_core::local_mod::{self, LocalMod};
 use rai_pal_core::maps::TryGettable;
 use rai_pal_core::mod_loaders::mod_loader::{self, ModLoaderActions};
@@ -579,7 +579,6 @@ pub async fn setup_database() -> Result<Pool<Sqlite>> {
         CREATE TABLE IF NOT EXISTS installed_games (
             id TEXT NOT NULL PRIMARY KEY,
             exe_path TEXT NOT NULL,
-            exe_name TEXT NOT NULL,
             engine_brand TEXT,
             engine_version TEXT
         );"#,
@@ -622,12 +621,12 @@ async fn refresh_games(handle: AppHandle, provider_id: ProviderId) -> Result {
 					}));
 
 					let installed_game_query = game_clone.installed_game.as_ref().map(|installed_game| sqlx::query::<Sqlite>(
-						"INSERT OR REPLACE INTO installed_games (id, exe_path, exe_name, engine_brand, engine_version) 
-						 VALUES (?, ?, ?, ?, ?)"
+						"INSERT OR REPLACE INTO installed_games (id, exe_path, engine_brand, engine_version) 
+						 VALUES (?, ?, ?, ?)"
 					)
 						.bind(installed_game.id.clone())
 						.bind(installed_game.executable.path.display().to_string()) // TODO lossy path guy.
-						.bind(installed_game.executable.name.clone())
+						// .bind(installed_game.executable.name.clone())
 						.bind(installed_game.executable.engine.as_ref().map(|engine| engine.brand))
 						.bind(installed_game.executable.engine.as_ref().map(|engine| engine.version.as_ref().map(|version| version.display.clone()))) // TODO lossy version.
 					);
@@ -848,22 +847,9 @@ async fn get_game(id: GameId, handle: AppHandle) -> Result<Game> {
 	let state = handle.app_state();
 	let pool = state.database_pool.read_state()?.clone();
 
-	let row = sqlx::query(
+	let db_game: DbGame = sqlx::query_as(
 		r#"
-		SELECT 
-				g.provider_id, 
-				g.game_id, 
-				g.external_id, 
-				g.display_title, 
-				g.normalized_titles, 
-				g.thumbnail_url, 
-				g.tags, 
-				g.release_date,
-				g.installed_game,
-				ig.exe_path,
-				ig.exe_name,
-				ig.engine_brand,
-				ig.engine_version
+		SELECT g.*, ig.*
 		FROM games g
 		LEFT JOIN installed_games ig ON g.installed_game = ig.id
 		WHERE g.provider_id = ? AND g.game_id = ?
@@ -874,22 +860,20 @@ async fn get_game(id: GameId, handle: AppHandle) -> Result<Game> {
 .fetch_one(&pool)
 .await?;
 
-	let installed_game_id: Option<String> = row.get("installed_game");
-
-	let mut game = Game::new(id.clone(), row.get("display_title"));
-	game.release_date = row.get("release_date");
-	game.thumbnail_url = row.get("thumbnail_url");
-	game.installed_game = installed_game_id.map(|installed_game_id| InstalledGame {
-		id: installed_game_id,
+	let mut game = Game::new(id.clone(), &db_game.display_title);
+	game.release_date = db_game.release_date;
+	game.thumbnail_url = db_game.thumbnail_url;
+	game.installed_game = db_game.exe_path.map(|exe_path| InstalledGame {
+		id: exe_path.clone(),
 		installed_mod_versions: HashMap::default(),
 		discriminator: None,
 		start_command: None,
 		executable: GameExecutable {
 			architecture: None,
-			engine: row.get::<Option<EngineBrand>, _>("engine_brand").map(|engine_brand| GameEngine {
+			engine: db_game.engine_brand.map(|engine_brand| GameEngine {
 				brand: engine_brand,
 				// TODO: properly store entire version information.
-				version: row.get::<Option<&str>, _>("engine_version").map(|engine_version| EngineVersion {
+				version: db_game.engine_version.map(|engine_version| EngineVersion {
 					display: engine_version.to_string(),
 					suffix: None,
 					numbers: EngineVersionNumbers {
@@ -899,8 +883,7 @@ async fn get_game(id: GameId, handle: AppHandle) -> Result<Game> {
 					},
 				}),
 			}),
-			name: row.get("exe_name"),
-			path: PathBuf::from(row.get::<&str, _>("exe_path")),
+			path: PathBuf::from(exe_path),
 			scripting_backend: None,
 		}
 	});

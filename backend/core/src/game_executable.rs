@@ -25,7 +25,6 @@ pub enum Architecture {
 #[serializable_struct]
 pub struct GameExecutable {
 	pub path: PathBuf,
-	pub name: String,
 	pub engine: Option<GameEngine>,
 	pub architecture: Option<Architecture>,
 	pub scripting_backend: Option<UnityScriptingBackend>,
@@ -84,7 +83,6 @@ impl GameExecutable {
 			.or_else(|| {
 				Some(Self {
 					path: path.to_owned(),
-					name: file_name_without_extension(path).ok()?.to_string(),
 					engine: None,
 					architecture: None,
 					scripting_backend: None,
