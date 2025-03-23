@@ -857,11 +857,13 @@ async fn get_game(id: GameId, handle: AppHandle) -> Result<Game> {
 .fetch_one(&pool)
 .await?;
 
+	let installed_game_id: Option<String> = row.get("installed_game");
+
 	let mut game = Game::new(id.clone(), row.get("display_title"));
 	game.release_date = row.get("release_date");
 	game.thumbnail_url = row.get("thumbnail_url");
-	game.installed_game = Some(InstalledGame {
-		id: row.get("installed_game"),
+	game.installed_game = installed_game_id.map(|installed_game_id| InstalledGame {
+		id: installed_game_id,
 		installed_mod_versions: HashMap::default(),
 		discriminator: None,
 		start_command: None,
