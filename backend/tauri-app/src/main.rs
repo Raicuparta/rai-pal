@@ -11,6 +11,7 @@ use app_settings::AppSettings;
 use app_state::{AppState, StateData, StatefulHandle};
 use events::EventEmitter;
 use rai_pal_core::game::{self, Game, GameId};
+use rai_pal_core::game_executable::GameExecutable;
 use rai_pal_core::games_query::GamesQuery;
 use rai_pal_core::installed_game::InstalledGame;
 use rai_pal_core::local_mod::{self, LocalMod};
@@ -542,6 +543,7 @@ async fn refresh_remote_games(handle: AppHandle) -> Result {
 }
 
 pub async fn setup_database() -> Result<Pool<Sqlite>> {
+	// TODO also save to disk. Probably use two pools.
 	let path = paths::app_data_path()?.join("sqlite.db");
 	if path.is_file() {
 		std::fs::remove_file(&path)?;
@@ -568,9 +570,18 @@ pub async fn setup_database() -> Result<Pool<Sqlite>> {
             thumbnail_url TEXT,
             tags TEXT,
             release_date INTEGER,
+            installed_game TEXT,
+            FOREIGN KEY(installed_game) REFERENCES installed_games(id),
             PRIMARY KEY (provider_id, game_id)
         );
-        "#,
+
+        CREATE TABLE IF NOT EXISTS installed_games (
+            id TEXT NOT NULL PRIMARY KEY,
+            exe_path TEXT NOT NULL,
+            exe_name TEXT NOT NULL,
+            engine_brand TEXT,
+            engine_version TEXT
+        );"#,
 	)
 	.await?;
 
@@ -594,9 +605,9 @@ async fn refresh_games(handle: AppHandle, provider_id: ProviderId) -> Result {
 				let pool = pool.clone();
 				let game_clone = game.clone();
 				tauri::async_runtime::spawn_blocking(move || {
-					let query = sqlx::query::<Sqlite>(
-						"INSERT OR REPLACE INTO games (provider_id, game_id, external_id, display_title, normalized_titles, thumbnail_url, release_date) 
-						 VALUES (?, ?, ?, ?, ?, ?, ?)"
+					let game_query = sqlx::query::<Sqlite>(
+						"INSERT OR REPLACE INTO games (provider_id, game_id, external_id, display_title, normalized_titles, thumbnail_url, release_date, installed_game) 
+						 VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
 					)
 					.bind(game_clone.id.provider_id)
 					.bind(game_clone.id.game_id.clone())
@@ -604,10 +615,27 @@ async fn refresh_games(handle: AppHandle, provider_id: ProviderId) -> Result {
 					.bind(game_clone.title.display.clone())
 					.bind(game_clone.title.normalized.join(","))
 					.bind(game_clone.thumbnail_url.clone())
-					.bind(game_clone.release_date);
+					.bind(game_clone.release_date)
+					.bind(game_clone.installed_game.as_ref().map(|installed_game| {
+						installed_game.id.clone()
+					}));
+
+					let installed_game_query = game_clone.installed_game.as_ref().map(|installed_game| sqlx::query::<Sqlite>(
+						"INSERT OR REPLACE INTO installed_games (id, exe_path, exe_name, engine_brand, engine_version) 
+						 VALUES (?, ?, ?, ?, ?)"
+					)
+						.bind(installed_game.id.clone())
+						.bind(installed_game.executable.path.display().to_string()) // TODO lossy path guy.
+						.bind(installed_game.executable.name.clone())
+						.bind(installed_game.executable.engine.as_ref().map(|engine| engine.brand))
+						.bind(installed_game.executable.engine.as_ref().map(|engine| engine.version.as_ref().map(|version| version.display.clone()))) // TODO lossy version.
+					);
 
 					tauri::async_runtime::block_on(async {
-						if let Err(err) = pool.execute(query).await {
+						if let Some(installed_game_query) = installed_game_query {
+							installed_game_query.execute(&pool).await;
+						}
+						if let Err(err) = pool.execute(game_query).await {
 							log::error!("Failed to execute query: {err}");
 						}
 					});
@@ -804,20 +832,47 @@ async fn get_game(id: GameId, handle: AppHandle) -> Result<Game> {
 	let pool = state.database_pool.read_state()?.clone();
 
 	let row = sqlx::query(
-        r#"
-        SELECT provider_id, game_id, external_id, display_title, normalized_titles, thumbnail_url, tags, release_date
-        FROM games
-        WHERE provider_id = ? AND game_id = ?
-        "#
-    )
-    .bind(id.provider_id)
-    .bind(&id.game_id)
-    .fetch_one(&pool)
-    .await?;
+		r#"
+		SELECT 
+				g.provider_id, 
+				g.game_id, 
+				g.external_id, 
+				g.display_title, 
+				g.normalized_titles, 
+				g.thumbnail_url, 
+				g.tags, 
+				g.release_date,
+				g.installed_game,
+				ig.exe_path,
+				ig.exe_name,
+				ig.engine_brand,
+				ig.engine_version
+		FROM games g
+		LEFT JOIN installed_games ig ON g.installed_game = ig.id
+		WHERE g.provider_id = ? AND g.game_id = ?
+		"#
+)
+.bind(id.provider_id)
+.bind(&id.game_id)
+.fetch_one(&pool)
+.await?;
 
 	let mut game = Game::new(id.clone(), row.get("display_title"));
 	game.release_date = row.get("release_date");
 	game.thumbnail_url = row.get("thumbnail_url");
+	game.installed_game = Some(InstalledGame {
+		id: row.get("installed_game"),
+		installed_mod_versions: HashMap::default(),
+		discriminator: None,
+		start_command: None,
+		executable: GameExecutable {
+			architecture: None,
+			engine: None,
+			name: row.get("exe_name"),
+			path: PathBuf::from(row.get::<&str, _>("exe_path")),
+			scripting_backend: None,
+		}
+	});
 	// let tags_str: &str = row.get("tags");
 	// game.tags = tags_str.split(',').map(|s| s.trim().to_string()).collect();
 
