@@ -575,24 +575,27 @@ async fn refresh_remote_games(handle: AppHandle) -> Result {
 
 pub async fn setup_database() -> Result<Pool<Sqlite>> {
 	// let test_path = paths::app_data_path()?.join("test.sqlite");
-	// let path = paths::app_data_path()?.join("db.sqlite");
-	// if path.is_file() {
-		// 	std::fs::remove_file(&path)?;
-		// }
+	let path = paths::app_data_path()?.join("db.sqlite");
+	if path.is_file() {
+			std::fs::remove_file(&path)?;
+		}
 		
 	// TODO also save to disk. Probably use two pools.
-	let config = sqlx::sqlite::SqliteConnectOptions::new()
-		// For some reason, the name needs to start with file: for shared_cache to work when in_memory is true.
-		.filename("file:database")
-		.journal_mode(sqlx::sqlite::SqliteJournalMode::Wal)
-		.shared_cache(true)
-		.in_memory(true);
 	// let config = sqlx::sqlite::SqliteConnectOptions::new()
-	// 	.filename(&path)
-	// 	.create_if_missing(true)
+	// 	// For some reason, the name needs to start with file: for shared_cache to work when in_memory is true.
+	// 	.filename("file:database")
 	// 	.journal_mode(sqlx::sqlite::SqliteJournalMode::Wal)
-	// 	.in_memory(false)
-	// 	.shared_cache(true);
+	// 	.synchronous(sqlx::sqlite::SqliteSynchronous::Off)
+	// 	.shared_cache(true)
+	// 	.in_memory(true);
+
+	let config = sqlx::sqlite::SqliteConnectOptions::new()
+		.filename(&path)
+		.create_if_missing(true)
+		.journal_mode(sqlx::sqlite::SqliteJournalMode::Wal)
+		.synchronous(sqlx::sqlite::SqliteSynchronous::Off)
+		.in_memory(false)
+		.shared_cache(true);
 
 	let pool = SqlitePoolOptions::new()
 		.connect_with(config)
