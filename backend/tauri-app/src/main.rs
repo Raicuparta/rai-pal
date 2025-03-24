@@ -582,8 +582,10 @@ pub async fn setup_database() -> Result<Pool<Sqlite>> {
 		
 	// TODO also save to disk. Probably use two pools.
 	let config = sqlx::sqlite::SqliteConnectOptions::new()
-		.filename("file::memory:?cache=shared")
+		// For some reason, the name needs to start with file: for shared_cache to work when in_memory is true.
+		.filename("file:database")
 		.journal_mode(sqlx::sqlite::SqliteJournalMode::Wal)
+		.shared_cache(true)
 		.in_memory(true);
 	// let config = sqlx::sqlite::SqliteConnectOptions::new()
 	// 	.filename(&path)
