@@ -576,9 +576,9 @@ async fn refresh_remote_games(handle: AppHandle) -> Result {
 pub async fn setup_database() -> Result<Pool<Sqlite>> {
 	// let test_path = paths::app_data_path()?.join("test.sqlite");
 	let path = paths::app_data_path()?.join("db.sqlite");
-	if path.is_file() {
-			std::fs::remove_file(&path)?;
-		}
+	// if path.is_file() {
+	// 		std::fs::remove_file(&path)?;
+	// 	}
 		
 	// TODO also save to disk. Probably use two pools.
 	// let config = sqlx::sqlite::SqliteConnectOptions::new()
@@ -915,8 +915,7 @@ async fn get_game(id: GameId, handle: AppHandle) -> Result<Game> {
 	let state = handle.app_state();
 	let pool = state.database_pool.read_state()?.clone();
 
-	let db_game: DbGame = sqlx::query_as(
-		r#"
+	let db_game: DbGame = sqlx::query_as(r#"
 		SELECT
 			g.*,
 			ig.*,
@@ -925,14 +924,18 @@ async fn get_game(id: GameId, handle: AppHandle) -> Result<Game> {
 			COALESCE(rg.engine_version, ig.engine_version) AS engine_version
 		FROM games g
 		LEFT JOIN installed_games ig ON g.installed_game = ig.id
-		LEFT JOIN remote_games rg ON g.provider_id = rg.provider_id AND g.external_id = rg.external_id
-		WHERE g.provider_id = ? AND g.game_id = ?
-		"#
-)
-.bind(id.provider_id)
-.bind(&id.game_id)
-.fetch_one(&pool)
-.await?;
+		LEFT JOIN remote_games rg ON (
+			g.provider_id = rg.provider_id AND g.external_id = rg.external_id
+		) OR (
+			rg.provider_id = 'Manual' AND g.normalized_titles = rg.external_id
+		)
+		WHERE g.provider_id = $1 AND g.game_id = $2
+		LIMIT 1
+	"#)
+	.bind(id.provider_id)
+	.bind(&id.game_id)
+	.fetch_one(&pool)
+	.await?;
 
 	let mut game = Game::new(id.clone(), &db_game.display_title);
 	game.release_date = db_game.release_date;
