@@ -95,7 +95,7 @@ fn parse_version(version: &str) -> Option<EngineVersion> {
 
 pub type Map = HashMap<ProviderId, HashMap<String, RemoteGame>>;
 
-pub async fn get() -> Result<Map> {
+pub async fn get_vec() -> Result<Vec<RemoteGame>> {
 	let url = format!("{URL_BASE}/{DATABASE_VERSION}/games.json");
 
 	let response = reqwest::get(&url).await?;
@@ -132,7 +132,12 @@ pub async fn get() -> Result<Map> {
 		})
 		.collect();
 
-	let game_map: Map = games
+	Ok(games)
+}
+
+pub async fn get_map() -> Result<Map> {
+	let game_map: Map = get_vec()
+		.await?
 		.iter()
 		.flat_map(|remote_game| {
 			remote_game.ids.iter().map(move |(id_kind, ids)| {

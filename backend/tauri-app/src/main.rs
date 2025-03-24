@@ -28,6 +28,7 @@ use rai_pal_core::providers::{
 	provider::{self, ProviderActions},
 	provider_command::ProviderCommandAction,
 };
+use rai_pal_core::remote_game::RemoteGame;
 #[cfg(target_os = "windows")]
 use rai_pal_core::windows;
 use rai_pal_core::{analytics, remote_game, remote_mod};
@@ -456,104 +457,153 @@ async fn refresh_mods(handle: AppHandle) -> Result {
 #[specta::specta]
 async fn refresh_remote_games(handle: AppHandle) -> Result {
 	let state = handle.app_state();
-	let remote_games = remote_game::get().await?;
-	let manual_remote_games = remote_games.get(&ProviderId::Manual);
+	let remote_games = remote_game::get_vec().await?;
+	// let manual_remote_games = remote_games.get(&ProviderId::Manual);
 	let app_settings = AppSettings::read();
 
-	state
-		.games
-		.iter()
-		.for_each(|(provider_id, provider_games)| {
-			if provider_id == &ProviderId::Manual {
-				return;
+	let pool = state.database_pool.read_state()?.clone();
+	let mut transaction = pool.begin().await?; // TODO error.
+
+	sqlx::query("DROP TABLE IF EXISTS remote_games;")
+		.execute(&mut *transaction)
+		.await?;
+
+	sqlx::query(r#"
+          CREATE TABLE IF NOT EXISTS remote_games (
+            provider_id TEXT NOT NULL,
+            external_id TEXT NOT NULL,
+            display_title TEXT,
+            engine_brand TEXT,
+            engine_version TEXT,
+            PRIMARY KEY (provider_id, external_id)
+        );
+	"#)
+		.execute(&mut *transaction)
+		.await?;
+
+	for remote_game in remote_games.iter() {
+		for (provider_id, remote_game_ids) in remote_game.ids.iter() {
+			for remote_game_id in remote_game_ids.iter() {
+				let mut game_query = sqlx::query::<Sqlite>(r#"
+					INSERT OR REPLACE INTO remote_games (provider_id, external_id, display_title, engine_brand, engine_version) 
+					 VALUES (?, ?, ?, ?, ?)
+				"#)
+				.bind(provider_id)
+				.bind(remote_game_id.clone())
+				.bind(remote_game.title.clone())
+				.bind(remote_game.engine.as_ref().map(|engine| engine.brand))
+				.bind(remote_game.engine.as_ref().and_then(|engine| {
+					engine.version.as_ref().map(|version| version.display.clone())
+				}));
+
+				game_query.execute(&mut *transaction).await.unwrap();
 			}
+		}
+	}
 
-			if let Some(provider_remote_games) =
-				remote_games.get(provider_id).or(manual_remote_games)
-			{
-				match provider_games.write_state() {
-					Ok(mut provider_games_write) => {
-						provider_games_write.iter_mut().for_each(|(_, game)| {
-							// Assign remote game to any existing game.
-							// This is for when the remote games are fetched *after* games are found locally.
-							game.remote_game = provider_remote_games
-								.get(&game.external_id)
-								.or_else(|| {
-									manual_remote_games.and_then(|provider_remote_games| {
-										// TODO also use other title normalizations.
-										game.title.normalized.first().and_then(|normalized_title| {
-											provider_remote_games.get(normalized_title)
-										})
-									})
-								})
-								.cloned()
-						});
+	transaction.commit().await?;
 
-						provider_remote_games.values().for_each(|remote_game| {
-							if let Some(subscriptions) = remote_game.subscriptions.as_ref() {
-								if !subscriptions.iter().any(|remote_game_subscription| {
-									app_settings
-										.owned_subscriptions
-										.contains(remote_game_subscription)
-								}) {
-									return;
-								}
+	// state
+	// 	.games
+	// 	.iter()
+	// 	.for_each(|(provider_id, provider_games)| {
+	// 		if provider_id == &ProviderId::Manual {
+	// 			return;
+	// 		}
 
-								if let Some(remote_game_title) = remote_game.title.as_ref() {
-									if let Some(ids) = remote_game.ids.get(provider_id) {
-										ids.iter().for_each(|remote_game_id| {
-											let game_id = GameId {
-												game_id: remote_game_id.clone(),
-												provider_id: *provider_id,
-											};
+	// 		if let Some(provider_remote_games) =
+	// 			remote_games.get(provider_id).or(manual_remote_games)
+	// 		{
+	// 			match provider_games.write_state() {
+	// 				Ok(mut provider_games_write) => {
+	// 					provider_games_write.iter_mut().for_each(|(_, game)| {
+	// 						// Assign remote game to any existing game.
+	// 						// This is for when the remote games are fetched *after* games are found locally.
+	// 						game.remote_game = provider_remote_games
+	// 							.get(&game.external_id)
+	// 							.or_else(|| {
+	// 								manual_remote_games.and_then(|provider_remote_games| {
+	// 									// TODO also use other title normalizations.
+	// 									game.title.normalized.first().and_then(|normalized_title| {
+	// 										provider_remote_games.get(normalized_title)
+	// 									})
+	// 								})
+	// 							})
+	// 							.cloned()
+	// 					});
 
-											let mut game = Game::new(game_id, remote_game_title);
-											game.from_subscriptions = subscriptions.clone();
-											game.remote_game = Some(remote_game.clone());
+	// 					provider_remote_games.values().for_each(|remote_game| {
+	// 						if let Some(subscriptions) = remote_game.subscriptions.as_ref() {
+	// 							if !subscriptions.iter().any(|remote_game_subscription| {
+	// 								app_settings
+	// 									.owned_subscriptions
+	// 									.contains(remote_game_subscription)
+	// 							}) {
+	// 								return;
+	// 							}
 
-											if let Some(remote_game_url) =
-												remote_game.get_url(provider_id)
-											{
-												game.add_provider_command(
-													ProviderCommandAction::OpenInBrowser,
-													ProviderCommand::String(remote_game_url),
-												);
-											}
+	// 							if let Some(remote_game_title) = remote_game.title.as_ref() {
+	// 								if let Some(ids) = remote_game.ids.get(provider_id) {
+	// 									ids.iter().for_each(|remote_game_id| {
+	// 										let game_id = GameId {
+	// 											game_id: remote_game_id.clone(),
+	// 											provider_id: *provider_id,
+	// 										};
 
-											provider_games_write
-												.insert(remote_game_id.clone(), game);
-										});
-									}
-								}
-							}
-						});
-					}
+	// 										let mut game = Game::new(game_id, remote_game_title);
+	// 										game.from_subscriptions = subscriptions.clone();
+	// 										game.remote_game = Some(remote_game.clone());
 
-					Err(err) => {
-						log::error!("Failed to write provider games state: {err}");
-					}
-				}
-			}
-		});
+	// 										if let Some(remote_game_url) =
+	// 											remote_game.get_url(provider_id)
+	// 										{
+	// 											game.add_provider_command(
+	// 												ProviderCommandAction::OpenInBrowser,
+	// 												ProviderCommand::String(remote_game_url),
+	// 											);
+	// 										}
+
+	// 										provider_games_write
+	// 											.insert(remote_game_id.clone(), game);
+	// 									});
+	// 								}
+	// 							}
+	// 						}
+	// 					});
+	// 				}
+
+	// 				Err(err) => {
+	// 					log::error!("Failed to write provider games state: {err}");
+	// 				}
+	// 			}
+	// 		}
+	// 	});
 
 	handle.emit_safe(events::GamesChanged());
 
-	state.remote_games.write_state_value(remote_games)?;
+	// state.remote_games.write_state_value(remote_games)?;
 
 	Ok(())
 }
 
 pub async fn setup_database() -> Result<Pool<Sqlite>> {
 	// TODO also save to disk. Probably use two pools.
-	let path = paths::app_data_path()?.join("sqlite.db");
+	let test_path = paths::app_data_path()?.join("test.sqlite");
+	let path = paths::app_data_path()?.join("db.sqlite");
 	if path.is_file() {
 		std::fs::remove_file(&path)?;
 	}
 
+	// let config = sqlx::sqlite::SqliteConnectOptions::new()
+	// 	.filename("file::memory:?cache=shared")
+	// 	.journal_mode(sqlx::sqlite::SqliteJournalMode::Wal)
+	// 	.in_memory(true);
 	let config = sqlx::sqlite::SqliteConnectOptions::new()
-		.filename("file::memory:?cache=shared")
+		.filename(&path)
+		.create_if_missing(true)
 		.journal_mode(sqlx::sqlite::SqliteJournalMode::Wal)
-		.in_memory(true);
+		.in_memory(false)
+		.shared_cache(true);
 
 	let pool = SqlitePoolOptions::new()
 		.connect_with(config)
@@ -561,7 +611,7 @@ pub async fn setup_database() -> Result<Pool<Sqlite>> {
 
 	// Run the initial migration
 	pool.execute(
-		r#"
+		format!(r#"
         CREATE TABLE IF NOT EXISTS games (
             provider_id TEXT NOT NULL,
             game_id TEXT NOT NULL,
@@ -581,9 +631,27 @@ pub async fn setup_database() -> Result<Pool<Sqlite>> {
             exe_path TEXT NOT NULL,
             engine_brand TEXT,
             engine_version TEXT
-        );"#,
+        );
+        
+        ATTACH DATABASE '{}' as 'remoteGames';
+        "#, test_path.display()).as_str(),
 	)
 	.await?;
+
+		println!("#### Attaching path: {:?}",test_path.display());
+
+
+		let rows = sqlx::query(
+			r#"
+			SELECT * FROM remoteGames.Album;
+			"#
+	)
+	.fetch_all(&pool)
+	.await?;
+
+	rows.iter().for_each(|row| {
+		println!("#### Row: {:?}", row.get::<&str, _>(1));
+	});
 
 	Ok(pool)
 }
@@ -849,9 +917,15 @@ async fn get_game(id: GameId, handle: AppHandle) -> Result<Game> {
 
 	let db_game: DbGame = sqlx::query_as(
 		r#"
-		SELECT g.*, ig.*
+		SELECT
+			g.*,
+			ig.*,
+			COALESCE(rg.display_title, g.display_title) AS display_title,
+			COALESCE(rg.engine_brand, ig.engine_brand) AS engine_brand,
+			COALESCE(rg.engine_version, ig.engine_version) AS engine_version
 		FROM games g
 		LEFT JOIN installed_games ig ON g.installed_game = ig.id
+		LEFT JOIN remote_games rg ON g.provider_id = rg.provider_id AND g.external_id = rg.external_id
 		WHERE g.provider_id = ? AND g.game_id = ?
 		"#
 )
@@ -863,6 +937,15 @@ async fn get_game(id: GameId, handle: AppHandle) -> Result<Game> {
 	let mut game = Game::new(id.clone(), &db_game.display_title);
 	game.release_date = db_game.release_date;
 	game.thumbnail_url = db_game.thumbnail_url;
+	game.remote_game = db_game.engine_brand.map(|engine_brand| RemoteGame {
+		title: None,
+		engine: Some(GameEngine {
+			version: None,
+			brand: engine_brand,
+		}),
+		ids: HashMap::default(),
+		subscriptions: None,
+	});
 	game.installed_game = db_game.exe_path.map(|exe_path| InstalledGame {
 		id: exe_path.clone(),
 		installed_mod_versions: HashMap::default(),
@@ -924,10 +1007,8 @@ fn main() {
 
 	let database_pool = tauri::async_runtime::block_on(setup_database()).unwrap_or_else(|err| {
 		#[cfg(target_os = "windows")]
-		windows::error_dialog(&format!("Failed to setup database: {err}"));
-
-		#[cfg(target_os = "linux")]
 		log::error!("Failed to setup database: {err}");
+		windows::error_dialog(&format!("Failed to setup database: {err}"));
 
 		std::process::exit(1);
 	});
@@ -1056,6 +1137,8 @@ fn main() {
 			windows::error_dialog(&error.to_string());
 
 			#[cfg(target_os = "linux")]
+			log::error!("Error: {error}");
+			#[cfg(target_os = "macos")]
 			log::error!("Error: {error}");
 		});
 }
