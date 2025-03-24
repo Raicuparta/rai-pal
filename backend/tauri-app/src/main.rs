@@ -464,27 +464,14 @@ async fn refresh_remote_games(handle: AppHandle) -> Result {
 	let pool = state.database_pool.read_state()?.clone();
 	let mut transaction = pool.begin().await?; // TODO error.
 
-	sqlx::query("DROP TABLE IF EXISTS remote_games;")
-		.execute(&mut *transaction)
-		.await?;
-
-	sqlx::query(r#"
-          CREATE TABLE IF NOT EXISTS remote_games (
-            provider_id TEXT NOT NULL,
-            external_id TEXT NOT NULL,
-            display_title TEXT,
-            engine_brand TEXT,
-            engine_version TEXT,
-            PRIMARY KEY (provider_id, external_id)
-        );
-	"#)
+	sqlx::query("DELETE FROM remote_games;")
 		.execute(&mut *transaction)
 		.await?;
 
 	for remote_game in remote_games.iter() {
 		for (provider_id, remote_game_ids) in remote_game.ids.iter() {
 			for remote_game_id in remote_game_ids.iter() {
-				let mut game_query = sqlx::query::<Sqlite>(r#"
+				let game_query = sqlx::query::<Sqlite>(r#"
 					INSERT OR REPLACE INTO remote_games (provider_id, external_id, display_title, engine_brand, engine_version) 
 					 VALUES (?, ?, ?, ?, ?)
 				"#)
@@ -587,31 +574,30 @@ async fn refresh_remote_games(handle: AppHandle) -> Result {
 }
 
 pub async fn setup_database() -> Result<Pool<Sqlite>> {
+	// let test_path = paths::app_data_path()?.join("test.sqlite");
+	// let path = paths::app_data_path()?.join("db.sqlite");
+	// if path.is_file() {
+		// 	std::fs::remove_file(&path)?;
+		// }
+		
 	// TODO also save to disk. Probably use two pools.
-	let test_path = paths::app_data_path()?.join("test.sqlite");
-	let path = paths::app_data_path()?.join("db.sqlite");
-	if path.is_file() {
-		std::fs::remove_file(&path)?;
-	}
-
-	// let config = sqlx::sqlite::SqliteConnectOptions::new()
-	// 	.filename("file::memory:?cache=shared")
-	// 	.journal_mode(sqlx::sqlite::SqliteJournalMode::Wal)
-	// 	.in_memory(true);
 	let config = sqlx::sqlite::SqliteConnectOptions::new()
-		.filename(&path)
-		.create_if_missing(true)
+		.filename("file::memory:?cache=shared")
 		.journal_mode(sqlx::sqlite::SqliteJournalMode::Wal)
-		.in_memory(false)
-		.shared_cache(true);
+		.in_memory(true);
+	// let config = sqlx::sqlite::SqliteConnectOptions::new()
+	// 	.filename(&path)
+	// 	.create_if_missing(true)
+	// 	.journal_mode(sqlx::sqlite::SqliteJournalMode::Wal)
+	// 	.in_memory(false)
+	// 	.shared_cache(true);
 
 	let pool = SqlitePoolOptions::new()
 		.connect_with(config)
 		.await?;
 
 	// Run the initial migration
-	pool.execute(
-		format!(r#"
+	pool.execute(r#"
         CREATE TABLE IF NOT EXISTS games (
             provider_id TEXT NOT NULL,
             game_id TEXT NOT NULL,
@@ -632,26 +618,32 @@ pub async fn setup_database() -> Result<Pool<Sqlite>> {
             engine_brand TEXT,
             engine_version TEXT
         );
-        
-        ATTACH DATABASE '{}' as 'remoteGames';
-        "#, test_path.display()).as_str(),
+
+				CREATE TABLE IF NOT EXISTS remote_games (
+						provider_id TEXT NOT NULL,
+						external_id TEXT NOT NULL,
+						display_title TEXT,
+						engine_brand TEXT,
+						engine_version TEXT,
+						PRIMARY KEY (provider_id, external_id)
+				);"#,
 	)
 	.await?;
 
-		println!("#### Attaching path: {:?}",test_path.display());
+		// println!("#### Attaching path: {:?}",test_path.display());
 
 
-		let rows = sqlx::query(
-			r#"
-			SELECT * FROM remoteGames.Album;
-			"#
-	)
-	.fetch_all(&pool)
-	.await?;
+	// 	let rows = sqlx::query(
+	// 		r#"
+	// 		SELECT * FROM remoteGames.Album;
+	// 		"#
+	// )
+	// .fetch_all(&pool)
+	// .await?;
 
-	rows.iter().for_each(|row| {
-		println!("#### Row: {:?}", row.get::<&str, _>(1));
-	});
+	// rows.iter().for_each(|row| {
+	// 	println!("#### Row: {:?}", row.get::<&str, _>(1));
+	// });
 
 	Ok(pool)
 }
@@ -863,8 +855,8 @@ async fn get_game_ids(
     let sort_columns = match data_query.as_ref().map(|q| q.sort_by) {
         Some(GamesSortBy::Title) => vec!["g.display_title"],
         Some(GamesSortBy::ReleaseDate) => vec!["g.release_date"],
-        Some(GamesSortBy::Engine) => vec!["ig.engine_brand", "ig.engine_version"],
-        _ => vec!["g.display_title"],
+        Some(GamesSortBy::Engine) => vec!["COALESCE(rg.engine_brand, ig.engine_brand)", "COALESCE(rg.engine_version, ig.engine_version)"],
+        _ => vec!["display_title"],
     };
 
     let sort_order = if data_query.as_ref().is_some_and(|q| q.sort_descending) {
@@ -875,10 +867,13 @@ async fn get_game_ids(
 
     let game_ids: Vec<_> = sqlx::query(
         &format!(r#"
-            SELECT g.provider_id, g.game_id, g.display_title, g.normalized_titles
+						SELECT
+							g.provider_id as provider_id,
+							g.game_id as game_id
             FROM games g
-            LEFT JOIN installed_games ig ON g.installed_game = ig.id
-            WHERE g.display_title LIKE '%' || $1 || '%'
+						LEFT JOIN installed_games ig ON g.installed_game = ig.id
+						LEFT JOIN remote_games rg ON g.provider_id = rg.provider_id AND g.external_id = rg.external_id
+						WHERE g.display_title LIKE '%' || $1 || '%'
             OR g.normalized_titles LIKE '%' || $1 || '%'
             ORDER BY {}
             "#, sort_columns.iter().map(|col| format!("{col} {sort_order}")).collect::<Vec<_>>().join(", "))
