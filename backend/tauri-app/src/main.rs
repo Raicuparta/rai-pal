@@ -576,9 +576,9 @@ async fn refresh_remote_games(handle: AppHandle) -> Result {
 pub async fn setup_database() -> Result<Pool<Sqlite>> {
 	// let test_path = paths::app_data_path()?.join("test.sqlite");
 	let path = paths::app_data_path()?.join("db.sqlite");
-	// if path.is_file() {
-	// 		std::fs::remove_file(&path)?;
-	// 	}
+	if path.is_file() {
+			std::fs::remove_file(&path)?;
+		}
 		
 	// TODO also save to disk. Probably use two pools.
 	// let config = sqlx::sqlite::SqliteConnectOptions::new()
@@ -860,7 +860,7 @@ async fn get_game_ids(
     let sort_columns = match data_query.as_ref().map(|q| q.sort_by) {
         Some(GamesSortBy::Title) => vec!["g.display_title"],
         Some(GamesSortBy::ReleaseDate) => vec!["g.release_date"],
-        Some(GamesSortBy::Engine) => vec!["COALESCE(rg.engine_brand, ig.engine_brand)", "COALESCE(rg.engine_version, ig.engine_version)"],
+        Some(GamesSortBy::Engine) => vec!["COALESCE(ig.engine_brand, rg1.engine_brand, rg2.engine_brand)", "COALESCE(ig.engine_version, rg1.engine_version, rg2.engine_version)"],
         _ => vec!["display_title"],
     };
 
@@ -877,7 +877,8 @@ async fn get_game_ids(
 							g.game_id as game_id
             FROM games g
 						LEFT JOIN installed_games ig ON g.installed_game = ig.id
-						LEFT JOIN remote_games rg ON g.provider_id = rg.provider_id AND g.external_id = rg.external_id
+						LEFT JOIN remote_games rg1 ON g.provider_id = rg1.provider_id AND g.external_id = rg1.external_id
+						LEFT JOIN remote_games rg2 ON rg2.provider_id = 'Manual' AND g.normalized_titles = rg2.external_id
 						WHERE g.display_title LIKE '%' || $1 || '%'
             OR g.normalized_titles LIKE '%' || $1 || '%'
             ORDER BY {}
@@ -915,6 +916,7 @@ async fn get_game(id: GameId, handle: AppHandle) -> Result<Game> {
 	let state = handle.app_state();
 	let pool = state.database_pool.read_state()?.clone();
 
+	// TODO take into account all normalized titles
 	let db_game: DbGame = sqlx::query_as(r#"
 		SELECT
 			g.*,
