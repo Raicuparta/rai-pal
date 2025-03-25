@@ -29,6 +29,9 @@ export const enUs = {
 		// Message that shows when Rai Pal didn't find any games at all.
 		emptyFilteredGamesList:
 			"Nothing! All of your games are hidden because of the filters you selected. Clear your filters to see your beautiful games again.",
+
+		// Message that shows while games are loading, and no games are available yet.
+		emptyGamesLoading: "Finding your games...",
 	},
 
 	addGame: {

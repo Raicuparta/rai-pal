@@ -457,38 +457,44 @@ async fn refresh_mods(handle: AppHandle) -> Result {
 #[specta::specta]
 async fn refresh_remote_games(handle: AppHandle) -> Result {
 	let state = handle.app_state();
-	let remote_games = remote_game::get_vec().await?;
+	// let remote_games = remote_game::get_vec().await?;
 	// let manual_remote_games = remote_games.get(&ProviderId::Manual);
 	let app_settings = AppSettings::read();
 
 	let pool = state.database_pool.read_state()?.clone();
-	let mut transaction = pool.begin().await?; // TODO error.
+	// let mut transaction = pool.begin().await?; // TODO error.
 
-	sqlx::query("DELETE FROM remote_games;")
-		.execute(&mut *transaction)
-		.await?;
+	// sqlx::query("DELETE FROM remote_games;")
+	// 	.execute(&mut *transaction)
+	// 	.await?;
 
-	for remote_game in remote_games.iter() {
-		for (provider_id, remote_game_ids) in remote_game.ids.iter() {
-			for remote_game_id in remote_game_ids.iter() {
-				let game_query = sqlx::query::<Sqlite>(r#"
-					INSERT OR REPLACE INTO remote_games (provider_id, external_id, display_title, engine_brand, engine_version) 
-					 VALUES (?, ?, ?, ?, ?)
-				"#)
-				.bind(provider_id)
-				.bind(remote_game_id.clone())
-				.bind(remote_game.title.clone())
-				.bind(remote_game.engine.as_ref().map(|engine| engine.brand))
-				.bind(remote_game.engine.as_ref().and_then(|engine| {
-					engine.version.as_ref().map(|version| version.display.clone())
-				}));
+	// let database_path = paths::app_data_path()?.join("remote.sqlite");
 
-				game_query.execute(&mut *transaction).await.unwrap();
-			}
-		}
-	}
+	// sqlx::query(format!("ATTACH DATABASE '{}' AS remote;", database_path.display()).as_str())
+	// 	.execute(&pool)
+	// 	.await?;
 
-	transaction.commit().await?;
+	// for remote_game in remote_games.iter() {
+	// 	for (provider_id, remote_game_ids) in remote_game.ids.iter() {
+	// 		for remote_game_id in remote_game_ids.iter() {
+	// 			let game_query = sqlx::query::<Sqlite>(r#"
+	// 				INSERT OR REPLACE INTO remote_games (provider_id, external_id, display_title, engine_brand, engine_version) 
+	// 				 VALUES (?, ?, ?, ?, ?)
+	// 			"#)
+	// 			.bind(provider_id)
+	// 			.bind(remote_game_id.clone())
+	// 			.bind(remote_game.title.clone())
+	// 			.bind(remote_game.engine.as_ref().map(|engine| engine.brand))
+	// 			.bind(remote_game.engine.as_ref().and_then(|engine| {
+	// 				engine.version.as_ref().map(|version| version.display.clone())
+	// 			}));
+
+	// 			game_query.execute(&mut *transaction).await.unwrap();
+	// 		}
+	// 	}
+	// }
+
+	// transaction.commit().await?;
 
 	// state
 	// 	.games
@@ -590,11 +596,11 @@ pub async fn setup_database() -> Result<Pool<Sqlite>> {
 	// 	.in_memory(true);
 
 	let config = sqlx::sqlite::SqliteConnectOptions::new()
-		.filename(&path)
+		.filename("file::memory:")
 		.create_if_missing(true)
 		.journal_mode(sqlx::sqlite::SqliteJournalMode::Wal)
 		.synchronous(sqlx::sqlite::SqliteSynchronous::Off)
-		.in_memory(false)
+		.in_memory(true)
 		.shared_cache(true);
 
 	let pool = SqlitePoolOptions::new()
@@ -623,17 +629,42 @@ pub async fn setup_database() -> Result<Pool<Sqlite>> {
             engine_brand TEXT,
             engine_version TEXT
         );
-
-				CREATE TABLE IF NOT EXISTS remote_games (
-						provider_id TEXT NOT NULL,
-						external_id TEXT NOT NULL,
-						display_title TEXT,
+				
+				CREATE TABLE remote_games (
+						id INTEGER PRIMARY KEY,
+						title TEXT,
 						engine_brand TEXT,
-						engine_version TEXT,
-						PRIMARY KEY (provider_id, external_id)
-				);"#,
+						engine_version TEXT
+				);
+
+				CREATE TABLE remote_game_ids (
+						game_id INTEGER,
+						provider TEXT,
+						external_id TEXT,
+						FOREIGN KEY (game_id) REFERENCES remote_games(id) ON DELETE CASCADE
+				);
+
+				CREATE TABLE remote_game_subscriptions (
+						game_id INTEGER,
+						subscription TEXT,
+						FOREIGN KEY (game_id) REFERENCES remote_games(id) ON DELETE CASCADE
+				);
+				"#,
 	)
 	.await?;
+
+	
+
+	let database_path = paths::app_data_path()?.join("remote.sqlite").display().to_string();
+	println!("#### Database path: {:?}", &database_path);
+	sqlx::query(format!(r#"
+		ATTACH DATABASE 'file:{database_path}?mode=ro' AS 'remote';
+		INSERT INTO main.remote_games SELECT * FROM remote.games;
+		INSERT INTO main.remote_game_ids SELECT * FROM remote.game_ids;
+		DETACH DATABASE remote;
+	"#).as_str())
+		.execute(&pool)
+		.await?;
 
 		// println!("#### Attaching path: {:?}",test_path.display());
 
@@ -860,7 +891,7 @@ async fn get_game_ids(
     let sort_columns = match data_query.as_ref().map(|q| q.sort_by) {
         Some(GamesSortBy::Title) => vec!["g.display_title"],
         Some(GamesSortBy::ReleaseDate) => vec!["g.release_date"],
-        Some(GamesSortBy::Engine) => vec!["COALESCE(ig.engine_brand, rg1.engine_brand, rg2.engine_brand)", "COALESCE(ig.engine_version, rg1.engine_version, rg2.engine_version)"],
+        Some(GamesSortBy::Engine) => vec!["COALESCE(ig.engine_brand, rg.engine_brand, rg.engine_brand)", "COALESCE(ig.engine_version, rg.engine_version, rg.engine_version)"],
         _ => vec!["display_title"],
     };
 
@@ -875,12 +906,12 @@ async fn get_game_ids(
 						SELECT
 							g.provider_id as provider_id,
 							g.game_id as game_id
-            FROM games g
-						LEFT JOIN installed_games ig ON g.installed_game = ig.id
-						LEFT JOIN remote_games rg1 ON g.provider_id = rg1.provider_id AND g.external_id = rg1.external_id
-						LEFT JOIN remote_games rg2 ON rg2.provider_id = 'Manual' AND g.normalized_titles = rg2.external_id
+						FROM main.games g
+						LEFT JOIN main.installed_games ig ON g.installed_game = ig.id
+						LEFT JOIN remote_game_ids rg_id ON g.provider_id = rg_id.provider AND g.external_id = rg_id.external_id
+						LEFT JOIN remote_games rg ON rg_id.game_id = rg.id
 						WHERE g.display_title LIKE '%' || $1 || '%'
-            OR g.normalized_titles LIKE '%' || $1 || '%'
+						OR g.normalized_titles LIKE '%' || $1 || '%'
             ORDER BY {}
             "#, sort_columns.iter().map(|col| format!("{col} {sort_order}")).collect::<Vec<_>>().join(", "))
     )
@@ -921,16 +952,17 @@ async fn get_game(id: GameId, handle: AppHandle) -> Result<Game> {
 		SELECT
 			g.*,
 			ig.*,
-			COALESCE(rg.display_title, g.display_title) AS display_title,
+			COALESCE(rg.title, g.display_title) AS display_title,
 			COALESCE(rg.engine_brand, ig.engine_brand) AS engine_brand,
 			COALESCE(rg.engine_version, ig.engine_version) AS engine_version
-		FROM games g
-		LEFT JOIN installed_games ig ON g.installed_game = ig.id
-		LEFT JOIN remote_games rg ON (
-			g.provider_id = rg.provider_id AND g.external_id = rg.external_id
+		FROM main.games g
+		LEFT JOIN main.installed_games ig ON g.installed_game = ig.id
+		LEFT JOIN remote_game_ids rg_id ON (
+			g.provider_id = rg_id.provider AND g.external_id = rg_id.external_id
 		) OR (
-			rg.provider_id = 'Manual' AND g.normalized_titles = rg.external_id
+			rg_id.provider = 'Manual' AND g.normalized_titles = rg_id.external_id
 		)
+		LEFT JOIN remote_games rg ON rg_id.game_id = rg.id
 		WHERE g.provider_id = $1 AND g.game_id = $2
 		LIMIT 1
 	"#)

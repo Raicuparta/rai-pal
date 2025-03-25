@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { GameId, GamesSortBy } from "@api/bindings";
 import { useAtomValue } from "jotai";
-import { gameDataAtom } from "@hooks/use-data";
+import { gameDataAtom, loadingTasksAtom } from "@hooks/use-data";
 import { TableContainer } from "@components/table/table-container";
 import {
 	TableComponents,
@@ -45,6 +45,7 @@ const tableComponents: TableComponents<GameId, unknown> = {
 
 export function GamesTable() {
 	const gameData = useAtomValue(gameDataAtom);
+	const loading = useAtomValue(loadingTasksAtom);
 	const [dataQuery, setDataQuery] = useDataQuery();
 	const tableRef = useRef<TableVirtuosoHandle>(null);
 	const t = useLocalization("gamesPage");
@@ -73,6 +74,10 @@ export function GamesTable() {
 			tableRef.current.scrollToIndex(0);
 		}
 	}, [dataQuery]);
+
+	if (gameData.totalCount === BigInt(0) && loading.length > 0) {
+		return <Alert>{t("emptyGamesLoading")}</Alert>;
+	}
 
 	if (gameData.totalCount === BigInt(0)) {
 		return <Alert>{t("emptyGamesList")}</Alert>;
