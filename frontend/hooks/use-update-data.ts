@@ -7,6 +7,7 @@ import { useAppEvent } from "./use-app-event";
 import { useThrottledCallback } from "@mantine/hooks";
 import { useDataQuery } from "./use-data-query";
 
+// TODO this is kinda stupid, hook doing too much work since it's used in multiple places.
 export function useUpdateData(executeOnMount = false) {
 	const [loadingTasks, setLoadingTasks] = useAtom(loadingTasksAtom);
 	const setGameData = useSetAtom(gameDataAtom);
@@ -24,6 +25,7 @@ export function useUpdateData(executeOnMount = false) {
 		commands
 			.getGameIds(deferredGamesQuery)
 			.then((data) => {
+				console.log("gooot game ids!!!");
 				if (thisFetchCount !== totalFetchCount.current) {
 					console.log(
 						"Cancelling this fetch since another one happened in the meantime.",
@@ -44,8 +46,9 @@ export function useUpdateData(executeOnMount = false) {
 	);
 
 	useEffect(() => {
+		if (!executeOnMount) return;
 		updateProviderGames();
-	}, [updateProviderGames]);
+	}, [updateProviderGames, executeOnMount]);
 
 	useAppEvent("gamesChanged", "update-data", throttledUpdateProviderGames);
 
