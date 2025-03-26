@@ -596,11 +596,11 @@ pub async fn setup_database() -> Result<Pool<Sqlite>> {
 	// 	.in_memory(true);
 
 	let config = sqlx::sqlite::SqliteConnectOptions::new()
-		.filename("file::memory:")
+		.filename(path)
 		.create_if_missing(true)
 		.journal_mode(sqlx::sqlite::SqliteJournalMode::Wal)
 		.synchronous(sqlx::sqlite::SqliteSynchronous::Off)
-		.in_memory(true)
+		.in_memory(false)
 		.shared_cache(true);
 
 	let pool = SqlitePoolOptions::new()
@@ -631,23 +631,11 @@ pub async fn setup_database() -> Result<Pool<Sqlite>> {
         );
 				
 				CREATE TABLE remote_games (
-						id INTEGER PRIMARY KEY,
-						title TEXT,
-						engine_brand TEXT,
-						engine_version TEXT
-				);
-
-				CREATE TABLE remote_game_ids (
-						game_id INTEGER,
-						provider TEXT,
 						external_id TEXT,
-						FOREIGN KEY (game_id) REFERENCES remote_games(id) ON DELETE CASCADE
-				);
-
-				CREATE TABLE remote_game_subscriptions (
-						game_id INTEGER,
-						subscription TEXT,
-						FOREIGN KEY (game_id) REFERENCES remote_games(id) ON DELETE CASCADE
+						provider_id TEXT,
+						engine_brand TEXT,
+						engine_version TEXT,
+						PRIMARY KEY (provider_id, external_id)
 				);
 				"#,
 	)
@@ -658,10 +646,13 @@ pub async fn setup_database() -> Result<Pool<Sqlite>> {
 	let database_path = paths::app_data_path()?.join("remote.sqlite").display().to_string();
 	println!("#### Database path: {:?}", &database_path);
 	sqlx::query(format!(r#"
-		ATTACH DATABASE 'file:{database_path}?mode=ro' AS 'remote';
-		INSERT INTO main.remote_games SELECT * FROM remote.games;
-		INSERT INTO main.remote_game_ids SELECT * FROM remote.game_ids;
-		DETACH DATABASE remote;
+    ATTACH DATABASE 'file:{database_path}?mode=ro' AS 'remote';
+    INSERT OR IGNORE INTO main.remote_games (external_id, provider_id, engine_brand, engine_version)
+    SELECT rg_ids.external_id, rg_ids.provider, rg.engine_brand, rg.engine_version
+    FROM remote.games rg
+    LEFT JOIN remote.game_ids rg_ids ON rg.id = rg_ids.game_id
+		WHERE rg_ids.external_id IS NOT NULL AND rg_ids.external_id != '';
+    DETACH DATABASE remote;
 	"#).as_str())
 		.execute(&pool)
 		.await?;
@@ -903,13 +894,16 @@ async fn get_game_ids(
 
     let game_ids: Vec<_> = sqlx::query(
         &format!(r#"
-						SELECT
+						SELECT DISTINCT
 							g.provider_id as provider_id,
 							g.game_id as game_id
 						FROM main.games g
 						LEFT JOIN main.installed_games ig ON g.installed_game = ig.id
-						LEFT JOIN remote_game_ids rg_id ON g.provider_id = rg_id.provider AND g.external_id = rg_id.external_id
-						LEFT JOIN remote_games rg ON rg_id.game_id = rg.id
+						LEFT JOIN remote_games rg ON (
+							g.provider_id = rg.provider_id AND g.external_id = rg.external_id
+						) OR (
+							rg.provider_id = 'Manual' AND g.normalized_titles = rg.external_id
+						)
 						WHERE g.display_title LIKE '%' || $1 || '%'
 						OR g.normalized_titles LIKE '%' || $1 || '%'
             ORDER BY {}
@@ -952,17 +946,15 @@ async fn get_game(id: GameId, handle: AppHandle) -> Result<Game> {
 		SELECT
 			g.*,
 			ig.*,
-			COALESCE(rg.title, g.display_title) AS display_title,
 			COALESCE(rg.engine_brand, ig.engine_brand) AS engine_brand,
 			COALESCE(rg.engine_version, ig.engine_version) AS engine_version
 		FROM main.games g
 		LEFT JOIN main.installed_games ig ON g.installed_game = ig.id
-		LEFT JOIN remote_game_ids rg_id ON (
-			g.provider_id = rg_id.provider AND g.external_id = rg_id.external_id
+		LEFT JOIN remote_games rg ON (
+			g.provider_id = rg.provider_id AND g.external_id = rg.external_id
 		) OR (
-			rg_id.provider = 'Manual' AND g.normalized_titles = rg_id.external_id
+			rg.provider_id = 'Manual' AND g.normalized_titles = rg.external_id
 		)
-		LEFT JOIN remote_games rg ON rg_id.game_id = rg.id
 		WHERE g.provider_id = $1 AND g.game_id = $2
 		LIMIT 1
 	"#)
@@ -1042,13 +1034,7 @@ fn main() {
 		log::error!("Panic: {info}");
 	}));
 
-	let database_pool = tauri::async_runtime::block_on(setup_database()).unwrap_or_else(|err| {
-		#[cfg(target_os = "windows")]
-		log::error!("Failed to setup database: {err}");
-		windows::error_dialog(&format!("Failed to setup database: {err}"));
-
-		std::process::exit(1);
-	});
+	let database_pool = tauri::async_runtime::block_on(setup_database()).unwrap();
 
 	let builder = Builder::<tauri::Wry>::new()
 		.commands(tauri_specta::collect_commands![
