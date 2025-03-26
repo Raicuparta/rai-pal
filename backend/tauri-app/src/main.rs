@@ -11,7 +11,7 @@ use app_settings::AppSettings;
 use app_state::{AppState, StateData, StatefulHandle};
 use events::EventEmitter;
 use rai_pal_core::game::{self, DbGame, Game, GameId};
-use rai_pal_core::game_engines::game_engine::{EngineBrand, EngineVersion, EngineVersionNumbers, GameEngine};
+use rai_pal_core::game_engines::game_engine::{EngineVersion, EngineVersionNumbers, GameEngine};
 use rai_pal_core::game_executable::GameExecutable;
 use rai_pal_core::games_query::{GamesQuery, GamesSortBy};
 use rai_pal_core::installed_game::{InstalledGame};
@@ -21,7 +21,6 @@ use rai_pal_core::mod_loaders::mod_loader::{self, ModLoaderActions};
 use rai_pal_core::paths::{self, normalize_path};
 use rai_pal_core::providers::provider::ProviderId;
 use rai_pal_core::providers::provider_cache;
-use rai_pal_core::providers::provider_command::ProviderCommand;
 use rai_pal_core::providers::steam::steam_provider::Steam;
 use rai_pal_core::providers::{
 	manual_provider,
@@ -31,7 +30,7 @@ use rai_pal_core::providers::{
 use rai_pal_core::remote_game::RemoteGame;
 #[cfg(target_os = "windows")]
 use rai_pal_core::windows;
-use rai_pal_core::{analytics, remote_game, remote_mod};
+use rai_pal_core::{analytics, remote_mod};
 use rai_pal_proc_macros::serializable_struct;
 use sqlx::sqlite::SqlitePoolOptions;
 use sqlx::{Executor, Pool, Row, Sqlite};
@@ -609,39 +608,40 @@ pub async fn setup_database() -> Result<Pool<Sqlite>> {
 
 	// Run the initial migration
 	pool.execute(r#"
-        CREATE TABLE IF NOT EXISTS games (
-            provider_id TEXT NOT NULL,
-            game_id TEXT NOT NULL,
-            external_id TEXT NOT NULL,
-            display_title TEXT NOT NULL,
-            normalized_titles TEXT NOT NULL,
-            thumbnail_url TEXT,
-            tags TEXT,
-            release_date INTEGER,
-            installed_game TEXT,
-            FOREIGN KEY(installed_game) REFERENCES installed_games(id),
-            PRIMARY KEY (provider_id, game_id)
-        );
+		CREATE TABLE IF NOT EXISTS games (
+				provider_id TEXT NOT NULL,
+				game_id TEXT NOT NULL,
+				external_id TEXT NOT NULL,
+				display_title TEXT NOT NULL,
+				normalized_titles TEXT NOT NULL,
+				thumbnail_url TEXT,
+				tags TEXT,
+				release_date INTEGER,
+				installed_game TEXT,
+				FOREIGN KEY(installed_game) REFERENCES installed_games(id),
+				PRIMARY KEY (provider_id, game_id)
+		);
 
-        CREATE TABLE IF NOT EXISTS installed_games (
-            id TEXT NOT NULL PRIMARY KEY,
-            exe_path TEXT NOT NULL,
-            engine_brand TEXT,
-            engine_version TEXT
-        );
-				
-				CREATE TABLE remote_games (
-						external_id TEXT,
-						provider_id TEXT,
-						engine_brand TEXT,
-						engine_version TEXT,
-						PRIMARY KEY (provider_id, external_id)
-				);
-				"#,
+		CREATE INDEX idx_games_external_id ON games(provider_id, external_id);
+		CREATE INDEX idx_games_installed_game ON games(installed_game);
+
+		CREATE TABLE IF NOT EXISTS installed_games (
+				id TEXT NOT NULL PRIMARY KEY,
+				exe_path TEXT NOT NULL,
+				engine_brand TEXT,
+				engine_version TEXT
+		);
+
+		CREATE TABLE remote_games (
+				provider_id TEXT,
+				external_id TEXT,
+				engine_brand TEXT,
+				engine_version TEXT,
+				PRIMARY KEY (provider_id, external_id)
+		);
+		"#,
 	)
 	.await?;
-
-	
 
 	let database_path = paths::app_data_path()?.join("remote.sqlite").display().to_string();
 	println!("#### Database path: {:?}", &database_path);
@@ -882,7 +882,7 @@ async fn get_game_ids(
     let sort_columns = match data_query.as_ref().map(|q| q.sort_by) {
         Some(GamesSortBy::Title) => vec!["g.display_title"],
         Some(GamesSortBy::ReleaseDate) => vec!["g.release_date"],
-        Some(GamesSortBy::Engine) => vec!["COALESCE(ig.engine_brand, rg.engine_brand, rg.engine_brand)", "COALESCE(ig.engine_version, rg.engine_version, rg.engine_version)"],
+        Some(GamesSortBy::Engine) => vec!["COALESCE(ig.engine_brand, rg.engine_brand)", "COALESCE(ig.engine_version, rg.engine_version)"],
         _ => vec!["display_title"],
     };
 
@@ -892,7 +892,7 @@ async fn get_game_ids(
         "ASC"
     };
 
-    let game_ids: Vec<_> = sqlx::query(
+    let game_ids: Vec<GameId> = sqlx::query_as(
         &format!(r#"
 						SELECT DISTINCT
 							g.provider_id as provider_id,
@@ -911,13 +911,7 @@ async fn get_game_ids(
     )
     .bind(search.trim())
     .fetch_all(&pool)
-    .await?
-    .iter()
-    .filter_map(|row| Some(GameId {
-        provider_id: row.try_get("provider_id").ok()?, // TODO don't swallow error.
-        game_id: row.try_get("game_id").ok()?, // TODO don't swallow error.
-    }))
-    .collect();
+    .await?;
 
     let total_count: i64 = sqlx::query(
         r#"

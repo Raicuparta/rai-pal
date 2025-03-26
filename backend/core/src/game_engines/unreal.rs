@@ -266,7 +266,7 @@ pub fn get_executable(launch_path: &Path) -> Option<GameExecutable> {
 		);
 
 		Some(GameExecutable {
-			path: shipping_exe_path.clone(),
+			path: shipping_exe_path,
 			// name: shipping_exe_path.file_name()?.to_string_lossy().to_string(),
 			architecture,
 			scripting_backend: None,

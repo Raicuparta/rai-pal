@@ -19,6 +19,7 @@ use crate::{
 pub type Map = HashMap<String, Game>;
 
 #[serializable_struct]
+#[derive(sqlx::Type, sqlx::FromRow)]
 pub struct GameId {
 	pub provider_id: ProviderId,
 	pub game_id: String,

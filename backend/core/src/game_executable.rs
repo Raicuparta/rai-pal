@@ -12,7 +12,7 @@ use crate::{
 		unity::{self, UnityScriptingBackend},
 		unreal,
 	},
-	paths::{file_name_without_extension, normalize_path},
+	paths::normalize_path,
 	result::Result,
 };
 
