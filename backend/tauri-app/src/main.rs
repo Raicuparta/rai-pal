@@ -13,7 +13,7 @@ use events::EventEmitter;
 use rai_pal_core::game::{self, DbGame, Game, GameId};
 use rai_pal_core::game_engines::game_engine::{EngineVersion, EngineVersionNumbers, GameEngine};
 use rai_pal_core::game_executable::GameExecutable;
-use rai_pal_core::games_query::{GamesQuery, GamesSortBy};
+use rai_pal_core::games_query::{GamesQuery, GamesSortBy, InstallState};
 use rai_pal_core::installed_game::{InstalledGame};
 use rai_pal_core::local_mod::{self, LocalMod};
 use rai_pal_core::maps::TryGettable;
@@ -877,6 +877,7 @@ async fn get_game_ids(
     let pool = state.database_pool.read_state()?.clone();
     let search = data_query.as_ref().map(|q| q.search.clone()).unwrap_or_default();
 
+    // Build sorting logic
     let sort_columns = match data_query.as_ref().map(|q| q.sort_by) {
         Some(GamesSortBy::Title) => vec!["g.display_title"],
         Some(GamesSortBy::ReleaseDate) => vec!["g.release_date"],
@@ -890,32 +891,92 @@ async fn get_game_ids(
         "ASC"
     };
 
+    // Build filtering logic dynamically
+    let mut filters = Vec::<String>::new();
+
+    if let Some(filter) = data_query.as_ref().map(|q| &q.filter) {
+        // Installed filter
+        if filter.installed.contains(&Some(InstallState::Installed)) {
+            filters.push("g.installed_game IS NOT NULL".to_string());
+        } else if filter.installed.contains(&Some(InstallState::NotInstalled)) {
+            filters.push("g.installed_game IS NULL".to_string());
+        }
+
+        // Add more filters here as needed, e.g., providers, tags, etc.
+        if !filter.providers.is_empty() {
+            let provider_conditions: Vec<String> = filter
+                .providers
+                .iter()
+                .filter_map(|provider| provider.as_ref().map(|p| format!("g.provider_id = '{}'", p)))
+                .collect();
+            if !provider_conditions.is_empty() {
+                filters.push(format!("({})", provider_conditions.join(" OR ")));
+            }
+        }
+
+        if !filter.tags.is_empty() {
+            let tag_conditions: Vec<String> = filter
+                .tags
+                .iter()
+                .filter_map(|tag| tag.as_ref().map(|t| format!("g.tags LIKE '%{}%'", t)))
+                .collect();
+            if !tag_conditions.is_empty() {
+                filters.push(format!("({})", tag_conditions.join(" OR ")));
+            }
+        }
+
+        // Add similar logic for architectures, unity_scripting_backends, engines, etc.
+    }
+
+    // Add search filter
+    if !search.trim().is_empty() {
+        filters.push("(g.display_title LIKE '%' || $1 || '%' OR g.normalized_titles LIKE '%' || $1 || '%')".to_string());
+    }
+
+    // Combine all filters into a single WHERE clause
+    let where_clause = if filters.is_empty() {
+        "1=1".to_string() // No filters, match all rows
+    } else {
+        filters.join(" AND ")
+    };
+
+		log::info!("#### WHERE clause: {where_clause}");
+
     let game_ids: Vec<GameId> = sqlx::query_as(
-        &format!(r#"
-						SELECT DISTINCT
-							g.provider_id as provider_id,
-							g.game_id as game_id
-						FROM main.games g
-						LEFT JOIN main.installed_games ig ON g.installed_game = ig.id
-						LEFT JOIN remote_games rg ON (
-							g.provider_id = rg.provider_id AND g.external_id = rg.external_id
-						) OR (
-							rg.provider_id = 'Manual' AND g.normalized_titles = rg.external_id
-						)
-						WHERE g.display_title LIKE '%' || $1 || '%'
-						OR g.normalized_titles LIKE '%' || $1 || '%'
+        &format!(
+            r#"
+            SELECT DISTINCT
+                g.provider_id as provider_id,
+                g.game_id as game_id
+            FROM main.games g
+            LEFT JOIN main.installed_games ig ON g.installed_game = ig.id
+            LEFT JOIN remote_games rg ON (
+                g.provider_id = rg.provider_id AND g.external_id = rg.external_id
+            ) OR (
+                rg.provider_id = 'Manual' AND g.normalized_titles = rg.external_id
+            )
+            WHERE {where_clause}
             ORDER BY {}
-            "#, sort_columns.iter().map(|col| format!("{col} {sort_order}")).collect::<Vec<_>>().join(", "))
+            "#,
+            sort_columns
+                .iter()
+                .map(|col| format!("{col} {sort_order}"))
+                .collect::<Vec<_>>()
+                .join(", ")
+        )
     )
     .bind(search.trim())
     .fetch_all(&pool)
     .await?;
 
     let total_count: i64 = sqlx::query(
-        r#"
-                SELECT COUNT(*)
-                FROM games
-                "#,
+        &format!(
+            r#"
+            SELECT COUNT(*)
+            FROM main.games g
+            WHERE {where_clause}
+            "#
+        )
     )
     .fetch_one(&pool)
     .await?
