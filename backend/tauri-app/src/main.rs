@@ -633,11 +633,12 @@ pub async fn setup_database() -> Result<Pool<Sqlite>> {
 		);
 
 		CREATE TABLE remote_games (
-				provider_id TEXT,
-				external_id TEXT,
-				engine_brand TEXT,
-				engine_version TEXT,
-				PRIMARY KEY (provider_id, external_id)
+        provider_id TEXT NOT NULL,
+        external_id TEXT NOT NULL,
+        engine_brand TEXT,
+        engine_version TEXT,
+        subscriptions TEXT,
+        PRIMARY KEY (provider_id, external_id)
 		);
 		"#,
 	)
@@ -647,11 +648,8 @@ pub async fn setup_database() -> Result<Pool<Sqlite>> {
 	println!("#### Database path: {:?}", &database_path);
 	sqlx::query(format!(r#"
     ATTACH DATABASE 'file:{database_path}?mode=ro' AS 'remote';
-    INSERT OR IGNORE INTO main.remote_games (external_id, provider_id, engine_brand, engine_version)
-    SELECT rg_ids.external_id, rg_ids.provider, rg.engine_brand, rg.engine_version
-    FROM remote.games rg
-    LEFT JOIN remote.game_ids rg_ids ON rg.id = rg_ids.game_id
-		WHERE rg_ids.external_id IS NOT NULL AND rg_ids.external_id != '';
+    INSERT OR IGNORE INTO main.remote_games
+    SELECT * FROM remote.games;
     DETACH DATABASE remote;
 	"#).as_str())
 		.execute(&pool)
