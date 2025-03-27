@@ -7,12 +7,12 @@ export const defaultQuery: GamesQuery = {
 	search: "",
 	sortDescending: false,
 	filter: {
-		architectures: ["X64", "X86", null],
-		engines: ["GameMaker", "Unity", "Godot", "Unreal", null],
-		providers: ["Epic", "Gog", "Itch", "Steam", "Manual", "Xbox", "Ubisoft"],
-		tags: ["Demo", "VR", null],
-		unityScriptingBackends: ["Il2Cpp", "Mono", null],
-		installed: ["Installed", "NotInstalled"],
+		architectures: [],
+		engines: [],
+		providers: [],
+		tags: [],
+		unityScriptingBackends: [],
+		installed: [],
 	},
 };
 

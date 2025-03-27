@@ -629,10 +629,11 @@ pub async fn setup_database() -> Result<Pool<Sqlite>> {
 				id TEXT NOT NULL PRIMARY KEY,
 				exe_path TEXT NOT NULL,
 				engine_brand TEXT,
-				engine_version TEXT
+				engine_version TEXT,
+				unity_backend TEXT
 		);
 
-		CREATE TABLE remote_games (
+		CREATE TABLE IF NOT EXISTS remote_games (
         provider_id TEXT NOT NULL,
         external_id TEXT NOT NULL,
         engine_brand TEXT,
@@ -706,14 +707,15 @@ async fn refresh_games(handle: AppHandle, provider_id: ProviderId) -> Result {
 					}));
 
 					let installed_game_query = game_clone.installed_game.as_ref().map(|installed_game| sqlx::query::<Sqlite>(
-						"INSERT OR REPLACE INTO installed_games (id, exe_path, engine_brand, engine_version) 
-						 VALUES (?, ?, ?, ?)"
+						"INSERT OR REPLACE INTO installed_games (id, exe_path, engine_brand, engine_version, unity_backend) 
+						 VALUES (?, ?, ?, ?, ?)"
 					)
 						.bind(installed_game.id.clone())
 						.bind(installed_game.executable.path.display().to_string()) // TODO lossy path guy.
 						// .bind(installed_game.executable.name.clone())
 						.bind(installed_game.executable.engine.as_ref().map(|engine| engine.brand))
 						.bind(installed_game.executable.engine.as_ref().map(|engine| engine.version.as_ref().map(|version| version.display.clone()))) // TODO lossy version.
+						.bind(installed_game.executable.scripting_backend.as_ref().map(|unity_backend| unity_backend.to_string()))
 					);
 
 					tauri::async_runtime::block_on(async {
@@ -902,7 +904,6 @@ async fn get_game_ids(
             filters.push("g.installed_game IS NULL".to_string());
         }
 
-        // Add more filters here as needed, e.g., providers, tags, etc.
         if !filter.providers.is_empty() {
             let provider_conditions: Vec<String> = filter
                 .providers
@@ -925,7 +926,27 @@ async fn get_game_ids(
             }
         }
 
-        // Add similar logic for architectures, unity_scripting_backends, engines, etc.
+        if !filter.engines.is_empty() {
+						let engine_conditions: Vec<String> = filter
+								.engines
+								.iter()
+								.filter_map(|engine| engine.as_ref().map(|e| format!("COALESCE(ig.engine_brand, rg.engine_brand) = '{}'", e)))
+								.collect();
+						if !engine_conditions.is_empty() {
+								filters.push(format!("({})", engine_conditions.join(" OR ")));
+						}
+				}
+
+				if !filter.unity_scripting_backends.is_empty() {
+						let backend_conditions: Vec<String> = filter
+								.unity_scripting_backends
+								.iter()
+								.filter_map(|backend| backend.as_ref().map(|b| format!("ig.unity_backend = '{}'", b)))
+								.collect();
+						if !backend_conditions.is_empty() {
+								filters.push(format!("({})", backend_conditions.join(" OR ")));
+						}
+				}
     }
 
     // Add search filter
@@ -942,42 +963,41 @@ async fn get_game_ids(
 
 		log::info!("#### WHERE clause: {where_clause}");
 
+		let query = &format!(
+			r#"
+			SELECT DISTINCT
+					g.provider_id as provider_id,
+					g.game_id as game_id
+			FROM main.games g
+			LEFT JOIN main.installed_games ig ON g.installed_game = ig.id
+			LEFT JOIN remote_games rg ON (
+					g.provider_id = rg.provider_id AND g.external_id = rg.external_id
+			) OR (
+					rg.provider_id = 'Manual' AND g.normalized_titles = rg.external_id
+			)
+			WHERE {where_clause}
+			ORDER BY {}
+			"#,
+			sort_columns
+					.iter()
+					.map(|col| format!("{col} {sort_order}"))
+					.collect::<Vec<_>>()
+					.join(", ")
+	);
+
+	log::info!("#### Query: {query}");
+
     let game_ids: Vec<GameId> = sqlx::query_as(
-        &format!(
-            r#"
-            SELECT DISTINCT
-                g.provider_id as provider_id,
-                g.game_id as game_id
-            FROM main.games g
-            LEFT JOIN main.installed_games ig ON g.installed_game = ig.id
-            LEFT JOIN remote_games rg ON (
-                g.provider_id = rg.provider_id AND g.external_id = rg.external_id
-            ) OR (
-                rg.provider_id = 'Manual' AND g.normalized_titles = rg.external_id
-            )
-            WHERE {where_clause}
-            ORDER BY {}
-            "#,
-            sort_columns
-                .iter()
-                .map(|col| format!("{col} {sort_order}"))
-                .collect::<Vec<_>>()
-                .join(", ")
-        )
+			query
     )
     .bind(search.trim())
     .fetch_all(&pool)
     .await?;
 
-    let total_count: i64 = sqlx::query(
-        &format!(
-            r#"
-            SELECT COUNT(*)
-            FROM main.games g
-            WHERE {where_clause}
-            "#
-        )
-    )
+    let total_count: i64 = sqlx::query(r#"
+			SELECT COUNT(*)
+			FROM main.games g
+		"#)
     .fetch_one(&pool)
     .await?
     .try_get(0)?;
