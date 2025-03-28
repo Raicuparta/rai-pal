@@ -936,7 +936,7 @@ async fn get_game_ids(
 						let engine_conditions: Vec<String> = filter
 								.engines
 								.iter()
-								.filter_map(|engine| engine.as_ref().map(|e| format!("COALESCE(ig.engine_brand, rg.engine_brand) = '{}'", e)))
+								.map(|engine| format!("COALESCE(ig.engine_brand, rg.engine_brand) {}", engine.as_ref().map(|e| format!("= '{}'", e)).unwrap_or_else(|| "is null".to_string())))
 								.collect();
 						if !engine_conditions.is_empty() {
 								filters.push(format!("({})", engine_conditions.join(" OR ")));
