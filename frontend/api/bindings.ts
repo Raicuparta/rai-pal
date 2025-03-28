@@ -26,8 +26,8 @@ async frontendReady() : Promise<null> {
 async getAppSettings() : Promise<AppSettings> {
     return await TAURI_INVOKE("get_app_settings");
 },
-async getGameIds(dataQuery: GamesQuery | null) : Promise<GameIdsResponse> {
-    return await TAURI_INVOKE("get_game_ids", { dataQuery });
+async getGameIds(query: GamesQuery | null) : Promise<GameIdsResponse> {
+    return await TAURI_INVOKE("get_game_ids", { query });
 },
 async getGame(id: GameId) : Promise<Game> {
     return await TAURI_INVOKE("get_game", { id });

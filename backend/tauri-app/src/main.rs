@@ -692,8 +692,8 @@ async fn refresh_games(handle: AppHandle, provider_id: ProviderId) -> Result {
 				let game_clone = game.clone();
 				tauri::async_runtime::spawn_blocking(move || {
 					let game_query = sqlx::query::<Sqlite>(
-						"INSERT OR REPLACE INTO games (provider_id, game_id, external_id, display_title, normalized_titles, thumbnail_url, release_date, installed_game) 
-						 VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+						"INSERT OR REPLACE INTO games (provider_id, game_id, external_id, display_title, normalized_titles, thumbnail_url, release_date, installed_game, tags) 
+						 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
 					)
 					.bind(game_clone.id.provider_id)
 					.bind(game_clone.id.game_id.clone())
@@ -704,7 +704,8 @@ async fn refresh_games(handle: AppHandle, provider_id: ProviderId) -> Result {
 					.bind(game_clone.release_date)
 					.bind(game_clone.installed_game.as_ref().map(|installed_game| {
 						installed_game.id.clone()
-					}));
+					}))
+					.bind(serde_json::to_string(&game_clone.tags).ok()); // TODO log error.
 
 					let installed_game_query = game_clone.installed_game.as_ref().map(|installed_game| sqlx::query::<Sqlite>(
 						"INSERT OR REPLACE INTO installed_games (id, exe_path, engine_brand, engine_version, unity_backend) 
@@ -873,21 +874,21 @@ async fn open_logs_folder() -> Result {
 #[specta::specta]
 async fn get_game_ids(
     handle: AppHandle,
-    data_query: Option<GamesQuery>,
+    query: Option<GamesQuery>,
 ) -> Result<GameIdsResponse> {
     let state = handle.app_state();
     let pool = state.database_pool.read_state()?.clone();
-    let search = data_query.as_ref().map(|q| q.search.clone()).unwrap_or_default();
+    let search = query.as_ref().map(|q| q.search.clone()).unwrap_or_default();
 
     // Build sorting logic
-    let sort_columns = match data_query.as_ref().map(|q| q.sort_by) {
+    let sort_columns = match query.as_ref().map(|q| q.sort_by) {
         Some(GamesSortBy::Title) => vec!["g.display_title"],
         Some(GamesSortBy::ReleaseDate) => vec!["g.release_date"],
         Some(GamesSortBy::Engine) => vec!["COALESCE(ig.engine_brand, rg.engine_brand)", "COALESCE(ig.engine_version, rg.engine_version)"],
-        _ => vec!["display_title"],
+        _ => vec!["g.display_title"],
     };
 
-    let sort_order = if data_query.as_ref().is_some_and(|q| q.sort_descending) {
+    let sort_order = if query.as_ref().is_some_and(|q| q.sort_descending) {
         "DESC"
     } else {
         "ASC"
@@ -896,7 +897,7 @@ async fn get_game_ids(
     // Build filtering logic dynamically
     let mut filters = Vec::<String>::new();
 
-    if let Some(filter) = data_query.as_ref().map(|q| &q.filter) {
+    if let Some(filter) = query.as_ref().map(|q| &q.filter) {
         // Installed filter
         if filter.installed.contains(&Some(InstallState::Installed)) {
             filters.push("g.installed_game IS NOT NULL".to_string());
@@ -915,11 +916,16 @@ async fn get_game_ids(
             }
         }
 
+				// TODO: tag filtering expectation is weird, probably want to make sure disabled tags never show up.
         if !filter.tags.is_empty() {
             let tag_conditions: Vec<String> = filter
                 .tags
                 .iter()
-                .filter_map(|tag| tag.as_ref().map(|t| format!("g.tags LIKE '%{}%'", t)))
+                .map(|tag| if let Some(t) = tag {
+									format!("g.tags LIKE '%\"{}\"%'", t)
+								} else {
+									format!("g.tags = '[]'")
+								})
                 .collect();
             if !tag_conditions.is_empty() {
                 filters.push(format!("({})", tag_conditions.join(" OR ")));
@@ -1072,6 +1078,7 @@ async fn get_game(id: GameId, handle: AppHandle) -> Result<Game> {
 			scripting_backend: None,
 		}
 	});
+	game.tags = db_game.tags.0;
 	// let tags_str: &str = row.get("tags");
 	// game.tags = tags_str.split(',').map(|s| s.trim().to_string()).collect();
 

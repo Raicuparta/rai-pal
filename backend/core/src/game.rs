@@ -25,9 +25,7 @@ pub struct GameId {
 	pub game_id: String,
 }
 
-#[serializable_struct]
-#[derive(sqlx::Type, sqlx::FromRow, sqlx::Decode)]
-#[sqlx(type_name = "game")]
+#[derive(sqlx::FromRow)]
 pub struct DbGame {
 	pub provider_id: String,
 	pub game_id: String,
@@ -39,6 +37,7 @@ pub struct DbGame {
 	pub exe_path: Option<String>,
 	pub engine_brand: Option<EngineBrand>,
 	pub engine_version: Option<String>,
+	pub tags: sqlx::types::Json<HashSet<GameTag>>,
 }
 
 #[serializable_struct]
