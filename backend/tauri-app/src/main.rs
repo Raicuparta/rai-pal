@@ -932,16 +932,32 @@ async fn get_game_ids(
             }
         }
 
-        if !filter.engines.is_empty() {
-						let engine_conditions: Vec<String> = filter
-								.engines
-								.iter()
-								.map(|engine| format!("COALESCE(ig.engine_brand, rg.engine_brand) {}", engine.as_ref().map(|e| format!("= '{}'", e)).unwrap_or_else(|| "is null".to_string())))
-								.collect();
-						if !engine_conditions.is_empty() {
-								filters.push(format!("({})", engine_conditions.join(" OR ")));
-						}
-				}
+				if !filter.engines.is_empty() {
+					let mut engine_conditions = Vec::new();
+			
+					// Check if None is in the filter.engines
+					if filter.engines.contains(&None) {
+							engine_conditions.push("COALESCE(ig.engine_brand, rg.engine_brand) IS NULL".to_string());
+					}
+			
+					// Collect all non-None values and use the IN clause
+					let engine_values: Vec<String> = filter
+							.engines
+							.iter()
+							.filter_map(|engine| engine.as_ref().map(|e| format!("'{}'", e)))
+							.collect();
+			
+					if !engine_values.is_empty() {
+							engine_conditions.push(format!(
+									"COALESCE(ig.engine_brand, rg.engine_brand) IN ({})",
+									engine_values.join(", ")
+							));
+					}
+			
+					if !engine_conditions.is_empty() {
+							filters.push(format!("({})", engine_conditions.join(" OR ")));
+					}
+			}
 
 				if !filter.unity_scripting_backends.is_empty() {
 						let backend_conditions: Vec<String> = filter
