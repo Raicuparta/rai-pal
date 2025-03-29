@@ -4,9 +4,9 @@ import { ItemName } from "../item-name";
 import styles from "./games.module.css";
 import { EngineBrand, Game, GamesSortBy, ProviderId } from "@api/bindings";
 import { IconCloud, IconDeviceDesktop } from "@tabler/icons-react";
-import { GameImage } from "@components/game-image";
 import { ProviderIcon } from "@components/providers/provider-icon";
 import { gameRowHeight } from "./game-row";
+import { useState } from "react";
 
 type GamesColumn = TableColumnBase<Game, GamesSortBy>;
 
@@ -15,42 +15,28 @@ type CellProps = { readonly item: Game };
 const thumbnail: GamesColumn = {
 	hidable: true,
 	width: 100,
-	component: ({ item }: CellProps) => {
-		const thumbnailUrl = item.thumbnailUrl
-			? `https://raicuparta.com/cdn-cgi/image/width=80,quality=75,anim=false,format=webp/${item.thumbnailUrl}`
-			: undefined;
+	component: function Thumbnail({ item }: CellProps) {
+		const fallbackThumbnail = "images/fallback-thumbnail.png";
+		const [isBroken, setIsBroken] = useState(false);
+		const thumbnailUrl =
+			!isBroken && item.thumbnailUrl ? item.thumbnailUrl : fallbackThumbnail;
 
 		return (
 			<Table.Td
 				bg="dark"
-				p={0}
-				pos="relative"
-				style={{
-					overflow: "hidden",
-				}}
+				className={styles.thumbnailCell}
 			>
-				<GameImage
+				<img
+					className={styles.thumbnailBackground}
 					src={thumbnailUrl}
-					h="100%"
-					fit="fill"
-					pos="absolute"
-					top={0}
-					left={0}
-					style={{
-						filter: "blur(10px)",
-						zIndex: 0,
-					}}
 				/>
-				<GameImage
-					pos="absolute"
-					top={0}
-					left={0}
-					src={thumbnailUrl}
-					h="100%"
-					style={{
-						zIndex: 1,
-					}}
-				/>
+				{(item.thumbnailUrl || isBroken) && (
+					<img
+						src={thumbnailUrl}
+						className={styles.thumbnailForeground}
+						onError={() => setIsBroken(true)}
+					/>
+				)}
 			</Table.Td>
 		);
 	},

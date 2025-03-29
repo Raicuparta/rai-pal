@@ -25,7 +25,6 @@ export function useUpdateData(executeOnMount = false) {
 		commands
 			.getGameIds(deferredGamesQuery)
 			.then((data) => {
-				console.log("gooot game ids!!!");
 				if (thisFetchCount !== totalFetchCount.current) {
 					console.log(
 						"Cancelling this fetch since another one happened in the meantime.",
