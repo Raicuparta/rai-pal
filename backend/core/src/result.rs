@@ -1,4 +1,11 @@
-use std::{env, num, path::PathBuf, result};
+use std::{
+	env,
+	ffi::{OsStr, OsString},
+	fmt::Display,
+	num,
+	path::PathBuf,
+	result,
+};
 
 use lazy_regex::regex;
 
@@ -95,7 +102,7 @@ pub enum Error {
 	AppDataNotFound(),
 
 	#[error("Failed to parse path (possibly because is a non-UTF-8 string) `{0}`")]
-	PathParseFailure(PathBuf),
+	InvalidOsStr(String),
 
 	#[error("Failed to get folder parent for path `{0}`")]
 	PathParentNotFound(PathBuf),

@@ -1,4 +1,6 @@
 use std::collections::{HashMap, HashSet};
+use std::fs;
+use std::path::{Path, PathBuf};
 
 use lazy_regex::regex;
 use rai_pal_proc_macros::serializable_struct;
@@ -7,6 +9,7 @@ use crate::game_engines::game_engine::{
 	EngineBrand, EngineVersion, EngineVersionNumbers, GameEngine,
 };
 use crate::game_subscription::GameSubscription;
+use crate::paths;
 use crate::providers::provider::ProviderId;
 use crate::result::Result;
 
@@ -16,7 +19,7 @@ const URL_BASE: &str = "https://raicuparta.github.io/rai-pal-db/game-db";
 // This way we prevent old versions of Rai Pal from breaking unless we want them to.
 // So when you need to change the database in a backwards-incompatible way,
 // you would create a new folder in the database repository and change this number to match the folder.
-const DATABASE_VERSION: i32 = 1;
+const DATABASE_VERSION: i32 = 2;
 
 #[serializable_struct]
 struct GameDatabaseEngineVersion {
@@ -93,65 +96,20 @@ fn parse_version(version: &str) -> Option<EngineVersion> {
 	})
 }
 
-pub type Map = HashMap<ProviderId, HashMap<String, RemoteGame>>;
+pub fn get_database_file_path() -> Result<PathBuf> {
+	Ok(paths::app_data_path()?.join("remote.sqlite"))
+}
 
-pub async fn get_vec() -> Result<Vec<RemoteGame>> {
-	let url = format!("{URL_BASE}/{DATABASE_VERSION}/games.json");
+pub async fn download_database() -> Result<PathBuf> {
+	let url = format!("{URL_BASE}/{DATABASE_VERSION}/games.db");
 
 	let response = reqwest::get(&url).await?;
 
-	let game_database: Vec<GameDatabaseEntry> = response.json().await?;
+	let file_path = get_database_file_path()?;
 
-	let games: Vec<_> = game_database
-		.into_iter()
-		.filter_map(|entry| {
-			Some(RemoteGame {
-				title: entry.title,
-				engine: entry.engines.and_then(|engines| {
-					engines
-						.into_iter()
-						.filter_map(|engine| {
-							Some(GameEngine {
-								brand: engine_brand_from_string(&engine.brand)?,
-								version: engine
-									.version
-									.and_then(|version| parse_version(&version))
-									// If we can't parse the version or it wasn't provided, we can check if there's a number in the actual engine name.
-									// This is common for Unreal Engine, since it usually shows up as "Unreal Engine 4" or similar.
-									.or_else(|| parse_version(&engine.brand)),
-							})
-						})
-						// The remote game database can have multiple engines for the same game,
-						// like when PCGamingWiki lists engines for old versions.
-						// To keep things simply we only take into account the most recent version for now.
-						.max()
-				}),
-				ids: entry.ids?,
-				subscriptions: entry.subscriptions,
-			})
-		})
-		.collect();
+	fs::create_dir_all(paths::path_parent(&file_path)?)?;
 
-	Ok(games)
-}
+	fs::write(&file_path, response.bytes().await?)?;
 
-pub async fn get_map() -> Result<Map> {
-	let game_map: Map = get_vec()
-		.await?
-		.iter()
-		.flat_map(|remote_game| {
-			remote_game.ids.iter().map(move |(id_kind, ids)| {
-				ids.iter()
-					.map(move |id| (*id_kind, id.clone(), remote_game.clone()))
-			})
-		})
-		.flatten()
-		.fold(HashMap::new(), |mut map, (id_kind, id, remote_game)| {
-			map.entry(id_kind).or_default().insert(id, remote_game);
-			map
-		});
-
-	log::info!("Remote game database downloaded and parsed successfully.");
-
-	Ok(game_map)
+	Ok(file_path)
 }

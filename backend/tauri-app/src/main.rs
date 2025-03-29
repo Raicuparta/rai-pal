@@ -3,6 +3,7 @@
 // Command stuff needs to be async so I can spawn tasks.
 #![allow(clippy::unused_async)]
 
+use std::path::Path;
 use std::sync::RwLock;
 use std::{collections::HashMap, path::PathBuf};
 
@@ -18,7 +19,7 @@ use rai_pal_core::installed_game::{InstalledGame};
 use rai_pal_core::local_mod::{self, LocalMod};
 use rai_pal_core::maps::TryGettable;
 use rai_pal_core::mod_loaders::mod_loader::{self, ModLoaderActions};
-use rai_pal_core::paths::{self, normalize_path};
+use rai_pal_core::paths::{self, normalize_path, AsValidStr};
 use rai_pal_core::providers::provider::ProviderId;
 use rai_pal_core::providers::provider_cache;
 use rai_pal_core::providers::steam::steam_provider::Steam;
@@ -27,7 +28,7 @@ use rai_pal_core::providers::{
 	provider::{self, ProviderActions},
 	provider_command::ProviderCommandAction,
 };
-use rai_pal_core::remote_game::RemoteGame;
+use rai_pal_core::remote_game::{self, RemoteGame};
 #[cfg(target_os = "windows")]
 use rai_pal_core::windows;
 use rai_pal_core::{analytics, remote_mod};
@@ -456,143 +457,36 @@ async fn refresh_mods(handle: AppHandle) -> Result {
 #[specta::specta]
 async fn refresh_remote_games(handle: AppHandle) -> Result {
 	let state = handle.app_state();
-	// let remote_games = remote_game::get_vec().await?;
-	// let manual_remote_games = remote_games.get(&ProviderId::Manual);
-	let app_settings = AppSettings::read();
-
 	let pool = state.database_pool.read_state()?.clone();
-	// let mut transaction = pool.begin().await?; // TODO error.
-
-	// sqlx::query("DELETE FROM remote_games;")
-	// 	.execute(&mut *transaction)
-	// 	.await?;
-
-	// let database_path = paths::app_data_path()?.join("remote.sqlite");
-
-	// sqlx::query(format!("ATTACH DATABASE '{}' AS remote;", database_path.display()).as_str())
-	// 	.execute(&pool)
-	// 	.await?;
-
-	// for remote_game in remote_games.iter() {
-	// 	for (provider_id, remote_game_ids) in remote_game.ids.iter() {
-	// 		for remote_game_id in remote_game_ids.iter() {
-	// 			let game_query = sqlx::query::<Sqlite>(r#"
-	// 				INSERT OR REPLACE INTO remote_games (provider_id, external_id, display_title, engine_brand, engine_version) 
-	// 				 VALUES (?, ?, ?, ?, ?)
-	// 			"#)
-	// 			.bind(provider_id)
-	// 			.bind(remote_game_id.clone())
-	// 			.bind(remote_game.title.clone())
-	// 			.bind(remote_game.engine.as_ref().map(|engine| engine.brand))
-	// 			.bind(remote_game.engine.as_ref().and_then(|engine| {
-	// 				engine.version.as_ref().map(|version| version.display.clone())
-	// 			}));
-
-	// 			game_query.execute(&mut *transaction).await.unwrap();
-	// 		}
-	// 	}
-	// }
-
-	// transaction.commit().await?;
-
-	// state
-	// 	.games
-	// 	.iter()
-	// 	.for_each(|(provider_id, provider_games)| {
-	// 		if provider_id == &ProviderId::Manual {
-	// 			return;
-	// 		}
-
-	// 		if let Some(provider_remote_games) =
-	// 			remote_games.get(provider_id).or(manual_remote_games)
-	// 		{
-	// 			match provider_games.write_state() {
-	// 				Ok(mut provider_games_write) => {
-	// 					provider_games_write.iter_mut().for_each(|(_, game)| {
-	// 						// Assign remote game to any existing game.
-	// 						// This is for when the remote games are fetched *after* games are found locally.
-	// 						game.remote_game = provider_remote_games
-	// 							.get(&game.external_id)
-	// 							.or_else(|| {
-	// 								manual_remote_games.and_then(|provider_remote_games| {
-	// 									// TODO also use other title normalizations.
-	// 									game.title.normalized.first().and_then(|normalized_title| {
-	// 										provider_remote_games.get(normalized_title)
-	// 									})
-	// 								})
-	// 							})
-	// 							.cloned()
-	// 					});
-
-	// 					provider_remote_games.values().for_each(|remote_game| {
-	// 						if let Some(subscriptions) = remote_game.subscriptions.as_ref() {
-	// 							if !subscriptions.iter().any(|remote_game_subscription| {
-	// 								app_settings
-	// 									.owned_subscriptions
-	// 									.contains(remote_game_subscription)
-	// 							}) {
-	// 								return;
-	// 							}
-
-	// 							if let Some(remote_game_title) = remote_game.title.as_ref() {
-	// 								if let Some(ids) = remote_game.ids.get(provider_id) {
-	// 									ids.iter().for_each(|remote_game_id| {
-	// 										let game_id = GameId {
-	// 											game_id: remote_game_id.clone(),
-	// 											provider_id: *provider_id,
-	// 										};
-
-	// 										let mut game = Game::new(game_id, remote_game_title);
-	// 										game.from_subscriptions = subscriptions.clone();
-	// 										game.remote_game = Some(remote_game.clone());
-
-	// 										if let Some(remote_game_url) =
-	// 											remote_game.get_url(provider_id)
-	// 										{
-	// 											game.add_provider_command(
-	// 												ProviderCommandAction::OpenInBrowser,
-	// 												ProviderCommand::String(remote_game_url),
-	// 											);
-	// 										}
-
-	// 										provider_games_write
-	// 											.insert(remote_game_id.clone(), game);
-	// 									});
-	// 								}
-	// 							}
-	// 						}
-	// 					});
-	// 				}
-
-	// 				Err(err) => {
-	// 					log::error!("Failed to write provider games state: {err}");
-	// 				}
-	// 			}
-	// 		}
-	// 	});
-
+	let path = remote_game::download_database().await?;
+	attach_remote_database(&pool, &path).await?;
 	handle.emit_safe(events::GamesChanged());
 
-	// state.remote_games.write_state_value(remote_games)?;
+	Ok(())
+}
+
+async fn attach_remote_database(pool: &Pool<Sqlite>, path: &Path) -> Result {
+	if !path.is_file() {
+		return Ok(());
+	}
+
+	sqlx::query(&format!(r#"
+    ATTACH DATABASE 'file:{}?mode=ro' AS 'remote';
+    INSERT OR IGNORE INTO main.remote_games
+    SELECT * FROM remote.games;
+    DETACH DATABASE remote;
+	"#, path.try_to_str()?))
+		.execute(pool)
+		.await?;
 
 	Ok(())
 }
 
 pub async fn setup_database() -> Result<Pool<Sqlite>> {
-	// let test_path = paths::app_data_path()?.join("test.sqlite");
 	let path = paths::app_data_path()?.join("db.sqlite");
-	if path.is_file() {
-			std::fs::remove_file(&path)?;
-		}
-		
-	// TODO also save to disk. Probably use two pools.
-	// let config = sqlx::sqlite::SqliteConnectOptions::new()
-	// 	// For some reason, the name needs to start with file: for shared_cache to work when in_memory is true.
-	// 	.filename("file:database")
-	// 	.journal_mode(sqlx::sqlite::SqliteJournalMode::Wal)
-	// 	.synchronous(sqlx::sqlite::SqliteSynchronous::Off)
-	// 	.shared_cache(true)
-	// 	.in_memory(true);
+	// if path.is_file() {
+	// 	std::fs::remove_file(&path)?;
+	// }
 
 	let config = sqlx::sqlite::SqliteConnectOptions::new()
 		.filename(path)
@@ -622,8 +516,8 @@ pub async fn setup_database() -> Result<Pool<Sqlite>> {
 				PRIMARY KEY (provider_id, game_id)
 		);
 
-		CREATE INDEX idx_games_external_id ON games(provider_id, external_id);
-		CREATE INDEX idx_games_installed_game ON games(installed_game);
+		CREATE INDEX IF NOT EXISTS idx_games_external_id ON games(provider_id, external_id);
+		CREATE INDEX IF NOT EXISTS idx_games_installed_game ON games(installed_game);
 
 		CREATE TABLE IF NOT EXISTS installed_games (
 				id TEXT NOT NULL PRIMARY KEY,
@@ -645,31 +539,7 @@ pub async fn setup_database() -> Result<Pool<Sqlite>> {
 	)
 	.await?;
 
-	let database_path = paths::app_data_path()?.join("remote.sqlite").display().to_string();
-	println!("#### Database path: {:?}", &database_path);
-	sqlx::query(format!(r#"
-    ATTACH DATABASE 'file:{database_path}?mode=ro' AS 'remote';
-    INSERT OR IGNORE INTO main.remote_games
-    SELECT * FROM remote.games;
-    DETACH DATABASE remote;
-	"#).as_str())
-		.execute(&pool)
-		.await?;
-
-		// println!("#### Attaching path: {:?}",test_path.display());
-
-
-	// 	let rows = sqlx::query(
-	// 		r#"
-	// 		SELECT * FROM remoteGames.Album;
-	// 		"#
-	// )
-	// .fetch_all(&pool)
-	// .await?;
-
-	// rows.iter().for_each(|row| {
-	// 	println!("#### Row: {:?}", row.get::<&str, _>(1));
-	// });
+	attach_remote_database(&pool, &remote_game::get_database_file_path()?).await?;
 
 	Ok(pool)
 }
@@ -735,30 +605,30 @@ async fn refresh_games(handle: AppHandle, provider_id: ProviderId) -> Result {
 			}
 		}
 
-			match state.remote_games.read() {
-				Ok(remote_games) => {
-					// Assign the remote game here as we find the new game.
-					// This is for when the remote games are fetched *before* games are found locally.
-					game.remote_game = remote_games
-						.get(&game.id.provider_id)
-						.and_then(|provider_remote_games| {
-							provider_remote_games.get(&game.external_id)
-						})
-						.or_else(|| {
-							remote_games.get(&ProviderId::Manual).and_then(
-								|provider_remote_games| {
-									game.title.normalized.first().and_then(|normalized_title| {
-										provider_remote_games.get(normalized_title)
-									})
-								},
-							)
-						})
-						.cloned();
-				}
-				Err(err) => {
-					log::error!("Failed to read remote games state: {err}");
-				}
-			}
+			// match state.remote_games.read() {
+			// 	Ok(remote_games) => {
+			// 		// Assign the remote game here as we find the new game.
+			// 		// This is for when the remote games are fetched *before* games are found locally.
+			// 		game.remote_game = remote_games
+			// 			.get(&game.id.provider_id)
+			// 			.and_then(|provider_remote_games| {
+			// 				provider_remote_games.get(&game.external_id)
+			// 			})
+			// 			.or_else(|| {
+			// 				remote_games.get(&ProviderId::Manual).and_then(
+			// 					|provider_remote_games| {
+			// 						game.title.normalized.first().and_then(|normalized_title| {
+			// 							provider_remote_games.get(normalized_title)
+			// 						})
+			// 					},
+			// 				)
+			// 			})
+			// 			.cloned();
+			// 	}
+			// 	Err(err) => {
+			// 		log::error!("Failed to read remote games state: {err}");
+			// 	}
+			// }
 
 			if let Some(provider_games) = handle.app_state().games.get(&provider_id) {
 				match provider_games.write() {
@@ -1204,7 +1074,6 @@ fn main() {
 			mod_loaders: RwLock::default(),
 			local_mods: RwLock::default(),
 			remote_mods: RwLock::default(),
-			remote_games: RwLock::default(),
 			games: HashMap::from_iter(ProviderId::variants().iter().map(|&id| {
 				(
 					id,
