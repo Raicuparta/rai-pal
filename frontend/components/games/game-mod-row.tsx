@@ -8,7 +8,7 @@ import {
 	Group,
 	Stack,
 } from "@mantine/core";
-import { Game, ModLoaderData, commands } from "@api/bindings";
+import { DbGame, ModLoaderData, commands } from "@api/bindings";
 import { CommandButton } from "@components/command-button";
 import {
 	IconCheck,
@@ -32,14 +32,15 @@ import { CommandDropdown } from "@components/command-dropdown";
 import { DeprecatedBadge } from "@components/mods/deprecated-badge";
 
 type Props = {
-	readonly game: Game;
+	readonly game: DbGame;
 	readonly mod: UnifiedMod;
 	readonly modLoader: ModLoaderData;
 };
 
 export function GameModRow({ game, mod, modLoader }: Props) {
-	const installedVersion =
-		game.installedGame?.installedModVersions[mod.common.id];
+	// const installedVersion =
+	// 	game.installedGame?.installedModVersions[mod.common.id];
+	const installedVersion = ""; // TODO installed version.
 
 	const isInstalledModOutdated = getIsOutdated(
 		installedVersion,
@@ -63,10 +64,10 @@ export function GameModRow({ game, mod, modLoader }: Props) {
 			// TODO figure out if this error would be handled.
 			await commands.downloadMod(mod.common.id);
 		} else if (isInstalled && !isInstalledModOutdated) {
-			return commands.uninstallMod(game.id, mod.common.id);
+			return commands.uninstallMod(game, mod.common.id);
 		}
 
-		return commands.installMod(game.id, mod.common.id);
+		return commands.installMod(game, mod.common.id);
 	};
 	const { actionText, actionIcon } = (() => {
 		if (isLocalModOutdated || isInstalledModOutdated) {
@@ -136,7 +137,7 @@ export function GameModRow({ game, mod, modLoader }: Props) {
 			</Table.Td>
 			<Table.Td maw={200}>
 				<Group justify="right">
-					{game.installedGame && (
+					{game.exePath && (
 						<ButtonGroup>
 							<CommandButton
 								color={buttonColor}
@@ -160,7 +161,7 @@ export function GameModRow({ game, mod, modLoader }: Props) {
 							<CommandDropdown icon={<IconDotsVertical />}>
 								<Button
 									disabled={!isInstalled && !isReadyRunnable}
-									onClick={() => commands.configureMod(game.id, mod.common.id)}
+									onClick={() => commands.configureMod(game, mod.common.id)}
 									leftSection={<IconSettings />}
 								>
 									Mod Settings
@@ -168,7 +169,7 @@ export function GameModRow({ game, mod, modLoader }: Props) {
 								<Button
 									disabled={!isInstalled && !isReadyRunnable}
 									onClick={() =>
-										commands.openInstalledModFolder(game.id, mod.common.id)
+										commands.openInstalledModFolder(game, mod.common.id)
 									}
 									leftSection={<IconFolderOpen />}
 								>

@@ -44,12 +44,15 @@ type Props = {
 };
 
 function isVersionWithinRange(
-	version: EngineVersion | null | undefined,
+	version: string | null,
 	range: EngineVersionRange | null,
 ) {
 	if (!version || !range) return true;
 
-	const { major, minor, patch } = version.numbers;
+	const [major, minor, patch] = version.split(".").map(Number);
+
+	if (!major) return false;
+
 	const { minimum, maximum } = range;
 
 	if (minimum && minimum.major > major) return false;
@@ -101,21 +104,22 @@ export function GameModal({ game }: Props) {
 	const close = () => setSelectedGame(null);
 
 	// TODO: installed mod versions
-	// const filteredMods = useMemo(() => {
-	// 	return Object.values(mods).filter(
-	// 		(mod) =>
-	// 			(!mod.common.engine || mod.common.engine === game.engineBrand) &&
-	// 			(!mod.common.unityBackend ||
-	// 				!game.unityBackend ||
-	// 				mod.common.unityBackend === game.unityBackend) &&
-	// 			isVersionWithinRange(game.engineVersion, mod.common.engineVersionRange) &&
-	// 			!(
-	// 				mod.remote?.deprecated &&
-	// 				!installedGame?.installedModVersions[mod.common.id]
-	// 			),
-	// 	);
-	// }, [installedGame, game, mods]);
-	const filteredMods = mods;
+	const filteredMods = useMemo(() => {
+		return Object.values(mods).filter(
+			(mod) =>
+				(!mod.common.engine || mod.common.engine === game.engineBrand) &&
+				(!mod.common.unityBackend ||
+					!game.unityBackend ||
+					mod.common.unityBackend === game.unityBackend) &&
+				isVersionWithinRange(
+					game.engineVersion,
+					mod.common.engineVersionRange,
+				) &&
+				!mod.remote?.deprecated,
+			// && !installedGame?.installedModVersions[mod.common.id]
+		);
+	}, [game, mods]);
+	// const filteredMods = mods;
 
 	return (
 		<Modal
@@ -208,14 +212,13 @@ export function GameModal({ game }: Props) {
 							{t("refreshGame")}
 						</CommandButton>
 					)}
-				</Group>
-				{installedGame && (
+				</Group> */}
+				{game.exePath && (
 					<>
-						{installedGame.executable.engine &&
-							!installedGame?.executable.architecture && (
-								<Alert color="red">{t("failedToReadGameInfo")}</Alert>
-							)}
-						{!installedGame.executable.engine && (
+						{game.engineBrand && !game.architecture && (
+							<Alert color="red">{t("failedToReadGameInfo")}</Alert>
+						)}
+						{!game.engineBrand && (
 							<Alert color="red">{t("failedToDetermineEngine")}</Alert>
 						)}
 					</>
@@ -223,7 +226,7 @@ export function GameModal({ game }: Props) {
 				{filteredMods.length > 0 && (
 					<>
 						<Divider label={t("gameModsLabel")} />
-						{!installedGame && (
+						{!game.exePath && (
 							<Alert color="orange">{t("gameNotInstalledWarning")}</Alert>
 						)}
 						<TableContainer bg="dark">
@@ -246,10 +249,10 @@ export function GameModal({ game }: Props) {
 								</Table.Tbody>
 							</Table>
 						</TableContainer>
-						{installedGame && (
+						{game.exePath && (
 							<CommandButton
 								confirmationText={t("uninstallAllModsConfirmation")}
-								onClick={() => commands.uninstallAllMods(game.id)}
+								onClick={() => commands.uninstallAllMods(game)}
 								color="red"
 								variant="light"
 								leftSection={<IconTrash />}
@@ -258,7 +261,7 @@ export function GameModal({ game }: Props) {
 							</CommandButton>
 						)}
 					</>
-				)} */}
+				)}
 				<DebugData data={game} />
 			</Stack>
 		</Modal>
