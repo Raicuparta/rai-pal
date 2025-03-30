@@ -484,9 +484,9 @@ async fn attach_remote_database(pool: &Pool<Sqlite>, path: &Path) -> Result {
 
 pub async fn setup_database() -> Result<Pool<Sqlite>> {
 	let path = paths::app_data_path()?.join("db.sqlite");
-	// if path.is_file() {
-	// 	std::fs::remove_file(&path)?;
-	// }
+	if path.is_file() {
+		std::fs::remove_file(&path)?;
+	}
 
 	let config = sqlx::sqlite::SqliteConnectOptions::new()
 		.filename(path)
@@ -524,7 +524,8 @@ pub async fn setup_database() -> Result<Pool<Sqlite>> {
 				exe_path TEXT NOT NULL,
 				engine_brand TEXT,
 				engine_version TEXT,
-				unity_backend TEXT
+				unity_backend TEXT,
+				architecture TEXT
 		);
 
 		CREATE TABLE IF NOT EXISTS remote_games (
@@ -902,7 +903,7 @@ async fn get_game_ids(
 
 #[tauri::command]
 #[specta::specta]
-async fn get_game(id: GameId, handle: AppHandle) -> Result<Game> {
+async fn get_game(id: GameId, handle: AppHandle) -> Result<DbGame> {
 	let state = handle.app_state();
 	let pool = state.database_pool.read_state()?.clone();
 
@@ -928,47 +929,47 @@ async fn get_game(id: GameId, handle: AppHandle) -> Result<Game> {
 	.fetch_one(&pool)
 	.await?;
 
-	let mut game = Game::new(id.clone(), &db_game.display_title);
-	game.release_date = db_game.release_date;
-	game.thumbnail_url = db_game.thumbnail_url;
-	game.remote_game = db_game.engine_brand.map(|engine_brand| RemoteGame {
-		title: None,
-		engine: Some(GameEngine {
-			version: None,
-			brand: engine_brand,
-		}),
-		ids: HashMap::default(),
-		subscriptions: None,
-	});
-	game.installed_game = db_game.exe_path.map(|exe_path| InstalledGame {
-		id: exe_path.clone(),
-		installed_mod_versions: HashMap::default(),
-		discriminator: None,
-		start_command: None,
-		executable: GameExecutable {
-			architecture: None,
-			engine: db_game.engine_brand.map(|engine_brand| GameEngine {
-				brand: engine_brand,
-				// TODO: properly store entire version information.
-				version: db_game.engine_version.map(|engine_version| EngineVersion {
-					display: engine_version.to_string(),
-					suffix: None,
-					numbers: EngineVersionNumbers {
-						major: 0,
-						minor: None,
-						patch: None,
-					},
-				}),
-			}),
-			path: PathBuf::from(exe_path),
-			scripting_backend: None,
-		}
-	});
-	game.tags = db_game.tags.0;
+	// let mut game = Game::new(id.clone(), &db_game.display_title);
+	// game.release_date = db_game.release_date;
+	// game.thumbnail_url = db_game.thumbnail_url;
+	// game.remote_game = db_game.engine_brand.map(|engine_brand| RemoteGame {
+	// 	title: None,
+	// 	engine: Some(GameEngine {
+	// 		version: None,
+	// 		brand: engine_brand,
+	// 	}),
+	// 	ids: HashMap::default(),
+	// 	subscriptions: None,
+	// });
+	// game.installed_game = db_game.exe_path.map(|exe_path| InstalledGame {
+	// 	id: exe_path.clone(),
+	// 	installed_mod_versions: HashMap::default(),
+	// 	discriminator: None,
+	// 	start_command: None,
+	// 	executable: GameExecutable {
+	// 		architecture: None,
+	// 		engine: db_game.engine_brand.map(|engine_brand| GameEngine {
+	// 			brand: engine_brand,
+	// 			// TODO: properly store entire version information.
+	// 			version: db_game.engine_version.map(|engine_version| EngineVersion {
+	// 				display: engine_version.to_string(),
+	// 				suffix: None,
+	// 				numbers: EngineVersionNumbers {
+	// 					major: 0,
+	// 					minor: None,
+	// 					patch: None,
+	// 				},
+	// 			}),
+	// 		}),
+	// 		path: PathBuf::from(exe_path),
+	// 		scripting_backend: None,
+	// 	}
+	// });
+	// game.tags = db_game.tags.0;
 	// let tags_str: &str = row.get("tags");
 	// game.tags = tags_str.split(',').map(|s| s.trim().to_string()).collect();
 
-	Ok(game)
+	Ok(db_game)
 }
 
 #[tauri::command]

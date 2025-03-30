@@ -10,7 +10,7 @@ import {
 import {
 	EngineVersion,
 	EngineVersionRange,
-	Game,
+	DbGame,
 	commands,
 } from "@api/bindings";
 import { useMemo } from "react";
@@ -40,7 +40,7 @@ import { gamesColumns } from "./games-columns";
 import { useLocalization } from "@hooks/use-localization";
 
 type Props = {
-	readonly game: Game;
+	readonly game: DbGame;
 };
 
 function isVersionWithinRange(
@@ -94,30 +94,28 @@ function isVersionWithinRange(
 
 export function GameModal({ game }: Props) {
 	const t = useLocalization("gameModal");
-	const { installedGame } = game;
 	const modLoaderMap = useAtomValue(modLoadersAtom);
 	const mods = useUnifiedMods();
 	const setSelectedGame = useSetAtom(selectedGameAtom);
 
 	const close = () => setSelectedGame(null);
 
-	const filteredMods = useMemo(() => {
-		const engine = installedGame?.executable.engine ?? game.remoteGame?.engine;
-
-		return Object.values(mods).filter(
-			(mod) =>
-				(!mod.common.engine || mod.common.engine === engine?.brand) &&
-				(!mod.common.unityBackend ||
-					!installedGame?.executable.scriptingBackend ||
-					mod.common.unityBackend ===
-						installedGame.executable.scriptingBackend) &&
-				isVersionWithinRange(engine?.version, mod.common.engineVersionRange) &&
-				!(
-					mod.remote?.deprecated &&
-					!installedGame?.installedModVersions[mod.common.id]
-				),
-		);
-	}, [installedGame, game, mods]);
+	// TODO: installed mod versions
+	// const filteredMods = useMemo(() => {
+	// 	return Object.values(mods).filter(
+	// 		(mod) =>
+	// 			(!mod.common.engine || mod.common.engine === game.engineBrand) &&
+	// 			(!mod.common.unityBackend ||
+	// 				!game.unityBackend ||
+	// 				mod.common.unityBackend === game.unityBackend) &&
+	// 			isVersionWithinRange(game.engineVersion, mod.common.engineVersionRange) &&
+	// 			!(
+	// 				mod.remote?.deprecated &&
+	// 				!installedGame?.installedModVersions[mod.common.id]
+	// 			),
+	// 	);
+	// }, [installedGame, game, mods]);
+	const filteredMods = mods;
 
 	return (
 		<Modal
@@ -125,7 +123,7 @@ export function GameModal({ game }: Props) {
 			onClose={close}
 			opened
 			size="xl"
-			title={game.title.display}
+			title={game.displayTitle}
 		>
 			<Stack>
 				<Group align="start">
@@ -140,8 +138,9 @@ export function GameModal({ game }: Props) {
 						</Table>
 					</TableContainer>
 				</Group>
-				<Group>
-					{installedGame && (
+				{/* TODO commands */}
+				{/* <Group>
+					{game.exePath && (
 						<>
 							<Button.Group>
 								<CommandButton
@@ -259,7 +258,7 @@ export function GameModal({ game }: Props) {
 							</CommandButton>
 						)}
 					</>
-				)}
+				)} */}
 				<DebugData data={game} />
 			</Stack>
 		</Modal>

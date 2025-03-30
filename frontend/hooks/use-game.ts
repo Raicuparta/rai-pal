@@ -1,27 +1,27 @@
-import { commands, Game, GameId } from "@api/bindings";
+import { commands, DbGame, GameId } from "@api/bindings";
 import { useCallback, useEffect, useState } from "react";
 import { useAsyncCommand } from "./use-async-command";
 import { useAppEvent } from "./use-app-event";
 
 export function useGame({ providerId, gameId }: GameId) {
 	const [getGame] = useAsyncCommand(commands.getGame);
-	const defaultGame: Game = {
-		id: { gameId, providerId },
-		externalId: gameId,
-		installedGame: null,
-		remoteGame: null,
-		fromSubscriptions: [],
+	const defaultGame: DbGame = {
+		providerId: providerId,
+		gameId: gameId,
+		displayTitle: "...",
+		engineBrand: null,
+		engineVersion: null,
+		exePath: null,
+		externalId: "",
+		normalizedTitles: "",
 		releaseDate: null,
-		tags: [],
 		thumbnailUrl: null,
-		title: {
-			display: "...",
-			normalized: ["..."],
-		},
-		providerCommands: {},
+		architecture: null,
+		unityBackend: null,
+		tags: [],
 	};
 
-	const [game, setGame] = useState<Game>(defaultGame);
+	const [game, setGame] = useState<DbGame>(defaultGame);
 
 	const updateData = useCallback(() => {
 		getGame({ providerId, gameId }).then(setGame);

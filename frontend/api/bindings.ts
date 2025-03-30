@@ -29,7 +29,7 @@ async getAppSettings() : Promise<AppSettings> {
 async getGameIds(query: GamesQuery | null) : Promise<GameIdsResponse> {
     return await TAURI_INVOKE("get_game_ids", { query });
 },
-async getGame(id: GameId) : Promise<Game> {
+async getGame(id: GameId) : Promise<DbGame> {
     return await TAURI_INVOKE("get_game", { id });
 },
 async getLocalMods() : Promise<Partial<{ [key in string]: LocalMod }>> {
@@ -136,6 +136,7 @@ export type AppLocale = "EnUs" | "EsEs" | "FrFr" | "DeDe" | "PtPt" | "ZhCn" | "J
 export type AppSettings = { hideGameThumbnails: boolean; overrideLanguage: AppLocale | null; gamesQuery: GamesQuery | null; selectedTab: TabId; skipConfirmDialogs: string[]; ownedSubscriptions: GameSubscription[] }
 export type Architecture = "X64" | "X86"
 export type CommonModData = { id: string; engine: EngineBrand | null; unityBackend: UnityScriptingBackend | null; engineVersionRange: EngineVersionRange | null; loaderId: string }
+export type DbGame = { providerId: ProviderId; gameId: string; externalId: string; displayTitle: string; normalizedTitles: string; thumbnailUrl: string | null; releaseDate: bigint | null; exePath: string | null; engineBrand: EngineBrand | null; engineVersion: string | null; unityBackend: UnityScriptingBackend | null; architecture: Architecture | null; tags: JsonSet<GameTag> }
 export type EngineBrand = "Unity" | "Unreal" | "Godot" | "GameMaker"
 export type EngineVersion = { numbers: EngineVersionNumbers; suffix: string | null; display: string }
 export type EngineVersionNumbers = { major: number; minor: number | null; patch: number | null }
@@ -158,6 +159,7 @@ export type GamesQuery = { filter: GamesFilter; search: string; sortBy: GamesSor
 export type GamesSortBy = "Title" | "Engine" | "ReleaseDate"
 export type InstallState = "Installed" | "NotInstalled"
 export type InstalledGame = { id: string; executable: GameExecutable; installedModVersions: Partial<{ [key in string]: string }>; discriminator: string | null; startCommand: ProviderCommand | null }
+export type JsonSet<T> = T[]
 export type LocalMod = { data: LocalModData; common: CommonModData }
 export type LocalModData = { path: string; manifest: Manifest | null }
 export type Manifest = { title: string | null; version: string; runnable: RunnableModData | null; engine: EngineBrand | null; engineVersionRange: EngineVersionRange | null; unityBackend: UnityScriptingBackend | null }

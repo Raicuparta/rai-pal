@@ -1,9 +1,17 @@
 use std::collections::{HashMap, HashSet};
 
 use rai_pal_proc_macros::serializable_struct;
+use sqlx::{
+	Sqlite,
+	sqlite::{SqliteTypeInfo, SqliteValueRef},
+};
 
 use crate::{
-	game_engines::game_engine::{EngineBrand, GameEngine},
+	game_engines::{
+		game_engine::{EngineBrand, GameEngine},
+		unity::UnityScriptingBackend,
+	},
+	game_executable::Architecture,
 	game_subscription::GameSubscription,
 	game_tag::GameTag,
 	game_title::GameTitle,
@@ -25,9 +33,10 @@ pub struct GameId {
 	pub game_id: String,
 }
 
-#[derive(sqlx::FromRow)]
+#[derive(sqlx::FromRow, serde::Serialize, specta::Type)]
+#[serde(rename_all = "camelCase")]
 pub struct DbGame {
-	pub provider_id: String,
+	pub provider_id: ProviderId,
 	pub game_id: String,
 	pub external_id: String,
 	pub display_title: String,
@@ -37,7 +46,27 @@ pub struct DbGame {
 	pub exe_path: Option<String>,
 	pub engine_brand: Option<EngineBrand>,
 	pub engine_version: Option<String>,
-	pub tags: sqlx::types::Json<HashSet<GameTag>>,
+	pub unity_backend: Option<UnityScriptingBackend>,
+	pub architecture: Option<Architecture>,
+	pub tags: JsonSet<GameTag>,
+}
+
+#[derive(sqlx::FromRow, serde::Serialize, specta::Type)]
+pub struct JsonSet<T>(pub HashSet<T>);
+
+impl sqlx::Decode<'_, sqlx::Sqlite> for JsonSet<GameTag> {
+	fn decode(value: SqliteValueRef<'_>) -> std::result::Result<Self, sqlx::error::BoxDynError> {
+		let value = <&str as sqlx::Decode<sqlx::Sqlite>>::decode(value)?;
+		let tags: HashSet<GameTag> = serde_json::from_str(&value)?;
+		Ok(JsonSet(tags))
+	}
+}
+
+// Ensure JsonSet<GameTag> is registered as a SQLx type
+impl sqlx::Type<Sqlite> for JsonSet<GameTag> {
+	fn type_info() -> SqliteTypeInfo {
+		<String as sqlx::Type<Sqlite>>::type_info()
+	}
 }
 
 #[serializable_struct]

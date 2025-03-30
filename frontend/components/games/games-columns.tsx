@@ -2,15 +2,15 @@ import { Box, DefaultMantineColor, Flex, Stack, Table } from "@mantine/core";
 import { TableColumnBase, columnMapToList } from "@components/table/table-head";
 import { ItemName } from "../item-name";
 import styles from "./games.module.css";
-import { EngineBrand, Game, GamesSortBy, ProviderId } from "@api/bindings";
+import { EngineBrand, DbGame, GamesSortBy, ProviderId } from "@api/bindings";
 import { IconCloud, IconDeviceDesktop } from "@tabler/icons-react";
 import { ProviderIcon } from "@components/providers/provider-icon";
 import { gameRowHeight } from "./game-row";
 import { useState } from "react";
 
-type GamesColumn = TableColumnBase<Game, GamesSortBy>;
+type GamesColumn = TableColumnBase<DbGame, GamesSortBy>;
 
-type CellProps = { readonly item: Game };
+type CellProps = { readonly item: DbGame };
 
 const thumbnail: GamesColumn = {
 	hidable: true,
@@ -59,22 +59,18 @@ const status: GamesColumn = {
 	component: ({ item }: CellProps) => (
 		<Table.Td
 			p="xs"
-			bg={`var(--mantine-color-${providerColors[item.id.providerId]}-light)`}
-			opacity={item.installedGame ? 1 : 0.5}
+			bg={`var(--mantine-color-${providerColors[item.providerId]}-light)`}
+			opacity={item.exePath ? 1 : 0.5}
 		>
 			<Stack
 				justify="center"
 				align="center"
 			>
 				<ProviderIcon
-					providerId={item.id.providerId}
-					color={`var(--mantine-color-${providerColors[item.id.providerId]}-light-color)`}
+					providerId={item.providerId}
+					color={`var(--mantine-color-${providerColors[item.providerId]}-light-color)`}
 				/>
-				{item.installedGame ? (
-					<IconDeviceDesktop color="white" />
-				) : (
-					<IconCloud />
-				)}
+				{item.exePath ? <IconDeviceDesktop color="white" /> : <IconCloud />}
 			</Stack>
 		</Table.Td>
 	),
@@ -92,14 +88,14 @@ const name: GamesColumn = {
 				gap={3}
 				p="xs"
 				fw="bold"
-				c={item.installedGame ? "white" : "grey"}
+				c={item.exePath ? "white" : "grey"}
 				style={{
 					maxHeight: gameRowHeight,
 					overflow: "hidden",
 				}}
 			>
 				<ItemName label={item.installedGame?.discriminator}>
-					{item?.title.display}
+					{item?.displayTitle}
 					<div className={styles.tags}>
 						{item.tags.sort().map((tag) => (
 							<span
@@ -130,37 +126,36 @@ const engine: GamesColumn = {
 	center: true,
 	hidable: true,
 	component: ({ item }: CellProps) => {
-		const engine =
-			item.installedGame?.executable.engine ?? item.remoteGame?.engine;
-
-		const engineColor = engine ? engineColors[engine.brand] : "gray";
-
-		const scriptingBackend = item.installedGame?.executable.scriptingBackend;
-
-		const architecture = item.installedGame?.executable.architecture;
+		const engineColor = item.engineBrand
+			? engineColors[item.engineBrand]
+			: "gray";
 
 		const detailsText =
-			scriptingBackend && architecture
-				? `${scriptingBackend} ${architecture}`
-				: architecture;
+			item.unityBackend && item.architecture
+				? `${item.unityBackend} ${item.architecture}`
+				: item.architecture;
 
 		return (
 			<Table.Td
-				bg={engine ? `var(--mantine-color-${engineColor}-light)` : "dark.4"}
+				bg={
+					item.engineBrand
+						? `var(--mantine-color-${engineColor}-light)`
+						: "dark.4"
+				}
 				className={styles.engineWrapper}
 				p={0}
 			>
-				{engine && (
+				{item.engineBrand && (
 					<Box
 						c={`var(--mantine-color-${engineColor}-light-color)`}
 						className={styles.engineBrand}
 					>
-						{engine?.brand}
+						{item.engineBrand}
 					</Box>
 				)}
 				{!engine && <div>-</div>}
-				{engine?.version?.display && (
-					<Box className={styles.engineVersion}>{engine.version.display}</Box>
+				{item.engineVersion && (
+					<Box className={styles.engineVersion}>{item.engineVersion}</Box>
 				)}
 				{detailsText && (
 					<Box className={styles.engineDetails}>{detailsText}</Box>

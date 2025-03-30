@@ -17,6 +17,7 @@ use crate::{
 };
 
 #[serializable_enum]
+#[derive(sqlx::Type)]
 pub enum Architecture {
 	X64,
 	X86,

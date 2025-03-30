@@ -5,7 +5,7 @@ import { selectedGameAtom } from "./games-state";
 import { useGame } from "@hooks/use-game";
 import { GameModal } from "./game-modal";
 import { ItemProps } from "react-virtuoso";
-import { Game, GameId } from "@api/bindings";
+import { DbGame, GameId } from "@api/bindings";
 import { gamesColumns } from "./games-columns";
 import { useAppSettings } from "@hooks/use-app-settings";
 
@@ -22,8 +22,8 @@ export const GameRow = React.forwardRef(function GameRow(
 	const isSelected =
 		!!game &&
 		!!selectedGame &&
-		selectedGame.gameId === game.id.gameId &&
-		selectedGame.providerId == game.id.providerId;
+		selectedGame.gameId === game.gameId &&
+		selectedGame.providerId == game.providerId;
 
 	return (
 		<>
@@ -31,13 +31,19 @@ export const GameRow = React.forwardRef(function GameRow(
 			<GameRowInner
 				game={game}
 				ref={ref}
-				onClick={() => game && setSelectedGame(game.id)}
+				onClick={() =>
+					game &&
+					setSelectedGame({
+						gameId: game.gameId,
+						providerId: game.providerId,
+					})
+				}
 			/>
 		</>
 	);
 });
 
-type Props = { readonly game: Game; readonly onClick?: () => void };
+type Props = { readonly game: DbGame; readonly onClick?: () => void };
 
 export const GameRowInner = React.forwardRef(function GameRowInner(
 	props: Props,
@@ -50,11 +56,14 @@ export const GameRowInner = React.forwardRef(function GameRowInner(
 			ref={ref}
 			onClick={props.onClick}
 		>
-			{gamesColumns.map((column) => (!settings.hideGameThumbnails || column.id !== "thumbnail") && (
-				<React.Fragment key={column.id}>
-					<column.component item={props.game} />
-				</React.Fragment>
-			))}
+			{gamesColumns.map(
+				(column) =>
+					(!settings.hideGameThumbnails || column.id !== "thumbnail") && (
+						<React.Fragment key={column.id}>
+							<column.component item={props.game} />
+						</React.Fragment>
+					),
+			)}
 		</Table.Tr>
 	);
 });
