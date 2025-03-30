@@ -13,7 +13,7 @@ export function useGame({ providerId, gameId }: GameId) {
 		engineVersion: null,
 		exePath: null,
 		externalId: "",
-		normalizedTitles: "",
+		normalizedTitles: [],
 		releaseDate: null,
 		thumbnailUrl: null,
 		architecture: null,

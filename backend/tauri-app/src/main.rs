@@ -571,7 +571,7 @@ async fn refresh_games(handle: AppHandle, provider_id: ProviderId) -> Result {
 					.bind(game_clone.id.game_id.clone())
 					.bind(game_clone.external_id.clone())
 					.bind(game_clone.title.display.clone())
-					.bind(game_clone.title.normalized.join(","))
+					.bind(serde_json::to_string(&game_clone.title.normalized).ok()) // TODO log error.
 					.bind(game_clone.thumbnail_url.clone())
 					.bind(game_clone.release_date)
 					.bind(game_clone.installed_game.as_ref().map(|installed_game| {
@@ -870,7 +870,7 @@ async fn get_game_ids(
 			LEFT JOIN remote_games rg ON (
 					g.provider_id = rg.provider_id AND g.external_id = rg.external_id
 			) OR (
-					rg.provider_id = 'Manual' AND g.normalized_titles = rg.external_id
+					rg.provider_id = 'Manual' AND g.normalized_titles LIKE '%"' || rg.external_id || '"%'
 			)
 			WHERE {where_clause}
 			ORDER BY {}
@@ -921,9 +921,9 @@ async fn get_game(id: GameId, handle: AppHandle) -> Result<DbGame> {
 		FROM main.games g
 		LEFT JOIN main.installed_games ig ON g.installed_game = ig.id
 		LEFT JOIN remote_games rg ON (
-			g.provider_id = rg.provider_id AND g.external_id = rg.external_id
+				g.provider_id = rg.provider_id AND g.external_id = rg.external_id
 		) OR (
-			rg.provider_id = 'Manual' AND g.normalized_titles = rg.external_id
+				rg.provider_id = 'Manual' AND g.normalized_titles LIKE '%"' || rg.external_id || '"%'
 		)
 		WHERE g.provider_id = $1 AND g.game_id = $2
 		LIMIT 1

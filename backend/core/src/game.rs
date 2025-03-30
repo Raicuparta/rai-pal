@@ -41,7 +41,7 @@ pub struct DbGame {
 	pub external_id: String,
 	pub display_title: String,
 	pub title_discriminator: Option<String>,
-	pub normalized_titles: String,
+	pub normalized_titles: JsonVec<String>,
 	pub thumbnail_url: Option<String>,
 	pub release_date: Option<i64>,
 	pub exe_path: Option<String>,
@@ -49,22 +49,24 @@ pub struct DbGame {
 	pub engine_version: Option<String>,
 	pub unity_backend: Option<UnityScriptingBackend>,
 	pub architecture: Option<Architecture>,
-	pub tags: JsonSet<GameTag>,
+	pub tags: JsonVec<GameTag>,
 }
 
 #[derive(sqlx::FromRow, serde::Serialize, specta::Type)]
-pub struct JsonSet<T>(pub HashSet<T>);
+pub struct JsonVec<T>(pub Vec<T>);
 
-impl sqlx::Decode<'_, sqlx::Sqlite> for JsonSet<GameTag> {
+impl<T> sqlx::Decode<'_, sqlx::Sqlite> for JsonVec<T>
+where
+	T: serde::de::DeserializeOwned + Eq + std::hash::Hash,
+{
 	fn decode(value: SqliteValueRef<'_>) -> std::result::Result<Self, sqlx::error::BoxDynError> {
-		let value = <&str as sqlx::Decode<sqlx::Sqlite>>::decode(value)?;
-		let tags: HashSet<GameTag> = serde_json::from_str(&value)?;
-		Ok(JsonSet(tags))
+		let json_str = <&str as sqlx::Decode<sqlx::Sqlite>>::decode(value)?;
+		let set: Vec<T> = serde_json::from_str(&json_str)?;
+		Ok(JsonVec(set))
 	}
 }
 
-// Ensure JsonSet<GameTag> is registered as a SQLx type
-impl sqlx::Type<Sqlite> for JsonSet<GameTag> {
+impl<T> sqlx::Type<Sqlite> for JsonVec<T> {
 	fn type_info() -> SqliteTypeInfo {
 		<String as sqlx::Type<Sqlite>>::type_info()
 	}
