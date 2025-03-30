@@ -121,7 +121,7 @@ pub enum Error {
 	#[error(
 		"Failed to install mod, because the known game information is insufficient. Missing information: `{0}`. Game: `{1}`"
 	)]
-	ModInstallInfoInsufficient(String, PathBuf),
+	ModInstallInfoInsufficient(String, String),
 
 	#[error("Failed to get game data from path `{0}`")]
 	FailedToGetGameFromPath(PathBuf),

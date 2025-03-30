@@ -66,13 +66,6 @@ pub fn file_name_without_extension(file_path: &Path) -> Result<&str> {
 		.try_to_str()
 }
 
-pub fn try_file_name_without_extension(file_path: &Path) -> Result<&str> {
-	file_path
-		.file_stem()
-		.ok_or_else(|| Error::InvalidOsStr(file_path.display().to_string()))?
-		.try_to_str()
-}
-
 pub fn normalize_path(path: &Path) -> PathBuf {
 	path.canonicalize().unwrap_or_else(|err| {
 		log::error!(
@@ -86,7 +79,7 @@ pub fn normalize_path(path: &Path) -> PathBuf {
 
 pub fn hash_path(path: &Path) -> String {
 	let mut hasher = DefaultHasher::new();
-	path.hash(&mut hasher);
+	normalize_path(path).hash(&mut hasher);
 	hasher.finish().to_string()
 }
 

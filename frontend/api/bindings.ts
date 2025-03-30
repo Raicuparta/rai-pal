@@ -32,8 +32,8 @@ async getGameIds(query: GamesQuery | null) : Promise<GameIdsResponse> {
 async getGame(id: GameId) : Promise<DbGame> {
     return await TAURI_INVOKE("get_game", { id });
 },
-async getInstalledModVersions(gamePath: string) : Promise<Partial<{ [key in string]: string }>> {
-    return await TAURI_INVOKE("get_installed_mod_versions", { gamePath });
+async getInstalledModVersions(gameId: GameId) : Promise<Partial<{ [key in string]: string }>> {
+    return await TAURI_INVOKE("get_installed_mod_versions", { gameId });
 },
 async getLocalMods() : Promise<Partial<{ [key in string]: LocalMod }>> {
     return await TAURI_INVOKE("get_local_mods");

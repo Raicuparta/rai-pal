@@ -1,4 +1,8 @@
-use std::collections::{HashMap, HashSet};
+use std::{
+	collections::{HashMap, HashSet},
+	fs,
+	path::{Path, PathBuf},
+};
 
 use rai_pal_proc_macros::serializable_struct;
 use sqlx::{
@@ -15,7 +19,8 @@ use crate::{
 	game_subscription::GameSubscription,
 	game_tag::GameTag,
 	game_title::GameTitle,
-	installed_game::InstalledGame,
+	installed_game::{InstalledGame, InstalledModVersions},
+	mod_manifest, paths,
 	providers::{
 		provider::ProviderId,
 		provider_command::{ProviderCommand, ProviderCommandAction},
@@ -44,7 +49,7 @@ pub struct DbGame {
 	pub normalized_titles: JsonData<Vec<String>>,
 	pub thumbnail_url: Option<String>,
 	pub release_date: Option<i64>,
-	pub exe_path: Option<String>,
+	pub exe_path: Option<String>, // TODO convert to Path and back
 	pub engine_brand: Option<EngineBrand>,
 	pub engine_version: Option<String>,
 	pub unity_backend: Option<UnityScriptingBackend>,
@@ -162,5 +167,74 @@ impl Game {
 		self.installed_game
 			.as_mut()
 			.ok_or_else(|| Error::GameNotInstalled(self.title.display.clone()))
+	}
+}
+
+impl DbGame {
+	pub fn open_game_folder(&self) -> Result {
+		paths::open_folder_or_parent(&self.try_get_exe_path()?)
+	}
+
+	pub fn open_mods_folder(&self) -> Result {
+		paths::open_folder_or_parent(&self.get_installed_mods_folder()?)
+	}
+
+	pub fn uninstall_all_mods(&self) -> Result {
+		Ok(fs::remove_dir_all(self.get_installed_mods_folder()?)?)
+	}
+
+	pub fn get_manifest_paths(&self) -> Vec<PathBuf> {
+		match self.get_installed_mod_manifest_path("*") {
+			Ok(manifests_path) => {
+				if !manifests_path.parent().is_some_and(Path::exists) {
+					return Vec::default();
+				}
+				paths::glob_path(&manifests_path)
+			}
+			Err(err) => {
+				log::error!(
+					"Failed to get mod manifests glob path for game {}. Error: {}",
+					self.display_title,
+					err
+				);
+				Vec::default()
+			}
+		}
+	}
+
+	pub fn get_installed_mod_versions(&self) -> InstalledModVersions {
+		self.get_manifest_paths()
+			.iter()
+			.filter_map(|manifest_path| {
+				let manifest = mod_manifest::get(manifest_path)?;
+
+				Some((
+					manifest_path.file_stem()?.to_str()?.to_string(),
+					manifest.version,
+				))
+			})
+			.collect()
+	}
+
+	pub fn get_installed_mod_manifest_path(&self, mod_id: &str) -> Result<PathBuf> {
+		Ok(self
+			.get_installed_mods_folder()?
+			.join("manifests")
+			.join(format!("{mod_id}.json")))
+	}
+
+	pub fn get_installed_mods_folder(&self) -> Result<PathBuf> {
+		let installed_mods_folder = paths::app_data_path()?
+			.join("installed-mods")
+			.join(&paths::hash_path(&self.try_get_exe_path()?));
+		fs::create_dir_all(&installed_mods_folder)?;
+
+		Ok(installed_mods_folder)
+	}
+
+	pub fn try_get_exe_path(&self) -> Result<PathBuf> {
+		Ok(PathBuf::from(self.exe_path.as_ref().ok_or_else(|| {
+			Error::GameNotInstalled(self.display_title.clone())
+		})?))
 	}
 }

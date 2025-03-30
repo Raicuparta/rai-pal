@@ -70,21 +70,17 @@ async fn get_remote_mods(handle: AppHandle) -> Result<remote_mod::Map> {
 #[tauri::command]
 #[specta::specta]
 async fn open_game_folder(handle: AppHandle, game_id: GameId) -> Result {
-	let state = handle.app_state();
-	let games = state.games.try_get(&game_id.provider_id)?.read_state()?;
-	let installed_game = games.try_get(&game_id.game_id)?.try_get_installed_game()?;
-
-	Ok(installed_game.open_game_folder()?)
+	let game = get_game(game_id, handle.clone()).await?;
+	game.open_game_folder()?;
+	Ok(())
 }
 
 #[tauri::command]
 #[specta::specta]
 async fn open_game_mods_folder(handle: AppHandle, game_id: GameId) -> Result {
-	let state = handle.app_state();
-	let games = state.games.try_get(&game_id.provider_id)?.read_state()?;
-	let installed_game = games.try_get(&game_id.game_id)?.try_get_installed_game()?;
-
-	Ok(installed_game.open_mods_folder()?)
+	let game = get_game(game_id, handle.clone()).await?;
+	game.open_mods_folder()?;
+	Ok(())
 }
 
 #[tauri::command]
@@ -168,13 +164,14 @@ async fn start_game_exe(installed_game: InstalledGame) -> Result {
 }
 
 fn refresh_game_mods(game_id: &GameId, handle: &AppHandle) -> Result {
-	let state = handle.app_state();
-	let mut games = state.games.try_get(&game_id.provider_id)?.write_state()?;
-	let game = games.try_get_mut(&game_id.game_id)?;
-	let installed_game = game.try_get_installed_game_mut()?;
-	installed_game.refresh_installed_mods();
+	// TODO: refresh game mods
+	// let state = handle.app_state();
+	// let mut games = state.games.try_get(&game_id.provider_id)?.write_state()?;
+	// let game = games.try_get_mut(&game_id.game_id)?;
+	// let installed_game = game.try_get_installed_game_mut()?;
+	// installed_game.refresh_installed_mods();
 
-	handle.emit_safe(events::FoundGame(game_id.clone()));
+	// handle.emit_safe(events::FoundGame(game_id.clone()));
 
 	Ok(())
 }
@@ -183,6 +180,7 @@ fn refresh_game_mods(game_id: &GameId, handle: &AppHandle) -> Result {
 #[specta::specta]
 async fn install_mod(game_id: GameId, mod_id: &str, handle: AppHandle) -> Result {
 	let state = handle.app_state();
+	let game = get_game(game_id.clone(), handle.clone()).await?;
 
 	let mod_loaders = state.mod_loaders.read_state()?.clone();
 
@@ -190,18 +188,12 @@ async fn install_mod(game_id: GameId, mod_id: &str, handle: AppHandle) -> Result
 
 	let mod_loader = mod_loaders.try_get(&local_mod.common.loader_id)?;
 
-	let installed_game = {
-		let games = state.games.try_get(&game_id.provider_id)?.read_state()?;
-		let game = games.try_get(&game_id.game_id)?;
-		game.try_get_installed_game()?.clone()
-	};
-
 	// Uninstall mod if it already exists, in case there are conflicting leftover files when updating.
 	mod_loader
-		.uninstall_mod(&installed_game, &local_mod)
+		.uninstall_mod(&game, &local_mod)
 		.await?;
 
-	mod_loader.install_mod(&installed_game, &local_mod).await?;
+	mod_loader.install_mod(&game, &local_mod).await?;
 
 	refresh_game_mods(&game_id, &handle)?;
 
@@ -230,19 +222,14 @@ async fn run_runnable_without_game(mod_id: &str, handle: AppHandle) -> Result {
 #[specta::specta]
 async fn configure_mod(game_id: GameId, mod_id: &str, handle: AppHandle) -> Result {
 	let state = handle.app_state();
-
-	let installed_game = {
-		let games = state.games.try_get(&game_id.provider_id)?.read_state()?;
-		let game = games.try_get(&game_id.game_id)?;
-		game.try_get_installed_game()?.clone()
-	};
+	let game = get_game(game_id.clone(), handle.clone()).await?;
 
 	let mod_loaders = state.mod_loaders.read_state()?.clone();
 	let local_mod = refresh_and_get_local_mod(mod_id, &mod_loaders, &handle).await?;
 
 	let mod_loader = mod_loaders.try_get(&local_mod.common.loader_id)?;
 
-	mod_loader.configure_mod(&installed_game, &local_mod)?;
+	mod_loader.configure_mod(&game, &local_mod)?;
 
 	Ok(())
 }
@@ -251,18 +238,14 @@ async fn configure_mod(game_id: GameId, mod_id: &str, handle: AppHandle) -> Resu
 #[specta::specta]
 async fn open_installed_mod_folder(game_id: GameId, mod_id: &str, handle: AppHandle) -> Result {
 	let state = handle.app_state();
+	let game = get_game(game_id.clone(), handle.clone()).await?;
 
 	let mod_loaders = state.mod_loaders.read_state()?.clone();
 	let local_mod = refresh_and_get_local_mod(mod_id, &mod_loaders, &handle).await?;
 
 	let mod_loader = mod_loaders.try_get(&local_mod.common.loader_id)?;
 
-	let installed_game = {
-		let games = state.games.try_get(&game_id.provider_id)?.read_state()?;
-		let game = games.try_get(&game_id.game_id)?;
-		game.try_get_installed_game()?.clone()
-	};
-	mod_loader.open_installed_mod_folder(&installed_game, &local_mod)?;
+	mod_loader.open_installed_mod_folder(&game, &local_mod)?;
 
 	Ok(())
 }
@@ -271,16 +254,15 @@ async fn open_installed_mod_folder(game_id: GameId, mod_id: &str, handle: AppHan
 #[specta::specta]
 async fn refresh_game(game_id: GameId, handle: AppHandle) -> Result {
 	let state = handle.app_state();
-	let mut games = state.games.try_get(&game_id.provider_id)?.write_state()?;
+	let game = get_game(game_id.clone(), handle.clone()).await?;
 
-	let game = games.try_get_mut(&game_id.game_id)?;
+	// TODO refresh game.
+	// if let Some(installed_game) = game.installed_game.as_mut() {
+	// 	installed_game.refresh_installed_mods();
+	// 	installed_game.refresh_executable()?;
+	// }
 
-	if let Some(installed_game) = game.installed_game.as_mut() {
-		installed_game.refresh_installed_mods();
-		installed_game.refresh_executable()?;
-	}
-
-	handle.emit_safe(events::FoundGame(game_id));
+	// handle.emit_safe(events::FoundGame(game_id));
 
 	Ok(())
 }
@@ -289,6 +271,7 @@ async fn refresh_game(game_id: GameId, handle: AppHandle) -> Result {
 #[specta::specta]
 async fn uninstall_mod(game_id: GameId, mod_id: &str, handle: AppHandle) -> Result {
 	let state = handle.app_state();
+	let game = get_game(game_id.clone(), handle.clone()).await?;
 
 	let mod_loaders = state.mod_loaders.read_state()?.clone();
 
@@ -296,15 +279,9 @@ async fn uninstall_mod(game_id: GameId, mod_id: &str, handle: AppHandle) -> Resu
 
 	let mod_loader = mod_loaders.try_get(&local_mod.common.loader_id)?;
 
-	let installed_game = {
-		let games = state.games.try_get(&game_id.provider_id)?.read_state()?;
-		let game = games.try_get(&game_id.game_id)?;
-		game.try_get_installed_game()?.clone()
-	};
-
 	// Uninstall mod if it already exists, in case there are conflicting leftover files when updating.
 	mod_loader
-		.uninstall_mod(&installed_game, &local_mod)
+		.uninstall_mod(&game, &local_mod)
 		.await?;
 
 	refresh_game_mods(&game_id, &handle)?;
@@ -316,13 +293,9 @@ async fn uninstall_mod(game_id: GameId, mod_id: &str, handle: AppHandle) -> Resu
 #[specta::specta]
 async fn uninstall_all_mods(game_id: GameId, handle: AppHandle) -> Result {
 	let state = handle.app_state();
-	let installed_game = {
-		let games = state.games.try_get(&game_id.provider_id)?.read_state()?;
-		let game = games.try_get(&game_id.game_id)?;
-		game.try_get_installed_game()?.clone()
-	};
+	let game = get_game(game_id.clone(), handle.clone()).await?;
 
-	installed_game.uninstall_all_mods()?;
+	game.uninstall_all_mods()?;
 
 	refresh_game_mods(&game_id, &handle)?;
 
@@ -612,45 +585,6 @@ async fn refresh_games(handle: AppHandle, provider_id: ProviderId) -> Result {
 				log::error!("Failed to read database pool: {err}");
 			}
 		}
-
-			// match state.remote_games.read() {
-			// 	Ok(remote_games) => {
-			// 		// Assign the remote game here as we find the new game.
-			// 		// This is for when the remote games are fetched *before* games are found locally.
-			// 		game.remote_game = remote_games
-			// 			.get(&game.id.provider_id)
-			// 			.and_then(|provider_remote_games| {
-			// 				provider_remote_games.get(&game.external_id)
-			// 			})
-			// 			.or_else(|| {
-			// 				remote_games.get(&ProviderId::Manual).and_then(
-			// 					|provider_remote_games| {
-			// 						game.title.normalized.first().and_then(|normalized_title| {
-			// 							provider_remote_games.get(normalized_title)
-			// 						})
-			// 					},
-			// 				)
-			// 			})
-			// 			.cloned();
-			// 	}
-			// 	Err(err) => {
-			// 		log::error!("Failed to read remote games state: {err}");
-			// 	}
-			// }
-
-			if let Some(provider_games) = handle.app_state().games.get(&provider_id) {
-				match provider_games.write() {
-					Ok(mut provider_games_write) => {
-						provider_games_write.insert(game.id.game_id.clone(), game.clone());
-						handle.emit_safe(events::FoundGame(game.id.clone()));
-						handle.emit_safe(events::GamesChanged());
-						fresh_games.insert(game.id.game_id.clone(), game);
-					}
-					Err(err) => {
-						log::error!("Failed to write games state: {err}");
-					}
-				}
-			}
 		})
 		.await
 		.unwrap_or_else(|err| {
@@ -661,9 +595,7 @@ async fn refresh_games(handle: AppHandle, provider_id: ProviderId) -> Result {
 			);
 		});
 
-	// After all is done, write again with fresh games, to get rid of the stale ones.
-	let mut games_write = state.games.try_get(&provider_id)?.write_state()?;
-	*games_write = fresh_games.clone();
+		// TODO get rid of stale games after everything is done.
 
 	provider_cache::write(provider_id, &fresh_games);
 
@@ -673,29 +605,31 @@ async fn refresh_games(handle: AppHandle, provider_id: ProviderId) -> Result {
 #[tauri::command]
 #[specta::specta]
 async fn add_game(path: PathBuf, handle: AppHandle) -> Result {
-	let normalized_path = normalize_path(&path);
+	// let normalized_path = normalize_path(&path);
 
-	let game = manual_provider::add_game(&normalized_path)?;
-	let game_name = game.title.display.clone();
+	// let game = manual_provider::add_game(&normalized_path)?;
+	// let game_name = game.title.display.clone();
 
-	let state = handle.app_state();
+	// let state = handle.app_state();
 
-	state
-		.games
-		.try_get(&ProviderId::Manual)?
-		.write_state()?
-		.insert(game.id.game_id.clone(), game.clone());
+	// state
+	// 	.games
+	// 	.try_get(&ProviderId::Manual)?
+	// 	.write_state()?
+	// 	.insert(game.id.game_id.clone(), game.clone());
 
-	handle.emit_safe(events::FoundGame(game.id.clone()));
+	// handle.emit_safe(events::FoundGame(game.id.clone()));
 
-	handle.emit_safe(events::GamesChanged());
+	// handle.emit_safe(events::GamesChanged());
 
-	handle.emit_safe(events::SelectInstalledGame(
-		ProviderId::Manual,
-		game.id.game_id.clone(),
-	));
+	// handle.emit_safe(events::SelectInstalledGame(
+	// 	ProviderId::Manual,
+	// 	game.id.game_id.clone(),
+	// ));
+		
+	// analytics::send_event(analytics::Event::ManuallyAddGame, &game_name).await;
 
-	analytics::send_event(analytics::Event::ManuallyAddGame, &game_name).await;
+	// TODO add manual game to db
 
 	Ok(())
 }
@@ -935,46 +869,6 @@ async fn get_game(id: GameId, handle: AppHandle) -> Result<DbGame> {
 	.fetch_one(&pool)
 	.await?;
 
-	// let mut game = Game::new(id.clone(), &db_game.display_title);
-	// game.release_date = db_game.release_date;
-	// game.thumbnail_url = db_game.thumbnail_url;
-	// game.remote_game = db_game.engine_brand.map(|engine_brand| RemoteGame {
-	// 	title: None,
-	// 	engine: Some(GameEngine {
-	// 		version: None,
-	// 		brand: engine_brand,
-	// 	}),
-	// 	ids: HashMap::default(),
-	// 	subscriptions: None,
-	// });
-	// game.installed_game = db_game.exe_path.map(|exe_path| InstalledGame {
-	// 	id: exe_path.clone(),
-	// 	installed_mod_versions: HashMap::default(),
-	// 	discriminator: None,
-	// 	start_command: None,
-	// 	executable: GameExecutable {
-	// 		architecture: None,
-	// 		engine: db_game.engine_brand.map(|engine_brand| GameEngine {
-	// 			brand: engine_brand,
-	// 			// TODO: properly store entire version information.
-	// 			version: db_game.engine_version.map(|engine_version| EngineVersion {
-	// 				display: engine_version.to_string(),
-	// 				suffix: None,
-	// 				numbers: EngineVersionNumbers {
-	// 					major: 0,
-	// 					minor: None,
-	// 					patch: None,
-	// 				},
-	// 			}),
-	// 		}),
-	// 		path: PathBuf::from(exe_path),
-	// 		scripting_backend: None,
-	// 	}
-	// });
-	// game.tags = db_game.tags.0;
-	// let tags_str: &str = row.get("tags");
-	// game.tags = tags_str.split(',').map(|s| s.trim().to_string()).collect();
-
 	Ok(db_game)
 }
 
@@ -999,8 +893,9 @@ async fn save_app_settings(settings: AppSettings) -> Result {
 
 #[tauri::command]
 #[specta::specta]
-async fn get_installed_mod_versions(game_path: PathBuf) -> Result<InstalledModVersions> {
-	Ok(installed_game::get_installed_mod_versions(&paths::hash_path(&game_path)))
+async fn get_installed_mod_versions(game_id: GameId, app_handle: AppHandle) -> Result<InstalledModVersions> {
+	let game = get_game(game_id.clone(), app_handle.clone()).await?;
+	Ok(game.get_installed_mod_versions())
 }
 
 fn main() {
@@ -1088,12 +983,6 @@ fn main() {
 			mod_loaders: RwLock::default(),
 			local_mods: RwLock::default(),
 			remote_mods: RwLock::default(),
-			games: HashMap::from_iter(ProviderId::variants().iter().map(|&id| {
-				(
-					id,
-					RwLock::new(provider_cache::read(id).unwrap_or_default()),
-				)
-			})),
 			database_pool: RwLock::new(database_pool),
 		})
 		.invoke_handler(builder.invoke_handler())

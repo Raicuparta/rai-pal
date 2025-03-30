@@ -13,7 +13,6 @@ use rai_pal_core::{
 };
 
 pub struct AppState {
-	pub games: HashMap<ProviderId, RwLock<game::Map>>,
 	pub mod_loaders: RwLock<mod_loader::Map>,
 	pub local_mods: RwLock<local_mod::Map>,
 	pub remote_mods: RwLock<remote_mod::Map>,
