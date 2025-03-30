@@ -88,7 +88,7 @@ export function GameModal({ game }: Props) {
 	const setSelectedGame = useSetAtom(selectedGameAtom);
 	const [installedModVersions, updateInstalledModVersions] = useCommandData(
 		commands.getInstalledModVersions,
-		() => (game.exePath ? { args: game.exePath } : { skip: true }),
+		() => (game.exePath ? { args: game } : { skip: true }),
 		{},
 	);
 
