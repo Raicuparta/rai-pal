@@ -18,6 +18,7 @@ export function useGame({ providerId, gameId }: GameId) {
 		thumbnailUrl: null,
 		architecture: null,
 		unityBackend: null,
+		titleDiscriminator: null,
 		tags: [],
 	};
 

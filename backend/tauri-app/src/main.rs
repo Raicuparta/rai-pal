@@ -508,6 +508,7 @@ pub async fn setup_database() -> Result<Pool<Sqlite>> {
 				external_id TEXT NOT NULL,
 				display_title TEXT NOT NULL,
 				normalized_titles TEXT NOT NULL,
+				title_discriminator TEXT,
 				thumbnail_url TEXT,
 				tags TEXT,
 				release_date INTEGER,
@@ -563,8 +564,8 @@ async fn refresh_games(handle: AppHandle, provider_id: ProviderId) -> Result {
 				let game_clone = game.clone();
 				tauri::async_runtime::spawn_blocking(move || {
 					let game_query = sqlx::query::<Sqlite>(
-						"INSERT OR REPLACE INTO games (provider_id, game_id, external_id, display_title, normalized_titles, thumbnail_url, release_date, installed_game, tags) 
-						 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+						"INSERT OR REPLACE INTO games (provider_id, game_id, external_id, display_title, normalized_titles, thumbnail_url, release_date, installed_game, tags, title_discriminator) 
+						 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 					)
 					.bind(game_clone.id.provider_id)
 					.bind(game_clone.id.game_id.clone())
@@ -576,7 +577,10 @@ async fn refresh_games(handle: AppHandle, provider_id: ProviderId) -> Result {
 					.bind(game_clone.installed_game.as_ref().map(|installed_game| {
 						installed_game.id.clone()
 					}))
-					.bind(serde_json::to_string(&game_clone.tags).ok()); // TODO log error.
+					.bind(serde_json::to_string(&game_clone.tags).ok()) // TODO log error.
+					.bind(game_clone.installed_game.as_ref().map(|installed_game| {
+						installed_game.discriminator.clone()
+					}));
 
 					let installed_game_query = game_clone.installed_game.as_ref().map(|installed_game| sqlx::query::<Sqlite>(
 						"INSERT OR REPLACE INTO installed_games (id, exe_path, engine_brand, engine_version, unity_backend) 

@@ -1,6 +1,5 @@
 import { Box, DefaultMantineColor, Flex, Stack, Table } from "@mantine/core";
 import { TableColumnBase, columnMapToList } from "@components/table/table-head";
-import { ItemName } from "../item-name";
 import styles from "./games.module.css";
 import { EngineBrand, DbGame, GamesSortBy, ProviderId } from "@api/bindings";
 import { IconCloud, IconDeviceDesktop } from "@tabler/icons-react";
@@ -94,19 +93,18 @@ const name: GamesColumn = {
 					overflow: "hidden",
 				}}
 			>
-				<ItemName label={item.installedGame?.discriminator}>
-					{item?.displayTitle}
-					<div className={styles.tags}>
-						{item.tags.sort().map((tag) => (
-							<span
-								className={styles.tag}
-								key={tag}
-							>
-								{tag}
-							</span>
-						))}
-					</div>
-				</ItemName>
+				{item.displayTitle}
+				{item.titleDiscriminator && ` (${item.titleDiscriminator})`}
+				<div className={styles.tags}>
+					{item.tags.sort().map((tag) => (
+						<span
+							className={styles.tag}
+							key={tag}
+						>
+							{tag}
+						</span>
+					))}
+				</div>
 			</Flex>
 		</Table.Td>
 	),

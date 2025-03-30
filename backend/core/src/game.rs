@@ -40,6 +40,7 @@ pub struct DbGame {
 	pub game_id: String,
 	pub external_id: String,
 	pub display_title: String,
+	pub title_discriminator: Option<String>,
 	pub normalized_titles: String,
 	pub thumbnail_url: Option<String>,
 	pub release_date: Option<i64>,
