@@ -143,7 +143,7 @@ export function GameModal({ game }: Props) {
 					</TableContainer>
 				</Group>
 				{/* TODO commands */}
-				{/* <Group>
+				<Group>
 					{game.exePath && (
 						<>
 							<Button.Group>
@@ -153,7 +153,7 @@ export function GameModal({ game }: Props) {
 								>
 									{t("startGameButton")}
 								</CommandButton>
-								{installedGame.startCommand && (
+								{/* {installedGame.startCommand && (
 									<CommandDropdown>
 										<CommandButton
 											leftSection={<IconAppWindow />}
@@ -172,7 +172,7 @@ export function GameModal({ game }: Props) {
 											})}
 										</CommandButton>
 									</CommandDropdown>
-								)}
+								)} */}
 							</Button.Group>
 							<CommandDropdown
 								label={t("foldersDropdown")}
@@ -180,23 +180,23 @@ export function GameModal({ game }: Props) {
 							>
 								<CommandButton
 									leftSection={<IconFolder />}
-									onClick={() => commands.openGameFolder(game.id)}
+									onClick={() => commands.openGameFolder(game)}
 								>
 									{t("openGameFilesFolder")}
 								</CommandButton>
 								<CommandButton
 									leftSection={<IconFolderCog />}
-									onClick={() => commands.openGameModsFolder(game.id)}
+									onClick={() => commands.openGameModsFolder(game)}
 								>
 									{t("openInstalledModsFolder")}
 								</CommandButton>
 							</CommandDropdown>
 						</>
 					)}
-					<ProviderCommandButtons game={game} />
-					{game.id.providerId === "Manual" && installedGame && (
+					{/* <ProviderCommandButtons game={game} /> */}
+					{game.providerId === "Manual" && game.exePath && (
 						<CommandButton
-							onClick={() => commands.removeGame(installedGame.executable.path)}
+							onClick={() => commands.removeGame(game.exePath)}
 							confirmationText={t("removeGameConfirmation")}
 							onSuccess={close}
 							leftSection={<IconTrash />}
@@ -204,15 +204,15 @@ export function GameModal({ game }: Props) {
 							{t("removeFromRaiPal")}
 						</CommandButton>
 					)}
-					{installedGame && (
+					{game.exePath && (
 						<CommandButton
-							onClick={() => commands.refreshGame(game.id)}
+							onClick={() => commands.refreshGame(game)}
 							leftSection={<IconRefresh />}
 						>
 							{t("refreshGame")}
 						</CommandButton>
 					)}
-				</Group> */}
+				</Group>
 				{game.exePath && (
 					<>
 						{game.engineBrand && !game.architecture && (
