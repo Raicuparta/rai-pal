@@ -24,7 +24,7 @@ pub struct InstalledGame {
 	pub start_command: Option<ProviderCommand>,
 }
 
-type InstalledModVersions = HashMap<String, String>;
+pub type InstalledModVersions = HashMap<String, String>;
 
 impl InstalledGame {
 	pub fn new(path: &Path) -> Option<Self> {
@@ -164,4 +164,53 @@ impl InstalledGame {
 
 		Ok(installed_mods_folder)
 	}
+}
+
+// TODO these should all be somewhere else probably.
+
+pub fn get_installed_mod_versions(game_path_hash: &str) -> InstalledModVersions {
+	get_manifest_paths(game_path_hash)
+		.iter()
+		.filter_map(|manifest_path| {
+			let manifest = mod_manifest::get(manifest_path)?;
+
+			Some((
+				manifest_path.file_stem()?.to_str()?.to_string(),
+				manifest.version,
+			))
+		})
+		.collect()
+}
+
+pub fn get_manifest_paths(game_path_hash: &str) -> Vec<PathBuf> {
+	match get_installed_mod_manifest_path(game_path_hash, "*") {
+		Ok(manifests_path) => {
+			if !manifests_path.parent().is_some_and(Path::exists) {
+				return Vec::default();
+			}
+			glob_path(&manifests_path)
+		}
+		Err(err) => {
+			error!(
+				"Failed to get mod manifests glob path for game {}. Error: {}",
+				game_path_hash, err
+			);
+			Vec::default()
+		}
+	}
+}
+
+pub fn get_installed_mod_manifest_path(game_path_hash: &str, mod_id: &str) -> Result<PathBuf> {
+	Ok(get_installed_mods_folder(game_path_hash)?
+		.join("manifests")
+		.join(format!("{mod_id}.json")))
+}
+
+pub fn get_installed_mods_folder(game_path_hash: &str) -> Result<PathBuf> {
+	let installed_mods_folder = paths::app_data_path()?
+		.join("installed-mods")
+		.join(game_path_hash);
+	fs::create_dir_all(&installed_mods_folder)?;
+
+	Ok(installed_mods_folder)
 }

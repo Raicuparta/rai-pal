@@ -87,7 +87,6 @@ export function GameModal({ game }: Props) {
 
 	const close = () => setSelectedGame(null);
 
-	// TODO: installed mod versions
 	const filteredMods = useMemo(() => {
 		return Object.values(mods).filter(
 			(mod) =>
@@ -99,10 +98,18 @@ export function GameModal({ game }: Props) {
 					game.engineVersion,
 					mod.common.engineVersionRange,
 				) &&
-				!mod.remote?.deprecated,
-			// && !installedGame?.installedModVersions[mod.common.id]
+				!(
+					mod.remote?.deprecated &&
+					!game.extraData.installedModVersions[mod.common.id]
+				),
 		);
-	}, [game, mods]);
+	}, [
+		game.engineBrand,
+		game.engineVersion,
+		game.extraData.installedModVersions,
+		game.unityBackend,
+		mods,
+	]);
 	// const filteredMods = mods;
 
 	return (
@@ -126,7 +133,6 @@ export function GameModal({ game }: Props) {
 						</Table>
 					</TableContainer>
 				</Group>
-				{/* TODO commands */}
 				<Group>
 					<ProviderCommandButtons game={game} />
 					{game.exePath && (
@@ -150,7 +156,9 @@ export function GameModal({ game }: Props) {
 					)}
 					{game.providerId === "Manual" && game.exePath && (
 						<CommandButton
-							onClick={() => commands.removeGame(game.exePath)}
+							onClick={async () => {
+								commands.removeGame(game.exePath);
+							}}
 							confirmationText={t("removeGameConfirmation")}
 							onSuccess={close}
 							leftSection={<IconTrash />}
@@ -217,6 +225,7 @@ export function GameModal({ game }: Props) {
 					</>
 				)}
 				<DebugData data={game} />
+				<DebugData data={game.extraData.installedModVersions} />
 			</Stack>
 		</Modal>
 	);

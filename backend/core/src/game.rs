@@ -33,6 +33,13 @@ pub struct GameId {
 	pub game_id: String,
 }
 
+#[derive(sqlx::FromRow, serde::Serialize, serde::Deserialize, specta::Type)]
+#[serde(rename_all = "camelCase")]
+pub struct ExtraData {
+	pub provider_commands: HashMap<ProviderCommandAction, ProviderCommand>,
+	pub installed_mod_versions: HashMap<String, String>,
+}
+
 #[derive(sqlx::FromRow, serde::Serialize, specta::Type)]
 #[serde(rename_all = "camelCase")]
 pub struct DbGame {
@@ -50,7 +57,7 @@ pub struct DbGame {
 	pub unity_backend: Option<UnityScriptingBackend>,
 	pub architecture: Option<Architecture>,
 	pub tags: JsonData<Vec<GameTag>>,
-	pub provider_commands: JsonData<HashMap<ProviderCommandAction, ProviderCommand>>,
+	pub extra_data: JsonData<ExtraData>,
 }
 
 #[derive(sqlx::FromRow, serde::Serialize, specta::Type)]
@@ -58,7 +65,7 @@ pub struct JsonData<T>(pub T);
 
 impl<T> sqlx::Decode<'_, sqlx::Sqlite> for JsonData<T>
 where
-	T: serde::de::DeserializeOwned + Eq,
+	T: serde::de::DeserializeOwned,
 {
 	fn decode(value: SqliteValueRef<'_>) -> std::result::Result<Self, sqlx::error::BoxDynError> {
 		let json_str = <&str as sqlx::Decode<sqlx::Sqlite>>::decode(value)?;

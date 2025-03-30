@@ -9,10 +9,9 @@ type Props = {
 };
 
 export function ProviderCommandButtons(props: Props) {
-	let providerCommands = Object.entries(props.game.providerCommands) as [
-		ProviderCommandAction,
-		ProviderCommand,
-	][];
+	let providerCommands = Object.entries(
+		props.game.extraData.providerCommands,
+	) as [ProviderCommandAction, ProviderCommand][];
 	if (props.game.exePath) {
 		providerCommands = providerCommands.filter(
 			([action]) => (action as ProviderCommandAction) != "Install",
@@ -21,8 +20,9 @@ export function ProviderCommandButtons(props: Props) {
 
 	if (providerCommands.length == 0) return null;
 
-	const startViaProvider = props.game.providerCommands["StartViaProvider"];
-	const startViaExe = props.game.providerCommands["StartViaExe"];
+	const startViaProvider =
+		props.game.extraData.providerCommands["StartViaProvider"];
+	const startViaExe = props.game.extraData.providerCommands["StartViaExe"];
 	const primaryStartCommand = startViaProvider ?? startViaExe;
 
 	return (

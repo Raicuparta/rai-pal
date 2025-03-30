@@ -15,7 +15,7 @@ use rai_pal_core::game::{self, DbGame, Game, GameId};
 use rai_pal_core::game_engines::game_engine::{EngineVersion, EngineVersionNumbers, GameEngine};
 use rai_pal_core::game_executable::GameExecutable;
 use rai_pal_core::games_query::{GamesQuery, GamesSortBy, InstallState};
-use rai_pal_core::installed_game::{InstalledGame};
+use rai_pal_core::installed_game::{self, InstalledGame, InstalledModVersions};
 use rai_pal_core::local_mod::{self, LocalMod};
 use rai_pal_core::maps::TryGettable;
 use rai_pal_core::mod_loaders::mod_loader::{self, ModLoaderActions};
@@ -514,7 +514,7 @@ pub async fn setup_database() -> Result<Pool<Sqlite>> {
 				tags TEXT,
 				release_date INTEGER,
 				installed_game TEXT,
-				provider_commands TEXT,
+				extra_data TEXT,
 				FOREIGN KEY(installed_game) REFERENCES installed_games(id),
 				PRIMARY KEY (provider_id, game_id)
 		);
@@ -566,7 +566,7 @@ async fn refresh_games(handle: AppHandle, provider_id: ProviderId) -> Result {
 				let game_clone = game.clone();
 				tauri::async_runtime::spawn_blocking(move || {
 					let game_query = sqlx::query::<Sqlite>(
-						"INSERT OR REPLACE INTO games (provider_id, game_id, external_id, display_title, normalized_titles, thumbnail_url, release_date, installed_game, tags, title_discriminator, provider_commands) 
+						"INSERT OR REPLACE INTO games (provider_id, game_id, external_id, display_title, normalized_titles, thumbnail_url, release_date, installed_game, tags, title_discriminator, extra_data) 
 						 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 					)
 					.bind(game_clone.id.provider_id)
@@ -583,7 +583,12 @@ async fn refresh_games(handle: AppHandle, provider_id: ProviderId) -> Result {
 					.bind(game_clone.installed_game.as_ref().map(|installed_game| {
 						installed_game.discriminator.clone()
 					}))
-					.bind(serde_json::to_string(&game_clone.provider_commands).ok()); // TODO log error;
+					.bind(serde_json::to_string(&game::ExtraData {
+						provider_commands: game_clone.provider_commands,
+						installed_mod_versions: game_clone.installed_game.as_ref().map(|installed_game| {
+							installed_game.installed_mod_versions.clone()
+						}).unwrap_or_default(),
+					}).ok()); // TODO log error;
 
 					let installed_game_query = game_clone.installed_game.as_ref().map(|installed_game| sqlx::query::<Sqlite>(
 						"INSERT OR REPLACE INTO installed_games (id, exe_path, engine_brand, engine_version, unity_backend) 

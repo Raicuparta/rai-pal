@@ -38,9 +38,7 @@ type Props = {
 };
 
 export function GameModRow({ game, mod, modLoader }: Props) {
-	// const installedVersion =
-	// 	game.installedGame?.installedModVersions[mod.common.id];
-	const installedVersion = ""; // TODO installed version.
+	const installedVersion = game.extraData.installedModVersions[mod.common.id];
 
 	const isInstalledModOutdated = getIsOutdated(
 		installedVersion,
