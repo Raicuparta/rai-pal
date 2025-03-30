@@ -26,8 +26,8 @@ export function ProviderCommandButtons(props: Props) {
 	const primaryStartCommand = startViaProvider ?? startViaExe;
 
 	return (
-		primaryStartCommand && (
-			<>
+		<>
+			{primaryStartCommand && (
 				<Button.Group>
 					{primaryStartCommand && (
 						<ProviderCommandButton
@@ -47,20 +47,20 @@ export function ProviderCommandButtons(props: Props) {
 						</CommandDropdown>
 					)}
 				</Button.Group>
-				<CommandDropdown
-					label={props.game.providerId}
-					icon={<ProviderIcon providerId={props.game.providerId} />}
-				>
-					{providerCommands.map(([action, command]) => (
-						<ProviderCommandButton
-							key={action}
-							game={props.game}
-							action={action}
-							command={command}
-						/>
-					))}
-				</CommandDropdown>
-			</>
-		)
+			)}
+			<CommandDropdown
+				label={props.game.providerId}
+				icon={<ProviderIcon providerId={props.game.providerId} />}
+			>
+				{providerCommands.map(([action, command]) => (
+					<ProviderCommandButton
+						key={action}
+						game={props.game}
+						action={action}
+						command={command}
+					/>
+				))}
+			</CommandDropdown>
+		</>
 	);
 }
