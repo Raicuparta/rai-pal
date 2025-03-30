@@ -1,26 +1,11 @@
-import {
-	Alert,
-	Button,
-	Divider,
-	Group,
-	Modal,
-	Stack,
-	Table,
-} from "@mantine/core";
-import {
-	EngineVersion,
-	EngineVersionRange,
-	DbGame,
-	commands,
-} from "@api/bindings";
+import { Alert, Divider, Group, Modal, Stack, Table } from "@mantine/core";
+import { EngineVersionRange, DbGame, commands } from "@api/bindings";
 import { useMemo } from "react";
 import { CommandButton } from "@components/command-button";
 import {
-	IconAppWindow,
 	IconFolder,
 	IconFolderCog,
 	IconFolderOpen,
-	IconPlayerPlay,
 	IconRefresh,
 	IconTrash,
 } from "@tabler/icons-react";
@@ -31,7 +16,6 @@ import { useUnifiedMods } from "@hooks/use-unified-mods";
 import { GameModRow } from "./game-mod-row";
 import { TableContainer } from "@components/table/table-container";
 import { CommandDropdown } from "@components/command-dropdown";
-import { ProviderIcon } from "@components/providers/provider-icon";
 import { selectedGameAtom } from "./games-state";
 import { ProviderCommandButtons } from "@components/providers/provider-command-dropdown";
 import { GameRowInner } from "./game-row";
@@ -144,56 +128,26 @@ export function GameModal({ game }: Props) {
 				</Group>
 				{/* TODO commands */}
 				<Group>
-					{game.exePath && (
-						<>
-							<Button.Group>
-								<CommandButton
-									leftSection={<IconPlayerPlay />}
-									onClick={() => commands.startGame(installedGame)}
-								>
-									{t("startGameButton")}
-								</CommandButton>
-								{/* {installedGame.startCommand && (
-									<CommandDropdown>
-										<CommandButton
-											leftSection={<IconAppWindow />}
-											onClick={() => commands.startGameExe(installedGame)}
-										>
-											{t("startGameExecutable")}
-										</CommandButton>
-										<CommandButton
-											leftSection={
-												<ProviderIcon providerId={game.id.providerId} />
-											}
-											onClick={() => commands.startGame(installedGame)}
-										>
-											{t("startGameViaProvider", {
-												provider: game.id.providerId,
-											})}
-										</CommandButton>
-									</CommandDropdown>
-								)} */}
-							</Button.Group>
-							<CommandDropdown
-								label={t("foldersDropdown")}
-								icon={<IconFolderOpen />}
-							>
-								<CommandButton
-									leftSection={<IconFolder />}
-									onClick={() => commands.openGameFolder(game)}
-								>
-									{t("openGameFilesFolder")}
-								</CommandButton>
-								<CommandButton
-									leftSection={<IconFolderCog />}
-									onClick={() => commands.openGameModsFolder(game)}
-								>
-									{t("openInstalledModsFolder")}
-								</CommandButton>
-							</CommandDropdown>
-						</>
-					)}
 					<ProviderCommandButtons game={game} />
+					{game.exePath && (
+						<CommandDropdown
+							label={t("foldersDropdown")}
+							icon={<IconFolderOpen />}
+						>
+							<CommandButton
+								leftSection={<IconFolder />}
+								onClick={() => commands.openGameFolder(game)}
+							>
+								{t("openGameFilesFolder")}
+							</CommandButton>
+							<CommandButton
+								leftSection={<IconFolderCog />}
+								onClick={() => commands.openGameModsFolder(game)}
+							>
+								{t("openInstalledModsFolder")}
+							</CommandButton>
+						</CommandDropdown>
+					)}
 					{game.providerId === "Manual" && game.exePath && (
 						<CommandButton
 							onClick={() => commands.removeGame(game.exePath)}

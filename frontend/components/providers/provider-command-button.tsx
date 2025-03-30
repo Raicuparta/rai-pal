@@ -30,7 +30,8 @@ const providerCommandLocalizationKey: Record<
 	Install: "installGame",
 	ShowInLibrary: "showGameInLibrary",
 	ShowInStore: "showGameInStore",
-	Start: "startGame",
+	StartViaProvider: "startGameViaProvider",
+	StartViaExe: "startGameViaExe",
 	OpenInBrowser: "openGamePageInBrowser",
 };
 
@@ -38,7 +39,8 @@ const providerCommandActionIcon: Record<ProviderCommandAction, Icon> = {
 	Install: IconDownload,
 	ShowInLibrary: IconBooks,
 	ShowInStore: IconBrowser,
-	Start: IconPlayerPlay,
+	StartViaProvider: IconPlayerPlay,
+	StartViaExe: IconPlayerPlay,
 	OpenInBrowser: IconExternalLink,
 };
 

@@ -137,7 +137,10 @@ export const enUs = {
 		showGameInStore: "Open Store Page",
 
 		// Start the game via this provider's launcher app.
-		startGame: "Start Game",
+		startGameViaProvider: "Start Game",
+
+		// Start the game via this game's executable.
+		startGameViaExe: "Run Game Executable",
 
 		// Open the game's store page in the user's default browser.
 		openGamePageInBrowser: "Open In Browser",

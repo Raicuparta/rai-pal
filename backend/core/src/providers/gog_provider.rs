@@ -99,7 +99,25 @@ impl ProviderActions for Gog {
 
 			for db_entry in database {
 				let mut game = Self::get_game(&db_entry, &launcher_path);
-				game.installed_game = Self::get_installed_game(&db_entry, &launcher_path);
+				if let Some(installed_game) = Self::get_installed_game(&db_entry, &launcher_path) {
+					if let Some(start_command) = &installed_game.start_command {
+						game.add_provider_command(
+							ProviderCommandAction::StartViaProvider,
+							start_command.clone(),
+						);
+					}
+
+					game.add_provider_command(
+						ProviderCommandAction::StartViaExe,
+						ProviderCommand::Path(
+							installed_game.executable.path.clone(),
+							Vec::default(),
+						),
+					);
+
+					game.installed_game = Some(installed_game);
+				}
+
 				callback(game);
 			}
 		} else {

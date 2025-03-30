@@ -213,7 +213,25 @@ impl ProviderActions for Epic {
 			let catalog = serde_json::from_str::<Vec<EpicCatalogItem>>(&json)?;
 			for catalog_item in catalog {
 				if let Some(mut game) = Self::get_game(&catalog_item) {
-					game.installed_game = installed_games.remove(&game.external_id);
+					if let Some(installed_game) = installed_games.remove(&game.external_id) {
+						if let Some(start_command) = &installed_game.start_command {
+							game.add_provider_command(
+								ProviderCommandAction::StartViaProvider,
+								start_command.clone(),
+							);
+						}
+
+						game.add_provider_command(
+							ProviderCommandAction::StartViaExe,
+							ProviderCommand::Path(
+								installed_game.executable.path.clone(),
+								Vec::default(),
+							),
+						);
+
+						game.installed_game = Some(installed_game);
+					}
+
 					callback(game);
 				}
 			}

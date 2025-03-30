@@ -15,7 +15,8 @@ pub enum ProviderCommandAction {
 	Install,
 	ShowInLibrary,
 	ShowInStore,
-	Start,
+	StartViaProvider,
+	StartViaExe,
 	OpenInBrowser,
 }
 

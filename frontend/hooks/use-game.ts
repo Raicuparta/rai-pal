@@ -19,6 +19,7 @@ export function useGame({ providerId, gameId }: GameId) {
 		architecture: null,
 		unityBackend: null,
 		titleDiscriminator: null,
+		providerCommands: {},
 		tags: [],
 	};
 

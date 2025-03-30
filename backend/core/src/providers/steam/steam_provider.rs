@@ -221,6 +221,22 @@ impl ProviderActions for Steam {
 					} else {
 						for installed_game in installed_games {
 							let mut game_with_installed = game.clone();
+
+							if let Some(start_command) = &installed_game.start_command {
+								game_with_installed.add_provider_command(
+									ProviderCommandAction::StartViaProvider,
+									start_command.clone(),
+								);
+							}
+
+							game_with_installed.add_provider_command(
+								ProviderCommandAction::StartViaExe,
+								ProviderCommand::Path(
+									installed_game.executable.path.clone(),
+									Vec::default(),
+								),
+							);
+
 							game_with_installed.id = GameId {
 								game_id: format!(
 									"{}_{}",
