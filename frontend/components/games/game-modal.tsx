@@ -22,6 +22,8 @@ import { GameRowInner } from "./game-row";
 import { TableHead } from "@components/table/table-head";
 import { gamesColumns } from "./games-columns";
 import { useLocalization } from "@hooks/use-localization";
+import { useCommandData } from "@hooks/use-command-data";
+import { useAppEvent } from "@hooks/use-app-event";
 
 type Props = {
 	readonly game: DbGame;
@@ -84,6 +86,20 @@ export function GameModal({ game }: Props) {
 	const modLoaderMap = useAtomValue(modLoadersAtom);
 	const mods = useUnifiedMods();
 	const setSelectedGame = useSetAtom(selectedGameAtom);
+	const [installedModVersions, updateInstalledModVersions] = useCommandData(
+		commands.getInstalledModVersions,
+		() => (game.exePath ? { args: game.exePath } : { skip: true }),
+		{},
+	);
+
+	useAppEvent("foundGame", `${game.providerId}:${game.gameId}`, (foundId) => {
+		if (
+			foundId.providerId !== game.providerId ||
+			foundId.gameId !== game.gameId
+		)
+			return;
+		updateInstalledModVersions();
+	});
 
 	const close = () => setSelectedGame(null);
 
@@ -98,16 +114,13 @@ export function GameModal({ game }: Props) {
 					game.engineVersion,
 					mod.common.engineVersionRange,
 				) &&
-				!(
-					mod.remote?.deprecated &&
-					!game.extraData.installedModVersions[mod.common.id]
-				),
+				!(mod.remote?.deprecated && !installedModVersions[mod.common.id]),
 		);
 	}, [
 		game.engineBrand,
 		game.engineVersion,
-		game.extraData.installedModVersions,
 		game.unityBackend,
+		installedModVersions,
 		mods,
 	]);
 	// const filteredMods = mods;
@@ -156,9 +169,7 @@ export function GameModal({ game }: Props) {
 					)}
 					{game.providerId === "Manual" && game.exePath && (
 						<CommandButton
-							onClick={async () => {
-								commands.removeGame(game.exePath);
-							}}
+							onClick={() => commands.removeGame(game.exePath)}
 							confirmationText={t("removeGameConfirmation")}
 							onSuccess={close}
 							leftSection={<IconTrash />}
@@ -204,6 +215,7 @@ export function GameModal({ game }: Props) {
 													game={game}
 													mod={mod}
 													modLoader={modLoader}
+													installedVersion={installedModVersions[mod.common.id]}
 												/>
 											)
 										);
@@ -225,7 +237,6 @@ export function GameModal({ game }: Props) {
 					</>
 				)}
 				<DebugData data={game} />
-				<DebugData data={game.extraData.installedModVersions} />
 			</Stack>
 		</Modal>
 	);

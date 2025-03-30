@@ -23,7 +23,7 @@ export function useGame({ providerId, gameId }: GameId) {
 	};
 	const [game, updateGame] = useCommandData(
 		commands.getGame,
-		{ providerId, gameId },
+		() => ({ args: { providerId, gameId } }),
 		defaultGame,
 	);
 

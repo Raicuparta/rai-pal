@@ -35,11 +35,10 @@ type Props = {
 	readonly game: DbGame;
 	readonly mod: UnifiedMod;
 	readonly modLoader: ModLoaderData;
+	readonly installedVersion?: string;
 };
 
-export function GameModRow({ game, mod, modLoader }: Props) {
-	const installedVersion = game.extraData.installedModVersions[mod.common.id];
-
+export function GameModRow({ game, mod, modLoader, installedVersion }: Props) {
 	const isInstalledModOutdated = getIsOutdated(
 		installedVersion,
 		mod.remote?.latestVersion?.id,

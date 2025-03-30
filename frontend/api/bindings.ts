@@ -32,6 +32,9 @@ async getGameIds(query: GamesQuery | null) : Promise<GameIdsResponse> {
 async getGame(id: GameId) : Promise<DbGame> {
     return await TAURI_INVOKE("get_game", { id });
 },
+async getInstalledModVersions(gamePath: string) : Promise<Partial<{ [key in string]: string }>> {
+    return await TAURI_INVOKE("get_installed_mod_versions", { gamePath });
+},
 async getLocalMods() : Promise<Partial<{ [key in string]: LocalMod }>> {
     return await TAURI_INVOKE("get_local_mods");
 },
@@ -136,7 +139,7 @@ export type AppLocale = "EnUs" | "EsEs" | "FrFr" | "DeDe" | "PtPt" | "ZhCn" | "J
 export type AppSettings = { hideGameThumbnails: boolean; overrideLanguage: AppLocale | null; gamesQuery: GamesQuery | null; selectedTab: TabId; skipConfirmDialogs: string[]; ownedSubscriptions: GameSubscription[] }
 export type Architecture = "X64" | "X86"
 export type CommonModData = { id: string; engine: EngineBrand | null; unityBackend: UnityScriptingBackend | null; engineVersionRange: EngineVersionRange | null; loaderId: string }
-export type DbGame = { providerId: ProviderId; gameId: string; externalId: string; displayTitle: string; titleDiscriminator: string | null; normalizedTitles: JsonData<string[]>; thumbnailUrl: string | null; releaseDate: bigint | null; exePath: string | null; engineBrand: EngineBrand | null; engineVersion: string | null; unityBackend: UnityScriptingBackend | null; architecture: Architecture | null; tags: JsonData<GameTag[]>; extraData: JsonData<ExtraData> }
+export type DbGame = { providerId: ProviderId; gameId: string; externalId: string; displayTitle: string; titleDiscriminator: string | null; normalizedTitles: JsonData<string[]>; thumbnailUrl: string | null; releaseDate: bigint | null; exePath: string | null; engineBrand: EngineBrand | null; engineVersion: string | null; unityBackend: UnityScriptingBackend | null; architecture: Architecture | null; tags: JsonData<GameTag[]>; providerCommands: JsonData<Partial<{ [key in ProviderCommandAction]: ProviderCommand }>> }
 export type EngineBrand = "Unity" | "Unreal" | "Godot" | "GameMaker"
 export type EngineVersion = { numbers: EngineVersionNumbers; suffix: string | null; display: string }
 export type EngineVersionNumbers = { major: number; minor: number | null; patch: number | null }
@@ -144,7 +147,6 @@ export type EngineVersionRange = { minimum: EngineVersionNumbers | null; maximum
 export type Error = "Tauri" | "Core" | "Io" | "Sql" | "SerdeJson" | { FailedToGetResourcesPath: string } | { FailedToAccessStateData: string }
 export type ErrorRaised = string
 export type ExecutedProviderCommand = null
-export type ExtraData = { providerCommands: Partial<{ [key in ProviderCommandAction]: ProviderCommand }>; installedModVersions: Partial<{ [key in string]: string }> }
 export type FoundGame = GameId
 export type GameEngine = { brand: EngineBrand; version: EngineVersion | null }
 export type GameExecutable = { path: string; engine: GameEngine | null; architecture: Architecture | null; scriptingBackend: UnityScriptingBackend | null }

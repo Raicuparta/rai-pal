@@ -514,7 +514,7 @@ pub async fn setup_database() -> Result<Pool<Sqlite>> {
 				tags TEXT,
 				release_date INTEGER,
 				installed_game TEXT,
-				extra_data TEXT,
+				provider_commands TEXT,
 				FOREIGN KEY(installed_game) REFERENCES installed_games(id),
 				PRIMARY KEY (provider_id, game_id)
 		);
@@ -566,7 +566,7 @@ async fn refresh_games(handle: AppHandle, provider_id: ProviderId) -> Result {
 				let game_clone = game.clone();
 				tauri::async_runtime::spawn_blocking(move || {
 					let game_query = sqlx::query::<Sqlite>(
-						"INSERT OR REPLACE INTO games (provider_id, game_id, external_id, display_title, normalized_titles, thumbnail_url, release_date, installed_game, tags, title_discriminator, extra_data) 
+						"INSERT OR REPLACE INTO games (provider_id, game_id, external_id, display_title, normalized_titles, thumbnail_url, release_date, installed_game, tags, title_discriminator, provider_commands) 
 						 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 					)
 					.bind(game_clone.id.provider_id)
@@ -583,12 +583,7 @@ async fn refresh_games(handle: AppHandle, provider_id: ProviderId) -> Result {
 					.bind(game_clone.installed_game.as_ref().map(|installed_game| {
 						installed_game.discriminator.clone()
 					}))
-					.bind(serde_json::to_string(&game::ExtraData {
-						provider_commands: game_clone.provider_commands,
-						installed_mod_versions: game_clone.installed_game.as_ref().map(|installed_game| {
-							installed_game.installed_mod_versions.clone()
-						}).unwrap_or_default(),
-					}).ok()); // TODO log error;
+					.bind(serde_json::to_string(&game_clone.provider_commands).ok()); // TODO log error;
 
 					let installed_game_query = game_clone.installed_game.as_ref().map(|installed_game| sqlx::query::<Sqlite>(
 						"INSERT OR REPLACE INTO installed_games (id, exe_path, engine_brand, engine_version, unity_backend) 
@@ -1002,6 +997,12 @@ async fn save_app_settings(settings: AppSettings) -> Result {
 	settings.try_write()
 }
 
+#[tauri::command]
+#[specta::specta]
+async fn get_installed_mod_versions(game_path: PathBuf) -> Result<InstalledModVersions> {
+	Ok(installed_game::get_installed_mod_versions(&paths::hash_path(&game_path)))
+}
+
 fn main() {
 	// Since I'm making all exposed functions async, panics won't crash anything important, I think.
 	// So I can just catch panics here and show a system message with the error.
@@ -1025,6 +1026,7 @@ fn main() {
 			get_app_settings,
 			get_game_ids,
 			get_game,
+			get_installed_mod_versions,
 			get_local_mods,
 			get_remote_mods,
 			install_mod,
