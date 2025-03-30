@@ -193,7 +193,7 @@ export function GameModal({ game }: Props) {
 							</CommandDropdown>
 						</>
 					)}
-					{/* <ProviderCommandButtons game={game} /> */}
+					<ProviderCommandButtons game={game} />
 					{game.providerId === "Manual" && game.exePath && (
 						<CommandButton
 							onClick={() => commands.removeGame(game.exePath)}

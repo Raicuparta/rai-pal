@@ -1,4 +1,9 @@
-import { Game, ProviderCommandAction, commands } from "@api/bindings";
+import {
+	DbGame,
+	ProviderCommand,
+	ProviderCommandAction,
+	commands,
+} from "@api/bindings";
 import { CommandButton } from "@components/command-button";
 import { useLocalization } from "@hooks/use-localization";
 import { LocalizationKey } from "@localizations/localizations";
@@ -13,8 +18,9 @@ import {
 } from "@tabler/icons-react";
 
 type Props = {
-	readonly game: Game;
+	readonly game: DbGame;
 	readonly action: ProviderCommandAction;
+	readonly command: ProviderCommand;
 };
 
 const providerCommandLocalizationKey: Record<
@@ -44,7 +50,7 @@ export function ProviderCommandButton(props: Props) {
 	return (
 		<CommandButton
 			leftSection={<IconComponent />}
-			onClick={() => commands.runProviderCommand(props.game, props.action)}
+			onClick={() => commands.runProviderCommand(props.command)}
 		>
 			{t(providerCommandLocalizationKey[props.action])}
 		</CommandButton>

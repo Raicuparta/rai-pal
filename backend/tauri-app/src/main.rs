@@ -22,6 +22,7 @@ use rai_pal_core::mod_loaders::mod_loader::{self, ModLoaderActions};
 use rai_pal_core::paths::{self, normalize_path, AsValidStr};
 use rai_pal_core::providers::provider::ProviderId;
 use rai_pal_core::providers::provider_cache;
+use rai_pal_core::providers::provider_command::ProviderCommand;
 use rai_pal_core::providers::steam::steam_provider::Steam;
 use rai_pal_core::providers::{
 	manual_provider,
@@ -513,6 +514,7 @@ pub async fn setup_database() -> Result<Pool<Sqlite>> {
 				tags TEXT,
 				release_date INTEGER,
 				installed_game TEXT,
+				provider_commands TEXT,
 				FOREIGN KEY(installed_game) REFERENCES installed_games(id),
 				PRIMARY KEY (provider_id, game_id)
 		);
@@ -564,8 +566,8 @@ async fn refresh_games(handle: AppHandle, provider_id: ProviderId) -> Result {
 				let game_clone = game.clone();
 				tauri::async_runtime::spawn_blocking(move || {
 					let game_query = sqlx::query::<Sqlite>(
-						"INSERT OR REPLACE INTO games (provider_id, game_id, external_id, display_title, normalized_titles, thumbnail_url, release_date, installed_game, tags, title_discriminator) 
-						 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+						"INSERT OR REPLACE INTO games (provider_id, game_id, external_id, display_title, normalized_titles, thumbnail_url, release_date, installed_game, tags, title_discriminator, provider_commands) 
+						 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 					)
 					.bind(game_clone.id.provider_id)
 					.bind(game_clone.id.game_id.clone())
@@ -580,7 +582,8 @@ async fn refresh_games(handle: AppHandle, provider_id: ProviderId) -> Result {
 					.bind(serde_json::to_string(&game_clone.tags).ok()) // TODO log error.
 					.bind(game_clone.installed_game.as_ref().map(|installed_game| {
 						installed_game.discriminator.clone()
-					}));
+					}))
+					.bind(serde_json::to_string(&game_clone.provider_commands).ok()); // TODO log error;
 
 					let installed_game_query = game_clone.installed_game.as_ref().map(|installed_game| sqlx::query::<Sqlite>(
 						"INSERT OR REPLACE INTO installed_games (id, exe_path, engine_brand, engine_version, unity_backend) 
@@ -708,11 +711,10 @@ async fn remove_game(path: PathBuf, handle: AppHandle) -> Result {
 #[tauri::command]
 #[specta::specta]
 async fn run_provider_command(
-	game: Game,
-	command_action: ProviderCommandAction,
+	provider_command: ProviderCommand,
 	handle: AppHandle,
 ) -> Result {
-	game.provider_commands.try_get(&command_action)?.run()?;
+	provider_command.run()?;
 
 	handle.emit_safe(events::ExecutedProviderCommand);
 

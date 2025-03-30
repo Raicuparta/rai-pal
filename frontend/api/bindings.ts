@@ -80,8 +80,8 @@ async removeGame(path: string) : Promise<null> {
 async resetSteamCache() : Promise<null> {
     return await TAURI_INVOKE("reset_steam_cache");
 },
-async runProviderCommand(game: Game, commandAction: ProviderCommandAction) : Promise<null> {
-    return await TAURI_INVOKE("run_provider_command", { game, commandAction });
+async runProviderCommand(providerCommand: ProviderCommand) : Promise<null> {
+    return await TAURI_INVOKE("run_provider_command", { providerCommand });
 },
 async runRunnableWithoutGame(modId: string) : Promise<null> {
     return await TAURI_INVOKE("run_runnable_without_game", { modId });
@@ -136,7 +136,7 @@ export type AppLocale = "EnUs" | "EsEs" | "FrFr" | "DeDe" | "PtPt" | "ZhCn" | "J
 export type AppSettings = { hideGameThumbnails: boolean; overrideLanguage: AppLocale | null; gamesQuery: GamesQuery | null; selectedTab: TabId; skipConfirmDialogs: string[]; ownedSubscriptions: GameSubscription[] }
 export type Architecture = "X64" | "X86"
 export type CommonModData = { id: string; engine: EngineBrand | null; unityBackend: UnityScriptingBackend | null; engineVersionRange: EngineVersionRange | null; loaderId: string }
-export type DbGame = { providerId: ProviderId; gameId: string; externalId: string; displayTitle: string; titleDiscriminator: string | null; normalizedTitles: JsonVec<string>; thumbnailUrl: string | null; releaseDate: bigint | null; exePath: string | null; engineBrand: EngineBrand | null; engineVersion: string | null; unityBackend: UnityScriptingBackend | null; architecture: Architecture | null; tags: JsonVec<GameTag> }
+export type DbGame = { providerId: ProviderId; gameId: string; externalId: string; displayTitle: string; titleDiscriminator: string | null; normalizedTitles: JsonData<string[]>; thumbnailUrl: string | null; releaseDate: bigint | null; exePath: string | null; engineBrand: EngineBrand | null; engineVersion: string | null; unityBackend: UnityScriptingBackend | null; architecture: Architecture | null; tags: JsonData<GameTag[]>; providerCommands: JsonData<Partial<{ [key in ProviderCommandAction]: ProviderCommand }>> }
 export type EngineBrand = "Unity" | "Unreal" | "Godot" | "GameMaker"
 export type EngineVersion = { numbers: EngineVersionNumbers; suffix: string | null; display: string }
 export type EngineVersionNumbers = { major: number; minor: number | null; patch: number | null }
@@ -145,21 +145,19 @@ export type Error = "Tauri" | "Core" | "Io" | "Sql" | "SerdeJson" | { FailedToGe
 export type ErrorRaised = string
 export type ExecutedProviderCommand = null
 export type FoundGame = GameId
-export type Game = { id: GameId; externalId: string; tags: GameTag[]; installedGame: InstalledGame | null; remoteGame: RemoteGame | null; title: GameTitle; thumbnailUrl: string | null; releaseDate: bigint | null; providerCommands: Partial<{ [key in ProviderCommandAction]: ProviderCommand }>; fromSubscriptions: GameSubscription[] }
 export type GameEngine = { brand: EngineBrand; version: EngineVersion | null }
 export type GameExecutable = { path: string; engine: GameEngine | null; architecture: Architecture | null; scriptingBackend: UnityScriptingBackend | null }
 export type GameId = { providerId: ProviderId; gameId: string }
 export type GameIdsResponse = { gameIds: GameId[]; totalCount: bigint }
 export type GameSubscription = "UbisoftClassics" | "UbisoftPremium" | "XboxGamePass" | "EaPlay"
 export type GameTag = "VR" | "Demo"
-export type GameTitle = { display: string; normalized: string[] }
 export type GamesChanged = []
 export type GamesFilter = { providers: (ProviderId | null)[]; tags: (GameTag | null)[]; architectures: (Architecture | null)[]; unityScriptingBackends: (UnityScriptingBackend | null)[]; engines: (EngineBrand | null)[]; installed: (InstallState | null)[] }
 export type GamesQuery = { filter: GamesFilter; search: string; sortBy: GamesSortBy; sortDescending: boolean }
 export type GamesSortBy = "Title" | "Engine" | "ReleaseDate"
 export type InstallState = "Installed" | "NotInstalled"
 export type InstalledGame = { id: string; executable: GameExecutable; installedModVersions: Partial<{ [key in string]: string }>; discriminator: string | null; startCommand: ProviderCommand | null }
-export type JsonVec<T> = T[]
+export type JsonData<T> = T
 export type LocalMod = { data: LocalModData; common: CommonModData }
 export type LocalModData = { path: string; manifest: Manifest | null }
 export type Manifest = { title: string | null; version: string; runnable: RunnableModData | null; engine: EngineBrand | null; engineVersionRange: EngineVersionRange | null; unityBackend: UnityScriptingBackend | null }
@@ -169,7 +167,6 @@ export type ModLoaderData = { id: string; path: string; kind: ModKind }
 export type ProviderCommand = { String: string } | { Path: [string, string[]] }
 export type ProviderCommandAction = "Install" | "ShowInLibrary" | "ShowInStore" | "Start" | "OpenInBrowser"
 export type ProviderId = "Ea" | "Epic" | "Gog" | "Itch" | "Manual" | "Steam" | "Ubisoft" | "Xbox"
-export type RemoteGame = { title: string | null; engine: GameEngine | null; ids: Partial<{ [key in ProviderId]: string[] }>; subscriptions: GameSubscription[] | null }
 export type RemoteMod = { common: CommonModData; data: RemoteModData }
 export type RemoteModData = { title: string; deprecated: boolean; author: string; sourceCode: string; description: string; latestVersion: ModDownload | null }
 export type RunnableModData = { path: string; args: string[] }
