@@ -481,7 +481,6 @@ pub async fn setup_database() -> Result<Pool<Sqlite>> {
 				game_id TEXT NOT NULL,
 				external_id TEXT NOT NULL,
 				display_title TEXT NOT NULL,
-				normalized_titles TEXT NOT NULL,
 				title_discriminator TEXT,
 				thumbnail_url TEXT,
 				tags TEXT,
@@ -494,6 +493,16 @@ pub async fn setup_database() -> Result<Pool<Sqlite>> {
 
 		CREATE INDEX IF NOT EXISTS idx_games_external_id ON games(provider_id, external_id);
 		CREATE INDEX IF NOT EXISTS idx_games_installed_game ON games(installed_game);
+
+		CREATE TABLE IF NOT EXISTS normalized_titles (
+				provider_id TEXT NOT NULL,
+				game_id TEXT NOT NULL,
+				normalized_title TEXT NOT NULL,
+				FOREIGN KEY (provider_id, game_id) REFERENCES games(provider_id, game_id) ON DELETE CASCADE,
+				PRIMARY KEY (provider_id, game_id, normalized_title)
+		);
+
+		CREATE INDEX IF NOT EXISTS idx_normalized_titles ON normalized_titles(provider_id, game_id);
 
 		CREATE TABLE IF NOT EXISTS installed_games (
 				id TEXT NOT NULL PRIMARY KEY,
@@ -539,14 +548,23 @@ async fn refresh_games(handle: AppHandle, provider_id: ProviderId) -> Result {
 				let game_clone = game.clone();
 				tauri::async_runtime::spawn_blocking(move || {
 					let game_query = sqlx::query::<Sqlite>(
-						"INSERT OR REPLACE INTO games (provider_id, game_id, external_id, display_title, normalized_titles, thumbnail_url, release_date, installed_game, tags, title_discriminator, provider_commands) 
-						 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+						"INSERT OR REPLACE INTO games (
+							provider_id,
+							game_id,
+							external_id,
+							display_title,
+							thumbnail_url,
+							release_date,
+							installed_game,
+							tags,
+							title_discriminator,
+							provider_commands
+						) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)"
 					)
 					.bind(game_clone.id.provider_id)
 					.bind(game_clone.id.game_id.clone())
 					.bind(game_clone.external_id.clone())
 					.bind(game_clone.title.display.clone())
-					.bind(serde_json::to_string(&game_clone.title.normalized).ok()) // TODO log error.
 					.bind(game_clone.thumbnail_url.clone())
 					.bind(game_clone.release_date)
 					.bind(game_clone.installed_game.as_ref().map(|installed_game| {
@@ -575,9 +593,21 @@ async fn refresh_games(handle: AppHandle, provider_id: ProviderId) -> Result {
 						if let Some(installed_game_query) = installed_game_query {
 							installed_game_query.execute(&pool).await;
 						}
+
 						if let Err(err) = pool.execute(game_query).await {
 							log::error!("Failed to execute query: {err}");
 						}
+						
+						for normalized_title in game.title.normalized {
+							sqlx::query::<Sqlite>(
+								 "INSERT OR REPLACE INTO normalized_titles (provider_id, game_id, normalized_title) 
+									VALUES (?, ?, ?)"
+							 )
+								 .bind(game.id.provider_id)
+								 .bind(game.id.game_id.clone())
+								 .bind(normalized_title.clone()).execute(&pool).await;
+						 }
+
 					});
 				});
 			}
@@ -784,7 +814,7 @@ async fn get_game_ids(
 
     // Add search filter
     if !search.trim().is_empty() {
-        filters.push("(g.display_title LIKE '%' || $1 || '%' OR g.normalized_titles LIKE '%' || $1 || '%')".to_string());
+        filters.push("(g.display_title LIKE '%' || $1 || '%' OR nt.normalized_title LIKE '%' || $1 || '%')".to_string());
     }
 
     // Combine all filters into a single WHERE clause
@@ -803,10 +833,11 @@ async fn get_game_ids(
 					g.game_id as game_id
 			FROM main.games g
 			LEFT JOIN main.installed_games ig ON g.installed_game = ig.id
+			LEFT JOIN main.normalized_titles nt ON g.provider_id = nt.provider_id AND g.game_id = nt.game_id
 			LEFT JOIN remote_games rg ON (
 					g.provider_id = rg.provider_id AND g.external_id = rg.external_id
 			) OR (
-					rg.provider_id = 'Manual' AND g.normalized_titles LIKE '%"' || rg.external_id || '"%'
+					rg.provider_id = 'Manual' AND nt.normalized_title = rg.external_id
 			)
 			WHERE {where_clause}
 			ORDER BY {}
@@ -856,10 +887,11 @@ async fn get_game(id: GameId, handle: AppHandle) -> Result<DbGame> {
 			COALESCE(rg.engine_version, ig.engine_version) AS engine_version
 		FROM main.games g
 		LEFT JOIN main.installed_games ig ON g.installed_game = ig.id
+		LEFT JOIN main.normalized_titles nt ON g.provider_id = nt.provider_id AND g.game_id = nt.game_id
 		LEFT JOIN remote_games rg ON (
 				g.provider_id = rg.provider_id AND g.external_id = rg.external_id
 		) OR (
-				rg.provider_id = 'Manual' AND g.normalized_titles LIKE '%"' || rg.external_id || '"%'
+				rg.provider_id = 'Manual' AND nt.normalized_title = rg.external_id
 		)
 		WHERE g.provider_id = $1 AND g.game_id = $2
 		LIMIT 1

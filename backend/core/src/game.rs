@@ -46,7 +46,6 @@ pub struct DbGame {
 	pub external_id: String,
 	pub display_title: String,
 	pub title_discriminator: Option<String>,
-	pub normalized_titles: JsonData<Vec<String>>,
 	pub thumbnail_url: Option<String>,
 	pub release_date: Option<i64>,
 	pub exe_path: Option<String>, // TODO convert to Path and back
