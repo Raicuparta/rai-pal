@@ -31,22 +31,31 @@ export function FilterSelect<TFilterKey extends FilterKey>({
 	const tProperty = useLocalization("filterProperty");
 	const tValue = useLocalization("filterValue");
 	const tValueNote = useLocalization("filterValueNote");
+	const emptyLocalizationKey = filterDetails[id].emptyLocalizationKey;
+	const possibleValuesWithNull = [
+		...(emptyLocalizationKey ? [null] : []),
+		...possibleValues,
+	];
 
 	function handleFilterClick(id: TFilterKey, value: string | null) {
-		console.log("wtf");
-		const newValues = [...currentValues];
+		let newValues = [
+			...(currentValues.length == 0 ? possibleValuesWithNull : currentValues),
+		];
 		const index = newValues.indexOf(value as FilterValue<TFilterKey>);
 		if (index === -1) {
 			newValues.push(value as FilterValue<TFilterKey>);
 		} else {
 			newValues.splice(index, 1);
 		}
+		if (newValues.length == possibleValuesWithNull.length) {
+			newValues = [];
+		}
 
 		onChange(id, newValues);
 	}
 
 	function handleResetClick() {
-		onChange(id, possibleValues);
+		onChange(id, []);
 	}
 
 	return (
@@ -59,25 +68,31 @@ export function FilterSelect<TFilterKey extends FilterKey>({
 				<Button.Group orientation="vertical">
 					{possibleValues.map((possibleValue) => {
 						const valueDetails = filterDetails[id].valueDetails[possibleValue];
+
 						return (
 							<CheckboxButton
 								key={possibleValue}
 								tooltip={tValueNote(valueDetails?.noteLocalizationKey)}
-								checked={currentValues.includes(possibleValue)}
+								checked={
+									currentValues.length == 0 ||
+									currentValues.includes(possibleValue)
+								}
 								onChange={() => handleFilterClick(id, possibleValue)}
 							>
-								{(valueDetails?.staticDisplayText ??
+								{valueDetails?.staticDisplayText ??
 									tValue(valueDetails?.localizationKey) ??
-									possibleValue)}
+									possibleValue}
 							</CheckboxButton>
 						);
 					})}
-					{filterDetails[id].emptyLocalizationKey && (
+					{emptyLocalizationKey && (
 						<CheckboxButton
-							checked={currentValues.includes(null)}
+							checked={
+								currentValues.length == 0 || currentValues.includes(null)
+							}
 							onChange={() => handleFilterClick(id, null)}
 						>
-							{tValue(filterDetails[id].emptyLocalizationKey)}
+							{tValue(emptyLocalizationKey)}
 						</CheckboxButton>
 					)}
 				</Button.Group>
@@ -85,7 +100,7 @@ export function FilterSelect<TFilterKey extends FilterKey>({
 			<Button
 				onClick={handleResetClick}
 				leftSection={<IconRestore fontSize={10} />}
-				disabled={(currentValues?.length || 0) === possibleValues.length}
+				disabled={currentValues.length == 0}
 			>
 				{tMenu("resetButton")}
 			</Button>
