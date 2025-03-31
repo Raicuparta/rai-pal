@@ -178,9 +178,9 @@ impl SteamAppInfoReader {
 
 			if app_type_option
 				.clone()
-				.is_some_and(|app_type| app_type == "Tool")
+				.is_some_and(|app_type| app_type != "Game")
 			{
-				// We don't care about tools like dedicated server, sdk, etc.
+				// We don't care about things like dedicated server, sdk, videos, dlcs, etc.
 				continue;
 			}
 
