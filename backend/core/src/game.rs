@@ -6,7 +6,7 @@ use std::{
 
 use rai_pal_proc_macros::serializable_struct;
 use sqlx::{
-	Database, Executor, Sqlite,
+	Database, Sqlite,
 	encode::IsNull,
 	sqlite::{SqliteTypeInfo, SqliteValueRef},
 };
@@ -207,7 +207,9 @@ pub trait InsertGame {
 
 impl InsertGame for sqlx::Pool<Sqlite> {
 	async fn insert_game(&self, game: &DbGame) -> Result {
-		let game_query = sqlx::query::<Sqlite>(
+		let mut transaction = self.begin().await?;
+
+		sqlx::query::<Sqlite>(
 			"INSERT OR REPLACE INTO games (
 					provider_id,
 					game_id,
@@ -228,27 +230,23 @@ impl InsertGame for sqlx::Pool<Sqlite> {
 		.bind(game.release_date)
 		.bind(game.tags.clone())
 		.bind(game.title_discriminator.clone())
-		.bind(game.provider_commands.clone());
+		.bind(game.provider_commands.clone())
+		.execute(&mut *transaction)
+		.await?;
 
-		let installed_game_query = game.exe_path.as_ref().map(|exe_path| sqlx::query::<Sqlite>(
-				"INSERT OR REPLACE INTO installed_games (provider_id, game_id, exe_path, engine_brand, engine_version, unity_backend, architecture)
-				 VALUES ($1, $2, $3, $4, $5, $6, $7)"
-			)
-				.bind(game.provider_id)
-				.bind(game.game_id.clone())
-				.bind(exe_path)
-				.bind(game.engine_brand)
-				.bind(game.engine_version.clone())
-				.bind(game.unity_backend.clone())
-				.bind(game.architecture.clone())
-			);
-
-		// TODO transaction
-
-		self.execute(game_query).await?;
-
-		if let Some(installed_game_query) = installed_game_query {
-			self.execute(installed_game_query).await?;
+		if let Some(exe_path) = game.exe_path.as_ref() {
+			sqlx::query::<Sqlite>(
+					"INSERT OR REPLACE INTO installed_games (provider_id, game_id, exe_path, engine_brand, engine_version, unity_backend, architecture)
+					 VALUES ($1, $2, $3, $4, $5, $6, $7)"
+				)
+					.bind(game.provider_id)
+					.bind(game.game_id.clone())
+					.bind(exe_path)
+					.bind(game.engine_brand)
+					.bind(game.engine_version.clone())
+					.bind(game.unity_backend.clone())
+					.bind(game.architecture.clone()
+				).execute(&mut *transaction).await?;
 		}
 
 		for normalized_title in get_normalized_titles(&game.display_title) {
@@ -259,9 +257,11 @@ impl InsertGame for sqlx::Pool<Sqlite> {
 			.bind(game.provider_id)
 			.bind(game.game_id.clone())
 			.bind(normalized_title.clone())
-			.execute(self)
+			.execute(&mut *transaction)
 			.await?;
 		}
+
+		transaction.commit().await?; // TODO roll back if needed
 
 		Ok(())
 	}
