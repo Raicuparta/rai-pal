@@ -5,7 +5,6 @@ pub mod heroic_gog_provider;
 pub mod itch_provider;
 pub mod manual_provider;
 pub mod provider;
-pub mod provider_cache;
 pub mod provider_command;
 pub mod steam;
 pub mod ubisoft_provider;

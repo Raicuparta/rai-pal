@@ -14,7 +14,7 @@ use crate::providers::heroic_gog_provider::HeroicGog;
 #[cfg(target_os = "windows")]
 use crate::providers::{epic_provider::Epic, gog_provider::Gog, xbox_provider::Xbox};
 use crate::{
-	game::Game,
+	game::DbGame,
 	paths,
 	providers::{
 		itch_provider::Itch, manual_provider::Manual, steam::steam_provider::Steam,
@@ -79,7 +79,7 @@ const PROVIDERS: &Map = &[
 pub trait ProviderActions {
 	async fn get_games<TCallback>(&self, callback: TCallback) -> Result
 	where
-		TCallback: FnMut(Game) + Send + Sync;
+		TCallback: FnMut(DbGame) + Send + Sync;
 }
 
 const fn create_map_entry<TProvider: ProviderActions + ProviderStatic>()

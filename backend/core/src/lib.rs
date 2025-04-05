@@ -21,7 +21,6 @@ pub mod providers;
 pub mod remote_game;
 pub mod remote_mod;
 pub mod result;
-pub mod string_includes;
 pub mod windows;
 
 #[cfg(test)]

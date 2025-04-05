@@ -33,7 +33,7 @@ impl GameTitle {
 // So we need to normalize the titles.
 // Some ways of normalizing the titles work for some games/providers, some work for others.
 // So we have a list of different normalization methods, so we can try each one later.
-fn get_normalized_titles(title: &str) -> Vec<String> {
+pub fn get_normalized_titles(title: &str) -> Vec<String> {
 	// Order is important here. First items will be attempted first.
 	let mut normalized_titles = vec![
 		normalize_title(title),

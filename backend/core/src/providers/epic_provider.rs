@@ -17,7 +17,7 @@ use super::{
 	provider_command::{ProviderCommand, ProviderCommandAction},
 };
 use crate::{
-	game::{Game, GameId},
+	game::{DbGame, GameId},
 	installed_game::InstalledGame,
 	paths::glob_path,
 	providers::provider::{ProviderActions, ProviderStatic},
@@ -72,7 +72,7 @@ pub struct EpicCatalogItem {
 pub struct Epic {}
 
 impl Epic {
-	fn get_game(catalog_item: &EpicCatalogItem) -> Option<Game> {
+	fn get_game(catalog_item: &EpicCatalogItem) -> Option<DbGame> {
 		if catalog_item
 			.categories
 			.iter()
@@ -81,45 +81,47 @@ impl Epic {
 			return None;
 		}
 
-		let mut game = Game::new(
-			GameId {
-				game_id: catalog_item.id.clone(),
-				provider_id: *Self::ID,
-			},
-			&catalog_item.title,
-		);
+		return None;
 
-		game.add_provider_command(
-			ProviderCommandAction::Install,
-			ProviderCommand::String(format!(
-				"com.epicgames.launcher://apps/{}%3A{}%3A{}?action=install",
-				catalog_item.namespace,
-				catalog_item.id,
-				catalog_item
-					.release_info
-					.first()
-					.map(|release_info| release_info.app_id.clone())
-					.unwrap_or_default(),
-			)),
-		)
-		.add_provider_command(
-			ProviderCommandAction::OpenInBrowser,
-			ProviderCommand::String(format!(
-				"https://store.epicgames.com/browse?{}",
-				serde_urlencoded::to_string([("sortBy", "relevancy"), ("q", &catalog_item.title)])
-					.ok()?,
-			)),
-		);
+		// 	let mut game = Game::new(
+		// 		GameId {
+		// 			game_id: catalog_item.id.clone(),
+		// 			provider_id: *Self::ID,
+		// 		},
+		// 		&catalog_item.title,
+		// 	);
 
-		if let Some(thumbnail_url) = catalog_item.get_thumbnail_url() {
-			game.set_thumbnail_url(&thumbnail_url);
-		}
+		// 	game.add_provider_command(
+		// 		ProviderCommandAction::Install,
+		// 		ProviderCommand::String(format!(
+		// 			"com.epicgames.launcher://apps/{}%3A{}%3A{}?action=install",
+		// 			catalog_item.namespace,
+		// 			catalog_item.id,
+		// 			catalog_item
+		// 				.release_info
+		// 				.first()
+		// 				.map(|release_info| release_info.app_id.clone())
+		// 				.unwrap_or_default(),
+		// 		)),
+		// 	)
+		// 	.add_provider_command(
+		// 		ProviderCommandAction::OpenInBrowser,
+		// 		ProviderCommand::String(format!(
+		// 			"https://store.epicgames.com/browse?{}",
+		// 			serde_urlencoded::to_string([("sortBy", "relevancy"), ("q", &catalog_item.title)])
+		// 				.ok()?,
+		// 		)),
+		// 	);
 
-		if let Some(release_date) = catalog_item.get_release_date() {
-			game.set_release_date(release_date);
-		}
+		// 	if let Some(thumbnail_url) = catalog_item.get_thumbnail_url() {
+		// 		game.set_thumbnail_url(&thumbnail_url);
+		// 	}
 
-		Some(game)
+		// 	if let Some(release_date) = catalog_item.get_release_date() {
+		// 		game.set_release_date(release_date);
+		// 	}
+
+		// 	Some(game)
 	}
 }
 
@@ -162,84 +164,84 @@ impl EpicCatalogItem {
 impl ProviderActions for Epic {
 	async fn get_games<TCallback>(&self, mut callback: TCallback) -> Result
 	where
-		TCallback: FnMut(Game) + Send + Sync,
+		TCallback: FnMut(DbGame) + Send + Sync,
 	{
-		let app_data_path = RegKey::predef(HKEY_LOCAL_MACHINE)
-			.open_subkey(r"SOFTWARE\WOW6432Node\Epic Games\EpicGamesLauncher")
-			.and_then(|launcher_reg| launcher_reg.get_value::<String, _>("AppDataPath"))
-			.map(PathBuf::from)?;
+		// let app_data_path = RegKey::predef(HKEY_LOCAL_MACHINE)
+		// 	.open_subkey(r"SOFTWARE\WOW6432Node\Epic Games\EpicGamesLauncher")
+		// 	.and_then(|launcher_reg| launcher_reg.get_value::<String, _>("AppDataPath"))
+		// 	.map(PathBuf::from)?;
 
-		let mut installed_games: HashMap<String, InstalledGame> = HashMap::new();
+		// let mut installed_games: HashMap<String, InstalledGame> = HashMap::new();
 
-		let manifests_path = app_data_path.join("Manifests");
-		if manifests_path.is_dir() {
-			let manifest_paths = glob_path(&manifests_path.join("*.item"));
-			for manifest_path in manifest_paths {
-				match read_manifest(&manifest_path) {
-					Ok(manifest) => {
-						let path = PathBuf::from(manifest.install_location)
-							.join(manifest.launch_executable);
+		// let manifests_path = app_data_path.join("Manifests");
+		// if manifests_path.is_dir() {
+		// 	let manifest_paths = glob_path(&manifests_path.join("*.item"));
+		// 	for manifest_path in manifest_paths {
+		// 		match read_manifest(&manifest_path) {
+		// 			Ok(manifest) => {
+		// 				let path = PathBuf::from(manifest.install_location)
+		// 					.join(manifest.launch_executable);
 
-						if let Some(mut installed_game) = InstalledGame::new(&path) {
-							installed_game.set_start_command_string(&format!(
-								"com.epicgames.launcher://apps/{}?action=launch&silent=true",
-								manifest.app_name
-							));
-							installed_games
-								.insert(manifest.catalog_item_id.clone(), installed_game);
-						}
-					}
-					Err(err) => {
-						error!("Failed to parse epic manifest: {err}");
-					}
-				}
-			}
-		} else {
-			log::info!(
-				"Epic Games Launcher manifests folder not found. Probably means Epic Games Launcher isn't installed, or maybe user hasn't installed any games dunno."
-			);
-		}
+		// 				if let Some(mut installed_game) = InstalledGame::new(&path) {
+		// 					installed_game.set_start_command_string(&format!(
+		// 						"com.epicgames.launcher://apps/{}?action=launch&silent=true",
+		// 						manifest.app_name
+		// 					));
+		// 					installed_games
+		// 						.insert(manifest.catalog_item_id.clone(), installed_game);
+		// 				}
+		// 			}
+		// 			Err(err) => {
+		// 				error!("Failed to parse epic manifest: {err}");
+		// 			}
+		// 		}
+		// 	}
+		// } else {
+		// 	log::info!(
+		// 		"Epic Games Launcher manifests folder not found. Probably means Epic Games Launcher isn't installed, or maybe user hasn't installed any games dunno."
+		// 	);
+		// }
 
-		let catalog_path = app_data_path.join("Catalog").join("catcache.bin");
-		if catalog_path.is_file() {
-			let mut catalog_cache_file = File::open(catalog_path)?;
-			let mut decoder = base64::read::DecoderReader::new(
-				&mut catalog_cache_file,
-				&general_purpose::STANDARD,
-			);
-			let mut json = String::default();
-			decoder.read_to_string(&mut json)?;
+		// let catalog_path = app_data_path.join("Catalog").join("catcache.bin");
+		// if catalog_path.is_file() {
+		// 	let mut catalog_cache_file = File::open(catalog_path)?;
+		// 	let mut decoder = base64::read::DecoderReader::new(
+		// 		&mut catalog_cache_file,
+		// 		&general_purpose::STANDARD,
+		// 	);
+		// 	let mut json = String::default();
+		// 	decoder.read_to_string(&mut json)?;
 
-			let catalog = serde_json::from_str::<Vec<EpicCatalogItem>>(&json)?;
-			for catalog_item in catalog {
-				if let Some(mut game) = Self::get_game(&catalog_item) {
-					if let Some(installed_game) = installed_games.remove(&game.external_id) {
-						if let Some(start_command) = &installed_game.start_command {
-							game.add_provider_command(
-								ProviderCommandAction::StartViaProvider,
-								start_command.clone(),
-							);
-						}
+		// 	let catalog = serde_json::from_str::<Vec<EpicCatalogItem>>(&json)?;
+		// 	for catalog_item in catalog {
+		// 		if let Some(mut game) = Self::get_game(&catalog_item) {
+		// 			if let Some(installed_game) = installed_games.remove(&game.external_id) {
+		// 				if let Some(start_command) = &installed_game.start_command {
+		// 					game.add_provider_command(
+		// 						ProviderCommandAction::StartViaProvider,
+		// 						start_command.clone(),
+		// 					);
+		// 				}
 
-						game.add_provider_command(
-							ProviderCommandAction::StartViaExe,
-							ProviderCommand::Path(
-								installed_game.executable.path.clone(),
-								Vec::default(),
-							),
-						);
+		// 				game.add_provider_command(
+		// 					ProviderCommandAction::StartViaExe,
+		// 					ProviderCommand::Path(
+		// 						installed_game.executable.path.clone(),
+		// 						Vec::default(),
+		// 					),
+		// 				);
 
-						game.installed_game = Some(installed_game);
-					}
+		// 				game.installed_game = Some(installed_game);
+		// 			}
 
-					callback(game);
-				}
-			}
-		} else {
-			log::info!(
-				"Epic Games Launcher catalog cache file not found. Probably means user hasn't installed Epic Games Launcher, or the cache file hasn't been created yet."
-			);
-		}
+		// 			callback(game);
+		// 		}
+		// 	}
+		// } else {
+		// 	log::info!(
+		// 		"Epic Games Launcher catalog cache file not found. Probably means user hasn't installed Epic Games Launcher, or the cache file hasn't been created yet."
+		// 	);
+		// }
 
 		Ok(())
 	}

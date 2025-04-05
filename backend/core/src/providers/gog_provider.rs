@@ -10,7 +10,7 @@ use winreg::{RegKey, enums::HKEY_LOCAL_MACHINE};
 
 use super::provider_command::{ProviderCommand, ProviderCommandAction};
 use crate::{
-	game::{Game, GameId},
+	game::{DbGame, GameId},
 	installed_game::InstalledGame,
 	paths,
 	providers::provider::{ProviderActions, ProviderId, ProviderStatic},
@@ -45,37 +45,37 @@ impl Gog {
 		Some(game)
 	}
 
-	fn get_game(db_entry: &GogDbEntry, launcher_path: &Path) -> Game {
-		let mut game = Game::new(
-			GameId {
-				game_id: db_entry.id.clone(),
-				provider_id: *Self::ID,
-			},
-			&db_entry.title,
-		);
+	// fn get_game(db_entry: &GogDbEntry, launcher_path: &Path) -> DbGame {
+	// 	let mut game = Game::new(
+	// 		GameId {
+	// 			game_id: db_entry.id.clone(),
+	// 			provider_id: *Self::ID,
+	// 		},
+	// 		&db_entry.title,
+	// 	);
 
-		game.add_provider_command(
-			ProviderCommandAction::ShowInLibrary,
-			ProviderCommand::Path(
-				launcher_path.to_owned(),
-				[
-					"/command=launch".to_string(),
-					format!("/gameId={}", db_entry.id),
-				]
-				.to_vec(),
-			),
-		);
+	// 	game.add_provider_command(
+	// 		ProviderCommandAction::ShowInLibrary,
+	// 		ProviderCommand::Path(
+	// 			launcher_path.to_owned(),
+	// 			[
+	// 				"/command=launch".to_string(),
+	// 				format!("/gameId={}", db_entry.id),
+	// 			]
+	// 			.to_vec(),
+	// 		),
+	// 	);
 
-		if let Some(thumbnail_url) = db_entry.image_url.clone() {
-			game.set_thumbnail_url(&thumbnail_url);
-		}
+	// 	if let Some(thumbnail_url) = db_entry.image_url.clone() {
+	// 		game.set_thumbnail_url(&thumbnail_url);
+	// 	}
 
-		if let Some(release_date) = db_entry.release_date {
-			game.set_release_date(release_date.into());
-		}
+	// 	if let Some(release_date) = db_entry.release_date {
+	// 		game.set_release_date(release_date.into());
+	// 	}
 
-		game
-	}
+	// 	game
+	// }
 }
 
 impl ProviderStatic for Gog {
@@ -92,39 +92,39 @@ impl ProviderStatic for Gog {
 impl ProviderActions for Gog {
 	async fn get_games<TCallback>(&self, mut callback: TCallback) -> Result
 	where
-		TCallback: FnMut(Game) + Send + Sync,
+		TCallback: FnMut(DbGame) + Send + Sync,
 	{
-		if let Some(database) = get_database().await? {
-			let launcher_path = get_launcher_path()?;
+		// if let Some(database) = get_database().await? {
+		// 	let launcher_path = get_launcher_path()?;
 
-			for db_entry in database {
-				let mut game = Self::get_game(&db_entry, &launcher_path);
-				if let Some(installed_game) = Self::get_installed_game(&db_entry, &launcher_path) {
-					if let Some(start_command) = &installed_game.start_command {
-						game.add_provider_command(
-							ProviderCommandAction::StartViaProvider,
-							start_command.clone(),
-						);
-					}
+		// 	for db_entry in database {
+		// 		let mut game = Self::get_game(&db_entry, &launcher_path);
+		// 		if let Some(installed_game) = Self::get_installed_game(&db_entry, &launcher_path) {
+		// 			if let Some(start_command) = &installed_game.start_command {
+		// 				game.add_provider_command(
+		// 					ProviderCommandAction::StartViaProvider,
+		// 					start_command.clone(),
+		// 				);
+		// 			}
 
-					game.add_provider_command(
-						ProviderCommandAction::StartViaExe,
-						ProviderCommand::Path(
-							installed_game.executable.path.clone(),
-							Vec::default(),
-						),
-					);
+		// 			game.add_provider_command(
+		// 				ProviderCommandAction::StartViaExe,
+		// 				ProviderCommand::Path(
+		// 					installed_game.executable.path.clone(),
+		// 					Vec::default(),
+		// 				),
+		// 			);
 
-					game.installed_game = Some(installed_game);
-				}
+		// 			game.installed_game = Some(installed_game);
+		// 		}
 
-				callback(game);
-			}
-		} else {
-			log::info!(
-				"GOG database file not found. Probably means user hasn't installed GOG Galaxy."
-			);
-		}
+		// 		callback(game);
+		// 	}
+		// } else {
+		// 	log::info!(
+		// 		"GOG database file not found. Probably means user hasn't installed GOG Galaxy."
+		// 	);
+		// }
 
 		Ok(())
 	}

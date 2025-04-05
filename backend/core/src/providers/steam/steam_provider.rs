@@ -7,9 +7,9 @@ use std::{
 use steamlocate::SteamDir;
 
 use crate::{
-	game::{Game, GameId},
+	game::DbGame,
 	game_tag::GameTag,
-	installed_game::{self, InstalledGame},
+	installed_game::InstalledGame,
 	providers::{
 		provider::{ProviderActions, ProviderId, ProviderStatic},
 		provider_command::{ProviderCommand, ProviderCommandAction},
@@ -59,7 +59,7 @@ impl Steam {
 
 				let app_name = app_info.name.clone();
 
-				if let Some(mut game) = installed_game::InstalledGame::new(full_path) {
+				if let Some(mut game) = InstalledGame::new(full_path) {
 					let discriminator_option =
 						if used_names.contains(&app_name) {
 							Some(launch_option.description.as_ref().map_or_else(
@@ -129,7 +129,7 @@ impl Steam {
 impl ProviderActions for Steam {
 	async fn get_games<TCallback>(&self, mut callback: TCallback) -> Result
 	where
-		TCallback: FnMut(Game) + Send + Sync,
+		TCallback: FnMut(DbGame) + Send + Sync,
 	{
 		let steam_dir = SteamDir::locate()?;
 		let steam_path = steam_dir.path();
@@ -165,18 +165,14 @@ impl ProviderActions for Steam {
 						.map(|app_path| Self::get_installed_games(&app_info, app_path))
 						.unwrap_or_default();
 
-					let mut game = Game::new(
-						GameId {
-							game_id: external_id.clone(),
-							provider_id: *Self::ID,
-						},
-						&app_info.name,
-					);
+					let mut game =
+						DbGame::new(*Self::ID, external_id.clone(), app_info.name.clone());
 
-					game.set_thumbnail_url(&format!(
+					game.thumbnail_url = Some(format!(
 						"https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/{external_id}/header.jpg"
-					))
-					.add_provider_command(
+					));
+
+					game.add_provider_command(
 						ProviderCommandAction::ShowInLibrary,
 						ProviderCommand::String(format!("steam://nav/games/details/{external_id}")),
 					)
@@ -207,7 +203,7 @@ impl ProviderActions for Steam {
 						.original_release_date
 						.or(app_info.steam_release_date)
 					{
-						game.set_release_date(release_date.into());
+						game.release_date = Some(release_date.into());
 					}
 
 					if let Some(app_type) = &app_info.app_type {
@@ -237,14 +233,21 @@ impl ProviderActions for Steam {
 								),
 							);
 
-							game_with_installed.id = GameId {
-								game_id: format!(
-									"{}_{}",
-									&game_with_installed.external_id, &installed_game.id
-								),
-								provider_id: *Self::ID,
-							};
-							game_with_installed.installed_game = Some(installed_game);
+							game_with_installed.game_id = format!(
+								"{}_{}",
+								&game_with_installed.external_id, &installed_game.id
+							);
+
+							game_with_installed.exe_path =
+								Some(installed_game.executable.path.display().to_string()); // TODO aaaa paths
+							if let Some(engine) = installed_game.executable.engine {
+								game_with_installed.engine_brand = Some(engine.brand);
+								if let Some(engine_version) = engine.version {
+									game_with_installed.engine_version =
+										Some(engine_version.display);
+								}
+							}
+
 							callback(game_with_installed);
 						}
 					}

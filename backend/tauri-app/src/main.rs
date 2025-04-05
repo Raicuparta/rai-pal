@@ -11,17 +11,17 @@ use crate::result::{Error, Result};
 use app_settings::AppSettings;
 use app_state::{AppState, StateData, StatefulHandle};
 use events::EventEmitter;
-use rai_pal_core::game::{self, DbGame, Game, GameId};
+use rai_pal_core::game::{self, DbGame, GameId};
 use rai_pal_core::game_engines::game_engine::{EngineVersion, EngineVersionNumbers, GameEngine};
 use rai_pal_core::game_executable::GameExecutable;
+use rai_pal_core::game_title::get_normalized_titles;
 use rai_pal_core::games_query::{GamesQuery, GamesSortBy, InstallState};
-use rai_pal_core::installed_game::{self, InstalledGame, InstalledModVersions};
+use rai_pal_core::installed_game::InstalledModVersions;
 use rai_pal_core::local_mod::{self, LocalMod};
 use rai_pal_core::maps::TryGettable;
 use rai_pal_core::mod_loaders::mod_loader::{self, ModLoaderActions};
 use rai_pal_core::paths::{self, normalize_path, AsValidStr};
 use rai_pal_core::providers::provider::ProviderId;
-use rai_pal_core::providers::provider_cache;
 use rai_pal_core::providers::provider_command::ProviderCommand;
 use rai_pal_core::providers::steam::steam_provider::Steam;
 use rai_pal_core::providers::{
@@ -145,22 +145,6 @@ async fn delete_mod(mod_id: &str, handle: AppHandle) -> Result {
 	refresh_local_mods(&mod_loaders, &handle)?;
 
 	Ok(())
-}
-
-#[tauri::command]
-#[specta::specta]
-async fn start_game(installed_game: InstalledGame, handle: AppHandle) -> Result {
-	installed_game.start()?;
-
-	handle.emit_safe(events::ExecutedProviderCommand);
-
-	Ok(())
-}
-
-#[tauri::command]
-#[specta::specta]
-async fn start_game_exe(installed_game: InstalledGame) -> Result {
-	Ok(installed_game.start_exe()?)
 }
 
 fn refresh_game_mods(game_id: &GameId, handle: &AppHandle) -> Result {
@@ -485,14 +469,11 @@ pub async fn setup_database() -> Result<Pool<Sqlite>> {
 				thumbnail_url TEXT,
 				tags TEXT,
 				release_date INTEGER,
-				installed_game TEXT,
 				provider_commands TEXT,
-				FOREIGN KEY(installed_game) REFERENCES installed_games(id),
 				PRIMARY KEY (provider_id, game_id)
 		);
 
 		CREATE INDEX IF NOT EXISTS idx_games_external_id ON games(provider_id, external_id);
-		CREATE INDEX IF NOT EXISTS idx_games_installed_game ON games(installed_game);
 
 		CREATE TABLE IF NOT EXISTS normalized_titles (
 				provider_id TEXT NOT NULL,
@@ -505,12 +486,15 @@ pub async fn setup_database() -> Result<Pool<Sqlite>> {
 		CREATE INDEX IF NOT EXISTS idx_normalized_titles ON normalized_titles(provider_id, game_id);
 
 		CREATE TABLE IF NOT EXISTS installed_games (
-				id TEXT NOT NULL PRIMARY KEY,
+				provider_id TEXT NOT NULL,
+				game_id TEXT NOT NULL,
 				exe_path TEXT NOT NULL,
 				engine_brand TEXT,
 				engine_version TEXT,
 				unity_backend TEXT,
-				architecture TEXT
+				architecture TEXT,
+				FOREIGN KEY(provider_id, game_id) REFERENCES games(provider_id, game_id),
+				PRIMARY KEY (provider_id, game_id)
 		);
 
 		CREATE TABLE IF NOT EXISTS remote_games (
@@ -537,10 +521,8 @@ async fn refresh_games(handle: AppHandle, provider_id: ProviderId) -> Result {
 
 	let provider = provider::get_provider(provider_id)?;
 
-	let mut fresh_games = game::Map::default();
-
 	provider
-		.get_games(|mut game: Game| {
+		.get_games(|mut game: DbGame| {
 			
 		match state.database_pool.read_state() {
 			Ok(pool) => {
@@ -555,56 +537,53 @@ async fn refresh_games(handle: AppHandle, provider_id: ProviderId) -> Result {
 							display_title,
 							thumbnail_url,
 							release_date,
-							installed_game,
 							tags,
 							title_discriminator,
 							provider_commands
-						) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)"
+						) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)"
 					)
-					.bind(game_clone.id.provider_id)
-					.bind(game_clone.id.game_id.clone())
+					.bind(game_clone.provider_id)
+					.bind(game_clone.game_id.clone())
 					.bind(game_clone.external_id.clone())
-					.bind(game_clone.title.display.clone())
+					.bind(game_clone.display_title.clone())
 					.bind(game_clone.thumbnail_url.clone())
 					.bind(game_clone.release_date)
-					.bind(game_clone.installed_game.as_ref().map(|installed_game| {
-						installed_game.id.clone()
-					}))
-					.bind(serde_json::to_string(&game_clone.tags).ok()) // TODO log error.
-					.bind(game_clone.installed_game.as_ref().map(|installed_game| {
-						installed_game.discriminator.clone()
-					}))
-					.bind(serde_json::to_string(&game_clone.provider_commands).ok()); // TODO log error;
+					.bind(game_clone.tags.clone())
+					.bind(game_clone.title_discriminator.clone())
+					.bind(game_clone.provider_commands.clone());
 
-					let installed_game_query = game_clone.installed_game.as_ref().map(|installed_game| sqlx::query::<Sqlite>(
-						"INSERT OR REPLACE INTO installed_games (id, exe_path, engine_brand, engine_version, unity_backend) 
-						 VALUES (?, ?, ?, ?, ?)"
+					let installed_game_query = game_clone.exe_path.as_ref().map(|exe_path| sqlx::query::<Sqlite>(
+						"INSERT OR REPLACE INTO installed_games (provider_id, game_id, exe_path, engine_brand, engine_version, unity_backend, architecture) 
+						 VALUES ($1, $2, $3, $4, $5, $6)"
 					)
-						.bind(installed_game.id.clone())
-						.bind(installed_game.executable.path.display().to_string()) // TODO lossy path guy.
-						// .bind(installed_game.executable.name.clone())
-						.bind(installed_game.executable.engine.as_ref().map(|engine| engine.brand))
-						.bind(installed_game.executable.engine.as_ref().map(|engine| engine.version.as_ref().map(|version| version.display.clone()))) // TODO lossy version.
-						.bind(installed_game.executable.scripting_backend.as_ref().map(|unity_backend| unity_backend.to_string()))
+						.bind(game_clone.provider_id)
+						.bind(game_clone.game_id.clone())
+						.bind(exe_path)
+						.bind(game_clone.engine_brand)
+						.bind(game_clone.engine_version)
+						.bind(game_clone.unity_backend)
+						.bind(game_clone.architecture)
 					);
 
 					tauri::async_runtime::block_on(async {
 						// TODO transaction
-						if let Some(installed_game_query) = installed_game_query {
-							installed_game_query.execute(&pool).await;
-						}
+
 
 						if let Err(err) = pool.execute(game_query).await {
 							log::error!("Failed to execute query: {err}");
 						}
+
+						if let Some(installed_game_query) = installed_game_query {
+							installed_game_query.execute(&pool).await;
+						}
 						
-						for normalized_title in game.title.normalized {
+						for normalized_title in get_normalized_titles(&game.display_title) {
 							sqlx::query::<Sqlite>(
 								 "INSERT OR REPLACE INTO normalized_titles (provider_id, game_id, normalized_title) 
-									VALUES (?, ?, ?)"
+									VALUES ($1, $2, $3)"
 							 )
-								 .bind(game.id.provider_id)
-								 .bind(game.id.game_id.clone())
+								 .bind(game.provider_id)
+								 .bind(game.game_id.clone())
 								 .bind(normalized_title.clone()).execute(&pool).await;
 						 }
 
@@ -626,8 +605,6 @@ async fn refresh_games(handle: AppHandle, provider_id: ProviderId) -> Result {
 		});
 
 		// TODO get rid of stale games after everything is done.
-
-	provider_cache::write(provider_id, &fresh_games);
 
 	Ok(())
 }
@@ -741,9 +718,9 @@ async fn get_game_ids(
     if let Some(filter) = query.as_ref().map(|q| &q.filter) {
         // Installed filter
         if filter.installed.contains(&Some(InstallState::Installed)) {
-            filters.push("g.installed_game IS NOT NULL".to_string());
+            filters.push("ig.exe_path IS NOT NULL".to_string());
         } else if filter.installed.contains(&Some(InstallState::NotInstalled)) {
-            filters.push("g.installed_game IS NULL".to_string());
+            filters.push("ig.exe_path IS NULL".to_string());
         }
 
         if !filter.providers.is_empty() {
@@ -832,7 +809,7 @@ async fn get_game_ids(
 					g.provider_id as provider_id,
 					g.game_id as game_id
 			FROM main.games g
-			LEFT JOIN main.installed_games ig ON g.installed_game = ig.id
+			LEFT JOIN main.installed_games ig ON g.provider_id = ig.provider_id AND g.game_id = ig.game_id
 			LEFT JOIN main.normalized_titles nt ON g.provider_id = nt.provider_id AND g.game_id = nt.game_id
 			LEFT JOIN remote_games rg ON (
 					g.provider_id = rg.provider_id AND g.external_id = rg.external_id
@@ -881,12 +858,22 @@ async fn get_game(id: GameId, handle: AppHandle) -> Result<DbGame> {
 	// TODO take into account all normalized titles
 	let db_game: DbGame = sqlx::query_as(r#"
 		SELECT
-			g.*,
-			ig.*,
+			g.provider_id,
+			g.game_id,
+			g.external_id,
+			g.display_title,
+			g.title_discriminator,
+			g.thumbnail_url,
+			g.release_date,
+			g.tags,
+			g.provider_commands,
+			ig.exe_path,
+			ig.unity_backend,
+			ig.architecture,
 			COALESCE(rg.engine_brand, ig.engine_brand) AS engine_brand,
 			COALESCE(rg.engine_version, ig.engine_version) AS engine_version
 		FROM main.games g
-		LEFT JOIN main.installed_games ig ON g.installed_game = ig.id
+		LEFT JOIN main.installed_games ig ON g.provider_id = ig.provider_id AND g.game_id = ig.game_id
 		LEFT JOIN main.normalized_titles nt ON g.provider_id = nt.provider_id AND g.game_id = nt.game_id
 		LEFT JOIN remote_games rg ON (
 				g.provider_id = rg.provider_id AND g.external_id = rg.external_id
@@ -902,13 +889,6 @@ async fn get_game(id: GameId, handle: AppHandle) -> Result<DbGame> {
 	.await?;
 
 	Ok(db_game)
-}
-
-#[tauri::command]
-#[specta::specta]
-async fn clear_cache() -> Result {
-	provider_cache::clear()?;
-	Ok(())
 }
 
 #[tauri::command]
@@ -945,7 +925,6 @@ fn main() {
 	let builder = Builder::<tauri::Wry>::new()
 		.commands(tauri_specta::collect_commands![
 			add_game,
-			clear_cache,
 			configure_mod,
 			delete_mod,
 			download_mod,
@@ -973,8 +952,6 @@ fn main() {
 			run_provider_command,
 			run_runnable_without_game,
 			save_app_settings,
-			start_game_exe,
-			start_game,
 			uninstall_all_mods,
 			uninstall_mod,
 		])

@@ -1,35 +1,27 @@
 use std::{
-	collections::{HashMap, HashSet},
+	collections::HashMap,
 	fs,
 	path::{Path, PathBuf},
 };
 
 use rai_pal_proc_macros::serializable_struct;
 use sqlx::{
-	Sqlite,
+	Database, Sqlite,
+	encode::IsNull,
 	sqlite::{SqliteTypeInfo, SqliteValueRef},
 };
 
 use crate::{
-	game_engines::{
-		game_engine::{EngineBrand, GameEngine},
-		unity::UnityScriptingBackend,
-	},
+	game_engines::{game_engine::EngineBrand, unity::UnityScriptingBackend},
 	game_executable::Architecture,
-	game_subscription::GameSubscription,
 	game_tag::GameTag,
-	game_title::GameTitle,
-	installed_game::{InstalledGame, InstalledModVersions},
 	mod_manifest, paths,
 	providers::{
 		provider::ProviderId,
 		provider_command::{ProviderCommand, ProviderCommandAction},
 	},
-	remote_game::RemoteGame,
 	result::{Error, Result},
 };
-
-pub type Map = HashMap<String, Game>;
 
 #[serializable_struct]
 #[derive(sqlx::Type, sqlx::FromRow)]
@@ -38,7 +30,7 @@ pub struct GameId {
 	pub game_id: String,
 }
 
-#[derive(sqlx::FromRow, serde::Serialize, specta::Type)]
+#[derive(sqlx::FromRow, serde::Serialize, specta::Type, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct DbGame {
 	pub provider_id: ProviderId,
@@ -57,7 +49,7 @@ pub struct DbGame {
 	pub provider_commands: JsonData<HashMap<ProviderCommandAction, ProviderCommand>>,
 }
 
-#[derive(sqlx::FromRow, serde::Serialize, specta::Type)]
+#[derive(sqlx::FromRow, serde::Serialize, specta::Type, Clone)]
 pub struct JsonData<T>(pub T);
 
 impl<T> sqlx::Decode<'_, sqlx::Sqlite> for JsonData<T>
@@ -71,105 +63,45 @@ where
 	}
 }
 
+impl<T> sqlx::Encode<'_, sqlx::Sqlite> for JsonData<T>
+where
+	T: serde::Serialize + Eq,
+{
+	fn encode_by_ref(
+		&self,
+		buf: &mut <Sqlite as Database>::ArgumentBuffer<'_>,
+	) -> std::result::Result<IsNull, Box<dyn std::error::Error + Send + Sync>> {
+		let json_str = serde_json::to_string(&self.0)?;
+		<String as sqlx::Encode<sqlx::Sqlite>>::encode_by_ref(&json_str, buf)
+	}
+}
+
 impl<T> sqlx::Type<Sqlite> for JsonData<T> {
 	fn type_info() -> SqliteTypeInfo {
 		<String as sqlx::Type<Sqlite>>::type_info()
 	}
 }
 
-#[serializable_struct]
-pub struct Game {
-	// ID used to uniquely identify this game in Rai Pal.
-	pub id: GameId,
-
-	// ID used to find this game in provider APIs and stuff.
-	pub external_id: String,
-
-	pub tags: HashSet<GameTag>,
-	pub installed_game: Option<InstalledGame>,
-	pub remote_game: Option<RemoteGame>,
-	pub title: GameTitle,
-	pub thumbnail_url: Option<String>,
-	pub release_date: Option<i64>,
-	pub provider_commands: HashMap<ProviderCommandAction, ProviderCommand>,
-	pub from_subscriptions: HashSet<GameSubscription>,
-}
-
-impl Game {
-	pub fn new(id: GameId, title: &str) -> Self {
-		let title = GameTitle::new(title);
-		let mut tags = HashSet::default();
-		if title.is_probably_demo() {
-			tags.insert(GameTag::Demo);
-		}
-
+impl DbGame {
+	pub fn new(provider_id: ProviderId, game_id: String, title: String) -> Self {
 		Self {
-			// We presume the provided ID is also the external ID, but that can be changed after creation.
-			external_id: id.game_id.clone(),
-			id,
-			tags,
-			installed_game: None,
-			remote_game: None,
-			title,
+			provider_id,
+			external_id: game_id.clone(),
+			game_id,
+			display_title: title,
+			title_discriminator: None,
 			thumbnail_url: None,
 			release_date: None,
-			provider_commands: HashMap::default(),
-			from_subscriptions: HashSet::default(),
+			exe_path: None,
+			engine_brand: None,
+			engine_version: None,
+			unity_backend: None,
+			architecture: None,
+			tags: JsonData(Vec::default()),
+			provider_commands: JsonData(HashMap::default()),
 		}
 	}
 
-	pub fn add_tag(&mut self, tag: GameTag) -> &mut Self {
-		self.tags.insert(tag);
-		self
-	}
-
-	pub fn set_thumbnail_url(&mut self, thumbnail_url: &str) -> &mut Self {
-		self.thumbnail_url = Some(thumbnail_url.to_string());
-		self
-	}
-
-	pub fn set_release_date(&mut self, release_date: i64) -> &mut Self {
-		self.release_date = Some(release_date);
-		self
-	}
-
-	pub fn add_provider_command(
-		&mut self,
-		command_action: ProviderCommandAction,
-		command: ProviderCommand,
-	) -> &mut Self {
-		self.provider_commands.insert(command_action, command);
-		self
-	}
-
-	pub const fn get_engine(&self) -> Option<&GameEngine> {
-		if let Some(installed_game) = &self.installed_game {
-			if let Some(engine) = installed_game.executable.engine.as_ref() {
-				return Some(engine);
-			}
-		}
-
-		if let Some(remote_game) = &self.remote_game {
-			return remote_game.engine.as_ref();
-		}
-
-		None
-	}
-
-	pub fn try_get_installed_game(&self) -> Result<&InstalledGame> {
-		self.installed_game
-			.as_ref()
-			.ok_or_else(|| Error::GameNotInstalled(self.title.display.clone()))
-	}
-
-	pub fn try_get_installed_game_mut(&mut self) -> Result<&mut InstalledGame> {
-		self.installed_game
-			.as_mut()
-			.ok_or_else(|| Error::GameNotInstalled(self.title.display.clone()))
-	}
-}
-
-impl DbGame {
 	pub fn open_game_folder(&self) -> Result {
 		paths::open_folder_or_parent(&self.try_get_exe_path()?)
 	}
@@ -201,7 +133,7 @@ impl DbGame {
 		}
 	}
 
-	pub fn get_installed_mod_versions(&self) -> InstalledModVersions {
+	pub fn get_installed_mod_versions(&self) -> HashMap<String, String> {
 		self.get_manifest_paths()
 			.iter()
 			.filter_map(|manifest_path| {
@@ -235,5 +167,19 @@ impl DbGame {
 		Ok(PathBuf::from(self.exe_path.as_ref().ok_or_else(|| {
 			Error::GameNotInstalled(self.display_title.clone())
 		})?))
+	}
+
+	pub fn add_provider_command(
+		&mut self,
+		command_action: ProviderCommandAction,
+		command: ProviderCommand,
+	) -> &mut Self {
+		self.provider_commands.0.insert(command_action, command);
+		self
+	}
+
+	pub fn add_tag(&mut self, tag: GameTag) -> &mut Self {
+		self.tags.0.push(tag);
+		self
 	}
 }

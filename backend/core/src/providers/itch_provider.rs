@@ -10,7 +10,7 @@ use sqlx::{Row, sqlite::SqlitePool};
 
 use super::provider_command::{ProviderCommand, ProviderCommandAction};
 use crate::{
-	game::{Game, GameId},
+	game::{DbGame, GameId},
 	installed_game::InstalledGame,
 	providers::provider::{ProviderActions, ProviderId, ProviderStatic},
 	result::{Error, Result},
@@ -26,36 +26,36 @@ impl Itch {
 		InstalledGame::new(&exe_path)
 	}
 
-	fn get_game(row: &ItchDatabaseGame) -> Game {
-		let mut game = Game::new(
-			GameId {
-				game_id: row.id.to_string(),
-				provider_id: *Self::ID,
-			},
-			&row.title,
-		);
+	// fn get_game(row: &ItchDatabaseGame) -> DbGame {
+	// 	let mut game = Game::new(
+	// 		GameId {
+	// 			game_id: row.id.to_string(),
+	// 			provider_id: *Self::ID,
+	// 		},
+	// 		&row.title,
+	// 	);
 
-		if let Some(thumbnail_url) = &row.cover_url {
-			game.set_thumbnail_url(thumbnail_url);
-		}
-		if let Some(date_time) = row
-			.published_at
-			.as_ref()
-			.and_then(|published_at| DateTime::parse_from_rfc3339(published_at).ok())
-		{
-			game.set_release_date(date_time.timestamp());
-		}
-		game.add_provider_command(
-			ProviderCommandAction::ShowInLibrary,
-			ProviderCommand::String(format!("itch://games/{}", row.id)),
-		)
-		.add_provider_command(
-			ProviderCommandAction::Install,
-			ProviderCommand::String(format!("itch://install?game_id={}", row.id)),
-		);
+	// 	if let Some(thumbnail_url) = &row.cover_url {
+	// 		game.set_thumbnail_url(thumbnail_url);
+	// 	}
+	// 	if let Some(date_time) = row
+	// 		.published_at
+	// 		.as_ref()
+	// 		.and_then(|published_at| DateTime::parse_from_rfc3339(published_at).ok())
+	// 	{
+	// 		game.set_release_date(date_time.timestamp());
+	// 	}
+	// 	game.add_provider_command(
+	// 		ProviderCommandAction::ShowInLibrary,
+	// 		ProviderCommand::String(format!("itch://games/{}", row.id)),
+	// 	)
+	// 	.add_provider_command(
+	// 		ProviderCommandAction::Install,
+	// 		ProviderCommand::String(format!("itch://install?game_id={}", row.id)),
+	// 	);
 
-		game
-	}
+	// 	game
+	// }
 }
 
 impl ProviderStatic for Itch {
@@ -106,32 +106,32 @@ pub struct ItchDatabase {
 impl ProviderActions for Itch {
 	async fn get_games<TCallback>(&self, mut callback: TCallback) -> Result
 	where
-		TCallback: FnMut(Game) + Send + Sync,
+		TCallback: FnMut(DbGame) + Send + Sync,
 	{
-		let app_data_path = directories::BaseDirs::new()
-			.ok_or_else(Error::AppDataNotFound)?
-			.config_dir()
-			.join("itch");
+		// let app_data_path = directories::BaseDirs::new()
+		// 	.ok_or_else(Error::AppDataNotFound)?
+		// 	.config_dir()
+		// 	.join("itch");
 
-		if let Some(database) = get_database(&app_data_path).await? {
-			let caves_map: HashMap<_, _> = database
-				.caves
-				.into_iter()
-				.map(|cave| (cave.id, cave))
-				.collect();
+		// if let Some(database) = get_database(&app_data_path).await? {
+		// 	let caves_map: HashMap<_, _> = database
+		// 		.caves
+		// 		.into_iter()
+		// 		.map(|cave| (cave.id, cave))
+		// 		.collect();
 
-			for db_entry in database.games {
-				let mut game = Self::get_game(&db_entry);
-				if let Some(cave) = caves_map.get(&db_entry.id) {
-					game.installed_game = Self::get_installed_game(cave);
-				}
-				callback(game);
-			}
-		} else {
-			log::info!(
-				"Itch database file not found. Probably means user hasn't installed the Itch app."
-			);
-		}
+		// 	for db_entry in database.games {
+		// 		let mut game = Self::get_game(&db_entry);
+		// 		if let Some(cave) = caves_map.get(&db_entry.id) {
+		// 			game.installed_game = Self::get_installed_game(cave);
+		// 		}
+		// 		callback(game);
+		// 	}
+		// } else {
+		// 	log::info!(
+		// 		"Itch database file not found. Probably means user hasn't installed the Itch app."
+		// 	);
+		// }
 
 		Ok(())
 	}
