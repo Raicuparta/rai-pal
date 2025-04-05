@@ -11,7 +11,6 @@ use winreg::{
 
 use crate::{
 	game::{DbGame, GameId},
-	installed_game::InstalledGame,
 	paths::file_name_without_extension,
 	providers::provider::{ProviderActions, ProviderId, ProviderStatic},
 	result::Result,

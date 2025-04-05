@@ -8,8 +8,9 @@ use steamlocate::SteamDir;
 
 use crate::{
 	game::DbGame,
+	game_executable::GameExecutable,
 	game_tag::GameTag,
-	installed_game::InstalledGame,
+	paths,
 	providers::{
 		provider::{ProviderActions, ProviderId, ProviderStatic},
 		provider_command::{ProviderCommand, ProviderCommandAction},
@@ -38,7 +39,11 @@ impl ProviderStatic for Steam {
 }
 
 impl Steam {
-	pub fn get_installed_games(app_info: &SteamAppInfo, app_path: &Path) -> Vec<InstalledGame> {
+	pub fn get_installed_games(
+		game: &DbGame,
+		app_info: &SteamAppInfo,
+		app_path: &Path,
+	) -> Vec<DbGame> {
 		let mut used_paths: HashSet<PathBuf> = HashSet::new();
 		let mut used_names: HashSet<String> = HashSet::new();
 		let mut installed_games = Vec::new();
@@ -59,8 +64,10 @@ impl Steam {
 
 				let app_name = app_info.name.clone();
 
-				if let Some(mut game) = InstalledGame::new(full_path) {
-					let discriminator_option =
+				if let Some(executable) = GameExecutable::new(full_path) {
+					let mut installed_game = game.clone();
+					installed_game.set_executable(&executable);
+					installed_game.title_discriminator =
 						if used_names.contains(&app_name) {
 							Some(launch_option.description.as_ref().map_or_else(
 								|| executable_path.display().to_string(),
@@ -70,18 +77,27 @@ impl Steam {
 							None
 						};
 
-					if let Some(discriminator) = &discriminator_option {
-						game.set_discriminator(discriminator);
-					}
+					installed_game.add_provider_command(
+						ProviderCommandAction::StartViaProvider,
+						get_start_command(&launch_option, &installed_game.title_discriminator),
+					);
 
-					game.set_start_command_string(&get_start_command(
-						&launch_option,
-						&discriminator_option,
-					));
+					installed_game.add_provider_command(
+						ProviderCommandAction::StartViaExe,
+						ProviderCommand::Path(executable.path.clone(), Vec::default()),
+					);
+
+					// Since there can be multiple Steam games within one installed app_id,
+					// we attach the exe path hash to the internal game_id to make it unique within the local Rai Pal database.
+					installed_game.game_id = format!(
+						"{}_{}",
+						&installed_game.external_id,
+						paths::hash_path(&executable.path)
+					);
 
 					used_names.insert(app_name);
 					used_paths.insert(full_path.clone());
-					installed_games.push(game);
+					installed_games.push(installed_game);
 				}
 			}
 		}
@@ -160,11 +176,6 @@ impl ProviderActions for Steam {
 						continue;
 					}
 
-					let installed_games = app_paths
-						.get(&app_info.app_id)
-						.map(|app_path| Self::get_installed_games(&app_info, app_path))
-						.unwrap_or_default();
-
 					let mut game =
 						DbGame::new(*Self::ID, external_id.clone(), app_info.name.clone());
 
@@ -212,43 +223,16 @@ impl ProviderActions for Steam {
 						}
 					}
 
+					let installed_games = app_paths
+						.get(&app_info.app_id)
+						.map(|app_path| Self::get_installed_games(&game, &app_info, app_path))
+						.unwrap_or_default();
+
 					if installed_games.is_empty() {
 						callback(game);
 					} else {
 						for installed_game in installed_games {
-							let mut game_with_installed = game.clone();
-
-							if let Some(start_command) = &installed_game.start_command {
-								game_with_installed.add_provider_command(
-									ProviderCommandAction::StartViaProvider,
-									start_command.clone(),
-								);
-							}
-
-							game_with_installed.add_provider_command(
-								ProviderCommandAction::StartViaExe,
-								ProviderCommand::Path(
-									installed_game.executable.path.clone(),
-									Vec::default(),
-								),
-							);
-
-							game_with_installed.game_id = format!(
-								"{}_{}",
-								&game_with_installed.external_id, &installed_game.id
-							);
-
-							game_with_installed.exe_path =
-								Some(installed_game.executable.path.display().to_string()); // TODO aaaa paths
-							if let Some(engine) = installed_game.executable.engine {
-								game_with_installed.engine_brand = Some(engine.brand);
-								if let Some(engine_version) = engine.version {
-									game_with_installed.engine_version =
-										Some(engine_version.display);
-								}
-							}
-
-							callback(game_with_installed);
+							callback(installed_game);
 						}
 					}
 				}
@@ -265,8 +249,8 @@ impl ProviderActions for Steam {
 pub fn get_start_command(
 	steam_launch: &SteamLaunchOption,
 	discriminator: &Option<String>,
-) -> String {
-	if discriminator.is_none() {
+) -> ProviderCommand {
+	ProviderCommand::String(if discriminator.is_none() {
 		// If a game has no discriminator, it means we're probably using the default launch option.
 		// For those, we use the steam://rungameid command, since that one will make steam show a nice
 		// loading popup, wait for game updates, etc.
@@ -284,5 +268,5 @@ pub fn get_start_command(
 			steam_launch.app_id,
 			steam_launch.launch_type.as_deref().unwrap_or(""),
 		)
-	}
+	})
 }

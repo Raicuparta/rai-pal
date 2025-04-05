@@ -16,7 +16,6 @@ use rai_pal_core::game_engines::game_engine::{EngineVersion, EngineVersionNumber
 use rai_pal_core::game_executable::GameExecutable;
 use rai_pal_core::game_title::get_normalized_titles;
 use rai_pal_core::games_query::{GamesQuery, GamesSortBy, InstallState};
-use rai_pal_core::installed_game::InstalledModVersions;
 use rai_pal_core::local_mod::{self, LocalMod};
 use rai_pal_core::maps::TryGettable;
 use rai_pal_core::mod_loaders::mod_loader::{self, ModLoaderActions};
@@ -522,7 +521,7 @@ async fn refresh_games(handle: AppHandle, provider_id: ProviderId) -> Result {
 	let provider = provider::get_provider(provider_id)?;
 
 	provider
-		.get_games(|mut game: DbGame| {
+		.get_games(|game: DbGame| {
 			
 		match state.database_pool.read_state() {
 			Ok(pool) => {
@@ -554,7 +553,7 @@ async fn refresh_games(handle: AppHandle, provider_id: ProviderId) -> Result {
 
 					let installed_game_query = game_clone.exe_path.as_ref().map(|exe_path| sqlx::query::<Sqlite>(
 						"INSERT OR REPLACE INTO installed_games (provider_id, game_id, exe_path, engine_brand, engine_version, unity_backend, architecture) 
-						 VALUES ($1, $2, $3, $4, $5, $6)"
+						 VALUES ($1, $2, $3, $4, $5, $6, $7)"
 					)
 						.bind(game_clone.provider_id)
 						.bind(game_clone.game_id.clone())
@@ -574,7 +573,9 @@ async fn refresh_games(handle: AppHandle, provider_id: ProviderId) -> Result {
 						}
 
 						if let Some(installed_game_query) = installed_game_query {
-							installed_game_query.execute(&pool).await;
+							if let Err(err) = pool.execute(installed_game_query).await {
+								log::error!("Failed to execute query: {err}");
+							}
 						}
 						
 						for normalized_title in get_normalized_titles(&game.display_title) {
@@ -870,8 +871,8 @@ async fn get_game(id: GameId, handle: AppHandle) -> Result<DbGame> {
 			ig.exe_path,
 			ig.unity_backend,
 			ig.architecture,
-			COALESCE(rg.engine_brand, ig.engine_brand) AS engine_brand,
-			COALESCE(rg.engine_version, ig.engine_version) AS engine_version
+			COALESCE(ig.engine_brand, rg.engine_brand) AS engine_brand,
+			COALESCE(ig.engine_version, rg.engine_version) AS engine_version
 		FROM main.games g
 		LEFT JOIN main.installed_games ig ON g.provider_id = ig.provider_id AND g.game_id = ig.game_id
 		LEFT JOIN main.normalized_titles nt ON g.provider_id = nt.provider_id AND g.game_id = nt.game_id
@@ -905,7 +906,7 @@ async fn save_app_settings(settings: AppSettings) -> Result {
 
 #[tauri::command]
 #[specta::specta]
-async fn get_installed_mod_versions(game_id: GameId, app_handle: AppHandle) -> Result<InstalledModVersions> {
+async fn get_installed_mod_versions(game_id: GameId, app_handle: AppHandle) -> Result<HashMap<String, String>> {
 	let game = get_game(game_id.clone(), app_handle.clone()).await?;
 	Ok(game.get_installed_mod_versions())
 }

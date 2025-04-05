@@ -18,7 +18,6 @@ use super::{
 };
 use crate::{
 	game::{DbGame, GameId},
-	installed_game::InstalledGame,
 	paths::glob_path,
 	providers::provider::{ProviderActions, ProviderStatic},
 	result::Result,

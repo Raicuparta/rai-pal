@@ -11,7 +11,6 @@ use sqlx::{Row, sqlite::SqlitePool};
 use super::provider_command::{ProviderCommand, ProviderCommandAction};
 use crate::{
 	game::{DbGame, GameId},
-	installed_game::InstalledGame,
 	providers::provider::{ProviderActions, ProviderId, ProviderStatic},
 	result::{Error, Result},
 };
@@ -20,10 +19,11 @@ use crate::{
 pub struct Itch {}
 
 impl Itch {
-	fn get_installed_game(cave: &ItchDatabaseCave) -> Option<InstalledGame> {
-		let verdict = cave.verdict.as_ref()?;
-		let exe_path = verdict.base_path.join(&verdict.candidates.first()?.path);
-		InstalledGame::new(&exe_path)
+	fn get_installed_game(cave: &ItchDatabaseCave) -> Option<DbGame> {
+		// let verdict = cave.verdict.as_ref()?;
+		// let exe_path = verdict.base_path.join(&verdict.candidates.first()?.path);
+		// InstalledGame::new(&exe_path)
+		None
 	}
 
 	// fn get_game(row: &ItchDatabaseGame) -> DbGame {

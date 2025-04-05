@@ -9,7 +9,6 @@ use rai_pal_proc_macros::serializable_struct;
 use super::provider::{ProviderActions, ProviderId, ProviderStatic};
 use crate::{
 	game::{DbGame, GameId},
-	installed_game::InstalledGame,
 	paths::{app_data_path, file_name_without_extension},
 	result::{Error, Result},
 };

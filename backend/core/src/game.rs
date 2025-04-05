@@ -13,7 +13,7 @@ use sqlx::{
 
 use crate::{
 	game_engines::{game_engine::EngineBrand, unity::UnityScriptingBackend},
-	game_executable::Architecture,
+	game_executable::{Architecture, GameExecutable},
 	game_tag::GameTag,
 	mod_manifest, paths,
 	providers::{
@@ -180,6 +180,18 @@ impl DbGame {
 
 	pub fn add_tag(&mut self, tag: GameTag) -> &mut Self {
 		self.tags.0.push(tag);
+		self
+	}
+
+	pub fn set_executable(&mut self, executable: &GameExecutable) -> &mut Self {
+		self.exe_path = Some(executable.path.display().to_string());
+		self.engine_brand = executable.engine.as_ref().map(|e| e.brand.clone());
+		self.engine_version = executable
+			.engine
+			.as_ref()
+			.and_then(|e| e.version.as_ref().map(|v| v.display.clone()));
+		self.architecture = executable.architecture;
+		self.unity_backend = executable.scripting_backend;
 		self
 	}
 }

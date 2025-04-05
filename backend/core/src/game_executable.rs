@@ -77,6 +77,26 @@ pub fn get_architecture(exe_path: &Path) -> Result<Option<Architecture>> {
 
 impl GameExecutable {
 	pub fn new(path: &Path) -> Option<Self> {
+		const VALID_EXTENSIONS: [&str; 3] = ["exe", "x86_64", "x86"];
+
+		if !path.is_file() {
+			return None;
+		}
+
+		// We ignore games that don't have an extension.
+		let extension = path.extension()?.to_str()?;
+
+		if !VALID_EXTENSIONS.contains(&extension.to_lowercase().as_str()) {
+			return None;
+		}
+
+		if extension == "x86" && path.with_extension("x86_64").is_file() {
+			// If there's an x86_64 version, we ignore the x86 version.
+			// I'm just gonna presume there are no x86 modders out there,
+			// if someone cries about it I'll make this smarter.
+			return None;
+		}
+
 		let normalized_path = normalize_path(path);
 
 		unity::get_executable(&normalized_path)

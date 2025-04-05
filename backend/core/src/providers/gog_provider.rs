@@ -11,7 +11,6 @@ use winreg::{RegKey, enums::HKEY_LOCAL_MACHINE};
 use super::provider_command::{ProviderCommand, ProviderCommandAction};
 use crate::{
 	game::{DbGame, GameId},
-	installed_game::InstalledGame,
 	paths,
 	providers::provider::{ProviderActions, ProviderId, ProviderStatic},
 	result::Result,
@@ -30,19 +29,20 @@ struct GogDbEntry {
 pub struct Gog {}
 
 impl Gog {
-	fn get_installed_game(db_entry: &GogDbEntry, launcher_path: &Path) -> Option<InstalledGame> {
-		let mut game = InstalledGame::new(db_entry.executable_path.as_ref()?)?;
+	fn get_installed_game(db_entry: &GogDbEntry, launcher_path: &Path) -> Option<DbGame> {
+		// let mut game = InstalledGame::new(db_entry.executable_path.as_ref()?)?;
 
-		game.set_start_command_path(
-			launcher_path,
-			[
-				"/command=runGame".to_string(),
-				format!("/gameId={}", db_entry.id),
-			]
-			.to_vec(),
-		);
+		// game.set_start_command_path(
+		// 	launcher_path,
+		// 	[
+		// 		"/command=runGame".to_string(),
+		// 		format!("/gameId={}", db_entry.id),
+		// 	]
+		// 	.to_vec(),
+		// );
 
-		Some(game)
+		// Some(game)
+		None
 	}
 
 	// fn get_game(db_entry: &GogDbEntry, launcher_path: &Path) -> DbGame {
