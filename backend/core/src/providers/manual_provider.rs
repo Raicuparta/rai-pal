@@ -8,8 +8,9 @@ use rai_pal_proc_macros::serializable_struct;
 
 use super::provider::{ProviderActions, ProviderId, ProviderStatic};
 use crate::{
-	game::{DbGame, GameId},
-	paths::{app_data_path, file_name_without_extension},
+	game::{DbGame, GameId, InsertGame},
+	game_executable::GameExecutable,
+	paths::{self, app_data_path, file_name_without_extension},
 	result::{Error, Result},
 };
 
@@ -34,6 +35,22 @@ impl ProviderStatic for Manual {
 
 impl ProviderActions for Manual {
 	async fn insert_games(&self, pool: &sqlx::Pool<sqlx::Sqlite>) -> Result {
+		for path in read_games_config(&games_config_path()?).paths {
+			match get_game_from_path(&path) {
+				Ok(game) => {
+					pool.insert_game(&game).await?;
+				}
+				Err(error) => {
+					error!(
+						"Failed to get game from path '{}'. Will remove this path from the config. Error: {}",
+						path.display(),
+						error
+					);
+					remove_game(&path)?;
+				}
+			}
+		}
+
 		Ok(())
 	}
 
@@ -41,20 +58,6 @@ impl ProviderActions for Manual {
 	where
 		TCallback: FnMut(DbGame) + Send + Sync,
 	{
-		// for path in read_games_config(&games_config_path()?).paths {
-		// 	match get_game_from_path(&path) {
-		// 		Ok(game) => callback(game),
-		// 		Err(error) => {
-		// 			error!(
-		// 				"Failed to get game from path '{}'. Will remove this path from the config. Error: {}",
-		// 				path.display(),
-		// 				error
-		// 			);
-		// 			remove_game(&path)?;
-		// 		}
-		// 	}
-		// }
-
 		Ok(())
 	}
 }
@@ -77,32 +80,30 @@ fn read_games_config(games_config_path: &Path) -> GamesConfig {
 	}
 }
 
-// fn get_game_from_path(path: &Path) -> Result<DbGame> {
-// 	let installed_game =
-// 		InstalledGame::new(path).ok_or(Error::FailedToGetGameFromPath(path.to_path_buf()))?;
-// 	let mut game = DbGame::new(
-// 		GameId {
-// 			game_id: installed_game.id.clone(),
-// 			provider_id: ProviderId::Manual,
-// 		},
-// 		file_name_without_extension(path)?,
-// 	);
-// 	game.installed_game = Some(installed_game);
-// 	Ok(game)
-// }
+fn get_game_from_path(path: &Path) -> Result<DbGame> {
+	let executable =
+		GameExecutable::new(path).ok_or(Error::FailedToGetGameFromPath(path.to_path_buf()))?;
+
+	let mut game = DbGame::new(
+		ProviderId::Manual,
+		paths::hash_path(path),
+		file_name_without_extension(path)?.to_string(),
+	);
+	game.set_executable(&executable);
+	Ok(game)
+}
 
 pub fn add_game(path: &Path) -> Result<DbGame> {
-	// let game = get_game_from_path(path)?;
+	let game = get_game_from_path(path)?;
 
-	// let config_path = games_config_path()?;
+	let config_path = games_config_path()?;
 
-	// let mut games_config = read_games_config(&config_path);
-	// games_config.paths.push(path.to_path_buf());
+	let mut games_config = read_games_config(&config_path);
+	games_config.paths.push(path.to_path_buf());
 
-	// fs::write(config_path, serde_json::to_string_pretty(&games_config)?)?;
+	fs::write(config_path, serde_json::to_string_pretty(&games_config)?)?;
 
-	// Ok(game)
-	Err(Error::FailedToGetGameFromPath(path.to_path_buf()))
+	Ok(game)
 }
 
 pub fn remove_game(path: &Path) -> Result {

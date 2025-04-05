@@ -19,6 +19,9 @@ impl ProviderStatic for Ubisoft {
 
 impl ProviderActions for Ubisoft {
 	async fn insert_games(&self, pool: &sqlx::Pool<sqlx::Sqlite>) -> Result {
+		// Nothing for now
+		// we're currently only getting subscription games from the remote game database.
+
 		Ok(())
 	}
 
@@ -26,8 +29,6 @@ impl ProviderActions for Ubisoft {
 	where
 		TCallback: FnMut(DbGame) + Send + Sync,
 	{
-		// Nothing for now
-		// we're currently only getting subscription games from the remote game database.
 		Ok(())
 	}
 }
