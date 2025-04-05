@@ -17,7 +17,7 @@ use super::{
 	provider_command::{ProviderCommand, ProviderCommandAction},
 };
 use crate::{
-	game::{DbGame, GameId, InsertGame},
+	game::{DbGame, InsertGame},
 	game_executable::GameExecutable,
 	paths::glob_path,
 	providers::provider::{ProviderActions, ProviderStatic},

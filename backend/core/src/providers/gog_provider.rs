@@ -10,7 +10,8 @@ use winreg::{RegKey, enums::HKEY_LOCAL_MACHINE};
 
 use super::provider_command::{ProviderCommand, ProviderCommandAction};
 use crate::{
-	game::{DbGame, GameId},
+	game::{DbGame, InsertGame},
+	game_executable::GameExecutable,
 	paths,
 	providers::provider::{ProviderActions, ProviderId, ProviderStatic},
 	result::Result,
@@ -29,53 +30,26 @@ struct GogDbEntry {
 pub struct Gog {}
 
 impl Gog {
-	fn get_installed_game(db_entry: &GogDbEntry, launcher_path: &Path) -> Option<DbGame> {
-		// let mut game = InstalledGame::new(db_entry.executable_path.as_ref()?)?;
+	fn get_game(db_entry: &GogDbEntry, launcher_path: &Path) -> DbGame {
+		let mut game = DbGame::new(*Self::ID, db_entry.id.clone(), db_entry.title.clone());
 
-		// game.set_start_command_path(
-		// 	launcher_path,
-		// 	[
-		// 		"/command=runGame".to_string(),
-		// 		format!("/gameId={}", db_entry.id),
-		// 	]
-		// 	.to_vec(),
-		// );
+		game.add_provider_command(
+			ProviderCommandAction::ShowInLibrary,
+			ProviderCommand::Path(
+				launcher_path.to_owned(),
+				[
+					"/command=launch".to_string(),
+					format!("/gameId={}", db_entry.id),
+				]
+				.to_vec(),
+			),
+		);
 
-		// Some(game)
-		None
+		game.thumbnail_url = db_entry.image_url.clone();
+		game.release_date = db_entry.release_date.map(|date| date.into());
+
+		game
 	}
-
-	// fn get_game(db_entry: &GogDbEntry, launcher_path: &Path) -> DbGame {
-	// 	let mut game = Game::new(
-	// 		GameId {
-	// 			game_id: db_entry.id.clone(),
-	// 			provider_id: *Self::ID,
-	// 		},
-	// 		&db_entry.title,
-	// 	);
-
-	// 	game.add_provider_command(
-	// 		ProviderCommandAction::ShowInLibrary,
-	// 		ProviderCommand::Path(
-	// 			launcher_path.to_owned(),
-	// 			[
-	// 				"/command=launch".to_string(),
-	// 				format!("/gameId={}", db_entry.id),
-	// 			]
-	// 			.to_vec(),
-	// 		),
-	// 	);
-
-	// 	if let Some(thumbnail_url) = db_entry.image_url.clone() {
-	// 		game.set_thumbnail_url(&thumbnail_url);
-	// 	}
-
-	// 	if let Some(release_date) = db_entry.release_date {
-	// 		game.set_release_date(release_date.into());
-	// 	}
-
-	// 	game
-	// }
 }
 
 impl ProviderStatic for Gog {
@@ -91,6 +65,36 @@ impl ProviderStatic for Gog {
 
 impl ProviderActions for Gog {
 	async fn insert_games(&self, pool: &sqlx::Pool<sqlx::Sqlite>) -> Result {
+		if let Some(database) = get_database().await? {
+			let launcher_path = get_launcher_path()?;
+
+			for db_entry in database {
+				let mut game = Self::get_game(&db_entry, &launcher_path);
+				if let Some(executable) = db_entry
+					.executable_path
+					.as_ref()
+					.and_then(|path| GameExecutable::new(path))
+				{
+					game.set_executable(&executable);
+					game.add_provider_command(
+						ProviderCommandAction::StartViaProvider,
+						ProviderCommand::Path(
+							launcher_path.clone(),
+							vec![
+								"/command=runGame".to_string(),
+								format!("/gameId={}", db_entry.id),
+							],
+						),
+					);
+				}
+
+				pool.insert_game(&game).await?; // TODO dont crash whole process if single game fails.
+			}
+		} else {
+			log::info!(
+				"GOG database file not found. Probably means user hasn't installed GOG Galaxy."
+			);
+		}
 		Ok(())
 	}
 
@@ -98,38 +102,6 @@ impl ProviderActions for Gog {
 	where
 		TCallback: FnMut(DbGame) + Send + Sync,
 	{
-		// if let Some(database) = get_database().await? {
-		// 	let launcher_path = get_launcher_path()?;
-
-		// 	for db_entry in database {
-		// 		let mut game = Self::get_game(&db_entry, &launcher_path);
-		// 		if let Some(installed_game) = Self::get_installed_game(&db_entry, &launcher_path) {
-		// 			if let Some(start_command) = &installed_game.start_command {
-		// 				game.add_provider_command(
-		// 					ProviderCommandAction::StartViaProvider,
-		// 					start_command.clone(),
-		// 				);
-		// 			}
-
-		// 			game.add_provider_command(
-		// 				ProviderCommandAction::StartViaExe,
-		// 				ProviderCommand::Path(
-		// 					installed_game.executable.path.clone(),
-		// 					Vec::default(),
-		// 				),
-		// 			);
-
-		// 			game.installed_game = Some(installed_game);
-		// 		}
-
-		// 		callback(game);
-		// 	}
-		// } else {
-		// 	log::info!(
-		// 		"GOG database file not found. Probably means user hasn't installed GOG Galaxy."
-		// 	);
-		// }
-
 		Ok(())
 	}
 }
