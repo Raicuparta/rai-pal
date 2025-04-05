@@ -1,11 +1,13 @@
 use std::{
 	fs,
 	marker::{Send, Sync},
+	ops::Deref,
 	path::PathBuf,
 };
 
 use enum_dispatch::enum_dispatch;
 use rai_pal_proc_macros::serializable_enum;
+use sqlx::{Pool, Sqlite};
 
 #[cfg(target_os = "linux")]
 use crate::providers::heroic_epic_provider::HeroicEpic;
@@ -80,6 +82,8 @@ pub trait ProviderActions {
 	async fn get_games<TCallback>(&self, callback: TCallback) -> Result
 	where
 		TCallback: FnMut(DbGame) + Send + Sync;
+
+	async fn insert_games(&self, pool: &Pool<Sqlite>) -> Result;
 }
 
 const fn create_map_entry<TProvider: ProviderActions + ProviderStatic>()

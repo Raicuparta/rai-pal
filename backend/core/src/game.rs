@@ -6,7 +6,7 @@ use std::{
 
 use rai_pal_proc_macros::serializable_struct;
 use sqlx::{
-	Database, Sqlite,
+	Database, Executor, Sqlite,
 	encode::IsNull,
 	sqlite::{SqliteTypeInfo, SqliteValueRef},
 };
@@ -15,6 +15,7 @@ use crate::{
 	game_engines::{game_engine::EngineBrand, unity::UnityScriptingBackend},
 	game_executable::{Architecture, GameExecutable},
 	game_tag::GameTag,
+	game_title::get_normalized_titles,
 	mod_manifest, paths,
 	providers::{
 		provider::ProviderId,
@@ -193,5 +194,71 @@ impl DbGame {
 		self.architecture = executable.architecture;
 		self.unity_backend = executable.scripting_backend;
 		self
+	}
+}
+
+pub trait InsertGame {
+	async fn insert_game(&self, game: &DbGame) -> Result;
+}
+
+impl InsertGame for sqlx::Pool<Sqlite> {
+	async fn insert_game(&self, game: &DbGame) -> Result {
+		let game_query = sqlx::query::<Sqlite>(
+			"INSERT OR REPLACE INTO games (
+					provider_id,
+					game_id,
+					external_id,
+					display_title,
+					thumbnail_url,
+					release_date,
+					tags,
+					title_discriminator,
+					provider_commands
+				) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)",
+		)
+		.bind(game.provider_id)
+		.bind(game.game_id.clone())
+		.bind(game.external_id.clone())
+		.bind(game.display_title.clone())
+		.bind(game.thumbnail_url.clone())
+		.bind(game.release_date)
+		.bind(game.tags.clone())
+		.bind(game.title_discriminator.clone())
+		.bind(game.provider_commands.clone());
+
+		let installed_game_query = game.exe_path.as_ref().map(|exe_path| sqlx::query::<Sqlite>(
+				"INSERT OR REPLACE INTO installed_games (provider_id, game_id, exe_path, engine_brand, engine_version, unity_backend, architecture)
+				 VALUES ($1, $2, $3, $4, $5, $6, $7)"
+			)
+				.bind(game.provider_id)
+				.bind(game.game_id.clone())
+				.bind(exe_path)
+				.bind(game.engine_brand)
+				.bind(game.engine_version.clone())
+				.bind(game.unity_backend.clone())
+				.bind(game.architecture.clone())
+			);
+
+		// TODO transaction
+
+		self.execute(game_query).await?;
+
+		if let Some(installed_game_query) = installed_game_query {
+			self.execute(installed_game_query).await?;
+		}
+
+		for normalized_title in get_normalized_titles(&game.display_title) {
+			sqlx::query::<Sqlite>(
+				"INSERT OR REPLACE INTO normalized_titles (provider_id, game_id, normalized_title)
+							VALUES ($1, $2, $3)",
+			)
+			.bind(game.provider_id)
+			.bind(game.game_id.clone())
+			.bind(normalized_title.clone())
+			.execute(self)
+			.await?;
+		}
+
+		Ok(())
 	}
 }

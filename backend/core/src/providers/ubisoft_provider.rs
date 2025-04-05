@@ -18,6 +18,10 @@ impl ProviderStatic for Ubisoft {
 }
 
 impl ProviderActions for Ubisoft {
+	async fn insert_games(&self, pool: &sqlx::Pool<sqlx::Sqlite>) -> Result {
+		Ok(())
+	}
+
 	async fn get_games<TCallback>(&self, mut _callback: TCallback) -> Result
 	where
 		TCallback: FnMut(DbGame) + Send + Sync,

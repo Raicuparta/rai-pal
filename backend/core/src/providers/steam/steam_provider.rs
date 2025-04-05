@@ -7,7 +7,7 @@ use std::{
 use steamlocate::SteamDir;
 
 use crate::{
-	game::DbGame,
+	game::{DbGame, InsertGame},
 	game_executable::GameExecutable,
 	game_tag::GameTag,
 	paths,
@@ -143,6 +143,106 @@ impl Steam {
 }
 
 impl ProviderActions for Steam {
+	async fn insert_games(&self, pool: &sqlx::Pool<sqlx::Sqlite>) -> Result {
+		let steam_dir = SteamDir::locate()?;
+		let steam_path = steam_dir.path();
+		let app_info_reader = SteamAppInfoReader::new(&Self::get_appinfo_path(steam_path))?;
+		let mut app_paths = HashMap::<u32, PathBuf>::new();
+		for library in (steam_dir.libraries()?).flatten() {
+			for app in library.apps().flatten() {
+				app_paths.insert(app.app_id, library.resolve_app_dir(&app));
+			}
+		}
+
+		let owned_ids_whitelist = Self::get_owned_ids_whitelist(steam_path).unwrap_or_else(|err| {
+			log::error!("Failed to read Steam assets cache: {}", err);
+			HashSet::new()
+		});
+
+		log::info!("whitelist size: {}", owned_ids_whitelist.len());
+
+		for app_info_result in app_info_reader {
+			match app_info_result {
+				Ok(app_info) => {
+					let external_id = app_info.app_id.to_string();
+
+					if !app_info.is_free
+						&& !owned_ids_whitelist.is_empty()
+						&& !owned_ids_whitelist.contains(&external_id)
+					{
+						continue;
+					}
+
+					let mut game =
+						DbGame::new(*Self::ID, external_id.clone(), app_info.name.clone());
+
+					game.thumbnail_url = Some(format!(
+						"https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/{external_id}/header.jpg"
+					));
+
+					game.add_provider_command(
+						ProviderCommandAction::ShowInLibrary,
+						ProviderCommand::String(format!("steam://nav/games/details/{external_id}")),
+					)
+					.add_provider_command(
+						ProviderCommandAction::ShowInStore,
+						ProviderCommand::String(format!("steam://store/{external_id}")),
+					)
+					.add_provider_command(
+						ProviderCommandAction::Install,
+						ProviderCommand::String(format!("steam://install/{external_id}")),
+					)
+					.add_provider_command(
+						ProviderCommandAction::OpenInBrowser,
+						ProviderCommand::String(format!(
+							"https://store.steampowered.com/app/{external_id}"
+						)),
+					);
+
+					if app_info
+						.launch_options
+						.iter()
+						.any(appinfo::SteamLaunchOption::is_vr)
+					{
+						game.add_tag(GameTag::VR);
+					}
+
+					if let Some(release_date) = app_info
+						.original_release_date
+						.or(app_info.steam_release_date)
+					{
+						game.release_date = Some(release_date.into());
+					}
+
+					if let Some(app_type) = &app_info.app_type {
+						if app_type == "Demo" {
+							game.add_tag(GameTag::Demo);
+						}
+					}
+
+					let installed_games = app_paths
+						.get(&app_info.app_id)
+						.map(|app_path| Self::get_installed_games(&game, &app_info, app_path))
+						.unwrap_or_default();
+
+					// TODO: careful with whole thing dying if a single game fails.
+					if installed_games.is_empty() {
+						pool.insert_game(&game).await?;
+					} else {
+						for installed_game in installed_games {
+							pool.insert_game(&installed_game).await?;
+						}
+					}
+				}
+				Err(error) => {
+					log::error!("Failed to read Steam appinfo: {}", error);
+				}
+			}
+		}
+
+		Ok(())
+	}
+
 	async fn get_games<TCallback>(&self, mut callback: TCallback) -> Result
 	where
 		TCallback: FnMut(DbGame) + Send + Sync,

@@ -90,6 +90,10 @@ impl ProviderStatic for Gog {
 }
 
 impl ProviderActions for Gog {
+	async fn insert_games(&self, pool: &sqlx::Pool<sqlx::Sqlite>) -> Result {
+		Ok(())
+	}
+
 	async fn get_games<TCallback>(&self, mut callback: TCallback) -> Result
 	where
 		TCallback: FnMut(DbGame) + Send + Sync,

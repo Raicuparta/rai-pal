@@ -19,7 +19,7 @@ use rai_pal_core::games_query::{GamesQuery, GamesSortBy, InstallState};
 use rai_pal_core::local_mod::{self, LocalMod};
 use rai_pal_core::maps::TryGettable;
 use rai_pal_core::mod_loaders::mod_loader::{self, ModLoaderActions};
-use rai_pal_core::paths::{self, normalize_path, AsValidStr};
+use rai_pal_core::paths::{self, AsValidStr, normalize_path};
 use rai_pal_core::providers::provider::ProviderId;
 use rai_pal_core::providers::provider_command::ProviderCommand;
 use rai_pal_core::providers::steam::steam_provider::Steam;
@@ -34,7 +34,7 @@ use rai_pal_core::windows;
 use rai_pal_core::{analytics, remote_mod};
 use rai_pal_proc_macros::serializable_struct;
 use sqlx::sqlite::SqlitePoolOptions;
-use sqlx::{Executor, Pool, Row, Sqlite};
+use sqlx::{Executor, Pool, Row, Sqlite, SqliteConnection, pool};
 use tauri::path::BaseDirectory;
 use tauri::{AppHandle, Manager};
 use tauri_plugin_log::{Target, TargetKind};
@@ -172,9 +172,7 @@ async fn install_mod(game_id: GameId, mod_id: &str, handle: AppHandle) -> Result
 	let mod_loader = mod_loaders.try_get(&local_mod.common.loader_id)?;
 
 	// Uninstall mod if it already exists, in case there are conflicting leftover files when updating.
-	mod_loader
-		.uninstall_mod(&game, &local_mod)
-		.await?;
+	mod_loader.uninstall_mod(&game, &local_mod).await?;
 
 	mod_loader.install_mod(&game, &local_mod).await?;
 
@@ -263,9 +261,7 @@ async fn uninstall_mod(game_id: GameId, mod_id: &str, handle: AppHandle) -> Resu
 	let mod_loader = mod_loaders.try_get(&local_mod.common.loader_id)?;
 
 	// Uninstall mod if it already exists, in case there are conflicting leftover files when updating.
-	mod_loader
-		.uninstall_mod(&game, &local_mod)
-		.await?;
+	mod_loader.uninstall_mod(&game, &local_mod).await?;
 
 	refresh_game_mods(&game_id, &handle)?;
 
@@ -417,7 +413,6 @@ async fn refresh_remote_games(handle: AppHandle) -> Result {
 	let pool = state.database_pool.read_state()?.clone();
 	let path = remote_game::download_database().await?;
 	attach_remote_database(&pool, &path).await?;
-	handle.emit_safe(events::GamesChanged());
 
 	Ok(())
 }
@@ -427,14 +422,17 @@ async fn attach_remote_database(pool: &Pool<Sqlite>, path: &Path) -> Result {
 		return Ok(());
 	}
 
-	sqlx::query(&format!(r#"
+	sqlx::query(&format!(
+		r#"
     ATTACH DATABASE 'file:{}?mode=ro' AS 'remote';
     INSERT OR IGNORE INTO main.remote_games
     SELECT * FROM remote.games;
     DETACH DATABASE remote;
-	"#, path.try_to_str()?))
-		.execute(pool)
-		.await?;
+	"#,
+		path.try_to_str()?
+	))
+	.execute(pool)
+	.await?;
 
 	Ok(())
 }
@@ -453,12 +451,11 @@ pub async fn setup_database() -> Result<Pool<Sqlite>> {
 		.in_memory(false)
 		.shared_cache(true);
 
-	let pool = SqlitePoolOptions::new()
-		.connect_with(config)
-		.await?;
+	let pool = SqlitePoolOptions::new().connect_with(config).await?;
 
 	// Run the initial migration
-	pool.execute(r#"
+	pool.execute(
+		r#"
 		CREATE TABLE IF NOT EXISTS games (
 				provider_id TEXT NOT NULL,
 				game_id TEXT NOT NULL,
@@ -519,93 +516,11 @@ async fn refresh_games(handle: AppHandle, provider_id: ProviderId) -> Result {
 	let state = handle.app_state();
 
 	let provider = provider::get_provider(provider_id)?;
+	let pool = state.database_pool.read_state()?.clone();
 
-	provider
-		.get_games(|game: DbGame| {
-			
-		match state.database_pool.read_state() {
-			Ok(pool) => {
-				let pool = pool.clone();
-				let game_clone = game.clone();
-				tauri::async_runtime::spawn_blocking(move || {
-					let game_query = sqlx::query::<Sqlite>(
-						"INSERT OR REPLACE INTO games (
-							provider_id,
-							game_id,
-							external_id,
-							display_title,
-							thumbnail_url,
-							release_date,
-							tags,
-							title_discriminator,
-							provider_commands
-						) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)"
-					)
-					.bind(game_clone.provider_id)
-					.bind(game_clone.game_id.clone())
-					.bind(game_clone.external_id.clone())
-					.bind(game_clone.display_title.clone())
-					.bind(game_clone.thumbnail_url.clone())
-					.bind(game_clone.release_date)
-					.bind(game_clone.tags.clone())
-					.bind(game_clone.title_discriminator.clone())
-					.bind(game_clone.provider_commands.clone());
+	provider.insert_games(&pool).await?;
 
-					let installed_game_query = game_clone.exe_path.as_ref().map(|exe_path| sqlx::query::<Sqlite>(
-						"INSERT OR REPLACE INTO installed_games (provider_id, game_id, exe_path, engine_brand, engine_version, unity_backend, architecture) 
-						 VALUES ($1, $2, $3, $4, $5, $6, $7)"
-					)
-						.bind(game_clone.provider_id)
-						.bind(game_clone.game_id.clone())
-						.bind(exe_path)
-						.bind(game_clone.engine_brand)
-						.bind(game_clone.engine_version)
-						.bind(game_clone.unity_backend)
-						.bind(game_clone.architecture)
-					);
-
-					tauri::async_runtime::block_on(async {
-						// TODO transaction
-
-
-						if let Err(err) = pool.execute(game_query).await {
-							log::error!("Failed to execute query: {err}");
-						}
-
-						if let Some(installed_game_query) = installed_game_query {
-							if let Err(err) = pool.execute(installed_game_query).await {
-								log::error!("Failed to execute query: {err}");
-							}
-						}
-						
-						for normalized_title in get_normalized_titles(&game.display_title) {
-							sqlx::query::<Sqlite>(
-								 "INSERT OR REPLACE INTO normalized_titles (provider_id, game_id, normalized_title) 
-									VALUES ($1, $2, $3)"
-							 )
-								 .bind(game.provider_id)
-								 .bind(game.game_id.clone())
-								 .bind(normalized_title.clone()).execute(&pool).await;
-						 }
-
-					});
-				});
-			}
-			Err(err) => {
-				log::error!("Failed to read database pool: {err}");
-			}
-		}
-		})
-		.await
-		.unwrap_or_else(|err| {
-			// It's normal for a provider to fail here if that provider is just missing.
-			// So we log those errors here instead of throwing them up.
-			log::warn!(
-				"Failed to get games for provider {provider_id}. User might just not have it. Error: {err}"
-			);
-		});
-
-		// TODO get rid of stale games after everything is done.
+	// TODO get rid of stale games after everything is done.
 
 	Ok(())
 }
@@ -634,7 +549,7 @@ async fn add_game(path: PathBuf, handle: AppHandle) -> Result {
 	// 	ProviderId::Manual,
 	// 	game.id.game_id.clone(),
 	// ));
-		
+
 	// analytics::send_event(analytics::Event::ManuallyAddGame, &game_name).await;
 
 	// TODO add manual game to db
@@ -652,10 +567,7 @@ async fn remove_game(path: PathBuf, handle: AppHandle) -> Result {
 
 #[tauri::command]
 #[specta::specta]
-async fn run_provider_command(
-	provider_command: ProviderCommand,
-	handle: AppHandle,
-) -> Result {
+async fn run_provider_command(provider_command: ProviderCommand, handle: AppHandle) -> Result {
 	provider_command.run()?;
 
 	handle.emit_safe(events::ExecutedProviderCommand);
@@ -691,121 +603,135 @@ async fn open_logs_folder() -> Result {
 
 #[tauri::command]
 #[specta::specta]
-async fn get_game_ids(
-    handle: AppHandle,
-    query: Option<GamesQuery>,
-) -> Result<GameIdsResponse> {
-    let state = handle.app_state();
-    let pool = state.database_pool.read_state()?.clone();
-    let search = query.as_ref().map(|q| q.search.clone()).unwrap_or_default();
+async fn get_game_ids(handle: AppHandle, query: Option<GamesQuery>) -> Result<GameIdsResponse> {
+	let state = handle.app_state();
+	let pool = state.database_pool.read_state()?.clone();
+	let search = query.as_ref().map(|q| q.search.clone()).unwrap_or_default();
 
-    // Build sorting logic
-    let sort_columns = match query.as_ref().map(|q| q.sort_by) {
-        Some(GamesSortBy::Title) => vec!["g.display_title"],
-        Some(GamesSortBy::ReleaseDate) => vec!["g.release_date"],
-        Some(GamesSortBy::Engine) => vec!["COALESCE(ig.engine_brand, rg.engine_brand)", "COALESCE(ig.engine_version, rg.engine_version)"],
-        _ => vec!["g.display_title"],
-    };
+	// Build sorting logic
+	let sort_columns = match query.as_ref().map(|q| q.sort_by) {
+		Some(GamesSortBy::Title) => vec!["g.display_title"],
+		Some(GamesSortBy::ReleaseDate) => vec!["g.release_date"],
+		Some(GamesSortBy::Engine) => vec![
+			"COALESCE(ig.engine_brand, rg.engine_brand)",
+			"COALESCE(ig.engine_version, rg.engine_version)",
+		],
+		_ => vec!["g.display_title"],
+	};
 
-    let sort_order = if query.as_ref().is_some_and(|q| q.sort_descending) {
-        "DESC"
-    } else {
-        "ASC"
-    };
+	let sort_order = if query.as_ref().is_some_and(|q| q.sort_descending) {
+		"DESC"
+	} else {
+		"ASC"
+	};
 
-    // Build filtering logic dynamically
-    let mut filters = Vec::<String>::new();
+	// Build filtering logic dynamically
+	let mut filters = Vec::<String>::new();
 
-    if let Some(filter) = query.as_ref().map(|q| &q.filter) {
-        // Installed filter
-        if filter.installed.contains(&Some(InstallState::Installed)) {
-            filters.push("ig.exe_path IS NOT NULL".to_string());
-        } else if filter.installed.contains(&Some(InstallState::NotInstalled)) {
-            filters.push("ig.exe_path IS NULL".to_string());
-        }
+	if let Some(filter) = query.as_ref().map(|q| &q.filter) {
+		// Installed filter
+		if filter.installed.contains(&Some(InstallState::Installed)) {
+			filters.push("ig.exe_path IS NOT NULL".to_string());
+		} else if filter.installed.contains(&Some(InstallState::NotInstalled)) {
+			filters.push("ig.exe_path IS NULL".to_string());
+		}
 
-        if !filter.providers.is_empty() {
-            let provider_conditions: Vec<String> = filter
-                .providers
-                .iter()
-                .filter_map(|provider| provider.as_ref().map(|p| format!("g.provider_id = '{}'", p)))
-                .collect();
-            if !provider_conditions.is_empty() {
-                filters.push(format!("({})", provider_conditions.join(" OR ")));
-            }
-        }
+		if !filter.providers.is_empty() {
+			let provider_conditions: Vec<String> = filter
+				.providers
+				.iter()
+				.filter_map(|provider| {
+					provider
+						.as_ref()
+						.map(|p| format!("g.provider_id = '{}'", p))
+				})
+				.collect();
+			if !provider_conditions.is_empty() {
+				filters.push(format!("({})", provider_conditions.join(" OR ")));
+			}
+		}
 
-				// TODO: tag filtering expectation is weird, probably want to make sure disabled tags never show up.
-        if !filter.tags.is_empty() {
-            let tag_conditions: Vec<String> = filter
-                .tags
-                .iter()
-                .map(|tag| if let Some(t) = tag {
-									format!("g.tags LIKE '%\"{}\"%'", t)
-								} else {
-									format!("g.tags = '[]'")
-								})
-                .collect();
-            if !tag_conditions.is_empty() {
-                filters.push(format!("({})", tag_conditions.join(" OR ")));
-            }
-        }
-
-				if !filter.engines.is_empty() {
-					let mut engine_conditions = Vec::new();
-			
-					// Check if None is in the filter.engines
-					if filter.engines.contains(&None) {
-							engine_conditions.push("COALESCE(ig.engine_brand, rg.engine_brand) IS NULL".to_string());
+		// TODO: tag filtering expectation is weird, probably want to make sure disabled tags never show up.
+		if !filter.tags.is_empty() {
+			let tag_conditions: Vec<String> = filter
+				.tags
+				.iter()
+				.map(|tag| {
+					if let Some(t) = tag {
+						format!("g.tags LIKE '%\"{}\"%'", t)
+					} else {
+						format!("g.tags = '[]'")
 					}
-			
-					// Collect all non-None values and use the IN clause
-					let engine_values: Vec<String> = filter
-							.engines
-							.iter()
-							.filter_map(|engine| engine.as_ref().map(|e| format!("'{}'", e)))
-							.collect();
-			
-					if !engine_values.is_empty() {
-							engine_conditions.push(format!(
-									"COALESCE(ig.engine_brand, rg.engine_brand) IN ({})",
-									engine_values.join(", ")
-							));
-					}
-			
-					if !engine_conditions.is_empty() {
-							filters.push(format!("({})", engine_conditions.join(" OR ")));
-					}
+				})
+				.collect();
+			if !tag_conditions.is_empty() {
+				filters.push(format!("({})", tag_conditions.join(" OR ")));
+			}
+		}
+
+		if !filter.engines.is_empty() {
+			let mut engine_conditions = Vec::new();
+
+			// Check if None is in the filter.engines
+			if filter.engines.contains(&None) {
+				engine_conditions
+					.push("COALESCE(ig.engine_brand, rg.engine_brand) IS NULL".to_string());
 			}
 
-				if !filter.unity_scripting_backends.is_empty() {
-						let backend_conditions: Vec<String> = filter
-								.unity_scripting_backends
-								.iter()
-								.filter_map(|backend| backend.as_ref().map(|b| format!("ig.unity_backend = '{}'", b)))
-								.collect();
-						if !backend_conditions.is_empty() {
-								filters.push(format!("({})", backend_conditions.join(" OR ")));
-						}
-				}
-    }
+			// Collect all non-None values and use the IN clause
+			let engine_values: Vec<String> = filter
+				.engines
+				.iter()
+				.filter_map(|engine| engine.as_ref().map(|e| format!("'{}'", e)))
+				.collect();
 
-    // Add search filter
-    if !search.trim().is_empty() {
-        filters.push("(g.display_title LIKE '%' || $1 || '%' OR nt.normalized_title LIKE '%' || $1 || '%')".to_string());
-    }
+			if !engine_values.is_empty() {
+				engine_conditions.push(format!(
+					"COALESCE(ig.engine_brand, rg.engine_brand) IN ({})",
+					engine_values.join(", ")
+				));
+			}
 
-    // Combine all filters into a single WHERE clause
-    let where_clause = if filters.is_empty() {
-        "1=1".to_string() // No filters, match all rows
-    } else {
-        filters.join(" AND ")
-    };
+			if !engine_conditions.is_empty() {
+				filters.push(format!("({})", engine_conditions.join(" OR ")));
+			}
+		}
 
-		log::info!("#### WHERE clause: {where_clause}");
+		if !filter.unity_scripting_backends.is_empty() {
+			let backend_conditions: Vec<String> = filter
+				.unity_scripting_backends
+				.iter()
+				.filter_map(|backend| {
+					backend
+						.as_ref()
+						.map(|b| format!("ig.unity_backend = '{}'", b))
+				})
+				.collect();
+			if !backend_conditions.is_empty() {
+				filters.push(format!("({})", backend_conditions.join(" OR ")));
+			}
+		}
+	}
 
-		let query = &format!(
-			r#"
+	// Add search filter
+	if !search.trim().is_empty() {
+		filters.push(
+			"(g.display_title LIKE '%' || $1 || '%' OR nt.normalized_title LIKE '%' || $1 || '%')"
+				.to_string(),
+		);
+	}
+
+	// Combine all filters into a single WHERE clause
+	let where_clause = if filters.is_empty() {
+		"1=1".to_string() // No filters, match all rows
+	} else {
+		filters.join(" AND ")
+	};
+
+	log::info!("#### WHERE clause: {where_clause}");
+
+	let query = &format!(
+		r#"
 			SELECT DISTINCT
 					g.provider_id as provider_id,
 					g.game_id as game_id
@@ -820,34 +746,34 @@ async fn get_game_ids(
 			WHERE {where_clause}
 			ORDER BY {}
 			"#,
-			sort_columns
-					.iter()
-					.map(|col| format!("{col} {sort_order}"))
-					.collect::<Vec<_>>()
-					.join(", ")
+		sort_columns
+			.iter()
+			.map(|col| format!("{col} {sort_order}"))
+			.collect::<Vec<_>>()
+			.join(", ")
 	);
 
 	log::info!("#### Query: {query}");
 
-    let game_ids: Vec<GameId> = sqlx::query_as(
-			query
-    )
-    .bind(search.trim())
-    .fetch_all(&pool)
-    .await?;
+	let game_ids: Vec<GameId> = sqlx::query_as(query)
+		.bind(search.trim())
+		.fetch_all(&pool)
+		.await?;
 
-    let total_count: i64 = sqlx::query(r#"
+	let total_count: i64 = sqlx::query(
+		r#"
 			SELECT COUNT(*)
 			FROM main.games g
-		"#)
-    .fetch_one(&pool)
-    .await?
-    .try_get(0)?;
+		"#,
+	)
+	.fetch_one(&pool)
+	.await?
+	.try_get(0)?;
 
-    Ok(GameIdsResponse {
-        game_ids,
-        total_count,
-    })
+	Ok(GameIdsResponse {
+		game_ids,
+		total_count,
+	})
 }
 
 #[tauri::command]
@@ -857,7 +783,8 @@ async fn get_game(id: GameId, handle: AppHandle) -> Result<DbGame> {
 	let pool = state.database_pool.read_state()?.clone();
 
 	// TODO take into account all normalized titles
-	let db_game: DbGame = sqlx::query_as(r#"
+	let db_game: DbGame = sqlx::query_as(
+		r#"
 		SELECT
 			g.provider_id,
 			g.game_id,
@@ -883,7 +810,8 @@ async fn get_game(id: GameId, handle: AppHandle) -> Result<DbGame> {
 		)
 		WHERE g.provider_id = $1 AND g.game_id = $2
 		LIMIT 1
-	"#)
+	"#,
+	)
 	.bind(id.provider_id)
 	.bind(&id.game_id)
 	.fetch_one(&pool)
@@ -906,7 +834,10 @@ async fn save_app_settings(settings: AppSettings) -> Result {
 
 #[tauri::command]
 #[specta::specta]
-async fn get_installed_mod_versions(game_id: GameId, app_handle: AppHandle) -> Result<HashMap<String, String>> {
+async fn get_installed_mod_versions(
+	game_id: GameId,
+	app_handle: AppHandle,
+) -> Result<HashMap<String, String>> {
 	let game = get_game(game_id.clone(), app_handle.clone()).await?;
 	Ok(game.get_installed_mod_versions())
 }
@@ -1023,6 +954,19 @@ fn main() {
 					}
 				});
 			}
+
+			let state = app.app_handle().app_state();
+			let database_pool = state.database_pool.read_state().unwrap().clone();
+			let app_handle = app.app_handle().clone();
+
+			tauri::async_runtime::spawn(async move {
+				if let Ok(mut connection) = database_pool.acquire().await {
+					if let Ok(mut handle) = connection.lock_handle().await {
+						handle
+							.set_update_hook(move |_| app_handle.emit_safe(events::GamesChanged()));
+					}
+				}
+			});
 
 			Ok(())
 		})
