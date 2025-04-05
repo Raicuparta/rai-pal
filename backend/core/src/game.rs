@@ -193,6 +193,10 @@ impl DbGame {
 			.and_then(|e| e.version.as_ref().map(|v| v.display.clone()));
 		self.architecture = executable.architecture;
 		self.unity_backend = executable.scripting_backend;
+		self.add_provider_command(
+			ProviderCommandAction::StartViaExe,
+			ProviderCommand::Path(executable.path.clone(), Vec::default()),
+		);
 		self
 	}
 }

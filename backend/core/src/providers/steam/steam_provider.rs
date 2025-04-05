@@ -82,11 +82,6 @@ impl Steam {
 						get_start_command(&launch_option, &installed_game.title_discriminator),
 					);
 
-					installed_game.add_provider_command(
-						ProviderCommandAction::StartViaExe,
-						ProviderCommand::Path(executable.path.clone(), Vec::default()),
-					);
-
 					// Since there can be multiple Steam games within one installed app_id,
 					// we attach the exe path hash to the internal game_id to make it unique within the local Rai Pal database.
 					installed_game.game_id = format!(
