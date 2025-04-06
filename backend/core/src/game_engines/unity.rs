@@ -18,7 +18,7 @@ use crate::{
 
 #[serializable_enum]
 #[derive(sqlx::Type)]
-pub enum UnityScriptingBackend {
+pub enum UnityBackend {
 	Il2Cpp,
 	Mono,
 }
@@ -92,15 +92,15 @@ fn get_unity_data_path(game_exe_path: &Path) -> Result<PathBuf> {
 	Ok(parent.join(format!("{file_stem}_Data")))
 }
 
-fn get_scripting_backend(path: &Path) -> Option<UnityScriptingBackend> {
+fn get_unity_backend(path: &Path) -> Option<UnityBackend> {
 	match paths::path_parent(path) {
 		Ok(game_folder) => {
 			if game_folder.join("GameAssembly.dll").is_file()
 				|| game_folder.join("GameAssembly.so").is_file()
 			{
-				Some(UnityScriptingBackend::Il2Cpp)
+				Some(UnityBackend::Il2Cpp)
 			} else {
-				Some(UnityScriptingBackend::Mono)
+				Some(UnityBackend::Mono)
 			}
 		}
 		Err(err) => {
@@ -163,7 +163,7 @@ pub fn get_executable(game_path: &Path) -> Option<GameExecutable> {
 			path: game_path.to_path_buf(),
 			// name: game_path.file_name()?.to_string_lossy().to_string(),
 			architecture,
-			scripting_backend: get_scripting_backend(game_path),
+			unity_backend: get_unity_backend(game_path),
 			engine: Some(GameEngine {
 				brand: EngineBrand::Unity,
 				version: get_version(game_path),

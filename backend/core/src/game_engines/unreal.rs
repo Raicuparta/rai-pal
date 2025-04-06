@@ -269,7 +269,7 @@ pub fn get_executable(launch_path: &Path) -> Option<GameExecutable> {
 			path: shipping_exe_path,
 			// name: shipping_exe_path.file_name()?.to_string_lossy().to_string(),
 			architecture,
-			scripting_backend: None,
+			unity_backend: None,
 			engine: Some(GameEngine {
 				brand: EngineBrand::Unreal,
 				version,

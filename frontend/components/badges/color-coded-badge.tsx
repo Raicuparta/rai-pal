@@ -1,4 +1,4 @@
-import { EngineBrand, UnityScriptingBackend } from "@api/bindings";
+import { EngineBrand, UnityBackend } from "@api/bindings";
 import { Badge, BadgeProps, DefaultMantineColor } from "@mantine/core";
 interface Props<TValue extends string> extends BadgeProps {
 	readonly value?: TValue | null;
@@ -31,10 +31,7 @@ export const EngineBadge = CreateColorCodedBadge<EngineBrand>("-", {
 	GameMaker: "teal",
 });
 
-export const UnityBackendBadge = CreateColorCodedBadge<UnityScriptingBackend>(
-	"-",
-	{
-		Il2Cpp: "grape",
-		Mono: "cyan",
-	},
-);
+export const UnityBackendBadge = CreateColorCodedBadge<UnityBackend>("-", {
+	Il2Cpp: "grape",
+	Mono: "cyan",
+});

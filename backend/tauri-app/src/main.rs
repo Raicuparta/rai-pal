@@ -697,9 +697,9 @@ async fn get_game_ids(handle: AppHandle, query: Option<GamesQuery>) -> Result<Ga
 			}
 		}
 
-		if !filter.unity_scripting_backends.is_empty() {
+		if !filter.unity_backends.is_empty() {
 			let backend_conditions: Vec<String> = filter
-				.unity_scripting_backends
+				.unity_backends
 				.iter()
 				.filter_map(|backend| {
 					backend

@@ -34,7 +34,7 @@ export const frFr: Localization = {
 		provider: "Fournisseur",
 		tags: "Tag",
 		architecture: "Architecture",
-		unityScriptingBackend: "Backend Unity",
+		unityBackend: "Backend Unity",
 		engine: "Moteur",
 		status: "Statut",
 	},

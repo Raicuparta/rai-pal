@@ -6,7 +6,7 @@ use std::{
 use rai_pal_proc_macros::{serializable_enum, serializable_struct};
 
 use crate::{
-	game_engines::{game_engine::EngineBrand, unity::UnityScriptingBackend},
+	game_engines::{game_engine::EngineBrand, unity::UnityBackend},
 	game_mod::CommonModData,
 	mod_manifest::{self, Manifest},
 	paths::{self, open_folder_or_parent},
@@ -40,7 +40,7 @@ impl LocalMod {
 		loader_id: &str,
 		path: &Path,
 		engine: Option<EngineBrand>,
-		unity_backend: Option<UnityScriptingBackend>,
+		unity_backend: Option<UnityBackend>,
 	) -> Result<Self> {
 		let manifest = mod_manifest::get(&get_manifest_path(path));
 

@@ -3,7 +3,7 @@ use std::collections::HashSet;
 use rai_pal_proc_macros::{serializable_enum, serializable_struct};
 
 use crate::{
-	game_engines::{game_engine::EngineBrand, unity::UnityScriptingBackend},
+	game_engines::{game_engine::EngineBrand, unity::UnityBackend},
 	game_executable::Architecture,
 	game_tag::GameTag,
 	providers::provider::ProviderId,
@@ -20,7 +20,7 @@ pub struct GamesFilter {
 	pub providers: HashSet<Option<ProviderId>>,
 	pub tags: HashSet<Option<GameTag>>,
 	pub architectures: HashSet<Option<Architecture>>,
-	pub unity_scripting_backends: HashSet<Option<UnityScriptingBackend>>,
+	pub unity_backends: HashSet<Option<UnityBackend>>,
 	pub engines: HashSet<Option<EngineBrand>>,
 	pub installed: HashSet<Option<InstallState>>,
 }
@@ -54,10 +54,7 @@ impl Default for GamesFilter {
 			engines: EngineBrand::variants().into_iter().map(Some).collect(),
 			providers: ProviderId::variants().into_iter().map(Some).collect(),
 			tags: GameTag::variants().into_iter().map(Some).collect(),
-			unity_scripting_backends: UnityScriptingBackend::variants()
-				.into_iter()
-				.map(Some)
-				.collect(),
+			unity_backends: UnityBackend::variants().into_iter().map(Some).collect(),
 			installed: InstallState::variants().into_iter().map(Some).collect(),
 		}
 	}

@@ -13,7 +13,7 @@ use crate::{
 	game::DbGame,
 	game_engines::{
 		game_engine::{EngineBrand, GameEngine},
-		unity::UnityScriptingBackend,
+		unity::UnityBackend,
 	},
 	game_mod::CommonModData,
 	local_mod::{LocalMod, ModKind},
@@ -50,17 +50,17 @@ impl ModLoaderActions for BepInEx {
 
 	fn install(&self, game: &DbGame) -> Result {
 		let exe_path = game.try_get_exe_path()?;
-		let scripting_backend_path = &self.data.path.join(
+		let unity_backend_path = &self.data.path.join(
 			game.unity_backend
 				.ok_or_else(|| {
 					Error::ModInstallInfoInsufficient(
-						"scripting_backend".to_string(),
+						"unity_backend".to_string(),
 						game.display_title.clone(),
 					)
 				})?
 				.to_string(),
 		);
-		let architecture_path = scripting_backend_path
+		let architecture_path = unity_backend_path
 			.join(
 				// Hardcoded windows platform since that's all we support for now.
 				"Windows",
@@ -102,8 +102,7 @@ impl ModLoaderActions for BepInEx {
 
 		fs::copy(config_origin_path, config_target_folder.join("BepInEx.cfg"))?;
 
-		let doorstop_config =
-			fs::read_to_string(scripting_backend_path.join("doorstop_config.ini"))?;
+		let doorstop_config = fs::read_to_string(unity_backend_path.join("doorstop_config.ini"))?;
 
 		fs::write(
 			game_folder.join("doorstop_config.ini"),
@@ -201,8 +200,8 @@ impl ModLoaderActions for BepInEx {
 		let installed_mods_path = Self::get_installed_mods_path()?;
 
 		let local_mods = {
-			let mut local_mods = find_mods(&installed_mods_path, UnityScriptingBackend::Il2Cpp);
-			local_mods.extend(find_mods(&installed_mods_path, UnityScriptingBackend::Mono));
+			let mut local_mods = find_mods(&installed_mods_path, UnityBackend::Il2Cpp);
+			local_mods.extend(find_mods(&installed_mods_path, UnityBackend::Mono));
 			local_mods
 		};
 
@@ -217,11 +216,8 @@ fn is_legacy(engine: &GameEngine) -> bool {
 	})
 }
 
-fn find_mods(
-	installed_mods_path: &Path,
-	scripting_backend: UnityScriptingBackend,
-) -> HashMap<String, LocalMod> {
-	let mods_folder_path = installed_mods_path.join(scripting_backend.to_string());
+fn find_mods(installed_mods_path: &Path, unity_backend: UnityBackend) -> HashMap<String, LocalMod> {
+	let mods_folder_path = installed_mods_path.join(unity_backend.to_string());
 
 	paths::glob_path(&mods_folder_path.join("*"))
 		.iter()
@@ -230,7 +226,7 @@ fn find_mods(
 				BepInEx::ID,
 				mod_path,
 				Some(EngineBrand::Unity),
-				Some(scripting_backend),
+				Some(unity_backend),
 			) {
 				Some((local_mod.common.id.clone(), local_mod))
 			} else {

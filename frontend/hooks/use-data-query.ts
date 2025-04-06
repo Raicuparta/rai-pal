@@ -11,7 +11,7 @@ export const defaultQuery: GamesQuery = {
 		engines: [],
 		providers: [],
 		tags: [],
-		unityScriptingBackends: [],
+		unityBackends: [],
 		installed: [],
 	},
 };

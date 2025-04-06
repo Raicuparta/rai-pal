@@ -9,7 +9,7 @@ use sqlx::Sqlite;
 
 use crate::{
 	data_types::{json_data::JsonData, path_data::PathData},
-	game_engines::{game_engine::EngineBrand, unity::UnityScriptingBackend},
+	game_engines::{game_engine::EngineBrand, unity::UnityBackend},
 	game_executable::{Architecture, GameExecutable},
 	game_tag::GameTag,
 	game_title::get_normalized_titles,
@@ -41,7 +41,7 @@ pub struct DbGame {
 	pub exe_path: Option<PathData>,
 	pub engine_brand: Option<EngineBrand>,
 	pub engine_version: Option<String>,
-	pub unity_backend: Option<UnityScriptingBackend>,
+	pub unity_backend: Option<UnityBackend>,
 	pub architecture: Option<Architecture>,
 	pub tags: JsonData<Vec<GameTag>>,
 	pub provider_commands: JsonData<HashMap<ProviderCommandAction, ProviderCommand>>,
@@ -158,7 +158,7 @@ impl DbGame {
 			.as_ref()
 			.and_then(|e| e.version.as_ref().map(|v| v.display.clone()));
 		self.architecture = executable.architecture;
-		self.unity_backend = executable.scripting_backend;
+		self.unity_backend = executable.unity_backend;
 		self.add_provider_command(
 			ProviderCommandAction::StartViaExe,
 			ProviderCommand::Path(executable.path.clone(), Vec::default()),

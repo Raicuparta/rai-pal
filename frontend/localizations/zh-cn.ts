@@ -33,7 +33,7 @@ export const zhCn: Localization = {
 		provider: "提供商",
 		tags: "标签",
 		architecture: "架构",
-		unityScriptingBackend: "Unity 后端",
+		unityBackend: "Unity 后端",
 		engine: "引擎",
 		status: "状态",
 	},

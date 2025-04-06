@@ -34,7 +34,7 @@ export const jaJp: Localization = {
 		provider: "プロバイダー",
 		tags: "タグ",
 		architecture: "アーキテクチャ",
-		unityScriptingBackend: "Unity バックエンド",
+		unityBackend: "Unity バックエンド",
 		engine: "エンジン",
 		status: "ステータス",
 	},

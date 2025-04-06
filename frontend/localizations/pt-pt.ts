@@ -33,7 +33,7 @@ export const ptPt: Localization = {
 		provider: "Fornecedor",
 		tags: "Etiqueta",
 		architecture: "Arquitetura",
-		unityScriptingBackend: "Backend do Unity",
+		unityBackend: "Backend do Unity",
 		engine: "Motor",
 		status: "Estado",
 	},

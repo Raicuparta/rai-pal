@@ -9,7 +9,7 @@ use rai_pal_proc_macros::{serializable_enum, serializable_struct};
 use crate::{
 	game_engines::{
 		game_engine::GameEngine,
-		unity::{self, UnityScriptingBackend},
+		unity::{self, UnityBackend},
 		unreal,
 	},
 	paths::normalize_path,
@@ -28,7 +28,7 @@ pub struct GameExecutable {
 	pub path: PathBuf,
 	pub engine: Option<GameEngine>,
 	pub architecture: Option<Architecture>,
-	pub scripting_backend: Option<UnityScriptingBackend>,
+	pub unity_backend: Option<UnityBackend>,
 }
 
 pub fn get_architecture(exe_path: &Path) -> Result<Option<Architecture>> {
@@ -106,7 +106,7 @@ impl GameExecutable {
 					path: path.to_owned(),
 					engine: None,
 					architecture: None,
-					scripting_backend: None,
+					unity_backend: None,
 				})
 			})
 	}

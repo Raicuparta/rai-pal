@@ -34,7 +34,7 @@ export const esEs: Localization = {
 		provider: "Proveedor",
 		tags: "Etiqueta",
 		architecture: "Arquitectura",
-		unityScriptingBackend: "Backend de Unity",
+		unityBackend: "Backend de Unity",
 		engine: "Motor",
 		status: "Estado",
 	},

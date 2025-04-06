@@ -1,7 +1,12 @@
 import { Button, Group, Indicator, Popover } from "@mantine/core";
 import { IconFilter, IconX } from "@tabler/icons-react";
 import styles from "./filters.module.css";
-import { FilterChangeCallback, FilterKey, FilterSelect, FilterValue } from "./filter-select";
+import {
+	FilterChangeCallback,
+	FilterKey,
+	FilterSelect,
+	FilterValue,
+} from "./filter-select";
 import { SearchInput } from "@components/search-input";
 import { GamesFilter, GamesQuery } from "@api/bindings";
 import { useDataQuery } from "@hooks/use-data-query";
@@ -24,7 +29,9 @@ type FilterDetails<TKey extends FilterKey> = {
 	valueDetails: Record<NonNullable<FilterValue<TKey>>, ValueDetails>;
 };
 
-export const filterDetails = Object.freeze<{ [key in FilterKey]: FilterDetails<key> }>({
+export const filterDetails = Object.freeze<{
+	[key in FilterKey]: FilterDetails<key>;
+}>({
 	architectures: {
 		localizationKey: "architecture",
 		emptyLocalizationKey: "unknown",
@@ -57,8 +64,8 @@ export const filterDetails = Object.freeze<{ [key in FilterKey]: FilterDetails<k
 			},
 		},
 	},
-	unityScriptingBackends: {
-		localizationKey: "unityScriptingBackend",
+	unityBackends: {
+		localizationKey: "unityBackend",
 		emptyLocalizationKey: "unknown",
 		valueDetails: {
 			Il2Cpp: {
@@ -139,11 +146,9 @@ export function FilterMenu() {
 	};
 
 	// active if has search or any filter has length smaller than default
-	const active =
-		Object.keys(dataQuery.filter).some(
-			(filterId) =>
-				dataQuery.filter[filterId as keyof GamesFilter].length > 0
-		);
+	const active = Object.keys(dataQuery.filter).some(
+		(filterId) => dataQuery.filter[filterId as keyof GamesFilter].length > 0,
+	);
 
 	return (
 		<>
@@ -185,15 +190,21 @@ export function FilterMenu() {
 								align="start"
 								wrap="nowrap"
 							>
-								{(Object.keys(filterDetails) as Array<FilterKey>).map((filterKey) => (
-									<FilterSelect
-										key={filterKey}
-										id={filterKey}
-										possibleValues={Object.keys(filterDetails[filterKey].valueDetails) as Array<NonNullable<FilterValue<FilterKey>>>}
-										currentValues={dataQuery.filter[filterKey]}
-										onChange={handleToggleClick}
-									/>
-								))}
+								{(Object.keys(filterDetails) as Array<FilterKey>).map(
+									(filterKey) => (
+										<FilterSelect
+											key={filterKey}
+											id={filterKey}
+											possibleValues={
+												Object.keys(
+													filterDetails[filterKey].valueDetails,
+												) as Array<NonNullable<FilterValue<FilterKey>>>
+											}
+											currentValues={dataQuery.filter[filterKey]}
+											onChange={handleToggleClick}
+										/>
+									),
+								)}
 							</Group>
 						</Popover.Dropdown>
 					</Popover>

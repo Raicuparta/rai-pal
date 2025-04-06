@@ -83,7 +83,7 @@ export const enUs = {
 		architecture: "Architecture",
 
 		// Unity scripting backend (Mono, IL2CPP)
-		unityScriptingBackend: "Unity Backend",
+		unityBackend: "Unity Backend",
 
 		// Game engine (Unity, Unreal, etc)
 		engine: "Engine",

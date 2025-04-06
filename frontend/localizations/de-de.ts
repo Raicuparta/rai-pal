@@ -34,7 +34,7 @@ export const deDe: Localization = {
 		provider: "Anbieter",
 		tags: "Tag",
 		architecture: "Architektur",
-		unityScriptingBackend: "Unity Backend",
+		unityBackend: "Unity Backend",
 		engine: "Engine",
 		status: "Status",
 	},
