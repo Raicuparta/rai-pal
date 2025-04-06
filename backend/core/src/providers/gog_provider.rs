@@ -97,13 +97,6 @@ impl ProviderActions for Gog {
 		}
 		Ok(())
 	}
-
-	async fn get_games<TCallback>(&self, mut callback: TCallback) -> Result
-	where
-		TCallback: FnMut(DbGame) + Send + Sync,
-	{
-		Ok(())
-	}
 }
 
 #[serializable_struct]

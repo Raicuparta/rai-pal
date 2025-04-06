@@ -53,13 +53,6 @@ impl ProviderActions for Manual {
 
 		Ok(())
 	}
-
-	async fn get_games<TCallback>(&self, mut callback: TCallback) -> Result
-	where
-		TCallback: FnMut(DbGame) + Send + Sync,
-	{
-		Ok(())
-	}
 }
 
 fn games_config_path() -> Result<PathBuf> {

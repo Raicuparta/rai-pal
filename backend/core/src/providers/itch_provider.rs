@@ -129,13 +129,6 @@ impl ProviderActions for Itch {
 
 		Ok(())
 	}
-
-	async fn get_games<TCallback>(&self, mut callback: TCallback) -> Result
-	where
-		TCallback: FnMut(DbGame) + Send + Sync,
-	{
-		Ok(())
-	}
 }
 
 fn parse_verdict(json_option: Option<String>) -> Option<ItchDatabaseVerdict> {

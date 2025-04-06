@@ -1,9 +1,4 @@
-use std::{
-	fs,
-	marker::{Send, Sync},
-	ops::Deref,
-	path::PathBuf,
-};
+use std::{fs, path::PathBuf};
 
 use enum_dispatch::enum_dispatch;
 use rai_pal_proc_macros::serializable_enum;
@@ -16,7 +11,6 @@ use crate::providers::heroic_gog_provider::HeroicGog;
 #[cfg(target_os = "windows")]
 use crate::providers::{epic_provider::Epic, gog_provider::Gog, xbox_provider::Xbox};
 use crate::{
-	game::DbGame,
 	paths,
 	providers::{
 		itch_provider::Itch, manual_provider::Manual, steam::steam_provider::Steam,
@@ -79,10 +73,6 @@ const PROVIDERS: &Map = &[
 
 #[enum_dispatch(Provider)]
 pub trait ProviderActions {
-	async fn get_games<TCallback>(&self, callback: TCallback) -> Result
-	where
-		TCallback: FnMut(DbGame) + Send + Sync;
-
 	async fn insert_games(&self, pool: &Pool<Sqlite>) -> Result;
 }
 

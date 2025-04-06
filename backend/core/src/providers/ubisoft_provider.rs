@@ -24,11 +24,4 @@ impl ProviderActions for Ubisoft {
 
 		Ok(())
 	}
-
-	async fn get_games<TCallback>(&self, mut _callback: TCallback) -> Result
-	where
-		TCallback: FnMut(DbGame) + Send + Sync,
-	{
-		Ok(())
-	}
 }

@@ -61,13 +61,6 @@ impl ProviderActions for Xbox {
 
 		Ok(())
 	}
-
-	async fn get_games<TCallback>(&self, mut callback: TCallback) -> Result
-	where
-		TCallback: FnMut(DbGame) + Send + Sync,
-	{
-		Ok(())
-	}
 }
 
 async fn get_games(pool: &sqlx::Pool<sqlx::Sqlite>) -> io::Result<()> {
