@@ -5,13 +5,10 @@ use std::{
 };
 
 use rai_pal_proc_macros::serializable_struct;
-use sqlx::{
-	Database, Sqlite,
-	encode::IsNull,
-	sqlite::{SqliteTypeInfo, SqliteValueRef},
-};
+use sqlx::Sqlite;
 
 use crate::{
+	data_types::{json_data::JsonData, path_data::PathData},
 	game_engines::{game_engine::EngineBrand, unity::UnityScriptingBackend},
 	game_executable::{Architecture, GameExecutable},
 	game_tag::GameTag,
@@ -41,46 +38,13 @@ pub struct DbGame {
 	pub title_discriminator: Option<String>,
 	pub thumbnail_url: Option<String>,
 	pub release_date: Option<i64>,
-	pub exe_path: Option<String>, // TODO convert to Path and back
+	pub exe_path: Option<PathData>,
 	pub engine_brand: Option<EngineBrand>,
 	pub engine_version: Option<String>,
 	pub unity_backend: Option<UnityScriptingBackend>,
 	pub architecture: Option<Architecture>,
 	pub tags: JsonData<Vec<GameTag>>,
 	pub provider_commands: JsonData<HashMap<ProviderCommandAction, ProviderCommand>>,
-}
-
-#[derive(sqlx::FromRow, serde::Serialize, specta::Type, Clone)]
-pub struct JsonData<T>(pub T);
-
-impl<T> sqlx::Decode<'_, sqlx::Sqlite> for JsonData<T>
-where
-	T: serde::de::DeserializeOwned + Eq,
-{
-	fn decode(value: SqliteValueRef<'_>) -> std::result::Result<Self, sqlx::error::BoxDynError> {
-		let json_str = <&str as sqlx::Decode<sqlx::Sqlite>>::decode(value)?;
-		let set: T = serde_json::from_str(&json_str)?;
-		Ok(JsonData(set))
-	}
-}
-
-impl<T> sqlx::Encode<'_, sqlx::Sqlite> for JsonData<T>
-where
-	T: serde::Serialize + Eq,
-{
-	fn encode_by_ref(
-		&self,
-		buf: &mut <Sqlite as Database>::ArgumentBuffer<'_>,
-	) -> std::result::Result<IsNull, Box<dyn std::error::Error + Send + Sync>> {
-		let json_str = serde_json::to_string(&self.0)?;
-		<String as sqlx::Encode<sqlx::Sqlite>>::encode_by_ref(&json_str, buf)
-	}
-}
-
-impl<T> sqlx::Type<Sqlite> for JsonData<T> {
-	fn type_info() -> SqliteTypeInfo {
-		<String as sqlx::Type<Sqlite>>::type_info()
-	}
 }
 
 impl DbGame {
@@ -164,10 +128,12 @@ impl DbGame {
 		Ok(installed_mods_folder)
 	}
 
-	pub fn try_get_exe_path(&self) -> Result<PathBuf> {
-		Ok(PathBuf::from(self.exe_path.as_ref().ok_or_else(|| {
-			Error::GameNotInstalled(self.display_title.clone())
-		})?))
+	pub fn try_get_exe_path(&self) -> Result<&Path> {
+		Ok(&self
+			.exe_path
+			.as_ref()
+			.ok_or_else(|| Error::GameNotInstalled(self.display_title.clone()))?
+			.0)
 	}
 
 	pub fn add_provider_command(
@@ -185,7 +151,7 @@ impl DbGame {
 	}
 
 	pub fn set_executable(&mut self, executable: &GameExecutable) -> &mut Self {
-		self.exe_path = Some(executable.path.display().to_string());
+		self.exe_path = Some(PathData(executable.path.clone()));
 		self.engine_brand = executable.engine.as_ref().map(|e| e.brand.clone());
 		self.engine_version = executable
 			.engine

@@ -1,6 +1,7 @@
 #![allow(async_fn_in_trait)]
 
 pub mod analytics;
+pub mod data_types;
 pub mod debug;
 pub mod files;
 pub mod game;
