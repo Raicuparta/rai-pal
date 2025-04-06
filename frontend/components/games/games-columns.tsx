@@ -152,8 +152,10 @@ const engine: GamesColumn = {
 					</Box>
 				)}
 				{!engine && <div>-</div>}
-				{item.engineVersion && (
-					<Box className={styles.engineVersion}>{item.engineVersion}</Box>
+				{item.engineVersionDisplay && (
+					<Box className={styles.engineVersion}>
+						{item.engineVersionDisplay}
+					</Box>
 				)}
 				{detailsText && (
 					<Box className={styles.engineDetails}>{detailsText}</Box>

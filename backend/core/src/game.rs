@@ -40,7 +40,10 @@ pub struct DbGame {
 	pub release_date: Option<i64>,
 	pub exe_path: Option<PathData>,
 	pub engine_brand: Option<EngineBrand>,
-	pub engine_version: Option<String>,
+	pub engine_version_major: Option<u32>,
+	pub engine_version_minor: Option<u32>,
+	pub engine_version_patch: Option<u32>,
+	pub engine_version_display: Option<String>,
 	pub unity_backend: Option<UnityBackend>,
 	pub architecture: Option<Architecture>,
 	pub tags: JsonData<Vec<GameTag>>,
@@ -59,7 +62,10 @@ impl DbGame {
 			release_date: None,
 			exe_path: None,
 			engine_brand: None,
-			engine_version: None,
+			engine_version_major: None,
+			engine_version_minor: None,
+			engine_version_patch: None,
+			engine_version_display: None,
 			unity_backend: None,
 			architecture: None,
 			tags: JsonData(Vec::default()),
@@ -153,10 +159,16 @@ impl DbGame {
 	pub fn set_executable(&mut self, executable: &GameExecutable) -> &mut Self {
 		self.exe_path = Some(PathData(executable.path.clone()));
 		self.engine_brand = executable.engine.as_ref().map(|e| e.brand.clone());
-		self.engine_version = executable
+		if let Some(engine_version) = executable
 			.engine
 			.as_ref()
-			.and_then(|e| e.version.as_ref().map(|v| v.display.clone()));
+			.and_then(|engine| engine.version.as_ref())
+		{
+			self.engine_version_major = Some(engine_version.numbers.major);
+			self.engine_version_minor = engine_version.numbers.minor;
+			self.engine_version_patch = engine_version.numbers.patch;
+			self.engine_version_display = Some(engine_version.display.clone());
+		}
 		self.architecture = executable.architecture;
 		self.unity_backend = executable.unity_backend;
 		self.add_provider_command(
@@ -202,17 +214,32 @@ impl InsertGame for sqlx::Pool<Sqlite> {
 
 		if let Some(exe_path) = game.exe_path.as_ref() {
 			sqlx::query::<Sqlite>(
-					"INSERT OR REPLACE INTO installed_games (provider_id, game_id, exe_path, engine_brand, engine_version, unity_backend, architecture)
-					 VALUES ($1, $2, $3, $4, $5, $6, $7)"
-				)
-					.bind(game.provider_id)
-					.bind(game.game_id.clone())
-					.bind(exe_path)
-					.bind(game.engine_brand)
-					.bind(game.engine_version.clone())
-					.bind(game.unity_backend.clone())
-					.bind(game.architecture.clone()
-				).execute(&mut *transaction).await?;
+				"INSERT OR REPLACE INTO installed_games (
+						provider_id,
+						game_id,
+						exe_path,
+						engine_brand,
+						engine_version_major,
+						engine_version_minor,
+						engine_version_patch,
+						engine_version_display,
+						unity_backend,
+						architecture
+					)
+					 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)",
+			)
+			.bind(game.provider_id)
+			.bind(game.game_id.clone())
+			.bind(exe_path)
+			.bind(game.engine_brand)
+			.bind(game.engine_version_major)
+			.bind(game.engine_version_minor)
+			.bind(game.engine_version_patch)
+			.bind(game.engine_version_display.clone())
+			.bind(game.unity_backend.clone())
+			.bind(game.architecture.clone())
+			.execute(&mut *transaction)
+			.await?;
 		}
 
 		for normalized_title in get_normalized_titles(&game.display_title) {

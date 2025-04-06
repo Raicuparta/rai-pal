@@ -422,6 +422,9 @@ async fn attach_remote_database(pool: &Pool<Sqlite>, path: &Path) -> Result {
 		return Ok(());
 	}
 
+	// TODO update remote with new version format.
+	return Ok(());
+
 	sqlx::query(&format!(
 		r#"
     ATTACH DATABASE 'file:{}?mode=ro' AS 'remote';
@@ -486,7 +489,10 @@ pub async fn setup_database() -> Result<Pool<Sqlite>> {
 				game_id TEXT NOT NULL,
 				exe_path TEXT NOT NULL,
 				engine_brand TEXT,
-				engine_version TEXT,
+				engine_version_major INTEGER,
+				engine_version_minor INTEGER,
+				engine_version_patch INTEGER,
+				engine_version_display TEXT,
 				unity_backend TEXT,
 				architecture TEXT,
 				FOREIGN KEY(provider_id, game_id) REFERENCES games(provider_id, game_id),
@@ -497,7 +503,10 @@ pub async fn setup_database() -> Result<Pool<Sqlite>> {
         provider_id TEXT NOT NULL,
         external_id TEXT NOT NULL,
         engine_brand TEXT,
-        engine_version TEXT,
+				engine_version_major INTEGER,
+				engine_version_minor INTEGER,
+				engine_version_patch INTEGER,
+				engine_version_display TEXT,
         subscriptions TEXT,
         PRIMARY KEY (provider_id, external_id)
 		);
@@ -614,7 +623,9 @@ async fn get_game_ids(handle: AppHandle, query: Option<GamesQuery>) -> Result<Ga
 		Some(GamesSortBy::ReleaseDate) => vec!["g.release_date"],
 		Some(GamesSortBy::Engine) => vec![
 			"COALESCE(ig.engine_brand, rg.engine_brand)",
-			"COALESCE(ig.engine_version, rg.engine_version)",
+			"COALESCE(ig.engine_version_major, rg.engine_version_major)",
+			"COALESCE(ig.engine_version_minor, rg.engine_version_minor)",
+			"COALESCE(ig.engine_version_patch, rg.engine_version_patch)",
 		],
 		_ => vec!["g.display_title"],
 	};
@@ -799,7 +810,10 @@ async fn get_game(id: GameId, handle: AppHandle) -> Result<DbGame> {
 			ig.unity_backend,
 			ig.architecture,
 			COALESCE(ig.engine_brand, rg.engine_brand) AS engine_brand,
-			COALESCE(ig.engine_version, rg.engine_version) AS engine_version
+			COALESCE(ig.engine_version_major, rg.engine_version_major) AS engine_version_major,
+			COALESCE(ig.engine_version_minor, rg.engine_version_minor) AS engine_version_minor,
+			COALESCE(ig.engine_version_patch, rg.engine_version_patch) AS engine_version_patch,
+			COALESCE(ig.engine_version_display, rg.engine_version_display) AS engine_version_display
 		FROM main.games g
 		LEFT JOIN main.installed_games ig ON g.provider_id = ig.provider_id AND g.game_id = ig.game_id
 		LEFT JOIN main.normalized_titles nt ON g.provider_id = nt.provider_id AND g.game_id = nt.game_id

@@ -30,12 +30,14 @@ type Props = {
 };
 
 function isVersionWithinRange(
-	version: string | null,
+	{
+		engineVersionMajor: major,
+		engineVersionMinor: minor,
+		engineVersionPatch: patch,
+	}: DbGame,
 	range: EngineVersionRange | null,
 ) {
-	if (!version || !range) return true;
-
-	const [major, minor, patch] = version.split(".").map(Number);
+	if (!major || !range) return true;
 
 	if (!major) return false;
 
@@ -110,19 +112,10 @@ export function GameModal({ game }: Props) {
 				(!mod.common.unityBackend ||
 					!game.unityBackend ||
 					mod.common.unityBackend === game.unityBackend) &&
-				isVersionWithinRange(
-					game.engineVersion,
-					mod.common.engineVersionRange,
-				) &&
+				isVersionWithinRange(game, mod.common.engineVersionRange) &&
 				!(mod.remote?.deprecated && !installedModVersions[mod.common.id]),
 		);
-	}, [
-		game.engineBrand,
-		game.engineVersion,
-		game.unityBackend,
-		installedModVersions,
-		mods,
-	]);
+	}, [game, installedModVersions, mods]);
 	// const filteredMods = mods;
 
 	return (
