@@ -68,11 +68,7 @@ pub fn file_name_without_extension(file_path: &Path) -> Result<&str> {
 
 pub fn normalize_path(path: &Path) -> PathBuf {
 	path.canonicalize().unwrap_or_else(|err| {
-		log::error!(
-			"Failed to normalize path `{}`: {}",
-			path.to_string_lossy(),
-			err
-		);
+		log::error!("Failed to normalize path `{}`: {}", path.display(), err);
 		path.to_path_buf()
 	})
 }
