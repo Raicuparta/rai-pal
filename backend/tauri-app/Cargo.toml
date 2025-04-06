@@ -27,6 +27,7 @@ tauri-plugin-window-state = "2.2.1"
 tauri-runtime = "2.4.0"
 tauri-plugin-os = "2.2.1"
 tauri-plugin-store = "2.2.0"
+futures = "0.3.31"
 
 [features]
 # This feature is used for production builds or when `devPath` points to the filesystem.

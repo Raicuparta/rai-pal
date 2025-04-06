@@ -74,7 +74,7 @@ fn engine_brand_from_string(brand: &str) -> Option<EngineBrand> {
 
 // Version strings in PCGamingWiki can be all weird, so parsing is pretty lax here.
 // We just find some numbers in the string separated by something (usually periods).
-fn parse_version(version: &str) -> Option<EngineVersion> {
+pub fn parse_version(version: &str) -> Option<EngineVersion> {
 	let version_numbers = regex!(r"\d+")
 		.find_iter(version)
 		.filter_map(|capture| capture.as_str().parse::<u32>().ok())

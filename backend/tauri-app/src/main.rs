@@ -11,6 +11,7 @@ use crate::result::{Error, Result};
 use app_settings::AppSettings;
 use app_state::{AppState, StateData, StatefulHandle};
 use events::EventEmitter;
+use futures::{StreamExt, TryStreamExt};
 use rai_pal_core::game::{self, DbGame, GameId};
 use rai_pal_core::game_engines::game_engine::{EngineVersion, EngineVersionNumbers, GameEngine};
 use rai_pal_core::game_executable::GameExecutable;
@@ -417,25 +418,55 @@ async fn refresh_remote_games(handle: AppHandle) -> Result {
 	Ok(())
 }
 
-async fn attach_remote_database(pool: &Pool<Sqlite>, path: &Path) -> Result {
+async fn attach_remote_database(local_pool: &Pool<Sqlite>, path: &Path) -> Result {
 	if !path.is_file() {
 		return Ok(());
 	}
 
-	// TODO update remote with new version format.
-	return Ok(());
+	let config = sqlx::sqlite::SqliteConnectOptions::new()
+		.filename(path)
+		.read_only(true);
 
-	sqlx::query(&format!(
-		r#"
-    ATTACH DATABASE 'file:{}?mode=ro' AS 'remote';
-    INSERT OR IGNORE INTO main.remote_games
-    SELECT * FROM remote.games;
-    DETACH DATABASE remote;
-	"#,
-		path.try_to_str()?
-	))
-	.execute(pool)
-	.await?;
+	let remote_pool = SqlitePoolOptions::new().connect_with(config).await?;
+
+	let mut rows = sqlx::query(r#"SELECT * FROM games;"#).fetch(&remote_pool);
+
+	while let Ok(Some(row)) = rows.try_next().await {
+		let provider_id: String = row.try_get("provider_id")?;
+		let external_id: String = row.try_get("external_id")?;
+		let engine_brand: Option<String> = row.try_get("engine_brand")?;
+		let engine_version_display: Option<String> = row.try_get("engine_version")?;
+		let subscriptions: Option<String> = row.try_get("subscriptions")?;
+
+		let engine_version = if let Some(engine_version) = row.try_get("engine_version")? {
+			remote_game::parse_version(engine_version)
+		} else {
+			None
+		};
+
+		// Insert the processed game into main.remote_games
+		sqlx::query(
+			r#"
+					INSERT OR IGNORE INTO main.remote_games (
+							provider_id, external_id, engine_brand, engine_version_major,
+							engine_version_minor, engine_version_patch, engine_version_display, subscriptions
+					)
+					VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+					"#,
+		)
+		.bind(provider_id)
+		.bind(external_id)
+		.bind(engine_brand)
+		.bind(engine_version.as_ref().map(|v| v.numbers.major))
+		.bind(engine_version.as_ref().map(|v| v.numbers.minor))
+		.bind(engine_version.as_ref().map(|v| v.numbers.patch))
+		.bind(engine_version_display)
+		.bind(subscriptions)
+		.execute(local_pool)
+		.await?;
+	}
+
+	remote_pool.close().await;
 
 	Ok(())
 }
