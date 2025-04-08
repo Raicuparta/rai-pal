@@ -653,7 +653,7 @@ async fn open_logs_folder() -> Result {
 #[specta::specta]
 async fn get_game_ids(handle: AppHandle, query: Option<GamesQuery>) -> Result<GameIdsResponse> {
 	let state = handle.app_state();
-	let pool = state.database_pool.read_state()?.clone();
+	let database_connection = state.database_connection.lock().await;
 	let search = query.as_ref().map(|q| q.search.clone()).unwrap_or_default();
 
 	// Build sorting logic
@@ -763,12 +763,13 @@ async fn get_game_ids(handle: AppHandle, query: Option<GamesQuery>) -> Result<Ga
 		}
 	}
 
+	let trimmed_search = search.trim();
 	// Add search filter
-	if !search.trim().is_empty() {
-		filters.push(
-			"(g.display_title LIKE '%' || $1 || '%' OR nt.normalized_title LIKE '%' || $1 || '%')"
-				.to_string(),
-		);
+	if !trimmed_search.is_empty() {
+		filters.push(format!(
+			"(g.display_title LIKE '%{}%' OR nt.normalized_title LIKE '%{}%')",
+			trimmed_search, trimmed_search
+		));
 	}
 
 	// Combine all filters into a single WHERE clause
@@ -805,20 +806,25 @@ async fn get_game_ids(handle: AppHandle, query: Option<GamesQuery>) -> Result<Ga
 
 	log::info!("#### Query: {query}");
 
-	let game_ids: Vec<GameId> = sqlx::query_as(query)
-		.bind(search.trim())
-		.fetch_all(&pool)
-		.await?;
+	let game_ids = database_connection
+		.prepare(query)?
+		.query_map([], |row| {
+			Ok(GameId {
+				provider_id: row.get(0)?,
+				game_id: row.get(1)?,
+			})
+		})?
+		.filter_map(|game_id| game_id.ok()) // TODO log errors.
+		.collect();
 
-	let total_count: i64 = sqlx::query(
-		r#"
+	let total_count = database_connection
+		.prepare(
+			r#"
 			SELECT COUNT(*)
 			FROM main.games g
 		"#,
-	)
-	.fetch_one(&pool)
-	.await?
-	.try_get(0)?;
+		)?
+		.query_row([], |row| Ok(row.get::<_, i64>(0)?))?;
 
 	Ok(GameIdsResponse {
 		game_ids,
