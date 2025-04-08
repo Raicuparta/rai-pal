@@ -31,6 +31,13 @@ pub enum Error {
 	),
 
 	#[error(transparent)]
+	Rusql(
+		#[from]
+		#[serde(skip)]
+		rusqlite::Error,
+	),
+
+	#[error(transparent)]
 	SerdeJson(
 		#[serde(skip)]
 		#[from]

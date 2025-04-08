@@ -36,6 +36,8 @@ use rai_pal_core::{analytics, remote_mod};
 use rai_pal_proc_macros::serializable_struct;
 use sqlx::sqlite::SqlitePoolOptions;
 use sqlx::{Executor, Pool, Row, Sqlite, SqliteConnection, pool};
+use strum::IntoEnumIterator;
+use tauri::async_runtime::Mutex;
 use tauri::path::BaseDirectory;
 use tauri::{AppHandle, Manager};
 use tauri_plugin_log::{Target, TargetKind};
@@ -550,6 +552,12 @@ pub async fn setup_database() -> Result<Pool<Sqlite>> {
 	Ok(pool)
 }
 
+pub async fn setup_rusqlite() -> Result<rusqlite::Connection> {
+	let connection = rusqlite::Connection::open(paths::app_data_path()?.join("db.sqlite"))?;
+
+	Ok(connection)
+}
+
 #[tauri::command]
 #[specta::specta]
 async fn refresh_games(handle: AppHandle, provider_id: ProviderId) -> Result {
@@ -822,11 +830,12 @@ async fn get_game_ids(handle: AppHandle, query: Option<GamesQuery>) -> Result<Ga
 #[specta::specta]
 async fn get_game(id: GameId, handle: AppHandle) -> Result<DbGame> {
 	let state = handle.app_state();
-	let pool = state.database_pool.read_state()?.clone();
+	let database_connection = state.database_connection.lock().await;
 
 	// TODO take into account all normalized titles
-	let db_game: DbGame = sqlx::query_as(
-		r#"
+	let db_game = database_connection
+		.prepare(
+			r#"
 		SELECT
 			g.provider_id,
 			g.game_id,
@@ -856,11 +865,28 @@ async fn get_game(id: GameId, handle: AppHandle) -> Result<DbGame> {
 		WHERE g.provider_id = $1 AND g.game_id = $2
 		LIMIT 1
 	"#,
-	)
-	.bind(id.provider_id)
-	.bind(&id.game_id)
-	.fetch_one(&pool)
-	.await?;
+		)?
+		.query_row([id.provider_id.to_string(), id.game_id], |row| {
+			Ok(DbGame {
+				provider_id: row.get(0)?,
+				game_id: row.get(1)?,
+				external_id: row.get(2)?,
+				display_title: row.get(3)?,
+				title_discriminator: row.get(4)?,
+				thumbnail_url: row.get(5)?,
+				release_date: row.get(6)?,
+				tags: row.get(7)?,
+				provider_commands: row.get(8)?,
+				exe_path: row.get(9)?,
+				unity_backend: row.get(10)?,
+				architecture: row.get(11)?,
+				engine_brand: row.get(12)?,
+				engine_version_major: row.get(13)?,
+				engine_version_minor: row.get(14)?,
+				engine_version_patch: row.get(15)?,
+				engine_version_display: row.get(16)?,
+			})
+		})?;
 
 	Ok(db_game)
 }
@@ -898,6 +924,7 @@ fn main() {
 	}));
 
 	let database_pool = tauri::async_runtime::block_on(setup_database()).unwrap();
+	let database_connection = tauri::async_runtime::block_on(setup_rusqlite()).unwrap();
 
 	let builder = Builder::<tauri::Wry>::new()
 		.commands(tauri_specta::collect_commands![
@@ -933,7 +960,7 @@ fn main() {
 			uninstall_mod,
 		])
 		.events(events::collect_events())
-		.constant("PROVIDER_IDS", ProviderId::variants())
+		.constant("PROVIDER_IDS", ProviderId::iter().collect::<Vec<_>>())
 		.error_handling(tauri_specta::ErrorHandlingMode::Throw);
 
 	#[cfg(debug_assertions)]
@@ -970,6 +997,7 @@ fn main() {
 			local_mods: RwLock::default(),
 			remote_mods: RwLock::default(),
 			database_pool: RwLock::new(database_pool),
+			database_connection: Mutex::new(database_connection),
 		})
 		.invoke_handler(builder.invoke_handler())
 		.setup(move |app| {
