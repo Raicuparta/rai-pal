@@ -30,6 +30,8 @@
 	text-transform: lowercase;
 	text-overflow: ellipsis;
 	white-space: nowrap;
+	overflow: hidden;
+	padding: 0 0.5em;
 }
 
 .engineDetails {
