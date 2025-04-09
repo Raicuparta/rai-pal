@@ -3,6 +3,7 @@
 // Command stuff needs to be async so I can spawn tasks.
 #![allow(clippy::unused_async)]
 
+use std::ops::Deref;
 use std::path::Path;
 use std::sync::RwLock;
 use std::{collections::HashMap, path::PathBuf};
@@ -13,7 +14,9 @@ use app_state::{AppState, StateData, StatefulHandle};
 use events::EventEmitter;
 use futures::{StreamExt, TryStreamExt};
 use rai_pal_core::game::{self, DbGame, GameId};
-use rai_pal_core::game_engines::game_engine::{EngineVersion, EngineVersionNumbers, GameEngine};
+use rai_pal_core::game_engines::game_engine::{
+	EngineBrand, EngineVersion, EngineVersionNumbers, GameEngine,
+};
 use rai_pal_core::game_executable::GameExecutable;
 use rai_pal_core::game_title::get_normalized_titles;
 use rai_pal_core::games_query::{GamesQuery, GamesSortBy, InstallState};
@@ -34,6 +37,7 @@ use rai_pal_core::remote_game::{self, RemoteGame};
 use rai_pal_core::windows;
 use rai_pal_core::{analytics, remote_mod};
 use rai_pal_proc_macros::serializable_struct;
+use rusqlite::OpenFlags;
 use sqlx::sqlite::SqlitePoolOptions;
 use sqlx::{Executor, Pool, Row, Sqlite, SqliteConnection, pool};
 use strum::IntoEnumIterator;
@@ -413,62 +417,72 @@ async fn refresh_mods(handle: AppHandle) -> Result {
 #[specta::specta]
 async fn refresh_remote_games(handle: AppHandle) -> Result {
 	let state = handle.app_state();
-	let pool = state.database_pool.read_state()?.clone();
 	let path = remote_game::download_database().await?;
-	attach_remote_database(&pool, &path).await?;
+	attach_remote_database(state.database_connection.lock().await, &path).await?;
 
 	Ok(())
 }
 
-async fn attach_remote_database(local_pool: &Pool<Sqlite>, path: &Path) -> Result {
+async fn attach_remote_database<TConnection: Deref<Target = rusqlite::Connection>>(
+	local_database_connection: TConnection,
+	path: &Path,
+) -> Result {
+	println!("Attaching remote database...");
+
 	if !path.is_file() {
 		return Ok(());
 	}
 
-	let config = sqlx::sqlite::SqliteConnectOptions::new()
-		.filename(path)
-		.read_only(true);
+	let remote_database_connection =
+		rusqlite::Connection::open_with_flags(path, OpenFlags::SQLITE_OPEN_READ_ONLY)?;
 
-	let remote_pool = SqlitePoolOptions::new().connect_with(config).await?;
+	remote_database_connection
+		.prepare("SELECT * FROM games;")?
+		.query_map([], |row| {
+			let provider_id: ProviderId = row.get("provider_id")?;
+			let external_id: String = row.get("external_id")?;
+			let engine_brand: Option<EngineBrand> = row.get("engine_brand")?;
+			let engine_version_display: Option<String> = row.get("engine_version")?;
+			let subscriptions: Option<String> = row.get("subscriptions")?;
+			let engine_version_string: Option<String> = row.get("engine_version")?;
 
-	let mut rows = sqlx::query(r#"SELECT * FROM games;"#).fetch(&remote_pool);
+			let engine_version = if let Some(engine_version) = engine_version_string {
+				remote_game::parse_version(&engine_version)
+			} else {
+				None
+			};
 
-	while let Ok(Some(row)) = rows.try_next().await {
-		let provider_id: String = row.try_get("provider_id")?;
-		let external_id: String = row.try_get("external_id")?;
-		let engine_brand: Option<String> = row.try_get("engine_brand")?;
-		let engine_version_display: Option<String> = row.try_get("engine_version")?;
-		let subscriptions: Option<String> = row.try_get("subscriptions")?;
-
-		let engine_version = if let Some(engine_version) = row.try_get("engine_version")? {
-			remote_game::parse_version(engine_version)
-		} else {
-			None
-		};
-
-		// Insert the processed game into main.remote_games
-		sqlx::query(
-			r#"
+			// Insert the processed game into main.remote_games
+			local_database_connection
+				.prepare(
+					r#"
 					INSERT OR IGNORE INTO main.remote_games (
 							provider_id, external_id, engine_brand, engine_version_major,
 							engine_version_minor, engine_version_patch, engine_version_display, subscriptions
 					)
 					VALUES (?, ?, ?, ?, ?, ?, ?, ?);
 					"#,
-		)
-		.bind(provider_id)
-		.bind(external_id)
-		.bind(engine_brand)
-		.bind(engine_version.as_ref().map(|v| v.numbers.major))
-		.bind(engine_version.as_ref().map(|v| v.numbers.minor))
-		.bind(engine_version.as_ref().map(|v| v.numbers.patch))
-		.bind(engine_version_display)
-		.bind(subscriptions)
-		.execute(local_pool)
-		.await?;
-	}
+				)?
+				.execute(rusqlite::params![
+					provider_id,
+					external_id,
+					engine_brand,
+					engine_version.as_ref().map(|v| v.numbers.major),
+					engine_version.as_ref().map(|v| v.numbers.minor),
+					engine_version.as_ref().map(|v| v.numbers.patch),
+					engine_version_display,
+					subscriptions,
+				])?;
 
-	remote_pool.close().await;
+			Ok(())
+		})?
+		.for_each(|result| {
+			if let Err(err) = result {
+				log::error!("Error processing row: {err}");
+			}
+		});
+
+	println!("Remote database attached!");
 
 	Ok(())
 }
@@ -547,13 +561,15 @@ pub async fn setup_database() -> Result<Pool<Sqlite>> {
 	)
 	.await?;
 
-	attach_remote_database(&pool, &remote_game::get_database_file_path()?).await?;
+	// attach_remote_database(&pool, &remote_game::get_database_file_path()?).await?;
 
 	Ok(pool)
 }
 
 pub async fn setup_rusqlite() -> Result<rusqlite::Connection> {
 	let connection = rusqlite::Connection::open(paths::app_data_path()?.join("db.sqlite"))?;
+
+	attach_remote_database(&connection, &remote_game::get_database_file_path()?).await?;
 
 	Ok(connection)
 }
