@@ -436,6 +436,16 @@ async fn attach_remote_database<TConnection: Deref<Target = rusqlite::Connection
 	let remote_database_connection =
 		rusqlite::Connection::open_with_flags(path, OpenFlags::SQLITE_OPEN_READ_ONLY)?;
 
+	let mut insert_into_local = local_database_connection.prepare(
+		r#"
+		INSERT OR IGNORE INTO main.remote_games (
+				provider_id, external_id, engine_brand, engine_version_major,
+				engine_version_minor, engine_version_patch, engine_version_display, subscriptions
+		)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+		"#,
+	)?;
+
 	remote_database_connection
 		.prepare("SELECT * FROM games;")?
 		.query_map([], |row| {
@@ -453,26 +463,16 @@ async fn attach_remote_database<TConnection: Deref<Target = rusqlite::Connection
 			};
 
 			// Insert the processed game into main.remote_games
-			local_database_connection
-				.prepare(
-					r#"
-					INSERT OR IGNORE INTO main.remote_games (
-							provider_id, external_id, engine_brand, engine_version_major,
-							engine_version_minor, engine_version_patch, engine_version_display, subscriptions
-					)
-					VALUES (?, ?, ?, ?, ?, ?, ?, ?);
-					"#,
-				)?
-				.execute(rusqlite::params![
-					provider_id,
-					external_id,
-					engine_brand,
-					engine_version.as_ref().map(|v| v.numbers.major),
-					engine_version.as_ref().map(|v| v.numbers.minor),
-					engine_version.as_ref().map(|v| v.numbers.patch),
-					engine_version_display,
-					subscriptions,
-				])?;
+			insert_into_local.execute(rusqlite::params![
+				provider_id,
+				external_id,
+				engine_brand,
+				engine_version.as_ref().map(|v| v.numbers.major),
+				engine_version.as_ref().map(|v| v.numbers.minor),
+				engine_version.as_ref().map(|v| v.numbers.patch),
+				engine_version_display,
+				subscriptions,
+			])?;
 
 			Ok(())
 		})?
@@ -567,8 +567,19 @@ pub async fn setup_database() -> Result<Pool<Sqlite>> {
 }
 
 pub async fn setup_rusqlite() -> Result<rusqlite::Connection> {
-	let connection = rusqlite::Connection::open(paths::app_data_path()?.join("db.sqlite"))?;
+	let connection = rusqlite::Connection::open_with_flags(
+		paths::app_data_path()?.join("db.sqlite"),
+		OpenFlags::SQLITE_OPEN_CREATE
+			| OpenFlags::SQLITE_OPEN_READ_WRITE
+			| OpenFlags::SQLITE_OPEN_SHARED_CACHE,
+	)?;
 
+	connection.execute_batch(
+		r#"
+		PRAGMA journal_mode = WAL;
+		PRAGMA synchronous = OFF;
+	"#,
+	)?;
 	attach_remote_database(&connection, &remote_game::get_database_file_path()?).await?;
 
 	Ok(connection)
@@ -939,14 +950,21 @@ fn main() {
 	// Since I'm making all exposed functions async, panics won't crash anything important, I think.
 	// So I can just catch panics here and show a system message with the error.
 	std::panic::set_hook(Box::new(|info| {
+		println!("Panic: {info}");
+
 		#[cfg(target_os = "windows")]
 		windows::error_dialog(&format!("I found a panic!!!: {info}"));
-
-		log::error!("Panic: {info}");
 	}));
 
 	let database_pool = tauri::async_runtime::block_on(setup_database()).unwrap();
-	let database_connection = tauri::async_runtime::block_on(setup_rusqlite()).unwrap();
+	let database_connection_result = tauri::async_runtime::block_on(setup_rusqlite());
+
+	if let Err(err) = database_connection_result {
+		println!("Failed to setup rusqlite: {err}");
+		return;
+	}
+
+	let database_connection = database_connection_result.unwrap();
 
 	let builder = Builder::<tauri::Wry>::new()
 		.commands(tauri_specta::collect_commands![
