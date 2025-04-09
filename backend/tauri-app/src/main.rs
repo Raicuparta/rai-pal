@@ -418,7 +418,7 @@ async fn refresh_mods(handle: AppHandle) -> Result {
 async fn refresh_remote_games(handle: AppHandle) -> Result {
 	let state = handle.app_state();
 	let path = remote_game::download_database().await?;
-	attach_remote_database(state.database_connection.lock().await, &path)?;
+	attach_remote_database(state.database_connection.lock().unwrap(), &path)?;
 
 	Ok(())
 }
@@ -588,9 +588,8 @@ async fn refresh_games(handle: AppHandle, provider_id: ProviderId) -> Result {
 	let state = handle.app_state();
 
 	let provider = provider::get_provider(provider_id)?;
-	let database_connection = state.database_connection.lock().await;
 
-	provider.insert_games(database_connection).await?;
+	provider.insert_games(&state.database_connection).await?;
 
 	// TODO get rid of stale games after everything is done.
 
@@ -677,7 +676,7 @@ async fn open_logs_folder() -> Result {
 #[specta::specta]
 async fn get_game_ids(handle: AppHandle, query: Option<GamesQuery>) -> Result<GameIdsResponse> {
 	let state = handle.app_state();
-	let database_connection = state.database_connection.lock().await;
+	let database_connection = state.database_connection.lock().unwrap();
 	let search = query.as_ref().map(|q| q.search.clone()).unwrap_or_default();
 
 	// Build sorting logic
@@ -860,7 +859,7 @@ async fn get_game_ids(handle: AppHandle, query: Option<GamesQuery>) -> Result<Ga
 #[specta::specta]
 async fn get_game(id: GameId, handle: AppHandle) -> Result<DbGame> {
 	let state = handle.app_state();
-	let database_connection = state.database_connection.lock().await;
+	let database_connection = state.database_connection.lock().unwrap();
 
 	// TODO take into account all normalized titles
 	let db_game = database_connection
@@ -1025,7 +1024,7 @@ fn main() {
 			mod_loaders: RwLock::default(),
 			local_mods: RwLock::default(),
 			remote_mods: RwLock::default(),
-			database_connection: Mutex::new(database_connection),
+			database_connection: std::sync::Mutex::new(database_connection),
 		})
 		.invoke_handler(builder.invoke_handler())
 		.setup(move |app| {

@@ -72,10 +72,7 @@ const PROVIDERS: &Map = &[
 
 #[enum_dispatch(Provider)]
 pub trait ProviderActions {
-	async fn insert_games<TConnection: Deref<Target = rusqlite::Connection>>(
-		&self,
-		db: TConnection,
-	) -> Result;
+	async fn insert_games(&self, db: &std::sync::Mutex<rusqlite::Connection>) -> Result;
 }
 
 const fn create_map_entry<TProvider: ProviderActions + ProviderStatic>()

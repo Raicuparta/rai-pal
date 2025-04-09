@@ -154,10 +154,7 @@ impl EpicCatalogItem {
 }
 
 impl ProviderActions for Epic {
-	async fn insert_games<TConnection: Deref<Target = rusqlite::Connection>>(
-		&self,
-		db: TConnection,
-	) -> Result {
+	async fn insert_games(&self, db: &std::sync::Mutex<rusqlite::Connection>) -> Result {
 		let app_data_path = RegKey::predef(HKEY_LOCAL_MACHINE)
 			.open_subkey(r"SOFTWARE\WOW6432Node\Epic Games\EpicGamesLauncher")
 			.and_then(|launcher_reg| launcher_reg.get_value::<String, _>("AppDataPath"))
@@ -213,7 +210,7 @@ impl ProviderActions for Epic {
 						);
 					}
 
-					db.insert_game(&game)?; // TODO prevent whole thing crashing if one game fails to insert.
+					db.lock().unwrap().insert_game(&game)?; // TODO prevent whole thing crashing if one game fails to insert.
 				}
 			}
 		} else {

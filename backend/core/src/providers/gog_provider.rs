@@ -67,10 +67,7 @@ impl ProviderStatic for Gog {
 }
 
 impl ProviderActions for Gog {
-	async fn insert_games<TConnection: Deref<Target = rusqlite::Connection>>(
-		&self,
-		db: TConnection,
-	) -> Result {
+	async fn insert_games(&self, db: &std::sync::Mutex<rusqlite::Connection>) -> Result {
 		if let Some(database) = get_database().await? {
 			let launcher_path = get_launcher_path()?;
 
@@ -94,7 +91,7 @@ impl ProviderActions for Gog {
 					);
 				}
 
-				db.insert_game(&game)?; // TODO dont crash whole process if single game fails.
+				db.lock().unwrap().insert_game(&game)?; // TODO dont crash whole process if single game fails.
 			}
 		} else {
 			log::info!(

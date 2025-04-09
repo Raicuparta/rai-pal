@@ -4,8 +4,8 @@ use std::sync::RwLock;
 
 use crate::result::Error;
 use crate::result::Result;
+use std::sync::Mutex;
 use tauri::Manager;
-use tauri::async_runtime::Mutex;
 
 use rai_pal_core::{local_mod, mod_loaders::mod_loader, remote_mod};
 

@@ -48,10 +48,7 @@ struct XboxGamepassImages {
 }
 
 impl ProviderActions for Xbox {
-	async fn insert_games<TConnection: Deref<Target = rusqlite::Connection>>(
-		&self,
-		db: TConnection,
-	) -> Result {
+	async fn insert_games(&self, db: &std::sync::Mutex<rusqlite::Connection>) -> Result {
 		if let Err(error) = get_games(db).await {
 			if error.kind() == io::ErrorKind::NotFound {
 				log::info!(
@@ -66,9 +63,7 @@ impl ProviderActions for Xbox {
 	}
 }
 
-async fn get_games<TConnection: Deref<Target = rusqlite::Connection>>(
-	db: TConnection,
-) -> io::Result<()> {
+async fn get_games(db: &std::sync::Mutex<rusqlite::Connection>) -> io::Result<()> {
 	let gaming_services =
 		RegKey::predef(HKEY_LOCAL_MACHINE).open_subkey("SOFTWARE\\Microsoft\\GamingServices")?;
 	let package_roots = gaming_services.open_subkey("PackageRepository\\Root")?;
@@ -146,7 +141,7 @@ async fn get_games<TConnection: Deref<Target = rusqlite::Connection>>(
 
 	// Perform database insertions asynchronously
 	for game in games_to_insert {
-		if let Err(error) = db.insert_game(&game) {
+		if let Err(error) = db.lock().unwrap().insert_game(&game) {
 			log::error!("Failed to insert Xbox game into database: {}", error);
 		}
 	}
