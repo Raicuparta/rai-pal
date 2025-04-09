@@ -54,6 +54,13 @@ pub enum Error {
 	),
 
 	#[error(transparent)]
+	Rusql(
+		#[from]
+		#[serde(skip)]
+		rusqlite::Error,
+	),
+
+	#[error(transparent)]
 	Env(
 		#[from]
 		#[serde(skip)]

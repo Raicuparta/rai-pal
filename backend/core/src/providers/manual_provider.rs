@@ -1,5 +1,6 @@
 use std::{
 	fs,
+	ops::Deref,
 	path::{Path, PathBuf},
 };
 
@@ -34,11 +35,14 @@ impl ProviderStatic for Manual {
 }
 
 impl ProviderActions for Manual {
-	async fn insert_games(&self, pool: &sqlx::Pool<sqlx::Sqlite>) -> Result {
+	async fn insert_games<TConnection: Deref<Target = rusqlite::Connection>>(
+		&self,
+		db: TConnection,
+	) -> Result {
 		for path in read_games_config(&games_config_path()?).paths {
 			match get_game_from_path(&path) {
 				Ok(game) => {
-					pool.insert_game(&game).await?;
+					db.insert_game(&game)?;
 				}
 				Err(error) => {
 					error!(

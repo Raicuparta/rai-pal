@@ -1,5 +1,6 @@
 use std::{
 	collections::HashMap,
+	ops::Deref,
 	path::{Path, PathBuf},
 };
 
@@ -98,7 +99,10 @@ pub struct ItchDatabase {
 }
 
 impl ProviderActions for Itch {
-	async fn insert_games(&self, pool: &sqlx::Pool<sqlx::Sqlite>) -> Result {
+	async fn insert_games<TConnection: Deref<Target = rusqlite::Connection>>(
+		&self,
+		db: TConnection,
+	) -> Result {
 		let app_data_path = directories::BaseDirs::new()
 			.ok_or_else(Error::AppDataNotFound)?
 			.config_dir()
@@ -119,7 +123,7 @@ impl ProviderActions for Itch {
 				{
 					game.set_executable(&executable);
 				}
-				pool.insert_game(&game).await?; // TODO don't crash whole thing if single game fails
+				db.insert_game(&game)?; // TODO don't crash whole thing if single game fails
 			}
 		} else {
 			log::info!(

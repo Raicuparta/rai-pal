@@ -1,3 +1,5 @@
+use std::ops::Deref;
+
 use rai_pal_proc_macros::serializable_struct;
 
 use super::provider::{ProviderActions, ProviderId, ProviderStatic};
@@ -18,7 +20,10 @@ impl ProviderStatic for Ubisoft {
 }
 
 impl ProviderActions for Ubisoft {
-	async fn insert_games(&self, pool: &sqlx::Pool<sqlx::Sqlite>) -> Result {
+	async fn insert_games<TConnection: Deref<Target = rusqlite::Connection>>(
+		&self,
+		db: TConnection,
+	) -> Result {
 		// Nothing for now
 		// we're currently only getting subscription games from the remote game database.
 

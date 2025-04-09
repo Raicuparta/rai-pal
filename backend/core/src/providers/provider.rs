@@ -1,8 +1,7 @@
-use std::{fs, path::PathBuf};
+use std::{fs, ops::Deref, path::PathBuf};
 
 use enum_dispatch::enum_dispatch;
 use rai_pal_proc_macros::serializable_enum;
-use sqlx::{Pool, Sqlite};
 
 #[cfg(target_os = "linux")]
 use crate::providers::heroic_epic_provider::HeroicEpic;
@@ -73,7 +72,10 @@ const PROVIDERS: &Map = &[
 
 #[enum_dispatch(Provider)]
 pub trait ProviderActions {
-	async fn insert_games(&self, pool: &Pool<Sqlite>) -> Result;
+	async fn insert_games<TConnection: Deref<Target = rusqlite::Connection>>(
+		&self,
+		db: TConnection,
+	) -> Result;
 }
 
 const fn create_map_entry<TProvider: ProviderActions + ProviderStatic>()

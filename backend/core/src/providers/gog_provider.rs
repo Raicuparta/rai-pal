@@ -1,6 +1,9 @@
 #![cfg(target_os = "windows")]
 
-use std::path::{Path, PathBuf};
+use std::{
+	ops::Deref,
+	path::{Path, PathBuf},
+};
 
 use log::error;
 use rai_pal_proc_macros::serializable_struct;
@@ -64,7 +67,10 @@ impl ProviderStatic for Gog {
 }
 
 impl ProviderActions for Gog {
-	async fn insert_games(&self, pool: &sqlx::Pool<sqlx::Sqlite>) -> Result {
+	async fn insert_games<TConnection: Deref<Target = rusqlite::Connection>>(
+		&self,
+		db: TConnection,
+	) -> Result {
 		if let Some(database) = get_database().await? {
 			let launcher_path = get_launcher_path()?;
 
@@ -88,7 +94,7 @@ impl ProviderActions for Gog {
 					);
 				}
 
-				pool.insert_game(&game).await?; // TODO dont crash whole process if single game fails.
+				db.insert_game(&game)?; // TODO dont crash whole process if single game fails.
 			}
 		} else {
 			log::info!(

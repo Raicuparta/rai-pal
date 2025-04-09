@@ -1,23 +1,18 @@
+use std::ops::Deref;
 use std::ops::DerefMut;
 use std::sync::RwLock;
-use std::{collections::HashMap, ops::Deref};
 
 use crate::result::Error;
 use crate::result::Result;
-use sqlx::{Pool, Sqlite};
 use tauri::Manager;
 use tauri::async_runtime::Mutex;
 
-use rai_pal_core::{
-	game, local_mod, mod_loaders::mod_loader, providers::provider::ProviderId, remote_game,
-	remote_mod,
-};
+use rai_pal_core::{local_mod, mod_loaders::mod_loader, remote_mod};
 
 pub struct AppState {
 	pub mod_loaders: RwLock<mod_loader::Map>,
 	pub local_mods: RwLock<local_mod::Map>,
 	pub remote_mods: RwLock<remote_mod::Map>,
-	pub database_pool: RwLock<Pool<Sqlite>>,
 	pub database_connection: Mutex<rusqlite::Connection>,
 }
 

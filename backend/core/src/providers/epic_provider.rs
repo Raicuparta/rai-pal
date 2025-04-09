@@ -4,6 +4,7 @@ use std::{
 	collections::HashMap,
 	fs::{self, File},
 	io::Read,
+	ops::Deref,
 	path::{Path, PathBuf},
 };
 
@@ -153,7 +154,10 @@ impl EpicCatalogItem {
 }
 
 impl ProviderActions for Epic {
-	async fn insert_games(&self, pool: &sqlx::Pool<sqlx::Sqlite>) -> Result {
+	async fn insert_games<TConnection: Deref<Target = rusqlite::Connection>>(
+		&self,
+		db: TConnection,
+	) -> Result {
 		let app_data_path = RegKey::predef(HKEY_LOCAL_MACHINE)
 			.open_subkey(r"SOFTWARE\WOW6432Node\Epic Games\EpicGamesLauncher")
 			.and_then(|launcher_reg| launcher_reg.get_value::<String, _>("AppDataPath"))
@@ -209,7 +213,7 @@ impl ProviderActions for Epic {
 						);
 					}
 
-					pool.insert_game(&game).await?; // TODO prevent whole thing crashing if one game fails to insert.
+					db.insert_game(&game)?; // TODO prevent whole thing crashing if one game fails to insert.
 				}
 			}
 		} else {
