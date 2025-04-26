@@ -8,14 +8,16 @@ use std::{
 };
 
 use crate::{
-	game::{Game, GameId},
-	installed_game::InstalledGame,
+	game::{DbGame, InsertGame},
+	game_executable::GameExecutable,
 	providers::provider::{ProviderActions, ProviderId, ProviderStatic},
-	result::Result as GameResult,
+	result::Result,
 };
 
 use directories::BaseDirs;
 use serde::{Deserialize, Serialize};
+
+use super::provider_command::{ProviderCommand, ProviderCommandAction};
 
 #[derive(Debug, Serialize, Deserialize)]
 struct InstalledGOGGame {
@@ -43,7 +45,7 @@ struct Root {
 	games: Vec<ParsedGame>,
 }
 
-fn get_detected_games() -> Result<Vec<ParsedGame>, io::Error> {
+fn get_detected_games() -> Result<Vec<ParsedGame>> {
 	let dirs = BaseDirs::new()
 		.ok_or_else(|| io::Error::new(io::ErrorKind::Other, "Failed to get user directories"))?;
 	let config_dir = dirs.config_dir();
@@ -66,7 +68,7 @@ fn get_detected_games() -> Result<Vec<ParsedGame>, io::Error> {
 		.collect())
 }
 
-fn read_installed_games() -> Result<Vec<String>, io::Error> {
+fn read_installed_games() -> Result<Vec<String>> {
 	let dirs = BaseDirs::new()
 		.ok_or_else(|| io::Error::new(io::ErrorKind::Other, "Failed to get user directories"))?;
 	let config_dir = dirs.config_dir();
@@ -98,23 +100,18 @@ struct GogGame {
 	play_tasks: Vec<PlayTask>,
 }
 
-fn read_info_file(path: &Path, app_id: &str) -> Result<GogGame, String> {
+fn read_info_file(path: &Path, app_id: &str) -> Result<GogGame> {
 	let file_path = path.join(format!("goggame-{app_id}.info"));
 
-	match fs::read_to_string(file_path) {
-		Ok(json_string) => match serde_json::from_str(&json_string) {
-			Ok(json_value) => Ok(json_value),
-			Err(err) => Err(format!("Error parsing JSON: {err}")),
-		},
-		Err(err) => Err(format!("Error reading file: {err}")),
-	}
+	let json_string = fs::read_to_string(file_path)?;
+	Ok(serde_json::from_str::<GogGame>(&json_string)?)
 }
 
 #[derive(Clone)]
 pub struct HeroicGog {}
 
 impl HeroicGog {
-	fn get_installed_game(entry: &ParsedGame) -> Option<InstalledGame> {
+	fn get_executable(entry: &ParsedGame) -> Option<GameExecutable> {
 		let dirs = BaseDirs::new()?;
 		let home_dir = dirs.home_dir();
 		let game_path = Path::new(&home_dir)
@@ -130,18 +127,14 @@ impl HeroicGog {
 			}
 		})?;
 
-		let mut game = InstalledGame::new(game_path.join(executable_name).as_path())?;
-
-		game.set_start_command_string(&get_start_command("gog", &entry.app_name));
-
-		Some(game)
+		GameExecutable::new(game_path.join(executable_name).as_path())
 	}
 }
 
 impl ProviderStatic for HeroicGog {
 	const ID: &'static ProviderId = &ProviderId::Gog;
 
-	fn new() -> GameResult<Self>
+	fn new() -> Result<Self>
 	where
 		Self: Sized,
 	{
@@ -150,30 +143,28 @@ impl ProviderStatic for HeroicGog {
 }
 
 impl ProviderActions for HeroicGog {
-	async fn get_games<TCallback>(&self, mut callback: TCallback) -> GameResult
-	where
-		TCallback: FnMut(Game) + Send + Sync,
-	{
+	async fn insert_games(&self, db: &std::sync::Mutex<rusqlite::Connection>) -> Result {
 		let parsed_games = get_detected_games()?;
 		for parsed_game in parsed_games {
-			let mut game = Game::new(
-				GameId {
-					game_id: parsed_game.app_name.clone(),
-					provider_id: *Self::ID,
-				},
-				&parsed_game.title,
+			let mut game = DbGame::new(
+				*Self::ID,
+				parsed_game.app_name.clone(),
+				parsed_game.title.clone(),
 			);
-			if let Some(thumbnail_url) = parsed_game.art_cover.clone() {
-				game.set_thumbnail_url(&thumbnail_url);
+			game.thumbnail_url = parsed_game.art_cover.clone();
+			if let Some(executable) = Self::get_executable(&parsed_game) {
+				game.set_executable(&executable);
+				game.add_provider_command(
+					ProviderCommandAction::StartViaProvider,
+					ProviderCommand::String(format!(
+						"heroic://launch/gog/{}", // TODO why does this have /gog/ but epic doesn't?
+						parsed_game.app_name
+					)),
+				);
 			}
-			game.installed_game = Self::get_installed_game(&parsed_game);
-			callback(game);
+			db.lock().unwrap().insert_game(&game)?; // TODO don't crash whole thing if single game fails
 		}
 
 		Ok(())
 	}
-}
-
-pub fn get_start_command(source: &str, app_id: &str) -> String {
-	format!("heroic://launch/{source}/{app_id}")
 }
