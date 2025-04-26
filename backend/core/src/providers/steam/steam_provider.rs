@@ -1,6 +1,5 @@
 use std::{
 	collections::{HashMap, HashSet},
-	ops::Deref,
 	path::{Path, PathBuf},
 };
 

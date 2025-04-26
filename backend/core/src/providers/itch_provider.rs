@@ -1,6 +1,5 @@
 use std::{
 	collections::HashMap,
-	ops::Deref,
 	path::{Path, PathBuf},
 };
 
@@ -13,8 +12,9 @@ use super::provider_command::{ProviderCommand, ProviderCommandAction};
 use crate::{
 	game::{DbGame, InsertGame},
 	game_executable::GameExecutable,
+	paths,
 	providers::provider::{ProviderActions, ProviderId, ProviderStatic},
-	result::{Error, Result},
+	result::Result,
 };
 
 #[derive(Clone)]
@@ -100,10 +100,7 @@ pub struct ItchDatabase {
 
 impl ProviderActions for Itch {
 	async fn insert_games(&self, db: &std::sync::Mutex<rusqlite::Connection>) -> Result {
-		let app_data_path = directories::BaseDirs::new()
-			.ok_or_else(Error::AppDataNotFound)?
-			.config_dir()
-			.join("itch");
+		let app_data_path = paths::base_dirs()?.config_dir().join("itch");
 
 		if let Some(database) = get_database(&app_data_path).await? {
 			let caves_map: HashMap<_, _> = database

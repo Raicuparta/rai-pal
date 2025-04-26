@@ -1,6 +1,5 @@
 use std::{
 	fs,
-	ops::Deref,
 	path::{Path, PathBuf},
 };
 
@@ -9,7 +8,7 @@ use rai_pal_proc_macros::serializable_struct;
 
 use super::provider::{ProviderActions, ProviderId, ProviderStatic};
 use crate::{
-	game::{DbGame, GameId, InsertGame},
+	game::{DbGame, InsertGame},
 	game_executable::GameExecutable,
 	paths::{self, app_data_path, file_name_without_extension},
 	result::{Error, Result},

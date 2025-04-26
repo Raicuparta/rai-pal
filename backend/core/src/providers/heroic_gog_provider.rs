@@ -11,7 +11,7 @@ use crate::{
 	game::{DbGame, InsertGame},
 	game_executable::GameExecutable,
 	providers::provider::{ProviderActions, ProviderId, ProviderStatic},
-	result::Result,
+	result::{Error, Result},
 };
 
 use directories::BaseDirs;
@@ -69,8 +69,7 @@ fn get_detected_games() -> Result<Vec<ParsedGame>> {
 }
 
 fn read_installed_games() -> Result<Vec<String>> {
-	let dirs = BaseDirs::new()
-		.ok_or_else(|| io::Error::new(io::ErrorKind::Other, "Failed to get user directories"))?;
+	let dirs = BaseDirs::new().ok_or_else(Error::AppDataNotFound)?;
 	let config_dir = dirs.config_dir();
 	let file_content =
 		read_to_string(Path::new(&config_dir).join("heroic/gog_store/installed.json"))?;

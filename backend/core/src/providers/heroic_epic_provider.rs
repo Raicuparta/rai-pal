@@ -1,15 +1,11 @@
 #![cfg(target_os = "linux")]
 
-use std::{
-	fmt::Debug,
-	fs::read_to_string,
-	io::{self},
-	path::Path,
-};
+use std::{fmt::Debug, fs::read_to_string, path::Path};
 
 use crate::{
 	game::{DbGame, InsertGame},
 	game_executable::GameExecutable,
+	paths,
 	providers::provider::{ProviderActions, ProviderId, ProviderStatic},
 	result::Result,
 };
@@ -53,8 +49,7 @@ struct Root {
 }
 
 fn get_detected_games() -> Result<Option<Vec<ParsedGame>>> {
-	let dirs = BaseDirs::new()
-		.ok_or_else(|| io::Error::new(io::ErrorKind::Other, "Failed to get user directories"))?;
+	let dirs = paths::base_dirs()?;
 	let config_dir = dirs.config_dir();
 	let file_content =
 		read_to_string(Path::new(&config_dir).join("heroic/store_cache/legendary_library.json"))?;
