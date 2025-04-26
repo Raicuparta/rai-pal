@@ -1055,19 +1055,18 @@ fn main() {
 				});
 			}
 
-			let state = app.app_handle().app_state();
-			// let database_pool = state.database_pool.read_state().unwrap().clone();
 			let app_handle = app.app_handle().clone();
 
-			// TODO setup rusqlite update hook
-			// tauri::async_runtime::spawn(async move {
-			// 	if let Ok(mut connection) = database_pool.acquire().await {
-			// 		if let Ok(mut handle) = connection.lock_handle().await {
-			// 			handle
-			// 				.set_update_hook(move |_| app_handle.emit_safe(events::GamesChanged()));
-			// 		}
-			// 	}
-			// });
+			tauri::async_runtime::spawn(async move {
+				let state = app_handle.app_state();
+				let database_connection = state.database_connection.lock().unwrap();
+				let cloned_handle = app_handle.clone();
+				database_connection.update_hook(Some({
+					move |_, _: &str, _: &str, _| {
+						cloned_handle.emit_safe(events::GamesChanged());
+					}
+				}));
+			});
 
 			Ok(())
 		})
