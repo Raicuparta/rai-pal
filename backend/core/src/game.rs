@@ -2,6 +2,7 @@ use std::{
 	collections::HashMap,
 	fs,
 	path::{Path, PathBuf},
+	time::{SystemTime, UNIX_EPOCH},
 };
 
 use rai_pal_proc_macros::serializable_struct;
@@ -197,8 +198,9 @@ impl InsertGame for rusqlite::Connection {
 					release_date,
 					tags,
 					title_discriminator,
-					provider_commands
-				) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)",
+					provider_commands,
+					created_at
+				) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)",
 		)?
 		.execute(rusqlite::params![
 			game.provider_id,
@@ -210,6 +212,10 @@ impl InsertGame for rusqlite::Connection {
 			game.tags.clone(),
 			game.title_discriminator.clone(),
 			game.provider_commands.clone(),
+			SystemTime::now()
+				.duration_since(UNIX_EPOCH)
+				.unwrap()
+				.as_secs()
 		])?;
 
 		if let Some(exe_path) = game.exe_path.as_ref() {

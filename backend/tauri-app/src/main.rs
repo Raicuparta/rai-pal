@@ -6,6 +6,7 @@
 use std::ops::Deref;
 use std::path::Path;
 use std::sync::RwLock;
+use std::time::{SystemTime, UNIX_EPOCH};
 use std::{collections::HashMap, path::PathBuf};
 
 use crate::result::{Error, Result};
@@ -513,6 +514,7 @@ pub fn setup_rusqlite() -> Result<rusqlite::Connection> {
 			tags TEXT,
 			release_date INTEGER,
 			provider_commands TEXT,
+			created_at INTEGER,
 			PRIMARY KEY (provider_id, game_id)
 		);
 
@@ -539,7 +541,7 @@ pub fn setup_rusqlite() -> Result<rusqlite::Connection> {
 			engine_version_display TEXT,
 			unity_backend TEXT,
 			architecture TEXT,
-			FOREIGN KEY(provider_id, game_id) REFERENCES games(provider_id, game_id),
+			FOREIGN KEY(provider_id, game_id) REFERENCES games(provider_id, game_id) ON DELETE CASCADE,
 			PRIMARY KEY (provider_id, game_id)
 		);
 
@@ -566,11 +568,22 @@ pub fn setup_rusqlite() -> Result<rusqlite::Connection> {
 async fn refresh_games(handle: AppHandle, provider_id: ProviderId) -> Result {
 	let state = handle.app_state();
 
+	let now = SystemTime::now()
+		.duration_since(UNIX_EPOCH)
+		.unwrap()
+		.as_secs();
+
 	let provider = provider::get_provider(provider_id)?;
 
 	provider.insert_games(&state.database_connection).await?;
 
-	// TODO get rid of stale games after everything is done.
+	// Remove stale games
+	state
+		.database_connection
+		.lock()
+		.unwrap()
+		.prepare("DELETE FROM main.games WHERE provider_id = $1 AND created_at < $2;")?
+		.execute(rusqlite::params![provider_id, now])?;
 
 	Ok(())
 }
