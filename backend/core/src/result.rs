@@ -47,13 +47,6 @@ pub enum Error {
 	),
 
 	#[error(transparent)]
-	SQL(
-		#[from]
-		#[serde(skip)]
-		sqlx::Error,
-	),
-
-	#[error(transparent)]
 	Rusql(
 		#[from]
 		#[serde(skip)]

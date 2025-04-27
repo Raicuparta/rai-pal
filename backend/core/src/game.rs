@@ -5,7 +5,6 @@ use std::{
 };
 
 use rai_pal_proc_macros::serializable_struct;
-use sqlx::Sqlite;
 
 use crate::{
 	data_types::{json_data::JsonData, path_data::PathData},
@@ -22,13 +21,12 @@ use crate::{
 };
 
 #[serializable_struct]
-#[derive(sqlx::Type, sqlx::FromRow)]
 pub struct GameId {
 	pub provider_id: ProviderId,
 	pub game_id: String,
 }
 
-#[derive(sqlx::FromRow, serde::Serialize, specta::Type, Clone)]
+#[derive(serde::Serialize, specta::Type, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct DbGame {
 	pub provider_id: ProviderId,

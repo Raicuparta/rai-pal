@@ -12,7 +12,6 @@ serde_json.workspace = true
 serde.workspace = true
 specta.workspace = true
 thiserror.workspace = true
-sqlx.workspace = true
 rusqlite.workspace = true
 strum.workspace = true
 

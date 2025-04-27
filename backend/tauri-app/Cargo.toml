@@ -15,7 +15,6 @@ serde.workspace = true
 specta.workspace = true
 tauri-specta.workspace = true
 thiserror.workspace = true
-sqlx.workspace = true
 rusqlite.workspace = true
 strum.workspace = true
 

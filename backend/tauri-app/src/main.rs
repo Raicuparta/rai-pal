@@ -38,8 +38,6 @@ use rai_pal_core::windows;
 use rai_pal_core::{analytics, remote_mod};
 use rai_pal_proc_macros::serializable_struct;
 use rusqlite::OpenFlags;
-use sqlx::sqlite::SqlitePoolOptions;
-use sqlx::{Executor, Pool, Row, Sqlite, SqliteConnection, pool};
 use strum::IntoEnumIterator;
 use tauri::async_runtime::Mutex;
 use tauri::path::BaseDirectory;
@@ -485,25 +483,6 @@ fn attach_remote_database<TConnection: Deref<Target = rusqlite::Connection>>(
 	println!("Remote database attached!");
 
 	Ok(())
-}
-
-pub async fn setup_database() -> Result<Pool<Sqlite>> {
-	let path = paths::app_data_path()?.join("db.sqlite");
-	if path.is_file() {
-		std::fs::remove_file(&path)?;
-	}
-
-	let config = sqlx::sqlite::SqliteConnectOptions::new()
-		.filename(path)
-		.create_if_missing(true)
-		.journal_mode(sqlx::sqlite::SqliteJournalMode::Wal)
-		.synchronous(sqlx::sqlite::SqliteSynchronous::Off)
-		.in_memory(false)
-		.shared_cache(true);
-
-	let pool = SqlitePoolOptions::new().connect_with(config).await?;
-
-	Ok(pool)
 }
 
 pub fn setup_rusqlite() -> Result<rusqlite::Connection> {
