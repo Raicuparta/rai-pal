@@ -1,3 +1,5 @@
+use rusqlite::types::FromSqlError;
+
 #[derive(serde::Serialize, specta::Type, Clone)]
 pub struct JsonData<T>(pub T);
 
@@ -6,9 +8,9 @@ where
 	T: serde::de::DeserializeOwned + Eq,
 {
 	fn column_result(value: rusqlite::types::ValueRef<'_>) -> rusqlite::types::FromSqlResult<Self> {
-		let json_str = value.as_str()?;
-		let set: T = serde_json::from_str(&json_str).unwrap(); // TODO error
-		Ok(JsonData(set))
+		Ok(JsonData(
+			serde_json::from_str(value.as_str()?).map_err(|err| FromSqlError::Other(err.into()))?,
+		))
 	}
 }
 
@@ -17,7 +19,8 @@ where
 	T: serde::Serialize + Eq,
 {
 	fn to_sql(&self) -> rusqlite::Result<rusqlite::types::ToSqlOutput<'_>> {
-		let json_str = serde_json::to_string(&self.0).unwrap(); // TODO error
-		Ok(json_str.into())
+		Ok(serde_json::to_string(&self.0)
+			.map_err(|err| FromSqlError::Other(err.into()))?
+			.into())
 	}
 }
