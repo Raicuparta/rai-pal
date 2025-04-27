@@ -11,10 +11,7 @@ use super::mod_loader::ModLoaderStatic;
 use crate::{
 	files::copy_dir_all,
 	game::DbGame,
-	game_engines::{
-		game_engine::{EngineBrand, GameEngine},
-		unity::UnityBackend,
-	},
+	game_engines::{game_engine::EngineBrand, unity::UnityBackend},
 	game_mod::CommonModData,
 	local_mod::{LocalMod, ModKind},
 	mod_loaders::mod_loader::{ModLoaderActions, ModLoaderData},
@@ -86,11 +83,7 @@ impl ModLoaderActions for BepInEx {
 
 		copy_dir_all(folder_to_copy_to_game, game_folder)?;
 
-		// let is_legacy = game.executable.engine.as_ref().is_some_and(is_legacy);
-		// TODO is_legacy
-		let is_legacy = false;
-
-		let config_origin_path = &self.data.path.join("config").join(if is_legacy {
+		let config_origin_path = &self.data.path.join("config").join(if is_legacy(game) {
 			"BepInEx-legacy.cfg"
 		} else {
 			"BepInEx.cfg"
@@ -209,10 +202,9 @@ impl ModLoaderActions for BepInEx {
 	}
 }
 
-fn is_legacy(engine: &GameEngine) -> bool {
-	engine.version.as_ref().is_some_and(|version| {
-		version.numbers.major < 5
-			|| (version.numbers.major == 5 && version.numbers.minor.is_some_and(|minor| minor < 5))
+fn is_legacy(game: &DbGame) -> bool {
+	game.engine_version_major.is_some_and(|major| {
+		major < 5 || (major == 5 && game.engine_version_minor.is_some_and(|minor| minor < 5))
 	})
 }
 
