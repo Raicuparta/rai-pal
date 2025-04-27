@@ -137,7 +137,7 @@ impl Steam {
 }
 
 impl ProviderActions for Steam {
-	async fn insert_games(&self, pool: &sqlx::Pool<sqlx::Sqlite>) -> Result {
+	async fn insert_games(&self, db: &std::sync::Mutex<rusqlite::Connection>) -> Result {
 		let steam_dir = SteamDir::locate()?;
 		let steam_path = steam_dir.path();
 		let app_info_reader = SteamAppInfoReader::new(&Self::get_appinfo_path(steam_path))?;
@@ -221,10 +221,10 @@ impl ProviderActions for Steam {
 
 					// TODO: careful with whole thing dying if a single game fails.
 					if installed_games.is_empty() {
-						pool.insert_game(&game).await?;
+						db.lock().unwrap().insert_game(&game)?;
 					} else {
 						for installed_game in installed_games {
-							pool.insert_game(&installed_game).await?;
+							db.lock().unwrap().insert_game(&installed_game)?;
 						}
 					}
 				}

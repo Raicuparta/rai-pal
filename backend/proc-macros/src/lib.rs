@@ -32,48 +32,44 @@ pub fn serializable_enum(_args: TokenStream, input: TokenStream) -> TokenStream 
 	// Get the enum name
 	let enum_name = &input.ident;
 
-	// Generate the impl Display block
-	let display_impl = quote! {
-		impl std::fmt::Display for #enum_name {
-			fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-				write!(f, "{:?}", self)
+	let sql_impl = quote! {
+		impl rusqlite::types::ToSql for #enum_name {
+			fn to_sql(&self) -> rusqlite::Result<rusqlite::types::ToSqlOutput<'_>> {
+				Ok(self.to_string().into())
+			}
+		}
+
+		impl rusqlite::types::FromSql for #enum_name {
+			fn column_result(value: rusqlite::types::ValueRef<'_>) -> rusqlite::types::FromSqlResult<Self> {
+				value.as_str()?.parse()
+					.map_err(|e| rusqlite::types::FromSqlError::Other(Box::new(e)))
 			}
 		}
 	};
 
 	// Generate the output tokens
 	let output = quote! {
-		#[derive(serde::Serialize, serde::Deserialize, specta::Type, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Copy, rai_pal_proc_macros::EnumVariants)]
+		#[derive(
+			serde::Serialize,
+			serde::Deserialize,
+			specta::Type,
+			Clone,
+			PartialEq,
+			Eq,
+			PartialOrd,
+			Ord,
+			Hash,
+			Debug,
+			Copy,
+			strum::Display,
+			strum::EnumString,
+			strum::EnumIter,
+		)]
 		#input
 
-		#display_impl
+		#sql_impl
 	};
 
 	// Convert the output tokens into a TokenStream
 	TokenStream::from(output)
-}
-
-#[proc_macro_derive(EnumVariants)]
-pub fn enum_variants(input: TokenStream) -> TokenStream {
-	let input = parse_macro_input!(input as DeriveInput);
-	let enum_name = &input.ident;
-
-	// Ensure it's an enum and collect variant names
-	let variants: Vec<_> = match input.data {
-		Data::Enum(DataEnum { variants, .. }) => variants.iter().map(|v| v.ident.clone()).collect(),
-		_ => panic!("#[derive(EnumVariants)] can only be used on enums"),
-	};
-
-	// Generate the implementation
-	let output = quote! {
-		impl #enum_name {
-			pub fn variants() -> Vec<#enum_name> {
-				vec![
-					#(Self::#variants),*
-				]
-			}
-		}
-	};
-
-	output.into()
 }

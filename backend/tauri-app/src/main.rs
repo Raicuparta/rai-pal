@@ -3,6 +3,7 @@
 // Command stuff needs to be async so I can spawn tasks.
 #![allow(clippy::unused_async)]
 
+use std::ops::Deref;
 use std::path::Path;
 use std::sync::RwLock;
 use std::{collections::HashMap, path::PathBuf};
@@ -13,7 +14,9 @@ use app_state::{AppState, StateData, StatefulHandle};
 use events::EventEmitter;
 use futures::{StreamExt, TryStreamExt};
 use rai_pal_core::game::{self, DbGame, GameId};
-use rai_pal_core::game_engines::game_engine::{EngineVersion, EngineVersionNumbers, GameEngine};
+use rai_pal_core::game_engines::game_engine::{
+	EngineBrand, EngineVersion, EngineVersionNumbers, GameEngine,
+};
 use rai_pal_core::game_executable::GameExecutable;
 use rai_pal_core::game_title::get_normalized_titles;
 use rai_pal_core::games_query::{GamesQuery, GamesSortBy, InstallState};
@@ -34,8 +37,9 @@ use rai_pal_core::remote_game::{self, RemoteGame};
 use rai_pal_core::windows;
 use rai_pal_core::{analytics, remote_mod};
 use rai_pal_proc_macros::serializable_struct;
-use sqlx::sqlite::SqlitePoolOptions;
-use sqlx::{Executor, Pool, Row, Sqlite, SqliteConnection, pool};
+use rusqlite::OpenFlags;
+use strum::IntoEnumIterator;
+use tauri::async_runtime::Mutex;
 use tauri::path::BaseDirectory;
 use tauri::{AppHandle, Manager};
 use tauri_plugin_log::{Target, TargetKind};
@@ -411,143 +415,150 @@ async fn refresh_mods(handle: AppHandle) -> Result {
 #[specta::specta]
 async fn refresh_remote_games(handle: AppHandle) -> Result {
 	let state = handle.app_state();
-	let pool = state.database_pool.read_state()?.clone();
 	let path = remote_game::download_database().await?;
-	attach_remote_database(&pool, &path).await?;
+	attach_remote_database(state.database_connection.lock().unwrap(), &path)?;
 
 	Ok(())
 }
 
-async fn attach_remote_database(local_pool: &Pool<Sqlite>, path: &Path) -> Result {
+fn attach_remote_database<TConnection: Deref<Target = rusqlite::Connection>>(
+	local_database_connection: TConnection,
+	path: &Path,
+) -> Result {
+	println!("Attaching remote database...");
+
 	if !path.is_file() {
 		return Ok(());
 	}
 
-	let config = sqlx::sqlite::SqliteConnectOptions::new()
-		.filename(path)
-		.read_only(true);
+	let remote_database_connection =
+		rusqlite::Connection::open_with_flags(path, OpenFlags::SQLITE_OPEN_READ_ONLY)?;
 
-	let remote_pool = SqlitePoolOptions::new().connect_with(config).await?;
-
-	let mut rows = sqlx::query(r#"SELECT * FROM games;"#).fetch(&remote_pool);
-
-	while let Ok(Some(row)) = rows.try_next().await {
-		let provider_id: String = row.try_get("provider_id")?;
-		let external_id: String = row.try_get("external_id")?;
-		let engine_brand: Option<String> = row.try_get("engine_brand")?;
-		let engine_version_display: Option<String> = row.try_get("engine_version")?;
-		let subscriptions: Option<String> = row.try_get("subscriptions")?;
-
-		let engine_version = if let Some(engine_version) = row.try_get("engine_version")? {
-			remote_game::parse_version(engine_version)
-		} else {
-			None
-		};
-
-		// Insert the processed game into main.remote_games
-		sqlx::query(
-			r#"
-					INSERT OR IGNORE INTO main.remote_games (
-							provider_id, external_id, engine_brand, engine_version_major,
-							engine_version_minor, engine_version_patch, engine_version_display, subscriptions
-					)
-					VALUES (?, ?, ?, ?, ?, ?, ?, ?);
-					"#,
+	let mut insert_into_local = local_database_connection.prepare(
+		r#"
+		INSERT OR IGNORE INTO main.remote_games (
+				provider_id, external_id, engine_brand, engine_version_major,
+				engine_version_minor, engine_version_patch, engine_version_display, subscriptions
 		)
-		.bind(provider_id)
-		.bind(external_id)
-		.bind(engine_brand)
-		.bind(engine_version.as_ref().map(|v| v.numbers.major))
-		.bind(engine_version.as_ref().map(|v| v.numbers.minor))
-		.bind(engine_version.as_ref().map(|v| v.numbers.patch))
-		.bind(engine_version_display)
-		.bind(subscriptions)
-		.execute(local_pool)
-		.await?;
-	}
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+		"#,
+	)?;
 
-	remote_pool.close().await;
+	remote_database_connection
+		.prepare("SELECT * FROM games;")?
+		.query_map([], |row| {
+			let provider_id: ProviderId = row.get("provider_id")?;
+			let external_id: String = row.get("external_id")?;
+			let engine_brand: Option<EngineBrand> = row.get("engine_brand")?;
+			let engine_version_display: Option<String> = row.get("engine_version")?;
+			let subscriptions: Option<String> = row.get("subscriptions")?;
+			let engine_version_string: Option<String> = row.get("engine_version")?;
+
+			let engine_version = if let Some(engine_version) = engine_version_string {
+				remote_game::parse_version(&engine_version)
+			} else {
+				None
+			};
+
+			// Insert the processed game into main.remote_games
+			insert_into_local.execute(rusqlite::params![
+				provider_id,
+				external_id,
+				engine_brand,
+				engine_version.as_ref().map(|v| v.numbers.major),
+				engine_version.as_ref().map(|v| v.numbers.minor),
+				engine_version.as_ref().map(|v| v.numbers.patch),
+				engine_version_display,
+				subscriptions,
+			])?;
+
+			Ok(())
+		})?
+		.for_each(|result| {
+			if let Err(err) = result {
+				log::error!("Error processing row: {err}");
+			}
+		});
+
+	println!("Remote database attached!");
 
 	Ok(())
 }
 
-pub async fn setup_database() -> Result<Pool<Sqlite>> {
+pub fn setup_rusqlite() -> Result<rusqlite::Connection> {
 	let path = paths::app_data_path()?.join("db.sqlite");
 	if path.is_file() {
 		std::fs::remove_file(&path)?;
 	}
 
-	let config = sqlx::sqlite::SqliteConnectOptions::new()
-		.filename(path)
-		.create_if_missing(true)
-		.journal_mode(sqlx::sqlite::SqliteJournalMode::Wal)
-		.synchronous(sqlx::sqlite::SqliteSynchronous::Off)
-		.in_memory(false)
-		.shared_cache(true);
+	let connection = rusqlite::Connection::open_with_flags(
+		path,
+		OpenFlags::SQLITE_OPEN_CREATE
+			| OpenFlags::SQLITE_OPEN_READ_WRITE
+			| OpenFlags::SQLITE_OPEN_SHARED_CACHE,
+	)?;
 
-	let pool = SqlitePoolOptions::new().connect_with(config).await?;
-
-	// Run the initial migration
-	pool.execute(
+	connection.execute_batch(
 		r#"
+		PRAGMA journal_mode = WAL;
+		PRAGMA synchronous = OFF;
+
 		CREATE TABLE IF NOT EXISTS games (
-				provider_id TEXT NOT NULL,
-				game_id TEXT NOT NULL,
-				external_id TEXT NOT NULL,
-				display_title TEXT NOT NULL,
-				title_discriminator TEXT,
-				thumbnail_url TEXT,
-				tags TEXT,
-				release_date INTEGER,
-				provider_commands TEXT,
-				PRIMARY KEY (provider_id, game_id)
+			provider_id TEXT NOT NULL,
+			game_id TEXT NOT NULL,
+			external_id TEXT NOT NULL,
+			display_title TEXT NOT NULL,
+			title_discriminator TEXT,
+			thumbnail_url TEXT,
+			tags TEXT,
+			release_date INTEGER,
+			provider_commands TEXT,
+			PRIMARY KEY (provider_id, game_id)
 		);
 
 		CREATE INDEX IF NOT EXISTS idx_games_external_id ON games(provider_id, external_id);
 
 		CREATE TABLE IF NOT EXISTS normalized_titles (
-				provider_id TEXT NOT NULL,
-				game_id TEXT NOT NULL,
-				normalized_title TEXT NOT NULL,
-				FOREIGN KEY (provider_id, game_id) REFERENCES games(provider_id, game_id) ON DELETE CASCADE,
-				PRIMARY KEY (provider_id, game_id, normalized_title)
+			provider_id TEXT NOT NULL,
+			game_id TEXT NOT NULL,
+			normalized_title TEXT NOT NULL,
+			FOREIGN KEY (provider_id, game_id) REFERENCES games(provider_id, game_id) ON DELETE CASCADE,
+			PRIMARY KEY (provider_id, game_id, normalized_title)
 		);
 
 		CREATE INDEX IF NOT EXISTS idx_normalized_titles ON normalized_titles(provider_id, game_id);
 
 		CREATE TABLE IF NOT EXISTS installed_games (
-				provider_id TEXT NOT NULL,
-				game_id TEXT NOT NULL,
-				exe_path TEXT NOT NULL,
-				engine_brand TEXT,
-				engine_version_major INTEGER,
-				engine_version_minor INTEGER,
-				engine_version_patch INTEGER,
-				engine_version_display TEXT,
-				unity_backend TEXT,
-				architecture TEXT,
-				FOREIGN KEY(provider_id, game_id) REFERENCES games(provider_id, game_id),
-				PRIMARY KEY (provider_id, game_id)
+			provider_id TEXT NOT NULL,
+			game_id TEXT NOT NULL,
+			exe_path TEXT NOT NULL,
+			engine_brand TEXT,
+			engine_version_major INTEGER,
+			engine_version_minor INTEGER,
+			engine_version_patch INTEGER,
+			engine_version_display TEXT,
+			unity_backend TEXT,
+			architecture TEXT,
+			FOREIGN KEY(provider_id, game_id) REFERENCES games(provider_id, game_id),
+			PRIMARY KEY (provider_id, game_id)
 		);
 
 		CREATE TABLE IF NOT EXISTS remote_games (
-        provider_id TEXT NOT NULL,
-        external_id TEXT NOT NULL,
-        engine_brand TEXT,
-				engine_version_major INTEGER,
-				engine_version_minor INTEGER,
-				engine_version_patch INTEGER,
-				engine_version_display TEXT,
-        subscriptions TEXT,
-        PRIMARY KEY (provider_id, external_id)
+			provider_id TEXT NOT NULL,
+			external_id TEXT NOT NULL,
+			engine_brand TEXT,
+			engine_version_major INTEGER,
+			engine_version_minor INTEGER,
+			engine_version_patch INTEGER,
+			engine_version_display TEXT,
+			subscriptions TEXT,
+			PRIMARY KEY (provider_id, external_id)
 		);
-		"#,
-	)
-	.await?;
+	"#,
+	)?;
+	attach_remote_database(&connection, &remote_game::get_database_file_path()?)?;
 
-	attach_remote_database(&pool, &remote_game::get_database_file_path()?).await?;
-
-	Ok(pool)
+	Ok(connection)
 }
 
 #[tauri::command]
@@ -556,9 +567,8 @@ async fn refresh_games(handle: AppHandle, provider_id: ProviderId) -> Result {
 	let state = handle.app_state();
 
 	let provider = provider::get_provider(provider_id)?;
-	let pool = state.database_pool.read_state()?.clone();
 
-	provider.insert_games(&pool).await?;
+	provider.insert_games(&state.database_connection).await?;
 
 	// TODO get rid of stale games after everything is done.
 
@@ -645,7 +655,7 @@ async fn open_logs_folder() -> Result {
 #[specta::specta]
 async fn get_game_ids(handle: AppHandle, query: Option<GamesQuery>) -> Result<GameIdsResponse> {
 	let state = handle.app_state();
-	let pool = state.database_pool.read_state()?.clone();
+	let database_connection = state.database_connection.lock().unwrap();
 	let search = query.as_ref().map(|q| q.search.clone()).unwrap_or_default();
 
 	// Build sorting logic
@@ -755,12 +765,13 @@ async fn get_game_ids(handle: AppHandle, query: Option<GamesQuery>) -> Result<Ga
 		}
 	}
 
+	let trimmed_search = search.trim();
 	// Add search filter
-	if !search.trim().is_empty() {
-		filters.push(
-			"(g.display_title LIKE '%' || $1 || '%' OR nt.normalized_title LIKE '%' || $1 || '%')"
-				.to_string(),
-		);
+	if !trimmed_search.is_empty() {
+		filters.push(format!(
+			"(g.display_title LIKE '%{}%' OR nt.normalized_title LIKE '%{}%')",
+			trimmed_search, trimmed_search
+		));
 	}
 
 	// Combine all filters into a single WHERE clause
@@ -797,20 +808,25 @@ async fn get_game_ids(handle: AppHandle, query: Option<GamesQuery>) -> Result<Ga
 
 	log::info!("#### Query: {query}");
 
-	let game_ids: Vec<GameId> = sqlx::query_as(query)
-		.bind(search.trim())
-		.fetch_all(&pool)
-		.await?;
+	let game_ids = database_connection
+		.prepare(query)?
+		.query_map([], |row| {
+			Ok(GameId {
+				provider_id: row.get(0)?,
+				game_id: row.get(1)?,
+			})
+		})?
+		.filter_map(|game_id| game_id.ok()) // TODO log errors.
+		.collect();
 
-	let total_count: i64 = sqlx::query(
-		r#"
+	let total_count = database_connection
+		.prepare(
+			r#"
 			SELECT COUNT(*)
 			FROM main.games g
 		"#,
-	)
-	.fetch_one(&pool)
-	.await?
-	.try_get(0)?;
+		)?
+		.query_row([], |row| Ok(row.get::<_, i64>(0)?))?;
 
 	Ok(GameIdsResponse {
 		game_ids,
@@ -822,11 +838,12 @@ async fn get_game_ids(handle: AppHandle, query: Option<GamesQuery>) -> Result<Ga
 #[specta::specta]
 async fn get_game(id: GameId, handle: AppHandle) -> Result<DbGame> {
 	let state = handle.app_state();
-	let pool = state.database_pool.read_state()?.clone();
+	let database_connection = state.database_connection.lock().unwrap();
 
 	// TODO take into account all normalized titles
-	let db_game: DbGame = sqlx::query_as(
-		r#"
+	let db_game = database_connection
+		.prepare(
+			r#"
 		SELECT
 			g.provider_id,
 			g.game_id,
@@ -856,11 +873,28 @@ async fn get_game(id: GameId, handle: AppHandle) -> Result<DbGame> {
 		WHERE g.provider_id = $1 AND g.game_id = $2
 		LIMIT 1
 	"#,
-	)
-	.bind(id.provider_id)
-	.bind(&id.game_id)
-	.fetch_one(&pool)
-	.await?;
+		)?
+		.query_row([id.provider_id.to_string(), id.game_id], |row| {
+			Ok(DbGame {
+				provider_id: row.get(0)?,
+				game_id: row.get(1)?,
+				external_id: row.get(2)?,
+				display_title: row.get(3)?,
+				title_discriminator: row.get(4)?,
+				thumbnail_url: row.get(5)?,
+				release_date: row.get(6)?,
+				tags: row.get(7)?,
+				provider_commands: row.get(8)?,
+				exe_path: row.get(9)?,
+				unity_backend: row.get(10)?,
+				architecture: row.get(11)?,
+				engine_brand: row.get(12)?,
+				engine_version_major: row.get(13)?,
+				engine_version_minor: row.get(14)?,
+				engine_version_patch: row.get(15)?,
+				engine_version_display: row.get(16)?,
+			})
+		})?;
 
 	Ok(db_game)
 }
@@ -891,13 +925,13 @@ fn main() {
 	// Since I'm making all exposed functions async, panics won't crash anything important, I think.
 	// So I can just catch panics here and show a system message with the error.
 	std::panic::set_hook(Box::new(|info| {
+		println!("Panic: {info}");
+
 		#[cfg(target_os = "windows")]
 		windows::error_dialog(&format!("I found a panic!!!: {info}"));
-
-		log::error!("Panic: {info}");
 	}));
 
-	let database_pool = tauri::async_runtime::block_on(setup_database()).unwrap();
+	let database_connection = setup_rusqlite().unwrap(); // TODO handle error
 
 	let builder = Builder::<tauri::Wry>::new()
 		.commands(tauri_specta::collect_commands![
@@ -933,7 +967,7 @@ fn main() {
 			uninstall_mod,
 		])
 		.events(events::collect_events())
-		.constant("PROVIDER_IDS", ProviderId::variants())
+		.constant("PROVIDER_IDS", ProviderId::iter().collect::<Vec<_>>())
 		.error_handling(tauri_specta::ErrorHandlingMode::Throw);
 
 	#[cfg(debug_assertions)]
@@ -969,7 +1003,7 @@ fn main() {
 			mod_loaders: RwLock::default(),
 			local_mods: RwLock::default(),
 			remote_mods: RwLock::default(),
-			database_pool: RwLock::new(database_pool),
+			database_connection: std::sync::Mutex::new(database_connection),
 		})
 		.invoke_handler(builder.invoke_handler())
 		.setup(move |app| {
@@ -1000,17 +1034,17 @@ fn main() {
 				});
 			}
 
-			let state = app.app_handle().app_state();
-			let database_pool = state.database_pool.read_state().unwrap().clone();
 			let app_handle = app.app_handle().clone();
 
 			tauri::async_runtime::spawn(async move {
-				if let Ok(mut connection) = database_pool.acquire().await {
-					if let Ok(mut handle) = connection.lock_handle().await {
-						handle
-							.set_update_hook(move |_| app_handle.emit_safe(events::GamesChanged()));
+				let state = app_handle.app_state();
+				let database_connection = state.database_connection.lock().unwrap();
+				let cloned_handle = app_handle.clone();
+				database_connection.update_hook(Some({
+					move |_, _: &str, _: &str, _| {
+						cloned_handle.emit_safe(events::GamesChanged());
 					}
-				}
+				}));
 			});
 
 			Ok(())

@@ -2,7 +2,6 @@ use std::{fs, path::PathBuf};
 
 use enum_dispatch::enum_dispatch;
 use rai_pal_proc_macros::serializable_enum;
-use sqlx::{Pool, Sqlite};
 
 #[cfg(target_os = "linux")]
 use crate::providers::heroic_epic_provider::HeroicEpic;
@@ -21,8 +20,6 @@ use crate::{
 
 // These IDs need to match the ones in rai-pal-db.
 #[serializable_enum]
-#[derive(sqlx::Type)]
-#[sqlx(type_name = "provider_id")]
 pub enum ProviderId {
 	Ea,
 	Epic,
@@ -73,7 +70,7 @@ const PROVIDERS: &Map = &[
 
 #[enum_dispatch(Provider)]
 pub trait ProviderActions {
-	async fn insert_games(&self, pool: &Pool<Sqlite>) -> Result;
+	async fn insert_games(&self, db: &std::sync::Mutex<rusqlite::Connection>) -> Result;
 }
 
 const fn create_map_entry<TProvider: ProviderActions + ProviderStatic>()

@@ -5,7 +5,6 @@ use std::{
 };
 
 use rai_pal_proc_macros::serializable_struct;
-use sqlx::Sqlite;
 
 use crate::{
 	data_types::{json_data::JsonData, path_data::PathData},
@@ -22,13 +21,12 @@ use crate::{
 };
 
 #[serializable_struct]
-#[derive(sqlx::Type, sqlx::FromRow)]
 pub struct GameId {
 	pub provider_id: ProviderId,
 	pub game_id: String,
 }
 
-#[derive(sqlx::FromRow, serde::Serialize, specta::Type, Clone)]
+#[derive(serde::Serialize, specta::Type, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct DbGame {
 	pub provider_id: ProviderId,
@@ -180,14 +178,16 @@ impl DbGame {
 }
 
 pub trait InsertGame {
-	async fn insert_game(&self, game: &DbGame) -> Result;
+	fn insert_game(&self, game: &DbGame) -> Result;
 }
 
-impl InsertGame for sqlx::Pool<Sqlite> {
-	async fn insert_game(&self, game: &DbGame) -> Result {
-		let mut transaction = self.begin().await?;
+impl InsertGame for rusqlite::Connection {
+	fn insert_game(&self, game: &DbGame) -> Result {
+		// let transaction = self.transaction()?;
+		// TODO understand how to do a transaction here
 
-		sqlx::query::<Sqlite>(
+		// TODO prepare this only once since it's always the same.
+		self.prepare(
 			"INSERT OR REPLACE INTO games (
 					provider_id,
 					game_id,
@@ -199,21 +199,21 @@ impl InsertGame for sqlx::Pool<Sqlite> {
 					title_discriminator,
 					provider_commands
 				) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)",
-		)
-		.bind(game.provider_id)
-		.bind(game.game_id.clone())
-		.bind(game.external_id.clone())
-		.bind(game.display_title.clone())
-		.bind(game.thumbnail_url.clone())
-		.bind(game.release_date)
-		.bind(game.tags.clone())
-		.bind(game.title_discriminator.clone())
-		.bind(game.provider_commands.clone())
-		.execute(&mut *transaction)
-		.await?;
+		)?
+		.execute(rusqlite::params![
+			game.provider_id,
+			game.game_id.clone(),
+			game.external_id.clone(),
+			game.display_title.clone(),
+			game.thumbnail_url.clone(),
+			game.release_date,
+			game.tags.clone(),
+			game.title_discriminator.clone(),
+			game.provider_commands.clone(),
+		])?;
 
 		if let Some(exe_path) = game.exe_path.as_ref() {
-			sqlx::query::<Sqlite>(
+			self.prepare(
 				"INSERT OR REPLACE INTO installed_games (
 						provider_id,
 						game_id,
@@ -227,34 +227,35 @@ impl InsertGame for sqlx::Pool<Sqlite> {
 						architecture
 					)
 					 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)",
-			)
-			.bind(game.provider_id)
-			.bind(game.game_id.clone())
-			.bind(exe_path)
-			.bind(game.engine_brand)
-			.bind(game.engine_version_major)
-			.bind(game.engine_version_minor)
-			.bind(game.engine_version_patch)
-			.bind(game.engine_version_display.clone())
-			.bind(game.unity_backend.clone())
-			.bind(game.architecture.clone())
-			.execute(&mut *transaction)
-			.await?;
+			)?
+			.execute(rusqlite::params![
+				game.provider_id,
+				game.game_id.clone(),
+				exe_path,
+				game.engine_brand,
+				game.engine_version_major,
+				game.engine_version_minor,
+				game.engine_version_patch,
+				game.engine_version_display.clone(),
+				game.unity_backend.clone(),
+				game.architecture.clone(),
+			])?;
 		}
 
 		for normalized_title in get_normalized_titles(&game.display_title) {
-			sqlx::query::<Sqlite>(
+			self.prepare(
 				"INSERT OR REPLACE INTO normalized_titles (provider_id, game_id, normalized_title)
 							VALUES ($1, $2, $3)",
-			)
-			.bind(game.provider_id)
-			.bind(game.game_id.clone())
-			.bind(normalized_title.clone())
-			.execute(&mut *transaction)
-			.await?;
+			)?
+			.execute(rusqlite::params![
+				game.provider_id,
+				game.game_id.clone(),
+				normalized_title.clone(),
+			])?;
 		}
 
-		transaction.commit().await?; // TODO roll back if needed
+		// TODO understand how to do a transaction here
+		// transaction.commit()?;
 
 		Ok(())
 	}

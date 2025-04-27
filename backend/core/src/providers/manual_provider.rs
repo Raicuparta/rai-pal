@@ -8,7 +8,7 @@ use rai_pal_proc_macros::serializable_struct;
 
 use super::provider::{ProviderActions, ProviderId, ProviderStatic};
 use crate::{
-	game::{DbGame, GameId, InsertGame},
+	game::{DbGame, InsertGame},
 	game_executable::GameExecutable,
 	paths::{self, app_data_path, file_name_without_extension},
 	result::{Error, Result},
@@ -34,11 +34,11 @@ impl ProviderStatic for Manual {
 }
 
 impl ProviderActions for Manual {
-	async fn insert_games(&self, pool: &sqlx::Pool<sqlx::Sqlite>) -> Result {
+	async fn insert_games(&self, db: &std::sync::Mutex<rusqlite::Connection>) -> Result {
 		for path in read_games_config(&games_config_path()?).paths {
 			match get_game_from_path(&path) {
 				Ok(game) => {
-					pool.insert_game(&game).await?;
+					db.lock().unwrap().insert_game(&game)?;
 				}
 				Err(error) => {
 					error!(

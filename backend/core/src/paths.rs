@@ -6,7 +6,7 @@ use std::{
 	path::{Path, PathBuf},
 };
 
-use directories::ProjectDirs;
+use directories::{BaseDirs, ProjectDirs};
 use globwalk::glob;
 use log;
 
@@ -99,6 +99,10 @@ pub fn open_folder_or_parent(path: &Path) -> Result {
 	};
 
 	Ok(open::that_detached(folder_path)?)
+}
+
+pub fn base_dirs() -> Result<BaseDirs> {
+	Ok(directories::BaseDirs::new().ok_or_else(Error::AppDataNotFound)?)
 }
 
 pub trait AsValidStr {

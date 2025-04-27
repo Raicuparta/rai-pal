@@ -1,6 +1,6 @@
 #![cfg(target_os = "windows")]
 
-use std::{future, io, path::PathBuf};
+use std::{future, io, ops::Deref, path::PathBuf};
 
 use log::error;
 use rai_pal_proc_macros::serializable_struct;
@@ -48,8 +48,8 @@ struct XboxGamepassImages {
 }
 
 impl ProviderActions for Xbox {
-	async fn insert_games(&self, pool: &sqlx::Pool<sqlx::Sqlite>) -> Result {
-		if let Err(error) = get_games(pool).await {
+	async fn insert_games(&self, db: &std::sync::Mutex<rusqlite::Connection>) -> Result {
+		if let Err(error) = get_games(db).await {
 			if error.kind() == io::ErrorKind::NotFound {
 				log::info!(
 					"Failed to find installed Xbox PC games. This probably means the Xbox PC app isn't installed, or there are no Windows Store games or something. Error: {}",
@@ -63,7 +63,7 @@ impl ProviderActions for Xbox {
 	}
 }
 
-async fn get_games(pool: &sqlx::Pool<sqlx::Sqlite>) -> io::Result<()> {
+async fn get_games(db: &std::sync::Mutex<rusqlite::Connection>) -> io::Result<()> {
 	let gaming_services =
 		RegKey::predef(HKEY_LOCAL_MACHINE).open_subkey("SOFTWARE\\Microsoft\\GamingServices")?;
 	let package_roots = gaming_services.open_subkey("PackageRepository\\Root")?;
@@ -141,7 +141,7 @@ async fn get_games(pool: &sqlx::Pool<sqlx::Sqlite>) -> io::Result<()> {
 
 	// Perform database insertions asynchronously
 	for game in games_to_insert {
-		if let Err(error) = pool.insert_game(&game).await {
+		if let Err(error) = db.lock().unwrap().insert_game(&game) {
 			log::error!("Failed to insert Xbox game into database: {}", error);
 		}
 	}

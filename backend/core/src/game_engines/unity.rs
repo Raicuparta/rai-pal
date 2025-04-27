@@ -17,7 +17,6 @@ use crate::{
 };
 
 #[serializable_enum]
-#[derive(sqlx::Type)]
 pub enum UnityBackend {
 	Il2Cpp,
 	Mono,

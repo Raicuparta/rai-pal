@@ -1,11 +1,4 @@
-use std::{
-	env,
-	ffi::{OsStr, OsString},
-	fmt::Display,
-	num,
-	path::PathBuf,
-	result,
-};
+use std::{env, num, path::PathBuf, result};
 
 use lazy_regex::regex;
 
@@ -47,10 +40,10 @@ pub enum Error {
 	),
 
 	#[error(transparent)]
-	SQL(
+	Rusql(
 		#[from]
 		#[serde(skip)]
-		sqlx::Error,
+		rusqlite::Error,
 	),
 
 	#[error(transparent)]

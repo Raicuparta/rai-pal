@@ -24,10 +24,10 @@ pub enum Error {
 	),
 
 	#[error(transparent)]
-	Sql(
+	Rusql(
 		#[from]
 		#[serde(skip)]
-		sqlx::Error,
+		rusqlite::Error,
 	),
 
 	#[error(transparent)]
