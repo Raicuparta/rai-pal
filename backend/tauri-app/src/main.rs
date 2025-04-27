@@ -13,7 +13,7 @@ use app_settings::AppSettings;
 use app_state::{AppState, StateData, StatefulHandle};
 use events::EventEmitter;
 use futures::{StreamExt, TryStreamExt};
-use rai_pal_core::game::{self, DbGame, GameId};
+use rai_pal_core::game::{self, DbGame, GameId, InsertGame};
 use rai_pal_core::game_engines::game_engine::{
 	EngineBrand, EngineVersion, EngineVersionNumbers, GameEngine,
 };
@@ -578,31 +578,32 @@ async fn refresh_games(handle: AppHandle, provider_id: ProviderId) -> Result {
 #[tauri::command]
 #[specta::specta]
 async fn add_game(path: PathBuf, handle: AppHandle) -> Result {
-	// let normalized_path = normalize_path(&path);
+	let normalized_path = normalize_path(&path);
 
-	// let game = manual_provider::add_game(&normalized_path)?;
-	// let game_name = game.title.display.clone();
+	let game = manual_provider::add_game(&normalized_path)?;
+	let game_name = game.display_title.clone();
 
-	// let state = handle.app_state();
+	let state = handle.app_state();
 
-	// state
-	// 	.games
-	// 	.try_get(&ProviderId::Manual)?
-	// 	.write_state()?
-	// 	.insert(game.id.game_id.clone(), game.clone());
+	state
+		.database_connection
+		.lock()
+		.unwrap()
+		.insert_game(&game)?;
 
-	// handle.emit_safe(events::FoundGame(game.id.clone()));
+	handle.emit_safe(events::FoundGame(GameId {
+		provider_id: game.provider_id,
+		game_id: game.game_id.clone(),
+	}));
 
-	// handle.emit_safe(events::GamesChanged());
+	handle.emit_safe(events::GamesChanged());
 
-	// handle.emit_safe(events::SelectInstalledGame(
-	// 	ProviderId::Manual,
-	// 	game.id.game_id.clone(),
-	// ));
+	handle.emit_safe(events::SelectInstalledGame(
+		ProviderId::Manual,
+		game.game_id,
+	));
 
-	// analytics::send_event(analytics::Event::ManuallyAddGame, &game_name).await;
-
-	// TODO add manual game to db
+	analytics::send_event(analytics::Event::ManuallyAddGame, &game_name).await;
 
 	Ok(())
 }
