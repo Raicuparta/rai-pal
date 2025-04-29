@@ -10,8 +10,10 @@ use rai_pal_proc_macros::serializable_enum;
 
 use super::game_engine::EngineVersionNumbers;
 use crate::{
-	game_engines::game_engine::{EngineBrand, EngineVersion, GameEngine},
-	game_executable::{Architecture, GameExecutable, get_architecture},
+	architecture::{Architecture, get_architecture},
+	data_types::path_data::PathData,
+	game::DbGame,
+	game_engines::game_engine::EngineVersion,
 	paths::{self, glob_path},
 	result::{Error, Result},
 };
@@ -109,7 +111,7 @@ fn get_unity_backend(path: &Path) -> Option<UnityBackend> {
 	}
 }
 
-fn is_unity_exe(game_path: &Path) -> bool {
+pub fn is_unity_exe(game_path: &Path) -> bool {
 	game_path.is_file() && get_unity_data_path(game_path).is_ok_and(|data_path| data_path.is_dir())
 }
 
@@ -152,23 +154,25 @@ fn get_alt_architecture(game_path: &Path) -> Option<Architecture> {
 	None
 }
 
-pub fn get_executable(game_path: &Path) -> Option<GameExecutable> {
-	if is_unity_exe(game_path) {
-		let architecture = get_architecture(game_path)
-			.unwrap_or(None)
-			.or_else(|| get_alt_architecture(game_path));
+pub fn process_game(game: &mut DbGame) {
+	if let Some(PathData(exe_path)) = game.exe_path.as_ref() {
+		game.unity_backend = get_unity_backend(exe_path);
+		if let Some(version) = get_version(exe_path) {
+			game.engine_version_major = Some(version.numbers.major);
+			game.engine_version_minor = version.numbers.minor;
+			game.engine_version_patch = version.numbers.patch;
+			game.engine_version_display = Some(version.display.clone());
+		}
 
-		Some(GameExecutable {
-			path: game_path.to_path_buf(),
-			// name: game_path.file_name()?.to_string_lossy().to_string(),
-			architecture,
-			unity_backend: get_unity_backend(game_path),
-			engine: Some(GameEngine {
-				brand: EngineBrand::Unity,
-				version: get_version(game_path),
-			}),
-		})
-	} else {
-		None
+		game.architecture = get_architecture(exe_path)
+			.unwrap_or_else(|err| {
+				log::error!(
+					"Failed to get exe architecture for {}: {}",
+					exe_path.display(),
+					err
+				);
+				None
+			})
+			.or_else(|| get_alt_architecture(exe_path));
 	}
 }

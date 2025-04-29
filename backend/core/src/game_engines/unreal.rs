@@ -12,8 +12,10 @@ use pelite::{
 
 use super::game_engine::EngineVersionNumbers;
 use crate::{
-	game_engines::game_engine::{EngineBrand, EngineVersion, GameEngine},
-	game_executable::{Architecture, GameExecutable, get_architecture},
+	architecture::{Architecture, get_architecture},
+	data_types::path_data::PathData,
+	game::DbGame,
+	game_engines::game_engine::EngineVersion,
 	paths::glob_path,
 };
 
@@ -226,7 +228,7 @@ fn get_shipping_exe(game_exe_path: &Path) -> PathBuf {
 	game_exe_path.to_path_buf()
 }
 
-fn is_unreal_exe(game_path: &Path) -> bool {
+pub fn is_unreal_exe(game_path: &Path) -> bool {
 	const VALID_FOLDER_NAMES: [&str; 3] = ["Win64", "Win32", "ThirdParty"];
 
 	if let Some(parent) = game_path.parent() {
@@ -254,28 +256,21 @@ fn is_unreal_exe(game_path: &Path) -> bool {
 	false
 }
 
-pub fn get_executable(launch_path: &Path) -> Option<GameExecutable> {
-	if is_unreal_exe(launch_path) {
+pub fn process_game(game: &mut DbGame) {
+	if let Some(PathData(launch_path)) = game.exe_path.as_ref() {
 		let shipping_exe_path = get_shipping_exe(launch_path);
+		game.architecture = get_architecture(&shipping_exe_path).unwrap_or(None);
 
-		let architecture = get_architecture(&shipping_exe_path).unwrap_or(None);
-
-		let version = get_version(
+		if let Some(version) = get_version(
 			&shipping_exe_path,
-			architecture.unwrap_or(Architecture::X64),
-		);
+			game.architecture.unwrap_or(Architecture::X64),
+		) {
+			game.engine_version_major = Some(version.numbers.major);
+			game.engine_version_minor = version.numbers.minor;
+			game.engine_version_patch = version.numbers.patch;
+			game.engine_version_display = Some(version.display.clone());
+		}
 
-		Some(GameExecutable {
-			path: shipping_exe_path,
-			// name: shipping_exe_path.file_name()?.to_string_lossy().to_string(),
-			architecture,
-			unity_backend: None,
-			engine: Some(GameEngine {
-				brand: EngineBrand::Unreal,
-				version,
-			}),
-		})
-	} else {
-		None
+		game.exe_path = Some(PathData(shipping_exe_path));
 	}
 }

@@ -18,7 +18,6 @@ use rai_pal_core::game::{self, DbGame, GameId, InsertGame};
 use rai_pal_core::game_engines::game_engine::{
 	EngineBrand, EngineVersion, EngineVersionNumbers, GameEngine,
 };
-use rai_pal_core::game_executable::GameExecutable;
 use rai_pal_core::game_title::get_normalized_titles;
 use rai_pal_core::games_query::{GamesQuery, GamesSortBy, InstallState};
 use rai_pal_core::local_mod::{self, LocalMod};

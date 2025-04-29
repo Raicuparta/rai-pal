@@ -1,12 +1,12 @@
 #![allow(async_fn_in_trait)]
 
 pub mod analytics;
+pub mod architecture;
 pub mod data_types;
 pub mod debug;
 pub mod files;
 pub mod game;
 pub mod game_engines;
-pub mod game_executable;
 pub mod game_mod;
 pub mod game_subscription;
 pub mod game_tag;

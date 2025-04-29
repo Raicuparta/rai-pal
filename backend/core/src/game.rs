@@ -9,9 +9,13 @@ use std::{
 use rai_pal_proc_macros::serializable_struct;
 
 use crate::{
+	architecture::Architecture,
 	data_types::{json_data::JsonData, path_data::PathData},
-	game_engines::{game_engine::EngineBrand, unity::UnityBackend},
-	game_executable::{Architecture, GameExecutable},
+	game_engines::{
+		game_engine::{EngineBrand, get_exe_engine},
+		unity::{self, UnityBackend},
+		unreal,
+	},
 	game_tag::GameTag,
 	game_title::get_normalized_titles,
 	mod_manifest, paths,
@@ -166,26 +170,38 @@ impl DbGame {
 	}
 
 	pub fn set_executable(&mut self, exe_path: &Path) -> &mut Self {
-		// TODO get rid of GameExecutable and just set it all up here
-		if let Some(executable) = GameExecutable::new(exe_path) {
-			self.exe_path = Some(PathData(executable.path.clone()));
-			self.engine_brand = executable.engine.as_ref().map(|e| e.brand.clone());
-			if let Some(engine_version) = executable
-				.engine
-				.as_ref()
-				.and_then(|engine| engine.version.as_ref())
-			{
-				self.engine_version_major = Some(engine_version.numbers.major);
-				self.engine_version_minor = engine_version.numbers.minor;
-				self.engine_version_patch = engine_version.numbers.patch;
-				self.engine_version_display = Some(engine_version.display.clone());
+		const VALID_EXTENSIONS: [&str; 3] = ["exe", "x86_64", "x86"];
+
+		if !exe_path.is_file() {
+			return self;
+		}
+
+		// We ignore games that don't have an extension.
+		if let Some(extension) = exe_path.extension().and_then(|ext| ext.to_str()) {
+			if !VALID_EXTENSIONS.contains(&extension.to_lowercase().as_str()) {
+				return self;
 			}
-			self.architecture = executable.architecture;
-			self.unity_backend = executable.unity_backend;
-			self.add_provider_command(
-				ProviderCommandAction::StartViaExe,
-				ProviderCommand::Path(executable.path.clone(), Vec::default()),
-			);
+
+			if extension == "x86" && exe_path.with_extension("x86_64").is_file() {
+				// If there's an x86_64 version, we ignore the x86 version.
+				// I'm just gonna presume there are no x86 modders out there,
+				// if someone cries about it I'll make this smarter.
+				return self;
+			}
+
+			self.exe_path = Some(PathData(paths::normalize_path(exe_path)));
+			if let Some(exe_engine_brand) = get_exe_engine(exe_path) {
+				self.engine_brand = Some(exe_engine_brand);
+				match exe_engine_brand {
+					EngineBrand::Unity => {
+						unity::process_game(self);
+					}
+					EngineBrand::Unreal => {
+						unreal::process_game(self);
+					}
+					_ => {}
+				}
+			}
 		}
 		self
 	}
