@@ -790,8 +790,6 @@ async fn get_game_ids(handle: AppHandle, query: Option<GamesQuery>) -> Result<Ga
 		filters.join(" AND ")
 	};
 
-	log::info!("#### WHERE clause: {where_clause}");
-
 	let query = &format!(
 		r#"
 			SELECT DISTINCT
@@ -814,8 +812,6 @@ async fn get_game_ids(handle: AppHandle, query: Option<GamesQuery>) -> Result<Ga
 			.collect::<Vec<_>>()
 			.join(", ")
 	);
-
-	log::info!("#### Query: {query}");
 
 	let game_ids = database_connection
 		.prepare(query)?

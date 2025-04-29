@@ -56,6 +56,10 @@ impl Steam {
 			if let Some(executable_path) = launch_option.executable.as_ref() {
 				let full_path = &app_path.join(executable_path);
 
+				if !full_path.is_file() {
+					continue;
+				}
+
 				if used_paths.contains(full_path) {
 					continue;
 				}
