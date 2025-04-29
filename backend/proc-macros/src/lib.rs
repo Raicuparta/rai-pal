@@ -3,7 +3,7 @@ extern crate quote;
 
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::{Data, DataEnum, DeriveInput, parse_macro_input};
+use syn::parse_macro_input;
 
 #[proc_macro_attribute]
 pub fn serializable_event(_args: TokenStream, input: TokenStream) -> TokenStream {
@@ -27,7 +27,7 @@ pub fn serializable_struct(_args: TokenStream, input: TokenStream) -> TokenStrea
 #[proc_macro_attribute]
 pub fn serializable_enum(_args: TokenStream, input: TokenStream) -> TokenStream {
 	// Parse the input tokens into a syntax tree
-	let input = syn::parse_macro_input!(input as syn::ItemEnum);
+	let input = parse_macro_input!(input as syn::ItemEnum);
 
 	// Get the enum name
 	let enum_name = &input.ident;
