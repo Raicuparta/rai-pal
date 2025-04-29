@@ -165,7 +165,10 @@ impl DbGame {
 		self
 	}
 
-	pub fn set_executable(&mut self, executable: &GameExecutable) -> &mut Self {
+	pub fn set_executable(&mut self, exe_path: &Path) -> &mut Self {
+		// TODO get rid of GameExecutable and just set it all up here
+		let executable = GameExecutable::new(exe_path).unwrap();
+
 		self.exe_path = Some(PathData(executable.path.clone()));
 		self.engine_brand = executable.engine.as_ref().map(|e| e.brand.clone());
 		if let Some(engine_version) = executable

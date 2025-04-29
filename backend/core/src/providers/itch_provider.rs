@@ -11,7 +11,6 @@ use rusqlite::{Connection, OpenFlags};
 use super::provider_command::{ProviderCommand, ProviderCommandAction};
 use crate::{
 	game::{DbGame, InsertGame},
-	game_executable::GameExecutable,
 	paths,
 	providers::provider::{ProviderActions, ProviderId, ProviderStatic},
 	result::Result,
@@ -21,10 +20,9 @@ use crate::{
 pub struct Itch {}
 
 impl Itch {
-	fn get_installed_game(cave: &ItchDatabaseCave) -> Option<GameExecutable> {
+	fn get_exe_path(cave: &ItchDatabaseCave) -> Option<PathBuf> {
 		let verdict = cave.verdict.as_ref()?;
-		let exe_path = verdict.base_path.join(&verdict.candidates.first()?.path);
-		GameExecutable::new(&exe_path)
+		Some(verdict.base_path.join(&verdict.candidates.first()?.path))
 	}
 
 	fn get_game(row: &ItchDatabaseGame) -> DbGame {
@@ -111,11 +109,8 @@ impl ProviderActions for Itch {
 
 			for db_entry in database.games {
 				let mut game = Self::get_game(&db_entry);
-				if let Some(executable) = caves_map
-					.get(&db_entry.id)
-					.and_then(Self::get_installed_game)
-				{
-					game.set_executable(&executable);
+				if let Some(exe_path) = caves_map.get(&db_entry.id).and_then(Self::get_exe_path) {
+					game.set_executable(&exe_path);
 				}
 				db.insert_game(&game);
 			}

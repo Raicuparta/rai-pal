@@ -7,7 +7,6 @@ use steamlocate::SteamDir;
 
 use crate::{
 	game::{DbGame, InsertGame},
-	game_executable::GameExecutable,
 	game_tag::GameTag,
 	paths,
 	providers::{
@@ -63,36 +62,35 @@ impl Steam {
 
 				let app_name = app_info.name.clone();
 
-				if let Some(executable) = GameExecutable::new(full_path) {
-					let mut installed_game = game.clone();
-					installed_game.set_executable(&executable);
-					installed_game.title_discriminator =
-						if used_names.contains(&app_name) {
-							Some(launch_option.description.as_ref().map_or_else(
-								|| executable_path.display().to_string(),
-								Clone::clone,
-							))
-						} else {
-							None
-						};
+				let mut installed_game = game.clone();
+				installed_game.set_executable(full_path);
+				installed_game.title_discriminator = if used_names.contains(&app_name) {
+					Some(
+						launch_option
+							.description
+							.as_ref()
+							.map_or_else(|| executable_path.display().to_string(), Clone::clone),
+					)
+				} else {
+					None
+				};
 
-					installed_game.add_provider_command(
-						ProviderCommandAction::StartViaProvider,
-						get_start_command(&launch_option, &installed_game.title_discriminator),
-					);
+				installed_game.add_provider_command(
+					ProviderCommandAction::StartViaProvider,
+					get_start_command(&launch_option, &installed_game.title_discriminator),
+				);
 
-					// Since there can be multiple Steam games within one installed app_id,
-					// we attach the exe path hash to the internal game_id to make it unique within the local Rai Pal database.
-					installed_game.game_id = format!(
-						"{}_{}",
-						&installed_game.external_id,
-						paths::hash_path(&executable.path)
-					);
+				// Since there can be multiple Steam games within one installed app_id,
+				// we attach the exe path hash to the internal game_id to make it unique within the local Rai Pal database.
+				installed_game.game_id = format!(
+					"{}_{}",
+					&installed_game.external_id,
+					paths::hash_path(full_path)
+				);
 
-					used_names.insert(app_name);
-					used_paths.insert(full_path.clone());
-					installed_games.push(installed_game);
-				}
+				used_names.insert(app_name);
+				used_paths.insert(full_path.clone());
+				installed_games.push(installed_game);
 			}
 		}
 

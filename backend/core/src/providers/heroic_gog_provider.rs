@@ -4,12 +4,11 @@ use std::{
 	fmt::Debug,
 	fs::{self, read_to_string},
 	io::{self},
-	path::Path,
+	path::{Path, PathBuf},
 };
 
 use crate::{
 	game::{DbGame, InsertGame},
-	game_executable::GameExecutable,
 	providers::provider::{ProviderActions, ProviderId, ProviderStatic},
 	result::{Error, Result},
 };
@@ -110,13 +109,13 @@ fn read_info_file(path: &Path, app_id: &str) -> Result<GogGame> {
 pub struct HeroicGog {}
 
 impl HeroicGog {
-	fn get_executable(entry: &ParsedGame) -> Option<GameExecutable> {
+	fn get_exe_path(entry: &ParsedGame) -> Option<PathBuf> {
 		let dirs = BaseDirs::new()?;
 		let home_dir = dirs.home_dir();
 		let game_path = Path::new(&home_dir)
 			.join("Games/Heroic")
 			.join(&entry.folder_name.clone()?);
-		let infos = read_info_file(game_path.as_path(), &entry.app_name).ok()?;
+		let infos = read_info_file(game_path.as_path(), &entry.app_name).ok()?; // TODO log error
 
 		let executable_name = infos.play_tasks.iter().find_map(|task| {
 			if task.is_primary.unwrap_or(false) {
@@ -126,7 +125,7 @@ impl HeroicGog {
 			}
 		})?;
 
-		GameExecutable::new(game_path.join(executable_name).as_path())
+		Some(game_path.join(executable_name))
 	}
 }
 
@@ -151,8 +150,8 @@ impl ProviderActions for HeroicGog {
 				parsed_game.title.clone(),
 			);
 			game.thumbnail_url = parsed_game.art_cover.clone();
-			if let Some(executable) = Self::get_executable(&parsed_game) {
-				game.set_executable(&executable);
+			if let Some(exe_path) = Self::get_exe_path(&parsed_game) {
+				game.set_executable(&exe_path);
 				game.add_provider_command(
 					ProviderCommandAction::StartViaProvider,
 					ProviderCommand::String(format!(

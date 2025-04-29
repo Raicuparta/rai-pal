@@ -1,10 +1,13 @@
 #![cfg(target_os = "linux")]
 
-use std::{fmt::Debug, fs::read_to_string, path::Path};
+use std::{
+	fmt::Debug,
+	fs::read_to_string,
+	path::{Path, PathBuf},
+};
 
 use crate::{
 	game::{DbGame, InsertGame},
-	game_executable::GameExecutable,
 	paths,
 	providers::provider::{ProviderActions, ProviderId, ProviderStatic},
 	result::Result,
@@ -77,7 +80,7 @@ struct EpicGame {
 pub struct HeroicEpic {}
 
 impl HeroicEpic {
-	fn get_executable(entry: &ParsedGame) -> Option<GameExecutable> {
+	fn get_exe_path(entry: &ParsedGame) -> Option<PathBuf> {
 		let dirs = BaseDirs::new()?;
 		let home_dir = dirs.home_dir();
 		let game_path = Path::new(&home_dir)
@@ -88,7 +91,7 @@ impl HeroicEpic {
 			.install
 			.executable
 			.as_ref()
-			.map(|executable_name| GameExecutable::new(game_path.join(executable_name).as_path()))?
+			.map(|executable_name| game_path.join(executable_name))
 	}
 }
 
@@ -113,8 +116,8 @@ impl ProviderActions for HeroicEpic {
 					parsed_game.title.clone(),
 				);
 				game.thumbnail_url = Some(parsed_game.art_cover.clone());
-				if let Some(executable) = Self::get_executable(&parsed_game) {
-					game.set_executable(&executable);
+				if let Some(exe_path) = Self::get_exe_path(&parsed_game) {
+					game.set_executable(&exe_path);
 					game.add_provider_command(
 						ProviderCommandAction::StartViaProvider,
 						ProviderCommand::String(format!(

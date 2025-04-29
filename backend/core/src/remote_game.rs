@@ -1,13 +1,11 @@
 use std::collections::{HashMap, HashSet};
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 use lazy_regex::regex;
 use rai_pal_proc_macros::serializable_struct;
 
-use crate::game_engines::game_engine::{
-	EngineBrand, EngineVersion, EngineVersionNumbers, GameEngine,
-};
+use crate::game_engines::game_engine::{EngineVersion, EngineVersionNumbers, GameEngine};
 use crate::game_subscription::GameSubscription;
 use crate::paths;
 use crate::providers::provider::ProviderId;
@@ -54,21 +52,6 @@ impl RemoteGame {
 				ProviderId::Ubisoft => Some(format!("https://store.ubisoft.com/a/{id}.html")),
 				_ => None,
 			})
-	}
-}
-
-fn engine_brand_from_string(brand: &str) -> Option<EngineBrand> {
-	let brand_lower = brand.to_lowercase();
-	if brand_lower.contains("unity") {
-		Some(EngineBrand::Unity)
-	} else if brand_lower.contains("unreal") {
-		Some(EngineBrand::Unreal)
-	} else if brand_lower.contains("godot") {
-		Some(EngineBrand::Godot)
-	} else if brand_lower.contains("gamemaker") {
-		Some(EngineBrand::GameMaker)
-	} else {
-		None
 	}
 }
 

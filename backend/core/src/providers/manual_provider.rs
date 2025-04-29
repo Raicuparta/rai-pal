@@ -9,9 +9,8 @@ use rai_pal_proc_macros::serializable_struct;
 use super::provider::{ProviderActions, ProviderId, ProviderStatic};
 use crate::{
 	game::{DbGame, InsertGame},
-	game_executable::GameExecutable,
 	paths::{self, app_data_path, file_name_without_extension},
-	result::{Error, Result},
+	result::Result,
 };
 
 #[serializable_struct]
@@ -73,16 +72,13 @@ fn read_games_config(games_config_path: &Path) -> GamesConfig {
 	}
 }
 
-fn get_game_from_path(path: &Path) -> Result<DbGame> {
-	let executable =
-		GameExecutable::new(path).ok_or(Error::FailedToGetGameFromPath(path.to_path_buf()))?;
-
+fn get_game_from_path(exe_path: &Path) -> Result<DbGame> {
 	let mut game = DbGame::new(
 		ProviderId::Manual,
-		paths::hash_path(path),
-		file_name_without_extension(path)?.to_string(),
+		paths::hash_path(exe_path),
+		file_name_without_extension(exe_path)?.to_string(),
 	);
-	game.set_executable(&executable);
+	game.set_executable(exe_path);
 	Ok(game)
 }
 
