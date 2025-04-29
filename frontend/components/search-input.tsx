@@ -9,6 +9,7 @@ type Props = {
 export function SearchInput(props: Props) {
 	const t = useLocalization("filterMenu");
 
+	// TODO on linux it seems to be losing key presses whe typing fast
 	return (
 		<Input
 			onChange={(event) => props.onChange(event.target.value)}
