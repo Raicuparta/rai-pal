@@ -850,7 +850,6 @@ async fn get_game(id: GameId, handle: AppHandle) -> Result<DbGame> {
 	let state = handle.app_state();
 	let database_connection = state.database_connection.lock().unwrap();
 
-	// TODO take into account all normalized titles
 	let db_game = database_connection
 		.prepare(
 			r#"
