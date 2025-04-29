@@ -156,12 +156,12 @@ impl ProviderActions for HeroicGog {
 				game.add_provider_command(
 					ProviderCommandAction::StartViaProvider,
 					ProviderCommand::String(format!(
-						"heroic://launch/gog/{}", // TODO why does this have /gog/ but epic doesn't?
+						"heroic://launch/gog/{}",
 						parsed_game.app_name
 					)),
 				);
 			}
-			db.lock().unwrap().insert_game(&game)?; // TODO don't crash whole thing if single game fails
+			db.lock().unwrap().insert_game(&game);
 		}
 
 		Ok(())

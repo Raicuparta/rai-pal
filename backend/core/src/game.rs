@@ -188,28 +188,42 @@ impl DbGame {
 }
 
 pub trait InsertGame {
-	fn insert_game(&self, game: &DbGame) -> Result;
+	fn insert_game(&self, game: &DbGame);
 }
 
 impl InsertGame for rusqlite::Connection {
-	fn insert_game(&self, game: &DbGame) -> Result {
-		// let transaction = self.transaction()?;
-		// TODO understand how to do a transaction here
+	fn insert_game(&self, game: &DbGame) {
+		if let Err(err) = try_insert_game(self, game) {
+			log::error!(
+				"Failed to insert game ({}/{}) into local database: {}",
+				game.provider_id,
+				game.game_id,
+				err
+			);
+		}
+	}
+}
 
-		// TODO prepare this only once since it's always the same.
-		self.prepare(
+// TODO should this receive the mutex instead?
+fn try_insert_game(connection: &rusqlite::Connection, game: &DbGame) -> Result {
+	// let transaction = self.transaction()?;
+	// TODO understand how to do a transaction here
+
+	// TODO prepare this only once since it's always the same.
+	connection
+		.prepare(
 			"INSERT OR REPLACE INTO games (
-					provider_id,
-					game_id,
-					external_id,
-					display_title,
-					thumbnail_url,
-					release_date,
-					tags,
-					title_discriminator,
-					provider_commands,
-					created_at
-				) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)",
+				provider_id,
+				game_id,
+				external_id,
+				display_title,
+				thumbnail_url,
+				release_date,
+				tags,
+				title_discriminator,
+				provider_commands,
+				created_at
+			) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)",
 		)?
 		.execute(rusqlite::params![
 			game.provider_id,
@@ -227,21 +241,22 @@ impl InsertGame for rusqlite::Connection {
 				.as_secs()
 		])?;
 
-		if let Some(exe_path) = game.exe_path.as_ref() {
-			self.prepare(
+	if let Some(exe_path) = game.exe_path.as_ref() {
+		connection
+			.prepare(
 				"INSERT OR REPLACE INTO installed_games (
-						provider_id,
-						game_id,
-						exe_path,
-						engine_brand,
-						engine_version_major,
-						engine_version_minor,
-						engine_version_patch,
-						engine_version_display,
-						unity_backend,
-						architecture
-					)
-					 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)",
+					provider_id,
+					game_id,
+					exe_path,
+					engine_brand,
+					engine_version_major,
+					engine_version_minor,
+					engine_version_patch,
+					engine_version_display,
+					unity_backend,
+					architecture
+				)
+				 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)",
 			)?
 			.execute(rusqlite::params![
 				game.provider_id,
@@ -255,23 +270,23 @@ impl InsertGame for rusqlite::Connection {
 				game.unity_backend.clone(),
 				game.architecture.clone(),
 			])?;
-		}
+	}
 
-		for normalized_title in get_normalized_titles(&game.display_title) {
-			self.prepare(
+	for normalized_title in get_normalized_titles(&game.display_title) {
+		connection
+			.prepare(
 				"INSERT OR REPLACE INTO normalized_titles (provider_id, game_id, normalized_title)
-							VALUES ($1, $2, $3)",
+						VALUES ($1, $2, $3)",
 			)?
 			.execute(rusqlite::params![
 				game.provider_id,
 				game.game_id.clone(),
 				normalized_title.clone(),
 			])?;
-		}
-
-		// TODO understand how to do a transaction here
-		// transaction.commit()?;
-
-		Ok(())
 	}
+
+	// TODO understand how to do a transaction here
+	// transaction.commit()?;
+
+	Ok(())
 }

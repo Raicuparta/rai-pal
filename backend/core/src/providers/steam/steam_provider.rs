@@ -219,12 +219,11 @@ impl ProviderActions for Steam {
 						.map(|app_path| Self::get_installed_games(&game, &app_info, app_path))
 						.unwrap_or_default();
 
-					// TODO: careful with whole thing dying if a single game fails.
 					if installed_games.is_empty() {
-						db.lock().unwrap().insert_game(&game)?;
+						db.lock().unwrap().insert_game(&game);
 					} else {
 						for installed_game in installed_games {
-							db.lock().unwrap().insert_game(&installed_game)?;
+							db.lock().unwrap().insert_game(&installed_game);
 						}
 					}
 				}

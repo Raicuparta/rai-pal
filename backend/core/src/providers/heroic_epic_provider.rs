@@ -123,7 +123,7 @@ impl ProviderActions for HeroicEpic {
 						)),
 					);
 				}
-				db.lock().unwrap().insert_game(&game)?; // TODO don't crash whole thing if single game fails
+				db.lock().unwrap().insert_game(&game);
 			}
 		}
 		Ok(())

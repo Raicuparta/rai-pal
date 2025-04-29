@@ -38,7 +38,7 @@ impl ProviderActions for Manual {
 		for path in read_games_config(&games_config_path()?).paths {
 			match get_game_from_path(&path) {
 				Ok(game) => {
-					db.lock().unwrap().insert_game(&game)?;
+					db.lock().unwrap().insert_game(&game);
 				}
 				Err(error) => {
 					error!(
