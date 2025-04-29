@@ -141,6 +141,15 @@ impl DbGame {
 			.0)
 	}
 
+	pub fn try_get_exe_name(&self) -> Result<String> {
+		let path = self.try_get_exe_path()?;
+		Ok(path
+			.file_name()
+			.and_then(|file_name| file_name.to_str())
+			.map(|file_name| file_name.to_string())
+			.ok_or_else(|| Error::InvalidOsStr(path.display().to_string()))?)
+	}
+
 	pub fn add_provider_command(
 		&mut self,
 		command_action: ProviderCommandAction,

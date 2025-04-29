@@ -11,7 +11,6 @@ use crate::{
 	game::DbGame,
 	game_mod::CommonModData,
 	local_mod::{self, LocalMod, ModKind},
-	maps::TryGettable,
 	mod_manifest,
 	paths::glob_path,
 	providers::provider_command::{ProviderCommand, ProviderCommandAction},
@@ -81,10 +80,9 @@ fn replace_parameters(argument: &str, game: &DbGame) -> String {
 		.get(&ProviderCommandAction::StartViaProvider)
 		.or_else(|| provider_commands.get(&ProviderCommandAction::StartViaExe));
 
-	// TODO exe name
-	// result = replace_parameter_value(&result, RunnableParameter::ExecutableName, || {
-	// 	Ok(&game.executable.name)
-	// });
+	result = replace_parameter_value(&result, RunnableParameter::ExecutableName, || {
+		game.try_get_exe_name()
+	});
 	result = replace_parameter_value(&result, RunnableParameter::ExecutablePath, || {
 		Ok(game.try_get_exe_path()?.to_string_lossy().to_string())
 	});
