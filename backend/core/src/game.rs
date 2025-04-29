@@ -167,26 +167,26 @@ impl DbGame {
 
 	pub fn set_executable(&mut self, exe_path: &Path) -> &mut Self {
 		// TODO get rid of GameExecutable and just set it all up here
-		let executable = GameExecutable::new(exe_path).unwrap();
-
-		self.exe_path = Some(PathData(executable.path.clone()));
-		self.engine_brand = executable.engine.as_ref().map(|e| e.brand.clone());
-		if let Some(engine_version) = executable
-			.engine
-			.as_ref()
-			.and_then(|engine| engine.version.as_ref())
-		{
-			self.engine_version_major = Some(engine_version.numbers.major);
-			self.engine_version_minor = engine_version.numbers.minor;
-			self.engine_version_patch = engine_version.numbers.patch;
-			self.engine_version_display = Some(engine_version.display.clone());
+		if let Some(executable) = GameExecutable::new(exe_path) {
+			self.exe_path = Some(PathData(executable.path.clone()));
+			self.engine_brand = executable.engine.as_ref().map(|e| e.brand.clone());
+			if let Some(engine_version) = executable
+				.engine
+				.as_ref()
+				.and_then(|engine| engine.version.as_ref())
+			{
+				self.engine_version_major = Some(engine_version.numbers.major);
+				self.engine_version_minor = engine_version.numbers.minor;
+				self.engine_version_patch = engine_version.numbers.patch;
+				self.engine_version_display = Some(engine_version.display.clone());
+			}
+			self.architecture = executable.architecture;
+			self.unity_backend = executable.unity_backend;
+			self.add_provider_command(
+				ProviderCommandAction::StartViaExe,
+				ProviderCommand::Path(executable.path.clone(), Vec::default()),
+			);
 		}
-		self.architecture = executable.architecture;
-		self.unity_backend = executable.unity_backend;
-		self.add_provider_command(
-			ProviderCommandAction::StartViaExe,
-			ProviderCommand::Path(executable.path.clone(), Vec::default()),
-		);
 		self
 	}
 }
