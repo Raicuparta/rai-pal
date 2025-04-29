@@ -2,6 +2,7 @@ use std::{
 	collections::HashMap,
 	fs,
 	path::{Path, PathBuf},
+	sync::Mutex,
 	time::{SystemTime, UNIX_EPOCH},
 };
 
@@ -191,7 +192,7 @@ pub trait InsertGame {
 	fn insert_game(&self, game: &DbGame);
 }
 
-impl InsertGame for rusqlite::Connection {
+impl InsertGame for Mutex<rusqlite::Connection> {
 	fn insert_game(&self, game: &DbGame) {
 		if let Err(err) = try_insert_game(self, game) {
 			log::error!(
@@ -204,13 +205,12 @@ impl InsertGame for rusqlite::Connection {
 	}
 }
 
-// TODO should this receive the mutex instead?
-fn try_insert_game(connection: &rusqlite::Connection, game: &DbGame) -> Result {
-	// let transaction = self.transaction()?;
-	// TODO understand how to do a transaction here
+fn try_insert_game(connection_mutex: &Mutex<rusqlite::Connection>, game: &DbGame) -> Result {
+	let mut connection = connection_mutex.lock().unwrap();
+	let transaction = connection.transaction()?;
 
 	// TODO prepare this only once since it's always the same.
-	connection
+	transaction
 		.prepare(
 			"INSERT OR REPLACE INTO games (
 				provider_id,
@@ -242,7 +242,7 @@ fn try_insert_game(connection: &rusqlite::Connection, game: &DbGame) -> Result {
 		])?;
 
 	if let Some(exe_path) = game.exe_path.as_ref() {
-		connection
+		transaction
 			.prepare(
 				"INSERT OR REPLACE INTO installed_games (
 					provider_id,
@@ -273,7 +273,7 @@ fn try_insert_game(connection: &rusqlite::Connection, game: &DbGame) -> Result {
 	}
 
 	for normalized_title in get_normalized_titles(&game.display_title) {
-		connection
+		transaction
 			.prepare(
 				"INSERT OR REPLACE INTO normalized_titles (provider_id, game_id, normalized_title)
 						VALUES ($1, $2, $3)",
@@ -285,8 +285,7 @@ fn try_insert_game(connection: &rusqlite::Connection, game: &DbGame) -> Result {
 			])?;
 	}
 
-	// TODO understand how to do a transaction here
-	// transaction.commit()?;
+	transaction.commit()?;
 
 	Ok(())
 }

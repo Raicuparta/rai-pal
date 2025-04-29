@@ -161,7 +161,7 @@ impl ProviderActions for HeroicGog {
 					)),
 				);
 			}
-			db.lock().unwrap().insert_game(&game);
+			db.insert_game(&game);
 		}
 
 		Ok(())

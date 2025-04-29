@@ -220,10 +220,10 @@ impl ProviderActions for Steam {
 						.unwrap_or_default();
 
 					if installed_games.is_empty() {
-						db.lock().unwrap().insert_game(&game);
+						db.insert_game(&game);
 					} else {
 						for installed_game in installed_games {
-							db.lock().unwrap().insert_game(&installed_game);
+							db.insert_game(&installed_game);
 						}
 					}
 				}

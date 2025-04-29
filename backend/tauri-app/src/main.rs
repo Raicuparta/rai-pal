@@ -598,7 +598,7 @@ async fn add_game(path: PathBuf, handle: AppHandle) -> Result {
 
 	let state = handle.app_state();
 
-	state.database_connection.lock().unwrap().insert_game(&game);
+	state.database_connection.insert_game(&game);
 
 	handle.emit_safe(events::FoundGame(GameId {
 		provider_id: game.provider_id,

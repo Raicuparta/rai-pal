@@ -117,7 +117,7 @@ impl ProviderActions for Itch {
 				{
 					game.set_executable(&executable);
 				}
-				db.lock().unwrap().insert_game(&game);
+				db.insert_game(&game);
 			}
 		} else {
 			log::info!(
