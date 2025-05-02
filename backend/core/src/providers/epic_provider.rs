@@ -4,7 +4,6 @@ use std::{
 	collections::HashMap,
 	fs::{self, File},
 	io::Read,
-	ops::Deref,
 	path::{Path, PathBuf},
 };
 
@@ -19,7 +18,6 @@ use super::{
 };
 use crate::{
 	game::{DbGame, InsertGame},
-	game_executable::GameExecutable,
 	paths::glob_path,
 	providers::provider::{ProviderActions, ProviderStatic},
 	result::Result,
@@ -160,7 +158,7 @@ impl ProviderActions for Epic {
 			.and_then(|launcher_reg| launcher_reg.get_value::<String, _>("AppDataPath"))
 			.map(PathBuf::from)?;
 
-		let mut executables: HashMap<String, GameExecutable> = HashMap::new();
+		let mut exe_paths: HashMap<String, PathBuf> = HashMap::new();
 
 		let manifests_path = app_data_path.join("Manifests");
 		if manifests_path.is_dir() {
@@ -171,9 +169,7 @@ impl ProviderActions for Epic {
 						let path = PathBuf::from(manifest.install_location)
 							.join(manifest.launch_executable);
 
-						if let Some(executable) = GameExecutable::new(&path) {
-							executables.insert(manifest.catalog_item_id.clone(), executable);
-						}
+						exe_paths.insert(manifest.catalog_item_id.clone(), path);
 					}
 					Err(err) => {
 						error!("Failed to parse epic manifest: {err}");
@@ -199,8 +195,8 @@ impl ProviderActions for Epic {
 			let catalog = serde_json::from_str::<Vec<EpicCatalogItem>>(&json)?;
 			for catalog_item in catalog {
 				if let Some(mut game) = Self::get_game(&catalog_item) {
-					if let Some(executable) = executables.remove(&game.external_id) {
-						game.set_executable(&executable);
+					if let Some(exe_path) = exe_paths.remove(&game.external_id) {
+						game.set_executable(&exe_path);
 						game.add_provider_command(
 							ProviderCommandAction::StartViaProvider,
 							ProviderCommand::String(format!(
@@ -210,7 +206,7 @@ impl ProviderActions for Epic {
 						);
 					}
 
-					db.lock().unwrap().insert_game(&game)?; // TODO prevent whole thing crashing if one game fails to insert.
+					db.insert_game(&game);
 				}
 			}
 		} else {

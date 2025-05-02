@@ -1,19 +1,16 @@
 #![cfg(target_os = "windows")]
 
-use std::{
-	ops::Deref,
-	path::{Path, PathBuf},
-};
+use std::path::{Path, PathBuf};
 
 use log::error;
 use rai_pal_proc_macros::serializable_struct;
+use rusqlite::{Connection, OpenFlags};
 use serde::Deserialize;
 use winreg::{RegKey, enums::HKEY_LOCAL_MACHINE};
 
 use super::provider_command::{ProviderCommand, ProviderCommandAction};
 use crate::{
 	game::{DbGame, InsertGame},
-	game_executable::GameExecutable,
 	paths,
 	providers::provider::{ProviderActions, ProviderId, ProviderStatic},
 	result::Result,
@@ -72,12 +69,8 @@ impl ProviderActions for Gog {
 
 			for db_entry in database {
 				let mut game = Self::get_game(&db_entry, &launcher_path);
-				if let Some(executable) = db_entry
-					.executable_path
-					.as_ref()
-					.and_then(|path| GameExecutable::new(path))
-				{
-					game.set_executable(&executable);
+				if let Some(executable_path) = db_entry.executable_path.as_ref() {
+					game.set_executable(&executable_path);
 					game.add_provider_command(
 						ProviderCommandAction::StartViaProvider,
 						ProviderCommand::Path(
@@ -90,7 +83,7 @@ impl ProviderActions for Gog {
 					);
 				}
 
-				db.lock().unwrap().insert_game(&game)?; // TODO dont crash whole process if single game fails.
+				db.insert_game(&game);
 			}
 		} else {
 			log::info!(

@@ -1,6 +1,6 @@
 #![cfg(target_os = "windows")]
 
-use std::{future, io, ops::Deref, path::PathBuf};
+use std::{io, path::PathBuf};
 
 use log::error;
 use rai_pal_proc_macros::serializable_struct;
@@ -10,8 +10,7 @@ use winreg::{
 };
 
 use crate::{
-	game::{DbGame, GameId, InsertGame},
-	game_executable::GameExecutable,
+	game::{DbGame, InsertGame},
 	paths::file_name_without_extension,
 	providers::provider::{ProviderActions, ProviderId, ProviderStatic},
 	result::Result,
@@ -71,8 +70,6 @@ async fn get_games(db: &std::sync::Mutex<rusqlite::Connection>) -> io::Result<()
 	let app_packages = RegKey::predef(HKEY_CURRENT_USER)
 			.open_subkey("Software\\Classes\\Local Settings\\Software\\Microsoft\\Windows\\CurrentVersion\\AppModel\\Repository\\Packages")?;
 
-	let mut games_to_insert = Vec::new();
-
 	for key in package_roots.enum_keys().flatten() {
 		if let Ok(child) = package_roots.open_subkey(key) {
 			if let Some(Ok(subkey)) = child.enum_keys().next() {
@@ -121,13 +118,9 @@ async fn get_games(db: &std::sync::Mutex<rusqlite::Connection>) -> io::Result<()
 												display_name,
 											);
 
-											if let Some(executable) =
-												GameExecutable::new(&executable_path)
-											{
-												game.set_executable(&executable);
-											}
+											game.set_executable(&executable_path);
 
-											games_to_insert.push(game);
+											db.insert_game(&game);
 										}
 									}
 								}
@@ -136,13 +129,6 @@ async fn get_games(db: &std::sync::Mutex<rusqlite::Connection>) -> io::Result<()
 					}
 				}
 			}
-		}
-	}
-
-	// Perform database insertions asynchronously
-	for game in games_to_insert {
-		if let Err(error) = db.lock().unwrap().insert_game(&game) {
-			log::error!("Failed to insert Xbox game into database: {}", error);
 		}
 	}
 
