@@ -10,7 +10,8 @@ use winreg::{
 };
 
 use crate::{
-	game::{DbGame, InsertGame},
+	local_database::{DbMutex, InsertGame},
+	game::DbGame,
 	paths::file_name_without_extension,
 	providers::provider::{ProviderActions, ProviderId, ProviderStatic},
 	result::Result,
@@ -47,7 +48,7 @@ struct XboxGamepassImages {
 }
 
 impl ProviderActions for Xbox {
-	async fn insert_games(&self, db: &std::sync::Mutex<rusqlite::Connection>) -> Result {
+	async fn insert_games(&self, db: &DbMutex) -> Result {
 		if let Err(error) = get_games(db).await {
 			if error.kind() == io::ErrorKind::NotFound {
 				log::info!(
@@ -62,7 +63,7 @@ impl ProviderActions for Xbox {
 	}
 }
 
-async fn get_games(db: &std::sync::Mutex<rusqlite::Connection>) -> io::Result<()> {
+async fn get_games(db: &DbMutex) -> io::Result<()> {
 	let gaming_services =
 		RegKey::predef(HKEY_LOCAL_MACHINE).open_subkey("SOFTWARE\\Microsoft\\GamingServices")?;
 	let package_roots = gaming_services.open_subkey("PackageRepository\\Root")?;

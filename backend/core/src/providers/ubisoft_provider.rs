@@ -1,7 +1,7 @@
 use rai_pal_proc_macros::serializable_struct;
 
 use super::provider::{ProviderActions, ProviderId, ProviderStatic};
-use crate::result::Result;
+use crate::{local_database::DbMutex, result::Result};
 
 #[serializable_struct]
 pub struct Ubisoft {}
@@ -18,7 +18,7 @@ impl ProviderStatic for Ubisoft {
 }
 
 impl ProviderActions for Ubisoft {
-	async fn insert_games(&self, _db: &std::sync::Mutex<rusqlite::Connection>) -> Result {
+	async fn insert_games(&self, _db: &DbMutex) -> Result {
 		// Nothing for now
 		// we're currently only getting subscription games from the remote game database.
 

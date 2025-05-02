@@ -7,7 +7,8 @@ use std::{
 };
 
 use crate::{
-	game::{DbGame, InsertGame},
+	database::{DbMutex, InsertGame},
+	game::DbGame,
 	paths,
 	providers::provider::{ProviderActions, ProviderId, ProviderStatic},
 	result::Result,
@@ -107,7 +108,7 @@ impl ProviderStatic for HeroicEpic {
 }
 
 impl ProviderActions for HeroicEpic {
-	async fn insert_games(&self, db: &std::sync::Mutex<rusqlite::Connection>) -> Result {
+	async fn insert_games(&self, db: &DbMutex) -> Result {
 		if let Some(parsed_games) = get_detected_games()? {
 			for parsed_game in parsed_games {
 				let mut game = DbGame::new(

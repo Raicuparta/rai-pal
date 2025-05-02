@@ -8,7 +8,8 @@ use std::{
 };
 
 use crate::{
-	game::{DbGame, InsertGame},
+	database::{DbMutex, InsertGame},
+	game::DbGame,
 	providers::provider::{ProviderActions, ProviderId, ProviderStatic},
 	result::{Error, Result},
 };
@@ -141,7 +142,7 @@ impl ProviderStatic for HeroicGog {
 }
 
 impl ProviderActions for HeroicGog {
-	async fn insert_games(&self, db: &std::sync::Mutex<rusqlite::Connection>) -> Result {
+	async fn insert_games(&self, db: &DbMutex) -> Result {
 		let parsed_games = get_detected_games()?;
 		for parsed_game in parsed_games {
 			let mut game = DbGame::new(

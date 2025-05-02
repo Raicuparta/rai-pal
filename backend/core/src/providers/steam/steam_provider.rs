@@ -6,7 +6,8 @@ use std::{
 use steamlocate::SteamDir;
 
 use crate::{
-	game::{DbGame, InsertGame},
+	local_database::{DbMutex, InsertGame},
+	game::DbGame,
 	game_tag::GameTag,
 	paths,
 	providers::{
@@ -139,7 +140,7 @@ impl Steam {
 }
 
 impl ProviderActions for Steam {
-	async fn insert_games(&self, db: &std::sync::Mutex<rusqlite::Connection>) -> Result {
+	async fn insert_games(&self, db: &DbMutex) -> Result {
 		let steam_dir = SteamDir::locate()?;
 		let steam_path = steam_dir.path();
 		let app_info_reader = SteamAppInfoReader::new(&Self::get_appinfo_path(steam_path))?;

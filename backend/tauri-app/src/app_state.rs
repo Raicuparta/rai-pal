@@ -4,6 +4,7 @@ use std::sync::RwLock;
 
 use crate::result::Error;
 use crate::result::Result;
+use rai_pal_core::local_database::DbMutex;
 use std::sync::Mutex;
 use tauri::Manager;
 
@@ -13,7 +14,7 @@ pub struct AppState {
 	pub mod_loaders: RwLock<mod_loader::Map>,
 	pub local_mods: RwLock<local_mod::Map>,
 	pub remote_mods: RwLock<remote_mod::Map>,
-	pub database_connection: Mutex<rusqlite::Connection>,
+	pub database: DbMutex,
 }
 
 type TauriState<'a> = tauri::State<'a, AppState>;

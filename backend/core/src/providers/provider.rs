@@ -10,6 +10,7 @@ use crate::providers::heroic_gog_provider::HeroicGog;
 #[cfg(target_os = "windows")]
 use crate::providers::{epic_provider::Epic, gog_provider::Gog, xbox_provider::Xbox};
 use crate::{
+	local_database::DbMutex,
 	paths,
 	providers::{
 		itch_provider::Itch, manual_provider::Manual, steam::steam_provider::Steam,
@@ -70,7 +71,7 @@ const PROVIDERS: &Map = &[
 
 #[enum_dispatch(Provider)]
 pub trait ProviderActions {
-	async fn insert_games(&self, db: &std::sync::Mutex<rusqlite::Connection>) -> Result;
+	async fn insert_games(&self, db: &DbMutex) -> Result;
 }
 
 const fn create_map_entry<TProvider: ProviderActions + ProviderStatic>()

@@ -10,7 +10,8 @@ use winreg::{RegKey, enums::HKEY_LOCAL_MACHINE};
 
 use super::provider_command::{ProviderCommand, ProviderCommandAction};
 use crate::{
-	game::{DbGame, InsertGame},
+	local_database::{DbMutex, InsertGame},
+	game::DbGame,
 	paths,
 	providers::provider::{ProviderActions, ProviderId, ProviderStatic},
 	result::Result,
@@ -63,7 +64,7 @@ impl ProviderStatic for Gog {
 }
 
 impl ProviderActions for Gog {
-	async fn insert_games(&self, db: &std::sync::Mutex<rusqlite::Connection>) -> Result {
+	async fn insert_games(&self, db: &DbMutex) -> Result {
 		if let Some(database) = get_database()? {
 			let launcher_path = get_launcher_path()?;
 

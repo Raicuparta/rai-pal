@@ -10,7 +10,8 @@ use rusqlite::{Connection, OpenFlags};
 
 use super::provider_command::{ProviderCommand, ProviderCommandAction};
 use crate::{
-	game::{DbGame, InsertGame},
+	local_database::{DbMutex, InsertGame},
+	game::DbGame,
 	paths,
 	providers::provider::{ProviderActions, ProviderId, ProviderStatic},
 	result::Result,
@@ -97,7 +98,7 @@ pub struct ItchDatabase {
 }
 
 impl ProviderActions for Itch {
-	async fn insert_games(&self, db: &std::sync::Mutex<rusqlite::Connection>) -> Result {
+	async fn insert_games(&self, db: &DbMutex) -> Result {
 		let app_data_path = paths::base_dirs()?.config_dir().join("itch");
 
 		if let Some(database) = get_database(&app_data_path)? {

@@ -14,12 +14,13 @@ use app_settings::AppSettings;
 use app_state::{AppState, StateData, StatefulHandle};
 use events::EventEmitter;
 use futures::{StreamExt, TryStreamExt};
-use rai_pal_core::game::{self, DbGame, GameId, InsertGame};
+use rai_pal_core::game::{self, DbGame, GameId};
 use rai_pal_core::game_engines::game_engine::{
 	EngineBrand, EngineVersion, EngineVersionNumbers, GameEngine,
 };
 use rai_pal_core::game_title::get_normalized_titles;
 use rai_pal_core::games_query::{GamesQuery, GamesSortBy, InstallState};
+use rai_pal_core::local_database::InsertGame;
 use rai_pal_core::local_mod::{self, LocalMod};
 use rai_pal_core::maps::TryGettable;
 use rai_pal_core::mod_loaders::mod_loader::{self, ModLoaderActions};
@@ -416,7 +417,7 @@ async fn refresh_mods(handle: AppHandle) -> Result {
 async fn refresh_remote_games(handle: AppHandle) -> Result {
 	let state = handle.app_state();
 	let path = remote_game::download_database().await?;
-	attach_remote_database(state.database_connection.lock().unwrap(), &path)?;
+	attach_remote_database(state.database.lock().unwrap(), &path)?;
 
 	Ok(())
 }
@@ -574,11 +575,11 @@ async fn refresh_games(handle: AppHandle, provider_id: ProviderId) -> Result {
 
 	let provider = provider::get_provider(provider_id)?;
 
-	provider.insert_games(&state.database_connection).await?;
+	provider.insert_games(&state.database).await?;
 
 	// Remove stale games
 	state
-		.database_connection
+		.database
 		.lock()
 		.unwrap()
 		.prepare("DELETE FROM main.games WHERE provider_id = $1 AND created_at < $2;")?
@@ -597,7 +598,7 @@ async fn add_game(path: PathBuf, handle: AppHandle) -> Result {
 
 	let state = handle.app_state();
 
-	state.database_connection.insert_game(&game);
+	state.database.insert_game(&game);
 
 	handle.emit_safe(events::FoundGame(GameId {
 		provider_id: game.provider_id,
@@ -664,7 +665,7 @@ async fn open_logs_folder() -> Result {
 #[specta::specta]
 async fn get_game_ids(handle: AppHandle, query: Option<GamesQuery>) -> Result<GameIdsResponse> {
 	let state = handle.app_state();
-	let database_connection = state.database_connection.lock().unwrap();
+	let database_connection = state.database.lock().unwrap();
 	let search = query.as_ref().map(|q| q.search.clone()).unwrap_or_default();
 
 	// Build sorting logic
@@ -843,7 +844,7 @@ async fn get_game_ids(handle: AppHandle, query: Option<GamesQuery>) -> Result<Ga
 #[specta::specta]
 async fn get_game(id: GameId, handle: AppHandle) -> Result<DbGame> {
 	let state = handle.app_state();
-	let database_connection = state.database_connection.lock().unwrap();
+	let database_connection = state.database.lock().unwrap();
 
 	let db_game = database_connection
 		.prepare(
@@ -1007,7 +1008,7 @@ fn main() {
 			mod_loaders: RwLock::default(),
 			local_mods: RwLock::default(),
 			remote_mods: RwLock::default(),
-			database_connection: std::sync::Mutex::new(database_connection),
+			database: std::sync::Mutex::new(database_connection),
 		})
 		.invoke_handler(builder.invoke_handler())
 		.setup(move |app| {
@@ -1042,7 +1043,7 @@ fn main() {
 
 			tauri::async_runtime::spawn(async move {
 				let state = app_handle.app_state();
-				let database_connection = state.database_connection.lock().unwrap();
+				let database_connection = state.database.lock().unwrap();
 				let cloned_handle = app_handle.clone();
 				database_connection.update_hook(Some({
 					move |_, _: &str, _: &str, _| {
