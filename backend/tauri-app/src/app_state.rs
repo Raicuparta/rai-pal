@@ -4,8 +4,8 @@ use std::sync::RwLock;
 
 use crate::result::Error;
 use crate::result::Result;
+use rai_pal_core::local_database;
 use rai_pal_core::local_database::DbMutex;
-use std::sync::Mutex;
 use tauri::Manager;
 
 use rai_pal_core::{local_mod, mod_loaders::mod_loader, remote_mod};
@@ -51,5 +51,16 @@ pub trait StatefulHandle {
 impl StatefulHandle for tauri::AppHandle {
 	fn app_state(&self) -> TauriState<'_> {
 		self.state::<AppState>()
+	}
+}
+
+impl AppState {
+	pub fn new() -> Result<Self> {
+		Ok(Self {
+			mod_loaders: RwLock::new(mod_loader::Map::new()),
+			local_mods: RwLock::new(local_mod::Map::new()),
+			remote_mods: RwLock::new(remote_mod::Map::new()),
+			database: local_database::create()?,
+		})
 	}
 }

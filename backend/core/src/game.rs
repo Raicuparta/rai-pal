@@ -2,8 +2,6 @@ use std::{
 	collections::HashMap,
 	fs,
 	path::{Path, PathBuf},
-	sync::Mutex,
-	time::{SystemTime, UNIX_EPOCH},
 };
 
 use rai_pal_proc_macros::serializable_struct;
@@ -17,7 +15,6 @@ use crate::{
 		unreal,
 	},
 	game_tag::GameTag,
-	game_title::get_normalized_titles,
 	mod_manifest, paths,
 	providers::{
 		provider::ProviderId,

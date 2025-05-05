@@ -20,7 +20,7 @@ use rai_pal_core::game_engines::game_engine::{
 };
 use rai_pal_core::game_title::get_normalized_titles;
 use rai_pal_core::games_query::{GamesQuery, GamesSortBy, InstallState};
-use rai_pal_core::local_database::InsertGame;
+use rai_pal_core::local_database::{InsertGame, attach_remote_database};
 use rai_pal_core::local_mod::{self, LocalMod};
 use rai_pal_core::maps::TryGettable;
 use rai_pal_core::mod_loaders::mod_loader::{self, ModLoaderActions};
@@ -422,147 +422,6 @@ async fn refresh_remote_games(handle: AppHandle) -> Result {
 	Ok(())
 }
 
-fn attach_remote_database<TConnection: Deref<Target = rusqlite::Connection>>(
-	local_database_connection: TConnection,
-	path: &Path,
-) -> Result {
-	println!("Attaching remote database...");
-
-	if !path.is_file() {
-		return Ok(());
-	}
-
-	let remote_database_connection =
-		rusqlite::Connection::open_with_flags(path, OpenFlags::SQLITE_OPEN_READ_ONLY)?;
-
-	let mut insert_into_local = local_database_connection.prepare(
-		r#"
-		INSERT OR IGNORE INTO main.remote_games (
-				provider_id, external_id, engine_brand, engine_version_major,
-				engine_version_minor, engine_version_patch, engine_version_display, subscriptions
-		)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?);
-		"#,
-	)?;
-
-	remote_database_connection
-		.prepare("SELECT * FROM games;")?
-		.query_map([], |row| {
-			let provider_id: ProviderId = row.get("provider_id")?;
-			let external_id: String = row.get("external_id")?;
-			let engine_brand: Option<EngineBrand> = row.get("engine_brand")?;
-			let engine_version_display: Option<String> = row.get("engine_version")?;
-			let subscriptions: Option<String> = row.get("subscriptions")?;
-			let engine_version_string: Option<String> = row.get("engine_version")?;
-
-			let engine_version = if let Some(engine_version) = engine_version_string {
-				remote_game::parse_version(&engine_version)
-			} else {
-				None
-			};
-
-			// Insert the processed game into main.remote_games
-			insert_into_local.execute(rusqlite::params![
-				provider_id,
-				external_id,
-				engine_brand,
-				engine_version.as_ref().map(|v| v.numbers.major),
-				engine_version.as_ref().map(|v| v.numbers.minor),
-				engine_version.as_ref().map(|v| v.numbers.patch),
-				engine_version_display,
-				subscriptions,
-			])?;
-
-			Ok(())
-		})?
-		.for_each(|result| {
-			if let Err(err) = result {
-				log::error!("Error processing row: {err}");
-			}
-		});
-
-	println!("Remote database attached!");
-
-	Ok(())
-}
-
-pub fn setup_rusqlite() -> Result<rusqlite::Connection> {
-	let path = paths::app_data_path()?.join("db.sqlite");
-	if path.is_file() {
-		std::fs::remove_file(&path)?;
-	}
-
-	let connection = rusqlite::Connection::open_with_flags(
-		path,
-		OpenFlags::SQLITE_OPEN_CREATE
-			| OpenFlags::SQLITE_OPEN_READ_WRITE
-			| OpenFlags::SQLITE_OPEN_SHARED_CACHE,
-	)?;
-
-	connection.execute_batch(
-		r#"
-		PRAGMA journal_mode = WAL;
-		PRAGMA synchronous = OFF;
-
-		CREATE TABLE IF NOT EXISTS games (
-			provider_id TEXT NOT NULL,
-			game_id TEXT NOT NULL,
-			external_id TEXT NOT NULL,
-			display_title TEXT NOT NULL,
-			title_discriminator TEXT,
-			thumbnail_url TEXT,
-			tags TEXT,
-			release_date INTEGER,
-			provider_commands TEXT,
-			created_at INTEGER,
-			PRIMARY KEY (provider_id, game_id)
-		);
-
-		CREATE INDEX IF NOT EXISTS idx_games_external_id ON games(provider_id, external_id);
-
-		CREATE TABLE IF NOT EXISTS normalized_titles (
-			provider_id TEXT NOT NULL,
-			game_id TEXT NOT NULL,
-			normalized_title TEXT NOT NULL,
-			FOREIGN KEY (provider_id, game_id) REFERENCES games(provider_id, game_id) ON DELETE CASCADE,
-			PRIMARY KEY (provider_id, game_id, normalized_title)
-		);
-
-		CREATE INDEX IF NOT EXISTS idx_normalized_titles ON normalized_titles(provider_id, game_id);
-
-		CREATE TABLE IF NOT EXISTS installed_games (
-			provider_id TEXT NOT NULL,
-			game_id TEXT NOT NULL,
-			exe_path TEXT NOT NULL,
-			engine_brand TEXT,
-			engine_version_major INTEGER,
-			engine_version_minor INTEGER,
-			engine_version_patch INTEGER,
-			engine_version_display TEXT,
-			unity_backend TEXT,
-			architecture TEXT,
-			FOREIGN KEY(provider_id, game_id) REFERENCES games(provider_id, game_id) ON DELETE CASCADE,
-			PRIMARY KEY (provider_id, game_id)
-		);
-
-		CREATE TABLE IF NOT EXISTS remote_games (
-			provider_id TEXT NOT NULL,
-			external_id TEXT NOT NULL,
-			engine_brand TEXT,
-			engine_version_major INTEGER,
-			engine_version_minor INTEGER,
-			engine_version_patch INTEGER,
-			engine_version_display TEXT,
-			subscriptions TEXT,
-			PRIMARY KEY (provider_id, external_id)
-		);
-	"#,
-	)?;
-	attach_remote_database(&connection, &remote_game::get_database_file_path()?)?;
-
-	Ok(connection)
-}
-
 #[tauri::command]
 #[specta::specta]
 async fn refresh_games(handle: AppHandle, provider_id: ProviderId) -> Result {
@@ -936,8 +795,6 @@ fn main() {
 		windows::error_dialog(&format!("I found a panic!!!: {info}"));
 	}));
 
-	let database_connection = setup_rusqlite().unwrap(); // TODO handle error
-
 	let builder = Builder::<tauri::Wry>::new()
 		.commands(tauri_specta::collect_commands![
 			add_game,
@@ -1004,12 +861,7 @@ fn main() {
 				])
 				.build(),
 		)
-		.manage(AppState {
-			mod_loaders: RwLock::default(),
-			local_mods: RwLock::default(),
-			remote_mods: RwLock::default(),
-			database: std::sync::Mutex::new(database_connection),
-		})
+		.manage(AppState::new().unwrap())
 		.invoke_handler(builder.invoke_handler())
 		.setup(move |app| {
 			builder.mount_events(app);
