@@ -11,10 +11,10 @@ export function GamesPage() {
 	const setSelectedGame = useSetAtom(selectedGameAtom);
 
 	useAppEvent("selectInstalledGame", "games-page", ([providerId, gameId]) => {
-		setSelectedGame({
+		setSelectedGame([
 			providerId,
 			gameId,
-		});
+		]);
 	});
 
 	return (

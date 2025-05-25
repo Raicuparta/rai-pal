@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { GameId, GamesSortBy } from "@api/bindings";
+import { GamesSortBy, ProviderId } from "@api/bindings";
 import { useAtomValue } from "jotai";
 import { gameDataAtom, loadingTasksAtom } from "@hooks/use-data";
 import { TableContainer } from "@components/table/table-container";
@@ -17,7 +17,7 @@ import React from "react";
 import { TableHead } from "@components/table/table-head";
 import { useLocalization } from "@hooks/use-localization";
 
-const tableComponents: TableComponents<GameId, unknown> = {
+const tableComponents: TableComponents<[ProviderId, string], unknown> = {
 	TableBody: React.forwardRef(function TableBody(props, ref) {
 		return (
 			<Table.Tbody
@@ -99,7 +99,7 @@ export function GamesTable() {
 				overscan={50}
 				increaseViewportBy={100}
 				computeItemKey={(index) =>
-					`${gameData.gameIds[index]?.providerId}${gameData.gameIds[index]?.gameId}`
+					`${gameData.gameIds[index]?.[0]}${gameData.gameIds[index]?.[1]}`
 				}
 			/>
 		</TableContainer>

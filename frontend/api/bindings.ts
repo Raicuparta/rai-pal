@@ -8,8 +8,8 @@ export const commands = {
 async addGame(path: string) : Promise<null> {
     return await TAURI_INVOKE("add_game", { path });
 },
-async configureMod(gameId: GameId, modId: string) : Promise<null> {
-    return await TAURI_INVOKE("configure_mod", { gameId, modId });
+async configureMod(providerId: ProviderId, gameId: string, modId: string) : Promise<null> {
+    return await TAURI_INVOKE("configure_mod", { providerId, gameId, modId });
 },
 async deleteMod(modId: string) : Promise<null> {
     return await TAURI_INVOKE("delete_mod", { modId });
@@ -26,11 +26,11 @@ async getAppSettings() : Promise<AppSettings> {
 async getGameIds(query: GamesQuery | null) : Promise<GameIdsResponse> {
     return await TAURI_INVOKE("get_game_ids", { query });
 },
-async getGame(gameId: GameId) : Promise<DbGame> {
-    return await TAURI_INVOKE("get_game", { gameId });
+async getGame(providerId: ProviderId, gameId: string) : Promise<DbGame> {
+    return await TAURI_INVOKE("get_game", { providerId, gameId });
 },
-async getInstalledModVersions(gameId: GameId) : Promise<Partial<{ [key in string]: string }>> {
-    return await TAURI_INVOKE("get_installed_mod_versions", { gameId });
+async getInstalledModVersions(providerId: ProviderId, gameId: string) : Promise<Partial<{ [key in string]: string }>> {
+    return await TAURI_INVOKE("get_installed_mod_versions", { providerId, gameId });
 },
 async getLocalMods() : Promise<Partial<{ [key in string]: LocalMod }>> {
     return await TAURI_INVOKE("get_local_mods");
@@ -38,17 +38,17 @@ async getLocalMods() : Promise<Partial<{ [key in string]: LocalMod }>> {
 async getRemoteMods() : Promise<Partial<{ [key in string]: RemoteMod }>> {
     return await TAURI_INVOKE("get_remote_mods");
 },
-async installMod(gameId: GameId, modId: string) : Promise<null> {
-    return await TAURI_INVOKE("install_mod", { gameId, modId });
+async installMod(providerId: ProviderId, gameId: string, modId: string) : Promise<null> {
+    return await TAURI_INVOKE("install_mod", { providerId, gameId, modId });
 },
-async openGameFolder(gameId: GameId) : Promise<null> {
-    return await TAURI_INVOKE("open_game_folder", { gameId });
+async openGameFolder(providerId: ProviderId, gameId: string) : Promise<null> {
+    return await TAURI_INVOKE("open_game_folder", { providerId, gameId });
 },
-async openGameModsFolder(gameId: GameId) : Promise<null> {
-    return await TAURI_INVOKE("open_game_mods_folder", { gameId });
+async openGameModsFolder(providerId: ProviderId, gameId: string) : Promise<null> {
+    return await TAURI_INVOKE("open_game_mods_folder", { providerId, gameId });
 },
-async openInstalledModFolder(gameId: GameId, modId: string) : Promise<null> {
-    return await TAURI_INVOKE("open_installed_mod_folder", { gameId, modId });
+async openInstalledModFolder(providerId: ProviderId, gameId: string, modId: string) : Promise<null> {
+    return await TAURI_INVOKE("open_installed_mod_folder", { providerId, gameId, modId });
 },
 async openLogsFolder() : Promise<null> {
     return await TAURI_INVOKE("open_logs_folder");
@@ -62,8 +62,8 @@ async openModLoaderFolder(modLoaderId: string) : Promise<null> {
 async openModsFolder() : Promise<null> {
     return await TAURI_INVOKE("open_mods_folder");
 },
-async refreshGame(gameId: GameId) : Promise<null> {
-    return await TAURI_INVOKE("refresh_game", { gameId });
+async refreshGame(providerId: ProviderId, gameId: string) : Promise<null> {
+    return await TAURI_INVOKE("refresh_game", { providerId, gameId });
 },
 async refreshGames(providerId: ProviderId) : Promise<null> {
     return await TAURI_INVOKE("refresh_games", { providerId });
@@ -74,8 +74,8 @@ async refreshMods() : Promise<null> {
 async refreshRemoteGames() : Promise<null> {
     return await TAURI_INVOKE("refresh_remote_games");
 },
-async removeGame(gameId: GameId) : Promise<null> {
-    return await TAURI_INVOKE("remove_game", { gameId });
+async removeGame(providerId: ProviderId, gameId: string) : Promise<null> {
+    return await TAURI_INVOKE("remove_game", { providerId, gameId });
 },
 async resetSteamCache() : Promise<null> {
     return await TAURI_INVOKE("reset_steam_cache");
@@ -89,11 +89,11 @@ async runRunnableWithoutGame(modId: string) : Promise<null> {
 async saveAppSettings(settings: AppSettings) : Promise<null> {
     return await TAURI_INVOKE("save_app_settings", { settings });
 },
-async uninstallAllMods(gameId: GameId) : Promise<null> {
-    return await TAURI_INVOKE("uninstall_all_mods", { gameId });
+async uninstallAllMods(providerId: ProviderId, gameId: string) : Promise<null> {
+    return await TAURI_INVOKE("uninstall_all_mods", { providerId, gameId });
 },
-async uninstallMod(gameId: GameId, modId: string) : Promise<null> {
-    return await TAURI_INVOKE("uninstall_mod", { gameId, modId });
+async uninstallMod(providerId: ProviderId, gameId: string, modId: string) : Promise<null> {
+    return await TAURI_INVOKE("uninstall_mod", { providerId, gameId, modId });
 }
 }
 
@@ -137,8 +137,7 @@ export type EngineVersionRange = { minimum: EngineVersionNumbers | null; maximum
 export type Error = "Tauri" | "Core" | "Io" | "Rusql" | "SerdeJson" | { FailedToGetResourcesPath: string } | { FailedToAccessStateData: string }
 export type ErrorRaised = string
 export type ExecutedProviderCommand = null
-export type GameId = { providerId: ProviderId; gameId: string }
-export type GameIdsResponse = { gameIds: GameId[]; totalCount: bigint }
+export type GameIdsResponse = { gameIds: ([ProviderId, string])[]; totalCount: bigint }
 export type GameSubscription = "UbisoftClassics" | "UbisoftPremium" | "XboxGamePass" | "EaPlay"
 export type GameTag = "VR" | "Demo"
 export type GamesChanged = []
@@ -157,7 +156,7 @@ export type PathData = string
 export type ProviderCommand = { String: string } | { Path: [string, string[]] }
 export type ProviderCommandAction = "Install" | "ShowInLibrary" | "ShowInStore" | "StartViaProvider" | "StartViaExe" | "OpenInBrowser"
 export type ProviderId = "Ea" | "Epic" | "Gog" | "Itch" | "Manual" | "Steam" | "Ubisoft" | "Xbox"
-export type RefreshGame = GameId
+export type RefreshGame = [ProviderId, string]
 export type RemoteMod = { common: CommonModData; data: RemoteModData }
 export type RemoteModData = { title: string; deprecated: boolean; author: string; sourceCode: string; description: string; latestVersion: ModDownload | null }
 export type RunnableModData = { path: string; args: string[] }

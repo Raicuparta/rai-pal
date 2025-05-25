@@ -5,11 +5,11 @@ use serde::Serialize;
 use tauri_specta::Event;
 
 use rai_pal_core::{
-	game::GameId, local_mod, mod_loaders::mod_loader, providers::provider::ProviderId, remote_mod,
+	local_mod, mod_loaders::mod_loader, providers::provider::ProviderId, remote_mod,
 };
 
 #[serializable_event]
-pub struct RefreshGame(pub GameId);
+pub struct RefreshGame(pub ProviderId, pub String);
 
 #[serializable_event]
 pub struct GamesChanged();

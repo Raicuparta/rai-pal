@@ -1,8 +1,8 @@
-import { commands, DbGame, GameId } from "@api/bindings";
+import { commands, DbGame, ProviderId } from "@api/bindings";
 import { useAppEvent } from "./use-app-event";
 import { useCommandData } from "./use-command-data";
 
-export function useGame({ providerId, gameId }: GameId) {
+export function useGame(providerId: ProviderId, gameId: string) {
 	const defaultGame: DbGame = {
 		providerId: providerId,
 		gameId: gameId,
@@ -23,15 +23,20 @@ export function useGame({ providerId, gameId }: GameId) {
 		tags: [],
 	};
 	const [game, updateGame] = useCommandData(
-		commands.getGame,
-		() => ({ args: { providerId, gameId } }),
+		() => commands.getGame(providerId, gameId),
+		() => ({ args: undefined }),
 		defaultGame,
 	);
 
-	useAppEvent("refreshGame", `game-${providerId}:${gameId}`, (foundId) => {
-		if (foundId.providerId !== providerId || foundId.gameId !== gameId) return;
-		updateGame();
-	});
+	useAppEvent(
+		"refreshGame",
+		`game-${providerId}:${gameId}`,
+		([refreshedProviderId, refreshedGameId]) => {
+			if (refreshedProviderId !== providerId || refreshedGameId !== gameId)
+				return;
+			updateGame();
+		},
+	);
 
 	return game;
 }

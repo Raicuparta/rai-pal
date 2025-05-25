@@ -61,10 +61,10 @@ export function GameModRow({ game, mod, modLoader, installedVersion }: Props) {
 			// TODO figure out if this error would be handled.
 			await commands.downloadMod(mod.common.id);
 		} else if (isInstalled && !isInstalledModOutdated) {
-			return commands.uninstallMod(game, mod.common.id);
+			return commands.uninstallMod(game.providerId, game.gameId, mod.common.id);
 		}
 
-		return commands.installMod(game, mod.common.id);
+		return commands.installMod(game.providerId, game.gameId, mod.common.id);
 	};
 	const { actionText, actionIcon } = (() => {
 		if (isLocalModOutdated || isInstalledModOutdated) {
@@ -158,7 +158,7 @@ export function GameModRow({ game, mod, modLoader, installedVersion }: Props) {
 							<CommandDropdown icon={<IconDotsVertical />}>
 								<Button
 									disabled={!isInstalled && !isReadyRunnable}
-									onClick={() => commands.configureMod(game, mod.common.id)}
+									onClick={() => commands.configureMod(game.providerId, game.gameId, mod.common.id)}
 									leftSection={<IconSettings />}
 								>
 									Mod Settings
@@ -166,7 +166,7 @@ export function GameModRow({ game, mod, modLoader, installedVersion }: Props) {
 								<Button
 									disabled={!isInstalled && !isReadyRunnable}
 									onClick={() =>
-										commands.openInstalledModFolder(game, mod.common.id)
+										commands.openInstalledModFolder(game.providerId, game.gameId, mod.common.id)
 									}
 									leftSection={<IconFolderOpen />}
 								>

@@ -4,8 +4,6 @@ use std::{
 	path::{Path, PathBuf},
 };
 
-use rai_pal_proc_macros::serializable_struct;
-
 use crate::{
 	architecture::Architecture,
 	data_types::{json_data::JsonData, path_data::PathData},
@@ -22,12 +20,6 @@ use crate::{
 	},
 	result::{Error, Result},
 };
-
-#[serializable_struct]
-pub struct GameId {
-	pub provider_id: ProviderId,
-	pub game_id: String,
-}
 
 #[derive(serde::Serialize, specta::Type, Clone)]
 #[serde(rename_all = "camelCase")]

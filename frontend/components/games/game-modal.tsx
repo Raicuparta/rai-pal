@@ -89,15 +89,15 @@ export function GameModal({ game }: Props) {
 	const mods = useUnifiedMods();
 	const setSelectedGame = useSetAtom(selectedGameAtom);
 	const [installedModVersions, updateInstalledModVersions] = useCommandData(
-		commands.getInstalledModVersions,
+		() => commands.getInstalledModVersions(game.providerId, game.gameId),
 		() => (game.exePath ? { args: game } : { skip: true }),
 		{},
 	);
 
-	useAppEvent("refreshGame", `installed-mods-${game.providerId}:${game.gameId}`, (foundId) => {
+	useAppEvent("refreshGame", `installed-mods-${game.providerId}:${game.gameId}`, ([refreshedProviderId, refreshedGameId]) => {
 		if (
-			foundId.providerId !== game.providerId ||
-			foundId.gameId !== game.gameId
+			refreshedProviderId !== game.providerId ||
+			refreshedGameId !== game.gameId
 		)
 			return;
 		updateInstalledModVersions();
@@ -147,13 +147,13 @@ export function GameModal({ game }: Props) {
 						>
 							<CommandButton
 								leftSection={<IconFolder />}
-								onClick={() => commands.openGameFolder(game)}
+								onClick={() => commands.openGameFolder(game.providerId, game.gameId)}
 							>
 								{t("openGameFilesFolder")}
 							</CommandButton>
 							<CommandButton
 								leftSection={<IconFolderCog />}
-								onClick={() => commands.openGameModsFolder(game)}
+								onClick={() => commands.openGameModsFolder(game.providerId, game.gameId)}
 							>
 								{t("openInstalledModsFolder")}
 							</CommandButton>
@@ -161,7 +161,7 @@ export function GameModal({ game }: Props) {
 					)}
 					{game.providerId === "Manual" && game.exePath && (
 						<CommandButton
-							onClick={() => commands.removeGame(game)}
+							onClick={() => commands.removeGame(game.providerId, game.gameId)}
 							confirmationText={t("removeGameConfirmation")}
 							onSuccess={close}
 							leftSection={<IconTrash />}
@@ -171,7 +171,7 @@ export function GameModal({ game }: Props) {
 					)}
 					{game.exePath && (
 						<CommandButton
-							onClick={() => commands.refreshGame({ providerId: game.providerId, gameId: game.gameId })}
+							onClick={() => commands.refreshGame(game.providerId, game.gameId)}
 							leftSection={<IconRefresh />}
 						>
 							{t("refreshGame")}
@@ -218,7 +218,7 @@ export function GameModal({ game }: Props) {
 						{game.exePath && (
 							<CommandButton
 								confirmationText={t("uninstallAllModsConfirmation")}
-								onClick={() => commands.uninstallAllMods(game)}
+								onClick={() => commands.uninstallAllMods(game.providerId, game.gameId)}
 								color="red"
 								variant="light"
 								leftSection={<IconTrash />}

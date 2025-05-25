@@ -5,7 +5,7 @@ import { selectedGameAtom } from "./games-state";
 import { useGame } from "@hooks/use-game";
 import { GameModal } from "./game-modal";
 import { ItemProps } from "react-virtuoso";
-import { DbGame, GameId } from "@api/bindings";
+import { DbGame, ProviderId } from "@api/bindings";
 import { gamesColumns } from "./games-columns";
 import { useAppSettings } from "@hooks/use-app-settings";
 
@@ -13,17 +13,17 @@ import { useAppSettings } from "@hooks/use-app-settings";
 export const gameRowHeight = 60;
 
 export const GameRow = React.forwardRef(function GameRow(
-	props: ItemProps<GameId>,
+	props: ItemProps<[ProviderId, string]>,
 	ref: React.ForwardedRef<HTMLTableRowElement>,
 ) {
-	const game = useGame(props.item);
+	const game = useGame(props.item[0], props.item[1]);
 	const [selectedGame, setSelectedGame] = useAtom(selectedGameAtom);
 
 	const isSelected =
 		!!game &&
 		!!selectedGame &&
-		selectedGame.gameId === game.gameId &&
-		selectedGame.providerId == game.providerId;
+		selectedGame[1] === game.gameId &&
+		selectedGame[0] == game.providerId;
 
 	return (
 		<>
@@ -32,11 +32,7 @@ export const GameRow = React.forwardRef(function GameRow(
 				game={game}
 				ref={ref}
 				onClick={() =>
-					game &&
-					setSelectedGame({
-						gameId: game.gameId,
-						providerId: game.providerId,
-					})
+					setSelectedGame([game.providerId, game.gameId])
 				}
 			/>
 		</>

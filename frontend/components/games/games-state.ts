@@ -1,4 +1,4 @@
 import { atom } from "jotai";
-import { GameId } from "@api/bindings";
+import { ProviderId } from "@api/bindings";
 
-export const selectedGameAtom = atom<GameId | null>(null);
+export const selectedGameAtom = atom<[ProviderId, string] | null>(null);
