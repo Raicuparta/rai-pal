@@ -10,8 +10,8 @@ use winreg::{
 };
 
 use crate::{
-	local_database::{DbMutex, InsertGame},
 	game::DbGame,
+	local_database::{DbMutex, GameDatabase},
 	paths::file_name_without_extension,
 	providers::provider::{ProviderActions, ProviderId, ProviderStatic},
 	result::Result,

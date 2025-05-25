@@ -10,7 +10,7 @@ use rusqlite::{Connection, OpenFlags};
 
 use super::provider_command::{ProviderCommand, ProviderCommandAction};
 use crate::{
-	local_database::{DbMutex, InsertGame},
+	local_database::{DbMutex, GameDatabase},
 	game::DbGame,
 	paths,
 	providers::provider::{ProviderActions, ProviderId, ProviderStatic},

@@ -8,7 +8,7 @@ use rai_pal_proc_macros::serializable_struct;
 
 use super::provider::{ProviderActions, ProviderId, ProviderStatic};
 use crate::{
-	local_database::{DbMutex, InsertGame},
+	local_database::{DbMutex, GameDatabase},
 	game::DbGame,
 	paths::{self, app_data_path, file_name_without_extension},
 	result::Result,

@@ -18,7 +18,6 @@ import {
 	IconLanguage,
 	IconMenu2,
 	IconRotateDot,
-	IconTrash,
 } from "@tabler/icons-react";
 import {
 	getNativeLocaleName,
@@ -108,17 +107,6 @@ export function AppSettings() {
 				>
 					{t("openLogsFolderButton")}
 				</Menu.Item>
-				<Tooltip
-					label={t("clearRaiPalCacheTooltip")}
-					position="bottom"
-				>
-					<Menu.Item
-						onClick={commands.clearCache}
-						leftSection={<IconTrash />}
-					>
-						{t("clearRaiPalCacheOpenModal")}
-					</Menu.Item>
-				</Tooltip>
 				<SteamCacheButton />
 				<Tooltip
 					label={t("resetRaiPalSettingsTooltip")}

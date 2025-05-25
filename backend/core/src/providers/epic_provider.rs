@@ -17,8 +17,8 @@ use super::{
 	provider_command::{ProviderCommand, ProviderCommandAction},
 };
 use crate::{
-	local_database::{DbMutex, InsertGame},
 	game::DbGame,
+	local_database::{DbMutex, GameDatabase},
 	paths::glob_path,
 	providers::provider::{ProviderActions, ProviderStatic},
 	result::Result,

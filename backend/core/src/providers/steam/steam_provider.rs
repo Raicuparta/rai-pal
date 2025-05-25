@@ -6,7 +6,7 @@ use std::{
 use steamlocate::SteamDir;
 
 use crate::{
-	local_database::{DbMutex, InsertGame},
+	local_database::{DbMutex, GameDatabase},
 	game::DbGame,
 	game_tag::GameTag,
 	paths,

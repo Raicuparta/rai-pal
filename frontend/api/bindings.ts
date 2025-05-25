@@ -26,8 +26,8 @@ async getAppSettings() : Promise<AppSettings> {
 async getGameIds(query: GamesQuery | null) : Promise<GameIdsResponse> {
     return await TAURI_INVOKE("get_game_ids", { query });
 },
-async getGame(id: GameId) : Promise<DbGame> {
-    return await TAURI_INVOKE("get_game", { id });
+async getGame(gameId: GameId) : Promise<DbGame> {
+    return await TAURI_INVOKE("get_game", { gameId });
 },
 async getInstalledModVersions(gameId: GameId) : Promise<Partial<{ [key in string]: string }>> {
     return await TAURI_INVOKE("get_installed_mod_versions", { gameId });

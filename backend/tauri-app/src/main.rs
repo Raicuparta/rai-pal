@@ -20,7 +20,7 @@ use rai_pal_core::game_engines::game_engine::{
 };
 use rai_pal_core::game_title::get_normalized_titles;
 use rai_pal_core::games_query::{GamesQuery, GamesSortBy, InstallState};
-use rai_pal_core::local_database::{InsertGame, attach_remote_database};
+use rai_pal_core::local_database::{GameDatabase, attach_remote_database};
 use rai_pal_core::local_mod::{self, LocalMod};
 use rai_pal_core::maps::TryGettable;
 use rai_pal_core::mod_loaders::mod_loader::{self, ModLoaderActions};
@@ -75,7 +75,7 @@ async fn get_remote_mods(handle: AppHandle) -> Result<remote_mod::Map> {
 #[tauri::command]
 #[specta::specta]
 async fn open_game_folder(handle: AppHandle, game_id: GameId) -> Result {
-	let game = get_game(game_id, handle.clone()).await?;
+	let game = get_game(handle.clone(), game_id).await?;
 	game.open_game_folder()?;
 	Ok(())
 }
@@ -83,7 +83,7 @@ async fn open_game_folder(handle: AppHandle, game_id: GameId) -> Result {
 #[tauri::command]
 #[specta::specta]
 async fn open_game_mods_folder(handle: AppHandle, game_id: GameId) -> Result {
-	let game = get_game(game_id, handle.clone()).await?;
+	let game = get_game(handle.clone(), game_id).await?;
 	game.open_mods_folder()?;
 	Ok(())
 }
@@ -169,7 +169,7 @@ fn refresh_game_mods(game_id: &GameId, handle: &AppHandle) -> Result {
 #[specta::specta]
 async fn install_mod(game_id: GameId, mod_id: &str, handle: AppHandle) -> Result {
 	let state = handle.app_state();
-	let game = get_game(game_id.clone(), handle.clone()).await?;
+	let game = get_game(handle.clone(), game_id.clone()).await?;
 
 	let mod_loaders = state.mod_loaders.read_state()?.clone();
 
@@ -209,7 +209,7 @@ async fn run_runnable_without_game(mod_id: &str, handle: AppHandle) -> Result {
 #[specta::specta]
 async fn configure_mod(game_id: GameId, mod_id: &str, handle: AppHandle) -> Result {
 	let state = handle.app_state();
-	let game = get_game(game_id.clone(), handle.clone()).await?;
+	let game = get_game(handle.clone(), game_id.clone()).await?;
 
 	let mod_loaders = state.mod_loaders.read_state()?.clone();
 	let local_mod = refresh_and_get_local_mod(mod_id, &mod_loaders, &handle).await?;
@@ -225,7 +225,7 @@ async fn configure_mod(game_id: GameId, mod_id: &str, handle: AppHandle) -> Resu
 #[specta::specta]
 async fn open_installed_mod_folder(game_id: GameId, mod_id: &str, handle: AppHandle) -> Result {
 	let state = handle.app_state();
-	let game = get_game(game_id.clone(), handle.clone()).await?;
+	let game = get_game(handle.clone(), game_id.clone()).await?;
 
 	let mod_loaders = state.mod_loaders.read_state()?.clone();
 	let local_mod = refresh_and_get_local_mod(mod_id, &mod_loaders, &handle).await?;
@@ -241,7 +241,7 @@ async fn open_installed_mod_folder(game_id: GameId, mod_id: &str, handle: AppHan
 #[specta::specta]
 async fn refresh_game(game_id: GameId, handle: AppHandle) -> Result {
 	let state = handle.app_state();
-	let game = get_game(game_id.clone(), handle.clone()).await?;
+	let game = get_game(handle.clone(), game_id.clone()).await?;
 
 	// TODO refresh game.
 	// if let Some(installed_game) = game.installed_game.as_mut() {
@@ -258,7 +258,7 @@ async fn refresh_game(game_id: GameId, handle: AppHandle) -> Result {
 #[specta::specta]
 async fn uninstall_mod(game_id: GameId, mod_id: &str, handle: AppHandle) -> Result {
 	let state = handle.app_state();
-	let game = get_game(game_id.clone(), handle.clone()).await?;
+	let game = get_game(handle.clone(), game_id.clone()).await?;
 
 	let mod_loaders = state.mod_loaders.read_state()?.clone();
 
@@ -278,7 +278,7 @@ async fn uninstall_mod(game_id: GameId, mod_id: &str, handle: AppHandle) -> Resu
 #[specta::specta]
 async fn uninstall_all_mods(game_id: GameId, handle: AppHandle) -> Result {
 	let state = handle.app_state();
-	let game = get_game(game_id.clone(), handle.clone()).await?;
+	let game = get_game(handle.clone(), game_id.clone()).await?;
 
 	game.uninstall_all_mods()?;
 
@@ -701,66 +701,11 @@ async fn get_game_ids(handle: AppHandle, query: Option<GamesQuery>) -> Result<Ga
 
 #[tauri::command]
 #[specta::specta]
-async fn get_game(id: GameId, handle: AppHandle) -> Result<DbGame> {
+async fn get_game(handle: AppHandle, game_id: GameId) -> Result<DbGame> {
 	let state = handle.app_state();
-	let database_connection = state.database.lock().unwrap();
-
-	let db_game = database_connection
-		.prepare(
-			r#"
-		SELECT
-			g.provider_id,
-			g.game_id,
-			g.external_id,
-			g.display_title,
-			g.title_discriminator,
-			g.thumbnail_url,
-			g.release_date,
-			g.tags,
-			g.provider_commands,
-			ig.exe_path,
-			ig.unity_backend,
-			ig.architecture,
-			COALESCE(ig.engine_brand, rg.engine_brand) AS engine_brand,
-			COALESCE(ig.engine_version_major, rg.engine_version_major) AS engine_version_major,
-			COALESCE(ig.engine_version_minor, rg.engine_version_minor) AS engine_version_minor,
-			COALESCE(ig.engine_version_patch, rg.engine_version_patch) AS engine_version_patch,
-			COALESCE(ig.engine_version_display, rg.engine_version_display) AS engine_version_display
-		FROM main.games g
-		LEFT JOIN main.installed_games ig ON g.provider_id = ig.provider_id AND g.game_id = ig.game_id
-		LEFT JOIN main.normalized_titles nt ON g.provider_id = nt.provider_id AND g.game_id = nt.game_id
-		LEFT JOIN remote_games rg ON (
-				g.provider_id = rg.provider_id AND g.external_id = rg.external_id
-		) OR (
-				rg.provider_id = 'Manual' AND nt.normalized_title = rg.external_id
-		)
-		WHERE g.provider_id = $1 AND g.game_id = $2
-		LIMIT 1
-	"#,
-		)?
-		.query_row([id.provider_id.to_string(), id.game_id], |row| {
-			Ok(DbGame {
-				provider_id: row.get(0)?,
-				game_id: row.get(1)?,
-				external_id: row.get(2)?,
-				display_title: row.get(3)?,
-				title_discriminator: row.get(4)?,
-				thumbnail_url: row.get(5)?,
-				release_date: row.get(6)?,
-				tags: row.get(7)?,
-				provider_commands: row.get(8)?,
-				exe_path: row.get(9)?,
-				unity_backend: row.get(10)?,
-				architecture: row.get(11)?,
-				engine_brand: row.get(12)?,
-				engine_version_major: row.get(13)?,
-				engine_version_minor: row.get(14)?,
-				engine_version_patch: row.get(15)?,
-				engine_version_display: row.get(16)?,
-			})
-		})?;
-
-	Ok(db_game)
+	Ok(state
+		.database
+		.get_game(&game_id.provider_id, &game_id.game_id)?)
 }
 
 #[tauri::command]
@@ -781,7 +726,7 @@ async fn get_installed_mod_versions(
 	game_id: GameId,
 	app_handle: AppHandle,
 ) -> Result<HashMap<String, String>> {
-	let game = get_game(game_id.clone(), app_handle.clone()).await?;
+	let game = get_game(app_handle.clone(), game_id.clone()).await?;
 	Ok(game.get_installed_mod_versions())
 }
 
