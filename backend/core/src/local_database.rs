@@ -5,11 +5,18 @@ use std::{
 	time::{SystemTime, UNIX_EPOCH},
 };
 
+use rai_pal_proc_macros::serializable_struct;
 use rusqlite::OpenFlags;
 
 use crate::{
-	game::DbGame, game_engines::game_engine::EngineBrand, game_title::get_normalized_titles, paths,
-	providers::provider::ProviderId, remote_game, result::Result,
+	game::{DbGame, GameId},
+	game_engines::game_engine::EngineBrand,
+	game_title::get_normalized_titles,
+	games_query::{GamesQuery, GamesSortBy, InstallState},
+	paths,
+	providers::provider::ProviderId,
+	remote_game,
+	result::Result,
 };
 
 pub type DbMutex = Mutex<rusqlite::Connection>;
@@ -17,6 +24,13 @@ pub type DbMutex = Mutex<rusqlite::Connection>;
 pub trait GameDatabase {
 	fn insert_game(&self, game: &DbGame);
 	fn get_game(&self, provider_id: &ProviderId, game_id: &str) -> Result<DbGame>;
+	fn get_game_ids(&self, query: Option<GamesQuery>) -> Result<GameIdsResponse>;
+}
+
+#[serializable_struct]
+pub struct GameIdsResponse {
+	game_ids: Vec<GameId>,
+	total_count: i64,
 }
 
 impl GameDatabase for DbMutex {
@@ -88,6 +102,182 @@ impl GameDatabase for DbMutex {
 					engine_version_display: row.get(16)?,
 				})
 			})?)
+	}
+
+	fn get_game_ids(&self, query: Option<GamesQuery>) -> Result<GameIdsResponse> {
+		let database_connection = self.lock().unwrap();
+		let search = query.as_ref().map(|q| q.search.clone()).unwrap_or_default();
+
+		// Build sorting logic
+		let sort_columns = match query.as_ref().map(|q| q.sort_by) {
+			Some(GamesSortBy::Title) => vec!["g.display_title"],
+			Some(GamesSortBy::ReleaseDate) => vec!["g.release_date"],
+			Some(GamesSortBy::Engine) => vec![
+				"COALESCE(ig.engine_brand, rg.engine_brand)",
+				"COALESCE(ig.engine_version_major, rg.engine_version_major)",
+				"COALESCE(ig.engine_version_minor, rg.engine_version_minor)",
+				"COALESCE(ig.engine_version_patch, rg.engine_version_patch)",
+			],
+			_ => vec!["g.display_title"],
+		};
+
+		let sort_order = if query.as_ref().is_some_and(|q| q.sort_descending) {
+			"DESC"
+		} else {
+			"ASC"
+		};
+
+		// Build filtering logic dynamically
+		let mut filters = Vec::<String>::new();
+
+		if let Some(filter) = query.as_ref().map(|q| &q.filter) {
+			// Installed filter
+			if filter.installed.contains(&Some(InstallState::Installed)) {
+				filters.push("ig.exe_path IS NOT NULL".to_string());
+			} else if filter.installed.contains(&Some(InstallState::NotInstalled)) {
+				filters.push("ig.exe_path IS NULL".to_string());
+			}
+
+			if !filter.providers.is_empty() {
+				let provider_conditions: Vec<String> = filter
+					.providers
+					.iter()
+					.filter_map(|provider| {
+						provider
+							.as_ref()
+							.map(|p| format!("g.provider_id = '{}'", p))
+					})
+					.collect();
+				if !provider_conditions.is_empty() {
+					filters.push(format!("({})", provider_conditions.join(" OR ")));
+				}
+			}
+
+			// TODO: tag filtering expectation is weird, probably want to make sure disabled tags never show up.
+			if !filter.tags.is_empty() {
+				let tag_conditions: Vec<String> = filter
+					.tags
+					.iter()
+					.map(|tag| {
+						if let Some(t) = tag {
+							format!("g.tags LIKE '%\"{}\"%'", t)
+						} else {
+							format!("g.tags = '[]'")
+						}
+					})
+					.collect();
+				if !tag_conditions.is_empty() {
+					filters.push(format!("({})", tag_conditions.join(" OR ")));
+				}
+			}
+
+			if !filter.engines.is_empty() {
+				let mut engine_conditions = Vec::new();
+
+				// Check if None is in the filter.engines
+				if filter.engines.contains(&None) {
+					engine_conditions
+						.push("COALESCE(ig.engine_brand, rg.engine_brand) IS NULL".to_string());
+				}
+
+				// Collect all non-None values and use the IN clause
+				let engine_values: Vec<String> = filter
+					.engines
+					.iter()
+					.filter_map(|engine| engine.as_ref().map(|e| format!("'{}'", e)))
+					.collect();
+
+				if !engine_values.is_empty() {
+					engine_conditions.push(format!(
+						"COALESCE(ig.engine_brand, rg.engine_brand) IN ({})",
+						engine_values.join(", ")
+					));
+				}
+
+				if !engine_conditions.is_empty() {
+					filters.push(format!("({})", engine_conditions.join(" OR ")));
+				}
+			}
+
+			if !filter.unity_backends.is_empty() {
+				let backend_conditions: Vec<String> = filter
+					.unity_backends
+					.iter()
+					.filter_map(|backend| {
+						backend
+							.as_ref()
+							.map(|b| format!("ig.unity_backend = '{}'", b))
+					})
+					.collect();
+				if !backend_conditions.is_empty() {
+					filters.push(format!("({})", backend_conditions.join(" OR ")));
+				}
+			}
+		}
+
+		let trimmed_search = search.trim();
+		// Add search filter
+		if !trimmed_search.is_empty() {
+			filters.push(format!(
+				"(g.display_title LIKE '%{}%' OR nt.normalized_title LIKE '%{}%')",
+				trimmed_search, trimmed_search
+			));
+		}
+
+		// Combine all filters into a single WHERE clause
+		let where_clause = if filters.is_empty() {
+			"1=1".to_string() // No filters, match all rows
+		} else {
+			filters.join(" AND ")
+		};
+
+		let query = &format!(
+			r#"
+			SELECT DISTINCT
+					g.provider_id as provider_id,
+					g.game_id as game_id
+			FROM main.games g
+			LEFT JOIN main.installed_games ig ON g.provider_id = ig.provider_id AND g.game_id = ig.game_id
+			LEFT JOIN main.normalized_titles nt ON g.provider_id = nt.provider_id AND g.game_id = nt.game_id
+			LEFT JOIN remote_games rg ON (
+					g.provider_id = rg.provider_id AND g.external_id = rg.external_id
+			) OR (
+					rg.provider_id = 'Manual' AND nt.normalized_title = rg.external_id
+			)
+			WHERE {where_clause}
+			ORDER BY {}
+			"#,
+			sort_columns
+				.iter()
+				.map(|col| format!("{col} {sort_order}"))
+				.collect::<Vec<_>>()
+				.join(", ")
+		);
+
+		let game_ids = database_connection
+			.prepare(query)?
+			.query_map([], |row| {
+				Ok(GameId {
+					provider_id: row.get(0)?,
+					game_id: row.get(1)?,
+				})
+			})?
+			.filter_map(|game_id| game_id.ok()) // TODO log errors.
+			.collect();
+
+		let total_count = database_connection
+			.prepare(
+				r#"
+			SELECT COUNT(*)
+			FROM main.games g
+		"#,
+			)?
+			.query_row([], |row| Ok(row.get::<_, i64>(0)?))?;
+
+		Ok(GameIdsResponse {
+			game_ids,
+			total_count,
+		})
 	}
 }
 
