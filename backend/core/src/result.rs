@@ -139,7 +139,9 @@ pub enum Error {
 	#[error("Can't run mod with ID `{0}` because it isn't a runnable mod.")]
 	CantRunNonRunnable(String),
 
-	#[error("Provider ID {0} is invalid in this platform.")]
+	#[error(
+		"Provider ID {0} is invalid for this action, or not supported in the current platform."
+	)]
 	InvalidProviderId(String),
 
 	#[error(

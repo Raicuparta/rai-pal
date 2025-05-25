@@ -444,8 +444,10 @@ async fn add_game(path: PathBuf, handle: AppHandle) -> Result {
 
 #[tauri::command]
 #[specta::specta]
-async fn remove_game(path: PathBuf, handle: AppHandle) -> Result {
-	manual_provider::remove_game(&path)?;
+async fn remove_game(game_id: GameId, handle: AppHandle) -> Result {
+	let game = handle.app_state().database.get_game(&game_id)?;
+
+	manual_provider::remove_game(&game)?;
 
 	refresh_games(handle, ProviderId::Manual).await
 }

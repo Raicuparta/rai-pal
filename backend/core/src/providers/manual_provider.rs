@@ -8,10 +8,10 @@ use rai_pal_proc_macros::serializable_struct;
 
 use super::provider::{ProviderActions, ProviderId, ProviderStatic};
 use crate::{
-	local_database::{DbMutex, GameDatabase},
 	game::DbGame,
+	local_database::{DbMutex, GameDatabase},
 	paths::{self, app_data_path, file_name_without_extension},
-	result::Result,
+	result::{Error, Result},
 };
 
 #[serializable_struct]
@@ -46,7 +46,7 @@ impl ProviderActions for Manual {
 						path.display(),
 						error
 					);
-					remove_game(&path)?;
+					remove_path(&path)?;
 				}
 			}
 		}
@@ -96,7 +96,23 @@ pub fn add_game(path: &Path) -> Result<DbGame> {
 	Ok(game)
 }
 
-pub fn remove_game(path: &Path) -> Result {
+pub fn remove_game(game: &DbGame) -> Result {
+	if game.provider_id != ProviderId::Manual {
+		return Err(Error::InvalidProviderId(game.provider_id.to_string()));
+	}
+
+	let path = &game
+		.exe_path
+		.as_ref()
+		.ok_or_else(|| Error::GameNotInstalled(game.display_title.clone()))?
+		.0;
+
+	remove_path(path)?;
+
+	Ok(())
+}
+
+fn remove_path(path: &Path) -> Result {
 	let config_path = games_config_path()?;
 	let mut games_config = read_games_config(&config_path);
 	games_config.paths.retain(|p| p != path);

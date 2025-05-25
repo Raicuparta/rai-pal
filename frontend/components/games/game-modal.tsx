@@ -116,7 +116,6 @@ export function GameModal({ game }: Props) {
 				!(mod.remote?.deprecated && !installedModVersions[mod.common.id]),
 		);
 	}, [game, installedModVersions, mods]);
-	// const filteredMods = mods;
 
 	return (
 		<Modal
@@ -162,7 +161,7 @@ export function GameModal({ game }: Props) {
 					)}
 					{game.providerId === "Manual" && game.exePath && (
 						<CommandButton
-							onClick={() => commands.removeGame(game.exePath)}
+							onClick={() => commands.removeGame(game)}
 							confirmationText={t("removeGameConfirmation")}
 							onSuccess={close}
 							leftSection={<IconTrash />}

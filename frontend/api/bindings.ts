@@ -74,8 +74,8 @@ async refreshMods() : Promise<null> {
 async refreshRemoteGames() : Promise<null> {
     return await TAURI_INVOKE("refresh_remote_games");
 },
-async removeGame(path: string) : Promise<null> {
-    return await TAURI_INVOKE("remove_game", { path });
+async removeGame(gameId: GameId) : Promise<null> {
+    return await TAURI_INVOKE("remove_game", { gameId });
 },
 async resetSteamCache() : Promise<null> {
     return await TAURI_INVOKE("reset_steam_cache");
