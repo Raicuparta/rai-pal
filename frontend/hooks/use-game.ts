@@ -3,7 +3,6 @@ import { useAppEvent } from "./use-app-event";
 import { useCommandData } from "./use-command-data";
 
 export function useGame({ providerId, gameId }: GameId) {
-	// const [getGame] = useAsyncCommand(commands.getGame);
 	const defaultGame: DbGame = {
 		providerId: providerId,
 		gameId: gameId,
@@ -29,7 +28,7 @@ export function useGame({ providerId, gameId }: GameId) {
 		defaultGame,
 	);
 
-	useAppEvent("foundGame", `${providerId}:${gameId}`, (foundId) => {
+	useAppEvent("refreshGame", `game-${providerId}:${gameId}`, (foundId) => {
 		if (foundId.providerId !== providerId || foundId.gameId !== gameId) return;
 		updateGame();
 	});

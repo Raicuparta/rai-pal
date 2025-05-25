@@ -146,19 +146,6 @@ async fn delete_mod(mod_id: &str, handle: AppHandle) -> Result {
 	Ok(())
 }
 
-fn refresh_game_mods(game_id: &GameId, handle: &AppHandle) -> Result {
-	// TODO: refresh game mods
-	// let state = handle.app_state();
-	// let mut games = state.games.try_get(&game_id.provider_id)?.write_state()?;
-	// let game = games.try_get_mut(&game_id.game_id)?;
-	// let installed_game = game.try_get_installed_game_mut()?;
-	// installed_game.refresh_installed_mods();
-
-	// handle.emit_safe(events::FoundGame(game_id.clone()));
-
-	Ok(())
-}
-
 #[tauri::command]
 #[specta::specta]
 async fn install_mod(game_id: GameId, mod_id: &str, handle: AppHandle) -> Result {
@@ -176,7 +163,7 @@ async fn install_mod(game_id: GameId, mod_id: &str, handle: AppHandle) -> Result
 
 	mod_loader.install_mod(&game, &local_mod).await?;
 
-	refresh_game_mods(&game_id, &handle)?;
+	handle.emit_safe(events::RefreshGame(game_id.clone()));
 
 	analytics::send_event(analytics::Event::InstallOrRunMod, mod_id).await;
 
@@ -235,15 +222,13 @@ async fn open_installed_mod_folder(game_id: GameId, mod_id: &str, handle: AppHan
 #[specta::specta]
 async fn refresh_game(game_id: GameId, handle: AppHandle) -> Result {
 	let state = handle.app_state();
-	let game = get_game(handle.clone(), game_id.clone()).await?;
+	let mut game = state.database.get_game(&game_id)?;
+	game.refresh_executable()?;
+	state.database.insert_game(&game);
 
-	// TODO refresh game.
-	// if let Some(installed_game) = game.installed_game.as_mut() {
-	// 	installed_game.refresh_installed_mods();
-	// 	installed_game.refresh_executable()?;
-	// }
+	log::info!("Refreshing game: {}", game_id.game_id);
 
-	// handle.emit_safe(events::FoundGame(game_id));
+	handle.emit_safe(events::RefreshGame(game_id.clone()));
 
 	Ok(())
 }
@@ -263,7 +248,7 @@ async fn uninstall_mod(game_id: GameId, mod_id: &str, handle: AppHandle) -> Resu
 	// Uninstall mod if it already exists, in case there are conflicting leftover files when updating.
 	mod_loader.uninstall_mod(&game, &local_mod).await?;
 
-	refresh_game_mods(&game_id, &handle)?;
+	handle.emit_safe(events::RefreshGame(game_id.clone()));
 
 	Ok(())
 }
@@ -276,7 +261,7 @@ async fn uninstall_all_mods(game_id: GameId, handle: AppHandle) -> Result {
 
 	game.uninstall_all_mods()?;
 
-	refresh_game_mods(&game_id, &handle)?;
+	handle.emit_safe(events::RefreshGame(game_id.clone()));
 
 	Ok(())
 }
@@ -448,7 +433,7 @@ async fn add_game(path: PathBuf, handle: AppHandle) -> Result {
 
 	state.database.insert_game(&game);
 
-	handle.emit_safe(events::FoundGame(GameId {
+	handle.emit_safe(events::RefreshGame(GameId {
 		provider_id: game.provider_id,
 		game_id: game.game_id.clone(),
 	}));
@@ -520,9 +505,7 @@ async fn get_game_ids(handle: AppHandle, query: Option<GamesQuery>) -> Result<Ga
 #[specta::specta]
 async fn get_game(handle: AppHandle, game_id: GameId) -> Result<DbGame> {
 	let state = handle.app_state();
-	Ok(state
-		.database
-		.get_game(&game_id.provider_id, &game_id.game_id)?)
+	Ok(state.database.get_game(&game_id)?)
 }
 
 #[tauri::command]

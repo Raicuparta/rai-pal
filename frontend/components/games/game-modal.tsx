@@ -94,7 +94,7 @@ export function GameModal({ game }: Props) {
 		{},
 	);
 
-	useAppEvent("foundGame", `${game.providerId}:${game.gameId}`, (foundId) => {
+	useAppEvent("refreshGame", `installed-mods-${game.providerId}:${game.gameId}`, (foundId) => {
 		if (
 			foundId.providerId !== game.providerId ||
 			foundId.gameId !== game.gameId
@@ -172,7 +172,7 @@ export function GameModal({ game }: Props) {
 					)}
 					{game.exePath && (
 						<CommandButton
-							onClick={() => commands.refreshGame(game)}
+							onClick={() => commands.refreshGame({ providerId: game.providerId, gameId: game.gameId })}
 							leftSection={<IconRefresh />}
 						>
 							{t("refreshGame")}

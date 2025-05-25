@@ -23,7 +23,7 @@ pub type DbMutex = Mutex<rusqlite::Connection>;
 
 pub trait GameDatabase {
 	fn insert_game(&self, game: &DbGame);
-	fn get_game(&self, provider_id: &ProviderId, game_id: &str) -> Result<DbGame>;
+	fn get_game(&self, game_id: &GameId) -> Result<DbGame>;
 	fn get_game_ids(&self, query: Option<GamesQuery>) -> Result<GameIdsResponse>;
 	fn remove_stale_games(&self, provider_id: &ProviderId, max_time: u64) -> Result;
 }
@@ -46,7 +46,7 @@ impl GameDatabase for DbMutex {
 		}
 	}
 
-	fn get_game(&self, provider_id: &ProviderId, game_id: &str) -> Result<DbGame> {
+	fn get_game(&self, game_id: &GameId) -> Result<DbGame> {
 		Ok(self
 			.lock()
 			.unwrap()
@@ -82,27 +82,30 @@ impl GameDatabase for DbMutex {
 		LIMIT 1
 	"#,
 			)?
-			.query_row([provider_id.to_string(), game_id.to_string()], |row| {
-				Ok(DbGame {
-					provider_id: row.get(0)?,
-					game_id: row.get(1)?,
-					external_id: row.get(2)?,
-					display_title: row.get(3)?,
-					title_discriminator: row.get(4)?,
-					thumbnail_url: row.get(5)?,
-					release_date: row.get(6)?,
-					tags: row.get(7)?,
-					provider_commands: row.get(8)?,
-					exe_path: row.get(9)?,
-					unity_backend: row.get(10)?,
-					architecture: row.get(11)?,
-					engine_brand: row.get(12)?,
-					engine_version_major: row.get(13)?,
-					engine_version_minor: row.get(14)?,
-					engine_version_patch: row.get(15)?,
-					engine_version_display: row.get(16)?,
-				})
-			})?)
+			.query_row(
+				[game_id.provider_id.to_string(), game_id.game_id.to_string()],
+				|row| {
+					Ok(DbGame {
+						provider_id: row.get(0)?,
+						game_id: row.get(1)?,
+						external_id: row.get(2)?,
+						display_title: row.get(3)?,
+						title_discriminator: row.get(4)?,
+						thumbnail_url: row.get(5)?,
+						release_date: row.get(6)?,
+						tags: row.get(7)?,
+						provider_commands: row.get(8)?,
+						exe_path: row.get(9)?,
+						unity_backend: row.get(10)?,
+						architecture: row.get(11)?,
+						engine_brand: row.get(12)?,
+						engine_version_major: row.get(13)?,
+						engine_version_minor: row.get(14)?,
+						engine_version_patch: row.get(15)?,
+						engine_version_display: row.get(16)?,
+					})
+				},
+			)?)
 	}
 
 	fn get_game_ids(&self, query: Option<GamesQuery>) -> Result<GameIdsResponse> {

@@ -103,8 +103,8 @@ async uninstallMod(gameId: GameId, modId: string) : Promise<null> {
 export const events = __makeEvents__<{
 errorRaised: ErrorRaised,
 executedProviderCommand: ExecutedProviderCommand,
-foundGame: FoundGame,
 gamesChanged: GamesChanged,
+refreshGame: RefreshGame,
 selectInstalledGame: SelectInstalledGame,
 syncLocalMods: SyncLocalMods,
 syncModLoaders: SyncModLoaders,
@@ -112,8 +112,8 @@ syncRemoteMods: SyncRemoteMods
 }>({
 errorRaised: "error-raised",
 executedProviderCommand: "executed-provider-command",
-foundGame: "found-game",
 gamesChanged: "games-changed",
+refreshGame: "refresh-game",
 selectInstalledGame: "select-installed-game",
 syncLocalMods: "sync-local-mods",
 syncModLoaders: "sync-mod-loaders",
@@ -137,7 +137,6 @@ export type EngineVersionRange = { minimum: EngineVersionNumbers | null; maximum
 export type Error = "Tauri" | "Core" | "Io" | "Rusql" | "SerdeJson" | { FailedToGetResourcesPath: string } | { FailedToAccessStateData: string }
 export type ErrorRaised = string
 export type ExecutedProviderCommand = null
-export type FoundGame = GameId
 export type GameId = { providerId: ProviderId; gameId: string }
 export type GameIdsResponse = { gameIds: GameId[]; totalCount: bigint }
 export type GameSubscription = "UbisoftClassics" | "UbisoftPremium" | "XboxGamePass" | "EaPlay"
@@ -158,6 +157,7 @@ export type PathData = string
 export type ProviderCommand = { String: string } | { Path: [string, string[]] }
 export type ProviderCommandAction = "Install" | "ShowInLibrary" | "ShowInStore" | "StartViaProvider" | "StartViaExe" | "OpenInBrowser"
 export type ProviderId = "Ea" | "Epic" | "Gog" | "Itch" | "Manual" | "Steam" | "Ubisoft" | "Xbox"
+export type RefreshGame = GameId
 export type RemoteMod = { common: CommonModData; data: RemoteModData }
 export type RemoteModData = { title: string; deprecated: boolean; author: string; sourceCode: string; description: string; latestVersion: ModDownload | null }
 export type RunnableModData = { path: string; args: string[] }

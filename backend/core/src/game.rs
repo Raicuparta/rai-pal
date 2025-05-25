@@ -202,4 +202,13 @@ impl DbGame {
 		}
 		self
 	}
+
+	pub fn refresh_executable(&mut self) -> Result<&mut Self> {
+		if let Some(PathData(exe_path)) = self.exe_path.clone() {
+			self.set_executable(&exe_path);
+		} else {
+			return Err(Error::GameNotInstalled(self.display_title.clone()));
+		}
+		Ok(self)
+	}
 }
