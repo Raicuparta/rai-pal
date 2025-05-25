@@ -421,7 +421,7 @@ async fn refresh_remote_games(handle: AppHandle) -> Result {
 async fn refresh_games(handle: AppHandle, provider_id: ProviderId) -> Result {
 	let state = handle.app_state();
 
-	let now = SystemTime::now()
+	let start_time = SystemTime::now()
 		.duration_since(UNIX_EPOCH)
 		.unwrap()
 		.as_secs();
@@ -429,14 +429,9 @@ async fn refresh_games(handle: AppHandle, provider_id: ProviderId) -> Result {
 	let provider = provider::get_provider(provider_id)?;
 
 	provider.insert_games(&state.database).await?;
-
-	// Remove stale games
 	state
 		.database
-		.lock()
-		.unwrap()
-		.prepare("DELETE FROM main.games WHERE provider_id = $1 AND created_at < $2;")?
-		.execute(rusqlite::params![provider_id, now])?;
+		.remove_stale_games(&provider_id, start_time)?;
 
 	Ok(())
 }
