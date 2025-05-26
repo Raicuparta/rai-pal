@@ -1,7 +1,7 @@
 use std::{collections::HashSet, fs, path::PathBuf};
 
 use crate::result::Result;
-use rai_pal_core::{game_subscription::GameSubscription, games_query::GamesQuery, paths};
+use rai_pal_core::{games_query::GamesQuery, paths};
 use rai_pal_proc_macros::{serializable_enum, serializable_struct};
 
 #[serializable_enum]
@@ -34,7 +34,6 @@ pub struct AppSettings {
 	pub games_query: Option<GamesQuery>,
 	pub selected_tab: TabId,
 	pub skip_confirm_dialogs: HashSet<String>,
-	pub owned_subscriptions: HashSet<GameSubscription>,
 }
 
 impl AppSettings {

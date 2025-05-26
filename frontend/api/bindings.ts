@@ -122,12 +122,12 @@ syncRemoteMods: "sync-remote-mods"
 
 /** user-defined constants **/
 
-export const PROVIDER_IDS = ["Ea","Epic","Gog","Itch","Manual","Steam","Ubisoft","Xbox"] as const;
+export const PROVIDER_IDS = ["Epic","Gog","Itch","Manual","Steam","Xbox"] as const;
 
 /** user-defined types **/
 
 export type AppLocale = "EnUs" | "EsEs" | "FrFr" | "DeDe" | "PtPt" | "ZhCn" | "JaJp" | "KoKr" | "WaWa"
-export type AppSettings = { hideGameThumbnails: boolean; overrideLanguage: AppLocale | null; gamesQuery: GamesQuery | null; selectedTab: TabId; skipConfirmDialogs: string[]; ownedSubscriptions: GameSubscription[] }
+export type AppSettings = { hideGameThumbnails: boolean; overrideLanguage: AppLocale | null; gamesQuery: GamesQuery | null; selectedTab: TabId; skipConfirmDialogs: string[] }
 export type Architecture = "X64" | "X86"
 export type CommonModData = { id: string; engine: EngineBrand | null; unityBackend: UnityBackend | null; engineVersionRange: EngineVersionRange | null; loaderId: string }
 export type DbGame = { providerId: ProviderId; gameId: string; externalId: string; displayTitle: string; titleDiscriminator: string | null; thumbnailUrl: string | null; releaseDate: bigint | null; exePath: PathData | null; engineBrand: EngineBrand | null; engineVersionMajor: number | null; engineVersionMinor: number | null; engineVersionPatch: number | null; engineVersionDisplay: string | null; unityBackend: UnityBackend | null; architecture: Architecture | null; tags: JsonData<GameTag[]>; providerCommands: JsonData<Partial<{ [key in ProviderCommandAction]: ProviderCommand }>> }
@@ -138,7 +138,6 @@ export type Error = "Tauri" | "Core" | "Io" | "Rusql" | "SerdeJson" | { FailedTo
 export type ErrorRaised = string
 export type ExecutedProviderCommand = null
 export type GameIdsResponse = { gameIds: ([ProviderId, string])[]; totalCount: bigint }
-export type GameSubscription = "UbisoftClassics" | "UbisoftPremium" | "XboxGamePass" | "EaPlay"
 export type GameTag = "VR" | "Demo"
 export type GamesChanged = []
 export type GamesFilter = { providers: (ProviderId | null)[]; tags: (GameTag | null)[]; architectures: (Architecture | null)[]; unityBackends: (UnityBackend | null)[]; engines: (EngineBrand | null)[]; installed: (InstallState | null)[] }
@@ -155,7 +154,7 @@ export type ModLoaderData = { id: string; path: string; kind: ModKind }
 export type PathData = string
 export type ProviderCommand = { String: string } | { Path: [string, string[]] }
 export type ProviderCommandAction = "Install" | "ShowInLibrary" | "ShowInStore" | "StartViaProvider" | "StartViaExe" | "OpenInBrowser"
-export type ProviderId = "Ea" | "Epic" | "Gog" | "Itch" | "Manual" | "Steam" | "Ubisoft" | "Xbox"
+export type ProviderId = "Epic" | "Gog" | "Itch" | "Manual" | "Steam" | "Xbox"
 export type RefreshGame = [ProviderId, string]
 export type RemoteMod = { common: CommonModData; data: RemoteModData }
 export type RemoteModData = { title: string; deprecated: boolean; author: string; sourceCode: string; description: string; latestVersion: ModDownload | null }

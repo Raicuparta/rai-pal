@@ -102,9 +102,6 @@ export const filterDetails = Object.freeze<{
 	providers: {
 		localizationKey: "provider",
 		valueDetails: {
-			Ea: {
-				staticDisplayText: "EA",
-			},
 			Epic: {
 				staticDisplayText: "Epic",
 			},
@@ -120,13 +117,9 @@ export const filterDetails = Object.freeze<{
 			Steam: {
 				staticDisplayText: "Steam",
 			},
-			Ubisoft: {
-				staticDisplayText: "Ubisoft",
-				noteLocalizationKey: "providerUbisoftOnlySubscription",
-			},
 			Xbox: {
 				staticDisplayText: "Xbox",
-				noteLocalizationKey: "providerXboxOnlyInstalledAndSubscription",
+				noteLocalizationKey: "providerXboxOnlyInstalled",
 			},
 		},
 	},

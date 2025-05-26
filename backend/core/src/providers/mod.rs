@@ -7,5 +7,4 @@ pub mod manual_provider;
 pub mod provider;
 pub mod provider_command;
 pub mod steam;
-pub mod ubisoft_provider;
 pub mod xbox_provider;

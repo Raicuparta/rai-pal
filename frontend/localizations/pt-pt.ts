@@ -51,10 +51,6 @@ export const ptPt: Localization = {
 	},
 
 	filterValueNote: {
-		providerXboxOnlyInstalledAndSubscription:
-			"Os jogos Xbox para PC só aparecem no Rai Pal depois de serem instalados ou se forem parte duma subscrição.",
-		providerUbisoftOnlySubscription:
-			"Os jogos da Ubisoft só aparecem no Rai Pal se forem parte duma subscrição.",
 		engineGodotNotFullySupported:
 			"Os jogos Godot ainda não são totalmente suportados.",
 		engineGameMakerNotFullySupported:

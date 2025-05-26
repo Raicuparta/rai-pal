@@ -52,10 +52,6 @@ export const koKr: Localization = {
 	},
 
 	filterValueNote: {
-		providerXboxOnlyInstalledAndSubscription:
-			"PC Xbox 게임은 설치된 경우 또는 PC Game Pass 구독의 일부로 소유한 경우에만 표시됩니다.",
-		providerUbisoftOnlySubscription:
-			"Ubisoft+ 구독의 일부로 소유한 경우에만 Ubisoft 게임이 표시됩니다.",
 		engineGodotNotFullySupported: "Godot 게임은 아직 완전히 지원되지 않습니다.",
 		engineGameMakerNotFullySupported:
 			"GameMaker 게임은 아직 완전히 지원되지 않습니다.",

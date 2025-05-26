@@ -51,10 +51,6 @@ export const zhCn: Localization = {
 	},
 
 	filterValueNote: {
-		providerXboxOnlyInstalledAndSubscription:
-			"仅显示已安装的 PC Xbox 游戏，或您作为 PC Game Pass 订阅的一部分拥有的游戏。",
-		providerUbisoftOnlySubscription:
-			"仅显示您作为 Ubisoft+ 订阅的一部分拥有的 Ubisoft 游戏。",
 		engineGodotNotFullySupported: "Godot 游戏尚未完全支持。",
 		engineGameMakerNotFullySupported: "GameMaker 游戏尚未完全支持。",
 	},

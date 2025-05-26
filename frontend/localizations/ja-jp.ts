@@ -52,10 +52,6 @@ export const jaJp: Localization = {
 	},
 
 	filterValueNote: {
-		providerXboxOnlyInstalledAndSubscription:
-			"インストールされているPC Xboxゲーム、またはPC Game Passサブスクリプションの一部として所有しているゲームのみを表示します。",
-		providerUbisoftOnlySubscription:
-			"Ubisoft+サブスクリプションの一部として所有しているUbisoftゲームのみを表示します。",
 		engineGodotNotFullySupported:
 			"Godotゲームはまだ完全にはサポートされていません。",
 		engineGameMakerNotFullySupported:

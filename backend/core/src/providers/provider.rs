@@ -12,23 +12,18 @@ use crate::providers::{epic_provider::Epic, gog_provider::Gog, xbox_provider::Xb
 use crate::{
 	local_database::DbMutex,
 	paths,
-	providers::{
-		itch_provider::Itch, manual_provider::Manual, steam::steam_provider::Steam,
-		ubisoft_provider::Ubisoft,
-	},
+	providers::{itch_provider::Itch, manual_provider::Manual, steam::steam_provider::Steam},
 	result::{Error, Result},
 };
 
 // These IDs need to match the ones in rai-pal-db.
 #[serializable_enum]
 pub enum ProviderId {
-	Ea,
 	Epic,
 	Gog,
 	Itch,
 	Manual,
 	Steam,
-	Ubisoft,
 	Xbox,
 }
 
@@ -38,7 +33,6 @@ pub enum Provider {
 	Steam,
 	Manual,
 	Itch,
-	Ubisoft,
 	#[cfg(target_os = "windows")]
 	Epic,
 	#[cfg(target_os = "windows")]
@@ -56,7 +50,6 @@ const PROVIDERS: &Map = &[
 	create_map_entry::<Steam>(),
 	create_map_entry::<Manual>(),
 	create_map_entry::<Itch>(),
-	create_map_entry::<Ubisoft>(),
 	#[cfg(target_os = "linux")]
 	create_map_entry::<HeroicEpic>(),
 	#[cfg(target_os = "linux")]

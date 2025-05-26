@@ -433,7 +433,6 @@ pub fn create() -> Result<DbMutex> {
 			engine_version_minor INTEGER,
 			engine_version_patch INTEGER,
 			engine_version_display TEXT,
-			subscriptions TEXT,
 			PRIMARY KEY (provider_id, external_id)
 		);
 	"#,
@@ -460,9 +459,9 @@ pub fn attach_remote_database<TConnection: Deref<Target = rusqlite::Connection>>
 		r#"
 		INSERT OR IGNORE INTO main.remote_games (
 				provider_id, external_id, engine_brand, engine_version_major,
-				engine_version_minor, engine_version_patch, engine_version_display, subscriptions
+				engine_version_minor, engine_version_patch, engine_version_display
 		)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+		VALUES (?, ?, ?, ?, ?, ?, ?);
 		"#,
 	)?;
 
@@ -473,7 +472,6 @@ pub fn attach_remote_database<TConnection: Deref<Target = rusqlite::Connection>>
 			let external_id: String = row.get("external_id")?;
 			let engine_brand: Option<EngineBrand> = row.get("engine_brand")?;
 			let engine_version_display: Option<String> = row.get("engine_version")?;
-			let subscriptions: Option<String> = row.get("subscriptions")?;
 			let engine_version_string: Option<String> = row.get("engine_version")?;
 
 			let engine_version = if let Some(engine_version) = engine_version_string {
@@ -491,7 +489,6 @@ pub fn attach_remote_database<TConnection: Deref<Target = rusqlite::Connection>>
 				engine_version.as_ref().map(|v| v.numbers.minor),
 				engine_version.as_ref().map(|v| v.numbers.patch),
 				engine_version_display,
-				subscriptions,
 			])?;
 
 			Ok(())

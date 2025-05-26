@@ -116,10 +116,7 @@ export const enUs = {
 
 	// Some filter values show extra notes when the user hovers that value.
 	filterValueNote: {
-		providerXboxOnlyInstalledAndSubscription:
-			"Only shows PC Xbox games if they're installed, or if you own them as part of the PC Game Pass subscription.",
-		providerUbisoftOnlySubscription:
-			"Only shows Ubisoft games if you own them as part of the Ubisoft+ subscription.",
+		providerXboxOnlyInstalled: "Only shows PC Xbox games if they're installed.",
 		engineGodotNotFullySupported: "Godot games are not fully supported yet.",
 		engineGameMakerNotFullySupported:
 			"GameMaker games are not fully supported yet.",
@@ -296,9 +293,6 @@ export const enUs = {
 
 		// Tooltip for the button that clears Rai Pal's local game database cache.
 		clearRaiPalCacheTooltip: "Clears the game list cache used by Rai Pal.",
-
-		// Title of the section that lists possible game subscriptions that the user can mark as owned.
-		ownedSubscriptions: "Owned subscriptions",
 	},
 
 	// Button and modal for resetting Steam's cache.

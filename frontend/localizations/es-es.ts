@@ -52,10 +52,6 @@ export const esEs: Localization = {
 	},
 
 	filterValueNote: {
-		providerXboxOnlyInstalledAndSubscription:
-			"Solo muestra juegos de Xbox para PC si están instalados, o si los posees como parte de la suscripción de PC Game Pass.",
-		providerUbisoftOnlySubscription:
-			"Solo muestra juegos de Ubisoft si los posees como parte de la suscripción de Ubisoft+.",
 		engineGodotNotFullySupported:
 			"Los juegos de Godot no están totalmente soportados aún.",
 		engineGameMakerNotFullySupported:

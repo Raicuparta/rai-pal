@@ -8,7 +8,6 @@ const defaultSettings: AppSettings = {
 	gamesQuery: null,
 	selectedTab: "Games",
 	skipConfirmDialogs: [],
-	ownedSubscriptions: [],
 };
 
 const appSettingsAtom = atom({

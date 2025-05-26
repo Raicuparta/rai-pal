@@ -1,4 +1,4 @@
-import { AppLocale, commands, GameSubscription } from "@api/bindings";
+import { AppLocale, commands } from "@api/bindings";
 import { useAppSettings } from "@hooks/use-app-settings";
 import {
 	NativeSelect,
@@ -8,7 +8,6 @@ import {
 	Stack,
 	Tooltip,
 	Divider,
-	InputLabel,
 	Button,
 } from "@mantine/core";
 import { useAtomValue } from "jotai";
@@ -25,9 +24,6 @@ import {
 } from "@localizations/localizations";
 import { SwitchButton } from "@components/switch-button";
 import { SteamCacheButton } from "./steam-cache-button";
-import { CheckboxButton } from "@components/checkbox-button";
-import { useUpdateData } from "@hooks/use-update-data";
-import { useState } from "react";
 
 const locales: AppLocale[] = [
 	"EnUs",
@@ -41,20 +37,10 @@ const locales: AppLocale[] = [
 	"WaWa",
 ];
 
-const subscriptions: GameSubscription[] = [
-	"XboxGamePass",
-	"EaPlay",
-	"UbisoftPremium",
-	"UbisoftClassics",
-];
-
 export function AppSettings() {
 	const t = useLocalization("appDropdownMenu");
 	const [settings, setSettings, resetSettings] = useAppSettings();
 	const detectedLocale = useAtomValue(detectedLocaleAtom);
-	const updateAppData = useUpdateData();
-	const [gamesNeedRefreshing, setGamesNeedRefreshing] =
-		useState<boolean>(false);
 
 	const localeSelectValues = locales.map((locale) => ({
 		value: locale as string,
@@ -67,12 +53,6 @@ export function AppSettings() {
 			withinPortal={false}
 			keepMounted={true}
 			withOverlay={true}
-			onClose={() => {
-				if (gamesNeedRefreshing) {
-					setGamesNeedRefreshing(false);
-					updateAppData(false);
-				}
-			}}
 		>
 			<Menu.Target>
 				<Button
@@ -162,29 +142,6 @@ export function AppSettings() {
 						</option>
 					))}
 				</NativeSelect>
-				<Divider my="xs" />
-				<InputLabel>{t("ownedSubscriptions")}</InputLabel>
-				<Button.Group orientation="vertical">
-					{subscriptions.map((subscription) => (
-						<CheckboxButton
-							checked={settings.ownedSubscriptions.includes(subscription)}
-							key={subscription}
-							onChange={(checked) => {
-								const newSubscriptions = checked
-									? [...settings.ownedSubscriptions, subscription]
-									: settings.ownedSubscriptions.filter(
-											(s) => s !== subscription,
-										);
-								setSettings({
-									...settings,
-									ownedSubscriptions: newSubscriptions,
-								}).finally(() => setGamesNeedRefreshing(true));
-							}}
-						>
-							{subscription}
-						</CheckboxButton>
-					))}
-				</Button.Group>
 			</Menu.Dropdown>
 		</Menu>
 	);

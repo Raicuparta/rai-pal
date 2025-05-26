@@ -48,8 +48,6 @@ const providerColors: Record<ProviderId, DefaultMantineColor> = {
 	Gog: "violet",
 	Xbox: "green",
 	Itch: "pink",
-	Ubisoft: "grape",
-	Ea: "cyan",
 } as const;
 
 const status: GamesColumn = {

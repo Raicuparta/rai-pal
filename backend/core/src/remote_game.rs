@@ -1,4 +1,4 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use std::fs;
 use std::path::PathBuf;
 
@@ -6,7 +6,6 @@ use lazy_regex::regex;
 use rai_pal_proc_macros::serializable_struct;
 
 use crate::game_engines::game_engine::{EngineVersion, EngineVersionNumbers, GameEngine};
-use crate::game_subscription::GameSubscription;
 use crate::paths;
 use crate::providers::provider::ProviderId;
 use crate::result::Result;
@@ -30,7 +29,6 @@ struct GameDatabaseEntry {
 	pub title: Option<String>,
 	pub engines: Option<Vec<GameDatabaseEngineVersion>>,
 	pub ids: Option<HashMap<ProviderId, Vec<String>>>,
-	pub subscriptions: Option<HashSet<GameSubscription>>,
 }
 
 #[serializable_struct]
@@ -38,21 +36,6 @@ pub struct RemoteGame {
 	pub title: Option<String>,
 	pub engine: Option<GameEngine>,
 	pub ids: HashMap<ProviderId, Vec<String>>,
-	pub subscriptions: Option<HashSet<GameSubscription>>,
-}
-
-impl RemoteGame {
-	//
-	pub fn get_url(&self, provider_id: &ProviderId) -> Option<String> {
-		self.ids
-			.get(provider_id)
-			.and_then(|ids| ids.first())
-			.and_then(|id| match provider_id {
-				ProviderId::Xbox => Some(format!("https://www.xbox.com/games/store/a/{id}")),
-				ProviderId::Ubisoft => Some(format!("https://store.ubisoft.com/a/{id}.html")),
-				_ => None,
-			})
-	}
 }
 
 // Version strings in PCGamingWiki can be all weird, so parsing is pretty lax here.
