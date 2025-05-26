@@ -90,8 +90,8 @@ export function GameModal({ game }: Props) {
 	const setSelectedGame = useSetAtom(selectedGameAtom);
 	const [installedModVersions, updateInstalledModVersions] = useCommandData(
 		() => commands.getInstalledModVersions(game.providerId, game.gameId),
-		() => (game.exePath ? { args: game } : { skip: true }),
 		{},
+		game.exePath === null,
 	);
 
 	useAppEvent("refreshGame", `installed-mods-${game.providerId}:${game.gameId}`, ([refreshedProviderId, refreshedGameId]) => {

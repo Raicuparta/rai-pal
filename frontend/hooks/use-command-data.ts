@@ -1,24 +1,18 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useAsyncCommand } from "./use-async-command";
 
-export function useCommandData<TResultValue, TArgs = void>(
-	command: (args: TArgs) => Promise<TResultValue>,
-	getArgs: () => { args: TArgs; skip?: false } | { args?: unknown; skip: true },
+export function useCommandData<TResultValue>(
+	command: () => Promise<TResultValue>,
 	defaultValue: TResultValue,
+	skip = false,
 ) {
 	const [getValue] = useAsyncCommand(command);
 	const [value, setValue] = useState<TResultValue>(defaultValue);
 
-	const getArgsRef = useRef(getArgs);
-	useEffect(() => {
-		getArgsRef.current = getArgs;
-	}, [getArgs]);
-
 	const updateData = useCallback(() => {
-		const { args, skip } = getArgsRef.current();
 		if (skip) return;
-		getValue(args).then(setValue);
-	}, [getValue]);
+		getValue().then(setValue);
+	}, [getValue, skip]);
 
 	useEffect(updateData, [updateData]);
 
