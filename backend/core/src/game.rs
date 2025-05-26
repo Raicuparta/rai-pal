@@ -165,6 +165,11 @@ impl DbGame {
 			return self;
 		}
 
+		self.add_provider_command(
+			ProviderCommandAction::StartViaExe,
+			ProviderCommand::Path(exe_path.to_path_buf(), Vec::default()),
+		);
+
 		// We ignore games that don't have an extension.
 		if let Some(extension) = exe_path.extension().and_then(|ext| ext.to_str()) {
 			if !VALID_EXTENSIONS.contains(&extension.to_lowercase().as_str()) {
@@ -192,6 +197,7 @@ impl DbGame {
 				}
 			}
 		}
+
 		self
 	}
 

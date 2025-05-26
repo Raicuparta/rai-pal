@@ -9,21 +9,21 @@ type Props = {
 };
 
 export function ProviderCommandButtons(props: Props) {
-	let providerCommands = Object.entries(props.game.providerCommands) as [
+	const {
+		StartViaProvider: startViaProvider,
+		StartViaExe: startViaExe,
+		Install: install,
+		...otherProviderCommands
+	} = props.game.providerCommands;
+
+	const providerCommandEntries = Object.entries(otherProviderCommands) as [
 		ProviderCommandAction,
 		ProviderCommand,
 	][];
-	if (props.game.exePath) {
-		providerCommands = providerCommands.filter(
-			([action]) => (action as ProviderCommandAction) != "Install",
-		);
-	}
 
-	if (providerCommands.length == 0) return null;
-
-	const startViaProvider = props.game.providerCommands["StartViaProvider"];
-	const startViaExe = props.game.providerCommands["StartViaExe"];
 	const primaryStartCommand = startViaProvider ?? startViaExe;
+	const secondaryStartCommand =
+		primaryStartCommand === startViaExe ? null : startViaExe;
 
 	return (
 		<>
@@ -37,30 +37,39 @@ export function ProviderCommandButtons(props: Props) {
 						/>
 					)}
 
-					{startViaExe && (
+					{secondaryStartCommand && (
 						<CommandDropdown>
 							<ProviderCommandButton
 								game={props.game}
 								action="StartViaExe"
-								command={startViaExe}
+								command={secondaryStartCommand}
 							/>
 						</CommandDropdown>
 					)}
 				</Button.Group>
 			)}
-			<CommandDropdown
-				label={props.game.providerId}
-				icon={<ProviderIcon providerId={props.game.providerId} />}
-			>
-				{providerCommands.map(([action, command]) => (
-					<ProviderCommandButton
-						key={action}
-						game={props.game}
-						action={action}
-						command={command}
-					/>
-				))}
-			</CommandDropdown>
+			{providerCommandEntries.length > 0 && (
+				<CommandDropdown
+					label={props.game.providerId}
+					icon={<ProviderIcon providerId={props.game.providerId} />}
+				>
+					{providerCommandEntries.map(([action, command]) => (
+						<ProviderCommandButton
+							key={action}
+							game={props.game}
+							action={action}
+							command={command}
+						/>
+					))}
+					{props.game.exePath && install && (
+						<ProviderCommandButton
+							game={props.game}
+							action="Install"
+							command={install}
+						/>
+					)}
+				</CommandDropdown>
+			)}
 		</>
 	);
 }
