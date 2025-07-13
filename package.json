@@ -13,7 +13,8 @@
 		"frontend:build": "tsc && vite build",
 		"frontend:dev": "vite",
 		"lint": "prettier ./frontend --write && eslint . --fix",
-		"lint-only": "eslint eslint.config.mjs --fix"
+		"lint-only": "eslint eslint.config.mjs --fix",
+		"find-unused": "cd backend && del index.scip &&  cargo workspace-unused-pub"
 	},
 	"prettier": {
 		"useTabs": true,
