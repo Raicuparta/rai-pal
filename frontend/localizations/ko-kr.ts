@@ -150,7 +150,7 @@ export const koKr: Localization = {
 	},
 
 	steamCache: {
-		resetSteamCacheButtonOpenModal: "Steam 캐시 재설정...",
+		resetSteamCacheButton: "Steam 캐시 재설정",
 		resetSteamCacheModalTitle: "Steam 캐시 재설정",
 		resetSteamCacheDescription:
 			"Rai Pal이 실제로 소유하지 않은 Steam 게임을 표시하는 경우 이 옵션을 사용하세요. Steam의 캐시를 재설정한 후 Steam을 다시 시작해야 합니다. 파일이 이미 삭제된 경우 오류가 발생합니다.",

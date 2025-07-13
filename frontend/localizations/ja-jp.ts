@@ -154,7 +154,7 @@ export const jaJp: Localization = {
 	},
 
 	steamCache: {
-		resetSteamCacheButtonOpenModal: "Steamのキャッシュをリセット...",
+		resetSteamCacheButton: "Steamのキャッシュをリセット",
 		resetSteamCacheModalTitle: "Steamのキャッシュをリセット",
 		resetSteamCacheDescription:
 			"Rai Palが実際に所有していないSteamのゲームを表示している場合に使用します。これによりSteamのキャッシュがリセットされ、Steamを再起動する必要があります。ファイルが既に削除されている場合はエラーが発生します。",

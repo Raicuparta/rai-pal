@@ -155,7 +155,7 @@ export const frFr: Localization = {
 	},
 
 	steamCache: {
-		resetSteamCacheButtonOpenModal: "Réinitialiser le cache Steam...",
+		resetSteamCacheButton: "Réinitialiser le cache Steam",
 		resetSteamCacheModalTitle: "Réinitialiser le cache Steam",
 		resetSteamCacheDescription:
 			"Utilisez ceci si Rai Pal affiche des jeux que vous ne possédez pas réellement sur Steam. Cela réinitialisera le cache de Steam, puis vous devrez redémarrer Steam. Vous obtiendrez une erreur si le fichier a déjà été supprimé.",

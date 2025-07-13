@@ -318,8 +318,8 @@ export const enUs = {
 
 	// Button and modal for resetting Steam's cache.
 	steamCache: {
-		// Button for resetting Steam's cache. The ellipsis indicates that a modal will open.
-		resetSteamCacheButtonOpenModal: "Reset Steam cache...",
+		// Button for resetting Steam's cache.
+		resetSteamCacheButton: "Reset Steam cache",
 
 		// Title of the modal that opens after clicking the reset Steam cache button.
 		resetSteamCacheModalTitle: "Reset Steam cache",

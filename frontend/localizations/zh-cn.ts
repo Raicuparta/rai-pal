@@ -145,7 +145,7 @@ export const zhCn: Localization = {
 	},
 
 	steamCache: {
-		resetSteamCacheButtonOpenModal: "重置 Steam 缓存...",
+		resetSteamCacheButton: "重置 Steam 缓存",
 		resetSteamCacheModalTitle: "重置 Steam 缓存",
 		resetSteamCacheDescription:
 			"如果 Rai Pal 显示您实际上不拥有的 Steam 游戏，请使用此选项。这将重置 Steam 的缓存，然后您需要重新启动 Steam。如果文件已被删除，您将收到错误消息。",

@@ -155,7 +155,7 @@ export const esEs: Localization = {
 	},
 
 	steamCache: {
-		resetSteamCacheButtonOpenModal: "Restablecer caché de Steam...",
+		resetSteamCacheButton: "Restablecer caché de Steam",
 		resetSteamCacheModalTitle: "Restablecer caché de Steam",
 		resetSteamCacheDescription:
 			"Usa esto si Rai Pal está mostrando juegos que no posees realmente en Steam. Esto restablecerá la caché de Steam, y luego tendrás que reiniciar Steam. Recibirás un error si el archivo ya ha sido eliminado.",
