@@ -2,13 +2,14 @@ use std::{
 	ops::Deref,
 	path::{Path, PathBuf},
 	sync::Mutex,
-	time::{SystemTime, UNIX_EPOCH},
+	time::{Instant, SystemTime, UNIX_EPOCH},
 };
 
 use rai_pal_proc_macros::serializable_struct;
 use rusqlite::OpenFlags;
 
 use crate::{
+	debug::LoggableInstant,
 	game::DbGame,
 	game_engines::game_engine::EngineBrand,
 	game_title::get_normalized_titles,
@@ -376,6 +377,9 @@ fn try_insert_game(connection_mutex: &DbMutex, game: &DbGame) -> Result {
 }
 
 pub fn create() -> Result<DbMutex> {
+	let mut instant = Instant::now();
+	instant.log_next("Creating local database...");
+
 	let connection = rusqlite::Connection::open_with_flags(
 		db_file_path()?,
 		OpenFlags::SQLITE_OPEN_CREATE
@@ -441,7 +445,11 @@ pub fn create() -> Result<DbMutex> {
 		);
 	"#,
 	)?;
-	attach_remote_database(&connection, &remote_game::get_database_file_path()?)?;
+
+	// TODO: Too slow to do on startup.
+	// attach_remote_database(&connection, &remote_game::get_database_file_path()?)?;
+
+	instant.log_next("Created local database!");
 
 	Ok(DbMutex::new(connection))
 }
@@ -450,7 +458,8 @@ pub fn attach_remote_database<TConnection: Deref<Target = rusqlite::Connection>>
 	local_database_connection: TConnection,
 	path: &Path,
 ) -> Result {
-	println!("Attaching remote database...");
+	let mut instant = Instant::now();
+	instant.log_next("Attaching remote database...");
 
 	if !path.is_file() {
 		return Ok(());
@@ -503,7 +512,7 @@ pub fn attach_remote_database<TConnection: Deref<Target = rusqlite::Connection>>
 			}
 		});
 
-	println!("Remote database attached!");
+	instant.log_next("Remote database attached!");
 
 	Ok(())
 }

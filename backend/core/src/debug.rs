@@ -9,7 +9,7 @@ pub trait LoggableInstant {
 impl LoggableInstant for Instant {
 	fn log_next(&mut self, message: &str) {
 		let millis = self.elapsed().as_millis();
-		info!("{millis:10}ms # {message}");
+		println!("{millis:10}ms # {message}");
 		*self = Self::now();
 	}
 }
