@@ -1,32 +1,12 @@
 use std::collections::HashSet;
 
 use lazy_regex::{regex, regex_replace_all};
-use rai_pal_proc_macros::serializable_struct;
-
-#[serializable_struct]
-pub struct GameTitle {
-	pub display: String,
-	pub normalized: Vec<String>,
-}
 
 static DEMO_REGEX: &lazy_regex::Lazy<regex::Regex> = regex!(r"(?i)[\((\s+)]demo\)?$");
 static BRACKETS_REGEX: &lazy_regex::Lazy<regex::Regex> = regex!(r"\[.*?\]|\(.*?\)|\{.*?\}|<.*?>");
 static SEPARATORS_REGEX: &lazy_regex::Lazy<regex::Regex> = regex!(r"\s-\s.+");
 static EDITION_REGEX: &lazy_regex::Lazy<regex::Regex> =
 	regex!(r"\b(?:standard|pc|deluxe|collectors|ultimate|definitive)\s+edition.*$");
-
-impl GameTitle {
-	pub fn new(display: &str) -> Self {
-		Self {
-			display: display.to_string(),
-			normalized: get_normalized_titles(display),
-		}
-	}
-
-	pub fn is_probably_demo(&self) -> bool {
-		DEMO_REGEX.is_match(&self.display.to_lowercase())
-	}
-}
 
 // Titles given by the game providers can have all sorts of trash.
 // But we want to be able to use the titles to match some local and remote games.
@@ -55,4 +35,8 @@ pub fn get_normalized_titles(title: &str) -> Vec<String> {
 
 fn normalize_title(title: &str) -> String {
 	regex_replace_all!(r"\W+", title, "").to_lowercase()
+}
+
+pub fn is_probably_demo(title: &str) -> bool {
+	DEMO_REGEX.is_match(title)
 }

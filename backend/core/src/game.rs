@@ -13,6 +13,7 @@ use crate::{
 		unreal,
 	},
 	game_tag::GameTag,
+	game_title::is_probably_demo,
 	mod_manifest, paths,
 	providers::{
 		provider::ProviderId,
@@ -45,7 +46,7 @@ pub struct DbGame {
 
 impl DbGame {
 	pub fn new(provider_id: ProviderId, game_id: String, title: String) -> Self {
-		Self {
+		let mut game = Self {
 			provider_id,
 			external_id: game_id.clone(),
 			game_id,
@@ -63,7 +64,13 @@ impl DbGame {
 			architecture: None,
 			tags: JsonData(Vec::default()),
 			provider_commands: JsonData(HashMap::default()),
+		};
+
+		if is_probably_demo(&game.display_title) {
+			game.add_tag(GameTag::Demo);
 		}
+
+		game
 	}
 
 	pub fn open_game_folder(&self) -> Result {
@@ -154,6 +161,10 @@ impl DbGame {
 	}
 
 	pub fn add_tag(&mut self, tag: GameTag) -> &mut Self {
+		if self.tags.0.contains(&tag) {
+			return self;
+		}
+
 		self.tags.0.push(tag);
 		self
 	}
