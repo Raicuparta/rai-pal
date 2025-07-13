@@ -173,7 +173,7 @@ export function GameModal({ providerId, gameId }: Props) {
 							</CommandButton>
 						</CommandDropdown>
 					)}
-					{providerId === "Manual" && game.exePath && (
+					{providerId === "Manual" && (
 						<CommandButton
 							onClick={() => commands.removeGame(providerId, gameId)}
 							confirmationText={t("removeGameConfirmation")}
