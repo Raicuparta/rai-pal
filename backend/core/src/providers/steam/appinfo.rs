@@ -9,9 +9,8 @@ use std::{
 
 use byteorder::{LittleEndian, ReadBytesExt};
 use rai_pal_proc_macros::serializable_struct;
-use steamlocate::SteamDir;
 
-use crate::result::Result;
+use crate::result::{Error, Result};
 
 use super::vdf::{
 	KeyValues, ValueType, find_keys, read_kv, read_string, value_to_i32, value_to_kv,
@@ -57,6 +56,10 @@ const OLD_APPINFO_MAX_VERSION: u32 = 0x07_56_44_28;
 
 impl SteamAppInfoReader {
 	pub fn new(appinfo_path: &Path) -> Result<Self> {
+		if !appinfo_path.exists() {
+			return Err(Error::SteamAppInfoNotFound(appinfo_path.to_owned()));
+		}
+
 		let mut reader = BufReader::new(fs::File::open(appinfo_path)?);
 
 		let version = reader.read_u32::<LittleEndian>()?;
@@ -221,13 +224,4 @@ impl App {
 	pub fn get(&self, keys: &[&str]) -> Option<&ValueType> {
 		find_keys(&self.key_values, keys)
 	}
-}
-
-pub fn get_path(steam_path: &Path) -> PathBuf {
-	steam_path.join("appcache/appinfo.vdf")
-}
-
-pub fn delete() -> Result {
-	let steam_dir = SteamDir::locate()?;
-	Ok(fs::remove_file(get_path(steam_dir.path()))?)
 }

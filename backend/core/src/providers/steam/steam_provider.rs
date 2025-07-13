@@ -113,11 +113,11 @@ impl Steam {
 		Ok(package_info.get_app_ids())
 	}
 
-	pub fn get_appinfo_path(steam_path: &Path) -> PathBuf {
+	fn get_appinfo_path(steam_path: &Path) -> PathBuf {
 		steam_path.join("appcache/appinfo.vdf")
 	}
 
-	pub fn get_packageinfo_path(steam_path: &Path) -> PathBuf {
+	fn get_packageinfo_path(steam_path: &Path) -> PathBuf {
 		steam_path.join("appcache/packageinfo.vdf")
 	}
 
@@ -142,8 +142,18 @@ impl Steam {
 impl ProviderActions for Steam {
 	async fn insert_games(&self, db: &DbMutex) -> Result {
 		let steam_dir = SteamDir::locate()?;
-		let steam_path = steam_dir.path();
-		let app_info_reader = SteamAppInfoReader::new(&Self::get_appinfo_path(steam_path))?;
+		let appinfo_path = Self::get_appinfo_path(steam_dir.path());
+
+		if !appinfo_path.exists() {
+			log::warn!(
+				"Steam appinfo.vdf not found at `{}`. Skipping Steam game insertion.",
+				appinfo_path.display()
+			);
+
+			return Ok(());
+		}
+
+		let app_info_reader = SteamAppInfoReader::new(&appinfo_path)?;
 		let mut app_paths = HashMap::<u32, PathBuf>::new();
 		for library in (steam_dir.libraries()?).flatten() {
 			for app in library.apps().flatten() {
@@ -151,10 +161,11 @@ impl ProviderActions for Steam {
 			}
 		}
 
-		let owned_ids_whitelist = Self::get_owned_ids_whitelist(steam_path).unwrap_or_else(|err| {
-			log::error!("Failed to read Steam assets cache: {}", err);
-			HashSet::new()
-		});
+		let owned_ids_whitelist =
+			Self::get_owned_ids_whitelist(steam_dir.path()).unwrap_or_else(|err| {
+				log::error!("Failed to read Steam assets cache: {}", err);
+				HashSet::new()
+			});
 
 		log::info!("whitelist size: {}", owned_ids_whitelist.len());
 

@@ -106,7 +106,7 @@ pub enum Error {
 	#[error(
 		"Failed to find Steam cache file. **Try restarting Steam**. (Tried to read from `{0}`)"
 	)]
-	AppInfoNotFound(String),
+	SteamAppInfoNotFound(PathBuf),
 
 	#[error("Failed to retrieve Unity version from asset `{0}`")]
 	FailedToParseUnityVersionAsset(PathBuf),
