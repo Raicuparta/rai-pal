@@ -1,5 +1,10 @@
 import { Alert, Divider, Group, Modal, Stack, Table } from "@mantine/core";
-import { EngineVersionRange, DbGame, commands } from "@api/bindings";
+import {
+	EngineVersionRange,
+	DbGame,
+	commands,
+	ProviderId,
+} from "@api/bindings";
 import { useMemo } from "react";
 import { CommandButton } from "@components/command-button";
 import {
@@ -24,9 +29,11 @@ import { gamesColumns } from "./games-columns";
 import { useLocalization } from "@hooks/use-localization";
 import { useCommandData } from "@hooks/use-command-data";
 import { useAppEvent } from "@hooks/use-app-event";
+import { useGame } from "@hooks/use-game";
 
 type Props = {
-	readonly game: DbGame;
+	readonly providerId: ProviderId;
+	readonly gameId: string;
 };
 
 function isVersionWithinRange(
@@ -83,25 +90,28 @@ function isVersionWithinRange(
 	return true;
 }
 
-export function GameModal({ game }: Props) {
+export function GameModal({ providerId, gameId }: Props) {
 	const t = useLocalization("gameModal");
 	const modLoaderMap = useAtomValue(modLoadersAtom);
+
+	const game = useGame(providerId, gameId);
 	const mods = useUnifiedMods();
 	const setSelectedGame = useSetAtom(selectedGameAtom);
 	const [installedModVersions, updateInstalledModVersions] = useCommandData(
-		() => commands.getInstalledModVersions(game.providerId, game.gameId),
+		() => commands.getInstalledModVersions(providerId, gameId),
 		{},
 		game.exePath === null,
 	);
 
-	useAppEvent("refreshGame", `installed-mods-${game.providerId}:${game.gameId}`, ([refreshedProviderId, refreshedGameId]) => {
-		if (
-			refreshedProviderId !== game.providerId ||
-			refreshedGameId !== game.gameId
-		)
-			return;
-		updateInstalledModVersions();
-	});
+	useAppEvent(
+		"refreshGame",
+		`installed-mods-${providerId}:${gameId}`,
+		([refreshedProviderId, refreshedGameId]) => {
+			if (refreshedProviderId !== providerId || refreshedGameId !== gameId)
+				return;
+			updateInstalledModVersions();
+		},
+	);
 
 	const close = () => setSelectedGame(null);
 
@@ -116,6 +126,10 @@ export function GameModal({ game }: Props) {
 				!(mod.remote?.deprecated && !installedModVersions[mod.common.id]),
 		);
 	}, [game, installedModVersions, mods]);
+
+	if (game.displayTitle === "...") {
+		return null;
+	}
 
 	return (
 		<Modal
@@ -147,21 +161,21 @@ export function GameModal({ game }: Props) {
 						>
 							<CommandButton
 								leftSection={<IconFolder />}
-								onClick={() => commands.openGameFolder(game.providerId, game.gameId)}
+								onClick={() => commands.openGameFolder(providerId, gameId)}
 							>
 								{t("openGameFilesFolder")}
 							</CommandButton>
 							<CommandButton
 								leftSection={<IconFolderCog />}
-								onClick={() => commands.openGameModsFolder(game.providerId, game.gameId)}
+								onClick={() => commands.openGameModsFolder(providerId, gameId)}
 							>
 								{t("openInstalledModsFolder")}
 							</CommandButton>
 						</CommandDropdown>
 					)}
-					{game.providerId === "Manual" && game.exePath && (
+					{providerId === "Manual" && game.exePath && (
 						<CommandButton
-							onClick={() => commands.removeGame(game.providerId, game.gameId)}
+							onClick={() => commands.removeGame(providerId, gameId)}
 							confirmationText={t("removeGameConfirmation")}
 							onSuccess={close}
 							leftSection={<IconTrash />}
@@ -171,7 +185,7 @@ export function GameModal({ game }: Props) {
 					)}
 					{game.exePath && (
 						<CommandButton
-							onClick={() => commands.refreshGame(game.providerId, game.gameId)}
+							onClick={() => commands.refreshGame(providerId, gameId)}
 							leftSection={<IconRefresh />}
 						>
 							{t("refreshGame")}
@@ -218,7 +232,7 @@ export function GameModal({ game }: Props) {
 						{game.exePath && (
 							<CommandButton
 								confirmationText={t("uninstallAllModsConfirmation")}
-								onClick={() => commands.uninstallAllMods(game.providerId, game.gameId)}
+								onClick={() => commands.uninstallAllMods(providerId, gameId)}
 								color="red"
 								variant="light"
 								leftSection={<IconTrash />}
