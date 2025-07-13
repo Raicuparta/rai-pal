@@ -7,8 +7,8 @@ use std::{
 };
 
 use crate::{
-	database::{DbMutex, InsertGame},
 	game::DbGame,
+	local_database::{DbMutex, GameDatabase},
 	paths,
 	providers::provider::{ProviderActions, ProviderId, ProviderStatic},
 	result::Result,
