@@ -257,7 +257,13 @@ impl GameDatabase for DbMutex {
 		let game_ids = database_connection
 			.prepare(query)?
 			.query_map([], |row| Ok((row.get(0)?, row.get(1)?)))?
-			.filter_map(|game_id| game_id.ok()) // TODO log errors.
+			.filter_map(|game_id| match game_id {
+				Ok(id) => Some(id),
+				Err(err) => {
+					log::warn!("Failed to read game from local database: {}", err);
+					None
+				}
+			})
 			.collect();
 
 		let total_count = database_connection
