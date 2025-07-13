@@ -179,8 +179,8 @@ impl SteamAppInfoReader {
 					.is_some_and(|app_type| app_type == "Demo");
 
 			if app_type_option
-				.clone()
-				.is_some_and(|app_type| app_type != "Game")
+				.as_ref()
+				.is_some_and(|app_type| app_type != "Game" && app_type != "Demo")
 			{
 				// We don't care about things like dedicated server, sdk, videos, dlcs, etc.
 				continue;

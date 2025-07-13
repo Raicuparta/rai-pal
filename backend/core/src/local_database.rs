@@ -154,7 +154,6 @@ impl GameDatabase for DbMutex {
 				}
 			}
 
-			// TODO: tag filtering expectation is weird, probably want to make sure disabled tags never show up.
 			if !filter.tags.is_empty() {
 				let tag_conditions: Vec<String> = filter
 					.tags
