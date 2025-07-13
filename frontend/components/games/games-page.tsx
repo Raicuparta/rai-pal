@@ -11,7 +11,7 @@ import { GameModal } from "./game-modal";
 export function GamesPage() {
 	const [selectedGame, setSelectedGame] = useAtom(selectedGameAtom);
 
-	useAppEvent("selectInstalledGame", "games-page", ([providerId, gameId]) => {
+	useAppEvent("selectGame", "games-page", ([providerId, gameId]) => {
 		setSelectedGame({ providerId, gameId });
 	});
 

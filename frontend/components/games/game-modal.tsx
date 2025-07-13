@@ -30,6 +30,7 @@ import { useLocalization } from "@hooks/use-localization";
 import { useCommandData } from "@hooks/use-command-data";
 import { useAppEvent } from "@hooks/use-app-event";
 import { useGame } from "@hooks/use-game";
+import { RemoveGameButton } from "./remove-game-button";
 
 type Props = {
 	readonly providerId: ProviderId;
@@ -93,7 +94,6 @@ function isVersionWithinRange(
 export function GameModal({ providerId, gameId }: Props) {
 	const t = useLocalization("gameModal");
 	const modLoaderMap = useAtomValue(modLoadersAtom);
-
 	const game = useGame(providerId, gameId);
 	const mods = useUnifiedMods();
 	const setSelectedGame = useSetAtom(selectedGameAtom);
@@ -174,14 +174,10 @@ export function GameModal({ providerId, gameId }: Props) {
 						</CommandDropdown>
 					)}
 					{providerId === "Manual" && (
-						<CommandButton
-							onClick={() => commands.removeGame(providerId, gameId)}
-							confirmationText={t("removeGameConfirmation")}
-							onSuccess={close}
-							leftSection={<IconTrash />}
-						>
-							{t("removeFromRaiPal")}
-						</CommandButton>
+						<RemoveGameButton
+							providerId={providerId}
+							gameId={gameId}
+						/>
 					)}
 					{game.exePath && (
 						<CommandButton
