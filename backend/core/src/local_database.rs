@@ -50,7 +50,7 @@ impl GameDatabase for DbMutex {
 		Ok(self
 			.lock()
 			.unwrap()
-			.prepare(
+			.prepare_cached(
 				r#"
 		SELECT
 			g.provider_id,
@@ -261,7 +261,7 @@ impl GameDatabase for DbMutex {
 			.collect();
 
 		let total_count = database_connection
-			.prepare(
+			.prepare_cached(
 				r#"
 			SELECT COUNT(*)
 			FROM main.games g
@@ -278,7 +278,7 @@ impl GameDatabase for DbMutex {
 	fn remove_stale_games(&self, provider_id: &ProviderId, max_time: u64) -> Result {
 		self.lock()
 			.unwrap()
-			.prepare("DELETE FROM main.games WHERE provider_id = $1 AND created_at < $2;")?
+			.prepare_cached("DELETE FROM main.games WHERE provider_id = $1 AND created_at < $2;")?
 			.execute(rusqlite::params![provider_id, max_time])?;
 
 		Ok(())
@@ -289,9 +289,8 @@ fn try_insert_game(connection_mutex: &DbMutex, game: &DbGame) -> Result {
 	let mut connection = connection_mutex.lock().unwrap();
 	let transaction = connection.transaction()?;
 
-	// TODO prepare this only once since it's always the same.
 	transaction
-		.prepare(
+		.prepare_cached(
 			"INSERT OR REPLACE INTO games (
 				provider_id,
 				game_id,
@@ -323,7 +322,7 @@ fn try_insert_game(connection_mutex: &DbMutex, game: &DbGame) -> Result {
 
 	if let Some(exe_path) = game.exe_path.as_ref() {
 		transaction
-			.prepare(
+			.prepare_cached(
 				"INSERT OR REPLACE INTO installed_games (
 					provider_id,
 					game_id,
@@ -354,7 +353,7 @@ fn try_insert_game(connection_mutex: &DbMutex, game: &DbGame) -> Result {
 
 	for normalized_title in get_normalized_titles(&game.display_title) {
 		transaction
-			.prepare(
+			.prepare_cached(
 				"INSERT OR REPLACE INTO normalized_titles (provider_id, game_id, normalized_title)
 						VALUES ($1, $2, $3)",
 			)?
@@ -454,7 +453,7 @@ pub fn attach_remote_database<TConnection: Deref<Target = rusqlite::Connection>>
 	let remote_database_connection =
 		rusqlite::Connection::open_with_flags(path, OpenFlags::SQLITE_OPEN_READ_ONLY)?;
 
-	let mut insert_into_local = local_database_connection.prepare(
+	let mut insert_into_local = local_database_connection.prepare_cached(
 		r#"
 		INSERT OR IGNORE INTO main.remote_games (
 				provider_id, external_id, engine_brand, engine_version_major,
