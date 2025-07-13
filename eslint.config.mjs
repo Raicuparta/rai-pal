@@ -6,6 +6,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import js from "@eslint/js";
 import { FlatCompat } from "@eslint/eslintrc";
+import reactCompiler from 'eslint-plugin-react-compiler'
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -29,6 +30,7 @@ export default [{
 )), {
     plugins: {
         "react-refresh": reactRefresh,
+        "react-compiler": reactCompiler,
     },
 
     languageOptions: {
@@ -51,5 +53,6 @@ export default [{
         "react/prop-types": "off",
         "react/prefer-read-only-props": "warn",
         "react/jsx-curly-brace-presence": "warn",
+        "react-compiler/react-compiler": "error",
     },
 }];

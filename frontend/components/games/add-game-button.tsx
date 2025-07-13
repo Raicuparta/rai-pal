@@ -1,19 +1,21 @@
 import { Button, Group, Modal, Stack, Text } from "@mantine/core";
 import { IconAppWindowFilled, IconPlaylistAdd } from "@tabler/icons-react";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { commands } from "@api/bindings";
 import { open as openDialog } from "@tauri-apps/plugin-dialog";
 import { useAtomValue } from "jotai";
 import { loadingTasksAtom } from "@hooks/use-data";
 import { useAsyncCommand } from "@hooks/use-async-command";
+import { useLocalization } from "@hooks/use-localization";
 
 export function AddGame() {
+	const t = useLocalization("addGame");
 	const [isOpen, setIsOpen] = useState(false);
 	const isLoading = useAtomValue(loadingTasksAtom);
 
 	const [executeAddGame] = useAsyncCommand(commands.addGame);
 
-	const handleClick = useCallback(async () => {
+	const handleClick = async () => {
 		const path = await openDialog({
 			multiple: false,
 			title: "Select the game executable",
@@ -31,7 +33,7 @@ export function AddGame() {
 		if (!path) return;
 
 		await executeAddGame(path).then(() => setIsOpen(false));
-	}, [executeAddGame]);
+	};
 
 	useEffect(() => {
 		if (isLoading) setIsOpen(false);
@@ -43,14 +45,14 @@ export function AddGame() {
 				onClick={() => setIsOpen(true)}
 				leftSection={<IconPlaylistAdd />}
 			>
-				Add game
+				{t("button")}
 			</Button>
 			<Modal
 				opened={isOpen}
 				centered
 				size="lg"
 				onClose={() => setIsOpen(false)}
-				title="Add game"
+				title={t("title")}
 			>
 				<Stack>
 					<Button
@@ -60,17 +62,10 @@ export function AddGame() {
 					>
 						<Group>
 							<IconAppWindowFilled fontSize={50} />
-							<Stack gap={0}>
-								<Text>Drag and drop a game&apos;s executable file here</Text>
-								<Text>or click to select a file</Text>
-							</Stack>
+							<Text>{t("dropField")}</Text>
 						</Group>
 					</Button>
-					<Text>
-						Note: you can drop game executable files anywhere on Rai Pal&apos;s
-						window to add them to the installed game list without opening this
-						dialog.
-					</Text>
+					<Text>{t("note")}</Text>
 				</Stack>
 			</Modal>
 		</>

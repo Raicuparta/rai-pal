@@ -17,6 +17,20 @@ pub enum Error {
 	),
 
 	#[error(transparent)]
+	Io(
+		#[serde(skip)]
+		#[from]
+		std::io::Error,
+	),
+
+	#[error(transparent)]
+	Rusql(
+		#[from]
+		#[serde(skip)]
+		rusqlite::Error,
+	),
+
+	#[error(transparent)]
 	SerdeJson(
 		#[serde(skip)]
 		#[from]

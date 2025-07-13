@@ -1,5 +1,12 @@
-import { Game, ProviderCommandAction, commands } from "@api/bindings";
+import {
+	DbGame,
+	ProviderCommand,
+	ProviderCommandAction,
+	commands,
+} from "@api/bindings";
 import { CommandButton } from "@components/command-button";
+import { useLocalization } from "@hooks/use-localization";
+import { LocalizationKey } from "@localizations/localizations";
 import {
 	Icon,
 	IconDeviceGamepad,
@@ -11,36 +18,43 @@ import {
 } from "@tabler/icons-react";
 
 type Props = {
-	readonly game: Game;
+	readonly game: DbGame;
 	readonly action: ProviderCommandAction;
+	readonly command: ProviderCommand;
 };
 
-const providerCommandActionName: Record<ProviderCommandAction, string> = {
-	Install: "Install",
-	ShowInLibrary: "Show In Library",
-	ShowInStore: "Open Store Page",
-	Start: "Start Game",
-	OpenInBrowser: "Open In Browser",
+const providerCommandLocalizationKey: Record<
+	ProviderCommandAction,
+	LocalizationKey<"providerCommand">
+> = {
+	Install: "installGame",
+	ShowInLibrary: "showGameInLibrary",
+	ShowInStore: "showGameInStore",
+	StartViaProvider: "startGameViaProvider",
+	StartViaExe: "startGameViaExe",
+	OpenInBrowser: "openGamePageInBrowser",
 };
 
 const providerCommandActionIcon: Record<ProviderCommandAction, Icon> = {
 	Install: IconDownload,
 	ShowInLibrary: IconBooks,
 	ShowInStore: IconBrowser,
-	Start: IconPlayerPlay,
+	StartViaProvider: IconPlayerPlay,
+	StartViaExe: IconPlayerPlay,
 	OpenInBrowser: IconExternalLink,
 };
 
 export function ProviderCommandButton(props: Props) {
+	const t = useLocalization("providerCommand");
 	const IconComponent =
 		providerCommandActionIcon[props.action] ?? IconDeviceGamepad;
 
 	return (
 		<CommandButton
 			leftSection={<IconComponent />}
-			onClick={() => commands.runProviderCommand(props.game, props.action)}
+			onClick={() => commands.runProviderCommand(props.command)}
 		>
-			{providerCommandActionName[props.action]}
+			{t(providerCommandLocalizationKey[props.action])}
 		</CommandButton>
 	);
 }

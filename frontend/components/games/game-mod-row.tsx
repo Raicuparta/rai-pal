@@ -8,7 +8,7 @@ import {
 	Group,
 	Stack,
 } from "@mantine/core";
-import { Game, ModLoaderData, commands } from "@api/bindings";
+import { DbGame, ModLoaderData, commands } from "@api/bindings";
 import { CommandButton } from "@components/command-button";
 import {
 	IconCheck,
@@ -24,23 +24,23 @@ import {
 import { UnifiedMod } from "@hooks/use-unified-mods";
 import { getIsOutdated } from "@util/is-outdated";
 import { OutdatedMarker } from "@components/outdated-marker";
-import { useCallback } from "react";
 import { ItemName } from "@components/item-name";
 import { MutedText } from "@components/muted-text";
 import { ModVersionBadge } from "@components/mods/mod-version-badge";
 import { getModTitle } from "@util/game-mod";
 import { CommandDropdown } from "@components/command-dropdown";
 import { DeprecatedBadge } from "@components/mods/deprecated-badge";
+import { useLocalization } from "@hooks/use-localization";
 
 type Props = {
-	readonly game: Game;
+	readonly game: DbGame;
 	readonly mod: UnifiedMod;
 	readonly modLoader: ModLoaderData;
+	readonly installedVersion?: string;
 };
 
-export function GameModRow({ game, mod, modLoader }: Props) {
-	const installedVersion =
-		game.installedGame?.installedModVersions[mod.common.id];
+export function GameModRow({ game, mod, modLoader, installedVersion }: Props) {
+	const t = useLocalization("gameModRow");
 
 	const isInstalledModOutdated = getIsOutdated(
 		installedVersion,
@@ -55,58 +55,38 @@ export function GameModRow({ game, mod, modLoader }: Props) {
 	const isInstalled = Boolean(installedVersion);
 	const isReadyRunnable = mod.local && modLoader.kind == "Runnable";
 
-	const handleInstallClick = useCallback(async () => {
+	const handleInstallClick = async () => {
 		if (modLoader.kind === "Runnable" && !mod.local && !mod.remote) {
 			return commands.openModFolder(mod.common.id);
 		}
 
 		if (isLocalModOutdated) {
-			const downloadResult = await commands.downloadMod(mod.common.id);
-			if (downloadResult.status === "error") {
-				return downloadResult;
-			}
+			// TODO figure out if this error would be handled.
+			await commands.downloadMod(mod.common.id);
 		} else if (isInstalled && !isInstalledModOutdated) {
-			return commands.uninstallMod(game.id, mod.common.id);
+			return commands.uninstallMod(game.providerId, game.gameId, mod.common.id);
 		}
 
-		return commands.installMod(game.id, mod.common.id);
-	}, [
-		modLoader.kind,
-		mod.local,
-		mod.remote,
-		mod.common.id,
-		game,
-		isLocalModOutdated,
-		isInstalled,
-		isInstalledModOutdated,
-	]);
-
-	const handleConfigureClick = useCallback(() => {
-		commands.configureMod(game.id, mod.common.id);
-	}, [game, mod.common.id]);
-
-	const handleOpenModFolderClick = useCallback(() => {
-		commands.openInstalledModFolder(game.id, mod.common.id);
-	}, [game, mod.common.id]);
-
+		return commands.installMod(game.providerId, game.gameId, mod.common.id);
+	};
 	const { actionText, actionIcon } = (() => {
 		if (isLocalModOutdated || isInstalledModOutdated) {
-			return { actionText: "Update", actionIcon: <IconRefreshAlert /> };
+			return { actionText: t("updateMod"), actionIcon: <IconRefreshAlert /> };
 		}
 
 		if (isInstalled) {
-			return { actionText: "Uninstall", actionIcon: <IconTrash /> };
+			return { actionText: t("uninstallMod"), actionIcon: <IconTrash /> };
 		}
 
 		if (modLoader.kind === "Installable") {
-			return { actionText: "Install", actionIcon: <IconCirclePlus /> };
+			return { actionText: t("installMod"), actionIcon: <IconCirclePlus /> };
 		}
 
 		if (!mod.remote && !mod.local) {
-			return { actionText: "Open mod folder", actionIcon: <IconFolderOpen /> };
+			return { actionText: t("openModFolder"), actionIcon: <IconFolderOpen /> };
 		}
 
-		return { actionText: "Run", actionIcon: <IconPlayerPlay /> };
+		return { actionText: t("runMod"), actionIcon: <IconPlayerPlay /> };
 	})();
 
 	const { statusIcon, statusColor } = (() => {
@@ -157,7 +137,7 @@ export function GameModRow({ game, mod, modLoader }: Props) {
 			</Table.Td>
 			<Table.Td maw={200}>
 				<Group justify="right">
-					{game.installedGame && (
+					{game.exePath && (
 						<ButtonGroup>
 							<CommandButton
 								color={buttonColor}
@@ -181,17 +161,29 @@ export function GameModRow({ game, mod, modLoader }: Props) {
 							<CommandDropdown icon={<IconDotsVertical />}>
 								<Button
 									disabled={!isInstalled && !isReadyRunnable}
-									onClick={handleConfigureClick}
+									onClick={() =>
+										commands.configureMod(
+											game.providerId,
+											game.gameId,
+											mod.common.id,
+										)
+									}
 									leftSection={<IconSettings />}
 								>
-									Mod Settings
+									{t("modSettings")}
 								</Button>
 								<Button
 									disabled={!isInstalled && !isReadyRunnable}
-									onClick={handleOpenModFolderClick}
+									onClick={() =>
+										commands.openInstalledModFolder(
+											game.providerId,
+											game.gameId,
+											mod.common.id,
+										)
+									}
 									leftSection={<IconFolderOpen />}
 								>
-									Open Mod Folder
+									{t("openModFolder")}
 								</Button>
 							</CommandDropdown>
 						</ButtonGroup>

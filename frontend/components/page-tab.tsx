@@ -1,28 +1,33 @@
+import { TabId } from "@api/bindings";
+import { useLocalization } from "@hooks/use-localization";
+import { LocalizationKey } from "@localizations/localizations";
 import { Tabs, Stack, Text } from "@mantine/core";
 
 export type Page = {
-	title: string;
-	component: () => React.JSX.Element;
-	icon: React.JSX.Element;
+	readonly localizationKey: LocalizationKey<"tab">;
+	readonly component: React.ComponentType;
+	readonly icon: React.ComponentType;
 };
 
 type Props = {
-	readonly id: string;
+	readonly id: TabId;
 	readonly page: Page;
 	readonly label?: string;
 };
 
 export function PageTab(props: Props) {
+	const t = useLocalization("tab");
+
 	return (
 		<Tabs.Tab
 			value={props.id}
-			leftSection={props.page.icon}
+			leftSection={<props.page.icon />}
 		>
 			<Stack
 				gap={0}
 				align="center"
 			>
-				<span>{props.page.title}</span>
+				<span>{t(props.page.localizationKey)}</span>
 				{props.label && (
 					<Text
 						size="9px"

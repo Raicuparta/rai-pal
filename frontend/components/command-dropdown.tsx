@@ -9,7 +9,7 @@ type Props = {
 
 export function CommandDropdown(props: Props) {
 	return (
-		<Popover withArrow>
+		<Popover>
 			<Popover.Target>
 				<Button
 					px="xs"
@@ -19,10 +19,7 @@ export function CommandDropdown(props: Props) {
 					{props.label ?? props.icon ?? <IconChevronDown />}
 				</Button>
 			</Popover.Target>
-			<Popover.Dropdown
-				p="xs"
-				bg="dark"
-			>
+			<Popover.Dropdown>
 				<Stack gap="xs">{props.children}</Stack>
 			</Popover.Dropdown>
 		</Popover>

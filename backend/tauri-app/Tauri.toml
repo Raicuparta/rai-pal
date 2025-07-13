@@ -1,0 +1,98 @@
+"$schema" = "../../node_modules/@tauri-apps/cli/config.schema.json"
+productName = "Rai Pal"
+identifier = "com.raicuparta.pal"
+
+[build]
+beforeDevCommand = "npm run frontend:dev"
+beforeBuildCommand = "npm run frontend:build"
+frontendDist = "../../dist"
+devUrl = "http://localhost:1420"
+
+[bundle]
+createUpdaterArtifacts = "v1Compatible"
+active = true
+targets = ["nsis"]
+resources = ["resources/**/*"]
+icon = [
+  "graphics/32x32.png",
+  "graphics/128x128.png",
+  "graphics/128x128@2x.png",
+  "graphics/icon.icns",
+  "graphics/icon.ico",
+]
+
+[bundle.windows.nsis]
+installerIcon = "graphics/icon.ico"
+sidebarImage = "graphics/installer-sidebar.bmp"
+
+# Before I moved to NSIS, I was using WIX for the Rai Pal installer.
+# MSIS was perMachine (maybe I could have changed that, dunno),
+# so it was installed to "Program Files" with admin privileges.
+# To make upgrades easier and avoid issues,
+# I'm keeping the NSIS installer perMachine too.
+# Main problem is that if someone has Rai Pal already installed in "Program Files",
+# and then tried to update without admin privileges,
+# the new path would still default to Program Files and the installer would fail.
+installMode = "perMachine"
+
+# Languages need to be explicitly listed here, otherwise the installer won't use them.
+# I included all languages that are fully translated by Tauri at the time I wrote this.
+# If they ever add more languages, we can then add them here too.
+languages = [
+  "Arabic",
+  "Bulgarian",
+  "Dutch",
+  "English",
+  "French",
+  "German",
+  "Italian",
+  "Japanese",
+  "Korean",
+  "Portuguese",
+  "PortugueseBR",
+  "Russian",
+  "SimpChinese",
+  "Spanish",
+  "SpanishInternational",
+  "Swedish",
+  "TradChinese",
+  "Turkish",
+  "Ukrainian",
+]
+
+[plugins.updater]
+pubkey = "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDNGMzI5QUM1RjMwMjM0OTMKUldTVE5BTHp4Wm95UDcvaWgyKzRENVkzZVc2K1JTOEhidUR4OFVENWVqemloUWRmZDllbzJGaSsK"
+endpoints = [
+  "https://github.com/Raicuparta/rai-pal/releases/latest/download/latest.json",
+]
+
+[[app.windows]]
+fullscreen = false
+resizable = true
+title = "Rai Pal"
+width = 800
+height = 600
+minHeight = 500
+minWidth = 800
+
+# Main window starts hidden to reduce the initial white flash.
+# It becomes visible after the frontend is ready.
+visible = false
+
+[app.security]
+# I think I had to add this one because of some css problem with Mantine, don't remember hehe.
+dangerousDisableAssetCspModification = ["style-src-elem"]
+
+[app.security.csp]
+img-src = [
+  "'self'",
+  "http://tauri.localhost",
+  "https://*.epicgames.com",
+  "https://*.itch.zone",
+  "https://*.steamstatic.com",
+  "https://*.gog.com",
+  "https://*.patreonusercontent.com",
+  "https://*.patreon.com",
+  "https://*.raicuparta.com",
+]
+style-src-elem = ["'self' 'unsafe-inline'"]

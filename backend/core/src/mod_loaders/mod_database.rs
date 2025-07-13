@@ -6,12 +6,11 @@ use rai_pal_proc_macros::serializable_struct;
 use reqwest::redirect::Policy;
 
 use crate::{
-	game_engines::{game_engine::EngineBrand, unity::UnityScriptingBackend},
+	game_engines::{game_engine::EngineBrand, unity::UnityBackend},
 	game_mod::EngineVersionRange,
 	result::Result,
 };
 
-// TODO: fall back to github if this one fails.
 const URL_BASE: &str = "https://raicuparta.github.io/rai-pal-db/mod-db";
 
 // The repository over at github.com/Raicuparta/rai-pal-db can have multiple versions of the database.
@@ -30,7 +29,7 @@ pub struct DatabaseEntry {
 	pub latest_version: Option<ModDownload>,
 	pub engine: Option<EngineBrand>,
 	pub engine_version_range: Option<EngineVersionRange>,
-	pub unity_backend: Option<UnityScriptingBackend>,
+	pub unity_backend: Option<UnityBackend>,
 	pub github: Option<ModGithubInfo>,
 	pub redownload_id: Option<i32>,
 	pub deprecated: Option<bool>,

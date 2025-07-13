@@ -1,4 +1,7 @@
 .table {
+	table {
+		table-layout: fixed;
+	}
 	tbody {
 		tr,
 		td {
@@ -25,6 +28,10 @@
 	font-family: monospace;
 	font-size: var(--mantine-font-size-xs);
 	text-transform: lowercase;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	overflow: hidden;
+	padding: 0 0.5em;
 }
 
 .engineDetails {
@@ -56,4 +63,42 @@
 	border-radius: 3px;
 	text-transform: uppercase;
 	white-space: nowrap;
+}
+
+.dateCell {
+	text-align: center;
+	font-size: 0.75em;
+	opacity: 0.75;
+}
+
+.thumbnailCell {
+	overflow: hidden;
+	padding: 0;
+	position: relative;
+
+	img {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		width: 100%;
+		height: 100%;
+	}
+}
+
+.thumbnailForeground {
+	z-index: 1;
+	object-fit: contain;
+}
+
+.thumbnailBackground {
+	filter: blur(5px);
+	z-index: 0;
+	object-fit: cover;
+}
+
+.thumbnailFallback {
+	z-index: 1;
+	object-fit: cover;
 }

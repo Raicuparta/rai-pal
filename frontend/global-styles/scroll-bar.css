@@ -9,6 +9,10 @@
 
   If this project has been updated to Tauri 2.0,
   please remove this and test it to see if the issue is fixed.
+
+	Edit: OK I tested it, the scrollbar is visible while hovering
+	a scrollable element. It actually looks kinda nice, but it draws
+	on top of content, so for now I'll keep my own epic scrollbar guy.
 */
 
 *::-webkit-scrollbar-corner {

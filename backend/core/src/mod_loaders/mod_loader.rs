@@ -13,7 +13,7 @@ use super::{bepinex::BepInEx, mod_database, runnable_loader::RunnableLoader};
 use crate::{
 	files,
 	game_mod::CommonModData,
-	installed_game::InstalledGame,
+	game::DbGame,
 	local_mod::{self, LocalMod, ModKind},
 	mod_loaders::mod_database::ModDatabase,
 	mod_manifest,
@@ -38,12 +38,12 @@ pub enum ModLoader {
 
 #[enum_dispatch(ModLoader)]
 pub trait ModLoaderActions {
-	fn install(&self, game: &InstalledGame) -> Result;
-	async fn install_mod_inner(&self, game: &InstalledGame, local_mod: &LocalMod) -> Result;
-	async fn uninstall_mod(&self, game: &InstalledGame, local_mod: &LocalMod) -> Result;
+	fn install(&self, game: &DbGame) -> Result;
+	async fn install_mod_inner(&self, game: &DbGame, local_mod: &LocalMod) -> Result;
+	async fn uninstall_mod(&self, game: &DbGame, local_mod: &LocalMod) -> Result;
 	async fn run_without_game(&self, local_mod: &LocalMod) -> Result;
-	fn configure_mod(&self, game: &InstalledGame, local_mod: &LocalMod) -> Result;
-	fn open_installed_mod_folder(&self, game: &InstalledGame, local_mod: &LocalMod) -> Result;
+	fn configure_mod(&self, game: &DbGame, local_mod: &LocalMod) -> Result;
+	fn open_installed_mod_folder(&self, game: &DbGame, local_mod: &LocalMod) -> Result;
 	fn get_data(&self) -> &ModLoaderData;
 	fn get_mod_path(&self, mod_data: &CommonModData) -> Result<PathBuf>;
 	fn get_local_mods(&self) -> Result<HashMap<String, LocalMod>>;
@@ -52,7 +52,7 @@ pub trait ModLoaderActions {
 		open_folder_or_parent(&self.get_data().path)
 	}
 
-	async fn install_mod(&self, game: &InstalledGame, local_mod: &LocalMod) -> Result {
+	async fn install_mod(&self, game: &DbGame, local_mod: &LocalMod) -> Result {
 		self.install_mod_inner(game, local_mod).await?;
 
 		if self.get_data().kind != ModKind::Runnable {

@@ -7,6 +7,6 @@ edition.workspace = true
 proc-macro = true
 
 [dependencies]
-quote = "1.0.37"
-syn = "2.0.77"
+quote = "1.0.40"
+syn = "2.0.100"
 serde.workspace = true

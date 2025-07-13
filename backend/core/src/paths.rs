@@ -1,11 +1,12 @@
 use std::{
 	collections::hash_map::DefaultHasher,
 	env,
+	ffi::OsStr,
 	hash::{Hash, Hasher},
 	path::{Path, PathBuf},
 };
 
-use directories::ProjectDirs;
+use directories::{BaseDirs, ProjectDirs};
 use globwalk::glob;
 use log;
 
@@ -61,25 +62,20 @@ pub fn installed_mods_path() -> Result<PathBuf> {
 pub fn file_name_without_extension(file_path: &Path) -> Result<&str> {
 	file_path
 		.file_stem()
-		.ok_or_else(|| Error::PathParseFailure(file_path.to_path_buf()))?
-		.to_str()
-		.ok_or_else(|| Error::PathParseFailure(file_path.to_path_buf()))
+		.ok_or_else(|| Error::InvalidOsStr(file_path.display().to_string()))?
+		.try_to_str()
 }
 
 pub fn normalize_path(path: &Path) -> PathBuf {
 	path.canonicalize().unwrap_or_else(|err| {
-		log::error!(
-			"Failed to normalize path `{}`: {}",
-			path.to_string_lossy(),
-			err
-		);
+		log::error!("Failed to normalize path `{}`: {}", path.display(), err);
 		path.to_path_buf()
 	})
 }
 
 pub fn hash_path(path: &Path) -> String {
 	let mut hasher = DefaultHasher::new();
-	path.hash(&mut hasher);
+	normalize_path(path).hash(&mut hasher);
 	hasher.finish().to_string()
 }
 
@@ -103,4 +99,37 @@ pub fn open_folder_or_parent(path: &Path) -> Result {
 	};
 
 	Ok(open::that_detached(folder_path)?)
+}
+
+pub fn base_dirs() -> Result<BaseDirs> {
+	Ok(directories::BaseDirs::new().ok_or_else(Error::AppDataNotFound)?)
+}
+
+pub trait AsValidStr {
+	fn try_to_str(&self) -> Result<&str>;
+}
+
+impl<T> AsValidStr for T
+where
+	T: AsRef<OsStr>,
+{
+	fn try_to_str(&self) -> Result<&str> {
+		self.as_ref()
+			.to_str()
+			.ok_or_else(|| Error::InvalidOsStr(self.as_ref().to_string_lossy().to_string()))
+	}
+}
+
+impl AsValidStr for OsStr {
+	fn try_to_str(&self) -> Result<&str> {
+		self.to_str()
+			.ok_or_else(|| Error::InvalidOsStr(self.to_string_lossy().to_string()))
+	}
+}
+
+impl AsValidStr for Path {
+	fn try_to_str(&self) -> Result<&str> {
+		self.to_str()
+			.ok_or_else(|| Error::InvalidOsStr(self.to_string_lossy().to_string()))
+	}
 }

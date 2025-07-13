@@ -9,13 +9,12 @@ use std::{
 
 use byteorder::{LittleEndian, ReadBytesExt};
 use rai_pal_proc_macros::serializable_struct;
-use steamlocate::SteamDir;
 
-use crate::result::Result;
+use crate::result::{Error, Result};
 
 use super::vdf::{
-	find_keys, read_kv, read_string, value_to_i32, value_to_kv, value_to_path, value_to_string,
-	KeyValues, ValueType,
+	KeyValues, ValueType, find_keys, read_kv, read_string, value_to_i32, value_to_kv,
+	value_to_path, value_to_string,
 };
 
 #[serializable_struct]
@@ -29,12 +28,6 @@ pub struct SteamLaunchOption {
 	pub os_list: Option<String>,
 	pub beta_key: Option<String>,
 	pub os_arch: Option<String>,
-}
-
-impl SteamLaunchOption {
-	pub fn is_vr(&self) -> bool {
-		matches!(self.launch_type.as_deref(), Some("vr"))
-	}
 }
 
 #[derive(Debug)]
@@ -51,6 +44,7 @@ pub struct SteamAppInfo {
 	pub original_release_date: Option<i32>,
 	pub is_free: bool,
 	pub app_type: Option<String>,
+	pub tags: Option<Vec<i32>>,
 }
 
 pub struct SteamAppInfoReader {
@@ -62,6 +56,10 @@ const OLD_APPINFO_MAX_VERSION: u32 = 0x07_56_44_28;
 
 impl SteamAppInfoReader {
 	pub fn new(appinfo_path: &Path) -> Result<Self> {
+		if !appinfo_path.exists() {
+			return Err(Error::SteamAppInfoNotFound(appinfo_path.to_owned()));
+		}
+
 		let mut reader = BufReader::new(fs::File::open(appinfo_path)?);
 
 		let version = reader.read_u32::<LittleEndian>()?;
@@ -167,6 +165,13 @@ impl SteamAppInfoReader {
 			let steam_release_date =
 				value_to_i32(app.get(&["appinfo", "common", "steam_release_date"]));
 
+			let tags = value_to_kv(app.get(&["appinfo", "common", "store_tags"])).map(|tag_map| {
+				tag_map
+					.values()
+					.filter_map(|value| value_to_i32(Some(value)))
+					.collect::<Vec<_>>()
+			});
+
 			let original_release_date =
 				value_to_i32(app.get(&["appinfo", "common", "original_release_date"]));
 
@@ -177,10 +182,10 @@ impl SteamAppInfoReader {
 					.is_some_and(|app_type| app_type == "Demo");
 
 			if app_type_option
-				.clone()
-				.is_some_and(|app_type| app_type == "Tool")
+				.as_ref()
+				.is_some_and(|app_type| app_type != "Game" && app_type != "Demo")
 			{
-				// We don't care about tools like dedicated server, sdk, etc.
+				// We don't care about things like dedicated server, sdk, videos, dlcs, etc.
 				continue;
 			}
 
@@ -197,6 +202,7 @@ impl SteamAppInfoReader {
 						original_release_date,
 						is_free,
 						app_type: app_type_option,
+						tags,
 					}));
 				}
 			}
@@ -218,13 +224,4 @@ impl App {
 	pub fn get(&self, keys: &[&str]) -> Option<&ValueType> {
 		find_keys(&self.key_values, keys)
 	}
-}
-
-pub fn get_path(steam_path: &Path) -> PathBuf {
-	steam_path.join("appcache/appinfo.vdf")
-}
-
-pub fn delete() -> Result {
-	let steam_dir = SteamDir::locate()?;
-	Ok(fs::remove_file(get_path(steam_dir.path()))?)
 }

@@ -3,19 +3,21 @@
 use std::{
 	fmt::Debug,
 	fs::read_to_string,
-	io::{self},
-	path::Path,
+	path::{Path, PathBuf},
 };
 
 use crate::{
-	game::Game,
-	installed_game::InstalledGame,
+	game::DbGame,
+	local_database::{DbMutex, GameDatabase},
+	paths,
 	providers::provider::{ProviderActions, ProviderId, ProviderStatic},
-	result::Result as GameResult,
+	result::Result,
 };
 
 use directories::BaseDirs;
 use serde::{Deserialize, Serialize};
+
+use super::provider_command::{ProviderCommand, ProviderCommandAction};
 
 #[derive(Debug, Serialize, Deserialize)]
 struct InstalledEpicGame {
@@ -50,9 +52,8 @@ struct Root {
 	library: Option<Vec<ParsedGame>>,
 }
 
-fn get_detected_games() -> Result<Option<Vec<ParsedGame>>, io::Error> {
-	let dirs = BaseDirs::new()
-		.ok_or_else(|| io::Error::new(io::ErrorKind::Other, "Failed to get user directories"))?;
+fn get_detected_games() -> Result<Option<Vec<ParsedGame>>> {
+	let dirs = paths::base_dirs()?;
 	let config_dir = dirs.config_dir();
 	let file_content =
 		read_to_string(Path::new(&config_dir).join("heroic/store_cache/legendary_library.json"))?;
@@ -80,29 +81,25 @@ struct EpicGame {
 pub struct HeroicEpic {}
 
 impl HeroicEpic {
-	fn get_installed_game(entry: &ParsedGame) -> Option<InstalledGame> {
+	fn get_exe_path(entry: &ParsedGame) -> Option<PathBuf> {
 		let dirs = BaseDirs::new()?;
 		let home_dir = dirs.home_dir();
 		let game_path = Path::new(&home_dir)
 			.join("Games/Heroic")
 			.join(&entry.folder_name.clone()?);
 
-		if let Some(executable_name) = &entry.install.executable {
-			let mut game = InstalledGame::new(game_path.join(executable_name).as_path())?;
-
-			game.set_start_command_string(&get_start_command(&entry.app_name));
-
-			return Some(game);
-		}
-
-		None
+		entry
+			.install
+			.executable
+			.as_ref()
+			.map(|executable_name| game_path.join(executable_name))
 	}
 }
 
 impl ProviderStatic for HeroicEpic {
 	const ID: &'static ProviderId = &ProviderId::Epic;
 
-	fn new() -> GameResult<Self>
+	fn new() -> Result<Self>
 	where
 		Self: Sized,
 	{
@@ -111,22 +108,28 @@ impl ProviderStatic for HeroicEpic {
 }
 
 impl ProviderActions for HeroicEpic {
-	async fn get_games<TCallback>(&self, mut callback: TCallback) -> GameResult
-	where
-		TCallback: FnMut(Game) + Send + Sync,
-	{
+	async fn insert_games(&self, db: &DbMutex) -> Result {
 		if let Some(parsed_games) = get_detected_games()? {
 			for parsed_game in parsed_games {
-				let mut game = Game::new(&parsed_game.app_name, *Self::ID, &parsed_game.title);
-				game.set_thumbnail_url(&parsed_game.art_cover);
-				game.installed_game = Self::get_installed_game(&parsed_game);
-				callback(game);
+				let mut game = DbGame::new(
+					*Self::ID,
+					parsed_game.app_name.clone(),
+					parsed_game.title.clone(),
+				);
+				game.thumbnail_url = Some(parsed_game.art_cover.clone());
+				if let Some(exe_path) = Self::get_exe_path(&parsed_game) {
+					game.set_executable(&exe_path);
+					game.add_provider_command(
+						ProviderCommandAction::StartViaProvider,
+						ProviderCommand::String(format!(
+							"heroic://launch/{}",
+							parsed_game.app_name
+						)),
+					);
+				}
+				db.insert_game(&game);
 			}
 		}
 		Ok(())
 	}
-}
-
-pub fn get_start_command(app_id: &str) -> String {
-	format!("heroic://launch/{app_id}")
 }

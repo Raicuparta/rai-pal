@@ -1,6 +1,5 @@
 import { useSetAtom, atom } from "jotai";
 import { AppEventId, EventPayload, useAppEvent } from "./use-app-event";
-import { useCallback } from "react";
 
 export function dataSubscription<TEventId extends AppEventId>(
 	eventId: TEventId,
@@ -10,13 +9,9 @@ export function dataSubscription<TEventId extends AppEventId>(
 
 	function useDataSubscription() {
 		const setData = useSetAtom(stateAtom);
-		const eventCallback = useCallback(
-			(payload: EventPayload<TEventId>) => {
-				console.log("useDataSubscription", eventId, payload);
-				setData(payload);
-			},
-			[setData],
-		);
+		const eventCallback = (payload: EventPayload<TEventId>) => {
+			setData(payload);
+		};
 
 		useAppEvent(eventId, "data-subscription", eventCallback);
 	}

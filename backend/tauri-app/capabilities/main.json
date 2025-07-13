@@ -13,6 +13,7 @@
 		"dialog:allow-ask",
 		"updater:allow-check",
 		"shell:default",
-		"updater:default"
+		"updater:default",
+		"os:allow-locale"
 	]
 }

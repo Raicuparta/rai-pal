@@ -10,12 +10,9 @@ use zip::ZipArchive;
 use super::mod_loader::ModLoaderStatic;
 use crate::{
 	files::copy_dir_all,
-	game_engines::{
-		game_engine::{EngineBrand, GameEngine},
-		unity::UnityScriptingBackend,
-	},
+	game::DbGame,
+	game_engines::{game_engine::EngineBrand, unity::UnityBackend},
 	game_mod::CommonModData,
-	installed_game::InstalledGame,
 	local_mod::{LocalMod, ModKind},
 	mod_loaders::mod_loader::{ModLoaderActions, ModLoaderData},
 	paths,
@@ -48,30 +45,29 @@ impl ModLoaderActions for BepInEx {
 		&self.data
 	}
 
-	fn install(&self, game: &InstalledGame) -> Result {
-		let scripting_backend_path = &self.data.path.join(
-			game.executable
-				.scripting_backend
+	fn install(&self, game: &DbGame) -> Result {
+		let exe_path = game.try_get_exe_path()?;
+		let unity_backend_path = &self.data.path.join(
+			game.unity_backend
 				.ok_or_else(|| {
 					Error::ModInstallInfoInsufficient(
-						"scripting_backend".to_string(),
-						game.executable.path.clone(),
+						"unity_backend".to_string(),
+						game.display_title.clone(),
 					)
 				})?
 				.to_string(),
 		);
-		let architecture_path = scripting_backend_path
+		let architecture_path = unity_backend_path
 			.join(
 				// Hardcoded windows platform since that's all we support for now.
 				"Windows",
 			)
 			.join(
-				game.executable
-					.architecture
+				game.architecture
 					.ok_or_else(|| {
 						Error::ModInstallInfoInsufficient(
 							"architecture".to_string(),
-							game.executable.path.clone(),
+							game.display_title.clone(),
 						)
 					})?
 					.to_string(),
@@ -79,17 +75,15 @@ impl ModLoaderActions for BepInEx {
 
 		let mod_loader_archive = architecture_path.join("mod-loader.zip");
 		let folder_to_copy_to_game = architecture_path.join("copy-to-game");
-		let game_data_folder = &game.get_installed_mods_folder()?;
+		let game_data_folder = game.get_installed_mods_folder()?;
 
-		ZipArchive::new(File::open(mod_loader_archive)?)?.extract(game_data_folder)?;
+		ZipArchive::new(File::open(mod_loader_archive)?)?.extract(&game_data_folder)?;
 
-		let game_folder = paths::path_parent(&game.executable.path)?;
+		let game_folder = paths::path_parent(&exe_path)?;
 
 		copy_dir_all(folder_to_copy_to_game, game_folder)?;
 
-		let is_legacy = game.executable.engine.as_ref().is_some_and(is_legacy);
-
-		let config_origin_path = &self.data.path.join("config").join(if is_legacy {
+		let config_origin_path = &self.data.path.join("config").join(if is_legacy(game) {
 			"BepInEx-legacy.cfg"
 		} else {
 			"BepInEx.cfg"
@@ -101,8 +95,7 @@ impl ModLoaderActions for BepInEx {
 
 		fs::copy(config_origin_path, config_target_folder.join("BepInEx.cfg"))?;
 
-		let doorstop_config =
-			fs::read_to_string(scripting_backend_path.join("doorstop_config.ini"))?;
+		let doorstop_config = fs::read_to_string(unity_backend_path.join("doorstop_config.ini"))?;
 
 		fs::write(
 			game_folder.join("doorstop_config.ini"),
@@ -115,7 +108,7 @@ impl ModLoaderActions for BepInEx {
 		Ok(())
 	}
 
-	async fn install_mod_inner(&self, game: &InstalledGame, local_mod: &LocalMod) -> Result {
+	async fn install_mod_inner(&self, game: &DbGame, local_mod: &LocalMod) -> Result {
 		self.install(game)?;
 
 		let bepinex_folder = game.get_installed_mods_folder()?.join("BepInEx");
@@ -139,7 +132,7 @@ impl ModLoaderActions for BepInEx {
 		Ok(())
 	}
 
-	async fn uninstall_mod(&self, game: &InstalledGame, local_mod: &LocalMod) -> Result {
+	async fn uninstall_mod(&self, game: &DbGame, local_mod: &LocalMod) -> Result {
 		let installed_mods_folder = game.get_installed_mods_folder()?;
 		let bepinex_folder = installed_mods_folder.join("BepInEx");
 
@@ -161,7 +154,7 @@ impl ModLoaderActions for BepInEx {
 		Ok(())
 	}
 
-	fn configure_mod(&self, game: &InstalledGame, _local_mod: &LocalMod) -> Result {
+	fn configure_mod(&self, game: &DbGame, _local_mod: &LocalMod) -> Result {
 		let game_data_folder = game.get_installed_mods_folder()?;
 		let mod_config_path = game_data_folder.join("BepInEx").join("config");
 
@@ -174,7 +167,7 @@ impl ModLoaderActions for BepInEx {
 		Err(Error::CantRunNonRunnable(local_mod.common.id.clone()))
 	}
 
-	fn open_installed_mod_folder(&self, game: &InstalledGame, local_mod: &LocalMod) -> Result {
+	fn open_installed_mod_folder(&self, game: &DbGame, local_mod: &LocalMod) -> Result {
 		let game_data_folder = game.get_installed_mods_folder()?;
 		let plugin_folder = game_data_folder
 			.join("BepInEx")
@@ -199,8 +192,8 @@ impl ModLoaderActions for BepInEx {
 		let installed_mods_path = Self::get_installed_mods_path()?;
 
 		let local_mods = {
-			let mut local_mods = find_mods(&installed_mods_path, UnityScriptingBackend::Il2Cpp);
-			local_mods.extend(find_mods(&installed_mods_path, UnityScriptingBackend::Mono));
+			let mut local_mods = find_mods(&installed_mods_path, UnityBackend::Il2Cpp);
+			local_mods.extend(find_mods(&installed_mods_path, UnityBackend::Mono));
 			local_mods
 		};
 
@@ -208,18 +201,14 @@ impl ModLoaderActions for BepInEx {
 	}
 }
 
-fn is_legacy(engine: &GameEngine) -> bool {
-	engine.version.as_ref().is_some_and(|version| {
-		version.numbers.major < 5
-			|| (version.numbers.major == 5 && version.numbers.minor.is_some_and(|minor| minor < 5))
+fn is_legacy(game: &DbGame) -> bool {
+	game.engine_version_major.is_some_and(|major| {
+		major < 5 || (major == 5 && game.engine_version_minor.is_some_and(|minor| minor < 5))
 	})
 }
 
-fn find_mods(
-	installed_mods_path: &Path,
-	scripting_backend: UnityScriptingBackend,
-) -> HashMap<String, LocalMod> {
-	let mods_folder_path = installed_mods_path.join(scripting_backend.to_string());
+fn find_mods(installed_mods_path: &Path, unity_backend: UnityBackend) -> HashMap<String, LocalMod> {
+	let mods_folder_path = installed_mods_path.join(unity_backend.to_string());
 
 	paths::glob_path(&mods_folder_path.join("*"))
 		.iter()
@@ -228,7 +217,7 @@ fn find_mods(
 				BepInEx::ID,
 				mod_path,
 				Some(EngineBrand::Unity),
-				Some(scripting_backend),
+				Some(unity_backend),
 			) {
 				Some((local_mod.common.id.clone(), local_mod))
 			} else {

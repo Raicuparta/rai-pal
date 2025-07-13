@@ -1,52 +1,39 @@
-import { Tabs, Container, Stack } from "@mantine/core";
-import { PageTab } from "@components/page-tab";
-import { useCallback } from "react";
-import { usePersistedState } from "@hooks/use-persisted-state";
-import { IconBox, IconDeviceGamepad, IconHammer } from "@tabler/icons-react";
+import { Tabs, Container, Stack, Group } from "@mantine/core";
+import { Page, PageTab } from "@components/page-tab";
+import { IconBox, IconDeviceGamepad } from "@tabler/icons-react";
 import { GamesPage } from "./games/games-page";
 import { ModsPage } from "./mods/mods-page";
-import { ToolsPage } from "./tools/tools-page";
 import { ThanksPage } from "./thanks/thanks-page";
 import { ThanksTabIcon } from "./thanks/thanks-tab-icon";
 import { useAtomValue } from "jotai";
 import { gameDataAtom } from "@hooks/use-data";
+import { AppSettings } from "./tools/app-settings";
+import { useAppSettingSingle } from "@hooks/use-app-setting-single";
+import { TabId } from "@api/bindings";
 
-const pages = {
-	games: {
-		title: "Games",
+const pages: Record<TabId, Page> = {
+	Games: {
+		localizationKey: "games",
 		component: GamesPage,
-		icon: <IconDeviceGamepad />,
+		icon: IconDeviceGamepad,
 	},
-	mods: { title: "Mods", component: ModsPage, icon: <IconBox /> },
-	tools: {
-		title: "Tools",
-		component: ToolsPage,
-		icon: <IconHammer />,
-	},
-	thanks: {
-		title: "Thanks",
+	Mods: { localizationKey: "mods", component: ModsPage, icon: IconBox },
+	Thanks: {
+		localizationKey: "thanks",
 		component: ThanksPage,
-		icon: <ThanksTabIcon />,
+		icon: ThanksTabIcon,
 	},
 } as const;
-
-const firstPage = Object.keys(pages)[0];
 
 export function AppTabs() {
 	const gamesData = useAtomValue(gameDataAtom);
 
-	const [selectedTab, setSelectedTab] = usePersistedState(
-		firstPage,
-		"selected-app-tab",
-	);
+	const [selectedTab, setSelectedTab] = useAppSettingSingle("selectedTab");
 
-	const handleTabChange = useCallback(
-		(pageId: string | null) => {
-			if (pageId === null) return;
-			setSelectedTab(pageId);
-		},
-		[setSelectedTab],
-	);
+	const handleTabChange = (pageId: string | null) => {
+		if (pageId === null || !(pageId in pages)) return;
+		setSelectedTab(pageId as TabId);
+	};
 
 	const gamesCountLabel =
 		gamesData.gameIds.length === Number(gamesData.totalCount)
@@ -63,16 +50,22 @@ export function AppTabs() {
 				gap={0}
 				style={{ height: "100vh" }}
 			>
-				<Tabs.List style={{ justifyContent: "center" }}>
-					{Object.entries(pages).map(([pageId, page]) => (
-						<PageTab
-							key={pageId}
-							id={pageId}
-							page={page}
-							label={page === pages.games ? gamesCountLabel : undefined}
-						/>
-					))}
+				<Tabs.List bg="dark">
+					<Container flex={1}>
+						<Group>
+							{Object.entries(pages).map(([pageId, page]) => (
+								<PageTab
+									id={pageId as TabId}
+									key={pageId}
+									page={page}
+									label={page === pages.Games ? gamesCountLabel : undefined}
+								/>
+							))}
+							<AppSettings />
+						</Group>
+					</Container>
 				</Tabs.List>
+
 				{Object.entries(pages).map(([pageId, page]) => (
 					<Tabs.Panel
 						key={pageId}
@@ -85,7 +78,6 @@ export function AppTabs() {
 						<Container
 							h="100%"
 							py="xs"
-							size="lg"
 						>
 							<page.component />
 						</Container>

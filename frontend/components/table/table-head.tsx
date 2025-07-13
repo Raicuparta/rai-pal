@@ -2,13 +2,15 @@ import { Box, Flex, Table } from "@mantine/core";
 import classes from "./table.module.css";
 import { IconChevronDown, IconChevronUp } from "@tabler/icons-react";
 import { GamesSortBy } from "@api/bindings";
+import { useLocalization } from "@hooks/use-localization";
+import { useAppSettings } from "@hooks/use-app-settings";
+import { LocalizationKey } from "@localizations/localizations";
 
 export type TableColumnBase<TItem, TSort> = {
-	label: string;
+	localizationKey?: LocalizationKey<"gamesTableColumn">;
 	component: React.ComponentType<{ item: TItem }>;
 	width?: number;
 	center?: boolean;
-	hideLabel?: boolean;
 	hidable?: boolean;
 	sort?: TSort;
 };
@@ -39,44 +41,49 @@ type Props<TKey extends string, TItem, TSort> = {
 export function TableHead<TKey extends string, TItem, TSort>(
 	props: Props<TKey, TItem, TSort>,
 ) {
+	const t = useLocalization("gamesTableColumn");
+	const [settings] = useAppSettings();
+
 	return (
 		<Table.Tr>
 			{props.columns.map((column) => {
 				return (
-					<Table.Th
-						className={
-							props.onChangeSort && column.sort ? classes.sortable : undefined
-						}
-						key={String(column.id)}
-						onClick={
-							column.sort
-								? () =>
-										props.onChangeSort && column.sort
-											? props.onChangeSort(column.sort)
-											: undefined
-								: undefined
-						}
-						w={column.width}
-						maw={column.width}
-						miw={column.width}
-					>
-						<Flex justify={column.center ? "center" : undefined}>
-							{column.hideLabel ? "" : column.label}
-							<Box
-								h={0}
-								w={0}
-								fs="xs"
-							>
-								{props.sortBy &&
-									props.sortBy === column.sort &&
-									(props.sortDescending ? (
-										<IconChevronDown />
-									) : (
-										<IconChevronUp />
-									))}
-							</Box>
-						</Flex>
-					</Table.Th>
+					(!settings.hideGameThumbnails || column.id !== "thumbnail") && (
+						<Table.Th
+							className={
+								props.onChangeSort && column.sort ? classes.sortable : undefined
+							}
+							key={String(column.id)}
+							onClick={
+								column.sort
+									? () =>
+											props.onChangeSort && column.sort
+												? props.onChangeSort(column.sort)
+												: undefined
+									: undefined
+							}
+							w={column.width}
+							maw={column.width}
+							miw={column.width}
+						>
+							<Flex justify={column.center ? "center" : undefined}>
+								{t(column.localizationKey)}
+								<Box
+									h={0}
+									w={0}
+									fs="xs"
+								>
+									{props.sortBy &&
+										props.sortBy === column.sort &&
+										(props.sortDescending ? (
+											<IconChevronDown />
+										) : (
+											<IconChevronUp />
+										))}
+								</Box>
+							</Flex>
+						</Table.Th>
+					)
 				);
 			})}
 		</Table.Tr>

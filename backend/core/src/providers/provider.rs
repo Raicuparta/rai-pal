@@ -1,8 +1,4 @@
-use std::{
-	fs,
-	marker::{Send, Sync},
-	path::PathBuf,
-};
+use std::{fs, path::PathBuf};
 
 use enum_dispatch::enum_dispatch;
 use rai_pal_proc_macros::serializable_enum;
@@ -12,26 +8,22 @@ use crate::providers::heroic_epic_provider::HeroicEpic;
 #[cfg(target_os = "linux")]
 use crate::providers::heroic_gog_provider::HeroicGog;
 #[cfg(target_os = "windows")]
-use crate::providers::{epic_provider::Epic, gog_provider::Gog};
+use crate::providers::{epic_provider::Epic, gog_provider::Gog, xbox_provider::Xbox};
 use crate::{
-	game::Game,
+	local_database::DbMutex,
 	paths,
-	providers::{
-		itch_provider::Itch, manual_provider::Manual, steam::steam_provider::Steam, xbox_provider::Xbox,
-	},
+	providers::{itch_provider::Itch, manual_provider::Manual, steam::steam_provider::Steam},
 	result::{Error, Result},
 };
 
 // These IDs need to match the ones in rai-pal-db.
 #[serializable_enum]
 pub enum ProviderId {
-	Ea,
 	Epic,
 	Gog,
 	Itch,
 	Manual,
 	Steam,
-	Ubisoft,
 	Xbox,
 }
 
@@ -45,6 +37,7 @@ pub enum Provider {
 	Epic,
 	#[cfg(target_os = "windows")]
 	Gog,
+	#[cfg(target_os = "windows")]
 	Xbox,
 	#[cfg(target_os = "linux")]
 	HeroicEpic,
@@ -57,7 +50,6 @@ const PROVIDERS: &Map = &[
 	create_map_entry::<Steam>(),
 	create_map_entry::<Manual>(),
 	create_map_entry::<Itch>(),
-	create_map_entry::<Xbox>(),
 	#[cfg(target_os = "linux")]
 	create_map_entry::<HeroicEpic>(),
 	#[cfg(target_os = "linux")]
@@ -66,17 +58,17 @@ const PROVIDERS: &Map = &[
 	create_map_entry::<Epic>(),
 	#[cfg(target_os = "windows")]
 	create_map_entry::<Gog>(),
+	#[cfg(target_os = "windows")]
+	create_map_entry::<Xbox>(),
 ];
 
 #[enum_dispatch(Provider)]
 pub trait ProviderActions {
-	async fn get_games<TCallback>(&self, callback: TCallback) -> Result
-	where
-		TCallback: FnMut(Game) + Send + Sync;
+	async fn insert_games(&self, db: &DbMutex) -> Result;
 }
 
-const fn create_map_entry<TProvider: ProviderActions + ProviderStatic>(
-) -> (ProviderId, fn() -> Result<Provider>)
+const fn create_map_entry<TProvider: ProviderActions + ProviderStatic>()
+-> (ProviderId, fn() -> Result<Provider>)
 where
 	Provider: From<TProvider>,
 {
@@ -108,8 +100,4 @@ pub fn get_provider(provider_id: ProviderId) -> Result<Provider> {
 		}
 	}
 	Err(Error::InvalidProviderId(provider_id.to_string()))
-}
-
-pub fn get_provider_ids() -> Vec<ProviderId> {
-	PROVIDERS.iter().map(|&(id, _)| id).collect()
 }

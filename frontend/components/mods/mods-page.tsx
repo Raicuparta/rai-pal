@@ -14,8 +14,10 @@ import { ModVersionBadge } from "./mod-version-badge";
 import { ItemName } from "@components/item-name";
 import { getModTitle } from "@util/game-mod";
 import { DeprecatedBadge } from "./deprecated-badge";
+import { useLocalization } from "@hooks/use-localization";
 
 export function ModsPage() {
+	const t = useLocalization("modsPage");
 	const [selectedModId, setSelectedId] = useState<string>();
 
 	const mods = useUnifiedMods();
@@ -50,7 +52,7 @@ export function ModsPage() {
 					onClick={commands.openModsFolder}
 					leftSection={<IconFolderCog />}
 				>
-					Open Mods Folder
+					{t("openModsFolderButton")}
 				</Button>
 				<RefreshButton />
 			</Group>
@@ -58,25 +60,25 @@ export function ModsPage() {
 				<Table highlightOnHover>
 					<Table.Thead pos="sticky">
 						<Table.Tr>
-							<Table.Th>Mod</Table.Th>
-							<Table.Th ta="center">Version</Table.Th>
+							<Table.Th>{t("tableColumnMod")}</Table.Th>
+							<Table.Th ta="center">{t("tableColumnVersion")}</Table.Th>
 							<Table.Th
 								ta="center"
 								w={100}
 							>
-								Loader
+								{t("tableColumnModLoader")}
 							</Table.Th>
 							<Table.Th
 								w={100}
 								ta="center"
 							>
-								Engine
+								{t("tableColumnGameEngine")}
 							</Table.Th>
 							<Table.Th
 								w={100}
 								ta="center"
 							>
-								Backend
+								{t("tableColumnUnityBackend")}
 							</Table.Th>
 						</Table.Tr>
 					</Table.Thead>
@@ -91,7 +93,7 @@ export function ModsPage() {
 									<ItemName
 										label={
 											mod.remote?.author
-												? `by ${mod.remote?.author}`
+												? `${t("modByAuthor", { authorName: mod.remote?.author })}`
 												: undefined
 										}
 									>

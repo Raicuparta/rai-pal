@@ -10,41 +10,35 @@ use rusqlite::{Connection, OpenFlags};
 
 use super::provider_command::{ProviderCommand, ProviderCommandAction};
 use crate::{
-	game::{Game, GameId},
-	installed_game::InstalledGame,
+	local_database::{DbMutex, GameDatabase},
+	game::DbGame,
+	paths,
 	providers::provider::{ProviderActions, ProviderId, ProviderStatic},
-	result::{Error, Result},
+	result::Result,
 };
 
 #[derive(Clone)]
 pub struct Itch {}
 
 impl Itch {
-	fn get_installed_game(cave: &ItchDatabaseCave) -> Option<InstalledGame> {
+	fn get_exe_path(cave: &ItchDatabaseCave) -> Option<PathBuf> {
 		let verdict = cave.verdict.as_ref()?;
-		let exe_path = verdict.base_path.join(&verdict.candidates.first()?.path);
-		InstalledGame::new(&exe_path)
+		Some(verdict.base_path.join(&verdict.candidates.first()?.path))
 	}
 
-	fn get_game(row: &ItchDatabaseGame) -> Game {
-		let mut game = Game::new(
-			GameId {
-				game_id: row.id.to_string(),
-				provider_id: *Self::ID,
-			},
-			&row.title,
-		);
+	fn get_game(row: &ItchDatabaseGame) -> DbGame {
+		let mut game = DbGame::new(*Self::ID, row.id.to_string(), row.title.clone());
 
-		if let Some(thumbnail_url) = &row.cover_url {
-			game.set_thumbnail_url(thumbnail_url);
-		}
+		game.thumbnail_url = row.cover_url.clone();
+
 		if let Some(date_time) = row
 			.published_at
 			.as_ref()
 			.and_then(|published_at| DateTime::parse_from_rfc3339(published_at).ok())
 		{
-			game.set_release_date(date_time.timestamp());
+			game.release_date = Some(date_time.timestamp());
 		}
+
 		game.add_provider_command(
 			ProviderCommandAction::ShowInLibrary,
 			ProviderCommand::String(format!("itch://games/{}", row.id)),
@@ -104,14 +98,8 @@ pub struct ItchDatabase {
 }
 
 impl ProviderActions for Itch {
-	async fn get_games<TCallback>(&self, mut callback: TCallback) -> Result
-	where
-		TCallback: FnMut(Game) + Send + Sync,
-	{
-		let app_data_path = directories::BaseDirs::new()
-			.ok_or_else(Error::AppDataNotFound)?
-			.config_dir()
-			.join("itch");
+	async fn insert_games(&self, db: &DbMutex) -> Result {
+		let app_data_path = paths::base_dirs()?.config_dir().join("itch");
 
 		if let Some(database) = get_database(&app_data_path)? {
 			let caves_map: HashMap<_, _> = database
@@ -122,10 +110,10 @@ impl ProviderActions for Itch {
 
 			for db_entry in database.games {
 				let mut game = Self::get_game(&db_entry);
-				if let Some(cave) = caves_map.get(&db_entry.id) {
-					game.installed_game = Self::get_installed_game(cave);
+				if let Some(exe_path) = caves_map.get(&db_entry.id).and_then(Self::get_exe_path) {
+					game.set_executable(&exe_path);
 				}
-				callback(game);
+				db.insert_game(&game);
 			}
 		} else {
 			log::info!(

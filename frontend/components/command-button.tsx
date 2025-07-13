@@ -9,19 +9,19 @@ import {
 	Popover,
 	Stack,
 } from "@mantine/core";
-import { forwardRef, useCallback, useState } from "react";
+import { forwardRef, useState } from "react";
 import { IconArrowBack, IconCheck } from "@tabler/icons-react";
-import { usePersistedState } from "@hooks/use-persisted-state";
-import { Result } from "@api/bindings";
+import { useLocalization } from "@hooks/use-localization";
+import { useAppSettingSingle } from "@hooks/use-app-setting-single";
 
-interface Props<TResultValue, TError> extends ButtonProps {
-	readonly onClick: () => Promise<Result<TResultValue, TError> | TResultValue>;
+interface Props<TResultValue> extends ButtonProps {
+	readonly onClick: () => Promise<TResultValue>;
 	readonly onSuccess?: (result: TResultValue) => void;
 	readonly confirmationText?: string;
 	readonly confirmationSkipId?: string;
 }
 
-function CommandButtonInternal<TResultValue, TError>(
+function CommandButtonInternal<TResultValue>(
 	{
 		onClick,
 		onSuccess,
@@ -29,52 +29,51 @@ function CommandButtonInternal<TResultValue, TError>(
 		confirmationSkipId,
 		children,
 		...props
-	}: Props<TResultValue, TError>,
+	}: Props<TResultValue>,
 	ref: React.ForwardedRef<HTMLButtonElement>,
 ) {
+	const t = useLocalization("commandButton");
 	const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
-	const [shouldSkipConfirm, setShouldSkipConfirm] = usePersistedState(
-		false,
-		`skip-confirm-${confirmationSkipId}`,
-	);
+	const [skipConfirmDialogs, setSkipConfirmDialogs] =
+		useAppSettingSingle("skipConfirmDialogs");
+	const confirmDialogId = `skip-confirm-${confirmationSkipId}`;
+	const shouldSkipConfirm = skipConfirmDialogs.includes(confirmDialogId);
+
 	const [dontAskAgain, setDontAskAgain] = useState(false);
 	const [executeCommand, isLoading, success] = useAsyncCommand(onClick);
 
-	const executeCommandWithSuccessCallback = useCallback(() => {
+	const executeCommandWithSuccessCallback = () =>
 		executeCommand().then(onSuccess);
-	}, [executeCommand, onSuccess]);
 
-	const handleClick = useCallback(() => {
+	const handleClick = () => {
 		if (confirmationText && !shouldSkipConfirm) {
 			setIsConfirmationOpen(true);
 		} else {
 			executeCommandWithSuccessCallback();
 		}
-	}, [confirmationText, shouldSkipConfirm, executeCommandWithSuccessCallback]);
+	};
 
-	const closeConfirmation = useCallback(() => {
+	const closeConfirmation = () => {
 		setIsConfirmationOpen(false);
 		setDontAskAgain(false);
-	}, []);
+	};
 
-	const confirm = useCallback(() => {
-		setShouldSkipConfirm(dontAskAgain);
+	const confirm = () => {
+		if (dontAskAgain) {
+			setSkipConfirmDialogs((prev) => {
+				if (prev.includes(confirmDialogId)) return prev;
+				return [...prev, confirmDialogId];
+			});
+		}
 		executeCommandWithSuccessCallback();
 		closeConfirmation();
-	}, [
-		closeConfirmation,
-		dontAskAgain,
-		executeCommandWithSuccessCallback,
-		setShouldSkipConfirm,
-	]);
+	};
 
 	const isLongLoading = useLongLoading(isLoading);
 
 	return (
 		<Popover
 			trapFocus
-			withArrow
-			shadow="md"
 			opened={isConfirmationOpen}
 			onClose={closeConfirmation}
 			disabled={!confirmationText || shouldSkipConfirm}
@@ -106,7 +105,7 @@ function CommandButtonInternal<TResultValue, TError>(
 								leftSection={<IconArrowBack />}
 								onClick={closeConfirmation}
 							>
-								Cancel
+								{t("cancel")}
 							</Button>
 							<Button
 								leftSection={<IconCheck />}
@@ -121,7 +120,7 @@ function CommandButtonInternal<TResultValue, TError>(
 								onChange={(event) =>
 									setDontAskAgain(event.currentTarget.checked)
 								}
-								label="Don't ask again"
+								label={t("dontAskAgain")}
 							/>
 						)}
 					</Stack>

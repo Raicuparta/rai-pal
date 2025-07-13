@@ -1,16 +1,17 @@
+#![cfg(target_os = "windows")]
+
 use std::{io, path::PathBuf};
 
 use log::error;
 use rai_pal_proc_macros::serializable_struct;
-#[cfg(target_os = "windows")]
 use winreg::{
-	enums::{HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE},
 	RegKey,
+	enums::{HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE},
 };
 
 use crate::{
-	game::{Game, GameId},
-	installed_game::InstalledGame,
+	game::DbGame,
+	local_database::{DbMutex, GameDatabase},
 	paths::file_name_without_extension,
 	providers::provider::{ProviderActions, ProviderId, ProviderStatic},
 	result::Result,
@@ -47,13 +48,13 @@ struct XboxGamepassImages {
 }
 
 impl ProviderActions for Xbox {
-	async fn get_games<TCallback>(&self, mut callback: TCallback) -> Result
-	where
-		TCallback: FnMut(Game) + Send + Sync,
-	{
-		if let Err(error) = get_games(&mut callback) {
+	async fn insert_games(&self, db: &DbMutex) -> Result {
+		if let Err(error) = get_games(db).await {
 			if error.kind() == io::ErrorKind::NotFound {
-				log::info!("Failed to find installed Xbox PC games. This probably means the Xbox PC app isn't installed, or there are no Windows Store games or something. Error: {}", error);
+				log::info!(
+					"Failed to find installed Xbox PC games. This probably means the Xbox PC app isn't installed, or there are no Windows Store games or something. Error: {}",
+					error
+				);
 				return Ok(());
 			}
 		}
@@ -62,73 +63,65 @@ impl ProviderActions for Xbox {
 	}
 }
 
-fn get_games<TCallback>(mut callback: TCallback) -> io::Result<()>
-where
-	TCallback: FnMut(Game) + Send + Sync,
-{
-	#[cfg(target_os = "windows")]
-	{
-		let gaming_services = RegKey::predef(HKEY_LOCAL_MACHINE)
-			.open_subkey("SOFTWARE\\Microsoft\\GamingServices")?;
-		let package_roots = gaming_services.open_subkey("PackageRepository\\Root")?;
-		let game_configs = gaming_services.open_subkey("GameConfig")?;
-		let app_packages = RegKey::predef(HKEY_CURRENT_USER).open_subkey("Software\\Classes\\Local Settings\\Software\\Microsoft\\Windows\\CurrentVersion\\AppModel\\Repository\\Packages")?;
+async fn get_games(db: &DbMutex) -> io::Result<()> {
+	let gaming_services =
+		RegKey::predef(HKEY_LOCAL_MACHINE).open_subkey("SOFTWARE\\Microsoft\\GamingServices")?;
+	let package_roots = gaming_services.open_subkey("PackageRepository\\Root")?;
+	let game_configs = gaming_services.open_subkey("GameConfig")?;
+	let app_packages = RegKey::predef(HKEY_CURRENT_USER)
+			.open_subkey("Software\\Classes\\Local Settings\\Software\\Microsoft\\Windows\\CurrentVersion\\AppModel\\Repository\\Packages")?;
 
-		for key in package_roots.enum_keys().flatten() {
-			if let Ok(child) = package_roots.open_subkey(key) {
-				if let Some(Ok(subkey)) = child.enum_keys().next() {
-					if let Ok(subchild) = child.open_subkey(subkey) {
-						if let Ok(package_id) = subchild.get_value::<String, _>("Package") {
-							if let Ok(root_path) = subchild.get_value::<String, _>("Root") {
-								if let Ok(executables) =
-									game_configs.open_subkey(format!("{package_id}\\Executable"))
+	for key in package_roots.enum_keys().flatten() {
+		if let Ok(child) = package_roots.open_subkey(key) {
+			if let Some(Ok(subkey)) = child.enum_keys().next() {
+				if let Ok(subchild) = child.open_subkey(subkey) {
+					if let Ok(package_id) = subchild.get_value::<String, _>("Package") {
+						if let Ok(root_path) = subchild.get_value::<String, _>("Root") {
+							if let Ok(executables) =
+								game_configs.open_subkey(format!("{package_id}\\Executable"))
+							{
+								if let Some(Ok(first_executable_key)) =
+									executables.enum_keys().next()
 								{
-									if let Some(Ok(first_executable_key)) =
-										executables.enum_keys().next()
+									if let Ok(first_executable) =
+										executables.open_subkey(first_executable_key)
 									{
-										if let Ok(first_executable) =
-											executables.open_subkey(first_executable_key)
+										if let Ok(executable_name) =
+											first_executable.get_value::<String, _>("Name")
 										{
-											if let Ok(executable_name) =
-												first_executable.get_value::<String, _>("Name")
-											{
-												let executable_path =
-													PathBuf::from(root_path).join(executable_name);
+											let executable_path =
+												PathBuf::from(&root_path).join(&executable_name);
 
-												let display_name = app_packages
-													.open_subkey(&package_id)
-													.and_then(|package| {
-														package
-															.get_value::<String, _>("DisplayName")
-													})
-													.or_else(|error| {
-														error!("Failed to find display name for Xbox game: {}", error);
-														file_name_without_extension(
-															&executable_path,
-														)
+											let display_name = app_packages
+												.open_subkey(&package_id)
+												.and_then(|package| {
+													package.get_value::<String, _>("DisplayName")
+												})
+												.or_else(|error| {
+													error!(
+														"Failed to find display name for Xbox game: {}",
+														error
+													);
+													file_name_without_extension(&executable_path)
 														.map(ToString::to_string)
-													})
-													.unwrap_or_else(|error| {
-														error!(
+												})
+												.unwrap_or_else(|error| {
+													error!(
 														"Failed to get game name from exe path: {}",
 														error
 													);
-														"[Name Not Found]".to_string()
-													});
+													"[Name Not Found]".to_string()
+												});
 
-												let mut game = Game::new(
-													GameId {
-														game_id: package_id,
-														provider_id: ProviderId::Xbox,
-													},
-													&display_name,
-												);
+											let mut game = DbGame::new(
+												ProviderId::Xbox,
+												package_id.clone(),
+												display_name,
+											);
 
-												game.installed_game =
-													InstalledGame::new(&executable_path);
+											game.set_executable(&executable_path);
 
-												callback(game);
-											}
+											db.insert_game(&game);
 										}
 									}
 								}

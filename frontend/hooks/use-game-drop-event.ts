@@ -9,7 +9,10 @@ export function useGameDropEvent() {
 	useEffect(() => {
 		const unlistenPromise = getCurrentWebview().onDragDropEvent((event) => {
 			if (event.payload.type === "drop") {
-				executeAddGame(event.payload.paths[0]);
+				const path = event.payload.paths[0];
+				if (path) {
+					executeAddGame(path);
+				}
 			}
 		});
 

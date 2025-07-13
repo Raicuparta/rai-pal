@@ -5,253 +5,95 @@
 
 
 export const commands = {
-async addGame(path: string) : Promise<Result<null, Error>> {
-    try {
-    return { status: "ok", data: await TAURI_INVOKE("add_game", { path }) };
-} catch (e) {
-    if(e instanceof Error) throw e;
-    else return { status: "error", error: e  as any };
-}
+async addGame(path: string) : Promise<null> {
+    return await TAURI_INVOKE("add_game", { path });
 },
-async clearCache() : Promise<Result<null, Error>> {
-    try {
-    return { status: "ok", data: await TAURI_INVOKE("clear_cache") };
-} catch (e) {
-    if(e instanceof Error) throw e;
-    else return { status: "error", error: e  as any };
-}
+async configureMod(providerId: ProviderId, gameId: string, modId: string) : Promise<null> {
+    return await TAURI_INVOKE("configure_mod", { providerId, gameId, modId });
 },
-async configureMod(gameId: GameId, modId: string) : Promise<Result<null, Error>> {
-    try {
-    return { status: "ok", data: await TAURI_INVOKE("configure_mod", { gameId, modId }) };
-} catch (e) {
-    if(e instanceof Error) throw e;
-    else return { status: "error", error: e  as any };
-}
+async deleteMod(modId: string) : Promise<null> {
+    return await TAURI_INVOKE("delete_mod", { modId });
 },
-async deleteMod(modId: string) : Promise<Result<null, Error>> {
-    try {
-    return { status: "ok", data: await TAURI_INVOKE("delete_mod", { modId }) };
-} catch (e) {
-    if(e instanceof Error) throw e;
-    else return { status: "error", error: e  as any };
-}
+async downloadMod(modId: string) : Promise<null> {
+    return await TAURI_INVOKE("download_mod", { modId });
 },
-async resetSteamCache() : Promise<Result<null, Error>> {
-    try {
-    return { status: "ok", data: await TAURI_INVOKE("reset_steam_cache") };
-} catch (e) {
-    if(e instanceof Error) throw e;
-    else return { status: "error", error: e  as any };
-}
+async frontendReady() : Promise<null> {
+    return await TAURI_INVOKE("frontend_ready");
 },
-async downloadMod(modId: string) : Promise<Result<null, Error>> {
-    try {
-    return { status: "ok", data: await TAURI_INVOKE("download_mod", { modId }) };
-} catch (e) {
-    if(e instanceof Error) throw e;
-    else return { status: "error", error: e  as any };
-}
+async getAppSettings() : Promise<AppSettings> {
+    return await TAURI_INVOKE("get_app_settings");
 },
-async frontendReady() : Promise<Result<null, Error>> {
-    try {
-    return { status: "ok", data: await TAURI_INVOKE("frontend_ready") };
-} catch (e) {
-    if(e instanceof Error) throw e;
-    else return { status: "error", error: e  as any };
-}
+async getGameIds(query: GamesQuery | null) : Promise<GameIdsResponse> {
+    return await TAURI_INVOKE("get_game_ids", { query });
 },
-async getGameIds(dataQuery: GamesQuery | null) : Promise<Result<GameIdsResponse, Error>> {
-    try {
-    return { status: "ok", data: await TAURI_INVOKE("get_game_ids", { dataQuery }) };
-} catch (e) {
-    if(e instanceof Error) throw e;
-    else return { status: "error", error: e  as any };
-}
+async getGame(providerId: ProviderId, gameId: string) : Promise<DbGame> {
+    return await TAURI_INVOKE("get_game", { providerId, gameId });
 },
-async getGame(id: GameId) : Promise<Result<Game, Error>> {
-    try {
-    return { status: "ok", data: await TAURI_INVOKE("get_game", { id }) };
-} catch (e) {
-    if(e instanceof Error) throw e;
-    else return { status: "error", error: e  as any };
-}
+async getInstalledModVersions(providerId: ProviderId, gameId: string) : Promise<Partial<{ [key in string]: string }>> {
+    return await TAURI_INVOKE("get_installed_mod_versions", { providerId, gameId });
 },
-async getLocalMods() : Promise<Result<Partial<{ [key in string]: LocalMod }>, Error>> {
-    try {
-    return { status: "ok", data: await TAURI_INVOKE("get_local_mods") };
-} catch (e) {
-    if(e instanceof Error) throw e;
-    else return { status: "error", error: e  as any };
-}
+async getLocalMods() : Promise<Partial<{ [key in string]: LocalMod }>> {
+    return await TAURI_INVOKE("get_local_mods");
 },
-async getProviderIds() : Promise<Result<ProviderId[], Error>> {
-    try {
-    return { status: "ok", data: await TAURI_INVOKE("get_provider_ids") };
-} catch (e) {
-    if(e instanceof Error) throw e;
-    else return { status: "error", error: e  as any };
-}
+async getRemoteMods() : Promise<Partial<{ [key in string]: RemoteMod }>> {
+    return await TAURI_INVOKE("get_remote_mods");
 },
-async getRemoteMods() : Promise<Result<Partial<{ [key in string]: RemoteMod }>, Error>> {
-    try {
-    return { status: "ok", data: await TAURI_INVOKE("get_remote_mods") };
-} catch (e) {
-    if(e instanceof Error) throw e;
-    else return { status: "error", error: e  as any };
-}
+async installMod(providerId: ProviderId, gameId: string, modId: string) : Promise<null> {
+    return await TAURI_INVOKE("install_mod", { providerId, gameId, modId });
 },
-async installMod(gameId: GameId, modId: string) : Promise<Result<null, Error>> {
-    try {
-    return { status: "ok", data: await TAURI_INVOKE("install_mod", { gameId, modId }) };
-} catch (e) {
-    if(e instanceof Error) throw e;
-    else return { status: "error", error: e  as any };
-}
+async openGameFolder(providerId: ProviderId, gameId: string) : Promise<null> {
+    return await TAURI_INVOKE("open_game_folder", { providerId, gameId });
 },
-async openGameFolder(gameId: GameId) : Promise<Result<null, Error>> {
-    try {
-    return { status: "ok", data: await TAURI_INVOKE("open_game_folder", { gameId }) };
-} catch (e) {
-    if(e instanceof Error) throw e;
-    else return { status: "error", error: e  as any };
-}
+async openGameModsFolder(providerId: ProviderId, gameId: string) : Promise<null> {
+    return await TAURI_INVOKE("open_game_mods_folder", { providerId, gameId });
 },
-async openGameModsFolder(gameId: GameId) : Promise<Result<null, Error>> {
-    try {
-    return { status: "ok", data: await TAURI_INVOKE("open_game_mods_folder", { gameId }) };
-} catch (e) {
-    if(e instanceof Error) throw e;
-    else return { status: "error", error: e  as any };
-}
+async openInstalledModFolder(providerId: ProviderId, gameId: string, modId: string) : Promise<null> {
+    return await TAURI_INVOKE("open_installed_mod_folder", { providerId, gameId, modId });
 },
-async openInstalledModFolder(gameId: GameId, modId: string) : Promise<Result<null, Error>> {
-    try {
-    return { status: "ok", data: await TAURI_INVOKE("open_installed_mod_folder", { gameId, modId }) };
-} catch (e) {
-    if(e instanceof Error) throw e;
-    else return { status: "error", error: e  as any };
-}
+async openLogsFolder() : Promise<null> {
+    return await TAURI_INVOKE("open_logs_folder");
 },
-async openLogsFolder() : Promise<Result<null, Error>> {
-    try {
-    return { status: "ok", data: await TAURI_INVOKE("open_logs_folder") };
-} catch (e) {
-    if(e instanceof Error) throw e;
-    else return { status: "error", error: e  as any };
-}
+async openModFolder(modId: string) : Promise<null> {
+    return await TAURI_INVOKE("open_mod_folder", { modId });
 },
-async openModFolder(modId: string) : Promise<Result<null, Error>> {
-    try {
-    return { status: "ok", data: await TAURI_INVOKE("open_mod_folder", { modId }) };
-} catch (e) {
-    if(e instanceof Error) throw e;
-    else return { status: "error", error: e  as any };
-}
+async openModLoaderFolder(modLoaderId: string) : Promise<null> {
+    return await TAURI_INVOKE("open_mod_loader_folder", { modLoaderId });
 },
-async openModLoaderFolder(modLoaderId: string) : Promise<Result<null, Error>> {
-    try {
-    return { status: "ok", data: await TAURI_INVOKE("open_mod_loader_folder", { modLoaderId }) };
-} catch (e) {
-    if(e instanceof Error) throw e;
-    else return { status: "error", error: e  as any };
-}
+async openModsFolder() : Promise<null> {
+    return await TAURI_INVOKE("open_mods_folder");
 },
-async openModsFolder() : Promise<Result<null, Error>> {
-    try {
-    return { status: "ok", data: await TAURI_INVOKE("open_mods_folder") };
-} catch (e) {
-    if(e instanceof Error) throw e;
-    else return { status: "error", error: e  as any };
-}
+async refreshGame(providerId: ProviderId, gameId: string) : Promise<null> {
+    return await TAURI_INVOKE("refresh_game", { providerId, gameId });
 },
-async refreshGame(gameId: GameId) : Promise<Result<null, Error>> {
-    try {
-    return { status: "ok", data: await TAURI_INVOKE("refresh_game", { gameId }) };
-} catch (e) {
-    if(e instanceof Error) throw e;
-    else return { status: "error", error: e  as any };
-}
+async refreshGames(providerId: ProviderId) : Promise<null> {
+    return await TAURI_INVOKE("refresh_games", { providerId });
 },
-async refreshGames(providerId: ProviderId) : Promise<Result<null, Error>> {
-    try {
-    return { status: "ok", data: await TAURI_INVOKE("refresh_games", { providerId }) };
-} catch (e) {
-    if(e instanceof Error) throw e;
-    else return { status: "error", error: e  as any };
-}
+async refreshMods() : Promise<null> {
+    return await TAURI_INVOKE("refresh_mods");
 },
-async refreshMods() : Promise<Result<null, Error>> {
-    try {
-    return { status: "ok", data: await TAURI_INVOKE("refresh_mods") };
-} catch (e) {
-    if(e instanceof Error) throw e;
-    else return { status: "error", error: e  as any };
-}
+async refreshRemoteGames() : Promise<null> {
+    return await TAURI_INVOKE("refresh_remote_games");
 },
-async refreshRemoteGames() : Promise<Result<null, Error>> {
-    try {
-    return { status: "ok", data: await TAURI_INVOKE("refresh_remote_games") };
-} catch (e) {
-    if(e instanceof Error) throw e;
-    else return { status: "error", error: e  as any };
-}
+async removeGame(providerId: ProviderId, gameId: string) : Promise<null> {
+    return await TAURI_INVOKE("remove_game", { providerId, gameId });
 },
-async removeGame(path: string) : Promise<Result<null, Error>> {
-    try {
-    return { status: "ok", data: await TAURI_INVOKE("remove_game", { path }) };
-} catch (e) {
-    if(e instanceof Error) throw e;
-    else return { status: "error", error: e  as any };
-}
+async resetSteamCache() : Promise<null> {
+    return await TAURI_INVOKE("reset_steam_cache");
 },
-async runProviderCommand(game: Game, commandAction: ProviderCommandAction) : Promise<Result<null, Error>> {
-    try {
-    return { status: "ok", data: await TAURI_INVOKE("run_provider_command", { game, commandAction }) };
-} catch (e) {
-    if(e instanceof Error) throw e;
-    else return { status: "error", error: e  as any };
-}
+async runProviderCommand(providerCommand: ProviderCommand) : Promise<null> {
+    return await TAURI_INVOKE("run_provider_command", { providerCommand });
 },
-async runRunnableWithoutGame(modId: string) : Promise<Result<null, Error>> {
-    try {
-    return { status: "ok", data: await TAURI_INVOKE("run_runnable_without_game", { modId }) };
-} catch (e) {
-    if(e instanceof Error) throw e;
-    else return { status: "error", error: e  as any };
-}
+async runRunnableWithoutGame(modId: string) : Promise<null> {
+    return await TAURI_INVOKE("run_runnable_without_game", { modId });
 },
-async startGameExe(installedGame: InstalledGame) : Promise<Result<null, Error>> {
-    try {
-    return { status: "ok", data: await TAURI_INVOKE("start_game_exe", { installedGame }) };
-} catch (e) {
-    if(e instanceof Error) throw e;
-    else return { status: "error", error: e  as any };
-}
+async saveAppSettings(settings: AppSettings) : Promise<null> {
+    return await TAURI_INVOKE("save_app_settings", { settings });
 },
-async startGame(installedGame: InstalledGame) : Promise<Result<null, Error>> {
-    try {
-    return { status: "ok", data: await TAURI_INVOKE("start_game", { installedGame }) };
-} catch (e) {
-    if(e instanceof Error) throw e;
-    else return { status: "error", error: e  as any };
-}
+async uninstallAllMods(providerId: ProviderId, gameId: string) : Promise<null> {
+    return await TAURI_INVOKE("uninstall_all_mods", { providerId, gameId });
 },
-async uninstallAllMods(gameId: GameId) : Promise<Result<null, Error>> {
-    try {
-    return { status: "ok", data: await TAURI_INVOKE("uninstall_all_mods", { gameId }) };
-} catch (e) {
-    if(e instanceof Error) throw e;
-    else return { status: "error", error: e  as any };
-}
-},
-async uninstallMod(gameId: GameId, modId: string) : Promise<Result<null, Error>> {
-    try {
-    return { status: "ok", data: await TAURI_INVOKE("uninstall_mod", { gameId, modId }) };
-} catch (e) {
-    if(e instanceof Error) throw e;
-    else return { status: "error", error: e  as any };
-}
+async uninstallMod(providerId: ProviderId, gameId: string, modId: string) : Promise<null> {
+    return await TAURI_INVOKE("uninstall_mod", { providerId, gameId, modId });
 }
 }
 
@@ -261,8 +103,8 @@ async uninstallMod(gameId: GameId, modId: string) : Promise<Result<null, Error>>
 export const events = __makeEvents__<{
 errorRaised: ErrorRaised,
 executedProviderCommand: ExecutedProviderCommand,
-foundGame: FoundGame,
 gamesChanged: GamesChanged,
+refreshGame: RefreshGame,
 selectInstalledGame: SelectInstalledGame,
 syncLocalMods: SyncLocalMods,
 syncModLoaders: SyncModLoaders,
@@ -270,8 +112,8 @@ syncRemoteMods: SyncRemoteMods
 }>({
 errorRaised: "error-raised",
 executedProviderCommand: "executed-provider-command",
-foundGame: "found-game",
 gamesChanged: "games-changed",
+refreshGame: "refresh-game",
 selectInstalledGame: "select-installed-game",
 syncLocalMods: "sync-local-mods",
 syncModLoaders: "sync-mod-loaders",
@@ -280,44 +122,40 @@ syncRemoteMods: "sync-remote-mods"
 
 /** user-defined constants **/
 
-
+export const PROVIDER_IDS = ["Epic","Gog","Itch","Manual","Steam","Xbox"] as const;
 
 /** user-defined types **/
 
+export type AppLocale = "EnUs" | "EsEs" | "FrFr" | "DeDe" | "PtPt" | "ZhCn" | "JaJp" | "KoKr" | "WaWa"
+export type AppSettings = { hideGameThumbnails: boolean; overrideLanguage: AppLocale | null; gamesQuery: GamesQuery | null; selectedTab: TabId; skipConfirmDialogs: string[] }
 export type Architecture = "X64" | "X86"
-export type CommonModData = { id: string; engine: EngineBrand | null; unityBackend: UnityScriptingBackend | null; engineVersionRange: EngineVersionRange | null; loaderId: string }
+export type CommonModData = { id: string; engine: EngineBrand | null; unityBackend: UnityBackend | null; engineVersionRange: EngineVersionRange | null; loaderId: string }
+export type DbGame = { providerId: ProviderId; gameId: string; externalId: string; displayTitle: string; titleDiscriminator: string | null; thumbnailUrl: string | null; releaseDate: bigint | null; exePath: PathData | null; engineBrand: EngineBrand | null; engineVersionMajor: number | null; engineVersionMinor: number | null; engineVersionPatch: number | null; engineVersionDisplay: string | null; unityBackend: UnityBackend | null; architecture: Architecture | null; tags: JsonData<GameTag[]>; providerCommands: JsonData<Partial<{ [key in ProviderCommandAction]: ProviderCommand }>> }
 export type EngineBrand = "Unity" | "Unreal" | "Godot" | "GameMaker"
-export type EngineVersion = { numbers: EngineVersionNumbers; suffix: string | null; display: string }
 export type EngineVersionNumbers = { major: number; minor: number | null; patch: number | null }
 export type EngineVersionRange = { minimum: EngineVersionNumbers | null; maximum: EngineVersionNumbers | null }
-export type Error = "Tauri" | "Core" | "SerdeJson" | { FailedToGetResourcesPath: string } | { FailedToAccessStateData: string }
+export type Error = "Tauri" | "Core" | "Io" | "Rusql" | "SerdeJson" | { FailedToGetResourcesPath: string } | { FailedToAccessStateData: string }
 export type ErrorRaised = string
 export type ExecutedProviderCommand = null
-export type FoundGame = GameId
-export type Game = { id: GameId; externalId: string; tags: GameTag[]; installedGame: InstalledGame | null; remoteGame: RemoteGame | null; title: GameTitle; thumbnailUrl: string | null; releaseDate: bigint | null; providerCommands: Partial<{ [key in ProviderCommandAction]: ProviderCommand }>; fromSubscriptions: GameSubscription[] }
-export type GameEngine = { brand: EngineBrand; version: EngineVersion | null }
-export type GameExecutable = { path: string; name: string; engine: GameEngine | null; architecture: Architecture | null; scriptingBackend: UnityScriptingBackend | null }
-export type GameId = { providerId: ProviderId; gameId: string }
-export type GameIdsResponse = { gameIds: GameId[]; totalCount: bigint }
-export type GameSubscription = "UbisoftClassics" | "UbisoftPremium" | "XboxGamePass" | "EaPlay"
+export type GameIdsResponse = { gameIds: ([ProviderId, string])[]; totalCount: bigint }
 export type GameTag = "VR" | "Demo"
-export type GameTitle = { display: string; normalized: string[] }
 export type GamesChanged = []
-export type GamesFilter = { providers: (ProviderId | null)[]; tags: (GameTag | null)[]; architectures: (Architecture | null)[]; unityScriptingBackends: (UnityScriptingBackend | null)[]; engines: (EngineBrand | null)[]; installed: (InstallState | null)[] }
+export type GamesFilter = { providers: (ProviderId | null)[]; tags: (GameTag | null)[]; architectures: (Architecture | null)[]; unityBackends: (UnityBackend | null)[]; engines: (EngineBrand | null)[]; installed: (InstallState | null)[] }
 export type GamesQuery = { filter: GamesFilter; search: string; sortBy: GamesSortBy; sortDescending: boolean }
 export type GamesSortBy = "Title" | "Engine" | "ReleaseDate"
 export type InstallState = "Installed" | "NotInstalled"
-export type InstalledGame = { id: string; executable: GameExecutable; installedModVersions: Partial<{ [key in string]: string }>; discriminator: string | null; startCommand: ProviderCommand | null }
+export type JsonData<T> = T
 export type LocalMod = { data: LocalModData; common: CommonModData }
 export type LocalModData = { path: string; manifest: Manifest | null }
-export type Manifest = { title: string | null; version: string; runnable: RunnableModData | null; engine: EngineBrand | null; engineVersionRange: EngineVersionRange | null; unityBackend: UnityScriptingBackend | null }
+export type Manifest = { title: string | null; version: string; runnable: RunnableModData | null; engine: EngineBrand | null; engineVersionRange: EngineVersionRange | null; unityBackend: UnityBackend | null }
 export type ModDownload = { id: string; url: string; root: string | null; runnable: RunnableModData | null }
 export type ModKind = "Installable" | "Runnable"
 export type ModLoaderData = { id: string; path: string; kind: ModKind }
+export type PathData = string
 export type ProviderCommand = { String: string } | { Path: [string, string[]] }
-export type ProviderCommandAction = "Install" | "ShowInLibrary" | "ShowInStore" | "Start" | "OpenInBrowser"
-export type ProviderId = "Ea" | "Epic" | "Gog" | "Itch" | "Manual" | "Steam" | "Ubisoft" | "Xbox"
-export type RemoteGame = { title: string | null; engine: GameEngine | null; ids: Partial<{ [key in ProviderId]: string[] }>; subscriptions: GameSubscription[] | null }
+export type ProviderCommandAction = "Install" | "ShowInLibrary" | "ShowInStore" | "StartViaProvider" | "StartViaExe" | "OpenInBrowser"
+export type ProviderId = "Epic" | "Gog" | "Itch" | "Manual" | "Steam" | "Xbox"
+export type RefreshGame = [ProviderId, string]
 export type RemoteMod = { common: CommonModData; data: RemoteModData }
 export type RemoteModData = { title: string; deprecated: boolean; author: string; sourceCode: string; description: string; latestVersion: ModDownload | null }
 export type RunnableModData = { path: string; args: string[] }
@@ -325,7 +163,8 @@ export type SelectInstalledGame = [ProviderId, string]
 export type SyncLocalMods = Partial<{ [key in string]: LocalMod }>
 export type SyncModLoaders = Partial<{ [key in string]: ModLoaderData }>
 export type SyncRemoteMods = Partial<{ [key in string]: RemoteMod }>
-export type UnityScriptingBackend = "Il2Cpp" | "Mono"
+export type TabId = "Games" | "Mods" | "Thanks"
+export type UnityBackend = "Il2Cpp" | "Mono"
 
 /** tauri-specta globals **/
 

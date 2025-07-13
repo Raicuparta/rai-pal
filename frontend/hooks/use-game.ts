@@ -1,50 +1,41 @@
-import { commands, Game, GameId } from "@api/bindings";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useAsyncCommand } from "./use-async-command";
+import { commands, DbGame, ProviderId } from "@api/bindings";
 import { useAppEvent } from "./use-app-event";
+import { useCommandData } from "./use-command-data";
 
-export function useGame({ providerId, gameId }: GameId) {
-	const [getGame] = useAsyncCommand(commands.getGame);
-	const defaultGame: Game = useMemo(
-		() => ({
-			id: { gameId, providerId },
-			externalId: gameId,
-			installedGame: null,
-			ownedGame: null,
-			remoteGame: null,
-			fromSubscriptions: [],
-			releaseDate: null,
-			tags: [],
-			thumbnailUrl: null,
-			title: {
-				display: "...",
-				normalized: ["..."],
-			},
-			providerCommands: {},
-		}),
-		[gameId, providerId],
+export function useGame(providerId: ProviderId, gameId: string) {
+	const defaultGame: DbGame = {
+		providerId: providerId,
+		gameId: gameId,
+		displayTitle: "...",
+		engineBrand: null,
+		engineVersionMajor: null,
+		engineVersionMinor: null,
+		engineVersionPatch: null,
+		engineVersionDisplay: null,
+		exePath: null,
+		externalId: "",
+		releaseDate: null,
+		thumbnailUrl: null,
+		architecture: null,
+		unityBackend: null,
+		titleDiscriminator: null,
+		providerCommands: {},
+		tags: [],
+	};
+	const [game, updateGame] = useCommandData(
+		() => commands.getGame(providerId, gameId),
+		defaultGame,
 	);
 
-	const [game, setGame] = useState<Game>(defaultGame);
-
-	const updateData = useCallback(() => {
-		getGame({ providerId, gameId }).then(setGame);
-	}, [getGame, providerId, gameId]);
-
-	useEffect(() => {
-		updateData();
-	}, [updateData]);
-
-	const foundGameCallback = useCallback(
-		(foundId: GameId) => {
-			if (foundId.providerId !== providerId || foundId.gameId !== gameId)
+	useAppEvent(
+		"refreshGame",
+		`game-${providerId}:${gameId}`,
+		([refreshedProviderId, refreshedGameId]) => {
+			if (refreshedProviderId !== providerId || refreshedGameId !== gameId)
 				return;
-			updateData();
+			updateGame();
 		},
-		[gameId, providerId, updateData],
 	);
-
-	useAppEvent("foundGame", `${providerId}:${gameId}`, foundGameCallback);
 
 	return game;
 }

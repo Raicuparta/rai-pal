@@ -1,34 +1,17 @@
 use std::{
 	fs::File,
 	io::{self, Read, Seek},
-	path::{Path, PathBuf},
+	path::Path,
 };
 
-use rai_pal_proc_macros::{serializable_enum, serializable_struct};
+use rai_pal_proc_macros::serializable_enum;
 
-use crate::{
-	game_engines::{
-		game_engine::GameEngine,
-		unity::{self, UnityScriptingBackend},
-		unreal,
-	},
-	paths::{file_name_without_extension, normalize_path},
-	result::Result,
-};
+use crate::result::Result;
 
 #[serializable_enum]
 pub enum Architecture {
 	X64,
 	X86,
-}
-
-#[serializable_struct]
-pub struct GameExecutable {
-	pub path: PathBuf,
-	pub name: String,
-	pub engine: Option<GameEngine>,
-	pub architecture: Option<Architecture>,
-	pub scripting_backend: Option<UnityScriptingBackend>,
 }
 
 pub fn get_architecture(exe_path: &Path) -> Result<Option<Architecture>> {
@@ -73,22 +56,4 @@ pub fn get_architecture(exe_path: &Path) -> Result<Option<Architecture>> {
 	}
 
 	Ok(None)
-}
-
-impl GameExecutable {
-	pub fn new(path: &Path) -> Option<Self> {
-		let normalized_path = normalize_path(path);
-
-		unity::get_executable(&normalized_path)
-			.or_else(|| unreal::get_executable(&normalized_path))
-			.or_else(|| {
-				Some(Self {
-					path: path.to_owned(),
-					name: file_name_without_extension(path).ok()?.to_string(),
-					engine: None,
-					architecture: None,
-					scripting_backend: None,
-				})
-			})
-	}
 }

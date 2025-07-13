@@ -12,7 +12,7 @@ use byteorder::{LittleEndian, ReadBytesExt};
 
 use crate::result::Result;
 
-use super::vdf::{find_keys, read_kv, KeyValues, ValueType};
+use super::vdf::{KeyValues, ValueType, find_keys, read_kv};
 
 #[derive(Debug)]
 pub struct Package {

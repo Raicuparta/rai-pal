@@ -8,14 +8,13 @@ use rai_pal_proc_macros::{serializable_enum, serializable_struct};
 
 use super::mod_loader::{ModLoaderActions, ModLoaderData, ModLoaderStatic};
 use crate::{
+	game::DbGame,
 	game_mod::CommonModData,
-	installed_game::InstalledGame,
 	local_mod::{self, LocalMod, ModKind},
 	mod_manifest,
 	paths::glob_path,
-	providers::provider_command::ProviderCommand,
-	result::Error,
-	result::Result,
+	providers::provider_command::{ProviderCommand, ProviderCommandAction},
+	result::{Error, Result},
 };
 
 #[serializable_struct]
@@ -65,35 +64,44 @@ fn replace_parameter_value<TValue: AsRef<str>, TGetValue: Fn() -> Result<TValue>
 	match get_value() {
 		Ok(value) => argument.replace(&get_parameter_token(parameter), value.as_ref()),
 		Err(error) => {
-			error!("Failed get value to replace parameter `{parameter}` in runnable argument `{argument}`. Error: {error}");
+			error!(
+				"Failed get value to replace parameter `{parameter}` in runnable argument `{argument}`. Error: {error}"
+			);
 			argument.to_string()
 		}
 	}
 }
 
-fn replace_parameters(argument: &str, game: &InstalledGame) -> String {
+fn replace_parameters(argument: &str, game: &DbGame) -> String {
 	let mut result = argument.to_string();
 
+	let provider_commands = &game.provider_commands.0;
+	let start_command = provider_commands
+		.get(&ProviderCommandAction::StartViaProvider)
+		.or_else(|| provider_commands.get(&ProviderCommandAction::StartViaExe));
+
 	result = replace_parameter_value(&result, RunnableParameter::ExecutableName, || {
-		Ok(&game.executable.name)
+		game.try_get_exe_name()
 	});
 	result = replace_parameter_value(&result, RunnableParameter::ExecutablePath, || {
-		Ok(game.executable.path.to_string_lossy())
+		Ok(game.try_get_exe_path()?.to_string_lossy().to_string())
 	});
 	result = replace_parameter_value(&result, RunnableParameter::GameJson, || {
 		Ok(serde_json::to_string(&game)?)
 	});
-	result = replace_parameter_value(&result, RunnableParameter::StartCommand, || {
-		game.start_command.as_ref().map_or_else(
-			|| Ok(game.executable.path.to_string_lossy().to_string()),
-			|provider_command| match provider_command {
+	result =
+		replace_parameter_value(
+			&result,
+			RunnableParameter::StartCommand,
+			|| match start_command
+				.ok_or_else(|| Error::GameNotInstalled(game.display_title.clone()))?
+			{
 				ProviderCommand::String(s) => Ok(s.to_string()),
 				ProviderCommand::Path(exe_path, _) => Ok(exe_path.to_string_lossy().to_string()),
 			},
-		)
-	});
+		);
 	result = replace_parameter_value(&result, RunnableParameter::StartCommandArgs, || {
-		game.start_command.as_ref().map_or_else(
+		start_command.map_or_else(
 			|| Ok(String::new()),
 			|provider_command| match provider_command {
 				ProviderCommand::Path(_, args) => Ok(args.join(" ")),
@@ -110,11 +118,11 @@ impl ModLoaderActions for RunnableLoader {
 		&self.data
 	}
 
-	fn install(&self, _game: &InstalledGame) -> Result {
+	fn install(&self, _game: &DbGame) -> Result {
 		todo!()
 	}
 
-	async fn install_mod_inner(&self, game: &InstalledGame, local_mod: &LocalMod) -> Result {
+	async fn install_mod_inner(&self, game: &DbGame, local_mod: &LocalMod) -> Result {
 		let mod_folder = self.get_mod_path(&local_mod.common)?;
 
 		let runnable = local_mod
@@ -138,7 +146,7 @@ impl ModLoaderActions for RunnableLoader {
 		Ok(())
 	}
 
-	async fn uninstall_mod(&self, _game: &InstalledGame, _local_mod: &LocalMod) -> Result {
+	async fn uninstall_mod(&self, _game: &DbGame, _local_mod: &LocalMod) -> Result {
 		// There's nothing to uninstall for runnables.
 
 		Ok(())
@@ -161,12 +169,12 @@ impl ModLoaderActions for RunnableLoader {
 		Ok(())
 	}
 
-	fn configure_mod(&self, game: &InstalledGame, local_mod: &LocalMod) -> Result {
+	fn configure_mod(&self, game: &DbGame, local_mod: &LocalMod) -> Result {
 		// TODO: make it actually open the config file / folder (would need extra info in database / manifest).
 		self.open_installed_mod_folder(game, local_mod)
 	}
 
-	fn open_installed_mod_folder(&self, _game: &InstalledGame, local_mod: &LocalMod) -> Result {
+	fn open_installed_mod_folder(&self, _game: &DbGame, local_mod: &LocalMod) -> Result {
 		let mod_folder = self.get_mod_path(&local_mod.common)?;
 
 		Ok(open::that_detached(mod_folder)?)

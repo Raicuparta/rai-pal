@@ -1,15 +1,14 @@
-import { Button, ButtonProps, Switch } from "@mantine/core";
+import { Menu, MenuItemProps, Switch } from "@mantine/core";
 
-interface Props extends ButtonProps {
+interface Props extends MenuItemProps {
 	readonly value: boolean;
 	readonly onChange: (value: boolean) => void;
 }
 
 export function SwitchButton({ value, onChange, ...props }: Props) {
 	return (
-		<Button
-			color={value ? "violet" : "dark"}
-			justify="start"
+		<Menu.Item
+			closeMenuOnClick={false}
 			leftSection={
 				<Switch
 					checked={value}
@@ -17,7 +16,6 @@ export function SwitchButton({ value, onChange, ...props }: Props) {
 				/>
 			}
 			onClick={() => onChange(!value)}
-			variant={value ? "light" : "filled"}
 			{...props}
 		/>
 	);
