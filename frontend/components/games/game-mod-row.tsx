@@ -40,7 +40,7 @@ type Props = {
 };
 
 export function GameModRow({ game, mod, modLoader, installedVersion }: Props) {
-	const t = useLocalization("gameModal");
+	const t = useLocalization("gameModRow");
 
 	const isInstalledModOutdated = getIsOutdated(
 		installedVersion,
@@ -71,22 +71,22 @@ export function GameModRow({ game, mod, modLoader, installedVersion }: Props) {
 	};
 	const { actionText, actionIcon } = (() => {
 		if (isLocalModOutdated || isInstalledModOutdated) {
-			return { actionText: "Update", actionIcon: <IconRefreshAlert /> };
+			return { actionText: t("updateMod"), actionIcon: <IconRefreshAlert /> };
 		}
 
 		if (isInstalled) {
-			return { actionText: "Uninstall", actionIcon: <IconTrash /> };
+			return { actionText: t("uninstallMod"), actionIcon: <IconTrash /> };
 		}
 
 		if (modLoader.kind === "Installable") {
-			return { actionText: "Install", actionIcon: <IconCirclePlus /> };
+			return { actionText: t("installMod"), actionIcon: <IconCirclePlus /> };
 		}
 
 		if (!mod.remote && !mod.local) {
-			return { actionText: "Open mod folder", actionIcon: <IconFolderOpen /> };
+			return { actionText: t("openModFolder"), actionIcon: <IconFolderOpen /> };
 		}
 
-		return { actionText: "Run", actionIcon: <IconPlayerPlay /> };
+		return { actionText: t("runMod"), actionIcon: <IconPlayerPlay /> };
 	})();
 
 	const { statusIcon, statusColor } = (() => {

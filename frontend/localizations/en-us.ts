@@ -194,12 +194,27 @@ export const enUs = {
 		// Confirmation dialog for uninstalling all mods for this game.
 		uninstallAllModsConfirmation:
 			"You sure? This will delete all files in this game's mods folder. It won't delete any files from the actual game though.",
+	},
 
+	// Row in the table that shows mods for a specific game in the game modal.
+	gameModRow: {
 		// Button for opening mod configuration/settings.
 		modSettings: "Mod Settings",
 
 		// Button for opening the folder where a specific mod is installed.
 		openModFolder: "Open Mod Folder",
+
+		// Button for updating the install mod for this game to the latest version.
+		updateMod: "Update",
+
+		// Button for installing a mod for this game.
+		installMod: "Install",
+
+		// Button for uninstalling a mod for this game.
+		uninstallMod: "Uninstall",
+
+		// For mods that can be executed (like UEVR), this button runs them.
+		runMod: "Run",
 	},
 
 	// Named table columns for the list of games.
