@@ -35,7 +35,6 @@ export function SteamCacheButton() {
 							onClick={commands.resetSteamCache}
 							onSuccess={() => setShowSteamRestartPrompt(true)}
 							leftSection={<IconHammer />}
-							confirmationText={t("resetSteamCacheDescription")}
 						>
 							{t("resetSteamCacheButton")}
 						</CommandButton>
