@@ -99,6 +99,8 @@ export const esEs: Localization = {
 		uninstallAllModsButton: "Desinstalar todos los mods",
 		uninstallAllModsConfirmation:
 			"¿Estás seguro? Esto eliminará todos los archivos en la carpeta de mods de este juego. Sin embargo, no eliminará ningún archivo del juego en sí.",
+		modSettings: "Configuración del Mod",
+		openModFolder: "Abrir Carpeta del Mod",
 	},
 
 	gamesTableColumn: {

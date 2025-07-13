@@ -30,6 +30,7 @@ import { ModVersionBadge } from "@components/mods/mod-version-badge";
 import { getModTitle } from "@util/game-mod";
 import { CommandDropdown } from "@components/command-dropdown";
 import { DeprecatedBadge } from "@components/mods/deprecated-badge";
+import { useLocalization } from "@hooks/use-localization";
 
 type Props = {
 	readonly game: DbGame;
@@ -39,6 +40,8 @@ type Props = {
 };
 
 export function GameModRow({ game, mod, modLoader, installedVersion }: Props) {
+	const t = useLocalization("gameModal");
+
 	const isInstalledModOutdated = getIsOutdated(
 		installedVersion,
 		mod.remote?.latestVersion?.id,
@@ -158,19 +161,29 @@ export function GameModRow({ game, mod, modLoader, installedVersion }: Props) {
 							<CommandDropdown icon={<IconDotsVertical />}>
 								<Button
 									disabled={!isInstalled && !isReadyRunnable}
-									onClick={() => commands.configureMod(game.providerId, game.gameId, mod.common.id)}
+									onClick={() =>
+										commands.configureMod(
+											game.providerId,
+											game.gameId,
+											mod.common.id,
+										)
+									}
 									leftSection={<IconSettings />}
 								>
-									Mod Settings
+									{t("modSettings")}
 								</Button>
 								<Button
 									disabled={!isInstalled && !isReadyRunnable}
 									onClick={() =>
-										commands.openInstalledModFolder(game.providerId, game.gameId, mod.common.id)
+										commands.openInstalledModFolder(
+											game.providerId,
+											game.gameId,
+											mod.common.id,
+										)
 									}
 									leftSection={<IconFolderOpen />}
 								>
-									Open Mod Folder
+									{t("openModFolder")}
 								</Button>
 							</CommandDropdown>
 						</ButtonGroup>

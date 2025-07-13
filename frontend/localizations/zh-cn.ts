@@ -93,6 +93,8 @@ export const zhCn: Localization = {
 		uninstallAllModsButton: "卸载所有模组",
 		uninstallAllModsConfirmation:
 			"您确定吗？这将删除此游戏模组文件夹中的所有文件。但不会删除游戏的任何文件。",
+		modSettings: "模组设置",
+		openModFolder: "打开模组文件夹",
 	},
 
 	gamesTableColumn: {

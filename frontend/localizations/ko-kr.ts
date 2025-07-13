@@ -96,6 +96,8 @@ export const koKr: Localization = {
 		uninstallAllModsButton: "모드 모두 제거",
 		uninstallAllModsConfirmation:
 			"확실합니까? 이 게임의 모드 폴더에 있는 모든 파일이 삭제됩니다. 실제 게임의 파일은 삭제되지 않습니다.",
+		modSettings: "모드 설정",
+		openModFolder: "모드 폴더 열기",
 	},
 
 	gamesTableColumn: {

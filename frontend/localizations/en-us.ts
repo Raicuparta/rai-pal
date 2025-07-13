@@ -194,6 +194,12 @@ export const enUs = {
 		// Confirmation dialog for uninstalling all mods for this game.
 		uninstallAllModsConfirmation:
 			"You sure? This will delete all files in this game's mods folder. It won't delete any files from the actual game though.",
+
+		// Button for opening mod configuration/settings.
+		modSettings: "Mod Settings",
+
+		// Button for opening the folder where a specific mod is installed.
+		openModFolder: "Open Mod Folder",
 	},
 
 	// Named table columns for the list of games.
