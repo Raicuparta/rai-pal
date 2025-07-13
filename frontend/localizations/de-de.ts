@@ -99,8 +99,15 @@ export const deDe: Localization = {
 		uninstallAllModsButton: "Alle Mods deinstallieren",
 		uninstallAllModsConfirmation:
 			"Sind Sie sicher? Dies wird alle Dateien im Mods-Ordner dieses Spiels löschen. Es werden jedoch keine Dateien aus dem eigentlichen Spiel gelöscht.",
+	},
+
+	gameModRow: {
 		modSettings: "Mod-Einstellungen",
 		openModFolder: "Mod-Ordner öffnen",
+		updateMod: "Aktualisieren",
+		installMod: "Installieren",
+		uninstallMod: "Deinstallieren",
+		runMod: "Ausführen",
 	},
 
 	gamesTableColumn: {

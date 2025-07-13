@@ -98,8 +98,15 @@ export const jaJp: Localization = {
 		uninstallAllModsButton: "すべてのモッドをアンインストール",
 		uninstallAllModsConfirmation:
 			"本当に？これにより、このゲームのモッドフォルダー内のすべてのファイルが削除されます。ただし、実際のゲームのファイルは削除されません。",
+	},
+
+	gameModRow: {
 		modSettings: "モッド設定",
 		openModFolder: "モッドフォルダーを開く",
+		updateMod: "更新",
+		installMod: "インストール",
+		uninstallMod: "アンインストール",
+		runMod: "実行",
 	},
 
 	gamesTableColumn: {

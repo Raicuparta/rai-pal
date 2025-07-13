@@ -98,8 +98,15 @@ export const ptPt: Localization = {
 		uninstallAllModsButton: "Desinstalar todos os mods",
 		uninstallAllModsConfirmation:
 			"Tens a certeza? Isto apagará todos os ficheiros na pasta de mods deste jogo. No entanto, não removerá ficheiros do próprio jogo.",
+	},
+
+	gameModRow: {
 		modSettings: "Configurações do Mod",
 		openModFolder: "Abrir Pasta do Mod",
+		updateMod: "Atualizar",
+		installMod: "Instalar",
+		uninstallMod: "Desinstalar",
+		runMod: "Executar",
 	},
 
 	gamesTableColumn: {

@@ -99,8 +99,15 @@ export const frFr: Localization = {
 		uninstallAllModsButton: "Désinstaller tous les mods",
 		uninstallAllModsConfirmation:
 			"Êtes-vous sûr ? Cela supprimera tous les fichiers dans le dossier des mods de ce jeu. Cela ne supprimera aucun fichier du jeu lui-même.",
+	},
+
+	gameModRow: {
 		modSettings: "Paramètres du Mod",
 		openModFolder: "Ouvrir le Dossier du Mod",
+		updateMod: "Mettre à jour",
+		installMod: "Installer",
+		uninstallMod: "Désinstaller",
+		runMod: "Exécuter",
 	},
 
 	gamesTableColumn: {
