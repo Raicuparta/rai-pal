@@ -31,12 +31,6 @@ pub struct SteamLaunchOption {
 	pub os_arch: Option<String>,
 }
 
-impl SteamLaunchOption {
-	pub fn is_vr(&self) -> bool {
-		matches!(self.launch_type.as_deref(), Some("vr"))
-	}
-}
-
 #[derive(Debug)]
 pub struct App {
 	pub key_values: KeyValues,
@@ -51,6 +45,7 @@ pub struct SteamAppInfo {
 	pub original_release_date: Option<i32>,
 	pub is_free: bool,
 	pub app_type: Option<String>,
+	pub tags: Option<Vec<i32>>,
 }
 
 pub struct SteamAppInfoReader {
@@ -167,6 +162,13 @@ impl SteamAppInfoReader {
 			let steam_release_date =
 				value_to_i32(app.get(&["appinfo", "common", "steam_release_date"]));
 
+			let tags = value_to_kv(app.get(&["appinfo", "common", "store_tags"])).map(|tag_map| {
+				tag_map
+					.values()
+					.filter_map(|value| value_to_i32(Some(value)))
+					.collect::<Vec<_>>()
+			});
+
 			let original_release_date =
 				value_to_i32(app.get(&["appinfo", "common", "original_release_date"]));
 
@@ -197,6 +199,7 @@ impl SteamAppInfoReader {
 						original_release_date,
 						is_free,
 						app_type: app_type_option,
+						tags,
 					}));
 				}
 			}

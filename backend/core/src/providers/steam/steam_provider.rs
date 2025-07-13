@@ -6,14 +6,14 @@ use std::{
 use steamlocate::SteamDir;
 
 use crate::{
-	local_database::{DbMutex, GameDatabase},
 	game::DbGame,
 	game_tag::GameTag,
+	local_database::{DbMutex, GameDatabase},
 	paths,
 	providers::{
 		provider::{ProviderActions, ProviderId, ProviderStatic},
 		provider_command::{ProviderCommand, ProviderCommandAction},
-		steam::appinfo::{self, SteamAppInfoReader},
+		steam::appinfo::SteamAppInfoReader,
 	},
 	result::Result,
 };
@@ -197,9 +197,9 @@ impl ProviderActions for Steam {
 					);
 
 					if app_info
-						.launch_options
-						.iter()
-						.any(appinfo::SteamLaunchOption::is_vr)
+						.tags
+						.as_ref()
+						.is_some_and(|tags| tags.contains(&21978))
 					{
 						game.add_tag(GameTag::VR);
 					}
