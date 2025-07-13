@@ -8,7 +8,15 @@ export const zhCn: Localization = {
 	tab: {
 		games: "游戏",
 		mods: "模组",
-		thanks: "感谢",
+		thanks: "致谢",
+	},
+
+	gamesPage: {
+		emptyGamesList:
+			"Rai Pal 完全没有找到任何游戏。请记住 Rai Pal 需要从其他游戏提供商（如 Steam、Epic 等）找到已安装的应用程序。",
+		emptyFilteredGamesList:
+			"什么都没有！由于您选择的过滤器，您的所有游戏都被隐藏了。清除过滤器以再次查看您美丽的游戏。",
+		emptyGamesLoading: "正在寻找您的游戏...",
 	},
 
 	addGame: {
@@ -20,6 +28,7 @@ export const zhCn: Localization = {
 
 	refresh: {
 		button: "刷新",
+		buttonUpdateRemoteDatabases: "更新远程数据库",
 		loading: "正在加载 {items}...",
 	},
 
@@ -51,6 +60,7 @@ export const zhCn: Localization = {
 	},
 
 	filterValueNote: {
+		providerXboxOnlyInstalled: "仅在已安装时显示 PC Xbox 游戏。",
 		engineGodotNotFullySupported: "Godot 游戏尚未完全支持。",
 		engineGameMakerNotFullySupported: "GameMaker 游戏尚未完全支持。",
 	},
@@ -59,7 +69,8 @@ export const zhCn: Localization = {
 		installGame: "安装",
 		showGameInLibrary: "在库中显示",
 		showGameInStore: "打开商店页面",
-		startGame: "启动游戏",
+		startGameViaProvider: "启动游戏",
+		startGameViaExe: "运行游戏可执行文件",
 		openGamePageInBrowser: "在浏览器中打开",
 	},
 

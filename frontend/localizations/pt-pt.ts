@@ -10,6 +10,14 @@ export const ptPt: Localization = {
 		thanks: "Agradecimentos",
 	},
 
+	gamesPage: {
+		emptyGamesList:
+			"O Rai Pal não encontrou nenhum jogo. Lembra-te que o Rai Pal precisa de encontrar aplicações instaladas de outros fornecedores de jogos, como Steam, Epic, etc.",
+		emptyFilteredGamesList:
+			"Nada! Todos os teus jogos estão escondidos devido aos filtros que selecionaste. Limpa os teus filtros para veres os teus belos jogos novamente.",
+		emptyGamesLoading: "A procurar os teus jogos...",
+	},
+
 	addGame: {
 		button: "Adicionar jogo",
 		title: "Adicionar jogo",
@@ -20,6 +28,7 @@ export const ptPt: Localization = {
 
 	refresh: {
 		button: "Atualizar",
+		buttonUpdateRemoteDatabases: "Atualizar bases de dados remotas",
 		loading: "A carregar {items}...",
 	},
 
@@ -51,6 +60,8 @@ export const ptPt: Localization = {
 	},
 
 	filterValueNote: {
+		providerXboxOnlyInstalled:
+			"Só mostra jogos Xbox PC se estiverem instalados.",
 		engineGodotNotFullySupported:
 			"Os jogos Godot ainda não são totalmente suportados.",
 		engineGameMakerNotFullySupported:
@@ -61,7 +72,8 @@ export const ptPt: Localization = {
 		installGame: "Instalar",
 		showGameInLibrary: "Mostrar na Biblioteca",
 		showGameInStore: "Abrir Página da Loja",
-		startGame: "Iniciar Jogo",
+		startGameViaProvider: "Iniciar Jogo",
+		startGameViaExe: "Executar Executável do Jogo",
 		openGamePageInBrowser: "Abrir no Navegador",
 	},
 

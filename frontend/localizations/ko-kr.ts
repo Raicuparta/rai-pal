@@ -11,6 +11,14 @@ export const koKr: Localization = {
 		thanks: "감사",
 	},
 
+	gamesPage: {
+		emptyGamesList:
+			"Rai Pal이 게임을 전혀 찾지 못했습니다. Rai Pal은 Steam, Epic 등과 같은 다른 게임 제공업체에서 설치된 앱을 찾아야 한다는 것을 기억하세요.",
+		emptyFilteredGamesList:
+			"아무것도 없습니다! 선택한 필터 때문에 모든 게임이 숨겨져 있습니다. 필터를 지워서 아름다운 게임들을 다시 보세요.",
+		emptyGamesLoading: "게임을 찾는 중...",
+	},
+
 	addGame: {
 		button: "게임 추가",
 		title: "게임 추가",
@@ -21,6 +29,7 @@ export const koKr: Localization = {
 
 	refresh: {
 		button: "새로고침",
+		buttonUpdateRemoteDatabases: "원격 데이터베이스 업데이트",
 		loading: "{items} 로딩 중...",
 	},
 
@@ -52,6 +61,7 @@ export const koKr: Localization = {
 	},
 
 	filterValueNote: {
+		providerXboxOnlyInstalled: "설치된 경우에만 PC Xbox 게임을 보여줍니다.",
 		engineGodotNotFullySupported: "Godot 게임은 아직 완전히 지원되지 않습니다.",
 		engineGameMakerNotFullySupported:
 			"GameMaker 게임은 아직 완전히 지원되지 않습니다.",
@@ -61,7 +71,8 @@ export const koKr: Localization = {
 		installGame: "설치",
 		showGameInLibrary: "라이브러리에서 보기",
 		showGameInStore: "스토어 페이지 열기",
-		startGame: "게임 시작",
+		startGameViaProvider: "게임 시작",
+		startGameViaExe: "게임 실행 파일 실행",
 		openGamePageInBrowser: "브라우저에서 열기",
 	},
 

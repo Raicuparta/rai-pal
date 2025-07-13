@@ -7,8 +7,16 @@ export const jaJp: Localization = {
 
 	tab: {
 		games: "ゲーム",
-		mods: "モッド",
+		mods: "Mod",
 		thanks: "感謝",
+	},
+
+	gamesPage: {
+		emptyGamesList:
+			"Rai Palはゲームを全く見つけられませんでした。Rai PalはSteam、Epicなどの他のゲームプロバイダーからインストールされたアプリを見つける必要があることを覚えておいてください。",
+		emptyFilteredGamesList:
+			"何もありません！選択したフィルターのために、すべてのゲームが非表示になっています。フィルターをクリアして、美しいゲームを再び見てください。",
+		emptyGamesLoading: "ゲームを検索中...",
 	},
 
 	addGame: {
@@ -21,6 +29,7 @@ export const jaJp: Localization = {
 
 	refresh: {
 		button: "更新",
+		buttonUpdateRemoteDatabases: "リモートデータベースを更新",
 		loading: "{items}を読み込み中...",
 	},
 
@@ -52,6 +61,8 @@ export const jaJp: Localization = {
 	},
 
 	filterValueNote: {
+		providerXboxOnlyInstalled:
+			"インストールされている場合のみPC Xboxゲームを表示します。",
 		engineGodotNotFullySupported:
 			"Godotゲームはまだ完全にはサポートされていません。",
 		engineGameMakerNotFullySupported:
@@ -62,7 +73,8 @@ export const jaJp: Localization = {
 		installGame: "インストール",
 		showGameInLibrary: "ライブラリで表示",
 		showGameInStore: "ストアページを開く",
-		startGame: "ゲームを開始",
+		startGameViaProvider: "ゲームを開始",
+		startGameViaExe: "ゲーム実行ファイルを実行",
 		openGamePageInBrowser: "ブラウザで開く",
 	},
 

@@ -11,6 +11,14 @@ export const esEs: Localization = {
 		thanks: "Agradecimientos",
 	},
 
+	gamesPage: {
+		emptyGamesList:
+			"Rai Pal no encontró ningún juego. Recuerda que Rai Pal necesita encontrar aplicaciones instaladas de otros proveedores de juegos, como Steam, Epic, etc.",
+		emptyFilteredGamesList:
+			"¡Nada! Todos tus juegos están ocultos debido a los filtros que seleccionaste. Limpia tus filtros para ver tus hermosos juegos de nuevo.",
+		emptyGamesLoading: "Buscando tus juegos...",
+	},
+
 	addGame: {
 		button: "Agregar juego",
 		title: "Agregar juego",
@@ -21,6 +29,7 @@ export const esEs: Localization = {
 
 	refresh: {
 		button: "Actualizar",
+		buttonUpdateRemoteDatabases: "Actualizar bases de datos remotas",
 		loading: "Cargando {items}...",
 	},
 
@@ -52,6 +61,8 @@ export const esEs: Localization = {
 	},
 
 	filterValueNote: {
+		providerXboxOnlyInstalled:
+			"Solo muestra juegos de Xbox para PC si están instalados.",
 		engineGodotNotFullySupported:
 			"Los juegos de Godot no están totalmente soportados aún.",
 		engineGameMakerNotFullySupported:
@@ -62,7 +73,8 @@ export const esEs: Localization = {
 		installGame: "Instalar",
 		showGameInLibrary: "Mostrar en la biblioteca",
 		showGameInStore: "Abrir página de la tienda",
-		startGame: "Iniciar juego",
+		startGameViaProvider: "Iniciar juego",
+		startGameViaExe: "Ejecutar ejecutable del juego",
 		openGamePageInBrowser: "Abrir en el navegador",
 	},
 
