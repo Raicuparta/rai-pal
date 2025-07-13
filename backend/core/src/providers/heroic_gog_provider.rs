@@ -7,6 +7,8 @@ use std::{
 	path::{Path, PathBuf},
 };
 
+use log;
+
 use crate::{
 	game::DbGame,
 	local_database::{DbMutex, GameDatabase},
@@ -116,7 +118,17 @@ impl HeroicGog {
 		let game_path = Path::new(&home_dir)
 			.join("Games/Heroic")
 			.join(&entry.folder_name.clone()?);
-		let infos = read_info_file(game_path.as_path(), &entry.app_name).ok()?; // TODO log error
+		let infos = match read_info_file(game_path.as_path(), &entry.app_name) {
+			Ok(infos) => infos,
+			Err(err) => {
+				log::warn!(
+					"Failed to read info file for GOG game '{}': {}",
+					entry.app_name,
+					err
+				);
+				return None;
+			}
+		};
 
 		let executable_name = infos.play_tasks.iter().find_map(|task| {
 			if task.is_primary.unwrap_or(false) {
