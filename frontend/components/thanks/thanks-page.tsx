@@ -210,6 +210,7 @@ export function ThanksPage() {
 								>
 									<Tooltip
 										ta="center"
+										withinPortal
 										label={
 											<>
 												<Text>{t("rankedByPatreonDonationAmount")}</Text>
