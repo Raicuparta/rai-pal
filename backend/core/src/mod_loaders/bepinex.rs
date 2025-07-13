@@ -105,7 +105,6 @@ impl ModLoaderActions for BepInEx {
 			),
 		)?;
 
-		// TODO error due to not installed?
 		Ok(())
 	}
 
