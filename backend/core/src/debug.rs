@@ -1,7 +1,5 @@
 use std::time::Instant;
 
-use log::info;
-
 pub trait LoggableInstant {
 	fn log_next(&mut self, message: &str);
 }
