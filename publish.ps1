@@ -20,23 +20,23 @@ function CheckEnvVar {
 CheckEnvVar -Var "TAURI_SIGNING_PRIVATE_KEY"
 CheckEnvVar -Var "TAURI_SIGNING_PRIVATE_KEY_PASSWORD"
 
-# Folder where the msi bundle will end up.
-$msiFolder = "./backend/target/release/bundle/msi"
+# Folder where the nsis bundle will end up.
+$bundleFolder = "./backend/target/release/bundle/nsis"
 
-# Delete everything in the msi folder first.
-Remove-Item $msiFolder -Force -Recurse -ErrorAction Ignore | Out-Null
+# Delete everything in the bundle folder first.
+Remove-Item $bundleFolder -Force -Recurse -ErrorAction Ignore | Out-Null
 
 npm run build
 
-# Get built msi file name.
-$msiName = (Get-ChildItem -Path $msiFolder -Filter "*.msi" | Select-Object -First 1).Name
+# Get built bundle file name.
+$exeName = (Get-ChildItem -Path $bundleFolder -Filter "*.exe" | Select-Object -First 1).Name
 
 # Extract version number from file name.
-$version = [regex]::Match($msiName, '.+_(.+)_.+_.+').Groups[1].Value
+$version = [regex]::Match($exeName, '.+_(.+)_.+_.+').Groups[1].Value
 
 # Read signature from sig file. We deleted everything in this folder before,
 # so we're pretty sure nothing other the newly created zip.sig should be found.
-$signature = Get-Content -Path "$msiFolder/*zip.sig" -Raw
+$signature = Get-Content -Path "$bundleFolder/*zip.sig" -Raw
 
 # Read changelog from environment variable.
 $changelog = $env:RAI_PAL_CHANGELOG ?? "Someone forgot to include a changelog."
@@ -66,7 +66,7 @@ $updaterJson | Set-Content -Path "$outputFolder/latest.json"
 # and remove version numbers frothe download file. This is important
 # because we want to be able to use GitHub's magic releases/latest links
 # to directly link to the latest release download.
-Copy-Item "$msiFolder/*.msi" "$outputFolder/RaiPal.msi" -Force
-Copy-Item "$msiFolder/*.zip" "$outputFolder/updater.zip" -Force
+Copy-Item "$bundleFolder/*.exe" "$outputFolder/RaiPal.exe" -Force
+Copy-Item "$bundleFolder/*.zip" "$outputFolder/updater.zip" -Force
 
 return $version
