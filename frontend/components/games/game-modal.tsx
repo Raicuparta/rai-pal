@@ -5,7 +5,7 @@ import {
 	commands,
 	ProviderId,
 } from "@api/bindings";
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { CommandButton } from "@components/command-button";
 import {
 	IconFolder,
@@ -91,15 +91,21 @@ function isVersionWithinRange(
 	return true;
 }
 
+const defaultInstalledModVersions: Record<string, string> = {};
+
 export function GameModal({ providerId, gameId }: Props) {
 	const t = useLocalization("gameModal");
 	const modLoaderMap = useAtomValue(modLoadersAtom);
 	const game = useGame(providerId, gameId);
 	const mods = useUnifiedMods();
 	const setSelectedGame = useSetAtom(selectedGameAtom);
-	const [installedModVersions, updateInstalledModVersions] = useCommandData(
+	const getInstalledModVersions = useCallback(
 		() => commands.getInstalledModVersions(providerId, gameId),
-		{},
+		[providerId, gameId],
+	);
+	const [installedModVersions, updateInstalledModVersions] = useCommandData(
+		getInstalledModVersions,
+		defaultInstalledModVersions,
 		game.exePath === null,
 	);
 

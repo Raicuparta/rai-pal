@@ -1,6 +1,7 @@
 import { commands, DbGame, ProviderId } from "@api/bindings";
 import { useAppEvent } from "./use-app-event";
 import { useCommandData } from "./use-command-data";
+import { useCallback } from "react";
 
 export function useGame(providerId: ProviderId, gameId: string) {
 	const defaultGame: DbGame = {
@@ -22,10 +23,13 @@ export function useGame(providerId: ProviderId, gameId: string) {
 		providerCommands: {},
 		tags: [],
 	};
-	const [game, updateGame] = useCommandData(
+
+	const getGame = useCallback(
 		() => commands.getGame(providerId, gameId),
-		defaultGame,
+		[providerId, gameId],
 	);
+
+	const [game, updateGame] = useCommandData(getGame, defaultGame);
 
 	useAppEvent(
 		"refreshGame",
