@@ -454,10 +454,7 @@ async fn add_game(path: PathBuf, handle: AppHandle) -> Result {
 
 	handle.emit_safe(events::GamesChanged());
 
-	handle.emit_safe(events::SelectInstalledGame(
-		ProviderId::Manual,
-		game.game_id,
-	));
+	handle.emit_safe(events::SelectGame(ProviderId::Manual, game.game_id));
 
 	analytics::send_event(analytics::Event::ManuallyAddGame, &game_name).await;
 
@@ -474,7 +471,7 @@ async fn remove_game(provider_id: ProviderId, game_id: String, handle: AppHandle
 
 	manual_provider::remove_game(&game)?;
 
-	refresh_games(handle, ProviderId::Manual).await
+	Ok(())
 }
 
 #[tauri::command]

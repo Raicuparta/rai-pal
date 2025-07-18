@@ -3,7 +3,7 @@ members = ["proc-macros", "core", "tauri-app"]
 resolver = "2"
 
 [workspace.package]
-version = "0.15.2"
+version = "0.16.0"
 authors = ["Raicuparta"]
 license = "GPL-3.0-or-later"
 repository = "https://github.com/Raicuparta/rai-pal"
@@ -18,8 +18,8 @@ serde_json = "1.0.140"
 specta = "2.0.0-rc.22"
 tauri-specta = { version = "2.0.0-rc.21", features = ["derive", "typescript"] }
 thiserror = "2.0.12"
-rusqlite = { version = "0.35.0", features = ["bundled", "hooks"] }
-strum = { version = "0.27", features = ["derive"] }
+rusqlite = { version = "0.37.0", features = ["bundled", "hooks"] }
+strum = { version = "0.27.1", features = ["derive"] }
 
 [profile.release]
 codegen-units = 1

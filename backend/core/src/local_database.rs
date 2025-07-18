@@ -2,15 +2,15 @@ use std::{
 	ops::Deref,
 	path::{Path, PathBuf},
 	sync::Mutex,
-	time::{SystemTime, UNIX_EPOCH},
+	time::{Instant, SystemTime, UNIX_EPOCH},
 };
 
 use rai_pal_proc_macros::serializable_struct;
 use rusqlite::OpenFlags;
 
 use crate::{
+	debug::LoggableInstant,
 	game::DbGame,
-	game_engines::game_engine::EngineBrand,
 	game_title::get_normalized_titles,
 	games_query::{GamesQuery, GamesSortBy, InstallState},
 	paths,
@@ -376,6 +376,9 @@ fn try_insert_game(connection_mutex: &DbMutex, game: &DbGame) -> Result {
 }
 
 pub fn create() -> Result<DbMutex> {
+	let mut instant = Instant::now();
+	instant.log_next("Creating local database...");
+
 	let connection = rusqlite::Connection::open_with_flags(
 		db_file_path()?,
 		OpenFlags::SQLITE_OPEN_CREATE
@@ -441,7 +444,11 @@ pub fn create() -> Result<DbMutex> {
 		);
 	"#,
 	)?;
+
+	// TODO: Too slow to do on startup.
 	attach_remote_database(&connection, &remote_game::get_database_file_path()?)?;
+
+	instant.log_next("Created local database!");
 
 	Ok(DbMutex::new(connection))
 }
@@ -450,60 +457,78 @@ pub fn attach_remote_database<TConnection: Deref<Target = rusqlite::Connection>>
 	local_database_connection: TConnection,
 	path: &Path,
 ) -> Result {
-	println!("Attaching remote database...");
+	let mut instant = Instant::now();
+	instant.log_next("Attaching remote database...");
 
 	if !path.is_file() {
 		return Ok(());
 	}
 
-	let remote_database_connection =
-		rusqlite::Connection::open_with_flags(path, OpenFlags::SQLITE_OPEN_READ_ONLY)?;
+	let path_str = path.to_string_lossy();
 
-	let mut insert_into_local = local_database_connection.prepare_cached(
+	local_database_connection
+		.execute(&format!("ATTACH DATABASE '{}' AS remote_db;", path_str), [])?;
+
+	local_database_connection.execute(
 		r#"
 		INSERT OR IGNORE INTO main.remote_games (
-				provider_id, external_id, engine_brand, engine_version_major,
-				engine_version_minor, engine_version_patch, engine_version_display
+			provider_id, external_id, engine_brand, engine_version_major,
+			engine_version_minor, engine_version_patch, engine_version_display
 		)
-		VALUES (?, ?, ?, ?, ?, ?, ?);
+		SELECT 
+			provider_id,
+			external_id,
+			engine_brand,
+			NULL,
+			NULL, 
+			NULL,
+			engine_version
+		FROM remote_db.games;
 		"#,
+		[],
 	)?;
 
-	remote_database_connection
-		.prepare("SELECT * FROM games;")?
-		.query_map([], |row| {
-			let provider_id: ProviderId = row.get("provider_id")?;
-			let external_id: String = row.get("external_id")?;
-			let engine_brand: Option<EngineBrand> = row.get("engine_brand")?;
-			let engine_version_display: Option<String> = row.get("engine_version")?;
-			let engine_version_string: Option<String> = row.get("engine_version")?;
+	let mut update_statement = local_database_connection.prepare_cached(
+		"UPDATE main.remote_games SET engine_version_major = ?, engine_version_minor = ?, engine_version_patch = ? 
+		 WHERE provider_id = ? AND external_id = ? AND engine_version_display = ?"
+	)?;
 
-			let engine_version = if let Some(engine_version) = engine_version_string {
-				remote_game::parse_version(&engine_version)
-			} else {
-				None
-			};
+	let mut select_statement = local_database_connection.prepare_cached(
+		"SELECT
+			provider_id,
+			external_id,
+			engine_version
+		FROM
+			remote_db.games
+		WHERE
+			engine_version IS NOT NULL AND engine_version != ''",
+	)?;
 
-			// Insert the processed game into main.remote_games
-			insert_into_local.execute(rusqlite::params![
-				provider_id,
-				external_id,
-				engine_brand,
-				engine_version.as_ref().map(|v| v.numbers.major),
-				engine_version.as_ref().map(|v| v.numbers.minor),
-				engine_version.as_ref().map(|v| v.numbers.patch),
-				engine_version_display,
-			])?;
+	let rows = select_statement.query_map([], |row| {
+		let provider_id: String = row.get(0)?;
+		let external_id: String = row.get(1)?;
+		let engine_version: String = row.get(2)?;
+		Ok((provider_id, external_id, engine_version))
+	})?;
 
-			Ok(())
-		})?
-		.for_each(|result| {
-			if let Err(err) = result {
-				log::error!("Error processing row: {err}");
+	for row_result in rows {
+		if let Ok((provider_id, external_id, engine_version)) = row_result {
+			if let Some(parsed) = remote_game::parse_version(&engine_version) {
+				update_statement.execute(rusqlite::params![
+					parsed.numbers.major,
+					parsed.numbers.minor,
+					parsed.numbers.patch,
+					provider_id,
+					external_id,
+					engine_version
+				])?;
 			}
-		});
+		}
+	}
 
-	println!("Remote database attached!");
+	local_database_connection.execute("DETACH DATABASE remote_db;", [])?;
+
+	instant.log_next("Finished attaching up remote games database.");
 
 	Ok(())
 }

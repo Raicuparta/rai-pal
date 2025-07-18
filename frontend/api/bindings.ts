@@ -105,7 +105,7 @@ errorRaised: ErrorRaised,
 executedProviderCommand: ExecutedProviderCommand,
 gamesChanged: GamesChanged,
 refreshGame: RefreshGame,
-selectInstalledGame: SelectInstalledGame,
+selectGame: SelectGame,
 syncLocalMods: SyncLocalMods,
 syncModLoaders: SyncModLoaders,
 syncRemoteMods: SyncRemoteMods
@@ -114,7 +114,7 @@ errorRaised: "error-raised",
 executedProviderCommand: "executed-provider-command",
 gamesChanged: "games-changed",
 refreshGame: "refresh-game",
-selectInstalledGame: "select-installed-game",
+selectGame: "select-game",
 syncLocalMods: "sync-local-mods",
 syncModLoaders: "sync-mod-loaders",
 syncRemoteMods: "sync-remote-mods"
@@ -159,7 +159,7 @@ export type RefreshGame = [ProviderId, string]
 export type RemoteMod = { common: CommonModData; data: RemoteModData }
 export type RemoteModData = { title: string; deprecated: boolean; author: string; sourceCode: string; description: string; latestVersion: ModDownload | null }
 export type RunnableModData = { path: string; args: string[] }
-export type SelectInstalledGame = [ProviderId, string]
+export type SelectGame = [ProviderId, string]
 export type SyncLocalMods = Partial<{ [key in string]: LocalMod }>
 export type SyncModLoaders = Partial<{ [key in string]: ModLoaderData }>
 export type SyncRemoteMods = Partial<{ [key in string]: RemoteMod }>

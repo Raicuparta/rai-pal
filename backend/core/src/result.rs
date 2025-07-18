@@ -148,6 +148,9 @@ pub enum Error {
 		"This operation requires game `{0}` to be installed, but the installed game wasn't found."
 	)]
 	GameNotInstalled(String),
+
+	#[error("Failed to find game executable at `{0}`")]
+	NoExecutableFound(PathBuf),
 }
 
 impl serde::Serialize for Error {

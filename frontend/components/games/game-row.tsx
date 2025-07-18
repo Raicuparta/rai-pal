@@ -1,9 +1,8 @@
 import { Table } from "@mantine/core";
 import React from "react";
-import { useAtom } from "jotai";
+import { useSetAtom } from "jotai";
 import { selectedGameAtom } from "./games-state";
 import { useGame } from "@hooks/use-game";
-import { GameModal } from "./game-modal";
 import { ItemProps } from "react-virtuoso";
 import { DbGame, ProviderId } from "@api/bindings";
 import { gamesColumns } from "./games-columns";
@@ -18,24 +17,34 @@ export const GameRow = React.forwardRef(function GameRow(
 ) {
 	const [providerId, gameId] = props.item;
 	const game = useGame(providerId, gameId);
-	const [selectedGame, setSelectedGame] = useAtom(selectedGameAtom);
-	const [selectedProviderId, selectedGameId] = selectedGame ?? [null, null];
+	const setSelectedGame = useSetAtom(selectedGameAtom);
 
-	const isSelected =
-		selectedGameId === game.gameId &&
-		selectedProviderId == game.providerId;
+	const defaultGame: DbGame = {
+		providerId: providerId,
+		gameId: gameId,
+		displayTitle: "...",
+		engineBrand: null,
+		engineVersionMajor: null,
+		engineVersionMinor: null,
+		engineVersionPatch: null,
+		engineVersionDisplay: null,
+		exePath: null,
+		externalId: "",
+		releaseDate: null,
+		thumbnailUrl: null,
+		architecture: null,
+		unityBackend: null,
+		titleDiscriminator: null,
+		providerCommands: {},
+		tags: [],
+	};
 
 	return (
-		<>
-			{isSelected && <GameModal game={game} />}
-			<GameRowInner
-				game={game}
-				ref={ref}
-				onClick={() =>
-					setSelectedGame([game.providerId, game.gameId])
-				}
-			/>
-		</>
+		<GameRowInner
+			game={game || defaultGame}
+			ref={ref}
+			onClick={() => setSelectedGame({ providerId, gameId })}
+		/>
 	);
 });
 
