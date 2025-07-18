@@ -19,9 +19,29 @@ export const GameRow = React.forwardRef(function GameRow(
 	const game = useGame(providerId, gameId);
 	const setSelectedGame = useSetAtom(selectedGameAtom);
 
+	const defaultGame: DbGame = {
+		providerId: providerId,
+		gameId: gameId,
+		displayTitle: "...",
+		engineBrand: null,
+		engineVersionMajor: null,
+		engineVersionMinor: null,
+		engineVersionPatch: null,
+		engineVersionDisplay: null,
+		exePath: null,
+		externalId: "",
+		releaseDate: null,
+		thumbnailUrl: null,
+		architecture: null,
+		unityBackend: null,
+		titleDiscriminator: null,
+		providerCommands: {},
+		tags: [],
+	};
+
 	return (
 		<GameRowInner
-			game={game}
+			game={game || defaultGame}
 			ref={ref}
 			onClick={() => setSelectedGame({ providerId, gameId })}
 		/>
