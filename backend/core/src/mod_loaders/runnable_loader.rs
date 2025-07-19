@@ -29,6 +29,7 @@ pub enum RunnableParameter {
 	GameJson,
 	StartCommand,
 	StartCommandArgs,
+	// If adding new parameters, remember to update runnable_schema.json in rai-pal-db repo.
 }
 
 impl ModLoaderStatic for RunnableLoader {
