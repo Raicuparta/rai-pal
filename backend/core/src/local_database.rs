@@ -379,8 +379,13 @@ pub fn create() -> Result<DbMutex> {
 	let mut instant = Instant::now();
 	instant.log_next("Creating local database...");
 
+	let path = db_file_path()?;
+	if let Some(parent) = path.parent() {
+		std::fs::create_dir_all(parent)?;
+	}
+
 	let connection = rusqlite::Connection::open_with_flags(
-		db_file_path()?,
+		path,
 		OpenFlags::SQLITE_OPEN_CREATE
 			| OpenFlags::SQLITE_OPEN_READ_WRITE
 			| OpenFlags::SQLITE_OPEN_SHARED_CACHE,
