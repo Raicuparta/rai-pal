@@ -32,6 +32,7 @@ npm run build
 $exeName = (Get-ChildItem -Path $bundleFolder -Filter "*.exe" | Select-Object -First 1).Name
 
 # Extract version number from file name.
+# // TODO: doesn't work anymore.
 $version = [regex]::Match($exeName, '.+_(.+)_.+_.+').Groups[1].Value
 
 # Read signature from sig file. We deleted everything in this folder before,
