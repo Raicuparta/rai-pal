@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 use lazy_regex::regex_captures;
 use log::error;
-use rai_pal_proc_macros::serializable_struct;
+use rai_pal_proc_macros::{serializable_enum, serializable_struct};
 use reqwest::redirect::Policy;
 
 use crate::{
@@ -11,7 +11,8 @@ use crate::{
 	result::Result,
 };
 
-const URL_BASE: &str = "https://raicuparta.github.io/rai-pal-db/mod-db";
+// TODO: remember to update this MORON
+const URL_BASE: &str = "https://config-db.rai-pal.pages.dev/mod-db";
 
 // The repository over at github.com/Raicuparta/rai-pal-db can have multiple versions of the database.
 // This way we prevent old versions of Rai Pal from breaking unless we want them to.
@@ -33,6 +34,7 @@ pub struct DatabaseEntry {
 	pub github: Option<ModGithubInfo>,
 	pub redownload_id: Option<i32>,
 	pub deprecated: Option<bool>,
+	pub configs: Option<ModConfigs>,
 }
 
 #[serializable_struct]
@@ -52,6 +54,21 @@ pub struct ModDownload {
 	pub url: String,
 	pub root: Option<PathBuf>,
 	pub runnable: Option<RunnableModData>,
+}
+
+#[serializable_struct]
+pub struct ModConfigs {
+	pub destination_path: String,
+	pub destination_type: ModConfigDestinationType,
+	pub mod_id_override: Option<String>,
+}
+
+#[serializable_enum]
+pub enum ModConfigDestinationType {
+	#[serde(rename = "file")] // TODO fix in db instead
+	File,
+	#[serde(rename = "folder")] // TODO fix in db instead
+	Folder,
 }
 
 #[serializable_struct]

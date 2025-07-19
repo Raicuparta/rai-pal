@@ -94,6 +94,12 @@ async uninstallAllMods(providerId: ProviderId, gameId: string) : Promise<null> {
 },
 async uninstallMod(providerId: ProviderId, gameId: string, modId: string) : Promise<null> {
     return await TAURI_INVOKE("uninstall_mod", { providerId, gameId, modId });
+},
+async getRemoteConfigs(providerId: ProviderId, gameId: string) : Promise<RemoteConfigs | null> {
+    return await TAURI_INVOKE("get_remote_configs", { providerId, gameId });
+},
+async downloadRemoteConfig(providerId: ProviderId, gameId: string, modId: string, remoteConfigFile: string) : Promise<null> {
+    return await TAURI_INVOKE("download_remote_config", { providerId, gameId, modId, remoteConfigFile });
 }
 }
 
@@ -148,6 +154,8 @@ export type JsonData<T> = T
 export type LocalMod = { data: LocalModData; common: CommonModData }
 export type LocalModData = { path: string; manifest: Manifest | null }
 export type Manifest = { title: string | null; version: string; runnable: RunnableModData | null; engine: EngineBrand | null; engineVersionRange: EngineVersionRange | null; unityBackend: UnityBackend | null }
+export type ModConfigDestinationType = "file" | "folder"
+export type ModConfigs = { destinationPath: string; destinationType: ModConfigDestinationType; modIdOverride: string | null }
 export type ModDownload = { id: string; url: string; root: string | null; runnable: RunnableModData | null }
 export type ModKind = "Installable" | "Runnable"
 export type ModLoaderData = { id: string; path: string; kind: ModKind }
@@ -156,8 +164,10 @@ export type ProviderCommand = { String: string } | { Path: [string, string[]] }
 export type ProviderCommandAction = "Install" | "ShowInLibrary" | "ShowInStore" | "StartViaProvider" | "StartViaExe" | "OpenInBrowser"
 export type ProviderId = "Epic" | "Gog" | "Itch" | "Manual" | "Steam" | "Xbox"
 export type RefreshGame = [ProviderId, string]
+export type RemoteConfig = { version: number; mod: string; loader: string; file: string }
+export type RemoteConfigs = { configs: RemoteConfig[] }
 export type RemoteMod = { common: CommonModData; data: RemoteModData }
-export type RemoteModData = { title: string; deprecated: boolean; author: string; sourceCode: string; description: string; latestVersion: ModDownload | null }
+export type RemoteModData = { title: string; deprecated: boolean; author: string; sourceCode: string; description: string; latestVersion: ModDownload | null; configs: ModConfigs | null }
 export type RunnableModData = { path: string; args: string[] }
 export type SelectGame = [ProviderId, string]
 export type SyncLocalMods = Partial<{ [key in string]: LocalMod }>

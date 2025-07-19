@@ -85,6 +85,15 @@ export function GameMods({ game }: Props) {
 		defaultInstalledModVersions,
 		!game?.exePath,
 	);
+	const getRemoteConfigs = useCallback(
+		() => commands.getRemoteConfigs(game.providerId, game.gameId),
+		[game],
+	);
+	const [remoteConfigs, updateRemoteConfigs] = useCommandData(
+		getRemoteConfigs,
+		null,
+		!game?.exePath,
+	);
 
 	useAppEvent(
 		"refreshGame",
@@ -135,6 +144,7 @@ export function GameMods({ game }: Props) {
 										game={game}
 										mod={mod}
 										modLoader={modLoader}
+										remoteConfigs={remoteConfigs}
 										installedVersion={installedModVersions[mod.common.id]}
 									/>
 								)

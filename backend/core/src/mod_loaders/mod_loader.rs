@@ -12,12 +12,13 @@ use zip::ZipArchive;
 use super::{bepinex::BepInEx, mod_database, runnable_loader::RunnableLoader};
 use crate::{
 	files,
-	game_mod::CommonModData,
 	game::DbGame,
+	game_mod::CommonModData,
 	local_mod::{self, LocalMod, ModKind},
-	mod_loaders::mod_database::ModDatabase,
+	mod_loaders::mod_database::{ModConfigs, ModDatabase},
 	mod_manifest,
 	paths::{self, open_folder_or_parent},
+	remote_config::RemoteConfigs,
 	remote_mod::{RemoteMod, RemoteModData},
 	result::{Error, Result},
 };
@@ -42,6 +43,12 @@ pub trait ModLoaderActions {
 	async fn install_mod_inner(&self, game: &DbGame, local_mod: &LocalMod) -> Result;
 	async fn uninstall_mod(&self, game: &DbGame, local_mod: &LocalMod) -> Result;
 	async fn run_without_game(&self, local_mod: &LocalMod) -> Result;
+	async fn download_config(
+		&self,
+		game: &DbGame,
+		remote_configs: &ModConfigs,
+		config_file: &str,
+	) -> Result;
 	fn configure_mod(&self, game: &DbGame, local_mod: &LocalMod) -> Result;
 	fn open_installed_mod_folder(&self, game: &DbGame, local_mod: &LocalMod) -> Result;
 	fn get_data(&self) -> &ModLoaderData;
@@ -97,6 +104,7 @@ pub trait ModLoaderActions {
 					title: database_mod.title.clone(),
 					latest_version: database_mod.get_download().await,
 					deprecated: database_mod.deprecated.unwrap_or(false),
+					configs: database_mod.configs.clone(),
 				},
 			};
 			mods_map.insert(database_mod.id.clone(), remote_mod);

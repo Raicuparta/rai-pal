@@ -14,8 +14,13 @@ use crate::{
 	game_engines::{game_engine::EngineBrand, unity::UnityBackend},
 	game_mod::CommonModData,
 	local_mod::{LocalMod, ModKind},
-	mod_loaders::mod_loader::{ModLoaderActions, ModLoaderData},
+	mod_loaders::{
+		mod_database::ModConfigs,
+		mod_loader::{ModLoaderActions, ModLoaderData},
+	},
 	paths,
+	remote_config::{self, RemoteConfigs},
+	remote_mod::RemoteMod,
 	result::{Error, Result},
 };
 
@@ -198,6 +203,29 @@ impl ModLoaderActions for BepInEx {
 		};
 
 		Ok(local_mods)
+	}
+
+	async fn download_config(
+		&self,
+		game: &DbGame,
+		mod_configs: &ModConfigs,
+		config_file: &str,
+	) -> Result {
+		let destination_path = game
+			.get_installed_mods_folder()?
+			.join("BepInEx")
+			.join(&mod_configs.destination_path);
+
+		log::info!(
+			"Downloading config file '{}' for game '{}' to: {}",
+			config_file,
+			game.display_title,
+			destination_path.display()
+		);
+
+		remote_config::download_config_file(config_file, game, &destination_path).await?;
+
+		Ok(())
 	}
 }
 

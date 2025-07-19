@@ -19,6 +19,7 @@ use crate::{
 		provider::ProviderId,
 		provider_command::{ProviderCommand, ProviderCommandAction},
 	},
+	remote_config::{self, RemoteConfigs},
 	result::{Error, Result},
 };
 
@@ -219,5 +220,13 @@ impl DbGame {
 			return Err(Error::GameNotInstalled(self.display_title.clone()));
 		}
 		Ok(self)
+	}
+
+	pub async fn get_remote_configs(&self) -> Result<Option<RemoteConfigs>> {
+		if let Some(exe_path) = self.exe_path.as_ref() {
+			remote_config::get_remote_configs(&exe_path.0).await
+		} else {
+			Err(Error::GameNotInstalled(self.display_title.clone()))
+		}
 	}
 }

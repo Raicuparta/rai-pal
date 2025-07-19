@@ -11,9 +11,12 @@ use crate::{
 	game::DbGame,
 	game_mod::CommonModData,
 	local_mod::{self, LocalMod, ModKind},
+	mod_loaders::mod_database::ModConfigs,
 	mod_manifest,
 	paths::glob_path,
 	providers::provider_command::{ProviderCommand, ProviderCommandAction},
+	remote_config::RemoteConfigs,
+	remote_mod::RemoteMod,
 	result::{Error, Result},
 };
 
@@ -214,5 +217,14 @@ impl ModLoaderActions for RunnableLoader {
 		}
 
 		Ok(mod_map)
+	}
+
+	async fn download_config(
+		&self,
+		game: &DbGame,
+		remote_configs: &ModConfigs,
+		config_file: &str,
+	) -> Result {
+		todo!()
 	}
 }

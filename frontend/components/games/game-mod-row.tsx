@@ -7,8 +7,10 @@ import {
 	ButtonGroup,
 	Group,
 	Stack,
+	Tooltip,
+	Badge,
 } from "@mantine/core";
-import { DbGame, ModLoaderData, commands } from "@api/bindings";
+import { DbGame, ModLoaderData, RemoteConfigs, commands } from "@api/bindings";
 import { CommandButton } from "@components/command-button";
 import {
 	IconCheck,
@@ -19,6 +21,10 @@ import {
 	IconPlayerPlay,
 	IconRefreshAlert,
 	IconSettings,
+	IconSettings2,
+	IconSettingsFilled,
+	IconStar,
+	IconStarFilled,
 	IconTrash,
 } from "@tabler/icons-react";
 import { UnifiedMod } from "@hooks/use-unified-mods";
@@ -36,11 +42,22 @@ type Props = {
 	readonly game: DbGame;
 	readonly mod: UnifiedMod;
 	readonly modLoader: ModLoaderData;
+	readonly remoteConfigs?: RemoteConfigs | null;
 	readonly installedVersion?: string;
 };
 
-export function GameModRow({ game, mod, modLoader, installedVersion }: Props) {
+export function GameModRow({
+	game,
+	mod,
+	modLoader,
+	installedVersion,
+	remoteConfigs,
+}: Props) {
 	const t = useLocalization("gameModRow");
+
+	const remoteConfig = remoteConfigs?.configs.find(
+		(config) => config.mod === mod.common.id && config.loader === modLoader.id,
+	);
 
 	const isInstalledModOutdated = getIsOutdated(
 		installedVersion,
@@ -67,7 +84,16 @@ export function GameModRow({ game, mod, modLoader, installedVersion }: Props) {
 			return commands.uninstallMod(game.providerId, game.gameId, mod.common.id);
 		}
 
-		return commands.installMod(game.providerId, game.gameId, mod.common.id);
+		await commands.installMod(game.providerId, game.gameId, mod.common.id);
+
+		if (remoteConfig) {
+			await commands.downloadRemoteConfig(
+				game.providerId,
+				game.gameId,
+				mod.common.id,
+				remoteConfig.file,
+			);
+		}
 	};
 	const { actionText, actionIcon } = (() => {
 		if (isLocalModOutdated || isInstalledModOutdated) {
@@ -123,6 +149,11 @@ export function GameModRow({ game, mod, modLoader, installedVersion }: Props) {
 						{statusIcon}
 					</ThemeIcon>
 					{getModTitle(mod)}
+					{remoteConfig && (
+						<Tooltip label={t("remoteConfigAvailable")}>
+							<IconSettingsFilled fontSize="15" />
+						</Tooltip>
+					)}
 					<ModVersionBadge
 						localVersion={installedVersion}
 						remoteVersion={mod.remote?.latestVersion?.id}
