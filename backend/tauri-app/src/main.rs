@@ -573,6 +573,7 @@ async fn download_remote_config(
 	game_id: &str,
 	mod_id: &str,
 	remote_config_file: &str,
+	overwrite: bool,
 	app_handle: AppHandle,
 ) -> Result {
 	let state = app_handle.app_state();
@@ -584,7 +585,7 @@ async fn download_remote_config(
 
 	if let Some(mod_configs) = remote_mod.data.configs.as_ref() {
 		mod_loader
-			.download_config(&game, mod_configs, remote_config_file)
+			.download_config(&game, mod_configs, remote_config_file, overwrite)
 			.await?;
 	}
 

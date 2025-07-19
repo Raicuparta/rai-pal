@@ -15,7 +15,7 @@ use crate::{
 	game_mod::CommonModData,
 	local_mod::{LocalMod, ModKind},
 	mod_loaders::{
-		mod_database::ModConfigs,
+		mod_database::{ModConfigDestinationType, ModConfigs},
 		mod_loader::{ModLoaderActions, ModLoaderData},
 	},
 	paths,
@@ -210,6 +210,7 @@ impl ModLoaderActions for BepInEx {
 		game: &DbGame,
 		mod_configs: &ModConfigs,
 		config_file: &str,
+		overwrite: bool,
 	) -> Result {
 		let destination_path = game
 			.get_installed_mods_folder()?
@@ -223,7 +224,22 @@ impl ModLoaderActions for BepInEx {
 			destination_path.display()
 		);
 
-		remote_config::download_config_file(config_file, game, &destination_path).await?;
+		match mod_configs.destination_type {
+			ModConfigDestinationType::File => {
+				remote_config::download_config_file(
+					config_file,
+					game,
+					&destination_path,
+					overwrite,
+				)
+				.await?;
+			}
+			ModConfigDestinationType::Folder => {
+				if !destination_path.exists() {
+					fs::create_dir_all(&destination_path)?;
+				}
+			}
+		}
 
 		Ok(())
 	}

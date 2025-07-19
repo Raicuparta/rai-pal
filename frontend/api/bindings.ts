@@ -98,8 +98,8 @@ async uninstallMod(providerId: ProviderId, gameId: string, modId: string) : Prom
 async getRemoteConfigs(providerId: ProviderId, gameId: string) : Promise<RemoteConfigs | null> {
     return await TAURI_INVOKE("get_remote_configs", { providerId, gameId });
 },
-async downloadRemoteConfig(providerId: ProviderId, gameId: string, modId: string, remoteConfigFile: string) : Promise<null> {
-    return await TAURI_INVOKE("download_remote_config", { providerId, gameId, modId, remoteConfigFile });
+async downloadRemoteConfig(providerId: ProviderId, gameId: string, modId: string, remoteConfigFile: string, overwrite: boolean) : Promise<null> {
+    return await TAURI_INVOKE("download_remote_config", { providerId, gameId, modId, remoteConfigFile, overwrite });
 }
 }
 

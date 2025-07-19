@@ -224,6 +224,7 @@ impl ModLoaderActions for RunnableLoader {
 		game: &DbGame,
 		remote_configs: &ModConfigs,
 		config_file: &str,
+		overwrite: bool,
 	) -> Result {
 		todo!()
 	}

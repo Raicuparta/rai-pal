@@ -129,7 +129,20 @@ pub async fn download_config_file(
 	config_file: &str,
 	game: &DbGame,
 	destination_path: &Path,
-) -> Result<Option<()>> {
+	overwrite: bool,
+) -> Result {
+	if destination_path.exists() {
+		if overwrite {
+			if destination_path.is_dir() {
+				std::fs::remove_dir_all(destination_path)?;
+			} else {
+				std::fs::remove_file(destination_path)?;
+			}
+		} else {
+			return Ok(());
+		}
+	}
+
 	// Extract game name from the executable path
 	let game_name = match &game.exe_path {
 		Some(exe_path) => {
@@ -141,13 +154,13 @@ pub async fn download_config_file(
 						"Could not extract game name from exe path: {}",
 						exe_path.0.display()
 					);
-					return Ok(None);
+					return Ok(());
 				}
 			}
 		}
 		None => {
 			warn!("Game '{}' has no exe_path set", game.display_title);
-			return Ok(None);
+			return Ok(());
 		}
 	};
 
@@ -162,7 +175,7 @@ pub async fn download_config_file(
 		}
 		Err(err) => {
 			warn!("Failed to request config file from URL '{}': {}", url, err);
-			return Ok(None);
+			return Ok(());
 		}
 	};
 
@@ -172,7 +185,7 @@ pub async fn download_config_file(
 			url,
 			response.status()
 		);
-		return Ok(None);
+		return Ok(());
 	}
 
 	let content = response.text().await?;
@@ -190,7 +203,7 @@ pub async fn download_config_file(
 		destination_path.display()
 	);
 
-	Ok(Some(()))
+	Ok(())
 }
 
 /// Downloads a specific config file using a RemoteConfig entry and game.

@@ -48,6 +48,7 @@ pub trait ModLoaderActions {
 		game: &DbGame,
 		remote_configs: &ModConfigs,
 		config_file: &str,
+		overwrite: bool,
 	) -> Result;
 	fn configure_mod(&self, game: &DbGame, local_mod: &LocalMod) -> Result;
 	fn open_installed_mod_folder(&self, game: &DbGame, local_mod: &LocalMod) -> Result;

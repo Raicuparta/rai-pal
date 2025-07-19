@@ -92,6 +92,7 @@ export function GameModRow({
 				game.gameId,
 				mod.common.id,
 				remoteConfig.file,
+				false,
 			);
 		}
 	};
@@ -216,6 +217,22 @@ export function GameModRow({
 								>
 									{t("openModFolder")}
 								</Button>
+								{remoteConfig && (
+									<CommandButton
+										disabled={!isInstalled}
+										onClick={() =>
+											commands.downloadRemoteConfig(
+												game.providerId,
+												game.gameId,
+												mod.common.id,
+												remoteConfig.file,
+												true,
+											)
+										}
+									>
+										{t("downloadRemoteConfig")}
+									</CommandButton>
+								)}
 							</CommandDropdown>
 						</ButtonGroup>
 					)}
