@@ -4,7 +4,7 @@
 
 ![rai-pal](https://github.com/Raicuparta/rai-pal/assets/3955124/aa4c0b67-8eb0-47e1-8f93-7244ab13bf19)
 
-[![Download Rai Pal for Windows](https://shields.io/badge/-Download_Rai_Pal_for_Windows-8A2BE2?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/Raicuparta/rai-pal/releases/latest/download/RaiPal.msi)
+[![Download Rai Pal for Windows](https://shields.io/badge/-Download_Rai_Pal_for_Windows-8A2BE2?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/Raicuparta/rai-pal/releases/latest/download/RaiPal.exe)
 
 ## What's this?
 
