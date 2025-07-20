@@ -8,7 +8,6 @@ import {
 	Group,
 	Stack,
 	Tooltip,
-	Badge,
 } from "@mantine/core";
 import { DbGame, ModLoaderData, RemoteConfigs, commands } from "@api/bindings";
 import { CommandButton } from "@components/command-button";
@@ -16,15 +15,13 @@ import {
 	IconCheck,
 	IconCirclePlus,
 	IconDotsVertical,
+	IconDownload,
 	IconFolderOpen,
 	IconMinus,
 	IconPlayerPlay,
 	IconRefreshAlert,
 	IconSettings,
-	IconSettings2,
 	IconSettingsFilled,
-	IconStar,
-	IconStarFilled,
 	IconTrash,
 } from "@tabler/icons-react";
 import { UnifiedMod } from "@hooks/use-unified-mods";
@@ -220,6 +217,7 @@ export function GameModRow({
 								{remoteConfig && (
 									<CommandButton
 										disabled={!isInstalled}
+										leftSection={<IconDownload />}
 										onClick={() =>
 											commands.downloadRemoteConfig(
 												game.providerId,

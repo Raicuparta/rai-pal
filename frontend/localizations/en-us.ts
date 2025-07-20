@@ -215,6 +215,13 @@ export const enUs = {
 
 		// For mods that can be executed (like UEVR), this button runs them.
 		runMod: "Run",
+
+		// Button for downloading a mod config from the database.
+		downloadRemoteConfig: "Download Recommended Config",
+
+		// Tooltip for icon that shows next to mod to indicate there's a downloadable config.
+		remoteConfigAvailable:
+			"Recommended config available. Will be downloaded if you don't already have a config. You can also force it to download from the three dot menu.",
 	},
 
 	// Named table columns for the list of games.
