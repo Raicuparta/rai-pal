@@ -174,27 +174,28 @@ pub trait ModLoaderActions {
 	) -> Result {
 		let destination_path = self.get_config_path(game, mod_configs)?;
 
-		log::info!(
-			"Downloading config file '{}' for game '{}' to: {}",
-			config_file,
-			game.display_title,
-			destination_path.display()
-		);
+		if destination_path.try_exists()? {
+			if overwrite {
+				if destination_path.is_dir() {
+					fs::remove_dir_all(&destination_path)?;
+				} else {
+					fs::remove_file(&destination_path)?;
+				}
+			} else {
+				return Ok(());
+			}
+		}
+
+		if let Some(parent) = destination_path.parent() {
+			fs::create_dir_all(parent)?;
+		}
 
 		match mod_configs.destination_type {
 			ModConfigDestinationType::File => {
-				remote_config::download_config_file(
-					config_file,
-					game,
-					&destination_path,
-					overwrite,
-				)
-				.await?;
+				remote_config::download_config_file(config_file, game, &destination_path).await?;
 			}
 			ModConfigDestinationType::Folder => {
-				if !destination_path.exists() {
-					fs::create_dir_all(&destination_path)?;
-				}
+				todo!();
 			}
 		}
 
