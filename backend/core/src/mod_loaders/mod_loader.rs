@@ -15,9 +15,10 @@ use crate::{
 	game::DbGame,
 	game_mod::CommonModData,
 	local_mod::{self, LocalMod, ModKind},
-	mod_loaders::mod_database::{ModConfigs, ModDatabase},
+	mod_loaders::mod_database::{ModConfigDestinationType, ModConfigs, ModDatabase},
 	mod_manifest,
 	paths::{self, open_folder_or_parent},
+	remote_config,
 	remote_mod::{RemoteMod, RemoteModData},
 	result::{Error, Result},
 };
@@ -42,13 +43,7 @@ pub trait ModLoaderActions {
 	async fn install_mod_inner(&self, game: &DbGame, local_mod: &LocalMod) -> Result;
 	async fn uninstall_mod(&self, game: &DbGame, local_mod: &LocalMod) -> Result;
 	async fn run_without_game(&self, local_mod: &LocalMod) -> Result;
-	async fn download_config(
-		&self,
-		game: &DbGame,
-		remote_configs: &ModConfigs,
-		config_file: &str,
-		overwrite: bool,
-	) -> Result;
+	fn get_config_path(&self, game: &DbGame, mod_configs: &ModConfigs) -> Result<PathBuf>;
 	fn configure_mod(&self, game: &DbGame, local_mod: &LocalMod) -> Result;
 	fn open_installed_mod_folder(&self, game: &DbGame, local_mod: &LocalMod) -> Result;
 	fn get_data(&self) -> &ModLoaderData;
@@ -165,6 +160,42 @@ pub trait ModLoaderActions {
 
 		if mod_path.exists() {
 			fs::remove_dir_all(&mod_path)?;
+		}
+
+		Ok(())
+	}
+
+	async fn download_config(
+		&self,
+		game: &DbGame,
+		mod_configs: &ModConfigs,
+		config_file: &str,
+		overwrite: bool,
+	) -> Result {
+		let destination_path = self.get_config_path(game, mod_configs)?;
+
+		log::info!(
+			"Downloading config file '{}' for game '{}' to: {}",
+			config_file,
+			game.display_title,
+			destination_path.display()
+		);
+
+		match mod_configs.destination_type {
+			ModConfigDestinationType::File => {
+				remote_config::download_config_file(
+					config_file,
+					game,
+					&destination_path,
+					overwrite,
+				)
+				.await?;
+			}
+			ModConfigDestinationType::Folder => {
+				if !destination_path.exists() {
+					fs::create_dir_all(&destination_path)?;
+				}
+			}
 		}
 
 		Ok(())

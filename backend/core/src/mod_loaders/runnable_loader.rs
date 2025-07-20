@@ -217,13 +217,7 @@ impl ModLoaderActions for RunnableLoader {
 		Ok(mod_map)
 	}
 
-	async fn download_config(
-		&self,
-		_game: &DbGame,
-		_remote_configs: &ModConfigs,
-		_config_file: &str,
-		_overwrite: bool,
-	) -> Result {
+	fn get_config_path(&self, game: &DbGame, mod_configs: &ModConfigs) -> Result<PathBuf> {
 		todo!()
 	}
 }
