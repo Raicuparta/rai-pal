@@ -14,6 +14,7 @@ use crate::{
 	files,
 	game::DbGame,
 	game_mod::CommonModData,
+	http_client,
 	local_mod::{self, LocalMod, ModKind},
 	mod_loaders::mod_database::{ModConfigDestinationType, ModConfigs, ModDatabase},
 	mod_manifest,
@@ -116,7 +117,8 @@ pub trait ModLoaderActions {
 				.join(&mod_loader_data.id)
 				.join("downloads");
 
-			let response = reqwest::get(&latest_version.url).await?;
+			let client = http_client::get_client();
+			let response = client.get(&latest_version.url).send().await?;
 
 			fs::create_dir_all(&downloads_path)?;
 
