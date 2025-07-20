@@ -31,6 +31,7 @@ reqwest = { version = "0.12.22", features = [
 ] }
 serde_urlencoded = "0.7.1"
 steamlocate = "2.0.1"
+unicode-normalization = "0.1.24"
 uuid = { version = "1.17.0", features = ["v4"] }
 zip = { version = "4.3.0", default-features = false, features = ["deflate"] }
 paths-as-strings = "0.1.1"
