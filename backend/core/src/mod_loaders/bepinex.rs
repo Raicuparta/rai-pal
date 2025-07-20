@@ -157,15 +157,6 @@ impl ModLoaderActions for BepInEx {
 		Ok(())
 	}
 
-	fn configure_mod(&self, game: &DbGame, _local_mod: &LocalMod) -> Result {
-		let game_data_folder = game.get_installed_mods_folder()?;
-		let mod_config_path = game_data_folder.join("BepInEx").join("config");
-
-		// TODO: actually open the specific config file somehow. Probably needs to be in the remote mod manifest.
-
-		Ok(open::that_detached(mod_config_path)?)
-	}
-
 	async fn run_without_game(&self, local_mod: &LocalMod) -> Result {
 		Err(Error::CantRunNonRunnable(local_mod.common.id.clone()))
 	}

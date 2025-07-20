@@ -184,11 +184,6 @@ impl ModLoaderActions for RunnableLoader {
 		Ok(())
 	}
 
-	fn configure_mod(&self, game: &DbGame, local_mod: &LocalMod) -> Result {
-		// TODO: make it actually open the config file / folder (would need extra info in database / manifest).
-		self.open_installed_mod_folder(game, local_mod)
-	}
-
 	fn open_installed_mod_folder(&self, _game: &DbGame, local_mod: &LocalMod) -> Result {
 		let mod_folder = self.get_mod_path(&local_mod.common)?;
 

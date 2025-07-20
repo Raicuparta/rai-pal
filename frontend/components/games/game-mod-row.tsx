@@ -188,19 +188,21 @@ export function GameModRow({
 								</Box>
 							</CommandButton>
 							<CommandDropdown icon={<IconDotsVertical />}>
-								<Button
-									disabled={!isInstalled && !isReadyRunnable}
-									onClick={() =>
-										commands.configureMod(
-											game.providerId,
-											game.gameId,
-											mod.common.id,
-										)
-									}
-									leftSection={<IconSettings />}
-								>
-									{t("modSettings")}
-								</Button>
+								{remoteConfig && (
+									<Button
+										disabled={!isInstalled && !isReadyRunnable}
+										onClick={() =>
+											commands.configureMod(
+												game.providerId,
+												game.gameId,
+												mod.common.id,
+											)
+										}
+										leftSection={<IconSettings />}
+									>
+										{t("modSettings")}
+									</Button>
+								)}
 								<Button
 									disabled={!isInstalled && !isReadyRunnable}
 									onClick={() =>

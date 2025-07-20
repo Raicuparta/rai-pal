@@ -44,7 +44,6 @@ pub trait ModLoaderActions {
 	async fn uninstall_mod(&self, game: &DbGame, local_mod: &LocalMod) -> Result;
 	async fn run_without_game(&self, local_mod: &LocalMod) -> Result;
 	fn get_config_path(&self, game: &DbGame, mod_configs: &ModConfigs) -> Result<PathBuf>;
-	fn configure_mod(&self, game: &DbGame, local_mod: &LocalMod) -> Result;
 	fn open_installed_mod_folder(&self, game: &DbGame, local_mod: &LocalMod) -> Result;
 	fn get_data(&self) -> &ModLoaderData;
 	fn get_mod_path(&self, mod_data: &CommonModData) -> Result<PathBuf>;
@@ -198,6 +197,17 @@ pub trait ModLoaderActions {
 				todo!();
 			}
 		}
+
+		Ok(())
+	}
+
+	fn configure_mod(&self, game: &DbGame, remote_mod: &RemoteMod) -> Result {
+		// TODO configs should be saved in local mod manifest? otherwise bad!
+		if let Some(configs) = remote_mod.data.configs.as_ref() {
+			let config_path = self.get_config_path(game, configs)?;
+			open::that_detached(config_path)?;
+		}
+		// TODO maybe error if no configs.
 
 		Ok(())
 	}

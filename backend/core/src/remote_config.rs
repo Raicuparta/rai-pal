@@ -28,10 +28,12 @@ fn get_config_url(game_name: &str) -> String {
 	format!("{CONFIG_DB_BASE_URL}/{CONFIG_DB_VERSION}/{game_name}/configs.json")
 }
 
-pub async fn get_remote_configs(exe_path: &Path) -> Result<Option<RemoteConfigs>> {
-	let game_name = paths::file_name_without_extension(exe_path)?;
+fn get_game_config_name(exe_path: &Path) -> Result<String> {
+	paths::file_name_without_extension(exe_path).map(|name| name.to_lowercase())
+}
 
-	let url = get_config_url(&game_name);
+pub async fn get_remote_configs(exe_path: &Path) -> Result<Option<RemoteConfigs>> {
+	let url = get_config_url(&get_game_config_name(exe_path)?);
 	let response = reqwest::get(&url).await?;
 
 	if !response.status().is_success() {
@@ -43,7 +45,7 @@ pub async fn get_remote_configs(exe_path: &Path) -> Result<Option<RemoteConfigs>
 }
 
 async fn download_config(config_file: &str, game: &DbGame) -> Result<Response> {
-	let game_name = paths::file_name_without_extension(game.try_get_exe_path()?)?;
+	let game_name = get_game_config_name(game.try_get_exe_path()?)?;
 
 	let url = format!("{CONFIG_DB_BASE_URL}/{CONFIG_DB_VERSION}/{game_name}/configs/{config_file}");
 	let response = reqwest::get(&url).await?;
