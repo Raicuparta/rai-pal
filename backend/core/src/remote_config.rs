@@ -1,8 +1,10 @@
-use std::{fs, path::Path};
+use std::{fs, io::Cursor, path::Path};
 
 use rai_pal_proc_macros::serializable_struct;
+use reqwest::Response;
+use zip::ZipArchive;
 
-use crate::{game::DbGame, result::Result};
+use crate::{game::DbGame, paths, result::Result};
 
 // TODO remember to update this MORON
 const CONFIG_DB_BASE_URL: &str = "https://config-db.rai-pal.pages.dev/config-db";
@@ -22,22 +24,12 @@ pub struct RemoteConfigs {
 	pub configs: Vec<RemoteConfig>,
 }
 
-pub fn get_game_name_from_exe(exe_path: &Path) -> Option<String> {
-	exe_path
-		.file_stem()
-		.and_then(|stem| stem.to_str())
-		.map(|name| name.to_lowercase())
-}
-
-pub fn get_config_url(game_name: &str) -> String {
+fn get_config_url(game_name: &str) -> String {
 	format!("{CONFIG_DB_BASE_URL}/{CONFIG_DB_VERSION}/{game_name}/configs.json")
 }
 
 pub async fn get_remote_configs(exe_path: &Path) -> Result<Option<RemoteConfigs>> {
-	let game_name = match get_game_name_from_exe(exe_path) {
-		Some(name) => name,
-		None => return Ok(None),
-	};
+	let game_name = paths::file_name_without_extension(exe_path)?;
 
 	let url = get_config_url(&game_name);
 	let response = reqwest::get(&url).await?;
@@ -50,28 +42,34 @@ pub async fn get_remote_configs(exe_path: &Path) -> Result<Option<RemoteConfigs>
 	Ok(Some(configs))
 }
 
+async fn download_config(config_file: &str, game: &DbGame) -> Result<Response> {
+	let game_name = paths::file_name_without_extension(game.try_get_exe_path()?)?;
+
+	let url = format!("{CONFIG_DB_BASE_URL}/{CONFIG_DB_VERSION}/{game_name}/configs/{config_file}");
+	let response = reqwest::get(&url).await?;
+
+	Ok(response.error_for_status()?)
+}
+
 pub async fn download_config_file(
 	config_file: &str,
 	game: &DbGame,
 	destination_path: &Path,
 ) -> Result {
-	let game_name = match &game.exe_path {
-		Some(exe_path) => match get_game_name_from_exe(&exe_path.0) {
-			Some(name) => name,
-			None => return Ok(()),
-		},
-		None => return Ok(()),
-	};
-
-	let url = format!("{CONFIG_DB_BASE_URL}/{CONFIG_DB_VERSION}/{game_name}/configs/{config_file}");
-	let response = reqwest::get(&url).await?;
-
-	if !response.status().is_success() {
-		return Ok(());
-	}
-
-	let content = response.bytes().await?;
+	let content = download_config(config_file, game).await?.bytes().await?;
 
 	fs::write(destination_path, content)?;
+	Ok(())
+}
+
+pub async fn download_config_folder(
+	config_file: &str,
+	game: &DbGame,
+	destination_path: &Path,
+) -> Result {
+	let content = download_config(config_file, game).await?.bytes().await?;
+
+	ZipArchive::new(Cursor::new(content))?.extract(destination_path)?;
+
 	Ok(())
 }
