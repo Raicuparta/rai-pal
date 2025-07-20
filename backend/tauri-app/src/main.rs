@@ -28,7 +28,7 @@ use rai_pal_core::remote_config::RemoteConfigs;
 use rai_pal_core::remote_game::{self};
 #[cfg(target_os = "windows")]
 use rai_pal_core::windows;
-use rai_pal_core::{analytics, mod_loaders, remote_mod};
+use rai_pal_core::{analytics, remote_mod};
 use strum::IntoEnumIterator;
 use tauri::path::BaseDirectory;
 use tauri::{AppHandle, Manager};

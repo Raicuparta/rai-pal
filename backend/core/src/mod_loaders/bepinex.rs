@@ -19,8 +19,7 @@ use crate::{
 		mod_loader::{ModLoaderActions, ModLoaderData},
 	},
 	paths,
-	remote_config::{self, RemoteConfigs},
-	remote_mod::RemoteMod,
+	remote_config::{self},
 	result::{Error, Result},
 };
 

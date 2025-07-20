@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use rai_pal_proc_macros::{serializable_enum, serializable_struct};
+use rai_pal_proc_macros::serializable_struct;
 
 use crate::{
 	game_mod::CommonModData,
