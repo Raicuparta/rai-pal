@@ -196,7 +196,7 @@ pub trait ModLoaderActions {
 				remote_config::download_config_file(config_file, game, &destination_path).await?;
 			}
 			ModConfigDestinationType::Folder => {
-				todo!();
+				remote_config::download_config_folder(config_file, game, &destination_path).await?;
 			}
 		}
 
