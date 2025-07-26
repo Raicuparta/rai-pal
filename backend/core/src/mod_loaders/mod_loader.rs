@@ -57,6 +57,12 @@ pub trait ModLoaderActions {
 	async fn install_mod(&self, game: &DbGame, local_mod: &LocalMod) -> Result {
 		self.install_mod_inner(game, local_mod).await?;
 
+		self.update_installed_mod_manifest(local_mod, game)?;
+
+		Ok(())
+	}
+
+	fn update_installed_mod_manifest(&self, local_mod: &LocalMod, game: &DbGame) -> Result {
 		if self.get_data().kind != ModKind::Runnable {
 			if let Some(manifest) = &local_mod.data.manifest {
 				let manifest_path = game.get_installed_mod_manifest_path(&local_mod.common.id)?;

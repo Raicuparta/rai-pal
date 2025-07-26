@@ -584,12 +584,17 @@ async fn download_remote_config(
 	let remote_mod = remote_mods.try_get(mod_id)?;
 	let mod_loaders = state.mod_loaders.read_state()?.clone();
 	let mod_loader = mod_loaders.try_get(&remote_mod.common.loader_id)?;
+	let local_mods = state.local_mods.read_state()?.clone();
+	let local_mod = local_mods.try_get(mod_id)?;
 
 	if let Some(mod_configs) = remote_mod.data.configs.as_ref() {
 		mod_loader
 			.download_config(&game, mod_configs, remote_config_file, overwrite)
 			.await?;
+		mod_loader.update_installed_mod_manifest(&local_mod, &game)?;
 	}
+
+	refresh_local_mods(&mod_loaders, &app_handle)?;
 
 	Ok(())
 }

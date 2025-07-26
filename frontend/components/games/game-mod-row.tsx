@@ -189,7 +189,7 @@ export function GameModRow({
 								</Box>
 							</CommandButton>
 							<CommandDropdown icon={<IconDotsVertical />}>
-								{localConfig && (
+								{(localConfig || availableRemoteConfig) && (
 									<ButtonGroup>
 										<CommandButton
 											flex={1}
@@ -206,26 +206,24 @@ export function GameModRow({
 										>
 											{t("editModConfig")}
 										</CommandButton>
-										{localConfig.destinationType !== "folder" && (
-											<Tooltip
-												label={t("openModConfigFolderTooltip")}
-												position="top-end"
+										<Tooltip
+											label={t("openModConfigFolderTooltip")}
+											position="top-end"
+										>
+											<CommandButton
+												disabled={!isInstalled && !isReadyRunnable}
+												onClick={() =>
+													commands.configureMod(
+														game.providerId,
+														game.gameId,
+														mod.common.id,
+														true,
+													)
+												}
 											>
-												<CommandButton
-													disabled={!isInstalled && !isReadyRunnable}
-													onClick={() =>
-														commands.configureMod(
-															game.providerId,
-															game.gameId,
-															mod.common.id,
-															true,
-														)
-													}
-												>
-													<IconFolderOpen />
-												</CommandButton>
-											</Tooltip>
-										)}
+												<IconFolderOpen />
+											</CommandButton>
+										</Tooltip>
 									</ButtonGroup>
 								)}
 								<CommandButton
