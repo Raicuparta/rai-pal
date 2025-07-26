@@ -3518,7 +3518,7 @@ checksum = "dc33ff2d4973d518d823d61aa239014831e521c75da58e3df4840d3f47749d09"
 
 [[package]]
 name = "rai-pal-core"
-version = "0.16.1"
+version = "0.17.0"
 dependencies = [
  "base64 0.22.1",
  "byteorder",
@@ -3551,7 +3551,7 @@ dependencies = [
 
 [[package]]
 name = "rai-pal-proc-macros"
-version = "0.16.1"
+version = "0.17.0"
 dependencies = [
  "quote",
  "serde",
@@ -3560,7 +3560,7 @@ dependencies = [
 
 [[package]]
 name = "rai-pal-tauri"
-version = "0.16.1"
+version = "0.17.0"
 dependencies = [
  "futures",
  "log",

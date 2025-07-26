@@ -3,7 +3,7 @@ members = ["proc-macros", "core", "tauri-app"]
 resolver = "2"
 
 [workspace.package]
-version = "0.16.1"
+version = "0.17.0"
 authors = ["Raicuparta"]
 license = "GPL-3.0-or-later"
 repository = "https://github.com/Raicuparta/rai-pal"
