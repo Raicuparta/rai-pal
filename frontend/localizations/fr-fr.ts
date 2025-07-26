@@ -102,12 +102,17 @@ export const frFr: Localization = {
 	},
 
 	gameModRow: {
-		modSettings: "Paramètres du Mod",
+		editModConfig: "Modifier la Configuration du Mod",
+		openModConfigFolderTooltip:
+			"Ouvrir le dossier contenant les fichiers de configuration de ce mod",
 		openModFolder: "Ouvrir le Dossier du Mod",
 		updateMod: "Mettre à jour",
 		installMod: "Installer",
 		uninstallMod: "Désinstaller",
 		runMod: "Exécuter",
+		downloadRemoteConfig: "Télécharger la Configuration Recommandée",
+		remoteConfigAvailable:
+			"Configuration recommandée disponible. Sera téléchargée si vous n'avez pas déjà une configuration. Vous pouvez aussi forcer le téléchargement depuis le menu à trois points.",
 	},
 
 	gamesTableColumn: {
