@@ -200,11 +200,11 @@ async fn configure_mod(
 	let state = handle.app_state();
 	let game = state.database.get_game(&provider_id, &game_id)?;
 	let mod_loaders = state.mod_loaders.read_state()?;
-	let remote_mods = state.remote_mods.read_state()?;
-	let remote_mod = remote_mods.try_get(mod_id)?;
-	let mod_loader = mod_loaders.try_get(&remote_mod.common.loader_id)?;
+	let local_mods = state.local_mods.read_state()?;
+	let local_mod = local_mods.try_get(mod_id)?;
+	let mod_loader = mod_loaders.try_get(&local_mod.common.loader_id)?;
 
-	mod_loader.configure_mod(&game, &remote_mod)?;
+	mod_loader.configure_mod(&game, &local_mod)?;
 
 	Ok(())
 }

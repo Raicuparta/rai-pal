@@ -52,9 +52,11 @@ export function GameModRow({
 }: Props) {
 	const t = useLocalization("gameModRow");
 
-	const remoteConfig = remoteConfigs?.configs.find(
-		(config) => config.mod === mod.common.id && config.loader === modLoader.id,
+	const availableRemoteConfig = remoteConfigs?.configs.find(
+		(config) =>
+			config.modId === mod.common.id && config.loaderId === modLoader.id,
 	);
+	const localConfig = mod.local?.manifest?.configs;
 
 	const isInstalledModOutdated = getIsOutdated(
 		installedVersion,
@@ -83,12 +85,12 @@ export function GameModRow({
 
 		await commands.installMod(game.providerId, game.gameId, mod.common.id);
 
-		if (remoteConfig) {
+		if (availableRemoteConfig) {
 			await commands.downloadRemoteConfig(
 				game.providerId,
 				game.gameId,
 				mod.common.id,
-				remoteConfig.file,
+				availableRemoteConfig.file,
 				false,
 			);
 		}
@@ -147,7 +149,7 @@ export function GameModRow({
 						{statusIcon}
 					</ThemeIcon>
 					{getModTitle(mod)}
-					{remoteConfig && (
+					{availableRemoteConfig && (
 						<Tooltip label={t("remoteConfigAvailable")}>
 							<IconSettingsFilled fontSize="15" />
 						</Tooltip>
@@ -188,7 +190,7 @@ export function GameModRow({
 								</Box>
 							</CommandButton>
 							<CommandDropdown icon={<IconDotsVertical />}>
-								{remoteConfig && (
+								{localConfig && (
 									<Button
 										disabled={!isInstalled && !isReadyRunnable}
 										onClick={() =>
@@ -216,7 +218,7 @@ export function GameModRow({
 								>
 									{t("openModFolder")}
 								</Button>
-								{remoteConfig && (
+								{availableRemoteConfig && (
 									<CommandButton
 										disabled={!isInstalled}
 										leftSection={<IconDownload />}
@@ -225,7 +227,7 @@ export function GameModRow({
 												game.providerId,
 												game.gameId,
 												mod.common.id,
-												remoteConfig.file,
+												availableRemoteConfig.file,
 												true,
 											)
 										}

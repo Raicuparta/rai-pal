@@ -6,7 +6,7 @@ use rai_pal_proc_macros::serializable_struct;
 use crate::{
 	game_engines::{game_engine::EngineBrand, unity::UnityBackend},
 	game_mod::EngineVersionRange,
-	mod_loaders::mod_database::RunnableModData,
+	mod_loaders::mod_database::{ModConfigs, RunnableModData},
 };
 
 #[serializable_struct]
@@ -17,6 +17,7 @@ pub struct Manifest {
 	pub engine: Option<EngineBrand>,
 	pub engine_version_range: Option<EngineVersionRange>,
 	pub unity_backend: Option<UnityBackend>,
+	pub configs: Option<ModConfigs>,
 }
 
 impl Manifest {

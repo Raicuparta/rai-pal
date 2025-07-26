@@ -13,9 +13,8 @@ const CONFIG_DB_VERSION: u32 = 0;
 #[serializable_struct]
 pub struct RemoteConfig {
 	pub version: u32,
-	#[serde(rename = "mod")]
 	pub mod_id: String,
-	pub loader: String,
+	pub loader_id: String,
 	pub file: String,
 }
 

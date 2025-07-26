@@ -148,6 +148,7 @@ pub trait ModLoaderActions {
 					engine: remote_mod.common.engine,
 					engine_version_range: remote_mod.common.engine_version_range.clone(),
 					unity_backend: remote_mod.common.unity_backend,
+					configs: remote_mod.data.configs.clone(),
 				})?,
 			)?;
 
@@ -203,9 +204,13 @@ pub trait ModLoaderActions {
 		Ok(())
 	}
 
-	fn configure_mod(&self, game: &DbGame, remote_mod: &RemoteMod) -> Result {
-		// TODO configs should be saved in local mod manifest? otherwise bad!
-		if let Some(configs) = remote_mod.data.configs.as_ref() {
+	fn configure_mod(&self, game: &DbGame, local_mod: &LocalMod) -> Result {
+		if let Some(configs) = local_mod
+			.data
+			.manifest
+			.as_ref()
+			.and_then(|manifest| manifest.configs.as_ref())
+		{
 			let config_path = self.get_config_path(game, configs)?;
 			open::that_detached(config_path)?;
 		}
