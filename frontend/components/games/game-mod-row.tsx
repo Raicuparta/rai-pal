@@ -241,7 +241,7 @@ export function GameModRow({
 								</CommandButton>
 								{availableRemoteConfig && (
 									<CommandButton
-										disabled={!isInstalled}
+										disabled={!isInstalled && !isReadyRunnable}
 										leftSection={<IconDownload />}
 										onClick={() =>
 											commands.downloadRemoteConfig(
