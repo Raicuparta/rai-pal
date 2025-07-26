@@ -195,6 +195,7 @@ async fn configure_mod(
 	provider_id: ProviderId,
 	game_id: String,
 	mod_id: &str,
+	open_folder: bool,
 	handle: AppHandle,
 ) -> Result {
 	let state = handle.app_state();
@@ -204,7 +205,7 @@ async fn configure_mod(
 	let local_mod = local_mods.try_get(mod_id)?;
 	let mod_loader = mod_loaders.try_get(&local_mod.common.loader_id)?;
 
-	mod_loader.configure_mod(&game, &local_mod)?;
+	mod_loader.configure_mod(&game, &local_mod, open_folder)?;
 
 	Ok(())
 }

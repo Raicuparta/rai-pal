@@ -8,8 +8,8 @@ export const commands = {
 async addGame(path: string) : Promise<null> {
     return await TAURI_INVOKE("add_game", { path });
 },
-async configureMod(providerId: ProviderId, gameId: string, modId: string) : Promise<null> {
-    return await TAURI_INVOKE("configure_mod", { providerId, gameId, modId });
+async configureMod(providerId: ProviderId, gameId: string, modId: string, openFolder: boolean) : Promise<null> {
+    return await TAURI_INVOKE("configure_mod", { providerId, gameId, modId, openFolder });
 },
 async deleteMod(modId: string) : Promise<null> {
     return await TAURI_INVOKE("delete_mod", { modId });

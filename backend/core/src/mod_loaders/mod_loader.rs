@@ -236,7 +236,7 @@ pub trait ModLoaderActions {
 		Ok(())
 	}
 
-	fn configure_mod(&self, game: &DbGame, local_mod: &LocalMod) -> Result {
+	fn configure_mod(&self, game: &DbGame, local_mod: &LocalMod, open_folder: bool) -> Result {
 		if let Some(configs) = local_mod
 			.data
 			.manifest
@@ -244,7 +244,11 @@ pub trait ModLoaderActions {
 			.and_then(|manifest| manifest.configs.as_ref())
 		{
 			let config_path = self.get_config_path(game, configs)?;
-			open::that_detached(config_path)?;
+			if open_folder {
+				paths::open_folder_or_parent(&config_path)?;
+			} else {
+				open::that_detached(config_path)?;
+			}
 		}
 		// TODO maybe error if no configs.
 

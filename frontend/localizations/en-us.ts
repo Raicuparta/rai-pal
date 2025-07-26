@@ -199,7 +199,10 @@ export const enUs = {
 	// Row in the table that shows mods for a specific game in the game modal.
 	gameModRow: {
 		// Button for opening mod configuration/settings.
-		modSettings: "Mod Settings",
+		editModConfig: "Edit Mod Config",
+
+		openModConfigFolderTooltip:
+			"Open folder containing this mod's config files",
 
 		// Button for opening the folder where a specific mod is installed.
 		openModFolder: "Open Mod Folder",

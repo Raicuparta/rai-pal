@@ -3,7 +3,6 @@ import {
 	Table,
 	ThemeIcon,
 	Box,
-	Button,
 	ButtonGroup,
 	Group,
 	Stack,
@@ -191,21 +190,45 @@ export function GameModRow({
 							</CommandButton>
 							<CommandDropdown icon={<IconDotsVertical />}>
 								{localConfig && (
-									<Button
-										disabled={!isInstalled && !isReadyRunnable}
-										onClick={() =>
-											commands.configureMod(
-												game.providerId,
-												game.gameId,
-												mod.common.id,
-											)
-										}
-										leftSection={<IconSettings />}
-									>
-										{t("modSettings")}
-									</Button>
+									<ButtonGroup>
+										<CommandButton
+											flex={1}
+											disabled={!isInstalled && !isReadyRunnable}
+											onClick={() =>
+												commands.configureMod(
+													game.providerId,
+													game.gameId,
+													mod.common.id,
+													false,
+												)
+											}
+											leftSection={<IconSettings />}
+										>
+											{t("editModConfig")}
+										</CommandButton>
+										{localConfig.destinationType !== "folder" && (
+											<Tooltip
+												label={t("openModConfigFolderTooltip")}
+												position="top-end"
+											>
+												<CommandButton
+													disabled={!isInstalled && !isReadyRunnable}
+													onClick={() =>
+														commands.configureMod(
+															game.providerId,
+															game.gameId,
+															mod.common.id,
+															true,
+														)
+													}
+												>
+													<IconFolderOpen />
+												</CommandButton>
+											</Tooltip>
+										)}
+									</ButtonGroup>
 								)}
-								<Button
+								<CommandButton
 									disabled={!isInstalled && !isReadyRunnable}
 									onClick={() =>
 										commands.openInstalledModFolder(
@@ -217,7 +240,7 @@ export function GameModRow({
 									leftSection={<IconFolderOpen />}
 								>
 									{t("openModFolder")}
-								</Button>
+								</CommandButton>
 								{availableRemoteConfig && (
 									<CommandButton
 										disabled={!isInstalled}
