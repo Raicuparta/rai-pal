@@ -20,7 +20,7 @@ jobs:
       - name: setup node
         uses: actions/setup-node@v4
         with:
-          cache: 'npm'
+          cache: "npm"
 
       - name: install Rust stable
         uses: dtolnay/rust-toolchain@stable
@@ -31,7 +31,7 @@ jobs:
       - name: Build
         id: build
         run: |
-          $output = ./publish.ps1
+          $output = ./scripts/create-release-build.ps1
           $version = $output | Select-Object -Last 1
           "version=$version" >> $env:GITHUB_OUTPUT
         env:
