@@ -98,7 +98,9 @@ pub fn open_folder_or_parent(path: &Path) -> Result {
 		path_parent(path)?
 	};
 
-	Ok(open::that_detached(folder_path)?)
+	// I've hard weird issues with non-normalized paths acting weird on Windows,
+	// normalizing seems to fix it.
+	Ok(open::that_detached(normalize_path(folder_path))?)
 }
 
 pub fn base_dirs() -> Result<BaseDirs> {
