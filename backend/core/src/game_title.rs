@@ -1,6 +1,7 @@
 use std::collections::HashSet;
 
 use lazy_regex::{regex, regex_replace_all};
+use unicode_normalization::UnicodeNormalization;
 
 static DEMO_REGEX: &lazy_regex::Lazy<regex::Regex> = regex!(r"(?i)[\((\s+)]demo\)?$");
 static BRACKETS_REGEX: &lazy_regex::Lazy<regex::Regex> = regex!(r"\[.*?\]|\(.*?\)|\{.*?\}|<.*?>");
@@ -34,7 +35,12 @@ pub fn get_normalized_titles(title: &str) -> Vec<String> {
 }
 
 fn normalize_title(title: &str) -> String {
-	regex_replace_all!(r"\W+", title, "").to_lowercase()
+	let normalized = title
+		.nfd()
+		.filter(|c| !unicode_normalization::char::is_combining_mark(*c))
+		.collect::<String>();
+
+	regex_replace_all!(r"\W+", &normalized, "").to_lowercase()
 }
 
 pub fn is_probably_demo(title: &str) -> bool {

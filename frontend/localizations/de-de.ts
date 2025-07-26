@@ -102,12 +102,17 @@ export const deDe: Localization = {
 	},
 
 	gameModRow: {
-		modSettings: "Mod-Einstellungen",
+		editModConfig: "Mod-Konfiguration bearbeiten",
+		openModConfigFolderTooltip:
+			"Ordner mit den Konfigurationsdateien dieses Mods öffnen",
 		openModFolder: "Mod-Ordner öffnen",
 		updateMod: "Aktualisieren",
 		installMod: "Installieren",
 		uninstallMod: "Deinstallieren",
 		runMod: "Ausführen",
+		downloadRemoteConfig: "Empfohlene Konfiguration herunterladen",
+		remoteConfigAvailable:
+			"Empfohlene Konfiguration verfügbar. Wird heruntergeladen, falls Sie noch keine Konfiguration haben. Sie können auch erzwingen, dass sie über das Drei-Punkte-Menü heruntergeladen wird.",
 	},
 
 	gamesTableColumn: {

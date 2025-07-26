@@ -101,12 +101,17 @@ export const ptPt: Localization = {
 	},
 
 	gameModRow: {
-		modSettings: "Configurações do Mod",
+		editModConfig: "Editar Configuração do Mod",
+		openModConfigFolderTooltip:
+			"Abrir pasta contendo os ficheiros de configuração deste mod",
 		openModFolder: "Abrir Pasta do Mod",
 		updateMod: "Atualizar",
 		installMod: "Instalar",
 		uninstallMod: "Desinstalar",
 		runMod: "Executar",
+		downloadRemoteConfig: "Descarregar Configuração Recomendada",
+		remoteConfigAvailable:
+			"Configuração recomendada disponível. Será descarregada se ainda não tiveres uma configuração. Também podes forçar o descarregamento a partir do menu de três pontos.",
 	},
 
 	gamesTableColumn: {

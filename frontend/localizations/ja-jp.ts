@@ -101,12 +101,17 @@ export const jaJp: Localization = {
 	},
 
 	gameModRow: {
-		modSettings: "モッド設定",
+		editModConfig: "モッド設定を編集",
+		openModConfigFolderTooltip:
+			"このモッドの設定ファイルが含まれているフォルダーを開く",
 		openModFolder: "モッドフォルダーを開く",
 		updateMod: "更新",
 		installMod: "インストール",
 		uninstallMod: "アンインストール",
 		runMod: "実行",
+		downloadRemoteConfig: "推奨設定をダウンロード",
+		remoteConfigAvailable:
+			"推奨設定が利用可能です。設定がまだない場合にダウンロードされます。三点メニューから強制的にダウンロードすることもできます。",
 	},
 
 	gamesTableColumn: {

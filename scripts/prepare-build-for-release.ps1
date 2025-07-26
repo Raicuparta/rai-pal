@@ -1,42 +1,30 @@
-# This script reads from the following environment variables:
+# This takes an existing build, and prepares the files for publishing.
+# You can run this locally if you want o test the publishing process,
+# although you'll usually be missing stuff like the updater signature and changelog.
+# 
+# Reads from the following environment variables:
 #
 # - TAURI_SIGNING_PRIVATE_KEY. See https://v2.tauri.app/plugin/updater/
 # - TAURI_SIGNING_PRIVATE_KEY_PASSWORD. Password for the key above.
 # - RAI_PAL_CHANGELOG. Changelog that gets included in the update json,
 # which gets shown to users whenever they get notified of an update.
 
-function CheckEnvVar {
-  param (
-    [Parameter(Mandatory = $true)]
-    [string]$Var
-  )
+param(
+    [Parameter(Mandatory=$true)]
+    [string]$bundleFolder,
 
-  if (-not (Test-Path Env:$Var)) {
-    Write-Error "Environment variable '$Var' is not defined."
-    exit 1
-  }
-}
-
-CheckEnvVar -Var "TAURI_SIGNING_PRIVATE_KEY"
-CheckEnvVar -Var "TAURI_SIGNING_PRIVATE_KEY_PASSWORD"
-
-# Folder where the nsis bundle will end up.
-$bundleFolder = "./backend/target/release/bundle/nsis"
-
-# Delete everything in the bundle folder first.
-Remove-Item $bundleFolder -Force -Recurse -ErrorAction Ignore | Out-Null
-
-npm run build
+    [Parameter(Mandatory=$true)]
+    [string]$outputFolder
+)
 
 # Get built bundle file name.
 $exeName = (Get-ChildItem -Path $bundleFolder -Filter "*.exe" | Select-Object -First 1).Name
 
 # Extract version number from file name.
-$version = [regex]::Match($exeName, '.+_(.+)_.+_.+').Groups[1].Value
+$version = [regex]::Match($exeName, '.+_(.+)_.+').Groups[1].Value
 
-# Read signature from sig file. We deleted everything in this folder before,
-# so we're pretty sure nothing other the newly created zip.sig should be found.
-$signature = Get-Content -Path "$bundleFolder/*zip.sig" -Raw
+$signatureFile = Get-ChildItem -Path $bundleFolder -Filter "*zip.sig" -ErrorAction SilentlyContinue | Select-Object -First 1
+$signature = if ($signatureFile) { Get-Content -Path $signatureFile.FullName -Raw } else { "[NOT PROVIDED]" }
 
 # Read changelog from environment variable.
 $changelog = $env:RAI_PAL_CHANGELOG ?? "Someone forgot to include a changelog."
@@ -52,8 +40,6 @@ $updaterJson = ConvertTo-Json -InputObjec @{
     }
   }
 }
-
-$outputFolder = "./publish"
 
 # Recreate publish folder.
 Remove-Item $outputFolder -Force -Recurse -ErrorAction Ignore | Out-Null

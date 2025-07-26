@@ -198,8 +198,12 @@ export const enUs = {
 
 	// Row in the table that shows mods for a specific game in the game modal.
 	gameModRow: {
-		// Button for opening mod configuration/settings.
-		modSettings: "Mod Settings",
+		// Button that directly opens the file (or folder) for the config of the mod installed in this game.
+		editModConfig: "Edit Mod Config",
+
+		// Tooltip that shows when hovering the button that opens the folder that contains the config file for the mod installed on this game.
+		openModConfigFolderTooltip:
+			"Open folder containing this mod's config files",
 
 		// Button for opening the folder where a specific mod is installed.
 		openModFolder: "Open Mod Folder",
@@ -215,6 +219,13 @@ export const enUs = {
 
 		// For mods that can be executed (like UEVR), this button runs them.
 		runMod: "Run",
+
+		// Button for downloading a mod config from the database.
+		downloadRemoteConfig: "Download Recommended Config",
+
+		// Tooltip for icon that shows next to mod to indicate there's a downloadable config.
+		remoteConfigAvailable:
+			"Recommended config available. Will be downloaded if you don't already have a config. You can also force it to download from the three dot menu.",
 	},
 
 	// Named table columns for the list of games.

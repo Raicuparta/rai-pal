@@ -99,12 +99,16 @@ export const koKr: Localization = {
 	},
 
 	gameModRow: {
-		modSettings: "모드 설정",
+		editModConfig: "모드 설정 편집",
+		openModConfigFolderTooltip: "이 모드의 설정 파일이 포함된 폴더 열기",
 		openModFolder: "모드 폴더 열기",
 		updateMod: "업데이트",
 		installMod: "설치",
 		uninstallMod: "제거",
 		runMod: "실행",
+		downloadRemoteConfig: "권장 설정 다운로드",
+		remoteConfigAvailable:
+			"권장 설정을 사용할 수 있습니다. 설정이 아직 없는 경우 다운로드됩니다. 세 점 메뉴에서 강제로 다운로드할 수도 있습니다.",
 	},
 
 	gamesTableColumn: {

@@ -12,12 +12,14 @@ use zip::ZipArchive;
 use super::{bepinex::BepInEx, mod_database, runnable_loader::RunnableLoader};
 use crate::{
 	files,
-	game_mod::CommonModData,
 	game::DbGame,
+	game_mod::CommonModData,
+	http_client,
 	local_mod::{self, LocalMod, ModKind},
-	mod_loaders::mod_database::ModDatabase,
+	mod_loaders::mod_database::{ModConfigDestinationType, ModConfigs, ModDatabase},
 	mod_manifest,
 	paths::{self, open_folder_or_parent},
+	remote_config,
 	remote_mod::{RemoteMod, RemoteModData},
 	result::{Error, Result},
 };
@@ -42,7 +44,7 @@ pub trait ModLoaderActions {
 	async fn install_mod_inner(&self, game: &DbGame, local_mod: &LocalMod) -> Result;
 	async fn uninstall_mod(&self, game: &DbGame, local_mod: &LocalMod) -> Result;
 	async fn run_without_game(&self, local_mod: &LocalMod) -> Result;
-	fn configure_mod(&self, game: &DbGame, local_mod: &LocalMod) -> Result;
+	fn get_config_path(&self, game: &DbGame, mod_configs: &ModConfigs) -> Result<PathBuf>;
 	fn open_installed_mod_folder(&self, game: &DbGame, local_mod: &LocalMod) -> Result;
 	fn get_data(&self) -> &ModLoaderData;
 	fn get_mod_path(&self, mod_data: &CommonModData) -> Result<PathBuf>;
@@ -55,6 +57,12 @@ pub trait ModLoaderActions {
 	async fn install_mod(&self, game: &DbGame, local_mod: &LocalMod) -> Result {
 		self.install_mod_inner(game, local_mod).await?;
 
+		self.update_installed_mod_manifest(local_mod, game)?;
+
+		Ok(())
+	}
+
+	fn update_installed_mod_manifest(&self, local_mod: &LocalMod, game: &DbGame) -> Result {
 		if self.get_data().kind != ModKind::Runnable {
 			if let Some(manifest) = &local_mod.data.manifest {
 				let manifest_path = game.get_installed_mod_manifest_path(&local_mod.common.id)?;
@@ -97,8 +105,41 @@ pub trait ModLoaderActions {
 					title: database_mod.title.clone(),
 					latest_version: database_mod.get_download().await,
 					deprecated: database_mod.deprecated.unwrap_or(false),
+					configs: database_mod.configs.clone(),
 				},
 			};
+
+			// If there's a local mod with the same ID, update its manifest with remote info
+			if let Some(local_mod) = self
+				.get_local_mods()
+				.ok()
+				.as_ref()
+				.and_then(|local_mods| local_mods.get(&database_mod.id))
+			{
+				if let Some(latest_version) = &remote_mod.data.latest_version {
+					let manifest_path = local_mod::get_manifest_path(&local_mod.data.path);
+
+					// Only update if the manifest file exists (mod has been downloaded before)
+					if manifest_path.exists() {
+						let updated_manifest = mod_manifest::Manifest {
+							title: Some(remote_mod.data.title.clone()),
+							version: latest_version.id.clone(),
+							runnable: latest_version.runnable.clone(),
+							engine: remote_mod.common.engine,
+							engine_version_range: remote_mod.common.engine_version_range.clone(),
+							unity_backend: remote_mod.common.unity_backend,
+							configs: remote_mod.data.configs.clone(),
+						};
+
+						if let Ok(manifest_contents) =
+							serde_json::to_string_pretty(&updated_manifest)
+						{
+							let _ = fs::write(&manifest_path, manifest_contents);
+						}
+					}
+				}
+			}
+
 			mods_map.insert(database_mod.id.clone(), remote_mod);
 		}
 
@@ -114,7 +155,8 @@ pub trait ModLoaderActions {
 				.join(&mod_loader_data.id)
 				.join("downloads");
 
-			let response = reqwest::get(&latest_version.url).await?;
+			let client = http_client::get_client();
+			let response = client.get(&latest_version.url).send().await?;
 
 			fs::create_dir_all(&downloads_path)?;
 
@@ -144,6 +186,7 @@ pub trait ModLoaderActions {
 					engine: remote_mod.common.engine,
 					engine_version_range: remote_mod.common.engine_version_range.clone(),
 					unity_backend: remote_mod.common.unity_backend,
+					configs: remote_mod.data.configs.clone(),
 				})?,
 			)?;
 
@@ -157,6 +200,61 @@ pub trait ModLoaderActions {
 
 		if mod_path.exists() {
 			fs::remove_dir_all(&mod_path)?;
+		}
+
+		Ok(())
+	}
+
+	async fn download_config(
+		&self,
+		game: &DbGame,
+		mod_configs: &ModConfigs,
+		config_file: &str,
+		overwrite: bool,
+	) -> Result {
+		let destination_path = self.get_config_path(game, mod_configs)?;
+
+		if destination_path.try_exists()? {
+			if overwrite {
+				if destination_path.is_dir() {
+					fs::remove_dir_all(&destination_path)?;
+				} else {
+					fs::remove_file(&destination_path)?;
+				}
+			} else {
+				return Ok(());
+			}
+		}
+
+		if let Some(parent) = destination_path.parent() {
+			fs::create_dir_all(parent)?;
+		}
+
+		match mod_configs.destination_type {
+			ModConfigDestinationType::File => {
+				remote_config::download_config_file(config_file, game, &destination_path).await?;
+			}
+			ModConfigDestinationType::Folder => {
+				remote_config::download_config_folder(config_file, game, &destination_path).await?;
+			}
+		}
+
+		Ok(())
+	}
+
+	fn configure_mod(&self, game: &DbGame, local_mod: &LocalMod, open_folder: bool) -> Result {
+		if let Some(configs) = local_mod
+			.data
+			.manifest
+			.as_ref()
+			.and_then(|manifest| manifest.configs.as_ref())
+		{
+			let config_path = self.get_config_path(game, configs)?;
+			if open_folder {
+				paths::open_folder_or_parent(&config_path)?;
+			} else {
+				open::that_detached(config_path)?;
+			}
 		}
 
 		Ok(())

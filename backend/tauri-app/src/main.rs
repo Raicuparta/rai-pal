@@ -24,6 +24,7 @@ use rai_pal_core::providers::{
 	manual_provider,
 	provider::{self, ProviderActions},
 };
+use rai_pal_core::remote_config::RemoteConfigs;
 use rai_pal_core::remote_game::{self};
 #[cfg(target_os = "windows")]
 use rai_pal_core::windows;
@@ -194,15 +195,17 @@ async fn configure_mod(
 	provider_id: ProviderId,
 	game_id: String,
 	mod_id: &str,
+	open_folder: bool,
 	handle: AppHandle,
 ) -> Result {
 	let state = handle.app_state();
 	let game = state.database.get_game(&provider_id, &game_id)?;
-	let mod_loaders = state.mod_loaders.read_state()?.clone();
-	let local_mod = refresh_and_get_local_mod(mod_id, &mod_loaders, &handle).await?;
+	let mod_loaders = state.mod_loaders.read_state()?;
+	let local_mods = state.local_mods.read_state()?;
+	let local_mod = local_mods.try_get(mod_id)?;
 	let mod_loader = mod_loaders.try_get(&local_mod.common.loader_id)?;
 
-	mod_loader.configure_mod(&game, &local_mod)?;
+	mod_loader.configure_mod(&game, &local_mod, open_folder)?;
 
 	Ok(())
 }
@@ -550,6 +553,52 @@ async fn get_installed_mod_versions(
 		.get_installed_mod_versions())
 }
 
+#[tauri::command]
+#[specta::specta]
+async fn get_remote_configs(
+	provider_id: ProviderId,
+	game_id: String,
+	app_handle: AppHandle,
+) -> Result<Option<RemoteConfigs>> {
+	Ok(app_handle
+		.app_state()
+		.database
+		.get_game(&provider_id, &game_id)?
+		.get_remote_configs()
+		.await?)
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn download_remote_config(
+	provider_id: ProviderId,
+	game_id: &str,
+	mod_id: &str,
+	remote_config_file: &str,
+	overwrite: bool,
+	app_handle: AppHandle,
+) -> Result {
+	let state = app_handle.app_state();
+	let game = state.database.get_game(&provider_id, &game_id)?;
+	let remote_mods = state.remote_mods.read_state()?.clone();
+	let remote_mod = remote_mods.try_get(mod_id)?;
+	let mod_loaders = state.mod_loaders.read_state()?.clone();
+	let mod_loader = mod_loaders.try_get(&remote_mod.common.loader_id)?;
+	let local_mods = state.local_mods.read_state()?.clone();
+	let local_mod = local_mods.try_get(mod_id)?;
+
+	if let Some(mod_configs) = remote_mod.data.configs.as_ref() {
+		mod_loader
+			.download_config(&game, mod_configs, remote_config_file, overwrite)
+			.await?;
+		mod_loader.update_installed_mod_manifest(&local_mod, &game)?;
+	}
+
+	refresh_local_mods(&mod_loaders, &app_handle)?;
+
+	Ok(())
+}
+
 fn main() {
 	// Since I'm making all exposed functions async, panics won't crash anything important, I think.
 	// So I can just catch panics here and show a system message with the error.
@@ -592,6 +641,8 @@ fn main() {
 			save_app_settings,
 			uninstall_all_mods,
 			uninstall_mod,
+			get_remote_configs,
+			download_remote_config,
 		])
 		.events(events::collect_events())
 		.constant("PROVIDER_IDS", ProviderId::iter().collect::<Vec<_>>())

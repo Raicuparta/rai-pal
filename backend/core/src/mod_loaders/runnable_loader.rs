@@ -11,8 +11,9 @@ use crate::{
 	game::DbGame,
 	game_mod::CommonModData,
 	local_mod::{self, LocalMod, ModKind},
+	mod_loaders::mod_database::ModConfigs,
 	mod_manifest,
-	paths::glob_path,
+	paths::{self, glob_path},
 	providers::provider_command::{ProviderCommand, ProviderCommandAction},
 	result::{Error, Result},
 };
@@ -25,10 +26,13 @@ pub struct RunnableLoader {
 #[serializable_enum]
 pub enum RunnableParameter {
 	ExecutableName,
+	ExecutableNameWithoutExtension,
 	ExecutablePath,
 	GameJson,
 	StartCommand,
 	StartCommandArgs,
+	RoamingAppData,
+	// If adding new parameters, remember to update runnable_schema.json in rai-pal-db repo.
 }
 
 impl ModLoaderStatic for RunnableLoader {
@@ -72,8 +76,8 @@ fn replace_parameter_value<TValue: AsRef<str>, TGetValue: Fn() -> Result<TValue>
 	}
 }
 
-fn replace_parameters(argument: &str, game: &DbGame) -> String {
-	let mut result = argument.to_string();
+fn replace_parameters(base_string: &str, game: &DbGame) -> String {
+	let mut result = base_string.to_string();
 
 	let provider_commands = &game.provider_commands.0;
 	let start_command = provider_commands
@@ -83,6 +87,11 @@ fn replace_parameters(argument: &str, game: &DbGame) -> String {
 	result = replace_parameter_value(&result, RunnableParameter::ExecutableName, || {
 		game.try_get_exe_name()
 	});
+	result = replace_parameter_value(
+		&result,
+		RunnableParameter::ExecutableNameWithoutExtension,
+		|| paths::file_name_without_extension(game.try_get_exe_path()?),
+	);
 	result = replace_parameter_value(&result, RunnableParameter::ExecutablePath, || {
 		Ok(game.try_get_exe_path()?.to_string_lossy().to_string())
 	});
@@ -108,6 +117,12 @@ fn replace_parameters(argument: &str, game: &DbGame) -> String {
 				ProviderCommand::String(_) => Ok(String::new()),
 			},
 		)
+	});
+	result = replace_parameter_value(&result, RunnableParameter::RoamingAppData, || {
+		Ok(paths::base_dirs()?
+			.config_dir()
+			.to_string_lossy()
+			.to_string())
 	});
 
 	result
@@ -169,11 +184,6 @@ impl ModLoaderActions for RunnableLoader {
 		Ok(())
 	}
 
-	fn configure_mod(&self, game: &DbGame, local_mod: &LocalMod) -> Result {
-		// TODO: make it actually open the config file / folder (would need extra info in database / manifest).
-		self.open_installed_mod_folder(game, local_mod)
-	}
-
 	fn open_installed_mod_folder(&self, _game: &DbGame, local_mod: &LocalMod) -> Result {
 		let mod_folder = self.get_mod_path(&local_mod.common)?;
 
@@ -213,5 +223,12 @@ impl ModLoaderActions for RunnableLoader {
 		}
 
 		Ok(mod_map)
+	}
+
+	fn get_config_path(&self, game: &DbGame, mod_configs: &ModConfigs) -> Result<PathBuf> {
+		Ok(PathBuf::from(replace_parameters(
+			&mod_configs.destination_path,
+			game,
+		)))
 	}
 }

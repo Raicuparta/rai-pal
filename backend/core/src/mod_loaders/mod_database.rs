@@ -2,12 +2,12 @@ use std::path::PathBuf;
 
 use lazy_regex::regex_captures;
 use log::error;
-use rai_pal_proc_macros::serializable_struct;
-use reqwest::redirect::Policy;
+use rai_pal_proc_macros::{serializable_enum, serializable_struct};
 
 use crate::{
 	game_engines::{game_engine::EngineBrand, unity::UnityBackend},
 	game_mod::EngineVersionRange,
+	http_client,
 	result::Result,
 };
 
@@ -33,6 +33,7 @@ pub struct DatabaseEntry {
 	pub github: Option<ModGithubInfo>,
 	pub redownload_id: Option<i32>,
 	pub deprecated: Option<bool>,
+	pub configs: Option<ModConfigs>,
 }
 
 #[serializable_struct]
@@ -55,6 +56,19 @@ pub struct ModDownload {
 }
 
 #[serializable_struct]
+pub struct ModConfigs {
+	pub destination_path: String,
+	pub destination_type: ModConfigDestinationType,
+	pub mod_id_override: Option<String>,
+}
+
+#[serializable_enum]
+pub enum ModConfigDestinationType {
+	File,
+	Folder,
+}
+
+#[serializable_struct]
 pub struct ModGithubInfo {
 	pub user: String,
 	pub repo: String,
@@ -64,12 +78,15 @@ pub struct ModGithubInfo {
 }
 
 pub async fn get(mod_loader_id: &str) -> Result<ModDatabase> {
-	Ok(reqwest::get(format!(
-		"{URL_BASE}/{DATABASE_VERSION}/{mod_loader_id}.json"
-	))
-	.await?
-	.json::<ModDatabase>()
-	.await?)
+	let client = http_client::get_client();
+	Ok(client
+		.get(format!(
+			"{URL_BASE}/{DATABASE_VERSION}/{mod_loader_id}.json"
+		))
+		.send()
+		.await?
+		.json::<ModDatabase>()
+		.await?)
 }
 
 impl DatabaseEntry {
@@ -106,13 +123,17 @@ impl ModGithubInfo {
 	async fn get_latest_tag(&self) -> Option<String> {
 		let url = format!("{}/latest", self.get_releases_url());
 
-		let response = (match request_head(&url).await {
+		let response = match http_client::get_client_no_redirect()
+			.head(&url)
+			.send()
+			.await
+		{
 			Ok(response) => Some(response),
 			Err(err) => {
 				error!("Failed to request head for url `{url}`. Error: {err}");
 				None
 			}
-		})?;
+		}?;
 
 		if response.status().is_redirection() {
 			let location_header = response
@@ -167,14 +188,4 @@ impl ModGithubInfo {
 	fn get_releases_url(&self) -> String {
 		format!("https://github.com/{}/{}/releases", self.user, self.repo)
 	}
-}
-
-async fn request_head(url: &str) -> Result<reqwest::Response> {
-	let client = reqwest::Client::builder()
-		// Don't follow redirects. We don't need to actually download the final page,
-		// we just want to look at where it wants to redirect.
-		.redirect(Policy::none())
-		.build()?;
-
-	Ok(client.head(url).send().await?)
 }

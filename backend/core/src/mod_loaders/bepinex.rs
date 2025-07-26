@@ -14,7 +14,10 @@ use crate::{
 	game_engines::{game_engine::EngineBrand, unity::UnityBackend},
 	game_mod::CommonModData,
 	local_mod::{LocalMod, ModKind},
-	mod_loaders::mod_loader::{ModLoaderActions, ModLoaderData},
+	mod_loaders::{
+		mod_database::ModConfigs,
+		mod_loader::{ModLoaderActions, ModLoaderData},
+	},
 	paths,
 	result::{Error, Result},
 };
@@ -154,15 +157,6 @@ impl ModLoaderActions for BepInEx {
 		Ok(())
 	}
 
-	fn configure_mod(&self, game: &DbGame, _local_mod: &LocalMod) -> Result {
-		let game_data_folder = game.get_installed_mods_folder()?;
-		let mod_config_path = game_data_folder.join("BepInEx").join("config");
-
-		// TODO: actually open the specific config file somehow. Probably needs to be in the remote mod manifest.
-
-		Ok(open::that_detached(mod_config_path)?)
-	}
-
 	async fn run_without_game(&self, local_mod: &LocalMod) -> Result {
 		Err(Error::CantRunNonRunnable(local_mod.common.id.clone()))
 	}
@@ -198,6 +192,15 @@ impl ModLoaderActions for BepInEx {
 		};
 
 		Ok(local_mods)
+	}
+
+	fn get_config_path(&self, game: &DbGame, mod_configs: &ModConfigs) -> Result<PathBuf> {
+		let destination_path = game
+			.get_installed_mods_folder()?
+			.join("BepInEx")
+			.join(&mod_configs.destination_path);
+
+		Ok(destination_path)
 	}
 }
 

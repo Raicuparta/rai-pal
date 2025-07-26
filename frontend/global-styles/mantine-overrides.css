@@ -27,3 +27,8 @@
 	I don't want that */
 	display: flex;
 }
+
+.mantine-Tooltip-tooltip {
+	white-space: unset;
+	max-width: 30em;
+}

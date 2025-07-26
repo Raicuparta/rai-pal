@@ -2,7 +2,10 @@ use std::collections::HashMap;
 
 use rai_pal_proc_macros::serializable_struct;
 
-use crate::{game_mod::CommonModData, mod_loaders::mod_database::ModDownload};
+use crate::{
+	game_mod::CommonModData,
+	mod_loaders::mod_database::{ModConfigs, ModDownload},
+};
 
 #[serializable_struct]
 pub struct RemoteModData {
@@ -12,6 +15,7 @@ pub struct RemoteModData {
 	pub source_code: String,
 	pub description: String,
 	pub latest_version: Option<ModDownload>,
+	pub configs: Option<ModConfigs>,
 }
 
 #[serializable_struct]

@@ -96,12 +96,16 @@ export const zhCn: Localization = {
 	},
 
 	gameModRow: {
-		modSettings: "模组设置",
+		editModConfig: "编辑模组配置",
+		openModConfigFolderTooltip: "打开包含此模组配置文件的文件夹",
 		openModFolder: "打开模组文件夹",
 		updateMod: "更新",
 		installMod: "安装",
 		uninstallMod: "卸载",
 		runMod: "运行",
+		downloadRemoteConfig: "下载推荐配置",
+		remoteConfigAvailable:
+			"推荐配置可用。如果您还没有配置，将会下载。您也可以从三点菜单强制下载。",
 	},
 
 	gamesTableColumn: {
