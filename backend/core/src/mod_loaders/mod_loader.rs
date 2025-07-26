@@ -214,7 +214,7 @@ pub trait ModLoaderActions {
 	) -> Result {
 		let destination_path = self.get_config_path(game, mod_configs)?;
 
-		if destination_path.try_exists()? {
+		if config_exists(&destination_path)? {
 			if overwrite {
 				if destination_path.is_dir() {
 					fs::remove_dir_all(&destination_path)?;
@@ -315,4 +315,16 @@ pub fn get_data_map(map: &Map) -> Result<DataMap> {
 			Ok((data.id.clone(), data.clone()))
 		})
 		.collect()
+}
+
+fn config_exists(path: &Path) -> Result<bool> {
+	if !path.try_exists()? {
+		return Ok(false);
+	}
+
+	if path.is_dir() && fs::read_dir(path)?.next().is_none() {
+		return Ok(false);
+	}
+
+	Ok(true)
 }
