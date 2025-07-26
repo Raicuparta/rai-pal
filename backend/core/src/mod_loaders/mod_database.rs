@@ -11,8 +11,7 @@ use crate::{
 	result::Result,
 };
 
-// TODO: remember to update this MORON
-const URL_BASE: &str = "https://config-db.rai-pal.pages.dev/mod-db";
+const URL_BASE: &str = "https://raicuparta.github.io/rai-pal-db/mod-db";
 
 // The repository over at github.com/Raicuparta/rai-pal-db can have multiple versions of the database.
 // This way we prevent old versions of Rai Pal from breaking unless we want them to.
@@ -65,9 +64,7 @@ pub struct ModConfigs {
 
 #[serializable_enum]
 pub enum ModConfigDestinationType {
-	#[serde(rename = "file")] // TODO fix in db instead
 	File,
-	#[serde(rename = "folder")] // TODO fix in db instead
 	Folder,
 }
 

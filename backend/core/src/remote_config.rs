@@ -6,8 +6,7 @@ use zip::ZipArchive;
 
 use crate::{game::DbGame, http_client, paths, result::Result};
 
-// TODO remember to update this MORON
-const CONFIG_DB_BASE_URL: &str = "https://config-db.rai-pal.pages.dev/config-db";
+const CONFIG_DB_BASE_URL: &str = "https://raicuparta.github.io/rai-pal-db/config-db";
 const CONFIG_DB_VERSION: u32 = 0;
 
 #[serializable_struct]

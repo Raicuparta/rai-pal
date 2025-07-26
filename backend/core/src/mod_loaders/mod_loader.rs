@@ -256,7 +256,6 @@ pub trait ModLoaderActions {
 				open::that_detached(config_path)?;
 			}
 		}
-		// TODO maybe error if no configs.
 
 		Ok(())
 	}

@@ -450,7 +450,6 @@ pub fn create() -> Result<DbMutex> {
 	"#,
 	)?;
 
-	// TODO: Too slow to do on startup.
 	attach_remote_database(&connection, &remote_game::get_database_file_path()?)?;
 
 	instant.log_next("Created local database!");
