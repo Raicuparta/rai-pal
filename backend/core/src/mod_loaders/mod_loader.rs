@@ -102,6 +102,38 @@ pub trait ModLoaderActions {
 					configs: database_mod.configs.clone(),
 				},
 			};
+
+			// If there's a local mod with the same ID, update its manifest with remote info
+			if let Some(local_mod) = self
+				.get_local_mods()
+				.ok()
+				.as_ref()
+				.and_then(|local_mods| local_mods.get(&database_mod.id))
+			{
+				if let Some(latest_version) = &remote_mod.data.latest_version {
+					let manifest_path = local_mod::get_manifest_path(&local_mod.data.path);
+
+					// Only update if the manifest file exists (mod has been downloaded before)
+					if manifest_path.exists() {
+						let updated_manifest = mod_manifest::Manifest {
+							title: Some(remote_mod.data.title.clone()),
+							version: latest_version.id.clone(),
+							runnable: latest_version.runnable.clone(),
+							engine: remote_mod.common.engine,
+							engine_version_range: remote_mod.common.engine_version_range.clone(),
+							unity_backend: remote_mod.common.unity_backend,
+							configs: remote_mod.data.configs.clone(),
+						};
+
+						if let Ok(manifest_contents) =
+							serde_json::to_string_pretty(&updated_manifest)
+						{
+							let _ = fs::write(&manifest_path, manifest_contents);
+						}
+					}
+				}
+			}
+
 			mods_map.insert(database_mod.id.clone(), remote_mod);
 		}
 
