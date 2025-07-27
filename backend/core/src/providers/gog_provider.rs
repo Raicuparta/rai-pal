@@ -46,7 +46,7 @@ impl Gog {
 		);
 
 		game.thumbnail_url = db_entry.image_url.clone();
-		game.release_date = db_entry.release_date.map(|date| date.into());
+		game.release_date = db_entry.release_date.map(std::convert::Into::into);
 
 		game
 	}
@@ -71,7 +71,7 @@ impl ProviderActions for Gog {
 			for db_entry in database {
 				let mut game = Self::get_game(&db_entry, &launcher_path);
 				if let Some(executable_path) = db_entry.executable_path.as_ref() {
-					game.set_executable(&executable_path);
+					game.set_executable(executable_path);
 					game.add_provider_command(
 						ProviderCommandAction::StartViaProvider,
 						ProviderCommand::Path(

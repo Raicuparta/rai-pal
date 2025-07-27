@@ -163,7 +163,7 @@ impl ProviderActions for Steam {
 
 		let owned_ids_whitelist =
 			Self::get_owned_ids_whitelist(steam_dir.path()).unwrap_or_else(|err| {
-				log::error!("Failed to read Steam assets cache: {}", err);
+				log::error!("Failed to read Steam assets cache: {err}");
 				HashSet::new()
 			});
 
@@ -242,7 +242,7 @@ impl ProviderActions for Steam {
 					}
 				}
 				Err(error) => {
-					log::error!("Failed to read Steam appinfo: {}", error);
+					log::error!("Failed to read Steam appinfo: {error}");
 				}
 			}
 		}

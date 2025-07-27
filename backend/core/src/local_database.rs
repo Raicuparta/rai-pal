@@ -51,7 +51,7 @@ impl GameDatabase for DbMutex {
 			.lock()
 			.unwrap()
 			.prepare_cached(
-				r#"
+				r"
 		SELECT
 			g.provider_id,
 			g.game_id,
@@ -80,7 +80,7 @@ impl GameDatabase for DbMutex {
 		)
 		WHERE g.provider_id = $1 AND g.game_id = $2
 		LIMIT 1
-	"#,
+	",
 			)?
 			.query_row([provider_id.to_string(), game_id.to_string()], |row| {
 				Ok(DbGame {
@@ -146,7 +146,7 @@ impl GameDatabase for DbMutex {
 					.filter_map(|provider| {
 						provider
 							.as_ref()
-							.map(|p| format!("g.provider_id = '{}'", p))
+							.map(|p| format!("g.provider_id = '{p}'"))
 					})
 					.collect();
 				if !provider_conditions.is_empty() {
@@ -160,9 +160,9 @@ impl GameDatabase for DbMutex {
 					.iter()
 					.map(|tag| {
 						if let Some(t) = tag {
-							format!("g.tags LIKE '%\"{}\"%'", t)
+							format!("g.tags LIKE '%\"{t}\"%'")
 						} else {
-							format!("g.tags = '[]'")
+							"g.tags = '[]'".to_string()
 						}
 					})
 					.collect();
@@ -184,7 +184,7 @@ impl GameDatabase for DbMutex {
 				let engine_values: Vec<String> = filter
 					.engines
 					.iter()
-					.filter_map(|engine| engine.as_ref().map(|e| format!("'{}'", e)))
+					.filter_map(|engine| engine.as_ref().map(|e| format!("'{e}'")))
 					.collect();
 
 				if !engine_values.is_empty() {
@@ -206,7 +206,7 @@ impl GameDatabase for DbMutex {
 					.filter_map(|backend| {
 						backend
 							.as_ref()
-							.map(|b| format!("ig.unity_backend = '{}'", b))
+							.map(|b| format!("ig.unity_backend = '{b}'"))
 					})
 					.collect();
 				if !backend_conditions.is_empty() {
@@ -219,8 +219,7 @@ impl GameDatabase for DbMutex {
 		// Add search filter
 		if !trimmed_search.is_empty() {
 			filters.push(format!(
-				"(g.display_title LIKE '%{}%' OR nt.normalized_title LIKE '%{}%')",
-				trimmed_search, trimmed_search
+				"(g.display_title LIKE '%{trimmed_search}%' OR nt.normalized_title LIKE '%{trimmed_search}%')"
 			));
 		}
 
@@ -232,7 +231,7 @@ impl GameDatabase for DbMutex {
 		};
 
 		let query = &format!(
-			r#"
+			r"
 			SELECT DISTINCT
 					g.provider_id as provider_id,
 					g.game_id as game_id
@@ -246,7 +245,7 @@ impl GameDatabase for DbMutex {
 			)
 			WHERE {where_clause}
 			ORDER BY {}
-			"#,
+			",
 			sort_columns
 				.iter()
 				.map(|col| format!("{col} {sort_order}"))
@@ -260,7 +259,7 @@ impl GameDatabase for DbMutex {
 			.filter_map(|game_id| match game_id {
 				Ok(id) => Some(id),
 				Err(err) => {
-					log::warn!("Failed to read game from local database: {}", err);
+					log::warn!("Failed to read game from local database: {err}");
 					None
 				}
 			})
@@ -268,12 +267,12 @@ impl GameDatabase for DbMutex {
 
 		let total_count = database_connection
 			.prepare_cached(
-				r#"
+				r"
 			SELECT COUNT(*)
 			FROM main.games g
-		"#,
+		",
 			)?
-			.query_row([], |row| Ok(row.get::<_, i64>(0)?))?;
+			.query_row([], |row| row.get::<_, i64>(0))?;
 
 		Ok(GameIdsResponse {
 			game_ids,
@@ -392,7 +391,7 @@ pub fn create() -> Result<DbMutex> {
 	)?;
 
 	connection.execute_batch(
-		r#"
+		r"
 		PRAGMA journal_mode = WAL;
 		PRAGMA synchronous = OFF;
 
@@ -447,7 +446,7 @@ pub fn create() -> Result<DbMutex> {
 			engine_version_display TEXT,
 			PRIMARY KEY (provider_id, external_id)
 		);
-	"#,
+	",
 	)?;
 
 	attach_remote_database(&connection, &remote_game::get_database_file_path()?)?;
@@ -471,10 +470,10 @@ pub fn attach_remote_database<TConnection: Deref<Target = rusqlite::Connection>>
 	let path_str = path.to_string_lossy();
 
 	local_database_connection
-		.execute(&format!("ATTACH DATABASE '{}' AS remote_db;", path_str), [])?;
+		.execute(&format!("ATTACH DATABASE '{path_str}' AS remote_db;"), [])?;
 
 	local_database_connection.execute(
-		r#"
+		r"
 		INSERT OR IGNORE INTO main.remote_games (
 			provider_id, external_id, engine_brand, engine_version_major,
 			engine_version_minor, engine_version_patch, engine_version_display
@@ -488,7 +487,7 @@ pub fn attach_remote_database<TConnection: Deref<Target = rusqlite::Connection>>
 			NULL,
 			engine_version
 		FROM remote_db.games;
-		"#,
+		",
 		[],
 	)?;
 

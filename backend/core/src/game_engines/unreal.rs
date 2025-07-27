@@ -268,7 +268,7 @@ pub fn process_game(game: &mut DbGame) {
 			game.engine_version_major = Some(version.numbers.major);
 			game.engine_version_minor = version.numbers.minor;
 			game.engine_version_patch = version.numbers.patch;
-			game.engine_version_display = Some(version.display.clone());
+			game.engine_version_display = Some(version.display);
 		}
 
 		game.exe_path = Some(PathData(shipping_exe_path));

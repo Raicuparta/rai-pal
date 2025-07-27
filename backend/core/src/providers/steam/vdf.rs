@@ -103,9 +103,7 @@ pub fn read_kv(
 			keys.get(key_index).cloned().unwrap_or_else(|| {
 				let fallback_key = format!("APPINFO_FALLBACK_{key_index}");
 				log::warn!(
-					"Failed to find a Steam appinfo key at index {}. Falling back to {}",
-					key_index,
-					fallback_key
+					"Failed to find a Steam appinfo key at index {key_index}. Falling back to {fallback_key}"
 				);
 				fallback_key
 			})

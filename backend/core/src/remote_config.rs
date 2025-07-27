@@ -27,7 +27,7 @@ fn get_config_url(game_name: &str) -> String {
 }
 
 fn get_game_config_name(exe_path: &Path) -> Result<String> {
-	paths::file_name_without_extension(exe_path).map(|name| name.to_lowercase())
+	paths::file_name_without_extension(exe_path).map(str::to_lowercase)
 }
 
 pub async fn get_remote_configs(exe_path: &Path) -> Result<Option<RemoteConfigs>> {
