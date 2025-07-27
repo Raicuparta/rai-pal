@@ -6,53 +6,61 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import js from "@eslint/js";
 import { FlatCompat } from "@eslint/eslintrc";
-import reactCompiler from 'eslint-plugin-react-compiler'
+import reactCompiler from "eslint-plugin-react-compiler";
+import reactHooks from "eslint-plugin-react-hooks";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const compat = new FlatCompat({
-    baseDirectory: __dirname,
-    recommendedConfig: js.configs.recommended,
-    allConfig: js.configs.all
+	baseDirectory: __dirname,
+	recommendedConfig: js.configs.recommended,
+	allConfig: js.configs.all,
 });
 
-export default [{
-    files: ["**/*.ts", "**/*.tsx"],
-}, {
-    ignores: ["frontend/api/**/*", "backend/**/*"],
-}, ...fixupConfigRules(compat.extends(
-    "eslint:recommended",
-    "plugin:react/recommended",
-    "plugin:react/jsx-runtime",
-    "plugin:@typescript-eslint/recommended",
-    "plugin:react-hooks/recommended",
-    "prettier",
-)), {
-    plugins: {
-        "react-refresh": reactRefresh,
-        "react-compiler": reactCompiler,
-    },
+export default [
+	{
+		files: ["**/*.ts", "**/*.tsx"],
+	},
+	{
+		ignores: ["frontend/api/**/*", "backend/**/*"],
+	},
+	...fixupConfigRules(
+		compat.extends(
+			"eslint:recommended",
+			"plugin:react/recommended",
+			"plugin:react/jsx-runtime",
+			"plugin:@typescript-eslint/recommended",
+			"prettier",
+		),
+	),
+	reactHooks.configs["recommended-latest"],
+	{
+		plugins: {
+			"react-refresh": reactRefresh,
+			"react-compiler": reactCompiler,
+		},
 
-    languageOptions: {
-        globals: {
-            ...globals.browser,
-        },
+		languageOptions: {
+			globals: {
+				...globals.browser,
+			},
 
-        parser: tsParser,
-        ecmaVersion: "latest",
-        sourceType: "module",
-    },
+			parser: tsParser,
+			ecmaVersion: "latest",
+			sourceType: "module",
+		},
 
-    settings: {
-        react: {
-            version: "detect",
-        },
-    },
+		settings: {
+			react: {
+				version: "detect",
+			},
+		},
 
-    rules: {
-        "react/prop-types": "off",
-        "react/prefer-read-only-props": "warn",
-        "react/jsx-curly-brace-presence": "warn",
-        "react-compiler/react-compiler": "error",
-    },
-}];
+		rules: {
+			"react/prop-types": "off",
+			"react/prefer-read-only-props": "warn",
+			"react/jsx-curly-brace-presence": "warn",
+			"react-compiler/react-compiler": "error",
+		},
+	},
+];
