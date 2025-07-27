@@ -22,6 +22,7 @@
 		"compatdata",
 		"ctypes",
 		"debuginfo",
+		"dependi",
 		"DLCs",
 		"dont",
 		"dtolnay",
@@ -104,6 +105,7 @@
 		"winuser",
 		"YESNO"
 	],
+	"cSpell.ignorePaths": ["frontend/localizations/!(en-us).ts"],
 	"dependi.npm.lockFileEnabled": true,
 	"typescript.tsdk": "node_modules\\typescript\\lib"
 }
