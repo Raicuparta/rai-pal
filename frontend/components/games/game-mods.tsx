@@ -1,4 +1,4 @@
-import { Alert, Divider, Table, Text } from "@mantine/core";
+import { Alert, Divider, Table } from "@mantine/core";
 import { EngineVersionRange, DbGame, commands } from "@api/bindings";
 import { useCallback, useMemo } from "react";
 import { CommandButton } from "@components/command-button";
@@ -87,7 +87,7 @@ export function GameMods({ game }: Props) {
 		() => commands.getRemoteConfigs(game.providerId, game.gameId),
 		[game],
 	);
-	const [remoteConfigs, updateRemoteConfigs] = useCommandData(
+	const [remoteConfigs] = useCommandData(
 		getRemoteConfigs,
 		null,
 		!game?.exePath,
