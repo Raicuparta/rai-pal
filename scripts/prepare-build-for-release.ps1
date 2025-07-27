@@ -1,13 +1,12 @@
 # This takes an existing build, and prepares the files for publishing.
-# You can run this locally if you want o test the publishing process,
-# although you'll usually be missing stuff like the updater signature and changelog.
+# You can run this locally if you want to test the publishing process,
+# although you'll usually be missing stuff like the updater signature.
 # 
-# Reads from the following environment variables:
+# Reads from the following sources:
 #
 # - TAURI_SIGNING_PRIVATE_KEY. See https://v2.tauri.app/plugin/updater/
 # - TAURI_SIGNING_PRIVATE_KEY_PASSWORD. Password for the key above.
-# - RAI_PAL_CHANGELOG. Changelog that gets included in the update json,
-# which gets shown to users whenever they get notified of an update.
+# - Changelog from tracked file: changelogs/v{version}.md
 
 param(
     [Parameter(Mandatory=$true)]
@@ -17,17 +16,20 @@ param(
     [string]$outputFolder
 )
 
-# Get built bundle file name.
 $exeName = (Get-ChildItem -Path $bundleFolder -Filter "*.exe" | Select-Object -First 1).Name
 
-# Extract version number from file name.
 $version = [regex]::Match($exeName, '.+_(.+)_.+').Groups[1].Value
 
 $signatureFile = Get-ChildItem -Path $bundleFolder -Filter "*zip.sig" -ErrorAction SilentlyContinue | Select-Object -First 1
 $signature = if ($signatureFile) { Get-Content -Path $signatureFile.FullName -Raw } else { "[NOT PROVIDED]" }
 
-# Read changelog from environment variable.
-$changelog = $env:RAI_PAL_CHANGELOG ?? "Someone forgot to include a changelog."
+$changelogFile = Join-Path $PSScriptRoot "..\changelogs\v${version}.md"
+if (Test-Path $changelogFile) {
+    $changelog = Get-Content -Path $changelogFile -Raw
+    $changelog = $changelog.Trim()
+} else {
+    $changelog = "No changelog file found for version ${version}. Expected file: changelogs\v${version}.md"
+}
 
 # Create json that's used by Rai Pal for checking updates.
 $updaterJson = ConvertTo-Json -InputObjec @{
