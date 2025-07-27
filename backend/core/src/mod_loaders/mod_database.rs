@@ -7,7 +7,6 @@ use rai_pal_proc_macros::{serializable_enum, serializable_struct};
 use crate::{
 	game_engines::{game_engine::EngineBrand, unity::UnityBackend},
 	game_mod::EngineVersionRange,
-	http_client,
 	result::Result,
 };
 
@@ -78,15 +77,12 @@ pub struct ModGithubInfo {
 }
 
 pub async fn get(mod_loader_id: &str) -> Result<ModDatabase> {
-	let client = http_client::get_client();
-	Ok(client
-		.get(format!(
-			"{URL_BASE}/{DATABASE_VERSION}/{mod_loader_id}.json"
-		))
-		.send()
-		.await?
-		.json::<ModDatabase>()
-		.await?)
+	Ok(reqwest::get(format!(
+		"{URL_BASE}/{DATABASE_VERSION}/{mod_loader_id}.json"
+	))
+	.await?
+	.json::<ModDatabase>()
+	.await?)
 }
 
 impl DatabaseEntry {
@@ -123,11 +119,18 @@ impl ModGithubInfo {
 	async fn get_latest_tag(&self) -> Option<String> {
 		let url = format!("{}/latest", self.get_releases_url());
 
-		let response = match http_client::get_client_no_redirect()
-			.head(&url)
-			.send()
-			.await
+		let response = match reqwest::Client::builder()
+			.redirect(reqwest::redirect::Policy::none())
+			.build()
 		{
+			Ok(client) => client.head(&url).send().await,
+			Err(err) => {
+				error!("Failed to build HTTP client for url `{url}`. Error: {err}");
+				return None;
+			}
+		};
+
+		let response = match response {
 			Ok(response) => Some(response),
 			Err(err) => {
 				error!("Failed to request head for url `{url}`. Error: {err}");
