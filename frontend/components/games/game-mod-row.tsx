@@ -8,7 +8,7 @@ import {
 	Stack,
 	Tooltip,
 } from "@mantine/core";
-import { DbGame, ModLoaderData, RemoteConfigs, commands } from "@api/bindings";
+import { DbGame, RemoteConfigs, commands } from "@api/bindings";
 import { CommandButton } from "@components/command-button";
 import {
 	IconCheck,
@@ -33,27 +33,32 @@ import { getModTitle } from "@util/game-mod";
 import { CommandDropdown } from "@components/command-dropdown";
 import { DeprecatedBadge } from "@components/mods/deprecated-badge";
 import { useLocalization } from "@hooks/use-localization";
+import { modLoadersAtom } from "@hooks/use-data";
+import { useAtomValue } from "jotai";
 
 type Props = {
 	readonly game: DbGame;
 	readonly mod: UnifiedMod;
-	readonly modLoader: ModLoaderData;
 	readonly remoteConfigs?: RemoteConfigs | null;
 	readonly installedVersion?: string;
+	readonly incompatible?: boolean;
 };
 
 export function GameModRow({
 	game,
 	mod,
-	modLoader,
 	installedVersion,
 	remoteConfigs,
+	incompatible = false,
 }: Props) {
 	const t = useLocalization("gameModRow");
 
+	const modLoaderMap = useAtomValue(modLoadersAtom);
+	const modLoader = modLoaderMap[mod.common.loaderId];
+
 	const availableRemoteConfig = remoteConfigs?.configs.find(
 		(config) =>
-			config.modId === mod.common.id && config.loaderId === modLoader.id,
+			config.modId === mod.common.id && config.loaderId === mod.common.loaderId,
 	);
 	const localConfig = mod.local?.manifest?.configs;
 
@@ -68,10 +73,10 @@ export function GameModRow({
 	);
 
 	const isInstalled = Boolean(installedVersion);
-	const isReadyRunnable = mod.local && modLoader.kind == "Runnable";
+	const isReadyRunnable = mod.local && modLoader?.kind == "Runnable";
 
 	const handleInstallClick = async () => {
-		if (modLoader.kind === "Runnable" && !mod.local && !mod.remote) {
+		if (modLoader?.kind === "Runnable" && !mod.local && !mod.remote) {
 			return commands.openModFolder(mod.common.id);
 		}
 
@@ -103,7 +108,7 @@ export function GameModRow({
 			return { actionText: t("uninstallMod"), actionIcon: <IconTrash /> };
 		}
 
-		if (modLoader.kind === "Installable") {
+		if (modLoader?.kind === "Installable") {
 			return { actionText: t("installMod"), actionIcon: <IconCirclePlus /> };
 		}
 
@@ -137,16 +142,20 @@ export function GameModRow({
 		return "violet";
 	})();
 
+	const isModUsable = !incompatible && game.exePath;
+
 	return (
 		<Table.Tr key={mod.common.id}>
 			<Table.Td ta="left">
 				<ItemName label={`by ${mod.remote?.author}`}>
-					<ThemeIcon
-						color={statusColor}
-						size="sm"
-					>
-						{statusIcon}
-					</ThemeIcon>
+					{isModUsable && (
+						<ThemeIcon
+							color={statusColor}
+							size="sm"
+						>
+							{statusIcon}
+						</ThemeIcon>
+					)}
 					{getModTitle(mod)}
 					{availableRemoteConfig && (
 						<Tooltip label={t("remoteConfigAvailable")}>
@@ -167,7 +176,7 @@ export function GameModRow({
 			</Table.Td>
 			<Table.Td maw={200}>
 				<Group justify="right">
-					{game.exePath && (
+					{isModUsable && (
 						<ButtonGroup>
 							<CommandButton
 								color={buttonColor}

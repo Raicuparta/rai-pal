@@ -1,16 +1,15 @@
-import { Alert, Divider, Table } from "@mantine/core";
+import { Alert, Divider, Table, Text } from "@mantine/core";
 import { EngineVersionRange, DbGame, commands } from "@api/bindings";
 import { useCallback, useMemo } from "react";
 import { CommandButton } from "@components/command-button";
 import { IconTrash } from "@tabler/icons-react";
-import { useAtomValue } from "jotai";
-import { modLoadersAtom } from "@hooks/use-data";
-import { useUnifiedMods } from "@hooks/use-unified-mods";
+import { UnifiedMod, useUnifiedMods } from "@hooks/use-unified-mods";
 import { GameModRow } from "./game-mod-row";
 import { TableContainer } from "@components/table/table-container";
 import { useLocalization } from "@hooks/use-localization";
 import { useCommandData } from "@hooks/use-command-data";
 import { useAppEvent } from "@hooks/use-app-event";
+import { MutedText } from "@components/muted-text";
 
 type Props = {
 	readonly game: DbGame;
@@ -74,7 +73,6 @@ const defaultInstalledModVersions: Record<string, string> = {};
 
 export function GameMods({ game }: Props) {
 	const t = useLocalization("gameModal");
-	const modLoaderMap = useAtomValue(modLoadersAtom);
 	const mods = useUnifiedMods();
 	const getInstalledModVersions = useCallback(
 		() => commands.getInstalledModVersions(game.providerId, game.gameId),
@@ -108,51 +106,91 @@ export function GameMods({ game }: Props) {
 		},
 	);
 
-	const filteredMods = useMemo(() => {
-		return Object.values(mods).filter(
-			(mod) =>
-				game &&
-				(!mod.common.engine || mod.common.engine === game.engineBrand) &&
-				(!mod.common.unityBackend ||
-					!game.unityBackend ||
-					mod.common.unityBackend === game.unityBackend) &&
-				isVersionWithinRange(game, mod.common.engineVersionRange) &&
-				!(mod.remote?.deprecated && !installedModVersions[mod.common.id]),
-		);
+	const { compatibleMods, incompatibleMods } = useMemo(() => {
+		const compatibleMods: UnifiedMod[] = [];
+		const incompatibleMods: UnifiedMod[] = [];
+
+		for (const mod of Object.values(mods)) {
+			const isCompatibleEngine =
+				!mod.common.engine || mod.common.engine === game.engineBrand;
+			const isCompatibleUnityBackend =
+				!mod.common.unityBackend ||
+				!game.unityBackend ||
+				mod.common.unityBackend === game.unityBackend;
+
+			if (!game || !isCompatibleEngine || !isCompatibleUnityBackend) {
+				continue;
+			}
+
+			// Deprecated mods only show if they had been previously installed.
+			if (mod.remote?.deprecated && !installedModVersions[mod.common.id]) {
+				continue;
+			}
+
+			if (isVersionWithinRange(game, mod.common.engineVersionRange)) {
+				compatibleMods.push(mod);
+			} else {
+				incompatibleMods.push(mod);
+			}
+		}
+
+		return {
+			compatibleMods,
+			incompatibleMods,
+		};
 	}, [game, installedModVersions, mods]);
 
-	if (filteredMods.length === 0) {
+	if (compatibleMods.length + incompatibleMods.length === 0) {
 		return null;
 	}
 
 	return (
 		<>
-			<Divider label={t("gameModsLabel")} />
-			{!game.exePath && (
-				<Alert color="orange">{t("gameNotInstalledWarning")}</Alert>
-			)}
-			<TableContainer bg="dark">
-				<Table>
-					<Table.Tbody>
-						{filteredMods.map((mod) => {
-							const modLoader = modLoaderMap[mod.common.loaderId];
-
-							return (
-								modLoader && (
+			{compatibleMods.length > 0 && (
+				<>
+					<Divider label={t("gameModsLabel")} />
+					{!game.exePath && (
+						<Alert color="orange">{t("gameNotInstalledWarning")}</Alert>
+					)}
+					<TableContainer bg="dark">
+						<Table>
+							<Table.Tbody>
+								{compatibleMods.map((mod) => (
 									<GameModRow
 										key={mod.common.id}
 										game={game}
 										mod={mod}
-										modLoader={modLoader}
 										remoteConfigs={remoteConfigs}
 										installedVersion={installedModVersions[mod.common.id]}
 									/>
-								)
-							);
-						})}
-					</Table.Tbody>
-				</Table>
-			</TableContainer>
+								))}
+							</Table.Tbody>
+						</Table>
+					</TableContainer>
+				</>
+			)}
+			{incompatibleMods.length > 0 && (
+				<>
+					<Divider label={t("incompatibleGameModsLabel")} />
+					<MutedText>{t("incompatibleGameModsDescription")}</MutedText>
+					<TableContainer bg="dark">
+						<Table>
+							<Table.Tbody>
+								{incompatibleMods.map((mod) => (
+									<GameModRow
+										key={mod.common.id}
+										game={game}
+										mod={mod}
+										remoteConfigs={remoteConfigs}
+										installedVersion={installedModVersions[mod.common.id]}
+										incompatible
+									/>
+								))}
+							</Table.Tbody>
+						</Table>
+					</TableContainer>
+				</>
+			)}
 			{game.exePath && (
 				<CommandButton
 					confirmationText={t("uninstallAllModsConfirmation")}

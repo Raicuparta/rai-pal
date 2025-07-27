@@ -194,6 +194,12 @@ export const enUs = {
 		// Confirmation dialog for uninstalling all mods for this game.
 		uninstallAllModsConfirmation:
 			"You sure? This will delete all files in this game's mods folder. It won't delete any files from the actual game though.",
+
+		// Label for the section that lists incompatible mods for this game.
+		incompatibleGameModsLabel: "Incompatible Mods",
+
+		incompatibleGameModsDescription:
+			"The mods listed here can't be installed because they aren't compatible with this game's engine version.",
 	},
 
 	// Row in the table that shows mods for a specific game in the game modal.
