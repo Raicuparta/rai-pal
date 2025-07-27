@@ -99,6 +99,11 @@ export const deDe: Localization = {
 		uninstallAllModsButton: "Alle Mods deinstallieren",
 		uninstallAllModsConfirmation:
 			"Sind Sie sicher? Dies wird alle Dateien im Mods-Ordner dieses Spiels löschen. Es werden jedoch keine Dateien aus dem eigentlichen Spiel gelöscht.",
+
+		incompatibleGameModsLabel: "Inkompatible Mods",
+
+		incompatibleGameModsDescription:
+			"Die hier aufgelisteten Mods können nicht installiert werden, da sie nicht mit der Engine-Version dieses Spiels kompatibel sind.",
 	},
 
 	gameModRow: {

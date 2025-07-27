@@ -96,6 +96,11 @@ export const koKr: Localization = {
 		uninstallAllModsButton: "모드 모두 제거",
 		uninstallAllModsConfirmation:
 			"확실합니까? 이 게임의 모드 폴더에 있는 모든 파일이 삭제됩니다. 실제 게임의 파일은 삭제되지 않습니다.",
+
+		incompatibleGameModsLabel: "호환되지 않는 모드",
+
+		incompatibleGameModsDescription:
+			"여기에 나열된 모드들은 이 게임의 엔진 버전과 호환되지 않기 때문에 설치할 수 없습니다.",
 	},
 
 	gameModRow: {

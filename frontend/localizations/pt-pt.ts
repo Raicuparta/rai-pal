@@ -98,6 +98,11 @@ export const ptPt: Localization = {
 		uninstallAllModsButton: "Desinstalar todos os mods",
 		uninstallAllModsConfirmation:
 			"Tens a certeza? Isto apagará todos os ficheiros na pasta de mods deste jogo. No entanto, não removerá ficheiros do próprio jogo.",
+
+		incompatibleGameModsLabel: "Mods Incompatíveis",
+
+		incompatibleGameModsDescription:
+			"Os mods listados aqui não podem ser instalados porque não são compatíveis com a versão do motor deste jogo.",
 	},
 
 	gameModRow: {
