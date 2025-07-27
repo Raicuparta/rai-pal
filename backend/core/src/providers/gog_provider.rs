@@ -10,8 +10,8 @@ use winreg::{RegKey, enums::HKEY_LOCAL_MACHINE};
 
 use super::provider_command::{ProviderCommand, ProviderCommandAction};
 use crate::{
-	local_database::{DbMutex, GameDatabase},
 	game::DbGame,
+	local_database::{DbMutex, GameDatabase},
 	paths,
 	providers::provider::{ProviderActions, ProviderId, ProviderStatic},
 	result::Result,
@@ -45,8 +45,8 @@ impl Gog {
 			),
 		);
 
-		game.thumbnail_url = db_entry.image_url.clone();
-		game.release_date = db_entry.release_date.map(std::convert::Into::into);
+		game.thumbnail_url.clone_from(&db_entry.image_url);
+		game.release_date = db_entry.release_date.map(Into::into);
 
 		game
 	}

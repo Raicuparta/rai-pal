@@ -49,7 +49,7 @@ struct XboxGamepassImages {
 
 impl ProviderActions for Xbox {
 	async fn insert_games(&self, db: &DbMutex) -> Result {
-		if let Err(error) = get_games(db).await {
+		if let Err(error) = get_games(db) {
 			if error.kind() == io::ErrorKind::NotFound {
 				log::info!(
 					"Failed to find installed Xbox PC games. This probably means the Xbox PC app isn't installed, or there are no Windows Store games or something. Error: {error}"
@@ -62,7 +62,7 @@ impl ProviderActions for Xbox {
 	}
 }
 
-async fn get_games(db: &DbMutex) -> io::Result<()> {
+fn get_games(db: &DbMutex) -> io::Result<()> {
 	let gaming_services =
 		RegKey::predef(HKEY_LOCAL_MACHINE).open_subkey("SOFTWARE\\Microsoft\\GamingServices")?;
 	let package_roots = gaming_services.open_subkey("PackageRepository\\Root")?;

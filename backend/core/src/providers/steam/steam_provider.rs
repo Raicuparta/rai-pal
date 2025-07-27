@@ -210,7 +210,7 @@ impl ProviderActions for Steam {
 					if app_info
 						.tags
 						.as_ref()
-						.is_some_and(|tags| tags.contains(&21978))
+						.is_some_and(|tags| tags.contains(&21_978_i32))
 					{
 						game.add_tag(GameTag::VR);
 					}

@@ -1,4 +1,4 @@
-use std::{env, num, path::PathBuf, result};
+use std::{env, num, path::PathBuf, result, time::SystemTimeError};
 
 use lazy_regex::regex;
 
@@ -88,6 +88,13 @@ pub enum Error {
 		steamlocate::error::Error,
 	),
 
+	#[error(transparent)]
+	SystemTime(
+		#[from]
+		#[serde(skip)]
+		SystemTimeError,
+	),
+
 	#[error("Invalid type `{0}` in binary vdf for key {1}")]
 	InvalidBinaryVdfType(u8, String),
 
@@ -151,6 +158,9 @@ pub enum Error {
 
 	#[error("Failed to find game executable at `{0}`")]
 	NoExecutableFound(PathBuf),
+
+	#[error("Failed to acquire lock for database: `{0}`")]
+	DatabaseLockFailed(String),
 }
 
 impl serde::Serialize for Error {

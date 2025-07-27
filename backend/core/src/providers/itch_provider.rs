@@ -10,8 +10,8 @@ use rusqlite::{Connection, OpenFlags};
 
 use super::provider_command::{ProviderCommand, ProviderCommandAction};
 use crate::{
-	local_database::{DbMutex, GameDatabase},
 	game::DbGame,
+	local_database::{DbMutex, GameDatabase},
 	paths,
 	providers::provider::{ProviderActions, ProviderId, ProviderStatic},
 	result::Result,
@@ -29,7 +29,7 @@ impl Itch {
 	fn get_game(row: &ItchDatabaseGame) -> DbGame {
 		let mut game = DbGame::new(*Self::ID, row.id.to_string(), row.title.clone());
 
-		game.thumbnail_url = row.cover_url.clone();
+		game.thumbnail_url.clone_from(&row.cover_url);
 
 		if let Some(date_time) = row
 			.published_at
