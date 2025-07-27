@@ -43,6 +43,6 @@ jobs:
           draft: true
           name: Rai Pal ${{ steps.build.outputs.version }}
           tag_name: v${{ steps.build.outputs.version }}
-          body: "${{ github.event.pull_request.body }}\n\n[![Download Rai Pal for Windows](https://shields.io/badge/-Download_Rai_Pal_for_Windows-8A2BE2?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/Raicuparta/rai-pal/releases/latest/download/RaiPal.exe)"
+          body_path: ./publish/ReleaseBody.md
           files: |
             ./publish/*
