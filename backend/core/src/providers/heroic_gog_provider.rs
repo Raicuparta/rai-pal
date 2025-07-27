@@ -48,8 +48,7 @@ struct Root {
 }
 
 fn get_detected_games() -> Result<Vec<ParsedGame>> {
-	let dirs = BaseDirs::new()
-		.ok_or_else(|| io::Error::new(io::ErrorKind::Other, "Failed to get user directories"))?;
+	let dirs = BaseDirs::new().ok_or_else(|| io::Error::other("Failed to get user directories"))?;
 	let config_dir = dirs.config_dir();
 	let file_content =
 		read_to_string(Path::new(&config_dir).join("heroic/store_cache/gog_library.json"))?;
@@ -162,7 +161,7 @@ impl ProviderActions for HeroicGog {
 				parsed_game.app_name.clone(),
 				parsed_game.title.clone(),
 			);
-			game.thumbnail_url = parsed_game.art_cover.clone();
+			game.thumbnail_url.clone_from(&parsed_game.art_cover);
 			if let Some(exe_path) = Self::get_exe_path(&parsed_game) {
 				game.set_executable(&exe_path);
 				game.add_provider_command(

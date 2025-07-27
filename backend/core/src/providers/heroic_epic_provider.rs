@@ -37,7 +37,7 @@ struct ParsedGame {
 	title: String,
 	install: Install,
 	is_installed: bool,
-	art_cover: String,
+	art_cover: Option<String>,
 	folder_name: Option<String>,
 }
 
@@ -116,7 +116,7 @@ impl ProviderActions for HeroicEpic {
 					parsed_game.app_name.clone(),
 					parsed_game.title.clone(),
 				);
-				game.thumbnail_url = Some(parsed_game.art_cover.clone());
+				game.thumbnail_url.clone_from(&parsed_game.art_cover);
 				if let Some(exe_path) = Self::get_exe_path(&parsed_game) {
 					game.set_executable(&exe_path);
 					game.add_provider_command(
