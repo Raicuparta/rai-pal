@@ -50,8 +50,20 @@ $updaterJson = ConvertTo-Json -InputObject @{
 Remove-Item $outputFolder -Force -Recurse -ErrorAction Ignore | Out-Null
 New-Item -ItemType Directory $outputFolder | Out-Null
 
-${updaterJson} | Set-Content -Path "${outputFolder}/latest.json"
+# Everything in this folder will get uploaded as a release artifact.
+$releaseFilesFolder = Join-Path $outputFolder "release-files"
+New-Item -ItemType Directory $releaseFilesFolder | Out-Null
 
+${updaterJson} | Set-Content -Path "${releaseFilesFolder}/latest.json"
+
+# Rename files to make it a bit clearer what should be downloaded,
+# and remove version numbers from the download file. This is important
+# because we want to be able to use GitHub's magic releases/latest links
+# to directly link to the latest release download.
+Copy-Item "${bundleFolder}/*.exe" "${releaseFilesFolder}/${releaseExeName}" -Force
+Copy-Item "${bundleFolder}/*.zip" "${releaseFilesFolder}/${releaseUpdaterName}" -Force
+
+# This will be used as the release description on GH, so GH-flavored markdown is supported.
 $releaseBody = @"
 $changelog
 
@@ -59,12 +71,5 @@ $changelog
 "@
 
 ${releaseBody} | Set-Content -Path "${outputFolder}/ReleaseBody.md"
-
-# Rename files to make it a bit clearer what should be downloaded,
-# and remove version numbers from the download file. This is important
-# because we want to be able to use GitHub's magic releases/latest links
-# to directly link to the latest release download.
-Copy-Item "${bundleFolder}/*.exe" "${outputFolder}/${releaseExeName}" -Force
-Copy-Item "${bundleFolder}/*.zip" "${outputFolder}/${releaseUpdaterName}" -Force
 
 return $version

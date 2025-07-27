@@ -45,4 +45,4 @@ jobs:
           tag_name: v${{ steps.build.outputs.version }}
           body_path: ./publish/ReleaseBody.md
           files: |
-            ./publish/*
+            ./publish/release-files/*
