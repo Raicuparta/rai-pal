@@ -12,14 +12,15 @@
 		"update-icons": "tauri icon backend/graphics/icon-source.png",
 		"frontend:build": "tsc && vite build",
 		"frontend:dev": "vite",
-		"lint": "prettier ./frontend --write && eslint . --fix",
+		"lint": "prettier ./frontend --write && eslint --fix",
 		"lint-only": "eslint eslint.config.mjs --fix",
 		"find-unused": "cd backend && del index.scip &&  cargo workspace-unused-pub"
 	},
 	"prettier": {
 		"useTabs": true,
 		"singleAttributePerLine": true,
-		"quoteProps": "as-needed"
+		"quoteProps": "as-needed",
+		"endOfLine": "auto"
 	},
 	"engines": {
 		"node": ">=20.0.0"

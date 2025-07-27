@@ -1,4 +1,4 @@
-import { fixupConfigRules } from "@eslint/compat";
+import { fixupConfigRules, includeIgnoreFile } from "@eslint/compat";
 import reactRefresh from "eslint-plugin-react-refresh";
 import globals from "globals";
 import tsParser from "@typescript-eslint/parser";
@@ -8,6 +8,7 @@ import js from "@eslint/js";
 import { FlatCompat } from "@eslint/eslintrc";
 import reactCompiler from "eslint-plugin-react-compiler";
 import reactHooks from "eslint-plugin-react-hooks";
+import { defineConfig, globalIgnores } from "eslint/config";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -17,13 +18,9 @@ const compat = new FlatCompat({
 	allConfig: js.configs.all,
 });
 
-export default [
-	{
-		files: ["**/*.ts", "**/*.tsx"],
-	},
-	{
-		ignores: ["frontend/api/**/*", "backend/**/*"],
-	},
+export default defineConfig([
+	globalIgnores(["**/frontend/api/", "backend/"]),
+	includeIgnoreFile(fileURLToPath(new URL(".gitignore", import.meta.url))),
 	...fixupConfigRules(
 		compat.extends(
 			"eslint:recommended",
@@ -33,6 +30,9 @@ export default [
 			"prettier",
 		),
 	),
+	{
+		files: ["**/*.ts", "**/*.tsx"],
+	},
 	reactHooks.configs["recommended-latest"],
 	{
 		plugins: {
@@ -63,4 +63,4 @@ export default [
 			"react-compiler/react-compiler": "error",
 		},
 	},
-];
+]);
