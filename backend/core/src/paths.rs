@@ -104,7 +104,7 @@ pub fn open_folder_or_parent(path: &Path) -> Result {
 }
 
 pub fn base_dirs() -> Result<BaseDirs> {
-	Ok(directories::BaseDirs::new().ok_or_else(Error::AppDataNotFound)?)
+	directories::BaseDirs::new().ok_or_else(Error::AppDataNotFound)
 }
 
 pub trait AsValidStr {

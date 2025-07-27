@@ -49,11 +49,10 @@ struct XboxGamepassImages {
 
 impl ProviderActions for Xbox {
 	async fn insert_games(&self, db: &DbMutex) -> Result {
-		if let Err(error) = get_games(db).await {
+		if let Err(error) = get_games(db) {
 			if error.kind() == io::ErrorKind::NotFound {
 				log::info!(
-					"Failed to find installed Xbox PC games. This probably means the Xbox PC app isn't installed, or there are no Windows Store games or something. Error: {}",
-					error
+					"Failed to find installed Xbox PC games. This probably means the Xbox PC app isn't installed, or there are no Windows Store games or something. Error: {error}"
 				);
 				return Ok(());
 			}
@@ -63,7 +62,7 @@ impl ProviderActions for Xbox {
 	}
 }
 
-async fn get_games(db: &DbMutex) -> io::Result<()> {
+fn get_games(db: &DbMutex) -> io::Result<()> {
 	let gaming_services =
 		RegKey::predef(HKEY_LOCAL_MACHINE).open_subkey("SOFTWARE\\Microsoft\\GamingServices")?;
 	let package_roots = gaming_services.open_subkey("PackageRepository\\Root")?;
@@ -99,16 +98,14 @@ async fn get_games(db: &DbMutex) -> io::Result<()> {
 												})
 												.or_else(|error| {
 													error!(
-														"Failed to find display name for Xbox game: {}",
-														error
+														"Failed to find display name for Xbox game: {error}"
 													);
 													file_name_without_extension(&executable_path)
 														.map(ToString::to_string)
 												})
 												.unwrap_or_else(|error| {
 													error!(
-														"Failed to get game name from exe path: {}",
-														error
+														"Failed to get game name from exe path: {error}"
 													);
 													"[Name Not Found]".to_string()
 												});

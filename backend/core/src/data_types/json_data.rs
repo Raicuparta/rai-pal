@@ -8,7 +8,7 @@ where
 	T: serde::de::DeserializeOwned + Eq,
 {
 	fn column_result(value: rusqlite::types::ValueRef<'_>) -> rusqlite::types::FromSqlResult<Self> {
-		Ok(JsonData(
+		Ok(Self(
 			serde_json::from_str(value.as_str()?).map_err(|err| FromSqlError::Other(err.into()))?,
 		))
 	}

@@ -93,6 +93,11 @@ export const zhCn: Localization = {
 		uninstallAllModsButton: "卸载所有模组",
 		uninstallAllModsConfirmation:
 			"您确定吗？这将删除此游戏模组文件夹中的所有文件。但不会删除游戏的任何文件。",
+
+		incompatibleGameModsLabel: "不兼容的模组",
+
+		incompatibleGameModsDescription:
+			"此处列出的模组无法安装，因为它们与此游戏的引擎版本不兼容。",
 	},
 
 	gameModRow: {

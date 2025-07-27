@@ -10,8 +10,8 @@ use winreg::{RegKey, enums::HKEY_LOCAL_MACHINE};
 
 use super::provider_command::{ProviderCommand, ProviderCommandAction};
 use crate::{
-	local_database::{DbMutex, GameDatabase},
 	game::DbGame,
+	local_database::{DbMutex, GameDatabase},
 	paths,
 	providers::provider::{ProviderActions, ProviderId, ProviderStatic},
 	result::Result,
@@ -45,8 +45,8 @@ impl Gog {
 			),
 		);
 
-		game.thumbnail_url = db_entry.image_url.clone();
-		game.release_date = db_entry.release_date.map(|date| date.into());
+		game.thumbnail_url.clone_from(&db_entry.image_url);
+		game.release_date = db_entry.release_date.map(Into::into);
 
 		game
 	}
@@ -71,7 +71,7 @@ impl ProviderActions for Gog {
 			for db_entry in database {
 				let mut game = Self::get_game(&db_entry, &launcher_path);
 				if let Some(executable_path) = db_entry.executable_path.as_ref() {
-					game.set_executable(&executable_path);
+					game.set_executable(executable_path);
 					game.add_provider_command(
 						ProviderCommandAction::StartViaProvider,
 						ProviderCommand::Path(

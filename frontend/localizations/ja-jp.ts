@@ -98,6 +98,11 @@ export const jaJp: Localization = {
 		uninstallAllModsButton: "すべてのモッドをアンインストール",
 		uninstallAllModsConfirmation:
 			"本当に？これにより、このゲームのモッドフォルダー内のすべてのファイルが削除されます。ただし、実際のゲームのファイルは削除されません。",
+
+		incompatibleGameModsLabel: "非互換モッド",
+
+		incompatibleGameModsDescription:
+			"ここにリストされているモッドは、このゲームのエンジンバージョンと互換性がないため、インストールできません。",
 	},
 
 	gameModRow: {

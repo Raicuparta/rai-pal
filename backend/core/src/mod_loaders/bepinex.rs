@@ -82,7 +82,7 @@ impl ModLoaderActions for BepInEx {
 
 		ZipArchive::new(File::open(mod_loader_archive)?)?.extract(&game_data_folder)?;
 
-		let game_folder = paths::path_parent(&exe_path)?;
+		let game_folder = paths::path_parent(exe_path)?;
 
 		copy_dir_all(folder_to_copy_to_game, game_folder)?;
 

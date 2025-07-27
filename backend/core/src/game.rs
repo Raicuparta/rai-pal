@@ -75,7 +75,7 @@ impl DbGame {
 	}
 
 	pub fn open_game_folder(&self) -> Result {
-		paths::open_folder_or_parent(&self.try_get_exe_path()?)
+		paths::open_folder_or_parent(self.try_get_exe_path()?)
 	}
 
 	pub fn open_mods_folder(&self) -> Result {
@@ -129,7 +129,7 @@ impl DbGame {
 	pub fn get_installed_mods_folder(&self) -> Result<PathBuf> {
 		let installed_mods_folder = paths::app_data_path()?
 			.join("installed-mods")
-			.join(&paths::hash_path(&self.try_get_exe_path()?));
+			.join(paths::hash_path(self.try_get_exe_path()?));
 		fs::create_dir_all(&installed_mods_folder)?;
 
 		Ok(installed_mods_folder)
@@ -145,11 +145,11 @@ impl DbGame {
 
 	pub fn try_get_exe_name(&self) -> Result<String> {
 		let path = self.try_get_exe_path()?;
-		Ok(path
+		path
 			.file_name()
 			.and_then(|file_name| file_name.to_str())
-			.map(|file_name| file_name.to_string())
-			.ok_or_else(|| Error::InvalidOsStr(path.display().to_string()))?)
+			.map(std::string::ToString::to_string)
+			.ok_or_else(|| Error::InvalidOsStr(path.display().to_string()))
 	}
 
 	pub fn add_provider_command(

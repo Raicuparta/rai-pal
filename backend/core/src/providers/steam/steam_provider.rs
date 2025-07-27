@@ -163,7 +163,7 @@ impl ProviderActions for Steam {
 
 		let owned_ids_whitelist =
 			Self::get_owned_ids_whitelist(steam_dir.path()).unwrap_or_else(|err| {
-				log::error!("Failed to read Steam assets cache: {}", err);
+				log::error!("Failed to read Steam assets cache: {err}");
 				HashSet::new()
 			});
 
@@ -210,7 +210,7 @@ impl ProviderActions for Steam {
 					if app_info
 						.tags
 						.as_ref()
-						.is_some_and(|tags| tags.contains(&21978))
+						.is_some_and(|tags| tags.contains(&21_978_i32))
 					{
 						game.add_tag(GameTag::VR);
 					}
@@ -242,7 +242,7 @@ impl ProviderActions for Steam {
 					}
 				}
 				Err(error) => {
-					log::error!("Failed to read Steam appinfo: {}", error);
+					log::error!("Failed to read Steam appinfo: {error}");
 				}
 			}
 		}

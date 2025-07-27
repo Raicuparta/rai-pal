@@ -205,7 +205,7 @@ async fn configure_mod(
 	let local_mod = local_mods.try_get(mod_id)?;
 	let mod_loader = mod_loaders.try_get(&local_mod.common.loader_id)?;
 
-	mod_loader.configure_mod(&game, &local_mod, open_folder)?;
+	mod_loader.configure_mod(&game, local_mod, open_folder)?;
 
 	Ok(())
 }
@@ -451,7 +451,7 @@ async fn add_game(path: PathBuf, handle: AppHandle) -> Result {
 	state.database.insert_game(&game);
 
 	handle.emit_safe(events::RefreshGame(
-		game.provider_id.clone(),
+		game.provider_id,
 		game.game_id.clone(),
 	));
 
@@ -579,7 +579,7 @@ async fn download_remote_config(
 	app_handle: AppHandle,
 ) -> Result {
 	let state = app_handle.app_state();
-	let game = state.database.get_game(&provider_id, &game_id)?;
+	let game = state.database.get_game(&provider_id, game_id)?;
 	let remote_mods = state.remote_mods.read_state()?.clone();
 	let remote_mod = remote_mods.try_get(mod_id)?;
 	let mod_loaders = state.mod_loaders.read_state()?.clone();
@@ -591,7 +591,7 @@ async fn download_remote_config(
 		mod_loader
 			.download_config(&game, mod_configs, remote_config_file, overwrite)
 			.await?;
-		mod_loader.update_installed_mod_manifest(&local_mod, &game)?;
+		mod_loader.update_installed_mod_manifest(local_mod, &game)?;
 	}
 
 	refresh_local_mods(&mod_loaders, &app_handle)?;
@@ -698,7 +698,7 @@ fn main() {
 				window.show()?;
 
 				window.on_window_event(|event| {
-					if let tauri::WindowEvent::Destroyed { .. } = event {
+					if let tauri::WindowEvent::Destroyed = event {
 						// Once the window is closed, we don't need to report panics anymore.
 						// I'm doing this because closing the window abruptly while events are being sent
 						// causes panics, so it was easy to trigger those messages by just closing while loading data.

@@ -34,7 +34,7 @@ impl ProviderCommand {
 				}
 				command.spawn()?;
 			}
-		};
+		}
 		Ok(())
 	}
 }

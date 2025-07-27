@@ -1,7 +1,7 @@
 use std::{
 	ops::Deref,
 	path::{Path, PathBuf},
-	sync::Mutex,
+	sync::{Mutex, MutexGuard},
 	time::{Instant, SystemTime, UNIX_EPOCH},
 };
 
@@ -16,12 +16,13 @@ use crate::{
 	paths,
 	providers::provider::ProviderId,
 	remote_game,
-	result::Result,
+	result::{Error, Result},
 };
 
 pub type DbMutex = Mutex<rusqlite::Connection>;
 
 pub trait GameDatabase {
+	fn lock_db(&self) -> Result<MutexGuard<'_, rusqlite::Connection>>;
 	fn insert_game(&self, game: &DbGame);
 	fn get_game(&self, provider_id: &ProviderId, game_id: &str) -> Result<DbGame>;
 	fn get_game_ids(&self, query: Option<GamesQuery>) -> Result<GameIdsResponse>;
@@ -35,6 +36,11 @@ pub struct GameIdsResponse {
 }
 
 impl GameDatabase for DbMutex {
+	fn lock_db(&self) -> Result<MutexGuard<'_, rusqlite::Connection>> {
+		self.lock()
+			.map_err(|err| Error::DatabaseLockFailed(err.to_string()))
+	}
+
 	fn insert_game(&self, game: &DbGame) {
 		if let Err(err) = try_insert_game(self, game) {
 			log::error!(
@@ -48,10 +54,9 @@ impl GameDatabase for DbMutex {
 
 	fn get_game(&self, provider_id: &ProviderId, game_id: &str) -> Result<DbGame> {
 		Ok(self
-			.lock()
-			.unwrap()
+			.lock_db()?
 			.prepare_cached(
-				r#"
+				r"
 		SELECT
 			g.provider_id,
 			g.game_id,
@@ -80,7 +85,7 @@ impl GameDatabase for DbMutex {
 		)
 		WHERE g.provider_id = $1 AND g.game_id = $2
 		LIMIT 1
-	"#,
+	",
 			)?
 			.query_row([provider_id.to_string(), game_id.to_string()], |row| {
 				Ok(DbGame {
@@ -106,12 +111,10 @@ impl GameDatabase for DbMutex {
 	}
 
 	fn get_game_ids(&self, query: Option<GamesQuery>) -> Result<GameIdsResponse> {
-		let database_connection = self.lock().unwrap();
 		let search = query.as_ref().map(|q| q.search.clone()).unwrap_or_default();
 
 		// Build sorting logic
 		let sort_columns = match query.as_ref().map(|q| q.sort_by) {
-			Some(GamesSortBy::Title) => vec!["g.display_title"],
 			Some(GamesSortBy::ReleaseDate) => vec!["g.release_date"],
 			Some(GamesSortBy::Engine) => vec![
 				"COALESCE(ig.engine_brand, rg.engine_brand)",
@@ -144,9 +147,7 @@ impl GameDatabase for DbMutex {
 					.providers
 					.iter()
 					.filter_map(|provider| {
-						provider
-							.as_ref()
-							.map(|p| format!("g.provider_id = '{}'", p))
+						provider.as_ref().map(|p| format!("g.provider_id = '{p}'"))
 					})
 					.collect();
 				if !provider_conditions.is_empty() {
@@ -159,11 +160,10 @@ impl GameDatabase for DbMutex {
 					.tags
 					.iter()
 					.map(|tag| {
-						if let Some(t) = tag {
-							format!("g.tags LIKE '%\"{}\"%'", t)
-						} else {
-							format!("g.tags = '[]'")
-						}
+						tag.as_ref().map_or_else(
+							|| "g.tags = '[]'".to_string(),
+							|t| format!("g.tags LIKE '%\"{t}\"%'"),
+						)
 					})
 					.collect();
 				if !tag_conditions.is_empty() {
@@ -184,7 +184,7 @@ impl GameDatabase for DbMutex {
 				let engine_values: Vec<String> = filter
 					.engines
 					.iter()
-					.filter_map(|engine| engine.as_ref().map(|e| format!("'{}'", e)))
+					.filter_map(|engine| engine.as_ref().map(|e| format!("'{e}'")))
 					.collect();
 
 				if !engine_values.is_empty() {
@@ -206,7 +206,7 @@ impl GameDatabase for DbMutex {
 					.filter_map(|backend| {
 						backend
 							.as_ref()
-							.map(|b| format!("ig.unity_backend = '{}'", b))
+							.map(|b| format!("ig.unity_backend = '{b}'"))
 					})
 					.collect();
 				if !backend_conditions.is_empty() {
@@ -219,8 +219,7 @@ impl GameDatabase for DbMutex {
 		// Add search filter
 		if !trimmed_search.is_empty() {
 			filters.push(format!(
-				"(g.display_title LIKE '%{}%' OR nt.normalized_title LIKE '%{}%')",
-				trimmed_search, trimmed_search
+				"(g.display_title LIKE '%{trimmed_search}%' OR nt.normalized_title LIKE '%{trimmed_search}%')"
 			));
 		}
 
@@ -231,8 +230,8 @@ impl GameDatabase for DbMutex {
 			filters.join(" AND ")
 		};
 
-		let query = &format!(
-			r#"
+		let sql_query = &format!(
+			r"
 			SELECT DISTINCT
 					g.provider_id as provider_id,
 					g.game_id as game_id
@@ -246,7 +245,7 @@ impl GameDatabase for DbMutex {
 			)
 			WHERE {where_clause}
 			ORDER BY {}
-			"#,
+			",
 			sort_columns
 				.iter()
 				.map(|col| format!("{col} {sort_order}"))
@@ -254,26 +253,28 @@ impl GameDatabase for DbMutex {
 				.join(", ")
 		);
 
-		let game_ids = database_connection
-			.prepare(query)?
+		let game_ids = self
+			.lock_db()?
+			.prepare(sql_query)?
 			.query_map([], |row| Ok((row.get(0)?, row.get(1)?)))?
 			.filter_map(|game_id| match game_id {
 				Ok(id) => Some(id),
 				Err(err) => {
-					log::warn!("Failed to read game from local database: {}", err);
+					log::warn!("Failed to read game from local database: {err}");
 					None
 				}
 			})
 			.collect();
 
-		let total_count = database_connection
+		let total_count = self
+			.lock_db()?
 			.prepare_cached(
-				r#"
+				r"
 			SELECT COUNT(*)
 			FROM main.games g
-		"#,
+		",
 			)?
-			.query_row([], |row| Ok(row.get::<_, i64>(0)?))?;
+			.query_row([], |row| row.get::<_, i64>(0))?;
 
 		Ok(GameIdsResponse {
 			game_ids,
@@ -282,8 +283,7 @@ impl GameDatabase for DbMutex {
 	}
 
 	fn remove_stale_games(&self, provider_id: &ProviderId, max_time: u64) -> Result {
-		self.lock()
-			.unwrap()
+		self.lock_db()?
 			.prepare_cached("DELETE FROM main.games WHERE provider_id = $1 AND created_at < $2;")?
 			.execute(rusqlite::params![provider_id, max_time])?;
 
@@ -292,7 +292,7 @@ impl GameDatabase for DbMutex {
 }
 
 fn try_insert_game(connection_mutex: &DbMutex, game: &DbGame) -> Result {
-	let mut connection = connection_mutex.lock().unwrap();
+	let mut connection = connection_mutex.lock_db()?;
 	let transaction = connection.transaction()?;
 
 	transaction
@@ -320,10 +320,7 @@ fn try_insert_game(connection_mutex: &DbMutex, game: &DbGame) -> Result {
 			game.tags.clone(),
 			game.title_discriminator.clone(),
 			game.provider_commands.clone(),
-			SystemTime::now()
-				.duration_since(UNIX_EPOCH)
-				.unwrap()
-				.as_secs()
+			SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs()
 		])?;
 
 	if let Some(exe_path) = game.exe_path.as_ref() {
@@ -372,6 +369,10 @@ fn try_insert_game(connection_mutex: &DbMutex, game: &DbGame) -> Result {
 
 	transaction.commit()?;
 
+	// tbh only here due to a clippy warning,
+	// Clippy does't seem to realize connection is needed as long as transaction.
+	drop(connection);
+
 	Ok(())
 }
 
@@ -392,7 +393,7 @@ pub fn create() -> Result<DbMutex> {
 	)?;
 
 	connection.execute_batch(
-		r#"
+		r"
 		PRAGMA journal_mode = WAL;
 		PRAGMA synchronous = OFF;
 
@@ -447,7 +448,7 @@ pub fn create() -> Result<DbMutex> {
 			engine_version_display TEXT,
 			PRIMARY KEY (provider_id, external_id)
 		);
-	"#,
+	",
 	)?;
 
 	attach_remote_database(&connection, &remote_game::get_database_file_path()?)?;
@@ -471,10 +472,10 @@ pub fn attach_remote_database<TConnection: Deref<Target = rusqlite::Connection>>
 	let path_str = path.to_string_lossy();
 
 	local_database_connection
-		.execute(&format!("ATTACH DATABASE '{}' AS remote_db;", path_str), [])?;
+		.execute(&format!("ATTACH DATABASE '{path_str}' AS remote_db;"), [])?;
 
 	local_database_connection.execute(
-		r#"
+		r"
 		INSERT OR IGNORE INTO main.remote_games (
 			provider_id, external_id, engine_brand, engine_version_major,
 			engine_version_minor, engine_version_patch, engine_version_display
@@ -488,7 +489,7 @@ pub fn attach_remote_database<TConnection: Deref<Target = rusqlite::Connection>>
 			NULL,
 			engine_version
 		FROM remote_db.games;
-		"#,
+		",
 		[],
 	)?;
 
@@ -516,16 +517,21 @@ pub fn attach_remote_database<TConnection: Deref<Target = rusqlite::Connection>>
 	})?;
 
 	for row_result in rows {
-		if let Ok((provider_id, external_id, engine_version)) = row_result {
-			if let Some(parsed) = remote_game::parse_version(&engine_version) {
-				update_statement.execute(rusqlite::params![
-					parsed.numbers.major,
-					parsed.numbers.minor,
-					parsed.numbers.patch,
-					provider_id,
-					external_id,
-					engine_version
-				])?;
+		match row_result {
+			Ok((provider_id, external_id, engine_version)) => {
+				if let Some(parsed) = remote_game::parse_version(&engine_version) {
+					update_statement.execute(rusqlite::params![
+						parsed.numbers.major,
+						parsed.numbers.minor,
+						parsed.numbers.patch,
+						provider_id,
+						external_id,
+						engine_version
+					])?;
+				}
+			}
+			Err(err) => {
+				log::warn!("Failed to read remote game row: {err}");
 			}
 		}
 	}

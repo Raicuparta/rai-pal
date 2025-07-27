@@ -11,7 +11,6 @@ pub mod game_mod;
 pub mod game_tag;
 pub mod game_title;
 pub mod games_query;
-pub mod http_client;
 pub mod local_database;
 pub mod local_mod;
 pub mod maps;

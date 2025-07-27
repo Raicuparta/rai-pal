@@ -7,7 +7,7 @@ pub struct PathData(pub PathBuf);
 
 impl rusqlite::types::FromSql for PathData {
 	fn column_result(value: ValueRef<'_>) -> FromSqlResult<Self> {
-		Ok(PathData(
+		Ok(Self(
 			paths_as_strings::decode_path(value.as_str()?)
 				.map_err(|err| FromSqlError::Other(err.into()))?,
 		))

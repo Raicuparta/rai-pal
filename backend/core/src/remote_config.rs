@@ -4,7 +4,7 @@ use rai_pal_proc_macros::serializable_struct;
 use reqwest::Response;
 use zip::ZipArchive;
 
-use crate::{game::DbGame, http_client, paths, result::Result};
+use crate::{game::DbGame, paths, result::Result};
 
 const CONFIG_DB_BASE_URL: &str = "https://raicuparta.github.io/rai-pal-db/config-db";
 const CONFIG_DB_VERSION: u32 = 0;
@@ -27,13 +27,12 @@ fn get_config_url(game_name: &str) -> String {
 }
 
 fn get_game_config_name(exe_path: &Path) -> Result<String> {
-	paths::file_name_without_extension(exe_path).map(|name| name.to_lowercase())
+	paths::file_name_without_extension(exe_path).map(str::to_lowercase)
 }
 
 pub async fn get_remote_configs(exe_path: &Path) -> Result<Option<RemoteConfigs>> {
 	let url = get_config_url(&get_game_config_name(exe_path)?);
-	let client = http_client::get_client();
-	let response = client.get(&url).send().await?;
+	let response = reqwest::get(&url).await?;
 
 	if !response.status().is_success() {
 		return Ok(None);
@@ -47,8 +46,7 @@ async fn download_config(config_file: &str, game: &DbGame) -> Result<Response> {
 	let game_name = get_game_config_name(game.try_get_exe_path()?)?;
 
 	let url = format!("{CONFIG_DB_BASE_URL}/{CONFIG_DB_VERSION}/{game_name}/configs/{config_file}");
-	let client = http_client::get_client();
-	let response = client.get(&url).send().await?;
+	let response = reqwest::get(&url).await?;
 
 	Ok(response.error_for_status()?)
 }
