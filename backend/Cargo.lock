@@ -3527,7 +3527,6 @@ dependencies = [
  "enum_dispatch",
  "globwalk",
  "lazy-regex",
- "lazy_static",
  "log",
  "open",
  "paths-as-strings",

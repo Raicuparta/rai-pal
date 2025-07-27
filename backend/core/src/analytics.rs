@@ -1,6 +1,8 @@
-use std::time::{SystemTime, UNIX_EPOCH};
+use std::{
+	sync::LazyLock,
+	time::{SystemTime, UNIX_EPOCH},
+};
 
-use lazy_static::lazy_static;
 use log::{error, info};
 use reqwest::Client;
 use serde::Serialize;
@@ -9,9 +11,7 @@ use uuid::Uuid;
 const MEASUREMENT_ID: &str = "G-KTJZNR0ZET";
 const API_KEY: Option<&str> = option_env!("ANALYTICS_API_KEY");
 
-lazy_static! {
-	static ref ANALYTICS_ID: String = Uuid::new_v4().hyphenated().to_string();
-}
+static ANALYTICS_ID: LazyLock<String> = LazyLock::new(|| Uuid::new_v4().hyphenated().to_string());
 
 #[derive(Serialize, Debug, Clone)]
 #[serde(rename_all = "snake_case")]
