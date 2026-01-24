@@ -120,7 +120,9 @@ impl ProviderActions for HeroicEpic {
 					parsed_game.app_name.clone(),
 					parsed_game.title.clone(),
 				);
-				game.thumbnail_url.clone_from(&parsed_game.art_cover);
+				if let Some(art_cover) = &parsed_game.art_cover {
+					game.thumbnail_url = Some(format!("{art_cover}?h=100&resize=1"));
+				}
 				if let Some(exe_path) = Self::get_exe_path(&parsed_game) {
 					game.set_executable(&exe_path);
 					game.add_provider_command(
