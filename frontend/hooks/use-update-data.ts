@@ -71,7 +71,7 @@ export function useUpdateData(executeOnMount = false) {
 				promise
 					.catch((error) => {
 						showAppNotification(
-							`Failed to initialize data update: ${error}`,
+							`Failed to initialize data update (${taskName}): ${error}`,
 							"error",
 						);
 					})
