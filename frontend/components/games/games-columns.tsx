@@ -22,15 +22,14 @@ const thumbnail: GamesColumn = {
 
 		return (
 			<Table.Td
-				bg="dark"
+				// bg="dark"
 				className={styles.thumbnailCell}
+				bg={`var(--mantine-color-${providerColors[item.providerId]}-light)`}
 			>
-				<img
-					className={styles.thumbnailBackground}
-					src={thumbnailUrl}
-				/>
 				{(item.thumbnailUrl || isBroken) && (
 					<img
+						decoding="async"
+						loading="lazy"
 						src={thumbnailUrl}
 						className={styles.thumbnailForeground}
 						onError={() => setIsBroken(true)}

@@ -39,6 +39,8 @@ struct ParsedGame {
 	title: String,
 	is_installed: bool,
 	art_cover: Option<String>,
+	art_square: Option<String>,
+	art_icon: Option<String>,
 	folder_name: Option<String>,
 }
 
@@ -161,7 +163,7 @@ impl ProviderActions for HeroicGog {
 				parsed_game.app_name.clone(),
 				parsed_game.title.clone(),
 			);
-			game.thumbnail_url.clone_from(&parsed_game.art_cover);
+			game.thumbnail_url.clone_from(&parsed_game.art_icon);
 			if let Some(exe_path) = Self::get_exe_path(&parsed_game) {
 				game.set_executable(&exe_path);
 				game.add_provider_command(
