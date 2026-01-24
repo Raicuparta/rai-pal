@@ -55,8 +55,12 @@ struct Root {
 fn get_detected_games() -> Result<Option<Vec<ParsedGame>>> {
 	let dirs = paths::base_dirs()?;
 	let config_dir = dirs.config_dir();
-	let file_content =
-		read_to_string(Path::new(&config_dir).join("heroic/store_cache/legendary_library.json"))?;
+	let path = Path::new(&config_dir).join("heroic/store_cache/legendary_library.json");
+	if !path.try_exists()? {
+		return Ok(None);
+	}
+
+	let file_content = read_to_string(path)?;
 
 	Ok(serde_json::from_str::<Root>(file_content.as_str())?.library)
 }

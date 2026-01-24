@@ -428,12 +428,12 @@ async fn refresh_games(handle: AppHandle, provider_id: ProviderId) -> Result {
 		.unwrap()
 		.as_secs();
 
-	let provider = provider::get_provider(provider_id)?;
-
-	provider.insert_games(&state.database).await?;
-	state
-		.database
-		.remove_stale_games(&provider_id, start_time)?;
+	if let Some(provider) = provider::get_provider(provider_id) {
+		provider?.insert_games(&state.database).await?;
+		state
+			.database
+			.remove_stale_games(&provider_id, start_time)?;
+	}
 
 	Ok(())
 }
@@ -450,10 +450,7 @@ async fn add_game(path: PathBuf, handle: AppHandle) -> Result {
 
 	state.database.insert_game(&game);
 
-	handle.emit_safe(events::RefreshGame(
-		game.provider_id,
-		game.game_id.clone(),
-	));
+	handle.emit_safe(events::RefreshGame(game.provider_id, game.game_id.clone()));
 
 	handle.emit_safe(events::GamesChanged());
 
