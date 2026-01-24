@@ -11,7 +11,7 @@ devUrl = "http://localhost:1420"
 [bundle]
 createUpdaterArtifacts = "v1Compatible"
 active = true
-targets = ["nsis"]
+targets = ["nsis", "appimage"]
 resources = ["resources/**/*"]
 icon = [
   "graphics/32x32.png",
