@@ -1,14 +1,12 @@
+use crate::game_engines::game_engine::{EngineVersion, EngineVersionNumbers, GameEngine};
+use crate::providers::provider::ProviderId;
+use crate::result::Result;
+use crate::{http, paths};
+use lazy_regex::regex;
+use rai_pal_proc_macros::serializable_struct;
 use std::collections::HashMap;
 use std::fs;
 use std::path::PathBuf;
-
-use lazy_regex::regex;
-use rai_pal_proc_macros::serializable_struct;
-
-use crate::game_engines::game_engine::{EngineVersion, EngineVersionNumbers, GameEngine};
-use crate::paths;
-use crate::providers::provider::ProviderId;
-use crate::result::Result;
 
 const URL_BASE: &str = "https://raicuparta.github.io/rai-pal-db/game-db";
 
@@ -69,7 +67,7 @@ pub fn get_database_file_path() -> Result<PathBuf> {
 pub async fn download_database() -> Result<PathBuf> {
 	let url = format!("{URL_BASE}/{DATABASE_VERSION}/games.db");
 
-	let response = reqwest::get(&url).await?;
+	let response = http::CLIENT.get(&url).send().await?;
 
 	let file_path = get_database_file_path()?;
 
