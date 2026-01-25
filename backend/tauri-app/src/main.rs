@@ -710,11 +710,13 @@ fn main() {
 				let state = app_handle.app_state();
 				let database_connection = state.database.lock().unwrap();
 				let cloned_handle = app_handle.clone();
-				database_connection.update_hook(Some({
-					move |_, _: &str, _: &str, _| {
-						cloned_handle.emit_safe(events::GamesChanged());
-					}
-				}));
+				database_connection
+					.update_hook(Some({
+						move |_, _: &str, _: &str, _| {
+							cloned_handle.emit_safe(events::GamesChanged());
+						}
+					}))
+					.expect("Failed to set up local database.");
 			});
 
 			Ok(())

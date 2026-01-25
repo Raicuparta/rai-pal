@@ -27,7 +27,9 @@ pub struct GamesFilter {
 }
 
 #[serializable_enum]
+#[derive(Default)]
 pub enum GamesSortBy {
+	#[default]
 	Title,
 	Engine,
 	ReleaseDate,
@@ -40,12 +42,6 @@ pub struct GamesQuery {
 	pub search: String,
 	pub sort_by: GamesSortBy,
 	pub sort_descending: bool,
-}
-
-impl Default for GamesSortBy {
-	fn default() -> Self {
-		Self::Title
-	}
 }
 
 impl Default for GamesFilter {

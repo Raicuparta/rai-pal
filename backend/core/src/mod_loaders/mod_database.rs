@@ -100,10 +100,10 @@ impl DatabaseEntry {
 	}
 
 	async fn get_download_inner(&self) -> Option<ModDownload> {
-		if let Some(github) = &self.github {
-			if let Some(github_download) = github.get_download().await {
-				return Some(github_download);
-			}
+		if let Some(github) = &self.github
+			&& let Some(github_download) = github.get_download().await
+		{
+			return Some(github_download);
 		}
 
 		self.latest_version.clone()

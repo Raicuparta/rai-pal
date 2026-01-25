@@ -222,10 +222,10 @@ impl ProviderActions for Steam {
 						game.release_date = Some(release_date.into());
 					}
 
-					if let Some(app_type) = &app_info.app_type {
-						if app_type == "Demo" {
-							game.add_tag(GameTag::Demo);
-						}
+					if let Some(app_type) = &app_info.app_type
+						&& app_type == "Demo"
+					{
+						game.add_tag(GameTag::Demo);
 					}
 
 					let installed_games = app_paths

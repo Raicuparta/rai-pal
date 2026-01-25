@@ -105,7 +105,7 @@ fn replace_parameters(base_string: &str, game: &DbGame) -> String {
 			|| match start_command
 				.ok_or_else(|| Error::GameNotInstalled(game.display_title.clone()))?
 			{
-				ProviderCommand::String(s) => Ok(s.to_string()),
+				ProviderCommand::String(s) => Ok(s.clone()),
 				ProviderCommand::Path(exe_path, _) => Ok(exe_path.to_string_lossy().to_string()),
 			},
 		);

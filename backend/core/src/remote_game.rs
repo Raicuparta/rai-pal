@@ -17,19 +17,6 @@ const URL_BASE: &str = "https://raicuparta.github.io/rai-pal-db/game-db";
 const DATABASE_VERSION: i32 = 2;
 
 #[serializable_struct]
-struct GameDatabaseEngineVersion {
-	brand: String,
-	version: Option<String>,
-}
-
-#[serializable_struct]
-struct GameDatabaseEntry {
-	pub title: Option<String>,
-	pub engines: Option<Vec<GameDatabaseEngineVersion>>,
-	pub ids: Option<HashMap<ProviderId, Vec<String>>>,
-}
-
-#[serializable_struct]
 pub struct RemoteGame {
 	pub title: Option<String>,
 	pub engine: Option<GameEngine>,

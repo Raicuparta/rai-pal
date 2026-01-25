@@ -20,18 +20,6 @@ use serde::{Deserialize, Serialize};
 use super::provider_command::{ProviderCommand, ProviderCommandAction};
 
 #[derive(Debug, Serialize, Deserialize)]
-struct InstalledEpicGame {
-	executable: String,
-	#[serde(rename(deserialize = "appName"))]
-	app_name: String,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-struct RootInstalled {
-	installed: Vec<InstalledEpicGame>,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
 struct ParsedGame {
 	app_name: String,
 	title: String,
@@ -63,22 +51,6 @@ fn get_detected_games() -> Result<Option<Vec<ParsedGame>>> {
 	let file_content = read_to_string(path)?;
 
 	Ok(serde_json::from_str::<Root>(file_content.as_str())?.library)
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
-struct PlayTask {
-	is_primary: Option<bool>,
-	name: String,
-	path: Option<String>,
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
-struct EpicGame {
-	game_id: String,
-	name: String,
-	play_tasks: Vec<PlayTask>,
 }
 
 #[derive(Clone)]

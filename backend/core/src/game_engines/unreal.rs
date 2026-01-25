@@ -244,12 +244,11 @@ pub fn is_unreal_exe(game_path: &Path) -> bool {
 		}
 
 		// For cases where the registered exe points directly to the shipping binary:
-		if is_valid_win_folder(parent) {
-			if let Some(binaries) = parent.parent() {
-				if binaries.ends_with("Binaries") {
-					return true;
-				}
-			}
+		if is_valid_win_folder(parent)
+			&& let Some(binaries) = parent.parent()
+			&& binaries.ends_with("Binaries")
+		{
+			return true;
 		}
 	}
 
