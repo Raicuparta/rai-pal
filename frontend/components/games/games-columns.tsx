@@ -22,9 +22,9 @@ const thumbnail: GamesColumn = {
 
 		return (
 			<Table.Td
-				// bg="dark"
 				className={styles.thumbnailCell}
 				bg={`var(--mantine-color-${providerColors[item.providerId]}-light)`}
+				opacity={item.exePath ? 1 : 0.5}
 			>
 				{(item.thumbnailUrl || isBroken) && (
 					<img
