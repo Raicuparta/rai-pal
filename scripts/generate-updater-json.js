@@ -22,7 +22,6 @@ try {
 	let bundleDir = "";
 	let updaterExt = "";
 
-	// Adjust these paths to match where Tauri outputs files on your machine
 	if (platform === "win32") {
 		bundleDir = path.join(
 			__dirname,

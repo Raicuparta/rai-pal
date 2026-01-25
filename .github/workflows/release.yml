@@ -41,17 +41,14 @@ jobs:
       - name: Install frontend dependencies
         run: npm ci
 
-      # Run our custom script to prepare version and body
       - name: Prepare Release Metadata
         id: pre
         run: node scripts/pre-release.js
 
-      # Build and Create/Update Release
       - name: Build and Release
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # The action automatically maps these to the signing process
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
           ANALYTICS_API_KEY: ${{ secrets.ANALYTICS_API_KEY }}
@@ -61,17 +58,13 @@ jobs:
           releaseBody: ${{ steps.pre.outputs.body_path }}
           releaseDraft: true
           prerelease: false
-          # "RaiPal" pattern ensures main binary is RaiPal.exe / RaiPal.AppImage
           releaseAssetNamePattern: "RaiPal"
-          # We disable the default json generator to use our custom one
           uploadUpdaterJson: false
           uploadUpdaterSignatures: true
 
-      # Generate the custom latest-os.json
       - name: Generate Custom Updater JSON
         run: node scripts/generate-updater-json.js ${{ steps.pre.outputs.version }} ${{ github.repository_owner }} ${{ github.event.repository.name }}
 
-      # Upload the JSON generated in the previous step
       - name: Upload Updater JSON
         uses: softprops/action-gh-release@v1
         with:

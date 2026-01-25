@@ -7,8 +7,6 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 function setOutput(key, value) {
-	// In GitHub Actions, we write to the file specified in GITHUB_OUTPUT.
-	// When running locally, we just print to console.
 	if (process.env.GITHUB_OUTPUT) {
 		fs.appendFileSync(process.env.GITHUB_OUTPUT, `${key}=${value}${os.EOL}`);
 	} else {
