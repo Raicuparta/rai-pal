@@ -24,7 +24,6 @@ use super::provider_command::{ProviderCommand, ProviderCommandAction};
 
 #[derive(Debug, Serialize, Deserialize)]
 struct InstalledGOGGame {
-	executable: String,
 	#[serde(rename(deserialize = "appName"))]
 	app_name: String,
 	install_path: Option<PathBuf>,

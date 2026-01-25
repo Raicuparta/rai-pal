@@ -1,11 +1,6 @@
 #![cfg(target_os = "linux")]
 
-use std::{
-	fmt::Debug,
-	fs::read_to_string,
-	path::{Path, PathBuf},
-};
-
+use super::provider_command::{ProviderCommand, ProviderCommandAction};
 use crate::{
 	game::DbGame,
 	local_database::{DbMutex, GameDatabase},
@@ -13,26 +8,25 @@ use crate::{
 	providers::provider::{ProviderActions, ProviderId, ProviderStatic},
 	result::Result,
 };
-
-use directories::BaseDirs;
 use serde::{Deserialize, Serialize};
-
-use super::provider_command::{ProviderCommand, ProviderCommandAction};
+use std::{
+	fmt::Debug,
+	fs::read_to_string,
+	path::{Path, PathBuf},
+};
 
 #[derive(Debug, Serialize, Deserialize)]
 struct ParsedGame {
 	app_name: String,
 	title: String,
-	install: Install,
-	is_installed: bool,
+	install: Option<Install>,
 	art_cover: Option<String>,
-	folder_name: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 struct Install {
 	executable: Option<String>,
-	install_path: Option<String>,
+	install_path: Option<PathBuf>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -58,17 +52,9 @@ pub struct HeroicEpic {}
 
 impl HeroicEpic {
 	fn get_exe_path(entry: &ParsedGame) -> Option<PathBuf> {
-		let dirs = BaseDirs::new()?;
-		let home_dir = dirs.home_dir();
-		let game_path = Path::new(&home_dir)
-			.join("Games/Heroic")
-			.join(&entry.folder_name.clone()?);
-
-		entry
-			.install
-			.executable
-			.as_ref()
-			.map(|executable_name| game_path.join(executable_name))
+		let install = entry.install.as_ref()?;
+		let game_path = install.install_path.as_ref()?;
+		Some(game_path.join(install.executable.as_ref()?))
 	}
 }
 
