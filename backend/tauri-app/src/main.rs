@@ -15,6 +15,7 @@ use rai_pal_core::games_query::GamesQuery;
 use rai_pal_core::local_database::{GameDatabase, GameIdsResponse, attach_remote_database};
 use rai_pal_core::local_mod::{self, LocalMod};
 use rai_pal_core::maps::TryGettable;
+use rai_pal_core::mod_loaders::bepinex;
 use rai_pal_core::mod_loaders::mod_loader::{self, ModLoaderActions};
 use rai_pal_core::paths::{self, normalize_path};
 use rai_pal_core::providers::provider::ProviderId;
@@ -596,6 +597,13 @@ async fn download_remote_config(
 	Ok(())
 }
 
+#[cfg(target_os = "linux")]
+#[tauri::command]
+#[specta::specta]
+async fn set_up_wine_bepinex_environment() -> Result {
+	Ok(bepinex::set_up_proton_environment()?)
+}
+
 fn main() {
 	// Since I'm making all exposed functions async, panics won't crash anything important, I think.
 	// So I can just catch panics here and show a system message with the error.
@@ -640,6 +648,7 @@ fn main() {
 			uninstall_mod,
 			get_remote_configs,
 			download_remote_config,
+			set_up_wine_bepinex_environment,
 		])
 		.events(events::collect_events())
 		.constant("PROVIDER_IDS", ProviderId::iter().collect::<Vec<_>>())

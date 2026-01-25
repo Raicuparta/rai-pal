@@ -24,6 +24,8 @@ import {
 } from "@localizations/localizations";
 import { SwitchButton } from "@components/switch-button";
 import { SteamCacheButton } from "./steam-cache-button";
+import { platform } from "@tauri-apps/plugin-os";
+import { WineBepInExEnvironmentButton } from "./wine-bepinex-environment-button";
 
 const locales: AppLocale[] = [
 	"EnUs",
@@ -99,7 +101,7 @@ export function AppSettings() {
 						{t("resetRaiPalSettingsButton")}
 					</Menu.Item>
 				</Tooltip>
-
+				{platform() === "linux" && <WineBepInExEnvironmentButton />}
 				<Divider my="xs" />
 				<NativeSelect
 					label={

@@ -229,3 +229,17 @@ fn find_mods(installed_mods_path: &Path, unity_backend: UnityBackend) -> HashMap
 		})
 		.collect()
 }
+
+#[cfg(target_os = "linux")]
+pub fn set_up_proton_environment() -> Result {
+	let path = paths::base_dirs()?.config_dir().join("environment.d");
+
+	fs::create_dir_all(&path)?;
+
+	fs::write(
+		path.join("90-rai-pal-wine-overrides.conf"),
+		"WINEDLLOVERRIDES=\"winhttp.dll=n,b\"",
+	)?;
+
+	Ok(())
+}

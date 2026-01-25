@@ -100,6 +100,9 @@ async getRemoteConfigs(providerId: ProviderId, gameId: string) : Promise<RemoteC
 },
 async downloadRemoteConfig(providerId: ProviderId, gameId: string, modId: string, remoteConfigFile: string, overwrite: boolean) : Promise<null> {
     return await TAURI_INVOKE("download_remote_config", { providerId, gameId, modId, remoteConfigFile, overwrite });
+},
+async setUpWineBepinexEnvironment() : Promise<null> {
+    return await TAURI_INVOKE("set_up_wine_bepinex_environment");
 }
 }
 
