@@ -26,7 +26,7 @@ pub trait GameDatabase {
 	fn insert_game(&self, game: &DbGame);
 	fn get_game(&self, provider_id: &ProviderId, game_id: &str) -> Result<DbGame>;
 	fn get_game_ids(&self, query: Option<GamesQuery>) -> Result<GameIdsResponse>;
-	fn remove_stale_games(&self, provider_id: &ProviderId, max_time: u64) -> Result;
+	fn remove_stale_games(&self, provider_id: &ProviderId, max_time: f64) -> Result;
 }
 
 #[serializable_struct]
@@ -282,7 +282,7 @@ impl GameDatabase for DbMutex {
 		})
 	}
 
-	fn remove_stale_games(&self, provider_id: &ProviderId, max_time: u64) -> Result {
+	fn remove_stale_games(&self, provider_id: &ProviderId, max_time: f64) -> Result {
 		self.lock_db()?
 			.prepare_cached("DELETE FROM main.games WHERE provider_id = $1 AND created_at < $2;")?
 			.execute(rusqlite::params![provider_id, max_time])?;
@@ -320,7 +320,7 @@ fn try_insert_game(connection_mutex: &DbMutex, game: &DbGame) -> Result {
 			game.tags.clone(),
 			game.title_discriminator.clone(),
 			game.provider_commands.clone(),
-			SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs()
+			SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs_f64()
 		])?;
 
 	if let Some(exe_path) = game.exe_path.as_ref() {

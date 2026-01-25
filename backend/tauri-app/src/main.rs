@@ -426,7 +426,7 @@ async fn refresh_games(handle: AppHandle, provider_id: ProviderId) -> Result {
 	let start_time = SystemTime::now()
 		.duration_since(UNIX_EPOCH)
 		.unwrap()
-		.as_secs();
+		.as_secs_f64();
 
 	if let Some(provider) = provider::get_provider(provider_id) {
 		provider?.insert_games(&state.database).await?;

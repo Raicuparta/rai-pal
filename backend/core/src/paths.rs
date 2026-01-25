@@ -13,23 +13,33 @@ use log;
 use crate::result::{Error, Result};
 
 pub fn glob_path(path: &Path) -> Vec<PathBuf> {
-	match glob(path.to_string_lossy().as_ref()) {
-		Ok(walker) => walker
-			.into_iter()
-			.filter_map(|glob_result| match glob_result {
-				Ok(glob_entry) => Some(glob_entry.into_path()),
-				Err(err) => {
-					log::error!(
-						"Failed to resolve one of the globbed paths from glob '{}'. Error: {}",
-						path.display(),
-						err
-					);
-					None
-				}
-			})
-			.collect(),
+	match path.try_to_str() {
+		Ok(path_str) => match glob(path_str) {
+			Ok(walker) => walker
+				.into_iter()
+				.filter_map(|glob_result| match glob_result {
+					Ok(glob_entry) => Some(glob_entry.into_path()),
+					Err(err) => {
+						log::error!(
+							"Failed to resolve one of the globbed paths from glob '{}'. Error: {}",
+							path.display(),
+							err
+						);
+						None
+					}
+				})
+				.collect(),
+			Err(err) => {
+				log::error!("Failed to glob path `{}`. Error: {}", path.display(), err);
+				Vec::default()
+			}
+		},
 		Err(err) => {
-			log::error!("Failed to glob path `{}`. Error: {}", path.display(), err);
+			log::error!(
+				"Failed to convert path to str `{}`. Error: {}",
+				path.display(),
+				err
+			);
 			Vec::default()
 		}
 	}
