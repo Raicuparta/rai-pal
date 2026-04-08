@@ -644,7 +644,7 @@ async fn download_remote_config(
 #[specta::specta]
 async fn set_up_wine_bepinex_environment() -> Result {
 	#[cfg(not(target_os = "linux"))]
-	return Err(rai_pal_core::error::Error::GeneralError("Only supported on Linux".into()).into());
+	return Err(Error::NotSupportedOnPlatform("Linux only".into()));
 
 	#[cfg(target_os = "linux")]
 	{
