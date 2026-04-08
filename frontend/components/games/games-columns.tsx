@@ -109,10 +109,10 @@ const name: GamesColumn = {
 };
 
 const engineColors: Record<EngineBrand, DefaultMantineColor> = {
-	Unity: "blue",
-	Unreal: "red",
-	Godot: "violet",
-	GameMaker: "teal",
+	Unity: "blue.3",
+	Unreal: "red.3",
+	Godot: "violet.3",
+	GameMaker: "teal.3",
 } as const;
 
 const engine: GamesColumn = {
@@ -133,17 +133,12 @@ const engine: GamesColumn = {
 
 		return (
 			<Table.Td
-				bg={
-					item.engineBrand
-						? `var(--mantine-color-${engineColor}-light)`
-						: "dark.4"
-				}
 				className={styles.engineWrapper}
 				p={0}
 			>
 				{item.engineBrand && (
 					<Box
-						c={`var(--mantine-color-${engineColor}-light-color)`}
+						c={engineColor}
 						className={styles.engineBrand}
 					>
 						{item.engineBrand}
