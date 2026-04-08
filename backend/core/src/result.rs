@@ -1,4 +1,10 @@
-use std::{env, num, path::PathBuf, result, time::SystemTimeError};
+use std::{
+	env,
+	num,
+	path::PathBuf,
+	result,
+	time::SystemTimeError,
+};
 
 use lazy_regex::regex;
 
@@ -6,7 +12,7 @@ use lazy_regex::regex;
 pub enum Error {
 	#[error(transparent)]
 	Io(
-		#[serde(skip)]
+		#[specta(skip)]
 		#[from]
 		std::io::Error,
 	),
@@ -14,84 +20,84 @@ pub enum Error {
 	#[error(transparent)]
 	Reqwest(
 		#[from]
-		#[serde(skip)]
+		#[specta(skip)]
 		reqwest::Error,
 	),
 
 	#[error(transparent)]
 	Zip(
 		#[from]
-		#[serde(skip)]
+		#[specta(skip)]
 		zip::result::ZipError,
 	),
 
 	#[error(transparent)]
 	Json(
 		#[from]
-		#[serde(skip)]
+		#[specta(skip)]
 		serde_json::Error,
 	),
 
 	#[error(transparent)]
 	ChronoParse(
 		#[from]
-		#[serde(skip)]
+		#[specta(skip)]
 		chrono::ParseError,
 	),
 
 	#[error(transparent)]
 	Rusql(
 		#[from]
-		#[serde(skip)]
+		#[specta(skip)]
 		rusqlite::Error,
 	),
 
 	#[error(transparent)]
 	Env(
 		#[from]
-		#[serde(skip)]
+		#[specta(skip)]
 		env::VarError,
 	),
 
 	#[error(transparent)]
 	UrlEncode(
 		#[from]
-		#[serde(skip)]
+		#[specta(skip)]
 		serde_urlencoded::ser::Error,
 	),
 
 	#[error(transparent)]
 	HeaderToStr(
 		#[from]
-		#[serde(skip)]
+		#[specta(skip)]
 		reqwest::header::ToStrError,
 	),
 
 	#[error(transparent)]
 	TryFromInt(
 		#[from]
-		#[serde(skip)]
+		#[specta(skip)]
 		num::TryFromIntError,
 	),
 
 	#[error(transparent)]
 	Regex(
 		#[from]
-		#[serde(skip)]
+		#[specta(skip)]
 		regex::Error,
 	),
 
 	#[error(transparent)]
 	SteamLocate(
 		#[from]
-		#[serde(skip)]
+		#[specta(skip)]
 		steamlocate::error::Error,
 	),
 
 	#[error(transparent)]
 	SystemTime(
 		#[from]
-		#[serde(skip)]
+		#[specta(skip)]
 		SystemTimeError,
 	),
 

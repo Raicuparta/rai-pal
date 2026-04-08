@@ -1,8 +1,18 @@
 use std::{
 	ops::Deref,
-	path::{Path, PathBuf},
-	sync::{Mutex, MutexGuard},
-	time::{Instant, SystemTime, UNIX_EPOCH},
+	path::{
+		Path,
+		PathBuf,
+	},
+	sync::{
+		Mutex,
+		MutexGuard,
+	},
+	time::{
+		Instant,
+		SystemTime,
+		UNIX_EPOCH,
+	},
 };
 
 use rai_pal_proc_macros::serializable_struct;
@@ -12,11 +22,18 @@ use crate::{
 	debug::LoggableInstant,
 	game::DbGame,
 	game_title::get_normalized_titles,
-	games_query::{GamesQuery, GamesSortBy, InstallState},
+	games_query::{
+		GamesQuery,
+		GamesSortBy,
+		InstallState,
+	},
 	paths,
 	providers::provider::ProviderId,
 	remote_game,
-	result::{Error, Result},
+	result::{
+		Error,
+		Result,
+	},
 };
 
 pub type DbMutex = Mutex<rusqlite::Connection>;
@@ -285,7 +302,7 @@ impl GameDatabase for DbMutex {
 	fn remove_stale_games(&self, provider_id: &ProviderId, max_time: u64) -> Result {
 		self.lock_db()?
 			.prepare_cached("DELETE FROM main.games WHERE provider_id = $1 AND created_at < $2;")?
-			.execute(rusqlite::params![provider_id, max_time])?;
+			.execute(rusqlite::params![provider_id, max_time as i64])?;
 
 		Ok(())
 	}
@@ -320,7 +337,10 @@ fn try_insert_game(connection_mutex: &DbMutex, game: &DbGame) -> Result {
 			game.tags.clone(),
 			game.title_discriminator.clone(),
 			game.provider_commands.clone(),
-			SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs()
+			SystemTime::now()
+				.duration_since(UNIX_EPOCH)?
+				.as_secs()
+				.cast_signed()
 		])?;
 
 	if let Some(exe_path) = game.exe_path.as_ref() {
