@@ -1,5 +1,5 @@
 import { showAppNotification } from "@components/app-notifications";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export function useAsyncCommand<TResultValue, TArgs = void>(
 	command: (args: TArgs) => Promise<TResultValue>,
@@ -8,30 +8,31 @@ export function useAsyncCommand<TResultValue, TArgs = void>(
 	const [success, setSuccess] = useState(false);
 	const timeout = useRef<number>(undefined);
 
-	const executeCommand: (args: TArgs) => Promise<TResultValue> = async (
-		args,
-	) => {
-		setIsLoading(true);
-		setSuccess(false);
+	const executeCommand: (args: TArgs) => Promise<TResultValue> = useCallback(
+		async (args) => {
+			setIsLoading(true);
+			setSuccess(false);
 
-		clearTimeout(timeout.current);
+			clearTimeout(timeout.current);
 
-		return command(args)
-			.then((result) => {
-				setSuccess(true);
+			return command(args)
+				.then((result) => {
+					setSuccess(true);
 
-				timeout.current = setTimeout(() => {
-					setSuccess(false);
-				}, 1000) as unknown as number;
+					timeout.current = setTimeout(() => {
+						setSuccess(false);
+					}, 1000) as unknown as number;
 
-				return result;
-			})
-			.catch((error) => {
-				showAppNotification(`Failed to execute command: ${error}`, "error");
-				throw error;
-			})
-			.finally(() => setIsLoading(false));
-	};
+					return result;
+				})
+				.catch((error) => {
+					showAppNotification(`Failed to execute command: ${error}`, "error");
+					throw error;
+				})
+				.finally(() => setIsLoading(false));
+		},
+		[command],
+	);
 
 	useEffect(() => {
 		return () => {
