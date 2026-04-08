@@ -442,6 +442,7 @@ pub fn create() -> Result<DbMutex> {
 		);
 
 		CREATE INDEX IF NOT EXISTS idx_normalized_titles ON normalized_titles(provider_id, game_id);
+		CREATE INDEX IF NOT EXISTS idx_normalized_titles_title ON normalized_titles(normalized_title);
 
 		CREATE TABLE IF NOT EXISTS installed_games (
 			provider_id TEXT NOT NULL,
