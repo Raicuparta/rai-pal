@@ -3,39 +3,82 @@
 // Command stuff needs to be async so I can spawn tasks.
 #![allow(clippy::unused_async)]
 
-use std::time::{SystemTime, UNIX_EPOCH};
-use std::{collections::HashMap, path::PathBuf};
-
-use crate::result::{Error, Result};
-use app_settings::AppSettings;
-use app_state::{AppState, StateData, StatefulHandle};
-use events::EventEmitter;
-use rai_pal_core::game::DbGame;
-use rai_pal_core::games_query::GamesQuery;
-use rai_pal_core::local_database::{GameDatabase, GameIdsResponse, attach_remote_database};
-use rai_pal_core::local_mod::{self, LocalMod};
-use rai_pal_core::maps::TryGettable;
-use rai_pal_core::mod_loaders::bepinex;
-use rai_pal_core::mod_loaders::mod_loader::{self, ModLoaderActions};
-use rai_pal_core::paths::{self, normalize_path};
-use rai_pal_core::providers::provider::ProviderId;
-use rai_pal_core::providers::provider_command::ProviderCommand;
-use rai_pal_core::providers::steam::steam_provider::Steam;
-use rai_pal_core::providers::{
-	manual_provider,
-	provider::{self, ProviderActions},
+use std::{
+	collections::HashMap,
+	path::PathBuf,
+	time::{
+		SystemTime,
+		UNIX_EPOCH,
+	},
 };
-use rai_pal_core::remote_config::RemoteConfigs;
-use rai_pal_core::remote_game::{self};
+
+use app_settings::AppSettings;
+use app_state::{
+	AppState,
+	StateData,
+	StatefulHandle,
+};
+use events::EventEmitter;
 #[cfg(target_os = "windows")]
 use rai_pal_core::windows;
-use rai_pal_core::{analytics, remote_mod};
+use rai_pal_core::{
+	analytics,
+	game::DbGame,
+	games_query::GamesQuery,
+	local_database::{
+		GameDatabase,
+		GameIdsResponse,
+		attach_remote_database,
+	},
+	local_mod::{
+		self,
+		LocalMod,
+	},
+	maps::TryGettable,
+	mod_loaders::{
+		bepinex,
+		mod_loader::{
+			self,
+			ModLoaderActions,
+		},
+	},
+	paths::{
+		self,
+		normalize_path,
+	},
+	providers::{
+		manual_provider,
+		provider::{
+			self,
+			ProviderActions,
+			ProviderId,
+		},
+		provider_command::ProviderCommand,
+		steam::steam_provider::Steam,
+	},
+	remote_config::RemoteConfigs,
+	remote_game::{
+		self,
+	},
+	remote_mod,
+};
 use strum::IntoEnumIterator;
-use tauri::path::BaseDirectory;
-use tauri::{AppHandle, Manager};
-use tauri_plugin_log::{Target, TargetKind};
+use tauri::{
+	AppHandle,
+	Manager,
+	path::BaseDirectory,
+};
+use tauri_plugin_log::{
+	Target,
+	TargetKind,
+};
 use tauri_plugin_window_state::StateFlags;
 use tauri_specta::Builder;
+
+use crate::result::{
+	Error,
+	Result,
+};
 
 mod app_settings;
 mod app_state;
@@ -427,7 +470,7 @@ async fn refresh_games(handle: AppHandle, provider_id: ProviderId) -> Result {
 	let start_time = SystemTime::now()
 		.duration_since(UNIX_EPOCH)
 		.unwrap()
-		.as_secs_f64();
+		.as_secs();
 
 	if let Some(provider) = provider::get_provider(provider_id) {
 		provider?.insert_games(&state.database).await?;

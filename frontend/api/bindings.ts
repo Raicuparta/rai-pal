@@ -44,6 +44,7 @@ export const commands = {
 	configs: RemoteConfig[],
 } | null>("get_remote_configs", { providerId, gameId }),
 	downloadRemoteConfig: (providerId: ProviderId, gameId: string, modId: string, remoteConfigFile: string, overwrite: boolean) => __TAURI_INVOKE<null>("download_remote_config", { providerId, gameId, modId, remoteConfigFile, overwrite }),
+	setUpWineBepinexEnvironment: () => __TAURI_INVOKE<null>("set_up_wine_bepinex_environment"),
 };
 
 /** Events */
