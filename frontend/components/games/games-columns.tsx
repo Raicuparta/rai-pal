@@ -55,19 +55,18 @@ const status: GamesColumn = {
 	component: ({ item }: CellProps) => (
 		<Table.Td
 			p="xs"
+			bg={`var(--mantine-color-${providerColors[item.providerId]}-light)`}
 			opacity={item.exePath ? 1 : 0.5}
 		>
 			<Stack
 				justify="center"
 				align="center"
-				c={providerColors[item.providerId]}
 			>
-				<ProviderIcon providerId={item.providerId} />
-				{item.exePath ? (
-					<IconDeviceDesktop color="white" />
-				) : (
-					<IconCloud color="gray" />
-				)}
+				<ProviderIcon
+					providerId={item.providerId}
+					color={`var(--mantine-color-${providerColors[item.providerId]}-light-color)`}
+				/>
+				{item.exePath ? <IconDeviceDesktop color="white" /> : <IconCloud />}
 			</Stack>
 		</Table.Td>
 	),
