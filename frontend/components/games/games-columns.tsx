@@ -55,18 +55,19 @@ const status: GamesColumn = {
 	component: ({ item }: CellProps) => (
 		<Table.Td
 			p="xs"
-			bg={`var(--mantine-color-${providerColors[item.providerId]}-light)`}
 			opacity={item.exePath ? 1 : 0.5}
 		>
 			<Stack
 				justify="center"
 				align="center"
+				c={providerColors[item.providerId]}
 			>
-				<ProviderIcon
-					providerId={item.providerId}
-					color={`var(--mantine-color-${providerColors[item.providerId]}-light-color)`}
-				/>
-				{item.exePath ? <IconDeviceDesktop color="white" /> : <IconCloud />}
+				<ProviderIcon providerId={item.providerId} />
+				{item.exePath ? (
+					<IconDeviceDesktop color="white" />
+				) : (
+					<IconCloud color="gray" />
+				)}
 			</Stack>
 		</Table.Td>
 	),
@@ -108,10 +109,10 @@ const name: GamesColumn = {
 };
 
 const engineColors: Record<EngineBrand, DefaultMantineColor> = {
-	Unity: "blue",
-	Unreal: "red",
-	Godot: "violet",
-	GameMaker: "teal",
+	Unity: "blue.3",
+	Unreal: "red.3",
+	Godot: "violet.3",
+	GameMaker: "teal.3",
 } as const;
 
 const engine: GamesColumn = {
@@ -132,17 +133,12 @@ const engine: GamesColumn = {
 
 		return (
 			<Table.Td
-				bg={
-					item.engineBrand
-						? `var(--mantine-color-${engineColor}-light)`
-						: "dark.4"
-				}
 				className={styles.engineWrapper}
 				p={0}
 			>
 				{item.engineBrand && (
 					<Box
-						c={`var(--mantine-color-${engineColor}-light-color)`}
+						c={engineColor}
 						className={styles.engineBrand}
 					>
 						{item.engineBrand}

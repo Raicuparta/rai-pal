@@ -4,10 +4,6 @@ import { TableContainer } from "@components/table/table-container";
 import { RefreshButton } from "@components/refresh-button";
 import { commands } from "@api/bindings";
 import { IconFolderCog } from "@tabler/icons-react";
-import {
-	EngineBadge,
-	UnityBackendBadge,
-} from "@components/badges/color-coded-badge";
 import { ModModal } from "./mod-modal";
 import { UnifiedMod, useUnifiedMods } from "@hooks/use-unified-mods";
 import { ModVersionBadge } from "./mod-version-badge";
@@ -115,12 +111,8 @@ export function ModsPage() {
 									/>
 								</Table.Td>
 								<Table.Td ta="center">{mod.common.loaderId}</Table.Td>
-								<Table.Td>
-									<EngineBadge value={mod.common.engine} />
-								</Table.Td>
-								<Table.Td>
-									<UnityBackendBadge value={mod.common.unityBackend} />
-								</Table.Td>
+								<Table.Td>{mod.common.engine}</Table.Td>
+								<Table.Td>{mod.common.unityBackend}</Table.Td>
 							</Table.Tr>
 						))}
 					</Table.Tbody>

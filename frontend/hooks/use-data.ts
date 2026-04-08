@@ -6,7 +6,7 @@ import { useGameDropEvent } from "./use-game-drop-event";
 
 export const gameDataAtom = atom<GameIdsResponse>({
 	gameIds: [],
-	totalCount: BigInt(0),
+	totalCount: 0,
 });
 
 export const [modLoadersAtom, useModLoadersSubscription] = dataSubscription(

@@ -4,21 +4,21 @@ use std::result;
 pub enum Error {
 	#[error(transparent)]
 	Tauri(
-		#[serde(skip)]
+		#[specta(skip)]
 		#[from]
 		tauri::Error,
 	),
 
 	#[error(transparent)]
 	Core(
-		#[serde(skip)]
+		#[specta(skip)]
 		#[from]
 		rai_pal_core::result::Error,
 	),
 
 	#[error(transparent)]
 	Io(
-		#[serde(skip)]
+		#[specta(skip)]
 		#[from]
 		std::io::Error,
 	),
@@ -26,13 +26,13 @@ pub enum Error {
 	#[error(transparent)]
 	Rusql(
 		#[from]
-		#[serde(skip)]
+		#[specta(skip)]
 		rusqlite::Error,
 	),
 
 	#[error(transparent)]
 	SerdeJson(
-		#[serde(skip)]
+		#[specta(skip)]
 		#[from]
 		serde_json::error::Error,
 	),

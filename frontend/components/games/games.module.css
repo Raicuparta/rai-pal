@@ -97,12 +97,6 @@
 	image-rendering: pixelated;
 }
 
-.thumbnailBackground {
-	filter: blur(5px);
-	z-index: 0;
-	object-fit: cover;
-}
-
 .thumbnailFallback {
 	z-index: 1;
 	object-fit: cover;

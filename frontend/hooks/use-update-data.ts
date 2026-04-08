@@ -1,4 +1,4 @@
-import { useCallback, useDeferredValue, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useAtom, useSetAtom } from "jotai";
 import { commands, PROVIDER_IDS } from "@api/bindings";
 import { loadingTasksAtom, gameDataAtom } from "./use-data";
@@ -12,7 +12,6 @@ export function useUpdateData(executeOnMount = false) {
 	const [loadingTasks, setLoadingTasks] = useAtom(loadingTasksAtom);
 	const setGameData = useSetAtom(gameDataAtom);
 	const [gamesQuery] = useDataQuery();
-	const deferredGamesQuery = useDeferredValue(gamesQuery);
 	const totalFetchCount = useRef(0);
 	const totalLoadingTaskCount = useRef(0);
 	const hasExecutedOnMount = useRef(false);
@@ -23,7 +22,7 @@ export function useUpdateData(executeOnMount = false) {
 		totalFetchCount.current++;
 		const thisFetchCount = totalFetchCount.current;
 		commands
-			.getGameIds(deferredGamesQuery)
+			.getGameIds(gamesQuery)
 			.then((data) => {
 				if (thisFetchCount !== totalFetchCount.current) {
 					console.log(
@@ -37,7 +36,7 @@ export function useUpdateData(executeOnMount = false) {
 			.catch((error) => {
 				showAppNotification(`Failed to get app data: ${error}`, "error");
 			});
-	}, [deferredGamesQuery, setGameData]);
+	}, [gamesQuery, setGameData]);
 
 	const throttledUpdateProviderGames = useThrottledCallback(
 		updateProviderGames,
