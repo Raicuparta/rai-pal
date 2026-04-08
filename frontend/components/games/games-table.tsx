@@ -75,11 +75,11 @@ export function GamesTable() {
 		}
 	}, [dataQuery]);
 
-	if (gameData.totalCount === BigInt(0) && loading.length > 0) {
+	if (gameData.totalCount === 0 && loading.length > 0) {
 		return <Alert>{t("emptyGamesLoading")}</Alert>;
 	}
 
-	if (gameData.totalCount === BigInt(0)) {
+	if (gameData.totalCount === 0) {
 		return <Alert>{t("emptyGamesList")}</Alert>;
 	}
 
