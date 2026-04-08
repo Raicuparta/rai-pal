@@ -39,10 +39,10 @@ installMode = "perMachine"
 # I included all languages that are fully translated by Tauri at the time I wrote this.
 # If they ever add more languages, we can then add them here too.
 languages = [
+  "English",
   "Arabic",
   "Bulgarian",
   "Dutch",
-  "English",
   "French",
   "German",
   "Italian",
