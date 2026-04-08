@@ -640,11 +640,18 @@ async fn download_remote_config(
 	Ok(())
 }
 
-#[cfg(target_os = "linux")]
 #[tauri::command]
 #[specta::specta]
 async fn set_up_wine_bepinex_environment() -> Result {
-	Ok(bepinex::set_up_proton_environment()?)
+	#[cfg(not(target_os = "linux"))]
+	return Err(rai_pal_core::error::Error::GeneralError("Only supported on Linux".into()).into());
+
+	#[cfg(target_os = "linux")]
+	{
+		bepinex::set_up_proton_environment()?;
+
+		Ok(())
+	}
 }
 
 fn main() {
