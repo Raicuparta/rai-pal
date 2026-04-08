@@ -2,7 +2,9 @@
 	table {
 		table-layout: fixed;
 	}
+
 	tbody {
+
 		tr,
 		td {
 			/* Needs to be consistent with height set in game-row.tsx ugh. TODO: fix that. */
@@ -11,6 +13,7 @@
 			min-height: 60px;
 		}
 	}
+
 	overflow-y: scroll;
 }
 
@@ -90,12 +93,6 @@
 .thumbnailForeground {
 	z-index: 1;
 	object-fit: contain;
-}
-
-.thumbnailBackground {
-	filter: blur(5px);
-	z-index: 0;
-	object-fit: cover;
 }
 
 .thumbnailFallback {

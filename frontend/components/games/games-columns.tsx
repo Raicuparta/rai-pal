@@ -25,10 +25,6 @@ const thumbnail: GamesColumn = {
 				bg="dark"
 				className={styles.thumbnailCell}
 			>
-				<img
-					className={styles.thumbnailBackground}
-					src={thumbnailUrl}
-				/>
 				{(item.thumbnailUrl || isBroken) && (
 					<img
 						src={thumbnailUrl}
