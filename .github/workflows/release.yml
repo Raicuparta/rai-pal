@@ -56,6 +56,7 @@ jobs:
         run: node scripts/pre-release.js
 
       - name: Build and Release
+        id: build
         uses: tauri-apps/tauri-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -63,8 +64,8 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
           ANALYTICS_API_KEY: ${{ secrets.ANALYTICS_API_KEY }}
         with:
-          tagName: v${{ steps.pre.outputs.version }}
-          releaseName: v${{ steps.pre.outputs.version }}
+          tagName: v__VERSION__
+          releaseName: v__VERSION__
           releaseBody: ${{ steps.pre.outputs.body_path }}
           releaseDraft: true
           prerelease: false
@@ -73,7 +74,7 @@ jobs:
           uploadUpdaterSignatures: false
 
       - name: Generate Updater Partial
-        run: node scripts/generate-updater-json.js ${{ steps.pre.outputs.version }} ${{ github.repository_owner }} ${{ github.event.repository.name }}
+        run: node scripts/generate-updater-json.js ${{ ${{ steps.build.outputs.appVersion }} }} ${{ github.repository_owner }} ${{ github.event.repository.name }}
 
       - name: Upload Updater Partial
         uses: actions/upload-artifact@v4
@@ -100,16 +101,13 @@ jobs:
           path: updater-partials
           pattern: updater-partial-*
 
-      - name: Prepare Release Metadata
-        id: pre
-        run: node scripts/pre-release.js
-
       - name: Merge Updater JSON
-        run: node scripts/merge-updater-json.js ${{ steps.pre.outputs.version }} updater-partials
+        id: merge
+        run: node scripts/merge-updater-json.js updater-partials
 
       - name: Upload Updater JSON
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: v${{ steps.pre.outputs.version }}
+          tag_name: v${{ steps.merge.outputs.version }}
           files: latest.json
           draft: true

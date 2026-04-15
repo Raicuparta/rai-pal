@@ -83,7 +83,7 @@ try {
 			: "updater-partial-linux.json";
 	fs.writeFileSync(
 		outputFilename,
-		JSON.stringify({ platformKey, platformData }, null, 2),
+		JSON.stringify({ version, platformKey, platformData }, null, 2),
 	);
 
 	console.log(`Generated ${outputFilename} pointing to ${bundleFilename}`);
