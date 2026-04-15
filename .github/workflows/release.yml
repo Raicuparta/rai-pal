@@ -34,7 +34,7 @@ jobs:
 
       - name: Install dependencies (Linux)
         if: matrix.platform == 'ubuntu-24.04'
-        # bug: https://github.com/audioling/audioling/issues/40
+        # pinning to ubuntu 24 due to bug: https://github.com/audioling/audioling/issues/40
         run: |
           sudo apt-get update
           sudo apt-get install -y \
@@ -56,7 +56,7 @@ jobs:
         run: node scripts/pre-release.js
 
       - name: Build and Release
-        uses: tauri-apps/tauri-action@v0
+        uses: tauri-apps/tauri-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
@@ -68,16 +68,48 @@ jobs:
           releaseBody: ${{ steps.pre.outputs.body_path }}
           releaseDraft: true
           prerelease: false
-          releaseAssetNamePattern: "RaiPal"
+          releaseAssetNamePattern: "RaiPal.[ext]"
           uploadUpdaterJson: false
-          uploadUpdaterSignatures: true
+          uploadUpdaterSignatures: false
 
-      - name: Generate Custom Updater JSON
+      - name: Generate Updater Partial
         run: node scripts/generate-updater-json.js ${{ steps.pre.outputs.version }} ${{ github.repository_owner }} ${{ github.event.repository.name }}
+
+      - name: Upload Updater Partial
+        uses: actions/upload-artifact@v4
+        with:
+          name: updater-partial-${{ matrix.os-name }}
+          path: updater-partial-*.json
+
+  upload-updater:
+    needs: release-matrix
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 25
+
+      - name: Download Updater Partials
+        uses: actions/download-artifact@v4
+        with:
+          path: updater-partials
+          pattern: updater-partial-*
+
+      - name: Prepare Release Metadata
+        id: pre
+        run: node scripts/pre-release.js
+
+      - name: Merge Updater JSON
+        run: node scripts/merge-updater-json.js ${{ steps.pre.outputs.version }} updater-partials
 
       - name: Upload Updater JSON
         uses: softprops/action-gh-release@v1
         with:
           tag_name: v${{ steps.pre.outputs.version }}
-          files: latest-${{ matrix.os-name }}.json
+          files: latest.json
           draft: true

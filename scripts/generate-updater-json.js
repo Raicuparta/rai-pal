@@ -70,32 +70,21 @@ try {
 		.trim();
 	const bundleFilename = sigFile.replace(".sig", "");
 
-	const changelogPath = path.join(
-		__dirname,
-		"..",
-		"changelogs",
-		`v${version}.md`,
-	);
-	let notes = `Version ${version}`;
-	if (fs.existsSync(changelogPath)) {
-		notes = fs.readFileSync(changelogPath, "utf8").trim();
-	}
+	const platformKey = platform === "win32" ? "windows-x86_64" : "linux-x86_64";
 
-	const updateData = {
-		version: `v${version}`,
-		notes: notes,
-		pub_date: new Date().toISOString(),
-		platforms: {
-			[platform === "win32" ? "windows-x86_64" : "linux-x86_64"]: {
-				signature: signature,
-				url: `https://github.com/${repoOwner}/${repoName}/releases/download/v${version}/${bundleFilename}`,
-			},
-		},
+	const platformData = {
+		signature: signature,
+		url: `https://github.com/${repoOwner}/${repoName}/releases/download/v${version}/${bundleFilename}`,
 	};
 
 	const outputFilename =
-		platform === "win32" ? "latest-windows.json" : "latest-linux.json";
-	fs.writeFileSync(outputFilename, JSON.stringify(updateData, null, 2));
+		platform === "win32"
+			? "updater-partial-windows.json"
+			: "updater-partial-linux.json";
+	fs.writeFileSync(
+		outputFilename,
+		JSON.stringify({ platformKey, platformData }, null, 2),
+	);
 
 	console.log(`Generated ${outputFilename} pointing to ${bundleFilename}`);
 } catch (error) {
