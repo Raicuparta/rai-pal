@@ -16,6 +16,7 @@ jobs:
           - platform: windows-latest
             os-name: windows
           - platform: ubuntu-24.04
+            # pinning to ubuntu 24 due to bug: https://github.com/audioling/audioling/issues/40
             os-name: linux
 
     runs-on: ${{ matrix.platform }}
@@ -34,7 +35,6 @@ jobs:
 
       - name: Install dependencies (Linux)
         if: matrix.platform == 'ubuntu-24.04'
-        # pinning to ubuntu 24 due to bug: https://github.com/audioling/audioling/issues/40
         run: |
           sudo apt-get update
           sudo apt-get install -y \
@@ -64,9 +64,8 @@ jobs:
           releaseName: v__VERSION__
           releaseDraft: true
           prerelease: false
-          releaseAssetNamePattern: "RaiPal.[ext]"
-          uploadUpdaterJson: false
-          uploadUpdaterSignatures: false
+          assetNamePattern: "RaiPal.[ext]"
+          includeUpdaterJson: false
 
       - name: Generate Updater Partial
         run: node scripts/generate-updater-json.js ${{ steps.build.outputs.appVersion }} ${{ github.repository_owner }} ${{ github.event.repository.name }}
