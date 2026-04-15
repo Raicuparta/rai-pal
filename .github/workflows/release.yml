@@ -51,10 +51,6 @@ jobs:
       - name: Install frontend dependencies
         run: npm ci
 
-      - name: Prepare Release Metadata
-        id: pre
-        run: node scripts/pre-release.js
-
       - name: Build and Release
         id: build
         uses: tauri-apps/tauri-action@v1
@@ -66,7 +62,6 @@ jobs:
         with:
           tagName: v__VERSION__
           releaseName: v__VERSION__
-          releaseBody: ${{ steps.pre.outputs.body_path }}
           releaseDraft: true
           prerelease: false
           releaseAssetNamePattern: "RaiPal.[ext]"
@@ -105,9 +100,14 @@ jobs:
         id: merge
         run: node scripts/merge-updater-json.js updater-partials
 
+      - name: Generate Release Body
+        id: body
+        run: node scripts/generate-release-body.js ${{ steps.merge.outputs.version }}
+
       - name: Upload Updater JSON
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: v${{ steps.merge.outputs.version }}
+          body_path: ${{ steps.body.outputs.body_path }}
           files: latest.json
           draft: true

@@ -14,14 +14,14 @@ function setOutput(key, value) {
 	}
 }
 
+const version = process.argv[2];
+
+if (!version) {
+	console.error("Usage: node scripts/generate-release-body.js <version>");
+	process.exit(1);
+}
+
 try {
-	const packageJsonPath = path.join(__dirname, "..", "package.json");
-	const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf8"));
-	const version = packageJson.version;
-
-	console.log(`Detected version: ${version}`);
-	setOutput("version", version);
-
 	const changelogPath = path.join(
 		__dirname,
 		"..",
