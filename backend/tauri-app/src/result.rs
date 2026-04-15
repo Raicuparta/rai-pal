@@ -42,9 +42,6 @@ pub enum Error {
 
 	#[error("Failed to access state data: `{0}`")]
 	FailedToAccessStateData(String),
-
-	#[error("Not supported on current platform: `{0}`")]
-	NotSupportedOnPlatform(String),
 }
 
 impl serde::Serialize for Error {
