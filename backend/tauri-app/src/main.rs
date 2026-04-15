@@ -644,7 +644,7 @@ async fn download_remote_config(
 #[specta::specta]
 async fn set_up_wine_bepinex_environment() -> Result {
 	#[cfg(not(target_os = "linux"))]
-	return Err(Error::NotSupportedOnPlatform("Linux only".into()));
+	return Err(Error::LinuxOnly());
 
 	#[cfg(target_os = "linux")]
 	{

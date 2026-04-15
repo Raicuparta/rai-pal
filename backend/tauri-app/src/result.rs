@@ -43,8 +43,9 @@ pub enum Error {
 	#[error("Failed to access state data: `{0}`")]
 	FailedToAccessStateData(String),
 
-	#[error("Not supported on current platform: `{0}`")]
-	NotSupportedOnPlatform(String),
+	#[cfg(not(target_os = "linux"))]
+	#[error("Not supported on current platform. Linux only.")]
+	LinuxOnly(),
 }
 
 impl serde::Serialize for Error {
