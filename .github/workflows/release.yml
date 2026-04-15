@@ -69,7 +69,7 @@ jobs:
           uploadUpdaterSignatures: false
 
       - name: Generate Updater Partial
-        run: node scripts/generate-updater-json.js ${{ ${{ steps.build.outputs.appVersion }} }} ${{ github.repository_owner }} ${{ github.event.repository.name }}
+        run: node scripts/generate-updater-json.js ${{ steps.build.outputs.appVersion }} ${{ github.repository_owner }} ${{ github.event.repository.name }}
 
       - name: Upload Updater Partial
         uses: actions/upload-artifact@v4
