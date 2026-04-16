@@ -34,13 +34,13 @@ try {
 		changelog = fs.readFileSync(changelogPath, "utf8").trim();
 	} else {
 		console.warn(`No changelog found at ${changelogPath}`);
-		changelog = `No changelog file found for version v${version}`;
+		changelog = `No changelog 🤷`;
 	}
 
 	const releaseBody = `${changelog}
 
-![Download for Windows](https://shields.io/badge/-Download_Rai_Pal_for_Windows-8A2BE2?style=for-the-badge&logo=windows&logoColor=white)
-![Download for Linux](https://shields.io/badge/-Download_Rai_Pal_for_Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)
+[![Download for Windows](https://shields.io/badge/-🪟_Download_Rai_Pal_for_Windows-3c7dcf?style=for-the-badge)](https://github.com/Raicuparta/rai-pal/releases/download/v${version}/RaiPal.exe)
+[![Download for Linux](https://shields.io/badge/-🐧_Download_Rai_Pal_for_Linux-dc4131?style=for-the-badge)](https://github.com/Raicuparta/rai-pal/releases/download/v${version}/RaiPal.AppImage)
 `;
 
 	console.log("--- Release Body ---");
