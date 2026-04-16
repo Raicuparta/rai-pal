@@ -20,11 +20,16 @@ jobs:
         id: version
         run: node scripts/get-version.js
 
+      - name: Generate Release Body
+        id: body
+        run: node scripts/generate-release-body.js ${{ steps.version.outputs.version }}
+
       - name: Create Draft Release
         uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ steps.version.outputs.tag_name }}
           name: ${{ steps.version.outputs.tag_name }}
+          body_path: ${{ steps.body.outputs.body_path }}
           draft: true
 
   release-matrix:
@@ -111,14 +116,9 @@ jobs:
         id: merge
         run: node scripts/merge-updater-json.js updater-partials
 
-      - name: Generate Release Body
-        id: body
-        run: node scripts/generate-release-body.js ${{ needs.create-release.outputs.version }}
-
-      - name: Upload Updater JSON and Release Body
+      - name: Upload Updater JSON
         uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ needs.create-release.outputs.tag_name }}
-          body_path: ${{ steps.body.outputs.body_path }}
           files: latest.json
           draft: true

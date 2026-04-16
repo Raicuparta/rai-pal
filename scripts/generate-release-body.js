@@ -43,8 +43,13 @@ try {
 ![Download for Linux](https://shields.io/badge/-Download_Rai_Pal_for_Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)
 `;
 
+	console.log("--- Release Body ---");
+	console.log(releaseBody);
+	console.log("--------------------");
+
 	const bodyPath = path.join(__dirname, "..", "temp_release_body.md");
 	fs.writeFileSync(bodyPath, releaseBody);
+	console.log(`Written to: ${bodyPath}`);
 	setOutput("body_path", bodyPath);
 } catch (error) {
 	console.error("Error in pre-release script:", error);
