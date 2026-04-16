@@ -17,22 +17,14 @@ function setOutput(key, value) {
 const args = process.argv.slice(2);
 const repoOwner = args[0];
 const repoName = args[1];
+const version = args[2];
 
-if (!repoOwner || !repoName) {
+if (!repoOwner || !repoName || !version) {
 	console.error(
-		"Usage: node scripts/collect-build-artifacts.js <owner> <repo>",
+		"Usage: node scripts/collect-build-artifacts.js <owner> <repo> <version>",
 	);
 	process.exit(1);
 }
-
-const cargoTomlPath = path.join(__dirname, "..", "backend", "Cargo.toml");
-const cargoToml = fs.readFileSync(cargoTomlPath, "utf8");
-const versionMatch = cargoToml.match(/^version\s*=\s*"(.+)"/m);
-if (!versionMatch) {
-	console.error("Could not find version in backend/Cargo.toml");
-	process.exit(1);
-}
-const version = versionMatch[1];
 
 const platform = process.platform;
 const outputDir = path.join(__dirname, "..", "release-assets");
