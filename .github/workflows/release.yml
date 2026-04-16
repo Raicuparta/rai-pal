@@ -51,24 +51,24 @@ jobs:
       - name: Install frontend dependencies
         run: npm ci
 
-      - name: Build and Release
-        id: build
-        uses: tauri-apps/tauri-action@v0
+      - name: Build
+        run: npm run build
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
           ANALYTICS_API_KEY: ${{ secrets.ANALYTICS_API_KEY }}
-        with:
-          tagName: v__VERSION__
-          releaseName: v__VERSION__
-          releaseDraft: true
-          prerelease: false
-          assetNamePattern: "RaiPal.[ext]"
-          includeUpdaterJson: false
 
-      - name: Generate Updater Partial
-        run: node scripts/generate-updater-json.js ${{ steps.build.outputs.appVersion }} ${{ github.repository_owner }} ${{ github.event.repository.name }}
+      - name: Collect Build Artifacts
+        id: collect
+        run: node scripts/collect-build-artifacts.js ${{ github.repository_owner }} ${{ github.event.repository.name }}
+
+      - name: Upload Release Assets
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: v${{ steps.collect.outputs.version }}
+          name: v${{ steps.collect.outputs.version }}
+          files: release-assets/*
+          draft: true
 
       - name: Upload Updater Partial
         uses: actions/upload-artifact@v4
@@ -76,7 +76,7 @@ jobs:
           name: updater-partial-${{ matrix.os-name }}
           path: updater-partial-*.json
 
-  upload-updater:
+  finalize-release:
     needs: release-matrix
     runs-on: ubuntu-latest
     permissions:
