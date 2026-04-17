@@ -1,30 +1,31 @@
 import { commands } from "@api/bindings";
 import { CommandButton } from "@components/command-button";
 import { useLocalization } from "@hooks/use-localization";
-import { Flex, Menu, Modal, Stack } from "@mantine/core";
+import { Button, Flex, Menu, Modal, Stack } from "@mantine/core";
+import { useDisclosure } from "@mantine/hooks";
 import { IconCat, IconDots, IconHammer } from "@tabler/icons-react";
 import { useState } from "react";
 
 export function WineBepInExEnvironmentButton() {
 	const t = useLocalization("wineBepInExEnvironment");
-	const [isModalOpen, setIsModalOpen] = useState(false);
-	const [showSteamRestartPrompt, setShowSteamRestartPrompt] = useState(false);
+	const [opened, { open, close }] = useDisclosure(false);
+	const [showSuccess, setShowSuccess] = useState(false);
 
 	return (
 		<>
-			<Menu.Item
-				onClick={() => setIsModalOpen(true)}
+			<Button
+				onClick={() => open()}
 				leftSection={<IconCat />}
 				rightSection={<IconDots />}
 			>
 				{t("setUpEnvironmentButton")}
-			</Menu.Item>
+			</Button>
 			<Modal
 				centered
-				opened={isModalOpen}
+				opened={opened}
 				onClose={() => {
-					setIsModalOpen(false);
-					setShowSteamRestartPrompt(false);
+					close();
+					setShowSuccess(false);
 				}}
 				title={t("setUpEnvironmentTitle")}
 			>
@@ -33,15 +34,13 @@ export function WineBepInExEnvironmentButton() {
 					<Flex justify="center">
 						<CommandButton
 							onClick={commands.setUpWineBepinexEnvironment}
-							onSuccess={() => setShowSteamRestartPrompt(true)}
+							onSuccess={() => setShowSuccess(true)}
 							leftSection={<IconHammer />}
 						>
 							{t("setUpEnvironmentButton")}
 						</CommandButton>
 					</Flex>
-					{showSteamRestartPrompt && (
-						<span>{t("setUpEnvironmentSuccess")}</span>
-					)}
+					{showSuccess && <span>{t("setUpEnvironmentSuccess")}</span>}
 				</Stack>
 			</Modal>
 		</>
