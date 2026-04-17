@@ -707,12 +707,11 @@ fn main() {
 	#[cfg(debug_assertions)]
 	typescript::export(&builder);
 
-	#[cfg(all(debug_assertions, target_os = "linux"))]
+	#[cfg(target_os = "linux")]
 	unsafe {
 		// This is to fix this error:
 		// Error 71 (Protocol error) dispatching to Wayland display.
 		// Probably only needed for dev.
-		std::env::set_var("__GL_THREADED_OPTIMIZATIONS", "0");
 		std::env::set_var("__NV_DISABLE_EXPLICIT_SYNC", "1");
 	}
 
