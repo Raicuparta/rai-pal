@@ -9,6 +9,7 @@ import {
 	Tooltip,
 	Divider,
 	Button,
+	Modal,
 } from "@mantine/core";
 import { useAtomValue } from "jotai";
 import { detectedLocaleAtom, useLocalization } from "@hooks/use-localization";
@@ -25,6 +26,8 @@ import {
 import { SwitchButton } from "@components/switch-button";
 import { SteamCacheButton } from "./steam-cache-button";
 import { platform } from "@tauri-apps/plugin-os";
+import { WineBepInExEnvironmentModal } from "./wine-bepinex-environment-modal";
+import { useDisclosure } from "@mantine/hooks";
 import { WineBepInExEnvironmentButton } from "./wine-bepinex-environment-button";
 
 const locales: AppLocale[] = [
@@ -43,6 +46,10 @@ export function AppSettings() {
 	const t = useLocalization("appDropdownMenu");
 	const [settings, setSettings, resetSettings] = useAppSettings();
 	const detectedLocale = useAtomValue(detectedLocaleAtom);
+	const [
+		isBepInExEnvironmentModalOpen,
+		{ open: openBepInExEnvironmentModal, close: closeBepInExEnvironmentModal },
+	] = useDisclosure(false);
 
 	const localeSelectValues = locales.map((locale) => ({
 		value: locale as string,
@@ -50,101 +57,113 @@ export function AppSettings() {
 	}));
 
 	return (
-		<Menu
-			closeOnItemClick={true}
-			withinPortal={false}
-			keepMounted={true}
-			withOverlay={true}
-		>
-			<Menu.Target>
-				<Button
-					variant="filled"
-					color="dark"
-					ml="auto"
-					fz="md"
-				>
-					<IconMenu2 />
-				</Button>
-			</Menu.Target>
-			<Menu.Dropdown
-				p="xs"
-				bg="dark"
+		<>
+			<Menu
+				closeOnItemClick={true}
+				// withinPortal={false}
+				keepMounted={true}
+				withOverlay={false}
 			>
-				<Stack>
-					<SwitchButton
-						value={!settings.hideGameThumbnails}
-						onChange={(value) => {
-							setSettings({
-								...settings,
-								hideGameThumbnails: !value,
-							});
-						}}
+				<Menu.Target>
+					<Button
+						variant="filled"
+						color="dark"
+						ml="auto"
+						fz="md"
 					>
-						{t("showGameThumbnails")}
-					</SwitchButton>
-				</Stack>
-				<Menu.Item
-					onClick={commands.openLogsFolder}
-					leftSection={<IconFolderCode />}
+						<IconMenu2 />
+					</Button>
+				</Menu.Target>
+				<Menu.Dropdown
+					p="xs"
+					bg="dark"
 				>
-					{t("openLogsFolderButton")}
-				</Menu.Item>
-				<SteamCacheButton />
-				<Tooltip
-					label={t("resetRaiPalSettingsTooltip")}
-					position="bottom"
-				>
+					<Stack>
+						<SwitchButton
+							value={!settings.hideGameThumbnails}
+							onChange={(value) => {
+								setSettings({
+									...settings,
+									hideGameThumbnails: !value,
+								});
+							}}
+						>
+							{t("showGameThumbnails")}
+						</SwitchButton>
+					</Stack>
 					<Menu.Item
-						onClick={resetSettings}
-						leftSection={<IconRotateDot />}
+						onClick={commands.openLogsFolder}
+						leftSection={<IconFolderCode />}
 					>
-						{t("resetRaiPalSettingsButton")}
+						{t("openLogsFolderButton")}
 					</Menu.Item>
-				</Tooltip>
-				{platform() === "linux" && <WineBepInExEnvironmentButton />}
-				<Divider my="xs" />
-				<NativeSelect
-					label={
-						<Group>
-							<span>{t("language")}</span>
-							<IconLanguage />
+					<SteamCacheButton />
+					<Tooltip
+						label={t("resetRaiPalSettingsTooltip")}
+						position="bottom"
+					>
+						<Menu.Item
+							onClick={resetSettings}
+							leftSection={<IconRotateDot />}
+						>
+							{t("resetRaiPalSettingsButton")}
+						</Menu.Item>
+					</Tooltip>
+					{platform() === "linux" && (
+						<WineBepInExEnvironmentButton
+							onClick={openBepInExEnvironmentModal}
+						/>
+					)}
+					<Divider my="xs" />
+					<NativeSelect
+						label={
+							<Group>
+								<span>{t("language")}</span>
+								<IconLanguage />
 
-							{/* 
+								{/* 
 							The text below is purposely left untranslated to make it easier to find,
 							in case the user doesn't speak the currently selected language.
 							I also included that icon that google uses for Translate,
 							but I feel like nobody actually identifies that as a "language" icon. Eh.
 							*/}
-							<Box opacity={0.5}>Language</Box>
-						</Group>
-					}
-					value={settings.overrideLanguage ?? ""}
-					data={localeSelectValues}
-					onChange={(event) => {
-						setSettings({
-							...settings,
-							overrideLanguage: (event.currentTarget.value ||
-								null) as AppLocale | null,
-						});
-					}}
-				>
-					{detectedLocale && (
-						<option value="">
-							{t("autoDetectedLanguage", {
-								languageName: getNativeLocaleName(detectedLocale),
-							})}
-						</option>
-					)}
-					{locales.map((locale) => (
-						<option
-							key={locale}
-							value={locale}
-						>
-							{getNativeLocaleName(locale)}
-						</option>
-					))}
-				</NativeSelect>
-			</Menu.Dropdown>
-		</Menu>
+								<Box opacity={0.5}>Language</Box>
+							</Group>
+						}
+						value={settings.overrideLanguage ?? ""}
+						data={localeSelectValues}
+						onChange={(event) => {
+							setSettings({
+								...settings,
+								overrideLanguage: (event.currentTarget.value ||
+									null) as AppLocale | null,
+							});
+						}}
+					>
+						{detectedLocale && (
+							<option value="">
+								{t("autoDetectedLanguage", {
+									languageName: getNativeLocaleName(detectedLocale),
+								})}
+							</option>
+						)}
+						{locales.map((locale) => (
+							<option
+								key={locale}
+								value={locale}
+							>
+								{getNativeLocaleName(locale)}
+							</option>
+						))}
+					</NativeSelect>
+				</Menu.Dropdown>
+			</Menu>
+			{platform() === "linux" && (
+				<WineBepInExEnvironmentModal
+					isOpen={isBepInExEnvironmentModalOpen}
+					onClose={closeBepInExEnvironmentModal}
+				/>
+			)}
+		</>
 	);
 }
