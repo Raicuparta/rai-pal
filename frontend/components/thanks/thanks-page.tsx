@@ -187,80 +187,76 @@ export function ThanksPage() {
 						</Stack>
 					</Stack>
 				</Card>
-				{patrons.length > 0 && (
-					<Stack
-						h="100%"
-						w={200}
-					>
-						<Group align="top">
-							<ThanksLinkButton
-								pos="relative"
-								size="lg"
-								href="https://www.patreon.com/raivr"
-								color="pink"
-								flex={1}
-							>
-								<Box style={{ textWrap: "wrap" }}>
-									{t("patreonLeaderboard")}
-								</Box>
-								<Box
-									pos="absolute"
-									right={0}
-									top={0}
-								>
-									<Tooltip
-										ta="center"
-										withinPortal
-										label={
-											<>
-												<Text>{t("rankedByPatreonDonationAmount")}</Text>
-												<Text>{t("patreonProfilePrivateNotice")}</Text>
-											</>
-										}
-									>
-										<IconHelpCircleFilled />
-									</Tooltip>
-								</Box>
-							</ThanksLinkButton>
-						</Group>
-						<Card
-							h="100%"
-							style={{ overflowY: "scroll" }}
+				<Stack
+					h="100%"
+					w={200}
+				>
+					<Group align="top">
+						<ThanksLinkButton
+							pos="relative"
+							size="lg"
+							href="https://www.patreon.com/raivr"
+							color="pink"
+							flex={1}
 						>
-							<Stack>
-								{patrons.map((patron) => (
-									<Group
-										key={patron.ranking}
-										pos="relative"
-									>
-										<Box c={getRankingColor(patron.ranking)}>
-											<img
-												className={styles.patronAvatar}
-												src={patron.imageUrl}
-											/>
-										</Box>
-										{patron.ranking <= 3 && (
-											<Text
-												size="xl"
-												className={styles.patronMedal}
-											>
-												{getRankingEmoji(patron.ranking)}
-											</Text>
-										)}
+							<Box style={{ textWrap: "wrap" }}>{t("patreonLeaderboard")}</Box>
+							<Box
+								pos="absolute"
+								right={0}
+								top={0}
+							>
+								<Tooltip
+									ta="center"
+									withinPortal
+									label={
+										<>
+											<Text>{t("rankedByPatreonDonationAmount")}</Text>
+											<Text>{t("patreonProfilePrivateNotice")}</Text>
+										</>
+									}
+								>
+									<IconHelpCircleFilled />
+								</Tooltip>
+							</Box>
+						</ThanksLinkButton>
+					</Group>
+					<Card
+						h="100%"
+						style={{ overflowY: "scroll" }}
+					>
+						<Stack>
+							{patrons.map((patron) => (
+								<Group
+									key={patron.ranking}
+									pos="relative"
+								>
+									<Box c={getRankingColor(patron.ranking)}>
+										<img
+											className={styles.patronAvatar}
+											src={patron.imageUrl}
+										/>
+									</Box>
+									{patron.ranking <= 3 && (
 										<Text
-											flex={1}
-											className={styles.patronName}
-											fw={patron.ranking <= 3 ? "bold" : "normal"}
-											c={patron.ranking <= 3 ? "white" : undefined}
+											size="xl"
+											className={styles.patronMedal}
 										>
-											{patron.name}
+											{getRankingEmoji(patron.ranking)}
 										</Text>
-									</Group>
-								))}
-							</Stack>
-						</Card>
-					</Stack>
-				)}
+									)}
+									<Text
+										flex={1}
+										className={styles.patronName}
+										fw={patron.ranking <= 3 ? "bold" : "normal"}
+										c={patron.ranking <= 3 ? "white" : undefined}
+									>
+										{patron.name}
+									</Text>
+								</Group>
+							))}
+						</Stack>
+					</Card>
+				</Stack>
 			</Group>
 		</Container>
 	);
