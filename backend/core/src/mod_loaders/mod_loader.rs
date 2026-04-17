@@ -1,6 +1,7 @@
 use std::{
 	collections::HashMap,
 	fs::{self, File},
+	io,
 	path::{Path, PathBuf},
 };
 
@@ -62,13 +63,13 @@ pub trait ModLoaderActions {
 	}
 
 	fn update_installed_mod_manifest(&self, local_mod: &LocalMod, game: &DbGame) -> Result {
-		if self.get_data().kind != ModKind::Runnable {
-			if let Some(manifest) = &local_mod.data.manifest {
-				let manifest_path = game.get_installed_mod_manifest_path(&local_mod.common.id)?;
-				fs::create_dir_all(paths::path_parent(&manifest_path)?)?;
-				let manifest_contents = serde_json::to_string_pretty(manifest)?;
-				fs::write(manifest_path, manifest_contents)?;
-			}
+		if self.get_data().kind != ModKind::Runnable
+			&& let Some(manifest) = &local_mod.data.manifest
+		{
+			let manifest_path = game.get_installed_mod_manifest_path(&local_mod.common.id)?;
+			fs::create_dir_all(paths::path_parent(&manifest_path)?)?;
+			let manifest_contents = serde_json::to_string_pretty(manifest)?;
+			fs::write(manifest_path, manifest_contents)?;
 		}
 
 		Ok(())
@@ -114,27 +115,24 @@ pub trait ModLoaderActions {
 				.ok()
 				.as_ref()
 				.and_then(|local_mods| local_mods.get(&database_mod.id))
+				&& let Some(latest_version) = &remote_mod.data.latest_version
 			{
-				if let Some(latest_version) = &remote_mod.data.latest_version {
-					let manifest_path = local_mod::get_manifest_path(&local_mod.data.path);
+				let manifest_path = local_mod::get_manifest_path(&local_mod.data.path);
 
-					// Only update if the manifest file exists (mod has been downloaded before)
-					if manifest_path.exists() {
-						let updated_manifest = mod_manifest::Manifest {
-							title: Some(remote_mod.data.title.clone()),
-							version: latest_version.id.clone(),
-							runnable: latest_version.runnable.clone(),
-							engine: remote_mod.common.engine,
-							engine_version_range: remote_mod.common.engine_version_range.clone(),
-							unity_backend: remote_mod.common.unity_backend,
-							configs: remote_mod.data.configs.clone(),
-						};
+				// Only update if the manifest file exists (mod has been downloaded before)
+				if manifest_path.exists() {
+					let updated_manifest = mod_manifest::Manifest {
+						title: Some(remote_mod.data.title.clone()),
+						version: latest_version.id.clone(),
+						runnable: latest_version.runnable.clone(),
+						engine: remote_mod.common.engine,
+						engine_version_range: remote_mod.common.engine_version_range.clone(),
+						unity_backend: remote_mod.common.unity_backend,
+						configs: remote_mod.data.configs.clone(),
+					};
 
-						if let Ok(manifest_contents) =
-							serde_json::to_string_pretty(&updated_manifest)
-						{
-							let _ = fs::write(&manifest_path, manifest_contents);
-						}
+					if let Ok(manifest_contents) = serde_json::to_string_pretty(&updated_manifest) {
+						let _ = fs::write(&manifest_path, manifest_contents);
 					}
 				}
 			}
@@ -168,10 +166,10 @@ pub trait ModLoaderActions {
 
 			if let Some(root) = &latest_version.root {
 				let unzip_path = downloads_path.join(mod_id);
-				zip_archive.extract(downloads_path.join(mod_id))?;
+				extract(&mut zip_archive, &unzip_path)?;
 				files::copy_dir_all(unzip_path.join(root), &target_path)?;
 			} else {
-				zip_archive.extract(&target_path)?;
+				extract(&mut zip_archive, &target_path)?;
 			}
 
 			// Saves the manifest so we know which version of the mod we installed.
@@ -325,4 +323,40 @@ fn config_exists(path: &Path) -> Result<bool> {
 	}
 
 	Ok(true)
+}
+
+fn extract<R: io::Read + io::Seek>(
+	archive: &mut ZipArchive<R>,
+	target_path: &Path,
+) -> io::Result<()> {
+	for i in 0..archive.len() {
+		let mut file = archive.by_index(i).map_err(io::Error::other)?;
+
+		// Some zips created on windows have cursed backslashes in their paths.
+		// We need to replace them with forward slashes to avoid issues when extracting on Linux.
+		// Hopefully there aren't any legitimate files with backslashes in their names.
+		let sanitized_name = file.name().replace('\\', "/");
+
+		let outpath = target_path.join(&sanitized_name);
+
+		if !outpath.starts_with(target_path) {
+			return Err(io::Error::new(
+				io::ErrorKind::InvalidData,
+				format!("Zip file contains path escaping target: {}", file.name()),
+			));
+		}
+
+		if file.is_dir() || sanitized_name.ends_with('/') {
+			fs::create_dir_all(&outpath)?;
+		} else {
+			if let Some(p) = outpath.parent()
+				&& !p.exists()
+			{
+				fs::create_dir_all(p)?;
+			}
+			let mut outfile = fs::File::create(&outpath)?;
+			io::copy(&mut file, &mut outfile)?;
+		}
+	}
+	Ok(())
 }

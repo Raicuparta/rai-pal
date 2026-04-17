@@ -130,7 +130,7 @@ impl SteamAppInfoReader {
 						.iter()
 						.filter_map(|(key, launch)| {
 							value_to_kv(Some(launch)).map(|launch_kv| SteamLaunchOption {
-								launch_id: key.to_string(),
+								launch_id: key.clone(),
 								app_id,
 								description: value_to_string(find_keys(
 									launch_kv,
@@ -189,22 +189,21 @@ impl SteamAppInfoReader {
 				continue;
 			}
 
-			if let Some(launch_options) = app_launch {
-				if let Some(name) = value_to_string(
+			if let Some(launch_options) = app_launch
+				&& let Some(name) = value_to_string(
 					app.get(&["appinfo", "common", "name_localized", "english"])
 						.or_else(|| app.get(&["appinfo", "common", "name"])),
 				) {
-					return Ok(Some(SteamAppInfo {
-						app_id,
-						launch_options,
-						name,
-						steam_release_date,
-						original_release_date,
-						is_free,
-						app_type: app_type_option,
-						tags,
-					}));
-				}
+				return Ok(Some(SteamAppInfo {
+					app_id,
+					launch_options,
+					name,
+					steam_release_date,
+					original_release_date,
+					is_free,
+					app_type: app_type_option,
+					tags,
+				}));
 			}
 		}
 

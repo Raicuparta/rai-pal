@@ -1,7 +1,13 @@
 use std::{
 	collections::HashMap,
-	fs::{self, File},
-	path::{Path, PathBuf},
+	fs::{
+		self,
+		File,
+	},
+	path::{
+		Path,
+		PathBuf,
+	},
 };
 
 use rai_pal_proc_macros::serializable_struct;
@@ -11,15 +17,27 @@ use super::mod_loader::ModLoaderStatic;
 use crate::{
 	files::copy_dir_all,
 	game::DbGame,
-	game_engines::{game_engine::EngineBrand, unity::UnityBackend},
+	game_engines::{
+		game_engine::EngineBrand,
+		unity::UnityBackend,
+	},
 	game_mod::CommonModData,
-	local_mod::{LocalMod, ModKind},
+	local_mod::{
+		LocalMod,
+		ModKind,
+	},
 	mod_loaders::{
 		mod_database::ModConfigs,
-		mod_loader::{ModLoaderActions, ModLoaderData},
+		mod_loader::{
+			ModLoaderActions,
+			ModLoaderData,
+		},
 	},
 	paths,
-	result::{Error, Result},
+	result::{
+		Error,
+		Result,
+	},
 };
 
 #[serializable_struct]
@@ -168,7 +186,7 @@ impl ModLoaderActions for BepInEx {
 			.join("plugins")
 			.join(&local_mod.common.id);
 
-		Ok(open::that_detached(plugin_folder)?)
+		paths::open_folder_or_parent(&plugin_folder)
 	}
 
 	fn get_mod_path(&self, mod_data: &CommonModData) -> Result<PathBuf> {
@@ -228,4 +246,18 @@ fn find_mods(installed_mods_path: &Path, unity_backend: UnityBackend) -> HashMap
 			}
 		})
 		.collect()
+}
+
+#[cfg(target_os = "linux")]
+pub fn set_up_proton_environment() -> Result {
+	let path = paths::base_dirs()?.config_dir().join("environment.d");
+
+	fs::create_dir_all(&path)?;
+
+	fs::write(
+		path.join("90-rai-pal-wine-overrides.conf"),
+		"WINEDLLOVERRIDES=\"winhttp.dll=n,b\"",
+	)?;
+
+	Ok(())
 }

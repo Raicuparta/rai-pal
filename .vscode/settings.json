@@ -60,6 +60,7 @@
 		"osarch",
 		"oslist",
 		"otherinstallcmd",
+		"outpath",
 		"overscan",
 		"packageinfo",
 		"Pardeike",

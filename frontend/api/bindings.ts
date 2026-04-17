@@ -44,6 +44,7 @@ export const commands = {
 	configs: RemoteConfig[],
 } | null>("get_remote_configs", { providerId, gameId }),
 	downloadRemoteConfig: (providerId: ProviderId, gameId: string, modId: string, remoteConfigFile: string, overwrite: boolean) => __TAURI_INVOKE<null>("download_remote_config", { providerId, gameId, modId, remoteConfigFile, overwrite }),
+	setUpWineBepinexEnvironment: () => __TAURI_INVOKE<null>("set_up_wine_bepinex_environment"),
 };
 
 /** Events */
@@ -115,7 +116,7 @@ export type EngineVersionRange = {
 	maximum: EngineVersionNumbers | null,
 };
 
-export type Error = "Tauri" | "Core" | "Io" | "Rusql" | "SerdeJson" | ({ FailedToGetResourcesPath: string }) & { FailedToAccessStateData?: never } | ({ FailedToAccessStateData: string }) & { FailedToGetResourcesPath?: never };
+export type Error = "Tauri" | "Core" | "Io" | "Rusql" | "SerdeJson" | ({ FailedToGetResourcesPath: string }) & { FailedToAccessStateData?: never; LinuxOnly?: never } | ({ FailedToAccessStateData: string }) & { FailedToGetResourcesPath?: never; LinuxOnly?: never } | ({ LinuxOnly: null }) & { FailedToAccessStateData?: never; FailedToGetResourcesPath?: never };
 
 export type ErrorRaised = string;
 

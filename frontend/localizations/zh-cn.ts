@@ -162,6 +162,15 @@ export const zhCn: Localization = {
 			"缓存文件已被删除。请重新启动 Steam，等待几秒钟，然后按 Rai Pal 上的刷新按钮。",
 	},
 
+	wineBepInExEnvironment: {
+		setUpEnvironmentButton: "为 BepInEx 设置 Linux 环境",
+		setUpEnvironmentTitle: "为 BepInEx 设置 Linux 环境",
+		setUpEnvironmentDescription:
+			"在 Linux 上使用 Proton/Wine 时，除非设置了一些 Wine 配置，否则 BepInEx 不会自动加载。此操作将全局设置环境变量 WINEDLLOVERRIDES 为 'winhttp.dll=n,b'。如果您想手动设置，请不要点击此按钮。",
+		setUpEnvironmentSuccess:
+			"文件已写入。您需要注销并重新登录，或重新启动计算机，更改才能生效。",
+	},
+
 	debugData: {
 		debugDataTitle: "调试数据",
 		debugDataCopy: "复制调试数据",

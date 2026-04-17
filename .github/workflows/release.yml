@@ -1,51 +1,124 @@
 name: "release"
+
 on:
   workflow_dispatch:
-  pull_request:
-    types: [closed]
+  push:
     branches: [main]
 
 jobs:
-  publish-release:
-    if: github.event.pull_request.merged == true
+  create-release:
+    runs-on: ubuntu-latest
     permissions:
       contents: write
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      tag_name: ${{ steps.version.outputs.tag_name }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Get Version
+        id: version
+        run: node scripts/get-version.js
+
+      - name: Generate Release Body
+        id: body
+        run: node scripts/generate-release-body.js ${{ steps.version.outputs.version }}
+
+      - name: Create Draft Release
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ steps.version.outputs.tag_name }}
+          name: ${{ steps.version.outputs.tag_name }}
+          body_path: ${{ steps.body.outputs.body_path }}
+          draft: true
+
+  release-matrix:
+    needs: create-release
     strategy:
       fail-fast: false
+      matrix:
+        include:
+          - platform: windows-latest
+            os-name: windows
+          - platform: ubuntu-24.04
+            # pinning to ubuntu 24 due to bug: https://github.com/audioling/audioling/issues/40
+            os-name: linux
 
-    runs-on: windows-latest
+    runs-on: ${{ matrix.platform }}
+    permissions:
+      contents: write
+
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
 
-      - name: setup node
-        uses: actions/setup-node@v4
+      - name: Setup Node
+        uses: actions/setup-node@v6
         with:
+          node-version: 25
           cache: "npm"
 
-      - name: install Rust stable
+      - name: Install Rust stable
         uses: dtolnay/rust-toolchain@stable
+
+      - name: Install dependencies (Linux)
+        if: matrix.platform == 'ubuntu-24.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
 
       - name: Install frontend dependencies
         run: npm ci
 
       - name: Build
-        id: build
-        run: |
-          $output = ./scripts/create-release-build.ps1
-          $version = $output | Select-Object -Last 1
-          "version=$version" >> $env:GITHUB_OUTPUT
+        run: npm run build
         env:
-          RAI_PAL_CHANGELOG: ${{ github.event.pull_request.body }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
           ANALYTICS_API_KEY: ${{ secrets.ANALYTICS_API_KEY }}
 
-      - name: Release
-        uses: softprops/action-gh-release@v1
+      - name: Collect Build Artifacts
+        id: collect
+        run: node scripts/collect-build-artifacts.js ${{ github.repository_owner }} ${{ github.event.repository.name }} ${{ needs.create-release.outputs.version }}
+
+      - name: Upload Release Assets
+        uses: softprops/action-gh-release@v3
         with:
+          tag_name: ${{ needs.create-release.outputs.tag_name }}
+          files: release-assets/*
           draft: true
-          name: Rai Pal ${{ steps.build.outputs.version }}
-          tag_name: v${{ steps.build.outputs.version }}
-          body: "${{ github.event.pull_request.body }}\n\n[![Download Rai Pal for Windows](https://shields.io/badge/-Download_Rai_Pal_for_Windows-8A2BE2?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/Raicuparta/rai-pal/releases/latest/download/RaiPal.msi)"
-          files: |
-            ./publish/*
+
+      - name: Upload Updater Partial
+        uses: actions/upload-artifact@v7
+        with:
+          name: updater-partial-${{ matrix.os-name }}
+          path: updater-partial-*.json
+
+  finalize-release:
+    needs: [create-release, release-matrix]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 25
+
+      - name: Download Updater Partials
+        uses: actions/download-artifact@v4
+        with:
+          path: updater-partials
+          pattern: updater-partial-*
+
+      - name: Merge Updater JSON
+        id: merge
+        run: node scripts/merge-updater-json.js updater-partials
+
+      - name: Upload Updater JSON
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ needs.create-release.outputs.tag_name }}
+          files: latest.json
+          draft: true

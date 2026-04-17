@@ -173,6 +173,15 @@ export const frFr: Localization = {
 			"Le fichier de cache a été supprimé. Veuillez redémarrer Steam, attendre quelques secondes, puis appuyer sur le bouton de rafraîchissement de Rai Pal.",
 	},
 
+	wineBepInExEnvironment: {
+		setUpEnvironmentButton: "Configurer l'environnement Linux pour BepInEx",
+		setUpEnvironmentTitle: "Configurer l'environnement Linux pour BepInEx",
+		setUpEnvironmentDescription:
+			"Lors de l'utilisation de Proton/Wine sous Linux, BepInEx ne se chargera pas automatiquement à moins que certains paramètres Wine soient configurés. Cela définira la variable d'environnement WINEDLLOVERRIDES sur 'winhttp.dll=n,b' globalement. Si vous préférez le faire manuellement, ne cliquez pas sur ce bouton.",
+		setUpEnvironmentSuccess:
+			"Le fichier a été écrit. Vous devrez vous déconnecter et vous reconnecter, ou redémarrer votre ordinateur, pour que les modifications prennent effet.",
+	},
+
 	debugData: {
 		debugDataTitle: "Données de débogage",
 		debugDataCopy: "Copier les données de débogage",

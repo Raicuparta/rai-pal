@@ -1,17 +1,5 @@
 #![cfg(target_os = "windows")]
 
-use std::{
-	collections::HashMap,
-	fs::{self, File},
-	io::Read,
-	path::{Path, PathBuf},
-};
-
-use base64::engine::general_purpose;
-use log::error;
-use rai_pal_proc_macros::serializable_struct;
-use winreg::{RegKey, enums::HKEY_LOCAL_MACHINE};
-
 use super::{
 	provider::ProviderId,
 	provider_command::{ProviderCommand, ProviderCommandAction},
@@ -23,6 +11,16 @@ use crate::{
 	providers::provider::{ProviderActions, ProviderStatic},
 	result::Result,
 };
+use base64::engine::general_purpose;
+use log::error;
+use rai_pal_proc_macros::serializable_struct;
+use std::{
+	collections::HashMap,
+	fs::{self, File},
+	io::Read,
+	path::{Path, PathBuf},
+};
+use winreg::{RegKey, enums::HKEY_LOCAL_MACHINE};
 
 #[serializable_struct]
 pub struct EpicManifest {

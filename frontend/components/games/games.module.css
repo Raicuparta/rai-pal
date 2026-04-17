@@ -93,6 +93,8 @@
 .thumbnailForeground {
 	z-index: 1;
 	object-fit: contain;
+	contain: paint;
+	image-rendering: pixelated;
 }
 
 .thumbnailFallback {

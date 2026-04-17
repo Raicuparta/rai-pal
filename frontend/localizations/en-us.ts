@@ -350,6 +350,23 @@ export const enUs = {
 			"The cache file has been deleted. Please restart Steam, wait a few seconds, and then press the refresh button on Rai Pal.",
 	},
 
+	// Button and modal for making sure BepInEx loads on Linux with Wine.
+	wineBepInExEnvironment: {
+		// Button that sets up the Linux environment for BepInEx.
+		setUpEnvironmentButton: "Set up Linux environment for BepInEx",
+
+		// Title of the modal that opens after clicking the set up Linux environment button.
+		setUpEnvironmentTitle: "Set up Linux environment for BepInEx",
+
+		// Description of what setting up the Linux environment for BepInEx does.
+		setUpEnvironmentDescription:
+			"When using Proton/Wine on Linux, BepInEx won't load automatically unless some Wine settings are set. This will set the environment variable WINEDLLOVERRIDES to 'winhttp.dll=n,b' globally. If you'd rather do that manually, then don't click this button.",
+
+		// Success message after setting up the Linux environment for BepInEx.
+		setUpEnvironmentSuccess:
+			"File has been written. You will need to log out and log back in, or restart your computer, for the changes to take effect.",
+	},
+
 	// Debug data that shows in modals for games and mods.
 	// Basically a JSON dump of all the info Rai Pal has on that game / mod.
 	debugData: {

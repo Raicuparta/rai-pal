@@ -1,6 +1,7 @@
 #![cfg(target_os = "linux")]
 
 use std::{
+	collections::HashMap,
 	fmt::Debug,
 	fs::{self, read_to_string},
 	io::{self},
@@ -23,9 +24,9 @@ use super::provider_command::{ProviderCommand, ProviderCommandAction};
 
 #[derive(Debug, Serialize, Deserialize)]
 struct InstalledGOGGame {
-	executable: String,
 	#[serde(rename(deserialize = "appName"))]
 	app_name: String,
+	install_path: Option<PathBuf>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -37,52 +38,14 @@ struct RootInstalled {
 struct ParsedGame {
 	app_name: String,
 	title: String,
-	is_installed: bool,
 	art_cover: Option<String>,
-	folder_name: Option<String>,
+	art_square: Option<String>,
+	art_icon: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 struct Root {
 	games: Vec<ParsedGame>,
-}
-
-fn get_detected_games() -> Result<Vec<ParsedGame>> {
-	let dirs = BaseDirs::new()
-		.ok_or_else(|| io::Error::new(io::ErrorKind::Other, "Failed to get user directories"))?;
-	let config_dir = dirs.config_dir();
-	let file_content =
-		read_to_string(Path::new(&config_dir).join("heroic/store_cache/gog_library.json"))?;
-	let installed_games = read_installed_games()?;
-
-	Ok(serde_json::from_str::<Root>(file_content.as_str())?
-		.games
-		.into_iter()
-		// gog-redist is not a game but it shows up in the library
-		.filter(|game| game.app_name != "gog-redist")
-		.map(|mut game| {
-			if installed_games.contains(&game.app_name) {
-				// is_installed props from the library are not reliable
-				game.is_installed = true;
-			}
-			game
-		})
-		.collect())
-}
-
-fn read_installed_games() -> Result<Vec<String>> {
-	let dirs = BaseDirs::new().ok_or_else(Error::AppDataNotFound)?;
-	let config_dir = dirs.config_dir();
-	let file_content =
-		read_to_string(Path::new(&config_dir).join("heroic/gog_store/installed.json"))?;
-
-	Ok(
-		serde_json::from_str::<RootInstalled>(file_content.as_str())?
-			.installed
-			.into_iter()
-			.map(|game| game.app_name)
-			.collect(),
-	)
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -101,24 +64,48 @@ struct GogGame {
 	play_tasks: Vec<PlayTask>,
 }
 
-fn read_info_file(path: &Path, app_id: &str) -> Result<GogGame> {
-	let file_path = path.join(format!("goggame-{app_id}.info"));
-
-	let json_string = fs::read_to_string(file_path)?;
-	Ok(serde_json::from_str::<GogGame>(&json_string)?)
-}
-
 #[derive(Clone)]
 pub struct HeroicGog {}
 
 impl HeroicGog {
-	fn get_exe_path(entry: &ParsedGame) -> Option<PathBuf> {
-		let dirs = BaseDirs::new()?;
-		let home_dir = dirs.home_dir();
-		let game_path = Path::new(&home_dir)
-			.join("Games/Heroic")
-			.join(&entry.folder_name.clone()?);
-		let infos = match read_info_file(game_path.as_path(), &entry.app_name) {
+	fn get_owned_games() -> Result<Vec<ParsedGame>> {
+		let dirs =
+			BaseDirs::new().ok_or_else(|| io::Error::other("Failed to get user directories"))?;
+		let config_dir = dirs.config_dir();
+		let file_content =
+			read_to_string(Path::new(&config_dir).join("heroic/store_cache/gog_library.json"))?;
+
+		Ok(serde_json::from_str::<Root>(file_content.as_str())?
+			.games
+			.into_iter()
+			// gog-redist is not a game but it shows up in the library
+			.filter(|game| game.app_name != "gog-redist")
+			.collect())
+	}
+
+	fn get_installed_games() -> Result<HashMap<String, InstalledGOGGame>> {
+		let dirs = BaseDirs::new().ok_or_else(Error::AppDataNotFound)?;
+		let config_dir = dirs.config_dir();
+		let file_content =
+			read_to_string(Path::new(&config_dir).join("heroic/gog_store/installed.json"))?;
+
+		Ok(
+			serde_json::from_str::<RootInstalled>(file_content.as_str())?
+				.installed
+				.into_iter()
+				.map(|game| (game.app_name.clone(), game))
+				.collect(),
+		)
+	}
+
+	fn read_info_file(path: &Path, app_id: &str) -> Result<GogGame> {
+		let json_string = fs::read_to_string(path.join(format!("goggame-{app_id}.info")))?;
+		Ok(serde_json::from_str::<GogGame>(&json_string)?)
+	}
+
+	fn get_exe_path(entry: &InstalledGOGGame) -> Option<PathBuf> {
+		let game_path = entry.install_path.as_ref()?;
+		let infos = match Self::read_info_file(game_path, &entry.app_name) {
 			Ok(infos) => infos,
 			Err(err) => {
 				log::warn!(
@@ -155,16 +142,20 @@ impl ProviderStatic for HeroicGog {
 
 impl ProviderActions for HeroicGog {
 	async fn insert_games(&self, db: &DbMutex) -> Result {
-		let parsed_games = get_detected_games()?;
-		for parsed_game in parsed_games {
+		let owned_games = Self::get_owned_games()?;
+		let installed_games = Self::get_installed_games()?;
+
+		for parsed_game in owned_games {
 			let mut game = DbGame::new(
 				*Self::ID,
 				parsed_game.app_name.clone(),
 				parsed_game.title.clone(),
 			);
-			game.thumbnail_url = parsed_game.art_cover.clone();
-			if let Some(exe_path) = Self::get_exe_path(&parsed_game) {
-				game.set_executable(&exe_path);
+			game.thumbnail_url.clone_from(&parsed_game.art_icon);
+			if let Some(installed_game) = installed_games.get(&parsed_game.app_name) {
+				if let Some(exe_path) = Self::get_exe_path(installed_game) {
+					game.set_executable(&exe_path);
+				}
 				game.add_provider_command(
 					ProviderCommandAction::StartViaProvider,
 					ProviderCommand::String(format!(

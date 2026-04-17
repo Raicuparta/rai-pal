@@ -70,14 +70,14 @@ fn get_version(game_exe_path: &Path) -> Option<EngineVersion> {
 		for asset_name in &ASSETS_WITH_VERSION {
 			let asset_path = data_path.join(asset_name);
 
-			if let Ok(metadata) = fs::metadata(&asset_path) {
-				if metadata.is_file() {
-					match get_version_from_asset(&asset_path) {
-						Ok(version) => {
-							return Some(version);
-						}
-						Err(err) => error!("Failed to get Unity version: {err}"),
+			if let Ok(metadata) = fs::metadata(&asset_path)
+				&& metadata.is_file()
+			{
+				match get_version_from_asset(&asset_path) {
+					Ok(version) => {
+						return Some(version);
 					}
+					Err(err) => error!("Failed to get Unity version: {err}"),
 				}
 			}
 		}
@@ -129,10 +129,10 @@ fn get_alt_architecture(game_path: &Path) -> Option<Architecture> {
 		// This would usually be UnityPlayer.dll, steam_api.dll, etc.
 		// Here the guessing can go wrong, since it's possible a top level dll is actual x86,
 		// when the actual game is x64.
-		if let Some(first_dll) = glob_path(&game_folder.join("*.dll")).first() {
-			if let Ok(Some(architecture)) = get_architecture(first_dll) {
-				return Some(architecture);
-			}
+		if let Some(first_dll) = glob_path(&game_folder.join("*.dll")).first()
+			&& let Ok(Some(architecture)) = get_architecture(first_dll)
+		{
+			return Some(architecture);
 		}
 
 		// If there are no top-level dlls, we try the Unity plugin dlls.
@@ -140,14 +140,12 @@ fn get_alt_architecture(game_path: &Path) -> Option<Architecture> {
 		// But it's common to drop all kinds of dlls in the plugins folder,
 		// so I'm leaving it for last. (mostly because my own UUVR mod drops both the
 		// x86 and x64 dlls in the folder so Unity picks the right one)
-		if let Ok(unity_data_path) = get_unity_data_path(game_path) {
-			if let Some(plugin_dll) =
+		if let Ok(unity_data_path) = get_unity_data_path(game_path)
+			&& let Some(plugin_dll) =
 				glob_path(&unity_data_path.join("Plugins").join("**").join("*.dll")).first()
-			{
-				if let Ok(Some(architecture)) = get_architecture(plugin_dll) {
-					return Some(architecture);
-				}
-			}
+			&& let Ok(Some(architecture)) = get_architecture(plugin_dll)
+		{
+			return Some(architecture);
 		}
 	}
 

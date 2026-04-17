@@ -167,6 +167,15 @@ export const koKr: Localization = {
 			"캐시 파일이 삭제되었습니다. Steam을 다시 시작하고 몇 초 기다린 후 Rai Pal에서 새로고침 버튼을 누르세요.",
 	},
 
+	wineBepInExEnvironment: {
+		setUpEnvironmentButton: "BepInEx용 Linux 환경 설정",
+		setUpEnvironmentTitle: "BepInEx용 Linux 환경 설정",
+		setUpEnvironmentDescription:
+			"Linux에서 Proton/Wine을 사용할 때, Wine 설정이 되어 있지 않으면 BepInEx가 자동으로 로드되지 않습니다. 이 작업은 환경 변수 WINEDLLOVERRIDES를 전역적으로 'winhttp.dll=n,b'로 설정합니다. 수동으로 설정하려면 이 버튼을 클릭하지 마세요.",
+		setUpEnvironmentSuccess:
+			"파일이 작성되었습니다. 변경 사항을 적용하려면 로그아웃 후 다시 로그인하거나 컴퓨터를 재시작해야 합니다.",
+	},
+
 	debugData: {
 		debugDataTitle: "디버그 데이터",
 		debugDataCopy: "디버그 데이터 복사",

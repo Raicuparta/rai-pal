@@ -172,6 +172,15 @@ export const jaJp: Localization = {
 			"キャッシュファイルが削除されました。Steamを再起動し、数秒待ってからRai Palの更新ボタンを押してください。",
 	},
 
+	wineBepInExEnvironment: {
+		setUpEnvironmentButton: "BepInEx用のLinux環境をセットアップ",
+		setUpEnvironmentTitle: "BepInEx用のLinux環境をセットアップ",
+		setUpEnvironmentDescription:
+			"LinuxでProton/Wineを使用している場合、Wineの設定が行われていないとBepInExは自動的に読み込まれません。これにより、環境変数WINEDLLOVERRIDESがグローバルに'winhttp.dll=n,b'に設定されます。手動で設定したい場合は、このボタンをクリックしないでください。",
+		setUpEnvironmentSuccess:
+			"ファイルが書き込まれました。変更を有効にするには、ログアウトして再ログインするか、コンピューターを再起動する必要があります。",
+	},
+
 	debugData: {
 		debugDataTitle: "デバッグデータ",
 		debugDataCopy: "デバッグデータをコピー",

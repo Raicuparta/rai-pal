@@ -1,13 +1,5 @@
 #![cfg(target_os = "windows")]
 
-use std::path::{Path, PathBuf};
-
-use log::error;
-use rai_pal_proc_macros::serializable_struct;
-use rusqlite::{Connection, OpenFlags};
-use serde::Deserialize;
-use winreg::{RegKey, enums::HKEY_LOCAL_MACHINE};
-
 use super::provider_command::{ProviderCommand, ProviderCommandAction};
 use crate::{
 	game::DbGame,
@@ -16,6 +8,12 @@ use crate::{
 	providers::provider::{ProviderActions, ProviderId, ProviderStatic},
 	result::Result,
 };
+use log::error;
+use rai_pal_proc_macros::serializable_struct;
+use rusqlite::{Connection, OpenFlags};
+use serde::Deserialize;
+use std::path::{Path, PathBuf};
+use winreg::{RegKey, enums::HKEY_LOCAL_MACHINE};
 
 #[derive(Clone)]
 struct GogDbEntry {

@@ -2,34 +2,58 @@ use std::{
 	collections::hash_map::DefaultHasher,
 	env,
 	ffi::OsStr,
-	hash::{Hash, Hasher},
-	path::{Path, PathBuf},
+	hash::{
+		Hash,
+		Hasher,
+	},
+	io,
+	path::{
+		Path,
+		PathBuf,
+	},
+	process::Stdio,
 };
 
-use directories::{BaseDirs, ProjectDirs};
+use directories::{
+	BaseDirs,
+	ProjectDirs,
+};
 use globwalk::glob;
 use log;
 
-use crate::result::{Error, Result};
+use crate::result::{
+	Error,
+	Result,
+};
 
 pub fn glob_path(path: &Path) -> Vec<PathBuf> {
-	match glob(path.to_string_lossy().as_ref()) {
-		Ok(walker) => walker
-			.into_iter()
-			.filter_map(|glob_result| match glob_result {
-				Ok(glob_entry) => Some(glob_entry.into_path()),
-				Err(err) => {
-					log::error!(
-						"Failed to resolve one of the globbed paths from glob '{}'. Error: {}",
-						path.display(),
-						err
-					);
-					None
-				}
-			})
-			.collect(),
+	match path.try_to_str() {
+		Ok(path_str) => match glob(path_str) {
+			Ok(walker) => walker
+				.into_iter()
+				.filter_map(|glob_result| match glob_result {
+					Ok(glob_entry) => Some(glob_entry.into_path()),
+					Err(err) => {
+						log::error!(
+							"Failed to resolve one of the globbed paths from glob '{}'. Error: {}",
+							path.display(),
+							err
+						);
+						None
+					}
+				})
+				.collect(),
+			Err(err) => {
+				log::error!("Failed to glob path `{}`. Error: {}", path.display(), err);
+				Vec::default()
+			}
+		},
 		Err(err) => {
-			log::error!("Failed to glob path `{}`. Error: {}", path.display(), err);
+			log::error!(
+				"Failed to convert path to str `{}`. Error: {}",
+				path.display(),
+				err
+			);
 			Vec::default()
 		}
 	}
@@ -52,7 +76,7 @@ pub fn logs_path() -> Result<PathBuf> {
 }
 
 pub fn open_logs_folder() -> Result {
-	Ok(open::that_detached(logs_path()?)?)
+	open_folder_or_parent(&logs_path()?)
 }
 
 pub fn installed_mods_path() -> Result<PathBuf> {
@@ -91,6 +115,29 @@ pub fn try_get_program_data_path() -> PathBuf {
 	})
 }
 
+// Weird workaround for AppImage builds.
+fn open_detached_clean_env(path: impl AsRef<OsStr>) -> Result {
+	let mut last_err = io::Error::new(io::ErrorKind::NotFound, "No command to open the path");
+
+	for mut cmd in open::commands(path) {
+		cmd.env_remove("LD_LIBRARY_PATH");
+		cmd.env_remove("QT_PLUGIN_PATH");
+		cmd.env_remove("APPDIR");
+		cmd.env_remove("APPIMAGE");
+
+		cmd.stdin(Stdio::null())
+			.stdout(Stdio::null())
+			.stderr(Stdio::null());
+
+		match cmd.spawn() {
+			Ok(_) => return Ok(()),
+			Err(e) => last_err = e,
+		}
+	}
+
+	Err(last_err.into())
+}
+
 pub fn open_folder_or_parent(path: &Path) -> Result {
 	let folder_path = if path.is_dir() {
 		path
@@ -100,7 +147,7 @@ pub fn open_folder_or_parent(path: &Path) -> Result {
 
 	// I've hard weird issues with non-normalized paths acting weird on Windows,
 	// normalizing seems to fix it.
-	Ok(open::that_detached(normalize_path(folder_path))?)
+	open_detached_clean_env(normalize_path(folder_path))
 }
 
 pub fn base_dirs() -> Result<BaseDirs> {

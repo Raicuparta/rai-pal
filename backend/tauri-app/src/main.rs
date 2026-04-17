@@ -35,9 +35,12 @@ use rai_pal_core::{
 		LocalMod,
 	},
 	maps::TryGettable,
-	mod_loaders::mod_loader::{
-		self,
-		ModLoaderActions,
+	mod_loaders::{
+		bepinex,
+		mod_loader::{
+			self,
+			ModLoaderActions,
+		},
 	},
 	paths::{
 		self,
@@ -469,12 +472,12 @@ async fn refresh_games(handle: AppHandle, provider_id: ProviderId) -> Result {
 		.unwrap()
 		.as_secs();
 
-	let provider = provider::get_provider(provider_id)?;
-
-	provider.insert_games(&state.database).await?;
-	state
-		.database
-		.remove_stale_games(&provider_id, start_time)?;
+	if let Some(provider) = provider::get_provider(provider_id) {
+		provider?.insert_games(&state.database).await?;
+		state
+			.database
+			.remove_stale_games(&provider_id, start_time)?;
+	}
 
 	Ok(())
 }
@@ -637,6 +640,20 @@ async fn download_remote_config(
 	Ok(())
 }
 
+#[tauri::command]
+#[specta::specta]
+async fn set_up_wine_bepinex_environment() -> Result {
+	#[cfg(not(target_os = "linux"))]
+	return Err(Error::LinuxOnly());
+
+	#[cfg(target_os = "linux")]
+	{
+		bepinex::set_up_proton_environment()?;
+
+		Ok(())
+	}
+}
+
 fn main() {
 	// Since I'm making all exposed functions async, panics won't crash anything important, I think.
 	// So I can just catch panics here and show a system message with the error.
@@ -681,6 +698,7 @@ fn main() {
 			uninstall_mod,
 			get_remote_configs,
 			download_remote_config,
+			set_up_wine_bepinex_environment,
 		])
 		.events(events::collect_events())
 		.constant("PROVIDER_IDS", ProviderId::iter().collect::<Vec<_>>())
@@ -688,6 +706,14 @@ fn main() {
 
 	#[cfg(debug_assertions)]
 	typescript::export(&builder);
+
+	#[cfg(target_os = "linux")]
+	unsafe {
+		// This is to fix this error:
+		// Error 71 (Protocol error) dispatching to Wayland display.
+		// Probably only needed for dev.
+		std::env::set_var("__NV_DISABLE_EXPLICIT_SYNC", "1");
+	}
 
 	tauri::Builder::default()
 		.plugin(tauri_plugin_shell::init())
@@ -751,11 +777,13 @@ fn main() {
 				let state = app_handle.app_state();
 				let database_connection = state.database.lock().unwrap();
 				let cloned_handle = app_handle.clone();
-				database_connection.update_hook(Some({
-					move |_, _: &str, _: &str, _| {
-						cloned_handle.emit_safe(events::GamesChanged());
-					}
-				}));
+				database_connection
+					.update_hook(Some({
+						move |_, _: &str, _: &str, _| {
+							cloned_handle.emit_safe(events::GamesChanged());
+						}
+					}))
+					.expect("Failed to set up local database.");
 			});
 
 			Ok(())

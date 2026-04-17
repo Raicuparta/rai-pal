@@ -1,6 +1,6 @@
 import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
-
+import react, { reactCompilerPreset } from "@vitejs/plugin-react";
+import babel from "@rolldown/plugin-babel";
 import tsconfig from "./tsconfig.json";
 
 function removeAsterisk(pathWithAsterisk: string) {
@@ -8,7 +8,7 @@ function removeAsterisk(pathWithAsterisk: string) {
 }
 
 function getAliasesFromTsconfig() {
-	const resolveAlias = {};
+	const resolveAlias: Record<string, string> = {};
 	for (const [key, [resolvePath]] of Object.entries(
 		tsconfig.compilerOptions.paths,
 	)) {
@@ -19,20 +19,7 @@ function getAliasesFromTsconfig() {
 }
 
 export default defineConfig(async () => ({
-	plugins: [
-		react({
-			babel: {
-				plugins: [
-					[
-						"babel-plugin-react-compiler",
-						{
-							target: "19",
-						},
-					],
-				],
-			},
-		}),
-	],
+	plugins: [react(), babel({ presets: [reactCompilerPreset()] })],
 	resolve: {
 		alias: getAliasesFromTsconfig(),
 	},

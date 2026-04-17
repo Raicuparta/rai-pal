@@ -13,7 +13,7 @@ use crate::{
 	local_database::DbMutex,
 	paths,
 	providers::{itch_provider::Itch, manual_provider::Manual, steam::steam_provider::Steam},
-	result::{Error, Result},
+	result::Result,
 };
 
 // These IDs need to match the ones in rai-pal-db.
@@ -93,11 +93,15 @@ pub trait ProviderStatic: ProviderActions {
 	}
 }
 
-pub fn get_provider(provider_id: ProviderId) -> Result<Provider> {
+pub fn get_provider(provider_id: ProviderId) -> Option<Result<Provider>> {
 	for &(id, create_provider) in PROVIDERS {
 		if id == provider_id {
-			return create_provider();
+			return Some(create_provider());
 		}
 	}
-	Err(Error::InvalidProviderId(provider_id.to_string()))
+	log::info!(
+		"Failed to find provider with ID `{provider_id}`. It's probably not supported in this platform."
+	);
+
+	None
 }

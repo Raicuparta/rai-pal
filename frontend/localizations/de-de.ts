@@ -173,6 +173,15 @@ export const deDe: Localization = {
 			"Die Cache-Datei wurde gelöscht. Bitte starten Sie Steam neu, warten Sie ein paar Sekunden und drücken Sie dann die Aktualisierungstaste in Rai Pal.",
 	},
 
+	wineBepInExEnvironment: {
+		setUpEnvironmentButton: "Linux-Umgebung für BepInEx einrichten",
+		setUpEnvironmentTitle: "Linux-Umgebung für BepInEx einrichten",
+		setUpEnvironmentDescription:
+			"Bei Verwendung von Proton/Wine unter Linux wird BepInEx nicht automatisch geladen, es sei denn, einige Wine-Einstellungen sind gesetzt. Dies setzt die Umgebungsvariable WINEDLLOVERRIDES global auf 'winhttp.dll=n,b'. Wenn Sie das lieber manuell machen möchten, klicken Sie nicht auf diese Schaltfläche.",
+		setUpEnvironmentSuccess:
+			"Die Datei wurde geschrieben. Sie müssen sich abmelden und wieder anmelden oder Ihren Computer neu starten, damit die Änderungen wirksam werden.",
+	},
+
 	debugData: {
 		debugDataTitle: "Debug-Daten",
 		debugDataCopy: "Debug-Daten kopieren",

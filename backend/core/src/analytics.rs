@@ -1,11 +1,10 @@
+use crate::http;
+use log::{error, info};
+use serde::Serialize;
 use std::{
 	sync::LazyLock,
 	time::{SystemTime, UNIX_EPOCH},
 };
-
-use log::{error, info};
-use reqwest::Client;
-use serde::Serialize;
 use uuid::Uuid;
 
 const MEASUREMENT_ID: &str = "G-KTJZNR0ZET";
@@ -66,10 +65,9 @@ pub async fn send_event(event_name: Event, data: &str) {
 		let url = format!(
 			"https://www.google-analytics.com/mp/collect?measurement_id={MEASUREMENT_ID}&api_secret={api_key}"
 		);
-		let client = Client::new();
 		let payload = AnalyticsPayload::new(&event_name, data);
 		info!("Sending {payload:?}");
-		let resp = client.post(url).json(&payload).send().await;
+		let resp = http::CLIENT.post(url).json(&payload).send().await;
 		match resp {
 			Ok(resp) => {
 				if resp.status().is_success() {

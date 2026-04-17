@@ -230,6 +230,29 @@ impl GameDatabase for DbMutex {
 					filters.push(format!("({})", backend_conditions.join(" OR ")));
 				}
 			}
+
+			if !filter.architectures.is_empty() {
+				let mut arch_conditions = Vec::new();
+
+				if filter.architectures.contains(&None) {
+					arch_conditions.push("ig.architecture IS NULL".to_string());
+				}
+
+				let arch_values: Vec<String> = filter
+					.architectures
+					.iter()
+					.filter_map(|arch| arch.as_ref().map(|a| format!("'{a}'")))
+					.collect();
+
+				if !arch_values.is_empty() {
+					arch_conditions
+						.push(format!("ig.architecture IN ({})", arch_values.join(", ")));
+				}
+
+				if !arch_conditions.is_empty() {
+					filters.push(format!("({})", arch_conditions.join(" OR ")));
+				}
+			}
 		}
 
 		let trimmed_search = search.trim();
@@ -302,7 +325,7 @@ impl GameDatabase for DbMutex {
 	fn remove_stale_games(&self, provider_id: &ProviderId, max_time: u64) -> Result {
 		self.lock_db()?
 			.prepare_cached("DELETE FROM main.games WHERE provider_id = $1 AND created_at < $2;")?
-			.execute(rusqlite::params![provider_id, max_time as i64])?;
+			.execute(rusqlite::params![provider_id, max_time.cast_signed()])?;
 
 		Ok(())
 	}
@@ -442,6 +465,7 @@ pub fn create() -> Result<DbMutex> {
 		);
 
 		CREATE INDEX IF NOT EXISTS idx_normalized_titles ON normalized_titles(provider_id, game_id);
+		CREATE INDEX IF NOT EXISTS idx_normalized_titles_title ON normalized_titles(normalized_title);
 
 		CREATE TABLE IF NOT EXISTS installed_games (
 			provider_id TEXT NOT NULL,
