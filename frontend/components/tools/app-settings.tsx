@@ -29,6 +29,7 @@ import { platform } from "@tauri-apps/plugin-os";
 import { WineBepInExEnvironmentModal } from "./wine-bepinex-environment-modal";
 import { useDisclosure } from "@mantine/hooks";
 import { WineBepInExEnvironmentButton } from "./wine-bepinex-environment-button";
+import { SteamCacheModal } from "./steam-cache-modal";
 
 const locales: AppLocale[] = [
 	"EnUs",
@@ -50,6 +51,10 @@ export function AppSettings() {
 		isBepInExEnvironmentModalOpen,
 		{ open: openBepInExEnvironmentModal, close: closeBepInExEnvironmentModal },
 	] = useDisclosure(false);
+	const [
+		isSteamCacheModalOpen,
+		{ open: openSteamCacheModal, close: closeSteamCacheModal },
+	] = useDisclosure(false);
 
 	const localeSelectValues = locales.map((locale) => ({
 		value: locale as string,
@@ -60,7 +65,6 @@ export function AppSettings() {
 		<>
 			<Menu
 				closeOnItemClick={true}
-				// withinPortal={false}
 				keepMounted={true}
 				withOverlay={false}
 			>
@@ -97,7 +101,7 @@ export function AppSettings() {
 					>
 						{t("openLogsFolderButton")}
 					</Menu.Item>
-					<SteamCacheButton />
+					<SteamCacheButton onClick={openSteamCacheModal} />
 					<Tooltip
 						label={t("resetRaiPalSettingsTooltip")}
 						position="bottom"
@@ -120,7 +124,6 @@ export function AppSettings() {
 							<Group>
 								<span>{t("language")}</span>
 								<IconLanguage />
-
 								{/* 
 							The text below is purposely left untranslated to make it easier to find,
 							in case the user doesn't speak the currently selected language.
@@ -158,6 +161,10 @@ export function AppSettings() {
 					</NativeSelect>
 				</Menu.Dropdown>
 			</Menu>
+			<SteamCacheModal
+				isOpen={isSteamCacheModalOpen}
+				onClose={closeSteamCacheModal}
+			/>
 			{platform() === "linux" && (
 				<WineBepInExEnvironmentModal
 					isOpen={isBepInExEnvironmentModalOpen}
