@@ -230,6 +230,29 @@ impl GameDatabase for DbMutex {
 					filters.push(format!("({})", backend_conditions.join(" OR ")));
 				}
 			}
+
+			if !filter.architectures.is_empty() {
+				let mut arch_conditions = Vec::new();
+
+				if filter.architectures.contains(&None) {
+					arch_conditions.push("ig.architecture IS NULL".to_string());
+				}
+
+				let arch_values: Vec<String> = filter
+					.architectures
+					.iter()
+					.filter_map(|arch| arch.as_ref().map(|a| format!("'{a}'")))
+					.collect();
+
+				if !arch_values.is_empty() {
+					arch_conditions
+						.push(format!("ig.architecture IN ({})", arch_values.join(", ")));
+				}
+
+				if !arch_conditions.is_empty() {
+					filters.push(format!("({})", arch_conditions.join(" OR ")));
+				}
+			}
 		}
 
 		let trimmed_search = search.trim();
