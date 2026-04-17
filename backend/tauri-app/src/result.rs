@@ -43,8 +43,8 @@ pub enum Error {
 	#[error("Failed to access state data: `{0}`")]
 	FailedToAccessStateData(String),
 
-	#[cfg(not(target_os = "linux"))]
 	#[error("Not supported on current platform. Linux only.")]
+	#[allow(dead_code)] // Unused on Linux.
 	LinuxOnly(),
 }
 
