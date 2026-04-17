@@ -172,21 +172,13 @@ export const ptPt: Localization = {
 			"O ficheiro de cache foi apagado. Reinicia a Steam, espera alguns segundos e depois clica no botão de atualização no Rai Pal.",
 	},
 
-	// Button and modal for making sure BepInEx loads on Linux with Wine.
 	wineBepInExEnvironment: {
-		// Button that sets up the Linux environment for BepInEx.
-		setUpEnvironmentButton: "Set up Linux environment for BepInEx",
-
-		// Title of the modal that opens after clicking the set up Linux environment button.
-		setUpEnvironmentTitle: "Set up Linux environment for BepInEx",
-
-		// Description of what setting up the Linux environment for BepInEx does.
+		setUpEnvironmentButton: "Configurar ambiente Linux para o BepInEx",
+		setUpEnvironmentTitle: "Configurar ambiente Linux para o BepInEx",
 		setUpEnvironmentDescription:
-			"When using Proton/Wine on Linux, BepInEx won't load automatically unless some Wine settings are set. This will set the environment variable WINEDLLOVERRIDES to 'winhttp.dll=n,b' globally. If you'd rather do that manually, then don't click this button.",
-
-		// Success message after setting up the Linux environment for BepInEx.
+			"Ao usar Proton/Wine no Linux, o BepInEx não será carregado automaticamente a menos que algumas definições do Wine estejam configuradas. Isto irá definir a variável de ambiente WINEDLLOVERRIDES para 'winhttp.dll=n,b' globalmente. Se preferires fazer isso manualmente, não cliques neste botão.",
 		setUpEnvironmentSuccess:
-			"File has been written. You will need to log out and log back in, or restart your computer, for the changes to take effect.",
+			"O ficheiro foi escrito. Precisas de terminar sessão e voltar a iniciar, ou reiniciar o computador, para que as alterações tenham efeito.",
 	},
 
 	debugData: {

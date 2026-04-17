@@ -162,21 +162,13 @@ export const zhCn: Localization = {
 			"缓存文件已被删除。请重新启动 Steam，等待几秒钟，然后按 Rai Pal 上的刷新按钮。",
 	},
 
-	// Button and modal for making sure BepInEx loads on Linux with Wine.
 	wineBepInExEnvironment: {
-		// Button that sets up the Linux environment for BepInEx.
-		setUpEnvironmentButton: "Set up Linux environment for BepInEx",
-
-		// Title of the modal that opens after clicking the set up Linux environment button.
-		setUpEnvironmentTitle: "Set up Linux environment for BepInEx",
-
-		// Description of what setting up the Linux environment for BepInEx does.
+		setUpEnvironmentButton: "为 BepInEx 设置 Linux 环境",
+		setUpEnvironmentTitle: "为 BepInEx 设置 Linux 环境",
 		setUpEnvironmentDescription:
-			"When using Proton/Wine on Linux, BepInEx won't load automatically unless some Wine settings are set. This will set the environment variable WINEDLLOVERRIDES to 'winhttp.dll=n,b' globally. If you'd rather do that manually, then don't click this button.",
-
-		// Success message after setting up the Linux environment for BepInEx.
+			"在 Linux 上使用 Proton/Wine 时，除非设置了一些 Wine 配置，否则 BepInEx 不会自动加载。此操作将全局设置环境变量 WINEDLLOVERRIDES 为 'winhttp.dll=n,b'。如果您想手动设置，请不要点击此按钮。",
 		setUpEnvironmentSuccess:
-			"File has been written. You will need to log out and log back in, or restart your computer, for the changes to take effect.",
+			"文件已写入。您需要注销并重新登录，或重新启动计算机，更改才能生效。",
 	},
 
 	debugData: {

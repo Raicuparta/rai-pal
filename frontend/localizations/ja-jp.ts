@@ -172,21 +172,13 @@ export const jaJp: Localization = {
 			"キャッシュファイルが削除されました。Steamを再起動し、数秒待ってからRai Palの更新ボタンを押してください。",
 	},
 
-	// Button and modal for making sure BepInEx loads on Linux with Wine.
 	wineBepInExEnvironment: {
-		// Button that sets up the Linux environment for BepInEx.
-		setUpEnvironmentButton: "Set up Linux environment for BepInEx",
-
-		// Title of the modal that opens after clicking the set up Linux environment button.
-		setUpEnvironmentTitle: "Set up Linux environment for BepInEx",
-
-		// Description of what setting up the Linux environment for BepInEx does.
+		setUpEnvironmentButton: "BepInEx用のLinux環境をセットアップ",
+		setUpEnvironmentTitle: "BepInEx用のLinux環境をセットアップ",
 		setUpEnvironmentDescription:
-			"When using Proton/Wine on Linux, BepInEx won't load automatically unless some Wine settings are set. This will set the environment variable WINEDLLOVERRIDES to 'winhttp.dll=n,b' globally. If you'd rather do that manually, then don't click this button.",
-
-		// Success message after setting up the Linux environment for BepInEx.
+			"LinuxでProton/Wineを使用している場合、Wineの設定が行われていないとBepInExは自動的に読み込まれません。これにより、環境変数WINEDLLOVERRIDESがグローバルに'winhttp.dll=n,b'に設定されます。手動で設定したい場合は、このボタンをクリックしないでください。",
 		setUpEnvironmentSuccess:
-			"File has been written. You will need to log out and log back in, or restart your computer, for the changes to take effect.",
+			"ファイルが書き込まれました。変更を有効にするには、ログアウトして再ログインするか、コンピューターを再起動する必要があります。",
 	},
 
 	debugData: {
