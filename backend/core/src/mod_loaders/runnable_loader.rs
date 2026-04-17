@@ -1,21 +1,44 @@
 use std::{
-	path::{Path, PathBuf},
+	path::{
+		Path,
+		PathBuf,
+	},
 	process::Command,
 };
 
 use log::error;
-use rai_pal_proc_macros::{serializable_enum, serializable_struct};
+use rai_pal_proc_macros::{
+	serializable_enum,
+	serializable_struct,
+};
 
-use super::mod_loader::{ModLoaderActions, ModLoaderData, ModLoaderStatic};
+use super::mod_loader::{
+	ModLoaderActions,
+	ModLoaderData,
+	ModLoaderStatic,
+};
 use crate::{
 	game::DbGame,
 	game_mod::CommonModData,
-	local_mod::{self, LocalMod, ModKind},
+	local_mod::{
+		self,
+		LocalMod,
+		ModKind,
+	},
 	mod_loaders::mod_database::ModConfigs,
 	mod_manifest,
-	paths::{self, glob_path},
-	providers::provider_command::{ProviderCommand, ProviderCommandAction},
-	result::{Error, Result},
+	paths::{
+		self,
+		glob_path,
+	},
+	providers::provider_command::{
+		ProviderCommand,
+		ProviderCommandAction,
+	},
+	result::{
+		Error,
+		Result,
+	},
 };
 
 #[serializable_struct]
@@ -187,7 +210,7 @@ impl ModLoaderActions for RunnableLoader {
 	fn open_installed_mod_folder(&self, _game: &DbGame, local_mod: &LocalMod) -> Result {
 		let mod_folder = self.get_mod_path(&local_mod.common)?;
 
-		Ok(open::that_detached(mod_folder)?)
+		paths::open_folder_or_parent(&mod_folder)
 	}
 
 	fn get_mod_path(&self, mod_data: &CommonModData) -> Result<PathBuf> {

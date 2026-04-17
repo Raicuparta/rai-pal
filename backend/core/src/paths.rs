@@ -76,7 +76,7 @@ pub fn logs_path() -> Result<PathBuf> {
 }
 
 pub fn open_logs_folder() -> Result {
-	Ok(open::that_detached(logs_path()?)?)
+	open_folder_or_parent(&logs_path()?)
 }
 
 pub fn installed_mods_path() -> Result<PathBuf> {
