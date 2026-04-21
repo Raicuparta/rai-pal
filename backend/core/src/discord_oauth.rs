@@ -39,13 +39,8 @@ use crate::{
 const DISCORD_AUTH_BASE_URL: &str = "https://discord.com/oauth2/authorize";
 const DISCORD_TOKEN_URL: &str = "https://discord.com/api/oauth2/token";
 const DISCORD_USER_URL: &str = "https://discord.com/api/users/@me";
-
-#[derive(Debug, Clone)]
-pub struct DiscordOAuthConfig {
-	pub client_id: String,
-	pub client_secret: Option<String>,
-	pub callback_port: u16,
-}
+const DISCORD_CLIENT_ID: &str = "1464045413920276694";
+const DISCORD_CALLBACK_PORT: u16 = 43941;
 
 #[derive(Clone, Debug, serde::Serialize, specta::Type)]
 pub struct DiscordOAuthResult {
@@ -240,22 +235,17 @@ fn parse_oauth_callback(
 
 async fn exchange_code_for_discord_token(
 	client_id: &str,
-	client_secret: Option<&str>,
 	code: &str,
 	redirect_uri: &str,
 	code_verifier: &str,
 ) -> Result<DiscordTokenResponse> {
-	let mut form_data = vec![
+	let form_data = vec![
 		("client_id".to_string(), client_id.to_string()),
 		("grant_type".to_string(), "authorization_code".to_string()),
 		("code".to_string(), code.to_string()),
 		("redirect_uri".to_string(), redirect_uri.to_string()),
 		("code_verifier".to_string(), code_verifier.to_string()),
 	];
-
-	if let Some(secret) = client_secret {
-		form_data.push(("client_secret".to_string(), secret.to_string()));
-	}
 
 	let response = http::CLIENT
 		.post(DISCORD_TOKEN_URL)
@@ -391,18 +381,13 @@ fn read_discord_token_file() -> Result<DiscordSavedToken> {
 
 async fn exchange_refresh_token_for_discord_token(
 	client_id: &str,
-	client_secret: Option<&str>,
 	refresh_token: &str,
 ) -> Result<DiscordTokenResponse> {
-	let mut form_data = vec![
+	let form_data = vec![
 		("client_id".to_string(), client_id.to_string()),
 		("grant_type".to_string(), "refresh_token".to_string()),
 		("refresh_token".to_string(), refresh_token.to_string()),
 	];
-
-	if let Some(secret) = client_secret {
-		form_data.push(("client_secret".to_string(), secret.to_string()));
-	}
 
 	let response = http::CLIENT
 		.post(DISCORD_TOKEN_URL)
@@ -426,7 +411,7 @@ async fn exchange_refresh_token_for_discord_token(
 	Ok(response.json::<DiscordTokenResponse>().await?)
 }
 
-pub async fn refresh_discord_token_if_possible(config: DiscordOAuthConfig) -> Result<bool> {
+pub async fn refresh_discord_token_if_possible() -> Result<bool> {
 	let token_file_path = get_user_file_path()?;
 	if !token_file_path.exists() {
 		log::debug!(
@@ -442,12 +427,8 @@ pub async fn refresh_discord_token_if_possible(config: DiscordOAuthConfig) -> Re
 		return Ok(false);
 	};
 
-	let token_response = exchange_refresh_token_for_discord_token(
-		&config.client_id,
-		config.client_secret.as_deref(),
-		&refresh_token,
-	)
-	.await?;
+	let token_response =
+		exchange_refresh_token_for_discord_token(DISCORD_CLIENT_ID, &refresh_token).await?;
 
 	let now = SystemTime::now()
 		.duration_since(UNIX_EPOCH)
@@ -503,21 +484,20 @@ pub fn logout_discord() -> Result {
 	Ok(())
 }
 
-pub async fn start_discord_oauth(config: DiscordOAuthConfig) -> Result<DiscordOAuthResult> {
-	let listener = TcpListener::bind(("127.0.0.1", config.callback_port)).map_err(|error| {
+pub async fn start_discord_oauth() -> Result<DiscordOAuthResult> {
+	let listener = TcpListener::bind(("127.0.0.1", DISCORD_CALLBACK_PORT)).map_err(|error| {
 		Error::DiscordOAuth(format!(
-			"Failed to bind callback port {}. Is another process using it? Error: {error}",
-			config.callback_port
+			"Failed to bind callback port {DISCORD_CALLBACK_PORT}. Is another process using it? Error: {error}"
 		))
 	})?;
-	let redirect_uri = format!("http://127.0.0.1:{}/discord/callback", config.callback_port);
+	let redirect_uri = format!("http://127.0.0.1:{DISCORD_CALLBACK_PORT}/discord/callback");
 
 	let state = create_oauth_nonce();
 	let code_verifier = create_pkce_code_verifier();
 	let code_challenge = URL_SAFE_NO_PAD.encode(sha2::Sha256::digest(code_verifier.as_bytes()));
 
 	let auth_url =
-		build_discord_auth_url(&config.client_id, &redirect_uri, &state, &code_challenge)?;
+		build_discord_auth_url(DISCORD_CLIENT_ID, &redirect_uri, &state, &code_challenge)?;
 
 	log::info!("Starting Discord OAuth flow. Redirect URI: {redirect_uri}");
 	open::that_detached(auth_url)?;
@@ -527,8 +507,7 @@ pub async fn start_discord_oauth(config: DiscordOAuthConfig) -> Result<DiscordOA
 	log::info!("Received Discord OAuth callback. Exchanging code for token...");
 
 	let token_response = exchange_code_for_discord_token(
-		&config.client_id,
-		config.client_secret.as_deref(),
+		DISCORD_CLIENT_ID,
 		&auth_code,
 		&redirect_uri,
 		&code_verifier,

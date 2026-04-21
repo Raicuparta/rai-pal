@@ -27,7 +27,6 @@ use rai_pal_core::{
 	analytics,
 	discord_oauth::{
 		DiscordAuthState,
-		DiscordOAuthConfig,
 		DiscordOAuthResult,
 	},
 	game::DbGame,
@@ -94,29 +93,12 @@ mod result;
 #[cfg(debug_assertions)]
 mod typescript;
 
-const DISCORD_CALLBACK_DEFAULT_PORT: u16 = 43941;
 const DISCORD_TOKEN_REFRESH_INTERVAL: Duration = Duration::from_secs(60 * 60);
-
-fn discord_oauth_config() -> DiscordOAuthConfig {
-	let client_id =
-		std::env::var("DISCORD_CLIENT_ID").unwrap_or_else(|_| "1464045413920276694".to_string());
-	let client_secret = std::env::var("DISCORD_CLIENT_SECRET").ok();
-	let callback_port = std::env::var("DISCORD_OAUTH_PORT")
-		.ok()
-		.and_then(|value| value.parse::<u16>().ok())
-		.unwrap_or(DISCORD_CALLBACK_DEFAULT_PORT);
-
-	DiscordOAuthConfig {
-		client_id,
-		client_secret,
-		callback_port,
-	}
-}
 
 #[tauri::command]
 #[specta::specta]
 async fn start_discord_oauth() -> Result<DiscordOAuthResult> {
-	rai_pal_core::discord_oauth::start_discord_oauth(discord_oauth_config())
+	rai_pal_core::discord_oauth::start_discord_oauth()
 		.await
 		.map_err(Into::into)
 }
@@ -798,9 +780,7 @@ fn main() {
 			thread::spawn(|| {
 				loop {
 					let refresh_result = tauri::async_runtime::block_on(
-						rai_pal_core::discord_oauth::refresh_discord_token_if_possible(
-							discord_oauth_config(),
-						),
+						rai_pal_core::discord_oauth::refresh_discord_token_if_possible(),
 					);
 
 					match refresh_result {

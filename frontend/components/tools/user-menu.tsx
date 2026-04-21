@@ -1,14 +1,8 @@
-import { commands } from "@api/bindings";
+import { commands, DiscordAuthState } from "@api/bindings";
 import { invoke, convertFileSrc } from "@tauri-apps/api/core";
 import { Avatar, Button, Menu, Text } from "@mantine/core";
 import { IconUserCircle } from "@tabler/icons-react";
 import { useCallback, useEffect, useState } from "react";
-
-type DiscordAuthState = {
-	is_logged_in: boolean;
-	avatar_file_path: string | null;
-	user_name: string | null;
-};
 
 async function getDiscordAuthState(): Promise<DiscordAuthState> {
 	return commands.getDiscordAuthState() as Promise<DiscordAuthState>;
