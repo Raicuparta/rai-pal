@@ -7,7 +7,9 @@ import * as __TAURI_EVENT from "@tauri-apps/api/event";
 export const commands = {
 	addGame: (path: string) => __TAURI_INVOKE<null>("add_game", { path }),
 	configureMod: (providerId: ProviderId, gameId: string, modId: string, openFolder: boolean) => __TAURI_INVOKE<null>("configure_mod", { providerId, gameId, modId, openFolder }),
+	getDiscordAuthState: () => __TAURI_INVOKE<DiscordAuthState>("get_discord_auth_state"),
 	startDiscordOauth: () => __TAURI_INVOKE<DiscordOAuthResult>("start_discord_oauth"),
+	logoutDiscord: () => __TAURI_INVOKE<null>("logout_discord"),
 	deleteMod: (modId: string) => __TAURI_INVOKE<null>("delete_mod", { modId }),
 	downloadMod: (modId: string) => __TAURI_INVOKE<null>("download_mod", { modId }),
 	frontendReady: () => __TAURI_INVOKE<null>("frontend_ready"),
@@ -102,6 +104,11 @@ export type DbGame = {
 	architecture: Architecture | null,
 	tags: JsonData<GameTag[]>,
 	providerCommands: JsonData<Partial<{ [key in ProviderCommandAction]: ProviderCommand }>>,
+};
+
+export type DiscordAuthState = {
+	is_logged_in: boolean,
+	avatar_file_path: string | null,
 };
 
 export type DiscordOAuthResult = {

@@ -6,7 +6,10 @@ use std::{
 		Write,
 	},
 	net::TcpListener,
-	path::PathBuf,
+	path::{
+		Path,
+		PathBuf,
+	},
 	thread,
 	time::{
 		Duration,
@@ -35,6 +38,7 @@ use crate::{
 
 const DISCORD_AUTH_BASE_URL: &str = "https://discord.com/oauth2/authorize";
 const DISCORD_TOKEN_URL: &str = "https://discord.com/api/oauth2/token";
+const DISCORD_USER_URL: &str = "https://discord.com/api/users/@me";
 
 #[derive(Debug, Clone)]
 pub struct DiscordOAuthConfig {
@@ -50,6 +54,12 @@ pub struct DiscordOAuthResult {
 	pub scope: String,
 	pub expires_in: u64,
 	pub access_token_preview: String,
+}
+
+#[derive(Clone, Debug, serde::Serialize, specta::Type)]
+pub struct DiscordAuthState {
+	pub is_logged_in: bool,
+	pub avatar_file_path: Option<String>,
 }
 
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
@@ -71,6 +81,12 @@ struct DiscordTokenResponse {
 	scope: String,
 }
 
+#[derive(Debug, serde::Deserialize)]
+struct DiscordUserResponse {
+	id: String,
+	avatar: Option<String>,
+}
+
 #[derive(Debug, Deserialize)]
 struct OAuthCallbackQuery {
 	code: Option<String>,
@@ -80,6 +96,12 @@ struct OAuthCallbackQuery {
 
 fn create_oauth_nonce() -> String {
 	Uuid::new_v4().simple().to_string()
+}
+
+fn create_pkce_code_verifier() -> String {
+	// PKCE verifier must be 43..=128 chars and use unreserved URL-safe characters.
+	// UUID simple values are [0-9a-f], so concatenating two yields a valid 64-char verifier.
+	format!("{}{}", Uuid::new_v4().simple(), Uuid::new_v4().simple())
 }
 
 fn build_discord_auth_url(
@@ -262,6 +284,83 @@ fn get_discord_token_file_path() -> Result<PathBuf> {
 	Ok(paths::app_data_path()?.join("discord-oauth-token.json"))
 }
 
+fn get_discord_avatar_file_path() -> Result<PathBuf> {
+	Ok(paths::app_data_path()?.join("discord-avatar.png"))
+}
+
+fn delete_file_if_exists(path: &Path) -> Result {
+	if path.exists() {
+		fs::remove_file(path)?;
+	}
+
+	Ok(())
+}
+
+async fn fetch_discord_user(access_token: &str) -> Result<DiscordUserResponse> {
+	let response = http::CLIENT
+		.get(DISCORD_USER_URL)
+		.bearer_auth(access_token)
+		.send()
+		.await?;
+
+	if !response.status().is_success() {
+		let status = response.status();
+		let body = response
+			.text()
+			.await
+			.unwrap_or_else(|_| "<failed to read body>".to_string());
+
+		return Err(Error::DiscordOAuth(format!(
+			"Failed to fetch Discord user profile ({status}): {body}"
+		)));
+	}
+
+	Ok(response.json::<DiscordUserResponse>().await?)
+}
+
+async fn download_and_save_discord_avatar(
+	access_token: &str,
+	user: &DiscordUserResponse,
+) -> Result<Option<String>> {
+	let avatar_file_path = get_discord_avatar_file_path()?;
+
+	let Some(avatar_hash) = user.avatar.as_ref() else {
+		delete_file_if_exists(&avatar_file_path)?;
+		return Ok(None);
+	};
+
+	let avatar_url = format!(
+		"https://cdn.discordapp.com/avatars/{}/{avatar_hash}.png?size=128",
+		user.id
+	);
+
+	let response = http::CLIENT
+		.get(avatar_url)
+		.bearer_auth(access_token)
+		.send()
+		.await?;
+
+	if !response.status().is_success() {
+		let status = response.status();
+		let body = response
+			.text()
+			.await
+			.unwrap_or_else(|_| "<failed to read body>".to_string());
+
+		return Err(Error::DiscordOAuth(format!(
+			"Failed to download Discord avatar ({status}): {body}"
+		)));
+	}
+
+	if let Some(parent) = avatar_file_path.parent() {
+		fs::create_dir_all(parent)?;
+	}
+
+	fs::write(&avatar_file_path, response.bytes().await?)?;
+
+	Ok(Some(avatar_file_path.display().to_string()))
+}
+
 fn read_discord_token_file() -> Result<DiscordSavedToken> {
 	let token_file_path = get_discord_token_file_path()?;
 	let token_contents = fs::read_to_string(&token_file_path).map_err(|error| {
@@ -365,6 +464,32 @@ pub async fn refresh_discord_token_if_possible(config: DiscordOAuthConfig) -> Re
 	Ok(true)
 }
 
+pub fn get_discord_auth_state() -> Result<DiscordAuthState> {
+	let token_file_path = get_discord_token_file_path()?;
+	if !token_file_path.exists() {
+		return Ok(DiscordAuthState {
+			is_logged_in: false,
+			avatar_file_path: None,
+		});
+	}
+
+	let avatar_file_path = get_discord_avatar_file_path()?;
+
+	Ok(DiscordAuthState {
+		is_logged_in: true,
+		avatar_file_path: avatar_file_path
+			.exists()
+			.then(|| avatar_file_path.display().to_string()),
+	})
+}
+
+pub fn logout_discord() -> Result {
+	delete_file_if_exists(&get_discord_token_file_path()?)?;
+	delete_file_if_exists(&get_discord_avatar_file_path()?)?;
+
+	Ok(())
+}
+
 pub async fn start_discord_oauth(config: DiscordOAuthConfig) -> Result<DiscordOAuthResult> {
 	let listener = TcpListener::bind(("127.0.0.1", config.callback_port)).map_err(|error| {
 		Error::DiscordOAuth(format!(
@@ -375,7 +500,7 @@ pub async fn start_discord_oauth(config: DiscordOAuthConfig) -> Result<DiscordOA
 	let redirect_uri = format!("http://127.0.0.1:{}/discord/callback", config.callback_port);
 
 	let state = create_oauth_nonce();
-	let code_verifier = create_oauth_nonce();
+	let code_verifier = create_pkce_code_verifier();
 	let code_challenge = URL_SAFE_NO_PAD.encode(sha2::Sha256::digest(code_verifier.as_bytes()));
 
 	let auth_url =
@@ -413,6 +538,12 @@ pub async fn start_discord_oauth(config: DiscordOAuthConfig) -> Result<DiscordOA
 
 	let token_path = save_discord_token_file(&token_to_save)?;
 	log::info!("Saved Discord OAuth token at: {}", token_path.display());
+
+	let user = fetch_discord_user(&token_response.access_token).await?;
+	let avatar_path = download_and_save_discord_avatar(&token_response.access_token, &user).await?;
+	if let Some(path) = avatar_path {
+		log::info!("Saved Discord avatar at: {path}");
+	}
 
 	let preview: String = token_response.access_token.chars().take(8).collect();
 

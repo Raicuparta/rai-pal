@@ -26,6 +26,7 @@ use rai_pal_core::windows;
 use rai_pal_core::{
 	analytics,
 	discord_oauth::{
+		DiscordAuthState,
 		DiscordOAuthConfig,
 		DiscordOAuthResult,
 	},
@@ -118,6 +119,18 @@ async fn start_discord_oauth() -> Result<DiscordOAuthResult> {
 	rai_pal_core::discord_oauth::start_discord_oauth(discord_oauth_config())
 		.await
 		.map_err(Into::into)
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn get_discord_auth_state() -> Result<DiscordAuthState> {
+	rai_pal_core::discord_oauth::get_discord_auth_state().map_err(Into::into)
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn logout_discord() -> Result {
+	rai_pal_core::discord_oauth::logout_discord().map_err(Into::into)
 }
 
 #[tauri::command]
@@ -701,7 +714,9 @@ fn main() {
 		.commands(tauri_specta::collect_commands![
 			add_game,
 			configure_mod,
+			get_discord_auth_state,
 			start_discord_oauth,
+			logout_discord,
 			delete_mod,
 			download_mod,
 			frontend_ready,

@@ -19,7 +19,7 @@ rusqlite.workspace = true
 strum.workspace = true
 
 specta-typescript = "0.0.11"
-tauri = { version = "2.10.3", features = ["config-toml"] }
+tauri = { version = "2.10.3", features = ["protocol-asset", "config-toml"] }
 tauri-plugin-dialog = "2.7.0"
 tauri-plugin-log = "2.8.0"
 tauri-plugin-shell = "2.3.5"
