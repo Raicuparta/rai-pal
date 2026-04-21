@@ -60,6 +60,7 @@ pub struct DiscordOAuthResult {
 pub struct DiscordAuthState {
 	pub is_logged_in: bool,
 	pub avatar_file_path: Option<String>,
+	pub user_name: Option<String>,
 }
 
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
@@ -70,6 +71,8 @@ struct DiscordSavedToken {
 	refresh_token: Option<String>,
 	scope: String,
 	received_at_unix_seconds: u64,
+	#[serde(default)]
+	user_name: Option<String>,
 }
 
 #[derive(Debug, serde::Deserialize)]
@@ -84,7 +87,15 @@ struct DiscordTokenResponse {
 #[derive(Debug, serde::Deserialize)]
 struct DiscordUserResponse {
 	id: String,
+	username: String,
+	global_name: Option<String>,
 	avatar: Option<String>,
+}
+
+fn discord_user_display_name(user: &DiscordUserResponse) -> String {
+	user.global_name
+		.clone()
+		.unwrap_or_else(|| user.username.clone())
 }
 
 #[derive(Debug, Deserialize)]
@@ -453,6 +464,7 @@ pub async fn refresh_discord_token_if_possible(config: DiscordOAuthConfig) -> Re
 		refresh_token: token_response.refresh_token.or(Some(refresh_token)),
 		scope: token_response.scope,
 		received_at_unix_seconds: now,
+		user_name: saved_token.user_name,
 	};
 
 	let refreshed_path = save_discord_token_file(&refreshed_token)?;
@@ -470,8 +482,11 @@ pub fn get_discord_auth_state() -> Result<DiscordAuthState> {
 		return Ok(DiscordAuthState {
 			is_logged_in: false,
 			avatar_file_path: None,
+			user_name: None,
 		});
 	}
+
+	let saved_token = read_discord_token_file()?;
 
 	let avatar_file_path = get_discord_avatar_file_path()?;
 
@@ -480,6 +495,7 @@ pub fn get_discord_auth_state() -> Result<DiscordAuthState> {
 		avatar_file_path: avatar_file_path
 			.exists()
 			.then(|| avatar_file_path.display().to_string()),
+		user_name: saved_token.user_name,
 	})
 }
 
@@ -527,19 +543,22 @@ pub async fn start_discord_oauth(config: DiscordOAuthConfig) -> Result<DiscordOA
 		.map_err(|error| Error::DiscordOAuth(format!("Clock error: {error}")))?
 		.as_secs();
 
-	let token_to_save = DiscordSavedToken {
+	let mut token_to_save = DiscordSavedToken {
 		access_token: token_response.access_token.clone(),
 		token_type: token_response.token_type.clone(),
 		expires_in: token_response.expires_in,
 		refresh_token: token_response.refresh_token.clone(),
 		scope: token_response.scope.clone(),
 		received_at_unix_seconds: now,
+		user_name: None,
 	};
+
+	let user = fetch_discord_user(&token_response.access_token).await?;
+	token_to_save.user_name = Some(discord_user_display_name(&user));
 
 	let token_path = save_discord_token_file(&token_to_save)?;
 	log::info!("Saved Discord OAuth token at: {}", token_path.display());
 
-	let user = fetch_discord_user(&token_response.access_token).await?;
 	let avatar_path = download_and_save_discord_avatar(&token_response.access_token, &user).await?;
 	if let Some(path) = avatar_path {
 		log::info!("Saved Discord avatar at: {path}");

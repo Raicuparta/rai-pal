@@ -109,6 +109,7 @@ export type DbGame = {
 export type DiscordAuthState = {
 	is_logged_in: boolean,
 	avatar_file_path: string | null,
+	user_name: string | null,
 };
 
 export type DiscordOAuthResult = {

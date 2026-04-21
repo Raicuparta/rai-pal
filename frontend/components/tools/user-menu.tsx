@@ -1,22 +1,36 @@
 import { commands } from "@api/bindings";
 import { invoke, convertFileSrc } from "@tauri-apps/api/core";
-import { Avatar, Button, Menu } from "@mantine/core";
-import { IconLogin, IconUserCircle, IconUserFilled } from "@tabler/icons-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { Avatar, Button, Menu, Text } from "@mantine/core";
+import { IconUserCircle } from "@tabler/icons-react";
+import { useCallback, useEffect, useState } from "react";
 
 type DiscordAuthState = {
 	is_logged_in: boolean;
 	avatar_file_path: string | null;
+	user_name: string | null;
 };
 
 async function getDiscordAuthState(): Promise<DiscordAuthState> {
-	return invoke<DiscordAuthState>("get_discord_auth_state");
+	return commands.getDiscordAuthState() as Promise<DiscordAuthState>;
+}
+
+function getInitials(name: string | null): string {
+	const words = name?.match(/\S+/g);
+	if (!words) return "?";
+
+	const initials =
+		words.length === 1
+			? (words[0]?.match(/[a-z0-9]/gi) || []).join("")
+			: words.map((w) => w.match(/[a-z0-9]/i)?.[0]).join("");
+
+	return initials.slice(0, 2).toUpperCase() || "?";
 }
 
 export function UserMenu() {
 	const [authState, setAuthState] = useState<DiscordAuthState>({
 		is_logged_in: false,
 		avatar_file_path: null,
+		user_name: null,
 	});
 
 	const refreshAuthState = useCallback(async () => {
@@ -30,13 +44,14 @@ export function UserMenu() {
 	}, []);
 
 	useEffect(() => {
-		void refreshAuthState();
+		refreshAuthState();
 	}, [refreshAuthState]);
 
-	const avatarUrl = useMemo(() => {
-		if (!authState.avatar_file_path) return null;
-		return convertFileSrc(authState.avatar_file_path);
-	}, [authState.avatar_file_path]);
+	const avatarUrl = authState.avatar_file_path
+		? convertFileSrc(authState.avatar_file_path)
+		: null;
+
+	const userInitials = getInitials(authState.user_name);
 
 	const handleLogin = async () => {
 		console.log("[Discord OAuth] Login requested from user menu.");
@@ -80,7 +95,7 @@ export function UserMenu() {
 							src={avatarUrl}
 							bg="black"
 						>
-							R
+							{userInitials}
 						</Avatar>
 					) : (
 						<IconUserCircle color="white" />
@@ -91,6 +106,19 @@ export function UserMenu() {
 				p="xs"
 				bg="dark"
 			>
+				{authState.is_logged_in && (
+					<>
+						<Text
+							size="sm"
+							c="dimmed"
+							px="xs"
+							pb={4}
+						>
+							Logged in as {authState.user_name ?? "Unknown user"}
+						</Text>
+						<Menu.Divider />
+					</>
+				)}
 				{authState.is_logged_in ? (
 					<Menu.Item onClick={handleLogout}>Log out</Menu.Item>
 				) : (
