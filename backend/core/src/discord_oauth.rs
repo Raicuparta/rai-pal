@@ -148,7 +148,9 @@ fn parse_oauth_callback(
 				let request = String::from_utf8_lossy(&buffer[..bytes_read]);
 				let Some(request_line) = request.lines().next() else {
 					write_browser_response(&mut stream, false)?;
-					return Err(Error::DiscordOAuth("Malformed callback request.".to_string()));
+					return Err(Error::DiscordOAuth(
+						"Malformed callback request.".to_string(),
+					));
 				};
 
 				let Some(path_and_query) = request_line.split_whitespace().nth(1) else {
@@ -256,6 +258,113 @@ fn save_discord_token_file(token: &DiscordSavedToken) -> Result<PathBuf> {
 	Ok(token_file_path)
 }
 
+fn get_discord_token_file_path() -> Result<PathBuf> {
+	Ok(paths::app_data_path()?.join("discord-oauth-token.json"))
+}
+
+fn read_discord_token_file() -> Result<DiscordSavedToken> {
+	let token_file_path = get_discord_token_file_path()?;
+	let token_contents = fs::read_to_string(&token_file_path).map_err(|error| {
+		Error::DiscordOAuth(format!(
+			"Failed to read saved Discord token file `{}`: {error}",
+			token_file_path.display()
+		))
+	})?;
+
+	serde_json::from_str(&token_contents).map_err(|error| {
+		Error::DiscordOAuth(format!(
+			"Failed to parse saved Discord token file `{}`: {error}",
+			token_file_path.display()
+		))
+	})
+}
+
+async fn exchange_refresh_token_for_discord_token(
+	client_id: &str,
+	client_secret: Option<&str>,
+	refresh_token: &str,
+) -> Result<DiscordTokenResponse> {
+	let mut form_data = vec![
+		("client_id".to_string(), client_id.to_string()),
+		("grant_type".to_string(), "refresh_token".to_string()),
+		("refresh_token".to_string(), refresh_token.to_string()),
+	];
+
+	if let Some(secret) = client_secret {
+		form_data.push(("client_secret".to_string(), secret.to_string()));
+	}
+
+	let response = http::CLIENT
+		.post(DISCORD_TOKEN_URL)
+		.header("content-type", "application/x-www-form-urlencoded")
+		.body(serde_urlencoded::to_string(&form_data)?)
+		.send()
+		.await?;
+
+	if !response.status().is_success() {
+		let status = response.status();
+		let body = response
+			.text()
+			.await
+			.unwrap_or_else(|_| "<failed to read body>".to_string());
+
+		return Err(Error::DiscordOAuth(format!(
+			"Token refresh failed ({status}): {body}"
+		)));
+	}
+
+	Ok(response.json::<DiscordTokenResponse>().await?)
+}
+
+pub async fn refresh_discord_token_if_possible(config: DiscordOAuthConfig) -> Result<bool> {
+	let token_file_path = get_discord_token_file_path()?;
+	if !token_file_path.exists() {
+		log::debug!(
+			"Skipping Discord token refresh: token file not found at {}",
+			token_file_path.display()
+		);
+		return Ok(false);
+	}
+
+	let saved_token = read_discord_token_file()?;
+	let refresh_token = match saved_token.refresh_token {
+		Some(refresh_token) => refresh_token,
+		None => {
+			log::debug!("Skipping Discord token refresh: saved token has no refresh_token");
+			return Ok(false);
+		}
+	};
+
+	let token_response = exchange_refresh_token_for_discord_token(
+		&config.client_id,
+		config.client_secret.as_deref(),
+		&refresh_token,
+	)
+	.await?;
+
+	let now = SystemTime::now()
+		.duration_since(UNIX_EPOCH)
+		.map_err(|error| Error::DiscordOAuth(format!("Clock error: {error}")))?
+		.as_secs();
+
+	let refreshed_token = DiscordSavedToken {
+		access_token: token_response.access_token,
+		token_type: token_response.token_type,
+		expires_in: token_response.expires_in,
+		refresh_token: token_response.refresh_token.or(Some(refresh_token)),
+		scope: token_response.scope,
+		received_at_unix_seconds: now,
+	};
+
+	let refreshed_path = save_discord_token_file(&refreshed_token)?;
+	log::info!(
+		"Refreshed Discord OAuth token and saved it at: {}",
+		refreshed_path.display()
+	);
+
+	Ok(true)
+}
+
 pub async fn start_discord_oauth(config: DiscordOAuthConfig) -> Result<DiscordOAuthResult> {
 	let listener = TcpListener::bind(("127.0.0.1", config.callback_port)).map_err(|error| {
 		Error::DiscordOAuth(format!(
@@ -269,12 +378,8 @@ pub async fn start_discord_oauth(config: DiscordOAuthConfig) -> Result<DiscordOA
 	let code_verifier = create_oauth_nonce();
 	let code_challenge = URL_SAFE_NO_PAD.encode(sha2::Sha256::digest(code_verifier.as_bytes()));
 
-	let auth_url = build_discord_auth_url(
-		&config.client_id,
-		&redirect_uri,
-		&state,
-		&code_challenge,
-	)?;
+	let auth_url =
+		build_discord_auth_url(&config.client_id, &redirect_uri, &state, &code_challenge)?;
 
 	log::info!("Starting Discord OAuth flow. Redirect URI: {redirect_uri}");
 	open::that_detached(auth_url)?;

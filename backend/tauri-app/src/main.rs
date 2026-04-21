@@ -6,7 +6,9 @@
 use std::{
 	collections::HashMap,
 	path::PathBuf,
+	thread,
 	time::{
+		Duration,
 		SystemTime,
 		UNIX_EPOCH,
 	},
@@ -92,9 +94,9 @@ mod result;
 mod typescript;
 
 const DISCORD_CALLBACK_DEFAULT_PORT: u16 = 43941;
-#[tauri::command]
-#[specta::specta]
-async fn start_discord_oauth() -> Result<DiscordOAuthResult> {
+const DISCORD_TOKEN_REFRESH_INTERVAL: Duration = Duration::from_secs(60 * 60);
+
+fn discord_oauth_config() -> DiscordOAuthConfig {
 	let client_id =
 		std::env::var("DISCORD_CLIENT_ID").unwrap_or_else(|_| "1464045413920276694".to_string());
 	let client_secret = std::env::var("DISCORD_CLIENT_SECRET").ok();
@@ -103,13 +105,19 @@ async fn start_discord_oauth() -> Result<DiscordOAuthResult> {
 		.and_then(|value| value.parse::<u16>().ok())
 		.unwrap_or(DISCORD_CALLBACK_DEFAULT_PORT);
 
-	rai_pal_core::discord_oauth::start_discord_oauth(DiscordOAuthConfig {
+	DiscordOAuthConfig {
 		client_id,
 		client_secret,
 		callback_port,
-	})
-	.await
-	.map_err(Into::into)
+	}
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn start_discord_oauth() -> Result<DiscordOAuthResult> {
+	rai_pal_core::discord_oauth::start_discord_oauth(discord_oauth_config())
+		.await
+		.map_err(Into::into)
 }
 
 #[tauri::command]
@@ -771,6 +779,28 @@ fn main() {
 		.invoke_handler(builder.invoke_handler())
 		.setup(move |app| {
 			builder.mount_events(app);
+
+			thread::spawn(|| {
+				loop {
+					let refresh_result = tauri::async_runtime::block_on(
+						rai_pal_core::discord_oauth::refresh_discord_token_if_possible(
+							discord_oauth_config(),
+						),
+					);
+
+					match refresh_result {
+						Ok(true) => log::info!("Discord OAuth token auto-refreshed."),
+						Ok(false) => {
+							log::debug!("Discord OAuth auto-refresh skipped (token not available).")
+						}
+						Err(error) => {
+							log::error!("Failed to auto-refresh Discord OAuth token: {error}")
+						}
+					}
+
+					thread::sleep(DISCORD_TOKEN_REFRESH_INTERVAL);
+				}
+			});
 
 			if let Some(window) = app.get_webview_window("main") {
 				let mut title = format!("Rai Pal {}", env!("CARGO_PKG_VERSION"));
