@@ -161,8 +161,8 @@ fn write_browser_response(stream: &mut std::net::TcpStream, success: bool) -> Re
 }
 
 fn parse_oauth_callback(
-	listener: TcpListener,
-	expected_state: String,
+	listener: &TcpListener,
+	expected_state: &str,
 	timeout: Duration,
 ) -> Result<String> {
 	listener.set_nonblocking(true)?;
@@ -280,7 +280,7 @@ async fn exchange_code_for_discord_token(
 }
 
 fn save_discord_token_file(token: &DiscordSavedToken) -> Result<PathBuf> {
-	let token_file_path = paths::app_data_path()?.join("discord-oauth-token.json");
+	let token_file_path = get_user_file_path()?;
 
 	if let Some(parent) = token_file_path.parent() {
 		fs::create_dir_all(parent)?;
@@ -291,8 +291,8 @@ fn save_discord_token_file(token: &DiscordSavedToken) -> Result<PathBuf> {
 	Ok(token_file_path)
 }
 
-fn get_discord_token_file_path() -> Result<PathBuf> {
-	Ok(paths::app_data_path()?.join("discord-oauth-token.json"))
+fn get_user_file_path() -> Result<PathBuf> {
+	Ok(paths::app_data_path()?.join("user.json"))
 }
 
 fn get_discord_avatar_file_path() -> Result<PathBuf> {
@@ -373,7 +373,7 @@ async fn download_and_save_discord_avatar(
 }
 
 fn read_discord_token_file() -> Result<DiscordSavedToken> {
-	let token_file_path = get_discord_token_file_path()?;
+	let token_file_path = get_user_file_path()?;
 	let token_contents = fs::read_to_string(&token_file_path).map_err(|error| {
 		Error::DiscordOAuth(format!(
 			"Failed to read saved Discord token file `{}`: {error}",
@@ -427,7 +427,7 @@ async fn exchange_refresh_token_for_discord_token(
 }
 
 pub async fn refresh_discord_token_if_possible(config: DiscordOAuthConfig) -> Result<bool> {
-	let token_file_path = get_discord_token_file_path()?;
+	let token_file_path = get_user_file_path()?;
 	if !token_file_path.exists() {
 		log::debug!(
 			"Skipping Discord token refresh: token file not found at {}",
@@ -437,12 +437,9 @@ pub async fn refresh_discord_token_if_possible(config: DiscordOAuthConfig) -> Re
 	}
 
 	let saved_token = read_discord_token_file()?;
-	let refresh_token = match saved_token.refresh_token {
-		Some(refresh_token) => refresh_token,
-		None => {
-			log::debug!("Skipping Discord token refresh: saved token has no refresh_token");
-			return Ok(false);
-		}
+	let Some(refresh_token) = saved_token.refresh_token else {
+		log::debug!("Skipping Discord token refresh: saved token has no refresh_token");
+		return Ok(false);
 	};
 
 	let token_response = exchange_refresh_token_for_discord_token(
@@ -477,7 +474,7 @@ pub async fn refresh_discord_token_if_possible(config: DiscordOAuthConfig) -> Re
 }
 
 pub fn get_discord_auth_state() -> Result<DiscordAuthState> {
-	let token_file_path = get_discord_token_file_path()?;
+	let token_file_path = get_user_file_path()?;
 	if !token_file_path.exists() {
 		return Ok(DiscordAuthState {
 			is_logged_in: false,
@@ -500,7 +497,7 @@ pub fn get_discord_auth_state() -> Result<DiscordAuthState> {
 }
 
 pub fn logout_discord() -> Result {
-	delete_file_if_exists(&get_discord_token_file_path()?)?;
+	delete_file_if_exists(&get_user_file_path()?)?;
 	delete_file_if_exists(&get_discord_avatar_file_path()?)?;
 
 	Ok(())
@@ -525,7 +522,7 @@ pub async fn start_discord_oauth(config: DiscordOAuthConfig) -> Result<DiscordOA
 	log::info!("Starting Discord OAuth flow. Redirect URI: {redirect_uri}");
 	open::that_detached(auth_url)?;
 
-	let auth_code = parse_oauth_callback(listener, state, Duration::from_secs(180))?;
+	let auth_code = parse_oauth_callback(&listener, &state, Duration::from_mins(3))?;
 
 	log::info!("Received Discord OAuth callback. Exchanging code for token...");
 
