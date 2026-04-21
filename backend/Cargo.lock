@@ -3411,6 +3411,7 @@ dependencies = [
  "serde",
  "serde_json",
  "serde_urlencoded",
+ "sha2",
  "specta",
  "steamlocate",
  "strum",

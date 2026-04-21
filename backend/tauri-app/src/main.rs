@@ -23,6 +23,10 @@ use events::EventEmitter;
 use rai_pal_core::windows;
 use rai_pal_core::{
 	analytics,
+	discord_oauth::{
+		DiscordOAuthConfig,
+		DiscordOAuthResult,
+	},
 	game::DbGame,
 	games_query::GamesQuery,
 	local_database::{
@@ -86,6 +90,27 @@ mod events;
 mod result;
 #[cfg(debug_assertions)]
 mod typescript;
+
+const DISCORD_CALLBACK_DEFAULT_PORT: u16 = 43941;
+#[tauri::command]
+#[specta::specta]
+async fn start_discord_oauth() -> Result<DiscordOAuthResult> {
+	let client_id =
+		std::env::var("DISCORD_CLIENT_ID").unwrap_or_else(|_| "1464045413920276694".to_string());
+	let client_secret = std::env::var("DISCORD_CLIENT_SECRET").ok();
+	let callback_port = std::env::var("DISCORD_OAUTH_PORT")
+		.ok()
+		.and_then(|value| value.parse::<u16>().ok())
+		.unwrap_or(DISCORD_CALLBACK_DEFAULT_PORT);
+
+	rai_pal_core::discord_oauth::start_discord_oauth(DiscordOAuthConfig {
+		client_id,
+		client_secret,
+		callback_port,
+	})
+	.await
+	.map_err(Into::into)
+}
 
 #[tauri::command]
 #[specta::specta]
@@ -668,6 +693,7 @@ fn main() {
 		.commands(tauri_specta::collect_commands![
 			add_game,
 			configure_mod,
+			start_discord_oauth,
 			delete_mod,
 			download_mod,
 			frontend_ready,
