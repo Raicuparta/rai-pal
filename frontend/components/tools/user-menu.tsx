@@ -1,7 +1,7 @@
 import { commands } from "@api/bindings";
 import { invoke, convertFileSrc } from "@tauri-apps/api/core";
 import { Avatar, Button, Menu } from "@mantine/core";
-import { IconUserCircle } from "@tabler/icons-react";
+import { IconLogin, IconUserCircle, IconUserFilled } from "@tabler/icons-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 type DiscordAuthState = {
@@ -70,16 +70,20 @@ export function UserMenu() {
 				<Button
 					variant="filled"
 					color="dark"
-					px={8}
+					fz="md"
 				>
 					{authState.is_logged_in ? (
 						<Avatar
-							size={22}
+							size={28}
 							radius="xl"
+							bd="2px solid white"
 							src={avatarUrl}
-						/>
+							bg="black"
+						>
+							R
+						</Avatar>
 					) : (
-						<IconUserCircle />
+						<IconUserCircle color="white" />
 					)}
 				</Button>
 			</Menu.Target>
