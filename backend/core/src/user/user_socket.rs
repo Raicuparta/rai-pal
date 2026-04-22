@@ -42,9 +42,7 @@ pub fn start_user_socket_manager() {
 		let mut bind_error_logged = false;
 
 		loop {
-			let is_logged_in = is_discord_user_logged_in();
-
-			if is_logged_in && listener.is_none() {
+			if listener.is_none() {
 				match bind_first_available_port() {
 					Ok((new_listener, new_port)) => {
 						if let Err(error) = new_listener.set_nonblocking(true) {
@@ -66,11 +64,6 @@ pub fn start_user_socket_manager() {
 						}
 					}
 				}
-			}
-
-			if !is_logged_in && listener.is_some() {
-				log::info!("User logged out. Stopping user socket server.");
-				listener = None;
 			}
 
 			if let Some(active_listener) = listener.as_ref() {
@@ -131,7 +124,12 @@ fn handle_socket_connection(stream: &mut TcpStream) -> Result {
 			write_http_response(stream, 200, "OK", &access_token)?;
 		}
 		Err(error) => {
-			write_http_response(stream, 401, "Unauthorized", "Discord user is not logged in")?;
+			write_http_response(
+				stream,
+				401,
+				"Unauthorized",
+				"User is not authenticated in Rai Pal",
+			)?;
 			log::debug!("Unable to serve /token because token is unavailable: {error}");
 		}
 	}
@@ -196,14 +194,4 @@ fn read_discord_access_token() -> Result<String> {
 
 fn get_user_file_path() -> Result<PathBuf> {
 	Ok(paths::app_data_path()?.join("user.json"))
-}
-
-fn is_discord_user_logged_in() -> bool {
-	match get_user_file_path() {
-		Ok(path) => path.exists(),
-		Err(error) => {
-			log::error!("Failed to resolve Discord token file path: {error}");
-			false
-		}
-	}
 }
