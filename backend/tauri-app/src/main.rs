@@ -63,13 +63,16 @@ use rai_pal_core::{
 		self,
 	},
 	remote_mod,
-	user::discord_oauth::{
-		DiscordAuthState,
-		DiscordOAuthResult,
-		get_discord_auth_state,
-		logout_discord,
-		refresh_discord_token_if_possible,
-		start_discord_oauth,
+	user::{
+		discord_oauth::{
+			DiscordAuthState,
+			DiscordOAuthResult,
+			get_discord_auth_state,
+			logout_discord,
+			refresh_discord_token_if_possible,
+			start_discord_oauth,
+		},
+		user_socket::start_user_socket_manager,
 	},
 };
 use strum::IntoEnumIterator;
@@ -778,6 +781,8 @@ fn main() {
 		.invoke_handler(builder.invoke_handler())
 		.setup(move |app| {
 			builder.mount_events(app);
+
+			start_user_socket_manager();
 
 			thread::spawn(|| {
 				loop {
