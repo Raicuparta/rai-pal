@@ -1,5 +1,4 @@
 use std::{
-	fs,
 	io::{
 		Read,
 		Write,
@@ -8,20 +7,16 @@ use std::{
 		TcpListener,
 		TcpStream,
 	},
-	path::PathBuf,
 	thread,
 	time::Duration,
 };
 
-use serde::Deserialize;
-
-use crate::{
-	paths,
-	result::{
+use crate::result::{
 		Error,
 		Result,
-	},
 };
+
+use super::discord_oauth;
 
 const USER_SOCKET_BIND_ADDRESS: &str = "127.0.0.1";
 const USER_SOCKET_POLL_INTERVAL: Duration = Duration::from_millis(100);
@@ -30,11 +25,6 @@ const USER_SOCKET_POLL_INTERVAL: Duration = Duration::from_millis(100);
 const USER_SOCKET_PORT_RANGE_START: u16 = 43950;
 const USER_SOCKET_PORT_RANGE_END: u16 = 43960;
 const USER_SOCKET_PHRASE: &str = "RAI PAL";
-
-#[derive(Debug, Deserialize)]
-struct DiscordSavedToken {
-	access_token: String,
-}
 
 pub fn start_user_socket_manager() {
 	thread::spawn(|| {
@@ -174,24 +164,5 @@ fn bind_first_available_port() -> Result<(TcpListener, u16)> {
 }
 
 fn read_discord_access_token() -> Result<String> {
-	let token_file_path = get_user_file_path()?;
-	let token_contents = fs::read_to_string(&token_file_path).map_err(|error| {
-		Error::DiscordOAuth(format!(
-			"Failed to read Discord token file `{}`: {error}",
-			token_file_path.display()
-		))
-	})?;
-
-	let token = serde_json::from_str::<DiscordSavedToken>(&token_contents).map_err(|error| {
-		Error::DiscordOAuth(format!(
-			"Failed to parse Discord token file `{}`: {error}",
-			token_file_path.display()
-		))
-	})?;
-
-	Ok(token.access_token)
-}
-
-fn get_user_file_path() -> Result<PathBuf> {
-	Ok(paths::app_data_path()?.join("user.json"))
+	discord_oauth::read_discord_access_token()
 }

@@ -41,6 +41,9 @@ const DISCORD_TOKEN_URL: &str = "https://discord.com/api/oauth2/token";
 const DISCORD_USER_URL: &str = "https://discord.com/api/users/@me";
 const DISCORD_CLIENT_ID: &str = "1464045413920276694";
 const DISCORD_CALLBACK_PORT: u16 = 43941;
+const DISCORD_KEYRING_SERVICE: &str = "rai-pal";
+const DISCORD_KEYRING_ACCOUNT: &str = "discord-oauth-token";
+const DISCORD_KEYRING_LOCATION: &str = "keyring://rai-pal/discord-oauth-token";
 
 #[derive(Clone, Debug, serde::Serialize, specta::Type)]
 pub struct DiscordOAuthResult {
@@ -269,20 +272,25 @@ async fn exchange_code_for_discord_token(
 	Ok(response.json::<DiscordTokenResponse>().await?)
 }
 
-fn save_discord_token_file(token: &DiscordSavedToken) -> Result<PathBuf> {
-	let token_file_path = get_user_file_path()?;
-
-	if let Some(parent) = token_file_path.parent() {
-		fs::create_dir_all(parent)?;
-	}
-
-	fs::write(&token_file_path, serde_json::to_vec_pretty(token)?)?;
-
-	Ok(token_file_path)
+fn get_discord_keyring_entry() -> Result<keyring::Entry> {
+	keyring::Entry::new(DISCORD_KEYRING_SERVICE, DISCORD_KEYRING_ACCOUNT).map_err(|error| {
+		Error::DiscordOAuth(format!(
+			"Failed to open Discord token keyring entry `{DISCORD_KEYRING_LOCATION}`: {error}"
+		))
+	})
 }
 
-fn get_user_file_path() -> Result<PathBuf> {
-	Ok(paths::app_data_path()?.join("user.json"))
+fn save_discord_token_file(token: &DiscordSavedToken) -> Result<String> {
+	let entry = get_discord_keyring_entry()?;
+	let token_json = serde_json::to_string(token)?;
+
+	entry.set_password(&token_json).map_err(|error| {
+		Error::DiscordOAuth(format!(
+			"Failed to save Discord token in system keyring: {error}"
+		))
+	})?;
+
+	Ok(DISCORD_KEYRING_LOCATION.to_string())
 }
 
 fn get_discord_avatar_file_path() -> Result<PathBuf> {
@@ -362,21 +370,38 @@ async fn download_and_save_discord_avatar(
 	Ok(Some(avatar_file_path.display().to_string()))
 }
 
-fn read_discord_token_file() -> Result<DiscordSavedToken> {
-	let token_file_path = get_user_file_path()?;
-	let token_contents = fs::read_to_string(&token_file_path).map_err(|error| {
-		Error::DiscordOAuth(format!(
-			"Failed to read saved Discord token file `{}`: {error}",
-			token_file_path.display()
-		))
-	})?;
+fn read_discord_token_file_optional() -> Result<Option<DiscordSavedToken>> {
+	let entry = get_discord_keyring_entry()?;
 
-	serde_json::from_str(&token_contents).map_err(|error| {
-		Error::DiscordOAuth(format!(
-			"Failed to parse saved Discord token file `{}`: {error}",
-			token_file_path.display()
-		))
-	})
+	match entry.get_password() {
+		Ok(token_json) => {
+			let token =
+				serde_json::from_str::<DiscordSavedToken>(&token_json).map_err(|error| {
+					Error::DiscordOAuth(format!(
+						"Failed to parse Discord token from system keyring: {error}"
+					))
+				})?;
+			let access_token_preview: String = token.access_token.chars().take(8).collect();
+			log::debug!(
+				"Read Discord token from keyring; user_name={:?} access_token_preview={}...",
+				token.user_name,
+				access_token_preview
+			);
+			Ok(Some(token))
+		}
+		Err(keyring::Error::NoEntry) => {
+			log::debug!("No Discord token found in keyring ({DISCORD_KEYRING_LOCATION})");
+			Ok(None)
+		}
+		Err(error) => Err(Error::DiscordOAuth(format!(
+			"Failed to read Discord token from system keyring: {error}"
+		))),
+	}
+}
+
+fn read_discord_token_file() -> Result<DiscordSavedToken> {
+	read_discord_token_file_optional()?
+		.ok_or_else(|| Error::DiscordOAuth("Discord OAuth token is not available.".to_string()))
 }
 
 async fn exchange_refresh_token_for_discord_token(
@@ -412,16 +437,11 @@ async fn exchange_refresh_token_for_discord_token(
 }
 
 pub async fn refresh_discord_token_if_possible() -> Result<bool> {
-	let token_file_path = get_user_file_path()?;
-	if !token_file_path.exists() {
-		log::debug!(
-			"Skipping Discord token refresh: token file not found at {}",
-			token_file_path.display()
-		);
+	let Some(saved_token) = read_discord_token_file_optional()? else {
+		log::debug!("Skipping Discord token refresh: Discord token not found in system keyring");
 		return Ok(false);
-	}
+	};
 
-	let saved_token = read_discord_token_file()?;
 	let Some(refresh_token) = saved_token.refresh_token else {
 		log::debug!("Skipping Discord token refresh: saved token has no refresh_token");
 		return Ok(false);
@@ -445,40 +465,49 @@ pub async fn refresh_discord_token_if_possible() -> Result<bool> {
 		user_name: saved_token.user_name,
 	};
 
-	let refreshed_path = save_discord_token_file(&refreshed_token)?;
-	log::info!(
-		"Refreshed Discord OAuth token and saved it at: {}",
-		refreshed_path.display()
-	);
+	save_discord_token_file(&refreshed_token)?;
 
 	Ok(true)
 }
 
 pub fn get_discord_auth_state() -> Result<DiscordAuthState> {
-	let token_file_path = get_user_file_path()?;
-	if !token_file_path.exists() {
+	log::debug!("Computing Discord auth state");
+	let Some(saved_token) = read_discord_token_file_optional()? else {
+		log::debug!("Discord auth state: logged out (no token in keyring)");
 		return Ok(DiscordAuthState {
 			is_logged_in: false,
 			avatar_file_path: None,
 			user_name: None,
 		});
-	}
-
-	let saved_token = read_discord_token_file()?;
+	};
 
 	let avatar_file_path = get_discord_avatar_file_path()?;
+	let avatar_path = avatar_file_path
+		.exists()
+		.then(|| avatar_file_path.display().to_string());
 
 	Ok(DiscordAuthState {
 		is_logged_in: true,
-		avatar_file_path: avatar_file_path
-			.exists()
-			.then(|| avatar_file_path.display().to_string()),
+		avatar_file_path: avatar_path,
 		user_name: saved_token.user_name,
 	})
 }
 
+pub(crate) fn read_discord_access_token() -> Result<String> {
+	let saved_token = read_discord_token_file()?;
+	Ok(saved_token.access_token)
+}
+
 pub fn logout_discord() -> Result {
-	delete_file_if_exists(&get_user_file_path()?)?;
+	let entry = get_discord_keyring_entry()?;
+	match entry.delete_credential() {
+		Ok(()) | Err(keyring::Error::NoEntry) => {}
+		Err(error) => {
+			return Err(Error::DiscordOAuth(format!(
+				"Failed to delete Discord token from system keyring: {error}"
+			)));
+		}
+	}
 	delete_file_if_exists(&get_discord_avatar_file_path()?)?;
 
 	Ok(())
@@ -533,7 +562,7 @@ pub async fn start_discord_oauth() -> Result<DiscordOAuthResult> {
 	token_to_save.user_name = Some(discord_user_display_name(&user));
 
 	let token_path = save_discord_token_file(&token_to_save)?;
-	log::info!("Saved Discord OAuth token at: {}", token_path.display());
+	log::info!("Saved Discord OAuth token at: {token_path}");
 
 	let avatar_path = download_and_save_discord_avatar(&token_response.access_token, &user).await?;
 	if let Some(path) = avatar_path {
@@ -543,7 +572,7 @@ pub async fn start_discord_oauth() -> Result<DiscordOAuthResult> {
 	let preview: String = token_response.access_token.chars().take(8).collect();
 
 	Ok(DiscordOAuthResult {
-		token_file_path: token_path.display().to_string(),
+		token_file_path: token_path,
 		token_type: token_response.token_type,
 		scope: token_response.scope,
 		expires_in: token_response.expires_in,
