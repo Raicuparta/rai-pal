@@ -1,7 +1,11 @@
 import { commands, DiscordAuthState } from "@api/bindings";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { Avatar, Button, Menu, Text } from "@mantine/core";
-import { IconUserCircle } from "@tabler/icons-react";
+import {
+	IconBrandDiscordFilled,
+	IconLogout2,
+	IconUserCircle,
+} from "@tabler/icons-react";
 import { useCallback, useEffect, useState } from "react";
 
 function getInitials(name: string | null): string {
@@ -96,7 +100,7 @@ export function UserMenu() {
 				p="xs"
 				bg="dark"
 			>
-				{authState.is_logged_in && (
+				{authState.is_logged_in ? (
 					<>
 						<Text
 							size="sm"
@@ -107,12 +111,34 @@ export function UserMenu() {
 							Logged in as {authState.user_name ?? "Unknown user"}
 						</Text>
 						<Menu.Divider />
+						<Menu.Item
+							onClick={handleLogout}
+							leftSection={<IconLogout2 />}
+							color="red"
+						>
+							Log out
+						</Menu.Item>
 					</>
-				)}
-				{authState.is_logged_in ? (
-					<Menu.Item onClick={handleLogout}>Log out</Menu.Item>
 				) : (
-					<Menu.Item onClick={handleLogin}>Log in</Menu.Item>
+					<>
+						<Menu.Item
+							onClick={handleLogin}
+							leftSection={<IconBrandDiscordFilled />}
+						>
+							Sign in with Discord
+						</Menu.Item>
+						<Menu.Divider />
+						<Text
+							size="sm"
+							c="dimmed"
+							px="xs"
+							pb={4}
+							maw={200}
+						>
+							Mods can use this to access your Discord username, avatar, roles,
+							etc.
+						</Text>
+					</>
 				)}
 			</Menu.Dropdown>
 		</Menu>
