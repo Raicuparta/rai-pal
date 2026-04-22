@@ -1,13 +1,8 @@
 import { commands, DiscordAuthState } from "@api/bindings";
-import { invoke, convertFileSrc } from "@tauri-apps/api/core";
+import { convertFileSrc } from "@tauri-apps/api/core";
 import { Avatar, Button, Menu, Text } from "@mantine/core";
 import { IconUserCircle } from "@tabler/icons-react";
 import { useCallback, useEffect, useState } from "react";
-import styles from "./tools.module.css";
-
-async function getDiscordAuthState(): Promise<DiscordAuthState> {
-	return commands.getDiscordAuthState() as Promise<DiscordAuthState>;
-}
 
 function getInitials(name: string | null): string {
 	const words = name?.match(/\S+/g);
@@ -30,11 +25,11 @@ export function UserMenu() {
 
 	const refreshAuthState = useCallback(async () => {
 		try {
-			const state = await getDiscordAuthState();
-			console.log("[Discord OAuth] Current auth state:", state);
+			const state = await commands.getAuthState();
+			console.log("Current auth state:", state);
 			setAuthState(state);
 		} catch (error) {
-			console.error("[Discord OAuth] Failed to read auth state:", error);
+			console.error("Failed to read auth state:", error);
 		}
 	}, []);
 
@@ -49,24 +44,24 @@ export function UserMenu() {
 	const userInitials = getInitials(authState.user_name);
 
 	const handleLogin = async () => {
-		console.log("[Discord OAuth] Login requested from user menu.");
+		console.log("Login requested from user menu.");
 		try {
-			const result = await commands.startDiscordOauth();
-			console.log("[Discord OAuth] Login completed:", result);
+			const result = await commands.logIn();
+			console.log("Login completed:", result);
 			await refreshAuthState();
 		} catch (error) {
-			console.error("[Discord OAuth] Login failed:", error);
+			console.error("Login failed:", error);
 		}
 	};
 
 	const handleLogout = async () => {
-		console.log("[Discord OAuth] Logout requested from user menu.");
+		console.log("Logout requested from user menu.");
 		try {
-			await invoke<null>("logout_discord");
-			console.log("[Discord OAuth] Logout completed.");
+			await commands.logOut();
+			console.log("Logout completed.");
 			await refreshAuthState();
 		} catch (error) {
-			console.error("[Discord OAuth] Logout failed:", error);
+			console.error("Logout failed:", error);
 		}
 	};
 

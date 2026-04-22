@@ -7,9 +7,9 @@ import * as __TAURI_EVENT from "@tauri-apps/api/event";
 export const commands = {
 	addGame: (path: string) => __TAURI_INVOKE<null>("add_game", { path }),
 	configureMod: (providerId: ProviderId, gameId: string, modId: string, openFolder: boolean) => __TAURI_INVOKE<null>("configure_mod", { providerId, gameId, modId, openFolder }),
-	getDiscordAuthState: () => __TAURI_INVOKE<DiscordAuthState>("get_discord_auth_state"),
-	startDiscordOauth: () => __TAURI_INVOKE<DiscordOAuthResult>("start_discord_oauth"),
-	logoutDiscord: () => __TAURI_INVOKE<null>("logout_discord"),
+	getAuthState: () => __TAURI_INVOKE<DiscordAuthState>("get_auth_state"),
+	logIn: () => __TAURI_INVOKE<DiscordOAuthResult>("log_in"),
+	logOut: () => __TAURI_INVOKE<null>("log_out"),
 	deleteMod: (modId: string) => __TAURI_INVOKE<null>("delete_mod", { modId }),
 	downloadMod: (modId: string) => __TAURI_INVOKE<null>("download_mod", { modId }),
 	frontendReady: () => __TAURI_INVOKE<null>("frontend_ready"),

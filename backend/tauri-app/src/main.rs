@@ -25,10 +25,6 @@ use events::EventEmitter;
 use rai_pal_core::windows;
 use rai_pal_core::{
 	analytics,
-	discord_oauth::{
-		DiscordAuthState,
-		DiscordOAuthResult,
-	},
 	game::DbGame,
 	games_query::GamesQuery,
 	local_database::{
@@ -67,6 +63,14 @@ use rai_pal_core::{
 		self,
 	},
 	remote_mod,
+	user::discord_oauth::{
+		DiscordAuthState,
+		DiscordOAuthResult,
+		get_discord_auth_state,
+		logout_discord,
+		refresh_discord_token_if_possible,
+		start_discord_oauth,
+	},
 };
 use strum::IntoEnumIterator;
 use tauri::{
@@ -97,22 +101,20 @@ const DISCORD_TOKEN_REFRESH_INTERVAL: Duration = Duration::from_secs(60 * 60);
 
 #[tauri::command]
 #[specta::specta]
-async fn start_discord_oauth() -> Result<DiscordOAuthResult> {
-	rai_pal_core::discord_oauth::start_discord_oauth()
-		.await
-		.map_err(Into::into)
+async fn log_in() -> Result<DiscordOAuthResult> {
+	start_discord_oauth().await.map_err(Into::into)
 }
 
 #[tauri::command]
 #[specta::specta]
-async fn get_discord_auth_state() -> Result<DiscordAuthState> {
-	rai_pal_core::discord_oauth::get_discord_auth_state().map_err(Into::into)
+async fn get_auth_state() -> Result<DiscordAuthState> {
+	get_discord_auth_state().map_err(Into::into)
 }
 
 #[tauri::command]
 #[specta::specta]
-async fn logout_discord() -> Result {
-	rai_pal_core::discord_oauth::logout_discord().map_err(Into::into)
+async fn log_out() -> Result {
+	logout_discord().map_err(Into::into)
 }
 
 #[tauri::command]
@@ -696,9 +698,9 @@ fn main() {
 		.commands(tauri_specta::collect_commands![
 			add_game,
 			configure_mod,
-			get_discord_auth_state,
-			start_discord_oauth,
-			logout_discord,
+			get_auth_state,
+			log_in,
+			log_out,
 			delete_mod,
 			download_mod,
 			frontend_ready,
@@ -779,9 +781,8 @@ fn main() {
 
 			thread::spawn(|| {
 				loop {
-					let refresh_result = tauri::async_runtime::block_on(
-						rai_pal_core::discord_oauth::refresh_discord_token_if_possible(),
-					);
+					let refresh_result =
+						tauri::async_runtime::block_on(refresh_discord_token_if_possible());
 
 					match refresh_result {
 						Ok(true) => log::info!("Discord OAuth token auto-refreshed."),
