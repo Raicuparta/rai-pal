@@ -6,7 +6,9 @@
 use std::{
 	collections::HashMap,
 	path::PathBuf,
+	thread,
 	time::{
+		Duration,
 		SystemTime,
 		UNIX_EPOCH,
 	},
@@ -23,6 +25,10 @@ use events::EventEmitter;
 use rai_pal_core::windows;
 use rai_pal_core::{
 	analytics,
+	discord_oauth::{
+		DiscordAuthState,
+		DiscordOAuthResult,
+	},
 	game::DbGame,
 	games_query::GamesQuery,
 	local_database::{
@@ -86,6 +92,28 @@ mod events;
 mod result;
 #[cfg(debug_assertions)]
 mod typescript;
+
+const DISCORD_TOKEN_REFRESH_INTERVAL: Duration = Duration::from_secs(60 * 60);
+
+#[tauri::command]
+#[specta::specta]
+async fn start_discord_oauth() -> Result<DiscordOAuthResult> {
+	rai_pal_core::discord_oauth::start_discord_oauth()
+		.await
+		.map_err(Into::into)
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn get_discord_auth_state() -> Result<DiscordAuthState> {
+	rai_pal_core::discord_oauth::get_discord_auth_state().map_err(Into::into)
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn logout_discord() -> Result {
+	rai_pal_core::discord_oauth::logout_discord().map_err(Into::into)
+}
 
 #[tauri::command]
 #[specta::specta]
@@ -668,6 +696,9 @@ fn main() {
 		.commands(tauri_specta::collect_commands![
 			add_game,
 			configure_mod,
+			get_discord_auth_state,
+			start_discord_oauth,
+			logout_discord,
 			delete_mod,
 			download_mod,
 			frontend_ready,
@@ -745,6 +776,26 @@ fn main() {
 		.invoke_handler(builder.invoke_handler())
 		.setup(move |app| {
 			builder.mount_events(app);
+
+			thread::spawn(|| {
+				loop {
+					let refresh_result = tauri::async_runtime::block_on(
+						rai_pal_core::discord_oauth::refresh_discord_token_if_possible(),
+					);
+
+					match refresh_result {
+						Ok(true) => log::info!("Discord OAuth token auto-refreshed."),
+						Ok(false) => {
+							log::debug!("Discord OAuth auto-refresh skipped (token not available).")
+						}
+						Err(error) => {
+							log::error!("Failed to auto-refresh Discord OAuth token: {error}")
+						}
+					}
+
+					thread::sleep(DISCORD_TOKEN_REFRESH_INTERVAL);
+				}
+			});
 
 			if let Some(window) = app.get_webview_window("main") {
 				let mut title = format!("Rai Pal {}", env!("CARGO_PKG_VERSION"));
