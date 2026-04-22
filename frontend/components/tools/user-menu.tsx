@@ -3,6 +3,7 @@ import { convertFileSrc } from "@tauri-apps/api/core";
 import { Avatar, Button, Menu, Text } from "@mantine/core";
 import {
 	IconBrandDiscordFilled,
+	IconExternalLink,
 	IconLogout2,
 	IconUserCircle,
 } from "@tabler/icons-react";
@@ -102,15 +103,7 @@ export function UserMenu() {
 			>
 				{authState.is_logged_in ? (
 					<>
-						<Text
-							size="sm"
-							c="dimmed"
-							px="xs"
-							pb={4}
-						>
-							Logged in as {authState.user_name ?? "Unknown user"}
-						</Text>
-						<Menu.Divider />
+						<Menu.Label>{authState.user_name ?? "Unknown user"}</Menu.Label>
 						<Menu.Item
 							onClick={handleLogout}
 							leftSection={<IconLogout2 />}
@@ -124,15 +117,16 @@ export function UserMenu() {
 						<Menu.Item
 							onClick={handleLogin}
 							leftSection={<IconBrandDiscordFilled />}
+							rightSection={<IconExternalLink />}
+							bg="violet"
+							c="white"
 						>
 							Sign in with Discord
 						</Menu.Item>
-						<Menu.Divider />
 						<Text
 							size="sm"
 							c="dimmed"
-							px="xs"
-							pb={4}
+							pt="xs"
 							maw={200}
 						>
 							Mods can use this to access your Discord username, avatar, roles,
