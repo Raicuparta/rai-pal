@@ -3,6 +3,7 @@ import { invoke, convertFileSrc } from "@tauri-apps/api/core";
 import { Avatar, Button, Menu, Text } from "@mantine/core";
 import { IconUserCircle } from "@tabler/icons-react";
 import { useCallback, useEffect, useState } from "react";
+import styles from "./tools.module.css";
 
 async function getDiscordAuthState(): Promise<DiscordAuthState> {
 	return commands.getDiscordAuthState() as Promise<DiscordAuthState>;
@@ -83,10 +84,10 @@ export function UserMenu() {
 				>
 					{authState.is_logged_in ? (
 						<Avatar
-							size={28}
 							radius="xl"
 							bd="2px solid white"
 							src={avatarUrl}
+							size="sm"
 							bg="black"
 						>
 							{userInitials}
