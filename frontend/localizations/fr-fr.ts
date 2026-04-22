@@ -164,6 +164,14 @@ export const frFr: Localization = {
 			"Efface le cache de la liste des jeux utilisé par Rai Pal.",
 	},
 
+	userMenu: {
+		unknownUser: "Utilisateur inconnu",
+		logOut: "Se déconnecter",
+		signInWithDiscord: "Se connecter avec Discord",
+		discordAccessNote:
+			"Les mods peuvent utiliser cela pour accéder à votre nom d'utilisateur Discord, avatar, rôles, etc.",
+	},
+
 	steamCache: {
 		resetSteamCacheButton: "Réinitialiser le cache Steam",
 		resetSteamCacheModalTitle: "Réinitialiser le cache Steam",

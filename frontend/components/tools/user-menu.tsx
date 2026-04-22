@@ -1,4 +1,5 @@
 import { commands, DiscordAuthState } from "@api/bindings";
+import { useLocalization } from "@hooks/use-localization";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { Avatar, Button, Menu, Text } from "@mantine/core";
 import {
@@ -22,6 +23,7 @@ function getInitials(name: string | null): string {
 }
 
 export function UserMenu() {
+	const t = useLocalization("userMenu");
 	const [authState, setAuthState] = useState<DiscordAuthState>({
 		is_logged_in: false,
 		avatar_file_path: null,
@@ -100,16 +102,17 @@ export function UserMenu() {
 			<Menu.Dropdown
 				p="xs"
 				bg="dark"
+				maw={250}
 			>
 				{authState.is_logged_in ? (
 					<>
-						<Menu.Label>{authState.user_name ?? "Unknown user"}</Menu.Label>
+						<Menu.Label>{authState.user_name ?? t("unknownUser")}</Menu.Label>
 						<Menu.Item
 							onClick={handleLogout}
 							leftSection={<IconLogout2 />}
 							color="red"
 						>
-							Log out
+							{t("logOut")}
 						</Menu.Item>
 					</>
 				) : (
@@ -121,16 +124,14 @@ export function UserMenu() {
 							bg="violet"
 							c="white"
 						>
-							Sign in with Discord
+							{t("signInWithDiscord")}
 						</Menu.Item>
 						<Text
 							size="sm"
 							c="dimmed"
 							pt="xs"
-							maw={200}
 						>
-							Mods can use this to access your Discord username, avatar, roles,
-							etc.
+							{t("discordAccessNote")}
 						</Text>
 					</>
 				)}

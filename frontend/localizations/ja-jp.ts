@@ -163,6 +163,14 @@ export const jaJp: Localization = {
 			"Rai Palが使用するゲームリストキャッシュをクリアします。",
 	},
 
+	userMenu: {
+		unknownUser: "不明なユーザー",
+		logOut: "ログアウト",
+		signInWithDiscord: "Discordでサインイン",
+		discordAccessNote:
+			"Mod はこれを使ってあなたのDiscordユーザー名、アバター、ロールなどにアクセスできます。",
+	},
+
 	steamCache: {
 		resetSteamCacheButton: "Steamのキャッシュをリセット",
 		resetSteamCacheModalTitle: "Steamのキャッシュをリセット",

@@ -164,6 +164,14 @@ export const esEs: Localization = {
 			"Borra la caché de la lista de juegos utilizada por Rai Pal.",
 	},
 
+	userMenu: {
+		unknownUser: "Usuario desconocido",
+		logOut: "Cerrar sesión",
+		signInWithDiscord: "Iniciar sesión con Discord",
+		discordAccessNote:
+			"Los mods pueden usar esto para acceder a tu nombre de usuario de Discord, avatar, roles, etc.",
+	},
+
 	steamCache: {
 		resetSteamCacheButton: "Restablecer caché de Steam",
 		resetSteamCacheModalTitle: "Restablecer caché de Steam",

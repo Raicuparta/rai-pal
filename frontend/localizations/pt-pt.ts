@@ -163,6 +163,14 @@ export const ptPt: Localization = {
 			"Limpa a cache da lista de jogos usada pelo Rai Pal.",
 	},
 
+	userMenu: {
+		unknownUser: "Utilizador desconhecido",
+		logOut: "Terminar sessão",
+		signInWithDiscord: "Iniciar sessão com o Discord",
+		discordAccessNote:
+			"Os mods podem usar isto para aceder ao teu nome de utilizador do Discord, avatar, funções, etc.",
+	},
+
 	steamCache: {
 		resetSteamCacheButton: "Repor cache da Steam",
 		resetSteamCacheModalTitle: "Repor cache da Steam",

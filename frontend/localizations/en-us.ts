@@ -333,6 +333,22 @@ export const enUs = {
 		clearRaiPalCacheTooltip: "Clears the game list cache used by Rai Pal.",
 	},
 
+	// Menu for Discord account login/logout and account info.
+	userMenu: {
+		// Fallback label when Rai Pal has no username for the logged in account.
+		unknownUser: "Unknown user",
+
+		// Button for logging out of Discord in the user menu.
+		logOut: "Log out",
+
+		// Button for starting the Discord OAuth login flow.
+		signInWithDiscord: "Sign in with Discord",
+
+		// Description text under the Discord sign-in button.
+		discordAccessNote:
+			"Mods can use this to access your Discord username, avatar, roles, etc.",
+	},
+
 	// Button and modal for resetting Steam's cache.
 	steamCache: {
 		// Button for resetting Steam's cache.

@@ -153,6 +153,14 @@ export const zhCn: Localization = {
 		clearRaiPalCacheTooltip: "清除 Rai Pal 使用的游戏列表缓存。",
 	},
 
+	userMenu: {
+		unknownUser: "未知用户",
+		logOut: "退出登录",
+		signInWithDiscord: "使用 Discord 登录",
+		discordAccessNote:
+			"模组可以使用此功能访问你的 Discord 用户名、头像、身份组等。",
+	},
+
 	steamCache: {
 		resetSteamCacheButton: "重置 Steam 缓存",
 		resetSteamCacheModalTitle: "重置 Steam 缓存",

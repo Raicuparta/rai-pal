@@ -158,6 +158,14 @@ export const koKr: Localization = {
 		clearRaiPalCacheTooltip: "Rai Pal이 사용하는 게임 목록 캐시를 지웁니다.",
 	},
 
+	userMenu: {
+		unknownUser: "알 수 없는 사용자",
+		logOut: "로그아웃",
+		signInWithDiscord: "Discord로 로그인",
+		discordAccessNote:
+			"모드는 이를 사용해 Discord 사용자 이름, 아바타, 역할 등에 접근할 수 있습니다.",
+	},
+
 	steamCache: {
 		resetSteamCacheButton: "Steam 캐시 재설정",
 		resetSteamCacheModalTitle: "Steam 캐시 재설정",

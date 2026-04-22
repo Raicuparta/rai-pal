@@ -164,6 +164,14 @@ export const deDe: Localization = {
 			"Löscht den von Rai Pal verwendeten Spielelisten-Cache.",
 	},
 
+	userMenu: {
+		unknownUser: "Unbekannter Benutzer",
+		logOut: "Abmelden",
+		signInWithDiscord: "Mit Discord anmelden",
+		discordAccessNote:
+			"Mods können dies verwenden, um auf Ihren Discord-Benutzernamen, Avatar, Rollen usw. zuzugreifen.",
+	},
+
 	steamCache: {
 		resetSteamCacheButton: "Steam-Cache zurücksetzen",
 		resetSteamCacheModalTitle: "Steam-Cache zurücksetzen",
