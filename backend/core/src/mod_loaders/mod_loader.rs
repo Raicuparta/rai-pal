@@ -1,8 +1,14 @@
 use std::{
 	collections::HashMap,
-	fs::{self, File},
+	fs::{
+		self,
+		File,
+	},
 	io,
-	path::{Path, PathBuf},
+	path::{
+		Path,
+		PathBuf,
+	},
 };
 
 use enum_dispatch::enum_dispatch;
@@ -10,18 +16,39 @@ use log::error;
 use rai_pal_proc_macros::serializable_struct;
 use zip::ZipArchive;
 
-use super::{bepinex::BepInEx, mod_database, runnable_loader::RunnableLoader};
+use super::{
+	bepinex::BepInEx,
+	mod_database,
+	runnable_loader::RunnableLoader,
+};
 use crate::{
 	files,
 	game::DbGame,
 	game_mod::CommonModData,
-	local_mod::{self, LocalMod, ModKind},
-	mod_loaders::mod_database::{ModConfigDestinationType, ModConfigs, ModDatabase},
+	local_mod::{
+		self,
+		LocalMod,
+		ModKind,
+	},
+	mod_loaders::mod_database::{
+		ModConfigDestinationType,
+		ModConfigs,
+		ModDatabase,
+	},
 	mod_manifest,
-	paths::{self, open_folder_or_parent},
+	paths::{
+		self,
+		open_folder_or_parent,
+	},
 	remote_config,
-	remote_mod::{RemoteMod, RemoteModData},
-	result::{Error, Result},
+	remote_mod::{
+		RemoteMod,
+		RemoteModData,
+	},
+	result::{
+		Error,
+		Result,
+	},
 };
 
 #[serializable_struct]
@@ -40,7 +67,7 @@ pub enum ModLoader {
 
 #[enum_dispatch(ModLoader)]
 pub trait ModLoaderActions {
-	fn install(&self, game: &DbGame) -> Result;
+	async fn install(&self, game: &DbGame) -> Result;
 	async fn install_mod_inner(&self, game: &DbGame, local_mod: &LocalMod) -> Result;
 	async fn uninstall_mod(&self, game: &DbGame, local_mod: &LocalMod) -> Result;
 	async fn run_without_game(&self, local_mod: &LocalMod) -> Result;
