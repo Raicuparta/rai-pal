@@ -34,6 +34,7 @@ use crate::{
 			ModLoaderData,
 		},
 	},
+	mod_manifest,
 	paths,
 	result::{
 		Error,
@@ -58,10 +59,75 @@ struct BepInExEntry {
 	builds: Vec<BepInExBuild>,
 }
 
-async fn get_download_url(
+struct BepInExVersionData {
+	version: String,
+	download_url: String,
+}
+
+#[serializable_struct]
+pub struct BepInExStatus {
+	pub installed_version: Option<String>,
+	pub latest_version: Option<String>,
+}
+
+fn get_installed_version(game: &DbGame) -> Option<String> {
+	let manifest_path = game.get_installed_mod_manifest_path(BepInEx::ID).ok()?;
+	mod_manifest::get(&manifest_path).map(|manifest| manifest.version)
+}
+
+fn update_installed_manifest(game: &DbGame, version: String) -> Result {
+	let manifest_path = game.get_installed_mod_manifest_path(BepInEx::ID)?;
+	fs::create_dir_all(paths::path_parent(&manifest_path)?)?;
+	fs::write(
+		manifest_path,
+		serde_json::to_string_pretty(&mod_manifest::Manifest {
+			title: Some("BepInEx".to_string()),
+			version,
+			runnable: None,
+			engine: Some(EngineBrand::Unity),
+			engine_version_range: None,
+			unity_backend: game.unity_backend,
+			configs: None,
+		})?,
+	)?;
+
+	Ok(())
+}
+
+pub async fn get_status(game: &DbGame) -> Result<Option<BepInExStatus>> {
+	if game.exe_path.is_none() || game.engine_brand != Some(EngineBrand::Unity) {
+		return Ok(None);
+	}
+
+	let installed_version = get_installed_version(game);
+
+	let latest_version = match (game.unity_backend, game.architecture) {
+		(Some(unity_backend), Some(architecture)) => {
+			match get_version_data(unity_backend, architecture).await {
+				Ok(version_data) => Some(version_data.version),
+				Err(error) => {
+					log::error!(
+						"Failed to get latest BepInEx version for game '{}': {}",
+						game.display_title,
+						error
+					);
+					None
+				}
+			}
+		}
+		_ => None,
+	};
+
+	Ok(Some(BepInExStatus {
+		installed_version,
+		latest_version,
+	}))
+}
+
+async fn get_version_data(
 	unity_backend: UnityBackend,
 	architecture: Architecture,
-) -> Result<String> {
+) -> Result<BepInExVersionData> {
 	let entries: Vec<BepInExEntry> = http::CLIENT
 		.get(BEPINEX_DB_URL)
 		.send()
@@ -88,11 +154,17 @@ async fn get_download_url(
 		.iter()
 		.find(|entry| entry.version.starts_with(&format!("{major_version}.")))
 		.and_then(|entry| {
-			entry.builds.iter().find(|build| {
-				build.os == "win" && build.backend == backend_str && build.arch == arch_str
-			})
+			entry
+				.builds
+				.iter()
+				.find(|build| {
+					build.os == "win" && build.backend == backend_str && build.arch == arch_str
+				})
+				.map(|build| BepInExVersionData {
+					version: entry.version.clone(),
+					download_url: build.download_url.clone(),
+				})
 		})
-		.map(|build| build.download_url.clone())
 		.ok_or_else(|| {
 			Error::ModInstallInfoInsufficient(
 				format!("bepinex_{backend_str}_{arch_str}"),
@@ -144,9 +216,9 @@ impl ModLoaderActions for BepInEx {
 
 		let unity_backend_path = &self.data.path.join(unity_backend.to_string());
 
-		let download_url = get_download_url(unity_backend, architecture).await?;
+		let version_data = get_version_data(unity_backend, architecture).await?;
 		let zip_bytes = http::CLIENT
-			.get(&download_url)
+			.get(&version_data.download_url)
 			.send()
 			.await?
 			.bytes()
@@ -185,11 +257,15 @@ impl ModLoaderActions for BepInEx {
 			),
 		)?;
 
+		update_installed_manifest(game, version_data.version)?;
+
 		Ok(())
 	}
 
 	async fn install_mod_inner(&self, game: &DbGame, local_mod: &LocalMod) -> Result {
-		self.install(game).await?;
+		if get_installed_version(game).is_none() {
+			self.install(game).await?;
+		}
 
 		let bepinex_folder = game.get_installed_mods_folder()?.join("BepInEx");
 

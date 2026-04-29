@@ -1,8 +1,13 @@
-import { Alert, Divider, Table } from "@mantine/core";
-import { EngineVersionRange, DbGame, commands } from "@api/bindings";
+import { Alert, Divider, Table, ThemeIcon } from "@mantine/core";
+import {
+	BepInExStatus,
+	EngineVersionRange,
+	DbGame,
+	commands,
+} from "@api/bindings";
 import { useCallback, useMemo } from "react";
 import { CommandButton } from "@components/command-button";
-import { IconTrash } from "@tabler/icons-react";
+import { IconCheck, IconMinus, IconTrash } from "@tabler/icons-react";
 import { UnifiedMod, useUnifiedMods } from "@hooks/use-unified-mods";
 import { GameModRow } from "./game-mod-row";
 import { TableContainer } from "@components/table/table-container";
@@ -10,6 +15,10 @@ import { useLocalization } from "@hooks/use-localization";
 import { useCommandData } from "@hooks/use-command-data";
 import { useAppEvent } from "@hooks/use-app-event";
 import { MutedText } from "@components/muted-text";
+import { getIsOutdated } from "@util/is-outdated";
+import { OutdatedMarker } from "@components/outdated-marker";
+import { ItemName } from "@components/item-name";
+import { ModVersionBadge } from "@components/mods/mod-version-badge";
 
 type Props = {
 	readonly game: DbGame;
@@ -71,6 +80,60 @@ function isVersionWithinRange(
 
 const defaultInstalledModVersions: Record<string, string> = {};
 
+type BepInExRowProps = {
+	readonly status: BepInExStatus;
+};
+
+function BepInExRow({ status }: BepInExRowProps) {
+	const isOutdated = getIsOutdated(
+		status.installedVersion,
+		status.latestVersion,
+	);
+
+	const { statusIcon, statusColor } = (() => {
+		if (isOutdated) {
+			return {
+				statusIcon: <OutdatedMarker />,
+				statusColor: "orange",
+			};
+		}
+
+		if (status.installedVersion) {
+			return {
+				statusIcon: <IconCheck />,
+				statusColor: "green",
+			};
+		}
+
+		return {
+			statusIcon: <IconMinus />,
+			statusColor: "gray",
+		};
+	})();
+
+	return (
+		<Table.Tr key="bepinex-row">
+			<Table.Td ta="left">
+				<ItemName label="mod loader">
+					<ThemeIcon
+						color={statusColor}
+						size="sm"
+					>
+						{statusIcon}
+					</ThemeIcon>
+					BepInEx
+					<ModVersionBadge
+						localVersion={status.installedVersion ?? undefined}
+						remoteVersion={status.latestVersion ?? undefined}
+					/>
+				</ItemName>
+				<MutedText>Required by many Unity mods.</MutedText>
+			</Table.Td>
+			<Table.Td />
+		</Table.Tr>
+	);
+}
+
 export function GameMods({ game }: Props) {
 	const t = useLocalization("gameModal");
 	const mods = useUnifiedMods();
@@ -92,6 +155,15 @@ export function GameMods({ game }: Props) {
 		null,
 		!game?.exePath,
 	);
+	const getBepinexStatus = useCallback(
+		() => commands.getBepinexStatus(game.providerId, game.gameId),
+		[game],
+	);
+	const [bepinexStatus, updateBepinexStatus] = useCommandData(
+		getBepinexStatus,
+		null,
+		!game?.exePath || game.engineBrand !== "Unity",
+	);
 
 	useAppEvent(
 		"refreshGame",
@@ -103,6 +175,7 @@ export function GameMods({ game }: Props) {
 			)
 				return;
 			updateInstalledModVersions();
+			updateBepinexStatus();
 		},
 	);
 
@@ -140,13 +213,18 @@ export function GameMods({ game }: Props) {
 		};
 	}, [game, installedModVersions, mods]);
 
-	if (compatibleMods.length + incompatibleMods.length === 0) {
+	const shouldShowBepinexRow = Boolean(bepinexStatus);
+
+	if (
+		compatibleMods.length + incompatibleMods.length === 0 &&
+		!shouldShowBepinexRow
+	) {
 		return null;
 	}
 
 	return (
 		<>
-			{compatibleMods.length > 0 && (
+			{(compatibleMods.length > 0 || shouldShowBepinexRow) && (
 				<>
 					<Divider label={t("gameModsLabel")} />
 					{!game.exePath && (
@@ -155,6 +233,7 @@ export function GameMods({ game }: Props) {
 					<TableContainer bg="dark">
 						<Table>
 							<Table.Tbody>
+								{bepinexStatus && <BepInExRow status={bepinexStatus} />}
 								{compatibleMods.map((mod) => (
 									<GameModRow
 										key={mod.common.id}

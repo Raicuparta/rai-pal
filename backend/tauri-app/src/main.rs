@@ -629,6 +629,21 @@ async fn get_installed_mod_versions(
 
 #[tauri::command]
 #[specta::specta]
+async fn get_bepinex_status(
+	provider_id: ProviderId,
+	game_id: String,
+	app_handle: AppHandle,
+) -> Result<Option<bepinex::BepInExStatus>> {
+	let game = app_handle
+		.app_state()
+		.database
+		.get_game(&provider_id, &game_id)?;
+
+	bepinex::get_status(&game).await.map_err(Into::into)
+}
+
+#[tauri::command]
+#[specta::specta]
 async fn get_remote_configs(
 	provider_id: ProviderId,
 	game_id: String,
@@ -711,6 +726,7 @@ fn main() {
 			get_game_ids,
 			get_game,
 			get_installed_mod_versions,
+			get_bepinex_status,
 			get_local_mods,
 			get_remote_mods,
 			install_mod,
