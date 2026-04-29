@@ -37,6 +37,7 @@ import { OutdatedMarker } from "@components/outdated-marker";
 import { ItemName } from "@components/item-name";
 import { ModVersionBadge } from "@components/mods/mod-version-badge";
 import { useAsyncCommand } from "@hooks/use-async-command";
+import { useUnifiedModLoaders } from "@hooks/use-unified-mod-loaders";
 
 type Props = {
 	readonly game: DbGame;
@@ -101,7 +102,7 @@ const defaultInstalledModVersions: Record<string, string> = {};
 type ModLoaderRowProps = {
 	readonly modLoaderId: string;
 	readonly game: DbGame;
-	readonly status: ModLoaderStatus;
+	readonly status?: ModLoaderStatus;
 };
 
 function ModLoaderRow({ game, modLoaderId, status }: ModLoaderRowProps) {
@@ -121,11 +122,11 @@ function ModLoaderRow({ game, modLoaderId, status }: ModLoaderRowProps) {
 	);
 
 	const isOutdated = getIsOutdated(
-		status.installedVersion,
-		status.latestVersion,
+		status?.installedVersion,
+		status?.latestVersion,
 	);
 
-	const isInstalled = Boolean(status.installedVersion);
+	const isInstalled = Boolean(status?.installedVersion);
 
 	const { statusIcon, statusColor } = (() => {
 		if (isOutdated) {
@@ -198,8 +199,8 @@ function ModLoaderRow({ game, modLoaderId, status }: ModLoaderRowProps) {
 					</ThemeIcon>
 					{modLoaderId}
 					<ModVersionBadge
-						localVersion={status.installedVersion ?? undefined}
-						remoteVersion={status.latestVersion ?? undefined}
+						localVersion={status?.installedVersion ?? undefined}
+						remoteVersion={status?.latestVersion ?? undefined}
 					/>
 				</ItemName>
 				<MutedText>Required by some mods.</MutedText>
@@ -272,6 +273,7 @@ export function GameMods({ game }: Props) {
 		{},
 		!game?.exePath,
 	);
+	const modLoaders = useUnifiedModLoaders(modLoaderStatuses);
 
 	useAppEvent(
 		"refreshGame",
@@ -321,18 +323,16 @@ export function GameMods({ game }: Props) {
 		};
 	}, [game, installedModVersions, mods]);
 
-	const modLoaderRows = Object.entries(modLoaderStatuses);
-
 	if (
 		compatibleMods.length + incompatibleMods.length === 0 &&
-		modLoaderRows.length === 0
+		modLoaders.length === 0
 	) {
 		return null;
 	}
 
 	return (
 		<>
-			{(compatibleMods.length > 0 || modLoaderRows.length > 0) && (
+			{(compatibleMods.length > 0 || modLoaders.length > 0) && (
 				<>
 					<Divider label={t("gameModsLabel")} />
 					{!game.exePath && (
@@ -341,10 +341,10 @@ export function GameMods({ game }: Props) {
 					<TableContainer bg="dark">
 						<Table>
 							<Table.Tbody>
-								{modLoaderRows.map(([modLoaderId, status]) => (
+								{modLoaders.map(({ id, status }) => (
 									<ModLoaderRow
-										key={modLoaderId}
-										modLoaderId={modLoaderId}
+										key={id}
+										modLoaderId={id}
 										game={game}
 										status={status}
 									/>
