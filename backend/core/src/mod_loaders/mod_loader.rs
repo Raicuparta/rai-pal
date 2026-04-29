@@ -58,6 +58,12 @@ pub struct ModLoaderData {
 	pub kind: ModKind,
 }
 
+#[serializable_struct]
+pub struct ModLoaderStatus {
+	pub installed_version: Option<String>,
+	pub latest_version: Option<String>,
+}
+
 #[enum_dispatch]
 #[derive(Clone)]
 pub enum ModLoader {
@@ -76,6 +82,15 @@ pub trait ModLoaderActions {
 	fn get_data(&self) -> &ModLoaderData;
 	fn get_mod_path(&self, mod_data: &CommonModData) -> Result<PathBuf>;
 	fn get_local_mods(&self) -> Result<HashMap<String, LocalMod>>;
+	async fn get_status(&self, _game: &DbGame) -> Result<Option<ModLoaderStatus>> {
+		Ok(None)
+	}
+	async fn uninstall_loader(&self, _game: &DbGame) -> Result {
+		Ok(())
+	}
+	fn open_loader_folder_for_game(&self, game: &DbGame) -> Result {
+		game.open_mods_folder()
+	}
 
 	fn open_folder(&self) -> Result {
 		open_folder_or_parent(&self.get_data().path)
@@ -85,6 +100,22 @@ pub trait ModLoaderActions {
 		self.install_mod_inner(game, local_mod).await?;
 
 		self.update_installed_mod_manifest(local_mod, game)?;
+
+		Ok(())
+	}
+
+	async fn install_loader(&self, game: &DbGame, force_reinstall: bool) -> Result {
+		let should_install = force_reinstall
+			|| self
+				.get_status(game)
+				.await?
+				.as_ref()
+				.and_then(|status| status.installed_version.as_ref())
+				.is_none();
+
+		if should_install {
+			self.install(game).await?;
+		}
 
 		Ok(())
 	}

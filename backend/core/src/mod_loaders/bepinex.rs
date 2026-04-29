@@ -32,6 +32,7 @@ use crate::{
 		mod_loader::{
 			ModLoaderActions,
 			ModLoaderData,
+			ModLoaderStatus,
 		},
 	},
 	mod_manifest,
@@ -64,12 +65,6 @@ struct BepInExVersionData {
 	download_url: String,
 }
 
-#[serializable_struct]
-pub struct BepInExStatus {
-	pub installed_version: Option<String>,
-	pub latest_version: Option<String>,
-}
-
 fn get_installed_version(game: &DbGame) -> Option<String> {
 	let manifest_path = game.get_installed_mod_manifest_path(BepInEx::ID).ok()?;
 	mod_manifest::get(&manifest_path).map(|manifest| manifest.version)
@@ -94,7 +89,7 @@ fn update_installed_manifest(game: &DbGame, version: String) -> Result {
 	Ok(())
 }
 
-pub async fn get_status(game: &DbGame) -> Result<Option<BepInExStatus>> {
+async fn get_status(game: &DbGame) -> Result<Option<ModLoaderStatus>> {
 	if game.exe_path.is_none() || game.engine_brand != Some(EngineBrand::Unity) {
 		return Ok(None);
 	}
@@ -118,7 +113,7 @@ pub async fn get_status(game: &DbGame) -> Result<Option<BepInExStatus>> {
 		_ => None,
 	};
 
-	Ok(Some(BepInExStatus {
+	Ok(Some(ModLoaderStatus {
 		installed_version,
 		latest_version,
 	}))
@@ -197,6 +192,10 @@ impl ModLoaderStatic for BepInEx {
 impl ModLoaderActions for BepInEx {
 	fn get_data(&self) -> &ModLoaderData {
 		&self.data
+	}
+
+	async fn get_status(&self, game: &DbGame) -> Result<Option<ModLoaderStatus>> {
+		get_status(game).await
 	}
 
 	async fn install(&self, game: &DbGame) -> Result {
@@ -310,6 +309,32 @@ impl ModLoaderActions for BepInEx {
 		Ok(())
 	}
 
+	async fn uninstall_loader(&self, game: &DbGame) -> Result {
+		if let Ok(mods_folder) = game.get_installed_mods_folder() {
+			let bepinex_folder = mods_folder.join("BepInEx");
+			if bepinex_folder.exists() {
+				fs::remove_dir_all(&bepinex_folder)?;
+			}
+
+			let game_folder = paths::path_parent(game.try_get_exe_path()?)?;
+			let winhttp_path = game_folder.join("winhttp.dll");
+			if winhttp_path.exists() {
+				fs::remove_file(&winhttp_path)?;
+			}
+
+			let doorstop_config_path = game_folder.join("doorstop_config.ini");
+			if doorstop_config_path.exists() {
+				fs::remove_file(&doorstop_config_path)?;
+			}
+		}
+
+		if let Ok(manifest_path) = game.get_installed_mod_manifest_path(Self::ID) {
+			let _ = fs::remove_file(manifest_path);
+		}
+
+		Ok(())
+	}
+
 	async fn run_without_game(&self, local_mod: &LocalMod) -> Result {
 		Err(Error::CantRunNonRunnable(local_mod.common.id.clone()))
 	}
@@ -322,6 +347,11 @@ impl ModLoaderActions for BepInEx {
 			.join(&local_mod.common.id);
 
 		paths::open_folder_or_parent(&plugin_folder)
+	}
+
+	fn open_loader_folder_for_game(&self, game: &DbGame) -> Result {
+		let bepinex_folder = game.get_installed_mods_folder()?.join("BepInEx");
+		paths::open_folder_or_parent(&bepinex_folder)
 	}
 
 	fn get_mod_path(&self, mod_data: &CommonModData) -> Result<PathBuf> {

@@ -7,9 +7,9 @@ import {
 	ThemeIcon,
 } from "@mantine/core";
 import {
-	BepInExStatus,
 	EngineVersionRange,
 	DbGame,
+	ModLoaderStatus,
 	commands,
 } from "@api/bindings";
 import { useCallback, useMemo } from "react";
@@ -98,20 +98,26 @@ function isVersionWithinRange(
 
 const defaultInstalledModVersions: Record<string, string> = {};
 
-type BepInExRowProps = {
+type ModLoaderRowProps = {
+	readonly modLoaderId: string;
 	readonly game: DbGame;
-	readonly status: BepInExStatus;
+	readonly status: ModLoaderStatus;
 };
 
-function BepInExRow({ game, status }: BepInExRowProps) {
+function ModLoaderRow({ game, modLoaderId, status }: ModLoaderRowProps) {
 	const tGameModRow = useLocalization("gameModRow");
-	const [runBepInExAction, isRunningBepInExAction] = useAsyncCommand(
+	const [runModLoaderAction, isRunningModLoaderAction] = useAsyncCommand(
 		(forceReinstall: boolean) =>
-			commands.installBepinex(game.providerId, game.gameId, forceReinstall),
+			commands.installModLoader(
+				game.providerId,
+				game.gameId,
+				modLoaderId,
+				forceReinstall,
+			),
 	);
 
-	const [runUninstallBepInEx, isUninstallingBepInEx] = useAsyncCommand(() =>
-		commands.uninstallBepinex(game.providerId, game.gameId),
+	const [runUninstallModLoader, isUninstallingModLoader] = useAsyncCommand(() =>
+		commands.uninstallModLoader(game.providerId, game.gameId, modLoaderId),
 	);
 
 	const isOutdated = getIsOutdated(
@@ -143,13 +149,17 @@ function BepInExRow({ game, status }: BepInExRowProps) {
 	})();
 
 	const handleOpenModLoaderFolder = async () => {
-		await commands.openBepinexFolder(game.providerId, game.gameId);
+		await commands.openGameModLoaderFolder(
+			game.providerId,
+			game.gameId,
+			modLoaderId,
+		);
 	};
 
 	const { mainButtonAction, mainButtonIcon, mainButtonColor } = (() => {
 		if (!isInstalled) {
 			return {
-				mainButtonAction: () => runBepInExAction(false),
+				mainButtonAction: () => runModLoaderAction(false),
 				mainButtonIcon: <IconCirclePlus />,
 				mainButtonColor: "violet",
 			};
@@ -157,14 +167,14 @@ function BepInExRow({ game, status }: BepInExRowProps) {
 
 		if (isOutdated) {
 			return {
-				mainButtonAction: () => runBepInExAction(true),
+				mainButtonAction: () => runModLoaderAction(true),
 				mainButtonIcon: <IconRefreshAlert />,
 				mainButtonColor: "orange",
 			};
 		}
 
 		return {
-			mainButtonAction: () => runUninstallBepInEx(),
+			mainButtonAction: () => runUninstallModLoader(),
 			mainButtonIcon: <IconTrash />,
 			mainButtonColor: "red",
 		};
@@ -177,7 +187,7 @@ function BepInExRow({ game, status }: BepInExRowProps) {
 			: "Uninstall";
 
 	return (
-		<Table.Tr key="bepinex-row">
+		<Table.Tr key={`${modLoaderId}-row`}>
 			<Table.Td ta="left">
 				<ItemName label="mod loader">
 					<ThemeIcon
@@ -186,13 +196,13 @@ function BepInExRow({ game, status }: BepInExRowProps) {
 					>
 						{statusIcon}
 					</ThemeIcon>
-					BepInEx
+					{modLoaderId}
 					<ModVersionBadge
 						localVersion={status.installedVersion ?? undefined}
 						remoteVersion={status.latestVersion ?? undefined}
 					/>
 				</ItemName>
-				<MutedText>Required by many Unity mods.</MutedText>
+				<MutedText>Required by some mods.</MutedText>
 			</Table.Td>
 			<Table.Td maw={200}>
 				<Group justify="right">
@@ -202,7 +212,7 @@ function BepInExRow({ game, status }: BepInExRowProps) {
 							leftSection={mainButtonIcon}
 							color={mainButtonColor}
 							variant={mainButtonColor === "red" ? "light" : "default"}
-							loading={isRunningBepInExAction || isUninstallingBepInEx}
+							loading={isRunningModLoaderAction || isUninstallingModLoader}
 							onClick={mainButtonAction}
 						>
 							{mainButtonLabel}
@@ -212,8 +222,8 @@ function BepInExRow({ game, status }: BepInExRowProps) {
 								size="xs"
 								leftSection={<IconRefresh />}
 								disabled={!isInstalled}
-								loading={isRunningBepInExAction}
-								onClick={() => runBepInExAction(true)}
+								loading={isRunningModLoaderAction}
+								onClick={() => runModLoaderAction(true)}
 							>
 								Reinstall
 							</CommandButton>
@@ -253,14 +263,14 @@ export function GameMods({ game }: Props) {
 		null,
 		!game?.exePath,
 	);
-	const getBepinexStatus = useCallback(
-		() => commands.getBepinexStatus(game.providerId, game.gameId),
+	const getModLoaderStatuses = useCallback(
+		() => commands.getModLoaderStatuses(game.providerId, game.gameId),
 		[game],
 	);
-	const [bepinexStatus, updateBepinexStatus] = useCommandData(
-		getBepinexStatus,
-		null,
-		!game?.exePath || game.engineBrand !== "Unity",
+	const [modLoaderStatuses, updateModLoaderStatuses] = useCommandData(
+		getModLoaderStatuses,
+		{},
+		!game?.exePath,
 	);
 
 	useAppEvent(
@@ -273,7 +283,7 @@ export function GameMods({ game }: Props) {
 			)
 				return;
 			updateInstalledModVersions();
-			updateBepinexStatus();
+			updateModLoaderStatuses();
 		},
 	);
 
@@ -311,18 +321,18 @@ export function GameMods({ game }: Props) {
 		};
 	}, [game, installedModVersions, mods]);
 
-	const shouldShowBepinexRow = Boolean(bepinexStatus);
+	const modLoaderRows = Object.entries(modLoaderStatuses);
 
 	if (
 		compatibleMods.length + incompatibleMods.length === 0 &&
-		!shouldShowBepinexRow
+		modLoaderRows.length === 0
 	) {
 		return null;
 	}
 
 	return (
 		<>
-			{(compatibleMods.length > 0 || shouldShowBepinexRow) && (
+			{(compatibleMods.length > 0 || modLoaderRows.length > 0) && (
 				<>
 					<Divider label={t("gameModsLabel")} />
 					{!game.exePath && (
@@ -331,12 +341,14 @@ export function GameMods({ game }: Props) {
 					<TableContainer bg="dark">
 						<Table>
 							<Table.Tbody>
-								{bepinexStatus && (
-									<BepInExRow
+								{modLoaderRows.map(([modLoaderId, status]) => (
+									<ModLoaderRow
+										key={modLoaderId}
+										modLoaderId={modLoaderId}
 										game={game}
-										status={bepinexStatus}
+										status={status}
 									/>
-								)}
+								))}
 								{compatibleMods.map((mod) => (
 									<GameModRow
 										key={mod.common.id}

@@ -22,13 +22,10 @@ export const commands = {
 } | null) => __TAURI_INVOKE<GameIdsResponse>("get_game_ids", { query }),
 	getGame: (providerId: ProviderId, gameId: string) => __TAURI_INVOKE<DbGame>("get_game", { providerId, gameId }),
 	getInstalledModVersions: (providerId: ProviderId, gameId: string) => __TAURI_INVOKE<{ [key in string]: string }>("get_installed_mod_versions", { providerId, gameId }),
-	getBepinexStatus: (providerId: ProviderId, gameId: string) => __TAURI_INVOKE<{
-	installedVersion: string | null,
-	latestVersion: string | null,
-} | null>("get_bepinex_status", { providerId, gameId }),
-	installBepinex: (providerId: ProviderId, gameId: string, forceReinstall: boolean) => __TAURI_INVOKE<null>("install_bepinex", { providerId, gameId, forceReinstall }),
-	uninstallBepinex: (providerId: ProviderId, gameId: string) => __TAURI_INVOKE<null>("uninstall_bepinex", { providerId, gameId }),
-	openBepinexFolder: (providerId: ProviderId, gameId: string) => __TAURI_INVOKE<null>("open_bepinex_folder", { providerId, gameId }),
+	getModLoaderStatuses: (providerId: ProviderId, gameId: string) => __TAURI_INVOKE<{ [key in string]: ModLoaderStatus }>("get_mod_loader_statuses", { providerId, gameId }),
+	installModLoader: (providerId: ProviderId, gameId: string, modLoaderId: string, forceReinstall: boolean) => __TAURI_INVOKE<null>("install_mod_loader", { providerId, gameId, modLoaderId, forceReinstall }),
+	uninstallModLoader: (providerId: ProviderId, gameId: string, modLoaderId: string) => __TAURI_INVOKE<null>("uninstall_mod_loader", { providerId, gameId, modLoaderId }),
+	openGameModLoaderFolder: (providerId: ProviderId, gameId: string, modLoaderId: string) => __TAURI_INVOKE<null>("open_game_mod_loader_folder", { providerId, gameId, modLoaderId }),
 	getLocalMods: () => __TAURI_INVOKE<{ [key in string]: LocalMod }>("get_local_mods"),
 	getRemoteMods: () => __TAURI_INVOKE<{ [key in string]: RemoteMod }>("get_remote_mods"),
 	installMod: (providerId: ProviderId, gameId: string, modId: string) => __TAURI_INVOKE<null>("install_mod", { providerId, gameId, modId }),
@@ -84,11 +81,6 @@ export type AppSettings = {
 };
 
 export type Architecture = "X64" | "X86";
-
-export type BepInExStatus = {
-	installedVersion: string | null,
-	latestVersion: string | null,
-};
 
 export type CommonModData = {
 	id: string,
@@ -223,6 +215,11 @@ export type ModLoaderData = {
 	id: string,
 	path: string,
 	kind: ModKind,
+};
+
+export type ModLoaderStatus = {
+	installedVersion: string | null,
+	latestVersion: string | null,
 };
 
 export type PathData = string;
