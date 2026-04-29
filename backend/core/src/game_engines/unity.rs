@@ -1,7 +1,14 @@
 use std::{
-	fs::{self, File},
+	ffi::OsStr,
+	fs::{
+		self,
+		File,
+	},
 	io::Read,
-	path::{Path, PathBuf},
+	path::{
+		Path,
+		PathBuf,
+	},
 };
 
 use lazy_regex::regex_captures;
@@ -10,12 +17,21 @@ use rai_pal_proc_macros::serializable_enum;
 
 use super::game_engine::EngineVersionNumbers;
 use crate::{
-	architecture::{Architecture, get_architecture},
+	architecture::{
+		Architecture,
+		get_architecture,
+	},
 	data_types::path_data::PathData,
 	game::DbGame,
 	game_engines::game_engine::EngineVersion,
-	paths::{self, glob_path},
-	result::{Error, Result},
+	paths::{
+		self,
+		glob_path,
+	},
+	result::{
+		Error,
+		Result,
+	},
 };
 
 #[serializable_enum]
@@ -89,8 +105,12 @@ fn get_version(game_exe_path: &Path) -> Option<EngineVersion> {
 fn get_unity_data_path(game_exe_path: &Path) -> Result<PathBuf> {
 	let parent = paths::path_parent(game_exe_path)?;
 	let file_stem = paths::file_name_without_extension(game_exe_path)?;
-
-	Ok(parent.join(format!("{file_stem}_Data")))
+	let expected_name = format!("{file_stem}_Data");
+	Ok(
+		paths::find_child_case_insensitive(parent, OsStr::new(expected_name.as_str()))
+			.filter(|path| path.is_dir())
+			.unwrap_or_else(|| parent.join(expected_name.as_str())),
+	)
 }
 
 fn get_unity_backend(path: &Path) -> Option<UnityBackend> {

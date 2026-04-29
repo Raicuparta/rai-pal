@@ -147,20 +147,21 @@ impl Steam {
 
 		for launch_option in sorted_launch_options {
 			if let Some(executable_path) = launch_option.executable.as_ref() {
-				let full_path = &app_path.join(executable_path);
-
-				if !full_path.is_file() {
+				let Some(full_path) =
+					paths::resolve_relative_path_case_insensitive(app_path, executable_path)
+						.filter(|path| path.is_file())
+				else {
 					continue;
-				}
+				};
 
-				if used_paths.contains(full_path) {
+				if used_paths.contains(&full_path) {
 					continue;
 				}
 
 				let app_name = app_info.name.clone();
 
 				let mut installed_game = game.clone();
-				installed_game.set_executable(full_path);
+				installed_game.set_executable(&full_path);
 				installed_game.title_discriminator = if used_names.contains(&app_name) {
 					Some(
 						launch_option
@@ -182,11 +183,11 @@ impl Steam {
 				installed_game.game_id = format!(
 					"{}_{}",
 					&installed_game.external_id,
-					paths::hash_path(full_path)
+					paths::hash_path(&full_path)
 				);
 
 				used_names.insert(app_name);
-				used_paths.insert(full_path.clone());
+				used_paths.insert(full_path);
 				installed_games.push(installed_game);
 			}
 		}
