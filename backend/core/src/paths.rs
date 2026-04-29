@@ -8,6 +8,7 @@ use std::{
 	},
 	io,
 	path::{
+		Component,
 		Path,
 		PathBuf,
 	},
@@ -95,6 +96,57 @@ pub fn normalize_path(path: &Path) -> PathBuf {
 		log::error!("Failed to normalize path `{}`: {}", path.display(), err);
 		path.to_path_buf()
 	})
+}
+
+pub fn find_child_case_insensitive(parent: &Path, child_name: &OsStr) -> Option<PathBuf> {
+	let direct_path = parent.join(Path::new(child_name));
+	if direct_path.exists() {
+		return Some(direct_path);
+	}
+
+	std::fs::read_dir(parent)
+		.ok()?
+		.flatten()
+		.find(|entry| entry.file_name().eq_ignore_ascii_case(child_name))
+		.map(|entry| entry.path())
+}
+
+pub fn resolve_relative_path_case_insensitive(
+	base_path: &Path,
+	relative_path: &Path,
+) -> Option<PathBuf> {
+	let direct_path = base_path.join(relative_path);
+	if direct_path.exists() {
+		return Some(direct_path);
+	}
+
+	let mut current = base_path.to_path_buf();
+
+	for component in relative_path.components() {
+		match component {
+			Component::CurDir => {}
+			Component::ParentDir => {
+				current.pop();
+			}
+			Component::Normal(name) => {
+				current.push(name);
+				if current.exists() {
+					continue;
+				}
+
+				current.pop();
+
+				if let Some(found) = find_child_case_insensitive(&current, name) {
+					current.push(found.file_name()?);
+				} else {
+					return None;
+				}
+			}
+			Component::RootDir | Component::Prefix(_) => return None,
+		}
+	}
+
+	Some(current)
 }
 
 pub fn hash_path(path: &Path) -> String {
