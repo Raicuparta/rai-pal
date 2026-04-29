@@ -190,7 +190,7 @@ function ModLoaderRow({ game, modLoaderId, status }: ModLoaderRowProps) {
 	return (
 		<Table.Tr key={`${modLoaderId}-row`}>
 			<Table.Td ta="left">
-				<ItemName label="mod loader">
+				<ItemName>
 					<ThemeIcon
 						color={statusColor}
 						size="sm"
@@ -203,7 +203,6 @@ function ModLoaderRow({ game, modLoaderId, status }: ModLoaderRowProps) {
 						remoteVersion={status?.latestVersion ?? undefined}
 					/>
 				</ItemName>
-				<MutedText>Required by some mods.</MutedText>
 			</Table.Td>
 			<Table.Td maw={200}>
 				<Group justify="right">
