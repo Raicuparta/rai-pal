@@ -644,6 +644,92 @@ async fn get_bepinex_status(
 
 #[tauri::command]
 #[specta::specta]
+async fn install_bepinex(
+	provider_id: ProviderId,
+	game_id: String,
+	force_reinstall: bool,
+	app_handle: AppHandle,
+) -> Result {
+	let state = app_handle.app_state();
+	let game = state.database.get_game(&provider_id, &game_id)?;
+	let status = bepinex::get_status(&game).await?;
+
+	let should_install = force_reinstall
+		|| status
+			.as_ref()
+			.and_then(|status| status.installed_version.as_ref())
+			.is_none();
+
+	if should_install {
+		let mod_loaders = state.mod_loaders.read_state()?.clone();
+		let bepinex_loader = mod_loaders.try_get("bepinex")?;
+		bepinex_loader.install(&game).await?;
+
+		app_handle.emit_safe(events::RefreshGame(provider_id, game_id));
+	}
+
+	Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn uninstall_bepinex(
+	provider_id: ProviderId,
+	game_id: String,
+	app_handle: AppHandle,
+) -> Result {
+	let state = app_handle.app_state();
+	let game = state.database.get_game(&provider_id, &game_id)?;
+
+	// Delete BepInEx installation folder and manifest
+	if let Ok(mods_folder) = game.get_installed_mods_folder() {
+		let bepinex_folder = mods_folder.join("BepInEx");
+		if bepinex_folder.exists() {
+			std::fs::remove_dir_all(&bepinex_folder)?;
+		}
+
+		let game_folder = paths::path_parent(game.try_get_exe_path()?)?;
+		let winhttp_path = game_folder.join("winhttp.dll");
+		if winhttp_path.exists() {
+			std::fs::remove_file(&winhttp_path)?;
+		}
+
+		let doorstop_config_path = game_folder.join("doorstop_config.ini");
+		if doorstop_config_path.exists() {
+			std::fs::remove_file(&doorstop_config_path)?;
+		}
+	}
+
+	// Delete BepInEx manifest
+	if let Ok(manifest_path) = game.get_installed_mod_manifest_path("bepinex") {
+		let _ = std::fs::remove_file(manifest_path);
+	}
+
+	app_handle.emit_safe(events::RefreshGame(provider_id, game_id));
+
+	Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn open_bepinex_folder(
+	provider_id: ProviderId,
+	game_id: String,
+	app_handle: AppHandle,
+) -> Result {
+	let game = app_handle
+		.app_state()
+		.database
+		.get_game(&provider_id, &game_id)?;
+
+	let bepinex_folder = game.get_installed_mods_folder()?.join("BepInEx");
+	paths::open_folder_or_parent(&bepinex_folder)?;
+
+	Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
 async fn get_remote_configs(
 	provider_id: ProviderId,
 	game_id: String,
@@ -727,6 +813,9 @@ fn main() {
 			get_game,
 			get_installed_mod_versions,
 			get_bepinex_status,
+			install_bepinex,
+			uninstall_bepinex,
+			open_bepinex_folder,
 			get_local_mods,
 			get_remote_mods,
 			install_mod,

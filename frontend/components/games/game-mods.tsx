@@ -1,4 +1,11 @@
-import { Alert, Divider, Table, ThemeIcon } from "@mantine/core";
+import {
+	Alert,
+	ButtonGroup,
+	Divider,
+	Group,
+	Table,
+	ThemeIcon,
+} from "@mantine/core";
 import {
 	BepInExStatus,
 	EngineVersionRange,
@@ -7,7 +14,17 @@ import {
 } from "@api/bindings";
 import { useCallback, useMemo } from "react";
 import { CommandButton } from "@components/command-button";
-import { IconCheck, IconMinus, IconTrash } from "@tabler/icons-react";
+import {
+	IconCheck,
+	IconCirclePlus,
+	IconDotsVertical,
+	IconFolderOpen,
+	IconMinus,
+	IconRefresh,
+	IconRefreshAlert,
+	IconTrash,
+} from "@tabler/icons-react";
+import { CommandDropdown } from "@components/command-dropdown";
 import { UnifiedMod, useUnifiedMods } from "@hooks/use-unified-mods";
 import { GameModRow } from "./game-mod-row";
 import { TableContainer } from "@components/table/table-container";
@@ -19,6 +36,7 @@ import { getIsOutdated } from "@util/is-outdated";
 import { OutdatedMarker } from "@components/outdated-marker";
 import { ItemName } from "@components/item-name";
 import { ModVersionBadge } from "@components/mods/mod-version-badge";
+import { useAsyncCommand } from "@hooks/use-async-command";
 
 type Props = {
 	readonly game: DbGame;
@@ -81,14 +99,27 @@ function isVersionWithinRange(
 const defaultInstalledModVersions: Record<string, string> = {};
 
 type BepInExRowProps = {
+	readonly game: DbGame;
 	readonly status: BepInExStatus;
 };
 
-function BepInExRow({ status }: BepInExRowProps) {
+function BepInExRow({ game, status }: BepInExRowProps) {
+	const tGameModRow = useLocalization("gameModRow");
+	const [runBepInExAction, isRunningBepInExAction] = useAsyncCommand(
+		(forceReinstall: boolean) =>
+			commands.installBepinex(game.providerId, game.gameId, forceReinstall),
+	);
+
+	const [runUninstallBepInEx, isUninstallingBepInEx] = useAsyncCommand(() =>
+		commands.uninstallBepinex(game.providerId, game.gameId),
+	);
+
 	const isOutdated = getIsOutdated(
 		status.installedVersion,
 		status.latestVersion,
 	);
+
+	const isInstalled = Boolean(status.installedVersion);
 
 	const { statusIcon, statusColor } = (() => {
 		if (isOutdated) {
@@ -98,7 +129,7 @@ function BepInExRow({ status }: BepInExRowProps) {
 			};
 		}
 
-		if (status.installedVersion) {
+		if (isInstalled) {
 			return {
 				statusIcon: <IconCheck />,
 				statusColor: "green",
@@ -110,6 +141,40 @@ function BepInExRow({ status }: BepInExRowProps) {
 			statusColor: "gray",
 		};
 	})();
+
+	const handleOpenModLoaderFolder = async () => {
+		await commands.openBepinexFolder(game.providerId, game.gameId);
+	};
+
+	const { mainButtonAction, mainButtonIcon, mainButtonColor } = (() => {
+		if (!isInstalled) {
+			return {
+				mainButtonAction: () => runBepInExAction(false),
+				mainButtonIcon: <IconCirclePlus />,
+				mainButtonColor: "violet",
+			};
+		}
+
+		if (isOutdated) {
+			return {
+				mainButtonAction: () => runBepInExAction(true),
+				mainButtonIcon: <IconRefreshAlert />,
+				mainButtonColor: "orange",
+			};
+		}
+
+		return {
+			mainButtonAction: () => runUninstallBepInEx(),
+			mainButtonIcon: <IconTrash />,
+			mainButtonColor: "red",
+		};
+	})();
+
+	const mainButtonLabel = !isInstalled
+		? tGameModRow("installMod")
+		: isOutdated
+			? tGameModRow("updateMod")
+			: "Uninstall";
 
 	return (
 		<Table.Tr key="bepinex-row">
@@ -129,7 +194,40 @@ function BepInExRow({ status }: BepInExRowProps) {
 				</ItemName>
 				<MutedText>Required by many Unity mods.</MutedText>
 			</Table.Td>
-			<Table.Td />
+			<Table.Td maw={200}>
+				<Group justify="right">
+					<ButtonGroup>
+						<CommandButton
+							size="xs"
+							leftSection={mainButtonIcon}
+							color={mainButtonColor}
+							variant={mainButtonColor === "red" ? "light" : "default"}
+							loading={isRunningBepInExAction || isUninstallingBepInEx}
+							onClick={mainButtonAction}
+						>
+							{mainButtonLabel}
+						</CommandButton>
+						<CommandDropdown icon={<IconDotsVertical />}>
+							<CommandButton
+								size="xs"
+								leftSection={<IconRefresh />}
+								disabled={!isInstalled}
+								loading={isRunningBepInExAction}
+								onClick={() => runBepInExAction(true)}
+							>
+								Reinstall
+							</CommandButton>
+							<CommandButton
+								size="xs"
+								leftSection={<IconFolderOpen />}
+								onClick={handleOpenModLoaderFolder}
+							>
+								Open mod loader folder
+							</CommandButton>
+						</CommandDropdown>
+					</ButtonGroup>
+				</Group>
+			</Table.Td>
 		</Table.Tr>
 	);
 }
@@ -233,7 +331,12 @@ export function GameMods({ game }: Props) {
 					<TableContainer bg="dark">
 						<Table>
 							<Table.Tbody>
-								{bepinexStatus && <BepInExRow status={bepinexStatus} />}
+								{bepinexStatus && (
+									<BepInExRow
+										game={game}
+										status={bepinexStatus}
+									/>
+								)}
 								{compatibleMods.map((mod) => (
 									<GameModRow
 										key={mod.common.id}
