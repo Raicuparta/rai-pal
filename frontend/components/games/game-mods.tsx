@@ -362,6 +362,19 @@ export function GameMods({ game }: Props) {
 					</TableContainer>
 				</>
 			)}
+			{game.exePath && (
+				<CommandButton
+					confirmationText={t("uninstallAllModsConfirmation")}
+					onClick={() =>
+						commands.uninstallAllMods(game.providerId, game.gameId)
+					}
+					color="red"
+					variant="light"
+					leftSection={<IconTrash />}
+				>
+					{t("uninstallAllModsButton")}
+				</CommandButton>
+			)}
 			{incompatibleMods.length > 0 && (
 				<>
 					<Divider label={t("incompatibleGameModsLabel")} />
@@ -383,19 +396,6 @@ export function GameMods({ game }: Props) {
 						</Table>
 					</TableContainer>
 				</>
-			)}
-			{game.exePath && (
-				<CommandButton
-					confirmationText={t("uninstallAllModsConfirmation")}
-					onClick={() =>
-						commands.uninstallAllMods(game.providerId, game.gameId)
-					}
-					color="red"
-					variant="light"
-					leftSection={<IconTrash />}
-				>
-					{t("uninstallAllModsButton")}
-				</CommandButton>
 			)}
 		</>
 	);
