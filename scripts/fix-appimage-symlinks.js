@@ -1,3 +1,6 @@
+// Tauri v2 messes up the icons in appimage.
+// If this issue gets closed, we can remove this script: https://github.com/tauri-apps/tauri/issues/15110
+
 import fs from "fs";
 import os from "os";
 import path from "path";
