@@ -88,6 +88,9 @@ assetProtocol = { enable = true, scope = ["$APPDATA/**", "$HOME/.local/share/rai
 img-src = [
   "'self'",
   "http://tauri.localhost",
+  "http://asset.localhost",
+  "https://asset.localhost",
+  "asset:",
   "https://*.epicgames.com",
   "https://*.itch.zone",
   "https://*.steamstatic.com",
