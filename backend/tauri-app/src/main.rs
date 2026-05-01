@@ -111,7 +111,7 @@ async fn log_in() -> Result<DiscordOAuthResult> {
 #[tauri::command]
 #[specta::specta]
 async fn get_auth_state() -> Result<DiscordAuthState> {
-	get_discord_auth_state().map_err(Into::into)
+	get_discord_auth_state().await.map_err(Into::into)
 }
 
 #[tauri::command]

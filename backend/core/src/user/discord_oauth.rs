@@ -44,6 +44,7 @@ const DISCORD_CALLBACK_PORT: u16 = 43941;
 const DISCORD_KEYRING_SERVICE: &str = "rai-pal";
 const DISCORD_KEYRING_ACCOUNT: &str = "discord-oauth-token";
 const DISCORD_KEYRING_LOCATION: &str = "keyring://rai-pal/discord-oauth-token";
+const DISCORD_TOKEN_EXPIRY_LEEWAY_SECONDS: u64 = 60;
 
 #[derive(Clone, Debug, serde::Serialize, specta::Type)]
 pub struct DiscordOAuthResult {
@@ -280,6 +281,39 @@ fn get_discord_keyring_entry() -> Result<keyring::Entry> {
 	})
 }
 
+fn current_unix_seconds() -> Result<u64> {
+	SystemTime::now()
+		.duration_since(UNIX_EPOCH)
+		.map_err(|error| Error::DiscordOAuth(format!("Clock error: {error}")))
+		.map(|duration| duration.as_secs())
+}
+
+fn is_discord_token_expired(token: &DiscordSavedToken) -> Result<bool> {
+	let expires_at = token
+		.received_at_unix_seconds
+		.saturating_add(token.expires_in);
+	let now_with_leeway =
+		current_unix_seconds()?.saturating_add(DISCORD_TOKEN_EXPIRY_LEEWAY_SECONDS);
+
+	Ok(now_with_leeway >= expires_at)
+}
+
+fn clear_discord_session() -> Result {
+	let entry = get_discord_keyring_entry()?;
+	match entry.delete_credential() {
+		Ok(()) | Err(keyring::Error::NoEntry) => {}
+		Err(error) => {
+			return Err(Error::DiscordOAuth(format!(
+				"Failed to delete Discord token from system keyring: {error}"
+			)));
+		}
+	}
+
+	delete_file_if_exists(&get_discord_avatar_file_path()?)?;
+
+	Ok(())
+}
+
 fn save_discord_token_file(token: &DiscordSavedToken) -> Result<String> {
 	let entry = get_discord_keyring_entry()?;
 	let token_json = serde_json::to_string(token)?;
@@ -450,10 +484,7 @@ pub async fn refresh_discord_token_if_possible() -> Result<bool> {
 	let token_response =
 		exchange_refresh_token_for_discord_token(DISCORD_CLIENT_ID, &refresh_token).await?;
 
-	let now = SystemTime::now()
-		.duration_since(UNIX_EPOCH)
-		.map_err(|error| Error::DiscordOAuth(format!("Clock error: {error}")))?
-		.as_secs();
+	let now = current_unix_seconds()?;
 
 	let refreshed_token = DiscordSavedToken {
 		access_token: token_response.access_token,
@@ -470,9 +501,9 @@ pub async fn refresh_discord_token_if_possible() -> Result<bool> {
 	Ok(true)
 }
 
-pub fn get_discord_auth_state() -> Result<DiscordAuthState> {
+pub async fn get_discord_auth_state() -> Result<DiscordAuthState> {
 	log::debug!("Computing Discord auth state");
-	let Some(saved_token) = read_discord_token_file_optional()? else {
+	let Some(mut saved_token) = read_discord_token_file_optional()? else {
 		log::debug!("Discord auth state: logged out (no token in keyring)");
 		return Ok(DiscordAuthState {
 			is_logged_in: false,
@@ -480,6 +511,63 @@ pub fn get_discord_auth_state() -> Result<DiscordAuthState> {
 			user_name: None,
 		});
 	};
+
+	if is_discord_token_expired(&saved_token)? {
+		log::info!("Discord auth token is expired; attempting immediate refresh.");
+
+		match refresh_discord_token_if_possible().await {
+			Ok(true) => {
+				log::info!("Discord auth token refreshed while computing auth state.");
+				if let Some(refreshed_token) = read_discord_token_file_optional()? {
+					saved_token = refreshed_token;
+				} else {
+					log::warn!(
+						"Discord token disappeared after refresh. Clearing session and marking logged out."
+					);
+					clear_discord_session()?;
+					return Ok(DiscordAuthState {
+						is_logged_in: false,
+						avatar_file_path: None,
+						user_name: None,
+					});
+				}
+			}
+			Ok(false) => {
+				log::info!(
+					"Discord auth token expired and refresh is unavailable. Clearing session and marking logged out."
+				);
+				clear_discord_session()?;
+				return Ok(DiscordAuthState {
+					is_logged_in: false,
+					avatar_file_path: None,
+					user_name: None,
+				});
+			}
+			Err(error) => {
+				log::warn!(
+					"Discord auth token expired and immediate refresh failed: {error}. Clearing session and marking logged out."
+				);
+				clear_discord_session()?;
+				return Ok(DiscordAuthState {
+					is_logged_in: false,
+					avatar_file_path: None,
+					user_name: None,
+				});
+			}
+		}
+
+		if is_discord_token_expired(&saved_token)? {
+			log::warn!(
+				"Discord token is still expired after refresh attempt. Clearing session and marking logged out."
+			);
+			clear_discord_session()?;
+			return Ok(DiscordAuthState {
+				is_logged_in: false,
+				avatar_file_path: None,
+				user_name: None,
+			});
+		}
+	}
 
 	let avatar_file_path = get_discord_avatar_file_path()?;
 	let avatar_path = avatar_file_path
@@ -495,22 +583,18 @@ pub fn get_discord_auth_state() -> Result<DiscordAuthState> {
 
 pub(crate) fn read_discord_access_token() -> Result<String> {
 	let saved_token = read_discord_token_file()?;
+
+	if is_discord_token_expired(&saved_token)? {
+		return Err(Error::DiscordOAuth(
+			"Discord OAuth token has expired. Please sign in again.".to_string(),
+		));
+	}
+
 	Ok(saved_token.access_token)
 }
 
 pub fn logout_discord() -> Result {
-	let entry = get_discord_keyring_entry()?;
-	match entry.delete_credential() {
-		Ok(()) | Err(keyring::Error::NoEntry) => {}
-		Err(error) => {
-			return Err(Error::DiscordOAuth(format!(
-				"Failed to delete Discord token from system keyring: {error}"
-			)));
-		}
-	}
-	delete_file_if_exists(&get_discord_avatar_file_path()?)?;
-
-	Ok(())
+	clear_discord_session()
 }
 
 pub async fn start_discord_oauth() -> Result<DiscordOAuthResult> {
@@ -543,10 +627,7 @@ pub async fn start_discord_oauth() -> Result<DiscordOAuthResult> {
 	)
 	.await?;
 
-	let now = SystemTime::now()
-		.duration_since(UNIX_EPOCH)
-		.map_err(|error| Error::DiscordOAuth(format!("Clock error: {error}")))?
-		.as_secs();
+	let now = current_unix_seconds()?;
 
 	let mut token_to_save = DiscordSavedToken {
 		access_token: token_response.access_token.clone(),
