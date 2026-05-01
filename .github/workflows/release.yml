@@ -2,6 +2,16 @@ name: "release"
 
 on:
   workflow_dispatch:
+    inputs:
+      build_target:
+        description: "Choose which platform to build"
+        required: true
+        type: choice
+        default: "all"
+        options:
+          - all
+          - ubuntu
+          - windows
   push:
     branches: [main]
 
@@ -37,11 +47,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - platform: windows-latest
-            os-name: windows
-          - platform: ubuntu-18.04
-            os-name: linux
+        # Evaluate dynamically using native Actions Expression syntax: condition && true_val || false_val
+        include: >-
+          ${{ fromJSON(
+            inputs.build_target == 'windows' && '[{"platform":"windows-latest","os-name":"windows"}]' ||
+            inputs.build_target == 'ubuntu' && '[{"platform":"ubuntu-18.04","os-name":"linux"}]' ||
+            '[{"platform":"windows-latest","os-name":"windows"},{"platform":"ubuntu-18.04","os-name":"linux"}]'
+          ) }}
 
     runs-on: ${{ matrix.platform }}
     permissions:
