@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 import os from "os";
 import { fileURLToPath } from "url";
+import { fixAppImageSymlinks } from "./fix-appimage-symlinks.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -73,6 +74,10 @@ try {
 	if (!fs.existsSync(bundleDir)) {
 		console.error(`Bundle directory not found: ${bundleDir}`);
 		process.exit(1);
+	}
+
+	if (platform === "linux") {
+		fixAppImageSymlinks();
 	}
 
 	const files = fs.readdirSync(bundleDir);
