@@ -117,10 +117,6 @@ function ModLoaderRow({ game, modLoaderId, status }: ModLoaderRowProps) {
 			),
 	);
 
-	const [runUninstallModLoader, isUninstallingModLoader] = useAsyncCommand(() =>
-		commands.uninstallModLoader(game.providerId, game.gameId, modLoaderId),
-	);
-
 	const isOutdated = getIsOutdated(
 		status?.installedVersion,
 		status?.latestVersion,
@@ -157,35 +153,27 @@ function ModLoaderRow({ game, modLoaderId, status }: ModLoaderRowProps) {
 		);
 	};
 
-	const { mainButtonAction, mainButtonIcon, mainButtonColor } = (() => {
+	const mainButton = (() => {
 		if (!isInstalled) {
 			return {
-				mainButtonAction: () => runModLoaderAction(false),
-				mainButtonIcon: <IconCirclePlus />,
-				mainButtonColor: "violet",
+				action: () => runModLoaderAction(false),
+				icon: <IconCirclePlus />,
+				color: "violet",
+				label: tGameModRow("installMod"),
 			};
 		}
 
 		if (isOutdated) {
 			return {
-				mainButtonAction: () => runModLoaderAction(true),
-				mainButtonIcon: <IconRefreshAlert />,
-				mainButtonColor: "orange",
+				action: () => runModLoaderAction(true),
+				icon: <IconRefreshAlert />,
+				color: "orange",
+				label: tGameModRow("updateMod"),
 			};
 		}
 
-		return {
-			mainButtonAction: () => runUninstallModLoader(),
-			mainButtonIcon: <IconTrash />,
-			mainButtonColor: "red",
-		};
+		return null;
 	})();
-
-	const mainButtonLabel = !isInstalled
-		? tGameModRow("installMod")
-		: isOutdated
-			? tGameModRow("updateMod")
-			: "Uninstall";
 
 	return (
 		<Table.Tr key={`${modLoaderId}-row`}>
@@ -207,16 +195,18 @@ function ModLoaderRow({ game, modLoaderId, status }: ModLoaderRowProps) {
 			<Table.Td maw={200}>
 				<Group justify="right">
 					<ButtonGroup>
-						<CommandButton
-							size="xs"
-							leftSection={mainButtonIcon}
-							color={mainButtonColor}
-							variant={mainButtonColor === "red" ? "light" : "default"}
-							loading={isRunningModLoaderAction || isUninstallingModLoader}
-							onClick={mainButtonAction}
-						>
-							{mainButtonLabel}
-						</CommandButton>
+						{mainButton && (
+							<CommandButton
+								size="xs"
+								leftSection={mainButton.icon}
+								color={mainButton.color}
+								variant="default"
+								loading={isRunningModLoaderAction}
+								onClick={mainButton.action}
+							>
+								{mainButton.label}
+							</CommandButton>
+						)}
 						<CommandDropdown icon={<IconDotsVertical />}>
 							<CommandButton
 								size="xs"

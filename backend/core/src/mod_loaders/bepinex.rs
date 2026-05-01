@@ -309,32 +309,6 @@ impl ModLoaderActions for BepInEx {
 		Ok(())
 	}
 
-	async fn uninstall_loader(&self, game: &DbGame) -> Result {
-		if let Ok(mods_folder) = game.get_installed_mods_folder() {
-			let bepinex_folder = mods_folder.join("BepInEx");
-			if bepinex_folder.exists() {
-				fs::remove_dir_all(&bepinex_folder)?;
-			}
-
-			let game_folder = paths::path_parent(game.try_get_exe_path()?)?;
-			let winhttp_path = game_folder.join("winhttp.dll");
-			if winhttp_path.exists() {
-				fs::remove_file(&winhttp_path)?;
-			}
-
-			let doorstop_config_path = game_folder.join("doorstop_config.ini");
-			if doorstop_config_path.exists() {
-				fs::remove_file(&doorstop_config_path)?;
-			}
-		}
-
-		if let Ok(manifest_path) = game.get_installed_mod_manifest_path(Self::ID) {
-			let _ = fs::remove_file(manifest_path);
-		}
-
-		Ok(())
-	}
-
 	async fn run_without_game(&self, local_mod: &LocalMod) -> Result {
 		Err(Error::CantRunNonRunnable(local_mod.common.id.clone()))
 	}

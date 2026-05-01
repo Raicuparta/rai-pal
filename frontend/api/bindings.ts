@@ -24,7 +24,6 @@ export const commands = {
 	getInstalledModVersions: (providerId: ProviderId, gameId: string) => __TAURI_INVOKE<{ [key in string]: string }>("get_installed_mod_versions", { providerId, gameId }),
 	getModLoaderStatuses: (providerId: ProviderId, gameId: string) => __TAURI_INVOKE<{ [key in string]: ModLoaderStatus }>("get_mod_loader_statuses", { providerId, gameId }),
 	installModLoader: (providerId: ProviderId, gameId: string, modLoaderId: string, forceReinstall: boolean) => __TAURI_INVOKE<null>("install_mod_loader", { providerId, gameId, modLoaderId, forceReinstall }),
-	uninstallModLoader: (providerId: ProviderId, gameId: string, modLoaderId: string) => __TAURI_INVOKE<null>("uninstall_mod_loader", { providerId, gameId, modLoaderId }),
 	openGameModLoaderFolder: (providerId: ProviderId, gameId: string, modLoaderId: string) => __TAURI_INVOKE<null>("open_game_mod_loader_folder", { providerId, gameId, modLoaderId }),
 	getLocalMods: () => __TAURI_INVOKE<{ [key in string]: LocalMod }>("get_local_mods"),
 	getRemoteMods: () => __TAURI_INVOKE<{ [key in string]: RemoteMod }>("get_remote_mods"),

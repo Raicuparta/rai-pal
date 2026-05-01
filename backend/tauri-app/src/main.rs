@@ -675,26 +675,6 @@ async fn install_mod_loader(
 
 #[tauri::command]
 #[specta::specta]
-async fn uninstall_mod_loader(
-	provider_id: ProviderId,
-	game_id: String,
-	mod_loader_id: String,
-	app_handle: AppHandle,
-) -> Result {
-	let state = app_handle.app_state();
-	let game = state.database.get_game(&provider_id, &game_id)?;
-	let mod_loaders = state.mod_loaders.read_state()?.clone();
-	let mod_loader = mod_loaders.try_get(&mod_loader_id)?;
-
-	mod_loader.uninstall_loader(&game).await?;
-
-	app_handle.emit_safe(events::RefreshGame(provider_id, game_id));
-
-	Ok(())
-}
-
-#[tauri::command]
-#[specta::specta]
 async fn open_game_mod_loader_folder(
 	provider_id: ProviderId,
 	game_id: String,
@@ -797,7 +777,6 @@ fn main() {
 			get_installed_mod_versions,
 			get_mod_loader_statuses,
 			install_mod_loader,
-			uninstall_mod_loader,
 			open_game_mod_loader_folder,
 			get_local_mods,
 			get_remote_mods,

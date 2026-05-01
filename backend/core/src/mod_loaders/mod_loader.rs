@@ -85,9 +85,6 @@ pub trait ModLoaderActions {
 	async fn get_status(&self, _game: &DbGame) -> Result<Option<ModLoaderStatus>> {
 		Ok(None)
 	}
-	async fn uninstall_loader(&self, _game: &DbGame) -> Result {
-		Ok(())
-	}
 	fn open_loader_folder_for_game(&self, game: &DbGame) -> Result {
 		game.open_mods_folder()
 	}
