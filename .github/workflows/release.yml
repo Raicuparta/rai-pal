@@ -51,8 +51,8 @@ jobs:
         include: >-
           ${{ fromJSON(
             inputs.build_target == 'windows' && '[{"platform":"windows-latest","os-name":"windows"}]' ||
-            inputs.build_target == 'ubuntu' && '[{"platform":"ubuntu-18.04","os-name":"linux"}]' ||
-            '[{"platform":"windows-latest","os-name":"windows"},{"platform":"ubuntu-18.04","os-name":"linux"}]'
+            inputs.build_target == 'ubuntu' && '[{"platform":"ubuntu-22.04","os-name":"linux"}]' ||
+            '[{"platform":"windows-latest","os-name":"windows"},{"platform":"ubuntu-22.04","os-name":"linux"}]'
           ) }}
 
     runs-on: ${{ matrix.platform }}
