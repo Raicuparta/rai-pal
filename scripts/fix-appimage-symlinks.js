@@ -231,6 +231,54 @@ function detectProductName(rootPath) {
 	return path.basename(appDirDesktopEntry, ".desktop");
 }
 
+function assertFileIsWorldExecutable(filePath) {
+	const mode = fs.statSync(filePath).mode & 0o777;
+	if ((mode & 0o001) === 0) {
+		fail(
+			`Post-process failed: ${path.basename(filePath)} is not world-executable (mode ${mode.toString(8)})`,
+		);
+	}
+}
+
+function normalizeLaunchPermissions(rootPath) {
+	const appRunPath = path.join(rootPath, "AppRun");
+	if (!pathExists(appRunPath)) {
+		fail("Could not find AppRun in extracted AppImage");
+	}
+
+	fs.chmodSync(appRunPath, 0o755);
+
+	const wrappedPath = path.join(rootPath, "AppRun.wrapped");
+	if (pathExists(wrappedPath)) {
+		fs.chmodSync(wrappedPath, 0o755);
+	}
+}
+
+function verifyLaunchPermissions(appImagePath, tempRoot) {
+	const verifyRoot = fs.mkdtempSync(path.join(tempRoot, "verify-"));
+	const verifyExtractedPath = path.join(verifyRoot, "squashfs-root");
+
+	try {
+		runOrFail(appImagePath, ["--appimage-extract"], {
+			cwd: verifyRoot,
+		});
+
+		const appRunPath = path.join(verifyExtractedPath, "AppRun");
+		if (!pathExists(appRunPath)) {
+			fail("Verification failed: AppRun missing after repack");
+		}
+
+		assertFileIsWorldExecutable(appRunPath);
+
+		const wrappedPath = path.join(verifyExtractedPath, "AppRun.wrapped");
+		if (pathExists(wrappedPath)) {
+			assertFileIsWorldExecutable(wrappedPath);
+		}
+	} finally {
+		fs.rmSync(verifyRoot, { recursive: true, force: true });
+	}
+}
+
 function patchAppImage(appImagePath, pluginTool) {
 	console.log(`Patching AppImage: ${appImagePath}`);
 
@@ -249,6 +297,7 @@ function patchAppImage(appImagePath, pluginTool) {
 
 		const productName = detectProductName(extractedPath);
 		toRelativeSymlinkLink(extractedPath, productName);
+		normalizeLaunchPermissions(extractedPath);
 
 		runOrFail(
 			pluginTool.command,
@@ -264,6 +313,7 @@ function patchAppImage(appImagePath, pluginTool) {
 
 		const generatedPath = selectBuiltAppImage(tempRoot);
 		fs.copyFileSync(generatedPath, rebuiltPath);
+		verifyLaunchPermissions(rebuiltPath, tempRoot);
 
 		fs.copyFileSync(rebuiltPath, appImagePath);
 		fs.chmodSync(appImagePath, 0o755);
