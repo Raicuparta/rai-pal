@@ -331,6 +331,10 @@ fn get_discord_avatar_file_path() -> Result<PathBuf> {
 	Ok(paths::app_data_path()?.join("discord-avatar.png"))
 }
 
+fn format_path_for_frontend(path: &Path) -> String {
+	path.to_string_lossy().replace('\\', "/")
+}
+
 fn delete_file_if_exists(path: &Path) -> Result {
 	if path.exists() {
 		fs::remove_file(path)?;
@@ -401,7 +405,7 @@ async fn download_and_save_discord_avatar(
 
 	fs::write(&avatar_file_path, response.bytes().await?)?;
 
-	Ok(Some(avatar_file_path.display().to_string()))
+	Ok(Some(format_path_for_frontend(&avatar_file_path)))
 }
 
 fn read_discord_token_file_optional() -> Result<Option<DiscordSavedToken>> {
@@ -572,7 +576,7 @@ pub async fn get_discord_auth_state() -> Result<DiscordAuthState> {
 	let avatar_file_path = get_discord_avatar_file_path()?;
 	let avatar_path = avatar_file_path
 		.exists()
-		.then(|| avatar_file_path.display().to_string());
+		.then(|| format_path_for_frontend(&avatar_file_path));
 
 	Ok(DiscordAuthState {
 		is_logged_in: true,
