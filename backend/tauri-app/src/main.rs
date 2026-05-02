@@ -66,7 +66,6 @@ use rai_pal_core::{
 	user::{
 		discord_oauth::{
 			DiscordAuthState,
-			DiscordOAuthResult,
 			get_discord_auth_state,
 			logout_discord,
 			refresh_discord_token_if_possible,
@@ -104,7 +103,7 @@ const DISCORD_TOKEN_REFRESH_INTERVAL: Duration = Duration::from_secs(60 * 60);
 
 #[tauri::command]
 #[specta::specta]
-async fn log_in() -> Result<DiscordOAuthResult> {
+async fn log_in() -> Result {
 	start_discord_oauth().await.map_err(Into::into)
 }
 

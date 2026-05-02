@@ -25,9 +25,9 @@ function getInitials(name: string | null): string {
 export function UserMenu() {
 	const t = useLocalization("userMenu");
 	const [authState, setAuthState] = useState<DiscordAuthState>({
-		is_logged_in: false,
-		avatar_file_path: null,
-		user_name: null,
+		isLoggedIn: false,
+		avatarFilePath: null,
+		userName: null,
 	});
 
 	const refreshAuthState = useCallback(async () => {
@@ -44,11 +44,11 @@ export function UserMenu() {
 		refreshAuthState();
 	}, [refreshAuthState]);
 
-	const avatarUrl = authState.avatar_file_path
-		? convertFileSrc(authState.avatar_file_path)
+	const avatarUrl = authState.avatarFilePath
+		? convertFileSrc(authState.avatarFilePath)
 		: null;
 
-	const userInitials = getInitials(authState.user_name);
+	const userInitials = getInitials(authState.userName);
 
 	const handleLogin = async () => {
 		console.log("Login requested from user menu.");
@@ -84,7 +84,7 @@ export function UserMenu() {
 					color="dark"
 					fz="md"
 				>
-					{authState.is_logged_in ? (
+					{authState.isLoggedIn ? (
 						<Avatar
 							radius="xl"
 							bd="2px solid white"
@@ -104,9 +104,9 @@ export function UserMenu() {
 				bg="dark"
 				maw={250}
 			>
-				{authState.is_logged_in ? (
+				{authState.isLoggedIn ? (
 					<>
-						<Menu.Label>{authState.user_name ?? t("unknownUser")}</Menu.Label>
+						<Menu.Label>{authState.userName ?? t("unknownUser")}</Menu.Label>
 						<Menu.Item
 							onClick={handleLogout}
 							leftSection={<IconLogout2 />}

@@ -29,7 +29,10 @@ use uuid::Uuid;
 
 use crate::{
 	http,
-	paths,
+	paths::{
+		self,
+		AsValidStr,
+	},
 	result::{
 		Error,
 		Result,
@@ -47,15 +50,7 @@ const DISCORD_KEYRING_LOCATION: &str = "keyring://rai-pal/discord-oauth-token";
 const DISCORD_TOKEN_EXPIRY_LEEWAY_SECONDS: u64 = 60;
 
 #[derive(Clone, Debug, serde::Serialize, specta::Type)]
-pub struct DiscordOAuthResult {
-	pub token_file_path: String,
-	pub token_type: String,
-	pub scope: String,
-	pub expires_in: u64,
-	pub access_token_preview: String,
-}
-
-#[derive(Clone, Debug, serde::Serialize, specta::Type)]
+#[serde(rename_all = "camelCase")]
 pub struct DiscordAuthState {
 	pub is_logged_in: bool,
 	pub avatar_file_path: Option<String>,
@@ -331,10 +326,6 @@ fn get_discord_avatar_file_path() -> Result<PathBuf> {
 	Ok(paths::app_data_path()?.join("discord-avatar.png"))
 }
 
-fn format_path_for_frontend(path: &Path) -> String {
-	path.to_string_lossy().replace('\\', "/")
-}
-
 fn delete_file_if_exists(path: &Path) -> Result {
 	if path.exists() {
 		fs::remove_file(path)?;
@@ -405,7 +396,7 @@ async fn download_and_save_discord_avatar(
 
 	fs::write(&avatar_file_path, response.bytes().await?)?;
 
-	Ok(Some(format_path_for_frontend(&avatar_file_path)))
+	Ok(Some(avatar_file_path.try_to_str()?.to_string()))
 }
 
 fn read_discord_token_file_optional() -> Result<Option<DiscordSavedToken>> {
@@ -574,13 +565,10 @@ pub async fn get_discord_auth_state() -> Result<DiscordAuthState> {
 	}
 
 	let avatar_file_path = get_discord_avatar_file_path()?;
-	let avatar_path = avatar_file_path
-		.exists()
-		.then(|| format_path_for_frontend(&avatar_file_path));
 
 	Ok(DiscordAuthState {
 		is_logged_in: true,
-		avatar_file_path: avatar_path,
+		avatar_file_path: Some(avatar_file_path.try_to_str()?.to_string()),
 		user_name: saved_token.user_name,
 	})
 }
@@ -601,7 +589,7 @@ pub fn logout_discord() -> Result {
 	clear_discord_session()
 }
 
-pub async fn start_discord_oauth() -> Result<DiscordOAuthResult> {
+pub async fn start_discord_oauth() -> Result {
 	let listener = TcpListener::bind(("127.0.0.1", DISCORD_CALLBACK_PORT)).map_err(|error| {
 		Error::DiscordOAuth(format!(
 			"Failed to bind callback port {DISCORD_CALLBACK_PORT}. Is another process using it? Error: {error}"
@@ -654,13 +642,5 @@ pub async fn start_discord_oauth() -> Result<DiscordOAuthResult> {
 		log::info!("Saved Discord avatar at: {path}");
 	}
 
-	let preview: String = token_response.access_token.chars().take(8).collect();
-
-	Ok(DiscordOAuthResult {
-		token_file_path: token_path,
-		token_type: token_response.token_type,
-		scope: token_response.scope,
-		expires_in: token_response.expires_in,
-		access_token_preview: format!("{preview}..."),
-	})
+	Ok(())
 }

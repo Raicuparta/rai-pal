@@ -1,0 +1,45 @@
+FROM ubuntu:22.04
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    RUSTUP_HOME=/usr/local/rustup \
+    CARGO_HOME=/usr/local/cargo \
+    PATH=/usr/local/cargo/bin:$PATH \
+    npm_config_cache=/tmp/npm-cache \
+    XWIN_ACCEPT_LICENSE=1
+
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends \
+    curl ca-certificates gnupg \
+ && curl -fsSL https://deb.nodesource.com/setup_25.x | bash - \
+ && apt-get update \
+ && apt-get install -y --no-install-recommends \
+    build-essential \
+    pkg-config \
+    wget \
+    git \
+    zip \
+    unzip \
+    file \
+    patchelf \
+    libssl-dev \
+    libwebkit2gtk-4.1-dev \
+    libappindicator3-dev \
+    librsvg2-dev \
+    nodejs \
+    nsis \
+    llvm \
+    lld \
+    clang \
+ && rm -rf /var/lib/apt/lists/*
+
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
+    | sh -s -- -y --profile minimal --default-toolchain stable
+
+RUN rustup toolchain install nightly --profile minimal \
+ && rustup target add x86_64-pc-windows-msvc \
+ && rustup target add --toolchain nightly x86_64-pc-windows-msvc \
+ && cargo install --locked cargo-xwin
+
+WORKDIR /app
+
+CMD ["/bin/bash"]
