@@ -1,26 +1,44 @@
 use std::{
-	collections::{HashMap, HashSet},
-	path::{Path, PathBuf},
+	collections::{
+		HashMap,
+		HashSet,
+	},
+	path::{
+		Path,
+		PathBuf,
+	},
 };
 
 use steamlocate::SteamDir;
 
+use super::{
+	appinfo::{
+		SteamAppInfo,
+		SteamLaunchOption,
+	},
+	packageinfo::PackageInfo,
+};
 use crate::{
 	game::DbGame,
 	game_tag::GameTag,
-	local_database::{DbMutex, GameDatabase},
+	local_database::{
+		DbMutex,
+		GameDatabase,
+	},
 	paths,
 	providers::{
-		provider::{ProviderActions, ProviderId, ProviderStatic},
-		provider_command::{ProviderCommand, ProviderCommandAction},
+		provider::{
+			ProviderActions,
+			ProviderId,
+			ProviderStatic,
+		},
+		provider_command::{
+			ProviderCommand,
+			ProviderCommandAction,
+		},
 		steam::appinfo::SteamAppInfoReader,
 	},
 	result::Result,
-};
-
-use super::{
-	appinfo::{SteamAppInfo, SteamLaunchOption},
-	packageinfo::PackageInfo,
 };
 
 #[derive(Clone)]
@@ -38,6 +56,80 @@ impl ProviderStatic for Steam {
 }
 
 impl Steam {
+	fn parse_shortcut_executable_path(executable: &str) -> Option<PathBuf> {
+		let executable = executable.trim();
+		if executable.is_empty() {
+			return None;
+		}
+
+		let executable_path = executable.strip_prefix('"').map_or_else(
+			|| executable.split_whitespace().next().unwrap_or(executable),
+			|without_open_quote| {
+				let end_quote_index = without_open_quote
+					.find('"')
+					.unwrap_or(without_open_quote.len());
+				&without_open_quote[..end_quote_index]
+			},
+		);
+
+		if executable_path.is_empty() {
+			return None;
+		}
+
+		Some(PathBuf::from(executable_path))
+	}
+
+	fn get_shortcut_games(steam_dir: &SteamDir) -> Vec<DbGame> {
+		let mut games = Vec::new();
+
+		let shortcuts = match steam_dir.shortcuts() {
+			Ok(shortcuts) => shortcuts,
+			Err(error) => {
+				log::error!("Failed to read Steam shortcuts: {error}");
+				return games;
+			}
+		};
+
+		for shortcut_result in shortcuts {
+			match shortcut_result {
+				Ok(shortcut) => {
+					let mut game =
+						DbGame::new(*Self::ID, shortcut.app_id.to_string(), shortcut.app_name);
+					game.add_provider_command(
+						ProviderCommandAction::ShowInLibrary,
+						ProviderCommand::String(format!(
+							"steam://nav/games/details/{}",
+							shortcut.app_id
+						)),
+					)
+					.add_provider_command(
+						ProviderCommandAction::StartViaProvider,
+						ProviderCommand::String(format!(
+							"steam://rungameid/{}",
+							// There is a shortcut.steam_id() thing in there, but we can't use that since it doesn't follow the cached ID Steam actually needs.
+							// So we need to do our own conversion from the 32-bit app_id to the 64-bit one needed for this specific command.
+							// Other commands seem to need the 32-bit id instead. Dunno why.
+							((u64::from(shortcut.app_id) << 32_i32) | 0x0200_0000)
+						)),
+					);
+
+					if let Some(executable_path) =
+						Self::parse_shortcut_executable_path(&shortcut.executable)
+					{
+						game.set_executable(&executable_path);
+					}
+
+					games.push(game);
+				}
+				Err(error) => {
+					log::error!("Failed to read Steam shortcut: {error}");
+				}
+			}
+		}
+
+		games
+	}
+
 	pub fn get_installed_games(
 		game: &DbGame,
 		app_info: &SteamAppInfo,
@@ -55,20 +147,21 @@ impl Steam {
 
 		for launch_option in sorted_launch_options {
 			if let Some(executable_path) = launch_option.executable.as_ref() {
-				let full_path = &app_path.join(executable_path);
-
-				if !full_path.is_file() {
+				let Some(full_path) =
+					paths::resolve_relative_path_case_insensitive(app_path, executable_path)
+						.filter(|path| path.is_file())
+				else {
 					continue;
-				}
+				};
 
-				if used_paths.contains(full_path) {
+				if used_paths.contains(&full_path) {
 					continue;
 				}
 
 				let app_name = app_info.name.clone();
 
 				let mut installed_game = game.clone();
-				installed_game.set_executable(full_path);
+				installed_game.set_executable(&full_path);
 				installed_game.title_discriminator = if used_names.contains(&app_name) {
 					Some(
 						launch_option
@@ -90,11 +183,11 @@ impl Steam {
 				installed_game.game_id = format!(
 					"{}_{}",
 					&installed_game.external_id,
-					paths::hash_path(full_path)
+					paths::hash_path(&full_path)
 				);
 
 				used_names.insert(app_name);
-				used_paths.insert(full_path.clone());
+				used_paths.insert(full_path);
 				installed_games.push(installed_game);
 			}
 		}
@@ -144,107 +237,111 @@ impl ProviderActions for Steam {
 		let steam_dir = SteamDir::locate()?;
 		let appinfo_path = Self::get_appinfo_path(steam_dir.path());
 
-		if !appinfo_path.exists() {
-			log::warn!(
-				"Steam appinfo.vdf not found at `{}`. Skipping Steam game insertion.",
-				appinfo_path.display()
-			);
-
-			return Ok(());
-		}
-
-		let app_info_reader = SteamAppInfoReader::new(&appinfo_path)?;
-		let mut app_paths = HashMap::<u32, PathBuf>::new();
-		for library in (steam_dir.libraries()?).flatten() {
-			for app in library.apps().flatten() {
-				app_paths.insert(app.app_id, library.resolve_app_dir(&app));
+		if appinfo_path.exists() {
+			let app_info_reader = SteamAppInfoReader::new(&appinfo_path)?;
+			let mut app_paths = HashMap::<u32, PathBuf>::new();
+			for library in (steam_dir.libraries()?).flatten() {
+				for app in library.apps().flatten() {
+					app_paths.insert(app.app_id, library.resolve_app_dir(&app));
+				}
 			}
-		}
 
-		let owned_ids_whitelist =
-			Self::get_owned_ids_whitelist(steam_dir.path()).unwrap_or_else(|err| {
-				log::error!("Failed to read Steam assets cache: {err}");
-				HashSet::new()
-			});
+			let owned_ids_whitelist = Self::get_owned_ids_whitelist(steam_dir.path())
+				.unwrap_or_else(|err| {
+					log::error!("Failed to read Steam assets cache: {err}");
+					HashSet::new()
+				});
 
-		log::info!("whitelist size: {}", owned_ids_whitelist.len());
+			log::info!("whitelist size: {}", owned_ids_whitelist.len());
 
-		for app_info_result in app_info_reader {
-			match app_info_result {
-				Ok(app_info) => {
-					let external_id = app_info.app_id.to_string();
+			for app_info_result in app_info_reader {
+				match app_info_result {
+					Ok(app_info) => {
+						let external_id = app_info.app_id.to_string();
 
-					if !app_info.is_free
-						&& !owned_ids_whitelist.is_empty()
-						&& !owned_ids_whitelist.contains(&external_id)
-					{
-						continue;
-					}
+						if !app_info.is_free
+							&& !owned_ids_whitelist.is_empty()
+							&& !owned_ids_whitelist.contains(&external_id)
+						{
+							continue;
+						}
 
-					let mut game =
-						DbGame::new(*Self::ID, external_id.clone(), app_info.name.clone());
+						let mut game =
+							DbGame::new(*Self::ID, external_id.clone(), app_info.name.clone());
 
-					game.thumbnail_url = Some(format!(
-						"https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/{external_id}/header.jpg"
-					));
+						game.thumbnail_url = Some(format!(
+							"https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/{external_id}/header.jpg"
+						));
 
-					game.add_provider_command(
-						ProviderCommandAction::ShowInLibrary,
-						ProviderCommand::String(format!("steam://nav/games/details/{external_id}")),
-					)
-					.add_provider_command(
-						ProviderCommandAction::ShowInStore,
-						ProviderCommand::String(format!("steam://store/{external_id}")),
-					)
-					.add_provider_command(
-						ProviderCommandAction::Install,
-						ProviderCommand::String(format!("steam://install/{external_id}")),
-					)
-					.add_provider_command(
-						ProviderCommandAction::OpenInBrowser,
-						ProviderCommand::String(format!(
-							"https://store.steampowered.com/app/{external_id}"
-						)),
-					);
+						game.add_provider_command(
+							ProviderCommandAction::ShowInLibrary,
+							ProviderCommand::String(format!(
+								"steam://nav/games/details/{external_id}"
+							)),
+						)
+						.add_provider_command(
+							ProviderCommandAction::ShowInStore,
+							ProviderCommand::String(format!("steam://store/{external_id}")),
+						)
+						.add_provider_command(
+							ProviderCommandAction::Install,
+							ProviderCommand::String(format!("steam://install/{external_id}")),
+						)
+						.add_provider_command(
+							ProviderCommandAction::OpenInBrowser,
+							ProviderCommand::String(format!(
+								"https://store.steampowered.com/app/{external_id}"
+							)),
+						);
 
-					if app_info
-						.tags
-						.as_ref()
-						.is_some_and(|tags| tags.contains(&21_978_i32))
-					{
-						game.add_tag(GameTag::VR);
-					}
+						if app_info
+							.tags
+							.as_ref()
+							.is_some_and(|tags| tags.contains(&21_978_i32))
+						{
+							game.add_tag(GameTag::VR);
+						}
 
-					if let Some(release_date) = app_info
-						.original_release_date
-						.or(app_info.steam_release_date)
-					{
-						game.release_date = Some(release_date.into());
-					}
+						if let Some(release_date) = app_info
+							.original_release_date
+							.or(app_info.steam_release_date)
+						{
+							game.release_date = Some(release_date.into());
+						}
 
-					if let Some(app_type) = &app_info.app_type
-						&& app_type == "Demo"
-					{
-						game.add_tag(GameTag::Demo);
-					}
+						if let Some(app_type) = &app_info.app_type
+							&& app_type == "Demo"
+						{
+							game.add_tag(GameTag::Demo);
+						}
 
-					let installed_games = app_paths
-						.get(&app_info.app_id)
-						.map(|app_path| Self::get_installed_games(&game, &app_info, app_path))
-						.unwrap_or_default();
+						let installed_games = app_paths
+							.get(&app_info.app_id)
+							.map(|app_path| Self::get_installed_games(&game, &app_info, app_path))
+							.unwrap_or_default();
 
-					if installed_games.is_empty() {
-						db.insert_game(&game);
-					} else {
-						for installed_game in installed_games {
-							db.insert_game(&installed_game);
+						if installed_games.is_empty() {
+							db.insert_game(&game);
+						} else {
+							for installed_game in installed_games {
+								db.insert_game(&installed_game);
+							}
 						}
 					}
-				}
-				Err(error) => {
-					log::error!("Failed to read Steam appinfo: {error}");
+					Err(error) => {
+						log::error!("Failed to read Steam appinfo: {error}");
+					}
 				}
 			}
+		} else {
+			log::warn!(
+				"Steam appinfo.vdf not found at `{}`. Skipping Steam appinfo game insertion.",
+				appinfo_path.display()
+			);
+		}
+
+		for game in Self::get_shortcut_games(&steam_dir) {
+			db.insert_game(&game);
 		}
 
 		Ok(())

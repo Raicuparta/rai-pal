@@ -104,8 +104,10 @@ export const zhCn: Localization = {
 		editModConfig: "编辑模组配置",
 		openModConfigFolderTooltip: "打开包含此模组配置文件的文件夹",
 		openModFolder: "打开模组文件夹",
+		openModLoaderFolder: "打开模组加载器文件夹",
 		updateMod: "更新",
 		installMod: "安装",
+		reinstallMod: "重新安装",
 		uninstallMod: "卸载",
 		runMod: "运行",
 		downloadRemoteConfig: "下载推荐配置",
@@ -151,6 +153,14 @@ export const zhCn: Localization = {
 		openLogsFolderButton: "打开日志文件夹",
 		clearRaiPalCacheOpenModal: "清除 Rai Pal 缓存",
 		clearRaiPalCacheTooltip: "清除 Rai Pal 使用的游戏列表缓存。",
+	},
+
+	userMenu: {
+		unknownUser: "未知用户",
+		logOut: "退出登录",
+		signInWithDiscord: "使用 Discord 登录",
+		discordAccessNote:
+			"模组可以使用此功能访问你的 Discord 用户名、头像、身份组等。",
 	},
 
 	steamCache: {

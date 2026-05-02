@@ -6,6 +6,7 @@
 	"scripts": {
 		"dev": "tauri dev",
 		"build": "tauri build",
+		"bundle": "tauri bundle",
 		"build-debug": "cross-env CARGO_TARGET_DIR=target/debug/standalone-build tauri build --debug --no-bundle",
 		"vite": "vite",
 		"tauri": "tauri",

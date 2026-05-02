@@ -23,6 +23,7 @@ pub mod remote_config;
 pub mod remote_game;
 pub mod remote_mod;
 pub mod result;
+pub mod user;
 pub mod windows;
 
 #[cfg(test)]

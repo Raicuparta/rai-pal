@@ -110,8 +110,10 @@ export const jaJp: Localization = {
 		openModConfigFolderTooltip:
 			"このモッドの設定ファイルが含まれているフォルダーを開く",
 		openModFolder: "モッドフォルダーを開く",
+		openModLoaderFolder: "モッドローダーフォルダーを開く",
 		updateMod: "更新",
 		installMod: "インストール",
+		reinstallMod: "再インストール",
 		uninstallMod: "アンインストール",
 		runMod: "実行",
 		downloadRemoteConfig: "推奨設定をダウンロード",
@@ -161,6 +163,14 @@ export const jaJp: Localization = {
 		clearRaiPalCacheOpenModal: "Rai Palのキャッシュをクリア",
 		clearRaiPalCacheTooltip:
 			"Rai Palが使用するゲームリストキャッシュをクリアします。",
+	},
+
+	userMenu: {
+		unknownUser: "不明なユーザー",
+		logOut: "ログアウト",
+		signInWithDiscord: "Discordでサインイン",
+		discordAccessNote:
+			"Mod はこれを使ってあなたのDiscordユーザー名、アバター、ロールなどにアクセスできます。",
 	},
 
 	steamCache: {

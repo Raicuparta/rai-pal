@@ -156,7 +156,7 @@ impl ModLoaderActions for RunnableLoader {
 		&self.data
 	}
 
-	fn install(&self, _game: &DbGame) -> Result {
+	async fn install(&self, _game: &DbGame) -> Result {
 		todo!()
 	}
 

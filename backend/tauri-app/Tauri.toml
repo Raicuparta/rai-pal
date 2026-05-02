@@ -82,11 +82,15 @@ visible = false
 [app.security]
 # I think I had to add this one because of some css problem with Mantine, don't remember hehe.
 dangerousDisableAssetCspModification = ["style-src-elem"]
+assetProtocol = { enable = true, scope = ["$APPDATA/**", "$HOME/.local/share/rai-pal/**"] }
 
 [app.security.csp]
 img-src = [
   "'self'",
   "http://tauri.localhost",
+  "http://asset.localhost",
+  "https://asset.localhost",
+  "asset:",
   "https://*.epicgames.com",
   "https://*.itch.zone",
   "https://*.steamstatic.com",

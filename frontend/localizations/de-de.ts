@@ -111,8 +111,10 @@ export const deDe: Localization = {
 		openModConfigFolderTooltip:
 			"Ordner mit den Konfigurationsdateien dieses Mods öffnen",
 		openModFolder: "Mod-Ordner öffnen",
+		openModLoaderFolder: "Mod-Loader-Ordner öffnen",
 		updateMod: "Aktualisieren",
 		installMod: "Installieren",
+		reinstallMod: "Neu installieren",
 		uninstallMod: "Deinstallieren",
 		runMod: "Ausführen",
 		downloadRemoteConfig: "Empfohlene Konfiguration herunterladen",
@@ -162,6 +164,14 @@ export const deDe: Localization = {
 		clearRaiPalCacheOpenModal: "Rai Pal-Cache leeren",
 		clearRaiPalCacheTooltip:
 			"Löscht den von Rai Pal verwendeten Spielelisten-Cache.",
+	},
+
+	userMenu: {
+		unknownUser: "Unbekannter Benutzer",
+		logOut: "Abmelden",
+		signInWithDiscord: "Mit Discord anmelden",
+		discordAccessNote:
+			"Mods können dies verwenden, um auf Ihren Discord-Benutzernamen, Avatar, Rollen usw. zuzugreifen.",
 	},
 
 	steamCache: {

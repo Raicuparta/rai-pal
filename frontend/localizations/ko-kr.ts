@@ -107,8 +107,10 @@ export const koKr: Localization = {
 		editModConfig: "모드 설정 편집",
 		openModConfigFolderTooltip: "이 모드의 설정 파일이 포함된 폴더 열기",
 		openModFolder: "모드 폴더 열기",
+		openModLoaderFolder: "모드 로더 폴더 열기",
 		updateMod: "업데이트",
 		installMod: "설치",
+		reinstallMod: "재설치",
 		uninstallMod: "제거",
 		runMod: "실행",
 		downloadRemoteConfig: "권장 설정 다운로드",
@@ -156,6 +158,14 @@ export const koKr: Localization = {
 		openLogsFolderButton: "로그 폴더 열기",
 		clearRaiPalCacheOpenModal: "Rai Pal 캐시 지우기",
 		clearRaiPalCacheTooltip: "Rai Pal이 사용하는 게임 목록 캐시를 지웁니다.",
+	},
+
+	userMenu: {
+		unknownUser: "알 수 없는 사용자",
+		logOut: "로그아웃",
+		signInWithDiscord: "Discord로 로그인",
+		discordAccessNote:
+			"모드는 이를 사용해 Discord 사용자 이름, 아바타, 역할 등에 접근할 수 있습니다.",
 	},
 
 	steamCache: {

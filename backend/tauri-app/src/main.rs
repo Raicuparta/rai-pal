@@ -6,7 +6,9 @@
 use std::{
 	collections::HashMap,
 	path::PathBuf,
+	thread,
 	time::{
+		Duration,
 		SystemTime,
 		UNIX_EPOCH,
 	},
@@ -61,6 +63,17 @@ use rai_pal_core::{
 		self,
 	},
 	remote_mod,
+	user::{
+		discord_oauth::{
+			DiscordAuthState,
+			DiscordOAuthResult,
+			get_discord_auth_state,
+			logout_discord,
+			refresh_discord_token_if_possible,
+			start_discord_oauth,
+		},
+		user_socket::start_user_socket_manager,
+	},
 };
 use strum::IntoEnumIterator;
 use tauri::{
@@ -86,6 +99,26 @@ mod events;
 mod result;
 #[cfg(debug_assertions)]
 mod typescript;
+
+const DISCORD_TOKEN_REFRESH_INTERVAL: Duration = Duration::from_secs(60 * 60);
+
+#[tauri::command]
+#[specta::specta]
+async fn log_in() -> Result<DiscordOAuthResult> {
+	start_discord_oauth().await.map_err(Into::into)
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn get_auth_state() -> Result<DiscordAuthState> {
+	get_discord_auth_state().await.map_err(Into::into)
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn log_out() -> Result {
+	logout_discord().map_err(Into::into)
+}
 
 #[tauri::command]
 #[specta::specta]
@@ -596,6 +629,70 @@ async fn get_installed_mod_versions(
 
 #[tauri::command]
 #[specta::specta]
+async fn get_mod_loader_statuses(
+	provider_id: ProviderId,
+	game_id: String,
+	app_handle: AppHandle,
+) -> Result<HashMap<String, mod_loader::ModLoaderStatus>> {
+	let state = app_handle.app_state();
+	let game = app_handle
+		.app_state()
+		.database
+		.get_game(&provider_id, &game_id)?;
+	let mod_loaders = state.mod_loaders.read_state()?.clone();
+
+	let mut statuses = HashMap::new();
+
+	for (loader_id, mod_loader) in &mod_loaders {
+		if let Some(status) = mod_loader.get_status(&game).await? {
+			statuses.insert(loader_id.clone(), status);
+		}
+	}
+
+	Ok(statuses)
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn install_mod_loader(
+	provider_id: ProviderId,
+	game_id: String,
+	mod_loader_id: String,
+	force_reinstall: bool,
+	app_handle: AppHandle,
+) -> Result {
+	let state = app_handle.app_state();
+	let game = state.database.get_game(&provider_id, &game_id)?;
+	let mod_loaders = state.mod_loaders.read_state()?.clone();
+	let mod_loader = mod_loaders.try_get(&mod_loader_id)?;
+
+	mod_loader.install_loader(&game, force_reinstall).await?;
+
+	app_handle.emit_safe(events::RefreshGame(provider_id, game_id));
+
+	Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn open_game_mod_loader_folder(
+	provider_id: ProviderId,
+	game_id: String,
+	mod_loader_id: String,
+	app_handle: AppHandle,
+) -> Result {
+	let state = app_handle.app_state();
+	let game = state.database.get_game(&provider_id, &game_id)?;
+	let mod_loaders = state.mod_loaders.read_state()?.clone();
+	let mod_loader = mod_loaders.try_get(&mod_loader_id)?;
+
+	mod_loader.open_loader_folder_for_game(&game)?;
+
+	Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
 async fn get_remote_configs(
 	provider_id: ProviderId,
 	game_id: String,
@@ -668,6 +765,9 @@ fn main() {
 		.commands(tauri_specta::collect_commands![
 			add_game,
 			configure_mod,
+			get_auth_state,
+			log_in,
+			log_out,
 			delete_mod,
 			download_mod,
 			frontend_ready,
@@ -675,6 +775,9 @@ fn main() {
 			get_game_ids,
 			get_game,
 			get_installed_mod_versions,
+			get_mod_loader_statuses,
+			install_mod_loader,
+			open_game_mod_loader_folder,
 			get_local_mods,
 			get_remote_mods,
 			install_mod,
@@ -745,6 +848,27 @@ fn main() {
 		.invoke_handler(builder.invoke_handler())
 		.setup(move |app| {
 			builder.mount_events(app);
+
+			start_user_socket_manager();
+
+			thread::spawn(|| {
+				loop {
+					let refresh_result =
+						tauri::async_runtime::block_on(refresh_discord_token_if_possible());
+
+					match refresh_result {
+						Ok(true) => log::info!("Discord OAuth token auto-refreshed."),
+						Ok(false) => {
+							log::debug!("Discord OAuth auto-refresh skipped (token not available).")
+						}
+						Err(error) => {
+							log::error!("Failed to auto-refresh Discord OAuth token: {error}")
+						}
+					}
+
+					thread::sleep(DISCORD_TOKEN_REFRESH_INTERVAL);
+				}
+			});
 
 			if let Some(window) = app.get_webview_window("main") {
 				let mut title = format!("Rai Pal {}", env!("CARGO_PKG_VERSION"));

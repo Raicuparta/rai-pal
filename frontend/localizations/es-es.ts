@@ -111,8 +111,10 @@ export const esEs: Localization = {
 		openModConfigFolderTooltip:
 			"Abrir carpeta que contiene los archivos de configuración de este mod",
 		openModFolder: "Abrir Carpeta del Mod",
+		openModLoaderFolder: "Abrir Carpeta del Cargador de Mods",
 		updateMod: "Actualizar",
 		installMod: "Instalar",
+		reinstallMod: "Reinstalar",
 		uninstallMod: "Desinstalar",
 		runMod: "Ejecutar",
 		downloadRemoteConfig: "Descargar Configuración Recomendada",
@@ -162,6 +164,14 @@ export const esEs: Localization = {
 		clearRaiPalCacheOpenModal: "Borrar caché de Rai Pal",
 		clearRaiPalCacheTooltip:
 			"Borra la caché de la lista de juegos utilizada por Rai Pal.",
+	},
+
+	userMenu: {
+		unknownUser: "Usuario desconocido",
+		logOut: "Cerrar sesión",
+		signInWithDiscord: "Iniciar sesión con Discord",
+		discordAccessNote:
+			"Los mods pueden usar esto para acceder a tu nombre de usuario de Discord, avatar, roles, etc.",
 	},
 
 	steamCache: {

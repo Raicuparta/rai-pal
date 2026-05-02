@@ -2,6 +2,16 @@ name: "release"
 
 on:
   workflow_dispatch:
+    inputs:
+      build_target:
+        description: "Choose which platform to build"
+        required: true
+        type: choice
+        default: "all"
+        options:
+          - all
+          - ubuntu
+          - windows
   push:
     branches: [main]
 
@@ -37,12 +47,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - platform: windows-latest
-            os-name: windows
-          - platform: ubuntu-24.04
-            # pinning to ubuntu 24 due to bug: https://github.com/audioling/audioling/issues/40
-            os-name: linux
+        # Evaluate dynamically using native Actions Expression syntax: condition && true_val || false_val
+        include: >-
+          ${{ fromJSON(
+            inputs.build_target == 'windows' && '[{"platform":"windows-latest","os-name":"windows"}]' ||
+            inputs.build_target == 'ubuntu' && '[{"platform":"ubuntu-22.04","os-name":"linux"}]' ||
+            '[{"platform":"windows-latest","os-name":"windows"},{"platform":"ubuntu-22.04","os-name":"linux"}]'
+          ) }}
 
     runs-on: ${{ matrix.platform }}
     permissions:
@@ -61,7 +72,7 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
 
       - name: Install dependencies (Linux)
-        if: matrix.platform == 'ubuntu-24.04'
+        if: matrix.os-name == 'linux'
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf

@@ -8,6 +8,7 @@ import { ThanksTabIcon } from "./thanks/thanks-tab-icon";
 import { useAtomValue } from "jotai";
 import { gameDataAtom } from "@hooks/use-data";
 import { AppSettings } from "./tools/app-settings";
+import { UserMenu } from "./tools/user-menu";
 import { useAppSettingSingle } from "@hooks/use-app-setting-single";
 import { TabId } from "@api/bindings";
 
@@ -61,7 +62,13 @@ export function AppTabs() {
 									label={page === pages.Games ? gamesCountLabel : undefined}
 								/>
 							))}
-							<AppSettings />
+							<Group
+								ml="auto"
+								gap="xs"
+							>
+								<UserMenu />
+								<AppSettings />
+							</Group>
 						</Group>
 					</Container>
 				</Tabs.List>

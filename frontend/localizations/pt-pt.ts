@@ -110,8 +110,10 @@ export const ptPt: Localization = {
 		openModConfigFolderTooltip:
 			"Abrir pasta contendo os ficheiros de configuração deste mod",
 		openModFolder: "Abrir Pasta do Mod",
+		openModLoaderFolder: "Abrir Pasta do Mod Loader",
 		updateMod: "Atualizar",
 		installMod: "Instalar",
+		reinstallMod: "Reinstalar",
 		uninstallMod: "Desinstalar",
 		runMod: "Executar",
 		downloadRemoteConfig: "Descarregar Configuração Recomendada",
@@ -161,6 +163,14 @@ export const ptPt: Localization = {
 		clearRaiPalCacheOpenModal: "Limpar cache do Rai Pal...",
 		clearRaiPalCacheTooltip:
 			"Limpa a cache da lista de jogos usada pelo Rai Pal.",
+	},
+
+	userMenu: {
+		unknownUser: "Utilizador desconhecido",
+		logOut: "Terminar sessão",
+		signInWithDiscord: "Iniciar sessão com o Discord",
+		discordAccessNote:
+			"Os mods podem usar isto para aceder ao teu nome de utilizador do Discord, avatar, funções, etc.",
 	},
 
 	steamCache: {

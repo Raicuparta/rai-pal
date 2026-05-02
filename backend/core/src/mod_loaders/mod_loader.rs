@@ -1,8 +1,14 @@
 use std::{
 	collections::HashMap,
-	fs::{self, File},
+	fs::{
+		self,
+		File,
+	},
 	io,
-	path::{Path, PathBuf},
+	path::{
+		Path,
+		PathBuf,
+	},
 };
 
 use enum_dispatch::enum_dispatch;
@@ -10,18 +16,39 @@ use log::error;
 use rai_pal_proc_macros::serializable_struct;
 use zip::ZipArchive;
 
-use super::{bepinex::BepInEx, mod_database, runnable_loader::RunnableLoader};
+use super::{
+	bepinex::BepInEx,
+	mod_database,
+	runnable_loader::RunnableLoader,
+};
 use crate::{
 	files,
 	game::DbGame,
 	game_mod::CommonModData,
-	local_mod::{self, LocalMod, ModKind},
-	mod_loaders::mod_database::{ModConfigDestinationType, ModConfigs, ModDatabase},
+	local_mod::{
+		self,
+		LocalMod,
+		ModKind,
+	},
+	mod_loaders::mod_database::{
+		ModConfigDestinationType,
+		ModConfigs,
+		ModDatabase,
+	},
 	mod_manifest,
-	paths::{self, open_folder_or_parent},
+	paths::{
+		self,
+		open_folder_or_parent,
+	},
 	remote_config,
-	remote_mod::{RemoteMod, RemoteModData},
-	result::{Error, Result},
+	remote_mod::{
+		RemoteMod,
+		RemoteModData,
+	},
+	result::{
+		Error,
+		Result,
+	},
 };
 
 #[serializable_struct]
@@ -29,6 +56,12 @@ pub struct ModLoaderData {
 	pub id: String,
 	pub path: PathBuf,
 	pub kind: ModKind,
+}
+
+#[serializable_struct]
+pub struct ModLoaderStatus {
+	pub installed_version: Option<String>,
+	pub latest_version: Option<String>,
 }
 
 #[enum_dispatch]
@@ -40,7 +73,7 @@ pub enum ModLoader {
 
 #[enum_dispatch(ModLoader)]
 pub trait ModLoaderActions {
-	fn install(&self, game: &DbGame) -> Result;
+	async fn install(&self, game: &DbGame) -> Result;
 	async fn install_mod_inner(&self, game: &DbGame, local_mod: &LocalMod) -> Result;
 	async fn uninstall_mod(&self, game: &DbGame, local_mod: &LocalMod) -> Result;
 	async fn run_without_game(&self, local_mod: &LocalMod) -> Result;
@@ -49,6 +82,12 @@ pub trait ModLoaderActions {
 	fn get_data(&self) -> &ModLoaderData;
 	fn get_mod_path(&self, mod_data: &CommonModData) -> Result<PathBuf>;
 	fn get_local_mods(&self) -> Result<HashMap<String, LocalMod>>;
+	async fn get_status(&self, _game: &DbGame) -> Result<Option<ModLoaderStatus>> {
+		Ok(None)
+	}
+	fn open_loader_folder_for_game(&self, game: &DbGame) -> Result {
+		game.open_mods_folder()
+	}
 
 	fn open_folder(&self) -> Result {
 		open_folder_or_parent(&self.get_data().path)
@@ -58,6 +97,22 @@ pub trait ModLoaderActions {
 		self.install_mod_inner(game, local_mod).await?;
 
 		self.update_installed_mod_manifest(local_mod, game)?;
+
+		Ok(())
+	}
+
+	async fn install_loader(&self, game: &DbGame, force_reinstall: bool) -> Result {
+		let should_install = force_reinstall
+			|| self
+				.get_status(game)
+				.await?
+				.as_ref()
+				.and_then(|status| status.installed_version.as_ref())
+				.is_none();
+
+		if should_install {
+			self.install(game).await?;
+		}
 
 		Ok(())
 	}

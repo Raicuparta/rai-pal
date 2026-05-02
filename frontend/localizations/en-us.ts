@@ -214,11 +214,17 @@ export const enUs = {
 		// Button for opening the folder where a specific mod is installed.
 		openModFolder: "Open Mod Folder",
 
+		// Button for opening the folder where the mod loader is installed.
+		openModLoaderFolder: "Open mod loader folder",
+
 		// Button for updating the install mod for this game to the latest version.
 		updateMod: "Update",
 
 		// Button for installing a mod for this game.
 		installMod: "Install",
+
+		// Button for reinstalling a mod that's already installed.
+		reinstallMod: "Reinstall",
 
 		// Button for uninstalling a mod for this game.
 		uninstallMod: "Uninstall",
@@ -331,6 +337,22 @@ export const enUs = {
 
 		// Tooltip for the button that clears Rai Pal's local game database cache.
 		clearRaiPalCacheTooltip: "Clears the game list cache used by Rai Pal.",
+	},
+
+	// Menu for Discord account login/logout and account info.
+	userMenu: {
+		// Fallback label when Rai Pal has no username for the logged in account.
+		unknownUser: "Unknown user",
+
+		// Button for logging out of Discord in the user menu.
+		logOut: "Log out",
+
+		// Button for starting the Discord OAuth login flow.
+		signInWithDiscord: "Sign in with Discord",
+
+		// Description text under the Discord sign-in button.
+		discordAccessNote:
+			"Mods can use this to access your Discord username, avatar, roles, etc.",
 	},
 
 	// Button and modal for resetting Steam's cache.

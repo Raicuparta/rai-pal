@@ -1,8 +1,30 @@
-import { Alert, Divider, Table } from "@mantine/core";
-import { EngineVersionRange, DbGame, commands } from "@api/bindings";
+import {
+	Alert,
+	ButtonGroup,
+	Divider,
+	Group,
+	Table,
+	ThemeIcon,
+} from "@mantine/core";
+import {
+	EngineVersionRange,
+	DbGame,
+	ModLoaderStatus,
+	commands,
+} from "@api/bindings";
 import { useCallback, useMemo } from "react";
 import { CommandButton } from "@components/command-button";
-import { IconTrash } from "@tabler/icons-react";
+import {
+	IconCheck,
+	IconCirclePlus,
+	IconDotsVertical,
+	IconFolderOpen,
+	IconMinus,
+	IconRefresh,
+	IconRefreshAlert,
+	IconTrash,
+} from "@tabler/icons-react";
+import { CommandDropdown } from "@components/command-dropdown";
 import { UnifiedMod, useUnifiedMods } from "@hooks/use-unified-mods";
 import { GameModRow } from "./game-mod-row";
 import { TableContainer } from "@components/table/table-container";
@@ -10,6 +32,12 @@ import { useLocalization } from "@hooks/use-localization";
 import { useCommandData } from "@hooks/use-command-data";
 import { useAppEvent } from "@hooks/use-app-event";
 import { MutedText } from "@components/muted-text";
+import { getIsOutdated } from "@util/is-outdated";
+import { OutdatedMarker } from "@components/outdated-marker";
+import { ItemName } from "@components/item-name";
+import { ModVersionBadge } from "@components/mods/mod-version-badge";
+import { useAsyncCommand } from "@hooks/use-async-command";
+import { useUnifiedModLoaders } from "@hooks/use-unified-mod-loaders";
 
 type Props = {
 	readonly game: DbGame;
@@ -71,6 +99,139 @@ function isVersionWithinRange(
 
 const defaultInstalledModVersions: Record<string, string> = {};
 
+type ModLoaderRowProps = {
+	readonly modLoaderId: string;
+	readonly game: DbGame;
+	readonly status?: ModLoaderStatus;
+};
+
+function ModLoaderRow({ game, modLoaderId, status }: ModLoaderRowProps) {
+	const tGameModRow = useLocalization("gameModRow");
+	const [runModLoaderAction, isRunningModLoaderAction] = useAsyncCommand(
+		(forceReinstall: boolean) =>
+			commands.installModLoader(
+				game.providerId,
+				game.gameId,
+				modLoaderId,
+				forceReinstall,
+			),
+	);
+
+	const isOutdated = getIsOutdated(
+		status?.installedVersion,
+		status?.latestVersion,
+	);
+
+	const isInstalled = Boolean(status?.installedVersion);
+
+	const { statusIcon, statusColor } = (() => {
+		if (isOutdated) {
+			return {
+				statusIcon: <OutdatedMarker />,
+				statusColor: "orange",
+			};
+		}
+
+		if (isInstalled) {
+			return {
+				statusIcon: <IconCheck />,
+				statusColor: "green",
+			};
+		}
+
+		return {
+			statusIcon: <IconMinus />,
+			statusColor: "gray",
+		};
+	})();
+
+	const handleOpenModLoaderFolder = async () => {
+		await commands.openGameModLoaderFolder(
+			game.providerId,
+			game.gameId,
+			modLoaderId,
+		);
+	};
+
+	const mainButton = (() => {
+		if (!isInstalled) {
+			return {
+				action: () => runModLoaderAction(false),
+				icon: <IconCirclePlus />,
+				color: "violet",
+				label: tGameModRow("installMod"),
+			};
+		}
+
+		if (isOutdated) {
+			return {
+				action: () => runModLoaderAction(true),
+				icon: <IconRefreshAlert />,
+				color: "orange",
+				label: tGameModRow("updateMod"),
+			};
+		}
+
+		return null;
+	})();
+
+	return (
+		<Table.Tr key={`${modLoaderId}-row`}>
+			<Table.Td ta="left">
+				<ItemName>
+					<ThemeIcon
+						color={statusColor}
+						size="sm"
+					>
+						{statusIcon}
+					</ThemeIcon>
+					{modLoaderId}
+					<ModVersionBadge
+						localVersion={status?.installedVersion ?? undefined}
+						remoteVersion={status?.latestVersion ?? undefined}
+					/>
+				</ItemName>
+			</Table.Td>
+			<Table.Td maw={200}>
+				<Group justify="right">
+					<ButtonGroup>
+						{mainButton && (
+							<CommandButton
+								size="xs"
+								leftSection={mainButton.icon}
+								color={mainButton.color}
+								variant="default"
+								loading={isRunningModLoaderAction}
+								onClick={mainButton.action}
+							>
+								{mainButton.label}
+							</CommandButton>
+						)}
+						<CommandDropdown icon={<IconDotsVertical />}>
+							<CommandButton
+								size="xs"
+								leftSection={<IconRefresh />}
+								disabled={!isInstalled}
+								loading={isRunningModLoaderAction}
+								onClick={() => runModLoaderAction(true)}
+							>
+								{tGameModRow("reinstallMod")}
+							</CommandButton>
+							<CommandButton
+								size="xs"
+								leftSection={<IconFolderOpen />}
+								onClick={handleOpenModLoaderFolder}
+							>
+								{tGameModRow("openModLoaderFolder")}
+							</CommandButton>
+						</CommandDropdown>
+					</ButtonGroup>
+				</Group>
+			</Table.Td>
+		</Table.Tr>
+	);
+}
+
 export function GameMods({ game }: Props) {
 	const t = useLocalization("gameModal");
 	const mods = useUnifiedMods();
@@ -92,6 +253,16 @@ export function GameMods({ game }: Props) {
 		null,
 		!game?.exePath,
 	);
+	const getModLoaderStatuses = useCallback(
+		() => commands.getModLoaderStatuses(game.providerId, game.gameId),
+		[game],
+	);
+	const [modLoaderStatuses, updateModLoaderStatuses] = useCommandData(
+		getModLoaderStatuses,
+		{},
+		!game?.exePath,
+	);
+	const modLoaders = useUnifiedModLoaders(modLoaderStatuses);
 
 	useAppEvent(
 		"refreshGame",
@@ -103,6 +274,7 @@ export function GameMods({ game }: Props) {
 			)
 				return;
 			updateInstalledModVersions();
+			updateModLoaderStatuses();
 		},
 	);
 
@@ -140,13 +312,16 @@ export function GameMods({ game }: Props) {
 		};
 	}, [game, installedModVersions, mods]);
 
-	if (compatibleMods.length + incompatibleMods.length === 0) {
+	if (
+		compatibleMods.length + incompatibleMods.length === 0 &&
+		modLoaders.length === 0
+	) {
 		return null;
 	}
 
 	return (
 		<>
-			{compatibleMods.length > 0 && (
+			{(compatibleMods.length > 0 || modLoaders.length > 0) && (
 				<>
 					<Divider label={t("gameModsLabel")} />
 					{!game.exePath && (
@@ -155,6 +330,14 @@ export function GameMods({ game }: Props) {
 					<TableContainer bg="dark">
 						<Table>
 							<Table.Tbody>
+								{modLoaders.map(({ id, status }) => (
+									<ModLoaderRow
+										key={id}
+										modLoaderId={id}
+										game={game}
+										status={status}
+									/>
+								))}
 								{compatibleMods.map((mod) => (
 									<GameModRow
 										key={mod.common.id}
@@ -168,6 +351,19 @@ export function GameMods({ game }: Props) {
 						</Table>
 					</TableContainer>
 				</>
+			)}
+			{game.exePath && (
+				<CommandButton
+					confirmationText={t("uninstallAllModsConfirmation")}
+					onClick={() =>
+						commands.uninstallAllMods(game.providerId, game.gameId)
+					}
+					color="red"
+					variant="light"
+					leftSection={<IconTrash />}
+				>
+					{t("uninstallAllModsButton")}
+				</CommandButton>
 			)}
 			{incompatibleMods.length > 0 && (
 				<>
@@ -190,19 +386,6 @@ export function GameMods({ game }: Props) {
 						</Table>
 					</TableContainer>
 				</>
-			)}
-			{game.exePath && (
-				<CommandButton
-					confirmationText={t("uninstallAllModsConfirmation")}
-					onClick={() =>
-						commands.uninstallAllMods(game.providerId, game.gameId)
-					}
-					color="red"
-					variant="light"
-					leftSection={<IconTrash />}
-				>
-					{t("uninstallAllModsButton")}
-				</CommandButton>
 			)}
 		</>
 	);

@@ -1,26 +1,48 @@
 use std::{
 	collections::HashMap,
 	fs,
-	path::{Path, PathBuf},
+	path::{
+		Path,
+		PathBuf,
+	},
 };
 
 use crate::{
 	architecture::Architecture,
-	data_types::{json_data::JsonData, path_data::PathData},
+	data_types::{
+		json_data::JsonData,
+		path_data::PathData,
+	},
 	game_engines::{
-		game_engine::{EngineBrand, get_exe_engine},
-		unity::{self, UnityBackend},
+		game_engine::{
+			EngineBrand,
+			get_exe_engine,
+		},
+		unity::{
+			self,
+			UnityBackend,
+		},
 		unreal,
 	},
 	game_tag::GameTag,
 	game_title::is_probably_demo,
-	mod_manifest, paths,
+	mod_manifest,
+	paths,
 	providers::{
 		provider::ProviderId,
-		provider_command::{ProviderCommand, ProviderCommandAction},
+		provider_command::{
+			ProviderCommand,
+			ProviderCommandAction,
+		},
 	},
-	remote_config::{self, RemoteConfigs},
-	result::{Error, Result},
+	remote_config::{
+		self,
+		RemoteConfigs,
+	},
+	result::{
+		Error,
+		Result,
+	},
 };
 
 #[derive(serde::Serialize, specta::Type, Clone)]
@@ -145,8 +167,7 @@ impl DbGame {
 
 	pub fn try_get_exe_name(&self) -> Result<String> {
 		let path = self.try_get_exe_path()?;
-		path
-			.file_name()
+		path.file_name()
 			.and_then(|file_name| file_name.to_str())
 			.map(std::string::ToString::to_string)
 			.ok_or_else(|| Error::InvalidOsStr(path.display().to_string()))
@@ -177,6 +198,9 @@ impl DbGame {
 			return self;
 		}
 
+		// TODO: Launching exes directly only works on Windows.
+		// Once we have native Linux executable support, we should change this based on the executable's format and current OS.
+		#[cfg(target_os = "windows")]
 		self.add_provider_command(
 			ProviderCommandAction::StartViaExe,
 			ProviderCommand::Path(exe_path.to_path_buf(), Vec::default()),

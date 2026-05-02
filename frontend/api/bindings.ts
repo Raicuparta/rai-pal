@@ -7,6 +7,9 @@ import * as __TAURI_EVENT from "@tauri-apps/api/event";
 export const commands = {
 	addGame: (path: string) => __TAURI_INVOKE<null>("add_game", { path }),
 	configureMod: (providerId: ProviderId, gameId: string, modId: string, openFolder: boolean) => __TAURI_INVOKE<null>("configure_mod", { providerId, gameId, modId, openFolder }),
+	getAuthState: () => __TAURI_INVOKE<DiscordAuthState>("get_auth_state"),
+	logIn: () => __TAURI_INVOKE<DiscordOAuthResult>("log_in"),
+	logOut: () => __TAURI_INVOKE<null>("log_out"),
 	deleteMod: (modId: string) => __TAURI_INVOKE<null>("delete_mod", { modId }),
 	downloadMod: (modId: string) => __TAURI_INVOKE<null>("download_mod", { modId }),
 	frontendReady: () => __TAURI_INVOKE<null>("frontend_ready"),
@@ -19,6 +22,9 @@ export const commands = {
 } | null) => __TAURI_INVOKE<GameIdsResponse>("get_game_ids", { query }),
 	getGame: (providerId: ProviderId, gameId: string) => __TAURI_INVOKE<DbGame>("get_game", { providerId, gameId }),
 	getInstalledModVersions: (providerId: ProviderId, gameId: string) => __TAURI_INVOKE<{ [key in string]: string }>("get_installed_mod_versions", { providerId, gameId }),
+	getModLoaderStatuses: (providerId: ProviderId, gameId: string) => __TAURI_INVOKE<{ [key in string]: ModLoaderStatus }>("get_mod_loader_statuses", { providerId, gameId }),
+	installModLoader: (providerId: ProviderId, gameId: string, modLoaderId: string, forceReinstall: boolean) => __TAURI_INVOKE<null>("install_mod_loader", { providerId, gameId, modLoaderId, forceReinstall }),
+	openGameModLoaderFolder: (providerId: ProviderId, gameId: string, modLoaderId: string) => __TAURI_INVOKE<null>("open_game_mod_loader_folder", { providerId, gameId, modLoaderId }),
 	getLocalMods: () => __TAURI_INVOKE<{ [key in string]: LocalMod }>("get_local_mods"),
 	getRemoteMods: () => __TAURI_INVOKE<{ [key in string]: RemoteMod }>("get_remote_mods"),
 	installMod: (providerId: ProviderId, gameId: string, modId: string) => __TAURI_INVOKE<null>("install_mod", { providerId, gameId, modId }),
@@ -101,6 +107,20 @@ export type DbGame = {
 	architecture: Architecture | null,
 	tags: JsonData<GameTag[]>,
 	providerCommands: JsonData<Partial<{ [key in ProviderCommandAction]: ProviderCommand }>>,
+};
+
+export type DiscordAuthState = {
+	is_logged_in: boolean,
+	avatar_file_path: string | null,
+	user_name: string | null,
+};
+
+export type DiscordOAuthResult = {
+	token_file_path: string,
+	token_type: string,
+	scope: string,
+	expires_in: number,
+	access_token_preview: string,
 };
 
 export type EngineBrand = "Unity" | "Unreal" | "Godot" | "GameMaker";
@@ -194,6 +214,11 @@ export type ModLoaderData = {
 	id: string,
 	path: string,
 	kind: ModKind,
+};
+
+export type ModLoaderStatus = {
+	installedVersion: string | null,
+	latestVersion: string | null,
 };
 
 export type PathData = string;

@@ -72,7 +72,6 @@ export function AppSettings() {
 					<Button
 						variant="filled"
 						color="dark"
-						ml="auto"
 						fz="md"
 					>
 						<IconMenu2 />
