@@ -8,7 +8,7 @@ export const commands = {
 	addGame: (path: string) => __TAURI_INVOKE<null>("add_game", { path }),
 	configureMod: (providerId: ProviderId, gameId: string, modId: string, openFolder: boolean) => __TAURI_INVOKE<null>("configure_mod", { providerId, gameId, modId, openFolder }),
 	getAuthState: () => __TAURI_INVOKE<DiscordAuthState>("get_auth_state"),
-	logIn: () => __TAURI_INVOKE<DiscordOAuthResult>("log_in"),
+	logIn: () => __TAURI_INVOKE<null>("log_in"),
 	logOut: () => __TAURI_INVOKE<null>("log_out"),
 	deleteMod: (modId: string) => __TAURI_INVOKE<null>("delete_mod", { modId }),
 	downloadMod: (modId: string) => __TAURI_INVOKE<null>("download_mod", { modId }),
@@ -110,17 +110,9 @@ export type DbGame = {
 };
 
 export type DiscordAuthState = {
-	is_logged_in: boolean,
-	avatar_file_path: string | null,
-	user_name: string | null,
-};
-
-export type DiscordOAuthResult = {
-	token_file_path: string,
-	token_type: string,
-	scope: string,
-	expires_in: number,
-	access_token_preview: string,
+	isLoggedIn: boolean,
+	avatarFilePath: string | null,
+	userName: string | null,
 };
 
 export type EngineBrand = "Unity" | "Unreal" | "Godot" | "GameMaker";
