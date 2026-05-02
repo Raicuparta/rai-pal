@@ -111,8 +111,10 @@ export const deDe: Localization = {
 		openModConfigFolderTooltip:
 			"Ordner mit den Konfigurationsdateien dieses Mods öffnen",
 		openModFolder: "Mod-Ordner öffnen",
+		openModLoaderFolder: "Mod-Loader-Ordner öffnen",
 		updateMod: "Aktualisieren",
 		installMod: "Installieren",
+		reinstallMod: "Neu installieren",
 		uninstallMod: "Deinstallieren",
 		runMod: "Ausführen",
 		downloadRemoteConfig: "Empfohlene Konfiguration herunterladen",

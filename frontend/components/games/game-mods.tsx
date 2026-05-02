@@ -215,14 +215,14 @@ function ModLoaderRow({ game, modLoaderId, status }: ModLoaderRowProps) {
 								loading={isRunningModLoaderAction}
 								onClick={() => runModLoaderAction(true)}
 							>
-								Reinstall
+								{tGameModRow("reinstallMod")}
 							</CommandButton>
 							<CommandButton
 								size="xs"
 								leftSection={<IconFolderOpen />}
 								onClick={handleOpenModLoaderFolder}
 							>
-								Open mod loader folder
+								{tGameModRow("openModLoaderFolder")}
 							</CommandButton>
 						</CommandDropdown>
 					</ButtonGroup>
