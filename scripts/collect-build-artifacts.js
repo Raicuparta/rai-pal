@@ -16,18 +16,25 @@ function setOutput(key, value) {
 }
 
 const args = process.argv.slice(2);
-const repoOwner = args[0];
-const repoName = args[1];
-const version = args[2];
+const targetPlatform = args[0];
+const repoOwner = args[1];
+const repoName = args[2];
+const version = args[3];
 
-if (!repoOwner || !repoName || !version) {
+if (!targetPlatform || !repoOwner || !repoName || !version) {
 	console.error(
-		"Usage: node scripts/collect-build-artifacts.js <owner> <repo> <version>",
+		"Usage: node scripts/collect-build-artifacts.js <platform> <owner> <repo> <version>",
 	);
 	process.exit(1);
 }
 
-const platform = process.platform;
+if (targetPlatform !== "windows" && targetPlatform !== "linux") {
+	console.error(
+		`Unsupported platform: ${targetPlatform}. Expected: windows|linux`,
+	);
+	process.exit(1);
+}
+
 const outputDir = path.join(__dirname, "..", "release-assets");
 fs.mkdirSync(outputDir, { recursive: true });
 
@@ -38,7 +45,7 @@ try {
 	let executableAssetName;
 	let executableExt;
 
-	if (platform === "win32") {
+	if (targetPlatform === "windows") {
 		bundleDir = path.join(
 			__dirname,
 			"..",
@@ -52,7 +59,7 @@ try {
 		updaterAssetName = "updater-windows.zip";
 		executableAssetName = "RaiPal.exe";
 		executableExt = ".exe";
-	} else if (platform === "linux") {
+	} else if (targetPlatform === "linux") {
 		bundleDir = path.join(
 			__dirname,
 			"..",
@@ -66,9 +73,6 @@ try {
 		updaterAssetName = "updater-linux.tar.gz";
 		executableAssetName = "RaiPal.AppImage";
 		executableExt = ".AppImage";
-	} else {
-		console.error(`Unsupported platform: ${platform}`);
-		process.exit(1);
 	}
 
 	if (!fs.existsSync(bundleDir)) {
@@ -76,7 +80,7 @@ try {
 		process.exit(1);
 	}
 
-	if (platform === "linux") {
+	if (targetPlatform === "linux") {
 		fixAppImageSymlinks();
 	}
 
@@ -120,7 +124,8 @@ try {
 	);
 	console.log(`Copied ${executableFile} -> ${executableAssetName}`);
 
-	const platformKey = platform === "win32" ? "windows-x86_64" : "linux-x86_64";
+	const platformKey =
+		targetPlatform === "windows" ? "windows-x86_64" : "linux-x86_64";
 	const partial = {
 		version,
 		platformKey,
@@ -131,7 +136,7 @@ try {
 	};
 
 	const partialFilename =
-		platform === "win32"
+		targetPlatform === "windows"
 			? "updater-partial-windows.json"
 			: "updater-partial-linux.json";
 	fs.writeFileSync(partialFilename, JSON.stringify(partial, null, 2));
