@@ -50,7 +50,7 @@ struct Root {
 
 fn get_detected_games() -> Result<Option<Vec<ParsedGame>>> {
 	Ok(
-		heroic_provider::read_heroic_json_if_exists::<Root>("store_cache/legendary_library.json")?
+		heroic_provider::read_heroic_json::<Root>("store_cache/legendary_library.json")?
 			.and_then(|root| root.library),
 	)
 }

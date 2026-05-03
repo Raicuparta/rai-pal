@@ -11,6 +11,8 @@ use std::{
 
 use steamlocate::SteamDir;
 
+#[cfg(target_os = "linux")]
+use super::steam_proton;
 use super::{
 	appinfo::{
 		SteamAppInfo,
@@ -347,8 +349,16 @@ impl ProviderActions for Steam {
 		Ok(())
 	}
 
-	fn set_environment(&self, _game: &DbGame, _environment: &HashMap<String, String>) -> Result {
-		Ok(())
+	fn set_environment(&self, game: &DbGame, environment: &HashMap<String, String>) -> Result {
+		#[cfg(target_os = "linux")]
+		{
+			steam_proton::set_environment_for_game(game, environment)
+		}
+
+		#[cfg(not(target_os = "linux"))]
+		{
+			Ok(())
+		}
 	}
 }
 

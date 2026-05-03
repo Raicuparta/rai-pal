@@ -41,7 +41,7 @@ struct InstalledGOGGame {
 	install_path: Option<PathBuf>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Default, Serialize, Deserialize)]
 struct RootInstalled {
 	installed: Vec<InstalledGOGGame>,
 }
@@ -55,7 +55,7 @@ struct ParsedGame {
 	art_icon: Option<String>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Default, Serialize, Deserialize)]
 struct Root {
 	games: Vec<ParsedGame>,
 }
@@ -83,6 +83,7 @@ impl HeroicGog {
 	fn get_owned_games() -> Result<Vec<ParsedGame>> {
 		Ok(
 			heroic_provider::read_heroic_json::<Root>("store_cache/gog_library.json")?
+				.unwrap_or_default()
 				.games
 				.into_iter()
 				// gog-redist is not a game but it shows up in the library
@@ -94,6 +95,7 @@ impl HeroicGog {
 	fn get_installed_games() -> Result<HashMap<String, InstalledGOGGame>> {
 		Ok(
 			heroic_provider::read_heroic_json::<RootInstalled>("gog_store/installed.json")?
+				.unwrap_or_default()
 				.installed
 				.into_iter()
 				.map(|game| (game.app_name.clone(), game))

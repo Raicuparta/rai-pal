@@ -6,11 +6,12 @@ use std::{
 	path::PathBuf,
 };
 
-use serde::de::DeserializeOwned;
-use serde_json::{
-	Map,
-	Value,
+use serde::{
+	Deserialize,
+	Serialize,
+	de::DeserializeOwned,
 };
+use serde_json::Value;
 
 use super::provider_command::ProviderCommand;
 use crate::{
@@ -27,36 +28,29 @@ fn games_config_path(game_id: &str) -> Result<PathBuf> {
 	heroic_config_path(&format!("GamesConfig/{game_id}.json"))
 }
 
-fn ensure_object(value: &mut Value) -> &mut Map<String, Value> {
-	if !value.is_object() {
-		*value = Value::Object(Map::default());
-	}
-
-	value
-		.as_object_mut()
-		.expect("value was converted to a JSON object")
+#[derive(Default, Deserialize, Serialize)]
+#[serde(transparent)]
+struct HeroicGamesConfig {
+	games: HashMap<String, HeroicGameConfig>,
 }
 
-fn ensure_array(value: &mut Value) -> &mut Vec<Value> {
-	if !value.is_array() {
-		*value = Value::Array(Vec::default());
-	}
-
-	value
-		.as_array_mut()
-		.expect("value was converted to a JSON array")
+#[derive(Default, Deserialize, Serialize)]
+struct HeroicGameConfig {
+	#[serde(rename = "enviromentOptions", default)]
+	environment_options: Vec<HeroicEnvironmentOption>,
+	#[serde(flatten)]
+	extra: HashMap<String, Value>,
 }
 
-pub fn read_heroic_json<T>(relative_path: &str) -> Result<T>
-where
-	T: DeserializeOwned,
-{
-	let path = heroic_config_path(relative_path)?;
-	let file_content = std::fs::read_to_string(path)?;
-	Ok(serde_json::from_str::<T>(file_content.as_str())?)
+#[derive(Deserialize, Serialize)]
+struct HeroicEnvironmentOption {
+	key: String,
+	value: String,
+	#[serde(flatten)]
+	extra: HashMap<String, Value>,
 }
 
-pub fn read_heroic_json_if_exists<T>(relative_path: &str) -> Result<Option<T>>
+pub fn read_heroic_json<T>(relative_path: &str) -> Result<Option<T>>
 where
 	T: DeserializeOwned,
 {
@@ -70,31 +64,27 @@ where
 }
 
 pub fn set_environment(game_id: &str, environment: &HashMap<String, String>) -> Result {
+	let relative_path = format!("GamesConfig/{game_id}.json");
 	let path = games_config_path(game_id)?;
-	let mut config = if path.try_exists()? {
-		serde_json::from_str::<Value>(&fs::read_to_string(&path)?)?
-	} else {
-		Value::Object(Map::default())
-	};
+	let mut config = read_heroic_json::<HeroicGamesConfig>(&relative_path)?.unwrap_or_default();
 
-	let config_object = ensure_object(&mut config);
-	let game_config = config_object
-		.entry(game_id.to_string())
-		.or_insert_with(|| Value::Object(Map::default()));
-	let environment_options = ensure_array(
-		ensure_object(game_config)
-			.entry("enviromentOptions".to_string())
-			.or_insert_with(|| Value::Array(Vec::default())),
-	);
+	let game_config = config.games.entry(game_id.to_string()).or_default();
 
 	for (key, value) in environment {
-		if let Some(existing_entry) = environment_options
+		if let Some(existing_entry) = game_config
+			.environment_options
 			.iter_mut()
-			.find(|entry| entry.get("key").and_then(Value::as_str) == Some(key.as_str()))
+			.find(|entry| entry.key == *key)
 		{
-			*existing_entry = serde_json::json!({ "key": key, "value": value });
+			existing_entry.value.clone_from(value);
 		} else {
-			environment_options.push(serde_json::json!({ "key": key, "value": value }));
+			game_config
+				.environment_options
+				.push(HeroicEnvironmentOption {
+					key: key.clone(),
+					value: value.clone(),
+					extra: HashMap::default(),
+				});
 		}
 	}
 
