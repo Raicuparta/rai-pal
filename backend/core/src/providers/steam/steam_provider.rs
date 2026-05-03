@@ -346,6 +346,10 @@ impl ProviderActions for Steam {
 
 		Ok(())
 	}
+
+	fn set_environment(&self, _game: &DbGame, _environment: &HashMap<String, String>) -> Result {
+		Ok(())
+	}
 }
 
 pub fn get_start_command(

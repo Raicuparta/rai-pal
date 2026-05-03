@@ -1,19 +1,35 @@
 use std::{
 	collections::HashMap,
-	path::{Path, PathBuf},
+	path::{
+		Path,
+		PathBuf,
+	},
 };
 
 use chrono::DateTime;
 use log::error;
 use rai_pal_proc_macros::serializable_struct;
-use rusqlite::{Connection, OpenFlags};
+use rusqlite::{
+	Connection,
+	OpenFlags,
+};
 
-use super::provider_command::{ProviderCommand, ProviderCommandAction};
+use super::provider_command::{
+	ProviderCommand,
+	ProviderCommandAction,
+};
 use crate::{
 	game::DbGame,
-	local_database::{DbMutex, GameDatabase},
+	local_database::{
+		DbMutex,
+		GameDatabase,
+	},
 	paths,
-	providers::provider::{ProviderActions, ProviderId, ProviderStatic},
+	providers::provider::{
+		ProviderActions,
+		ProviderId,
+		ProviderStatic,
+	},
 	result::Result,
 };
 

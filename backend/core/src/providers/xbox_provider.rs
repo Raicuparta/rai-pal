@@ -1,19 +1,32 @@
 #![cfg(target_os = "windows")]
 
-use std::{io, path::PathBuf};
+use std::{
+	io,
+	path::PathBuf,
+};
 
 use log::error;
 use rai_pal_proc_macros::serializable_struct;
 use winreg::{
 	RegKey,
-	enums::{HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE},
+	enums::{
+		HKEY_CURRENT_USER,
+		HKEY_LOCAL_MACHINE,
+	},
 };
 
 use crate::{
 	game::DbGame,
-	local_database::{DbMutex, GameDatabase},
+	local_database::{
+		DbMutex,
+		GameDatabase,
+	},
 	paths::file_name_without_extension,
-	providers::provider::{ProviderActions, ProviderId, ProviderStatic},
+	providers::provider::{
+		ProviderActions,
+		ProviderId,
+		ProviderStatic,
+	},
 	result::Result,
 };
 

@@ -1,6 +1,7 @@
 #![cfg(target_os = "linux")]
 
 use std::{
+	collections::HashMap,
 	fmt::Debug,
 	path::PathBuf,
 };
@@ -99,5 +100,9 @@ impl ProviderActions for HeroicEpic {
 			}
 		}
 		Ok(())
+	}
+
+	fn set_environment(&self, game: &DbGame, environment: &HashMap<String, String>) -> Result {
+		heroic_provider::set_environment(&game.external_id, environment)
 	}
 }

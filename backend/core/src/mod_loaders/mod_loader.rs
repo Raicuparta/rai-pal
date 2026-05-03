@@ -40,6 +40,10 @@ use crate::{
 		self,
 		open_folder_or_parent,
 	},
+	providers::provider::{
+		self,
+		ProviderActions,
+	},
 	remote_config,
 	remote_mod::{
 		RemoteMod,
@@ -82,6 +86,9 @@ pub trait ModLoaderActions {
 	fn get_data(&self) -> &ModLoaderData;
 	fn get_mod_path(&self, mod_data: &CommonModData) -> Result<PathBuf>;
 	fn get_local_mods(&self) -> Result<HashMap<String, LocalMod>>;
+	fn get_environment(&self, _game: &DbGame) -> HashMap<String, String> {
+		HashMap::new()
+	}
 	async fn get_status(&self, _game: &DbGame) -> Result<Option<ModLoaderStatus>> {
 		Ok(None)
 	}
@@ -111,6 +118,12 @@ pub trait ModLoaderActions {
 				.is_none();
 
 		if should_install {
+			let provider = provider::get_provider(game.provider_id)
+				.ok_or_else(|| Error::InvalidProviderId(game.provider_id.to_string()))??;
+			let environment = self.get_environment(game);
+
+			provider.set_environment(game, &environment)?;
+
 			self.install(game).await?;
 		}
 

@@ -169,4 +169,8 @@ impl ProviderActions for HeroicGog {
 
 		Ok(())
 	}
+
+	fn set_environment(&self, game: &DbGame, environment: &HashMap<String, String>) -> Result {
+		heroic_provider::set_environment(&game.external_id, environment)
+	}
 }
