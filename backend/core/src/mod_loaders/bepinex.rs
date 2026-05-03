@@ -194,11 +194,8 @@ impl ModLoaderActions for BepInEx {
 		&self.data
 	}
 
-	fn get_environment(&self, _game: &DbGame) -> HashMap<String, String> {
-		HashMap::from([(
-			"WINEDLLOVERRIDES".to_string(),
-			"winhttp.dll=n,b".to_string(),
-		)])
+	fn get_wine_dll_overrides(&self, _game: &DbGame) -> Vec<String> {
+		vec!["winhttp".to_string()]
 	}
 
 	async fn get_status(&self, game: &DbGame) -> Result<Option<ModLoaderStatus>> {

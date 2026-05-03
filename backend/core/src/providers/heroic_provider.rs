@@ -63,7 +63,19 @@ where
 	Ok(Some(serde_json::from_str::<T>(file_content.as_str())?))
 }
 
-pub fn set_environment(game_id: &str, environment: &HashMap<String, String>) -> Result {
+pub fn set_wine_dll_overrides(game_id: &str, dll_overrides: &[String]) -> Result {
+	if dll_overrides.is_empty() {
+		return Ok(());
+	}
+
+	let wine_dll_overrides_value = dll_overrides
+		.iter()
+		.map(|dll| format!("{dll}=n,b"))
+		.collect::<Vec<_>>()
+		.join(";");
+
+	let environment = HashMap::from([("WINEDLLOVERRIDES".to_string(), wine_dll_overrides_value)]);
+
 	let relative_path = format!("GamesConfig/{game_id}.json");
 	let path = games_config_path(game_id)?;
 	let mut config = read_heroic_json::<HeroicGamesConfig>(&relative_path)?.unwrap_or_default();
@@ -76,13 +88,13 @@ pub fn set_environment(game_id: &str, environment: &HashMap<String, String>) -> 
 			.iter_mut()
 			.find(|entry| entry.key == *key)
 		{
-			existing_entry.value.clone_from(value);
+			existing_entry.value = value;
 		} else {
 			game_config
 				.environment_options
 				.push(HeroicEnvironmentOption {
-					key: key.clone(),
-					value: value.clone(),
+					key,
+					value,
 					extra: HashMap::default(),
 				});
 		}

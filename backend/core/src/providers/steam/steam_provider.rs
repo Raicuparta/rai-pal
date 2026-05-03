@@ -349,10 +349,10 @@ impl ProviderActions for Steam {
 		Ok(())
 	}
 
-	fn set_environment(&self, game: &DbGame, environment: &HashMap<String, String>) -> Result {
+	fn set_wine_dll_overrides(&self, game: &DbGame, dll_overrides: &[String]) -> Result {
 		#[cfg(target_os = "linux")]
 		{
-			steam_proton::set_environment_for_game(game, environment)
+			steam_proton::set_wine_dll_overrides_for_game(game, dll_overrides)
 		}
 
 		#[cfg(not(target_os = "linux"))]

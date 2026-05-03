@@ -1,5 +1,4 @@
 use std::{
-	collections::HashMap,
 	fs,
 	path::PathBuf,
 };
@@ -78,7 +77,7 @@ const PROVIDERS: &Map = &[
 #[enum_dispatch(Provider)]
 pub trait ProviderActions {
 	async fn insert_games(&self, db: &DbMutex) -> Result;
-	fn set_environment(&self, _game: &DbGame, _environment: &HashMap<String, String>) -> Result {
+	fn set_wine_dll_overrides(&self, _game: &DbGame, _dll_overrides: &[String]) -> Result {
 		Ok(())
 	}
 }
