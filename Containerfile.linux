@@ -28,6 +28,12 @@ RUN apt-get update \
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
     | sh -s -- -y --profile minimal --default-toolchain stable
 
+# Shitty fix for "EGL_BAD_PARAMETER" on AppImage releases.
+RUN TAURI_TOOLKIT_PATH="${XDG_CACHE_HOME:-$HOME/.cache}/tauri" \
+ && mkdir -p "$TAURI_TOOLKIT_PATH" \
+ && wget https://github.com/linuxdeploy/linuxdeploy/releases/latest/download/linuxdeploy-x86_64.AppImage -O "$TAURI_TOOLKIT_PATH/linuxdeploy-x86_64.AppImage" \
+ && chmod +x "$TAURI_TOOLKIT_PATH/linuxdeploy-x86_64.AppImage"
+
 WORKDIR /app
 
 CMD ["/bin/bash"]
