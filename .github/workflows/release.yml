@@ -60,7 +60,7 @@ jobs:
       packages: read
 
     container:
-      image: ghcr.io/${{ github.repository_owner }}/rai-pal-builder:${{ matrix.os-name }}-latest
+      image: ghcr.io/raicuparta/rai-pal-builder:${{ matrix.os-name }}-latest
       credentials:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
