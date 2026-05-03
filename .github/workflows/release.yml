@@ -71,8 +71,17 @@ jobs:
       - name: Install frontend dependencies
         run: npm ci
 
-      - name: Build
+      - name: Build (Linux)
+        if: matrix.os-name == 'linux'
         run: npm run build
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
+          ANALYTICS_API_KEY: ${{ secrets.ANALYTICS_API_KEY }}
+
+      - name: Build (Windows)
+        if: matrix.os-name == 'windows'
+        run: npm run tauri build -- --runner cargo-xwin --target x86_64-pc-windows-msvc
         env:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
