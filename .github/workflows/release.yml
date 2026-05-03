@@ -47,35 +47,26 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Evaluate dynamically using native Actions Expression syntax: condition && true_val || false_val
         include: >-
           ${{ fromJSON(
-            inputs.build_target == 'windows' && '[{"platform":"windows-latest","os-name":"windows"}]' ||
-            inputs.build_target == 'ubuntu' && '[{"platform":"ubuntu-22.04","os-name":"linux"}]' ||
-            '[{"platform":"windows-latest","os-name":"windows"},{"platform":"ubuntu-22.04","os-name":"linux"}]'
+            inputs.build_target == 'windows' && '[{"os-name":"windows"}]' ||
+            inputs.build_target == 'ubuntu' && '[{"os-name":"linux"}]' ||
+            '[{"os-name":"windows"},{"os-name":"linux"}]'
           ) }}
 
-    runs-on: ${{ matrix.platform }}
+    runs-on: ubuntu-latest
     permissions:
       contents: write
+      packages: read
+
+    container:
+      image: ghcr.io/${{ github.repository_owner }}/rai-pal-builder:${{ matrix.os-name }}-latest
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
       - uses: actions/checkout@v6
-
-      - name: Setup Node
-        uses: actions/setup-node@v6
-        with:
-          node-version: 25
-          cache: "npm"
-
-      - name: Install Rust stable
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Install dependencies (Linux)
-        if: matrix.os-name == 'linux'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
 
       - name: Install frontend dependencies
         run: npm ci
