@@ -51,6 +51,7 @@ try {
 			"..",
 			"backend",
 			"target",
+			"x86_64-pc-windows-msvc",
 			"release",
 			"bundle",
 			"nsis",
