@@ -88,6 +88,31 @@ pub struct ModLoaderStatus {
 	pub latest_version: Option<String>,
 }
 
+#[serializable_struct]
+pub struct LocalModLoaderData {
+	pub installed_version: Option<String>,
+}
+
+#[serializable_struct]
+pub struct RemoteModLoaderData {
+	pub latest_version: Option<String>,
+}
+
+#[serializable_struct]
+pub struct LocalModLoader {
+	pub common: ModLoaderData,
+	pub data: LocalModLoaderData,
+}
+
+#[serializable_struct]
+pub struct RemoteModLoader {
+	pub common: ModLoaderData,
+	pub data: RemoteModLoaderData,
+}
+
+pub type LocalModLoadersMap = HashMap<String, LocalModLoader>;
+pub type RemoteModLoadersMap = HashMap<String, RemoteModLoader>;
+
 #[enum_dispatch]
 #[derive(Clone)]
 pub enum ModLoader {
@@ -394,11 +419,36 @@ pub fn get_map(resources_path: &Path) -> Map {
 	map
 }
 
-pub fn get_data_map(map: &Map) -> Result<DataMap> {
+pub fn get_local_mod_loaders_map(map: &Map) -> Result<LocalModLoadersMap> {
 	map.values()
 		.map(|mod_loader| {
-			let data = mod_loader.get_data();
-			Ok((data.id.clone(), data.clone()))
+			let common = mod_loader.get_data().clone();
+			Ok((
+				common.id.as_str().to_string(),
+				LocalModLoader {
+					common,
+					data: LocalModLoaderData {
+						installed_version: None,
+					},
+				},
+			))
+		})
+		.collect()
+}
+
+pub fn get_remote_mod_loaders_map(map: &Map) -> Result<RemoteModLoadersMap> {
+	map.values()
+		.map(|mod_loader| {
+			let common = mod_loader.get_data().clone();
+			Ok((
+				common.id.as_str().to_string(),
+				RemoteModLoader {
+					common,
+					data: RemoteModLoaderData {
+						latest_version: None,
+					},
+				},
+			))
 		})
 		.collect()
 }

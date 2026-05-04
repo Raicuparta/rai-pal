@@ -1,22 +1,49 @@
-import { ModLoaderId, ModLoaderStatus } from "@api/bindings";
-import { useAtomValue } from "jotai";
-import { modLoadersAtom } from "./use-data";
+import { atom, useAtomValue } from "jotai";
+import { localModLoadersAtom, remoteModLoadersAtom } from "./use-data";
+import {
+	LocalModLoaderData,
+	RemoteModLoaderData,
+	ModLoaderData,
+} from "@api/bindings";
 
-export type UnifiedModLoader = {
-	id: ModLoaderId;
-	status?: ModLoaderStatus;
+export type UnifiedModLoaderData = {
+	common: ModLoaderData;
+	local?: LocalModLoaderData;
+	remote?: RemoteModLoaderData;
 };
 
-export function useUnifiedModLoaders(
-	statuses: Partial<Record<ModLoaderId, ModLoaderStatus>>,
-) {
-	const modLoaders = useAtomValue(modLoadersAtom);
+const unifiedModsAtom = atom((get) => {
+	const localModLoaders = get(localModLoadersAtom);
+	const remoteModLoaders = get(remoteModLoadersAtom);
+	const unifiedModLoaders: Record<string, UnifiedModLoaderData> = {};
+	const keys = [
+		...new Set([
+			...Object.keys(localModLoaders),
+			...Object.keys(remoteModLoaders),
+		]),
+	].sort();
 
-	return Object.values(modLoaders)
-		.filter((modLoader) => modLoader.kind === "Installable")
-		.sort((a, b) => a.id.localeCompare(b.id))
-		.map((modLoader) => ({
-			id: modLoader.id,
-			status: statuses[modLoader.id],
-		}));
+	for (const key of keys) {
+		const localModLoader = localModLoaders[key];
+		const remoteModLoader = remoteModLoaders[key];
+
+		if (!localModLoader && !remoteModLoader) continue;
+
+		// Use local common data if available, otherwise use remote
+		const common = localModLoader?.common ?? remoteModLoader?.common;
+
+		if (!common) continue;
+
+		unifiedModLoaders[key] = {
+			common,
+			local: localModLoader?.data,
+			remote: remoteModLoader?.data,
+		};
+	}
+
+	return unifiedModLoaders;
+});
+
+export function useUnifiedModLoaders() {
+	return useAtomValue(unifiedModsAtom);
 }

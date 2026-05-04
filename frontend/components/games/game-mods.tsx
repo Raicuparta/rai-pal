@@ -265,7 +265,14 @@ export function GameMods({ game }: Props) {
 		defaultModLoaderStatuses,
 		!game?.exePath,
 	);
-	const modLoaders = useUnifiedModLoaders(modLoaderStatuses);
+	const unifiedModLoadersData = useUnifiedModLoaders();
+	const modLoaders = Object.values(unifiedModLoadersData)
+		.filter((modLoader) => modLoader.common.kind === "Installable")
+		.sort((a, b) => a.common.id.localeCompare(b.common.id))
+		.map((modLoader) => ({
+			id: modLoader.common.id,
+			status: modLoaderStatuses[modLoader.common.id],
+		}));
 
 	useAppEvent(
 		"refreshGame",

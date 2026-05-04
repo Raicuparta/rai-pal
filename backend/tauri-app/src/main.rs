@@ -467,9 +467,13 @@ async fn refresh_mods(handle: AppHandle) -> Result {
 
 	let mod_loaders = mod_loader::get_map(&resources_path);
 
-	handle.emit_safe(events::SyncModLoaders(mod_loader::get_data_map(
-		&mod_loaders,
-	)?));
+	handle.emit_safe(events::SyncLocalModLoaders(
+		mod_loader::get_local_mod_loaders_map(&mod_loaders)?,
+	));
+
+	handle.emit_safe(events::SyncRemoteModLoaders(
+		mod_loader::get_remote_mod_loaders_map(&mod_loaders)?,
+	));
 
 	log::info!("Found {} mod loaders. Refreshing local mods...", {
 		mod_loaders.len()

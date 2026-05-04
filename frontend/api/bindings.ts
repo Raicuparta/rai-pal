@@ -61,8 +61,9 @@ export const events = {
 	gamesChanged: makeEvent<GamesChanged>("games-changed"),
 	refreshGame: makeEvent<RefreshGame>("refresh-game"),
 	selectGame: makeEvent<SelectGame>("select-game"),
+	syncLocalModLoaders: makeEvent<SyncLocalModLoaders>("sync-local-mod-loaders"),
 	syncLocalMods: makeEvent<SyncLocalMods>("sync-local-mods"),
-	syncModLoaders: makeEvent<SyncModLoaders>("sync-mod-loaders"),
+	syncRemoteModLoaders: makeEvent<SyncRemoteModLoaders>("sync-remote-mod-loaders"),
 	syncRemoteMods: makeEvent<SyncRemoteMods>("sync-remote-mods"),
 };
 
@@ -176,6 +177,15 @@ export type LocalModData = {
 	manifest: Manifest | null,
 };
 
+export type LocalModLoader = {
+	common: ModLoaderData,
+	data: LocalModLoaderData,
+};
+
+export type LocalModLoaderData = {
+	installedVersion: string | null,
+};
+
 export type Manifest = {
 	title: string | null,
 	version: string,
@@ -252,6 +262,15 @@ export type RemoteModData = {
 	configs: ModConfigs | null,
 };
 
+export type RemoteModLoader = {
+	common: ModLoaderData,
+	data: RemoteModLoaderData,
+};
+
+export type RemoteModLoaderData = {
+	latestVersion: string | null,
+};
+
 export type RunnableModData = {
 	path: string,
 	args: string[],
@@ -259,9 +278,11 @@ export type RunnableModData = {
 
 export type SelectGame = [ProviderId, string];
 
+export type SyncLocalModLoaders = { [key in string]: LocalModLoader };
+
 export type SyncLocalMods = { [key in string]: LocalMod };
 
-export type SyncModLoaders = Partial<{ [key in ModLoaderId]: ModLoaderData }>;
+export type SyncRemoteModLoaders = { [key in string]: RemoteModLoader };
 
 export type SyncRemoteMods = { [key in string]: RemoteMod };
 
