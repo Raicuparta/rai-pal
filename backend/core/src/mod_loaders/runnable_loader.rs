@@ -71,6 +71,7 @@ impl ModLoaderStatic for RunnableLoader {
 				id: Self::ID,
 				path: resources_path.join(Self::ID.as_str()),
 				kind: ModKind::Runnable,
+				engine: None,
 			},
 		})
 	}

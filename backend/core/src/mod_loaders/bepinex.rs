@@ -187,6 +187,7 @@ impl ModLoaderStatic for BepInEx {
 				id: Self::ID,
 				path: resources_path.join(Self::ID.as_str()),
 				kind: ModKind::Installable,
+				engine: Some(EngineBrand::Unity),
 			},
 		})
 	}

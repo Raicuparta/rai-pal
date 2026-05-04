@@ -27,6 +27,7 @@ use super::{
 use crate::{
 	files,
 	game::DbGame,
+	game_engines::game_engine::EngineBrand,
 	game_mod::CommonModData,
 	local_mod::{
 		self,
@@ -63,6 +64,7 @@ pub struct ModLoaderData {
 	pub id: ModLoaderId,
 	pub path: PathBuf,
 	pub kind: ModKind,
+	pub engine: Option<EngineBrand>,
 }
 
 #[serializable_enum]

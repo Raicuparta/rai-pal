@@ -217,6 +217,7 @@ export type ModLoaderData = {
 	id: ModLoaderId,
 	path: string,
 	kind: ModKind,
+	engine: EngineBrand | null,
 };
 
 export type ModLoaderId = "bepinex" | "runnable";
