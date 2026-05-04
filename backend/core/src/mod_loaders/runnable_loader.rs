@@ -15,6 +15,7 @@ use rai_pal_proc_macros::{
 use super::mod_loader::{
 	ModLoaderActions,
 	ModLoaderData,
+	ModLoaderId,
 	ModLoaderStatic,
 };
 use crate::{
@@ -59,7 +60,7 @@ pub enum RunnableParameter {
 }
 
 impl ModLoaderStatic for RunnableLoader {
-	const ID: &'static str = "runnable";
+	const ID: ModLoaderId = ModLoaderId::Runnable;
 
 	fn new(resources_path: &Path) -> Result<Self>
 	where
@@ -67,9 +68,10 @@ impl ModLoaderStatic for RunnableLoader {
 	{
 		Ok(Self {
 			data: ModLoaderData {
-				id: Self::ID.to_string(),
-				path: resources_path.join(Self::ID),
+				id: Self::ID,
+				path: resources_path.join(Self::ID.as_str()),
 				kind: ModKind::Runnable,
+				engine: None,
 			},
 		})
 	}

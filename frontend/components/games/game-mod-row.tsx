@@ -33,8 +33,7 @@ import { getModTitle } from "@util/game-mod";
 import { CommandDropdown } from "@components/command-dropdown";
 import { DeprecatedBadge } from "@components/mods/deprecated-badge";
 import { useLocalization } from "@hooks/use-localization";
-import { modLoadersAtom } from "@hooks/use-data";
-import { useAtomValue } from "jotai";
+import { useUnifiedModLoaders } from "@hooks/use-unified-mod-loaders";
 
 type Props = {
 	readonly game: DbGame;
@@ -53,8 +52,8 @@ export function GameModRow({
 }: Props) {
 	const t = useLocalization("gameModRow");
 
-	const modLoaderMap = useAtomValue(modLoadersAtom);
-	const modLoader = modLoaderMap[mod.common.loaderId];
+	const unifiedModLoaders = useUnifiedModLoaders();
+	const modLoader = unifiedModLoaders[mod.common.loaderId];
 
 	const availableRemoteConfig = remoteConfigs?.configs.find(
 		(config) =>
@@ -73,10 +72,10 @@ export function GameModRow({
 	);
 
 	const isInstalled = Boolean(installedVersion);
-	const isReadyRunnable = mod.local && modLoader?.kind == "Runnable";
+	const isReadyRunnable = mod.local && modLoader?.common?.kind == "Runnable";
 
 	const handleInstallClick = async () => {
-		if (modLoader?.kind === "Runnable" && !mod.local && !mod.remote) {
+		if (modLoader?.common?.kind === "Runnable" && !mod.local && !mod.remote) {
 			return commands.openModFolder(mod.common.id);
 		}
 
@@ -108,7 +107,7 @@ export function GameModRow({
 			return { actionText: t("uninstallMod"), actionIcon: <IconTrash /> };
 		}
 
-		if (modLoader?.kind === "Installable") {
+		if (modLoader?.common?.kind === "Installable") {
 			return { actionText: t("installMod"), actionIcon: <IconCirclePlus /> };
 		}
 

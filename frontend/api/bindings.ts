@@ -23,9 +23,9 @@ export const commands = {
 } | null) => __TAURI_INVOKE<GameIdsResponse>("get_game_ids", { query }),
 	getGame: (providerId: ProviderId, gameId: string) => __TAURI_INVOKE<DbGame>("get_game", { providerId, gameId }),
 	getInstalledModVersions: (providerId: ProviderId, gameId: string) => __TAURI_INVOKE<{ [key in string]: string }>("get_installed_mod_versions", { providerId, gameId }),
-	getModLoaderStatuses: (providerId: ProviderId, gameId: string) => __TAURI_INVOKE<{ [key in string]: ModLoaderStatus }>("get_mod_loader_statuses", { providerId, gameId }),
-	installModLoader: (providerId: ProviderId, gameId: string, modLoaderId: string, forceReinstall: boolean) => __TAURI_INVOKE<null>("install_mod_loader", { providerId, gameId, modLoaderId, forceReinstall }),
-	openGameModLoaderFolder: (providerId: ProviderId, gameId: string, modLoaderId: string) => __TAURI_INVOKE<null>("open_game_mod_loader_folder", { providerId, gameId, modLoaderId }),
+	getModLoaderStatuses: (providerId: ProviderId, gameId: string) => __TAURI_INVOKE<Partial<{ [key in ModLoaderId]: ModLoaderStatus }>>("get_mod_loader_statuses", { providerId, gameId }),
+	installModLoader: (providerId: ProviderId, gameId: string, modLoaderId: ModLoaderId, forceReinstall: boolean) => __TAURI_INVOKE<null>("install_mod_loader", { providerId, gameId, modLoaderId, forceReinstall }),
+	openGameModLoaderFolder: (providerId: ProviderId, gameId: string, modLoaderId: ModLoaderId) => __TAURI_INVOKE<null>("open_game_mod_loader_folder", { providerId, gameId, modLoaderId }),
 	getLocalMods: () => __TAURI_INVOKE<{ [key in string]: LocalMod }>("get_local_mods"),
 	getRemoteMods: () => __TAURI_INVOKE<{ [key in string]: RemoteMod }>("get_remote_mods"),
 	installMod: (providerId: ProviderId, gameId: string, modId: string) => __TAURI_INVOKE<null>("install_mod", { providerId, gameId, modId }),
@@ -34,7 +34,7 @@ export const commands = {
 	openInstalledModFolder: (providerId: ProviderId, gameId: string, modId: string) => __TAURI_INVOKE<null>("open_installed_mod_folder", { providerId, gameId, modId }),
 	openLogsFolder: () => __TAURI_INVOKE<null>("open_logs_folder"),
 	openModFolder: (modId: string) => __TAURI_INVOKE<null>("open_mod_folder", { modId }),
-	openModLoaderFolder: (modLoaderId: string) => __TAURI_INVOKE<null>("open_mod_loader_folder", { modLoaderId }),
+	openModLoaderFolder: (modLoaderId: ModLoaderId) => __TAURI_INVOKE<null>("open_mod_loader_folder", { modLoaderId }),
 	openModsFolder: () => __TAURI_INVOKE<null>("open_mods_folder"),
 	refreshGame: (providerId: ProviderId, gameId: string) => __TAURI_INVOKE<null>("refresh_game", { providerId, gameId }),
 	refreshGames: (providerId: ProviderId) => __TAURI_INVOKE<null>("refresh_games", { providerId }),
@@ -61,8 +61,9 @@ export const events = {
 	gamesChanged: makeEvent<GamesChanged>("games-changed"),
 	refreshGame: makeEvent<RefreshGame>("refresh-game"),
 	selectGame: makeEvent<SelectGame>("select-game"),
+	syncLocalModLoaders: makeEvent<SyncLocalModLoaders>("sync-local-mod-loaders"),
 	syncLocalMods: makeEvent<SyncLocalMods>("sync-local-mods"),
-	syncModLoaders: makeEvent<SyncModLoaders>("sync-mod-loaders"),
+	syncRemoteModLoaders: makeEvent<SyncRemoteModLoaders>("sync-remote-mod-loaders"),
 	syncRemoteMods: makeEvent<SyncRemoteMods>("sync-remote-mods"),
 };
 
@@ -87,7 +88,7 @@ export type CommonModData = {
 	engine: EngineBrand | null,
 	unityBackend: UnityBackend | null,
 	engineVersionRange: EngineVersionRange | null,
-	loaderId: string,
+	loaderId: ModLoaderId,
 };
 
 export type DbGame = {
@@ -176,6 +177,15 @@ export type LocalModData = {
 	manifest: Manifest | null,
 };
 
+export type LocalModLoader = {
+	common: ModLoaderData,
+	data: LocalModLoaderData,
+};
+
+export type LocalModLoaderData = {
+	installedVersion: string | null,
+};
+
 export type Manifest = {
 	title: string | null,
 	version: string,
@@ -204,10 +214,13 @@ export type ModDownload = {
 export type ModKind = "Installable" | "Runnable";
 
 export type ModLoaderData = {
-	id: string,
+	id: ModLoaderId,
 	path: string,
 	kind: ModKind,
+	engine: EngineBrand | null,
 };
+
+export type ModLoaderId = "bepinex" | "runnable";
 
 export type ModLoaderStatus = {
 	installedVersion: string | null,
@@ -227,7 +240,7 @@ export type RefreshGame = [ProviderId, string];
 export type RemoteConfig = {
 	version: number,
 	modId: string,
-	loaderId: string,
+	loaderId: ModLoaderId,
 	file: string,
 };
 
@@ -250,6 +263,15 @@ export type RemoteModData = {
 	configs: ModConfigs | null,
 };
 
+export type RemoteModLoader = {
+	common: ModLoaderData,
+	data: RemoteModLoaderData,
+};
+
+export type RemoteModLoaderData = {
+	latestVersion: string | null,
+};
+
 export type RunnableModData = {
 	path: string,
 	args: string[],
@@ -257,9 +279,11 @@ export type RunnableModData = {
 
 export type SelectGame = [ProviderId, string];
 
+export type SyncLocalModLoaders = { [key in string]: LocalModLoader };
+
 export type SyncLocalMods = { [key in string]: LocalMod };
 
-export type SyncModLoaders = { [key in string]: ModLoaderData };
+export type SyncRemoteModLoaders = { [key in string]: RemoteModLoader };
 
 export type SyncRemoteMods = { [key in string]: RemoteMod };
 

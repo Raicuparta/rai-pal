@@ -1,12 +1,14 @@
 use std::fmt::Display;
 
+use rai_pal_core::{
+	local_mod,
+	mod_loaders::mod_loader,
+	providers::provider::ProviderId,
+	remote_mod,
+};
 use rai_pal_proc_macros::serializable_event;
 use serde::Serialize;
 use tauri_specta::Event;
-
-use rai_pal_core::{
-	local_mod, mod_loaders::mod_loader, providers::provider::ProviderId, remote_mod,
-};
 
 #[serializable_event]
 pub struct RefreshGame(pub ProviderId, pub String);
@@ -15,7 +17,10 @@ pub struct RefreshGame(pub ProviderId, pub String);
 pub struct GamesChanged();
 
 #[serializable_event]
-pub struct SyncModLoaders(pub mod_loader::DataMap);
+pub struct SyncLocalModLoaders(pub mod_loader::LocalModLoadersMap);
+
+#[serializable_event]
+pub struct SyncRemoteModLoaders(pub mod_loader::RemoteModLoadersMap);
 
 #[serializable_event]
 pub struct SyncLocalMods(pub local_mod::Map);
@@ -57,7 +62,8 @@ pub fn collect_events() -> tauri_specta::Events {
 	tauri_specta::collect_events![
 		RefreshGame,
 		GamesChanged,
-		SyncModLoaders,
+		SyncLocalModLoaders,
+		SyncRemoteModLoaders,
 		SyncLocalMods,
 		SyncRemoteMods,
 		ExecutedProviderCommand,

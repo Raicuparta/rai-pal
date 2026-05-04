@@ -1,15 +1,31 @@
 use std::{
 	collections::HashMap,
-	path::{Path, PathBuf},
+	path::{
+		Path,
+		PathBuf,
+	},
 };
 
-use rai_pal_proc_macros::{serializable_enum, serializable_struct};
+use rai_pal_proc_macros::{
+	serializable_enum,
+	serializable_struct,
+};
 
 use crate::{
-	game_engines::{game_engine::EngineBrand, unity::UnityBackend},
+	game_engines::{
+		game_engine::EngineBrand,
+		unity::UnityBackend,
+	},
 	game_mod::CommonModData,
-	mod_manifest::{self, Manifest},
-	paths::{self, open_folder_or_parent},
+	mod_loaders::mod_loader::ModLoaderId,
+	mod_manifest::{
+		self,
+		Manifest,
+	},
+	paths::{
+		self,
+		open_folder_or_parent,
+	},
 	result::Result,
 };
 
@@ -37,7 +53,7 @@ pub fn get_manifest_path(mod_path: &Path) -> PathBuf {
 
 impl LocalMod {
 	pub fn new(
-		loader_id: &str,
+		loader_id: ModLoaderId,
 		path: &Path,
 		engine: Option<EngineBrand>,
 		unity_backend: Option<UnityBackend>,
@@ -52,7 +68,7 @@ impl LocalMod {
 					.as_ref()
 					.and_then(|m| m.engine_version_range.clone()),
 				unity_backend,
-				loader_id: loader_id.to_string(),
+				loader_id,
 			},
 			data: LocalModData {
 				path: path.to_path_buf(),

@@ -1,3 +1,4 @@
+import { atom } from "jotai";
 import { useAtomValue } from "jotai";
 import { localModsAtom, remoteModsAtom } from "./use-data";
 import { CommonModData, LocalModData, RemoteModData } from "@api/bindings";
@@ -8,10 +9,9 @@ export type UnifiedMod = {
 	remote?: RemoteModData;
 };
 
-// TODO this should be in a centralized computed state to avoid re-calculation.
-export function useUnifiedMods() {
-	const localMods = useAtomValue(localModsAtom);
-	const remoteMods = useAtomValue(remoteModsAtom);
+const unifiedModsAtom = atom((get) => {
+	const localMods = get(localModsAtom);
+	const remoteMods = get(remoteModsAtom);
 	const unifiedMods: Record<string, UnifiedMod> = {};
 	const keys = [
 		...new Set([...Object.keys(localMods), ...Object.keys(remoteMods)]),
@@ -50,4 +50,8 @@ export function useUnifiedMods() {
 	}
 
 	return unifiedMods;
+});
+
+export function useUnifiedMods() {
+	return useAtomValue(unifiedModsAtom);
 }
