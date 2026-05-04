@@ -270,7 +270,7 @@ fn append_shortcut_entry(
 	// A valid shortcuts.vdf ends with TWO 0x08 bytes (one for the `shortcuts` dictionary,
 	// and one as the EOF marker). We must pop EXACTLY TWO to append INSIDE the root dictionary.
 	// If we use a while loop, we accidentally pop the closing bytes of the previous shortcut too!
-	for _ in 0..2 {
+	for _ in 0_i32..2_i32 {
 		if shortcuts_bytes.last().copied() == Some(8) {
 			shortcuts_bytes.pop();
 		}

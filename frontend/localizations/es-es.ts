@@ -183,6 +183,15 @@ export const esEs: Localization = {
 			"El archivo de caché ha sido eliminado. Por favor, reinicia Steam, espera unos segundos y luego presiona el botón de actualizar en Rai Pal.",
 	},
 
+	steamShortcut: {
+		addRaiPalSteamShortcutButton: "Agregar Rai Pal a la biblioteca de Steam",
+		addRaiPalSteamShortcutModalTitle: "Agregar Rai Pal a la biblioteca de Steam",
+		addRaiPalSteamShortcutDescription:
+			"Esto es especialmente útil en Steam Deck para poder iniciar Rai Pal en el modo Juego. Tendrás que reiniciar Steam después de hacerlo.",
+		addRaiPalSteamShortcutSuccess:
+			"Rai Pal se ha agregado a tu biblioteca de Steam. Reinicia Steam para verlo.",
+	},
+
 	wineBepInExEnvironment: {
 		setUpEnvironmentButton: "Configurar entorno Linux para BepInEx",
 		setUpEnvironmentTitle: "Configurar entorno Linux para BepInEx",

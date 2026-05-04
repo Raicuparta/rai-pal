@@ -172,6 +172,15 @@ export const zhCn: Localization = {
 			"缓存文件已被删除。请重新启动 Steam，等待几秒钟，然后按 Rai Pal 上的刷新按钮。",
 	},
 
+	steamShortcut: {
+		addRaiPalSteamShortcutButton: "将 Rai Pal 添加到 Steam 库",
+		addRaiPalSteamShortcutModalTitle: "将 Rai Pal 添加到 Steam 库",
+		addRaiPalSteamShortcutDescription:
+			"这在 Steam Deck 上尤其有用，这样你就可以在游戏模式中启动 Rai Pal。完成后你需要重新启动 Steam。",
+		addRaiPalSteamShortcutSuccess:
+			"Rai Pal 已添加到你的 Steam 库中。重启 Steam 后即可看到它。",
+	},
+
 	wineBepInExEnvironment: {
 		setUpEnvironmentButton: "为 BepInEx 设置 Linux 环境",
 		setUpEnvironmentTitle: "为 BepInEx 设置 Linux 环境",
