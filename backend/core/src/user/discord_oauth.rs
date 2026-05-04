@@ -47,6 +47,8 @@ const DISCORD_CALLBACK_PORT: u16 = 43941;
 const DISCORD_KEYRING_SERVICE: &str = "rai-pal";
 const DISCORD_KEYRING_ACCOUNT: &str = "discord-oauth-token";
 const DISCORD_KEYRING_LOCATION: &str = "keyring://rai-pal/discord-oauth-token";
+const DISCORD_TOKEN_FALLBACK_FILE_NAME: &str = "discord-oauth-token.json";
+const DISCORD_TOKEN_FALLBACK_LOCATION: &str = "file://app_data/discord-oauth-token.json";
 const DISCORD_TOKEN_EXPIRY_LEEWAY_SECONDS: u64 = 60;
 
 #[derive(Clone, Debug, serde::Serialize, specta::Type)]
@@ -133,12 +135,12 @@ fn write_browser_response(stream: &mut std::net::TcpStream, success: bool) -> Re
 	let (status_line, body) = if success {
 		(
 			"HTTP/1.1 200 OK",
-			"<html><body><h2>Discord login complete.</h2><p>You can close this tab and return to Rai Pal.</p></body></html>",
+			"<html style=\"background:#fff;\"><body style=\"margin:0;padding:24px;background:#fff;color:#000;\"><h2>Discord login code received.</h2><p>Rai Pal will finish sign-in now. You can close this tab and return to Rai Pal.</p></body></html>",
 		)
 	} else {
 		(
 			"HTTP/1.1 400 Bad Request",
-			"<html><body><h2>Discord login failed.</h2><p>You can close this tab and return to Rai Pal.</p></body></html>",
+			"<html style=\"background:#fff;\"><body style=\"margin:0;padding:24px;background:#fff;color:#000;\"><h2>Discord login failed.</h2><p>You can close this tab and return to Rai Pal.</p></body></html>",
 		)
 	};
 
@@ -147,6 +149,15 @@ fn write_browser_response(stream: &mut std::net::TcpStream, success: bool) -> Re
 		body.len(),
 		body
 	);
+
+	stream.write_all(response.as_bytes())?;
+	stream.flush()?;
+
+	Ok(())
+}
+
+fn write_browser_no_content_response(stream: &mut std::net::TcpStream) -> Result {
+	let response = "HTTP/1.1 204 No Content\r\nContent-Length: 0\r\nConnection: close\r\n\r\n";
 
 	stream.write_all(response.as_bytes())?;
 	stream.flush()?;
@@ -185,6 +196,11 @@ fn parse_oauth_callback(
 					return Err(Error::DiscordOAuth("Missing callback path.".to_string()));
 				};
 
+				if !path_and_query.starts_with("/discord/callback") {
+					write_browser_no_content_response(&mut stream)?;
+					continue;
+				}
+
 				let query = path_and_query
 					.split_once('?')
 					.map(|(_, query)| query)
@@ -200,6 +216,11 @@ fn parse_oauth_callback(
 					return Err(Error::DiscordOAuth(format!(
 						"Discord returned OAuth error: {error}"
 					)));
+				}
+
+				if callback_query.state.is_none() && callback_query.code.is_none() {
+					write_browser_no_content_response(&mut stream)?;
+					continue;
 				}
 
 				let state = callback_query.state.ok_or_else(|| {
@@ -230,6 +251,54 @@ fn parse_oauth_callback(
 			Err(error) => return Err(error.into()),
 		}
 	}
+}
+
+fn get_discord_token_fallback_file_path() -> Result<PathBuf> {
+	Ok(paths::app_data_path()?.join(DISCORD_TOKEN_FALLBACK_FILE_NAME))
+}
+
+fn read_discord_token_from_fallback_file_optional() -> Result<Option<DiscordSavedToken>> {
+	let fallback_path = get_discord_token_fallback_file_path()?;
+
+	if !fallback_path.exists() {
+		return Ok(None);
+	}
+
+	let token_json = fs::read_to_string(&fallback_path)?;
+	let token = serde_json::from_str::<DiscordSavedToken>(&token_json).map_err(|error| {
+		Error::DiscordOAuth(format!(
+			"Failed to parse Discord token from fallback file `{}`: {error}",
+			fallback_path.display()
+		))
+	})?;
+
+	log::warn!(
+		"Using Discord token fallback file storage at `{}`. System keyring appears unavailable.",
+		fallback_path.display()
+	);
+
+	Ok(Some(token))
+}
+
+fn save_discord_token_to_fallback_file(token: &DiscordSavedToken) -> Result<String> {
+	let fallback_path = get_discord_token_fallback_file_path()?;
+
+	if let Some(parent) = fallback_path.parent() {
+		fs::create_dir_all(parent)?;
+	}
+
+	let token_json = serde_json::to_string(token)?;
+	fs::write(&fallback_path, token_json)?;
+
+	#[cfg(unix)]
+	{
+		use std::os::unix::fs::PermissionsExt;
+		let mut permissions = fs::metadata(&fallback_path)?.permissions();
+		permissions.set_mode(0o600);
+		fs::set_permissions(&fallback_path, permissions)?;
+	}
+
+	Ok(DISCORD_TOKEN_FALLBACK_LOCATION.to_string())
 }
 
 async fn exchange_code_for_discord_token(
@@ -294,15 +363,23 @@ fn is_discord_token_expired(token: &DiscordSavedToken) -> Result<bool> {
 }
 
 fn clear_discord_session() -> Result {
-	let entry = get_discord_keyring_entry()?;
-	match entry.delete_credential() {
-		Ok(()) | Err(keyring::Error::NoEntry) => {}
+	match get_discord_keyring_entry() {
+		Ok(entry) => match entry.delete_credential() {
+			Ok(()) | Err(keyring::Error::NoEntry) => {}
+			Err(error) => {
+				log::warn!(
+					"Failed to delete Discord token from system keyring (continuing cleanup): {error}"
+				);
+			}
+		},
 		Err(error) => {
-			return Err(Error::DiscordOAuth(format!(
-				"Failed to delete Discord token from system keyring: {error}"
-			)));
+			log::warn!(
+				"Failed to open Discord token keyring entry while clearing session (continuing cleanup): {error}"
+			);
 		}
 	}
+
+	delete_file_if_exists(&get_discord_token_fallback_file_path()?)?;
 
 	delete_file_if_exists(&get_discord_avatar_file_path()?)?;
 
@@ -310,16 +387,33 @@ fn clear_discord_session() -> Result {
 }
 
 fn save_discord_token_file(token: &DiscordSavedToken) -> Result<String> {
-	let entry = get_discord_keyring_entry()?;
 	let token_json = serde_json::to_string(token)?;
 
-	entry.set_password(&token_json).map_err(|error| {
-		Error::DiscordOAuth(format!(
-			"Failed to save Discord token in system keyring: {error}"
-		))
-	})?;
-
-	Ok(DISCORD_KEYRING_LOCATION.to_string())
+	match get_discord_keyring_entry() {
+		Ok(entry) => match entry.set_password(&token_json) {
+			Ok(()) => {
+				if let Err(error) = delete_file_if_exists(&get_discord_token_fallback_file_path()?)
+				{
+					log::warn!(
+						"Saved Discord token to keyring but failed to remove fallback file: {error}"
+					);
+				}
+				Ok(DISCORD_KEYRING_LOCATION.to_string())
+			}
+			Err(error) => {
+				log::warn!(
+					"Failed to save Discord token in system keyring: {error}. Falling back to file storage."
+				);
+				save_discord_token_to_fallback_file(token)
+			}
+		},
+		Err(error) => {
+			log::warn!(
+				"Failed to open Discord keyring entry: {error}. Falling back to file storage."
+			);
+			save_discord_token_to_fallback_file(token)
+		}
+	}
 }
 
 fn get_discord_avatar_file_path() -> Result<PathBuf> {
@@ -400,7 +494,15 @@ async fn download_and_save_discord_avatar(
 }
 
 fn read_discord_token_file_optional() -> Result<Option<DiscordSavedToken>> {
-	let entry = get_discord_keyring_entry()?;
+	let entry = match get_discord_keyring_entry() {
+		Ok(entry) => entry,
+		Err(error) => {
+			log::warn!(
+				"Failed to open Discord keyring entry: {error}. Trying fallback file storage."
+			);
+			return read_discord_token_from_fallback_file_optional();
+		}
+	};
 
 	match entry.get_password() {
 		Ok(token_json) => {
@@ -419,12 +521,17 @@ fn read_discord_token_file_optional() -> Result<Option<DiscordSavedToken>> {
 			Ok(Some(token))
 		}
 		Err(keyring::Error::NoEntry) => {
-			log::debug!("No Discord token found in keyring ({DISCORD_KEYRING_LOCATION})");
-			Ok(None)
+			log::debug!(
+				"No Discord token found in keyring ({DISCORD_KEYRING_LOCATION}); checking fallback file."
+			);
+			read_discord_token_from_fallback_file_optional()
 		}
-		Err(error) => Err(Error::DiscordOAuth(format!(
-			"Failed to read Discord token from system keyring: {error}"
-		))),
+		Err(error) => {
+			log::warn!(
+				"Failed to read Discord token from system keyring: {error}. Trying fallback file storage."
+			);
+			read_discord_token_from_fallback_file_optional()
+		}
 	}
 }
 

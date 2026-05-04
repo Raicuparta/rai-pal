@@ -60,7 +60,7 @@ jobs:
       packages: read
 
     container:
-      image: ghcr.io/${{ github.repository_owner }}/rai-pal-builder:${{ matrix.os-name }}-latest
+      image: ghcr.io/raicuparta/rai-pal-builder:${{ matrix.os-name }}-latest
       credentials:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
@@ -71,8 +71,17 @@ jobs:
       - name: Install frontend dependencies
         run: npm ci
 
-      - name: Build
+      - name: Build (Linux)
+        if: matrix.os-name == 'linux'
         run: npm run build
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
+          ANALYTICS_API_KEY: ${{ secrets.ANALYTICS_API_KEY }}
+
+      - name: Build (Windows)
+        if: matrix.os-name == 'windows'
+        run: npm run build-windows
         env:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
@@ -80,7 +89,7 @@ jobs:
 
       - name: Collect Build Artifacts
         id: collect
-        run: node scripts/collect-build-artifacts.js ${{ github.repository_owner }} ${{ github.event.repository.name }} ${{ needs.create-release.outputs.version }}
+        run: node scripts/collect-build-artifacts.js ${{ matrix.os-name }} ${{ github.repository_owner }} ${{ github.event.repository.name }} ${{ needs.create-release.outputs.version }}
 
       - name: Upload Release Assets
         uses: softprops/action-gh-release@v3

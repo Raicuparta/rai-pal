@@ -11,6 +11,8 @@ use std::{
 
 use steamlocate::SteamDir;
 
+#[cfg(target_os = "linux")]
+use super::steam_proton;
 use super::{
 	appinfo::{
 		SteamAppInfo,
@@ -345,6 +347,18 @@ impl ProviderActions for Steam {
 		}
 
 		Ok(())
+	}
+
+	fn set_wine_dll_overrides(&self, game: &DbGame, dll_overrides: &[String]) -> Result {
+		#[cfg(target_os = "linux")]
+		{
+			steam_proton::set_wine_dll_overrides_for_game(game, dll_overrides)
+		}
+
+		#[cfg(not(target_os = "linux"))]
+		{
+			Ok(())
+		}
 	}
 }
 

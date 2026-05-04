@@ -9,7 +9,6 @@ import {
 	Tooltip,
 	Divider,
 	Button,
-	Modal,
 } from "@mantine/core";
 import { useAtomValue } from "jotai";
 import { detectedLocaleAtom, useLocalization } from "@hooks/use-localization";
@@ -30,6 +29,8 @@ import { WineBepInExEnvironmentModal } from "./wine-bepinex-environment-modal";
 import { useDisclosure } from "@mantine/hooks";
 import { WineBepInExEnvironmentButton } from "./wine-bepinex-environment-button";
 import { SteamCacheModal } from "./steam-cache-modal";
+import { SteamShortcutButton } from "./steam-shortcut-button";
+import { SteamShortcutModal } from "./steam-shortcut-modal";
 
 const locales: AppLocale[] = [
 	"EnUs",
@@ -54,6 +55,10 @@ export function AppSettings() {
 	const [
 		isSteamCacheModalOpen,
 		{ open: openSteamCacheModal, close: closeSteamCacheModal },
+	] = useDisclosure(false);
+	const [
+		isSteamShortcutModalOpen,
+		{ open: openSteamShortcutModal, close: closeSteamShortcutModal },
 	] = useDisclosure(false);
 
 	const localeSelectValues = locales.map((locale) => ({
@@ -94,13 +99,15 @@ export function AppSettings() {
 							{t("showGameThumbnails")}
 						</SwitchButton>
 					</Stack>
-					<Menu.Item
-						onClick={commands.openLogsFolder}
-						leftSection={<IconFolderCode />}
-					>
-						{t("openLogsFolderButton")}
-					</Menu.Item>
+					<Divider my="xs" />
+					<SteamShortcutButton onClick={openSteamShortcutModal} />
 					<SteamCacheButton onClick={openSteamCacheModal} />
+					{platform() === "linux" && (
+						<WineBepInExEnvironmentButton
+							onClick={openBepInExEnvironmentModal}
+						/>
+					)}
+					<Divider my="xs" />
 					<Tooltip
 						label={t("resetRaiPalSettingsTooltip")}
 						position="bottom"
@@ -112,11 +119,12 @@ export function AppSettings() {
 							{t("resetRaiPalSettingsButton")}
 						</Menu.Item>
 					</Tooltip>
-					{platform() === "linux" && (
-						<WineBepInExEnvironmentButton
-							onClick={openBepInExEnvironmentModal}
-						/>
-					)}
+					<Menu.Item
+						onClick={commands.openLogsFolder}
+						leftSection={<IconFolderCode />}
+					>
+						{t("openLogsFolderButton")}
+					</Menu.Item>
 					<Divider my="xs" />
 					<NativeSelect
 						label={
@@ -163,6 +171,10 @@ export function AppSettings() {
 			<SteamCacheModal
 				isOpen={isSteamCacheModalOpen}
 				onClose={closeSteamCacheModal}
+			/>
+			<SteamShortcutModal
+				isOpen={isSteamShortcutModalOpen}
+				onClose={closeSteamShortcutModal}
 			/>
 			{platform() === "linux" && (
 				<WineBepInExEnvironmentModal

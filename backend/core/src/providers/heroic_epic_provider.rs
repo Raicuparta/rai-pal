@@ -1,18 +1,31 @@
 #![cfg(target_os = "linux")]
 
-use super::provider_command::{ProviderCommand, ProviderCommandAction};
-use crate::{
-	game::DbGame,
-	local_database::{DbMutex, GameDatabase},
-	paths,
-	providers::provider::{ProviderActions, ProviderId, ProviderStatic},
-	result::Result,
-};
-use serde::{Deserialize, Serialize};
 use std::{
 	fmt::Debug,
-	fs::read_to_string,
-	path::{Path, PathBuf},
+	path::PathBuf,
+};
+
+use serde::{
+	Deserialize,
+	Serialize,
+};
+
+use super::provider_command::ProviderCommandAction;
+use crate::{
+	game::DbGame,
+	local_database::{
+		DbMutex,
+		GameDatabase,
+	},
+	providers::{
+		heroic_provider,
+		provider::{
+			ProviderActions,
+			ProviderId,
+			ProviderStatic,
+		},
+	},
+	result::Result,
 };
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -35,16 +48,10 @@ struct Root {
 }
 
 fn get_detected_games() -> Result<Option<Vec<ParsedGame>>> {
-	let dirs = paths::base_dirs()?;
-	let config_dir = dirs.config_dir();
-	let path = Path::new(&config_dir).join("heroic/store_cache/legendary_library.json");
-	if !path.try_exists()? {
-		return Ok(None);
-	}
-
-	let file_content = read_to_string(path)?;
-
-	Ok(serde_json::from_str::<Root>(file_content.as_str())?.library)
+	Ok(
+		heroic_provider::read_heroic_json::<Root>("store_cache/legendary_library.json")?
+			.and_then(|root| root.library),
+	)
 }
 
 #[derive(Clone)]
@@ -85,15 +92,16 @@ impl ProviderActions for HeroicEpic {
 					game.set_executable(&exe_path);
 					game.add_provider_command(
 						ProviderCommandAction::StartViaProvider,
-						ProviderCommand::String(format!(
-							"heroic://launch/{}",
-							parsed_game.app_name
-						)),
+						heroic_provider::launch_command(&parsed_game.app_name, None),
 					);
 				}
 				db.insert_game(&game);
 			}
 		}
 		Ok(())
+	}
+
+	fn set_wine_dll_overrides(&self, game: &DbGame, dll_overrides: &[String]) -> Result {
+		heroic_provider::set_wine_dll_overrides(&game.external_id, dll_overrides)
 	}
 }

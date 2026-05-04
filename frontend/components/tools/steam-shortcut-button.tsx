@@ -1,21 +1,21 @@
 import { useLocalization } from "@hooks/use-localization";
 import { Menu } from "@mantine/core";
-import { IconDots, IconSteam } from "@tabler/icons-react";
+import { IconBrandSteam, IconDots } from "@tabler/icons-react";
 
 type Props = {
 	onClick: () => void;
 };
 
-export function SteamCacheButton(props: Props) {
-	const t = useLocalization("steamCache");
+export function SteamShortcutButton(props: Props) {
+	const t = useLocalization("steamShortcut");
 
 	return (
 		<Menu.Item
 			onClick={() => props.onClick()}
-			leftSection={<IconSteam />}
+			leftSection={<IconBrandSteam />}
 			rightSection={<IconDots />}
 		>
-			{t("resetSteamCacheButton")}
+			{t("addRaiPalSteamShortcutButton")}
 		</Menu.Item>
 	);
 }

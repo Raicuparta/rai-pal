@@ -1,4 +1,7 @@
-use std::{fs, path::PathBuf};
+use std::{
+	fs,
+	path::PathBuf,
+};
 
 use enum_dispatch::enum_dispatch;
 use rai_pal_proc_macros::serializable_enum;
@@ -8,11 +11,20 @@ use crate::providers::heroic_epic_provider::HeroicEpic;
 #[cfg(target_os = "linux")]
 use crate::providers::heroic_gog_provider::HeroicGog;
 #[cfg(target_os = "windows")]
-use crate::providers::{epic_provider::Epic, gog_provider::Gog, xbox_provider::Xbox};
+use crate::providers::{
+	epic_provider::Epic,
+	gog_provider::Gog,
+	xbox_provider::Xbox,
+};
 use crate::{
+	game::DbGame,
 	local_database::DbMutex,
 	paths,
-	providers::{itch_provider::Itch, manual_provider::Manual, steam::steam_provider::Steam},
+	providers::{
+		itch_provider::Itch,
+		manual_provider::Manual,
+		steam::steam_provider::Steam,
+	},
 	result::Result,
 };
 
@@ -65,6 +77,9 @@ const PROVIDERS: &Map = &[
 #[enum_dispatch(Provider)]
 pub trait ProviderActions {
 	async fn insert_games(&self, db: &DbMutex) -> Result;
+	fn set_wine_dll_overrides(&self, _game: &DbGame, _dll_overrides: &[String]) -> Result {
+		Ok(())
+	}
 }
 
 const fn create_map_entry<TProvider: ProviderActions + ProviderStatic>()

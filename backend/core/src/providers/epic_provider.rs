@@ -1,26 +1,46 @@
 #![cfg(target_os = "windows")]
 
-use super::{
-	provider::ProviderId,
-	provider_command::{ProviderCommand, ProviderCommandAction},
+use std::{
+	collections::HashMap,
+	fs::{
+		self,
+		File,
+	},
+	io::Read,
+	path::{
+		Path,
+		PathBuf,
+	},
 };
-use crate::{
-	game::DbGame,
-	local_database::{DbMutex, GameDatabase},
-	paths::glob_path,
-	providers::provider::{ProviderActions, ProviderStatic},
-	result::Result,
-};
+
 use base64::engine::general_purpose;
 use log::error;
 use rai_pal_proc_macros::serializable_struct;
-use std::{
-	collections::HashMap,
-	fs::{self, File},
-	io::Read,
-	path::{Path, PathBuf},
+use winreg::{
+	RegKey,
+	enums::HKEY_LOCAL_MACHINE,
 };
-use winreg::{RegKey, enums::HKEY_LOCAL_MACHINE};
+
+use super::{
+	provider::ProviderId,
+	provider_command::{
+		ProviderCommand,
+		ProviderCommandAction,
+	},
+};
+use crate::{
+	game::DbGame,
+	local_database::{
+		DbMutex,
+		GameDatabase,
+	},
+	paths::glob_path,
+	providers::provider::{
+		ProviderActions,
+		ProviderStatic,
+	},
+	result::Result,
+};
 
 #[serializable_struct]
 pub struct EpicManifest {

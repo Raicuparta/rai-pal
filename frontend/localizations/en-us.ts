@@ -372,6 +372,23 @@ export const enUs = {
 			"The cache file has been deleted. Please restart Steam, wait a few seconds, and then press the refresh button on Rai Pal.",
 	},
 
+	// Button and modal for adding Rai Pal to Steam as a shortcut.
+	steamShortcut: {
+		// Button that opens the add-to-Steam modal.
+		addRaiPalSteamShortcutButton: "Add Rai Pal to Steam library",
+
+		// Title of the modal that opens after clicking the add-to-Steam button.
+		addRaiPalSteamShortcutModalTitle: "Add Rai Pal to Steam Library",
+
+		// Description of what adding Rai Pal to Steam does.
+		addRaiPalSteamShortcutDescription:
+			"This is especially useful on Steam Deck, to be able to launch Rai Pal in Game Mode. You'll have to restart Steam after doing this.",
+
+		// Success message after adding Rai Pal to Steam.
+		addRaiPalSteamShortcutSuccess:
+			"Rai Pal has been added to your Steam library. Restart Steam to see it.",
+	},
+
 	// Button and modal for making sure BepInEx loads on Linux with Wine.
 	wineBepInExEnvironment: {
 		// Button that sets up the Linux environment for BepInEx.

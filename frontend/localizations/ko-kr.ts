@@ -177,6 +177,15 @@ export const koKr: Localization = {
 			"캐시 파일이 삭제되었습니다. Steam을 다시 시작하고 몇 초 기다린 후 Rai Pal에서 새로고침 버튼을 누르세요.",
 	},
 
+	steamShortcut: {
+		addRaiPalSteamShortcutButton: "Rai Pal을 Steam 라이브러리에 추가",
+		addRaiPalSteamShortcutModalTitle: "Rai Pal을 Steam 라이브러리에 추가",
+		addRaiPalSteamShortcutDescription:
+			"이 기능은 특히 Steam Deck에서 게임 모드로 Rai Pal을 실행할 수 있게 해줘서 유용합니다. 실행 후에는 Steam을 다시 시작해야 합니다.",
+		addRaiPalSteamShortcutSuccess:
+			"Rai Pal이 Steam 라이브러리에 추가되었습니다. 보려면 Steam을 다시 시작하세요.",
+	},
+
 	wineBepInExEnvironment: {
 		setUpEnvironmentButton: "BepInEx용 Linux 환경 설정",
 		setUpEnvironmentTitle: "BepInEx용 Linux 환경 설정",

@@ -194,6 +194,10 @@ impl ModLoaderActions for BepInEx {
 		&self.data
 	}
 
+	fn get_wine_dll_overrides(&self, _game: &DbGame) -> Vec<String> {
+		vec!["winhttp".to_string()]
+	}
+
 	async fn get_status(&self, game: &DbGame) -> Result<Option<ModLoaderStatus>> {
 		get_status(game).await
 	}

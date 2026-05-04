@@ -183,6 +183,15 @@ export const deDe: Localization = {
 			"Die Cache-Datei wurde gelöscht. Bitte starten Sie Steam neu, warten Sie ein paar Sekunden und drücken Sie dann die Aktualisierungstaste in Rai Pal.",
 	},
 
+	steamShortcut: {
+		addRaiPalSteamShortcutButton: "Rai Pal zur Steam-Bibliothek hinzufügen",
+		addRaiPalSteamShortcutModalTitle: "Rai Pal zur Steam-Bibliothek hinzufügen",
+		addRaiPalSteamShortcutDescription:
+			"Das ist besonders auf dem Steam Deck nützlich, damit Sie Rai Pal im Spielmodus starten können. Danach müssen Sie Steam neu starten.",
+		addRaiPalSteamShortcutSuccess:
+			"Rai Pal wurde zu Ihrer Steam-Bibliothek hinzugefügt. Starten Sie Steam neu, damit es angezeigt wird.",
+	},
+
 	wineBepInExEnvironment: {
 		setUpEnvironmentButton: "Linux-Umgebung für BepInEx einrichten",
 		setUpEnvironmentTitle: "Linux-Umgebung für BepInEx einrichten",

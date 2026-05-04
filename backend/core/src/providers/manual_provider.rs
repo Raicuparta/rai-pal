@@ -1,17 +1,34 @@
 use std::{
 	fs,
-	path::{Path, PathBuf},
+	path::{
+		Path,
+		PathBuf,
+	},
 };
 
 use log::error;
 use rai_pal_proc_macros::serializable_struct;
 
-use super::provider::{ProviderActions, ProviderId, ProviderStatic};
+use super::provider::{
+	ProviderActions,
+	ProviderId,
+	ProviderStatic,
+};
 use crate::{
 	game::DbGame,
-	local_database::{DbMutex, GameDatabase},
-	paths::{self, app_data_path, file_name_without_extension},
-	result::{Error, Result},
+	local_database::{
+		DbMutex,
+		GameDatabase,
+	},
+	paths::{
+		self,
+		app_data_path,
+		file_name_without_extension,
+	},
+	result::{
+		Error,
+		Result,
+	},
 };
 
 #[serializable_struct]

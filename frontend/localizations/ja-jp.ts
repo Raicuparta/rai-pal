@@ -182,6 +182,15 @@ export const jaJp: Localization = {
 			"キャッシュファイルが削除されました。Steamを再起動し、数秒待ってからRai Palの更新ボタンを押してください。",
 	},
 
+	steamShortcut: {
+		addRaiPalSteamShortcutButton: "Rai PalをSteamライブラリに追加",
+		addRaiPalSteamShortcutModalTitle: "Rai PalをSteamライブラリに追加",
+		addRaiPalSteamShortcutDescription:
+			"これは特にSteam DeckでRai Palをゲームモードから起動できるようにするのに便利です。実行後はSteamを再起動する必要があります。",
+		addRaiPalSteamShortcutSuccess:
+			"Rai PalがSteamライブラリに追加されました。表示するにはSteamを再起動してください。",
+	},
+
 	wineBepInExEnvironment: {
 		setUpEnvironmentButton: "BepInEx用のLinux環境をセットアップ",
 		setUpEnvironmentTitle: "BepInEx用のLinux環境をセットアップ",

@@ -46,8 +46,8 @@ pub fn parse_version(string: &str) -> Option<EngineVersion> {
 			# Version number as "major.minor.patch".
 			(\d+)\.(\d+)\.(\d+)
 
-			# Suffix, like "f1" or "p3".
-			([fp]\d+)
+			# Suffix, like "f1", "p3", or "f1c1".
+			([fp]\d+(?:[a-z]\d+)*)
 		"#,
 		&string
 	)?;

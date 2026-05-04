@@ -1,4 +1,5 @@
 import { commands, DiscordAuthState } from "@api/bindings";
+import { showAppNotification } from "@components/app-notifications";
 import { useLocalization } from "@hooks/use-localization";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { Avatar, Button, Menu, Text } from "@mantine/core";
@@ -37,6 +38,10 @@ export function UserMenu() {
 			setAuthState(state);
 		} catch (error) {
 			console.error("Failed to read auth state:", error);
+			showAppNotification(
+				`Failed to read Discord auth state: ${String(error)}`,
+				"error",
+			);
 		}
 	}, []);
 
@@ -58,6 +63,7 @@ export function UserMenu() {
 			await refreshAuthState();
 		} catch (error) {
 			console.error("Login failed:", error);
+			showAppNotification(`Discord sign-in failed: ${String(error)}`, "error");
 		}
 	};
 
@@ -69,6 +75,7 @@ export function UserMenu() {
 			await refreshAuthState();
 		} catch (error) {
 			console.error("Logout failed:", error);
+			showAppNotification(`Discord sign-out failed: ${String(error)}`, "error");
 		}
 	};
 
