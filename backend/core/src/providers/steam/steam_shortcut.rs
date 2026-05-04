@@ -1,4 +1,5 @@
 use std::{
+	cmp::Reverse,
 	fs,
 	path::{
 		Path,
@@ -20,6 +21,8 @@ const RAI_PAL_SHORTCUT_NAME: &str = "Rai Pal";
 struct ShortcutSummary {
 	app_name: Option<String>,
 	exe: Option<String>,
+	start_byte: usize,
+	end_byte: usize,
 }
 pub fn add_current_executable_to_steam_shortcuts(executable_path: &Path) -> Result {
 	let steam_dir = SteamDir::locate()?;
@@ -76,10 +79,19 @@ fn add_shortcut_to_path(
 	};
 
 	let (mut max_index, entries) = parse_shortcuts_file(&shortcuts_bytes)?;
-	if entries.iter().any(|entry| {
-		entry.app_name.as_deref() == Some(app_name) && entry.exe.as_deref() == Some(executable)
-	}) {
-		return Ok(());
+
+	let matching_entries: Vec<_> = entries
+		.iter()
+		.filter(|entry| entry.app_name.as_deref() == Some(app_name))
+		.collect();
+
+	let mut ranges_to_remove: Vec<(usize, usize)> = matching_entries
+		.iter()
+		.map(|entry| (entry.start_byte, entry.end_byte))
+		.collect();
+	ranges_to_remove.sort_by_key(|b| Reverse(b.0));
+	for (start, end) in &ranges_to_remove {
+		shortcuts_bytes.drain(*start..*end);
 	}
 
 	max_index += 1;
@@ -159,6 +171,7 @@ fn parse_shortcuts_file(bytes: &[u8]) -> Result<(u32, Vec<ShortcutSummary>)> {
 	let mut entries = Vec::new();
 
 	loop {
+		let entry_start = position;
 		let field_type = *bytes.get(position).unwrap_or(&8);
 		position += 1;
 
@@ -168,7 +181,9 @@ fn parse_shortcuts_file(bytes: &[u8]) -> Result<(u32, Vec<ShortcutSummary>)> {
 
 		let field_name = read_cstring(bytes, &mut position)?;
 		if field_type == 0 {
-			let (entry, next_position) = parse_shortcut_object(bytes, position)?;
+			let (mut entry, next_position) = parse_shortcut_object(bytes, position)?;
+			entry.start_byte = entry_start;
+			entry.end_byte = next_position;
 			position = next_position;
 
 			if let Ok(index) = field_name.parse::<u32>() {
