@@ -56,7 +56,10 @@ use rai_pal_core::{
 			ProviderId,
 		},
 		provider_command::ProviderCommand,
-		steam::steam_provider::Steam,
+		steam::{
+			steam_provider::Steam,
+			steam_shortcut,
+		},
 	},
 	remote_config::RemoteConfigs,
 	remote_game::{
@@ -572,6 +575,15 @@ async fn reset_steam_cache(handle: AppHandle) -> Result {
 
 #[tauri::command]
 #[specta::specta]
+async fn add_rai_pal_steam_shortcut() -> Result {
+	let current_executable = std::env::current_exe()?;
+	steam_shortcut::add_current_executable_to_steam_shortcuts(&current_executable)?;
+
+	Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
 async fn frontend_ready() -> Result {
 	analytics::send_event(analytics::Event::StartApp, "").await;
 
@@ -763,6 +775,7 @@ fn main() {
 	let builder = Builder::<tauri::Wry>::new()
 		.commands(tauri_specta::collect_commands![
 			add_game,
+			add_rai_pal_steam_shortcut,
 			configure_mod,
 			get_auth_state,
 			log_in,

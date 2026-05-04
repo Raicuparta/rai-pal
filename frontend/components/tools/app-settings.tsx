@@ -18,7 +18,9 @@ import {
 	IconLanguage,
 	IconMenu2,
 	IconRotateDot,
+	IconSquareRoundedPlus,
 } from "@tabler/icons-react";
+import { invoke } from "@tauri-apps/api/core";
 import {
 	getNativeLocaleName,
 	localizations,
@@ -99,6 +101,12 @@ export function AppSettings() {
 						leftSection={<IconFolderCode />}
 					>
 						{t("openLogsFolderButton")}
+					</Menu.Item>
+					<Menu.Item
+						onClick={commands.addRaiPalSteamShortcut}
+						leftSection={<IconSquareRoundedPlus />}
+					>
+						Add Rai Pal to Steam
 					</Menu.Item>
 					<SteamCacheButton onClick={openSteamCacheModal} />
 					<Tooltip

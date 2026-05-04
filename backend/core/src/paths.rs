@@ -136,10 +136,9 @@ pub fn resolve_relative_path_case_insensitive(
 
 				current.pop();
 
-				if let Some(found) = find_child_case_insensitive(&current, name) {
+				{
+					let found = find_child_case_insensitive(&current, name)?;
 					current.push(found.file_name()?);
-				} else {
-					return None;
 				}
 			}
 			Component::RootDir | Component::Prefix(_) => return None,
