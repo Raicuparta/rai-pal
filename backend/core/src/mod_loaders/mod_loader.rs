@@ -13,7 +13,10 @@ use std::{
 
 use enum_dispatch::enum_dispatch;
 use log::error;
-use rai_pal_proc_macros::{serializable_enum, serializable_struct};
+use rai_pal_proc_macros::{
+	serializable_enum,
+	serializable_struct,
+};
 use zip::ZipArchive;
 
 use super::{

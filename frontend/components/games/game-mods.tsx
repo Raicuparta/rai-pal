@@ -99,7 +99,8 @@ function isVersionWithinRange(
 }
 
 const defaultInstalledModVersions: Record<string, string> = {};
-const defaultModLoaderStatuses: Partial<Record<ModLoaderId, ModLoaderStatus>> = {};
+const defaultModLoaderStatuses: Partial<Record<ModLoaderId, ModLoaderStatus>> =
+	{};
 
 type ModLoaderRowProps = {
 	readonly modLoaderId: ModLoaderId;

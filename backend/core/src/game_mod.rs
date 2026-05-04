@@ -1,10 +1,15 @@
 use rai_pal_proc_macros::serializable_struct;
 
-use crate::game_engines::{
-	game_engine::{EngineBrand, EngineVersionNumbers},
-	unity::UnityBackend,
+use crate::{
+	game_engines::{
+		game_engine::{
+			EngineBrand,
+			EngineVersionNumbers,
+		},
+		unity::UnityBackend,
+	},
+	mod_loaders::mod_loader::ModLoaderId,
 };
-use crate::mod_loaders::mod_loader::ModLoaderId;
 
 #[serializable_struct]
 pub struct EngineVersionRange {

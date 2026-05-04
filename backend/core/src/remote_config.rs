@@ -1,3 +1,13 @@
+use std::{
+	fs,
+	io::Cursor,
+	path::Path,
+};
+
+use rai_pal_proc_macros::serializable_struct;
+use reqwest::Response;
+use zip::ZipArchive;
+
 use crate::{
 	game::DbGame,
 	http,
@@ -5,10 +15,6 @@ use crate::{
 	paths,
 	result::Result,
 };
-use rai_pal_proc_macros::serializable_struct;
-use reqwest::Response;
-use std::{fs, io::Cursor, path::Path};
-use zip::ZipArchive;
 
 const CONFIG_DB_BASE_URL: &str = "https://raicuparta.github.io/rai-pal-db/config-db";
 const CONFIG_DB_VERSION: u32 = 0;

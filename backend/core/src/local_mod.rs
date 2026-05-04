@@ -1,16 +1,31 @@
 use std::{
 	collections::HashMap,
-	path::{Path, PathBuf},
+	path::{
+		Path,
+		PathBuf,
+	},
 };
 
-use rai_pal_proc_macros::{serializable_enum, serializable_struct};
+use rai_pal_proc_macros::{
+	serializable_enum,
+	serializable_struct,
+};
 
 use crate::{
-	game_engines::{game_engine::EngineBrand, unity::UnityBackend},
+	game_engines::{
+		game_engine::EngineBrand,
+		unity::UnityBackend,
+	},
 	game_mod::CommonModData,
 	mod_loaders::mod_loader::ModLoaderId,
-	mod_manifest::{self, Manifest},
-	paths::{self, open_folder_or_parent},
+	mod_manifest::{
+		self,
+		Manifest,
+	},
+	paths::{
+		self,
+		open_folder_or_parent,
+	},
 	result::Result,
 };
 
