@@ -43,7 +43,7 @@ jobs:
         with:
           images: ghcr.io/raicuparta/rai-pal-builder
           tags: |
-            type=raw,value=${{ matrix.os-name }}-latest,enable={{is_default_branch}}
+            type=raw,value=${{ matrix.os-name }}-latest
             type=sha,format=short,prefix=${{ matrix.os-name }}-
 
       - name: Build and push image
