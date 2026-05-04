@@ -4,7 +4,8 @@ ENV DEBIAN_FRONTEND=noninteractive \
     RUSTUP_HOME=/usr/local/rustup \
     CARGO_HOME=/usr/local/cargo \
     PATH=/usr/local/cargo/bin:$PATH \
-    npm_config_cache=/tmp/npm-cache
+    npm_config_cache=/tmp/npm-cache \
+    XDG_CACHE_HOME=/var/cache
 
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
