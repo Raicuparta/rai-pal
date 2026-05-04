@@ -36,9 +36,8 @@ pub fn add_current_executable_to_steam_shortcuts(executable_path: &Path) -> Resu
 	// AppImage Support:
 	// AppImages run from a temporary `/tmp/.mount_...` directory.
 	// The `APPIMAGE` env var holds the path to the actual `.AppImage` file.
-	let actual_executable = std::env::var_os("APPIMAGE")
-		.map(PathBuf::from)
-		.unwrap_or_else(|| executable_path.to_path_buf());
+	let actual_executable =
+		std::env::var_os("APPIMAGE").map_or_else(|| executable_path.to_path_buf(), PathBuf::from);
 
 	let quoted_executable = quote_path(&actual_executable);
 	let start_dir = actual_executable
@@ -283,23 +282,11 @@ fn append_shortcut_entry(
 	push_string_field(shortcuts_bytes, "Exe", executable);
 	push_string_field(shortcuts_bytes, "StartDir", start_dir);
 	push_string_field(shortcuts_bytes, "icon", "");
-	push_string_field(shortcuts_bytes, "ShortcutPath", "");
-	push_string_field(shortcuts_bytes, "LaunchOptions", "");
 	push_i32_field(shortcuts_bytes, "IsHidden", 0);
 	push_i32_field(shortcuts_bytes, "AllowDesktopConfig", 1);
-	push_i32_field(shortcuts_bytes, "AllowOverlay", 1);
-	push_i32_field(shortcuts_bytes, "openvr", 0);
-	push_i32_field(shortcuts_bytes, "Devkit", 0);
-	push_string_field(shortcuts_bytes, "DevkitGameID", "");
-	push_i32_field(shortcuts_bytes, "DevkitOverrideAppID", 0);
-	push_i32_field(shortcuts_bytes, "LastPlayTime", 0);
+	push_i32_field(shortcuts_bytes, "AllowOverlay", 0);
 	push_string_field(shortcuts_bytes, "FlatpakAppID", "");
-
-	push_object_start(shortcuts_bytes, "tags");
-	push_object_end(shortcuts_bytes); // ends `tags`
-
 	push_object_end(shortcuts_bytes); // ends the index entry
-
 	push_object_end(shortcuts_bytes); // ends the `shortcuts` root object
 	push_object_end(shortcuts_bytes); // additionally required EOF terminator byte
 }
