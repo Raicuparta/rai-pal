@@ -21,7 +21,16 @@ use crate::{
 
 fn heroic_config_path(relative_path: &str) -> Result<std::path::PathBuf> {
 	let dirs = paths::base_dirs()?;
-	Ok(dirs.config_dir().join("heroic").join(relative_path))
+
+	let native = dirs.config_dir().join("heroic");
+	if native.exists() {
+		return Ok(native.join(relative_path));
+	}
+
+	let flatpak = dirs
+		.home_dir()
+		.join(".var/app/com.heroicgameslauncher.hgl/config/heroic");
+	Ok(flatpak.join(relative_path))
 }
 
 fn games_config_path(game_id: &str) -> Result<PathBuf> {

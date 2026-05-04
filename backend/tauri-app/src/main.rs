@@ -661,7 +661,7 @@ async fn get_mod_loader_statuses(
 
 	for (loader_id, mod_loader) in &mod_loaders {
 		if let Some(status) = mod_loader.get_status(&game).await? {
-			statuses.insert(loader_id.clone(), status);
+			statuses.insert(*loader_id, status);
 		}
 	}
 
