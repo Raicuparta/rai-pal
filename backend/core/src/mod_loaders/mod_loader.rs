@@ -13,7 +13,7 @@ use std::{
 
 use enum_dispatch::enum_dispatch;
 use log::error;
-use rai_pal_proc_macros::serializable_struct;
+use rai_pal_proc_macros::{serializable_enum, serializable_struct};
 use zip::ZipArchive;
 
 use super::{
@@ -57,9 +57,26 @@ use crate::{
 
 #[serializable_struct]
 pub struct ModLoaderData {
-	pub id: String,
+	pub id: ModLoaderId,
 	pub path: PathBuf,
 	pub kind: ModKind,
+}
+
+#[serializable_enum]
+#[serde(rename_all = "lowercase")]
+#[strum(serialize_all = "lowercase", ascii_case_insensitive)]
+pub enum ModLoaderId {
+	BepInEx,
+	Runnable,
+}
+
+impl ModLoaderId {
+	pub const fn as_str(self) -> &'static str {
+		match self {
+			Self::BepInEx => "bepinex",
+			Self::Runnable => "runnable",
+		}
+	}
 }
 
 #[serializable_struct]
@@ -148,7 +165,7 @@ pub trait ModLoaderActions {
 		F: Fn(Error) + Send,
 	{
 		let data = self.get_data();
-		let loader_id = &data.id;
+		let loader_id = data.id;
 
 		let database = mod_database::get(loader_id).await.unwrap_or_else(|error| {
 			error_handler(error);
@@ -164,7 +181,7 @@ pub trait ModLoaderActions {
 					engine: database_mod.engine,
 					engine_version_range: database_mod.engine_version_range.clone(),
 					unity_backend: database_mod.unity_backend,
-					loader_id: loader_id.clone(),
+					loader_id,
 				},
 				data: RemoteModData {
 					author: database_mod.author.clone(),
@@ -217,7 +234,7 @@ pub trait ModLoaderActions {
 			let mod_loader_data = self.get_data();
 			let mod_id = &remote_mod.common.id;
 			let downloads_path = paths::installed_mods_path()?
-				.join(&mod_loader_data.id)
+				.join(mod_loader_data.id.as_str())
 				.join("downloads");
 
 			let response = reqwest::get(&latest_version.url).await?;
@@ -326,29 +343,31 @@ pub trait ModLoaderActions {
 }
 
 pub trait ModLoaderStatic {
-	const ID: &'static str;
+	const ID: ModLoaderId;
 
 	fn new(resources_path: &Path) -> Result<Self>
 	where
 		Self: Sized;
 
 	fn get_installed_mods_path() -> Result<PathBuf> {
-		Ok(paths::installed_mods_path()?.join(Self::ID).join("mods"))
+		Ok(paths::installed_mods_path()?
+			.join(Self::ID.as_str())
+			.join("mods"))
 	}
 }
 
-pub type Map = HashMap<String, ModLoader>;
-pub type DataMap = HashMap<String, ModLoaderData>;
+pub type Map = HashMap<ModLoaderId, ModLoader>;
+pub type DataMap = HashMap<ModLoaderId, ModLoaderData>;
 
 fn create_map_entry<TModLoader: ModLoaderActions + ModLoaderStatic>(
 	path: &Path,
-) -> Result<(String, ModLoader)>
+) -> Result<(ModLoaderId, ModLoader)>
 where
 	ModLoader: std::convert::From<TModLoader>,
 {
 	let mod_loader: ModLoader = TModLoader::new(path)?.into();
 
-	Ok((TModLoader::ID.to_string(), mod_loader))
+	Ok((TModLoader::ID, mod_loader))
 }
 
 fn add_entry<TModLoader: ModLoaderActions + ModLoaderStatic>(path: &Path, map: &mut Map)

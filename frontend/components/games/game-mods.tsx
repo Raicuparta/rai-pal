@@ -9,6 +9,7 @@ import {
 import {
 	EngineVersionRange,
 	DbGame,
+	ModLoaderId,
 	ModLoaderStatus,
 	commands,
 } from "@api/bindings";
@@ -98,9 +99,10 @@ function isVersionWithinRange(
 }
 
 const defaultInstalledModVersions: Record<string, string> = {};
+const defaultModLoaderStatuses: Partial<Record<ModLoaderId, ModLoaderStatus>> = {};
 
 type ModLoaderRowProps = {
-	readonly modLoaderId: string;
+	readonly modLoaderId: ModLoaderId;
 	readonly game: DbGame;
 	readonly status?: ModLoaderStatus;
 };
@@ -259,7 +261,7 @@ export function GameMods({ game }: Props) {
 	);
 	const [modLoaderStatuses, updateModLoaderStatuses] = useCommandData(
 		getModLoaderStatuses,
-		{},
+		defaultModLoaderStatuses,
 		!game?.exePath,
 	);
 	const modLoaders = useUnifiedModLoaders(modLoaderStatuses);

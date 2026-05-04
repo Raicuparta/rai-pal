@@ -32,6 +32,7 @@ use crate::{
 		mod_loader::{
 			ModLoaderActions,
 			ModLoaderData,
+			ModLoaderId,
 			ModLoaderStatus,
 		},
 	},
@@ -66,12 +67,14 @@ struct BepInExVersionData {
 }
 
 fn get_installed_version(game: &DbGame) -> Option<String> {
-	let manifest_path = game.get_installed_mod_manifest_path(BepInEx::ID).ok()?;
+	let manifest_path = game
+		.get_installed_mod_manifest_path(BepInEx::ID.as_str())
+		.ok()?;
 	mod_manifest::get(&manifest_path).map(|manifest| manifest.version)
 }
 
 fn update_installed_manifest(game: &DbGame, version: String) -> Result {
-	let manifest_path = game.get_installed_mod_manifest_path(BepInEx::ID)?;
+	let manifest_path = game.get_installed_mod_manifest_path(BepInEx::ID.as_str())?;
 	fs::create_dir_all(paths::path_parent(&manifest_path)?)?;
 	fs::write(
 		manifest_path,
@@ -171,18 +174,18 @@ async fn get_version_data(
 #[serializable_struct]
 pub struct BepInEx {
 	pub data: ModLoaderData,
-	pub id: &'static str,
+	pub id: ModLoaderId,
 }
 
 impl ModLoaderStatic for BepInEx {
-	const ID: &'static str = "bepinex";
+	const ID: ModLoaderId = ModLoaderId::BepInEx;
 
 	fn new(resources_path: &Path) -> Result<Self> {
 		Ok(Self {
 			id: Self::ID,
 			data: ModLoaderData {
-				id: Self::ID.to_string(),
-				path: resources_path.join(Self::ID),
+				id: Self::ID,
+				path: resources_path.join(Self::ID.as_str()),
 				kind: ModKind::Installable,
 			},
 		})

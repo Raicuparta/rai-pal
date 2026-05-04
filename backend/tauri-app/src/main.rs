@@ -42,6 +42,7 @@ use rai_pal_core::{
 		mod_loader::{
 			self,
 			ModLoaderActions,
+			ModLoaderId,
 		},
 	},
 	paths::{
@@ -180,12 +181,12 @@ async fn open_mod_folder(mod_id: &str, handle: AppHandle) -> Result {
 
 #[tauri::command]
 #[specta::specta]
-async fn open_mod_loader_folder(mod_loader_id: &str, handle: AppHandle) -> Result {
+async fn open_mod_loader_folder(mod_loader_id: ModLoaderId, handle: AppHandle) -> Result {
 	Ok(handle
 		.app_state()
 		.mod_loaders
 		.read_state()?
-		.try_get(mod_loader_id)?
+		.try_get(&mod_loader_id)?
 		.open_folder()?)
 }
 
@@ -644,7 +645,7 @@ async fn get_mod_loader_statuses(
 	provider_id: ProviderId,
 	game_id: String,
 	app_handle: AppHandle,
-) -> Result<HashMap<String, mod_loader::ModLoaderStatus>> {
+) -> Result<HashMap<ModLoaderId, mod_loader::ModLoaderStatus>> {
 	let state = app_handle.app_state();
 	let game = app_handle
 		.app_state()
@@ -668,7 +669,7 @@ async fn get_mod_loader_statuses(
 async fn install_mod_loader(
 	provider_id: ProviderId,
 	game_id: String,
-	mod_loader_id: String,
+	mod_loader_id: ModLoaderId,
 	force_reinstall: bool,
 	app_handle: AppHandle,
 ) -> Result {
@@ -689,7 +690,7 @@ async fn install_mod_loader(
 async fn open_game_mod_loader_folder(
 	provider_id: ProviderId,
 	game_id: String,
-	mod_loader_id: String,
+	mod_loader_id: ModLoaderId,
 	app_handle: AppHandle,
 ) -> Result {
 	let state = app_handle.app_state();

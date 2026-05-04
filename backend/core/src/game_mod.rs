@@ -4,6 +4,7 @@ use crate::game_engines::{
 	game_engine::{EngineBrand, EngineVersionNumbers},
 	unity::UnityBackend,
 };
+use crate::mod_loaders::mod_loader::ModLoaderId;
 
 #[serializable_struct]
 pub struct EngineVersionRange {
@@ -17,5 +18,5 @@ pub struct CommonModData {
 	pub engine: Option<EngineBrand>,
 	pub unity_backend: Option<UnityBackend>,
 	pub engine_version_range: Option<EngineVersionRange>,
-	pub loader_id: String,
+	pub loader_id: ModLoaderId,
 }

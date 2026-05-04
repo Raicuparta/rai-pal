@@ -1,4 +1,10 @@
-use crate::{game::DbGame, http, paths, result::Result};
+use crate::{
+	game::DbGame,
+	http,
+	mod_loaders::mod_loader::ModLoaderId,
+	paths,
+	result::Result,
+};
 use rai_pal_proc_macros::serializable_struct;
 use reqwest::Response;
 use std::{fs, io::Cursor, path::Path};
@@ -11,7 +17,7 @@ const CONFIG_DB_VERSION: u32 = 0;
 pub struct RemoteConfig {
 	pub version: u32,
 	pub mod_id: String,
-	pub loader_id: String,
+	pub loader_id: ModLoaderId,
 	pub file: String,
 }
 

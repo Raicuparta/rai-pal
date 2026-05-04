@@ -8,6 +8,7 @@ use crate::{
 	game_engines::{game_engine::EngineBrand, unity::UnityBackend},
 	game_mod::EngineVersionRange,
 	http,
+	mod_loaders::mod_loader::ModLoaderId,
 	result::Result,
 };
 
@@ -77,7 +78,7 @@ pub struct ModGithubInfo {
 	pub runnable: Option<RunnableModData>,
 }
 
-pub async fn get(mod_loader_id: &str) -> Result<ModDatabase> {
+pub async fn get(mod_loader_id: ModLoaderId) -> Result<ModDatabase> {
 	Ok(http::CLIENT
 		.get(format!(
 			"{URL_BASE}/{DATABASE_VERSION}/{mod_loader_id}.json"
