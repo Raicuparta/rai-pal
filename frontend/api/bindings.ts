@@ -130,7 +130,7 @@ export type EngineVersionRange = {
 	maximum: EngineVersionNumbers | null,
 };
 
-export type Error = "Tauri" | "Core" | "Io" | "Rusql" | "SerdeJson" | ({ FailedToGetResourcesPath: string }) & { FailedToAccessStateData?: never; LinuxOnly?: never } | ({ FailedToAccessStateData: string }) & { FailedToGetResourcesPath?: never; LinuxOnly?: never } | ({ LinuxOnly: null }) & { FailedToAccessStateData?: never; FailedToGetResourcesPath?: never };
+export type Error = "Tauri" | "Core" | "Io" | "Rusql" | "SerdeJson" | "SystemTimeError" | ({ FailedToGetResourcesPath: string }) & { FailedToAccessStateData?: never; LinuxOnly?: never } | ({ FailedToAccessStateData: string }) & { FailedToGetResourcesPath?: never; LinuxOnly?: never } | ({ LinuxOnly: null }) & { FailedToAccessStateData?: never; FailedToGetResourcesPath?: never };
 
 export type ErrorRaised = string;
 

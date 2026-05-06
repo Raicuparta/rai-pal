@@ -497,7 +497,7 @@ async fn refresh_mods(handle: AppHandle) -> Result {
 async fn refresh_remote_games(handle: AppHandle) -> Result {
 	let state = handle.app_state();
 	let path = remote_game::download_database().await?;
-	attach_remote_database(state.database.lock().unwrap(), &path)?;
+	attach_remote_database(state.database.lock_db()?, &path)?;
 
 	Ok(())
 }
@@ -507,10 +507,7 @@ async fn refresh_remote_games(handle: AppHandle) -> Result {
 async fn refresh_games(handle: AppHandle, provider_id: ProviderId) -> Result {
 	let state = handle.app_state();
 
-	let start_time = SystemTime::now()
-		.duration_since(UNIX_EPOCH)
-		.unwrap()
-		.as_secs();
+	let start_time = SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs();
 
 	if let Some(provider) = provider::get_provider(provider_id) {
 		provider?.insert_games(&state.database).await?;

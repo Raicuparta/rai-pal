@@ -37,6 +37,13 @@ pub enum Error {
 		serde_json::error::Error,
 	),
 
+	#[error(transparent)]
+	SystemTimeError(
+		#[specta(skip)]
+		#[from]
+		std::time::SystemTimeError,
+	),
+
 	#[error("Failed to get app resources path: `{0}`")]
 	FailedToGetResourcesPath(String),
 
