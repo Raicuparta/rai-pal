@@ -103,7 +103,7 @@ mod result;
 #[cfg(debug_assertions)]
 mod typescript;
 
-const DISCORD_TOKEN_REFRESH_INTERVAL: Duration = Duration::from_secs(60 * 60);
+const DISCORD_TOKEN_REFRESH_INTERVAL: Duration = Duration::from_hours(1);
 
 #[tauri::command]
 #[specta::specta]
@@ -764,14 +764,27 @@ async fn set_up_wine_bepinex_environment() -> Result {
 	}
 }
 
+fn show_panic(error: &str) {
+	rfd::MessageDialog::new()
+		.set_title("Rai Pal is panicking rn!")
+		.set_description(error)
+		.set_buttons(rfd::MessageButtons::Ok)
+		.show();
+}
+
 fn main() {
 	// Since I'm making all exposed functions async, panics won't crash anything important, I think.
 	// So I can just catch panics here and show a system message with the error.
 	std::panic::set_hook(Box::new(|info| {
 		println!("Panic: {info}");
 
-		#[cfg(target_os = "windows")]
-		windows::error_dialog(&format!("I found a panic!!!: {info}"));
+		show_panic(&info.to_string());
+
+		rfd::MessageDialog::new()
+			.set_title("Rai Pal is panicking rn!")
+			.set_description(info.to_string())
+			.set_buttons(rfd::MessageButtons::Ok)
+			.show();
 	}));
 
 	let builder = Builder::<tauri::Wry>::new()
@@ -832,6 +845,11 @@ fn main() {
 		std::env::set_var("__NV_DISABLE_EXPLICIT_SYNC", "1");
 	}
 
+	let app_state = AppState::new().unwrap_or_else(|error| {
+		show_panic(&format!("Failed to initialize app state. Rai Pal can't work without that, so I'm gonna crash now. Error: {error}"));
+		std::process::exit(1);
+	});
+
 	tauri::Builder::default()
 		.plugin(tauri_plugin_shell::init())
 		.plugin(tauri_plugin_os::init())
@@ -858,7 +876,7 @@ fn main() {
 				])
 				.build(),
 		)
-		.manage(AppState::new().unwrap())
+		.manage(app_state)
 		.invoke_handler(builder.invoke_handler())
 		.setup(move |app| {
 			builder.mount_events(app);
@@ -873,10 +891,12 @@ fn main() {
 					match refresh_result {
 						Ok(true) => log::info!("Discord OAuth token auto-refreshed."),
 						Ok(false) => {
-							log::debug!("Discord OAuth auto-refresh skipped (token not available).")
+							log::debug!(
+								"Discord OAuth auto-refresh skipped (token not available)."
+							);
 						}
 						Err(error) => {
-							log::error!("Failed to auto-refresh Discord OAuth token: {error}")
+							log::error!("Failed to auto-refresh Discord OAuth token: {error}");
 						}
 					}
 
@@ -900,7 +920,7 @@ fn main() {
 				window.show()?;
 
 				window.on_window_event(|event| {
-					if let tauri::WindowEvent::Destroyed = event {
+					if matches!(event, tauri::WindowEvent::Destroyed) {
 						// Once the window is closed, we don't need to report panics anymore.
 						// I'm doing this because closing the window abruptly while events are being sent
 						// causes panics, so it was easy to trigger those messages by just closing while loading data.
@@ -913,15 +933,22 @@ fn main() {
 
 			tauri::async_runtime::spawn(async move {
 				let state = app_handle.app_state();
-				let database_connection = state.database.lock().unwrap();
 				let cloned_handle = app_handle.clone();
-				database_connection
-					.update_hook(Some({
-						move |_, _: &str, _: &str, _| {
+
+				if let Err(error) = state
+					.database
+					.lock_db()
+					.map_err(|e| e.to_string())
+					.and_then(|db| {
+						db.update_hook(Some(move |_, _: &str, _: &str, _| {
 							cloned_handle.emit_safe(events::GamesChanged());
-						}
-					}))
-					.expect("Failed to set up local database.");
+						}))
+						.map_err(|e| e.to_string())
+					}) {
+					log::error!(
+						"Failed to subscribe to local database updates. App won't work properly. Error: {error}"
+					);
+				}
 			});
 
 			Ok(())

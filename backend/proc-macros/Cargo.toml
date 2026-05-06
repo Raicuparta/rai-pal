@@ -10,3 +10,6 @@ proc-macro = true
 quote = "1.0.45"
 syn = "2.0.117"
 serde.workspace = true
+
+[lints]
+workspace = true
