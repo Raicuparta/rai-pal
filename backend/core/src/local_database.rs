@@ -513,10 +513,8 @@ pub fn attach_remote_database<TConnection: Deref<Target = rusqlite::Connection>>
 		return Ok(());
 	}
 
-	let path_str = path.to_string_lossy();
-
 	local_database_connection
-		.execute(&format!("ATTACH DATABASE '{path_str}' AS remote_db;"), [])?;
+		.execute("ATTACH DATABASE ?1 AS remote_db;", [path.to_string_lossy()])?;
 
 	local_database_connection.execute(
 		r"
