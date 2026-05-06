@@ -111,7 +111,7 @@ impl Steam {
 							// There is a shortcut.steam_id() thing in there, but we can't use that since it doesn't follow the cached ID Steam actually needs.
 							// So we need to do our own conversion from the 32-bit app_id to the 64-bit one needed for this specific command.
 							// Other commands seem to need the 32-bit id instead. Dunno why.
-							((u64::from(shortcut.app_id) << 32_i32) | 0x0200_0000)
+							((u64::from(shortcut.app_id) << 32) | 0x0200_0000)
 						)),
 					);
 
@@ -299,7 +299,7 @@ impl ProviderActions for Steam {
 						if app_info
 							.tags
 							.as_ref()
-							.is_some_and(|tags| tags.contains(&21_978_i32))
+							.is_some_and(|tags| tags.contains(&21_978))
 						{
 							game.add_tag(GameTag::VR);
 						}

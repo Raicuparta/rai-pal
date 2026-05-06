@@ -105,7 +105,35 @@ fn add_shortcut_to_path(
 		app_id,
 	);
 
+	if shortcuts_path.exists() {
+		create_numbered_backup(shortcuts_path)?;
+	}
+
 	fs::write(shortcuts_path, shortcuts_bytes)?;
+
+	Ok(())
+}
+
+fn create_numbered_backup(shortcuts_path: &Path) -> Result {
+	let backup_dir = shortcuts_path
+		.parent()
+		.ok_or_else(|| {
+			Error::DataEntryNotFound("Unable to determine parent directory for backups".to_string())
+		})?
+		.join("rai-pal-backups");
+
+	fs::create_dir_all(&backup_dir)?;
+
+	// Find the next available backup number
+	let mut backup_number = 0;
+	loop {
+		let backup_path = backup_dir.join(format!("shortcuts.vdf.bak{backup_number}"));
+		if !backup_path.exists() {
+			fs::copy(shortcuts_path, backup_path)?;
+			break;
+		}
+		backup_number += 1;
+	}
 
 	Ok(())
 }
@@ -285,7 +313,7 @@ fn append_shortcut_entry(
 	// A valid shortcuts.vdf ends with TWO 0x08 bytes (one for the `shortcuts` dictionary,
 	// and one as the EOF marker). We must pop EXACTLY TWO to append INSIDE the root dictionary.
 	// If we use a while loop, we accidentally pop the closing bytes of the previous shortcut too!
-	for _ in 0_i32..2_i32 {
+	for _ in 0..2 {
 		if shortcuts_bytes.last().copied() == Some(8) {
 			shortcuts_bytes.pop();
 		}
