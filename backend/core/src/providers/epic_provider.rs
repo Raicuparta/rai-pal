@@ -173,7 +173,7 @@ impl EpicCatalogItem {
 impl ProviderActions for Epic {
 	async fn insert_games(&self, db: &DbMutex) -> Result {
 		let app_data_path = match RegKey::predef(HKEY_LOCAL_MACHINE)
-			.open_subkey(r"SOFTWARE\WOW6432Node\Epic Games\EpicGamesLauncher")
+			.open_subkey(r"SOFTWARE\Epic Games\EpicGamesLauncher")
 			.and_then(|launcher_reg| launcher_reg.get_value::<String, _>("AppDataPath"))
 			.map(PathBuf::from)
 		{
