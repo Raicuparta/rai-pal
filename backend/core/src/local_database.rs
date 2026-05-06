@@ -164,7 +164,9 @@ impl GameDatabase for DbMutex {
 					.providers
 					.iter()
 					.filter_map(|provider| {
-						provider.as_ref().map(|p| format!("g.provider_id = '{p}'"))
+						provider.as_ref().map(|p| {
+							format!("g.provider_id = '{}'", escape_sql_string(&p.to_string()))
+						})
 					})
 					.collect();
 				if !provider_conditions.is_empty() {
@@ -179,7 +181,9 @@ impl GameDatabase for DbMutex {
 					.map(|tag| {
 						tag.as_ref().map_or_else(
 							|| "g.tags = '[]'".to_string(),
-							|t| format!("g.tags LIKE '%\"{t}\"%'"),
+							|t| {
+								format!("g.tags LIKE '%\"{}\"%'", escape_sql_string(&t.to_string()))
+							},
 						)
 					})
 					.collect();
@@ -201,7 +205,11 @@ impl GameDatabase for DbMutex {
 				let engine_values: Vec<String> = filter
 					.engines
 					.iter()
-					.filter_map(|engine| engine.as_ref().map(|e| format!("'{e}'")))
+					.filter_map(|engine| {
+						engine
+							.as_ref()
+							.map(|e| format!("'{}'", escape_sql_string(&e.to_string())))
+					})
 					.collect();
 
 				if !engine_values.is_empty() {
@@ -221,9 +229,9 @@ impl GameDatabase for DbMutex {
 					.unity_backends
 					.iter()
 					.filter_map(|backend| {
-						backend
-							.as_ref()
-							.map(|b| format!("ig.unity_backend = '{b}'"))
+						backend.as_ref().map(|b| {
+							format!("ig.unity_backend = '{}'", escape_sql_string(&b.to_string()))
+						})
 					})
 					.collect();
 				if !backend_conditions.is_empty() {
@@ -241,7 +249,10 @@ impl GameDatabase for DbMutex {
 				let arch_values: Vec<String> = filter
 					.architectures
 					.iter()
-					.filter_map(|arch| arch.as_ref().map(|a| format!("'{a}'")))
+					.filter_map(|arch| {
+						arch.as_ref()
+							.map(|a| format!("'{}'", escape_sql_string(&a.to_string())))
+					})
 					.collect();
 
 				if !arch_values.is_empty() {
@@ -258,8 +269,10 @@ impl GameDatabase for DbMutex {
 		let trimmed_search = search.trim();
 		// Add search filter
 		if !trimmed_search.is_empty() {
+			let escaped_search = escape_sql_string(trimmed_search);
+			#[allow(clippy::uninlined_format_args)]
 			filters.push(format!(
-				"(g.display_title LIKE '%{trimmed_search}%' OR nt.normalized_title LIKE '%{trimmed_search}%')"
+				"(g.display_title LIKE '%{escaped_search}%' OR nt.normalized_title LIKE '%{escaped_search}%')"
 			));
 		}
 
@@ -587,4 +600,8 @@ pub fn attach_remote_database<TConnection: Deref<Target = rusqlite::Connection>>
 
 fn db_file_path() -> Result<PathBuf> {
 	Ok(paths::app_data_path()?.join("db.sqlite"))
+}
+
+fn escape_sql_string(s: &str) -> String {
+	s.replace('\'', "''")
 }
