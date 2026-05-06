@@ -1,4 +1,5 @@
 use std::{
+	fs,
 	ops::Deref,
 	path::{
 		Path,
@@ -164,7 +165,9 @@ impl GameDatabase for DbMutex {
 					.providers
 					.iter()
 					.filter_map(|provider| {
-						provider.as_ref().map(|p| format!("g.provider_id = '{p}'"))
+						provider.as_ref().map(|p| {
+							format!("g.provider_id = '{}'", escape_sql_string(&p.to_string()))
+						})
 					})
 					.collect();
 				if !provider_conditions.is_empty() {
@@ -179,7 +182,9 @@ impl GameDatabase for DbMutex {
 					.map(|tag| {
 						tag.as_ref().map_or_else(
 							|| "g.tags = '[]'".to_string(),
-							|t| format!("g.tags LIKE '%\"{t}\"%'"),
+							|t| {
+								format!("g.tags LIKE '%\"{}\"%'", escape_sql_string(&t.to_string()))
+							},
 						)
 					})
 					.collect();
@@ -201,7 +206,11 @@ impl GameDatabase for DbMutex {
 				let engine_values: Vec<String> = filter
 					.engines
 					.iter()
-					.filter_map(|engine| engine.as_ref().map(|e| format!("'{e}'")))
+					.filter_map(|engine| {
+						engine
+							.as_ref()
+							.map(|e| format!("'{}'", escape_sql_string(&e.to_string())))
+					})
 					.collect();
 
 				if !engine_values.is_empty() {
@@ -221,9 +230,9 @@ impl GameDatabase for DbMutex {
 					.unity_backends
 					.iter()
 					.filter_map(|backend| {
-						backend
-							.as_ref()
-							.map(|b| format!("ig.unity_backend = '{b}'"))
+						backend.as_ref().map(|b| {
+							format!("ig.unity_backend = '{}'", escape_sql_string(&b.to_string()))
+						})
 					})
 					.collect();
 				if !backend_conditions.is_empty() {
@@ -241,7 +250,10 @@ impl GameDatabase for DbMutex {
 				let arch_values: Vec<String> = filter
 					.architectures
 					.iter()
-					.filter_map(|arch| arch.as_ref().map(|a| format!("'{a}'")))
+					.filter_map(|arch| {
+						arch.as_ref()
+							.map(|a| format!("'{}'", escape_sql_string(&a.to_string())))
+					})
 					.collect();
 
 				if !arch_values.is_empty() {
@@ -258,8 +270,10 @@ impl GameDatabase for DbMutex {
 		let trimmed_search = search.trim();
 		// Add search filter
 		if !trimmed_search.is_empty() {
+			let escaped_search = escape_sql_string(trimmed_search);
+			#[allow(clippy::uninlined_format_args)]
 			filters.push(format!(
-				"(g.display_title LIKE '%{trimmed_search}%' OR nt.normalized_title LIKE '%{trimmed_search}%')"
+				"(g.display_title LIKE '%{escaped_search}%' OR nt.normalized_title LIKE '%{escaped_search}%')"
 			));
 		}
 
@@ -419,7 +433,55 @@ fn try_insert_game(connection_mutex: &DbMutex, game: &DbGame) -> Result {
 	Ok(())
 }
 
-pub fn create() -> Result<DbMutex> {
+pub fn try_create() -> Result<DbMutex> {
+	match create() {
+		Ok(db) => Ok(db),
+		Err(initial_error) => {
+			log::error!(
+				"Failed to set up local databases. Deleting them and retrying once. Error: {initial_error}"
+			);
+			cleanup_database_files();
+
+			match create() {
+				Ok(db) => Ok(db),
+				Err(retry_error) => {
+					log::error!(
+						"Failed to set up local databases after cleanup retry. Giving up. Error: {retry_error}"
+					);
+					Err(retry_error)
+				}
+			}
+		}
+	}
+}
+
+fn cleanup_database_files() {
+	cleanup_database_file(db_file_path(), "local");
+	cleanup_database_file(remote_game::get_database_file_path(), "remote");
+}
+
+fn cleanup_database_file(path_result: Result<PathBuf>, database_name: &str) {
+	let path = match path_result {
+		Ok(path) => path,
+		Err(path_error) => {
+			log::warn!("Failed to resolve {database_name} database path for cleanup: {path_error}");
+			return;
+		}
+	};
+
+	match fs::remove_file(&path) {
+		Ok(()) => {}
+		Err(remove_error) if remove_error.kind() == std::io::ErrorKind::NotFound => {}
+		Err(remove_error) => {
+			log::warn!(
+				"Failed to delete {database_name} database after create failure ({}): {remove_error}",
+				path.display()
+			);
+		}
+	}
+}
+
+fn create() -> Result<DbMutex> {
 	let mut instant = Instant::now();
 	instant.log_next("Creating local database...");
 
@@ -495,7 +557,8 @@ pub fn create() -> Result<DbMutex> {
 	",
 	)?;
 
-	attach_remote_database(&connection, &remote_game::get_database_file_path()?)?;
+	let remote_database_path = remote_game::get_database_file_path()?;
+	attach_remote_database(&connection, &remote_database_path)?;
 
 	instant.log_next("Created local database!");
 
@@ -513,10 +576,8 @@ pub fn attach_remote_database<TConnection: Deref<Target = rusqlite::Connection>>
 		return Ok(());
 	}
 
-	let path_str = path.to_string_lossy();
-
 	local_database_connection
-		.execute(&format!("ATTACH DATABASE '{path_str}' AS remote_db;"), [])?;
+		.execute("ATTACH DATABASE ?1 AS remote_db;", [path.to_string_lossy()])?;
 
 	local_database_connection.execute(
 		r"
@@ -589,4 +650,8 @@ pub fn attach_remote_database<TConnection: Deref<Target = rusqlite::Connection>>
 
 fn db_file_path() -> Result<PathBuf> {
 	Ok(paths::app_data_path()?.join("db.sqlite"))
+}
+
+fn escape_sql_string(s: &str) -> String {
+	s.replace('\'', "''")
 }
