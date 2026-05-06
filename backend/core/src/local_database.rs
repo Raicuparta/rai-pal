@@ -1,4 +1,5 @@
 use std::{
+	fs,
 	ops::Deref,
 	path::{
 		Path,
@@ -432,7 +433,55 @@ fn try_insert_game(connection_mutex: &DbMutex, game: &DbGame) -> Result {
 	Ok(())
 }
 
-pub fn create() -> Result<DbMutex> {
+pub fn try_create() -> Result<DbMutex> {
+	match create() {
+		Ok(db) => Ok(db),
+		Err(initial_error) => {
+			log::error!(
+				"Failed to set up local databases. Deleting them and retrying once. Error: {initial_error}"
+			);
+			cleanup_database_files();
+
+			match create() {
+				Ok(db) => Ok(db),
+				Err(retry_error) => {
+					log::error!(
+						"Failed to set up local databases after cleanup retry. Giving up. Error: {retry_error}"
+					);
+					Err(retry_error)
+				}
+			}
+		}
+	}
+}
+
+fn cleanup_database_files() {
+	cleanup_database_file(db_file_path(), "local");
+	cleanup_database_file(remote_game::get_database_file_path(), "remote");
+}
+
+fn cleanup_database_file(path_result: Result<PathBuf>, database_name: &str) {
+	let path = match path_result {
+		Ok(path) => path,
+		Err(path_error) => {
+			log::warn!("Failed to resolve {database_name} database path for cleanup: {path_error}");
+			return;
+		}
+	};
+
+	match fs::remove_file(&path) {
+		Ok(()) => {}
+		Err(remove_error) if remove_error.kind() == std::io::ErrorKind::NotFound => {}
+		Err(remove_error) => {
+			log::warn!(
+				"Failed to delete {database_name} database after create failure ({}): {remove_error}",
+				path.display()
+			);
+		}
+	}
+}
+
+fn create() -> Result<DbMutex> {
 	let mut instant = Instant::now();
 	instant.log_next("Creating local database...");
 
@@ -508,7 +557,8 @@ pub fn create() -> Result<DbMutex> {
 	",
 	)?;
 
-	attach_remote_database(&connection, &remote_game::get_database_file_path()?)?;
+	let remote_database_path = remote_game::get_database_file_path()?;
+	attach_remote_database(&connection, &remote_database_path)?;
 
 	instant.log_next("Created local database!");
 

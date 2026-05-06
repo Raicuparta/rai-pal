@@ -1,13 +1,21 @@
-use std::ops::Deref;
-use std::sync::RwLock;
+use std::{
+	ops::Deref,
+	sync::RwLock,
+};
 
-use crate::result::Error;
-use crate::result::Result;
-use rai_pal_core::local_database;
-use rai_pal_core::local_database::DbMutex;
+use rai_pal_core::{
+	local_database,
+	local_database::DbMutex,
+	local_mod,
+	mod_loaders::mod_loader,
+	remote_mod,
+};
 use tauri::Manager;
 
-use rai_pal_core::{local_mod, mod_loaders::mod_loader, remote_mod};
+use crate::result::{
+	Error,
+	Result,
+};
 
 pub struct AppState {
 	pub mod_loaders: RwLock<mod_loader::Map>,
@@ -53,7 +61,7 @@ impl AppState {
 			mod_loaders: RwLock::new(mod_loader::Map::new()),
 			local_mods: RwLock::new(local_mod::Map::new()),
 			remote_mods: RwLock::new(remote_mod::Map::new()),
-			database: local_database::create()?,
+			database: local_database::try_create()?,
 		})
 	}
 }
