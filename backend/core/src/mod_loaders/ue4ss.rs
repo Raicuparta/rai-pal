@@ -128,10 +128,23 @@ impl ModLoaderActions for Ue4ss {
 			.bytes()
 			.await?;
 
-		let game_folder = paths::path_parent(exe_path)?;
-		fs::create_dir_all(&game_folder)?;
+		let game_mods_folder = game.get_installed_mods_folder()?;
+		fs::create_dir_all(&game_mods_folder)?;
+		ZipArchive::new(Cursor::new(zip_bytes))?.extract(&game_mods_folder)?;
 
-		ZipArchive::new(Cursor::new(zip_bytes))?.extract(&game_folder)?;
+		let game_folder = paths::path_parent(exe_path)?;
+		fs::create_dir_all(game_folder)?;
+
+		fs::copy(
+			game_mods_folder.join("dwmapi.dll"),
+			game_folder.join("dwmapi.dll"),
+		)?;
+
+		let ue4ss_path = game_mods_folder.join("ue4ss").join("UE4SS.dll");
+		fs::write(
+			game_folder.join("override.txt"),
+			ue4ss_path.to_string_lossy().as_ref(),
+		)?;
 
 		Ok(())
 	}
@@ -154,7 +167,7 @@ impl ModLoaderActions for Ue4ss {
 	fn open_installed_mod_folder(&self, game: &DbGame, local_mod: &LocalMod) -> Result {
 		let game_data_folder = game.get_installed_mods_folder()?;
 		let mod_folder = game_data_folder
-			.join("UE4SS")
+			.join("ue4ss")
 			.join("Mods")
 			.join(&local_mod.common.id);
 
@@ -162,7 +175,7 @@ impl ModLoaderActions for Ue4ss {
 	}
 
 	fn open_loader_folder_for_game(&self, game: &DbGame) -> Result {
-		let ue4ss_folder = game.get_installed_mods_folder()?.join("UE4SS");
+		let ue4ss_folder = game.get_installed_mods_folder()?.join("ue4ss");
 		crate::paths::open_folder_or_parent(&ue4ss_folder)
 	}
 
@@ -177,7 +190,7 @@ impl ModLoaderActions for Ue4ss {
 	fn get_config_path(&self, game: &DbGame, mod_configs: &ModConfigs) -> Result<PathBuf> {
 		Ok(game
 			.get_installed_mods_folder()?
-			.join("UE4SS")
+			.join("ue4ss")
 			.join(&mod_configs.destination_path))
 	}
 }
