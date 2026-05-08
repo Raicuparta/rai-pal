@@ -29,6 +29,7 @@ use crate::{
 		ModKind,
 	},
 	mod_loaders::mod_database::ModConfigs,
+	mod_manifest,
 	paths,
 	result::{
 		Error,
@@ -61,6 +62,25 @@ async fn get_version_data() -> Result<Ue4ssVersionData> {
 				})
 		})
 		.ok_or_else(|| Error::ModInstallInfoInsufficient("ue4ss_win".to_string(), String::new()))
+}
+
+fn get_installed_version(game: &DbGame) -> Option<String> {
+	Ue4ss::get_installed_loader_version(game)
+}
+
+fn update_installed_manifest(game: &DbGame, version: String) -> Result {
+	Ue4ss::update_installed_loader_manifest(
+		game,
+		&mod_manifest::Manifest {
+			title: Some("UE4SS".to_string()),
+			version,
+			runnable: None,
+			engine: Some(EngineBrand::Unreal),
+			engine_version_range: None,
+			unity_backend: None,
+			configs: None,
+		},
+	)
 }
 
 #[serializable_struct]
@@ -99,6 +119,8 @@ impl ModLoaderActions for Ue4ss {
 			return Ok(None);
 		}
 
+		let installed_version = get_installed_version(game);
+
 		let latest_version = match get_version_data().await {
 			Ok(version_data) => Some(version_data.version),
 			Err(error) => {
@@ -112,7 +134,7 @@ impl ModLoaderActions for Ue4ss {
 		};
 
 		Ok(Some(ModLoaderStatus {
-			installed_version: None,
+			installed_version,
 			latest_version,
 		}))
 	}
@@ -140,11 +162,13 @@ impl ModLoaderActions for Ue4ss {
 			game_folder.join("dwmapi.dll"),
 		)?;
 
-		let ue4ss_path = game_mods_folder.join("ue4ss").join("UE4SS.dll");
+		let ue4ss_path = game_mods_folder.join("ue4ss").join("UE4SS");
 		fs::write(
 			game_folder.join("override.txt"),
 			ue4ss_path.to_string_lossy().as_ref(),
 		)?;
+
+		update_installed_manifest(game, version_data.version)?;
 
 		Ok(())
 	}
@@ -168,6 +192,7 @@ impl ModLoaderActions for Ue4ss {
 		let game_data_folder = game.get_installed_mods_folder()?;
 		let mod_folder = game_data_folder
 			.join("ue4ss")
+			.join("UE4SS")
 			.join("Mods")
 			.join(&local_mod.common.id);
 
@@ -175,7 +200,10 @@ impl ModLoaderActions for Ue4ss {
 	}
 
 	fn open_loader_folder_for_game(&self, game: &DbGame) -> Result {
-		let ue4ss_folder = game.get_installed_mods_folder()?.join("ue4ss");
+		let ue4ss_folder = game
+			.get_installed_mods_folder()?
+			.join("ue4ss")
+			.join("UE4SS");
 		crate::paths::open_folder_or_parent(&ue4ss_folder)
 	}
 
@@ -191,6 +219,7 @@ impl ModLoaderActions for Ue4ss {
 		Ok(game
 			.get_installed_mods_folder()?
 			.join("ue4ss")
+			.join("UE4SS")
 			.join(&mod_configs.destination_path))
 	}
 }

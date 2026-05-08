@@ -52,18 +52,13 @@ struct BepInExVersionData {
 }
 
 fn get_installed_version(game: &DbGame) -> Option<String> {
-	let manifest_path = game
-		.get_installed_mod_manifest_path(BepInEx::ID.as_str())
-		.ok()?;
-	mod_manifest::get(&manifest_path).map(|manifest| manifest.version)
+	BepInEx::get_installed_loader_version(game)
 }
 
 fn update_installed_manifest(game: &DbGame, version: String) -> Result {
-	let manifest_path = game.get_installed_mod_manifest_path(BepInEx::ID.as_str())?;
-	fs::create_dir_all(paths::path_parent(&manifest_path)?)?;
-	fs::write(
-		manifest_path,
-		serde_json::to_string_pretty(&mod_manifest::Manifest {
+	BepInEx::update_installed_loader_manifest(
+		game,
+		&mod_manifest::Manifest {
 			title: Some("BepInEx".to_string()),
 			version,
 			runnable: None,
@@ -71,10 +66,8 @@ fn update_installed_manifest(game: &DbGame, version: String) -> Result {
 			engine_version_range: None,
 			unity_backend: game.unity_backend,
 			configs: None,
-		})?,
-	)?;
-
-	Ok(())
+		},
+	)
 }
 
 async fn get_status(game: &DbGame) -> Result<Option<ModLoaderStatus>> {

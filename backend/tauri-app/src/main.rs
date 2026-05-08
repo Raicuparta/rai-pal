@@ -396,7 +396,11 @@ async fn refresh_remote_mods(
 	for mod_loader in mod_loaders.values() {
 		for (mod_id, remote_mod) in mod_loader
 			.get_remote_mods(|error| {
-				handle.emit_error(format!("Failed to get remote mods: {error}"));
+				handle.emit_error(format!(
+					"Failed to get remote mods for mod loader {}: {}",
+					mod_loader.get_data().id,
+					error
+				));
 			})
 			.await
 		{

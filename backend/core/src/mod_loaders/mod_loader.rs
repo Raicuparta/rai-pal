@@ -412,6 +412,24 @@ pub trait ModLoaderStatic {
 			.join(Self::ID.as_str())
 			.join("mods"))
 	}
+
+	fn get_installed_loader_version(game: &DbGame) -> Option<String> {
+		let manifest_path = game
+			.get_installed_mod_manifest_path(Self::ID.as_str())
+			.ok()?;
+		mod_manifest::get(&manifest_path).map(|manifest| manifest.version)
+	}
+
+	fn update_installed_loader_manifest(
+		game: &DbGame,
+		manifest: &mod_manifest::Manifest,
+	) -> Result {
+		let manifest_path = game.get_installed_mod_manifest_path(Self::ID.as_str())?;
+		fs::create_dir_all(paths::path_parent(&manifest_path)?)?;
+		fs::write(manifest_path, serde_json::to_string_pretty(manifest)?)?;
+
+		Ok(())
+	}
 }
 
 pub type Map = HashMap<ModLoaderId, ModLoader>;
