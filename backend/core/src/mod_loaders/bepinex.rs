@@ -9,7 +9,6 @@ use std::{
 };
 
 use rai_pal_proc_macros::serializable_struct;
-use serde::Deserialize;
 use zip::ZipArchive;
 
 use super::mod_loader::ModLoaderStatic;
@@ -30,6 +29,7 @@ use crate::{
 	mod_loaders::{
 		mod_database::ModConfigs,
 		mod_loader::{
+			LoaderDatabase,
 			ModLoaderActions,
 			ModLoaderData,
 			ModLoaderId,
@@ -44,22 +44,7 @@ use crate::{
 	},
 };
 
-const BEPINEX_DB_URL: &str = "https://raicuparta.github.io/rai-pal-db/loader-db/0/bepinex.json";
-
-#[derive(Deserialize)]
-struct BepInExBuild {
-	arch: String,
-	os: String,
-	backend: String,
-	#[serde(rename = "downloadUrl")]
-	download_url: String,
-}
-
-#[derive(Deserialize)]
-struct BepInExEntry {
-	version: String,
-	builds: Vec<BepInExBuild>,
-}
+const BEPINEX_DB_URL: &str = "https://raicuparta.github.io/rai-pal-db/loader-db/1/bepinex.json";
 
 struct BepInExVersionData {
 	version: String,
@@ -126,7 +111,7 @@ async fn get_version_data(
 	unity_backend: UnityBackend,
 	architecture: Architecture,
 ) -> Result<BepInExVersionData> {
-	let entries: Vec<BepInExEntry> = http::CLIENT
+	let database: LoaderDatabase = http::CLIENT
 		.get(BEPINEX_DB_URL)
 		.send()
 		.await?
@@ -138,7 +123,7 @@ async fn get_version_data(
 		UnityBackend::Mono => "5",
 	};
 
-	let backend_str = match unity_backend {
+	let unity_backend_str = match unity_backend {
 		UnityBackend::Il2Cpp => "IL2CPP",
 		UnityBackend::Mono => "Mono",
 	};
@@ -148,24 +133,27 @@ async fn get_version_data(
 		Architecture::X86 => "x86",
 	};
 
-	entries
+	database
+		.releases
 		.iter()
-		.find(|entry| entry.version.starts_with(&format!("{major_version}.")))
-		.and_then(|entry| {
-			entry
+		.find(|release| release.version.starts_with(&format!("{major_version}.")))
+		.and_then(|release| {
+			release
 				.builds
 				.iter()
 				.find(|build| {
-					build.os == "win" && build.backend == backend_str && build.arch == arch_str
+					build.os == "win"
+						&& build.unity_backend.as_deref() == Some(unity_backend_str)
+						&& build.arch.as_deref() == Some(arch_str)
 				})
 				.map(|build| BepInExVersionData {
-					version: entry.version.clone(),
+					version: release.version.clone(),
 					download_url: build.download_url.clone(),
 				})
 		})
 		.ok_or_else(|| {
 			Error::ModInstallInfoInsufficient(
-				format!("bepinex_{backend_str}_{arch_str}"),
+				format!("bepinex_{unity_backend_str}_{arch_str}"),
 				String::new(),
 			)
 		})

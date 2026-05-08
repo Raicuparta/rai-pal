@@ -17,12 +17,14 @@ use rai_pal_proc_macros::{
 	serializable_enum,
 	serializable_struct,
 };
+use serde::Deserialize;
 use zip::ZipArchive;
 
 use super::{
 	bepinex::BepInEx,
 	mod_database,
 	runnable_loader::RunnableLoader,
+	ue4ss::Ue4ss,
 };
 use crate::{
 	files,
@@ -67,11 +69,35 @@ pub struct ModLoaderData {
 	pub engine: Option<EngineBrand>,
 }
 
+#[derive(Deserialize)]
+pub struct LoaderBuild {
+	pub os: String,
+	#[serde(rename = "downloadUrl")]
+	pub download_url: String,
+	#[serde(rename = "unityBackend")]
+	pub unity_backend: Option<String>,
+	pub arch: Option<String>,
+}
+
+#[derive(Deserialize)]
+pub struct LoaderRelease {
+	pub version: String,
+	pub timestamp: u64,
+	pub builds: Vec<LoaderBuild>,
+}
+
+#[derive(Deserialize)]
+pub struct LoaderDatabase {
+	pub id: String,
+	pub releases: Vec<LoaderRelease>,
+}
+
 #[serializable_enum]
 #[serde(rename_all = "lowercase")]
 #[strum(serialize_all = "lowercase", ascii_case_insensitive)]
 pub enum ModLoaderId {
 	BepInEx,
+	Ue4ss,
 	Runnable,
 }
 
@@ -79,6 +105,7 @@ impl ModLoaderId {
 	pub const fn as_str(self) -> &'static str {
 		match self {
 			Self::BepInEx => "bepinex",
+			Self::Ue4ss => "ue4ss",
 			Self::Runnable => "runnable",
 		}
 	}
@@ -119,6 +146,7 @@ pub type RemoteModLoadersMap = HashMap<String, RemoteModLoader>;
 #[derive(Clone)]
 pub enum ModLoader {
 	BepInEx,
+	Ue4ss,
 	RunnableLoader,
 }
 
@@ -416,6 +444,7 @@ pub fn get_map(resources_path: &Path) -> Map {
 	let mut map = Map::new();
 
 	add_entry::<BepInEx>(resources_path, &mut map);
+	add_entry::<Ue4ss>(resources_path, &mut map);
 	add_entry::<RunnableLoader>(resources_path, &mut map);
 
 	map

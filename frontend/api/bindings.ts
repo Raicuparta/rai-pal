@@ -220,7 +220,7 @@ export type ModLoaderData = {
 	engine: EngineBrand | null,
 };
 
-export type ModLoaderId = "bepinex" | "runnable";
+export type ModLoaderId = "bepinex" | "ue4ss" | "runnable";
 
 export type ModLoaderStatus = {
 	installedVersion: string | null,
