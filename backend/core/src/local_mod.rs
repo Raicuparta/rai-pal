@@ -67,6 +67,7 @@ impl LocalMod {
 				engine_version_range: manifest
 					.as_ref()
 					.and_then(|m| m.engine_version_range.clone()),
+				architecture: manifest.as_ref().and_then(|m| m.architecture),
 				unity_backend,
 				loader_id,
 			},

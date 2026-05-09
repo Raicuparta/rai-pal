@@ -8,6 +8,7 @@ use rai_pal_proc_macros::{
 };
 
 use crate::{
+	architecture::Architecture,
 	game_engines::{
 		game_engine::EngineBrand,
 		unity::UnityBackend,
@@ -24,7 +25,7 @@ const URL_BASE: &str = "https://raicuparta.github.io/rai-pal-db/mod-db";
 // This way we prevent old versions of Rai Pal from breaking unless we want them to.
 // So when you need to change the database in a backwards-incompatible way,
 // you would create a new folder in the database repository and change this number to match the folder.
-const DATABASE_VERSION: i32 = 0;
+const DATABASE_VERSION: i32 = 1;
 
 #[serializable_struct]
 pub struct DatabaseEntry {
@@ -37,6 +38,7 @@ pub struct DatabaseEntry {
 	pub engine: Option<EngineBrand>,
 	pub engine_version_range: Option<EngineVersionRange>,
 	pub unity_backend: Option<UnityBackend>,
+	pub architecture: Option<Architecture>,
 	pub github: Option<ModGithubInfo>,
 	pub redownload_id: Option<i32>,
 	pub deprecated: Option<bool>,

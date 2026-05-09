@@ -77,6 +77,7 @@ fn update_installed_manifest(game: &DbGame, version: String) -> Result {
 			runnable: None,
 			engine: Some(EngineBrand::Unreal),
 			engine_version_range: None,
+			architecture: None,
 			unity_backend: None,
 			configs: None,
 		},

@@ -88,6 +88,7 @@ export type CommonModData = {
 	engine: EngineBrand | null,
 	unityBackend: UnityBackend | null,
 	engineVersionRange: EngineVersionRange | null,
+	architecture: Architecture | null,
 	loaderId: ModLoaderId,
 };
 
@@ -192,6 +193,7 @@ export type Manifest = {
 	runnable: RunnableModData | null,
 	engine: EngineBrand | null,
 	engineVersionRange: EngineVersionRange | null,
+	architecture: Architecture | null,
 	unityBackend: UnityBackend | null,
 	configs: ModConfigs | null,
 };

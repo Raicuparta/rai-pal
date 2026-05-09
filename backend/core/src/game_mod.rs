@@ -1,6 +1,7 @@
 use rai_pal_proc_macros::serializable_struct;
 
 use crate::{
+	architecture::Architecture,
 	game_engines::{
 		game_engine::{
 			EngineBrand,
@@ -23,5 +24,6 @@ pub struct CommonModData {
 	pub engine: Option<EngineBrand>,
 	pub unity_backend: Option<UnityBackend>,
 	pub engine_version_range: Option<EngineVersionRange>,
+	pub architecture: Option<Architecture>,
 	pub loader_id: ModLoaderId,
 }

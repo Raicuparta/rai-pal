@@ -306,8 +306,17 @@ export function GameMods({ game }: Props) {
 				!mod.common.unityBackend ||
 				!game.unityBackend ||
 				mod.common.unityBackend === game.unityBackend;
+			const isCompatibleArchitecture =
+				!mod.common.architecture ||
+				!game.architecture ||
+				mod.common.architecture === game.architecture;
 
-			if (!game || !isCompatibleEngine || !isCompatibleUnityBackend) {
+			if (
+				!game ||
+				!isCompatibleEngine ||
+				!isCompatibleUnityBackend ||
+				!isCompatibleArchitecture
+			) {
 				continue;
 			}
 

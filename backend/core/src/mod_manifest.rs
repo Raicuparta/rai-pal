@@ -1,12 +1,22 @@
-use std::{fs, path::Path};
+use std::{
+	fs,
+	path::Path,
+};
 
 use log::error;
 use rai_pal_proc_macros::serializable_struct;
 
 use crate::{
-	game_engines::{game_engine::EngineBrand, unity::UnityBackend},
+	architecture::Architecture,
+	game_engines::{
+		game_engine::EngineBrand,
+		unity::UnityBackend,
+	},
 	game_mod::EngineVersionRange,
-	mod_loaders::mod_database::{ModConfigs, RunnableModData},
+	mod_loaders::mod_database::{
+		ModConfigs,
+		RunnableModData,
+	},
 };
 
 #[serializable_struct]
@@ -16,6 +26,7 @@ pub struct Manifest {
 	pub runnable: Option<RunnableModData>,
 	pub engine: Option<EngineBrand>,
 	pub engine_version_range: Option<EngineVersionRange>,
+	pub architecture: Option<Architecture>,
 	pub unity_backend: Option<UnityBackend>,
 	pub configs: Option<ModConfigs>,
 }
