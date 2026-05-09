@@ -719,12 +719,6 @@ fn main() {
 		println!("Panic: {info}");
 
 		show_panic(&info.to_string());
-
-		rfd::MessageDialog::new()
-			.set_title("Rai Pal is panicking rn!")
-			.set_description(info.to_string())
-			.set_buttons(rfd::MessageButtons::Ok)
-			.show();
 	}));
 
 	let builder = Builder::<tauri::Wry>::new()
