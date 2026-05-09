@@ -1,6 +1,9 @@
-use std::path::{
-	Path,
-	PathBuf,
+use std::{
+	fs,
+	path::{
+		Path,
+		PathBuf,
+	},
 };
 
 use rai_pal_proc_macros::serializable_struct;
@@ -12,6 +15,7 @@ use super::mod_loader::{
 	ModLoaderStatic,
 };
 use crate::{
+	files::copy_dir_all,
 	game::DbGame,
 	game_engines::game_engine::EngineBrand,
 	local_mod::{
@@ -19,6 +23,7 @@ use crate::{
 		ModKind,
 	},
 	mod_loaders::mod_database::ModConfigs,
+	paths,
 	result::{
 		Error,
 		Result,
@@ -54,6 +59,30 @@ impl ModLoaderActions for Ue4ss {
 
 	fn get_wine_dll_overrides(&self, _game: &DbGame) -> Vec<String> {
 		vec!["dwmapi".to_string()]
+	}
+
+	async fn install_loader(&self, game: &DbGame, local_mod: &LocalMod) -> Result {
+		let installed_mods_folder = game.get_installed_mods_folder()?;
+
+		copy_dir_all(&local_mod.data.path, &installed_mods_folder)?;
+
+		let exe_path = game.try_get_exe_path()?;
+
+		let game_folder = paths::path_parent(exe_path)?;
+		fs::create_dir_all(game_folder)?;
+
+		fs::copy(
+			local_mod.data.path.join("dwmapi.dll"),
+			game_folder.join("dwmapi.dll"),
+		)?;
+
+		let ue4ss_path = installed_mods_folder.join("ue4ss").join("UE4SS.dll");
+		fs::write(
+			game_folder.join("override.txt"),
+			ue4ss_path.to_string_lossy().as_ref(),
+		)?;
+
+		Ok(())
 	}
 
 	async fn install_mod_inner(&self, game: &DbGame, _local_mod: &LocalMod) -> Result {
