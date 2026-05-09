@@ -1,7 +1,6 @@
 use std::{
 	collections::HashMap,
 	fs,
-	io::Cursor,
 	path::{
 		Path,
 		PathBuf,
@@ -9,11 +8,9 @@ use std::{
 };
 
 use rai_pal_proc_macros::serializable_struct;
-use zip::ZipArchive;
 
 use super::mod_loader::ModLoaderStatic;
 use crate::{
-	architecture::Architecture,
 	files::copy_dir_all,
 	game::DbGame,
 	game_engines::{
@@ -21,7 +18,6 @@ use crate::{
 		unity::UnityBackend,
 	},
 	game_mod::CommonModData,
-	http,
 	local_mod::{
 		LocalMod,
 		ModKind,
@@ -29,130 +25,17 @@ use crate::{
 	mod_loaders::{
 		mod_database::ModConfigs,
 		mod_loader::{
-			LoaderDatabase,
 			ModLoaderActions,
 			ModLoaderData,
 			ModLoaderId,
-			ModLoaderStatus,
 		},
 	},
-	mod_manifest,
 	paths,
 	result::{
 		Error,
 		Result,
 	},
 };
-
-const BEPINEX_DB_URL: &str = "https://raicuparta.github.io/rai-pal-db/loader-db/1/bepinex.json";
-
-struct BepInExVersionData {
-	version: String,
-	download_url: String,
-}
-
-fn get_installed_version(game: &DbGame) -> Option<String> {
-	BepInEx::get_installed_loader_version(game)
-}
-
-fn update_installed_manifest(game: &DbGame, version: String) -> Result {
-	BepInEx::update_installed_loader_manifest(
-		game,
-		&mod_manifest::Manifest {
-			title: Some("BepInEx".to_string()),
-			is_loader: Some(true),
-			version,
-			runnable: None,
-			engine: Some(EngineBrand::Unity),
-			engine_version_range: None,
-			architecture: game.architecture,
-			unity_backend: game.unity_backend,
-			configs: None,
-		},
-	)
-}
-
-async fn get_status(game: &DbGame) -> Result<Option<ModLoaderStatus>> {
-	if game.exe_path.is_none() || game.engine_brand != Some(EngineBrand::Unity) {
-		return Ok(None);
-	}
-
-	let installed_version = get_installed_version(game);
-
-	let latest_version = match (game.unity_backend, game.architecture) {
-		(Some(unity_backend), Some(architecture)) => {
-			match get_version_data(unity_backend, architecture).await {
-				Ok(version_data) => Some(version_data.version),
-				Err(error) => {
-					log::error!(
-						"Failed to get latest BepInEx version for game '{}': {}",
-						game.display_title,
-						error
-					);
-					None
-				}
-			}
-		}
-		_ => None,
-	};
-
-	Ok(Some(ModLoaderStatus {
-		installed_version,
-		latest_version,
-	}))
-}
-
-async fn get_version_data(
-	unity_backend: UnityBackend,
-	architecture: Architecture,
-) -> Result<BepInExVersionData> {
-	let database: LoaderDatabase = http::CLIENT
-		.get(BEPINEX_DB_URL)
-		.send()
-		.await?
-		.json()
-		.await?;
-
-	let major_version = match unity_backend {
-		UnityBackend::Il2Cpp => "6",
-		UnityBackend::Mono => "5",
-	};
-
-	let unity_backend_str = match unity_backend {
-		UnityBackend::Il2Cpp => "IL2CPP",
-		UnityBackend::Mono => "Mono",
-	};
-
-	let arch_str = match architecture {
-		Architecture::X64 => "x64",
-		Architecture::X86 => "x86",
-	};
-
-	database
-		.releases
-		.iter()
-		.find(|release| release.version.starts_with(&format!("{major_version}.")))
-		.and_then(|release| {
-			release
-				.builds
-				.iter()
-				.find(|build| {
-					build.os == "win"
-						&& build.unity_backend.as_deref() == Some(unity_backend_str)
-						&& build.arch.as_deref() == Some(arch_str)
-				})
-				.map(|build| BepInExVersionData {
-					version: release.version.clone(),
-					download_url: build.download_url.clone(),
-				})
-		})
-		.ok_or_else(|| {
-			Error::ModInstallInfoInsufficient(
-				format!("bepinex_{unity_backend_str}_{arch_str}"),
-				String::new(),
-			)
-		})
-}
 
 #[serializable_struct]
 pub struct BepInEx {
@@ -185,11 +68,9 @@ impl ModLoaderActions for BepInEx {
 		vec!["winhttp".to_string()]
 	}
 
-	async fn get_status(&self, game: &DbGame) -> Result<Option<ModLoaderStatus>> {
-		get_status(game).await
-	}
+	async fn install_loader(&self, game: &DbGame, local_mod: &LocalMod) -> Result {
+		copy_dir_all(&local_mod.data.path, game.get_installed_mods_folder()?)?;
 
-	async fn install(&self, game: &DbGame) -> Result {
 		let exe_path = game.try_get_exe_path()?;
 		let unity_backend = game.unity_backend.ok_or_else(|| {
 			Error::ModInstallInfoInsufficient(
@@ -197,27 +78,9 @@ impl ModLoaderActions for BepInEx {
 				game.display_title.clone(),
 			)
 		})?;
-		let architecture = game.architecture.ok_or_else(|| {
-			Error::ModInstallInfoInsufficient(
-				"architecture".to_string(),
-				game.display_title.clone(),
-			)
-		})?;
 
-		let unity_backend_path = &self.data.path.join(unity_backend.to_string());
-
-		let version_data = get_version_data(unity_backend, architecture).await?;
-		let zip_bytes = http::CLIENT
-			.get(&version_data.download_url)
-			.send()
-			.await?
-			.bytes()
-			.await?;
-
+		let unity_backend_path = self.data.path.join(unity_backend.to_string());
 		let game_mods_folder = game.get_installed_mods_folder()?;
-		fs::create_dir_all(&game_mods_folder)?;
-		ZipArchive::new(Cursor::new(zip_bytes))?.extract(&game_mods_folder)?;
-
 		let game_folder = paths::path_parent(exe_path)?;
 
 		fs::copy(
@@ -225,16 +88,14 @@ impl ModLoaderActions for BepInEx {
 			game_folder.join("winhttp.dll"),
 		)?;
 
-		let config_origin_path = &self.data.path.join("config").join(if is_legacy(game) {
+		let config_origin_path = self.data.path.join("config").join(if is_legacy(game) {
 			"BepInEx-legacy.cfg"
 		} else {
 			"BepInEx.cfg"
 		});
 
 		let config_target_folder = game_mods_folder.join("BepInEx").join("config");
-
 		fs::create_dir_all(&config_target_folder)?;
-
 		fs::copy(config_origin_path, config_target_folder.join("BepInEx.cfg"))?;
 
 		let doorstop_config = fs::read_to_string(unity_backend_path.join("doorstop_config.ini"))?;
@@ -247,17 +108,10 @@ impl ModLoaderActions for BepInEx {
 			),
 		)?;
 
-		update_installed_manifest(game, version_data.version)?;
-
 		Ok(())
 	}
 
 	async fn install_mod_inner(&self, game: &DbGame, local_mod: &LocalMod) -> Result {
-		if local_mod.common.is_loader.unwrap_or_default() {
-			copy_dir_all(&local_mod.data.path, game.get_installed_mods_folder()?)?;
-			return Ok(());
-		}
-
 		let bepinex_folder = game.get_installed_mods_folder()?.join("BepInEx");
 
 		let mod_plugin_path = local_mod.data.path.join("plugins");

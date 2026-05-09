@@ -46,10 +46,6 @@ use crate::{
 		self,
 		open_folder_or_parent,
 	},
-	providers::provider::{
-		self,
-		ProviderActions,
-	},
 	remote_config,
 	remote_mod::{
 		RemoteMod,
@@ -152,8 +148,10 @@ pub enum ModLoader {
 
 #[enum_dispatch(ModLoader)]
 pub trait ModLoaderActions {
-	async fn install(&self, game: &DbGame) -> Result;
 	async fn install_mod_inner(&self, game: &DbGame, local_mod: &LocalMod) -> Result;
+	async fn install_loader(&self, game: &DbGame, local_mod: &LocalMod) -> Result {
+		self.install_mod_inner(game, local_mod).await
+	}
 	async fn uninstall_mod(&self, game: &DbGame, local_mod: &LocalMod) -> Result;
 	async fn run_without_game(&self, local_mod: &LocalMod) -> Result;
 	fn get_config_path(&self, game: &DbGame, mod_configs: &ModConfigs) -> Result<PathBuf>;
@@ -164,9 +162,6 @@ pub trait ModLoaderActions {
 	fn get_wine_dll_overrides(&self, _game: &DbGame) -> Vec<String> {
 		Vec::new()
 	}
-	async fn get_status(&self, _game: &DbGame) -> Result<Option<ModLoaderStatus>> {
-		Ok(None)
-	}
 	fn open_loader_folder_for_game(&self, game: &DbGame) -> Result {
 		game.open_mods_folder()
 	}
@@ -176,31 +171,13 @@ pub trait ModLoaderActions {
 	}
 
 	async fn install_mod(&self, game: &DbGame, local_mod: &LocalMod) -> Result {
-		self.install_mod_inner(game, local_mod).await?;
+		if local_mod.common.is_loader.unwrap_or_default() {
+			self.install_loader(game, local_mod).await?;
+		} else {
+			self.install_mod_inner(game, local_mod).await?;
+		}
 
 		self.update_installed_mod_manifest(local_mod, game)?;
-
-		Ok(())
-	}
-
-	async fn install_loader(&self, game: &DbGame, force_reinstall: bool) -> Result {
-		let should_install = force_reinstall
-			|| self
-				.get_status(game)
-				.await?
-				.as_ref()
-				.and_then(|status| status.installed_version.as_ref())
-				.is_none();
-
-		if should_install {
-			let provider = provider::get_provider(game.provider_id)
-				.ok_or_else(|| Error::InvalidProviderId(game.provider_id.to_string()))??;
-			let dll_overrides = self.get_wine_dll_overrides(game);
-
-			provider.set_wine_dll_overrides(game, &dll_overrides)?;
-
-			self.install(game).await?;
-		}
 
 		Ok(())
 	}

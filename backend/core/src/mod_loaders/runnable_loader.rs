@@ -158,10 +158,6 @@ impl ModLoaderActions for RunnableLoader {
 		&self.data
 	}
 
-	async fn install(&self, _game: &DbGame) -> Result {
-		todo!()
-	}
-
 	async fn install_mod_inner(&self, game: &DbGame, local_mod: &LocalMod) -> Result {
 		let mod_folder = self.get_mod_path(&local_mod.common)?;
 

@@ -23,9 +23,6 @@ export const commands = {
 } | null) => __TAURI_INVOKE<GameIdsResponse>("get_game_ids", { query }),
 	getGame: (providerId: ProviderId, gameId: string) => __TAURI_INVOKE<DbGame>("get_game", { providerId, gameId }),
 	getInstalledModVersions: (providerId: ProviderId, gameId: string) => __TAURI_INVOKE<{ [key in string]: string }>("get_installed_mod_versions", { providerId, gameId }),
-	getModLoaderStatuses: (providerId: ProviderId, gameId: string) => __TAURI_INVOKE<Partial<{ [key in ModLoaderId]: ModLoaderStatus }>>("get_mod_loader_statuses", { providerId, gameId }),
-	installModLoader: (providerId: ProviderId, gameId: string, modLoaderId: ModLoaderId, forceReinstall: boolean) => __TAURI_INVOKE<null>("install_mod_loader", { providerId, gameId, modLoaderId, forceReinstall }),
-	openGameModLoaderFolder: (providerId: ProviderId, gameId: string, modLoaderId: ModLoaderId) => __TAURI_INVOKE<null>("open_game_mod_loader_folder", { providerId, gameId, modLoaderId }),
 	getLocalMods: () => __TAURI_INVOKE<{ [key in string]: LocalMod }>("get_local_mods"),
 	getRemoteMods: () => __TAURI_INVOKE<{ [key in string]: RemoteMod }>("get_remote_mods"),
 	installMod: (providerId: ProviderId, gameId: string, modId: string) => __TAURI_INVOKE<null>("install_mod", { providerId, gameId, modId }),
@@ -225,11 +222,6 @@ export type ModLoaderData = {
 };
 
 export type ModLoaderId = "bepinex" | "ue4ss" | "runnable";
-
-export type ModLoaderStatus = {
-	installedVersion: string | null,
-	latestVersion: string | null,
-};
 
 export type PathData = string;
 

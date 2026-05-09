@@ -646,70 +646,6 @@ async fn get_installed_mod_versions(
 
 #[tauri::command]
 #[specta::specta]
-async fn get_mod_loader_statuses(
-	provider_id: ProviderId,
-	game_id: String,
-	app_handle: AppHandle,
-) -> Result<HashMap<ModLoaderId, mod_loader::ModLoaderStatus>> {
-	let state = app_handle.app_state();
-	let game = app_handle
-		.app_state()
-		.database
-		.get_game(&provider_id, &game_id)?;
-	let mod_loaders = state.mod_loaders.read_state()?.clone();
-
-	let mut statuses = HashMap::new();
-
-	for (loader_id, mod_loader) in &mod_loaders {
-		if let Some(status) = mod_loader.get_status(&game).await? {
-			statuses.insert(*loader_id, status);
-		}
-	}
-
-	Ok(statuses)
-}
-
-#[tauri::command]
-#[specta::specta]
-async fn install_mod_loader(
-	provider_id: ProviderId,
-	game_id: String,
-	mod_loader_id: ModLoaderId,
-	force_reinstall: bool,
-	app_handle: AppHandle,
-) -> Result {
-	let state = app_handle.app_state();
-	let game = state.database.get_game(&provider_id, &game_id)?;
-	let mod_loaders = state.mod_loaders.read_state()?.clone();
-	let mod_loader = mod_loaders.try_get(&mod_loader_id)?;
-
-	mod_loader.install_loader(&game, force_reinstall).await?;
-
-	app_handle.emit_safe(events::RefreshGame(provider_id, game_id));
-
-	Ok(())
-}
-
-#[tauri::command]
-#[specta::specta]
-async fn open_game_mod_loader_folder(
-	provider_id: ProviderId,
-	game_id: String,
-	mod_loader_id: ModLoaderId,
-	app_handle: AppHandle,
-) -> Result {
-	let state = app_handle.app_state();
-	let game = state.database.get_game(&provider_id, &game_id)?;
-	let mod_loaders = state.mod_loaders.read_state()?.clone();
-	let mod_loader = mod_loaders.try_get(&mod_loader_id)?;
-
-	mod_loader.open_loader_folder_for_game(&game)?;
-
-	Ok(())
-}
-
-#[tauri::command]
-#[specta::specta]
 async fn get_remote_configs(
 	provider_id: ProviderId,
 	game_id: String,
@@ -806,9 +742,6 @@ fn main() {
 			get_game_ids,
 			get_game,
 			get_installed_mod_versions,
-			get_mod_loader_statuses,
-			install_mod_loader,
-			open_game_mod_loader_folder,
 			get_local_mods,
 			get_remote_mods,
 			install_mod,
