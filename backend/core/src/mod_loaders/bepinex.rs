@@ -1,5 +1,4 @@
 use std::{
-	collections::HashMap,
 	fs,
 	path::{
 		Path,
@@ -13,11 +12,7 @@ use super::mod_loader::ModLoaderStatic;
 use crate::{
 	files::copy_dir_all,
 	game::DbGame,
-	game_engines::{
-		game_engine::EngineBrand,
-		unity::UnityBackend,
-	},
-	game_mod::CommonModData,
+	game_engines::game_engine::EngineBrand,
 	local_mod::{
 		LocalMod,
 		ModKind,
@@ -174,29 +169,6 @@ impl ModLoaderActions for BepInEx {
 		paths::open_folder_or_parent(&bepinex_folder)
 	}
 
-	fn get_mod_path(&self, mod_data: &CommonModData) -> Result<PathBuf> {
-		mod_data.unity_backend.map_or_else(
-			|| Err(Error::UnityBackendUnknown(mod_data.id.clone())),
-			|unity_backend| {
-				Ok(Self::get_installed_mods_path()?
-					.join(unity_backend.to_string())
-					.join(&mod_data.id))
-			},
-		)
-	}
-
-	fn get_local_mods(&self) -> Result<HashMap<String, LocalMod>> {
-		let installed_mods_path = Self::get_installed_mods_path()?;
-
-		let local_mods = {
-			let mut local_mods = find_mods(&installed_mods_path, UnityBackend::Il2Cpp);
-			local_mods.extend(find_mods(&installed_mods_path, UnityBackend::Mono));
-			local_mods
-		};
-
-		Ok(local_mods)
-	}
-
 	fn get_config_path(&self, game: &DbGame, mod_configs: &ModConfigs) -> Result<PathBuf> {
 		let destination_path = game
 			.get_installed_mods_folder()?
@@ -211,26 +183,6 @@ fn is_legacy(game: &DbGame) -> bool {
 	game.engine_version_major.is_some_and(|major| {
 		major < 5 || (major == 5 && game.engine_version_minor.is_some_and(|minor| minor < 5))
 	})
-}
-
-fn find_mods(installed_mods_path: &Path, unity_backend: UnityBackend) -> HashMap<String, LocalMod> {
-	let mods_folder_path = installed_mods_path.join(unity_backend.to_string());
-
-	paths::glob_path(&mods_folder_path.join("*"))
-		.iter()
-		.filter_map(|mod_path| {
-			if let Ok(local_mod) = LocalMod::new(
-				BepInEx::ID,
-				mod_path,
-				Some(EngineBrand::Unity),
-				Some(unity_backend),
-			) {
-				Some((local_mod.common.id.clone(), local_mod))
-			} else {
-				None
-			}
-		})
-		.collect()
 }
 
 #[cfg(target_os = "linux")]

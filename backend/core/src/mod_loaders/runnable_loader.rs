@@ -20,17 +20,13 @@ use super::mod_loader::{
 };
 use crate::{
 	game::DbGame,
-	game_mod::CommonModData,
 	local_mod::{
-		self,
 		LocalMod,
 		ModKind,
 	},
 	mod_loaders::mod_database::ModConfigs,
-	mod_manifest,
 	paths::{
 		self,
-		glob_path,
 	},
 	providers::provider_command::{
 		ProviderCommand,
@@ -159,7 +155,7 @@ impl ModLoaderActions for RunnableLoader {
 	}
 
 	async fn install_mod_inner(&self, game: &DbGame, local_mod: &LocalMod) -> Result {
-		let mod_folder = self.get_mod_path(&local_mod.common)?;
+		let mod_folder = local_mod.common.get_path()?;
 
 		let runnable = local_mod
 			.data
@@ -189,7 +185,7 @@ impl ModLoaderActions for RunnableLoader {
 	}
 
 	async fn run_without_game(&self, local_mod: &LocalMod) -> Result {
-		let mod_folder = self.get_mod_path(&local_mod.common)?;
+		let mod_folder = local_mod.common.get_path()?;
 
 		let runnable = local_mod
 			.data
@@ -206,44 +202,7 @@ impl ModLoaderActions for RunnableLoader {
 	}
 
 	fn open_installed_mod_folder(&self, _game: &DbGame, local_mod: &LocalMod) -> Result {
-		let mod_folder = self.get_mod_path(&local_mod.common)?;
-
-		paths::open_folder_or_parent(&mod_folder)
-	}
-
-	fn get_mod_path(&self, mod_data: &CommonModData) -> Result<PathBuf> {
-		Ok(Self::get_installed_mods_path()?.join(&mod_data.id))
-	}
-
-	fn get_local_mods(&self) -> Result<local_mod::Map> {
-		let mods_path = Self::get_installed_mods_path()?;
-
-		let mut mod_map = local_mod::Map::default();
-
-		for manifest_path in glob_path(&mods_path.join("*").join(mod_manifest::Manifest::FILE_NAME))
-		{
-			if let Some(manifest) = mod_manifest::get(&manifest_path) {
-				match LocalMod::new(
-					Self::ID,
-					manifest_path.parent().unwrap_or(&manifest_path),
-					manifest.engine,
-					manifest.unity_backend,
-				) {
-					Ok(local_mod) => {
-						mod_map.insert(local_mod.common.id.clone(), local_mod);
-					}
-					Err(error) => {
-						error!(
-							"Failed to create local runnable mod from manifest in {}. Error: {}",
-							manifest_path.display(),
-							error
-						);
-					}
-				}
-			}
-		}
-
-		Ok(mod_map)
+		paths::open_folder_or_parent(&local_mod.common.get_path()?)
 	}
 
 	fn get_config_path(&self, game: &DbGame, mod_configs: &ModConfigs) -> Result<PathBuf> {

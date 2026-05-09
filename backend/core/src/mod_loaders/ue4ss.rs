@@ -1,9 +1,6 @@
-use std::{
-	collections::HashMap,
-	path::{
-		Path,
-		PathBuf,
-	},
+use std::path::{
+	Path,
+	PathBuf,
 };
 
 use rai_pal_proc_macros::serializable_struct;
@@ -17,7 +14,6 @@ use super::mod_loader::{
 use crate::{
 	game::DbGame,
 	game_engines::game_engine::EngineBrand,
-	game_mod::CommonModData,
 	local_mod::{
 		LocalMod,
 		ModKind,
@@ -92,14 +88,6 @@ impl ModLoaderActions for Ue4ss {
 			.join("ue4ss")
 			.join("UE4SS");
 		crate::paths::open_folder_or_parent(&ue4ss_folder)
-	}
-
-	fn get_mod_path(&self, mod_data: &CommonModData) -> Result<PathBuf> {
-		Ok(Self::get_installed_mods_path()?.join(&mod_data.id))
-	}
-
-	fn get_local_mods(&self) -> Result<HashMap<String, LocalMod>> {
-		Ok(HashMap::new())
 	}
 
 	fn get_config_path(&self, game: &DbGame, mod_configs: &ModConfigs) -> Result<PathBuf> {

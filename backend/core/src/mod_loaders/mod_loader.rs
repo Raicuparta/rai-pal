@@ -157,8 +157,6 @@ pub trait ModLoaderActions {
 	fn get_config_path(&self, game: &DbGame, mod_configs: &ModConfigs) -> Result<PathBuf>;
 	fn open_installed_mod_folder(&self, game: &DbGame, local_mod: &LocalMod) -> Result;
 	fn get_data(&self) -> &ModLoaderData;
-	fn get_mod_path(&self, mod_data: &CommonModData) -> Result<PathBuf>;
-	fn get_local_mods(&self) -> Result<HashMap<String, LocalMod>>;
 	fn get_wine_dll_overrides(&self, _game: &DbGame) -> Vec<String> {
 		Vec::new()
 	}
@@ -168,6 +166,27 @@ pub trait ModLoaderActions {
 
 	fn open_folder(&self) -> Result {
 		open_folder_or_parent(&self.get_data().path)
+	}
+
+	fn get_local_mods(&self) -> Result<HashMap<String, LocalMod>> {
+		let local_mods_path = self.get_local_mods_path()?;
+
+		Ok(
+			paths::glob_path(&local_mods_path.join("*/rai-pal-manifest.json"))
+				.iter()
+				.filter_map(|mod_path| {
+					let local_mod =
+						LocalMod::new(self.get_data().id, mod_path.parent()?, None, None).ok(); // TODO don't swalloow error.
+					local_mod.map(|m| (m.common.id.clone(), m))
+				})
+				.collect(),
+		)
+	}
+
+	fn get_local_mods_path(&self) -> Result<PathBuf> {
+		Ok(paths::installed_mods_path()?
+			.join(self.get_data().id.as_str())
+			.join("mods"))
 	}
 
 	async fn install_mod(&self, game: &DbGame, local_mod: &LocalMod) -> Result {
@@ -269,7 +288,7 @@ pub trait ModLoaderActions {
 
 	async fn download_mod(&self, remote_mod: &RemoteMod) -> Result {
 		if let Some(latest_version) = &remote_mod.data.latest_version {
-			let target_path = self.get_mod_path(&remote_mod.common)?;
+			let target_path = remote_mod.common.get_path()?;
 			let mod_loader_data = self.get_data();
 			let mod_id = &remote_mod.common.id;
 			let downloads_path = paths::installed_mods_path()?
@@ -318,7 +337,7 @@ pub trait ModLoaderActions {
 	}
 
 	fn delete_mod(&self, local_mod: &LocalMod) -> Result {
-		let mod_path = self.get_mod_path(&local_mod.common)?;
+		let mod_path = local_mod.common.get_path()?;
 
 		if mod_path.exists() {
 			fs::remove_dir_all(&mod_path)?;
@@ -389,30 +408,6 @@ pub trait ModLoaderStatic {
 	fn new(resources_path: &Path) -> Result<Self>
 	where
 		Self: Sized;
-
-	fn get_installed_mods_path() -> Result<PathBuf> {
-		Ok(paths::installed_mods_path()?
-			.join(Self::ID.as_str())
-			.join("mods"))
-	}
-
-	fn get_installed_loader_version(game: &DbGame) -> Option<String> {
-		let manifest_path = game
-			.get_installed_mod_manifest_path(Self::ID.as_str())
-			.ok()?;
-		mod_manifest::get(&manifest_path).map(|manifest| manifest.version)
-	}
-
-	fn update_installed_loader_manifest(
-		game: &DbGame,
-		manifest: &mod_manifest::Manifest,
-	) -> Result {
-		let manifest_path = game.get_installed_mod_manifest_path(Self::ID.as_str())?;
-		fs::create_dir_all(paths::path_parent(&manifest_path)?)?;
-		fs::write(manifest_path, serde_json::to_string_pretty(manifest)?)?;
-
-		Ok(())
-	}
 }
 
 pub type Map = HashMap<ModLoaderId, ModLoader>;
