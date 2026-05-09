@@ -152,16 +152,13 @@ pub trait ModLoaderActions {
 	async fn install_loader(&self, game: &DbGame, local_mod: &LocalMod) -> Result {
 		self.install_mod_inner(game, local_mod).await
 	}
-	async fn uninstall_mod(&self, game: &DbGame, local_mod: &LocalMod) -> Result;
+	async fn uninstall_mod_inner(&self, game: &DbGame, local_mod: &LocalMod) -> Result;
 	async fn run_without_game(&self, local_mod: &LocalMod) -> Result;
 	fn get_config_path(&self, game: &DbGame, mod_configs: &ModConfigs) -> Result<PathBuf>;
 	fn open_installed_mod_folder(&self, game: &DbGame, local_mod: &LocalMod) -> Result;
 	fn get_data(&self) -> &ModLoaderData;
 	fn get_wine_dll_overrides(&self, _game: &DbGame) -> Vec<String> {
 		Vec::new()
-	}
-	fn open_loader_folder_for_game(&self, game: &DbGame) -> Result {
-		game.open_mods_folder()
 	}
 
 	fn open_folder(&self) -> Result {
@@ -197,6 +194,25 @@ pub trait ModLoaderActions {
 		}
 
 		self.update_installed_mod_manifest(local_mod, game)?;
+
+		Ok(())
+	}
+
+	async fn uninstall_loader(&self, game: &DbGame, local_mod: &LocalMod) -> Result {
+		panic!("Not implemented");
+	}
+
+	async fn uninstall_mod(&self, game: &DbGame, local_mod: &LocalMod) -> Result {
+		if local_mod.common.is_loader.unwrap_or_default() {
+			self.uninstall_loader(game, local_mod).await?;
+		} else {
+			self.uninstall_mod_inner(game, local_mod).await?;
+		}
+
+		let manifest_path = game.get_installed_mod_manifest_path(&local_mod.common.id)?;
+		if manifest_path.is_file() {
+			fs::remove_file(manifest_path)?;
+		}
 
 		Ok(())
 	}

@@ -92,7 +92,7 @@ impl ModLoaderActions for Ue4ss {
 		))
 	}
 
-	async fn uninstall_mod(&self, _game: &DbGame, _local_mod: &LocalMod) -> Result {
+	async fn uninstall_mod_inner(&self, _game: &DbGame, _local_mod: &LocalMod) -> Result {
 		Ok(())
 	}
 
@@ -109,14 +109,6 @@ impl ModLoaderActions for Ue4ss {
 			.join(&local_mod.common.id);
 
 		crate::paths::open_folder_or_parent(&mod_folder)
-	}
-
-	fn open_loader_folder_for_game(&self, game: &DbGame) -> Result {
-		let ue4ss_folder = game
-			.get_installed_mods_folder()?
-			.join("ue4ss")
-			.join("UE4SS");
-		crate::paths::open_folder_or_parent(&ue4ss_folder)
 	}
 
 	fn get_config_path(&self, game: &DbGame, mod_configs: &ModConfigs) -> Result<PathBuf> {

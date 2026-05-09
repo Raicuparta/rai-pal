@@ -243,7 +243,7 @@ async fn install_mod(
 	let mod_loader = mod_loaders.try_get(&local_mod.common.loader_id)?;
 
 	// Uninstall mod if it already exists, in case there are conflicting leftover files when updating.
-	mod_loader.uninstall_mod(&game, &local_mod).await?;
+	mod_loader.uninstall_mod_inner(&game, &local_mod).await?;
 
 	mod_loader.install_mod(&game, &local_mod).await?;
 
@@ -342,7 +342,7 @@ async fn uninstall_mod(
 	let mod_loader = mod_loaders.try_get(&local_mod.common.loader_id)?;
 
 	// Uninstall mod if it already exists, in case there are conflicting leftover files when updating.
-	mod_loader.uninstall_mod(&game, &local_mod).await?;
+	mod_loader.uninstall_mod_inner(&game, &local_mod).await?;
 
 	handle.emit_safe(events::RefreshGame(provider_id, game_id));
 

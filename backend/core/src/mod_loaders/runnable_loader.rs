@@ -176,7 +176,7 @@ impl ModLoaderActions for RunnableLoader {
 		Ok(())
 	}
 
-	async fn uninstall_mod(&self, _game: &DbGame, _local_mod: &LocalMod) -> Result {
+	async fn uninstall_mod_inner(&self, _game: &DbGame, _local_mod: &LocalMod) -> Result {
 		// There's nothing to uninstall for runnables.
 
 		Ok(())

@@ -128,7 +128,7 @@ impl ModLoaderActions for BepInEx {
 		Ok(())
 	}
 
-	async fn uninstall_mod(&self, game: &DbGame, local_mod: &LocalMod) -> Result {
+	async fn uninstall_mod_inner(&self, game: &DbGame, local_mod: &LocalMod) -> Result {
 		let installed_mods_folder = game.get_installed_mods_folder()?;
 		let bepinex_folder = installed_mods_folder.join("BepInEx");
 
@@ -140,11 +140,6 @@ impl ModLoaderActions for BepInEx {
 		let patchers_folder = bepinex_folder.join("patchers").join(&local_mod.common.id);
 		if patchers_folder.is_dir() {
 			fs::remove_dir_all(patchers_folder)?;
-		}
-
-		let manifest_path = game.get_installed_mod_manifest_path(&local_mod.common.id)?;
-		if manifest_path.is_file() {
-			fs::remove_file(manifest_path)?;
 		}
 
 		Ok(())
@@ -162,11 +157,6 @@ impl ModLoaderActions for BepInEx {
 			.join(&local_mod.common.id);
 
 		paths::open_folder_or_parent(&plugin_folder)
-	}
-
-	fn open_loader_folder_for_game(&self, game: &DbGame) -> Result {
-		let bepinex_folder = game.get_installed_mods_folder()?.join("BepInEx");
-		paths::open_folder_or_parent(&bepinex_folder)
 	}
 
 	fn get_config_path(&self, game: &DbGame, mod_configs: &ModConfigs) -> Result<PathBuf> {
