@@ -155,8 +155,6 @@ impl ModLoaderActions for RunnableLoader {
 	}
 
 	async fn install_mod_inner(&self, game: &DbGame, local_mod: &LocalMod) -> Result {
-		let mod_folder = local_mod.common.get_path()?;
-
 		let runnable = local_mod
 			.data
 			.manifest
@@ -170,8 +168,8 @@ impl ModLoaderActions for RunnableLoader {
 			.map(|arg| replace_parameters(arg, game))
 			.collect();
 
-		Command::new(mod_folder.join(&runnable.path))
-			.current_dir(mod_folder)
+		Command::new(local_mod.data.path.join(&runnable.path))
+			.current_dir(&local_mod.data.path)
 			.args(&args)
 			.spawn()?;
 
@@ -185,8 +183,6 @@ impl ModLoaderActions for RunnableLoader {
 	}
 
 	async fn run_without_game(&self, local_mod: &LocalMod) -> Result {
-		let mod_folder = local_mod.common.get_path()?;
-
 		let runnable = local_mod
 			.data
 			.manifest
@@ -194,15 +190,15 @@ impl ModLoaderActions for RunnableLoader {
 			.and_then(|manifest| manifest.runnable.as_ref())
 			.ok_or_else(|| Error::RunnableManifestNotFound(local_mod.common.id.clone()))?;
 
-		Command::new(mod_folder.join(&runnable.path))
-			.current_dir(mod_folder)
+		Command::new(local_mod.data.path.join(&runnable.path))
+			.current_dir(&local_mod.data.path)
 			.spawn()?;
 
 		Ok(())
 	}
 
 	fn open_installed_mod_folder(&self, _game: &DbGame, local_mod: &LocalMod) -> Result {
-		paths::open_folder_or_parent(&local_mod.common.get_path()?)
+		paths::open_folder_or_parent(&local_mod.data.path)
 	}
 
 	fn get_config_path(&self, game: &DbGame, mod_configs: &ModConfigs) -> Result<PathBuf> {

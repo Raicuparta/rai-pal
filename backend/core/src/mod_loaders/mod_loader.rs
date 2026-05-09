@@ -288,7 +288,7 @@ pub trait ModLoaderActions {
 
 	async fn download_mod(&self, remote_mod: &RemoteMod) -> Result {
 		if let Some(latest_version) = &remote_mod.data.latest_version {
-			let target_path = remote_mod.common.get_path()?;
+			let target_path = self.get_local_mods_path()?.join(&remote_mod.common.id);
 			let mod_loader_data = self.get_data();
 			let mod_id = &remote_mod.common.id;
 			let downloads_path = paths::installed_mods_path()?
@@ -337,10 +337,8 @@ pub trait ModLoaderActions {
 	}
 
 	fn delete_mod(&self, local_mod: &LocalMod) -> Result {
-		let mod_path = local_mod.common.get_path()?;
-
-		if mod_path.exists() {
-			fs::remove_dir_all(&mod_path)?;
+		if local_mod.data.path.exists() {
+			fs::remove_dir_all(&local_mod.data.path)?;
 		}
 
 		Ok(())
