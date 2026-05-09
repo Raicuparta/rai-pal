@@ -60,6 +60,7 @@ fn update_installed_manifest(game: &DbGame, version: String) -> Result {
 		game,
 		&mod_manifest::Manifest {
 			title: Some("BepInEx".to_string()),
+			is_loader: Some(true),
 			version,
 			runnable: None,
 			engine: Some(EngineBrand::Unity),
@@ -252,8 +253,9 @@ impl ModLoaderActions for BepInEx {
 	}
 
 	async fn install_mod_inner(&self, game: &DbGame, local_mod: &LocalMod) -> Result {
-		if get_installed_version(game).is_none() {
-			self.install(game).await?;
+		if local_mod.common.is_loader.unwrap_or_default() {
+			copy_dir_all(&local_mod.data.path, game.get_installed_mods_folder()?)?;
+			return Ok(());
 		}
 
 		let bepinex_folder = game.get_installed_mods_folder()?.join("BepInEx");

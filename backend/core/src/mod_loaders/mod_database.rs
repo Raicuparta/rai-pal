@@ -30,6 +30,7 @@ const DATABASE_VERSION: i32 = 1;
 #[serializable_struct]
 pub struct DatabaseEntry {
 	pub id: String,
+	pub is_loader: Option<bool>,
 	pub title: String,
 	pub author: String,
 	pub source_code: String,

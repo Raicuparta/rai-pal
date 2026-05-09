@@ -85,6 +85,7 @@ export type Architecture = "X64" | "X86";
 
 export type CommonModData = {
 	id: string,
+	isLoader: boolean | null,
 	engine: EngineBrand | null,
 	unityBackend: UnityBackend | null,
 	engineVersionRange: EngineVersionRange | null,
@@ -189,6 +190,7 @@ export type LocalModLoaderData = {
 
 export type Manifest = {
 	title: string | null,
+	isLoader: boolean | null,
 	version: string,
 	runnable: RunnableModData | null,
 	engine: EngineBrand | null,

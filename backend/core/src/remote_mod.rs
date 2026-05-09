@@ -4,7 +4,10 @@ use rai_pal_proc_macros::serializable_struct;
 
 use crate::{
 	game_mod::CommonModData,
-	mod_loaders::mod_database::{ModConfigs, ModDownload},
+	mod_loaders::mod_database::{
+		ModConfigs,
+		ModDownload,
+	},
 };
 
 #[serializable_struct]

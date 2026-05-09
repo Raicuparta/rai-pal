@@ -22,6 +22,7 @@ use crate::{
 #[serializable_struct]
 pub struct Manifest {
 	pub title: Option<String>,
+	pub is_loader: Option<bool>,
 	pub version: String,
 	pub runnable: Option<RunnableModData>,
 	pub engine: Option<EngineBrand>,

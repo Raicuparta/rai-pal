@@ -73,6 +73,7 @@ fn update_installed_manifest(game: &DbGame, version: String) -> Result {
 		game,
 		&mod_manifest::Manifest {
 			title: Some("UE4SS".to_string()),
+			is_loader: Some(true),
 			version,
 			runnable: None,
 			engine: Some(EngineBrand::Unreal),

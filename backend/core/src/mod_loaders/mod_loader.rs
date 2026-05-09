@@ -236,6 +236,7 @@ pub trait ModLoaderActions {
 			let remote_mod = RemoteMod {
 				common: CommonModData {
 					id: database_mod.id.clone(),
+					is_loader: database_mod.is_loader,
 					engine: database_mod.engine,
 					architecture: database_mod.architecture,
 					engine_version_range: database_mod.engine_version_range.clone(),
@@ -267,6 +268,7 @@ pub trait ModLoaderActions {
 				if manifest_path.exists() {
 					let updated_manifest = mod_manifest::Manifest {
 						title: Some(remote_mod.data.title.clone()),
+						is_loader: remote_mod.common.is_loader,
 						version: latest_version.id.clone(),
 						runnable: latest_version.runnable.clone(),
 						engine: remote_mod.common.engine,
@@ -322,6 +324,7 @@ pub trait ModLoaderActions {
 				local_mod::get_manifest_path(&target_path),
 				serde_json::to_string_pretty(&mod_manifest::Manifest {
 					title: Some(remote_mod.data.title.clone()),
+					is_loader: remote_mod.common.is_loader,
 					version: latest_version.id.clone(),
 					runnable: latest_version.runnable.clone(),
 					engine: remote_mod.common.engine,
