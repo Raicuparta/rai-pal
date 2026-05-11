@@ -1,8 +1,3 @@
-use std::{
-	fs,
-	path::PathBuf,
-};
-
 use enum_dispatch::enum_dispatch;
 use rai_pal_proc_macros::serializable_enum;
 
@@ -19,7 +14,6 @@ use crate::providers::{
 use crate::{
 	game::DbGame,
 	local_database::DbMutex,
-	paths,
 	providers::{
 		itch_provider::Itch,
 		manual_provider::Manual,
@@ -96,16 +90,6 @@ pub trait ProviderStatic: ProviderActions {
 	fn new() -> Result<Self>
 	where
 		Self: Sized;
-
-	fn get_folder() -> Result<PathBuf> {
-		let path = paths::app_data_path()?
-			.join("providers")
-			.join(Self::ID.to_string());
-
-		fs::create_dir_all(&path)?;
-
-		Ok(path)
-	}
 }
 
 pub fn get_provider(provider_id: ProviderId) -> Option<Result<Provider>> {

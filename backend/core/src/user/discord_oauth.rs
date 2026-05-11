@@ -47,7 +47,6 @@ const DISCORD_CALLBACK_PORT: u16 = 43941;
 const DISCORD_KEYRING_SERVICE: &str = "rai-pal";
 const DISCORD_KEYRING_ACCOUNT: &str = "discord-oauth-token";
 const DISCORD_KEYRING_LOCATION: &str = "keyring://rai-pal/discord-oauth-token";
-const DISCORD_TOKEN_FALLBACK_FILE_NAME: &str = "discord-oauth-token.json";
 const DISCORD_TOKEN_FALLBACK_LOCATION: &str = "file://app_data/discord-oauth-token.json";
 const DISCORD_TOKEN_EXPIRY_LEEWAY_SECONDS: u64 = 60;
 
@@ -254,7 +253,7 @@ fn parse_oauth_callback(
 }
 
 fn get_discord_token_fallback_file_path() -> Result<PathBuf> {
-	Ok(paths::app_data_path()?.join(DISCORD_TOKEN_FALLBACK_FILE_NAME))
+	paths::app_data_file("discord-oauth-token.json")
 }
 
 fn read_discord_token_from_fallback_file_optional() -> Result<Option<DiscordSavedToken>> {
@@ -417,7 +416,7 @@ fn save_discord_token_file(token: &DiscordSavedToken) -> Result<String> {
 }
 
 fn get_discord_avatar_file_path() -> Result<PathBuf> {
-	Ok(paths::app_data_path()?.join("discord-avatar.png"))
+	paths::app_data_file("avatar.png")
 }
 
 fn delete_file_if_exists(path: &Path) -> Result {

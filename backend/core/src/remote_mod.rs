@@ -106,6 +106,7 @@ where
 	});
 
 	let mut mods_map = HashMap::new();
+	let local_mods = local_mod::get_all().ok_or_log("Failed to get local mods");
 
 	for database_mod in database.mods {
 		let remote_mod = RemoteMod {
@@ -130,8 +131,7 @@ where
 		};
 
 		// If there's a local mod with the same ID, update its manifest with remote info
-		if let Some(local_mod) = local_mod::get_all()
-			.ok_or_log("Failed to get local mods")
+		if let Some(local_mod) = local_mods
 			.as_ref()
 			.and_then(|local_mods| local_mods.get(&database_mod.id))
 			&& let Some(latest_version) = &remote_mod.data.latest_version

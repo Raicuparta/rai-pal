@@ -20,11 +20,7 @@ use crate::{
 		DbMutex,
 		GameDatabase,
 	},
-	paths::{
-		self,
-		app_data_path,
-		file_name_without_extension,
-	},
+	paths,
 	result::{
 		Error,
 		Result,
@@ -73,7 +69,7 @@ impl ProviderActions for Manual {
 }
 
 fn games_config_path() -> Result<PathBuf> {
-	Ok(app_data_path()?.join("games.json"))
+	paths::app_data_file("games.json")
 }
 
 fn read_games_config(games_config_path: &Path) -> GamesConfig {
@@ -94,7 +90,7 @@ fn get_game_from_path(exe_path: &Path) -> Result<DbGame> {
 	let mut game = DbGame::new(
 		ProviderId::Manual,
 		paths::hash_path(exe_path),
-		file_name_without_extension(exe_path)?.to_string(),
+		paths::file_name_without_extension(exe_path)?.to_string(),
 	);
 	game.set_executable(exe_path);
 	Ok(game)

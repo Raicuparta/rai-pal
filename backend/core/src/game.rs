@@ -149,9 +149,8 @@ impl DbGame {
 	}
 
 	pub fn get_installed_mods_folder(&self) -> Result<PathBuf> {
-		let installed_mods_folder = paths::app_data_path()?
-			.join("installed-mods")
-			.join(paths::hash_path(self.try_get_exe_path()?));
+		let installed_mods_folder =
+			paths::installed_mods_path()?.join(paths::hash_path(self.try_get_exe_path()?));
 		fs::create_dir_all(&installed_mods_folder)?;
 
 		Ok(installed_mods_folder)

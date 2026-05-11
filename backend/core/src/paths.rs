@@ -2,6 +2,7 @@ use std::{
 	collections::hash_map::DefaultHasher,
 	env,
 	ffi::OsStr,
+	fs,
 	hash::{
 		Hash,
 		Hasher,
@@ -65,15 +66,27 @@ pub fn path_parent(path: &Path) -> Result<&Path> {
 		.ok_or_else(|| Error::PathParentNotFound(path.to_path_buf()))
 }
 
-pub fn app_data_path() -> Result<PathBuf> {
+fn app_data_path() -> Result<PathBuf> {
 	let project_dirs =
 		ProjectDirs::from("com", "raicuparta", "rai-pal").ok_or_else(Error::AppDataNotFound)?;
+	let path = project_dirs.data_dir().to_path_buf();
+	fs::create_dir_all(&path)?;
 
-	Ok(project_dirs.data_dir().to_path_buf())
+	Ok(path)
+}
+
+pub fn app_data_file(file_name: &str) -> Result<PathBuf> {
+	Ok(app_data_path()?.join(file_name))
+}
+
+fn app_data_subfolder(folder_name: &str) -> Result<PathBuf> {
+	let path = app_data_path()?.join(folder_name);
+	fs::create_dir_all(&path)?;
+	Ok(path)
 }
 
 pub fn logs_path() -> Result<PathBuf> {
-	Ok(app_data_path()?.join("logs"))
+	app_data_subfolder("logs")
 }
 
 pub fn open_logs_folder() -> Result {
@@ -81,11 +94,23 @@ pub fn open_logs_folder() -> Result {
 }
 
 pub fn local_mods_path() -> Result<PathBuf> {
-	Ok(app_data_path()?.join("mods"))
+	app_data_subfolder("mods")
+}
+
+pub fn installed_mods_path() -> Result<PathBuf> {
+	app_data_subfolder("installed_mods")
 }
 
 pub fn downloads_path() -> Result<PathBuf> {
-	Ok(app_data_path()?.join("downloads"))
+	app_data_subfolder("downloads")
+}
+
+fn databases_path() -> Result<PathBuf> {
+	app_data_subfolder("databases")
+}
+
+pub fn database_path(database_name: &str) -> Result<PathBuf> {
+	Ok(databases_path()?.join(format!("{database_name}.db")))
 }
 
 pub fn file_name_without_extension(file_path: &Path) -> Result<&str> {

@@ -649,7 +649,7 @@ pub fn attach_remote_database<TConnection: Deref<Target = rusqlite::Connection>>
 }
 
 fn db_file_path() -> Result<PathBuf> {
-	Ok(paths::app_data_path()?.join("db.sqlite"))
+	paths::database_path("local")
 }
 
 fn escape_sql_string(s: &str) -> String {

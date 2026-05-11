@@ -1,12 +1,23 @@
-use crate::game_engines::game_engine::{EngineVersion, EngineVersionNumbers, GameEngine};
-use crate::providers::provider::ProviderId;
-use crate::result::Result;
-use crate::{http, paths};
+use std::{
+	collections::HashMap,
+	fs,
+	path::PathBuf,
+};
+
 use lazy_regex::regex;
 use rai_pal_proc_macros::serializable_struct;
-use std::collections::HashMap;
-use std::fs;
-use std::path::PathBuf;
+
+use crate::{
+	game_engines::game_engine::{
+		EngineVersion,
+		EngineVersionNumbers,
+		GameEngine,
+	},
+	http,
+	paths,
+	providers::provider::ProviderId,
+	result::Result,
+};
 
 const URL_BASE: &str = "https://raicuparta.github.io/rai-pal-db/game-db";
 
@@ -48,7 +59,7 @@ pub fn parse_version(version: &str) -> Option<EngineVersion> {
 }
 
 pub fn get_database_file_path() -> Result<PathBuf> {
-	Ok(paths::app_data_path()?.join("remote.sqlite"))
+	paths::database_path("remote")
 }
 
 pub async fn download_database() -> Result<PathBuf> {
