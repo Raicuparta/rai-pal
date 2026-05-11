@@ -42,7 +42,6 @@ use rai_pal_core::{
 		mod_loader::{
 			self,
 			ModLoaderActions,
-			ModLoaderId,
 		},
 	},
 	paths::{
@@ -220,7 +219,7 @@ async fn install_mod(
 
 	let mod_loaders = state.mod_loaders.read_state()?.clone();
 
-	let local_mod = refresh_and_get_local_mod(mod_id, &mod_loaders, &handle).await?;
+	let local_mod = refresh_and_get_local_mod(mod_id, &handle).await?;
 
 	let mod_loader = mod_loaders.try_get(&local_mod.common.loader_id)?;
 
@@ -241,7 +240,7 @@ async fn install_mod(
 async fn run_runnable_without_game(mod_id: &str, handle: AppHandle) -> Result {
 	let state = handle.app_state();
 	let mod_loaders = state.mod_loaders.read_state()?.clone();
-	let local_mod = refresh_and_get_local_mod(mod_id, &mod_loaders, &handle).await?;
+	let local_mod = refresh_and_get_local_mod(mod_id, &handle).await?;
 	let mod_loader = mod_loaders.try_get(&local_mod.common.loader_id)?;
 
 	mod_loader.run_without_game(&local_mod).await?;
@@ -284,7 +283,7 @@ async fn open_installed_mod_folder(
 	let game = state.database.get_game(&provider_id, &game_id)?;
 
 	let mod_loaders = state.mod_loaders.read_state()?.clone();
-	let local_mod = refresh_and_get_local_mod(mod_id, &mod_loaders, &handle).await?;
+	let local_mod = refresh_and_get_local_mod(mod_id, &handle).await?;
 
 	let mod_loader = mod_loaders.try_get(&local_mod.common.loader_id)?;
 
@@ -319,7 +318,7 @@ async fn uninstall_mod(
 
 	let mod_loaders = state.mod_loaders.read_state()?.clone();
 
-	let local_mod = refresh_and_get_local_mod(mod_id, &mod_loaders, &handle).await?;
+	let local_mod = refresh_and_get_local_mod(mod_id, &handle).await?;
 
 	let mod_loader = mod_loaders.try_get(&local_mod.common.loader_id)?;
 
@@ -388,11 +387,7 @@ async fn refresh_remote_mods(
 	Ok(remote_mods)
 }
 
-async fn refresh_and_get_local_mod(
-	mod_id: &str,
-	mod_loaders: &mod_loader::Map,
-	handle: &AppHandle,
-) -> Result<LocalMod> {
+async fn refresh_and_get_local_mod(mod_id: &str, handle: &AppHandle) -> Result<LocalMod> {
 	let local_mods = {
 		let state = handle.app_state();
 
@@ -409,16 +404,11 @@ async fn refresh_and_get_local_mod(
 			} else {
 				let remote_mods = state.remote_mods.read_state()?.clone();
 				let remote_mod = remote_mods.try_get(mod_id)?;
-				let mod_loader = mod_loaders.try_get(&remote_mod.common.loader_id)?;
 
 				if remote_mod.data.latest_version.is_some() {
 					// If local mod still can't be found on disk,
 					// we try to download it from the database.
 					remote_mod::download(remote_mods.try_get(mod_id)?).await?;
-				} else {
-					// If downloading from the database isn't possible,
-					// we just open the mod loader folder so the user can install it themselves.
-					mod_loader.open_folder()?;
 				}
 
 				refresh_local_mods(handle)

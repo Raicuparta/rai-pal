@@ -1,5 +1,6 @@
 use std::{
 	env,
+	fmt,
 	num,
 	path::PathBuf,
 	result,
@@ -186,11 +187,14 @@ impl serde::Serialize for Error {
 
 pub type Result<T = ()> = result::Result<T, Error>;
 
-pub trait LogErrExt<T> {
+pub trait LogErrExt<T, E> {
 	fn ok_or_log(self, message: &str) -> Option<T>;
 }
 
-impl<T> LogErrExt<T> for Result<T> {
+impl<T, E> LogErrExt<T, E> for result::Result<T, E>
+where
+	E: fmt::Display,
+{
 	fn ok_or_log(self, message: &str) -> Option<T> {
 		match self {
 			Ok(val) => Some(val),
