@@ -185,3 +185,19 @@ impl serde::Serialize for Error {
 }
 
 pub type Result<T = ()> = result::Result<T, Error>;
+
+pub trait LogErrExt<T> {
+	fn ok_or_log(self, message: &str) -> Option<T>;
+}
+
+impl<T> LogErrExt<T> for Result<T> {
+	fn ok_or_log(self, message: &str) -> Option<T> {
+		match self {
+			Ok(val) => Some(val),
+			Err(err) => {
+				log::info!("{message}: {err}");
+				None
+			}
+		}
+	}
+}

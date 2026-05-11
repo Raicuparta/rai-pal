@@ -26,7 +26,6 @@ use rai_pal_core::windows;
 use rai_pal_core::{
 	analytics,
 	game::DbGame,
-	game_mod,
 	games_query::GamesQuery,
 	local_database::{
 		GameDatabase,
@@ -198,7 +197,7 @@ async fn download_mod(mod_id: &str, handle: AppHandle) -> Result {
 	let remote_mods = state.remote_mods.read_state()?.clone();
 	let remote_mod = remote_mods.try_get(mod_id)?;
 
-	game_mod::download(remote_mod).await?;
+	remote_mod::download(remote_mod).await?;
 
 	refresh_local_mods(&handle)?;
 
@@ -212,7 +211,7 @@ async fn delete_mod(mod_id: &str, handle: AppHandle) -> Result {
 	let local_mods = state.local_mods.read_state()?;
 	let local_mod = local_mods.try_get(mod_id)?;
 
-	game_mod::delete(local_mod)?;
+	local_mod::delete(local_mod)?;
 
 	refresh_local_mods(&handle)?;
 
@@ -357,7 +356,7 @@ async fn uninstall_all_mods(provider_id: ProviderId, game_id: String, handle: Ap
 }
 
 fn refresh_local_mods(handle: &AppHandle) -> Result<local_mod::Map> {
-	let local_mods = game_mod::get_local()?;
+	let local_mods = local_mod::get_all()?;
 
 	log::info!("Found {} local mods.", { local_mods.len() });
 	handle.emit_safe(events::SyncLocalMods(local_mods.clone()));
@@ -377,7 +376,7 @@ async fn refresh_remote_mods(
 	let mut remote_mods = remote_mod::Map::default();
 
 	for mod_loader in mod_loaders.values() {
-		for (mod_id, remote_mod) in game_mod::get_remote(|error| {
+		for (mod_id, remote_mod) in remote_mod::get_all(|error| {
 			handle.emit_error(format!(
 				"Failed to get remote mods for mod loader {}: {}",
 				mod_loader.get_data().id,
@@ -426,7 +425,7 @@ async fn refresh_and_get_local_mod(
 				if remote_mod.data.latest_version.is_some() {
 					// If local mod still can't be found on disk,
 					// we try to download it from the database.
-					game_mod::download(remote_mods.try_get(mod_id)?).await?;
+					remote_mod::download(remote_mods.try_get(mod_id)?).await?;
 				} else {
 					// If downloading from the database isn't possible,
 					// we just open the mod loader folder so the user can install it themselves.

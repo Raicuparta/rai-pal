@@ -1,5 +1,6 @@
 use std::{
 	collections::HashMap,
+	fs,
 	path::{
 		Path,
 		PathBuf,
@@ -23,6 +24,7 @@ use crate::{
 	},
 	result::{
 		Error,
+		LogErrExt,
 		Result,
 	},
 };
@@ -78,4 +80,27 @@ impl LocalMod {
 	}
 }
 
+pub fn get_all() -> Result<HashMap<String, LocalMod>> {
+	Ok(paths::glob_path(
+		&paths::local_mods_path()?
+			.join("*")
+			.join(mod_manifest::Manifest::FILE_NAME),
+	)
+	.iter()
+	.filter_map(|manifest_path| {
+		LocalMod::new(manifest_path)
+			.ok_or_log("Failed to create local mod")
+			.map(|local_mod| (local_mod.common.id.clone(), local_mod))
+	})
+	.collect())
+}
+
 pub type Map = HashMap<String, LocalMod>;
+
+pub fn delete(local_mod: &LocalMod) -> Result {
+	if local_mod.data.path.exists() {
+		fs::remove_dir_all(&local_mod.data.path)?;
+	}
+
+	Ok(())
+}
