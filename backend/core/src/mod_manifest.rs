@@ -13,14 +13,18 @@ use crate::{
 		unity::UnityBackend,
 	},
 	game_mod::EngineVersionRange,
-	mod_loaders::mod_database::{
-		ModConfigs,
-		RunnableModData,
+	mod_loaders::{
+		mod_database::{
+			ModConfigs,
+			RunnableModData,
+		},
+		mod_loader::ModLoaderId,
 	},
 };
 
 #[serializable_struct]
 pub struct Manifest {
+	pub loader_id: ModLoaderId,
 	pub title: Option<String>,
 	pub is_loader: Option<bool>,
 	pub version: String,

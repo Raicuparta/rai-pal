@@ -26,6 +26,7 @@ use rai_pal_core::windows;
 use rai_pal_core::{
 	analytics,
 	game::DbGame,
+	game_mod,
 	games_query::GamesQuery,
 	local_database::{
 		GameDatabase,
@@ -164,7 +165,7 @@ async fn open_game_mods_folder(
 #[tauri::command]
 #[specta::specta]
 async fn open_mods_folder() -> Result {
-	paths::open_folder_or_parent(&paths::installed_mods_path()?)?;
+	paths::open_folder_or_parent(&paths::local_mods_path()?)?;
 	Ok(())
 }
 
@@ -196,14 +197,10 @@ async fn download_mod(mod_id: &str, handle: AppHandle) -> Result {
 	let state = handle.app_state();
 	let remote_mods = state.remote_mods.read_state()?.clone();
 	let remote_mod = remote_mods.try_get(mod_id)?;
-	let mod_loaders = state.mod_loaders.read_state()?.clone();
 
-	mod_loaders
-		.try_get(&remote_mod.common.loader_id)?
-		.download_mod(remote_mod)
-		.await?;
+	game_mod::download(remote_mod).await?;
 
-	refresh_local_mods(&mod_loaders, &handle)?;
+	refresh_local_mods(&handle)?;
 
 	Ok(())
 }
@@ -214,13 +211,10 @@ async fn delete_mod(mod_id: &str, handle: AppHandle) -> Result {
 	let state = handle.app_state();
 	let local_mods = state.local_mods.read_state()?;
 	let local_mod = local_mods.try_get(mod_id)?;
-	let mod_loaders = state.mod_loaders.read_state()?;
 
-	mod_loaders
-		.try_get(&local_mod.common.loader_id)?
-		.delete_mod(local_mod)?;
+	game_mod::delete(local_mod)?;
 
-	refresh_local_mods(&mod_loaders, &handle)?;
+	refresh_local_mods(&handle)?;
 
 	Ok(())
 }
@@ -362,18 +356,8 @@ async fn uninstall_all_mods(provider_id: ProviderId, game_id: String, handle: Ap
 	Ok(())
 }
 
-fn refresh_local_mods(mod_loaders: &mod_loader::Map, handle: &AppHandle) -> Result<local_mod::Map> {
-	let local_mods: HashMap<_, _> = mod_loaders
-		.values()
-		.filter_map(|mod_loader| match mod_loader.get_local_mods() {
-			Ok(local_mods) => Some(local_mods),
-			Err(err) => {
-				log::error!("Failed to get local mods: {err}");
-				None
-			}
-		})
-		.flatten()
-		.collect();
+fn refresh_local_mods(handle: &AppHandle) -> Result<local_mod::Map> {
+	let local_mods = game_mod::get_local()?;
 
 	log::info!("Found {} local mods.", { local_mods.len() });
 	handle.emit_safe(events::SyncLocalMods(local_mods.clone()));
@@ -393,15 +377,14 @@ async fn refresh_remote_mods(
 	let mut remote_mods = remote_mod::Map::default();
 
 	for mod_loader in mod_loaders.values() {
-		for (mod_id, remote_mod) in mod_loader
-			.get_remote_mods(|error| {
-				handle.emit_error(format!(
-					"Failed to get remote mods for mod loader {}: {}",
-					mod_loader.get_data().id,
-					error
-				));
-			})
-			.await
+		for (mod_id, remote_mod) in game_mod::get_remote(|error| {
+			handle.emit_error(format!(
+				"Failed to get remote mods for mod loader {}: {}",
+				mod_loader.get_data().id,
+				error
+			));
+		})
+		.await
 		{
 			remote_mods.insert(mod_id.clone(), remote_mod.clone());
 		}
@@ -431,7 +414,7 @@ async fn refresh_and_get_local_mod(
 		} else {
 			// Local mod wasn't in app state,
 			// so let's sync app state to local files in case some file was manually changed.
-			let disk_local_mods = refresh_local_mods(mod_loaders, handle);
+			let disk_local_mods = refresh_local_mods(handle);
 
 			if state_local_mods.contains_key(mod_id) {
 				disk_local_mods
@@ -443,16 +426,14 @@ async fn refresh_and_get_local_mod(
 				if remote_mod.data.latest_version.is_some() {
 					// If local mod still can't be found on disk,
 					// we try to download it from the database.
-					mod_loader
-						.download_mod(remote_mods.try_get(mod_id)?)
-						.await?;
+					game_mod::download(remote_mods.try_get(mod_id)?).await?;
 				} else {
 					// If downloading from the database isn't possible,
 					// we just open the mod loader folder so the user can install it themselves.
 					mod_loader.open_folder()?;
 				}
 
-				refresh_local_mods(mod_loaders, handle)
+				refresh_local_mods(handle)
 			}
 		}
 	}?;
@@ -481,7 +462,7 @@ async fn refresh_mods(handle: AppHandle) -> Result {
 	log::info!("Found {} mod loaders. Refreshing local mods...", {
 		mod_loaders.len()
 	});
-	refresh_local_mods(&mod_loaders, &handle)?;
+	refresh_local_mods(&handle)?;
 
 	log::info!("Refreshing remote mods...");
 	refresh_remote_mods(&mod_loaders, &handle).await?;
@@ -684,7 +665,7 @@ async fn download_remote_config(
 		mod_loader.update_installed_mod_manifest(local_mod, &game)?;
 	}
 
-	refresh_local_mods(&mod_loaders, &app_handle)?;
+	refresh_local_mods(&app_handle)?;
 
 	Ok(())
 }

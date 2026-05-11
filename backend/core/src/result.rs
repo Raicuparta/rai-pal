@@ -170,6 +170,9 @@ pub enum Error {
 
 	#[error("Discord OAuth failed: `{0}`")]
 	DiscordOAuth(String),
+
+	#[error("Failed to find mod manifest in path: `{0}`")]
+	ManifestNotFound(String),
 }
 
 impl serde::Serialize for Error {

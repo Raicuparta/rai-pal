@@ -158,8 +158,8 @@ impl ModLoaderActions for RunnableLoader {
 		let runnable = local_mod
 			.data
 			.manifest
+			.runnable
 			.as_ref()
-			.and_then(|manifest| manifest.runnable.as_ref())
 			.ok_or_else(|| Error::RunnableManifestNotFound(local_mod.common.id.clone()))?;
 
 		let args: Vec<String> = runnable
@@ -186,8 +186,8 @@ impl ModLoaderActions for RunnableLoader {
 		let runnable = local_mod
 			.data
 			.manifest
+			.runnable
 			.as_ref()
-			.and_then(|manifest| manifest.runnable.as_ref())
 			.ok_or_else(|| Error::RunnableManifestNotFound(local_mod.common.id.clone()))?;
 
 		Command::new(local_mod.data.path.join(&runnable.path))

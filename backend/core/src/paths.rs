@@ -80,8 +80,12 @@ pub fn open_logs_folder() -> Result {
 	open_folder_or_parent(&logs_path()?)
 }
 
-pub fn installed_mods_path() -> Result<PathBuf> {
-	Ok(app_data_path()?.join("mod-loaders"))
+pub fn local_mods_path() -> Result<PathBuf> {
+	Ok(app_data_path()?.join("mods"))
+}
+
+pub fn downloads_path() -> Result<PathBuf> {
+	Ok(app_data_path()?.join("downloads"))
 }
 
 pub fn file_name_without_extension(file_path: &Path) -> Result<&str> {

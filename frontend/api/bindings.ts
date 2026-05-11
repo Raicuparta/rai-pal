@@ -173,7 +173,7 @@ export type LocalMod = {
 
 export type LocalModData = {
 	path: string,
-	manifest: Manifest | null,
+	manifest: Manifest,
 };
 
 export type LocalModLoader = {
@@ -186,6 +186,7 @@ export type LocalModLoaderData = {
 };
 
 export type Manifest = {
+	loaderId: ModLoaderId,
 	title: string | null,
 	isLoader: boolean | null,
 	version: string,

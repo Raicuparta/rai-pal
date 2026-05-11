@@ -30,6 +30,7 @@ const DATABASE_VERSION: i32 = 1;
 #[serializable_struct]
 pub struct DatabaseEntry {
 	pub id: String,
+	pub loader_id: ModLoaderId,
 	pub is_loader: Option<bool>,
 	pub title: String,
 	pub author: String,
@@ -87,11 +88,9 @@ pub struct ModGithubInfo {
 	pub runnable: Option<RunnableModData>,
 }
 
-pub async fn get(mod_loader_id: ModLoaderId) -> Result<ModDatabase> {
+pub async fn get() -> Result<ModDatabase> {
 	Ok(http::CLIENT
-		.get(format!(
-			"{URL_BASE}/{DATABASE_VERSION}/{mod_loader_id}.json"
-		))
+		.get(format!("{URL_BASE}/{DATABASE_VERSION}/mods.json"))
 		.send()
 		.await?
 		.json::<ModDatabase>()
