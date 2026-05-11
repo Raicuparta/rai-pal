@@ -153,6 +153,27 @@ export function GameMods({ game }: Props) {
 		return null;
 	}
 
+	function getRequiredLoaderModId(mod: UnifiedMod): string | undefined {
+		if (mod.common.isLoader) return undefined;
+
+		const loaderModId = compatibleMods.find((m) => m.common.isLoader)?.common
+			.id;
+
+		if (!loaderModId) {
+			console.error(
+				`Mod ${mod.common.id} requires a loader mod, but no loader mod was found among compatible mods.`,
+			);
+			return undefined;
+		}
+
+		if (installedModVersions[loaderModId]) {
+			// No need to reinstall loader if already installed.
+			return undefined;
+		}
+
+		return loaderModId;
+	}
+
 	return (
 		<>
 			{compatibleMods.length > 0 && (
@@ -171,6 +192,7 @@ export function GameMods({ game }: Props) {
 										mod={mod}
 										remoteConfigs={remoteConfigs}
 										installedVersion={installedModVersions[mod.common.id]}
+										loaderModId={getRequiredLoaderModId(mod)}
 									/>
 								))}
 							</Table.Tbody>

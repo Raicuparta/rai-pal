@@ -41,6 +41,7 @@ type Props = {
 	readonly remoteConfigs?: RemoteConfigs | null;
 	readonly installedVersion?: string;
 	readonly incompatible?: boolean;
+	readonly loaderModId?: string;
 };
 
 export function GameModRow({
@@ -49,6 +50,7 @@ export function GameModRow({
 	installedVersion,
 	remoteConfigs,
 	incompatible = false,
+	loaderModId,
 }: Props) {
 	const t = useLocalization("gameModRow");
 
@@ -84,6 +86,10 @@ export function GameModRow({
 			await commands.downloadMod(mod.common.id);
 		} else if (isInstalled && !isInstalledModOutdated) {
 			return commands.uninstallMod(game.providerId, game.gameId, mod.common.id);
+		}
+
+		if (loaderModId) {
+			await commands.installMod(game.providerId, game.gameId, loaderModId);
 		}
 
 		await commands.installMod(game.providerId, game.gameId, mod.common.id);
