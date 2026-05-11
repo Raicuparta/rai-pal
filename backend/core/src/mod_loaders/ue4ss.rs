@@ -85,6 +85,15 @@ impl ModLoaderActions for Ue4ss {
 		Ok(())
 	}
 
+	async fn uninstall_loader(&self, game: &DbGame, _local_mod: &LocalMod) -> Result {
+		let game_folder = paths::path_parent(game.try_get_exe_path()?)?;
+
+		fs::remove_file(game_folder.join("dwmapi.dll"))?;
+		fs::remove_file(game_folder.join("override.txt"))?;
+
+		Ok(())
+	}
+
 	async fn install_mod_inner(&self, game: &DbGame, _local_mod: &LocalMod) -> Result {
 		Err(Error::ModInstallInfoInsufficient(
 			"ue4ss_mod_install_not_implemented".to_string(),

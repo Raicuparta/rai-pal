@@ -106,6 +106,20 @@ impl ModLoaderActions for BepInEx {
 		Ok(())
 	}
 
+	async fn uninstall_loader(&self, game: &DbGame, _local_mod: &LocalMod) -> Result {
+		let game_folder = paths::path_parent(game.try_get_exe_path()?)?;
+
+		log::info!(
+			"Uninstalling BepInEx loader for game {}",
+			game.display_title
+		);
+
+		fs::remove_file(game_folder.join("winhttp.dll"))?;
+		fs::remove_file(game_folder.join("doorstop_config.ini"))?;
+
+		Ok(())
+	}
+
 	async fn install_mod_inner(&self, game: &DbGame, local_mod: &LocalMod) -> Result {
 		let bepinex_folder = game.get_installed_mods_folder()?.join("BepInEx");
 

@@ -148,10 +148,13 @@ pub enum ModLoader {
 
 #[enum_dispatch(ModLoader)]
 pub trait ModLoaderActions {
-	async fn install_mod_inner(&self, game: &DbGame, local_mod: &LocalMod) -> Result;
 	async fn install_loader(&self, game: &DbGame, local_mod: &LocalMod) -> Result {
 		self.install_mod_inner(game, local_mod).await
 	}
+	async fn uninstall_loader(&self, game: &DbGame, local_mod: &LocalMod) -> Result {
+		self.uninstall_mod_inner(game, local_mod).await
+	}
+	async fn install_mod_inner(&self, game: &DbGame, local_mod: &LocalMod) -> Result;
 	async fn uninstall_mod_inner(&self, game: &DbGame, local_mod: &LocalMod) -> Result;
 	async fn run_without_game(&self, local_mod: &LocalMod) -> Result;
 	fn get_config_path(&self, game: &DbGame, mod_configs: &ModConfigs) -> Result<PathBuf>;
@@ -198,11 +201,12 @@ pub trait ModLoaderActions {
 		Ok(())
 	}
 
-	async fn uninstall_loader(&self, game: &DbGame, local_mod: &LocalMod) -> Result {
-		panic!("Not implemented");
-	}
-
 	async fn uninstall_mod(&self, game: &DbGame, local_mod: &LocalMod) -> Result {
+		log::info!(
+			"Uninstalling mod '{}' for game '{}'",
+			local_mod.common.id,
+			game.display_title
+		);
 		if local_mod.common.is_loader.unwrap_or_default() {
 			self.uninstall_loader(game, local_mod).await?;
 		} else {
