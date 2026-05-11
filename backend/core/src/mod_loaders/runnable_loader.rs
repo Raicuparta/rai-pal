@@ -28,9 +28,12 @@ use crate::{
 	paths::{
 		self,
 	},
-	providers::provider_command::{
-		ProviderCommand,
-		ProviderCommandAction,
+	providers::{
+		provider,
+		provider_command::{
+			ProviderCommand,
+			ProviderCommandAction,
+		},
 	},
 	result::{
 		Error,
@@ -168,10 +171,23 @@ impl ModLoaderActions for RunnableLoader {
 			.map(|arg| replace_parameters(arg, game))
 			.collect();
 
-		Command::new(local_mod.data.path.join(&runnable.path))
-			.current_dir(&local_mod.data.path)
-			.args(&args)
-			.spawn()?;
+		#[cfg(target_os = "linux")]
+		{
+			use crate::providers::provider::ProviderActions;
+
+			let provider = provider::get_provider(game.provider_id)
+				.ok_or_else(|| Error::DataEntryNotFound(game.provider_id.to_string()))??;
+
+			provider.run_with_wine(game, &local_mod.data.path.join(&runnable.path), &args)?;
+		}
+
+		#[cfg(target_os = "windows")]
+		{
+			Command::new(local_mod.data.path.join(&runnable.path))
+				.current_dir(&local_mod.data.path)
+				.args(&args)
+				.spawn()?;
+		}
 
 		Ok(())
 	}

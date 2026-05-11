@@ -349,16 +349,14 @@ impl ProviderActions for Steam {
 		Ok(())
 	}
 
+	#[cfg(target_os = "linux")]
 	fn set_wine_dll_overrides(&self, game: &DbGame, dll_overrides: &[String]) -> Result {
-		#[cfg(target_os = "linux")]
-		{
-			steam_proton::set_wine_dll_overrides_for_game(game, dll_overrides)
-		}
+		steam_proton::set_wine_dll_overrides_for_game(game, dll_overrides)
+	}
 
-		#[cfg(not(target_os = "linux"))]
-		{
-			Ok(())
-		}
+	#[cfg(target_os = "linux")]
+	fn run_with_wine(&self, game: &DbGame, exe_path: &Path, args: &[String]) -> Result {
+		steam_proton::run_with_wine(game, exe_path, args)
 	}
 }
 

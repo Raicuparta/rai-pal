@@ -1,3 +1,8 @@
+use std::path::{
+	Path,
+	PathBuf,
+};
+
 use enum_dispatch::enum_dispatch;
 use rai_pal_proc_macros::serializable_enum;
 
@@ -72,6 +77,9 @@ const PROVIDERS: &Map = &[
 pub trait ProviderActions {
 	async fn insert_games(&self, db: &DbMutex) -> Result;
 	fn set_wine_dll_overrides(&self, _game: &DbGame, _dll_overrides: &[String]) -> Result {
+		Ok(())
+	}
+	fn run_with_wine(&self, _game: &DbGame, _exe_path: &Path, _args: &[String]) -> Result {
 		Ok(())
 	}
 }

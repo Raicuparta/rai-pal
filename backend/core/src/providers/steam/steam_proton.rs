@@ -1,9 +1,11 @@
 use std::{
 	fs,
+	io,
 	path::{
 		Path,
 		PathBuf,
 	},
+	process::Command,
 };
 
 use steamlocate::SteamDir;
@@ -15,6 +17,127 @@ use crate::{
 
 const DLL_OVERRIDES_SECTION: &str = "[Software\\\\Wine\\\\DllOverrides]";
 const DLL_OVERRIDE_VALUE: &str = "native,builtin";
+
+fn get_wine_prefix_path_for_game(game: &DbGame) -> Option<PathBuf> {
+	let app_id = get_app_id(game)?;
+	let steam_dir = match SteamDir::locate() {
+		Ok(steam_dir) => steam_dir,
+		Err(error) => {
+			log::error!(
+				"Failed to locate Steam directory while resolving compatdata for app {app_id}: {error}",
+			);
+			return None;
+		}
+	};
+
+	let library_path = get_app_library_path(&steam_dir, app_id)?;
+
+	Some(
+		library_path
+			.join("steamapps")
+			.join("compatdata")
+			.join(app_id.to_string())
+			.join("pfx"),
+	)
+}
+
+fn get_wine_binary_for_game(game: &DbGame) -> Option<PathBuf> {
+	let prefix_path = get_wine_prefix_path_for_game(game)?;
+	let compat_data_path = prefix_path.parent()?;
+	let config_info_path = compat_data_path.join("config_info");
+
+	let config_info_data = match fs::read_to_string(&config_info_path) {
+		Ok(data) => data,
+		Err(error) => {
+			log::warn!(
+				"Failed to read Steam Proton config_info for `{}` ({}) at {}: {}",
+				game.display_title,
+				game.external_id,
+				config_info_path.display(),
+				error,
+			);
+			return None;
+		}
+	};
+
+	let proton_lib_path_line = match config_info_data.lines().nth(2) {
+		Some(line) if !line.trim().is_empty() => line.trim(),
+		_ => {
+			log::warn!(
+				"Steam Proton config_info for `{}` ({}) is missing a valid third line at {}",
+				game.display_title,
+				game.external_id,
+				config_info_path.display(),
+			);
+			return None;
+		}
+	};
+
+	let proton_lib_path = Path::new(proton_lib_path_line);
+	let Some(proton_files_path) = proton_lib_path.parent() else {
+		log::warn!(
+			"Failed to derive Proton files path from `{}` for `{}` ({})",
+			proton_lib_path_line,
+			game.display_title,
+			game.external_id,
+		);
+		return None;
+	};
+
+	Some(proton_files_path.join("bin").join("wine"))
+}
+
+pub fn run_with_wine(game: &DbGame, exe_path: &Path, args: &[String]) -> Result {
+	let wine_prefix_path = get_wine_prefix_path_for_game(game).ok_or_else(|| {
+		io::Error::new(
+			io::ErrorKind::NotFound,
+			format!(
+				"Failed to resolve Wine prefix path for Steam game `{}` ({})",
+				game.display_title, game.external_id,
+			),
+		)
+	})?;
+
+	let wine_binary_path = get_wine_binary_for_game(game).ok_or_else(|| {
+		io::Error::new(
+			io::ErrorKind::NotFound,
+			format!(
+				"Failed to resolve Wine binary path for Steam game `{}` ({})",
+				game.display_title, game.external_id,
+			),
+		)
+	})?;
+
+	let compat_data_path = wine_prefix_path.parent().ok_or_else(|| {
+		io::Error::new(
+			io::ErrorKind::InvalidData,
+			format!(
+				"Failed to derive STEAM_COMPAT_DATA_PATH from Wine prefix `{}`",
+				wine_prefix_path.display(),
+			),
+		)
+	})?;
+
+	let child = Command::new(&wine_binary_path)
+		.env("WINEPREFIX", &wine_prefix_path)
+		.env("STEAM_COMPAT_DATA_PATH", compat_data_path)
+		.env("WINEFSYNC", "1")
+		.arg(exe_path)
+		.args(args)
+		.spawn()?;
+
+	log::info!(
+		"Launched `{}` with Wine `{}` for Steam game `{}` ({}) using prefix `{}` (pid {})",
+		exe_path.display(),
+		wine_binary_path.display(),
+		game.display_title,
+		game.external_id,
+		wine_prefix_path.display(),
+		child.id(),
+	);
+
+	Ok(())
+}
 
 pub(crate) fn set_wine_dll_overrides_for_game(game: &DbGame, dll_overrides: &[String]) -> Result {
 	if dll_overrides.is_empty() {
@@ -102,27 +225,7 @@ fn get_app_library_path(steam_dir: &SteamDir, app_id: u32) -> Option<PathBuf> {
 }
 
 fn get_compat_user_reg_path(game: &DbGame) -> Option<PathBuf> {
-	let app_id = get_app_id(game)?;
-	let steam_dir = match SteamDir::locate() {
-		Ok(steam_dir) => steam_dir,
-		Err(error) => {
-			log::error!(
-				"Failed to locate Steam directory while resolving compatdata for app {app_id}: {error}",
-			);
-			return None;
-		}
-	};
-
-	let library_path = get_app_library_path(&steam_dir, app_id)?;
-
-	let user_reg_path = library_path
-		.join("steamapps")
-		.join("compatdata")
-		.join(app_id.to_string())
-		.join("pfx")
-		.join("user.reg");
-
-	Some(user_reg_path)
+	Some(get_wine_prefix_path_for_game(game)?.join("user.reg"))
 }
 
 fn upsert_dll_overrides_in_user_reg(path: &Path, dll_overrides: &[String]) -> Result {
