@@ -111,7 +111,6 @@ export const esEs: Localization = {
 		openModConfigFolderTooltip:
 			"Abrir carpeta que contiene los archivos de configuración de este mod",
 		openModFolder: "Abrir Carpeta del Mod",
-		openModLoaderFolder: "Abrir Carpeta del Cargador de Mods",
 		updateMod: "Actualizar",
 		installMod: "Instalar",
 		reinstallMod: "Reinstalar",
@@ -185,7 +184,8 @@ export const esEs: Localization = {
 
 	steamShortcut: {
 		addRaiPalSteamShortcutButton: "Agregar Rai Pal a la biblioteca de Steam",
-		addRaiPalSteamShortcutModalTitle: "Agregar Rai Pal a la biblioteca de Steam",
+		addRaiPalSteamShortcutModalTitle:
+			"Agregar Rai Pal a la biblioteca de Steam",
 		addRaiPalSteamShortcutDescription:
 			"Esto es especialmente útil en Steam Deck para poder iniciar Rai Pal en el modo Juego. Tendrás que reiniciar Steam después de hacerlo.",
 		addRaiPalSteamShortcutSuccess:

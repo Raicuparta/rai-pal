@@ -181,17 +181,6 @@ async fn open_mod_folder(mod_id: &str, handle: AppHandle) -> Result {
 
 #[tauri::command]
 #[specta::specta]
-async fn open_mod_loader_folder(mod_loader_id: ModLoaderId, handle: AppHandle) -> Result {
-	Ok(handle
-		.app_state()
-		.mod_loaders
-		.read_state()?
-		.try_get(&mod_loader_id)?
-		.open_folder()?)
-}
-
-#[tauri::command]
-#[specta::specta]
 async fn download_mod(mod_id: &str, handle: AppHandle) -> Result {
 	let state = handle.app_state();
 	let remote_mods = state.remote_mods.read_state()?.clone();
@@ -723,7 +712,6 @@ fn main() {
 			open_installed_mod_folder,
 			open_logs_folder,
 			open_mod_folder,
-			open_mod_loader_folder,
 			open_mods_folder,
 			refresh_game,
 			refresh_games,

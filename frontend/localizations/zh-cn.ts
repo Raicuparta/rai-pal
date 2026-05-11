@@ -104,7 +104,6 @@ export const zhCn: Localization = {
 		editModConfig: "编辑模组配置",
 		openModConfigFolderTooltip: "打开包含此模组配置文件的文件夹",
 		openModFolder: "打开模组文件夹",
-		openModLoaderFolder: "打开模组加载器文件夹",
 		updateMod: "更新",
 		installMod: "安装",
 		reinstallMod: "重新安装",

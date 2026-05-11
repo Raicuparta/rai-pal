@@ -110,7 +110,6 @@ export const ptPt: Localization = {
 		openModConfigFolderTooltip:
 			"Abrir pasta contendo os ficheiros de configuração deste mod",
 		openModFolder: "Abrir Pasta do Mod",
-		openModLoaderFolder: "Abrir Pasta do Mod Loader",
 		updateMod: "Atualizar",
 		installMod: "Instalar",
 		reinstallMod: "Reinstalar",

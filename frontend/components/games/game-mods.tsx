@@ -1,27 +1,8 @@
-import {
-	Alert,
-	ButtonGroup,
-	Divider,
-	Group,
-	Table,
-	ThemeIcon,
-} from "@mantine/core";
-import {
-	EngineVersionRange,
-	DbGame,
-	ModLoaderId,
-	commands,
-} from "@api/bindings";
+import { Alert, Divider, Table } from "@mantine/core";
+import { EngineVersionRange, DbGame, commands } from "@api/bindings";
 import { useCallback, useMemo } from "react";
 import { CommandButton } from "@components/command-button";
-import {
-	IconCheck,
-	IconDotsVertical,
-	IconFolderOpen,
-	IconMinus,
-	IconTrash,
-} from "@tabler/icons-react";
-import { CommandDropdown } from "@components/command-dropdown";
+import { IconTrash } from "@tabler/icons-react";
 import { UnifiedMod, useUnifiedMods } from "@hooks/use-unified-mods";
 import { GameModRow } from "./game-mod-row";
 import { TableContainer } from "@components/table/table-container";
@@ -29,11 +10,6 @@ import { useLocalization } from "@hooks/use-localization";
 import { useCommandData } from "@hooks/use-command-data";
 import { useAppEvent } from "@hooks/use-app-event";
 import { MutedText } from "@components/muted-text";
-import { getIsOutdated } from "@util/is-outdated";
-import { OutdatedMarker } from "@components/outdated-marker";
-import { ItemName } from "@components/item-name";
-import { ModVersionBadge } from "@components/mods/mod-version-badge";
-import { useUnifiedModLoaders } from "@hooks/use-unified-mod-loaders";
 
 type Props = {
 	readonly game: DbGame;

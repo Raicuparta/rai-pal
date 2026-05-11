@@ -214,9 +214,6 @@ export const enUs = {
 		// Button for opening the folder where a specific mod is installed.
 		openModFolder: "Open Mod Folder",
 
-		// Button for opening the folder where the mod loader is installed.
-		openModLoaderFolder: "Open mod loader folder",
-
 		// Button for updating the install mod for this game to the latest version.
 		updateMod: "Update",
 

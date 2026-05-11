@@ -111,7 +111,6 @@ export const frFr: Localization = {
 		openModConfigFolderTooltip:
 			"Ouvrir le dossier contenant les fichiers de configuration de ce mod",
 		openModFolder: "Ouvrir le Dossier du Mod",
-		openModLoaderFolder: "Ouvrir le Dossier du Chargeur de Mods",
 		updateMod: "Mettre à jour",
 		installMod: "Installer",
 		reinstallMod: "Réinstaller",

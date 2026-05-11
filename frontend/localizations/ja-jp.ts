@@ -110,7 +110,6 @@ export const jaJp: Localization = {
 		openModConfigFolderTooltip:
 			"このモッドの設定ファイルが含まれているフォルダーを開く",
 		openModFolder: "モッドフォルダーを開く",
-		openModLoaderFolder: "モッドローダーフォルダーを開く",
 		updateMod: "更新",
 		installMod: "インストール",
 		reinstallMod: "再インストール",
