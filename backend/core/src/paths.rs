@@ -25,6 +25,7 @@ use log;
 
 use crate::result::{
 	Error,
+	LogErrExt,
 	Result,
 };
 
@@ -134,7 +135,7 @@ pub fn find_child_case_insensitive(parent: &Path, child_name: &OsStr) -> Option<
 	}
 
 	std::fs::read_dir(parent)
-		.ok()?
+		.ok_or_log(&format!("Failed to read dir {}", parent.display()))?
 		.flatten()
 		.find(|entry| entry.file_name().eq_ignore_ascii_case(child_name))
 		.map(|entry| entry.path())

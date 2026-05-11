@@ -16,7 +16,10 @@ use crate::{
 	http,
 	paths,
 	providers::provider::ProviderId,
-	result::Result,
+	result::{
+		LogErrExt,
+		Result,
+	},
 };
 
 const URL_BASE: &str = "https://raicuparta.github.io/rai-pal-db/game-db";
@@ -39,7 +42,12 @@ pub struct RemoteGame {
 pub fn parse_version(version: &str) -> Option<EngineVersion> {
 	let version_numbers = regex!(r"\d+")
 		.find_iter(version)
-		.filter_map(|capture| capture.as_str().parse::<u32>().ok())
+		.filter_map(|capture| {
+			let capture_str = capture.as_str();
+			capture_str.parse::<u32>().ok_or_log(&format!(
+				"Failed to parse version number from capture `{capture_str}` in version string `{version}`",
+			))
+		})
 		.take(2)
 		.collect::<Vec<_>>();
 

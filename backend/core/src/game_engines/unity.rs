@@ -30,6 +30,7 @@ use crate::{
 	},
 	result::{
 		Error,
+		LogErrExt,
 		Result,
 	},
 };
@@ -56,8 +57,12 @@ pub fn parse_version(string: &str) -> Option<EngineVersion> {
 		display: full.to_string(),
 		numbers: EngineVersionNumbers {
 			major: major.parse().unwrap_or(0),
-			minor: minor.parse().ok(),
-			patch: patch.parse().ok(),
+			minor: minor.parse().ok_or_log(&format!(
+				"Failed to parse minor version number `{minor}` from version string `{string}`"
+			)),
+			patch: patch.parse().ok_or_log(&format!(
+				"Failed to parse patch version number `{patch}` from version string `{string}`"
+			)),
 		},
 		suffix: Some(suffix.to_string()),
 	})

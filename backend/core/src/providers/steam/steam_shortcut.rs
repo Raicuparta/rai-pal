@@ -12,6 +12,7 @@ use steamlocate::SteamDir;
 
 use crate::result::{
 	Error,
+	LogErrExt,
 	Result,
 };
 
@@ -141,14 +142,21 @@ fn create_numbered_backup(shortcuts_path: &Path) -> Result {
 fn get_target_shortcuts_paths(steam_path: &Path) -> Result<Vec<PathBuf>> {
 	let userdata_path = steam_path.join("userdata");
 
-	let candidates = fs::read_dir(userdata_path)?
-		.filter_map(std::result::Result::ok)
-		.filter(|entry| entry.path().is_dir())
-		.filter_map(|entry| {
+	let candidates = fs::read_dir(&userdata_path)?
+		.filter_map(|entry_result| {
+			let entry = entry_result.ok_or_log(&format!(
+				"Failed to handle a steam shortcut candidate in {}",
+				userdata_path.display()
+			))?;
+
 			let path = entry.path();
+			if !path.is_dir() {
+				return None;
+			}
+
 			let user_id = path.file_name()?.to_str()?;
 
-			if !user_id.chars().all(|c| c.is_ascii_digit()) {
+			if !user_id.chars().all(|character| character.is_ascii_digit()) {
 				return None;
 			}
 
@@ -157,7 +165,11 @@ fn get_target_shortcuts_paths(steam_path: &Path) -> Result<Vec<PathBuf>> {
 				.join("config/localconfig.vdf")
 				.metadata()
 				.and_then(|m| m.modified())
-				.unwrap_or_else(|_| {
+				.unwrap_or_else(|error| {
+					log::warn!(
+						"Failed to get modification time for localconfig.vdf at {}: {error}",
+						path.join("config/localconfig.vdf").display(),
+					);
 					entry
 						.metadata()
 						.and_then(|m| m.modified())

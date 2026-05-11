@@ -30,7 +30,10 @@ use crate::{
 		ProviderId,
 		ProviderStatic,
 	},
-	result::Result,
+	result::{
+		LogErrExt,
+		Result,
+	},
 };
 
 #[derive(Clone)]
@@ -47,11 +50,12 @@ impl Itch {
 
 		game.thumbnail_url.clone_from(&row.cover_url);
 
-		if let Some(date_time) = row
-			.published_at
-			.as_ref()
-			.and_then(|published_at| DateTime::parse_from_rfc3339(published_at).ok())
-		{
+		if let Some(date_time) = row.published_at.as_ref().and_then(|published_at| {
+			DateTime::parse_from_rfc3339(published_at).ok_or_log(&format!(
+				"Failed to parse itch published_at `{published_at}` for `{}`",
+				row.title
+			))
+		}) {
 			game.release_date = Some(date_time.timestamp());
 		}
 
@@ -174,8 +178,18 @@ fn get_database(app_data_path: &Path) -> Result<Option<ItchDatabase>> {
 		Ok(ItchDatabaseCave {
 			id: row.get("game_id")?,
 			title: row.get("title")?,
-			verdict: parse_verdict(row.get("verdict").ok().as_ref()),
-			cover_url: row.get("cover_url").ok(),
+			verdict: parse_verdict(
+				row.get("verdict")
+					.ok_or_log(&format!(
+						"Failed to parse itch cave verdict for {}",
+						app_data_path.display()
+					))
+					.as_ref(),
+			),
+			cover_url: row.get("cover_url").ok_or_log(&format!(
+				"Failed to parse itch cave cover_url for {}",
+				app_data_path.display()
+			)),
 		})
 	})?;
 
@@ -192,30 +206,20 @@ fn get_database(app_data_path: &Path) -> Result<Option<ItchDatabase>> {
 		Ok(ItchDatabaseGame {
 			id: row.get(0)?,
 			title: row.get(1)?,
-			url: row.get(2).ok(),
-			published_at: row.get(3).ok(),
-			cover_url: row.get(4).ok(),
+			url: row.get(2).ok_or_log("Failed to read url on itch row"),
+			published_at: row
+				.get(3)
+				.ok_or_log("Failed to read published_at on itch row"),
+			cover_url: row.get(4).ok_or_log("Failed to read cover_url on itch row"),
 		})
 	})?;
 
 	Ok(Some(ItchDatabase {
 		games: game_rows
-			.filter_map(|row| match row {
-				Ok(game) => Some(game),
-				Err(err) => {
-					error!("Failed create itch game from database: {err}");
-					None
-				}
-			})
+			.filter_map(|row| row.ok_or_log("Failed create itch game from database"))
 			.collect(),
 		caves: cave_rows
-			.filter_map(|row| match row {
-				Ok(cave) => Some(cave),
-				Err(err) => {
-					error!("Failed create itch game from database: {err}");
-					None
-				}
-			})
+			.filter_map(|row| row.ok_or_log("Failed create itch cave from database"))
 			.collect(),
 	}))
 }

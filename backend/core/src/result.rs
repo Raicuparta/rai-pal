@@ -199,7 +199,7 @@ where
 		match self {
 			Ok(val) => Some(val),
 			Err(err) => {
-				log::info!("{message}: {err}");
+				log::warn!("{message}: {err}");
 				None
 			}
 		}

@@ -32,12 +32,17 @@ use crate::{
 	game::DbGame,
 	game_engines::game_engine::EngineVersion,
 	paths::glob_path,
+	result::LogErrExt,
 };
 
 fn get_version_from_metadata(
 	file_bytes: &[u8],
 	architecture: Architecture,
 ) -> Option<EngineVersion> {
+	#[allow(
+		clippy::disallowed_methods,
+		reason = "Errors from PeFile parsing are expected."
+	)]
 	let version = if architecture == Architecture::X86 {
 		PeFile32::from_bytes(&file_bytes)
 			.ok()?
@@ -108,8 +113,14 @@ fn get_version_from_build_version_file(exe_path: &Path) -> Option<EngineVersion>
 		.into_iter()
 		.next()?;
 
-	let content = fs::read_to_string(&build_version_path).ok()?;
-	let value = serde_json::from_str::<serde_json::Value>(&content).ok()?;
+	let content = fs::read_to_string(&build_version_path).ok_or_log(&format!(
+		"Failed to read build version file {}",
+		build_version_path.display()
+	))?;
+	let value = serde_json::from_str::<serde_json::Value>(&content).ok_or_log(&format!(
+		"Failed to parse build version file as json {}",
+		build_version_path.display()
+	))?;
 	let (Some(major), Some(minor), Some(patch), Some(changelist)) = (
 		value["MajorVersion"].as_u64(),
 		value["MinorVersion"].as_u64(),
@@ -122,9 +133,12 @@ fn get_version_from_build_version_file(exe_path: &Path) -> Option<EngineVersion>
 	let display = format!("{major}.{minor}.{patch}.{changelist}");
 	Some(EngineVersion {
 		numbers: EngineVersionNumbers {
-			major: u32::try_from(major).ok()?,
-			minor: u32::try_from(minor).ok(),
-			patch: u32::try_from(patch).ok(),
+			major: u32::try_from(major)
+				.ok_or_log(&format!("Failed to convert version part {major}"))?,
+			minor: u32::try_from(minor)
+				.ok_or_log(&format!("Failed to convert version part {minor}")),
+			patch: u32::try_from(patch)
+				.ok_or_log(&format!("Failed to convert version part {patch}")),
 		},
 		suffix: None,
 		display,
@@ -181,7 +195,9 @@ fn parse_version(string: &str) -> Option<EngineVersion> {
 	Some(EngineVersion {
 		numbers: EngineVersionNumbers {
 			major: major.parse().unwrap_or(0),
-			minor: minor.parse().ok(),
+			minor: minor.parse().ok_or_log(&format!(
+				"Failed to parse minor version number `{minor}` from version string `{string}`"
+			)),
 			patch: None,
 		},
 		suffix: None,
