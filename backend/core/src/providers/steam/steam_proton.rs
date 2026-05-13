@@ -12,6 +12,10 @@ use steamlocate::SteamDir;
 
 use crate::{
 	game::DbGame,
+	paths::{
+		self,
+		AsValidStr,
+	},
 	result::Result,
 };
 
@@ -122,6 +126,11 @@ pub fn run_with_wine(game: &DbGame, exe_path: &Path, args: &[String]) -> Result 
 		.env("WINEPREFIX", &wine_prefix_path)
 		.env("STEAM_COMPAT_DATA_PATH", compat_data_path)
 		.env("WINEFSYNC", "1")
+		// TODO: This is only for UEVR
+		.env(
+			"DOTNET_ROOT",
+			paths::path_parent(exe_path)?.join("dotnet").try_to_str()?,
+		)
 		.arg(exe_path)
 		.args(args)
 		.spawn()?;
