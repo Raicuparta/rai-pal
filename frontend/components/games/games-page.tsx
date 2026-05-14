@@ -22,15 +22,19 @@ export function GamesPage() {
 	return (
 		<Stack h="100%">
 			{game && (
-				<Group>
-					<Button
-						onClick={() => setSelectedGame(null)}
-						leftSection={<IconArrowLeft />}
-					>
-						{/* TODO: translate */}
-						Back to game list
-					</Button>
-				</Group>
+				<>
+					<Group>
+						<Button
+							onClick={() => setSelectedGame(null)}
+							leftSection={<IconArrowLeft />}
+						>
+							{/* TODO: translate */}
+							Back to game list
+						</Button>
+					</Group>
+
+					<GameModal game={game} />
+				</>
 			)}
 			{!game && (
 				<Group>
@@ -39,10 +43,8 @@ export function GamesPage() {
 					<RefreshButton />
 				</Group>
 			)}
-			{game && <GameModal game={game} />}
 			<Stack
 				flex={1}
-				hidden={Boolean(game)}
 				display={game ? "none" : undefined}
 			>
 				<GamesTable />

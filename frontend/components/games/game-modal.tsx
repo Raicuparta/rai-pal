@@ -33,7 +33,10 @@ export function GameModal({ game }: Props) {
 	const { providerId, gameId } = game;
 
 	return (
-		<Stack style={{ overflowY: "scroll" }}>
+		<Stack
+			flex={1}
+			style={{ overflowY: "scroll" }}
+		>
 			<Group align="start">
 				<TableContainer>
 					<Table highlightOnHover>

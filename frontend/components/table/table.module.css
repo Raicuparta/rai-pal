@@ -21,14 +21,28 @@ div.table {
 	tr {
 		border-bottom: 2px solid var(--mantine-color-dark-7);
 	}
+
+	table {
+		table-layout: fixed;
+	}
+
+	tbody {
+
+		tr,
+		td {
+			/* Needs to be consistent with height set in game-row.tsx ugh. TODO: fix that. */
+			height: 60px;
+			max-height: 60px;
+			min-height: 60px;
+		}
+	}
 }
 
 .sortable {
 	cursor: pointer;
+
 	&:hover {
-		background: light-dark(
-			var(--mantine-color-gray-3),
-			var(--mantine-color-dark-7)
-		);
+		background: light-dark(var(--mantine-color-gray-3),
+				var(--mantine-color-dark-7));
 	}
 }

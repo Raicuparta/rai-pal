@@ -1,4 +1,4 @@
-import { Alert, Divider, Table } from "@mantine/core";
+import { Alert, Divider, Stack, Table } from "@mantine/core";
 import { EngineVersionRange, DbGame, commands } from "@api/bindings";
 import { useCallback, useMemo } from "react";
 import { CommandButton } from "@components/command-button";
@@ -184,9 +184,9 @@ export function GameMods({ game }: Props) {
 	}
 
 	return (
-		<>
+		<Stack>
 			{compatibleMods.length > 0 && (
-				<>
+				<Stack>
 					<Divider label={t("gameModsLabel")} />
 					{!game.exePath && (
 						<Alert color="orange">{t("gameNotInstalledWarning")}</Alert>
@@ -207,7 +207,7 @@ export function GameMods({ game }: Props) {
 							</Table.Tbody>
 						</Table>
 					</TableContainer>
-				</>
+				</Stack>
 			)}
 			{game.exePath && (
 				<CommandButton
@@ -223,7 +223,7 @@ export function GameMods({ game }: Props) {
 				</CommandButton>
 			)}
 			{incompatibleMods.length > 0 && (
-				<>
+				<Stack>
 					<Divider label={t("incompatibleGameModsLabel")} />
 					<MutedText>{t("incompatibleGameModsDescription")}</MutedText>
 					<TableContainer bg="dark">
@@ -242,8 +242,8 @@ export function GameMods({ game }: Props) {
 							</Table.Tbody>
 						</Table>
 					</TableContainer>
-				</>
+				</Stack>
 			)}
-		</>
+		</Stack>
 	);
 }
