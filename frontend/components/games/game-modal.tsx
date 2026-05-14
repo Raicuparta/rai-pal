@@ -1,5 +1,5 @@
 import { Alert, Group, Modal, Stack, Table } from "@mantine/core";
-import { commands, ProviderId } from "@api/bindings";
+import { commands, DbGame, ProviderId } from "@api/bindings";
 import { CommandButton } from "@components/command-button";
 import {
 	IconFolder,
@@ -22,20 +22,15 @@ import { RemoveGameButton } from "./remove-game-button";
 import { GameMods } from "./game-mods";
 
 type Props = {
-	readonly providerId: ProviderId;
-	readonly gameId: string;
+	readonly game: DbGame;
 };
 
-export function GameModal({ providerId, gameId }: Props) {
+export function GameModal({ game }: Props) {
 	const t = useLocalization("gameModal");
-	const game = useGame(providerId, gameId);
 	const setSelectedGame = useSetAtom(selectedGameAtom);
 
 	const close = () => setSelectedGame(null);
-
-	if (!game) {
-		return null;
-	}
+	const { providerId, gameId } = game;
 
 	return (
 		<Stack style={{ overflowY: "scroll" }}>

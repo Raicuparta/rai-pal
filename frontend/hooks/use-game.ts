@@ -3,9 +3,10 @@ import { useAppEvent } from "./use-app-event";
 import { useCommandData } from "./use-command-data";
 import { useCallback } from "react";
 
-export function useGame(providerId: ProviderId, gameId: string) {
+export function useGame(providerId?: ProviderId, gameId?: string) {
 	const getGame = useCallback(
-		() => commands.getGame(providerId, gameId),
+		async () =>
+			providerId && gameId ? commands.getGame(providerId, gameId) : null,
 		[providerId, gameId],
 	);
 

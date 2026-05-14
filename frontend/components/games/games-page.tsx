@@ -8,6 +8,7 @@ import { selectedGameAtom } from "./games-state";
 import { GamesTable } from "./games-table";
 import { GameModal } from "./game-modal";
 import { IconArrowLeft } from "@tabler/icons-react";
+import { useGame } from "@hooks/use-game";
 
 export function GamesPage() {
 	const [selectedGame, setSelectedGame] = useAtom(selectedGameAtom);
@@ -16,35 +17,33 @@ export function GamesPage() {
 		setSelectedGame({ providerId, gameId });
 	});
 
+	const game = useGame(selectedGame?.providerId, selectedGame?.gameId);
+
 	return (
 		<Stack h="100%">
-			{selectedGame && (
+			{game && (
 				<Group>
 					<Button
 						onClick={() => setSelectedGame(null)}
 						leftSection={<IconArrowLeft />}
 					>
+						{/* TODO: translate */}
 						Back to game list
 					</Button>
 				</Group>
 			)}
-			{!selectedGame && (
+			{!game && (
 				<Group>
 					<AddGame />
 					<FilterMenu />
 					<RefreshButton />
 				</Group>
 			)}
-			{selectedGame && (
-				<GameModal
-					providerId={selectedGame.providerId}
-					gameId={selectedGame.gameId}
-				/>
-			)}
+			{game && <GameModal game={game} />}
 			<Stack
 				flex={1}
-				hidden={Boolean(selectedGame)}
-				display={selectedGame ? "none" : undefined}
+				hidden={Boolean(game)}
+				display={game ? "none" : undefined}
 			>
 				<GamesTable />
 			</Stack>
