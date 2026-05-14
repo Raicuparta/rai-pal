@@ -13,10 +13,6 @@ use steamlocate::SteamDir;
 
 use crate::{
 	game::DbGame,
-	paths::{
-		self,
-		AsValidStr,
-	},
 	result::Result,
 };
 
@@ -127,8 +123,6 @@ pub fn run_with_wine(
 			),
 		)
 	})?;
-
-	log::info!("wine env: {:#?}", wine_env);
 
 	let child = Command::new(&wine_binary_path)
 		.env("WINEPREFIX", &wine_prefix_path)

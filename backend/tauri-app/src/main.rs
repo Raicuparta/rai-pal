@@ -214,6 +214,10 @@ async fn install_mod(
 	mod_id: &str,
 	handle: AppHandle,
 ) -> Result {
+	log::info!(
+		"Installing mod with id '{mod_id}' for game '{game_id}' from provider '{provider_id}'"
+	);
+
 	let state = handle.app_state();
 	let game = state.database.get_game(&provider_id, &game_id)?;
 

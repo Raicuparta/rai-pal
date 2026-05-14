@@ -205,6 +205,11 @@ export type ModConfigs = {
 	modIdOverride: string | null,
 };
 
+export type ModDependency = {
+	modId: string,
+	operatingSystems: string[] | null,
+};
+
 export type ModDownload = {
 	id: string,
 	url: string,
@@ -257,6 +262,7 @@ export type RemoteModData = {
 	description: string,
 	latestVersion: ModDownload | null,
 	configs: ModConfigs | null,
+	dependencies: ModDependency[] | null,
 };
 
 export type RemoteModLoader = {

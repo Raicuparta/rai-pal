@@ -48,6 +48,7 @@ pub struct DatabaseEntry {
 	pub redownload_id: Option<i32>,
 	pub deprecated: Option<bool>,
 	pub configs: Option<ModConfigs>,
+	pub dependencies: Option<Vec<ModDependency>>,
 }
 
 #[serializable_struct]
@@ -75,6 +76,12 @@ pub struct ModConfigs {
 	pub destination_path: String,
 	pub destination_type: ModConfigDestinationType,
 	pub mod_id_override: Option<String>,
+}
+
+#[serializable_struct]
+pub struct ModDependency {
+	pub mod_id: String,
+	pub operating_systems: Option<Vec<String>>,
 }
 
 #[serializable_enum]

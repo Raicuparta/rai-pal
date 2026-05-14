@@ -41,7 +41,7 @@ type Props = {
 	readonly remoteConfigs?: RemoteConfigs | null;
 	readonly installedVersion?: string;
 	readonly incompatible?: boolean;
-	readonly loaderModId?: string;
+	readonly missingDependencies?: string[];
 };
 
 export function GameModRow({
@@ -49,8 +49,8 @@ export function GameModRow({
 	mod,
 	installedVersion,
 	remoteConfigs,
+	missingDependencies,
 	incompatible = false,
-	loaderModId,
 }: Props) {
 	const t = useLocalization("gameModRow");
 
@@ -88,8 +88,12 @@ export function GameModRow({
 			return commands.uninstallMod(game.providerId, game.gameId, mod.common.id);
 		}
 
-		if (loaderModId) {
-			await commands.installMod(game.providerId, game.gameId, loaderModId);
+		if (missingDependencies) {
+			await Promise.all(
+				missingDependencies.map((dependencyId) =>
+					commands.installMod(game.providerId, game.gameId, dependencyId),
+				),
+			);
 		}
 
 		await commands.installMod(game.providerId, game.gameId, mod.common.id);

@@ -153,7 +153,7 @@ export function GameMods({ game }: Props) {
 		return null;
 	}
 
-	function getRequiredLoaderModId(mod: UnifiedMod): string | undefined {
+	function getLoaderDependency(mod: UnifiedMod): string | undefined {
 		if (mod.common.isLoader) return undefined;
 
 		const loaderModId = compatibleMods.find((m) => m.common.isLoader)?.common
@@ -166,12 +166,16 @@ export function GameMods({ game }: Props) {
 			return undefined;
 		}
 
-		if (installedModVersions[loaderModId]) {
-			// No need to reinstall loader if already installed.
-			return undefined;
-		}
-
 		return loaderModId;
+	}
+
+	function getMissingDepdendencies(mod: UnifiedMod): string[] {
+		const loaderDependency = getLoaderDependency(mod);
+		return [
+			...(mod.remote?.dependencies?.map((dependency) => dependency.modId) ??
+				[]),
+			...(loaderDependency ? [loaderDependency] : []),
+		].filter((dependencyId) => !installedModVersions[dependencyId]);
 	}
 
 	return (
@@ -192,7 +196,7 @@ export function GameMods({ game }: Props) {
 										mod={mod}
 										remoteConfigs={remoteConfigs}
 										installedVersion={installedModVersions[mod.common.id]}
-										loaderModId={getRequiredLoaderModId(mod)}
+										missingDependencies={getMissingDepdendencies(mod)}
 									/>
 								))}
 							</Table.Tbody>

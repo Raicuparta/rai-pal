@@ -19,6 +19,7 @@ use crate::{
 		self,
 		ModConfigs,
 		ModDatabase,
+		ModDependency,
 		ModDownload,
 	},
 	mod_manifest,
@@ -39,6 +40,7 @@ pub struct RemoteModData {
 	pub description: String,
 	pub latest_version: Option<ModDownload>,
 	pub configs: Option<ModConfigs>,
+	pub dependencies: Option<Vec<ModDependency>>,
 }
 
 #[serializable_struct]
@@ -127,6 +129,7 @@ where
 				latest_version: database_mod.get_download().await,
 				deprecated: database_mod.deprecated.unwrap_or(false),
 				configs: database_mod.configs.clone(),
+				dependencies: database_mod.dependencies.clone(),
 			},
 		};
 

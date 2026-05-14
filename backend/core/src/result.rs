@@ -174,6 +174,9 @@ pub enum Error {
 
 	#[error("Failed to find mod manifest in path: `{0}`")]
 	ManifestNotFound(String),
+
+	#[error("Unsupported operation: `{0}`")]
+	UnsupportedOperation(String),
 }
 
 impl serde::Serialize for Error {

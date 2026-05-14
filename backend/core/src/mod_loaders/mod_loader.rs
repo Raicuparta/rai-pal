@@ -29,9 +29,12 @@ use crate::{
 		LocalMod,
 		ModKind,
 	},
-	mod_loaders::mod_database::{
-		ModConfigDestinationType,
-		ModConfigs,
+	mod_loaders::{
+		mod_database::{
+			ModConfigDestinationType,
+			ModConfigs,
+		},
+		package::PackageLoader,
 	},
 	paths::{
 		self,
@@ -130,6 +133,7 @@ pub enum ModLoader {
 	BepInEx,
 	Ue4ss,
 	RunnableLoader,
+	PackageLoader,
 }
 
 #[enum_dispatch(ModLoader)]
@@ -288,6 +292,7 @@ pub fn get_map(resources_path: &Path) -> Map {
 	add_entry::<BepInEx>(resources_path, &mut map);
 	add_entry::<Ue4ss>(resources_path, &mut map);
 	add_entry::<RunnableLoader>(resources_path, &mut map);
+	add_entry::<PackageLoader>(resources_path, &mut map);
 
 	map
 }
