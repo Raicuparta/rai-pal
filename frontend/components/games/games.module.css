@@ -2,6 +2,11 @@
 	overflow-y: scroll;
 }
 
+.gameInfoTable {
+	border-top-right-radius: 0 !important;
+	border-bottom-right-radius: 0 !important;
+}
+
 .engineWrapper {
 	overflow: hidden;
 	text-align: center;
