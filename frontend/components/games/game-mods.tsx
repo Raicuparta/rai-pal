@@ -160,8 +160,9 @@ export function GameMods({ game }: Props) {
 	function getLoaderDependency(mod: UnifiedMod): string | undefined {
 		if (mod.common.isLoader) return undefined;
 
-		const loaderModId = compatibleMods.find((m) => m.common.isLoader)?.common
-			.id;
+		const loaderModId = compatibleMods.find(
+			(m) => m.common.isLoader && m.common.loaderId === mod.common.loaderId,
+		)?.common.id;
 
 		if (!loaderModId) {
 			console.error(
