@@ -195,7 +195,8 @@ export function GameModRow({
 								confirmationText={
 									isInstalled
 										? undefined
-										: "Attention: be careful when installing mods on multiplayer games! Anticheat can detect some mods and get you banned, even if the mods seem harmless."
+										: // TODO: translate
+											"Attention: be careful when installing mods on multiplayer games! Anticheat can detect some mods and get you banned, even if the mods seem harmless."
 								}
 								confirmationSkipId={
 									isInstalled ? undefined : "install-mod-confirm"

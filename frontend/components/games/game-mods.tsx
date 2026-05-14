@@ -111,6 +111,10 @@ export function GameMods({ game }: Props) {
 		const incompatibleMods: UnifiedMod[] = [];
 
 		for (const mod of Object.values(mods)) {
+			if (mod.common.loaderId === "package") {
+				continue;
+			}
+
 			const isCompatibleEngine =
 				!mod.common.engine || mod.common.engine === game.engineBrand;
 			const isCompatibleUnityBackend =
