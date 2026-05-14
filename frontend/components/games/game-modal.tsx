@@ -38,75 +38,70 @@ export function GameModal({ providerId, gameId }: Props) {
 	}
 
 	return (
-		<Modal
-			centered
-			onClose={close}
-			opened
-			size="xl"
-			title={game.displayTitle}
-		>
-			<Stack>
-				<Group align="start">
-					<TableContainer>
-						<Table>
-							<Table.Thead>
-								<TableHead columns={gamesColumns} />
-							</Table.Thead>
-							<Table.Tbody>
-								<GameRowInner game={game} />
-							</Table.Tbody>
-						</Table>
-					</TableContainer>
-				</Group>
-				<Group>
-					<ProviderCommandButtons game={game} />
-					{game.exePath && (
-						<CommandDropdown
-							label={t("foldersDropdown")}
-							icon={<IconFolderOpen />}
-						>
-							<CommandButton
-								leftSection={<IconFolder />}
-								onClick={() => commands.openGameFolder(providerId, gameId)}
-							>
-								{t("openGameFilesFolder")}
-							</CommandButton>
-							<CommandButton
-								leftSection={<IconFolderCog />}
-								onClick={() => commands.openGameModsFolder(providerId, gameId)}
-							>
-								{t("openInstalledModsFolder")}
-							</CommandButton>
-						</CommandDropdown>
-					)}
-					{providerId === "Manual" && (
-						<RemoveGameButton
-							providerId={providerId}
-							gameId={gameId}
-						/>
-					)}
-					{game.exePath && (
-						<CommandButton
-							onClick={() => commands.refreshGame(providerId, gameId)}
-							leftSection={<IconRefresh />}
-						>
-							{t("refreshGame")}
-						</CommandButton>
-					)}
-				</Group>
+		<Stack style={{ overflowY: "scroll" }}>
+			<Group align="start">
+				<TableContainer>
+					<Table highlightOnHover>
+						<Table.Thead>
+							<TableHead columns={gamesColumns} />
+						</Table.Thead>
+						<Table.Tbody>
+							<GameRowInner
+								game={game}
+								onClick={close}
+							/>
+						</Table.Tbody>
+					</Table>
+				</TableContainer>
+			</Group>
+			<Group>
+				<ProviderCommandButtons game={game} />
 				{game.exePath && (
-					<>
-						{game.engineBrand && !game.architecture && (
-							<Alert color="red">{t("failedToReadGameInfo")}</Alert>
-						)}
-						{!game.engineBrand && (
-							<Alert color="red">{t("failedToDetermineEngine")}</Alert>
-						)}
-					</>
+					<CommandDropdown
+						label={t("foldersDropdown")}
+						icon={<IconFolderOpen />}
+					>
+						<CommandButton
+							leftSection={<IconFolder />}
+							onClick={() => commands.openGameFolder(providerId, gameId)}
+						>
+							{t("openGameFilesFolder")}
+						</CommandButton>
+						<CommandButton
+							leftSection={<IconFolderCog />}
+							onClick={() => commands.openGameModsFolder(providerId, gameId)}
+						>
+							{t("openInstalledModsFolder")}
+						</CommandButton>
+					</CommandDropdown>
 				)}
-				<GameMods game={game} />
-				<DebugData data={game} />
-			</Stack>
-		</Modal>
+				{providerId === "Manual" && (
+					<RemoveGameButton
+						providerId={providerId}
+						gameId={gameId}
+					/>
+				)}
+				{game.exePath && (
+					<CommandButton
+						onClick={() => commands.refreshGame(providerId, gameId)}
+						leftSection={<IconRefresh />}
+					>
+						{t("refreshGame")}
+					</CommandButton>
+				)}
+			</Group>
+			{game.exePath && (
+				<>
+					{game.engineBrand && !game.architecture && (
+						<Alert color="red">{t("failedToReadGameInfo")}</Alert>
+					)}
+					{!game.engineBrand && (
+						<Alert color="red">{t("failedToDetermineEngine")}</Alert>
+					)}
+				</>
+			)}
+			<GameMods game={game} />
+			<DebugData data={game} />
+		</Stack>
 	);
 }
