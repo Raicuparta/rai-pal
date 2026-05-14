@@ -1,4 +1,5 @@
 use std::{
+	collections::HashMap,
 	fs,
 	io,
 	path::{
@@ -91,7 +92,12 @@ fn get_wine_binary_for_game(game: &DbGame) -> Option<PathBuf> {
 	Some(proton_files_path.join("bin").join("wine"))
 }
 
-pub fn run_with_wine(game: &DbGame, exe_path: &Path, args: &[String]) -> Result {
+pub fn run_with_wine(
+	game: &DbGame,
+	exe_path: &Path,
+	args: &[String],
+	wine_env: &HashMap<String, String>,
+) -> Result {
 	let wine_prefix_path = get_wine_prefix_path_for_game(game).ok_or_else(|| {
 		io::Error::new(
 			io::ErrorKind::NotFound,
@@ -122,15 +128,13 @@ pub fn run_with_wine(game: &DbGame, exe_path: &Path, args: &[String]) -> Result 
 		)
 	})?;
 
+	log::info!("wine env: {:#?}", wine_env);
+
 	let child = Command::new(&wine_binary_path)
 		.env("WINEPREFIX", &wine_prefix_path)
 		.env("STEAM_COMPAT_DATA_PATH", compat_data_path)
 		.env("WINEFSYNC", "1")
-		// TODO: This is only for UEVR
-		.env(
-			"DOTNET_ROOT",
-			paths::path_parent(exe_path)?.join("dotnet").try_to_str()?,
-		)
+		.envs(wine_env)
 		.arg(exe_path)
 		.args(args)
 		.spawn()?;

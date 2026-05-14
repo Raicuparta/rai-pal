@@ -1,4 +1,7 @@
-use std::path::Path;
+use std::{
+	collections::HashMap,
+	path::Path,
+};
 
 use enum_dispatch::enum_dispatch;
 use rai_pal_proc_macros::serializable_enum;
@@ -76,7 +79,13 @@ pub trait ProviderActions {
 	fn set_wine_dll_overrides(&self, _game: &DbGame, _dll_overrides: &[String]) -> Result {
 		Ok(())
 	}
-	fn run_with_wine(&self, _game: &DbGame, _exe_path: &Path, _args: &[String]) -> Result {
+	fn run_with_wine(
+		&self,
+		_game: &DbGame,
+		_exe_path: &Path,
+		_args: &[String],
+		_wine_env: &HashMap<String, String>,
+	) -> Result {
 		Ok(())
 	}
 }

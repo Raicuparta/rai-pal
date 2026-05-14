@@ -79,6 +79,7 @@ pub enum ModLoaderId {
 	BepInEx,
 	Ue4ss,
 	Runnable,
+	Package,
 }
 
 impl ModLoaderId {
@@ -87,6 +88,7 @@ impl ModLoaderId {
 			Self::BepInEx => "bepinex",
 			Self::Ue4ss => "ue4ss",
 			Self::Runnable => "runnable",
+			Self::Package => "package",
 		}
 	}
 }

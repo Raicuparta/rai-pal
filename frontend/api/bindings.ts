@@ -221,7 +221,7 @@ export type ModLoaderData = {
 	engine: EngineBrand | null,
 };
 
-export type ModLoaderId = "bepinex" | "ue4ss" | "runnable";
+export type ModLoaderId = "bepinex" | "ue4ss" | "runnable" | "package";
 
 export type PathData = string;
 
@@ -271,6 +271,7 @@ export type RemoteModLoaderData = {
 export type RunnableModData = {
 	path: string,
 	args: string[],
+	wineEnvironment: { [key in string]: string } | null,
 };
 
 export type SelectGame = [ProviderId, string];

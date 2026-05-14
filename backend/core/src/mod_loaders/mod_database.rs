@@ -1,4 +1,7 @@
-use std::path::PathBuf;
+use std::{
+	collections::HashMap,
+	path::PathBuf,
+};
 
 use lazy_regex::regex_captures;
 use log::error;
@@ -51,6 +54,7 @@ pub struct DatabaseEntry {
 pub struct RunnableModData {
 	pub path: String,
 	pub args: Vec<String>,
+	pub wine_environment: Option<HashMap<String, String>>,
 }
 
 #[serializable_struct]

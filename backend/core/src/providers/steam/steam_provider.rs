@@ -355,8 +355,14 @@ impl ProviderActions for Steam {
 	}
 
 	#[cfg(target_os = "linux")]
-	fn run_with_wine(&self, game: &DbGame, exe_path: &Path, args: &[String]) -> Result {
-		steam_proton::run_with_wine(game, exe_path, args)
+	fn run_with_wine(
+		&self,
+		game: &DbGame,
+		exe_path: &Path,
+		args: &[String],
+		wine_env: &HashMap<String, String>,
+	) -> Result {
+		steam_proton::run_with_wine(game, exe_path, args, wine_env)
 	}
 }
 

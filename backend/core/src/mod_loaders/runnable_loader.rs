@@ -55,7 +55,10 @@ pub enum RunnableParameter {
 	StartCommand,
 	StartCommandArgs,
 	RoamingAppData,
+	RunnablePath,
+	LocalModsPath,
 	// If adding new parameters, remember to update runnable_schema.json in rai-pal-db repo.
+	// (and bump the database version).
 }
 
 impl ModLoaderStatic for RunnableLoader {
@@ -100,7 +103,7 @@ fn replace_parameter_value<TValue: AsRef<str>, TGetValue: Fn() -> Result<TValue>
 	}
 }
 
-fn replace_parameters(base_string: &str, game: &DbGame) -> String {
+fn replace_parameters(base_string: &str, game: &DbGame, runnable_mod: Option<&LocalMod>) -> String {
 	let mut result = base_string.to_string();
 
 	let provider_commands = &game.provider_commands.0;
@@ -148,6 +151,21 @@ fn replace_parameters(base_string: &str, game: &DbGame) -> String {
 			.to_string_lossy()
 			.to_string())
 	});
+	result = replace_parameter_value(&result, RunnableParameter::LocalModsPath, || {
+		Ok(paths::local_mods_path()?.to_string_lossy().to_string())
+	});
+	if let Some(runnable) = runnable_mod
+		&& let Some(runnable_data) = runnable.data.manifest.runnable.as_ref()
+	{
+		result = replace_parameter_value(&result, RunnableParameter::RunnablePath, || {
+			Ok(runnable
+				.data
+				.path
+				.join(&runnable_data.path)
+				.to_string_lossy()
+				.to_string())
+		});
+	}
 
 	result
 }
@@ -168,17 +186,37 @@ impl ModLoaderActions for RunnableLoader {
 		let args: Vec<String> = runnable
 			.args
 			.iter()
-			.map(|arg| replace_parameters(arg, game))
+			.map(|arg| replace_parameters(arg, game, Some(local_mod)))
 			.collect();
 
 		#[cfg(target_os = "linux")]
 		{
+			use std::collections::HashMap;
+
 			use crate::providers::provider::ProviderActions;
+
+			let wine_environment: HashMap<String, String> = runnable
+				.wine_environment
+				.clone()
+				.unwrap_or_default()
+				.iter()
+				.map(|(key, value)| {
+					(
+						key.clone(),
+						replace_parameters(value, game, Some(local_mod)),
+					)
+				})
+				.collect();
 
 			let provider = provider::get_provider(game.provider_id)
 				.ok_or_else(|| Error::DataEntryNotFound(game.provider_id.to_string()))??;
 
-			provider.run_with_wine(game, &local_mod.data.path.join(&runnable.path), &args)?;
+			provider.run_with_wine(
+				game,
+				&local_mod.data.path.join(&runnable.path),
+				&args,
+				&wine_environment,
+			)?;
 		}
 
 		#[cfg(target_os = "windows")]
@@ -221,6 +259,7 @@ impl ModLoaderActions for RunnableLoader {
 		Ok(PathBuf::from(replace_parameters(
 			&mod_configs.destination_path,
 			game,
+			None,
 		)))
 	}
 }
