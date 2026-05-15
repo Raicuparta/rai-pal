@@ -113,7 +113,6 @@ impl ModLoaderActions for Ue4ss {
 		let game_data_folder = game.get_installed_mods_folder()?;
 		let mod_folder = game_data_folder
 			.join("ue4ss")
-			.join("UE4SS")
 			.join("Mods")
 			.join(&local_mod.common.id);
 
@@ -124,7 +123,6 @@ impl ModLoaderActions for Ue4ss {
 		Ok(game
 			.get_installed_mods_folder()?
 			.join("ue4ss")
-			.join("UE4SS")
 			.join(&mod_configs.destination_path))
 	}
 }
