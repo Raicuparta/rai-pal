@@ -91,7 +91,13 @@ export function GameModRow({
 			);
 		}
 
-		await commands.installMod(game.providerId, game.gameId, mod.common.id);
+		if (mod.remote?.install) {
+			await commands.installMod(game.providerId, game.gameId, mod.common.id);
+		}
+
+		if (mod.remote?.runForGame) {
+			await commands.runMod(game.providerId, game.gameId, mod.common.id);
+		}
 
 		if (availableRemoteConfig) {
 			await commands.downloadRemoteConfig(

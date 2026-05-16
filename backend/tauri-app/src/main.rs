@@ -226,6 +226,28 @@ async fn install_mod(
 
 #[tauri::command]
 #[specta::specta]
+async fn run_mod(
+	provider_id: ProviderId,
+	game_id: String,
+	mod_id: &str,
+	handle: AppHandle,
+) -> Result {
+	log::info!("Running mod with id '{mod_id}' for game '{game_id}' from provider '{provider_id}'");
+
+	let state = handle.app_state();
+	let game = state.database.get_game(&provider_id, &game_id)?;
+
+	let local_mod = refresh_and_get_local_mod(mod_id, &handle).await?;
+
+	local_mod.run(&game).await?;
+
+	analytics::send_event(analytics::Event::InstallOrRunMod, mod_id).await;
+
+	Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
 async fn run_runnable_without_game(mod_id: &str, handle: AppHandle) -> Result {
 	let local_mod = refresh_and_get_local_mod(mod_id, &handle).await?;
 
@@ -632,6 +654,7 @@ fn main() {
 			get_local_mods,
 			get_remote_mods,
 			install_mod,
+			run_mod,
 			open_game_folder,
 			open_game_mods_folder,
 			open_installed_mod_folder,

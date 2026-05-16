@@ -85,6 +85,10 @@ impl LocalMod {
 		todo!();
 	}
 
+	pub async fn run(&self, game: &DbGame) -> Result {
+		todo!();
+	}
+
 	pub async fn uninstall(&self, game: &DbGame) -> Result {
 		todo!();
 	}
