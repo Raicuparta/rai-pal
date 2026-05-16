@@ -30,9 +30,14 @@ use crate::{
 	game_mods::{
 		mod_config::ModConfig,
 		mod_database::ModDatabase,
+		replacement_token::replace_tokens,
 	},
 	operating_system::OperatingSystem,
 	paths,
+	providers::provider::{
+		self,
+		ProviderActions,
+	},
 	result::{
 		Error,
 		LogErrExt,
@@ -127,8 +132,48 @@ impl GameMod {
 		paths::open_folder_or_parent(&self.get_local_folder_path()?)
 	}
 
-	pub async fn install(&self, game: &DbGame) -> Result {
-		todo!();
+	pub fn install(&self, game: &DbGame) -> Result {
+		let install = self.install.as_ref().ok_or_else(|| {
+			Error::ModInstallInfoInsufficient("install".to_string(), game.display_title.clone())
+		})?;
+
+		let local_mod_path = self.get_local_folder_path()?;
+
+		if let Some(extract_actions) = install.extract.as_ref() {
+			for extract_action in extract_actions {
+				let source_path = local_mod_path.join(&extract_action.source);
+				let destination_path =
+					PathBuf::from(replace_tokens(&extract_action.destination, game));
+
+				if source_path.is_dir() {
+					files::copy_dir_all(&source_path, &destination_path)?;
+				} else {
+					fs::create_dir_all(paths::path_parent(&destination_path)?)?;
+					fs::copy(&source_path, &destination_path)?;
+				}
+			}
+		}
+
+		if let Some(write_actions) = install.write.as_ref() {
+			for write_action in write_actions {
+				let destination_path =
+					PathBuf::from(replace_tokens(&write_action.destination, game));
+				let content = replace_tokens(&write_action.content, game);
+
+				fs::create_dir_all(paths::path_parent(&destination_path)?)?;
+				fs::write(destination_path, content)?;
+			}
+		}
+
+		if let Some(wine_dll_overrides) = install.wine_dll_overrides.as_ref() {
+			let provider = provider::get_provider(game.provider_id)
+				.ok_or_else(|| Error::DataEntryNotFound(game.provider_id.to_string()))??;
+			provider.set_wine_dll_overrides(game, wine_dll_overrides)?;
+		}
+
+		self.update_installed_mod_manifest(game)?;
+
+		Ok(())
 	}
 
 	pub async fn run(&self, game: &DbGame) -> Result {
@@ -136,7 +181,7 @@ impl GameMod {
 	}
 
 	pub async fn uninstall(&self, game: &DbGame) -> Result {
-		todo!();
+		Ok(()) // TODO
 	}
 
 	pub async fn run_without_game(&self) -> Result {

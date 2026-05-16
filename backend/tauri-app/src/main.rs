@@ -199,7 +199,7 @@ async fn install_mod(
 	// Uninstall mod if it already exists, in case there are conflicting leftover files when updating.
 	local_mod.uninstall(&game).await?;
 
-	local_mod.install(&game).await?;
+	local_mod.install(&game)?;
 
 	handle.emit_safe(events::RefreshGame(provider_id, game_id));
 
