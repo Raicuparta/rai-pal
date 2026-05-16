@@ -174,6 +174,9 @@ pub enum Error {
 
 	#[error("Unsupported operation: `{0}`")]
 	UnsupportedOperation(String),
+
+	#[error("Required information for mod with ID `{0}` is missing. Expected `{1}`")]
+	ModInfoMissing(String, String),
 }
 
 impl serde::Serialize for Error {

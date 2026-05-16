@@ -128,15 +128,19 @@ impl GameMod {
 			}
 		}
 	}
-	pub fn open_folder(&self) -> Result {
+
+	pub fn open_local_folder(&self) -> Result {
 		paths::open_folder_or_parent(&self.get_local_folder_path()?)
 	}
 
-	pub fn install(&self, game: &DbGame) -> Result {
-		let install = self.install.as_ref().ok_or_else(|| {
-			Error::ModInstallInfoInsufficient("install".to_string(), game.display_title.clone())
-		})?;
+	fn get_install(&self) -> Result<&ModInstall> {
+		self.install
+			.as_ref()
+			.ok_or_else(|| Error::ModInfoMissing(self.id.clone(), "install".to_string()))
+	}
 
+	pub fn install(&self, game: &DbGame) -> Result {
+		let install = self.get_install()?;
 		let local_mod_path = self.get_local_folder_path()?;
 
 		if let Some(extract_actions) = install.extract.as_ref() {
@@ -234,9 +238,11 @@ impl GameMod {
 		Ok(())
 	}
 
-	pub fn get_config_path(&self, config: &ModConfig, _game: &DbGame) -> Result<PathBuf> {
-		// TODO: handle tokens and game.
-		Ok(PathBuf::from(&config.destination_path))
+	pub fn get_config_path(&self, config: &ModConfig, game: &DbGame) -> Result<PathBuf> {
+		Ok(PathBuf::from(&replace_tokens(
+			&config.destination_path,
+			game,
+		)))
 	}
 
 	pub fn configure_mod(&self, game: &DbGame, open_folder: bool) -> Result {
@@ -252,8 +258,18 @@ impl GameMod {
 		Ok(())
 	}
 
-	pub fn open_installed_mod_folder(&self, _game: &DbGame) -> Result {
-		todo!();
+	pub fn open_installed_mod_folder(&self, game: &DbGame) -> Result {
+		paths::open_folder_or_parent(&PathBuf::from(replace_tokens(
+			self.get_install()?
+				.main_installed_folder_path
+				.as_ref()
+				.ok_or_else(|| {
+					Error::ModInfoMissing(self.id.clone(), "main_installed_folder_path".to_string())
+				})?,
+			game,
+		)))?;
+
+		Ok(())
 	}
 
 	pub fn delete_local(&self) -> Result {

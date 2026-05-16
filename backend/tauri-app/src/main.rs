@@ -148,7 +148,7 @@ async fn open_mod_folder(mod_id: &str, handle: AppHandle) -> Result {
 		.local_mods
 		.read_state()?
 		.try_get(mod_id)?
-		.open_folder()?)
+		.open_local_folder()?)
 }
 
 #[tauri::command]
