@@ -44,9 +44,6 @@ pub enum Error {
 		std::time::SystemTimeError,
 	),
 
-	#[error("Failed to get app resources path: `{0}`")]
-	FailedToGetResourcesPath(String),
-
 	#[error("Failed to access state data: `{0}`")]
 	FailedToAccessStateData(String),
 

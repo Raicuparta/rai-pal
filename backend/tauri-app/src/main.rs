@@ -188,7 +188,7 @@ async fn delete_mod(mod_id: &str, handle: AppHandle) -> Result {
 	let local_mods = state.local_mods.read_state()?;
 	let local_mod = local_mods.try_get(mod_id)?;
 
-	local_mod::delete(local_mod)?;
+	local_mod.delete()?;
 
 	refresh_local_mods(&handle)?;
 

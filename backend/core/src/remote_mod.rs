@@ -146,9 +146,10 @@ where
 			.as_ref()
 			.and_then(|local_mods| local_mods.get(&database_mod.id))
 			&& let Some(latest_version) = &remote_mod.data.latest_version
+			&& let Some(manifest_path) = local_mod
+				.get_manifest_path()
+				.ok_or_log("Failed to get manifest path for local mod.")
 		{
-			let manifest_path = local_mod::get_manifest_path(&local_mod.data.path);
-
 			// Only update if the manifest file exists (mod has been downloaded before)
 			if manifest_path.exists() {
 				let updated_manifest = mod_manifest::Manifest {

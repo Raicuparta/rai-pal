@@ -1,11 +1,11 @@
 import { atom } from "jotai";
 import { useAtomValue } from "jotai";
 import { localModsAtom, remoteModsAtom } from "./use-data";
-import { CommonModData, LocalModData, RemoteModData } from "@api/bindings";
+import { CommonModData, Manifest, RemoteModData } from "@api/bindings";
 
 export type UnifiedMod = {
 	common: CommonModData;
-	local?: LocalModData;
+	manifest?: Manifest;
 	remote?: RemoteModData;
 };
 
@@ -44,7 +44,7 @@ const unifiedModsAtom = atom((get) => {
 
 		unifiedMods[key] = {
 			common,
-			local: localMod?.data,
+			manifest: localMod?.manifest,
 			remote: remoteMod?.data,
 		};
 	}

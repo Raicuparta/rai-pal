@@ -44,7 +44,7 @@ export function ModModal(props: Props) {
 			}
 		>
 			<Stack>
-				{props.mod.local && props.mod.local.manifest?.runnable && (
+				{props.mod.manifest && props.mod.manifest?.runnable && (
 					<CommandButton
 						leftSection={<IconPlayerPlay />}
 						onClick={() => commands.runRunnableWithoutGame(props.mod.common.id)}
@@ -52,7 +52,7 @@ export function ModModal(props: Props) {
 						{t("runMod")}
 					</CommandButton>
 				)}
-				{props.mod.local && (
+				{props.mod.manifest && (
 					<CommandButton
 						leftSection={<IconFolderCog />}
 						onClick={() => commands.openModFolder(props.mod.common.id)}

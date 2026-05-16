@@ -20,7 +20,7 @@ export function ModsPage() {
 	const filteredMods = useMemo(() => {
 		const result: Record<string, UnifiedMod> = {};
 		for (const [modId, mod] of Object.entries(mods)) {
-			if (!mod.local && mod.remote?.deprecated) {
+			if (!mod.manifest && mod.remote?.deprecated) {
 				continue;
 			}
 
@@ -100,7 +100,7 @@ export function ModsPage() {
 								</Table.Td>
 								<Table.Td>
 									<ModVersionBadge
-										localVersion={mod.local?.manifest?.version}
+										localVersion={mod?.manifest?.version}
 										remoteVersion={mod.remote?.latestVersion?.id}
 									/>
 								</Table.Td>

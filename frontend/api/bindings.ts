@@ -125,7 +125,7 @@ export type EngineVersionRange = {
 	maximum: EngineVersionNumbers | null,
 };
 
-export type Error = "Tauri" | "Core" | "Io" | "Rusql" | "SerdeJson" | "SystemTimeError" | ({ FailedToGetResourcesPath: string }) & { FailedToAccessStateData?: never; LinuxOnly?: never } | ({ FailedToAccessStateData: string }) & { FailedToGetResourcesPath?: never; LinuxOnly?: never } | ({ LinuxOnly: null }) & { FailedToAccessStateData?: never; FailedToGetResourcesPath?: never };
+export type Error = "Tauri" | "Core" | "Io" | "Rusql" | "SerdeJson" | "SystemTimeError" | ({ FailedToAccessStateData: string }) & { LinuxOnly?: never } | ({ LinuxOnly: null }) & { FailedToAccessStateData?: never };
 
 export type ErrorRaised = string;
 
@@ -163,19 +163,13 @@ export type InstallState = "Installed" | "NotInstalled";
 export type JsonData<T> = T;
 
 export type LocalMod = {
-	data: LocalModData,
-	common: CommonModData,
-};
-
-export type LocalModData = {
-	path: string,
 	manifest: Manifest,
+	common: CommonModData,
 };
 
 export type Manifest = {
 	title: string | null,
 	version: string,
-	runnable: RunnableModData | null,
 	engine: EngineBrand | null,
 	engineVersionRange: EngineVersionRange | null,
 	architecture: Architecture | null,
@@ -199,7 +193,6 @@ export type ModDownload = {
 	id: string,
 	url: string,
 	root: string | null,
-	runnable: RunnableModData | null,
 };
 
 export type ModInstall = {
@@ -265,12 +258,6 @@ export type RemoteModData = {
 	hostOs: OperatingSystem | null,
 	install: ModInstall | null,
 	runForGame: ModRunForGame | null,
-};
-
-export type RunnableModData = {
-	path: string,
-	args: string[],
-	wineEnvironment: { [key in string]: string } | null,
 };
 
 export type SelectGame = [ProviderId, string];

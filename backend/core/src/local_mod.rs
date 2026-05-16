@@ -40,19 +40,9 @@ pub enum ModKind {
 }
 
 #[serializable_struct]
-pub struct LocalModData {
-	pub path: PathBuf,
-	pub manifest: Manifest,
-}
-
-#[serializable_struct]
 pub struct LocalMod {
-	pub data: LocalModData,
+	pub manifest: Manifest,
 	pub common: CommonModData,
-}
-
-pub fn get_manifest_path(mod_path: &Path) -> PathBuf {
-	mod_path.join(mod_manifest::Manifest::FILE_NAME)
 }
 
 impl LocalMod {
@@ -63,10 +53,7 @@ impl LocalMod {
 		let mod_path = paths::path_parent(manifest_path)?;
 
 		Ok(Self {
-			data: LocalModData {
-				path: mod_path.to_path_buf(),
-				manifest: manifest.clone(),
-			},
+			manifest: manifest.clone(),
 			common: CommonModData {
 				id: paths::file_name_without_extension(mod_path)?.to_string(),
 				engine: manifest.engine,
@@ -78,7 +65,7 @@ impl LocalMod {
 	}
 
 	pub fn open_folder(&self) -> Result {
-		open_folder_or_parent(&self.data.path)
+		open_folder_or_parent(&self.get_path()?)
 	}
 
 	pub async fn install(&self, game: &DbGame) -> Result {
@@ -101,7 +88,7 @@ impl LocalMod {
 		// TODO: make sure it doesn't happen for runnables.
 		let manifest_path = game.get_installed_mod_manifest_path(&self.common.id)?;
 		fs::create_dir_all(paths::path_parent(&manifest_path)?)?;
-		let manifest_contents = serde_json::to_string_pretty(&self.data.manifest)?;
+		let manifest_contents = serde_json::to_string_pretty(&self.manifest)?;
 		fs::write(manifest_path, manifest_contents)?;
 
 		Ok(())
@@ -113,7 +100,7 @@ impl LocalMod {
 	}
 
 	pub fn configure_mod(&self, game: &DbGame, open_folder: bool) -> Result {
-		if let Some(config) = self.data.manifest.config.as_ref() {
+		if let Some(config) = self.manifest.config.as_ref() {
 			let config_path = self.get_config_path(config, game)?;
 			if open_folder {
 				paths::open_folder_or_parent(&config_path)?;
@@ -127,6 +114,23 @@ impl LocalMod {
 
 	pub fn open_installed_mod_folder(&self, _game: &DbGame) -> Result {
 		todo!();
+	}
+
+	pub fn delete(&self) -> Result {
+		let path = self.get_path()?;
+		if path.exists() {
+			fs::remove_dir_all(&path)?;
+		}
+
+		Ok(())
+	}
+
+	pub fn get_path(&self) -> Result<PathBuf> {
+		Ok(paths::local_mods_path()?.join(&self.common.id))
+	}
+
+	pub fn get_manifest_path(&self) -> Result<PathBuf> {
+		Ok(get_manifest_path(&self.get_path()?))
 	}
 }
 
@@ -145,12 +149,8 @@ pub fn get_all() -> Result<HashMap<String, LocalMod>> {
 	.collect())
 }
 
-pub type Map = HashMap<String, LocalMod>;
-
-pub fn delete(local_mod: &LocalMod) -> Result {
-	if local_mod.data.path.exists() {
-		fs::remove_dir_all(&local_mod.data.path)?;
-	}
-
-	Ok(())
+pub fn get_manifest_path(target_path: &Path) -> PathBuf {
+	target_path.join(mod_manifest::Manifest::FILE_NAME)
 }
+
+pub type Map = HashMap<String, LocalMod>;
