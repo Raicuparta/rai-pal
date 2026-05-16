@@ -24,9 +24,9 @@ use crate::{
 		},
 		unreal,
 	},
+	game_mods::mod_database::DatabaseEntry,
 	game_tag::GameTag,
 	game_title::is_probably_demo,
-	mod_manifest,
 	paths,
 	providers::{
 		provider::ProviderId,
@@ -131,11 +131,11 @@ impl DbGame {
 		self.get_manifest_paths()
 			.iter()
 			.filter_map(|manifest_path| {
-				let manifest = mod_manifest::get(manifest_path)?;
+				let manifest = DatabaseEntry::from_file(manifest_path)?;
 
 				Some((
 					manifest_path.file_stem()?.to_str()?.to_string(),
-					manifest.version,
+					manifest.latest_version.id,
 				))
 			})
 			.collect()

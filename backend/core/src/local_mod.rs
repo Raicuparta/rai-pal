@@ -17,10 +17,7 @@ use crate::{
 	game_mods::{
 		game_mod::CommonModData,
 		mod_config::ModConfig,
-	},
-	mod_manifest::{
-		self,
-		Manifest,
+		mod_database::DatabaseEntry,
 	},
 	paths::{
 		self,
@@ -41,13 +38,13 @@ pub enum ModKind {
 
 #[serializable_struct]
 pub struct LocalMod {
-	pub manifest: Manifest,
+	pub manifest: DatabaseEntry,
 	pub common: CommonModData,
 }
 
 impl LocalMod {
 	pub fn new(manifest_path: &Path) -> Result<Self> {
-		let manifest = mod_manifest::get(manifest_path)
+		let manifest = DatabaseEntry::from_file(manifest_path)
 			.ok_or_else(|| Error::ManifestNotFound(manifest_path.display().to_string()))?;
 
 		let mod_path = paths::path_parent(manifest_path)?;
@@ -138,7 +135,7 @@ pub fn get_all() -> Result<HashMap<String, LocalMod>> {
 	Ok(paths::glob_path(
 		&paths::local_mods_path()?
 			.join("*")
-			.join(mod_manifest::Manifest::FILE_NAME),
+			.join(DatabaseEntry::FILE_NAME),
 	)
 	.iter()
 	.filter_map(|manifest_path| {
@@ -150,7 +147,7 @@ pub fn get_all() -> Result<HashMap<String, LocalMod>> {
 }
 
 pub fn get_manifest_path(target_path: &Path) -> PathBuf {
-	target_path.join(mod_manifest::Manifest::FILE_NAME)
+	target_path.join(DatabaseEntry::FILE_NAME)
 }
 
 pub type Map = HashMap<String, LocalMod>;

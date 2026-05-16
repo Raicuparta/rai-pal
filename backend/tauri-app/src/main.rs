@@ -386,13 +386,10 @@ async fn refresh_and_get_local_mod(mod_id: &str, handle: &AppHandle) -> Result<L
 				disk_local_mods
 			} else {
 				let remote_mods = state.remote_mods.read_state()?.clone();
-				let remote_mod = remote_mods.try_get(mod_id)?;
 
-				if remote_mod.data.latest_version.is_some() {
-					// If local mod still can't be found on disk,
-					// we try to download it from the database.
-					remote_mod::download(remote_mods.try_get(mod_id)?).await?;
-				}
+				// If local mod still can't be found on disk,
+				// we try to download it from the database.
+				remote_mod::download(remote_mods.try_get(mod_id)?).await?;
 
 				refresh_local_mods(handle)
 			}
@@ -591,7 +588,7 @@ async fn download_remote_config(
 	let local_mods = state.local_mods.read_state()?.clone();
 	let local_mod = local_mods.try_get(mod_id)?;
 
-	if let Some(mod_config) = remote_mod.data.config.as_ref() {
+	if let Some(mod_config) = remote_mod.config.as_ref() {
 		mod_config
 			.download(&game, remote_config_file, overwrite)
 			.await?;

@@ -20,7 +20,7 @@ export function ModsPage() {
 	const filteredMods = useMemo(() => {
 		const result: Record<string, UnifiedMod> = {};
 		for (const [modId, mod] of Object.entries(mods)) {
-			if (!mod.manifest && mod.remote?.deprecated) {
+			if (!mod.local && mod.remote?.deprecated) {
 				continue;
 			}
 
@@ -76,7 +76,7 @@ export function ModsPage() {
 						{Object.entries(filteredMods).map(([modId, mod]) => (
 							<Table.Tr
 								key={modId}
-								onClick={() => setSelectedId(mod.common.id)}
+								onClick={() => setSelectedId(mod.merged.id)}
 							>
 								<Table.Td>
 									{mod.remote?.deprecated && <DeprecatedBadge />}
@@ -100,12 +100,12 @@ export function ModsPage() {
 								</Table.Td>
 								<Table.Td>
 									<ModVersionBadge
-										localVersion={mod?.manifest?.version}
-										remoteVersion={mod.remote?.latestVersion?.id}
+										localVersion={mod.local?.latestVersion.id}
+										remoteVersion={mod.remote?.latestVersion.id}
 									/>
 								</Table.Td>
-								<Table.Td>{mod.common.engine}</Table.Td>
-								<Table.Td>{mod.common.unityBackend}</Table.Td>
+								<Table.Td>{mod.merged.engine}</Table.Td>
+								<Table.Td>{mod.merged.unityBackend}</Table.Td>
 							</Table.Tr>
 						))}
 					</Table.Tbody>

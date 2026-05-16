@@ -112,15 +112,15 @@ export function GameMods({ game }: Props) {
 
 		for (const mod of Object.values(mods)) {
 			const isCompatibleEngine =
-				!mod.common.engine || mod.common.engine === game.engineBrand;
+				!mod.merged.engine || mod.merged.engine === game.engineBrand;
 			const isCompatibleUnityBackend =
-				!mod.common.unityBackend ||
+				!mod.merged.unityBackend ||
 				!game.unityBackend ||
-				mod.common.unityBackend === game.unityBackend;
+				mod.merged.unityBackend === game.unityBackend;
 			const isCompatibleArchitecture =
-				!mod.common.architecture ||
+				!mod.merged.architecture ||
 				!game.architecture ||
-				mod.common.architecture === game.architecture;
+				mod.merged.architecture === game.architecture;
 
 			if (
 				!game ||
@@ -132,11 +132,11 @@ export function GameMods({ game }: Props) {
 			}
 
 			// Deprecated mods only show if they had been previously installed.
-			if (mod.remote?.deprecated && !installedModVersions[mod.common.id]) {
+			if (mod.remote?.deprecated && !installedModVersions[mod.merged.id]) {
 				continue;
 			}
 
-			if (isVersionWithinRange(game, mod.common.engineVersionRange)) {
+			if (isVersionWithinRange(game, mod.merged.engineVersionRange)) {
 				compatibleMods.push(mod);
 			} else {
 				incompatibleMods.push(mod);
@@ -172,11 +172,11 @@ export function GameMods({ game }: Props) {
 							<Table.Tbody>
 								{compatibleMods.map((mod) => (
 									<GameModRow
-										key={mod.common.id}
+										key={mod.merged.id}
 										game={game}
 										mod={mod}
 										remoteConfigs={remoteConfigs}
-										installedVersion={installedModVersions[mod.common.id]}
+										installedVersion={installedModVersions[mod.merged.id]}
 										missingDependencies={getMissingDepdendencies(mod)}
 									/>
 								))}
@@ -207,11 +207,11 @@ export function GameMods({ game }: Props) {
 							<Table.Tbody>
 								{incompatibleMods.map((mod) => (
 									<GameModRow
-										key={mod.common.id}
+										key={mod.merged.id}
 										game={game}
 										mod={mod}
 										remoteConfigs={remoteConfigs}
-										installedVersion={installedModVersions[mod.common.id]}
+										installedVersion={installedModVersions[mod.merged.id]}
 										incompatible
 									/>
 								))}

@@ -1,12 +1,12 @@
 import { atom } from "jotai";
 import { useAtomValue } from "jotai";
 import { localModsAtom, remoteModsAtom } from "./use-data";
-import { CommonModData, Manifest, RemoteModData } from "@api/bindings";
+import { DatabaseEntry } from "@api/bindings";
 
 export type UnifiedMod = {
-	common: CommonModData;
-	manifest?: Manifest;
-	remote?: RemoteModData;
+	local?: DatabaseEntry;
+	remote?: DatabaseEntry;
+	merged: DatabaseEntry;
 };
 
 const unifiedModsAtom = atom((get) => {
@@ -26,10 +26,10 @@ const unifiedModsAtom = atom((get) => {
 		// local common but without any nulls or undefined values,
 		// to avoid overriding remote common values.
 		const cleanedUpLocalCommon = Object.fromEntries(
-			Object.entries(localMod?.common ?? {}).filter(
+			Object.entries(localMod?.manifest ?? {}).filter(
 				([, value]) => value != null,
 			),
-		) as CommonModData;
+		) as DatabaseEntry;
 
 		// When a mod is downloaded, the database information is stored in the local manifest.
 		// But there can be cases where the information isn't the same on both ends.
@@ -37,15 +37,15 @@ const unifiedModsAtom = atom((get) => {
 		// we'll just use the one from the database.
 		// This might cause some discrepancies, but since this should mostly only happen when messing
 		// with mods for dev purposes, I think it's ok.
-		const common = {
-			...remoteMod?.common,
+		const merged = {
+			...remoteMod,
 			...cleanedUpLocalCommon,
 		};
 
 		unifiedMods[key] = {
-			common,
-			manifest: localMod?.manifest,
-			remote: remoteMod?.data,
+			local: localMod?.manifest,
+			remote: remoteMod,
+			merged,
 		};
 	}
 

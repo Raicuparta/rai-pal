@@ -15,7 +15,6 @@ pub mod http;
 pub mod local_database;
 pub mod local_mod;
 pub mod maps;
-pub mod mod_manifest;
 pub mod operating_system;
 pub mod paths;
 pub mod providers;

@@ -1,6 +1,7 @@
 use std::{
 	collections::HashMap,
-	path::PathBuf,
+	fs,
+	path::Path,
 };
 
 use rai_pal_proc_macros::{
@@ -38,14 +39,13 @@ pub struct DatabaseEntry {
 	pub author: String,
 	pub source_code: String,
 	pub description: String,
-	pub latest_version: Option<ModDownload>,
+	pub latest_version: ModDownload,
 	pub engine: Option<EngineBrand>,
 	pub engine_version_range: Option<EngineVersionRange>,
 	pub unity_backend: Option<UnityBackend>,
 	pub architecture: Option<Architecture>,
 	pub game_os: Option<OperatingSystem>,
 	pub host_os: Option<OperatingSystem>,
-	pub redownload_id: Option<i32>,
 	pub deprecated: Option<bool>,
 	pub config: Option<ModConfig>,
 	pub dependencies: Option<Vec<ModDependency>>,
@@ -89,7 +89,6 @@ pub struct ModDatabase {
 pub struct ModDownload {
 	pub id: String,
 	pub url: String,
-	pub root: Option<PathBuf>,
 }
 
 #[serializable_struct]
@@ -113,13 +112,21 @@ pub async fn get() -> Result<ModDatabase> {
 }
 
 impl DatabaseEntry {
-	pub fn get_download(&self) -> Option<ModDownload> {
-		self.latest_version.clone().map(|mut download| {
-			if let Some(redownload_id) = self.redownload_id {
-				download.id = format!("{}/{}", download.id, redownload_id);
-			}
+	pub const FILE_NAME: &'static str = "rai-pal-manifest.json";
 
-			download
-		})
+	pub fn from_file(path: &Path) -> Option<Self> {
+		match fs::read_to_string(path)
+			.and_then(|manifest_bytes| Ok(serde_json::from_str::<Self>(&manifest_bytes)?))
+		{
+			Ok(manifest) => Some(manifest),
+			Err(error) => {
+				log::error!(
+					"Error getting manifest in path '{}': {}",
+					path.display(),
+					error
+				);
+				None
+			}
+		}
 	}
 }

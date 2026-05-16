@@ -142,9 +142,6 @@ pub enum Error {
 	#[error("Unity backend not known for mod `{0}`")]
 	UnityBackendUnknown(String),
 
-	#[error("Download not available for mod `{0}`")]
-	ModDownloadNotAvailable(String),
-
 	#[error(
 		"Operation can't be completed without a `runnable` section in the mod manifest (rai-pal-manifest.json) `{0}`"
 	)]

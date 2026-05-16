@@ -54,18 +54,18 @@ export function GameModRow({
 	const t = useLocalization("gameModRow");
 
 	const availableRemoteConfig = remoteConfigs?.configs.find(
-		(config) => config.modId === mod.common.id,
+		(config) => config.modId === mod.merged.id,
 	);
-	const localConfig = mod.local?.manifest?.config;
+	const localConfig = mod.merged?.config;
 
 	const isInstalledModOutdated = getIsOutdated(
 		installedVersion,
-		mod.remote?.latestVersion?.id,
+		mod.remote?.latestVersion.id,
 	);
 
 	const isLocalModOutdated = getIsOutdated(
-		mod.local?.manifest?.version,
-		mod.remote?.latestVersion?.id,
+		mod.local?.latestVersion.id,
+		mod.remote?.latestVersion.id,
 	);
 
 	const isInstalled = Boolean(installedVersion);
@@ -73,14 +73,14 @@ export function GameModRow({
 
 	const handleInstallClick = async () => {
 		if (mod.remote?.runForGame && !mod.local && !mod.remote) {
-			return commands.openModFolder(mod.common.id);
+			return commands.openModFolder(mod.merged.id);
 		}
 
 		if (isLocalModOutdated) {
 			// TODO figure out if this error would be handled.
-			await commands.downloadMod(mod.common.id);
+			await commands.downloadMod(mod.merged.id);
 		} else if (isInstalled && !isInstalledModOutdated) {
-			return commands.uninstallMod(game.providerId, game.gameId, mod.common.id);
+			return commands.uninstallMod(game.providerId, game.gameId, mod.merged.id);
 		}
 
 		if (missingDependencies) {
@@ -92,18 +92,18 @@ export function GameModRow({
 		}
 
 		if (mod.remote?.install) {
-			await commands.installMod(game.providerId, game.gameId, mod.common.id);
+			await commands.installMod(game.providerId, game.gameId, mod.merged.id);
 		}
 
 		if (mod.remote?.runForGame) {
-			await commands.runMod(game.providerId, game.gameId, mod.common.id);
+			await commands.runMod(game.providerId, game.gameId, mod.merged.id);
 		}
 
 		if (availableRemoteConfig) {
 			await commands.downloadRemoteConfig(
 				game.providerId,
 				game.gameId,
-				mod.common.id,
+				mod.merged.id,
 				availableRemoteConfig.file,
 				false,
 			);
@@ -155,7 +155,7 @@ export function GameModRow({
 	const isModUsable = !incompatible && game.exePath;
 
 	return (
-		<Table.Tr key={mod.common.id}>
+		<Table.Tr key={mod.merged.id}>
 			<Table.Td ta="left">
 				<ItemName label={`by ${mod.remote?.author}`}>
 					{isModUsable && (
@@ -174,7 +174,7 @@ export function GameModRow({
 					)}
 					<ModVersionBadge
 						localVersion={installedVersion}
-						remoteVersion={mod.remote?.latestVersion?.id}
+						remoteVersion={mod.remote?.latestVersion.id}
 					/>
 				</ItemName>
 				<Stack gap={0}>
@@ -218,7 +218,7 @@ export function GameModRow({
 												commands.configureMod(
 													game.providerId,
 													game.gameId,
-													mod.common.id,
+													mod.merged.id,
 													false,
 												)
 											}
@@ -236,7 +236,7 @@ export function GameModRow({
 													commands.configureMod(
 														game.providerId,
 														game.gameId,
-														mod.common.id,
+														mod.merged.id,
 														true,
 													)
 												}
@@ -252,7 +252,7 @@ export function GameModRow({
 										commands.openInstalledModFolder(
 											game.providerId,
 											game.gameId,
-											mod.common.id,
+											mod.merged.id,
 										)
 									}
 									leftSection={<IconFolderOpen />}
@@ -267,7 +267,7 @@ export function GameModRow({
 											commands.downloadRemoteConfig(
 												game.providerId,
 												game.gameId,
-												mod.common.id,
+												mod.merged.id,
 												availableRemoteConfig.file,
 												true,
 											)
