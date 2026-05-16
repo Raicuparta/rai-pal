@@ -197,7 +197,7 @@ async fn install_mod(
 	let local_mod = refresh_and_get_local_mod(mod_id, &handle).await?;
 
 	// Uninstall mod if it already exists, in case there are conflicting leftover files when updating.
-	local_mod.uninstall(&game).await?;
+	local_mod.uninstall(&game)?;
 
 	local_mod.install(&game)?;
 
@@ -303,7 +303,7 @@ async fn uninstall_mod(
 	let game = state.database.get_game(&provider_id, &game_id)?;
 	let local_mod = refresh_and_get_local_mod(mod_id, &handle).await?;
 
-	local_mod.uninstall(&game).await?;
+	local_mod.uninstall(&game)?;
 
 	handle.emit_safe(events::RefreshGame(provider_id, game_id));
 

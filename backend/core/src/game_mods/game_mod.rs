@@ -180,8 +180,44 @@ impl GameMod {
 		todo!();
 	}
 
-	pub async fn uninstall(&self, game: &DbGame) -> Result {
-		Ok(()) // TODO
+	pub fn uninstall(&self, game: &DbGame) -> Result {
+		let install = self.install.as_ref().ok_or_else(|| {
+			Error::ModInstallInfoInsufficient("install".to_string(), game.display_title.clone())
+		})?;
+
+		let local_mod_path = self.get_local_folder_path()?;
+
+		if let Some(extract_actions) = install.extract.as_ref() {
+			for extract_action in extract_actions {
+				let source_path = local_mod_path.join(&extract_action.source);
+				let destination_path =
+					PathBuf::from(replace_tokens(&extract_action.destination, game));
+
+				if source_path.is_dir() {
+					Self::remove_path_if_exists(&destination_path)?;
+				} else if destination_path.exists() {
+					fs::remove_file(&destination_path)?;
+				}
+			}
+		}
+
+		if let Some(write_actions) = install.write.as_ref() {
+			for write_action in write_actions {
+				let destination_path =
+					PathBuf::from(replace_tokens(&write_action.destination, game));
+
+				if destination_path.exists() {
+					fs::remove_file(&destination_path)?;
+				}
+			}
+		}
+
+		let manifest_path = game.get_installed_mod_manifest_path(&self.id)?;
+		if manifest_path.exists() {
+			fs::remove_file(manifest_path)?;
+		}
+
+		Ok(())
 	}
 
 	pub async fn run_without_game(&self) -> Result {
@@ -314,5 +350,19 @@ impl GameMod {
 
 	fn get_manifest_path(target_path: &Path) -> PathBuf {
 		target_path.join(Self::FILE_NAME)
+	}
+
+	fn remove_path_if_exists(path: &Path) -> Result {
+		let Ok(metadata) = fs::symlink_metadata(path) else {
+			return Ok(());
+		};
+
+		if metadata.is_dir() {
+			fs::remove_dir_all(path)?;
+		} else {
+			fs::remove_file(path)?;
+		}
+
+		Ok(())
 	}
 }
