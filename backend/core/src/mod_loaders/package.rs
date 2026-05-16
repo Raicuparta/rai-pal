@@ -17,7 +17,7 @@ use crate::{
 		LocalMod,
 		ModKind,
 	},
-	mod_loaders::mod_database::ModConfigs,
+	mod_loaders::mod_database::ModConfig,
 	paths::{
 		self,
 	},
@@ -73,7 +73,7 @@ impl ModLoaderActions for PackageLoader {
 		paths::open_folder_or_parent(&local_mod.data.path)
 	}
 
-	fn get_config_path(&self, _game: &DbGame, _mod_configs: &ModConfigs) -> Result<PathBuf> {
+	fn get_config_path(&self, _game: &DbGame, _mod_configs: &ModConfig) -> Result<PathBuf> {
 		Err(Error::UnsupportedOperation(
 			"Package does not support configs".to_string(),
 		))

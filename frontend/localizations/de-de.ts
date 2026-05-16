@@ -131,7 +131,6 @@ export const deDe: Localization = {
 		openModsFolderButton: "Mods-Ordner öffnen",
 		tableColumnMod: "Mod",
 		tableColumnVersion: "Version",
-		tableColumnModLoader: "Loader",
 		tableColumnGameEngine: "Engine",
 		tableColumnUnityBackend: "Backend",
 		modByAuthor: "von {authorName}",

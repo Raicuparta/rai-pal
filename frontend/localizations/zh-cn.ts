@@ -124,7 +124,6 @@ export const zhCn: Localization = {
 		openModsFolderButton: "打开模组文件夹",
 		tableColumnMod: "模组",
 		tableColumnVersion: "版本",
-		tableColumnModLoader: "加载器",
 		tableColumnGameEngine: "引擎",
 		tableColumnUnityBackend: "后端",
 		modByAuthor: "作者 {authorName}",

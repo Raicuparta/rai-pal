@@ -9,7 +9,6 @@ use crate::{
 		},
 		unity::UnityBackend,
 	},
-	mod_loaders::mod_loader::ModLoaderId,
 };
 
 #[serializable_struct]
@@ -21,10 +20,8 @@ pub struct EngineVersionRange {
 #[serializable_struct]
 pub struct CommonModData {
 	pub id: String,
-	pub is_loader: Option<bool>,
 	pub engine: Option<EngineBrand>,
 	pub unity_backend: Option<UnityBackend>,
 	pub engine_version_range: Option<EngineVersionRange>,
 	pub architecture: Option<Architecture>,
-	pub loader_id: ModLoaderId,
 }

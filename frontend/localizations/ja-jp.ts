@@ -130,7 +130,6 @@ export const jaJp: Localization = {
 		openModsFolderButton: "モッドフォルダーを開く",
 		tableColumnMod: "モッド",
 		tableColumnVersion: "バージョン",
-		tableColumnModLoader: "ローダー",
 		tableColumnGameEngine: "エンジン",
 		tableColumnUnityBackend: "バックエンド",
 		modByAuthor: "{authorName} 作",

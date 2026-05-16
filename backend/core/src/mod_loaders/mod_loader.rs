@@ -31,8 +31,8 @@ use crate::{
 	},
 	mod_loaders::{
 		mod_database::{
+			ModConfig,
 			ModConfigDestinationType,
-			ModConfigs,
 		},
 		package::PackageLoader,
 	},
@@ -147,7 +147,7 @@ pub trait ModLoaderActions {
 	async fn install_mod_inner(&self, game: &DbGame, local_mod: &LocalMod) -> Result;
 	async fn uninstall_mod_inner(&self, game: &DbGame, local_mod: &LocalMod) -> Result;
 	async fn run_without_game(&self, local_mod: &LocalMod) -> Result;
-	fn get_config_path(&self, game: &DbGame, mod_configs: &ModConfigs) -> Result<PathBuf>;
+	fn get_config_path(&self, game: &DbGame, mod_configs: &ModConfig) -> Result<PathBuf>;
 	fn open_installed_mod_folder(&self, game: &DbGame, local_mod: &LocalMod) -> Result;
 	fn get_data(&self) -> &ModLoaderData;
 	fn get_wine_dll_overrides(&self, _game: &DbGame) -> Vec<String> {
@@ -196,43 +196,6 @@ pub trait ModLoaderActions {
 			fs::create_dir_all(paths::path_parent(&manifest_path)?)?;
 			let manifest_contents = serde_json::to_string_pretty(&local_mod.data.manifest)?;
 			fs::write(manifest_path, manifest_contents)?;
-		}
-
-		Ok(())
-	}
-
-	async fn download_config(
-		&self,
-		game: &DbGame,
-		mod_configs: &ModConfigs,
-		config_file: &str,
-		overwrite: bool,
-	) -> Result {
-		let destination_path = self.get_config_path(game, mod_configs)?;
-
-		if config_exists(&destination_path)? {
-			if overwrite {
-				if destination_path.is_dir() {
-					fs::remove_dir_all(&destination_path)?;
-				} else {
-					fs::remove_file(&destination_path)?;
-				}
-			} else {
-				return Ok(());
-			}
-		}
-
-		if let Some(parent) = destination_path.parent() {
-			fs::create_dir_all(parent)?;
-		}
-
-		match mod_configs.destination_type {
-			ModConfigDestinationType::File => {
-				remote_config::download_config_file(config_file, game, &destination_path).await?;
-			}
-			ModConfigDestinationType::Folder => {
-				remote_config::download_config_folder(config_file, game, &destination_path).await?;
-			}
 		}
 
 		Ok(())
@@ -329,16 +292,4 @@ pub fn get_remote_mod_loaders_map(map: &Map) -> Result<RemoteModLoadersMap> {
 			))
 		})
 		.collect()
-}
-
-fn config_exists(path: &Path) -> Result<bool> {
-	if !path.try_exists()? {
-		return Ok(false);
-	}
-
-	if path.is_dir() && fs::read_dir(path)?.next().is_none() {
-		return Ok(false);
-	}
-
-	Ok(true)
 }

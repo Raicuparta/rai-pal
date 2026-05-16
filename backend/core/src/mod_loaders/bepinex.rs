@@ -18,7 +18,7 @@ use crate::{
 		ModKind,
 	},
 	mod_loaders::{
-		mod_database::ModConfigs,
+		mod_database::ModConfig,
 		mod_loader::{
 			ModLoaderActions,
 			ModLoaderData,
@@ -173,7 +173,7 @@ impl ModLoaderActions for BepInEx {
 		paths::open_folder_or_parent(&plugin_folder)
 	}
 
-	fn get_config_path(&self, game: &DbGame, mod_configs: &ModConfigs) -> Result<PathBuf> {
+	fn get_config_path(&self, game: &DbGame, mod_configs: &ModConfig) -> Result<PathBuf> {
 		let destination_path = game
 			.get_installed_mods_folder()?
 			.join("BepInEx")
@@ -187,18 +187,4 @@ fn is_legacy(game: &DbGame) -> bool {
 	game.engine_version_major.is_some_and(|major| {
 		major < 5 || (major == 5 && game.engine_version_minor.is_some_and(|minor| minor < 5))
 	})
-}
-
-#[cfg(target_os = "linux")]
-pub fn set_up_proton_environment() -> Result {
-	let path = paths::base_dirs()?.config_dir().join("environment.d");
-
-	fs::create_dir_all(&path)?;
-
-	fs::write(
-		path.join("90-rai-pal-wine-overrides.conf"),
-		"WINEDLLOVERRIDES=\"winhttp.dll=n,b\"",
-	)?;
-
-	Ok(())
 }

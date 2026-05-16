@@ -11,16 +11,18 @@ use zip::ZipArchive;
 
 use crate::{
 	files,
-	game_mod::CommonModData,
+	game_mods::{
+		game_mod::CommonModData,
+		mod_config::ModConfig,
+		mod_database::{
+			self,
+			ModDatabase,
+			ModDependency,
+			ModDownload,
+		},
+	},
 	local_mod::{
 		self,
-	},
-	mod_loaders::mod_database::{
-		self,
-		ModConfigs,
-		ModDatabase,
-		ModDependency,
-		ModDownload,
 	},
 	mod_manifest,
 	paths,
@@ -39,7 +41,7 @@ pub struct RemoteModData {
 	pub source_code: String,
 	pub description: String,
 	pub latest_version: Option<ModDownload>,
-	pub configs: Option<ModConfigs>,
+	pub config: Option<ModConfig>,
 	pub dependencies: Option<Vec<ModDependency>>,
 }
 
@@ -81,15 +83,13 @@ pub async fn download(remote_mod: &RemoteMod) -> Result {
 			local_mod::get_manifest_path(&target_path),
 			serde_json::to_string_pretty(&mod_manifest::Manifest {
 				title: Some(remote_mod.data.title.clone()),
-				is_loader: remote_mod.common.is_loader,
-				loader_id: remote_mod.common.loader_id,
 				version: latest_version.id.clone(),
 				runnable: latest_version.runnable.clone(),
 				engine: remote_mod.common.engine,
 				architecture: remote_mod.common.architecture,
 				engine_version_range: remote_mod.common.engine_version_range.clone(),
 				unity_backend: remote_mod.common.unity_backend,
-				configs: remote_mod.data.configs.clone(),
+				config: remote_mod.data.config.clone(),
 			})?,
 		)?;
 
@@ -114,21 +114,19 @@ where
 		let remote_mod = RemoteMod {
 			common: CommonModData {
 				id: database_mod.id.clone(),
-				is_loader: database_mod.is_loader,
 				engine: database_mod.engine,
 				architecture: database_mod.architecture,
 				engine_version_range: database_mod.engine_version_range.clone(),
 				unity_backend: database_mod.unity_backend,
-				loader_id: database_mod.loader_id,
 			},
 			data: RemoteModData {
 				author: database_mod.author.clone(),
 				description: database_mod.description.clone(),
 				source_code: database_mod.source_code.clone(),
 				title: database_mod.title.clone(),
-				latest_version: database_mod.get_download().await,
+				latest_version: database_mod.get_download(),
 				deprecated: database_mod.deprecated.unwrap_or(false),
-				configs: database_mod.configs.clone(),
+				config: database_mod.config.clone(),
 				dependencies: database_mod.dependencies.clone(),
 			},
 		};
@@ -144,16 +142,14 @@ where
 			// Only update if the manifest file exists (mod has been downloaded before)
 			if manifest_path.exists() {
 				let updated_manifest = mod_manifest::Manifest {
-					loader_id: remote_mod.common.loader_id,
 					title: Some(remote_mod.data.title.clone()),
-					is_loader: remote_mod.common.is_loader,
 					version: latest_version.id.clone(),
 					runnable: latest_version.runnable.clone(),
 					engine: remote_mod.common.engine,
 					architecture: remote_mod.common.architecture,
 					engine_version_range: remote_mod.common.engine_version_range.clone(),
 					unity_backend: remote_mod.common.unity_backend,
-					configs: remote_mod.data.configs.clone(),
+					config: remote_mod.data.config.clone(),
 				};
 
 				if let Ok(manifest_contents) = serde_json::to_string_pretty(&updated_manifest) {

@@ -127,7 +127,6 @@ export const koKr: Localization = {
 		openModsFolderButton: "모드 폴더 열기",
 		tableColumnMod: "모드",
 		tableColumnVersion: "버전",
-		tableColumnModLoader: "로더",
 		tableColumnGameEngine: "엔진",
 		tableColumnUnityBackend: "백엔드",
 		modByAuthor: "{authorName} 제작",

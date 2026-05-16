@@ -260,9 +260,6 @@ export const enUs = {
 		// Table column for the version of the mod.
 		tableColumnVersion: "Version",
 
-		// Table column for the mod loader used by the mod (bepinex, melon loader, etc)
-		tableColumnModLoader: "Loader",
-
 		// Table column for the game engine the mod is for (Unity, Unreal, etc)
 		tableColumnGameEngine: "Engine",
 

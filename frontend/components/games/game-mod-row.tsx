@@ -33,7 +33,6 @@ import { getModTitle } from "@util/game-mod";
 import { CommandDropdown } from "@components/command-dropdown";
 import { DeprecatedBadge } from "@components/mods/deprecated-badge";
 import { useLocalization } from "@hooks/use-localization";
-import { useUnifiedModLoaders } from "@hooks/use-unified-mod-loaders";
 
 type Props = {
 	readonly game: DbGame;
@@ -54,14 +53,10 @@ export function GameModRow({
 }: Props) {
 	const t = useLocalization("gameModRow");
 
-	const unifiedModLoaders = useUnifiedModLoaders();
-	const modLoader = unifiedModLoaders[mod.common.loaderId];
-
 	const availableRemoteConfig = remoteConfigs?.configs.find(
-		(config) =>
-			config.modId === mod.common.id && config.loaderId === mod.common.loaderId,
+		(config) => config.modId === mod.common.id,
 	);
-	const localConfig = mod.local?.manifest?.configs;
+	const localConfig = mod.local?.manifest?.config;
 
 	const isInstalledModOutdated = getIsOutdated(
 		installedVersion,
@@ -74,7 +69,7 @@ export function GameModRow({
 	);
 
 	const isInstalled = Boolean(installedVersion);
-	const isReadyRunnable = mod.local && modLoader?.common?.kind == "Runnable";
+	const isReadyRunnable = mod.local && true; // TODO: use new runnable.
 
 	const handleInstallClick = async () => {
 		if (modLoader?.common?.kind === "Runnable" && !mod.local && !mod.remote) {

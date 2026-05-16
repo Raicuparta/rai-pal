@@ -22,7 +22,7 @@ use crate::{
 		LocalMod,
 		ModKind,
 	},
-	mod_loaders::mod_database::ModConfigs,
+	mod_loaders::mod_database::ModConfig,
 	paths,
 	result::{
 		Error,
@@ -119,7 +119,7 @@ impl ModLoaderActions for Ue4ss {
 		crate::paths::open_folder_or_parent(&mod_folder)
 	}
 
-	fn get_config_path(&self, game: &DbGame, mod_configs: &ModConfigs) -> Result<PathBuf> {
+	fn get_config_path(&self, game: &DbGame, mod_configs: &ModConfig) -> Result<PathBuf> {
 		Ok(game
 			.get_installed_mods_folder()?
 			.join("ue4ss")

@@ -12,28 +12,23 @@ use crate::{
 		game_engine::EngineBrand,
 		unity::UnityBackend,
 	},
-	game_mod::EngineVersionRange,
-	mod_loaders::{
-		mod_database::{
-			ModConfigs,
-			RunnableModData,
-		},
-		mod_loader::ModLoaderId,
+	game_mods::{
+		game_mod::EngineVersionRange,
+		mod_config::ModConfig,
+		mod_database::RunnableModData,
 	},
 };
 
 #[serializable_struct]
 pub struct Manifest {
-	pub loader_id: ModLoaderId,
 	pub title: Option<String>,
-	pub is_loader: Option<bool>,
 	pub version: String,
 	pub runnable: Option<RunnableModData>,
 	pub engine: Option<EngineBrand>,
 	pub engine_version_range: Option<EngineVersionRange>,
 	pub architecture: Option<Architecture>,
 	pub unity_backend: Option<UnityBackend>,
-	pub configs: Option<ModConfigs>,
+	pub config: Option<ModConfig>,
 }
 
 impl Manifest {

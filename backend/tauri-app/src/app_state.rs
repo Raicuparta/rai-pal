@@ -7,7 +7,6 @@ use rai_pal_core::{
 	local_database,
 	local_database::DbMutex,
 	local_mod,
-	mod_loaders::mod_loader,
 	remote_mod,
 };
 use tauri::Manager;
@@ -18,7 +17,6 @@ use crate::result::{
 };
 
 pub struct AppState {
-	pub mod_loaders: RwLock<mod_loader::Map>,
 	pub local_mods: RwLock<local_mod::Map>,
 	pub remote_mods: RwLock<remote_mod::Map>,
 	pub database: DbMutex,
@@ -58,7 +56,6 @@ impl StatefulHandle for tauri::AppHandle {
 impl AppState {
 	pub fn new() -> Result<Self> {
 		Ok(Self {
-			mod_loaders: RwLock::new(mod_loader::Map::new()),
 			local_mods: RwLock::new(local_mod::Map::new()),
 			remote_mods: RwLock::new(remote_mod::Map::new()),
 			database: local_database::try_create()?,

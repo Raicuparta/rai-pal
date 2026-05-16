@@ -130,7 +130,6 @@ export const ptPt: Localization = {
 		openModsFolderButton: "Abrir Pasta de Mods",
 		tableColumnMod: "Mod",
 		tableColumnVersion: "Versão",
-		tableColumnModLoader: "Loader",
 		tableColumnGameEngine: "Motor",
 		tableColumnUnityBackend: "Backend",
 		modByAuthor: "por {authorName}",

@@ -24,7 +24,7 @@ use crate::{
 		LocalMod,
 		ModKind,
 	},
-	mod_loaders::mod_database::ModConfigs,
+	mod_loaders::mod_database::ModConfig,
 	paths::{
 		self,
 	},
@@ -255,7 +255,7 @@ impl ModLoaderActions for RunnableLoader {
 		paths::open_folder_or_parent(&local_mod.data.path)
 	}
 
-	fn get_config_path(&self, game: &DbGame, mod_configs: &ModConfigs) -> Result<PathBuf> {
+	fn get_config_path(&self, game: &DbGame, mod_configs: &ModConfig) -> Result<PathBuf> {
 		Ok(PathBuf::from(replace_parameters(
 			&mod_configs.destination_path,
 			game,

@@ -131,7 +131,6 @@ export const esEs: Localization = {
 		openModsFolderButton: "Abrir carpeta de mods",
 		tableColumnMod: "Mod",
 		tableColumnVersion: "Versión",
-		tableColumnModLoader: "Cargador",
 		tableColumnGameEngine: "Motor",
 		tableColumnUnityBackend: "Backend",
 		modByAuthor: "por {authorName}",

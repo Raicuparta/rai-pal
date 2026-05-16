@@ -131,7 +131,6 @@ export const frFr: Localization = {
 		openModsFolderButton: "Ouvrir le dossier des mods",
 		tableColumnMod: "Mod",
 		tableColumnVersion: "Version",
-		tableColumnModLoader: "Chargeur",
 		tableColumnGameEngine: "Moteur",
 		tableColumnUnityBackend: "Backend",
 		modByAuthor: "par {authorName}",

@@ -11,7 +11,6 @@ use zip::ZipArchive;
 use crate::{
 	game::DbGame,
 	http,
-	mod_loaders::mod_loader::ModLoaderId,
 	paths,
 	result::Result,
 };
@@ -23,7 +22,6 @@ const CONFIG_DB_VERSION: u32 = 0;
 pub struct RemoteConfig {
 	pub version: u32,
 	pub mod_id: String,
-	pub loader_id: ModLoaderId,
 	pub file: String,
 }
 

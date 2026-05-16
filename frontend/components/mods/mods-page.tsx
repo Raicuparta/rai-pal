@@ -59,12 +59,6 @@ export function ModsPage() {
 							<Table.Th>{t("tableColumnMod")}</Table.Th>
 							<Table.Th ta="center">{t("tableColumnVersion")}</Table.Th>
 							<Table.Th
-								ta="center"
-								w={100}
-							>
-								{t("tableColumnModLoader")}
-							</Table.Th>
-							<Table.Th
 								w={100}
 								ta="center"
 							>
@@ -110,7 +104,6 @@ export function ModsPage() {
 										remoteVersion={mod.remote?.latestVersion?.id}
 									/>
 								</Table.Td>
-								<Table.Td ta="center">{mod.common.loaderId}</Table.Td>
 								<Table.Td>{mod.common.engine}</Table.Td>
 								<Table.Td>{mod.common.unityBackend}</Table.Td>
 							</Table.Tr>

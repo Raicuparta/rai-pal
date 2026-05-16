@@ -47,7 +47,7 @@ export const commands = {
 	configs: RemoteConfig[],
 } | null>("get_remote_configs", { providerId, gameId }),
 	downloadRemoteConfig: (providerId: ProviderId, gameId: string, modId: string, remoteConfigFile: string, overwrite: boolean) => __TAURI_INVOKE<null>("download_remote_config", { providerId, gameId, modId, remoteConfigFile, overwrite }),
-	setUpWineBepinexEnvironment: () => __TAURI_INVOKE<null>("set_up_wine_bepinex_environment"),
+	setUpGlobalWineOverrides: () => __TAURI_INVOKE<null>("set_up_global_wine_overrides"),
 };
 
 /** Events */
@@ -57,9 +57,7 @@ export const events = {
 	gamesChanged: makeEvent<GamesChanged>("games-changed"),
 	refreshGame: makeEvent<RefreshGame>("refresh-game"),
 	selectGame: makeEvent<SelectGame>("select-game"),
-	syncLocalModLoaders: makeEvent<SyncLocalModLoaders>("sync-local-mod-loaders"),
 	syncLocalMods: makeEvent<SyncLocalMods>("sync-local-mods"),
-	syncRemoteModLoaders: makeEvent<SyncRemoteModLoaders>("sync-remote-mod-loaders"),
 	syncRemoteMods: makeEvent<SyncRemoteMods>("sync-remote-mods"),
 };
 
@@ -81,12 +79,10 @@ export type Architecture = "X64" | "X86";
 
 export type CommonModData = {
 	id: string,
-	isLoader: boolean | null,
 	engine: EngineBrand | null,
 	unityBackend: UnityBackend | null,
 	engineVersionRange: EngineVersionRange | null,
 	architecture: Architecture | null,
-	loaderId: ModLoaderId,
 };
 
 export type DbGame = {
@@ -175,39 +171,27 @@ export type LocalModData = {
 	manifest: Manifest,
 };
 
-export type LocalModLoader = {
-	common: ModLoaderData,
-	data: LocalModLoaderData,
-};
-
-export type LocalModLoaderData = {
-	installedVersion: string | null,
-};
-
 export type Manifest = {
-	loaderId: ModLoaderId,
 	title: string | null,
-	isLoader: boolean | null,
 	version: string,
 	runnable: RunnableModData | null,
 	engine: EngineBrand | null,
 	engineVersionRange: EngineVersionRange | null,
 	architecture: Architecture | null,
 	unityBackend: UnityBackend | null,
-	configs: ModConfigs | null,
+	config: ModConfig | null,
 };
 
-export type ModConfigDestinationType = "File" | "Folder";
-
-export type ModConfigs = {
+export type ModConfig = {
 	destinationPath: string,
 	destinationType: ModConfigDestinationType,
 	modIdOverride: string | null,
 };
 
+export type ModConfigDestinationType = "File" | "Folder";
+
 export type ModDependency = {
 	modId: string,
-	operatingSystems: string[] | null,
 };
 
 export type ModDownload = {
@@ -216,17 +200,6 @@ export type ModDownload = {
 	root: string | null,
 	runnable: RunnableModData | null,
 };
-
-export type ModKind = "Installable" | "Runnable";
-
-export type ModLoaderData = {
-	id: ModLoaderId,
-	path: string,
-	kind: ModKind,
-	engine: EngineBrand | null,
-};
-
-export type ModLoaderId = "bepinex" | "ue4ss" | "runnable" | "package";
 
 export type PathData = string;
 
@@ -241,7 +214,6 @@ export type RefreshGame = [ProviderId, string];
 export type RemoteConfig = {
 	version: number,
 	modId: string,
-	loaderId: ModLoaderId,
 	file: string,
 };
 
@@ -261,17 +233,8 @@ export type RemoteModData = {
 	sourceCode: string,
 	description: string,
 	latestVersion: ModDownload | null,
-	configs: ModConfigs | null,
+	config: ModConfig | null,
 	dependencies: ModDependency[] | null,
-};
-
-export type RemoteModLoader = {
-	common: ModLoaderData,
-	data: RemoteModLoaderData,
-};
-
-export type RemoteModLoaderData = {
-	latestVersion: string | null,
 };
 
 export type RunnableModData = {
@@ -282,11 +245,7 @@ export type RunnableModData = {
 
 export type SelectGame = [ProviderId, string];
 
-export type SyncLocalModLoaders = { [key in string]: LocalModLoader };
-
 export type SyncLocalMods = { [key in string]: LocalMod };
-
-export type SyncRemoteModLoaders = { [key in string]: RemoteModLoader };
 
 export type SyncRemoteMods = { [key in string]: RemoteMod };
 

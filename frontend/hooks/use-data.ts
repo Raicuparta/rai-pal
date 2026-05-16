@@ -9,12 +9,6 @@ export const gameDataAtom = atom<GameIdsResponse>({
 	totalCount: 0,
 });
 
-export const [localModLoadersAtom, useLocalModLoadersSubscription] =
-	dataSubscription("syncLocalModLoaders", {});
-
-export const [remoteModLoadersAtom, useRemoteModLoadersSubscription] =
-	dataSubscription("syncRemoteModLoaders", {});
-
 export const [localModsAtom, useLocalModsSubscription] = dataSubscription(
 	"syncLocalMods",
 	{},
@@ -33,8 +27,6 @@ type LoadingTask = {
 export const loadingTasksAtom = atom<LoadingTask[]>([]);
 
 export function useData() {
-	useLocalModLoadersSubscription();
-	useRemoteModLoadersSubscription();
 	useLocalModsSubscription();
 	useRemoteModsSubscription();
 	useGameDropEvent();

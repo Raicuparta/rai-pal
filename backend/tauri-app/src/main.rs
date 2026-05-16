@@ -37,13 +37,6 @@ use rai_pal_core::{
 		LocalMod,
 	},
 	maps::TryGettable,
-	mod_loaders::{
-		bepinex,
-		mod_loader::{
-			self,
-			ModLoaderActions,
-		},
-	},
 	paths::{
 		self,
 		normalize_path,
@@ -81,7 +74,6 @@ use strum::IntoEnumIterator;
 use tauri::{
 	AppHandle,
 	Manager,
-	path::BaseDirectory,
 };
 use tauri_plugin_log::{
 	Target,
@@ -90,10 +82,7 @@ use tauri_plugin_log::{
 use tauri_plugin_window_state::StateFlags;
 use tauri_specta::Builder;
 
-use crate::result::{
-	Error,
-	Result,
-};
+use crate::result::Result;
 
 mod app_settings;
 mod app_state;
@@ -221,16 +210,12 @@ async fn install_mod(
 	let state = handle.app_state();
 	let game = state.database.get_game(&provider_id, &game_id)?;
 
-	let mod_loaders = state.mod_loaders.read_state()?.clone();
-
 	let local_mod = refresh_and_get_local_mod(mod_id, &handle).await?;
 
-	let mod_loader = mod_loaders.try_get(&local_mod.common.loader_id)?;
-
 	// Uninstall mod if it already exists, in case there are conflicting leftover files when updating.
-	mod_loader.uninstall_mod_inner(&game, &local_mod).await?;
+	local_mod.uninstall(&game).await?;
 
-	mod_loader.install_mod(&game, &local_mod).await?;
+	local_mod.install(&game).await?;
 
 	handle.emit_safe(events::RefreshGame(provider_id, game_id));
 
@@ -242,12 +227,9 @@ async fn install_mod(
 #[tauri::command]
 #[specta::specta]
 async fn run_runnable_without_game(mod_id: &str, handle: AppHandle) -> Result {
-	let state = handle.app_state();
-	let mod_loaders = state.mod_loaders.read_state()?.clone();
 	let local_mod = refresh_and_get_local_mod(mod_id, &handle).await?;
-	let mod_loader = mod_loaders.try_get(&local_mod.common.loader_id)?;
 
-	mod_loader.run_without_game(&local_mod).await?;
+	local_mod.run_without_game().await?;
 
 	analytics::send_event(analytics::Event::InstallOrRunMod, mod_id).await;
 
@@ -265,12 +247,10 @@ async fn configure_mod(
 ) -> Result {
 	let state = handle.app_state();
 	let game = state.database.get_game(&provider_id, &game_id)?;
-	let mod_loaders = state.mod_loaders.read_state()?;
 	let local_mods = state.local_mods.read_state()?;
 	let local_mod = local_mods.try_get(mod_id)?;
-	let mod_loader = mod_loaders.try_get(&local_mod.common.loader_id)?;
 
-	mod_loader.configure_mod(&game, local_mod, open_folder)?;
+	local_mod.configure_mod(&game, open_folder)?;
 
 	Ok(())
 }
@@ -285,13 +265,9 @@ async fn open_installed_mod_folder(
 ) -> Result {
 	let state = handle.app_state();
 	let game = state.database.get_game(&provider_id, &game_id)?;
-
-	let mod_loaders = state.mod_loaders.read_state()?.clone();
 	let local_mod = refresh_and_get_local_mod(mod_id, &handle).await?;
 
-	let mod_loader = mod_loaders.try_get(&local_mod.common.loader_id)?;
-
-	mod_loader.open_installed_mod_folder(&game, &local_mod)?;
+	local_mod.open_installed_mod_folder(&game)?;
 
 	Ok(())
 }
@@ -319,14 +295,9 @@ async fn uninstall_mod(
 ) -> Result {
 	let state = handle.app_state();
 	let game = state.database.get_game(&provider_id, &game_id)?;
-
-	let mod_loaders = state.mod_loaders.read_state()?.clone();
-
 	let local_mod = refresh_and_get_local_mod(mod_id, &handle).await?;
 
-	let mod_loader = mod_loaders.try_get(&local_mod.common.loader_id)?;
-
-	mod_loader.uninstall_mod(&game, &local_mod).await?;
+	local_mod.uninstall(&game).await?;
 
 	handle.emit_safe(events::RefreshGame(provider_id, game_id));
 
@@ -361,25 +332,11 @@ fn refresh_local_mods(handle: &AppHandle) -> Result<local_mod::Map> {
 	Ok(local_mods)
 }
 
-async fn refresh_remote_mods(
-	mod_loaders: &mod_loader::Map,
-	handle: &AppHandle,
-) -> Result<remote_mod::Map> {
-	let mut remote_mods = remote_mod::Map::default();
-
-	for mod_loader in mod_loaders.values() {
-		for (mod_id, remote_mod) in remote_mod::get_all(|error| {
-			handle.emit_error(format!(
-				"Failed to get remote mods for mod loader {}: {}",
-				mod_loader.get_data().id,
-				error
-			));
-		})
-		.await
-		{
-			remote_mods.insert(mod_id.clone(), remote_mod.clone());
-		}
-	}
+async fn refresh_remote_mods(handle: &AppHandle) -> Result<remote_mod::Map> {
+	let remote_mods = remote_mod::get_all(|error| {
+		handle.emit_error(format!("Failed to get remote mods: {error}"));
+	})
+	.await;
 
 	handle.emit_safe(events::SyncRemoteMods(remote_mods.clone()));
 
@@ -426,34 +383,8 @@ async fn refresh_and_get_local_mod(mod_id: &str, handle: &AppHandle) -> Result<L
 #[tauri::command]
 #[specta::specta]
 async fn refresh_mods(handle: AppHandle) -> Result {
-	let resources_path = handle
-		.path()
-		.resolve("resources", BaseDirectory::Resource)
-		.map_err(|err| Error::FailedToGetResourcesPath(err.to_string()))?;
-
-	let mod_loaders = mod_loader::get_map(&resources_path);
-
-	handle.emit_safe(events::SyncLocalModLoaders(
-		mod_loader::get_local_mod_loaders_map(&mod_loaders)?,
-	));
-
-	handle.emit_safe(events::SyncRemoteModLoaders(
-		mod_loader::get_remote_mod_loaders_map(&mod_loaders)?,
-	));
-
-	log::info!("Found {} mod loaders. Refreshing local mods...", {
-		mod_loaders.len()
-	});
 	refresh_local_mods(&handle)?;
-
-	log::info!("Refreshing remote mods...");
-	refresh_remote_mods(&mod_loaders, &handle).await?;
-
-	log::info!("Saving mods to state.");
-	handle
-		.app_state()
-		.mod_loaders
-		.write_state_value(mod_loaders)?;
+	refresh_remote_mods(&handle).await?;
 
 	Ok(())
 }
@@ -635,16 +566,14 @@ async fn download_remote_config(
 	let game = state.database.get_game(&provider_id, game_id)?;
 	let remote_mods = state.remote_mods.read_state()?.clone();
 	let remote_mod = remote_mods.try_get(mod_id)?;
-	let mod_loaders = state.mod_loaders.read_state()?.clone();
-	let mod_loader = mod_loaders.try_get(&remote_mod.common.loader_id)?;
 	let local_mods = state.local_mods.read_state()?.clone();
 	let local_mod = local_mods.try_get(mod_id)?;
 
-	if let Some(mod_configs) = remote_mod.data.configs.as_ref() {
-		mod_loader
-			.download_config(&game, mod_configs, remote_config_file, overwrite)
+	if let Some(mod_config) = remote_mod.data.config.as_ref() {
+		mod_config
+			.download(&game, remote_config_file, overwrite)
 			.await?;
-		mod_loader.update_installed_mod_manifest(local_mod, &game)?;
+		local_mod.update_installed_mod_manifest(&game)?;
 	}
 
 	refresh_local_mods(&app_handle)?;
@@ -654,13 +583,15 @@ async fn download_remote_config(
 
 #[tauri::command]
 #[specta::specta]
-async fn set_up_wine_bepinex_environment() -> Result {
+async fn set_up_global_wine_overrides() -> Result {
 	#[cfg(not(target_os = "linux"))]
 	return Err(Error::LinuxOnly());
 
 	#[cfg(target_os = "linux")]
 	{
-		bepinex::set_up_proton_environment()?;
+		use rai_pal_core::wine;
+
+		wine::set_up_global_wine_overrides()?;
 
 		Ok(())
 	}
@@ -720,7 +651,7 @@ fn main() {
 			uninstall_mod,
 			get_remote_configs,
 			download_remote_config,
-			set_up_wine_bepinex_environment,
+			set_up_global_wine_overrides,
 		])
 		.events(events::collect_events())
 		.constant("PROVIDER_IDS", ProviderId::iter().collect::<Vec<_>>())
