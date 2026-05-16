@@ -1,9 +1,11 @@
-use std::fmt::Display;
+use std::{
+	collections::HashMap,
+	fmt::Display,
+};
 
 use rai_pal_core::{
-	local_mod,
+	game_mods::mod_database::GameMod,
 	providers::provider::ProviderId,
-	remote_mod,
 };
 use rai_pal_proc_macros::serializable_event;
 use serde::Serialize;
@@ -16,10 +18,10 @@ pub struct RefreshGame(pub ProviderId, pub String);
 pub struct GamesChanged();
 
 #[serializable_event]
-pub struct SyncLocalMods(pub local_mod::Map);
+pub struct SyncLocalMods(pub HashMap<String, GameMod>);
 
 #[serializable_event]
-pub struct SyncRemoteMods(pub remote_mod::Map);
+pub struct SyncRemoteMods(pub HashMap<String, GameMod>);
 
 #[serializable_event]
 pub struct ExecutedProviderCommand;

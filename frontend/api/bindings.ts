@@ -23,8 +23,6 @@ export const commands = {
 } | null) => __TAURI_INVOKE<GameIdsResponse>("get_game_ids", { query }),
 	getGame: (providerId: ProviderId, gameId: string) => __TAURI_INVOKE<DbGame>("get_game", { providerId, gameId }),
 	getInstalledModVersions: (providerId: ProviderId, gameId: string) => __TAURI_INVOKE<{ [key in string]: string }>("get_installed_mod_versions", { providerId, gameId }),
-	getLocalMods: () => __TAURI_INVOKE<{ [key in string]: LocalMod }>("get_local_mods"),
-	getRemoteMods: () => __TAURI_INVOKE<{ [key in string]: DatabaseEntry }>("get_remote_mods"),
 	installMod: (providerId: ProviderId, gameId: string, modId: string) => __TAURI_INVOKE<null>("install_mod", { providerId, gameId, modId }),
 	runMod: (providerId: ProviderId, gameId: string, modId: string) => __TAURI_INVOKE<null>("run_mod", { providerId, gameId, modId }),
 	openGameFolder: (providerId: ProviderId, gameId: string) => __TAURI_INVOKE<null>("open_game_folder", { providerId, gameId }),
@@ -78,26 +76,6 @@ export type AppSettings = {
 
 export type Architecture = "X64" | "X86";
 
-export type DatabaseEntry = {
-	id: string,
-	title: string,
-	author: string,
-	sourceCode: string,
-	description: string,
-	latestVersion: ModDownload,
-	engine: EngineBrand | null,
-	engineVersionRange: EngineVersionRange | null,
-	unityBackend: UnityBackend | null,
-	architecture: Architecture | null,
-	gameOs: OperatingSystem | null,
-	hostOs: OperatingSystem | null,
-	deprecated: boolean | null,
-	config: ModConfig | null,
-	dependencies: ModDependency[] | null,
-	install: ModInstall | null,
-	runForGame: ModRunForGame | null,
-};
-
 export type DbGame = {
 	providerId: ProviderId,
 	gameId: string,
@@ -148,6 +126,26 @@ export type GameIdsResponse = {
 	totalCount: number,
 };
 
+export type GameMod = {
+	id: string,
+	title: string,
+	author: string,
+	sourceCode: string,
+	description: string,
+	latestVersion: ModDownload,
+	engine: EngineBrand | null,
+	engineVersionRange: EngineVersionRange | null,
+	unityBackend: UnityBackend | null,
+	architecture: Architecture | null,
+	gameOs: OperatingSystem | null,
+	hostOs: OperatingSystem | null,
+	deprecated: boolean | null,
+	config: ModConfig | null,
+	dependencies: ModDependency[] | null,
+	install: ModInstall | null,
+	runForGame: ModRunForGame | null,
+};
+
 export type GameTag = "VR" | "Demo";
 
 export type GamesChanged = [];
@@ -173,10 +171,6 @@ export type GamesSortBy = "Title" | "Engine" | "ReleaseDate";
 export type InstallState = "Installed" | "NotInstalled";
 
 export type JsonData<T> = T;
-
-export type LocalMod = {
-	manifest: DatabaseEntry,
-};
 
 export type ModConfig = {
 	destinationPath: string,
@@ -242,9 +236,9 @@ export type RemoteConfigs = {
 
 export type SelectGame = [ProviderId, string];
 
-export type SyncLocalMods = { [key in string]: LocalMod };
+export type SyncLocalMods = { [key in string]: GameMod };
 
-export type SyncRemoteMods = { [key in string]: DatabaseEntry };
+export type SyncRemoteMods = { [key in string]: GameMod };
 
 export type TabId = "Games" | "Mods" | "Thanks";
 

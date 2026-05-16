@@ -7,49 +7,22 @@ use std::{
 	},
 };
 
-use rai_pal_proc_macros::{
-	serializable_enum,
-	serializable_struct,
-};
-
 use crate::{
 	game::DbGame,
 	game_mods::{
 		mod_config::ModConfig,
-		mod_database::DatabaseEntry,
+		mod_database::GameMod,
 	},
 	paths::{
 		self,
 		open_folder_or_parent,
 	},
-	result::{
-		Error,
-		LogErrExt,
-		Result,
-	},
+	result::Result,
 };
 
-#[serializable_enum]
-pub enum ModKind {
-	Installable,
-	Runnable,
-}
-
-#[serializable_struct]
-pub struct LocalMod {
-	pub manifest: DatabaseEntry,
-}
-
-impl LocalMod {
-	pub fn new(manifest_path: &Path) -> Result<Self> {
-		let manifest = DatabaseEntry::from_file(manifest_path)
-			.ok_or_else(|| Error::ManifestNotFound(manifest_path.display().to_string()))?;
-
-		Ok(Self { manifest })
-	}
-
+impl GameMod {
 	pub fn open_folder(&self) -> Result {
-		open_folder_or_parent(&self.get_path()?)
+		open_folder_or_parent(&self.get_local_folder_path()?)
 	}
 
 	pub async fn install(&self, game: &DbGame) -> Result {
@@ -70,9 +43,9 @@ impl LocalMod {
 
 	pub fn update_installed_mod_manifest(&self, game: &DbGame) -> Result {
 		// TODO: make sure it doesn't happen for runnables.
-		let manifest_path = game.get_installed_mod_manifest_path(&self.manifest.id)?;
+		let manifest_path = game.get_installed_mod_manifest_path(&self.id)?;
 		fs::create_dir_all(paths::path_parent(&manifest_path)?)?;
-		let manifest_contents = serde_json::to_string_pretty(&self.manifest)?;
+		let manifest_contents = serde_json::to_string_pretty(&self)?;
 		fs::write(manifest_path, manifest_contents)?;
 
 		Ok(())
@@ -84,7 +57,7 @@ impl LocalMod {
 	}
 
 	pub fn configure_mod(&self, game: &DbGame, open_folder: bool) -> Result {
-		if let Some(config) = self.manifest.config.as_ref() {
+		if let Some(config) = self.config.as_ref() {
 			let config_path = self.get_config_path(config, game)?;
 			if open_folder {
 				paths::open_folder_or_parent(&config_path)?;
@@ -100,8 +73,8 @@ impl LocalMod {
 		todo!();
 	}
 
-	pub fn delete(&self) -> Result {
-		let path = self.get_path()?;
+	pub fn delete_local(&self) -> Result {
+		let path = self.get_local_folder_path()?;
 		if path.exists() {
 			fs::remove_dir_all(&path)?;
 		}
@@ -109,32 +82,26 @@ impl LocalMod {
 		Ok(())
 	}
 
-	pub fn get_path(&self) -> Result<PathBuf> {
-		Ok(paths::local_mods_path()?.join(&self.manifest.id))
+	pub fn get_local_folder_path(&self) -> Result<PathBuf> {
+		Ok(paths::local_mods_path()?.join(&self.id))
 	}
 
-	pub fn get_manifest_path(&self) -> Result<PathBuf> {
-		Ok(get_manifest_path(&self.get_path()?))
+	pub fn get_local_manifest_path(&self) -> Result<PathBuf> {
+		Ok(get_manifest_path(&self.get_local_folder_path()?))
 	}
 }
 
-pub fn get_all() -> Result<HashMap<String, LocalMod>> {
-	Ok(paths::glob_path(
-		&paths::local_mods_path()?
-			.join("*")
-			.join(DatabaseEntry::FILE_NAME),
+pub fn get_all() -> Result<HashMap<String, GameMod>> {
+	Ok(
+		paths::glob_path(&paths::local_mods_path()?.join("*").join(GameMod::FILE_NAME))
+			.iter()
+			.filter_map(|manifest_path| {
+				GameMod::from_file(manifest_path).map(|local_mod| (local_mod.id.clone(), local_mod))
+			})
+			.collect(),
 	)
-	.iter()
-	.filter_map(|manifest_path| {
-		LocalMod::new(manifest_path)
-			.ok_or_log("Failed to create local mod")
-			.map(|local_mod| (local_mod.manifest.id.clone(), local_mod))
-	})
-	.collect())
 }
 
 pub fn get_manifest_path(target_path: &Path) -> PathBuf {
-	target_path.join(DatabaseEntry::FILE_NAME)
+	target_path.join(GameMod::FILE_NAME)
 }
-
-pub type Map = HashMap<String, LocalMod>;

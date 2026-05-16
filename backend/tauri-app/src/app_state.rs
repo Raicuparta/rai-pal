@@ -1,13 +1,15 @@
 use std::{
+	collections::HashMap,
 	ops::Deref,
 	sync::RwLock,
 };
 
 use rai_pal_core::{
-	local_database,
-	local_database::DbMutex,
-	local_mod,
-	remote_mod,
+	game_mods::mod_database::GameMod,
+	local_database::{
+		self,
+		DbMutex,
+	},
 };
 use tauri::Manager;
 
@@ -17,8 +19,8 @@ use crate::result::{
 };
 
 pub struct AppState {
-	pub local_mods: RwLock<local_mod::Map>,
-	pub remote_mods: RwLock<remote_mod::Map>,
+	pub local_mods: RwLock<HashMap<String, GameMod>>,
+	pub remote_mods: RwLock<HashMap<String, GameMod>>,
 	pub database: DbMutex,
 }
 
@@ -56,8 +58,8 @@ impl StatefulHandle for tauri::AppHandle {
 impl AppState {
 	pub fn new() -> Result<Self> {
 		Ok(Self {
-			local_mods: RwLock::new(local_mod::Map::new()),
-			remote_mods: RwLock::new(remote_mod::Map::new()),
+			local_mods: RwLock::new(HashMap::new()),
+			remote_mods: RwLock::new(HashMap::new()),
 			database: local_database::try_create()?,
 		})
 	}

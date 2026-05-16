@@ -26,16 +26,14 @@ use rai_pal_core::windows;
 use rai_pal_core::{
 	analytics,
 	game::DbGame,
+	game_mods::mod_database::GameMod,
 	games_query::GamesQuery,
 	local_database::{
 		GameDatabase,
 		GameIdsResponse,
 		attach_remote_database,
 	},
-	local_mod::{
-		self,
-		LocalMod,
-	},
+	local_mod,
 	maps::TryGettable,
 	paths::{
 		self,
@@ -113,18 +111,6 @@ async fn log_out() -> Result {
 
 #[tauri::command]
 #[specta::specta]
-async fn get_local_mods(handle: AppHandle) -> Result<local_mod::Map> {
-	Ok(handle.app_state().local_mods.read_state()?.clone())
-}
-
-#[tauri::command]
-#[specta::specta]
-async fn get_remote_mods(handle: AppHandle) -> Result<remote_mod::Map> {
-	Ok(handle.app_state().remote_mods.read_state()?.clone())
-}
-
-#[tauri::command]
-#[specta::specta]
 async fn open_game_folder(handle: AppHandle, provider_id: ProviderId, game_id: String) -> Result {
 	handle
 		.app_state()
@@ -174,7 +160,7 @@ async fn download_mod(mod_id: &str, handle: AppHandle) -> Result {
 	let remote_mods = state.remote_mods.read_state()?.clone();
 	let remote_mod = remote_mods.try_get(mod_id)?;
 
-	remote_mod::download(remote_mod).await?;
+	GameMod::download(remote_mod).await?;
 
 	refresh_local_mods(&handle)?;
 
@@ -188,7 +174,7 @@ async fn delete_mod(mod_id: &str, handle: AppHandle) -> Result {
 	let local_mods = state.local_mods.read_state()?;
 	let local_mod = local_mods.try_get(mod_id)?;
 
-	local_mod.delete()?;
+	local_mod.delete_local()?;
 
 	refresh_local_mods(&handle)?;
 
@@ -340,7 +326,7 @@ async fn uninstall_all_mods(provider_id: ProviderId, game_id: String, handle: Ap
 	Ok(())
 }
 
-fn refresh_local_mods(handle: &AppHandle) -> Result<local_mod::Map> {
+fn refresh_local_mods(handle: &AppHandle) -> Result<HashMap<String, GameMod>> {
 	let local_mods = local_mod::get_all()?;
 
 	log::info!("Found {} local mods.", { local_mods.len() });
@@ -354,8 +340,8 @@ fn refresh_local_mods(handle: &AppHandle) -> Result<local_mod::Map> {
 	Ok(local_mods)
 }
 
-async fn refresh_remote_mods(handle: &AppHandle) -> Result<remote_mod::Map> {
-	let remote_mods = remote_mod::get_all(|error| {
+async fn refresh_remote_mods(handle: &AppHandle) -> Result<HashMap<String, GameMod>> {
+	let remote_mods = remote_mod::get_all_remote(|error| {
 		handle.emit_error(format!("Failed to get remote mods: {error}"));
 	})
 	.await;
@@ -370,7 +356,7 @@ async fn refresh_remote_mods(handle: &AppHandle) -> Result<remote_mod::Map> {
 	Ok(remote_mods)
 }
 
-async fn refresh_and_get_local_mod(mod_id: &str, handle: &AppHandle) -> Result<LocalMod> {
+async fn refresh_and_get_local_mod(mod_id: &str, handle: &AppHandle) -> Result<GameMod> {
 	let local_mods = {
 		let state = handle.app_state();
 
@@ -389,7 +375,7 @@ async fn refresh_and_get_local_mod(mod_id: &str, handle: &AppHandle) -> Result<L
 
 				// If local mod still can't be found on disk,
 				// we try to download it from the database.
-				remote_mod::download(remote_mods.try_get(mod_id)?).await?;
+				GameMod::download(remote_mods.try_get(mod_id)?).await?;
 
 				refresh_local_mods(handle)
 			}
@@ -648,8 +634,6 @@ fn main() {
 			get_game_ids,
 			get_game,
 			get_installed_mod_versions,
-			get_local_mods,
-			get_remote_mods,
 			install_mod,
 			run_mod,
 			open_game_folder,

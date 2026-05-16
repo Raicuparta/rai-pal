@@ -1,12 +1,12 @@
 import { atom } from "jotai";
 import { useAtomValue } from "jotai";
 import { localModsAtom, remoteModsAtom } from "./use-data";
-import { DatabaseEntry } from "@api/bindings";
+import { GameMod } from "@api/bindings";
 
 export type UnifiedMod = {
-	local?: DatabaseEntry;
-	remote?: DatabaseEntry;
-	merged: DatabaseEntry;
+	local?: GameMod;
+	remote?: GameMod;
+	merged: GameMod;
 };
 
 const unifiedModsAtom = atom((get) => {
@@ -18,18 +18,16 @@ const unifiedModsAtom = atom((get) => {
 	].sort();
 
 	for (const key of keys) {
-		const localMod = localMods[key];
-		const remoteMod = remoteMods[key];
+		const local = localMods[key];
+		const remote = remoteMods[key];
 
-		if (!localMod && !remoteMod) continue;
+		if (!local && !remote) continue;
 
 		// local common but without any nulls or undefined values,
 		// to avoid overriding remote common values.
 		const cleanedUpLocalCommon = Object.fromEntries(
-			Object.entries(localMod?.manifest ?? {}).filter(
-				([, value]) => value != null,
-			),
-		) as DatabaseEntry;
+			Object.entries(local ?? {}).filter(([, value]) => value != null),
+		) as GameMod;
 
 		// When a mod is downloaded, the database information is stored in the local manifest.
 		// But there can be cases where the information isn't the same on both ends.
@@ -38,13 +36,13 @@ const unifiedModsAtom = atom((get) => {
 		// This might cause some discrepancies, but since this should mostly only happen when messing
 		// with mods for dev purposes, I think it's ok.
 		const merged = {
-			...remoteMod,
+			...remote,
 			...cleanedUpLocalCommon,
 		};
 
 		unifiedMods[key] = {
-			local: localMod?.manifest,
-			remote: remoteMod,
+			local,
+			remote,
 			merged,
 		};
 	}
