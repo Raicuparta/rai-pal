@@ -19,12 +19,15 @@ use crate::{
 			ModDatabase,
 			ModDependency,
 			ModDownload,
+			ModInstall,
+			ModRunForGame,
 		},
 	},
 	local_mod::{
 		self,
 	},
 	mod_manifest,
+	operating_system::OperatingSystem,
 	paths,
 	result::{
 		Error,
@@ -43,6 +46,10 @@ pub struct RemoteModData {
 	pub latest_version: Option<ModDownload>,
 	pub config: Option<ModConfig>,
 	pub dependencies: Option<Vec<ModDependency>>,
+	pub game_os: Option<OperatingSystem>,
+	pub host_os: Option<OperatingSystem>,
+	pub install: Option<ModInstall>,
+	pub run_for_game: Option<ModRunForGame>,
 }
 
 #[serializable_struct]
@@ -128,6 +135,10 @@ where
 				deprecated: database_mod.deprecated.unwrap_or(false),
 				config: database_mod.config.clone(),
 				dependencies: database_mod.dependencies.clone(),
+				game_os: database_mod.game_os,
+				host_os: database_mod.host_os,
+				install: database_mod.install.clone(),
+				run_for_game: database_mod.run_for_game.clone(),
 			},
 		};
 

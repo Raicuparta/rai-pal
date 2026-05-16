@@ -111,10 +111,6 @@ export function GameMods({ game }: Props) {
 		const incompatibleMods: UnifiedMod[] = [];
 
 		for (const mod of Object.values(mods)) {
-			if (mod.common.loaderId === "package") {
-				continue;
-			}
-
 			const isCompatibleEngine =
 				!mod.common.engine || mod.common.engine === game.engineBrand;
 			const isCompatibleUnityBackend =
@@ -157,30 +153,10 @@ export function GameMods({ game }: Props) {
 		return null;
 	}
 
-	function getLoaderDependency(mod: UnifiedMod): string | undefined {
-		if (mod.common.isLoader) return undefined;
-
-		const loaderModId = compatibleMods.find(
-			(m) => m.common.isLoader && m.common.loaderId === mod.common.loaderId,
-		)?.common.id;
-
-		if (!loaderModId) {
-			console.error(
-				`Mod ${mod.common.id} requires a loader mod, but no loader mod was found among compatible mods.`,
-			);
-			return undefined;
-		}
-
-		return loaderModId;
-	}
-
-	function getMissingDepdendencies(mod: UnifiedMod): string[] {
-		const loaderDependency = getLoaderDependency(mod);
-		return [
-			...(mod.remote?.dependencies?.map((dependency) => dependency.modId) ??
-				[]),
-			...(loaderDependency ? [loaderDependency] : []),
-		].filter((dependencyId) => !installedModVersions[dependencyId]);
+	function getMissingDepdendencies(mod: UnifiedMod): string[] | undefined {
+		return mod.remote?.dependencies
+			?.map((dependency) => dependency.modId)
+			.filter((dependencyId) => !installedModVersions[dependencyId]);
 	}
 
 	return (

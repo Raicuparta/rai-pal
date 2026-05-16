@@ -69,10 +69,10 @@ export function GameModRow({
 	);
 
 	const isInstalled = Boolean(installedVersion);
-	const isReadyRunnable = mod.local && true; // TODO: use new runnable.
+	const isReadyRunnable = mod.local && mod.remote?.runForGame;
 
 	const handleInstallClick = async () => {
-		if (modLoader?.common?.kind === "Runnable" && !mod.local && !mod.remote) {
+		if (mod.remote?.runForGame && !mod.local && !mod.remote) {
 			return commands.openModFolder(mod.common.id);
 		}
 
@@ -112,7 +112,7 @@ export function GameModRow({
 			return { actionText: t("uninstallMod"), actionIcon: <IconTrash /> };
 		}
 
-		if (modLoader?.common?.kind === "Installable") {
+		if (mod.remote?.install) {
 			return { actionText: t("installMod"), actionIcon: <IconCirclePlus /> };
 		}
 

@@ -201,6 +201,31 @@ export type ModDownload = {
 	runnable: RunnableModData | null,
 };
 
+export type ModInstall = {
+	extract: ModInstallExtract[] | null,
+	write: ModInstallWrite[] | null,
+	wineDllOverrides: string[] | null,
+	mainInstalledFolderPath: string | null,
+};
+
+export type ModInstallExtract = {
+	source: string,
+	destination: string,
+};
+
+export type ModInstallWrite = {
+	content: string,
+	destination: string,
+};
+
+export type ModRunForGame = {
+	path: string | null,
+	args: string[] | null,
+	wineEnvironment: { [key in string]: string } | null,
+};
+
+export type OperatingSystem = "Windows" | "Linux";
+
 export type PathData = string;
 
 export type ProviderCommand = ({ String: string }) & { Path?: never } | ({ Path: [string, string[]] }) & { String?: never };
@@ -235,6 +260,10 @@ export type RemoteModData = {
 	latestVersion: ModDownload | null,
 	config: ModConfig | null,
 	dependencies: ModDependency[] | null,
+	gameOs: OperatingSystem | null,
+	hostOs: OperatingSystem | null,
+	install: ModInstall | null,
+	runForGame: ModRunForGame | null,
 };
 
 export type RunnableModData = {

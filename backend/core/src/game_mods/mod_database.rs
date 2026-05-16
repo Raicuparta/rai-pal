@@ -49,6 +49,35 @@ pub struct DatabaseEntry {
 	pub deprecated: Option<bool>,
 	pub config: Option<ModConfig>,
 	pub dependencies: Option<Vec<ModDependency>>,
+	pub install: Option<ModInstall>,
+	pub run_for_game: Option<ModRunForGame>,
+}
+
+#[serializable_struct]
+pub struct ModInstallExtract {
+	pub source: String,
+	pub destination: String,
+}
+
+#[serializable_struct]
+pub struct ModInstallWrite {
+	pub content: String,
+	pub destination: String,
+}
+
+#[serializable_struct]
+pub struct ModInstall {
+	pub extract: Option<Vec<ModInstallExtract>>,
+	pub write: Option<Vec<ModInstallWrite>>,
+	pub wine_dll_overrides: Option<Vec<String>>,
+	pub main_installed_folder_path: Option<String>,
+}
+
+#[serializable_struct]
+pub struct ModRunForGame {
+	pub path: Option<String>,
+	pub args: Option<Vec<String>>,
+	pub wine_environment: Option<HashMap<String, String>>,
 }
 
 #[serializable_struct]
