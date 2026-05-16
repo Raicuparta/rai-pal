@@ -15,7 +15,6 @@ use crate::{
 	game_mods::{
 		game_mod::EngineVersionRange,
 		mod_config::ModConfig,
-		mod_database::RunnableModData,
 	},
 };
 
@@ -23,7 +22,6 @@ use crate::{
 pub struct Manifest {
 	pub title: Option<String>,
 	pub version: String,
-	pub runnable: Option<RunnableModData>,
 	pub engine: Option<EngineBrand>,
 	pub engine_version_range: Option<EngineVersionRange>,
 	pub architecture: Option<Architecture>,

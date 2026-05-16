@@ -81,13 +81,6 @@ pub struct ModRunForGame {
 }
 
 #[serializable_struct]
-pub struct RunnableModData {
-	pub path: String,
-	pub args: Vec<String>,
-	pub wine_environment: Option<HashMap<String, String>>,
-}
-
-#[serializable_struct]
 pub struct ModDatabase {
 	pub mods: Vec<DatabaseEntry>,
 }
@@ -97,7 +90,6 @@ pub struct ModDownload {
 	pub id: String,
 	pub url: String,
 	pub root: Option<PathBuf>,
-	pub runnable: Option<RunnableModData>,
 }
 
 #[serializable_struct]
@@ -109,15 +101,6 @@ pub struct ModDependency {
 pub enum ModConfigDestinationType {
 	File,
 	Folder,
-}
-
-#[serializable_struct]
-pub struct ModGithubInfo {
-	pub user: String,
-	pub repo: String,
-	pub asset_name: String,
-	pub root: Option<PathBuf>,
-	pub runnable: Option<RunnableModData>,
 }
 
 pub async fn get() -> Result<ModDatabase> {

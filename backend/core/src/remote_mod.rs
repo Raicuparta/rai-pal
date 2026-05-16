@@ -91,7 +91,6 @@ pub async fn download(remote_mod: &RemoteMod) -> Result {
 			serde_json::to_string_pretty(&mod_manifest::Manifest {
 				title: Some(remote_mod.data.title.clone()),
 				version: latest_version.id.clone(),
-				runnable: latest_version.runnable.clone(),
 				engine: remote_mod.common.engine,
 				architecture: remote_mod.common.architecture,
 				engine_version_range: remote_mod.common.engine_version_range.clone(),
@@ -155,7 +154,6 @@ where
 				let updated_manifest = mod_manifest::Manifest {
 					title: Some(remote_mod.data.title.clone()),
 					version: latest_version.id.clone(),
-					runnable: latest_version.runnable.clone(),
 					engine: remote_mod.common.engine,
 					architecture: remote_mod.common.architecture,
 					engine_version_range: remote_mod.common.engine_version_range.clone(),
