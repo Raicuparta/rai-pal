@@ -123,7 +123,7 @@ export function GameMods({ game }: Props) {
 				mod.merged.architecture === game.architecture;
 
 			if (
-				// !game ||
+				!game ||
 				!isCompatibleEngine ||
 				!isCompatibleUnityBackend ||
 				!isCompatibleArchitecture
