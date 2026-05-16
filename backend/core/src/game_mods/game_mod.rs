@@ -180,14 +180,59 @@ impl GameMod {
 		Ok(())
 	}
 
-	pub async fn run(&self, game: &DbGame) -> Result {
-		todo!();
+	pub fn run(&self, game: &DbGame) -> Result {
+		let run_for_game = self
+			.run_for_game
+			.as_ref()
+			.ok_or_else(|| Error::ModInfoMissing(self.id.clone(), "run_for_game".to_string()))?;
+		let local_mod_path = self.get_local_folder_path()?;
+
+		let run_path = local_mod_path.join(PathBuf::from(replace_tokens(
+			run_for_game.path.as_ref().ok_or_else(|| {
+				Error::ModInfoMissing(self.id.clone(), "run_for_game.path".to_string())
+			})?,
+			game,
+		)));
+		let args: Vec<String> = run_for_game
+			.args
+			.clone()
+			.unwrap_or_default()
+			.iter()
+			.map(|arg| replace_tokens(arg, game))
+			.collect();
+
+		#[cfg(target_os = "linux")]
+		{
+			let wine_environment: HashMap<String, String> = run_for_game
+				.wine_environment
+				.clone()
+				.unwrap_or_default()
+				.iter()
+				.map(|(key, value)| (key.clone(), replace_tokens(value, game)))
+				.collect();
+
+			let provider = provider::get_provider(game.provider_id)
+				.ok_or_else(|| Error::DataEntryNotFound(game.provider_id.to_string()))??;
+
+			provider.run_with_wine(game, &run_path, &args, &wine_environment)?;
+		}
+
+		#[cfg(target_os = "windows")]
+		{
+			std::process::Command::new(&run_path)
+				.current_dir(&local_mod_path)
+				.args(&args)
+				.spawn()?;
+		}
+
+		Ok(())
 	}
 
 	pub fn uninstall(&self, game: &DbGame) -> Result {
-		let install = self.install.as_ref().ok_or_else(|| {
-			Error::ModInstallInfoInsufficient("install".to_string(), game.display_title.clone())
-		})?;
+		let install = self
+			.install
+			.as_ref()
+			.ok_or_else(|| Error::ModInfoMissing(self.id.clone(), "install".to_string()))?;
 
 		let local_mod_path = self.get_local_folder_path()?;
 

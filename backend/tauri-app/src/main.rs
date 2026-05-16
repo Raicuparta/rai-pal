@@ -223,7 +223,7 @@ async fn run_mod(
 
 	let local_mod = refresh_and_get_local_mod(mod_id, &handle).await?;
 
-	local_mod.run(&game).await?;
+	local_mod.run(&game)?;
 
 	analytics::send_event(analytics::Event::InstallOrRunMod, mod_id).await;
 
