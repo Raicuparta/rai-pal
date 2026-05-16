@@ -15,7 +15,6 @@ use rai_pal_proc_macros::{
 use crate::{
 	game::DbGame,
 	game_mods::{
-		game_mod::CommonModData,
 		mod_config::ModConfig,
 		mod_database::DatabaseEntry,
 	},
@@ -39,7 +38,6 @@ pub enum ModKind {
 #[serializable_struct]
 pub struct LocalMod {
 	pub manifest: DatabaseEntry,
-	pub common: CommonModData,
 }
 
 impl LocalMod {
@@ -47,18 +45,7 @@ impl LocalMod {
 		let manifest = DatabaseEntry::from_file(manifest_path)
 			.ok_or_else(|| Error::ManifestNotFound(manifest_path.display().to_string()))?;
 
-		let mod_path = paths::path_parent(manifest_path)?;
-
-		Ok(Self {
-			manifest: manifest.clone(),
-			common: CommonModData {
-				id: paths::file_name_without_extension(mod_path)?.to_string(),
-				engine: manifest.engine,
-				engine_version_range: manifest.engine_version_range,
-				architecture: manifest.architecture,
-				unity_backend: manifest.unity_backend,
-			},
-		})
+		Ok(Self { manifest })
 	}
 
 	pub fn open_folder(&self) -> Result {
@@ -83,7 +70,7 @@ impl LocalMod {
 
 	pub fn update_installed_mod_manifest(&self, game: &DbGame) -> Result {
 		// TODO: make sure it doesn't happen for runnables.
-		let manifest_path = game.get_installed_mod_manifest_path(&self.common.id)?;
+		let manifest_path = game.get_installed_mod_manifest_path(&self.manifest.id)?;
 		fs::create_dir_all(paths::path_parent(&manifest_path)?)?;
 		let manifest_contents = serde_json::to_string_pretty(&self.manifest)?;
 		fs::write(manifest_path, manifest_contents)?;
@@ -123,7 +110,7 @@ impl LocalMod {
 	}
 
 	pub fn get_path(&self) -> Result<PathBuf> {
-		Ok(paths::local_mods_path()?.join(&self.common.id))
+		Ok(paths::local_mods_path()?.join(&self.manifest.id))
 	}
 
 	pub fn get_manifest_path(&self) -> Result<PathBuf> {
@@ -141,7 +128,7 @@ pub fn get_all() -> Result<HashMap<String, LocalMod>> {
 	.filter_map(|manifest_path| {
 		LocalMod::new(manifest_path)
 			.ok_or_log("Failed to create local mod")
-			.map(|local_mod| (local_mod.common.id.clone(), local_mod))
+			.map(|local_mod| (local_mod.manifest.id.clone(), local_mod))
 	})
 	.collect())
 }

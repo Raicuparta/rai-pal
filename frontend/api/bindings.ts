@@ -78,14 +78,6 @@ export type AppSettings = {
 
 export type Architecture = "X64" | "X86";
 
-export type CommonModData = {
-	id: string,
-	engine: EngineBrand | null,
-	unityBackend: UnityBackend | null,
-	engineVersionRange: EngineVersionRange | null,
-	architecture: Architecture | null,
-};
-
 export type DatabaseEntry = {
 	id: string,
 	title: string,
@@ -184,7 +176,6 @@ export type JsonData<T> = T;
 
 export type LocalMod = {
 	manifest: DatabaseEntry,
-	common: CommonModData,
 };
 
 export type ModConfig = {
