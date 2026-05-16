@@ -24,7 +24,7 @@ use crate::{
 		},
 		unreal,
 	},
-	game_mods::mod_database::GameMod,
+	game_mods::game_mod::GameMod,
 	game_tag::GameTag,
 	game_title::is_probably_demo,
 	paths,

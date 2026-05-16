@@ -10,7 +10,7 @@ use rai_pal_proc_macros::serializable_struct;
 
 use crate::{
 	game::DbGame,
-	game_mods::mod_database::ModConfigDestinationType,
+	game_mods::game_mod::ModConfigDestinationType,
 	remote_config,
 	result::Result,
 };

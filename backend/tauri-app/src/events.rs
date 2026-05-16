@@ -4,7 +4,7 @@ use std::{
 };
 
 use rai_pal_core::{
-	game_mods::mod_database::GameMod,
+	game_mods::game_mod::GameMod,
 	providers::provider::ProviderId,
 };
 use rai_pal_proc_macros::serializable_event;

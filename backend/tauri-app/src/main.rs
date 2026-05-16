@@ -26,14 +26,13 @@ use rai_pal_core::windows;
 use rai_pal_core::{
 	analytics,
 	game::DbGame,
-	game_mods::mod_database::GameMod,
+	game_mods::game_mod::GameMod,
 	games_query::GamesQuery,
 	local_database::{
 		GameDatabase,
 		GameIdsResponse,
 		attach_remote_database,
 	},
-	local_mod,
 	maps::TryGettable,
 	paths::{
 		self,
@@ -56,7 +55,6 @@ use rai_pal_core::{
 	remote_game::{
 		self,
 	},
-	remote_mod,
 	user::{
 		discord_oauth::{
 			DiscordAuthState,
@@ -327,7 +325,7 @@ async fn uninstall_all_mods(provider_id: ProviderId, game_id: String, handle: Ap
 }
 
 fn refresh_local_mods(handle: &AppHandle) -> Result<HashMap<String, GameMod>> {
-	let local_mods = local_mod::get_all()?;
+	let local_mods = GameMod::get_all_local()?;
 
 	log::info!("Found {} local mods.", { local_mods.len() });
 	handle.emit_safe(events::SyncLocalMods(local_mods.clone()));
@@ -341,7 +339,7 @@ fn refresh_local_mods(handle: &AppHandle) -> Result<HashMap<String, GameMod>> {
 }
 
 async fn refresh_remote_mods(handle: &AppHandle) -> Result<HashMap<String, GameMod>> {
-	let remote_mods = remote_mod::get_all_remote(|error| {
+	let remote_mods = GameMod::get_all_remote(|error| {
 		handle.emit_error(format!("Failed to get remote mods: {error}"));
 	})
 	.await;
