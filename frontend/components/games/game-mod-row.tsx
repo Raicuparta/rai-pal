@@ -1,8 +1,6 @@
 import {
-	DefaultMantineColor,
 	Table,
 	ThemeIcon,
-	Box,
 	ButtonGroup,
 	Group,
 	Stack,
@@ -12,16 +10,12 @@ import { DbGame, RemoteConfigs, commands } from "@api/bindings";
 import { CommandButton } from "@components/command-button";
 import {
 	IconCheck,
-	IconCirclePlus,
 	IconDotsVertical,
 	IconDownload,
 	IconFolderOpen,
 	IconMinus,
-	IconPlayerPlay,
-	IconRefreshAlert,
 	IconSettings,
 	IconSettingsFilled,
-	IconTrash,
 } from "@tabler/icons-react";
 import { UnifiedMod } from "@hooks/use-unified-mods";
 import { getIsOutdated } from "@util/is-outdated";
@@ -33,6 +27,10 @@ import { getModTitle } from "@util/game-mod";
 import { CommandDropdown } from "@components/command-dropdown";
 import { DeprecatedBadge } from "@components/mods/deprecated-badge";
 import { useLocalization } from "@hooks/use-localization";
+import { GameModInstallButton } from "./game-mod-install-button";
+import { GameModUpdateButton } from "./game-mod-update-button";
+import { GameModRunButton } from "./game-mod-run-button";
+import { GameModUninstallButton } from "./game-mod-uninstall-button";
 
 type Props = {
 	readonly game: DbGame;
@@ -69,56 +67,6 @@ export function GameModRow({
 	const isInstalled = Boolean(installedVersion);
 	const isReadyRunnable = mod.local && mod.remote?.runForGame;
 
-	const handleInstallClick = async () => {
-		if (mod.remote?.runForGame && !mod.local && !mod.remote) {
-			return commands.openModFolder(mod.merged.id);
-		}
-
-		if (isLocalModOutdated) {
-			// TODO figure out if this error would be handled.
-			await commands.downloadMod(mod.merged.id);
-		} else if (isInstalled && !isInstalledModOutdated) {
-			return commands.uninstallMod(game.providerId, game.gameId, mod.merged.id);
-		}
-
-		if (mod.remote?.install) {
-			await commands.installMod(game.providerId, game.gameId, mod.merged.id);
-		}
-
-		if (mod.remote?.runForGame) {
-			await commands.runMod(game.providerId, game.gameId, mod.merged.id);
-		}
-
-		if (availableRemoteConfig) {
-			await commands.downloadRemoteConfig(
-				game.providerId,
-				game.gameId,
-				mod.merged.id,
-				availableRemoteConfig.file,
-				false,
-			);
-		}
-	};
-	const { actionText, actionIcon } = (() => {
-		if (isLocalModOutdated || isInstalledModOutdated) {
-			return { actionText: t("updateMod"), actionIcon: <IconRefreshAlert /> };
-		}
-
-		if (isInstalled) {
-			return { actionText: t("uninstallMod"), actionIcon: <IconTrash /> };
-		}
-
-		if (mod.remote?.install) {
-			return { actionText: t("installMod"), actionIcon: <IconCirclePlus /> };
-		}
-
-		if (!mod.remote && !mod.local) {
-			return { actionText: t("openModFolder"), actionIcon: <IconFolderOpen /> };
-		}
-
-		return { actionText: t("runMod"), actionIcon: <IconPlayerPlay /> };
-	})();
-
 	const { statusIcon, statusColor } = (() => {
 		if (isLocalModOutdated || isInstalledModOutdated)
 			return {
@@ -134,12 +82,6 @@ export function GameModRow({
 			statusIcon: <IconMinus />,
 			statusColor: "gray",
 		};
-	})();
-
-	const buttonColor = ((): DefaultMantineColor => {
-		if (isLocalModOutdated || isInstalledModOutdated) return "orange";
-		if (isInstalled) return "red";
-		return "violet";
 	})();
 
 	const isModUsable = !incompatible && game.exePath;
@@ -178,26 +120,32 @@ export function GameModRow({
 				<Group justify="right">
 					{isModUsable && (
 						<ButtonGroup>
-							<CommandButton
-								color={buttonColor}
-								size="xs"
-								leftSection={actionIcon}
-								variant={isInstalled ? "light" : "default"}
-								confirmationText={
-									isInstalled
-										? undefined
-										: // TODO: translate
-											"Attention: be careful when installing mods on multiplayer games! Anticheat can detect some mods and get you banned, even if the mods seem harmless."
-								}
-								confirmationSkipId={
-									isInstalled ? undefined : "install-mod-confirm"
-								}
-								onClick={handleInstallClick}
-							>
-								<Box style={{ textOverflow: "ellipsis", overflow: "hidden" }}>
-									{actionText}
-								</Box>
-							</CommandButton>
+							{!isInstalled &&
+								!isInstalledModOutdated &&
+								mod.merged.install && (
+									<GameModInstallButton
+										game={game}
+										mod={mod}
+									/>
+								)}
+							{isInstalled && mod.merged.install && (
+								<GameModUninstallButton
+									game={game}
+									mod={mod}
+								/>
+							)}
+							{(isLocalModOutdated || isInstalledModOutdated) && (
+								<GameModUpdateButton
+									game={game}
+									mod={mod}
+								/>
+							)}
+							{mod.merged.runForGame && (
+								<GameModRunButton
+									game={game}
+									mod={mod}
+								/>
+							)}
 							<CommandDropdown icon={<IconDotsVertical />}>
 								{(localConfig || availableRemoteConfig) && (
 									<ButtonGroup>

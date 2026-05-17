@@ -15,6 +15,8 @@ const mergeKeys = [
 	"unityBackend",
 	"architecture",
 	"engineVersionRange",
+	"install",
+	"runForGame",
 ] as const satisfies (keyof GameMod)[];
 
 type MergedKey = (typeof mergeKeys)[number];
