@@ -226,9 +226,13 @@ pub fn open_folder_or_parent(path: &Path) -> Result {
 		path_parent(path)?
 	};
 
+	let normalized_path = normalize_path(folder_path);
+
+	fs::create_dir_all(&normalized_path)?;
+
 	// I've hard weird issues with non-normalized paths acting weird on Windows,
 	// normalizing seems to fix it.
-	open_detached_clean_env(normalize_path(folder_path))
+	open_detached_clean_env(normalized_path)
 }
 
 pub fn base_dirs() -> Result<BaseDirs> {
