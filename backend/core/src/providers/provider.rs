@@ -1,6 +1,9 @@
 use std::{
 	collections::HashMap,
-	path::Path,
+	path::{
+		Path,
+		PathBuf,
+	},
 };
 
 use enum_dispatch::enum_dispatch;
@@ -24,7 +27,10 @@ use crate::{
 		manual_provider::Manual,
 		steam::steam_provider::Steam,
 	},
-	result::Result,
+	result::{
+		Error,
+		Result,
+	},
 };
 
 // These IDs need to match the ones in rai-pal-db.
@@ -78,6 +84,11 @@ pub trait ProviderActions {
 	async fn insert_games(&self, db: &DbMutex) -> Result;
 	fn set_wine_dll_overrides(&self, _game: &DbGame, _dll_overrides: &[String]) -> Result {
 		Ok(())
+	}
+	fn get_wine_prefix_path(&self, _game: &DbGame) -> Result<PathBuf> {
+		Err(Error::UnsupportedOperation(
+			"get_wine_prefix_path".to_string(),
+		))
 	}
 	fn run_with_wine(
 		&self,

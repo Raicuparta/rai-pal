@@ -2,9 +2,11 @@ import { Alert, Group, Modal, Stack, Table } from "@mantine/core";
 import { commands, DbGame, ProviderId } from "@api/bindings";
 import { CommandButton } from "@components/command-button";
 import {
+	IconBottleFilled,
 	IconFolder,
 	IconFolderCog,
 	IconFolderOpen,
+	IconGlassFull,
 	IconRefresh,
 } from "@tabler/icons-react";
 import { useSetAtom } from "jotai";
@@ -20,6 +22,7 @@ import { useLocalization } from "@hooks/use-localization";
 import { useGame } from "@hooks/use-game";
 import { RemoveGameButton } from "./remove-game-button";
 import { GameMods } from "./game-mods";
+import { platform } from "@tauri-apps/plugin-os";
 import styles from "./games.module.css";
 
 type Props = {
@@ -73,6 +76,16 @@ export function GameModal({ game }: Props) {
 							>
 								{t("openInstalledModsFolder")}
 							</CommandButton>
+							{platform() === "linux" && (
+								<CommandButton
+									leftSection={<IconGlassFull />}
+									onClick={() =>
+										commands.openGameWinePrefixFolder(providerId, gameId)
+									}
+								>
+									{t("openGameWinePrefixFolder")}
+								</CommandButton>
+							)}
 						</CommandDropdown>
 					)}
 					{providerId === "Manual" && (

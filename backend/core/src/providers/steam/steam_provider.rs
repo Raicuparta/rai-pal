@@ -355,6 +355,11 @@ impl ProviderActions for Steam {
 	}
 
 	#[cfg(target_os = "linux")]
+	fn get_wine_prefix_path(&self, game: &DbGame) -> Result<PathBuf> {
+		Ok(steam_proton::get_wine_prefix_path(game).unwrap())
+	}
+
+	#[cfg(target_os = "linux")]
 	fn run_with_wine(
 		&self,
 		game: &DbGame,

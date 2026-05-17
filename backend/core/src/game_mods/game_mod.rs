@@ -147,7 +147,7 @@ impl GameMod {
 			for extract_action in extract_actions {
 				let source_path = local_mod_path.join(&extract_action.source);
 				let destination_path =
-					PathBuf::from(replace_tokens(&extract_action.destination, game));
+					PathBuf::from(replace_tokens(&extract_action.destination, game, self));
 
 				if source_path.is_dir() {
 					files::copy_dir_all(&source_path, &destination_path)?;
@@ -161,8 +161,8 @@ impl GameMod {
 		if let Some(write_actions) = install.write.as_ref() {
 			for write_action in write_actions {
 				let destination_path =
-					PathBuf::from(replace_tokens(&write_action.destination, game));
-				let content = replace_tokens(&write_action.content, game);
+					PathBuf::from(replace_tokens(&write_action.destination, game, self));
+				let content = replace_tokens(&write_action.content, game, self);
 
 				fs::create_dir_all(paths::path_parent(&destination_path)?)?;
 				fs::write(destination_path, content)?;
@@ -192,13 +192,14 @@ impl GameMod {
 				Error::ModInfoMissing(self.id.clone(), "run_for_game.path".to_string())
 			})?,
 			game,
+			self,
 		)));
 		let args: Vec<String> = run_for_game
 			.args
 			.clone()
 			.unwrap_or_default()
 			.iter()
-			.map(|arg| replace_tokens(arg, game))
+			.map(|arg| replace_tokens(arg, game, self))
 			.collect();
 
 		#[cfg(target_os = "linux")]
@@ -208,7 +209,7 @@ impl GameMod {
 				.clone()
 				.unwrap_or_default()
 				.iter()
-				.map(|(key, value)| (key.clone(), replace_tokens(value, game)))
+				.map(|(key, value)| (key.clone(), replace_tokens(value, game, self)))
 				.collect();
 
 			let provider = provider::get_provider(game.provider_id)
@@ -240,7 +241,7 @@ impl GameMod {
 			for extract_action in extract_actions {
 				let source_path = local_mod_path.join(&extract_action.source);
 				let destination_path =
-					PathBuf::from(replace_tokens(&extract_action.destination, game));
+					PathBuf::from(replace_tokens(&extract_action.destination, game, self));
 
 				if source_path.is_dir() {
 					Self::remove_path_if_exists(&destination_path)?;
@@ -253,7 +254,7 @@ impl GameMod {
 		if let Some(write_actions) = install.write.as_ref() {
 			for write_action in write_actions {
 				let destination_path =
-					PathBuf::from(replace_tokens(&write_action.destination, game));
+					PathBuf::from(replace_tokens(&write_action.destination, game, self));
 
 				if destination_path.exists() {
 					fs::remove_file(&destination_path)?;
@@ -287,6 +288,7 @@ impl GameMod {
 		Ok(PathBuf::from(&replace_tokens(
 			&config.destination_path,
 			game,
+			self,
 		)))
 	}
 
@@ -312,6 +314,7 @@ impl GameMod {
 					Error::ModInfoMissing(self.id.clone(), "main_installed_folder_path".to_string())
 				})?,
 			game,
+			self,
 		)))?;
 
 		Ok(())

@@ -2,6 +2,8 @@ use rai_pal_proc_macros::serializable_enum;
 
 use crate::{
 	game::DbGame,
+	game_mods::game_mod::GameMod,
+	operating_system::OperatingSystem,
 	paths,
 	providers::provider_command::{
 		ProviderCommand,
@@ -53,7 +55,7 @@ fn replace_parameter_value<TValue: AsRef<str>, TGetValue: Fn() -> Result<TValue>
 	}
 }
 
-pub fn replace_tokens(base_string: &str, game: &DbGame) -> String {
+pub fn replace_tokens(base_string: &str, game: &DbGame, game_mod: &GameMod) -> String {
 	let mut result = base_string.to_string();
 
 	let provider_commands = &game.provider_commands.0;
@@ -104,6 +106,14 @@ pub fn replace_tokens(base_string: &str, game: &DbGame) -> String {
 		)
 	});
 	result = replace_parameter_value(&result, ReplacementToken::RoamingAppData, || {
+		#[cfg(target_os = "linux")]
+		if game_mod.host_os == Some(OperatingSystem::Windows) {
+			// If runnable mod host OS is windows and we're on Linux, that means Wine,
+			// which means config dir is inside the prefix.
+
+			// game.
+		}
+
 		Ok(paths::base_dirs()?
 			.config_dir()
 			.to_string_lossy()

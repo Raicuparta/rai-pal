@@ -19,7 +19,7 @@ use crate::{
 const DLL_OVERRIDES_SECTION: &str = "[Software\\\\Wine\\\\DllOverrides]";
 const DLL_OVERRIDE_VALUE: &str = "native,builtin";
 
-fn get_wine_prefix_path_for_game(game: &DbGame) -> Option<PathBuf> {
+pub fn get_wine_prefix_path(game: &DbGame) -> Option<PathBuf> {
 	let app_id = get_app_id(game)?;
 	let steam_dir = match SteamDir::locate() {
 		Ok(steam_dir) => steam_dir,
@@ -43,7 +43,7 @@ fn get_wine_prefix_path_for_game(game: &DbGame) -> Option<PathBuf> {
 }
 
 fn get_wine_binary_for_game(game: &DbGame) -> Option<PathBuf> {
-	let prefix_path = get_wine_prefix_path_for_game(game)?;
+	let prefix_path = get_wine_prefix_path(game)?;
 	let compat_data_path = prefix_path.parent()?;
 	let config_info_path = compat_data_path.join("config_info");
 
@@ -94,7 +94,7 @@ pub fn run_with_wine(
 	args: &[String],
 	wine_env: &HashMap<String, String>,
 ) -> Result {
-	let wine_prefix_path = get_wine_prefix_path_for_game(game).ok_or_else(|| {
+	let wine_prefix_path = get_wine_prefix_path(game).ok_or_else(|| {
 		io::Error::new(
 			io::ErrorKind::NotFound,
 			format!(
@@ -232,7 +232,7 @@ fn get_app_library_path(steam_dir: &SteamDir, app_id: u32) -> Option<PathBuf> {
 }
 
 fn get_compat_user_reg_path(game: &DbGame) -> Option<PathBuf> {
-	Some(get_wine_prefix_path_for_game(game)?.join("user.reg"))
+	Some(get_wine_prefix_path(game)?.join("user.reg"))
 }
 
 fn upsert_dll_overrides_in_user_reg(path: &Path, dll_overrides: &[String]) -> Result {
