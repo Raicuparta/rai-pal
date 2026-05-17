@@ -40,7 +40,6 @@ type Props = {
 	readonly remoteConfigs?: RemoteConfigs | null;
 	readonly installedVersion?: string;
 	readonly incompatible?: boolean;
-	readonly missingDependencies?: string[];
 };
 
 export function GameModRow({
@@ -48,7 +47,6 @@ export function GameModRow({
 	mod,
 	installedVersion,
 	remoteConfigs,
-	missingDependencies,
 	incompatible = false,
 }: Props) {
 	const t = useLocalization("gameModRow");
@@ -56,7 +54,7 @@ export function GameModRow({
 	const availableRemoteConfig = remoteConfigs?.configs.find(
 		(config) => config.modId === mod.merged.id,
 	);
-	const localConfig = mod.merged?.config;
+	const localConfig = mod.local?.config;
 
 	const isInstalledModOutdated = getIsOutdated(
 		installedVersion,
@@ -81,14 +79,6 @@ export function GameModRow({
 			await commands.downloadMod(mod.merged.id);
 		} else if (isInstalled && !isInstalledModOutdated) {
 			return commands.uninstallMod(game.providerId, game.gameId, mod.merged.id);
-		}
-
-		if (missingDependencies) {
-			await Promise.all(
-				missingDependencies.map((dependencyId) =>
-					commands.installMod(game.providerId, game.gameId, dependencyId),
-				),
-			);
 		}
 
 		if (mod.remote?.install) {

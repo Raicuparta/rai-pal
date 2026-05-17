@@ -3,11 +3,43 @@ import { useAtomValue } from "jotai";
 import { localModsAtom, remoteModsAtom } from "./use-data";
 import { GameMod } from "@api/bindings";
 
+// Keys that go into the merged part of the unified mod.
+// Local mod takes priority, remote as a fallback.
+// So the keys here are things we use for filtering etc,
+// but we shouldn't have stuff here where it's important to dinstinguish the local vs remote version,
+// like the latest release version etc.
+const mergeKeys = [
+	"id",
+	"title",
+	"engine",
+	"unityBackend",
+	"architecture",
+	"engineVersionRange",
+] as const satisfies (keyof GameMod)[];
+
+type MergedKey = (typeof mergeKeys)[number];
+
+type MergedMod = Pick<GameMod, MergedKey>;
+
 export type UnifiedMod = {
 	local?: GameMod;
 	remote?: GameMod;
-	merged: GameMod;
+	merged: MergedMod;
 };
+
+function mergeMods(
+	local: GameMod | undefined,
+	remote: GameMod | undefined,
+): MergedMod {
+	const merged: Record<string, unknown> = {};
+
+	for (const key of mergeKeys) {
+		const val = remote?.[key] ?? local?.[key] ?? null;
+		merged[key] = val;
+	}
+
+	return merged as MergedMod;
+}
 
 const unifiedModsAtom = atom((get) => {
 	const localMods = get(localModsAtom);
@@ -21,29 +53,10 @@ const unifiedModsAtom = atom((get) => {
 		const local = localMods[key];
 		const remote = remoteMods[key];
 
-		if (!local && !remote) continue;
-
-		// local common but without any nulls or undefined values,
-		// to avoid overriding remote common values.
-		const cleanedUpLocalCommon = Object.fromEntries(
-			Object.entries(local ?? {}).filter(([, value]) => value != null),
-		) as GameMod;
-
-		// When a mod is downloaded, the database information is stored in the local manifest.
-		// But there can be cases where the information isn't the same on both ends.
-		// Local manifest information takes precedence, but if certain parts of the manifest are missing,
-		// we'll just use the one from the database.
-		// This might cause some discrepancies, but since this should mostly only happen when messing
-		// with mods for dev purposes, I think it's ok.
-		const merged = {
-			...remote,
-			...cleanedUpLocalCommon,
-		};
-
 		unifiedMods[key] = {
 			local,
 			remote,
-			merged,
+			merged: mergeMods(local, remote),
 		};
 	}
 

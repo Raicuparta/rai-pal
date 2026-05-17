@@ -153,12 +153,6 @@ export function GameMods({ game }: Props) {
 		return null;
 	}
 
-	function getMissingDepdendencies(mod: UnifiedMod): string[] | undefined {
-		return mod.remote?.dependencies
-			?.map((dependency) => dependency.modId)
-			.filter((dependencyId) => !installedModVersions[dependencyId]);
-	}
-
 	return (
 		<Stack>
 			{compatibleMods.length > 0 && (
@@ -177,7 +171,6 @@ export function GameMods({ game }: Props) {
 										mod={mod}
 										remoteConfigs={remoteConfigs}
 										installedVersion={installedModVersions[mod.merged.id]}
-										missingDependencies={getMissingDepdendencies(mod)}
 									/>
 								))}
 							</Table.Tbody>

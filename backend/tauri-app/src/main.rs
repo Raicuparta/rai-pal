@@ -196,6 +196,16 @@ async fn install_mod(
 
 	let local_mod = refresh_and_get_local_mod(mod_id, &handle).await?;
 
+	if let Some(dependencies) = local_mod.dependencies.as_ref() {
+		for dependency in dependencies {
+			let dependency_mod = refresh_and_get_local_mod(&dependency.mod_id, &handle).await?;
+
+			if dependency_mod.install.is_some() {
+				dependency_mod.install(&game)?;
+			}
+		}
+	}
+
 	// Uninstall mod if it already exists, in case there are conflicting leftover files when updating.
 	local_mod.uninstall(&game)?;
 
