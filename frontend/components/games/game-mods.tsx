@@ -136,6 +136,11 @@ export function GameMods({ game }: Props) {
 				continue;
 			}
 
+			// Non-actionable mods can be skipped.
+			if (!mod.merged.runForGame && !mod.merged.install) {
+				continue;
+			}
+
 			if (isVersionWithinRange(game, mod.merged.engineVersionRange)) {
 				compatibleMods.push(mod);
 			} else {
