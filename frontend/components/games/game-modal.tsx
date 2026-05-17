@@ -77,14 +77,24 @@ export function GameModal({ game }: Props) {
 								{t("openInstalledModsFolder")}
 							</CommandButton>
 							{platform() === "linux" && (
-								<CommandButton
-									leftSection={<IconGlassFull />}
-									onClick={() =>
-										commands.openGameWinePrefixFolder(providerId, gameId)
-									}
-								>
-									{t("openGameWinePrefixFolder")}
-								</CommandButton>
+								<>
+									<CommandButton
+										leftSection={<IconGlassFull />}
+										onClick={() =>
+											commands.openGameWinePrefixFolder(providerId, gameId)
+										}
+									>
+										{t("openGameWinePrefixFolder")}
+									</CommandButton>
+									<CommandButton
+										leftSection={<IconGlassFull />}
+										onClick={() =>
+											commands.openGameWineBinaryFolder(providerId, gameId)
+										}
+									>
+										{t("openGameWineBinaryFolder")}
+									</CommandButton>
+								</>
 							)}
 						</CommandDropdown>
 					)}

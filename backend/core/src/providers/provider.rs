@@ -90,6 +90,11 @@ pub trait ProviderActions {
 			"get_wine_prefix_path".to_string(),
 		))
 	}
+	fn get_wine_binary_path(&self, _game: &DbGame) -> Result<PathBuf> {
+		Err(Error::UnsupportedOperation(
+			"get_wine_binary_folder".to_string(),
+		))
+	}
 	fn run_with_wine(
 		&self,
 		_game: &DbGame,

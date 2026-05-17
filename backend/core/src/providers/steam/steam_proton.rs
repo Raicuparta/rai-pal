@@ -42,7 +42,7 @@ pub fn get_wine_prefix_path(game: &DbGame) -> Option<PathBuf> {
 	)
 }
 
-fn get_wine_binary_for_game(game: &DbGame) -> Option<PathBuf> {
+pub fn get_wine_binary_path(game: &DbGame) -> Option<PathBuf> {
 	let prefix_path = get_wine_prefix_path(game)?;
 	let compat_data_path = prefix_path.parent()?;
 	let config_info_path = compat_data_path.join("config_info");
@@ -104,7 +104,7 @@ pub fn run_with_wine(
 		)
 	})?;
 
-	let wine_binary_path = get_wine_binary_for_game(game).ok_or_else(|| {
+	let wine_binary_path = get_wine_binary_path(game).ok_or_else(|| {
 		io::Error::new(
 			io::ErrorKind::NotFound,
 			format!(

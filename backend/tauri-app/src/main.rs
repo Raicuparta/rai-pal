@@ -141,6 +141,27 @@ async fn open_game_wine_prefix_folder(
 
 #[tauri::command]
 #[specta::specta]
+async fn open_game_wine_binary_folder(
+	handle: AppHandle,
+	provider_id: ProviderId,
+	game_id: String,
+) -> Result {
+	paths::open_folder_or_parent(
+		&provider::get_provider(provider_id)
+			.unwrap()?
+			.get_wine_binary_path(
+				&handle
+					.app_state()
+					.database
+					.get_game(&provider_id, &game_id)?,
+			)?,
+	)?;
+
+	Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
 async fn open_game_mods_folder(
 	handle: AppHandle,
 	provider_id: ProviderId,
@@ -667,6 +688,7 @@ fn main() {
 			run_mod,
 			open_game_folder,
 			open_game_wine_prefix_folder,
+			open_game_wine_binary_folder,
 			open_game_mods_folder,
 			open_installed_mod_folder,
 			open_logs_folder,

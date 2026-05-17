@@ -107,11 +107,44 @@ pub fn replace_tokens(base_string: &str, game: &DbGame, game_mod: &GameMod) -> S
 	});
 	result = replace_parameter_value(&result, ReplacementToken::RoamingAppData, || {
 		#[cfg(target_os = "linux")]
-		if game_mod.host_os == Some(OperatingSystem::Windows) {
+		if game_mod.game_os == Some(OperatingSystem::Windows) {
 			// If runnable mod host OS is windows and we're on Linux, that means Wine,
 			// which means config dir is inside the prefix.
 
-			// game.
+			use std::{
+				path::PathBuf,
+				process::Command,
+			};
+
+			use crate::providers::provider::{
+				self,
+				ProviderActions,
+			};
+
+			let provider = provider::get_provider(game.provider_id).unwrap()?;
+			let prefix_path = provider.get_wine_prefix_path(game)?;
+
+			let output = Command::new(&provider.get_wine_binary_path(game)?)
+				.env("WINEPREFIX", &prefix_path)
+				.arg("cmd")
+				.arg("/C")
+				.arg("echo %APPDATA%")
+				.output()?;
+
+			let win_path = str::from_utf8(&output.stdout).unwrap().trim();
+
+			// 2. Convert Windows path to Linux path manually
+			// The format is always C:\users\username\AppData\Roaming
+			// We replace 'C:\' with the actual path to drive_c
+			let drive_c_path = format!("{}/drive_c", prefix_path.to_string_lossy());
+
+			// Remove the 'C:\' prefix and replace backslashes with slashes
+			let relative_path = win_path.replace("C:\\", "").replace('\\', "/");
+
+			return Ok(PathBuf::from(drive_c_path)
+				.join(relative_path)
+				.to_string_lossy()
+				.to_string());
 		}
 
 		Ok(paths::base_dirs()?
