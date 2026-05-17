@@ -110,8 +110,8 @@ pub fn replace_tokens(base_string: &str, game: &DbGame) -> String {
 			.to_string())
 	});
 	result = replace_parameter_value(&result, ReplacementToken::InstalledModsPath, || {
-		Ok(paths::installed_mods_path()?
-			.join(&game.game_id)
+		Ok(game
+			.get_installed_mods_folder()?
 			.to_string_lossy()
 			.to_string())
 	});

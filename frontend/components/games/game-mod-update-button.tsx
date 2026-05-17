@@ -15,7 +15,7 @@ export function GameModUpdateButton({ game, mod }: Props) {
 	return (
 		<CommandButton
 			leftSection={<IconRefreshAlert />}
-			color="orange"
+			color="green"
 			variant="light"
 			onClick={() =>
 				commands.installMod(game.providerId, game.gameId, mod.merged.id)
