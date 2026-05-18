@@ -1,5 +1,5 @@
 import { Alert, Divider, Stack, Table } from "@mantine/core";
-import { EngineVersionRange, DbGame, commands } from "@api/bindings";
+import { EngineVersionRange, DbGame, commands, GameMod } from "@api/bindings";
 import { useCallback, useMemo } from "react";
 import { CommandButton } from "@components/command-button";
 import { IconTrash } from "@tabler/icons-react";
@@ -69,18 +69,18 @@ function isVersionWithinRange(
 	return true;
 }
 
-const defaultInstalledModVersions: Record<string, string> = {};
+const defaultInstalledMods: Record<string, GameMod> = {};
 
 export function GameMods({ game }: Props) {
 	const t = useLocalization("gameModal");
 	const mods = useUnifiedMods();
-	const getInstalledModVersions = useCallback(
-		() => commands.getInstalledModVersions(game.providerId, game.gameId),
+	const getInstalledMods = useCallback(
+		() => commands.getInstalledMods(game.providerId, game.gameId),
 		[game],
 	);
-	const [installedModVersions, updateInstalledModVersions] = useCommandData(
-		getInstalledModVersions,
-		defaultInstalledModVersions,
+	const [installedMods, updateInstalledMods] = useCommandData(
+		getInstalledMods,
+		defaultInstalledMods,
 		!game?.exePath,
 	);
 	const getRemoteConfigs = useCallback(
@@ -102,7 +102,7 @@ export function GameMods({ game }: Props) {
 				refreshedGameId !== game.gameId
 			)
 				return;
-			updateInstalledModVersions();
+			updateInstalledMods();
 		},
 	);
 
@@ -132,7 +132,7 @@ export function GameMods({ game }: Props) {
 			}
 
 			// Deprecated mods only show if they had been previously installed.
-			if (mod.remote?.deprecated && !installedModVersions[mod.merged.id]) {
+			if (mod.remote?.deprecated && !installedMods[mod.merged.id]) {
 				continue;
 			}
 
@@ -152,7 +152,7 @@ export function GameMods({ game }: Props) {
 			compatibleMods,
 			incompatibleMods,
 		};
-	}, [game, installedModVersions, mods]);
+	}, [game, installedMods, mods]);
 
 	if (compatibleMods.length + incompatibleMods.length === 0) {
 		return null;
@@ -175,7 +175,7 @@ export function GameMods({ game }: Props) {
 										game={game}
 										mod={mod}
 										remoteConfigs={remoteConfigs}
-										installedVersion={installedModVersions[mod.merged.id]}
+										installedMod={installedMods[mod.merged.id]}
 									/>
 								))}
 							</Table.Tbody>
@@ -209,7 +209,7 @@ export function GameMods({ game }: Props) {
 										game={game}
 										mod={mod}
 										remoteConfigs={remoteConfigs}
-										installedVersion={installedModVersions[mod.merged.id]}
+										installedMod={installedMods[mod.merged.id]}
 										incompatible
 									/>
 								))}

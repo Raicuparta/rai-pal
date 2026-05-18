@@ -1,8 +1,10 @@
-export function getIsOutdated(
-	localVersion: string | undefined | null,
-	remoteVersion: string | undefined | null,
-) {
+import { GameMod } from "@api/bindings";
+
+export function getIsOutdated(localVersion?: GameMod, remoteVersion?: GameMod) {
+	if (!localVersion || !remoteVersion) return false;
+
 	return (
-		Boolean(localVersion && remoteVersion) && localVersion !== remoteVersion
+		localVersion.latestVersion.id !== remoteVersion.latestVersion.id ||
+		localVersion.hash !== remoteVersion.hash
 	);
 }

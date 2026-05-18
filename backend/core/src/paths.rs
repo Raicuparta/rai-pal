@@ -235,6 +235,20 @@ pub fn open_folder_or_parent(path: &Path) -> Result {
 	open_detached_clean_env(normalized_path)
 }
 
+pub fn remove_path_if_exists(path: &Path) -> Result {
+	let Ok(metadata) = fs::symlink_metadata(path) else {
+		return Ok(());
+	};
+
+	if metadata.is_dir() {
+		fs::remove_dir_all(path)?;
+	} else {
+		fs::remove_file(path)?;
+	}
+
+	Ok(())
+}
+
 pub fn base_dirs() -> Result<BaseDirs> {
 	directories::BaseDirs::new().ok_or_else(Error::AppDataNotFound)
 }

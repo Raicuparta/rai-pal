@@ -100,8 +100,8 @@ export function ModsPage() {
 								</Table.Td>
 								<Table.Td>
 									<ModVersionBadge
-										localVersion={mod.local?.latestVersion.id}
-										remoteVersion={mod.remote?.latestVersion.id}
+										local={mod.local}
+										remote={mod.remote}
 									/>
 								</Table.Td>
 								<Table.Td>{mod.merged.engine}</Table.Td>

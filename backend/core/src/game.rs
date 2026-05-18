@@ -24,7 +24,10 @@ use crate::{
 		},
 		unreal,
 	},
-	game_mods::game_mod::GameMod,
+	game_mods::{
+		game_mod::GameMod,
+		installed_mod::InstalledMod,
+	},
 	game_tag::GameTag,
 	game_title::is_probably_demo,
 	paths,
@@ -127,16 +130,13 @@ impl DbGame {
 		}
 	}
 
-	pub fn get_installed_mod_versions(&self) -> HashMap<String, String> {
+	pub fn get_installed_mods(&self) -> HashMap<String, GameMod> {
 		self.get_manifest_paths()
 			.iter()
 			.filter_map(|manifest_path| {
 				let manifest = GameMod::from_file(manifest_path)?;
 
-				Some((
-					manifest_path.file_stem()?.to_str()?.to_string(),
-					manifest.latest_version.id,
-				))
+				Some((manifest_path.file_stem()?.to_str()?.to_string(), manifest))
 			})
 			.collect()
 	}
@@ -251,5 +251,16 @@ impl DbGame {
 		} else {
 			Err(Error::GameNotInstalled(self.display_title.clone()))
 		}
+	}
+
+	pub fn get_installed_mod(&self, mod_id: &str) -> Result<Option<InstalledMod<'_>>> {
+		Ok(
+			GameMod::from_file(&self.get_installed_mod_manifest_path(mod_id)?).map(|game_mod| {
+				InstalledMod {
+					game_mod,
+					game: self,
+				}
+			}),
+		)
 	}
 }

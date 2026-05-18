@@ -6,7 +6,7 @@ import {
 	Stack,
 	Tooltip,
 } from "@mantine/core";
-import { DbGame, RemoteConfigs, commands } from "@api/bindings";
+import { DbGame, GameMod, RemoteConfigs, commands } from "@api/bindings";
 import { CommandButton } from "@components/command-button";
 import {
 	IconCheck,
@@ -36,14 +36,14 @@ type Props = {
 	readonly game: DbGame;
 	readonly mod: UnifiedMod;
 	readonly remoteConfigs?: RemoteConfigs | null;
-	readonly installedVersion?: string;
+	readonly installedMod?: GameMod;
 	readonly incompatible?: boolean;
 };
 
 export function GameModRow({
 	game,
 	mod,
-	installedVersion,
+	installedMod,
 	remoteConfigs,
 	incompatible = false,
 }: Props) {
@@ -54,17 +54,11 @@ export function GameModRow({
 	);
 	const localConfig = mod.local?.config;
 
-	const isInstalledModOutdated = getIsOutdated(
-		installedVersion,
-		mod.remote?.latestVersion.id,
-	);
+	const isInstalledModOutdated = getIsOutdated(installedMod, mod.remote);
 
-	const isLocalModOutdated = getIsOutdated(
-		mod.local?.latestVersion.id,
-		mod.remote?.latestVersion.id,
-	);
+	const isLocalModOutdated = getIsOutdated(mod.local, mod.remote);
 
-	const isInstalled = Boolean(installedVersion);
+	const isInstalled = Boolean(installedMod);
 	const isReadyRunnable = mod.local && mod.remote?.runForGame;
 
 	const { statusIcon, statusColor } = (() => {
@@ -105,8 +99,8 @@ export function GameModRow({
 						</Tooltip>
 					)}
 					<ModVersionBadge
-						localVersion={installedVersion}
-						remoteVersion={mod.remote?.latestVersion.id}
+						local={installedMod}
+						remote={mod.remote}
 					/>
 				</ItemName>
 				<Stack gap={0}>

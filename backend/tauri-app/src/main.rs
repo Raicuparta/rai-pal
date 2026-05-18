@@ -248,8 +248,10 @@ async fn install_mod(
 		}
 	}
 
-	// Uninstall mod if it already exists, in case there are conflicting leftover files when updating.
-	local_mod.uninstall(&game)?;
+	if let Some(installed_mod) = game.get_installed_mod(mod_id)? {
+		// Uninstall mod if it already exists, in case there are conflicting leftover files when updating.
+		installed_mod.uninstall()?;
+	}
 
 	local_mod.install(&game)?;
 
@@ -303,12 +305,13 @@ async fn configure_mod(
 	open_folder: bool,
 	handle: AppHandle,
 ) -> Result {
-	let state = handle.app_state();
-	let game = state.database.get_game(&provider_id, &game_id)?;
-	let local_mods = state.local_mods.read_state()?;
-	let local_mod = local_mods.try_get(mod_id)?;
-
-	local_mod.configure_mod(&game, open_folder)?;
+	handle
+		.app_state()
+		.database
+		.get_game(&provider_id, &game_id)?
+		.get_installed_mod(mod_id)?
+		.unwrap()
+		.configure(open_folder)?;
 
 	Ok(())
 }
@@ -323,9 +326,7 @@ async fn open_installed_mod_folder(
 ) -> Result {
 	let state = handle.app_state();
 	let game = state.database.get_game(&provider_id, &game_id)?;
-	let local_mod = refresh_and_get_local_mod(mod_id, &handle).await?;
-
-	local_mod.open_installed_mod_folder(&game)?;
+	game.get_installed_mod(mod_id)?.unwrap().open_folder()?;
 
 	Ok(())
 }
@@ -353,9 +354,7 @@ async fn uninstall_mod(
 ) -> Result {
 	let state = handle.app_state();
 	let game = state.database.get_game(&provider_id, &game_id)?;
-	let local_mod = refresh_and_get_local_mod(mod_id, &handle).await?;
-
-	local_mod.uninstall(&game)?;
+	game.get_installed_mod(mod_id)?.unwrap().uninstall()?;
 
 	handle.emit_safe(events::RefreshGame(provider_id, game_id));
 
@@ -580,16 +579,16 @@ async fn save_app_settings(settings: AppSettings) -> Result {
 
 #[tauri::command]
 #[specta::specta]
-async fn get_installed_mod_versions(
+async fn get_installed_mods(
 	provider_id: ProviderId,
 	game_id: String,
 	app_handle: AppHandle,
-) -> Result<HashMap<String, String>> {
+) -> Result<HashMap<String, GameMod>> {
 	Ok(app_handle
 		.app_state()
 		.database
 		.get_game(&provider_id, &game_id)?
-		.get_installed_mod_versions())
+		.get_installed_mods())
 }
 
 #[tauri::command]
@@ -683,7 +682,7 @@ fn main() {
 			get_app_settings,
 			get_game_ids,
 			get_game,
-			get_installed_mod_versions,
+			get_installed_mods,
 			install_mod,
 			run_mod,
 			open_game_folder,

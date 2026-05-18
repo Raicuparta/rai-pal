@@ -64,6 +64,7 @@ pub struct GameMod {
 	pub dependencies: Option<Vec<ModDependency>>,
 	pub install: Option<ModInstall>,
 	pub run_for_game: Option<ModRunForGame>,
+	pub hash: Option<String>,
 }
 
 #[serializable_struct]
@@ -91,6 +92,7 @@ pub struct ModRunForGame {
 	pub path: Option<String>,
 	pub args: Option<Vec<String>>,
 	pub wine_environment: Option<HashMap<String, String>>,
+	pub os: Option<OperatingSystem>,
 }
 
 #[serializable_struct]
@@ -133,7 +135,7 @@ impl GameMod {
 		paths::open_folder_or_parent(&self.get_local_folder_path()?)
 	}
 
-	fn get_install(&self) -> Result<&ModInstall> {
+	pub fn get_install(&self) -> Result<&ModInstall> {
 		self.install
 			.as_ref()
 			.ok_or_else(|| Error::ModInfoMissing(self.id.clone(), "install".to_string()))
@@ -229,47 +231,6 @@ impl GameMod {
 		Ok(())
 	}
 
-	pub fn uninstall(&self, game: &DbGame) -> Result {
-		let install = self
-			.install
-			.as_ref()
-			.ok_or_else(|| Error::ModInfoMissing(self.id.clone(), "install".to_string()))?;
-
-		let local_mod_path = self.get_local_folder_path()?;
-
-		if let Some(extract_actions) = install.extract.as_ref() {
-			for extract_action in extract_actions {
-				let source_path = local_mod_path.join(&extract_action.source);
-				let destination_path =
-					PathBuf::from(replace_tokens(&extract_action.destination, game, self));
-
-				if source_path.is_dir() {
-					Self::remove_path_if_exists(&destination_path)?;
-				} else if destination_path.exists() {
-					fs::remove_file(&destination_path)?;
-				}
-			}
-		}
-
-		if let Some(write_actions) = install.write.as_ref() {
-			for write_action in write_actions {
-				let destination_path =
-					PathBuf::from(replace_tokens(&write_action.destination, game, self));
-
-				if destination_path.exists() {
-					fs::remove_file(&destination_path)?;
-				}
-			}
-		}
-
-		let manifest_path = game.get_installed_mod_manifest_path(&self.id)?;
-		if manifest_path.exists() {
-			fs::remove_file(manifest_path)?;
-		}
-
-		Ok(())
-	}
-
 	pub async fn run_without_game(&self) -> Result {
 		todo!();
 	}
@@ -280,42 +241,6 @@ impl GameMod {
 		fs::create_dir_all(paths::path_parent(&manifest_path)?)?;
 		let manifest_contents = serde_json::to_string_pretty(&self)?;
 		fs::write(manifest_path, manifest_contents)?;
-
-		Ok(())
-	}
-
-	pub fn get_config_path(&self, config: &ModConfig, game: &DbGame) -> Result<PathBuf> {
-		Ok(PathBuf::from(&replace_tokens(
-			&config.destination_path,
-			game,
-			self,
-		)))
-	}
-
-	pub fn configure_mod(&self, game: &DbGame, open_folder: bool) -> Result {
-		if let Some(config) = self.config.as_ref() {
-			let config_path = self.get_config_path(config, game)?;
-			if open_folder {
-				paths::open_folder_or_parent(&config_path)?;
-			} else {
-				open::that_detached(config_path)?;
-			}
-		}
-
-		Ok(())
-	}
-
-	pub fn open_installed_mod_folder(&self, game: &DbGame) -> Result {
-		paths::open_folder_or_parent(&PathBuf::from(replace_tokens(
-			self.get_install()?
-				.main_installed_folder_path
-				.as_ref()
-				.ok_or_else(|| {
-					Error::ModInfoMissing(self.id.clone(), "main_installed_folder_path".to_string())
-				})?,
-			game,
-			self,
-		)))?;
 
 		Ok(())
 	}
@@ -414,19 +339,5 @@ impl GameMod {
 
 	fn get_manifest_path(target_path: &Path) -> PathBuf {
 		target_path.join(Self::FILE_NAME)
-	}
-
-	fn remove_path_if_exists(path: &Path) -> Result {
-		let Ok(metadata) = fs::symlink_metadata(path) else {
-			return Ok(());
-		};
-
-		if metadata.is_dir() {
-			fs::remove_dir_all(path)?;
-		} else {
-			fs::remove_file(path)?;
-		}
-
-		Ok(())
 	}
 }

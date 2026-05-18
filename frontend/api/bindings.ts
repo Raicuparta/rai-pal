@@ -22,7 +22,7 @@ export const commands = {
 	sortDescending: boolean,
 } | null) => __TAURI_INVOKE<GameIdsResponse>("get_game_ids", { query }),
 	getGame: (providerId: ProviderId, gameId: string) => __TAURI_INVOKE<DbGame>("get_game", { providerId, gameId }),
-	getInstalledModVersions: (providerId: ProviderId, gameId: string) => __TAURI_INVOKE<{ [key in string]: string }>("get_installed_mod_versions", { providerId, gameId }),
+	getInstalledMods: (providerId: ProviderId, gameId: string) => __TAURI_INVOKE<{ [key in string]: GameMod }>("get_installed_mods", { providerId, gameId }),
 	installMod: (providerId: ProviderId, gameId: string, modId: string) => __TAURI_INVOKE<null>("install_mod", { providerId, gameId, modId }),
 	runMod: (providerId: ProviderId, gameId: string, modId: string) => __TAURI_INVOKE<null>("run_mod", { providerId, gameId, modId }),
 	openGameFolder: (providerId: ProviderId, gameId: string) => __TAURI_INVOKE<null>("open_game_folder", { providerId, gameId }),
@@ -146,6 +146,7 @@ export type GameMod = {
 	dependencies: ModDependency[] | null,
 	install: ModInstall | null,
 	runForGame: ModRunForGame | null,
+	hash: string | null,
 };
 
 export type GameTag = "VR" | "Demo";
@@ -212,6 +213,7 @@ export type ModRunForGame = {
 	path: string | null,
 	args: string[] | null,
 	wineEnvironment: { [key in string]: string } | null,
+	os: OperatingSystem | null,
 };
 
 export type OperatingSystem = "Windows" | "Linux";

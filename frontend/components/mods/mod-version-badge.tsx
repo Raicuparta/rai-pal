@@ -2,25 +2,28 @@ import { Badge, DefaultMantineColor, Stack, Tooltip } from "@mantine/core";
 import { getIsOutdated } from "@util/is-outdated";
 import { IconRefreshAlert } from "@tabler/icons-react";
 import { useLocalization } from "@hooks/use-localization";
+import { GameMod } from "@api/bindings";
 
 type Props = {
-	readonly localVersion?: string;
-	readonly remoteVersion?: string;
+	readonly local?: GameMod;
+	readonly remote?: GameMod;
 };
 
 function getColor(props: Props): DefaultMantineColor {
-	if (!props.localVersion) return "gray";
-	if (getIsOutdated(props.localVersion, props.remoteVersion)) return "orange";
+	if (!props.local) return "gray";
+	if (getIsOutdated(props.local, props.remote)) return "orange";
 	return "green";
 }
 
 export function ModVersionBadge(props: Props) {
 	const t = useLocalization("modsPage");
-	const isOutdated = getIsOutdated(props.localVersion, props.remoteVersion);
+	const isOutdated = getIsOutdated(props.local, props.remote);
 
-	const versionText = (props.localVersion || props.remoteVersion || "-").split(
-		"/",
-	)[0];
+	const versionText = (
+		props.local?.latestVersion.id ||
+		props.remote?.latestVersion.id ||
+		"-"
+	).split("/")[0];
 
 	return (
 		<Tooltip

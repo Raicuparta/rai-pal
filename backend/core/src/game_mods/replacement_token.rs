@@ -107,7 +107,9 @@ pub fn replace_tokens(base_string: &str, game: &DbGame, game_mod: &GameMod) -> S
 	});
 	result = replace_parameter_value(&result, ReplacementToken::RoamingAppData, || {
 		#[cfg(target_os = "linux")]
-		if game_mod.game_os == Some(OperatingSystem::Windows) {
+		if let Some(run) = game_mod.run_for_game.as_ref()
+			&& run.os == Some(OperatingSystem::Windows)
+		{
 			// If runnable mod host OS is windows and we're on Linux, that means Wine,
 			// which means config dir is inside the prefix.
 
