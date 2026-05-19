@@ -32,6 +32,7 @@ use crate::{
 		mod_database::ModDatabase,
 		replacement_token::replace_tokens,
 	},
+	http,
 	operating_system::OperatingSystem,
 	paths,
 	providers::provider::{
@@ -267,7 +268,7 @@ impl GameMod {
 		let downloads_path = paths::downloads_path()?;
 		let mod_id = &self.id;
 
-		let response = reqwest::get(&self.latest_version.url).await?;
+		let response = http::CLIENT.get(&self.latest_version.url).send().await?;
 
 		fs::create_dir_all(&downloads_path)?;
 
