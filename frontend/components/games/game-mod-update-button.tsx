@@ -7,9 +7,10 @@ import { useLocalization } from "@hooks/use-localization";
 type Props = {
 	readonly game: DbGame;
 	readonly mod: UnifiedMod;
+	readonly isLocalModOutdated: boolean;
 };
 
-export function GameModUpdateButton({ game, mod }: Props) {
+export function GameModUpdateButton({ game, mod, isLocalModOutdated }: Props) {
 	const t = useLocalization("gameModRow");
 
 	return (
@@ -17,9 +18,12 @@ export function GameModUpdateButton({ game, mod }: Props) {
 			leftSection={<IconRefreshAlert />}
 			color="green"
 			variant="light"
-			onClick={() =>
-				commands.installMod(game.providerId, game.gameId, mod.merged.id)
-			}
+			onClick={async () => {
+				if (isLocalModOutdated) {
+					await commands.downloadMod(mod.merged.id);
+				}
+				await commands.installMod(game.providerId, game.gameId, mod.merged.id);
+			}}
 		>
 			{t("updateMod")}
 		</CommandButton>

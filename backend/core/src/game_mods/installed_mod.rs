@@ -22,7 +22,11 @@ pub struct InstalledMod<'a> {
 	pub game: &'a DbGame,
 }
 
-impl InstalledMod<'_> {
+impl<'a> InstalledMod<'a> {
+	pub const fn new(game_mod: GameMod, game: &'a DbGame) -> Self {
+		Self { game_mod, game }
+	}
+
 	pub fn open_folder(&self) -> Result {
 		paths::open_folder_or_parent(&PathBuf::from(replace_tokens(
 			self.game_mod

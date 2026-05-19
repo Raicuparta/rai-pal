@@ -439,6 +439,7 @@ async fn refresh_and_get_local_mod(mod_id: &str, handle: &AppHandle) -> Result<G
 async fn refresh_mods(handle: AppHandle) -> Result {
 	refresh_local_mods(&handle)?;
 	refresh_remote_mods(&handle).await?;
+	refresh_local_mods(&handle)?;
 
 	Ok(())
 }
@@ -584,11 +585,12 @@ async fn get_installed_mods(
 	game_id: String,
 	app_handle: AppHandle,
 ) -> Result<HashMap<String, GameMod>> {
-	Ok(app_handle
-		.app_state()
+	let state = app_handle.app_state();
+	let local_mods = state.local_mods.read_state()?.clone();
+	Ok(state
 		.database
 		.get_game(&provider_id, &game_id)?
-		.get_installed_mods())
+		.get_installed_mods(&local_mods))
 }
 
 #[tauri::command]

@@ -132,6 +132,7 @@ export function GameModRow({
 								<GameModUpdateButton
 									game={game}
 									mod={mod}
+									isLocalModOutdated={isLocalModOutdated}
 								/>
 							)}
 							{mod.merged.runForGame && (

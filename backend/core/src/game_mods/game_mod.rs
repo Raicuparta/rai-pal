@@ -302,7 +302,7 @@ impl GameMod {
 		let local_mods = Self::get_all_local().ok_or_log("Failed to get local mods");
 
 		for remote_mod in database.mods {
-			// If there's a local mod with the same ID, update its manifest with remote info
+			// If there's a local mod with the same ID, refresh its manifest if out of sync
 			if let Some(local_mod) = local_mods
 				.as_ref()
 				.and_then(|local_mods| local_mods.get(&remote_mod.id))
@@ -310,11 +310,13 @@ impl GameMod {
 					.get_local_manifest_path()
 					.ok_or_log("Failed to get manifest path for local mod.")
 			{
-				// Only update if the manifest file exists (mod has been downloaded before)
+				// Only refresh if the manifest file exists (mod has been downloaded before),
+				// the latest version ID matches, and the hash differs
 				if manifest_path.exists()
+					&& local_mod.latest_version.id == remote_mod.latest_version.id
+					&& local_mod.hash != remote_mod.hash
 					&& let Ok(manifest_contents) = serde_json::to_string_pretty(&remote_mod)
 				{
-					// TODO what's going on with this result?
 					let _ = fs::write(&manifest_path, manifest_contents);
 				}
 			}

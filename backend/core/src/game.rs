@@ -130,11 +130,28 @@ impl DbGame {
 		}
 	}
 
-	pub fn get_installed_mods(&self) -> HashMap<String, GameMod> {
+	pub fn get_installed_mods(
+		&self,
+		local_mods: &HashMap<String, GameMod>,
+	) -> HashMap<String, GameMod> {
 		self.get_manifest_paths()
 			.iter()
 			.filter_map(|manifest_path| {
-				let manifest = GameMod::from_file(manifest_path)?;
+				let mut manifest = GameMod::from_file(manifest_path)?;
+
+				if let Some(local_mod) = local_mods.get(&manifest.id)
+					&& manifest.latest_version.id == local_mod.latest_version.id
+					&& manifest.hash != local_mod.hash
+					&& let Ok(manifest_contents) = serde_json::to_string_pretty(local_mod)
+				{
+					let _ = fs::write(manifest_path, &manifest_contents);
+
+					if let Ok(updated_manifest) =
+						serde_json::from_str::<GameMod>(&manifest_contents)
+					{
+						manifest = updated_manifest;
+					}
+				}
 
 				Some((manifest_path.file_stem()?.to_str()?.to_string(), manifest))
 			})
