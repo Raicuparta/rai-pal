@@ -3922,6 +3922,7 @@ dependencies = [
  "chrono",
  "directories",
  "enum_dispatch",
+ "futures-util",
  "globwalk",
  "keyring",
  "lazy-regex",

@@ -265,17 +265,24 @@ impl GameMod {
 
 	pub async fn download(&self) -> Result {
 		let target_path = paths::local_mods_path()?.join(&self.id);
-		let downloads_path = paths::downloads_path()?;
 		let mod_id = &self.id;
 
-		let response = http::CLIENT.get(&self.latest_version.url).send().await?;
+		let zip_path = paths::downloads_path()?.join(format!("{mod_id}.zip"));
 
-		fs::create_dir_all(&downloads_path)?;
+		http::download_with_progress(
+			&self.latest_version.url,
+			&zip_path,
+			|downloaded, total_size| {
+				log::info!(
+					"Downloading mod `{}`: {} / {} bytes",
+					self.title,
+					downloaded,
+					total_size.map_or("unknown".to_string(), |size| size.to_string())
+				);
+			},
+		)
+		.await?;
 
-		let zip_path = downloads_path.join(format!("{mod_id}.zip"));
-
-		// TODO Stream to disk instead of keeping it all in memory.
-		fs::write(&zip_path, response.bytes().await?)?;
 		let file = File::open(&zip_path)?;
 
 		let mut zip_archive = ZipArchive::new(file)?;

@@ -41,6 +41,7 @@ keyring = { version = "3", features = [
   "crypto-rust",
   "sync-secret-service",
 ] }
+futures-util = "0.3"
 
 [target.'cfg(target_os = "windows")'.dependencies]
 winapi = { version = "0.3.9", features = ["winuser"] }
