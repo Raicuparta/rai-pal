@@ -29,19 +29,9 @@ export function ModModal(props: Props) {
 		localVersion && remoteVersion && remoteVersion !== localVersion;
 
 	return (
-		<Modal
-			centered
-			onClose={props.onClose}
-			opened
-			size="xl"
-			title={
-				<Group>
-					<ItemName label={`by ${props.mod.remote?.author}`}>
-						{getModTitle(props.mod)}
-					</ItemName>
-					{props.mod.remote?.deprecated && <DeprecatedBadge />}
-				</Group>
-			}
+		<Stack
+			flex={1}
+			style={{ overflowY: "scroll" }}
 		>
 			<Stack>
 				{props.mod.local && props.mod.local?.runForGame && (
@@ -81,6 +71,6 @@ export function ModModal(props: Props) {
 				)}
 				<DebugData data={props.mod} />
 			</Stack>
-		</Modal>
+		</Stack>
 	);
 }

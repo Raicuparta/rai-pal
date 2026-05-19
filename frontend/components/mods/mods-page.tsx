@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import { TableContainer } from "@components/table/table-container";
 import { RefreshButton } from "@components/refresh-button";
 import { commands } from "@api/bindings";
-import { IconFolderCog } from "@tabler/icons-react";
+import { IconArrowLeft, IconFolderCog } from "@tabler/icons-react";
 import { ModModal } from "./mod-modal";
 import { UnifiedMod, useUnifiedMods } from "@hooks/use-unified-mods";
 import { ModVersionBadge } from "./mod-version-badge";
@@ -37,80 +37,94 @@ export function ModsPage() {
 
 	return (
 		<Stack h="100%">
-			{selectedMod ? (
-				<ModModal
-					onClose={() => setSelectedId(undefined)}
-					mod={selectedMod}
-				/>
-			) : null}
-			<Group justify="end">
-				<Button
-					onClick={commands.openModsFolder}
-					leftSection={<IconFolderCog />}
-				>
-					{t("openModsFolderButton")}
-				</Button>
-				<RefreshButton />
-			</Group>
-			<TableContainer style={{ overflowY: "scroll" }}>
-				<Table highlightOnHover>
-					<Table.Thead pos="sticky">
-						<Table.Tr>
-							<Table.Th>{t("tableColumnMod")}</Table.Th>
-							<Table.Th ta="center">{t("tableColumnVersion")}</Table.Th>
-							<Table.Th
-								w={100}
-								ta="center"
-							>
-								{t("tableColumnGameEngine")}
-							</Table.Th>
-							<Table.Th
-								w={100}
-								ta="center"
-							>
-								{t("tableColumnUnityBackend")}
-							</Table.Th>
-						</Table.Tr>
-					</Table.Thead>
-					<Table.Tbody>
-						{Object.entries(filteredMods).map(([modId, mod]) => (
-							<Table.Tr
-								key={modId}
-								onClick={() => setSelectedId(mod.merged.id)}
-							>
-								<Table.Td>
-									{mod.remote?.deprecated && <DeprecatedBadge />}
-									<ItemName
-										label={
-											mod.remote?.author
-												? `${t("modByAuthor", { authorName: mod.remote?.author })}`
-												: undefined
-										}
+			{selectedMod && (
+				<>
+					<Group>
+						<Button
+							onClick={() => setSelectedId(undefined)}
+							leftSection={<IconArrowLeft />}
+						>
+							{t("backToModsList")}
+						</Button>
+					</Group>
+					<ModModal
+						onClose={() => setSelectedId(undefined)}
+						mod={selectedMod}
+					/>
+				</>
+			)}
+			{!selectedMod && (
+				<>
+					<Group justify="end">
+						<Button
+							onClick={commands.openModsFolder}
+							leftSection={<IconFolderCog />}
+						>
+							{t("openModsFolderButton")}
+						</Button>
+						<RefreshButton />
+					</Group>
+					<TableContainer style={{ overflowY: "scroll" }}>
+						<Table highlightOnHover>
+							<Table.Thead pos="sticky">
+								<Table.Tr>
+									<Table.Th>{t("tableColumnMod")}</Table.Th>
+									<Table.Th ta="center">{t("tableColumnVersion")}</Table.Th>
+									<Table.Th
+										w={100}
+										ta="center"
 									>
-										{getModTitle(mod)}
-									</ItemName>
-									{mod.remote?.description && (
-										<Text
-											size="sm"
-											opacity={0.5}
-										>
-											{mod.remote.description}
-										</Text>
-									)}
-								</Table.Td>
-								<Table.Td>
-									<ModVersionBadge
-										local={mod.local}
-										remote={mod.remote}
-									/>
-								</Table.Td>
-								<Table.Td>{mod.merged.engine}</Table.Td>
-								<Table.Td>{mod.merged.unityBackend}</Table.Td>
-							</Table.Tr>
-						))}
-					</Table.Tbody>
-				</Table>
-			</TableContainer>
+										{t("tableColumnGameEngine")}
+									</Table.Th>
+									<Table.Th
+										w={100}
+										ta="center"
+									>
+										{t("tableColumnUnityBackend")}
+									</Table.Th>
+								</Table.Tr>
+							</Table.Thead>
+							<Table.Tbody>
+								{Object.entries(filteredMods).map(([modId, mod]) => (
+									<Table.Tr
+										key={modId}
+										onClick={() => setSelectedId(mod.merged.id)}
+									>
+										<Table.Td>
+											{mod.remote?.deprecated && <DeprecatedBadge />}
+											<ItemName
+												label={
+													mod.remote?.author
+														? `${t("modByAuthor", { authorName: mod.remote?.author })}`
+														: undefined
+												}
+											>
+												{getModTitle(mod)}
+											</ItemName>
+											{mod.remote?.description && (
+												<Text
+													size="sm"
+													opacity={0.5}
+												>
+													{mod.remote.description}
+												</Text>
+											)}
+										</Table.Td>
+										<Table.Td>
+											<ModVersionBadge
+												local={mod.local}
+												remote={mod.remote}
+											/>
+										</Table.Td>
+										<Table.Td>{mod.merged.engine}</Table.Td>
+										<Table.Td>{mod.merged.unityBackend}</Table.Td>
+									</Table.Tr>
+								))}
+							</Table.Tbody>
+						</Table>
+					</TableContainer>
+				</>
+			)}
 		</Stack>
 	);
 }

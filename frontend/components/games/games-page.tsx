@@ -9,8 +9,10 @@ import { GamesTable } from "./games-table";
 import { GameModal } from "./game-modal";
 import { IconArrowLeft } from "@tabler/icons-react";
 import { useGame } from "@hooks/use-game";
+import { useLocalization } from "@hooks/use-localization";
 
 export function GamesPage() {
+	const t = useLocalization("gamesPage");
 	const [selectedGame, setSelectedGame] = useAtom(selectedGameAtom);
 
 	useAppEvent("selectGame", "games-page", ([providerId, gameId]) => {
@@ -28,8 +30,7 @@ export function GamesPage() {
 							onClick={() => setSelectedGame(null)}
 							leftSection={<IconArrowLeft />}
 						>
-							{/* TODO: translate */}
-							Back to game list
+							{t("backToGamesList")}
 						</Button>
 					</Group>
 
