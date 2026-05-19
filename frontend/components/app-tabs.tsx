@@ -11,6 +11,7 @@ import { AppSettings } from "./tools/app-settings";
 import { UserMenu } from "./tools/user-menu";
 import { useAppSettingSingle } from "@hooks/use-app-setting-single";
 import { TabId } from "@api/bindings";
+import { DownloadStatusMenu } from "./tools/download-status-menu";
 
 const pages: Record<TabId, Page> = {
 	Games: {
@@ -66,6 +67,7 @@ export function AppTabs() {
 								ml="auto"
 								gap="xs"
 							>
+								<DownloadStatusMenu />
 								<UserMenu />
 								<AppSettings />
 							</Group>

@@ -28,6 +28,7 @@ use rai_pal_core::{
 	game::DbGame,
 	game_mods::game_mod::GameMod,
 	games_query::GamesQuery,
+	http::DownloadStatus,
 	local_database::{
 		GameDatabase,
 		GameIdsResponse,
@@ -70,6 +71,7 @@ use strum::IntoEnumIterator;
 use tauri::{
 	AppHandle,
 	Manager,
+	ipc::Channel,
 };
 use tauri_plugin_log::{
 	Target,
@@ -184,7 +186,7 @@ async fn open_mods_folder() -> Result {
 
 #[tauri::command]
 #[specta::specta]
-async fn open_mod_folder(mod_id: &str, handle: AppHandle) -> Result {
+async fn open_mod_folder(handle: AppHandle, mod_id: &str) -> Result {
 	Ok(handle
 		.app_state()
 		.local_mods
@@ -195,13 +197,19 @@ async fn open_mod_folder(mod_id: &str, handle: AppHandle) -> Result {
 
 #[tauri::command]
 #[specta::specta]
-async fn download_mod(mod_id: &str, handle: AppHandle) -> Result {
+async fn download_mod(handle: AppHandle, mod_id: &str) -> Result {
 	let state = handle.app_state();
 	let remote_mods = state.remote_mods.read_state()?.clone();
 	let remote_mod = remote_mods.try_get(mod_id)?;
 
-	GameMod::download(remote_mod).await?;
-
+	GameMod::download(remote_mod, |status| {
+		state
+			.download_status_channel
+			.read_state()
+			.unwrap()
+			.send(status);
+	})
+	.await?;
 	refresh_local_mods(&handle)?;
 
 	Ok(())
@@ -209,7 +217,7 @@ async fn download_mod(mod_id: &str, handle: AppHandle) -> Result {
 
 #[tauri::command]
 #[specta::specta]
-async fn delete_mod(mod_id: &str, handle: AppHandle) -> Result {
+async fn delete_mod(handle: AppHandle, mod_id: &str) -> Result {
 	let state = handle.app_state();
 	let local_mods = state.local_mods.read_state()?;
 	let local_mod = local_mods.try_get(mod_id)?;
@@ -286,7 +294,7 @@ async fn run_mod(
 
 #[tauri::command]
 #[specta::specta]
-async fn run_runnable_without_game(mod_id: &str, handle: AppHandle) -> Result {
+async fn run_runnable_without_game(handle: AppHandle, mod_id: &str) -> Result {
 	let local_mod = refresh_and_get_local_mod(mod_id, &handle).await?;
 
 	local_mod.run_without_game().await?;
@@ -333,7 +341,7 @@ async fn open_installed_mod_folder(
 
 #[tauri::command]
 #[specta::specta]
-async fn refresh_game(provider_id: ProviderId, game_id: String, handle: AppHandle) -> Result {
+async fn refresh_game(handle: AppHandle, provider_id: ProviderId, game_id: String) -> Result {
 	let state = handle.app_state();
 	let mut game = state.database.get_game(&provider_id, &game_id)?;
 	game.refresh_executable()?;
@@ -363,7 +371,7 @@ async fn uninstall_mod(
 
 #[tauri::command]
 #[specta::specta]
-async fn uninstall_all_mods(provider_id: ProviderId, game_id: String, handle: AppHandle) -> Result {
+async fn uninstall_all_mods(handle: AppHandle, provider_id: ProviderId, game_id: String) -> Result {
 	handle
 		.app_state()
 		.database
@@ -424,7 +432,14 @@ async fn refresh_and_get_local_mod(mod_id: &str, handle: &AppHandle) -> Result<G
 
 				// If local mod still can't be found on disk,
 				// we try to download it from the database.
-				GameMod::download(remote_mods.try_get(mod_id)?).await?;
+				GameMod::download(remote_mods.try_get(mod_id)?, |status| {
+					state
+						.download_status_channel
+						.read_state()
+						.unwrap()
+						.send(status);
+				})
+				.await?;
 
 				refresh_local_mods(handle)
 			}
@@ -473,7 +488,7 @@ async fn refresh_games(handle: AppHandle, provider_id: ProviderId) -> Result {
 
 #[tauri::command]
 #[specta::specta]
-async fn add_game(path: PathBuf, handle: AppHandle) -> Result {
+async fn add_game(handle: AppHandle, path: PathBuf) -> Result {
 	let normalized_path = normalize_path(&path);
 
 	let game = manual_provider::add_game(&normalized_path)?;
@@ -496,7 +511,7 @@ async fn add_game(path: PathBuf, handle: AppHandle) -> Result {
 
 #[tauri::command]
 #[specta::specta]
-async fn remove_game(provider_id: ProviderId, game_id: String, handle: AppHandle) -> Result {
+async fn remove_game(handle: AppHandle, provider_id: ProviderId, game_id: String) -> Result {
 	let game = handle
 		.app_state()
 		.database
@@ -509,7 +524,7 @@ async fn remove_game(provider_id: ProviderId, game_id: String, handle: AppHandle
 
 #[tauri::command]
 #[specta::specta]
-async fn run_provider_command(provider_command: ProviderCommand, handle: AppHandle) -> Result {
+async fn run_provider_command(handle: AppHandle, provider_command: ProviderCommand) -> Result {
 	provider_command.run()?;
 
 	handle.emit_safe(events::ExecutedProviderCommand);
@@ -653,6 +668,20 @@ async fn set_up_global_wine_overrides() -> Result {
 	}
 }
 
+#[tauri::command]
+#[specta::specta]
+async fn listen_to_download_progress(
+	handle: AppHandle,
+	channel: Channel<DownloadStatus>,
+) -> Result {
+	handle
+		.app_state()
+		.download_status_channel
+		.write_state_value(channel)?;
+
+	Ok(())
+}
+
 fn show_panic(error: &str) {
 	rfd::MessageDialog::new()
 		.set_title("Rai Pal is panicking rn!")
@@ -709,6 +738,7 @@ fn main() {
 			get_remote_configs,
 			download_remote_config,
 			set_up_global_wine_overrides,
+			listen_to_download_progress,
 		])
 		.events(events::collect_events())
 		.constant("PROVIDER_IDS", ProviderId::iter().collect::<Vec<_>>())

@@ -6,12 +6,16 @@ use std::{
 
 use rai_pal_core::{
 	game_mods::game_mod::GameMod,
+	http::DownloadStatus,
 	local_database::{
 		self,
 		DbMutex,
 	},
 };
-use tauri::Manager;
+use tauri::{
+	Manager,
+	ipc::Channel,
+};
 
 use crate::result::{
 	Error,
@@ -19,28 +23,36 @@ use crate::result::{
 };
 
 pub struct AppState {
-	pub local_mods: RwLock<HashMap<String, GameMod>>,
-	pub remote_mods: RwLock<HashMap<String, GameMod>>,
+	pub local_mods: RwLock<Option<HashMap<String, GameMod>>>,
+	pub remote_mods: RwLock<Option<HashMap<String, GameMod>>>,
 	pub database: DbMutex,
+	pub download_status_channel: RwLock<Option<Channel<DownloadStatus>>>,
 }
 
 type TauriState<'a> = tauri::State<'a, AppState>;
 
 pub trait StateData<TData> {
-	fn read_state(&self) -> Result<impl Deref<Target = TData>>;
+	fn read_state(&self) -> Result<TData>;
 	fn write_state_value(&self, data: TData) -> Result;
 }
 
-impl<TData: Clone> StateData<TData> for RwLock<TData> {
-	fn read_state(&self) -> Result<impl Deref<Target = TData>> {
-		self.read()
-			.map_err(|err| Error::FailedToAccessStateData(err.to_string()))
+impl<TData: Clone> StateData<TData> for RwLock<Option<TData>> {
+	fn read_state(&self) -> Result<TData> {
+		let guard = self
+			.read()
+			.map_err(|err| Error::FailedToAccessStateData(err.to_string()))?;
+
+		match &*guard {
+			Some(data) => Ok(data.clone()),
+			None => Err(Error::FailedToAccessStateData("Empty data".into())),
+		}
 	}
 
-	fn write_state_value(&self, data: TData) -> Result {
+	fn write_state_value(&self, data: TData) -> Result<()> {
 		*self
 			.write()
-			.map_err(|err| Error::FailedToAccessStateData(err.to_string()))? = data;
+			.map_err(|err| Error::FailedToAccessStateData(err.to_string()))? = Some(data);
+
 		Ok(())
 	}
 }
@@ -58,9 +70,10 @@ impl StatefulHandle for tauri::AppHandle {
 impl AppState {
 	pub fn new() -> Result<Self> {
 		Ok(Self {
-			local_mods: RwLock::new(HashMap::new()),
-			remote_mods: RwLock::new(HashMap::new()),
+			local_mods: RwLock::new(Some(HashMap::new())),
+			remote_mods: RwLock::new(Some(HashMap::new())),
 			database: local_database::try_create()?,
+			download_status_channel: RwLock::new(None),
 		})
 	}
 }

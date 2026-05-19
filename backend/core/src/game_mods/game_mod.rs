@@ -32,7 +32,10 @@ use crate::{
 		mod_database::ModDatabase,
 		replacement_token::replace_tokens,
 	},
-	http,
+	http::{
+		self,
+		DownloadStatus,
+	},
 	operating_system::OperatingSystem,
 	paths,
 	providers::provider::{
@@ -263,25 +266,13 @@ impl GameMod {
 		Ok(Self::get_manifest_path(&self.get_local_folder_path()?))
 	}
 
-	pub async fn download(&self) -> Result {
+	pub async fn download(&self, status_callback: impl Fn(DownloadStatus) + Send) -> Result {
 		let target_path = paths::local_mods_path()?.join(&self.id);
 		let mod_id = &self.id;
 
 		let zip_path = paths::downloads_path()?.join(format!("{mod_id}.zip"));
 
-		http::download_with_progress(
-			&self.latest_version.url,
-			&zip_path,
-			|downloaded, total_size| {
-				log::info!(
-					"Downloading mod `{}`: {} / {} bytes",
-					self.title,
-					downloaded,
-					total_size.map_or("unknown".to_string(), |size| size.to_string())
-				);
-			},
-		)
-		.await?;
+		http::download(&self.latest_version.url, &zip_path, status_callback).await?;
 
 		let file = File::open(&zip_path)?;
 
