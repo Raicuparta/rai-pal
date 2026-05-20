@@ -1,4 +1,4 @@
-import { Alert, Box, Group, Stack, Table } from "@mantine/core";
+import { Alert, Box, Card, Group, Stack, Table } from "@mantine/core";
 import { commands, DbGame } from "@api/bindings";
 import { CommandButton } from "@components/command-button";
 import {
@@ -34,12 +34,14 @@ export function GameModal({ game }: Props) {
 	const { providerId, gameId } = game;
 
 	return (
-		<Stack
+		<Card
 			flex={1}
 			style={{ overflowY: "scroll" }}
+			p={0}
+			bg="dark"
 		>
 			<Box>
-				<TableContainer singleItem>
+				<TableContainer>
 					<Table highlightOnHover>
 						<Table.Thead>
 							<TableHead columns={gamesColumns} />
@@ -53,7 +55,10 @@ export function GameModal({ game }: Props) {
 					</Table>
 				</TableContainer>
 			</Box>
-			<Stack pr={10}>
+			<Stack
+				p={10}
+				gap={30}
+			>
 				<Group>
 					<ProviderCommandButtons game={game} />
 					{game.exePath && (
@@ -123,6 +128,6 @@ export function GameModal({ game }: Props) {
 				<GameMods game={game} />
 				<DebugData data={game} />
 			</Stack>
-		</Stack>
+		</Card>
 	);
 }

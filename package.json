@@ -33,7 +33,6 @@
 		"@eslint/compat": "2.0.5",
 		"@eslint/eslintrc": "3.3.5",
 		"@eslint/js": "9.39.4",
-		"@mantine/code-highlight": "9.0.2",
 		"@mantine/core": "9.0.2",
 		"@mantine/hooks": "9.0.2",
 		"@mantine/notifications": "9.0.2",

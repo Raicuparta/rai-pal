@@ -1,4 +1,4 @@
-import { Button, Group, Stack } from "@mantine/core";
+import { Button, Card, Group, Stack } from "@mantine/core";
 import { useMemo, useState } from "react";
 import { RefreshButton } from "@components/refresh-button";
 import { commands } from "@api/bindings";
@@ -61,12 +61,18 @@ export function ModsPage() {
 						</Button>
 						<RefreshButton />
 					</Group>
-					<TableContainer style={{ overflowY: "scroll" }}>
-						<ModsTable
-							mods={filteredMods}
-							onClick={(mod) => setSelectedId(mod.merged.id)}
-						/>
-					</TableContainer>
+					<Card
+						p={0}
+						flex={1}
+						bg="dark"
+					>
+						<TableContainer style={{ overflowY: "scroll" }}>
+							<ModsTable
+								mods={filteredMods}
+								onClick={(mod) => setSelectedId(mod.merged.id)}
+							/>
+						</TableContainer>
+					</Card>
 				</>
 			)}
 		</Stack>

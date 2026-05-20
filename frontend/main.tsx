@@ -7,7 +7,6 @@ import { theme } from "./theme";
 import { registerEvents } from "./register-events";
 
 import "@mantine/core/styles.css";
-import "@mantine/code-highlight/styles.css";
 import "@mantine/notifications/styles.css";
 import "./global-styles/global.css";
 import "./global-styles/mantine-overrides.css";

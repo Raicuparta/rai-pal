@@ -1,4 +1,4 @@
-import { Alert, Divider, Stack, Table } from "@mantine/core";
+import { Alert, Card, Divider, Stack, Table } from "@mantine/core";
 import { EngineVersionRange, DbGame, commands, GameMod } from "@api/bindings";
 import { useCallback, useMemo } from "react";
 import { CommandButton } from "@components/command-button";
@@ -159,15 +159,18 @@ export function GameMods({ game }: Props) {
 	}
 
 	return (
-		<Stack>
-			{compatibleMods.length > 0 && (
-				<Stack>
-					<Divider label={t("gameModsLabel")} />
-					{!game.exePath && (
-						<Alert color="orange">{t("gameNotInstalledWarning")}</Alert>
-					)}
-					<TableContainer bg="dark">
-						<Table>
+		<>
+			<Stack>
+				{compatibleMods.length > 0 && (
+					<>
+						<Divider label={t("gameModsLabel")} />
+						{!game.exePath && (
+							<Alert color="orange">{t("gameNotInstalledWarning")}</Alert>
+						)}
+						<Table
+							highlightOnHover
+							highlightOnHoverColor="dark.7"
+						>
 							<Table.Tbody>
 								{compatibleMods.map((mod) => (
 									<GameModRow
@@ -180,44 +183,42 @@ export function GameMods({ game }: Props) {
 								))}
 							</Table.Tbody>
 						</Table>
-					</TableContainer>
-				</Stack>
-			)}
-			{game.exePath && (
-				<CommandButton
-					confirmationText={t("uninstallAllModsConfirmation")}
-					onClick={() =>
-						commands.uninstallAllMods(game.providerId, game.gameId)
-					}
-					color="red"
-					variant="light"
-					leftSection={<IconTrash />}
-				>
-					{t("uninstallAllModsButton")}
-				</CommandButton>
-			)}
+					</>
+				)}
+				{game.exePath && (
+					<CommandButton
+						confirmationText={t("uninstallAllModsConfirmation")}
+						onClick={() =>
+							commands.uninstallAllMods(game.providerId, game.gameId)
+						}
+						color="red"
+						variant="light"
+						leftSection={<IconTrash />}
+					>
+						{t("uninstallAllModsButton")}
+					</CommandButton>
+				)}
+			</Stack>
 			{incompatibleMods.length > 0 && (
 				<Stack>
 					<Divider label={t("incompatibleGameModsLabel")} />
 					<MutedText>{t("incompatibleGameModsDescription")}</MutedText>
-					<TableContainer bg="dark">
-						<Table>
-							<Table.Tbody>
-								{incompatibleMods.map((mod) => (
-									<GameModRow
-										key={mod.merged.id}
-										game={game}
-										mod={mod}
-										remoteConfigs={remoteConfigs}
-										installedMod={installedMods[mod.merged.id]}
-										incompatible
-									/>
-								))}
-							</Table.Tbody>
-						</Table>
-					</TableContainer>
+					<Table>
+						<Table.Tbody>
+							{incompatibleMods.map((mod) => (
+								<GameModRow
+									key={mod.merged.id}
+									game={game}
+									mod={mod}
+									remoteConfigs={remoteConfigs}
+									installedMod={installedMods[mod.merged.id]}
+									incompatible
+								/>
+							))}
+						</Table.Tbody>
+					</Table>
 				</Stack>
 			)}
-		</Stack>
+		</>
 	);
 }

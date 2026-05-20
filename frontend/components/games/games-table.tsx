@@ -12,7 +12,7 @@ import { GameRow, gameRowHeight } from "./game-row";
 import { useDataQuery } from "@hooks/use-data-query";
 import { gamesColumns } from "./games-columns";
 import styles from "./games.module.css";
-import { Alert, Table } from "@mantine/core";
+import { Alert, Box, Card, Stack, Table } from "@mantine/core";
 import React from "react";
 import { TableHead } from "@components/table/table-head";
 import { useLocalization } from "@hooks/use-localization";

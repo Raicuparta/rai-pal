@@ -1,4 +1,4 @@
-import { Box, Group, Modal, Stack, Table } from "@mantine/core";
+import { Box, Card, Stack } from "@mantine/core";
 import { commands } from "@api/bindings";
 import { CommandButton } from "@components/command-button";
 import {
@@ -10,14 +10,8 @@ import {
 } from "@tabler/icons-react";
 import { DebugData } from "@components/debug-data";
 import { UnifiedMod } from "@hooks/use-unified-mods";
-import { ItemName } from "@components/item-name";
-import { getModTitle } from "@util/game-mod";
-import { DeprecatedBadge } from "./deprecated-badge";
 import { useLocalization } from "@hooks/use-localization";
-import { GameRowInner } from "@components/games/game-row";
-import { gamesColumns } from "@components/games/games-columns";
 import { TableContainer } from "@components/table/table-container";
-import { TableHead } from "@components/table/table-head";
 import { useMemo } from "react";
 import { ModsTable } from "./mods-table";
 
@@ -37,16 +31,21 @@ export function ModModal(props: Props) {
 	const wrappedMod = useMemo(() => [props.mod], []);
 
 	return (
-		<Stack
+		<Card
+			p={0}
 			flex={1}
 			style={{ overflowY: "scroll" }}
+			bg="dark"
 		>
 			<Box>
-				<TableContainer singleItem>
+				<TableContainer>
 					<ModsTable mods={wrappedMod} />
 				</TableContainer>
 			</Box>
-			<Stack pr={10}>
+			<Stack
+				p={10}
+				gap={30}
+			>
 				{props.mod.local && props.mod.local?.runForGame && (
 					<CommandButton
 						leftSection={<IconPlayerPlay />}
@@ -84,6 +83,6 @@ export function ModModal(props: Props) {
 				)}
 				<DebugData data={props.mod} />
 			</Stack>
-		</Stack>
+		</Card>
 	);
 }

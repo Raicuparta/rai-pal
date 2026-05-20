@@ -1,4 +1,4 @@
-import { Button, Group, Stack } from "@mantine/core";
+import { Button, Card, Group, Stack } from "@mantine/core";
 import { FilterMenu } from "@components/filters/filter-menu";
 import { RefreshButton } from "@components/refresh-button";
 import { AddGame } from "./add-game-button";
@@ -44,12 +44,14 @@ export function GamesPage() {
 					<RefreshButton />
 				</Group>
 			)}
-			<Stack
+			<Card
+				p={0}
 				flex={1}
 				display={game ? "none" : undefined}
+				bg="dark"
 			>
 				<GamesTable />
-			</Stack>
+			</Card>
 		</Stack>
 	);
 }

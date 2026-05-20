@@ -21,10 +21,7 @@
 
 *::-webkit-scrollbar {
 	width: var(--mantine-spacing-md);
-}
-
-*::-webkit-scrollbar-track {
-	background: var(--background-dark);
+	height: var(--mantine-spacing-md);
 }
 
 *::-webkit-scrollbar-track:vertical {

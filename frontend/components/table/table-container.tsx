@@ -1,14 +1,11 @@
+import { ComponentProps } from "react";
 import styles from "./table.module.css";
-import { Card, CardProps } from "@mantine/core";
+import { Box, Card } from "@mantine/core";
 
-interface Props extends CardProps {
-	singleItem?: boolean;
-}
-
-export function TableContainer({ className, singleItem, ...props }: Props) {
+export function TableContainer({ className, ...props }: ComponentProps<"div">) {
 	return (
-		<Card
-			className={`${className ?? ""} ${styles.table} ${singleItem ? styles.singleItem : ""}`}
+		<Box
+			className={`${className ?? ""} ${styles.table}`}
 			{...props}
 		/>
 	);
