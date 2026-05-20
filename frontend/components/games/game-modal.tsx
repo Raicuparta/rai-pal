@@ -1,8 +1,7 @@
-import { Alert, Group, Modal, Stack, Table } from "@mantine/core";
-import { commands, DbGame, ProviderId } from "@api/bindings";
+import { Alert, Box, Group, Stack, Table } from "@mantine/core";
+import { commands, DbGame } from "@api/bindings";
 import { CommandButton } from "@components/command-button";
 import {
-	IconBottleFilled,
 	IconFolder,
 	IconFolderCog,
 	IconFolderOpen,
@@ -19,11 +18,9 @@ import { GameRowInner } from "./game-row";
 import { TableHead } from "@components/table/table-head";
 import { gamesColumns } from "./games-columns";
 import { useLocalization } from "@hooks/use-localization";
-import { useGame } from "@hooks/use-game";
 import { RemoveGameButton } from "./remove-game-button";
 import { GameMods } from "./game-mods";
 import { platform } from "@tauri-apps/plugin-os";
-import styles from "./games.module.css";
 
 type Props = {
 	readonly game: DbGame;
@@ -41,8 +38,8 @@ export function GameModal({ game }: Props) {
 			flex={1}
 			style={{ overflowY: "scroll" }}
 		>
-			<Group align="start">
-				<TableContainer className={styles.gameInfoTable}>
+			<Box>
+				<TableContainer singleItem>
 					<Table highlightOnHover>
 						<Table.Thead>
 							<TableHead columns={gamesColumns} />
@@ -55,7 +52,7 @@ export function GameModal({ game }: Props) {
 						</Table.Tbody>
 					</Table>
 				</TableContainer>
-			</Group>
+			</Box>
 			<Stack pr={10}>
 				<Group>
 					<ProviderCommandButtons game={game} />

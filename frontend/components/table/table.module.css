@@ -27,7 +27,6 @@ div.table {
 	}
 
 	tbody {
-
 		tr,
 		td {
 			/* Needs to be consistent with height set in game-row.tsx ugh. TODO: fix that. */
@@ -42,7 +41,14 @@ div.table {
 	cursor: pointer;
 
 	&:hover {
-		background: light-dark(var(--mantine-color-gray-3),
-				var(--mantine-color-dark-7));
+		background: light-dark(
+			var(--mantine-color-gray-3),
+			var(--mantine-color-dark-7)
+		);
 	}
+}
+
+.singleItem {
+	border-top-right-radius: 0 !important;
+	border-bottom-right-radius: 0 !important;
 }
