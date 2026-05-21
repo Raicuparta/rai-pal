@@ -59,7 +59,7 @@ export function ModsPage() {
 						<TableContainer style={{ overflowY: "scroll" }}>
 							<ModsTable
 								mods={filteredMods}
-								onClick={(mod) => setSelectedId(mod.merged.id)}
+								onClick={(mod) => setSelectedId(mod.id)}
 							/>
 						</TableContainer>
 					</Card>

@@ -50,16 +50,15 @@ export function GameModRow({
 	const t = useLocalization("gameModRow");
 
 	const availableRemoteConfig = remoteConfigs?.configs.find(
-		(config) => config.modId === mod.merged.id,
+		(config) => config.modId === mod.id,
 	);
-	const localConfig = mod.local?.config;
 
 	const isInstalledModOutdated = getIsOutdated(installedMod, mod.remote);
 
 	const isLocalModOutdated = getIsOutdated(mod.local, mod.remote);
 
 	const isInstalled = Boolean(installedMod);
-	const isReadyRunnable = mod.local && mod.remote?.runForGame;
+	const isReadyRunnable = mod.local && mod.runForGame;
 
 	const { statusIcon, statusColor } = (() => {
 		if (isLocalModOutdated || isInstalledModOutdated)
@@ -81,9 +80,9 @@ export function GameModRow({
 	const isModUsable = !incompatible && game.exePath;
 
 	return (
-		<Table.Tr key={mod.merged.id}>
+		<Table.Tr key={mod.id}>
 			<Table.Td ta="left">
-				<ItemName label={`by ${mod.remote?.author}`}>
+				<ItemName label={`by ${mod.author}`}>
 					{isModUsable && (
 						<ThemeIcon
 							color={statusColor}
@@ -104,25 +103,21 @@ export function GameModRow({
 					/>
 				</ItemName>
 				<Stack gap={0}>
-					{mod.remote?.deprecated && <DeprecatedBadge mt={5} />}
-					{mod.remote?.description && (
-						<MutedText>{mod.remote.description}</MutedText>
-					)}
+					{mod?.deprecated && <DeprecatedBadge mt={5} />}
+					{mod?.description && <MutedText>{mod.description}</MutedText>}
 				</Stack>
 			</Table.Td>
 			<Table.Td maw={200}>
 				<Group justify="right">
 					{isModUsable && (
 						<ButtonGroup>
-							{!isInstalled &&
-								!isInstalledModOutdated &&
-								mod.merged.install && (
-									<GameModInstallButton
-										game={game}
-										mod={mod}
-									/>
-								)}
-							{isInstalled && mod.merged.install && (
+							{!isInstalled && !isInstalledModOutdated && mod.install && (
+								<GameModInstallButton
+									game={game}
+									mod={mod}
+								/>
+							)}
+							{isInstalled && mod.install && (
 								<GameModUninstallButton
 									game={game}
 									mod={mod}
@@ -135,14 +130,14 @@ export function GameModRow({
 									isLocalModOutdated={isLocalModOutdated}
 								/>
 							)}
-							{mod.merged.runForGame && (
+							{mod.runForGame && (
 								<GameModRunButton
 									game={game}
 									mod={mod}
 								/>
 							)}
 							<CommandDropdown icon={<IconDotsVertical />}>
-								{(localConfig || availableRemoteConfig) && (
+								{(mod.config || availableRemoteConfig) && (
 									<ButtonGroup>
 										<CommandButton
 											flex={1}
@@ -151,7 +146,7 @@ export function GameModRow({
 												commands.configureMod(
 													game.providerId,
 													game.gameId,
-													mod.merged.id,
+													mod.id,
 													false,
 												)
 											}
@@ -169,7 +164,7 @@ export function GameModRow({
 													commands.configureMod(
 														game.providerId,
 														game.gameId,
-														mod.merged.id,
+														mod.id,
 														true,
 													)
 												}
@@ -185,7 +180,7 @@ export function GameModRow({
 										commands.openInstalledModFolder(
 											game.providerId,
 											game.gameId,
-											mod.merged.id,
+											mod.id,
 										)
 									}
 									leftSection={<IconFolderOpen />}
@@ -200,7 +195,7 @@ export function GameModRow({
 											commands.downloadRemoteConfig(
 												game.providerId,
 												game.gameId,
-												mod.merged.id,
+												mod.id,
 												availableRemoteConfig.file,
 												true,
 											)

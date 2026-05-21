@@ -48,7 +48,7 @@ export function ModModal(props: Props) {
 				{props.mod.local && props.mod.local?.runForGame && (
 					<CommandButton
 						leftSection={<IconPlayerPlay />}
-						onClick={() => commands.runRunnableWithoutGame(props.mod.merged.id)}
+						onClick={() => commands.runRunnableWithoutGame(props.mod.id)}
 					>
 						{t("runMod")}
 					</CommandButton>
@@ -56,7 +56,7 @@ export function ModModal(props: Props) {
 				{props.mod.local && (
 					<CommandButton
 						leftSection={<IconFolderCog />}
-						onClick={() => commands.openModFolder(props.mod.merged.id)}
+						onClick={() => commands.openModFolder(props.mod.id)}
 					>
 						{t("openModFolder")}
 					</CommandButton>
@@ -64,7 +64,7 @@ export function ModModal(props: Props) {
 				{isDownloadAvailable && (
 					<CommandButton
 						leftSection={isOutdated ? <IconRefreshAlert /> : <IconDownload />}
-						onClick={() => commands.downloadMod(props.mod.merged.id)}
+						onClick={() => commands.downloadMod(props.mod.id)}
 					>
 						{isOutdated ? t("updateMod") : t("downloadMod")}
 					</CommandButton>
@@ -75,7 +75,7 @@ export function ModModal(props: Props) {
 						variant="light"
 						confirmationText={t("deleteModConfirmation")}
 						leftSection={<IconTrash />}
-						onClick={() => commands.deleteMod(props.mod.merged.id)}
+						onClick={() => commands.deleteMod(props.mod.id)}
 					>
 						{t("deleteMod")}
 					</CommandButton>

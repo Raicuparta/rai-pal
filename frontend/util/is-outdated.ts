@@ -1,10 +1,13 @@
-import { GameMod } from "@api/bindings";
+import { UnifiedModVersion } from "@hooks/use-unified-mods";
 
-export function getIsOutdated(localVersion?: GameMod, remoteVersion?: GameMod) {
-	if (!localVersion || !remoteVersion) return false;
+export function getIsOutdated(
+	local?: UnifiedModVersion,
+	remote?: UnifiedModVersion,
+) {
+	if (!local || !remote) return false;
 
 	return (
-		localVersion.latestVersion.id !== remoteVersion.latestVersion.id ||
-		localVersion.hash !== remoteVersion.hash
+		local.latestVersion.id !== remote.latestVersion.id ||
+		local.hash !== remote.hash
 	);
 }

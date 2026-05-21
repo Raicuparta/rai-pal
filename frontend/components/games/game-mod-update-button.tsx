@@ -20,9 +20,9 @@ export function GameModUpdateButton({ game, mod, isLocalModOutdated }: Props) {
 			variant="light"
 			onClick={async () => {
 				if (isLocalModOutdated) {
-					await commands.downloadMod(mod.merged.id);
+					await commands.downloadMod(mod.id);
 				}
-				await commands.installMod(game.providerId, game.gameId, mod.merged.id);
+				await commands.installMod(game.providerId, game.gameId, mod.id);
 			}}
 		>
 			{t("updateMod")}

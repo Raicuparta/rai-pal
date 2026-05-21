@@ -18,7 +18,7 @@ export function GameModUninstallButton({ game, mod }: Props) {
 			color="red"
 			variant="light"
 			onClick={() =>
-				commands.uninstallMod(game.providerId, game.gameId, mod.merged.id)
+				commands.uninstallMod(game.providerId, game.gameId, mod.id)
 			}
 		>
 			{t("uninstallMod")}

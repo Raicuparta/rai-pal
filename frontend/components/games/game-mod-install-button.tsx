@@ -20,9 +20,7 @@ export function GameModInstallButton({ game, mod }: Props) {
 				"Attention: be careful when installing mods on multiplayer games! Anticheat can detect some mods and get you banned, even if the mods seem harmless."
 			}
 			confirmationSkipId="install-mod-confirm"
-			onClick={() =>
-				commands.installMod(game.providerId, game.gameId, mod.merged.id)
-			}
+			onClick={() => commands.installMod(game.providerId, game.gameId, mod.id)}
 		>
 			{t("installMod")}
 		</GameModActionButton>

@@ -70,8 +70,8 @@ export function ModsTable(props: Props) {
 								remote={mod.remote}
 							/>
 						</Table.Td>
-						<Table.Td>{mod.merged.engine}</Table.Td>
-						<Table.Td>{mod.merged.unityBackend}</Table.Td>
+						<Table.Td>{mod.engine}</Table.Td>
+						<Table.Td>{mod.unityBackend}</Table.Td>
 					</Table.Tr>
 				))}
 			</Table.Tbody>

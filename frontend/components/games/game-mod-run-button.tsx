@@ -15,9 +15,7 @@ export function GameModRunButton({ game, mod }: Props) {
 	return (
 		<CommandButton
 			leftSection={<IconPlayerPlay />}
-			onClick={() =>
-				commands.runMod(game.providerId, game.gameId, mod.merged.id)
-			}
+			onClick={() => commands.runMod(game.providerId, game.gameId, mod.id)}
 		>
 			{t("runMod")}
 		</CommandButton>

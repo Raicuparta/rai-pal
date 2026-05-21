@@ -3,44 +3,12 @@ import { useAtomValue } from "jotai";
 import { localModsAtom, remoteModsAtom } from "./use-data";
 import { GameMod } from "@api/bindings";
 
-// Keys that go into the merged part of the unified mod.
-// Local mod takes priority, remote as a fallback.
-// So the keys here are things we use for filtering etc,
-// but we shouldn't have stuff here where it's important to dinstinguish the local vs remote version,
-// like the latest release version etc.
-const mergeKeys = [
-	"id",
-	"title",
-	"engine",
-	"unityBackend",
-	"architecture",
-	"engineVersionRange",
-	"install",
-	"runForGame",
-] as const satisfies (keyof GameMod)[];
+// Anything where it's important to distinguish between local and remote versions should be included here.
+export type UnifiedModVersion = Pick<GameMod, "latestVersion" | "hash">;
 
-type MergedKey = (typeof mergeKeys)[number];
-
-type MergedMod = Pick<GameMod, MergedKey>;
-
-export type UnifiedMod = {
-	local?: GameMod;
-	remote?: GameMod;
-	merged: MergedMod;
-};
-
-function mergeMods(
-	local: GameMod | undefined,
-	remote: GameMod | undefined,
-): MergedMod {
-	const merged: Record<string, unknown> = {};
-
-	for (const key of mergeKeys) {
-		const val = remote?.[key] ?? local?.[key] ?? null;
-		merged[key] = val;
-	}
-
-	return merged as MergedMod;
+export interface UnifiedMod extends GameMod {
+	local?: UnifiedModVersion;
+	remote?: UnifiedModVersion;
 }
 
 const unifiedModsAtom = atom((get) => {
@@ -56,10 +24,11 @@ const unifiedModsAtom = atom((get) => {
 		const remote = remoteMods[key];
 
 		unifiedMods[key] = {
-			local,
-			remote,
-			merged: mergeMods(local, remote),
-		};
+			...remote,
+			...local,
+			localVersion: local?.latestVersion,
+			remoteVersion: local?.latestVersion,
+		} as GameMod;
 	}
 
 	return unifiedMods;

@@ -2,11 +2,11 @@ import { Badge, DefaultMantineColor, Stack, Tooltip } from "@mantine/core";
 import { getIsOutdated } from "@util/is-outdated";
 import { IconRefreshAlert } from "@tabler/icons-react";
 import { useLocalization } from "@hooks/use-localization";
-import { GameMod } from "@api/bindings";
+import { UnifiedModVersion } from "@hooks/use-unified-mods";
 
 type Props = {
-	readonly local?: GameMod;
-	readonly remote?: GameMod;
+	readonly local?: UnifiedModVersion;
+	readonly remote?: UnifiedModVersion;
 };
 
 function getColor(props: Props): DefaultMantineColor {
