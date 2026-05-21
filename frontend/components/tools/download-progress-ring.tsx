@@ -1,7 +1,7 @@
 import { RingProgress } from "@mantine/core";
 
 type Props = {
-	percentage: number;
+	readonly percentage: number;
 };
 
 export function DownloadProgressRing(props: Props) {

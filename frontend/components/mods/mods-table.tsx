@@ -8,8 +8,8 @@ import { DeprecatedBadge } from "./deprecated-badge";
 import { useLocalization } from "@hooks/use-localization";
 
 type Props = {
-	mods: UnifiedMod[];
-	onClick?: (mod: UnifiedMod) => void;
+	readonly mods: UnifiedMod[];
+	readonly onClick?: (mod: UnifiedMod) => void;
 };
 
 export function ModsTable(props: Props) {

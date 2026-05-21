@@ -3,7 +3,7 @@ import { Menu } from "@mantine/core";
 import { IconCat, IconDots } from "@tabler/icons-react";
 
 type Props = {
-	onClick: () => void;
+	readonly onClick: () => void;
 };
 
 export function WineBepInExEnvironmentButton(props: Props) {
