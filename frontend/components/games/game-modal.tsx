@@ -1,4 +1,4 @@
-import { Alert, Box, Card, Group, Stack, Table } from "@mantine/core";
+import { Alert, Box, Group, Stack, Table } from "@mantine/core";
 import { commands, DbGame } from "@api/bindings";
 import { CommandButton } from "@components/command-button";
 import {
@@ -21,6 +21,7 @@ import { useLocalization } from "@hooks/use-localization";
 import { RemoveGameButton } from "./remove-game-button";
 import { GameMods } from "./game-mods";
 import { platform } from "@tauri-apps/plugin-os";
+import { SubPage } from "@components/sub-page";
 
 type Props = {
 	readonly game: DbGame;
@@ -31,15 +32,11 @@ export function GameModal({ game }: Props) {
 	const setSelectedGame = useSetAtom(selectedGameAtom);
 
 	const close = () => setSelectedGame(null);
+
 	const { providerId, gameId } = game;
 
 	return (
-		<Card
-			flex={1}
-			style={{ overflowY: "scroll" }}
-			p={0}
-			bg="dark"
-		>
+		<SubPage onClose={close}>
 			<Box>
 				<TableContainer>
 					<Table highlightOnHover>
@@ -128,6 +125,6 @@ export function GameModal({ game }: Props) {
 				<GameMods game={game} />
 				<DebugData data={game} />
 			</Stack>
-		</Card>
+		</SubPage>
 	);
 }

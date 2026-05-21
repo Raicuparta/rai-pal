@@ -35,20 +35,10 @@ export function ModsPage() {
 	return (
 		<Stack h="100%">
 			{selectedMod && (
-				<>
-					<Group>
-						<Button
-							onClick={() => setSelectedId(undefined)}
-							leftSection={<IconArrowLeft />}
-						>
-							{t("backToModsList")}
-						</Button>
-					</Group>
-					<ModModal
-						onClose={() => setSelectedId(undefined)}
-						mod={selectedMod}
-					/>
-				</>
+				<ModModal
+					onClose={() => setSelectedId(undefined)}
+					mod={selectedMod}
+				/>
 			)}
 			{!selectedMod && (
 				<>

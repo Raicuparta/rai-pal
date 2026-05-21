@@ -1,4 +1,4 @@
-import { Button, Card, Group, Stack } from "@mantine/core";
+import { Card, Group, Stack } from "@mantine/core";
 import { FilterMenu } from "@components/filters/filter-menu";
 import { RefreshButton } from "@components/refresh-button";
 import { AddGame } from "./add-game-button";
@@ -7,7 +7,6 @@ import { useAtom } from "jotai";
 import { selectedGameAtom } from "./games-state";
 import { GamesTable } from "./games-table";
 import { GameModal } from "./game-modal";
-import { IconArrowLeft } from "@tabler/icons-react";
 import { useGame } from "@hooks/use-game";
 import { useLocalization } from "@hooks/use-localization";
 
@@ -23,20 +22,7 @@ export function GamesPage() {
 
 	return (
 		<Stack h="100%">
-			{game && (
-				<>
-					<Group>
-						<Button
-							onClick={() => setSelectedGame(null)}
-							leftSection={<IconArrowLeft />}
-						>
-							{t("backToGamesList")}
-						</Button>
-					</Group>
-
-					<GameModal game={game} />
-				</>
-			)}
+			{game && <GameModal game={game} />}
 			{!game && (
 				<Group>
 					<AddGame />

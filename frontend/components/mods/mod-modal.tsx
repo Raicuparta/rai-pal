@@ -14,6 +14,7 @@ import { useLocalization } from "@hooks/use-localization";
 import { TableContainer } from "@components/table/table-container";
 import { useMemo } from "react";
 import { ModsTable } from "./mods-table";
+import { SubPage } from "@components/sub-page";
 
 type Props = {
 	readonly mod: UnifiedMod;
@@ -31,15 +32,13 @@ export function ModModal(props: Props) {
 	const wrappedMod = useMemo(() => [props.mod], []);
 
 	return (
-		<Card
-			p={0}
-			flex={1}
-			style={{ overflowY: "scroll" }}
-			bg="dark"
-		>
+		<SubPage onClose={props.onClose}>
 			<Box>
 				<TableContainer>
-					<ModsTable mods={wrappedMod} />
+					<ModsTable
+						mods={wrappedMod}
+						onClick={props.onClose}
+					/>
 				</TableContainer>
 			</Box>
 			<Stack
@@ -83,6 +82,6 @@ export function ModModal(props: Props) {
 				)}
 				<DebugData data={props.mod} />
 			</Stack>
-		</Card>
+		</SubPage>
 	);
 }
