@@ -8,10 +8,8 @@ import { selectedGameAtom } from "./games-state";
 import { GamesTable } from "./games-table";
 import { GameModal } from "./game-modal";
 import { useGame } from "@hooks/use-game";
-import { useLocalization } from "@hooks/use-localization";
 
 export function GamesPage() {
-	const t = useLocalization("gamesPage");
 	const [selectedGame, setSelectedGame] = useAtom(selectedGameAtom);
 
 	useAppEvent("selectGame", "games-page", ([providerId, gameId]) => {

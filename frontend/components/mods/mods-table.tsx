@@ -1,5 +1,4 @@
 import { Table, Text } from "@mantine/core";
-import { TableContainer } from "@components/table/table-container";
 import { UnifiedMod } from "@hooks/use-unified-mods";
 import { ModVersionBadge } from "./mod-version-badge";
 import { ItemName } from "@components/item-name";

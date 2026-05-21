@@ -3,7 +3,6 @@ import {
 	ActionIcon,
 	Box,
 	Card,
-	CheckIcon,
 	CopyButton,
 	Divider,
 	Stack,

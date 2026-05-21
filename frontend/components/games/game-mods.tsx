@@ -1,11 +1,10 @@
-import { Alert, Card, Divider, Stack, Table } from "@mantine/core";
+import { Alert, Divider, Stack, Table } from "@mantine/core";
 import { EngineVersionRange, DbGame, commands, GameMod } from "@api/bindings";
 import { useCallback, useMemo } from "react";
 import { CommandButton } from "@components/command-button";
 import { IconTrash } from "@tabler/icons-react";
 import { UnifiedMod, useUnifiedMods } from "@hooks/use-unified-mods";
 import { GameModRow } from "./game-mod-row";
-import { TableContainer } from "@components/table/table-container";
 import { useLocalization } from "@hooks/use-localization";
 import { useCommandData } from "@hooks/use-command-data";
 import { useAppEvent } from "@hooks/use-app-event";

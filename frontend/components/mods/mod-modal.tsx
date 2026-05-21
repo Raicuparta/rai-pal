@@ -1,4 +1,4 @@
-import { Box, Card, Stack } from "@mantine/core";
+import { Box, Stack } from "@mantine/core";
 import { commands } from "@api/bindings";
 import { CommandButton } from "@components/command-button";
 import {
@@ -29,7 +29,7 @@ export function ModModal(props: Props) {
 	const isOutdated =
 		localVersion && remoteVersion && remoteVersion !== localVersion;
 
-	const wrappedMod = useMemo(() => [props.mod], []);
+	const wrappedMod = useMemo(() => [props.mod], [props.mod]);
 
 	return (
 		<SubPage onClose={props.onClose}>

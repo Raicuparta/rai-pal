@@ -1,17 +1,14 @@
 import { Button, Group, Modal, Stack, Text } from "@mantine/core";
 import { IconAppWindowFilled, IconPlaylistAdd } from "@tabler/icons-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { commands } from "@api/bindings";
 import { open as openDialog } from "@tauri-apps/plugin-dialog";
-import { useAtomValue } from "jotai";
-import { loadingTasksAtom } from "@hooks/use-data";
 import { useAsyncCommand } from "@hooks/use-async-command";
 import { useLocalization } from "@hooks/use-localization";
 
 export function AddGame() {
 	const t = useLocalization("addGame");
 	const [isOpen, setIsOpen] = useState(false);
-	const isLoading = useAtomValue(loadingTasksAtom);
 
 	const [executeAddGame] = useAsyncCommand(commands.addGame);
 
@@ -34,10 +31,6 @@ export function AddGame() {
 
 		await executeAddGame(path).then(() => setIsOpen(false));
 	};
-
-	useEffect(() => {
-		if (isLoading) setIsOpen(false);
-	}, [isLoading]);
 
 	return (
 		<>

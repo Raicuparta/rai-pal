@@ -2,7 +2,7 @@ import { Button, Card, Group, Stack } from "@mantine/core";
 import { useMemo, useState } from "react";
 import { RefreshButton } from "@components/refresh-button";
 import { commands } from "@api/bindings";
-import { IconArrowLeft, IconFolderCog } from "@tabler/icons-react";
+import { IconFolderCog } from "@tabler/icons-react";
 import { ModModal } from "./mod-modal";
 import { useUnifiedMods } from "@hooks/use-unified-mods";
 import { useLocalization } from "@hooks/use-localization";

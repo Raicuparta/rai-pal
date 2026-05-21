@@ -1,4 +1,4 @@
-import { Button, Card, CardProps, Group, Stack } from "@mantine/core";
+import { Button, Card, CardProps, Group } from "@mantine/core";
 import { useHotkeys } from "@mantine/hooks";
 import { useLocalization } from "@hooks/use-localization";
 import { IconArrowLeft } from "@tabler/icons-react";
