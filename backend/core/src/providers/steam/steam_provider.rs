@@ -41,7 +41,7 @@ use crate::{
 		},
 		steam::appinfo::SteamAppInfoReader,
 	},
-	result::Result,
+	result::CoreResult,
 };
 
 #[derive(Clone)]
@@ -50,7 +50,7 @@ pub struct Steam;
 impl ProviderStatic for Steam {
 	const ID: &'static ProviderId = &ProviderId::Steam;
 
-	fn new() -> Result<Self>
+	fn new() -> CoreResult<Self>
 	where
 		Self: Sized,
 	{
@@ -198,7 +198,7 @@ impl Steam {
 		installed_games
 	}
 
-	fn get_owned_ids_whitelist(steam_path: &Path) -> Result<HashSet<String>> {
+	fn get_owned_ids_whitelist(steam_path: &Path) -> CoreResult<HashSet<String>> {
 		// Games in appinfo.vdf aren't necessarily owned.
 		// Most of them are, but there are also a bunch of other games that Steam needs to reference for one reason or another.
 		// packageinfo.vdf is another cache file, and from my (not very extensive) tests, it does really only include owned packages.
@@ -217,7 +217,7 @@ impl Steam {
 		steam_path.join("appcache/packageinfo.vdf")
 	}
 
-	pub fn delete_cache() -> Result {
+	pub fn delete_cache() -> CoreResult {
 		let steam_dir = SteamDir::locate()?;
 		let steam_path = steam_dir.path();
 		let appinfo_path = Self::get_appinfo_path(steam_path);
@@ -236,7 +236,7 @@ impl Steam {
 }
 
 impl ProviderActions for Steam {
-	async fn insert_games(&self, db: &DbMutex) -> Result {
+	async fn insert_games(&self, db: &DbMutex) -> CoreResult {
 		let steam_dir = SteamDir::locate()?;
 		let appinfo_path = Self::get_appinfo_path(steam_dir.path());
 
@@ -355,17 +355,17 @@ impl ProviderActions for Steam {
 	}
 
 	#[cfg(target_os = "linux")]
-	fn set_wine_dll_overrides(&self, game: &DbGame, dll_overrides: &[String]) -> Result {
+	fn set_wine_dll_overrides(&self, game: &DbGame, dll_overrides: &[String]) -> CoreResult {
 		steam_proton::set_wine_dll_overrides_for_game(game, dll_overrides)
 	}
 
 	#[cfg(target_os = "linux")]
-	fn get_wine_prefix_path(&self, game: &DbGame) -> Result<PathBuf> {
+	fn get_wine_prefix_path(&self, game: &DbGame) -> CoreResult<PathBuf> {
 		Ok(steam_proton::get_wine_prefix_path(game).unwrap())
 	}
 
 	#[cfg(target_os = "linux")]
-	fn get_wine_binary_path(&self, game: &DbGame) -> Result<PathBuf> {
+	fn get_wine_binary_path(&self, game: &DbGame) -> CoreResult<PathBuf> {
 		Ok(steam_proton::get_wine_binary_path(game).unwrap())
 	}
 
@@ -376,7 +376,7 @@ impl ProviderActions for Steam {
 		exe_path: &Path,
 		args: &[String],
 		wine_env: &HashMap<String, String>,
-	) -> Result {
+	) -> CoreResult {
 		steam_proton::run_with_wine(game, exe_path, args, wine_env)
 	}
 }

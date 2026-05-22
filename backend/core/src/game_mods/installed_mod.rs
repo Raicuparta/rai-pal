@@ -14,8 +14,8 @@ use crate::{
 	},
 	paths,
 	result::{
-		Error,
-		Result,
+		CoreError,
+		CoreResult,
 	},
 };
 
@@ -29,14 +29,14 @@ impl<'a> InstalledMod<'a> {
 		Self { game_mod, game }
 	}
 
-	pub fn open_folder(&self) -> Result {
+	pub fn open_folder(&self) -> CoreResult {
 		paths::open_folder_or_parent(&PathBuf::from(replace_tokens(
 			self.game_mod
 				.get_install()?
 				.main_installed_folder_path
 				.as_ref()
 				.with_context(|| {
-					Error::ModInfoMissing(
+					CoreError::ModInfoMissing(
 						self.game_mod.id.clone(),
 						"main_installed_folder_path".to_string(),
 					)
@@ -48,9 +48,9 @@ impl<'a> InstalledMod<'a> {
 		Ok(())
 	}
 
-	pub fn uninstall(&self) -> Result {
+	pub fn uninstall(&self) -> CoreResult {
 		let install = self.game_mod.install.as_ref().with_context(|| {
-			Error::ModInfoMissing(self.game_mod.id.clone(), "install".to_string())
+			CoreError::ModInfoMissing(self.game_mod.id.clone(), "install".to_string())
 		})?;
 
 		let local_mod_path = self.game_mod.get_local_folder_path()?;
@@ -104,7 +104,7 @@ impl<'a> InstalledMod<'a> {
 		))
 	}
 
-	pub fn configure(&self, open_folder: bool) -> Result {
+	pub fn configure(&self, open_folder: bool) -> CoreResult {
 		if let Some(config) = self.game_mod.config.as_ref() {
 			let config_path = self.get_config_path(config);
 			if open_folder {

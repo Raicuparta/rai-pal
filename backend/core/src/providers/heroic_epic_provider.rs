@@ -25,7 +25,7 @@ use crate::{
 			ProviderStatic,
 		},
 	},
-	result::Result,
+	result::CoreResult,
 };
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -47,7 +47,7 @@ struct Root {
 	library: Option<Vec<ParsedGame>>,
 }
 
-fn get_detected_games() -> Result<Option<Vec<ParsedGame>>> {
+fn get_detected_games() -> CoreResult<Option<Vec<ParsedGame>>> {
 	Ok(
 		heroic_provider::read_heroic_json::<Root>("store_cache/legendary_library.json")?
 			.and_then(|root| root.library),
@@ -68,7 +68,7 @@ impl HeroicEpic {
 impl ProviderStatic for HeroicEpic {
 	const ID: &'static ProviderId = &ProviderId::Epic;
 
-	fn new() -> Result<Self>
+	fn new() -> CoreResult<Self>
 	where
 		Self: Sized,
 	{
@@ -77,7 +77,7 @@ impl ProviderStatic for HeroicEpic {
 }
 
 impl ProviderActions for HeroicEpic {
-	async fn insert_games(&self, db: &DbMutex) -> Result {
+	async fn insert_games(&self, db: &DbMutex) -> CoreResult {
 		if let Some(parsed_games) = get_detected_games()? {
 			for parsed_game in parsed_games {
 				let mut game = DbGame::new(
@@ -101,7 +101,7 @@ impl ProviderActions for HeroicEpic {
 		Ok(())
 	}
 
-	fn set_wine_dll_overrides(&self, game: &DbGame, dll_overrides: &[String]) -> Result {
+	fn set_wine_dll_overrides(&self, game: &DbGame, dll_overrides: &[String]) -> CoreResult {
 		heroic_provider::set_wine_dll_overrides(&game.external_id, dll_overrides)
 	}
 }

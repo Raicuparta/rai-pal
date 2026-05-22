@@ -1,12 +1,16 @@
 use std::{
 	fs::File,
-	io::{self, Read, Seek},
+	io::{
+		self,
+		Read,
+		Seek,
+	},
 	path::Path,
 };
 
 use rai_pal_proc_macros::serializable_enum;
 
-use crate::result::Result;
+use crate::result::CoreResult;
 
 #[serializable_enum]
 pub enum Architecture {
@@ -14,7 +18,7 @@ pub enum Architecture {
 	X86,
 }
 
-pub fn get_architecture(exe_path: &Path) -> Result<Option<Architecture>> {
+pub fn get_architecture(exe_path: &Path) -> CoreResult<Option<Architecture>> {
 	// Open the file
 	let mut file = File::open(exe_path)?;
 

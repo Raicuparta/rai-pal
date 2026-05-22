@@ -13,7 +13,7 @@ use rai_pal_proc_macros::{
 	serializable_struct,
 };
 
-use crate::result::Result;
+use crate::result::AppResult;
 
 #[serializable_enum]
 pub enum AppLocale {
@@ -48,7 +48,7 @@ pub struct AppSettings {
 }
 
 impl AppSettings {
-	fn try_read() -> Result<Self> {
+	fn try_read() -> AppResult<Self> {
 		let path = Self::get_path()?;
 		if !path.is_file() {
 			return Ok(Self::default());
@@ -66,7 +66,7 @@ impl AppSettings {
 		})
 	}
 
-	pub fn try_write(&self) -> Result {
+	pub fn try_write(&self) -> AppResult {
 		let path = Self::get_path()?;
 		fs::create_dir_all(paths::path_parent(&path)?)?;
 		fs::write(&path, serde_json::to_string(self)?)?;
@@ -74,7 +74,7 @@ impl AppSettings {
 		Ok(())
 	}
 
-	fn get_path() -> Result<PathBuf> {
+	fn get_path() -> AppResult<PathBuf> {
 		Ok(paths::app_data_file("settings.json")?)
 	}
 }

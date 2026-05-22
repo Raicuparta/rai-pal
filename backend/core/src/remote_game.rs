@@ -18,7 +18,7 @@ use crate::{
 	providers::provider::ProviderId,
 	result::{
 		LogErrExt,
-		Result,
+		CoreResult,
 	},
 };
 
@@ -66,11 +66,11 @@ pub fn parse_version(version: &str) -> Option<EngineVersion> {
 	})
 }
 
-pub fn get_database_file_path() -> Result<PathBuf> {
+pub fn get_database_file_path() -> CoreResult<PathBuf> {
 	paths::database_path("remote")
 }
 
-pub async fn download_database() -> Result<PathBuf> {
+pub async fn download_database() -> CoreResult<PathBuf> {
 	let url = format!("{URL_BASE}/{DATABASE_VERSION}/games.db");
 
 	let response = http::CLIENT.get(&url).send().await?;

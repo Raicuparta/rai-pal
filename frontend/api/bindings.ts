@@ -66,6 +66,8 @@ export const events = {
 export const PROVIDER_IDS = ["Epic","Gog","Itch","Manual","Steam","Xbox"] as const;
 
 /* Types */
+export type AppError = ({ FailedToAccessStateData: string }) & { LinuxOnly?: never } | ({ LinuxOnly: null }) & { FailedToAccessStateData?: never };
+
 export type AppLocale = "EnUs" | "EsEs" | "FrFr" | "DeDe" | "PtPt" | "ZhCn" | "JaJp" | "KoKr" | "WaWa";
 
 export type AppSettings = {
@@ -123,8 +125,6 @@ export type EngineVersionRange = {
 	minimum: EngineVersionNumbers | null,
 	maximum: EngineVersionNumbers | null,
 };
-
-export type Error = ({ FailedToAccessStateData: string }) & { LinuxOnly?: never } | ({ LinuxOnly: null }) & { FailedToAccessStateData?: never };
 
 export type ExecutedProviderCommand = null;
 

@@ -16,10 +16,10 @@ use serde_json::Value;
 use super::provider_command::ProviderCommand;
 use crate::{
 	paths,
-	result::Result,
+	result::CoreResult,
 };
 
-fn heroic_config_path(relative_path: &str) -> Result<std::path::PathBuf> {
+fn heroic_config_path(relative_path: &str) -> CoreResult<std::path::PathBuf> {
 	let dirs = paths::base_dirs()?;
 
 	let native = dirs.config_dir().join("heroic");
@@ -33,7 +33,7 @@ fn heroic_config_path(relative_path: &str) -> Result<std::path::PathBuf> {
 	Ok(flatpak.join(relative_path))
 }
 
-fn games_config_path(game_id: &str) -> Result<PathBuf> {
+fn games_config_path(game_id: &str) -> CoreResult<PathBuf> {
 	heroic_config_path(&format!("GamesConfig/{game_id}.json"))
 }
 
@@ -59,7 +59,7 @@ struct HeroicEnvironmentOption {
 	extra: HashMap<String, Value>,
 }
 
-pub fn read_heroic_json<T>(relative_path: &str) -> Result<Option<T>>
+pub fn read_heroic_json<T>(relative_path: &str) -> CoreResult<Option<T>>
 where
 	T: DeserializeOwned,
 {
@@ -72,7 +72,7 @@ where
 	Ok(Some(serde_json::from_str::<T>(file_content.as_str())?))
 }
 
-pub fn set_wine_dll_overrides(game_id: &str, dll_overrides: &[String]) -> Result {
+pub fn set_wine_dll_overrides(game_id: &str, dll_overrides: &[String]) -> CoreResult {
 	if dll_overrides.is_empty() {
 		return Ok(());
 	}

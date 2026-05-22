@@ -29,8 +29,8 @@ use crate::{
 		steam::steam_provider::Steam,
 	},
 	result::{
-		Error,
-		Result,
+		CoreError,
+		CoreResult,
 	},
 };
 
@@ -63,7 +63,7 @@ pub enum Provider {
 	HeroicGog,
 }
 
-type Map = [(ProviderId, fn() -> Result<Provider>)];
+type Map = [(ProviderId, fn() -> CoreResult<Provider>)];
 const PROVIDERS: &Map = &[
 	create_map_entry::<Steam>(),
 	create_map_entry::<Manual>(),
@@ -82,17 +82,17 @@ const PROVIDERS: &Map = &[
 
 #[enum_dispatch(Provider)]
 pub trait ProviderActions {
-	async fn insert_games(&self, db: &DbMutex) -> Result;
-	fn set_wine_dll_overrides(&self, _game: &DbGame, _dll_overrides: &[String]) -> Result {
+	async fn insert_games(&self, db: &DbMutex) -> CoreResult;
+	fn set_wine_dll_overrides(&self, _game: &DbGame, _dll_overrides: &[String]) -> CoreResult {
 		Ok(())
 	}
-	fn get_wine_prefix_path(&self, _game: &DbGame) -> Result<PathBuf> {
-		bail!(Error::UnsupportedOperation(
+	fn get_wine_prefix_path(&self, _game: &DbGame) -> CoreResult<PathBuf> {
+		bail!(CoreError::UnsupportedOperation(
 			"get_wine_prefix_path".to_string(),
 		))
 	}
-	fn get_wine_binary_path(&self, _game: &DbGame) -> Result<PathBuf> {
-		bail!(Error::UnsupportedOperation(
+	fn get_wine_binary_path(&self, _game: &DbGame) -> CoreResult<PathBuf> {
+		bail!(CoreError::UnsupportedOperation(
 			"get_wine_binary_folder".to_string(),
 		))
 	}
@@ -102,13 +102,13 @@ pub trait ProviderActions {
 		_exe_path: &Path,
 		_args: &[String],
 		_wine_env: &HashMap<String, String>,
-	) -> Result {
+	) -> CoreResult {
 		Ok(())
 	}
 }
 
 const fn create_map_entry<TProvider: ProviderActions + ProviderStatic>()
--> (ProviderId, fn() -> Result<Provider>)
+-> (ProviderId, fn() -> CoreResult<Provider>)
 where
 	Provider: From<TProvider>,
 {
@@ -118,12 +118,12 @@ where
 pub trait ProviderStatic: ProviderActions {
 	const ID: &'static ProviderId;
 
-	fn new() -> Result<Self>
+	fn new() -> CoreResult<Self>
 	where
 		Self: Sized;
 }
 
-pub fn get_provider(provider_id: ProviderId) -> Option<Result<Provider>> {
+pub fn get_provider(provider_id: ProviderId) -> Option<CoreResult<Provider>> {
 	for &(id, create_provider) in PROVIDERS {
 		if id == provider_id {
 			return Some(create_provider());

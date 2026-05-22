@@ -14,7 +14,7 @@ use tokio::{
 	},
 };
 
-use crate::result::Result;
+use crate::result::CoreResult;
 
 pub static CLIENT: LazyLock<reqwest::Client> = LazyLock::new(|| {
 	#[allow(clippy::expect_used)]
@@ -46,8 +46,8 @@ pub struct DownloadStatus {
 pub async fn download(
 	url: &str,
 	target_path: &Path,
-	status_callback: impl Fn(DownloadStatus) -> Result + Send,
-) -> Result<()> {
+	status_callback: impl Fn(DownloadStatus) -> CoreResult + Send,
+) -> CoreResult<()> {
 	let response = CLIENT.get(url).send().await?.error_for_status()?;
 
 	let file = File::create(target_path).await?;

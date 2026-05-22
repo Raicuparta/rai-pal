@@ -9,7 +9,6 @@ use std::{
 
 use anyhow::{
 	Context,
-	anyhow,
 	bail,
 };
 
@@ -49,8 +48,8 @@ use crate::{
 		RemoteConfigs,
 	},
 	result::{
-		Error,
-		Result,
+		CoreError,
+		CoreResult,
 	},
 };
 
@@ -105,15 +104,15 @@ impl DbGame {
 		game
 	}
 
-	pub fn open_game_folder(&self) -> Result {
+	pub fn open_game_folder(&self) -> CoreResult {
 		paths::open_folder_or_parent(self.try_get_exe_path()?)
 	}
 
-	pub fn open_mods_folder(&self) -> Result {
+	pub fn open_mods_folder(&self) -> CoreResult {
 		paths::open_folder_or_parent(&self.get_installed_mods_folder()?)
 	}
 
-	pub fn uninstall_all_mods(&self) -> Result {
+	pub fn uninstall_all_mods(&self) -> CoreResult {
 		Ok(fs::remove_dir_all(self.get_installed_mods_folder()?)?)
 	}
 
@@ -164,14 +163,14 @@ impl DbGame {
 			.collect()
 	}
 
-	pub fn get_installed_mod_manifest_path(&self, mod_id: &str) -> Result<PathBuf> {
+	pub fn get_installed_mod_manifest_path(&self, mod_id: &str) -> CoreResult<PathBuf> {
 		Ok(self
 			.get_installed_mods_folder()?
 			.join("manifests")
 			.join(format!("{mod_id}.json")))
 	}
 
-	pub fn get_installed_mods_folder(&self) -> Result<PathBuf> {
+	pub fn get_installed_mods_folder(&self) -> CoreResult<PathBuf> {
 		let installed_mods_folder =
 			paths::installed_mods_path()?.join(paths::hash_path(self.try_get_exe_path()?));
 		fs::create_dir_all(&installed_mods_folder)?;
@@ -179,21 +178,21 @@ impl DbGame {
 		Ok(installed_mods_folder)
 	}
 
-	pub fn try_get_exe_path(&self) -> Result<&Path> {
+	pub fn try_get_exe_path(&self) -> CoreResult<&Path> {
 		Ok(&&self
 			.exe_path
 			.as_ref()
-			.with_context(|| Error::GameNotInstalled(self.display_title.clone()))?
+			.with_context(|| CoreError::GameNotInstalled(self.display_title.clone()))?
 			.0)
 	}
 
-	pub fn try_get_exe_name(&self) -> Result<String> {
+	pub fn try_get_exe_name(&self) -> CoreResult<String> {
 		let path = self.try_get_exe_path()?;
 		Ok(path
 			.file_name()
 			.and_then(|file_name| file_name.to_str())
 			.map(std::string::ToString::to_string)
-			.with_context(|| Error::InvalidOsStr(path.display().to_string()))?)
+			.with_context(|| CoreError::InvalidOsStr(path.display().to_string()))?)
 	}
 
 	pub fn add_provider_command(
@@ -260,20 +259,20 @@ impl DbGame {
 		self
 	}
 
-	pub fn refresh_executable(&mut self) -> Result<&mut Self> {
+	pub fn refresh_executable(&mut self) -> CoreResult<&mut Self> {
 		if let Some(PathData(exe_path)) = self.exe_path.clone() {
 			self.set_executable(&exe_path);
 		} else {
-			bail!(Error::GameNotInstalled(self.display_title.clone()));
+			bail!(CoreError::GameNotInstalled(self.display_title.clone()));
 		}
 		Ok(self)
 	}
 
-	pub async fn get_remote_configs(&self) -> Result<Option<RemoteConfigs>> {
+	pub async fn get_remote_configs(&self) -> CoreResult<Option<RemoteConfigs>> {
 		remote_config::get_remote_configs(&self.try_get_exe_path()?).await
 	}
 
-	pub fn get_installed_mod(&self, mod_id: &str) -> Result<Option<InstalledMod<'_>>> {
+	pub fn get_installed_mod(&self, mod_id: &str) -> CoreResult<Option<InstalledMod<'_>>> {
 		Ok(
 			GameMod::from_file(&self.get_installed_mod_manifest_path(mod_id)?).map(|game_mod| {
 				InstalledMod {

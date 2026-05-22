@@ -15,8 +15,8 @@ use anyhow::bail;
 
 use super::discord_oauth;
 use crate::result::{
-	Error,
-	Result,
+	CoreError,
+	CoreResult,
 };
 
 const USER_SOCKET_BIND_ADDRESS: &str = "127.0.0.1";
@@ -77,7 +77,7 @@ pub fn start_user_socket_manager() {
 	});
 }
 
-fn handle_socket_connection(stream: &mut TcpStream) -> Result {
+fn handle_socket_connection(stream: &mut TcpStream) -> CoreResult {
 	let mut buffer = [0_u8; 4096];
 	let bytes_read = stream.read(&mut buffer)?;
 
@@ -133,7 +133,7 @@ fn write_http_response(
 	status_code: u16,
 	status_text: &str,
 	body: &str,
-) -> Result {
+) -> CoreResult {
 	let response = format!(
 		"HTTP/1.1 {status_code} {status_text}\r\nContent-Type: text/plain; charset=utf-8\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
 		body.len(),
@@ -146,24 +146,24 @@ fn write_http_response(
 	Ok(())
 }
 
-fn bind_first_available_port() -> Result<(TcpListener, u16)> {
+fn bind_first_available_port() -> CoreResult<(TcpListener, u16)> {
 	for port in USER_SOCKET_PORT_RANGE_START..=USER_SOCKET_PORT_RANGE_END {
 		match TcpListener::bind((USER_SOCKET_BIND_ADDRESS, port)) {
 			Ok(listener) => return Ok((listener, port)),
 			Err(error) if error.kind() == std::io::ErrorKind::AddrInUse => {}
 			Err(error) => {
-				bail!(Error::DiscordOAuth(format!(
+				bail!(CoreError::DiscordOAuth(format!(
 					"Failed to bind user socket at {USER_SOCKET_BIND_ADDRESS}:{port}: {error}"
 				)));
 			}
 		}
 	}
 
-	bail!(Error::DiscordOAuth(format!(
+	bail!(CoreError::DiscordOAuth(format!(
 		"No available user socket ports in range {USER_SOCKET_PORT_RANGE_START}..={USER_SOCKET_PORT_RANGE_END}"
 	)))
 }
 
-fn read_discord_access_token() -> Result<String> {
+fn read_discord_access_token() -> CoreResult<String> {
 	discord_oauth::read_discord_access_token()
 }

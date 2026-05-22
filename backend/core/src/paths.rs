@@ -16,10 +16,7 @@ use std::{
 	process::Stdio,
 };
 
-use anyhow::{
-	Context,
-	anyhow,
-};
+use anyhow::Context;
 use directories::{
 	BaseDirs,
 	ProjectDirs,
@@ -28,9 +25,9 @@ use globwalk::glob;
 use log;
 
 use crate::result::{
-	Error,
+	CoreError,
+	CoreResult,
 	LogErrExt,
-	Result,
 };
 
 pub fn glob_path(path: &Path) -> Vec<PathBuf> {
@@ -67,62 +64,62 @@ pub fn glob_path(path: &Path) -> Vec<PathBuf> {
 }
 
 // TODO in trait.
-pub fn path_parent(path: &Path) -> Result<&Path> {
+pub fn path_parent(path: &Path) -> CoreResult<&Path> {
 	path.parent()
-		.context(Error::PathParentNotFound(path.to_path_buf()))
+		.context(CoreError::PathParentNotFound(path.to_path_buf()))
 }
 
-fn app_data_path() -> Result<PathBuf> {
+fn app_data_path() -> CoreResult<PathBuf> {
 	let project_dirs =
-		ProjectDirs::from("com", "raicuparta", "rai-pal").context(Error::AppDataNotFound)?;
+		ProjectDirs::from("com", "raicuparta", "rai-pal").context(CoreError::AppDataNotFound)?;
 	let path = project_dirs.data_dir().to_path_buf();
 	fs::create_dir_all(&path)?;
 
 	Ok(path)
 }
 
-pub fn app_data_file(file_name: &str) -> Result<PathBuf> {
+pub fn app_data_file(file_name: &str) -> CoreResult<PathBuf> {
 	Ok(app_data_path()?.join(file_name))
 }
 
-fn app_data_subfolder(folder_name: &str) -> Result<PathBuf> {
+fn app_data_subfolder(folder_name: &str) -> CoreResult<PathBuf> {
 	let path = app_data_path()?.join(folder_name);
 	fs::create_dir_all(&path)?;
 	Ok(path)
 }
 
-pub fn logs_path() -> Result<PathBuf> {
+pub fn logs_path() -> CoreResult<PathBuf> {
 	app_data_subfolder("logs")
 }
 
-pub fn open_logs_folder() -> Result {
+pub fn open_logs_folder() -> CoreResult {
 	open_folder_or_parent(&logs_path()?)
 }
 
-pub fn local_mods_path() -> Result<PathBuf> {
+pub fn local_mods_path() -> CoreResult<PathBuf> {
 	app_data_subfolder("mods")
 }
 
-pub fn installed_mods_path() -> Result<PathBuf> {
+pub fn installed_mods_path() -> CoreResult<PathBuf> {
 	app_data_subfolder("installed_mods")
 }
 
-pub fn downloads_path() -> Result<PathBuf> {
+pub fn downloads_path() -> CoreResult<PathBuf> {
 	app_data_subfolder("downloads")
 }
 
-fn databases_path() -> Result<PathBuf> {
+fn databases_path() -> CoreResult<PathBuf> {
 	app_data_subfolder("databases")
 }
 
-pub fn database_path(database_name: &str) -> Result<PathBuf> {
+pub fn database_path(database_name: &str) -> CoreResult<PathBuf> {
 	Ok(databases_path()?.join(format!("{database_name}.db")))
 }
 
-pub fn file_name_without_extension(file_path: &Path) -> Result<&str> {
+pub fn file_name_without_extension(file_path: &Path) -> CoreResult<&str> {
 	file_path
 		.file_stem()
-		.with_context(|| Error::InvalidOsStr(file_path.display().to_string()))?
+		.with_context(|| CoreError::InvalidOsStr(file_path.display().to_string()))?
 		.try_to_str()
 }
 
@@ -189,7 +186,7 @@ pub fn hash_path(path: &Path) -> String {
 	hasher.finish().to_string()
 }
 
-fn get_program_data_path() -> Result<PathBuf> {
+fn get_program_data_path() -> CoreResult<PathBuf> {
 	let path_from_env = env::var("ProgramData")?;
 	Ok(PathBuf::from(path_from_env))
 }
@@ -202,7 +199,7 @@ pub fn try_get_program_data_path() -> PathBuf {
 }
 
 // Weird workaround for AppImage builds.
-fn open_detached_clean_env(path: impl AsRef<OsStr>) -> Result {
+fn open_detached_clean_env(path: impl AsRef<OsStr>) -> CoreResult {
 	let mut last_err = io::Error::new(io::ErrorKind::NotFound, "No command to open the path");
 
 	for mut cmd in open::commands(path) {
@@ -224,7 +221,7 @@ fn open_detached_clean_env(path: impl AsRef<OsStr>) -> Result {
 	Err(last_err.into())
 }
 
-pub fn open_folder_or_parent(path: &Path) -> Result {
+pub fn open_folder_or_parent(path: &Path) -> CoreResult {
 	let folder_path = if path.is_dir() {
 		path
 	} else {
@@ -240,7 +237,7 @@ pub fn open_folder_or_parent(path: &Path) -> Result {
 	open_detached_clean_env(normalized_path)
 }
 
-pub fn remove_path_if_exists(path: &Path) -> Result {
+pub fn remove_path_if_exists(path: &Path) -> CoreResult {
 	let Ok(metadata) = fs::symlink_metadata(path) else {
 		return Ok(());
 	};
@@ -254,35 +251,35 @@ pub fn remove_path_if_exists(path: &Path) -> Result {
 	Ok(())
 }
 
-pub fn base_dirs() -> Result<BaseDirs> {
-	directories::BaseDirs::new().context(Error::AppDataNotFound)
+pub fn base_dirs() -> CoreResult<BaseDirs> {
+	directories::BaseDirs::new().context(CoreError::AppDataNotFound)
 }
 
 pub trait AsValidStr {
-	fn try_to_str(&self) -> Result<&str>;
+	fn try_to_str(&self) -> CoreResult<&str>;
 }
 
 impl<T> AsValidStr for T
 where
 	T: AsRef<OsStr>,
 {
-	fn try_to_str(&self) -> Result<&str> {
+	fn try_to_str(&self) -> CoreResult<&str> {
 		self.as_ref()
 			.to_str()
-			.with_context(|| Error::InvalidOsStr(self.as_ref().to_string_lossy().to_string()))
+			.with_context(|| CoreError::InvalidOsStr(self.as_ref().to_string_lossy().to_string()))
 	}
 }
 
 impl AsValidStr for OsStr {
-	fn try_to_str(&self) -> Result<&str> {
+	fn try_to_str(&self) -> CoreResult<&str> {
 		self.to_str()
-			.with_context(|| Error::InvalidOsStr(self.to_string_lossy().to_string()))
+			.with_context(|| CoreError::InvalidOsStr(self.to_string_lossy().to_string()))
 	}
 }
 
 impl AsValidStr for Path {
-	fn try_to_str(&self) -> Result<&str> {
+	fn try_to_str(&self) -> CoreResult<&str> {
 		self.to_str()
-			.with_context(|| Error::InvalidOsStr(self.to_string_lossy().to_string()))
+			.with_context(|| CoreError::InvalidOsStr(self.to_string_lossy().to_string()))
 	}
 }

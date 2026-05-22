@@ -26,8 +26,8 @@ use crate::{
 	},
 	paths,
 	result::{
-		Error,
-		Result,
+		CoreError,
+		CoreResult,
 	},
 };
 
@@ -42,7 +42,7 @@ struct GamesConfig {
 impl ProviderStatic for Manual {
 	const ID: &'static ProviderId = &ProviderId::Manual;
 
-	fn new() -> Result<Self>
+	fn new() -> CoreResult<Self>
 	where
 		Self: Sized,
 	{
@@ -51,7 +51,7 @@ impl ProviderStatic for Manual {
 }
 
 impl ProviderActions for Manual {
-	async fn insert_games(&self, db: &DbMutex) -> Result {
+	async fn insert_games(&self, db: &DbMutex) -> CoreResult {
 		for path in read_games_config(&games_config_path()?).paths {
 			match get_game_from_path(&path) {
 				Ok(game) => {
@@ -72,7 +72,7 @@ impl ProviderActions for Manual {
 	}
 }
 
-fn games_config_path() -> Result<PathBuf> {
+fn games_config_path() -> CoreResult<PathBuf> {
 	paths::app_data_file("games.json")
 }
 
@@ -90,7 +90,7 @@ fn read_games_config(games_config_path: &Path) -> GamesConfig {
 	}
 }
 
-fn get_game_from_path(exe_path: &Path) -> Result<DbGame> {
+fn get_game_from_path(exe_path: &Path) -> CoreResult<DbGame> {
 	let mut game = DbGame::new(
 		ProviderId::Manual,
 		paths::hash_path(exe_path),
@@ -100,11 +100,11 @@ fn get_game_from_path(exe_path: &Path) -> Result<DbGame> {
 	Ok(game)
 }
 
-pub fn add_game(path: &Path) -> Result<DbGame> {
+pub fn add_game(path: &Path) -> CoreResult<DbGame> {
 	let game = get_game_from_path(path)?;
 
 	if game.exe_path.is_none() {
-		bail!(Error::NoExecutableFound(path.to_owned()));
+		bail!(CoreError::NoExecutableFound(path.to_owned()));
 	}
 
 	let config_path = games_config_path()?;
@@ -117,15 +117,15 @@ pub fn add_game(path: &Path) -> Result<DbGame> {
 	Ok(game)
 }
 
-pub fn remove_game(game: &DbGame) -> Result {
+pub fn remove_game(game: &DbGame) -> CoreResult {
 	if game.provider_id != ProviderId::Manual {
-		bail!(Error::InvalidProviderId(game.provider_id.to_string()));
+		bail!(CoreError::InvalidProviderId(game.provider_id.to_string()));
 	}
 
 	let path = &game
 		.exe_path
 		.as_ref()
-		.with_context(|| Error::GameNotInstalled(game.display_title.clone()))?
+		.with_context(|| CoreError::GameNotInstalled(game.display_title.clone()))?
 		.0;
 
 	remove_path(path)?;
@@ -133,7 +133,7 @@ pub fn remove_game(game: &DbGame) -> Result {
 	Ok(())
 }
 
-fn remove_path(path: &Path) -> Result {
+fn remove_path(path: &Path) -> CoreResult {
 	let config_path = games_config_path()?;
 	let mut games_config = read_games_config(&config_path);
 	games_config.paths.retain(|p| p != path);

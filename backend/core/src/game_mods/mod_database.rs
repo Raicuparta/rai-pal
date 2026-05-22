@@ -3,7 +3,7 @@ use rai_pal_proc_macros::serializable_struct;
 use crate::{
 	game_mods::game_mod::GameMod,
 	http,
-	result::Result,
+	result::CoreResult,
 };
 
 const URL_BASE: &str = "https://raicuparta.github.io/rai-pal-db/mod-db";
@@ -20,7 +20,7 @@ pub struct ModDatabase {
 }
 
 impl ModDatabase {
-	pub async fn get() -> Result<Self> {
+	pub async fn get() -> CoreResult<Self> {
 		Ok(http::CLIENT
 			.get(format!("{URL_BASE}/{DATABASE_VERSION}/mods.json"))
 			.send()

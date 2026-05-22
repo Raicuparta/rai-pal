@@ -34,8 +34,8 @@ use super::vdf::{
 	value_to_string,
 };
 use crate::result::{
-	Error,
-	Result,
+	CoreError,
+	CoreResult,
 };
 
 #[serializable_struct]
@@ -76,9 +76,9 @@ pub struct SteamAppInfoReader {
 const OLD_APPINFO_MAX_VERSION: u32 = 0x07_56_44_28;
 
 impl SteamAppInfoReader {
-	pub fn new(appinfo_path: &Path) -> Result<Self> {
+	pub fn new(appinfo_path: &Path) -> CoreResult<Self> {
 		if !appinfo_path.exists() {
-			bail!(Error::SteamAppInfoNotFound(appinfo_path.to_owned()));
+			bail!(CoreError::SteamAppInfoNotFound(appinfo_path.to_owned()));
 		}
 
 		let mut reader = BufReader::new(fs::File::open(appinfo_path)?);
@@ -118,7 +118,7 @@ impl SteamAppInfoReader {
 		Ok(Self { reader, keys })
 	}
 
-	pub fn try_next(&mut self) -> Result<Option<SteamAppInfo>> {
+	pub fn try_next(&mut self) -> CoreResult<Option<SteamAppInfo>> {
 		loop {
 			let app_id = self.reader.read_u32::<LittleEndian>()?;
 
@@ -233,7 +233,7 @@ impl SteamAppInfoReader {
 }
 
 impl Iterator for SteamAppInfoReader {
-	type Item = Result<SteamAppInfo>;
+	type Item = CoreResult<SteamAppInfo>;
 
 	fn next(&mut self) -> Option<Self::Item> {
 		self.try_next().transpose()

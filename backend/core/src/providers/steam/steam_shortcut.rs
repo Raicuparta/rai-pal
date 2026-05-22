@@ -15,9 +15,9 @@ use anyhow::{
 use steamlocate::SteamDir;
 
 use crate::result::{
-	Error,
+	CoreError,
 	LogErrExt,
-	Result,
+	CoreResult,
 };
 
 const RAI_PAL_SHORTCUT_NAME: &str = "Rai Pal";
@@ -29,7 +29,7 @@ struct ShortcutSummary {
 	start_byte: usize,
 	end_byte: usize,
 }
-pub fn add_current_executable_to_steam_shortcuts(executable_path: &Path) -> Result {
+pub fn add_current_executable_to_steam_shortcuts(executable_path: &Path) -> CoreResult {
 	let steam_dir = SteamDir::locate()?;
 	let shortcuts_paths = get_target_shortcuts_paths(steam_dir.path())?;
 	log::info!(
@@ -72,7 +72,7 @@ fn add_shortcut_to_path(
 	executable: &str,
 	start_dir: &str,
 	app_id: u32,
-) -> Result {
+) -> CoreResult {
 	if let Some(parent) = shortcuts_path.parent() {
 		fs::create_dir_all(parent)?;
 	}
@@ -119,11 +119,13 @@ fn add_shortcut_to_path(
 	Ok(())
 }
 
-fn create_numbered_backup(shortcuts_path: &Path) -> Result {
+fn create_numbered_backup(shortcuts_path: &Path) -> CoreResult {
 	let backup_dir = shortcuts_path
 		.parent()
 		.with_context(|| {
-			Error::DataEntryNotFound("Unable to determine parent directory for backups".to_string())
+			CoreError::DataEntryNotFound(
+				"Unable to determine parent directory for backups".to_string(),
+			)
 		})?
 		.join("rai-pal-backups");
 
@@ -143,7 +145,7 @@ fn create_numbered_backup(shortcuts_path: &Path) -> Result {
 	Ok(())
 }
 
-fn get_target_shortcuts_paths(steam_path: &Path) -> Result<Vec<PathBuf>> {
+fn get_target_shortcuts_paths(steam_path: &Path) -> CoreResult<Vec<PathBuf>> {
 	let userdata_path = steam_path.join("userdata");
 
 	let candidates = fs::read_dir(&userdata_path)?
@@ -185,7 +187,7 @@ fn get_target_shortcuts_paths(steam_path: &Path) -> Result<Vec<PathBuf>> {
 		.collect::<Vec<_>>();
 
 	if candidates.is_empty() {
-		bail!(Error::DataEntryNotFound(
+		bail!(CoreError::DataEntryNotFound(
 			"No Steam userdata user folder was found".to_string(),
 		));
 	}
@@ -193,20 +195,23 @@ fn get_target_shortcuts_paths(steam_path: &Path) -> Result<Vec<PathBuf>> {
 	Ok(candidates.into_iter().map(|(path, _)| path).collect())
 }
 
-fn parse_shortcuts_file(bytes: &[u8]) -> Result<(u32, Vec<ShortcutSummary>)> {
+fn parse_shortcuts_file(bytes: &[u8]) -> CoreResult<(u32, Vec<ShortcutSummary>)> {
 	if bytes.len() < 2 {
 		return Ok((0, Vec::new()));
 	}
 
 	let mut position = 0;
 	if bytes.get(position).copied() != Some(0) {
-		bail!(Error::InvalidBinaryVdfType(bytes[0], "<root>".to_string()));
+		bail!(CoreError::InvalidBinaryVdfType(
+			bytes[0],
+			"<root>".to_string()
+		));
 	}
 	position += 1;
 
 	let root_name = read_cstring(bytes, &mut position)?;
 	if root_name != "shortcuts" {
-		bail!(Error::DataEntryNotFound(format!(
+		bail!(CoreError::DataEntryNotFound(format!(
 			"Steam shortcuts root object not found (got `{root_name}`)"
 		)));
 	}
@@ -236,14 +241,14 @@ fn parse_shortcuts_file(bytes: &[u8]) -> Result<(u32, Vec<ShortcutSummary>)> {
 
 			entries.push(entry);
 		} else {
-			bail!(Error::InvalidBinaryVdfType(field_type, field_name));
+			bail!(CoreError::InvalidBinaryVdfType(field_type, field_name));
 		}
 	}
 
 	Ok((max_index, entries))
 }
 
-fn parse_shortcut_object(bytes: &[u8], mut position: usize) -> Result<(ShortcutSummary, usize)> {
+fn parse_shortcut_object(bytes: &[u8], mut position: usize) -> CoreResult<(ShortcutSummary, usize)> {
 	let mut entry = ShortcutSummary::default();
 
 	loop {
@@ -267,18 +272,18 @@ fn parse_shortcut_object(bytes: &[u8], mut position: usize) -> Result<(ShortcutS
 			}
 			2 => {
 				if position + 4 > bytes.len() {
-					bail!(Error::InvalidBinaryVdfType(2, field_name));
+					bail!(CoreError::InvalidBinaryVdfType(2, field_name));
 				}
 				position += 4;
 			}
-			other => bail!(Error::InvalidBinaryVdfType(other, field_name)),
+			other => bail!(CoreError::InvalidBinaryVdfType(other, field_name)),
 		}
 	}
 
 	Ok((entry, position))
 }
 
-fn skip_object(bytes: &[u8], mut position: usize) -> Result<usize> {
+fn skip_object(bytes: &[u8], mut position: usize) -> CoreResult<usize> {
 	loop {
 		let field_type = *bytes.get(position).unwrap_or(&8);
 		position += 1;
@@ -295,16 +300,16 @@ fn skip_object(bytes: &[u8], mut position: usize) -> Result<usize> {
 			}
 			2 => {
 				if position + 4 > bytes.len() {
-					bail!(Error::InvalidBinaryVdfType(2, field_name));
+					bail!(CoreError::InvalidBinaryVdfType(2, field_name));
 				}
 				position += 4;
 			}
-			other => bail!(Error::InvalidBinaryVdfType(other, field_name)),
+			other => bail!(CoreError::InvalidBinaryVdfType(other, field_name)),
 		}
 	}
 }
 
-fn read_cstring(bytes: &[u8], position: &mut usize) -> Result<String> {
+fn read_cstring(bytes: &[u8], position: &mut usize) -> CoreResult<String> {
 	let start = *position;
 	while *position < bytes.len() {
 		if bytes[*position] == 0 {
@@ -315,7 +320,7 @@ fn read_cstring(bytes: &[u8], position: &mut usize) -> Result<String> {
 		*position += 1;
 	}
 
-	bail!(Error::InvalidBinaryVdfType(1, "<cstring>".to_string()))
+	bail!(CoreError::InvalidBinaryVdfType(1, "<cstring>".to_string()))
 }
 
 fn append_shortcut_entry(

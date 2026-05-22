@@ -32,7 +32,7 @@ use crate::{
 	},
 	result::{
 		LogErrExt,
-		Result,
+		CoreResult,
 	},
 };
 
@@ -75,7 +75,7 @@ impl Itch {
 impl ProviderStatic for Itch {
 	const ID: &'static ProviderId = &ProviderId::Itch;
 
-	fn new() -> Result<Self>
+	fn new() -> CoreResult<Self>
 	where
 		Self: Sized,
 	{
@@ -118,7 +118,7 @@ pub struct ItchDatabase {
 }
 
 impl ProviderActions for Itch {
-	async fn insert_games(&self, db: &DbMutex) -> Result {
+	async fn insert_games(&self, db: &DbMutex) -> CoreResult {
 		let app_data_path = paths::base_dirs()?.config_dir().join("itch");
 
 		if let Some(database) = get_database(&app_data_path)? {
@@ -156,7 +156,7 @@ fn parse_verdict(json_option: Option<&String>) -> Option<ItchDatabaseVerdict> {
 	}
 }
 
-fn get_database(app_data_path: &Path) -> Result<Option<ItchDatabase>> {
+fn get_database(app_data_path: &Path) -> CoreResult<Option<ItchDatabase>> {
 	let db_path = app_data_path.join("db").join("butler.db");
 
 	if !db_path.is_file() {

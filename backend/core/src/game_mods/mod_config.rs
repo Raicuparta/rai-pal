@@ -12,7 +12,7 @@ use crate::{
 	game::DbGame,
 	game_mods::game_mod::ModConfigDestinationType,
 	remote_config,
-	result::Result,
+	result::CoreResult,
 };
 
 #[serializable_struct]
@@ -23,7 +23,7 @@ pub struct ModConfig {
 }
 
 impl ModConfig {
-	pub async fn download(&self, game: &DbGame, config_file: &str, overwrite: bool) -> Result {
+	pub async fn download(&self, game: &DbGame, config_file: &str, overwrite: bool) -> CoreResult {
 		// TODO: handle tokens.
 		let destination_path = PathBuf::from(&self.destination_path);
 
@@ -56,7 +56,7 @@ impl ModConfig {
 	}
 }
 
-fn config_exists(path: &Path) -> Result<bool> {
+fn config_exists(path: &Path) -> CoreResult<bool> {
 	if !path.try_exists()? {
 		return Ok(false);
 	}

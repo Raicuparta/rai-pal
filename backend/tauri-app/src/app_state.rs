@@ -17,8 +17,8 @@ use tauri::{
 };
 
 use crate::result::{
-	Error,
-	Result,
+	AppError,
+	AppResult,
 };
 
 pub struct AppState {
@@ -31,26 +31,26 @@ pub struct AppState {
 type TauriState<'a> = tauri::State<'a, AppState>;
 
 pub trait StateData<TData> {
-	fn read_state(&self) -> Result<TData>;
-	fn write_state_value(&self, data: TData) -> Result;
+	fn read_state(&self) -> AppResult<TData>;
+	fn write_state_value(&self, data: TData) -> AppResult;
 }
 
 impl<TData: Clone> StateData<TData> for RwLock<Option<TData>> {
-	fn read_state(&self) -> Result<TData> {
+	fn read_state(&self) -> AppResult<TData> {
 		let guard = self
 			.read()
-			.map_err(|err| Error::FailedToAccessStateData(err.to_string()))?;
+			.map_err(|err| AppError::FailedToAccessStateData(err.to_string()))?;
 
 		match &*guard {
 			Some(data) => Ok(data.clone()),
-			None => Err(Error::FailedToAccessStateData("Empty data".to_string())),
+			None => Err(AppError::FailedToAccessStateData("Empty data".to_string())),
 		}
 	}
 
-	fn write_state_value(&self, data: TData) -> Result {
+	fn write_state_value(&self, data: TData) -> AppResult {
 		*self
 			.write()
-			.map_err(|err| Error::FailedToAccessStateData(err.to_string()))? = Some(data);
+			.map_err(|err| AppError::FailedToAccessStateData(err.to_string()))? = Some(data);
 
 		Ok(())
 	}
@@ -67,7 +67,7 @@ impl StatefulHandle for tauri::AppHandle {
 }
 
 impl AppState {
-	pub fn new() -> Result<Self> {
+	pub fn new() -> AppResult<Self> {
 		Ok(Self {
 			local_mods: RwLock::new(Some(HashMap::new())),
 			remote_mods: RwLock::new(Some(HashMap::new())),

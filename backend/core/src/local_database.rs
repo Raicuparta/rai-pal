@@ -33,19 +33,19 @@ use crate::{
 	providers::provider::ProviderId,
 	remote_game,
 	result::{
-		Error,
-		Result,
+		CoreError,
+		CoreResult,
 	},
 };
 
 pub type DbMutex = Mutex<rusqlite::Connection>;
 
 pub trait GameDatabase {
-	fn lock_db(&self) -> Result<MutexGuard<'_, rusqlite::Connection>>;
+	fn lock_db(&self) -> CoreResult<MutexGuard<'_, rusqlite::Connection>>;
 	fn insert_game(&self, game: &DbGame);
-	fn get_game(&self, provider_id: &ProviderId, game_id: &str) -> Result<DbGame>;
-	fn get_game_ids(&self, query: Option<GamesQuery>) -> Result<GameIdsResponse>;
-	fn remove_stale_games(&self, provider_id: &ProviderId, max_time: u64) -> Result;
+	fn get_game(&self, provider_id: &ProviderId, game_id: &str) -> CoreResult<DbGame>;
+	fn get_game_ids(&self, query: Option<GamesQuery>) -> CoreResult<GameIdsResponse>;
+	fn remove_stale_games(&self, provider_id: &ProviderId, max_time: u64) -> CoreResult;
 }
 
 #[serializable_struct]
@@ -55,9 +55,9 @@ pub struct GameIdsResponse {
 }
 
 impl GameDatabase for DbMutex {
-	fn lock_db(&self) -> Result<MutexGuard<'_, rusqlite::Connection>> {
+	fn lock_db(&self) -> CoreResult<MutexGuard<'_, rusqlite::Connection>> {
 		self.lock()
-			.map_err(|err| anyhow!(Error::DatabaseLockFailed(err.to_string())))
+			.map_err(|err| anyhow!(CoreError::DatabaseLockFailed(err.to_string())))
 	}
 
 	fn insert_game(&self, game: &DbGame) {
@@ -71,7 +71,7 @@ impl GameDatabase for DbMutex {
 		}
 	}
 
-	fn get_game(&self, provider_id: &ProviderId, game_id: &str) -> Result<DbGame> {
+	fn get_game(&self, provider_id: &ProviderId, game_id: &str) -> CoreResult<DbGame> {
 		Ok(self
 			.lock_db()?
 			.prepare_cached(
@@ -129,7 +129,7 @@ impl GameDatabase for DbMutex {
 			})?)
 	}
 
-	fn get_game_ids(&self, query: Option<GamesQuery>) -> Result<GameIdsResponse> {
+	fn get_game_ids(&self, query: Option<GamesQuery>) -> CoreResult<GameIdsResponse> {
 		let search = query.as_ref().map(|q| q.search.clone()).unwrap_or_default();
 
 		// Build sorting logic
@@ -337,7 +337,7 @@ impl GameDatabase for DbMutex {
 		})
 	}
 
-	fn remove_stale_games(&self, provider_id: &ProviderId, max_time: u64) -> Result {
+	fn remove_stale_games(&self, provider_id: &ProviderId, max_time: u64) -> CoreResult {
 		self.lock_db()?
 			.prepare_cached("DELETE FROM main.games WHERE provider_id = $1 AND created_at < $2;")?
 			.execute(rusqlite::params![provider_id, max_time.cast_signed()])?;
@@ -346,7 +346,7 @@ impl GameDatabase for DbMutex {
 	}
 }
 
-fn try_insert_game(connection_mutex: &DbMutex, game: &DbGame) -> Result {
+fn try_insert_game(connection_mutex: &DbMutex, game: &DbGame) -> CoreResult {
 	let mut connection = connection_mutex.lock_db()?;
 	let transaction = connection.transaction()?;
 
@@ -434,7 +434,7 @@ fn try_insert_game(connection_mutex: &DbMutex, game: &DbGame) -> Result {
 	Ok(())
 }
 
-pub fn try_create() -> Result<DbMutex> {
+pub fn try_create() -> CoreResult<DbMutex> {
 	match create() {
 		Ok(db) => Ok(db),
 		Err(initial_error) => {
@@ -461,7 +461,7 @@ fn cleanup_database_files() {
 	cleanup_database_file(remote_game::get_database_file_path(), "remote");
 }
 
-fn cleanup_database_file(path_result: Result<PathBuf>, database_name: &str) {
+fn cleanup_database_file(path_result: CoreResult<PathBuf>, database_name: &str) {
 	let path = match path_result {
 		Ok(path) => path,
 		Err(path_error) => {
@@ -482,7 +482,7 @@ fn cleanup_database_file(path_result: Result<PathBuf>, database_name: &str) {
 	}
 }
 
-fn create() -> Result<DbMutex> {
+fn create() -> CoreResult<DbMutex> {
 	let mut instant = Instant::now();
 	instant.log_next("Creating local database...");
 
@@ -569,7 +569,7 @@ fn create() -> Result<DbMutex> {
 pub fn attach_remote_database<TConnection: Deref<Target = rusqlite::Connection>>(
 	local_database_connection: TConnection,
 	path: &Path,
-) -> Result {
+) -> CoreResult {
 	let mut instant = Instant::now();
 	instant.log_next("Attaching remote database...");
 
@@ -649,7 +649,7 @@ pub fn attach_remote_database<TConnection: Deref<Target = rusqlite::Connection>>
 	Ok(())
 }
 
-fn db_file_path() -> Result<PathBuf> {
+fn db_file_path() -> CoreResult<PathBuf> {
 	paths::database_path("local")
 }
 

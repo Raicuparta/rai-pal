@@ -15,8 +15,8 @@ use byteorder::{
 };
 
 use crate::result::{
-	Error,
-	Result,
+	CoreError,
+	CoreResult,
 };
 
 const BIN_NONE: u8 = b'\x00';
@@ -99,7 +99,7 @@ pub fn read_kv(
 	reader: &mut BufReader<fs::File>,
 	alt_format: bool,
 	keys_option: Option<&Vec<String>>,
-) -> Result<KeyValues> {
+) -> CoreResult<KeyValues> {
 	let current_bin_end = if alt_format { BIN_END_ALT } else { BIN_END };
 
 	let mut node = KeyValues::new();
@@ -151,12 +151,12 @@ pub fn read_kv(
 			let val = reader.read_f32::<LittleEndian>()?;
 			node.insert(key, ValueType::Float32(val));
 		} else {
-			bail!(Error::InvalidBinaryVdfType(t, key));
+			bail!(CoreError::InvalidBinaryVdfType(t, key));
 		}
 	}
 }
 
-pub fn read_string(reader: &mut BufReader<fs::File>, wide: bool) -> Result<String> {
+pub fn read_string(reader: &mut BufReader<fs::File>, wide: bool) -> CoreResult<String> {
 	if wide {
 		let mut buf: Vec<u16> = vec![];
 		loop {

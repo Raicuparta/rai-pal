@@ -7,9 +7,9 @@ use std::{
 use anyhow::bail;
 use zip::ZipArchive;
 
-use crate::result::Result;
+use crate::result::CoreResult;
 
-pub fn copy_dir_all(src: impl AsRef<Path>, dst: impl AsRef<Path>) -> Result {
+pub fn copy_dir_all(src: impl AsRef<Path>, dst: impl AsRef<Path>) -> CoreResult {
 	fs::create_dir_all(&dst)?;
 	for entry in fs::read_dir(src)? {
 		let entry = entry?;
@@ -23,7 +23,10 @@ pub fn copy_dir_all(src: impl AsRef<Path>, dst: impl AsRef<Path>) -> Result {
 	Ok(())
 }
 
-pub fn extract<R: io::Read + io::Seek>(archive: &mut ZipArchive<R>, target_path: &Path) -> Result {
+pub fn extract<R: io::Read + io::Seek>(
+	archive: &mut ZipArchive<R>,
+	target_path: &Path,
+) -> CoreResult {
 	for i in 0..archive.len() {
 		let mut file = archive.by_index(i)?;
 

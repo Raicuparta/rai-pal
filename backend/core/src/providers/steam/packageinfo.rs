@@ -2,17 +2,30 @@
 // It has been adapted to fit the needs of this project.
 
 use std::{
-	collections::{HashMap, HashSet},
+	collections::{
+		HashMap,
+		HashSet,
+	},
 	fs,
-	io::{BufReader, Read},
+	io::{
+		BufReader,
+		Read,
+	},
 	path::Path,
 };
 
-use byteorder::{LittleEndian, ReadBytesExt};
+use byteorder::{
+	LittleEndian,
+	ReadBytesExt,
+};
 
-use crate::result::Result;
-
-use super::vdf::{KeyValues, ValueType, find_keys, read_kv};
+use super::vdf::{
+	KeyValues,
+	ValueType,
+	find_keys,
+	read_kv,
+};
+use crate::result::CoreResult;
 
 #[derive(Debug)]
 pub struct Package {
@@ -30,7 +43,7 @@ pub struct PackageInfo {
 }
 
 impl PackageInfo {
-	pub fn read(path: &Path) -> Result<Self> {
+	pub fn read(path: &Path) -> CoreResult<Self> {
 		let mut reader = BufReader::new(fs::File::open(path)?);
 
 		let magic = reader.read_u32::<LittleEndian>()?;

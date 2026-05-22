@@ -1,17 +1,13 @@
 use std::{
-	env,
 	fmt,
-	num,
 	path::PathBuf,
 	result,
-	time::SystemTimeError,
 };
 
-use lazy_regex::regex;
 use strum::Display;
 
 #[derive(Debug, Display, specta::Type)]
-pub enum Error {
+pub enum CoreError {
 	Io,
 
 	Reqwest,
@@ -83,7 +79,7 @@ pub enum Error {
 	ModInfoMissing(String, String),
 }
 
-pub type Result<T = ()> = anyhow::Result<T>;
+pub type CoreResult<T = ()> = anyhow::Result<T>;
 
 pub trait LogErrExt<T, E> {
 	fn ok_or_log(self, message: &str) -> Option<T>;

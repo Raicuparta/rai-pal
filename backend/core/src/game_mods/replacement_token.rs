@@ -11,8 +11,8 @@ use crate::{
 		ProviderCommandAction,
 	},
 	result::{
-		Error,
-		Result,
+		CoreError,
+		CoreResult,
 	},
 };
 
@@ -36,7 +36,7 @@ fn get_parameter_token(parameter: ReplacementToken) -> String {
 	format!("{{{{{parameter}}}}}")
 }
 
-fn replace_parameter_value<TValue: AsRef<str>, TGetValue: Fn() -> Result<TValue>>(
+fn replace_parameter_value<TValue: AsRef<str>, TGetValue: Fn() -> CoreResult<TValue>>(
 	current: &str,
 	token: ReplacementToken,
 	get_value: TGetValue,
@@ -71,7 +71,7 @@ pub fn replace_tokens(base_string: &str, game: &DbGame, game_mod: &GameMod) -> S
 		Ok(game
 			.try_get_exe_path()?
 			.parent()
-			.with_context(|| Error::GameNotInstalled(game.display_title.clone()))?
+			.with_context(|| CoreError::GameNotInstalled(game.display_title.clone()))?
 			.to_string_lossy()
 			.to_string())
 	});
@@ -91,7 +91,7 @@ pub fn replace_tokens(base_string: &str, game: &DbGame, game_mod: &GameMod) -> S
 			&result,
 			ReplacementToken::GameStartCommand,
 			|| match start_command
-				.with_context(|| Error::GameNotInstalled(game.display_title.clone()))?
+				.with_context(|| CoreError::GameNotInstalled(game.display_title.clone()))?
 			{
 				ProviderCommand::String(s) => Ok(s.clone()),
 				ProviderCommand::Path(exe_path, _) => Ok(exe_path.to_string_lossy().to_string()),

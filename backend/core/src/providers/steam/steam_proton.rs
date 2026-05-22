@@ -13,7 +13,7 @@ use steamlocate::SteamDir;
 
 use crate::{
 	game::DbGame,
-	result::Result,
+	result::CoreResult,
 };
 
 const DLL_OVERRIDES_SECTION: &str = "[Software\\\\Wine\\\\DllOverrides]";
@@ -93,7 +93,7 @@ pub fn run_with_wine(
 	exe_path: &Path,
 	args: &[String],
 	wine_env: &HashMap<String, String>,
-) -> Result {
+) -> CoreResult {
 	let wine_prefix_path = get_wine_prefix_path(game).with_context(|| {
 		format!(
 			"Failed to resolve Wine prefix path for Steam game `{}` ({})",
@@ -137,7 +137,7 @@ pub fn run_with_wine(
 	Ok(())
 }
 
-pub(crate) fn set_wine_dll_overrides_for_game(game: &DbGame, dll_overrides: &[String]) -> Result {
+pub(crate) fn set_wine_dll_overrides_for_game(game: &DbGame, dll_overrides: &[String]) -> CoreResult {
 	if dll_overrides.is_empty() {
 		log::debug!(
 			"Steam Proton DLL override setup skipped for `{}` ({}): empty override list",
@@ -226,7 +226,7 @@ fn get_compat_user_reg_path(game: &DbGame) -> Option<PathBuf> {
 	Some(get_wine_prefix_path(game)?.join("user.reg"))
 }
 
-fn upsert_dll_overrides_in_user_reg(path: &Path, dll_overrides: &[String]) -> Result {
+fn upsert_dll_overrides_in_user_reg(path: &Path, dll_overrides: &[String]) -> CoreResult {
 	if !path.exists() {
 		log::warn!(
 			"Steam Proton user.reg does not exist yet at {}. Launch the game once to create the prefix.",

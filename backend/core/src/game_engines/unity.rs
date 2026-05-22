@@ -33,9 +33,9 @@ use crate::{
 		glob_path,
 	},
 	result::{
-		Error,
+		CoreError,
 		LogErrExt,
-		Result,
+		CoreResult,
 	},
 };
 
@@ -72,17 +72,20 @@ pub fn parse_version(string: &str) -> Option<EngineVersion> {
 	})
 }
 
-fn get_version_from_asset(asset_path: &Path) -> Result<EngineVersion> {
+fn get_version_from_asset(asset_path: &Path) -> CoreResult<EngineVersion> {
 	let mut file = File::open(asset_path)?;
 	let mut data = vec![0u8; 4096];
 
 	let bytes_read = file.read(&mut data)?;
-	ensure!(bytes_read == 0, Error::EmptyFile(asset_path.to_path_buf()));
+	ensure!(
+		bytes_read == 0,
+		CoreError::EmptyFile(asset_path.to_path_buf())
+	);
 
 	let data_str = String::from_utf8_lossy(&data[..bytes_read]);
 
 	parse_version(&data_str)
-		.with_context(|| Error::FailedToParseUnityVersionAsset(asset_path.to_path_buf()))
+		.with_context(|| CoreError::FailedToParseUnityVersionAsset(asset_path.to_path_buf()))
 }
 
 fn get_version(game_exe_path: &Path) -> Option<EngineVersion> {
@@ -108,7 +111,7 @@ fn get_version(game_exe_path: &Path) -> Option<EngineVersion> {
 	None
 }
 
-fn get_unity_data_path(game_exe_path: &Path) -> Result<PathBuf> {
+fn get_unity_data_path(game_exe_path: &Path) -> CoreResult<PathBuf> {
 	let parent = paths::path_parent(game_exe_path)?;
 	let file_stem = paths::file_name_without_extension(game_exe_path)?;
 	let expected_name = format!("{file_stem}_Data");

@@ -12,7 +12,7 @@ use crate::{
 	game::DbGame,
 	http,
 	paths,
-	result::Result,
+	result::CoreResult,
 };
 
 const CONFIG_DB_BASE_URL: &str = "https://raicuparta.github.io/rai-pal-db/config-db";
@@ -34,11 +34,11 @@ fn get_config_url(game_name: &str) -> String {
 	format!("{CONFIG_DB_BASE_URL}/{CONFIG_DB_VERSION}/{game_name}/configs.json")
 }
 
-fn get_game_config_name(exe_path: &Path) -> Result<String> {
+fn get_game_config_name(exe_path: &Path) -> CoreResult<String> {
 	paths::file_name_without_extension(exe_path).map(str::to_lowercase)
 }
 
-pub async fn get_remote_configs(exe_path: &Path) -> Result<Option<RemoteConfigs>> {
+pub async fn get_remote_configs(exe_path: &Path) -> CoreResult<Option<RemoteConfigs>> {
 	let url = get_config_url(&get_game_config_name(exe_path)?);
 	let response = http::CLIENT.get(&url).send().await?;
 
@@ -50,7 +50,7 @@ pub async fn get_remote_configs(exe_path: &Path) -> Result<Option<RemoteConfigs>
 	Ok(Some(configs))
 }
 
-async fn download_config(config_file: &str, game: &DbGame) -> Result<Response> {
+async fn download_config(config_file: &str, game: &DbGame) -> CoreResult<Response> {
 	let game_name = get_game_config_name(game.try_get_exe_path()?)?;
 
 	let url = format!("{CONFIG_DB_BASE_URL}/{CONFIG_DB_VERSION}/{game_name}/configs/{config_file}");
@@ -63,7 +63,7 @@ pub async fn download_config_file(
 	config_file: &str,
 	game: &DbGame,
 	destination_path: &Path,
-) -> Result {
+) -> CoreResult {
 	let content = download_config(config_file, game).await?.bytes().await?;
 
 	fs::write(destination_path, content)?;
@@ -74,7 +74,7 @@ pub async fn download_config_folder(
 	config_file: &str,
 	game: &DbGame,
 	destination_path: &Path,
-) -> Result {
+) -> CoreResult {
 	let content = download_config(config_file, game).await?.bytes().await?;
 
 	ZipArchive::new(Cursor::new(content))?.extract(destination_path)?;

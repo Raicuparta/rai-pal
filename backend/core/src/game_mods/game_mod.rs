@@ -44,9 +44,9 @@ use crate::{
 		ProviderActions,
 	},
 	result::{
-		Error,
+		CoreError,
 		LogErrExt,
-		Result,
+		CoreResult,
 	},
 };
 
@@ -136,17 +136,17 @@ impl GameMod {
 		}
 	}
 
-	pub fn open_local_folder(&self) -> Result {
+	pub fn open_local_folder(&self) -> CoreResult {
 		paths::open_folder_or_parent(&self.get_local_folder_path()?)
 	}
 
-	pub fn get_install(&self) -> Result<&ModInstall> {
+	pub fn get_install(&self) -> CoreResult<&ModInstall> {
 		self.install
 			.as_ref()
-			.with_context(|| Error::ModInfoMissing(self.id.clone(), "install".to_string()))
+			.with_context(|| CoreError::ModInfoMissing(self.id.clone(), "install".to_string()))
 	}
 
-	pub fn install(&self, game: &DbGame) -> Result {
+	pub fn install(&self, game: &DbGame) -> CoreResult {
 		let install = self.get_install()?;
 		let local_mod_path = self.get_local_folder_path()?;
 
@@ -178,7 +178,7 @@ impl GameMod {
 
 		if let Some(wine_dll_overrides) = install.wine_dll_overrides.as_ref() {
 			let provider = provider::get_provider(game.provider_id)
-				.with_context(|| Error::DataEntryNotFound(game.provider_id.to_string()))??;
+				.with_context(|| CoreError::DataEntryNotFound(game.provider_id.to_string()))??;
 			provider.set_wine_dll_overrides(game, wine_dll_overrides)?;
 		}
 
@@ -187,16 +187,15 @@ impl GameMod {
 		Ok(())
 	}
 
-	pub fn run(&self, game: &DbGame) -> Result {
-		let run_for_game = self
-			.run_for_game
-			.as_ref()
-			.with_context(|| Error::ModInfoMissing(self.id.clone(), "run_for_game".to_string()))?;
+	pub fn run(&self, game: &DbGame) -> CoreResult {
+		let run_for_game = self.run_for_game.as_ref().with_context(|| {
+			CoreError::ModInfoMissing(self.id.clone(), "run_for_game".to_string())
+		})?;
 		let local_mod_path = self.get_local_folder_path()?;
 
 		let run_path = local_mod_path.join(PathBuf::from(replace_tokens(
 			run_for_game.path.as_ref().with_context(|| {
-				Error::ModInfoMissing(self.id.clone(), "run_for_game.path".to_string())
+				CoreError::ModInfoMissing(self.id.clone(), "run_for_game.path".to_string())
 			})?,
 			game,
 			self,
@@ -220,7 +219,7 @@ impl GameMod {
 				.collect();
 
 			let provider = provider::get_provider(game.provider_id)
-				.with_context(|| Error::DataEntryNotFound(game.provider_id.to_string()))??;
+				.with_context(|| CoreError::DataEntryNotFound(game.provider_id.to_string()))??;
 
 			provider.run_with_wine(game, &run_path, &args, &wine_environment)?;
 		}
@@ -236,11 +235,11 @@ impl GameMod {
 		Ok(())
 	}
 
-	pub async fn run_without_game(&self) -> Result {
+	pub async fn run_without_game(&self) -> CoreResult {
 		todo!();
 	}
 
-	pub fn update_installed_mod_manifest(&self, game: &DbGame) -> Result {
+	pub fn update_installed_mod_manifest(&self, game: &DbGame) -> CoreResult {
 		// TODO: make sure it doesn't happen for runnables.
 		let manifest_path = game.get_installed_mod_manifest_path(&self.id)?;
 		fs::create_dir_all(paths::path_parent(&manifest_path)?)?;
@@ -250,7 +249,7 @@ impl GameMod {
 		Ok(())
 	}
 
-	pub fn delete_local(&self) -> Result {
+	pub fn delete_local(&self) -> CoreResult {
 		let path = self.get_local_folder_path()?;
 		if path.exists() {
 			fs::remove_dir_all(&path)?;
@@ -259,18 +258,18 @@ impl GameMod {
 		Ok(())
 	}
 
-	pub fn get_local_folder_path(&self) -> Result<PathBuf> {
+	pub fn get_local_folder_path(&self) -> CoreResult<PathBuf> {
 		Ok(paths::local_mods_path()?.join(&self.id))
 	}
 
-	pub fn get_local_manifest_path(&self) -> Result<PathBuf> {
+	pub fn get_local_manifest_path(&self) -> CoreResult<PathBuf> {
 		Ok(Self::get_manifest_path(&self.get_local_folder_path()?))
 	}
 
 	pub async fn download(
 		&self,
-		status_callback: impl Fn(DownloadStatus) -> Result + Send,
-	) -> Result {
+		status_callback: impl Fn(DownloadStatus) -> CoreResult + Send,
+	) -> CoreResult {
 		let target_path = paths::local_mods_path()?.join(&self.id);
 		let mod_id = &self.id;
 
@@ -292,7 +291,7 @@ impl GameMod {
 		Ok(())
 	}
 
-	pub async fn get_all_remote() -> Result<HashMap<String, Self>> {
+	pub async fn get_all_remote() -> CoreResult<HashMap<String, Self>> {
 		let database = ModDatabase::get().await?;
 
 		let mut mods_map = HashMap::new();
@@ -324,7 +323,7 @@ impl GameMod {
 		Ok(mods_map)
 	}
 
-	pub fn get_all_local() -> Result<HashMap<String, Self>> {
+	pub fn get_all_local() -> CoreResult<HashMap<String, Self>> {
 		Ok(
 			paths::glob_path(&paths::local_mods_path()?.join("*").join(Self::FILE_NAME))
 				.iter()

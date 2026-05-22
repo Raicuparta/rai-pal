@@ -31,7 +31,7 @@ use crate::{
 			ProviderStatic,
 		},
 	},
-	result::Result,
+	result::CoreResult,
 };
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -80,7 +80,7 @@ struct GogGame {
 pub struct HeroicGog {}
 
 impl HeroicGog {
-	fn get_owned_games() -> Result<Vec<ParsedGame>> {
+	fn get_owned_games() -> CoreResult<Vec<ParsedGame>> {
 		Ok(
 			heroic_provider::read_heroic_json::<Root>("store_cache/gog_library.json")?
 				.unwrap_or_default()
@@ -92,7 +92,7 @@ impl HeroicGog {
 		)
 	}
 
-	fn get_installed_games() -> Result<HashMap<String, InstalledGOGGame>> {
+	fn get_installed_games() -> CoreResult<HashMap<String, InstalledGOGGame>> {
 		Ok(
 			heroic_provider::read_heroic_json::<RootInstalled>("gog_store/installed.json")?
 				.unwrap_or_default()
@@ -103,7 +103,7 @@ impl HeroicGog {
 		)
 	}
 
-	fn read_info_file(path: &Path, app_id: &str) -> Result<GogGame> {
+	fn read_info_file(path: &Path, app_id: &str) -> CoreResult<GogGame> {
 		let json_string = fs::read_to_string(path.join(format!("goggame-{app_id}.info")))?;
 		Ok(serde_json::from_str::<GogGame>(&json_string)?)
 	}
@@ -137,7 +137,7 @@ impl HeroicGog {
 impl ProviderStatic for HeroicGog {
 	const ID: &'static ProviderId = &ProviderId::Gog;
 
-	fn new() -> Result<Self>
+	fn new() -> CoreResult<Self>
 	where
 		Self: Sized,
 	{
@@ -146,7 +146,7 @@ impl ProviderStatic for HeroicGog {
 }
 
 impl ProviderActions for HeroicGog {
-	async fn insert_games(&self, db: &DbMutex) -> Result {
+	async fn insert_games(&self, db: &DbMutex) -> CoreResult {
 		let owned_games = Self::get_owned_games()?;
 		let installed_games = Self::get_installed_games()?;
 
@@ -172,7 +172,7 @@ impl ProviderActions for HeroicGog {
 		Ok(())
 	}
 
-	fn set_wine_dll_overrides(&self, game: &DbGame, dll_overrides: &[String]) -> Result {
+	fn set_wine_dll_overrides(&self, game: &DbGame, dll_overrides: &[String]) -> CoreResult {
 		heroic_provider::set_wine_dll_overrides(&game.external_id, dll_overrides)
 	}
 }
