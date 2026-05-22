@@ -606,7 +606,7 @@ async fn get_installed_mods(
 	app_handle: AppHandle,
 ) -> AppResult<HashMap<String, GameMod>> {
 	let state = app_handle.app_state();
-	let local_mods = state.local_mods.read_state()?.clone();
+	let local_mods = state.local_mods.read_state()?;
 	Ok(state
 		.database
 		.get_game(&provider_id, &game_id)?

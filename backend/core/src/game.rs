@@ -179,7 +179,7 @@ impl DbGame {
 	}
 
 	pub fn try_get_exe_path(&self) -> CoreResult<&Path> {
-		Ok(&&self
+		Ok(&self
 			.exe_path
 			.as_ref()
 			.with_context(|| CoreError::GameNotInstalled(self.display_title.clone()))?
@@ -188,11 +188,11 @@ impl DbGame {
 
 	pub fn try_get_exe_name(&self) -> CoreResult<String> {
 		let path = self.try_get_exe_path()?;
-		Ok(path
+		path
 			.file_name()
 			.and_then(|file_name| file_name.to_str())
 			.map(std::string::ToString::to_string)
-			.with_context(|| CoreError::InvalidOsStr(path.display().to_string()))?)
+			.with_context(|| CoreError::InvalidOsStr(path.display().to_string()))
 	}
 
 	pub fn add_provider_command(
@@ -269,7 +269,7 @@ impl DbGame {
 	}
 
 	pub async fn get_remote_configs(&self) -> CoreResult<Option<RemoteConfigs>> {
-		remote_config::get_remote_configs(&self.try_get_exe_path()?).await
+		remote_config::get_remote_configs(self.try_get_exe_path()?).await
 	}
 
 	pub fn get_installed_mod(&self, mod_id: &str) -> CoreResult<Option<InstalledMod<'_>>> {

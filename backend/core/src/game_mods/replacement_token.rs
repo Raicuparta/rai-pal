@@ -124,7 +124,8 @@ pub fn replace_tokens(base_string: &str, game: &DbGame, game_mod: &GameMod) -> S
 				ProviderActions,
 			};
 
-			let provider = provider::get_provider(game.provider_id).unwrap()?;
+			let provider = provider::get_provider(game.provider_id)
+				.with_context(|| CoreError::InvalidProviderId(game.provider_id.to_string()))??;
 			let prefix_path = provider.get_wine_prefix_path(game)?;
 
 			let output = Command::new(&provider.get_wine_binary_path(game)?)
@@ -134,7 +135,7 @@ pub fn replace_tokens(base_string: &str, game: &DbGame, game_mod: &GameMod) -> S
 				.arg("echo %APPDATA%")
 				.output()?;
 
-			let win_path = str::from_utf8(&output.stdout).unwrap().trim();
+			let win_path = str::from_utf8(&output.stdout)?.trim();
 
 			// 2. Convert Windows path to Linux path manually
 			// The format is always C:\users\username\AppData\Roaming

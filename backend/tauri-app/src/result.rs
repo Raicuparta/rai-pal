@@ -1,6 +1,5 @@
 use std::result;
 
-use anyhow;
 use strum::Display;
 
 #[derive(Debug, Display, specta::Type)]
