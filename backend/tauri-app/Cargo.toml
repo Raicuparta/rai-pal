@@ -16,7 +16,6 @@ serde_json.workspace = true
 specta.workspace = true
 strum.workspace = true
 tauri-specta.workspace = true
-thiserror.workspace = true
 anyhow.workspace = true
 
 futures = "0.3.32"

@@ -124,7 +124,7 @@ export type EngineVersionRange = {
 	maximum: EngineVersionNumbers | null,
 };
 
-export type Error = "Tauri" | "Io" | "Rusql" | "SerdeJson" | "SystemTimeError" | ({ FailedToAccessStateData: string }) & { LinuxOnly?: never } | ({ LinuxOnly: null }) & { FailedToAccessStateData?: never } | "Anyhow";
+export type Error = ({ FailedToAccessStateData: string }) & { LinuxOnly?: never } | ({ LinuxOnly: null }) & { FailedToAccessStateData?: never };
 
 export type ExecutedProviderCommand = null;
 
