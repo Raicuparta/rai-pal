@@ -41,10 +41,10 @@ impl<TData: Clone> StateData<TData> for RwLock<Option<TData>> {
 			.read()
 			.map_err(|err| AppError::FailedToAccessStateData(err.to_string()))?;
 
-		match &*guard {
-			Some(data) => Ok(data.clone()),
-			None => Err(AppError::FailedToAccessStateData("Empty data".to_string())),
-		}
+		(*guard).as_ref().map_or_else(
+			|| Err(AppError::FailedToAccessStateData("Empty data".to_string())),
+			|data| Ok(data.clone()),
+		)
 	}
 
 	fn write_state_value(&self, data: TData) -> AppResult {

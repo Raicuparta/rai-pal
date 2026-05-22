@@ -63,7 +63,7 @@ export const events = {
 };
 
 /* Constants */
-export const PROVIDER_IDS = ["Epic","Gog","Itch","Manual","Steam","Xbox"] as const;
+export const PROVIDER_IDS = ["Itch","Manual","Steam","Epic","Gog"] as const;
 
 /* Types */
 export type AppError = ({ FailedToAccessStateData: string }) & { LinuxOnly?: never } | ({ LinuxOnly: null }) & { FailedToAccessStateData?: never };
@@ -229,7 +229,7 @@ export type ProviderCommand = ({ String: string }) & { Path?: never } | ({ Path:
 
 export type ProviderCommandAction = "Install" | "ShowInLibrary" | "ShowInStore" | "StartViaProvider" | "StartViaExe" | "OpenInBrowser";
 
-export type ProviderId = "Epic" | "Gog" | "Itch" | "Manual" | "Steam" | "Xbox";
+export type ProviderId = "Itch" | "Manual" | "Steam" | "Epic" | "Gog";
 
 export type RefreshGame = [ProviderId, string];
 

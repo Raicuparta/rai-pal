@@ -37,11 +37,12 @@ use crate::{
 // These IDs need to match the ones in rai-pal-db.
 #[serializable_enum]
 pub enum ProviderId {
-	Epic,
-	Gog,
 	Itch,
 	Manual,
 	Steam,
+	Epic,
+	Gog,
+	#[cfg(target_os = "windows")]
 	Xbox,
 }
 
@@ -123,15 +124,13 @@ pub trait ProviderStatic: ProviderActions {
 		Self: Sized;
 }
 
-pub fn get_provider(provider_id: ProviderId) -> Option<CoreResult<Provider>> {
+pub fn get_provider(provider_id: ProviderId) -> CoreResult<Provider> {
 	for &(id, create_provider) in PROVIDERS {
 		if id == provider_id {
-			return Some(create_provider());
+			return create_provider();
 		}
 	}
-	log::info!(
+	bail!(
 		"Failed to find provider with ID `{provider_id}`. It's probably not supported in this platform."
 	);
-
-	None
 }

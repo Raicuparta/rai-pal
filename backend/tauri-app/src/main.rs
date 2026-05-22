@@ -132,14 +132,12 @@ async fn open_game_wine_prefix_folder(
 	game_id: String,
 ) -> AppResult {
 	paths::open_folder_or_parent(
-		&provider::get_provider(provider_id)
-			.unwrap()?
-			.get_wine_prefix_path(
-				&handle
-					.app_state()
-					.database
-					.get_game(&provider_id, &game_id)?,
-			)?,
+		&provider::get_provider(provider_id)?.get_wine_prefix_path(
+			&handle
+				.app_state()
+				.database
+				.get_game(&provider_id, &game_id)?,
+		)?,
 	)?;
 
 	Ok(())
@@ -153,14 +151,12 @@ async fn open_game_wine_binary_folder(
 	game_id: String,
 ) -> AppResult {
 	paths::open_folder_or_parent(
-		&provider::get_provider(provider_id)
-			.unwrap()?
-			.get_wine_binary_path(
-				&handle
-					.app_state()
-					.database
-					.get_game(&provider_id, &game_id)?,
-			)?,
+		&provider::get_provider(provider_id)?.get_wine_binary_path(
+			&handle
+				.app_state()
+				.database
+				.get_game(&provider_id, &game_id)?,
+		)?,
 	)?;
 
 	Ok(())
@@ -319,8 +315,7 @@ async fn configure_mod(
 		.app_state()
 		.database
 		.get_game(&provider_id, &game_id)?
-		.get_installed_mod(mod_id)?
-		.unwrap()
+		.try_get_installed_mod(mod_id)?
 		.configure(open_folder)?;
 
 	Ok(())
@@ -336,7 +331,7 @@ async fn open_installed_mod_folder(
 ) -> AppResult {
 	let state = handle.app_state();
 	let game = state.database.get_game(&provider_id, &game_id)?;
-	game.get_installed_mod(mod_id)?.unwrap().open_folder()?;
+	game.try_get_installed_mod(mod_id)?.open_folder()?;
 
 	Ok(())
 }
@@ -364,7 +359,7 @@ async fn uninstall_mod(
 ) -> AppResult {
 	let state = handle.app_state();
 	let game = state.database.get_game(&provider_id, &game_id)?;
-	game.get_installed_mod(mod_id)?.unwrap().uninstall()?;
+	game.try_get_installed_mod(mod_id)?.uninstall()?;
 
 	handle.emit_safe(events::RefreshGame(provider_id, game_id));
 
@@ -477,12 +472,13 @@ async fn refresh_games(handle: AppHandle, provider_id: ProviderId) -> AppResult 
 
 	let start_time = SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs();
 
-	if let Some(provider) = provider::get_provider(provider_id) {
-		provider?.insert_games(&state.database).await?;
-		state
-			.database
-			.remove_stale_games(&provider_id, start_time)?;
-	}
+	provider::get_provider(provider_id)?
+		.insert_games(&state.database)
+		.await?;
+
+	state
+		.database
+		.remove_stale_games(&provider_id, start_time)?;
 
 	Ok(())
 }

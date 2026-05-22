@@ -188,8 +188,7 @@ impl DbGame {
 
 	pub fn try_get_exe_name(&self) -> CoreResult<String> {
 		let path = self.try_get_exe_path()?;
-		path
-			.file_name()
+		path.file_name()
 			.and_then(|file_name| file_name.to_str())
 			.map(std::string::ToString::to_string)
 			.with_context(|| CoreError::InvalidOsStr(path.display().to_string()))
@@ -281,5 +280,10 @@ impl DbGame {
 				}
 			}),
 		)
+	}
+
+	pub fn try_get_installed_mod(&self, mod_id: &str) -> CoreResult<InstalledMod<'_>> {
+		self.get_installed_mod(mod_id)?
+			.with_context(|| format!("Failed to get installed mod {mod_id}"))
 	}
 }

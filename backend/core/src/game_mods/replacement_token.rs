@@ -124,10 +124,8 @@ pub fn replace_tokens(base_string: &str, game: &DbGame, game_mod: &GameMod) -> S
 				ProviderActions,
 			};
 
-			let provider = provider::get_provider(game.provider_id)
-				.with_context(|| CoreError::InvalidProviderId(game.provider_id.to_string()))??;
+			let provider = provider::get_provider(game.provider_id)?;
 			let prefix_path = provider.get_wine_prefix_path(game)?;
-
 			let output = Command::new(&provider.get_wine_binary_path(game)?)
 				.env("WINEPREFIX", &prefix_path)
 				.arg("cmd")

@@ -45,8 +45,8 @@ use crate::{
 	},
 	result::{
 		CoreError,
-		LogErrExt,
 		CoreResult,
+		LogErrExt,
 	},
 };
 
@@ -177,9 +177,8 @@ impl GameMod {
 		}
 
 		if let Some(wine_dll_overrides) = install.wine_dll_overrides.as_ref() {
-			let provider = provider::get_provider(game.provider_id)
-				.with_context(|| CoreError::DataEntryNotFound(game.provider_id.to_string()))??;
-			provider.set_wine_dll_overrides(game, wine_dll_overrides)?;
+			provider::get_provider(game.provider_id)?
+				.set_wine_dll_overrides(game, wine_dll_overrides)?;
 		}
 
 		self.update_installed_mod_manifest(game)?;
@@ -218,10 +217,12 @@ impl GameMod {
 				.map(|(key, value)| (key.clone(), replace_tokens(value, game, self)))
 				.collect();
 
-			let provider = provider::get_provider(game.provider_id)
-				.with_context(|| CoreError::DataEntryNotFound(game.provider_id.to_string()))??;
-
-			provider.run_with_wine(game, &run_path, &args, &wine_environment)?;
+			provider::get_provider(game.provider_id)?.run_with_wine(
+				game,
+				&run_path,
+				&args,
+				&wine_environment,
+			)?;
 		}
 
 		#[cfg(target_os = "windows")]
