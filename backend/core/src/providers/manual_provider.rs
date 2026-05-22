@@ -6,6 +6,10 @@ use std::{
 	},
 };
 
+use anyhow::{
+	Context,
+	bail,
+};
 use log::error;
 use rai_pal_proc_macros::serializable_struct;
 
@@ -100,7 +104,7 @@ pub fn add_game(path: &Path) -> Result<DbGame> {
 	let game = get_game_from_path(path)?;
 
 	if game.exe_path.is_none() {
-		return Err(Error::NoExecutableFound(path.to_owned()));
+		bail!(Error::NoExecutableFound(path.to_owned()));
 	}
 
 	let config_path = games_config_path()?;
@@ -115,13 +119,13 @@ pub fn add_game(path: &Path) -> Result<DbGame> {
 
 pub fn remove_game(game: &DbGame) -> Result {
 	if game.provider_id != ProviderId::Manual {
-		return Err(Error::InvalidProviderId(game.provider_id.to_string()));
+		bail!(Error::InvalidProviderId(game.provider_id.to_string()));
 	}
 
 	let path = &game
 		.exe_path
 		.as_ref()
-		.ok_or_else(|| Error::GameNotInstalled(game.display_title.clone()))?
+		.with_context(|| Error::GameNotInstalled(game.display_title.clone()))?
 		.0;
 
 	remove_path(path)?;

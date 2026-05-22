@@ -10,6 +10,7 @@ use std::{
 	},
 };
 
+use anyhow::Context;
 use rai_pal_proc_macros::{
 	serializable_enum,
 	serializable_struct,
@@ -142,7 +143,7 @@ impl GameMod {
 	pub fn get_install(&self) -> Result<&ModInstall> {
 		self.install
 			.as_ref()
-			.ok_or_else(|| Error::ModInfoMissing(self.id.clone(), "install".to_string()))
+			.with_context(|| Error::ModInfoMissing(self.id.clone(), "install".to_string()))
 	}
 
 	pub fn install(&self, game: &DbGame) -> Result {
@@ -177,7 +178,7 @@ impl GameMod {
 
 		if let Some(wine_dll_overrides) = install.wine_dll_overrides.as_ref() {
 			let provider = provider::get_provider(game.provider_id)
-				.ok_or_else(|| Error::DataEntryNotFound(game.provider_id.to_string()))??;
+				.with_context(|| Error::DataEntryNotFound(game.provider_id.to_string()))??;
 			provider.set_wine_dll_overrides(game, wine_dll_overrides)?;
 		}
 
@@ -190,11 +191,11 @@ impl GameMod {
 		let run_for_game = self
 			.run_for_game
 			.as_ref()
-			.ok_or_else(|| Error::ModInfoMissing(self.id.clone(), "run_for_game".to_string()))?;
+			.with_context(|| Error::ModInfoMissing(self.id.clone(), "run_for_game".to_string()))?;
 		let local_mod_path = self.get_local_folder_path()?;
 
 		let run_path = local_mod_path.join(PathBuf::from(replace_tokens(
-			run_for_game.path.as_ref().ok_or_else(|| {
+			run_for_game.path.as_ref().with_context(|| {
 				Error::ModInfoMissing(self.id.clone(), "run_for_game.path".to_string())
 			})?,
 			game,
@@ -219,7 +220,7 @@ impl GameMod {
 				.collect();
 
 			let provider = provider::get_provider(game.provider_id)
-				.ok_or_else(|| Error::DataEntryNotFound(game.provider_id.to_string()))??;
+				.with_context(|| Error::DataEntryNotFound(game.provider_id.to_string()))??;
 
 			provider.run_with_wine(game, &run_path, &args, &wine_environment)?;
 		}
@@ -266,7 +267,10 @@ impl GameMod {
 		Ok(Self::get_manifest_path(&self.get_local_folder_path()?))
 	}
 
-	pub async fn download(&self, status_callback: impl Fn(DownloadStatus) + Send) -> Result {
+	pub async fn download(
+		&self,
+		status_callback: impl Fn(DownloadStatus) -> Result + Send,
+	) -> Result {
 		let target_path = paths::local_mods_path()?.join(&self.id);
 		let mod_id = &self.id;
 
@@ -288,14 +292,8 @@ impl GameMod {
 		Ok(())
 	}
 
-	pub async fn get_all_remote<F>(error_handler: F) -> HashMap<String, Self>
-	where
-		F: Fn(Error) + Send,
-	{
-		let database = ModDatabase::get().await.unwrap_or_else(|error| {
-			error_handler(error);
-			ModDatabase { mods: Vec::new() }
-		});
+	pub async fn get_all_remote() -> Result<HashMap<String, Self>> {
+		let database = ModDatabase::get().await?;
 
 		let mut mods_map = HashMap::new();
 		let local_mods = Self::get_all_local().ok_or_log("Failed to get local mods");
@@ -323,7 +321,7 @@ impl GameMod {
 			mods_map.insert(remote_mod.id.clone(), remote_mod);
 		}
 
-		mods_map
+		Ok(mods_map)
 	}
 
 	pub fn get_all_local() -> Result<HashMap<String, Self>> {

@@ -10,16 +10,17 @@ repository = "https://github.com/Raicuparta/rai-pal"
 edition = "2024"
 
 [workspace.dependencies]
+anyhow = "1.0.102"
 log = "0.4.29"
 rai-pal-core = { path = "./core" }
 rai-pal-proc-macros = { path = "./proc-macros" }
+rusqlite = { version = "0.39.0", features = ["bundled", "hooks"] }
 serde = { version = "1.0.228", features = ["derive"] }
-serde_json = "1.0.149"
+serde_json = "1.0.150"
 specta = "2.0.0-rc.24"
+strum = { version = "0.28.0", features = ["derive"] }
 tauri-specta = { version = "2.0.0-rc.24", features = ["derive", "typescript"] }
 thiserror = "2.0.18"
-rusqlite = { version = "0.39.0", features = ["bundled", "hooks"] }
-strum = { version = "0.28.0", features = ["derive"] }
 
 [profile.release]
 codegen-units = 1

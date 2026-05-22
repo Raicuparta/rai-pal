@@ -11,12 +11,13 @@ use std::{
 	time::Duration,
 };
 
-use crate::result::{
-		Error,
-		Result,
-};
+use anyhow::bail;
 
 use super::discord_oauth;
+use crate::result::{
+	Error,
+	Result,
+};
 
 const USER_SOCKET_BIND_ADDRESS: &str = "127.0.0.1";
 const USER_SOCKET_POLL_INTERVAL: Duration = Duration::from_millis(100);
@@ -151,14 +152,14 @@ fn bind_first_available_port() -> Result<(TcpListener, u16)> {
 			Ok(listener) => return Ok((listener, port)),
 			Err(error) if error.kind() == std::io::ErrorKind::AddrInUse => {}
 			Err(error) => {
-				return Err(Error::DiscordOAuth(format!(
+				bail!(Error::DiscordOAuth(format!(
 					"Failed to bind user socket at {USER_SOCKET_BIND_ADDRESS}:{port}: {error}"
 				)));
 			}
 		}
 	}
 
-	Err(Error::DiscordOAuth(format!(
+	bail!(Error::DiscordOAuth(format!(
 		"No available user socket ports in range {USER_SOCKET_PORT_RANGE_START}..={USER_SOCKET_PORT_RANGE_END}"
 	)))
 }

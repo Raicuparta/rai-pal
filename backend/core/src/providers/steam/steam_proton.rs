@@ -1,7 +1,6 @@
 use std::{
 	collections::HashMap,
 	fs,
-	io,
 	path::{
 		Path,
 		PathBuf,
@@ -9,6 +8,7 @@ use std::{
 	process::Command,
 };
 
+use anyhow::Context;
 use steamlocate::SteamDir;
 
 use crate::{
@@ -94,33 +94,24 @@ pub fn run_with_wine(
 	args: &[String],
 	wine_env: &HashMap<String, String>,
 ) -> Result {
-	let wine_prefix_path = get_wine_prefix_path(game).ok_or_else(|| {
-		io::Error::new(
-			io::ErrorKind::NotFound,
-			format!(
-				"Failed to resolve Wine prefix path for Steam game `{}` ({})",
-				game.display_title, game.external_id,
-			),
+	let wine_prefix_path = get_wine_prefix_path(game).with_context(|| {
+		format!(
+			"Failed to resolve Wine prefix path for Steam game `{}` ({})",
+			game.display_title, game.external_id
 		)
 	})?;
 
-	let wine_binary_path = get_wine_binary_path(game).ok_or_else(|| {
-		io::Error::new(
-			io::ErrorKind::NotFound,
-			format!(
-				"Failed to resolve Wine binary path for Steam game `{}` ({})",
-				game.display_title, game.external_id,
-			),
+	let wine_binary_path = get_wine_binary_path(game).with_context(|| {
+		format!(
+			"Failed to resolve Wine binary path for Steam game `{}` ({})",
+			game.display_title, game.external_id
 		)
 	})?;
 
-	let compat_data_path = wine_prefix_path.parent().ok_or_else(|| {
-		io::Error::new(
-			io::ErrorKind::InvalidData,
-			format!(
-				"Failed to derive STEAM_COMPAT_DATA_PATH from Wine prefix `{}`",
-				wine_prefix_path.display(),
-			),
+	let compat_data_path = wine_prefix_path.parent().with_context(|| {
+		format!(
+			"Failed to derive STEAM_COMPAT_DATA_PATH from Wine prefix `{}`",
+			wine_prefix_path.display()
 		)
 	})?;
 

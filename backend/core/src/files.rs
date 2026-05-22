@@ -4,6 +4,7 @@ use std::{
 	path::Path,
 };
 
+use anyhow::bail;
 use zip::ZipArchive;
 
 use crate::result::Result;
@@ -22,12 +23,9 @@ pub fn copy_dir_all(src: impl AsRef<Path>, dst: impl AsRef<Path>) -> Result {
 	Ok(())
 }
 
-pub fn extract<R: io::Read + io::Seek>(
-	archive: &mut ZipArchive<R>,
-	target_path: &Path,
-) -> io::Result<()> {
+pub fn extract<R: io::Read + io::Seek>(archive: &mut ZipArchive<R>, target_path: &Path) -> Result {
 	for i in 0..archive.len() {
-		let mut file = archive.by_index(i).map_err(io::Error::other)?;
+		let mut file = archive.by_index(i)?;
 
 		// Some zips created on windows have cursed backslashes in their paths.
 		// We need to replace them with forward slashes to avoid issues when extracting on Linux.
@@ -37,10 +35,7 @@ pub fn extract<R: io::Read + io::Seek>(
 		let outpath = target_path.join(&sanitized_name);
 
 		if !outpath.starts_with(target_path) {
-			return Err(io::Error::new(
-				io::ErrorKind::InvalidData,
-				format!("Zip file contains path escaping target: {}", file.name()),
-			));
+			bail!("Zip file contains path escaping target: {}", file.name());
 		}
 
 		if file.is_dir() || sanitized_name.ends_with('/') {

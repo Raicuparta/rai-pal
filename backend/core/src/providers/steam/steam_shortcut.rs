@@ -8,6 +8,10 @@ use std::{
 	time::SystemTime,
 };
 
+use anyhow::{
+	Context,
+	bail,
+};
 use steamlocate::SteamDir;
 
 use crate::result::{
@@ -118,7 +122,7 @@ fn add_shortcut_to_path(
 fn create_numbered_backup(shortcuts_path: &Path) -> Result {
 	let backup_dir = shortcuts_path
 		.parent()
-		.ok_or_else(|| {
+		.with_context(|| {
 			Error::DataEntryNotFound("Unable to determine parent directory for backups".to_string())
 		})?
 		.join("rai-pal-backups");
@@ -181,7 +185,7 @@ fn get_target_shortcuts_paths(steam_path: &Path) -> Result<Vec<PathBuf>> {
 		.collect::<Vec<_>>();
 
 	if candidates.is_empty() {
-		return Err(Error::DataEntryNotFound(
+		bail!(Error::DataEntryNotFound(
 			"No Steam userdata user folder was found".to_string(),
 		));
 	}
@@ -196,13 +200,13 @@ fn parse_shortcuts_file(bytes: &[u8]) -> Result<(u32, Vec<ShortcutSummary>)> {
 
 	let mut position = 0;
 	if bytes.get(position).copied() != Some(0) {
-		return Err(Error::InvalidBinaryVdfType(bytes[0], "<root>".to_string()));
+		bail!(Error::InvalidBinaryVdfType(bytes[0], "<root>".to_string()));
 	}
 	position += 1;
 
 	let root_name = read_cstring(bytes, &mut position)?;
 	if root_name != "shortcuts" {
-		return Err(Error::DataEntryNotFound(format!(
+		bail!(Error::DataEntryNotFound(format!(
 			"Steam shortcuts root object not found (got `{root_name}`)"
 		)));
 	}
@@ -232,7 +236,7 @@ fn parse_shortcuts_file(bytes: &[u8]) -> Result<(u32, Vec<ShortcutSummary>)> {
 
 			entries.push(entry);
 		} else {
-			return Err(Error::InvalidBinaryVdfType(field_type, field_name));
+			bail!(Error::InvalidBinaryVdfType(field_type, field_name));
 		}
 	}
 
@@ -263,11 +267,11 @@ fn parse_shortcut_object(bytes: &[u8], mut position: usize) -> Result<(ShortcutS
 			}
 			2 => {
 				if position + 4 > bytes.len() {
-					return Err(Error::InvalidBinaryVdfType(2, field_name));
+					bail!(Error::InvalidBinaryVdfType(2, field_name));
 				}
 				position += 4;
 			}
-			other => return Err(Error::InvalidBinaryVdfType(other, field_name)),
+			other => bail!(Error::InvalidBinaryVdfType(other, field_name)),
 		}
 	}
 
@@ -291,11 +295,11 @@ fn skip_object(bytes: &[u8], mut position: usize) -> Result<usize> {
 			}
 			2 => {
 				if position + 4 > bytes.len() {
-					return Err(Error::InvalidBinaryVdfType(2, field_name));
+					bail!(Error::InvalidBinaryVdfType(2, field_name));
 				}
 				position += 4;
 			}
-			other => return Err(Error::InvalidBinaryVdfType(other, field_name)),
+			other => bail!(Error::InvalidBinaryVdfType(other, field_name)),
 		}
 	}
 }
@@ -311,7 +315,7 @@ fn read_cstring(bytes: &[u8], position: &mut usize) -> Result<String> {
 		*position += 1;
 	}
 
-	Err(Error::InvalidBinaryVdfType(1, "<cstring>".to_string()))
+	bail!(Error::InvalidBinaryVdfType(1, "<cstring>".to_string()))
 }
 
 fn append_shortcut_entry(

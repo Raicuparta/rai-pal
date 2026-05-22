@@ -2,10 +2,21 @@ use std::{
 	borrow::Borrow,
 	collections::HashMap,
 	fmt::Display,
-	hash::{BuildHasher, Hash},
+	hash::{
+		BuildHasher,
+		Hash,
+	},
 };
 
-use crate::result::{Error, Result};
+use anyhow::{
+	Context,
+	anyhow,
+};
+
+use crate::result::{
+	Error,
+	Result,
+};
 
 pub trait TryGettable<K, V> {
 	fn try_get<Q>(&self, k: &Q) -> Result<&V>
@@ -29,7 +40,7 @@ where
 		Q: Hash + Eq + Display + ?Sized,
 	{
 		self.get(key)
-			.ok_or_else(|| Error::DataEntryNotFound(key.to_string()))
+			.with_context(|| Error::DataEntryNotFound(key.to_string()))
 	}
 
 	fn try_get_mut<Q>(&mut self, key: &Q) -> Result<&mut V>
@@ -38,6 +49,6 @@ where
 		Q: Hash + Eq + Display + ?Sized,
 	{
 		self.get_mut(key)
-			.ok_or_else(|| Error::DataEntryNotFound(key.to_string()))
+			.with_context(|| Error::DataEntryNotFound(key.to_string()))
 	}
 }

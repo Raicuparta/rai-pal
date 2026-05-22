@@ -1,3 +1,4 @@
+use anyhow::Context;
 use rai_pal_proc_macros::serializable_enum;
 
 use crate::{
@@ -70,7 +71,7 @@ pub fn replace_tokens(base_string: &str, game: &DbGame, game_mod: &GameMod) -> S
 		Ok(game
 			.try_get_exe_path()?
 			.parent()
-			.ok_or_else(|| Error::GameNotInstalled(game.display_title.clone()))?
+			.with_context(|| Error::GameNotInstalled(game.display_title.clone()))?
 			.to_string_lossy()
 			.to_string())
 	});
@@ -90,7 +91,7 @@ pub fn replace_tokens(base_string: &str, game: &DbGame, game_mod: &GameMod) -> S
 			&result,
 			ReplacementToken::GameStartCommand,
 			|| match start_command
-				.ok_or_else(|| Error::GameNotInstalled(game.display_title.clone()))?
+				.with_context(|| Error::GameNotInstalled(game.display_title.clone()))?
 			{
 				ProviderCommand::String(s) => Ok(s.clone()),
 				ProviderCommand::Path(exe_path, _) => Ok(exe_path.to_string_lossy().to_string()),

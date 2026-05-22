@@ -7,6 +7,12 @@ use std::{
 	},
 };
 
+use anyhow::{
+	Context,
+	anyhow,
+	bail,
+};
+
 use crate::{
 	architecture::Architecture,
 	data_types::{
@@ -57,7 +63,7 @@ pub struct DbGame {
 	pub display_title: String,
 	pub title_discriminator: Option<String>,
 	pub thumbnail_url: Option<String>,
-	pub release_date: Option<i64>,
+	pub release_date_rfc2822: Option<String>,
 	pub exe_path: Option<PathData>,
 	pub engine_brand: Option<EngineBrand>,
 	pub engine_version_major: Option<u32>,
@@ -79,7 +85,7 @@ impl DbGame {
 			display_title: title,
 			title_discriminator: None,
 			thumbnail_url: None,
-			release_date: None,
+			release_date_rfc2822: None,
 			exe_path: None,
 			engine_brand: None,
 			engine_version_major: None,
@@ -174,19 +180,20 @@ impl DbGame {
 	}
 
 	pub fn try_get_exe_path(&self) -> Result<&Path> {
-		Ok(&self
+		Ok(&&self
 			.exe_path
 			.as_ref()
-			.ok_or_else(|| Error::GameNotInstalled(self.display_title.clone()))?
+			.with_context(|| Error::GameNotInstalled(self.display_title.clone()))?
 			.0)
 	}
 
 	pub fn try_get_exe_name(&self) -> Result<String> {
 		let path = self.try_get_exe_path()?;
-		path.file_name()
+		Ok(path
+			.file_name()
 			.and_then(|file_name| file_name.to_str())
 			.map(std::string::ToString::to_string)
-			.ok_or_else(|| Error::InvalidOsStr(path.display().to_string()))
+			.with_context(|| Error::InvalidOsStr(path.display().to_string()))?)
 	}
 
 	pub fn add_provider_command(
@@ -257,17 +264,13 @@ impl DbGame {
 		if let Some(PathData(exe_path)) = self.exe_path.clone() {
 			self.set_executable(&exe_path);
 		} else {
-			return Err(Error::GameNotInstalled(self.display_title.clone()));
+			bail!(Error::GameNotInstalled(self.display_title.clone()));
 		}
 		Ok(self)
 	}
 
 	pub async fn get_remote_configs(&self) -> Result<Option<RemoteConfigs>> {
-		if let Some(exe_path) = self.exe_path.as_ref() {
-			remote_config::get_remote_configs(&exe_path.0).await
-		} else {
-			Err(Error::GameNotInstalled(self.display_title.clone()))
-		}
+		remote_config::get_remote_configs(&self.try_get_exe_path()?).await
 	}
 
 	pub fn get_installed_mod(&self, mod_id: &str) -> Result<Option<InstalledMod<'_>>> {

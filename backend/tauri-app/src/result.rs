@@ -1,5 +1,7 @@
 use std::result;
 
+use anyhow;
+
 #[derive(Debug, thiserror::Error, specta::Type)]
 pub enum Error {
 	#[error(transparent)]
@@ -7,13 +9,6 @@ pub enum Error {
 		#[specta(skip)]
 		#[from]
 		tauri::Error,
-	),
-
-	#[error(transparent)]
-	Core(
-		#[specta(skip)]
-		#[from]
-		rai_pal_core::result::Error,
 	),
 
 	#[error(transparent)]
@@ -50,6 +45,13 @@ pub enum Error {
 	#[error("Not supported on current platform. Linux only.")]
 	#[allow(dead_code)] // Unused on Linux.
 	LinuxOnly(),
+
+	#[error(transparent)]
+	Anyhow(
+		#[specta(skip)]
+		#[from]
+		anyhow::Error,
+	),
 }
 
 impl serde::Serialize for Error {

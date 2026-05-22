@@ -1,11 +1,23 @@
 // This code is based on https://github.com/drguildo/vdfr
 // It has been adapted to fit the needs of this project.
 
-use std::{collections::HashMap, fs, io::BufReader, path::PathBuf};
+use std::{
+	collections::HashMap,
+	fs,
+	io::BufReader,
+	path::PathBuf,
+};
 
-use byteorder::{LittleEndian, ReadBytesExt};
+use anyhow::bail;
+use byteorder::{
+	LittleEndian,
+	ReadBytesExt,
+};
 
-use crate::result::{Error, Result};
+use crate::result::{
+	Error,
+	Result,
+};
 
 const BIN_NONE: u8 = b'\x00';
 const BIN_STRING: u8 = b'\x01';
@@ -139,7 +151,7 @@ pub fn read_kv(
 			let val = reader.read_f32::<LittleEndian>()?;
 			node.insert(key, ValueType::Float32(val));
 		} else {
-			return Err(Error::InvalidBinaryVdfType(t, key));
+			bail!(Error::InvalidBinaryVdfType(t, key));
 		}
 	}
 }

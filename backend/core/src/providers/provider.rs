@@ -6,6 +6,7 @@ use std::{
 	},
 };
 
+use anyhow::bail;
 use enum_dispatch::enum_dispatch;
 use rai_pal_proc_macros::serializable_enum;
 
@@ -86,12 +87,12 @@ pub trait ProviderActions {
 		Ok(())
 	}
 	fn get_wine_prefix_path(&self, _game: &DbGame) -> Result<PathBuf> {
-		Err(Error::UnsupportedOperation(
+		bail!(Error::UnsupportedOperation(
 			"get_wine_prefix_path".to_string(),
 		))
 	}
 	fn get_wine_binary_path(&self, _game: &DbGame) -> Result<PathBuf> {
-		Err(Error::UnsupportedOperation(
+		bail!(Error::UnsupportedOperation(
 			"get_wine_binary_folder".to_string(),
 		))
 	}

@@ -16,6 +16,7 @@ use std::{
 	},
 };
 
+use anyhow::anyhow;
 use rai_pal_proc_macros::serializable_struct;
 use rusqlite::OpenFlags;
 
@@ -50,13 +51,13 @@ pub trait GameDatabase {
 #[serializable_struct]
 pub struct GameIdsResponse {
 	game_ids: Vec<(ProviderId, String)>,
-	total_count: i64,
+	total_count: u32,
 }
 
 impl GameDatabase for DbMutex {
 	fn lock_db(&self) -> Result<MutexGuard<'_, rusqlite::Connection>> {
 		self.lock()
-			.map_err(|err| Error::DatabaseLockFailed(err.to_string()))
+			.map_err(|err| anyhow!(Error::DatabaseLockFailed(err.to_string())))
 	}
 
 	fn insert_game(&self, game: &DbGame) {
@@ -113,7 +114,7 @@ impl GameDatabase for DbMutex {
 					display_title: row.get(3)?,
 					title_discriminator: row.get(4)?,
 					thumbnail_url: row.get(5)?,
-					release_date: row.get(6)?,
+					release_date_rfc2822: row.get(6)?,
 					tags: row.get(7)?,
 					provider_commands: row.get(8)?,
 					exe_path: row.get(9)?,
@@ -328,7 +329,7 @@ impl GameDatabase for DbMutex {
 			FROM main.games g
 		",
 			)?
-			.query_row([], |row| row.get::<_, i64>(0))?;
+			.query_row([], |row| row.get::<_, u32>(0))?;
 
 		Ok(GameIdsResponse {
 			game_ids,
@@ -370,7 +371,7 @@ fn try_insert_game(connection_mutex: &DbMutex, game: &DbGame) -> Result {
 			game.external_id.clone(),
 			game.display_title.clone(),
 			game.thumbnail_url.clone(),
-			game.release_date,
+			game.release_date_rfc2822,
 			game.tags.clone(),
 			game.title_discriminator.clone(),
 			game.provider_commands.clone(),
@@ -585,12 +586,12 @@ pub fn attach_remote_database<TConnection: Deref<Target = rusqlite::Connection>>
 			provider_id, external_id, engine_brand, engine_version_major,
 			engine_version_minor, engine_version_patch, engine_version_display
 		)
-		SELECT 
+		SELECT
 			provider_id,
 			external_id,
 			engine_brand,
 			NULL,
-			NULL, 
+			NULL,
 			NULL,
 			engine_version
 		FROM remote_db.games;
@@ -599,7 +600,7 @@ pub fn attach_remote_database<TConnection: Deref<Target = rusqlite::Connection>>
 	)?;
 
 	let mut update_statement = local_database_connection.prepare_cached(
-		"UPDATE main.remote_games SET engine_version_major = ?, engine_version_minor = ?, engine_version_patch = ? 
+		"UPDATE main.remote_games SET engine_version_major = ?, engine_version_minor = ?, engine_version_patch = ?
 		 WHERE provider_id = ? AND external_id = ? AND engine_version_display = ?"
 	)?;
 

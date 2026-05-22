@@ -11,6 +11,10 @@ use std::{
 	},
 };
 
+use anyhow::{
+	Context,
+	ensure,
+};
 use lazy_regex::regex_captures;
 use log::error;
 use rai_pal_proc_macros::serializable_enum;
@@ -73,15 +77,12 @@ fn get_version_from_asset(asset_path: &Path) -> Result<EngineVersion> {
 	let mut data = vec![0u8; 4096];
 
 	let bytes_read = file.read(&mut data)?;
-	if bytes_read == 0 {
-		return Err(Error::EmptyFile(asset_path.to_path_buf()));
-	}
+	ensure!(bytes_read == 0, Error::EmptyFile(asset_path.to_path_buf()));
 
 	let data_str = String::from_utf8_lossy(&data[..bytes_read]);
 
-	parse_version(&data_str).ok_or(Error::FailedToParseUnityVersionAsset(
-		asset_path.to_path_buf(),
-	))
+	parse_version(&data_str)
+		.with_context(|| Error::FailedToParseUnityVersionAsset(asset_path.to_path_buf()))
 }
 
 fn get_version(game_exe_path: &Path) -> Option<EngineVersion> {

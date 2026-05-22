@@ -94,19 +94,19 @@ const DISCORD_TOKEN_REFRESH_INTERVAL: Duration = Duration::from_hours(1);
 #[tauri::command]
 #[specta::specta]
 async fn log_in() -> Result {
-	start_discord_oauth().await.map_err(Into::into)
+	Ok(start_discord_oauth().await?)
 }
 
 #[tauri::command]
 #[specta::specta]
 async fn get_auth_state() -> Result<DiscordAuthState> {
-	get_discord_auth_state().await.map_err(Into::into)
+	Ok(get_discord_auth_state().await?)
 }
 
 #[tauri::command]
 #[specta::specta]
 async fn log_out() -> Result {
-	logout_discord().map_err(Into::into)
+	Ok(logout_discord()?)
 }
 
 #[tauri::command]
@@ -201,13 +201,11 @@ async fn download_mod(handle: AppHandle, mod_id: &str) -> Result {
 	let state = handle.app_state();
 	let remote_mods = state.remote_mods.read_state()?.clone();
 	let remote_mod = remote_mods.try_get(mod_id)?;
+	let download_status_channel = state.download_status_channel.read_state()?.clone();
 
 	GameMod::download(remote_mod, |status| {
-		state
-			.download_status_channel
-			.read_state()
-			.unwrap()
-			.send(status);
+		download_status_channel.send(status)?;
+		Ok(())
 	})
 	.await?;
 	refresh_local_mods(&handle)?;
@@ -398,10 +396,7 @@ fn refresh_local_mods(handle: &AppHandle) -> Result<HashMap<String, GameMod>> {
 }
 
 async fn refresh_remote_mods(handle: &AppHandle) -> Result<HashMap<String, GameMod>> {
-	let remote_mods = GameMod::get_all_remote(|error| {
-		handle.emit_error(format!("Failed to get remote mods: {error}"));
-	})
-	.await;
+	let remote_mods = GameMod::get_all_remote().await?;
 
 	handle.emit_safe(events::SyncRemoteMods(remote_mods.clone()));
 
@@ -432,12 +427,10 @@ async fn refresh_and_get_local_mod(mod_id: &str, handle: &AppHandle) -> Result<G
 
 				// If local mod still can't be found on disk,
 				// we try to download it from the database.
+				let download_status_channel = state.download_status_channel.read_state()?.clone();
 				GameMod::download(remote_mods.try_get(mod_id)?, |status| {
-					state
-						.download_status_channel
-						.read_state()
-						.unwrap()
-						.send(status);
+					download_status_channel.send(status)?;
+					Ok(())
 				})
 				.await?;
 

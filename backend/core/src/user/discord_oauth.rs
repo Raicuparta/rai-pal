@@ -19,6 +19,10 @@ use std::{
 	},
 };
 
+use anyhow::{
+	Context,
+	bail,
+};
 use base64::{
 	Engine,
 	engine::general_purpose::URL_SAFE_NO_PAD,
@@ -185,14 +189,14 @@ fn parse_oauth_callback(
 				let request = String::from_utf8_lossy(&buffer[..bytes_read]);
 				let Some(request_line) = request.lines().next() else {
 					write_browser_response(&mut stream, false)?;
-					return Err(Error::DiscordOAuth(
+					bail!(Error::DiscordOAuth(
 						"Malformed callback request.".to_string(),
 					));
 				};
 
 				let Some(path_and_query) = request_line.split_whitespace().nth(1) else {
 					write_browser_response(&mut stream, false)?;
-					return Err(Error::DiscordOAuth("Missing callback path.".to_string()));
+					bail!(Error::DiscordOAuth("Missing callback path.".to_string()));
 				};
 
 				if !path_and_query.starts_with("/discord/callback") {
@@ -205,14 +209,11 @@ fn parse_oauth_callback(
 					.map(|(_, query)| query)
 					.unwrap_or_default();
 
-				let callback_query = serde_urlencoded::from_str::<OAuthCallbackQuery>(query)
-					.map_err(|error| {
-						Error::DiscordOAuth(format!("Invalid callback query: {error}"))
-					})?;
+				let callback_query = serde_urlencoded::from_str::<OAuthCallbackQuery>(query)?;
 
 				if let Some(error) = callback_query.error {
 					write_browser_response(&mut stream, false)?;
-					return Err(Error::DiscordOAuth(format!(
+					bail!(Error::DiscordOAuth(format!(
 						"Discord returned OAuth error: {error}"
 					)));
 				}
@@ -222,16 +223,16 @@ fn parse_oauth_callback(
 					continue;
 				}
 
-				let state = callback_query.state.ok_or_else(|| {
+				let state = callback_query.state.with_context(|| {
 					Error::DiscordOAuth("Missing OAuth state in callback.".to_string())
 				})?;
 
 				if state != expected_state {
 					write_browser_response(&mut stream, false)?;
-					return Err(Error::DiscordOAuth("OAuth state mismatch.".to_string()));
+					bail!(Error::DiscordOAuth("OAuth state mismatch.".to_string()));
 				}
 
-				let code = callback_query.code.ok_or_else(|| {
+				let code = callback_query.code.with_context(|| {
 					Error::DiscordOAuth("Missing OAuth code in callback.".to_string())
 				})?;
 
@@ -240,14 +241,14 @@ fn parse_oauth_callback(
 			}
 			Err(error) if error.kind() == std::io::ErrorKind::WouldBlock => {
 				if start.elapsed() >= timeout {
-					return Err(Error::DiscordOAuth(
+					bail!(Error::DiscordOAuth(
 						"Timed out waiting for Discord OAuth callback.".to_string(),
 					));
 				}
 
 				thread::sleep(Duration::from_millis(100));
 			}
-			Err(error) => return Err(error.into()),
+			Err(error) => bail!(error),
 		}
 	}
 }
@@ -264,12 +265,7 @@ fn read_discord_token_from_fallback_file_optional() -> Result<Option<DiscordSave
 	}
 
 	let token_json = fs::read_to_string(&fallback_path)?;
-	let token = serde_json::from_str::<DiscordSavedToken>(&token_json).map_err(|error| {
-		Error::DiscordOAuth(format!(
-			"Failed to parse Discord token from fallback file `{}`: {error}",
-			fallback_path.display()
-		))
-	})?;
+	let token = serde_json::from_str::<DiscordSavedToken>(&token_json)?;
 
 	log::warn!(
 		"Using Discord token fallback file storage at `{}`. System keyring appears unavailable.",
@@ -328,7 +324,7 @@ async fn exchange_code_for_discord_token(
 			.await
 			.unwrap_or_else(|_| "<failed to read body>".to_string());
 
-		return Err(Error::DiscordOAuth(format!(
+		bail!(Error::DiscordOAuth(format!(
 			"Token exchange failed ({status}): {body}"
 		)));
 	}
@@ -337,18 +333,14 @@ async fn exchange_code_for_discord_token(
 }
 
 fn get_discord_keyring_entry() -> Result<keyring::Entry> {
-	keyring::Entry::new(DISCORD_KEYRING_SERVICE, DISCORD_KEYRING_ACCOUNT).map_err(|error| {
-		Error::DiscordOAuth(format!(
-			"Failed to open Discord token keyring entry `{DISCORD_KEYRING_LOCATION}`: {error}"
-		))
-	})
+	Ok(keyring::Entry::new(
+		DISCORD_KEYRING_SERVICE,
+		DISCORD_KEYRING_ACCOUNT,
+	)?)
 }
 
 fn current_unix_seconds() -> Result<u64> {
-	SystemTime::now()
-		.duration_since(UNIX_EPOCH)
-		.map_err(|error| Error::DiscordOAuth(format!("Clock error: {error}")))
-		.map(|duration| duration.as_secs())
+	Ok(SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs())
 }
 
 fn is_discord_token_expired(token: &DiscordSavedToken) -> Result<bool> {
@@ -441,7 +433,7 @@ async fn fetch_discord_user(access_token: &str) -> Result<DiscordUserResponse> {
 			.await
 			.unwrap_or_else(|_| "<failed to read body>".to_string());
 
-		return Err(Error::DiscordOAuth(format!(
+		bail!(Error::DiscordOAuth(format!(
 			"Failed to fetch Discord user profile ({status}): {body}"
 		)));
 	}
@@ -478,7 +470,7 @@ async fn download_and_save_discord_avatar(
 			.await
 			.unwrap_or_else(|_| "<failed to read body>".to_string());
 
-		return Err(Error::DiscordOAuth(format!(
+		bail!(Error::DiscordOAuth(format!(
 			"Failed to download Discord avatar ({status}): {body}"
 		)));
 	}
@@ -505,12 +497,7 @@ fn read_discord_token_file_optional() -> Result<Option<DiscordSavedToken>> {
 
 	match entry.get_password() {
 		Ok(token_json) => {
-			let token =
-				serde_json::from_str::<DiscordSavedToken>(&token_json).map_err(|error| {
-					Error::DiscordOAuth(format!(
-						"Failed to parse Discord token from system keyring: {error}"
-					))
-				})?;
+			let token = serde_json::from_str::<DiscordSavedToken>(&token_json)?;
 			let access_token_preview: String = token.access_token.chars().take(8).collect();
 			log::debug!(
 				"Read Discord token from keyring; user_name={:?} access_token_preview={}...",
@@ -536,7 +523,7 @@ fn read_discord_token_file_optional() -> Result<Option<DiscordSavedToken>> {
 
 fn read_discord_token_file() -> Result<DiscordSavedToken> {
 	read_discord_token_file_optional()?
-		.ok_or_else(|| Error::DiscordOAuth("Discord OAuth token is not available.".to_string()))
+		.with_context(|| Error::DiscordOAuth("Discord OAuth token is not available.".to_string()))
 }
 
 async fn exchange_refresh_token_for_discord_token(
@@ -563,7 +550,7 @@ async fn exchange_refresh_token_for_discord_token(
 			.await
 			.unwrap_or_else(|_| "<failed to read body>".to_string());
 
-		return Err(Error::DiscordOAuth(format!(
+		bail!(Error::DiscordOAuth(format!(
 			"Token refresh failed ({status}): {body}"
 		)));
 	}
@@ -683,7 +670,7 @@ pub(crate) fn read_discord_access_token() -> Result<String> {
 	let saved_token = read_discord_token_file()?;
 
 	if is_discord_token_expired(&saved_token)? {
-		return Err(Error::DiscordOAuth(
+		bail!(Error::DiscordOAuth(
 			"Discord OAuth token has expired. Please sign in again.".to_string(),
 		));
 	}
@@ -696,11 +683,7 @@ pub fn logout_discord() -> Result {
 }
 
 pub async fn start_discord_oauth() -> Result {
-	let listener = TcpListener::bind(("127.0.0.1", DISCORD_CALLBACK_PORT)).map_err(|error| {
-		Error::DiscordOAuth(format!(
-			"Failed to bind callback port {DISCORD_CALLBACK_PORT}. Is another process using it? Error: {error}"
-		))
-	})?;
+	let listener = TcpListener::bind(("127.0.0.1", DISCORD_CALLBACK_PORT))?;
 	let redirect_uri = format!("http://127.0.0.1:{DISCORD_CALLBACK_PORT}/discord/callback");
 
 	let state = create_oauth_nonce();

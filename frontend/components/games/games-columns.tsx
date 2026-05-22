@@ -174,8 +174,8 @@ const releaseDate: GamesColumn = {
 	center: true,
 	sort: "ReleaseDate",
 	component: ({ item }: CellProps) => {
-		const date = item.releaseDate
-			? new Date(Number(item.releaseDate) * 1000)
+		const date = item.releaseDateRfc2822
+			? new Date(item.releaseDateRfc2822)
 			: null;
 
 		const formattedDate = date ? dateFormatter.formatToParts(date) : [];

@@ -3,6 +3,8 @@ use std::{
 	path::PathBuf,
 };
 
+use anyhow::Context;
+
 use crate::{
 	game::DbGame,
 	game_mods::{
@@ -33,7 +35,7 @@ impl<'a> InstalledMod<'a> {
 				.get_install()?
 				.main_installed_folder_path
 				.as_ref()
-				.ok_or_else(|| {
+				.with_context(|| {
 					Error::ModInfoMissing(
 						self.game_mod.id.clone(),
 						"main_installed_folder_path".to_string(),
@@ -47,7 +49,7 @@ impl<'a> InstalledMod<'a> {
 	}
 
 	pub fn uninstall(&self) -> Result {
-		let install = self.game_mod.install.as_ref().ok_or_else(|| {
+		let install = self.game_mod.install.as_ref().with_context(|| {
 			Error::ModInfoMissing(self.game_mod.id.clone(), "install".to_string())
 		})?;
 

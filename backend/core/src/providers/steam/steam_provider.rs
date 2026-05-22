@@ -9,6 +9,7 @@ use std::{
 	},
 };
 
+use chrono::DateTime;
 use steamlocate::SteamDir;
 
 #[cfg(target_os = "linux")]
@@ -308,7 +309,11 @@ impl ProviderActions for Steam {
 							.original_release_date
 							.or(app_info.steam_release_date)
 						{
-							game.release_date = Some(release_date.into());
+							game.release_date_rfc2822 = Some(
+								DateTime::from_timestamp_secs(release_date.into())
+									.unwrap()
+									.to_rfc3339(),
+							);
 						}
 
 						if let Some(app_type) = &app_info.app_type

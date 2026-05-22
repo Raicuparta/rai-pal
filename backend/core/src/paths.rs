@@ -16,6 +16,10 @@ use std::{
 	process::Stdio,
 };
 
+use anyhow::{
+	Context,
+	anyhow,
+};
 use directories::{
 	BaseDirs,
 	ProjectDirs,
@@ -62,14 +66,15 @@ pub fn glob_path(path: &Path) -> Vec<PathBuf> {
 	}
 }
 
+// TODO in trait.
 pub fn path_parent(path: &Path) -> Result<&Path> {
 	path.parent()
-		.ok_or_else(|| Error::PathParentNotFound(path.to_path_buf()))
+		.context(Error::PathParentNotFound(path.to_path_buf()))
 }
 
 fn app_data_path() -> Result<PathBuf> {
 	let project_dirs =
-		ProjectDirs::from("com", "raicuparta", "rai-pal").ok_or_else(Error::AppDataNotFound)?;
+		ProjectDirs::from("com", "raicuparta", "rai-pal").context(Error::AppDataNotFound)?;
 	let path = project_dirs.data_dir().to_path_buf();
 	fs::create_dir_all(&path)?;
 
@@ -117,7 +122,7 @@ pub fn database_path(database_name: &str) -> Result<PathBuf> {
 pub fn file_name_without_extension(file_path: &Path) -> Result<&str> {
 	file_path
 		.file_stem()
-		.ok_or_else(|| Error::InvalidOsStr(file_path.display().to_string()))?
+		.with_context(|| Error::InvalidOsStr(file_path.display().to_string()))?
 		.try_to_str()
 }
 
@@ -250,7 +255,7 @@ pub fn remove_path_if_exists(path: &Path) -> Result {
 }
 
 pub fn base_dirs() -> Result<BaseDirs> {
-	directories::BaseDirs::new().ok_or_else(Error::AppDataNotFound)
+	directories::BaseDirs::new().context(Error::AppDataNotFound)
 }
 
 pub trait AsValidStr {
@@ -264,20 +269,20 @@ where
 	fn try_to_str(&self) -> Result<&str> {
 		self.as_ref()
 			.to_str()
-			.ok_or_else(|| Error::InvalidOsStr(self.as_ref().to_string_lossy().to_string()))
+			.with_context(|| Error::InvalidOsStr(self.as_ref().to_string_lossy().to_string()))
 	}
 }
 
 impl AsValidStr for OsStr {
 	fn try_to_str(&self) -> Result<&str> {
 		self.to_str()
-			.ok_or_else(|| Error::InvalidOsStr(self.to_string_lossy().to_string()))
+			.with_context(|| Error::InvalidOsStr(self.to_string_lossy().to_string()))
 	}
 }
 
 impl AsValidStr for Path {
 	fn try_to_str(&self) -> Result<&str> {
 		self.to_str()
-			.ok_or_else(|| Error::InvalidOsStr(self.to_string_lossy().to_string()))
+			.with_context(|| Error::InvalidOsStr(self.to_string_lossy().to_string()))
 	}
 }

@@ -8,187 +8,82 @@ use std::{
 };
 
 use lazy_regex::regex;
+use strum::Display;
 
-#[derive(Debug, thiserror::Error, specta::Type)]
+#[derive(Debug, Display, specta::Type)]
 pub enum Error {
-	#[error(transparent)]
-	Io(
-		#[specta(skip)]
-		#[from]
-		std::io::Error,
-	),
+	Io,
 
-	#[error(transparent)]
-	Reqwest(
-		#[from]
-		#[specta(skip)]
-		reqwest::Error,
-	),
+	Reqwest,
 
-	#[error(transparent)]
-	Zip(
-		#[from]
-		#[specta(skip)]
-		zip::result::ZipError,
-	),
+	Zip,
 
-	#[error(transparent)]
-	Json(
-		#[from]
-		#[specta(skip)]
-		serde_json::Error,
-	),
+	Json,
 
-	#[error(transparent)]
-	ChronoParse(
-		#[from]
-		#[specta(skip)]
-		chrono::ParseError,
-	),
+	ChronoParse,
 
-	#[error(transparent)]
-	Rusql(
-		#[from]
-		#[specta(skip)]
-		rusqlite::Error,
-	),
+	Rusql,
 
-	#[error(transparent)]
-	Env(
-		#[from]
-		#[specta(skip)]
-		env::VarError,
-	),
+	Env,
 
-	#[error(transparent)]
-	UrlEncode(
-		#[from]
-		#[specta(skip)]
-		serde_urlencoded::ser::Error,
-	),
+	UrlEncode,
 
-	#[error(transparent)]
-	HeaderToStr(
-		#[from]
-		#[specta(skip)]
-		reqwest::header::ToStrError,
-	),
+	HeaderToStr,
 
-	#[error(transparent)]
-	TryFromInt(
-		#[from]
-		#[specta(skip)]
-		num::TryFromIntError,
-	),
+	TryFromInt,
 
-	#[error(transparent)]
-	Regex(
-		#[from]
-		#[specta(skip)]
-		regex::Error,
-	),
+	Regex,
 
-	#[error(transparent)]
-	SteamLocate(
-		#[from]
-		#[specta(skip)]
-		steamlocate::error::Error,
-	),
+	SteamLocate,
 
-	#[error(transparent)]
-	SystemTime(
-		#[from]
-		#[specta(skip)]
-		SystemTimeError,
-	),
+	SystemTime,
 
-	#[error("Invalid type `{0}` in binary vdf for key {1}")]
 	InvalidBinaryVdfType(u8, String),
 
-	#[error("Failed to find app data folder")]
-	AppDataNotFound(),
+	AppDataNotFound,
 
-	#[error("Failed to parse path (possibly because is a non-UTF-8 string) `{0}`")]
 	InvalidOsStr(String),
 
-	#[error("Failed to get folder parent for path `{0}`")]
 	PathParentNotFound(PathBuf),
 
-	#[error("Tried to read empty file `{0}`")]
 	EmptyFile(PathBuf),
 
-	#[error(
-		"Failed to find Steam cache file. **Try restarting Steam**. (Tried to read from `{0}`)"
-	)]
 	SteamAppInfoNotFound(PathBuf),
 
-	#[error("Failed to retrieve Unity version from asset `{0}`")]
 	FailedToParseUnityVersionAsset(PathBuf),
 
-	#[error(
-		"Failed to install mod, because the known game information is insufficient. Missing information: `{0}`. Game: `{1}`"
-	)]
 	ModInstallInfoInsufficient(String, String),
 
-	#[error("Failed to get game data from path `{0}`")]
 	FailedToGetGameFromPath(PathBuf),
 
-	#[error("This game has already been added before: `{0}`")]
 	GameAlreadyAdded(PathBuf),
 
-	#[error("Data entry not found: `{0}`")]
 	DataEntryNotFound(String),
 
-	#[error("Unity backend not known for mod `{0}`")]
 	UnityBackendUnknown(String),
 
-	#[error(
-		"Operation can't be completed without a `runnable` section in the mod manifest (rai-pal-manifest.json) `{0}`"
-	)]
 	RunnableManifestNotFound(String),
 
-	#[error("Can't run mod with ID `{0}` because it isn't a runnable mod.")]
 	CantRunNonRunnable(String),
 
-	#[error(
-		"Provider ID {0} is invalid for this action, or not supported in the current platform."
-	)]
 	InvalidProviderId(String),
 
-	#[error(
-		"This operation requires game `{0}` to be installed, but the installed game wasn't found."
-	)]
 	GameNotInstalled(String),
 
-	#[error("Failed to find game executable at `{0}`")]
 	NoExecutableFound(PathBuf),
 
-	#[error("Failed to acquire lock for database: `{0}`")]
 	DatabaseLockFailed(String),
 
-	#[error("Discord OAuth failed: `{0}`")]
 	DiscordOAuth(String),
 
-	#[error("Failed to find mod manifest in path: `{0}`")]
 	ManifestNotFound(String),
 
-	#[error("Unsupported operation: `{0}`")]
 	UnsupportedOperation(String),
 
-	#[error("Required information for mod with ID `{0}` is missing. Expected `{1}`")]
 	ModInfoMissing(String, String),
 }
 
-impl serde::Serialize for Error {
-	fn serialize<S>(&self, serializer: S) -> result::Result<S::Ok, S::Error>
-	where
-		S: serde::ser::Serializer,
-	{
-		serializer.serialize_str(self.to_string().as_ref())
-	}
-}
-
-pub type Result<T = ()> = result::Result<T, Error>;
+pub type Result<T = ()> = anyhow::Result<T>;
 
 pub trait LogErrExt<T, E> {
 	fn ok_or_log(self, message: &str) -> Option<T>;

@@ -56,7 +56,7 @@ impl Itch {
 				row.title
 			))
 		}) {
-			game.release_date = Some(date_time.timestamp());
+			game.release_date_rfc2822 = Some(date_time.to_rfc3339());
 		}
 
 		game.add_provider_command(
