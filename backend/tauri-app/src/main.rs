@@ -195,17 +195,7 @@ async fn open_mod_folder(handle: AppHandle, mod_id: &str) -> Result {
 #[tauri::command]
 #[specta::specta]
 async fn download_mod(handle: AppHandle, mod_id: &str) -> Result {
-	let state = handle.app_state();
-	let remote_mods = state.remote_mods.read_state()?.clone();
-	let remote_mod = remote_mods.try_get(mod_id)?;
-	let download_status_channel = state.download_status_channel.read_state()?.clone();
-
-	GameMod::download(remote_mod, |status| {
-		download_status_channel
-			.send(status)
-			.ok_or_log("Failed to send download status update");
-	})
-	.await?;
+	download_mod_inner(&handle, mod_id).await?;
 	refresh_local_mods(&handle)?;
 
 	Ok(())
@@ -408,6 +398,22 @@ async fn refresh_remote_mods(handle: &AppHandle) -> Result<HashMap<String, GameM
 	Ok(remote_mods)
 }
 
+async fn download_mod_inner(handle: &AppHandle, mod_id: &str) -> Result {
+	let state = handle.app_state();
+	let remote_mods = state.remote_mods.read_state()?.clone();
+	let remote_mod = remote_mods.try_get(mod_id)?;
+	let download_status_channel = state.download_status_channel.read_state()?.clone();
+
+	GameMod::download(remote_mod, |status| {
+		download_status_channel
+			.send(status)
+			.ok_or_log("Failed to send download status update");
+	})
+	.await?;
+
+	Ok(())
+}
+
 async fn refresh_and_get_local_mod(mod_id: &str, handle: &AppHandle) -> Result<GameMod> {
 	let local_mods = {
 		let state = handle.app_state();
@@ -423,19 +429,7 @@ async fn refresh_and_get_local_mod(mod_id: &str, handle: &AppHandle) -> Result<G
 			if state_local_mods.contains_key(mod_id) {
 				disk_local_mods
 			} else {
-				let remote_mods = state.remote_mods.read_state()?.clone();
-
-				// If local mod still can't be found on disk,
-				// we try to download it from the database.
-				GameMod::download(remote_mods.try_get(mod_id)?, |status| {
-					state
-						.download_status_channel
-						.read_state()
-						.unwrap()
-						.send(status);
-				})
-				.await?;
-
+				download_mod_inner(handle, mod_id).await?;
 				refresh_local_mods(handle)
 			}
 		}
