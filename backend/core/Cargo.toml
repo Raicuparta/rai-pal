@@ -21,7 +21,6 @@ byteorder = "1.5.0"
 chrono = { version = "0.4.44", default-features = false, features = ["std"] }
 directories = "6.0.0"
 tokio = "1.52.3"
-enum_dispatch = "0.3.13"
 globwalk = "0.9.1"
 lazy-regex = "3.6.0"
 pelite = { version = "0.10.0", features = ["std"], default-features = false }

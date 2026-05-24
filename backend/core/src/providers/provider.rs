@@ -6,13 +6,15 @@ use std::{
 	},
 };
 
-use enum_dispatch::enum_dispatch;
 use rai_pal_proc_macros::serializable_enum;
 
 #[cfg(target_os = "linux")]
-use crate::providers::heroic_epic_provider::HeroicEpic;
-#[cfg(target_os = "linux")]
 use crate::providers::heroic_gog_provider::HeroicGog;
+#[cfg(target_os = "linux")]
+use crate::providers::{
+	dummy_provider::Dummy,
+	heroic_epic_provider::HeroicEpic,
+};
 #[cfg(target_os = "windows")]
 use crate::providers::{
 	epic_provider::Epic,
@@ -44,44 +46,8 @@ pub enum ProviderId {
 	Xbox,
 }
 
-#[enum_dispatch]
-#[derive(Clone)]
-pub enum Provider {
-	Steam,
-	Manual,
-	Itch,
-	#[cfg(target_os = "windows")]
-	Epic,
-	#[cfg(target_os = "windows")]
-	Gog,
-	#[cfg(target_os = "windows")]
-	Xbox,
-	#[cfg(target_os = "linux")]
-	HeroicEpic,
-	#[cfg(target_os = "linux")]
-	HeroicGog,
-}
-
-type Map = [(ProviderId, fn() -> Result<Provider>)];
-const PROVIDERS: &Map = &[
-	create_map_entry::<Steam>(),
-	create_map_entry::<Manual>(),
-	create_map_entry::<Itch>(),
-	#[cfg(target_os = "linux")]
-	create_map_entry::<HeroicEpic>(),
-	#[cfg(target_os = "linux")]
-	create_map_entry::<HeroicGog>(),
-	#[cfg(target_os = "windows")]
-	create_map_entry::<Epic>(),
-	#[cfg(target_os = "windows")]
-	create_map_entry::<Gog>(),
-	#[cfg(target_os = "windows")]
-	create_map_entry::<Xbox>(),
-];
-
-#[enum_dispatch(Provider)]
 pub trait ProviderActions {
-	async fn insert_games(&self, db: &DbMutex) -> Result;
+	fn insert_games(&self, db: &DbMutex) -> Result;
 	fn set_wine_dll_overrides(&self, _game: &DbGame, _dll_overrides: &[String]) -> Result {
 		Ok(())
 	}
@@ -106,28 +72,27 @@ pub trait ProviderActions {
 	}
 }
 
-const fn create_map_entry<TProvider: ProviderActions + ProviderStatic>()
--> (ProviderId, fn() -> Result<Provider>)
-where
-	Provider: From<TProvider>,
-{
-	(*TProvider::ID, || Ok(TProvider::new()?.into()))
-}
+pub fn get_provider(provider_id: ProviderId) -> Result<Box<dyn ProviderActions>> {
+	match provider_id {
+		ProviderId::Steam => Ok(Box::new(Steam {})),
 
-pub trait ProviderStatic: ProviderActions {
-	const ID: &'static ProviderId;
+		ProviderId::Manual => Ok(Box::new(Manual {})),
 
-	fn new() -> Result<Self>
-	where
-		Self: Sized;
-}
+		ProviderId::Itch => Ok(Box::new(Itch {})),
 
-pub fn get_provider(provider_id: ProviderId) -> Result<Provider> {
-	for &(id, create_provider) in PROVIDERS {
-		if id == provider_id {
-			return create_provider();
-		}
+		#[cfg(target_os = "linux")]
+		ProviderId::Epic => Ok(Box::new(HeroicEpic {})),
+		#[cfg(target_os = "windows")]
+		ProviderId::Epic => Ok(Box::new(Epic {})),
+
+		#[cfg(target_os = "linux")]
+		ProviderId::Gog => Ok(Box::new(HeroicGog {})),
+		#[cfg(target_os = "windows")]
+		ProviderId::Gog => Ok(Box::new(Gog {})),
+
+		#[cfg(target_os = "windows")]
+		ProviderId::Xbox => Ok(Box::new(Xbox {})),
+		#[cfg(target_os = "linux")]
+		ProviderId::Xbox => Ok(Box::new(Dummy {})),
 	}
-
-	Err(Error::InvalidProviderId(provider_id.to_string()))
 }

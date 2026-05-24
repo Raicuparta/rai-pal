@@ -1,3 +1,4 @@
+pub mod dummy_provider;
 pub mod epic_provider;
 pub mod gog_provider;
 pub mod heroic_epic_provider;

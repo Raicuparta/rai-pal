@@ -28,7 +28,6 @@ use crate::{
 	providers::provider::{
 		ProviderActions,
 		ProviderId,
-		ProviderStatic,
 	},
 	result::{
 		LogErrExt,
@@ -46,7 +45,7 @@ impl Itch {
 	}
 
 	fn get_game(row: &ItchDatabaseGame) -> DbGame {
-		let mut game = DbGame::new(*Self::ID, row.id.to_string(), row.title.clone());
+		let mut game = DbGame::new(ProviderId::Itch, row.id.to_string(), row.title.clone());
 
 		game.thumbnail_url.clone_from(&row.cover_url);
 
@@ -69,17 +68,6 @@ impl Itch {
 		);
 
 		game
-	}
-}
-
-impl ProviderStatic for Itch {
-	const ID: &'static ProviderId = &ProviderId::Itch;
-
-	fn new() -> Result<Self>
-	where
-		Self: Sized,
-	{
-		Ok(Self {})
 	}
 }
 
@@ -118,7 +106,7 @@ pub struct ItchDatabase {
 }
 
 impl ProviderActions for Itch {
-	async fn insert_games(&self, db: &DbMutex) -> Result {
+	fn insert_games(&self, db: &DbMutex) -> Result {
 		let app_data_path = paths::base_dirs()?.config_dir().join("itch");
 
 		if let Some(database) = get_database(&app_data_path)? {

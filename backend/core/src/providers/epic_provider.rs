@@ -35,10 +35,7 @@ use crate::{
 		GameDatabase,
 	},
 	paths::glob_path,
-	providers::provider::{
-		ProviderActions,
-		ProviderStatic,
-	},
+	providers::provider::ProviderActions,
 	result::Result,
 };
 
@@ -100,7 +97,7 @@ impl Epic {
 		}
 
 		let mut game = DbGame::new(
-			*Self::ID,
+			ProviderId::Epic,
 			catalog_item.id.clone(),
 			catalog_item.title.clone(),
 		);
@@ -128,25 +125,14 @@ impl Epic {
 		);
 
 		game.thumbnail_url = catalog_item.get_thumbnail_url();
-		game.release_date = catalog_item.get_release_date();
+		game.release_date_rfc3339 = catalog_item.get_release_date();
 
 		Some(game)
 	}
 }
 
-impl ProviderStatic for Epic {
-	const ID: &'static ProviderId = &ProviderId::Epic;
-
-	fn new() -> Result<Self>
-	where
-		Self: Sized,
-	{
-		Ok(Self {})
-	}
-}
-
 impl EpicCatalogItem {
-	fn get_release_date(&self) -> Option<i64> {
+	fn get_release_date(&self) -> Option<String> {
 		Some(
 			self.release_info
 				.first()?
@@ -154,7 +140,7 @@ impl EpicCatalogItem {
 				.as_ref()?
 				.parse::<chrono::DateTime<chrono::Utc>>()
 				.ok()?
-				.timestamp(),
+				.to_rfc3339(),
 		)
 	}
 
@@ -171,7 +157,7 @@ impl EpicCatalogItem {
 }
 
 impl ProviderActions for Epic {
-	async fn insert_games(&self, db: &DbMutex) -> Result {
+	fn insert_games(&self, db: &DbMutex) -> Result {
 		let app_data_path = match RegKey::predef(HKEY_LOCAL_MACHINE)
 			.open_subkey(r"SOFTWARE\Epic Games\EpicGamesLauncher")
 			.and_then(|launcher_reg| launcher_reg.get_value::<String, _>("AppDataPath"))

@@ -12,7 +12,6 @@ use rai_pal_proc_macros::serializable_struct;
 use super::provider::{
 	ProviderActions,
 	ProviderId,
-	ProviderStatic,
 };
 use crate::{
 	game::DbGame,
@@ -35,19 +34,8 @@ struct GamesConfig {
 	pub paths: Vec<PathBuf>,
 }
 
-impl ProviderStatic for Manual {
-	const ID: &'static ProviderId = &ProviderId::Manual;
-
-	fn new() -> Result<Self>
-	where
-		Self: Sized,
-	{
-		Ok(Self {})
-	}
-}
-
 impl ProviderActions for Manual {
-	async fn insert_games(&self, db: &DbMutex) -> Result {
+	fn insert_games(&self, db: &DbMutex) -> Result {
 		for path in read_games_config(&games_config_path()?).paths {
 			match get_game_from_path(&path) {
 				Ok(game) => {

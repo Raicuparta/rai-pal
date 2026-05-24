@@ -22,7 +22,6 @@ use crate::{
 		provider::{
 			ProviderActions,
 			ProviderId,
-			ProviderStatic,
 		},
 	},
 	result::Result,
@@ -55,7 +54,7 @@ fn get_detected_games() -> Result<Option<Vec<ParsedGame>>> {
 }
 
 #[derive(Clone)]
-pub struct HeroicEpic {}
+pub struct HeroicEpic;
 
 impl HeroicEpic {
 	fn get_exe_path(entry: &ParsedGame) -> Option<PathBuf> {
@@ -65,23 +64,12 @@ impl HeroicEpic {
 	}
 }
 
-impl ProviderStatic for HeroicEpic {
-	const ID: &'static ProviderId = &ProviderId::Epic;
-
-	fn new() -> Result<Self>
-	where
-		Self: Sized,
-	{
-		Ok(Self {})
-	}
-}
-
 impl ProviderActions for HeroicEpic {
-	async fn insert_games(&self, db: &DbMutex) -> Result {
+	fn insert_games(&self, db: &DbMutex) -> Result {
 		if let Some(parsed_games) = get_detected_games()? {
 			for parsed_game in parsed_games {
 				let mut game = DbGame::new(
-					*Self::ID,
+					ProviderId::Epic,
 					parsed_game.app_name.clone(),
 					parsed_game.title.clone(),
 				);

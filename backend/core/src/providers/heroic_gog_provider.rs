@@ -28,7 +28,6 @@ use crate::{
 		provider::{
 			ProviderActions,
 			ProviderId,
-			ProviderStatic,
 		},
 	},
 	result::Result,
@@ -134,25 +133,14 @@ impl HeroicGog {
 	}
 }
 
-impl ProviderStatic for HeroicGog {
-	const ID: &'static ProviderId = &ProviderId::Gog;
-
-	fn new() -> Result<Self>
-	where
-		Self: Sized,
-	{
-		Ok(Self {})
-	}
-}
-
 impl ProviderActions for HeroicGog {
-	async fn insert_games(&self, db: &DbMutex) -> Result {
+	fn insert_games(&self, db: &DbMutex) -> Result {
 		let owned_games = Self::get_owned_games()?;
 		let installed_games = Self::get_installed_games()?;
 
 		for parsed_game in owned_games {
 			let mut game = DbGame::new(
-				*Self::ID,
+				ProviderId::Gog,
 				parsed_game.app_name.clone(),
 				parsed_game.title.clone(),
 			);

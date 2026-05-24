@@ -61,7 +61,7 @@ struct XboxGamepassImages {
 }
 
 impl ProviderActions for Xbox {
-	async fn insert_games(&self, db: &DbMutex) -> Result {
+	fn insert_games(&self, db: &DbMutex) -> Result {
 		if let Err(error) = get_games(db) {
 			if error.kind() == io::ErrorKind::NotFound {
 				log::info!(

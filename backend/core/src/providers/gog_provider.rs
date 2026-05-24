@@ -5,6 +5,7 @@ use std::path::{
 	PathBuf,
 };
 
+use chrono::DateTime;
 use log::error;
 use rai_pal_proc_macros::serializable_struct;
 use rusqlite::{
@@ -31,7 +32,6 @@ use crate::{
 	providers::provider::{
 		ProviderActions,
 		ProviderId,
-		ProviderStatic,
 	},
 	result::Result,
 };
@@ -50,7 +50,7 @@ pub struct Gog {}
 
 impl Gog {
 	fn get_game(db_entry: &GogDbEntry, launcher_path: &Path) -> DbGame {
-		let mut game = DbGame::new(*Self::ID, db_entry.id.clone(), db_entry.title.clone());
+		let mut game = DbGame::new(ProviderId::Gog, db_entry.id.clone(), db_entry.title.clone());
 
 		game.add_provider_command(
 			ProviderCommandAction::ShowInLibrary,
@@ -65,25 +65,17 @@ impl Gog {
 		);
 
 		game.thumbnail_url.clone_from(&db_entry.image_url);
-		game.release_date = db_entry.release_date.map(Into::into);
+		game.release_date_rfc3339 = db_entry
+			.release_date
+			.and_then(|ts| DateTime::from_timestamp_secs(ts.into()))
+			.map(|dt| dt.to_rfc3339());
 
 		game
 	}
 }
 
-impl ProviderStatic for Gog {
-	const ID: &'static ProviderId = &ProviderId::Gog;
-
-	fn new() -> Result<Self>
-	where
-		Self: Sized,
-	{
-		Ok(Self {})
-	}
-}
-
 impl ProviderActions for Gog {
-	async fn insert_games(&self, db: &DbMutex) -> Result {
+	fn insert_games(&self, db: &DbMutex) -> Result {
 		if let Some(database) = get_database()? {
 			let launcher_path = get_launcher_path()?;
 
@@ -138,23 +130,23 @@ fn get_database() -> Result<Option<Vec<GogDbEntry>>> {
 	let connection = Connection::open_with_flags(database_path, OpenFlags::SQLITE_OPEN_READ_ONLY)?;
 
 	let mut statement = connection.prepare(
-		r"SELECT 
+		r"SELECT
 	Builds.productId AS id,
 	MAX(CASE WHEN GamePieceTypes.type = 'originalTitle' THEN GamePieces.value END) AS title,
 	MAX(CASE WHEN GamePieceTypes.type = 'originalImages' THEN GamePieces.value END) AS images,
 	MAX(CASE WHEN GamePieceTypes.type = 'originalMeta' THEN GamePieces.value END) AS meta,
 	MAX(PlayTaskLaunchParameters.executablePath) AS executablePath
-FROM 
+FROM
 	Builds
-JOIN 
+JOIN
 	GamePieces ON GamePieces.releaseKey = 'gog_' || Builds.productId
-LEFT JOIN 
+LEFT JOIN
 	PlayTasks ON GamePieces.releaseKey = PlayTasks.gameReleaseKey
-LEFT JOIN 
+LEFT JOIN
 	PlayTaskLaunchParameters ON PlayTasks.id = PlayTaskLaunchParameters.playTaskId
 JOIN
 	GamePieceTypes ON GamePieces.gamePieceTypeId = GamePieceTypes.id
-GROUP BY 
+GROUP BY
 	Builds.productId;",
 	)?;
 

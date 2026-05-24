@@ -33,7 +33,6 @@ use crate::{
 		provider::{
 			ProviderActions,
 			ProviderId,
-			ProviderStatic,
 		},
 		provider_command::{
 			ProviderCommand,
@@ -46,17 +45,6 @@ use crate::{
 
 #[derive(Clone)]
 pub struct Steam;
-
-impl ProviderStatic for Steam {
-	const ID: &'static ProviderId = &ProviderId::Steam;
-
-	fn new() -> Result<Self>
-	where
-		Self: Sized,
-	{
-		Ok(Self {})
-	}
-}
 
 impl Steam {
 	fn parse_shortcut_executable_path(executable: &str) -> Option<PathBuf> {
@@ -96,8 +84,11 @@ impl Steam {
 		for shortcut_result in shortcuts {
 			match shortcut_result {
 				Ok(shortcut) => {
-					let mut game =
-						DbGame::new(*Self::ID, shortcut.app_id.to_string(), shortcut.app_name);
+					let mut game = DbGame::new(
+						ProviderId::Steam,
+						shortcut.app_id.to_string(),
+						shortcut.app_name,
+					);
 					game.add_provider_command(
 						ProviderCommandAction::ShowInLibrary,
 						ProviderCommand::String(format!(
@@ -236,7 +227,7 @@ impl Steam {
 }
 
 impl ProviderActions for Steam {
-	async fn insert_games(&self, db: &DbMutex) -> Result {
+	fn insert_games(&self, db: &DbMutex) -> Result {
 		let steam_dir = SteamDir::locate()?;
 		let appinfo_path = Self::get_appinfo_path(steam_dir.path());
 
@@ -269,8 +260,11 @@ impl ProviderActions for Steam {
 							continue;
 						}
 
-						let mut game =
-							DbGame::new(*Self::ID, external_id.clone(), app_info.name.clone());
+						let mut game = DbGame::new(
+							ProviderId::Steam,
+							external_id.clone(),
+							app_info.name.clone(),
+						);
 
 						game.thumbnail_url = Some(format!(
 							"https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/{external_id}/header.jpg"
