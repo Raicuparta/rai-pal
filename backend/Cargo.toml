@@ -49,6 +49,7 @@ must_use_candidate = "allow"
 missing_errors_doc = "allow"
 cargo_common_metadata = "allow"
 multiple_crate_versions = "allow"
+implicit_hasher = "allow"
 
 # Restriction rules are too restrictive, so we allow by default.
 restriction = { level = "allow", priority = -1 }

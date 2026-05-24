@@ -122,15 +122,12 @@ pub trait ProviderStatic: ProviderActions {
 		Self: Sized;
 }
 
-pub fn get_provider(provider_id: ProviderId) -> Option<Result<Provider>> {
+pub fn get_provider(provider_id: ProviderId) -> Result<Provider> {
 	for &(id, create_provider) in PROVIDERS {
 		if id == provider_id {
-			return Some(create_provider());
+			return create_provider();
 		}
 	}
-	log::info!(
-		"Failed to find provider with ID `{provider_id}`. It's probably not supported in this platform."
-	);
 
-	None
+	Err(Error::InvalidProviderId(provider_id.to_string()))
 }

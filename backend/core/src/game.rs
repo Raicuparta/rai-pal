@@ -280,4 +280,9 @@ impl DbGame {
 			}),
 		)
 	}
+
+	pub fn try_get_installed_mod(&self, mod_id: &str) -> Result<InstalledMod<'_>> {
+		self.get_installed_mod(mod_id)?
+			.ok_or(Error::ModNotInstalled(mod_id.to_string()))
+	}
 }

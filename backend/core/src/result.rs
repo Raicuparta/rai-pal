@@ -102,6 +102,13 @@ pub enum Error {
 		SystemTimeError,
 	),
 
+	#[error(transparent)]
+	ParseInt(
+		#[from]
+		#[specta(skip)]
+		num::ParseIntError,
+	),
+
 	#[error("Invalid type `{0}` in binary vdf for key {1}")]
 	InvalidBinaryVdfType(u8, String),
 
@@ -121,6 +128,9 @@ pub enum Error {
 		"Failed to find Steam cache file. **Try restarting Steam**. (Tried to read from `{0}`)"
 	)]
 	SteamAppInfoNotFound(PathBuf),
+
+	#[error("Steam Proton handling error: {0}")]
+	SteamProton(String),
 
 	#[error("Failed to retrieve Unity version from asset `{0}`")]
 	FailedToParseUnityVersionAsset(PathBuf),
@@ -159,6 +169,9 @@ pub enum Error {
 		"This operation requires game `{0}` to be installed, but the installed game wasn't found."
 	)]
 	GameNotInstalled(String),
+
+	#[error("This operation requires mod `{0}` to be installed in a game.")]
+	ModNotInstalled(String),
 
 	#[error("Failed to find game executable at `{0}`")]
 	NoExecutableFound(PathBuf),

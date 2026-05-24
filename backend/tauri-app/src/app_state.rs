@@ -1,6 +1,5 @@
 use std::{
 	collections::HashMap,
-	ops::Deref,
 	sync::RwLock,
 };
 
@@ -42,10 +41,10 @@ impl<TData: Clone> StateData<TData> for RwLock<Option<TData>> {
 			.read()
 			.map_err(|err| Error::FailedToAccessStateData(err.to_string()))?;
 
-		match &*guard {
-			Some(data) => Ok(data.clone()),
-			None => Err(Error::FailedToAccessStateData("Empty data".into())),
-		}
+		(*guard).as_ref().map_or_else(
+			|| Err(Error::FailedToAccessStateData("Empty data".into())),
+			|data| Ok(data.clone()),
+		)
 	}
 
 	fn write_state_value(&self, data: TData) -> Result<()> {
