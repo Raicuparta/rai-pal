@@ -2,7 +2,6 @@ import { commands } from "@api/bindings";
 import { CommandButton } from "@components/command-button";
 import { useLocalization } from "@hooks/use-localization";
 import { Flex, Modal, Stack } from "@mantine/core";
-import { useDisclosure } from "@mantine/hooks";
 import { IconHammer } from "@tabler/icons-react";
 import { useState } from "react";
 
@@ -11,8 +10,8 @@ type Props = {
 	readonly onClose: () => void;
 };
 
-export function WineBepInExEnvironmentModal(props: Props) {
-	const t = useLocalization("wineBepInExEnvironment");
+export function GlobalWineOverridesModal(props: Props) {
+	const t = useLocalization("globalWineOverrides");
 	const [showSuccess, setShowSuccess] = useState(false);
 
 	return (
@@ -29,7 +28,7 @@ export function WineBepInExEnvironmentModal(props: Props) {
 				<span>{t("setUpEnvironmentDescription")}</span>
 				<Flex justify="center">
 					<CommandButton
-						onClick={commands.setUpWineBepinexEnvironment}
+						onClick={commands.setUpGlobalWineOverrides}
 						onSuccess={() => setShowSuccess(true)}
 						leftSection={<IconHammer />}
 					>

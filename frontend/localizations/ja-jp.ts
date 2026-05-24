@@ -85,6 +85,8 @@ export const jaJp: Localization = {
 		foldersDropdown: "フォルダー",
 		openGameFilesFolder: "ゲームファイルフォルダーを開く",
 		openInstalledModsFolder: "インストール済みモッドフォルダーを開く",
+		openGameWinePrefixFolder: "ゲームのWineプレフィックスフォルダーを開く",
+		openGameWineBinaryFolder: "ゲームのWineバイナリフォルダーを開く",
 		removeFromRaiPal: "Rai Palから削除",
 		removeGameConfirmation: "このゲームをRai Palから削除してもよろしいですか？",
 		refreshGame: "更新",
@@ -171,6 +173,14 @@ export const jaJp: Localization = {
 			"Mod はこれを使ってあなたのDiscordユーザー名、アバター、ロールなどにアクセスできます。",
 	},
 
+	subPage: {
+		back: "戻る",
+	},
+
+	downloadStatusMenu: {
+		clear: "完了済みを消去",
+	},
+
 	steamCache: {
 		resetSteamCacheButton: "Steamのキャッシュをリセット",
 		resetSteamCacheModalTitle: "Steamのキャッシュをリセット",
@@ -189,7 +199,7 @@ export const jaJp: Localization = {
 			"Rai PalがSteamライブラリに追加されました。表示するにはSteamを再起動してください。",
 	},
 
-	wineBepInExEnvironment: {
+	globalWineOverrides: {
 		setUpEnvironmentButton: "BepInEx用のLinux環境をセットアップ",
 		setUpEnvironmentTitle: "BepInEx用のLinux環境をセットアップ",
 		setUpEnvironmentDescription:

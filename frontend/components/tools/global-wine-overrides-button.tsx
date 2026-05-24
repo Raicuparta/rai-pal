@@ -6,8 +6,8 @@ type Props = {
 	readonly onClick: () => void;
 };
 
-export function WineBepInExEnvironmentButton(props: Props) {
-	const t = useLocalization("wineBepInExEnvironment");
+export function GlobalWineOverridesButton(props: Props) {
+	const t = useLocalization("globalWineOverrides");
 
 	return (
 		<Menu.Item

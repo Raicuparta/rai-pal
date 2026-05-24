@@ -130,7 +130,7 @@ export function GameMods({ game }: Props) {
 			}
 
 			// Deprecated mods only show if they had been previously installed.
-			if (mod.remote?.deprecated && !installedMods[mod.id]) {
+			if (mod.deprecated && !installedMods[mod.id]) {
 				continue;
 			}
 

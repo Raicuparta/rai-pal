@@ -81,6 +81,8 @@ export const zhCn: Localization = {
 		foldersDropdown: "文件夹",
 		openGameFilesFolder: "打开游戏文件夹",
 		openInstalledModsFolder: "打开已安装模组文件夹",
+		openGameWinePrefixFolder: "打开游戏的 Wine 前缀文件夹",
+		openGameWineBinaryFolder: "打开游戏的 Wine 二进制文件夹",
 		removeFromRaiPal: "从 Rai Pal 移除",
 		removeGameConfirmation: "您确定要从 Rai Pal 移除此游戏吗？",
 		refreshGame: "刷新",
@@ -161,6 +163,14 @@ export const zhCn: Localization = {
 			"模组可以使用此功能访问你的 Discord 用户名、头像、身份组等。",
 	},
 
+	subPage: {
+		back: "返回",
+	},
+
+	downloadStatusMenu: {
+		clear: "清除已完成",
+	},
+
 	steamCache: {
 		resetSteamCacheButton: "重置 Steam 缓存",
 		resetSteamCacheModalTitle: "重置 Steam 缓存",
@@ -179,7 +189,7 @@ export const zhCn: Localization = {
 			"Rai Pal 已添加到你的 Steam 库中。重启 Steam 后即可看到它。",
 	},
 
-	wineBepInExEnvironment: {
+	globalWineOverrides: {
 		setUpEnvironmentButton: "为 BepInEx 设置 Linux 环境",
 		setUpEnvironmentTitle: "为 BepInEx 设置 Linux 环境",
 		setUpEnvironmentDescription:

@@ -163,6 +163,12 @@ export const enUs = {
 		// Open the folder where Rai Pal places the mods for this game.
 		openInstalledModsFolder: "Open Installed Mods Folder",
 
+		// Open the Wine prefix folder detected for this game.
+		openGameWinePrefixFolder: "Open Game Wine Prefix Folder",
+
+		// Open the folder that contains the Wine binary used for this game.
+		openGameWineBinaryFolder: "Open Game Wine Binary Folder",
+
 		// Button for removing a manually-added game from Rai Pal.
 		removeFromRaiPal: "Remove from Rai Pal",
 
@@ -349,6 +355,18 @@ export const enUs = {
 			"Mods can use this to access your Discord username, avatar, roles, etc.",
 	},
 
+	// Shared header shown in sub-pages and modals.
+	subPage: {
+		// Button to close the sub-page and go back to the previous view.
+		back: "Back",
+	},
+
+	// Menu that shows active and completed file downloads.
+	downloadStatusMenu: {
+		// Button that removes finished downloads from the list.
+		clear: "Clear completed",
+	},
+
 	// Button and modal for resetting Steam's cache.
 	steamCache: {
 		// Button for resetting Steam's cache.
@@ -384,7 +402,7 @@ export const enUs = {
 	},
 
 	// Button and modal for making sure BepInEx loads on Linux with Wine.
-	wineBepInExEnvironment: {
+	globalWineOverrides: {
 		// Button that sets up the Linux environment for BepInEx.
 		setUpEnvironmentButton: "Set up Linux environment for BepInEx",
 

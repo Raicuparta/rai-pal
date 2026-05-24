@@ -83,6 +83,8 @@ export const koKr: Localization = {
 		foldersDropdown: "폴더",
 		openGameFilesFolder: "게임 파일 폴더 열기",
 		openInstalledModsFolder: "설치된 모드 폴더 열기",
+		openGameWinePrefixFolder: "게임 Wine 프리픽스 폴더 열기",
+		openGameWineBinaryFolder: "게임 Wine 바이너리 폴더 열기",
 		removeFromRaiPal: "Rai Pal에서 제거",
 		removeGameConfirmation: "이 게임을 Rai Pal에서 제거하시겠습니까?",
 		refreshGame: "새로고침",
@@ -166,6 +168,14 @@ export const koKr: Localization = {
 			"모드는 이를 사용해 Discord 사용자 이름, 아바타, 역할 등에 접근할 수 있습니다.",
 	},
 
+	subPage: {
+		back: "뒤로",
+	},
+
+	downloadStatusMenu: {
+		clear: "완료 항목 지우기",
+	},
+
 	steamCache: {
 		resetSteamCacheButton: "Steam 캐시 재설정",
 		resetSteamCacheModalTitle: "Steam 캐시 재설정",
@@ -184,7 +194,7 @@ export const koKr: Localization = {
 			"Rai Pal이 Steam 라이브러리에 추가되었습니다. 보려면 Steam을 다시 시작하세요.",
 	},
 
-	wineBepInExEnvironment: {
+	globalWineOverrides: {
 		setUpEnvironmentButton: "BepInEx용 Linux 환경 설정",
 		setUpEnvironmentTitle: "BepInEx용 Linux 환경 설정",
 		setUpEnvironmentDescription:

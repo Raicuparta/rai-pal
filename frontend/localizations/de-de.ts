@@ -85,6 +85,8 @@ export const deDe: Localization = {
 		foldersDropdown: "Ordner",
 		openGameFilesFolder: "Spiel-Dateien-Ordner öffnen",
 		openInstalledModsFolder: "Installierte Mods-Ordner öffnen",
+		openGameWinePrefixFolder: "Wine-Präfix-Ordner des Spiels öffnen",
+		openGameWineBinaryFolder: "Wine-Binärordner des Spiels öffnen",
 		removeFromRaiPal: "Aus Rai Pal entfernen",
 		removeGameConfirmation:
 			"Sind Sie sicher, dass Sie dieses Spiel aus Rai Pal entfernen möchten?",
@@ -172,6 +174,14 @@ export const deDe: Localization = {
 			"Mods können dies verwenden, um auf Ihren Discord-Benutzernamen, Avatar, Rollen usw. zuzugreifen.",
 	},
 
+	subPage: {
+		back: "Zurück",
+	},
+
+	downloadStatusMenu: {
+		clear: "Abgeschlossene entfernen",
+	},
+
 	steamCache: {
 		resetSteamCacheButton: "Steam-Cache zurücksetzen",
 		resetSteamCacheModalTitle: "Steam-Cache zurücksetzen",
@@ -190,7 +200,7 @@ export const deDe: Localization = {
 			"Rai Pal wurde zu Ihrer Steam-Bibliothek hinzugefügt. Starten Sie Steam neu, damit es angezeigt wird.",
 	},
 
-	wineBepInExEnvironment: {
+	globalWineOverrides: {
 		setUpEnvironmentButton: "Linux-Umgebung für BepInEx einrichten",
 		setUpEnvironmentTitle: "Linux-Umgebung für BepInEx einrichten",
 		setUpEnvironmentDescription:

@@ -17,7 +17,7 @@ export function ModsPage() {
 	const filteredMods = useMemo(
 		() =>
 			Object.values(mods).filter((mod) => {
-				if (!mod.local && mod.remote?.deprecated) {
+				if (!mod.local && mod.deprecated) {
 					return false;
 				}
 
