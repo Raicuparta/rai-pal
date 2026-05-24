@@ -109,6 +109,13 @@ pub enum Error {
 		num::ParseIntError,
 	),
 
+	#[error(transparent)]
+	Utf8(
+		#[from]
+		#[specta(skip)]
+		std::str::Utf8Error,
+	),
+
 	#[error("Invalid type `{0}` in binary vdf for key {1}")]
 	InvalidBinaryVdfType(u8, String),
 

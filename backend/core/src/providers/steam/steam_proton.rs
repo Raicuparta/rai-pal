@@ -93,37 +93,15 @@ pub fn run_with_wine(
 }
 
 pub(crate) fn set_wine_dll_overrides_for_game(game: &DbGame, dll_overrides: &[String]) -> Result {
-	if dll_overrides.is_empty() {
-		log::debug!(
-			"Steam Proton DLL override setup skipped for `{}` ({}): empty override list",
-			game.display_title,
-			game.external_id,
-		);
-		return Ok(());
-	}
+	let path = get_wine_prefix_path(game)?.join("user.reg");
 
-	log::info!(
-		"Steam Proton DLL override setup started for `{}` ({}) with {} DLL entries",
-		game.display_title,
-		game.external_id,
-		dll_overrides.len(),
-	);
-
-	upsert_dll_overrides_in_user_reg(&get_wine_prefix_path(game)?.join("user.reg"), dll_overrides)?;
-
-	Ok(())
-}
-
-fn upsert_dll_overrides_in_user_reg(path: &Path, dll_overrides: &[String]) -> Result {
 	if !path.exists() {
-		log::warn!(
-			"Steam Proton user.reg does not exist yet at {}. Launch the game once to create the prefix.",
-			path.display(),
-		);
-		return Ok(());
+		return Err(Error::SteamProton(
+			"Steam Proton user.reg doesn't exist yet for this game".to_string(),
+		));
 	}
 
-	let user_reg_data = fs::read_to_string(path)?;
+	let user_reg_data = fs::read_to_string(&path)?;
 	let mut ensured_user_reg_data = user_reg_data.clone();
 
 	for dll_override in dll_overrides {
@@ -142,8 +120,8 @@ fn upsert_dll_overrides_in_user_reg(path: &Path, dll_overrides: &[String]) -> Re
 			|parent| parent.join("user.reg.bak"),
 		);
 
-		fs::copy(path, backup_path)?;
-		fs::write(path, ensured_user_reg_data)?;
+		fs::copy(&path, backup_path)?;
+		fs::write(&path, ensured_user_reg_data)?;
 
 		log::info!("Updated Steam Proton user.reg at {}", path.display());
 	}
