@@ -29,6 +29,7 @@ use uuid::Uuid;
 
 use crate::{
 	http,
+	open_better::open_detached_better,
 	paths::{
 		self,
 		AsValidStr,
@@ -711,7 +712,7 @@ pub async fn start_discord_oauth() -> Result {
 		build_discord_auth_url(DISCORD_CLIENT_ID, &redirect_uri, &state, &code_challenge)?;
 
 	log::info!("Starting Discord OAuth flow. Redirect URI: {redirect_uri}");
-	open::that_detached(auth_url)?;
+	open_detached_better(auth_url)?;
 
 	let auth_code = parse_oauth_callback(&listener, &state, Duration::from_mins(3))?;
 

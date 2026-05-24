@@ -50,7 +50,7 @@ pub trait GameDatabase {
 #[serializable_struct]
 pub struct GameIdsResponse {
 	game_ids: Vec<(ProviderId, String)>,
-	total_count: i64,
+	total_count: u32,
 }
 
 impl GameDatabase for DbMutex {
@@ -113,7 +113,7 @@ impl GameDatabase for DbMutex {
 					display_title: row.get(3)?,
 					title_discriminator: row.get(4)?,
 					thumbnail_url: row.get(5)?,
-					release_date: row.get(6)?,
+					release_date_rfc3339: row.get(6)?,
 					tags: row.get(7)?,
 					provider_commands: row.get(8)?,
 					exe_path: row.get(9)?,
@@ -332,7 +332,7 @@ impl GameDatabase for DbMutex {
 
 		Ok(GameIdsResponse {
 			game_ids,
-			total_count,
+			total_count: u32::try_from(total_count)?,
 		})
 	}
 
@@ -370,7 +370,7 @@ fn try_insert_game(connection_mutex: &DbMutex, game: &DbGame) -> Result {
 			game.external_id.clone(),
 			game.display_title.clone(),
 			game.thumbnail_url.clone(),
-			game.release_date,
+			game.release_date_rfc3339,
 			game.tags.clone(),
 			game.title_discriminator.clone(),
 			game.provider_commands.clone(),
@@ -585,12 +585,12 @@ pub fn attach_remote_database<TConnection: Deref<Target = rusqlite::Connection>>
 			provider_id, external_id, engine_brand, engine_version_major,
 			engine_version_minor, engine_version_patch, engine_version_display
 		)
-		SELECT 
+		SELECT
 			provider_id,
 			external_id,
 			engine_brand,
 			NULL,
-			NULL, 
+			NULL,
 			NULL,
 			engine_version
 		FROM remote_db.games;
@@ -599,7 +599,7 @@ pub fn attach_remote_database<TConnection: Deref<Target = rusqlite::Connection>>
 	)?;
 
 	let mut update_statement = local_database_connection.prepare_cached(
-		"UPDATE main.remote_games SET engine_version_major = ?, engine_version_minor = ?, engine_version_patch = ? 
+		"UPDATE main.remote_games SET engine_version_major = ?, engine_version_minor = ?, engine_version_patch = ?
 		 WHERE provider_id = ? AND external_id = ? AND engine_version_display = ?"
 	)?;
 

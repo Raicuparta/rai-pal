@@ -45,7 +45,7 @@ export function ModModal(props: Props) {
 				p={10}
 				gap={30}
 			>
-				{props.mod.local && props.mod.local?.runForGame && (
+				{props.mod.local && props.mod.runForGame && (
 					<CommandButton
 						leftSection={<IconPlayerPlay />}
 						onClick={() => commands.runRunnableWithoutGame(props.mod.id)}

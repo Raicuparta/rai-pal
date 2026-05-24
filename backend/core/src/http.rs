@@ -5,10 +5,7 @@ use std::{
 };
 
 use futures_util::StreamExt;
-use rai_pal_proc_macros::{
-	serializable_enum,
-	serializable_struct,
-};
+use rai_pal_proc_macros::serializable_struct;
 use tokio::{
 	fs::File,
 	io::{
@@ -37,13 +34,32 @@ pub static CLIENT_NO_REDIRECT: LazyLock<reqwest::Client> = LazyLock::new(|| {
 		.build()
 		.expect("Failed to set up HTTP client")
 });
-
 #[serializable_struct]
 pub struct DownloadStatus {
 	url: String,
 	target_path: String,
-	downloaded: u64,
-	total: Option<u64>,
+	downloaded_bytes: f64,
+	total_bytes: Option<f64>,
+}
+
+impl DownloadStatus {
+	pub fn new(
+		url: String,
+		target_path: String,
+		downloaded_bytes: usize,
+		total_bytes: Option<u64>,
+	) -> Self {
+		Self {
+			url,
+			target_path,
+
+			#[allow(clippy::cast_precision_loss)]
+			downloaded_bytes: downloaded_bytes as f64,
+
+			#[allow(clippy::cast_precision_loss)]
+			total_bytes: total_bytes.map(|total| total as f64),
+		}
+	}
 }
 
 pub async fn download(
@@ -56,11 +72,12 @@ pub async fn download(
 	let file = File::create(target_path).await?;
 	let mut file = BufWriter::new(file);
 
-	let total_size = response.content_length();
-	let mut downloaded: u64 = 0;
+	let mut downloaded_bytes: usize = 0;
 
 	let url_str = url.to_string();
 	let target_path_str = target_path.to_string_lossy().into_owned();
+	// Directly convert u64 content length to f64
+	let total_bytes = response.content_length();
 
 	let mut stream = response.bytes_stream();
 
@@ -69,24 +86,24 @@ pub async fn download(
 
 		file.write_all(&chunk).await?;
 
-		downloaded += u64::try_from(chunk.len())?;
+		downloaded_bytes += chunk.len();
 
-		status_callback(DownloadStatus {
-			url: url_str.clone(),
-			target_path: target_path_str.clone(),
-			downloaded,
-			total: total_size,
-		});
+		status_callback(DownloadStatus::new(
+			url_str.clone(),
+			target_path_str.clone(),
+			downloaded_bytes,
+			total_bytes,
+		));
 	}
 
 	file.flush().await?;
 
-	status_callback(DownloadStatus {
-		url: url_str,
-		target_path: target_path_str,
-		downloaded,
-		total: downloaded.into(),
-	});
+	status_callback(DownloadStatus::new(
+		url_str,
+		target_path_str,
+		downloaded_bytes,
+		Some(downloaded_bytes as u64),
+	));
 
 	Ok(())
 }

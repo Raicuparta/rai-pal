@@ -7,13 +7,11 @@ use std::{
 		Hash,
 		Hasher,
 	},
-	io,
 	path::{
 		Component,
 		Path,
 		PathBuf,
 	},
-	process::Stdio,
 };
 
 use directories::{
@@ -23,10 +21,13 @@ use directories::{
 use globwalk::glob;
 use log;
 
-use crate::result::{
-	Error,
-	LogErrExt,
-	Result,
+use crate::{
+	open_better::open_detached_better,
+	result::{
+		Error,
+		LogErrExt,
+		Result,
+	},
 };
 
 pub fn glob_path(path: &Path) -> Vec<PathBuf> {
@@ -196,29 +197,6 @@ pub fn try_get_program_data_path() -> PathBuf {
 	})
 }
 
-// Weird workaround for AppImage builds.
-fn open_detached_clean_env(path: impl AsRef<OsStr>) -> Result {
-	let mut last_err = io::Error::new(io::ErrorKind::NotFound, "No command to open the path");
-
-	for mut cmd in open::commands(path) {
-		cmd.env_remove("LD_LIBRARY_PATH");
-		cmd.env_remove("QT_PLUGIN_PATH");
-		cmd.env_remove("APPDIR");
-		cmd.env_remove("APPIMAGE");
-
-		cmd.stdin(Stdio::null())
-			.stdout(Stdio::null())
-			.stderr(Stdio::null());
-
-		match cmd.spawn() {
-			Ok(_) => return Ok(()),
-			Err(e) => last_err = e,
-		}
-	}
-
-	Err(last_err.into())
-}
-
 pub fn open_folder_or_parent(path: &Path) -> Result {
 	let folder_path = if path.is_dir() {
 		path
@@ -232,7 +210,7 @@ pub fn open_folder_or_parent(path: &Path) -> Result {
 
 	// I've hard weird issues with non-normalized paths acting weird on Windows,
 	// normalizing seems to fix it.
-	open_detached_clean_env(normalized_path)
+	open_detached_better(normalized_path)
 }
 
 pub fn remove_path_if_exists(path: &Path) -> Result {

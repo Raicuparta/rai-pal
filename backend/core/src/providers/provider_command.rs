@@ -1,8 +1,14 @@
-use std::{path::PathBuf, process::Command};
+use std::{
+	path::PathBuf,
+	process::Command,
+};
 
 use rai_pal_proc_macros::serializable_enum;
 
-use crate::result::Result;
+use crate::{
+	open_better::open_detached_better,
+	result::Result,
+};
 
 #[derive(serde::Serialize, serde::Deserialize, specta::Type, Clone, PartialEq, Eq, Hash, Debug)]
 pub enum ProviderCommand {
@@ -24,7 +30,7 @@ impl ProviderCommand {
 	pub fn run(&self) -> Result {
 		match self {
 			Self::String(command) => {
-				open::that_detached(command)?;
+				open_detached_better(command)?;
 			}
 			Self::Path(path, args) => {
 				let mut command = Command::new(path);

@@ -1,3 +1,4 @@
 disallowed-methods = [
-    { path = "std::result::Result::ok", reason = "Using .ok() swallows errors.", replacement = "ok_or_log" }
+    { path = "std::result::Result::ok", reason = "Using .ok() swallows errors.", replacement = "ok_or_log" },
+    { path = "open::that_detached", reason = "Does't work on AppImage builds", replacement = "open_detached_clean_env" },
 ]

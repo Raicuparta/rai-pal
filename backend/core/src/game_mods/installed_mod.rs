@@ -10,6 +10,7 @@ use crate::{
 		mod_config::ModConfig,
 		replacement_token::replace_tokens,
 	},
+	open_better::open_detached_better,
 	paths,
 	result::{
 		Error,
@@ -108,7 +109,7 @@ impl<'a> InstalledMod<'a> {
 			if open_folder {
 				paths::open_folder_or_parent(&config_path)?;
 			} else {
-				open::that_detached(config_path)?;
+				open_detached_better(config_path)?;
 			}
 		}
 

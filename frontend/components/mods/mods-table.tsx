@@ -45,22 +45,22 @@ export function ModsTable(props: Props) {
 						}
 					>
 						<Table.Td>
-							{mod.remote?.deprecated && <DeprecatedBadge />}
+							{mod.deprecated && <DeprecatedBadge />}
 							<ItemName
 								label={
-									mod.remote?.author
-										? `${t("modByAuthor", { authorName: mod.remote?.author })}`
+									mod.author
+										? `${t("modByAuthor", { authorName: mod.author })}`
 										: undefined
 								}
 							>
 								{getModTitle(mod)}
 							</ItemName>
-							{mod.remote?.description && (
+							{mod.description && (
 								<Text
 									size="sm"
 									opacity={0.5}
 								>
-									{mod.remote.description}
+									{mod.description}
 								</Text>
 							)}
 						</Table.Td>

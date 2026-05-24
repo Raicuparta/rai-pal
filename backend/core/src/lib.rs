@@ -14,6 +14,7 @@ pub mod games_query;
 pub mod http;
 pub mod local_database;
 pub mod maps;
+pub mod open_better;
 pub mod operating_system;
 pub mod paths;
 pub mod providers;

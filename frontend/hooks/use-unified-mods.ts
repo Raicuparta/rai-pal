@@ -26,9 +26,19 @@ const unifiedModsAtom = atom((get) => {
 		unifiedMods[key] = {
 			...remote,
 			...local,
-			localVersion: local?.latestVersion,
-			remoteVersion: local?.latestVersion,
-		} as GameMod;
+			local: local
+				? {
+						latestVersion: local.latestVersion,
+						hash: local.hash,
+					}
+				: undefined,
+			remote: remote
+				? {
+						latestVersion: remote.latestVersion,
+						hash: remote.hash,
+					}
+				: undefined,
+		} as UnifiedMod;
 	}
 
 	return unifiedMods;

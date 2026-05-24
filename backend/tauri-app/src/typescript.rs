@@ -3,10 +3,11 @@ use specta_typescript::Typescript;
 const BINDINGS_PATH: &str = "../../frontend/api/bindings.ts";
 
 pub fn export(builder: &tauri_specta::Builder<tauri::Wry>) {
+	#[allow(
+		clippy::unwrap_used,
+		reason = "This is dev only, we wanna make sure it explodes if types fail to generate."
+	)]
 	builder
 		.export(Typescript::default(), BINDINGS_PATH)
-		.unwrap_or_else(|err| {
-			log::error!("Failed to generate TypeScript bindings: {err}");
-			std::process::exit(1);
-		});
+		.unwrap();
 }
