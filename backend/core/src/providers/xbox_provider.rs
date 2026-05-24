@@ -25,24 +25,12 @@ use crate::{
 	providers::provider::{
 		ProviderActions,
 		ProviderId,
-		ProviderStatic,
 	},
 	result::Result,
 };
 
 #[derive(Clone)]
 pub struct Xbox {}
-
-impl ProviderStatic for Xbox {
-	const ID: &'static ProviderId = &ProviderId::Xbox;
-
-	fn new() -> Result<Self>
-	where
-		Self: Sized,
-	{
-		Ok(Self {})
-	}
-}
 
 #[serializable_struct]
 struct XboxGamepassGame {

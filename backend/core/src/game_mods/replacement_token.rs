@@ -3,7 +3,6 @@ use rai_pal_proc_macros::serializable_enum;
 use crate::{
 	game::DbGame,
 	game_mods::game_mod::GameMod,
-	operating_system::OperatingSystem,
 	paths,
 	providers::provider_command::{
 		ProviderCommand,
@@ -107,43 +106,47 @@ pub fn replace_tokens(base_string: &str, game: &DbGame, game_mod: &GameMod) -> S
 	});
 	result = replace_parameter_value(&result, ReplacementToken::RoamingAppData, || {
 		#[cfg(target_os = "linux")]
-		if let Some(run) = game_mod.run_for_game.as_ref()
-			&& run.os == Some(OperatingSystem::Windows)
 		{
-			// If runnable mod host OS is windows and we're on Linux, that means Wine,
-			// which means config dir is inside the prefix.
+			use crate::operating_system::OperatingSystem;
 
-			use std::{
-				path::PathBuf,
-				process::Command,
-			};
+			if let Some(run) = game_mod.run_for_game.as_ref()
+				&& run.os == Some(OperatingSystem::Windows)
+			{
+				// If runnable mod host OS is windows and we're on Linux, that means Wine,
+				// which means config dir is inside the prefix.
 
-			use crate::providers::provider;
+				use std::{
+					path::PathBuf,
+					process::Command,
+				};
 
-			let provider = provider::get_provider(game.provider_id)?;
-			let prefix_path = provider.get_wine_prefix_path(game)?;
+				use crate::providers::provider;
 
-			let output = Command::new(&provider.get_wine_binary_path(game)?)
-				.env("WINEPREFIX", &prefix_path)
-				.arg("cmd")
-				.arg("/C")
-				.arg("echo %APPDATA%")
-				.output()?;
+				let provider = provider::get_provider(game.provider_id)?;
+				let prefix_path = provider.get_wine_prefix_path(game)?;
 
-			let win_path = str::from_utf8(&output.stdout)?.trim();
+				let output = Command::new(&provider.get_wine_binary_path(game)?)
+					.env("WINEPREFIX", &prefix_path)
+					.arg("cmd")
+					.arg("/C")
+					.arg("echo %APPDATA%")
+					.output()?;
 
-			// 2. Convert Windows path to Linux path manually
-			// The format is always C:\users\username\AppData\Roaming
-			// We replace 'C:\' with the actual path to drive_c
-			let drive_c_path = format!("{}/drive_c", prefix_path.to_string_lossy());
+				let win_path = str::from_utf8(&output.stdout)?.trim();
 
-			// Remove the 'C:\' prefix and replace backslashes with slashes
-			let relative_path = win_path.replace("C:\\", "").replace('\\', "/");
+				// 2. Convert Windows path to Linux path manually
+				// The format is always C:\users\username\AppData\Roaming
+				// We replace 'C:\' with the actual path to drive_c
+				let drive_c_path = format!("{}/drive_c", prefix_path.to_string_lossy());
 
-			return Ok(PathBuf::from(drive_c_path)
-				.join(relative_path)
-				.to_string_lossy()
-				.to_string());
+				// Remove the 'C:\' prefix and replace backslashes with slashes
+				let relative_path = win_path.replace("C:\\", "").replace('\\', "/");
+
+				return Ok(PathBuf::from(drive_c_path)
+					.join(relative_path)
+					.to_string_lossy()
+					.to_string());
+			}
 		}
 
 		Ok(paths::base_dirs()?

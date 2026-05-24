@@ -642,7 +642,11 @@ async fn download_remote_config(
 #[specta::specta]
 async fn set_up_global_wine_overrides() -> Result {
 	#[cfg(not(target_os = "linux"))]
-	return Err(Error::LinuxOnly());
+	{
+		use crate::result::Error;
+
+		return Err(Error::LinuxOnly());
+	}
 
 	#[cfg(target_os = "linux")]
 	{
