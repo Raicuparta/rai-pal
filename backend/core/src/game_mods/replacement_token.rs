@@ -118,10 +118,7 @@ pub fn replace_tokens(base_string: &str, game: &DbGame, game_mod: &GameMod) -> S
 				process::Command,
 			};
 
-			use crate::providers::provider::{
-				self,
-				ProviderActions,
-			};
+			use crate::providers::provider;
 
 			let provider = provider::get_provider(game.provider_id)?;
 			let prefix_path = provider.get_wine_prefix_path(game)?;

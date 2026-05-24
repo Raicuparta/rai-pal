@@ -38,10 +38,7 @@ use crate::{
 	},
 	operating_system::OperatingSystem,
 	paths,
-	providers::provider::{
-		self,
-		ProviderActions,
-	},
+	providers::provider,
 	result::{
 		Error,
 		LogErrExt,

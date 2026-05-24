@@ -43,7 +43,6 @@ use rai_pal_core::{
 		manual_provider,
 		provider::{
 			self,
-			ProviderActions,
 			ProviderId,
 		},
 		provider_command::ProviderCommand,
