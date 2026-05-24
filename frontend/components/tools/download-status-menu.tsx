@@ -32,8 +32,12 @@ export function DownloadStatusMenu() {
 	const totalPercentage = Array.from(progresses.values()).reduce<number>(
 		(acc, status) => {
 			// Skip if total size is unknown or download finished.
-			if (status.total !== null && status.downloaded < status.total) {
-				acc += (status.downloaded / status.total) * 100;
+			if (
+				status.totalBytes !== null &&
+				status.downloadedBytes !== null &&
+				status.downloadedBytes < status.totalBytes
+			) {
+				acc += (status.downloadedBytes / status.totalBytes) * 100;
 			}
 			return acc;
 		},
@@ -64,7 +68,11 @@ export function DownloadStatusMenu() {
 						setProgresses((previous) => {
 							const newMap: StatusMap = new Map();
 							for (const [id, status] of previous.entries()) {
-								if (status.total !== null && status.downloaded < status.total) {
+								if (
+									status.totalBytes &&
+									status.downloadedBytes !== null &&
+									status.downloadedBytes < status.totalBytes
+								) {
 									newMap.set(id, status);
 								}
 							}
@@ -79,20 +87,20 @@ export function DownloadStatusMenu() {
 					return (
 						<Menu.Item
 							key={id}
-							disabled={status.total === null}
+							disabled={status.totalBytes === null}
 							leftSection={
 								<DownloadProgressRing
 									percentage={
-										status.total !== null
-											? (status.downloaded / status.total) * 100
+										status.totalBytes && status.downloadedBytes !== null
+											? (status.downloadedBytes / status.totalBytes) * 100
 											: 0
 									}
 								/>
 							}
 						>
 							{status.url.split("/").slice(-1)[0]}:{" "}
-							{status.total
-								? `${((status.downloaded / status.total) * 100).toFixed(2)}%`
+							{status.totalBytes && status.downloadedBytes
+								? `${((status.downloadedBytes / status.totalBytes) * 100).toFixed(2)}%`
 								: "Unknown size"}
 						</Menu.Item>
 					);

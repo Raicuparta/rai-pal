@@ -76,7 +76,6 @@ pub async fn download(
 
 	let url_str = url.to_string();
 	let target_path_str = target_path.to_string_lossy().into_owned();
-	// Directly convert u64 content length to f64
 	let total_bytes = response.content_length();
 
 	let mut stream = response.bytes_stream();
