@@ -53,8 +53,8 @@ export function GameModal({ game }: Props) {
 				</TableContainer>
 			</Box>
 			<Stack
-				p={10}
-				gap={30}
+				p="xs"
+				gap="xl"
 			>
 				<Group>
 					<ProviderCommandButtons game={game} />

@@ -42,44 +42,46 @@ export function ModModal(props: Props) {
 				</TableContainer>
 			</Box>
 			<Stack
-				p={10}
-				gap={30}
+				p="xs"
+				gap="xl"
 			>
-				{props.mod.local && props.mod.runForGame && (
-					<CommandButton
-						leftSection={<IconPlayerPlay />}
-						onClick={() => commands.runRunnableWithoutGame(props.mod.id)}
-					>
-						{t("runMod")}
-					</CommandButton>
-				)}
-				{props.mod.local && (
-					<CommandButton
-						leftSection={<IconFolderCog />}
-						onClick={() => commands.openModFolder(props.mod.id)}
-					>
-						{t("openModFolder")}
-					</CommandButton>
-				)}
-				{isDownloadAvailable && (
-					<CommandButton
-						leftSection={isOutdated ? <IconRefreshAlert /> : <IconDownload />}
-						onClick={() => commands.downloadMod(props.mod.id)}
-					>
-						{isOutdated ? t("updateMod") : t("downloadMod")}
-					</CommandButton>
-				)}
-				{localVersion && (
-					<CommandButton
-						color="red"
-						variant="light"
-						confirmationText={t("deleteModConfirmation")}
-						leftSection={<IconTrash />}
-						onClick={() => commands.deleteMod(props.mod.id)}
-					>
-						{t("deleteMod")}
-					</CommandButton>
-				)}
+				<Stack>
+					{props.mod.local && props.mod.runForGame && (
+						<CommandButton
+							leftSection={<IconPlayerPlay />}
+							onClick={() => commands.runRunnableWithoutGame(props.mod.id)}
+						>
+							{t("runMod")}
+						</CommandButton>
+					)}
+					{props.mod.local && (
+						<CommandButton
+							leftSection={<IconFolderCog />}
+							onClick={() => commands.openModFolder(props.mod.id)}
+						>
+							{t("openModFolder")}
+						</CommandButton>
+					)}
+					{isDownloadAvailable && (
+						<CommandButton
+							leftSection={isOutdated ? <IconRefreshAlert /> : <IconDownload />}
+							onClick={() => commands.downloadMod(props.mod.id)}
+						>
+							{isOutdated ? t("updateMod") : t("downloadMod")}
+						</CommandButton>
+					)}
+					{localVersion && (
+						<CommandButton
+							color="red"
+							variant="light"
+							confirmationText={t("deleteModConfirmation")}
+							leftSection={<IconTrash />}
+							onClick={() => commands.deleteMod(props.mod.id)}
+						>
+							{t("deleteMod")}
+						</CommandButton>
+					)}
+				</Stack>
 				<DebugData data={props.mod} />
 			</Stack>
 		</SubPage>

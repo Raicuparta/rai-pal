@@ -741,6 +741,9 @@ fn main() {
 		// Error 71 (Protocol error) dispatching to Wayland display.
 		// Probably only needed for dev.
 		std::env::set_var("__NV_DISABLE_EXPLICIT_SYNC", "1");
+
+		// Fixes performance and scroll issues on Wayland (maybe just on Nvidia, not sure)
+		std::env::set_var("WEBKIT_DISABLE_DMABUF_RENDERER", "1");
 	}
 
 	let app_state = AppState::new().unwrap_or_else(|error| {
@@ -808,6 +811,26 @@ fn main() {
 					title += " DEV";
 				}
 				window.set_title(&title)?;
+
+				#[cfg(target_os = "linux")]
+				{
+					use webkit2gtk::{
+						SettingsExt,
+						WebViewExt,
+					};
+
+					window
+						.with_webview(|webview| {
+							if let Some(settings) = webview.inner().settings() {
+								// Seems to only take effect with WEBKIT_DISABLE_DMABUF_RENDERER=1
+								// Smooth scrolling was making things perform poorly on Wayland (maybe just Nvidia, not sure)
+								settings.set_enable_smooth_scrolling(false);
+							}
+						})
+						.unwrap_or_else(|err| {
+							log::error!("Failed to set webview settings: {err}");
+						});
+				}
 
 				// Window is created hidden in tauri.conf.json.
 				// We show it here once everything is ready, which reduces the jumping around
