@@ -20,6 +20,7 @@ use rai_pal_proc_macros::serializable_struct;
 use rusqlite::OpenFlags;
 
 use crate::{
+	app_paths,
 	debug::LoggableInstant,
 	game::DbGame,
 	game_title::get_normalized_titles,
@@ -28,7 +29,6 @@ use crate::{
 		GamesSortBy,
 		InstallState,
 	},
-	paths,
 	providers::provider::ProviderId,
 	remote_game,
 	result::{
@@ -649,7 +649,7 @@ pub fn attach_remote_database<TConnection: Deref<Target = rusqlite::Connection>>
 }
 
 fn db_file_path() -> Result<PathBuf> {
-	paths::database_path("local")
+	app_paths::database_path("local")
 }
 
 fn escape_sql_string(s: &str) -> String {

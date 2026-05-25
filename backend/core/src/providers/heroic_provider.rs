@@ -15,12 +15,12 @@ use serde_json::Value;
 
 use super::provider_command::ProviderCommand;
 use crate::{
-	paths,
+	app_paths,
 	result::Result,
 };
 
 fn heroic_config_path(relative_path: &str) -> Result<std::path::PathBuf> {
-	let dirs = paths::base_dirs()?;
+	let dirs = app_paths::base_dirs()?;
 
 	let native = dirs.config_dir().join("heroic");
 	if native.exists() {

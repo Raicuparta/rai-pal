@@ -1,6 +1,7 @@
 #![allow(async_fn_in_trait)]
 
 pub mod analytics;
+pub mod app_paths;
 pub mod architecture;
 pub mod data_types;
 pub mod debug;

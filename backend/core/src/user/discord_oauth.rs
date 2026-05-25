@@ -28,12 +28,10 @@ use sha2::Digest;
 use uuid::Uuid;
 
 use crate::{
+	app_paths,
 	http,
 	open_better::open_detached_better,
-	paths::{
-		self,
-		AsValidStr,
-	},
+	paths::AsValidStr,
 	result::{
 		Error,
 		Result,
@@ -254,7 +252,7 @@ fn parse_oauth_callback(
 }
 
 fn get_discord_token_fallback_file_path() -> Result<PathBuf> {
-	paths::app_data_file("discord-oauth-token.json")
+	app_paths::app_data_file("discord-oauth-token.json")
 }
 
 fn read_discord_token_from_fallback_file_optional() -> Result<Option<DiscordSavedToken>> {
@@ -417,7 +415,7 @@ fn save_discord_token_file(token: &DiscordSavedToken) -> Result<String> {
 }
 
 fn get_discord_avatar_file_path() -> Result<PathBuf> {
-	paths::app_data_file("avatar.png")
+	app_paths::app_data_file("avatar.png")
 }
 
 fn delete_file_if_exists(path: &Path) -> Result {

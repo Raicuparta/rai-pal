@@ -23,12 +23,12 @@ use super::provider_command::{
 	ProviderCommandAction,
 };
 use crate::{
+	app_paths,
 	game::DbGame,
 	local_database::{
 		DbMutex,
 		GameDatabase,
 	},
-	paths,
 	providers::provider::{
 		ProviderActions,
 		ProviderId,
@@ -120,7 +120,7 @@ pub struct GogDbEntryMeta {
 }
 
 fn get_database() -> Result<Option<Vec<GogDbEntry>>> {
-	let program_data = paths::try_get_program_data_path();
+	let program_data = app_paths::try_get_program_data_path();
 	let database_path = program_data.join("GOG.com/Galaxy/storage/galaxy-2.0.db");
 
 	if !database_path.is_file() {

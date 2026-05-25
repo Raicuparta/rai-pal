@@ -25,6 +25,7 @@ use events::EventEmitter;
 use rai_pal_core::windows;
 use rai_pal_core::{
 	analytics,
+	app_paths,
 	game::DbGame,
 	game_mods::game_mod::GameMod,
 	games_query::GamesQuery,
@@ -176,7 +177,7 @@ async fn open_game_mods_folder(
 #[tauri::command]
 #[specta::specta]
 async fn open_mods_folder() -> Result {
-	paths::open_folder_or_parent(&paths::local_mods_path()?)?;
+	paths::open_folder_or_parent(&app_paths::local_mods_path()?)?;
 	Ok(())
 }
 
@@ -549,7 +550,7 @@ async fn frontend_ready() -> Result {
 #[tauri::command]
 #[specta::specta]
 async fn open_logs_folder() -> Result {
-	paths::open_logs_folder()?;
+	app_paths::open_logs_folder()?;
 
 	Ok(())
 }
@@ -766,7 +767,7 @@ fn main() {
 				.level(log::LevelFilter::Info)
 				.targets([
 					Target::new(TargetKind::Stdout),
-					Target::new(paths::logs_path().map_or(
+					Target::new(app_paths::logs_path().map_or(
 						TargetKind::LogDir { file_name: None },
 						|logs_path| TargetKind::Folder {
 							path: logs_path,

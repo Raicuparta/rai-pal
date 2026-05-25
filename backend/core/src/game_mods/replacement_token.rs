@@ -1,6 +1,7 @@
 use rai_pal_proc_macros::serializable_enum;
 
 use crate::{
+	app_paths,
 	game::DbGame,
 	game_mods::game_mod::GameMod,
 	paths,
@@ -149,7 +150,7 @@ pub fn replace_tokens(base_string: &str, game: &DbGame, game_mod: &GameMod) -> S
 			}
 		}
 
-		Ok(paths::base_dirs()?
+		Ok(app_paths::base_dirs()?
 			.config_dir()
 			.to_string_lossy()
 			.to_string())
@@ -161,7 +162,7 @@ pub fn replace_tokens(base_string: &str, game: &DbGame, game_mod: &GameMod) -> S
 			.to_string())
 	});
 	result = replace_parameter_value(&result, ReplacementToken::LocalModsPath, || {
-		Ok(paths::local_mods_path()?.to_string_lossy().to_string())
+		Ok(app_paths::local_mods_path()?.to_string_lossy().to_string())
 	});
 
 	result

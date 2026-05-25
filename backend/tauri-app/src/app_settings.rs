@@ -5,6 +5,7 @@ use std::{
 };
 
 use rai_pal_core::{
+	app_paths,
 	games_query::GamesQuery,
 	paths,
 };
@@ -75,6 +76,6 @@ impl AppSettings {
 	}
 
 	fn get_path() -> Result<PathBuf> {
-		Ok(paths::app_data_file("settings.json")?)
+		Ok(app_paths::app_data_file("settings.json")?)
 	}
 }

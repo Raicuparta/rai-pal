@@ -8,6 +8,7 @@ use lazy_regex::regex;
 use rai_pal_proc_macros::serializable_struct;
 
 use crate::{
+	app_paths,
 	game_engines::game_engine::{
 		EngineVersion,
 		EngineVersionNumbers,
@@ -67,7 +68,7 @@ pub fn parse_version(version: &str) -> Option<EngineVersion> {
 }
 
 pub fn get_database_file_path() -> Result<PathBuf> {
-	paths::database_path("remote")
+	app_paths::database_path("remote")
 }
 
 pub async fn download_database() -> Result<PathBuf> {

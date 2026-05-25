@@ -17,6 +17,7 @@ use rai_pal_proc_macros::{
 use zip::ZipArchive;
 
 use crate::{
+	app_paths,
 	architecture::Architecture,
 	files,
 	game::DbGame,
@@ -257,7 +258,7 @@ impl GameMod {
 	}
 
 	pub fn get_local_folder_path(&self) -> Result<PathBuf> {
-		Ok(paths::local_mods_path()?.join(&self.id))
+		Ok(app_paths::local_mods_path()?.join(&self.id))
 	}
 
 	pub fn get_local_manifest_path(&self) -> Result<PathBuf> {
@@ -265,10 +266,10 @@ impl GameMod {
 	}
 
 	pub async fn download(&self, status_callback: impl Fn(DownloadStatus) + Send) -> Result {
-		let target_path = paths::local_mods_path()?.join(&self.id);
+		let target_path = app_paths::local_mods_path()?.join(&self.id);
 		let mod_id = &self.id;
 
-		let zip_path = paths::downloads_path()?.join(format!("{mod_id}.zip"));
+		let zip_path = app_paths::downloads_path()?.join(format!("{mod_id}.zip"));
 
 		http::download(&self.latest_version.url, &zip_path, status_callback).await?;
 
@@ -325,15 +326,16 @@ impl GameMod {
 	}
 
 	pub fn get_all_local() -> Result<HashMap<String, Self>> {
-		Ok(
-			paths::glob_path(&paths::local_mods_path()?.join("*").join(Self::FILE_NAME))
-				.iter()
-				.filter_map(|manifest_path| {
-					Self::from_file(manifest_path)
-						.map(|local_mod| (local_mod.id.clone(), local_mod))
-				})
-				.collect(),
+		Ok(paths::glob_path(
+			&app_paths::local_mods_path()?
+				.join("*")
+				.join(Self::FILE_NAME),
 		)
+		.iter()
+		.filter_map(|manifest_path| {
+			Self::from_file(manifest_path).map(|local_mod| (local_mod.id.clone(), local_mod))
+		})
+		.collect())
 	}
 
 	fn get_manifest_path(target_path: &Path) -> PathBuf {

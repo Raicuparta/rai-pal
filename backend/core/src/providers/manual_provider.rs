@@ -14,6 +14,7 @@ use super::provider::{
 	ProviderId,
 };
 use crate::{
+	app_paths,
 	game::DbGame,
 	local_database::{
 		DbMutex,
@@ -57,7 +58,7 @@ impl ProviderActions for Manual {
 }
 
 fn games_config_path() -> Result<PathBuf> {
-	paths::app_data_file("games.json")
+	app_paths::app_data_file("games.json")
 }
 
 fn read_games_config(games_config_path: &Path) -> GamesConfig {

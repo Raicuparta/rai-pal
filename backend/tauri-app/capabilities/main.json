@@ -8,7 +8,6 @@
 		"core:event:default",
 		"core:window:default",
 		"core:app:default",
-		"core:resources:default",
 		"dialog:allow-open",
 		"dialog:allow-ask",
 		"updater:allow-check",

@@ -19,12 +19,12 @@ use super::provider_command::{
 	ProviderCommandAction,
 };
 use crate::{
+	app_paths,
 	game::DbGame,
 	local_database::{
 		DbMutex,
 		GameDatabase,
 	},
-	paths,
 	providers::provider::{
 		ProviderActions,
 		ProviderId,
@@ -107,7 +107,7 @@ pub struct ItchDatabase {
 
 impl ProviderActions for Itch {
 	fn insert_games(&self, db: &DbMutex) -> Result {
-		let app_data_path = paths::base_dirs()?.config_dir().join("itch");
+		let app_data_path = app_paths::base_dirs()?.config_dir().join("itch");
 
 		if let Some(database) = get_database(&app_data_path)? {
 			let caves_map: HashMap<_, _> = database

@@ -16,6 +16,7 @@ rusqlite.workspace = true
 strum.workspace = true
 
 open = "5.3.5"
+dunce = "1.0"
 base64 = "0.22.1"
 byteorder = "1.5.0"
 chrono = { version = "0.4.44", default-features = false, features = ["std"] }
