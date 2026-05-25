@@ -1,11 +1,19 @@
-use crate::http;
-use log::{error, info};
-use serde::Serialize;
 use std::{
 	sync::LazyLock,
-	time::{SystemTime, UNIX_EPOCH},
+	time::{
+		SystemTime,
+		UNIX_EPOCH,
+	},
 };
+
+use log::{
+	error,
+	info,
+};
+use serde::Serialize;
 use uuid::Uuid;
+
+use crate::http;
 
 const MEASUREMENT_ID: &str = "G-KTJZNR0ZET";
 const API_KEY: Option<&str> = option_env!("ANALYTICS_API_KEY");

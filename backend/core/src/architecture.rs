@@ -1,6 +1,10 @@
 use std::{
 	fs::File,
-	io::{self, Read, Seek},
+	io::{
+		self,
+		Read,
+		Seek,
+	},
 	path::Path,
 };
 

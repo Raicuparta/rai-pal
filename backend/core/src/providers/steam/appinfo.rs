@@ -3,18 +3,38 @@
 
 use std::{
 	fs,
-	io::{BufReader, Read, Seek, SeekFrom},
-	path::{Path, PathBuf},
+	io::{
+		BufReader,
+		Read,
+		Seek,
+		SeekFrom,
+	},
+	path::{
+		Path,
+		PathBuf,
+	},
 };
 
-use byteorder::{LittleEndian, ReadBytesExt};
+use byteorder::{
+	LittleEndian,
+	ReadBytesExt,
+};
 use rai_pal_proc_macros::serializable_struct;
 
-use crate::result::{Error, Result};
-
 use super::vdf::{
-	KeyValues, ValueType, find_keys, read_kv, read_string, value_to_i32, value_to_kv,
-	value_to_path, value_to_string,
+	KeyValues,
+	ValueType,
+	find_keys,
+	read_kv,
+	read_string,
+	value_to_i32,
+	value_to_kv,
+	value_to_path,
+	value_to_string,
+};
+use crate::result::{
+	Error,
+	Result,
 };
 
 #[serializable_struct]

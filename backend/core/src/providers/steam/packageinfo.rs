@@ -2,17 +2,30 @@
 // It has been adapted to fit the needs of this project.
 
 use std::{
-	collections::{HashMap, HashSet},
+	collections::{
+		HashMap,
+		HashSet,
+	},
 	fs,
-	io::{BufReader, Read},
+	io::{
+		BufReader,
+		Read,
+	},
 	path::Path,
 };
 
-use byteorder::{LittleEndian, ReadBytesExt};
+use byteorder::{
+	LittleEndian,
+	ReadBytesExt,
+};
 
+use super::vdf::{
+	KeyValues,
+	ValueType,
+	find_keys,
+	read_kv,
+};
 use crate::result::Result;
-
-use super::vdf::{KeyValues, ValueType, find_keys, read_kv};
 
 #[derive(Debug)]
 pub struct Package {

@@ -1,11 +1,17 @@
 use std::collections::HashSet;
 
-use rai_pal_proc_macros::{serializable_enum, serializable_struct};
+use rai_pal_proc_macros::{
+	serializable_enum,
+	serializable_struct,
+};
 use strum::IntoEnumIterator;
 
 use crate::{
 	architecture::Architecture,
-	game_engines::{game_engine::EngineBrand, unity::UnityBackend},
+	game_engines::{
+		game_engine::EngineBrand,
+		unity::UnityBackend,
+	},
 	game_tag::GameTag,
 	providers::provider::ProviderId,
 };

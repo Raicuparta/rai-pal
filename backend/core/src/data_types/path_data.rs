@@ -1,6 +1,11 @@
 use std::path::PathBuf;
 
-use rusqlite::types::{FromSqlError, FromSqlResult, ToSqlOutput, ValueRef};
+use rusqlite::types::{
+	FromSqlError,
+	FromSqlResult,
+	ToSqlOutput,
+	ValueRef,
+};
 
 #[derive(serde::Serialize, specta::Type, Clone)]
 pub struct PathData(pub PathBuf);

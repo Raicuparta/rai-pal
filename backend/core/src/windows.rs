@@ -1,11 +1,25 @@
 #![cfg(target_os = "windows")]
 
-use std::{ffi::OsStr, os::windows::ffi::OsStrExt, ptr};
+use std::{
+	ffi::OsStr,
+	os::windows::ffi::OsStrExt,
+	ptr,
+};
 
 use log::error;
 use winapi::{
-	ctypes::{c_int, c_uint},
-	um::winuser::{IDYES, MB_ICONERROR, MB_OK, MB_SYSTEMMODAL, MB_YESNO, MessageBoxW},
+	ctypes::{
+		c_int,
+		c_uint,
+	},
+	um::winuser::{
+		IDYES,
+		MB_ICONERROR,
+		MB_OK,
+		MB_SYSTEMMODAL,
+		MB_YESNO,
+		MessageBoxW,
+	},
 };
 
 use crate::paths;

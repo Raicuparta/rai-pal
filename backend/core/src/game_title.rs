@@ -1,6 +1,9 @@
 use std::collections::HashSet;
 
-use lazy_regex::{regex, regex_replace_all};
+use lazy_regex::{
+	regex,
+	regex_replace_all,
+};
 use unicode_normalization::UnicodeNormalization;
 
 static DEMO_REGEX: &lazy_regex::Lazy<regex::Regex> = regex!(r"(?i)[\((\s+)]demo\)?$");
