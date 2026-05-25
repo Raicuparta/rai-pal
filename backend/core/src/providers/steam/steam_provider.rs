@@ -28,7 +28,7 @@ use crate::{
 		DbMutex,
 		GameDatabase,
 	},
-	paths,
+	path_extensions::PathExt,
 	providers::{
 		provider::{
 			ProviderActions,
@@ -141,9 +141,9 @@ impl Steam {
 
 		for launch_option in sorted_launch_options {
 			if let Some(executable_path) = launch_option.executable.as_ref() {
-				let Some(full_path) =
-					paths::resolve_relative_path_case_insensitive(app_path, executable_path)
-						.filter(|path| path.is_file())
+				let Some(full_path) = app_path
+					.resolve_relative_path_case_insensitive(executable_path)
+					.filter(|path| path.is_file())
 				else {
 					continue;
 				};
@@ -177,7 +177,7 @@ impl Steam {
 				installed_game.game_id = format!(
 					"{}_{}",
 					&installed_game.external_id,
-					paths::hash_path(&full_path)
+					full_path.hash_string()
 				);
 
 				used_names.insert(app_name);

@@ -12,7 +12,7 @@ use steamlocate::SteamDir;
 
 use crate::{
 	game::DbGame,
-	paths,
+	path_extensions::PathExt,
 	result::{
 		Error,
 		Result,
@@ -39,7 +39,7 @@ pub fn get_wine_prefix_path(game: &DbGame) -> Result<PathBuf> {
 
 pub fn get_wine_binary_path(game: &DbGame) -> Result<PathBuf> {
 	let prefix_path = get_wine_prefix_path(game)?;
-	let compat_data_path = paths::path_parent(&prefix_path)?;
+	let compat_data_path = prefix_path.try_parent()?;
 	let config_info_path = compat_data_path.join("config_info");
 
 	let config_info_data = fs::read_to_string(&config_info_path)?;
@@ -53,7 +53,8 @@ pub fn get_wine_binary_path(game: &DbGame) -> Result<PathBuf> {
 		}
 	};
 
-	Ok(paths::path_parent(Path::new(proton_lib_path_line))?
+	Ok(Path::new(proton_lib_path_line)
+		.try_parent()?
 		.join("bin")
 		.join("wine"))
 }
@@ -68,7 +69,7 @@ pub fn run_with_wine(
 
 	let wine_binary_path = get_wine_binary_path(game)?;
 
-	let compat_data_path = paths::path_parent(&wine_prefix_path)?;
+	let compat_data_path = wine_prefix_path.try_parent()?;
 
 	let child = Command::new(&wine_binary_path)
 		.env("WINEPREFIX", &wine_prefix_path)

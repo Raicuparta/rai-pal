@@ -12,7 +12,7 @@ use directories::{
 use log;
 
 use crate::{
-	paths,
+	path_extensions::PathExt,
 	result::{
 		Error,
 		Result,
@@ -59,7 +59,7 @@ pub fn logs_path() -> Result<PathBuf> {
 }
 
 pub fn open_logs_folder() -> Result {
-	paths::open_folder_or_parent(&logs_path()?)
+	logs_path()?.open_folder_or_parent()
 }
 
 pub fn local_mods_path() -> Result<PathBuf> {

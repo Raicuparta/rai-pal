@@ -7,7 +7,7 @@ use std::{
 use rai_pal_core::{
 	app_paths,
 	games_query::GamesQuery,
-	paths,
+	path_extensions::PathExt,
 };
 use rai_pal_proc_macros::{
 	serializable_enum,
@@ -69,7 +69,7 @@ impl AppSettings {
 
 	pub fn try_write(&self) -> Result {
 		let path = Self::get_path()?;
-		fs::create_dir_all(paths::path_parent(&path)?)?;
+		fs::create_dir_all(path.try_parent()?)?;
 		fs::write(&path, serde_json::to_string(self)?)?;
 
 		Ok(())

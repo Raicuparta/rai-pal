@@ -31,7 +31,7 @@ use crate::{
 	data_types::path_data::PathData,
 	game::DbGame,
 	game_engines::game_engine::EngineVersion,
-	paths::glob_path,
+	path_extensions::PathExt,
 	result::LogErrExt,
 };
 
@@ -109,7 +109,9 @@ fn find_game_root(exe_path: &Path) -> &Path {
 fn get_version_from_build_version_file(exe_path: &Path) -> Option<EngineVersion> {
 	let game_root = find_game_root(exe_path);
 
-	let build_version_path = glob_path(&game_root.join("**/Build.version"))
+	let build_version_path = game_root
+		.join("**/Build.version")
+		.glob()
 		.into_iter()
 		.next()?;
 
@@ -172,18 +174,18 @@ fn parse_version(string: &str) -> Option<EngineVersion> {
 		r#"(?x)
 			# Case insensitive.
 			(?i)
-		
+
 			# Starts with "+UE".
 			\+UE
-			
+
 			# Capture major version number.
 			([45])
-			
+
 			# Capture optional block with full version number.
 			(?:
 				# Skip over some characters, usually something like "+release-".
 				.*?
-				
+
 				# Full version as "major.minor".
 				# Capture minor only (major already captured above).
 				[45]\.(\d+)
@@ -221,7 +223,7 @@ fn get_version_from_exe_parse(file_bytes: &[u8]) -> Option<EngineVersion> {
 
 			# Starts with "+UE".
 			\+\x00U\x00E\x00
-			
+
 			# Major version number.
 			[45]\x00
 
@@ -297,7 +299,7 @@ pub fn process_game(game: &mut DbGame) {
 
 		// 2-3. Try specific known launcher/helper executables (CrashReportClient.exe, EpicWebHelper.exe)
 		for filename in &["CrashReportClient.exe", "EpicWebHelper.exe"] {
-			let exe_paths = glob_path(&game_dir.join(format!("**/{filename}")));
+			let exe_paths = game_dir.join(format!("**/{filename}")).glob();
 			if let Some(exe_path) = exe_paths.first()
 				&& let Some(version) = get_version_from_exe_path(exe_path)
 			{
@@ -312,9 +314,8 @@ pub fn process_game(game: &mut DbGame) {
 		}
 
 		// 4. Try *-Shipping.exe (build stamp and metadata)
-		if let Some(shipping_exe_path) = glob_path(&game_dir.join("**/*-Shipping.exe"))
-			.first()
-			.cloned() && let Some(version) = get_version_from_exe_path(&shipping_exe_path)
+		if let Some(shipping_exe_path) = game_dir.join("**/*-Shipping.exe").glob().first().cloned()
+			&& let Some(version) = get_version_from_exe_path(&shipping_exe_path)
 		{
 			game.engine_version_major = Some(version.numbers.major);
 			game.engine_version_minor = version.numbers.minor;
@@ -326,7 +327,7 @@ pub fn process_game(game: &mut DbGame) {
 		}
 
 		// 5-6. Try any .exe files
-		for exe_path in glob_path(&game_dir.join("**/*.exe")) {
+		for exe_path in game_dir.join("**/*.exe").glob() {
 			if let Some(version) = get_version_from_exe_path(&exe_path) {
 				game.engine_version_major = Some(version.numbers.major);
 				game.engine_version_minor = version.numbers.minor;

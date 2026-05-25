@@ -3,14 +3,17 @@ use std::{
 	process::Stdio,
 };
 
-use crate::result::{
-	Error,
-	Result,
+use crate::{
+	path_extensions::AsValidStr,
+	result::{
+		Error,
+		Result,
+	},
 };
 
 // Weird workaround for AppImage builds.
 pub fn open_detached_better(path: impl AsRef<OsStr>) -> Result {
-	let mut last_error = Error::NoCommandForOpen(path.as_ref().to_string_lossy().to_string());
+	let mut last_error = Error::NoCommandForOpen(path.as_ref().try_to_str()?.to_string());
 
 	for mut cmd in open::commands(path) {
 		cmd.env_remove("LD_LIBRARY_PATH");

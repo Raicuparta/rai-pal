@@ -38,7 +38,7 @@ use crate::{
 		DownloadStatus,
 	},
 	operating_system::OperatingSystem,
-	paths,
+	path_extensions::PathExt,
 	providers::provider,
 	result::{
 		Error,
@@ -134,7 +134,7 @@ impl GameMod {
 	}
 
 	pub fn open_local_folder(&self) -> Result {
-		paths::open_folder_or_parent(&self.get_local_folder_path()?)
+		self.get_local_folder_path()?.open_folder_or_parent()
 	}
 
 	pub fn get_install(&self) -> Result<&ModInstall> {
@@ -156,7 +156,7 @@ impl GameMod {
 				if source_path.is_dir() {
 					files::copy_dir_all(&source_path, &destination_path)?;
 				} else {
-					fs::create_dir_all(paths::path_parent(&destination_path)?)?;
+					fs::create_dir_all(destination_path.try_parent()?)?;
 					fs::copy(&source_path, &destination_path)?;
 				}
 			}
@@ -168,7 +168,7 @@ impl GameMod {
 					PathBuf::from(replace_tokens(&write_action.destination, game, self));
 				let content = replace_tokens(&write_action.content, game, self);
 
-				fs::create_dir_all(paths::path_parent(&destination_path)?)?;
+				fs::create_dir_all(destination_path.try_parent()?)?;
 				fs::write(destination_path, content)?;
 			}
 		}
@@ -241,7 +241,7 @@ impl GameMod {
 	pub fn update_installed_mod_manifest(&self, game: &DbGame) -> Result {
 		// TODO: make sure it doesn't happen for runnables.
 		let manifest_path = game.get_installed_mod_manifest_path(&self.id)?;
-		fs::create_dir_all(paths::path_parent(&manifest_path)?)?;
+		fs::create_dir_all(manifest_path.try_parent()?)?;
 		let manifest_contents = serde_json::to_string_pretty(&self)?;
 		fs::write(manifest_path, manifest_contents)?;
 
@@ -326,16 +326,15 @@ impl GameMod {
 	}
 
 	pub fn get_all_local() -> Result<HashMap<String, Self>> {
-		Ok(paths::glob_path(
-			&app_paths::local_mods_path()?
-				.join("*")
-				.join(Self::FILE_NAME),
-		)
-		.iter()
-		.filter_map(|manifest_path| {
-			Self::from_file(manifest_path).map(|local_mod| (local_mod.id.clone(), local_mod))
-		})
-		.collect())
+		Ok(app_paths::local_mods_path()?
+			.join("*")
+			.join(Self::FILE_NAME)
+			.glob()
+			.iter()
+			.filter_map(|manifest_path| {
+				Self::from_file(manifest_path).map(|local_mod| (local_mod.id.clone(), local_mod))
+			})
+			.collect())
 	}
 
 	fn get_manifest_path(target_path: &Path) -> PathBuf {

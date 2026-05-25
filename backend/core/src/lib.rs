@@ -17,7 +17,7 @@ pub mod local_database;
 pub mod maps;
 pub mod open_better;
 pub mod operating_system;
-pub mod paths;
+pub mod path_extensions;
 pub mod providers;
 pub mod remote_config;
 pub mod remote_game;

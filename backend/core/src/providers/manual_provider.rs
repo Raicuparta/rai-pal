@@ -20,7 +20,7 @@ use crate::{
 		DbMutex,
 		GameDatabase,
 	},
-	paths,
+	path_extensions::PathExt,
 	result::{
 		Error,
 		Result,
@@ -78,8 +78,8 @@ fn read_games_config(games_config_path: &Path) -> GamesConfig {
 fn get_game_from_path(exe_path: &Path) -> Result<DbGame> {
 	let mut game = DbGame::new(
 		ProviderId::Manual,
-		paths::hash_path(exe_path),
-		paths::file_name_without_extension(exe_path)?.to_string(),
+		exe_path.hash_string(),
+		exe_path.file_name_without_extension()?.to_string(),
 	);
 	game.set_executable(exe_path);
 	Ok(game)

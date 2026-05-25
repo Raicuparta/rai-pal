@@ -36,10 +36,7 @@ use rai_pal_core::{
 		attach_remote_database,
 	},
 	maps::TryGettable,
-	paths::{
-		self,
-		normalize_path,
-	},
+	path_extensions::PathExt,
 	providers::{
 		manual_provider,
 		provider::{
@@ -128,14 +125,14 @@ async fn open_game_wine_prefix_folder(
 	provider_id: ProviderId,
 	game_id: String,
 ) -> Result {
-	paths::open_folder_or_parent(
-		&provider::get_provider(provider_id)?.get_wine_prefix_path(
+	provider::get_provider(provider_id)?
+		.get_wine_prefix_path(
 			&handle
 				.app_state()
 				.database
 				.get_game(&provider_id, &game_id)?,
-		)?,
-	)?;
+		)?
+		.open_folder_or_parent()?;
 
 	Ok(())
 }
@@ -147,14 +144,14 @@ async fn open_game_wine_binary_folder(
 	provider_id: ProviderId,
 	game_id: String,
 ) -> Result {
-	paths::open_folder_or_parent(
-		&provider::get_provider(provider_id)?.get_wine_binary_path(
+	provider::get_provider(provider_id)?
+		.get_wine_binary_path(
 			&handle
 				.app_state()
 				.database
 				.get_game(&provider_id, &game_id)?,
-		)?,
-	)?;
+		)?
+		.open_folder_or_parent()?;
 
 	Ok(())
 }
@@ -177,7 +174,7 @@ async fn open_game_mods_folder(
 #[tauri::command]
 #[specta::specta]
 async fn open_mods_folder() -> Result {
-	paths::open_folder_or_parent(&app_paths::local_mods_path()?)?;
+	app_paths::local_mods_path()?.open_folder_or_parent()?;
 	Ok(())
 }
 
@@ -477,7 +474,7 @@ async fn refresh_games(handle: AppHandle, provider_id: ProviderId) -> Result {
 #[tauri::command]
 #[specta::specta]
 async fn add_game(handle: AppHandle, path: PathBuf) -> Result {
-	let normalized_path = normalize_path(&path);
+	let normalized_path = path.normalize();
 
 	let game = manual_provider::add_game(&normalized_path)?;
 	let game_name = game.display_title.clone();

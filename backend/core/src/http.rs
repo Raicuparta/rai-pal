@@ -14,7 +14,10 @@ use tokio::{
 	},
 };
 
-use crate::result::Result;
+use crate::{
+	path_extensions::AsValidStr,
+	result::Result,
+};
 
 pub static CLIENT: LazyLock<reqwest::Client> = LazyLock::new(|| {
 	#[allow(clippy::expect_used)]
@@ -75,7 +78,7 @@ pub async fn download(
 	let mut downloaded_bytes: usize = 0;
 
 	let url_str = url.to_string();
-	let target_path_str = target_path.to_string_lossy().into_owned();
+	let target_path_str = target_path.try_to_str()?;
 	let total_bytes = response.content_length();
 
 	let mut stream = response.bytes_stream();
@@ -89,7 +92,7 @@ pub async fn download(
 
 		status_callback(DownloadStatus::new(
 			url_str.clone(),
-			target_path_str.clone(),
+			target_path_str.to_string(),
 			downloaded_bytes,
 			total_bytes,
 		));
@@ -99,7 +102,7 @@ pub async fn download(
 
 	status_callback(DownloadStatus::new(
 		url_str,
-		target_path_str,
+		target_path_str.to_string(),
 		downloaded_bytes,
 		Some(downloaded_bytes as u64),
 	));

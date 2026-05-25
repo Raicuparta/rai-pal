@@ -4,7 +4,10 @@ use crate::{
 	app_paths,
 	game::DbGame,
 	game_mods::game_mod::GameMod,
-	paths,
+	path_extensions::{
+		AsValidStr,
+		PathExt,
+	},
 	providers::provider_command::{
 		ProviderCommand,
 		ProviderCommandAction,
@@ -67,20 +70,15 @@ pub fn replace_tokens(base_string: &str, game: &DbGame, game_mod: &GameMod) -> S
 		game.try_get_exe_name()
 	});
 	result = replace_parameter_value(&result, ReplacementToken::GameExecutableFolderPath, || {
-		Ok(game
-			.try_get_exe_path()?
-			.parent()
-			.ok_or_else(|| Error::GameNotInstalled(game.display_title.clone()))?
-			.to_string_lossy()
-			.to_string())
+		game.try_get_exe_path()?.try_parent()?.try_to_str()
 	});
 	result = replace_parameter_value(
 		&result,
 		ReplacementToken::GameExecutableNameWithoutExtension,
-		|| paths::file_name_without_extension(game.try_get_exe_path()?),
+		|| game.try_get_exe_path()?.file_name_without_extension(),
 	);
 	result = replace_parameter_value(&result, ReplacementToken::GameExecutablePath, || {
-		Ok(game.try_get_exe_path()?.to_string_lossy().to_string())
+		game.try_get_exe_path()?.try_to_str()
 	});
 	result = replace_parameter_value(&result, ReplacementToken::GameJson, || {
 		Ok(serde_json::to_string(&game)?)
@@ -93,7 +91,7 @@ pub fn replace_tokens(base_string: &str, game: &DbGame, game_mod: &GameMod) -> S
 				.ok_or_else(|| Error::GameNotInstalled(game.display_title.clone()))?
 			{
 				ProviderCommand::String(s) => Ok(s.clone()),
-				ProviderCommand::Path(exe_path, _) => Ok(exe_path.to_string_lossy().to_string()),
+				ProviderCommand::Path(exe_path, _) => Ok(exe_path.try_to_str()?.to_string()),
 			},
 		);
 	result = replace_parameter_value(&result, ReplacementToken::GameStartCommandArgs, || {
@@ -138,31 +136,25 @@ pub fn replace_tokens(base_string: &str, game: &DbGame, game_mod: &GameMod) -> S
 				// 2. Convert Windows path to Linux path manually
 				// The format is always C:\users\username\AppData\Roaming
 				// We replace 'C:\' with the actual path to drive_c
-				let drive_c_path = format!("{}/drive_c", prefix_path.to_string_lossy());
+				let drive_c_path = PathBuf::from(format!("{}/drive_c", prefix_path.try_to_str()?));
 
 				// Remove the 'C:\' prefix and replace backslashes with slashes
 				let relative_path = win_path.replace("C:\\", "").replace('\\', "/");
 
-				return Ok(PathBuf::from(drive_c_path)
-					.join(relative_path)
-					.to_string_lossy()
-					.to_string());
+				return Ok(drive_c_path.join(relative_path).try_to_str()?.to_string());
 			}
 		}
 
 		Ok(app_paths::base_dirs()?
 			.config_dir()
-			.to_string_lossy()
+			.try_to_str()?
 			.to_string())
 	});
 	result = replace_parameter_value(&result, ReplacementToken::InstalledModsPath, || {
-		Ok(game
-			.get_installed_mods_folder()?
-			.to_string_lossy()
-			.to_string())
+		Ok(game.get_installed_mods_folder()?.try_to_str()?.to_string())
 	});
 	result = replace_parameter_value(&result, ReplacementToken::LocalModsPath, || {
-		Ok(app_paths::local_mods_path()?.to_string_lossy().to_string())
+		Ok(app_paths::local_mods_path()?.try_to_str()?.to_string())
 	});
 
 	result

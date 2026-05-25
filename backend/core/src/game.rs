@@ -31,7 +31,7 @@ use crate::{
 	},
 	game_tag::GameTag,
 	game_title::is_probably_demo,
-	paths,
+	path_extensions::PathExt,
 	providers::{
 		provider::ProviderId,
 		provider_command::{
@@ -101,11 +101,11 @@ impl DbGame {
 	}
 
 	pub fn open_game_folder(&self) -> Result {
-		paths::open_folder_or_parent(self.try_get_exe_path()?)
+		self.try_get_exe_path()?.open_folder_or_parent()
 	}
 
 	pub fn open_mods_folder(&self) -> Result {
-		paths::open_folder_or_parent(&self.get_installed_mods_folder()?)
+		self.get_installed_mods_folder()?.open_folder_or_parent()
 	}
 
 	pub fn uninstall_all_mods(&self) -> Result {
@@ -118,7 +118,7 @@ impl DbGame {
 				if !manifests_path.parent().is_some_and(Path::exists) {
 					return Vec::default();
 				}
-				paths::glob_path(&manifests_path)
+				manifests_path.glob()
 			}
 			Err(err) => {
 				log::error!(
@@ -168,7 +168,7 @@ impl DbGame {
 
 	pub fn get_installed_mods_folder(&self) -> Result<PathBuf> {
 		let installed_mods_folder =
-			app_paths::installed_mods_path()?.join(paths::hash_path(self.try_get_exe_path()?));
+			app_paths::installed_mods_path()?.join(self.try_get_exe_path()?.hash_string());
 		fs::create_dir_all(&installed_mods_folder)?;
 
 		Ok(installed_mods_folder)
@@ -236,7 +236,7 @@ impl DbGame {
 				return self;
 			}
 
-			self.exe_path = Some(PathData(paths::normalize_path(exe_path)));
+			self.exe_path = Some(PathData(exe_path.normalize()));
 			if let Some(exe_engine_brand) = get_exe_engine(exe_path) {
 				self.engine_brand = Some(exe_engine_brand);
 				match exe_engine_brand {

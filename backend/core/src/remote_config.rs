@@ -11,7 +11,7 @@ use zip::ZipArchive;
 use crate::{
 	game::DbGame,
 	http,
-	paths,
+	path_extensions::PathExt,
 	result::Result,
 };
 
@@ -35,7 +35,9 @@ fn get_config_url(game_name: &str) -> String {
 }
 
 fn get_game_config_name(exe_path: &Path) -> Result<String> {
-	paths::file_name_without_extension(exe_path).map(str::to_lowercase)
+	exe_path
+		.file_name_without_extension()
+		.map(str::to_lowercase)
 }
 
 pub async fn get_remote_configs(exe_path: &Path) -> Result<Option<RemoteConfigs>> {

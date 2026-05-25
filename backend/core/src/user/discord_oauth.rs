@@ -31,7 +31,7 @@ use crate::{
 	app_paths,
 	http,
 	open_better::open_detached_better,
-	paths::AsValidStr,
+	path_extensions::AsValidStr,
 	result::{
 		Error,
 		Result,

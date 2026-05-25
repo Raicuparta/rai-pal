@@ -10,10 +10,16 @@ use std::{
 
 use steamlocate::SteamDir;
 
-use crate::result::{
-	Error,
-	LogErrExt,
-	Result,
+use crate::{
+	path_extensions::{
+		AsValidStr,
+		PathExt,
+	},
+	result::{
+		Error,
+		LogErrExt,
+		Result,
+	},
 };
 
 const RAI_PAL_SHORTCUT_NAME: &str = "Rai Pal";
@@ -43,10 +49,9 @@ pub fn add_current_executable_to_steam_shortcuts(executable_path: &Path) -> Resu
 	let actual_executable =
 		std::env::var_os("APPIMAGE").map_or_else(|| executable_path.to_path_buf(), PathBuf::from);
 
-	let quoted_executable = quote_path(&actual_executable);
-	let start_dir = actual_executable
-		.parent()
-		.map_or_else(|| "\"./\"".to_string(), quote_path);
+	let quoted_executable = quote_path(&actual_executable)?;
+	let start_dir = quote_path(actual_executable.try_parent()?)?;
+
 	let app_id = calculate_shortcut_app_id(RAI_PAL_SHORTCUT_NAME, &quoted_executable);
 
 	for shortcuts_path in shortcuts_paths {
@@ -386,8 +391,8 @@ fn new_shortcuts_file_bytes() -> Vec<u8> {
 	bytes
 }
 
-fn quote_path(path: &Path) -> String {
-	format!("\"{path}\"", path = path.to_string_lossy())
+fn quote_path(path: &Path) -> Result<String> {
+	Ok(format!("\"{}\"", path.try_to_str()?))
 }
 
 fn calculate_shortcut_app_id(app_name: &str, executable: &str) -> u32 {

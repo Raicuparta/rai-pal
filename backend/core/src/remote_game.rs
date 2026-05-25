@@ -15,7 +15,7 @@ use crate::{
 		GameEngine,
 	},
 	http,
-	paths,
+	path_extensions::PathExt,
 	providers::provider::ProviderId,
 	result::{
 		LogErrExt,
@@ -78,7 +78,7 @@ pub async fn download_database() -> Result<PathBuf> {
 
 	let file_path = get_database_file_path()?;
 
-	fs::create_dir_all(paths::path_parent(&file_path)?)?;
+	fs::create_dir_all(file_path.try_parent()?)?;
 
 	fs::write(&file_path, response.bytes().await?)?;
 

@@ -11,7 +11,7 @@ use crate::{
 		replacement_token::replace_tokens,
 	},
 	open_better::open_detached_better,
-	paths,
+	path_extensions::PathExt,
 	result::{
 		Error,
 		Result,
@@ -29,7 +29,7 @@ impl<'a> InstalledMod<'a> {
 	}
 
 	pub fn open_folder(&self) -> Result {
-		paths::open_folder_or_parent(&PathBuf::from(replace_tokens(
+		PathBuf::from(replace_tokens(
 			self.game_mod
 				.get_install()?
 				.main_installed_folder_path
@@ -42,7 +42,8 @@ impl<'a> InstalledMod<'a> {
 				})?,
 			self.game,
 			&self.game_mod,
-		)))?;
+		))
+		.open_folder_or_parent()?;
 
 		Ok(())
 	}
@@ -64,7 +65,7 @@ impl<'a> InstalledMod<'a> {
 				));
 
 				if source_path.is_dir() {
-					paths::remove_path_if_exists(&destination_path)?;
+					destination_path.remove_if_exists()?;
 				} else if destination_path.exists() {
 					fs::remove_file(&destination_path)?;
 				}
@@ -107,7 +108,7 @@ impl<'a> InstalledMod<'a> {
 		if let Some(config) = self.game_mod.config.as_ref() {
 			let config_path = self.get_config_path(config);
 			if open_folder {
-				paths::open_folder_or_parent(&config_path)?;
+				config_path.open_folder_or_parent()?;
 			} else {
 				open_detached_better(config_path)?;
 			}

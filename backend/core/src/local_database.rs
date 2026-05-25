@@ -29,6 +29,7 @@ use crate::{
 		GamesSortBy,
 		InstallState,
 	},
+	path_extensions::AsValidStr,
 	providers::provider::ProviderId,
 	remote_game,
 	result::{
@@ -576,8 +577,7 @@ pub fn attach_remote_database<TConnection: Deref<Target = rusqlite::Connection>>
 		return Ok(());
 	}
 
-	local_database_connection
-		.execute("ATTACH DATABASE ?1 AS remote_db;", [path.to_string_lossy()])?;
+	local_database_connection.execute("ATTACH DATABASE ?1 AS remote_db;", [path.try_to_str()?])?;
 
 	local_database_connection.execute(
 		r"
