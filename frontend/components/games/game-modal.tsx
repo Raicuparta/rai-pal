@@ -128,7 +128,7 @@ export function GameModal({ game, mods }: Props) {
 					game={game}
 					mods={mods}
 				/>
-				<DebugData data={game} />
+				<DebugData data={{ game, mods }} />
 			</Stack>
 		</SubPage>
 	);

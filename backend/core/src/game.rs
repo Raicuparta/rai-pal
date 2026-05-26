@@ -1,5 +1,6 @@
 use std::{
 	collections::{
+		BTreeMap,
 		HashMap,
 		HashSet,
 	},
@@ -82,7 +83,7 @@ pub struct DbGame {
 	pub unity_backend: Option<UnityBackend>,
 	pub architecture: Option<Architecture>,
 	pub tags: JsonData<Vec<GameTag>>,
-	pub provider_commands: JsonData<HashMap<ProviderCommandAction, ProviderCommand>>,
+	pub provider_commands: JsonData<BTreeMap<ProviderCommandAction, ProviderCommand>>,
 }
 
 impl DbGame {
@@ -104,7 +105,7 @@ impl DbGame {
 			unity_backend: None,
 			architecture: None,
 			tags: JsonData(Vec::default()),
-			provider_commands: JsonData(HashMap::default()),
+			provider_commands: JsonData(BTreeMap::default()),
 		};
 
 		if is_probably_demo(&game.display_title) {
@@ -288,6 +289,7 @@ impl DbGame {
 			});
 		}
 
+		result.sort_by(|a, b| a.mod_id.cmp(&b.mod_id));
 		result
 	}
 
