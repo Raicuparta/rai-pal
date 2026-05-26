@@ -8,6 +8,7 @@ import { selectedGameAtom } from "./games-state";
 import { GamesTable } from "./games-table";
 import { GameModal } from "./game-modal";
 import { useGame } from "@hooks/use-game";
+import { useGameMods } from "@hooks/use-game-mods";
 
 export function GamesPage() {
 	const [selectedGame, setSelectedGame] = useAtom(selectedGameAtom);
@@ -17,11 +18,16 @@ export function GamesPage() {
 	});
 
 	const game = useGame(selectedGame?.providerId, selectedGame?.gameId);
+	const mods = useGameMods(selectedGame?.providerId, selectedGame?.gameId);
 
 	return (
 		<Stack h="100%">
-			{game && <GameModal game={game} />}
-			{!game && (
+			{game && mods ? (
+				<GameModal
+					game={game}
+					mods={mods}
+				/>
+			) : (
 				<Group>
 					<AddGame />
 					<FilterMenu />
@@ -31,7 +37,7 @@ export function GamesPage() {
 			<Card
 				p={0}
 				flex={1}
-				display={game ? "none" : undefined}
+				display={game && mods ? "none" : undefined}
 				bg="dark"
 			>
 				<GamesTable />

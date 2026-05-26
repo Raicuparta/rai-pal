@@ -1,32 +1,21 @@
 import { Alert, Divider, Stack, Table } from "@mantine/core";
-import { DbGame, GameModInfo, commands } from "@api/bindings";
-import { useCallback, useMemo } from "react";
+import { DbGame, commands } from "@api/bindings";
+import { useCallback } from "react";
 import { CommandButton } from "@components/command-button";
 import { IconTrash } from "@tabler/icons-react";
-import { UnifiedMod, useUnifiedMods } from "@hooks/use-unified-mods";
 import { GameModRow } from "./game-mod-row";
 import { useLocalization } from "@hooks/use-localization";
 import { useCommandData } from "@hooks/use-command-data";
-import { useAppEvent } from "@hooks/use-app-event";
 import { MutedText } from "@components/muted-text";
+import { GameModsData } from "@hooks/use-game-mods";
 
 type Props = {
 	readonly game: DbGame;
+	readonly mods: GameModsData;
 };
 
-const defaultModsInfo: GameModInfo[] = [];
-
-export function GameMods({ game }: Props) {
+export function GameMods({ game, mods }: Props) {
 	const t = useLocalization("gameModal");
-	const mods = useUnifiedMods();
-	const getGameMods = useCallback(
-		() => commands.getGameMods(game.providerId, game.gameId),
-		[game],
-	);
-	const [modsInfo, updateModsInfo] = useCommandData(
-		getGameMods,
-		defaultModsInfo,
-	);
 	const getRemoteConfigs = useCallback(
 		() => commands.getRemoteConfigs(game.providerId, game.gameId),
 		[game],
@@ -37,45 +26,14 @@ export function GameMods({ game }: Props) {
 		!game?.exePath,
 	);
 
-	useAppEvent(
-		"refreshGame",
-		`installed-mods-${game.providerId}:${game.gameId}`,
-		([refreshedProviderId, refreshedGameId]) => {
-			if (
-				refreshedProviderId !== game.providerId ||
-				refreshedGameId !== game.gameId
-			)
-				return;
-			updateModsInfo();
-		},
-	);
-
-	const { compatibleMods, incompatibleMods } = useMemo(() => {
-		const compatibleMods: { mod: UnifiedMod; info: GameModInfo }[] = [];
-		const incompatibleMods: { mod: UnifiedMod; info: GameModInfo }[] = [];
-
-		for (const info of modsInfo) {
-			const mod = mods[info.modId];
-			if (!mod) continue;
-
-			if (info.compatible) {
-				compatibleMods.push({ mod, info });
-			} else {
-				incompatibleMods.push({ mod, info });
-			}
-		}
-
-		return { compatibleMods, incompatibleMods };
-	}, [modsInfo, mods]);
-
-	if (compatibleMods.length + incompatibleMods.length === 0) {
+	if (mods.compatibleMods.length + mods.incompatibleMods.length === 0) {
 		return null;
 	}
 
 	return (
 		<>
 			<Stack>
-				{compatibleMods.length > 0 && (
+				{mods.compatibleMods.length > 0 && (
 					<>
 						<Divider label={t("gameModsLabel")} />
 						{!game.exePath && (
@@ -86,7 +44,7 @@ export function GameMods({ game }: Props) {
 							highlightOnHoverColor="dark.7"
 						>
 							<Table.Tbody>
-								{compatibleMods.map(({ mod, info }) => (
+								{mods.compatibleMods.map(({ mod, info }) => (
 									<GameModRow
 										key={mod.id}
 										game={game}
@@ -123,13 +81,13 @@ export function GameMods({ game }: Props) {
 					</CommandButton>
 				)}
 			</Stack>
-			{incompatibleMods.length > 0 && (
+			{mods.incompatibleMods.length > 0 && (
 				<Stack>
 					<Divider label={t("incompatibleGameModsLabel")} />
 					<MutedText>{t("incompatibleGameModsDescription")}</MutedText>
 					<Table>
 						<Table.Tbody>
-							{incompatibleMods.map(({ mod, info }) => (
+							{mods.incompatibleMods.map(({ mod, info }) => (
 								<GameModRow
 									key={mod.id}
 									game={game}

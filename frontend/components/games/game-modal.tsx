@@ -19,15 +19,17 @@ import { TableHead } from "@components/table/table-head";
 import { gamesColumns } from "./games-columns";
 import { useLocalization } from "@hooks/use-localization";
 import { RemoveGameButton } from "./remove-game-button";
-import { GameMods } from "./game-mods";
 import { platform } from "@tauri-apps/plugin-os";
 import { SubPage } from "@components/sub-page";
+import { GameModsData } from "@hooks/use-game-mods";
+import { GameMods } from "./game-mods";
 
 type Props = {
 	readonly game: DbGame;
+	readonly mods: GameModsData;
 };
 
-export function GameModal({ game }: Props) {
+export function GameModal({ game, mods }: Props) {
 	const t = useLocalization("gameModal");
 	const setSelectedGame = useSetAtom(selectedGameAtom);
 
@@ -122,7 +124,10 @@ export function GameModal({ game }: Props) {
 						)}
 					</>
 				)}
-				<GameMods game={game} />
+				<GameMods
+					game={game}
+					mods={mods}
+				/>
 				<DebugData data={game} />
 			</Stack>
 		</SubPage>
