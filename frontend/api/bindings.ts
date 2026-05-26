@@ -22,7 +22,7 @@ export const commands = {
 	sortDescending: boolean,
 } | null) => __TAURI_INVOKE<GameIdsResponse>("get_game_ids", { query }),
 	getGame: (providerId: ProviderId, gameId: string) => __TAURI_INVOKE<DbGame>("get_game", { providerId, gameId }),
-	getInstalledMods: (providerId: ProviderId, gameId: string) => __TAURI_INVOKE<{ [key in string]: GameMod }>("get_installed_mods", { providerId, gameId }),
+	getGameMods: (providerId: ProviderId, gameId: string) => __TAURI_INVOKE<GameModInfo[]>("get_game_mods", { providerId, gameId }),
 	installMod: (providerId: ProviderId, gameId: string, modId: string) => __TAURI_INVOKE<null>("install_mod", { providerId, gameId, modId }),
 	runMod: (providerId: ProviderId, gameId: string, modId: string) => __TAURI_INVOKE<null>("run_mod", { providerId, gameId, modId }),
 	openGameFolder: (providerId: ProviderId, gameId: string) => __TAURI_INVOKE<null>("open_game_folder", { providerId, gameId }),
@@ -155,6 +155,13 @@ export type GameMod = {
 	install: ModInstall | null,
 	runForGame: ModRunForGame | null,
 	hash: string | null,
+};
+
+export type GameModInfo = {
+	modId: string,
+	installedVersion: string | null,
+	installedHash: string | null,
+	compatible: boolean,
 };
 
 export type GameTag = "VR" | "Demo";

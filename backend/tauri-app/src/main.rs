@@ -26,7 +26,10 @@ use rai_pal_core::windows;
 use rai_pal_core::{
 	analytics,
 	app_paths,
-	game::DbGame,
+	game::{
+		DbGame,
+		GameModInfo,
+	},
 	game_mods::game_mod::GameMod,
 	games_query::GamesQuery,
 	http::DownloadStatus,
@@ -580,16 +583,19 @@ async fn save_app_settings(settings: AppSettings) -> Result {
 
 #[tauri::command]
 #[specta::specta]
-async fn get_installed_mods(
+async fn get_game_mods(
 	provider_id: ProviderId,
 	game_id: String,
 	app_handle: AppHandle,
-) -> Result<HashMap<String, GameMod>> {
+) -> Result<Vec<GameModInfo>> {
 	let state = app_handle.app_state();
 	Ok(state
 		.database
 		.get_game(&provider_id, &game_id)?
-		.get_installed_mods(&state.local_mods.read_state()?))
+		.get_relevant_mods(
+			&state.local_mods.read_state()?,
+			&state.remote_mods.read_state()?,
+		))
 }
 
 #[tauri::command]
@@ -701,7 +707,7 @@ fn main() {
 			get_app_settings,
 			get_game_ids,
 			get_game,
-			get_installed_mods,
+			get_game_mods,
 			install_mod,
 			run_mod,
 			open_game_folder,

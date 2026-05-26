@@ -6,7 +6,7 @@ import {
 	Stack,
 	Tooltip,
 } from "@mantine/core";
-import { DbGame, GameMod, RemoteConfigs, commands } from "@api/bindings";
+import { DbGame, RemoteConfigs, commands } from "@api/bindings";
 import { CommandButton } from "@components/command-button";
 import {
 	IconCheck,
@@ -17,7 +17,7 @@ import {
 	IconSettings,
 	IconSettingsFilled,
 } from "@tabler/icons-react";
-import { UnifiedMod } from "@hooks/use-unified-mods";
+import { UnifiedMod, UnifiedModVersion } from "@hooks/use-unified-mods";
 import { getIsOutdated } from "@util/is-outdated";
 import { OutdatedMarker } from "@components/outdated-marker";
 import { ItemName } from "@components/item-name";
@@ -36,7 +36,7 @@ type Props = {
 	readonly game: DbGame;
 	readonly mod: UnifiedMod;
 	readonly remoteConfigs?: RemoteConfigs | null;
-	readonly installedMod?: GameMod;
+	readonly installedMod?: UnifiedModVersion;
 	readonly incompatible?: boolean;
 };
 
