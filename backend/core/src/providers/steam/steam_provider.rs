@@ -1,3 +1,5 @@
+#[cfg(target_os = "linux")]
+use std::collections::BTreeMap;
 use std::{
 	collections::{
 		HashMap,
@@ -367,7 +369,7 @@ impl ProviderActions for Steam {
 		game: &DbGame,
 		exe_path: &Path,
 		args: &[String],
-		wine_env: &HashMap<String, String>,
+		wine_env: &BTreeMap<String, String>,
 	) -> Result {
 		steam_proton::run_with_wine(game, exe_path, args, wine_env)
 	}

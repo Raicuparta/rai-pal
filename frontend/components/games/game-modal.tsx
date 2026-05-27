@@ -113,6 +113,8 @@ export function GameModal({ game, mods }: Props) {
 							{t("refreshGame")}
 						</CommandButton>
 					)}
+
+					<DebugData data={{ game, mods }} />
 				</Group>
 				{game.exePath && (
 					<>
@@ -128,7 +130,6 @@ export function GameModal({ game, mods }: Props) {
 					game={game}
 					mods={mods}
 				/>
-				<DebugData data={{ game, mods }} />
 			</Stack>
 		</SubPage>
 	);

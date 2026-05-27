@@ -1,5 +1,8 @@
 use std::{
-	collections::HashMap,
+	collections::{
+		BTreeMap,
+		HashMap,
+	},
 	fs::{
 		self,
 		File,
@@ -93,7 +96,7 @@ pub struct ModInstall {
 pub struct ModRunForGame {
 	pub path: Option<String>,
 	pub args: Option<Vec<String>>,
-	pub wine_environment: Option<HashMap<String, String>>,
+	pub wine_environment: Option<BTreeMap<String, String>>,
 	pub os: Option<OperatingSystem>,
 }
 
@@ -207,7 +210,7 @@ impl GameMod {
 
 		#[cfg(target_os = "linux")]
 		{
-			let wine_environment: HashMap<String, String> = run_for_game
+			let wine_environment: BTreeMap<String, String> = run_for_game
 				.wine_environment
 				.clone()
 				.unwrap_or_default()

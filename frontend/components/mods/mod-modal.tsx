@@ -81,8 +81,8 @@ export function ModModal(props: Props) {
 							{t("deleteMod")}
 						</CommandButton>
 					)}
+					<DebugData data={props.mod} />
 				</Stack>
-				<DebugData data={props.mod} />
 			</Stack>
 		</SubPage>
 	);

@@ -3743,7 +3743,6 @@ dependencies = [
  "tauri-runtime",
  "tauri-specta",
  "thiserror 2.0.18",
- "webkit2gtk",
 ]
 
 [[package]]

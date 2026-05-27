@@ -1,5 +1,8 @@
 use std::{
-	collections::HashMap,
+	collections::{
+		BTreeMap,
+		HashMap,
+	},
 	path::{
 		Path,
 		PathBuf,
@@ -66,7 +69,7 @@ pub trait ProviderActions {
 		_game: &DbGame,
 		_exe_path: &Path,
 		_args: &[String],
-		_wine_env: &HashMap<String, String>,
+		_wine_env: &BTreeMap<String, String>,
 	) -> Result {
 		Ok(())
 	}

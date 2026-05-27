@@ -1,5 +1,5 @@
 use std::{
-	collections::HashMap,
+	collections::BTreeMap,
 	fs,
 	path::{
 		Path,
@@ -63,7 +63,7 @@ pub fn run_with_wine(
 	game: &DbGame,
 	exe_path: &Path,
 	args: &[String],
-	wine_env: &HashMap<String, String>,
+	wine_env: &BTreeMap<String, String>,
 ) -> Result {
 	let wine_prefix_path = get_wine_prefix_path(game)?;
 
