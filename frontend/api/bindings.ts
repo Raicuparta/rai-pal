@@ -142,7 +142,7 @@ export type GameMod = {
 	author: string,
 	sourceCode: string,
 	description: string,
-	latestVersion: ModDownload | null,
+	download: ModDownload | null,
 	engine: EngineBrand | null,
 	engineVersionRange: EngineVersionRange | null,
 	unityBackend: UnityBackend | null,

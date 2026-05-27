@@ -19,13 +19,13 @@ export function ModVersionBadge(props: Props) {
 	const t = useLocalization("modsPage");
 	const isOutdated = getIsOutdated(props.local, props.remote);
 
-	if (!props.local?.latestVersion && !props.remote?.latestVersion) {
+	if (!props.local?.download && !props.remote?.download) {
 		return null;
 	}
 
 	const versionText = (
-		props.local?.latestVersion?.id ||
-		props.remote?.latestVersion?.id ||
+		props.local?.download?.id ||
+		props.remote?.download?.id ||
 		"-"
 	).split("/")[0];
 

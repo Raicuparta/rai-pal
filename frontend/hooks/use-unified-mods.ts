@@ -4,7 +4,7 @@ import { localModsAtom, remoteModsAtom } from "./use-data";
 import { GameMod } from "@api/bindings";
 
 // Anything where it's important to distinguish between local and remote versions should be included here.
-export type UnifiedModVersion = Pick<GameMod, "latestVersion" | "hash">;
+export type UnifiedModVersion = Pick<GameMod, "download" | "hash">;
 
 export interface UnifiedMod extends GameMod {
 	local?: UnifiedModVersion;
@@ -28,13 +28,13 @@ const unifiedModsAtom = atom((get) => {
 			...local,
 			local: local
 				? {
-						latestVersion: local.latestVersion,
+						download: local.download,
 						hash: local.hash,
 					}
 				: undefined,
 			remote: remote
 				? {
-						latestVersion: remote.latestVersion,
+						download: remote.download,
 						hash: remote.hash,
 					}
 				: undefined,

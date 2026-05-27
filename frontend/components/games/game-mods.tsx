@@ -53,7 +53,7 @@ export function GameMods({ game, mods }: Props) {
 										installedMod={
 											info.installedVersion
 												? {
-														latestVersion: {
+														download: {
 															id: info.installedVersion,
 															url: "",
 														},
@@ -96,7 +96,7 @@ export function GameMods({ game, mods }: Props) {
 									installedMod={
 										info.installedVersion
 											? {
-													latestVersion: {
+													download: {
 														id: info.installedVersion,
 														url: "",
 													},

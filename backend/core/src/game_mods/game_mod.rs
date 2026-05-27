@@ -57,7 +57,7 @@ pub struct GameMod {
 	pub author: String,
 	pub source_code: String,
 	pub description: String,
-	pub latest_version: Option<ModDownload>,
+	pub download: Option<ModDownload>,
 	pub engine: Option<EngineBrand>,
 	pub engine_version_range: Option<EngineVersionRange>,
 	pub unity_backend: Option<UnityBackend>,
@@ -269,7 +269,7 @@ impl GameMod {
 	}
 
 	pub async fn download(&self, status_callback: impl Fn(DownloadStatus) + Send) -> Result {
-		if let Some(latest_version) = &self.latest_version {
+		if let Some(latest_version) = &self.download {
 			let target_path = app_paths::local_mods_path()?.join(&self.id);
 			let mod_id = &self.id;
 
@@ -316,8 +316,8 @@ impl GameMod {
 				// Only refresh if the manifest file exists (mod has been downloaded before),
 				// the latest version ID matches, and the hash differs
 				if manifest_path.exists()
-					&& local_mod.latest_version.as_ref().map(|v| v.id.clone())
-						== remote_mod.latest_version.as_ref().map(|v| v.id.clone())
+					&& local_mod.download.as_ref().map(|v| v.id.clone())
+						== remote_mod.download.as_ref().map(|v| v.id.clone())
 					&& local_mod.hash != remote_mod.hash
 					&& let Ok(manifest_contents) = serde_json::to_string_pretty(&remote_mod)
 				{
