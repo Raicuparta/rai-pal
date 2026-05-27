@@ -2,6 +2,7 @@ div.table {
 	padding: 0;
 	flex: 1;
 	user-select: none;
+	background-color: var(--mantine-color-dark-6);
 
 	thead {
 		background: var(--background-dark);

@@ -16,7 +16,8 @@
 */
 
 *::-webkit-scrollbar-corner {
-	background: transparent;
+	background: var(--mantine-color-dark-9);
+	border-bottom-right-radius: var(--mantine-radius-md);
 }
 
 *::-webkit-scrollbar {
@@ -24,13 +25,24 @@
 	height: var(--mantine-spacing-md);
 }
 
+*::-webkit-scrollbar-track {
+	background: var(--mantine-color-dark-9);
+}
+
 *::-webkit-scrollbar-track:vertical {
 	border-top-right-radius: var(--mantine-radius-md);
+	background: var(--mantine-color-dark-9);
+}
+
+*::-webkit-scrollbar-track:vertical:not(:corner-present) {
 	border-bottom-right-radius: var(--mantine-radius-md);
 }
 
 *::-webkit-scrollbar-track:horizontal {
 	border-bottom-left-radius: var(--mantine-radius-md);
+}
+
+*::-webkit-scrollbar-track:horizontal:not(:corner-present) {
 	border-bottom-right-radius: var(--mantine-radius-md);
 }
 
