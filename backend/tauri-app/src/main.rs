@@ -426,20 +426,20 @@ async fn download_mod_inner(handle: &AppHandle, mod_id: &str) -> Result {
 	let remote_mod = remote_mods.try_get(mod_id)?;
 	let download_status_channel = state.download_status_channel.read_state()?.clone();
 
-	GameMod::download(remote_mod, |status| {
-		download_status_channel
-			.send(status)
-			.ok_or_log("Failed to send download status update");
-	})
-	.await?;
+	remote_mod
+		.download(|status| {
+			download_status_channel
+				.send(status)
+				.ok_or_log("Failed to send download status update");
+		})
+		.await?;
 
 	Ok(())
 }
 
 async fn refresh_and_get_local_mod(mod_id: &str, handle: &AppHandle) -> Result<GameMod> {
+	let state = handle.app_state();
 	let local_mods = {
-		let state = handle.app_state();
-
 		let state_local_mods = state.local_mods.read_state()?.clone();
 		if state_local_mods.contains_key(mod_id) {
 			Ok(state_local_mods)
@@ -457,7 +457,11 @@ async fn refresh_and_get_local_mod(mod_id: &str, handle: &AppHandle) -> Result<G
 		}
 	}?;
 
-	Ok(local_mods.try_get(mod_id).cloned()?)
+	if let Some(local_mod) = local_mods.get(mod_id) {
+		Ok(local_mod.clone())
+	} else {
+		Ok(state.remote_mods.read_state()?.try_get(mod_id)?.clone())
+	}
 }
 
 #[tauri::command]

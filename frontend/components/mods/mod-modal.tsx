@@ -23,9 +23,9 @@ type Props = {
 
 export function ModModal(props: Props) {
 	const t = useLocalization("modModal");
-	const isDownloadAvailable = Boolean(props.mod.remote?.latestVersion.url);
-	const localVersion = props.mod.local?.latestVersion.id;
-	const remoteVersion = props.mod.remote?.latestVersion.id;
+	const isDownloadAvailable = Boolean(props.mod.remote?.latestVersion?.url);
+	const localVersion = props.mod.local?.latestVersion?.id;
+	const remoteVersion = props.mod.remote?.latestVersion?.id;
 	const isOutdated =
 		localVersion && remoteVersion && remoteVersion !== localVersion;
 

@@ -57,7 +57,7 @@ pub struct GameMod {
 	pub author: String,
 	pub source_code: String,
 	pub description: String,
-	pub latest_version: ModDownload,
+	pub latest_version: Option<ModDownload>,
 	pub engine: Option<EngineBrand>,
 	pub engine_version_range: Option<EngineVersionRange>,
 	pub unity_backend: Option<UnityBackend>,
@@ -269,23 +269,25 @@ impl GameMod {
 	}
 
 	pub async fn download(&self, status_callback: impl Fn(DownloadStatus) + Send) -> Result {
-		let target_path = app_paths::local_mods_path()?.join(&self.id);
-		let mod_id = &self.id;
+		if let Some(latest_version) = &self.latest_version {
+			let target_path = app_paths::local_mods_path()?.join(&self.id);
+			let mod_id = &self.id;
 
-		let zip_path = app_paths::downloads_path()?.join(format!("{mod_id}.zip"));
+			let zip_path = app_paths::downloads_path()?.join(format!("{mod_id}.zip"));
 
-		http::download(&self.latest_version.url, &zip_path, status_callback).await?;
+			http::download(&latest_version.url, &zip_path, status_callback).await?;
 
-		let file = File::open(&zip_path)?;
+			let file = File::open(&zip_path)?;
 
-		let mut zip_archive = ZipArchive::new(file)?;
+			let mut zip_archive = ZipArchive::new(file)?;
 
-		files::extract(&mut zip_archive, &target_path)?;
+			files::extract(&mut zip_archive, &target_path)?;
 
-		fs::write(
-			Self::get_manifest_path(&target_path),
-			serde_json::to_string_pretty(&self)?,
-		)?;
+			fs::write(
+				Self::get_manifest_path(&target_path),
+				serde_json::to_string_pretty(&self)?,
+			)?;
+		}
 
 		Ok(())
 	}
@@ -314,7 +316,8 @@ impl GameMod {
 				// Only refresh if the manifest file exists (mod has been downloaded before),
 				// the latest version ID matches, and the hash differs
 				if manifest_path.exists()
-					&& local_mod.latest_version.id == remote_mod.latest_version.id
+					&& local_mod.latest_version.as_ref().map(|v| v.id.clone())
+						== remote_mod.latest_version.as_ref().map(|v| v.id.clone())
 					&& local_mod.hash != remote_mod.hash
 					&& let Ok(manifest_contents) = serde_json::to_string_pretty(&remote_mod)
 				{

@@ -44,7 +44,10 @@ export function useGameMods(
 			if (!mod) continue;
 
 			if (info.compatible) {
-				if (mod.install || mod.runForGame) {
+				// Conditions that determine whether a mod is worthy of showing in the mods list for a specific game.
+				// If no install nor run, then there's nothing to do.
+				// If nothing to download, then likely just an extra dependency (might change in the future dunno).
+				if ((mod.install || mod.runForGame) && mod.latestVersion) {
 					compatibleMods.push({ mod, info });
 				}
 			} else {

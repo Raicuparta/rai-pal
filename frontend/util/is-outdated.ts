@@ -7,7 +7,7 @@ export function getIsOutdated(
 	if (!local || !remote) return false;
 
 	return (
-		local.latestVersion.id !== remote.latestVersion.id ||
+		local.latestVersion?.id !== remote.latestVersion?.id ||
 		local.hash !== remote.hash
 	);
 }

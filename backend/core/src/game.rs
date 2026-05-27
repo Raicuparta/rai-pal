@@ -210,7 +210,8 @@ impl DbGame {
 				let mut manifest = GameMod::from_file(manifest_path)?;
 
 				if let Some(local_mod) = local_mods.get(&manifest.id)
-					&& manifest.latest_version.id == local_mod.latest_version.id
+					&& manifest.latest_version.as_ref().map(|v| v.id.clone())
+						== local_mod.latest_version.as_ref().map(|v| v.id.clone())
 					&& manifest.hash != local_mod.hash
 					&& let Ok(manifest_contents) = serde_json::to_string_pretty(local_mod)
 				{
@@ -270,9 +271,12 @@ impl DbGame {
 			let compatible =
 				self.is_engine_version_compatible(mod_data.engine_version_range.as_ref());
 
-			let (installed_version, installed_hash) = installed_manifest
-				.map_or((None, None), |m| {
-					(Some(m.latest_version.id.clone()), m.hash.clone())
+			let (installed_version, installed_hash) =
+				installed_manifest.map_or((None, None), |m| {
+					(
+						m.latest_version.as_ref().map(|v| v.id.clone()),
+						m.hash.clone(),
+					)
 				});
 
 			result.push(GameModInfo {
