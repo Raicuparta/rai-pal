@@ -379,6 +379,7 @@ async fn install_mod_dependencies(
 			}) {
 				let dependency_mod =
 					refresh_and_get_local_mod(&relevant_dependency_mod_info.mod_id, handle).await?;
+				Box::pin(install_mod_dependencies(handle, &dependency_mod, game)).await?;
 
 				if dependency_mod.install.is_some() {
 					dependency_mod.install(game)?;
