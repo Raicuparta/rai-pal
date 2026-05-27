@@ -51,19 +51,25 @@ pub enum ProviderId {
 
 pub trait ProviderActions {
 	fn insert_games(&self, db: &DbMutex) -> Result;
+}
+
+pub trait WineProviderActions {
 	fn set_wine_dll_overrides(&self, _game: &DbGame, _dll_overrides: &[String]) -> Result {
 		Ok(())
 	}
+
 	fn get_wine_prefix_path(&self, _game: &DbGame) -> Result<PathBuf> {
 		Err(Error::UnsupportedOperation(
 			"get_wine_prefix_path".to_string(),
 		))
 	}
+
 	fn get_wine_binary_path(&self, _game: &DbGame) -> Result<PathBuf> {
 		Err(Error::UnsupportedOperation(
-			"get_wine_binary_folder".to_string(),
+			"get_wine_binary_path".to_string(),
 		))
 	}
+
 	fn run_with_wine(
 		&self,
 		_game: &DbGame,
@@ -75,7 +81,10 @@ pub trait ProviderActions {
 	}
 }
 
-pub fn get_provider(provider_id: ProviderId) -> Result<Box<dyn ProviderActions>> {
+pub trait Provider: ProviderActions + WineProviderActions {}
+impl<T> Provider for T where T: ProviderActions + WineProviderActions {}
+
+pub fn get_provider(provider_id: ProviderId) -> Result<Box<dyn Provider>> {
 	match provider_id {
 		ProviderId::Steam => Ok(Box::new(Steam {})),
 

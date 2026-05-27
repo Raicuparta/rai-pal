@@ -3,6 +3,7 @@ use rai_pal_proc_macros::serializable_struct;
 use super::provider::ProviderActions;
 use crate::{
 	local_database::DbMutex,
+	providers::provider::WineProviderActions,
 	result::Result,
 };
 
@@ -14,3 +15,5 @@ impl ProviderActions for Dummy {
 		Ok(())
 	}
 }
+
+impl WineProviderActions for Dummy {}

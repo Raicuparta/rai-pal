@@ -21,6 +21,7 @@ use crate::{
 		GameDatabase,
 	},
 	path_extensions::PathExt,
+	providers::provider::WineProviderActions,
 	result::{
 		Error,
 		Result,
@@ -56,6 +57,8 @@ impl ProviderActions for Manual {
 		Ok(())
 	}
 }
+
+impl WineProviderActions for Manual {}
 
 fn games_config_path() -> Result<PathBuf> {
 	app_paths::app_data_file("games.json")

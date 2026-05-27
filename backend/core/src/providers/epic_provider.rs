@@ -35,7 +35,10 @@ use crate::{
 		GameDatabase,
 	},
 	paths::glob_path,
-	providers::provider::ProviderActions,
+	providers::provider::{
+		ProviderActions,
+		WineProviderActions,
+	},
 	result::Result,
 };
 
@@ -232,6 +235,8 @@ impl ProviderActions for Epic {
 		Ok(())
 	}
 }
+
+impl WineProviderActions for Epic {}
 
 fn read_manifest(path: &Path) -> Result<EpicManifest> {
 	let json = fs::read_to_string(path)?;

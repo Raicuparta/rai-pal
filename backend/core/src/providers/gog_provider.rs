@@ -32,6 +32,7 @@ use crate::{
 	providers::provider::{
 		ProviderActions,
 		ProviderId,
+		WineProviderActions,
 	},
 	result::Result,
 };
@@ -179,6 +180,8 @@ GROUP BY
 
 	Ok(Some(rows))
 }
+
+impl WineProviderActions for Gog {}
 
 fn try_parse_json<TData>(json: &str) -> Option<TData>
 where

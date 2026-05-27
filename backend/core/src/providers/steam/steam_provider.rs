@@ -1,5 +1,3 @@
-#[cfg(target_os = "linux")]
-use std::collections::BTreeMap;
 use std::{
 	collections::{
 		HashMap,
@@ -14,8 +12,6 @@ use std::{
 use chrono::DateTime;
 use steamlocate::SteamDir;
 
-#[cfg(target_os = "linux")]
-use super::steam_proton;
 use super::{
 	appinfo::{
 		SteamAppInfo,
@@ -346,32 +342,6 @@ impl ProviderActions for Steam {
 		}
 
 		Ok(())
-	}
-
-	#[cfg(target_os = "linux")]
-	fn set_wine_dll_overrides(&self, game: &DbGame, dll_overrides: &[String]) -> Result {
-		steam_proton::set_wine_dll_overrides_for_game(game, dll_overrides)
-	}
-
-	#[cfg(target_os = "linux")]
-	fn get_wine_prefix_path(&self, game: &DbGame) -> Result<PathBuf> {
-		steam_proton::get_wine_prefix_path(game)
-	}
-
-	#[cfg(target_os = "linux")]
-	fn get_wine_binary_path(&self, game: &DbGame) -> Result<PathBuf> {
-		steam_proton::get_wine_binary_path(game)
-	}
-
-	#[cfg(target_os = "linux")]
-	fn run_with_wine(
-		&self,
-		game: &DbGame,
-		exe_path: &Path,
-		args: &[String],
-		wine_env: &BTreeMap<String, String>,
-	) -> Result {
-		steam_proton::run_with_wine(game, exe_path, args, wine_env)
 	}
 }
 

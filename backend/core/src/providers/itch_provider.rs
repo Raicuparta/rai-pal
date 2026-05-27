@@ -28,6 +28,7 @@ use crate::{
 	providers::provider::{
 		ProviderActions,
 		ProviderId,
+		WineProviderActions,
 	},
 	result::{
 		LogErrExt,
@@ -132,6 +133,8 @@ impl ProviderActions for Itch {
 		Ok(())
 	}
 }
+
+impl WineProviderActions for Itch {}
 
 fn parse_verdict(json_option: Option<&String>) -> Option<ItchDatabaseVerdict> {
 	let json = json_option?;

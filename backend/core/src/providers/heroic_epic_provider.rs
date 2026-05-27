@@ -22,6 +22,7 @@ use crate::{
 		provider::{
 			ProviderActions,
 			ProviderId,
+			WineProviderActions,
 		},
 	},
 	result::Result,
@@ -88,7 +89,9 @@ impl ProviderActions for HeroicEpic {
 		}
 		Ok(())
 	}
+}
 
+impl WineProviderActions for HeroicEpic {
 	fn set_wine_dll_overrides(&self, game: &DbGame, dll_overrides: &[String]) -> Result {
 		heroic_provider::set_wine_dll_overrides(&game.external_id, dll_overrides)
 	}
