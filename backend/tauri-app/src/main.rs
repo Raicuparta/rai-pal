@@ -223,24 +223,12 @@ async fn install_mod(
 	mod_id: &str,
 	handle: AppHandle,
 ) -> Result {
-	log::info!(
-		"Installing mod with id '{mod_id}' for game '{game_id}' from provider '{provider_id}'"
-	);
-
 	let state = handle.app_state();
 	let game = state.database.get_game(&provider_id, &game_id)?;
 
 	let local_mod = refresh_and_get_local_mod(mod_id, &handle).await?;
 
-	if let Some(dependencies) = local_mod.dependencies.as_ref() {
-		for dependency in dependencies {
-			let dependency_mod = refresh_and_get_local_mod(&dependency.mod_id, &handle).await?;
-
-			if dependency_mod.install.is_some() {
-				dependency_mod.install(&game)?;
-			}
-		}
-	}
+	install_mod_dependencies(&handle, &local_mod, &game).await?;
 
 	if let Some(installed_mod) = game.get_installed_mod(mod_id)? {
 		// Uninstall mod if it already exists, in case there are conflicting leftover files when updating.
@@ -270,6 +258,8 @@ async fn run_mod(
 	let game = state.database.get_game(&provider_id, &game_id)?;
 
 	let local_mod = refresh_and_get_local_mod(mod_id, &handle).await?;
+
+	install_mod_dependencies(&handle, &local_mod, &game).await?;
 
 	local_mod.run(&game)?;
 
@@ -364,6 +354,38 @@ async fn uninstall_all_mods(handle: AppHandle, provider_id: ProviderId, game_id:
 		.uninstall_all_mods()?;
 
 	handle.emit_safe(events::RefreshGame(provider_id, game_id));
+
+	Ok(())
+}
+
+async fn install_mod_dependencies(
+	handle: &AppHandle,
+	local_mod: &GameMod,
+	game: &DbGame,
+) -> Result {
+	let state = handle.app_state();
+
+	let relevant_mods = game.get_relevant_mods(
+		&state.local_mods.read_state()?,
+		&state.remote_mods.read_state()?,
+	);
+
+	if let Some(dependencies) = local_mod.dependencies.as_ref() {
+		for dependency in dependencies {
+			// Dependencies can have multiple versions of the same thing or just generally specify things that are needed in some cases but not all.
+			// So we need to make sure to only install compatible dependencies.
+			if let Some(relevant_dependency_mod_info) = relevant_mods.iter().find(|relevant_mod| {
+				relevant_mod.compatible && relevant_mod.mod_id == dependency.mod_id
+			}) {
+				let dependency_mod =
+					refresh_and_get_local_mod(&relevant_dependency_mod_info.mod_id, handle).await?;
+
+				if dependency_mod.install.is_some() {
+					dependency_mod.install(game)?;
+				}
+			}
+		}
+	}
 
 	Ok(())
 }

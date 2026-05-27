@@ -43,7 +43,7 @@ export function useGameMods(
 			const mod = mods[info.modId];
 			if (!mod) continue;
 
-			if (info.compatible) {
+			if ((info.compatible && mod.install) || mod.runForGame) {
 				compatibleMods.push({ mod, info });
 			} else {
 				incompatibleMods.push({ mod, info });

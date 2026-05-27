@@ -203,7 +203,6 @@ impl DbGame {
 		local_mods: &HashMap<String, GameMod>,
 		remote_mods: &HashMap<String, GameMod>,
 	) -> Vec<GameModInfo> {
-		// Refresh installed manifests and preserve update-on-read behavior
 		let installed_manifests: HashMap<String, GameMod> = self
 			.get_manifest_paths()
 			.iter()
@@ -265,11 +264,6 @@ impl DbGame {
 
 			// Skip deprecated mods unless they are installed
 			if mod_data.deprecated == Some(true) && installed_manifest.is_none() {
-				continue;
-			}
-
-			// Skip mods that are neither installable nor runnable
-			if mod_data.install.is_none() && mod_data.run_for_game.is_none() {
 				continue;
 			}
 
