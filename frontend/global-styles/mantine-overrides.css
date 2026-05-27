@@ -1,7 +1,3 @@
-.mantine-Code-root {
-	border-radius: var(--mantine-radius-md);
-}
-
 .mantine-Indicator-indicator {
 	pointer-events: none;
 }
@@ -16,16 +12,6 @@
 		width: 1.1em;
 		height: 1.1em;
 	}
-}
-
-.mantine-CodeHighlight-root {
-	border-radius: var(--mantine-radius-md);
-}
-
-.mantine-CodeHighlight-copy {
-	/* Mantine auto-hides the copy button on narrow screens.
-	I don't want that */
-	display: flex;
 }
 
 .mantine-Tooltip-tooltip {

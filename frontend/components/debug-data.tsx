@@ -3,9 +3,7 @@ import {
 	ActionIcon,
 	Box,
 	Button,
-	Card,
 	CopyButton,
-	Divider,
 	Group,
 	Modal,
 	Stack,
@@ -65,12 +63,7 @@ export function DebugData<TData>({ data }: Props<TData>) {
 					component="pre"
 					fz="xs"
 				>
-					<Box
-						component="code"
-						style={{ overflowX: "auto", overflowY: "hidden" }}
-					>
-						{debugText}
-					</Box>
+					<Box component="code">{debugText}</Box>
 				</Box>
 			</Modal>
 		</>
