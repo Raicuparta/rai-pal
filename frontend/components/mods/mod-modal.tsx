@@ -4,7 +4,6 @@ import { CommandButton } from "@components/command-button";
 import {
 	IconDownload,
 	IconFolderCog,
-	IconPlayerPlay,
 	IconRefreshAlert,
 	IconTrash,
 } from "@tabler/icons-react";
@@ -46,14 +45,6 @@ export function ModModal(props: Props) {
 				gap="xl"
 			>
 				<Stack>
-					{props.mod.local && props.mod.runForGame && (
-						<CommandButton
-							leftSection={<IconPlayerPlay />}
-							onClick={() => commands.runRunnableWithoutGame(props.mod.id)}
-						>
-							{t("runMod")}
-						</CommandButton>
-					)}
 					{props.mod.local && (
 						<CommandButton
 							leftSection={<IconFolderCog />}

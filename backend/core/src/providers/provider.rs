@@ -58,26 +58,31 @@ pub trait WineProviderActions {
 		Ok(())
 	}
 
-	fn get_wine_prefix_path(&self, _game: &DbGame) -> Result<PathBuf> {
-		Err(Error::UnsupportedOperation(
+	fn get_wine_prefix_path(&self, game: &DbGame) -> Result<PathBuf> {
+		Err(Error::UnsupportedProviderOperation(
+			game.provider_id,
 			"get_wine_prefix_path".to_string(),
 		))
 	}
 
-	fn get_wine_binary_path(&self, _game: &DbGame) -> Result<PathBuf> {
-		Err(Error::UnsupportedOperation(
+	fn get_wine_binary_path(&self, game: &DbGame) -> Result<PathBuf> {
+		Err(Error::UnsupportedProviderOperation(
+			game.provider_id,
 			"get_wine_binary_path".to_string(),
 		))
 	}
 
 	fn run_with_wine(
 		&self,
-		_game: &DbGame,
+		game: &DbGame,
 		_exe_path: &Path,
 		_args: &[String],
 		_wine_env: &BTreeMap<String, String>,
 	) -> Result {
-		Ok(())
+		Err(Error::UnsupportedProviderOperation(
+			game.provider_id,
+			"run_with_wine".to_string(),
+		))
 	}
 }
 

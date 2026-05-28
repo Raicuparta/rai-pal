@@ -1,11 +1,9 @@
-use std::{
-	path::PathBuf,
-	process::Command,
-};
+use std::path::PathBuf;
 
 use rai_pal_proc_macros::serializable_enum;
 
 use crate::{
+	game::DbGame,
 	open_better::open_detached_better,
 	result::Result,
 };
@@ -27,18 +25,37 @@ pub enum ProviderCommandAction {
 }
 
 impl ProviderCommand {
-	pub fn run(&self) -> Result {
+	pub fn run(&self, game: &DbGame) -> Result {
 		match self {
 			Self::String(command) => {
 				open_detached_better(command)?;
 			}
 			Self::Path(path, args) => {
-				let mut command = Command::new(path);
-				command.args(args);
-				if let Some(parent) = path.parent() {
-					command.current_dir(parent);
+				#[cfg(target_os = "linux")]
+				{
+					use std::collections::BTreeMap;
+
+					use crate::providers::provider;
+
+					provider::get_provider(game.provider_id)?.run_with_wine(
+						game,
+						path,
+						args,
+						&BTreeMap::default(),
+					)?;
 				}
-				command.spawn()?;
+
+				#[cfg(target_os = "windows")]
+				{
+					use std::process::Command;
+
+					let mut command = Command::new(path);
+					command.args(args);
+					if let Some(parent) = path.parent() {
+						command.current_dir(parent);
+					}
+					command.spawn()?;
+				}
 			}
 		}
 		Ok(())

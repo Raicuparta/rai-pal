@@ -9,6 +9,8 @@ use std::{
 
 use lazy_regex::regex;
 
+use crate::providers::provider::ProviderId;
+
 #[derive(Debug, thiserror::Error, specta::Type)]
 pub enum Error {
 	#[error(transparent)]
@@ -192,8 +194,8 @@ pub enum Error {
 	#[error("Failed to find mod manifest in path: `{0}`")]
 	ManifestNotFound(String),
 
-	#[error("Unsupported operation: `{0}`")]
-	UnsupportedOperation(String),
+	#[error("Provider {0} doesn't support this operation: `{1}`")]
+	UnsupportedProviderOperation(ProviderId, String),
 
 	#[error("Required information for mod with ID `{0}` is missing. Expected `{1}`")]
 	ModInfoMissing(String, String),

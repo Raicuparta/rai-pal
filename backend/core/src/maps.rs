@@ -1,6 +1,9 @@
 use std::{
 	borrow::Borrow,
-	collections::HashMap,
+	collections::{
+		BTreeMap,
+		HashMap,
+	},
 	fmt::Display,
 	hash::{
 		BuildHasher,
@@ -17,12 +20,12 @@ pub trait TryGettable<K, V> {
 	fn try_get<Q>(&self, k: &Q) -> Result<&V>
 	where
 		K: Borrow<Q> + Display,
-		Q: Hash + Eq + Display + ?Sized;
+		Q: Hash + Eq + Ord + Display + ?Sized;
 
 	fn try_get_mut<Q>(&mut self, k: &Q) -> Result<&mut V>
 	where
 		K: Borrow<Q> + Display,
-		Q: Hash + Eq + Display + ?Sized;
+		Q: Hash + Eq + Ord + Display + ?Sized;
 }
 
 impl<K, V, S: BuildHasher> TryGettable<K, V> for HashMap<K, V, S>
@@ -32,7 +35,7 @@ where
 	fn try_get<Q>(&self, key: &Q) -> Result<&V>
 	where
 		K: Borrow<Q> + Display,
-		Q: Hash + Eq + Display + ?Sized,
+		Q: Hash + Eq + Ord + Display + ?Sized,
 	{
 		self.get(key)
 			.ok_or_else(|| Error::DataEntryNotFound(key.to_string()))
@@ -41,7 +44,30 @@ where
 	fn try_get_mut<Q>(&mut self, key: &Q) -> Result<&mut V>
 	where
 		K: Borrow<Q> + Display,
-		Q: Hash + Eq + Display + ?Sized,
+		Q: Hash + Eq + Ord + Display + ?Sized,
+	{
+		self.get_mut(key)
+			.ok_or_else(|| Error::DataEntryNotFound(key.to_string()))
+	}
+}
+
+impl<K, V> TryGettable<K, V> for BTreeMap<K, V>
+where
+	K: Ord + Display,
+{
+	fn try_get<Q>(&self, key: &Q) -> Result<&V>
+	where
+		K: Borrow<Q> + Display,
+		Q: Hash + Eq + Ord + Display + ?Sized,
+	{
+		self.get(key)
+			.ok_or_else(|| Error::DataEntryNotFound(key.to_string()))
+	}
+
+	fn try_get_mut<Q>(&mut self, key: &Q) -> Result<&mut V>
+	where
+		K: Borrow<Q> + Display,
+		Q: Hash + Eq + Ord + Display + ?Sized,
 	{
 		self.get_mut(key)
 			.ok_or_else(|| Error::DataEntryNotFound(key.to_string()))

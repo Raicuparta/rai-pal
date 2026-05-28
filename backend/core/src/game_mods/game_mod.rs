@@ -237,10 +237,6 @@ impl GameMod {
 		Ok(())
 	}
 
-	pub async fn run_without_game(&self) -> Result {
-		todo!();
-	}
-
 	pub fn update_installed_mod_manifest(&self, game: &DbGame) -> Result {
 		// TODO: make sure it doesn't happen for runnables.
 		let manifest_path = game.get_installed_mod_manifest_path(&self.id)?;

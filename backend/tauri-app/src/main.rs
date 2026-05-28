@@ -46,7 +46,7 @@ use rai_pal_core::{
 			self,
 			ProviderId,
 		},
-		provider_command::ProviderCommand,
+		provider_command::ProviderCommandAction,
 		steam::{
 			steam_provider::Steam,
 			steam_shortcut,
@@ -262,18 +262,6 @@ async fn run_mod(
 	install_mod_dependencies(&handle, &local_mod, &game).await?;
 
 	local_mod.run(&game)?;
-
-	analytics::send_event(analytics::Event::InstallOrRunMod, mod_id).await;
-
-	Ok(())
-}
-
-#[tauri::command]
-#[specta::specta]
-async fn run_runnable_without_game(handle: AppHandle, mod_id: &str) -> Result {
-	let local_mod = refresh_and_get_local_mod(mod_id, &handle).await?;
-
-	local_mod.run_without_game().await?;
 
 	analytics::send_event(analytics::Event::InstallOrRunMod, mod_id).await;
 
@@ -539,8 +527,19 @@ async fn remove_game(handle: AppHandle, provider_id: ProviderId, game_id: String
 
 #[tauri::command]
 #[specta::specta]
-async fn run_provider_command(handle: AppHandle, provider_command: ProviderCommand) -> Result {
-	provider_command.run()?;
+async fn run_provider_command(
+	handle: AppHandle,
+	provider_id: ProviderId,
+	game_id: &str,
+	provider_command_aciton: ProviderCommandAction,
+) -> Result {
+	let game = handle
+		.app_state()
+		.database
+		.get_game(&provider_id, game_id)?;
+
+	let provider_command = game.provider_commands.0.try_get(&provider_command_aciton)?;
+	provider_command.run(&game)?;
 
 	handle.emit_safe(events::ExecutedProviderCommand);
 
@@ -752,7 +751,6 @@ fn main() {
 			remove_game,
 			reset_steam_cache,
 			run_provider_command,
-			run_runnable_without_game,
 			save_app_settings,
 			uninstall_all_mods,
 			uninstall_mod,

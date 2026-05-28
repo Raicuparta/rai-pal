@@ -344,9 +344,6 @@ impl DbGame {
 			return self;
 		}
 
-		// TODO: Launching exes directly only works on Windows.
-		// Once we have native Linux executable support, we should change this based on the executable's format and current OS.
-		#[cfg(target_os = "windows")]
 		self.add_provider_command(
 			ProviderCommandAction::StartViaExe,
 			ProviderCommand::Path(exe_path.to_path_buf(), Vec::default()),
