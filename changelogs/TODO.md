@@ -1,3 +1,12 @@
+# TODOS:
+
+- Keep better track of loading states.
+- Figure out why stuff gets stuck forever. Like if one thing is downloading, can't open a folder?
+- Make sure things work offline as much as possible. Especially stuff from remotemod.
+- in database:
+  - check each mod to see if zip structure is correct.
+  - make sure one failure doesn't break the whole thing. it should preserve the previous mod if so.
+- Add Z: to UE4SS paths. Need to figure out how to handle that generically.
 
 # Done:
 
