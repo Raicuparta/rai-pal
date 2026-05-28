@@ -21,10 +21,11 @@ use crate::{
 		DbMutex,
 		GameDatabase,
 	},
-	paths::file_name_without_extension,
+	path_extensions::PathExt,
 	providers::provider::{
 		ProviderActions,
 		ProviderId,
+		WineProviderActions,
 	},
 	result::Result,
 };
@@ -62,6 +63,8 @@ impl ProviderActions for Xbox {
 		Ok(())
 	}
 }
+
+impl WineProviderActions for Xbox {}
 
 fn get_games(db: &DbMutex) -> io::Result<()> {
 	let gaming_services =
@@ -101,7 +104,8 @@ fn get_games(db: &DbMutex) -> io::Result<()> {
 													error!(
 														"Failed to find display name for Xbox game: {error}"
 													);
-													file_name_without_extension(&executable_path)
+													(&executable_path)
+														.file_name_without_extension()
 														.map(ToString::to_string)
 												})
 												.unwrap_or_else(|error| {

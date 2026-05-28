@@ -345,6 +345,11 @@ impl ProviderActions for Steam {
 	}
 }
 
+#[cfg(target_os = "windows")]
+use crate::providers::provider::WineProviderActions;
+#[cfg(target_os = "windows")]
+impl WineProviderActions for Steam {}
+
 pub fn get_start_command(
 	steam_launch: &SteamLaunchOption,
 	discriminator: &Option<String>,

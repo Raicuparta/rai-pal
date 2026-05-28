@@ -34,7 +34,7 @@ use crate::{
 		DbMutex,
 		GameDatabase,
 	},
-	paths::glob_path,
+	path_extensions::PathExt,
 	providers::provider::{
 		ProviderActions,
 		WineProviderActions,
@@ -179,7 +179,7 @@ impl ProviderActions for Epic {
 
 		let manifests_path = app_data_path.join("Manifests");
 		if manifests_path.is_dir() {
-			let manifest_paths = glob_path(&manifests_path.join("*.item"));
+			let manifest_paths = manifests_path.join("*.item").glob();
 			for manifest_path in manifest_paths {
 				match read_manifest(&manifest_path) {
 					Ok(manifest) => {

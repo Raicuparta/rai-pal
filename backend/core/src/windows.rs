@@ -22,7 +22,7 @@ use winapi::{
 	},
 };
 
-use crate::paths;
+use crate::app_paths;
 
 fn os_str_to_wide(os_str: &OsStr) -> Vec<u16> {
 	os_str.encode_wide().chain(std::iter::once(0)).collect()
@@ -62,7 +62,7 @@ If that doesn't work, search online for "Microsoft Edge WebView2", and download 
 Would you like to open the logs folder?"#;
 
 fn try_open_logs_folder() {
-	if let Err(error) = paths::open_logs_folder() {
+	if let Err(error) = app_paths::open_logs_folder() {
 		error!("Failed to even open the logs folder: {error}");
 	}
 }
