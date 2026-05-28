@@ -356,7 +356,7 @@ async fn install_mod_dependencies(
 	let relevant_mods = game.get_relevant_mods(
 		&state.local_mods.read_state()?,
 		&state.remote_mods.read_state()?,
-	);
+	)?;
 
 	if let Some(dependencies) = local_mod.dependencies.as_ref() {
 		for dependency in dependencies {
@@ -621,7 +621,7 @@ async fn get_game_mods(
 		.get_relevant_mods(
 			&state.local_mods.read_state()?,
 			&state.remote_mods.read_state()?,
-		))
+		)?)
 }
 
 #[tauri::command]

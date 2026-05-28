@@ -38,6 +38,7 @@ use crate::{
 	},
 	game_tag::GameTag,
 	game_title::is_probably_demo,
+	maps::TryGettable,
 	path_extensions::PathExt,
 	providers::{
 		provider::ProviderId,
@@ -202,7 +203,7 @@ impl DbGame {
 		&self,
 		local_mods: &HashMap<String, GameMod>,
 		remote_mods: &HashMap<String, GameMod>,
-	) -> Vec<GameModInfo> {
+	) -> Result<Vec<GameModInfo>> {
 		let installed_manifests: HashMap<String, GameMod> = self
 			.get_manifest_paths()
 			.iter()
@@ -234,13 +235,12 @@ impl DbGame {
 		let mut result = Vec::new();
 
 		for mod_id in all_mod_ids {
-			let mod_data = local_mods
+			let game_mod = local_mods
 				.get(mod_id)
-				.or_else(|| remote_mods.get(mod_id))
-				.unwrap();
+				.map_or_else(|| remote_mods.try_get(mod_id), Ok)?;
 
 			// Skip if mod requires a specific engine and game's engine doesn't match
-			if let Some(required_engine) = &mod_data.engine
+			if let Some(required_engine) = &game_mod.engine
 				&& self.engine_brand.as_ref() != Some(required_engine)
 			{
 				continue;
@@ -248,14 +248,14 @@ impl DbGame {
 
 			// Skip if both mod and game specify unity_backend and they differ
 			if let (Some(mod_backend), Some(game_backend)) =
-				(&mod_data.unity_backend, &self.unity_backend)
+				(&game_mod.unity_backend, &self.unity_backend)
 				&& mod_backend != game_backend
 			{
 				continue;
 			}
 
 			// Skip if both mod and game specify architecture and they differ
-			if let (Some(mod_arch), Some(game_arch)) = (&mod_data.architecture, &self.architecture)
+			if let (Some(mod_arch), Some(game_arch)) = (&game_mod.architecture, &self.architecture)
 				&& mod_arch != game_arch
 			{
 				continue;
@@ -264,12 +264,12 @@ impl DbGame {
 			let installed_manifest = installed_manifests.get(mod_id.as_str());
 
 			// Skip deprecated mods unless they are installed
-			if mod_data.deprecated == Some(true) && installed_manifest.is_none() {
+			if game_mod.deprecated == Some(true) && installed_manifest.is_none() {
 				continue;
 			}
 
 			let compatible =
-				self.is_engine_version_compatible(mod_data.engine_version_range.as_ref());
+				self.is_engine_version_compatible(game_mod.engine_version_range.as_ref());
 
 			let (installed_version, installed_hash) = installed_manifest
 				.map_or((None, None), |m| {
@@ -285,7 +285,7 @@ impl DbGame {
 		}
 
 		result.sort_by(|a, b| a.mod_id.cmp(&b.mod_id));
-		result
+		Ok(result)
 	}
 
 	pub fn get_installed_mod_manifest_path(&self, mod_id: &str) -> Result<PathBuf> {

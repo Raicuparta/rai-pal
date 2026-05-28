@@ -20,7 +20,6 @@ import {
 import { UnifiedMod, UnifiedModVersion } from "@hooks/use-unified-mods";
 import { getIsOutdated } from "@util/is-outdated";
 import { OutdatedMarker } from "@components/outdated-marker";
-import { ItemName } from "@components/item-name";
 import { MutedText } from "@components/muted-text";
 import { ModVersionBadge } from "@components/mods/mod-version-badge";
 import { getModTitle } from "@util/game-mod";
@@ -82,7 +81,7 @@ export function GameModRow({
 	return (
 		<Table.Tr key={mod.id}>
 			<Table.Td ta="left">
-				<ItemName label={`by ${mod.author}`}>
+				<Group gap="xs">
 					{isModUsable && (
 						<ThemeIcon
 							color={statusColor}
@@ -92,16 +91,16 @@ export function GameModRow({
 						</ThemeIcon>
 					)}
 					{getModTitle(mod)}
+					<ModVersionBadge
+						local={installedMod}
+						remote={mod.remote}
+					/>
 					{availableRemoteConfig && (
 						<Tooltip label={t("remoteConfigAvailable")}>
 							<IconSettingsFilled fontSize="15" />
 						</Tooltip>
 					)}
-					<ModVersionBadge
-						local={installedMod}
-						remote={mod.remote}
-					/>
-				</ItemName>
+				</Group>
 				<Stack gap={0}>
 					{mod?.deprecated && <DeprecatedBadge mt={5} />}
 					{mod?.description && <MutedText>{mod.description}</MutedText>}

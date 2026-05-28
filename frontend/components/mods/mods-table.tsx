@@ -1,7 +1,6 @@
-import { Table, Text } from "@mantine/core";
+import { Group, Table, Text } from "@mantine/core";
 import { UnifiedMod } from "@hooks/use-unified-mods";
 import { ModVersionBadge } from "./mod-version-badge";
-import { ItemName } from "@components/item-name";
 import { getModTitle } from "@util/game-mod";
 import { DeprecatedBadge } from "./deprecated-badge";
 import { useLocalization } from "@hooks/use-localization";
@@ -46,15 +45,15 @@ export function ModsTable(props: Props) {
 					>
 						<Table.Td>
 							{mod.deprecated && <DeprecatedBadge />}
-							<ItemName
-								label={
-									mod.author
-										? `${t("modByAuthor", { authorName: mod.author })}`
-										: undefined
-								}
-							>
-								{getModTitle(mod)}
-							</ItemName>
+							<Group gap="xs">
+								<span>{getModTitle(mod)}</span>
+								{mod.author && (
+									<Text
+										size="xs"
+										opacity={0.5}
+									>{`${t("modByAuthor", { authorName: mod.author })}`}</Text>
+								)}
+							</Group>
 							{mod.description && (
 								<Text
 									size="sm"
