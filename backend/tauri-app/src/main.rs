@@ -658,7 +658,7 @@ async fn download_remote_config(
 
 	if let Some(mod_config) = remote_mod.config.as_ref() {
 		mod_config
-			.download(&game, remote_config_file, overwrite)
+			.download(&game, remote_mod, remote_config_file, overwrite)
 			.await?;
 		local_mod.update_installed_mod_manifest(&game)?;
 	}

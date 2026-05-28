@@ -10,7 +10,13 @@ use rai_pal_proc_macros::serializable_struct;
 
 use crate::{
 	game::DbGame,
-	game_mods::game_mod::ModConfigDestinationType,
+	game_mods::{
+		game_mod::{
+			GameMod,
+			ModConfigDestinationType,
+		},
+		replacement_token::replace_tokens,
+	},
 	remote_config,
 	result::Result,
 };
@@ -23,9 +29,15 @@ pub struct ModConfig {
 }
 
 impl ModConfig {
-	pub async fn download(&self, game: &DbGame, config_file: &str, overwrite: bool) -> Result {
-		// TODO: handle tokens.
-		let destination_path = PathBuf::from(&self.destination_path);
+	pub async fn download(
+		&self,
+		game: &DbGame,
+		game_mod: &GameMod,
+		config_file: &str,
+		overwrite: bool,
+	) -> Result {
+		let destination_path =
+			PathBuf::from(replace_tokens(&self.destination_path, game, game_mod));
 
 		if config_exists(&destination_path)? {
 			if overwrite {

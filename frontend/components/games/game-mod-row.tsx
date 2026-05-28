@@ -115,6 +115,7 @@ export function GameModRow({
 								<GameModInstallButton
 									game={game}
 									mod={mod}
+									remoteConfigFile={availableRemoteConfig?.file}
 								/>
 							)}
 							{isInstalled && mod.install && (
@@ -128,6 +129,7 @@ export function GameModRow({
 									game={game}
 									mod={mod}
 									isLocalModOutdated={isLocalModOutdated}
+									remoteConfigFile={availableRemoteConfig?.file}
 								/>
 							)}
 							{mod.runForGame && (

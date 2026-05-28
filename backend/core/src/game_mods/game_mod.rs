@@ -238,7 +238,6 @@ impl GameMod {
 	}
 
 	pub fn update_installed_mod_manifest(&self, game: &DbGame) -> Result {
-		// TODO: make sure it doesn't happen for runnables.
 		let manifest_path = game.get_installed_mod_manifest_path(&self.id)?;
 		fs::create_dir_all(manifest_path.try_parent()?)?;
 		let manifest_contents = serde_json::to_string_pretty(&self)?;

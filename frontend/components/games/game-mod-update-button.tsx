@@ -8,9 +8,15 @@ type Props = {
 	readonly game: DbGame;
 	readonly mod: UnifiedMod;
 	readonly isLocalModOutdated: boolean;
+	readonly remoteConfigFile?: string;
 };
 
-export function GameModUpdateButton({ game, mod, isLocalModOutdated }: Props) {
+export function GameModUpdateButton({
+	game,
+	mod,
+	isLocalModOutdated,
+	remoteConfigFile,
+}: Props) {
 	const t = useLocalization("gameModRow");
 
 	return (
@@ -21,6 +27,15 @@ export function GameModUpdateButton({ game, mod, isLocalModOutdated }: Props) {
 			onClick={async () => {
 				if (isLocalModOutdated) {
 					await commands.downloadMod(mod.id);
+				}
+				if (remoteConfigFile) {
+					await commands.downloadRemoteConfig(
+						game.providerId,
+						game.gameId,
+						mod.id,
+						remoteConfigFile,
+						false,
+					);
 				}
 				await commands.installMod(game.providerId, game.gameId, mod.id);
 			}}

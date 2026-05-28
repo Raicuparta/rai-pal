@@ -7,9 +7,10 @@ import { GameModActionButton } from "./game-mod-action-button";
 type Props = {
 	readonly game: DbGame;
 	readonly mod: UnifiedMod;
+	readonly remoteConfigFile?: string;
 };
 
-export function GameModInstallButton({ game, mod }: Props) {
+export function GameModInstallButton({ game, mod, remoteConfigFile }: Props) {
 	const t = useLocalization("gameModRow");
 
 	return (
@@ -20,7 +21,18 @@ export function GameModInstallButton({ game, mod }: Props) {
 				"Attention: be careful when installing mods on multiplayer games! Anticheat can detect some mods and get you banned, even if the mods seem harmless."
 			}
 			confirmationSkipId="install-mod-confirm"
-			onClick={() => commands.installMod(game.providerId, game.gameId, mod.id)}
+			onClick={async () => {
+				if (remoteConfigFile) {
+					await commands.downloadRemoteConfig(
+						game.providerId,
+						game.gameId,
+						mod.id,
+						remoteConfigFile,
+						false,
+					);
+				}
+				await commands.installMod(game.providerId, game.gameId, mod.id);
+			}}
 		>
 			{t("installMod")}
 		</GameModActionButton>
