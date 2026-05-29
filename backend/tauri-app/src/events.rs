@@ -18,10 +18,7 @@ pub struct RefreshGame(pub ProviderId, pub String);
 pub struct GamesChanged();
 
 #[serializable_event]
-pub struct SyncLocalMods(pub HashMap<String, GameMod>);
-
-#[serializable_event]
-pub struct SyncRemoteMods(pub HashMap<String, GameMod>);
+pub struct SyncMods(pub HashMap<String, GameMod>);
 
 #[serializable_event]
 pub struct ExecutedProviderCommand;
@@ -57,8 +54,7 @@ pub fn collect_events() -> tauri_specta::Events {
 	tauri_specta::collect_events![
 		RefreshGame,
 		GamesChanged,
-		SyncLocalMods,
-		SyncRemoteMods,
+		SyncMods,
 		ExecutedProviderCommand,
 		SelectGame,
 		ErrorRaised,

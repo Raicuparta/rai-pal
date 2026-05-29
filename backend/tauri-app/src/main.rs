@@ -30,7 +30,10 @@ use rai_pal_core::{
 		DbGame,
 		GameModInfo,
 	},
-	game_mods::game_mod::GameMod,
+	game_mods::{
+		game_mod::GameMod,
+		mod_providers::url_mod_provider::UrlModProvider,
+	},
 	games_query::GamesQuery,
 	http::DownloadStatus,
 	local_database::{
@@ -176,47 +179,6 @@ async fn open_game_mods_folder(
 
 #[tauri::command]
 #[specta::specta]
-async fn open_mods_folder() -> Result {
-	app_paths::local_mods_path()?.open_folder_or_parent()?;
-	Ok(())
-}
-
-#[tauri::command]
-#[specta::specta]
-async fn open_mod_folder(handle: AppHandle, mod_id: &str) -> Result {
-	Ok(handle
-		.app_state()
-		.local_mods
-		.read_state()?
-		.try_get(mod_id)?
-		.open_local_folder()?)
-}
-
-#[tauri::command]
-#[specta::specta]
-async fn download_mod(handle: AppHandle, mod_id: &str) -> Result {
-	download_mod_inner(&handle, mod_id).await?;
-	refresh_local_mods(&handle)?;
-
-	Ok(())
-}
-
-#[tauri::command]
-#[specta::specta]
-async fn delete_mod(handle: AppHandle, mod_id: &str) -> Result {
-	let state = handle.app_state();
-	let local_mods = state.local_mods.read_state()?;
-	let local_mod = local_mods.try_get(mod_id)?;
-
-	local_mod.delete_local()?;
-
-	refresh_local_mods(&handle)?;
-
-	Ok(())
-}
-
-#[tauri::command]
-#[specta::specta]
 async fn install_mod(
 	provider_id: ProviderId,
 	game_id: String,
@@ -226,16 +188,25 @@ async fn install_mod(
 	let state = handle.app_state();
 	let game = state.database.get_game(&provider_id, &game_id)?;
 
-	let local_mod = refresh_and_get_local_mod(mod_id, &handle).await?;
+	let mods = state.mods.read_state()?;
+	let game_mod = mods.try_get(mod_id)?.clone();
+	drop(mods);
 
-	install_mod_dependencies(&handle, &local_mod, &game).await?;
+	let download_status_channel = state.download_status_channel.read_state()?.clone();
+
+	install_mod_dependencies(&handle, &game_mod, &game).await?;
 
 	if let Some(installed_mod) = game.get_installed_mod(mod_id)? {
-		// Uninstall mod if it already exists, in case there are conflicting leftover files when updating.
 		installed_mod.uninstall()?;
 	}
 
-	local_mod.install(&game)?;
+	game_mod
+		.install(&game, |status| {
+			download_status_channel
+				.send(status)
+				.ok_or_log("Failed to send download status update");
+		})
+		.await?;
 
 	handle.emit_safe(events::RefreshGame(provider_id, game_id));
 
@@ -257,11 +228,13 @@ async fn run_mod(
 	let state = handle.app_state();
 	let game = state.database.get_game(&provider_id, &game_id)?;
 
-	let local_mod = refresh_and_get_local_mod(mod_id, &handle).await?;
+	let mods = state.mods.read_state()?;
+	let game_mod = mods.try_get(mod_id)?.clone();
+	drop(mods);
 
-	install_mod_dependencies(&handle, &local_mod, &game).await?;
+	install_mod_dependencies(&handle, &game_mod, &game).await?;
 
-	local_mod.run(&game)?;
+	game_mod.run(&game)?;
 
 	analytics::send_event(analytics::Event::InstallOrRunMod, mod_id).await;
 
@@ -346,31 +319,33 @@ async fn uninstall_all_mods(handle: AppHandle, provider_id: ProviderId, game_id:
 	Ok(())
 }
 
-async fn install_mod_dependencies(
-	handle: &AppHandle,
-	local_mod: &GameMod,
-	game: &DbGame,
-) -> Result {
+async fn install_mod_dependencies(handle: &AppHandle, game_mod: &GameMod, game: &DbGame) -> Result {
 	let state = handle.app_state();
 
-	let relevant_mods = game.get_relevant_mods(
-		&state.local_mods.read_state()?,
-		&state.remote_mods.read_state()?,
-	)?;
+	let relevant_mods = game.get_relevant_mods(&state.mods.read_state()?)?;
+	let download_status_channel = state.download_status_channel.read_state()?.clone();
 
-	if let Some(dependencies) = local_mod.dependencies.as_ref() {
+	if let Some(dependencies) = game_mod.dependencies.as_ref() {
 		for dependency in dependencies {
-			// Dependencies can have multiple versions of the same thing or just generally specify things that are needed in some cases but not all.
-			// So we need to make sure to only install compatible dependencies.
 			if let Some(relevant_dependency_mod_info) = relevant_mods.iter().find(|relevant_mod| {
 				relevant_mod.compatible && relevant_mod.mod_id == dependency.mod_id
 			}) {
-				let dependency_mod =
-					refresh_and_get_local_mod(&relevant_dependency_mod_info.mod_id, handle).await?;
+				let dep_mods = state.mods.read_state()?;
+				let dependency_mod = dep_mods
+					.try_get(&relevant_dependency_mod_info.mod_id)?
+					.clone();
+				drop(dep_mods);
+
 				Box::pin(install_mod_dependencies(handle, &dependency_mod, game)).await?;
 
 				if dependency_mod.install.is_some() {
-					dependency_mod.install(game)?;
+					dependency_mod
+						.install(game, |status| {
+							download_status_channel
+								.send(status)
+								.ok_or_log("Failed to send download status update");
+						})
+						.await?;
 				}
 			}
 		}
@@ -379,86 +354,27 @@ async fn install_mod_dependencies(
 	Ok(())
 }
 
-fn refresh_local_mods(handle: &AppHandle) -> Result<HashMap<String, GameMod>> {
-	let local_mods = GameMod::get_all_local()?;
+async fn refresh_mods_from_provider(handle: &AppHandle) -> Result<HashMap<String, GameMod>> {
+	let default_url = "https://raicuparta.github.io/rai-pal-db/mod-db/1/mods.json".to_string();
+	let provider = UrlModProvider { url: default_url };
 
-	log::info!("Found {} local mods.", { local_mods.len() });
-	handle.emit_safe(events::SyncLocalMods(local_mods.clone()));
+	let mods = provider.get_mods_async().await.map_err(|error| {
+		handle.emit_error(format!("Failed to get mods from provider: {error}"));
+		error
+	})?;
 
-	handle
-		.app_state()
-		.local_mods
-		.write_state_value(local_mods.clone())?;
+	log::info!("Found {} mods from provider.", mods.len());
+	handle.emit_safe(events::SyncMods(mods.clone()));
 
-	Ok(local_mods)
-}
+	handle.app_state().mods.write_state_value(mods.clone())?;
 
-async fn refresh_remote_mods(handle: &AppHandle) -> Result<HashMap<String, GameMod>> {
-	let remote_mods = GameMod::get_all_remote(|error| {
-		handle.emit_error(format!("Failed to get remote mods: {error}"));
-	})
-	.await;
-
-	handle.emit_safe(events::SyncRemoteMods(remote_mods.clone()));
-
-	handle
-		.app_state()
-		.remote_mods
-		.write_state_value(remote_mods.clone())?;
-
-	Ok(remote_mods)
-}
-
-async fn download_mod_inner(handle: &AppHandle, mod_id: &str) -> Result {
-	let state = handle.app_state();
-	let remote_mods = state.remote_mods.read_state()?.clone();
-	let remote_mod = remote_mods.try_get(mod_id)?;
-	let download_status_channel = state.download_status_channel.read_state()?.clone();
-
-	remote_mod
-		.download(|status| {
-			download_status_channel
-				.send(status)
-				.ok_or_log("Failed to send download status update");
-		})
-		.await?;
-
-	Ok(())
-}
-
-async fn refresh_and_get_local_mod(mod_id: &str, handle: &AppHandle) -> Result<GameMod> {
-	let state = handle.app_state();
-	let local_mods = {
-		let state_local_mods = state.local_mods.read_state()?.clone();
-		if state_local_mods.contains_key(mod_id) {
-			Ok(state_local_mods)
-		} else {
-			// Local mod wasn't in app state,
-			// so let's sync app state to local files in case some file was manually changed.
-			let disk_local_mods = refresh_local_mods(handle);
-
-			if state_local_mods.contains_key(mod_id) {
-				disk_local_mods
-			} else {
-				download_mod_inner(handle, mod_id).await?;
-				refresh_local_mods(handle)
-			}
-		}
-	}?;
-
-	if let Some(local_mod) = local_mods.get(mod_id) {
-		Ok(local_mod.clone())
-	} else {
-		Ok(state.remote_mods.read_state()?.try_get(mod_id)?.clone())
-	}
+	Ok(mods)
 }
 
 #[tauri::command]
 #[specta::specta]
 async fn refresh_mods(handle: AppHandle) -> Result {
-	refresh_local_mods(&handle)?;
-	refresh_remote_mods(&handle).await?;
-	refresh_local_mods(&handle)?;
+	refresh_mods_from_provider(&handle).await?;
 
 	Ok(())
 }
@@ -618,10 +534,7 @@ async fn get_game_mods(
 	Ok(state
 		.database
 		.get_game(&provider_id, &game_id)?
-		.get_relevant_mods(
-			&state.local_mods.read_state()?,
-			&state.remote_mods.read_state()?,
-		)?)
+		.get_relevant_mods(&state.mods.read_state()?)?)
 }
 
 #[tauri::command]
@@ -651,19 +564,16 @@ async fn download_remote_config(
 ) -> Result {
 	let state = app_handle.app_state();
 	let game = state.database.get_game(&provider_id, game_id)?;
-	let remote_mods = state.remote_mods.read_state()?.clone();
-	let remote_mod = remote_mods.try_get(mod_id)?;
-	let local_mods = state.local_mods.read_state()?.clone();
-	let local_mod = local_mods.try_get(mod_id)?;
+	let mods = state.mods.read_state()?;
+	let game_mod = mods.try_get(mod_id)?.clone();
+	drop(mods);
 
-	if let Some(mod_config) = remote_mod.config.as_ref() {
+	if let Some(mod_config) = game_mod.config.as_ref() {
 		mod_config
-			.download(&game, remote_mod, remote_config_file, overwrite)
+			.download(&game, &game_mod, remote_config_file, overwrite)
 			.await?;
-		local_mod.update_installed_mod_manifest(&game)?;
+		game_mod.update_installed_mod_manifest(&game)?;
 	}
-
-	refresh_local_mods(&app_handle)?;
 
 	Ok(())
 }
@@ -727,8 +637,6 @@ fn main() {
 			get_auth_state,
 			log_in,
 			log_out,
-			delete_mod,
-			download_mod,
 			frontend_ready,
 			get_app_settings,
 			get_game_ids,
@@ -742,8 +650,6 @@ fn main() {
 			open_game_mods_folder,
 			open_installed_mod_folder,
 			open_logs_folder,
-			open_mod_folder,
-			open_mods_folder,
 			refresh_game,
 			refresh_games,
 			refresh_mods,

@@ -22,8 +22,7 @@ use crate::result::{
 };
 
 pub struct AppState {
-	pub local_mods: RwLock<Option<HashMap<String, GameMod>>>,
-	pub remote_mods: RwLock<Option<HashMap<String, GameMod>>>,
+	pub mods: RwLock<Option<HashMap<String, GameMod>>>,
 	pub database: DbMutex,
 	pub download_status_channel: RwLock<Option<Channel<DownloadStatus>>>,
 }
@@ -69,8 +68,7 @@ impl StatefulHandle for tauri::AppHandle {
 impl AppState {
 	pub fn new() -> Result<Self> {
 		Ok(Self {
-			local_mods: RwLock::new(Some(HashMap::new())),
-			remote_mods: RwLock::new(Some(HashMap::new())),
+			mods: RwLock::new(Some(HashMap::new())),
 			database: local_database::try_create()?,
 			download_status_channel: RwLock::new(None),
 		})

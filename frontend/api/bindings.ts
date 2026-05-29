@@ -11,8 +11,6 @@ export const commands = {
 	getAuthState: () => __TAURI_INVOKE<DiscordAuthState>("get_auth_state"),
 	logIn: () => __TAURI_INVOKE<null>("log_in"),
 	logOut: () => __TAURI_INVOKE<null>("log_out"),
-	deleteMod: (modId: string) => __TAURI_INVOKE<null>("delete_mod", { modId }),
-	downloadMod: (modId: string) => __TAURI_INVOKE<null>("download_mod", { modId }),
 	frontendReady: () => __TAURI_INVOKE<null>("frontend_ready"),
 	getAppSettings: () => __TAURI_INVOKE<AppSettings>("get_app_settings"),
 	getGameIds: (query: {
@@ -31,8 +29,6 @@ export const commands = {
 	openGameModsFolder: (providerId: ProviderId, gameId: string) => __TAURI_INVOKE<null>("open_game_mods_folder", { providerId, gameId }),
 	openInstalledModFolder: (providerId: ProviderId, gameId: string, modId: string) => __TAURI_INVOKE<null>("open_installed_mod_folder", { providerId, gameId, modId }),
 	openLogsFolder: () => __TAURI_INVOKE<null>("open_logs_folder"),
-	openModFolder: (modId: string) => __TAURI_INVOKE<null>("open_mod_folder", { modId }),
-	openModsFolder: () => __TAURI_INVOKE<null>("open_mods_folder"),
 	refreshGame: (providerId: ProviderId, gameId: string) => __TAURI_INVOKE<null>("refresh_game", { providerId, gameId }),
 	refreshGames: (providerId: ProviderId) => __TAURI_INVOKE<null>("refresh_games", { providerId }),
 	refreshMods: () => __TAURI_INVOKE<null>("refresh_mods"),
@@ -58,8 +54,7 @@ export const events = {
 	gamesChanged: makeEvent<GamesChanged>("games-changed"),
 	refreshGame: makeEvent<RefreshGame>("refresh-game"),
 	selectGame: makeEvent<SelectGame>("select-game"),
-	syncLocalMods: makeEvent<SyncLocalMods>("sync-local-mods"),
-	syncRemoteMods: makeEvent<SyncRemoteMods>("sync-remote-mods"),
+	syncMods: makeEvent<SyncMods>("sync-mods"),
 };
 
 /* Constants */
@@ -254,9 +249,7 @@ export type RemoteConfigs = {
 
 export type SelectGame = [ProviderId, string];
 
-export type SyncLocalMods = { [key in string]: GameMod };
-
-export type SyncRemoteMods = { [key in string]: GameMod };
+export type SyncMods = { [key in string]: GameMod };
 
 export type TabId = "Games" | "Mods" | "Thanks";
 

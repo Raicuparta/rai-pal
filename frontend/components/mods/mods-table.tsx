@@ -1,13 +1,13 @@
 import { Group, Table, Text } from "@mantine/core";
-import { UnifiedMod } from "@hooks/use-unified-mods";
 import { ModVersionBadge } from "./mod-version-badge";
 import { getModTitle } from "@util/game-mod";
 import { DeprecatedBadge } from "./deprecated-badge";
 import { useLocalization } from "@hooks/use-localization";
+import { GameMod } from "@api/bindings";
 
 type Props = {
-	readonly mods: UnifiedMod[];
-	readonly onClick?: (mod: UnifiedMod) => void;
+	readonly mods: GameMod[];
+	readonly onClick?: (mod: GameMod) => void;
 };
 
 export function ModsTable(props: Props) {
@@ -64,10 +64,7 @@ export function ModsTable(props: Props) {
 							)}
 						</Table.Td>
 						<Table.Td>
-							<ModVersionBadge
-								local={mod.local}
-								remote={mod.remote}
-							/>
+							<ModVersionBadge remote={mod} />
 						</Table.Td>
 						<Table.Td>{mod.engine}</Table.Td>
 						<Table.Td>{mod.unityBackend}</Table.Td>

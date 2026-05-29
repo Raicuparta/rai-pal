@@ -2,7 +2,6 @@ use std::{
 	collections::{
 		BTreeMap,
 		HashMap,
-		HashSet,
 	},
 	fs,
 	path::{
@@ -38,7 +37,6 @@ use crate::{
 	},
 	game_tag::GameTag,
 	game_title::is_probably_demo,
-	maps::TryGettable,
 	path_extensions::PathExt,
 	providers::{
 		provider::ProviderId,
@@ -201,8 +199,7 @@ impl DbGame {
 
 	pub fn get_relevant_mods(
 		&self,
-		local_mods: &HashMap<String, GameMod>,
-		remote_mods: &HashMap<String, GameMod>,
+		mods: &HashMap<String, GameMod>,
 	) -> Result<Vec<GameModInfo>> {
 		let installed_manifests: HashMap<String, GameMod> = self
 			.get_manifest_paths()
@@ -210,11 +207,11 @@ impl DbGame {
 			.filter_map(|manifest_path| {
 				let mut manifest = GameMod::from_file(manifest_path)?;
 
-				if let Some(local_mod) = local_mods.get(&manifest.id)
+				if let Some(provider_mod) = mods.get(&manifest.id)
 					&& manifest.download.as_ref().map(|v| v.id.clone())
-						== local_mod.download.as_ref().map(|v| v.id.clone())
-					&& manifest.hash != local_mod.hash
-					&& let Ok(manifest_contents) = serde_json::to_string_pretty(local_mod)
+						== provider_mod.download.as_ref().map(|v| v.id.clone())
+					&& manifest.hash != provider_mod.hash
+					&& let Ok(manifest_contents) = serde_json::to_string_pretty(provider_mod)
 				{
 					let _ = fs::write(manifest_path, &manifest_contents);
 
@@ -229,16 +226,9 @@ impl DbGame {
 			})
 			.collect();
 
-		// Collect all mod IDs from local and remote (prefer local data over remote)
-		let all_mod_ids: HashSet<&String> = local_mods.keys().chain(remote_mods.keys()).collect();
-
 		let mut result = Vec::new();
 
-		for mod_id in all_mod_ids {
-			let game_mod = local_mods
-				.get(mod_id)
-				.map_or_else(|| remote_mods.try_get(mod_id), Ok)?;
-
+		for game_mod in mods.values() {
 			// Skip if mod requires a specific engine and game's engine doesn't match
 			if let Some(required_engine) = &game_mod.engine
 				&& self.engine_brand.as_ref() != Some(required_engine)
@@ -261,7 +251,7 @@ impl DbGame {
 				continue;
 			}
 
-			let installed_manifest = installed_manifests.get(mod_id.as_str());
+			let installed_manifest = installed_manifests.get(&game_mod.id);
 
 			// Skip deprecated mods unless they are installed
 			if game_mod.deprecated == Some(true) && installed_manifest.is_none() {
@@ -277,7 +267,7 @@ impl DbGame {
 				});
 
 			result.push(GameModInfo {
-				mod_id: mod_id.clone(),
+				mod_id: game_mod.id.clone(),
 				installed_version,
 				installed_hash,
 				compatible,

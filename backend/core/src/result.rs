@@ -179,7 +179,7 @@ pub enum Error {
 	)]
 	GameNotInstalled(String),
 
-	#[error("This operation requires mod `{0}` to be installed in a game.")]
+	#[error("This operation requires mod `{0}` to be installed.")]
 	ModNotInstalled(String),
 
 	#[error("Failed to find game executable at `{0}`")]

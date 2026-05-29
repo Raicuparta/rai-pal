@@ -1,8 +1,5 @@
 use std::{
-	collections::{
-		BTreeMap,
-		HashMap,
-	},
+	collections::BTreeMap,
 	fs::{
 		self,
 		File,
@@ -17,6 +14,7 @@ use rai_pal_proc_macros::{
 	serializable_enum,
 	serializable_struct,
 };
+use uuid::Uuid;
 use zip::ZipArchive;
 
 use crate::{
@@ -33,7 +31,6 @@ use crate::{
 	},
 	game_mods::{
 		mod_config::ModConfig,
-		mod_database::ModDatabase,
 		replacement_token::replace_tokens,
 	},
 	http::{
@@ -45,7 +42,6 @@ use crate::{
 	providers::provider,
 	result::{
 		Error,
-		LogErrExt,
 		Result,
 	},
 };
@@ -136,23 +132,33 @@ impl GameMod {
 		}
 	}
 
-	pub fn open_local_folder(&self) -> Result {
-		self.get_local_folder_path()?.open_folder_or_parent()
-	}
-
 	pub fn get_install(&self) -> Result<&ModInstall> {
 		self.install
 			.as_ref()
 			.ok_or_else(|| Error::ModInfoMissing(self.id.clone(), "install".to_string()))
 	}
 
-	pub fn install(&self, game: &DbGame) -> Result {
-		let install = self.get_install()?;
-		let local_mod_path = self.get_local_folder_path()?;
+	pub async fn install(
+		&self,
+		game: &DbGame,
+		on_download_status: impl Fn(DownloadStatus) + Send,
+	) -> Result {
+		let install = self
+			.install
+			.as_ref()
+			.ok_or_else(|| Error::ModInfoMissing(self.id.clone(), "install".to_string()))?;
 
 		if let Some(extract_actions) = install.extract.as_ref() {
+			let download = self
+				.download
+				.as_ref()
+				.ok_or_else(|| Error::ModInfoMissing(self.id.clone(), "download".to_string()))?;
+			let source_dir = download
+				.download_to_temp(&self.id, on_download_status)
+				.await?;
+
 			for extract_action in extract_actions {
-				let source_path = local_mod_path.join(&extract_action.source);
+				let source_path = source_dir.join(&extract_action.source);
 				let destination_path =
 					PathBuf::from(replace_tokens(&extract_action.destination, game, self));
 
@@ -186,20 +192,26 @@ impl GameMod {
 		Ok(())
 	}
 
+	// TODO: can only run if installed.
 	pub fn run(&self, game: &DbGame) -> Result {
 		let run_for_game = self
 			.run_for_game
 			.as_ref()
 			.ok_or_else(|| Error::ModInfoMissing(self.id.clone(), "run_for_game".to_string()))?;
-		let local_mod_path = self.get_local_folder_path()?;
 
-		let run_path = local_mod_path.join(PathBuf::from(replace_tokens(
+		// TODO check this path, probably needs changing in DB to be absolute.
+		let run_path = PathBuf::from(replace_tokens(
 			run_for_game.path.as_ref().ok_or_else(|| {
 				Error::ModInfoMissing(self.id.clone(), "run_for_game.path".to_string())
 			})?,
 			game,
 			self,
-		)));
+		));
+
+		if !run_path.try_exists()? {
+			return Err(Error::ModNotInstalled(self.id.clone()));
+		}
+
 		let args: Vec<String> = run_for_game
 			.args
 			.clone()
@@ -229,7 +241,7 @@ impl GameMod {
 		#[cfg(target_os = "windows")]
 		{
 			std::process::Command::new(&run_path)
-				.current_dir(&local_mod_path)
+				.current_dir(source_dir)
 				.args(&args)
 				.spawn()?;
 		}
@@ -245,100 +257,27 @@ impl GameMod {
 
 		Ok(())
 	}
+}
 
-	pub fn delete_local(&self) -> Result {
-		let path = self.get_local_folder_path()?;
-		if path.exists() {
-			fs::remove_dir_all(&path)?;
-		}
+impl ModDownload {
+	async fn download_to_temp(
+		&self,
+		mod_id: &str,
+		on_download_status: impl Fn(DownloadStatus) + Send,
+	) -> Result<PathBuf> {
+		let temp_dir = app_paths::temp_dir(&format!("mod-{mod_id}"))?;
+		// TODO cache should be per version.
+		let zip_path = temp_dir.join(format!("{mod_id}.zip"));
 
-		Ok(())
-	}
+		http::download(&self.url, &zip_path, on_download_status).await?;
 
-	pub fn get_local_folder_path(&self) -> Result<PathBuf> {
-		Ok(app_paths::local_mods_path()?.join(&self.id))
-	}
+		let file = File::open(&zip_path)?;
+		let mut zip_archive = ZipArchive::new(file)?;
 
-	pub fn get_local_manifest_path(&self) -> Result<PathBuf> {
-		Ok(Self::get_manifest_path(&self.get_local_folder_path()?))
-	}
+		files::extract(&mut zip_archive, &temp_dir)?;
 
-	pub async fn download(&self, status_callback: impl Fn(DownloadStatus) + Send) -> Result {
-		if let Some(latest_version) = &self.download {
-			let target_path = app_paths::local_mods_path()?.join(&self.id);
-			let mod_id = &self.id;
+		fs::remove_file(&zip_path)?;
 
-			let zip_path = app_paths::downloads_path()?.join(format!("{mod_id}.zip"));
-
-			http::download(&latest_version.url, &zip_path, status_callback).await?;
-
-			let file = File::open(&zip_path)?;
-
-			let mut zip_archive = ZipArchive::new(file)?;
-
-			files::extract(&mut zip_archive, &target_path)?;
-
-			fs::write(
-				Self::get_manifest_path(&target_path),
-				serde_json::to_string_pretty(&self)?,
-			)?;
-		}
-
-		Ok(())
-	}
-
-	pub async fn get_all_remote<F>(error_handler: F) -> HashMap<String, Self>
-	where
-		F: Fn(Error) + Send,
-	{
-		let database = ModDatabase::get().await.unwrap_or_else(|error| {
-			error_handler(error);
-			ModDatabase { mods: Vec::new() }
-		});
-
-		let mut mods_map = HashMap::new();
-		let local_mods = Self::get_all_local().ok_or_log("Failed to get local mods");
-
-		for remote_mod in database.mods {
-			// If there's a local mod with the same ID, refresh its manifest if out of sync
-			if let Some(local_mod) = local_mods
-				.as_ref()
-				.and_then(|local_mods| local_mods.get(&remote_mod.id))
-				&& let Some(manifest_path) = local_mod
-					.get_local_manifest_path()
-					.ok_or_log("Failed to get manifest path for local mod.")
-			{
-				// Only refresh if the manifest file exists (mod has been downloaded before),
-				// the latest version ID matches, and the hash differs
-				if manifest_path.exists()
-					&& local_mod.download.as_ref().map(|v| v.id.clone())
-						== remote_mod.download.as_ref().map(|v| v.id.clone())
-					&& local_mod.hash != remote_mod.hash
-					&& let Ok(manifest_contents) = serde_json::to_string_pretty(&remote_mod)
-				{
-					let _ = fs::write(&manifest_path, manifest_contents);
-				}
-			}
-
-			mods_map.insert(remote_mod.id.clone(), remote_mod);
-		}
-
-		mods_map
-	}
-
-	pub fn get_all_local() -> Result<HashMap<String, Self>> {
-		Ok(app_paths::local_mods_path()?
-			.join("*")
-			.join(Self::FILE_NAME)
-			.glob()
-			.iter()
-			.filter_map(|manifest_path| {
-				Self::from_file(manifest_path).map(|local_mod| (local_mod.id.clone(), local_mod))
-			})
-			.collect())
-	}
-
-	fn get_manifest_path(target_path: &Path) -> PathBuf {
-		target_path.join(Self::FILE_NAME)
+		Ok(temp_dir)
 	}
 }

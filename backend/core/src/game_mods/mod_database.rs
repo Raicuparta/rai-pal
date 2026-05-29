@@ -21,11 +21,10 @@ pub struct ModDatabase {
 
 impl ModDatabase {
 	pub async fn get() -> Result<Self> {
-		Ok(http::CLIENT
-			.get(format!("{URL_BASE}/{DATABASE_VERSION}/mods.json"))
-			.send()
-			.await?
-			.json::<Self>()
-			.await?)
+		Self::get_from_url(&format!("{URL_BASE}/{DATABASE_VERSION}/mods.json")).await
+	}
+
+	pub async fn get_from_url(url: &str) -> Result<Self> {
+		Ok(http::CLIENT.get(url).send().await?.json::<Self>().await?)
 	}
 }

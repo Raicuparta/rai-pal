@@ -1,10 +1,11 @@
-import { commands, GameModInfo, ProviderId } from "@api/bindings";
+import { commands, GameMod, GameModInfo, ProviderId } from "@api/bindings";
 import { useAppEvent } from "./use-app-event";
 import { useCommandData } from "./use-command-data";
 import { useCallback, useMemo } from "react";
-import { useUnifiedMods, UnifiedMod } from "./use-unified-mods";
+import { useAtomValue } from "jotai";
+import { remoteModsAtom } from "./use-data";
 
-type GameModsPart = { mod: UnifiedMod; info: GameModInfo };
+type GameModsPart = { mod: GameMod; info: GameModInfo };
 export type GameModsData = {
 	compatibleMods: GameModsPart[];
 	incompatibleMods: GameModsPart[];
@@ -14,7 +15,7 @@ export function useGameMods(
 	providerId?: ProviderId,
 	gameId?: string,
 ): GameModsData | null {
-	const mods = useUnifiedMods();
+	const mods = useAtomValue(remoteModsAtom);
 	const getGameMods = useCallback(
 		async () =>
 			providerId && gameId ? commands.getGameMods(providerId, gameId) : null,
@@ -34,8 +35,8 @@ export function useGameMods(
 	);
 
 	const result = useMemo(() => {
-		const compatibleMods: { mod: UnifiedMod; info: GameModInfo }[] = [];
-		const incompatibleMods: { mod: UnifiedMod; info: GameModInfo }[] = [];
+		const compatibleMods: { mod: GameMod; info: GameModInfo }[] = [];
+		const incompatibleMods: { mod: GameMod; info: GameModInfo }[] = [];
 
 		if (!gameModInfos) return null;
 

@@ -1,12 +1,11 @@
-import { DbGame, commands } from "@api/bindings";
+import { DbGame, GameMod, commands } from "@api/bindings";
 import { CommandButton } from "@components/command-button";
 import { IconPlayerPlay } from "@tabler/icons-react";
-import { UnifiedMod } from "@hooks/use-unified-mods";
 import { useLocalization } from "@hooks/use-localization";
 
 type Props = {
 	readonly game: DbGame;
-	readonly mod: UnifiedMod;
+	readonly mod: GameMod;
 };
 
 export function GameModRunButton({ game, mod }: Props) {

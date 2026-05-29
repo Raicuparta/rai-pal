@@ -6,7 +6,7 @@ import {
 	Stack,
 	Tooltip,
 } from "@mantine/core";
-import { DbGame, RemoteConfigs, commands } from "@api/bindings";
+import { DbGame, GameMod, RemoteConfigs, commands } from "@api/bindings";
 import { CommandButton } from "@components/command-button";
 import {
 	IconCheck,
@@ -17,7 +17,6 @@ import {
 	IconSettings,
 	IconSettingsFilled,
 } from "@tabler/icons-react";
-import { UnifiedMod, UnifiedModVersion } from "@hooks/use-unified-mods";
 import { getIsOutdated } from "@util/is-outdated";
 import { OutdatedMarker } from "@components/outdated-marker";
 import { MutedText } from "@components/muted-text";
@@ -33,9 +32,9 @@ import { GameModUninstallButton } from "./game-mod-uninstall-button";
 
 type Props = {
 	readonly game: DbGame;
-	readonly mod: UnifiedMod;
+	readonly mod: GameMod;
 	readonly remoteConfigs?: RemoteConfigs | null;
-	readonly installedMod?: UnifiedModVersion;
+	readonly installedMod?: GameMod;
 	readonly incompatible?: boolean;
 };
 
@@ -52,15 +51,13 @@ export function GameModRow({
 		(config) => config.modId === mod.id,
 	);
 
-	const isInstalledModOutdated = getIsOutdated(installedMod, mod.remote);
-
-	const isLocalModOutdated = getIsOutdated(mod.local, mod.remote);
+	const isInstalledModOutdated = getIsOutdated(installedMod, mod);
 
 	const isInstalled = Boolean(installedMod);
-	const isReadyRunnable = mod.local && mod.runForGame;
+	const isReadyRunnable = mod.runForGame;
 
 	const { statusIcon, statusColor } = (() => {
-		if (isLocalModOutdated || isInstalledModOutdated)
+		if (isInstalledModOutdated)
 			return {
 				statusIcon: <OutdatedMarker />,
 				statusColor: "orange",
@@ -93,7 +90,7 @@ export function GameModRow({
 					{getModTitle(mod)}
 					<ModVersionBadge
 						local={installedMod}
-						remote={mod.remote}
+						remote={mod}
 					/>
 					{availableRemoteConfig && (
 						<Tooltip label={t("remoteConfigAvailable")}>
@@ -123,11 +120,10 @@ export function GameModRow({
 									mod={mod}
 								/>
 							)}
-							{(isLocalModOutdated || isInstalledModOutdated) && (
+							{isInstalledModOutdated && (
 								<GameModUpdateButton
 									game={game}
 									mod={mod}
-									isLocalModOutdated={isLocalModOutdated}
 									remoteConfigFile={availableRemoteConfig?.file}
 								/>
 							)}

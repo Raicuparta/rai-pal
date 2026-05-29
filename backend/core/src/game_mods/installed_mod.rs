@@ -53,18 +53,15 @@ impl<'a> InstalledMod<'a> {
 			Error::ModInfoMissing(self.game_mod.id.clone(), "install".to_string())
 		})?;
 
-		let local_mod_path = self.game_mod.get_local_folder_path()?;
-
 		if let Some(extract_actions) = install.extract.as_ref() {
 			for extract_action in extract_actions {
-				let source_path = local_mod_path.join(&extract_action.source);
 				let destination_path = PathBuf::from(replace_tokens(
 					&extract_action.destination,
 					self.game,
 					&self.game_mod,
 				));
 
-				if source_path.is_dir() {
+				if destination_path.is_dir() {
 					destination_path.remove_if_exists()?;
 				} else if destination_path.exists() {
 					fs::remove_file(&destination_path)?;

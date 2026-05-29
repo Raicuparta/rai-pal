@@ -4,19 +4,21 @@ import { RefreshButton } from "@components/refresh-button";
 import { commands } from "@api/bindings";
 import { IconFolderCog } from "@tabler/icons-react";
 import { ModModal } from "./mod-modal";
-import { useUnifiedMods } from "@hooks/use-unified-mods";
 import { useLocalization } from "@hooks/use-localization";
 import { ModsTable } from "./mods-table";
 import { TableContainer } from "@components/table/table-container";
+import { useAtomValue } from "jotai";
+import { remoteModsAtom } from "@hooks/use-data";
 
 export function ModsPage() {
 	const t = useLocalization("modsPage");
 	const [selectedModId, setSelectedId] = useState<string>();
 
-	const mods = useUnifiedMods();
+	const mods = useAtomValue(remoteModsAtom);
 	const filteredMods = useMemo(
 		() =>
 			Object.values(mods).filter((mod) => {
+				// TODO check mod provider ID?
 				if (!mod.local && mod.deprecated) {
 					return false;
 				}

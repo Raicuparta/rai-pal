@@ -78,6 +78,12 @@ fn databases_path() -> Result<PathBuf> {
 	app_data_subfolder("databases")
 }
 
+pub fn temp_dir(sub_dir: &str) -> Result<PathBuf> {
+	let path = std::env::temp_dir().join("rai-pal").join(sub_dir);
+	fs::create_dir_all(&path)?;
+	Ok(path)
+}
+
 pub fn database_path(database_name: &str) -> Result<PathBuf> {
 	Ok(databases_path()?.join(format!("{database_name}.db")))
 }

@@ -1,12 +1,11 @@
-import { DbGame, commands } from "@api/bindings";
+import { DbGame, GameMod, commands } from "@api/bindings";
 import { IconCirclePlus } from "@tabler/icons-react";
-import { UnifiedMod } from "@hooks/use-unified-mods";
 import { useLocalization } from "@hooks/use-localization";
 import { GameModActionButton } from "./game-mod-action-button";
 
 type Props = {
 	readonly game: DbGame;
-	readonly mod: UnifiedMod;
+	readonly mod: GameMod;
 	readonly remoteConfigFile?: string;
 };
 

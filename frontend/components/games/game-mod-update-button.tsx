@@ -1,22 +1,15 @@
-import { DbGame, commands } from "@api/bindings";
+import { DbGame, GameMod, commands } from "@api/bindings";
 import { CommandButton } from "@components/command-button";
 import { IconRefreshAlert } from "@tabler/icons-react";
-import { UnifiedMod } from "@hooks/use-unified-mods";
 import { useLocalization } from "@hooks/use-localization";
 
 type Props = {
 	readonly game: DbGame;
-	readonly mod: UnifiedMod;
-	readonly isLocalModOutdated: boolean;
+	readonly mod: GameMod;
 	readonly remoteConfigFile?: string;
 };
 
-export function GameModUpdateButton({
-	game,
-	mod,
-	isLocalModOutdated,
-	remoteConfigFile,
-}: Props) {
+export function GameModUpdateButton({ game, mod, remoteConfigFile }: Props) {
 	const t = useLocalization("gameModRow");
 
 	return (
@@ -25,9 +18,6 @@ export function GameModUpdateButton({
 			color="green"
 			variant="light"
 			onClick={async () => {
-				if (isLocalModOutdated) {
-					await commands.downloadMod(mod.id);
-				}
 				if (remoteConfigFile) {
 					await commands.downloadRemoteConfig(
 						game.providerId,
