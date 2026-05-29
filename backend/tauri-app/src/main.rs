@@ -23,7 +23,6 @@ use events::EventEmitter;
 #[cfg(target_os = "windows")]
 use rai_pal_core::windows;
 use rai_pal_core::{
-	analytics,
 	app_paths,
 	game::{
 		DbGame,
@@ -209,8 +208,6 @@ async fn install_mod(
 
 	handle.emit_safe(events::RefreshGame(provider_id, game_id));
 
-	analytics::send_event(analytics::Event::InstallOrRunMod, mod_id).await;
-
 	Ok(())
 }
 
@@ -222,20 +219,9 @@ async fn run_mod(
 	mod_id: &str,
 	handle: AppHandle,
 ) -> Result {
-	log::info!("Running mod with id '{mod_id}' for game '{game_id}' from provider '{provider_id}'");
-
 	let state = handle.app_state();
 	let game = state.database.get_game(&provider_id, &game_id)?;
-
-	let mods = state.mods.read_state()?;
-	let game_mod = mods.try_get(mod_id)?.clone();
-	drop(mods);
-
-	install_mod_dependencies(&handle, &game_mod, &game).await?;
-
-	game_mod.run(&game)?;
-
-	analytics::send_event(analytics::Event::InstallOrRunMod, mod_id).await;
+	state.mods.read_state()?.try_get(mod_id)?.run(&game)?;
 
 	Ok(())
 }
@@ -393,21 +379,14 @@ async fn refresh_games(handle: AppHandle, provider_id: ProviderId) -> Result {
 #[specta::specta]
 async fn add_game(handle: AppHandle, path: PathBuf) -> Result {
 	let normalized_path = path.normalize();
-
 	let game = manual_provider::add_game(&normalized_path)?;
-	let game_name = game.display_title.clone();
-
 	let state = handle.app_state();
 
 	state.database.insert_game(&game);
 
 	handle.emit_safe(events::RefreshGame(game.provider_id, game.game_id.clone()));
-
 	handle.emit_safe(events::GamesChanged());
-
 	handle.emit_safe(events::SelectGame(ProviderId::Manual, game.game_id));
-
-	analytics::send_event(analytics::Event::ManuallyAddGame, &game_name).await;
 
 	Ok(())
 }
@@ -468,7 +447,8 @@ async fn add_rai_pal_steam_shortcut() -> Result {
 #[tauri::command]
 #[specta::specta]
 async fn frontend_ready() -> Result {
-	analytics::send_event(analytics::Event::StartApp, "").await;
+	// TODO analytics
+	// analytics::send_event(analytics::Event::StartApp, "").await;
 
 	Ok(())
 }

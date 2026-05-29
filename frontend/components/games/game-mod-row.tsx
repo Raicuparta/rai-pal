@@ -54,7 +54,6 @@ export function GameModRow({
 	const isInstalledModOutdated = getIsOutdated(installedMod, mod);
 
 	const isInstalled = Boolean(installedMod);
-	const isReadyRunnable = mod.runForGame;
 
 	const { statusIcon, statusColor } = (() => {
 		if (isInstalledModOutdated)
@@ -62,7 +61,7 @@ export function GameModRow({
 				statusIcon: <OutdatedMarker />,
 				statusColor: "orange",
 			};
-		if (isInstalled || isReadyRunnable)
+		if (isInstalled)
 			return {
 				statusIcon: <IconCheck />,
 				statusColor: "green",
@@ -138,7 +137,7 @@ export function GameModRow({
 									<ButtonGroup>
 										<CommandButton
 											flex={1}
-											disabled={!isInstalled && !isReadyRunnable}
+											disabled={!isInstalled}
 											onClick={() =>
 												commands.configureMod(
 													game.providerId,
@@ -156,7 +155,7 @@ export function GameModRow({
 											position="top-end"
 										>
 											<CommandButton
-												disabled={!isInstalled && !isReadyRunnable}
+												disabled={!isInstalled}
 												onClick={() =>
 													commands.configureMod(
 														game.providerId,
@@ -172,7 +171,7 @@ export function GameModRow({
 									</ButtonGroup>
 								)}
 								<CommandButton
-									disabled={!isInstalled && !isReadyRunnable}
+									disabled={!isInstalled}
 									onClick={() =>
 										commands.openInstalledModFolder(
 											game.providerId,
@@ -186,7 +185,7 @@ export function GameModRow({
 								</CommandButton>
 								{availableRemoteConfig && (
 									<CommandButton
-										disabled={!isInstalled && !isReadyRunnable}
+										disabled={!isInstalled}
 										leftSection={<IconDownload />}
 										onClick={() =>
 											commands.downloadRemoteConfig(
