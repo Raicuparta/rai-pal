@@ -30,7 +30,7 @@ use crate::{
 		InstallState,
 	},
 	path_extensions::AsValidStr,
-	providers::provider::ProviderId,
+	game_providers::game_provider::ProviderId,
 	remote_game,
 	result::{
 		Error,

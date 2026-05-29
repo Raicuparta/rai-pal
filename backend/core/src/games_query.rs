@@ -13,7 +13,7 @@ use crate::{
 		unity::UnityBackend,
 	},
 	game_tag::GameTag,
-	providers::provider::ProviderId,
+	game_providers::game_provider::ProviderId,
 };
 
 #[serializable_enum]

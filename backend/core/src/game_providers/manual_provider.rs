@@ -9,7 +9,7 @@ use std::{
 use log::error;
 use rai_pal_proc_macros::serializable_struct;
 
-use super::provider::{
+use super::game_provider::{
 	ProviderActions,
 	ProviderId,
 };
@@ -21,7 +21,7 @@ use crate::{
 		GameDatabase,
 	},
 	path_extensions::PathExt,
-	providers::provider::WineProviderActions,
+	game_providers::game_provider::WineProviderActions,
 	result::{
 		Error,
 		Result,

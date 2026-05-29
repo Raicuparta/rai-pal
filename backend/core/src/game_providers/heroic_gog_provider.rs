@@ -23,9 +23,9 @@ use crate::{
 		DbMutex,
 		GameDatabase,
 	},
-	providers::{
+	game_providers::{
 		heroic_provider,
-		provider::{
+		game_provider::{
 			ProviderActions,
 			ProviderId,
 			WineProviderActions,

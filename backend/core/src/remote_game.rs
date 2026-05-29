@@ -16,7 +16,7 @@ use crate::{
 	},
 	http,
 	path_extensions::PathExt,
-	providers::provider::ProviderId,
+	game_providers::game_provider::ProviderId,
 	result::{
 		LogErrExt,
 		Result,

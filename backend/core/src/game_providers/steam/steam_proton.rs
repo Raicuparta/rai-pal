@@ -12,11 +12,11 @@ use steamlocate::SteamDir;
 
 use crate::{
 	game::DbGame,
-	path_extensions::PathExt,
-	providers::{
-		provider::WineProviderActions,
+	game_providers::{
+		game_provider::WineProviderActions,
 		steam::steam_provider::Steam,
 	},
+	path_extensions::PathExt,
 	result::{
 		Error,
 		Result,

@@ -32,6 +32,18 @@ use rai_pal_core::{
 		game_mod::GameMod,
 		mod_providers::mod_provider,
 	},
+	game_providers::{
+		game_provider::{
+			self,
+			ProviderId,
+		},
+		manual_provider,
+		provider_command::ProviderCommandAction,
+		steam::{
+			steam_provider::Steam,
+			steam_shortcut,
+		},
+	},
 	games_query::GamesQuery,
 	http::DownloadStatus,
 	local_database::{
@@ -41,18 +53,6 @@ use rai_pal_core::{
 	},
 	maps::TryGettable,
 	path_extensions::PathExt,
-	providers::{
-		manual_provider,
-		provider::{
-			self,
-			ProviderId,
-		},
-		provider_command::ProviderCommandAction,
-		steam::{
-			steam_provider::Steam,
-			steam_shortcut,
-		},
-	},
 	remote_config::RemoteConfigs,
 	remote_game::{
 		self,
@@ -129,7 +129,7 @@ async fn open_game_wine_prefix_folder(
 	provider_id: ProviderId,
 	game_id: String,
 ) -> Result {
-	provider::get_provider(provider_id)?
+	game_provider::get_provider(provider_id)?
 		.get_wine_prefix_path(
 			&handle
 				.app_state()
@@ -148,7 +148,7 @@ async fn open_game_wine_binary_folder(
 	provider_id: ProviderId,
 	game_id: String,
 ) -> Result {
-	provider::get_provider(provider_id)?
+	game_provider::get_provider(provider_id)?
 		.get_wine_binary_path(
 			&handle
 				.app_state()
@@ -368,7 +368,7 @@ async fn refresh_games(handle: AppHandle, provider_id: ProviderId) -> Result {
 
 	let start_time = SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs();
 
-	provider::get_provider(provider_id)?.insert_games(&state.database)?;
+	game_provider::get_provider(provider_id)?.insert_games(&state.database)?;
 
 	state
 		.database

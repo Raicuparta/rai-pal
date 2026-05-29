@@ -2,7 +2,7 @@
 
 use std::path::Path;
 
-use crate::providers::steam::appinfo::SteamAppInfoReader;
+use crate::game_providers::steam::appinfo::SteamAppInfoReader;
 
 #[test]
 fn benchmark_thing() {

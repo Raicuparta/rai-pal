@@ -1,9 +1,9 @@
 use rai_pal_proc_macros::serializable_struct;
 
-use super::provider::ProviderActions;
+use super::game_provider::ProviderActions;
 use crate::{
 	local_database::DbMutex,
-	providers::provider::WineProviderActions,
+	game_providers::game_provider::WineProviderActions,
 	result::Result,
 };
 

@@ -9,7 +9,7 @@ use std::{
 
 use lazy_regex::regex;
 
-use crate::providers::provider::ProviderId;
+use crate::game_providers::game_provider::ProviderId;
 
 #[derive(Debug, thiserror::Error, specta::Type)]
 pub enum Error {

@@ -38,7 +38,7 @@ use crate::{
 	},
 	operating_system::OperatingSystem,
 	path_extensions::PathExt,
-	providers::provider,
+	game_providers::game_provider,
 	result::{
 		Error,
 		Result,
@@ -182,7 +182,7 @@ impl GameMod {
 		}
 
 		if let Some(wine_dll_overrides) = install.wine_dll_overrides.as_ref() {
-			provider::get_provider(game.provider_id)?
+			game_provider::get_provider(game.provider_id)?
 				.set_wine_dll_overrides(game, wine_dll_overrides)?;
 		}
 
@@ -229,7 +229,7 @@ impl GameMod {
 				.map(|(key, value)| (key.clone(), replace_tokens(value, game, self)))
 				.collect();
 
-			provider::get_provider(game.provider_id)?.run_with_wine(
+			game_provider::get_provider(game.provider_id)?.run_with_wine(
 				game,
 				&run_path,
 				&args,

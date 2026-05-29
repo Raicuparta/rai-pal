@@ -38,8 +38,8 @@ use crate::{
 	game_tag::GameTag,
 	game_title::is_probably_demo,
 	path_extensions::PathExt,
-	providers::{
-		provider::ProviderId,
+	game_providers::{
+		game_provider::ProviderId,
 		provider_command::{
 			ProviderCommand,
 			ProviderCommandAction,

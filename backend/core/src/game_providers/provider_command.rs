@@ -35,9 +35,9 @@ impl ProviderCommand {
 				{
 					use std::collections::BTreeMap;
 
-					use crate::providers::provider;
+					use crate::game_providers::game_provider;
 
-					provider::get_provider(game.provider_id)?.run_with_wine(
+					game_provider::get_provider(game.provider_id)?.run_with_wine(
 						game,
 						path,
 						args,

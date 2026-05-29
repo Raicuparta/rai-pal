@@ -21,14 +21,8 @@ use super::{
 };
 use crate::{
 	game::DbGame,
-	game_tag::GameTag,
-	local_database::{
-		DbMutex,
-		GameDatabase,
-	},
-	path_extensions::PathExt,
-	providers::{
-		provider::{
+	game_providers::{
+		game_provider::{
 			ProviderActions,
 			ProviderId,
 		},
@@ -38,6 +32,12 @@ use crate::{
 		},
 		steam::appinfo::SteamAppInfoReader,
 	},
+	game_tag::GameTag,
+	local_database::{
+		DbMutex,
+		GameDatabase,
+	},
+	path_extensions::PathExt,
 	result::Result,
 };
 
@@ -346,7 +346,7 @@ impl ProviderActions for Steam {
 }
 
 #[cfg(target_os = "windows")]
-use crate::providers::provider::WineProviderActions;
+use crate::game_providers::game_provider::WineProviderActions;
 #[cfg(target_os = "windows")]
 impl WineProviderActions for Steam {}
 

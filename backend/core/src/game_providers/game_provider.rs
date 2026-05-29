@@ -9,14 +9,14 @@ use std::{
 use rai_pal_proc_macros::serializable_enum;
 
 #[cfg(target_os = "linux")]
-use crate::providers::heroic_gog_provider::HeroicGog;
+use crate::game_providers::heroic_gog_provider::HeroicGog;
 #[cfg(target_os = "linux")]
-use crate::providers::{
+use crate::game_providers::{
 	dummy_provider::Dummy,
 	heroic_epic_provider::HeroicEpic,
 };
 #[cfg(target_os = "windows")]
-use crate::providers::{
+use crate::game_providers::{
 	epic_provider::Epic,
 	gog_provider::Gog,
 	xbox_provider::Xbox,
@@ -24,7 +24,7 @@ use crate::providers::{
 use crate::{
 	game::DbGame,
 	local_database::DbMutex,
-	providers::{
+	game_providers::{
 		itch_provider::Itch,
 		manual_provider::Manual,
 		steam::steam_provider::Steam,

@@ -8,7 +8,7 @@ use crate::{
 		AsValidStr,
 		PathExt,
 	},
-	providers::provider_command::{
+	game_providers::provider_command::{
 		ProviderCommand,
 		ProviderCommandAction,
 	},
@@ -120,9 +120,9 @@ pub fn replace_tokens(base_string: &str, game: &DbGame, game_mod: &GameMod) -> S
 					process::Command,
 				};
 
-				use crate::providers::provider;
+				use crate::game_providers::game_provider;
 
-				let provider = provider::get_provider(game.provider_id)?;
+				let provider = game_provider::get_provider(game.provider_id)?;
 				let prefix_path = provider.get_wine_prefix_path(game)?;
 
 				let output = Command::new(&provider.get_wine_binary_path(game)?)
