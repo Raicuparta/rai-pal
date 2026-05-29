@@ -13,8 +13,11 @@ impl ModProvider for FolderModProvider {
 		Self {}
 	}
 
-	async fn get_mods(&self) -> Result<HashMap<String, GameMod>> {
+	async fn get_mods<TCallback>(&self, callback: &TCallback) -> Result
+	where
+		TCallback: Fn(HashMap<String, GameMod>) + Send + Sync,
+	{
 		// TODO
-		Ok(HashMap::new())
+		Ok(())
 	}
 }

@@ -342,9 +342,11 @@ async fn install_mod_dependencies(handle: &AppHandle, game_mod: &GameMod, game: 
 #[tauri::command]
 #[specta::specta]
 async fn refresh_mods(handle: AppHandle) -> Result {
-	let mods = mod_provider::get_all_mods().await?;
-	handle.emit_safe(events::SyncMods(mods.clone()));
-	handle.app_state().mods.write_state_value(mods)?;
+	mod_provider::get_all_mods(|new_mods| {
+		handle.emit_safe(events::SyncMods(new_mods.clone()));
+		handle.app_state().mods.write_state_value(new_mods).unwrap();
+	})
+	.await?;
 
 	Ok(())
 }

@@ -13,12 +13,16 @@ use crate::{
 
 pub trait ModProvider {
 	fn default() -> Self;
-	async fn get_mods(&self) -> Result<HashMap<String, GameMod>>;
+	async fn get_mods<TCallback>(&self, callback: &TCallback) -> Result
+	where
+		TCallback: Fn(HashMap<String, GameMod>) + Send + Sync;
 }
 
-pub async fn get_all_mods() -> Result<HashMap<String, GameMod>> {
-	let mut mods = HashMap::new();
-	mods.extend(FolderModProvider::default().get_mods().await?);
-	mods.extend(UrlModProvider::default().get_mods().await?);
-	Ok(mods)
+pub async fn get_all_mods<TCallback>(callback: TCallback) -> Result
+where
+	TCallback: Fn(HashMap<String, GameMod>) + Send + Sync,
+{
+	FolderModProvider::default().get_mods(&callback).await?;
+	UrlModProvider::default().get_mods(&callback).await?;
+	Ok(())
 }

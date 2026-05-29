@@ -1,9 +1,14 @@
-use std::collections::HashMap;
+use std::{
+	collections::HashMap,
+	fs,
+	path::PathBuf,
+};
 
 use rai_pal_proc_macros::serializable_struct;
 
 use super::mod_provider::ModProvider;
 use crate::{
+	app_paths,
 	game_mods::game_mod::GameMod,
 	http,
 	result::Result,
@@ -28,15 +33,17 @@ impl ModProvider for UrlModProvider {
 		}
 	}
 
-	async fn get_mods(&self) -> Result<HashMap<String, GameMod>> {
-		let database = ModDatabase::get_from_url(&self.url).await?;
-
-		let mut mods_map = HashMap::new();
-		for game_mod in database.mods {
-			mods_map.insert(game_mod.id.clone(), game_mod);
+	async fn get_mods<TCallback>(&self, callback: &TCallback) -> Result
+	where
+		TCallback: Fn(HashMap<String, GameMod>) + Send + Sync,
+	{
+		if let Some(cached_database) = ModDatabase::get_from_cache()? {
+			callback(cached_database.get_mod_map());
 		}
 
-		Ok(mods_map)
+		callback(ModDatabase::get_from_url(&self.url).await?.get_mod_map());
+
+		Ok(())
 	}
 }
 
@@ -46,7 +53,36 @@ pub struct ModDatabase {
 }
 
 impl ModDatabase {
+	pub fn get_cache_path() -> Result<PathBuf> {
+		Ok(app_paths::temp_dir("mod_database")?.join("mod_database.json"))
+	}
+
+	pub fn get_from_cache() -> Result<Option<Self>> {
+		let cache_path = Self::get_cache_path()?;
+		if !cache_path.exists() {
+			return Ok(None);
+		}
+
+		let contents = fs::read_to_string(cache_path)?;
+		let result = serde_json::from_str::<Self>(&contents)?;
+		Ok(Some(result))
+	}
+
 	pub async fn get_from_url(url: &str) -> Result<Self> {
-		Ok(http::CLIENT.get(url).send().await?.json::<Self>().await?)
+		let result = http::CLIENT.get(url).send().await?.json::<Self>().await?;
+
+		fs::write(
+			Self::get_cache_path()?,
+			serde_json::to_string_pretty(&result)?,
+		)?;
+
+		Ok(result)
+	}
+
+	pub fn get_mod_map(&self) -> HashMap<String, GameMod> {
+		self.mods
+			.iter()
+			.map(|game_mod| (game_mod.id.clone(), game_mod.clone()))
+			.collect()
 	}
 }
