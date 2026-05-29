@@ -6,10 +6,11 @@
 - in database:
   - check each mod to see if zip structure is correct.
   - make sure one failure doesn't break the whole thing. it should preserve the previous mod if so.
-- Add Z: to UE4SS paths. Need to figure out how to handle that generically.
+- Make sure manifests don't get installed if anything in the process fails. It seemed to fail when a dependency of a dependency failed.
 
 # Done:
 
+- Add Z: to UE4SS paths. Need to figure out how to handle that generically.
 - Check all new token types being replaced.
 - Hide runnable self run button on linux.
 - the bepinex config thing should be a dependency by itself instead of the entire bepinex ugh
