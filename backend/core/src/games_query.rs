@@ -12,8 +12,8 @@ use crate::{
 		game_engine::EngineBrand,
 		unity::UnityBackend,
 	},
+	game_providers::game_provider::GameProviderId,
 	game_tag::GameTag,
-	game_providers::game_provider::ProviderId,
 };
 
 #[serializable_enum]
@@ -24,7 +24,7 @@ pub enum InstallState {
 
 #[serializable_struct]
 pub struct GamesFilter {
-	pub providers: HashSet<Option<ProviderId>>,
+	pub providers: HashSet<Option<GameProviderId>>,
 	pub tags: HashSet<Option<GameTag>>,
 	pub architectures: HashSet<Option<Architecture>>,
 	pub unity_backends: HashSet<Option<UnityBackend>>,
@@ -55,7 +55,7 @@ impl Default for GamesFilter {
 		Self {
 			architectures: Architecture::iter().map(Some).collect(),
 			engines: EngineBrand::iter().map(Some).collect(),
-			providers: ProviderId::iter().map(Some).collect(),
+			providers: GameProviderId::iter().map(Some).collect(),
 			tags: GameTag::iter().map(Some).collect(),
 			unity_backends: UnityBackend::iter().map(Some).collect(),
 			installed: InstallState::iter().map(Some).collect(),

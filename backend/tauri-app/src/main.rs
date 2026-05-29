@@ -35,7 +35,7 @@ use rai_pal_core::{
 	game_providers::{
 		game_provider::{
 			self,
-			ProviderId,
+			GameProviderId,
 		},
 		manual_provider,
 		provider_command::ProviderCommandAction,
@@ -113,7 +113,11 @@ async fn log_out() -> Result {
 
 #[tauri::command]
 #[specta::specta]
-async fn open_game_folder(handle: AppHandle, provider_id: ProviderId, game_id: String) -> Result {
+async fn open_game_folder(
+	handle: AppHandle,
+	provider_id: GameProviderId,
+	game_id: String,
+) -> Result {
 	handle
 		.app_state()
 		.database
@@ -126,7 +130,7 @@ async fn open_game_folder(handle: AppHandle, provider_id: ProviderId, game_id: S
 #[specta::specta]
 async fn open_game_wine_prefix_folder(
 	handle: AppHandle,
-	provider_id: ProviderId,
+	provider_id: GameProviderId,
 	game_id: String,
 ) -> Result {
 	game_provider::get_provider(provider_id)?
@@ -145,7 +149,7 @@ async fn open_game_wine_prefix_folder(
 #[specta::specta]
 async fn open_game_wine_binary_folder(
 	handle: AppHandle,
-	provider_id: ProviderId,
+	provider_id: GameProviderId,
 	game_id: String,
 ) -> Result {
 	game_provider::get_provider(provider_id)?
@@ -164,7 +168,7 @@ async fn open_game_wine_binary_folder(
 #[specta::specta]
 async fn open_game_mods_folder(
 	handle: AppHandle,
-	provider_id: ProviderId,
+	provider_id: GameProviderId,
 	game_id: String,
 ) -> Result {
 	handle
@@ -178,7 +182,7 @@ async fn open_game_mods_folder(
 #[tauri::command]
 #[specta::specta]
 async fn install_mod(
-	provider_id: ProviderId,
+	provider_id: GameProviderId,
 	game_id: String,
 	mod_id: &str,
 	handle: AppHandle,
@@ -214,7 +218,7 @@ async fn install_mod(
 #[tauri::command]
 #[specta::specta]
 async fn run_mod(
-	provider_id: ProviderId,
+	provider_id: GameProviderId,
 	game_id: String,
 	mod_id: &str,
 	handle: AppHandle,
@@ -229,7 +233,7 @@ async fn run_mod(
 #[tauri::command]
 #[specta::specta]
 async fn configure_mod(
-	provider_id: ProviderId,
+	provider_id: GameProviderId,
 	game_id: String,
 	mod_id: &str,
 	open_folder: bool,
@@ -248,7 +252,7 @@ async fn configure_mod(
 #[tauri::command]
 #[specta::specta]
 async fn open_installed_mod_folder(
-	provider_id: ProviderId,
+	provider_id: GameProviderId,
 	game_id: String,
 	mod_id: &str,
 	handle: AppHandle,
@@ -262,7 +266,7 @@ async fn open_installed_mod_folder(
 
 #[tauri::command]
 #[specta::specta]
-async fn refresh_game(handle: AppHandle, provider_id: ProviderId, game_id: String) -> Result {
+async fn refresh_game(handle: AppHandle, provider_id: GameProviderId, game_id: String) -> Result {
 	let state = handle.app_state();
 	let mut game = state.database.get_game(&provider_id, &game_id)?;
 	game.refresh_executable()?;
@@ -276,7 +280,7 @@ async fn refresh_game(handle: AppHandle, provider_id: ProviderId, game_id: Strin
 #[tauri::command]
 #[specta::specta]
 async fn uninstall_mod(
-	provider_id: ProviderId,
+	provider_id: GameProviderId,
 	game_id: String,
 	mod_id: &str,
 	handle: AppHandle,
@@ -292,7 +296,11 @@ async fn uninstall_mod(
 
 #[tauri::command]
 #[specta::specta]
-async fn uninstall_all_mods(handle: AppHandle, provider_id: ProviderId, game_id: String) -> Result {
+async fn uninstall_all_mods(
+	handle: AppHandle,
+	provider_id: GameProviderId,
+	game_id: String,
+) -> Result {
 	handle
 		.app_state()
 		.database
@@ -363,7 +371,7 @@ async fn refresh_remote_games(handle: AppHandle) -> Result {
 
 #[tauri::command]
 #[specta::specta]
-async fn refresh_games(handle: AppHandle, provider_id: ProviderId) -> Result {
+async fn refresh_games(handle: AppHandle, provider_id: GameProviderId) -> Result {
 	let state = handle.app_state();
 
 	let start_time = SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs();
@@ -388,14 +396,14 @@ async fn add_game(handle: AppHandle, path: PathBuf) -> Result {
 
 	handle.emit_safe(events::RefreshGame(game.provider_id, game.game_id.clone()));
 	handle.emit_safe(events::GamesChanged());
-	handle.emit_safe(events::SelectGame(ProviderId::Manual, game.game_id));
+	handle.emit_safe(events::SelectGame(GameProviderId::Manual, game.game_id));
 
 	Ok(())
 }
 
 #[tauri::command]
 #[specta::specta]
-async fn remove_game(handle: AppHandle, provider_id: ProviderId, game_id: String) -> Result {
+async fn remove_game(handle: AppHandle, provider_id: GameProviderId, game_id: String) -> Result {
 	let game = handle
 		.app_state()
 		.database
@@ -410,7 +418,7 @@ async fn remove_game(handle: AppHandle, provider_id: ProviderId, game_id: String
 #[specta::specta]
 async fn run_provider_command(
 	handle: AppHandle,
-	provider_id: ProviderId,
+	provider_id: GameProviderId,
 	game_id: &str,
 	provider_command_aciton: ProviderCommandAction,
 ) -> Result {
@@ -432,7 +440,7 @@ async fn run_provider_command(
 async fn reset_steam_cache(handle: AppHandle) -> Result {
 	Steam::delete_cache()?;
 
-	refresh_games(handle, ProviderId::Steam).await?;
+	refresh_games(handle, GameProviderId::Steam).await?;
 
 	Ok(())
 }
@@ -472,7 +480,11 @@ async fn get_game_ids(handle: AppHandle, query: Option<GamesQuery>) -> Result<Ga
 
 #[tauri::command]
 #[specta::specta]
-async fn get_game(handle: AppHandle, provider_id: ProviderId, game_id: String) -> Result<DbGame> {
+async fn get_game(
+	handle: AppHandle,
+	provider_id: GameProviderId,
+	game_id: String,
+) -> Result<DbGame> {
 	let state = handle.app_state();
 	Ok(state.database.get_game(&provider_id, &game_id)?)
 }
@@ -492,7 +504,7 @@ async fn save_app_settings(settings: AppSettings) -> Result {
 #[tauri::command]
 #[specta::specta]
 async fn get_game_mods(
-	provider_id: ProviderId,
+	provider_id: GameProviderId,
 	game_id: String,
 	app_handle: AppHandle,
 ) -> Result<Vec<GameModInfo>> {
@@ -506,7 +518,7 @@ async fn get_game_mods(
 #[tauri::command]
 #[specta::specta]
 async fn get_remote_configs(
-	provider_id: ProviderId,
+	provider_id: GameProviderId,
 	game_id: String,
 	app_handle: AppHandle,
 ) -> Result<Option<RemoteConfigs>> {
@@ -521,7 +533,7 @@ async fn get_remote_configs(
 #[tauri::command]
 #[specta::specta]
 async fn download_remote_config(
-	provider_id: ProviderId,
+	provider_id: GameProviderId,
 	game_id: &str,
 	mod_id: &str,
 	remote_config_file: &str,
@@ -632,7 +644,7 @@ fn main() {
 			listen_to_download_progress,
 		])
 		.events(events::collect_events())
-		.constant("PROVIDER_IDS", ProviderId::iter().collect::<Vec<_>>())
+		.constant("PROVIDER_IDS", GameProviderId::iter().collect::<Vec<_>>())
 		.error_handling(tauri_specta::ErrorHandlingMode::Throw);
 
 	#[cfg(debug_assertions)]

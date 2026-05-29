@@ -9,7 +9,7 @@ use std::{
 
 use lazy_regex::regex;
 
-use crate::game_providers::game_provider::ProviderId;
+use crate::game_providers::game_provider::GameProviderId;
 
 #[derive(Debug, thiserror::Error, specta::Type)]
 pub enum Error {
@@ -195,7 +195,7 @@ pub enum Error {
 	ManifestNotFound(String),
 
 	#[error("Provider {0} doesn't support this operation: `{1}`")]
-	UnsupportedProviderOperation(ProviderId, String),
+	UnsupportedProviderOperation(GameProviderId, String),
 
 	#[error("Required information for mod with ID `{0}` is missing. Expected `{1}`")]
 	ModInfoMissing(String, String),

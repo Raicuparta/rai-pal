@@ -21,24 +21,24 @@ use winreg::{
 	enums::HKEY_LOCAL_MACHINE,
 };
 
-use super::{
-	provider::ProviderId,
-	provider_command::{
-		ProviderCommand,
-		ProviderCommandAction,
-	},
-};
 use crate::{
 	game::DbGame,
+	game_providers::{
+		game_provider::{
+			GameProviderId,
+			ProviderActions,
+			WineProviderActions,
+		},
+		provider_command::{
+			ProviderCommand,
+			ProviderCommandAction,
+		},
+	},
 	local_database::{
 		DbMutex,
 		GameDatabase,
 	},
 	path_extensions::PathExt,
-	providers::provider::{
-		ProviderActions,
-		WineProviderActions,
-	},
 	result::Result,
 };
 
@@ -100,7 +100,7 @@ impl Epic {
 		}
 
 		let mut game = DbGame::new(
-			ProviderId::Epic,
+			GameProviderId::Epic,
 			catalog_item.id.clone(),
 			catalog_item.title.clone(),
 		);

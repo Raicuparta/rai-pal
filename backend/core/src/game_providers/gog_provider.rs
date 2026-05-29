@@ -25,14 +25,14 @@ use super::provider_command::{
 use crate::{
 	app_paths,
 	game::DbGame,
+	game_providers::game_provider::{
+		GameProviderId,
+		ProviderActions,
+		WineProviderActions,
+	},
 	local_database::{
 		DbMutex,
 		GameDatabase,
-	},
-	providers::provider::{
-		ProviderActions,
-		ProviderId,
-		WineProviderActions,
 	},
 	result::Result,
 };
@@ -51,7 +51,11 @@ pub struct Gog {}
 
 impl Gog {
 	fn get_game(db_entry: &GogDbEntry, launcher_path: &Path) -> DbGame {
-		let mut game = DbGame::new(ProviderId::Gog, db_entry.id.clone(), db_entry.title.clone());
+		let mut game = DbGame::new(
+			GameProviderId::Gog,
+			db_entry.id.clone(),
+			db_entry.title.clone(),
+		);
 
 		game.add_provider_command(
 			ProviderCommandAction::ShowInLibrary,

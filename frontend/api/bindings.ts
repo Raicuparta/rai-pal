@@ -7,7 +7,7 @@ import * as __TAURI_EVENT from "@tauri-apps/api/event";
 export const commands = {
 	addGame: (path: string) => __TAURI_INVOKE<null>("add_game", { path }),
 	addRaiPalSteamShortcut: () => __TAURI_INVOKE<null>("add_rai_pal_steam_shortcut"),
-	configureMod: (providerId: ProviderId, gameId: string, modId: string, openFolder: boolean) => __TAURI_INVOKE<null>("configure_mod", { providerId, gameId, modId, openFolder }),
+	configureMod: (providerId: GameProviderId, gameId: string, modId: string, openFolder: boolean) => __TAURI_INVOKE<null>("configure_mod", { providerId, gameId, modId, openFolder }),
 	getAuthState: () => __TAURI_INVOKE<DiscordAuthState>("get_auth_state"),
 	logIn: () => __TAURI_INVOKE<null>("log_in"),
 	logOut: () => __TAURI_INVOKE<null>("log_out"),
@@ -19,30 +19,30 @@ export const commands = {
 	sortBy: GamesSortBy,
 	sortDescending: boolean,
 } | null) => __TAURI_INVOKE<GameIdsResponse>("get_game_ids", { query }),
-	getGame: (providerId: ProviderId, gameId: string) => __TAURI_INVOKE<DbGame>("get_game", { providerId, gameId }),
-	getGameMods: (providerId: ProviderId, gameId: string) => __TAURI_INVOKE<GameModInfo[]>("get_game_mods", { providerId, gameId }),
-	installMod: (providerId: ProviderId, gameId: string, modId: string) => __TAURI_INVOKE<null>("install_mod", { providerId, gameId, modId }),
-	runMod: (providerId: ProviderId, gameId: string, modId: string) => __TAURI_INVOKE<null>("run_mod", { providerId, gameId, modId }),
-	openGameFolder: (providerId: ProviderId, gameId: string) => __TAURI_INVOKE<null>("open_game_folder", { providerId, gameId }),
-	openGameWinePrefixFolder: (providerId: ProviderId, gameId: string) => __TAURI_INVOKE<null>("open_game_wine_prefix_folder", { providerId, gameId }),
-	openGameWineBinaryFolder: (providerId: ProviderId, gameId: string) => __TAURI_INVOKE<null>("open_game_wine_binary_folder", { providerId, gameId }),
-	openGameModsFolder: (providerId: ProviderId, gameId: string) => __TAURI_INVOKE<null>("open_game_mods_folder", { providerId, gameId }),
-	openInstalledModFolder: (providerId: ProviderId, gameId: string, modId: string) => __TAURI_INVOKE<null>("open_installed_mod_folder", { providerId, gameId, modId }),
+	getGame: (providerId: GameProviderId, gameId: string) => __TAURI_INVOKE<DbGame>("get_game", { providerId, gameId }),
+	getGameMods: (providerId: GameProviderId, gameId: string) => __TAURI_INVOKE<GameModInfo[]>("get_game_mods", { providerId, gameId }),
+	installMod: (providerId: GameProviderId, gameId: string, modId: string) => __TAURI_INVOKE<null>("install_mod", { providerId, gameId, modId }),
+	runMod: (providerId: GameProviderId, gameId: string, modId: string) => __TAURI_INVOKE<null>("run_mod", { providerId, gameId, modId }),
+	openGameFolder: (providerId: GameProviderId, gameId: string) => __TAURI_INVOKE<null>("open_game_folder", { providerId, gameId }),
+	openGameWinePrefixFolder: (providerId: GameProviderId, gameId: string) => __TAURI_INVOKE<null>("open_game_wine_prefix_folder", { providerId, gameId }),
+	openGameWineBinaryFolder: (providerId: GameProviderId, gameId: string) => __TAURI_INVOKE<null>("open_game_wine_binary_folder", { providerId, gameId }),
+	openGameModsFolder: (providerId: GameProviderId, gameId: string) => __TAURI_INVOKE<null>("open_game_mods_folder", { providerId, gameId }),
+	openInstalledModFolder: (providerId: GameProviderId, gameId: string, modId: string) => __TAURI_INVOKE<null>("open_installed_mod_folder", { providerId, gameId, modId }),
 	openLogsFolder: () => __TAURI_INVOKE<null>("open_logs_folder"),
-	refreshGame: (providerId: ProviderId, gameId: string) => __TAURI_INVOKE<null>("refresh_game", { providerId, gameId }),
-	refreshGames: (providerId: ProviderId) => __TAURI_INVOKE<null>("refresh_games", { providerId }),
+	refreshGame: (providerId: GameProviderId, gameId: string) => __TAURI_INVOKE<null>("refresh_game", { providerId, gameId }),
+	refreshGames: (providerId: GameProviderId) => __TAURI_INVOKE<null>("refresh_games", { providerId }),
 	refreshMods: () => __TAURI_INVOKE<null>("refresh_mods"),
 	refreshRemoteGames: () => __TAURI_INVOKE<null>("refresh_remote_games"),
-	removeGame: (providerId: ProviderId, gameId: string) => __TAURI_INVOKE<null>("remove_game", { providerId, gameId }),
+	removeGame: (providerId: GameProviderId, gameId: string) => __TAURI_INVOKE<null>("remove_game", { providerId, gameId }),
 	resetSteamCache: () => __TAURI_INVOKE<null>("reset_steam_cache"),
-	runProviderCommand: (providerId: ProviderId, gameId: string, providerCommandAciton: ProviderCommandAction) => __TAURI_INVOKE<null>("run_provider_command", { providerId, gameId, providerCommandAciton }),
+	runProviderCommand: (providerId: GameProviderId, gameId: string, providerCommandAciton: ProviderCommandAction) => __TAURI_INVOKE<null>("run_provider_command", { providerId, gameId, providerCommandAciton }),
 	saveAppSettings: (settings: AppSettings) => __TAURI_INVOKE<null>("save_app_settings", { settings }),
-	uninstallAllMods: (providerId: ProviderId, gameId: string) => __TAURI_INVOKE<null>("uninstall_all_mods", { providerId, gameId }),
-	uninstallMod: (providerId: ProviderId, gameId: string, modId: string) => __TAURI_INVOKE<null>("uninstall_mod", { providerId, gameId, modId }),
-	getRemoteConfigs: (providerId: ProviderId, gameId: string) => __TAURI_INVOKE<{
+	uninstallAllMods: (providerId: GameProviderId, gameId: string) => __TAURI_INVOKE<null>("uninstall_all_mods", { providerId, gameId }),
+	uninstallMod: (providerId: GameProviderId, gameId: string, modId: string) => __TAURI_INVOKE<null>("uninstall_mod", { providerId, gameId, modId }),
+	getRemoteConfigs: (providerId: GameProviderId, gameId: string) => __TAURI_INVOKE<{
 	configs: RemoteConfig[],
 } | null>("get_remote_configs", { providerId, gameId }),
-	downloadRemoteConfig: (providerId: ProviderId, gameId: string, modId: string, remoteConfigFile: string, overwrite: boolean) => __TAURI_INVOKE<null>("download_remote_config", { providerId, gameId, modId, remoteConfigFile, overwrite }),
+	downloadRemoteConfig: (providerId: GameProviderId, gameId: string, modId: string, remoteConfigFile: string, overwrite: boolean) => __TAURI_INVOKE<null>("download_remote_config", { providerId, gameId, modId, remoteConfigFile, overwrite }),
 	setUpGlobalWineOverrides: () => __TAURI_INVOKE<null>("set_up_global_wine_overrides"),
 	listenToDownloadProgress: (channel: Channel<DownloadStatus>) => __TAURI_INVOKE<null>("listen_to_download_progress", { channel }),
 };
@@ -74,7 +74,7 @@ export type AppSettings = {
 export type Architecture = "X64" | "X86";
 
 export type DbGame = {
-	providerId: ProviderId,
+	providerId: GameProviderId,
 	gameId: string,
 	externalId: string,
 	displayTitle: string,
@@ -126,7 +126,7 @@ export type ErrorRaised = string;
 export type ExecutedProviderCommand = null;
 
 export type GameIdsResponse = {
-	gameIds: ([ProviderId, string])[],
+	gameIds: ([GameProviderId, string])[],
 	totalCount: number,
 };
 
@@ -158,12 +158,14 @@ export type GameModInfo = {
 	compatible: boolean,
 };
 
+export type GameProviderId = "Epic" | "Gog" | "Itch" | "Manual" | "Steam" | "Xbox";
+
 export type GameTag = "VR" | "Demo";
 
 export type GamesChanged = [];
 
 export type GamesFilter = {
-	providers: (ProviderId | null)[],
+	providers: (GameProviderId | null)[],
 	tags: (GameTag | null)[],
 	architectures: (Architecture | null)[],
 	unityBackends: (UnityBackend | null)[],
@@ -233,9 +235,7 @@ export type ProviderCommand = ({ String: string }) & { Path?: never } | ({ Path:
 
 export type ProviderCommandAction = "Install" | "ShowInLibrary" | "ShowInStore" | "StartViaProvider" | "StartViaExe" | "OpenInBrowser";
 
-export type ProviderId = "Epic" | "Gog" | "Itch" | "Manual" | "Steam" | "Xbox";
-
-export type RefreshGame = [ProviderId, string];
+export type RefreshGame = [GameProviderId, string];
 
 export type RemoteConfig = {
 	version: number,
@@ -247,7 +247,7 @@ export type RemoteConfigs = {
 	configs: RemoteConfig[],
 };
 
-export type SelectGame = [ProviderId, string];
+export type SelectGame = [GameProviderId, string];
 
 export type SyncMods = { [key in string]: GameMod };
 

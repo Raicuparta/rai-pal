@@ -16,7 +16,7 @@ use crate::{
 	},
 	http,
 	path_extensions::PathExt,
-	game_providers::game_provider::ProviderId,
+	game_providers::game_provider::GameProviderId,
 	result::{
 		LogErrExt,
 		Result,
@@ -35,7 +35,7 @@ const DATABASE_VERSION: i32 = 2;
 pub struct RemoteGame {
 	pub title: Option<String>,
 	pub engine: Option<GameEngine>,
-	pub ids: HashMap<ProviderId, Vec<String>>,
+	pub ids: HashMap<GameProviderId, Vec<String>>,
 }
 
 // Version strings in PCGamingWiki can be all weird, so parsing is pretty lax here.

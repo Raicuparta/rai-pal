@@ -1,4 +1,4 @@
-import { commands, GameMod, GameModInfo, ProviderId } from "@api/bindings";
+import { commands, GameMod, GameModInfo, GameProviderId } from "@api/bindings";
 import { useAppEvent } from "./use-app-event";
 import { useCommandData } from "./use-command-data";
 import { useCallback, useMemo } from "react";
@@ -12,7 +12,7 @@ export type GameModsData = {
 };
 
 export function useGameMods(
-	providerId?: ProviderId,
+	providerId?: GameProviderId,
 	gameId?: string,
 ): GameModsData | null {
 	const mods = useAtomValue(remoteModsAtom);

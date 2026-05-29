@@ -17,16 +17,16 @@ use winreg::{
 
 use crate::{
 	game::DbGame,
+	game_providers::game_provider::{
+		GameProviderId,
+		ProviderActions,
+		WineProviderActions,
+	},
 	local_database::{
 		DbMutex,
 		GameDatabase,
 	},
 	path_extensions::PathExt,
-	providers::provider::{
-		ProviderActions,
-		ProviderId,
-		WineProviderActions,
-	},
 	result::Result,
 };
 
@@ -116,7 +116,7 @@ fn get_games(db: &DbMutex) -> io::Result<()> {
 												});
 
 											let mut game = DbGame::new(
-												ProviderId::Xbox,
+												GameProviderId::Xbox,
 												package_id.clone(),
 												display_name,
 											);

@@ -23,8 +23,8 @@ use crate::{
 	game::DbGame,
 	game_providers::{
 		game_provider::{
+			GameProviderId,
 			ProviderActions,
-			ProviderId,
 		},
 		provider_command::{
 			ProviderCommand,
@@ -83,7 +83,7 @@ impl Steam {
 			match shortcut_result {
 				Ok(shortcut) => {
 					let mut game = DbGame::new(
-						ProviderId::Steam,
+						GameProviderId::Steam,
 						shortcut.app_id.to_string(),
 						shortcut.app_name,
 					);
@@ -259,7 +259,7 @@ impl ProviderActions for Steam {
 						}
 
 						let mut game = DbGame::new(
-							ProviderId::Steam,
+							GameProviderId::Steam,
 							external_id.clone(),
 							app_info.name.clone(),
 						);

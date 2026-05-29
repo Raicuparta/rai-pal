@@ -23,12 +23,12 @@ use crate::game_providers::{
 };
 use crate::{
 	game::DbGame,
-	local_database::DbMutex,
 	game_providers::{
 		itch_provider::Itch,
 		manual_provider::Manual,
 		steam::steam_provider::Steam,
 	},
+	local_database::DbMutex,
 	result::{
 		Error,
 		Result,
@@ -37,7 +37,7 @@ use crate::{
 
 // These IDs need to match the ones in rai-pal-db.
 #[serializable_enum]
-pub enum ProviderId {
+pub enum GameProviderId {
 	Epic,
 	Gog,
 	Itch,
@@ -83,30 +83,30 @@ pub trait WineProviderActions {
 	}
 }
 
-pub trait Provider: ProviderActions + WineProviderActions {}
-impl<T> Provider for T where T: ProviderActions + WineProviderActions {}
+pub trait GameProvider: ProviderActions + WineProviderActions {}
+impl<T> GameProvider for T where T: ProviderActions + WineProviderActions {}
 
-pub fn get_provider(provider_id: ProviderId) -> Result<Box<dyn Provider>> {
+pub fn get_provider(provider_id: GameProviderId) -> Result<Box<dyn GameProvider>> {
 	match provider_id {
-		ProviderId::Steam => Ok(Box::new(Steam {})),
+		GameProviderId::Steam => Ok(Box::new(Steam {})),
 
-		ProviderId::Manual => Ok(Box::new(Manual {})),
+		GameProviderId::Manual => Ok(Box::new(Manual {})),
 
-		ProviderId::Itch => Ok(Box::new(Itch {})),
-
-		#[cfg(target_os = "linux")]
-		ProviderId::Epic => Ok(Box::new(HeroicEpic {})),
-		#[cfg(target_os = "windows")]
-		ProviderId::Epic => Ok(Box::new(Epic {})),
+		GameProviderId::Itch => Ok(Box::new(Itch {})),
 
 		#[cfg(target_os = "linux")]
-		ProviderId::Gog => Ok(Box::new(HeroicGog {})),
+		GameProviderId::Epic => Ok(Box::new(HeroicEpic {})),
 		#[cfg(target_os = "windows")]
-		ProviderId::Gog => Ok(Box::new(Gog {})),
+		GameProviderId::Epic => Ok(Box::new(Epic {})),
+
+		#[cfg(target_os = "linux")]
+		GameProviderId::Gog => Ok(Box::new(HeroicGog {})),
+		#[cfg(target_os = "windows")]
+		GameProviderId::Gog => Ok(Box::new(Gog {})),
 
 		#[cfg(target_os = "windows")]
-		ProviderId::Xbox => Ok(Box::new(Xbox {})),
+		GameProviderId::Xbox => Ok(Box::new(Xbox {})),
 		#[cfg(target_os = "linux")]
-		ProviderId::Xbox => Ok(Box::new(Dummy {})),
+		GameProviderId::Xbox => Ok(Box::new(Dummy {})),
 	}
 }

@@ -27,7 +27,7 @@ use crate::{
 	},
 	game_providers::game_provider::{
 		ProviderActions,
-		ProviderId,
+		GameProviderId,
 		WineProviderActions,
 	},
 	result::{
@@ -46,7 +46,7 @@ impl Itch {
 	}
 
 	fn get_game(row: &ItchDatabaseGame) -> DbGame {
-		let mut game = DbGame::new(ProviderId::Itch, row.id.to_string(), row.title.clone());
+		let mut game = DbGame::new(GameProviderId::Itch, row.id.to_string(), row.title.clone());
 
 		game.thumbnail_url.clone_from(&row.cover_url);
 

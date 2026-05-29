@@ -21,7 +21,7 @@ use crate::{
 		heroic_provider,
 		game_provider::{
 			ProviderActions,
-			ProviderId,
+			GameProviderId,
 			WineProviderActions,
 		},
 	},
@@ -70,7 +70,7 @@ impl ProviderActions for HeroicEpic {
 		if let Some(parsed_games) = get_detected_games()? {
 			for parsed_game in parsed_games {
 				let mut game = DbGame::new(
-					ProviderId::Epic,
+					GameProviderId::Epic,
 					parsed_game.app_name.clone(),
 					parsed_game.title.clone(),
 				);

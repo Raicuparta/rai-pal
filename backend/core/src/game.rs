@@ -39,7 +39,7 @@ use crate::{
 	game_title::is_probably_demo,
 	path_extensions::PathExt,
 	game_providers::{
-		game_provider::ProviderId,
+		game_provider::GameProviderId,
 		provider_command::{
 			ProviderCommand,
 			ProviderCommandAction,
@@ -66,7 +66,7 @@ pub struct GameModInfo {
 #[derive(serde::Serialize, specta::Type, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct DbGame {
-	pub provider_id: ProviderId,
+	pub provider_id: GameProviderId,
 	pub game_id: String,
 	pub external_id: String,
 	pub display_title: String,
@@ -86,7 +86,7 @@ pub struct DbGame {
 }
 
 impl DbGame {
-	pub fn new(provider_id: ProviderId, game_id: String, title: String) -> Self {
+	pub fn new(provider_id: GameProviderId, game_id: String, title: String) -> Self {
 		let mut game = Self {
 			provider_id,
 			external_id: game_id.clone(),

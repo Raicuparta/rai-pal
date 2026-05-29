@@ -11,7 +11,7 @@ use rai_pal_proc_macros::serializable_struct;
 
 use super::game_provider::{
 	ProviderActions,
-	ProviderId,
+	GameProviderId,
 };
 use crate::{
 	app_paths,
@@ -80,7 +80,7 @@ fn read_games_config(games_config_path: &Path) -> GamesConfig {
 
 fn get_game_from_path(exe_path: &Path) -> Result<DbGame> {
 	let mut game = DbGame::new(
-		ProviderId::Manual,
+		GameProviderId::Manual,
 		exe_path.hash_string(),
 		exe_path.file_name_without_extension()?.to_string(),
 	);
@@ -106,7 +106,7 @@ pub fn add_game(path: &Path) -> Result<DbGame> {
 }
 
 pub fn remove_game(game: &DbGame) -> Result {
-	if game.provider_id != ProviderId::Manual {
+	if game.provider_id != GameProviderId::Manual {
 		return Err(Error::InvalidProviderId(game.provider_id.to_string()));
 	}
 

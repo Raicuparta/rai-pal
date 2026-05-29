@@ -5,14 +5,14 @@ use std::{
 
 use rai_pal_core::{
 	game_mods::game_mod::GameMod,
-	game_providers::game_provider::ProviderId,
+	game_providers::game_provider::GameProviderId,
 };
 use rai_pal_proc_macros::serializable_event;
 use serde::Serialize;
 use tauri_specta::Event;
 
 #[serializable_event]
-pub struct RefreshGame(pub ProviderId, pub String);
+pub struct RefreshGame(pub GameProviderId, pub String);
 
 #[serializable_event]
 pub struct GamesChanged();
@@ -24,7 +24,7 @@ pub struct SyncMods(pub HashMap<String, GameMod>);
 pub struct ExecutedProviderCommand;
 
 #[serializable_event]
-pub struct SelectGame(pub ProviderId, pub String);
+pub struct SelectGame(pub GameProviderId, pub String);
 
 #[serializable_event]
 pub struct ErrorRaised(pub String);
