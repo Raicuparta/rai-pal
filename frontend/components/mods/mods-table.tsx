@@ -6,7 +6,7 @@ import { useLocalization } from "@hooks/use-localization";
 import { GameMod } from "@api/bindings";
 
 type Props = {
-	readonly mods: GameMod[];
+	readonly mods: Record<string, GameMod>;
 	readonly onClick?: (mod: GameMod) => void;
 };
 

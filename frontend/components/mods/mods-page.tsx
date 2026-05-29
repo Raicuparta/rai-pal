@@ -15,18 +15,6 @@ export function ModsPage() {
 	const [selectedModId, setSelectedId] = useState<string>();
 
 	const mods = useAtomValue(remoteModsAtom);
-	const filteredMods = useMemo(
-		() =>
-			Object.values(mods).filter((mod) => {
-				// TODO check mod provider ID?
-				if (!mod.local && mod.deprecated) {
-					return false;
-				}
-
-				return true;
-			}),
-		[mods],
-	);
 
 	const selectedMod = useMemo(() => {
 		const result = selectedModId ? mods[selectedModId] : undefined;
@@ -60,7 +48,7 @@ export function ModsPage() {
 					>
 						<TableContainer style={{ overflowY: "scroll" }}>
 							<ModsTable
-								mods={filteredMods}
+								mods={mods}
 								onClick={(mod) => setSelectedId(mod.id)}
 							/>
 						</TableContainer>

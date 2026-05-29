@@ -13,6 +13,7 @@
 - why did i see two folders installed_mods and installed-mods?
 - implement download cache.
 - implement path provider.
+- make mods page order stable.
 
 # Done:
 

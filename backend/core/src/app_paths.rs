@@ -62,16 +62,12 @@ pub fn open_logs_folder() -> Result {
 	logs_path()?.open_folder_or_parent()
 }
 
-pub fn local_mods_path() -> Result<PathBuf> {
-	app_data_subfolder("mods")
+pub fn shared_mods_path() -> Result<PathBuf> {
+	app_data_subfolder("shared-mods")
 }
 
 pub fn installed_mods_path() -> Result<PathBuf> {
-	app_data_subfolder("installed_mods")
-}
-
-pub fn downloads_path() -> Result<PathBuf> {
-	app_data_subfolder("downloads")
+	app_data_subfolder("installed-mods")
 }
 
 fn databases_path() -> Result<PathBuf> {

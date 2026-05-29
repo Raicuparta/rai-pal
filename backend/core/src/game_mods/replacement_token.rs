@@ -28,7 +28,7 @@ pub enum ReplacementToken {
 	GameJson,
 	GameStartCommand,
 	GameStartCommandArgs,
-	LocalModsPath,
+	SharedModsPath,
 	MaybeWineRoot,
 	RoamingAppData,
 	// If adding new parameters, remember to update mod.ts in rai-pal-db repo.
@@ -154,8 +154,8 @@ pub fn replace_tokens(base_string: &str, game: &DbGame, game_mod: &GameMod) -> S
 	result = replace_parameter_value(&result, ReplacementToken::GameInstalledModsPath, || {
 		Ok(game.get_installed_mods_folder()?.try_to_str()?.to_string())
 	});
-	result = replace_parameter_value(&result, ReplacementToken::LocalModsPath, || {
-		Ok(app_paths::local_mods_path()?.try_to_str()?.to_string())
+	result = replace_parameter_value(&result, ReplacementToken::SharedModsPath, || {
+		Ok(app_paths::shared_mods_path()?.try_to_str()?.to_string())
 	});
 	result = replace_parameter_value(&result, ReplacementToken::MaybeWineRoot, || {
 		#[cfg(target_os = "linux")]
