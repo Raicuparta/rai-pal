@@ -3,14 +3,14 @@ use rai_pal_proc_macros::serializable_enum;
 use crate::{
 	app_paths,
 	game::DbGame,
-	game_mods::game_mod::GameMod,
-	path_extensions::{
-		AsValidStr,
-		PathExt,
-	},
 	game_providers::provider_command::{
 		ProviderCommand,
 		ProviderCommandAction,
+	},
+	mods::game_mod::GameMod,
+	path_extensions::{
+		AsValidStr,
+		PathExt,
 	},
 	result::{
 		Error,

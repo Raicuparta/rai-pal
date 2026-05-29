@@ -5,7 +5,7 @@ use std::{
 
 use crate::{
 	game::DbGame,
-	game_mods::{
+	mods::{
 		game_mod::GameMod,
 		mod_config::ModConfig,
 		replacement_token::replace_tokens,

@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use super::mod_provider::ModProvider;
 use crate::{
-	game_mods::game_mod::GameMod,
+	mods::game_mod::GameMod,
 	result::Result,
 };
 

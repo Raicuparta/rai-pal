@@ -28,17 +28,17 @@ use crate::{
 		},
 		unity::UnityBackend,
 	},
-	game_mods::{
+	mods::{
 		mod_config::ModConfig,
 		replacement_token::replace_tokens,
 	},
+	game_providers::game_provider,
 	http::{
 		self,
 		DownloadStatus,
 	},
 	operating_system::OperatingSystem,
 	path_extensions::PathExt,
-	game_providers::game_provider,
 	result::{
 		Error,
 		Result,

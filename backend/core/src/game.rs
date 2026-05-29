@@ -31,13 +31,6 @@ use crate::{
 		},
 		unreal,
 	},
-	game_mods::{
-		game_mod::GameMod,
-		installed_mod::InstalledMod,
-	},
-	game_tag::GameTag,
-	game_title::is_probably_demo,
-	path_extensions::PathExt,
 	game_providers::{
 		game_provider::GameProviderId,
 		provider_command::{
@@ -45,6 +38,13 @@ use crate::{
 			ProviderCommandAction,
 		},
 	},
+	game_tag::GameTag,
+	game_title::is_probably_demo,
+	mods::{
+		game_mod::GameMod,
+		installed_mod::InstalledMod,
+	},
+	path_extensions::PathExt,
 	remote_config::{
 		self,
 		RemoteConfigs,
@@ -197,10 +197,7 @@ impl DbGame {
 		true
 	}
 
-	pub fn get_relevant_mods(
-		&self,
-		mods: &HashMap<String, GameMod>,
-	) -> Result<Vec<GameModInfo>> {
+	pub fn get_relevant_mods(&self, mods: &HashMap<String, GameMod>) -> Result<Vec<GameModInfo>> {
 		let installed_manifests: HashMap<String, GameMod> = self
 			.get_manifest_paths()
 			.iter()

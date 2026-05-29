@@ -9,7 +9,7 @@ use rai_pal_proc_macros::serializable_struct;
 use super::mod_provider::ModProvider;
 use crate::{
 	app_paths,
-	game_mods::game_mod::GameMod,
+	mods::game_mod::GameMod,
 	http,
 	result::Result,
 };

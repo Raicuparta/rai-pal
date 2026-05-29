@@ -10,7 +10,7 @@ use rai_pal_proc_macros::serializable_struct;
 
 use crate::{
 	game::DbGame,
-	game_mods::{
+	mods::{
 		game_mod::{
 			GameMod,
 			ModConfigDestinationType,

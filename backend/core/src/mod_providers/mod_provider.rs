@@ -1,11 +1,11 @@
 use std::collections::HashMap;
 
 use crate::{
-	game_mods::game_mod::GameMod,
 	mod_providers::{
 		folder_mod_provider::FolderModProvider,
 		url_mod_provider::UrlModProvider,
 	},
+	mods::game_mod::GameMod,
 	result::Result,
 };
 
