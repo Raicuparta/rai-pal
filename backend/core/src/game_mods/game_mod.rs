@@ -14,7 +14,6 @@ use rai_pal_proc_macros::{
 	serializable_enum,
 	serializable_struct,
 };
-use uuid::Uuid;
 use zip::ZipArchive;
 
 use crate::{

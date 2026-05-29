@@ -4,7 +4,6 @@
 #![allow(clippy::unused_async)]
 
 use std::{
-	collections::HashMap,
 	path::PathBuf,
 	thread,
 	time::{
@@ -32,7 +31,7 @@ use rai_pal_core::{
 	},
 	game_mods::{
 		game_mod::GameMod,
-		mod_providers::url_mod_provider::UrlModProvider,
+		mod_providers::mod_provider,
 	},
 	games_query::GamesQuery,
 	http::DownloadStatus,
@@ -354,27 +353,12 @@ async fn install_mod_dependencies(handle: &AppHandle, game_mod: &GameMod, game: 
 	Ok(())
 }
 
-async fn refresh_mods_from_provider(handle: &AppHandle) -> Result<HashMap<String, GameMod>> {
-	let default_url = "https://raicuparta.github.io/rai-pal-db/mod-db/1/mods.json".to_string();
-	let provider = UrlModProvider { url: default_url };
-
-	let mods = provider.get_mods_async().await.map_err(|error| {
-		handle.emit_error(format!("Failed to get mods from provider: {error}"));
-		error
-	})?;
-
-	log::info!("Found {} mods from provider.", mods.len());
-	handle.emit_safe(events::SyncMods(mods.clone()));
-
-	handle.app_state().mods.write_state_value(mods.clone())?;
-
-	Ok(mods)
-}
-
 #[tauri::command]
 #[specta::specta]
 async fn refresh_mods(handle: AppHandle) -> Result {
-	refresh_mods_from_provider(&handle).await?;
+	let mods = mod_provider::get_all_mods().await?;
+	handle.emit_safe(events::SyncMods(mods.clone()));
+	handle.app_state().mods.write_state_value(mods)?;
 
 	Ok(())
 }
