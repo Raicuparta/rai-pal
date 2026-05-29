@@ -20,16 +20,17 @@ use crate::{
 
 #[serializable_enum]
 pub enum ReplacementToken {
-	InstalledModsPath,
-	LocalModsPath,
 	GameExecutableFolderPath,
-	GameExecutablePath,
 	GameExecutableName,
 	GameExecutableNameWithoutExtension,
-	RoamingAppData,
+	GameExecutablePath,
+	GameInstalledModsPath,
+	GameJson,
 	GameStartCommand,
 	GameStartCommandArgs,
-	GameJson,
+	LocalModsPath,
+	MaybeWineRoot,
+	RoamingAppData,
 	// If adding new parameters, remember to update mod.ts in rai-pal-db repo.
 	// (and bump the database version).
 }
@@ -150,11 +151,17 @@ pub fn replace_tokens(base_string: &str, game: &DbGame, game_mod: &GameMod) -> S
 			.try_to_str()?
 			.to_string())
 	});
-	result = replace_parameter_value(&result, ReplacementToken::InstalledModsPath, || {
+	result = replace_parameter_value(&result, ReplacementToken::GameInstalledModsPath, || {
 		Ok(game.get_installed_mods_folder()?.try_to_str()?.to_string())
 	});
 	result = replace_parameter_value(&result, ReplacementToken::LocalModsPath, || {
 		Ok(app_paths::local_mods_path()?.try_to_str()?.to_string())
+	});
+	result = replace_parameter_value(&result, ReplacementToken::MaybeWineRoot, || {
+		#[cfg(target_os = "linux")]
+		return Ok("Z:".to_string());
+		#[cfg(target_os = "windows")]
+		return Ok("".to_string());
 	});
 
 	result
