@@ -28,10 +28,7 @@ use rai_pal_core::{
 		DbGame,
 		GameModInfo,
 	},
-	game_mods::{
-		game_mod::GameMod,
-		mod_providers::mod_provider,
-	},
+	game_mods::game_mod::GameMod,
 	game_providers::{
 		game_provider::{
 			self,
@@ -52,6 +49,7 @@ use rai_pal_core::{
 		attach_remote_database,
 	},
 	maps::TryGettable,
+	mod_providers::mod_provider,
 	path_extensions::PathExt,
 	remote_config::RemoteConfigs,
 	remote_game::{
