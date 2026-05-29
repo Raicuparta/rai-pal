@@ -14,6 +14,7 @@
 - implement download cache.
 - implement path provider.
 - make mods page order stable.
+- frontend should probably get each mod provider individually like it does for game providers.
 
 # Done:
 
