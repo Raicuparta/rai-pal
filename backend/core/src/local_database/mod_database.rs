@@ -1,5 +1,5 @@
 use std::{
-	collections::HashMap,
+	collections::BTreeMap,
 	ffi::OsStr,
 	path::Path,
 	string,
@@ -39,7 +39,7 @@ pub trait ModDatabase {
 	fn setup_mod_tables(&self) -> Result;
 	fn insert_mod(&self, game_mod: &GameMod);
 	fn get_mod(&self, mod_id: &str) -> Result<GameMod>;
-	fn get_mod_map(&self) -> Result<HashMap<String, GameMod>>;
+	fn get_mod_map(&self) -> Result<BTreeMap<String, GameMod>>;
 	fn refresh_installed_mods(&self) -> Result;
 	fn get_game_mods(
 		&self,
@@ -160,7 +160,7 @@ impl ModDatabase for DbMutex {
 			})?)
 	}
 
-	fn get_mod_map(&self) -> Result<HashMap<String, GameMod>> {
+	fn get_mod_map(&self) -> Result<BTreeMap<String, GameMod>> {
 		Ok(self
 			.lock_db()?
 			.prepare_cached(
@@ -291,7 +291,7 @@ impl ModDatabase for DbMutex {
 		provider_id: &GameProviderId,
 		game_id: &str,
 	) -> Result<Vec<GameModInfo>> {
-		let mut result: Vec<GameModInfo> = self
+		Ok(self
 			.lock_db()?
 			.prepare_cached(
 				r"
@@ -401,11 +401,7 @@ impl ModDatabase for DbMutex {
 					compatible,
 				})
 			})?
-			.collect::<rusqlite::Result<Vec<GameModInfo>>>()?;
-
-		result.sort_by(|a, b| a.mod_id.cmp(&b.mod_id));
-
-		Ok(result)
+			.collect::<rusqlite::Result<Vec<GameModInfo>>>()?)
 	}
 
 	fn remove_stale_mods(&self, max_time: u64) -> Result {

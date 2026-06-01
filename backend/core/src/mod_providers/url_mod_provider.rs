@@ -1,13 +1,7 @@
-use std::{
-	fs,
-	path::PathBuf,
-};
-
 use rai_pal_proc_macros::serializable_struct;
 
 use super::mod_provider::ModProvider;
 use crate::{
-	app_paths,
 	http,
 	local_database::{
 		game_database::DbMutex,
@@ -37,10 +31,6 @@ impl ModProvider for UrlModProvider {
 	}
 
 	async fn insert_mods(&self, db: &DbMutex) -> Result {
-		if let Some(cached_database) = UrlModDatabase::get_from_cache()? {
-			cached_database.insert_mods(db);
-		}
-
 		UrlModDatabase::get_from_url(&self.url)
 			.await?
 			.insert_mods(db);
@@ -55,30 +45,8 @@ pub struct UrlModDatabase {
 }
 
 impl UrlModDatabase {
-	pub fn get_cache_path() -> Result<PathBuf> {
-		Ok(app_paths::temp_dir("mod_database")?.join("mod_database.json"))
-	}
-
-	pub fn get_from_cache() -> Result<Option<Self>> {
-		let cache_path = Self::get_cache_path()?;
-		if !cache_path.exists() {
-			return Ok(None);
-		}
-
-		let contents = fs::read_to_string(cache_path)?;
-		let result = serde_json::from_str::<Self>(&contents)?;
-		Ok(Some(result))
-	}
-
 	pub async fn get_from_url(url: &str) -> Result<Self> {
-		let result = http::CLIENT.get(url).send().await?.json::<Self>().await?;
-
-		fs::write(
-			Self::get_cache_path()?,
-			serde_json::to_string_pretty(&result)?,
-		)?;
-
-		Ok(result)
+		Ok(http::CLIENT.get(url).send().await?.json::<Self>().await?)
 	}
 
 	pub fn insert_mods(&self, db: &DbMutex) {

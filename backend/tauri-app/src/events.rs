@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 use rai_pal_core::{
 	game_providers::game_provider::GameProviderId,
@@ -14,7 +14,7 @@ pub struct RefreshGame(pub GameProviderId, pub String);
 pub struct GamesChanged();
 
 #[serializable_event]
-pub struct SyncMods(pub HashMap<String, GameMod>);
+pub struct SyncMods(pub BTreeMap<String, GameMod>);
 
 #[serializable_event]
 pub struct ExecutedProviderCommand;

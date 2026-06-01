@@ -15,16 +15,28 @@ pub trait ModProvider {
 	async fn insert_mods(&self, db: &DbMutex) -> Result;
 }
 
+async fn refresh_provider<P: ModProvider>(provider_name: &str, db: &DbMutex) -> bool {
+	match P::default().insert_mods(db).await {
+		Ok(()) => true,
+		Err(err) => {
+			log::warn!("Failed to refresh {provider_name} mods: {err}");
+			false
+		}
+	}
+}
+
 pub async fn refresh_all_mods(db: &DbMutex) -> Result {
 	let start_time = std::time::SystemTime::now()
 		.duration_since(std::time::UNIX_EPOCH)?
 		.as_secs();
 
-	FolderModProvider::default().insert_mods(db).await?;
-	UrlModProvider::default().insert_mods(db).await?;
+	if refresh_provider::<FolderModProvider>("folder", db).await
+		& refresh_provider::<UrlModProvider>("URL", db).await
+	{
+		db.remove_stale_mods(start_time)?;
+	}
 
 	db.refresh_installed_mods()?;
-	db.remove_stale_mods(start_time)?;
 
 	Ok(())
 }
