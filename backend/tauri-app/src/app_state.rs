@@ -23,7 +23,7 @@ use crate::result::{
 
 pub struct AppState {
 	pub mods: RwLock<Option<HashMap<String, GameMod>>>,
-	pub database: DbMutex,
+	pub games: DbMutex,
 	pub download_status_channel: RwLock<Option<Channel<DownloadStatus>>>,
 }
 
@@ -69,7 +69,7 @@ impl AppState {
 	pub fn new() -> Result<Self> {
 		Ok(Self {
 			mods: RwLock::new(Some(HashMap::new())),
-			database: game_database::try_create()?,
+			games: game_database::try_create()?,
 			download_status_channel: RwLock::new(None),
 		})
 	}

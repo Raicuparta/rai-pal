@@ -118,7 +118,7 @@ async fn open_game_folder(
 ) -> Result {
 	handle
 		.app_state()
-		.database
+		.games
 		.get_game(&provider_id, &game_id)?
 		.open_game_folder()?;
 	Ok(())
@@ -132,12 +132,7 @@ async fn open_game_wine_prefix_folder(
 	game_id: String,
 ) -> Result {
 	game_provider::get_provider(provider_id)?
-		.get_wine_prefix_path(
-			&handle
-				.app_state()
-				.database
-				.get_game(&provider_id, &game_id)?,
-		)?
+		.get_wine_prefix_path(&handle.app_state().games.get_game(&provider_id, &game_id)?)?
 		.open_folder_or_parent()?;
 
 	Ok(())
@@ -151,12 +146,7 @@ async fn open_game_wine_binary_folder(
 	game_id: String,
 ) -> Result {
 	game_provider::get_provider(provider_id)?
-		.get_wine_binary_path(
-			&handle
-				.app_state()
-				.database
-				.get_game(&provider_id, &game_id)?,
-		)?
+		.get_wine_binary_path(&handle.app_state().games.get_game(&provider_id, &game_id)?)?
 		.open_folder_or_parent()?;
 
 	Ok(())
@@ -171,7 +161,7 @@ async fn open_game_mods_folder(
 ) -> Result {
 	handle
 		.app_state()
-		.database
+		.games
 		.get_game(&provider_id, &game_id)?
 		.open_mods_folder()?;
 	Ok(())
@@ -186,7 +176,7 @@ async fn install_mod(
 	handle: AppHandle,
 ) -> Result {
 	let state = handle.app_state();
-	let game = state.database.get_game(&provider_id, &game_id)?;
+	let game = state.games.get_game(&provider_id, &game_id)?;
 
 	let mods = state.mods.read_state()?;
 	let game_mod = mods.try_get(mod_id)?.clone();
@@ -222,7 +212,7 @@ async fn run_mod(
 	handle: AppHandle,
 ) -> Result {
 	let state = handle.app_state();
-	let game = state.database.get_game(&provider_id, &game_id)?;
+	let game = state.games.get_game(&provider_id, &game_id)?;
 	state.mods.read_state()?.try_get(mod_id)?.run(&game)?;
 
 	Ok(())
@@ -239,7 +229,7 @@ async fn configure_mod(
 ) -> Result {
 	handle
 		.app_state()
-		.database
+		.games
 		.get_game(&provider_id, &game_id)?
 		.try_get_installed_mod(mod_id)?
 		.configure(open_folder)?;
@@ -256,7 +246,7 @@ async fn open_installed_mod_folder(
 	handle: AppHandle,
 ) -> Result {
 	let state = handle.app_state();
-	let game = state.database.get_game(&provider_id, &game_id)?;
+	let game = state.games.get_game(&provider_id, &game_id)?;
 	game.try_get_installed_mod(mod_id)?.open_folder()?;
 
 	Ok(())
@@ -266,9 +256,9 @@ async fn open_installed_mod_folder(
 #[specta::specta]
 async fn refresh_game(handle: AppHandle, provider_id: GameProviderId, game_id: String) -> Result {
 	let state = handle.app_state();
-	let mut game = state.database.get_game(&provider_id, &game_id)?;
+	let mut game = state.games.get_game(&provider_id, &game_id)?;
 	game.refresh_executable()?;
-	state.database.insert_game(&game);
+	state.games.insert_game(&game);
 
 	handle.emit_safe(events::RefreshGame(provider_id, game_id));
 
@@ -284,7 +274,7 @@ async fn uninstall_mod(
 	handle: AppHandle,
 ) -> Result {
 	let state = handle.app_state();
-	let game = state.database.get_game(&provider_id, &game_id)?;
+	let game = state.games.get_game(&provider_id, &game_id)?;
 	game.try_get_installed_mod(mod_id)?.uninstall()?;
 
 	handle.emit_safe(events::RefreshGame(provider_id, game_id));
@@ -301,7 +291,7 @@ async fn uninstall_all_mods(
 ) -> Result {
 	handle
 		.app_state()
-		.database
+		.games
 		.get_game(&provider_id, &game_id)?
 		.uninstall_all_mods()?;
 
@@ -362,7 +352,7 @@ async fn refresh_mods(handle: AppHandle) -> Result {
 async fn refresh_remote_games(handle: AppHandle) -> Result {
 	let state = handle.app_state();
 	let path = remote_game::download_database().await?;
-	attach_remote_database(state.database.lock_db()?, &path)?;
+	attach_remote_database(state.games.lock_db()?, &path)?;
 
 	Ok(())
 }
@@ -374,11 +364,9 @@ async fn refresh_games(handle: AppHandle, provider_id: GameProviderId) -> Result
 
 	let start_time = SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs();
 
-	game_provider::get_provider(provider_id)?.insert_games(&state.database)?;
+	game_provider::get_provider(provider_id)?.insert_games(&state.games)?;
 
-	state
-		.database
-		.remove_stale_games(&provider_id, start_time)?;
+	state.games.remove_stale_games(&provider_id, start_time)?;
 
 	Ok(())
 }
@@ -390,7 +378,7 @@ async fn add_game(handle: AppHandle, path: PathBuf) -> Result {
 	let game = manual_provider::add_game(&normalized_path)?;
 	let state = handle.app_state();
 
-	state.database.insert_game(&game);
+	state.games.insert_game(&game);
 
 	handle.emit_safe(events::RefreshGame(game.provider_id, game.game_id.clone()));
 	handle.emit_safe(events::GamesChanged());
@@ -402,10 +390,7 @@ async fn add_game(handle: AppHandle, path: PathBuf) -> Result {
 #[tauri::command]
 #[specta::specta]
 async fn remove_game(handle: AppHandle, provider_id: GameProviderId, game_id: String) -> Result {
-	let game = handle
-		.app_state()
-		.database
-		.get_game(&provider_id, &game_id)?;
+	let game = handle.app_state().games.get_game(&provider_id, &game_id)?;
 
 	manual_provider::remove_game(&game)?;
 
@@ -420,10 +405,7 @@ async fn run_provider_command(
 	game_id: &str,
 	provider_command_aciton: ProviderCommandAction,
 ) -> Result {
-	let game = handle
-		.app_state()
-		.database
-		.get_game(&provider_id, game_id)?;
+	let game = handle.app_state().games.get_game(&provider_id, game_id)?;
 
 	let provider_command = game.provider_commands.try_get(&provider_command_aciton)?;
 	provider_command.run(&game)?;
@@ -473,7 +455,7 @@ async fn open_logs_folder() -> Result {
 #[specta::specta]
 async fn get_game_ids(handle: AppHandle, query: Option<GamesQuery>) -> Result<GameIdsResponse> {
 	let state = handle.app_state();
-	Ok(state.database.get_game_ids(query)?)
+	Ok(state.games.get_game_ids(query)?)
 }
 
 #[tauri::command]
@@ -484,7 +466,7 @@ async fn get_game(
 	game_id: String,
 ) -> Result<DbGame> {
 	let state = handle.app_state();
-	Ok(state.database.get_game(&provider_id, &game_id)?)
+	Ok(state.games.get_game(&provider_id, &game_id)?)
 }
 
 #[tauri::command]
@@ -508,7 +490,7 @@ async fn get_game_mods(
 ) -> Result<Vec<GameModInfo>> {
 	let state = app_handle.app_state();
 	Ok(state
-		.database
+		.games
 		.get_game(&provider_id, &game_id)?
 		.get_relevant_mods(&state.mods.read_state()?)?)
 }
@@ -522,7 +504,7 @@ async fn get_remote_configs(
 ) -> Result<Option<RemoteConfigs>> {
 	Ok(app_handle
 		.app_state()
-		.database
+		.games
 		.get_game(&provider_id, &game_id)?
 		.get_remote_configs()
 		.await?)
@@ -539,7 +521,7 @@ async fn download_remote_config(
 	app_handle: AppHandle,
 ) -> Result {
 	let state = app_handle.app_state();
-	let game = state.database.get_game(&provider_id, game_id)?;
+	let game = state.games.get_game(&provider_id, game_id)?;
 	let mods = state.mods.read_state()?;
 	let game_mod = mods.try_get(mod_id)?.clone();
 	drop(mods);
@@ -746,16 +728,17 @@ fn main() {
 				let state = app_handle.app_state();
 				let cloned_handle = app_handle.clone();
 
-				if let Err(error) = state
-					.database
-					.lock_db()
-					.map_err(|e| e.to_string())
-					.and_then(|db| {
-						db.update_hook(Some(move |_, _: &str, _: &str, _| {
-							cloned_handle.emit_safe(events::GamesChanged());
-						}))
+				if let Err(error) =
+					state
+						.games
+						.lock_db()
 						.map_err(|e| e.to_string())
-					}) {
+						.and_then(|db| {
+							db.update_hook(Some(move |_, _: &str, _: &str, _| {
+								cloned_handle.emit_safe(events::GamesChanged());
+							}))
+							.map_err(|e| e.to_string())
+						}) {
 					log::error!(
 						"Failed to subscribe to local database updates. App won't work properly. Error: {error}"
 					);
