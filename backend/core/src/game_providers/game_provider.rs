@@ -4,6 +4,10 @@ use std::{
 		Path,
 		PathBuf,
 	},
+	time::{
+		SystemTime,
+		UNIX_EPOCH,
+	},
 };
 
 use rai_pal_proc_macros::serializable_enum;
@@ -28,7 +32,10 @@ use crate::{
 		manual_provider::Manual,
 		steam::steam_provider::Steam,
 	},
-	local_database::game_database::DbMutex,
+	local_database::game_database::{
+		DbMutex,
+		GameDatabase,
+	},
 	result::{
 		Error,
 		Result,
@@ -108,5 +115,17 @@ pub fn get_provider(provider_id: GameProviderId) -> Result<Box<dyn GameProvider>
 		GameProviderId::Xbox => Ok(Box::new(Xbox {})),
 		#[cfg(target_os = "linux")]
 		GameProviderId::Xbox => Ok(Box::new(Dummy {})),
+	}
+}
+
+impl GameProviderId {
+	pub fn insert_games(&self, db: &DbMutex) -> Result {
+		let start_time = SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs();
+
+		get_provider(*self)?.insert_games(db)?;
+
+		db.remove_stale_games(self, start_time)?;
+
+		Ok(())
 	}
 }

@@ -373,15 +373,7 @@ async fn refresh_remote_games(handle: AppHandle) -> Result {
 #[tauri::command]
 #[specta::specta]
 async fn refresh_games(handle: AppHandle, provider_id: GameProviderId) -> Result {
-	let state = handle.app_state();
-
-	let start_time = SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs();
-
-	game_provider::get_provider(provider_id)?.insert_games(&state.database)?;
-
-	state
-		.database
-		.remove_stale_games(&provider_id, start_time)?;
+	provider_id.insert_games(&handle.app_state().database)?;
 
 	Ok(())
 }
