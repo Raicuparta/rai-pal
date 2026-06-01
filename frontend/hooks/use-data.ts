@@ -9,10 +9,7 @@ export const gameDataAtom = atom<GameIdsResponse>({
 	totalCount: 0,
 });
 
-export const [remoteModsAtom, useRemoteModsSubscription] = dataSubscription(
-	"syncMods",
-	{},
-);
+export const [modsAtom, useModsSubscription] = dataSubscription("syncMods", {});
 
 type LoadingTask = {
 	index: number;
@@ -22,7 +19,7 @@ type LoadingTask = {
 export const loadingTasksAtom = atom<LoadingTask[]>([]);
 
 export function useData() {
-	useRemoteModsSubscription();
+	useModsSubscription();
 	useGameDropEvent();
 	useUpdateData(true);
 }

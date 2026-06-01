@@ -3,7 +3,7 @@ import { useAppEvent } from "./use-app-event";
 import { useCommandData } from "./use-command-data";
 import { useCallback, useMemo } from "react";
 import { useAtomValue } from "jotai";
-import { remoteModsAtom } from "./use-data";
+import { modsAtom } from "./use-data";
 
 type GameModsPart = { mod: GameMod; info: GameModInfo };
 export type GameModsData = {
@@ -15,7 +15,7 @@ export function useGameMods(
 	providerId?: GameProviderId,
 	gameId?: string,
 ): GameModsData | null {
-	const mods = useAtomValue(remoteModsAtom);
+	const mods = useAtomValue(modsAtom);
 	const getGameMods = useCallback(
 		async () =>
 			providerId && gameId ? commands.getGameMods(providerId, gameId) : null,

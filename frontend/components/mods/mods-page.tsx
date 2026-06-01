@@ -8,13 +8,13 @@ import { useLocalization } from "@hooks/use-localization";
 import { ModsTable } from "./mods-table";
 import { TableContainer } from "@components/table/table-container";
 import { useAtomValue } from "jotai";
-import { remoteModsAtom } from "@hooks/use-data";
+import { modsAtom } from "@hooks/use-data";
 
 export function ModsPage() {
 	const t = useLocalization("modsPage");
 	const [selectedModId, setSelectedId] = useState<string>();
 
-	const mods = useAtomValue(remoteModsAtom);
+	const mods = useAtomValue(modsAtom);
 
 	const selectedMod = useMemo(() => {
 		const result = selectedModId ? mods[selectedModId] : undefined;

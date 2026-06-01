@@ -15,7 +15,7 @@ pub trait ModProvider {
 	async fn insert_mods(&self, db: &DbMutex) -> Result;
 }
 
-pub async fn get_all_mods(db: &DbMutex) -> Result {
+pub async fn refresh_all_mods(db: &DbMutex) -> Result {
 	let start_time = std::time::SystemTime::now()
 		.duration_since(std::time::UNIX_EPOCH)?
 		.as_secs();
@@ -23,7 +23,7 @@ pub async fn get_all_mods(db: &DbMutex) -> Result {
 	FolderModProvider::default().insert_mods(db).await?;
 	UrlModProvider::default().insert_mods(db).await?;
 
-	let installed_mods = db.refresh_installed_mods()?;
+	db.refresh_installed_mods()?;
 	db.remove_stale_mods(start_time)?;
 
 	Ok(())

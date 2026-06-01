@@ -24,10 +24,7 @@ use events::EventEmitter;
 use rai_pal_core::windows;
 use rai_pal_core::{
 	app_paths,
-	game::{
-		DbGame,
-		GameModInfo,
-	},
+	game::DbGame,
 	game_providers::{
 		game_provider::{
 			self,
@@ -48,7 +45,10 @@ use rai_pal_core::{
 			GameIdsResponse,
 			attach_remote_database,
 		},
-		mod_database::ModDatabase,
+		mod_database::{
+			GameModInfo,
+			ModDatabase,
+		},
 	},
 	maps::TryGettable,
 	mod_providers::mod_provider,
@@ -208,6 +208,8 @@ async fn install_mod(
 		})
 		.await?;
 
+	state.database.refresh_installed_mods()?;
+
 	handle.emit_safe(events::RefreshGame(provider_id, game_id));
 
 	Ok(())
@@ -269,6 +271,7 @@ async fn refresh_game(handle: AppHandle, provider_id: GameProviderId, game_id: S
 	let mut game = state.database.get_game(&provider_id, &game_id)?;
 	game.refresh_executable()?;
 	state.database.insert_game(&game);
+	state.database.refresh_installed_mods()?;
 
 	handle.emit_safe(events::RefreshGame(provider_id, game_id));
 
@@ -286,6 +289,7 @@ async fn uninstall_mod(
 	let state = handle.app_state();
 	let game = state.database.get_game(&provider_id, &game_id)?;
 	game.try_get_installed_mod(mod_id)?.uninstall()?;
+	state.database.refresh_installed_mods()?;
 
 	handle.emit_safe(events::RefreshGame(provider_id, game_id));
 
@@ -299,11 +303,12 @@ async fn uninstall_all_mods(
 	provider_id: GameProviderId,
 	game_id: String,
 ) -> Result {
-	handle
-		.app_state()
+	let state = handle.app_state();
+	state
 		.database
 		.get_game(&provider_id, &game_id)?
 		.uninstall_all_mods()?;
+	state.database.refresh_installed_mods()?;
 
 	handle.emit_safe(events::RefreshGame(provider_id, game_id));
 
@@ -315,7 +320,7 @@ async fn install_mod_dependencies(handle: &AppHandle, game_mod: &GameMod, game: 
 
 	let relevant_mods = state
 		.database
-		.get_relevant_mods_for_game(&game.provider_id, &game.game_id)?;
+		.get_game_mods(&game.provider_id, &game.game_id)?;
 	let download_status_channel = state.download_status_channel.read_state()?.clone();
 
 	if let Some(dependencies) = game_mod.dependencies.as_ref() {
@@ -348,7 +353,7 @@ async fn install_mod_dependencies(handle: &AppHandle, game_mod: &GameMod, game: 
 #[tauri::command]
 #[specta::specta]
 async fn refresh_mods(handle: AppHandle) -> Result {
-	mod_provider::get_all_mods(&handle.app_state().database).await?;
+	mod_provider::refresh_all_mods(&handle.app_state().database).await?;
 	let mods = handle.app_state().database.get_mod_map()?;
 	handle.emit_safe(events::SyncMods(mods));
 
@@ -504,10 +509,10 @@ async fn get_game_mods(
 	game_id: String,
 	app_handle: AppHandle,
 ) -> Result<Vec<GameModInfo>> {
-	let state = app_handle.app_state();
-	Ok(state
+	Ok(app_handle
+		.app_state()
 		.database
-		.get_relevant_mods_for_game(&provider_id, &game_id)?)
+		.get_game_mods(&provider_id, &game_id)?)
 }
 
 #[tauri::command]

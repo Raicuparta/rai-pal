@@ -9,11 +9,11 @@ use std::{
 	},
 };
 
+use rai_pal_proc_macros::serializable_struct;
 use serde::Serialize;
 
 use crate::{
 	app_paths,
-	game::GameModInfo,
 	game_providers::game_provider::GameProviderId,
 	local_database::{
 		game_database::{
@@ -27,13 +27,21 @@ use crate::{
 	result::Result,
 };
 
+#[serializable_struct]
+pub struct GameModInfo {
+	pub mod_id: String,
+	pub installed_version: Option<String>,
+	pub installed_hash: Option<String>,
+	pub compatible: bool,
+}
+
 pub trait ModDatabase {
 	fn setup_mod_tables(&self) -> Result;
 	fn insert_mod(&self, game_mod: &GameMod);
 	fn get_mod(&self, mod_id: &str) -> Result<GameMod>;
 	fn get_mod_map(&self) -> Result<HashMap<String, GameMod>>;
 	fn refresh_installed_mods(&self) -> Result;
-	fn get_relevant_mods_for_game(
+	fn get_game_mods(
 		&self,
 		provider_id: &GameProviderId,
 		game_id: &str,
@@ -278,7 +286,7 @@ impl ModDatabase for DbMutex {
 		Ok(())
 	}
 
-	fn get_relevant_mods_for_game(
+	fn get_game_mods(
 		&self,
 		provider_id: &GameProviderId,
 		game_id: &str,

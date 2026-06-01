@@ -1,8 +1,5 @@
 use std::{
-	collections::{
-		BTreeMap,
-		HashMap,
-	},
+	collections::BTreeMap,
 	fs,
 	path::{
 		Path,
@@ -18,7 +15,6 @@ use crate::{
 	game_engines::{
 		game_engine::{
 			EngineBrand,
-			EngineVersionRange,
 			get_exe_engine,
 		},
 		unity::{
@@ -50,14 +46,6 @@ use crate::{
 		Result,
 	},
 };
-
-#[serializable_struct]
-pub struct GameModInfo {
-	pub mod_id: String,
-	pub installed_version: Option<String>,
-	pub installed_hash: Option<String>,
-	pub compatible: bool,
-}
 
 #[derive(serde::Serialize, specta::Type, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -141,136 +129,6 @@ impl DbGame {
 		}
 	}
 
-	const fn is_engine_version_compatible(&self, range: Option<&EngineVersionRange>) -> bool {
-		let Some(major) = self.engine_version_major else {
-			return true;
-		};
-		let Some(range) = range else {
-			return true;
-		};
-
-		let minor = self.engine_version_minor;
-		let patch = self.engine_version_patch;
-
-		if let Some(min) = &range.minimum {
-			if min.major > major {
-				return false;
-			}
-			if min.major == major
-				&& let (Some(min_minor), Some(game_minor)) = (min.minor, minor)
-			{
-				if min_minor > game_minor {
-					return false;
-				}
-				if min_minor == game_minor
-					&& let (Some(min_patch), Some(game_patch)) = (min.patch, patch)
-					&& min_patch > game_patch
-				{
-					return false;
-				}
-			}
-		}
-
-		if let Some(max) = &range.maximum {
-			if max.major < major {
-				return false;
-			}
-			if max.major == major
-				&& let (Some(max_minor), Some(game_minor)) = (max.minor, minor)
-			{
-				if max_minor < game_minor {
-					return false;
-				}
-				if max_minor == game_minor
-					&& let (Some(max_patch), Some(game_patch)) = (max.patch, patch)
-					&& max_patch < game_patch
-				{
-					return false;
-				}
-			}
-		}
-
-		true
-	}
-
-	pub fn get_relevant_mods(&self, mods: &HashMap<String, GameMod>) -> Result<Vec<GameModInfo>> {
-		let installed_manifests: HashMap<String, GameMod> = self
-			.get_manifest_paths()
-			.iter()
-			.filter_map(|manifest_path| {
-				let mut manifest = GameMod::from_file(manifest_path)?;
-
-				if let Some(provider_mod) = mods.get(&manifest.id)
-					&& manifest.download.as_ref().map(|v| v.id.clone())
-						== provider_mod.download.as_ref().map(|v| v.id.clone())
-					&& manifest.hash != provider_mod.hash
-					&& let Ok(manifest_contents) = serde_json::to_string_pretty(provider_mod)
-				{
-					let _ = fs::write(manifest_path, &manifest_contents);
-
-					if let Ok(updated_manifest) =
-						serde_json::from_str::<GameMod>(&manifest_contents)
-					{
-						manifest = updated_manifest;
-					}
-				}
-
-				Some((manifest_path.file_stem()?.to_str()?.to_string(), manifest))
-			})
-			.collect();
-
-		let mut result = Vec::new();
-
-		for game_mod in mods.values() {
-			// Skip if mod requires a specific engine and game's engine doesn't match
-			if let Some(required_engine) = &game_mod.engine
-				&& self.engine_brand.as_ref() != Some(required_engine)
-			{
-				continue;
-			}
-
-			// Skip if both mod and game specify unity_backend and they differ
-			if let (Some(mod_backend), Some(game_backend)) =
-				(&game_mod.unity_backend, &self.unity_backend)
-				&& mod_backend != game_backend
-			{
-				continue;
-			}
-
-			// Skip if both mod and game specify architecture and they differ
-			if let (Some(mod_arch), Some(game_arch)) = (&game_mod.architecture, &self.architecture)
-				&& mod_arch != game_arch
-			{
-				continue;
-			}
-
-			let installed_manifest = installed_manifests.get(&game_mod.id);
-
-			// Skip deprecated mods unless they are installed
-			if game_mod.deprecated == Some(true) && installed_manifest.is_none() {
-				continue;
-			}
-
-			let compatible =
-				self.is_engine_version_compatible(game_mod.engine_version_range.as_ref());
-
-			let (installed_version, installed_hash) = installed_manifest
-				.map_or((None, None), |m| {
-					(m.download.as_ref().map(|v| v.id.clone()), m.hash.clone())
-				});
-
-			result.push(GameModInfo {
-				mod_id: game_mod.id.clone(),
-				installed_version,
-				installed_hash,
-				compatible,
-			});
-		}
-
-		result.sort_by(|a, b| a.mod_id.cmp(&b.mod_id));
-		Ok(result)
-	}
-
 	pub fn get_installed_mod_manifest_path(&self, mod_id: &str) -> Result<PathBuf> {
 		Ok(self
 			.get_installed_mods_folder()?
@@ -287,7 +145,7 @@ impl DbGame {
 	}
 
 	pub fn try_get_exe_path(&self) -> Result<&Path> {
-		Ok(&self
+		Ok(self
 			.exe_path
 			.as_ref()
 			.ok_or_else(|| Error::GameNotInstalled(self.display_title.clone()))?)
@@ -373,7 +231,7 @@ impl DbGame {
 
 	pub async fn get_remote_configs(&self) -> Result<Option<RemoteConfigs>> {
 		if let Some(exe_path) = self.exe_path.as_ref() {
-			remote_config::get_remote_configs(&exe_path).await
+			remote_config::get_remote_configs(exe_path).await
 		} else {
 			Err(Error::GameNotInstalled(self.display_title.clone()))
 		}
