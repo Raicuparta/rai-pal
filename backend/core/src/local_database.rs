@@ -21,8 +21,13 @@ use rusqlite::OpenFlags;
 
 use crate::{
 	app_paths,
+	data_types::json_data::{
+		JsonData,
+		RowExt,
+	},
 	debug::LoggableInstant,
 	game::DbGame,
+	game_providers::game_provider::GameProviderId,
 	game_title::get_normalized_titles,
 	games_query::{
 		GamesQuery,
@@ -30,7 +35,6 @@ use crate::{
 		InstallState,
 	},
 	path_extensions::AsValidStr,
-	game_providers::game_provider::GameProviderId,
 	remote_game,
 	result::{
 		Error,
@@ -115,8 +119,8 @@ impl GameDatabase for DbMutex {
 					title_discriminator: row.get(4)?,
 					thumbnail_url: row.get(5)?,
 					release_date_rfc3339: row.get(6)?,
-					tags: row.get(7)?,
-					provider_commands: row.get(8)?,
+					tags: row.get_json(7)?,
+					provider_commands: row.get_json(8)?,
 					exe_path: row.get(9)?,
 					unity_backend: row.get(10)?,
 					architecture: row.get(11)?,
@@ -372,9 +376,9 @@ fn try_insert_game(connection_mutex: &DbMutex, game: &DbGame) -> Result {
 			game.display_title.clone(),
 			game.thumbnail_url.clone(),
 			game.release_date_rfc3339,
-			game.tags.clone(),
+			JsonData(game.tags.clone()),
 			game.title_discriminator.clone(),
-			game.provider_commands.clone(),
+			JsonData(game.provider_commands.clone()),
 			SystemTime::now()
 				.duration_since(UNIX_EPOCH)?
 				.as_secs()

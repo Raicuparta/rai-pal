@@ -81,8 +81,8 @@ pub struct DbGame {
 	pub engine_version_display: Option<String>,
 	pub unity_backend: Option<UnityBackend>,
 	pub architecture: Option<Architecture>,
-	pub tags: JsonData<Vec<GameTag>>,
-	pub provider_commands: JsonData<BTreeMap<ProviderCommandAction, ProviderCommand>>,
+	pub tags: Vec<GameTag>,
+	pub provider_commands: BTreeMap<ProviderCommandAction, ProviderCommand>,
 }
 
 impl DbGame {
@@ -103,8 +103,8 @@ impl DbGame {
 			engine_version_display: None,
 			unity_backend: None,
 			architecture: None,
-			tags: JsonData(Vec::default()),
-			provider_commands: JsonData(BTreeMap::default()),
+			tags: Vec::default(),
+			provider_commands: BTreeMap::default(),
 		};
 
 		if is_probably_demo(&game.display_title) {
@@ -311,16 +311,16 @@ impl DbGame {
 		command_action: ProviderCommandAction,
 		command: ProviderCommand,
 	) -> &mut Self {
-		self.provider_commands.0.insert(command_action, command);
+		self.provider_commands.insert(command_action, command);
 		self
 	}
 
 	pub fn add_tag(&mut self, tag: GameTag) -> &mut Self {
-		if self.tags.0.contains(&tag) {
+		if self.tags.contains(&tag) {
 			return self;
 		}
 
-		self.tags.0.push(tag);
+		self.tags.push(tag);
 		self
 	}
 

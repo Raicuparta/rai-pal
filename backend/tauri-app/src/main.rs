@@ -425,7 +425,7 @@ async fn run_provider_command(
 		.database
 		.get_game(&provider_id, game_id)?;
 
-	let provider_command = game.provider_commands.0.try_get(&provider_command_aciton)?;
+	let provider_command = game.provider_commands.try_get(&provider_command_aciton)?;
 	provider_command.run(&game)?;
 
 	handle.emit_safe(events::ExecutedProviderCommand);

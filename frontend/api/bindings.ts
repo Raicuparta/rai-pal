@@ -88,8 +88,8 @@ export type DbGame = {
 	engineVersionDisplay: string | null,
 	unityBackend: UnityBackend | null,
 	architecture: Architecture | null,
-	tags: JsonData<GameTag[]>,
-	providerCommands: JsonData<Partial<{ [key in ProviderCommandAction]: ProviderCommand }>>,
+	tags: GameTag[],
+	providerCommands: Partial<{ [key in ProviderCommandAction]: ProviderCommand }>,
 };
 
 export type DiscordAuthState = {
@@ -180,8 +180,6 @@ export type GamesQuery = {
 export type GamesSortBy = "Title" | "Engine" | "ReleaseDate";
 
 export type InstallState = "Installed" | "NotInstalled";
-
-export type JsonData<T> = T;
 
 export type ModConfig = {
 	destinationPath: string,

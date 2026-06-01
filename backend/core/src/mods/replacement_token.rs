@@ -62,7 +62,7 @@ fn replace_parameter_value<TValue: AsRef<str>, TGetValue: Fn() -> Result<TValue>
 pub fn replace_tokens(base_string: &str, game: &DbGame, game_mod: &GameMod) -> String {
 	let mut result = base_string.to_string();
 
-	let provider_commands = &game.provider_commands.0;
+	let provider_commands = &game.provider_commands;
 	let start_command = provider_commands
 		.get(&ProviderCommandAction::StartViaProvider)
 		.or_else(|| provider_commands.get(&ProviderCommandAction::StartViaExe));
