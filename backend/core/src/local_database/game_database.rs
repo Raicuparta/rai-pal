@@ -34,7 +34,10 @@ use crate::{
 		JsonData,
 		RowExt,
 	},
-	path_extensions::AsValidStr,
+	path_extensions::{
+		AsValidStr,
+		PathExt,
+	},
 	remote_game,
 	result::{
 		Error,
@@ -366,8 +369,9 @@ fn try_insert_game(connection_mutex: &DbMutex, game: &DbGame) -> Result {
 				tags,
 				title_discriminator,
 				provider_commands,
+				exe_path_hash,
 				created_at
-			) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)",
+			) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)",
 		)?
 		.execute(rusqlite::params![
 			game.provider_id,
@@ -379,6 +383,9 @@ fn try_insert_game(connection_mutex: &DbMutex, game: &DbGame) -> Result {
 			JsonData(game.tags.clone()),
 			game.title_discriminator.clone(),
 			JsonData(game.provider_commands.clone()),
+			game.exe_path
+				.as_ref()
+				.map(|exe_path| exe_path.as_path().hash_string()),
 			SystemTime::now()
 				.duration_since(UNIX_EPOCH)?
 				.as_secs()
@@ -517,6 +524,7 @@ fn create() -> Result<DbMutex> {
 			tags TEXT,
 			release_date INTEGER,
 			provider_commands TEXT,
+			exe_path_hash TEXT,
 			created_at INTEGER,
 			PRIMARY KEY (provider_id, game_id)
 		);
@@ -562,12 +570,34 @@ fn create() -> Result<DbMutex> {
 	",
 	)?;
 
+	ensure_games_exe_path_hash_column(&connection)?;
+
 	let remote_database_path = remote_game::get_database_file_path()?;
 	attach_remote_database(&connection, &remote_database_path)?;
 
 	instant.log_next("Created local database!");
 
 	Ok(DbMutex::new(connection))
+}
+
+fn ensure_games_exe_path_hash_column(connection: &rusqlite::Connection) -> Result {
+	let has_exe_path_hash = connection
+		.prepare_cached("PRAGMA table_info(games);")?
+		.query_map([], |row| row.get::<_, String>(1))?
+		.collect::<rusqlite::Result<Vec<String>>>()?
+		.into_iter()
+		.any(|column_name| column_name == "exe_path_hash");
+
+	if !has_exe_path_hash {
+		connection.execute("ALTER TABLE main.games ADD COLUMN exe_path_hash TEXT;", [])?;
+	}
+
+	connection.execute(
+		"CREATE INDEX IF NOT EXISTS idx_games_exe_path_hash ON games(exe_path_hash);",
+		[],
+	)?;
+
+	Ok(())
 }
 
 pub fn attach_remote_database<TConnection: Deref<Target = rusqlite::Connection>>(

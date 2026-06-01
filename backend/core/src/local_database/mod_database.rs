@@ -1,35 +1,94 @@
 use std::{
 	collections::HashMap,
-	fs,
-	path::PathBuf,
+	ffi::OsStr,
+	path::Path,
+	string,
 	time::{
 		SystemTime,
 		UNIX_EPOCH,
 	},
 };
 
-use rusqlite::OpenFlags;
 use serde::Serialize;
 
 use crate::{
 	app_paths,
-	local_database::game_database::{
-		DbMutex,
-		GameDatabase,
+	game::GameModInfo,
+	game_providers::game_provider::GameProviderId,
+	local_database::{
+		game_database::{
+			DbMutex,
+			GameDatabase,
+		},
+		rusqlite_extensions::RowExt,
 	},
-	local_database::rusqlite_extensions::RowExt,
 	mods::game_mod::GameMod,
+	path_extensions::PathExt,
 	result::Result,
 };
 
 pub trait ModDatabase {
+	fn setup_mod_tables(&self) -> Result;
 	fn insert_mod(&self, game_mod: &GameMod);
 	fn get_mod(&self, mod_id: &str) -> Result<GameMod>;
 	fn get_mod_map(&self) -> Result<HashMap<String, GameMod>>;
+	fn refresh_installed_mods(&self) -> Result;
+	fn get_relevant_mods_for_game(
+		&self,
+		provider_id: &GameProviderId,
+		game_id: &str,
+	) -> Result<Vec<GameModInfo>>;
 	fn remove_stale_mods(&self, max_time: u64) -> Result;
 }
 
 impl ModDatabase for DbMutex {
+	fn setup_mod_tables(&self) -> Result {
+		self.lock_db()?.execute_batch(
+			r"
+			CREATE TABLE IF NOT EXISTS mods (
+				id TEXT NOT NULL,
+				title TEXT NOT NULL,
+				author TEXT NOT NULL,
+				source_code TEXT NOT NULL,
+				description TEXT NOT NULL,
+				download TEXT,
+				engine TEXT,
+				engine_version_range TEXT,
+				unity_backend TEXT,
+				architecture TEXT,
+				game_os TEXT,
+				host_os TEXT,
+				deprecated INTEGER,
+				config TEXT,
+				dependencies TEXT,
+				install TEXT,
+				run_for_game TEXT,
+				hash TEXT,
+				created_at INTEGER,
+				PRIMARY KEY (id)
+			);
+
+			CREATE INDEX IF NOT EXISTS idx_mods_created_at ON mods(created_at);
+
+			DROP TABLE IF EXISTS installed_mods;
+
+			CREATE TABLE IF NOT EXISTS installed_mods (
+				exe_path_hash TEXT NOT NULL,
+				mod_id TEXT NOT NULL,
+				installed_version TEXT,
+				installed_hash TEXT,
+				created_at INTEGER,
+				PRIMARY KEY (exe_path_hash, mod_id)
+			);
+
+			CREATE INDEX IF NOT EXISTS idx_installed_mods_hash ON installed_mods(exe_path_hash);
+			CREATE INDEX IF NOT EXISTS idx_installed_mods_mod_id ON installed_mods(mod_id);
+		",
+		)?;
+
+		Ok(())
+	}
+
 	fn insert_mod(&self, game_mod: &GameMod) {
 		if let Err(err) = try_insert_mod(self, game_mod) {
 			log::error!(
@@ -152,6 +211,195 @@ impl ModDatabase for DbMutex {
 			.collect())
 	}
 
+	fn refresh_installed_mods(&self) -> Result {
+		let installed_mods_root = app_paths::installed_mods_path()?;
+		let manifests_glob = installed_mods_root
+			.join("*")
+			.join("manifests")
+			.join("*.json");
+
+		let created_at = SystemTime::now()
+			.duration_since(UNIX_EPOCH)?
+			.as_secs()
+			.cast_signed();
+
+		{
+			let mut connection = self.lock_db()?;
+			let transaction = connection.transaction()?;
+
+			transaction.execute("DELETE FROM main.installed_mods;", [])?;
+
+			{
+				let mut statement = transaction.prepare_cached(
+					"INSERT OR REPLACE INTO main.installed_mods (
+						exe_path_hash,
+						mod_id,
+						installed_version,
+						installed_hash,
+						created_at
+					) VALUES ($1, $2, $3, $4, $5)",
+				)?;
+
+				for manifest_path in manifests_glob.glob() {
+					let Some(exe_path_hash) = manifest_path
+						.parent()
+						.and_then(Path::parent)
+						.and_then(Path::file_name)
+						.and_then(OsStr::to_str)
+						.map(string::ToString::to_string)
+					else {
+						continue;
+					};
+
+					let Some(manifest) = GameMod::from_file(&manifest_path) else {
+						continue;
+					};
+
+					statement.execute(rusqlite::params![
+						exe_path_hash,
+						manifest.id,
+						manifest
+							.download
+							.as_ref()
+							.map(|download| download.id.clone()),
+						manifest.hash,
+						created_at,
+					])?;
+				}
+			}
+
+			transaction.commit()?;
+
+			// tbh only here due to a clippy warning,
+			// Clippy does't seem to realize connection is needed as long as transaction.
+			drop(connection);
+		}
+
+		Ok(())
+	}
+
+	fn get_relevant_mods_for_game(
+		&self,
+		provider_id: &GameProviderId,
+		game_id: &str,
+	) -> Result<Vec<GameModInfo>> {
+		let mut result: Vec<GameModInfo> = self
+			.lock_db()?
+			.prepare_cached(
+				r"
+			WITH candidate_mods AS (
+				SELECT DISTINCT
+					m.id AS mod_id,
+					im.installed_version AS installed_version,
+					im.installed_hash AS installed_hash,
+					COALESCE(ig.engine_version_major, rg.engine_version_major) AS game_major,
+					COALESCE(ig.engine_version_minor, rg.engine_version_minor) AS game_minor,
+					COALESCE(ig.engine_version_patch, rg.engine_version_patch) AS game_patch,
+					json_extract(m.engine_version_range, '$.minimum.major') AS min_major,
+					json_extract(m.engine_version_range, '$.minimum.minor') AS min_minor,
+					json_extract(m.engine_version_range, '$.minimum.patch') AS min_patch,
+					json_extract(m.engine_version_range, '$.maximum.major') AS max_major,
+					json_extract(m.engine_version_range, '$.maximum.minor') AS max_minor,
+					json_extract(m.engine_version_range, '$.maximum.patch') AS max_patch
+				FROM main.games g
+				LEFT JOIN main.installed_games ig ON g.provider_id = ig.provider_id AND g.game_id = ig.game_id
+				LEFT JOIN main.normalized_titles nt ON g.provider_id = nt.provider_id AND g.game_id = nt.game_id
+				LEFT JOIN remote_games rg ON (
+						g.provider_id = rg.provider_id AND g.external_id = rg.external_id
+				) OR (
+						rg.provider_id = 'Manual' AND nt.normalized_title = rg.external_id
+				)
+				INNER JOIN main.mods m ON 1=1
+				LEFT JOIN main.installed_mods im ON
+					g.exe_path_hash = im.exe_path_hash
+					AND m.id = im.mod_id
+				WHERE g.provider_id = $1
+					AND g.game_id = $2
+					AND (
+						m.deprecated IS NULL
+						OR m.deprecated = 0
+						OR im.mod_id IS NOT NULL
+					)
+					AND (
+						json_extract(m.engine, '$') IS NULL
+						OR json_extract(m.engine, '$') = COALESCE(ig.engine_brand, rg.engine_brand)
+					)
+					AND (
+						json_extract(m.unity_backend, '$') IS NULL
+						OR ig.unity_backend IS NULL
+						OR json_extract(m.unity_backend, '$') = ig.unity_backend
+					)
+					AND (
+						json_extract(m.architecture, '$') IS NULL
+						OR ig.architecture IS NULL
+						OR json_extract(m.architecture, '$') = ig.architecture
+					)
+			)
+			SELECT
+				mod_id,
+				installed_version,
+				installed_hash,
+				CASE
+					WHEN game_major IS NULL THEN 1
+					WHEN min_major IS NOT NULL AND (
+						min_major > game_major
+						OR (
+							min_major = game_major
+							AND min_minor IS NOT NULL
+							AND game_minor IS NOT NULL
+							AND (
+								min_minor > game_minor
+								OR (
+									min_minor = game_minor
+									AND min_patch IS NOT NULL
+									AND game_patch IS NOT NULL
+									AND min_patch > game_patch
+								)
+							)
+						)
+					) THEN 0
+					WHEN max_major IS NOT NULL AND (
+						max_major < game_major
+						OR (
+							max_major = game_major
+							AND max_minor IS NOT NULL
+							AND game_minor IS NOT NULL
+							AND (
+								max_minor < game_minor
+								OR (
+									max_minor = game_minor
+									AND max_patch IS NOT NULL
+									AND game_patch IS NOT NULL
+									AND max_patch < game_patch
+								)
+							)
+						)
+					) THEN 0
+					ELSE 1
+				END AS compatible
+			FROM candidate_mods
+		",
+			)?
+			.query_map([provider_id.to_string(), game_id.to_string()], |row| {
+				let mod_id = row.get::<_, String>(0)?;
+				let installed_version = row.get::<_, Option<String>>(1)?;
+				let installed_hash = row.get::<_, Option<String>>(2)?;
+				let compatible = row.get::<_, bool>(3)?;
+
+				Ok(GameModInfo {
+					mod_id,
+					installed_version,
+					installed_hash,
+					compatible,
+				})
+			})?
+			.collect::<rusqlite::Result<Vec<GameModInfo>>>()?;
+
+		result.sort_by(|a, b| a.mod_id.cmp(&b.mod_id));
+
+		Ok(result)
+	}
+
 	fn remove_stale_mods(&self, max_time: u64) -> Result {
 		self.lock_db()?
 			.prepare_cached("DELETE FROM main.mods WHERE created_at < $1;")?
@@ -161,22 +409,22 @@ impl ModDatabase for DbMutex {
 	}
 }
 
-fn serialize_json_option<T: Serialize>(value: &Option<T>) -> Result<String> {
-	serde_json::to_string(value).map_err(Into::into)
+fn serialize_json_option<T: Serialize>(value: Option<&T>) -> Result<String> {
+	serde_json::to_string(&value).map_err(Into::into)
 }
 
 fn try_insert_mod(connection_mutex: &DbMutex, game_mod: &GameMod) -> Result {
-	let download = serialize_json_option(&game_mod.download)?;
-	let engine = serialize_json_option(&game_mod.engine)?;
-	let engine_version_range = serialize_json_option(&game_mod.engine_version_range)?;
-	let unity_backend = serialize_json_option(&game_mod.unity_backend)?;
-	let architecture = serialize_json_option(&game_mod.architecture)?;
-	let game_os = serialize_json_option(&game_mod.game_os)?;
-	let host_os = serialize_json_option(&game_mod.host_os)?;
-	let config = serialize_json_option(&game_mod.config)?;
-	let dependencies = serialize_json_option(&game_mod.dependencies)?;
-	let install = serialize_json_option(&game_mod.install)?;
-	let run_for_game = serialize_json_option(&game_mod.run_for_game)?;
+	let download = serialize_json_option(game_mod.download.as_ref())?;
+	let engine = serialize_json_option(game_mod.engine.as_ref())?;
+	let engine_version_range = serialize_json_option(game_mod.engine_version_range.as_ref())?;
+	let unity_backend = serialize_json_option(game_mod.unity_backend.as_ref())?;
+	let architecture = serialize_json_option(game_mod.architecture.as_ref())?;
+	let game_os = serialize_json_option(game_mod.game_os.as_ref())?;
+	let host_os = serialize_json_option(game_mod.host_os.as_ref())?;
+	let config = serialize_json_option(game_mod.config.as_ref())?;
+	let dependencies = serialize_json_option(game_mod.dependencies.as_ref())?;
+	let install = serialize_json_option(game_mod.install.as_ref())?;
+	let run_for_game = serialize_json_option(game_mod.run_for_game.as_ref())?;
 
 	connection_mutex
 		.lock_db()?
@@ -229,99 +477,4 @@ fn try_insert_mod(connection_mutex: &DbMutex, game_mod: &GameMod) -> Result {
 		])?;
 
 	Ok(())
-}
-
-pub fn try_create() -> Result<DbMutex> {
-	match create() {
-		Ok(db) => Ok(db),
-		Err(initial_error) => {
-			log::error!(
-				"Failed to set up mod database. Deleting it and retrying once. Error: {initial_error}"
-			);
-			cleanup_database_file();
-
-			match create() {
-				Ok(db) => Ok(db),
-				Err(retry_error) => {
-					log::error!(
-						"Failed to set up mod database after cleanup retry. Giving up. Error: {retry_error}"
-					);
-					Err(retry_error)
-				}
-			}
-		}
-	}
-}
-
-fn cleanup_database_file() {
-	let path = match db_file_path() {
-		Ok(path) => path,
-		Err(path_error) => {
-			log::warn!("Failed to resolve mod database path for cleanup: {path_error}");
-			return;
-		}
-	};
-
-	match fs::remove_file(&path) {
-		Ok(()) => {}
-		Err(remove_error) if remove_error.kind() == std::io::ErrorKind::NotFound => {}
-		Err(remove_error) => {
-			log::warn!(
-				"Failed to delete mod database after create failure ({}): {remove_error}",
-				path.display()
-			);
-		}
-	}
-}
-
-fn create() -> Result<DbMutex> {
-	let path = db_file_path()?;
-	if let Some(parent) = path.parent() {
-		std::fs::create_dir_all(parent)?;
-	}
-
-	let connection = rusqlite::Connection::open_with_flags(
-		path,
-		OpenFlags::SQLITE_OPEN_CREATE
-			| OpenFlags::SQLITE_OPEN_READ_WRITE
-			| OpenFlags::SQLITE_OPEN_SHARED_CACHE,
-	)?;
-
-	connection.execute_batch(
-		r"
-		PRAGMA journal_mode = WAL;
-		PRAGMA synchronous = OFF;
-
-		CREATE TABLE IF NOT EXISTS mods (
-			id TEXT NOT NULL,
-			title TEXT NOT NULL,
-			author TEXT NOT NULL,
-			source_code TEXT NOT NULL,
-			description TEXT NOT NULL,
-			download TEXT,
-			engine TEXT,
-			engine_version_range TEXT,
-			unity_backend TEXT,
-			architecture TEXT,
-			game_os TEXT,
-			host_os TEXT,
-			deprecated INTEGER,
-			config TEXT,
-			dependencies TEXT,
-			install TEXT,
-			run_for_game TEXT,
-			hash TEXT,
-			created_at INTEGER,
-			PRIMARY KEY (id)
-		);
-
-		CREATE INDEX IF NOT EXISTS idx_mods_created_at ON mods(created_at);
-	",
-	)?;
-
-	Ok(DbMutex::new(connection))
-}
-
-fn db_file_path() -> Result<PathBuf> {
-	app_paths::database_path("mods")
 }

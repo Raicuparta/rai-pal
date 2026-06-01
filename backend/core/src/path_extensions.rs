@@ -46,6 +46,9 @@ impl PathExt for Path {
 					.filter_map(|glob_result| match glob_result {
 						Ok(glob_entry) => Some(glob_entry.into_path()),
 						Err(err) => {
+							// Ignore not found error since that's the point.
+							err.path()?;
+
 							log::error!(
 								"Failed to resolve one of the globbed paths from glob '{}'. Error: {}",
 								self.display(),

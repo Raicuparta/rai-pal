@@ -7,7 +7,7 @@ use rai_pal_core::{
 			self,
 			DbMutex,
 		},
-		mod_database,
+		mod_database::ModDatabase,
 	},
 };
 use tauri::{
@@ -21,8 +21,7 @@ use crate::result::{
 };
 
 pub struct AppState {
-	pub mods: DbMutex,
-	pub games: DbMutex,
+	pub database: DbMutex,
 	pub download_status_channel: RwLock<Option<Channel<DownloadStatus>>>,
 }
 
@@ -66,9 +65,11 @@ impl StatefulHandle for tauri::AppHandle {
 
 impl AppState {
 	pub fn new() -> Result<Self> {
+		let games = game_database::try_create()?;
+		games.setup_mod_tables()?;
+
 		Ok(Self {
-			mods: mod_database::try_create()?,
-			games: game_database::try_create()?,
+			database: games,
 			download_status_channel: RwLock::new(None),
 		})
 	}
