@@ -1,5 +1,5 @@
-import { UnifiedMod } from "@hooks/use-unified-mods";
+import { GameMod } from "@api/bindings";
 
-export function getModTitle(mod: UnifiedMod) {
+export function getModTitle(mod: GameMod) {
 	return mod.title ?? mod.id;
 }

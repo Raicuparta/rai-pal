@@ -1,7 +1,12 @@
 import { Box, DefaultMantineColor, Flex, Stack, Table } from "@mantine/core";
 import { TableColumnBase, columnMapToList } from "@components/table/table-head";
 import styles from "./games.module.css";
-import { EngineBrand, DbGame, GamesSortBy, ProviderId } from "@api/bindings";
+import {
+	EngineBrand,
+	DbGame,
+	GamesSortBy,
+	GameProviderId,
+} from "@api/bindings";
 import { IconCloud, IconDeviceDesktop } from "@tabler/icons-react";
 import { ProviderIcon } from "@components/providers/provider-icon";
 import { gameRowHeight } from "./game-row";
@@ -40,7 +45,7 @@ const thumbnail: GamesColumn = {
 	},
 };
 
-const providerColors: Record<ProviderId, DefaultMantineColor> = {
+const providerColors: Record<GameProviderId, DefaultMantineColor> = {
 	Manual: "gray",
 	Steam: "blue",
 	Epic: "red",
