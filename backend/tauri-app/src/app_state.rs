@@ -4,12 +4,12 @@ use std::{
 };
 
 use rai_pal_core::{
-	mods::game_mod::GameMod,
 	http::DownloadStatus,
-	local_database::{
+	local_database::local_database::{
 		self,
 		DbMutex,
 	},
+	mods::game_mod::GameMod,
 };
 use tauri::{
 	Manager,

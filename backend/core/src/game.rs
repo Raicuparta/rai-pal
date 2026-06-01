@@ -15,10 +15,6 @@ use rai_pal_proc_macros::serializable_struct;
 use crate::{
 	app_paths,
 	architecture::Architecture,
-	data_types::{
-		json_data::JsonData,
-		path_data::PathData,
-	},
 	game_engines::{
 		game_engine::{
 			EngineBrand,
@@ -73,7 +69,7 @@ pub struct DbGame {
 	pub title_discriminator: Option<String>,
 	pub thumbnail_url: Option<String>,
 	pub release_date_rfc3339: Option<String>,
-	pub exe_path: Option<PathData>,
+	pub exe_path: Option<PathBuf>,
 	pub engine_brand: Option<EngineBrand>,
 	pub engine_version_major: Option<u32>,
 	pub engine_version_minor: Option<u32>,
@@ -294,8 +290,7 @@ impl DbGame {
 		Ok(&self
 			.exe_path
 			.as_ref()
-			.ok_or_else(|| Error::GameNotInstalled(self.display_title.clone()))?
-			.0)
+			.ok_or_else(|| Error::GameNotInstalled(self.display_title.clone()))?)
 	}
 
 	pub fn try_get_exe_name(&self) -> Result<String> {
@@ -349,7 +344,7 @@ impl DbGame {
 				return self;
 			}
 
-			self.exe_path = Some(PathData(exe_path.normalize()));
+			self.exe_path = Some(exe_path.normalize());
 			if let Some(exe_engine_brand) = get_exe_engine(exe_path) {
 				self.engine_brand = Some(exe_engine_brand);
 				match exe_engine_brand {
@@ -368,7 +363,7 @@ impl DbGame {
 	}
 
 	pub fn refresh_executable(&mut self) -> Result<&mut Self> {
-		if let Some(PathData(exe_path)) = self.exe_path.clone() {
+		if let Some(exe_path) = self.exe_path.clone() {
 			self.set_executable(&exe_path);
 		} else {
 			return Err(Error::GameNotInstalled(self.display_title.clone()));
@@ -378,7 +373,7 @@ impl DbGame {
 
 	pub async fn get_remote_configs(&self) -> Result<Option<RemoteConfigs>> {
 		if let Some(exe_path) = self.exe_path.as_ref() {
-			remote_config::get_remote_configs(&exe_path.0).await
+			remote_config::get_remote_configs(&exe_path).await
 		} else {
 			Err(Error::GameNotInstalled(self.display_title.clone()))
 		}

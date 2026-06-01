@@ -21,7 +21,6 @@ use crate::{
 		Architecture,
 		get_architecture,
 	},
-	data_types::path_data::PathData,
 	game::DbGame,
 	game_engines::game_engine::EngineVersion,
 	path_extensions::PathExt,
@@ -177,7 +176,7 @@ fn get_alt_architecture(game_path: &Path) -> Option<Architecture> {
 }
 
 pub fn process_game(game: &mut DbGame) {
-	if let Some(PathData(exe_path)) = game.exe_path.as_ref() {
+	if let Some(exe_path) = game.exe_path.as_ref() {
 		game.unity_backend = get_unity_backend(exe_path);
 		if let Some(version) = get_version(exe_path) {
 			game.engine_version_major = Some(version.numbers.major);

@@ -13,17 +13,17 @@ use serde::{
 use super::provider_command::ProviderCommandAction;
 use crate::{
 	game::DbGame,
-	local_database::{
-		DbMutex,
-		GameDatabase,
-	},
 	game_providers::{
-		heroic_provider,
 		game_provider::{
-			ProviderActions,
 			GameProviderId,
+			ProviderActions,
 			WineProviderActions,
 		},
+		heroic_provider,
+	},
+	local_database::local_database::{
+		DbMutex,
+		GameDatabase,
 	},
 	result::Result,
 };

@@ -80,7 +80,7 @@ export type DbGame = {
 	titleDiscriminator: string | null,
 	thumbnailUrl: string | null,
 	releaseDateRfc3339: string | null,
-	exePath: PathData | null,
+	exePath: string | null,
 	engineBrand: EngineBrand | null,
 	engineVersionMajor: number | null,
 	engineVersionMinor: number | null,
@@ -223,8 +223,6 @@ export type ModRunForGame = {
 };
 
 export type OperatingSystem = "Windows" | "Linux";
-
-export type PathData = string;
 
 export type ProviderCommand = ({ String: string }) & { Path?: never } | ({ Path: [string, string[]] }) & { String?: never };
 

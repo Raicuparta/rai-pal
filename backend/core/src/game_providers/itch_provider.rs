@@ -21,14 +21,14 @@ use super::provider_command::{
 use crate::{
 	app_paths,
 	game::DbGame,
-	local_database::{
+	game_providers::game_provider::{
+		GameProviderId,
+		ProviderActions,
+		WineProviderActions,
+	},
+	local_database::local_database::{
 		DbMutex,
 		GameDatabase,
-	},
-	game_providers::game_provider::{
-		ProviderActions,
-		GameProviderId,
-		WineProviderActions,
 	},
 	result::{
 		LogErrExt,

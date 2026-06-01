@@ -10,18 +10,18 @@ use log::error;
 use rai_pal_proc_macros::serializable_struct;
 
 use super::game_provider::{
-	ProviderActions,
 	GameProviderId,
+	ProviderActions,
 };
 use crate::{
 	app_paths,
 	game::DbGame,
-	local_database::{
+	game_providers::game_provider::WineProviderActions,
+	local_database::local_database::{
 		DbMutex,
 		GameDatabase,
 	},
 	path_extensions::PathExt,
-	game_providers::game_provider::WineProviderActions,
 	result::{
 		Error,
 		Result,
@@ -113,8 +113,7 @@ pub fn remove_game(game: &DbGame) -> Result {
 	let path = &game
 		.exe_path
 		.as_ref()
-		.ok_or_else(|| Error::GameNotInstalled(game.display_title.clone()))?
-		.0;
+		.ok_or_else(|| Error::GameNotInstalled(game.display_title.clone()))?;
 
 	remove_path(path)?;
 

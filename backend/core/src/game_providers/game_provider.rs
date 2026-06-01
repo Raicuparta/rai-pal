@@ -28,7 +28,7 @@ use crate::{
 		manual_provider::Manual,
 		steam::steam_provider::Steam,
 	},
-	local_database::DbMutex,
+	local_database::local_database::DbMutex,
 	result::{
 		Error,
 		Result,

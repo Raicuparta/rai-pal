@@ -28,7 +28,6 @@ use crate::{
 		Architecture,
 		get_architecture,
 	},
-	data_types::path_data::PathData,
 	game::DbGame,
 	game_engines::game_engine::EngineVersion,
 	path_extensions::PathExt,
@@ -285,7 +284,7 @@ pub fn is_unreal_exe(game_path: &Path) -> bool {
 }
 
 pub fn process_game(game: &mut DbGame) {
-	if let Some(PathData(game_path)) = game.exe_path.as_ref() {
+	if let Some(game_path) = game.exe_path.as_ref() {
 		let game_dir = game_path.parent().unwrap_or(game_path);
 
 		// 1. Try Build.version file (most reliable)
@@ -308,7 +307,7 @@ pub fn process_game(game: &mut DbGame) {
 				game.engine_version_patch = version.numbers.patch;
 				game.engine_version_display = Some(version.display);
 				game.architecture = get_architecture(exe_path).unwrap_or(None);
-				game.exe_path = Some(PathData(exe_path.clone()));
+				game.exe_path = Some(exe_path.clone());
 				return;
 			}
 		}
@@ -322,7 +321,7 @@ pub fn process_game(game: &mut DbGame) {
 			game.engine_version_patch = version.numbers.patch;
 			game.engine_version_display = Some(version.display);
 			game.architecture = get_architecture(&shipping_exe_path).unwrap_or(None);
-			game.exe_path = Some(PathData(shipping_exe_path));
+			game.exe_path = Some(shipping_exe_path);
 			return;
 		}
 
@@ -334,7 +333,7 @@ pub fn process_game(game: &mut DbGame) {
 				game.engine_version_patch = version.numbers.patch;
 				game.engine_version_display = Some(version.display);
 				game.architecture = get_architecture(&exe_path).unwrap_or(None);
-				game.exe_path = Some(PathData(exe_path));
+				game.exe_path = Some(exe_path);
 				return;
 			}
 		}

@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use rusqlite::{
 	Row,
 	RowIndex,
@@ -47,10 +49,16 @@ impl<T: DeserializeOwned> FromSql for FromJson<T> {
 
 pub trait RowExt {
 	fn get_json<I: RowIndex, T: DeserializeOwned>(&self, index: I) -> rusqlite::Result<T>;
+	fn get_path<I: RowIndex>(&self, index: I) -> rusqlite::Result<Option<PathBuf>>;
 }
 
 impl RowExt for Row<'_> {
 	fn get_json<I: RowIndex, T: DeserializeOwned>(&self, index: I) -> rusqlite::Result<T> {
 		self.get::<I, FromJson<T>>(index).map(|wrapper| wrapper.0)
+	}
+
+	fn get_path<I: RowIndex>(&self, index: I) -> rusqlite::Result<Option<PathBuf>> {
+		let s: Option<String> = self.get(index)?;
+		Ok(s.map(PathBuf::from))
 	}
 }

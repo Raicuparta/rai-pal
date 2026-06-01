@@ -3,7 +3,6 @@
 pub mod analytics;
 pub mod app_paths;
 pub mod architecture;
-pub mod data_types;
 pub mod debug;
 pub mod files;
 pub mod game;

@@ -21,10 +21,6 @@ use rusqlite::OpenFlags;
 
 use crate::{
 	app_paths,
-	data_types::json_data::{
-		JsonData,
-		RowExt,
-	},
 	debug::LoggableInstant,
 	game::DbGame,
 	game_providers::game_provider::GameProviderId,
@@ -33,6 +29,10 @@ use crate::{
 		GamesQuery,
 		GamesSortBy,
 		InstallState,
+	},
+	local_database::rusqlite_extensions::{
+		JsonData,
+		RowExt,
 	},
 	path_extensions::AsValidStr,
 	remote_game,
@@ -121,7 +121,7 @@ impl GameDatabase for DbMutex {
 					release_date_rfc3339: row.get(6)?,
 					tags: row.get_json(7)?,
 					provider_commands: row.get_json(8)?,
-					exe_path: row.get(9)?,
+					exe_path: row.get_path(9)?,
 					unity_backend: row.get(10)?,
 					architecture: row.get(11)?,
 					engine_brand: row.get(12)?,
@@ -405,7 +405,7 @@ fn try_insert_game(connection_mutex: &DbMutex, game: &DbGame) -> Result {
 			.execute(rusqlite::params![
 				game.provider_id,
 				game.game_id.clone(),
-				exe_path,
+				exe_path.try_to_str()?,
 				game.engine_brand,
 				game.engine_version_major,
 				game.engine_version_minor,
