@@ -26,7 +26,7 @@ use crate::{
 		ProviderActions,
 		WineProviderActions,
 	},
-	local_database::local_database::{
+	local_database::game_database::{
 		DbMutex,
 		GameDatabase,
 	},

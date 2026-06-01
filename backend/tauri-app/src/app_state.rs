@@ -5,7 +5,7 @@ use std::{
 
 use rai_pal_core::{
 	http::DownloadStatus,
-	local_database::local_database::{
+	local_database::game_database::{
 		self,
 		DbMutex,
 	},
@@ -69,7 +69,7 @@ impl AppState {
 	pub fn new() -> Result<Self> {
 		Ok(Self {
 			mods: RwLock::new(Some(HashMap::new())),
-			database: local_database::try_create()?,
+			database: game_database::try_create()?,
 			download_status_channel: RwLock::new(None),
 		})
 	}

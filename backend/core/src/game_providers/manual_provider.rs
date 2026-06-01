@@ -17,7 +17,7 @@ use crate::{
 	app_paths,
 	game::DbGame,
 	game_providers::game_provider::WineProviderActions,
-	local_database::local_database::{
+	local_database::game_database::{
 		DbMutex,
 		GameDatabase,
 	},

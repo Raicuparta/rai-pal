@@ -27,7 +27,7 @@ use crate::{
 		},
 		heroic_provider,
 	},
-	local_database::local_database::{
+	local_database::game_database::{
 		DbMutex,
 		GameDatabase,
 	},

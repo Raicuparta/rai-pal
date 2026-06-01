@@ -33,7 +33,7 @@ use crate::{
 		steam::appinfo::SteamAppInfoReader,
 	},
 	game_tag::GameTag,
-	local_database::local_database::{
+	local_database::game_database::{
 		DbMutex,
 		GameDatabase,
 	},

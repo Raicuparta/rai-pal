@@ -42,7 +42,7 @@ use rai_pal_core::{
 	},
 	games_query::GamesQuery,
 	http::DownloadStatus,
-	local_database::local_database::{
+	local_database::game_database::{
 		GameDatabase,
 		GameIdsResponse,
 		attach_remote_database,
