@@ -1,26 +1,29 @@
-use std::collections::HashMap;
-
 use crate::{
+	local_database::{
+		game_database::DbMutex,
+		mod_database::ModDatabase,
+	},
 	mod_providers::{
 		folder_mod_provider::FolderModProvider,
 		url_mod_provider::UrlModProvider,
 	},
-	mods::game_mod::GameMod,
 	result::Result,
 };
 
 pub trait ModProvider {
 	fn default() -> Self;
-	async fn get_mods<TCallback>(&self, callback: &TCallback) -> Result
-	where
-		TCallback: Fn(HashMap<String, GameMod>) + Send + Sync;
+	async fn insert_mods(&self, db: &DbMutex) -> Result;
 }
 
-pub async fn get_all_mods<TCallback>(callback: TCallback) -> Result
-where
-	TCallback: Fn(HashMap<String, GameMod>) + Send + Sync,
-{
-	FolderModProvider::default().get_mods(&callback).await?;
-	UrlModProvider::default().get_mods(&callback).await?;
+pub async fn get_all_mods(db: &DbMutex) -> Result {
+	let start_time = std::time::SystemTime::now()
+		.duration_since(std::time::UNIX_EPOCH)?
+		.as_secs();
+
+	FolderModProvider::default().insert_mods(db).await?;
+	UrlModProvider::default().insert_mods(db).await?;
+
+	db.remove_stale_mods(start_time)?;
+
 	Ok(())
 }

@@ -47,6 +47,7 @@ use rai_pal_core::{
 		GameIdsResponse,
 		attach_remote_database,
 	},
+	local_database::mod_database::ModDatabase,
 	maps::TryGettable,
 	mod_providers::mod_provider,
 	mods::game_mod::GameMod,
@@ -177,10 +178,7 @@ async fn install_mod(
 ) -> Result {
 	let state = handle.app_state();
 	let game = state.games.get_game(&provider_id, &game_id)?;
-
-	let mods = state.mods.read_state()?;
-	let game_mod = mods.try_get(mod_id)?.clone();
-	drop(mods);
+	let game_mod = state.mods.get_mod(mod_id)?;
 
 	let download_status_channel = state.download_status_channel.read_state()?.clone();
 
@@ -213,7 +211,7 @@ async fn run_mod(
 ) -> Result {
 	let state = handle.app_state();
 	let game = state.games.get_game(&provider_id, &game_id)?;
-	state.mods.read_state()?.try_get(mod_id)?.run(&game)?;
+	state.mods.get_mod(mod_id)?.run(&game)?;
 
 	Ok(())
 }
@@ -303,7 +301,7 @@ async fn uninstall_all_mods(
 async fn install_mod_dependencies(handle: &AppHandle, game_mod: &GameMod, game: &DbGame) -> Result {
 	let state = handle.app_state();
 
-	let relevant_mods = game.get_relevant_mods(&state.mods.read_state()?)?;
+	let relevant_mods = game.get_relevant_mods(&state.mods.get_mod_map()?)?;
 	let download_status_channel = state.download_status_channel.read_state()?.clone();
 
 	if let Some(dependencies) = game_mod.dependencies.as_ref() {
@@ -311,11 +309,7 @@ async fn install_mod_dependencies(handle: &AppHandle, game_mod: &GameMod, game: 
 			if let Some(relevant_dependency_mod_info) = relevant_mods.iter().find(|relevant_mod| {
 				relevant_mod.compatible && relevant_mod.mod_id == dependency.mod_id
 			}) {
-				let dep_mods = state.mods.read_state()?;
-				let dependency_mod = dep_mods
-					.try_get(&relevant_dependency_mod_info.mod_id)?
-					.clone();
-				drop(dep_mods);
+				let dependency_mod = state.mods.get_mod(&relevant_dependency_mod_info.mod_id)?;
 
 				Box::pin(install_mod_dependencies(handle, &dependency_mod, game)).await?;
 
@@ -338,11 +332,9 @@ async fn install_mod_dependencies(handle: &AppHandle, game_mod: &GameMod, game: 
 #[tauri::command]
 #[specta::specta]
 async fn refresh_mods(handle: AppHandle) -> Result {
-	mod_provider::get_all_mods(|new_mods| {
-		handle.emit_safe(events::SyncMods(new_mods.clone()));
-		handle.app_state().mods.write_state_value(new_mods).unwrap();
-	})
-	.await?;
+	mod_provider::get_all_mods(&handle.app_state().mods).await?;
+	let mods = handle.app_state().mods.get_mod_map()?;
+	handle.emit_safe(events::SyncMods(mods));
 
 	Ok(())
 }
@@ -492,7 +484,7 @@ async fn get_game_mods(
 	Ok(state
 		.games
 		.get_game(&provider_id, &game_id)?
-		.get_relevant_mods(&state.mods.read_state()?)?)
+		.get_relevant_mods(&state.mods.get_mod_map()?)?)
 }
 
 #[tauri::command]
@@ -522,9 +514,7 @@ async fn download_remote_config(
 ) -> Result {
 	let state = app_handle.app_state();
 	let game = state.games.get_game(&provider_id, game_id)?;
-	let mods = state.mods.read_state()?;
-	let game_mod = mods.try_get(mod_id)?.clone();
-	drop(mods);
+	let game_mod = state.mods.get_mod(mod_id)?;
 
 	if let Some(mod_config) = game_mod.config.as_ref() {
 		mod_config

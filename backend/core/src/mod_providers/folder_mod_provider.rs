@@ -1,8 +1,6 @@
-use std::collections::HashMap;
-
 use super::mod_provider::ModProvider;
 use crate::{
-	mods::game_mod::GameMod,
+	local_database::game_database::DbMutex,
 	result::Result,
 };
 
@@ -13,10 +11,7 @@ impl ModProvider for FolderModProvider {
 		Self {}
 	}
 
-	async fn get_mods<TCallback>(&self, callback: &TCallback) -> Result
-	where
-		TCallback: Fn(HashMap<String, GameMod>) + Send + Sync,
-	{
+	async fn insert_mods(&self, _db: &DbMutex) -> Result {
 		// TODO
 		Ok(())
 	}

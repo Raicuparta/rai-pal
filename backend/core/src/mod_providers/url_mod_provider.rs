@@ -1,5 +1,4 @@
 use std::{
-	collections::HashMap,
 	fs,
 	path::PathBuf,
 };
@@ -9,8 +8,12 @@ use rai_pal_proc_macros::serializable_struct;
 use super::mod_provider::ModProvider;
 use crate::{
 	app_paths,
-	mods::game_mod::GameMod,
 	http,
+	local_database::{
+		game_database::DbMutex,
+		mod_database::ModDatabase,
+	},
+	mods::game_mod::GameMod,
 	result::Result,
 };
 
@@ -33,26 +36,25 @@ impl ModProvider for UrlModProvider {
 		}
 	}
 
-	async fn get_mods<TCallback>(&self, callback: &TCallback) -> Result
-	where
-		TCallback: Fn(HashMap<String, GameMod>) + Send + Sync,
-	{
-		if let Some(cached_database) = ModDatabase::get_from_cache()? {
-			callback(cached_database.get_mod_map());
+	async fn insert_mods(&self, db: &DbMutex) -> Result {
+		if let Some(cached_database) = UrlModDatabase::get_from_cache()? {
+			cached_database.insert_mods(db);
 		}
 
-		callback(ModDatabase::get_from_url(&self.url).await?.get_mod_map());
+		UrlModDatabase::get_from_url(&self.url)
+			.await?
+			.insert_mods(db);
 
 		Ok(())
 	}
 }
 
 #[serializable_struct]
-pub struct ModDatabase {
+pub struct UrlModDatabase {
 	pub mods: Vec<GameMod>,
 }
 
-impl ModDatabase {
+impl UrlModDatabase {
 	pub fn get_cache_path() -> Result<PathBuf> {
 		Ok(app_paths::temp_dir("mod_database")?.join("mod_database.json"))
 	}
@@ -79,10 +81,9 @@ impl ModDatabase {
 		Ok(result)
 	}
 
-	pub fn get_mod_map(&self) -> HashMap<String, GameMod> {
-		self.mods
-			.iter()
-			.map(|game_mod| (game_mod.id.clone(), game_mod.clone()))
-			.collect()
+	pub fn insert_mods(&self, db: &DbMutex) {
+		for game_mod in &self.mods {
+			db.insert_mod(game_mod);
+		}
 	}
 }

@@ -1,15 +1,14 @@
-use std::{
-	collections::HashMap,
-	sync::RwLock,
-};
+use std::sync::RwLock;
 
 use rai_pal_core::{
 	http::DownloadStatus,
-	local_database::game_database::{
-		self,
-		DbMutex,
+	local_database::{
+		game_database::{
+			self,
+			DbMutex,
+		},
+		mod_database,
 	},
-	mods::game_mod::GameMod,
 };
 use tauri::{
 	Manager,
@@ -22,7 +21,7 @@ use crate::result::{
 };
 
 pub struct AppState {
-	pub mods: RwLock<Option<HashMap<String, GameMod>>>,
+	pub mods: DbMutex,
 	pub games: DbMutex,
 	pub download_status_channel: RwLock<Option<Channel<DownloadStatus>>>,
 }
@@ -68,7 +67,7 @@ impl StatefulHandle for tauri::AppHandle {
 impl AppState {
 	pub fn new() -> Result<Self> {
 		Ok(Self {
-			mods: RwLock::new(Some(HashMap::new())),
+			mods: mod_database::try_create()?,
 			games: game_database::try_create()?,
 			download_status_channel: RwLock::new(None),
 		})
