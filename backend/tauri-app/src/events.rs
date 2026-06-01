@@ -1,15 +1,11 @@
-use std::{
-	collections::HashMap,
-	fmt::Display,
-};
+use std::collections::HashMap;
 
 use rai_pal_core::{
-	mods::game_mod::GameMod,
 	game_providers::game_provider::GameProviderId,
+	mods::game_mod::GameMod,
 };
 use rai_pal_proc_macros::serializable_event;
 use serde::Serialize;
-use tauri_specta::Event;
 
 #[serializable_event]
 pub struct RefreshGame(pub GameProviderId, pub String);
@@ -26,12 +22,8 @@ pub struct ExecutedProviderCommand;
 #[serializable_event]
 pub struct SelectGame(pub GameProviderId, pub String);
 
-#[serializable_event]
-pub struct ErrorRaised(pub String);
-
 pub trait EventEmitter {
 	fn emit_safe<TEvent: tauri_specta::Event + Serialize + Clone>(&self, event: TEvent);
-	fn emit_error<TError: Serialize + Clone + Display>(&self, error: TError);
 }
 
 impl EventEmitter for tauri::AppHandle {
@@ -39,14 +31,6 @@ impl EventEmitter for tauri::AppHandle {
 		event
 			.emit(self)
 			.unwrap_or_else(|err| log::error!("Failed to emit event: {err}"));
-	}
-
-	fn emit_error<TError: Serialize + Clone + Display>(&self, error: TError) {
-		log::error!("Error: {error}");
-
-		ErrorRaised(error.to_string())
-			.emit(self)
-			.unwrap_or_else(|err| log::error!("Failed to emit error event: {err}"));
 	}
 }
 
@@ -57,6 +41,5 @@ pub fn collect_events() -> tauri_specta::Events {
 		SyncMods,
 		ExecutedProviderCommand,
 		SelectGame,
-		ErrorRaised,
 	]
 }

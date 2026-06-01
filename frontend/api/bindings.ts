@@ -49,7 +49,6 @@ export const commands = {
 
 /** Events */
 export const events = {
-	errorRaised: makeEvent<ErrorRaised>("error-raised"),
 	executedProviderCommand: makeEvent<ExecutedProviderCommand>("executed-provider-command"),
 	gamesChanged: makeEvent<GamesChanged>("games-changed"),
 	refreshGame: makeEvent<RefreshGame>("refresh-game"),
@@ -120,8 +119,6 @@ export type EngineVersionRange = {
 };
 
 export type Error = "Tauri" | "Core" | "Io" | "Rusql" | "SerdeJson" | "SystemTimeError" | ({ FailedToAccessStateData: string }) & { LinuxOnly?: never } | ({ LinuxOnly: null }) & { FailedToAccessStateData?: never };
-
-export type ErrorRaised = string;
 
 export type ExecutedProviderCommand = null;
 
