@@ -1,17 +1,13 @@
-import { Button, Card, Group, Stack } from "@mantine/core";
+import { Card, Group, Stack } from "@mantine/core";
 import { useMemo, useState } from "react";
 import { RefreshButton } from "@components/refresh-button";
-import { commands } from "@api/bindings";
-import { IconFolderCog } from "@tabler/icons-react";
 import { ModModal } from "./mod-modal";
-import { useLocalization } from "@hooks/use-localization";
 import { ModsTable } from "./mods-table";
 import { TableContainer } from "@components/table/table-container";
 import { useAtomValue } from "jotai";
 import { modsAtom } from "@hooks/use-data";
 
 export function ModsPage() {
-	const t = useLocalization("modsPage");
 	const [selectedModId, setSelectedId] = useState<string>();
 
 	const mods = useAtomValue(modsAtom);
@@ -33,12 +29,6 @@ export function ModsPage() {
 			{!selectedMod && (
 				<>
 					<Group justify="end">
-						<Button
-							onClick={commands.openModsFolder}
-							leftSection={<IconFolderCog />}
-						>
-							{t("openModsFolderButton")}
-						</Button>
 						<RefreshButton />
 					</Group>
 					<Card
