@@ -18,13 +18,13 @@ use crate::{
 	},
 };
 
-pub struct InstalledMod<'a> {
+pub struct InstalledMod {
 	pub game_mod: GameMod,
-	pub game: &'a DbGame,
+	pub game: DbGame,
 }
 
-impl<'a> InstalledMod<'a> {
-	pub const fn new(game_mod: GameMod, game: &'a DbGame) -> Self {
+impl InstalledMod {
+	pub const fn new(game_mod: GameMod, game: DbGame) -> Self {
 		Self { game_mod, game }
 	}
 
@@ -40,7 +40,7 @@ impl<'a> InstalledMod<'a> {
 						"main_installed_folder_path".to_string(),
 					)
 				})?,
-			self.game,
+			&self.game,
 			&self.game_mod,
 		))
 		.open_folder_or_parent()?;
@@ -57,7 +57,7 @@ impl<'a> InstalledMod<'a> {
 			for extract_action in extract_actions {
 				let destination_path = PathBuf::from(replace_tokens(
 					&extract_action.destination,
-					self.game,
+					&self.game,
 					&self.game_mod,
 				));
 
@@ -73,7 +73,7 @@ impl<'a> InstalledMod<'a> {
 			for write_action in write_actions {
 				let destination_path = PathBuf::from(replace_tokens(
 					&write_action.destination,
-					self.game,
+					&self.game,
 					&self.game_mod,
 				));
 
@@ -96,7 +96,7 @@ impl<'a> InstalledMod<'a> {
 	fn get_config_path(&self, config: &ModConfig) -> PathBuf {
 		PathBuf::from(&replace_tokens(
 			&config.destination_path,
-			self.game,
+			&self.game,
 			&self.game_mod,
 		))
 	}

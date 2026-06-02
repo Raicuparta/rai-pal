@@ -22,9 +22,15 @@ use crate::{
 		},
 		rusqlite_extensions::RowExt,
 	},
-	mods::game_mod::GameMod,
+	mods::{
+		game_mod::GameMod,
+		installed_mod::InstalledMod,
+	},
 	path_extensions::PathExt,
-	result::Result,
+	result::{
+		Error,
+		Result,
+	},
 };
 
 #[serializable_struct]
@@ -39,6 +45,18 @@ pub trait ModDatabase {
 	fn setup_mod_tables(&self) -> Result;
 	fn insert_mod(&self, game_mod: &GameMod);
 	fn get_mod(&self, mod_id: &str) -> Result<GameMod>;
+	fn get_installed_mod(
+		&self,
+		provider_id: &GameProviderId,
+		game_id: &str,
+		mod_id: &str,
+	) -> Result<Option<InstalledMod>>;
+	fn try_get_installed_mod(
+		&self,
+		provider_id: &GameProviderId,
+		game_id: &str,
+		mod_id: &str,
+	) -> Result<InstalledMod>;
 	fn get_mod_map(&self) -> Result<BTreeMap<String, GameMod>>;
 	fn refresh_installed_mods(&self) -> Result;
 	fn get_game_mods(
@@ -158,6 +176,49 @@ impl ModDatabase for DbMutex {
 					hash: row.get(17)?,
 				})
 			})?)
+	}
+
+	fn get_installed_mod(
+		&self,
+		provider_id: &GameProviderId,
+		game_id: &str,
+		mod_id: &str,
+	) -> Result<Option<InstalledMod>> {
+		let game = self.get_game(provider_id, game_id)?;
+
+		let Some(exe_path_hash) = game.try_get_exe_path().ok().map(PathExt::hash_string) else {
+			return Ok(None);
+		};
+
+		let is_installed = self
+			.lock_db()?
+			.prepare_cached(
+				"SELECT EXISTS(
+					SELECT 1
+					FROM main.installed_mods
+					WHERE exe_path_hash = $1 AND mod_id = $2
+				)",
+			)?
+			.query_row(rusqlite::params![exe_path_hash, mod_id], |row| {
+				row.get::<_, bool>(0)
+			})?;
+
+		if !is_installed {
+			return Ok(None);
+		}
+
+		let game_mod = self.get_mod(mod_id)?;
+		Ok(Some(InstalledMod::new(game_mod, game)))
+	}
+
+	fn try_get_installed_mod(
+		&self,
+		provider_id: &GameProviderId,
+		game_id: &str,
+		mod_id: &str,
+	) -> Result<InstalledMod> {
+		self.get_installed_mod(provider_id, game_id, mod_id)?
+			.ok_or(Error::ModNotInstalled(mod_id.to_string()))
 	}
 
 	fn get_mod_map(&self) -> Result<BTreeMap<String, GameMod>> {

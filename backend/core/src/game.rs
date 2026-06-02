@@ -30,10 +30,6 @@ use crate::{
 	},
 	game_tag::GameTag,
 	game_title::is_probably_demo,
-	mods::{
-		game_mod::GameMod,
-		installed_mod::InstalledMod,
-	},
 	path_extensions::PathExt,
 	remote_config::{
 		self,
@@ -233,21 +229,5 @@ impl DbGame {
 		} else {
 			Err(Error::GameNotInstalled(self.display_title.clone()))
 		}
-	}
-
-	pub fn get_installed_mod(&self, mod_id: &str) -> Result<Option<InstalledMod<'_>>> {
-		Ok(
-			GameMod::from_file(&self.get_installed_mod_manifest_path(mod_id)?).map(|game_mod| {
-				InstalledMod {
-					game_mod,
-					game: self,
-				}
-			}),
-		)
-	}
-
-	pub fn try_get_installed_mod(&self, mod_id: &str) -> Result<InstalledMod<'_>> {
-		self.get_installed_mod(mod_id)?
-			.ok_or(Error::ModNotInstalled(mod_id.to_string()))
 	}
 }

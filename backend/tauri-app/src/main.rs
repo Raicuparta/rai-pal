@@ -192,7 +192,10 @@ async fn install_mod(
 
 	install_mod_dependencies(&handle, &game_mod, &game).await?;
 
-	if let Some(installed_mod) = game.get_installed_mod(mod_id)? {
+	if let Some(installed_mod) = state
+		.database
+		.get_installed_mod(&provider_id, &game_id, mod_id)?
+	{
 		installed_mod.uninstall()?;
 	}
 
@@ -238,8 +241,7 @@ async fn configure_mod(
 	handle
 		.app_state()
 		.database
-		.get_game(&provider_id, &game_id)?
-		.try_get_installed_mod(mod_id)?
+		.try_get_installed_mod(&provider_id, &game_id, mod_id)?
 		.configure(open_folder)?;
 
 	Ok(())
@@ -254,8 +256,10 @@ async fn open_installed_mod_folder(
 	handle: AppHandle,
 ) -> Result {
 	let state = handle.app_state();
-	let game = state.database.get_game(&provider_id, &game_id)?;
-	game.try_get_installed_mod(mod_id)?.open_folder()?;
+	state
+		.database
+		.try_get_installed_mod(&provider_id, &game_id, mod_id)?
+		.open_folder()?;
 
 	Ok(())
 }
@@ -283,8 +287,10 @@ async fn uninstall_mod(
 	handle: AppHandle,
 ) -> Result {
 	let state = handle.app_state();
-	let game = state.database.get_game(&provider_id, &game_id)?;
-	game.try_get_installed_mod(mod_id)?.uninstall()?;
+	state
+		.database
+		.try_get_installed_mod(&provider_id, &game_id, mod_id)?
+		.uninstall()?;
 	state.database.refresh_installed_mods()?;
 
 	handle.emit_safe(events::RefreshGame(provider_id, game_id));
