@@ -64,7 +64,16 @@ export function ModsTable(props: Props) {
 							)}
 						</Table.Td>
 						<Table.Td>
-							<ModVersionBadge remote={mod} />
+							<ModVersionBadge
+								latest={
+									mod.download && mod.hash
+										? {
+												version: mod.download?.id,
+												hash: mod.hash,
+											}
+										: undefined
+								}
+							/>
 						</Table.Td>
 						<Table.Td>{mod.engine}</Table.Td>
 						<Table.Td>{mod.unityBackend}</Table.Td>

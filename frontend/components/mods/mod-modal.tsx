@@ -12,7 +12,10 @@ type Props = {
 };
 
 export function ModModal(props: Props) {
-	const wrappedMod = useMemo(() => [props.mod], [props.mod]);
+	const wrappedMod = useMemo(
+		() => ({ [props.mod.id]: props.mod }),
+		[props.mod],
+	);
 
 	return (
 		<SubPage onClose={props.onClose}>

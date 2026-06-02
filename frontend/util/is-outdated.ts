@@ -1,9 +1,13 @@
-import { GameMod } from "@api/bindings";
+export type ModVersionInfo = {
+	version: string;
+	hash: string;
+};
 
-export function getIsOutdated(local?: GameMod, remote?: GameMod) {
-	if (!local || !remote) return false;
+export function getIsOutdated(
+	current?: ModVersionInfo,
+	latest?: ModVersionInfo,
+) {
+	if (!current || !latest) return false;
 
-	return (
-		local.download?.id !== remote.download?.id || local.hash !== remote.hash
-	);
+	return current?.version !== latest?.version || current.hash !== latest.hash;
 }

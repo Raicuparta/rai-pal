@@ -6,11 +6,7 @@
 use std::{
 	path::PathBuf,
 	thread,
-	time::{
-		Duration,
-		SystemTime,
-		UNIX_EPOCH,
-	},
+	time::Duration,
 };
 
 use app_settings::AppSettings;

@@ -50,17 +50,7 @@ export function GameMods({ game, mods }: Props) {
 										game={game}
 										mod={mod}
 										remoteConfigs={remoteConfigs}
-										installedMod={
-											info.installedVersion
-												? {
-														download: {
-															id: info.installedVersion,
-															url: "",
-														},
-														hash: info.installedHash,
-													}
-												: undefined
-										}
+										info={info}
 									/>
 								))}
 							</Table.Tbody>
@@ -93,7 +83,7 @@ export function GameMods({ game, mods }: Props) {
 									game={game}
 									mod={mod}
 									remoteConfigs={remoteConfigs}
-									installedMod={
+									info={
 										info.installedVersion
 											? {
 													download: {
