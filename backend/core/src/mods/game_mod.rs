@@ -152,9 +152,8 @@ impl GameMod {
 				.download
 				.as_ref()
 				.ok_or_else(|| Error::ModInfoMissing(self.id.clone(), "download".to_string()))?;
-			let source_dir = download
-				.download_to_temp(&self.id, on_download_status)
-				.await?;
+
+			let source_dir = download.download(&self.id, on_download_status).await?;
 
 			for extract_action in extract_actions {
 				let source_path = source_dir.join(&extract_action.source);
@@ -259,7 +258,7 @@ impl GameMod {
 }
 
 impl ModDownload {
-	async fn download_to_temp(
+	async fn download(
 		&self,
 		mod_id: &str,
 		on_download_status: impl Fn(DownloadStatus) + Send,

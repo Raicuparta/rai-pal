@@ -544,7 +544,6 @@ async fn download_remote_config(
 		mod_config
 			.download(&game, &game_mod, remote_config_file, overwrite)
 			.await?;
-		game_mod.update_installed_mod_manifest(&game)?;
 	}
 
 	Ok(())

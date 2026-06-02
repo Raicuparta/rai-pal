@@ -10,14 +10,14 @@
 - auto install runnable on run
 - better way to hide ugly mods like .net runtime
 - better way to handle shared manifests
-- why did i see two folders installed_mods and installed-mods?
-- implement download cache.
-- implement path provider.
-- make mods page order stable.
 - frontend should probably get each mod provider individually like it does for game providers.
 
 # Done:
 
+- why did i see two folders installed_mods and installed-mods?
+- implement download cache.
+- implement path provider.
+- make mods page order stable.
 - Add Z: to UE4SS paths. Need to figure out how to handle that generically.
 - Check all new token types being replaced.
 - Hide runnable self run button on linux.
