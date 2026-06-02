@@ -1,8 +1,5 @@
 use std::{
 	collections::BTreeMap,
-	ffi::OsStr,
-	path::Path,
-	string,
 	time::{
 		SystemTime,
 		UNIX_EPOCH,
@@ -13,7 +10,6 @@ use rai_pal_proc_macros::serializable_struct;
 use serde::Serialize;
 
 use crate::{
-	app_paths,
 	game_providers::game_provider::GameProviderId,
 	local_database::{
 		game_database::{
@@ -186,9 +182,10 @@ impl ModDatabase for DbMutex {
 	) -> Result<Option<InstalledMod>> {
 		let game = self.get_game(provider_id, game_id)?;
 
-		let Some(exe_path_hash) = game.try_get_exe_path().ok().map(PathExt::hash_string) else {
+		let Ok(exe_path) = game.try_get_exe_path() else {
 			return Ok(None);
 		};
+		let exe_path_hash = exe_path.hash_string();
 
 		let is_installed = self
 			.lock_db()?
@@ -281,11 +278,52 @@ impl ModDatabase for DbMutex {
 	}
 
 	fn refresh_installed_mods(&self) -> Result {
-		let installed_mods_root = app_paths::installed_mods_path()?;
-		let manifests_glob = installed_mods_root
-			.join("*")
-			.join("manifests")
-			.join("*.json");
+		let installed_game_ids = self
+			.lock_db()?
+			.prepare_cached(
+				"SELECT DISTINCT provider_id, game_id FROM main.installed_games WHERE exe_path IS NOT NULL",
+			)?
+			.query_map([], |row| Ok((row.get(0)?, row.get(1)?)))?
+			.filter_map(|game_id| match game_id {
+				Ok(id) => Some(id),
+				Err(err) => {
+					log::warn!("Failed to read installed game from local database: {err}");
+					None
+				}
+			})
+			.collect::<Vec<(crate::game_providers::game_provider::GameProviderId, String)>>();
+
+		let game_mods = self.get_mod_map()?;
+		let mut installed_mod_rows = Vec::new();
+
+		for (provider_id, game_id) in installed_game_ids {
+			let game = self.get_game(&provider_id, &game_id)?;
+			let Ok(exe_path) = game.try_get_exe_path() else {
+				continue;
+			};
+			let exe_path_hash = exe_path.hash_string();
+
+			for game_mod in game_mods.values() {
+				let Ok(manifest_path) = game_mod.get_manifest_target_path(&game) else {
+					continue;
+				};
+
+				if !manifest_path.exists() {
+					continue;
+				}
+
+				let Some(manifest) = GameMod::from_file(&manifest_path) else {
+					continue;
+				};
+
+				installed_mod_rows.push((
+					exe_path_hash.clone(),
+					manifest.id,
+					manifest.download.as_ref().map(|download| download.id.clone()),
+					manifest.hash,
+				));
+			}
+		}
 
 		let created_at = SystemTime::now()
 			.duration_since(UNIX_EPOCH)?
@@ -309,29 +347,12 @@ impl ModDatabase for DbMutex {
 					) VALUES ($1, $2, $3, $4, $5)",
 				)?;
 
-				for manifest_path in manifests_glob.glob() {
-					let Some(exe_path_hash) = manifest_path
-						.parent()
-						.and_then(Path::parent)
-						.and_then(Path::file_name)
-						.and_then(OsStr::to_str)
-						.map(string::ToString::to_string)
-					else {
-						continue;
-					};
-
-					let Some(manifest) = GameMod::from_file(&manifest_path) else {
-						continue;
-					};
-
+				for (exe_path_hash, mod_id, installed_version, installed_hash) in installed_mod_rows {
 					statement.execute(rusqlite::params![
 						exe_path_hash,
-						manifest.id,
-						manifest
-							.download
-							.as_ref()
-							.map(|download| download.id.clone()),
-						manifest.hash,
+						mod_id,
+						installed_version,
+						installed_hash,
 						created_at,
 					])?;
 				}

@@ -104,32 +104,6 @@ impl DbGame {
 		Ok(fs::remove_dir_all(self.get_installed_mods_folder()?)?)
 	}
 
-	pub fn get_manifest_paths(&self) -> Vec<PathBuf> {
-		match self.get_installed_mod_manifest_path("*") {
-			Ok(manifests_path) => {
-				if !manifests_path.parent().is_some_and(Path::exists) {
-					return Vec::default();
-				}
-				manifests_path.glob()
-			}
-			Err(err) => {
-				log::error!(
-					"Failed to get mod manifests glob path for game {}. Error: {}",
-					self.display_title,
-					err
-				);
-				Vec::default()
-			}
-		}
-	}
-
-	pub fn get_installed_mod_manifest_path(&self, mod_id: &str) -> Result<PathBuf> {
-		Ok(self
-			.get_installed_mods_folder()?
-			.join("manifests")
-			.join(format!("{mod_id}.json")))
-	}
-
 	pub fn get_installed_mods_folder(&self) -> Result<PathBuf> {
 		let installed_mods_folder =
 			app_paths::installed_mods_path()?.join(self.try_get_exe_path()?.hash_string());

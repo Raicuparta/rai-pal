@@ -200,6 +200,7 @@ export type ModDownload = {
 };
 
 export type ModInstall = {
+	manifestPath: string,
 	extract: ModInstallExtract[] | null,
 	write: ModInstallWrite[] | null,
 	wineDllOverrides: string[] | null,

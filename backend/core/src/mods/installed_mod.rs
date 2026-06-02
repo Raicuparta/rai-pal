@@ -83,9 +83,7 @@ impl InstalledMod {
 			}
 		}
 
-		let manifest_path = self
-			.game
-			.get_installed_mod_manifest_path(&self.game_mod.id)?;
+		let manifest_path = self.game_mod.get_manifest_target_path(&self.game)?;
 		if manifest_path.exists() {
 			fs::remove_file(manifest_path)?;
 		}

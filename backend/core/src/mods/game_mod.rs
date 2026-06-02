@@ -81,6 +81,7 @@ pub struct ModInstallWrite {
 
 #[serializable_struct]
 pub struct ModInstall {
+	pub manifest_path: String,
 	pub extract: Option<Vec<ModInstallExtract>>,
 	pub write: Option<Vec<ModInstallWrite>>,
 	pub wine_dll_overrides: Option<Vec<String>>,
@@ -114,6 +115,14 @@ pub enum ModConfigDestinationType {
 
 impl GameMod {
 	pub const FILE_NAME: &'static str = "rai-pal-manifest.json";
+
+	pub fn get_manifest_target_path(&self, game: &DbGame) -> Result<PathBuf> {
+		Ok(PathBuf::from(replace_tokens(
+			&self.get_install()?.manifest_path,
+			game,
+			self,
+		)))
+	}
 
 	pub fn from_file(path: &Path) -> Option<Self> {
 		match fs::read_to_string(path)
@@ -248,7 +257,7 @@ impl GameMod {
 	}
 
 	pub fn update_installed_mod_manifest(&self, game: &DbGame) -> Result {
-		let manifest_path = game.get_installed_mod_manifest_path(&self.id)?;
+		let manifest_path = self.get_manifest_target_path(game)?;
 		fs::create_dir_all(manifest_path.try_parent()?)?;
 		let manifest_contents = serde_json::to_string_pretty(&self)?;
 		fs::write(manifest_path, manifest_contents)?;
