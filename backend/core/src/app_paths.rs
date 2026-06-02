@@ -11,12 +11,9 @@ use directories::{
 };
 use log;
 
-use crate::{
-	path_extensions::PathExt,
-	result::{
-		Error,
-		Result,
-	},
+use crate::result::{
+	Error,
+	Result,
 };
 
 pub fn base_dirs() -> Result<BaseDirs> {
