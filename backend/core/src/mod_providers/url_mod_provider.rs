@@ -24,10 +24,10 @@ pub struct UrlModProvider {
 }
 
 impl ModProvider for UrlModProvider {
-	fn default() -> Self {
-		Self {
+	fn default() -> Result<Self> {
+		Ok(Self {
 			url: format!("{URL_BASE}/{DATABASE_VERSION}/mods.json"),
-		}
+		})
 	}
 
 	async fn insert_mods(&self, db: &DbMutex) -> Result {

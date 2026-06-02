@@ -34,7 +34,7 @@ export function ModsPage() {
 				<>
 					<Group justify="end">
 						<Button
-							onClick={commands.openModsFolder}
+							onClick={commands.openLocalModsFolder}
 							leftSection={<IconFolderCog />}
 						>
 							{t("openModsFolderButton")}

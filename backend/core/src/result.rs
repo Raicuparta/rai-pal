@@ -149,6 +149,9 @@ pub enum Error {
 	)]
 	ModInstallInfoInsufficient(String, String),
 
+	#[error("Local mod manifest in `{0}` defines 'download' section, makes no sense.")]
+	LocalModCantDefineDownload(String),
+
 	#[error("Failed to get game data from path `{0}`")]
 	FailedToGetGameFromPath(PathBuf),
 

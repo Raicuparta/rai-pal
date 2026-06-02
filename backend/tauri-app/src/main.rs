@@ -454,8 +454,16 @@ async fn frontend_ready() -> Result {
 
 #[tauri::command]
 #[specta::specta]
+async fn open_local_mods_folder() -> Result {
+	app_paths::local_mods_path()?.open_folder_or_parent()?;
+
+	Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
 async fn open_logs_folder() -> Result {
-	app_paths::open_logs_folder()?;
+	app_paths::logs_path()?.open_folder_or_parent()?;
 
 	Ok(())
 }
@@ -613,6 +621,7 @@ fn main() {
 			open_game_wine_binary_folder,
 			open_game_mods_folder,
 			open_installed_mod_folder,
+			open_local_mods_folder,
 			open_logs_folder,
 			refresh_game,
 			refresh_games,

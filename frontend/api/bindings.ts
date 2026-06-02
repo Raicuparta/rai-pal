@@ -28,6 +28,7 @@ export const commands = {
 	openGameWineBinaryFolder: (providerId: GameProviderId, gameId: string) => __TAURI_INVOKE<null>("open_game_wine_binary_folder", { providerId, gameId }),
 	openGameModsFolder: (providerId: GameProviderId, gameId: string) => __TAURI_INVOKE<null>("open_game_mods_folder", { providerId, gameId }),
 	openInstalledModFolder: (providerId: GameProviderId, gameId: string, modId: string) => __TAURI_INVOKE<null>("open_installed_mod_folder", { providerId, gameId, modId }),
+	openLocalModsFolder: () => __TAURI_INVOKE<null>("open_local_mods_folder"),
 	openLogsFolder: () => __TAURI_INVOKE<null>("open_logs_folder"),
 	refreshGame: (providerId: GameProviderId, gameId: string) => __TAURI_INVOKE<null>("refresh_game", { providerId, gameId }),
 	refreshGames: (providerId: GameProviderId) => __TAURI_INVOKE<null>("refresh_games", { providerId }),

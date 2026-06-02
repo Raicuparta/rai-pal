@@ -28,14 +28,14 @@ use crate::{
 		},
 		unity::UnityBackend,
 	},
-	mods::{
-		mod_config::ModConfig,
-		replacement_token::replace_tokens,
-	},
 	game_providers::game_provider,
 	http::{
 		self,
 		DownloadStatus,
+	},
+	mods::{
+		mod_config::ModConfig,
+		replacement_token::replace_tokens,
 	},
 	operating_system::OperatingSystem,
 	path_extensions::PathExt,
@@ -264,6 +264,16 @@ impl ModDownload {
 		mod_id: &str,
 		on_download_status: impl Fn(DownloadStatus) + Send,
 	) -> Result<PathBuf> {
+		if let Some(local_path) = self.url.strip_prefix("file://") {
+			let source_path = PathBuf::from(local_path);
+
+			if source_path.is_dir() {
+				return Ok(source_path);
+			}
+
+			return Ok(source_path);
+		}
+
 		let temp_dir = app_paths::temp_dir(&format!("mod-{mod_id}"))?;
 		// TODO cache should be per version.
 		let zip_path = temp_dir.join(format!("{mod_id}.zip"));
