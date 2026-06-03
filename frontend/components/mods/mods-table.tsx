@@ -62,7 +62,7 @@ export function ModsTable(props: Props) {
 							)}
 						</Table.Td>
 						<Table.Td ta="center">
-							<Badge>{mod.download?.id ?? "-"}</Badge>
+							<Badge color="gray">{mod.download?.id ?? "-"}</Badge>
 						</Table.Td>
 						<Table.Td>{mod.engine}</Table.Td>
 						<Table.Td>{mod.unityBackend}</Table.Td>
