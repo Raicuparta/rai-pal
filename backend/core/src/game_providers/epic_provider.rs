@@ -34,7 +34,7 @@ use crate::{
 			ProviderCommandAction,
 		},
 	},
-	local_database::local_database::{
+	local_database::game_database::{
 		DbMutex,
 		GameDatabase,
 	},

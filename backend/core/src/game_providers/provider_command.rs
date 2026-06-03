@@ -25,7 +25,7 @@ pub enum ProviderCommandAction {
 }
 
 impl ProviderCommand {
-	pub fn run(&self, game: &DbGame) -> Result {
+	pub fn run(&self, _game: &DbGame) -> Result {
 		match self {
 			Self::String(command) => {
 				open_detached_better(command)?;
@@ -37,8 +37,8 @@ impl ProviderCommand {
 
 					use crate::game_providers::game_provider;
 
-					game_provider::get_provider(game.provider_id)?.run_with_wine(
-						game,
+					game_provider::get_provider(_game.provider_id)?.run_with_wine(
+						_game,
 						path,
 						args,
 						&BTreeMap::default(),

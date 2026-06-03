@@ -249,7 +249,7 @@ impl GameMod {
 		#[cfg(target_os = "windows")]
 		{
 			std::process::Command::new(&run_path)
-				.current_dir(source_dir)
+				.current_dir(run_path.try_parent()?)
 				.args(&args)
 				.spawn()?;
 		}
