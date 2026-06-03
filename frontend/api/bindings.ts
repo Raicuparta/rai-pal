@@ -156,6 +156,7 @@ export type GameModInfo = {
 	modId: string,
 	installedVersion: string | null,
 	installedHash: string | null,
+	isOutdated: boolean,
 	compatible: boolean,
 };
 

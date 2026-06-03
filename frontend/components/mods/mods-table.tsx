@@ -1,5 +1,4 @@
-import { Group, Table, Text } from "@mantine/core";
-import { ModVersionBadge } from "./mod-version-badge";
+import { Badge, Group, Table, Text } from "@mantine/core";
 import { getModTitle } from "@util/game-mod";
 import { DeprecatedBadge } from "./deprecated-badge";
 import { useLocalization } from "@hooks/use-localization";
@@ -63,17 +62,8 @@ export function ModsTable(props: Props) {
 								</Text>
 							)}
 						</Table.Td>
-						<Table.Td>
-							<ModVersionBadge
-								latest={
-									mod.download && mod.hash
-										? {
-												version: mod.download?.id,
-												hash: mod.hash,
-											}
-										: undefined
-								}
-							/>
+						<Table.Td ta="center">
+							<Badge>{mod.download?.id ?? "-"}</Badge>
 						</Table.Td>
 						<Table.Td>{mod.engine}</Table.Td>
 						<Table.Td>{mod.unityBackend}</Table.Td>

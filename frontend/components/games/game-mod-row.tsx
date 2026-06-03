@@ -5,6 +5,7 @@ import {
 	Group,
 	Stack,
 	Tooltip,
+	Badge,
 } from "@mantine/core";
 import {
 	DbGame,
@@ -20,14 +21,12 @@ import {
 	IconDownload,
 	IconFolderOpen,
 	IconMinus,
+	IconRefreshAlert,
 	IconSettings,
 	IconSettingsFilled,
 } from "@tabler/icons-react";
-import { getIsOutdated } from "@util/is-outdated";
 import { OutdatedMarker } from "@components/outdated-marker";
 import { MutedText } from "@components/muted-text";
-import { ModVersionBadge } from "@components/mods/mod-version-badge";
-import { getModTitle } from "@util/game-mod";
 import { CommandDropdown } from "@components/command-dropdown";
 import { DeprecatedBadge } from "@components/mods/deprecated-badge";
 import { useLocalization } from "@hooks/use-localization";
@@ -57,22 +56,12 @@ export function GameModRow({
 		(config) => config.modId === mod.id,
 	);
 
-	const installedVersion =
-		info?.installedHash && info.installedVersion
-			? { hash: info.installedHash, version: info.installedVersion }
-			: undefined;
+	const isOutdated = info?.isOutdated;
 
-	const latestVersion =
-		mod.download && mod.hash
-			? { hash: mod.hash, version: mod.download.id }
-			: undefined;
-
-	const isInstalledModOutdated = getIsOutdated(installedVersion, latestVersion);
-
-	const isInstalled = Boolean(installedVersion);
+	const isInstalled = Boolean(info?.installedVersion);
 
 	const { statusIcon, statusColor } = (() => {
-		if (isInstalledModOutdated)
+		if (isOutdated)
 			return {
 				statusIcon: <OutdatedMarker />,
 				statusColor: "orange",
@@ -102,11 +91,28 @@ export function GameModRow({
 							{statusIcon}
 						</ThemeIcon>
 					)}
-					{getModTitle(mod)}
-					<ModVersionBadge
-						current={installedVersion}
-						latest={latestVersion}
-					/>
+					{mod.title}
+					<Tooltip
+						disabled={!isOutdated}
+						label={t("modOutdated")}
+					>
+						<Stack
+							gap={5}
+							align="center"
+						>
+							<Badge
+								color={isOutdated ? "orange" : isInstalled ? "green" : "gray"}
+								maw={150}
+								leftSection={isOutdated && <IconRefreshAlert fontSize={15} />}
+							>
+								{
+									(info?.installedVersion || mod.download?.id || "-").split(
+										"/",
+									)[0]
+								}
+							</Badge>
+						</Stack>
+					</Tooltip>
 					{availableRemoteConfig && (
 						<Tooltip label={t("remoteConfigAvailable")}>
 							<IconSettingsFilled fontSize="15" />
@@ -122,7 +128,7 @@ export function GameModRow({
 				<Group justify="right">
 					{isModUsable && (
 						<ButtonGroup>
-							{!isInstalled && !isInstalledModOutdated && mod.install && (
+							{!isInstalled && !isOutdated && mod.install && (
 								<GameModInstallButton
 									game={game}
 									mod={mod}
@@ -135,14 +141,14 @@ export function GameModRow({
 									mod={mod}
 								/>
 							)}
-							{isInstalledModOutdated && (
+							{isOutdated && (
 								<GameModUpdateButton
 									game={game}
 									mod={mod}
 									remoteConfigFile={availableRemoteConfig?.file}
 								/>
 							)}
-							{mod.runForGame && (
+							{mod.runForGame && (!mod.install || isInstalled) && (
 								<GameModRunButton
 									game={game}
 									mod={mod}

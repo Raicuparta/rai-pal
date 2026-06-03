@@ -241,6 +241,9 @@ export const enUs = {
 		// Tooltip for icon that shows next to mod to indicate there's a downloadable config.
 		remoteConfigAvailable:
 			"Recommended config available. Will be downloaded if you don't already have a config. You can also force it to download from the three dot menu.",
+
+		// Badge that shows when a new version of a mod is available.
+		modOutdated: "Mod outdated",
 	},
 
 	// Named table columns for the list of games.
@@ -281,9 +284,6 @@ export const enUs = {
 		// Tooltip that shows when hovering over a deprecated mod.
 		modDeprecatedTooltip:
 			"This mod is deprecated. You should uninstall it and install a newer alternative.",
-
-		// Badge that shows when a new version of a mod is available.
-		modOutdated: "Mod outdated",
 	},
 
 	// Modal that opens after clicking a mod in the mods page.

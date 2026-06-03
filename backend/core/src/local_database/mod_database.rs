@@ -34,6 +34,7 @@ pub struct GameModInfo {
 	pub mod_id: String,
 	pub installed_version: Option<String>,
 	pub installed_hash: Option<String>,
+	pub is_outdated: bool,
 	pub compatible: bool,
 }
 
@@ -391,6 +392,12 @@ impl ModDatabase for DbMutex {
 					m.id AS mod_id,
 					im.installed_version AS installed_version,
 					im.installed_hash AS installed_hash,
+					CASE
+						WHEN im.mod_id IS NULL THEN 0
+						WHEN json_extract(m.download, '$.id') IS NOT im.installed_version THEN 1
+						WHEN m.hash IS NOT im.installed_hash THEN 1
+						ELSE 0
+					END AS is_outdated,
 					COALESCE(ig.engine_version_major, rg.engine_version_major) AS game_major,
 					COALESCE(ig.engine_version_minor, rg.engine_version_minor) AS game_minor,
 					COALESCE(ig.engine_version_patch, rg.engine_version_patch) AS game_patch,
@@ -438,6 +445,7 @@ impl ModDatabase for DbMutex {
 				mod_id,
 				installed_version,
 				installed_hash,
+				is_outdated,
 				CASE
 					WHEN game_major IS NULL THEN 1
 					WHEN min_major IS NOT NULL AND (
@@ -480,16 +488,12 @@ impl ModDatabase for DbMutex {
 		",
 			)?
 			.query_map([provider_id.to_string(), game_id.to_string()], |row| {
-				let mod_id = row.get::<_, String>(0)?;
-				let installed_version = row.get::<_, Option<String>>(1)?;
-				let installed_hash = row.get::<_, Option<String>>(2)?;
-				let compatible = row.get::<_, bool>(3)?;
-
 				Ok(GameModInfo {
-					mod_id,
-					installed_version,
-					installed_hash,
-					compatible,
+					mod_id: row.get(0)?,
+					installed_version: row.get(1)?,
+					installed_hash: row.get(2)?,
+					is_outdated: row.get(3)?,
+					compatible: row.get(4)?,
 				})
 			})?
 			.collect::<rusqlite::Result<Vec<GameModInfo>>>()?)

@@ -336,7 +336,10 @@ async fn install_mod_dependencies(handle: &AppHandle, game_mod: &GameMod, game: 
 
 				Box::pin(install_mod_dependencies(handle, &dependency_mod, game)).await?;
 
-				if dependency_mod.install.is_some() {
+				let outdated = relevant_dependency_mod_info.installed_version.is_none()
+					|| relevant_dependency_mod_info.is_outdated;
+
+				if outdated && dependency_mod.install.is_some() {
 					dependency_mod
 						.install(game, |status| {
 							download_status_channel
