@@ -626,6 +626,7 @@ fn create() -> Result<DbMutex> {
 		);
 
 		CREATE INDEX IF NOT EXISTS idx_games_external_id ON games(provider_id, external_id);
+		CREATE INDEX IF NOT EXISTS idx_games_exe_path_hash ON games(exe_path_hash);
 
 		CREATE TABLE IF NOT EXISTS normalized_titles (
 			provider_id TEXT NOT NULL,
@@ -665,8 +666,6 @@ fn create() -> Result<DbMutex> {
 		);
 	",
 	)?;
-
-	ensure_games_exe_path_hash_column(&connection)?;
 
 	let remote_database_path = remote_game::get_database_file_path()?;
 
@@ -708,26 +707,6 @@ fn open_local_database_connection() -> Result<rusqlite::Connection> {
 	)?;
 
 	Ok(connection)
-}
-
-fn ensure_games_exe_path_hash_column(connection: &rusqlite::Connection) -> Result {
-	let has_exe_path_hash = connection
-		.prepare_cached("PRAGMA table_info(games);")?
-		.query_map([], |row| row.get::<_, String>(1))?
-		.collect::<rusqlite::Result<Vec<String>>>()?
-		.into_iter()
-		.any(|column_name| column_name == "exe_path_hash");
-
-	if !has_exe_path_hash {
-		connection.execute("ALTER TABLE main.games ADD COLUMN exe_path_hash TEXT;", [])?;
-	}
-
-	connection.execute(
-		"CREATE INDEX IF NOT EXISTS idx_games_exe_path_hash ON games(exe_path_hash);",
-		[],
-	)?;
-
-	Ok(())
 }
 
 fn is_database_attached(connection: &rusqlite::Connection, database_name: &str) -> Result<bool> {
