@@ -39,7 +39,6 @@ use rai_pal_core::{
 		game_database::{
 			GameDatabase,
 			GameIdsResponse,
-			attach_remote_database,
 		},
 		mod_database::{
 			GameModInfo,
@@ -367,7 +366,7 @@ async fn refresh_mods(handle: AppHandle) -> Result {
 async fn refresh_remote_games(handle: AppHandle) -> Result {
 	let state = handle.app_state();
 	let path = remote_game::download_database().await?;
-	attach_remote_database(state.database.lock_db()?, &path)?;
+	state.database.attach_remote(&path)?;
 
 	Ok(())
 }
