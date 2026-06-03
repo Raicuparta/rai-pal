@@ -35,6 +35,7 @@ pub struct GameModInfo {
 	pub installed_version: Option<String>,
 	pub installed_hash: Option<String>,
 	pub is_outdated: bool,
+	pub has_installed_dependants: bool,
 	pub compatible: bool,
 }
 
@@ -392,6 +393,11 @@ impl ModDatabase for DbMutex {
 					m.id AS mod_id,
 					im.installed_version AS installed_version,
 					im.installed_hash AS installed_hash,
+					m.dependencies AS dependencies,
+					CASE
+						WHEN im.mod_id IS NULL THEN 0
+						ELSE 1
+					END AS is_installed,
 					CASE
 						WHEN im.mod_id IS NULL THEN 0
 						WHEN json_extract(m.download, '$.id') IS NOT im.installed_version THEN 1
@@ -442,49 +448,60 @@ impl ModDatabase for DbMutex {
 					)
 			)
 			SELECT
-				mod_id,
-				installed_version,
-				installed_hash,
-				is_outdated,
+				cm.mod_id,
+				cm.installed_version,
+				cm.installed_hash,
+				cm.is_outdated,
 				CASE
-					WHEN game_major IS NULL THEN 1
-					WHEN min_major IS NOT NULL AND (
-						min_major > game_major
+					WHEN EXISTS (
+						SELECT 1
+						FROM candidate_mods dependant
+						INNER JOIN json_each(dependant.dependencies) dep
+						WHERE dependant.mod_id <> cm.mod_id
+							AND dependant.is_installed = 1
+							AND json_extract(dep.value, '$.modId') = cm.mod_id
+					) THEN 1
+					ELSE 0
+				END AS has_installed_dependants,
+				CASE
+					WHEN cm.game_major IS NULL THEN 1
+					WHEN cm.min_major IS NOT NULL AND (
+						cm.min_major > cm.game_major
 						OR (
-							min_major = game_major
-							AND min_minor IS NOT NULL
-							AND game_minor IS NOT NULL
+							cm.min_major = cm.game_major
+							AND cm.min_minor IS NOT NULL
+							AND cm.game_minor IS NOT NULL
 							AND (
-								min_minor > game_minor
+								cm.min_minor > cm.game_minor
 								OR (
-									min_minor = game_minor
-									AND min_patch IS NOT NULL
-									AND game_patch IS NOT NULL
-									AND min_patch > game_patch
+									cm.min_minor = cm.game_minor
+									AND cm.min_patch IS NOT NULL
+									AND cm.game_patch IS NOT NULL
+									AND cm.min_patch > cm.game_patch
 								)
 							)
 						)
 					) THEN 0
-					WHEN max_major IS NOT NULL AND (
-						max_major < game_major
+					WHEN cm.max_major IS NOT NULL AND (
+						cm.max_major < cm.game_major
 						OR (
-							max_major = game_major
-							AND max_minor IS NOT NULL
-							AND game_minor IS NOT NULL
+							cm.max_major = cm.game_major
+							AND cm.max_minor IS NOT NULL
+							AND cm.game_minor IS NOT NULL
 							AND (
-								max_minor < game_minor
+								cm.max_minor < cm.game_minor
 								OR (
-									max_minor = game_minor
-									AND max_patch IS NOT NULL
-									AND game_patch IS NOT NULL
-									AND max_patch < game_patch
+									cm.max_minor = cm.game_minor
+									AND cm.max_patch IS NOT NULL
+									AND cm.game_patch IS NOT NULL
+									AND cm.max_patch < cm.game_patch
 								)
 							)
 						)
 					) THEN 0
 					ELSE 1
 				END AS compatible
-			FROM candidate_mods
+			FROM candidate_mods cm
 		",
 			)?
 			.query_map([provider_id.to_string(), game_id.to_string()], |row| {
@@ -493,7 +510,8 @@ impl ModDatabase for DbMutex {
 					installed_version: row.get(1)?,
 					installed_hash: row.get(2)?,
 					is_outdated: row.get(3)?,
-					compatible: row.get(4)?,
+					has_installed_dependants: row.get(4)?,
+					compatible: row.get(5)?,
 				})
 			})?
 			.collect::<rusqlite::Result<Vec<GameModInfo>>>()?)

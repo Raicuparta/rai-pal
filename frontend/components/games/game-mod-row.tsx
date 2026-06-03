@@ -139,6 +139,7 @@ export function GameModRow({
 								<GameModUninstallButton
 									game={game}
 									mod={mod}
+									modInfo={info}
 								/>
 							)}
 							{isOutdated && (
