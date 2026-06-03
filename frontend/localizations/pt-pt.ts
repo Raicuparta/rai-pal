@@ -120,6 +120,9 @@ export const ptPt: Localization = {
 		downloadRemoteConfig: "Descarregar Configuração Recomendada",
 		remoteConfigAvailable:
 			"Configuração recomendada disponível. Será descarregada se ainda não tiveres uma configuração. Também podes forçar o descarregamento a partir do menu de três pontos.",
+		modOutdated: "Mod desatualizado",
+		cantUninstallModWithDependants:
+			"Não é possível desinstalar um mod que tenha dependentes. Desinstala primeiro os mods que dependem deste.",
 	},
 
 	gamesTableColumn: {
@@ -138,7 +141,6 @@ export const ptPt: Localization = {
 		modDeprecated: "Obsoleto",
 		modDeprecatedTooltip:
 			"Este mod está obsoleto. Deves desinstalá-lo e instalar uma alternativa mais recente.",
-		modOutdated: "Mod desatualizado",
 	},
 
 	modModal: {

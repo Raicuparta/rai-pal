@@ -244,6 +244,10 @@ export const enUs = {
 
 		// Badge that shows when a new version of a mod is available.
 		modOutdated: "Mod outdated",
+
+		// Tooltip that shows when hovering the uninstall button for a mod that has other mods depending on it.
+		cantUninstallModWithDependants:
+			"Can't uninstall a mod that has dependants. Uninstall the mods that depend on this one first.",
 	},
 
 	// Named table columns for the list of games.

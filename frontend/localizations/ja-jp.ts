@@ -120,6 +120,9 @@ export const jaJp: Localization = {
 		downloadRemoteConfig: "推奨設定をダウンロード",
 		remoteConfigAvailable:
 			"推奨設定が利用可能です。設定がまだない場合にダウンロードされます。三点メニューから強制的にダウンロードすることもできます。",
+		modOutdated: "モッドが古い",
+		cantUninstallModWithDependants:
+			"依存しているモッドがあるモッドはアンインストールできません。先にこのモッドに依存しているモッドをアンインストールしてください。",
 	},
 
 	gamesTableColumn: {
@@ -138,7 +141,6 @@ export const jaJp: Localization = {
 		modDeprecated: "非推奨",
 		modDeprecatedTooltip:
 			"このモッドは非推奨です。アンインストールして新しい代替品をインストールすることをお勧めします。",
-		modOutdated: "モッドが古い",
 	},
 
 	modModal: {

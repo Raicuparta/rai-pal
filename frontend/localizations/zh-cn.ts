@@ -114,6 +114,9 @@ export const zhCn: Localization = {
 		downloadRemoteConfig: "下载推荐配置",
 		remoteConfigAvailable:
 			"推荐配置可用。如果您还没有配置，将会下载。您也可以从三点菜单强制下载。",
+		modOutdated: "模组过时",
+		cantUninstallModWithDependants:
+			"无法卸载有依赖项的模组。请先卸载依赖此模组的其他模组。",
 	},
 
 	gamesTableColumn: {
@@ -131,7 +134,6 @@ export const zhCn: Localization = {
 		modByAuthor: "作者 {authorName}",
 		modDeprecated: "已弃用",
 		modDeprecatedTooltip: "此模组已弃用。您应该卸载它并安装更新的替代品。",
-		modOutdated: "模组过时",
 	},
 
 	modModal: {

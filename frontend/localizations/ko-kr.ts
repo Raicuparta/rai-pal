@@ -117,6 +117,9 @@ export const koKr: Localization = {
 		downloadRemoteConfig: "권장 설정 다운로드",
 		remoteConfigAvailable:
 			"권장 설정을 사용할 수 있습니다. 설정이 아직 없는 경우 다운로드됩니다. 세 점 메뉴에서 강제로 다운로드할 수도 있습니다.",
+		modOutdated: "모드가 오래되었습니다",
+		cantUninstallModWithDependants:
+			"의존하는 다른 모드가 있는 모드는 제거할 수 없습니다. 먼저 이 모드에 의존하는 모드들을 제거하세요.",
 	},
 
 	gamesTableColumn: {
@@ -135,7 +138,6 @@ export const koKr: Localization = {
 		modDeprecated: "사용 중지됨",
 		modDeprecatedTooltip:
 			"이 모드는 사용 중지되었습니다. 이 모드를 제거하고 새로운 대안을 설치해야 합니다.",
-		modOutdated: "모드가 오래되었습니다",
 	},
 
 	modModal: {

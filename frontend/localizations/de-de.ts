@@ -121,6 +121,9 @@ export const deDe: Localization = {
 		downloadRemoteConfig: "Empfohlene Konfiguration herunterladen",
 		remoteConfigAvailable:
 			"Empfohlene Konfiguration verfügbar. Wird heruntergeladen, falls Sie noch keine Konfiguration haben. Sie können auch erzwingen, dass sie über das Drei-Punkte-Menü heruntergeladen wird.",
+		modOutdated: "Mod veraltet",
+		cantUninstallModWithDependants:
+			"Ein Mod mit abhängigen Mods kann nicht deinstalliert werden. Deinstallieren Sie zuerst die Mods, die von diesem abhängen.",
 	},
 
 	gamesTableColumn: {
@@ -139,7 +142,6 @@ export const deDe: Localization = {
 		modDeprecated: "Veraltet",
 		modDeprecatedTooltip:
 			"Dieser Mod ist veraltet. Sie sollten ihn deinstallieren und eine neuere Alternative installieren.",
-		modOutdated: "Mod veraltet",
 	},
 
 	modModal: {
