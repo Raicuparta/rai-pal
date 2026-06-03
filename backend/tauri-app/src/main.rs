@@ -355,8 +355,10 @@ async fn install_mod_dependencies(handle: &AppHandle, game_mod: &GameMod, game: 
 #[tauri::command]
 #[specta::specta]
 async fn refresh_mods(handle: AppHandle) -> Result {
-	mod_provider::refresh_all_mods(&handle.app_state().database).await?;
-	let mods = handle.app_state().database.get_mod_map()?;
+	let state = handle.app_state();
+
+	mod_provider::refresh_all_mods(&state.database).await?;
+	let mods = state.database.get_mod_map()?;
 	handle.emit_safe(events::SyncMods(mods));
 
 	Ok(())
@@ -374,7 +376,9 @@ async fn refresh_remote_games() -> Result {
 #[tauri::command]
 #[specta::specta]
 async fn refresh_games(handle: AppHandle, provider_id: GameProviderId) -> Result {
-	provider_id.insert_games(&handle.app_state().database)?;
+	let state = handle.app_state();
+	provider_id.insert_games(&state.database)?;
+	state.database.refresh_installed_mods()?;
 
 	Ok(())
 }
@@ -389,7 +393,7 @@ async fn add_game(handle: AppHandle, path: PathBuf) -> Result {
 	state.database.insert_game(&game);
 
 	handle.emit_safe(events::RefreshGame(game.provider_id, game.game_id.clone()));
-	handle.emit_safe(events::GamesChanged());
+	handle.emit_safe(events::AppDatabaseChanged());
 	handle.emit_safe(events::SelectGame(GameProviderId::Manual, game.game_id));
 
 	Ok(())
@@ -510,10 +514,9 @@ async fn get_game_mods(
 	game_id: String,
 	app_handle: AppHandle,
 ) -> Result<Vec<GameModInfo>> {
-	Ok(app_handle
-		.app_state()
-		.database
-		.get_game_mods(&provider_id, &game_id)?)
+	let state = app_handle.app_state();
+
+	Ok(state.database.get_game_mods(&provider_id, &game_id)?)
 }
 
 #[tauri::command]
@@ -753,7 +756,7 @@ fn main() {
 					.map_err(|e| e.to_string())
 					.and_then(|db| {
 						db.update_hook(Some(move |_, _: &str, _: &str, _| {
-							cloned_handle.emit_safe(events::GamesChanged());
+							cloned_handle.emit_safe(events::AppDatabaseChanged());
 						}))
 						.map_err(|e| e.to_string())
 					}) {

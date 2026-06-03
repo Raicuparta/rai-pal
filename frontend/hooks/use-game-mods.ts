@@ -34,6 +34,17 @@ export function useGameMods(
 		},
 	);
 
+	useAppEvent(
+		"appDatabaseChanged",
+		`app-data-mods-${providerId}:${gameId}`,
+		() => {
+			if (!providerId || !gameId) return;
+
+			console.log("updating mod infos!");
+			return updateGameModInfos();
+		},
+	);
+
 	const result = useMemo(() => {
 		const compatibleMods: { mod: GameMod; info: GameModInfo }[] = [];
 		const incompatibleMods: { mod: GameMod; info: GameModInfo }[] = [];
@@ -45,10 +56,7 @@ export function useGameMods(
 			if (!mod) continue;
 
 			if (info.compatible) {
-				// Conditions that determine whether a mod is worthy of showing in the mods list for a specific game.
-				// If no install nor run, then there's nothing to do.
-				// If nothing to download, then likely just an extra dependency (might change in the future dunno).
-				if ((mod.install || mod.runForGame) && mod.download) {
+				if (!mod.hideFromGameModsList) {
 					compatibleMods.push({ mod, info });
 				}
 			} else {

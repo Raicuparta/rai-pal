@@ -81,6 +81,7 @@ impl ModDatabase for DbMutex {
 				game_os TEXT,
 				host_os TEXT,
 				deprecated INTEGER,
+				hide_from_game_mods_list INTEGER,
 				config TEXT,
 				dependencies TEXT,
 				install TEXT,
@@ -144,7 +145,8 @@ impl ModDatabase for DbMutex {
 				dependencies,
 				install,
 				run_for_game,
-				hash
+				hash,
+				hide_from_game_mods_list
 			FROM main.mods
 			WHERE id = $1
 			LIMIT 1
@@ -170,6 +172,7 @@ impl ModDatabase for DbMutex {
 					install: row.get_json(15)?,
 					run_for_game: row.get_json(16)?,
 					hash: row.get(17)?,
+					hide_from_game_mods_list: row.get(18)?,
 				})
 			})?)
 	}
@@ -241,7 +244,8 @@ impl ModDatabase for DbMutex {
 				dependencies,
 				install,
 				run_for_game,
-				hash
+				hash,
+				hide_from_game_mods_list
 			FROM main.mods
 		",
 			)?
@@ -265,6 +269,7 @@ impl ModDatabase for DbMutex {
 					install: row.get_json(15)?,
 					run_for_game: row.get_json(16)?,
 					hash: row.get(17)?,
+					hide_from_game_mods_list: row.get(18)?,
 				})
 			})?
 			.filter_map(|game_mod| match game_mod {
@@ -319,7 +324,10 @@ impl ModDatabase for DbMutex {
 				installed_mod_rows.push((
 					exe_path_hash.clone(),
 					manifest.id,
-					manifest.download.as_ref().map(|download| download.id.clone()),
+					manifest
+						.download
+						.as_ref()
+						.map(|download| download.id.clone()),
 					manifest.hash,
 				));
 			}
@@ -347,7 +355,8 @@ impl ModDatabase for DbMutex {
 					) VALUES ($1, $2, $3, $4, $5)",
 				)?;
 
-				for (exe_path_hash, mod_id, installed_version, installed_hash) in installed_mod_rows {
+				for (exe_path_hash, mod_id, installed_version, installed_hash) in installed_mod_rows
+				{
 					statement.execute(rusqlite::params![
 						exe_path_hash,
 						mod_id,
@@ -533,9 +542,10 @@ fn try_insert_mod(connection_mutex: &DbMutex, game_mod: &GameMod) -> Result {
 				dependencies,
 				install,
 				run_for_game,
+				hide_from_game_mods_list,
 				hash,
 				created_at
-			) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)",
+			) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)",
 		)?
 		.execute(rusqlite::params![
 			game_mod.id,
@@ -555,6 +565,7 @@ fn try_insert_mod(connection_mutex: &DbMutex, game_mod: &GameMod) -> Result {
 			dependencies,
 			install,
 			run_for_game,
+			game_mod.hide_from_game_mods_list,
 			game_mod.hash,
 			SystemTime::now()
 				.duration_since(UNIX_EPOCH)?

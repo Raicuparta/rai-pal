@@ -50,8 +50,8 @@ export const commands = {
 
 /** Events */
 export const events = {
+	appDatabaseChanged: makeEvent<AppDatabaseChanged>("app-database-changed"),
 	executedProviderCommand: makeEvent<ExecutedProviderCommand>("executed-provider-command"),
-	gamesChanged: makeEvent<GamesChanged>("games-changed"),
 	refreshGame: makeEvent<RefreshGame>("refresh-game"),
 	selectGame: makeEvent<SelectGame>("select-game"),
 	syncMods: makeEvent<SyncMods>("sync-mods"),
@@ -61,6 +61,8 @@ export const events = {
 export const PROVIDER_IDS = ["Epic","Gog","Itch","Manual","Steam","Xbox"] as const;
 
 /* Types */
+export type AppDatabaseChanged = [];
+
 export type AppLocale = "EnUs" | "EsEs" | "FrFr" | "DeDe" | "PtPt" | "ZhCn" | "JaJp" | "KoKr" | "WaWa";
 
 export type AppSettings = {
@@ -131,6 +133,7 @@ export type GameIdsResponse = {
 export type GameMod = {
 	id: string,
 	title: string,
+	hideFromGameModsList: boolean | null,
 	author: string,
 	sourceCode: string,
 	description: string,
@@ -159,8 +162,6 @@ export type GameModInfo = {
 export type GameProviderId = "Epic" | "Gog" | "Itch" | "Manual" | "Steam" | "Xbox";
 
 export type GameTag = "VR" | "Demo";
-
-export type GamesChanged = [];
 
 export type GamesFilter = {
 	providers: (GameProviderId | null)[],

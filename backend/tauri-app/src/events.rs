@@ -11,7 +11,7 @@ use serde::Serialize;
 pub struct RefreshGame(pub GameProviderId, pub String);
 
 #[serializable_event]
-pub struct GamesChanged();
+pub struct AppDatabaseChanged();
 
 #[serializable_event]
 pub struct SyncMods(pub BTreeMap<String, GameMod>);
@@ -37,7 +37,7 @@ impl EventEmitter for tauri::AppHandle {
 pub fn collect_events() -> tauri_specta::Events {
 	tauri_specta::collect_events![
 		RefreshGame,
-		GamesChanged,
+		AppDatabaseChanged,
 		SyncMods,
 		ExecutedProviderCommand,
 		SelectGame,

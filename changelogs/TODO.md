@@ -8,12 +8,12 @@
   - make sure one failure doesn't break the whole thing. it should preserve the previous mod if so.
 - Make sure manifests don't get installed if anything in the process fails. It seemed to fail when a dependency of a dependency failed.
 - auto install runnable on run
-- better way to hide ugly mods like .net runtime
-- better way to handle shared manifests
 - frontend should probably get each mod provider individually like it does for game providers.
 
 # Done:
 
+- better way to hide ugly mods like .net runtime
+- better way to handle shared manifests
 - why did i see two folders installed_mods and installed-mods?
 - implement download cache.
 - implement path provider.

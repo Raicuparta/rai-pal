@@ -43,7 +43,11 @@ export function useUpdateData(executeOnMount = false) {
 		updateGames();
 	}, [updateGames, executeOnMount]);
 
-	useAppEvent("gamesChanged", "update-data", throttledUpdateProviderGames);
+	useAppEvent(
+		"appDatabaseChanged",
+		"update-data",
+		throttledUpdateProviderGames,
+	);
 
 	const updateAppData = useCallback(async () => {
 		function handleDataPromise(promise: Promise<null>, taskName: string) {

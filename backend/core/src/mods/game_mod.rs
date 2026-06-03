@@ -49,6 +49,7 @@ use crate::{
 pub struct GameMod {
 	pub id: String,
 	pub title: String,
+	pub hide_from_game_mods_list: Option<bool>,
 	pub author: String,
 	pub source_code: String,
 	pub description: String,
