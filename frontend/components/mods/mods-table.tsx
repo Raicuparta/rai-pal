@@ -1,5 +1,4 @@
 import { Badge, Group, Table, Text } from "@mantine/core";
-import { getModTitle } from "@util/game-mod";
 import { DeprecatedBadge } from "./deprecated-badge";
 import { useLocalization } from "@hooks/use-localization";
 import { GameMod } from "@api/bindings";
@@ -45,7 +44,7 @@ export function ModsTable(props: Props) {
 						<Table.Td>
 							{mod.deprecated && <DeprecatedBadge />}
 							<Group gap="xs">
-								<span>{getModTitle(mod)}</span>
+								<span>{mod.title}</span>
 								{mod.author && (
 									<Text
 										size="xs"

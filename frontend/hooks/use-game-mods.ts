@@ -40,7 +40,6 @@ export function useGameMods(
 		() => {
 			if (!providerId || !gameId) return;
 
-			console.log("updating mod infos!");
 			return updateGameModInfos();
 		},
 	);

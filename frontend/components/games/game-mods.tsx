@@ -83,17 +83,7 @@ export function GameMods({ game, mods }: Props) {
 									game={game}
 									mod={mod}
 									remoteConfigs={remoteConfigs}
-									info={
-										info.installedVersion
-											? {
-													download: {
-														id: info.installedVersion,
-														url: "",
-													},
-													hash: info.installedHash,
-												}
-											: undefined
-									}
+									info={info}
 									incompatible
 								/>
 							))}

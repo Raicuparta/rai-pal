@@ -14,9 +14,9 @@ use crate::{
 		EngineVersionNumbers,
 		GameEngine,
 	},
+	game_providers::game_provider::GameProviderId,
 	http,
 	path_extensions::PathExt,
-	game_providers::game_provider::GameProviderId,
 	result::{
 		LogErrExt,
 		Result,
