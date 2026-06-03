@@ -37,6 +37,7 @@ use rai_pal_core::{
 	http::DownloadStatus,
 	local_database::{
 		game_database::{
+			attach_remote,
 			GameDatabase,
 			GameIdsResponse,
 		},
@@ -364,9 +365,8 @@ async fn refresh_mods(handle: AppHandle) -> Result {
 #[tauri::command]
 #[specta::specta]
 async fn refresh_remote_games(handle: AppHandle) -> Result {
-	let state = handle.app_state();
 	let path = remote_game::download_database().await?;
-	state.database.attach_remote(&path)?;
+	attach_remote(&path)?;
 
 	Ok(())
 }
