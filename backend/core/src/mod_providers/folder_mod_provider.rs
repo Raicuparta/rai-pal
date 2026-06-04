@@ -2,9 +2,10 @@ use super::mod_provider::ModProvider;
 use crate::{
 	app_paths,
 	local_database::{
-		game_database::DbMutex,
+		app_database::DbMutex,
 		mod_database::ModDatabase,
 	},
+	mod_providers::mod_provider::ModProviderId,
 	mods::game_mod::{
 		GameMod,
 		ModDownload,
@@ -24,6 +25,10 @@ pub struct FolderModProvider {
 }
 
 impl ModProvider for FolderModProvider {
+	fn get_id() -> ModProviderId {
+		ModProviderId::Folder
+	}
+
 	fn default() -> Result<Self> {
 		Ok(Self {
 			folder_path: app_paths::local_mods_path()?,
@@ -45,7 +50,7 @@ impl ModProvider for FolderModProvider {
 				url: format!("file://{}", manifest_path.try_parent()?.try_to_str()?),
 			});
 
-			db.insert_mod(&game_mod);
+			db.insert_mod(&game_mod, Self::get_id());
 		}
 
 		Ok(())

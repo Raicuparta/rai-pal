@@ -77,6 +77,9 @@ pub fn temp_dir(sub_dir: &str) -> Result<PathBuf> {
 	Ok(path)
 }
 
+// We don't have migrations. If any database schema changes, update this so they get recreated.
+const DATABASE_VERSION: u32 = 0u32;
+
 pub fn database_path(database_name: &str) -> Result<PathBuf> {
-	Ok(databases_path()?.join(format!("{database_name}.db")))
+	Ok(databases_path()?.join(format!("{database_name}-{DATABASE_VERSION}.db")))
 }

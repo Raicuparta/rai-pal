@@ -4,10 +4,6 @@ use std::{
 		Path,
 		PathBuf,
 	},
-	sync::{
-		Mutex,
-		MutexGuard,
-	},
 	time::{
 		Instant,
 		SystemTime,
@@ -29,25 +25,25 @@ use crate::{
 		GamesSortBy,
 		InstallState,
 	},
-	local_database::rusqlite_extensions::{
-		JsonData,
-		RowExt,
+	local_database::{
+		app_database::{
+			AppDatabase,
+			DbMutex,
+		},
+		rusqlite_extensions::{
+			JsonData,
+			RowExt,
+		},
 	},
 	path_extensions::{
 		AsValidStr,
 		PathExt,
 	},
 	remote_game,
-	result::{
-		Error,
-		Result,
-	},
+	result::Result,
 };
 
-pub type DbMutex = Mutex<rusqlite::Connection>;
-
 pub trait GameDatabase {
-	fn lock_db(&self) -> Result<MutexGuard<'_, rusqlite::Connection>>;
 	fn insert_game(&self, game: &DbGame);
 	fn get_game(&self, provider_id: &GameProviderId, game_id: &str) -> Result<DbGame>;
 	fn get_game_ids(&self, query: Option<GamesQuery>) -> Result<GameIdsResponse>;
@@ -61,11 +57,6 @@ pub struct GameIdsResponse {
 }
 
 impl GameDatabase for DbMutex {
-	fn lock_db(&self) -> Result<MutexGuard<'_, rusqlite::Connection>> {
-		self.lock()
-			.map_err(|err| Error::DatabaseLockFailed(err.to_string()))
-	}
-
 	fn insert_game(&self, game: &DbGame) {
 		if let Err(err) = try_insert_game(self, game) {
 			log::error!(

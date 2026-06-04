@@ -12,12 +12,14 @@ use serde::Serialize;
 use crate::{
 	game_providers::game_provider::GameProviderId,
 	local_database::{
-		game_database::{
+		app_database::{
+			AppDatabase,
 			DbMutex,
-			GameDatabase,
 		},
+		game_database::GameDatabase,
 		rusqlite_extensions::RowExt,
 	},
+	mod_providers::mod_provider::ModProviderId,
 	mods::{
 		game_mod::GameMod,
 		installed_mod::InstalledMod,
@@ -41,7 +43,7 @@ pub struct GameModInfo {
 
 pub trait ModDatabase {
 	fn setup_mod_tables(&self) -> Result;
-	fn insert_mod(&self, game_mod: &GameMod);
+	fn insert_mod(&self, game_mod: &GameMod, provider_id: ModProviderId);
 	fn get_mod(&self, mod_id: &str) -> Result<GameMod>;
 	fn get_installed_mod(
 		&self,
@@ -62,7 +64,7 @@ pub trait ModDatabase {
 		provider_id: &GameProviderId,
 		game_id: &str,
 	) -> Result<Vec<GameModInfo>>;
-	fn remove_stale_mods(&self, max_time: u64) -> Result;
+	fn remove_stale_mods(&self, max_time: u64, provider_id: ModProviderId) -> Result;
 }
 
 impl ModDatabase for DbMutex {
@@ -71,6 +73,7 @@ impl ModDatabase for DbMutex {
 			r"
 			CREATE TABLE IF NOT EXISTS mods (
 				id TEXT NOT NULL,
+				provider_id TEXT NOT NULL,
 				title TEXT NOT NULL,
 				author TEXT NOT NULL,
 				source_code TEXT NOT NULL,
@@ -114,8 +117,8 @@ impl ModDatabase for DbMutex {
 		Ok(())
 	}
 
-	fn insert_mod(&self, game_mod: &GameMod) {
-		if let Err(err) = try_insert_mod(self, game_mod) {
+	fn insert_mod(&self, game_mod: &GameMod, provider_id: ModProviderId) {
+		if let Err(err) = try_insert_mod(self, game_mod, provider_id) {
 			log::error!(
 				"Failed to insert mod ({}) into local database: {}",
 				game_mod.id,
@@ -517,10 +520,10 @@ impl ModDatabase for DbMutex {
 			.collect::<rusqlite::Result<Vec<GameModInfo>>>()?)
 	}
 
-	fn remove_stale_mods(&self, max_time: u64) -> Result {
+	fn remove_stale_mods(&self, max_time: u64, provider_id: ModProviderId) -> Result {
 		self.lock_db()?
-			.prepare_cached("DELETE FROM main.mods WHERE created_at < $1;")?
-			.execute(rusqlite::params![max_time.cast_signed()])?;
+			.prepare_cached("DELETE FROM main.mods WHERE provider_id = $1 AND created_at < $2;")?
+			.execute(rusqlite::params![provider_id, max_time.cast_signed()])?;
 
 		Ok(())
 	}
@@ -530,7 +533,11 @@ fn serialize_json_option<T: Serialize>(value: Option<&T>) -> Result<String> {
 	serde_json::to_string(&value).map_err(Into::into)
 }
 
-fn try_insert_mod(connection_mutex: &DbMutex, game_mod: &GameMod) -> Result {
+fn try_insert_mod(
+	connection_mutex: &DbMutex,
+	game_mod: &GameMod,
+	provider_id: ModProviderId,
+) -> Result {
 	let download = serialize_json_option(game_mod.download.as_ref())?;
 	let engine = serialize_json_option(game_mod.engine.as_ref())?;
 	let engine_version_range = serialize_json_option(game_mod.engine_version_range.as_ref())?;
@@ -547,6 +554,7 @@ fn try_insert_mod(connection_mutex: &DbMutex, game_mod: &GameMod) -> Result {
 		.lock_db()?
 		.prepare_cached(
 			"INSERT OR REPLACE INTO mods (
+				provider_id,
 				id,
 				title,
 				author,
@@ -567,9 +575,10 @@ fn try_insert_mod(connection_mutex: &DbMutex, game_mod: &GameMod) -> Result {
 				hide_from_game_mods_list,
 				hash,
 				created_at
-			) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)",
+			) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)",
 		)?
 		.execute(rusqlite::params![
+			provider_id,
 			game_mod.id,
 			game_mod.title,
 			game_mod.author,

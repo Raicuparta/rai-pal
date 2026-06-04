@@ -3,9 +3,9 @@ use std::sync::RwLock;
 use rai_pal_core::{
 	http::DownloadStatus,
 	local_database::{
+		app_database::DbMutex,
 		game_database::{
 			self,
-			DbMutex,
 		},
 		mod_database::ModDatabase,
 	},

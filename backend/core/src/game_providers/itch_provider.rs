@@ -26,9 +26,9 @@ use crate::{
 		ProviderActions,
 		WineProviderActions,
 	},
-	local_database::game_database::{
-		DbMutex,
-		GameDatabase,
+	local_database::{
+		app_database::DbMutex,
+		game_database::GameDatabase,
 	},
 	result::{
 		LogErrExt,

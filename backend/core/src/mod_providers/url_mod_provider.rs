@@ -4,9 +4,10 @@ use super::mod_provider::ModProvider;
 use crate::{
 	http,
 	local_database::{
-		game_database::DbMutex,
+		app_database::DbMutex,
 		mod_database::ModDatabase,
 	},
+	mod_providers::mod_provider::ModProviderId,
 	mods::game_mod::GameMod,
 	result::Result,
 };
@@ -29,6 +30,10 @@ pub struct UrlModProvider {
 }
 
 impl ModProvider for UrlModProvider {
+	fn get_id() -> ModProviderId {
+		ModProviderId::Url
+	}
+
 	fn default() -> Result<Self> {
 		Ok(Self {
 			url: format!("{URL_BASE}/{DATABASE_VERSION}/mods.json"),
@@ -44,7 +49,7 @@ impl ModProvider for UrlModProvider {
 			.await?
 			.mods
 			.iter()
-			.for_each(|game_mod| db.insert_mod(game_mod));
+			.for_each(|game_mod| db.insert_mod(game_mod, Self::get_id()));
 
 		Ok(())
 	}

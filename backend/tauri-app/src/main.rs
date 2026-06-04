@@ -37,6 +37,7 @@ use rai_pal_core::{
 	games_query::GamesQuery,
 	http::DownloadStatus,
 	local_database::{
+		app_database::AppDatabase,
 		game_database::{
 			GameDatabase,
 			GameIdsResponse,

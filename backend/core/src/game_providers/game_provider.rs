@@ -32,10 +32,10 @@ use crate::{
 		manual_provider::Manual,
 		steam::steam_provider::Steam,
 	},
-	local_database::game_database::{
+	local_database::app_database::{
 		DbMutex,
-		GameDatabase,
 	},
+	local_database::game_database::GameDatabase,
 	result::{
 		Error,
 		Result,
