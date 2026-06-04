@@ -11,7 +11,10 @@ export const commands = {
 	getAuthState: () => __TAURI_INVOKE<DiscordAuthState>("get_auth_state"),
 	logIn: () => __TAURI_INVOKE<null>("log_in"),
 	logOut: () => __TAURI_INVOKE<null>("log_out"),
-	frontendReady: () => __TAURI_INVOKE<null>("frontend_ready"),
+	sendAnalyticsEvent: (event: Event, data: {
+	modId: string | null,
+	game: string | null,
+} | null) => __TAURI_INVOKE<null>("send_analytics_event", { event, data }),
 	getAppSettings: () => __TAURI_INVOKE<AppSettings>("get_app_settings"),
 	getGameIds: (query: {
 	filter: GamesFilter,
@@ -61,6 +64,11 @@ export const events = {
 export const PROVIDER_IDS = ["Epic","Gog","Itch","Manual","Steam","Xbox"] as const;
 
 /* Types */
+export type AnalyticsData = {
+	modId: string | null,
+	game: string | null,
+};
+
 export type AppDatabaseChanged = [];
 
 export type AppLocale = "EnUs" | "EsEs" | "FrFr" | "DeDe" | "PtPt" | "ZhCn" | "JaJp" | "KoKr" | "WaWa";
@@ -122,6 +130,8 @@ export type EngineVersionRange = {
 };
 
 export type Error = "Tauri" | "Core" | "Io" | "Rusql" | "SerdeJson" | "SystemTimeError" | ({ FailedToAccessStateData: string }) & { LinuxOnly?: never } | ({ LinuxOnly: null }) & { FailedToAccessStateData?: never };
+
+export type Event = "install_mod" | "run_mod" | "provider_command" | "start_app" | "manually_add_game";
 
 export type ExecutedProviderCommand = null;
 

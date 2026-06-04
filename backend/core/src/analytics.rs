@@ -10,6 +10,10 @@ use log::{
 	error,
 	info,
 };
+use rai_pal_proc_macros::{
+	serializable_enum,
+	serializable_struct,
+};
 use serde::Serialize;
 use uuid::Uuid;
 
@@ -20,18 +24,27 @@ const API_KEY: Option<&str> = option_env!("ANALYTICS_API_KEY");
 
 static ANALYTICS_ID: LazyLock<String> = LazyLock::new(|| Uuid::new_v4().hyphenated().to_string());
 
-#[derive(Serialize, Debug, Clone)]
+#[serializable_enum]
 #[serde(rename_all = "snake_case")]
 pub enum Event {
-	InstallOrRunMod,
+	InstallMod,
+	RunMod,
+	ProviderCommand,
 	StartApp,
 	ManuallyAddGame,
 }
 
 #[derive(Debug, Serialize)]
 struct AnalyticsEventParams {
-	data: String,
+	mod_id: String,
+	game: String,
 	app_version: String,
+}
+
+#[serializable_struct]
+pub struct AnalyticsData {
+	mod_id: Option<String>,
+	game: Option<String>,
 }
 
 #[derive(Debug, Serialize)]
@@ -49,7 +62,7 @@ struct AnalyticsPayload {
 }
 
 impl AnalyticsPayload {
-	pub fn new(event_name: &Event, data: &str) -> Self {
+	pub fn new(event_name: Event, data: &AnalyticsData) -> Self {
 		Self {
 			client_id: ANALYTICS_ID.to_string(),
 			timestamp_micros: SystemTime::now()
@@ -58,9 +71,10 @@ impl AnalyticsPayload {
 				.as_micros(),
 			non_personalized_ads: true,
 			events: vec![AnalyticsEvent {
-				name: event_name.to_owned(),
+				name: event_name,
 				params: AnalyticsEventParams {
-					data: data.to_string(),
+					mod_id: data.mod_id.clone().unwrap_or_default(),
+					game: data.game.clone().unwrap_or_default(),
 					app_version: env!("CARGO_PKG_VERSION").to_string(),
 				},
 			}],
@@ -68,22 +82,27 @@ impl AnalyticsPayload {
 	}
 }
 
-pub async fn send_event(event_name: Event, data: &str) {
+pub async fn send_event(event_name: Event, data: Option<AnalyticsData>) {
 	if let Some(api_key) = API_KEY {
 		let url = format!(
 			"https://www.google-analytics.com/mp/collect?measurement_id={MEASUREMENT_ID}&api_secret={api_key}"
 		);
-		let payload = AnalyticsPayload::new(&event_name, data);
+		let payload = AnalyticsPayload::new(
+			event_name,
+			&data.unwrap_or(AnalyticsData {
+				mod_id: None,
+				game: None,
+			}),
+		);
 		info!("Sending {payload:?}");
 		let resp = http::CLIENT.post(url).json(&payload).send().await;
 		match resp {
 			Ok(resp) => {
 				if resp.status().is_success() {
-					info!("Successfully Sent Analytics Event {event_name:?} for {data}");
+					info!("Successfully Sent Analytics Event {event_name:?}");
 				} else {
 					error!(
-						"Couldn't Send Analytics Event For {}! {}",
-						data,
+						"Couldn't Send Analytics Event {event_name}! {}",
 						resp.status()
 					);
 				}
@@ -91,7 +110,7 @@ pub async fn send_event(event_name: Event, data: &str) {
 			Err(err) => {
 				error!(
 					"{}",
-					format!("Couldn't Send Analytics Event For {data}! {err:?}")
+					format!("Couldn't Send Analytics Event {event_name}! {err:?}")
 						.replace(api_key, "***")
 				);
 			}

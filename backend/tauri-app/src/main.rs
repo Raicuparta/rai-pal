@@ -19,6 +19,7 @@ use events::EventEmitter;
 #[cfg(target_os = "windows")]
 use rai_pal_core::windows;
 use rai_pal_core::{
+	analytics,
 	app_paths,
 	game::DbGame,
 	game_providers::{
@@ -457,9 +458,11 @@ async fn add_rai_pal_steam_shortcut() -> Result {
 
 #[tauri::command]
 #[specta::specta]
-async fn frontend_ready() -> Result {
-	// TODO analytics
-	// analytics::send_event(analytics::Event::StartApp, "").await;
+async fn send_analytics_event(
+	event: analytics::Event,
+	data: Option<analytics::AnalyticsData>,
+) -> Result {
+	analytics::send_event(event, data).await;
 
 	Ok(())
 }
@@ -619,7 +622,7 @@ fn main() {
 			get_auth_state,
 			log_in,
 			log_out,
-			frontend_ready,
+			send_analytics_event,
 			get_app_settings,
 			get_game_ids,
 			get_game,
