@@ -91,16 +91,17 @@ pub async fn send_event(event_name: Event, data: Option<AnalyticsData>) {
 			game: None,
 		}),
 	);
+	info!("Analytics payload {payload:?}");
+
 	if let Some(api_key) = API_KEY {
 		let url = format!(
 			"https://www.google-analytics.com/mp/collect?measurement_id={MEASUREMENT_ID}&api_secret={api_key}"
 		);
-		info!("Sending {payload:?}");
 		let resp = http::CLIENT.post(url).json(&payload).send().await;
 		match resp {
 			Ok(resp) => {
 				if resp.status().is_success() {
-					info!("Successfully Sent Analytics Event {event_name:?}");
+					info!("Successfully Sent Analytics Event {event_name}");
 				} else {
 					error!(
 						"Couldn't Send Analytics Event {event_name}! {}",
@@ -117,8 +118,6 @@ pub async fn send_event(event_name: Event, data: Option<AnalyticsData>) {
 			}
 		}
 	} else {
-		let payload_json = serde_json::to_string_pretty(&payload)
-			.unwrap_or_else(|err| format!("Failed To Serialize Payload: {err:?}"));
-		info!("Skipping Analytics As The ANALYTICS_API_KEY Is Null ({payload_json})");
+		info!("Skipping Analytics As The ANALYTICS_API_KEY Is Null");
 	}
 }
