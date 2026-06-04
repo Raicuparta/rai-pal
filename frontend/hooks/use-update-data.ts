@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef } from "react";
 import { useSetAtom } from "jotai";
 import { commands, PROVIDER_IDS } from "@api/bindings";
-import { loadingTasksAtom, gameDataAtom } from "./use-data";
+import { loadingTasksAtom, gameDataAtom, modsAtom } from "./use-data";
 import { showAppNotification } from "@components/app-notifications";
 import { useAppEvent } from "./use-app-event";
 import { useThrottledCallback } from "@mantine/hooks";
@@ -11,18 +11,20 @@ import { useDataQuery } from "./use-data-query";
 export function useUpdateData(executeOnMount = false) {
 	const setLoadingTasks = useSetAtom(loadingTasksAtom);
 	const setGameData = useSetAtom(gameDataAtom);
+	const setMods = useSetAtom(modsAtom);
 	const [gamesQuery] = useDataQuery();
-	const totalFetchCount = useRef(0);
+	const totalGameFetchCount = useRef(0);
+	const totalModFetchCount = useRef(0);
 	const totalLoadingTaskCount = useRef(0);
 	const hasExecutedOnMount = useRef(false);
 
 	const updateGames = useCallback(() => {
-		totalFetchCount.current++;
-		const thisFetchCount = totalFetchCount.current;
+		totalGameFetchCount.current++;
+		const thisFetchCount = totalGameFetchCount.current;
 		commands
 			.getGameIds(gamesQuery)
 			.then((data) => {
-				if (thisFetchCount !== totalFetchCount.current) {
+				if (thisFetchCount !== totalGameFetchCount.current) {
 					console.log(
 						"Cancelling this fetch since another one happened in the meantime.",
 					);
@@ -32,22 +34,42 @@ export function useUpdateData(executeOnMount = false) {
 				setGameData(data);
 			})
 			.catch((error) => {
-				showAppNotification(`Failed to get app data: ${error}`, "error");
+				showAppNotification(`Failed to get app games data: ${error}`, "error");
 			});
 	}, [gamesQuery, setGameData]);
 
-	const throttledUpdateProviderGames = useThrottledCallback(updateGames, 1000);
+	const updateMods = useCallback(() => {
+		totalModFetchCount.current++;
+		const thisFetchCount = totalModFetchCount.current;
+		commands
+			.getMods()
+			.then((data) => {
+				if (thisFetchCount !== totalModFetchCount.current) {
+					console.log(
+						"Cancelling this fetch since another one happened in the meantime.",
+					);
+					return;
+				}
+
+				setMods(data);
+			})
+			.catch((error) => {
+				showAppNotification(`Failed to get app mods data: ${error}`, "error");
+			});
+	}, [setMods]);
+
+	const throttledUpdateData = useThrottledCallback(() => {
+		updateGames();
+		updateMods();
+	}, 1000);
 
 	useEffect(() => {
 		if (!executeOnMount) return;
 		updateGames();
-	}, [updateGames, executeOnMount]);
+		updateMods();
+	}, [updateGames, executeOnMount, updateMods]);
 
-	useAppEvent(
-		"appDatabaseChanged",
-		"update-data",
-		throttledUpdateProviderGames,
-	);
+	useAppEvent("appDatabaseChanged", "update-data", throttledUpdateData);
 
 	const updateAppData = useCallback(async () => {
 		function handleDataPromise(promise: Promise<null>, taskName: string) {

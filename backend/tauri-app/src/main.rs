@@ -4,6 +4,7 @@
 #![allow(clippy::unused_async)]
 
 use std::{
+	collections::BTreeMap,
 	path::PathBuf,
 	thread,
 	time::Duration,
@@ -361,13 +362,16 @@ async fn install_mod_dependencies(handle: &AppHandle, game_mod: &GameMod, game: 
 #[specta::specta]
 async fn refresh_mods(handle: AppHandle) -> Result {
 	let state = handle.app_state();
-
-	let refresh_result = mod_provider::refresh_all_mods(&state.database).await;
-	let mods = state.database.get_mod_map()?;
-	handle.emit_safe(events::SyncMods(mods));
-	refresh_result?;
+	mod_provider::refresh_all_mods(&state.database).await?;
 
 	Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn get_mods(handle: AppHandle) -> Result<BTreeMap<String, GameMod>> {
+	let state = handle.app_state();
+	Ok(state.database.get_mod_map()?)
 }
 
 #[tauri::command]
@@ -621,20 +625,22 @@ fn main() {
 			add_game,
 			add_rai_pal_steam_shortcut,
 			configure_mod,
+			download_remote_config,
+			get_app_settings,
 			get_auth_state,
+			get_game,
+			get_game_ids,
+			get_game_mods,
+			get_mods,
+			get_remote_configs,
+			install_mod,
+			listen_to_download_progress,
 			log_in,
 			log_out,
-			send_analytics_event,
-			get_app_settings,
-			get_game_ids,
-			get_game,
-			get_game_mods,
-			install_mod,
-			run_mod,
 			open_game_folder,
-			open_game_wine_prefix_folder,
-			open_game_wine_binary_folder,
 			open_game_mods_folder,
+			open_game_wine_binary_folder,
+			open_game_wine_prefix_folder,
 			open_installed_mod_folder,
 			open_local_mods_folder,
 			open_logs_folder,
@@ -644,14 +650,13 @@ fn main() {
 			refresh_remote_games,
 			remove_game,
 			reset_steam_cache,
+			run_mod,
 			run_provider_command,
 			save_app_settings,
+			send_analytics_event,
+			set_up_global_wine_overrides,
 			uninstall_all_mods,
 			uninstall_mod,
-			get_remote_configs,
-			download_remote_config,
-			set_up_global_wine_overrides,
-			listen_to_download_progress,
 		])
 		.events(events::collect_events())
 		.constant("PROVIDER_IDS", GameProviderId::iter().collect::<Vec<_>>())

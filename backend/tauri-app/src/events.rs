@@ -1,9 +1,4 @@
-use std::collections::BTreeMap;
-
-use rai_pal_core::{
-	game_providers::game_provider::GameProviderId,
-	mods::game_mod::GameMod,
-};
+use rai_pal_core::game_providers::game_provider::GameProviderId;
 use rai_pal_proc_macros::serializable_event;
 use serde::Serialize;
 
@@ -12,9 +7,6 @@ pub struct RefreshGame(pub GameProviderId, pub String);
 
 #[serializable_event]
 pub struct AppDatabaseChanged();
-
-#[serializable_event]
-pub struct SyncMods(pub BTreeMap<String, GameMod>);
 
 #[serializable_event]
 pub struct ExecutedProviderCommand;
@@ -38,7 +30,6 @@ pub fn collect_events() -> tauri_specta::Events {
 	tauri_specta::collect_events![
 		RefreshGame,
 		AppDatabaseChanged,
-		SyncMods,
 		ExecutedProviderCommand,
 		SelectGame,
 	]
