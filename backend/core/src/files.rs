@@ -1,5 +1,8 @@
 use std::{
-	fs,
+	fs::{
+		self,
+		File,
+	},
 	io,
 	path::Path,
 };
@@ -22,10 +25,9 @@ pub fn copy_dir_all(src: impl AsRef<Path>, dst: impl AsRef<Path>) -> Result {
 	Ok(())
 }
 
-pub fn extract<R: io::Read + io::Seek>(
-	archive: &mut ZipArchive<R>,
-	target_path: &Path,
-) -> io::Result<()> {
+pub fn extract(archive_path: &Path, target_path: &Path) -> io::Result<()> {
+	let mut archive = ZipArchive::new(File::open(archive_path)?)?;
+
 	for i in 0..archive.len() {
 		let mut file = archive.by_index(i).map_err(io::Error::other)?;
 
@@ -46,6 +48,13 @@ pub fn extract<R: io::Read + io::Seek>(
 		if file.is_dir() || sanitized_name.ends_with('/') {
 			fs::create_dir_all(&outpath)?;
 		} else {
+			if let Ok(metadata) = fs::metadata(&outpath)
+				&& metadata.len() == file.size()
+			{
+				// Skip extracting if already extracted.
+				continue;
+			}
+
 			if let Some(p) = outpath.parent()
 				&& !p.exists()
 			{

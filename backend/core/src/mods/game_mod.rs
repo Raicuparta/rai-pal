@@ -4,6 +4,11 @@ use std::{
 		self,
 		File,
 	},
+	hash::{
+		DefaultHasher,
+		Hash,
+		Hasher,
+	},
 	path::{
 		Path,
 		PathBuf,
@@ -163,7 +168,7 @@ impl GameMod {
 				.as_ref()
 				.ok_or_else(|| Error::ModInfoMissing(self.id.clone(), "download".to_string()))?;
 
-			let source_dir = download.download(&self.id, on_download_status).await?;
+			let source_dir = download.download(on_download_status).await?;
 
 			for extract_action in extract_actions {
 				let source_path = source_dir.join(&extract_action.source);
@@ -200,14 +205,12 @@ impl GameMod {
 		Ok(())
 	}
 
-	// TODO: can only run if installed.
 	pub fn run(&self, game: &DbGame) -> Result {
 		let run_for_game = self
 			.run_for_game
 			.as_ref()
 			.ok_or_else(|| Error::ModInfoMissing(self.id.clone(), "run_for_game".to_string()))?;
 
-		// TODO check this path, probably needs changing in DB to be absolute.
 		let run_path = PathBuf::from(replace_tokens(
 			run_for_game.path.as_ref().ok_or_else(|| {
 				Error::ModInfoMissing(self.id.clone(), "run_for_game.path".to_string())
@@ -270,7 +273,6 @@ impl GameMod {
 impl ModDownload {
 	async fn download(
 		&self,
-		mod_id: &str,
 		on_download_status: impl Fn(DownloadStatus) + Send,
 	) -> Result<PathBuf> {
 		if let Some(local_path) = self.url.strip_prefix("file://") {
@@ -283,19 +285,21 @@ impl ModDownload {
 			return Ok(source_path);
 		}
 
-		let temp_dir = app_paths::temp_dir(&format!("mod-{mod_id}"))?;
-		// TODO cache should be per version.
-		let zip_path = temp_dir.join(format!("{mod_id}.zip"));
+		let mut hasher = DefaultHasher::new();
+		self.url.hash(&mut hasher);
+		let url_hash = hasher.finish().to_string();
 
-		http::download(&self.url, &zip_path, on_download_status).await?;
+		let temp_dir = app_paths::temp_dir(&url_hash)?;
+		let zip_path = temp_dir.join("download.zip");
+		let extracted_folder = temp_dir.join("extracted");
+		fs::create_dir_all(&extracted_folder)?;
 
-		let file = File::open(&zip_path)?;
-		let mut zip_archive = ZipArchive::new(file)?;
+		if !zip_path.is_file() {
+			http::download(&self.url, &zip_path, on_download_status).await?;
+		}
 
-		files::extract(&mut zip_archive, &temp_dir)?;
+		files::extract(&zip_path, &extracted_folder)?;
 
-		fs::remove_file(&zip_path)?;
-
-		Ok(temp_dir)
+		Ok(extracted_folder)
 	}
 }
