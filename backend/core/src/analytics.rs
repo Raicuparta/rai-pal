@@ -6,10 +6,7 @@ use std::{
 	},
 };
 
-use log::{
-	error,
-	info,
-};
+use log;
 use rai_pal_proc_macros::{
 	serializable_enum,
 	serializable_struct,
@@ -91,7 +88,7 @@ pub async fn send_event(event_name: Event, data: Option<AnalyticsData>) {
 			game: None,
 		}),
 	);
-	info!("Analytics payload {payload:?}");
+	log::debug!("Analytics payload {payload:?}");
 
 	if let Some(api_key) = API_KEY {
 		let url = format!(
@@ -101,16 +98,16 @@ pub async fn send_event(event_name: Event, data: Option<AnalyticsData>) {
 		match resp {
 			Ok(resp) => {
 				if resp.status().is_success() {
-					info!("Successfully Sent Analytics Event {event_name}");
+					log::info!("Successfully Sent Analytics Event {event_name}");
 				} else {
-					error!(
+					log::error!(
 						"Couldn't Send Analytics Event {event_name}! {}",
 						resp.status()
 					);
 				}
 			}
 			Err(err) => {
-				error!(
+				log::error!(
 					"{}",
 					format!("Couldn't Send Analytics Event {event_name}! {err:?}")
 						.replace(api_key, "***")
@@ -118,6 +115,6 @@ pub async fn send_event(event_name: Event, data: Option<AnalyticsData>) {
 			}
 		}
 	} else {
-		info!("Skipping Analytics As The ANALYTICS_API_KEY Is Null");
+		log::info!("Skipping Analytics As The ANALYTICS_API_KEY Is Null");
 	}
 }

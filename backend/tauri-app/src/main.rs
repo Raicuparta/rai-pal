@@ -684,7 +684,11 @@ fn main() {
 		.plugin(tauri_plugin_updater::Builder::default().build())
 		.plugin(
 			tauri_plugin_log::Builder::new()
-				.level(log::LevelFilter::Info)
+				.level(if cfg!(debug_assertions) {
+					log::LevelFilter::Trace
+				} else {
+					log::LevelFilter::Info
+				})
 				.targets([
 					Target::new(TargetKind::Stdout),
 					Target::new(app_paths::logs_path().map_or(
