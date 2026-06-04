@@ -206,6 +206,13 @@ export const enUs = {
 
 		incompatibleGameModsDescription:
 			"The mods listed here can't be installed because they aren't compatible with this game's engine version.",
+
+		// Button that expands the section showing hidden "mods", which sometimes aren't mods at all so we say "things" here.
+		otherThings: "Other things",
+
+		// Description for the section that shows hidden "mods".
+		otherThingsDescription:
+			"These are mostly dependencies and other stuff that you don't usually need to mess with directly.",
 	},
 
 	// Row in the table that shows mods for a specific game in the game modal.
@@ -225,6 +232,10 @@ export const enUs = {
 
 		// Button for installing a mod for this game.
 		installMod: "Install",
+
+		// Warning that shows before installing a mod for the first time.
+		installModAnticheatWarning:
+			"Attention: be careful when installing mods on multiplayer games! Anticheat can detect some mods and get you banned, even if the mods seem harmless.",
 
 		// Button for reinstalling a mod that's already installed.
 		reinstallMod: "Reinstall",

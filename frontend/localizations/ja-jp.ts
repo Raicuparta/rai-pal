@@ -105,6 +105,11 @@ export const jaJp: Localization = {
 
 		incompatibleGameModsDescription:
 			"ここにリストされているモッドは、このゲームのエンジンバージョンと互換性がないため、インストールできません。",
+
+		otherThings: "その他のもの",
+
+		otherThingsDescription:
+			"これらは主に依存関係やその他のもので、通常は直接いじる必要はありません。",
 	},
 
 	gameModRow: {
@@ -114,6 +119,8 @@ export const jaJp: Localization = {
 		openModFolder: "モッドフォルダーを開く",
 		updateMod: "更新",
 		installMod: "インストール",
+		installModAnticheatWarning:
+			"注意: マルチプレイヤーゲームにモッドをインストールする際は注意してください! アンチチートはいくつかのモッドを検出して、モッドが無害に見えても、あなたをバンすることができます。",
 		reinstallMod: "再インストール",
 		uninstallMod: "アンインストール",
 		runMod: "実行",

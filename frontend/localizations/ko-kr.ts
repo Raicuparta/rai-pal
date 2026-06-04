@@ -103,6 +103,11 @@ export const koKr: Localization = {
 
 		incompatibleGameModsDescription:
 			"여기에 나열된 모드들은 이 게임의 엔진 버전과 호환되지 않기 때문에 설치할 수 없습니다.",
+
+		otherThings: "기타 항목",
+
+		otherThingsDescription:
+			"이들은 주로 종속성 및 기타 항목으로 일반적으로 직접 수정할 필요가 없습니다.",
 	},
 
 	gameModRow: {
@@ -111,6 +116,8 @@ export const koKr: Localization = {
 		openModFolder: "모드 폴더 열기",
 		updateMod: "업데이트",
 		installMod: "설치",
+		installModAnticheatWarning:
+			"주의: 멀티플레이어 게임에 모드를 설치할 때 주의하세요! 안티치트는 일부 모드를 감지할 수 있으며, 모드가 무해해 보여도 당신을 밴할 수 있습니다.",
 		reinstallMod: "재설치",
 		uninstallMod: "제거",
 		runMod: "실행",

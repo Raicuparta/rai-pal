@@ -100,6 +100,11 @@ export const zhCn: Localization = {
 
 		incompatibleGameModsDescription:
 			"此处列出的模组无法安装，因为它们与此游戏的引擎版本不兼容。",
+
+		otherThings: "其他内容",
+
+		otherThingsDescription:
+			"这些主要是依赖项和其他内容，通常您无需直接修改。",
 	},
 
 	gameModRow: {
@@ -108,6 +113,8 @@ export const zhCn: Localization = {
 		openModFolder: "打开模组文件夹",
 		updateMod: "更新",
 		installMod: "安装",
+		installModAnticheatWarning:
+			"警告：在多人游戏中安装模组时要小心！反作弊可以检测一些模组并禁止您，即使这些模组看起来无害。",
 		reinstallMod: "重新安装",
 		uninstallMod: "卸载",
 		runMod: "运行",

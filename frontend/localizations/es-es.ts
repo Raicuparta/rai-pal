@@ -106,6 +106,11 @@ export const esEs: Localization = {
 
 		incompatibleGameModsDescription:
 			"Los mods listados aquí no se pueden instalar porque no son compatibles con la versión del motor de este juego.",
+
+		otherThings: "Otras cosas",
+
+		otherThingsDescription:
+			"Estas son principalmente dependencias y otras cosas que normalmente no necesitas modificar directamente.",
 	},
 
 	gameModRow: {
@@ -115,6 +120,8 @@ export const esEs: Localization = {
 		openModFolder: "Abrir Carpeta del Mod",
 		updateMod: "Actualizar",
 		installMod: "Instalar",
+		installModAnticheatWarning:
+			"Atención: ¡Ten cuidado al instalar mods en juegos multijugador! El anticheat puede detectar algunos mods y banearte, incluso si los mods parecen inofensivos.",
 		reinstallMod: "Reinstalar",
 		uninstallMod: "Desinstalar",
 		runMod: "Ejecutar",

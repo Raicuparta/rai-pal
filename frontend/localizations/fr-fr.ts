@@ -106,6 +106,11 @@ export const frFr: Localization = {
 
 		incompatibleGameModsDescription:
 			"Les mods listés ici ne peuvent pas être installés car ils ne sont pas compatibles avec la version du moteur de ce jeu.",
+
+		otherThings: "Autres choses",
+
+		otherThingsDescription:
+			"Ce sont principalement des dépendances et d'autres choses que vous n'avez généralement pas besoin de modifier directement.",
 	},
 
 	gameModRow: {
@@ -115,6 +120,8 @@ export const frFr: Localization = {
 		openModFolder: "Ouvrir le Dossier du Mod",
 		updateMod: "Mettre à jour",
 		installMod: "Installer",
+		installModAnticheatWarning:
+			"Attention: soyez prudent lors de l'installation de mods sur des jeux multijoueurs! L'anticheat peut détecter certains mods et vous bannir, même si les mods semblent inoffensifs.",
 		reinstallMod: "Réinstaller",
 		uninstallMod: "Désinstaller",
 		runMod: "Exécuter",

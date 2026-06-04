@@ -106,6 +106,11 @@ export const deDe: Localization = {
 
 		incompatibleGameModsDescription:
 			"Die hier aufgelisteten Mods können nicht installiert werden, da sie nicht mit der Engine-Version dieses Spiels kompatibel sind.",
+
+		otherThings: "Sonstige Dinge",
+
+		otherThingsDescription:
+			"Dies sind hauptsächlich Abhängigkeiten und andere Dinge, die Sie normalerweise nicht direkt bearbeiten müssen.",
 	},
 
 	gameModRow: {
@@ -115,6 +120,8 @@ export const deDe: Localization = {
 		openModFolder: "Mod-Ordner öffnen",
 		updateMod: "Aktualisieren",
 		installMod: "Installieren",
+		installModAnticheatWarning:
+			"Achtung: Seien Sie vorsichtig beim Installieren von Mods in Mehrspieler-Spielen! Anticheat kann einige Mods erkennen und Sie bannen, auch wenn die Mods harmlos aussehen.",
 		reinstallMod: "Neu installieren",
 		uninstallMod: "Deinstallieren",
 		runMod: "Ausführen",
