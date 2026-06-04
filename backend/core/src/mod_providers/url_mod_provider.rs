@@ -11,6 +11,11 @@ use crate::{
 	result::Result,
 };
 
+#[serializable_struct]
+pub struct UrlModDatabase {
+	pub mods: Vec<GameMod>,
+}
+
 const URL_BASE: &str = "https://raicuparta.github.io/rai-pal-db/mod-db";
 
 // The repository over at github.com/Raicuparta/rai-pal-db can have multiple versions of the database.
@@ -31,27 +36,16 @@ impl ModProvider for UrlModProvider {
 	}
 
 	async fn insert_mods(&self, db: &DbMutex) -> Result {
-		UrlModDatabase::get_from_url(&self.url)
+		http::CLIENT
+			.get(&self.url)
+			.send()
 			.await?
-			.insert_mods(db);
+			.json::<UrlModDatabase>()
+			.await?
+			.mods
+			.iter()
+			.for_each(|game_mod| db.insert_mod(game_mod));
 
 		Ok(())
-	}
-}
-
-#[serializable_struct]
-pub struct UrlModDatabase {
-	pub mods: Vec<GameMod>,
-}
-
-impl UrlModDatabase {
-	pub async fn get_from_url(url: &str) -> Result<Self> {
-		Ok(http::CLIENT.get(url).send().await?.json::<Self>().await?)
-	}
-
-	pub fn insert_mods(&self, db: &DbMutex) {
-		for game_mod in &self.mods {
-			db.insert_mod(game_mod);
-		}
 	}
 }

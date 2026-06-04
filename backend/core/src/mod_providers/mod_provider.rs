@@ -25,20 +25,15 @@ pub enum ModProviderId {
 	Url,
 }
 
-async fn refresh_provider<TProvider: ModProvider>(db: &DbMutex) -> Result {
+pub async fn refresh_all_mods(db: &DbMutex) -> Result {
 	let start_time = std::time::SystemTime::now()
 		.duration_since(std::time::UNIX_EPOCH)?
 		.as_secs();
 
-	TProvider::default()?.insert_mods(db).await?;
+	FolderModProvider::default()?.insert_mods(db).await?;
+	UrlModProvider::default()?.insert_mods(db).await?;
+
 	db.remove_stale_mods(start_time)?;
-
-	Ok(())
-}
-
-pub async fn refresh_all_mods(db: &DbMutex) -> Result {
-	refresh_provider::<FolderModProvider>(db).await?;
-	refresh_provider::<UrlModProvider>(db).await?;
 
 	db.refresh_installed_mods()?;
 

@@ -361,9 +361,10 @@ async fn install_mod_dependencies(handle: &AppHandle, game_mod: &GameMod, game: 
 async fn refresh_mods(handle: AppHandle) -> Result {
 	let state = handle.app_state();
 
-	mod_provider::refresh_all_mods(&state.database).await?;
+	let refresh_result = mod_provider::refresh_all_mods(&state.database).await;
 	let mods = state.database.get_mod_map()?;
 	handle.emit_safe(events::SyncMods(mods));
+	refresh_result?;
 
 	Ok(())
 }
