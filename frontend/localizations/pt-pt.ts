@@ -118,7 +118,7 @@ export const ptPt: Localization = {
 		updateMod: "Atualizar",
 		installMod: "Instalar",
 		installModAnticheatWarning:
-			"Atenção: tenha cuidado ao instalar mods em jogos multijogador! O anticheat pode detectar alguns mods e bani-lo, mesmo que os mods pareçam inofensivos.",
+			"Atenção: tem cuidado ao instalar mods em jogos multiplayer! O anticheat pode detectar alguns mods e banir-te, mesmo que os mods pareçam inofensivos.",
 		reinstallMod: "Reinstalar",
 		uninstallMod: "Desinstalar",
 		runMod: "Executar",

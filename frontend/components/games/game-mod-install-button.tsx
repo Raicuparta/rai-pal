@@ -15,10 +15,7 @@ export function GameModInstallButton({ game, mod, remoteConfigFile }: Props) {
 	return (
 		<GameModActionButton
 			leftSection={<IconCirclePlus />}
-			confirmationText={
-				// TODO: translate
-				"Attention: be careful when installing mods on multiplayer games! Anticheat can detect some mods and get you banned, even if the mods seem harmless."
-			}
+			confirmationText={t("installModAnticheatWarning")}
 			confirmationSkipId="install-mod-confirm"
 			onClick={async () => {
 				if (remoteConfigFile) {

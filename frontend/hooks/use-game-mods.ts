@@ -8,6 +8,7 @@ import { modsAtom } from "./use-data";
 type GameModsPart = { mod: GameMod; info: GameModInfo };
 export type GameModsData = {
 	compatibleMods: GameModsPart[];
+	hiddenMods: GameModsPart[];
 	incompatibleMods: GameModsPart[];
 };
 
@@ -47,6 +48,7 @@ export function useGameMods(
 	const result = useMemo(() => {
 		const compatibleMods: { mod: GameMod; info: GameModInfo }[] = [];
 		const incompatibleMods: { mod: GameMod; info: GameModInfo }[] = [];
+		const hiddenMods: { mod: GameMod; info: GameModInfo }[] = [];
 
 		if (!gameModInfos) return null;
 
@@ -55,7 +57,9 @@ export function useGameMods(
 			if (!mod) continue;
 
 			if (info.compatible) {
-				if (!mod.hideFromGameModsList) {
+				if (mod.hideFromGameModsList) {
+					hiddenMods.push({ mod, info });
+				} else {
 					compatibleMods.push({ mod, info });
 				}
 			} else {
@@ -63,7 +67,7 @@ export function useGameMods(
 			}
 		}
 
-		return { compatibleMods, incompatibleMods };
+		return { compatibleMods, hiddenMods, incompatibleMods };
 	}, [gameModInfos, mods]);
 
 	return result;

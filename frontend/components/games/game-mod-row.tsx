@@ -58,7 +58,7 @@ export function GameModRow({
 
 	const isOutdated = info?.isOutdated;
 
-	const isInstalled = Boolean(info?.installedVersion);
+	const isInstalled = Boolean(info?.installedHash);
 
 	const { statusIcon, statusColor } = (() => {
 		if (isOutdated)
