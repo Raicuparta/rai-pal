@@ -12,7 +12,7 @@ export const commands = {
 	logIn: () => __TAURI_INVOKE<null>("log_in"),
 	logOut: () => __TAURI_INVOKE<null>("log_out"),
 	sendAnalyticsEvent: (event: Event, data: {
-	modId: string | null,
+	param: string | null,
 	game: string | null,
 } | null) => __TAURI_INVOKE<null>("send_analytics_event", { event, data }),
 	getAppSettings: () => __TAURI_INVOKE<AppSettings>("get_app_settings"),
@@ -65,7 +65,7 @@ export const PROVIDER_IDS = ["Epic","Gog","Itch","Manual","Steam","Xbox"] as con
 
 /* Types */
 export type AnalyticsData = {
-	modId: string | null,
+	param: string | null,
 	game: string | null,
 };
 
@@ -131,7 +131,7 @@ export type EngineVersionRange = {
 
 export type Error = "Tauri" | "Core" | "Io" | "Rusql" | "SerdeJson" | "SystemTimeError" | ({ FailedToAccessStateData: string }) & { LinuxOnly?: never } | ({ LinuxOnly: null }) & { FailedToAccessStateData?: never };
 
-export type Event = "install_mod" | "run_mod" | "provider_command" | "start_app" | "manually_add_game";
+export type Event = "install_mod" | "uninstall_mod" | "update_mod" | "run_mod" | "provider_command" | "start_app";
 
 export type ExecutedProviderCommand = null;
 

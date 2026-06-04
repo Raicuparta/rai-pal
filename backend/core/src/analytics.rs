@@ -28,22 +28,23 @@ static ANALYTICS_ID: LazyLock<String> = LazyLock::new(|| Uuid::new_v4().hyphenat
 #[serde(rename_all = "snake_case")]
 pub enum Event {
 	InstallMod,
+	UninstallMod,
+	UpdateMod,
 	RunMod,
 	ProviderCommand,
 	StartApp,
-	ManuallyAddGame,
 }
 
 #[derive(Debug, Serialize)]
 struct AnalyticsEventParams {
-	mod_id: String,
+	param: String,
 	game: String,
 	app_version: String,
 }
 
 #[serializable_struct]
 pub struct AnalyticsData {
-	mod_id: Option<String>,
+	param: Option<String>,
 	game: Option<String>,
 }
 
@@ -73,7 +74,7 @@ impl AnalyticsPayload {
 			events: vec![AnalyticsEvent {
 				name: event_name,
 				params: AnalyticsEventParams {
-					mod_id: data.mod_id.clone().unwrap_or_default(),
+					param: data.param.clone().unwrap_or_default(),
 					game: data.game.clone().unwrap_or_default(),
 					app_version: env!("CARGO_PKG_VERSION").to_string(),
 				},
@@ -83,16 +84,16 @@ impl AnalyticsPayload {
 }
 
 pub async fn send_event(event_name: Event, data: Option<AnalyticsData>) {
+	let payload = AnalyticsPayload::new(
+		event_name,
+		&data.unwrap_or(AnalyticsData {
+			param: None,
+			game: None,
+		}),
+	);
 	if let Some(api_key) = API_KEY {
 		let url = format!(
 			"https://www.google-analytics.com/mp/collect?measurement_id={MEASUREMENT_ID}&api_secret={api_key}"
-		);
-		let payload = AnalyticsPayload::new(
-			event_name,
-			&data.unwrap_or(AnalyticsData {
-				mod_id: None,
-				game: None,
-			}),
 		);
 		info!("Sending {payload:?}");
 		let resp = http::CLIENT.post(url).json(&payload).send().await;
@@ -116,6 +117,8 @@ pub async fn send_event(event_name: Event, data: Option<AnalyticsData>) {
 			}
 		}
 	} else {
-		info!("Skipping Analytics As The ANALYTICS_API_KEY Is Null ({event_name:?})");
+		let payload_json = serde_json::to_string_pretty(&payload)
+			.unwrap_or_else(|err| format!("Failed To Serialize Payload: {err:?}"));
+		info!("Skipping Analytics As The ANALYTICS_API_KEY Is Null ({payload_json})");
 	}
 }

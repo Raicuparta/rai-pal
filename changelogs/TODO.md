@@ -7,10 +7,11 @@
   - check each mod to see if zip structure is correct.
   - make sure one failure doesn't break the whole thing. it should preserve the previous mod if so.
 - Make sure manifests don't get installed if anything in the process fails. It seemed to fail when a dependency of a dependency failed.
-- Finish analytics.
+- Downloading remote config should be handled in backend prolly.
 
 # Done:
 
+- Finish analytics.
 - (nope) auto install runnable on run
 - (didnt do) frontend should probably get each mod provider individually like it does for game providers.
 - better way to hide ugly mods like .net runtime

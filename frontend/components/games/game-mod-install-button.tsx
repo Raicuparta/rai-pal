@@ -21,11 +21,6 @@ export function GameModInstallButton({ game, mod, remoteConfigFile }: Props) {
 			}
 			confirmationSkipId="install-mod-confirm"
 			onClick={async () => {
-				commands.sendAnalyticsEvent("install_mod", {
-					game: game.displayTitle,
-					modId: mod.id,
-				});
-
 				if (remoteConfigFile) {
 					await commands.downloadRemoteConfig(
 						game.providerId,
@@ -36,6 +31,10 @@ export function GameModInstallButton({ game, mod, remoteConfigFile }: Props) {
 					);
 				}
 				await commands.installMod(game.providerId, game.gameId, mod.id);
+				commands.sendAnalyticsEvent("install_mod", {
+					game: game.displayTitle,
+					param: mod.id,
+				});
 			}}
 		>
 			{t("installMod")}

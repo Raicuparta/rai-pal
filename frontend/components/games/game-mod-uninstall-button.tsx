@@ -24,9 +24,14 @@ export function GameModUninstallButton({ game, mod, modInfo }: Props) {
 				color="red"
 				variant="light"
 				disabled={modInfo?.hasInstalledDependants}
-				onClick={() =>
-					commands.uninstallMod(game.providerId, game.gameId, mod.id)
-				}
+				onClick={async () => {
+					await commands.uninstallMod(game.providerId, game.gameId, mod.id);
+
+					commands.sendAnalyticsEvent("uninstall_mod", {
+						game: game.displayTitle,
+						param: mod.id,
+					});
+				}}
 			>
 				{t("uninstallMod")}
 			</CommandButton>

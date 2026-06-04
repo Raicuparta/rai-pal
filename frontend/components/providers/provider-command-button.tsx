@@ -46,13 +46,18 @@ export function ProviderCommandButton(props: Props) {
 	return (
 		<CommandButton
 			leftSection={<IconComponent />}
-			onClick={() =>
-				commands.runProviderCommand(
+			onClick={async () => {
+				await commands.runProviderCommand(
 					props.game.providerId,
 					props.game.gameId,
 					props.action,
-				)
-			}
+				);
+
+				commands.sendAnalyticsEvent("provider_command", {
+					game: props.game.displayTitle,
+					param: props.action,
+				});
+			}}
 		>
 			{t(providerCommandLocalizationKey[props.action])}
 		</CommandButton>
