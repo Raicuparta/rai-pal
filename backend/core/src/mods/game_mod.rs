@@ -1,9 +1,6 @@
 use std::{
 	collections::BTreeMap,
-	fs::{
-		self,
-		File,
-	},
+	fs,
 	hash::{
 		DefaultHasher,
 		Hash,
@@ -19,7 +16,6 @@ use rai_pal_proc_macros::{
 	serializable_enum,
 	serializable_struct,
 };
-use zip::ZipArchive;
 
 use crate::{
 	app_paths,
