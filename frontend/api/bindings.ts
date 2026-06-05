@@ -40,7 +40,7 @@ export const commands = {
 	refreshRemoteGames: () => __TAURI_INVOKE<null>("refresh_remote_games"),
 	removeGame: (providerId: GameProviderId, gameId: string) => __TAURI_INVOKE<null>("remove_game", { providerId, gameId }),
 	resetSteamCache: () => __TAURI_INVOKE<null>("reset_steam_cache"),
-	runMod: (providerId: GameProviderId, gameId: string, modId: string) => __TAURI_INVOKE<null>("run_mod", { providerId, gameId, modId }),
+	runMod: (modId: string, providerIdOption: "Epic" | "Gog" | "Itch" | "Manual" | "Steam" | "Xbox" | null, gameIdOption: string | null) => __TAURI_INVOKE<null>("run_mod", { modId, providerIdOption, gameIdOption }),
 	runProviderCommand: (providerId: GameProviderId, gameId: string, providerCommandAciton: ProviderCommandAction) => __TAURI_INVOKE<null>("run_provider_command", { providerId, gameId, providerCommandAciton }),
 	saveAppSettings: (settings: AppSettings) => __TAURI_INVOKE<null>("save_app_settings", { settings }),
 	sendAnalyticsEvent: (event: Event, data: {
@@ -131,7 +131,7 @@ export type EngineVersionRange = {
 
 export type Error = "Tauri" | "Core" | "Io" | "Rusql" | "SerdeJson" | "SystemTimeError" | ({ FailedToAccessStateData: string }) & { LinuxOnly?: never } | ({ LinuxOnly: null }) & { FailedToAccessStateData?: never };
 
-export type Event = "install_mod" | "uninstall_mod" | "update_mod" | "run_mod" | "provider_command" | "start_app";
+export type Event = "install_mod" | "uninstall_mod" | "update_mod" | "run_mod_for_game" | "run_mod_standalone" | "provider_command" | "start_app";
 
 export type ExecutedProviderCommand = null;
 
@@ -158,7 +158,8 @@ export type GameMod = {
 	config: ModConfig | null,
 	dependencies: ModDependency[] | null,
 	install: ModInstall | null,
-	runForGame: ModRunForGame | null,
+	runForGame: ModRun | null,
+	runStandalone: ModRun | null,
 	hash: string | null,
 };
 
@@ -230,7 +231,7 @@ export type ModInstallWrite = {
 	destination: string,
 };
 
-export type ModRunForGame = {
+export type ModRun = {
 	path: string | null,
 	args: string[] | null,
 	wineEnvironment: { [key in string]: string } | null,

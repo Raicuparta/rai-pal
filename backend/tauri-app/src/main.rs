@@ -220,14 +220,22 @@ async fn install_mod(
 #[tauri::command]
 #[specta::specta]
 async fn run_mod(
-	provider_id: GameProviderId,
-	game_id: String,
 	mod_id: &str,
+	provider_id_option: Option<GameProviderId>,
+	game_id_option: Option<String>,
 	handle: AppHandle,
 ) -> Result {
 	let state = handle.app_state();
-	let game = state.database.get_game(&provider_id, &game_id)?;
-	state.database.get_mod(mod_id)?.run(&game)?;
+
+	let game = if let Some(game_id) = game_id_option
+		&& let Some(provider_id) = provider_id_option
+	{
+		Some(state.database.get_game(&provider_id, &game_id)?)
+	} else {
+		None
+	};
+
+	state.database.get_mod(mod_id)?.run(game.as_ref())?;
 
 	Ok(())
 }

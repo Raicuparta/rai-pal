@@ -27,7 +27,8 @@ pub enum Event {
 	InstallMod,
 	UninstallMod,
 	UpdateMod,
-	RunMod,
+	RunModForGame,
+	RunModStandalone,
 	ProviderCommand,
 	StartApp,
 }

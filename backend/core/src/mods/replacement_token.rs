@@ -59,51 +59,59 @@ fn replace_parameter_value<TValue: AsRef<str>, TGetValue: Fn() -> Result<TValue>
 	}
 }
 
-pub fn replace_tokens(base_string: &str, game: &DbGame, game_mod: &GameMod) -> String {
+pub fn replace_tokens(
+	base_string: &str,
+	game_option: Option<&DbGame>,
+	game_mod: &GameMod,
+) -> String {
 	let mut result = base_string.to_string();
 
-	let provider_commands = &game.provider_commands;
-	let start_command = provider_commands
-		.get(&ProviderCommandAction::StartViaProvider)
-		.or_else(|| provider_commands.get(&ProviderCommandAction::StartViaExe));
+	if let Some(game) = game_option {
+		let provider_commands = &game.provider_commands;
+		let start_command = provider_commands
+			.get(&ProviderCommandAction::StartViaProvider)
+			.or_else(|| provider_commands.get(&ProviderCommandAction::StartViaExe));
 
-	result = replace_parameter_value(&result, ReplacementToken::GameExecutableName, || {
-		game.try_get_exe_name()
-	});
-	result = replace_parameter_value(&result, ReplacementToken::GameExecutableFolderPath, || {
-		game.try_get_exe_path()?.try_parent()?.try_to_str()
-	});
-	result = replace_parameter_value(
-		&result,
-		ReplacementToken::GameExecutableNameWithoutExtension,
-		|| game.try_get_exe_path()?.file_name_without_extension(),
-	);
-	result = replace_parameter_value(&result, ReplacementToken::GameExecutablePath, || {
-		game.try_get_exe_path()?.try_to_str()
-	});
-	result = replace_parameter_value(&result, ReplacementToken::GameJson, || {
-		Ok(serde_json::to_string(&game)?)
-	});
-	result =
-		replace_parameter_value(
+		result = replace_parameter_value(&result, ReplacementToken::GameExecutableName, || {
+			game.try_get_exe_name()
+		});
+		result =
+			replace_parameter_value(&result, ReplacementToken::GameExecutableFolderPath, || {
+				game.try_get_exe_path()?.try_parent()?.try_to_str()
+			});
+		result = replace_parameter_value(
 			&result,
-			ReplacementToken::GameStartCommand,
-			|| match start_command
+			ReplacementToken::GameExecutableNameWithoutExtension,
+			|| game.try_get_exe_path()?.file_name_without_extension(),
+		);
+		result = replace_parameter_value(&result, ReplacementToken::GameExecutablePath, || {
+			game.try_get_exe_path()?.try_to_str()
+		});
+		result = replace_parameter_value(&result, ReplacementToken::GameJson, || {
+			Ok(serde_json::to_string(&game)?)
+		});
+		result = replace_parameter_value(&result, ReplacementToken::GameStartCommand, || {
+			match start_command
 				.ok_or_else(|| Error::GameNotInstalled(game.display_title.clone()))?
 			{
 				ProviderCommand::String(s) => Ok(s.clone()),
 				ProviderCommand::Path(exe_path, _) => Ok(exe_path.try_to_str()?.to_string()),
-			},
-		);
-	result = replace_parameter_value(&result, ReplacementToken::GameStartCommandArgs, || {
-		start_command.map_or_else(
-			|| Ok(String::new()),
-			|provider_command| match provider_command {
-				ProviderCommand::Path(_, args) => Ok(args.join(" ")),
-				ProviderCommand::String(_) => Ok(String::new()),
-			},
-		)
-	});
+			}
+		});
+		result = replace_parameter_value(&result, ReplacementToken::GameStartCommandArgs, || {
+			start_command.map_or_else(
+				|| Ok(String::new()),
+				|provider_command| match provider_command {
+					ProviderCommand::Path(_, args) => Ok(args.join(" ")),
+					ProviderCommand::String(_) => Ok(String::new()),
+				},
+			)
+		});
+		result = replace_parameter_value(&result, ReplacementToken::GameInstalledModsPath, || {
+			Ok(game.get_installed_mods_folder()?.try_to_str()?.to_string())
+		});
+	}
+
 	result = replace_parameter_value(&result, ReplacementToken::RoamingAppData, || {
 		#[cfg(target_os = "linux")]
 		{
@@ -120,7 +128,12 @@ pub fn replace_tokens(base_string: &str, game: &DbGame, game_mod: &GameMod) -> S
 					process::Command,
 				};
 
-				use crate::game_providers::game_provider;
+				use crate::{
+					game_providers::game_provider,
+					result::Error,
+				};
+
+				let game = game_option.ok_or_else(Error::GameNeeded)?;
 
 				let provider = game_provider::get_provider(game.provider_id)?;
 				let prefix_path = provider.get_wine_prefix_path(game)?;
@@ -150,9 +163,6 @@ pub fn replace_tokens(base_string: &str, game: &DbGame, game_mod: &GameMod) -> S
 			.config_dir()
 			.try_to_str()?
 			.to_string())
-	});
-	result = replace_parameter_value(&result, ReplacementToken::GameInstalledModsPath, || {
-		Ok(game.get_installed_mods_folder()?.try_to_str()?.to_string())
 	});
 	result = replace_parameter_value(&result, ReplacementToken::SharedModsPath, || {
 		Ok(app_paths::shared_mods_path()?.try_to_str()?.to_string())

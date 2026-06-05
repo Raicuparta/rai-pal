@@ -92,6 +92,7 @@ impl ModDatabase for DbMutex {
 				dependencies TEXT,
 				install TEXT,
 				run_for_game TEXT,
+				run_standalone TEXT,
 				hash TEXT,
 				created_at INTEGER,
 				PRIMARY KEY (id)
@@ -151,6 +152,7 @@ impl ModDatabase for DbMutex {
 				dependencies,
 				install,
 				run_for_game,
+				run_standalone,
 				hash,
 				hide_from_game_mods_list
 			FROM main.mods
@@ -177,8 +179,9 @@ impl ModDatabase for DbMutex {
 					dependencies: row.get_json(14)?,
 					install: row.get_json(15)?,
 					run_for_game: row.get_json(16)?,
-					hash: row.get(17)?,
-					hide_from_game_mods_list: row.get(18)?,
+					run_standalone: row.get_json(17)?,
+					hash: row.get(18)?,
+					hide_from_game_mods_list: row.get(19)?,
 				})
 			})?)
 	}
@@ -250,6 +253,7 @@ impl ModDatabase for DbMutex {
 				dependencies,
 				install,
 				run_for_game,
+				run_standalone,
 				hash,
 				hide_from_game_mods_list
 			FROM main.mods
@@ -274,8 +278,9 @@ impl ModDatabase for DbMutex {
 					dependencies: row.get_json(14)?,
 					install: row.get_json(15)?,
 					run_for_game: row.get_json(16)?,
-					hash: row.get(17)?,
-					hide_from_game_mods_list: row.get(18)?,
+					run_standalone: row.get_json(17)?,
+					hash: row.get(18)?,
+					hide_from_game_mods_list: row.get(19)?,
 				})
 			})?
 			.filter_map(|game_mod| match game_mod {
@@ -550,18 +555,6 @@ fn try_insert_mod(
 	game_mod: &GameMod,
 	provider_id: ModProviderId,
 ) -> Result {
-	let download = serialize_json_option(game_mod.download.as_ref())?;
-	let engine = serialize_json_option(game_mod.engine.as_ref())?;
-	let engine_version_range = serialize_json_option(game_mod.engine_version_range.as_ref())?;
-	let unity_backend = serialize_json_option(game_mod.unity_backend.as_ref())?;
-	let architecture = serialize_json_option(game_mod.architecture.as_ref())?;
-	let game_os = serialize_json_option(game_mod.game_os.as_ref())?;
-	let host_os = serialize_json_option(game_mod.host_os.as_ref())?;
-	let config = serialize_json_option(game_mod.config.as_ref())?;
-	let dependencies = serialize_json_option(game_mod.dependencies.as_ref())?;
-	let install = serialize_json_option(game_mod.install.as_ref())?;
-	let run_for_game = serialize_json_option(game_mod.run_for_game.as_ref())?;
-
 	connection_mutex
 		.lock_db()?
 		.prepare_cached(
@@ -584,10 +577,11 @@ fn try_insert_mod(
 				dependencies,
 				install,
 				run_for_game,
+				run_standalone,
 				hide_from_game_mods_list,
 				hash,
 				created_at
-			) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)",
+			) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22)",
 		)?
 		.execute(rusqlite::params![
 			provider_id,
@@ -596,18 +590,19 @@ fn try_insert_mod(
 			game_mod.author,
 			game_mod.source_code,
 			game_mod.description,
-			download,
-			engine,
-			engine_version_range,
-			unity_backend,
-			architecture,
-			game_os,
-			host_os,
+			serialize_json_option(game_mod.download.as_ref())?,
+			serialize_json_option(game_mod.engine.as_ref())?,
+			serialize_json_option(game_mod.engine_version_range.as_ref())?,
+			serialize_json_option(game_mod.unity_backend.as_ref())?,
+			serialize_json_option(game_mod.architecture.as_ref())?,
+			serialize_json_option(game_mod.game_os.as_ref())?,
+			serialize_json_option(game_mod.host_os.as_ref())?,
 			game_mod.deprecated,
-			config,
-			dependencies,
-			install,
-			run_for_game,
+			serialize_json_option(game_mod.config.as_ref())?,
+			serialize_json_option(game_mod.dependencies.as_ref())?,
+			serialize_json_option(game_mod.install.as_ref())?,
+			serialize_json_option(game_mod.run_for_game.as_ref())?,
+			serialize_json_option(game_mod.run_standalone.as_ref())?,
 			game_mod.hide_from_game_mods_list,
 			game_mod.hash,
 			SystemTime::now()

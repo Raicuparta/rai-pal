@@ -65,7 +65,8 @@ pub struct GameMod {
 	pub config: Option<ModConfig>,
 	pub dependencies: Option<Vec<ModDependency>>,
 	pub install: Option<ModInstall>,
-	pub run_for_game: Option<ModRunForGame>,
+	pub run_for_game: Option<ModRun>,
+	pub run_standalone: Option<ModRun>,
 	pub hash: Option<String>,
 }
 
@@ -91,7 +92,7 @@ pub struct ModInstall {
 }
 
 #[serializable_struct]
-pub struct ModRunForGame {
+pub struct ModRun {
 	pub path: Option<String>,
 	pub args: Option<Vec<String>>,
 	pub wine_environment: Option<BTreeMap<String, String>>,
@@ -121,7 +122,7 @@ impl GameMod {
 	pub fn get_manifest_target_path(&self, game: &DbGame) -> Result<PathBuf> {
 		Ok(PathBuf::from(replace_tokens(
 			&self.get_install()?.manifest_path,
-			game,
+			Some(game),
 			self,
 		)))
 	}
@@ -168,8 +169,11 @@ impl GameMod {
 
 			for extract_action in extract_actions {
 				let source_path = source_dir.join(&extract_action.source);
-				let destination_path =
-					PathBuf::from(replace_tokens(&extract_action.destination, game, self));
+				let destination_path = PathBuf::from(replace_tokens(
+					&extract_action.destination,
+					Some(game),
+					self,
+				));
 
 				if source_path.is_dir() {
 					files::copy_dir_all(&source_path, &destination_path)?;
@@ -183,8 +187,8 @@ impl GameMod {
 		if let Some(write_actions) = install.write.as_ref() {
 			for write_action in write_actions {
 				let destination_path =
-					PathBuf::from(replace_tokens(&write_action.destination, game, self));
-				let content = replace_tokens(&write_action.content, game, self);
+					PathBuf::from(replace_tokens(&write_action.destination, Some(game), self));
+				let content = replace_tokens(&write_action.content, Some(game), self);
 
 				fs::create_dir_all(destination_path.try_parent()?)?;
 				fs::write(destination_path, content)?;
@@ -201,17 +205,22 @@ impl GameMod {
 		Ok(())
 	}
 
-	pub fn run(&self, game: &DbGame) -> Result {
-		let run_for_game = self
-			.run_for_game
-			.as_ref()
-			.ok_or_else(|| Error::ModInfoMissing(self.id.clone(), "run_for_game".to_string()))?;
+	pub fn run(&self, game_option: Option<&DbGame>) -> Result {
+		let mod_run = if game_option.is_some() {
+			self.run_for_game
+				.as_ref()
+				.ok_or_else(|| Error::ModInfoMissing(self.id.clone(), "run_for_game".to_string()))?
+		} else {
+			self.run_standalone.as_ref().ok_or_else(|| {
+				Error::ModInfoMissing(self.id.clone(), "run_standalone".to_string())
+			})?
+		};
 
 		let run_path = PathBuf::from(replace_tokens(
-			run_for_game.path.as_ref().ok_or_else(|| {
-				Error::ModInfoMissing(self.id.clone(), "run_for_game.path".to_string())
+			mod_run.path.as_ref().ok_or_else(|| {
+				Error::ModInfoMissing(self.id.clone(), "mod_run.path".to_string())
 			})?,
-			game,
+			game_option,
 			self,
 		));
 
@@ -219,22 +228,24 @@ impl GameMod {
 			return Err(Error::ModNotInstalled(self.id.clone()));
 		}
 
-		let args: Vec<String> = run_for_game
+		let args: Vec<String> = mod_run
 			.args
 			.clone()
 			.unwrap_or_default()
 			.iter()
-			.map(|arg| replace_tokens(arg, game, self))
+			.map(|arg| replace_tokens(arg, game_option, self))
 			.collect();
 
 		#[cfg(target_os = "linux")]
 		{
-			let wine_environment: BTreeMap<String, String> = run_for_game
+			let game = game_option.ok_or_else(Error::GameNeeded)?;
+
+			let wine_environment: BTreeMap<String, String> = mod_run
 				.wine_environment
 				.clone()
 				.unwrap_or_default()
 				.iter()
-				.map(|(key, value)| (key.clone(), replace_tokens(value, game, self)))
+				.map(|(key, value)| (key.clone(), replace_tokens(value, game_option, self)))
 				.collect();
 
 			game_provider::get_provider(game.provider_id)?.run_with_wine(

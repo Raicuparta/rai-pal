@@ -40,7 +40,7 @@ impl InstalledMod {
 						"main_installed_folder_path".to_string(),
 					)
 				})?,
-			&self.game,
+			Some(&self.game),
 			&self.game_mod,
 		))
 		.open_folder_or_parent()?;
@@ -57,7 +57,7 @@ impl InstalledMod {
 			for extract_action in extract_actions {
 				let destination_path = PathBuf::from(replace_tokens(
 					&extract_action.destination,
-					&self.game,
+					Some(&self.game),
 					&self.game_mod,
 				));
 
@@ -73,7 +73,7 @@ impl InstalledMod {
 			for write_action in write_actions {
 				let destination_path = PathBuf::from(replace_tokens(
 					&write_action.destination,
-					&self.game,
+					Some(&self.game),
 					&self.game_mod,
 				));
 
@@ -94,7 +94,7 @@ impl InstalledMod {
 	fn get_config_path(&self, config: &ModConfig) -> PathBuf {
 		PathBuf::from(&replace_tokens(
 			&config.destination_path,
-			&self.game,
+			Some(&self.game),
 			&self.game_mod,
 		))
 	}
