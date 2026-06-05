@@ -24,6 +24,7 @@ use crate::{
 		game_mod::GameMod,
 		installed_mod::InstalledMod,
 	},
+	operating_system::OperatingSystem,
 	path_extensions::PathExt,
 	result::{
 		Error,
@@ -449,6 +450,10 @@ impl ModDatabase for DbMutex {
 						OR ig.architecture IS NULL
 						OR json_extract(m.architecture, '$') = ig.architecture
 					)
+					AND (
+						json_extract(m.host_os, '$') IS NULL
+						OR json_extract(m.host_os, '$') = $3
+					)
 			)
 			SELECT
 				cm.mod_id,
@@ -507,16 +512,23 @@ impl ModDatabase for DbMutex {
 			FROM candidate_mods cm
 		",
 			)?
-			.query_map([provider_id.to_string(), game_id.to_string()], |row| {
-				Ok(GameModInfo {
-					mod_id: row.get(0)?,
-					installed_version: row.get(1)?,
-					installed_hash: row.get(2)?,
-					is_outdated: row.get(3)?,
-					has_installed_dependants: row.get(4)?,
-					compatible: row.get(5)?,
-				})
-			})?
+			.query_map(
+				[
+					provider_id.to_string(),
+					game_id.to_string(),
+					OperatingSystem::get_current().to_string(),
+				],
+				|row| {
+					Ok(GameModInfo {
+						mod_id: row.get(0)?,
+						installed_version: row.get(1)?,
+						installed_hash: row.get(2)?,
+						is_outdated: row.get(3)?,
+						has_installed_dependants: row.get(4)?,
+						compatible: row.get(5)?,
+					})
+				},
+			)?
 			.collect::<rusqlite::Result<Vec<GameModInfo>>>()?)
 	}
 

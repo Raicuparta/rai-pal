@@ -67,45 +67,49 @@ export function GameMods({ game, mods }: Props) {
 										info={info}
 									/>
 								))}
-								<Table.Tr onClick={() => toggleShowHiddenMods()}>
-									<Table.Td
-										colSpan={2}
-										style={{ cursor: "pointer" }}
-									>
-										<Group fz="xs">
-											<ThemeIcon
-												size="sm"
-												color="gray"
-											>
-												{showHiddenMods ? (
-													<IconChevronDown />
-												) : (
-													<IconChevronRight />
-												)}
-											</ThemeIcon>
-											<Text size="sm">{t("otherThings")}</Text>
-										</Group>
-										{showHiddenMods && (
-											<Text
-												opacity={0.5}
-												size="xs"
-											>
-												{t("otherThingsDescription")}
-											</Text>
-										)}
-									</Table.Td>
-								</Table.Tr>
-								{showHiddenMods && (
+								{mods.hiddenMods.length > 0 && (
 									<>
-										{mods.hiddenMods.map(({ mod, info }) => (
-											<GameModRow
-												key={mod.id}
-												game={game}
-												mod={mod}
-												remoteConfigs={remoteConfigs}
-												info={info}
-											/>
-										))}
+										<Table.Tr onClick={() => toggleShowHiddenMods()}>
+											<Table.Td
+												colSpan={2}
+												style={{ cursor: "pointer" }}
+											>
+												<Group fz="xs">
+													<ThemeIcon
+														size="sm"
+														color="gray"
+													>
+														{showHiddenMods ? (
+															<IconChevronDown />
+														) : (
+															<IconChevronRight />
+														)}
+													</ThemeIcon>
+													<Text size="sm">{t("otherThings")}</Text>
+												</Group>
+												{showHiddenMods && (
+													<Text
+														opacity={0.5}
+														size="xs"
+													>
+														{t("otherThingsDescription")}
+													</Text>
+												)}
+											</Table.Td>
+										</Table.Tr>
+										{showHiddenMods && (
+											<>
+												{mods.hiddenMods.map(({ mod, info }) => (
+													<GameModRow
+														key={mod.id}
+														game={game}
+														mod={mod}
+														remoteConfigs={remoteConfigs}
+														info={info}
+													/>
+												))}
+											</>
+										)}
 									</>
 								)}
 							</Table.Tbody>
