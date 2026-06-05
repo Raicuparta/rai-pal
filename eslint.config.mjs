@@ -17,6 +17,7 @@ const compat = new FlatCompat({
 	recommendedConfig: js.configs.recommended,
 	allConfig: js.configs.all,
 });
+const tsFiles = ["**/*.{ts,tsx}"];
 
 export default defineConfig([
 	globalIgnores(["**/frontend/api/", "backend/"]),
@@ -29,12 +30,16 @@ export default defineConfig([
 			"plugin:@typescript-eslint/recommended",
 			"prettier",
 		),
-	),
+	).map((config) => ({
+		...config,
+		files: tsFiles,
+	})),
 	{
-		files: ["**/*.ts", "**/*.tsx"],
+		...reactHooks.configs.flat["recommended-latest"],
+		files: tsFiles,
 	},
-	reactHooks.configs["recommended-latest"],
 	{
+		files: tsFiles,
 		plugins: {
 			"react-refresh": reactRefresh,
 			"react-compiler": reactCompiler,

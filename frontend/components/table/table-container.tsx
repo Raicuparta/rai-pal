@@ -1,10 +1,11 @@
-import classes from "./table.module.css";
-import { Card, CardProps } from "@mantine/core";
+import { ComponentProps } from "react";
+import styles from "./table.module.css";
+import { Box } from "@mantine/core";
 
-export function TableContainer(props: CardProps) {
+export function TableContainer({ className, ...props }: ComponentProps<"div">) {
 	return (
-		<Card
-			className={classes.table}
+		<Box
+			className={`${className ?? ""} ${styles.table}`}
 			{...props}
 		/>
 	);

@@ -1,10 +1,11 @@
-import { Alert, Group, Modal, Stack, Table } from "@mantine/core";
-import { commands, ProviderId } from "@api/bindings";
+import { Alert, Box, Group, Stack, Table } from "@mantine/core";
+import { commands, DbGame } from "@api/bindings";
 import { CommandButton } from "@components/command-button";
 import {
 	IconFolder,
 	IconFolderCog,
 	IconFolderOpen,
+	IconGlassFull,
 	IconRefresh,
 } from "@tabler/icons-react";
 import { useSetAtom } from "jotai";
@@ -17,47 +18,46 @@ import { GameRowInner } from "./game-row";
 import { TableHead } from "@components/table/table-head";
 import { gamesColumns } from "./games-columns";
 import { useLocalization } from "@hooks/use-localization";
-import { useGame } from "@hooks/use-game";
 import { RemoveGameButton } from "./remove-game-button";
+import { platform } from "@tauri-apps/plugin-os";
+import { SubPage } from "@components/sub-page";
+import { GameModsData } from "@hooks/use-game-mods";
 import { GameMods } from "./game-mods";
 
 type Props = {
-	readonly providerId: ProviderId;
-	readonly gameId: string;
+	readonly game: DbGame;
+	readonly mods: GameModsData;
 };
 
-export function GameModal({ providerId, gameId }: Props) {
+export function GameModal({ game, mods }: Props) {
 	const t = useLocalization("gameModal");
-	const game = useGame(providerId, gameId);
 	const setSelectedGame = useSetAtom(selectedGameAtom);
 
 	const close = () => setSelectedGame(null);
 
-	if (!game) {
-		return null;
-	}
+	const { providerId, gameId } = game;
 
 	return (
-		<Modal
-			centered
-			onClose={close}
-			opened
-			size="xl"
-			title={game.displayTitle}
-		>
-			<Stack>
-				<Group align="start">
-					<TableContainer>
-						<Table>
-							<Table.Thead>
-								<TableHead columns={gamesColumns} />
-							</Table.Thead>
-							<Table.Tbody>
-								<GameRowInner game={game} />
-							</Table.Tbody>
-						</Table>
-					</TableContainer>
-				</Group>
+		<SubPage onClose={close}>
+			<Box>
+				<TableContainer>
+					<Table highlightOnHover>
+						<Table.Thead>
+							<TableHead columns={gamesColumns} />
+						</Table.Thead>
+						<Table.Tbody>
+							<GameRowInner
+								game={game}
+								onClick={close}
+							/>
+						</Table.Tbody>
+					</Table>
+				</TableContainer>
+			</Box>
+			<Stack
+				p="xs"
+				gap="xl"
+			>
 				<Group>
 					<ProviderCommandButtons game={game} />
 					{game.exePath && (
@@ -77,6 +77,26 @@ export function GameModal({ providerId, gameId }: Props) {
 							>
 								{t("openInstalledModsFolder")}
 							</CommandButton>
+							{platform() === "linux" && (
+								<>
+									<CommandButton
+										leftSection={<IconGlassFull />}
+										onClick={() =>
+											commands.openGameWinePrefixFolder(providerId, gameId)
+										}
+									>
+										{t("openGameWinePrefixFolder")}
+									</CommandButton>
+									<CommandButton
+										leftSection={<IconGlassFull />}
+										onClick={() =>
+											commands.openGameWineBinaryFolder(providerId, gameId)
+										}
+									>
+										{t("openGameWineBinaryFolder")}
+									</CommandButton>
+								</>
+							)}
 						</CommandDropdown>
 					)}
 					{providerId === "Manual" && (
@@ -93,6 +113,8 @@ export function GameModal({ providerId, gameId }: Props) {
 							{t("refreshGame")}
 						</CommandButton>
 					)}
+
+					<DebugData data={{ game, mods }} />
 				</Group>
 				{game.exePath && (
 					<>
@@ -104,9 +126,11 @@ export function GameModal({ providerId, gameId }: Props) {
 						)}
 					</>
 				)}
-				<GameMods game={game} />
-				<DebugData data={game} />
+				<GameMods
+					game={game}
+					mods={mods}
+				/>
 			</Stack>
-		</Modal>
+		</SubPage>
 	);
 }

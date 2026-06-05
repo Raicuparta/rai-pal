@@ -1,11 +1,12 @@
-import { commands, ProviderId } from "@api/bindings";
+import { commands, GameProviderId } from "@api/bindings";
 import { useAppEvent } from "./use-app-event";
 import { useCommandData } from "./use-command-data";
 import { useCallback } from "react";
 
-export function useGame(providerId: ProviderId, gameId: string) {
+export function useGame(providerId?: GameProviderId, gameId?: string) {
 	const getGame = useCallback(
-		() => commands.getGame(providerId, gameId),
+		async () =>
+			providerId && gameId ? commands.getGame(providerId, gameId) : null,
 		[providerId, gameId],
 	);
 

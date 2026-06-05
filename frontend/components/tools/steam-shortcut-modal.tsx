@@ -6,8 +6,8 @@ import { IconSquareRoundedPlus } from "@tabler/icons-react";
 import { useState } from "react";
 
 type Props = {
-	isOpen: boolean;
-	onClose: () => void;
+	readonly isOpen: boolean;
+	readonly onClose: () => void;
 };
 
 export function SteamShortcutModal(props: Props) {

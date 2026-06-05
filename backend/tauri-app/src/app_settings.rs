@@ -1,8 +1,20 @@
-use std::{collections::HashSet, fs, path::PathBuf};
+use std::{
+	collections::HashSet,
+	fs,
+	path::PathBuf,
+};
+
+use rai_pal_core::{
+	app_paths,
+	games_query::GamesQuery,
+	path_extensions::PathExt,
+};
+use rai_pal_proc_macros::{
+	serializable_enum,
+	serializable_struct,
+};
 
 use crate::result::Result;
-use rai_pal_core::{games_query::GamesQuery, paths};
-use rai_pal_proc_macros::{serializable_enum, serializable_struct};
 
 #[serializable_enum]
 pub enum AppLocale {
@@ -57,13 +69,13 @@ impl AppSettings {
 
 	pub fn try_write(&self) -> Result {
 		let path = Self::get_path()?;
-		fs::create_dir_all(paths::path_parent(&path)?)?;
+		fs::create_dir_all(path.try_parent()?)?;
 		fs::write(&path, serde_json::to_string(self)?)?;
 
 		Ok(())
 	}
 
 	fn get_path() -> Result<PathBuf> {
-		Ok(paths::app_data_path()?.join("settings.json"))
+		Ok(app_paths::app_data_file("settings.json")?)
 	}
 }

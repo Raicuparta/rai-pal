@@ -1,4 +1,6 @@
-import { useCallback, useEffect, useState } from "react";
+import { showAppNotification } from "@components/app-notifications";
+import { PrimitiveAtom, useSetAtom } from "jotai";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useAsyncCommand } from "./use-async-command";
 
 export function useCommandData<TResultValue>(
@@ -17,4 +19,34 @@ export function useCommandData<TResultValue>(
 	useEffect(updateData, [updateData]);
 
 	return [value, updateData] as const;
+}
+
+export function useCommandAtomData<TResultValue>(
+	command: () => Promise<TResultValue>,
+	atom: PrimitiveAtom<TResultValue>,
+) {
+	const setValue = useSetAtom(atom);
+	const totalFetchCount = useRef(0);
+
+	const updateData = useCallback(() => {
+		totalFetchCount.current += 1;
+		const thisFetchCount = totalFetchCount.current;
+
+		command()
+			.then((data) => {
+				if (thisFetchCount !== totalFetchCount.current) {
+					console.log(
+						"Cancelling this fetch since another one happened in the meantime.",
+					);
+					return;
+				}
+
+				setValue(data);
+			})
+			.catch((error) => {
+				showAppNotification(`Failed to get app data: ${error}`, "error");
+			});
+	}, [command, setValue]);
+
+	return updateData;
 }

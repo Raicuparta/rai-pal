@@ -1,0 +1,42 @@
+import { DbGame, GameMod, commands } from "@api/bindings";
+import { CommandButton } from "@components/command-button";
+import { IconRefreshAlert } from "@tabler/icons-react";
+import { useLocalization } from "@hooks/use-localization";
+
+type Props = {
+	readonly game: DbGame;
+	readonly mod: GameMod;
+	readonly remoteConfigFile?: string;
+};
+
+export function GameModUpdateButton({ game, mod, remoteConfigFile }: Props) {
+	const t = useLocalization("gameModRow");
+
+	return (
+		<CommandButton
+			leftSection={<IconRefreshAlert />}
+			color="green"
+			variant="light"
+			onClick={async () => {
+				if (remoteConfigFile) {
+					await commands.downloadRemoteConfig(
+						game.providerId,
+						game.gameId,
+						mod.id,
+						remoteConfigFile,
+						false,
+					);
+				}
+
+				await commands.installMod(game.providerId, game.gameId, mod.id);
+
+				commands.sendAnalyticsEvent("update_mod", {
+					game: game.displayTitle,
+					param: mod.id,
+				});
+			}}
+		>
+			{t("updateMod")}
+		</CommandButton>
+	);
+}

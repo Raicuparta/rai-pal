@@ -25,12 +25,12 @@ import {
 import { SwitchButton } from "@components/switch-button";
 import { SteamCacheButton } from "./steam-cache-button";
 import { platform } from "@tauri-apps/plugin-os";
-import { WineBepInExEnvironmentModal } from "./wine-bepinex-environment-modal";
 import { useDisclosure } from "@mantine/hooks";
-import { WineBepInExEnvironmentButton } from "./wine-bepinex-environment-button";
 import { SteamCacheModal } from "./steam-cache-modal";
 import { SteamShortcutButton } from "./steam-shortcut-button";
 import { SteamShortcutModal } from "./steam-shortcut-modal";
+import { GlobalWineOverridesButton } from "./global-wine-overrides-button";
+import { GlobalWineOverridesModal } from "./global-wine-overrides-modal";
 
 const locales: AppLocale[] = [
 	"EnUs",
@@ -103,9 +103,7 @@ export function AppSettings() {
 					<SteamShortcutButton onClick={openSteamShortcutModal} />
 					<SteamCacheButton onClick={openSteamCacheModal} />
 					{platform() === "linux" && (
-						<WineBepInExEnvironmentButton
-							onClick={openBepInExEnvironmentModal}
-						/>
+						<GlobalWineOverridesButton onClick={openBepInExEnvironmentModal} />
 					)}
 					<Divider my="xs" />
 					<Tooltip
@@ -131,7 +129,7 @@ export function AppSettings() {
 							<Group>
 								<span>{t("language")}</span>
 								<IconLanguage />
-								{/* 
+								{/*
 							The text below is purposely left untranslated to make it easier to find,
 							in case the user doesn't speak the currently selected language.
 							I also included that icon that google uses for Translate,
@@ -177,7 +175,7 @@ export function AppSettings() {
 				onClose={closeSteamShortcutModal}
 			/>
 			{platform() === "linux" && (
-				<WineBepInExEnvironmentModal
+				<GlobalWineOverridesModal
 					isOpen={isBepInExEnvironmentModalOpen}
 					onClose={closeBepInExEnvironmentModal}
 				/>

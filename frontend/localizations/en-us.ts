@@ -163,6 +163,12 @@ export const enUs = {
 		// Open the folder where Rai Pal places the mods for this game.
 		openInstalledModsFolder: "Open Installed Mods Folder",
 
+		// Open the Wine prefix folder detected for this game.
+		openGameWinePrefixFolder: "Open Game Wine Prefix Folder",
+
+		// Open the folder that contains the Wine binary used for this game.
+		openGameWineBinaryFolder: "Open Game Wine Binary Folder",
+
 		// Button for removing a manually-added game from Rai Pal.
 		removeFromRaiPal: "Remove from Rai Pal",
 
@@ -200,6 +206,13 @@ export const enUs = {
 
 		incompatibleGameModsDescription:
 			"The mods listed here can't be installed because they aren't compatible with this game's engine version.",
+
+		// Button that expands the section showing hidden "mods", which sometimes aren't mods at all so we say "things" here.
+		otherThings: "Other things",
+
+		// Description for the section that shows hidden "mods".
+		otherThingsDescription:
+			"These are mostly dependencies and other stuff that you don't usually need to mess with directly.",
 	},
 
 	// Row in the table that shows mods for a specific game in the game modal.
@@ -214,14 +227,15 @@ export const enUs = {
 		// Button for opening the folder where a specific mod is installed.
 		openModFolder: "Open Mod Folder",
 
-		// Button for opening the folder where the mod loader is installed.
-		openModLoaderFolder: "Open mod loader folder",
-
 		// Button for updating the install mod for this game to the latest version.
 		updateMod: "Update",
 
 		// Button for installing a mod for this game.
 		installMod: "Install",
+
+		// Warning that shows before installing a mod for the first time.
+		installModAnticheatWarning:
+			"Attention: be careful when installing mods on multiplayer games! Anticheat can detect some mods and get you banned, even if the mods seem harmless.",
 
 		// Button for reinstalling a mod that's already installed.
 		reinstallMod: "Reinstall",
@@ -238,6 +252,13 @@ export const enUs = {
 		// Tooltip for icon that shows next to mod to indicate there's a downloadable config.
 		remoteConfigAvailable:
 			"Recommended config available. Will be downloaded if you don't already have a config. You can also force it to download from the three dot menu.",
+
+		// Badge that shows when a new version of a mod is available.
+		modOutdated: "Mod outdated",
+
+		// Tooltip that shows when hovering the uninstall button for a mod that has other mods depending on it.
+		cantUninstallModWithDependants:
+			"Can't uninstall a mod that has dependants. Uninstall the mods that depend on this one first.",
 	},
 
 	// Named table columns for the list of games.
@@ -254,17 +275,18 @@ export const enUs = {
 
 	// Page that shows all mods available on Rai Pal
 	modsPage: {
-		// Button for opening the folder where Rai Pal downloads mods to (before installing them in a game).
-		openModsFolderButton: "Open Mods Folder",
+		// Button for opening the folder where loads can be loaded from disk without being in the online database.
+		openLocalModsFolderButton: "Open Local Mods Folder",
+
+		// Describes what the local mods folder is.
+		openLoadlModsFolderTooltip:
+			"You can place mods in this folder with a rai-pal-manifest.json, to be loaded directly without going through the online database.",
 
 		// Table column for the name of the mod.
 		tableColumnMod: "Mod",
 
 		// Table column for the version of the mod.
 		tableColumnVersion: "Version",
-
-		// Table column for the mod loader used by the mod (bepinex, melon loader, etc)
-		tableColumnModLoader: "Loader",
 
 		// Table column for the game engine the mod is for (Unity, Unreal, etc)
 		tableColumnGameEngine: "Engine",
@@ -281,9 +303,6 @@ export const enUs = {
 		// Tooltip that shows when hovering over a deprecated mod.
 		modDeprecatedTooltip:
 			"This mod is deprecated. You should uninstall it and install a newer alternative.",
-
-		// Badge that shows when a new version of a mod is available.
-		modOutdated: "Mod outdated",
 	},
 
 	// Modal that opens after clicking a mod in the mods page.
@@ -355,6 +374,18 @@ export const enUs = {
 			"Mods can use this to access your Discord username, avatar, roles, etc.",
 	},
 
+	// Shared header shown in sub-pages and modals.
+	subPage: {
+		// Button to close the sub-page and go back to the previous view.
+		back: "Back",
+	},
+
+	// Menu that shows active and completed file downloads.
+	downloadStatusMenu: {
+		// Button that removes finished downloads from the list.
+		clear: "Clear completed",
+	},
+
 	// Button and modal for resetting Steam's cache.
 	steamCache: {
 		// Button for resetting Steam's cache.
@@ -390,7 +421,7 @@ export const enUs = {
 	},
 
 	// Button and modal for making sure BepInEx loads on Linux with Wine.
-	wineBepInExEnvironment: {
+	globalWineOverrides: {
 		// Button that sets up the Linux environment for BepInEx.
 		setUpEnvironmentButton: "Set up Linux environment for BepInEx",
 

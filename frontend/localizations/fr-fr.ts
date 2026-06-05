@@ -85,6 +85,8 @@ export const frFr: Localization = {
 		foldersDropdown: "Dossiers",
 		openGameFilesFolder: "Ouvrir le dossier des fichiers du jeu",
 		openInstalledModsFolder: "Ouvrir le dossier des mods installés",
+		openGameWinePrefixFolder: "Ouvrir le dossier du préfixe Wine du jeu",
+		openGameWineBinaryFolder: "Ouvrir le dossier du binaire Wine du jeu",
 		removeFromRaiPal: "Retirer de Rai Pal",
 		removeGameConfirmation:
 			"Êtes-vous sûr de vouloir retirer ce jeu de Rai Pal ?",
@@ -104,6 +106,11 @@ export const frFr: Localization = {
 
 		incompatibleGameModsDescription:
 			"Les mods listés ici ne peuvent pas être installés car ils ne sont pas compatibles avec la version du moteur de ce jeu.",
+
+		otherThings: "Autres choses",
+
+		otherThingsDescription:
+			"Ce sont principalement des dépendances et d'autres choses que vous n'avez généralement pas besoin de modifier directement.",
 	},
 
 	gameModRow: {
@@ -111,15 +118,19 @@ export const frFr: Localization = {
 		openModConfigFolderTooltip:
 			"Ouvrir le dossier contenant les fichiers de configuration de ce mod",
 		openModFolder: "Ouvrir le Dossier du Mod",
-		openModLoaderFolder: "Ouvrir le Dossier du Chargeur de Mods",
 		updateMod: "Mettre à jour",
 		installMod: "Installer",
+		installModAnticheatWarning:
+			"Attention: soyez prudent lors de l'installation de mods sur des jeux multijoueurs! L'anticheat peut détecter certains mods et vous bannir, même si les mods semblent inoffensifs.",
 		reinstallMod: "Réinstaller",
 		uninstallMod: "Désinstaller",
 		runMod: "Exécuter",
 		downloadRemoteConfig: "Télécharger la Configuration Recommandée",
 		remoteConfigAvailable:
 			"Configuration recommandée disponible. Sera téléchargée si vous n'avez pas déjà une configuration. Vous pouvez aussi forcer le téléchargement depuis le menu à trois points.",
+		modOutdated: "Mod obsolète",
+		cantUninstallModWithDependants:
+			"Impossible de désinstaller un mod qui a des dépendants. Désinstallez d'abord les mods qui dépendent de celui-ci.",
 	},
 
 	gamesTableColumn: {
@@ -129,17 +140,17 @@ export const frFr: Localization = {
 	},
 
 	modsPage: {
-		openModsFolderButton: "Ouvrir le dossier des mods",
+		openLocalModsFolderButton: "Ouvrir le dossier des mods",
+		openLoadlModsFolderTooltip:
+			"Vous pouvez placer des mods dans ce dossier avec un rai-pal-manifest.json pour les charger directement sans passer par la base de données en ligne.",
 		tableColumnMod: "Mod",
 		tableColumnVersion: "Version",
-		tableColumnModLoader: "Chargeur",
 		tableColumnGameEngine: "Moteur",
 		tableColumnUnityBackend: "Backend",
 		modByAuthor: "par {authorName}",
 		modDeprecated: "Obsolète",
 		modDeprecatedTooltip:
 			"Ce mod est obsolète. Vous devriez le désinstaller et installer une alternative plus récente.",
-		modOutdated: "Mod obsolète",
 	},
 
 	modModal: {
@@ -174,6 +185,14 @@ export const frFr: Localization = {
 			"Les mods peuvent utiliser cela pour accéder à votre nom d'utilisateur Discord, avatar, rôles, etc.",
 	},
 
+	subPage: {
+		back: "Retour",
+	},
+
+	downloadStatusMenu: {
+		clear: "Retirer les terminés",
+	},
+
 	steamCache: {
 		resetSteamCacheButton: "Réinitialiser le cache Steam",
 		resetSteamCacheModalTitle: "Réinitialiser le cache Steam",
@@ -192,7 +211,7 @@ export const frFr: Localization = {
 			"Rai Pal a été ajouté à votre bibliothèque Steam. Redémarrez Steam pour le voir.",
 	},
 
-	wineBepInExEnvironment: {
+	globalWineOverrides: {
 		setUpEnvironmentButton: "Configurer l'environnement Linux pour BepInEx",
 		setUpEnvironmentTitle: "Configurer l'environnement Linux pour BepInEx",
 		setUpEnvironmentDescription:

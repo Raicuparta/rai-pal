@@ -1,9 +1,3 @@
-.gameName {
-	gap: var(--mantine-spacing-xs);
-	flex-wrap: wrap;
-	align-items: center;
-}
-
 .refreshProgress {
 	position: absolute;
 	bottom: 0;

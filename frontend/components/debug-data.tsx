@@ -1,6 +1,16 @@
 import { useLocalization } from "@hooks/use-localization";
-import { CodeHighlight } from "@mantine/code-highlight";
-import { Divider, Stack } from "@mantine/core";
+import {
+	ActionIcon,
+	Box,
+	Button,
+	CopyButton,
+	Group,
+	Modal,
+	Stack,
+	Tooltip,
+} from "@mantine/core";
+import { useDisclosure } from "@mantine/hooks";
+import { IconBug, IconCheck, IconCopy } from "@tabler/icons-react";
 
 type Props<TData> = {
 	readonly data: TData;
@@ -9,18 +19,53 @@ type Props<TData> = {
 export function DebugData<TData>({ data }: Props<TData>) {
 	const t = useLocalization("debugData");
 	const debugText = JSON.stringify(data, null, 2) ?? "";
+	const [opened, { open, close }] = useDisclosure(false);
 
 	return (
-		<Stack gap="xs">
-			<Divider label={t("debugDataTitle")} />
-			<CodeHighlight
-				// Using text as key to force component to remount,
-				// seems like there's some bug preventing it from updating.
-				key={debugText}
-				code={debugText}
-				copyLabel={t("debugDataCopy")}
-				language="json"
-			/>
-		</Stack>
+		<>
+			<Button
+				leftSection={<IconBug />}
+				onClick={open}
+			>
+				{t("debugDataTitle")}
+			</Button>
+			<Modal
+				size="100%"
+				opened={opened}
+				onClose={close}
+				title={
+					<Group>
+						<span>{t("debugDataTitle")}</span>
+						<CopyButton
+							value={debugText}
+							timeout={2000}
+						>
+							{({ copied, copy }) => (
+								<Tooltip
+									label={t("debugDataCopy")}
+									withArrow
+									position="right"
+								>
+									<ActionIcon
+										color={copied ? "green" : "gray"}
+										variant="subtle"
+										onClick={copy}
+									>
+										{copied ? <IconCheck size={16} /> : <IconCopy size={16} />}
+									</ActionIcon>
+								</Tooltip>
+							)}
+						</CopyButton>
+					</Group>
+				}
+			>
+				<Box
+					component="pre"
+					fz="xs"
+				>
+					<Box component="code">{debugText}</Box>
+				</Box>
+			</Modal>
+		</>
 	);
 }

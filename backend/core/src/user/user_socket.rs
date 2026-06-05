@@ -11,12 +11,11 @@ use std::{
 	time::Duration,
 };
 
-use crate::result::{
-		Error,
-		Result,
-};
-
 use super::discord_oauth;
+use crate::result::{
+	Error,
+	Result,
+};
 
 const USER_SOCKET_BIND_ADDRESS: &str = "127.0.0.1";
 const USER_SOCKET_POLL_INTERVAL: Duration = Duration::from_millis(100);

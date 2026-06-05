@@ -15,8 +15,11 @@ export type TableColumnBase<TItem, TSort> = {
 	sort?: TSort;
 };
 
-export interface TableColumn<TKey extends string, TItem, TSort>
-	extends TableColumnBase<TItem, TSort> {
+export interface TableColumn<
+	TKey extends string,
+	TItem,
+	TSort,
+> extends TableColumnBase<TItem, TSort> {
 	id: TKey;
 }
 

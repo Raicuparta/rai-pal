@@ -1,14 +1,31 @@
 #![cfg(target_os = "windows")]
 
-use std::{ffi::OsStr, os::windows::ffi::OsStrExt, ptr};
+use std::{
+	ffi::OsStr,
+	os::windows::ffi::OsStrExt,
+	ptr,
+};
 
 use log::error;
 use winapi::{
-	ctypes::{c_int, c_uint},
-	um::winuser::{IDYES, MB_ICONERROR, MB_OK, MB_SYSTEMMODAL, MB_YESNO, MessageBoxW},
+	ctypes::{
+		c_int,
+		c_uint,
+	},
+	um::winuser::{
+		IDYES,
+		MB_ICONERROR,
+		MB_OK,
+		MB_SYSTEMMODAL,
+		MB_YESNO,
+		MessageBoxW,
+	},
 };
 
-use crate::paths;
+use crate::{
+	app_paths,
+	path_extensions::PathExt,
+};
 
 fn os_str_to_wide(os_str: &OsStr) -> Vec<u16> {
 	os_str.encode_wide().chain(std::iter::once(0)).collect()
@@ -48,7 +65,7 @@ If that doesn't work, search online for "Microsoft Edge WebView2", and download 
 Would you like to open the logs folder?"#;
 
 fn try_open_logs_folder() {
-	if let Err(error) = paths::open_logs_folder() {
+	if let Err(error) = app_paths::logs_path().and_then(|path| path.open_folder_or_parent()) {
 		error!("Failed to even open the logs folder: {error}");
 	}
 }

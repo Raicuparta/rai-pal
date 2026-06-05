@@ -1,12 +1,27 @@
-use crate::game_engines::game_engine::{EngineVersion, EngineVersionNumbers, GameEngine};
-use crate::providers::provider::ProviderId;
-use crate::result::Result;
-use crate::{http, paths};
+use std::{
+	collections::HashMap,
+	fs,
+	path::PathBuf,
+};
+
 use lazy_regex::regex;
 use rai_pal_proc_macros::serializable_struct;
-use std::collections::HashMap;
-use std::fs;
-use std::path::PathBuf;
+
+use crate::{
+	app_paths,
+	game_engines::game_engine::{
+		EngineVersion,
+		EngineVersionNumbers,
+		GameEngine,
+	},
+	game_providers::game_provider::GameProviderId,
+	http,
+	path_extensions::PathExt,
+	result::{
+		LogErrExt,
+		Result,
+	},
+};
 
 const URL_BASE: &str = "https://raicuparta.github.io/rai-pal-db/game-db";
 
@@ -20,7 +35,7 @@ const DATABASE_VERSION: i32 = 2;
 pub struct RemoteGame {
 	pub title: Option<String>,
 	pub engine: Option<GameEngine>,
-	pub ids: HashMap<ProviderId, Vec<String>>,
+	pub ids: HashMap<GameProviderId, Vec<String>>,
 }
 
 // Version strings in PCGamingWiki can be all weird, so parsing is pretty lax here.
@@ -28,7 +43,12 @@ pub struct RemoteGame {
 pub fn parse_version(version: &str) -> Option<EngineVersion> {
 	let version_numbers = regex!(r"\d+")
 		.find_iter(version)
-		.filter_map(|capture| capture.as_str().parse::<u32>().ok())
+		.filter_map(|capture| {
+			let capture_str = capture.as_str();
+			capture_str.parse::<u32>().ok_or_log(&format!(
+				"Failed to parse version number from capture `{capture_str}` in version string `{version}`",
+			))
+		})
 		.take(2)
 		.collect::<Vec<_>>();
 
@@ -48,7 +68,7 @@ pub fn parse_version(version: &str) -> Option<EngineVersion> {
 }
 
 pub fn get_database_file_path() -> Result<PathBuf> {
-	Ok(paths::app_data_path()?.join("remote.sqlite"))
+	app_paths::database_path("remote")
 }
 
 pub async fn download_database() -> Result<PathBuf> {
@@ -58,7 +78,7 @@ pub async fn download_database() -> Result<PathBuf> {
 
 	let file_path = get_database_file_path()?;
 
-	fs::create_dir_all(paths::path_parent(&file_path)?)?;
+	fs::create_dir_all(file_path.try_parent()?)?;
 
 	fs::write(&file_path, response.bytes().await?)?;
 

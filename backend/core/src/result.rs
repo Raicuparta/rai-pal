@@ -1,5 +1,6 @@
 use std::{
 	env,
+	fmt,
 	num,
 	path::PathBuf,
 	result,
@@ -7,6 +8,8 @@ use std::{
 };
 
 use lazy_regex::regex;
+
+use crate::game_providers::game_provider::GameProviderId;
 
 #[derive(Debug, thiserror::Error, specta::Type)]
 pub enum Error {
@@ -101,6 +104,20 @@ pub enum Error {
 		SystemTimeError,
 	),
 
+	#[error(transparent)]
+	ParseInt(
+		#[from]
+		#[specta(skip)]
+		num::ParseIntError,
+	),
+
+	#[error(transparent)]
+	Utf8(
+		#[from]
+		#[specta(skip)]
+		std::str::Utf8Error,
+	),
+
 	#[error("Invalid type `{0}` in binary vdf for key {1}")]
 	InvalidBinaryVdfType(u8, String),
 
@@ -121,6 +138,9 @@ pub enum Error {
 	)]
 	SteamAppInfoNotFound(PathBuf),
 
+	#[error("Steam Proton handling error: {0}")]
+	SteamProton(String),
+
 	#[error("Failed to retrieve Unity version from asset `{0}`")]
 	FailedToParseUnityVersionAsset(PathBuf),
 
@@ -128,6 +148,9 @@ pub enum Error {
 		"Failed to install mod, because the known game information is insufficient. Missing information: `{0}`. Game: `{1}`"
 	)]
 	ModInstallInfoInsufficient(String, String),
+
+	#[error("Local mod manifest in `{0}` defines 'download' section, makes no sense.")]
+	LocalModCantDefineDownload(String),
 
 	#[error("Failed to get game data from path `{0}`")]
 	FailedToGetGameFromPath(PathBuf),
@@ -140,9 +163,6 @@ pub enum Error {
 
 	#[error("Unity backend not known for mod `{0}`")]
 	UnityBackendUnknown(String),
-
-	#[error("Download not available for mod `{0}`")]
-	ModDownloadNotAvailable(String),
 
 	#[error(
 		"Operation can't be completed without a `runnable` section in the mod manifest (rai-pal-manifest.json) `{0}`"
@@ -162,6 +182,9 @@ pub enum Error {
 	)]
 	GameNotInstalled(String),
 
+	#[error("This operation requires mod `{0}` to be installed.")]
+	ModNotInstalled(String),
+
 	#[error("Failed to find game executable at `{0}`")]
 	NoExecutableFound(PathBuf),
 
@@ -170,6 +193,18 @@ pub enum Error {
 
 	#[error("Discord OAuth failed: `{0}`")]
 	DiscordOAuth(String),
+
+	#[error("Failed to find mod manifest in path: `{0}`")]
+	ManifestNotFound(String),
+
+	#[error("Provider {0} doesn't support this operation: `{1}`")]
+	UnsupportedProviderOperation(GameProviderId, String),
+
+	#[error("Required information for mod with ID `{0}` is missing. Expected `{1}`")]
+	ModInfoMissing(String, String),
+
+	#[error("No command fount for opening `{0}`")]
+	NoCommandForOpen(String),
 }
 
 impl serde::Serialize for Error {
@@ -182,3 +217,22 @@ impl serde::Serialize for Error {
 }
 
 pub type Result<T = ()> = result::Result<T, Error>;
+
+pub trait LogErrExt<T, E> {
+	fn ok_or_log(self, message: &str) -> Option<T>;
+}
+
+impl<T, E> LogErrExt<T, E> for result::Result<T, E>
+where
+	E: fmt::Display,
+{
+	fn ok_or_log(self, message: &str) -> Option<T> {
+		match self {
+			Ok(val) => Some(val),
+			Err(err) => {
+				log::warn!("{message}: {err}");
+				None
+			}
+		}
+	}
+}

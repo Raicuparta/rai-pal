@@ -83,6 +83,8 @@ export const koKr: Localization = {
 		foldersDropdown: "폴더",
 		openGameFilesFolder: "게임 파일 폴더 열기",
 		openInstalledModsFolder: "설치된 모드 폴더 열기",
+		openGameWinePrefixFolder: "게임 Wine 프리픽스 폴더 열기",
+		openGameWineBinaryFolder: "게임 Wine 바이너리 폴더 열기",
 		removeFromRaiPal: "Rai Pal에서 제거",
 		removeGameConfirmation: "이 게임을 Rai Pal에서 제거하시겠습니까?",
 		refreshGame: "새로고침",
@@ -101,21 +103,30 @@ export const koKr: Localization = {
 
 		incompatibleGameModsDescription:
 			"여기에 나열된 모드들은 이 게임의 엔진 버전과 호환되지 않기 때문에 설치할 수 없습니다.",
+
+		otherThings: "기타 항목",
+
+		otherThingsDescription:
+			"이들은 주로 종속성 및 기타 항목으로 일반적으로 직접 수정할 필요가 없습니다.",
 	},
 
 	gameModRow: {
 		editModConfig: "모드 설정 편집",
 		openModConfigFolderTooltip: "이 모드의 설정 파일이 포함된 폴더 열기",
 		openModFolder: "모드 폴더 열기",
-		openModLoaderFolder: "모드 로더 폴더 열기",
 		updateMod: "업데이트",
 		installMod: "설치",
+		installModAnticheatWarning:
+			"주의: 멀티플레이어 게임에 모드를 설치할 때 주의하세요! 안티치트는 일부 모드를 감지할 수 있으며, 모드가 무해해 보여도 당신을 밴할 수 있습니다.",
 		reinstallMod: "재설치",
 		uninstallMod: "제거",
 		runMod: "실행",
 		downloadRemoteConfig: "권장 설정 다운로드",
 		remoteConfigAvailable:
 			"권장 설정을 사용할 수 있습니다. 설정이 아직 없는 경우 다운로드됩니다. 세 점 메뉴에서 강제로 다운로드할 수도 있습니다.",
+		modOutdated: "모드가 오래되었습니다",
+		cantUninstallModWithDependants:
+			"의존하는 다른 모드가 있는 모드는 제거할 수 없습니다. 먼저 이 모드에 의존하는 모드들을 제거하세요.",
 	},
 
 	gamesTableColumn: {
@@ -125,17 +136,17 @@ export const koKr: Localization = {
 	},
 
 	modsPage: {
-		openModsFolderButton: "모드 폴더 열기",
+		openLocalModsFolderButton: "모드 폴더 열기",
+		openLoadlModsFolderTooltip:
+			"이 폴더에 rai-pal-manifest.json이 있는 모드를 배치하여 온라인 데이터베이스를 거치지 않고 직접 로드할 수 있습니다.",
 		tableColumnMod: "모드",
 		tableColumnVersion: "버전",
-		tableColumnModLoader: "로더",
 		tableColumnGameEngine: "엔진",
 		tableColumnUnityBackend: "백엔드",
 		modByAuthor: "{authorName} 제작",
 		modDeprecated: "사용 중지됨",
 		modDeprecatedTooltip:
 			"이 모드는 사용 중지되었습니다. 이 모드를 제거하고 새로운 대안을 설치해야 합니다.",
-		modOutdated: "모드가 오래되었습니다",
 	},
 
 	modModal: {
@@ -168,6 +179,14 @@ export const koKr: Localization = {
 			"모드는 이를 사용해 Discord 사용자 이름, 아바타, 역할 등에 접근할 수 있습니다.",
 	},
 
+	subPage: {
+		back: "뒤로",
+	},
+
+	downloadStatusMenu: {
+		clear: "완료 항목 지우기",
+	},
+
 	steamCache: {
 		resetSteamCacheButton: "Steam 캐시 재설정",
 		resetSteamCacheModalTitle: "Steam 캐시 재설정",
@@ -186,7 +205,7 @@ export const koKr: Localization = {
 			"Rai Pal이 Steam 라이브러리에 추가되었습니다. 보려면 Steam을 다시 시작하세요.",
 	},
 
-	wineBepInExEnvironment: {
+	globalWineOverrides: {
 		setUpEnvironmentButton: "BepInEx용 Linux 환경 설정",
 		setUpEnvironmentTitle: "BepInEx용 Linux 환경 설정",
 		setUpEnvironmentDescription:

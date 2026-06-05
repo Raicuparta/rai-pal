@@ -1,8 +1,17 @@
-use std::{cmp::Ordering, path::Path};
+use std::{
+	cmp::Ordering,
+	path::Path,
+};
 
-use rai_pal_proc_macros::{serializable_enum, serializable_struct};
+use rai_pal_proc_macros::{
+	serializable_enum,
+	serializable_struct,
+};
 
-use super::{unity, unreal};
+use super::{
+	unity,
+	unreal,
+};
 
 #[serializable_enum]
 pub enum EngineBrand {
@@ -30,6 +39,12 @@ pub struct EngineVersion {
 	pub numbers: EngineVersionNumbers,
 	pub suffix: Option<String>,
 	pub display: String,
+}
+
+#[serializable_struct]
+pub struct EngineVersionRange {
+	pub minimum: Option<EngineVersionNumbers>,
+	pub maximum: Option<EngineVersionNumbers>,
 }
 
 impl Eq for EngineVersionNumbers {}

@@ -1,13 +1,19 @@
 use std::collections::HashSet;
 
-use rai_pal_proc_macros::{serializable_enum, serializable_struct};
+use rai_pal_proc_macros::{
+	serializable_enum,
+	serializable_struct,
+};
 use strum::IntoEnumIterator;
 
 use crate::{
 	architecture::Architecture,
-	game_engines::{game_engine::EngineBrand, unity::UnityBackend},
+	game_engines::{
+		game_engine::EngineBrand,
+		unity::UnityBackend,
+	},
+	game_providers::game_provider::GameProviderId,
 	game_tag::GameTag,
-	providers::provider::ProviderId,
 };
 
 #[serializable_enum]
@@ -18,7 +24,7 @@ pub enum InstallState {
 
 #[serializable_struct]
 pub struct GamesFilter {
-	pub providers: HashSet<Option<ProviderId>>,
+	pub providers: HashSet<Option<GameProviderId>>,
 	pub tags: HashSet<Option<GameTag>>,
 	pub architectures: HashSet<Option<Architecture>>,
 	pub unity_backends: HashSet<Option<UnityBackend>>,
@@ -49,7 +55,7 @@ impl Default for GamesFilter {
 		Self {
 			architectures: Architecture::iter().map(Some).collect(),
 			engines: EngineBrand::iter().map(Some).collect(),
-			providers: ProviderId::iter().map(Some).collect(),
+			providers: GameProviderId::iter().map(Some).collect(),
 			tags: GameTag::iter().map(Some).collect(),
 			unity_backends: UnityBackend::iter().map(Some).collect(),
 			installed: InstallState::iter().map(Some).collect(),

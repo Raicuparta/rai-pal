@@ -4,14 +4,10 @@
 #![allow(clippy::unused_async)]
 
 use std::{
-	collections::HashMap,
+	collections::BTreeMap,
 	path::PathBuf,
 	thread,
-	time::{
-		Duration,
-		SystemTime,
-		UNIX_EPOCH,
-	},
+	time::Duration,
 };
 
 use app_settings::AppSettings;
@@ -25,48 +21,43 @@ use events::EventEmitter;
 use rai_pal_core::windows;
 use rai_pal_core::{
 	analytics,
+	app_paths,
 	game::DbGame,
-	games_query::GamesQuery,
-	local_database::{
-		GameDatabase,
-		GameIdsResponse,
-		attach_remote_database,
-	},
-	local_mod::{
-		self,
-		LocalMod,
-	},
-	maps::TryGettable,
-	mod_loaders::{
-		bepinex,
-		mod_loader::{
+	game_providers::{
+		game_provider::{
 			self,
-			ModLoaderActions,
-			ModLoaderId,
+			GameProviderId,
 		},
-	},
-	paths::{
-		self,
-		normalize_path,
-	},
-	providers::{
 		manual_provider,
-		provider::{
-			self,
-			ProviderActions,
-			ProviderId,
-		},
-		provider_command::ProviderCommand,
+		provider_command::ProviderCommandAction,
 		steam::{
 			steam_provider::Steam,
 			steam_shortcut,
 		},
 	},
+	games_query::GamesQuery,
+	http::DownloadStatus,
+	local_database::{
+		app_database::AppDatabase,
+		game_database::{
+			GameDatabase,
+			GameIdsResponse,
+			attach_remote,
+		},
+		mod_database::{
+			GameModInfo,
+			ModDatabase,
+		},
+	},
+	maps::TryGettable,
+	mod_providers::mod_provider,
+	mods::game_mod::GameMod,
+	path_extensions::PathExt,
 	remote_config::RemoteConfigs,
 	remote_game::{
 		self,
 	},
-	remote_mod,
+	result::LogErrExt,
 	user::{
 		discord_oauth::{
 			DiscordAuthState,
@@ -82,7 +73,7 @@ use strum::IntoEnumIterator;
 use tauri::{
 	AppHandle,
 	Manager,
-	path::BaseDirectory,
+	ipc::Channel,
 };
 use tauri_plugin_log::{
 	Target,
@@ -91,10 +82,7 @@ use tauri_plugin_log::{
 use tauri_plugin_window_state::StateFlags;
 use tauri_specta::Builder;
 
-use crate::result::{
-	Error,
-	Result,
-};
+use crate::result::Result;
 
 mod app_settings;
 mod app_state;
@@ -125,19 +113,11 @@ async fn log_out() -> Result {
 
 #[tauri::command]
 #[specta::specta]
-async fn get_local_mods(handle: AppHandle) -> Result<local_mod::Map> {
-	Ok(handle.app_state().local_mods.read_state()?.clone())
-}
-
-#[tauri::command]
-#[specta::specta]
-async fn get_remote_mods(handle: AppHandle) -> Result<remote_mod::Map> {
-	Ok(handle.app_state().remote_mods.read_state()?.clone())
-}
-
-#[tauri::command]
-#[specta::specta]
-async fn open_game_folder(handle: AppHandle, provider_id: ProviderId, game_id: String) -> Result {
+async fn open_game_folder(
+	handle: AppHandle,
+	provider_id: GameProviderId,
+	game_id: String,
+) -> Result {
 	handle
 		.app_state()
 		.database
@@ -148,9 +128,47 @@ async fn open_game_folder(handle: AppHandle, provider_id: ProviderId, game_id: S
 
 #[tauri::command]
 #[specta::specta]
+async fn open_game_wine_prefix_folder(
+	handle: AppHandle,
+	provider_id: GameProviderId,
+	game_id: String,
+) -> Result {
+	game_provider::get_provider(provider_id)?
+		.get_wine_prefix_path(
+			&handle
+				.app_state()
+				.database
+				.get_game(&provider_id, &game_id)?,
+		)?
+		.open_folder_or_parent()?;
+
+	Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn open_game_wine_binary_folder(
+	handle: AppHandle,
+	provider_id: GameProviderId,
+	game_id: String,
+) -> Result {
+	game_provider::get_provider(provider_id)?
+		.get_wine_binary_path(
+			&handle
+				.app_state()
+				.database
+				.get_game(&provider_id, &game_id)?,
+		)?
+		.open_folder_or_parent()?;
+
+	Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
 async fn open_game_mods_folder(
 	handle: AppHandle,
-	provider_id: ProviderId,
+	provider_id: GameProviderId,
 	game_id: String,
 ) -> Result {
 	handle
@@ -163,108 +181,53 @@ async fn open_game_mods_folder(
 
 #[tauri::command]
 #[specta::specta]
-async fn open_mods_folder() -> Result {
-	paths::open_folder_or_parent(&paths::installed_mods_path()?)?;
-	Ok(())
-}
-
-#[tauri::command]
-#[specta::specta]
-async fn open_mod_folder(mod_id: &str, handle: AppHandle) -> Result {
-	Ok(handle
-		.app_state()
-		.local_mods
-		.read_state()?
-		.try_get(mod_id)?
-		.open_folder()?)
-}
-
-#[tauri::command]
-#[specta::specta]
-async fn open_mod_loader_folder(mod_loader_id: ModLoaderId, handle: AppHandle) -> Result {
-	Ok(handle
-		.app_state()
-		.mod_loaders
-		.read_state()?
-		.try_get(&mod_loader_id)?
-		.open_folder()?)
-}
-
-#[tauri::command]
-#[specta::specta]
-async fn download_mod(mod_id: &str, handle: AppHandle) -> Result {
-	let state = handle.app_state();
-	let remote_mods = state.remote_mods.read_state()?.clone();
-	let remote_mod = remote_mods.try_get(mod_id)?;
-	let mod_loaders = state.mod_loaders.read_state()?.clone();
-
-	mod_loaders
-		.try_get(&remote_mod.common.loader_id)?
-		.download_mod(remote_mod)
-		.await?;
-
-	refresh_local_mods(&mod_loaders, &handle)?;
-
-	Ok(())
-}
-
-#[tauri::command]
-#[specta::specta]
-async fn delete_mod(mod_id: &str, handle: AppHandle) -> Result {
-	let state = handle.app_state();
-	let local_mods = state.local_mods.read_state()?;
-	let local_mod = local_mods.try_get(mod_id)?;
-	let mod_loaders = state.mod_loaders.read_state()?;
-
-	mod_loaders
-		.try_get(&local_mod.common.loader_id)?
-		.delete_mod(local_mod)?;
-
-	refresh_local_mods(&mod_loaders, &handle)?;
-
-	Ok(())
-}
-
-#[tauri::command]
-#[specta::specta]
 async fn install_mod(
-	provider_id: ProviderId,
+	provider_id: GameProviderId,
 	game_id: String,
 	mod_id: &str,
 	handle: AppHandle,
 ) -> Result {
 	let state = handle.app_state();
 	let game = state.database.get_game(&provider_id, &game_id)?;
+	let game_mod = state.database.get_mod(mod_id)?;
 
-	let mod_loaders = state.mod_loaders.read_state()?.clone();
+	let download_status_channel = state.download_status_channel.read_state()?.clone();
 
-	let local_mod = refresh_and_get_local_mod(mod_id, &mod_loaders, &handle).await?;
+	install_mod_dependencies(&handle, &game_mod, &game).await?;
 
-	let mod_loader = mod_loaders.try_get(&local_mod.common.loader_id)?;
+	if let Some(installed_mod) = state
+		.database
+		.get_installed_mod(&provider_id, &game_id, mod_id)?
+	{
+		installed_mod.uninstall()?;
+	}
 
-	// Uninstall mod if it already exists, in case there are conflicting leftover files when updating.
-	mod_loader.uninstall_mod(&game, &local_mod).await?;
+	game_mod
+		.install(&game, |status| {
+			download_status_channel
+				.send(status)
+				.ok_or_log("Failed to send download status update");
+		})
+		.await?;
 
-	mod_loader.install_mod(&game, &local_mod).await?;
+	state.database.refresh_installed_mods()?;
 
 	handle.emit_safe(events::RefreshGame(provider_id, game_id));
-
-	analytics::send_event(analytics::Event::InstallOrRunMod, mod_id).await;
 
 	Ok(())
 }
 
 #[tauri::command]
 #[specta::specta]
-async fn run_runnable_without_game(mod_id: &str, handle: AppHandle) -> Result {
+async fn run_mod(
+	provider_id: GameProviderId,
+	game_id: String,
+	mod_id: &str,
+	handle: AppHandle,
+) -> Result {
 	let state = handle.app_state();
-	let mod_loaders = state.mod_loaders.read_state()?.clone();
-	let local_mod = refresh_and_get_local_mod(mod_id, &mod_loaders, &handle).await?;
-	let mod_loader = mod_loaders.try_get(&local_mod.common.loader_id)?;
-
-	mod_loader.run_without_game(&local_mod).await?;
-
-	analytics::send_event(analytics::Event::InstallOrRunMod, mod_id).await;
+	let game = state.database.get_game(&provider_id, &game_id)?;
+	state.database.get_mod(mod_id)?.run(&game)?;
 
 	Ok(())
 }
@@ -272,20 +235,17 @@ async fn run_runnable_without_game(mod_id: &str, handle: AppHandle) -> Result {
 #[tauri::command]
 #[specta::specta]
 async fn configure_mod(
-	provider_id: ProviderId,
+	provider_id: GameProviderId,
 	game_id: String,
 	mod_id: &str,
 	open_folder: bool,
 	handle: AppHandle,
 ) -> Result {
-	let state = handle.app_state();
-	let game = state.database.get_game(&provider_id, &game_id)?;
-	let mod_loaders = state.mod_loaders.read_state()?;
-	let local_mods = state.local_mods.read_state()?;
-	let local_mod = local_mods.try_get(mod_id)?;
-	let mod_loader = mod_loaders.try_get(&local_mod.common.loader_id)?;
-
-	mod_loader.configure_mod(&game, local_mod, open_folder)?;
+	handle
+		.app_state()
+		.database
+		.try_get_installed_mod(&provider_id, &game_id, mod_id)?
+		.configure(open_folder)?;
 
 	Ok(())
 }
@@ -293,31 +253,28 @@ async fn configure_mod(
 #[tauri::command]
 #[specta::specta]
 async fn open_installed_mod_folder(
-	provider_id: ProviderId,
+	provider_id: GameProviderId,
 	game_id: String,
 	mod_id: &str,
 	handle: AppHandle,
 ) -> Result {
 	let state = handle.app_state();
-	let game = state.database.get_game(&provider_id, &game_id)?;
-
-	let mod_loaders = state.mod_loaders.read_state()?.clone();
-	let local_mod = refresh_and_get_local_mod(mod_id, &mod_loaders, &handle).await?;
-
-	let mod_loader = mod_loaders.try_get(&local_mod.common.loader_id)?;
-
-	mod_loader.open_installed_mod_folder(&game, &local_mod)?;
+	state
+		.database
+		.try_get_installed_mod(&provider_id, &game_id, mod_id)?
+		.open_folder()?;
 
 	Ok(())
 }
 
 #[tauri::command]
 #[specta::specta]
-async fn refresh_game(provider_id: ProviderId, game_id: String, handle: AppHandle) -> Result {
+async fn refresh_game(handle: AppHandle, provider_id: GameProviderId, game_id: String) -> Result {
 	let state = handle.app_state();
 	let mut game = state.database.get_game(&provider_id, &game_id)?;
 	game.refresh_executable()?;
 	state.database.insert_game(&game);
+	state.database.refresh_installed_mods()?;
 
 	handle.emit_safe(events::RefreshGame(provider_id, game_id));
 
@@ -327,22 +284,17 @@ async fn refresh_game(provider_id: ProviderId, game_id: String, handle: AppHandl
 #[tauri::command]
 #[specta::specta]
 async fn uninstall_mod(
-	provider_id: ProviderId,
+	provider_id: GameProviderId,
 	game_id: String,
 	mod_id: &str,
 	handle: AppHandle,
 ) -> Result {
 	let state = handle.app_state();
-	let game = state.database.get_game(&provider_id, &game_id)?;
-
-	let mod_loaders = state.mod_loaders.read_state()?.clone();
-
-	let local_mod = refresh_and_get_local_mod(mod_id, &mod_loaders, &handle).await?;
-
-	let mod_loader = mod_loaders.try_get(&local_mod.common.loader_id)?;
-
-	// Uninstall mod if it already exists, in case there are conflicting leftover files when updating.
-	mod_loader.uninstall_mod(&game, &local_mod).await?;
+	state
+		.database
+		.try_get_installed_mod(&provider_id, &game_id, mod_id)?
+		.uninstall()?;
+	state.database.refresh_installed_mods()?;
 
 	handle.emit_safe(events::RefreshGame(provider_id, game_id));
 
@@ -351,200 +303,115 @@ async fn uninstall_mod(
 
 #[tauri::command]
 #[specta::specta]
-async fn uninstall_all_mods(provider_id: ProviderId, game_id: String, handle: AppHandle) -> Result {
-	handle
-		.app_state()
+async fn uninstall_all_mods(
+	handle: AppHandle,
+	provider_id: GameProviderId,
+	game_id: String,
+) -> Result {
+	let state = handle.app_state();
+	state
 		.database
 		.get_game(&provider_id, &game_id)?
 		.uninstall_all_mods()?;
+	state.database.refresh_installed_mods()?;
 
 	handle.emit_safe(events::RefreshGame(provider_id, game_id));
 
 	Ok(())
 }
 
-fn refresh_local_mods(mod_loaders: &mod_loader::Map, handle: &AppHandle) -> Result<local_mod::Map> {
-	let local_mods: HashMap<_, _> = mod_loaders
-		.values()
-		.filter_map(|mod_loader| match mod_loader.get_local_mods() {
-			Ok(local_mods) => Some(local_mods),
-			Err(err) => {
-				log::error!("Failed to get local mods: {err}");
-				None
+async fn install_mod_dependencies(handle: &AppHandle, game_mod: &GameMod, game: &DbGame) -> Result {
+	let state = handle.app_state();
+
+	let relevant_mods = state
+		.database
+		.get_game_mods(&game.provider_id, &game.game_id)?;
+	let download_status_channel = state.download_status_channel.read_state()?.clone();
+
+	if let Some(dependencies) = game_mod.dependencies.as_ref() {
+		for dependency in dependencies {
+			if let Some(relevant_dependency_mod_info) = relevant_mods.iter().find(|relevant_mod| {
+				relevant_mod.compatible && relevant_mod.mod_id == dependency.mod_id
+			}) {
+				let dependency_mod = state
+					.database
+					.get_mod(&relevant_dependency_mod_info.mod_id)?;
+
+				Box::pin(install_mod_dependencies(handle, &dependency_mod, game)).await?;
+
+				let outdated = relevant_dependency_mod_info.installed_version.is_none()
+					|| relevant_dependency_mod_info.is_outdated;
+
+				if outdated && dependency_mod.install.is_some() {
+					dependency_mod
+						.install(game, |status| {
+							download_status_channel
+								.send(status)
+								.ok_or_log("Failed to send download status update");
+						})
+						.await?;
+				}
 			}
-		})
-		.flatten()
-		.collect();
-
-	log::info!("Found {} local mods.", { local_mods.len() });
-	handle.emit_safe(events::SyncLocalMods(local_mods.clone()));
-
-	handle
-		.app_state()
-		.local_mods
-		.write_state_value(local_mods.clone())?;
-
-	Ok(local_mods)
-}
-
-async fn refresh_remote_mods(
-	mod_loaders: &mod_loader::Map,
-	handle: &AppHandle,
-) -> Result<remote_mod::Map> {
-	let mut remote_mods = remote_mod::Map::default();
-
-	for mod_loader in mod_loaders.values() {
-		for (mod_id, remote_mod) in mod_loader
-			.get_remote_mods(|error| {
-				handle.emit_error(format!("Failed to get remote mods: {error}"));
-			})
-			.await
-		{
-			remote_mods.insert(mod_id.clone(), remote_mod.clone());
 		}
 	}
 
-	handle.emit_safe(events::SyncRemoteMods(remote_mods.clone()));
-
-	handle
-		.app_state()
-		.remote_mods
-		.write_state_value(remote_mods.clone())?;
-
-	Ok(remote_mods)
-}
-
-async fn refresh_and_get_local_mod(
-	mod_id: &str,
-	mod_loaders: &mod_loader::Map,
-	handle: &AppHandle,
-) -> Result<LocalMod> {
-	let local_mods = {
-		let state = handle.app_state();
-
-		let state_local_mods = state.local_mods.read_state()?.clone();
-		if state_local_mods.contains_key(mod_id) {
-			Ok(state_local_mods)
-		} else {
-			// Local mod wasn't in app state,
-			// so let's sync app state to local files in case some file was manually changed.
-			let disk_local_mods = refresh_local_mods(mod_loaders, handle);
-
-			if state_local_mods.contains_key(mod_id) {
-				disk_local_mods
-			} else {
-				let remote_mods = state.remote_mods.read_state()?.clone();
-				let remote_mod = remote_mods.try_get(mod_id)?;
-				let mod_loader = mod_loaders.try_get(&remote_mod.common.loader_id)?;
-
-				if remote_mod.data.latest_version.is_some() {
-					// If local mod still can't be found on disk,
-					// we try to download it from the database.
-					mod_loader
-						.download_mod(remote_mods.try_get(mod_id)?)
-						.await?;
-				} else {
-					// If downloading from the database isn't possible,
-					// we just open the mod loader folder so the user can install it themselves.
-					mod_loader.open_folder()?;
-				}
-
-				refresh_local_mods(mod_loaders, handle)
-			}
-		}
-	}?;
-
-	Ok(local_mods.try_get(mod_id).cloned()?)
+	Ok(())
 }
 
 #[tauri::command]
 #[specta::specta]
 async fn refresh_mods(handle: AppHandle) -> Result {
-	let resources_path = handle
-		.path()
-		.resolve("resources", BaseDirectory::Resource)
-		.map_err(|err| Error::FailedToGetResourcesPath(err.to_string()))?;
-
-	let mod_loaders = mod_loader::get_map(&resources_path);
-
-	handle.emit_safe(events::SyncLocalModLoaders(
-		mod_loader::get_local_mod_loaders_map(&mod_loaders)?,
-	));
-
-	handle.emit_safe(events::SyncRemoteModLoaders(
-		mod_loader::get_remote_mod_loaders_map(&mod_loaders)?,
-	));
-
-	log::info!("Found {} mod loaders. Refreshing local mods...", {
-		mod_loaders.len()
-	});
-	refresh_local_mods(&mod_loaders, &handle)?;
-
-	log::info!("Refreshing remote mods...");
-	refresh_remote_mods(&mod_loaders, &handle).await?;
-
-	log::info!("Saving mods to state.");
-	handle
-		.app_state()
-		.mod_loaders
-		.write_state_value(mod_loaders)?;
+	let state = handle.app_state();
+	mod_provider::refresh_all_mods(&state.database).await?;
 
 	Ok(())
 }
 
 #[tauri::command]
 #[specta::specta]
-async fn refresh_remote_games(handle: AppHandle) -> Result {
+async fn get_mods(handle: AppHandle) -> Result<BTreeMap<String, GameMod>> {
 	let state = handle.app_state();
+	Ok(state.database.get_mod_map()?)
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn refresh_remote_games() -> Result {
 	let path = remote_game::download_database().await?;
-	attach_remote_database(state.database.lock_db()?, &path)?;
+	attach_remote(&path)?;
 
 	Ok(())
 }
 
 #[tauri::command]
 #[specta::specta]
-async fn refresh_games(handle: AppHandle, provider_id: ProviderId) -> Result {
+async fn refresh_games(handle: AppHandle, provider_id: GameProviderId) -> Result {
 	let state = handle.app_state();
-
-	let start_time = SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs();
-
-	if let Some(provider) = provider::get_provider(provider_id) {
-		provider?.insert_games(&state.database).await?;
-		state
-			.database
-			.remove_stale_games(&provider_id, start_time)?;
-	}
+	provider_id.insert_games(&state.database)?;
+	state.database.refresh_installed_mods()?;
 
 	Ok(())
 }
 
 #[tauri::command]
 #[specta::specta]
-async fn add_game(path: PathBuf, handle: AppHandle) -> Result {
-	let normalized_path = normalize_path(&path);
-
+async fn add_game(handle: AppHandle, path: PathBuf) -> Result {
+	let normalized_path = path.normalize();
 	let game = manual_provider::add_game(&normalized_path)?;
-	let game_name = game.display_title.clone();
-
 	let state = handle.app_state();
 
 	state.database.insert_game(&game);
 
 	handle.emit_safe(events::RefreshGame(game.provider_id, game.game_id.clone()));
-
-	handle.emit_safe(events::GamesChanged());
-
-	handle.emit_safe(events::SelectGame(ProviderId::Manual, game.game_id));
-
-	analytics::send_event(analytics::Event::ManuallyAddGame, &game_name).await;
+	handle.emit_safe(events::AppDatabaseChanged());
+	handle.emit_safe(events::SelectGame(GameProviderId::Manual, game.game_id));
 
 	Ok(())
 }
 
 #[tauri::command]
 #[specta::specta]
-async fn remove_game(provider_id: ProviderId, game_id: String, handle: AppHandle) -> Result {
+async fn remove_game(handle: AppHandle, provider_id: GameProviderId, game_id: String) -> Result {
 	let game = handle
 		.app_state()
 		.database
@@ -557,8 +424,19 @@ async fn remove_game(provider_id: ProviderId, game_id: String, handle: AppHandle
 
 #[tauri::command]
 #[specta::specta]
-async fn run_provider_command(provider_command: ProviderCommand, handle: AppHandle) -> Result {
-	provider_command.run()?;
+async fn run_provider_command(
+	handle: AppHandle,
+	provider_id: GameProviderId,
+	game_id: &str,
+	provider_command_aciton: ProviderCommandAction,
+) -> Result {
+	let game = handle
+		.app_state()
+		.database
+		.get_game(&provider_id, game_id)?;
+
+	let provider_command = game.provider_commands.try_get(&provider_command_aciton)?;
+	provider_command.run(&game)?;
 
 	handle.emit_safe(events::ExecutedProviderCommand);
 
@@ -570,7 +448,7 @@ async fn run_provider_command(provider_command: ProviderCommand, handle: AppHand
 async fn reset_steam_cache(handle: AppHandle) -> Result {
 	Steam::delete_cache()?;
 
-	refresh_games(handle, ProviderId::Steam).await?;
+	refresh_games(handle, GameProviderId::Steam).await?;
 
 	Ok(())
 }
@@ -586,8 +464,19 @@ async fn add_rai_pal_steam_shortcut() -> Result {
 
 #[tauri::command]
 #[specta::specta]
-async fn frontend_ready() -> Result {
-	analytics::send_event(analytics::Event::StartApp, "").await;
+async fn send_analytics_event(
+	event: analytics::Event,
+	data: Option<analytics::AnalyticsData>,
+) -> Result {
+	analytics::send_event(event, data).await;
+
+	Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn open_local_mods_folder() -> Result {
+	app_paths::local_mods_path()?.open_folder_or_parent()?;
 
 	Ok(())
 }
@@ -595,7 +484,7 @@ async fn frontend_ready() -> Result {
 #[tauri::command]
 #[specta::specta]
 async fn open_logs_folder() -> Result {
-	paths::open_logs_folder()?;
+	app_paths::logs_path()?.open_folder_or_parent()?;
 
 	Ok(())
 }
@@ -609,7 +498,11 @@ async fn get_game_ids(handle: AppHandle, query: Option<GamesQuery>) -> Result<Ga
 
 #[tauri::command]
 #[specta::specta]
-async fn get_game(handle: AppHandle, provider_id: ProviderId, game_id: String) -> Result<DbGame> {
+async fn get_game(
+	handle: AppHandle,
+	provider_id: GameProviderId,
+	game_id: String,
+) -> Result<DbGame> {
 	let state = handle.app_state();
 	Ok(state.database.get_game(&provider_id, &game_id)?)
 }
@@ -628,86 +521,20 @@ async fn save_app_settings(settings: AppSettings) -> Result {
 
 #[tauri::command]
 #[specta::specta]
-async fn get_installed_mod_versions(
-	provider_id: ProviderId,
+async fn get_game_mods(
+	provider_id: GameProviderId,
 	game_id: String,
 	app_handle: AppHandle,
-) -> Result<HashMap<String, String>> {
-	Ok(app_handle
-		.app_state()
-		.database
-		.get_game(&provider_id, &game_id)?
-		.get_installed_mod_versions())
-}
-
-#[tauri::command]
-#[specta::specta]
-async fn get_mod_loader_statuses(
-	provider_id: ProviderId,
-	game_id: String,
-	app_handle: AppHandle,
-) -> Result<HashMap<ModLoaderId, mod_loader::ModLoaderStatus>> {
+) -> Result<Vec<GameModInfo>> {
 	let state = app_handle.app_state();
-	let game = app_handle
-		.app_state()
-		.database
-		.get_game(&provider_id, &game_id)?;
-	let mod_loaders = state.mod_loaders.read_state()?.clone();
 
-	let mut statuses = HashMap::new();
-
-	for (loader_id, mod_loader) in &mod_loaders {
-		if let Some(status) = mod_loader.get_status(&game).await? {
-			statuses.insert(*loader_id, status);
-		}
-	}
-
-	Ok(statuses)
-}
-
-#[tauri::command]
-#[specta::specta]
-async fn install_mod_loader(
-	provider_id: ProviderId,
-	game_id: String,
-	mod_loader_id: ModLoaderId,
-	force_reinstall: bool,
-	app_handle: AppHandle,
-) -> Result {
-	let state = app_handle.app_state();
-	let game = state.database.get_game(&provider_id, &game_id)?;
-	let mod_loaders = state.mod_loaders.read_state()?.clone();
-	let mod_loader = mod_loaders.try_get(&mod_loader_id)?;
-
-	mod_loader.install_loader(&game, force_reinstall).await?;
-
-	app_handle.emit_safe(events::RefreshGame(provider_id, game_id));
-
-	Ok(())
-}
-
-#[tauri::command]
-#[specta::specta]
-async fn open_game_mod_loader_folder(
-	provider_id: ProviderId,
-	game_id: String,
-	mod_loader_id: ModLoaderId,
-	app_handle: AppHandle,
-) -> Result {
-	let state = app_handle.app_state();
-	let game = state.database.get_game(&provider_id, &game_id)?;
-	let mod_loaders = state.mod_loaders.read_state()?.clone();
-	let mod_loader = mod_loaders.try_get(&mod_loader_id)?;
-
-	mod_loader.open_loader_folder_for_game(&game)?;
-
-	Ok(())
+	Ok(state.database.get_game_mods(&provider_id, &game_id)?)
 }
 
 #[tauri::command]
 #[specta::specta]
 async fn get_remote_configs(
-	provider_id: ProviderId,
+	provider_id: GameProviderId,
 	game_id: String,
 	app_handle: AppHandle,
 ) -> Result<Option<RemoteConfigs>> {
@@ -722,7 +549,7 @@ async fn get_remote_configs(
 #[tauri::command]
 #[specta::specta]
 async fn download_remote_config(
-	provider_id: ProviderId,
+	provider_id: GameProviderId,
 	game_id: &str,
 	mod_id: &str,
 	remote_config_file: &str,
@@ -731,37 +558,49 @@ async fn download_remote_config(
 ) -> Result {
 	let state = app_handle.app_state();
 	let game = state.database.get_game(&provider_id, game_id)?;
-	let remote_mods = state.remote_mods.read_state()?.clone();
-	let remote_mod = remote_mods.try_get(mod_id)?;
-	let mod_loaders = state.mod_loaders.read_state()?.clone();
-	let mod_loader = mod_loaders.try_get(&remote_mod.common.loader_id)?;
-	let local_mods = state.local_mods.read_state()?.clone();
-	let local_mod = local_mods.try_get(mod_id)?;
+	let game_mod = state.database.get_mod(mod_id)?;
 
-	if let Some(mod_configs) = remote_mod.data.configs.as_ref() {
-		mod_loader
-			.download_config(&game, mod_configs, remote_config_file, overwrite)
+	if let Some(mod_config) = game_mod.config.as_ref() {
+		mod_config
+			.download(&game, &game_mod, remote_config_file, overwrite)
 			.await?;
-		mod_loader.update_installed_mod_manifest(local_mod, &game)?;
 	}
-
-	refresh_local_mods(&mod_loaders, &app_handle)?;
 
 	Ok(())
 }
 
 #[tauri::command]
 #[specta::specta]
-async fn set_up_wine_bepinex_environment() -> Result {
+async fn set_up_global_wine_overrides() -> Result {
 	#[cfg(not(target_os = "linux"))]
-	return Err(Error::LinuxOnly());
+	{
+		use crate::result::Error;
+
+		return Err(Error::LinuxOnly());
+	}
 
 	#[cfg(target_os = "linux")]
 	{
-		bepinex::set_up_proton_environment()?;
+		use rai_pal_core::wine;
+
+		wine::set_up_global_wine_overrides()?;
 
 		Ok(())
 	}
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn listen_to_download_progress(
+	handle: AppHandle,
+	channel: Channel<DownloadStatus>,
+) -> Result {
+	handle
+		.app_state()
+		.download_status_channel
+		.write_state_value(channel)?;
+
+	Ok(())
 }
 
 fn show_panic(error: &str) {
@@ -779,12 +618,6 @@ fn main() {
 		println!("Panic: {info}");
 
 		show_panic(&info.to_string());
-
-		rfd::MessageDialog::new()
-			.set_title("Rai Pal is panicking rn!")
-			.set_description(info.to_string())
-			.set_buttons(rfd::MessageButtons::Ok)
-			.show();
 	}));
 
 	let builder = Builder::<tauri::Wry>::new()
@@ -792,46 +625,41 @@ fn main() {
 			add_game,
 			add_rai_pal_steam_shortcut,
 			configure_mod,
+			download_remote_config,
+			get_app_settings,
 			get_auth_state,
+			get_game,
+			get_game_ids,
+			get_game_mods,
+			get_mods,
+			get_remote_configs,
+			install_mod,
+			listen_to_download_progress,
 			log_in,
 			log_out,
-			delete_mod,
-			download_mod,
-			frontend_ready,
-			get_app_settings,
-			get_game_ids,
-			get_game,
-			get_installed_mod_versions,
-			get_mod_loader_statuses,
-			install_mod_loader,
-			open_game_mod_loader_folder,
-			get_local_mods,
-			get_remote_mods,
-			install_mod,
 			open_game_folder,
 			open_game_mods_folder,
+			open_game_wine_binary_folder,
+			open_game_wine_prefix_folder,
 			open_installed_mod_folder,
+			open_local_mods_folder,
 			open_logs_folder,
-			open_mod_folder,
-			open_mod_loader_folder,
-			open_mods_folder,
 			refresh_game,
 			refresh_games,
 			refresh_mods,
 			refresh_remote_games,
 			remove_game,
 			reset_steam_cache,
+			run_mod,
 			run_provider_command,
-			run_runnable_without_game,
 			save_app_settings,
+			send_analytics_event,
+			set_up_global_wine_overrides,
 			uninstall_all_mods,
 			uninstall_mod,
-			get_remote_configs,
-			download_remote_config,
-			set_up_wine_bepinex_environment,
 		])
 		.events(events::collect_events())
-		.constant("PROVIDER_IDS", ProviderId::iter().collect::<Vec<_>>())
+		.constant("PROVIDER_IDS", GameProviderId::iter().collect::<Vec<_>>())
 		.error_handling(tauri_specta::ErrorHandlingMode::Throw);
 
 	#[cfg(debug_assertions)]
@@ -863,10 +691,14 @@ fn main() {
 		.plugin(tauri_plugin_updater::Builder::default().build())
 		.plugin(
 			tauri_plugin_log::Builder::new()
-				.level(log::LevelFilter::Info)
+				.level(if cfg!(debug_assertions) {
+					log::LevelFilter::Trace
+				} else {
+					log::LevelFilter::Info
+				})
 				.targets([
 					Target::new(TargetKind::Stdout),
-					Target::new(paths::logs_path().map_or(
+					Target::new(app_paths::logs_path().map_or(
 						TargetKind::LogDir { file_name: None },
 						|logs_path| TargetKind::Folder {
 							path: logs_path,
@@ -941,7 +773,7 @@ fn main() {
 					.map_err(|e| e.to_string())
 					.and_then(|db| {
 						db.update_hook(Some(move |_, _: &str, _: &str, _| {
-							cloned_handle.emit_safe(events::GamesChanged());
+							cloned_handle.emit_safe(events::AppDatabaseChanged());
 						}))
 						.map_err(|e| e.to_string())
 					}) {

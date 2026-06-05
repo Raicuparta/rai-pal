@@ -1,4 +1,4 @@
-import { DbGame, ProviderCommand, ProviderCommandAction } from "@api/bindings";
+import { DbGame, ProviderCommandAction } from "@api/bindings";
 import { CommandDropdown } from "@components/command-dropdown";
 import { ProviderIcon } from "@components/providers/provider-icon";
 import { ProviderCommandButton } from "./provider-command-button";
@@ -12,62 +12,51 @@ export function ProviderCommandButtons(props: Props) {
 	const {
 		StartViaProvider: startViaProvider,
 		StartViaExe: startViaExe,
-		Install: install,
 		...otherProviderCommands
 	} = props.game.providerCommands;
 
-	const providerCommandEntries = Object.entries(otherProviderCommands) as [
-		ProviderCommandAction,
-		ProviderCommand,
-	][];
+	const providerCommandActions = Object.keys(
+		otherProviderCommands,
+	) as ProviderCommandAction[];
 
-	const primaryStartCommand = startViaProvider ?? startViaExe;
-	const secondaryStartCommand =
-		primaryStartCommand === startViaExe ? null : startViaExe;
+	const [primaryStart, secondaryStart]: readonly ProviderCommandAction[] =
+		startViaProvider
+			? ["StartViaProvider", "StartViaExe"]
+			: startViaExe
+				? ["StartViaExe"]
+				: [];
 
 	return (
 		<>
-			{primaryStartCommand && (
+			{primaryStart && (
 				<Button.Group>
-					{primaryStartCommand && (
-						<ProviderCommandButton
-							game={props.game}
-							action={startViaProvider ? "StartViaProvider" : "StartViaExe"}
-							command={primaryStartCommand}
-						/>
-					)}
+					<ProviderCommandButton
+						game={props.game}
+						action={primaryStart}
+					/>
 
-					{secondaryStartCommand && (
+					{secondaryStart && (
 						<CommandDropdown>
 							<ProviderCommandButton
 								game={props.game}
-								action="StartViaExe"
-								command={secondaryStartCommand}
+								action={secondaryStart}
 							/>
 						</CommandDropdown>
 					)}
 				</Button.Group>
 			)}
-			{providerCommandEntries.length > 0 && (
+			{providerCommandActions.length > 0 && (
 				<CommandDropdown
 					label={props.game.providerId}
 					icon={<ProviderIcon providerId={props.game.providerId} />}
 				>
-					{providerCommandEntries.map(([action, command]) => (
+					{providerCommandActions.map((action) => (
 						<ProviderCommandButton
 							key={action}
 							game={props.game}
 							action={action}
-							command={command}
 						/>
 					))}
-					{props.game.exePath && install && (
-						<ProviderCommandButton
-							game={props.game}
-							action="Install"
-							command={install}
-						/>
-					)}
 				</CommandDropdown>
 			)}
 		</>

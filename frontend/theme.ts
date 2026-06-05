@@ -1,4 +1,4 @@
-import { type MantineThemeOverride } from "@mantine/core";
+import { Modal, type MantineThemeOverride } from "@mantine/core";
 
 export const theme: MantineThemeOverride = {
 	defaultRadius: "md",
@@ -75,6 +75,15 @@ export const theme: MantineThemeOverride = {
 			defaultProps: {
 				p: "xs",
 				bg: "dark",
+			},
+		},
+		Modal: {
+			defaultProps: {
+				styles: {
+					header: {
+						left: 0,
+					},
+				},
 			},
 		},
 	},

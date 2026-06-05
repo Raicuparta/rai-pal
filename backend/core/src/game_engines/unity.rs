@@ -21,15 +21,12 @@ use crate::{
 		Architecture,
 		get_architecture,
 	},
-	data_types::path_data::PathData,
 	game::DbGame,
 	game_engines::game_engine::EngineVersion,
-	paths::{
-		self,
-		glob_path,
-	},
+	path_extensions::PathExt,
 	result::{
 		Error,
+		LogErrExt,
 		Result,
 	},
 };
@@ -56,8 +53,12 @@ pub fn parse_version(string: &str) -> Option<EngineVersion> {
 		display: full.to_string(),
 		numbers: EngineVersionNumbers {
 			major: major.parse().unwrap_or(0),
-			minor: minor.parse().ok(),
-			patch: patch.parse().ok(),
+			minor: minor.parse().ok_or_log(&format!(
+				"Failed to parse minor version number `{minor}` from version string `{string}`"
+			)),
+			patch: patch.parse().ok_or_log(&format!(
+				"Failed to parse patch version number `{patch}` from version string `{string}`"
+			)),
 		},
 		suffix: Some(suffix.to_string()),
 	})
@@ -103,18 +104,17 @@ fn get_version(game_exe_path: &Path) -> Option<EngineVersion> {
 }
 
 fn get_unity_data_path(game_exe_path: &Path) -> Result<PathBuf> {
-	let parent = paths::path_parent(game_exe_path)?;
-	let file_stem = paths::file_name_without_extension(game_exe_path)?;
+	let parent = game_exe_path.try_parent()?;
+	let file_stem = game_exe_path.file_name_without_extension()?;
 	let expected_name = format!("{file_stem}_Data");
-	Ok(
-		paths::find_child_case_insensitive(parent, OsStr::new(expected_name.as_str()))
-			.filter(|path| path.is_dir())
-			.unwrap_or_else(|| parent.join(expected_name.as_str())),
-	)
+	Ok(parent
+		.find_child_case_insensitive(OsStr::new(expected_name.as_str()))
+		.filter(|path| path.is_dir())
+		.unwrap_or_else(|| parent.join(expected_name.as_str())))
 }
 
 fn get_unity_backend(path: &Path) -> Option<UnityBackend> {
-	match paths::path_parent(path) {
+	match path.try_parent() {
 		Ok(game_folder) => {
 			if game_folder.join("GameAssembly.dll").is_file()
 				|| game_folder.join("GameAssembly.so").is_file()
@@ -149,7 +149,7 @@ fn get_alt_architecture(game_path: &Path) -> Option<Architecture> {
 		// This would usually be UnityPlayer.dll, steam_api.dll, etc.
 		// Here the guessing can go wrong, since it's possible a top level dll is actual x86,
 		// when the actual game is x64.
-		if let Some(first_dll) = glob_path(&game_folder.join("*.dll")).first()
+		if let Some(first_dll) = game_folder.join("*.dll").glob().first()
 			&& let Ok(Some(architecture)) = get_architecture(first_dll)
 		{
 			return Some(architecture);
@@ -161,9 +161,12 @@ fn get_alt_architecture(game_path: &Path) -> Option<Architecture> {
 		// so I'm leaving it for last. (mostly because my own UUVR mod drops both the
 		// x86 and x64 dlls in the folder so Unity picks the right one)
 		if let Ok(unity_data_path) = get_unity_data_path(game_path)
-			&& let Some(plugin_dll) =
-				glob_path(&unity_data_path.join("Plugins").join("**").join("*.dll")).first()
-			&& let Ok(Some(architecture)) = get_architecture(plugin_dll)
+			&& let Some(plugin_dll) = unity_data_path
+				.join("Plugins")
+				.join("**")
+				.join("*.dll")
+				.glob()
+				.first() && let Ok(Some(architecture)) = get_architecture(plugin_dll)
 		{
 			return Some(architecture);
 		}
@@ -173,7 +176,7 @@ fn get_alt_architecture(game_path: &Path) -> Option<Architecture> {
 }
 
 pub fn process_game(game: &mut DbGame) {
-	if let Some(PathData(exe_path)) = game.exe_path.as_ref() {
+	if let Some(exe_path) = game.exe_path.as_ref() {
 		game.unity_backend = get_unity_backend(exe_path);
 		if let Some(version) = get_version(exe_path) {
 			game.engine_version_major = Some(version.numbers.major);

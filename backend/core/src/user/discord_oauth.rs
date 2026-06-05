@@ -28,11 +28,10 @@ use sha2::Digest;
 use uuid::Uuid;
 
 use crate::{
+	app_paths,
 	http,
-	paths::{
-		self,
-		AsValidStr,
-	},
+	open_better::open_detached_better,
+	path_extensions::AsValidStr,
 	result::{
 		Error,
 		Result,
@@ -47,7 +46,6 @@ const DISCORD_CALLBACK_PORT: u16 = 43941;
 const DISCORD_KEYRING_SERVICE: &str = "rai-pal";
 const DISCORD_KEYRING_ACCOUNT: &str = "discord-oauth-token";
 const DISCORD_KEYRING_LOCATION: &str = "keyring://rai-pal/discord-oauth-token";
-const DISCORD_TOKEN_FALLBACK_FILE_NAME: &str = "discord-oauth-token.json";
 const DISCORD_TOKEN_FALLBACK_LOCATION: &str = "file://app_data/discord-oauth-token.json";
 const DISCORD_TOKEN_EXPIRY_LEEWAY_SECONDS: u64 = 60;
 
@@ -254,7 +252,7 @@ fn parse_oauth_callback(
 }
 
 fn get_discord_token_fallback_file_path() -> Result<PathBuf> {
-	Ok(paths::app_data_path()?.join(DISCORD_TOKEN_FALLBACK_FILE_NAME))
+	app_paths::app_data_file("discord-oauth-token.json")
 }
 
 fn read_discord_token_from_fallback_file_optional() -> Result<Option<DiscordSavedToken>> {
@@ -417,7 +415,7 @@ fn save_discord_token_file(token: &DiscordSavedToken) -> Result<String> {
 }
 
 fn get_discord_avatar_file_path() -> Result<PathBuf> {
-	Ok(paths::app_data_path()?.join("discord-avatar.png"))
+	app_paths::app_data_file("avatar.png")
 }
 
 fn delete_file_if_exists(path: &Path) -> Result {
@@ -712,7 +710,7 @@ pub async fn start_discord_oauth() -> Result {
 		build_discord_auth_url(DISCORD_CLIENT_ID, &redirect_uri, &state, &code_challenge)?;
 
 	log::info!("Starting Discord OAuth flow. Redirect URI: {redirect_uri}");
-	open::that_detached(auth_url)?;
+	open_detached_better(auth_url)?;
 
 	let auth_code = parse_oauth_callback(&listener, &state, Duration::from_mins(3))?;
 

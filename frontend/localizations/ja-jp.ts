@@ -85,6 +85,8 @@ export const jaJp: Localization = {
 		foldersDropdown: "フォルダー",
 		openGameFilesFolder: "ゲームファイルフォルダーを開く",
 		openInstalledModsFolder: "インストール済みモッドフォルダーを開く",
+		openGameWinePrefixFolder: "ゲームのWineプレフィックスフォルダーを開く",
+		openGameWineBinaryFolder: "ゲームのWineバイナリフォルダーを開く",
 		removeFromRaiPal: "Rai Palから削除",
 		removeGameConfirmation: "このゲームをRai Palから削除してもよろしいですか？",
 		refreshGame: "更新",
@@ -103,6 +105,11 @@ export const jaJp: Localization = {
 
 		incompatibleGameModsDescription:
 			"ここにリストされているモッドは、このゲームのエンジンバージョンと互換性がないため、インストールできません。",
+
+		otherThings: "その他のもの",
+
+		otherThingsDescription:
+			"これらは主に依存関係やその他のもので、通常は直接いじる必要はありません。",
 	},
 
 	gameModRow: {
@@ -110,15 +117,19 @@ export const jaJp: Localization = {
 		openModConfigFolderTooltip:
 			"このモッドの設定ファイルが含まれているフォルダーを開く",
 		openModFolder: "モッドフォルダーを開く",
-		openModLoaderFolder: "モッドローダーフォルダーを開く",
 		updateMod: "更新",
 		installMod: "インストール",
+		installModAnticheatWarning:
+			"注意: マルチプレイヤーゲームにモッドをインストールする際は注意してください! アンチチートはいくつかのモッドを検出して、モッドが無害に見えても、あなたをバンすることができます。",
 		reinstallMod: "再インストール",
 		uninstallMod: "アンインストール",
 		runMod: "実行",
 		downloadRemoteConfig: "推奨設定をダウンロード",
 		remoteConfigAvailable:
 			"推奨設定が利用可能です。設定がまだない場合にダウンロードされます。三点メニューから強制的にダウンロードすることもできます。",
+		modOutdated: "モッドが古い",
+		cantUninstallModWithDependants:
+			"依存しているモッドがあるモッドはアンインストールできません。先にこのモッドに依存しているモッドをアンインストールしてください。",
 	},
 
 	gamesTableColumn: {
@@ -128,17 +139,17 @@ export const jaJp: Localization = {
 	},
 
 	modsPage: {
-		openModsFolderButton: "モッドフォルダーを開く",
+		openLocalModsFolderButton: "モッドフォルダーを開く",
+		openLoadlModsFolderTooltip:
+			"このフォルダーに rai-pal-manifest.json を含むモッドを配置して、オンラインデータベースを経由せずに直接読み込むことができます。",
 		tableColumnMod: "モッド",
 		tableColumnVersion: "バージョン",
-		tableColumnModLoader: "ローダー",
 		tableColumnGameEngine: "エンジン",
 		tableColumnUnityBackend: "バックエンド",
 		modByAuthor: "{authorName} 作",
 		modDeprecated: "非推奨",
 		modDeprecatedTooltip:
 			"このモッドは非推奨です。アンインストールして新しい代替品をインストールすることをお勧めします。",
-		modOutdated: "モッドが古い",
 	},
 
 	modModal: {
@@ -173,6 +184,14 @@ export const jaJp: Localization = {
 			"Mod はこれを使ってあなたのDiscordユーザー名、アバター、ロールなどにアクセスできます。",
 	},
 
+	subPage: {
+		back: "戻る",
+	},
+
+	downloadStatusMenu: {
+		clear: "完了済みを消去",
+	},
+
 	steamCache: {
 		resetSteamCacheButton: "Steamのキャッシュをリセット",
 		resetSteamCacheModalTitle: "Steamのキャッシュをリセット",
@@ -191,7 +210,7 @@ export const jaJp: Localization = {
 			"Rai PalがSteamライブラリに追加されました。表示するにはSteamを再起動してください。",
 	},
 
-	wineBepInExEnvironment: {
+	globalWineOverrides: {
 		setUpEnvironmentButton: "BepInEx用のLinux環境をセットアップ",
 		setUpEnvironmentTitle: "BepInEx用のLinux環境をセットアップ",
 		setUpEnvironmentDescription:

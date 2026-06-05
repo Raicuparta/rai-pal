@@ -1,4 +1,4 @@
-import { ProviderId } from "@api/bindings";
+import { GameProviderId } from "@api/bindings";
 import {
 	Icon,
 	IconDeviceGamepad,
@@ -11,10 +11,10 @@ import {
 import { ComponentProps } from "react";
 
 interface Props extends ComponentProps<typeof IconDeviceGamepad> {
-	readonly providerId: ProviderId;
+	readonly providerId: GameProviderId;
 }
 
-const providerIcons: Record<ProviderId, Icon> = {
+const providerIcons: Record<GameProviderId, Icon> = {
 	Manual: IconDeviceGamepad,
 	Steam: IconBrandSteam,
 	Epic: IconSquareLetterE,

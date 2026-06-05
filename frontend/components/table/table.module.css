@@ -2,6 +2,7 @@ div.table {
 	padding: 0;
 	flex: 1;
 	user-select: none;
+	background-color: var(--mantine-color-dark-6);
 
 	thead {
 		background: var(--background-dark);
@@ -21,14 +22,37 @@ div.table {
 	tr {
 		border-bottom: 2px solid var(--mantine-color-dark-7);
 	}
+
+	table {
+		table-layout: fixed;
+	}
+
+	tbody {
+		tr {
+			background-color: var(--mantine-color-dark-6);
+		}
+		tr,
+		td {
+			/* Needs to be consistent with height set in game-row.tsx ugh. TODO: fix that. */
+			height: 60px;
+			max-height: 60px;
+			min-height: 60px;
+		}
+	}
 }
 
 .sortable {
 	cursor: pointer;
+
 	&:hover {
 		background: light-dark(
 			var(--mantine-color-gray-3),
 			var(--mantine-color-dark-7)
 		);
 	}
+}
+
+.singleItem {
+	border-top-right-radius: 0 !important;
+	border-bottom-right-radius: 0 !important;
 }

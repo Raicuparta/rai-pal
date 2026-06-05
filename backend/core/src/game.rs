@@ -1,5 +1,5 @@
 use std::{
-	collections::HashMap,
+	collections::BTreeMap,
 	fs,
 	path::{
 		Path,
@@ -8,11 +8,8 @@ use std::{
 };
 
 use crate::{
+	app_paths,
 	architecture::Architecture,
-	data_types::{
-		json_data::JsonData,
-		path_data::PathData,
-	},
 	game_engines::{
 		game_engine::{
 			EngineBrand,
@@ -24,17 +21,16 @@ use crate::{
 		},
 		unreal,
 	},
-	game_tag::GameTag,
-	game_title::is_probably_demo,
-	mod_manifest,
-	paths,
-	providers::{
-		provider::ProviderId,
+	game_providers::{
+		game_provider::GameProviderId,
 		provider_command::{
 			ProviderCommand,
 			ProviderCommandAction,
 		},
 	},
+	game_tag::GameTag,
+	game_title::is_probably_demo,
+	path_extensions::PathExt,
 	remote_config::{
 		self,
 		RemoteConfigs,
@@ -48,14 +44,14 @@ use crate::{
 #[derive(serde::Serialize, specta::Type, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct DbGame {
-	pub provider_id: ProviderId,
+	pub provider_id: GameProviderId,
 	pub game_id: String,
 	pub external_id: String,
 	pub display_title: String,
 	pub title_discriminator: Option<String>,
 	pub thumbnail_url: Option<String>,
-	pub release_date: Option<i64>,
-	pub exe_path: Option<PathData>,
+	pub release_date_rfc3339: Option<String>,
+	pub exe_path: Option<PathBuf>,
 	pub engine_brand: Option<EngineBrand>,
 	pub engine_version_major: Option<u32>,
 	pub engine_version_minor: Option<u32>,
@@ -63,12 +59,12 @@ pub struct DbGame {
 	pub engine_version_display: Option<String>,
 	pub unity_backend: Option<UnityBackend>,
 	pub architecture: Option<Architecture>,
-	pub tags: JsonData<Vec<GameTag>>,
-	pub provider_commands: JsonData<HashMap<ProviderCommandAction, ProviderCommand>>,
+	pub tags: Vec<GameTag>,
+	pub provider_commands: BTreeMap<ProviderCommandAction, ProviderCommand>,
 }
 
 impl DbGame {
-	pub fn new(provider_id: ProviderId, game_id: String, title: String) -> Self {
+	pub fn new(provider_id: GameProviderId, game_id: String, title: String) -> Self {
 		let mut game = Self {
 			provider_id,
 			external_id: game_id.clone(),
@@ -76,7 +72,7 @@ impl DbGame {
 			display_title: title,
 			title_discriminator: None,
 			thumbnail_url: None,
-			release_date: None,
+			release_date_rfc3339: None,
 			exe_path: None,
 			engine_brand: None,
 			engine_version_major: None,
@@ -85,8 +81,8 @@ impl DbGame {
 			engine_version_display: None,
 			unity_backend: None,
 			architecture: None,
-			tags: JsonData(Vec::default()),
-			provider_commands: JsonData(HashMap::default()),
+			tags: Vec::default(),
+			provider_commands: BTreeMap::default(),
 		};
 
 		if is_probably_demo(&game.display_title) {
@@ -97,72 +93,30 @@ impl DbGame {
 	}
 
 	pub fn open_game_folder(&self) -> Result {
-		paths::open_folder_or_parent(self.try_get_exe_path()?)
+		self.try_get_exe_path()?.open_folder_or_parent()
 	}
 
 	pub fn open_mods_folder(&self) -> Result {
-		paths::open_folder_or_parent(&self.get_installed_mods_folder()?)
+		self.get_installed_mods_folder()?.open_folder_or_parent()
 	}
 
 	pub fn uninstall_all_mods(&self) -> Result {
 		Ok(fs::remove_dir_all(self.get_installed_mods_folder()?)?)
 	}
 
-	pub fn get_manifest_paths(&self) -> Vec<PathBuf> {
-		match self.get_installed_mod_manifest_path("*") {
-			Ok(manifests_path) => {
-				if !manifests_path.parent().is_some_and(Path::exists) {
-					return Vec::default();
-				}
-				paths::glob_path(&manifests_path)
-			}
-			Err(err) => {
-				log::error!(
-					"Failed to get mod manifests glob path for game {}. Error: {}",
-					self.display_title,
-					err
-				);
-				Vec::default()
-			}
-		}
-	}
-
-	pub fn get_installed_mod_versions(&self) -> HashMap<String, String> {
-		self.get_manifest_paths()
-			.iter()
-			.filter_map(|manifest_path| {
-				let manifest = mod_manifest::get(manifest_path)?;
-
-				Some((
-					manifest_path.file_stem()?.to_str()?.to_string(),
-					manifest.version,
-				))
-			})
-			.collect()
-	}
-
-	pub fn get_installed_mod_manifest_path(&self, mod_id: &str) -> Result<PathBuf> {
-		Ok(self
-			.get_installed_mods_folder()?
-			.join("manifests")
-			.join(format!("{mod_id}.json")))
-	}
-
 	pub fn get_installed_mods_folder(&self) -> Result<PathBuf> {
-		let installed_mods_folder = paths::app_data_path()?
-			.join("installed-mods")
-			.join(paths::hash_path(self.try_get_exe_path()?));
+		let installed_mods_folder =
+			app_paths::installed_mods_path()?.join(self.try_get_exe_path()?.hash_string());
 		fs::create_dir_all(&installed_mods_folder)?;
 
 		Ok(installed_mods_folder)
 	}
 
 	pub fn try_get_exe_path(&self) -> Result<&Path> {
-		Ok(&self
+		Ok(self
 			.exe_path
 			.as_ref()
-			.ok_or_else(|| Error::GameNotInstalled(self.display_title.clone()))?
-			.0)
+			.ok_or_else(|| Error::GameNotInstalled(self.display_title.clone()))?)
 	}
 
 	pub fn try_get_exe_name(&self) -> Result<String> {
@@ -178,16 +132,16 @@ impl DbGame {
 		command_action: ProviderCommandAction,
 		command: ProviderCommand,
 	) -> &mut Self {
-		self.provider_commands.0.insert(command_action, command);
+		self.provider_commands.insert(command_action, command);
 		self
 	}
 
 	pub fn add_tag(&mut self, tag: GameTag) -> &mut Self {
-		if self.tags.0.contains(&tag) {
+		if self.tags.contains(&tag) {
 			return self;
 		}
 
-		self.tags.0.push(tag);
+		self.tags.push(tag);
 		self
 	}
 
@@ -198,9 +152,6 @@ impl DbGame {
 			return self;
 		}
 
-		// TODO: Launching exes directly only works on Windows.
-		// Once we have native Linux executable support, we should change this based on the executable's format and current OS.
-		#[cfg(target_os = "windows")]
 		self.add_provider_command(
 			ProviderCommandAction::StartViaExe,
 			ProviderCommand::Path(exe_path.to_path_buf(), Vec::default()),
@@ -219,7 +170,7 @@ impl DbGame {
 				return self;
 			}
 
-			self.exe_path = Some(PathData(paths::normalize_path(exe_path)));
+			self.exe_path = Some(exe_path.normalize());
 			if let Some(exe_engine_brand) = get_exe_engine(exe_path) {
 				self.engine_brand = Some(exe_engine_brand);
 				match exe_engine_brand {
@@ -238,7 +189,7 @@ impl DbGame {
 	}
 
 	pub fn refresh_executable(&mut self) -> Result<&mut Self> {
-		if let Some(PathData(exe_path)) = self.exe_path.clone() {
+		if let Some(exe_path) = self.exe_path.clone() {
 			self.set_executable(&exe_path);
 		} else {
 			return Err(Error::GameNotInstalled(self.display_title.clone()));
@@ -248,7 +199,7 @@ impl DbGame {
 
 	pub async fn get_remote_configs(&self) -> Result<Option<RemoteConfigs>> {
 		if let Some(exe_path) = self.exe_path.as_ref() {
-			remote_config::get_remote_configs(&exe_path.0).await
+			remote_config::get_remote_configs(exe_path).await
 		} else {
 			Err(Error::GameNotInstalled(self.display_title.clone()))
 		}

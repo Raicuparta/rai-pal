@@ -1,6 +1,5 @@
 import { atom } from "jotai";
-import { GameIdsResponse } from "@api/bindings";
-import { dataSubscription } from "./use-data-subscription";
+import { GameIdsResponse, GameMod } from "@api/bindings";
 import { useUpdateData } from "./use-update-data";
 import { useGameDropEvent } from "./use-game-drop-event";
 
@@ -9,21 +8,7 @@ export const gameDataAtom = atom<GameIdsResponse>({
 	totalCount: 0,
 });
 
-export const [localModLoadersAtom, useLocalModLoadersSubscription] =
-	dataSubscription("syncLocalModLoaders", {});
-
-export const [remoteModLoadersAtom, useRemoteModLoadersSubscription] =
-	dataSubscription("syncRemoteModLoaders", {});
-
-export const [localModsAtom, useLocalModsSubscription] = dataSubscription(
-	"syncLocalMods",
-	{},
-);
-
-export const [remoteModsAtom, useRemoteModsSubscription] = dataSubscription(
-	"syncRemoteMods",
-	{},
-);
+export const modsAtom = atom<Record<string, GameMod>>({});
 
 type LoadingTask = {
 	index: number;
@@ -33,10 +18,6 @@ type LoadingTask = {
 export const loadingTasksAtom = atom<LoadingTask[]>([]);
 
 export function useData() {
-	useLocalModLoadersSubscription();
-	useRemoteModLoadersSubscription();
-	useLocalModsSubscription();
-	useRemoteModsSubscription();
 	useGameDropEvent();
 	useUpdateData(true);
 }

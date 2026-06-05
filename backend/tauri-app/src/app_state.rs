@@ -1,16 +1,19 @@
-use std::{
-	ops::Deref,
-	sync::RwLock,
-};
+use std::sync::RwLock;
 
 use rai_pal_core::{
-	local_database,
-	local_database::DbMutex,
-	local_mod,
-	mod_loaders::mod_loader,
-	remote_mod,
+	http::DownloadStatus,
+	local_database::{
+		app_database::DbMutex,
+		game_database::{
+			self,
+		},
+		mod_database::ModDatabase,
+	},
 };
-use tauri::Manager;
+use tauri::{
+	Manager,
+	ipc::Channel,
+};
 
 use crate::result::{
 	Error,
@@ -18,29 +21,34 @@ use crate::result::{
 };
 
 pub struct AppState {
-	pub mod_loaders: RwLock<mod_loader::Map>,
-	pub local_mods: RwLock<local_mod::Map>,
-	pub remote_mods: RwLock<remote_mod::Map>,
 	pub database: DbMutex,
+	pub download_status_channel: RwLock<Option<Channel<DownloadStatus>>>,
 }
 
 type TauriState<'a> = tauri::State<'a, AppState>;
 
 pub trait StateData<TData> {
-	fn read_state(&self) -> Result<impl Deref<Target = TData>>;
+	fn read_state(&self) -> Result<TData>;
 	fn write_state_value(&self, data: TData) -> Result;
 }
 
-impl<TData: Clone> StateData<TData> for RwLock<TData> {
-	fn read_state(&self) -> Result<impl Deref<Target = TData>> {
-		self.read()
-			.map_err(|err| Error::FailedToAccessStateData(err.to_string()))
+impl<TData: Clone> StateData<TData> for RwLock<Option<TData>> {
+	fn read_state(&self) -> Result<TData> {
+		let guard = self
+			.read()
+			.map_err(|err| Error::FailedToAccessStateData(err.to_string()))?;
+
+		(*guard).as_ref().map_or_else(
+			|| Err(Error::FailedToAccessStateData("Empty data".into())),
+			|data| Ok(data.clone()),
+		)
 	}
 
-	fn write_state_value(&self, data: TData) -> Result {
+	fn write_state_value(&self, data: TData) -> Result<()> {
 		*self
 			.write()
-			.map_err(|err| Error::FailedToAccessStateData(err.to_string()))? = data;
+			.map_err(|err| Error::FailedToAccessStateData(err.to_string()))? = Some(data);
+
 		Ok(())
 	}
 }
@@ -57,11 +65,12 @@ impl StatefulHandle for tauri::AppHandle {
 
 impl AppState {
 	pub fn new() -> Result<Self> {
+		let games = game_database::try_create()?;
+		games.setup_mod_tables()?;
+
 		Ok(Self {
-			mod_loaders: RwLock::new(mod_loader::Map::new()),
-			local_mods: RwLock::new(local_mod::Map::new()),
-			remote_mods: RwLock::new(remote_mod::Map::new()),
-			database: local_database::try_create()?,
+			database: games,
+			download_status_channel: RwLock::new(None),
 		})
 	}
 }

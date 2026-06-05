@@ -4,7 +4,7 @@ import { useSetAtom } from "jotai";
 import { selectedGameAtom } from "./games-state";
 import { useGame } from "@hooks/use-game";
 import { ItemProps } from "react-virtuoso";
-import { DbGame, ProviderId } from "@api/bindings";
+import { DbGame, GameProviderId } from "@api/bindings";
 import { gamesColumns } from "./games-columns";
 import { useAppSettings } from "@hooks/use-app-settings";
 
@@ -12,7 +12,7 @@ import { useAppSettings } from "@hooks/use-app-settings";
 export const gameRowHeight = 60;
 
 export const GameRow = React.forwardRef(function GameRow(
-	props: ItemProps<[ProviderId, string]>,
+	props: ItemProps<[GameProviderId, string]>,
 	ref: React.ForwardedRef<HTMLTableRowElement>,
 ) {
 	const [providerId, gameId] = props.item;
@@ -30,7 +30,7 @@ export const GameRow = React.forwardRef(function GameRow(
 		engineVersionDisplay: null,
 		exePath: null,
 		externalId: "",
-		releaseDate: null,
+		releaseDateRfc3339: null,
 		thumbnailUrl: null,
 		architecture: null,
 		unityBackend: null,

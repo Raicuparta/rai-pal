@@ -1,4 +1,4 @@
-import { commands, ProviderId } from "@api/bindings";
+import { commands, GameProviderId } from "@api/bindings";
 import { CommandButton } from "@components/command-button";
 import { useLocalization } from "@hooks/use-localization";
 import { IconTrash } from "@tabler/icons-react";
@@ -7,7 +7,7 @@ import { selectedGameAtom } from "./games-state";
 import { useAsyncCommand } from "@hooks/use-async-command";
 
 type Props = {
-	readonly providerId: ProviderId;
+	readonly providerId: GameProviderId;
 	readonly gameId: string;
 };
 

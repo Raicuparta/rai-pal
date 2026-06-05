@@ -81,6 +81,8 @@ export const zhCn: Localization = {
 		foldersDropdown: "文件夹",
 		openGameFilesFolder: "打开游戏文件夹",
 		openInstalledModsFolder: "打开已安装模组文件夹",
+		openGameWinePrefixFolder: "打开游戏的 Wine 前缀文件夹",
+		openGameWineBinaryFolder: "打开游戏的 Wine 二进制文件夹",
 		removeFromRaiPal: "从 Rai Pal 移除",
 		removeGameConfirmation: "您确定要从 Rai Pal 移除此游戏吗？",
 		refreshGame: "刷新",
@@ -98,21 +100,29 @@ export const zhCn: Localization = {
 
 		incompatibleGameModsDescription:
 			"此处列出的模组无法安装，因为它们与此游戏的引擎版本不兼容。",
+
+		otherThings: "其他内容",
+
+		otherThingsDescription: "这些主要是依赖项和其他内容，通常您无需直接修改。",
 	},
 
 	gameModRow: {
 		editModConfig: "编辑模组配置",
 		openModConfigFolderTooltip: "打开包含此模组配置文件的文件夹",
 		openModFolder: "打开模组文件夹",
-		openModLoaderFolder: "打开模组加载器文件夹",
 		updateMod: "更新",
 		installMod: "安装",
+		installModAnticheatWarning:
+			"警告：在多人游戏中安装模组时要小心！反作弊可以检测一些模组并禁止您，即使这些模组看起来无害。",
 		reinstallMod: "重新安装",
 		uninstallMod: "卸载",
 		runMod: "运行",
 		downloadRemoteConfig: "下载推荐配置",
 		remoteConfigAvailable:
 			"推荐配置可用。如果您还没有配置，将会下载。您也可以从三点菜单强制下载。",
+		modOutdated: "模组过时",
+		cantUninstallModWithDependants:
+			"无法卸载有依赖项的模组。请先卸载依赖此模组的其他模组。",
 	},
 
 	gamesTableColumn: {
@@ -122,16 +132,16 @@ export const zhCn: Localization = {
 	},
 
 	modsPage: {
-		openModsFolderButton: "打开模组文件夹",
+		openLocalModsFolderButton: "打开模组文件夹",
+		openLoadlModsFolderTooltip:
+			"您可以在此文件夹中放置包含 rai-pal-manifest.json 的模组，以直接加载它们，而无需通过在线数据库。",
 		tableColumnMod: "模组",
 		tableColumnVersion: "版本",
-		tableColumnModLoader: "加载器",
 		tableColumnGameEngine: "引擎",
 		tableColumnUnityBackend: "后端",
 		modByAuthor: "作者 {authorName}",
 		modDeprecated: "已弃用",
 		modDeprecatedTooltip: "此模组已弃用。您应该卸载它并安装更新的替代品。",
-		modOutdated: "模组过时",
 	},
 
 	modModal: {
@@ -163,6 +173,14 @@ export const zhCn: Localization = {
 			"模组可以使用此功能访问你的 Discord 用户名、头像、身份组等。",
 	},
 
+	subPage: {
+		back: "返回",
+	},
+
+	downloadStatusMenu: {
+		clear: "清除已完成",
+	},
+
 	steamCache: {
 		resetSteamCacheButton: "重置 Steam 缓存",
 		resetSteamCacheModalTitle: "重置 Steam 缓存",
@@ -181,7 +199,7 @@ export const zhCn: Localization = {
 			"Rai Pal 已添加到你的 Steam 库中。重启 Steam 后即可看到它。",
 	},
 
-	wineBepInExEnvironment: {
+	globalWineOverrides: {
 		setUpEnvironmentButton: "为 BepInEx 设置 Linux 环境",
 		setUpEnvironmentTitle: "为 BepInEx 设置 Linux 环境",
 		setUpEnvironmentDescription:

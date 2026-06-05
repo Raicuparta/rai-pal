@@ -84,6 +84,8 @@ export const ptPt: Localization = {
 		foldersDropdown: "Pastas",
 		openGameFilesFolder: "Abrir Pasta de Ficheiros do Jogo",
 		openInstalledModsFolder: "Abrir Pasta de Mods Instalados",
+		openGameWinePrefixFolder: "Abrir Pasta do Prefixo Wine do Jogo",
+		openGameWineBinaryFolder: "Abrir Pasta do Binário Wine do Jogo",
 		removeFromRaiPal: "Remover do Rai Pal",
 		removeGameConfirmation:
 			"Tens a certeza de que queres remover este jogo do Rai Pal?",
@@ -103,6 +105,9 @@ export const ptPt: Localization = {
 
 		incompatibleGameModsDescription:
 			"Os mods listados aqui não podem ser instalados porque não são compatíveis com a versão do motor deste jogo.",
+		otherThings: "Outras coisas",
+		otherThingsDescription:
+			"Estes são principalmente dependências e outras coisas que normalmente não é necessário mexer diretamente.",
 	},
 
 	gameModRow: {
@@ -110,15 +115,19 @@ export const ptPt: Localization = {
 		openModConfigFolderTooltip:
 			"Abrir pasta contendo os ficheiros de configuração deste mod",
 		openModFolder: "Abrir Pasta do Mod",
-		openModLoaderFolder: "Abrir Pasta do Mod Loader",
 		updateMod: "Atualizar",
 		installMod: "Instalar",
+		installModAnticheatWarning:
+			"Atenção: tem cuidado ao instalar mods em jogos multiplayer! O anticheat pode detectar alguns mods e banir-te, mesmo que os mods pareçam inofensivos.",
 		reinstallMod: "Reinstalar",
 		uninstallMod: "Desinstalar",
 		runMod: "Executar",
 		downloadRemoteConfig: "Descarregar Configuração Recomendada",
 		remoteConfigAvailable:
 			"Configuração recomendada disponível. Será descarregada se ainda não tiveres uma configuração. Também podes forçar o descarregamento a partir do menu de três pontos.",
+		modOutdated: "Mod desatualizado",
+		cantUninstallModWithDependants:
+			"Não é possível desinstalar um mod que tenha dependentes. Desinstala primeiro os mods que dependem deste.",
 	},
 
 	gamesTableColumn: {
@@ -128,17 +137,17 @@ export const ptPt: Localization = {
 	},
 
 	modsPage: {
-		openModsFolderButton: "Abrir Pasta de Mods",
+		openLocalModsFolderButton: "Abrir Pasta de Mods",
+		openLoadlModsFolderTooltip:
+			"Podes colocar mods nesta pasta com um rai-pal-manifest.json para os carregar diretamente sem passar pela base de dados online.",
 		tableColumnMod: "Mod",
 		tableColumnVersion: "Versão",
-		tableColumnModLoader: "Loader",
 		tableColumnGameEngine: "Motor",
 		tableColumnUnityBackend: "Backend",
 		modByAuthor: "por {authorName}",
 		modDeprecated: "Obsoleto",
 		modDeprecatedTooltip:
 			"Este mod está obsoleto. Deves desinstalá-lo e instalar uma alternativa mais recente.",
-		modOutdated: "Mod desatualizado",
 	},
 
 	modModal: {
@@ -173,6 +182,14 @@ export const ptPt: Localization = {
 			"Os mods podem usar isto para aceder ao teu nome de utilizador do Discord, avatar, funções, etc.",
 	},
 
+	subPage: {
+		back: "Voltar",
+	},
+
+	downloadStatusMenu: {
+		clear: "Limpar concluídos",
+	},
+
 	steamCache: {
 		resetSteamCacheButton: "Repor cache da Steam",
 		resetSteamCacheModalTitle: "Repor cache da Steam",
@@ -191,7 +208,7 @@ export const ptPt: Localization = {
 			"O Rai Pal foi adicionado à tua biblioteca da Steam. Reinicia a Steam para o veres.",
 	},
 
-	wineBepInExEnvironment: {
+	globalWineOverrides: {
 		setUpEnvironmentButton: "Configurar ambiente Linux para o BepInEx",
 		setUpEnvironmentTitle: "Configurar ambiente Linux para o BepInEx",
 		setUpEnvironmentDescription:
