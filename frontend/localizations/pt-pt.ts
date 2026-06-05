@@ -137,7 +137,9 @@ export const ptPt: Localization = {
 	},
 
 	modsPage: {
-		openModsFolderButton: "Abrir Pasta de Mods",
+		openLocalModsFolderButton: "Abrir Pasta de Mods",
+		openLoadlModsFolderTooltip:
+			"Podes colocar mods nesta pasta com um rai-pal-manifest.json para os carregar diretamente sem passar pela base de dados online.",
 		tableColumnMod: "Mod",
 		tableColumnVersion: "Versão",
 		tableColumnGameEngine: "Motor",

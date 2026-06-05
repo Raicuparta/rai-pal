@@ -140,7 +140,9 @@ export const deDe: Localization = {
 	},
 
 	modsPage: {
-		openModsFolderButton: "Mods-Ordner öffnen",
+		openLocalModsFolderButton: "Mods-Ordner öffnen",
+		openLoadlModsFolderTooltip:
+			"Sie können Mods in diesen Ordner mit einer rai-pal-manifest.json platzieren, um sie direkt zu laden, ohne die Online-Datenbank zu durchlaufen.",
 		tableColumnMod: "Mod",
 		tableColumnVersion: "Version",
 		tableColumnGameEngine: "Engine",

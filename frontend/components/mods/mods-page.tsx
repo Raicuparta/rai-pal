@@ -1,4 +1,4 @@
-import { Button, Card, Group, Stack } from "@mantine/core";
+import { Button, Card, Group, Stack, Tooltip } from "@mantine/core";
 import { useMemo, useState } from "react";
 import { RefreshButton } from "@components/refresh-button";
 import { commands } from "@api/bindings";
@@ -33,12 +33,14 @@ export function ModsPage() {
 			{!selectedMod && (
 				<>
 					<Group justify="end">
-						<Button
-							onClick={commands.openLocalModsFolder}
-							leftSection={<IconFolderCog />}
-						>
-							{t("openModsFolderButton")}
-						</Button>
+						<Tooltip label={t("openLoadlModsFolderTooltip")}>
+							<Button
+								onClick={commands.openLocalModsFolder}
+								leftSection={<IconFolderCog />}
+							>
+								{t("openLocalModsFolderButton")}
+							</Button>
+						</Tooltip>
 						<RefreshButton />
 					</Group>
 					<Card

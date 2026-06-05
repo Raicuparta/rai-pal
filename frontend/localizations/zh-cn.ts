@@ -103,8 +103,7 @@ export const zhCn: Localization = {
 
 		otherThings: "其他内容",
 
-		otherThingsDescription:
-			"这些主要是依赖项和其他内容，通常您无需直接修改。",
+		otherThingsDescription: "这些主要是依赖项和其他内容，通常您无需直接修改。",
 	},
 
 	gameModRow: {
@@ -133,7 +132,9 @@ export const zhCn: Localization = {
 	},
 
 	modsPage: {
-		openModsFolderButton: "打开模组文件夹",
+		openLocalModsFolderButton: "打开模组文件夹",
+		openLoadlModsFolderTooltip:
+			"您可以在此文件夹中放置包含 rai-pal-manifest.json 的模组，以直接加载它们，而无需通过在线数据库。",
 		tableColumnMod: "模组",
 		tableColumnVersion: "版本",
 		tableColumnGameEngine: "引擎",

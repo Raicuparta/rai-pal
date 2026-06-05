@@ -139,7 +139,9 @@ export const jaJp: Localization = {
 	},
 
 	modsPage: {
-		openModsFolderButton: "モッドフォルダーを開く",
+		openLocalModsFolderButton: "モッドフォルダーを開く",
+		openLoadlModsFolderTooltip:
+			"このフォルダーに rai-pal-manifest.json を含むモッドを配置して、オンラインデータベースを経由せずに直接読み込むことができます。",
 		tableColumnMod: "モッド",
 		tableColumnVersion: "バージョン",
 		tableColumnGameEngine: "エンジン",

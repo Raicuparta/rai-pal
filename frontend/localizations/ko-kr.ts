@@ -136,7 +136,9 @@ export const koKr: Localization = {
 	},
 
 	modsPage: {
-		openModsFolderButton: "모드 폴더 열기",
+		openLocalModsFolderButton: "모드 폴더 열기",
+		openLoadlModsFolderTooltip:
+			"이 폴더에 rai-pal-manifest.json이 있는 모드를 배치하여 온라인 데이터베이스를 거치지 않고 직접 로드할 수 있습니다.",
 		tableColumnMod: "모드",
 		tableColumnVersion: "버전",
 		tableColumnGameEngine: "엔진",

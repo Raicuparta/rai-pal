@@ -275,8 +275,12 @@ export const enUs = {
 
 	// Page that shows all mods available on Rai Pal
 	modsPage: {
-		// Button for opening the folder where Rai Pal downloads mods to (before installing them in a game).
-		openModsFolderButton: "Open Mods Folder",
+		// Button for opening the folder where loads can be loaded from disk without being in the online database.
+		openLocalModsFolderButton: "Open Local Mods Folder",
+
+		// Describes what the local mods folder is.
+		openLoadlModsFolderTooltip:
+			"You can place mods in this folder with a rai-pal-manifest.json, to be loaded directly without going through the online database.",
 
 		// Table column for the name of the mod.
 		tableColumnMod: "Mod",

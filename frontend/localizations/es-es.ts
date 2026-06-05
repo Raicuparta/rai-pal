@@ -140,7 +140,9 @@ export const esEs: Localization = {
 	},
 
 	modsPage: {
-		openModsFolderButton: "Abrir carpeta de mods",
+		openLocalModsFolderButton: "Abrir carpeta de mods",
+		openLoadlModsFolderTooltip:
+			"Puedes colocar mods en esta carpeta con un rai-pal-manifest.json para cargarlos directamente sin pasar por la base de datos en línea.",
 		tableColumnMod: "Mod",
 		tableColumnVersion: "Versión",
 		tableColumnGameEngine: "Motor",

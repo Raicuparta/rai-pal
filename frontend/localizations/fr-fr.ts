@@ -140,7 +140,9 @@ export const frFr: Localization = {
 	},
 
 	modsPage: {
-		openModsFolderButton: "Ouvrir le dossier des mods",
+		openLocalModsFolderButton: "Ouvrir le dossier des mods",
+		openLoadlModsFolderTooltip:
+			"Vous pouvez placer des mods dans ce dossier avec un rai-pal-manifest.json pour les charger directement sans passer par la base de données en ligne.",
 		tableColumnMod: "Mod",
 		tableColumnVersion: "Version",
 		tableColumnGameEngine: "Moteur",
