@@ -73,6 +73,8 @@ use strum::IntoEnumIterator;
 use tauri::{
 	AppHandle,
 	Manager,
+	WebviewUrl,
+	WebviewWindowBuilder,
 	ipc::Channel,
 };
 use tauri_plugin_log::{
@@ -744,30 +746,33 @@ fn main() {
 				}
 			});
 
-			if let Some(window) = app.get_webview_window("main") {
-				let mut title = format!("Rai Pal {}", env!("CARGO_PKG_VERSION"));
-				if cfg!(debug_assertions) {
-					title += " DEV";
+			// Only create the window once everything is ready, which reduces the jumping around
+			// that happens while waiting for tauri_plugin_window_state to do its thing.
+			// We could also trigger this on the frontend to reduce the white flash,
+			// but it never seems to go away, and that introduces an extra delay
+			// until something is visible, so I figure I'd just show it here.
+			let window = WebviewWindowBuilder::new(app, "main", WebviewUrl::default())
+				.title(format!(
+					"Rai Pal {}{}",
+					env!("CARGO_PKG_VERSION"),
+					if cfg!(debug_assertions) { " DEV" } else { "" }
+				))
+				// Another reason to create Webview manually is to have full control of the data folder.
+				.data_directory(app_paths::app_data_subfolder("main-webview")?)
+				.inner_size(800.0, 600.0)
+				.min_inner_size(800.0, 500.0)
+				.resizable(true)
+				.fullscreen(false)
+				.build()?;
+
+			window.on_window_event(|event| {
+				if matches!(event, tauri::WindowEvent::Destroyed) {
+					// Once the window is closed, we don't need to report panics anymore.
+					// I'm doing this because closing the window abruptly while events are being sent
+					// causes panics, so it was easy to trigger those messages by just closing while loading data.
+					let _ = std::panic::take_hook();
 				}
-				window.set_title(&title)?;
-
-				// Window is created hidden in tauri.conf.json.
-				// We show it here once everything is ready, which reduces the jumping around
-				// that happens while waiting for tauri_plugin_window_state to do its thing.
-				// We could also trigger this on the frontend to reduce the white flash,
-				// but it never seems to go away, and that introduces an extra delay
-				// until something is visible, so I figure I'd just show it here.
-				window.show()?;
-
-				window.on_window_event(|event| {
-					if matches!(event, tauri::WindowEvent::Destroyed) {
-						// Once the window is closed, we don't need to report panics anymore.
-						// I'm doing this because closing the window abruptly while events are being sent
-						// causes panics, so it was easy to trigger those messages by just closing while loading data.
-						let _ = std::panic::take_hook();
-					}
-				});
-			}
+			});
 
 			let app_handle = app.app_handle().clone();
 

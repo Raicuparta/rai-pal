@@ -45,7 +45,7 @@ pub fn app_data_file(file_name: &str) -> Result<PathBuf> {
 	Ok(app_data_path()?.join(file_name))
 }
 
-fn app_data_subfolder(folder_name: &str) -> Result<PathBuf> {
+pub fn app_data_subfolder(folder_name: &str) -> Result<PathBuf> {
 	let path = app_data_path()?.join(folder_name);
 	fs::create_dir_all(&path)?;
 	Ok(path)

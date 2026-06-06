@@ -65,14 +65,8 @@ endpoints = [
   "https://github.com/Raicuparta/rai-pal/releases/latest/download/latest.json",
 ]
 
-[[app.windows]]
-fullscreen = false
-resizable = true
-title = "Rai Pal"
-width = 800
-height = 600
-minHeight = 500
-minWidth = 800
+# [[app.windows]]
+# Window is actually created manually in main.rs instead.
 
 # Main window starts hidden to reduce the initial white flash.
 # It becomes visible after the frontend is ready.
