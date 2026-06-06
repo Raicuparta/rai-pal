@@ -73,6 +73,8 @@ use strum::IntoEnumIterator;
 use tauri::{
 	AppHandle,
 	Manager,
+	WebviewUrl,
+	WebviewWindowBuilder,
 	ipc::Channel,
 };
 use tauri_plugin_log::{
@@ -182,28 +184,36 @@ async fn open_game_mods_folder(
 #[tauri::command]
 #[specta::specta]
 async fn install_mod(
-	provider_id: GameProviderId,
-	game_id: String,
 	mod_id: &str,
+	provider_id_option: Option<GameProviderId>,
+	game_id_option: Option<String>,
 	handle: AppHandle,
 ) -> Result {
 	let state = handle.app_state();
-	let game = state.database.get_game(&provider_id, &game_id)?;
+	let game_option = if let Some(game_id) = game_id_option
+		&& let Some(provider_id) = provider_id_option
+	{
+		Some(state.database.get_game(&provider_id, &game_id)?)
+	} else {
+		None
+	};
 	let game_mod = state.database.get_mod(mod_id)?;
 
 	let download_status_channel = state.download_status_channel.read_state()?.clone();
 
-	install_mod_dependencies(&handle, &game_mod, &game).await?;
+	install_mod_dependencies(&handle, &game_mod, game_option.as_ref()).await?;
 
-	if let Some(installed_mod) = state
-		.database
-		.get_installed_mod(&provider_id, &game_id, mod_id)?
-	{
+	if let Some(game) = game_option.as_ref()
+		&& let Some(installed_mod) = state.database.get_installed_mod(
+			mod_id,
+			Some(game.provider_id),
+			Some(game.game_id.clone()),
+		)? {
 		installed_mod.uninstall()?;
 	}
 
 	game_mod
-		.install(&game, |status| {
+		.install(game_option.as_ref(), |status| {
 			download_status_channel
 				.send(status)
 				.ok_or_log("Failed to send download status update");
@@ -212,7 +222,9 @@ async fn install_mod(
 
 	state.database.refresh_installed_mods()?;
 
-	handle.emit_safe(events::RefreshGame(provider_id, game_id));
+	if let Some(game) = game_option.as_ref() {
+		handle.emit_safe(events::RefreshGame(game.provider_id, game.game_id.clone()));
+	}
 
 	Ok(())
 }
@@ -220,14 +232,22 @@ async fn install_mod(
 #[tauri::command]
 #[specta::specta]
 async fn run_mod(
-	provider_id: GameProviderId,
-	game_id: String,
 	mod_id: &str,
+	provider_id_option: Option<GameProviderId>,
+	game_id_option: Option<String>,
 	handle: AppHandle,
 ) -> Result {
 	let state = handle.app_state();
-	let game = state.database.get_game(&provider_id, &game_id)?;
-	state.database.get_mod(mod_id)?.run(&game)?;
+
+	let game = if let Some(game_id) = game_id_option
+		&& let Some(provider_id) = provider_id_option
+	{
+		Some(state.database.get_game(&provider_id, &game_id)?)
+	} else {
+		None
+	};
+
+	state.database.get_mod(mod_id)?.run(game.as_ref())?;
 
 	Ok(())
 }
@@ -320,12 +340,33 @@ async fn uninstall_all_mods(
 	Ok(())
 }
 
-async fn install_mod_dependencies(handle: &AppHandle, game_mod: &GameMod, game: &DbGame) -> Result {
+async fn install_mod_dependencies(
+	handle: &AppHandle,
+	game_mod: &GameMod,
+	game_option: Option<&DbGame>,
+) -> Result {
 	let state = handle.app_state();
 
-	let relevant_mods = state
-		.database
-		.get_game_mods(&game.provider_id, &game.game_id)?;
+	let relevant_mods: Vec<GameModInfo> = if let Some(game) = game_option {
+		state
+			.database
+			.get_game_mods(&game.provider_id, &game.game_id)?
+	} else {
+		state
+			.database
+			.get_mod_map()?
+			.values()
+			.map(|other_mod| GameModInfo {
+				compatible: true,
+				has_installed_dependants: false,
+				installed_hash: None,
+				installed_version: None,
+				is_outdated: false,
+				mod_id: other_mod.id.clone(),
+			})
+			.collect()
+	};
+
 	let download_status_channel = state.download_status_channel.read_state()?.clone();
 
 	if let Some(dependencies) = game_mod.dependencies.as_ref() {
@@ -337,14 +378,19 @@ async fn install_mod_dependencies(handle: &AppHandle, game_mod: &GameMod, game: 
 					.database
 					.get_mod(&relevant_dependency_mod_info.mod_id)?;
 
-				Box::pin(install_mod_dependencies(handle, &dependency_mod, game)).await?;
+				Box::pin(install_mod_dependencies(
+					handle,
+					&dependency_mod,
+					game_option,
+				))
+				.await?;
 
 				let outdated = relevant_dependency_mod_info.installed_version.is_none()
 					|| relevant_dependency_mod_info.is_outdated;
 
 				if outdated && dependency_mod.install.is_some() {
 					dependency_mod
-						.install(game, |status| {
+						.install(game_option, |status| {
 							download_status_channel
 								.send(status)
 								.ok_or_log("Failed to send download status update");
@@ -736,30 +782,33 @@ fn main() {
 				}
 			});
 
-			if let Some(window) = app.get_webview_window("main") {
-				let mut title = format!("Rai Pal {}", env!("CARGO_PKG_VERSION"));
-				if cfg!(debug_assertions) {
-					title += " DEV";
+			// Only create the window once everything is ready, which reduces the jumping around
+			// that happens while waiting for tauri_plugin_window_state to do its thing.
+			// We could also trigger this on the frontend to reduce the white flash,
+			// but it never seems to go away, and that introduces an extra delay
+			// until something is visible, so I figure I'd just show it here.
+			let window = WebviewWindowBuilder::new(app, "main", WebviewUrl::default())
+				.title(format!(
+					"Rai Pal {}{}",
+					env!("CARGO_PKG_VERSION"),
+					if cfg!(debug_assertions) { " DEV" } else { "" }
+				))
+				// Another reason to create Webview manually is to have full control of the data folder.
+				.data_directory(app_paths::app_data_subfolder("main-webview")?)
+				.inner_size(800.0, 600.0)
+				.min_inner_size(800.0, 500.0)
+				.resizable(true)
+				.fullscreen(false)
+				.build()?;
+
+			window.on_window_event(|event| {
+				if matches!(event, tauri::WindowEvent::Destroyed) {
+					// Once the window is closed, we don't need to report panics anymore.
+					// I'm doing this because closing the window abruptly while events are being sent
+					// causes panics, so it was easy to trigger those messages by just closing while loading data.
+					let _ = std::panic::take_hook();
 				}
-				window.set_title(&title)?;
-
-				// Window is created hidden in tauri.conf.json.
-				// We show it here once everything is ready, which reduces the jumping around
-				// that happens while waiting for tauri_plugin_window_state to do its thing.
-				// We could also trigger this on the frontend to reduce the white flash,
-				// but it never seems to go away, and that introduces an extra delay
-				// until something is visible, so I figure I'd just show it here.
-				window.show()?;
-
-				window.on_window_event(|event| {
-					if matches!(event, tauri::WindowEvent::Destroyed) {
-						// Once the window is closed, we don't need to report panics anymore.
-						// I'm doing this because closing the window abruptly while events are being sent
-						// causes panics, so it was easy to trigger those messages by just closing while loading data.
-						let _ = std::panic::take_hook();
-					}
-				});
-			}
+			});
 
 			let app_handle = app.app_handle().clone();
 

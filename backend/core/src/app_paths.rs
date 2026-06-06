@@ -45,7 +45,7 @@ pub fn app_data_file(file_name: &str) -> Result<PathBuf> {
 	Ok(app_data_path()?.join(file_name))
 }
 
-fn app_data_subfolder(folder_name: &str) -> Result<PathBuf> {
+pub fn app_data_subfolder(folder_name: &str) -> Result<PathBuf> {
 	let path = app_data_path()?.join(folder_name);
 	fs::create_dir_all(&path)?;
 	Ok(path)
@@ -78,7 +78,7 @@ pub fn temp_dir(sub_dir: &str) -> Result<PathBuf> {
 }
 
 // We don't have migrations. If any database schema changes, update this so they get recreated.
-const DATABASE_VERSION: u32 = 0u32;
+const DATABASE_VERSION: u32 = 1u32;
 
 pub fn database_path(database_name: &str) -> Result<PathBuf> {
 	Ok(databases_path()?.join(format!("{database_name}-{DATABASE_VERSION}.db")))

@@ -20,11 +20,11 @@ use crate::{
 
 pub struct InstalledMod {
 	pub game_mod: GameMod,
-	pub game: DbGame,
+	pub game: Option<DbGame>,
 }
 
 impl InstalledMod {
-	pub const fn new(game_mod: GameMod, game: DbGame) -> Self {
+	pub const fn new(game_mod: GameMod, game: Option<DbGame>) -> Self {
 		Self { game_mod, game }
 	}
 
@@ -40,7 +40,7 @@ impl InstalledMod {
 						"main_installed_folder_path".to_string(),
 					)
 				})?,
-			&self.game,
+			self.game.as_ref(),
 			&self.game_mod,
 		))
 		.open_folder_or_parent()?;
@@ -57,7 +57,7 @@ impl InstalledMod {
 			for extract_action in extract_actions {
 				let destination_path = PathBuf::from(replace_tokens(
 					&extract_action.destination,
-					&self.game,
+					self.game.as_ref(),
 					&self.game_mod,
 				));
 
@@ -73,7 +73,7 @@ impl InstalledMod {
 			for write_action in write_actions {
 				let destination_path = PathBuf::from(replace_tokens(
 					&write_action.destination,
-					&self.game,
+					self.game.as_ref(),
 					&self.game_mod,
 				));
 
@@ -83,7 +83,7 @@ impl InstalledMod {
 			}
 		}
 
-		let manifest_path = self.game_mod.get_manifest_target_path(&self.game)?;
+		let manifest_path = self.game_mod.get_manifest_target_path(self.game.as_ref())?;
 		if manifest_path.exists() {
 			fs::remove_file(manifest_path)?;
 		}
@@ -94,7 +94,7 @@ impl InstalledMod {
 	fn get_config_path(&self, config: &ModConfig) -> PathBuf {
 		PathBuf::from(&replace_tokens(
 			&config.destination_path,
-			&self.game,
+			self.game.as_ref(),
 			&self.game_mod,
 		))
 	}

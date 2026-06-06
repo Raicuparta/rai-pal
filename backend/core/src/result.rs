@@ -205,6 +205,9 @@ pub enum Error {
 
 	#[error("No command fount for opening `{0}`")]
 	NoCommandForOpen(String),
+
+	#[error("Can't do this without a game. If possible, try it from the games tab instead.")]
+	GameNeeded(),
 }
 
 impl serde::Serialize for Error {

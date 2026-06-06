@@ -37,7 +37,7 @@ impl ModConfig {
 		overwrite: bool,
 	) -> Result {
 		let destination_path =
-			PathBuf::from(replace_tokens(&self.destination_path, game, game_mod));
+			PathBuf::from(replace_tokens(&self.destination_path, Some(game), game_mod));
 
 		if config_exists(&destination_path)? {
 			if overwrite {

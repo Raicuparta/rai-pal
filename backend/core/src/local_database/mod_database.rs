@@ -48,9 +48,9 @@ pub trait ModDatabase {
 	fn get_mod(&self, mod_id: &str) -> Result<GameMod>;
 	fn get_installed_mod(
 		&self,
-		provider_id: &GameProviderId,
-		game_id: &str,
 		mod_id: &str,
+		provider_id_option: Option<GameProviderId>,
+		game_id_option: Option<String>,
 	) -> Result<Option<InstalledMod>>;
 	fn try_get_installed_mod(
 		&self,
@@ -92,6 +92,7 @@ impl ModDatabase for DbMutex {
 				dependencies TEXT,
 				install TEXT,
 				run_for_game TEXT,
+				run_standalone TEXT,
 				hash TEXT,
 				created_at INTEGER,
 				PRIMARY KEY (id)
@@ -151,6 +152,7 @@ impl ModDatabase for DbMutex {
 				dependencies,
 				install,
 				run_for_game,
+				run_standalone,
 				hash,
 				hide_from_game_mods_list
 			FROM main.mods
@@ -177,44 +179,59 @@ impl ModDatabase for DbMutex {
 					dependencies: row.get_json(14)?,
 					install: row.get_json(15)?,
 					run_for_game: row.get_json(16)?,
-					hash: row.get(17)?,
-					hide_from_game_mods_list: row.get(18)?,
+					run_standalone: row.get_json(17)?,
+					hash: row.get(18)?,
+					hide_from_game_mods_list: row.get(19)?,
 				})
 			})?)
 	}
 
 	fn get_installed_mod(
 		&self,
-		provider_id: &GameProviderId,
-		game_id: &str,
 		mod_id: &str,
+		provider_id_option: Option<GameProviderId>,
+		game_id_option: Option<String>,
 	) -> Result<Option<InstalledMod>> {
-		let game = self.get_game(provider_id, game_id)?;
-
-		let Ok(exe_path) = game.try_get_exe_path() else {
-			return Ok(None);
-		};
-		let exe_path_hash = exe_path.hash_string();
-
 		let is_installed = self
 			.lock_db()?
 			.prepare_cached(
 				"SELECT EXISTS(
 					SELECT 1
-					FROM main.installed_mods
-					WHERE exe_path_hash = $1 AND mod_id = $2
+					FROM main.installed_mods im
+					WHERE im.mod_id = $1
+						AND (
+							$2 IS NULL OR $3 IS NULL OR im.exe_path_hash = (
+								SELECT g.exe_path_hash
+								FROM main.games g
+								WHERE g.provider_id = $2 AND g.game_id = $3
+								LIMIT 1
+							)
+						)
 				)",
 			)?
-			.query_row(rusqlite::params![exe_path_hash, mod_id], |row| {
-				row.get::<_, bool>(0)
-			})?;
+			.query_row(
+				rusqlite::params![
+					mod_id,
+					provider_id_option.map(|provider_id| provider_id.to_string()),
+					game_id_option.as_deref(),
+				],
+				|row| row.get::<_, bool>(0),
+			)?;
 
 		if !is_installed {
 			return Ok(None);
 		}
 
 		let game_mod = self.get_mod(mod_id)?;
-		Ok(Some(InstalledMod::new(game_mod, game)))
+		let game_option = if let Some(game_id) = game_id_option
+			&& let Some(provider_id) = provider_id_option
+		{
+			Some(self.get_game(&provider_id, &game_id)?)
+		} else {
+			None
+		};
+
+		Ok(Some(InstalledMod::new(game_mod, game_option)))
 	}
 
 	fn try_get_installed_mod(
@@ -223,7 +240,7 @@ impl ModDatabase for DbMutex {
 		game_id: &str,
 		mod_id: &str,
 	) -> Result<InstalledMod> {
-		self.get_installed_mod(provider_id, game_id, mod_id)?
+		self.get_installed_mod(mod_id, Some(*provider_id), Some(game_id.to_string()))?
 			.ok_or(Error::ModNotInstalled(mod_id.to_string()))
 	}
 
@@ -250,6 +267,7 @@ impl ModDatabase for DbMutex {
 				dependencies,
 				install,
 				run_for_game,
+				run_standalone,
 				hash,
 				hide_from_game_mods_list
 			FROM main.mods
@@ -274,8 +292,9 @@ impl ModDatabase for DbMutex {
 					dependencies: row.get_json(14)?,
 					install: row.get_json(15)?,
 					run_for_game: row.get_json(16)?,
-					hash: row.get(17)?,
-					hide_from_game_mods_list: row.get(18)?,
+					run_standalone: row.get_json(17)?,
+					hash: row.get(18)?,
+					hide_from_game_mods_list: row.get(19)?,
 				})
 			})?
 			.filter_map(|game_mod| match game_mod {
@@ -315,7 +334,7 @@ impl ModDatabase for DbMutex {
 			let exe_path_hash = exe_path.hash_string();
 
 			for game_mod in game_mods.values() {
-				let Ok(manifest_path) = game_mod.get_manifest_target_path(&game) else {
+				let Ok(manifest_path) = game_mod.get_manifest_target_path(Some(&game)) else {
 					continue;
 				};
 
@@ -550,18 +569,6 @@ fn try_insert_mod(
 	game_mod: &GameMod,
 	provider_id: ModProviderId,
 ) -> Result {
-	let download = serialize_json_option(game_mod.download.as_ref())?;
-	let engine = serialize_json_option(game_mod.engine.as_ref())?;
-	let engine_version_range = serialize_json_option(game_mod.engine_version_range.as_ref())?;
-	let unity_backend = serialize_json_option(game_mod.unity_backend.as_ref())?;
-	let architecture = serialize_json_option(game_mod.architecture.as_ref())?;
-	let game_os = serialize_json_option(game_mod.game_os.as_ref())?;
-	let host_os = serialize_json_option(game_mod.host_os.as_ref())?;
-	let config = serialize_json_option(game_mod.config.as_ref())?;
-	let dependencies = serialize_json_option(game_mod.dependencies.as_ref())?;
-	let install = serialize_json_option(game_mod.install.as_ref())?;
-	let run_for_game = serialize_json_option(game_mod.run_for_game.as_ref())?;
-
 	connection_mutex
 		.lock_db()?
 		.prepare_cached(
@@ -584,10 +591,11 @@ fn try_insert_mod(
 				dependencies,
 				install,
 				run_for_game,
+				run_standalone,
 				hide_from_game_mods_list,
 				hash,
 				created_at
-			) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)",
+			) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22)",
 		)?
 		.execute(rusqlite::params![
 			provider_id,
@@ -596,18 +604,19 @@ fn try_insert_mod(
 			game_mod.author,
 			game_mod.source_code,
 			game_mod.description,
-			download,
-			engine,
-			engine_version_range,
-			unity_backend,
-			architecture,
-			game_os,
-			host_os,
+			serialize_json_option(game_mod.download.as_ref())?,
+			serialize_json_option(game_mod.engine.as_ref())?,
+			serialize_json_option(game_mod.engine_version_range.as_ref())?,
+			serialize_json_option(game_mod.unity_backend.as_ref())?,
+			serialize_json_option(game_mod.architecture.as_ref())?,
+			serialize_json_option(game_mod.game_os.as_ref())?,
+			serialize_json_option(game_mod.host_os.as_ref())?,
 			game_mod.deprecated,
-			config,
-			dependencies,
-			install,
-			run_for_game,
+			serialize_json_option(game_mod.config.as_ref())?,
+			serialize_json_option(game_mod.dependencies.as_ref())?,
+			serialize_json_option(game_mod.install.as_ref())?,
+			serialize_json_option(game_mod.run_for_game.as_ref())?,
+			serialize_json_option(game_mod.run_standalone.as_ref())?,
 			game_mod.hide_from_game_mods_list,
 			game_mod.hash,
 			SystemTime::now()

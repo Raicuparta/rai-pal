@@ -23,7 +23,7 @@ export const commands = {
 	getRemoteConfigs: (providerId: GameProviderId, gameId: string) => __TAURI_INVOKE<{
 	configs: RemoteConfig[],
 } | null>("get_remote_configs", { providerId, gameId }),
-	installMod: (providerId: GameProviderId, gameId: string, modId: string) => __TAURI_INVOKE<null>("install_mod", { providerId, gameId, modId }),
+	installMod: (modId: string, providerIdOption: "Epic" | "Gog" | "Itch" | "Manual" | "Steam" | "Xbox" | null, gameIdOption: string | null) => __TAURI_INVOKE<null>("install_mod", { modId, providerIdOption, gameIdOption }),
 	listenToDownloadProgress: (channel: Channel<DownloadStatus>) => __TAURI_INVOKE<null>("listen_to_download_progress", { channel }),
 	logIn: () => __TAURI_INVOKE<null>("log_in"),
 	logOut: () => __TAURI_INVOKE<null>("log_out"),
@@ -40,7 +40,7 @@ export const commands = {
 	refreshRemoteGames: () => __TAURI_INVOKE<null>("refresh_remote_games"),
 	removeGame: (providerId: GameProviderId, gameId: string) => __TAURI_INVOKE<null>("remove_game", { providerId, gameId }),
 	resetSteamCache: () => __TAURI_INVOKE<null>("reset_steam_cache"),
-	runMod: (providerId: GameProviderId, gameId: string, modId: string) => __TAURI_INVOKE<null>("run_mod", { providerId, gameId, modId }),
+	runMod: (modId: string, providerIdOption: "Epic" | "Gog" | "Itch" | "Manual" | "Steam" | "Xbox" | null, gameIdOption: string | null) => __TAURI_INVOKE<null>("run_mod", { modId, providerIdOption, gameIdOption }),
 	runProviderCommand: (providerId: GameProviderId, gameId: string, providerCommandAciton: ProviderCommandAction) => __TAURI_INVOKE<null>("run_provider_command", { providerId, gameId, providerCommandAciton }),
 	saveAppSettings: (settings: AppSettings) => __TAURI_INVOKE<null>("save_app_settings", { settings }),
 	sendAnalyticsEvent: (event: Event, data: {
@@ -158,7 +158,8 @@ export type GameMod = {
 	config: ModConfig | null,
 	dependencies: ModDependency[] | null,
 	install: ModInstall | null,
-	runForGame: ModRunForGame | null,
+	runForGame: ModRun | null,
+	runStandalone: ModRun | null,
 	hash: string | null,
 };
 
@@ -230,7 +231,7 @@ export type ModInstallWrite = {
 	destination: string,
 };
 
-export type ModRunForGame = {
+export type ModRun = {
 	path: string | null,
 	args: string[] | null,
 	wineEnvironment: { [key in string]: string } | null,

@@ -15,7 +15,7 @@ export function GameModRunButton({ game, mod }: Props) {
 		<CommandButton
 			leftSection={<IconPlayerPlay />}
 			onClick={async () => {
-				await commands.runMod(game.providerId, game.gameId, mod.id);
+				await commands.runMod(mod.id, game.providerId, game.gameId);
 
 				commands.sendAnalyticsEvent("run_mod", {
 					game: game.displayTitle,
