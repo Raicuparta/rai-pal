@@ -23,7 +23,7 @@ export const commands = {
 	getRemoteConfigs: (providerId: GameProviderId, gameId: string) => __TAURI_INVOKE<{
 	configs: RemoteConfig[],
 } | null>("get_remote_configs", { providerId, gameId }),
-	installMod: (providerId: GameProviderId, gameId: string, modId: string) => __TAURI_INVOKE<null>("install_mod", { providerId, gameId, modId }),
+	installMod: (modId: string, providerIdOption: "Epic" | "Gog" | "Itch" | "Manual" | "Steam" | "Xbox" | null, gameIdOption: string | null) => __TAURI_INVOKE<null>("install_mod", { modId, providerIdOption, gameIdOption }),
 	listenToDownloadProgress: (channel: Channel<DownloadStatus>) => __TAURI_INVOKE<null>("listen_to_download_progress", { channel }),
 	logIn: () => __TAURI_INVOKE<null>("log_in"),
 	logOut: () => __TAURI_INVOKE<null>("log_out"),
@@ -131,7 +131,7 @@ export type EngineVersionRange = {
 
 export type Error = "Tauri" | "Core" | "Io" | "Rusql" | "SerdeJson" | "SystemTimeError" | ({ FailedToAccessStateData: string }) & { LinuxOnly?: never } | ({ LinuxOnly: null }) & { FailedToAccessStateData?: never };
 
-export type Event = "install_mod" | "uninstall_mod" | "update_mod" | "run_mod_for_game" | "run_mod_standalone" | "provider_command" | "start_app";
+export type Event = "install_mod" | "uninstall_mod" | "update_mod" | "run_mod" | "provider_command" | "start_app";
 
 export type ExecutedProviderCommand = null;
 

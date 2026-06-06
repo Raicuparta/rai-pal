@@ -184,28 +184,36 @@ async fn open_game_mods_folder(
 #[tauri::command]
 #[specta::specta]
 async fn install_mod(
-	provider_id: GameProviderId,
-	game_id: String,
 	mod_id: &str,
+	provider_id_option: Option<GameProviderId>,
+	game_id_option: Option<String>,
 	handle: AppHandle,
 ) -> Result {
 	let state = handle.app_state();
-	let game = state.database.get_game(&provider_id, &game_id)?;
+	let game_option = if let Some(game_id) = game_id_option
+		&& let Some(provider_id) = provider_id_option
+	{
+		Some(state.database.get_game(&provider_id, &game_id)?)
+	} else {
+		None
+	};
 	let game_mod = state.database.get_mod(mod_id)?;
 
 	let download_status_channel = state.download_status_channel.read_state()?.clone();
 
-	install_mod_dependencies(&handle, &game_mod, &game).await?;
+	install_mod_dependencies(&handle, &game_mod, game_option.as_ref()).await?;
 
-	if let Some(installed_mod) = state
-		.database
-		.get_installed_mod(&provider_id, &game_id, mod_id)?
-	{
+	if let Some(game) = game_option.as_ref()
+		&& let Some(installed_mod) = state.database.get_installed_mod(
+			mod_id,
+			Some(game.provider_id),
+			Some(game.game_id.clone()),
+		)? {
 		installed_mod.uninstall()?;
 	}
 
 	game_mod
-		.install(&game, |status| {
+		.install(game_option.as_ref(), |status| {
 			download_status_channel
 				.send(status)
 				.ok_or_log("Failed to send download status update");
@@ -214,7 +222,9 @@ async fn install_mod(
 
 	state.database.refresh_installed_mods()?;
 
-	handle.emit_safe(events::RefreshGame(provider_id, game_id));
+	if let Some(game) = game_option.as_ref() {
+		handle.emit_safe(events::RefreshGame(game.provider_id, game.game_id.clone()));
+	}
 
 	Ok(())
 }
@@ -330,12 +340,33 @@ async fn uninstall_all_mods(
 	Ok(())
 }
 
-async fn install_mod_dependencies(handle: &AppHandle, game_mod: &GameMod, game: &DbGame) -> Result {
+async fn install_mod_dependencies(
+	handle: &AppHandle,
+	game_mod: &GameMod,
+	game_option: Option<&DbGame>,
+) -> Result {
 	let state = handle.app_state();
 
-	let relevant_mods = state
-		.database
-		.get_game_mods(&game.provider_id, &game.game_id)?;
+	let relevant_mods: Vec<GameModInfo> = if let Some(game) = game_option {
+		state
+			.database
+			.get_game_mods(&game.provider_id, &game.game_id)?
+	} else {
+		state
+			.database
+			.get_mod_map()?
+			.values()
+			.map(|other_mod| GameModInfo {
+				compatible: true,
+				has_installed_dependants: false,
+				installed_hash: None,
+				installed_version: None,
+				is_outdated: false,
+				mod_id: other_mod.id.clone(),
+			})
+			.collect()
+	};
+
 	let download_status_channel = state.download_status_channel.read_state()?.clone();
 
 	if let Some(dependencies) = game_mod.dependencies.as_ref() {
@@ -347,14 +378,19 @@ async fn install_mod_dependencies(handle: &AppHandle, game_mod: &GameMod, game: 
 					.database
 					.get_mod(&relevant_dependency_mod_info.mod_id)?;
 
-				Box::pin(install_mod_dependencies(handle, &dependency_mod, game)).await?;
+				Box::pin(install_mod_dependencies(
+					handle,
+					&dependency_mod,
+					game_option,
+				))
+				.await?;
 
 				let outdated = relevant_dependency_mod_info.installed_version.is_none()
 					|| relevant_dependency_mod_info.is_outdated;
 
 				if outdated && dependency_mod.install.is_some() {
 					dependency_mod
-						.install(game, |status| {
+						.install(game_option, |status| {
 							download_status_channel
 								.send(status)
 								.ok_or_log("Failed to send download status update");

@@ -48,9 +48,9 @@ pub trait ModDatabase {
 	fn get_mod(&self, mod_id: &str) -> Result<GameMod>;
 	fn get_installed_mod(
 		&self,
-		provider_id: &GameProviderId,
-		game_id: &str,
 		mod_id: &str,
+		provider_id_option: Option<GameProviderId>,
+		game_id_option: Option<String>,
 	) -> Result<Option<InstalledMod>>;
 	fn try_get_installed_mod(
 		&self,
@@ -188,36 +188,50 @@ impl ModDatabase for DbMutex {
 
 	fn get_installed_mod(
 		&self,
-		provider_id: &GameProviderId,
-		game_id: &str,
 		mod_id: &str,
+		provider_id_option: Option<GameProviderId>,
+		game_id_option: Option<String>,
 	) -> Result<Option<InstalledMod>> {
-		let game = self.get_game(provider_id, game_id)?;
-
-		let Ok(exe_path) = game.try_get_exe_path() else {
-			return Ok(None);
-		};
-		let exe_path_hash = exe_path.hash_string();
-
 		let is_installed = self
 			.lock_db()?
 			.prepare_cached(
 				"SELECT EXISTS(
 					SELECT 1
-					FROM main.installed_mods
-					WHERE exe_path_hash = $1 AND mod_id = $2
+					FROM main.installed_mods im
+					WHERE im.mod_id = $1
+						AND (
+							$2 IS NULL OR $3 IS NULL OR im.exe_path_hash = (
+								SELECT g.exe_path_hash
+								FROM main.games g
+								WHERE g.provider_id = $2 AND g.game_id = $3
+								LIMIT 1
+							)
+						)
 				)",
 			)?
-			.query_row(rusqlite::params![exe_path_hash, mod_id], |row| {
-				row.get::<_, bool>(0)
-			})?;
+			.query_row(
+				rusqlite::params![
+					mod_id,
+					provider_id_option.map(|provider_id| provider_id.to_string()),
+					game_id_option.as_deref(),
+				],
+				|row| row.get::<_, bool>(0),
+			)?;
 
 		if !is_installed {
 			return Ok(None);
 		}
 
 		let game_mod = self.get_mod(mod_id)?;
-		Ok(Some(InstalledMod::new(game_mod, game)))
+		let game_option = if let Some(game_id) = game_id_option
+			&& let Some(provider_id) = provider_id_option
+		{
+			Some(self.get_game(&provider_id, &game_id)?)
+		} else {
+			None
+		};
+
+		Ok(Some(InstalledMod::new(game_mod, game_option)))
 	}
 
 	fn try_get_installed_mod(
@@ -226,7 +240,7 @@ impl ModDatabase for DbMutex {
 		game_id: &str,
 		mod_id: &str,
 	) -> Result<InstalledMod> {
-		self.get_installed_mod(provider_id, game_id, mod_id)?
+		self.get_installed_mod(mod_id, Some(*provider_id), Some(game_id.to_string()))?
 			.ok_or(Error::ModNotInstalled(mod_id.to_string()))
 	}
 
@@ -320,7 +334,7 @@ impl ModDatabase for DbMutex {
 			let exe_path_hash = exe_path.hash_string();
 
 			for game_mod in game_mods.values() {
-				let Ok(manifest_path) = game_mod.get_manifest_target_path(&game) else {
+				let Ok(manifest_path) = game_mod.get_manifest_target_path(Some(&game)) else {
 					continue;
 				};
 

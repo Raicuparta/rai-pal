@@ -7,7 +7,7 @@ import { ModsTable } from "./mods-table";
 import { SubPage } from "@components/sub-page";
 import { CommandButton } from "@components/command-button";
 import { useLocalization } from "@hooks/use-localization";
-import { IconPlayerPlay } from "@tabler/icons-react";
+import { IconDownload, IconPlayerPlay } from "@tabler/icons-react";
 
 type Props = {
 	readonly mod: GameMod;
@@ -36,14 +36,13 @@ export function ModModal(props: Props) {
 				gap="xl"
 			>
 				<Stack>
-					<DebugData data={props.mod} />
 					{props.mod.runStandalone && (
 						<CommandButton
 							leftSection={<IconPlayerPlay />}
 							onClick={async () => {
 								await commands.runMod(props.mod.id, null, null);
 
-								commands.sendAnalyticsEvent("run_mod_standalone", {
+								commands.sendAnalyticsEvent("run_mod", {
 									game: null,
 									param: props.mod.id,
 								});
@@ -52,6 +51,22 @@ export function ModModal(props: Props) {
 							{t("runMod")}
 						</CommandButton>
 					)}
+					{props.mod.runStandalone && props.mod.install && (
+						<CommandButton
+							leftSection={<IconDownload />}
+							onClick={async () => {
+								await commands.installMod(props.mod.id, null, null);
+
+								commands.sendAnalyticsEvent("install_mod", {
+									game: null,
+									param: props.mod.id,
+								});
+							}}
+						>
+							{t("downloadMod")}
+						</CommandButton>
+					)}
+					<DebugData data={props.mod} />
 				</Stack>
 			</Stack>
 		</SubPage>

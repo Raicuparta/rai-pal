@@ -119,10 +119,10 @@ pub enum ModConfigDestinationType {
 impl GameMod {
 	pub const FILE_NAME: &'static str = "rai-pal-manifest.json";
 
-	pub fn get_manifest_target_path(&self, game: &DbGame) -> Result<PathBuf> {
+	pub fn get_manifest_target_path(&self, game: Option<&DbGame>) -> Result<PathBuf> {
 		Ok(PathBuf::from(replace_tokens(
 			&self.get_install()?.manifest_path,
-			Some(game),
+			game,
 			self,
 		)))
 	}
@@ -151,7 +151,7 @@ impl GameMod {
 
 	pub async fn install(
 		&self,
-		game: &DbGame,
+		game_option: Option<&DbGame>,
 		on_download_status: impl Fn(DownloadStatus) + Send,
 	) -> Result {
 		let install = self
@@ -171,7 +171,7 @@ impl GameMod {
 				let source_path = source_dir.join(&extract_action.source);
 				let destination_path = PathBuf::from(replace_tokens(
 					&extract_action.destination,
-					Some(game),
+					game_option,
 					self,
 				));
 
@@ -187,8 +187,8 @@ impl GameMod {
 		if let Some(write_actions) = install.write.as_ref() {
 			for write_action in write_actions {
 				let destination_path =
-					PathBuf::from(replace_tokens(&write_action.destination, Some(game), self));
-				let content = replace_tokens(&write_action.content, Some(game), self);
+					PathBuf::from(replace_tokens(&write_action.destination, game_option, self));
+				let content = replace_tokens(&write_action.content, game_option, self);
 
 				fs::create_dir_all(destination_path.try_parent()?)?;
 				fs::write(destination_path, content)?;
@@ -196,11 +196,12 @@ impl GameMod {
 		}
 
 		if let Some(wine_dll_overrides) = install.wine_dll_overrides.as_ref() {
+			let game = game_option.ok_or_else(Error::GameNeeded)?;
 			game_provider::get_provider(game.provider_id)?
 				.set_wine_dll_overrides(game, wine_dll_overrides)?;
 		}
 
-		self.update_installed_mod_manifest(game)?;
+		self.update_installed_mod_manifest(game_option)?;
 
 		Ok(())
 	}
@@ -267,7 +268,7 @@ impl GameMod {
 		Ok(())
 	}
 
-	pub fn update_installed_mod_manifest(&self, game: &DbGame) -> Result {
+	pub fn update_installed_mod_manifest(&self, game: Option<&DbGame>) -> Result {
 		let manifest_path = self.get_manifest_target_path(game)?;
 		fs::create_dir_all(manifest_path.try_parent()?)?;
 		let manifest_contents = serde_json::to_string_pretty(&self)?;
