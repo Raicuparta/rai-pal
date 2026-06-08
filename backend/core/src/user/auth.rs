@@ -1,23 +1,25 @@
 use std::{
 	collections::HashMap,
 	fs,
-	io::{
-		Read,
-		Write,
-	},
-	net::TcpListener,
 	path::{
 		Path,
 		PathBuf,
 	},
-	thread,
-	time::{
-		Duration,
-		Instant,
-	},
+	time::Duration,
 };
 
 use serde::Deserialize;
+use tokio::{
+	io::{
+		AsyncReadExt,
+		AsyncWriteExt,
+	},
+	net::{
+		TcpListener,
+		TcpStream,
+	},
+	time::timeout,
+};
 use uuid::Uuid;
 
 use crate::{
@@ -82,7 +84,7 @@ fn build_auth_start_url(start_url: &str, redirect_uri: &str, state: &str) -> Res
 	Ok(format!("{start_url}?{query}"))
 }
 
-fn write_browser_response(stream: &mut std::net::TcpStream, success: bool) -> Result {
+async fn write_browser_response(stream: &mut TcpStream, success: bool) -> Result {
 	let (status_line, body) = if success {
 		(
 			"HTTP/1.1 200 OK",
@@ -101,110 +103,90 @@ fn write_browser_response(stream: &mut std::net::TcpStream, success: bool) -> Re
 		body
 	);
 
-	stream.write_all(response.as_bytes())?;
-	stream.flush()?;
+	stream.write_all(response.as_bytes()).await?;
+	stream.flush().await?;
 
 	Ok(())
 }
 
-fn write_browser_no_content_response(stream: &mut std::net::TcpStream) -> Result {
+async fn write_browser_no_content_response(stream: &mut TcpStream) -> Result {
 	let response = "HTTP/1.1 204 No Content\r\nContent-Length: 0\r\nConnection: close\r\n\r\n";
 
-	stream.write_all(response.as_bytes())?;
-	stream.flush()?;
+	stream.write_all(response.as_bytes()).await?;
+	stream.flush().await?;
 
 	Ok(())
 }
 
-fn parse_auth_callback(
+async fn parse_auth_callback(
 	listener: &TcpListener,
 	expected_state: &str,
-	timeout: Duration,
 ) -> Result<AuthCallbackQuery> {
-	listener.set_nonblocking(true)?;
-	let start = Instant::now();
-
 	loop {
-		match listener.accept() {
-			Ok((mut stream, _addr)) => {
-				let mut buffer = [0_u8; 4096];
-				let bytes_read = stream.read(&mut buffer)?;
+		let (mut stream, _addr) = listener.accept().await?;
 
-				if bytes_read == 0 {
-					continue;
-				}
+		let mut buffer = [0_u8; 4096];
+		let bytes_read = stream.read(&mut buffer).await?;
 
-				let request = String::from_utf8_lossy(&buffer[..bytes_read]);
-				let Some(request_line) = request.lines().next() else {
-					write_browser_response(&mut stream, false)?;
-					return Err(Error::Auth("Malformed callback request.".to_string()));
-				};
-
-				let Some(path_and_query) = request_line.split_whitespace().nth(1) else {
-					write_browser_response(&mut stream, false)?;
-					return Err(Error::Auth("Missing callback path.".to_string()));
-				};
-
-				if !path_and_query.starts_with("/auth/callback") {
-					write_browser_no_content_response(&mut stream)?;
-					continue;
-				}
-
-				log::info!("callback query: {}", path_and_query);
-
-				let query = path_and_query
-					.split_once('?')
-					.map(|(_, query)| query)
-					.unwrap_or_default();
-
-				// log query for debeug
-
-				let callback_query = serde_urlencoded::from_str::<AuthCallbackQuery>(query)
-					.map_err(|error| Error::Auth(format!("Invalid callback query: {error}")))?;
-
-				if let Some(error) = callback_query.error.as_ref() {
-					write_browser_response(&mut stream, false)?;
-					return Err(Error::Auth(format!(
-						"Authentication server returned an error: {error}"
-					)));
-				}
-
-				if callback_query.state.is_none() && callback_query.token.is_none() {
-					write_browser_no_content_response(&mut stream)?;
-					continue;
-				}
-
-				let state = callback_query
-					.state
-					.ok_or_else(|| Error::Auth("Missing auth state in callback.".to_string()))?;
-
-				if state != expected_state {
-					write_browser_response(&mut stream, false)?;
-					return Err(Error::Auth("Auth state mismatch.".to_string()));
-				}
-
-				let token = callback_query
-					.token
-					.ok_or_else(|| Error::Auth("Missing auth token in callback.".to_string()))?;
-
-				write_browser_response(&mut stream, true)?;
-				return Ok(AuthCallbackQuery {
-					token: Some(token),
-					state: Some(state),
-					error: None,
-				});
-			}
-			Err(error) if error.kind() == std::io::ErrorKind::WouldBlock => {
-				if start.elapsed() >= timeout {
-					return Err(Error::Auth(
-						"Timed out waiting for auth callback.".to_string(),
-					));
-				}
-
-				thread::sleep(Duration::from_millis(100));
-			}
-			Err(error) => return Err(error.into()),
+		if bytes_read == 0 {
+			continue;
 		}
+
+		let request = String::from_utf8_lossy(&buffer[..bytes_read]);
+		let Some(request_line) = request.lines().next() else {
+			write_browser_response(&mut stream, false).await?;
+			return Err(Error::Auth("Malformed callback request.".to_string()));
+		};
+
+		let Some(path_and_query) = request_line.split_whitespace().nth(1) else {
+			write_browser_response(&mut stream, false).await?;
+			return Err(Error::Auth("Missing callback path.".to_string()));
+		};
+
+		if !path_and_query.starts_with("/auth/callback") {
+			write_browser_no_content_response(&mut stream).await?;
+			continue;
+		}
+
+		let query = path_and_query
+			.split_once('?')
+			.map(|(_, query)| query)
+			.unwrap_or_default();
+
+		let callback_query = serde_urlencoded::from_str::<AuthCallbackQuery>(query)
+			.map_err(|error| Error::Auth(format!("Invalid callback query: {error}")))?;
+
+		if let Some(error) = callback_query.error.as_ref() {
+			write_browser_response(&mut stream, false).await?;
+			return Err(Error::Auth(format!(
+				"Authentication server returned an error: {error}"
+			)));
+		}
+
+		if callback_query.state.is_none() && callback_query.token.is_none() {
+			write_browser_no_content_response(&mut stream).await?;
+			continue;
+		}
+
+		let state = callback_query
+			.state
+			.ok_or_else(|| Error::Auth("Missing auth state in callback.".to_string()))?;
+
+		if state != expected_state {
+			write_browser_response(&mut stream, false).await?;
+			return Err(Error::Auth("Auth state mismatch.".to_string()));
+		}
+
+		let token = callback_query
+			.token
+			.ok_or_else(|| Error::Auth("Missing auth token in callback.".to_string()))?;
+
+		write_browser_response(&mut stream, true).await?;
+		return Ok(AuthCallbackQuery {
+			token: Some(token),
+			state: Some(state),
+			error: None,
+		});
 	}
 }
 
@@ -396,6 +378,7 @@ pub fn logout_auth() -> Result {
 
 pub async fn start_auth() -> Result {
 	let listener = TcpListener::bind(("127.0.0.1", 0))
+		.await
 		.map_err(|error| Error::Auth(format!("Failed to bind callback port. Error: {error}")))?;
 	let local_address = listener.local_addr()?;
 	let redirect_uri = format!("http://{local_address}/auth/callback");
@@ -406,7 +389,12 @@ pub async fn start_auth() -> Result {
 	log::info!("Starting auth flow. Redirect URI: {redirect_uri}");
 	open_detached_better(auth_url)?;
 
-	let callback = parse_auth_callback(&listener, &state, Duration::from_mins(3))?;
+	let callback = timeout(
+		Duration::from_mins(3),
+		parse_auth_callback(&listener, &state),
+	)
+	.await
+	.map_err(|_| Error::Auth("Timed out waiting for auth callback.".to_string()))??;
 
 	log::info!("Received auth callback. Getting session...");
 

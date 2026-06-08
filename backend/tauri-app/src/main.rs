@@ -754,7 +754,7 @@ fn main() {
 		.setup(move |app| {
 			builder.mount_events(app);
 
-			start_user_socket_manager();
+			tauri::async_runtime::spawn(start_user_socket_manager());
 
 			// Only create the window once everything is ready, which reduces the jumping around
 			// that happens while waiting for tauri_plugin_window_state to do its thing.
