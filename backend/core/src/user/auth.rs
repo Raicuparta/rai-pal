@@ -31,7 +31,6 @@ use crate::{
 };
 
 const AUTH_URL_BASE: &str = "https://auth.raicuparta.com";
-const AUTH_CALLBACK_PORT: u16 = 43941;
 const AUTH_KEYRING_SERVICE: &str = "rai-pal";
 const AUTH_KEYRING_ACCOUNT: &str = "auth-session-token";
 const AUTH_KEYRING_LOCATION: &str = "keyring://rai-pal/auth-session-token";
@@ -396,12 +395,10 @@ pub fn logout_auth() -> Result {
 }
 
 pub async fn start_auth() -> Result {
-	let listener = TcpListener::bind(("127.0.0.1", AUTH_CALLBACK_PORT)).map_err(|error| {
-		Error::Auth(format!(
-			"Failed to bind callback port {AUTH_CALLBACK_PORT}. Is another process using it? Error: {error}"
-		))
-	})?;
-	let redirect_uri = format!("http://127.0.0.1:{AUTH_CALLBACK_PORT}/auth/callback");
+	let listener = TcpListener::bind(("127.0.0.1", 0))
+		.map_err(|error| Error::Auth(format!("Failed to bind callback port. Error: {error}")))?;
+	let local_address = listener.local_addr()?;
+	let redirect_uri = format!("http://{local_address}/auth/callback");
 
 	let state = create_oauth_nonce();
 	let auth_url = build_auth_start_url(&format!("{AUTH_URL_BASE}/start"), &redirect_uri, &state)?;
@@ -411,13 +408,11 @@ pub async fn start_auth() -> Result {
 
 	let callback = parse_auth_callback(&listener, &state, Duration::from_mins(3))?;
 
-	log::info!("Received auth callback. Saving session...");
+	log::info!("Received auth callback. Getting session...");
 
 	let auth_token = callback
 		.token
 		.ok_or_else(|| Error::Auth("Missing auth token in callback.".to_string()))?;
-
-	log::info!("auth token is {auth_token}");
 
 	let result = http::CLIENT
 		.get(format!("{AUTH_URL_BASE}/user"))
