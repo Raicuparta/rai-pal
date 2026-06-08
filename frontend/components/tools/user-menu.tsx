@@ -1,7 +1,6 @@
-import { commands, DiscordAuthState } from "@api/bindings";
+import { commands, AuthState } from "@api/bindings";
 import { showAppNotification } from "@components/app-notifications";
 import { useLocalization } from "@hooks/use-localization";
-import { convertFileSrc } from "@tauri-apps/api/core";
 import { Avatar, Button, Menu, Text } from "@mantine/core";
 import {
 	IconBrandDiscordFilled,
@@ -25,57 +24,50 @@ function getInitials(name: string | null): string {
 
 export function UserMenu() {
 	const t = useLocalization("userMenu");
-	const [authState, setAuthState] = useState<DiscordAuthState>({
+	const [authState, setAuthState] = useState<AuthState>({
 		isLoggedIn: false,
-		avatarFilePath: null,
+		avatarUrl: null,
 		userName: null,
 	});
 
 	const refreshAuthState = useCallback(async () => {
-		try {
-			const state = await commands.getAuthState();
-			console.log("Current auth state:", state);
-			setAuthState(state);
-		} catch (error) {
-			console.error("Failed to read auth state:", error);
-			showAppNotification(
-				`Failed to read Discord auth state: ${String(error)}`,
-				"error",
-			);
-		}
+		commands
+			.getAuthState()
+			.then((state) => {
+				setAuthState(state);
+			})
+			.catch((error) => {
+				console.error("Failed to read auth state:", error);
+				showAppNotification(
+					`Failed to read auth state: ${String(error)}`,
+					"error",
+				);
+			});
 	}, []);
 
 	useEffect(() => {
 		refreshAuthState();
 	}, [refreshAuthState]);
 
-	const avatarUrl = authState.avatarFilePath
-		? convertFileSrc(authState.avatarFilePath)
-		: null;
-
 	const userInitials = getInitials(authState.userName);
 
 	const handleLogin = async () => {
-		console.log("Login requested from user menu.");
 		try {
-			const result = await commands.logIn();
-			console.log("Login completed:", result);
+			await commands.logIn();
 			await refreshAuthState();
 		} catch (error) {
 			console.error("Login failed:", error);
-			showAppNotification(`Discord sign-in failed: ${String(error)}`, "error");
+			showAppNotification(`Sign-in failed: ${String(error)}`, "error");
 		}
 	};
 
 	const handleLogout = async () => {
-		console.log("Logout requested from user menu.");
 		try {
 			await commands.logOut();
-			console.log("Logout completed.");
 			await refreshAuthState();
 		} catch (error) {
 			console.error("Logout failed:", error);
-			showAppNotification(`Discord sign-out failed: ${String(error)}`, "error");
+			showAppNotification(`Sign-out failed: ${String(error)}`, "error");
 		}
 	};
 
@@ -95,7 +87,7 @@ export function UserMenu() {
 						<Avatar
 							radius="xl"
 							bd="2px solid white"
-							src={avatarUrl}
+							src={authState.avatarUrl}
 							size="sm"
 							bg="black"
 						>

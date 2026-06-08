@@ -11,7 +11,7 @@ use std::{
 	time::Duration,
 };
 
-use super::discord_oauth;
+use super::auth;
 use crate::result::{
 	Error,
 	Result,
@@ -108,7 +108,7 @@ fn handle_socket_connection(stream: &mut TcpStream) -> Result {
 		return Ok(());
 	}
 
-	match read_discord_access_token() {
+	match read_auth_token() {
 		Ok(access_token) => {
 			write_http_response(stream, 200, "OK", &access_token)?;
 		}
@@ -150,18 +150,18 @@ fn bind_first_available_port() -> Result<(TcpListener, u16)> {
 			Ok(listener) => return Ok((listener, port)),
 			Err(error) if error.kind() == std::io::ErrorKind::AddrInUse => {}
 			Err(error) => {
-				return Err(Error::DiscordOAuth(format!(
+				return Err(Error::Auth(format!(
 					"Failed to bind user socket at {USER_SOCKET_BIND_ADDRESS}:{port}: {error}"
 				)));
 			}
 		}
 	}
 
-	Err(Error::DiscordOAuth(format!(
+	Err(Error::Auth(format!(
 		"No available user socket ports in range {USER_SOCKET_PORT_RANGE_START}..={USER_SOCKET_PORT_RANGE_END}"
 	)))
 }
 
-fn read_discord_access_token() -> Result<String> {
-	discord_oauth::read_discord_access_token()
+fn read_auth_token() -> Result<String> {
+	auth::read_auth_token()
 }
