@@ -34,6 +34,10 @@ export function UserMenu() {
 		commands
 			.getAuthState()
 			.then((state) => {
+				commands.sendAnalyticsEvent("user_sign_in", {
+					game: null,
+					param: null,
+				});
 				setAuthState(state);
 			})
 			.catch((error) => {

@@ -131,7 +131,7 @@ export type EngineVersionRange = {
 
 export type Error = "Tauri" | "Core" | "Io" | "Rusql" | "SerdeJson" | "SystemTimeError" | ({ FailedToAccessStateData: string }) & { LinuxOnly?: never } | ({ LinuxOnly: null }) & { FailedToAccessStateData?: never };
 
-export type Event = "install_mod" | "uninstall_mod" | "update_mod" | "run_mod" | "provider_command" | "start_app";
+export type Event = "install_mod" | "uninstall_mod" | "update_mod" | "run_mod" | "provider_command" | "start_app" | "user_sign_in" | "error_notification";
 
 export type ExecutedProviderCommand = null;
 

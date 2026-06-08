@@ -30,6 +30,8 @@ pub enum Event {
 	RunMod,
 	ProviderCommand,
 	StartApp,
+	UserSignIn,
+	ErrorNotification,
 }
 
 #[derive(Debug, Serialize)]
