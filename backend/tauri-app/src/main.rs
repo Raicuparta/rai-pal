@@ -92,8 +92,12 @@ mod typescript;
 
 #[tauri::command]
 #[specta::specta]
-async fn log_in() -> Result {
-	Ok(start_auth().await?)
+async fn log_in(window: tauri::Window) -> Result {
+	start_auth().await?;
+	window.hide()?;
+	window.show()?;
+
+	Ok(())
 }
 
 #[tauri::command]

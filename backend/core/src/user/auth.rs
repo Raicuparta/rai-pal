@@ -84,23 +84,11 @@ fn build_auth_start_url(start_url: &str, redirect_uri: &str, state: &str) -> Res
 	Ok(format!("{start_url}?{query}"))
 }
 
-async fn write_browser_response(stream: &mut TcpStream, success: bool) -> Result {
-	let (status_line, body) = if success {
-		(
-			"HTTP/1.1 200 OK",
-			"<html style=\"background:#fff;\"><body style=\"margin:0;padding:24px;background:#fff;color:#000;\"><h2>Authentication complete.</h2><p>You can close this tab and return to Rai Pal.</p></body></html>",
-		)
-	} else {
-		(
-			"HTTP/1.1 400 Bad Request",
-			"<html style=\"background:#fff;\"><body style=\"margin:0;padding:24px;background:#fff;color:#000;\"><h2>Authentication failed.</h2><p>You can close this tab and return to Rai Pal.</p></body></html>",
-		)
-	};
+async fn write_browser_response(stream: &mut TcpStream, success: bool) -> Result<()> {
+	let target_path = if success { "success" } else { "error" };
 
 	let response = format!(
-		"{status_line}\r\nContent-Type: text/html; charset=utf-8\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
-		body.len(),
-		body
+		"HTTP/1.1 302 Found\r\nLocation: {AUTH_URL_BASE}/{target_path}\r\nConnection: close\r\n\r\n",
 	);
 
 	stream.write_all(response.as_bytes()).await?;
