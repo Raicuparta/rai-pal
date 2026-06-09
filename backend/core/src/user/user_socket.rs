@@ -96,7 +96,7 @@ async fn handle_socket_connection(stream: &mut TcpStream) -> Result {
 		return Ok(());
 	}
 
-	match read_auth_token() {
+	match auth::read_auth_token() {
 		Ok(access_token) => {
 			write_http_response(stream, 200, "OK", &access_token).await?;
 		}
@@ -149,8 +149,4 @@ async fn bind_first_available_port() -> Result<(TcpListener, u16)> {
 	Err(Error::Auth(format!(
 		"No available user socket ports in range {USER_SOCKET_PORT_RANGE_START}..={USER_SOCKET_PORT_RANGE_END}"
 	)))
-}
-
-fn read_auth_token() -> Result<String> {
-	auth::read_auth_token()
 }

@@ -44,7 +44,7 @@ impl<TData: Clone> StateData<TData> for RwLock<Option<TData>> {
 		)
 	}
 
-	fn write_state_value(&self, data: TData) -> Result<()> {
+	fn write_state_value(&self, data: TData) -> Result {
 		*self
 			.write()
 			.map_err(|err| Error::FailedToAccessStateData(err.to_string()))? = Some(data);
