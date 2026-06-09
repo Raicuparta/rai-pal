@@ -8,6 +8,7 @@ use std::{
 	time::Duration,
 };
 
+use rai_pal_proc_macros::serializable_struct;
 use serde::Deserialize;
 use tokio::{
 	io::{
@@ -46,12 +47,10 @@ pub struct AuthState {
 	pub user_name: Option<String>,
 }
 
-#[derive(Debug, serde::Serialize, serde::Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[serializable_struct]
 struct AuthSavedSession {
 	token: String,
 	user_name: String,
-	#[serde(default)]
 	avatar_url: Option<String>,
 }
 
@@ -336,7 +335,41 @@ fn read_auth_session_file() -> Result<AuthSavedSession> {
 		.ok_or_else(|| Error::Auth("Auth token is not available.".to_string()))
 }
 
-pub fn get_user_auth_state() -> Result<AuthState> {
+async fn refresh_auth(auth_token: &str) -> Result<AuthState> {
+	let result = http::CLIENT
+		.get(format!("{AUTH_URL_BASE}/user"))
+		.header("Authorization", format!("Bearer {auth_token}"))
+		.send()
+		.await?;
+
+	if !result.status().is_success() {
+		log::warn!("Failed to refresh auth");
+		return Ok(AuthState {
+			is_logged_in: false,
+			avatar_url: None,
+			user_name: None,
+		});
+	}
+
+	let session = result.json::<AuthSessionResponse>().await?;
+
+	let session = AuthSavedSession {
+		token: auth_token.to_string(),
+		user_name: session.user_name,
+		avatar_url: session.avatar_url,
+	};
+
+	let session_path = save_auth_session_file(&session)?;
+	log::info!("Saved auth session at: {session_path}");
+
+	Ok(AuthState {
+		is_logged_in: true,
+		avatar_url: session.avatar_url,
+		user_name: Some(session.user_name),
+	})
+}
+
+pub async fn get_user_auth_state() -> Result<AuthState> {
 	log::debug!("Computing auth state");
 	let Some(saved_session) = read_auth_session_file_optional()? else {
 		log::debug!("Auth state: logged out (no session found)");
@@ -347,11 +380,7 @@ pub fn get_user_auth_state() -> Result<AuthState> {
 		});
 	};
 
-	Ok(AuthState {
-		is_logged_in: true,
-		avatar_url: saved_session.avatar_url,
-		user_name: Some(saved_session.user_name),
-	})
+	refresh_auth(&saved_session.token).await
 }
 
 pub(crate) fn read_auth_token() -> Result<String> {
@@ -390,22 +419,7 @@ pub async fn start_auth() -> Result {
 		.token
 		.ok_or_else(|| Error::Auth("Missing auth token in callback.".to_string()))?;
 
-	let result = http::CLIENT
-		.get(format!("{AUTH_URL_BASE}/user"))
-		.header("Authorization", format!("Bearer {auth_token}"))
-		.send()
-		.await?;
-
-	let session = result.json::<AuthSessionResponse>().await?;
-
-	let session = AuthSavedSession {
-		token: auth_token,
-		user_name: session.user_name,
-		avatar_url: session.avatar_url,
-	};
-
-	let session_path = save_auth_session_file(&session)?;
-	log::info!("Saved auth session at: {session_path}");
+	refresh_auth(&auth_token).await?;
 
 	Ok(())
 }

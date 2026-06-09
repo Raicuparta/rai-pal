@@ -103,7 +103,7 @@ async fn log_in(window: tauri::Window) -> Result {
 #[tauri::command]
 #[specta::specta]
 async fn get_auth_state() -> Result<AuthState> {
-	Ok(get_user_auth_state()?)
+	Ok(get_user_auth_state().await?)
 }
 
 #[tauri::command]
