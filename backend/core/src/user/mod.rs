@@ -1,2 +1,2 @@
-pub mod discord_oauth;
+pub mod auth;
 pub mod user_socket;

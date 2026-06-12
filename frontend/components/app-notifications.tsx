@@ -1,3 +1,4 @@
+import { commands } from "@api/bindings";
 import { useAppEvent } from "@hooks/use-app-event";
 import { DefaultMantineColor } from "@mantine/core";
 import { Notifications, notifications } from "@mantine/notifications";
@@ -33,6 +34,12 @@ export function showAppNotification(message: string, type: NotificationType) {
 		color: getNotificationColor(type),
 		icon: getNotificationIcon(type),
 	});
+	if (type === "error") {
+		commands.sendAnalyticsEvent("error_notification", {
+			game: null,
+			param: message,
+		});
+	}
 }
 
 export function AppNotifications() {

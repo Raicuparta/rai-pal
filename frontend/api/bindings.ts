@@ -10,7 +10,7 @@ export const commands = {
 	configureMod: (providerId: GameProviderId, gameId: string, modId: string, openFolder: boolean) => __TAURI_INVOKE<null>("configure_mod", { providerId, gameId, modId, openFolder }),
 	downloadRemoteConfig: (providerId: GameProviderId, gameId: string, modId: string, remoteConfigFile: string, overwrite: boolean) => __TAURI_INVOKE<null>("download_remote_config", { providerId, gameId, modId, remoteConfigFile, overwrite }),
 	getAppSettings: () => __TAURI_INVOKE<AppSettings>("get_app_settings"),
-	getAuthState: () => __TAURI_INVOKE<DiscordAuthState>("get_auth_state"),
+	getAuthState: () => __TAURI_INVOKE<AuthState>("get_auth_state"),
 	getGame: (providerId: GameProviderId, gameId: string) => __TAURI_INVOKE<DbGame>("get_game", { providerId, gameId }),
 	getGameIds: (query: {
 	filter: GamesFilter,
@@ -83,6 +83,12 @@ export type AppSettings = {
 
 export type Architecture = "X64" | "X86";
 
+export type AuthState = {
+	isLoggedIn: boolean,
+	avatarUrl: string | null,
+	userName: string | null,
+};
+
 export type DbGame = {
 	providerId: GameProviderId,
 	gameId: string,
@@ -101,12 +107,6 @@ export type DbGame = {
 	architecture: Architecture | null,
 	tags: GameTag[],
 	providerCommands: Partial<{ [key in ProviderCommandAction]: ProviderCommand }>,
-};
-
-export type DiscordAuthState = {
-	isLoggedIn: boolean,
-	avatarFilePath: string | null,
-	userName: string | null,
 };
 
 export type DownloadStatus = {
@@ -131,7 +131,7 @@ export type EngineVersionRange = {
 
 export type Error = "Tauri" | "Core" | "Io" | "Rusql" | "SerdeJson" | "SystemTimeError" | ({ FailedToAccessStateData: string }) & { LinuxOnly?: never } | ({ LinuxOnly: null }) & { FailedToAccessStateData?: never };
 
-export type Event = "install_mod" | "uninstall_mod" | "update_mod" | "run_mod" | "provider_command" | "start_app";
+export type Event = "install_mod" | "uninstall_mod" | "update_mod" | "run_mod" | "provider_command" | "start_app" | "user_sign_in" | "error_notification";
 
 export type ExecutedProviderCommand = null;
 

@@ -6,8 +6,6 @@
 use std::{
 	collections::BTreeMap,
 	path::PathBuf,
-	thread,
-	time::Duration,
 };
 
 use app_settings::AppSettings;
@@ -59,12 +57,11 @@ use rai_pal_core::{
 	},
 	result::LogErrExt,
 	user::{
-		discord_oauth::{
-			DiscordAuthState,
-			get_discord_auth_state,
-			logout_discord,
-			refresh_discord_token_if_possible,
-			start_discord_oauth,
+		auth::{
+			AuthState,
+			get_user_auth_state,
+			logout_auth,
+			start_auth,
 		},
 		user_socket::start_user_socket_manager,
 	},
@@ -93,24 +90,26 @@ mod result;
 #[cfg(debug_assertions)]
 mod typescript;
 
-const DISCORD_TOKEN_REFRESH_INTERVAL: Duration = Duration::from_hours(1);
-
 #[tauri::command]
 #[specta::specta]
-async fn log_in() -> Result {
-	start_discord_oauth().await.map_err(Into::into)
+async fn log_in(window: tauri::Window) -> Result {
+	start_auth().await?;
+	window.hide()?;
+	window.show()?;
+
+	Ok(())
 }
 
 #[tauri::command]
 #[specta::specta]
-async fn get_auth_state() -> Result<DiscordAuthState> {
-	get_discord_auth_state().await.map_err(Into::into)
+async fn get_auth_state() -> Result<AuthState> {
+	Ok(get_user_auth_state().await?)
 }
 
 #[tauri::command]
 #[specta::specta]
 async fn log_out() -> Result {
-	logout_discord().map_err(Into::into)
+	logout_auth().map_err(Into::into)
 }
 
 #[tauri::command]
@@ -759,28 +758,7 @@ fn main() {
 		.setup(move |app| {
 			builder.mount_events(app);
 
-			start_user_socket_manager();
-
-			thread::spawn(|| {
-				loop {
-					let refresh_result =
-						tauri::async_runtime::block_on(refresh_discord_token_if_possible());
-
-					match refresh_result {
-						Ok(true) => log::info!("Discord OAuth token auto-refreshed."),
-						Ok(false) => {
-							log::debug!(
-								"Discord OAuth auto-refresh skipped (token not available)."
-							);
-						}
-						Err(error) => {
-							log::error!("Failed to auto-refresh Discord OAuth token: {error}");
-						}
-					}
-
-					thread::sleep(DISCORD_TOKEN_REFRESH_INTERVAL);
-				}
-			});
+			tauri::async_runtime::spawn(start_user_socket_manager());
 
 			// Only create the window once everything is ready, which reduces the jumping around
 			// that happens while waiting for tauri_plugin_window_state to do its thing.

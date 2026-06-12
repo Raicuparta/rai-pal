@@ -8,7 +8,10 @@ use std::{
 	process::Command,
 };
 
-use steamlocate::SteamDir;
+use steamlocate::{
+	Library,
+	SteamDir,
+};
 
 use crate::{
 	game::DbGame,
@@ -28,18 +31,24 @@ const DLL_OVERRIDE_VALUE: &str = "native,builtin";
 
 impl WineProviderActions for Steam {
 	fn get_wine_prefix_path(&self, game: &DbGame) -> Result<PathBuf> {
-		let app_id = game.external_id.parse()?;
+		let app_id: u32 = game.external_id.parse()?;
 		let steam_dir = SteamDir::locate()?;
-		let (_, library) = steam_dir.find_app(app_id)?.ok_or_else(|| {
-			Error::SteamProton(format!("Library not found for Steam app {app_id}"))
-		})?;
 
-		Ok(library
-			.path()
-			.join("steamapps")
-			.join("compatdata")
-			.join(app_id.to_string())
-			.join("pfx"))
+		if let Some((_, library)) = steam_dir.find_app(app_id)? {
+			return Ok(get_prefix_path(&library, &game.external_id));
+		}
+
+		for library in (steam_dir.libraries()?).flatten() {
+			let prefix_path = get_prefix_path(&library, &game.external_id);
+
+			if prefix_path.exists() {
+				return Ok(prefix_path);
+			}
+		}
+
+		Err(Error::SteamProton(format!(
+			"Library not found for Steam app {app_id} and no compatdata prefix exists in any Steam library"
+		)))
 	}
 
 	fn get_wine_binary_path(&self, game: &DbGame) -> Result<PathBuf> {
@@ -135,6 +144,15 @@ impl WineProviderActions for Steam {
 
 		Ok(())
 	}
+}
+
+fn get_prefix_path(library: &Library, app_id: &str) -> PathBuf {
+	library
+		.path()
+		.join("steamapps")
+		.join("compatdata")
+		.join(app_id)
+		.join("pfx")
 }
 
 fn normalize_dll_override_name(dll_name: &str) -> String {

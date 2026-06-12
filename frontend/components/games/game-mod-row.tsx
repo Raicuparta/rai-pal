@@ -53,7 +53,7 @@ export function GameModRow({
 	const t = useLocalization("gameModRow");
 
 	const availableRemoteConfig = remoteConfigs?.configs.find(
-		(config) => config.modId === mod.id,
+		(config) => config.modId === (mod.config?.modIdOverride ?? mod.id),
 	);
 
 	const isOutdated = info?.isOutdated;

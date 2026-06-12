@@ -191,8 +191,8 @@ pub enum Error {
 	#[error("Failed to acquire lock for database: `{0}`")]
 	DatabaseLockFailed(String),
 
-	#[error("Discord OAuth failed: `{0}`")]
-	DiscordOAuth(String),
+	#[error("Auth failed: `{0}`")]
+	Auth(String),
 
 	#[error("Failed to find mod manifest in path: `{0}`")]
 	ManifestNotFound(String),
