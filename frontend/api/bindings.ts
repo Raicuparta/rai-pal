@@ -85,7 +85,7 @@ export type Architecture = "X64" | "X86";
 
 export type AuthState = {
 	isLoggedIn: boolean,
-	avatarUrl: string | null,
+	avatarPath: string | null,
 	userName: string | null,
 };
 

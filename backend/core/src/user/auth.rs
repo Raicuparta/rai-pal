@@ -1,6 +1,7 @@
 use std::{
 	collections::HashMap,
 	fs,
+	path::PathBuf,
 	time::Duration,
 };
 
@@ -23,8 +24,10 @@ use crate::{
 	app_paths,
 	http,
 	open_better::open_detached_better,
+	path_extensions::AsValidStr,
 	result::{
 		Error,
+		LogErrExt,
 		Result,
 	},
 };
@@ -37,7 +40,7 @@ const AUTH_KEYRING_ACCOUNT: &str = "auth-session-token";
 #[serde(rename_all = "camelCase")]
 pub struct AuthState {
 	pub is_logged_in: bool,
-	pub avatar_url: Option<String>,
+	pub avatar_path: Option<String>,
 	pub user_name: Option<String>,
 }
 
@@ -252,7 +255,7 @@ async fn refresh_auth(auth_token: &str) -> Result<AuthState> {
 	if !result.status().is_success() {
 		return Ok(AuthState {
 			is_logged_in: false,
-			avatar_url: None,
+			avatar_path: None,
 			user_name: None,
 		});
 	}
@@ -266,18 +269,41 @@ async fn refresh_auth(auth_token: &str) -> Result<AuthState> {
 
 	save_auth_session_file(&session)?;
 
+	let avatar_path = if let Some(avatar_url) = session.avatar_url {
+		save_avatar(&avatar_url)
+			.await
+			.ok_or_log("Failed to get user avatar")
+			.flatten()
+	} else {
+		None
+	};
+
 	Ok(AuthState {
 		is_logged_in: true,
-		avatar_url: session.avatar_url,
+		avatar_path,
 		user_name: Some(session.user_name),
 	})
+}
+
+fn get_avatar_path() -> Result<PathBuf> {
+	app_paths::app_data_file("avatar.png")
+}
+
+async fn save_avatar(url: &str) -> Result<Option<String>> {
+	let avatar_path = get_avatar_path()?;
+
+	let response = http::CLIENT.get(url).send().await?;
+
+	fs::write(&avatar_path, response.bytes().await?)?;
+
+	Ok(Some(avatar_path.try_to_str()?.to_string()))
 }
 
 pub async fn get_user_auth_state() -> Result<AuthState> {
 	let Some(saved_session) = read_auth_session_file_optional()? else {
 		return Ok(AuthState {
 			is_logged_in: false,
-			avatar_url: None,
+			avatar_path: None,
 			user_name: None,
 		});
 	};

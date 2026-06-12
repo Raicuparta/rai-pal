@@ -8,6 +8,7 @@ import {
 	IconLogout2,
 	IconUserCircle,
 } from "@tabler/icons-react";
+import { convertFileSrc } from "@tauri-apps/api/core";
 import { useCallback, useEffect, useState } from "react";
 
 function getInitials(name: string | null): string {
@@ -26,9 +27,13 @@ export function UserMenu() {
 	const t = useLocalization("userMenu");
 	const [authState, setAuthState] = useState<AuthState>({
 		isLoggedIn: false,
-		avatarUrl: null,
+		avatarPath: null,
 		userName: null,
 	});
+
+	const avatarUrl = authState.avatarPath
+		? convertFileSrc(authState.avatarPath)
+		: null;
 
 	const refreshAuthState = useCallback(async () => {
 		commands
@@ -91,7 +96,7 @@ export function UserMenu() {
 						<Avatar
 							radius="xl"
 							bd="2px solid white"
-							src={authState.avatarUrl}
+							src={avatarUrl}
 							size="sm"
 							bg="black"
 						>
