@@ -50,7 +50,6 @@ export const filterDetails = Object.freeze<{
 		valueDetails: {
 			Godot: {
 				staticDisplayText: "Godot",
-				noteLocalizationKey: "engineGodotNotFullySupported",
 			},
 			GameMaker: {
 				staticDisplayText: "GameMaker",
