@@ -9,6 +9,7 @@ use rai_pal_proc_macros::{
 };
 
 use super::{
+	godot,
 	unity,
 	unreal,
 };
@@ -111,6 +112,8 @@ impl PartialOrd for GameEngine {
 pub fn get_exe_engine(exe_path: &Path) -> Option<EngineBrand> {
 	if unity::is_unity_exe(exe_path) {
 		Some(EngineBrand::Unity)
+	} else if godot::is_godot_exe(exe_path) {
+		Some(EngineBrand::Godot)
 	} else if unreal::is_unreal_exe(exe_path) {
 		Some(EngineBrand::Unreal)
 	} else {

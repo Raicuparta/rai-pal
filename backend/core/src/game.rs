@@ -15,6 +15,7 @@ use crate::{
 			EngineBrand,
 			get_exe_engine,
 		},
+		godot,
 		unity::{
 			self,
 			UnityBackend,
@@ -174,6 +175,9 @@ impl DbGame {
 			if let Some(exe_engine_brand) = get_exe_engine(exe_path) {
 				self.engine_brand = Some(exe_engine_brand);
 				match exe_engine_brand {
+					EngineBrand::Godot => {
+						godot::process_game(self);
+					}
 					EngineBrand::Unity => {
 						unity::process_game(self);
 					}
