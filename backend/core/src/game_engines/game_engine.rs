@@ -109,13 +109,13 @@ impl PartialOrd for GameEngine {
 	}
 }
 
-pub fn get_exe_engine(exe_path: &Path) -> Option<EngineBrand> {
+pub fn get_exe_engine(exe_path: &Path) -> Option<(EngineBrand, Option<EngineVersion>)> {
 	if unity::is_unity_exe(exe_path) {
-		Some(EngineBrand::Unity)
-	} else if godot::is_godot_exe(exe_path) {
-		Some(EngineBrand::Godot)
+		Some((EngineBrand::Unity, None))
 	} else if unreal::is_unreal_exe(exe_path) {
-		Some(EngineBrand::Unreal)
+		Some((EngineBrand::Unreal, None))
+	} else if let Some(version) = godot::check_exe(exe_path) {
+		Some((EngineBrand::Godot, Some(version)))
 	} else {
 		None
 	}

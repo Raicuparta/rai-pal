@@ -172,11 +172,13 @@ impl DbGame {
 			}
 
 			self.exe_path = Some(exe_path.normalize());
-			if let Some(exe_engine_brand) = get_exe_engine(exe_path) {
-				self.engine_brand = Some(exe_engine_brand);
-				match exe_engine_brand {
+			if let Some((brand, godot_version)) = get_exe_engine(exe_path) {
+				self.engine_brand = Some(brand);
+				match brand {
 					EngineBrand::Godot => {
-						godot::process_game(self);
+						if let Some(ref version) = godot_version {
+							godot::process_game(self, version);
+						}
 					}
 					EngineBrand::Unity => {
 						unity::process_game(self);
