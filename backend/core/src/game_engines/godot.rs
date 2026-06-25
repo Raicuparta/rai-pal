@@ -67,10 +67,12 @@ fn parse_version(version_string: &str) -> Option<EngineVersion> {
 	})
 }
 
-/// Reads the exe and returns the engine version if it's a Godot executable.
+/// Reads and scans the exe, returning the version if it's a Godot executable.
 ///
-/// Godot version strings live near the end of the file (in .rdata section),
-/// so we only scan the last portion to minimize I/O and scan time.
+/// Uses a two-tier approach:
+/// 1. Fast probe: read 1 MB at ~80% of the file, check for "Godot" or ".stable".
+///    For non-Godot games this takes ~1ms and returns early.
+/// 2. Full scan: only if the probe hits, read the last 50 MB and extract the version.
 pub fn check_exe(exe_path: &Path) -> Option<EngineVersion> {
 	let metadata = match fs::metadata(exe_path) {
 		Ok(m) => m,
@@ -85,51 +87,100 @@ pub fn check_exe(exe_path: &Path) -> Option<EngineVersion> {
 		return None;
 	}
 
-	// Read only the last 50 MB (or the whole file if smaller).
-	// Version strings and Godot markers consistently appear in the last ~30%.
-	let tail_size = (50 * 1024 * 1024).min(file_len);
-	let start_offset = file_len - tail_size;
+	// Tier 1: fast probe at ~80% of the file (where version strings reside).
+	if !probe_for_godot(exe_path, file_len) {
+		// If seek-based probe fails, fall back to checking if the file
+		// contains "Godot" anywhere by reading the tail.
+		if let Some(bytes) = read_tail(exe_path, file_len, 50 * 1024 * 1024) {
+			if !contains_marker(&bytes) {
+				return None;
+			}
+		} else {
+			return None;
+		}
+	}
+
+	// Tier 2: full version extraction.
+	let bytes = read_tail(exe_path, file_len, 50 * 1024 * 1024)?;
+	scan_for_version(&bytes)
+}
+
+/// Read 1 MB at 80% offset and check for Godot markers.
+fn probe_for_godot(exe_path: &Path, file_len: u64) -> bool {
+	let probe_size = 1 * 1024 * 1024; // 1 MB
+	let offset = (file_len * 80 / 100).saturating_sub(probe_size as u64 / 2);
 
 	let mut file = match fs::File::open(exe_path) {
 		Ok(f) => f,
-		Err(err) => {
-			error!(
-				"Failed to open exe `{}`. Error: {}",
-				exe_path.display(),
-				err
-			);
-			return None;
-		}
+		Err(_) => return true, // Can't read — assume it might be Godot, let Tier 2 decide.
 	};
 
+	if file.seek(SeekFrom::Start(offset)).is_err() {
+		return true; // Can't seek — assume it might be Godot.
+	}
+
+	let mut buf = vec![0u8; probe_size];
+	let n = file.read(&mut buf).unwrap_or(0);
+	if n == 0 {
+		return true; // Can't read — assume it might be Godot.
+	}
+
+	contains_marker(&buf[..n])
+}
+
+/// Fast scan for Godot-identifying markers in a byte slice.
+fn contains_marker(bytes: &[u8]) -> bool {
+	let len = bytes.len();
+	let mut i = 0;
+	// Check for "Godot" (5 bytes, case-sensitive).
+	while i + 5 <= len {
+		if bytes[i] == b'G'
+			&& bytes[i + 1] == b'o'
+			&& bytes[i + 2] == b'd'
+			&& bytes[i + 3] == b'o'
+			&& bytes[i + 4] == b't'
+		{
+			return true;
+		}
+		i += 1;
+	}
+	// Check for ".stable" (7 bytes, Godot 3.x marker).
+	i = 0;
+	while i + 7 <= len {
+		if bytes[i] == b'.'
+			&& bytes[i + 1] == b's'
+			&& bytes[i + 2] == b't'
+			&& bytes[i + 3] == b'a'
+			&& bytes[i + 4] == b'b'
+			&& bytes[i + 5] == b'l'
+			&& bytes[i + 6] == b'e'
+		{
+			return true;
+		}
+		i += 1;
+	}
+	false
+}
+
+fn read_tail(exe_path: &Path, file_len: u64, max_size: u64) -> Option<Vec<u8>> {
+	let tail_size = max_size.min(file_len);
+	let start_offset = file_len - tail_size;
+
+	let mut file = fs::File::open(exe_path).ok()?;
 	if file.seek(SeekFrom::Start(start_offset)).is_err() {
-		// If seek fails, fall back to full read.
-		let bytes = match fs::read(exe_path) {
-			Ok(b) => b,
-			Err(err) => {
-				error!(
-					"Failed to read exe `{}`. Error: {}",
-					exe_path.display(),
-					err
-				);
-				return None;
-			}
-		};
-		return scan_for_godot(&bytes);
+		// Fall back to full read.
+		return fs::read(exe_path).ok();
 	}
 
 	let mut bytes = vec![0u8; tail_size as usize];
-	if file.read_exact(&mut bytes).is_err() {
-		return None;
-	}
-
-	scan_for_godot(&bytes)
+	file.read_exact(&mut bytes).ok()?;
+	Some(bytes)
 }
 
-fn scan_for_godot(bytes: &[u8]) -> Option<EngineVersion> {
+fn scan_for_version(bytes: &[u8]) -> Option<EngineVersion> {
 	let len = bytes.len();
 
-	// --- Scan for Godot 4.x: "Godot Engine v" or "Godot v" ---
+	// Scan for Godot 4.x: "Godot Engine v" or "Godot v".
 	let mut i = 0;
 	while i + 14 <= len {
 		if bytes[i] != b'G' {
@@ -170,9 +221,8 @@ fn scan_for_godot(bytes: &[u8]) -> Option<EngineVersion> {
 		i += 1;
 	}
 
-	// --- Scan for Godot 3.x version markers ---
-	let markers: &[&[u8]] = &[b".stable", b".beta", b".alpha", b".rc", b".dev"];
-	for marker in markers {
+	// Scan for Godot 3.x version markers.
+	for marker in &[&b".stable"[..], b".beta", b".alpha", b".rc", b".dev"] {
 		let mut i = 0;
 		let m = marker.len();
 		let first = marker[0];
@@ -264,6 +314,24 @@ mod tests {
 		let t0 = Instant::now();
 		let _ = check_exe(path);
 		let t = t0.elapsed();
-		println!("check_exe total: {:>8.2} ms", t.as_secs_f64() * 1000.0);
+		println!("Godot 4.x check: {:>8.2} ms", t.as_secs_f64() * 1000.0);
+
+		// Test a non-Godot file
+		let path2 = Path::new("/usr/bin/bash");
+		if path2.is_file() {
+			let t0 = Instant::now();
+			let result = check_exe(path2);
+			let t = t0.elapsed();
+			println!("Non-Godot check: {:>8.2} ms (result={:?})", t.as_secs_f64() * 1000.0, result.is_some());
+		}
+
+		// Test a small file (where probe reads whole file)
+		let path3 = Path::new("/usr/bin/ls");
+		if path3.is_file() {
+			let t0 = Instant::now();
+			let result = check_exe(path3);
+			let t = t0.elapsed();
+			println!("Small non-Godot:  {:>8.2} ms (result={:?})", t.as_secs_f64() * 1000.0, result.is_some());
+		}
 	}
 }
