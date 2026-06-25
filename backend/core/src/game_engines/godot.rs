@@ -1,14 +1,19 @@
 use std::{
 	fs,
-	io::{
-		Read,
-		Seek,
-		SeekFrom,
-	},
 	path::Path,
 };
 
 use log::error;
+use pelite::{
+	pe32::{
+		Pe as _,
+		PeFile as PeFile32,
+	},
+	pe64::{
+		Pe as _,
+		PeFile as PeFile64,
+	},
+};
 
 use super::game_engine::EngineVersionNumbers;
 use crate::{
@@ -67,120 +72,11 @@ fn parse_version(version_string: &str) -> Option<EngineVersion> {
 	})
 }
 
-/// Reads and scans the exe, returning the version if it's a Godot executable.
-///
-/// Uses a two-tier approach:
-/// 1. Fast probe: read 1 MB at ~80% of the file, check for "Godot" or ".stable".
-///    For non-Godot games this takes ~1ms and returns early.
-/// 2. Full scan: only if the probe hits, read the last 50 MB and extract the version.
-pub fn check_exe(exe_path: &Path) -> Option<EngineVersion> {
-	let metadata = match fs::metadata(exe_path) {
-		Ok(m) => m,
-		Err(err) => {
-			error!("Failed to stat `{}`. Error: {}", exe_path.display(), err);
-			return None;
-		}
-	};
-
-	let file_len = metadata.len();
-	if file_len == 0 {
-		return None;
-	}
-
-	// Tier 1: fast probe at ~80% of the file (where version strings reside).
-	if !probe_for_godot(exe_path, file_len) {
-		// If seek-based probe fails, fall back to checking if the file
-		// contains "Godot" anywhere by reading the tail.
-		if let Some(bytes) = read_tail(exe_path, file_len, 50 * 1024 * 1024) {
-			if !contains_marker(&bytes) {
-				return None;
-			}
-		} else {
-			return None;
-		}
-	}
-
-	// Tier 2: full version extraction.
-	let bytes = read_tail(exe_path, file_len, 50 * 1024 * 1024)?;
-	scan_for_version(&bytes)
-}
-
-/// Read 1 MB at 80% offset and check for Godot markers.
-fn probe_for_godot(exe_path: &Path, file_len: u64) -> bool {
-	let probe_size = 1 * 1024 * 1024; // 1 MB
-	let offset = (file_len * 80 / 100).saturating_sub(probe_size as u64 / 2);
-
-	let mut file = match fs::File::open(exe_path) {
-		Ok(f) => f,
-		Err(_) => return true, // Can't read — assume it might be Godot, let Tier 2 decide.
-	};
-
-	if file.seek(SeekFrom::Start(offset)).is_err() {
-		return true; // Can't seek — assume it might be Godot.
-	}
-
-	let mut buf = vec![0u8; probe_size];
-	let n = file.read(&mut buf).unwrap_or(0);
-	if n == 0 {
-		return true; // Can't read — assume it might be Godot.
-	}
-
-	contains_marker(&buf[..n])
-}
-
-/// Fast scan for Godot-identifying markers in a byte slice.
-fn contains_marker(bytes: &[u8]) -> bool {
-	let len = bytes.len();
-	let mut i = 0;
-	// Check for "Godot" (5 bytes, case-sensitive).
-	while i + 5 <= len {
-		if bytes[i] == b'G'
-			&& bytes[i + 1] == b'o'
-			&& bytes[i + 2] == b'd'
-			&& bytes[i + 3] == b'o'
-			&& bytes[i + 4] == b't'
-		{
-			return true;
-		}
-		i += 1;
-	}
-	// Check for ".stable" (7 bytes, Godot 3.x marker).
-	i = 0;
-	while i + 7 <= len {
-		if bytes[i] == b'.'
-			&& bytes[i + 1] == b's'
-			&& bytes[i + 2] == b't'
-			&& bytes[i + 3] == b'a'
-			&& bytes[i + 4] == b'b'
-			&& bytes[i + 5] == b'l'
-			&& bytes[i + 6] == b'e'
-		{
-			return true;
-		}
-		i += 1;
-	}
-	false
-}
-
-fn read_tail(exe_path: &Path, file_len: u64, max_size: u64) -> Option<Vec<u8>> {
-	let tail_size = max_size.min(file_len);
-	let start_offset = file_len - tail_size;
-
-	let mut file = fs::File::open(exe_path).ok()?;
-	if file.seek(SeekFrom::Start(start_offset)).is_err() {
-		// Fall back to full read.
-		return fs::read(exe_path).ok();
-	}
-
-	let mut bytes = vec![0u8; tail_size as usize];
-	file.read_exact(&mut bytes).ok()?;
-	Some(bytes)
-}
-
+/// Scan a byte slice for Godot version strings.
 fn scan_for_version(bytes: &[u8]) -> Option<EngineVersion> {
 	let len = bytes.len();
 
-	// Scan for Godot 4.x: "Godot Engine v" or "Godot v".
+	// Godot 4.x: "Godot Engine v" or "Godot v"
 	let mut i = 0;
 	while i + 14 <= len {
 		if bytes[i] != b'G' {
@@ -221,13 +117,21 @@ fn scan_for_version(bytes: &[u8]) -> Option<EngineVersion> {
 		i += 1;
 	}
 
-	// Scan for Godot 3.x version markers.
-	for marker in &[&b".stable"[..], b".beta", b".alpha", b".rc", b".dev"] {
+	// Godot 3.x: version markers like "3.3.1.stable" — require a digit
+	// before the marker to avoid false positives like "alphaTest".
+	for marker in &[&b"0.stable"[..], b".stable", b".beta", b".alpha", b".rc", b".dev"] {
 		let mut i = 0;
 		let m = marker.len();
 		let first = marker[0];
+		// For markers starting with '.', require a digit immediately before.
+		let need_digit_before = first == b'.';
 		while i + m <= len {
 			if bytes[i] != first {
+				i += 1;
+				continue;
+			}
+			// Require a digit before e.g. ".stable", ".alpha", etc.
+			if need_digit_before && (i == 0 || !bytes[i - 1].is_ascii_digit()) {
 				i += 1;
 				continue;
 			}
@@ -250,6 +154,100 @@ fn scan_for_version(bytes: &[u8]) -> Option<EngineVersion> {
 		}
 	}
 
+	None
+}
+
+/// Detects and versions a Godot executable.
+///
+/// Pipeline:
+/// 1. Parse PE header (PE32+ then PE32).
+/// 2. Fast filter: check export DLL name for "godot". If not found → None.
+/// 3. Scan only the `.rdata` section for version strings.
+/// 4. Falls back to full-file scan for non-PE files.
+pub fn check_exe(exe_path: &Path) -> Option<EngineVersion> {
+	let file_bytes = match fs::read(exe_path) {
+		Ok(b) => b,
+		Err(err) => {
+			error!(
+				"Failed to read exe `{}`. Error: {}",
+				exe_path.display(),
+				err
+			);
+			return None;
+		}
+	};
+
+	#[allow(
+		clippy::disallowed_methods,
+		reason = "Errors from PeFile parsing are expected."
+	)]
+	{
+		if let Ok(pe) = PeFile64::from_bytes(&file_bytes) {
+			return check_pe64(&pe, &file_bytes);
+		}
+		if let Ok(pe) = PeFile32::from_bytes(&file_bytes) {
+			return check_pe32(&pe, &file_bytes);
+		}
+	}
+
+	None
+}
+
+fn check_pe64(pe: &PeFile64<'_>, _file_bytes: &[u8]) -> Option<EngineVersion> {
+	#[allow(clippy::disallowed_methods, reason = "expected")]
+	if let Ok(exports) = pe.exports() {
+		if let Ok(name) = exports.dll_name() {
+			let bytes = name.as_ref();
+			if !(bytes.len() >= 5
+				&& (bytes[0] == b'g' || bytes[0] == b'G')
+				&& bytes[1..5].eq_ignore_ascii_case(b"odot"))
+			{
+				return None;
+			}
+		} else {
+			return None;
+		}
+	} else {
+		return None;
+	}
+
+	for sec in pe.section_headers() {
+		let name = &sec.Name;
+		if name[0] == b'.' && name[1] == b'r' && name[2] == b'd'
+			&& name[3] == b'a' && name[4] == b't' && name[5] == b'a'
+		{
+			return pe.get_section_bytes(&sec).ok().and_then(|rdata| scan_for_version(rdata));
+		}
+	}
+	None
+}
+
+fn check_pe32(pe: &PeFile32<'_>, _file_bytes: &[u8]) -> Option<EngineVersion> {
+	#[allow(clippy::disallowed_methods, reason = "expected")]
+	if let Ok(exports) = pe.exports() {
+		if let Ok(name) = exports.dll_name() {
+			let bytes = name.as_ref();
+			if !(bytes.len() >= 5
+				&& (bytes[0] == b'g' || bytes[0] == b'G')
+				&& bytes[1..5].eq_ignore_ascii_case(b"odot"))
+			{
+				return None;
+			}
+		} else {
+			return None;
+		}
+	} else {
+		return None;
+	}
+
+	for sec in pe.section_headers() {
+		let name = &sec.Name;
+		if name[0] == b'.' && name[1] == b'r' && name[2] == b'd'
+			&& name[3] == b'a' && name[4] == b't' && name[5] == b'a'
+		{
+			return pe.get_section_bytes(&sec).ok().and_then(|rdata| scan_for_version(rdata));
+		}
+	}
 	None
 }
 
@@ -300,6 +298,15 @@ mod tests {
 	}
 
 	#[test]
+	fn test_unity_not_godot() {
+		let path = Path::new("/mnt/big_nvme/Unity/Hub/Editor/UnitySetup-4.6.1/Unity.exe");
+		if !path.is_file() {
+			return;
+		}
+		assert!(check_exe(path).is_none(), "Unity exe should NOT be detected as Godot");
+	}
+
+	#[test]
 	fn bench_timing() {
 		use std::fs;
 
@@ -316,22 +323,21 @@ mod tests {
 		let t = t0.elapsed();
 		println!("Godot 4.x check: {:>8.2} ms", t.as_secs_f64() * 1000.0);
 
-		// Test a non-Godot file
 		let path2 = Path::new("/usr/bin/bash");
 		if path2.is_file() {
 			let t0 = Instant::now();
 			let result = check_exe(path2);
 			let t = t0.elapsed();
-			println!("Non-Godot check: {:>8.2} ms (result={:?})", t.as_secs_f64() * 1000.0, result.is_some());
+			println!("Non-PE check:     {:>8.2} ms (result={:?})", t.as_secs_f64() * 1000.0, result.is_some());
 		}
 
-		// Test a small file (where probe reads whole file)
-		let path3 = Path::new("/usr/bin/ls");
+		// PE32 non-Godot file (Unity) — should be very fast.
+		let path3 = Path::new("/mnt/big_nvme/Unity/Hub/Editor/UnitySetup-4.6.1/Unity.exe");
 		if path3.is_file() {
 			let t0 = Instant::now();
 			let result = check_exe(path3);
 			let t = t0.elapsed();
-			println!("Small non-Godot:  {:>8.2} ms (result={:?})", t.as_secs_f64() * 1000.0, result.is_some());
+			println!("PE32 non-Godot:   {:>8.2} ms (result={:?})", t.as_secs_f64() * 1000.0, result.is_some());
 		}
 	}
 }
