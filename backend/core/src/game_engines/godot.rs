@@ -132,14 +132,11 @@ fn check_pe32(pe: &PeFile32<'_>, mmap: &[u8]) -> Option<EngineVersion> {
 }
 
 fn check_exe(exe_path: &Path) -> Option<EngineVersion> {
-	let file = std::fs::File::open(exe_path).ok()?;
-
 	// Memory-map the file. The OS loads pages lazily, so only the headers
 	// (a few KB) are actually fetched from disk for the fast filter. If the
 	// game turns out to be a Godot game, the .rdata pages are loaded on
 	// demand during the section scan.
-	let mmap = unsafe { memmap2::Mmap::map(&file).ok()? };
-	drop(file);
+	let mmap = crate::game_engines::mmap_safe::map_readonly(exe_path).ok()?;
 
 	#[allow(
 		clippy::disallowed_methods,

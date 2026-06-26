@@ -150,29 +150,14 @@ fn get_version_from_build_version_file(exe_path: &Path) -> Option<EngineVersion>
 }
 
 fn get_version_from_exe_path(exe_path: &Path) -> Option<EngineVersion> {
-	let file = match std::fs::File::open(exe_path) {
-		Ok(f) => f,
-		Err(err) => {
+	let mmap = crate::game_engines::mmap_safe::map_readonly(exe_path)
+		.inspect_err(|err| {
 			error!(
-				"Failed to open exe `{}`. Error: {}",
-				exe_path.display(),
-				err
+				"Failed to open or memory-map `{}`: {err}",
+				exe_path.display()
 			);
-			return None;
-		}
-	};
-	let mmap = match unsafe { memmap2::Mmap::map(&file) } {
-		Ok(m) => m,
-		Err(err) => {
-			error!(
-				"Failed to memory-map exe `{}`. Error: {}",
-				exe_path.display(),
-				err
-			);
-			return None;
-		}
-	};
-	drop(file);
+		})
+		.ok()?;
 
 	// Try metadata first (only touches .rsrc section pages via demand paging)
 	if let Some(version) = try_get_version_from_metadata(&mmap) {
