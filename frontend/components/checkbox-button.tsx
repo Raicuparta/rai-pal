@@ -41,14 +41,6 @@ function CheckboxButtonInternal(
 					justify="start"
 					flex={1}
 					px="xs"
-					// leftSection={
-					// 	<Checkbox
-					// 		className={styles.buttonCheckbox}
-					// 		tabIndex={-1}
-					// 		readOnly
-					// 		checked={checked}
-					// 	/>
-					// }
 					onClick={(e) => {
 						e.stopPropagation();
 						onExclusiveClick();

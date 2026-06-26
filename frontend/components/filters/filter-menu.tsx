@@ -9,7 +9,7 @@ import {
 } from "./filter-select";
 import { SearchInput } from "@components/search-input";
 import { GamesFilter, GamesQuery } from "@api/bindings";
-import { useDataQuery } from "@hooks/use-data-query";
+import { defaultQuery, useDataQuery } from "@hooks/use-data-query";
 import { useLocalization } from "@hooks/use-localization";
 import { LocalizationKey } from "@localizations/localizations";
 
@@ -159,7 +159,11 @@ export function FilterMenu() {
 				<Button.Group>
 					{active && (
 						<Button
-							onClick={() => setDataQuery(null)}
+							onClick={() =>
+								setDataQuery({
+									filter: defaultQuery.filter,
+								})
+							}
 							px={5}
 						>
 							<IconX />

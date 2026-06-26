@@ -4,6 +4,7 @@ import {
 	Group,
 	InputLabel,
 	Stack,
+	Text,
 	ThemeIcon,
 } from "@mantine/core";
 import { GamesFilter } from "@api/bindings";
@@ -34,7 +35,6 @@ export function FilterSelect<TFilterKey extends FilterKey>({
 	currentValues,
 	onChange,
 }: Props<TFilterKey>) {
-	const tMenu = useLocalization("filterMenu");
 	const tProperty = useLocalization("filterProperty");
 	const tValue = useLocalization("filterValue");
 	const tValueNote = useLocalization("filterValueNote");
@@ -100,9 +100,7 @@ export function FilterSelect<TFilterKey extends FilterKey>({
 							<IconRestore fontSize={13} />
 						</ActionIcon>
 					)}
-					<InputLabel>
-						{tProperty(filterDetails[id].localizationKey)}
-					</InputLabel>
+					<Text fz="md">{tProperty(filterDetails[id].localizationKey)}</Text>
 				</Group>
 				<Stack
 					gap={2}
