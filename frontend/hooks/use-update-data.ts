@@ -1,7 +1,12 @@
 import { useCallback, useEffect, useRef } from "react";
 import { useSetAtom } from "jotai";
 import { commands, PROVIDER_IDS } from "@api/bindings";
-import { loadingTasksAtom, gameDataAtom, modsAtom } from "./use-data";
+import {
+	loadingTasksAtom,
+	gameDataAtom,
+	modsAtom,
+	gameDataVersionAtom,
+} from "./use-data";
 import { showAppNotification } from "@components/app-notifications";
 import { useAppEvent } from "./use-app-event";
 import { useThrottledCallback } from "@mantine/hooks";
@@ -23,6 +28,8 @@ export function useUpdateData(executeOnMount = false) {
 
 	const updateMods = useCommandAtomData(commands.getMods, modsAtom);
 
+	const setGameDataVersion = useSetAtom(gameDataVersionAtom);
+
 	useEffect(() => {
 		if (!executeOnMount) return;
 		updateGames();
@@ -31,6 +38,7 @@ export function useUpdateData(executeOnMount = false) {
 
 	const throttledUpdateData = useThrottledCallback(() => {
 		updateGames();
+		setGameDataVersion((v) => v + 1);
 		updateMods();
 	}, 1000);
 
