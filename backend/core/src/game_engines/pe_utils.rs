@@ -41,10 +41,16 @@ pub fn try_read_export_dll_name<'a>(
 
 	let export_offset = rva_to_file_offset(sections, export_rva)?;
 
+	// Read just the Name field from the export directory struct
 	let exp_dir_end = export_offset.checked_add(std::mem::size_of::<IMAGE_EXPORT_DIRECTORY>())?;
 	let exp_dir_bytes = file_bytes.get(export_offset..exp_dir_end)?;
-	let exp_dir = unsafe { &*(exp_dir_bytes.as_ptr() as *const IMAGE_EXPORT_DIRECTORY) };
+	let name_offset_in_struct = std::mem::offset_of!(IMAGE_EXPORT_DIRECTORY, Name);
+	let name_rva_bytes = exp_dir_bytes.get(name_offset_in_struct..name_offset_in_struct + 4)?;
+	let Ok(name_rva_bytes): Result<[u8; 4], _> = name_rva_bytes.try_into() else {
+		return None;
+	};
+	let name_rva = u32::from_le_bytes(name_rva_bytes);
 
-	let name_offset = rva_to_file_offset(sections, exp_dir.Name)?;
+	let name_offset = rva_to_file_offset(sections, name_rva)?;
 	read_cstr(file_bytes, name_offset)
 }
