@@ -133,10 +133,10 @@ fn check_pe64(pe: &PeFile64<'_>, file_bytes: &[u8]) -> Option<EngineVersion> {
 	let data_dir = pe.data_directory();
 
 	// Fast filter: if we can read the export DLL name and it doesn't start with "godot",
-	// skip the expensive section scan.
-	if let Some(name) = pe_utils::try_read_export_dll_name(sections, data_dir, file_bytes)
-		&& !name.to_ascii_lowercase().starts_with("godot")
-	{
+	// skip the expensive section scan. If we can't read it at all, also skip — it's not
+	// a Godot game.
+	let name = pe_utils::try_read_export_dll_name(sections, data_dir, file_bytes)?;
+	if !name.to_ascii_lowercase().starts_with("godot") {
 		return None;
 	}
 
@@ -153,9 +153,8 @@ fn check_pe32(pe: &PeFile32<'_>, file_bytes: &[u8]) -> Option<EngineVersion> {
 	let sections = pe.section_headers();
 	let data_dir = pe.data_directory();
 
-	if let Some(name) = pe_utils::try_read_export_dll_name(sections, data_dir, file_bytes)
-		&& !name.to_ascii_lowercase().starts_with("godot")
-	{
+	let name = pe_utils::try_read_export_dll_name(sections, data_dir, file_bytes)?;
+	if !name.to_ascii_lowercase().starts_with("godot") {
 		return None;
 	}
 

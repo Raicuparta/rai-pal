@@ -20,6 +20,7 @@ use rai_pal_core::windows;
 use rai_pal_core::{
 	analytics,
 	app_paths,
+	debug,
 	game::DbGame,
 	game_providers::{
 		game_provider::{
@@ -434,6 +435,8 @@ async fn refresh_games(handle: AppHandle, provider_id: GameProviderId) -> Result
 	let state = handle.app_state();
 	provider_id.insert_games(&state.database)?;
 	state.database.refresh_installed_mods()?;
+
+	debug::print_game_process_timing_report();
 
 	Ok(())
 }
