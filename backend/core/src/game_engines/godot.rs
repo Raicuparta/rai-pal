@@ -1,20 +1,6 @@
-use std::{
-	fs,
-	path::Path,
-};
+use std::path::Path;
 
 use lazy_regex::regex_find;
-use log::error;
-use pelite::{
-	pe32::{
-		Pe as _,
-		PeFile as PeFile32,
-	},
-	pe64::{
-		Pe as _,
-		PeFile as PeFile64,
-	},
-};
 
 use super::{
 	game_engine::{
@@ -100,71 +86,20 @@ fn scan_for_version(bytes: &[u8]) -> Option<EngineVersion> {
 }
 
 fn check_exe(exe_path: &Path) -> Option<EngineVersion> {
-	let file_bytes = match fs::read(exe_path) {
-		Ok(b) => b,
-		Err(err) => {
-			error!(
-				"Failed to read exe `{}`. Error: {}",
-				exe_path.display(),
-				err
-			);
-			return None;
-		}
-	};
+	// Read only the PE headers and export DLL name from disk (a few KB).
+	let mut file = std::fs::File::open(exe_path).ok()?;
+	let metadata = pe_utils::read_pe_metadata(&mut file)?;
 
-	#[allow(
-		clippy::disallowed_methods,
-		reason = "Errors from PeFile parsing are expected."
-	)]
-	{
-		if let Ok(pe) = PeFile64::from_bytes(&file_bytes) {
-			return check_pe64(&pe, &file_bytes);
-		}
-		if let Ok(pe) = PeFile32::from_bytes(&file_bytes) {
-			return check_pe32(&pe, &file_bytes);
-		}
-	}
-
-	None
-}
-
-fn check_pe64(pe: &PeFile64<'_>, file_bytes: &[u8]) -> Option<EngineVersion> {
-	let sections = pe.section_headers();
-	let data_dir = pe.data_directory();
-
-	// Fast filter: if we can read the export DLL name and it doesn't start with "godot",
-	// skip the expensive section scan. If we can't read it at all, also skip — it's not
-	// a Godot game.
-	let name = pe_utils::try_read_export_dll_name(sections, data_dir, file_bytes)?;
-	if !name.to_ascii_lowercase().starts_with("godot") {
+	// Fast filter: not a Godot export → return early, no full file read.
+	if !metadata.is_godot_export() {
 		return None;
 	}
 
-	if let Some(sec) = pe.section_headers().by_name(".rdata") {
-		return pe
-			.get_section_bytes(sec)
-			.ok_or_log("Failed to get PE section bytes")
-			.and_then(scan_for_version);
-	}
-	None
-}
-
-fn check_pe32(pe: &PeFile32<'_>, file_bytes: &[u8]) -> Option<EngineVersion> {
-	let sections = pe.section_headers();
-	let data_dir = pe.data_directory();
-
-	let name = pe_utils::try_read_export_dll_name(sections, data_dir, file_bytes)?;
-	if !name.to_ascii_lowercase().starts_with("godot") {
-		return None;
-	}
-
-	if let Some(sec) = pe.section_headers().by_name(".rdata") {
-		return pe
-			.get_section_bytes(sec)
-			.ok_or_log("Failed to get PE section bytes")
-			.and_then(scan_for_version);
-	}
-	None
+	// Looks like a Godot game — read only the .rdata section from the same file
+	// handle and scan it for version strings.
+	let rdata = metadata.find_section(".rdata")?;
+	let section_bytes = pe_utils::read_section_bytes(&mut file, rdata)?;
+	scan_for_version(&section_bytes)
 }
 
 pub fn process_game(game: &mut DbGame) -> bool {
