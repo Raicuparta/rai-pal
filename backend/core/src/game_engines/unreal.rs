@@ -150,24 +150,36 @@ fn get_version_from_build_version_file(exe_path: &Path) -> Option<EngineVersion>
 }
 
 fn get_version_from_exe_path(exe_path: &Path) -> Option<EngineVersion> {
-	match fs::read(exe_path) {
-		Ok(file_bytes) => {
-			// Try metadata first
-			if let Some(version) = try_get_version_from_metadata(&file_bytes) {
-				return Some(version);
-			}
-			// Then try parsing exe strings
-			get_version_from_exe_parse(&file_bytes)
-		}
+	let file = match std::fs::File::open(exe_path) {
+		Ok(f) => f,
 		Err(err) => {
 			error!(
-				"Failed to read exe `{}`. Error: {}",
+				"Failed to open exe `{}`. Error: {}",
 				exe_path.display(),
 				err
 			);
-			None
+			return None;
 		}
+	};
+	let mmap = match unsafe { memmap2::Mmap::map(&file) } {
+		Ok(m) => m,
+		Err(err) => {
+			error!(
+				"Failed to memory-map exe `{}`. Error: {}",
+				exe_path.display(),
+				err
+			);
+			return None;
+		}
+	};
+	drop(file);
+
+	// Try metadata first (only touches .rsrc section pages via demand paging)
+	if let Some(version) = try_get_version_from_metadata(&mmap) {
+		return Some(version);
 	}
+	// Then try parsing exe strings (regex scans lazily via mmap)
+	get_version_from_exe_parse(&mmap)
 }
 
 fn parse_version(string: &str) -> Option<EngineVersion> {
