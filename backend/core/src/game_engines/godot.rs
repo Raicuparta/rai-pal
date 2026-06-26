@@ -3,6 +3,7 @@ use std::{
 	path::Path,
 };
 
+use lazy_regex::regex_find;
 use log::error;
 use pelite::{
 	pe32::{
@@ -77,90 +78,19 @@ fn parse_version(version_string: &str) -> Option<EngineVersion> {
 
 /// Scan a byte slice for Godot version strings.
 fn scan_for_version(bytes: &[u8]) -> Option<EngineVersion> {
-	let len = bytes.len();
-
 	// Godot 4.x: "Godot Engine v" or "Godot v"
-	let mut i = 0;
-	while i + 14 <= len {
-		if bytes[i] != b'G' {
-			i += 1;
-			continue;
-		}
-		if bytes[i + 1] != b'o'
-			|| bytes[i + 2] != b'd'
-			|| bytes[i + 3] != b'o'
-			|| bytes[i + 4] != b't'
-		{
-			i += 1;
-			continue;
-		}
-		if bytes[i + 5] != b' ' {
-			i += 1;
-			continue;
-		}
-		let b6 = bytes[i + 6];
-		if (b6 == b'e' || b6 == b'E')
-			&& (bytes[i + 7] == b'n' || bytes[i + 7] == b'N')
-			&& (bytes[i + 8] == b'g' || bytes[i + 8] == b'G')
-			&& (bytes[i + 9] == b'i' || bytes[i + 9] == b'I')
-			&& (bytes[i + 10] == b'n' || bytes[i + 10] == b'N')
-			&& (bytes[i + 11] == b'e' || bytes[i + 11] == b'E')
-			&& bytes[i + 12] == b' '
-			&& (bytes[i + 13] == b'v' || bytes[i + 13] == b'V')
-		{
-			let end = (i + 80).min(len);
-			let s = String::from_utf8_lossy(&bytes[i..end]);
-			return parse_version(&s);
-		}
-		if b6 == b'v' || b6 == b'V' {
-			let end = (i + 60).min(len);
-			let s = String::from_utf8_lossy(&bytes[i..end]);
-			return parse_version(&s);
-		}
-		i += 1;
+	if let Some(m) = regex_find!(r#"(?-u)(?i)Godot (?:Engine )?v\d[-.\d]*"#B, bytes) {
+		return parse_version(&String::from_utf8_lossy(m));
 	}
 
 	// Godot 3.x: version markers like "3.3.1.stable" — require a digit
-	// before the marker to avoid false positives like "alphaTest".
-	for marker in &[
-		&b"0.stable"[..],
-		b".stable",
-		b".beta",
-		b".alpha",
-		b".rc",
-		b".dev",
-	] {
-		let mut i = 0;
-		let m = marker.len();
-		let first = marker[0];
-		// For markers starting with '.', require a digit immediately before.
-		let need_digit_before = first == b'.';
-		while i + m <= len {
-			if bytes[i] != first {
-				i += 1;
-				continue;
-			}
-			// Require a digit before e.g. ".stable", ".alpha", etc.
-			if need_digit_before && (i == 0 || !bytes[i - 1].is_ascii_digit()) {
-				i += 1;
-				continue;
-			}
-			let mut matched = true;
-			for j in 1..m {
-				if bytes[i + j] != marker[j] {
-					matched = false;
-					break;
-				}
-			}
-			if matched {
-				let start = i.saturating_sub(20);
-				let end = (i + m + 20).min(len);
-				let s = String::from_utf8_lossy(&bytes[start..end]);
-				if let Some(ver) = parse_version(&s) {
-					return Some(ver);
-				}
-			}
-			i += 1;
+	// to anchor the match and avoid false positives like "alphaTest".
+	if let Some(m) = regex_find!(
+		r#"(?-u)(?i)\d[-.\d]*(?:\.stable|\.beta|\.alpha|\.rc|\.dev)"#B,
+		bytes
+	) {
+		if let Some(ver) = parse_version(&String::from_utf8_lossy(m)) {
+			return Some(ver);
 		}
 	}
 
@@ -211,28 +141,16 @@ fn check_pe64(pe: &PeFile64<'_>, file_bytes: &[u8]) -> Option<EngineVersion> {
 	// Fast filter: if we can read the export DLL name and it doesn't start with "godot",
 	// skip the expensive section scan.
 	if let Some(name) = pe_utils::try_read_export_dll_name(sections, data_dir, file_bytes) {
-		let name_bytes = name.as_bytes();
-		if !(name_bytes.len() >= 5
-			&& (name_bytes[0] == b'g' || name_bytes[0] == b'G')
-			&& name_bytes[1..5].eq_ignore_ascii_case(b"odot"))
-		{
+		if !name.to_ascii_lowercase().starts_with("godot") {
 			return None;
 		}
 	}
 
-	for sec in pe.section_headers() {
-		if sec.Name[0] == b'.'
-			&& sec.Name[1] == b'r'
-			&& sec.Name[2] == b'd'
-			&& sec.Name[3] == b'a'
-			&& sec.Name[4] == b't'
-			&& sec.Name[5] == b'a'
-		{
-			return pe
-				.get_section_bytes(&sec)
-				.ok()
-				.and_then(|rdata| scan_for_version(rdata));
-		}
+	if let Some(sec) = pe.section_headers().by_name(".rdata") {
+		return pe
+			.get_section_bytes(sec)
+			.ok()
+			.and_then(|rdata| scan_for_version(rdata));
 	}
 	None
 }
@@ -242,29 +160,16 @@ fn check_pe32(pe: &PeFile32<'_>, file_bytes: &[u8]) -> Option<EngineVersion> {
 	let data_dir = pe.data_directory();
 
 	if let Some(name) = pe_utils::try_read_export_dll_name(sections, data_dir, file_bytes) {
-		let name_bytes = name.as_bytes();
-		if !(name_bytes.len() >= 5
-			&& (name_bytes[0] == b'g' || name_bytes[0] == b'G')
-			&& name_bytes[1..5].eq_ignore_ascii_case(b"odot"))
-		{
+		if !name.to_ascii_lowercase().starts_with("godot") {
 			return None;
 		}
 	}
 
-	for sec in pe.section_headers() {
-		let name = &sec.Name;
-		if name[0] == b'.'
-			&& name[1] == b'r'
-			&& name[2] == b'd'
-			&& name[3] == b'a'
-			&& name[4] == b't'
-			&& name[5] == b'a'
-		{
-			return pe
-				.get_section_bytes(&sec)
-				.ok()
-				.and_then(|rdata| scan_for_version(rdata));
-		}
+	if let Some(sec) = pe.section_headers().by_name(".rdata") {
+		return pe
+			.get_section_bytes(sec)
+			.ok()
+			.and_then(|rdata| scan_for_version(rdata));
 	}
 	None
 }
