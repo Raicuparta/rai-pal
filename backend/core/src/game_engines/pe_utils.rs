@@ -7,25 +7,27 @@ use pelite::{
 	pe64::headers::SectionHeaders,
 };
 
-/// Resolve an RVA to a file offset using VirtualSize-based bounds (not SizeOfRawData).
-/// This avoids pelite's `cmp::max(VirtualSize, SizeOfRawData)` which incorrectly maps
-/// RVAs into sections like Godot's `pck` section that have tiny VirtualSize but huge raw data.
-pub fn rva_to_file_offset(sections: &SectionHeaders, rva: u32) -> Option<usize> {
+use crate::result::LogErrExt;
+
+// Resolve an RVA to a file offset using VirtualSize-based bounds (not SizeOfRawData).
+// This avoids pelite's `cmp::max(VirtualSize, SizeOfRawData)` which incorrectly maps
+// RVAs into sections like Godot's `pck` section that have tiny VirtualSize but huge raw data.
+fn rva_to_file_offset(sections: &SectionHeaders, rva: u32) -> Option<usize> {
 	let sec = sections.by_rva(rva)?;
 	let offset_within = rva.checked_sub(sec.VirtualAddress)?;
 	let file_offset = sec.PointerToRawData as usize + offset_within as usize;
 	Some(file_offset)
 }
 
-/// Read a null-terminated string from `file_bytes` starting at `offset`.
-pub fn read_cstr(file_bytes: &[u8], offset: usize) -> Option<&str> {
+// Read a null-terminated string from `file_bytes` starting at `offset`.
+fn read_cstr(file_bytes: &[u8], offset: usize) -> Option<&str> {
 	let remaining = file_bytes.get(offset..)?;
 	let len = remaining.iter().position(|&b| b == 0)?;
-	std::str::from_utf8(&remaining[..len]).ok()
+	std::str::from_utf8(&remaining[..len]).ok_or_log("Failed to read cstr")
 }
 
-/// Try to read the export DLL name using correct RVA-to-file-offset mapping.
-/// Returns None if the export directory doesn't exist or can't be read.
+// Try to read the export DLL name using correct RVA-to-file-offset mapping.
+// Returns None if the export directory doesn't exist or can't be read.
 pub fn try_read_export_dll_name<'a>(
 	sections: &SectionHeaders,
 	data_dir: &[IMAGE_DATA_DIRECTORY],

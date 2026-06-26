@@ -1,12 +1,4 @@
-import {
-	ActionIcon,
-	Button,
-	Group,
-	InputLabel,
-	Stack,
-	Text,
-	ThemeIcon,
-} from "@mantine/core";
+import { ActionIcon, Group, Stack, Text, ThemeIcon } from "@mantine/core";
 import { GamesFilter } from "@api/bindings";
 import { IconRestore } from "@tabler/icons-react";
 import { useLocalization } from "@hooks/use-localization";

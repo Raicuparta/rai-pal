@@ -1,14 +1,6 @@
-import {
-	ActionIcon,
-	Button,
-	ButtonProps,
-	Checkbox,
-	Group,
-	Tooltip,
-} from "@mantine/core";
+import { ActionIcon, Button, ButtonProps, Group, Tooltip } from "@mantine/core";
 import { forwardRef } from "react";
-import styles from "./components.module.css";
-import { IconCheck, IconCircleDotFilled } from "@tabler/icons-react";
+import { IconCheck } from "@tabler/icons-react";
 
 interface Props extends ButtonProps {
 	readonly checked: boolean;

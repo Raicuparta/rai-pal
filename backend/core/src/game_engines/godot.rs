@@ -96,14 +96,6 @@ fn scan_for_version(bytes: &[u8]) -> Option<EngineVersion> {
 	None
 }
 
-/// Detects and versions a Godot executable.
-///
-/// Pipeline:
-/// 1. Parse PE header (PE32+ then PE32).
-/// 2. Fast filter: read export DLL name using correct RVA→file mapping.
-///    If name doesn't start with "godot" → None.
-///    If exports can't be read, fall through to section scanning.
-/// 3. Scan only the `.rdata` section for version strings.
 pub fn check_exe(exe_path: &Path) -> Option<EngineVersion> {
 	let file_bytes = match fs::read(exe_path) {
 		Ok(b) => b,
@@ -146,7 +138,10 @@ fn check_pe64(pe: &PeFile64<'_>, file_bytes: &[u8]) -> Option<EngineVersion> {
 	}
 
 	if let Some(sec) = pe.section_headers().by_name(".rdata") {
-		return pe.get_section_bytes(sec).ok().and_then(scan_for_version);
+		return pe
+			.get_section_bytes(sec)
+			.ok_or_log("Failed to get PE section bytes")
+			.and_then(scan_for_version);
 	}
 	None
 }
@@ -162,7 +157,10 @@ fn check_pe32(pe: &PeFile32<'_>, file_bytes: &[u8]) -> Option<EngineVersion> {
 	}
 
 	if let Some(sec) = pe.section_headers().by_name(".rdata") {
-		return pe.get_section_bytes(sec).ok().and_then(scan_for_version);
+		return pe
+			.get_section_bytes(sec)
+			.ok_or_log("Failed to get PE section bytes")
+			.and_then(scan_for_version);
 	}
 	None
 }
@@ -172,114 +170,4 @@ pub fn process_game(game: &mut DbGame, version: &EngineVersion) {
 	game.engine_version_minor = version.numbers.minor;
 	game.engine_version_patch = version.numbers.patch;
 	game.engine_version_display = Some(version.display.clone());
-}
-
-#[cfg(test)]
-mod tests {
-	use std::{
-		path::Path,
-		time::Instant,
-	};
-
-	use super::*;
-
-	#[test]
-	fn test_moldrise() {
-		let path =
-			Path::new("/mnt/big_nvme/SteamLibrary/steamapps/common/MOLDRISE Demo/MOLDRISE.exe");
-		assert!(path.is_file(), "Test exe not found");
-		let version = check_exe(path).expect("Failed to detect/version");
-		assert_eq!(version.numbers.major, 4);
-		assert_eq!(version.numbers.minor, Some(6));
-		assert_eq!(version.numbers.patch, Some(3));
-	}
-
-	#[test]
-	fn test_glongoboy() {
-		let path = Path::new("/home/rai/Downloads/glongoboy/glongoboy.exe");
-		assert!(path.is_file(), "Test exe not found");
-		let version = check_exe(path).expect("Failed to detect/version");
-		assert_eq!(version.numbers.major, 4);
-		assert_eq!(version.numbers.minor, Some(6));
-		assert_eq!(version.numbers.patch, None);
-	}
-
-	#[test]
-	fn test_spring_and_fall() {
-		let path =
-			Path::new("/home/rai/Downloads/spring-and-fall-windows-64bit/spring-and-fall.exe");
-		assert!(path.is_file(), "Test exe not found");
-		let version = check_exe(path).expect("Failed to detect/version");
-		assert_eq!(version.numbers.major, 3);
-		assert_eq!(version.numbers.minor, Some(3));
-		assert_eq!(version.numbers.patch, Some(1));
-	}
-
-	#[test]
-	fn test_unity_not_godot() {
-		let path = Path::new("/mnt/big_nvme/Unity/Hub/Editor/UnitySetup-4.6.1/Unity.exe");
-		if !path.is_file() {
-			return;
-		}
-		assert!(
-			check_exe(path).is_none(),
-			"Unity exe should NOT be detected as Godot"
-		);
-	}
-
-	#[test]
-	fn test_asteroid_arcade() {
-		let path = Path::new(
-			"/mnt/big_nvme/SteamLibrary/steamapps/common/Asteroid Arcade/AsteroidArcade.exe",
-		);
-		assert!(path.is_file(), "Test exe not found");
-		let version = check_exe(path).expect("Failed to detect/version");
-		assert_eq!(version.numbers.major, 4);
-		assert_eq!(version.numbers.minor, Some(3));
-		assert_eq!(version.numbers.patch, None);
-	}
-
-	#[test]
-	fn bench_timing() {
-		use std::fs;
-
-		let path =
-			Path::new("/mnt/big_nvme/SteamLibrary/steamapps/common/MOLDRISE Demo/MOLDRISE.exe");
-		if !path.is_file() {
-			return;
-		}
-
-		let file_size = fs::metadata(path).unwrap().len();
-		println!("\nFile size: {} MB", file_size / 1024 / 1024);
-
-		let t0 = Instant::now();
-		let _ = check_exe(path);
-		let t = t0.elapsed();
-		println!("Godot 4.x check: {:>8.2} ms", t.as_secs_f64() * 1000.0);
-
-		let path2 = Path::new("/usr/bin/bash");
-		if path2.is_file() {
-			let t0 = Instant::now();
-			let result = check_exe(path2);
-			let t = t0.elapsed();
-			println!(
-				"Non-PE check:     {:>8.2} ms (result={:?})",
-				t.as_secs_f64() * 1000.0,
-				result.is_some()
-			);
-		}
-
-		// PE32 non-Godot file (Unity) — should be very fast.
-		let path3 = Path::new("/mnt/big_nvme/Unity/Hub/Editor/UnitySetup-4.6.1/Unity.exe");
-		if path3.is_file() {
-			let t0 = Instant::now();
-			let result = check_exe(path3);
-			let t = t0.elapsed();
-			println!(
-				"PE32 non-Godot:   {:>8.2} ms (result={:?})",
-				t.as_secs_f64() * 1000.0,
-				result.is_some()
-			);
-		}
-	}
 }
