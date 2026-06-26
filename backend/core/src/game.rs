@@ -11,10 +11,7 @@ use crate::{
 	app_paths,
 	architecture::Architecture,
 	game_engines::{
-		game_engine::{
-			EngineBrand,
-			get_exe_engine,
-		},
+		game_engine::EngineBrand,
 		godot,
 		unity::{
 			self,
@@ -172,23 +169,11 @@ impl DbGame {
 			}
 
 			self.exe_path = Some(exe_path.normalize());
-			if let Some((brand, godot_version)) = get_exe_engine(exe_path) {
-				self.engine_brand = Some(brand);
-				match brand {
-					EngineBrand::Godot => {
-						if let Some(ref version) = godot_version {
-							godot::process_game(self, version);
-						}
-					}
-					EngineBrand::Unity => {
-						unity::process_game(self);
-					}
-					EngineBrand::Unreal => {
-						unreal::process_game(self);
-					}
-					_ => {}
-				}
-			}
+
+			// Order matters here. We're checking all sequentially, so we should leave the most expensive ones last.
+			let _ = unity::process_game(self)
+				|| unreal::process_game(self)
+				|| godot::process_game(self);
 		}
 
 		self

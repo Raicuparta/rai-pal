@@ -17,12 +17,15 @@ use pelite::{
 };
 
 use super::{
-	game_engine::EngineVersionNumbers,
+	game_engine::{
+		EngineBrand,
+		EngineVersion,
+		EngineVersionNumbers,
+	},
 	pe_utils,
 };
 use crate::{
 	game::DbGame,
-	game_engines::game_engine::EngineVersion,
 	result::LogErrExt,
 };
 
@@ -96,7 +99,7 @@ fn scan_for_version(bytes: &[u8]) -> Option<EngineVersion> {
 	None
 }
 
-pub fn check_exe(exe_path: &Path) -> Option<EngineVersion> {
+fn check_exe(exe_path: &Path) -> Option<EngineVersion> {
 	let file_bytes = match fs::read(exe_path) {
 		Ok(b) => b,
 		Err(err) => {
@@ -165,9 +168,20 @@ fn check_pe32(pe: &PeFile32<'_>, file_bytes: &[u8]) -> Option<EngineVersion> {
 	None
 }
 
-pub fn process_game(game: &mut DbGame, version: &EngineVersion) {
+pub fn process_game(game: &mut DbGame) -> bool {
+	let Some(exe_path) = game.exe_path.as_ref() else {
+		return false;
+	};
+
+	let Some(version) = check_exe(exe_path) else {
+		return false;
+	};
+
+	game.engine_brand = Some(EngineBrand::Godot);
 	game.engine_version_major = Some(version.numbers.major);
 	game.engine_version_minor = version.numbers.minor;
 	game.engine_version_patch = version.numbers.patch;
-	game.engine_version_display = Some(version.display.clone());
+	game.engine_version_display = Some(version.display);
+
+	true
 }
