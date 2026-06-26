@@ -15,7 +15,10 @@ use pelite::{
 	},
 };
 
-use super::game_engine::EngineVersionNumbers;
+use super::{
+	game_engine::EngineVersionNumbers,
+	pe_utils,
+};
 use crate::{
 	game::DbGame,
 	game_engines::game_engine::EngineVersion,
@@ -119,7 +122,14 @@ fn scan_for_version(bytes: &[u8]) -> Option<EngineVersion> {
 
 	// Godot 3.x: version markers like "3.3.1.stable" — require a digit
 	// before the marker to avoid false positives like "alphaTest".
-	for marker in &[&b"0.stable"[..], b".stable", b".beta", b".alpha", b".rc", b".dev"] {
+	for marker in &[
+		&b"0.stable"[..],
+		b".stable",
+		b".beta",
+		b".alpha",
+		b".rc",
+		b".dev",
+	] {
 		let mut i = 0;
 		let m = marker.len();
 		let first = marker[0];
@@ -161,9 +171,10 @@ fn scan_for_version(bytes: &[u8]) -> Option<EngineVersion> {
 ///
 /// Pipeline:
 /// 1. Parse PE header (PE32+ then PE32).
-/// 2. Fast filter: check export DLL name for "godot". If not found → None.
+/// 2. Fast filter: read export DLL name using correct RVA→file mapping.
+///    If name doesn't start with "godot" → None.
+///    If exports can't be read, fall through to section scanning.
 /// 3. Scan only the `.rdata` section for version strings.
-/// 4. Falls back to full-file scan for non-PE files.
 pub fn check_exe(exe_path: &Path) -> Option<EngineVersion> {
 	let file_bytes = match fs::read(exe_path) {
 		Ok(b) => b,
@@ -193,59 +204,66 @@ pub fn check_exe(exe_path: &Path) -> Option<EngineVersion> {
 	None
 }
 
-fn check_pe64(pe: &PeFile64<'_>, _file_bytes: &[u8]) -> Option<EngineVersion> {
-	#[allow(clippy::disallowed_methods, reason = "expected")]
-	if let Ok(exports) = pe.exports() {
-		if let Ok(name) = exports.dll_name() {
-			let bytes = name.as_ref();
-			if !(bytes.len() >= 5
-				&& (bytes[0] == b'g' || bytes[0] == b'G')
-				&& bytes[1..5].eq_ignore_ascii_case(b"odot"))
-			{
-				return None;
-			}
-		} else {
+fn check_pe64(pe: &PeFile64<'_>, file_bytes: &[u8]) -> Option<EngineVersion> {
+	let sections = pe.section_headers();
+	let data_dir = pe.data_directory();
+
+	// Fast filter: if we can read the export DLL name and it doesn't start with "godot",
+	// skip the expensive section scan.
+	if let Some(name) = pe_utils::try_read_export_dll_name(sections, data_dir, file_bytes) {
+		let name_bytes = name.as_bytes();
+		if !(name_bytes.len() >= 5
+			&& (name_bytes[0] == b'g' || name_bytes[0] == b'G')
+			&& name_bytes[1..5].eq_ignore_ascii_case(b"odot"))
+		{
 			return None;
 		}
-	} else {
-		return None;
 	}
 
 	for sec in pe.section_headers() {
-		let name = &sec.Name;
-		if name[0] == b'.' && name[1] == b'r' && name[2] == b'd'
-			&& name[3] == b'a' && name[4] == b't' && name[5] == b'a'
+		if sec.Name[0] == b'.'
+			&& sec.Name[1] == b'r'
+			&& sec.Name[2] == b'd'
+			&& sec.Name[3] == b'a'
+			&& sec.Name[4] == b't'
+			&& sec.Name[5] == b'a'
 		{
-			return pe.get_section_bytes(&sec).ok().and_then(|rdata| scan_for_version(rdata));
+			return pe
+				.get_section_bytes(&sec)
+				.ok()
+				.and_then(|rdata| scan_for_version(rdata));
 		}
 	}
 	None
 }
 
-fn check_pe32(pe: &PeFile32<'_>, _file_bytes: &[u8]) -> Option<EngineVersion> {
-	#[allow(clippy::disallowed_methods, reason = "expected")]
-	if let Ok(exports) = pe.exports() {
-		if let Ok(name) = exports.dll_name() {
-			let bytes = name.as_ref();
-			if !(bytes.len() >= 5
-				&& (bytes[0] == b'g' || bytes[0] == b'G')
-				&& bytes[1..5].eq_ignore_ascii_case(b"odot"))
-			{
-				return None;
-			}
-		} else {
+fn check_pe32(pe: &PeFile32<'_>, file_bytes: &[u8]) -> Option<EngineVersion> {
+	let sections = pe.section_headers();
+	let data_dir = pe.data_directory();
+
+	if let Some(name) = pe_utils::try_read_export_dll_name(sections, data_dir, file_bytes) {
+		let name_bytes = name.as_bytes();
+		if !(name_bytes.len() >= 5
+			&& (name_bytes[0] == b'g' || name_bytes[0] == b'G')
+			&& name_bytes[1..5].eq_ignore_ascii_case(b"odot"))
+		{
 			return None;
 		}
-	} else {
-		return None;
 	}
 
 	for sec in pe.section_headers() {
 		let name = &sec.Name;
-		if name[0] == b'.' && name[1] == b'r' && name[2] == b'd'
-			&& name[3] == b'a' && name[4] == b't' && name[5] == b'a'
+		if name[0] == b'.'
+			&& name[1] == b'r'
+			&& name[2] == b'd'
+			&& name[3] == b'a'
+			&& name[4] == b't'
+			&& name[5] == b'a'
 		{
-			return pe.get_section_bytes(&sec).ok().and_then(|rdata| scan_for_version(rdata));
+			return pe
+				.get_section_bytes(&sec)
+				.ok()
+				.and_then(|rdata| scan_for_version(rdata));
 		}
 	}
 	None
@@ -260,8 +278,10 @@ pub fn process_game(game: &mut DbGame, version: &EngineVersion) {
 
 #[cfg(test)]
 mod tests {
-	use std::path::Path;
-	use std::time::Instant;
+	use std::{
+		path::Path,
+		time::Instant,
+	};
 
 	use super::*;
 
@@ -303,14 +323,30 @@ mod tests {
 		if !path.is_file() {
 			return;
 		}
-		assert!(check_exe(path).is_none(), "Unity exe should NOT be detected as Godot");
+		assert!(
+			check_exe(path).is_none(),
+			"Unity exe should NOT be detected as Godot"
+		);
+	}
+
+	#[test]
+	fn test_asteroid_arcade() {
+		let path = Path::new(
+			"/mnt/big_nvme/SteamLibrary/steamapps/common/Asteroid Arcade/AsteroidArcade.exe",
+		);
+		assert!(path.is_file(), "Test exe not found");
+		let version = check_exe(path).expect("Failed to detect/version");
+		assert_eq!(version.numbers.major, 4);
+		assert_eq!(version.numbers.minor, Some(3));
+		assert_eq!(version.numbers.patch, None);
 	}
 
 	#[test]
 	fn bench_timing() {
 		use std::fs;
 
-		let path = Path::new("/mnt/big_nvme/SteamLibrary/steamapps/common/MOLDRISE Demo/MOLDRISE.exe");
+		let path =
+			Path::new("/mnt/big_nvme/SteamLibrary/steamapps/common/MOLDRISE Demo/MOLDRISE.exe");
 		if !path.is_file() {
 			return;
 		}
@@ -328,7 +364,11 @@ mod tests {
 			let t0 = Instant::now();
 			let result = check_exe(path2);
 			let t = t0.elapsed();
-			println!("Non-PE check:     {:>8.2} ms (result={:?})", t.as_secs_f64() * 1000.0, result.is_some());
+			println!(
+				"Non-PE check:     {:>8.2} ms (result={:?})",
+				t.as_secs_f64() * 1000.0,
+				result.is_some()
+			);
 		}
 
 		// PE32 non-Godot file (Unity) — should be very fast.
@@ -337,7 +377,11 @@ mod tests {
 			let t0 = Instant::now();
 			let result = check_exe(path3);
 			let t = t0.elapsed();
-			println!("PE32 non-Godot:   {:>8.2} ms (result={:?})", t.as_secs_f64() * 1000.0, result.is_some());
+			println!(
+				"PE32 non-Godot:   {:>8.2} ms (result={:?})",
+				t.as_secs_f64() * 1000.0,
+				result.is_some()
+			);
 		}
 	}
 }
