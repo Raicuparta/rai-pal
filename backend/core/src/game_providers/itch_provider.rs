@@ -39,8 +39,44 @@ pub struct Itch {}
 impl Itch {
 	fn get_exe_path(cave: &ItchDatabaseCave) -> Option<PathBuf> {
 		let verdict = cave.verdict.as_ref()?;
-		let candidate = verdict.candidates.as_ref()?.first()?;
-		Some(verdict.base_path.join(&candidate.path))
+
+		if let Some(candidates) = &verdict.candidates {
+			if let Some(candidate) = candidates.first() {
+				return Some(verdict.base_path.join(&candidate.path));
+			}
+		}
+
+		// Fallback: scan base_path for executables if butler hasn't cached candidates
+		Self::scan_for_exe(&verdict.base_path)
+	}
+
+	fn scan_for_exe(base_path: &std::path::Path) -> Option<PathBuf> {
+		use std::fs;
+
+		let mut entries: Vec<_> = fs::read_dir(base_path)
+			.ok()?
+			.filter_map(|e| e.ok())
+			.filter(|e| e.file_name() != ".itch")
+			.collect();
+
+		// If there's only one entry and it's a directory, look inside it
+		if entries.len() == 1 && entries[0].file_type().map_or(false, |ft| ft.is_dir()) {
+			entries = fs::read_dir(entries[0].path())
+				.ok()?
+				.filter_map(|e| e.ok())
+				.collect();
+		}
+
+		for entry in entries {
+			let path = entry.path();
+			if let Some(ext) = path.extension().and_then(|e| e.to_str()) {
+				if ext == "exe" || ext == "x86" || ext == "x86_64" {
+					return Some(path);
+				}
+			}
+		}
+
+		None
 	}
 
 	fn get_game(row: &ItchDatabaseGame) -> DbGame {
