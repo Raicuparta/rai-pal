@@ -141,6 +141,9 @@ pub enum Error {
 	#[error("Steam Proton handling error: {0}")]
 	SteamProton(String),
 
+	#[error("Itch handling error: {0}")]
+	Itch(String),
+
 	#[error("Failed to retrieve Unity version from asset `{0}`")]
 	FailedToParseUnityVersionAsset(PathBuf),
 

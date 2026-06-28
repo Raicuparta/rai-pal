@@ -4,6 +4,7 @@ use std::{
 		Path,
 		PathBuf,
 	},
+	process::Command,
 	time::{
 		SystemTime,
 		UNIX_EPOCH,
@@ -32,10 +33,10 @@ use crate::{
 		manual_provider::Manual,
 		steam::steam_provider::Steam,
 	},
-	local_database::app_database::{
-		DbMutex,
+	local_database::{
+		app_database::DbMutex,
+		game_database::GameDatabase,
 	},
-	local_database::game_database::GameDatabase,
 	result::{
 		Error,
 		Result,
@@ -76,17 +77,33 @@ pub trait WineProviderActions {
 		))
 	}
 
+	fn get_run_with_wine_command(&self, game: &DbGame) -> Result<Command> {
+		Err(Error::UnsupportedProviderOperation(
+			game.provider_id,
+			"get_run_with_wine_command".to_string(),
+		))
+	}
+
 	fn run_with_wine(
 		&self,
 		game: &DbGame,
-		_exe_path: &Path,
-		_args: &[String],
-		_wine_env: &BTreeMap<String, String>,
+		exe_path: &Path,
+		args: &[String],
+		wine_env: &BTreeMap<String, String>,
 	) -> Result {
-		Err(Error::UnsupportedProviderOperation(
-			game.provider_id,
-			"run_with_wine".to_string(),
-		))
+		let mut cmd = self.get_run_with_wine_command(game)?;
+
+		let child = cmd.arg(exe_path).args(args).envs(wine_env).spawn()?;
+
+		log::info!(
+			"Launched `{}` with Wine for game `{}` ({}) (pid {})",
+			exe_path.display(),
+			game.display_title,
+			game.external_id,
+			child.id(),
+		);
+
+		Ok(())
 	}
 }
 

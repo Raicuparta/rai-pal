@@ -123,10 +123,7 @@ pub fn replace_tokens(
 				// If runnable mod host OS is windows and we're on Linux, that means Wine,
 				// which means config dir is inside the prefix.
 
-				use std::{
-					path::PathBuf,
-					process::Command,
-				};
+				use std::path::PathBuf;
 
 				use crate::{
 					game_providers::game_provider,
@@ -137,13 +134,9 @@ pub fn replace_tokens(
 
 				let provider = game_provider::get_provider(game.provider_id)?;
 				let prefix_path = provider.get_wine_prefix_path(game)?;
+				let mut cmd = provider.get_run_with_wine_command(game)?;
 
-				let output = Command::new(&provider.get_wine_binary_path(game)?)
-					.env("WINEPREFIX", &prefix_path)
-					.arg("cmd")
-					.arg("/C")
-					.arg("echo %APPDATA%")
-					.output()?;
+				let output = cmd.arg("cmd").arg("/C").arg("echo %APPDATA%").output()?;
 
 				let win_path = str::from_utf8(&output.stdout)?.trim();
 
