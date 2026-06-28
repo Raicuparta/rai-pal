@@ -1,9 +1,6 @@
 use std::{
 	collections::HashMap,
-	path::{
-		Path,
-		PathBuf,
-	},
+	path::PathBuf,
 };
 
 use chrono::DateTime;
@@ -42,7 +39,8 @@ pub struct Itch {}
 impl Itch {
 	fn get_exe_path(cave: &ItchDatabaseCave) -> Option<PathBuf> {
 		let verdict = cave.verdict.as_ref()?;
-		Some(verdict.base_path.join(&verdict.candidates.first()?.path))
+		let candidate = verdict.candidates.as_ref()?.first()?;
+		Some(verdict.base_path.join(&candidate.path))
 	}
 
 	fn get_game(row: &ItchDatabaseGame) -> DbGame {
@@ -92,7 +90,7 @@ pub struct ItchDatabaseCave {
 #[serializable_struct]
 pub struct ItchDatabaseVerdict {
 	base_path: PathBuf,
-	candidates: Vec<ItchDatabaseCandidate>,
+	candidates: Option<Vec<ItchDatabaseCandidate>>,
 }
 
 #[serializable_struct]
@@ -108,26 +106,24 @@ pub struct ItchDatabase {
 
 impl ProviderActions for Itch {
 	fn insert_games(&self, db: &DbMutex) -> Result {
-		let app_data_path = app_paths::base_dirs()?.config_dir().join("itch");
-
-		if let Some(database) = get_database(&app_data_path)? {
-			let caves_map: HashMap<_, _> = database
-				.caves
-				.into_iter()
-				.map(|cave| (cave.id, cave))
-				.collect();
-
-			for db_entry in database.games {
-				let mut game = Self::get_game(&db_entry);
-				if let Some(exe_path) = caves_map.get(&db_entry.id).and_then(Self::get_exe_path) {
-					game.set_executable(&exe_path);
-				}
-				db.insert_game(&game);
-			}
-		} else {
+		let Some(database) = get_database()? else {
 			log::info!(
 				"Itch database file not found. Probably means user hasn't installed the Itch app."
 			);
+			return Ok(());
+		};
+		let caves_map: HashMap<_, _> = database
+			.caves
+			.into_iter()
+			.map(|cave| (cave.id, cave))
+			.collect();
+
+		for db_entry in database.games {
+			let mut game = Self::get_game(&db_entry);
+			if let Some(exe_path) = caves_map.get(&db_entry.id).and_then(Self::get_exe_path) {
+				game.set_executable(&exe_path);
+			}
+			db.insert_game(&game);
 		}
 
 		Ok(())
@@ -147,13 +143,27 @@ fn parse_verdict(json_option: Option<&String>) -> Option<ItchDatabaseVerdict> {
 	}
 }
 
-fn get_database(app_data_path: &Path) -> Result<Option<ItchDatabase>> {
-	let db_path = app_data_path.join("db").join("butler.db");
+fn find_butler_db() -> Result<Option<PathBuf>> {
+	let base_dirs = app_paths::base_dirs()?;
 
-	if !db_path.is_file() {
+	Ok([
+		base_dirs.config_dir().join("itch"),
+		base_dirs
+			.home_dir()
+			.join(".var/app/io.itch.itch/config/itch"),
+	]
+	.into_iter()
+	.find_map(|p| {
+		let db = p.join("db").join("butler.db");
+		db.is_file().then_some(db)
+	}))
+}
+
+fn get_database() -> Result<Option<ItchDatabase>> {
+	let Some(db_path) = find_butler_db()? else {
 		return Ok(None);
-	}
-
+	};
+	let db_display = db_path.display().to_string();
 	let connection = Connection::open_with_flags(db_path, OpenFlags::SQLITE_OPEN_READ_ONLY)?;
 
 	let mut caves_statement = connection.prepare(
@@ -172,14 +182,12 @@ fn get_database(app_data_path: &Path) -> Result<Option<ItchDatabase>> {
 			verdict: parse_verdict(
 				row.get("verdict")
 					.ok_or_log(&format!(
-						"Failed to parse itch cave verdict for {}",
-						app_data_path.display()
+						"Failed to parse itch cave verdict for {db_display}"
 					))
 					.as_ref(),
 			),
 			cover_url: row.get("cover_url").ok_or_log(&format!(
-				"Failed to parse itch cave cover_url for {}",
-				app_data_path.display()
+				"Failed to parse itch cave cover_url for {db_display}"
 			)),
 		})
 	})?;

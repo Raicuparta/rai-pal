@@ -5,13 +5,11 @@ use std::{
 		Path,
 		PathBuf,
 	},
-	time::Instant,
 };
 
 use crate::{
 	app_paths,
 	architecture::Architecture,
-	debug,
 	game_engines::{
 		game_engine::EngineBrand,
 		godot,
@@ -173,29 +171,9 @@ impl DbGame {
 			self.exe_path = Some(exe_path.normalize());
 
 			// Order matters here. We're checking all sequentially, so we should leave the most expensive ones last.
-			let unity_start = Instant::now();
-			let matched = unity::process_game(self);
-			debug::record_game_process_time("Unity", &self.display_title, unity_start.elapsed());
-
-			if !matched {
-				let unreal_start = Instant::now();
-				let matched = unreal::process_game(self);
-				debug::record_game_process_time(
-					"Unreal",
-					&self.display_title,
-					unreal_start.elapsed(),
-				);
-
-				if !matched {
-					let godot_start = Instant::now();
-					godot::process_game(self);
-					debug::record_game_process_time(
-						"Godot",
-						&self.display_title,
-						godot_start.elapsed(),
-					);
-				}
-			}
+			let _ = unity::process_game(self)
+				|| unreal::process_game(self)
+				|| godot::process_game(self);
 		}
 
 		self
