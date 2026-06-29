@@ -77,6 +77,11 @@ export function GameModal({ game, mods }: Props) {
 							>
 								{t("openInstalledModsFolder")}
 							</CommandButton>
+							<CommandButton
+								onClick={() => commands.openGameLogsFolder(providerId, gameId)}
+							>
+								{t("openGameLogsFolder")}
+							</CommandButton>
 							{platform() === "linux" && (
 								<>
 									<CommandButton

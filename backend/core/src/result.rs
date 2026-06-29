@@ -9,7 +9,13 @@ use std::{
 
 use lazy_regex::regex;
 
-use crate::game_providers::game_provider::GameProviderId;
+use crate::{
+	game_engines::game_engine::{
+		EngineBrand,
+		GameEngine,
+	},
+	game_providers::game_provider::GameProviderId,
+};
 
 #[derive(Debug, thiserror::Error, specta::Type)]
 pub enum Error {
@@ -202,6 +208,12 @@ pub enum Error {
 
 	#[error("Provider {0} doesn't support this operation: `{1}`")]
 	UnsupportedProviderOperation(GameProviderId, String),
+
+	#[error("Game engine {0} doesn't support this operation: `{1}`")]
+	UnsupportedEngineOperation(EngineBrand, String),
+
+	#[error("Game engine detection missing for this operation: `{0}`")]
+	OperationRequiresEngine(String),
 
 	#[error("Required information for mod with ID `{0}` is missing. Expected `{1}`")]
 	ModInfoMissing(String, String),

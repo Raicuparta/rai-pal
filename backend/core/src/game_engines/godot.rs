@@ -22,7 +22,12 @@ use super::{
 };
 use crate::{
 	game::DbGame,
-	result::LogErrExt,
+	open_better::open_detached_better,
+	path_extensions::PathExt,
+	result::{
+		LogErrExt,
+		Result,
+	},
 };
 
 fn parse_version(version_string: &str) -> Option<EngineVersion> {
@@ -170,4 +175,25 @@ pub fn process_game(game: &mut DbGame) -> bool {
 	game.engine_version_display = Some(version.display);
 
 	true
+}
+
+pub fn open_logs_folder(game: &DbGame) -> Result {
+	let app_data = game.get_roaming_app_data_slow()?;
+	let default_godot_data = game.get_roaming_app_data_slow()?.join("Godot/app_userdata");
+
+	let target = if default_godot_data.exists() {
+		let with_name = default_godot_data
+			.join(game.try_get_exe_path()?.file_name_without_extension()?)
+			.join("logs");
+
+		if with_name.exists() {
+			with_name
+		} else {
+			default_godot_data
+		}
+	} else {
+		app_data
+	};
+
+	open_detached_better(target)
 }

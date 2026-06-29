@@ -183,6 +183,21 @@ async fn open_game_mods_folder(
 
 #[tauri::command]
 #[specta::specta]
+async fn open_game_logs_folder(
+	handle: AppHandle,
+	provider_id: GameProviderId,
+	game_id: String,
+) -> Result {
+	handle
+		.app_state()
+		.database
+		.get_game(&provider_id, &game_id)?
+		.open_logs_folder()?;
+	Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
 async fn install_mod(
 	mod_id: &str,
 	provider_id_option: Option<GameProviderId>,
@@ -685,6 +700,7 @@ fn main() {
 			log_out,
 			open_game_folder,
 			open_game_mods_folder,
+			open_game_logs_folder,
 			open_game_wine_binary_folder,
 			open_game_wine_prefix_folder,
 			open_installed_mod_folder,

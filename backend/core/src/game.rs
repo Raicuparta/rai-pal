@@ -195,4 +195,59 @@ impl DbGame {
 			Err(Error::GameNotInstalled(self.display_title.clone()))
 		}
 	}
+
+	pub fn open_logs_folder(&self) -> Result {
+		if let Some(engine) = self.engine_brand {
+			return match engine {
+				// EngineBrand::Unity => todo!(),
+				// EngineBrand::Unreal => todo!(),
+				EngineBrand::Godot => godot::open_logs_folder(self),
+				_ => Err(Error::UnsupportedEngineOperation(
+					engine,
+					"open_logs_folder".to_string(),
+				)),
+			};
+		}
+
+		Err(Error::OperationRequiresEngine(
+			"open_logs_folder".to_string(),
+		))
+	}
+
+	/// Marked slow because potentially runs slow wine command to get inner path,
+	/// don't call while processing games or any other performance-sensitive places.
+	pub fn get_roaming_app_data_slow(&self) -> Result<PathBuf> {
+		#[cfg(target_os = "linux")]
+		{
+			use std::path::PathBuf;
+
+			use crate::{
+				game_providers::game_provider,
+				path_extensions::AsValidStr,
+			};
+
+			let provider = game_provider::get_provider(self.provider_id)?;
+			let prefix_path = provider.get_wine_prefix_path(self)?;
+			let mut cmd = provider.get_run_with_wine_command(self)?;
+
+			let output = cmd.arg("cmd").arg("/C").arg("echo %APPDATA%").output()?;
+
+			let win_path = str::from_utf8(&output.stdout)?.trim();
+
+			// 2. Convert Windows path to Linux path manually
+			// The format is always C:\users\username\AppData\Roaming
+			// We replace 'C:\' with the actual path to drive_c
+			let drive_c_path = PathBuf::from(format!("{}/drive_c", prefix_path.try_to_str()?));
+
+			// Remove the 'C:\' prefix and replace backslashes with slashes
+			let relative_path = win_path.replace("C:\\", "").replace('\\', "/");
+
+			Ok(drive_c_path.join(relative_path))
+		}
+
+		#[cfg(target_os = "windows")]
+		{
+			Ok(app_paths::base_dirs()?.config_dir().to_owned())
+		}
+	}
 }
