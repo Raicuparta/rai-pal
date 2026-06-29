@@ -33,8 +33,12 @@ use crate::{
 		get_architecture,
 	},
 	game::DbGame,
+	open_better::open_detached_better,
 	path_extensions::PathExt,
-	result::LogErrExt,
+	result::{
+		LogErrExt,
+		Result,
+	},
 };
 
 fn get_version_from_metadata(
@@ -345,4 +349,26 @@ pub fn process_game(game: &mut DbGame) -> bool {
 	}
 
 	true
+}
+
+pub fn open_data_folder(game: &DbGame) -> Result {
+	let app_data = game
+		.get_roaming_app_data_slow()?
+		.try_parent()?
+		.to_owned()
+		.join("Local");
+
+	let potential_game_folder = app_data.join(
+		game.try_get_exe_path()?
+			.file_name_without_extension()?
+			.replace("-Win64-Shipping", ""),
+	);
+
+	let target = if potential_game_folder.exists() {
+		potential_game_folder
+	} else {
+		app_data
+	};
+
+	open_detached_better(target)
 }
