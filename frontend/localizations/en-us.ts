@@ -163,6 +163,9 @@ export const enUs = {
 		// Open the folder where Rai Pal places the mods for this game.
 		openInstalledModsFolder: "Installed Mods",
 
+		// Open the folder where the game stores its app data.
+		openGameDataFolder: "Game App Data",
+
 		// Open the Wine prefix folder detected for this game.
 		openGameWinePrefixFolder: "Wine Prefix",
 

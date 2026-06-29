@@ -177,14 +177,13 @@ pub fn process_game(game: &mut DbGame) -> bool {
 	true
 }
 
-pub fn open_logs_folder(game: &DbGame) -> Result {
+pub fn open_data_folder(game: &DbGame) -> Result {
 	let app_data = game.get_roaming_app_data_slow()?;
 	let default_godot_data = game.get_roaming_app_data_slow()?.join("Godot/app_userdata");
 
 	let target = if default_godot_data.exists() {
-		let potential_game_folder = default_godot_data
-			.join(game.try_get_exe_path()?.file_name_without_extension()?)
-			.join("logs");
+		let potential_game_folder =
+			default_godot_data.join(game.try_get_exe_path()?.file_name_without_extension()?);
 
 		if potential_game_folder.exists() {
 			potential_game_folder

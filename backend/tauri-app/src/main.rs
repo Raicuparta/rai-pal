@@ -183,7 +183,7 @@ async fn open_game_mods_folder(
 
 #[tauri::command]
 #[specta::specta]
-async fn open_game_logs_folder(
+async fn open_game_data_folder(
 	handle: AppHandle,
 	provider_id: GameProviderId,
 	game_id: String,
@@ -192,7 +192,7 @@ async fn open_game_logs_folder(
 		.app_state()
 		.database
 		.get_game(&provider_id, &game_id)?
-		.open_logs_folder()?;
+		.open_data_folder()?;
 	Ok(())
 }
 
@@ -700,7 +700,7 @@ fn main() {
 			log_out,
 			open_game_folder,
 			open_game_mods_folder,
-			open_game_logs_folder,
+			open_game_data_folder,
 			open_game_wine_binary_folder,
 			open_game_wine_prefix_folder,
 			open_installed_mod_folder,

@@ -196,21 +196,21 @@ impl DbGame {
 		}
 	}
 
-	pub fn open_logs_folder(&self) -> Result {
+	pub fn open_data_folder(&self) -> Result {
 		if let Some(engine) = self.engine_brand {
 			return match engine {
-				EngineBrand::Unity => unity::open_logs_folder(self),
+				EngineBrand::Unity => unity::open_data_folder(self),
 				EngineBrand::Unreal => unreal::open_data_folder(self),
-				EngineBrand::Godot => godot::open_logs_folder(self),
+				EngineBrand::Godot => godot::open_data_folder(self),
 				_ => Err(Error::UnsupportedEngineOperation(
 					engine,
-					"open_logs_folder".to_string(),
+					"open_data_folder".to_string(),
 				)),
 			};
 		}
 
 		Err(Error::OperationRequiresEngine(
-			"open_logs_folder".to_string(),
+			"open_data_folder".to_string(),
 		))
 	}
 

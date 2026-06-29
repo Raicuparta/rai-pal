@@ -2,11 +2,13 @@ import { Alert, Box, Group, Stack, Table } from "@mantine/core";
 import { commands, DbGame } from "@api/bindings";
 import { CommandButton } from "@components/command-button";
 import {
+	IconFileSettings,
 	IconFolder,
 	IconFolderCog,
 	IconFolderOpen,
 	IconGlassFull,
 	IconRefresh,
+	IconWriting,
 } from "@tabler/icons-react";
 import { useSetAtom } from "jotai";
 import { DebugData } from "@components/debug-data";
@@ -78,9 +80,10 @@ export function GameModal({ game, mods }: Props) {
 								{t("openInstalledModsFolder")}
 							</CommandButton>
 							<CommandButton
-								onClick={() => commands.openGameLogsFolder(providerId, gameId)}
+								leftSection={<IconFileSettings />}
+								onClick={() => commands.openGameDataFolder(providerId, gameId)}
 							>
-								{t("openGameLogsFolder")}
+								{t("openGameDataFolder")}
 							</CommandButton>
 							{platform() === "linux" && (
 								<>

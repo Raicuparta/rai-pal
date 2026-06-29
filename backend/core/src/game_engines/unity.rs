@@ -214,7 +214,7 @@ pub fn process_game(game: &mut DbGame) -> bool {
 	true
 }
 
-pub fn open_logs_folder(game: &DbGame) -> Result {
+pub fn open_data_folder(game: &DbGame) -> Result {
 	let app_data = game
 		.get_roaming_app_data_slow()?
 		.try_parent()?
