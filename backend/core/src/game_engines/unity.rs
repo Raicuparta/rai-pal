@@ -26,6 +26,7 @@ use crate::{
 		get_architecture,
 	},
 	game::DbGame,
+	open_better::open_detached_better,
 	path_extensions::PathExt,
 	result::{
 		Error,
@@ -211,4 +212,23 @@ pub fn process_game(game: &mut DbGame) -> bool {
 		.or_else(|| get_alt_architecture(exe_path));
 
 	true
+}
+
+pub fn open_logs_folder(game: &DbGame) -> Result {
+	let app_data = game
+		.get_roaming_app_data_slow()?
+		.try_parent()?
+		.to_owned()
+		.join("LocalLow");
+
+	open_detached_better(
+		app_data
+			.join("*")
+			.join(game.try_get_exe_path()?.file_name_without_extension()?)
+			.glob()
+			.first()
+			.map_or(app_data, |potential_game_folder| {
+				potential_game_folder.to_owned()
+			}),
+	)
 }

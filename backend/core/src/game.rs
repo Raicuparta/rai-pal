@@ -199,7 +199,7 @@ impl DbGame {
 	pub fn open_logs_folder(&self) -> Result {
 		if let Some(engine) = self.engine_brand {
 			return match engine {
-				// EngineBrand::Unity => todo!(),
+				EngineBrand::Unity => unity::open_logs_folder(self),
 				// EngineBrand::Unreal => todo!(),
 				EngineBrand::Godot => godot::open_logs_folder(self),
 				_ => Err(Error::UnsupportedEngineOperation(

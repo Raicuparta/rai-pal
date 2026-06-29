@@ -182,12 +182,12 @@ pub fn open_logs_folder(game: &DbGame) -> Result {
 	let default_godot_data = game.get_roaming_app_data_slow()?.join("Godot/app_userdata");
 
 	let target = if default_godot_data.exists() {
-		let with_name = default_godot_data
+		let potential_game_folder = default_godot_data
 			.join(game.try_get_exe_path()?.file_name_without_extension()?)
 			.join("logs");
 
-		if with_name.exists() {
-			with_name
+		if potential_game_folder.exists() {
+			potential_game_folder
 		} else {
 			default_godot_data
 		}
