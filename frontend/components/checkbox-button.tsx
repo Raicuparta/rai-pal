@@ -4,13 +4,20 @@ import { IconCheck } from "@tabler/icons-react";
 
 interface Props extends ButtonProps {
 	readonly checked: boolean;
+	readonly onClickCheckbox: () => void;
+	readonly onClickButton: () => void;
 	readonly tooltip?: string;
-	readonly onChange: (checked: boolean) => void;
-	readonly onExclusiveClick: () => void;
 }
 
 function CheckboxButtonInternal(
-	{ checked, onChange, tooltip, onExclusiveClick, children, ...props }: Props,
+	{
+		checked,
+		onClickCheckbox,
+		onClickButton,
+		tooltip,
+		children,
+		...props
+	}: Props,
 	ref: React.ForwardedRef<HTMLButtonElement>,
 ) {
 	return (
@@ -22,7 +29,7 @@ function CheckboxButtonInternal(
 				<ActionIcon
 					size="sm"
 					variant={checked ? "filled" : "default"}
-					onClick={onChange ? () => onChange(!checked) : undefined}
+					onClick={onClickCheckbox}
 				>
 					{checked && <IconCheck />}
 				</ActionIcon>
@@ -35,7 +42,7 @@ function CheckboxButtonInternal(
 					px="xs"
 					onClick={(e) => {
 						e.stopPropagation();
-						onExclusiveClick();
+						onClickButton();
 					}}
 					{...props}
 				>

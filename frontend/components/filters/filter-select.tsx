@@ -109,8 +109,8 @@ export function FilterSelect<TFilterKey extends FilterKey>({
 									currentValues.length == 0 ||
 									currentValues.includes(possibleValue)
 								}
-								onChange={() => handleFilterClick(id, possibleValue)}
-								onExclusiveClick={() => handleExclusiveClick(possibleValue)}
+								onClickCheckbox={() => handleFilterClick(id, possibleValue)}
+								onClickButton={() => handleExclusiveClick(possibleValue)}
 							>
 								{valueDetails?.staticDisplayText ??
 									tValue(valueDetails?.localizationKey) ??
@@ -123,8 +123,8 @@ export function FilterSelect<TFilterKey extends FilterKey>({
 							checked={
 								currentValues.length == 0 || currentValues.includes(null)
 							}
-							onChange={() => handleFilterClick(id, null)}
-							onExclusiveClick={() => handleExclusiveClick(null)}
+							onClickCheckbox={() => handleFilterClick(id, null)}
+							onClickButton={() => handleExclusiveClick(null)}
 						>
 							{tValue(emptyLocalizationKey)}
 						</CheckboxButton>
