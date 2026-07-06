@@ -39,10 +39,6 @@ export function UserMenu() {
 		commands
 			.getAuthState()
 			.then((state) => {
-				commands.sendAnalyticsEvent("user_sign_in", {
-					game: null,
-					param: null,
-				});
 				setAuthState(state);
 			})
 			.catch((error) => {
@@ -64,6 +60,10 @@ export function UserMenu() {
 		try {
 			await commands.logIn();
 			await refreshAuthState();
+			commands.sendAnalyticsEvent("user_sign_in", {
+				game: null,
+				param: null,
+			});
 		} catch (error) {
 			console.error("Login failed:", error);
 			showAppNotification(`Sign-in failed: ${String(error)}`, "error");
