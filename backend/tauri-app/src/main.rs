@@ -20,7 +20,6 @@ use rai_pal_core::windows;
 use rai_pal_core::{
 	analytics,
 	app_paths,
-	debug,
 	game::DbGame,
 	game_providers::{
 		game_provider::{

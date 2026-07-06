@@ -16,10 +16,10 @@ use uuid::Uuid;
 
 use crate::http;
 
-const MEASUREMENT_ID: &str = "G-KTJZNR0ZET";
-const API_KEY: Option<&str> = option_env!("ANALYTICS_API_KEY");
+const APP_ID: &str = "rai-pal";
+const COLLECT_URL: &str = "https://events.raicuparta.com/collect";
 
-static ANALYTICS_ID: LazyLock<String> = LazyLock::new(|| Uuid::new_v4().hyphenated().to_string());
+static SESSION_ID: LazyLock<String> = LazyLock::new(|| Uuid::new_v4().hyphenated().to_string());
 
 #[serializable_enum]
 #[serde(rename_all = "snake_case")]
@@ -34,13 +34,6 @@ pub enum Event {
 	ErrorNotification,
 }
 
-#[derive(Debug, Serialize)]
-struct AnalyticsEventParams {
-	param: String,
-	game: String,
-	app_version: String,
-}
-
 #[serializable_struct]
 pub struct AnalyticsData {
 	param: Option<String>,
@@ -48,75 +41,69 @@ pub struct AnalyticsData {
 }
 
 #[derive(Debug, Serialize)]
-struct AnalyticsEvent {
-	name: Event,
-	params: AnalyticsEventParams,
-}
-
-#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
 struct AnalyticsPayload {
+	app_id: String,
 	client_id: String,
-	timestamp_micros: u128,
-	non_personalized_ads: bool,
+	session_id: String,
+	timestamp_millis: u128,
 	events: Vec<AnalyticsEvent>,
 }
 
-impl AnalyticsPayload {
-	pub fn new(event_name: Event, data: &AnalyticsData) -> Self {
-		Self {
-			client_id: ANALYTICS_ID.to_string(),
-			timestamp_micros: SystemTime::now()
-				.duration_since(UNIX_EPOCH)
-				.unwrap_or_default()
-				.as_micros(),
-			non_personalized_ads: true,
-			events: vec![AnalyticsEvent {
-				name: event_name,
-				params: AnalyticsEventParams {
-					param: data.param.clone().unwrap_or_default(),
-					game: data.game.clone().unwrap_or_default(),
-					app_version: env!("CARGO_PKG_VERSION").to_string(),
-				},
-			}],
-		}
-	}
+#[derive(Debug, Serialize)]
+struct AnalyticsEvent {
+	id: String,
+	data: Option<serde_json::Value>,
 }
 
 pub async fn send_event(event_name: Event, data: Option<AnalyticsData>) {
-	let payload = AnalyticsPayload::new(
-		event_name,
-		&data.unwrap_or(AnalyticsData {
-			param: None,
-			game: None,
-		}),
-	);
+	let event_data = data.as_ref().and_then(|d| {
+		if d.param.is_none() && d.game.is_none() {
+			None
+		} else {
+			Some(serde_json::json!({
+				"param": d.param,
+				"game": d.game,
+			}))
+		}
+	});
+
+	let event_id = serde_json::to_value(event_name)
+		.ok()
+		.and_then(|v| v.as_str().map(String::from))
+		.unwrap_or_default();
+
+	let payload = AnalyticsPayload {
+		app_id: APP_ID.to_string(),
+		client_id: SESSION_ID.to_string(),
+		session_id: SESSION_ID.to_string(),
+		timestamp_millis: SystemTime::now()
+			.duration_since(UNIX_EPOCH)
+			.unwrap_or_default()
+			.as_millis(),
+		events: vec![AnalyticsEvent {
+			id: event_id,
+			data: event_data,
+		}],
+	};
+
 	log::debug!("Analytics payload {payload:?}");
 
-	if let Some(api_key) = API_KEY {
-		let url = format!(
-			"https://www.google-analytics.com/mp/collect?measurement_id={MEASUREMENT_ID}&api_secret={api_key}"
-		);
-		let resp = http::CLIENT.post(url).json(&payload).send().await;
-		match resp {
-			Ok(resp) => {
-				if resp.status().is_success() {
-					log::info!("Successfully Sent Analytics Event {event_name}");
-				} else {
-					log::error!(
-						"Couldn't Send Analytics Event {event_name}! {}",
-						resp.status()
-					);
-				}
-			}
-			Err(err) => {
+	let resp = http::CLIENT.post(COLLECT_URL).json(&payload).send().await;
+
+	match resp {
+		Ok(resp) => {
+			if resp.status().is_success() {
+				log::info!("Successfully Sent Analytics Event {event_name}");
+			} else {
 				log::error!(
-					"{}",
-					format!("Couldn't Send Analytics Event {event_name}! {err:?}")
-						.replace(api_key, "***")
+					"Couldn't Send Analytics Event {event_name}! {}",
+					resp.status()
 				);
 			}
 		}
-	} else {
-		log::info!("Skipping Analytics As The ANALYTICS_API_KEY Is Null");
+		Err(err) => {
+			log::error!("Couldn't Send Analytics Event {event_name}! {err:?}");
+		}
 	}
 }
