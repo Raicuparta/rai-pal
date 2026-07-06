@@ -43,8 +43,7 @@ export function ModModal(props: Props) {
 								await commands.runMod(props.mod.id, null, null);
 
 								commands.sendAnalyticsEvent("run_mod", {
-									game: null,
-									param: props.mod.id,
+									mod_id: props.mod.id,
 								});
 							}}
 						>
@@ -58,8 +57,7 @@ export function ModModal(props: Props) {
 								await commands.installMod(props.mod.id, null, null);
 
 								commands.sendAnalyticsEvent("install_mod", {
-									game: null,
-									param: props.mod.id,
+									mod_id: props.mod.id,
 								});
 							}}
 						>

@@ -28,8 +28,8 @@ export function GameModUninstallButton({ game, mod, modInfo }: Props) {
 					await commands.uninstallMod(game.providerId, game.gameId, mod.id);
 
 					commands.sendAnalyticsEvent("uninstall_mod", {
+						mod_id: mod.id,
 						game: game.displayTitle,
-						param: mod.id,
 					});
 				}}
 			>

@@ -18,8 +18,8 @@ export function GameModRunButton({ game, mod }: Props) {
 				await commands.runMod(mod.id, game.providerId, game.gameId);
 
 				commands.sendAnalyticsEvent("run_mod", {
+					mod_id: mod.id,
 					game: game.displayTitle,
-					param: mod.id,
 				});
 			}}
 		>

@@ -36,8 +36,7 @@ export function showAppNotification(message: string, type: NotificationType) {
 	});
 	if (type === "error") {
 		commands.sendAnalyticsEvent("error_notification", {
-			game: null,
-			param: message,
+			error_message: message,
 		});
 	}
 }

@@ -1,4 +1,5 @@
 use std::{
+	collections::HashMap,
 	sync::LazyLock,
 	time::{
 		SystemTime,
@@ -7,19 +8,17 @@ use std::{
 };
 
 use log;
-use rai_pal_proc_macros::{
-	serializable_enum,
-	serializable_struct,
-};
+use rai_pal_proc_macros::serializable_enum;
 use serde::Serialize;
 use uuid::Uuid;
 
 use crate::http;
 
-const APP_ID: &str = "rai-pal";
-const COLLECT_URL: &str = "https://events.raicuparta.com/collect";
+const COLLECT_URL: &str = "https://events.raicuparta.com/rai-pal/collect";
 
 static SESSION_ID: LazyLock<String> = LazyLock::new(|| Uuid::new_v4().hyphenated().to_string());
+
+pub type AnalyticsData = HashMap<String, String>;
 
 #[serializable_enum]
 #[serde(rename_all = "snake_case")]
@@ -34,18 +33,11 @@ pub enum Event {
 	ErrorNotification,
 }
 
-#[serializable_struct]
-pub struct AnalyticsData {
-	param: Option<String>,
-	game: Option<String>,
-}
-
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 struct AnalyticsPayload {
-	app_id: String,
-	client_id: String,
-	session_id: String,
+	client_id: Option<String>,
+	session_id: Option<String>,
 	timestamp_millis: u128,
 	events: Vec<AnalyticsEvent>,
 }
@@ -53,18 +45,16 @@ struct AnalyticsPayload {
 #[derive(Debug, Serialize)]
 struct AnalyticsEvent {
 	id: String,
+	#[serde(skip_serializing_if = "Option::is_none")]
 	data: Option<serde_json::Value>,
 }
 
 pub async fn send_event(event_name: Event, data: Option<AnalyticsData>) {
-	let event_data = data.as_ref().and_then(|d| {
-		if d.param.is_none() && d.game.is_none() {
+	let event_data = data.and_then(|d| {
+		if d.is_empty() {
 			None
 		} else {
-			Some(serde_json::json!({
-				"param": d.param,
-				"game": d.game,
-			}))
+			Some(serde_json::to_value(d).unwrap_or_default())
 		}
 	});
 
@@ -74,9 +64,8 @@ pub async fn send_event(event_name: Event, data: Option<AnalyticsData>) {
 		.unwrap_or_default();
 
 	let payload = AnalyticsPayload {
-		app_id: APP_ID.to_string(),
-		client_id: SESSION_ID.to_string(),
-		session_id: SESSION_ID.to_string(),
+		client_id: None,
+		session_id: Some(SESSION_ID.to_string()),
 		timestamp_millis: SystemTime::now()
 			.duration_since(UNIX_EPOCH)
 			.unwrap_or_default()

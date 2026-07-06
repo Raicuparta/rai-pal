@@ -44,10 +44,7 @@ export const commands = {
 	runMod: (modId: string, providerIdOption: "Epic" | "Gog" | "Itch" | "Manual" | "Steam" | "Xbox" | null, gameIdOption: string | null) => __TAURI_INVOKE<null>("run_mod", { modId, providerIdOption, gameIdOption }),
 	runProviderCommand: (providerId: GameProviderId, gameId: string, providerCommandAciton: ProviderCommandAction) => __TAURI_INVOKE<null>("run_provider_command", { providerId, gameId, providerCommandAciton }),
 	saveAppSettings: (settings: AppSettings) => __TAURI_INVOKE<null>("save_app_settings", { settings }),
-	sendAnalyticsEvent: (event: Event, data: {
-	param: string | null,
-	game: string | null,
-} | null) => __TAURI_INVOKE<null>("send_analytics_event", { event, data }),
+	sendAnalyticsEvent: (event: Event, data: { [key in string]: string } | null) => __TAURI_INVOKE<null>("send_analytics_event", { event, data }),
 	setUpGlobalWineOverrides: () => __TAURI_INVOKE<null>("set_up_global_wine_overrides"),
 	uninstallAllMods: (providerId: GameProviderId, gameId: string) => __TAURI_INVOKE<null>("uninstall_all_mods", { providerId, gameId }),
 	uninstallMod: (providerId: GameProviderId, gameId: string, modId: string) => __TAURI_INVOKE<null>("uninstall_mod", { providerId, gameId, modId }),
@@ -65,11 +62,6 @@ export const events = {
 export const PROVIDER_IDS = ["Epic","Gog","Itch","Manual","Steam","Xbox"] as const;
 
 /* Types */
-export type AnalyticsData = {
-	param: string | null,
-	game: string | null,
-};
-
 export type AppDatabaseChanged = [];
 
 export type AppLocale = "EnUs" | "EsEs" | "FrFr" | "DeDe" | "PtPt" | "ZhCn" | "JaJp" | "KoKr" | "WaWa";

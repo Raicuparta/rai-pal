@@ -31,8 +31,8 @@ export function GameModUpdateButton({ game, mod, remoteConfigFile }: Props) {
 				await commands.installMod(mod.id, game.providerId, game.gameId);
 
 				commands.sendAnalyticsEvent("update_mod", {
+					mod_id: mod.id,
 					game: game.displayTitle,
-					param: mod.id,
 				});
 			}}
 		>
