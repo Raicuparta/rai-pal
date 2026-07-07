@@ -14,7 +14,7 @@ use uuid::Uuid;
 
 use crate::http;
 
-const COLLECT_URL: &str = "https://events.raicuparta.com/rai-pal/collect";
+const COLLECT_URL: &str = "https://raipal.events.raicuparta.com/collect";
 
 static SESSION_ID: LazyLock<String> = LazyLock::new(|| Uuid::new_v4().hyphenated().to_string());
 
