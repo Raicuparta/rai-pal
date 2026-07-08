@@ -12,7 +12,7 @@ import "./global-styles/global.css";
 import "./global-styles/mantine-overrides.css";
 import "./global-styles/scroll-bar.css";
 
-commands.sendAnalyticsEvent("start_app", null);
+commands.sendAnalyticsEvent("StartApp", null);
 registerEvents();
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(

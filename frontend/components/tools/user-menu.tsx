@@ -60,7 +60,7 @@ export function UserMenu() {
 		try {
 			await commands.logIn();
 			await refreshAuthState();
-			commands.sendAnalyticsEvent("user_sign_in", null);
+			commands.sendAnalyticsEvent("UserSignIn", null);
 		} catch (error) {
 			console.error("Login failed:", error);
 			showAppNotification(`Sign-in failed: ${String(error)}`, "error");

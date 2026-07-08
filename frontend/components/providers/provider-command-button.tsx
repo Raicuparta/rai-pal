@@ -53,7 +53,7 @@ export function ProviderCommandButton(props: Props) {
 					props.action,
 				);
 
-				commands.sendAnalyticsEvent("provider_command", {
+				commands.sendAnalyticsEvent("ProviderCommand", {
 					action: props.action,
 					game: props.game.displayTitle,
 				});

@@ -27,7 +27,7 @@ export function GameModUninstallButton({ game, mod, modInfo }: Props) {
 				onClick={async () => {
 					await commands.uninstallMod(game.providerId, game.gameId, mod.id);
 
-					commands.sendAnalyticsEvent("uninstall_mod", {
+					commands.sendAnalyticsEvent("UninstallMod", {
 						mod_id: mod.id,
 						game: game.displayTitle,
 					});

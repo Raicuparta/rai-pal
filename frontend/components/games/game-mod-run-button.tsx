@@ -17,7 +17,7 @@ export function GameModRunButton({ game, mod }: Props) {
 			onClick={async () => {
 				await commands.runMod(mod.id, game.providerId, game.gameId);
 
-				commands.sendAnalyticsEvent("run_mod", {
+				commands.sendAnalyticsEvent("RunMod", {
 					mod_id: mod.id,
 					game: game.displayTitle,
 				});
