@@ -33,7 +33,6 @@ strip = true
 debug = 0
 strip = "debuginfo"
 
-
 [workspace.lints.clippy]
 # Categories that have mostly useful lints.
 # Priority is -1 so that they get overridden by priority 0 lints.

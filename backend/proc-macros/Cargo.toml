@@ -7,9 +7,8 @@ edition.workspace = true
 proc-macro = true
 
 [dependencies]
-quote = "1.0.45"
-syn = "2.0.117"
-serde.workspace = true
+quote = "1.0.46"
+syn = "2.0.118"
 
 [lints]
 workspace = true

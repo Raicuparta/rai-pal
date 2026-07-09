@@ -10,10 +10,7 @@ use std::{
 use lazy_regex::regex;
 
 use crate::{
-	game_engines::game_engine::{
-		EngineBrand,
-		GameEngine,
-	},
+	game_engines::game_engine::EngineBrand,
 	game_providers::game_provider::GameProviderId,
 };
 
