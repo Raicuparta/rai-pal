@@ -6,7 +6,6 @@ import {
 	CopyButton,
 	Group,
 	Modal,
-	Stack,
 	Tooltip,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";

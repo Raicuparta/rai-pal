@@ -74,6 +74,7 @@ use tauri::{
 	WebviewWindowBuilder,
 	ipc::Channel,
 };
+use tauri_plugin_deep_link::DeepLinkExt;
 use tauri_plugin_log::{
 	Target,
 	TargetKind,
@@ -723,9 +724,6 @@ fn main() {
 		.constant("PROVIDER_IDS", GameProviderId::iter().collect::<Vec<_>>())
 		.error_handling(tauri_specta::ErrorHandlingMode::Throw);
 
-	#[cfg(debug_assertions)]
-	typescript::export(&builder);
-
 	#[cfg(target_os = "linux")]
 	unsafe {
 		// This is to fix this error:
@@ -740,16 +738,7 @@ fn main() {
 	});
 
 	tauri::Builder::default()
-		.plugin(tauri_plugin_shell::init())
-		.plugin(tauri_plugin_os::init())
-		.plugin(tauri_plugin_store::Builder::new().build())
-		.plugin(
-			tauri_plugin_window_state::Builder::default()
-				.with_state_flags(StateFlags::POSITION | StateFlags::SIZE)
-				.build(),
-		)
-		.plugin(tauri_plugin_dialog::init())
-		.plugin(tauri_plugin_updater::Builder::default().build())
+		.plugin(tauri_plugin_single_instance::init(|_app, _args, _cwd| {}))
 		.plugin(
 			tauri_plugin_log::Builder::new()
 				.level(if cfg!(debug_assertions) {
@@ -769,10 +758,41 @@ fn main() {
 				])
 				.build(),
 		)
+		.plugin(tauri_plugin_deep_link::init())
+		.plugin(tauri_plugin_shell::init())
+		.plugin(tauri_plugin_os::init())
+		.plugin(tauri_plugin_store::Builder::new().build())
+		.plugin(
+			tauri_plugin_window_state::Builder::default()
+				.with_state_flags(StateFlags::POSITION | StateFlags::SIZE)
+				.build(),
+		)
+		.plugin(tauri_plugin_dialog::init())
+		.plugin(tauri_plugin_updater::Builder::default().build())
 		.manage(app_state)
 		.invoke_handler(builder.invoke_handler())
 		.setup(move |app| {
 			builder.mount_events(app);
+
+			app.deep_link().register_all()?;
+
+			if let Ok(start_urls) = app.deep_link().get_current()
+				&& let Some(urls) = start_urls
+			{
+				log::info!("App opened via deep link: {urls:?}");
+			} else {
+				log::info!("App opened directly.");
+
+				#[cfg(debug_assertions)]
+				{
+					// This is buried here to avoid touching the TS bindings file when opening via deep link.
+					typescript::export(&builder);
+				}
+			}
+
+			app.deep_link().on_open_url(|event| {
+				log::info!("Deep link received: {:?}", event.urls());
+			});
 
 			tauri::async_runtime::spawn(start_user_socket_manager());
 
@@ -839,9 +859,8 @@ fn main() {
 			#[cfg(target_os = "windows")]
 			windows::error_dialog(&error.to_string());
 
-			#[cfg(target_os = "linux")]
-			log::error!("Error: {error}");
-			#[cfg(target_os = "macos")]
-			log::error!("Error: {error}");
+			// Use eprintln! as fallback since log plugin may not capture this
+			eprintln!("Fatal error: {error}");
+			log::error!("Fatal error: {error}");
 		});
 }

@@ -68,9 +68,8 @@ endpoints = [
 # [[app.windows]]
 # Window is actually created manually in main.rs instead.
 
-# Main window starts hidden to reduce the initial white flash.
-# It becomes visible after the frontend is ready.
-visible = false
+[plugins.deep-link]
+desktop.schemes = ["rai-pal"]
 
 [app.security]
 # I think I had to add this one because of some css problem with Mantine, don't remember hehe.
