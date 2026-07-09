@@ -25,8 +25,6 @@ tauri = { version = "2.11.5", features = ["protocol-asset", "config-toml"] }
 tauri-plugin-dialog = "2.7.1"
 tauri-plugin-log = "2.8.0"
 tauri-plugin-os = "2.3.2"
-tauri-plugin-shell = "2.3.5"
-tauri-plugin-store = "2.4.3"
 tauri-plugin-updater = "2.10.1"
 tauri-plugin-window-state = "2.4.1"
 tauri-runtime = "2.11.3"
