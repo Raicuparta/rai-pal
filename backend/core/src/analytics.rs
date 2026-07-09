@@ -29,6 +29,7 @@ pub enum Event {
 }
 
 #[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
 struct AnalyticsPayload {
 	client_id: Option<String>,
 	session_id: Option<String>,
@@ -36,9 +37,9 @@ struct AnalyticsPayload {
 }
 
 #[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
 struct AnalyticsEvent {
 	id: String,
-	#[serde(skip_serializing_if = "Option::is_none")]
 	data: Option<serde_json::Value>,
 }
 
