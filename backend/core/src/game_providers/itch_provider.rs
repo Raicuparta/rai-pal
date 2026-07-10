@@ -33,7 +33,6 @@ use crate::{
 		LogErrExt,
 		Result,
 	},
-	wine,
 };
 
 #[derive(Clone)]
@@ -169,6 +168,10 @@ impl ProviderActions for Itch {
 	}
 }
 
+#[cfg(target_os = "windows")]
+impl WineProviderActions for Itch {}
+
+#[cfg(target_os = "linux")]
 impl WineProviderActions for Itch {
 	fn get_wine_prefix_path(&self, _game: &DbGame) -> Result<PathBuf> {
 		let prefix = get_itch_wine_prefix()?;
@@ -198,8 +201,12 @@ impl WineProviderActions for Itch {
 	}
 
 	fn set_wine_dll_overrides(&self, game: &DbGame, dll_overrides: &[String]) -> Result {
+		use crate::wine;
+
 		let prefix_path = self.get_wine_prefix_path(game)?;
-		wine::set_wine_dll_overrides_in_reg(&prefix_path, dll_overrides)
+		wine::set_wine_dll_overrides_in_reg(&prefix_path, dll_overrides)?;
+
+		Ok(())
 	}
 }
 
