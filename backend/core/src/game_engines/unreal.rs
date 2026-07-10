@@ -1,44 +1,22 @@
 use std::{
-	fs::{
-		self,
-	},
+	fs::{self},
 	path::Path,
 };
 
-use lazy_regex::{
-	regex_captures,
-	regex_find,
-};
-use log::error;
+use lazy_regex::{regex_captures, regex_find};
 use pelite::{
-	pe32::{
-		Pe as Pe32,
-		PeFile as PeFile32,
-	},
-	pe64::{
-		Pe as Pe64,
-		PeFile as PeFile64,
-	},
+	pe32::{Pe as Pe32, PeFile as PeFile32},
+	pe64::{Pe as Pe64, PeFile as PeFile64},
 };
 use serde_json;
 
-use super::game_engine::{
-	EngineBrand,
-	EngineVersion,
-	EngineVersionNumbers,
-};
+use super::game_engine::{EngineBrand, EngineVersion, EngineVersionNumbers};
 use crate::{
-	architecture::{
-		Architecture,
-		get_architecture,
-	},
+	architecture::{Architecture, get_architecture},
 	game::DbGame,
 	open_better::open_detached_better,
 	path_extensions::PathExt,
-	result::{
-		LogErrExt,
-		Result,
-	},
+	result::{LogErrExt, Result},
 };
 
 fn get_version_from_metadata(
@@ -155,13 +133,7 @@ fn get_version_from_build_version_file(exe_path: &Path) -> Option<EngineVersion>
 
 fn get_version_from_exe_path(exe_path: &Path) -> Option<EngineVersion> {
 	let mmap = crate::game_engines::mmap_safe::map_readonly(exe_path)
-		.inspect_err(|err| {
-			error!(
-				"Failed to open or memory-map `{}`: {err}",
-				exe_path.display()
-			);
-		})
-		.ok()?;
+		.ok_or_log("Failed to memory map Unreal exe")?;
 
 	// Try metadata first (only touches .rsrc section pages via demand paging)
 	if let Some(version) = try_get_version_from_metadata(&mmap) {

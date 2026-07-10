@@ -1,38 +1,17 @@
-use std::{
-	collections::HashMap,
-	path::PathBuf,
-	process::Command,
-};
+use std::{collections::HashMap, path::PathBuf, process::Command};
 
 use chrono::DateTime;
 use log::error;
 use rai_pal_proc_macros::serializable_struct;
-use rusqlite::{
-	Connection,
-	OpenFlags,
-};
+use rusqlite::{Connection, OpenFlags};
 
-use super::provider_command::{
-	ProviderCommand,
-	ProviderCommandAction,
-};
+use super::provider_command::{ProviderCommand, ProviderCommandAction};
 use crate::{
 	app_paths,
 	game::DbGame,
-	game_providers::game_provider::{
-		GameProviderId,
-		ProviderActions,
-		WineProviderActions,
-	},
-	local_database::{
-		app_database::DbMutex,
-		game_database::GameDatabase,
-	},
-	result::{
-		Error,
-		LogErrExt,
-		Result,
-	},
+	game_providers::game_provider::{GameProviderId, ProviderActions, WineProviderActions},
+	local_database::{app_database::DbMutex, game_database::GameDatabase},
+	result::{Error, LogErrExt, Result},
 	wine,
 };
 
@@ -57,16 +36,16 @@ impl Itch {
 		use std::fs;
 
 		let mut entries: Vec<_> = fs::read_dir(base_path)
-			.ok()?
-			.filter_map(|e| e.ok())
+			.ok_or_log("Failed to read Itch dir")?
+			.filter_map(|e| e.ok_or_log("Failed to read Itch dir entry"))
 			.filter(|e| e.file_name() != ".itch")
 			.collect();
 
 		// If there's only one entry and it's a directory, look inside it
-		if entries.len() == 1 && entries[0].file_type().map_or(false, |ft| ft.is_dir()) {
+		if entries.len() == 1 && entries[0].file_type().is_ok_and(|ft| ft.is_dir()) {
 			entries = fs::read_dir(entries[0].path())
-				.ok()?
-				.filter_map(|e| e.ok())
+				.ok_or_log("Failed to read Itch dir")?
+				.filter_map(|e| e.ok_or_log("Failed to read Itch dir entry"))
 				.collect();
 		}
 

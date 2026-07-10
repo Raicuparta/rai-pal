@@ -2,32 +2,19 @@ use std::path::Path;
 
 use lazy_regex::regex_find;
 use pelite::{
-	pe32::{
-		Pe as _,
-		PeFile as PeFile32,
-	},
-	pe64::{
-		Pe as _,
-		PeFile as PeFile64,
-	},
+	pe32::{Pe as _, PeFile as PeFile32},
+	pe64::{Pe as _, PeFile as PeFile64},
 };
 
 use super::{
-	game_engine::{
-		EngineBrand,
-		EngineVersion,
-		EngineVersionNumbers,
-	},
+	game_engine::{EngineBrand, EngineVersion, EngineVersionNumbers},
 	pe_utils,
 };
 use crate::{
 	game::DbGame,
 	open_better::open_detached_better,
 	path_extensions::PathExt,
-	result::{
-		LogErrExt,
-		Result,
-	},
+	result::{LogErrExt, Result},
 };
 
 fn parse_version(version_string: &str) -> Option<EngineVersion> {
@@ -141,7 +128,8 @@ fn check_exe(exe_path: &Path) -> Option<EngineVersion> {
 	// (a few KB) are actually fetched from disk for the fast filter. If the
 	// game turns out to be a Godot game, the .rdata pages are loaded on
 	// demand during the section scan.
-	let mmap = crate::game_engines::mmap_safe::map_readonly(exe_path).ok()?;
+	let mmap = crate::game_engines::mmap_safe::map_readonly(exe_path)
+		.ok_or_log("Failed to memory map Godot exe")?;
 
 	#[allow(
 		clippy::disallowed_methods,
