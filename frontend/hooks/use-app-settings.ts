@@ -32,19 +32,17 @@ export function useAppSettings() {
 	}, [settings]);
 
 	const setSettings = useCallback(
-		(
+		async (
 			newSettingsGetter:
-				| AppSettings
-				| ((prevSettings: AppSettings) => AppSettings),
+				AppSettings | ((prevSettings: AppSettings) => AppSettings),
 		) => {
 			const newSettings =
 				typeof newSettingsGetter === "function"
 					? newSettingsGetter(settingsRef.current.settings)
 					: newSettingsGetter;
 
-			return commands.saveAppSettings(newSettings).then(() => {
-				setSettingsInternal({ isInitialized: true, settings: newSettings });
-			});
+			await commands.saveAppSettings(newSettings);
+			setSettingsInternal({ isInitialized: true, settings: newSettings });
 		},
 		[setSettingsInternal],
 	);
