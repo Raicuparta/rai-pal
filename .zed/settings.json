@@ -1,0 +1,13 @@
+{
+	"languages": {
+		"Rust": {
+			"formatter": {
+				"external": {
+					"command": "rustup",
+					"arguments": ["run", "nightly", "rustfmt"],
+				},
+			},
+		},
+	},
+	"format_on_save": "on",
+}

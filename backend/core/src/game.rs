@@ -1,7 +1,10 @@
 use std::{
 	collections::BTreeMap,
 	fs,
-	path::{Path, PathBuf},
+	path::{
+		Path,
+		PathBuf,
+	},
 };
 
 use crate::{
@@ -10,18 +13,30 @@ use crate::{
 	game_engines::{
 		game_engine::EngineBrand,
 		godot,
-		unity::{self, UnityBackend},
+		unity::{
+			self,
+			UnityBackend,
+		},
 		unreal,
 	},
 	game_providers::{
 		game_provider::GameProviderId,
-		provider_command::{ProviderCommand, ProviderCommandAction},
+		provider_command::{
+			ProviderCommand,
+			ProviderCommandAction,
+		},
 	},
 	game_tag::GameTag,
 	game_title::is_probably_demo,
 	path_extensions::PathExt,
-	remote_config::{self, RemoteConfigs},
-	result::{Error, Result},
+	remote_config::{
+		self,
+		RemoteConfigs,
+	},
+	result::{
+		Error,
+		Result,
+	},
 };
 
 #[derive(serde::Serialize, specta::Type, Clone)]
@@ -206,7 +221,10 @@ impl DbGame {
 		{
 			use std::path::PathBuf;
 
-			use crate::{game_providers::game_provider, path_extensions::AsValidStr};
+			use crate::{
+				game_providers::game_provider,
+				path_extensions::AsValidStr,
+			};
 
 			let provider = game_provider::get_provider(self.provider_id)?;
 			let prefix_path = provider.get_wine_prefix_path(self)?;

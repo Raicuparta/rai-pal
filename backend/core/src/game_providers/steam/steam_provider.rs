@@ -172,11 +172,8 @@ impl Steam {
 
 				// Since there can be multiple Steam games within one installed app_id,
 				// we attach the exe path hash to the internal game_id to make it unique within the local Rai Pal database.
-				installed_game.game_id = format!(
-					"{}_{}",
-					installed_game.external_id,
-					full_path.hash_string()
-				);
+				installed_game.game_id =
+					format!("{}_{}", installed_game.external_id, full_path.hash_string());
 
 				used_names.insert(app_name);
 				used_paths.insert(full_path);

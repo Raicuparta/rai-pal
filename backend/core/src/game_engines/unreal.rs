@@ -1,22 +1,43 @@
 use std::{
-	fs::{self},
+	fs::{
+		self,
+	},
 	path::Path,
 };
 
-use lazy_regex::{regex_captures, regex_find};
+use lazy_regex::{
+	regex_captures,
+	regex_find,
+};
 use pelite::{
-	pe32::{Pe as Pe32, PeFile as PeFile32},
-	pe64::{Pe as Pe64, PeFile as PeFile64},
+	pe32::{
+		Pe as Pe32,
+		PeFile as PeFile32,
+	},
+	pe64::{
+		Pe as Pe64,
+		PeFile as PeFile64,
+	},
 };
 use serde_json;
 
-use super::game_engine::{EngineBrand, EngineVersion, EngineVersionNumbers};
+use super::game_engine::{
+	EngineBrand,
+	EngineVersion,
+	EngineVersionNumbers,
+};
 use crate::{
-	architecture::{Architecture, get_architecture},
+	architecture::{
+		Architecture,
+		get_architecture,
+	},
 	game::DbGame,
 	open_better::open_detached_better,
 	path_extensions::PathExt,
-	result::{LogErrExt, Result},
+	result::{
+		LogErrExt,
+		Result,
+	},
 };
 
 fn get_version_from_metadata(
