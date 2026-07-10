@@ -5,7 +5,7 @@ import { commands } from "@api/bindings";
 import App from "./app";
 import { theme } from "./theme";
 import { registerEvents } from "./register-events";
-import { getVersion, getBundleType } from "@tauri-apps/api/app";
+import { getVersion } from "@tauri-apps/api/app";
 
 import "@mantine/core/styles.css";
 import "@mantine/notifications/styles.css";
@@ -14,11 +14,10 @@ import "./global-styles/mantine-overrides.css";
 import "./global-styles/scroll-bar.css";
 import { platform } from "@tauri-apps/plugin-os";
 
-Promise.all([getVersion(), getBundleType()])
-	.then(([appVersion, bundleType]) => {
+getVersion()
+	.then((appVersion) => {
 		commands.sendAnalyticsEvent("StartApp", {
 			app_version: appVersion,
-			bundle_type: bundleType ?? "none",
 			platform: platform(),
 			mode: import.meta.env.MODE,
 		});
