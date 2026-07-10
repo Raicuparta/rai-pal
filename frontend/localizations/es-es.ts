@@ -85,6 +85,7 @@ export const esEs: Localization = {
 		foldersDropdown: "Carpetas",
 		openGameFilesFolder: "Abrir carpeta de archivos del juego",
 		openInstalledModsFolder: "Abrir carpeta de mods instalados",
+		openGameDataFolder: "Abrir carpeta de datos de la aplicación del juego",
 		openGameWinePrefixFolder: "Abrir carpeta del prefijo Wine del juego",
 		openGameWineBinaryFolder: "Abrir carpeta del binario Wine del juego",
 		removeFromRaiPal: "Eliminar de Rai Pal",

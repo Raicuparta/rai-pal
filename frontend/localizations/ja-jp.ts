@@ -85,6 +85,7 @@ export const jaJp: Localization = {
 		foldersDropdown: "フォルダー",
 		openGameFilesFolder: "ゲームファイルフォルダーを開く",
 		openInstalledModsFolder: "インストール済みモッドフォルダーを開く",
+		openGameDataFolder: "ゲームアプリデータフォルダーを開く",
 		openGameWinePrefixFolder: "ゲームのWineプレフィックスフォルダーを開く",
 		openGameWineBinaryFolder: "ゲームのWineバイナリフォルダーを開く",
 		removeFromRaiPal: "Rai Palから削除",

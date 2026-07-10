@@ -85,6 +85,7 @@ export const deDe: Localization = {
 		foldersDropdown: "Ordner",
 		openGameFilesFolder: "Spiel-Dateien-Ordner öffnen",
 		openInstalledModsFolder: "Installierte Mods-Ordner öffnen",
+		openGameDataFolder: "Spiel-App-Daten-Ordner öffnen",
 		openGameWinePrefixFolder: "Wine-Präfix-Ordner des Spiels öffnen",
 		openGameWineBinaryFolder: "Wine-Binärordner des Spiels öffnen",
 		removeFromRaiPal: "Aus Rai Pal entfernen",

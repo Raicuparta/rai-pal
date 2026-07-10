@@ -81,6 +81,7 @@ export const zhCn: Localization = {
 		foldersDropdown: "文件夹",
 		openGameFilesFolder: "打开游戏文件夹",
 		openInstalledModsFolder: "打开已安装模组文件夹",
+		openGameDataFolder: "打开游戏数据文件夹",
 		openGameWinePrefixFolder: "打开游戏的 Wine 前缀文件夹",
 		openGameWineBinaryFolder: "打开游戏的 Wine 二进制文件夹",
 		removeFromRaiPal: "从 Rai Pal 移除",
