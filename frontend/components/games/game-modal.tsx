@@ -8,7 +8,6 @@ import {
 	IconFolderOpen,
 	IconGlassFull,
 	IconRefresh,
-	IconWriting,
 } from "@tabler/icons-react";
 import { useSetAtom } from "jotai";
 import { DebugData } from "@components/debug-data";

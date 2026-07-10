@@ -1,6 +1,6 @@
 import { AppSettings, commands } from "@api/bindings";
-import { atom, useAtom } from "jotai";
-import { useCallback, useEffect, useRef } from "react";
+import { atom, useAtom, useStore } from "jotai";
+import { useCallback, useEffect } from "react";
 
 const defaultSettings: AppSettings = {
 	hideGameThumbnails: false,
@@ -15,41 +15,44 @@ const appSettingsAtom = atom({
 	settings: defaultSettings,
 });
 
+let isFetching = false;
+
 export function useAppSettings() {
-	const [settings, setSettingsInternal] = useAtom(appSettingsAtom);
-	const settingsRef = useRef(settings);
+	const [state, setSettingsInternal] = useAtom(appSettingsAtom);
+	const store = useStore();
 
 	useEffect(() => {
-		if (settings.isInitialized) return;
+		if (state.isInitialized || isFetching) return;
 
+		isFetching = true;
 		commands.getAppSettings().then((initialSettings) => {
 			setSettingsInternal({ isInitialized: true, settings: initialSettings });
+			isFetching = false;
 		});
-	}, [setSettingsInternal, settings]);
-
-	useEffect(() => {
-		settingsRef.current = settings;
-	}, [settings]);
+	}, [state.isInitialized, setSettingsInternal]);
 
 	const setSettings = useCallback(
 		async (
 			newSettingsGetter:
 				AppSettings | ((prevSettings: AppSettings) => AppSettings),
 		) => {
+			const currentState = store.get(appSettingsAtom).settings;
+
 			const newSettings =
 				typeof newSettingsGetter === "function"
-					? newSettingsGetter(settingsRef.current.settings)
+					? newSettingsGetter(currentState)
 					: newSettingsGetter;
 
-			await commands.saveAppSettings(newSettings);
 			setSettingsInternal({ isInitialized: true, settings: newSettings });
+
+			await commands.saveAppSettings(newSettings);
 		},
-		[setSettingsInternal],
+		[store, setSettingsInternal],
 	);
 
 	const reset = useCallback(() => {
 		setSettings(defaultSettings);
 	}, [setSettings]);
 
-	return [settings.settings, setSettings, reset] as const;
+	return [state.settings, setSettings, reset] as const;
 }

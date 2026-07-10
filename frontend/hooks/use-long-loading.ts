@@ -1,22 +1,19 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export function useLongLoading(isLoading: boolean) {
 	const [isLongLoading, setIsLongLoading] = useState(false);
-	const timeout = useRef<number>(undefined);
-
-	const timeoutCallback = useCallback(() => {
-		if (!isLoading) return;
-		setIsLongLoading(true);
-	}, [isLoading]);
+	const timeout = useRef<ReturnType<typeof setTimeout>>(undefined);
 
 	useEffect(() => {
-		setIsLongLoading(false);
 		if (!isLoading) return;
 
-		timeout.current = setTimeout(timeoutCallback, 500);
+		timeout.current = setTimeout(() => setIsLongLoading(true), 500);
 
-		return () => clearTimeout(timeout.current);
-	}, [isLoading, timeoutCallback]);
+		return () => {
+			clearTimeout(timeout.current);
+			setIsLongLoading(false);
+		};
+	}, [isLoading]);
 
 	return isLongLoading;
 }
