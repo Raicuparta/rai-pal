@@ -93,10 +93,9 @@ mod typescript;
 
 #[tauri::command]
 #[specta::specta]
-async fn log_in(window: tauri::Window) -> Result {
+async fn log_in(handle: AppHandle) -> Result {
 	start_auth().await?;
-	window.hide()?;
-	window.show()?;
+	focus(&handle);
 
 	Ok(())
 }
@@ -672,7 +671,24 @@ fn show_panic(error: &str) {
 		.show();
 }
 
+fn focus(handle: &AppHandle) {
+	if let Some(window) = handle.get_webview_window("main") {
+		if window.is_minimized().is_ok_and(|is| is) {
+			log::warn!("######### MINIMIZED");
+			window.set_focus().ok_or_log("Failed to focus minimized window");
+		} else {
+			log::warn!("######### NOT MINIMIZED");
+			window.hide()
+				.and_then(|_| { window.show() })
+				.and_then(|_| { window.set_focus() })
+				.ok_or_log("Failed to focus window");
+		}
+	}
+}
+
 fn main() {
+    std::fs::write("/tmp/rai-pal-env.log", format!("XDG_ACTIVATION_TOKEN: {}", std::env::var("XDG_ACTIVATION_TOKEN").unwrap_or_default())).ok();
+
 	// Since I'm making all exposed functions async, panics won't crash anything important, I think.
 	// So I can just catch panics here and show a system message with the error.
 	std::panic::set_hook(Box::new(|info| {
@@ -738,7 +754,9 @@ fn main() {
 	});
 
 	tauri::Builder::default()
-		.plugin(tauri_plugin_single_instance::init(|_app, _args, _cwd| {}))
+		.plugin(tauri_plugin_single_instance::init(|handle, _args, _cwd| {
+    		focus(&handle);
+		}))
 		.plugin(
 			tauri_plugin_log::Builder::new()
 				.level(if cfg!(debug_assertions) {
@@ -762,7 +780,7 @@ fn main() {
 		.plugin(tauri_plugin_os::init())
 		.plugin(
 			tauri_plugin_window_state::Builder::default()
-				.with_state_flags(StateFlags::POSITION | StateFlags::SIZE)
+				.with_state_flags(StateFlags::POSITION | StateFlags::SIZE | StateFlags::MAXIMIZED)
 				.build(),
 		)
 		.plugin(tauri_plugin_dialog::init())
@@ -772,27 +790,25 @@ fn main() {
 		.setup(move |app| {
 			builder.mount_events(app);
 
+			// --- Deep link ---
+
 			app.deep_link().register_all()?;
 
-			if let Ok(start_urls) = app.deep_link().get_current()
-				&& let Some(urls) = start_urls
-			{
+			if let Ok(Some(urls)) = app.deep_link().get_current() {
 				log::info!("App opened via deep link: {urls:?}");
 			} else {
 				log::info!("App opened directly.");
 
 				#[cfg(debug_assertions)]
-				{
-					// This is buried here to avoid touching the TS bindings file when opening via deep link.
-					typescript::export(&builder);
-				}
+				// This is buried here to avoid touching the TS bindings file when opening via deep link.
+				typescript::export(&builder);
 			}
 
 			app.deep_link().on_open_url(|event| {
 				log::info!("Deep link received: {:?}", event.urls());
 			});
 
-			tauri::async_runtime::spawn(start_user_socket_manager());
+			// --- Window ---
 
 			// Only create the window once everything is ready, which reduces the jumping around
 			// that happens while waiting for tauri_plugin_window_state to do its thing.
@@ -809,8 +825,11 @@ fn main() {
 				.data_directory(app_paths::app_data_subfolder("main-webview")?)
 				.inner_size(800.0, 600.0)
 				.min_inner_size(800.0, 500.0)
+				.decorations(false)
 				.resizable(true)
-				.fullscreen(false)
+				.focusable(true)
+				.minimizable(true)
+				// .fullscreen(false)
 				.build()?;
 
 			window.on_window_event(|event| {
@@ -822,25 +841,30 @@ fn main() {
 				}
 			});
 
-			let app_handle = app.app_handle().clone();
+			// --- Background tasks ---
 
-			tauri::async_runtime::spawn(async move {
-				let state = app_handle.app_state();
-				let cloned_handle = app_handle.clone();
+			tauri::async_runtime::spawn(start_user_socket_manager());
 
-				if let Err(error) = state
-					.database
-					.lock_db()
-					.map_err(|e| e.to_string())
-					.and_then(|db| {
-						db.update_hook(Some(move |_, _: &str, _: &str, _| {
-							cloned_handle.emit_safe(events::AppDatabaseChanged());
-						}))
+			tauri::async_runtime::spawn({
+				let handle = app.app_handle().clone();
+				async move {
+					let state = handle.app_state();
+
+					if let Err(error) = state
+						.database
+						.lock_db()
 						.map_err(|e| e.to_string())
-					}) {
-					log::error!(
-						"Failed to subscribe to local database updates. App won't work properly. Error: {error}"
-					);
+						.and_then(|db| {
+							let handle = handle.clone();
+							db.update_hook(Some(move |_, _: &str, _: &str, _| {
+								handle.emit_safe(events::AppDatabaseChanged());
+							}))
+							.map_err(|e| e.to_string())
+						}) {
+						log::error!(
+							"Failed to subscribe to local database updates. App won't work properly. Error: {error}"
+						);
+					}
 				}
 			});
 
