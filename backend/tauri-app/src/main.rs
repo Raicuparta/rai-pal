@@ -825,11 +825,6 @@ fn main() {
 				.data_directory(app_paths::app_data_subfolder("main-webview")?)
 				.inner_size(800.0, 600.0)
 				.min_inner_size(800.0, 500.0)
-				.decorations(false)
-				.resizable(true)
-				.focusable(true)
-				.minimizable(true)
-				// .fullscreen(false)
 				.build()?;
 
 			window.on_window_event(|event| {
