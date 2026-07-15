@@ -183,7 +183,7 @@ impl GameDatabase for DbMutex {
 						tag.as_ref().map_or_else(
 							|| "g.tags = '[]'".to_string(),
 							|t| {
-								params.push(Box::new(format!("%\"{}\"%", t)));
+								params.push(Box::new(format!(r#"%"{t}"%"#)));
 								"g.tags LIKE ?".to_string()
 							},
 						)
