@@ -675,19 +675,29 @@ fn focus(handle: &AppHandle) {
 	if let Some(window) = handle.get_webview_window("main") {
 		if window.is_minimized().is_ok_and(|is| is) {
 			log::warn!("######### MINIMIZED");
-			window.set_focus().ok_or_log("Failed to focus minimized window");
+			window
+				.set_focus()
+				.ok_or_log("Failed to focus minimized window");
 		} else {
 			log::warn!("######### NOT MINIMIZED");
-			window.hide()
-				.and_then(|_| { window.show() })
-				.and_then(|_| { window.set_focus() })
+			window
+				.hide()
+				.and_then(|_| window.show())
+				.and_then(|_| window.set_focus())
 				.ok_or_log("Failed to focus window");
 		}
 	}
 }
 
 fn main() {
-    std::fs::write("/tmp/rai-pal-env.log", format!("XDG_ACTIVATION_TOKEN: {}", std::env::var("XDG_ACTIVATION_TOKEN").unwrap_or_default())).ok();
+	std::fs::write(
+		"/tmp/rai-pal-env.log",
+		format!(
+			"XDG_ACTIVATION_TOKEN: {}",
+			std::env::var("XDG_ACTIVATION_TOKEN").unwrap_or_default()
+		),
+	)
+	.ok();
 
 	// Since I'm making all exposed functions async, panics won't crash anything important, I think.
 	// So I can just catch panics here and show a system message with the error.
@@ -755,7 +765,7 @@ fn main() {
 
 	tauri::Builder::default()
 		.plugin(tauri_plugin_single_instance::init(|handle, _args, _cwd| {
-    		focus(&handle);
+			focus(&handle);
 		}))
 		.plugin(
 			tauri_plugin_log::Builder::new()

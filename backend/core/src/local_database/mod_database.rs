@@ -212,7 +212,7 @@ impl ModDatabase for DbMutex {
 			.query_row(
 				rusqlite::params![
 					mod_id,
-					provider_id_option.map(|provider_id| provider_id.to_string()),
+					provider_id_option.map(|provider_id| { provider_id.to_string() }),
 					game_id_option.as_deref(),
 				],
 				|row| row.get::<_, bool>(0),
