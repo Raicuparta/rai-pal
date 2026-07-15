@@ -1,16 +1,25 @@
 {
-	"languages": {
-		"Rust": {
-			"formatter": {
-				"external": {
-					"command": "rustup",
-					"arguments": ["run", "nightly", "rustfmt"],
-				},
-			},
-		},
-	},
-	"format_on_save": "on",
-	"prettier": {
-		"allowed": true,
-	},
+  "languages": {
+    "Rust": {
+      "prettier": {
+        "allowed": false,
+      },
+      "formatter": {
+        "external": {
+          "command": "rustup",
+          "arguments": [
+            "run",
+            "nightly",
+            "rustfmt",
+            "--config-path",
+            "backend/.rustfmt.toml"
+          ],
+        },
+      },
+    },
+  },
+  "format_on_save": "on",
+  "prettier": {
+    "allowed": false,
+  },
 }
