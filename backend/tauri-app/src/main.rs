@@ -673,7 +673,10 @@ fn show_panic(error: &str) {
 
 fn focus(handle: &AppHandle) {
 	if let Some(window) = handle.get_webview_window("main") {
-	  window.set_focus().ok_or_log("Failed to focus window");
+		window.unminimize().ok_or_log("Failed to unminimize window");
+		window.set_focus().ok_or_log("Failed to focus window");
+	} else {
+		log::error!("Failed to find main window!");
 	}
 }
 
@@ -814,6 +817,7 @@ fn main() {
 				.data_directory(app_paths::app_data_subfolder("main-webview")?)
 				.inner_size(800.0, 600.0)
 				.min_inner_size(800.0, 500.0)
+				.focusable(true)
 				.build()?;
 
 			window.on_window_event(|event| {
