@@ -14,7 +14,10 @@ use app_state::{
 	StateData,
 	StatefulHandle,
 };
-use events::EventEmitter;
+use events::{
+	AddModSource,
+	EventEmitter,
+};
 #[cfg(target_os = "windows")]
 use rai_pal_core::windows;
 use rai_pal_core::{
@@ -450,6 +453,19 @@ async fn get_mods_from_url_mod_source(url: String) -> Result<Vec<GameMod>> {
 
 #[tauri::command]
 #[specta::specta]
+async fn prompt_add_mod_source(
+	url: String,
+	handle: AppHandle,
+) -> Result {
+	url_mod_provider::get_mods_from_url_mod_source(&url).await?;
+
+	handle.emit_safe(AddModSource(url));
+
+	Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
 async fn remove_url_mod_source(url: String) -> Result {
 	Ok(url_mod_provider::remove_url_mod_source(&url)?)
 }
@@ -698,6 +714,29 @@ fn show_panic(error: &str) {
 		.show();
 }
 
+fn handle_deep_link_url(url: &str, handle: &AppHandle) {
+	let url = url
+		.strip_prefix("rai-pal://")
+		.or_else(|| url.strip_prefix("rai-pal:"));
+
+	let Some(url) = url else { return };
+
+	let (path, query) = url.split_once('?').unwrap_or((url, ""));
+
+	if path != "add-mod-source" {
+		return;
+	}
+
+	let mod_source_url = query
+		.split('&')
+		.filter_map(|part| part.strip_prefix("url="))
+		.next();
+
+	if let Some(mod_source_url) = mod_source_url {
+		handle.emit_safe(AddModSource(mod_source_url.to_string()));
+	}
+}
+
 fn focus(handle: &AppHandle) {
 	if let Some(window) = handle.get_webview_window("main") {
 		window.unminimize().ok_or_log("Failed to unminimize window");
@@ -730,6 +769,7 @@ fn main() {
 			get_game_mods,
 			get_mods,
 			get_mods_from_url_mod_source,
+			prompt_add_mod_source,
 			get_remote_configs,
 			get_url_mod_sources,
 			install_mod,
@@ -817,8 +857,14 @@ fn main() {
 
 			app.deep_link().register_all()?;
 
+			let handle = app.handle().clone();
+
 			if let Ok(Some(urls)) = app.deep_link().get_current() {
 				log::info!("App opened via deep link: {urls:?}");
+
+				for url in &urls {
+					handle_deep_link_url(url.as_str(), &handle);
+				}
 			} else {
 				log::info!("App opened directly.");
 
@@ -827,8 +873,14 @@ fn main() {
 				typescript::export(&builder);
 			}
 
-			app.deep_link().on_open_url(|event| {
-				log::info!("Deep link received: {:?}", event.urls());
+			app.deep_link().on_open_url(move |event| {
+				let urls = event.urls();
+
+				log::info!("Deep link received: {urls:?}");
+
+				for url in urls {
+					handle_deep_link_url(url.as_str(), &handle);
+				}
 			});
 
 			// --- Window ---

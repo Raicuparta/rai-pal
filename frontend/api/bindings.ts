@@ -22,6 +22,7 @@ export const commands = {
 	getGameMods: (providerId: GameProviderId, gameId: string) => __TAURI_INVOKE<GameModInfo[]>("get_game_mods", { providerId, gameId }),
 	getMods: () => __TAURI_INVOKE<{ [key in string]: GameMod }>("get_mods"),
 	getModsFromUrlModSource: (url: string) => __TAURI_INVOKE<GameMod[]>("get_mods_from_url_mod_source", { url }),
+	promptAddModSource: (url: string) => __TAURI_INVOKE<null>("prompt_add_mod_source", { url }),
 	getRemoteConfigs: (providerId: GameProviderId, gameId: string) => __TAURI_INVOKE<{
 	configs: RemoteConfig[],
 } | null>("get_remote_configs", { providerId, gameId }),
@@ -56,6 +57,7 @@ export const commands = {
 
 /** Events */
 export const events = {
+	addModSource: makeEvent<AddModSource>("add-mod-source"),
 	appDatabaseChanged: makeEvent<AppDatabaseChanged>("app-database-changed"),
 	executedProviderCommand: makeEvent<ExecutedProviderCommand>("executed-provider-command"),
 	refreshGame: makeEvent<RefreshGame>("refresh-game"),
@@ -66,6 +68,8 @@ export const events = {
 export const PROVIDER_IDS = ["Epic","Gog","Itch","Manual","Steam","Xbox"] as const;
 
 /* Types */
+export type AddModSource = string;
+
 export type AppDatabaseChanged = [];
 
 export type AppLocale = "EnUs" | "EsEs" | "FrFr" | "DeDe" | "PtPt" | "ZhCn" | "JaJp" | "KoKr" | "WaWa";

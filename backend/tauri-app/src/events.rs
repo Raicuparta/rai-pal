@@ -14,6 +14,9 @@ pub struct ExecutedProviderCommand;
 #[serializable_event]
 pub struct SelectGame(pub GameProviderId, pub String);
 
+#[serializable_event]
+pub struct AddModSource(pub String);
+
 pub trait EventEmitter {
 	fn emit_safe<TEvent: tauri_specta::Event + Serialize + Clone>(&self, event: TEvent);
 }
@@ -32,5 +35,6 @@ pub fn collect_events() -> tauri_specta::Events {
 		AppDatabaseChanged,
 		ExecutedProviderCommand,
 		SelectGame,
+		AddModSource,
 	]
 }
