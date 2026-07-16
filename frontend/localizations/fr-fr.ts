@@ -244,4 +244,17 @@ export const frFr: Localization = {
 		cancel: "Annuler",
 		dontAskAgain: "Ne plus demander",
 	},
+
+	urlModSources: {
+		title: "Sources de la base de données de mods",
+		defaultSource: "Source par défaut (toujours activée)",
+		customSources: "Sources personnalisées",
+		addCustomSource: "Ajouter une source personnalisée",
+		add: "Ajouter",
+		confirmModalTitle: "Confirmer la source de mods",
+		modsFound: "{count} mods trouvés dans cette source",
+		addSource: "Ajouter la source",
+		cancel: "Annuler",
+		loading: "Chargement des mods...",
+	},
 } as const;

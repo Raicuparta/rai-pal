@@ -243,4 +243,17 @@ export const jaJp: Localization = {
 		cancel: "キャンセル",
 		dontAskAgain: "今後確認しない",
 	},
+
+	urlModSources: {
+		title: "Modデータベースソース",
+		defaultSource: "デフォルトソース（常に有効）",
+		customSources: "カスタムソース",
+		addCustomSource: "カスタムソースを追加",
+		add: "追加",
+		confirmModalTitle: "Modソースを確認",
+		modsFound: "このソースに{count}個のModが見つかりました",
+		addSource: "ソースを追加",
+		cancel: "キャンセル",
+		loading: "Modを読み込み中...",
+	},
 } as const;

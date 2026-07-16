@@ -241,4 +241,17 @@ export const ptPt: Localization = {
 		cancel: "Cancelar",
 		dontAskAgain: "Não perguntar novamente",
 	},
+
+	urlModSources: {
+		title: "Fontes de base de dados de mods",
+		defaultSource: "Fonte predefinida (sempre ativada)",
+		customSources: "Fontes personalizadas",
+		addCustomSource: "Adicionar fonte personalizada",
+		add: "Adicionar",
+		confirmModalTitle: "Confirmar fonte de mods",
+		modsFound: "{count} mods encontrados nesta fonte",
+		addSource: "Adicionar fonte",
+		cancel: "Cancelar",
+		loading: "A carregar mods...",
+	},
 };

@@ -48,7 +48,10 @@ use rai_pal_core::{
 		},
 	},
 	maps::TryGettable,
-	mod_providers::mod_provider,
+	mod_providers::{
+		mod_provider,
+		url_mod_provider,
+	},
 	mods::game_mod::GameMod,
 	path_extensions::PathExt,
 	remote_config::RemoteConfigs,
@@ -429,6 +432,30 @@ async fn refresh_mods(handle: AppHandle) -> Result {
 
 #[tauri::command]
 #[specta::specta]
+async fn get_url_mod_sources() -> Result<url_mod_provider::UrlModSources> {
+	Ok(url_mod_provider::get_url_mod_sources())
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn add_url_mod_source(url: String) -> Result {
+	Ok(url_mod_provider::add_url_mod_source(url)?)
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn get_mods_from_url_mod_source(url: String) -> Result<Vec<GameMod>> {
+	Ok(url_mod_provider::get_mods_from_url_mod_source(&url).await?)
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn remove_url_mod_source(url: String) -> Result {
+	Ok(url_mod_provider::remove_url_mod_source(&url)?)
+}
+
+#[tauri::command]
+#[specta::specta]
 async fn get_mods(handle: AppHandle) -> Result<BTreeMap<String, GameMod>> {
 	let state = handle.app_state();
 	Ok(state.database.get_mod_map()?)
@@ -693,6 +720,7 @@ fn main() {
 		.commands(tauri_specta::collect_commands![
 			add_game,
 			add_rai_pal_steam_shortcut,
+			add_url_mod_source,
 			configure_mod,
 			download_remote_config,
 			get_app_settings,
@@ -701,7 +729,9 @@ fn main() {
 			get_game_ids,
 			get_game_mods,
 			get_mods,
+			get_mods_from_url_mod_source,
 			get_remote_configs,
+			get_url_mod_sources,
 			install_mod,
 			listen_to_download_progress,
 			log_in,
@@ -719,6 +749,7 @@ fn main() {
 			refresh_mods,
 			refresh_remote_games,
 			remove_game,
+			remove_url_mod_source,
 			reset_steam_cache,
 			run_mod,
 			run_provider_command,

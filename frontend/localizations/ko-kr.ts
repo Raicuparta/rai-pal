@@ -238,4 +238,17 @@ export const koKr: Localization = {
 		cancel: "취소",
 		dontAskAgain: "다시 묻지 않기",
 	},
+
+	urlModSources: {
+		title: "모드 데이터베이스 소스",
+		defaultSource: "기본 소스(항상 활성화)",
+		customSources: "사용자 정의 소스",
+		addCustomSource: "사용자 정의 소스 추가",
+		add: "추가",
+		confirmModalTitle: "Mod 소스 확인",
+		modsFound: "이 소스에서 {count}개의 모드를 찾았습니다",
+		addSource: "소스 추가",
+		cancel: "취소",
+		loading: "모드 로딩 중...",
+	},
 } as const;

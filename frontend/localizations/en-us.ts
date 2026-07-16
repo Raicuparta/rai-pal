@@ -488,4 +488,37 @@ export const enUs = {
 		// Label of the checkbox for skipping future confirmations for a command.
 		dontAskAgain: "Don't ask again",
 	},
+
+	// Modal for managing custom mod database URLs.
+	urlModSources: {
+		// Title of the modal.
+		title: "Mod Database Sources",
+
+		// Label for the default (built-in) source section.
+		defaultSource: "Default source (always enabled)",
+
+		// Label for the custom sources section.
+		customSources: "Custom sources",
+
+		// Label for the text input where the user types a new URL.
+		addCustomSource: "Add custom source",
+
+		// Button to add a new URL.
+		add: "Add",
+
+		// Title for the confirmation modal when adding a new source.
+		confirmModalTitle: "Confirm Mod Source",
+
+		// Label showing how many mods were found in the source.
+		modsFound: "{count} mods found in this source",
+
+		// Button to confirm adding the source.
+		addSource: "Add Source",
+
+		// Button to cancel adding the source.
+		cancel: "Cancel",
+
+		// Text shown while the source URL is being fetched.
+		loading: "Loading mods...",
+	},
 } as const;

@@ -1,7 +1,10 @@
+use std::{fs, path::PathBuf};
+
 use rai_pal_proc_macros::serializable_struct;
 
 use super::mod_provider::ModProvider;
 use crate::{
+	app_paths,
 	http,
 	local_database::{
 		app_database::DbMutex,
@@ -9,6 +12,7 @@ use crate::{
 	},
 	mod_providers::mod_provider::ModProviderId,
 	mods::game_mod::GameMod,
+	path_extensions::PathExt,
 	result::Result,
 };
 
@@ -25,8 +29,97 @@ const URL_BASE: &str = "https://raicuparta.github.io/rai-pal-db/mod-db";
 // you would create a new folder in the database repository and change this number to match the folder.
 const DATABASE_VERSION: i32 = 1;
 
+fn default_url() -> String {
+	format!("{URL_BASE}/{DATABASE_VERSION}/mods.json")
+}
+
+#[serializable_struct]
+pub struct UrlModSources {
+	pub additional_urls: Vec<String>,
+}
+
+impl Default for UrlModSources {
+	fn default() -> Self {
+		Self {
+			additional_urls: Vec::new(),
+		}
+	}
+}
+
+fn url_mod_sources_path() -> Result<PathBuf> {
+	Ok(app_paths::app_data_file("url-mod-sources.json")?)
+}
+
+fn read_url_mod_sources() -> UrlModSources {
+	let path = match url_mod_sources_path() {
+		Ok(p) => p,
+		Err(_) => return UrlModSources::default(),
+	};
+
+	if !path.is_file() {
+		return UrlModSources::default();
+	}
+
+	fs::read_to_string(&path)
+		.ok()
+		.and_then(|data| serde_json::from_str(&data).ok())
+		.unwrap_or_default()
+}
+
+fn write_url_mod_sources(sources: &UrlModSources) -> Result {
+	let path = url_mod_sources_path()?;
+
+	fs::create_dir_all(path.try_parent()?)?;
+	fs::write(&path, serde_json::to_string(sources)?)?;
+
+	Ok(())
+}
+
+pub async fn get_mods_from_url_mod_source(url: &str) -> Result<Vec<GameMod>> {
+	let mods = http::CLIENT
+		.get(url)
+		.send()
+		.await?
+		.error_for_status()?
+		.json::<UrlModDatabase>()
+		.await?
+		.mods;
+
+	Ok(mods)
+}
+
+pub fn add_url_mod_source(url: String) -> Result {
+	let mut sources = read_url_mod_sources();
+
+	if !sources.additional_urls.contains(&url) {
+		sources.additional_urls.push(url);
+		write_url_mod_sources(&sources)?;
+	}
+
+	Ok(())
+}
+
+pub fn remove_url_mod_source(url: &str) -> Result {
+	let mut sources = read_url_mod_sources();
+
+	sources.additional_urls.retain(|u| u != url);
+	write_url_mod_sources(&sources)
+}
+
+pub fn get_url_mod_sources() -> UrlModSources {
+	read_url_mod_sources()
+}
+
+pub fn get_all_urls() -> Vec<String> {
+	let mut urls = vec![default_url()];
+
+	urls.extend(read_url_mod_sources().additional_urls);
+
+	urls
+}
+
 pub struct UrlModProvider {
-	pub url: String,
+	pub urls: Vec<String>,
 }
 
 impl ModProvider for UrlModProvider {
@@ -36,20 +129,22 @@ impl ModProvider for UrlModProvider {
 
 	fn default() -> Result<Self> {
 		Ok(Self {
-			url: format!("{URL_BASE}/{DATABASE_VERSION}/mods.json"),
+			urls: get_all_urls(),
 		})
 	}
 
 	async fn insert_mods(&self, db: &DbMutex) -> Result {
-		http::CLIENT
-			.get(&self.url)
-			.send()
-			.await?
-			.json::<UrlModDatabase>()
-			.await?
-			.mods
-			.iter()
-			.for_each(|game_mod| db.insert_mod(game_mod, Self::get_id()));
+		for url in &self.urls {
+			http::CLIENT
+				.get(url)
+				.send()
+				.await?
+				.json::<UrlModDatabase>()
+				.await?
+				.mods
+				.iter()
+				.for_each(|game_mod| db.insert_mod(game_mod, Self::get_id()));
+		}
 
 		Ok(())
 	}

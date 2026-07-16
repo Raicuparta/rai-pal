@@ -7,6 +7,7 @@ import * as __TAURI_EVENT from "@tauri-apps/api/event";
 export const commands = {
 	addGame: (path: string) => __TAURI_INVOKE<null>("add_game", { path }),
 	addRaiPalSteamShortcut: () => __TAURI_INVOKE<null>("add_rai_pal_steam_shortcut"),
+	addUrlModSource: (url: string) => __TAURI_INVOKE<null>("add_url_mod_source", { url }),
 	configureMod: (providerId: GameProviderId, gameId: string, modId: string, openFolder: boolean) => __TAURI_INVOKE<null>("configure_mod", { providerId, gameId, modId, openFolder }),
 	downloadRemoteConfig: (providerId: GameProviderId, gameId: string, modId: string, remoteConfigFile: string, overwrite: boolean) => __TAURI_INVOKE<null>("download_remote_config", { providerId, gameId, modId, remoteConfigFile, overwrite }),
 	getAppSettings: () => __TAURI_INVOKE<AppSettings>("get_app_settings"),
@@ -20,9 +21,11 @@ export const commands = {
 } | null) => __TAURI_INVOKE<GameIdsResponse>("get_game_ids", { query }),
 	getGameMods: (providerId: GameProviderId, gameId: string) => __TAURI_INVOKE<GameModInfo[]>("get_game_mods", { providerId, gameId }),
 	getMods: () => __TAURI_INVOKE<{ [key in string]: GameMod }>("get_mods"),
+	getModsFromUrlModSource: (url: string) => __TAURI_INVOKE<GameMod[]>("get_mods_from_url_mod_source", { url }),
 	getRemoteConfigs: (providerId: GameProviderId, gameId: string) => __TAURI_INVOKE<{
 	configs: RemoteConfig[],
 } | null>("get_remote_configs", { providerId, gameId }),
+	getUrlModSources: () => __TAURI_INVOKE<UrlModSources>("get_url_mod_sources"),
 	installMod: (modId: string, providerIdOption: "Epic" | "Gog" | "Itch" | "Manual" | "Steam" | "Xbox" | null, gameIdOption: string | null) => __TAURI_INVOKE<null>("install_mod", { modId, providerIdOption, gameIdOption }),
 	listenToDownloadProgress: (channel: Channel<DownloadStatus>) => __TAURI_INVOKE<null>("listen_to_download_progress", { channel }),
 	logIn: () => __TAURI_INVOKE<null>("log_in"),
@@ -40,6 +43,7 @@ export const commands = {
 	refreshMods: () => __TAURI_INVOKE<null>("refresh_mods"),
 	refreshRemoteGames: () => __TAURI_INVOKE<null>("refresh_remote_games"),
 	removeGame: (providerId: GameProviderId, gameId: string) => __TAURI_INVOKE<null>("remove_game", { providerId, gameId }),
+	removeUrlModSource: (url: string) => __TAURI_INVOKE<null>("remove_url_mod_source", { url }),
 	resetSteamCache: () => __TAURI_INVOKE<null>("reset_steam_cache"),
 	runMod: (modId: string, providerIdOption: "Epic" | "Gog" | "Itch" | "Manual" | "Steam" | "Xbox" | null, gameIdOption: string | null) => __TAURI_INVOKE<null>("run_mod", { modId, providerIdOption, gameIdOption }),
 	runProviderCommand: (providerId: GameProviderId, gameId: string, providerCommandAciton: ProviderCommandAction) => __TAURI_INVOKE<null>("run_provider_command", { providerId, gameId, providerCommandAciton }),
@@ -254,6 +258,10 @@ export type SelectGame = [GameProviderId, string];
 export type TabId = "Games" | "Mods" | "Thanks";
 
 export type UnityBackend = "Il2Cpp" | "Mono";
+
+export type UrlModSources = {
+	additionalUrls: string[],
+};
 
 /* Tauri Specta runtime */
 type EventEmit<T> = [T] extends [null] ? () => Promise<void> : (payload: T) => Promise<void>;

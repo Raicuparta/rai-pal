@@ -246,4 +246,17 @@ export const esEs: Localization = {
 		cancel: "Cancelar",
 		dontAskAgain: "No preguntar de nuevo",
 	},
+
+	urlModSources: {
+		title: "Fuentes de base de datos de mods",
+		defaultSource: "Fuente predeterminada (siempre activada)",
+		customSources: "Fuentes personalizadas",
+		addCustomSource: "Añadir fuente personalizada",
+		add: "Añadir",
+		confirmModalTitle: "Confirmar fuente de mods",
+		modsFound: "{count} mods encontrados en esta fuente",
+		addSource: "Añadir fuente",
+		cancel: "Cancelar",
+		loading: "Cargando mods...",
+	},
 } as const;

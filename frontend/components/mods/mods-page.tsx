@@ -1,18 +1,25 @@
 import { Button, Card, Group, Stack, Tooltip } from "@mantine/core";
 import { useMemo, useState } from "react";
+import { useDisclosure } from "@mantine/hooks";
 import { RefreshButton } from "@components/refresh-button";
 import { commands } from "@api/bindings";
-import { IconFolderCog } from "@tabler/icons-react";
+import { IconFolderCog, IconWorld } from "@tabler/icons-react";
 import { ModModal } from "./mod-modal";
 import { useLocalization } from "@hooks/use-localization";
 import { ModsTable } from "./mods-table";
 import { TableContainer } from "@components/table/table-container";
 import { useAtomValue } from "jotai";
 import { modsAtom } from "@hooks/use-data";
+import { UrlModSourcesModal } from "@components/tools/url-mod-sources-modal";
 
 export function ModsPage() {
 	const t = useLocalization("modsPage");
+	const urlModSourcesT = useLocalization("urlModSources");
 	const [selectedModId, setSelectedId] = useState<string>();
+	const [
+		isUrlModSourcesModalOpen,
+		{ open: openUrlModSourcesModal, close: closeUrlModSourcesModal },
+	] = useDisclosure(false);
 
 	const mods = useAtomValue(modsAtom);
 
@@ -33,6 +40,12 @@ export function ModsPage() {
 			{!selectedMod && (
 				<>
 					<Group justify="end">
+						<Button
+							onClick={openUrlModSourcesModal}
+							leftSection={<IconWorld />}
+						>
+							{urlModSourcesT("title")}
+						</Button>
 						<Tooltip label={t("openLoadlModsFolderTooltip")}>
 							<Button
 								onClick={commands.openLocalModsFolder}
@@ -43,6 +56,10 @@ export function ModsPage() {
 						</Tooltip>
 						<RefreshButton />
 					</Group>
+					<UrlModSourcesModal
+						isOpen={isUrlModSourcesModalOpen}
+						onClose={closeUrlModSourcesModal}
+					/>
 					<Card
 						p={0}
 						flex={1}

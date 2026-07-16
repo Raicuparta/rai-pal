@@ -232,4 +232,17 @@ export const zhCn: Localization = {
 		cancel: "取消",
 		dontAskAgain: "不再询问",
 	},
+
+	urlModSources: {
+		title: "Mod数据库来源",
+		defaultSource: "默认来源（始终启用）",
+		customSources: "自定义来源",
+		addCustomSource: "添加自定义来源",
+		add: "添加",
+		confirmModalTitle: "确认Mod来源",
+		modsFound: "在此来源中找到{count}个Mod",
+		addSource: "添加来源",
+		cancel: "取消",
+		loading: "正在加载Mod...",
+	},
 } as const;

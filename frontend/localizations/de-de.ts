@@ -245,4 +245,17 @@ export const deDe: Localization = {
 		cancel: "Abbrechen",
 		dontAskAgain: "Nicht mehr fragen",
 	},
+
+	urlModSources: {
+		title: "Mod-Datenbank-Quellen",
+		defaultSource: "Standardquelle (immer aktiviert)",
+		customSources: "Benutzerdefinierte Quellen",
+		addCustomSource: "Benutzerdefinierte Quelle hinzufügen",
+		add: "Hinzufügen",
+		confirmModalTitle: "Mod-Quelle bestätigen",
+		modsFound: "{count} Mods in dieser Quelle gefunden",
+		addSource: "Quelle hinzufügen",
+		cancel: "Abbrechen",
+		loading: "Mods werden geladen...",
+	},
 } as const;
