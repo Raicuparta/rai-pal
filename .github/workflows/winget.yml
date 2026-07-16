@@ -3,6 +3,11 @@ name: Update WinGet Package
 on:
   release:
     types: [released]
+  workflow_dispatch:
+    inputs:
+      release-tag:
+        description: "The release tag to submit to WinGet"
+        required: true
 
 jobs:
   winget:
@@ -11,4 +16,6 @@ jobs:
       - uses: vedantmgoyal9/winget-releaser@4ffc7888bffd451b357355dc214d43bb9f23917e
         with:
           identifier: Raicuparta.RaiPal
+          installers-regex: '\.exe$'
           token: ${{ secrets.WINGET_GH_TOKEN }}
+          release-tag: ${{ github.event.release.tag_name || github.event.inputs.release-tag }}
