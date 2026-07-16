@@ -11,8 +11,8 @@
 		"dialog:allow-open",
 		"dialog:allow-ask",
 		"updater:allow-check",
-		"shell:default",
 		"updater:default",
-		"os:allow-locale"
+		"os:allow-locale",
+		"deep-link:default"
 	]
 }

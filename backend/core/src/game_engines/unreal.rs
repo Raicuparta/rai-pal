@@ -9,7 +9,6 @@ use lazy_regex::{
 	regex_captures,
 	regex_find,
 };
-use log::error;
 use pelite::{
 	pe32::{
 		Pe as Pe32,
@@ -22,16 +21,23 @@ use pelite::{
 };
 use serde_json;
 
-use super::game_engine::EngineVersionNumbers;
+use super::game_engine::{
+	EngineBrand,
+	EngineVersion,
+	EngineVersionNumbers,
+};
 use crate::{
 	architecture::{
 		Architecture,
 		get_architecture,
 	},
 	game::DbGame,
-	game_engines::game_engine::EngineVersion,
+	open_better::open_detached_better,
 	path_extensions::PathExt,
-	result::LogErrExt,
+	result::{
+		LogErrExt,
+		Result,
+	},
 };
 
 fn get_version_from_metadata(
@@ -147,24 +153,15 @@ fn get_version_from_build_version_file(exe_path: &Path) -> Option<EngineVersion>
 }
 
 fn get_version_from_exe_path(exe_path: &Path) -> Option<EngineVersion> {
-	match fs::read(exe_path) {
-		Ok(file_bytes) => {
-			// Try metadata first
-			if let Some(version) = try_get_version_from_metadata(&file_bytes) {
-				return Some(version);
-			}
-			// Then try parsing exe strings
-			get_version_from_exe_parse(&file_bytes)
-		}
-		Err(err) => {
-			error!(
-				"Failed to read exe `{}`. Error: {}",
-				exe_path.display(),
-				err
-			);
-			None
-		}
+	let mmap = crate::game_engines::mmap_safe::map_readonly(exe_path)
+		.ok_or_log("Failed to memory map Unreal exe")?;
+
+	// Try metadata first (only touches .rsrc section pages via demand paging)
+	if let Some(version) = try_get_version_from_metadata(&mmap) {
+		return Some(version);
 	}
+	// Then try parsing exe strings (regex scans lazily via mmap)
+	get_version_from_exe_parse(&mmap)
 }
 
 fn parse_version(string: &str) -> Option<EngineVersion> {
@@ -256,11 +253,10 @@ fn is_valid_win_folder(path: &Path) -> bool {
 	path.ends_with("Win64") || path.ends_with("Win32") || path.ends_with("WinGDK")
 }
 
-pub fn is_unreal_exe(game_path: &Path) -> bool {
+fn is_unreal_exe(game_path: &Path) -> bool {
 	const VALID_FOLDER_NAMES: [&str; 3] = ["Win64", "Win32", "ThirdParty"];
 
 	if let Some(parent) = game_path.parent() {
-		// For cases where the registered exe points to a launcher at the root level:
 		if VALID_FOLDER_NAMES.iter().any(|folder_name| {
 			parent
 				.join("Engine")
@@ -271,7 +267,6 @@ pub fn is_unreal_exe(game_path: &Path) -> bool {
 			return true;
 		}
 
-		// For cases where the registered exe points directly to the shipping binary:
 		if is_valid_win_folder(parent)
 			&& let Some(binaries) = parent.parent()
 			&& binaries.ends_with("Binaries")
@@ -283,59 +278,90 @@ pub fn is_unreal_exe(game_path: &Path) -> bool {
 	false
 }
 
-pub fn process_game(game: &mut DbGame) {
-	if let Some(game_path) = game.exe_path.as_ref() {
-		let game_dir = game_path.parent().unwrap_or(game_path);
+pub fn process_game(game: &mut DbGame) -> bool {
+	let Some(game_path) = game.exe_path.as_ref() else {
+		return false;
+	};
 
-		// 1. Try Build.version file (most reliable)
-		if let Some(version) = get_version_from_build_version_file(game_path) {
-			game.engine_version_major = Some(version.numbers.major);
-			game.engine_version_minor = version.numbers.minor;
-			game.engine_version_patch = version.numbers.patch;
-			game.engine_version_display = Some(version.display);
-			return;
-		}
+	if !is_unreal_exe(game_path) {
+		return false;
+	}
 
-		// 2-3. Try specific known launcher/helper executables (CrashReportClient.exe, EpicWebHelper.exe)
-		for filename in &["CrashReportClient.exe", "EpicWebHelper.exe"] {
-			let exe_paths = game_dir.join(format!("**/{filename}")).glob();
-			if let Some(exe_path) = exe_paths.first()
-				&& let Some(version) = get_version_from_exe_path(exe_path)
-			{
-				game.engine_version_major = Some(version.numbers.major);
-				game.engine_version_minor = version.numbers.minor;
-				game.engine_version_patch = version.numbers.patch;
-				game.engine_version_display = Some(version.display);
-				game.architecture = get_architecture(exe_path).unwrap_or(None);
-				game.exe_path = Some(exe_path.clone());
-				return;
-			}
-		}
+	game.engine_brand = Some(EngineBrand::Unreal);
+	let game_dir = game_path.parent().unwrap_or(game_path);
 
-		// 4. Try *-Shipping.exe (build stamp and metadata)
-		if let Some(shipping_exe_path) = game_dir.join("**/*-Shipping.exe").glob().first().cloned()
-			&& let Some(version) = get_version_from_exe_path(&shipping_exe_path)
+	// 1. Try Build.version file (most reliable)
+	if let Some(version) = get_version_from_build_version_file(game_path) {
+		game.engine_version_major = Some(version.numbers.major);
+		game.engine_version_minor = version.numbers.minor;
+		game.engine_version_patch = version.numbers.patch;
+		game.engine_version_display = Some(version.display);
+		return true;
+	}
+
+	// 2-3. Try specific known launcher/helper executables (CrashReportClient.exe, EpicWebHelper.exe)
+	for filename in &["CrashReportClient.exe", "EpicWebHelper.exe"] {
+		let exe_paths = game_dir.join(format!("**/{filename}")).glob();
+		if let Some(exe_path) = exe_paths.first()
+			&& let Some(version) = get_version_from_exe_path(exe_path)
 		{
 			game.engine_version_major = Some(version.numbers.major);
 			game.engine_version_minor = version.numbers.minor;
 			game.engine_version_patch = version.numbers.patch;
 			game.engine_version_display = Some(version.display);
-			game.architecture = get_architecture(&shipping_exe_path).unwrap_or(None);
-			game.exe_path = Some(shipping_exe_path);
-			return;
-		}
-
-		// 5-6. Try any .exe files
-		for exe_path in game_dir.join("**/*.exe").glob() {
-			if let Some(version) = get_version_from_exe_path(&exe_path) {
-				game.engine_version_major = Some(version.numbers.major);
-				game.engine_version_minor = version.numbers.minor;
-				game.engine_version_patch = version.numbers.patch;
-				game.engine_version_display = Some(version.display);
-				game.architecture = get_architecture(&exe_path).unwrap_or(None);
-				game.exe_path = Some(exe_path);
-				return;
-			}
+			game.architecture = get_architecture(exe_path).unwrap_or(None);
+			game.exe_path = Some(exe_path.clone());
+			return true;
 		}
 	}
+
+	// 4. Try *-Shipping.exe (build stamp and metadata)
+	if let Some(shipping_exe_path) = game_dir.join("**/*-Shipping.exe").glob().first().cloned()
+		&& let Some(version) = get_version_from_exe_path(&shipping_exe_path)
+	{
+		game.engine_version_major = Some(version.numbers.major);
+		game.engine_version_minor = version.numbers.minor;
+		game.engine_version_patch = version.numbers.patch;
+		game.engine_version_display = Some(version.display);
+		game.architecture = get_architecture(&shipping_exe_path).unwrap_or(None);
+		game.exe_path = Some(shipping_exe_path);
+		return true;
+	}
+
+	// 5-6. Try any .exe files
+	for exe_path in game_dir.join("**/*.exe").glob() {
+		if let Some(version) = get_version_from_exe_path(&exe_path) {
+			game.engine_version_major = Some(version.numbers.major);
+			game.engine_version_minor = version.numbers.minor;
+			game.engine_version_patch = version.numbers.patch;
+			game.engine_version_display = Some(version.display);
+			game.architecture = get_architecture(&exe_path).unwrap_or(None);
+			game.exe_path = Some(exe_path);
+			return true;
+		}
+	}
+
+	true
+}
+
+pub fn open_data_folder(game: &DbGame) -> Result {
+	let app_data = game
+		.get_roaming_app_data_slow()?
+		.try_parent()?
+		.to_owned()
+		.join("Local");
+
+	let potential_game_folder = app_data.join(
+		game.try_get_exe_path()?
+			.file_name_without_extension()?
+			.replace("-Win64-Shipping", ""),
+	);
+
+	let target = if potential_game_folder.exists() {
+		potential_game_folder
+	} else {
+		app_data
+	};
+
+	open_detached_better(target)
 }

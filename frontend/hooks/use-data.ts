@@ -10,6 +10,8 @@ export const gameDataAtom = atom<GameIdsResponse>({
 
 export const modsAtom = atom<Record<string, GameMod>>({});
 
+export const gameDataVersionAtom = atom(0);
+
 type LoadingTask = {
 	index: number;
 	name: string;

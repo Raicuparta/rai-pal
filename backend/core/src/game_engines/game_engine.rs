@@ -1,16 +1,8 @@
-use std::{
-	cmp::Ordering,
-	path::Path,
-};
+use std::cmp::Ordering;
 
 use rai_pal_proc_macros::{
 	serializable_enum,
 	serializable_struct,
-};
-
-use super::{
-	unity,
-	unreal,
 };
 
 #[serializable_enum]
@@ -105,15 +97,5 @@ impl Ord for GameEngine {
 impl PartialOrd for GameEngine {
 	fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
 		Some(self.cmp(other))
-	}
-}
-
-pub fn get_exe_engine(exe_path: &Path) -> Option<EngineBrand> {
-	if unity::is_unity_exe(exe_path) {
-		Some(EngineBrand::Unity)
-	} else if unreal::is_unreal_exe(exe_path) {
-		Some(EngineBrand::Unreal)
-	} else {
-		None
 	}
 }

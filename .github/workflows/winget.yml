@@ -1,0 +1,14 @@
+name: Update WinGet Package
+
+on:
+  release:
+    types: [released]
+
+jobs:
+  winget:
+    runs-on: ubuntu-slim
+    steps:
+      - uses: vedantmgoyal9/winget-releaser@4ffc7888bffd451b357355dc214d43bb9f23917e
+        with:
+          identifier: Raicuparta.RaiPal
+          token: ${{ secrets.WINGET_GH_TOKEN }}

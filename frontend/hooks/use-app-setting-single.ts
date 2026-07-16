@@ -6,8 +6,7 @@ export function useAppSettingSingle<TKey extends keyof AppSettings>(key: TKey) {
 
 	const setValue = (
 		newValueGetter:
-			| AppSettings[TKey]
-			| ((newValue: AppSettings[TKey]) => AppSettings[TKey]),
+			AppSettings[TKey] | ((newValue: AppSettings[TKey]) => AppSettings[TKey]),
 	) => {
 		const newValue =
 			typeof newValueGetter === "function"

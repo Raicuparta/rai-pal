@@ -1,15 +1,23 @@
-import { Button, ButtonProps, Checkbox, Tooltip } from "@mantine/core";
+import { ActionIcon, Button, ButtonProps, Group, Tooltip } from "@mantine/core";
 import { forwardRef } from "react";
-import styles from "./components.module.css";
+import { IconCheck } from "@tabler/icons-react";
 
 interface Props extends ButtonProps {
 	readonly checked: boolean;
+	readonly onClickCheckbox: () => void;
+	readonly onClickButton: () => void;
 	readonly tooltip?: string;
-	readonly onChange?: (checked: boolean) => void;
 }
 
 function CheckboxButtonInternal(
-	{ checked, onChange, tooltip, children, ...props }: Props,
+	{
+		checked,
+		onClickCheckbox,
+		onClickButton,
+		tooltip,
+		children,
+		...props
+	}: Props,
 	ref: React.ForwardedRef<HTMLButtonElement>,
 ) {
 	return (
@@ -17,24 +25,32 @@ function CheckboxButtonInternal(
 			label={tooltip}
 			disabled={!tooltip}
 		>
-			<Button
-				ref={ref}
-				justify="start"
-				leftSection={
-					<Checkbox
-						className={styles.buttonCheckbox}
-						tabIndex={-1}
-						readOnly
-						checked={checked}
-					/>
-				}
-				onClick={onChange ? () => onChange(!checked) : undefined}
-				{...props}
-			>
-				{children}
+			<Group gap={0}>
+				<ActionIcon
+					size="sm"
+					variant={checked ? "filled" : "default"}
+					onClick={onClickCheckbox}
+				>
+					{checked && <IconCheck />}
+				</ActionIcon>
+				<Button
+					variant="subtle"
+					color="gray"
+					ref={ref}
+					justify="start"
+					flex={1}
+					px="xs"
+					onClick={(e) => {
+						e.stopPropagation();
+						onClickButton();
+					}}
+					{...props}
+				>
+					{children}
 
-				{tooltip && " *"}
-			</Button>
+					{tooltip && " *"}
+				</Button>
+			</Group>
 		</Tooltip>
 	);
 }

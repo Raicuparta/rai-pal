@@ -1,7 +1,7 @@
 import { useLocalization } from "@hooks/use-localization";
 import { CloseButton, Input } from "@mantine/core";
 import { useDebouncedCallback } from "@mantine/hooks";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 type Props = {
 	readonly onChange: (search: string) => void;
@@ -10,11 +10,14 @@ type Props = {
 
 export function SearchInput(props: Props) {
 	const t = useLocalization("filterMenu");
+
+	const [prevValueProp, setPrevValueProp] = useState(props.value);
 	const [innerValue, setInnerValue] = useState(props.value);
 
-	useEffect(() => {
+	if (props.value !== prevValueProp) {
+		setPrevValueProp(props.value);
 		setInnerValue(props.value);
-	}, [props.value]);
+	}
 
 	const debouncedOnChange = useDebouncedCallback(props.onChange, 200);
 

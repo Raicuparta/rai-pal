@@ -1,4 +1,4 @@
-import { Button, InputLabel, Stack } from "@mantine/core";
+import { ActionIcon, Group, Stack, Text, ThemeIcon } from "@mantine/core";
 import { GamesFilter } from "@api/bindings";
 import { IconRestore } from "@tabler/icons-react";
 import { useLocalization } from "@hooks/use-localization";
@@ -27,7 +27,6 @@ export function FilterSelect<TFilterKey extends FilterKey>({
 	currentValues,
 	onChange,
 }: Props<TFilterKey>) {
-	const tMenu = useLocalization("filterMenu");
 	const tProperty = useLocalization("filterProperty");
 	const tValue = useLocalization("filterValue");
 	const tValueNote = useLocalization("filterValueNote");
@@ -54,18 +53,51 @@ export function FilterSelect<TFilterKey extends FilterKey>({
 		onChange(id, newValues);
 	}
 
+	function handleExclusiveClick(
+		value: NonNullable<FilterValue<TFilterKey>> | null,
+	) {
+		if (
+			currentValues.length === 1 &&
+			currentValues.includes(value as FilterValue<TFilterKey>)
+		) {
+			onChange(id, []);
+		} else {
+			onChange(id, [value as FilterValue<TFilterKey>]);
+		}
+	}
+
 	function handleResetClick() {
 		onChange(id, []);
 	}
 
 	return (
 		<Stack>
-			<Stack
-				gap={0}
-				align="center"
-			>
-				<InputLabel>{tProperty(filterDetails[id].localizationKey)}</InputLabel>
-				<Button.Group orientation="vertical">
+			<Stack gap={5}>
+				<Group wrap="nowrap">
+					{currentValues.length === 0 ? (
+						<ThemeIcon
+							size="sm"
+							variant="transparent"
+							color="gray"
+							opacity={0.3}
+						>
+							<IconRestore fontSize={13} />
+						</ThemeIcon>
+					) : (
+						<ActionIcon
+							size="sm"
+							variant="subtle"
+							onClick={handleResetClick}
+						>
+							<IconRestore fontSize={13} />
+						</ActionIcon>
+					)}
+					<Text fz="md">{tProperty(filterDetails[id].localizationKey)}</Text>
+				</Group>
+				<Stack
+					gap={2}
+					miw={100}
+				>
 					{possibleValues.map((possibleValue) => {
 						const valueDetails = filterDetails[id].valueDetails[possibleValue];
 
@@ -77,7 +109,8 @@ export function FilterSelect<TFilterKey extends FilterKey>({
 									currentValues.length == 0 ||
 									currentValues.includes(possibleValue)
 								}
-								onChange={() => handleFilterClick(id, possibleValue)}
+								onClickCheckbox={() => handleFilterClick(id, possibleValue)}
+								onClickButton={() => handleExclusiveClick(possibleValue)}
 							>
 								{valueDetails?.staticDisplayText ??
 									tValue(valueDetails?.localizationKey) ??
@@ -90,20 +123,14 @@ export function FilterSelect<TFilterKey extends FilterKey>({
 							checked={
 								currentValues.length == 0 || currentValues.includes(null)
 							}
-							onChange={() => handleFilterClick(id, null)}
+							onClickCheckbox={() => handleFilterClick(id, null)}
+							onClickButton={() => handleExclusiveClick(null)}
 						>
 							{tValue(emptyLocalizationKey)}
 						</CheckboxButton>
 					)}
-				</Button.Group>
+				</Stack>
 			</Stack>
-			<Button
-				onClick={handleResetClick}
-				leftSection={<IconRestore fontSize={10} />}
-				disabled={currentValues.length == 0}
-			>
-				{tMenu("resetButton")}
-			</Button>
 		</Stack>
 	);
 }

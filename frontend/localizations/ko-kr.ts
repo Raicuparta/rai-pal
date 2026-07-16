@@ -83,6 +83,7 @@ export const koKr: Localization = {
 		foldersDropdown: "폴더",
 		openGameFilesFolder: "게임 파일 폴더 열기",
 		openInstalledModsFolder: "설치된 모드 폴더 열기",
+		openGameDataFolder: "게임 앱 데이터 폴더 열기",
 		openGameWinePrefixFolder: "게임 Wine 프리픽스 폴더 열기",
 		openGameWineBinaryFolder: "게임 Wine 바이너리 폴더 열기",
 		removeFromRaiPal: "Rai Pal에서 제거",

@@ -158,16 +158,19 @@ export const enUs = {
 		foldersDropdown: "Folders",
 
 		// Open the folder where the game's executable is located.
-		openGameFilesFolder: "Open Game Files Folder",
+		openGameFilesFolder: "Game Files",
 
 		// Open the folder where Rai Pal places the mods for this game.
-		openInstalledModsFolder: "Open Installed Mods Folder",
+		openInstalledModsFolder: "Installed Mods",
+
+		// Open the folder where the game stores its app data.
+		openGameDataFolder: "Game App Data",
 
 		// Open the Wine prefix folder detected for this game.
-		openGameWinePrefixFolder: "Open Game Wine Prefix Folder",
+		openGameWinePrefixFolder: "Wine Prefix",
 
 		// Open the folder that contains the Wine binary used for this game.
-		openGameWineBinaryFolder: "Open Game Wine Binary Folder",
+		openGameWineBinaryFolder: "Wine Binary",
 
 		// Button for removing a manually-added game from Rai Pal.
 		removeFromRaiPal: "Remove from Rai Pal",

@@ -1,6 +1,9 @@
 use specta_typescript::Typescript;
 
-const BINDINGS_PATH: &str = "../../frontend/api/bindings.ts";
+const BINDINGS_PATH: &str = concat!(
+	env!("CARGO_MANIFEST_DIR"),
+	"/../../frontend/api/bindings.ts"
+);
 
 pub fn export(builder: &tauri_specta::Builder<tauri::Wry>) {
 	#[allow(

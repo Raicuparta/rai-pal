@@ -147,8 +147,9 @@ impl GameDatabase for DbMutex {
 			"ASC"
 		};
 
-		// Build filtering logic dynamically
+		// Build filtering logic dynamically with parameterized queries
 		let mut filters = Vec::<String>::new();
+		let mut params: Vec<Box<dyn rusqlite::types::ToSql>> = Vec::new();
 
 		if let Some(filter) = query.as_ref().map(|q| &q.filter) {
 			// Installed filter
@@ -164,7 +165,8 @@ impl GameDatabase for DbMutex {
 					.iter()
 					.filter_map(|provider| {
 						provider.as_ref().map(|p| {
-							format!("g.provider_id = '{}'", escape_sql_string(&p.to_string()))
+							params.push(Box::new(p.to_string()));
+							"g.provider_id = ?".to_string()
 						})
 					})
 					.collect();
@@ -181,7 +183,8 @@ impl GameDatabase for DbMutex {
 						tag.as_ref().map_or_else(
 							|| "g.tags = '[]'".to_string(),
 							|t| {
-								format!("g.tags LIKE '%\"{}\"%'", escape_sql_string(&t.to_string()))
+								params.push(Box::new(format!(r#"%"{t}"%"#)));
+								"g.tags LIKE ?".to_string()
 							},
 						)
 					})
@@ -194,20 +197,19 @@ impl GameDatabase for DbMutex {
 			if !filter.engines.is_empty() {
 				let mut engine_conditions = Vec::new();
 
-				// Check if None is in the filter.engines
 				if filter.engines.contains(&None) {
 					engine_conditions
 						.push("COALESCE(ig.engine_brand, rg.engine_brand) IS NULL".to_string());
 				}
 
-				// Collect all non-None values and use the IN clause
 				let engine_values: Vec<String> = filter
 					.engines
 					.iter()
 					.filter_map(|engine| {
-						engine
-							.as_ref()
-							.map(|e| format!("'{}'", escape_sql_string(&e.to_string())))
+						engine.as_ref().map(|e| {
+							params.push(Box::new(e.to_string()));
+							"?".to_string()
+						})
 					})
 					.collect();
 
@@ -229,7 +231,8 @@ impl GameDatabase for DbMutex {
 					.iter()
 					.filter_map(|backend| {
 						backend.as_ref().map(|b| {
-							format!("ig.unity_backend = '{}'", escape_sql_string(&b.to_string()))
+							params.push(Box::new(b.to_string()));
+							"ig.unity_backend = ?".to_string()
 						})
 					})
 					.collect();
@@ -249,8 +252,10 @@ impl GameDatabase for DbMutex {
 					.architectures
 					.iter()
 					.filter_map(|arch| {
-						arch.as_ref()
-							.map(|a| format!("'{}'", escape_sql_string(&a.to_string())))
+						arch.as_ref().map(|a| {
+							params.push(Box::new(a.to_string()));
+							"?".to_string()
+						})
 					})
 					.collect();
 
@@ -266,23 +271,25 @@ impl GameDatabase for DbMutex {
 		}
 
 		let trimmed_search = search.trim();
-		// Add search filter
 		if !trimmed_search.is_empty() {
-			let escaped_search = escape_sql_string(trimmed_search);
-			#[allow(clippy::uninlined_format_args)]
-			filters.push(format!(
-				"(g.display_title LIKE '%{escaped_search}%' OR nt.normalized_title LIKE '%{escaped_search}%')"
-			));
+			params.push(Box::new(format!("%{trimmed_search}%")));
+			params.push(Box::new(format!("%{trimmed_search}%")));
+			filters.push("(g.display_title LIKE ? OR nt.normalized_title LIKE ?)".to_string());
 		}
 
-		// Combine all filters into a single WHERE clause
 		let where_clause = if filters.is_empty() {
-			"1=1".to_string() // No filters, match all rows
+			"1=1".to_string()
 		} else {
 			filters.join(" AND ")
 		};
 
-		let sql_query = &format!(
+		let sort_clause = sort_columns
+			.iter()
+			.map(|col| format!("{col} {sort_order}"))
+			.collect::<Vec<_>>()
+			.join(", ");
+
+		let sql_query = format!(
 			r"
 			SELECT DISTINCT
 					g.provider_id as provider_id,
@@ -296,19 +303,15 @@ impl GameDatabase for DbMutex {
 					rg.provider_id = 'Manual' AND nt.normalized_title = rg.external_id
 			)
 			WHERE {where_clause}
-			ORDER BY {}
+			ORDER BY {sort_clause}
 			",
-			sort_columns
-				.iter()
-				.map(|col| format!("{col} {sort_order}"))
-				.collect::<Vec<_>>()
-				.join(", ")
 		);
 
+		let param_refs: Vec<&dyn rusqlite::types::ToSql> = params.iter().map(|p| &**p).collect();
 		let game_ids = self
 			.lock_db()?
-			.prepare(sql_query)?
-			.query_map([], |row| Ok((row.get(0)?, row.get(1)?)))?
+			.prepare(&sql_query)?
+			.query_map(param_refs.as_slice(), |row| Ok((row.get(0)?, row.get(1)?)))?
 			.filter_map(|game_id| match game_id {
 				Ok(id) => Some(id),
 				Err(err) => {
@@ -711,8 +714,4 @@ fn is_database_attached(connection: &rusqlite::Connection, database_name: &str) 
 
 fn db_file_path() -> Result<PathBuf> {
 	app_paths::database_path("local")
-}
-
-fn escape_sql_string(s: &str) -> String {
-	s.replace('\'', "''")
 }

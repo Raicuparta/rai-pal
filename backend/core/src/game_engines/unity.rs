@@ -15,14 +15,18 @@ use lazy_regex::regex_captures;
 use log::error;
 use rai_pal_proc_macros::serializable_enum;
 
-use super::game_engine::EngineVersionNumbers;
+use super::game_engine::{
+	EngineBrand,
+	EngineVersion,
+	EngineVersionNumbers,
+};
 use crate::{
 	architecture::{
 		Architecture,
 		get_architecture,
 	},
 	game::DbGame,
-	game_engines::game_engine::EngineVersion,
+	open_better::open_detached_better,
 	path_extensions::PathExt,
 	result::{
 		Error,
@@ -80,22 +84,20 @@ fn get_version_from_asset(asset_path: &Path) -> Result<EngineVersion> {
 	))
 }
 
-fn get_version(game_exe_path: &Path) -> Option<EngineVersion> {
+fn get_version(data_path: &Path) -> Option<EngineVersion> {
 	const ASSETS_WITH_VERSION: [&str; 3] = ["globalgamemanagers", "mainData", "data.unity3d"];
 
-	if let Ok(data_path) = get_unity_data_path(game_exe_path) {
-		for asset_name in &ASSETS_WITH_VERSION {
-			let asset_path = data_path.join(asset_name);
+	for asset_name in &ASSETS_WITH_VERSION {
+		let asset_path = data_path.join(asset_name);
 
-			if let Ok(metadata) = fs::metadata(&asset_path)
-				&& metadata.is_file()
-			{
-				match get_version_from_asset(&asset_path) {
-					Ok(version) => {
-						return Some(version);
-					}
-					Err(err) => error!("Failed to get Unity version: {err}"),
+		if let Ok(metadata) = fs::metadata(&asset_path)
+			&& metadata.is_file()
+		{
+			match get_version_from_asset(&asset_path) {
+				Ok(version) => {
+					return Some(version);
 				}
+				Err(err) => error!("Failed to get Unity version: {err}"),
 			}
 		}
 	}
@@ -129,10 +131,6 @@ fn get_unity_backend(path: &Path) -> Option<UnityBackend> {
 			None
 		}
 	}
-}
-
-pub fn is_unity_exe(game_path: &Path) -> bool {
-	game_path.is_file() && get_unity_data_path(game_path).is_ok_and(|data_path| data_path.is_dir())
 }
 
 // If we can't figure out the architecture by reading the executable,
@@ -175,25 +173,62 @@ fn get_alt_architecture(game_path: &Path) -> Option<Architecture> {
 	None
 }
 
-pub fn process_game(game: &mut DbGame) {
-	if let Some(exe_path) = game.exe_path.as_ref() {
-		game.unity_backend = get_unity_backend(exe_path);
-		if let Some(version) = get_version(exe_path) {
-			game.engine_version_major = Some(version.numbers.major);
-			game.engine_version_minor = version.numbers.minor;
-			game.engine_version_patch = version.numbers.patch;
-			game.engine_version_display = Some(version.display);
-		}
+pub fn process_game(game: &mut DbGame) -> bool {
+	let Some(exe_path) = game.exe_path.as_ref() else {
+		return false;
+	};
 
-		game.architecture = get_architecture(exe_path)
-			.unwrap_or_else(|err| {
-				log::error!(
-					"Failed to get exe architecture for {}: {}",
-					exe_path.display(),
-					err
-				);
-				None
-			})
-			.or_else(|| get_alt_architecture(exe_path));
+	if !exe_path.is_file() {
+		return false;
 	}
+
+	let Ok(data_path) = get_unity_data_path(exe_path) else {
+		return false;
+	};
+
+	if !data_path.is_dir() {
+		return false;
+	}
+
+	game.engine_brand = Some(EngineBrand::Unity);
+	game.unity_backend = get_unity_backend(exe_path);
+
+	if let Some(version) = get_version(&data_path) {
+		game.engine_version_major = Some(version.numbers.major);
+		game.engine_version_minor = version.numbers.minor;
+		game.engine_version_patch = version.numbers.patch;
+		game.engine_version_display = Some(version.display);
+	}
+
+	game.architecture = get_architecture(exe_path)
+		.unwrap_or_else(|err| {
+			log::error!(
+				"Failed to get exe architecture for {}: {}",
+				exe_path.display(),
+				err
+			);
+			None
+		})
+		.or_else(|| get_alt_architecture(exe_path));
+
+	true
+}
+
+pub fn open_data_folder(game: &DbGame) -> Result {
+	let app_data = game
+		.get_roaming_app_data_slow()?
+		.try_parent()?
+		.to_owned()
+		.join("LocalLow");
+
+	open_detached_better(
+		app_data
+			.join("*")
+			.join(game.try_get_exe_path()?.file_name_without_extension()?)
+			.glob()
+			.first()
+			.map_or(app_data, |potential_game_folder| {
+				potential_game_folder.to_owned()
+			}),
+	)
 }

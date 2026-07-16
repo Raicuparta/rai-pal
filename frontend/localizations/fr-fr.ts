@@ -85,6 +85,7 @@ export const frFr: Localization = {
 		foldersDropdown: "Dossiers",
 		openGameFilesFolder: "Ouvrir le dossier des fichiers du jeu",
 		openInstalledModsFolder: "Ouvrir le dossier des mods installés",
+		openGameDataFolder: "Ouvrir le dossier des données de l'application du jeu",
 		openGameWinePrefixFolder: "Ouvrir le dossier du préfixe Wine du jeu",
 		openGameWineBinaryFolder: "Ouvrir le dossier du binaire Wine du jeu",
 		removeFromRaiPal: "Retirer de Rai Pal",

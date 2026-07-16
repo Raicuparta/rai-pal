@@ -35,9 +35,9 @@ RUN apt-get update \
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
     | sh -s -- -y --profile minimal --default-toolchain stable
 
-RUN rustup toolchain install nightly --profile minimal \
- && rustup target add x86_64-pc-windows-msvc \
- && rustup target add --toolchain nightly x86_64-pc-windows-msvc \
+RUN rustup toolchain install 1.97.0 --profile minimal --component rustfmt --component clippy \
+ && rustup target add --toolchain 1.97.0 x86_64-pc-windows-msvc \
+ && rustup default 1.97.0 \
  && cargo install --locked cargo-xwin
 
 WORKDIR /app

@@ -74,6 +74,7 @@ use tauri::{
 	WebviewWindowBuilder,
 	ipc::Channel,
 };
+use tauri_plugin_deep_link::DeepLinkExt;
 use tauri_plugin_log::{
 	Target,
 	TargetKind,
@@ -92,10 +93,9 @@ mod typescript;
 
 #[tauri::command]
 #[specta::specta]
-async fn log_in(window: tauri::Window) -> Result {
+async fn log_in(handle: AppHandle) -> Result {
 	start_auth().await?;
-	window.hide()?;
-	window.show()?;
+	focus(&handle);
 
 	Ok(())
 }
@@ -177,6 +177,21 @@ async fn open_game_mods_folder(
 		.database
 		.get_game(&provider_id, &game_id)?
 		.open_mods_folder()?;
+	Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn open_game_data_folder(
+	handle: AppHandle,
+	provider_id: GameProviderId,
+	game_id: String,
+) -> Result {
+	handle
+		.app_state()
+		.database
+		.get_game(&provider_id, &game_id)?
+		.open_data_folder()?;
 	Ok(())
 }
 
@@ -656,6 +671,15 @@ fn show_panic(error: &str) {
 		.show();
 }
 
+fn focus(handle: &AppHandle) {
+	if let Some(window) = handle.get_webview_window("main") {
+		window.unminimize().ok_or_log("Failed to unminimize window");
+		window.set_focus().ok_or_log("Failed to focus window");
+	} else {
+		log::error!("Failed to find main window!");
+	}
+}
+
 fn main() {
 	// Since I'm making all exposed functions async, panics won't crash anything important, I think.
 	// So I can just catch panics here and show a system message with the error.
@@ -684,6 +708,7 @@ fn main() {
 			log_out,
 			open_game_folder,
 			open_game_mods_folder,
+			open_game_data_folder,
 			open_game_wine_binary_folder,
 			open_game_wine_prefix_folder,
 			open_installed_mod_folder,
@@ -707,9 +732,6 @@ fn main() {
 		.constant("PROVIDER_IDS", GameProviderId::iter().collect::<Vec<_>>())
 		.error_handling(tauri_specta::ErrorHandlingMode::Throw);
 
-	#[cfg(debug_assertions)]
-	typescript::export(&builder);
-
 	#[cfg(target_os = "linux")]
 	unsafe {
 		// This is to fix this error:
@@ -724,16 +746,9 @@ fn main() {
 	});
 
 	tauri::Builder::default()
-		.plugin(tauri_plugin_shell::init())
-		.plugin(tauri_plugin_os::init())
-		.plugin(tauri_plugin_store::Builder::new().build())
-		.plugin(
-			tauri_plugin_window_state::Builder::default()
-				.with_state_flags(StateFlags::POSITION | StateFlags::SIZE)
-				.build(),
-		)
-		.plugin(tauri_plugin_dialog::init())
-		.plugin(tauri_plugin_updater::Builder::default().build())
+		.plugin(tauri_plugin_single_instance::init(|handle, _args, _cwd| {
+			focus(handle);
+		}))
 		.plugin(
 			tauri_plugin_log::Builder::new()
 				.level(if cfg!(debug_assertions) {
@@ -753,12 +768,39 @@ fn main() {
 				])
 				.build(),
 		)
+		.plugin(tauri_plugin_deep_link::init())
+		.plugin(tauri_plugin_os::init())
+		.plugin(
+			tauri_plugin_window_state::Builder::default()
+				.with_state_flags(StateFlags::POSITION | StateFlags::SIZE | StateFlags::MAXIMIZED)
+				.build(),
+		)
+		.plugin(tauri_plugin_dialog::init())
+		.plugin(tauri_plugin_updater::Builder::default().build())
 		.manage(app_state)
 		.invoke_handler(builder.invoke_handler())
 		.setup(move |app| {
 			builder.mount_events(app);
 
-			tauri::async_runtime::spawn(start_user_socket_manager());
+			// --- Deep link ---
+
+			app.deep_link().register_all()?;
+
+			if let Ok(Some(urls)) = app.deep_link().get_current() {
+				log::info!("App opened via deep link: {urls:?}");
+			} else {
+				log::info!("App opened directly.");
+
+				#[cfg(debug_assertions)]
+				// This is buried here to avoid touching the TS bindings file when opening via deep link.
+				typescript::export(&builder);
+			}
+
+			app.deep_link().on_open_url(|event| {
+				log::info!("Deep link received: {:?}", event.urls());
+			});
+
+			// --- Window ---
 
 			// Only create the window once everything is ready, which reduces the jumping around
 			// that happens while waiting for tauri_plugin_window_state to do its thing.
@@ -775,8 +817,7 @@ fn main() {
 				.data_directory(app_paths::app_data_subfolder("main-webview")?)
 				.inner_size(800.0, 600.0)
 				.min_inner_size(800.0, 500.0)
-				.resizable(true)
-				.fullscreen(false)
+				.focusable(true)
 				.build()?;
 
 			window.on_window_event(|event| {
@@ -788,25 +829,30 @@ fn main() {
 				}
 			});
 
-			let app_handle = app.app_handle().clone();
+			// --- Background tasks ---
 
-			tauri::async_runtime::spawn(async move {
-				let state = app_handle.app_state();
-				let cloned_handle = app_handle.clone();
+			tauri::async_runtime::spawn(start_user_socket_manager());
 
-				if let Err(error) = state
-					.database
-					.lock_db()
-					.map_err(|e| e.to_string())
-					.and_then(|db| {
-						db.update_hook(Some(move |_, _: &str, _: &str, _| {
-							cloned_handle.emit_safe(events::AppDatabaseChanged());
-						}))
+			tauri::async_runtime::spawn({
+				let handle = app.app_handle().clone();
+				async move {
+					let state = handle.app_state();
+
+					if let Err(error) = state
+						.database
+						.lock_db()
 						.map_err(|e| e.to_string())
-					}) {
-					log::error!(
-						"Failed to subscribe to local database updates. App won't work properly. Error: {error}"
-					);
+						.and_then(|db| {
+							let handle = handle.clone();
+							db.update_hook(Some(move |_, _: &str, _: &str, _| {
+								handle.emit_safe(events::AppDatabaseChanged());
+							}))
+							.map_err(|e| e.to_string())
+						}) {
+						log::error!(
+							"Failed to subscribe to local database updates. App won't work properly. Error: {error}"
+						);
+					}
 				}
 			});
 
@@ -823,9 +869,8 @@ fn main() {
 			#[cfg(target_os = "windows")]
 			windows::error_dialog(&error.to_string());
 
-			#[cfg(target_os = "linux")]
-			log::error!("Error: {error}");
-			#[cfg(target_os = "macos")]
-			log::error!("Error: {error}");
+			// Use eprintln! as fallback since log plugin may not capture this
+			eprintln!("Fatal error: {error}");
+			log::error!("Fatal error: {error}");
 		});
 }

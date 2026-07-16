@@ -2,6 +2,7 @@ import { Alert, Box, Group, Stack, Table } from "@mantine/core";
 import { commands, DbGame } from "@api/bindings";
 import { CommandButton } from "@components/command-button";
 import {
+	IconFileSettings,
 	IconFolder,
 	IconFolderCog,
 	IconFolderOpen,
@@ -76,6 +77,12 @@ export function GameModal({ game, mods }: Props) {
 								onClick={() => commands.openGameModsFolder(providerId, gameId)}
 							>
 								{t("openInstalledModsFolder")}
+							</CommandButton>
+							<CommandButton
+								leftSection={<IconFileSettings />}
+								onClick={() => commands.openGameDataFolder(providerId, gameId)}
+							>
+								{t("openGameDataFolder")}
 							</CommandButton>
 							{platform() === "linux" && (
 								<>

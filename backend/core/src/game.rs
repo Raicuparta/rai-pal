@@ -11,10 +11,8 @@ use crate::{
 	app_paths,
 	architecture::Architecture,
 	game_engines::{
-		game_engine::{
-			EngineBrand,
-			get_exe_engine,
-		},
+		game_engine::EngineBrand,
+		godot,
 		unity::{
 			self,
 			UnityBackend,
@@ -171,18 +169,11 @@ impl DbGame {
 			}
 
 			self.exe_path = Some(exe_path.normalize());
-			if let Some(exe_engine_brand) = get_exe_engine(exe_path) {
-				self.engine_brand = Some(exe_engine_brand);
-				match exe_engine_brand {
-					EngineBrand::Unity => {
-						unity::process_game(self);
-					}
-					EngineBrand::Unreal => {
-						unreal::process_game(self);
-					}
-					_ => {}
-				}
-			}
+
+			// Order matters here. We're checking all sequentially, so we should leave the most expensive ones last.
+			let _ = unity::process_game(self)
+				|| unreal::process_game(self)
+				|| godot::process_game(self);
 		}
 
 		self
@@ -202,6 +193,61 @@ impl DbGame {
 			remote_config::get_remote_configs(exe_path).await
 		} else {
 			Err(Error::GameNotInstalled(self.display_title.clone()))
+		}
+	}
+
+	pub fn open_data_folder(&self) -> Result {
+		if let Some(engine) = self.engine_brand {
+			return match engine {
+				EngineBrand::Unity => unity::open_data_folder(self),
+				EngineBrand::Unreal => unreal::open_data_folder(self),
+				EngineBrand::Godot => godot::open_data_folder(self),
+				EngineBrand::GameMaker => Err(Error::UnsupportedEngineOperation(
+					engine,
+					"open_data_folder".to_string(),
+				)),
+			};
+		}
+
+		Err(Error::OperationRequiresEngine(
+			"open_data_folder".to_string(),
+		))
+	}
+
+	/// Marked slow because potentially runs slow wine command to get inner path,
+	/// don't call while processing games or any other performance-sensitive places.
+	pub fn get_roaming_app_data_slow(&self) -> Result<PathBuf> {
+		#[cfg(target_os = "linux")]
+		{
+			use std::path::PathBuf;
+
+			use crate::{
+				game_providers::game_provider,
+				path_extensions::AsValidStr,
+			};
+
+			let provider = game_provider::get_provider(self.provider_id)?;
+			let prefix_path = provider.get_wine_prefix_path(self)?;
+			let mut cmd = provider.get_run_with_wine_command(self)?;
+
+			let output = cmd.arg("cmd").arg("/C").arg("echo %APPDATA%").output()?;
+
+			let win_path = str::from_utf8(&output.stdout)?.trim();
+
+			// 2. Convert Windows path to Linux path manually
+			// The format is always C:\users\username\AppData\Roaming
+			// We replace 'C:\' with the actual path to drive_c
+			let drive_c_path = PathBuf::from(format!("{}/drive_c", prefix_path.try_to_str()?));
+
+			// Remove the 'C:\' prefix and replace backslashes with slashes
+			let relative_path = win_path.replace("C:\\", "").replace('\\', "/");
+
+			Ok(drive_c_path.join(relative_path))
+		}
+
+		#[cfg(target_os = "windows")]
+		{
+			Ok(app_paths::base_dirs()?.config_dir().to_owned())
 		}
 	}
 }

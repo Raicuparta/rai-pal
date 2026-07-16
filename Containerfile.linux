@@ -23,6 +23,7 @@ RUN apt-get update \
     libappindicator3-dev \
     librsvg2-dev \
     patchelf \
+    xdg-utils \
     nodejs \
  && rm -rf /var/lib/apt/lists/*
 

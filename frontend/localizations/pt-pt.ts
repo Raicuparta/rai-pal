@@ -84,6 +84,7 @@ export const ptPt: Localization = {
 		foldersDropdown: "Pastas",
 		openGameFilesFolder: "Abrir Pasta de Ficheiros do Jogo",
 		openInstalledModsFolder: "Abrir Pasta de Mods Instalados",
+		openGameDataFolder: "Abrir Pasta de Dados da Aplicação do Jogo",
 		openGameWinePrefixFolder: "Abrir Pasta do Prefixo Wine do Jogo",
 		openGameWineBinaryFolder: "Abrir Pasta do Binário Wine do Jogo",
 		removeFromRaiPal: "Remover do Rai Pal",

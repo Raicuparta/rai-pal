@@ -38,12 +38,6 @@ fn games_config_path(game_id: &str) -> Result<PathBuf> {
 }
 
 #[derive(Default, Deserialize, Serialize)]
-#[serde(transparent)]
-struct HeroicGamesConfig {
-	games: HashMap<String, HeroicGameConfig>,
-}
-
-#[derive(Default, Deserialize, Serialize)]
 struct HeroicGameConfig {
 	#[serde(rename = "enviromentOptions", default)]
 	environment_options: Vec<HeroicEnvironmentOption>,
@@ -87,9 +81,7 @@ pub fn set_wine_dll_overrides(game_id: &str, dll_overrides: &[String]) -> Result
 
 	let relative_path = format!("GamesConfig/{game_id}.json");
 	let path = games_config_path(game_id)?;
-	let mut config = read_heroic_json::<HeroicGamesConfig>(&relative_path)?.unwrap_or_default();
-
-	let game_config = config.games.entry(game_id.to_string()).or_default();
+	let mut game_config = read_heroic_json::<HeroicGameConfig>(&relative_path)?.unwrap_or_default();
 
 	for (key, value) in environment {
 		if let Some(existing_entry) = game_config
@@ -112,7 +104,7 @@ pub fn set_wine_dll_overrides(game_id: &str, dll_overrides: &[String]) -> Result
 	if let Some(parent) = path.parent() {
 		fs::create_dir_all(parent)?;
 	}
-	fs::write(path, serde_json::to_string_pretty(&config)?)?;
+	fs::write(path, serde_json::to_string_pretty(&game_config)?)?;
 
 	Ok(())
 }

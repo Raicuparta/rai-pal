@@ -1,5 +1,6 @@
 import { Button, Popover, Stack } from "@mantine/core";
 import { IconChevronDown } from "@tabler/icons-react";
+import styles from "./components.module.css";
 
 type Props = {
 	readonly children: React.ReactNode;
@@ -20,7 +21,12 @@ export function CommandDropdown(props: Props) {
 				</Button>
 			</Popover.Target>
 			<Popover.Dropdown>
-				<Stack gap="xs">{props.children}</Stack>
+				<Stack
+					gap="xs"
+					className={styles.commandDropdownButtons}
+				>
+					{props.children}
+				</Stack>
 			</Popover.Dropdown>
 		</Popover>
 	);
