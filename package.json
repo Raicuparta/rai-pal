@@ -44,11 +44,11 @@
 		"@tauri-apps/plugin-os": "2.3.2",
 		"@tauri-apps/plugin-process": "2.3.1",
 		"@tauri-apps/plugin-updater": "2.10.1",
-		"@types/node": "25.9.1",
+		"@types/node": "26.1.1",
 		"@types/react": "19.2.17",
 		"@types/react-dom": "19.2.3",
-		"@typescript-eslint/eslint-plugin": "8.63.0",
-		"@typescript-eslint/parser": "8.63.0",
+		"@typescript-eslint/eslint-plugin": "8.64.0",
+		"@typescript-eslint/parser": "8.64.0",
 		"@vitejs/plugin-react": "6.0.3",
 		"babel-plugin-react-compiler": "1.0.0",
 		"cross-env": "10.1.0",
@@ -59,8 +59,8 @@
 		"eslint-plugin-react-hooks": "7.1.1",
 		"eslint-plugin-react-refresh": "0.5.3",
 		"globals": "17.7.0",
-		"jotai": "2.20.1",
-		"postcss": "8.5.16",
+		"jotai": "2.20.2",
+		"postcss": "8.5.19",
 		"postcss-preset-mantine": "1.18.0",
 		"postcss-simple-vars": "7.0.1",
 		"prettier": "3.9.5",
@@ -69,7 +69,6 @@
 		"react-virtuoso": "4.18.10",
 		"typescript": "6.0.3",
 		"vite": "8.1.4",
-		"vite-plugin-babel": "1.7.3",
-		"zod-validation-error": "4.0.2"
+		"vite-plugin-babel": "1.7.3"
 	}
 }
