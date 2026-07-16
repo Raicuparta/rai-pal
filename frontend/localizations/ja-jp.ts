@@ -246,7 +246,6 @@ export const jaJp: Localization = {
 
 	urlModSources: {
 		title: "Modデータベースソース",
-		defaultSource: "デフォルトソース（常に有効）",
 		customSources: "カスタムソース",
 		addCustomSource: "カスタムソースを追加",
 		add: "追加",

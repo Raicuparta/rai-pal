@@ -235,7 +235,6 @@ export const zhCn: Localization = {
 
 	urlModSources: {
 		title: "Mod数据库来源",
-		defaultSource: "默认来源（始终启用）",
 		customSources: "自定义来源",
 		addCustomSource: "添加自定义来源",
 		add: "添加",

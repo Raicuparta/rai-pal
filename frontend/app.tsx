@@ -10,9 +10,7 @@ function App() {
 	useAppUpdater();
 	useData();
 
-	const [pendingSourceUrl, setPendingSourceUrl] = useState<string | null>(
-		null,
-	);
+	const [pendingSourceUrl, setPendingSourceUrl] = useState<string | null>(null);
 
 	const handleAddModSource = useCallback((url: string) => {
 		setPendingSourceUrl(url);
@@ -24,14 +22,12 @@ function App() {
 		<>
 			<AppNotifications />
 			<AppTabs />
-			{pendingSourceUrl && (
-				<ConfirmModSourceModal
-					url={pendingSourceUrl}
-					isOpen
-					onClose={() => setPendingSourceUrl(null)}
-					onSaved={() => setPendingSourceUrl(null)}
-				/>
-			)}
+			<ConfirmModSourceModal
+				url={pendingSourceUrl ?? ""}
+				isOpen={!!pendingSourceUrl}
+				onClose={() => setPendingSourceUrl(null)}
+				onSaved={() => setPendingSourceUrl(null)}
+			/>
 		</>
 	);
 }

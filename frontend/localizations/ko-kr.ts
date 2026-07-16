@@ -241,7 +241,6 @@ export const koKr: Localization = {
 
 	urlModSources: {
 		title: "모드 데이터베이스 소스",
-		defaultSource: "기본 소스(항상 활성화)",
 		customSources: "사용자 정의 소스",
 		addCustomSource: "사용자 정의 소스 추가",
 		add: "추가",

@@ -247,7 +247,6 @@ export const frFr: Localization = {
 
 	urlModSources: {
 		title: "Sources de la base de données de mods",
-		defaultSource: "Source par défaut (toujours activée)",
 		customSources: "Sources personnalisées",
 		addCustomSource: "Ajouter une source personnalisée",
 		add: "Ajouter",

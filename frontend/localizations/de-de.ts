@@ -248,7 +248,6 @@ export const deDe: Localization = {
 
 	urlModSources: {
 		title: "Mod-Datenbank-Quellen",
-		defaultSource: "Standardquelle (immer aktiviert)",
 		customSources: "Benutzerdefinierte Quellen",
 		addCustomSource: "Benutzerdefinierte Quelle hinzufügen",
 		add: "Hinzufügen",

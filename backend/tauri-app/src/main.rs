@@ -453,19 +453,6 @@ async fn get_mods_from_url_mod_source(url: String) -> Result<Vec<GameMod>> {
 
 #[tauri::command]
 #[specta::specta]
-async fn prompt_add_mod_source(
-	url: String,
-	handle: AppHandle,
-) -> Result {
-	url_mod_provider::get_mods_from_url_mod_source(&url).await?;
-
-	handle.emit_safe(AddModSource(url));
-
-	Ok(())
-}
-
-#[tauri::command]
-#[specta::specta]
 async fn remove_url_mod_source(url: String) -> Result {
 	Ok(url_mod_provider::remove_url_mod_source(&url)?)
 }
@@ -769,7 +756,6 @@ fn main() {
 			get_game_mods,
 			get_mods,
 			get_mods_from_url_mod_source,
-			prompt_add_mod_source,
 			get_remote_configs,
 			get_url_mod_sources,
 			install_mod,

@@ -2,14 +2,7 @@ import { commands, GameMod } from "@api/bindings";
 import { showAppNotification } from "@components/app-notifications";
 import { CommandButton } from "@components/command-button";
 import { useLocalization } from "@hooks/use-localization";
-import {
-	Button,
-	Group,
-	Modal,
-	Stack,
-	Text,
-	ScrollArea,
-} from "@mantine/core";
+import { Button, Group, Modal, Stack, Text, ScrollArea } from "@mantine/core";
 import { IconPlus } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 
@@ -76,7 +69,10 @@ export function ConfirmModSourceModal(props: Props) {
 
 				{isLoading && <Text>{t("loading")}</Text>}
 				{error && (
-					<Text c="red" size="sm">
+					<Text
+						c="red"
+						size="sm"
+					>
 						{error}
 					</Text>
 				)}
@@ -88,33 +84,22 @@ export function ConfirmModSourceModal(props: Props) {
 						<ScrollArea.Autosize mah={300}>
 							<Stack gap="xs">
 								{mods.map((mod) => (
-									<Group
+									<Text
 										key={mod.id}
-										gap="xs"
-										wrap="nowrap"
+										size="sm"
 									>
-										<Text
-											size="sm"
-											style={{ flex: 1 }}
-											lineClamp={1}
-										>
-											{mod.title}
-										</Text>
-										<Text
-											size="xs"
-											opacity={0.6}
-											lineClamp={1}
-										>
-											{mod.author}
-										</Text>
-									</Group>
+										{mod.title}
+									</Text>
 								))}
 							</Stack>
 						</ScrollArea.Autosize>
 					</>
 				)}
 
-				<Group justify="end" gap="xs">
+				<Group
+					justify="end"
+					gap="xs"
+				>
 					<Button
 						variant="default"
 						onClick={props.onClose}

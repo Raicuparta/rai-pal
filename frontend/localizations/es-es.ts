@@ -249,7 +249,6 @@ export const esEs: Localization = {
 
 	urlModSources: {
 		title: "Fuentes de base de datos de mods",
-		defaultSource: "Fuente predeterminada (siempre activada)",
 		customSources: "Fuentes personalizadas",
 		addCustomSource: "Añadir fuente personalizada",
 		add: "Añadir",

@@ -494,9 +494,6 @@ export const enUs = {
 		// Title of the modal.
 		title: "Mod Database Sources",
 
-		// Label for the default (built-in) source section.
-		defaultSource: "Default source (always enabled)",
-
 		// Label for the custom sources section.
 		customSources: "Custom sources",
 

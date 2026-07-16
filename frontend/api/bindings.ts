@@ -22,7 +22,6 @@ export const commands = {
 	getGameMods: (providerId: GameProviderId, gameId: string) => __TAURI_INVOKE<GameModInfo[]>("get_game_mods", { providerId, gameId }),
 	getMods: () => __TAURI_INVOKE<{ [key in string]: GameMod }>("get_mods"),
 	getModsFromUrlModSource: (url: string) => __TAURI_INVOKE<GameMod[]>("get_mods_from_url_mod_source", { url }),
-	promptAddModSource: (url: string) => __TAURI_INVOKE<null>("prompt_add_mod_source", { url }),
 	getRemoteConfigs: (providerId: GameProviderId, gameId: string) => __TAURI_INVOKE<{
 	configs: RemoteConfig[],
 } | null>("get_remote_configs", { providerId, gameId }),

@@ -244,7 +244,6 @@ export const ptPt: Localization = {
 
 	urlModSources: {
 		title: "Fontes de base de dados de mods",
-		defaultSource: "Fonte predefinida (sempre ativada)",
 		customSources: "Fontes personalizadas",
 		addCustomSource: "Adicionar fonte personalizada",
 		add: "Adicionar",
