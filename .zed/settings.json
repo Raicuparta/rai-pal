@@ -1,25 +1,34 @@
 {
-  "languages": {
-    "Rust": {
-      "prettier": {
-        "allowed": false,
-      },
-      "formatter": {
-        "external": {
-          "command": "rustup",
-          "arguments": [
-            "run",
-            "nightly",
-            "rustfmt",
-            "--config-path",
-            "backend/.rustfmt.toml"
-          ],
-        },
-      },
-    },
-  },
-  "format_on_save": "on",
-  "prettier": {
-    "allowed": false,
-  },
+	"format_on_save": "on",
+	"lsp": {
+		"rust-analyzer": {
+			"initialization_options": {
+				"check": {
+					"command": "clippy",
+				},
+			},
+		},
+	},
+	"languages": {
+		"Rust": {
+			"prettier": {
+				"allowed": false,
+			},
+			"formatter": {
+				"external": {
+					"command": "rustup",
+					"arguments": [
+						"run",
+						"nightly",
+						"rustfmt",
+						"--config-path",
+						"./backend",
+					],
+				},
+			},
+		},
+	},
+	"prettier": {
+		"allowed": true,
+	},
 }
