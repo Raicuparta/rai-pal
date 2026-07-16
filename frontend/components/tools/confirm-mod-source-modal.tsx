@@ -45,6 +45,7 @@ export function ConfirmModSourceModal(props: Props) {
 		setIsSaving(true);
 		try {
 			await commands.addUrlModSource(props.url);
+			commands.refreshMods();
 			props.onSaved();
 			props.onClose();
 		} catch (error) {

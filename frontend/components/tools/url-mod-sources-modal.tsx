@@ -36,7 +36,7 @@ export function UrlModSourcesModal(props: Props) {
 		try {
 			await commands.promptAddModSource(newUrl.trim());
 			setNewUrl("");
-			await loadSources();
+			props.onClose();
 		} catch (error) {
 			showAppNotification(
 				`Failed to add mod source: ${String(error)}`,
@@ -47,6 +47,7 @@ export function UrlModSourcesModal(props: Props) {
 
 	const handleRemove = async (url: string) => {
 		await commands.removeUrlModSource(url);
+		commands.refreshMods();
 		await loadSources();
 	};
 
