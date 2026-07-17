@@ -9,16 +9,7 @@ use lazy_regex::{
 	regex_captures,
 	regex_find,
 };
-use pelite::{
-	pe32::{
-		Pe as Pe32,
-		PeFile as PeFile32,
-	},
-	pe64::{
-		Pe as Pe64,
-		PeFile as PeFile64,
-	},
-};
+use pelite::PeFile;
 use serde_json;
 
 use super::game_engine::{
@@ -27,10 +18,7 @@ use super::game_engine::{
 	EngineVersionNumbers,
 };
 use crate::{
-	architecture::{
-		Architecture,
-		get_architecture,
-	},
+	architecture::get_architecture,
 	game::DbGame,
 	open_better::open_detached_better,
 	path_extensions::PathExt,
@@ -40,31 +28,18 @@ use crate::{
 	},
 };
 
-fn get_version_from_metadata(
-	file_bytes: &[u8],
-	architecture: Architecture,
-) -> Option<EngineVersion> {
+fn get_version_from_metadata(file_bytes: &[u8]) -> Option<EngineVersion> {
 	#[allow(
 		clippy::disallowed_methods,
 		reason = "Errors from PeFile parsing are expected."
 	)]
-	let version = if architecture == Architecture::X86 {
-		PeFile32::from_bytes(&file_bytes)
-			.ok()?
-			.resources()
-			.ok()?
-			.version_info()
-			.ok()?
-			.fixed()?
-	} else {
-		PeFile64::from_bytes(&file_bytes)
-			.ok()?
-			.resources()
-			.ok()?
-			.version_info()
-			.ok()?
-			.fixed()?
-	};
+	let version = PeFile::from_bytes(&file_bytes)
+		.ok()?
+		.resources()
+		.ok()?
+		.version_info()
+		.ok()?
+		.fixed()?;
 
 	let major = u32::from(version.dwFileVersion.Major);
 	let minor = u32::from(version.dwFileVersion.Minor);
@@ -79,15 +54,6 @@ fn get_version_from_metadata(
 		suffix: None,
 		display: format!("{major}.{minor}.{patch}"),
 	})
-}
-
-fn try_get_version_from_metadata(file_bytes: &[u8]) -> Option<EngineVersion> {
-	// Try x64 first
-	if let Some(version) = get_version_from_metadata(file_bytes, Architecture::X64) {
-		return Some(version);
-	}
-	// Try x86
-	get_version_from_metadata(file_bytes, Architecture::X86)
 }
 
 fn find_game_root(exe_path: &Path) -> &Path {
@@ -157,7 +123,7 @@ fn get_version_from_exe_path(exe_path: &Path) -> Option<EngineVersion> {
 		.ok_or_log("Failed to memory map Unreal exe")?;
 
 	// Try metadata first (only touches .rsrc section pages via demand paging)
-	if let Some(version) = try_get_version_from_metadata(&mmap) {
+	if let Some(version) = get_version_from_metadata(&mmap) {
 		return Some(version);
 	}
 	// Then try parsing exe strings (regex scans lazily via mmap)

@@ -714,9 +714,7 @@ fn handle_deep_link_url(url: &str, handle: &AppHandle) {
 		return;
 	}
 
-	let mod_source_url = query
-		.split('&')
-		.find_map(|part| part.strip_prefix("url="));
+	let mod_source_url = query.split('&').find_map(|part| part.strip_prefix("url="));
 
 	if let Some(mod_source_url) = mod_source_url {
 		handle.emit_safe(AddModSource(mod_source_url.to_string()));

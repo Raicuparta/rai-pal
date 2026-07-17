@@ -1,16 +1,7 @@
 use std::path::Path;
 
 use lazy_regex::regex_find;
-use pelite::{
-	pe32::{
-		Pe as _,
-		PeFile as PeFile32,
-	},
-	pe64::{
-		Pe as _,
-		PeFile as PeFile64,
-	},
-};
+use pelite::PeFile;
 
 use super::{
 	game_engine::{
@@ -100,42 +91,6 @@ fn scan_for_version(bytes: &[u8]) -> Option<EngineVersion> {
 	None
 }
 
-fn check_pe64(pe: &PeFile64<'_>, mmap: &[u8]) -> Option<EngineVersion> {
-	let sections = pe.section_headers();
-	let data_dir = pe.data_directory();
-
-	let name = pe_utils::try_read_export_dll_name(sections, data_dir, mmap)?;
-	if !name.to_ascii_lowercase().starts_with("godot") {
-		return None;
-	}
-
-	if let Some(sec) = sections.by_name(".rdata") {
-		return pe
-			.get_section_bytes(sec)
-			.ok_or_log("Failed to get PE section bytes")
-			.and_then(scan_for_version);
-	}
-	None
-}
-
-fn check_pe32(pe: &PeFile32<'_>, mmap: &[u8]) -> Option<EngineVersion> {
-	let sections = pe.section_headers();
-	let data_dir = pe.data_directory();
-
-	let name = pe_utils::try_read_export_dll_name(sections, data_dir, mmap)?;
-	if !name.to_ascii_lowercase().starts_with("godot") {
-		return None;
-	}
-
-	if let Some(sec) = sections.by_name(".rdata") {
-		return pe
-			.get_section_bytes(sec)
-			.ok_or_log("Failed to get PE section bytes")
-			.and_then(scan_for_version);
-	}
-	None
-}
-
 fn check_exe(exe_path: &Path) -> Option<EngineVersion> {
 	// Memory-map the file. The OS loads pages lazily, so only the headers
 	// (a few KB) are actually fetched from disk for the fast filter. If the
@@ -144,19 +99,21 @@ fn check_exe(exe_path: &Path) -> Option<EngineVersion> {
 	let mmap = crate::game_engines::mmap_safe::map_readonly(exe_path)
 		.ok_or_log("Failed to memory map Godot exe")?;
 
-	#[allow(
-		clippy::disallowed_methods,
-		reason = "Errors from PeFile parsing are expected."
-	)]
-	{
-		if let Ok(pe) = PeFile64::from_bytes(&mmap) {
-			return check_pe64(&pe, &mmap);
-		}
-		if let Ok(pe) = PeFile32::from_bytes(&mmap) {
-			return check_pe32(&pe, &mmap);
-		}
+	let pe = PeFile::from_bytes(&mmap).ok_or_log("Failed to parse PE file")?;
+	let sections = pe.section_headers();
+	let data_dir = pe.data_directory();
+
+	let name = pe_utils::try_read_export_dll_name(sections.image(), data_dir, &mmap)?;
+	if !name.to_ascii_lowercase().starts_with("godot") {
+		return None;
 	}
 
+	if let Some(sec) = sections.by_name(".rdata") {
+		return pe
+			.get_section_bytes(sec)
+			.ok_or_log("Failed to get PE section bytes")
+			.and_then(scan_for_version);
+	}
 	None
 }
 

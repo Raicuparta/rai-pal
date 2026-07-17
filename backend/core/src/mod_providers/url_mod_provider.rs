@@ -1,4 +1,7 @@
-use std::{fs, path::PathBuf};
+use std::{
+	fs,
+	path::PathBuf,
+};
 
 use rai_pal_proc_macros::serializable_struct;
 

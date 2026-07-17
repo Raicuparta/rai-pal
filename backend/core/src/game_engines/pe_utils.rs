@@ -1,20 +1,14 @@
 use std::path::Path;
 
 use pelite::{
+	PeFile,
+	Wrap,
 	image::{
 		IMAGE_DATA_DIRECTORY,
 		IMAGE_DIRECTORY_ENTRY_EXPORT,
 		IMAGE_EXPORT_DIRECTORY,
+		IMAGE_SECTION_HEADER,
 		IMAGE_SUBSYSTEM_WINDOWS_CUI,
-	},
-	pe32::{
-		Pe as _,
-		PeFile as PeFile32,
-	},
-	pe64::{
-		Pe as _,
-		PeFile as PeFile64,
-		headers::SectionHeaders,
 	},
 };
 
@@ -23,8 +17,10 @@ use crate::result::LogErrExt;
 // Resolve an RVA to a file offset using VirtualSize-based bounds (not SizeOfRawData).
 // This avoids pelite's `cmp::max(VirtualSize, SizeOfRawData)` which incorrectly maps
 // RVAs into sections like Godot's `pck` section that have tiny VirtualSize but huge raw data.
-fn rva_to_file_offset(sections: &SectionHeaders, rva: u32) -> Option<usize> {
-	let sec = sections.by_rva(rva)?;
+fn rva_to_file_offset(sections: &[IMAGE_SECTION_HEADER], rva: u32) -> Option<usize> {
+	let sec = sections.iter().find(|sec| {
+		rva >= sec.VirtualAddress && rva < u32::wrapping_add(sec.VirtualAddress, sec.VirtualSize)
+	})?;
 	let offset_within = rva.checked_sub(sec.VirtualAddress)?;
 	let file_offset = sec.PointerToRawData as usize + offset_within as usize;
 	Some(file_offset)
@@ -42,19 +38,18 @@ pub fn is_pe_console_app(exe_path: &Path) -> bool {
 		return false;
 	};
 
-	if let Ok(pe) = PeFile64::from_bytes(&mmap) {
-		return pe.optional_header().Subsystem == IMAGE_SUBSYSTEM_WINDOWS_CUI;
-	}
+	let Ok(pe) = PeFile::from_bytes(&mmap) else {
+		return false;
+	};
 
-	if let Ok(pe) = PeFile32::from_bytes(&mmap) {
-		return pe.optional_header().Subsystem == IMAGE_SUBSYSTEM_WINDOWS_CUI;
+	match pe.optional_header() {
+		Wrap::T32(h) => h.Subsystem == IMAGE_SUBSYSTEM_WINDOWS_CUI,
+		Wrap::T64(h) => h.Subsystem == IMAGE_SUBSYSTEM_WINDOWS_CUI,
 	}
-
-	false
 }
 
 pub fn try_read_export_dll_name<'a>(
-	sections: &SectionHeaders,
+	sections: &[IMAGE_SECTION_HEADER],
 	data_dir: &[IMAGE_DATA_DIRECTORY],
 	file_bytes: &'a [u8],
 ) -> Option<&'a str> {
