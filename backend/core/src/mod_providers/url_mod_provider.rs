@@ -1,5 +1,10 @@
 use std::{
 	fs,
+	hash::{
+		DefaultHasher,
+		Hash,
+		Hasher,
+	},
 	path::PathBuf,
 };
 
@@ -37,6 +42,15 @@ const DATABASE_VERSION: i32 = 1;
 
 fn default_url() -> String {
 	format!("{URL_BASE}/{DATABASE_VERSION}/mods.json")
+}
+
+fn compute_source_hash(url: &str, is_default: bool) -> String {
+	if is_default {
+		return String::new();
+	}
+	let mut hasher = DefaultHasher::new();
+	url.hash(&mut hasher);
+	hasher.finish().to_string()
 }
 
 #[derive(Default)]
@@ -132,7 +146,9 @@ impl ModProvider for UrlModProvider {
 	}
 
 	async fn insert_mods(&self, db: &DbMutex) -> Result {
-		for url in &self.urls {
+		for (i, url) in self.urls.iter().enumerate() {
+			let source_hash = compute_source_hash(url, i == 0);
+
 			http::CLIENT
 				.get(url)
 				.send()
@@ -141,7 +157,7 @@ impl ModProvider for UrlModProvider {
 				.await?
 				.mods
 				.iter()
-				.for_each(|game_mod| db.insert_mod(game_mod, Self::get_id()));
+				.for_each(|game_mod| db.insert_mod(game_mod, Self::get_id(), &source_hash));
 		}
 
 		Ok(())

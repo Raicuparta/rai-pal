@@ -142,6 +142,7 @@ export type GameIdsResponse = {
 
 export type GameMod = {
 	id: string,
+	scope: string | null,
 	family: string | null,
 	title: string,
 	hideFromGameModsList: boolean | null,
@@ -166,6 +167,7 @@ export type GameMod = {
 
 export type GameModInfo = {
 	modId: string,
+	modScope: string,
 	installedVersion: string | null,
 	installedHash: string | null,
 	isOutdated: boolean,

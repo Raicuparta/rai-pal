@@ -201,19 +201,12 @@ export function FilterMenu() {
 														...new Set(
 															Object.values(mods)
 																.map((m) => m.family)
-																.filter(
-																	(f): f is string =>
-																		f !== null,
-																),
+																.filter((f): f is string => f !== null),
 														),
-													] as Array<
-														NonNullable<FilterValue<FilterKey>>
-													>)
+													] as Array<NonNullable<FilterValue<FilterKey>>>)
 												: (Object.keys(
 														filterDetails[filterKey].valueDetails,
-													) as Array<
-														NonNullable<FilterValue<FilterKey>>
-													>);
+													) as Array<NonNullable<FilterValue<FilterKey>>>);
 
 										return (
 											<FilterSelect

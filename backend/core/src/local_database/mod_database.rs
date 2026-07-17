@@ -1,4 +1,5 @@
 use std::{
+	borrow::Cow,
 	collections::BTreeMap,
 	time::{
 		SystemTime,
@@ -21,7 +22,10 @@ use crate::{
 	},
 	mod_providers::mod_provider::ModProviderId,
 	mods::{
-		game_mod::GameMod,
+		game_mod::{
+			GameMod,
+			ModDependency,
+		},
 		installed_mod::InstalledMod,
 	},
 	operating_system::OperatingSystem,
@@ -35,6 +39,7 @@ use crate::{
 #[serializable_struct]
 pub struct GameModInfo {
 	pub mod_id: String,
+	pub mod_scope: String,
 	pub installed_version: Option<String>,
 	pub installed_hash: Option<String>,
 	pub is_outdated: bool,
@@ -44,7 +49,7 @@ pub struct GameModInfo {
 
 pub trait ModDatabase {
 	fn setup_mod_tables(&self) -> Result;
-	fn insert_mod(&self, game_mod: &GameMod, provider_id: ModProviderId);
+	fn insert_mod(&self, game_mod: &GameMod, provider_id: ModProviderId, source_hash: &str);
 	fn get_mod(&self, mod_id: &str) -> Result<GameMod>;
 	fn get_installed_mod(
 		&self,
@@ -68,12 +73,29 @@ pub trait ModDatabase {
 	fn remove_stale_mods(&self, max_time: u64, provider_id: ModProviderId) -> Result;
 }
 
+fn compute_scope(provider_id: ModProviderId, source_hash: &str) -> String {
+	if source_hash.is_empty() {
+		String::new()
+	} else {
+		format!("{}:{}", provider_id, source_hash)
+	}
+}
+
+fn scope_id<'a>(scope: &'a str, original_id: &'a str) -> Cow<'a, str> {
+	if scope.is_empty() {
+		Cow::Borrowed(original_id)
+	} else {
+		Cow::Owned(format!("{}:{}", scope, original_id))
+	}
+}
+
 impl ModDatabase for DbMutex {
 	fn setup_mod_tables(&self) -> Result {
 		self.lock_db()?.execute_batch(
 			r"
 			CREATE TABLE IF NOT EXISTS mods (
-				id TEXT NOT NULL,
+				id TEXT NOT NULL PRIMARY KEY,
+				scope TEXT NOT NULL DEFAULT '',
 				provider_id TEXT NOT NULL,
 				title TEXT NOT NULL,
 				author TEXT NOT NULL,
@@ -94,8 +116,8 @@ impl ModDatabase for DbMutex {
 				run_for_game TEXT,
 				run_standalone TEXT,
 				hash TEXT,
-				created_at INTEGER,
-				PRIMARY KEY (id)
+				family TEXT,
+				created_at INTEGER
 			);
 
 			CREATE INDEX IF NOT EXISTS idx_mods_created_at ON mods(created_at);
@@ -104,6 +126,7 @@ impl ModDatabase for DbMutex {
 
 			CREATE TABLE IF NOT EXISTS installed_mods (
 				exe_path_hash TEXT NOT NULL,
+				mod_scope TEXT NOT NULL DEFAULT '',
 				mod_id TEXT NOT NULL,
 				installed_version TEXT,
 				installed_hash TEXT,
@@ -112,22 +135,14 @@ impl ModDatabase for DbMutex {
 			);
 
 			CREATE INDEX IF NOT EXISTS idx_installed_mods_hash ON installed_mods(exe_path_hash);
-			CREATE INDEX IF NOT EXISTS idx_installed_mods_mod_id ON installed_mods(mod_id);
 		",
 		)?;
-
-		if let Err(err) = self
-			.lock_db()?
-			.execute_batch("ALTER TABLE mods ADD COLUMN family TEXT;")
-		{
-			log::warn!("Could not add 'family' column to mods table (may already exist): {err}");
-		}
 
 		Ok(())
 	}
 
-	fn insert_mod(&self, game_mod: &GameMod, provider_id: ModProviderId) {
-		if let Err(err) = try_insert_mod(self, game_mod, provider_id) {
+	fn insert_mod(&self, game_mod: &GameMod, provider_id: ModProviderId, source_hash: &str) {
+		if let Err(err) = try_insert_mod(self, game_mod, provider_id, source_hash) {
 			log::error!(
 				"Failed to insert mod ({}) into local database: {}",
 				game_mod.id,
@@ -162,7 +177,8 @@ impl ModDatabase for DbMutex {
 				run_standalone,
 				hash,
 				hide_from_game_mods_list,
-				family
+				family,
+				scope
 			FROM main.mods
 			WHERE id = $1
 			LIMIT 1
@@ -191,6 +207,7 @@ impl ModDatabase for DbMutex {
 					hash: row.get(18)?,
 					hide_from_game_mods_list: row.get(19)?,
 					family: row.get(20)?,
+					scope: row.get(21)?,
 				})
 			})?)
 	}
@@ -279,7 +296,8 @@ impl ModDatabase for DbMutex {
 				run_standalone,
 				hash,
 				hide_from_game_mods_list,
-				family
+				family,
+				scope
 			FROM main.mods
 		",
 			)?
@@ -306,6 +324,7 @@ impl ModDatabase for DbMutex {
 					hash: row.get(18)?,
 					hide_from_game_mods_list: row.get(19)?,
 					family: row.get(20)?,
+					scope: row.get(21)?,
 				})
 			})?
 			.filter_map(|game_mod| match game_mod {
@@ -359,6 +378,7 @@ impl ModDatabase for DbMutex {
 
 				installed_mod_rows.push((
 					exe_path_hash.clone(),
+					manifest.scope.clone().unwrap_or_default(),
 					manifest.id,
 					manifest
 						.download
@@ -384,17 +404,20 @@ impl ModDatabase for DbMutex {
 				let mut statement = transaction.prepare_cached(
 					"INSERT OR REPLACE INTO main.installed_mods (
 						exe_path_hash,
+						mod_scope,
 						mod_id,
 						installed_version,
 						installed_hash,
 						created_at
-					) VALUES ($1, $2, $3, $4, $5)",
+					) VALUES ($1, $2, $3, $4, $5, $6)",
 				)?;
 
-				for (exe_path_hash, mod_id, installed_version, installed_hash) in installed_mod_rows
+				for (exe_path_hash, mod_scope, mod_id, installed_version, installed_hash) in
+					installed_mod_rows
 				{
 					statement.execute(rusqlite::params![
 						exe_path_hash,
+						mod_scope,
 						mod_id,
 						installed_version,
 						installed_hash,
@@ -446,7 +469,8 @@ impl ModDatabase for DbMutex {
 					json_extract(m.engine_version_range, '$.minimum.patch') AS min_patch,
 					json_extract(m.engine_version_range, '$.maximum.major') AS max_major,
 					json_extract(m.engine_version_range, '$.maximum.minor') AS max_minor,
-					json_extract(m.engine_version_range, '$.maximum.patch') AS max_patch
+					json_extract(m.engine_version_range, '$.maximum.patch') AS max_patch,
+					m.scope AS mod_scope
 				FROM main.games g
 				LEFT JOIN main.installed_games ig ON g.provider_id = ig.provider_id AND g.game_id = ig.game_id
 				LEFT JOIN main.normalized_titles nt ON g.provider_id = nt.provider_id AND g.game_id = nt.game_id
@@ -538,7 +562,8 @@ impl ModDatabase for DbMutex {
 						)
 					) THEN 0
 					ELSE 1
-				END AS compatible
+				END AS compatible,
+				cm.mod_scope
 			FROM candidate_mods cm
 		",
 			)?
@@ -556,6 +581,7 @@ impl ModDatabase for DbMutex {
 						is_outdated: row.get(3)?,
 						has_installed_dependants: row.get(4)?,
 						compatible: row.get(5)?,
+						mod_scope: row.get(6)?,
 					})
 				},
 			)?
@@ -579,13 +605,25 @@ fn try_insert_mod(
 	connection_mutex: &DbMutex,
 	game_mod: &GameMod,
 	provider_id: ModProviderId,
+	source_hash: &str,
 ) -> Result {
+	let scope = compute_scope(provider_id, source_hash);
+	let scoped_id = scope_id(&scope, &game_mod.id);
+
+	let scoped_deps = game_mod.dependencies.as_ref().map(|deps| {
+		deps.iter()
+			.map(|dep| ModDependency {
+				mod_id: scope_id(&scope, &dep.mod_id).into_owned(),
+			})
+			.collect::<Vec<_>>()
+	});
+
 	connection_mutex
 		.lock_db()?
 		.prepare_cached(
 			"INSERT OR REPLACE INTO mods (
-				provider_id,
 				id,
+				provider_id,
 				title,
 				author,
 				source_code,
@@ -606,12 +644,13 @@ fn try_insert_mod(
 				hide_from_game_mods_list,
 				hash,
 				family,
-				created_at
-			) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23)",
+				created_at,
+				scope
+			) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24)",
 		)?
 		.execute(rusqlite::params![
+			scoped_id.as_ref(),
 			provider_id,
-			game_mod.id,
 			game_mod.title,
 			game_mod.author,
 			game_mod.source_code,
@@ -625,7 +664,7 @@ fn try_insert_mod(
 			serialize_json_option(game_mod.host_os.as_ref())?,
 			game_mod.deprecated,
 			serialize_json_option(game_mod.config.as_ref())?,
-			serialize_json_option(game_mod.dependencies.as_ref())?,
+			serialize_json_option(scoped_deps.as_ref())?,
 			serialize_json_option(game_mod.install.as_ref())?,
 			serialize_json_option(game_mod.run_for_game.as_ref())?,
 			serialize_json_option(game_mod.run_standalone.as_ref())?,
@@ -635,7 +674,8 @@ fn try_insert_mod(
 			SystemTime::now()
 				.duration_since(UNIX_EPOCH)?
 				.as_secs()
-				.cast_signed()
+				.cast_signed(),
+			scope
 		])?;
 
 	Ok(())

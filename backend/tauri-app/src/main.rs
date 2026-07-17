@@ -383,6 +383,7 @@ async fn install_mod_dependencies(
 				installed_version: None,
 				is_outdated: false,
 				mod_id: other_mod.id.clone(),
+				mod_scope: other_mod.scope.clone().unwrap_or_default(),
 			})
 			.collect()
 	};
@@ -394,9 +395,7 @@ async fn install_mod_dependencies(
 			if let Some(relevant_dependency_mod_info) = relevant_mods.iter().find(|relevant_mod| {
 				relevant_mod.compatible && relevant_mod.mod_id == dependency.mod_id
 			}) {
-				let dependency_mod = state
-					.database
-					.get_mod(&relevant_dependency_mod_info.mod_id)?;
+				let dependency_mod = state.database.get_mod(&relevant_dependency_mod_info.mod_id)?;
 
 				Box::pin(install_mod_dependencies(
 					handle,
