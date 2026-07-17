@@ -45,6 +45,9 @@ export const enUs = {
 		dropField:
 			"Drag and drop a game executable here, or click to select a file.",
 
+		// Text inside the directory picker area for adding a whole folder of games.
+		directoryButton: "Scan a folder recursively for games. Can be slow!",
+
 		// Note that shows under the file drop area for adding a game.
 		note: "Note: you can drop game executable files anywhere on Rai Pal's window to add them to the installed game list without opening this dialog.",
 	},

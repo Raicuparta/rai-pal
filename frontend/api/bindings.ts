@@ -6,6 +6,7 @@ import * as __TAURI_EVENT from "@tauri-apps/api/event";
 /** Commands */
 export const commands = {
 	addGame: (path: string) => __TAURI_INVOKE<null>("add_game", { path }),
+	addGameDirectory: (path: string) => __TAURI_INVOKE<null>("add_game_directory", { path }),
 	addRaiPalSteamShortcut: () => __TAURI_INVOKE<null>("add_rai_pal_steam_shortcut"),
 	addUrlModSource: (url: string) => __TAURI_INVOKE<null>("add_url_mod_source", { url }),
 	configureMod: (providerId: GameProviderId, gameId: string, modId: string, openFolder: boolean) => __TAURI_INVOKE<null>("configure_mod", { providerId, gameId, modId, openFolder }),

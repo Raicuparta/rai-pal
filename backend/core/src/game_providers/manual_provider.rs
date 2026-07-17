@@ -34,12 +34,16 @@ pub struct Manual {}
 #[derive(serde::Serialize, serde::Deserialize)]
 struct GamesConfig {
 	pub paths: Vec<PathBuf>,
+	#[serde(default)]
+	pub directories: Vec<PathBuf>,
 }
 
 impl ProviderActions for Manual {
 	fn insert_games(&self, db: &DbMutex) -> Result {
-		for path in read_games_config(&games_config_path()?).paths {
-			match get_game_from_path(&path) {
+		let config = read_games_config(&games_config_path()?);
+
+		for path in &config.paths {
+			match get_game_from_path(path) {
 				Ok(game) => {
 					db.insert_game(&game);
 				}
@@ -49,7 +53,44 @@ impl ProviderActions for Manual {
 						path.display(),
 						error
 					);
-					remove_path(&path)?;
+					remove_path(path)?;
+				}
+			}
+		}
+
+		for dir in &config.directories {
+			if !dir.is_dir() {
+				error!(
+					"Directory '{}' not found. Will remove it from the config.",
+					dir.display()
+				);
+				remove_directory_path(dir)?;
+				continue;
+			}
+
+			match find_executables_in_directory(dir) {
+				Ok(executables) => {
+					for exe_path in executables {
+						match get_game_from_path(&exe_path) {
+							Ok(game) => {
+								db.insert_game(&game);
+							}
+							Err(error) => {
+								error!(
+									"Failed to get game from path '{}': {}",
+									exe_path.display(),
+									error
+								);
+							}
+						}
+					}
+				}
+				Err(error) => {
+					error!(
+						"Failed to walk directory '{}': {}",
+						dir.display(),
+						error
+					);
 				}
 			}
 		}
@@ -73,6 +114,7 @@ fn read_games_config(games_config_path: &Path) -> GamesConfig {
 			error!("Error reading config: {error}");
 			GamesConfig {
 				paths: Vec::default(),
+				directories: Vec::default(),
 			}
 		}
 	}
@@ -103,6 +145,68 @@ pub fn add_game(path: &Path) -> Result<DbGame> {
 	fs::write(config_path, serde_json::to_string_pretty(&games_config)?)?;
 
 	Ok(game)
+}
+
+pub fn add_directory(path: &Path) -> Result<Vec<DbGame>> {
+	if !path.is_dir() {
+		return Err(Error::NoExecutableFound(path.to_owned()));
+	}
+
+	let executables = find_executables_in_directory(path)?;
+
+	let games: Result<Vec<DbGame>> =
+		executables.iter().map(|exe_path| get_game_from_path(exe_path)).collect();
+	let games = games?;
+
+	let config_path = games_config_path()?;
+	let mut games_config = read_games_config(&config_path);
+	games_config.directories.push(path.to_path_buf());
+
+	fs::write(config_path, serde_json::to_string_pretty(&games_config)?)?;
+
+	Ok(games)
+}
+
+fn find_executables_in_directory(dir: &Path) -> Result<Vec<PathBuf>> {
+	const VALID_EXTENSIONS: [&str; 3] = ["exe", "x86_64", "x86"];
+	let mut executables = Vec::new();
+
+	walk_directory(dir, &mut executables, &VALID_EXTENSIONS)?;
+
+	Ok(executables)
+}
+
+fn walk_directory(
+	dir: &Path,
+	executables: &mut Vec<PathBuf>,
+	valid_extensions: &[&str],
+) -> Result {
+	for entry in fs::read_dir(dir)? {
+		let entry = entry?;
+		let path = entry.path();
+
+		if path.is_dir() {
+			walk_directory(&path, executables, valid_extensions)?;
+		} else if path.is_file() {
+			if let Some(ext) = path.extension().and_then(|e| e.to_str()) {
+				if valid_extensions.contains(&ext.to_lowercase().as_str()) {
+					executables.push(path);
+				}
+			}
+		}
+	}
+
+	Ok(())
+}
+
+fn remove_directory_path(path: &Path) -> Result {
+	let config_path = games_config_path()?;
+	let mut games_config = read_games_config(&config_path);
+	games_config.directories.retain(|p| p != path);
+
+	fs::write(config_path, serde_json::to_string_pretty(&games_config)?)?;
+
+	Ok(())
 }
 
 pub fn remove_game(game: &DbGame) -> Result {

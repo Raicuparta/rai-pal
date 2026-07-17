@@ -500,6 +500,30 @@ async fn add_game(handle: AppHandle, path: PathBuf) -> Result {
 
 #[tauri::command]
 #[specta::specta]
+async fn add_game_directory(handle: AppHandle, path: PathBuf) -> Result {
+	let normalized_path = path.normalize();
+	let games = manual_provider::add_directory(&normalized_path)?;
+	let state = handle.app_state();
+
+	for game in &games {
+		state.database.insert_game(game);
+		handle.emit_safe(events::RefreshGame(game.provider_id, game.game_id.clone()));
+	}
+
+	handle.emit_safe(events::AppDatabaseChanged());
+
+	if let Some(game) = games.first() {
+		handle.emit_safe(events::SelectGame(
+			GameProviderId::Manual,
+			game.game_id.clone(),
+		));
+	}
+
+	Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
 async fn remove_game(handle: AppHandle, provider_id: GameProviderId, game_id: String) -> Result {
 	let game = handle
 		.app_state()
@@ -741,6 +765,7 @@ fn main() {
 	let builder = Builder::<tauri::Wry>::new()
 		.commands(tauri_specta::collect_commands![
 			add_game,
+			add_game_directory,
 			add_rai_pal_steam_shortcut,
 			add_url_mod_source,
 			configure_mod,

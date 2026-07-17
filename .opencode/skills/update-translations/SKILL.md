@@ -34,6 +34,7 @@ For every other `.ts` file in `frontend/localizations/` (excluding `en-us.ts` an
 - Keep existing translations as-is — only add missing entries or fix parameter mismatches.
 - Match the same parameters/variables from `en-us.ts` (e.g. `{items}`, `{authorName}`, `{provider}`).
 - **NEVER put placeholder values in any language file.** No English text, no `TODO`, no copied en-us strings, no machine-guessed filler — a key either gets a real translation or it is not added to that file at all.
+- **Never add translations to non-English files unless the user explicitly asks you to translate.** New keys go only in `en-us.ts`. Type errors from missing keys in other language files are the intended signal that translations are pending.
 
 ## Missing translations are signaled by type errors — on purpose
 
