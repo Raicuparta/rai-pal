@@ -15,7 +15,7 @@ Download the installer:
 or install via winget:
 
 ```
-winget install raipal
+winget install Raicuparta.RaiPal
 ```
 
 ### Linux
