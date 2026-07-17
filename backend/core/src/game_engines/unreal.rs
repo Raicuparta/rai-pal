@@ -262,6 +262,7 @@ pub fn process_game(game: &mut DbGame) -> bool {
 		game.engine_version_minor = version.numbers.minor;
 		game.engine_version_patch = version.numbers.patch;
 		game.engine_version_display = Some(version.display);
+		game.architecture = get_architecture(game_path).unwrap_or(None);
 		return true;
 	}
 
