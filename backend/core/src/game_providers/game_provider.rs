@@ -28,6 +28,7 @@ use crate::game_providers::{
 };
 use crate::{
 	game::DbGame,
+	game_engines::pe_utils,
 	game_providers::{
 		itch_provider::Itch,
 		manual_provider::Manual,
@@ -92,6 +93,10 @@ pub trait WineProviderActions {
 		wine_env: &BTreeMap<String, String>,
 	) -> Result {
 		let mut cmd = self.get_run_with_wine_command(game)?;
+
+		if pe_utils::is_pe_console_app(exe_path) {
+			cmd.arg("wineconsole");
+		}
 
 		let child = cmd.arg(exe_path).args(args).envs(wine_env).spawn()?;
 

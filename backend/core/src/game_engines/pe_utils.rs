@@ -1,10 +1,21 @@
+use std::path::Path;
+
 use pelite::{
 	image::{
 		IMAGE_DATA_DIRECTORY,
 		IMAGE_DIRECTORY_ENTRY_EXPORT,
 		IMAGE_EXPORT_DIRECTORY,
+		IMAGE_SUBSYSTEM_WINDOWS_CUI,
 	},
-	pe64::headers::SectionHeaders,
+	pe32::{
+		Pe as _,
+		PeFile as PeFile32,
+	},
+	pe64::{
+		Pe as _,
+		PeFile as PeFile64,
+		headers::SectionHeaders,
+	},
 };
 
 use crate::result::LogErrExt;
@@ -26,8 +37,22 @@ fn read_cstr(file_bytes: &[u8], offset: usize) -> Option<&str> {
 	std::str::from_utf8(&remaining[..len]).ok_or_log("Failed to read cstr")
 }
 
-// Try to read the export DLL name using correct RVA-to-file-offset mapping.
-// Returns None if the export directory doesn't exist or can't be read.
+pub fn is_pe_console_app(exe_path: &Path) -> bool {
+	let Ok(mmap) = super::mmap_safe::map_readonly(exe_path) else {
+		return false;
+	};
+
+	if let Ok(pe) = PeFile64::from_bytes(&mmap) {
+		return pe.optional_header().Subsystem == IMAGE_SUBSYSTEM_WINDOWS_CUI;
+	}
+
+	if let Ok(pe) = PeFile32::from_bytes(&mmap) {
+		return pe.optional_header().Subsystem == IMAGE_SUBSYSTEM_WINDOWS_CUI;
+	}
+
+	false
+}
+
 pub fn try_read_export_dll_name<'a>(
 	sections: &SectionHeaders,
 	data_dir: &[IMAGE_DATA_DIRECTORY],
