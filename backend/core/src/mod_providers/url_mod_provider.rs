@@ -13,7 +13,10 @@ use crate::{
 	mod_providers::mod_provider::ModProviderId,
 	mods::game_mod::GameMod,
 	path_extensions::PathExt,
-	result::Result,
+	result::{
+		LogErrExt,
+		Result,
+	},
 };
 
 #[serializable_struct]
@@ -33,27 +36,19 @@ fn default_url() -> String {
 	format!("{URL_BASE}/{DATABASE_VERSION}/mods.json")
 }
 
+#[derive(Default)]
 #[serializable_struct]
 pub struct UrlModSources {
 	pub additional_urls: Vec<String>,
 }
 
-impl Default for UrlModSources {
-	fn default() -> Self {
-		Self {
-			additional_urls: Vec::new(),
-		}
-	}
-}
-
 fn url_mod_sources_path() -> Result<PathBuf> {
-	Ok(app_paths::app_data_file("url-mod-sources.json")?)
+	app_paths::app_data_file("url-mod-sources.json")
 }
 
 fn read_url_mod_sources() -> UrlModSources {
-	let path = match url_mod_sources_path() {
-		Ok(p) => p,
-		Err(_) => return UrlModSources::default(),
+	let Ok(path) = url_mod_sources_path() else {
+		return UrlModSources::default();
 	};
 
 	if !path.is_file() {
@@ -61,8 +56,8 @@ fn read_url_mod_sources() -> UrlModSources {
 	}
 
 	fs::read_to_string(&path)
-		.ok()
-		.and_then(|data| serde_json::from_str(&data).ok())
+		.ok_or_log("Failed to read URL mod sources")
+		.and_then(|data| serde_json::from_str(&data).ok_or_log("Failed to parse URL mod sources"))
 		.unwrap_or_default()
 }
 

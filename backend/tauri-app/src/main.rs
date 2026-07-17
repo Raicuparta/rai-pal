@@ -716,8 +716,7 @@ fn handle_deep_link_url(url: &str, handle: &AppHandle) {
 
 	let mod_source_url = query
 		.split('&')
-		.filter_map(|part| part.strip_prefix("url="))
-		.next();
+		.find_map(|part| part.strip_prefix("url="));
 
 	if let Some(mod_source_url) = mod_source_url {
 		handle.emit_safe(AddModSource(mod_source_url.to_string()));
@@ -903,18 +902,18 @@ fn main() {
 			tauri::async_runtime::spawn(start_user_socket_manager());
 
 			tauri::async_runtime::spawn({
-				let handle = app.app_handle().clone();
+				let app_handle = app.app_handle().clone();
 				async move {
-					let state = handle.app_state();
+					let state = app_handle.app_state();
 
 					if let Err(error) = state
 						.database
 						.lock_db()
 						.map_err(|e| e.to_string())
 						.and_then(|db| {
-							let handle = handle.clone();
+							let db_handle = app_handle.clone();
 							db.update_hook(Some(move |_, _: &str, _: &str, _| {
-								handle.emit_safe(events::AppDatabaseChanged());
+								db_handle.emit_safe(events::AppDatabaseChanged());
 							}))
 							.map_err(|e| e.to_string())
 						}) {
