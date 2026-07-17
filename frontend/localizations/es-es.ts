@@ -249,10 +249,10 @@ export const esEs: Localization = {
 	},
 
 	urlModSources: {
-		title: "Fuentes de base de datos de mods",
-		customSources: "Fuentes personalizadas",
-		addCustomSource: "Añadir fuente personalizada",
-		add: "Añadir",
+		title: "Fuentes de mods",
+		add: "Añadir fuente",
+		addSourceDescription:
+			"Rai Pal buscará mods en todas las bases de datos proporcionadas aquí, además de la base de datos predeterminada. Puedes compartir fuentes de mods mediante el enlace profundo {deepLink}.",
 		confirmModalTitle: "Confirmar fuente de mods",
 		modsFound: "{count} mods encontrados en esta fuente",
 		addSource: "Añadir fuente",

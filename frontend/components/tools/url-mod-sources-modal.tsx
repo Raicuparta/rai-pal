@@ -2,7 +2,14 @@ import { commands } from "@api/bindings";
 import { CommandButton } from "@components/command-button";
 import { ConfirmModSourceModal } from "@components/tools/confirm-mod-source-modal";
 import { useLocalization } from "@hooks/use-localization";
-import { ActionIcon, Group, Modal, Stack, TextInput } from "@mantine/core";
+import {
+	ActionIcon,
+	Group,
+	Modal,
+	Stack,
+	Text,
+	TextInput,
+} from "@mantine/core";
 import { IconPlus, IconTrash } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 
@@ -64,7 +71,6 @@ export function UrlModSourcesModal(props: Props) {
 				<Stack>
 					{sources.length > 0 && (
 						<Stack gap="xs">
-							<span style={{ fontWeight: 500 }}>{t("customSources")}</span>
 							{sources.map((url) => (
 								<Group
 									key={url}
@@ -97,7 +103,6 @@ export function UrlModSourcesModal(props: Props) {
 						align="flex-end"
 					>
 						<TextInput
-							label={t("addCustomSource")}
 							placeholder="https://example.com/mods.json"
 							value={newUrl}
 							onChange={(event) => setNewUrl(event.currentTarget.value)}
@@ -115,6 +120,15 @@ export function UrlModSourcesModal(props: Props) {
 							{t("add")}
 						</CommandButton>
 					</Group>
+
+					<Text
+						size="sm"
+						c="dimmed"
+					>
+						{t("addSourceDescription", {
+							deepLink: "rai-pal://add-mod-source?url=[URL]",
+						})}
+					</Text>
 				</Stack>
 			</Modal>
 			<ConfirmModSourceModal

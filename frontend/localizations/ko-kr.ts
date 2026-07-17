@@ -241,10 +241,10 @@ export const koKr: Localization = {
 	},
 
 	urlModSources: {
-		title: "모드 데이터베이스 소스",
-		customSources: "사용자 정의 소스",
-		addCustomSource: "사용자 정의 소스 추가",
-		add: "추가",
+		title: "모드 소스",
+		add: "소스 추가",
+		addSourceDescription:
+			"Rai Pal이 기본 데이터베이스 외에도 여기에 제공된 모든 데이터베이스에서 모드를 확인합니다. 딥링크 {deepLink} 를 통해 모드 소스를 공유할 수 있습니다.",
 		confirmModalTitle: "모드 소스 확인",
 		modsFound: "이 소스에서 {count}개의 모드를 찾았습니다",
 		addSource: "소스 추가",

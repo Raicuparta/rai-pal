@@ -247,10 +247,10 @@ export const frFr: Localization = {
 	},
 
 	urlModSources: {
-		title: "Sources de la base de données de mods",
-		customSources: "Sources personnalisées",
-		addCustomSource: "Ajouter une source personnalisée",
-		add: "Ajouter",
+		title: "Sources de mods",
+		add: "Ajouter la source",
+		addSourceDescription:
+			"Rai Pal vérifiera les mods dans toutes les bases de données fournies ici, en plus de la base de données par défaut. Vous pouvez partager des sources de mods via le lien profond {deepLink}.",
 		confirmModalTitle: "Confirmer la source de mods",
 		modsFound: "{count} mods trouvés dans cette source",
 		addSource: "Ajouter la source",

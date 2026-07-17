@@ -248,10 +248,10 @@ export const deDe: Localization = {
 	},
 
 	urlModSources: {
-		title: "Mod-Datenbankquellen",
-		customSources: "Benutzerdefinierte Quellen",
-		addCustomSource: "Benutzerdefinierte Quelle hinzufügen",
-		add: "Hinzufügen",
+		title: "Mod-Quellen",
+		add: "Quelle hinzufügen",
+		addSourceDescription:
+			"Rai Pal sucht in allen hier angegebenen Datenbanken nach Mods, zusätzlich zur Standard-Datenbank. Du kannst Mod-Quellen über den Deep-Link {deepLink} teilen.",
 		confirmModalTitle: "Mod-Quelle bestätigen",
 		modsFound: "{count} Mods in dieser Quelle gefunden",
 		addSource: "Quelle hinzufügen",

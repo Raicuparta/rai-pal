@@ -235,10 +235,10 @@ export const zhCn: Localization = {
 	},
 
 	urlModSources: {
-		title: "模组数据库来源",
-		customSources: "自定义来源",
-		addCustomSource: "添加自定义来源",
-		add: "添加",
+		title: "模组来源",
+		add: "添加来源",
+		addSourceDescription:
+			"Rai Pal 除了默认数据库外，还会在此提供的所有数据库中检查模组。你可以通过深层链接 {deepLink} 共享模组来源。",
 		confirmModalTitle: "确认模组来源",
 		modsFound: "在此来源中找到 {count} 个模组",
 		addSource: "添加来源",

@@ -244,10 +244,10 @@ export const ptPt: Localization = {
 	},
 
 	urlModSources: {
-		title: "Fontes da base de dados de mods",
-		customSources: "Fontes personalizadas",
-		addCustomSource: "Adicionar fonte personalizada",
-		add: "Adicionar",
+		title: "Fontes de mods",
+		add: "Adicionar fonte",
+		addSourceDescription:
+			"O Rai Pal irá verificar mods em todas as bases de dados fornecidas aqui, além da base de dados predefinida. Podes partilhar fontes de mods através do deep-link {deepLink}.",
 		confirmModalTitle: "Confirmar fonte de mods",
 		modsFound: "{count} mods encontrados nesta fonte",
 		addSource: "Adicionar fonte",

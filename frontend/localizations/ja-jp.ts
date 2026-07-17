@@ -246,10 +246,10 @@ export const jaJp: Localization = {
 	},
 
 	urlModSources: {
-		title: "Modデータベースソース",
-		customSources: "カスタムソース",
-		addCustomSource: "カスタムソースを追加",
-		add: "追加",
+		title: "Modソース",
+		add: "ソースを追加",
+		addSourceDescription:
+			"Rai Palはデフォルトのデータベースに加えて、ここで提供されているすべてのデータベースでModをチェックします。ディープリンク {deepLink} でModソースを共有できます。",
 		confirmModalTitle: "Modソースを確認",
 		modsFound: "このソースに{count}個のModが見つかりました",
 		addSource: "ソースを追加",

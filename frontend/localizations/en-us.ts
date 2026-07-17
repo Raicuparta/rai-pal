@@ -495,16 +495,13 @@ export const enUs = {
 	// Modal for managing custom mod database URLs.
 	urlModSources: {
 		// Title of the modal.
-		title: "Mod Database Sources",
+		title: "Mod Sources",
 
-		// Label for the custom sources section.
-		customSources: "Custom sources",
+		add: "Add source",
 
-		// Label for the text input where the user types a new URL.
-		addCustomSource: "Add custom source",
-
-		// Button to add a new URL.
-		add: "Add",
+		// Description under the text input for adding a source URL.
+		addSourceDescription:
+			"Rai Pal will check for mods in all databases provided here, in addition to checking the default mod database. You can share mod sources via the deep-link {deepLink}.",
 
 		// Title for the confirmation modal when adding a new source.
 		confirmModalTitle: "Confirm Mod Source",
