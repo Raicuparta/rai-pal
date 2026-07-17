@@ -4,6 +4,7 @@ import { ConfirmModSourceModal } from "@components/tools/confirm-mod-source-moda
 import { useLocalization } from "@hooks/use-localization";
 import {
 	ActionIcon,
+	Code,
 	Group,
 	Modal,
 	Stack,
@@ -19,7 +20,7 @@ type Props = {
 };
 
 export function UrlModSourcesModal(props: Props) {
-	const t = useLocalization("urlModSources");
+	const { t, T } = useLocalization("urlModSources");
 	const [sources, setSources] = useState<string[]>([]);
 	const [newUrl, setNewUrl] = useState("");
 	const [pendingSourceUrl, setPendingSourceUrl] = useState<string | null>(null);
@@ -67,41 +68,27 @@ export function UrlModSourcesModal(props: Props) {
 				opened={props.isOpen}
 				onClose={props.onClose}
 				title={t("title")}
+				size="lg"
 			>
 				<Stack>
 					{sources.length > 0 && (
-						<Stack gap="xs">
+						<Stack>
 							{sources.map((url) => (
-								<Group
-									key={url}
-									gap="xs"
-									wrap="nowrap"
-								>
-									<span
-										style={{
-											flex: 1,
-											wordBreak: "break-all",
-											fontSize: "0.875rem",
-										}}
-									>
-										{url}
-									</span>
+								<Group key={url}>
+									<Code>{url}</Code>
 									<ActionIcon
 										color="red"
 										variant="subtle"
 										onClick={() => handleRemove(url)}
 									>
-										<IconTrash size={16} />
+										<IconTrash />
 									</ActionIcon>
 								</Group>
 							))}
 						</Stack>
 					)}
 
-					<Group
-						gap="xs"
-						align="flex-end"
-					>
+					<Group>
 						<TextInput
 							placeholder="https://example.com/mods.json"
 							value={newUrl}
@@ -125,9 +112,19 @@ export function UrlModSourcesModal(props: Props) {
 						size="sm"
 						c="dimmed"
 					>
-						{t("addSourceDescription", {
-							deepLink: "rai-pal://add-mod-source?url=[URL]",
-						})}
+						<T
+							path="addSourceDescription"
+							params={{
+								deepLink: (
+									<Text
+										component={Code}
+										textWrap="nowrap"
+									>
+										rai-pal://add-mod-source?url=[URL]
+									</Text>
+								),
+							}}
+						/>
 					</Text>
 				</Stack>
 			</Modal>

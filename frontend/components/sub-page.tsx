@@ -8,7 +8,7 @@ interface Props extends CardProps {
 }
 
 export function SubPage({ onClose, ...props }: Props) {
-	const t = useLocalization("subPage");
+	const { t } = useLocalization("subPage");
 
 	useHotkeys([["Escape", onClose]]);
 

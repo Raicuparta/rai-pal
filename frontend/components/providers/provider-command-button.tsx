@@ -39,7 +39,7 @@ const providerCommandActionIcon: Record<ProviderCommandAction, Icon> = {
 };
 
 export function ProviderCommandButton(props: Props) {
-	const t = useLocalization("providerCommand");
+	const { t } = useLocalization("providerCommand");
 	const IconComponent =
 		providerCommandActionIcon[props.action] ?? IconDeviceGamepad;
 

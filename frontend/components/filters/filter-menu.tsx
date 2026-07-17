@@ -133,7 +133,7 @@ export const filterDetails = Object.freeze<{
 export function FilterMenu() {
 	const [dataQuery, setDataQuery] = useDataQuery();
 	const mods = useAtomValue(modsAtom);
-	const t = useLocalization("filterMenu");
+	const { t } = useLocalization("filterMenu");
 
 	const handleToggleClick: FilterChangeCallback = (id, values) => {
 		setDataQuery({

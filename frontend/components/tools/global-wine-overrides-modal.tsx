@@ -11,7 +11,7 @@ type Props = {
 };
 
 export function GlobalWineOverridesModal(props: Props) {
-	const t = useLocalization("globalWineOverrides");
+	const { t } = useLocalization("globalWineOverrides");
 	const [showSuccess, setShowSuccess] = useState(false);
 
 	return (

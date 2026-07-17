@@ -9,7 +9,7 @@ import { useLocalization } from "@hooks/use-localization";
 export function RefreshButton() {
 	const loadingTasks = useAtomValue(loadingTasksAtom);
 	const updateAppData = useUpdateData();
-	const t = useLocalization("refresh");
+	const { t } = useLocalization("refresh");
 
 	const isLoading = loadingTasks.length > 0;
 

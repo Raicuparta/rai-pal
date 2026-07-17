@@ -13,8 +13,8 @@ import { modsAtom } from "@hooks/use-data";
 import { UrlModSourcesModal } from "@components/tools/url-mod-sources-modal";
 
 export function ModsPage() {
-	const t = useLocalization("modsPage");
-	const urlModSourcesT = useLocalization("urlModSources");
+	const { t } = useLocalization("modsPage");
+	const { t: urlModSourcesT } = useLocalization("urlModSources");
 	const [selectedModId, setSelectedId] = useState<string>();
 	const [
 		isUrlModSourcesModalOpen,

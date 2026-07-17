@@ -7,7 +7,7 @@ import { useAsyncCommand } from "@hooks/use-async-command";
 import { useLocalization } from "@hooks/use-localization";
 
 export function AddGame() {
-	const t = useLocalization("addGame");
+	const { t } = useLocalization("addGame");
 	const [isOpen, setIsOpen] = useState(false);
 
 	const [executeAddGame] = useAsyncCommand(commands.addGame);

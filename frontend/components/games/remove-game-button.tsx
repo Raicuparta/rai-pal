@@ -12,7 +12,7 @@ type Props = {
 };
 
 export function RemoveGameButton(props: Props) {
-	const t = useLocalization("gameModal");
+	const { t } = useLocalization("gameModal");
 	const setSelectedGame = useSetAtom(selectedGameAtom);
 	const [refreshGames] = useAsyncCommand(commands.refreshGames);
 

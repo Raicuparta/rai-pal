@@ -50,7 +50,7 @@ export function GameModRow({
 	remoteConfigs,
 	incompatible = false,
 }: Props) {
-	const t = useLocalization("gameModRow");
+	const { t } = useLocalization("gameModRow");
 
 	const availableRemoteConfig = remoteConfigs?.configs.find(
 		(config) => config.modId === (mod.config?.modIdOverride ?? mod.id),

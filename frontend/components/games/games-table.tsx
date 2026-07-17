@@ -48,7 +48,7 @@ export function GamesTable() {
 	const loading = useAtomValue(loadingTasksAtom);
 	const [dataQuery, setDataQuery] = useDataQuery();
 	const tableRef = useRef<TableVirtuosoHandle>(null);
-	const t = useLocalization("gamesPage");
+	const { t } = useLocalization("gamesPage");
 
 	const onChangeSort = (sortBy: GamesSortBy) => {
 		const sortDescending =

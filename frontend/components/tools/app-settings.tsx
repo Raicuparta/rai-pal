@@ -45,7 +45,7 @@ const locales: AppLocale[] = [
 ];
 
 export function AppSettings() {
-	const t = useLocalization("appDropdownMenu");
+	const { t } = useLocalization("appDropdownMenu");
 	const [settings, setSettings, resetSettings] = useAppSettings();
 	const detectedLocale = useAtomValue(detectedLocaleAtom);
 	const [

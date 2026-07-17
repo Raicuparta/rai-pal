@@ -9,7 +9,7 @@ type Props = {
 };
 
 export function GameModRunButton({ game, mod }: Props) {
-	const t = useLocalization("gameModRow");
+	const { t } = useLocalization("gameModRow");
 
 	return (
 		<CommandButton

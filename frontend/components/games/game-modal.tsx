@@ -31,7 +31,7 @@ type Props = {
 };
 
 export function GameModal({ game, mods }: Props) {
-	const t = useLocalization("gameModal");
+	const { t } = useLocalization("gameModal");
 	const setSelectedGame = useSetAtom(selectedGameAtom);
 
 	const close = () => setSelectedGame(null);

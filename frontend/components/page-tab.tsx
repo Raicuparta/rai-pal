@@ -16,7 +16,7 @@ type Props = {
 };
 
 export function PageTab(props: Props) {
-	const t = useLocalization("tab");
+	const { t } = useLocalization("tab");
 
 	return (
 		<Tabs.Tab

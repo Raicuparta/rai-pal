@@ -10,7 +10,7 @@ type Props = {
 };
 
 export function GameModUpdateButton({ game, mod, remoteConfigFile }: Props) {
-	const t = useLocalization("gameModRow");
+	const { t } = useLocalization("gameModRow");
 
 	return (
 		<CommandButton

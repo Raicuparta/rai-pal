@@ -32,7 +32,7 @@ function CommandButtonInternal<TResultValue>(
 	}: Props<TResultValue>,
 	ref: React.ForwardedRef<HTMLButtonElement>,
 ) {
-	const t = useLocalization("commandButton");
+	const { t } = useLocalization("commandButton");
 	const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
 	const [skipConfirmDialogs, setSkipConfirmDialogs] =
 		useAppSettingSingle("skipConfirmDialogs");

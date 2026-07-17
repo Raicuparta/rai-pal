@@ -28,7 +28,7 @@ type Props = {
 };
 
 export function GameMods({ game, mods }: Props) {
-	const t = useLocalization("gameModal");
+	const { t } = useLocalization("gameModal");
 	const getRemoteConfigs = useCallback(
 		() => commands.getRemoteConfigs(game.providerId, game.gameId),
 		[game],

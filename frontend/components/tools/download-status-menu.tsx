@@ -9,7 +9,7 @@ import { DownloadProgressRing } from "./download-progress-ring";
 type StatusMap = Map<string, DownloadStatus>;
 
 export function DownloadStatusMenu() {
-	const t = useLocalization("downloadStatusMenu");
+	const { t } = useLocalization("downloadStatusMenu");
 
 	const [progresses, setProgresses] = useState<StatusMap>(new Map());
 	useEffect(() => {

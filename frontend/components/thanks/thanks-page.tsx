@@ -37,7 +37,7 @@ function getRankingColor(ranking: number): MantineColor {
 }
 
 export function ThanksPage() {
-	const t = useLocalization("thanksPage");
+	const { t } = useLocalization("thanksPage");
 	const patrons = usePatrons();
 
 	return (

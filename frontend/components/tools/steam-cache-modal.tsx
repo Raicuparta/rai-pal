@@ -11,7 +11,7 @@ type Props = {
 };
 
 export function SteamCacheModal(props: Props) {
-	const t = useLocalization("steamCache");
+	const { t } = useLocalization("steamCache");
 	const [showSteamRestartPrompt, setShowSteamRestartPrompt] = useState(false);
 
 	return (

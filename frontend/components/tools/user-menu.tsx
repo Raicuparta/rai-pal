@@ -24,7 +24,7 @@ function getInitials(name: string | null): string {
 }
 
 export function UserMenu() {
-	const t = useLocalization("userMenu");
+	const { t } = useLocalization("userMenu");
 	const [authState, setAuthState] = useState<AuthState>({
 		isLoggedIn: false,
 		avatarPath: null,

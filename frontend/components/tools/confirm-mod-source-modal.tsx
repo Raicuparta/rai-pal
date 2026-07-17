@@ -14,7 +14,7 @@ type Props = {
 };
 
 export function ConfirmModSourceModal(props: Props) {
-	const t = useLocalization("urlModSources");
+	const { t } = useLocalization("urlModSources");
 	const [mods, setMods] = useState<GameMod[]>();
 	const [isLoading, setIsLoading] = useState(false);
 	const [isSaving, setIsSaving] = useState(false);

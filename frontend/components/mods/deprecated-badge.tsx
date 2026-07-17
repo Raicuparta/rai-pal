@@ -3,7 +3,7 @@ import { Badge, BadgeProps, Tooltip } from "@mantine/core";
 import { IconAlertTriangleFilled } from "@tabler/icons-react";
 
 export const DeprecatedBadge = (props: BadgeProps) => {
-	const t = useLocalization("modsPage");
+	const { t } = useLocalization("modsPage");
 	return (
 		<Tooltip label={t("modDeprecatedTooltip")}>
 			<Badge

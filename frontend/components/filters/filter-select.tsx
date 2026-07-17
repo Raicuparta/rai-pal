@@ -27,9 +27,9 @@ export function FilterSelect<TFilterKey extends FilterKey>({
 	currentValues,
 	onChange,
 }: Props<TFilterKey>) {
-	const tProperty = useLocalization("filterProperty");
-	const tValue = useLocalization("filterValue");
-	const tValueNote = useLocalization("filterValueNote");
+	const { t: tProperty } = useLocalization("filterProperty");
+	const { t: tValue } = useLocalization("filterValue");
+	const { t: tValueNote } = useLocalization("filterValueNote");
 	const emptyLocalizationKey = filterDetails[id].emptyLocalizationKey;
 	const possibleValuesWithNull = [
 		...(emptyLocalizationKey ? [null] : []),
