@@ -46,6 +46,7 @@ export const esEs: Localization = {
 		unityBackend: "Backend de Unity",
 		engine: "Motor",
 		status: "Estado",
+		mod: "Mod",
 	},
 
 	filterValue: {

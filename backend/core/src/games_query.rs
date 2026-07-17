@@ -30,6 +30,7 @@ pub struct GamesFilter {
 	pub unity_backends: HashSet<Option<UnityBackend>>,
 	pub engines: HashSet<Option<EngineBrand>>,
 	pub installed: HashSet<Option<InstallState>>,
+	pub mod_families: HashSet<String>,
 }
 
 #[serializable_enum]
@@ -59,6 +60,7 @@ impl Default for GamesFilter {
 			tags: GameTag::iter().map(Some).collect(),
 			unity_backends: UnityBackend::iter().map(Some).collect(),
 			installed: InstallState::iter().map(Some).collect(),
+			mod_families: HashSet::new(),
 		}
 	}
 }

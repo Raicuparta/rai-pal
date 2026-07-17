@@ -49,6 +49,7 @@ use crate::{
 #[serializable_struct]
 pub struct GameMod {
 	pub id: String,
+	pub family: Option<String>,
 	pub title: String,
 	pub hide_from_game_mods_list: Option<bool>,
 	pub author: String,

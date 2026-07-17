@@ -35,6 +35,7 @@ use crate::{
 			RowExt,
 		},
 	},
+	operating_system::OperatingSystem,
 	path_extensions::{
 		AsValidStr,
 		PathExt,
@@ -267,6 +268,77 @@ impl GameDatabase for DbMutex {
 				if !arch_conditions.is_empty() {
 					filters.push(format!("({})", arch_conditions.join(" OR ")));
 				}
+			}
+
+			if !filter.mod_families.is_empty() {
+				let family_placeholders: Vec<String> = filter
+					.mod_families
+					.iter()
+					.map(|family| {
+						params.push(Box::new(family.clone()));
+						"?".to_string()
+					})
+					.collect();
+
+				let current_os = OperatingSystem::get_current().to_string();
+				params.push(Box::new(current_os));
+
+				filters.push(format!(
+					r"EXISTS (
+						SELECT 1 FROM main.mods m
+						WHERE m.family IN ({})
+						AND (json_extract(m.engine, '$') IS NULL OR json_extract(m.engine, '$') = COALESCE(ig.engine_brand, rg.engine_brand))
+						AND (json_extract(m.unity_backend, '$') IS NULL OR ig.unity_backend IS NULL OR json_extract(m.unity_backend, '$') = ig.unity_backend)
+						AND (json_extract(m.architecture, '$') IS NULL OR ig.architecture IS NULL OR json_extract(m.architecture, '$') = ig.architecture)
+						AND (json_extract(m.host_os, '$') IS NULL OR json_extract(m.host_os, '$') = ?)
+						AND (
+							COALESCE(ig.engine_version_major, rg.engine_version_major) IS NULL
+							OR (
+								(
+									json_extract(m.engine_version_range, '$.minimum.major') IS NULL
+									OR NOT (
+										json_extract(m.engine_version_range, '$.minimum.major') > COALESCE(ig.engine_version_major, rg.engine_version_major)
+										OR (
+											json_extract(m.engine_version_range, '$.minimum.major') = COALESCE(ig.engine_version_major, rg.engine_version_major)
+											AND json_extract(m.engine_version_range, '$.minimum.minor') IS NOT NULL
+											AND COALESCE(ig.engine_version_minor, rg.engine_version_minor) IS NOT NULL
+											AND (
+												json_extract(m.engine_version_range, '$.minimum.minor') > COALESCE(ig.engine_version_minor, rg.engine_version_minor)
+												OR (
+													json_extract(m.engine_version_range, '$.minimum.minor') = COALESCE(ig.engine_version_minor, rg.engine_version_minor)
+													AND json_extract(m.engine_version_range, '$.minimum.patch') IS NOT NULL
+													AND COALESCE(ig.engine_version_patch, rg.engine_version_patch) IS NOT NULL
+													AND json_extract(m.engine_version_range, '$.minimum.patch') > COALESCE(ig.engine_version_patch, rg.engine_version_patch)
+												)
+											)
+										)
+									)
+								)
+								AND (
+									json_extract(m.engine_version_range, '$.maximum.major') IS NULL
+									OR NOT (
+										json_extract(m.engine_version_range, '$.maximum.major') < COALESCE(ig.engine_version_major, rg.engine_version_major)
+										OR (
+											json_extract(m.engine_version_range, '$.maximum.major') = COALESCE(ig.engine_version_major, rg.engine_version_major)
+											AND json_extract(m.engine_version_range, '$.maximum.minor') IS NOT NULL
+											AND COALESCE(ig.engine_version_minor, rg.engine_version_minor) IS NOT NULL
+											AND (
+												json_extract(m.engine_version_range, '$.maximum.minor') < COALESCE(ig.engine_version_minor, rg.engine_version_minor)
+												OR (
+													json_extract(m.engine_version_range, '$.maximum.minor') = COALESCE(ig.engine_version_minor, rg.engine_version_minor)
+													AND json_extract(m.engine_version_range, '$.maximum.patch') IS NOT NULL
+													AND COALESCE(ig.engine_version_patch, rg.engine_version_patch) IS NOT NULL
+													AND json_extract(m.engine_version_range, '$.maximum.patch') < COALESCE(ig.engine_version_patch, rg.engine_version_patch)
+												)
+											)
+										)
+									)
+								)
+							)
+						)
+					)",
+					family_placeholders.join(", ")
+				));
 			}
 		}
 

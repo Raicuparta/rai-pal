@@ -45,6 +45,7 @@ export const zhCn: Localization = {
 		unityBackend: "Unity 后端",
 		engine: "引擎",
 		status: "状态",
+		mod: "Mod",
 	},
 
 	filterValue: {

@@ -46,6 +46,7 @@ export const frFr: Localization = {
 		unityBackend: "Backend Unity",
 		engine: "Moteur",
 		status: "Statut",
+		mod: "Mod",
 	},
 
 	filterValue: {

@@ -46,6 +46,7 @@ export const koKr: Localization = {
 		unityBackend: "Unity 백엔드",
 		engine: "엔진",
 		status: "상태",
+		mod: "Mod",
 	},
 
 	filterValue: {

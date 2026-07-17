@@ -1,5 +1,6 @@
 import { Button, Group, Indicator, Popover } from "@mantine/core";
 import { IconFilter, IconX } from "@tabler/icons-react";
+import { useAtomValue } from "jotai";
 import styles from "./filters.module.css";
 import {
 	FilterChangeCallback,
@@ -9,6 +10,7 @@ import {
 } from "./filter-select";
 import { SearchInput } from "@components/search-input";
 import { GamesFilter, GamesQuery } from "@api/bindings";
+import { modsAtom } from "@hooks/use-data";
 import { defaultQuery, useDataQuery } from "@hooks/use-data-query";
 import { useLocalization } from "@hooks/use-localization";
 import { LocalizationKey } from "@localizations/localizations";
@@ -122,10 +124,15 @@ export const filterDetails = Object.freeze<{
 			},
 		},
 	},
+	modFamilies: {
+		localizationKey: "mod",
+		valueDetails: {},
+	},
 });
 
 export function FilterMenu() {
 	const [dataQuery, setDataQuery] = useDataQuery();
+	const mods = useAtomValue(modsAtom);
 	const t = useLocalization("filterMenu");
 
 	const handleToggleClick: FilterChangeCallback = (id, values) => {
@@ -187,19 +194,37 @@ export function FilterMenu() {
 								wrap="nowrap"
 							>
 								{(Object.keys(filterDetails) as Array<FilterKey>).map(
-									(filterKey) => (
-										<FilterSelect
-											key={filterKey}
-											id={filterKey}
-											possibleValues={
-												Object.keys(
-													filterDetails[filterKey].valueDetails,
-												) as Array<NonNullable<FilterValue<FilterKey>>>
-											}
-											currentValues={dataQuery.filter[filterKey]}
-											onChange={handleToggleClick}
-										/>
-									),
+									(filterKey) => {
+										const possibleValues =
+											filterKey === "modFamilies"
+												? ([
+														...new Set(
+															Object.values(mods)
+																.map((m) => m.family)
+																.filter(
+																	(f): f is string =>
+																		f !== null,
+																),
+														),
+													] as Array<
+														NonNullable<FilterValue<FilterKey>>
+													>)
+												: (Object.keys(
+														filterDetails[filterKey].valueDetails,
+													) as Array<
+														NonNullable<FilterValue<FilterKey>>
+													>);
+
+										return (
+											<FilterSelect
+												key={filterKey}
+												id={filterKey}
+												possibleValues={possibleValues}
+												currentValues={dataQuery.filter[filterKey]}
+												onChange={handleToggleClick}
+											/>
+										);
+									},
 								)}
 							</Group>
 						</Popover.Dropdown>

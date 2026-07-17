@@ -46,6 +46,7 @@ export const deDe: Localization = {
 		unityBackend: "Unity Backend",
 		engine: "Engine",
 		status: "Status",
+		mod: "Mod",
 	},
 
 	filterValue: {

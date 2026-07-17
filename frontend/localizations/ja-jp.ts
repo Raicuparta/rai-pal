@@ -46,6 +46,7 @@ export const jaJp: Localization = {
 		unityBackend: "Unity バックエンド",
 		engine: "エンジン",
 		status: "ステータス",
+		mod: "Mod",
 	},
 
 	filterValue: {

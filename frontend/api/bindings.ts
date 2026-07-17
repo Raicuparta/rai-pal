@@ -142,6 +142,7 @@ export type GameIdsResponse = {
 
 export type GameMod = {
 	id: string,
+	family: string | null,
 	title: string,
 	hideFromGameModsList: boolean | null,
 	author: string,
@@ -183,6 +184,7 @@ export type GamesFilter = {
 	unityBackends: (UnityBackend | null)[],
 	engines: (EngineBrand | null)[],
 	installed: (InstallState | null)[],
+	modFamilies: string[],
 };
 
 export type GamesQuery = {

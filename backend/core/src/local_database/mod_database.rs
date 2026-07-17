@@ -116,6 +116,13 @@ impl ModDatabase for DbMutex {
 		",
 		)?;
 
+		if let Err(err) = self
+			.lock_db()?
+			.execute_batch("ALTER TABLE mods ADD COLUMN family TEXT;")
+		{
+			log::warn!("Could not add 'family' column to mods table (may already exist): {err}");
+		}
+
 		Ok(())
 	}
 
@@ -154,7 +161,8 @@ impl ModDatabase for DbMutex {
 				run_for_game,
 				run_standalone,
 				hash,
-				hide_from_game_mods_list
+				hide_from_game_mods_list,
+				family
 			FROM main.mods
 			WHERE id = $1
 			LIMIT 1
@@ -182,6 +190,7 @@ impl ModDatabase for DbMutex {
 					run_standalone: row.get_json(17)?,
 					hash: row.get(18)?,
 					hide_from_game_mods_list: row.get(19)?,
+					family: row.get(20)?,
 				})
 			})?)
 	}
@@ -269,7 +278,8 @@ impl ModDatabase for DbMutex {
 				run_for_game,
 				run_standalone,
 				hash,
-				hide_from_game_mods_list
+				hide_from_game_mods_list,
+				family
 			FROM main.mods
 		",
 			)?
@@ -295,6 +305,7 @@ impl ModDatabase for DbMutex {
 					run_standalone: row.get_json(17)?,
 					hash: row.get(18)?,
 					hide_from_game_mods_list: row.get(19)?,
+					family: row.get(20)?,
 				})
 			})?
 			.filter_map(|game_mod| match game_mod {
@@ -594,8 +605,9 @@ fn try_insert_mod(
 				run_standalone,
 				hide_from_game_mods_list,
 				hash,
+				family,
 				created_at
-			) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22)",
+			) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23)",
 		)?
 		.execute(rusqlite::params![
 			provider_id,
@@ -619,6 +631,7 @@ fn try_insert_mod(
 			serialize_json_option(game_mod.run_standalone.as_ref())?,
 			game_mod.hide_from_game_mods_list,
 			game_mod.hash,
+			game_mod.family,
 			SystemTime::now()
 				.duration_since(UNIX_EPOCH)?
 				.as_secs()

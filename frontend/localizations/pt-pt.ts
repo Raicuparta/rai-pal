@@ -45,6 +45,7 @@ export const ptPt: Localization = {
 		unityBackend: "Backend do Unity",
 		engine: "Motor",
 		status: "Estado",
+		mod: "Mod",
 	},
 
 	filterValue: {

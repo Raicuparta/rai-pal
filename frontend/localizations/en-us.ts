@@ -90,6 +90,9 @@ export const enUs = {
 
 		// Game installation status (Installed, Not installed). Might have more statuses in the future.
 		status: "Status",
+
+		// Mod compatibility.
+		mod: "Mod",
 	},
 
 	// Different values for each of the filterable properties.

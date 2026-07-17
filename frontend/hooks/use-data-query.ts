@@ -13,6 +13,7 @@ export const defaultQuery: GamesQuery = {
 		tags: [],
 		unityBackends: [],
 		installed: [],
+		modFamilies: [],
 	},
 };
 
