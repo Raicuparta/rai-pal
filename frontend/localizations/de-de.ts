@@ -8,23 +8,23 @@ export const deDe: Localization = {
 	tab: {
 		games: "Spiele",
 		mods: "Mods",
-		thanks: "Dank",
+		thanks: "Danke",
 	},
 
 	gamesPage: {
 		emptyGamesList:
-			"Rai Pal hat überhaupt keine Spiele gefunden. Denken Sie daran, dass Rai Pal installierte Apps von anderen Spieleanbietern wie Steam, Epic usw. finden muss.",
+			"Rai Pal hat keine einzigen Spiele gefunden. Denk dran, dass Rai Pal installierte Apps von anderen Spieleplattformen wie Steam, Epic usw. finden muss.",
 		emptyFilteredGamesList:
-			"Nichts! Alle Ihre Spiele sind wegen der ausgewählten Filter versteckt. Löschen Sie Ihre Filter, um Ihre schönen Spiele wieder zu sehen.",
-		emptyGamesLoading: "Suche nach Ihren Spielen...",
+			"Nichts! All deine Spiele sind wegen der ausgewählten Filter versteckt. Setz deine Filter zurück, um deine schönen Spiele wiederzusehen.",
+		emptyGamesLoading: "Suche nach deinen Spielen...",
 	},
 
 	addGame: {
 		button: "Spiel hinzufügen",
 		title: "Spiel hinzufügen",
 		dropField:
-			"Ziehen Sie eine Spielexe hierher oder klicken Sie, um eine Datei auszuwählen.",
-		note: "Hinweis: Sie können Spielexe-Dateien überall im Rai Pal-Fenster ablegen, um sie der Liste der installierten Spiele hinzuzufügen, ohne dieses Dialogfeld zu öffnen.",
+			"Zieh eine Spiel-Exe hier rein oder klick, um eine Datei auszuwählen.",
+		note: "Hinweis: Du kannst Spiel-Exe-Dateien überall auf Rai Pal ablegen, ohne dieses Dialogfenster zu öffnen.",
 	},
 
 	refresh: {
@@ -55,7 +55,7 @@ export const deDe: Localization = {
 		arch32: "32-bit",
 		tagDemo: "Demo",
 		tagVr: "Native VR",
-		tagUntagged: "Nicht getaggt",
+		tagUntagged: "Ohne Tag",
 		statusInstalled: "Installiert",
 		statusNotInstalled: "Nicht installiert",
 		providerManual: "Manuell",
@@ -72,7 +72,7 @@ export const deDe: Localization = {
 
 	providerCommand: {
 		installGame: "Installieren",
-		showGameInLibrary: "In Bibliothek anzeigen",
+		showGameInLibrary: "In der Bibliothek anzeigen",
 		showGameInStore: "Store-Seite öffnen",
 		startGameViaProvider: "Spiel starten",
 		startGameViaExe: "Spiel-Exe ausführen",
@@ -84,25 +84,25 @@ export const deDe: Localization = {
 		startGameExecutable: "Spiel-Exe starten",
 		startGameViaProvider: "Spiel starten über {provider}",
 		foldersDropdown: "Ordner",
-		openGameFilesFolder: "Spiel-Dateien-Ordner öffnen",
-		openInstalledModsFolder: "Installierte Mods-Ordner öffnen",
-		openGameDataFolder: "Spiel-App-Daten-Ordner öffnen",
-		openGameWinePrefixFolder: "Wine-Präfix-Ordner des Spiels öffnen",
-		openGameWineBinaryFolder: "Wine-Binärordner des Spiels öffnen",
+		openGameFilesFolder: "Spiel-Ordner öffnen",
+		openInstalledModsFolder: "Installierte Mods öffnen",
+		openGameDataFolder: "App-Daten öffnen",
+		openGameWinePrefixFolder: "Wine-Prefix öffnen",
+		openGameWineBinaryFolder: "Wine Binary öffnen",
 		removeFromRaiPal: "Aus Rai Pal entfernen",
 		removeGameConfirmation:
-			"Sind Sie sicher, dass Sie dieses Spiel aus Rai Pal entfernen möchten?",
+			"Bist du sicher, dass du dieses Spiel aus Rai Pal entfernen willst?",
 		refreshGame: "Aktualisieren",
 		failedToReadGameInfo:
-			"Fehler beim Lesen wichtiger Informationen über dieses Spiel. Dies könnte daran liegen, dass die Exe-Datei geschützt ist. Einige Mods könnten fehlschlagen.",
+			"Konnte wichtige Infos zu diesem Spiel nicht lesen. Vielleicht ist die Exe geschützt. Einige Mods könnten dann nicht installiert werden.",
 		failedToDetermineEngine:
-			"Fehler beim Bestimmen der Engine für dieses Spiel. Einige Mods könnten fehlschlagen.",
+			"Konnte die Engine für dieses Spiel nicht bestimmen. Einige Mods könnten dann nicht funktionieren.",
 		gameModsLabel: "Mods",
 		gameNotInstalledWarning:
-			"Dieses Spiel ist nicht installiert, daher bin ich mir nicht 100% sicher, welche Mods kompatibel sind. Die unten angezeigten könnten funktionieren. Wenn Sie das Spiel installieren, zeige ich Ihnen genauere Informationen.",
+			"Das Spiel ist nicht installiert, daher bin ich mir nicht 100% sicher, welche Mods kompatibel sind. Die unten angezeigten könnten trotzdem funktionieren. Wenn du das Spiel installierst, zeig ich dir genauere Infos.",
 		uninstallAllModsButton: "Alle Mods deinstallieren",
 		uninstallAllModsConfirmation:
-			"Sind Sie sicher? Dies wird alle Dateien im Mods-Ordner dieses Spiels löschen. Es werden jedoch keine Dateien aus dem eigentlichen Spiel gelöscht.",
+			"Sicher? Das löscht alle Dateien im Mod-Ordner des Spiels. Dateien aus dem eigentlichen Spiel bleiben aber erhalten.",
 
 		incompatibleGameModsLabel: "Inkompatible Mods",
 
@@ -112,7 +112,7 @@ export const deDe: Localization = {
 		otherThings: "Sonstige Dinge",
 
 		otherThingsDescription:
-			"Dies sind hauptsächlich Abhängigkeiten und andere Dinge, die Sie normalerweise nicht direkt bearbeiten müssen.",
+			"Das sind hauptsächlich Abhängigkeiten und andere Dinge, die du normalerweise nicht direkt bearbeiten musst.",
 	},
 
 	gameModRow: {
@@ -123,16 +123,16 @@ export const deDe: Localization = {
 		updateMod: "Aktualisieren",
 		installMod: "Installieren",
 		installModAnticheatWarning:
-			"Achtung: Seien Sie vorsichtig beim Installieren von Mods in Mehrspieler-Spielen! Anticheat kann einige Mods erkennen und Sie bannen, auch wenn die Mods harmlos aussehen.",
+			"Achtung: Sei vorsichtig beim Installieren von Mods in Mehrspielerspielen! Anticheat kann einige Mods erkennen und dich bannen, auch wenn sie harmlos aussehen.",
 		reinstallMod: "Neu installieren",
 		uninstallMod: "Deinstallieren",
 		runMod: "Ausführen",
 		downloadRemoteConfig: "Empfohlene Konfiguration herunterladen",
 		remoteConfigAvailable:
-			"Empfohlene Konfiguration verfügbar. Wird heruntergeladen, falls Sie noch keine Konfiguration haben. Sie können auch erzwingen, dass sie über das Drei-Punkte-Menü heruntergeladen wird.",
+			"Empfohlene Konfiguration verfügbar. Wird heruntergeladen, falls du noch keine hast. Du kannst auch über das Drei-Punkte-Menü den Download erzwingen.",
 		modOutdated: "Mod veraltet",
 		cantUninstallModWithDependants:
-			"Ein Mod mit abhängigen Mods kann nicht deinstalliert werden. Deinstallieren Sie zuerst die Mods, die von diesem abhängen.",
+			"Kann keinen Mod deinstallieren, von dem andere Mods abhängen. Deinstalliere zuerst die Mods, die davon abhängen.",
 	},
 
 	gamesTableColumn: {
@@ -142,9 +142,9 @@ export const deDe: Localization = {
 	},
 
 	modsPage: {
-		openLocalModsFolderButton: "Mods-Ordner öffnen",
+		openLocalModsFolderButton: "Lokale Mods öffnen",
 		openLoadlModsFolderTooltip:
-			"Sie können Mods in diesen Ordner mit einer rai-pal-manifest.json platzieren, um sie direkt zu laden, ohne die Online-Datenbank zu durchlaufen.",
+			"Du kannst Mods mit einer rai-pal-manifest.json in diesen Ordner legen, um sie direkt zu laden, ohne die Online-Datenbank zu nutzen.",
 		tableColumnMod: "Mod",
 		tableColumnVersion: "Version",
 		tableColumnGameEngine: "Engine",
@@ -152,7 +152,7 @@ export const deDe: Localization = {
 		modByAuthor: "von {authorName}",
 		modDeprecated: "Veraltet",
 		modDeprecatedTooltip:
-			"Dieser Mod ist veraltet. Sie sollten ihn deinstallieren und eine neuere Alternative installieren.",
+			"Dieser Mod ist veraltet. Du solltest ihn deinstallieren und eine neuere Alternative installieren.",
 	},
 
 	modModal: {
@@ -162,7 +162,7 @@ export const deDe: Localization = {
 		downloadMod: "Mod herunterladen",
 		deleteMod: "Mod löschen",
 		deleteModConfirmation:
-			"Sind Sie sicher? Alle Dateien im Mod-Ordner gehen verloren.",
+			"Sicher? Alle Dateien im Mod-Ordner werden gelöscht.",
 		byAuthor: "von {authorName}",
 	},
 
@@ -184,7 +184,7 @@ export const deDe: Localization = {
 		logOut: "Abmelden",
 		signInWithDiscord: "Mit Discord anmelden",
 		discordAccessNote:
-			"Mods können dies verwenden, um auf Ihren Discord-Benutzernamen, Avatar, Rollen usw. zuzugreifen.",
+			"Mods können das nutzen, um auf deinen Discord-Nutzernamen, Avatar, Rollen usw. zuzugreifen.",
 	},
 
 	subPage: {
@@ -199,27 +199,27 @@ export const deDe: Localization = {
 		resetSteamCacheButton: "Steam-Cache zurücksetzen",
 		resetSteamCacheModalTitle: "Steam-Cache zurücksetzen",
 		resetSteamCacheDescription:
-			"Verwenden Sie dies, wenn Rai Pal Spiele anzeigt, die Sie tatsächlich nicht besitzen. Dies wird den Steam-Cache zurücksetzen, und dann müssen Sie Steam neu starten. Sie erhalten einen Fehler, wenn die Datei bereits gelöscht wurde.",
+			"Nutze das, wenn Rai Pal Spiele anzeigt, die du eigentlich nicht besitzt. Das setzt den Steam-Cache zurück, und dann musst du Steam neu starten. Du bekommst einen Fehler, wenn die Datei bereits gelöscht wurde.",
 		resetSteamCacheSuccess:
-			"Die Cache-Datei wurde gelöscht. Bitte starten Sie Steam neu, warten Sie ein paar Sekunden und drücken Sie dann die Aktualisierungstaste in Rai Pal.",
+			"Die Cache-Datei wurde gelöscht. Bitte starte Steam neu, warte ein paar Sekunden und drück dann auf Aktualisieren in Rai Pal.",
 	},
 
 	steamShortcut: {
 		addRaiPalSteamShortcutButton: "Rai Pal zur Steam-Bibliothek hinzufügen",
 		addRaiPalSteamShortcutModalTitle: "Rai Pal zur Steam-Bibliothek hinzufügen",
 		addRaiPalSteamShortcutDescription:
-			"Das ist besonders auf dem Steam Deck nützlich, damit Sie Rai Pal im Spielmodus starten können. Danach müssen Sie Steam neu starten.",
+			"Ist besonders auf dem Steam Deck nützlich, damit du Rai Pal im Spielmodus starten kannst. Danach musst du Steam neu starten.",
 		addRaiPalSteamShortcutSuccess:
-			"Rai Pal wurde zu Ihrer Steam-Bibliothek hinzugefügt. Starten Sie Steam neu, damit es angezeigt wird.",
+			"Rai Pal wurde zu deiner Steam-Bibliothek hinzugefügt. Starte Steam neu, damit es angezeigt wird.",
 	},
 
 	globalWineOverrides: {
 		setUpEnvironmentButton: "Linux-Umgebung für BepInEx einrichten",
 		setUpEnvironmentTitle: "Linux-Umgebung für BepInEx einrichten",
 		setUpEnvironmentDescription:
-			"Bei Verwendung von Proton/Wine unter Linux wird BepInEx nicht automatisch geladen, es sei denn, einige Wine-Einstellungen sind gesetzt. Dies setzt die Umgebungsvariable WINEDLLOVERRIDES global auf 'winhttp.dll=n,b'. Wenn Sie das lieber manuell machen möchten, klicken Sie nicht auf diese Schaltfläche.",
+			"Bei Verwendung von Proton/Wine unter Linux wird BepInEx nicht automatisch geladen, wenn nicht einige Wine-Einstellungen gesetzt sind. Dies setzt die Umgebungsvariable WINEDLLOVERRIDES global auf 'winhttp.dll=n,b'. Wenn du das lieber manuell machen möchtest, klick nicht auf diesen Button.",
 		setUpEnvironmentSuccess:
-			"Die Datei wurde geschrieben. Sie müssen sich abmelden und wieder anmelden oder Ihren Computer neu starten, damit die Änderungen wirksam werden.",
+			"Die Datei wurde geschrieben. Du musst dich abmelden und wieder anmelden oder deinen Computer neu starten, damit die Änderungen wirksam werden.",
 	},
 
 	debugData: {
@@ -229,17 +229,17 @@ export const deDe: Localization = {
 
 	thanksPage: {
 		intro:
-			"Hallo. Ich habe Rai Pal gemacht. Ich habe auch in der Vergangenheit andere VR-Mods gemacht und arbeite derzeit an einem universellen VR-Mod für Unity-Spiele. Wenn Ihnen gefällt, was ich tue, und Sie mehr sehen möchten, ziehen Sie bitte eine Spende in Betracht! Sie können mich auch unterstützen, indem Sie einen meiner kostenlosen Mods auf itch.io kaufen.",
-		starRaiPalOnGitHub: "Rai Pal auf GitHub bewerten",
+			"Hallo. Ich habe Rai Pal gemacht. Ich hab auch in der Vergangenheit andere VR-Mods gemacht und arbeite gerade an einem universellen VR-Mod für Unity-Spiele. Wenn dir gefällt, was ich mache, und du mehr sehen willst, denk mal über eine Spende nach! Du kannst mich auch unterstützen, indem du einen meiner kostenlosen Mods auf itch.io kaufst.",
+		starRaiPalOnGitHub: "Rai Pal auf GitHub ein Sternchen geben",
 		otherModdersTitle: "Andere Modder",
 		otherModdersDescription:
-			"Rai Pal soll Ihnen helfen, Spiele zu modden, und das können wir nicht ohne die Werkzeuge, die andere Entwickler erstellt haben. Einige dieser Personen haben keine Spendenlinks, aber ich bin ihnen für ihre Arbeit sehr dankbar.",
+			"Rai Pal soll dir helfen, Spiele zu modden, und das schaffen wir nicht ohne die Werkzeuge, die andere Entwickler erstellt haben. Manche dieser Leute haben keine Spendenlinks, aber ich bin für ihre Arbeit extrem dankbar.",
 		modderOnWebsite: "{modderName} auf {website}",
 		patreonLeaderboard: "Patreon-Bestenliste",
 		rankedByPatreonDonationAmount:
-			"Nach der gesamten Lebenszeit-Spendensumme geordnet.",
+			"Nach Gesamtspenden sortiert.",
 		patreonProfilePrivateNotice:
-			"Wenn Sie sich hier nicht sehen, liegt das daran, dass Ihr Patreon-Profil privat ist.",
+			"Siehst du dich hier nicht? Dann ist dein Patreon-Profil privat.",
 	},
 
 	commandButton: {
@@ -248,7 +248,7 @@ export const deDe: Localization = {
 	},
 
 	urlModSources: {
-		title: "Mod-Datenbank-Quellen",
+		title: "Mod-Datenbankquellen",
 		customSources: "Benutzerdefinierte Quellen",
 		addCustomSource: "Benutzerdefinierte Quelle hinzufügen",
 		add: "Hinzufügen",

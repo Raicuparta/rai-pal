@@ -54,7 +54,7 @@ export const esEs: Localization = {
 		arch64: "64-bit",
 		arch32: "32-bit",
 		tagDemo: "Demo",
-		tagVr: "VR Nativo",
+		tagVr: "VR nativa",
 		tagUntagged: "Sin etiqueta",
 		statusInstalled: "Instalado",
 		statusNotInstalled: "No instalado",
@@ -65,17 +65,17 @@ export const esEs: Localization = {
 		providerXboxOnlyInstalled:
 			"Solo muestra juegos de Xbox para PC si están instalados.",
 		engineGodotNotFullySupported:
-			"Los juegos de Godot no están totalmente soportados aún.",
+			"Los juegos de Godot no son totalmente compatibles aún.",
 		engineGameMakerNotFullySupported:
-			"Los juegos de GameMaker no están totalmente soportados aún.",
+			"Los juegos de GameMaker no son totalmente compatibles aún.",
 	},
 
 	providerCommand: {
 		installGame: "Instalar",
 		showGameInLibrary: "Mostrar en la biblioteca",
-		showGameInStore: "Abrir página de la tienda",
+		showGameInStore: "Abrir la página de la tienda",
 		startGameViaProvider: "Iniciar juego",
-		startGameViaExe: "Ejecutar ejecutable del juego",
+		startGameViaExe: "Abrir ejecutable del juego",
 		openGamePageInBrowser: "Abrir en el navegador",
 	},
 
@@ -102,7 +102,7 @@ export const esEs: Localization = {
 			"Este juego no está instalado, así que no estoy 100% seguro de qué mods son compatibles. Los que ves a continuación podrían funcionar. Si instalas el juego, te mostraré información más precisa.",
 		uninstallAllModsButton: "Desinstalar todos los mods",
 		uninstallAllModsConfirmation:
-			"¿Estás seguro? Esto eliminará todos los archivos en la carpeta de mods de este juego. Sin embargo, no eliminará ningún archivo del juego en sí.",
+			"¿Seguro? Esto borrará todos los archivos de la carpeta de mods del juego. Eso sí, los archivos del juego no se tocan.",
 
 		incompatibleGameModsLabel: "Mods Incompatibles",
 
@@ -116,10 +116,10 @@ export const esEs: Localization = {
 	},
 
 	gameModRow: {
-		editModConfig: "Editar Configuración del Mod",
+		editModConfig: "Editar configuración del mod",
 		openModConfigFolderTooltip:
-			"Abrir carpeta que contiene los archivos de configuración de este mod",
-		openModFolder: "Abrir Carpeta del Mod",
+			"Abrir la carpeta con los archivos de configuración del mod",
+		openModFolder: "Abrir carpeta del mod",
 		updateMod: "Actualizar",
 		installMod: "Instalar",
 		installModAnticheatWarning:
@@ -127,7 +127,7 @@ export const esEs: Localization = {
 		reinstallMod: "Reinstalar",
 		uninstallMod: "Desinstalar",
 		runMod: "Ejecutar",
-		downloadRemoteConfig: "Descargar Configuración Recomendada",
+		downloadRemoteConfig: "Descargar configuración recomendada",
 		remoteConfigAvailable:
 			"Configuración recomendada disponible. Se descargará si aún no tienes una configuración. También puedes forzar la descarga desde el menú de tres puntos.",
 		modOutdated: "Mod desactualizado",
@@ -142,9 +142,9 @@ export const esEs: Localization = {
 	},
 
 	modsPage: {
-		openLocalModsFolderButton: "Abrir carpeta de mods",
+		openLocalModsFolderButton: "Abrir carpeta de mods locales",
 		openLoadlModsFolderTooltip:
-			"Puedes colocar mods en esta carpeta con un rai-pal-manifest.json para cargarlos directamente sin pasar por la base de datos en línea.",
+			"Puedes poner mods en esta carpeta con un rai-pal-manifest.json para cargarlos directamente sin pasar por la base de datos en línea.",
 		tableColumnMod: "Mod",
 		tableColumnVersion: "Versión",
 		tableColumnGameEngine: "Motor",
@@ -162,7 +162,7 @@ export const esEs: Localization = {
 		downloadMod: "Descargar mod",
 		deleteMod: "Eliminar mod",
 		deleteModConfirmation:
-			"¿Estás seguro? Se perderán todos los archivos dentro de la carpeta del mod.",
+			"¿Seguro? Se borrarán todos los archivos de la carpeta del mod.",
 		byAuthor: "por {authorName}",
 	},
 
@@ -172,11 +172,11 @@ export const esEs: Localization = {
 		autoDetectedLanguage: "Auto-detectado - {languageName}",
 		resetRaiPalSettingsButton: "Restablecer configuración de Rai Pal",
 		resetRaiPalSettingsTooltip:
-			"Restablecerá filtros, diálogos de confirmación, probablemente otras cosas.",
+			"Restablecerá filtros, diálogos de confirmación y demás.",
 		openLogsFolderButton: "Abrir carpeta de registros",
 		clearRaiPalCacheOpenModal: "Borrar caché de Rai Pal",
 		clearRaiPalCacheTooltip:
-			"Borra la caché de la lista de juegos utilizada por Rai Pal.",
+			"Borra la caché de la lista de juegos que usa Rai Pal.",
 	},
 
 	userMenu: {
@@ -209,7 +209,7 @@ export const esEs: Localization = {
 		addRaiPalSteamShortcutModalTitle:
 			"Agregar Rai Pal a la biblioteca de Steam",
 		addRaiPalSteamShortcutDescription:
-			"Esto es especialmente útil en Steam Deck para poder iniciar Rai Pal en el modo Juego. Tendrás que reiniciar Steam después de hacerlo.",
+			"Esto es especialmente útil en Steam Deck para poder iniciar Rai Pal en Modo Juego. Tendrás que reiniciar Steam después de hacerlo.",
 		addRaiPalSteamShortcutSuccess:
 			"Rai Pal se ha agregado a tu biblioteca de Steam. Reinicia Steam para verlo.",
 	},
@@ -220,7 +220,7 @@ export const esEs: Localization = {
 		setUpEnvironmentDescription:
 			"Al usar Proton/Wine en Linux, BepInEx no se cargará automáticamente a menos que se configuren algunos ajustes de Wine. Esto establecerá la variable de entorno WINEDLLOVERRIDES en 'winhttp.dll=n,b' globalmente. Si prefieres hacerlo manualmente, no hagas clic en este botón.",
 		setUpEnvironmentSuccess:
-			"El archivo ha sido escrito. Necesitarás cerrar sesión y volver a iniciarla, o reiniciar tu computadora, para que los cambios surtan efecto.",
+			"El archivo se ha creado. Tendrás que cerrar sesión y volver a iniciarla, o reiniciar el ordenador, para que los cambios se apliquen.",
 	},
 
 	debugData: {
@@ -230,15 +230,15 @@ export const esEs: Localization = {
 
 	thanksPage: {
 		intro:
-			"Hola. Hice Rai Pal. También hice otros mods de VR en el pasado, y actualmente estoy trabajando en un mod universal de VR para juegos de Unity. Si te gusta lo que hago y te gustaría ver más, por favor considera donar. También puedes apoyarme comprando uno de mis mods gratuitos en itch.io.",
+			"Hola. Hice Rai Pal. También hice otros mods de VR en el pasado, y actualmente estoy trabajando en un mod universal de VR para juegos de Unity. Si te gusta lo que hago y te gustaría ver más, anímate a donar. También puedes apoyarme comprando uno de mis mods gratuitos en itch.io.",
 		starRaiPalOnGitHub: "Dale una estrella a Rai Pal en GitHub",
 		otherModdersTitle: "Otros modders",
 		otherModdersDescription:
-			"Rai Pal está destinado a ayudarte a gestionar la modificación de juegos, y no podemos hacerlo sin las herramientas que otros desarrolladores han creado. Algunas de estas personas no tienen enlaces de donación, pero estoy extremadamente agradecido por su trabajo.",
+			"Rai Pal está pensado para ayudarte a gestionar mods, y no podemos hacerlo sin las herramientas que otros desarrolladores han creado. Algunas de estas personas no tienen enlaces de donación, pero estoy muy agradecido por su trabajo.",
 		modderOnWebsite: "{modderName} en {website}",
-		patreonLeaderboard: "Tabla de líderes de Patreon",
+		patreonLeaderboard: "Ranking de Patreon",
 		rankedByPatreonDonationAmount:
-			"Clasificado por la cantidad total de donaciones de por vida.",
+			"Ordenado por el total de donaciones acumuladas.",
 		patreonProfilePrivateNotice:
 			"Si no te ves aquí, es porque tu perfil de Patreon es privado.",
 	},

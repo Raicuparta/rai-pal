@@ -13,9 +13,9 @@ export const frFr: Localization = {
 
 	gamesPage: {
 		emptyGamesList:
-			"Rai Pal n'a trouvé aucun jeu du tout. Rappelez-vous que Rai Pal doit trouver des applications installées d'autres fournisseurs de jeux, comme Steam, Epic, etc.",
+			"Rai Pal n'a trouvé aucun jeu. N'oubliez pas que Rai Pal doit trouver des applications installées depuis d'autres plateformes de jeux, comme Steam, Epic, etc.",
 		emptyFilteredGamesList:
-			"Rien ! Tous vos jeux sont cachés à cause des filtres que vous avez sélectionnés. Effacez vos filtres pour revoir vos beaux jeux.",
+			"Rien ! Tous vos jeux sont masqués à cause des filtres sélectionnés. Réinitialisez vos filtres pour les revoir.",
 		emptyGamesLoading: "Recherche de vos jeux...",
 	},
 
@@ -23,14 +23,14 @@ export const frFr: Localization = {
 		button: "Ajouter un jeu",
 		title: "Ajouter un jeu",
 		dropField:
-			"Glissez et déposez un exécutable de jeu ici, ou cliquez pour sélectionner un fichier.",
+			"Glissez-déposez un exécutable de jeu ici, ou cliquez pour sélectionner un fichier.",
 		note: "Remarque : vous pouvez déposer des fichiers exécutables de jeu n'importe où dans la fenêtre de Rai Pal pour les ajouter à la liste des jeux installés sans ouvrir ce dialogue.",
 	},
 
 	refresh: {
 		button: "Rafraîchir",
 		buttonUpdateRemoteDatabases: "Mettre à jour les bases de données distantes",
-		loading: "Chargement de {items}...",
+		loading: "Chargement des {items}...",
 	},
 
 	filterMenu: {
@@ -55,7 +55,7 @@ export const frFr: Localization = {
 		arch32: "32 bits",
 		tagDemo: "Démo",
 		tagVr: "VR native",
-		tagUntagged: "Non tagué",
+		tagUntagged: "Sans tag",
 		statusInstalled: "Installé",
 		statusNotInstalled: "Non installé",
 		providerManual: "Manuel",
@@ -84,27 +84,27 @@ export const frFr: Localization = {
 		startGameExecutable: "Lancer l'exécutable du jeu",
 		startGameViaProvider: "Lancer le jeu via {provider}",
 		foldersDropdown: "Dossiers",
-		openGameFilesFolder: "Ouvrir le dossier des fichiers du jeu",
-		openInstalledModsFolder: "Ouvrir le dossier des mods installés",
-		openGameDataFolder: "Ouvrir le dossier des données de l'application du jeu",
-		openGameWinePrefixFolder: "Ouvrir le dossier du préfixe Wine du jeu",
-		openGameWineBinaryFolder: "Ouvrir le dossier du binaire Wine du jeu",
+		openGameFilesFolder: "Fichiers du jeu",
+		openInstalledModsFolder: "Mods installés",
+		openGameDataFolder: "Données d'application",
+		openGameWinePrefixFolder: "Préfixe Wine",
+		openGameWineBinaryFolder: "Binaire Wine",
 		removeFromRaiPal: "Retirer de Rai Pal",
 		removeGameConfirmation:
-			"Êtes-vous sûr de vouloir retirer ce jeu de Rai Pal ?",
+			"Vous êtes sûr de vouloir retirer ce jeu de Rai Pal ?",
 		refreshGame: "Rafraîchir",
 		failedToReadGameInfo:
-			"Impossible de lire certaines informations importantes sur ce jeu. Cela peut être dû à la protection de l'exécutable. Certains mods peuvent échouer à s'installer.",
+			"Impossible de lire certaines informations importantes sur ce jeu. C'est peut-être parce que l'exécutable est protégé. Certains mods risquent de ne pas s'installer.",
 		failedToDetermineEngine:
-			"Impossible de déterminer le moteur de ce jeu. Certains mods peuvent échouer à s'installer.",
+			"Impossible de déterminer le moteur de ce jeu. Certains mods risquent de ne pas s'installer.",
 		gameModsLabel: "Mods",
 		gameNotInstalledWarning:
-			"Ce jeu n'est pas installé, donc je ne suis pas sûr à 100% de quels mods sont compatibles. Ceux que vous voyez ci-dessous pourraient fonctionner. Si vous installez le jeu, je vous montrerai des informations plus précises.",
+			"Ce jeu n'est pas installé, donc je ne suis pas sûr à 100 % des mods compatibles. Ceux affichés ci-dessous pourraient fonctionner. Si vous installez le jeu, je vous montrerai des informations plus précises.",
 		uninstallAllModsButton: "Désinstaller tous les mods",
 		uninstallAllModsConfirmation:
-			"Êtes-vous sûr ? Cela supprimera tous les fichiers dans le dossier des mods de ce jeu. Cela ne supprimera aucun fichier du jeu lui-même.",
+			"T'es sûr ? Cela supprimera tous les fichiers dans le dossier des mods de ce jeu. Mais ça ne touchera pas aux fichiers du jeu.",
 
-		incompatibleGameModsLabel: "Mods Incompatibles",
+		incompatibleGameModsLabel: "Mods incompatibles",
 
 		incompatibleGameModsDescription:
 			"Les mods listés ici ne peuvent pas être installés car ils ne sont pas compatibles avec la version du moteur de ce jeu.",
@@ -112,27 +112,27 @@ export const frFr: Localization = {
 		otherThings: "Autres choses",
 
 		otherThingsDescription:
-			"Ce sont principalement des dépendances et d'autres choses que vous n'avez généralement pas besoin de modifier directement.",
+			"Ce sont principalement des dépendances et d'autres trucs que vous n'avez généralement pas besoin de toucher directement.",
 	},
 
 	gameModRow: {
-		editModConfig: "Modifier la Configuration du Mod",
+		editModConfig: "Modifier la configuration du mod",
 		openModConfigFolderTooltip:
 			"Ouvrir le dossier contenant les fichiers de configuration de ce mod",
-		openModFolder: "Ouvrir le Dossier du Mod",
+		openModFolder: "Ouvrir le dossier du mod",
 		updateMod: "Mettre à jour",
 		installMod: "Installer",
 		installModAnticheatWarning:
-			"Attention: soyez prudent lors de l'installation de mods sur des jeux multijoueurs! L'anticheat peut détecter certains mods et vous bannir, même si les mods semblent inoffensifs.",
+			"Attention : faites gaffe en installant des mods sur des jeux multijoueurs ! L'anticheat peut détecter certains mods et vous faire bannir, même si les mods semblent inoffensifs.",
 		reinstallMod: "Réinstaller",
 		uninstallMod: "Désinstaller",
 		runMod: "Exécuter",
-		downloadRemoteConfig: "Télécharger la Configuration Recommandée",
+		downloadRemoteConfig: "Télécharger la configuration recommandée",
 		remoteConfigAvailable:
 			"Configuration recommandée disponible. Sera téléchargée si vous n'avez pas déjà une configuration. Vous pouvez aussi forcer le téléchargement depuis le menu à trois points.",
 		modOutdated: "Mod obsolète",
 		cantUninstallModWithDependants:
-			"Impossible de désinstaller un mod qui a des dépendants. Désinstallez d'abord les mods qui dépendent de celui-ci.",
+			"Impossible de désinstaller un mod qui a des dépendants. Désinstallez d'abord les mods qui en dépendent.",
 	},
 
 	gamesTableColumn: {
@@ -152,7 +152,7 @@ export const frFr: Localization = {
 		modByAuthor: "par {authorName}",
 		modDeprecated: "Obsolète",
 		modDeprecatedTooltip:
-			"Ce mod est obsolète. Vous devriez le désinstaller et installer une alternative plus récente.",
+			"Ce mod est obsolète. Désinstallez-le et installez une alternative plus récente.",
 	},
 
 	modModal: {
@@ -162,17 +162,17 @@ export const frFr: Localization = {
 		downloadMod: "Télécharger le mod",
 		deleteMod: "Supprimer le mod",
 		deleteModConfirmation:
-			"Êtes-vous sûr ? Tous les fichiers dans le dossier du mod seront perdus.",
+			"T'es sûr ? Tous les fichiers dans le dossier du mod seront perdus.",
 		byAuthor: "par {authorName}",
 	},
 
 	appDropdownMenu: {
-		showGameThumbnails: "Afficher les vignettes des jeux dans la liste",
+		showGameThumbnails: "Afficher les miniatures des jeux dans la liste",
 		language: "Langue",
 		autoDetectedLanguage: "Détecté automatiquement - {languageName}",
 		resetRaiPalSettingsButton: "Réinitialiser les paramètres de Rai Pal",
 		resetRaiPalSettingsTooltip:
-			"Réinitialisera les filtres, les dialogues de confirmation, probablement d'autres choses.",
+			"Réinitialisera les filtres, les dialogues de confirmation, probablement d'autres trucs.",
 		openLogsFolderButton: "Ouvrir le dossier des journaux",
 		clearRaiPalCacheOpenModal: "Effacer le cache de Rai Pal",
 		clearRaiPalCacheTooltip:
@@ -192,7 +192,7 @@ export const frFr: Localization = {
 	},
 
 	downloadStatusMenu: {
-		clear: "Retirer les terminés",
+		clear: "Effacer les terminés",
 	},
 
 	steamCache: {
@@ -201,7 +201,7 @@ export const frFr: Localization = {
 		resetSteamCacheDescription:
 			"Utilisez ceci si Rai Pal affiche des jeux que vous ne possédez pas réellement sur Steam. Cela réinitialisera le cache de Steam, puis vous devrez redémarrer Steam. Vous obtiendrez une erreur si le fichier a déjà été supprimé.",
 		resetSteamCacheSuccess:
-			"Le fichier de cache a été supprimé. Veuillez redémarrer Steam, attendre quelques secondes, puis appuyer sur le bouton de rafraîchissement de Rai Pal.",
+			"Le fichier de cache a été supprimé. Redémarrez Steam, attendez quelques secondes, puis appuyez sur le bouton de rafraîchissement de Rai Pal.",
 	},
 
 	steamShortcut: {
@@ -210,14 +210,14 @@ export const frFr: Localization = {
 		addRaiPalSteamShortcutDescription:
 			"C'est particulièrement utile sur Steam Deck pour pouvoir lancer Rai Pal en mode Jeu. Vous devrez redémarrer Steam après cela.",
 		addRaiPalSteamShortcutSuccess:
-			"Rai Pal a été ajouté à votre bibliothèque Steam. Redémarrez Steam pour le voir.",
+			"Rai Pal a été ajouté à votre bibliothèque Steam. Redémarrez Steam pour y accéder.",
 	},
 
 	globalWineOverrides: {
 		setUpEnvironmentButton: "Configurer l'environnement Linux pour BepInEx",
 		setUpEnvironmentTitle: "Configurer l'environnement Linux pour BepInEx",
 		setUpEnvironmentDescription:
-			"Lors de l'utilisation de Proton/Wine sous Linux, BepInEx ne se chargera pas automatiquement à moins que certains paramètres Wine soient configurés. Cela définira la variable d'environnement WINEDLLOVERRIDES sur 'winhttp.dll=n,b' globalement. Si vous préférez le faire manuellement, ne cliquez pas sur ce bouton.",
+			"Quand vous utilisez Proton/Wine sous Linux, BepInEx ne se chargera pas automatiquement, sauf si certains paramètres Wine sont configurés. Cela définira la variable d'environnement WINEDLLOVERRIDES sur 'winhttp.dll=n,b' globalement. Si vous préférez le faire manuellement, ne cliquez pas sur ce bouton.",
 		setUpEnvironmentSuccess:
 			"Le fichier a été écrit. Vous devrez vous déconnecter et vous reconnecter, ou redémarrer votre ordinateur, pour que les modifications prennent effet.",
 	},
@@ -229,14 +229,14 @@ export const frFr: Localization = {
 
 	thanksPage: {
 		intro:
-			"Bonjour. J'ai créé Rai Pal. J'ai également créé d'autres mods VR dans le passé, et je travaille actuellement sur un mod VR universel pour les jeux Unity. Si vous aimez ce que je fais et que vous souhaitez en voir plus, veuillez envisager de faire un don ! Vous pouvez également me soutenir en achetant un de mes mods gratuits sur itch.io.",
-		starRaiPalOnGitHub: "Étoile Rai Pal sur GitHub",
+			"Bonjour. J'ai créé Rai Pal. J'ai également créé d'autres mods VR dans le passé, et je travaille actuellement sur un mod VR universel pour les jeux Unity. Si vous aimez ce que je fais et que vous souhaitez en voir plus, pensez à faire un don ! Vous pouvez également me soutenir en achetant un de mes mods gratuits sur itch.io.",
+		starRaiPalOnGitHub: "Mettre une étoile à Rai Pal sur GitHub",
 		otherModdersTitle: "Autres moddeurs",
 		otherModdersDescription:
-			"Rai Pal est conçu pour vous aider à gérer le modding de jeux, et nous ne pouvons pas le faire sans les outils créés par d'autres développeurs. Certaines de ces personnes n'ont pas de liens de donation, mais je suis extrêmement reconnaissant pour leur travail.",
+			"Rai Pal est conçu pour vous aider à gérer le modding de jeux, et nous ne pouvons pas le faire sans les outils créés par d'autres développeurs. Certaines de ces personnes n'ont pas de liens de don, mais je suis extrêmement reconnaissant pour leur travail.",
 		modderOnWebsite: "{modderName} sur {website}",
 		patreonLeaderboard: "Classement Patreon",
-		rankedByPatreonDonationAmount: "Classé par montant total des dons à vie.",
+		rankedByPatreonDonationAmount: "Classé par montant total des dons cumulés.",
 		patreonProfilePrivateNotice:
 			"Si vous ne vous voyez pas ici, c'est parce que votre profil Patreon est privé.",
 	},

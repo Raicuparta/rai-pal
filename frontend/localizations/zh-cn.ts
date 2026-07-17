@@ -13,17 +13,17 @@ export const zhCn: Localization = {
 
 	gamesPage: {
 		emptyGamesList:
-			"Rai Pal 完全没有找到任何游戏。请记住 Rai Pal 需要从其他游戏提供商（如 Steam、Epic 等）找到已安装的应用程序。",
+			"Rai Pal 一个游戏都没找到。别忘了 Rai Pal 需要从其他游戏平台（如 Steam、Epic 等）检测到已安装的应用。",
 		emptyFilteredGamesList:
-			"什么都没有！由于您选择的过滤器，您的所有游戏都被隐藏了。清除过滤器以再次查看您美丽的游戏。",
-		emptyGamesLoading: "正在寻找您的游戏...",
+			"什么都没有！因为你选的筛选条件，所有游戏都被隐藏了。清除筛选，再看看你的游戏吧。",
+		emptyGamesLoading: "正在找你的游戏...",
 	},
 
 	addGame: {
 		button: "添加游戏",
 		title: "添加游戏",
 		dropField: "拖放游戏可执行文件到这里，或点击选择文件。",
-		note: "注意：您可以将游戏可执行文件拖放到 Rai Pal 窗口的任何地方，以将其添加到已安装游戏列表中，而无需打开此对话框。",
+		note: "提示：你可以将游戏可执行文件拖放到 Rai Pal 窗口的任何地方，就能将其加入已安装游戏列表，无需打开此对话框。",
 	},
 
 	refresh: {
@@ -38,21 +38,21 @@ export const zhCn: Localization = {
 		searchPlaceholder: "搜索...",
 	},
 
-	filterProperty: {
-		provider: "提供商",
+		filterProperty: {
+		provider: "平台",
 		tags: "标签",
 		architecture: "架构",
 		unityBackend: "Unity 后端",
 		engine: "引擎",
 		status: "状态",
-		mod: "Mod",
+		mod: "模组",
 	},
 
 	filterValue: {
 		unknown: "未知",
 		arch64: "64 位",
 		arch32: "32 位",
-		tagDemo: "演示",
+		tagDemo: "试玩",
 		tagVr: "原生 VR",
 		tagUntagged: "未标记",
 		statusInstalled: "已安装",
@@ -84,28 +84,28 @@ export const zhCn: Localization = {
 		openInstalledModsFolder: "打开已安装模组文件夹",
 		openGameDataFolder: "打开游戏数据文件夹",
 		openGameWinePrefixFolder: "打开游戏的 Wine 前缀文件夹",
-		openGameWineBinaryFolder: "打开游戏的 Wine 二进制文件夹",
+		openGameWineBinaryFolder: "打开 Wine 程序文件夹",
 		removeFromRaiPal: "从 Rai Pal 移除",
-		removeGameConfirmation: "您确定要从 Rai Pal 移除此游戏吗？",
+		removeGameConfirmation: "确定要从 Rai Pal 移除此游戏吗？",
 		refreshGame: "刷新",
 		failedToReadGameInfo:
-			"无法读取有关此游戏的一些重要信息。这可能是由于可执行文件受保护。一些模组可能无法安装。",
+			"无法读取此游戏的部分重要信息。可执行文件可能被保护了。一些模组可能无法安装。",
 		failedToDetermineEngine: "无法确定此游戏的引擎。一些模组可能无法安装。",
 		gameModsLabel: "模组",
 		gameNotInstalledWarning:
-			"此游戏未安装，因此我不能 100% 确定哪些模组兼容。您看到的模组可能会工作。如果您安装了游戏，我会显示更准确的信息。",
+			"此游戏未安装，所以我不太确定哪些模组兼容。下面列出的模组可能可以用。安装游戏后，我再显示更准确的信息。",
 		uninstallAllModsButton: "卸载所有模组",
 		uninstallAllModsConfirmation:
-			"您确定吗？这将删除此游戏模组文件夹中的所有文件。但不会删除游戏的任何文件。",
+			"你确定吗？这将删除此游戏模组文件夹中的所有文件。但不会删除游戏本身的文件。",
 
 		incompatibleGameModsLabel: "不兼容的模组",
 
 		incompatibleGameModsDescription:
-			"此处列出的模组无法安装，因为它们与此游戏的引擎版本不兼容。",
+			"这里列出的模组因不兼容此游戏的引擎版本，无法安装。",
 
-		otherThings: "其他内容",
+		otherThings: "其他东西",
 
-		otherThingsDescription: "这些主要是依赖项和其他内容，通常您无需直接修改。",
+		otherThingsDescription: "这些主要是依赖项之类的，一般不用直接碰。",
 	},
 
 	gameModRow: {
@@ -115,13 +115,13 @@ export const zhCn: Localization = {
 		updateMod: "更新",
 		installMod: "安装",
 		installModAnticheatWarning:
-			"警告：在多人游戏中安装模组时要小心！反作弊可以检测一些模组并禁止您，即使这些模组看起来无害。",
+			"警告：在多人游戏中安装模组时要小心！反作弊系统可能会检测到某些模组并导致封号，即使这些模组看起来无害。",
 		reinstallMod: "重新安装",
 		uninstallMod: "卸载",
 		runMod: "运行",
 		downloadRemoteConfig: "下载推荐配置",
 		remoteConfigAvailable:
-			"推荐配置可用。如果您还没有配置，将会下载。您也可以从三点菜单强制下载。",
+			"推荐配置可用。如果你还没有配置，将会下载。你也可以从三点菜单强制下载。",
 		modOutdated: "模组过时",
 		cantUninstallModWithDependants:
 			"无法卸载有依赖项的模组。请先卸载依赖此模组的其他模组。",
@@ -134,14 +134,14 @@ export const zhCn: Localization = {
 	},
 
 	modsPage: {
-		openLocalModsFolderButton: "打开模组文件夹",
+		openLocalModsFolderButton: "打开本地模组文件夹",
 		openLoadlModsFolderTooltip:
-			"您可以在此文件夹中放置包含 rai-pal-manifest.json 的模组，以直接加载它们，而无需通过在线数据库。",
+			"在此文件夹中放入包含 rai-pal-manifest.json 的模组，即可直接加载，无需通过在线数据库。",
 		tableColumnMod: "模组",
 		tableColumnVersion: "版本",
 		tableColumnGameEngine: "引擎",
 		tableColumnUnityBackend: "后端",
-		modByAuthor: "作者 {authorName}",
+		modByAuthor: "由 {authorName} 制作",
 		modDeprecated: "已弃用",
 		modDeprecatedTooltip: "此模组已弃用。您应该卸载它并安装更新的替代品。",
 	},
@@ -152,8 +152,8 @@ export const zhCn: Localization = {
 		updateMod: "更新模组",
 		downloadMod: "下载模组",
 		deleteMod: "删除模组",
-		deleteModConfirmation: "您确定吗？模组文件夹中的任何文件都将丢失。",
-		byAuthor: "作者 {authorName}",
+		deleteModConfirmation: "你确定吗？模组文件夹中的任何文件都将丢失。",
+		byAuthor: "由 {authorName} 制作",
 	},
 
 	appDropdownMenu: {
@@ -161,7 +161,7 @@ export const zhCn: Localization = {
 		language: "语言",
 		autoDetectedLanguage: "自动检测 - {languageName}",
 		resetRaiPalSettingsButton: "重置 Rai Pal 设置",
-		resetRaiPalSettingsTooltip: "将重置筛选器、确认对话框，可能还有其他内容。",
+		resetRaiPalSettingsTooltip: "将重置筛选条件、确认对话框，可能还有其他内容。",
 		openLogsFolderButton: "打开日志文件夹",
 		clearRaiPalCacheOpenModal: "清除 Rai Pal 缓存",
 		clearRaiPalCacheTooltip: "清除 Rai Pal 使用的游戏列表缓存。",
@@ -187,16 +187,16 @@ export const zhCn: Localization = {
 		resetSteamCacheButton: "重置 Steam 缓存",
 		resetSteamCacheModalTitle: "重置 Steam 缓存",
 		resetSteamCacheDescription:
-			"如果 Rai Pal 显示您实际上不拥有的 Steam 游戏，请使用此选项。这将重置 Steam 的缓存，然后您需要重新启动 Steam。如果文件已被删除，您将收到错误消息。",
+			"如果 Rai Pal 显示了你不拥有的 Steam 游戏，可以用此功能。这会重置 Steam 的缓存，然后你需要重启 Steam。如果文件已被删除，会显示错误。",
 		resetSteamCacheSuccess:
-			"缓存文件已被删除。请重新启动 Steam，等待几秒钟，然后按 Rai Pal 上的刷新按钮。",
+			"缓存文件已被删除。请重启 Steam，等待几秒钟，然后按 Rai Pal 上的刷新按钮。",
 	},
 
 	steamShortcut: {
 		addRaiPalSteamShortcutButton: "将 Rai Pal 添加到 Steam 库",
 		addRaiPalSteamShortcutModalTitle: "将 Rai Pal 添加到 Steam 库",
 		addRaiPalSteamShortcutDescription:
-			"这在 Steam Deck 上尤其有用，这样你就可以在游戏模式中启动 Rai Pal。完成后你需要重新启动 Steam。",
+			"这在 Steam Deck 上尤其有用，这样你就可以在游戏模式中启动 Rai Pal。完成后需要重启 Steam。",
 		addRaiPalSteamShortcutSuccess:
 			"Rai Pal 已添加到你的 Steam 库中。重启 Steam 后即可看到它。",
 	},
@@ -205,9 +205,9 @@ export const zhCn: Localization = {
 		setUpEnvironmentButton: "为 BepInEx 设置 Linux 环境",
 		setUpEnvironmentTitle: "为 BepInEx 设置 Linux 环境",
 		setUpEnvironmentDescription:
-			"在 Linux 上使用 Proton/Wine 时，除非设置了一些 Wine 配置，否则 BepInEx 不会自动加载。此操作将全局设置环境变量 WINEDLLOVERRIDES 为 'winhttp.dll=n,b'。如果您想手动设置，请不要点击此按钮。",
+			"在 Linux 上使用 Proton/Wine 时，除非设置了一些 Wine 配置，否则 BepInEx 不会自动加载。此操作将全局设置环境变量 WINEDLLOVERRIDES 为 'winhttp.dll=n,b'。如果你更想手动设置，别点这个按钮。",
 		setUpEnvironmentSuccess:
-			"文件已写入。您需要注销并重新登录，或重新启动计算机，更改才能生效。",
+			"文件已写入。你需要注销后重新登录，或重启计算机，更改才能生效。",
 	},
 
 	debugData: {
@@ -217,16 +217,16 @@ export const zhCn: Localization = {
 
 	thanksPage: {
 		intro:
-			"你好。我制作了 Rai Pal。我还制作了其他 VR 模组，目前正在开发一个通用的 Unity 游戏 VR 模组。如果您喜欢我的作品，并希望看到更多，请考虑捐赠！您也可以通过在 itch.io 上购买我的免费模组来支持我。",
+			"你好。我做了 Rai Pal。我也做过其他 VR 模组，目前正在开发一个通用的 Unity 游戏 VR 模组。如果你喜欢我的作品并想看更多，可以考虑捐赠！你也可以在 itch.io 上购买我的免费模组来支持我。",
 		starRaiPalOnGitHub: "在 GitHub 上为 Rai Pal 点星",
 		otherModdersTitle: "其他模组作者",
 		otherModdersDescription:
-			"Rai Pal 旨在帮助您管理游戏模组，而我们离不开其他开发者创建的工具。这些人中有些没有捐赠链接，但我非常感谢他们的工作。",
+			"Rai Pal 的目的是帮你管理游戏模组，而我们离不开其他开发者创建的工具。这些人中有些没有捐赠链接，但我非常感谢他们的工作。",
 		modderOnWebsite: "{modderName} 在 {website}",
 		patreonLeaderboard: "Patreon 排行榜",
 		rankedByPatreonDonationAmount: "按总捐赠金额排名。",
 		patreonProfilePrivateNotice:
-			"如果您没有看到自己，那是因为您的 Patreon 个人资料是私密的。",
+			"如果你没看到自己，那是因为你的 Patreon 个人资料是私密的。",
 	},
 
 	commandButton: {
@@ -235,14 +235,14 @@ export const zhCn: Localization = {
 	},
 
 	urlModSources: {
-		title: "Mod数据库来源",
+		title: "模组数据库来源",
 		customSources: "自定义来源",
 		addCustomSource: "添加自定义来源",
 		add: "添加",
-		confirmModalTitle: "确认Mod来源",
-		modsFound: "在此来源中找到{count}个Mod",
+		confirmModalTitle: "确认模组来源",
+		modsFound: "在此来源中找到 {count} 个模组",
 		addSource: "添加来源",
 		cancel: "取消",
-		loading: "正在加载Mod...",
+		loading: "正在加载模组...",
 	},
 } as const;

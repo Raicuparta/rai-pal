@@ -84,54 +84,54 @@ export const jaJp: Localization = {
 		startGameExecutable: "実行ファイルでゲームを開始",
 		startGameViaProvider: "{provider}でゲームを開始",
 		foldersDropdown: "フォルダー",
-		openGameFilesFolder: "ゲームファイルフォルダーを開く",
-		openInstalledModsFolder: "インストール済みモッドフォルダーを開く",
-		openGameDataFolder: "ゲームアプリデータフォルダーを開く",
-		openGameWinePrefixFolder: "ゲームのWineプレフィックスフォルダーを開く",
-		openGameWineBinaryFolder: "ゲームのWineバイナリフォルダーを開く",
+		openGameFilesFolder: "ゲームの場所",
+		openInstalledModsFolder: "導入済みMod",
+		openGameDataFolder: "アプリデータ",
+		openGameWinePrefixFolder: "Wineプレフィックス",
+		openGameWineBinaryFolder: "Wineバイナリ",
 		removeFromRaiPal: "Rai Palから削除",
-		removeGameConfirmation: "このゲームをRai Palから削除してもよろしいですか？",
+		removeGameConfirmation: "このゲームをRai Palから削除していい？",
 		refreshGame: "更新",
 		failedToReadGameInfo:
-			"このゲームに関する重要な情報の一部を読み取ることができませんでした。実行ファイルが保護されている可能性があります。一部のモッドがインストールに失敗する可能性があります。",
+			"このゲームの重要情報がちゃんと読み取れなかった。実行ファイルが保護されてるのかも。一部のModはうまくインストールできないかも。",
 		failedToDetermineEngine:
-			"このゲームのエンジンを特定できませんでした。一部のモッドがインストールに失敗する可能性があります。",
-		gameModsLabel: "モッド",
+			"このゲームのエンジンが特定できなかった。一部のModはうまくインストールできないかも。",
+		gameModsLabel: "Mod",
 		gameNotInstalledWarning:
-			"このゲームはインストールされていないため、どのモッドが互換性があるか100％確信できません。以下に表示されるモッドは動作する可能性があります。ゲームをインストールすると、より正確な情報を表示します。",
-		uninstallAllModsButton: "すべてのモッドをアンインストール",
+			"このゲームはインストールされてないから、どのModが対応してるか100%は確信できないんだ。下に出てるModなら動くかも。インストールしたら、もっと正確な情報を出せるよ。",
+		uninstallAllModsButton: "すべてのModをアンインストール",
 		uninstallAllModsConfirmation:
-			"本当に？これにより、このゲームのモッドフォルダー内のすべてのファイルが削除されます。ただし、実際のゲームのファイルは削除されません。",
+			"本当に？このゲームのModフォルダー内の全ファイルが消えるよ。でもゲーム本体のファイルは消さないからね。",
 
-		incompatibleGameModsLabel: "非互換モッド",
+		incompatibleGameModsLabel: "非対応Mod",
 
 		incompatibleGameModsDescription:
-			"ここにリストされているモッドは、このゲームのエンジンバージョンと互換性がないため、インストールできません。",
+			"ここに表示されてるModは、このゲームのエンジンバージョンと互換性がないからインストールできないよ。",
 
 		otherThings: "その他のもの",
 
 		otherThingsDescription:
-			"これらは主に依存関係やその他のもので、通常は直接いじる必要はありません。",
+			"これらは主に依存関係とかで、普段は直接いじる必要はないよ。",
 	},
 
 	gameModRow: {
-		editModConfig: "モッド設定を編集",
+		editModConfig: "Mod設定",
 		openModConfigFolderTooltip:
-			"このモッドの設定ファイルが含まれているフォルダーを開く",
-		openModFolder: "モッドフォルダーを開く",
+			"このModの設定ファイルがあるフォルダーを開く",
+		openModFolder: "Modフォルダーを開く",
 		updateMod: "更新",
 		installMod: "インストール",
 		installModAnticheatWarning:
-			"注意: マルチプレイヤーゲームにモッドをインストールする際は注意してください! アンチチートはいくつかのモッドを検出して、モッドが無害に見えても、あなたをバンすることができます。",
+			"注意: マルチプレイゲームにModを入れるときは気をつけて！アンチチートがModを検出して、無害そうでもBANされることがあるからね。",
 		reinstallMod: "再インストール",
 		uninstallMod: "アンインストール",
 		runMod: "実行",
 		downloadRemoteConfig: "推奨設定をダウンロード",
 		remoteConfigAvailable:
-			"推奨設定が利用可能です。設定がまだない場合にダウンロードされます。三点メニューから強制的にダウンロードすることもできます。",
-		modOutdated: "モッドが古い",
+			"推奨設定あり。まだ設定がなければ自動でダウンロードされるよ。三点メニューから手動でもダウンロードできる。",
+		modOutdated: "Modが古い",
 		cantUninstallModWithDependants:
-			"依存しているモッドがあるモッドはアンインストールできません。先にこのモッドに依存しているモッドをアンインストールしてください。",
+			"依存ModがあるModはアンインストールできないよ。先に依存してるModをアンインストールしてね。",
 	},
 
 	gamesTableColumn: {
@@ -141,27 +141,27 @@ export const jaJp: Localization = {
 	},
 
 	modsPage: {
-		openLocalModsFolderButton: "モッドフォルダーを開く",
+		openLocalModsFolderButton: "Modフォルダーを開く",
 		openLoadlModsFolderTooltip:
-			"このフォルダーに rai-pal-manifest.json を含むモッドを配置して、オンラインデータベースを経由せずに直接読み込むことができます。",
-		tableColumnMod: "モッド",
+			"このフォルダーに rai-pal-manifest.json 付きのModを入れれば、オンラインデータベースを通さずに直接読み込めるよ。",
+		tableColumnMod: "Mod",
 		tableColumnVersion: "バージョン",
 		tableColumnGameEngine: "エンジン",
 		tableColumnUnityBackend: "バックエンド",
 		modByAuthor: "{authorName} 作",
 		modDeprecated: "非推奨",
 		modDeprecatedTooltip:
-			"このモッドは非推奨です。アンインストールして新しい代替品をインストールすることをお勧めします。",
+			"このModは非推奨だよ。アンインストールして新しいのに切り替えよう。",
 	},
 
 	modModal: {
 		runMod: "実行",
-		openModFolder: "モッドフォルダーを開く",
-		updateMod: "モッドを更新",
-		downloadMod: "モッドをダウンロード",
-		deleteMod: "モッドを削除",
+		openModFolder: "Modフォルダーを開く",
+		updateMod: "Modを更新",
+		downloadMod: "Modをダウンロード",
+		deleteMod: "Modを削除",
 		deleteModConfirmation:
-			"本当に？モッドフォルダー内のファイルはすべて失われます。",
+			"本当に？Modフォルダーの中のファイルが全部消えちゃうよ。",
 		byAuthor: "{authorName} 作",
 	},
 
@@ -171,11 +171,11 @@ export const jaJp: Localization = {
 		autoDetectedLanguage: "自動検出 - {languageName}",
 		resetRaiPalSettingsButton: "Rai Palの設定をリセット",
 		resetRaiPalSettingsTooltip:
-			"フィルター、確認ダイアログ、おそらく他の設定をリセットします。",
+			"フィルターや確認ダイアログ、あと多分その他の設定もリセットされるよ。",
 		openLogsFolderButton: "ログフォルダーを開く",
 		clearRaiPalCacheOpenModal: "Rai Palのキャッシュをクリア",
 		clearRaiPalCacheTooltip:
-			"Rai Palが使用するゲームリストキャッシュをクリアします。",
+			"Rai Palが使ってるゲームリストのキャッシュを消すよ。",
 	},
 
 	userMenu: {
@@ -191,34 +191,34 @@ export const jaJp: Localization = {
 	},
 
 	downloadStatusMenu: {
-		clear: "完了済みを消去",
+		clear: "完了したものを消す",
 	},
 
 	steamCache: {
 		resetSteamCacheButton: "Steamのキャッシュをリセット",
 		resetSteamCacheModalTitle: "Steamのキャッシュをリセット",
 		resetSteamCacheDescription:
-			"Rai Palが実際に所有していないSteamのゲームを表示している場合に使用します。これによりSteamのキャッシュがリセットされ、Steamを再起動する必要があります。ファイルが既に削除されている場合はエラーが発生します。",
+			"Rai Palが実際には持ってないSteamのゲームを表示してるときに使ってね。Steamのキャッシュがリセットされるから、その後Steamを再起動して。ファイルが既に消えてたらエラーが出るかも。",
 		resetSteamCacheSuccess:
-			"キャッシュファイルが削除されました。Steamを再起動し、数秒待ってからRai Palの更新ボタンを押してください。",
+			"キャッシュファイルを消したよ。Steamを再起動して数秒待ったら、Rai Palの更新ボタンを押してね。",
 	},
 
 	steamShortcut: {
 		addRaiPalSteamShortcutButton: "Rai PalをSteamライブラリに追加",
 		addRaiPalSteamShortcutModalTitle: "Rai PalをSteamライブラリに追加",
 		addRaiPalSteamShortcutDescription:
-			"これは特にSteam DeckでRai Palをゲームモードから起動できるようにするのに便利です。実行後はSteamを再起動する必要があります。",
+			"特にSteam DeckのゲームモードからRai Palを起動できるようになるから便利だよ。実行したらSteamを再起動してね。",
 		addRaiPalSteamShortcutSuccess:
-			"Rai PalがSteamライブラリに追加されました。表示するにはSteamを再起動してください。",
+			"Rai PalをSteamライブラリに追加したよ。表示するにはSteamを再起動してね。",
 	},
 
 	globalWineOverrides: {
 		setUpEnvironmentButton: "BepInEx用のLinux環境をセットアップ",
 		setUpEnvironmentTitle: "BepInEx用のLinux環境をセットアップ",
 		setUpEnvironmentDescription:
-			"LinuxでProton/Wineを使用している場合、Wineの設定が行われていないとBepInExは自動的に読み込まれません。これにより、環境変数WINEDLLOVERRIDESがグローバルに'winhttp.dll=n,b'に設定されます。手動で設定したい場合は、このボタンをクリックしないでください。",
+			"LinuxでProton/Wineを使ってると、Wineの設定をしないとBepInExは自動で読み込まれないんだ。これは環境変数 WINEDLLOVERRIDES をグローバルに 'winhttp.dll=n,b' に設定するよ。手動でやりたいなら、このボタンは押さないでね。",
 		setUpEnvironmentSuccess:
-			"ファイルが書き込まれました。変更を有効にするには、ログアウトして再ログインするか、コンピューターを再起動する必要があります。",
+			"ファイルを書き込んだよ。変更を反映するには、ログアウトして再ログインするか、PCを再起動してね。",
 	},
 
 	debugData: {
@@ -228,16 +228,16 @@ export const jaJp: Localization = {
 
 	thanksPage: {
 		intro:
-			"こんにちは。私はRai Palを作りました。過去には他のVRモッドも作成しており、現在はUnityゲーム用のユニバーサルVRモッドに取り組んでいます。私の活動を気に入っていただけたら、寄付を検討してください。また、itch.ioで私の無料モッドの1つを購入してサポートすることもできます。",
+			"こんにちは。私がRai Palを作ったよ。過去には他のVR Modも作ってて、今はUnityゲーム向けのユニバーサルVR Modを開発中。もし私のやってることが気に入ったら、寄付を考えてみてね！itch.ioで私の無料Modを「購入」する形でもサポートできるよ。",
 		starRaiPalOnGitHub: "GitHubでRai Palにスターを付ける",
-		otherModdersTitle: "他のモッダー",
+		otherModdersTitle: "他のModder",
 		otherModdersDescription:
-			"Rai Palはゲームのモッディングを支援することを目的としており、他の開発者が作成したツールなしではそれを実現できません。これらの人々の中には寄付リンクを持っていない人もいますが、彼らの仕事に非常に感謝しています。",
-		modderOnWebsite: "{modderName} の {website}",
+			"Rai PalはゲームのMod管理を手助けするツールだけど、他の開発者が作ったツールなしじゃ成り立たないんだ。寄付リンクを持ってない人もいるけど、みんなの仕事には本当に感謝してるよ。",
+		modderOnWebsite: "{modderName}（{website}）",
 		patreonLeaderboard: "Patreonリーダーボード",
-		rankedByPatreonDonationAmount: "総生涯寄付額によるランキング。",
+		rankedByPatreonDonationAmount: "累計寄付額でランク付け",
 		patreonProfilePrivateNotice:
-			"ここに表示されない場合は、Patreonプロファイルが非公開であるためです。",
+			"ここに表示されてない人は、Patreonのプロフィールが非公開になってるからだよ。",
 	},
 
 	commandButton: {

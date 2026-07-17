@@ -13,9 +13,9 @@ export const koKr: Localization = {
 
 	gamesPage: {
 		emptyGamesList:
-			"Rai Pal이 게임을 전혀 찾지 못했습니다. Rai Pal은 Steam, Epic 등과 같은 다른 게임 제공업체에서 설치된 앱을 찾아야 한다는 것을 기억하세요.",
+			"Rai Pal이 게임을 하나도 못 찾았어요. Steam이나 Epic 같은 게임 플랫폼에서 설치된 앱이 있어야 해요.",
 		emptyFilteredGamesList:
-			"아무것도 없습니다! 선택한 필터 때문에 모든 게임이 숨겨져 있습니다. 필터를 지워서 아름다운 게임들을 다시 보세요.",
+			"아무것도 없어요! 선택한 필터 때문에 게임이 전부 숨겨졌어요. 필터 지우면 다시 보여요.",
 		emptyGamesLoading: "게임을 찾는 중...",
 	},
 
@@ -23,8 +23,8 @@ export const koKr: Localization = {
 		button: "게임 추가",
 		title: "게임 추가",
 		dropField:
-			"게임 실행 파일을 여기로 드래그 앤 드롭하거나, 클릭하여 파일을 선택하세요.",
-		note: "참고: Rai Pal 창 어디에나 게임 실행 파일을 드롭하여 이 대화 상자를 열지 않고도 설치된 게임 목록에 추가할 수 있습니다.",
+			"게임 실행 파일을 여기로 끌어다 놓거나, 클릭해서 파일을 선택하세요.",
+		note: "참고: Rai Pal 창 아무 데나 게임 실행 파일을 끌어다 놓으면 이 창 안 열고도 게임 목록에 바로 추가할 수 있어요.",
 	},
 
 	refresh: {
@@ -40,13 +40,13 @@ export const koKr: Localization = {
 	},
 
 	filterProperty: {
-		provider: "제공자",
+		provider: "플랫폼",
 		tags: "태그",
 		architecture: "아키텍처",
 		unityBackend: "Unity 백엔드",
 		engine: "엔진",
 		status: "상태",
-		mod: "Mod",
+		mod: "모드",
 	},
 
 	filterValue: {
@@ -88,28 +88,28 @@ export const koKr: Localization = {
 		openGameWinePrefixFolder: "게임 Wine 프리픽스 폴더 열기",
 		openGameWineBinaryFolder: "게임 Wine 바이너리 폴더 열기",
 		removeFromRaiPal: "Rai Pal에서 제거",
-		removeGameConfirmation: "이 게임을 Rai Pal에서 제거하시겠습니까?",
+		removeGameConfirmation: "이 게임을 Rai Pal에서 제거할까요?",
 		refreshGame: "새로고침",
 		failedToReadGameInfo:
-			"이 게임에 대한 중요한 정보를 읽는 데 실패했습니다. 실행 파일이 보호되어 있을 수 있습니다. 일부 모드 설치가 실패할 수 있습니다.",
+			"이 게임의 중요 정보를 읽을 수 없었어요. 실행 파일이 보호돼 있어서 그럴 수 있어요. 일부 모드가 설치 안 될 수도 있어요.",
 		failedToDetermineEngine:
-			"이 게임의 엔진을 확인하는 데 실패했습니다. 일부 모드 설치가 실패할 수 있습니다.",
+			"이 게임의 엔진을 확인할 수 없었어요. 일부 모드가 설치 안 될 수도 있어요.",
 		gameModsLabel: "모드",
 		gameNotInstalledWarning:
-			"이 게임이 설치되지 않았기 때문에 어떤 모드가 호환되는지 100% 확신할 수 없습니다. 아래에 표시된 모드가 작동할 수 있습니다. 게임을 설치하면 더 정확한 정보를 보여드리겠습니다.",
+			"이 게임이 설치되지 않아서 어떤 모드가 맞는지 100% 장담할 수 없어요. 아래 모드들이 될 수도 있어요. 게임을 설치하면 더 정확히 알려드릴게요.",
 		uninstallAllModsButton: "모드 모두 제거",
 		uninstallAllModsConfirmation:
-			"확실합니까? 이 게임의 모드 폴더에 있는 모든 파일이 삭제됩니다. 실제 게임의 파일은 삭제되지 않습니다.",
+			"확실해요? 이 게임 모드 폴더 안 파일이 전부 지워져요. 실제 게임 파일은 그대로 두고요.",
 
 		incompatibleGameModsLabel: "호환되지 않는 모드",
 
 		incompatibleGameModsDescription:
-			"여기에 나열된 모드들은 이 게임의 엔진 버전과 호환되지 않기 때문에 설치할 수 없습니다.",
+			"여기 모드들은 이 게임 엔진 버전과 호환이 안 돼서 설치할 수 없어요.",
 
 		otherThings: "기타 항목",
 
 		otherThingsDescription:
-			"이들은 주로 종속성 및 기타 항목으로 일반적으로 직접 수정할 필요가 없습니다.",
+			"이것들은 대부분 종속성 같은 거라서 보통 직접 건드릴 일이 없어요.",
 	},
 
 	gameModRow: {
@@ -119,16 +119,16 @@ export const koKr: Localization = {
 		updateMod: "업데이트",
 		installMod: "설치",
 		installModAnticheatWarning:
-			"주의: 멀티플레이어 게임에 모드를 설치할 때 주의하세요! 안티치트는 일부 모드를 감지할 수 있으며, 모드가 무해해 보여도 당신을 밴할 수 있습니다.",
+			"멀티플레이 게임에 모드 설치할 땐 조심하세요! 안티치트가 모드를 감지하면 해롭지 않아 보여도 밴 당할 수 있어요.",
 		reinstallMod: "재설치",
 		uninstallMod: "제거",
 		runMod: "실행",
 		downloadRemoteConfig: "권장 설정 다운로드",
 		remoteConfigAvailable:
-			"권장 설정을 사용할 수 있습니다. 설정이 아직 없는 경우 다운로드됩니다. 세 점 메뉴에서 강제로 다운로드할 수도 있습니다.",
-		modOutdated: "모드가 오래되었습니다",
+			"권장 설정이 있어요. 아직 설정이 없으면 자동으로 받고, 세 점 메뉴에서 강제로 받을 수도 있어요.",
+		modOutdated: "업데이트 가능",
 		cantUninstallModWithDependants:
-			"의존하는 다른 모드가 있는 모드는 제거할 수 없습니다. 먼저 이 모드에 의존하는 모드들을 제거하세요.",
+			"이 모드를 쓰는 다른 모드가 있으면 제거할 수 없어요. 그 모드들부터 먼저 제거해 주세요.",
 	},
 
 	gamesTableColumn: {
@@ -140,7 +140,7 @@ export const koKr: Localization = {
 	modsPage: {
 		openLocalModsFolderButton: "모드 폴더 열기",
 		openLoadlModsFolderTooltip:
-			"이 폴더에 rai-pal-manifest.json이 있는 모드를 배치하여 온라인 데이터베이스를 거치지 않고 직접 로드할 수 있습니다.",
+			"rai-pal-manifest.json이 있는 모드를 이 폴더에 넣으면 온라인 데이터베이스 없이 바로 불러올 수 있어요.",
 		tableColumnMod: "모드",
 		tableColumnVersion: "버전",
 		tableColumnGameEngine: "엔진",
@@ -148,7 +148,7 @@ export const koKr: Localization = {
 		modByAuthor: "{authorName} 제작",
 		modDeprecated: "사용 중지됨",
 		modDeprecatedTooltip:
-			"이 모드는 사용 중지되었습니다. 이 모드를 제거하고 새로운 대안을 설치해야 합니다.",
+			"이 모드는 더 이상 지원되지 않아요. 제거하고 더 최신 모드를 설치하는 게 좋아요.",
 	},
 
 	modModal: {
@@ -157,7 +157,7 @@ export const koKr: Localization = {
 		updateMod: "모드 업데이트",
 		downloadMod: "모드 다운로드",
 		deleteMod: "모드 삭제",
-		deleteModConfirmation: "확실합니까? 모드 폴더 안의 모든 파일이 삭제됩니다.",
+		deleteModConfirmation: "확실해요? 모드 폴더 안 파일이 전부 날아가요.",
 		byAuthor: "{authorName} 제작",
 	},
 
@@ -167,7 +167,7 @@ export const koKr: Localization = {
 		autoDetectedLanguage: "자동 감지 - {languageName}",
 		resetRaiPalSettingsButton: "Rai Pal 설정 재설정",
 		resetRaiPalSettingsTooltip:
-			"필터, 확인 대화 상자 및 기타 설정을 재설정합니다.",
+			"필터, 확인 창, 이것저것 다 초기화돼요.",
 		openLogsFolderButton: "로그 폴더 열기",
 		clearRaiPalCacheOpenModal: "Rai Pal 캐시 지우기",
 		clearRaiPalCacheTooltip: "Rai Pal이 사용하는 게임 목록 캐시를 지웁니다.",
@@ -178,7 +178,7 @@ export const koKr: Localization = {
 		logOut: "로그아웃",
 		signInWithDiscord: "Discord로 로그인",
 		discordAccessNote:
-			"모드는 이를 사용해 Discord 사용자 이름, 아바타, 역할 등에 접근할 수 있습니다.",
+			"모드가 이걸로 Discord 사용자 이름, 아바타, 역할 등에 접근할 수 있어요.",
 	},
 
 	subPage: {
@@ -193,7 +193,7 @@ export const koKr: Localization = {
 		resetSteamCacheButton: "Steam 캐시 재설정",
 		resetSteamCacheModalTitle: "Steam 캐시 재설정",
 		resetSteamCacheDescription:
-			"Rai Pal이 실제로 소유하지 않은 Steam 게임을 표시하는 경우 이 옵션을 사용하세요. Steam의 캐시를 재설정한 후 Steam을 다시 시작해야 합니다. 파일이 이미 삭제된 경우 오류가 발생합니다.",
+			"Rai Pal에 내가 가지고 있지 않은 Steam 게임이 표시될 때 쓰세요. Steam 캐시를 초기화한 다음 Steam을 다시 시작해야 해요. 이미 지워진 파일이면 오류가 나요.",
 		resetSteamCacheSuccess:
 			"캐시 파일이 삭제되었습니다. Steam을 다시 시작하고 몇 초 기다린 후 Rai Pal에서 새로고침 버튼을 누르세요.",
 	},
@@ -202,7 +202,7 @@ export const koKr: Localization = {
 		addRaiPalSteamShortcutButton: "Rai Pal을 Steam 라이브러리에 추가",
 		addRaiPalSteamShortcutModalTitle: "Rai Pal을 Steam 라이브러리에 추가",
 		addRaiPalSteamShortcutDescription:
-			"이 기능은 특히 Steam Deck에서 게임 모드로 Rai Pal을 실행할 수 있게 해줘서 유용합니다. 실행 후에는 Steam을 다시 시작해야 합니다.",
+			"이건 특히 Steam Deck에서 게임 모드로 Rai Pal을 실행할 때 좋아요. 하고 나서 Steam을 다시 시작해야 해요.",
 		addRaiPalSteamShortcutSuccess:
 			"Rai Pal이 Steam 라이브러리에 추가되었습니다. 보려면 Steam을 다시 시작하세요.",
 	},
@@ -211,9 +211,9 @@ export const koKr: Localization = {
 		setUpEnvironmentButton: "BepInEx용 Linux 환경 설정",
 		setUpEnvironmentTitle: "BepInEx용 Linux 환경 설정",
 		setUpEnvironmentDescription:
-			"Linux에서 Proton/Wine을 사용할 때, Wine 설정이 되어 있지 않으면 BepInEx가 자동으로 로드되지 않습니다. 이 작업은 환경 변수 WINEDLLOVERRIDES를 전역적으로 'winhttp.dll=n,b'로 설정합니다. 수동으로 설정하려면 이 버튼을 클릭하지 마세요.",
+			"Linux에서 Proton/Wine을 쓸 때, Wine 설정을 안 해두면 BepInEx가 자동으로 로드되지 않아요. 이 버튼은 WINEDLLOVERRIDES 환경 변수를 전역으로 'winhttp.dll=n,b'로 설정해요. 직접 하고 싶으면 누르지 마세요.",
 		setUpEnvironmentSuccess:
-			"파일이 작성되었습니다. 변경 사항을 적용하려면 로그아웃 후 다시 로그인하거나 컴퓨터를 재시작해야 합니다.",
+			"파일이 생성됐어요. 적용하려면 로그아웃 후 다시 로그인하거나 컴퓨터를 다시 시작해야 해요.",
 	},
 
 	debugData: {
@@ -223,16 +223,16 @@ export const koKr: Localization = {
 
 	thanksPage: {
 		intro:
-			"안녕하세요. 저는 Rai Pal을 만들었습니다. 과거에 다른 VR 모드를 만들었고, 현재는 Unity 게임을 위한 범용 VR 모드를 작업 중입니다. 제가 하는 일을 좋아하시고 더 많은 것을 보고 싶다면 기부를 고려해 주세요! itch.io에서 무료 모드 중 하나를 구매하여 저를 지원할 수도 있습니다.",
-		starRaiPalOnGitHub: "GitHub에서 Rai Pal에 별표 표시",
+			"안녕하세요. Rai Pal을 만든 사람이에요. 예전에 여러 VR 모드도 만들었고, 지금은 Unity 게임용 범용 VR 모드를 만들고 있어요. 제 작업이 마음에 들고 더 보고 싶으시면 후원 고려해 주세요! itch.io에서 제 무료 모드를 구매해서 응원해 주셔도 좋아요.",
+		starRaiPalOnGitHub: "GitHub에서 Rai Pal 별표 주기",
 		otherModdersTitle: "다른 모더들",
 		otherModdersDescription:
-			"Rai Pal은 게임 모딩을 관리하는 데 도움을 주기 위해 만들어졌으며, 다른 개발자가 만든 도구 없이는 할 수 없습니다. 이 사람들 중 일부는 기부 링크가 없지만, 그들의 작업에 매우 감사드립니다.",
-		modderOnWebsite: "{modderName}의 {website} 프로필",
+			"Rai Pal은 게임 모딩을 쉽게 관리하도록 도와주는 도구예요. 다른 개발자분들이 만든 도구 없이는 불가능했을 거예요. 어떤 분들은 후원 링크가 없지만, 그래도 그분들 작업에 정말 감사드려요.",
+		modderOnWebsite: "{website}의 {modderName}",
 		patreonLeaderboard: "Patreon 리더보드",
-		rankedByPatreonDonationAmount: "총 기부 금액 순으로 정렬되었습니다.",
+		rankedByPatreonDonationAmount: "총 후원 금액 기준으로 정렬됐어요.",
 		patreonProfilePrivateNotice:
-			"여기에서 자신을 볼 수 없는 경우, Patreon 프로필이 비공개로 설정되어 있기 때문입니다.",
+			"여기에 안 보이시면 Patreon 프로필이 비공개라서 그래요.",
 	},
 
 	commandButton: {
@@ -245,7 +245,7 @@ export const koKr: Localization = {
 		customSources: "사용자 정의 소스",
 		addCustomSource: "사용자 정의 소스 추가",
 		add: "추가",
-		confirmModalTitle: "Mod 소스 확인",
+		confirmModalTitle: "모드 소스 확인",
 		modsFound: "이 소스에서 {count}개의 모드를 찾았습니다",
 		addSource: "소스 추가",
 		cancel: "취소",

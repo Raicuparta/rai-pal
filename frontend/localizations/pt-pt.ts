@@ -39,8 +39,8 @@ export const ptPt: Localization = {
 	},
 
 	filterProperty: {
-		provider: "Fornecedor",
-		tags: "Etiqueta",
+		provider: "Plataforma",
+		tags: "Tag",
 		architecture: "Arquitetura",
 		unityBackend: "Backend do Unity",
 		engine: "Motor",
@@ -53,8 +53,8 @@ export const ptPt: Localization = {
 		arch64: "64-bit",
 		arch32: "32-bit",
 		tagDemo: "Demo",
-		tagVr: "VR Nativo",
-		tagUntagged: "Sem etiqueta",
+		tagVr: "VR nativo",
+		tagUntagged: "Sem tag",
 		statusInstalled: "Instalado",
 		statusNotInstalled: "Não instalado",
 		providerManual: "Manual",
@@ -71,37 +71,37 @@ export const ptPt: Localization = {
 
 	providerCommand: {
 		installGame: "Instalar",
-		showGameInLibrary: "Mostrar na Biblioteca",
-		showGameInStore: "Abrir Página da Loja",
-		startGameViaProvider: "Iniciar Jogo",
-		startGameViaExe: "Executar Executável do Jogo",
-		openGamePageInBrowser: "Abrir no Navegador",
+		showGameInLibrary: "Mostrar na biblioteca",
+		showGameInStore: "Abrir página da loja",
+		startGameViaProvider: "Iniciar jogo",
+		startGameViaExe: "Abrir executável do jogo",
+		openGamePageInBrowser: "Abrir no navegador",
 	},
 
 	gameModal: {
-		startGameButton: "Iniciar Jogo",
-		startGameExecutable: "Iniciar Executável do Jogo",
-		startGameViaProvider: "Iniciar Jogo via {provider}",
+		startGameButton: "Iniciar jogo",
+		startGameExecutable: "Iniciar executável do jogo",
+		startGameViaProvider: "Iniciar jogo via {provider}",
 		foldersDropdown: "Pastas",
-		openGameFilesFolder: "Abrir Pasta de Ficheiros do Jogo",
-		openInstalledModsFolder: "Abrir Pasta de Mods Instalados",
-		openGameDataFolder: "Abrir Pasta de Dados da Aplicação do Jogo",
-		openGameWinePrefixFolder: "Abrir Pasta do Prefixo Wine do Jogo",
-		openGameWineBinaryFolder: "Abrir Pasta do Binário Wine do Jogo",
+		openGameFilesFolder: "Ficheiros do jogo",
+		openInstalledModsFolder: "Mods instalados",
+		openGameDataFolder: "Dados da aplicação",
+		openGameWinePrefixFolder: "Prefixo Wine",
+		openGameWineBinaryFolder: "Binário Wine",
 		removeFromRaiPal: "Remover do Rai Pal",
 		removeGameConfirmation:
-			"Tens a certeza de que queres remover este jogo do Rai Pal?",
+			"Queres mesmo remover este jogo do Rai Pal?",
 		refreshGame: "Atualizar",
 		failedToReadGameInfo:
-			"Falha ao ler informações importantes sobre este jogo. O executável pode estar protegido. Alguns mods podem não conseguir ser instalados.",
+			"Erro ao ler informações importantes sobre este jogo. O executável pode estar protegido. Alguns mods podem não instalar-se.",
 		failedToDetermineEngine:
-			"Falha ao determinar o motor deste jogo. Alguns mods podem não funcionar.",
+			"Não foi possível determinar o motor deste jogo. Alguns mods podem não funcionar.",
 		gameModsLabel: "Mods",
 		gameNotInstalledWarning:
-			"Este jogo não está instalado, por isso não tenho 100% de certeza sobre a compatibilidade dos mods. Os que vês abaixo podem funcionar. Se instalares o jogo, poderei mostrar informações mais precisas.",
+			"Este jogo não está instalado, por isso não tenho 100% de certeza sobre a compatibilidade dos mods. Os que vês abaixo podem funcionar. Se instalares o jogo, posso mostrar informações mais exatas.",
 		uninstallAllModsButton: "Desinstalar todos os mods",
 		uninstallAllModsConfirmation:
-			"Tens a certeza? Isto apagará todos os ficheiros na pasta de mods deste jogo. No entanto, não removerá ficheiros do próprio jogo.",
+			"Tens a certeza? Isto vai apagar todos os ficheiros da pasta de mods deste jogo. Mas não mexe nos ficheiros do jogo em si.",
 
 		incompatibleGameModsLabel: "Mods Incompatíveis",
 
@@ -109,24 +109,24 @@ export const ptPt: Localization = {
 			"Os mods listados aqui não podem ser instalados porque não são compatíveis com a versão do motor deste jogo.",
 		otherThings: "Outras coisas",
 		otherThingsDescription:
-			"Estes são principalmente dependências e outras coisas que normalmente não é necessário mexer diretamente.",
+			"Estes são principalmente dependências e outras coisas que normalmente não precisas de mexer.",
 	},
 
 	gameModRow: {
-		editModConfig: "Editar Configuração do Mod",
+		editModConfig: "Editar configuração do mod",
 		openModConfigFolderTooltip:
-			"Abrir pasta contendo os ficheiros de configuração deste mod",
-		openModFolder: "Abrir Pasta do Mod",
+			"Abrir a pasta que contém os ficheiros de configuração deste mod",
+		openModFolder: "Abrir pasta do mod",
 		updateMod: "Atualizar",
 		installMod: "Instalar",
 		installModAnticheatWarning:
-			"Atenção: tem cuidado ao instalar mods em jogos multiplayer! O anticheat pode detectar alguns mods e banir-te, mesmo que os mods pareçam inofensivos.",
+			"Atenção: tem cuidado ao instalar mods em jogos multiplayer! O anticheat pode detetar alguns mods e podes ser banido, mesmo que os mods pareçam inofensivos.",
 		reinstallMod: "Reinstalar",
 		uninstallMod: "Desinstalar",
 		runMod: "Executar",
-		downloadRemoteConfig: "Descarregar Configuração Recomendada",
+		downloadRemoteConfig: "Descarregar configuração recomendada",
 		remoteConfigAvailable:
-			"Configuração recomendada disponível. Será descarregada se ainda não tiveres uma configuração. Também podes forçar o descarregamento a partir do menu de três pontos.",
+			"Configuração recomendada disponível. Será descarregada se ainda não tiveres uma configuração. Também podes forçar o download a partir do menu de três pontos.",
 		modOutdated: "Mod desatualizado",
 		cantUninstallModWithDependants:
 			"Não é possível desinstalar um mod que tenha dependentes. Desinstala primeiro os mods que dependem deste.",
@@ -139,7 +139,7 @@ export const ptPt: Localization = {
 	},
 
 	modsPage: {
-		openLocalModsFolderButton: "Abrir Pasta de Mods",
+		openLocalModsFolderButton: "Abrir pasta de mods locais",
 		openLoadlModsFolderTooltip:
 			"Podes colocar mods nesta pasta com um rai-pal-manifest.json para os carregar diretamente sem passar pela base de dados online.",
 		tableColumnMod: "Mod",
@@ -159,7 +159,7 @@ export const ptPt: Localization = {
 		downloadMod: "Descarregar mod",
 		deleteMod: "Eliminar mod",
 		deleteModConfirmation:
-			"Tens a certeza? Todos os ficheiros dentro da pasta do mod serão apagados.",
+			"Tens a certeza? Todos os ficheiros dentro da pasta do mod vão ser apagados.",
 		byAuthor: "por {authorName}",
 	},
 
@@ -170,7 +170,7 @@ export const ptPt: Localization = {
 		openLogsFolderButton: "Abrir Pasta de Registos",
 		resetRaiPalSettingsButton: "Repor definições do Rai Pal",
 		resetRaiPalSettingsTooltip:
-			"Irá repor filtros, diálogos de confirmação e outras definições.",
+			"Repõe filtros, diálogos de confirmação e provavelmente mais algumas coisas.",
 		clearRaiPalCacheOpenModal: "Limpar cache do Rai Pal...",
 		clearRaiPalCacheTooltip:
 			"Limpa a cache da lista de jogos usada pelo Rai Pal.",
@@ -196,7 +196,7 @@ export const ptPt: Localization = {
 		resetSteamCacheButton: "Repor cache da Steam",
 		resetSteamCacheModalTitle: "Repor cache da Steam",
 		resetSteamCacheDescription:
-			"Usa isto se o Rai Pal estiver a mostrar jogos que não possuis na Steam. Isto irá repor a cache da Steam e terás de a reiniciar. Irás receber um erro se o ficheiro já tiver sido apagado.",
+			"Usa isto se o Rai Pal estiver a mostrar jogos que não possuis na Steam. Isto vai repor a cache da Steam e vais ter de a reiniciar. Vais receber um erro se o ficheiro já tiver sido apagado.",
 		resetSteamCacheSuccess:
 			"O ficheiro de cache foi apagado. Reinicia a Steam, espera alguns segundos e depois clica no botão de atualização no Rai Pal.",
 	},
@@ -205,7 +205,7 @@ export const ptPt: Localization = {
 		addRaiPalSteamShortcutButton: "Adicionar Rai Pal à biblioteca da Steam",
 		addRaiPalSteamShortcutModalTitle: "Adicionar Rai Pal à biblioteca da Steam",
 		addRaiPalSteamShortcutDescription:
-			"Isto é especialmente útil no Steam Deck, para poderes iniciar o Rai Pal no Modo Jogo. Terás de reiniciar a Steam depois de fazer isto.",
+			"Isto é especialmente útil no Steam Deck, para poderes iniciar o Rai Pal no Modo Jogo. Vais ter de reiniciar a Steam depois de fazer isto.",
 		addRaiPalSteamShortcutSuccess:
 			"O Rai Pal foi adicionado à tua biblioteca da Steam. Reinicia a Steam para o veres.",
 	},
@@ -216,11 +216,11 @@ export const ptPt: Localization = {
 		setUpEnvironmentDescription:
 			"Ao usar Proton/Wine no Linux, o BepInEx não será carregado automaticamente a menos que algumas definições do Wine estejam configuradas. Isto irá definir a variável de ambiente WINEDLLOVERRIDES para 'winhttp.dll=n,b' globalmente. Se preferires fazer isso manualmente, não cliques neste botão.",
 		setUpEnvironmentSuccess:
-			"O ficheiro foi escrito. Precisas de terminar sessão e voltar a iniciar, ou reiniciar o computador, para que as alterações tenham efeito.",
+			"O ficheiro foi escrito. Precisas de terminar sessão e voltar a iniciar, ou reiniciar o computador, para as alterações fazerem efeito.",
 	},
 
 	debugData: {
-		debugDataTitle: "Dados de Depuração",
+		debugDataTitle: "Dados de depuração",
 		debugDataCopy: "Copiar dados de depuração",
 	},
 
@@ -240,11 +240,11 @@ export const ptPt: Localization = {
 
 	commandButton: {
 		cancel: "Cancelar",
-		dontAskAgain: "Não perguntar novamente",
+		dontAskAgain: "Não voltar a perguntar",
 	},
 
 	urlModSources: {
-		title: "Fontes de base de dados de mods",
+		title: "Fontes da base de dados de mods",
 		customSources: "Fontes personalizadas",
 		addCustomSource: "Adicionar fonte personalizada",
 		add: "Adicionar",
