@@ -7,6 +7,8 @@ use std::{
 	},
 };
 
+use rai_pal_proc_macros::serializable_struct;
+
 use crate::{
 	app_paths,
 	architecture::Architecture,
@@ -39,8 +41,7 @@ use crate::{
 	},
 };
 
-#[derive(serde::Serialize, specta::Type, Clone)]
-#[serde(rename_all = "camelCase")]
+#[serializable_struct]
 pub struct DbGame {
 	pub provider_id: GameProviderId,
 	pub game_id: String,

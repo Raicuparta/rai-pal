@@ -4,7 +4,7 @@ import { CommandButton } from "@components/command-button";
 import { useLocalization } from "@hooks/use-localization";
 import { Button, Group, Modal, Stack, Text, ScrollArea } from "@mantine/core";
 import { IconPlus } from "@tabler/icons-react";
-import { useEffect, useState } from "react";
+import { startTransition, useEffect, useState } from "react";
 
 type Props = {
 	readonly url: string;
@@ -23,9 +23,11 @@ export function ConfirmModSourceModal(props: Props) {
 	useEffect(() => {
 		if (!props.isOpen) return;
 
-		setMods(undefined);
-		setError(undefined);
-		setIsLoading(true);
+		startTransition(() => {
+			setMods(undefined);
+			setError(undefined);
+			setIsLoading(true);
+		});
 
 		commands
 			.getModsFromUrlModSource(props.url)

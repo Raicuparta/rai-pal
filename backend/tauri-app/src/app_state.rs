@@ -1,6 +1,7 @@
 use std::sync::RwLock;
 
 use rai_pal_core::{
+	game_providers::game_provider::GameProviderId,
 	http::DownloadStatus,
 	local_database::{
 		app_database::DbMutex,
@@ -23,6 +24,7 @@ use crate::result::{
 pub struct AppState {
 	pub database: DbMutex,
 	pub download_status_channel: RwLock<Option<Channel<DownloadStatus>>>,
+	pub selected_game: RwLock<Option<(GameProviderId, String)>>,
 }
 
 type TauriState<'a> = tauri::State<'a, AppState>;
@@ -71,6 +73,7 @@ impl AppState {
 		Ok(Self {
 			database: games,
 			download_status_channel: RwLock::new(None),
+			selected_game: RwLock::new(None),
 		})
 	}
 }

@@ -23,6 +23,7 @@ export const zhCn: Localization = {
 		button: "添加游戏",
 		title: "添加游戏",
 		dropField: "拖放游戏可执行文件到这里，或点击选择文件。",
+		directoryButton: "Scan a folder recursively for games. Can be slow!",
 		note: "提示：你可以将游戏可执行文件拖放到 Rai Pal 窗口的任何地方，就能将其加入已安装游戏列表，无需打开此对话框。",
 	},
 
@@ -38,7 +39,7 @@ export const zhCn: Localization = {
 		searchPlaceholder: "搜索...",
 	},
 
-		filterProperty: {
+	filterProperty: {
 		provider: "平台",
 		tags: "标签",
 		architecture: "架构",
@@ -161,7 +162,8 @@ export const zhCn: Localization = {
 		language: "语言",
 		autoDetectedLanguage: "自动检测 - {languageName}",
 		resetRaiPalSettingsButton: "重置 Rai Pal 设置",
-		resetRaiPalSettingsTooltip: "将重置筛选条件、确认对话框，可能还有其他内容。",
+		resetRaiPalSettingsTooltip:
+			"将重置筛选条件、确认对话框，可能还有其他内容。",
 		openLogsFolderButton: "打开日志文件夹",
 		clearRaiPalCacheOpenModal: "清除 Rai Pal 缓存",
 		clearRaiPalCacheTooltip: "清除 Rai Pal 使用的游戏列表缓存。",

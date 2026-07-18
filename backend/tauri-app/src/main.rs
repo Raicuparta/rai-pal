@@ -17,6 +17,7 @@ use app_state::{
 use events::{
 	AddModSource,
 	EventEmitter,
+	SelectedGameData,
 };
 #[cfg(target_os = "windows")]
 use rai_pal_core::windows;
@@ -395,7 +396,9 @@ async fn install_mod_dependencies(
 			if let Some(relevant_dependency_mod_info) = relevant_mods.iter().find(|relevant_mod| {
 				relevant_mod.compatible && relevant_mod.mod_id == dependency.mod_id
 			}) {
-				let dependency_mod = state.database.get_mod(&relevant_dependency_mod_info.mod_id)?;
+				let dependency_mod = state
+					.database
+					.get_mod(&relevant_dependency_mod_info.mod_id)?;
 
 				Box::pin(install_mod_dependencies(
 					handle,
@@ -493,7 +496,12 @@ async fn add_game(handle: AppHandle, path: PathBuf) -> Result {
 
 	handle.emit_safe(events::RefreshGame(game.provider_id, game.game_id.clone()));
 	handle.emit_safe(events::AppDatabaseChanged());
-	handle.emit_safe(events::SelectGame(GameProviderId::Manual, game.game_id));
+
+	let mod_infos = state
+		.database
+		.get_game_mods(&GameProviderId::Manual, &game.game_id)?;
+	let data = SelectedGameData { game, mod_infos };
+	handle.emit_safe(events::SelectGame(Some(data)));
 
 	Ok(())
 }
@@ -513,10 +521,14 @@ async fn add_game_directory(handle: AppHandle, path: PathBuf) -> Result {
 	handle.emit_safe(events::AppDatabaseChanged());
 
 	if let Some(game) = games.first() {
-		handle.emit_safe(events::SelectGame(
-			GameProviderId::Manual,
-			game.game_id.clone(),
-		));
+		let mod_infos = state
+			.database
+			.get_game_mods(&GameProviderId::Manual, &game.game_id)?;
+		let data = SelectedGameData {
+			game: game.clone(),
+			mod_infos,
+		};
+		handle.emit_safe(events::SelectGame(Some(data)));
 	}
 
 	Ok(())
@@ -716,6 +728,41 @@ async fn listen_to_download_progress(
 	Ok(())
 }
 
+#[tauri::command]
+#[specta::specta]
+async fn set_selected_game(
+	provider_id: Option<GameProviderId>,
+	game_id: Option<String>,
+	handle: AppHandle,
+) -> Result {
+	let state = handle.app_state();
+
+	if let Some(provider_id) = provider_id
+		&& let Some(game_id) = game_id
+	{
+		let game = state.database.get_game(&provider_id, &game_id)?;
+		let mod_infos = state.database.get_game_mods(&provider_id, &game_id)?;
+
+		*state
+			.selected_game
+			.write()
+			.map_err(|e| crate::result::Error::FailedToAccessStateData(e.to_string()))? =
+			Some((provider_id, game_id));
+
+		let data = SelectedGameData { game, mod_infos };
+		handle.emit_safe(events::SelectGame(Some(data)));
+	} else {
+		*state
+			.selected_game
+			.write()
+			.map_err(|e| crate::result::Error::FailedToAccessStateData(e.to_string()))? = None;
+
+		handle.emit_safe(events::SelectGame(None));
+	}
+
+	Ok(())
+}
+
 fn show_panic(error: &str) {
 	rfd::MessageDialog::new()
 		.set_title("Rai Pal is panicking rn!")
@@ -799,6 +846,7 @@ fn main() {
 			remove_url_mod_source,
 			reset_steam_cache,
 			run_mod,
+			set_selected_game,
 			run_provider_command,
 			save_app_settings,
 			send_analytics_event,

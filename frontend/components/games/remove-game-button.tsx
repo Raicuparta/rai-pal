@@ -2,8 +2,6 @@ import { commands, GameProviderId } from "@api/bindings";
 import { CommandButton } from "@components/command-button";
 import { useLocalization } from "@hooks/use-localization";
 import { IconTrash } from "@tabler/icons-react";
-import { useSetAtom } from "jotai";
-import { selectedGameAtom } from "./games-state";
 import { useAsyncCommand } from "@hooks/use-async-command";
 
 type Props = {
@@ -13,7 +11,9 @@ type Props = {
 
 export function RemoveGameButton(props: Props) {
 	const { t } = useLocalization("gameModal");
-	const setSelectedGame = useSetAtom(selectedGameAtom);
+	const [clearSelection] = useAsyncCommand(() =>
+		commands.setSelectedGame(null, null),
+	);
 	const [refreshGames] = useAsyncCommand(commands.refreshGames);
 
 	return (
@@ -21,16 +21,7 @@ export function RemoveGameButton(props: Props) {
 			onClick={() => commands.removeGame(props.providerId, props.gameId)}
 			confirmationText={t("removeGameConfirmation")}
 			onSuccess={() => {
-				setSelectedGame((previous) => {
-					if (
-						previous?.providerId === props.providerId &&
-						previous?.gameId === props.gameId
-					) {
-						return null;
-					}
-					return previous;
-				});
-
+				clearSelection();
 				refreshGames(props.providerId);
 			}}
 			leftSection={<IconTrash />}

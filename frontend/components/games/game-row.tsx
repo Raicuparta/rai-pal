@@ -1,10 +1,9 @@
 import { Table } from "@mantine/core";
 import React from "react";
-import { useSetAtom } from "jotai";
-import { selectedGameAtom } from "./games-state";
 import { useGame } from "@hooks/use-game";
+import { useAsyncCommand } from "@hooks/use-async-command";
 import { ItemProps } from "react-virtuoso";
-import { DbGame, GameProviderId } from "@api/bindings";
+import { commands, DbGame, GameProviderId } from "@api/bindings";
 import { gamesColumns } from "./games-columns";
 import { useAppSettings } from "@hooks/use-app-settings";
 
@@ -17,7 +16,10 @@ export const GameRow = React.forwardRef(function GameRow(
 ) {
 	const [providerId, gameId] = props.item;
 	const game = useGame(providerId, gameId);
-	const setSelectedGame = useSetAtom(selectedGameAtom);
+	const [selectGame] = useAsyncCommand(
+		async (params: { providerId: GameProviderId; gameId: string }) =>
+			commands.setSelectedGame(params.providerId, params.gameId),
+	);
 
 	const defaultGame: DbGame = {
 		providerId: providerId,
@@ -43,7 +45,7 @@ export const GameRow = React.forwardRef(function GameRow(
 		<GameRowInner
 			game={game || defaultGame}
 			ref={ref}
-			onClick={() => setSelectedGame({ providerId, gameId })}
+			onClick={() => selectGame({ providerId, gameId })}
 		/>
 	);
 });

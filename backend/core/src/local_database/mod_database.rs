@@ -77,7 +77,7 @@ fn compute_scope(provider_id: ModProviderId, source_hash: &str) -> String {
 	if source_hash.is_empty() {
 		String::new()
 	} else {
-		format!("{}:{}", provider_id, source_hash)
+		format!("{provider_id}:{source_hash}")
 	}
 }
 
@@ -85,7 +85,7 @@ fn scope_id<'a>(scope: &'a str, original_id: &'a str) -> Cow<'a, str> {
 	if scope.is_empty() {
 		Cow::Borrowed(original_id)
 	} else {
-		Cow::Owned(format!("{}:{}", scope, original_id))
+		Cow::Owned(format!("{scope}:{original_id}"))
 	}
 }
 

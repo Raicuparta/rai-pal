@@ -86,11 +86,7 @@ impl ProviderActions for Manual {
 					}
 				}
 				Err(error) => {
-					error!(
-						"Failed to walk directory '{}': {}",
-						dir.display(),
-						error
-					);
+					error!("Failed to walk directory '{}': {}", dir.display(), error);
 				}
 			}
 		}
@@ -154,8 +150,10 @@ pub fn add_directory(path: &Path) -> Result<Vec<DbGame>> {
 
 	let executables = find_executables_in_directory(path)?;
 
-	let games: Result<Vec<DbGame>> =
-		executables.iter().map(|exe_path| get_game_from_path(exe_path)).collect();
+	let games: Result<Vec<DbGame>> = executables
+		.iter()
+		.map(|exe_path| get_game_from_path(exe_path))
+		.collect();
 	let games = games?;
 
 	let config_path = games_config_path()?;
@@ -176,23 +174,18 @@ fn find_executables_in_directory(dir: &Path) -> Result<Vec<PathBuf>> {
 	Ok(executables)
 }
 
-fn walk_directory(
-	dir: &Path,
-	executables: &mut Vec<PathBuf>,
-	valid_extensions: &[&str],
-) -> Result {
+fn walk_directory(dir: &Path, executables: &mut Vec<PathBuf>, valid_extensions: &[&str]) -> Result {
 	for entry in fs::read_dir(dir)? {
 		let entry = entry?;
 		let path = entry.path();
 
 		if path.is_dir() {
 			walk_directory(&path, executables, valid_extensions)?;
-		} else if path.is_file() {
-			if let Some(ext) = path.extension().and_then(|e| e.to_str()) {
-				if valid_extensions.contains(&ext.to_lowercase().as_str()) {
-					executables.push(path);
-				}
-			}
+		} else if path.is_file()
+			&& let Some(ext) = path.extension().and_then(|e| e.to_str())
+			&& valid_extensions.contains(&ext.to_lowercase().as_str())
+		{
+			executables.push(path);
 		}
 	}
 

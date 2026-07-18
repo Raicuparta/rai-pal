@@ -12,7 +12,7 @@ import {
 	TextInput,
 } from "@mantine/core";
 import { IconPlus, IconTrash } from "@tabler/icons-react";
-import { useEffect, useState } from "react";
+import { startTransition, useEffect, useState } from "react";
 
 type Props = {
 	readonly isOpen: boolean;
@@ -33,7 +33,9 @@ export function UrlModSourcesModal(props: Props) {
 	useEffect(() => {
 		if (props.isOpen) {
 			loadSources();
-			setNewUrl("");
+			startTransition(() => {
+				setNewUrl("");
+			});
 		}
 	}, [props.isOpen]);
 

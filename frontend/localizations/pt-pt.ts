@@ -23,6 +23,7 @@ export const ptPt: Localization = {
 		title: "Adicionar jogo",
 		dropField:
 			"Arrasta e larga um executável de jogo aqui ou clica para selecionar um ficheiro.",
+		directoryButton: "Scan a folder recursively for games. Can be slow!",
 		note: "Nota: podes largar ficheiros executáveis de jogos em qualquer lugar na janela do Rai Pal para os adicionar à lista de jogos instalados sem abrir este diálogo.",
 	},
 
@@ -89,8 +90,7 @@ export const ptPt: Localization = {
 		openGameWinePrefixFolder: "Prefixo Wine",
 		openGameWineBinaryFolder: "Binário Wine",
 		removeFromRaiPal: "Remover do Rai Pal",
-		removeGameConfirmation:
-			"Queres mesmo remover este jogo do Rai Pal?",
+		removeGameConfirmation: "Queres mesmo remover este jogo do Rai Pal?",
 		refreshGame: "Atualizar",
 		failedToReadGameInfo:
 			"Erro ao ler informações importantes sobre este jogo. O executável pode estar protegido. Alguns mods podem não instalar-se.",

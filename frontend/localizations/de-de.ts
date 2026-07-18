@@ -24,6 +24,7 @@ export const deDe: Localization = {
 		title: "Spiel hinzufügen",
 		dropField:
 			"Zieh eine Spiel-Exe hier rein oder klick, um eine Datei auszuwählen.",
+		directoryButton: "Scan a folder recursively for games. Can be slow!",
 		note: "Hinweis: Du kannst Spiel-Exe-Dateien überall auf Rai Pal ablegen, ohne dieses Dialogfenster zu öffnen.",
 	},
 
@@ -236,8 +237,7 @@ export const deDe: Localization = {
 			"Rai Pal soll dir helfen, Spiele zu modden, und das schaffen wir nicht ohne die Werkzeuge, die andere Entwickler erstellt haben. Manche dieser Leute haben keine Spendenlinks, aber ich bin für ihre Arbeit extrem dankbar.",
 		modderOnWebsite: "{modderName} auf {website}",
 		patreonLeaderboard: "Patreon-Bestenliste",
-		rankedByPatreonDonationAmount:
-			"Nach Gesamtspenden sortiert.",
+		rankedByPatreonDonationAmount: "Nach Gesamtspenden sortiert.",
 		patreonProfilePrivateNotice:
 			"Siehst du dich hier nicht? Dann ist dein Patreon-Profil privat.",
 	},

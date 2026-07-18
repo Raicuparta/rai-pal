@@ -1,5 +1,9 @@
 import { Button, Group, Modal, Stack, Text } from "@mantine/core";
-import { IconAppWindowFilled, IconFolderFilled, IconPlaylistAdd } from "@tabler/icons-react";
+import {
+	IconAppWindowFilled,
+	IconFolderFilled,
+	IconPlaylistAdd,
+} from "@tabler/icons-react";
 import { useState } from "react";
 import { commands } from "@api/bindings";
 import { open as openDialog } from "@tauri-apps/plugin-dialog";

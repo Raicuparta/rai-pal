@@ -24,6 +24,7 @@ export const frFr: Localization = {
 		title: "Ajouter un jeu",
 		dropField:
 			"Glissez-déposez un exécutable de jeu ici, ou cliquez pour sélectionner un fichier.",
+		directoryButton: "Scan a folder recursively for games. Can be slow!",
 		note: "Remarque : vous pouvez déposer des fichiers exécutables de jeu n'importe où dans la fenêtre de Rai Pal pour les ajouter à la liste des jeux installés sans ouvrir ce dialogue.",
 	},
 
