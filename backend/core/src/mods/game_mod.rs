@@ -315,7 +315,20 @@ impl ModDownload {
 				fs::rename(&part_path, &zip_path)?;
 			}
 
-			match files::extract(&zip_path, &extracted_folder) {
+			let extract_result = files::extract(
+				&zip_path,
+				&extracted_folder,
+				&|extracted_bytes, total_uncompressed| {
+					on_download_status(DownloadStatus::new(
+						self.url.clone(),
+						extracted_folder.to_string_lossy().to_string(),
+						extracted_bytes as usize,
+						Some(total_uncompressed),
+					));
+				},
+			);
+
+			match extract_result {
 				Ok(()) => return Ok(extracted_folder),
 				Err(err) => {
 					fs::remove_dir_all(&temp_dir).ok();

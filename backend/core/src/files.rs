@@ -25,11 +25,28 @@ pub fn copy_dir_all(src: impl AsRef<Path>, dst: impl AsRef<Path>) -> Result {
 	Ok(())
 }
 
-pub fn extract(archive_path: &Path, target_path: &Path) -> io::Result<()> {
+pub fn extract(
+	archive_path: &Path,
+	target_path: &Path,
+	on_progress: &impl Fn(u64, u64),
+) -> io::Result<()> {
 	let mut archive = ZipArchive::new(File::open(archive_path)?)?;
+
+	let total_uncompressed: u64 = {
+		let mut total = 0;
+		for i in 0..archive.len() {
+			if let Ok(file) = archive.by_index(i) {
+				total += file.size();
+			}
+		}
+		total
+	};
+
+	let mut extracted_bytes: u64 = 0;
 
 	for i in 0..archive.len() {
 		let mut file = archive.by_index(i).map_err(io::Error::other)?;
+		let file_size = file.size();
 
 		// Some zips created on windows have cursed backslashes in their paths.
 		// We need to replace them with forward slashes to avoid issues when extracting on Linux.
@@ -47,14 +64,12 @@ pub fn extract(archive_path: &Path, target_path: &Path) -> io::Result<()> {
 
 		if file.is_dir() || sanitized_name.ends_with('/') {
 			fs::create_dir_all(&outpath)?;
+		} else if let Ok(metadata) = fs::metadata(&outpath)
+			&& metadata.len() == file_size
+		{
+			// Skip extracting if already extracted.
+			extracted_bytes += file_size;
 		} else {
-			if let Ok(metadata) = fs::metadata(&outpath)
-				&& metadata.len() == file.size()
-			{
-				// Skip extracting if already extracted.
-				continue;
-			}
-
 			if let Some(p) = outpath.parent()
 				&& !p.exists()
 			{
@@ -62,7 +77,10 @@ pub fn extract(archive_path: &Path, target_path: &Path) -> io::Result<()> {
 			}
 			let mut outfile = fs::File::create(&outpath)?;
 			io::copy(&mut file, &mut outfile)?;
+			extracted_bytes += file_size;
 		}
+
+		on_progress(extracted_bytes, total_uncompressed);
 	}
 	Ok(())
 }
