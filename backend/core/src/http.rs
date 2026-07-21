@@ -68,7 +68,7 @@ impl DownloadStatus {
 pub async fn download(
 	url: &str,
 	target_path: &Path,
-	status_callback: impl Fn(DownloadStatus) + Send,
+	status_callback: &(impl Fn(DownloadStatus) + Send),
 ) -> Result {
 	let response = CLIENT.get(url).send().await?.error_for_status()?;
 

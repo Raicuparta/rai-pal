@@ -300,22 +300,31 @@ impl ModDownload {
 		let url_hash = hasher.finish().to_string();
 
 		let temp_dir = app_paths::temp_dir(&url_hash)?;
-		let part_path = temp_dir.join("download.zip.part");
-		let zip_path = temp_dir.join("download.zip");
 		let extracted_folder = temp_dir.join("extracted");
-		fs::create_dir_all(&extracted_folder)?;
 
-		if !zip_path.is_file() {
-			fs::remove_file(&part_path).ok();
-			http::download(&self.url, &part_path, on_download_status).await?;
-			fs::rename(&part_path, &zip_path)?;
+		let mut attempts = 0;
+		loop {
+			fs::create_dir_all(&extracted_folder)?;
+
+			let part_path = temp_dir.join("download.zip.part");
+			let zip_path = temp_dir.join("download.zip");
+
+			if !zip_path.is_file() {
+				fs::remove_file(&part_path).ok();
+				http::download(&self.url, &part_path, &on_download_status).await?;
+				fs::rename(&part_path, &zip_path)?;
+			}
+
+			match files::extract(&zip_path, &extracted_folder) {
+				Ok(()) => return Ok(extracted_folder),
+				Err(err) => {
+					fs::remove_dir_all(&temp_dir).ok();
+					if attempts >= 1 {
+						return Err(err.into());
+					}
+					attempts += 1;
+				}
+			}
 		}
-
-		if let Err(err) = files::extract(&zip_path, &extracted_folder) {
-			fs::remove_dir_all(&temp_dir).ok();
-			return Err(err.into());
-		}
-
-		Ok(extracted_folder)
 	}
 }
