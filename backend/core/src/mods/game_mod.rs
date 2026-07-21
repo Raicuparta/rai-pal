@@ -308,7 +308,10 @@ impl ModDownload {
 			http::download(&self.url, &zip_path, on_download_status).await?;
 		}
 
-		files::extract(&zip_path, &extracted_folder)?;
+		if let Err(err) = files::extract(&zip_path, &extracted_folder) {
+			fs::remove_dir_all(&temp_dir).ok();
+			return Err(err.into());
+		}
 
 		Ok(extracted_folder)
 	}
