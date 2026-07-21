@@ -59,7 +59,7 @@ export function useAppUpdater() {
 					await relaunch();
 				})
 				.catch((error) => {
-					showAppNotification(`Failed to get app updates: ${error}`, "error");
+					console.error(`Failed to get app updates: ${error}`, "error");
 				});
 		}
 
