@@ -336,17 +336,6 @@ async fn install_mod(
 
 	let (steps, main_dl, _main_ex) = build_steps(&all_owned, mod_id);
 
-	for (step_id, step_name) in &steps {
-		download_status_channel
-			.send(ProgressStatus::new(
-				step_id.clone(),
-				step_name.clone(),
-				0,
-				Some(0),
-			))
-			.ok_or_log("Failed to send download status update");
-	}
-
 	let channel = download_status_channel.clone();
 	let forward = move |status: ProgressStatus| {
 		channel
@@ -354,28 +343,53 @@ async fn install_mod(
 			.ok_or_log("Failed to send download status update");
 	};
 
-	for m in &deps_to_install {
-		m.install(game_option.as_ref(), &forward).await?;
+	for (step_id, step_name) in &steps {
+		forward(ProgressStatus::new(
+			step_id.clone(),
+			step_name.clone(),
+			0,
+			Some(0),
+		));
 	}
 
-	if let Some(game) = game_option.as_ref()
-		&& let Some(installed_mod) = state.database.get_installed_mod(
-			mod_id,
-			Some(game.provider_id),
-			Some(game.game_id.clone()),
-		)? {
-		installed_mod.uninstall()?;
+	let core_result: std::result::Result<(), rai_pal_core::result::Error> = async {
+		for m in &deps_to_install {
+			m.install(game_option.as_ref(), &forward).await?;
+		}
+
+		if let Some(game) = game_option.as_ref()
+			&& let Some(installed_mod) = state.database.get_installed_mod(
+				mod_id,
+				Some(game.provider_id),
+				Some(game.game_id.clone()),
+			)? {
+			installed_mod.uninstall()?;
+		}
+
+		if main_dl.is_some() {
+			game_mod.install(game_option.as_ref(), &forward).await?;
+		}
+
+		state.database.refresh_installed_mods()?;
+
+		if let Some(game) = game_option.as_ref() {
+			handle.emit_safe(events::RefreshGame(game.provider_id, game.game_id.clone()));
+		}
+
+		Ok(())
+	}
+	.await;
+
+	for (step_id, step_name) in &steps {
+		forward(ProgressStatus::new(
+			step_id.clone(),
+			step_name.clone(),
+			1,
+			Some(1),
+		));
 	}
 
-	if main_dl.is_some() {
-		game_mod.install(game_option.as_ref(), &forward).await?;
-	}
-
-	state.database.refresh_installed_mods()?;
-
-	if let Some(game) = game_option.as_ref() {
-		handle.emit_safe(events::RefreshGame(game.provider_id, game.game_id.clone()));
-	}
+	core_result?;
 
 	Ok(())
 }

@@ -318,13 +318,6 @@ impl ModDownload {
 				)
 				.await?;
 				fs::rename(&part_path, &zip_path)?;
-			} else {
-				on_progress(ProgressStatus::new(
-					format!("{mod_id}:download"),
-					format!("Download {}", self.file_name()),
-					1,
-					Some(1),
-				));
 			}
 
 			let extract_result = files::extract(
