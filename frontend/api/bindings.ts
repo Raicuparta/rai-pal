@@ -47,6 +47,7 @@ export const commands = {
 	removeUrlModSource: (url: string) => __TAURI_INVOKE<null>("remove_url_mod_source", { url }),
 	resetSteamCache: () => __TAURI_INVOKE<null>("reset_steam_cache"),
 	runMod: (modId: string, providerIdOption: "Epic" | "Gog" | "Itch" | "Manual" | "Steam" | "Xbox" | null, gameIdOption: string | null) => __TAURI_INVOKE<null>("run_mod", { modId, providerIdOption, gameIdOption }),
+	setSelectedGame: (providerId: "Epic" | "Gog" | "Itch" | "Manual" | "Steam" | "Xbox" | null, gameId: string | null) => __TAURI_INVOKE<null>("set_selected_game", { providerId, gameId }),
 	runProviderCommand: (providerId: GameProviderId, gameId: string, providerCommandAciton: ProviderCommandAction) => __TAURI_INVOKE<null>("run_provider_command", { providerId, gameId, providerCommandAciton }),
 	saveAppSettings: (settings: AppSettings) => __TAURI_INVOKE<null>("save_app_settings", { settings }),
 	sendAnalyticsEvent: (event: Event, data: { [key in string]: string } | null) => __TAURI_INVOKE<null>("send_analytics_event", { event, data }),
@@ -261,7 +262,12 @@ export type RemoteConfigs = {
 	configs: RemoteConfig[],
 };
 
-export type SelectGame = [GameProviderId, string];
+export type SelectGame = SelectedGameData | null;
+
+export type SelectedGameData = {
+	game: DbGame,
+	modInfos: GameModInfo[],
+};
 
 export type TabId = "Games" | "Mods" | "Thanks";
 

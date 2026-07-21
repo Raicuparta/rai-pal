@@ -34,11 +34,12 @@ pub struct FolderModProvider {
 }
 
 impl FolderModProvider {
+	// TODO: use path hash helper that already exists.
 	fn compute_source_hash(&self) -> String {
 		let canonical =
 			std::fs::canonicalize(&self.folder_path).unwrap_or_else(|_| self.folder_path.clone());
 		let mut hasher = DefaultHasher::new();
-		canonical.to_string_lossy().hash(&mut hasher);
+		canonical.try_to_str().unwrap_or_default().hash(&mut hasher);
 		hasher.finish().to_string()
 	}
 }

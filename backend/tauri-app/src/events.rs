@@ -1,6 +1,19 @@
-use rai_pal_core::game_providers::game_provider::GameProviderId;
-use rai_pal_proc_macros::serializable_event;
+use rai_pal_core::{
+	game::DbGame,
+	game_providers::game_provider::GameProviderId,
+	local_database::mod_database::GameModInfo,
+};
+use rai_pal_proc_macros::{
+	serializable_event,
+	serializable_struct,
+};
 use serde::Serialize;
+
+#[serializable_struct]
+pub struct SelectedGameData {
+	pub game: DbGame,
+	pub mod_infos: Vec<GameModInfo>,
+}
 
 #[serializable_event]
 pub struct RefreshGame(pub GameProviderId, pub String);
@@ -12,7 +25,7 @@ pub struct AppDatabaseChanged();
 pub struct ExecutedProviderCommand;
 
 #[serializable_event]
-pub struct SelectGame(pub GameProviderId, pub String);
+pub struct SelectGame(pub Option<SelectedGameData>);
 
 #[serializable_event]
 pub struct AddModSource(pub String);

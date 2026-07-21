@@ -24,6 +24,7 @@ export const jaJp: Localization = {
 		title: "ゲームを追加",
 		dropField:
 			"ここにゲームの実行ファイルをドラッグ＆ドロップするか、クリックしてファイルを選択してください。",
+		directoryButton: "Scan a folder recursively for games. Can be slow!",
 		note: "注: Rai Palのウィンドウ内のどこにでもゲームの実行ファイルをドロップして、ダイアログを開かずにインストール済みゲームリストに追加できます。",
 	},
 
@@ -116,8 +117,7 @@ export const jaJp: Localization = {
 
 	gameModRow: {
 		editModConfig: "Mod設定",
-		openModConfigFolderTooltip:
-			"このModの設定ファイルがあるフォルダーを開く",
+		openModConfigFolderTooltip: "このModの設定ファイルがあるフォルダーを開く",
 		openModFolder: "Modフォルダーを開く",
 		updateMod: "更新",
 		installMod: "インストール",

@@ -24,6 +24,7 @@ export const esEs: Localization = {
 		title: "Agregar juego",
 		dropField:
 			"Arrastra y suelta un ejecutable de juego aquí, o haz clic para seleccionar un archivo.",
+		directoryButton: "Scan a folder recursively for games. Can be slow!",
 		note: "Nota: puedes soltar archivos ejecutables de juegos en cualquier parte de la ventana de Rai Pal para agregarlos a la lista de juegos instalados sin abrir este diálogo.",
 	},
 

@@ -24,6 +24,7 @@ export const koKr: Localization = {
 		title: "게임 추가",
 		dropField:
 			"게임 실행 파일을 여기로 끌어다 놓거나, 클릭해서 파일을 선택하세요.",
+		directoryButton: "Scan a folder recursively for games. Can be slow!",
 		note: "참고: Rai Pal 창 아무 데나 게임 실행 파일을 끌어다 놓으면 이 창 안 열고도 게임 목록에 바로 추가할 수 있어요.",
 	},
 
@@ -166,8 +167,7 @@ export const koKr: Localization = {
 		language: "언어",
 		autoDetectedLanguage: "자동 감지 - {languageName}",
 		resetRaiPalSettingsButton: "Rai Pal 설정 재설정",
-		resetRaiPalSettingsTooltip:
-			"필터, 확인 창, 이것저것 다 초기화돼요.",
+		resetRaiPalSettingsTooltip: "필터, 확인 창, 이것저것 다 초기화돼요.",
 		openLogsFolderButton: "로그 폴더 열기",
 		clearRaiPalCacheOpenModal: "Rai Pal 캐시 지우기",
 		clearRaiPalCacheTooltip: "Rai Pal이 사용하는 게임 목록 캐시를 지웁니다.",

@@ -9,20 +9,19 @@ import {
 	IconGlassFull,
 	IconRefresh,
 } from "@tabler/icons-react";
-import { useSetAtom } from "jotai";
 import { DebugData } from "@components/debug-data";
 import { TableContainer } from "@components/table/table-container";
 import { CommandDropdown } from "@components/command-dropdown";
-import { selectedGameAtom } from "./games-state";
 import { ProviderCommandButtons } from "@components/providers/provider-command-dropdown";
 import { GameRowInner } from "./game-row";
 import { TableHead } from "@components/table/table-head";
 import { gamesColumns } from "./games-columns";
 import { useLocalization } from "@hooks/use-localization";
+import { useAsyncCommand } from "@hooks/use-async-command";
 import { RemoveGameButton } from "./remove-game-button";
 import { platform } from "@tauri-apps/plugin-os";
 import { SubPage } from "@components/sub-page";
-import { GameModsData } from "@hooks/use-game-mods";
+import { GameModsData } from "@hooks/use-selected-game";
 import { GameMods } from "./game-mods";
 
 type Props = {
@@ -32,9 +31,7 @@ type Props = {
 
 export function GameModal({ game, mods }: Props) {
 	const { t } = useLocalization("gameModal");
-	const setSelectedGame = useSetAtom(selectedGameAtom);
-
-	const close = () => setSelectedGame(null);
+	const [close] = useAsyncCommand(() => commands.setSelectedGame(null, null));
 
 	const { providerId, gameId } = game;
 
