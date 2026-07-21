@@ -300,12 +300,15 @@ impl ModDownload {
 		let url_hash = hasher.finish().to_string();
 
 		let temp_dir = app_paths::temp_dir(&url_hash)?;
+		let part_path = temp_dir.join("download.zip.part");
 		let zip_path = temp_dir.join("download.zip");
 		let extracted_folder = temp_dir.join("extracted");
 		fs::create_dir_all(&extracted_folder)?;
 
 		if !zip_path.is_file() {
-			http::download(&self.url, &zip_path, on_download_status).await?;
+			fs::remove_file(&part_path).ok();
+			http::download(&self.url, &part_path, on_download_status).await?;
+			fs::rename(&part_path, &zip_path)?;
 		}
 
 		if let Err(err) = files::extract(&zip_path, &extracted_folder) {
