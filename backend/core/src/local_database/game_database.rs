@@ -410,8 +410,16 @@ impl GameDatabase for DbMutex {
 	}
 
 	fn remove_stale_games(&self, provider_id: &GameProviderId, max_time: u64) -> Result {
-		self.lock_db()?
-			.prepare_cached("DELETE FROM main.games WHERE provider_id = $1 AND created_at < $2;")?
+		let db = self.lock_db()?;
+		db.prepare_cached(
+			"DELETE FROM main.installed_games WHERE provider_id = $1 AND game_id IN (SELECT game_id FROM main.games WHERE provider_id = $1 AND created_at < $2)",
+		)?
+		.execute(rusqlite::params![provider_id, max_time.cast_signed()])?;
+		db.prepare_cached(
+			"DELETE FROM main.normalized_titles WHERE provider_id = $1 AND game_id IN (SELECT game_id FROM main.games WHERE provider_id = $1 AND created_at < $2)",
+		)?
+		.execute(rusqlite::params![provider_id, max_time.cast_signed()])?;
+		db.prepare_cached("DELETE FROM main.games WHERE provider_id = $1 AND created_at < $2")?
 			.execute(rusqlite::params![provider_id, max_time.cast_signed()])?;
 
 		Ok(())
