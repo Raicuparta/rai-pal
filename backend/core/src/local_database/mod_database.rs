@@ -357,7 +357,12 @@ impl ModDatabase for DbMutex {
 		let mut installed_mod_rows = Vec::new();
 
 		for (provider_id, game_id) in installed_game_ids {
-			let game = self.get_game(&provider_id, &game_id)?;
+			let Ok(game) = self.get_game(&provider_id, &game_id) else {
+				log::warn!(
+					"Game ({provider_id}/{game_id}) not found in database, skipping refresh of installed mods"
+				);
+				continue;
+			};
 			let Ok(exe_path) = game.try_get_exe_path() else {
 				continue;
 			};
