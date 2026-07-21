@@ -33,17 +33,30 @@ fn get_version_from_metadata(file_bytes: &[u8]) -> Option<EngineVersion> {
 		clippy::disallowed_methods,
 		reason = "Errors from PeFile parsing are expected."
 	)]
-	let version = PeFile::from_bytes(&file_bytes)
-		.ok()?
-		.resources()
-		.ok()?
-		.version_info()
-		.ok()?
-		.fixed()?;
+	let pe = PeFile::from_bytes(&file_bytes).ok()?;
+	let resources = pe.resources().ok()?;
+	let version_info = resources.version_info().ok()?;
 
-	let major = u32::from(version.dwFileVersion.Major);
-	let minor = u32::from(version.dwFileVersion.Minor);
-	let patch = u32::from(version.dwFileVersion.Patch);
+	// Check that the version info is actually from Unreal Engine, not from some other
+	// component's metadata. Unreal Engine always sets ProductName to "UnrealGame"
+	// and ProductVersion starts with "++UE" in its executables.
+	let file_info = version_info.file_info();
+	let is_unreal_metadata = file_info.strings.values().any(|strings| {
+		strings
+			.get("ProductName")
+			.map_or(false, |v| v == "UnrealGame")
+			|| strings
+				.get("ProductVersion")
+				.map_or(false, |v| v.starts_with("++UE"))
+	});
+	if !is_unreal_metadata {
+		return None;
+	}
+
+	let fixed_version = file_info.fixed?.dwFileVersion;
+	let major = u32::from(fixed_version.Major);
+	let minor = u32::from(fixed_version.Minor);
+	let patch = u32::from(fixed_version.Patch);
 
 	Some(EngineVersion {
 		numbers: EngineVersionNumbers {
