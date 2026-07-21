@@ -30,10 +30,8 @@ use crate::{
 		unity::UnityBackend,
 	},
 	game_providers::game_provider,
-	http::{
-		self,
-		DownloadStatus,
-	},
+	http::{self},
+	progress_status::ProgressStatus,
 	mods::{
 		mod_config::ModConfig,
 		replacement_token::replace_tokens,
@@ -154,7 +152,7 @@ impl GameMod {
 	pub async fn install(
 		&self,
 		game_option: Option<&DbGame>,
-		on_download_status: impl Fn(DownloadStatus) + Send,
+		on_progress: impl Fn(ProgressStatus) + Send,
 	) -> Result {
 		let install = self
 			.install
@@ -167,7 +165,7 @@ impl GameMod {
 				.as_ref()
 				.ok_or_else(|| Error::ModInfoMissing(self.id.clone(), "download".to_string()))?;
 
-			let source_dir = download.download(on_download_status).await?;
+			let source_dir = download.download(&self.id, &on_progress).await?;
 
 			for extract_action in extract_actions {
 				let source_path = source_dir.join(&extract_action.source);
@@ -283,7 +281,8 @@ impl GameMod {
 impl ModDownload {
 	async fn download(
 		&self,
-		on_download_status: impl Fn(DownloadStatus) + Send,
+		mod_id: &str,
+		on_progress: &(impl Fn(ProgressStatus) + Send),
 	) -> Result<PathBuf> {
 		if let Some(local_path) = self.url.strip_prefix("file://") {
 			let source_path = PathBuf::from(local_path);
@@ -310,18 +309,31 @@ impl ModDownload {
 			let zip_path = temp_dir.join("download.zip");
 
 			if !zip_path.is_file() {
-				fs::remove_file(&part_path).ok();
-				http::download(&self.url, &part_path, &on_download_status).await?;
+				http::download(
+					&self.url,
+					&part_path,
+					&format!("{mod_id}:download"),
+					&format!("Download {}", self.file_name()),
+					on_progress,
+				)
+				.await?;
 				fs::rename(&part_path, &zip_path)?;
+			} else {
+				on_progress(ProgressStatus::new(
+					format!("{mod_id}:download"),
+					format!("Download {}", self.file_name()),
+					1,
+					Some(1),
+				));
 			}
 
 			let extract_result = files::extract(
 				&zip_path,
 				&extracted_folder,
 				&|extracted_bytes, total_uncompressed| {
-					on_download_status(DownloadStatus::new(
-						self.url.clone(),
-						extracted_folder.to_string_lossy().to_string(),
+					on_progress(ProgressStatus::new(
+						format!("{mod_id}:extract"),
+						format!("Extract {}", self.file_name()),
 						extracted_bytes as usize,
 						Some(total_uncompressed),
 					));
@@ -339,5 +351,13 @@ impl ModDownload {
 				}
 			}
 		}
+	}
+
+	fn file_name(&self) -> String {
+		self.url
+			.rsplit('/')
+			.next()
+			.unwrap_or(&self.url)
+			.to_string()
 	}
 }

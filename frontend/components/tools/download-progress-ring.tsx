@@ -11,7 +11,7 @@ export function DownloadProgressRing(props: Props) {
 			sections={[
 				{
 					value: props.percentage,
-					color: props.percentage >= 100 ? "gray" : "green",
+					color: "green",
 				},
 			]}
 		/>

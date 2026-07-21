@@ -2,7 +2,6 @@ use std::sync::RwLock;
 
 use rai_pal_core::{
 	game_providers::game_provider::GameProviderId,
-	http::DownloadStatus,
 	local_database::{
 		app_database::DbMutex,
 		game_database::{
@@ -10,6 +9,7 @@ use rai_pal_core::{
 		},
 		mod_database::ModDatabase,
 	},
+	progress_status::ProgressStatus,
 };
 use tauri::{
 	Manager,
@@ -23,7 +23,7 @@ use crate::result::{
 
 pub struct AppState {
 	pub database: DbMutex,
-	pub download_status_channel: RwLock<Option<Channel<DownloadStatus>>>,
+	pub download_status_channel: RwLock<Option<Channel<ProgressStatus>>>,
 	pub selected_game: RwLock<Option<(GameProviderId, String)>>,
 }
 

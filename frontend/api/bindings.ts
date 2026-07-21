@@ -28,7 +28,7 @@ export const commands = {
 } | null>("get_remote_configs", { providerId, gameId }),
 	getUrlModSources: () => __TAURI_INVOKE<UrlModSources>("get_url_mod_sources"),
 	installMod: (modId: string, providerIdOption: "Epic" | "Gog" | "Itch" | "Manual" | "Steam" | "Xbox" | null, gameIdOption: string | null) => __TAURI_INVOKE<null>("install_mod", { modId, providerIdOption, gameIdOption }),
-	listenToDownloadProgress: (channel: Channel<DownloadStatus>) => __TAURI_INVOKE<null>("listen_to_download_progress", { channel }),
+	listenToDownloadProgress: (channel: Channel<ProgressStatus>) => __TAURI_INVOKE<null>("listen_to_download_progress", { channel }),
 	logIn: () => __TAURI_INVOKE<null>("log_in"),
 	logOut: () => __TAURI_INVOKE<null>("log_out"),
 	openGameFolder: (providerId: GameProviderId, gameId: string) => __TAURI_INVOKE<null>("open_game_folder", { providerId, gameId }),
@@ -109,13 +109,6 @@ export type DbGame = {
 	architecture: Architecture | null,
 	tags: GameTag[],
 	providerCommands: Partial<{ [key in ProviderCommandAction]: ProviderCommand }>,
-};
-
-export type DownloadStatus = {
-	url: string,
-	targetPath: string,
-	downloadedBytes: number | null,
-	totalBytes: number | null,
 };
 
 export type EngineBrand = "Unity" | "Unreal" | "Godot" | "GameMaker";
@@ -245,6 +238,13 @@ export type ModRun = {
 };
 
 export type OperatingSystem = "Windows" | "Linux";
+
+export type ProgressStatus = {
+	id: string,
+	name: string,
+	current: number | null,
+	total: number | null,
+};
 
 export type ProviderCommand = ({ String: string }) & { Path?: never } | ({ Path: [string, string[]] }) & { String?: never };
 

@@ -5,7 +5,6 @@ use std::{
 };
 
 use futures_util::StreamExt;
-use rai_pal_proc_macros::serializable_struct;
 use tokio::{
 	fs::File,
 	io::{
@@ -15,7 +14,7 @@ use tokio::{
 };
 
 use crate::{
-	path_extensions::AsValidStr,
+	progress_status::ProgressStatus,
 	result::Result,
 };
 
@@ -37,38 +36,13 @@ pub static CLIENT_NO_REDIRECT: LazyLock<reqwest::Client> = LazyLock::new(|| {
 		.build()
 		.expect("Failed to set up HTTP client")
 });
-#[serializable_struct]
-pub struct DownloadStatus {
-	url: String,
-	target_path: String,
-	downloaded_bytes: f64,
-	total_bytes: Option<f64>,
-}
-
-impl DownloadStatus {
-	pub fn new(
-		url: String,
-		target_path: String,
-		downloaded_bytes: usize,
-		total_bytes: Option<u64>,
-	) -> Self {
-		Self {
-			url,
-			target_path,
-
-			#[allow(clippy::cast_precision_loss)]
-			downloaded_bytes: downloaded_bytes as f64,
-
-			#[allow(clippy::cast_precision_loss)]
-			total_bytes: total_bytes.map(|total| total as f64),
-		}
-	}
-}
 
 pub async fn download(
 	url: &str,
 	target_path: &Path,
-	status_callback: &(impl Fn(DownloadStatus) + Send),
+	id: &str,
+	name: &str,
+	status_callback: &(impl Fn(ProgressStatus) + Send),
 ) -> Result {
 	let response = CLIENT.get(url).send().await?.error_for_status()?;
 
@@ -77,8 +51,8 @@ pub async fn download(
 
 	let mut downloaded_bytes: usize = 0;
 
-	let url_str = url.to_string();
-	let target_path_str = target_path.try_to_str()?;
+	let id_str = id.to_string();
+	let name_str = name.to_string();
 	let total_bytes = response.content_length();
 
 	let mut stream = response.bytes_stream();
@@ -90,9 +64,9 @@ pub async fn download(
 
 		downloaded_bytes += chunk.len();
 
-		status_callback(DownloadStatus::new(
-			url_str.clone(),
-			target_path_str.to_string(),
+		status_callback(ProgressStatus::new(
+			id_str.clone(),
+			name_str.clone(),
 			downloaded_bytes,
 			total_bytes,
 		));
@@ -100,9 +74,9 @@ pub async fn download(
 
 	file.flush().await?;
 
-	status_callback(DownloadStatus::new(
-		url_str,
-		target_path_str.to_string(),
+	status_callback(ProgressStatus::new(
+		id_str,
+		name_str,
 		downloaded_bytes,
 		Some(downloaded_bytes as u64),
 	));

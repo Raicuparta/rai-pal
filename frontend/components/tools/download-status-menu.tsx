@@ -1,4 +1,4 @@
-import { commands, DownloadStatus } from "@api/bindings";
+import { commands, ProgressStatus } from "@api/bindings";
 import { Channel } from "@tauri-apps/api/core";
 import { Button, Menu } from "@mantine/core";
 import { IconClearAll } from "@tabler/icons-react";
@@ -6,7 +6,15 @@ import { useEffect, useState } from "react";
 import { useLocalization } from "@hooks/use-localization";
 import { DownloadProgressRing } from "./download-progress-ring";
 
-type StatusMap = Map<string, DownloadStatus>;
+type StatusMap = Map<string, ProgressStatus>;
+
+const stepProgress = (status: ProgressStatus) => {
+	if (status.total === null || status.current === null) return 0;
+	if (status.total === 0) return 0;
+	if (status.current >= status.total) return 100;
+	const raw = (status.current / status.total) * 100;
+	return Number.isFinite(raw) ? raw : 0;
+};
 
 export function DownloadStatusMenu() {
 	const { t } = useLocalization("downloadStatusMenu");
@@ -14,12 +22,9 @@ export function DownloadStatusMenu() {
 	const [progresses, setProgresses] = useState<StatusMap>(new Map());
 	useEffect(() => {
 		commands.listenToDownloadProgress(
-			new Channel<DownloadStatus>((status) => {
+			new Channel<ProgressStatus>((status) => {
 				setProgresses((previous) => {
-					return new Map(previous).set(
-						`${status.url}:${status.targetPath}`,
-						status,
-					);
+					return new Map(previous).set(status.id, status);
 				});
 			}),
 		);
@@ -29,18 +34,9 @@ export function DownloadStatusMenu() {
 		return null;
 	}
 
+	const count = progresses.size;
 	const totalPercentage = Array.from(progresses.values()).reduce<number>(
-		(acc, status) => {
-			// Skip if total size is unknown or download finished.
-			if (
-				status.totalBytes !== null &&
-				status.downloadedBytes !== null &&
-				status.downloadedBytes < status.totalBytes
-			) {
-				acc += (status.downloadedBytes / status.totalBytes) * 100;
-			}
-			return acc;
-		},
+		(acc, status) => acc + stepProgress(status) / count,
 		0,
 	);
 
@@ -68,11 +64,7 @@ export function DownloadStatusMenu() {
 						setProgresses((previous) => {
 							const newMap: StatusMap = new Map();
 							for (const [id, status] of previous.entries()) {
-								if (
-									status.totalBytes &&
-									status.downloadedBytes !== null &&
-									status.downloadedBytes < status.totalBytes
-								) {
+								if (stepProgress(status) < 100) {
 									newMap.set(id, status);
 								}
 							}
@@ -84,24 +76,13 @@ export function DownloadStatusMenu() {
 					{t("clear")}
 				</Menu.Item>
 				{[...progresses.entries()].map(([id, status]) => {
+					const progress = stepProgress(status);
 					return (
 						<Menu.Item
 							key={id}
-							disabled={status.totalBytes === null}
-							leftSection={
-								<DownloadProgressRing
-									percentage={
-										status.totalBytes && status.downloadedBytes !== null
-											? (status.downloadedBytes / status.totalBytes) * 100
-											: 0
-									}
-								/>
-							}
+							leftSection={<DownloadProgressRing percentage={progress} />}
 						>
-							{status.url.split("/").slice(-1)[0]}:{" "}
-							{status.totalBytes && status.downloadedBytes
-								? `${((status.downloadedBytes / status.totalBytes) * 100).toFixed(2)}%`
-								: "Unknown size"}
+							{status.name}: {progress.toFixed(2)}%
 						</Menu.Item>
 					);
 				})}

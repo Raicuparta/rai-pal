@@ -4,7 +4,10 @@
 #![allow(clippy::unused_async)]
 
 use std::{
-	collections::BTreeMap,
+	collections::{
+		BTreeMap,
+		HashSet,
+	},
 	path::PathBuf,
 };
 
@@ -38,9 +41,12 @@ use rai_pal_core::{
 		},
 	},
 	games_query::GamesQuery,
-	http::DownloadStatus,
+	progress_status::ProgressStatus,
 	local_database::{
-		app_database::AppDatabase,
+		app_database::{
+			AppDatabase,
+			DbMutex,
+		},
 		game_database::{
 			GameDatabase,
 			GameIdsResponse,
@@ -202,6 +208,76 @@ async fn open_game_data_folder(
 	Ok(())
 }
 
+fn collect_deps_to_install(
+	mod_id: &str,
+	database: &DbMutex,
+	relevant_mods: &[GameModInfo],
+	visited: &mut HashSet<String>,
+	result: &mut Vec<GameMod>,
+) {
+	if !visited.insert(mod_id.to_string()) {
+		return;
+	}
+
+	if let Ok(game_mod) = database.get_mod(mod_id) {
+		if let Some(deps) = &game_mod.dependencies {
+			for dep in deps {
+				if let Some(info) = relevant_mods
+					.iter()
+					.find(|m| m.compatible && m.mod_id == dep.mod_id)
+				{
+					let outdated = info.installed_version.is_none() || info.is_outdated;
+					if outdated {
+						if let Ok(dep_mod) = database.get_mod(&dep.mod_id) {
+							if dep_mod.install.is_some() {
+								collect_deps_to_install(
+									&dep.mod_id,
+									database,
+									relevant_mods,
+									visited,
+									result,
+								);
+								result.push(dep_mod);
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+fn build_steps(
+	mods: &[GameMod],
+	main_id: &str,
+) -> (Vec<(String, String)>, Option<String>, Option<String>) {
+	let mut steps = Vec::new();
+	let mut main_dl = None;
+	let mut main_ex = None;
+	for m in mods {
+		if m.download.is_none() {
+			continue;
+		}
+		let dl_key = format!("{}:download", m.id);
+		steps.push((dl_key.clone(), format!("Download {}", m.id)));
+		if m.id == main_id {
+			main_dl = Some(dl_key);
+		}
+		if m.install
+			.as_ref()
+			.and_then(|i| i.extract.as_ref())
+			.is_some()
+		{
+			let ex_key = format!("{}:extract", m.id);
+			steps.push((ex_key.clone(), format!("Extract {}", m.id)));
+			if m.id == main_id {
+				main_ex = Some(ex_key);
+			}
+		}
+	}
+	(steps, main_dl, main_ex)
+}
+
 #[tauri::command]
 #[specta::specta]
 async fn install_mod(
@@ -222,7 +298,65 @@ async fn install_mod(
 
 	let download_status_channel = state.download_status_channel.read_state()?.clone();
 
-	install_mod_dependencies(&handle, &game_mod, game_option.as_ref()).await?;
+	let relevant_mods: Vec<GameModInfo> = if let Some(game) = game_option.as_ref() {
+		state
+			.database
+			.get_game_mods(&game.provider_id, &game.game_id)?
+	} else {
+		state
+			.database
+			.get_mod_map()?
+			.values()
+			.map(|other_mod| GameModInfo {
+				compatible: true,
+				has_installed_dependants: false,
+				installed_hash: None,
+				installed_version: None,
+				is_outdated: false,
+				mod_id: other_mod.id.clone(),
+				mod_scope: other_mod.scope.clone().unwrap_or_default(),
+			})
+			.collect()
+	};
+
+	let mut deps_to_install = Vec::new();
+	collect_deps_to_install(
+		mod_id,
+		&state.database,
+		&relevant_mods,
+		&mut HashSet::new(),
+		&mut deps_to_install,
+	);
+
+	let all_to_install: Vec<&GameMod> = deps_to_install
+		.iter()
+		.chain(std::iter::once(&game_mod))
+		.collect();
+	let all_owned: Vec<GameMod> = all_to_install.into_iter().cloned().collect();
+
+	let (steps, main_dl, _main_ex) = build_steps(&all_owned, mod_id);
+
+	for (step_id, step_name) in &steps {
+		download_status_channel
+			.send(ProgressStatus::new(
+				step_id.clone(),
+				step_name.clone(),
+				0,
+				Some(0),
+			))
+			.ok_or_log("Failed to send download status update");
+	}
+
+	let channel = download_status_channel.clone();
+	let forward = move |status: ProgressStatus| {
+		channel
+			.send(status)
+			.ok_or_log("Failed to send download status update");
+	};
+
+	for m in &deps_to_install {
+		m.install(game_option.as_ref(), &forward).await?;
+	}
 
 	if let Some(game) = game_option.as_ref()
 		&& let Some(installed_mod) = state.database.get_installed_mod(
@@ -233,13 +367,9 @@ async fn install_mod(
 		installed_mod.uninstall()?;
 	}
 
-	game_mod
-		.install(game_option.as_ref(), |status| {
-			download_status_channel
-				.send(status)
-				.ok_or_log("Failed to send download status update");
-		})
-		.await?;
+	if main_dl.is_some() {
+		game_mod.install(game_option.as_ref(), &forward).await?;
+	}
 
 	state.database.refresh_installed_mods()?;
 
@@ -357,71 +487,6 @@ async fn uninstall_all_mods(
 	state.database.refresh_installed_mods()?;
 
 	handle.emit_safe(events::RefreshGame(provider_id, game_id));
-
-	Ok(())
-}
-
-async fn install_mod_dependencies(
-	handle: &AppHandle,
-	game_mod: &GameMod,
-	game_option: Option<&DbGame>,
-) -> Result {
-	let state = handle.app_state();
-
-	let relevant_mods: Vec<GameModInfo> = if let Some(game) = game_option {
-		state
-			.database
-			.get_game_mods(&game.provider_id, &game.game_id)?
-	} else {
-		state
-			.database
-			.get_mod_map()?
-			.values()
-			.map(|other_mod| GameModInfo {
-				compatible: true,
-				has_installed_dependants: false,
-				installed_hash: None,
-				installed_version: None,
-				is_outdated: false,
-				mod_id: other_mod.id.clone(),
-				mod_scope: other_mod.scope.clone().unwrap_or_default(),
-			})
-			.collect()
-	};
-
-	let download_status_channel = state.download_status_channel.read_state()?.clone();
-
-	if let Some(dependencies) = game_mod.dependencies.as_ref() {
-		for dependency in dependencies {
-			if let Some(relevant_dependency_mod_info) = relevant_mods.iter().find(|relevant_mod| {
-				relevant_mod.compatible && relevant_mod.mod_id == dependency.mod_id
-			}) {
-				let dependency_mod = state
-					.database
-					.get_mod(&relevant_dependency_mod_info.mod_id)?;
-
-				Box::pin(install_mod_dependencies(
-					handle,
-					&dependency_mod,
-					game_option,
-				))
-				.await?;
-
-				let outdated = relevant_dependency_mod_info.installed_version.is_none()
-					|| relevant_dependency_mod_info.is_outdated;
-
-				if outdated && dependency_mod.install.is_some() {
-					dependency_mod
-						.install(game_option, |status| {
-							download_status_channel
-								.send(status)
-								.ok_or_log("Failed to send download status update");
-						})
-						.await?;
-				}
-			}
-		}
-	}
 
 	Ok(())
 }
@@ -718,7 +783,7 @@ async fn set_up_global_wine_overrides() -> Result {
 #[specta::specta]
 async fn listen_to_download_progress(
 	handle: AppHandle,
-	channel: Channel<DownloadStatus>,
+	channel: Channel<ProgressStatus>,
 ) -> Result {
 	handle
 		.app_state()
