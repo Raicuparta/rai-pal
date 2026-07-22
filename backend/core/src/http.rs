@@ -41,7 +41,6 @@ pub async fn download(
 	url: &str,
 	target_path: &Path,
 	id: &str,
-	name: &str,
 	status_callback: &(impl Fn(ProgressStatus) + Send),
 ) -> Result {
 	let response = CLIENT.get(url).send().await?.error_for_status()?;
@@ -52,7 +51,6 @@ pub async fn download(
 	let mut downloaded_bytes: usize = 0;
 
 	let id_str = id.to_string();
-	let name_str = name.to_string();
 	let total_bytes = response.content_length();
 
 	let mut stream = response.bytes_stream();
@@ -64,22 +62,21 @@ pub async fn download(
 
 		downloaded_bytes += chunk.len();
 
-		status_callback(ProgressStatus::new(
-			id_str.clone(),
-			name_str.clone(),
-			downloaded_bytes,
-			total_bytes,
-		));
+		let percentage = total_bytes.map_or(0.0, |total| {
+			if total == 0 {
+				0.0
+			} else {
+				downloaded_bytes as f64 / total as f64
+			}
+		});
+
+		status_callback(ProgressStatus::InProgress {
+			id: id_str.clone(),
+			progress: percentage,
+		});
 	}
 
 	file.flush().await?;
-
-	status_callback(ProgressStatus::new(
-		id_str,
-		name_str,
-		downloaded_bytes,
-		Some(downloaded_bytes as u64),
-	));
 
 	Ok(())
 }

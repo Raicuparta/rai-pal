@@ -239,12 +239,7 @@ export type ModRun = {
 
 export type OperatingSystem = "Windows" | "Linux";
 
-export type ProgressStatus = {
-	id: string,
-	name: string,
-	current: number | null,
-	total: number | null,
-};
+export type ProgressStatus = { phase: "pending"; id: string; name: string } | { phase: "inProgress"; id: string; progress: number | null } | { phase: "finished"; id: string } | { phase: "failed"; id: string; error: string };
 
 export type ProviderCommand = ({ String: string }) & { Path?: never } | ({ Path: [string, string[]] }) & { String?: never };
 

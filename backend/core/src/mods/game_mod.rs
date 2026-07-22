@@ -30,14 +30,16 @@ use crate::{
 		unity::UnityBackend,
 	},
 	game_providers::game_provider,
-	http::{self},
-	progress_status::ProgressStatus,
+	http::{
+		self,
+	},
 	mods::{
 		mod_config::ModConfig,
 		replacement_token::replace_tokens,
 	},
 	operating_system::OperatingSystem,
 	path_extensions::PathExt,
+	progress_status::ProgressStatus,
 	result::{
 		Error,
 		Result,
@@ -313,7 +315,6 @@ impl ModDownload {
 					&self.url,
 					&part_path,
 					&format!("{mod_id}:download"),
-					&format!("Download {}", self.file_name()),
 					on_progress,
 				)
 				.await?;
@@ -324,12 +325,15 @@ impl ModDownload {
 				&zip_path,
 				&extracted_folder,
 				&|extracted_bytes, total_uncompressed| {
-					on_progress(ProgressStatus::new(
-						format!("{mod_id}:extract"),
-						format!("Extract {}", self.file_name()),
-						extracted_bytes as usize,
-						Some(total_uncompressed),
-					));
+					let percentage = if total_uncompressed > 0 {
+						extracted_bytes as f64 / total_uncompressed as f64
+					} else {
+						0.0
+					};
+					on_progress(ProgressStatus::InProgress {
+						id: format!("{mod_id}:extract"),
+						progress: percentage,
+					});
 				},
 			);
 
@@ -344,13 +348,5 @@ impl ModDownload {
 				}
 			}
 		}
-	}
-
-	fn file_name(&self) -> String {
-		self.url
-			.rsplit('/')
-			.next()
-			.unwrap_or(&self.url)
-			.to_string()
 	}
 }

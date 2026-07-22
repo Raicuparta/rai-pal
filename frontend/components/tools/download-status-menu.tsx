@@ -1,44 +1,77 @@
 import { commands, ProgressStatus } from "@api/bindings";
 import { Channel } from "@tauri-apps/api/core";
-import { Button, Menu } from "@mantine/core";
+import { Button, DefaultMantineColor, Menu, RingProgress } from "@mantine/core";
 import { IconClearAll } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 import { useLocalization } from "@hooks/use-localization";
-import { DownloadProgressRing } from "./download-progress-ring";
 
-type StatusMap = Map<string, ProgressStatus>;
+export type ProgressItem = {
+	name: string;
+	progress: number;
+	phase: ProgressStatus["phase"];
+	error?: string;
+};
 
-const stepProgress = (status: ProgressStatus) => {
-	if (status.total === null || status.current === null) return 0;
-	if (status.total === 0) return 0;
-	if (status.current >= status.total) return 100;
-	const raw = (status.current / status.total) * 100;
-	return Number.isFinite(raw) ? raw : 0;
+const colorMap: Record<ProgressStatus["phase"], DefaultMantineColor> = {
+	failed: "red",
+	inProgress: "blue",
+	finished: "green",
+	pending: "gray",
 };
 
 export function DownloadStatusMenu() {
 	const { t } = useLocalization("downloadStatusMenu");
 
-	const [progresses, setProgresses] = useState<StatusMap>(new Map());
+	const [items, setItems] = useState<Map<string, ProgressItem>>(new Map());
+
 	useEffect(() => {
 		commands.listenToDownloadProgress(
 			new Channel<ProgressStatus>((status) => {
-				setProgresses((previous) => {
-					return new Map(previous).set(status.id, status);
+				console.log(`#### status ${status.phase}`);
+				setItems((prev) => {
+					const next = new Map(prev);
+					switch (status.phase) {
+						case "pending":
+							next.set(status.id, {
+								name: status.name,
+								progress: 0,
+								phase: "pending",
+							});
+							break;
+						case "inProgress":
+							next.set(status.id, {
+								name: prev.get(status.id)?.name ?? status.id,
+								progress: (status.progress ?? 0) * 100,
+								phase: "inProgress",
+							});
+							break;
+						case "finished":
+							next.set(status.id, {
+								name: prev.get(status.id)?.name ?? status.id,
+								progress: 100,
+								phase: "finished",
+							});
+							break;
+						case "failed":
+							next.set(status.id, {
+								name: prev.get(status.id)?.name ?? status.id,
+								progress: prev.get(status.id)?.progress ?? 0,
+								error: status.error,
+								phase: "failed",
+							});
+							break;
+					}
+					return next;
 				});
 			}),
 		);
 	}, []);
 
-	if (progresses.size === 0) {
+	if (items.size === 0) {
 		return null;
 	}
 
-	const count = progresses.size;
-	const totalPercentage = Array.from(progresses.values()).reduce<number>(
-		(acc, status) => acc + stepProgress(status) / count,
-		0,
-	);
+	const entries = [...items.entries()];
 
 	return (
 		<Menu
@@ -52,7 +85,17 @@ export function DownloadStatusMenu() {
 					color="dark"
 					fz="md"
 				>
-					<DownloadProgressRing percentage={totalPercentage} />
+					<RingProgress
+						size={40}
+						sections={entries
+							.filter(([, item]) => item.phase !== "finished")
+							.map(([, item]) => ({
+								color: colorMap[item.phase],
+								value:
+									(item.phase === "inProgress" ? item.progress : 100) /
+									entries.length,
+							}))}
+					/>
 				</Button>
 			</Menu.Target>
 			<Menu.Dropdown
@@ -61,28 +104,38 @@ export function DownloadStatusMenu() {
 			>
 				<Menu.Item
 					onClick={() => {
-						setProgresses((previous) => {
-							const newMap: StatusMap = new Map();
-							for (const [id, status] of previous.entries()) {
-								if (stepProgress(status) < 100) {
-									newMap.set(id, status);
+						setItems((prev) => {
+							const next = new Map(prev);
+							for (const [id, item] of next) {
+								if (item.phase === "failed" || item.phase === "finished") {
+									next.delete(id);
 								}
 							}
-							return newMap;
+							return next;
 						});
 					}}
 					leftSection={<IconClearAll />}
 				>
 					{t("clear")}
 				</Menu.Item>
-				{[...progresses.entries()].map(([id, status]) => {
-					const progress = stepProgress(status);
+				{entries.map(([id, item]) => {
+					const progress = item.progress;
 					return (
 						<Menu.Item
 							key={id}
-							leftSection={<DownloadProgressRing percentage={progress} />}
+							leftSection={
+								<RingProgress
+									size={40}
+									sections={[
+										{
+											value: item.phase === "inProgress" ? item.progress : 100,
+											color: colorMap[item.phase],
+										},
+									]}
+								/>
+							}
 						>
-							{status.name}: {progress.toFixed(2)}%
+							{item.name}: {progress.toFixed(2)}%
 						</Menu.Item>
 					);
 				})}

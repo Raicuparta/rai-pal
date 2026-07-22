@@ -344,15 +344,13 @@ async fn install_mod(
 	};
 
 	for (step_id, step_name) in &steps {
-		forward(ProgressStatus::new(
-			step_id.clone(),
-			step_name.clone(),
-			0,
-			Some(0),
-		));
+		forward(ProgressStatus::Pending {
+			id: step_id.clone(),
+			name: step_name.clone(),
+		});
 	}
 
-	let core_result: std::result::Result<(), rai_pal_core::result::Error> = async {
+	let result: std::result::Result<(), rai_pal_core::result::Error> = async {
 		for m in &deps_to_install {
 			m.install(game_option.as_ref(), &forward).await?;
 		}
@@ -376,20 +374,26 @@ async fn install_mod(
 			handle.emit_safe(events::RefreshGame(game.provider_id, game.game_id.clone()));
 		}
 
+		for (step_id, _) in &steps {
+			forward(ProgressStatus::Finished {
+				id: step_id.clone(),
+			});
+		}
+
 		Ok(())
 	}
 	.await;
 
-	for (step_id, step_name) in &steps {
-		forward(ProgressStatus::new(
-			step_id.clone(),
-			step_name.clone(),
-			1,
-			Some(1),
-		));
+	if let Err(error) = &result {
+		for (step_id, _) in &steps {
+			forward(ProgressStatus::Failed {
+				id: step_id.clone(),
+				error: error.to_string(),
+			});
+		}
 	}
 
-	core_result?;
+	result?;
 
 	Ok(())
 }
