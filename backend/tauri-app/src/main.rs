@@ -601,17 +601,6 @@ async fn add_game_directory(handle: AppHandle, path: PathBuf) -> Result {
 
 	handle.emit_safe(events::AppDatabaseChanged());
 
-	if let Some(game) = games.first() {
-		let mod_infos = state
-			.database
-			.get_game_mods(&GameProviderId::Manual, &game.game_id)?;
-		let data = SelectedGameData {
-			game: game.clone(),
-			mod_infos,
-		};
-		handle.emit_safe(events::SelectGame(Some(data)));
-	}
-
 	Ok(())
 }
 

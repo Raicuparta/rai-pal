@@ -65,7 +65,9 @@ export function AddGame() {
 		});
 		if (!path) return;
 
-		await executeAddGameDirectory(path).then(() => setIsOpen(false));
+		await executeAddGameDirectory(path).then(() => {
+			loadDirectories();
+		});
 	};
 
 	const handleRemoveDirectory = async (path: string) => {
