@@ -34,8 +34,8 @@ pub struct Manual {}
 #[derive(serde::Serialize, serde::Deserialize)]
 struct GamesConfig {
 	pub paths: Vec<PathBuf>,
-	#[serde(default)]
 	pub directories: Vec<PathBuf>,
+	pub ignored_paths: Vec<PathBuf>,
 }
 
 impl ProviderActions for Manual {
@@ -71,6 +71,10 @@ impl ProviderActions for Manual {
 			match find_executables_in_directory(dir) {
 				Ok(executables) => {
 					for exe_path in executables {
+						if config.ignored_paths.contains(&exe_path) {
+							continue;
+						}
+
 						match get_game_from_path(&exe_path) {
 							Ok(game) => {
 								db.insert_game(&game);
@@ -90,6 +94,8 @@ impl ProviderActions for Manual {
 				}
 			}
 		}
+
+		clean_up_stale_ignored_paths(&config)?;
 
 		Ok(())
 	}
@@ -111,6 +117,7 @@ fn read_games_config(games_config_path: &Path) -> GamesConfig {
 			GamesConfig {
 				paths: Vec::default(),
 				directories: Vec::default(),
+				ignored_paths: Vec::default(),
 			}
 		}
 	}
@@ -212,7 +219,16 @@ pub fn remove_game(game: &DbGame) -> Result {
 		.as_ref()
 		.ok_or_else(|| Error::GameNotInstalled(game.display_title.clone()))?;
 
-	remove_path(path)?;
+	let config_path = games_config_path()?;
+	let mut games_config = read_games_config(&config_path);
+
+	if games_config.paths.contains(path) {
+		games_config.paths.retain(|p| p != *path);
+	} else if !games_config.ignored_paths.contains(path) {
+		games_config.ignored_paths.push((*path).clone());
+	}
+
+	fs::write(config_path, serde_json::to_string_pretty(&games_config)?)?;
 
 	Ok(())
 }
@@ -221,6 +237,32 @@ fn remove_path(path: &Path) -> Result {
 	let config_path = games_config_path()?;
 	let mut games_config = read_games_config(&config_path);
 	games_config.paths.retain(|p| p != path);
+
+	fs::write(config_path, serde_json::to_string_pretty(&games_config)?)?;
+
+	Ok(())
+}
+
+fn clean_up_stale_ignored_paths(config: &GamesConfig) -> Result {
+	if config.ignored_paths.is_empty() {
+		return Ok(());
+	}
+
+	let mut changed = false;
+	for ignored_path in &config.ignored_paths {
+		if !ignored_path.exists() {
+			changed = true;
+			break;
+		}
+	}
+
+	if !changed {
+		return Ok(());
+	}
+
+	let config_path = games_config_path()?;
+	let mut games_config = read_games_config(&config_path);
+	games_config.ignored_paths.retain(|p| p.exists());
 
 	fs::write(config_path, serde_json::to_string_pretty(&games_config)?)?;
 
