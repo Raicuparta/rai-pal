@@ -13,17 +13,35 @@ import {
 	IconFolderFilled,
 	IconPlaylistAdd,
 	IconTrash,
+	IconSearch,
+	IconCircleCheck,
 } from "@tabler/icons-react";
-import { useEffect, useState } from "react";
-import { commands } from "@api/bindings";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Channel } from "@tauri-apps/api/core";
+import {
+	commands,
+	type DirectoryScanResult,
+	type ScanProgress,
+} from "@api/bindings";
 import { open as openDialog } from "@tauri-apps/plugin-dialog";
 import { useAsyncCommand } from "@hooks/use-async-command";
 import { useLocalization } from "@hooks/use-localization";
+
+type ScanPhase = "idle" | "scanning" | "confirming";
 
 export function AddGame() {
 	const { t } = useLocalization("manualGames");
 	const [isOpen, setIsOpen] = useState(false);
 	const [directories, setDirectories] = useState<string[]>([]);
+
+	const [scanPhase, setScanPhase] = useState<ScanPhase>("idle");
+	const [scanProgress, setScanProgress] = useState<ScanProgress | null>(null);
+	const [scanResult, setScanResult] = useState<DirectoryScanResult | null>(
+		null,
+	);
+	const [selectedPath, setSelectedPath] = useState<string | null>(null);
+	const cancelledRef = useRef(false);
+	const mountedRef = useRef(true);
 
 	const [executeAddGame] = useAsyncCommand(commands.addGame);
 	const [executeAddGameDirectory] = useAsyncCommand(commands.addGameDirectory);
@@ -31,11 +49,27 @@ export function AddGame() {
 	const loadDirectories = () =>
 		commands.getManualGameDirectories().then(setDirectories);
 
+	const resetScanState = useCallback(() => {
+		setScanPhase("idle");
+		setScanProgress(null);
+		setScanResult(null);
+		setSelectedPath(null);
+		cancelledRef.current = false;
+	}, []);
+
+	useEffect(() => {
+		mountedRef.current = true;
+		return () => {
+			mountedRef.current = false;
+		};
+	}, []);
+
 	useEffect(() => {
 		if (isOpen) {
 			loadDirectories();
+			resetScanState();
 		}
-	}, [isOpen]);
+	}, [isOpen, resetScanState]);
 
 	const handleFileClick = async () => {
 		const path = await openDialog({
@@ -65,9 +99,43 @@ export function AddGame() {
 		});
 		if (!path) return;
 
-		await executeAddGameDirectory(path).then(() => {
-			loadDirectories();
+		setSelectedPath(path);
+		cancelledRef.current = false;
+
+		const channel = new Channel<ScanProgress>((progress) => {
+			setScanProgress(progress);
 		});
+
+		setScanPhase("scanning");
+
+		try {
+			const result = await commands.scanGameDirectory(path, channel);
+			if (cancelledRef.current || !mountedRef.current) return;
+			setScanResult(result);
+			setScanPhase("confirming");
+		} catch (error) {
+			if (cancelledRef.current || !mountedRef.current) return;
+			setScanPhase("idle");
+		}
+	};
+
+	const handleCancel = () => {
+		cancelledRef.current = true;
+		resetScanState();
+	};
+
+	const handleConfirm = async () => {
+		if (!selectedPath) return;
+
+		try {
+			await executeAddGameDirectory(selectedPath);
+			if (!mountedRef.current) return;
+			loadDirectories();
+			setIsOpen(false);
+		} catch {
+			if (!mountedRef.current) return;
+			resetScanState();
+		}
 	};
 
 	const handleRemoveDirectory = async (path: string) => {
@@ -88,11 +156,14 @@ export function AddGame() {
 				opened={isOpen}
 				centered
 				size="lg"
-				onClose={() => setIsOpen(false)}
+				onClose={() => {
+					handleCancel();
+					setIsOpen(false);
+				}}
 				title={t("title")}
 			>
 				<Stack>
-					{directories.length > 0 && (
+					{directories.length > 0 && scanPhase === "idle" && (
 						<Stack>
 							<Text>{t("savedDirectories")}</Text>
 							{directories.map((dir) => (
@@ -109,23 +180,89 @@ export function AddGame() {
 							))}
 						</Stack>
 					)}
-					<Button
-						size="lg"
-						leftSection={<IconAppWindowFilled />}
-						onClick={handleFileClick}
-						rightSection={<IconDots />}
-					>
-						{t("selectGameExecutable")}
-					</Button>
-					<Button
-						size="lg"
-						leftSection={<IconFolderFilled />}
-						onClick={handleDirectoryClick}
-						rightSection={<IconDots />}
-					>
-						{t("selectGamesDirectory")}
-					</Button>
-					<Text>{t("fileDropNote")}</Text>
+
+					{scanPhase === "idle" && (
+						<>
+							<Button
+								size="lg"
+								leftSection={<IconAppWindowFilled />}
+								onClick={handleFileClick}
+								rightSection={<IconDots />}
+							>
+								{t("selectGameExecutable")}
+							</Button>
+							<Button
+								size="lg"
+								leftSection={<IconFolderFilled />}
+								onClick={handleDirectoryClick}
+								rightSection={<IconDots />}
+							>
+								{t("selectGamesDirectory")}
+							</Button>
+							<Text>{t("fileDropNote")}</Text>
+						</>
+					)}
+
+					{scanPhase === "scanning" && (
+						<Stack
+							align="center"
+							gap="md"
+						>
+							<IconSearch size={48} />
+							<Text>{t("scanning", { path: selectedPath ?? "" })}</Text>
+							{scanProgress && (
+								<Text>
+									{t("scanProgress", {
+										directories: String(scanProgress.scannedDirs),
+										executables: String(scanProgress.executablesFound),
+									})}
+								</Text>
+							)}
+							{scanProgress && (
+								<Text
+									size="sm"
+									c="dimmed"
+								>
+									{t("currentPath", {
+										path: scanProgress.currentPath,
+									})}
+								</Text>
+							)}
+							<Button
+								variant="outline"
+								onClick={handleCancel}
+							>
+								{t("cancel")}
+							</Button>
+						</Stack>
+					)}
+
+					{scanPhase === "confirming" && scanResult && (
+						<Stack
+							align="center"
+							gap="md"
+						>
+							<IconCircleCheck
+								size={48}
+								color="green"
+							/>
+							<Text>
+								{t("scanComplete", {
+									gamesCount: String(scanResult.games.length),
+									duration: scanResult.durationSecs.toFixed(1),
+								})}
+							</Text>
+							<Group>
+								<Button onClick={handleConfirm}>{t("confirmAddFolder")}</Button>
+								<Button
+									variant="outline"
+									onClick={handleCancel}
+								>
+									{t("cancel")}
+								</Button>
+							</Group>
+						</Stack>
+					)}
 				</Stack>
 			</Modal>
 		</>

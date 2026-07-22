@@ -53,6 +53,26 @@ export const enUs = {
 		// Note that explains you can drop files and folders onto Rai Pal's window.
 		fileDropNote:
 			"You can also just drop game executable files or entire folders anywhere on Rai Pal's window to add them to the library, even without opening this dialog.",
+
+		// Shown while scanning a directory for game executables.
+		scanning: "Scanning {path}...",
+
+		// Shows the scan progress. {directories} and {executables} are numbers.
+		scanProgress:
+			"Scanned {directories} directories, found {executables} executables",
+
+		// Shows the current path being scanned.
+		currentPath: "Current: {path}",
+
+		// Shown after scan completes, asking the user to confirm. {gamesCount} is a number, {duration} is in seconds.
+		scanComplete:
+			"Found {gamesCount} executables in {duration} seconds. Add this folder to Rai Pal?",
+
+		// Button to confirm adding a scanned folder.
+		confirmAddFolder: "Add folder",
+
+		// Button to cancel adding the folder (during or after scan).
+		cancel: "Cancel",
 	},
 
 	refresh: {

@@ -10,17 +10,14 @@ let nextGameHookId = 0;
 export function useGame(providerId?: GameProviderId, gameId?: string) {
 	const hookId = useMemo(() => nextGameHookId++, []);
 
-	const getGame = useCallback(
-		async () => {
-			if (!providerId || !gameId) return null;
-			try {
-				return await commands.getGame(providerId, gameId);
-			} catch {
-				return null;
-			}
-		},
-		[providerId, gameId],
-	);
+	const getGame = useCallback(async () => {
+		if (!providerId || !gameId) return null;
+		try {
+			return await commands.getGame(providerId, gameId);
+		} catch {
+			return null;
+		}
+	}, [providerId, gameId]);
 
 	const [game, updateGame] = useCommandData(getGame, null);
 

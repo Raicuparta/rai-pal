@@ -4,6 +4,7 @@ use std::{
 		Path,
 		PathBuf,
 	},
+	time::Instant,
 };
 
 use log::error;
@@ -28,6 +29,8 @@ use crate::{
 	},
 };
 
+const VALID_EXTENSIONS: [&str; 3] = ["exe", "x86_64", "x86"];
+
 #[serializable_struct]
 pub struct Manual {}
 
@@ -36,6 +39,19 @@ struct GamesConfig {
 	pub paths: Vec<PathBuf>,
 	pub directories: Vec<PathBuf>,
 	pub ignored_paths: Vec<PathBuf>,
+}
+
+#[serializable_struct]
+pub struct ScanProgress {
+	pub scanned_dirs: u32,
+	pub executables_found: u32,
+	pub current_path: String,
+}
+
+#[serializable_struct]
+pub struct DirectoryScanResult {
+	pub games: Vec<DbGame>,
+	pub duration_secs: f64,
 }
 
 impl ProviderActions for Manual {
@@ -178,30 +194,85 @@ pub fn add_directory(path: &Path) -> Result<Vec<DbGame>> {
 }
 
 fn find_executables_in_directory(dir: &Path) -> Result<Vec<PathBuf>> {
-	const VALID_EXTENSIONS: [&str; 3] = ["exe", "x86_64", "x86"];
 	let mut executables = Vec::new();
+	let mut scanned_dirs = 0u32;
 
-	walk_directory(dir, &mut executables, &VALID_EXTENSIONS)?;
+	walk_directory(dir, &mut executables, &VALID_EXTENSIONS, None, &mut scanned_dirs)?;
 
 	Ok(executables)
 }
 
-fn walk_directory(dir: &Path, executables: &mut Vec<PathBuf>, valid_extensions: &[&str]) -> Result {
+fn walk_directory(
+	dir: &Path,
+	executables: &mut Vec<PathBuf>,
+	valid_extensions: &[&str],
+	on_progress: Option<&dyn Fn(ScanProgress)>,
+	scanned_dirs: &mut u32,
+) -> Result {
 	for entry in fs::read_dir(dir)? {
 		let entry = entry?;
 		let path = entry.path();
 
 		if path.is_dir() {
-			walk_directory(&path, executables, valid_extensions)?;
+			*scanned_dirs += 1;
+			if let Some(cb) = on_progress {
+				cb(ScanProgress {
+					scanned_dirs: *scanned_dirs,
+					executables_found: executables.len() as u32,
+					current_path: path.display().to_string(),
+				});
+			}
+			walk_directory(
+				&path,
+				executables,
+				valid_extensions,
+				on_progress,
+				scanned_dirs,
+			)?;
 		} else if path.is_file()
 			&& let Some(ext) = path.extension().and_then(|e| e.to_str())
 			&& valid_extensions.contains(&ext.to_lowercase().as_str())
 		{
+			if let Some(cb) = on_progress {
+				cb(ScanProgress {
+					scanned_dirs: *scanned_dirs,
+					executables_found: executables.len() as u32 + 1,
+					current_path: path.display().to_string(),
+				});
+			}
 			executables.push(path);
 		}
 	}
 
 	Ok(())
+}
+
+pub fn scan_directory(
+	path: &Path,
+	on_progress: impl Fn(ScanProgress) + Send + Sync + 'static,
+) -> Result<DirectoryScanResult> {
+	if !path.is_dir() {
+		return Err(Error::NoExecutableFound(path.to_owned()));
+	}
+
+	let start = Instant::now();
+	let mut executables = Vec::new();
+	let mut scanned_dirs = 0u32;
+
+	walk_directory(path, &mut executables, &VALID_EXTENSIONS, Some(&on_progress), &mut scanned_dirs)?;
+
+	let duration_secs = start.elapsed().as_secs_f64();
+
+	let games: Result<Vec<DbGame>> = executables
+		.iter()
+		.map(|exe_path| get_game_from_path(exe_path))
+		.collect();
+	let games = games?;
+
+	Ok(DirectoryScanResult {
+		games,
+		duration_secs,
+	})
 }
 
 fn remove_directory_path(path: &Path) -> Result {

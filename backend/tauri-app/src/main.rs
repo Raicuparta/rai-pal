@@ -34,6 +34,10 @@ use rai_pal_core::{
 			GameProviderId,
 		},
 		manual_provider,
+		manual_provider::{
+			DirectoryScanResult,
+			ScanProgress,
+		},
 		provider_command::ProviderCommandAction,
 		steam::{
 			steam_provider::Steam,
@@ -606,6 +610,31 @@ async fn add_game_directory(handle: AppHandle, path: PathBuf) -> Result {
 
 #[tauri::command]
 #[specta::specta]
+async fn scan_game_directory(
+	handle: AppHandle,
+	path: PathBuf,
+	on_progress: Channel<ScanProgress>,
+) -> Result<DirectoryScanResult> {
+	let normalized_path = path.normalize();
+
+	let result = tokio::task::spawn_blocking(move || {
+		manual_provider::scan_directory(&normalized_path, move |progress| {
+			let _ = on_progress.send(progress);
+		})
+	})
+	.await
+	.map_err(|join_error| {
+		rai_pal_core::result::Error::Io(std::io::Error::new(
+			std::io::ErrorKind::Other,
+			format!("scan task failed: {join_error}"),
+		))
+	})??;
+
+	Ok(result)
+}
+
+#[tauri::command]
+#[specta::specta]
 async fn remove_game(handle: AppHandle, provider_id: GameProviderId, game_id: String) -> Result {
 	let game = handle
 		.app_state()
@@ -896,6 +925,7 @@ fn main() {
 		.commands(tauri_specta::collect_commands![
 			add_game,
 			add_game_directory,
+			scan_game_directory,
 			add_rai_pal_steam_shortcut,
 			add_url_mod_source,
 			configure_mod,
