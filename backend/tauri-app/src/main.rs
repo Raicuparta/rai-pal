@@ -322,11 +322,11 @@ async fn install_mod(
 		&mut deps_to_install,
 	);
 
-	let all_to_install: Vec<&GameMod> = deps_to_install
+	let all_owned: Vec<GameMod> = deps_to_install
 		.iter()
 		.chain(std::iter::once(&game_mod))
+		.cloned()
 		.collect();
-	let all_owned: Vec<GameMod> = all_to_install.into_iter().cloned().collect();
 
 	let (steps, main_dl, _main_ex) = build_steps(&all_owned, mod_id);
 

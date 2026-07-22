@@ -422,6 +422,7 @@ impl GameDatabase for DbMutex {
 		db.prepare_cached("DELETE FROM main.games WHERE provider_id = $1 AND created_at < $2")?
 			.execute(rusqlite::params![provider_id, max_time.cast_signed()])?;
 
+		drop(db);
 		Ok(())
 	}
 }

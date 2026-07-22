@@ -37,6 +37,10 @@ pub static CLIENT_NO_REDIRECT: LazyLock<reqwest::Client> = LazyLock::new(|| {
 		.expect("Failed to set up HTTP client")
 });
 
+#[allow(
+	clippy::future_not_send,
+	reason = "status_callback is only used on one task"
+)]
 pub async fn download(
 	url: &str,
 	target_path: &Path,
@@ -62,6 +66,7 @@ pub async fn download(
 
 		downloaded_bytes += chunk.len();
 
+		#[allow(clippy::cast_precision_loss)]
 		let percentage = total_bytes.map_or(0.0, |total| {
 			if total == 0 {
 				0.0

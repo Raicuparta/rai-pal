@@ -29,13 +29,11 @@ use crate::{
 };
 
 fn get_version_from_metadata(file_bytes: &[u8]) -> Option<EngineVersion> {
-	#[allow(
-		clippy::disallowed_methods,
-		reason = "Errors from PeFile parsing are expected."
-	)]
-	let pe = PeFile::from_bytes(&file_bytes).ok()?;
-	let resources = pe.resources().ok()?;
-	let version_info = resources.version_info().ok()?;
+	let pe = PeFile::from_bytes(&file_bytes).ok_or_log("Failed to parse PE file from bytes")?;
+	let resources = pe.resources().ok_or_log("Failed to parse PE resources")?;
+	let version_info = resources
+		.version_info()
+		.ok_or_log("Failed to parse PE version info")?;
 
 	// Check that the version info is actually from Unreal Engine, not from some other
 	// component's metadata. Unreal Engine always sets ProductName to "UnrealGame"
@@ -44,10 +42,10 @@ fn get_version_from_metadata(file_bytes: &[u8]) -> Option<EngineVersion> {
 	let is_unreal_metadata = file_info.strings.values().any(|strings| {
 		strings
 			.get("ProductName")
-			.map_or(false, |v| v == "UnrealGame")
+			.is_some_and(|v| v == "UnrealGame")
 			|| strings
 				.get("ProductVersion")
-				.map_or(false, |v| v.starts_with("++UE"))
+				.is_some_and(|v| v.starts_with("++UE"))
 	});
 	if !is_unreal_metadata {
 		return None;

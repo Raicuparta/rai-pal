@@ -42,6 +42,7 @@ use crate::{
 	progress_status::ProgressStatus,
 	result::{
 		Error,
+		LogErrExt,
 		Result,
 	},
 };
@@ -151,6 +152,7 @@ impl GameMod {
 			.ok_or_else(|| Error::ModInfoMissing(self.id.clone(), "install".to_string()))
 	}
 
+	#[allow(clippy::future_not_send, reason = "install is called on a single task")]
 	pub async fn install(
 		&self,
 		game_option: Option<&DbGame>,
@@ -281,6 +283,10 @@ impl GameMod {
 }
 
 impl ModDownload {
+	#[allow(
+		clippy::future_not_send,
+		reason = "download is called on a single task"
+	)]
 	async fn download(
 		&self,
 		mod_id: &str,
@@ -325,6 +331,7 @@ impl ModDownload {
 				&zip_path,
 				&extracted_folder,
 				&|extracted_bytes, total_uncompressed| {
+					#[allow(clippy::cast_precision_loss)]
 					let percentage = if total_uncompressed > 0 {
 						extracted_bytes as f64 / total_uncompressed as f64
 					} else {
@@ -340,7 +347,7 @@ impl ModDownload {
 			match extract_result {
 				Ok(()) => return Ok(extracted_folder),
 				Err(err) => {
-					fs::remove_dir_all(&temp_dir).ok();
+					fs::remove_dir_all(&temp_dir).ok_or_log("Failed to remove temp dir");
 					if attempts >= 1 {
 						return Err(err.into());
 					}
