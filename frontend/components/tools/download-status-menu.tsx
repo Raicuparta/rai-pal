@@ -28,15 +28,21 @@ export function DownloadStatusMenu() {
 		commands.listenToDownloadProgress(
 			new Channel<ProgressStatus>((status) => {
 				setItems((prev) => {
+					if (status.phase === "pending") {
+						const allFinished = [...prev.values()].every(
+							(item) => item.phase === "finished",
+						);
+						const next = allFinished ? new Map() : new Map(prev);
+						next.set(status.id, {
+							name: status.name,
+							progress: 0,
+							phase: "pending",
+						});
+						return next;
+					}
+
 					const next = new Map(prev);
 					switch (status.phase) {
-						case "pending":
-							next.set(status.id, {
-								name: status.name,
-								progress: 0,
-								phase: "pending",
-							});
-							break;
 						case "inProgress":
 							next.set(status.id, {
 								name: prev.get(status.id)?.name ?? status.id,

@@ -288,9 +288,6 @@ async fn install_mod(
 ) -> Result {
 	let state = handle.app_state();
 
-	// Prevent concurrent mod installs since it can get messy with shared dependencies.
-	let _install_guard = state.install_lock.lock().await;
-
 	let game_option = if let Some(game_id) = game_id_option
 		&& let Some(provider_id) = provider_id_option
 	{
@@ -353,6 +350,10 @@ async fn install_mod(
 			name: step_name.clone(),
 		});
 	}
+
+	// Prevent concurrent mod installs since it can get messy with shared dependencies.
+	// Acquired after sending pending state so the frontend always sees updates immediately.
+	let _install_guard = state.install_lock.lock().await;
 
 	let result: std::result::Result<(), rai_pal_core::result::Error> = async {
 		for m in &deps_to_install {
