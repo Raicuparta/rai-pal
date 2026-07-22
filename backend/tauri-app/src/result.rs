@@ -48,7 +48,7 @@ pub enum Error {
 	FailedToAccessStateData(String),
 
 	#[error("Not supported on current platform. Linux only.")]
-	#[allow(dead_code)] // Unused on Linux.
+	#[cfg_attr(target_os = "linux", expect(dead_code, reason = "Unused on Linux"))]
 	LinuxOnly(),
 }
 

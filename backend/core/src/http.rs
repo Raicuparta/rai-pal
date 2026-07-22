@@ -19,7 +19,10 @@ use crate::{
 };
 
 pub static CLIENT: LazyLock<reqwest::Client> = LazyLock::new(|| {
-	#[allow(clippy::expect_used)]
+	#[expect(
+		clippy::expect_used,
+		reason = "Startup invariant — the app cannot function without an HTTP client"
+	)]
 	reqwest::Client::builder()
 		.connect_timeout(Duration::from_secs(10))
 		.pool_max_idle_per_host(10)
@@ -28,7 +31,10 @@ pub static CLIENT: LazyLock<reqwest::Client> = LazyLock::new(|| {
 });
 
 pub static CLIENT_NO_REDIRECT: LazyLock<reqwest::Client> = LazyLock::new(|| {
-	#[allow(clippy::expect_used)]
+	#[expect(
+		clippy::expect_used,
+		reason = "Startup invariant — the app cannot function without an HTTP client"
+	)]
 	reqwest::Client::builder()
 		.redirect(reqwest::redirect::Policy::none())
 		.connect_timeout(Duration::from_secs(10))
@@ -37,15 +43,11 @@ pub static CLIENT_NO_REDIRECT: LazyLock<reqwest::Client> = LazyLock::new(|| {
 		.expect("Failed to set up HTTP client")
 });
 
-#[allow(
-	clippy::future_not_send,
-	reason = "status_callback is only used on one task"
-)]
 pub async fn download(
 	url: &str,
 	target_path: &Path,
 	id: &str,
-	status_callback: &(impl Fn(ProgressStatus) + Send),
+	status_callback: &(impl Fn(ProgressStatus) + Send + Sync),
 ) -> Result {
 	let response = CLIENT.get(url).send().await?.error_for_status()?;
 
@@ -66,7 +68,10 @@ pub async fn download(
 
 		downloaded_bytes += chunk.len();
 
-		#[allow(clippy::cast_precision_loss)]
+		#[expect(
+			clippy::cast_precision_loss,
+			reason = "Precision loss is irrelevant for progress display"
+		)]
 		let percentage = total_bytes.map_or(0.0, |total| {
 			if total == 0 {
 				0.0

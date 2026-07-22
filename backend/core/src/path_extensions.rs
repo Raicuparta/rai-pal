@@ -205,7 +205,7 @@ impl AsValidStr for OsStr {
 
 impl AsValidStr for Path {
 	fn try_to_str(&self) -> Result<&str> {
-		#[allow(
+		#[expect(
 			clippy::disallowed_methods,
 			reason = "This is the replacement for to_string_lossy(), so it uses it internally"
 		)]

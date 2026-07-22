@@ -30,7 +30,6 @@ const BIN_END: u8 = b'\x08';
 const BIN_INT64: u8 = b'\x0A';
 const BIN_END_ALT: u8 = b'\x0B';
 
-#[allow(dead_code)] // Some unused fields inside the types, keeping them for future reference.
 #[derive(Debug)]
 pub enum ValueType {
 	String(String),

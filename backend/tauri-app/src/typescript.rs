@@ -6,7 +6,7 @@ const BINDINGS_PATH: &str = concat!(
 );
 
 pub fn export(builder: &tauri_specta::Builder<tauri::Wry>) {
-	#[allow(
+	#[expect(
 		clippy::unwrap_used,
 		reason = "This is dev only, we wanna make sure it explodes if types fail to generate."
 	)]

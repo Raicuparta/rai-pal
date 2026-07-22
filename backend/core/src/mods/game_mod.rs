@@ -152,11 +152,10 @@ impl GameMod {
 			.ok_or_else(|| Error::ModInfoMissing(self.id.clone(), "install".to_string()))
 	}
 
-	#[allow(clippy::future_not_send, reason = "install is called on a single task")]
 	pub async fn install(
 		&self,
 		game_option: Option<&DbGame>,
-		on_progress: impl Fn(ProgressStatus) + Send,
+		on_progress: impl Fn(ProgressStatus) + Send + Sync,
 	) -> Result {
 		let install = self
 			.install
@@ -283,14 +282,10 @@ impl GameMod {
 }
 
 impl ModDownload {
-	#[allow(
-		clippy::future_not_send,
-		reason = "download is called on a single task"
-	)]
 	async fn download(
 		&self,
 		mod_id: &str,
-		on_progress: &(impl Fn(ProgressStatus) + Send),
+		on_progress: &(impl Fn(ProgressStatus) + Send + Sync),
 	) -> Result<PathBuf> {
 		if let Some(local_path) = self.url.strip_prefix("file://") {
 			let source_path = PathBuf::from(local_path);
@@ -331,7 +326,10 @@ impl ModDownload {
 				&zip_path,
 				&extracted_folder,
 				&|extracted_bytes, total_uncompressed| {
-					#[allow(clippy::cast_precision_loss)]
+					#[expect(
+						clippy::cast_precision_loss,
+						reason = "Precision loss is irrelevant for progress display"
+					)]
 					let percentage = if total_uncompressed > 0 {
 						extracted_bytes as f64 / total_uncompressed as f64
 					} else {
