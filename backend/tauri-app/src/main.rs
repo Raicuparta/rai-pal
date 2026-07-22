@@ -630,6 +630,19 @@ async fn remove_game(handle: AppHandle, provider_id: GameProviderId, game_id: St
 
 #[tauri::command]
 #[specta::specta]
+async fn remove_game_directory(path: PathBuf) -> Result {
+	manual_provider::remove_directory(&path.normalize())?;
+	Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn get_manual_game_directories() -> Result<Vec<PathBuf>> {
+	Ok(manual_provider::get_directories()?)
+}
+
+#[tauri::command]
+#[specta::specta]
 async fn run_provider_command(
 	handle: AppHandle,
 	provider_id: GameProviderId,
@@ -924,6 +937,8 @@ fn main() {
 			refresh_mods,
 			refresh_remote_games,
 			remove_game,
+			remove_game_directory,
+			get_manual_game_directories,
 			remove_url_mod_source,
 			reset_steam_cache,
 			run_mod,

@@ -34,22 +34,25 @@ export const enUs = {
 		emptyGamesLoading: "Finding your games...",
 	},
 
-	addGame: {
-		// Button for adding a game to Rai Pal.
-		button: "Add game",
+	manualGames: {
+		savedDirectories:
+			"These directories will be scanned recursively every time Rai Pal refreshes its data. Large folders may make things significantly slower.",
 
-		// Title of the modal for adding a game.
-		title: "Add game",
+		// Button for adding games manually to Rai Pal.
+		button: "Add games",
 
-		// Text inside the file drop area for adding a game.
-		dropField:
-			"Drag and drop a game executable here, or click to select a file.",
+		// Title of the modal for manually adding games.
+		title: "Manually Added Games",
 
-		// Text inside the directory picker area for adding a whole folder of games.
-		directoryButton: "Scan a folder recursively for games. Can be slow!",
+		// Button for selecting a single game executable.
+		selectGameExecutable: "Select game executable",
 
-		// Note that shows under the file drop area for adding a game.
-		note: "Note: you can drop game executable files anywhere on Rai Pal's window to add them to the installed game list without opening this dialog.",
+		// Button for adding a game directory to scan for multiple games, with a warning about it being potentially slow.
+		selectGamesDirectory: "Select game directory. Can be slow!",
+
+		// Note that explains you can drop files and folders onto Rai Pal's window.
+		fileDropNote:
+			"You can also just drop game executable files or entire folders anywhere on Rai Pal's window to add them to the library, even without opening this dialog.",
 	},
 
 	refresh: {

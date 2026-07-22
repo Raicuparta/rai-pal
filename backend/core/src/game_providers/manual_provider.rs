@@ -165,6 +165,11 @@ pub fn add_directory(path: &Path) -> Result<Vec<DbGame>> {
 
 	let config_path = games_config_path()?;
 	let mut games_config = read_games_config(&config_path);
+
+	if games_config.directories.iter().any(|p| p.as_path() == path) {
+		return Ok(games);
+	}
+
 	games_config.directories.push(path.to_path_buf());
 
 	fs::write(config_path, serde_json::to_string_pretty(&games_config)?)?;
@@ -203,10 +208,21 @@ fn remove_directory_path(path: &Path) -> Result {
 	let config_path = games_config_path()?;
 	let mut games_config = read_games_config(&config_path);
 	games_config.directories.retain(|p| p != path);
+	games_config.ignored_paths.retain(|p| !p.starts_with(path));
 
 	fs::write(config_path, serde_json::to_string_pretty(&games_config)?)?;
 
 	Ok(())
+}
+
+pub fn remove_directory(path: &Path) -> Result {
+	remove_directory_path(path)
+}
+
+pub fn get_directories() -> Result<Vec<PathBuf>> {
+	let config_path = games_config_path()?;
+	let config = read_games_config(&config_path);
+	Ok(config.directories)
 }
 
 pub fn remove_game(game: &DbGame) -> Result {
