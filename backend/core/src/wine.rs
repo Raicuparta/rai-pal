@@ -40,10 +40,7 @@ pub fn set_wine_dll_overrides_in_reg(prefix_path: &Path, dll_overrides: &[String
 		fs::create_dir_all(prefix_path)?;
 		let initial_content = "REGEDIT4\n\n".to_string();
 		fs::write(&path, &initial_content)?;
-		log::info!(
-			"Created new Wine user.reg at {}",
-			path.display()
-		);
+		log::info!("Created new Wine user.reg at {}", path.display());
 		initial_content
 	};
 	let mut ensured_user_reg_data = user_reg_data.clone();

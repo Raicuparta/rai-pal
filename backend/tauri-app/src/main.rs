@@ -219,28 +219,21 @@ fn collect_deps_to_install(
 		return;
 	}
 
-	if let Ok(game_mod) = database.get_mod(mod_id) {
-		if let Some(deps) = &game_mod.dependencies {
-			for dep in deps {
-				if let Some(info) = relevant_mods
-					.iter()
-					.find(|m| m.compatible && m.mod_id == dep.mod_id)
+	if let Ok(game_mod) = database.get_mod(mod_id)
+		&& let Some(deps) = &game_mod.dependencies
+	{
+		for dep in deps {
+			if let Some(info) = relevant_mods
+				.iter()
+				.find(|m| m.compatible && m.mod_id == dep.mod_id)
+			{
+				let outdated = info.installed_version.is_none() || info.is_outdated;
+				if outdated
+					&& let Ok(dep_mod) = database.get_mod(&dep.mod_id)
+					&& dep_mod.install.is_some()
 				{
-					let outdated = info.installed_version.is_none() || info.is_outdated;
-					if outdated {
-						if let Ok(dep_mod) = database.get_mod(&dep.mod_id) {
-							if dep_mod.install.is_some() {
-								collect_deps_to_install(
-									&dep.mod_id,
-									database,
-									relevant_mods,
-									visited,
-									result,
-								);
-								result.push(dep_mod);
-							}
-						}
-					}
+					collect_deps_to_install(&dep.mod_id, database, relevant_mods, visited, result);
+					result.push(dep_mod);
 				}
 			}
 		}

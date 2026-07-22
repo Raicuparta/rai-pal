@@ -3,7 +3,6 @@ import { useEffect, useRef } from "react";
 import { check as checkUpdate } from "@tauri-apps/plugin-updater";
 import { relaunch } from "@tauri-apps/plugin-process";
 import { ask } from "@tauri-apps/plugin-dialog";
-import { showAppNotification } from "@components/app-notifications";
 
 const CHECK_INTERVAL_MILLISECONDS = 120000;
 

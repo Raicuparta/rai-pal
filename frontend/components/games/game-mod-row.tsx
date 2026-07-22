@@ -35,7 +35,6 @@ import { GameModRunButton } from "./game-mod-run-button";
 import { GameModUpdateButton } from "./game-mod-update-button";
 import { GameModUninstallButton } from "./game-mod-uninstall-button";
 
-
 type Props = {
 	readonly game: DbGame;
 	readonly mod: GameMod;

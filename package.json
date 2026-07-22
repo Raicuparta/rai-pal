@@ -16,8 +16,7 @@
 		"update-icons": "tauri icon backend/graphics/icon-source.png",
 		"frontend:build": "tsc && vite build",
 		"frontend:dev": "vite",
-		"lint": "prettier ./frontend --write && eslint --fix",
-		"lint-only": "eslint",
+		"format": "prettier ./frontend --write && eslint --fix && cd backend && cargo +nightly fmt && cargo clippy --fix --allow-dirty",
 		"find-unused": "cd backend && del index.scip &&  cargo workspace-unused-pub"
 	},
 	"prettier": {
