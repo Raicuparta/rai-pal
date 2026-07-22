@@ -36,8 +36,8 @@ export function useUpdateData(executeOnMount = false) {
 		updateMods();
 	}, [executeOnMount, updateGames, updateMods]);
 
-	const throttledUpdateData = useThrottledCallback(() => {
-		updateGames();
+	const throttledUpdateData = useThrottledCallback(async () => {
+		await updateGames();
 		setGameDataVersion((v) => v + 1);
 		updateMods();
 	}, 1000);

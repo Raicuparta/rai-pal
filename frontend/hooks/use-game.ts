@@ -11,8 +11,14 @@ export function useGame(providerId?: GameProviderId, gameId?: string) {
 	const hookId = useMemo(() => nextGameHookId++, []);
 
 	const getGame = useCallback(
-		async () =>
-			providerId && gameId ? commands.getGame(providerId, gameId) : null,
+		async () => {
+			if (!providerId || !gameId) return null;
+			try {
+				return await commands.getGame(providerId, gameId);
+			} catch {
+				return null;
+			}
+		},
 		[providerId, gameId],
 	);
 
