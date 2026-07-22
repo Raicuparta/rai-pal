@@ -15,6 +15,7 @@ use tauri::{
 	Manager,
 	ipc::Channel,
 };
+use tokio::sync::Mutex as AsyncMutex;
 
 use crate::result::{
 	Error,
@@ -25,6 +26,7 @@ pub struct AppState {
 	pub database: DbMutex,
 	pub download_status_channel: RwLock<Option<Channel<ProgressStatus>>>,
 	pub selected_game: RwLock<Option<(GameProviderId, String)>>,
+	pub install_lock: AsyncMutex<()>,
 }
 
 type TauriState<'a> = tauri::State<'a, AppState>;
@@ -74,6 +76,7 @@ impl AppState {
 			database: games,
 			download_status_channel: RwLock::new(None),
 			selected_game: RwLock::new(None),
+			install_lock: AsyncMutex::new(()),
 		})
 	}
 }

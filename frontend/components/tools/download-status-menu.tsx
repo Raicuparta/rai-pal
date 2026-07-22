@@ -27,7 +27,6 @@ export function DownloadStatusMenu() {
 	useEffect(() => {
 		commands.listenToDownloadProgress(
 			new Channel<ProgressStatus>((status) => {
-				console.log(`#### status ${status.phase}`);
 				setItems((prev) => {
 					const next = new Map(prev);
 					switch (status.phase) {
@@ -87,14 +86,12 @@ export function DownloadStatusMenu() {
 				>
 					<RingProgress
 						size={40}
-						sections={entries
-							.filter(([, item]) => item.phase !== "finished")
-							.map(([, item]) => ({
-								color: colorMap[item.phase],
-								value:
-									(item.phase === "inProgress" ? item.progress : 100) /
-									entries.length,
-							}))}
+						sections={entries.map(([, item]) => ({
+							color: colorMap[item.phase],
+							value:
+								(item.phase === "inProgress" ? item.progress : 100) /
+								entries.length,
+						}))}
 					/>
 				</Button>
 			</Menu.Target>

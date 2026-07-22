@@ -41,7 +41,6 @@ use rai_pal_core::{
 		},
 	},
 	games_query::GamesQuery,
-	progress_status::ProgressStatus,
 	local_database::{
 		app_database::{
 			AppDatabase,
@@ -64,6 +63,7 @@ use rai_pal_core::{
 	},
 	mods::game_mod::GameMod,
 	path_extensions::PathExt,
+	progress_status::ProgressStatus,
 	remote_config::RemoteConfigs,
 	remote_game::{
 		self,
@@ -287,6 +287,10 @@ async fn install_mod(
 	handle: AppHandle,
 ) -> Result {
 	let state = handle.app_state();
+
+	// Prevent concurrent mod installs since it can get messy with shared dependencies.
+	let _install_guard = state.install_lock.lock().await;
+
 	let game_option = if let Some(game_id) = game_id_option
 		&& let Some(provider_id) = provider_id_option
 	{

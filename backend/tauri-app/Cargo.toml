@@ -20,6 +20,7 @@ thiserror.workspace = true
 
 rfd = { version = "0.17.2", default-features = false, features = ["gtk3"] }
 specta-typescript = "0.0.12"
+tokio = "1.52.3"
 tauri = { version = "2.11.5", features = ["protocol-asset", "config-toml"] }
 tauri-plugin-dialog = "2.7.1"
 tauri-plugin-log = "2.8.0"
