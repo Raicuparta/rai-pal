@@ -2,7 +2,7 @@ import { commands, ProgressStatus } from "@api/bindings";
 import { Channel } from "@tauri-apps/api/core";
 import { Button, DefaultMantineColor, Menu, RingProgress } from "@mantine/core";
 import { IconClearAll } from "@tabler/icons-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocalization } from "@hooks/use-localization";
 
 export type ProgressItem = {
@@ -23,26 +23,60 @@ export function DownloadStatusMenu() {
 	const { t } = useLocalization("downloadStatusMenu");
 
 	const [items, setItems] = useState<Map<string, ProgressItem>>(new Map());
+	const clearTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+	useEffect(() => {
+		const entries = [...items.values()];
+		const hasActive = entries.some(
+			(item) => item.phase !== "finished" && item.phase !== "failed",
+		);
+
+		if (hasActive) {
+			if (clearTimerRef.current) {
+				clearTimeout(clearTimerRef.current);
+				clearTimerRef.current = null;
+			}
+			return;
+		}
+
+		const hasFinished = entries.some((item) => item.phase === "finished");
+
+		if (hasFinished && !clearTimerRef.current) {
+			clearTimerRef.current = setTimeout(() => {
+				setItems((prev) => {
+					const next = new Map(prev);
+					for (const [id, item] of next) {
+						if (item.phase === "finished") {
+							next.delete(id);
+						}
+					}
+					return next;
+				});
+				clearTimerRef.current = null;
+			}, 5000);
+		}
+
+		return () => {
+			if (clearTimerRef.current) {
+				clearTimeout(clearTimerRef.current);
+				clearTimerRef.current = null;
+			}
+		};
+	}, [items]);
 
 	useEffect(() => {
 		commands.listenToDownloadProgress(
 			new Channel<ProgressStatus>((status) => {
 				setItems((prev) => {
-					if (status.phase === "pending") {
-						const allFinished = [...prev.values()].every(
-							(item) => item.phase === "finished",
-						);
-						const next = allFinished ? new Map() : new Map(prev);
-						next.set(status.id, {
-							name: status.name,
-							progress: 0,
-							phase: "pending",
-						});
-						return next;
-					}
-
 					const next = new Map(prev);
 					switch (status.phase) {
+						case "pending":
+							next.set(status.id, {
+								name: status.name,
+								progress: 0,
+								phase: "pending",
+							});
+							break;
 						case "inProgress":
 							next.set(status.id, {
 								name: prev.get(status.id)?.name ?? status.id,
