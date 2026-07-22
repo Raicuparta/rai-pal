@@ -19,7 +19,7 @@ const colorMap: Record<ProgressStatus["phase"], DefaultMantineColor> = {
 	pending: "gray",
 };
 
-export function DownloadStatusMenu() {
+export function ProgressStatusMenu() {
 	const { t } = useLocalization("downloadStatusMenu");
 
 	const [items, setItems] = useState<Map<string, ProgressItem>>(new Map());
