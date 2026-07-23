@@ -138,8 +138,8 @@ export type Event = "InstallMod" | "UninstallMod" | "UpdateMod" | "RunMod" | "Pr
 
 export type ExecutedProviderCommand = null;
 
-export type FilterGroup<T extends string> = {
-	known: Record<string, FilterItem>,
+export type FilterGroup<T> = {
+	known: { [key in T]: FilterItem },
 	unknown: FilterItem | null,
 };
 

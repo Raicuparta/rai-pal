@@ -13,6 +13,7 @@ use crate::{
 	architecture::Architecture,
 	game_engines::{
 		game_engine::EngineBrand,
+		gamemaker,
 		godot,
 		unity::{
 			self,
@@ -175,7 +176,8 @@ impl DbGame {
 			// Order matters here. We're checking all sequentially, so we should leave the most expensive ones last.
 			let _ = unity::process_game(self)
 				|| unreal::process_game(self)
-				|| godot::process_game(self);
+				|| godot::process_game(self)
+				|| gamemaker::process_game(self);
 		}
 
 		self
