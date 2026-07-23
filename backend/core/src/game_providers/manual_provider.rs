@@ -1,4 +1,5 @@
 use std::{
+	collections::HashMap,
 	fs,
 	path::{
 		Path,
@@ -30,6 +31,17 @@ use crate::{
 };
 
 const VALID_EXTENSIONS: [&str; 3] = ["exe", "x86_64", "x86"];
+const MAX_SCAN_DEPTH: u32 = 8;
+const IGNORED_EXE_NAMES: [&str; 8] = [
+	"setup",
+	"install",
+	"uninstall",
+	"dxsetup",
+	"vc_redist",
+	"unitycrashhandler",
+	"unitycrashhandler64",
+	"unitycrashhandler32",
+];
 
 #[serializable_struct]
 pub struct Manual {}
@@ -58,10 +70,12 @@ impl ProviderActions for Manual {
 	fn insert_games(&self, db: &DbMutex) -> Result {
 		let config = read_games_config(&games_config_path()?);
 
+		let mut games: Vec<DbGame> = Vec::new();
+
 		for path in &config.paths {
 			match get_game_from_path(path) {
 				Ok(game) => {
-					db.insert_game(&game);
+					games.push(game);
 				}
 				Err(error) => {
 					error!(
@@ -93,7 +107,7 @@ impl ProviderActions for Manual {
 
 						match get_game_from_path(&exe_path) {
 							Ok(game) => {
-								db.insert_game(&game);
+								games.push(game);
 							}
 							Err(error) => {
 								error!(
@@ -109,6 +123,12 @@ impl ProviderActions for Manual {
 					error!("Failed to walk directory '{}': {}", dir.display(), error);
 				}
 			}
+		}
+
+		compute_title_discriminators(&mut games);
+
+		for game in &games {
+			db.insert_game(game);
 		}
 
 		clean_up_stale_ignored_paths(&config)?;
@@ -140,13 +160,76 @@ fn read_games_config(games_config_path: &Path) -> GamesConfig {
 }
 
 fn get_game_from_path(exe_path: &Path) -> Result<DbGame> {
+	let name = exe_path.file_name_without_extension()?.to_string();
+	let parent_folder = exe_path
+		.parent()
+		.and_then(|p| p.file_name())
+		.map(|f| f.to_string_lossy().to_string());
+
 	let mut game = DbGame::new(
 		GameProviderId::Manual,
 		exe_path.hash_string(),
-		exe_path.file_name_without_extension()?.to_string(),
+		match parent_folder {
+			Some(ref folder) => format!("{folder} / {name}"),
+			None => name,
+		},
 	);
 	game.set_executable(exe_path);
 	Ok(game)
+}
+
+fn compute_title_discriminators(games: &mut [DbGame]) {
+	let mut groups: HashMap<String, Vec<usize>> = HashMap::new();
+	for (idx, game) in games.iter().enumerate() {
+		if game.exe_path.is_some() {
+			groups
+				.entry(game.display_title.clone())
+				.or_default()
+				.push(idx);
+		}
+	}
+
+	for (_title, indices) in &groups {
+		if indices.len() <= 1 {
+			continue;
+		}
+
+		let path_components: Vec<Vec<String>> = indices
+			.iter()
+			.map(|&idx| {
+				let exe_path = games[idx].exe_path.as_ref().unwrap();
+				exe_path
+					.parent()
+					.unwrap()
+					.components()
+					.rev()
+					.map(|c| c.as_os_str().to_string_lossy().to_string())
+					.collect()
+			})
+			.collect();
+
+		for level in 1.. {
+			let mut seen: HashMap<&str, Vec<usize>> = HashMap::new();
+			for (i, components) in path_components.iter().enumerate() {
+				if let Some(comp) = components.get(level) {
+					seen.entry(comp.as_str()).or_default().push(i);
+				}
+			}
+
+			if seen.len() > 1 {
+				for (comp, member_indices) in &seen {
+					for &member_idx in member_indices {
+						games[indices[member_idx]].title_discriminator = Some(comp.to_string());
+					}
+				}
+				break;
+			}
+
+			if seen.is_empty() {
+				break;
+			}
+		}
+	}
 }
 
 pub fn add_game(path: &Path) -> Result<DbGame> {
@@ -193,6 +276,16 @@ pub fn add_directory(path: &Path) -> Result<Vec<DbGame>> {
 	Ok(games)
 }
 
+fn is_ignored_exe_name(path: &Path) -> bool {
+	path.file_stem()
+		.and_then(|s| s.to_str())
+		.is_some_and(|name| {
+			IGNORED_EXE_NAMES
+				.iter()
+				.any(|ignored| name.eq_ignore_ascii_case(ignored))
+		})
+}
+
 fn find_executables_in_directory(dir: &Path) -> Result<Vec<PathBuf>> {
 	let mut executables = Vec::new();
 	let mut scanned_dirs = 0u32;
@@ -203,7 +296,10 @@ fn find_executables_in_directory(dir: &Path) -> Result<Vec<PathBuf>> {
 		&VALID_EXTENSIONS,
 		None,
 		&mut scanned_dirs,
+		0,
 	)?;
+
+	executables.retain(|p| !is_ignored_exe_name(p));
 
 	Ok(executables)
 }
@@ -214,10 +310,19 @@ fn walk_directory(
 	valid_extensions: &[&str],
 	on_progress: Option<&dyn Fn(ScanProgress)>,
 	scanned_dirs: &mut u32,
+	depth: u32,
 ) -> Result {
+	if depth >= MAX_SCAN_DEPTH {
+		return Ok(());
+	}
+
 	for entry in fs::read_dir(dir)? {
 		let entry = entry?;
 		let path = entry.path();
+
+		if path.is_symlink() {
+			continue;
+		}
 
 		if path.is_dir() {
 			*scanned_dirs += 1;
@@ -235,6 +340,7 @@ fn walk_directory(
 				valid_extensions,
 				on_progress,
 				scanned_dirs,
+				depth + 1,
 			)?;
 		} else if path.is_file()
 			&& let Some(ext) = path.extension().and_then(|e| e.to_str())
@@ -273,6 +379,7 @@ pub fn scan_directory(
 		&VALID_EXTENSIONS,
 		Some(&on_progress),
 		&mut scanned_dirs,
+		0,
 	)?;
 
 	let duration_secs = start.elapsed().as_secs_f64();
