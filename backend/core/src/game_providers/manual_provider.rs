@@ -212,10 +212,13 @@ fn compute_title_discriminators(db: &DbMutex) -> Result {
 		let path_components: Vec<Vec<String>> = indices
 			.iter()
 			.map(|&idx| {
-				let exe_path = games[idx].exe_path.as_ref().unwrap();
-				exe_path
-					.parent()
-					.unwrap()
+				let Some(exe_path) = games[idx].exe_path.as_ref() else {
+					return vec![];
+				};
+				let Some(parent) = exe_path.parent() else {
+					return vec![];
+				};
+				parent
 					.components()
 					.rev()
 					.map(|c| c.as_os_str().to_string_lossy().to_string())
