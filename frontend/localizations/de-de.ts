@@ -20,6 +20,8 @@ export const deDe: Localization = {
 	},
 
 	manualGames: {
+		manualSteamSupportNote:
+			"Hinweis: Du kannst deine Nicht-Steam-Spiele auch zu Steam hinzufügen, und sie werden trotzdem von Rai Pal erkannt.",
 		savedDirectories:
 			"Diese Verzeichnisse werden bei jeder Aktualisierung der Rai Pal-Daten rekursiv durchsucht. Große Ordner können die Leistung erheblich beeinträchtigen.",
 		button: "Spiele hinzufügen",

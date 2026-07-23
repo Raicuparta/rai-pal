@@ -20,6 +20,8 @@ export const esEs: Localization = {
 	},
 
 	manualGames: {
+		manualSteamSupportNote:
+			"Nota: también puedes añadir tus juegos que no son de Steam a Steam, y Rai Pal los detectará igualmente.",
 		savedDirectories:
 			"Estos directorios se escanearán recursivamente cada vez que Rai Pal actualice sus datos. Las carpetas grandes pueden ralentizar significativamente las cosas.",
 		button: "Agregar juegos",

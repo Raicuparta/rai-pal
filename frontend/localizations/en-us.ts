@@ -35,6 +35,9 @@ export const enUs = {
 	},
 
 	manualGames: {
+		manualSteamSupportNote:
+			"Note: you can also add your non-Steam games to Steam, and they will still be detected by Rai Pal.",
+
 		savedDirectories:
 			"These directories will be scanned recursively every time Rai Pal refreshes its data. Large folders may make things significantly slower.",
 

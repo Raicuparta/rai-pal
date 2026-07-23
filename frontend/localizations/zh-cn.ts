@@ -20,6 +20,8 @@ export const zhCn: Localization = {
 	},
 
 	manualGames: {
+		manualSteamSupportNote:
+			"注意：你也可以将非 Steam 游戏添加到 Steam 中，Rai Pal 仍会检测到它们。",
 		savedDirectories:
 			"每次 Rai Pal 刷新数据时，这些目录都将被递归扫描。大文件夹可能会显著降低速度。",
 		button: "添加游戏",

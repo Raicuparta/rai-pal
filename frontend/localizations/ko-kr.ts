@@ -20,6 +20,8 @@ export const koKr: Localization = {
 	},
 
 	manualGames: {
+		manualSteamSupportNote:
+			"참고: Steam이 아닌 게임을 Steam에 추가해도 Rai Pal에서 계속 감지됩니다.",
 		savedDirectories:
 			"Rai Pal이 데이터를 새로고침할 때마다 이 디렉토리들이 재귀적으로 스캔됩니다. 큰 폴더는 속도를 현저히 느리게 할 수 있습니다.",
 		button: "게임 추가",

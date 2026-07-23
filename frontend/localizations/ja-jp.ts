@@ -20,6 +20,8 @@ export const jaJp: Localization = {
 	},
 
 	manualGames: {
+		manualSteamSupportNote:
+			"注：Steam以外のゲームをSteamに追加しても、Rai Palは引き続き検出できます。",
 		savedDirectories:
 			"これらのディレクトリは、Rai Palがデータを更新するたびに再帰的にスキャンされます。大きなフォルダは処理を大幅に遅くする可能性があります。",
 		button: "ゲームを追加",

@@ -19,6 +19,10 @@ use crate::{
 	app_paths,
 	game::DbGame,
 	game_providers::game_provider::WineProviderActions,
+	games_query::{
+		GamesFilter,
+		GamesQuery,
+	},
 	local_database::{
 		app_database::DbMutex,
 		game_database::GameDatabase,
@@ -70,12 +74,10 @@ impl ProviderActions for Manual {
 	fn insert_games(&self, db: &DbMutex) -> Result {
 		let config = read_games_config(&games_config_path()?);
 
-		let mut games: Vec<DbGame> = Vec::new();
-
 		for path in &config.paths {
 			match get_game_from_path(path) {
 				Ok(game) => {
-					games.push(game);
+					db.insert_game(&game);
 				}
 				Err(error) => {
 					error!(
@@ -107,7 +109,7 @@ impl ProviderActions for Manual {
 
 						match get_game_from_path(&exe_path) {
 							Ok(game) => {
-								games.push(game);
+								db.insert_game(&game);
 							}
 							Err(error) => {
 								error!(
@@ -125,11 +127,7 @@ impl ProviderActions for Manual {
 			}
 		}
 
-		compute_title_discriminators(&mut games);
-
-		for game in &games {
-			db.insert_game(game);
-		}
+		compute_title_discriminators(db)?;
 
 		clean_up_stale_ignored_paths(&config)?;
 
@@ -178,7 +176,25 @@ fn get_game_from_path(exe_path: &Path) -> Result<DbGame> {
 	Ok(game)
 }
 
-fn compute_title_discriminators(games: &mut [DbGame]) {
+fn compute_title_discriminators(db: &DbMutex) -> Result {
+	let game_ids = db.get_game_ids(Some(GamesQuery {
+		filter: GamesFilter {
+			providers: std::collections::HashSet::from([Some(GameProviderId::Manual)]),
+			architectures: std::collections::HashSet::new(),
+			engines: std::collections::HashSet::new(),
+			unity_backends: std::collections::HashSet::new(),
+			tags: std::collections::HashSet::new(),
+			..Default::default()
+		},
+		..Default::default()
+	}))?;
+
+	let mut games: Vec<DbGame> = game_ids
+		.game_ids
+		.iter()
+		.map(|(provider_id, game_id)| db.get_game(provider_id, game_id))
+		.collect::<Result<Vec<_>>>()?;
+
 	let mut groups: HashMap<String, Vec<usize>> = HashMap::new();
 	for (idx, game) in games.iter().enumerate() {
 		if game.exe_path.is_some() {
@@ -230,6 +246,14 @@ fn compute_title_discriminators(games: &mut [DbGame]) {
 			}
 		}
 	}
+
+	for game in &games {
+		if game.title_discriminator.is_some() {
+			db.insert_game(game);
+		}
+	}
+
+	Ok(())
 }
 
 pub fn add_game(path: &Path) -> Result<DbGame> {

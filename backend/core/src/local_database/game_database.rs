@@ -53,8 +53,8 @@ pub trait GameDatabase {
 
 #[serializable_struct]
 pub struct GameIdsResponse {
-	game_ids: Vec<(GameProviderId, String)>,
-	total_count: u32,
+	pub game_ids: Vec<(GameProviderId, String)>,
+	pub total_count: u32,
 }
 
 impl GameDatabase for DbMutex {

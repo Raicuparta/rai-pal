@@ -1,5 +1,6 @@
 import {
 	ActionIcon,
+	Alert,
 	Button,
 	Code,
 	Group,
@@ -15,6 +16,7 @@ import {
 	IconTrash,
 	IconSearch,
 	IconCircleCheck,
+	IconInfoCircle,
 } from "@tabler/icons-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Channel } from "@tauri-apps/api/core";
@@ -167,6 +169,7 @@ export function AddGame() {
 				title={t("title")}
 			>
 				<Stack>
+					<Alert icon={<IconInfoCircle />}>{t("manualSteamSupportNote")}</Alert>
 					{directories.length > 0 && scanPhase === "idle" && (
 						<Stack>
 							<Text>{t("savedDirectories")}</Text>

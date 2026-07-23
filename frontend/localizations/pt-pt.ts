@@ -19,6 +19,8 @@ export const ptPt: Localization = {
 	},
 
 	manualGames: {
+		manualSteamSupportNote:
+			"Nota: também pode adicionar os seus jogos não-Steam ao Steam, e eles continuarão a ser detetados pelo Rai Pal.",
 		savedDirectories:
 			"Estes diretórios serão analisados recursivamente sempre que o Rai Pal atualizar os seus dados. Pastas grandes podem tornar as coisas significativamente mais lentas.",
 		button: "Adicionar jogos",
