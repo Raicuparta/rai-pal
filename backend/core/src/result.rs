@@ -220,6 +220,9 @@ pub enum Error {
 
 	#[error("Can't do this without a game. If possible, try it from the games tab instead.")]
 	GameNeeded(),
+
+	#[error("Wine prefix not initialized at `{0}`. Please start the game at least once first.")]
+	WinePrefixNotInitialized(PathBuf),
 }
 
 impl serde::Serialize for Error {

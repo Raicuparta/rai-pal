@@ -37,11 +37,9 @@ pub fn set_wine_dll_overrides_in_reg(prefix_path: &Path, dll_overrides: &[String
 	let user_reg_data = if path.exists() {
 		fs::read_to_string(&path)?
 	} else {
-		fs::create_dir_all(prefix_path)?;
-		let initial_content = "REGEDIT4\n\n".to_string();
-		fs::write(&path, &initial_content)?;
-		log::info!("Created new Wine user.reg at {}", path.display());
-		initial_content
+		return Err(crate::result::Error::WinePrefixNotInitialized(
+			prefix_path.to_path_buf(),
+		));
 	};
 	let mut ensured_user_reg_data = user_reg_data.clone();
 
