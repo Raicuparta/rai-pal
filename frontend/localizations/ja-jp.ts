@@ -19,13 +19,23 @@ export const jaJp: Localization = {
 		emptyGamesLoading: "ゲームを検索中...",
 	},
 
-	addGame: {
+	manualGames: {
+		savedDirectories:
+			"これらのディレクトリは、Rai Palがデータを更新するたびに再帰的にスキャンされます。大きなフォルダは処理を大幅に遅くする可能性があります。",
 		button: "ゲームを追加",
-		title: "ゲームを追加",
-		dropField:
-			"ここにゲームの実行ファイルをドラッグ＆ドロップするか、クリックしてファイルを選択してください。",
-		directoryButton: "Scan a folder recursively for games. Can be slow!",
-		note: "注: Rai Palのウィンドウ内のどこにでもゲームの実行ファイルをドロップして、ダイアログを開かずにインストール済みゲームリストに追加できます。",
+		title: "手動で追加したゲーム",
+		selectGameExecutable: "ゲームの実行ファイルを選択",
+		selectGamesDirectory: "ゲームディレクトリを選択。遅い可能性があります！",
+		fileDropNote:
+			"ゲームの実行ファイルやフォルダ全体をRai Palのウィンドウのどこにでもドロップして、このダイアログを開かずにライブラリに追加することもできます。",
+		scanning: "{path}をスキャン中...",
+		scanProgress:
+			"{directories}個のディレクトリをスキャン、{executables}個の実行ファイルを発見",
+		currentPath: "現在: {path}",
+		scanComplete:
+			"{duration}秒で{gamesCount}個の実行ファイルが見つかりました。このフォルダをRai Palに追加しますか？",
+		confirmAddFolder: "フォルダを追加",
+		cancel: "キャンセル",
 	},
 
 	refresh: {

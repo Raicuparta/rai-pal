@@ -19,13 +19,23 @@ export const frFr: Localization = {
 		emptyGamesLoading: "Recherche de vos jeux...",
 	},
 
-	addGame: {
-		button: "Ajouter un jeu",
-		title: "Ajouter un jeu",
-		dropField:
-			"Glissez-déposez un exécutable de jeu ici, ou cliquez pour sélectionner un fichier.",
-		directoryButton: "Scan a folder recursively for games. Can be slow!",
-		note: "Remarque : vous pouvez déposer des fichiers exécutables de jeu n'importe où dans la fenêtre de Rai Pal pour les ajouter à la liste des jeux installés sans ouvrir ce dialogue.",
+	manualGames: {
+		savedDirectories:
+			"Ces répertoires seront analysés récursivement à chaque fois que Rai Pal actualise ses données. Les dossiers volumineux peuvent considérablement ralentir les choses.",
+		button: "Ajouter des jeux",
+		title: "Jeux ajoutés manuellement",
+		selectGameExecutable: "Sélectionner un exécutable de jeu",
+		selectGamesDirectory: "Sélectionner un dossier de jeux. Peut être lent !",
+		fileDropNote:
+			"Vous pouvez également déposer des fichiers exécutables de jeu ou des dossiers entiers n'importe où sur la fenêtre de Rai Pal pour les ajouter à la bibliothèque, même sans ouvrir ce dialogue.",
+		scanning: "Analyse de {path}...",
+		scanProgress:
+			"{directories} dossiers analysés, {executables} exécutables trouvés",
+		currentPath: "Actuel : {path}",
+		scanComplete:
+			"{gamesCount} exécutables trouvés en {duration} secondes. Ajouter ce dossier à Rai Pal ?",
+		confirmAddFolder: "Ajouter le dossier",
+		cancel: "Annuler",
 	},
 
 	refresh: {

@@ -19,13 +19,23 @@ export const koKr: Localization = {
 		emptyGamesLoading: "게임을 찾는 중...",
 	},
 
-	addGame: {
+	manualGames: {
+		savedDirectories:
+			"Rai Pal이 데이터를 새로고침할 때마다 이 디렉토리들이 재귀적으로 스캔됩니다. 큰 폴더는 속도를 현저히 느리게 할 수 있습니다.",
 		button: "게임 추가",
-		title: "게임 추가",
-		dropField:
-			"게임 실행 파일을 여기로 끌어다 놓거나, 클릭해서 파일을 선택하세요.",
-		directoryButton: "Scan a folder recursively for games. Can be slow!",
-		note: "참고: Rai Pal 창 아무 데나 게임 실행 파일을 끌어다 놓으면 이 창 안 열고도 게임 목록에 바로 추가할 수 있어요.",
+		title: "수동으로 추가된 게임",
+		selectGameExecutable: "게임 실행 파일 선택",
+		selectGamesDirectory: "게임 디렉토리 선택. 느릴 수 있음!",
+		fileDropNote:
+			"게임 실행 파일이나 폴더 전체를 Rai Pal 창 아무 곳에나 끌어다 놓으면 이 대화상자를 열지 않고도 라이브러리에 추가할 수 있습니다.",
+		scanning: "{path} 스캔 중...",
+		scanProgress:
+			"{directories}개 디렉토리 스캔, {executables}개 실행 파일 발견",
+		currentPath: "현재: {path}",
+		scanComplete:
+			"{duration}초 만에 {gamesCount}개 실행 파일을 찾았습니다. 이 폴더를 Rai Pal에 추가할까요?",
+		confirmAddFolder: "폴더 추가",
+		cancel: "취소",
 	},
 
 	refresh: {

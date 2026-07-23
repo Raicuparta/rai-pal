@@ -19,12 +19,23 @@ export const zhCn: Localization = {
 		emptyGamesLoading: "正在找你的游戏...",
 	},
 
-	addGame: {
+	manualGames: {
+		savedDirectories:
+			"每次 Rai Pal 刷新数据时，这些目录都将被递归扫描。大文件夹可能会显著降低速度。",
 		button: "添加游戏",
-		title: "添加游戏",
-		dropField: "拖放游戏可执行文件到这里，或点击选择文件。",
-		directoryButton: "Scan a folder recursively for games. Can be slow!",
-		note: "提示：你可以将游戏可执行文件拖放到 Rai Pal 窗口的任何地方，就能将其加入已安装游戏列表，无需打开此对话框。",
+		title: "手动添加的游戏",
+		selectGameExecutable: "选择游戏可执行文件",
+		selectGamesDirectory: "选择游戏目录。可能很慢！",
+		fileDropNote:
+			"你也可以将游戏可执行文件或整个文件夹拖放到 Rai Pal 窗口的任何位置来添加到库中，无需打开此对话框。",
+		scanning: "正在扫描 {path}...",
+		scanProgress:
+			"已扫描 {directories} 个目录，找到 {executables} 个可执行文件",
+		currentPath: "当前: {path}",
+		scanComplete:
+			"在 {duration} 秒内找到 {gamesCount} 个可执行文件。是否将此文件夹添加到 Rai Pal？",
+		confirmAddFolder: "添加文件夹",
+		cancel: "取消",
 	},
 
 	refresh: {
