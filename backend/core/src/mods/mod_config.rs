@@ -1,9 +1,6 @@
-use std::{
-	fs,
-	path::{
-		Path,
-		PathBuf,
-	},
+use std::path::{
+	Path,
+	PathBuf,
 };
 
 use rai_pal_proc_macros::serializable_struct;
@@ -39,12 +36,12 @@ impl ModConfig {
 		let destination_path =
 			PathBuf::from(replace_tokens(&self.destination_path, Some(game), game_mod));
 
-		if config_exists(&destination_path)? {
+		if config_exists(&destination_path).await? {
 			if overwrite {
 				if destination_path.is_dir() {
-					fs::remove_dir_all(&destination_path)?;
+					tokio::fs::remove_dir_all(&destination_path).await?;
 				} else {
-					fs::remove_file(&destination_path)?;
+					tokio::fs::remove_file(&destination_path).await?;
 				}
 			} else {
 				return Ok(());
@@ -52,7 +49,7 @@ impl ModConfig {
 		}
 
 		if let Some(parent) = destination_path.parent() {
-			fs::create_dir_all(parent)?;
+			tokio::fs::create_dir_all(parent).await?;
 		}
 
 		match self.destination_type {
@@ -68,12 +65,18 @@ impl ModConfig {
 	}
 }
 
-fn config_exists(path: &Path) -> Result<bool> {
+async fn config_exists(path: &Path) -> Result<bool> {
 	if !path.try_exists()? {
 		return Ok(false);
 	}
 
-	if path.is_dir() && fs::read_dir(path)?.next().is_none() {
+	if path.is_dir()
+		&& tokio::fs::read_dir(path)
+			.await?
+			.next_entry()
+			.await?
+			.is_none()
+	{
 		return Ok(false);
 	}
 

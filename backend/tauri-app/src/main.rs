@@ -126,7 +126,7 @@ async fn get_auth_state() -> Result<AuthState> {
 #[tauri::command]
 #[specta::specta]
 async fn log_out() -> Result {
-	logout_auth().map_err(Into::into)
+	logout_auth().await.map_err(Into::into)
 }
 
 #[tauri::command]
@@ -363,7 +363,7 @@ async fn install_mod(
 				Some(game.provider_id),
 				Some(game.game_id.clone()),
 			)? {
-			installed_mod.uninstall()?;
+			installed_mod.uninstall().await?;
 		}
 
 		if main_dl.is_some() {
@@ -484,7 +484,8 @@ async fn uninstall_mod(
 	state
 		.database
 		.try_get_installed_mod(&provider_id, &game_id, mod_id)?
-		.uninstall()?;
+		.uninstall()
+		.await?;
 	state.database.refresh_installed_mods()?;
 
 	handle.emit_safe(events::RefreshGame(provider_id, game_id));
@@ -503,7 +504,8 @@ async fn uninstall_all_mods(
 	state
 		.database
 		.get_game(&provider_id, &game_id)?
-		.uninstall_all_mods()?;
+		.uninstall_all_mods()
+		.await?;
 	state.database.refresh_installed_mods()?;
 
 	handle.emit_safe(events::RefreshGame(provider_id, game_id));
@@ -574,7 +576,7 @@ async fn refresh_games(handle: AppHandle, provider_id: GameProviderId) -> Result
 #[specta::specta]
 async fn add_game(handle: AppHandle, path: PathBuf) -> Result {
 	let normalized_path = path.normalize();
-	let game = manual_provider::add_game(&normalized_path)?;
+	let game = manual_provider::add_game(&normalized_path).await?;
 	let state = handle.app_state();
 
 	state.database.insert_game(&game);
@@ -595,7 +597,7 @@ async fn add_game(handle: AppHandle, path: PathBuf) -> Result {
 #[specta::specta]
 async fn add_game_directory(handle: AppHandle, path: PathBuf) -> Result {
 	let normalized_path = path.normalize();
-	let games = manual_provider::add_directory(&normalized_path)?;
+	let games = manual_provider::add_directory(&normalized_path).await?;
 	let state = handle.app_state();
 
 	for game in &games {
@@ -639,7 +641,7 @@ async fn remove_game(handle: AppHandle, provider_id: GameProviderId, game_id: St
 		.database
 		.get_game(&provider_id, &game_id)?;
 
-	manual_provider::remove_game(&game)?;
+	manual_provider::remove_game(&game).await?;
 
 	Ok(())
 }
@@ -647,7 +649,7 @@ async fn remove_game(handle: AppHandle, provider_id: GameProviderId, game_id: St
 #[tauri::command]
 #[specta::specta]
 async fn remove_game_directory(path: PathBuf) -> Result {
-	manual_provider::remove_directory(&path.normalize())?;
+	manual_provider::remove_directory(&path.normalize()).await?;
 	Ok(())
 }
 

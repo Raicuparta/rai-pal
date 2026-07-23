@@ -11,15 +11,21 @@ use zip::ZipArchive;
 
 use crate::result::Result;
 
-pub fn copy_dir_all(src: impl AsRef<Path>, dst: impl AsRef<Path>) -> Result {
-	fs::create_dir_all(&dst)?;
-	for entry in fs::read_dir(src)? {
-		let entry = entry?;
-		let file_type = entry.file_type()?;
-		if file_type.is_dir() {
-			copy_dir_all(entry.path(), dst.as_ref().join(entry.file_name()))?;
-		} else {
-			fs::copy(entry.path(), dst.as_ref().join(entry.file_name()))?;
+pub async fn copy_dir_all(src: &Path, dst: &Path) -> Result {
+	tokio::fs::create_dir_all(dst).await?;
+	let mut dirs = vec![(src.to_path_buf(), dst.to_path_buf())];
+
+	while let Some((current_src, current_dst)) = dirs.pop() {
+		let mut entries = tokio::fs::read_dir(&current_src).await?;
+		while let Some(entry) = entries.next_entry().await? {
+			let file_type = entry.file_type().await?;
+			let entry_dst = current_dst.join(entry.file_name());
+			if file_type.is_dir() {
+				tokio::fs::create_dir_all(&entry_dst).await?;
+				dirs.push((entry.path(), entry_dst));
+			} else {
+				tokio::fs::copy(entry.path(), entry_dst).await?;
+			}
 		}
 	}
 	Ok(())

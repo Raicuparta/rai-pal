@@ -1,7 +1,4 @@
-use std::{
-	fs,
-	path::PathBuf,
-};
+use std::path::PathBuf;
 
 use crate::{
 	game::DbGame,
@@ -48,7 +45,7 @@ impl InstalledMod {
 		Ok(())
 	}
 
-	pub fn uninstall(&self) -> Result {
+	pub async fn uninstall(&self) -> Result {
 		let install = self.game_mod.install.as_ref().ok_or_else(|| {
 			Error::ModInfoMissing(self.game_mod.id.clone(), "install".to_string())
 		})?;
@@ -62,9 +59,9 @@ impl InstalledMod {
 				));
 
 				if destination_path.is_dir() {
-					destination_path.remove_if_exists()?;
+					tokio::fs::remove_dir_all(&destination_path).await?;
 				} else if destination_path.exists() {
-					fs::remove_file(&destination_path)?;
+					tokio::fs::remove_file(&destination_path).await?;
 				}
 			}
 		}
@@ -78,14 +75,14 @@ impl InstalledMod {
 				));
 
 				if destination_path.exists() {
-					fs::remove_file(&destination_path)?;
+					tokio::fs::remove_file(&destination_path).await?;
 				}
 			}
 		}
 
 		let manifest_path = self.game_mod.get_manifest_target_path(self.game.as_ref())?;
 		if manifest_path.exists() {
-			fs::remove_file(manifest_path)?;
+			tokio::fs::remove_file(manifest_path).await?;
 		}
 
 		Ok(())

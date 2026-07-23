@@ -1,5 +1,4 @@
 use std::{
-	fs,
 	io::Cursor,
 	path::Path,
 };
@@ -68,7 +67,7 @@ pub async fn download_config_file(
 ) -> Result {
 	let content = download_config(config_file, game).await?.bytes().await?;
 
-	fs::write(destination_path, content)?;
+	tokio::fs::write(destination_path, content).await?;
 	Ok(())
 }
 

@@ -1,6 +1,5 @@
 use std::{
 	collections::BTreeMap,
-	fs,
 	hash::{
 		DefaultHasher,
 		Hash,
@@ -131,7 +130,7 @@ impl GameMod {
 	}
 
 	pub fn from_file(path: &Path) -> Option<Self> {
-		match fs::read_to_string(path)
+		match std::fs::read_to_string(path)
 			.and_then(|manifest_bytes| Ok(serde_json::from_str::<Self>(&manifest_bytes)?))
 		{
 			Ok(manifest) => Some(manifest),
@@ -179,10 +178,10 @@ impl GameMod {
 				));
 
 				if source_path.is_dir() {
-					files::copy_dir_all(&source_path, &destination_path)?;
+					files::copy_dir_all(&source_path, &destination_path).await?;
 				} else {
-					fs::create_dir_all(destination_path.try_parent()?)?;
-					fs::copy(&source_path, &destination_path)?;
+					tokio::fs::create_dir_all(destination_path.try_parent()?).await?;
+					tokio::fs::copy(&source_path, &destination_path).await?;
 				}
 			}
 		}
@@ -193,8 +192,8 @@ impl GameMod {
 					PathBuf::from(replace_tokens(&write_action.destination, game_option, self));
 				let content = replace_tokens(&write_action.content, game_option, self);
 
-				fs::create_dir_all(destination_path.try_parent()?)?;
-				fs::write(destination_path, content)?;
+				tokio::fs::create_dir_all(destination_path.try_parent()?).await?;
+				tokio::fs::write(destination_path, content).await?;
 			}
 		}
 
@@ -204,7 +203,7 @@ impl GameMod {
 				.set_wine_dll_overrides(game, wine_dll_overrides)?;
 		}
 
-		self.update_installed_mod_manifest(game_option)?;
+		self.update_installed_mod_manifest(game_option).await?;
 
 		Ok(())
 	}
@@ -271,11 +270,11 @@ impl GameMod {
 		Ok(())
 	}
 
-	pub fn update_installed_mod_manifest(&self, game: Option<&DbGame>) -> Result {
+	pub async fn update_installed_mod_manifest(&self, game: Option<&DbGame>) -> Result {
 		let manifest_path = self.get_manifest_target_path(game)?;
-		fs::create_dir_all(manifest_path.try_parent()?)?;
+		tokio::fs::create_dir_all(manifest_path.try_parent()?).await?;
 		let manifest_contents = serde_json::to_string_pretty(&self)?;
-		fs::write(manifest_path, manifest_contents)?;
+		tokio::fs::write(manifest_path, manifest_contents).await?;
 
 		Ok(())
 	}
@@ -306,7 +305,7 @@ impl ModDownload {
 
 		let mut attempts = 0;
 		loop {
-			fs::create_dir_all(&extracted_folder)?;
+			tokio::fs::create_dir_all(&extracted_folder).await?;
 
 			let part_path = temp_dir.join("download.zip.part");
 			let zip_path = temp_dir.join("download.zip");
@@ -319,7 +318,7 @@ impl ModDownload {
 					on_progress,
 				)
 				.await?;
-				fs::rename(&part_path, &zip_path)?;
+				tokio::fs::rename(&part_path, &zip_path).await?;
 			}
 
 			let extract_result = files::extract(
@@ -345,7 +344,9 @@ impl ModDownload {
 			match extract_result {
 				Ok(()) => return Ok(extracted_folder),
 				Err(err) => {
-					fs::remove_dir_all(&temp_dir).ok_or_log("Failed to remove temp dir");
+					tokio::fs::remove_dir_all(&temp_dir)
+						.await
+						.ok_or_log("Failed to remove temp dir");
 					if attempts >= 1 {
 						return Err(err.into());
 					}

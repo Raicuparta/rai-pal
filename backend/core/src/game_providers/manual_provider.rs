@@ -1,6 +1,5 @@
 use std::{
 	collections::HashMap,
-	fs,
 	path::{
 		Path,
 		PathBuf,
@@ -142,7 +141,7 @@ fn games_config_path() -> Result<PathBuf> {
 }
 
 fn read_games_config(games_config_path: &Path) -> GamesConfig {
-	match fs::read_to_string(games_config_path)
+	match std::fs::read_to_string(games_config_path)
 		.and_then(|games_config_file| Ok(serde_json::from_str::<GamesConfig>(&games_config_file)?))
 	{
 		Ok(games_config) => games_config,
@@ -205,7 +204,7 @@ fn compute_title_discriminators(db: &DbMutex) -> Result {
 		}
 	}
 
-	for (_title, indices) in &groups {
+	for indices in groups.values() {
 		if indices.len() <= 1 {
 			continue;
 		}
@@ -256,7 +255,7 @@ fn compute_title_discriminators(db: &DbMutex) -> Result {
 	Ok(())
 }
 
-pub fn add_game(path: &Path) -> Result<DbGame> {
+pub async fn add_game(path: &Path) -> Result<DbGame> {
 	let game = get_game_from_path(path)?;
 
 	if game.exe_path.is_none() {
@@ -268,12 +267,12 @@ pub fn add_game(path: &Path) -> Result<DbGame> {
 	let mut games_config = read_games_config(&config_path);
 	games_config.paths.push(path.to_path_buf());
 
-	fs::write(config_path, serde_json::to_string_pretty(&games_config)?)?;
+	tokio::fs::write(config_path, serde_json::to_string_pretty(&games_config)?).await?;
 
 	Ok(game)
 }
 
-pub fn add_directory(path: &Path) -> Result<Vec<DbGame>> {
+pub async fn add_directory(path: &Path) -> Result<Vec<DbGame>> {
 	if !path.is_dir() {
 		return Err(Error::NoExecutableFound(path.to_owned()));
 	}
@@ -295,7 +294,7 @@ pub fn add_directory(path: &Path) -> Result<Vec<DbGame>> {
 
 	games_config.directories.push(path.to_path_buf());
 
-	fs::write(config_path, serde_json::to_string_pretty(&games_config)?)?;
+	tokio::fs::write(config_path, serde_json::to_string_pretty(&games_config)?).await?;
 
 	Ok(games)
 }
@@ -340,7 +339,7 @@ fn walk_directory(
 		return Ok(());
 	}
 
-	for entry in fs::read_dir(dir)? {
+	for entry in std::fs::read_dir(dir)? {
 		let entry = entry?;
 		let path = entry.path();
 
@@ -426,13 +425,20 @@ fn remove_directory_path(path: &Path) -> Result {
 	games_config.directories.retain(|p| p != path);
 	games_config.ignored_paths.retain(|p| !p.starts_with(path));
 
-	fs::write(config_path, serde_json::to_string_pretty(&games_config)?)?;
+	std::fs::write(config_path, serde_json::to_string_pretty(&games_config)?)?;
 
 	Ok(())
 }
 
-pub fn remove_directory(path: &Path) -> Result {
-	remove_directory_path(path)
+pub async fn remove_directory(path: &Path) -> Result {
+	let config_path = games_config_path()?;
+	let mut games_config = read_games_config(&config_path);
+	games_config.directories.retain(|p| p != path);
+	games_config.ignored_paths.retain(|p| !p.starts_with(path));
+
+	tokio::fs::write(config_path, serde_json::to_string_pretty(&games_config)?).await?;
+
+	Ok(())
 }
 
 pub fn get_directories() -> Result<Vec<PathBuf>> {
@@ -441,7 +447,7 @@ pub fn get_directories() -> Result<Vec<PathBuf>> {
 	Ok(config.directories)
 }
 
-pub fn remove_game(game: &DbGame) -> Result {
+pub async fn remove_game(game: &DbGame) -> Result {
 	if game.provider_id != GameProviderId::Manual {
 		return Err(Error::InvalidProviderId(game.provider_id.to_string()));
 	}
@@ -460,7 +466,7 @@ pub fn remove_game(game: &DbGame) -> Result {
 		games_config.ignored_paths.push((*path).clone());
 	}
 
-	fs::write(config_path, serde_json::to_string_pretty(&games_config)?)?;
+	tokio::fs::write(config_path, serde_json::to_string_pretty(&games_config)?).await?;
 
 	Ok(())
 }
@@ -470,7 +476,7 @@ fn remove_path(path: &Path) -> Result {
 	let mut games_config = read_games_config(&config_path);
 	games_config.paths.retain(|p| p != path);
 
-	fs::write(config_path, serde_json::to_string_pretty(&games_config)?)?;
+	std::fs::write(config_path, serde_json::to_string_pretty(&games_config)?)?;
 
 	Ok(())
 }
@@ -496,7 +502,7 @@ fn clean_up_stale_ignored_paths(config: &GamesConfig) -> Result {
 	let mut games_config = read_games_config(&config_path);
 	games_config.ignored_paths.retain(|p| p.exists());
 
-	fs::write(config_path, serde_json::to_string_pretty(&games_config)?)?;
+	std::fs::write(config_path, serde_json::to_string_pretty(&games_config)?)?;
 
 	Ok(())
 }

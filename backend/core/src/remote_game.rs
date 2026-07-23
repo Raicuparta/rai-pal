@@ -1,6 +1,5 @@
 use std::{
 	collections::HashMap,
-	fs,
 	path::PathBuf,
 };
 
@@ -78,9 +77,9 @@ pub async fn download_database() -> Result<PathBuf> {
 
 	let file_path = get_database_file_path()?;
 
-	fs::create_dir_all(file_path.try_parent()?)?;
+	tokio::fs::create_dir_all(file_path.try_parent()?).await?;
 
-	fs::write(&file_path, response.bytes().await?)?;
+	tokio::fs::write(&file_path, response.bytes().await?).await?;
 
 	Ok(file_path)
 }
