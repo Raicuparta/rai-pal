@@ -36,7 +36,8 @@ use crate::{
 	},
 };
 
-const VALID_EXTENSIONS: [&str; 3] = ["exe", "x86_64", "x86"];
+const VALID_EXTENSIONS: [&str; 1] = ["exe"];
+// TODO configurable or what?
 const MAX_SCAN_DEPTH: u32 = 8;
 const IGNORED_EXE_NAMES: [&str; 8] = [
 	"setup",
