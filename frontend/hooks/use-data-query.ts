@@ -7,13 +7,13 @@ export const defaultQuery: GamesQuery = {
 	search: "",
 	sortDescending: false,
 	filter: {
-		architectures: [],
-		engines: [],
-		providers: [],
-		tags: [],
-		unityBackends: [],
-		installed: [],
-		modFamilies: [],
+		architectures: { known: {}, unknown: null },
+		engines: { known: {}, unknown: null },
+		providers: { known: {}, unknown: null },
+		tags: { known: {}, unknown: null },
+		unityBackends: { known: {}, unknown: null },
+		installed: { known: {}, unknown: null },
+		modFamilies: { known: {}, unknown: null },
 	},
 };
 

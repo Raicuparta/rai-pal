@@ -138,6 +138,16 @@ export type Event = "InstallMod" | "UninstallMod" | "UpdateMod" | "RunMod" | "Pr
 
 export type ExecutedProviderCommand = null;
 
+export type FilterGroup<T extends string> = {
+	known: Record<string, FilterItem>,
+	unknown: FilterItem | null,
+};
+
+export type FilterItem = {
+	enabled: boolean,
+	locked: boolean,
+};
+
 export type GameIdsResponse = {
 	gameIds: ([GameProviderId, string])[],
 	totalCount: number,
@@ -183,13 +193,13 @@ export type GameProviderId = "Epic" | "Gog" | "Itch" | "Manual" | "Steam" | "Xbo
 export type GameTag = "VR" | "Demo";
 
 export type GamesFilter = {
-	providers: (GameProviderId | null)[],
-	tags: (GameTag | null)[],
-	architectures: (Architecture | null)[],
-	unityBackends: (UnityBackend | null)[],
-	engines: (EngineBrand | null)[],
-	installed: (InstallState | null)[],
-	modFamilies: string[],
+	providers: FilterGroup<GameProviderId>,
+	tags: FilterGroup<GameTag>,
+	architectures: FilterGroup<Architecture>,
+	unityBackends: FilterGroup<UnityBackend>,
+	engines: FilterGroup<EngineBrand>,
+	installed: FilterGroup<InstallState>,
+	modFamilies: FilterGroup<string>,
 };
 
 export type GamesQuery = {

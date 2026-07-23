@@ -6,10 +6,10 @@ import {
 	FilterChangeCallback,
 	FilterKey,
 	FilterSelect,
-	FilterValue,
+	keepOnlyLocked,
 } from "./filter-select";
 import { SearchInput } from "@components/search-input";
-import { GamesFilter, GamesQuery } from "@api/bindings";
+import { FilterGroup, GamesFilter, GamesQuery } from "@api/bindings";
 import { modsAtom } from "@hooks/use-data";
 import { defaultQuery, useDataQuery } from "@hooks/use-data-query";
 import { useLocalization } from "@hooks/use-localization";
@@ -21,18 +21,18 @@ type ValueDetails = {
 	staticDisplayText?: string;
 };
 
-type FilterDetails<TKey extends FilterKey> = {
+type FilterDetails = {
 	localizationKey: LocalizationKey<"filterProperty">;
 
 	// Text that shows for each filter type for the "empty value" option.
 	// If not defined, the empty option is hidden from the filter menu.
 	emptyLocalizationKey?: LocalizationKey<"filterValue">;
 
-	valueDetails: Record<NonNullable<FilterValue<TKey>>, ValueDetails>;
+	valueDetails: Record<string, ValueDetails>;
 };
 
 export const filterDetails = Object.freeze<{
-	[key in FilterKey]: FilterDetails<key>;
+	[key in FilterKey]: FilterDetails;
 }>({
 	architectures: {
 		localizationKey: "architecture",
@@ -130,6 +130,13 @@ export const filterDetails = Object.freeze<{
 	},
 });
 
+function hasDisabledNonLocked(group: FilterGroup<string>): boolean {
+	return (
+		Object.values(group.known).some((item) => !item.enabled && !item.locked) ||
+		(group.unknown !== null && !group.unknown.enabled && !group.unknown.locked)
+	);
+}
+
 export function FilterMenu() {
 	const [dataQuery, setDataQuery] = useDataQuery();
 	const mods = useAtomValue(modsAtom);
@@ -144,9 +151,8 @@ export function FilterMenu() {
 		} as GamesQuery);
 	};
 
-	// active if has search or any filter has length smaller than default
-	const active = Object.keys(dataQuery.filter).some(
-		(filterId) => dataQuery.filter[filterId as keyof GamesFilter].length > 0,
+	const active = (Object.keys(filterDetails) as FilterKey[]).some((filterId) =>
+		hasDisabledNonLocked(dataQuery.filter[filterId] as FilterGroup<string>),
 	);
 
 	return (
@@ -166,11 +172,21 @@ export function FilterMenu() {
 				<Button.Group>
 					{active && (
 						<Button
-							onClick={() =>
+							onClick={() => {
+								const newFilter: GamesFilter = {
+									...defaultQuery.filter,
+								};
+
+								for (const key of Object.keys(filterDetails) as FilterKey[]) {
+									(newFilter as Record<string, unknown>)[key] = keepOnlyLocked(
+										dataQuery.filter[key] as FilterGroup<string>,
+									);
+								}
+
 								setDataQuery({
-									filter: defaultQuery.filter,
-								})
-							}
+									filter: newFilter,
+								});
+							}}
 							px={5}
 						>
 							<IconX />
@@ -203,17 +219,19 @@ export function FilterMenu() {
 																.map((m) => m.family)
 																.filter((f): f is string => f !== null),
 														),
-													] as Array<NonNullable<FilterValue<FilterKey>>>)
+													] as string[])
 												: (Object.keys(
 														filterDetails[filterKey].valueDetails,
-													) as Array<NonNullable<FilterValue<FilterKey>>>);
+													) as string[]);
 
 										return (
 											<FilterSelect
 												key={filterKey}
 												id={filterKey}
 												possibleValues={possibleValues}
-												currentValues={dataQuery.filter[filterKey]}
+												filterGroup={
+													dataQuery.filter[filterKey] as FilterGroup<string>
+												}
 												onChange={handleToggleClick}
 											/>
 										);

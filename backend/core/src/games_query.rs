@@ -1,10 +1,9 @@
-use std::collections::HashSet;
+use std::collections::HashMap;
 
 use rai_pal_proc_macros::{
 	serializable_enum,
 	serializable_struct,
 };
-use strum::IntoEnumIterator;
 
 use crate::{
 	architecture::Architecture,
@@ -23,14 +22,37 @@ pub enum InstallState {
 }
 
 #[serializable_struct]
+pub struct FilterItem {
+	pub enabled: bool,
+	pub locked: bool,
+}
+
+#[derive(serde::Serialize, serde::Deserialize, specta::Type, Clone, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct FilterGroup<T: std::hash::Hash + std::cmp::Eq> {
+	pub known: HashMap<T, FilterItem>,
+	pub unknown: Option<FilterItem>,
+}
+
+impl<T: std::hash::Hash + std::cmp::Eq> Default for FilterGroup<T> {
+	fn default() -> Self {
+		Self {
+			known: HashMap::new(),
+			unknown: None,
+		}
+	}
+}
+
+#[serializable_struct]
+#[derive(Default)]
 pub struct GamesFilter {
-	pub providers: HashSet<Option<GameProviderId>>,
-	pub tags: HashSet<Option<GameTag>>,
-	pub architectures: HashSet<Option<Architecture>>,
-	pub unity_backends: HashSet<Option<UnityBackend>>,
-	pub engines: HashSet<Option<EngineBrand>>,
-	pub installed: HashSet<Option<InstallState>>,
-	pub mod_families: HashSet<String>,
+	pub providers: FilterGroup<GameProviderId>,
+	pub tags: FilterGroup<GameTag>,
+	pub architectures: FilterGroup<Architecture>,
+	pub unity_backends: FilterGroup<UnityBackend>,
+	pub engines: FilterGroup<EngineBrand>,
+	pub installed: FilterGroup<InstallState>,
+	pub mod_families: FilterGroup<String>,
 }
 
 #[serializable_enum]
@@ -49,18 +71,4 @@ pub struct GamesQuery {
 	pub search: String,
 	pub sort_by: GamesSortBy,
 	pub sort_descending: bool,
-}
-
-impl Default for GamesFilter {
-	fn default() -> Self {
-		Self {
-			architectures: Architecture::iter().map(Some).collect(),
-			engines: EngineBrand::iter().map(Some).collect(),
-			providers: GameProviderId::iter().map(Some).collect(),
-			tags: GameTag::iter().map(Some).collect(),
-			unity_backends: UnityBackend::iter().map(Some).collect(),
-			installed: InstallState::iter().map(Some).collect(),
-			mod_families: HashSet::new(),
-		}
-	}
 }

@@ -9,6 +9,7 @@ use std::{
 
 use log::error;
 use rai_pal_proc_macros::serializable_struct;
+use strum::IntoEnumIterator;
 
 use super::game_provider::{
 	GameProviderId,
@@ -19,6 +20,8 @@ use crate::{
 	game::DbGame,
 	game_providers::game_provider::WineProviderActions,
 	games_query::{
+		FilterGroup,
+		FilterItem,
 		GamesFilter,
 		GamesQuery,
 	},
@@ -178,11 +181,21 @@ fn get_game_from_path(exe_path: &Path) -> Result<DbGame> {
 fn compute_title_discriminators(db: &DbMutex) -> Result {
 	let game_ids = db.get_game_ids(Some(GamesQuery {
 		filter: GamesFilter {
-			providers: std::collections::HashSet::from([Some(GameProviderId::Manual)]),
-			architectures: std::collections::HashSet::new(),
-			engines: std::collections::HashSet::new(),
-			unity_backends: std::collections::HashSet::new(),
-			tags: std::collections::HashSet::new(),
+			providers: FilterGroup {
+				known: GameProviderId::iter()
+					.filter(|p| *p != GameProviderId::Manual)
+					.map(|p| {
+						(
+							p,
+							FilterItem {
+								enabled: false,
+								locked: false,
+							},
+						)
+					})
+					.collect(),
+				unknown: None,
+			},
 			..Default::default()
 		},
 		..Default::default()
