@@ -18,7 +18,7 @@
 		"frontend:dev": "vite",
 		"lint": "eslint --fix && cd backend && cargo clippy --fix --allow-dirty",
 		"format": "prettier ./frontend --write && cd backend && cargo +nightly fmt",
-		"cleanup": "npm run lint && npm run format",
+		"cleanup": "tsc && npm run lint && npm run format",
 		"find-unused": "cd backend && del index.scip &&  cargo workspace-unused-pub"
 	},
 	"prettier": {

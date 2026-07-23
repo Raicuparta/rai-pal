@@ -244,7 +244,7 @@ export function AddGame() {
 							<Text>
 								{t("scanComplete", {
 									gamesCount: String(scanResult.games.length),
-									duration: scanResult.durationSecs.toFixed(1),
+									duration: scanResult.durationSecs?.toFixed(1) ?? "?",
 								})}
 							</Text>
 							<Group>
