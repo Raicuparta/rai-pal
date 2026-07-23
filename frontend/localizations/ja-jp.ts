@@ -33,7 +33,6 @@ export const jaJp: Localization = {
 		scanning: "{path}をスキャン中...",
 		scanProgress:
 			"{directories}個のディレクトリをスキャン、{executables}個の実行ファイルを発見",
-		currentPath: "現在: {path}",
 		scanComplete:
 			"{duration}秒で{gamesCount}個の実行ファイルが見つかりました。このフォルダをRai Palに追加しますか？",
 		confirmAddFolder: "フォルダを追加",

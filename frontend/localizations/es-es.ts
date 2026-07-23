@@ -33,7 +33,6 @@ export const esEs: Localization = {
 		scanning: "Escaneando {path}...",
 		scanProgress:
 			"Escaneados {directories} directorios, encontrados {executables} ejecutables",
-		currentPath: "Actual: {path}",
 		scanComplete:
 			"Se encontraron {gamesCount} ejecutables en {duration} segundos. ¿Agregar esta carpeta a Rai Pal?",
 		confirmAddFolder: "Agregar carpeta",

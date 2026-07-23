@@ -3,6 +3,7 @@ import {
 	Alert,
 	Button,
 	Code,
+	Divider,
 	Group,
 	Modal,
 	Stack,
@@ -169,24 +170,12 @@ export function AddGame() {
 				title={t("title")}
 			>
 				<Stack>
-					<Alert icon={<IconInfoCircle />}>{t("manualSteamSupportNote")}</Alert>
-					{directories.length > 0 && scanPhase === "idle" && (
-						<Stack>
-							<Text>{t("savedDirectories")}</Text>
-							{directories.map((dir) => (
-								<Group key={dir}>
-									<Code style={{ flex: 1 }}>{dir}</Code>
-									<ActionIcon
-										color="red"
-										variant="subtle"
-										onClick={() => handleRemoveDirectory(dir)}
-									>
-										<IconTrash />
-									</ActionIcon>
-								</Group>
-							))}
-						</Stack>
-					)}
+					<Alert
+						p="xs"
+						icon={<IconInfoCircle />}
+					>
+						{t("manualSteamSupportNote")}
+					</Alert>
 
 					{scanPhase === "idle" && (
 						<>
@@ -225,22 +214,21 @@ export function AddGame() {
 									})}
 								</Text>
 							)}
-							{scanProgress && (
-								<Text
-									size="sm"
-									c="dimmed"
-								>
-									{t("currentPath", {
-										path: scanProgress.currentPath,
-									})}
-								</Text>
-							)}
 							<Button
-								variant="outline"
+								color="red"
+								variant="light"
 								onClick={handleCancel}
 							>
 								{t("cancel")}
 							</Button>
+							{scanProgress && (
+								<Code
+									style={{ overflowX: "scroll" }}
+									w="100%"
+								>
+									<pre>{scanProgress.currentPath}</pre>
+								</Code>
+							)}
 						</Stack>
 					)}
 
@@ -268,6 +256,25 @@ export function AddGame() {
 									{t("cancel")}
 								</Button>
 							</Group>
+						</Stack>
+					)}
+
+					{directories.length > 0 && scanPhase === "idle" && (
+						<Stack>
+							<Divider />
+							<Text>{t("savedDirectories")}</Text>
+							{directories.map((dir) => (
+								<Group key={dir}>
+									<Code style={{ flex: 1 }}>{dir}</Code>
+									<ActionIcon
+										color="red"
+										variant="subtle"
+										onClick={() => handleRemoveDirectory(dir)}
+									>
+										<IconTrash />
+									</ActionIcon>
+								</Group>
+							))}
 						</Stack>
 					)}
 				</Stack>

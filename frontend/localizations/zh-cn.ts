@@ -33,7 +33,6 @@ export const zhCn: Localization = {
 		scanning: "正在扫描 {path}...",
 		scanProgress:
 			"已扫描 {directories} 个目录，找到 {executables} 个可执行文件",
-		currentPath: "当前: {path}",
 		scanComplete:
 			"在 {duration} 秒内找到 {gamesCount} 个可执行文件。是否将此文件夹添加到 Rai Pal？",
 		confirmAddFolder: "添加文件夹",

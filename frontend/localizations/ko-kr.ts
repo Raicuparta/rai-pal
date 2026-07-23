@@ -33,7 +33,6 @@ export const koKr: Localization = {
 		scanning: "{path} 스캔 중...",
 		scanProgress:
 			"{directories}개 디렉토리 스캔, {executables}개 실행 파일 발견",
-		currentPath: "현재: {path}",
 		scanComplete:
 			"{duration}초 만에 {gamesCount}개 실행 파일을 찾았습니다. 이 폴더를 Rai Pal에 추가할까요?",
 		confirmAddFolder: "폴더 추가",

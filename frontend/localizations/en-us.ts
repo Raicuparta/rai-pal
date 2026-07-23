@@ -64,9 +64,6 @@ export const enUs = {
 		scanProgress:
 			"Scanned {directories} directories, found {executables} executables",
 
-		// Shows the current path being scanned.
-		currentPath: "Current: {path}",
-
 		// Shown after scan completes, asking the user to confirm. {gamesCount} is a number, {duration} is in seconds.
 		scanComplete:
 			"Found {gamesCount} executables in {duration} seconds. Add this folder to Rai Pal?",

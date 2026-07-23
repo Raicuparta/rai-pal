@@ -33,7 +33,6 @@ export const frFr: Localization = {
 		scanning: "Analyse de {path}...",
 		scanProgress:
 			"{directories} dossiers analysés, {executables} exécutables trouvés",
-		currentPath: "Actuel : {path}",
 		scanComplete:
 			"{gamesCount} exécutables trouvés en {duration} secondes. Ajouter ce dossier à Rai Pal ?",
 		confirmAddFolder: "Ajouter le dossier",

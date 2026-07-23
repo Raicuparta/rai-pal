@@ -32,7 +32,6 @@ export const ptPt: Localization = {
 		scanning: "A analisar {path}...",
 		scanProgress:
 			"Analisados {directories} diretórios, encontrados {executables} executáveis",
-		currentPath: "Atual: {path}",
 		scanComplete:
 			"Encontrados {gamesCount} executáveis em {duration} segundos. Adicionar esta pasta ao Rai Pal?",
 		confirmAddFolder: "Adicionar pasta",
