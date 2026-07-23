@@ -611,7 +611,6 @@ async fn add_game_directory(handle: AppHandle, path: PathBuf) -> Result {
 #[tauri::command]
 #[specta::specta]
 async fn scan_game_directory(
-	handle: AppHandle,
 	path: PathBuf,
 	on_progress: Channel<ScanProgress>,
 ) -> Result<DirectoryScanResult> {
@@ -624,10 +623,9 @@ async fn scan_game_directory(
 	})
 	.await
 	.map_err(|join_error| {
-		rai_pal_core::result::Error::Io(std::io::Error::new(
-			std::io::ErrorKind::Other,
-			format!("scan task failed: {join_error}"),
-		))
+		rai_pal_core::result::Error::Io(std::io::Error::other(format!(
+			"scan task failed: {join_error}"
+		)))
 	})??;
 
 	Ok(result)

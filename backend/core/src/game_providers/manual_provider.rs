@@ -197,7 +197,13 @@ fn find_executables_in_directory(dir: &Path) -> Result<Vec<PathBuf>> {
 	let mut executables = Vec::new();
 	let mut scanned_dirs = 0u32;
 
-	walk_directory(dir, &mut executables, &VALID_EXTENSIONS, None, &mut scanned_dirs)?;
+	walk_directory(
+		dir,
+		&mut executables,
+		&VALID_EXTENSIONS,
+		None,
+		&mut scanned_dirs,
+	)?;
 
 	Ok(executables)
 }
@@ -218,6 +224,7 @@ fn walk_directory(
 			if let Some(cb) = on_progress {
 				cb(ScanProgress {
 					scanned_dirs: *scanned_dirs,
+					#[expect(clippy::cast_possible_truncation)]
 					executables_found: executables.len() as u32,
 					current_path: path.display().to_string(),
 				});
@@ -236,6 +243,7 @@ fn walk_directory(
 			if let Some(cb) = on_progress {
 				cb(ScanProgress {
 					scanned_dirs: *scanned_dirs,
+					#[expect(clippy::cast_possible_truncation)]
 					executables_found: executables.len() as u32 + 1,
 					current_path: path.display().to_string(),
 				});
@@ -259,7 +267,13 @@ pub fn scan_directory(
 	let mut executables = Vec::new();
 	let mut scanned_dirs = 0u32;
 
-	walk_directory(path, &mut executables, &VALID_EXTENSIONS, Some(&on_progress), &mut scanned_dirs)?;
+	walk_directory(
+		path,
+		&mut executables,
+		&VALID_EXTENSIONS,
+		Some(&on_progress),
+		&mut scanned_dirs,
+	)?;
 
 	let duration_secs = start.elapsed().as_secs_f64();
 

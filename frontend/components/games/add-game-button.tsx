@@ -26,6 +26,7 @@ import {
 import { open as openDialog } from "@tauri-apps/plugin-dialog";
 import { useAsyncCommand } from "@hooks/use-async-command";
 import { useLocalization } from "@hooks/use-localization";
+import { showAppNotification } from "@components/app-notifications";
 
 type ScanPhase = "idle" | "scanning" | "confirming";
 
@@ -67,9 +68,8 @@ export function AddGame() {
 	useEffect(() => {
 		if (isOpen) {
 			loadDirectories();
-			resetScanState();
 		}
-	}, [isOpen, resetScanState]);
+	}, [isOpen]);
 
 	const handleFileClick = async () => {
 		const path = await openDialog({
@@ -114,6 +114,7 @@ export function AddGame() {
 			setScanResult(result);
 			setScanPhase("confirming");
 		} catch (error) {
+			showAppNotification(`${error}`, "error");
 			if (cancelledRef.current || !mountedRef.current) return;
 			setScanPhase("idle");
 		}
@@ -131,7 +132,7 @@ export function AddGame() {
 			await executeAddGameDirectory(selectedPath);
 			if (!mountedRef.current) return;
 			loadDirectories();
-			setIsOpen(false);
+			resetScanState();
 		} catch {
 			if (!mountedRef.current) return;
 			resetScanState();
@@ -147,7 +148,10 @@ export function AddGame() {
 	return (
 		<>
 			<Button
-				onClick={() => setIsOpen(true)}
+				onClick={() => {
+					resetScanState();
+					setIsOpen(true);
+				}}
 				leftSection={<IconPlaylistAdd />}
 			>
 				{t("button")}
