@@ -1,3 +1,5 @@
+// TODO: test this after fresh start (delete app data).
+
 import { Button, Group, Indicator, Popover } from "@mantine/core";
 import { IconFilter, IconX } from "@tabler/icons-react";
 import { useAtomValue } from "jotai";

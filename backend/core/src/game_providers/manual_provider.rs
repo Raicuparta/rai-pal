@@ -144,14 +144,13 @@ impl WineProviderActions for Manual {}
 #[cfg(target_os = "linux")]
 impl WineProviderActions for Manual {
 	fn get_wine_prefix_path(&self, _game: &DbGame) -> Result<PathBuf> {
-		Ok(
-			std::env::var_os("WINEPREFIX")
-				.map(PathBuf::from)
-				.unwrap_or_else(|| {
-					let home = std::env::var_os("HOME").unwrap_or_default();
-					PathBuf::from(home).join(".wine")
-				}),
-		)
+		Ok(std::env::var_os("WINEPREFIX").map_or_else(
+			|| {
+				let home = std::env::var_os("HOME").unwrap_or_default();
+				PathBuf::from(home).join(".wine")
+			},
+			PathBuf::from,
+		))
 	}
 
 	fn get_wine_binary_path(&self, _game: &DbGame) -> Result<PathBuf> {
@@ -209,9 +208,12 @@ fn find_system_wine() -> PathBuf {
 	}
 
 	if let Some(home) = std::env::var_os("HOME") {
-		let user_flatpak_base =
-			PathBuf::from(home).join(".local/share/flatpak/app");
-		for flatpak_id in ["org.winehq.Wine", "org.winehq.Wine.Stable", "org.winehq.Wine.Devel"] {
+		let user_flatpak_base = PathBuf::from(home).join(".local/share/flatpak/app");
+		for flatpak_id in [
+			"org.winehq.Wine",
+			"org.winehq.Wine.Stable",
+			"org.winehq.Wine.Devel",
+		] {
 			let candidate = user_flatpak_base
 				.join(flatpak_id)
 				.join("current/active/files/bin/wine");

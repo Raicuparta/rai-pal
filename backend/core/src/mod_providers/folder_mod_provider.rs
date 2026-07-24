@@ -1,11 +1,4 @@
-use std::{
-	hash::{
-		DefaultHasher,
-		Hash,
-		Hasher,
-	},
-	path::PathBuf,
-};
+use std::path::PathBuf;
 
 use super::mod_provider::ModProvider;
 use crate::{
@@ -33,17 +26,6 @@ pub struct FolderModProvider {
 	pub folder_path: PathBuf,
 }
 
-impl FolderModProvider {
-	// TODO: use path hash helper that already exists.
-	fn compute_source_hash(&self) -> String {
-		let canonical =
-			std::fs::canonicalize(&self.folder_path).unwrap_or_else(|_| self.folder_path.clone());
-		let mut hasher = DefaultHasher::new();
-		canonical.try_to_str().unwrap_or_default().hash(&mut hasher);
-		hasher.finish().to_string()
-	}
-}
-
 impl ModProvider for FolderModProvider {
 	fn get_id() -> ModProviderId {
 		ModProviderId::Folder
@@ -56,7 +38,7 @@ impl ModProvider for FolderModProvider {
 	}
 
 	async fn insert_mods(&self, db: &DbMutex) -> Result {
-		let source_hash = self.compute_source_hash();
+		let source_hash = self.folder_path.hash_string();
 
 		for manifest_path in self.folder_path.join("*").join(GameMod::FILE_NAME).glob() {
 			let Some(mut game_mod) = GameMod::from_file(&manifest_path) else {
