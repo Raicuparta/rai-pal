@@ -3637,6 +3637,7 @@ dependencies = [
  "keyring",
  "lazy-regex",
  "log",
+ "memchr",
  "memmap2",
  "open",
  "pelite",

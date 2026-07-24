@@ -1,5 +1,6 @@
 use std::path::Path;
 
+use memchr::memmem;
 use pelite::PeFile;
 
 use super::game_engine::{
@@ -83,14 +84,14 @@ fn is_gamemaker_studio_1(data: &[u8]) -> bool {
 	const MARKERS: &[&[u8]] = &[b"GML_STUB_ASSERT", b"Initializing GML"];
 	MARKERS
 		.iter()
-		.any(|marker| data.windows(marker.len()).any(|w| w == *marker))
+		.any(|marker| memmem::find(data, marker).is_some())
 }
 
 fn is_gamemaker_legacy(data: &[u8]) -> bool {
 	const MARKERS: &[&[u8]] = &[b"GameMaker", b"YoYo Games", b"gamemaker"];
 	MARKERS
 		.iter()
-		.any(|marker| data.windows(marker.len()).any(|w| w == *marker))
+		.any(|marker| memmem::find(data, marker).is_some())
 }
 
 fn has_gamemaker_metadata(data: &[u8]) -> bool {
