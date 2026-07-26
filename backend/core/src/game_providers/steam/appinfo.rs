@@ -1,32 +1,17 @@
-// This code is based on https://github.com/drguildo/vdfr
-// It has been adapted to fit the needs of this project.
-
 use std::{
 	fs,
-	io::{
-		BufReader,
-		Read,
-		Seek,
-		SeekFrom,
-	},
 	path::{
 		Path,
 		PathBuf,
 	},
 };
 
-use byteorder::{
-	LittleEndian,
-	ReadBytesExt,
-};
 use rai_pal_proc_macros::serializable_struct;
 
 use super::vdf::{
 	KeyValues,
 	ValueType,
 	find_keys,
-	read_kv,
-	read_string,
 	value_to_i32,
 	value_to_kv,
 	value_to_path,
@@ -68,8 +53,9 @@ pub struct SteamAppInfo {
 }
 
 pub struct SteamAppInfoReader {
-	pub reader: BufReader<fs::File>,
-	pub keys: Option<Vec<String>>,
+	mmap: memmap2::Mmap,
+	pos: usize,
+	keys: Option<Vec<String>>,
 }
 
 const OLD_APPINFO_MAX_VERSION: u32 = 0x07_56_44_28;
@@ -80,67 +66,76 @@ impl SteamAppInfoReader {
 			return Err(Error::SteamAppInfoNotFound(appinfo_path.to_owned()));
 		}
 
-		let mut reader = BufReader::new(fs::File::open(appinfo_path)?);
+		let file = fs::File::open(appinfo_path)?;
+		let mmap = unsafe { memmap2::Mmap::map(&file)? };
+		let mut pos = 0;
 
-		let version = reader.read_u32::<LittleEndian>()?;
-		let _universe = reader.read_u32::<LittleEndian>()?;
+		let version = super::vdf::read_u32_le(&mmap, &mut pos);
+		let _universe = super::vdf::read_u32_le(&mmap, &mut pos);
 
 		let is_new_version = version > OLD_APPINFO_MAX_VERSION;
 
 		let keys = if is_new_version {
-			let key_list_address = reader.read_u64::<LittleEndian>()?;
+			let key_list_address = super::vdf::read_u64_le(&mmap, &mut pos);
+			let position_before_jump = pos;
 
-			let position_before_jump = reader.stream_position()?;
+			pos = usize::try_from(key_list_address)?;
 
-			// This new version of appinfo has all the keyvalue keys at the end of the file,
-			// starting at the address given at the start.
-			reader.seek(SeekFrom::Start(key_list_address))?;
-
-			let key_count = reader.read_u32::<LittleEndian>()?;
-
-			let mut keys: Vec<String> = Vec::with_capacity(usize::try_from(key_count)?);
-			// loop key_count times and push into keys:
+			let key_count = super::vdf::read_u32_le(&mmap, &mut pos);
+			let mut keys_vec: Vec<String> = Vec::with_capacity(usize::try_from(key_count)?);
 			for _ in 0..key_count {
-				if let Ok(key) = read_string(&mut reader, false) {
-					keys.push(key);
+				if let Ok(key) = super::vdf::read_cstring(&mmap, &mut pos) {
+					keys_vec.push(key);
 				}
 			}
 
-			// Now we jump back to the start and do what we did before.
-			reader.seek(SeekFrom::Start(position_before_jump))?;
+			pos = position_before_jump;
 
-			Some(keys)
+			Some(keys_vec)
 		} else {
 			None
 		};
 
-		Ok(Self { reader, keys })
+		Ok(Self { mmap, pos, keys })
 	}
 
 	pub fn try_next(&mut self) -> Result<Option<SteamAppInfo>> {
 		loop {
-			let app_id = self.reader.read_u32::<LittleEndian>()?;
-
-			if app_id == 0 {
-				break;
+			if self.pos + 8 > self.mmap.len() {
+				return Ok(None);
 			}
 
-			let _size = self.reader.read_u32::<LittleEndian>()?;
-			let _state = self.reader.read_u32::<LittleEndian>()?;
-			let _last_update = self.reader.read_u32::<LittleEndian>()?;
-			let _access_token = self.reader.read_u64::<LittleEndian>()?;
+			let app_id = super::vdf::read_u32_le(&self.mmap, &mut self.pos);
+			if app_id == 0 {
+				return Ok(None);
+			}
 
-			let mut checksum_txt: [u8; 20] = [0; 20];
-			self.reader.read_exact(&mut checksum_txt)?;
+			self.pos += 4; // size: u32
+			self.pos += 4; // state: u32
+			self.pos += 4; // last_update: u32
+			self.pos += 8; // access_token: u64
+			self.pos += 20; // checksum_txt: [u8; 20]
+			self.pos += 4; // change_number: u32
+			self.pos += 20; // checksum_bin: [u8; 20]
 
-			let _change_number = self.reader.read_u32::<LittleEndian>()?;
+			let keys_ref = self.keys.as_deref();
+			let vdf_start = self.pos;
 
-			let mut checksum_bin: [u8; 20] = [0; 20];
-			self.reader.read_exact(&mut checksum_bin)?;
+			// Quick scan for app_type to skip non-game entries without full VDF parse.
+			let mut scan_pos = vdf_start;
+			let early_type = super::vdf::find_app_type_in_vdf(&self.mmap, &mut scan_pos, keys_ref);
 
-			// let some_pre_kv_thing = self.reader.read_u64::<LittleEndian>()?;
+			if let Some(ref app_type) = early_type
+				&& app_type != "Game"
+				&& app_type != "Demo"
+			{
+				super::vdf::skip_vdf(&self.mmap, &mut self.pos, keys_ref);
+				continue;
+			}
 
-			let key_values = read_kv(&mut self.reader, false, self.keys.as_ref())?;
+			// Full parse for kept entries (or when app_type wasn't found).
+			self.pos = vdf_start;
+			let key_values = super::vdf::read_kv_mmap(&self.mmap, &mut self.pos, keys_ref, false)?;
 
 			let app = App { key_values };
 
@@ -226,8 +221,6 @@ impl SteamAppInfoReader {
 				}));
 			}
 		}
-
-		Ok(None)
 	}
 }
 

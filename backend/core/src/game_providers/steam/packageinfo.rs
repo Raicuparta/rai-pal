@@ -1,29 +1,16 @@
-// This code is based on https://github.com/drguildo/vdfr
-// It has been adapted to fit the needs of this project.
-
 use std::{
 	collections::{
 		HashMap,
 		HashSet,
 	},
 	fs,
-	io::{
-		BufReader,
-		Read,
-	},
 	path::Path,
-};
-
-use byteorder::{
-	LittleEndian,
-	ReadBytesExt,
 };
 
 use super::vdf::{
 	KeyValues,
 	ValueType,
 	find_keys,
-	read_kv,
 };
 use crate::result::Result;
 
@@ -44,33 +31,30 @@ pub struct PackageInfo {
 
 impl PackageInfo {
 	pub fn read(path: &Path) -> Result<Self> {
-		let mut reader = BufReader::new(fs::File::open(path)?);
+		let file = fs::File::open(path)?;
+		let mmap = unsafe { memmap2::Mmap::map(&file)? };
+		let mut pos = 0;
 
-		let magic = reader.read_u32::<LittleEndian>()?;
-		let universe = reader.read_u32::<LittleEndian>()?;
+		let magic = super::vdf::read_u32_le(&mmap, &mut pos);
+		let universe = super::vdf::read_u32_le(&mmap, &mut pos);
 
-		let mut package_info = Self {
-			magic,
-			universe,
-			packages: HashMap::new(),
-		};
+		let mut packages = HashMap::new();
 
 		loop {
-			let package_id = reader.read_u32::<LittleEndian>()?;
-
+			let package_id = super::vdf::read_u32_le(&mmap, &mut pos);
 			if package_id == 0xffff_ffff {
 				break;
 			}
 
 			let mut checksum: [u8; 20] = [0; 20];
-			reader.read_exact(&mut checksum)?;
+			checksum.copy_from_slice(&mmap[pos..pos + 20]);
+			pos += 20;
 
-			let change_number = reader.read_u32::<LittleEndian>()?;
-
+			let change_number = super::vdf::read_u32_le(&mmap, &mut pos);
 			// XXX: No idea what this is. Seems to get ignored in vdf.py.
-			let pics = reader.read_u64::<LittleEndian>()?;
+			let pics = super::vdf::read_u64_le(&mmap, &mut pos);
 
-			let key_values = read_kv(&mut reader, false, None)?;
+			let key_values = super::vdf::read_kv_mmap(&mmap, &mut pos, None, false)?;
 
 			let package = Package {
 				checksum,
@@ -79,10 +63,14 @@ impl PackageInfo {
 				key_values,
 			};
 
-			package_info.packages.insert(package_id, package);
+			packages.insert(package_id, package);
 		}
 
-		Ok(package_info)
+		Ok(Self {
+			magic,
+			universe,
+			packages,
+		})
 	}
 
 	pub fn get_app_ids(&self) -> HashSet<String> {
