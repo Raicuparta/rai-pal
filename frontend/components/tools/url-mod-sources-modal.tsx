@@ -6,11 +6,13 @@ import {
 	ActionIcon,
 	Code,
 	Group,
+	Input,
 	Modal,
 	Stack,
 	Switch,
 	Text,
 	TextInput,
+	Tooltip,
 } from "@mantine/core";
 import { IconPlus, IconTrash } from "@tabler/icons-react";
 import { startTransition, useEffect, useState } from "react";
@@ -92,16 +94,24 @@ export function UrlModSourcesModal(props: Props) {
 										checked={source.enabled}
 										onChange={() => handleToggle(source)}
 										disabled={isToggling}
+										size="xs"
 									/>
-									<Code>{source.url}</Code>
-									<ActionIcon
-										color="red"
-										variant="subtle"
-										disabled={source.isDefault}
-										onClick={() => handleRemove(source.url)}
-									>
-										<IconTrash />
-									</ActionIcon>
+									<TextInput
+										rightSection={
+											<ActionIcon
+												size="sm"
+												color="red"
+												variant="subtle"
+												disabled={source.isDefault}
+												onClick={() => handleRemove(source.url)}
+											>
+												<IconTrash />
+											</ActionIcon>
+										}
+										readOnly
+										value={source.url}
+										flex={1}
+									/>
 								</Group>
 							))}
 						</Stack>
