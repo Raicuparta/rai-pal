@@ -79,6 +79,18 @@ export const filterDetails = Object.freeze<{
 			},
 		},
 	},
+	os: {
+		localizationKey: "os",
+		emptyLocalizationKey: "unknown",
+		valueDetails: {
+			Windows: {
+				staticDisplayText: "Windows",
+			},
+			Linux: {
+				staticDisplayText: "Linux",
+			},
+		},
+	},
 	tags: {
 		localizationKey: "tags",
 		emptyLocalizationKey: "tagUntagged",

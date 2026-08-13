@@ -13,6 +13,7 @@ use crate::{
 	},
 	game_providers::game_provider::GameProviderId,
 	game_tag::GameTag,
+	operating_system::OperatingSystem,
 };
 
 #[serializable_enum]
@@ -51,6 +52,7 @@ pub struct GamesFilter {
 	pub architectures: FilterGroup<Architecture>,
 	pub unity_backends: FilterGroup<UnityBackend>,
 	pub engines: FilterGroup<EngineBrand>,
+	pub os: FilterGroup<OperatingSystem>,
 	pub installed: FilterGroup<InstallState>,
 	pub mod_families: FilterGroup<String>,
 }

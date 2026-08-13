@@ -200,6 +200,7 @@ export type GamesFilter = {
 	architectures: FilterGroup<Architecture>,
 	unityBackends: FilterGroup<UnityBackend>,
 	engines: FilterGroup<EngineBrand>,
+	os: FilterGroup<OperatingSystem>,
 	installed: FilterGroup<InstallState>,
 	modFamilies: FilterGroup<string>,
 };

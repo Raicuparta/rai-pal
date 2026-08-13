@@ -48,6 +48,13 @@ export const defaultQuery: GamesQuery = {
 			},
 			unknown: null,
 		},
+		os: {
+			known: {
+				Windows: { enabled: false, locked: false },
+				Linux: { enabled: false, locked: false },
+			},
+			unknown: null,
+		},
 		installed: {
 			known: {
 				Installed: { enabled: false, locked: false },

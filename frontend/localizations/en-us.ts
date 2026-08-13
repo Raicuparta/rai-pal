@@ -108,6 +108,9 @@ export const enUs = {
 		// Game executable architecture (32-bit, 64-bit)
 		architecture: "Architecture",
 
+		// Game operating system (Windows, Linux)
+		os: "OS",
+
 		// Unity scripting backend (Mono, IL2CPP)
 		unityBackend: "Unity Backend",
 

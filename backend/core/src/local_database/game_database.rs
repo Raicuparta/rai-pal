@@ -284,6 +284,15 @@ impl GameDatabase for DbMutex {
 				filters.push(cond);
 			}
 
+			// Operating systems filter
+			if let Some(cond) = build_nullable_exclusion_filter(
+				"ig.os",
+				&filter.os,
+				&mut params,
+			) {
+				filters.push(cond);
+			}
+
 			// Mod families filter
 			{
 				let disabled: Vec<_> = filter
