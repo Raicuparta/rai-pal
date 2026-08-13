@@ -65,7 +65,10 @@ use rai_pal_core::{
 		mod_provider,
 		url_mod_provider,
 	},
-	mods::game_mod::GameMod,
+	mods::game_mod::{
+		GameMod,
+		ModDependency,
+	},
 	path_extensions::PathExt,
 	progress_status::ProgressStatus,
 	remote_config::RemoteConfigs,
@@ -227,16 +230,24 @@ fn collect_deps_to_install(
 		&& let Some(deps) = &game_mod.dependencies
 	{
 		for dep in deps {
-			if let Some(info) = relevant_mods
-				.iter()
-				.find(|m| m.compatible && m.mod_id == dep.mod_id)
-			{
+			let matching_mods = match dep {
+				ModDependency::ModId { mod_id: dep_id } => relevant_mods
+					.iter()
+					.filter(|info| info.compatible && info.mod_id == *dep_id)
+					.collect::<Vec<_>>(),
+				ModDependency::Family { family: dep_family } => relevant_mods
+					.iter()
+					.filter(|info| info.compatible && info.family.as_deref() == Some(dep_family.as_str()))
+					.collect::<Vec<_>>(),
+			};
+
+			for info in matching_mods {
 				let outdated = info.installed_version.is_none() || info.is_outdated;
 				if outdated
-					&& let Ok(dep_mod) = database.get_mod(&dep.mod_id)
+					&& let Ok(dep_mod) = database.get_mod(&info.mod_id)
 					&& dep_mod.install.is_some()
 				{
-					collect_deps_to_install(&dep.mod_id, database, relevant_mods, visited, result);
+					collect_deps_to_install(&info.mod_id, database, relevant_mods, visited, result);
 					result.push(dep_mod);
 				}
 			}
@@ -313,6 +324,7 @@ async fn install_mod(
 				is_outdated: false,
 				mod_id: other_mod.id.clone(),
 				mod_scope: other_mod.scope.clone().unwrap_or_default(),
+				family: other_mod.family.clone(),
 			})
 			.collect()
 	};

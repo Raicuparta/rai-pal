@@ -188,6 +188,7 @@ export type GameModInfo = {
 	isOutdated: boolean,
 	hasInstalledDependants: boolean,
 	compatible: boolean,
+	family: string | null,
 };
 
 export type GameProviderId = "Epic" | "Gog" | "Itch" | "Manual" | "Steam" | "Xbox";
@@ -224,9 +225,7 @@ export type ModConfig = {
 
 export type ModConfigDestinationType = "File" | "Folder";
 
-export type ModDependency = {
-	modId: string,
-};
+export type ModDependency = ({ modId: string }) & { family?: never } | ({ family: string }) & { modId?: never };
 
 export type ModDownload = {
 	id: string,

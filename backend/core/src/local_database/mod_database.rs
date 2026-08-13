@@ -45,6 +45,7 @@ pub struct GameModInfo {
 	pub is_outdated: bool,
 	pub has_installed_dependants: bool,
 	pub compatible: bool,
+	pub family: Option<String>,
 }
 
 pub trait ModDatabase {
@@ -456,6 +457,7 @@ impl ModDatabase for DbMutex {
 					im.installed_version AS installed_version,
 					im.installed_hash AS installed_hash,
 					m.dependencies AS dependencies,
+					m.family AS family,
 					CASE
 						WHEN im.mod_id IS NULL THEN 0
 						ELSE 1
@@ -510,6 +512,11 @@ impl ModDatabase for DbMutex {
 						OR json_extract(m.architecture, '$') = ig.architecture
 					)
 					AND (
+						json_extract(m.game_os, '$') IS NULL
+						OR ig.os IS NULL
+						OR json_extract(m.game_os, '$') = ig.os
+					)
+					AND (
 						json_extract(m.host_os, '$') IS NULL
 						OR json_extract(m.host_os, '$') = $3
 					)
@@ -526,7 +533,10 @@ impl ModDatabase for DbMutex {
 						INNER JOIN json_each(dependant.dependencies) dep
 						WHERE dependant.mod_id <> cm.mod_id
 							AND dependant.is_installed = 1
-							AND json_extract(dep.value, '$.modId') = cm.mod_id
+							AND (
+								json_extract(dep.value, '$.modId') = cm.mod_id
+								OR json_extract(dep.value, '$.family') = cm.family
+							)
 					) THEN 1
 					ELSE 0
 				END AS has_installed_dependants,
@@ -568,7 +578,8 @@ impl ModDatabase for DbMutex {
 					) THEN 0
 					ELSE 1
 				END AS compatible,
-				cm.mod_scope
+				cm.mod_scope,
+				cm.family
 			FROM candidate_mods cm
 		",
 			)?
@@ -587,6 +598,7 @@ impl ModDatabase for DbMutex {
 						has_installed_dependants: row.get(4)?,
 						compatible: row.get(5)?,
 						mod_scope: row.get(6)?,
+						family: row.get(7)?,
 					})
 				},
 			)?
@@ -617,8 +629,11 @@ fn try_insert_mod(
 
 	let scoped_deps = game_mod.dependencies.as_ref().map(|deps| {
 		deps.iter()
-			.map(|dep| ModDependency {
-				mod_id: scope_id(&scope, &dep.mod_id).into_owned(),
+			.map(|dep| match dep {
+				ModDependency::ModId { mod_id } => ModDependency::ModId {
+					mod_id: scope_id(&scope, mod_id).into_owned(),
+				},
+				ModDependency::Family { .. } => dep.clone(),
 			})
 			.collect::<Vec<_>>()
 	});

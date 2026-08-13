@@ -319,8 +319,9 @@ impl GameDatabase for DbMutex {
 						WHERE m.family IN ({})
 						AND (json_extract(m.engine, '$') IS NULL OR json_extract(m.engine, '$') = COALESCE(ig.engine_brand, rg.engine_brand))
 						AND (json_extract(m.unity_backend, '$') IS NULL OR ig.unity_backend IS NULL OR json_extract(m.unity_backend, '$') = ig.unity_backend)
-						AND (json_extract(m.architecture, '$') IS NULL OR ig.architecture IS NULL OR json_extract(m.architecture, '$') = ig.architecture)
-						AND (json_extract(m.host_os, '$') IS NULL OR json_extract(m.host_os, '$') = ?)
+					AND (json_extract(m.architecture, '$') IS NULL OR ig.architecture IS NULL OR json_extract(m.architecture, '$') = ig.architecture)
+					AND (json_extract(m.game_os, '$') IS NULL OR ig.os IS NULL OR json_extract(m.game_os, '$') = ig.os)
+					AND (json_extract(m.host_os, '$') IS NULL OR json_extract(m.host_os, '$') = ?)
 						AND (
 							COALESCE(ig.engine_version_major, rg.engine_version_major) IS NULL
 							OR (

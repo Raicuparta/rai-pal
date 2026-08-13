@@ -107,9 +107,13 @@ pub struct ModDownload {
 	pub url: String,
 }
 
-#[serializable_struct]
-pub struct ModDependency {
-	pub mod_id: String,
+#[derive(serde::Serialize, serde::Deserialize, specta::Type, Clone, Debug, PartialEq, Eq, Hash)]
+#[serde(untagged)]
+pub enum ModDependency {
+	#[serde(rename_all = "camelCase")]
+	ModId { mod_id: String },
+	#[serde(rename_all = "camelCase")]
+	Family { family: String },
 }
 
 #[serializable_enum]
