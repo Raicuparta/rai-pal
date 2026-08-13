@@ -226,29 +226,35 @@ fn collect_deps_to_install(
 		return;
 	}
 
-	if let Ok(game_mod) = database.get_mod(mod_id)
-		&& let Some(deps) = &game_mod.dependencies
-	{
-		for dep in deps {
-			let matching_mods = match dep {
-				ModDependency::ModId { mod_id: dep_id } => relevant_mods
-					.iter()
-					.filter(|info| info.compatible && info.mod_id == *dep_id)
-					.collect::<Vec<_>>(),
-				ModDependency::Family { family: dep_family } => relevant_mods
-					.iter()
-					.filter(|info| info.compatible && info.family.as_deref() == Some(dep_family.as_str()))
-					.collect::<Vec<_>>(),
-			};
+	if let Ok(game_mod) = database.get_mod(mod_id) {
+		for deps in [
+			game_mod.optional_dependencies.as_ref(),
+			game_mod.required_dependencies.as_ref(),
+		]
+		.into_iter()
+		.flatten()
+		{
+			for dep in deps {
+				let matching_mods = match dep {
+					ModDependency::ModId { mod_id: dep_id } => relevant_mods
+						.iter()
+						.filter(|info| info.compatible && info.mod_id == *dep_id)
+						.collect::<Vec<_>>(),
+					ModDependency::Family { family: dep_family } => relevant_mods
+						.iter()
+						.filter(|info| info.compatible && info.family.as_deref() == Some(dep_family.as_str()))
+						.collect::<Vec<_>>(),
+				};
 
-			for info in matching_mods {
-				let outdated = info.installed_version.is_none() || info.is_outdated;
-				if outdated
-					&& let Ok(dep_mod) = database.get_mod(&info.mod_id)
-					&& dep_mod.install.is_some()
-				{
-					collect_deps_to_install(&info.mod_id, database, relevant_mods, visited, result);
-					result.push(dep_mod);
+				for info in matching_mods {
+					let outdated = info.installed_version.is_none() || info.is_outdated;
+					if outdated
+						&& let Ok(dep_mod) = database.get_mod(&info.mod_id)
+						&& dep_mod.install.is_some()
+					{
+						collect_deps_to_install(&info.mod_id, database, relevant_mods, visited, result);
+						result.push(dep_mod);
+					}
 				}
 			}
 		}

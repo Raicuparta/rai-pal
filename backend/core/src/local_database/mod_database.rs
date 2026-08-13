@@ -112,7 +112,8 @@ impl ModDatabase for DbMutex {
 				deprecated INTEGER,
 				hide_from_game_mods_list INTEGER,
 				config TEXT,
-				dependencies TEXT,
+				optional_dependencies TEXT,
+				required_dependencies TEXT,
 				install TEXT,
 				run_for_game TEXT,
 				run_standalone TEXT,
@@ -172,7 +173,8 @@ impl ModDatabase for DbMutex {
 				host_os,
 				deprecated,
 				config,
-				dependencies,
+				optional_dependencies,
+				required_dependencies,
 				install,
 				run_for_game,
 				run_standalone,
@@ -201,14 +203,15 @@ impl ModDatabase for DbMutex {
 					host_os: row.get_json(11)?,
 					deprecated: row.get(12)?,
 					config: row.get_json(13)?,
-					dependencies: row.get_json(14)?,
-					install: row.get_json(15)?,
-					run_for_game: row.get_json(16)?,
-					run_standalone: row.get_json(17)?,
-					hash: row.get(18)?,
-					hide_from_game_mods_list: row.get(19)?,
-					family: row.get(20)?,
-					scope: row.get(21)?,
+					optional_dependencies: row.get_json(14)?,
+					required_dependencies: row.get_json(15)?,
+					install: row.get_json(16)?,
+					run_for_game: row.get_json(17)?,
+					run_standalone: row.get_json(18)?,
+					hash: row.get(19)?,
+					hide_from_game_mods_list: row.get(20)?,
+					family: row.get(21)?,
+					scope: row.get(22)?,
 				})
 			})?)
 	}
@@ -291,7 +294,8 @@ impl ModDatabase for DbMutex {
 				host_os,
 				deprecated,
 				config,
-				dependencies,
+				optional_dependencies,
+				required_dependencies,
 				install,
 				run_for_game,
 				run_standalone,
@@ -318,14 +322,15 @@ impl ModDatabase for DbMutex {
 					host_os: row.get_json(11)?,
 					deprecated: row.get(12)?,
 					config: row.get_json(13)?,
-					dependencies: row.get_json(14)?,
-					install: row.get_json(15)?,
-					run_for_game: row.get_json(16)?,
-					run_standalone: row.get_json(17)?,
-					hash: row.get(18)?,
-					hide_from_game_mods_list: row.get(19)?,
-					family: row.get(20)?,
-					scope: row.get(21)?,
+					optional_dependencies: row.get_json(14)?,
+					required_dependencies: row.get_json(15)?,
+					install: row.get_json(16)?,
+					run_for_game: row.get_json(17)?,
+					run_standalone: row.get_json(18)?,
+					hash: row.get(19)?,
+					hide_from_game_mods_list: row.get(20)?,
+					family: row.get(21)?,
+					scope: row.get(22)?,
 				})
 			})?
 			.filter_map(|game_mod| match game_mod {
@@ -447,7 +452,7 @@ impl ModDatabase for DbMutex {
 		provider_id: &GameProviderId,
 		game_id: &str,
 	) -> Result<Vec<GameModInfo>> {
-		Ok(self
+		let mut mod_infos = self
 			.lock_db()?
 			.prepare_cached(
 				r"
@@ -456,7 +461,8 @@ impl ModDatabase for DbMutex {
 					m.id AS mod_id,
 					im.installed_version AS installed_version,
 					im.installed_hash AS installed_hash,
-					m.dependencies AS dependencies,
+					m.optional_dependencies AS optional_dependencies,
+					m.required_dependencies AS required_dependencies,
 					m.family AS family,
 					CASE
 						WHEN im.mod_id IS NULL THEN 0
@@ -530,7 +536,18 @@ impl ModDatabase for DbMutex {
 					WHEN EXISTS (
 						SELECT 1
 						FROM candidate_mods dependant
-						INNER JOIN json_each(dependant.dependencies) dep
+						INNER JOIN json_each(dependant.optional_dependencies) dep ON 1=1
+						WHERE dependant.mod_id <> cm.mod_id
+							AND dependant.is_installed = 1
+							AND (
+								json_extract(dep.value, '$.modId') = cm.mod_id
+								OR json_extract(dep.value, '$.family') = cm.family
+							)
+					) THEN 1
+					WHEN EXISTS (
+						SELECT 1
+						FROM candidate_mods dependant
+						INNER JOIN json_each(dependant.required_dependencies) dep ON 1=1
 						WHERE dependant.mod_id <> cm.mod_id
 							AND dependant.is_installed = 1
 							AND (
@@ -602,7 +619,14 @@ impl ModDatabase for DbMutex {
 					})
 				},
 			)?
-			.collect::<rusqlite::Result<Vec<GameModInfo>>>()?)
+			.collect::<rusqlite::Result<Vec<GameModInfo>>>()?;
+
+		// A mod whose required dependencies don't exist (or aren't compatible)
+		// is itself considered not compatible.
+		let mod_map = self.get_mod_map()?;
+		apply_required_dependency_compatibility(&mut mod_infos, &mod_map);
+
+		Ok(mod_infos)
 	}
 
 	fn remove_stale_mods(&self, max_time: u64, provider_id: ModProviderId) -> Result {
@@ -618,6 +642,62 @@ fn serialize_json_option<T: Serialize>(value: Option<&T>) -> Result<String> {
 	serde_json::to_string(&value).map_err(Into::into)
 }
 
+fn scope_dependencies(deps: &[ModDependency], scope: &str) -> Vec<ModDependency> {
+	deps.iter()
+		.map(|dep| match dep {
+			ModDependency::ModId { mod_id } => ModDependency::ModId {
+				mod_id: scope_id(scope, mod_id).into_owned(),
+			},
+			ModDependency::Family { .. } => dep.clone(),
+		})
+		.collect()
+}
+
+// A mod is considered not compatible if any of its required dependencies
+// don't exist in this game's mod list, or aren't themselves compatible.
+// Kept in a loop so incompatibility propagates through chains of required deps.
+fn apply_required_dependency_compatibility(
+	mod_infos: &mut [GameModInfo],
+	mod_map: &BTreeMap<String, GameMod>,
+) {
+	loop {
+		let mut changed = false;
+
+		for i in 0..mod_infos.len() {
+			if !mod_infos[i].compatible {
+				continue;
+			}
+
+			let required_deps_ok = mod_map
+				.get(&mod_infos[i].mod_id)
+				.and_then(|game_mod| game_mod.required_dependencies.as_ref())
+				.is_none_or(|required_deps| {
+					required_deps.iter().all(|dep| {
+						mod_infos
+							.iter()
+							.any(|info| info.compatible && dependency_matches(dep, info))
+					})
+				});
+
+			if !required_deps_ok {
+				mod_infos[i].compatible = false;
+				changed = true;
+			}
+		}
+
+		if !changed {
+			break;
+		}
+	}
+}
+
+fn dependency_matches(dep: &ModDependency, info: &GameModInfo) -> bool {
+	match dep {
+		ModDependency::ModId { mod_id } => info.mod_id == *mod_id,
+		ModDependency::Family { family } => info.family.as_deref() == Some(family.as_str()),
+	}
+}
+
 fn try_insert_mod(
 	connection_mutex: &DbMutex,
 	game_mod: &GameMod,
@@ -627,16 +707,14 @@ fn try_insert_mod(
 	let scope = compute_scope(provider_id, source_hash);
 	let scoped_id = scope_id(&scope, &game_mod.id);
 
-	let scoped_deps = game_mod.dependencies.as_ref().map(|deps| {
-		deps.iter()
-			.map(|dep| match dep {
-				ModDependency::ModId { mod_id } => ModDependency::ModId {
-					mod_id: scope_id(&scope, mod_id).into_owned(),
-				},
-				ModDependency::Family { .. } => dep.clone(),
-			})
-			.collect::<Vec<_>>()
-	});
+	let scoped_optional_deps = game_mod
+		.optional_dependencies
+		.as_ref()
+		.map(|deps| scope_dependencies(deps, &scope));
+	let scoped_required_deps = game_mod
+		.required_dependencies
+		.as_ref()
+		.map(|deps| scope_dependencies(deps, &scope));
 
 	connection_mutex
 		.lock_db()?
@@ -657,7 +735,8 @@ fn try_insert_mod(
 				host_os,
 				deprecated,
 				config,
-				dependencies,
+				optional_dependencies,
+				required_dependencies,
 				install,
 				run_for_game,
 				run_standalone,
@@ -666,7 +745,7 @@ fn try_insert_mod(
 				family,
 				created_at,
 				scope
-			) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24)",
+			) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25)",
 		)?
 		.execute(rusqlite::params![
 			scoped_id.as_ref(),
@@ -684,7 +763,8 @@ fn try_insert_mod(
 			serialize_json_option(game_mod.host_os.as_ref())?,
 			game_mod.deprecated,
 			serialize_json_option(game_mod.config.as_ref())?,
-			serialize_json_option(scoped_deps.as_ref())?,
+			serialize_json_option(scoped_optional_deps.as_ref())?,
+			serialize_json_option(scoped_required_deps.as_ref())?,
 			serialize_json_option(game_mod.install.as_ref())?,
 			serialize_json_option(game_mod.run_for_game.as_ref())?,
 			serialize_json_option(game_mod.run_standalone.as_ref())?,
