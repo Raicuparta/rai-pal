@@ -35,6 +35,7 @@ export const GameRow = React.forwardRef(function GameRow(
 		releaseDateRfc3339: null,
 		thumbnailUrl: null,
 		architecture: null,
+		os: null,
 		unityBackend: null,
 		titleDiscriminator: null,
 		providerCommands: {},

@@ -132,6 +132,7 @@ impl GameDatabase for DbMutex {
 			ig.exe_path,
 			ig.unity_backend,
 			ig.architecture,
+			ig.os,
 			COALESCE(ig.engine_brand, rg.engine_brand) AS engine_brand,
 			COALESCE(ig.engine_version_major, rg.engine_version_major) AS engine_version_major,
 			COALESCE(ig.engine_version_minor, rg.engine_version_minor) AS engine_version_minor,
@@ -163,11 +164,12 @@ impl GameDatabase for DbMutex {
 					exe_path: row.get_path(9)?,
 					unity_backend: row.get(10)?,
 					architecture: row.get(11)?,
-					engine_brand: row.get(12)?,
-					engine_version_major: row.get(13)?,
-					engine_version_minor: row.get(14)?,
-					engine_version_patch: row.get(15)?,
-					engine_version_display: row.get(16)?,
+					os: row.get(12)?,
+					engine_brand: row.get(13)?,
+					engine_version_major: row.get(14)?,
+					engine_version_minor: row.get(15)?,
+					engine_version_patch: row.get(16)?,
+					engine_version_display: row.get(17)?,
 				})
 			})?)
 	}
@@ -499,9 +501,10 @@ fn try_insert_game(connection_mutex: &DbMutex, game: &DbGame) -> Result {
 					engine_version_patch,
 					engine_version_display,
 					unity_backend,
-					architecture
+					architecture,
+					os
 				)
-				 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)",
+				 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)",
 			)?
 			.execute(rusqlite::params![
 				game.provider_id,
@@ -514,6 +517,7 @@ fn try_insert_game(connection_mutex: &DbMutex, game: &DbGame) -> Result {
 				game.engine_version_display.clone(),
 				game.unity_backend.clone(),
 				game.architecture.clone(),
+				game.os,
 			])?;
 	}
 
@@ -745,6 +749,7 @@ fn create() -> Result<DbMutex> {
 			engine_version_display TEXT,
 			unity_backend TEXT,
 			architecture TEXT,
+			os TEXT,
 			FOREIGN KEY(provider_id, game_id) REFERENCES games(provider_id, game_id) ON DELETE CASCADE,
 			PRIMARY KEY (provider_id, game_id)
 		);

@@ -111,6 +111,7 @@ export type DbGame = {
 	engineVersionDisplay: string | null,
 	unityBackend: UnityBackend | null,
 	architecture: Architecture | null,
+	os: OperatingSystem | null,
 	tags: GameTag[],
 	providerCommands: Partial<{ [key in ProviderCommandAction]: ProviderCommand }>,
 };

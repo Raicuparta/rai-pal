@@ -30,6 +30,10 @@ use crate::{
 	},
 	game_tag::GameTag,
 	game_title::is_probably_demo,
+	operating_system::{
+		self,
+		OperatingSystem,
+	},
 	path_extensions::PathExt,
 	remote_config::{
 		self,
@@ -58,6 +62,7 @@ pub struct DbGame {
 	pub engine_version_display: Option<String>,
 	pub unity_backend: Option<UnityBackend>,
 	pub architecture: Option<Architecture>,
+	pub os: Option<OperatingSystem>,
 	pub tags: Vec<GameTag>,
 	pub provider_commands: BTreeMap<ProviderCommandAction, ProviderCommand>,
 }
@@ -80,6 +85,7 @@ impl DbGame {
 			engine_version_display: None,
 			unity_backend: None,
 			architecture: None,
+			os: None,
 			tags: Vec::default(),
 			provider_commands: BTreeMap::default(),
 		};
@@ -172,6 +178,8 @@ impl DbGame {
 			}
 
 			self.exe_path = Some(exe_path.normalize());
+
+			self.os = operating_system::get_os_from_path(exe_path);
 
 			// Order matters here. We're checking all sequentially, so we should leave the most expensive ones last.
 			let _ = unity::process_game(self)

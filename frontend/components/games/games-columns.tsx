@@ -130,10 +130,13 @@ const engine: GamesColumn = {
 			? engineColors[item.engineBrand]
 			: "gray";
 
-		const detailsText =
+		const detailsParts = [
 			item.unityBackend && item.architecture
 				? `${item.unityBackend} ${item.architecture}`
-				: item.architecture;
+				: item.architecture,
+			item.os,
+		].filter(Boolean);
+		const detailsText = detailsParts.join(" ");
 
 		return (
 			<Table.Td
