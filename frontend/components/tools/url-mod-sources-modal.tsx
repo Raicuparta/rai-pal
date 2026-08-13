@@ -1,4 +1,4 @@
-import { commands } from "@api/bindings";
+import { commands, UrlModSource } from "@api/bindings";
 import { CommandButton } from "@components/command-button";
 import { ConfirmModSourceModal } from "@components/tools/confirm-mod-source-modal";
 import { useLocalization } from "@hooks/use-localization";
@@ -8,6 +8,7 @@ import {
 	Group,
 	Modal,
 	Stack,
+	Switch,
 	Text,
 	TextInput,
 } from "@mantine/core";
@@ -21,14 +22,13 @@ type Props = {
 
 export function UrlModSourcesModal(props: Props) {
 	const { t, T } = useLocalization("urlModSources");
-	const [sources, setSources] = useState<string[]>([]);
+	const [sources, setSources] = useState<UrlModSource[]>([]);
 	const [newUrl, setNewUrl] = useState("");
 	const [pendingSourceUrl, setPendingSourceUrl] = useState<string | null>(null);
+	const [isToggling, setIsToggling] = useState(false);
 
 	const loadSources = () =>
-		commands
-			.getUrlModSources()
-			.then((result) => setSources(result.additionalUrls));
+		commands.getUrlModSources().then((result) => setSources(result.sources));
 
 	useEffect(() => {
 		if (props.isOpen) {
@@ -57,6 +57,17 @@ export function UrlModSourcesModal(props: Props) {
 		props.onClose();
 	};
 
+	const handleToggle = async (source: UrlModSource) => {
+		setIsToggling(true);
+		try {
+			await commands.setUrlModSourceEnabled(source.url, !source.enabled);
+			await commands.refreshMods();
+			await loadSources();
+		} finally {
+			setIsToggling(false);
+		}
+	};
+
 	const handleRemove = async (url: string) => {
 		await commands.removeUrlModSource(url);
 		commands.refreshMods();
@@ -75,13 +86,19 @@ export function UrlModSourcesModal(props: Props) {
 				<Stack>
 					{sources.length > 0 && (
 						<Stack>
-							{sources.map((url) => (
-								<Group key={url}>
-									<Code>{url}</Code>
+							{sources.map((source) => (
+								<Group key={source.url}>
+									<Switch
+										checked={source.enabled}
+										onChange={() => handleToggle(source)}
+										disabled={isToggling}
+									/>
+									<Code>{source.url}</Code>
 									<ActionIcon
 										color="red"
 										variant="subtle"
-										onClick={() => handleRemove(url)}
+										disabled={source.isDefault}
+										onClick={() => handleRemove(source.url)}
 									>
 										<IconTrash />
 									</ActionIcon>

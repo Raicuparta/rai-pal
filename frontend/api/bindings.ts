@@ -52,6 +52,7 @@ export const commands = {
 	resetSteamCache: () => __TAURI_INVOKE<null>("reset_steam_cache"),
 	runMod: (modId: string, providerIdOption: "Epic" | "Gog" | "Itch" | "Manual" | "Steam" | "Xbox" | null, gameIdOption: string | null) => __TAURI_INVOKE<null>("run_mod", { modId, providerIdOption, gameIdOption }),
 	setSelectedGame: (providerId: "Epic" | "Gog" | "Itch" | "Manual" | "Steam" | "Xbox" | null, gameId: string | null) => __TAURI_INVOKE<null>("set_selected_game", { providerId, gameId }),
+	setUrlModSourceEnabled: (url: string, enabled: boolean) => __TAURI_INVOKE<null>("set_url_mod_source_enabled", { url, enabled }),
 	runProviderCommand: (providerId: GameProviderId, gameId: string, providerCommandAciton: ProviderCommandAction) => __TAURI_INVOKE<null>("run_provider_command", { providerId, gameId, providerCommandAciton }),
 	saveAppSettings: (settings: AppSettings) => __TAURI_INVOKE<null>("save_app_settings", { settings }),
 	sendAnalyticsEvent: (event: Event, data: { [key in string]: string } | null) => __TAURI_INVOKE<null>("send_analytics_event", { event, data }),
@@ -295,8 +296,14 @@ export type TabId = "Games" | "Mods" | "Thanks";
 
 export type UnityBackend = "Il2Cpp" | "Mono";
 
+export type UrlModSource = {
+	url: string,
+	isDefault: boolean,
+	enabled: boolean,
+};
+
 export type UrlModSources = {
-	additionalUrls: string[],
+	sources: UrlModSource[],
 };
 
 /* Tauri Specta runtime */

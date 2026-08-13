@@ -566,6 +566,12 @@ async fn remove_url_mod_source(url: String) -> Result {
 
 #[tauri::command]
 #[specta::specta]
+async fn set_url_mod_source_enabled(url: String, enabled: bool) -> Result {
+	Ok(url_mod_provider::set_url_mod_source_enabled(&url, enabled)?)
+}
+
+#[tauri::command]
+#[specta::specta]
 async fn get_mods(handle: AppHandle) -> Result<BTreeMap<String, GameMod>> {
 	let state = handle.app_state();
 	Ok(state.database.get_mod_map()?)
@@ -980,6 +986,7 @@ fn main() {
 			reset_steam_cache,
 			run_mod,
 			set_selected_game,
+			set_url_mod_source_enabled,
 			run_provider_command,
 			save_app_settings,
 			send_analytics_event,

@@ -55,8 +55,30 @@ fn compute_source_hash(url: &str, is_default: bool) -> String {
 
 #[derive(Default)]
 #[serializable_struct]
+pub struct UrlModSource {
+	pub url: String,
+	pub is_default: bool,
+	pub enabled: bool,
+}
+
+#[derive(Default)]
+#[serializable_struct]
 pub struct UrlModSources {
-	pub additional_urls: Vec<String>,
+	pub sources: Vec<UrlModSource>,
+}
+
+fn default_source() -> UrlModSource {
+	UrlModSource {
+		url: default_url(),
+		is_default: true,
+		enabled: true,
+	}
+}
+
+fn default_sources() -> UrlModSources {
+	UrlModSources {
+		sources: vec![default_source()],
+	}
 }
 
 fn url_mod_sources_path() -> Result<PathBuf> {
@@ -64,18 +86,20 @@ fn url_mod_sources_path() -> Result<PathBuf> {
 }
 
 fn read_url_mod_sources() -> UrlModSources {
+	let default = default_sources();
+
 	let Ok(path) = url_mod_sources_path() else {
-		return UrlModSources::default();
+		return default;
 	};
 
 	if !path.is_file() {
-		return UrlModSources::default();
+		return default;
 	}
 
 	fs::read_to_string(&path)
 		.ok_or_log("Failed to read URL mod sources")
 		.and_then(|data| serde_json::from_str(&data).ok_or_log("Failed to parse URL mod sources"))
-		.unwrap_or_default()
+		.unwrap_or(default)
 }
 
 fn write_url_mod_sources(sources: &UrlModSources) -> Result {
@@ -103,8 +127,12 @@ pub async fn get_mods_from_url_mod_source(url: &str) -> Result<Vec<GameMod>> {
 pub fn add_url_mod_source(url: String) -> Result {
 	let mut sources = read_url_mod_sources();
 
-	if !sources.additional_urls.contains(&url) {
-		sources.additional_urls.push(url);
+	if !sources.sources.iter().any(|source| source.url == url) {
+		sources.sources.push(UrlModSource {
+			url,
+			is_default: false,
+			enabled: true,
+		});
 		write_url_mod_sources(&sources)?;
 	}
 
@@ -114,24 +142,35 @@ pub fn add_url_mod_source(url: String) -> Result {
 pub fn remove_url_mod_source(url: &str) -> Result {
 	let mut sources = read_url_mod_sources();
 
-	sources.additional_urls.retain(|u| u != url);
+	sources.sources.retain(|source| source.url != url || source.is_default);
 	write_url_mod_sources(&sources)
+}
+
+pub fn set_url_mod_source_enabled(url: &str, enabled: bool) -> Result {
+	let mut sources = read_url_mod_sources();
+
+	if let Some(source) = sources.sources.iter_mut().find(|source| source.url == url) {
+		source.enabled = enabled;
+		write_url_mod_sources(&sources)?;
+	}
+
+	Ok(())
 }
 
 pub fn get_url_mod_sources() -> UrlModSources {
 	read_url_mod_sources()
 }
 
-pub fn get_all_urls() -> Vec<String> {
-	let mut urls = vec![default_url()];
-
-	urls.extend(read_url_mod_sources().additional_urls);
-
-	urls
+pub fn get_enabled_sources() -> Vec<UrlModSource> {
+	read_url_mod_sources()
+		.sources
+		.into_iter()
+		.filter(|source| source.enabled)
+		.collect()
 }
 
 pub struct UrlModProvider {
-	pub urls: Vec<String>,
+	pub sources: Vec<UrlModSource>,
 }
 
 impl ModProvider for UrlModProvider {
@@ -141,16 +180,16 @@ impl ModProvider for UrlModProvider {
 
 	fn default() -> Result<Self> {
 		Ok(Self {
-			urls: get_all_urls(),
+			sources: get_enabled_sources(),
 		})
 	}
 
 	async fn insert_mods(&self, db: &DbMutex) -> Result {
-		for (i, url) in self.urls.iter().enumerate() {
-			let source_hash = compute_source_hash(url, i == 0);
+		for source in &self.sources {
+			let source_hash = compute_source_hash(&source.url, source.is_default);
 
 			http::CLIENT
-				.get(url)
+				.get(&source.url)
 				.send()
 				.await?
 				.json::<UrlModDatabase>()
