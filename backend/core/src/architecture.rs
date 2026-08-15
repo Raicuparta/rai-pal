@@ -20,6 +20,10 @@ pub enum Architecture {
 pub fn get_architecture(exe_path: &Path) -> Result<Option<Architecture>> {
 	let mmap = mmap_safe::map_readonly(exe_path)?;
 
+	if mmap.starts_with(b"\x7FELF") {
+		return Ok(get_elf_architecture(&mmap));
+	}
+
 	let Ok(pe) = PeFile::from_bytes(&mmap) else {
 		return Ok(None);
 	};
@@ -28,4 +32,17 @@ pub fn get_architecture(exe_path: &Path) -> Result<Option<Architecture>> {
 		Wrap::T64(_) => Architecture::X64,
 		Wrap::T32(_) => Architecture::X86,
 	}))
+}
+
+fn get_elf_architecture(mmap: &[u8]) -> Option<Architecture> {
+	let machine_bytes = mmap.get(18..20)?.try_into().ok()?;
+	let machine = u16::from_le_bytes(machine_bytes);
+
+	match machine {
+		// EM_386
+		3 => Some(Architecture::X86),
+		// EM_X86_64
+		62 => Some(Architecture::X64),
+		_ => None,
+	}
 }
