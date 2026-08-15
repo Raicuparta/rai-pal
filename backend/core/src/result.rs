@@ -171,14 +171,6 @@ pub enum Error {
 	UnityBackendUnknown(String),
 
 	#[error(
-		"Operation can't be completed without a `runnable` section in the mod manifest (rai-pal-manifest.json) `{0}`"
-	)]
-	RunnableManifestNotFound(String),
-
-	#[error("Can't run mod with ID `{0}` because it isn't a runnable mod.")]
-	CantRunNonRunnable(String),
-
-	#[error(
 		"Provider ID {0} is invalid for this action, or not supported in the current platform."
 	)]
 	InvalidProviderId(String),

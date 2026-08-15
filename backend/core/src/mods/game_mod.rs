@@ -244,24 +244,39 @@ impl GameMod {
 			.map(|arg| replace_tokens(arg, game_option, self))
 			.collect();
 
+		log::info!(
+			"Running mod `{}` at `{}` with args `{}`",
+			self.id,
+			run_path.display(),
+			args.join(" ")
+		);
+
 		#[cfg(target_os = "linux")]
 		{
-			let game = game_option.ok_or_else(Error::GameNeeded)?;
+			if mod_run.os == Some(OperatingSystem::Windows) {
+				let game = game_option.ok_or_else(Error::GameNeeded)?;
 
-			let wine_environment: BTreeMap<String, String> = mod_run
-				.wine_environment
-				.clone()
-				.unwrap_or_default()
-				.iter()
-				.map(|(key, value)| (key.clone(), replace_tokens(value, game_option, self)))
-				.collect();
+				let wine_environment: BTreeMap<String, String> = mod_run
+					.wine_environment
+					.clone()
+					.unwrap_or_default()
+					.iter()
+					.map(|(key, value)| (key.clone(), replace_tokens(value, game_option, self)))
+					.collect();
 
-			game_provider::get_provider(game.provider_id)?.run_with_wine(
-				game,
-				&run_path,
-				&args,
-				&wine_environment,
-			)?;
+				game_provider::get_provider(game.provider_id)?.run_with_wine(
+					game,
+					&run_path,
+					&args,
+					&wine_environment,
+				)?;
+			} else {
+				make_executable(&run_path)?;
+				std::process::Command::new(&run_path)
+					.current_dir(run_path.try_parent()?)
+					.args(&args)
+					.spawn()?;
+			}
 		}
 
 		#[cfg(target_os = "windows")]
@@ -283,6 +298,17 @@ impl GameMod {
 
 		Ok(())
 	}
+}
+
+#[cfg(target_os = "linux")]
+fn make_executable(path: &Path) -> Result {
+	use std::os::unix::fs::PermissionsExt;
+
+	let mut permissions = std::fs::metadata(path)?.permissions();
+	permissions.set_mode(permissions.mode() | 0o111);
+	std::fs::set_permissions(path, permissions)?;
+
+	Ok(())
 }
 
 impl ModDownload {
