@@ -130,13 +130,12 @@ const engine: GamesColumn = {
 			? engineColors[item.engineBrand]
 			: "gray";
 
-		const detailsParts = [
-			item.unityBackend && item.architecture
-				? `${item.unityBackend} ${item.architecture}`
-				: item.architecture,
-			item.os,
-		].filter(Boolean);
-		const detailsText = detailsParts.join(" ");
+		const osDisplay =
+			item.os === "Windows" ? "win" : item.os === "Linux" ? "linux" : item.os;
+
+		const detailsText = [osDisplay, item.unityBackend, item.architecture]
+			.filter(Boolean)
+			.join(" ");
 
 		return (
 			<Table.Td
