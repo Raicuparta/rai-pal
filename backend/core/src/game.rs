@@ -171,10 +171,10 @@ impl DbGame {
 			}
 
 			if extension == "x86" && exe_path.with_extension("x86_64").is_file() {
-				// If there's an x86_64 version, we ignore the x86 version.
-				// I'm just gonna presume there are no x86 modders out there,
-				// if someone cries about it I'll make this smarter.
-				return self;
+				// If there's an x86_64 version, we use that instead.
+				// Steam launch configs sometimes only list the x86 executable
+				// even when an x86_64 one is installed, so we can't just ignore the game.
+				return self.set_executable(&exe_path.with_extension("x86_64"));
 			}
 
 			self.exe_path = Some(exe_path.normalize());
