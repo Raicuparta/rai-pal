@@ -137,48 +137,71 @@ impl Steam {
 			sorted_launch_options
 		};
 
-		for launch_option in sorted_launch_options {
-			if let Some(executable_path) = launch_option.executable.as_ref() {
-				let Some(full_path) = app_path
-					.resolve_relative_path_case_insensitive(executable_path)
-					.filter(|path| path.is_file())
-				else {
-					continue;
-				};
+		let resolved_launch_options: Vec<(SteamLaunchOption, Option<PathBuf>)> =
+			sorted_launch_options
+				.into_iter()
+				.map(|launch_option| {
+					let full_path = launch_option.executable.as_ref().and_then(|executable_path| {
+						app_path
+							.resolve_relative_path_case_insensitive(executable_path)
+							.filter(|path| path.is_file())
+					});
+					(launch_option, full_path)
+				})
+				.collect();
 
-				if used_paths.contains(&full_path) {
-					continue;
-				}
+		// Steam launch options can list both an x86 and an x86_64 executable for the same game.
+		// When both are provided, we only want to use the x86_64 one.
+		// When only the x86 one is provided, that's the one we use.
+		let available_executables: HashSet<PathBuf> = resolved_launch_options
+			.iter()
+			.filter_map(|(_, full_path)| full_path.as_ref())
+			.cloned()
+			.collect();
 
-				let app_name = app_info.name.clone();
+		for (launch_option, full_path) in resolved_launch_options {
+			let Some(full_path) = full_path else {
+				continue;
+			};
 
-				let mut installed_game = game.clone();
-				installed_game.set_executable(&full_path);
-				installed_game.title_discriminator = if used_names.contains(&app_name) {
-					Some(
-						launch_option
-							.description
-							.as_ref()
-							.map_or_else(|| executable_path.display().to_string(), Clone::clone),
-					)
-				} else {
-					None
-				};
-
-				installed_game.add_provider_command(
-					ProviderCommandAction::StartViaProvider,
-					get_start_command(&launch_option, &installed_game.title_discriminator),
-				);
-
-				// Since there can be multiple Steam games within one installed app_id,
-				// we attach the exe path hash to the internal game_id to make it unique within the local Rai Pal database.
-				installed_game.game_id =
-					format!("{}_{}", installed_game.external_id, full_path.hash_string());
-
-				used_names.insert(app_name);
-				used_paths.insert(full_path);
-				installed_games.push(installed_game);
+			if used_paths.contains(&full_path) {
+				continue;
 			}
+
+			if full_path.extension().and_then(|ext| ext.to_str()) == Some("x86")
+				&& available_executables.contains(&full_path.with_extension("x86_64"))
+			{
+				continue;
+			}
+
+			let app_name = app_info.name.clone();
+
+			let mut installed_game = game.clone();
+			installed_game.set_executable(&full_path);
+			installed_game.title_discriminator = if used_names.contains(&app_name) {
+				Some(
+					launch_option
+						.description
+						.as_ref()
+						.map_or_else(|| full_path.display().to_string(), Clone::clone),
+				)
+			} else {
+				None
+			};
+
+			installed_game.add_provider_command(
+				ProviderCommandAction::StartViaProvider,
+				get_start_command(&launch_option, &installed_game.title_discriminator),
+			);
+
+			// Since there can be multiple Steam games within one installed app_id,
+			// we attach the exe path hash to the internal game_id to make it unique within the local Rai Pal database.
+			installed_game.game_id =
+				format!("{}_{}", installed_game.external_id, full_path.hash_string());
+
+			used_names.insert(app_name);
+			used_paths.insert(full_path);
+			installed_games.push(installed_game);
 		}
 
 		installed_games
