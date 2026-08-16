@@ -38,6 +38,7 @@ use crate::{
 		app_database::DbMutex,
 		game_database::GameDatabase,
 	},
+	open_better::spawn_detached,
 	result::{
 		Error,
 		Result,
@@ -98,14 +99,14 @@ pub trait WineProviderActions {
 			cmd.arg("wineconsole");
 		}
 
-		let child = cmd.arg(exe_path).args(args).envs(wine_env).spawn()?;
+		cmd.arg(exe_path).args(args).envs(wine_env);
+		spawn_detached(&mut cmd)?;
 
 		log::info!(
-			"Launched `{}` with Wine for game `{}` ({}) (pid {})",
+			"Launched `{}` with Wine for game `{}` ({}) in a detached session",
 			exe_path.display(),
 			game.display_title,
 			game.external_id,
-			child.id(),
 		);
 
 		Ok(())

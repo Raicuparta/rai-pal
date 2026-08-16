@@ -36,6 +36,7 @@ use crate::{
 		mod_config::ModConfig,
 		replacement_token::replace_tokens,
 	},
+	open_better::spawn_detached,
 	operating_system::OperatingSystem,
 	path_extensions::PathExt,
 	progress_status::ProgressStatus,
@@ -272,19 +273,17 @@ impl GameMod {
 				)?;
 			} else {
 				make_executable(&run_path)?;
-				std::process::Command::new(&run_path)
-					.current_dir(run_path.try_parent()?)
-					.args(&args)
-					.spawn()?;
+				let mut command = std::process::Command::new(&run_path);
+				command.current_dir(run_path.try_parent()?).args(&args);
+				spawn_detached(&mut command)?;
 			}
 		}
 
 		#[cfg(target_os = "windows")]
 		{
-			std::process::Command::new(&run_path)
-				.current_dir(run_path.try_parent()?)
-				.args(&args)
-				.spawn()?;
+			let mut command = std::process::Command::new(&run_path);
+			command.current_dir(run_path.try_parent()?).args(&args);
+			spawn_detached(&mut command)?;
 		}
 
 		Ok(())

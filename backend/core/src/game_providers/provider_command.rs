@@ -4,7 +4,10 @@ use rai_pal_proc_macros::serializable_enum;
 
 use crate::{
 	game::DbGame,
-	open_better::open_detached_better,
+	open_better::{
+		open_detached_better,
+		spawn_detached,
+	},
 	operating_system::OperatingSystem,
 	result::Result,
 };
@@ -48,7 +51,7 @@ impl ProviderCommand {
 						if let Some(parent) = path.parent() {
 							command.current_dir(parent);
 						}
-						command.spawn()?;
+						spawn_detached(&mut command)?;
 					} else {
 						game_provider::get_provider(game.provider_id)?.run_with_wine(
 							game,
@@ -68,7 +71,7 @@ impl ProviderCommand {
 					if let Some(parent) = path.parent() {
 						command.current_dir(parent);
 					}
-					command.spawn()?;
+					spawn_detached(&mut command)?;
 				}
 			}
 		}

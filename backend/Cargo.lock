@@ -3636,6 +3636,7 @@ dependencies = [
  "globwalk",
  "keyring",
  "lazy-regex",
+ "libc",
  "log",
  "memchr",
  "memmap2",
