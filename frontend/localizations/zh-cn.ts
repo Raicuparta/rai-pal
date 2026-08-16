@@ -55,6 +55,7 @@ export const zhCn: Localization = {
 		provider: "平台",
 		tags: "标签",
 		architecture: "架构",
+		os: "操作系统",
 		unityBackend: "Unity 后端",
 		engine: "引擎",
 		status: "状态",
