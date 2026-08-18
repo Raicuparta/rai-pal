@@ -32,22 +32,10 @@ pub struct AppState {
 type TauriState<'a> = tauri::State<'a, AppState>;
 
 pub trait StateData<TData> {
-	fn read_state(&self) -> Result<TData>;
 	fn write_state_value(&self, data: TData) -> Result;
 }
 
 impl<TData: Clone> StateData<TData> for RwLock<Option<TData>> {
-	fn read_state(&self) -> Result<TData> {
-		let guard = self
-			.read()
-			.map_err(|err| Error::FailedToAccessStateData(err.to_string()))?;
-
-		(*guard).as_ref().map_or_else(
-			|| Err(Error::FailedToAccessStateData("Empty data".into())),
-			|data| Ok(data.clone()),
-		)
-	}
-
 	fn write_state_value(&self, data: TData) -> Result {
 		*self
 			.write()

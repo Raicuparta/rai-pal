@@ -18,7 +18,6 @@ use app_state::{
 	StatefulHandle,
 };
 use events::{
-	AddModSource,
 	EventEmitter,
 	SelectedGameData,
 };
@@ -106,6 +105,7 @@ use crate::result::Result;
 
 mod app_settings;
 mod app_state;
+mod deep_links;
 mod events;
 mod result;
 #[cfg(debug_assertions)]
@@ -311,7 +311,11 @@ async fn install_mod(
 	};
 	let game_mod = state.database.get_mod(mod_id)?;
 
-	let download_status_channel = state.download_status_channel.read_state()?.clone();
+	let download_status_channel = state
+		.download_status_channel
+		.read()
+		.ok_or_log("Failed to read download status channel")
+		.and_then(|guard| guard.clone());
 
 	let relevant_mods: Vec<GameModInfo> = if let Some(game) = game_option.as_ref() {
 		state
@@ -352,11 +356,12 @@ async fn install_mod(
 
 	let (steps, main_dl, _main_ex) = build_steps(&all_owned, mod_id);
 
-	let channel = download_status_channel.clone();
 	let forward = move |status: ProgressStatus| {
-		channel
-			.send(status)
-			.ok_or_log("Failed to send download status update");
+		if let Some(channel) = &download_status_channel {
+			channel
+				.send(status)
+				.ok_or_log("Failed to send download status update");
+		}
 	};
 
 	for (step_id, step_name) in &steps {
@@ -908,23 +913,7 @@ fn show_panic(error: &str) {
 }
 
 fn handle_deep_link_url(url: &str, handle: &AppHandle) {
-	let url = url
-		.strip_prefix("rai-pal://")
-		.or_else(|| url.strip_prefix("rai-pal:"));
-
-	let Some(url) = url else { return };
-
-	let (path, query) = url.split_once('?').unwrap_or((url, ""));
-
-	if path != "add-mod-source" {
-		return;
-	}
-
-	let mod_source_url = query.split('&').find_map(|part| part.strip_prefix("url="));
-
-	if let Some(mod_source_url) = mod_source_url {
-		handle.emit_safe(AddModSource(mod_source_url.to_string()));
-	}
+	deep_links::handle(url, handle);
 }
 
 fn focus(handle: &AppHandle) {
