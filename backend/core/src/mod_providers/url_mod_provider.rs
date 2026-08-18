@@ -16,7 +16,11 @@ use crate::{
 	http,
 	local_database::{
 		app_database::DbMutex,
-		mod_database::ModDatabase,
+		mod_database::{
+			ModDatabase,
+			compute_scope,
+			scope_id,
+		},
 	},
 	mod_providers::mod_provider::ModProviderId,
 	mods::game_mod::GameMod,
@@ -114,6 +118,7 @@ fn write_url_mod_sources(sources: &UrlModSources) -> Result {
 pub async fn get_mods_from_url_mod_source(url: &str) -> Result<Vec<GameMod>> {
 	let mods = http::CLIENT
 		.get(url)
+		.timeout(std::time::Duration::from_secs(15))
 		.send()
 		.await?
 		.error_for_status()?
@@ -161,17 +166,7 @@ pub fn get_url_mod_sources() -> UrlModSources {
 	read_url_mod_sources()
 }
 
-pub fn get_enabled_sources() -> Vec<UrlModSource> {
-	read_url_mod_sources()
-		.sources
-		.into_iter()
-		.filter(|source| source.enabled)
-		.collect()
-}
-
-pub struct UrlModProvider {
-	pub sources: Vec<UrlModSource>,
-}
+pub struct UrlModProvider;
 
 impl ModProvider for UrlModProvider {
 	fn get_id() -> ModProviderId {
@@ -179,26 +174,61 @@ impl ModProvider for UrlModProvider {
 	}
 
 	fn default() -> Result<Self> {
-		Ok(Self {
-			sources: get_enabled_sources(),
-		})
+		Ok(Self)
 	}
 
-	async fn insert_mods(&self, db: &DbMutex) -> Result {
-		for source in &self.sources {
-			let source_hash = compute_source_hash(&source.url, source.is_default);
+	async fn refresh(&self, db: &DbMutex) -> Result {
+		let sources = read_url_mod_sources().sources;
 
-			http::CLIENT
-				.get(&source.url)
-				.send()
-				.await?
-				.json::<UrlModDatabase>()
-				.await?
-				.mods
-				.iter()
-				.for_each(|game_mod| db.insert_mod(game_mod, Self::get_id(), &source_hash));
+		let mut keep_ids = Vec::new();
+
+		for source in sources.iter().filter(|source| source.enabled) {
+			let source_hash = compute_source_hash(&source.url, source.is_default);
+			let scope = compute_scope(Self::get_id(), &source_hash);
+
+			match fetch_and_insert(source, &source_hash, &scope, db).await {
+				Ok(ids) => keep_ids.extend(ids),
+				Err(error) => {
+					// If a source fails to refresh, keep whatever we already had
+					// for it as a fallback, but still remove disabled sources.
+					log::warn!(
+						"Failed to refresh mod source `{}`, keeping existing mods as fallback: {error}",
+						source.url
+					);
+					keep_ids.extend(db.get_mod_ids_in_scope(Self::get_id(), &scope)?);
+				}
+			}
 		}
+
+		db.remove_mods_except(Self::get_id(), &keep_ids)?;
 
 		Ok(())
 	}
+}
+
+async fn fetch_and_insert(
+	source: &UrlModSource,
+	source_hash: &str,
+	scope: &str,
+	db: &DbMutex,
+) -> Result<Vec<String>> {
+	// The timeout bounds how long a refresh can hold the mod refresh lock,
+	// so a single unresponsive mod source can't block all future refreshes.
+	let mods = http::CLIENT
+		.get(&source.url)
+		.timeout(std::time::Duration::from_secs(15))
+		.send()
+		.await?
+		.json::<UrlModDatabase>()
+		.await?
+		.mods;
+
+	let mut ids = Vec::with_capacity(mods.len());
+
+	for game_mod in &mods {
+		db.insert_mod(game_mod, ModProviderId::Url, source_hash);
+		ids.push(scope_id(scope, &game_mod.id).into_owned());
+	}
+
+	Ok(ids)
 }

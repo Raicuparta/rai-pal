@@ -544,6 +544,18 @@ async fn refresh_mods(handle: AppHandle) -> Result {
 	let state = handle.app_state();
 	mod_provider::refresh_all_mods(&state.database).await?;
 
+	// The open game's mod list depends on the mods table, so re-select it to
+	// refresh its mod info after sources change.
+	let selected_game = state
+		.selected_game
+		.read()
+		.map_err(|err| crate::result::Error::FailedToAccessStateData(err.to_string()))?
+		.clone();
+
+	if let Some((provider_id, game_id)) = selected_game {
+		handle.emit_safe(events::RefreshGame(provider_id, game_id));
+	}
+
 	Ok(())
 }
 

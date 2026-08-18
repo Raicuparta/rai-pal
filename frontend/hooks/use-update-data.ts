@@ -9,7 +9,7 @@ import {
 } from "./use-data";
 import { showAppNotification } from "@components/app-notifications";
 import { useAppEvent } from "./use-app-event";
-import { useThrottledCallback } from "@mantine/hooks";
+import { useDebouncedCallback } from "@mantine/hooks";
 import { useDataQuery } from "./use-data-query";
 import { useCommandAtomData } from "./use-command-data";
 
@@ -36,13 +36,15 @@ export function useUpdateData(executeOnMount = false) {
 		updateMods();
 	}, [executeOnMount, updateGames, updateMods]);
 
-	const throttledUpdateData = useThrottledCallback(async () => {
-		await updateGames();
+	const debouncedUpdateData = useDebouncedCallback(async () => {
+		// Fetch games and mods concurrently so a slow games fetch doesn't delay
+		// the mods list update. Debouncing (trailing-only) means this runs once
+		// after the database-write burst settles, so it always reads final data.
+		await Promise.all([updateGames(), updateMods()]);
 		setGameDataVersion((v) => v + 1);
-		updateMods();
-	}, 1000);
+	}, 500);
 
-	useAppEvent("appDatabaseChanged", "update-data", throttledUpdateData);
+	useAppEvent("appDatabaseChanged", "update-data", debouncedUpdateData);
 
 	const updateAppData = useCallback(async () => {
 		function handleDataPromise(promise: Promise<null>, taskName: string) {

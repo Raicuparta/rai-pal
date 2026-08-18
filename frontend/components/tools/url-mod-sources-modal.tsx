@@ -59,20 +59,23 @@ export function UrlModSourcesModal(props: Props) {
 		props.onClose();
 	};
 
-	const handleToggle = async (source: UrlModSource) => {
+	const handleToggle = async (source: UrlModSource, enabled: boolean) => {
 		setIsToggling(true);
 		try {
-			await commands.setUrlModSourceEnabled(source.url, !source.enabled);
+			await commands.setUrlModSourceEnabled(source.url, enabled);
 			await commands.refreshMods();
-			await loadSources();
 		} finally {
+			// Always re-read sources so the switches reflect what was actually
+			// persisted, and always clear the toggling flag even if something
+			// failed, so the switches can never get stuck disabled.
+			await loadSources().catch(() => {});
 			setIsToggling(false);
 		}
 	};
 
 	const handleRemove = async (url: string) => {
 		await commands.removeUrlModSource(url);
-		commands.refreshMods();
+		await commands.refreshMods();
 		await loadSources();
 	};
 
@@ -92,7 +95,9 @@ export function UrlModSourcesModal(props: Props) {
 								<Group key={source.url}>
 									<Switch
 										checked={source.enabled}
-										onChange={() => handleToggle(source)}
+										onChange={(event) =>
+											handleToggle(source, event.currentTarget.checked)
+										}
 										disabled={isToggling}
 										size="xs"
 									/>

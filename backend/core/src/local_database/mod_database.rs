@@ -71,10 +71,11 @@ pub trait ModDatabase {
 		provider_id: &GameProviderId,
 		game_id: &str,
 	) -> Result<Vec<GameModInfo>>;
-	fn remove_stale_mods(&self, max_time: u64, provider_id: ModProviderId) -> Result;
+	fn get_mod_ids_in_scope(&self, provider_id: ModProviderId, scope: &str) -> Result<Vec<String>>;
+	fn remove_mods_except(&self, provider_id: ModProviderId, keep_ids: &[String]) -> Result;
 }
 
-fn compute_scope(provider_id: ModProviderId, source_hash: &str) -> String {
+pub(crate) fn compute_scope(provider_id: ModProviderId, source_hash: &str) -> String {
 	if source_hash.is_empty() {
 		String::new()
 	} else {
@@ -82,7 +83,7 @@ fn compute_scope(provider_id: ModProviderId, source_hash: &str) -> String {
 	}
 }
 
-fn scope_id<'a>(scope: &'a str, original_id: &'a str) -> Cow<'a, str> {
+pub(crate) fn scope_id<'a>(scope: &'a str, original_id: &'a str) -> Cow<'a, str> {
 	if scope.is_empty() {
 		Cow::Borrowed(original_id)
 	} else {
@@ -627,10 +628,24 @@ impl ModDatabase for DbMutex {
 		Ok(mod_infos)
 	}
 
-	fn remove_stale_mods(&self, max_time: u64, provider_id: ModProviderId) -> Result {
+	fn get_mod_ids_in_scope(&self, provider_id: ModProviderId, scope: &str) -> Result<Vec<String>> {
+		let ids = self
+			.lock_db()?
+			.prepare_cached("SELECT id FROM main.mods WHERE provider_id = $1 AND scope = $2;")?
+			.query_map(rusqlite::params![provider_id, scope], |row| row.get::<_, String>(0))?
+			.collect::<rusqlite::Result<Vec<String>>>()?;
+
+		Ok(ids)
+	}
+
+	fn remove_mods_except(&self, provider_id: ModProviderId, keep_ids: &[String]) -> Result {
+		let keep_json = serde_json::to_string(keep_ids)?;
+
 		self.lock_db()?
-			.prepare_cached("DELETE FROM main.mods WHERE provider_id = $1 AND created_at < $2;")?
-			.execute(rusqlite::params![provider_id, max_time.cast_signed()])?;
+			.prepare_cached(
+				"DELETE FROM main.mods WHERE provider_id = ? AND id NOT IN (SELECT value FROM json_each(?));",
+			)?
+			.execute(rusqlite::params![provider_id, keep_json])?;
 
 		Ok(())
 	}
