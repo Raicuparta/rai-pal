@@ -106,6 +106,8 @@ use crate::result::Result;
 mod app_settings;
 mod app_state;
 mod deep_links;
+#[cfg(debug_assertions)]
+mod dev_socket;
 mod events;
 mod result;
 #[cfg(debug_assertions)]
@@ -1095,6 +1097,9 @@ fn main() {
 					let _ = std::panic::take_hook();
 				}
 			});
+
+			#[cfg(debug_assertions)]
+			dev_socket::start(window);
 
 			// --- Background tasks ---
 

@@ -16,6 +16,7 @@
 		"update-icons": "tauri icon backend/graphics/icon-source.png",
 		"frontend:build": "tsc && vite build",
 		"frontend:dev": "vite",
+		"dev-socket": "node scripts/dev-socket/client.mjs",
 		"lint": "eslint --fix && cd backend && cargo clippy --fix --allow-dirty",
 		"format": "prettier ./frontend --write && cd backend && cargo +nightly fmt",
 		"cleanup": "tsc && npm run lint && npm run format",
