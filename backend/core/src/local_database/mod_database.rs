@@ -124,8 +124,6 @@ impl ModDatabase for DbMutex {
 
 			CREATE INDEX IF NOT EXISTS idx_mods_created_at ON mods(created_at);
 
-			DROP TABLE IF EXISTS installed_mods;
-
 			CREATE TABLE IF NOT EXISTS installed_mods (
 				exe_path_hash TEXT NOT NULL,
 				mod_scope TEXT NOT NULL DEFAULT '',
