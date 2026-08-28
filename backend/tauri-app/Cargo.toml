@@ -30,6 +30,7 @@ tauri-plugin-window-state = "2.4.1"
 tauri-runtime = "2.11.3"
 tauri-plugin-deep-link = "2.4.9"
 tauri-plugin-single-instance = { version = "2.4.2", features = ["deep-link"] }
+urlencoding.workspace = true
 
 [features]
 # This feature is used for production builds or when `devPath` points to the filesystem.

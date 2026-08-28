@@ -1,14 +1,20 @@
 #!/usr/bin/env node
-// Minimal client for Rai Pal's dev socket (see backend/tauri-app/src/dev_socket.rs).
-// Sends one JavaScript expression to the running dev app and prints the result.
+// Minimal client for Rai Pal's dev commands (see backend/tauri-app/src/dev_commands.rs).
+// Sends one JavaScript expression to the running dev app over the user socket and
+// prints the result.
+//
+// The user socket uses a dynamic port, so we discover it by probing the known port
+// range for the `/check` endpoint. Then we issue `GET /dev/eval?code=...`.
 //
 // Usage:
 //   npm run dev-socket -- "document.title"
 //   echo 'document.body.innerText' | npm run dev-socket
 
-import { createConnection } from "node:net";
+import { request } from "node:http";
 
-const port = Number(process.env.RAI_PAL_DEV_SOCKET_PORT || 25899);
+const USER_SOCKET_PORT_RANGE_START = 43950;
+const USER_SOCKET_PORT_RANGE_END = 43960;
+const USER_SOCKET_PHRASE = "RAI PAL";
 
 const js =
 	process.argv.slice(2).join(" ").trim() ||
@@ -24,31 +30,61 @@ if (!js) {
 	process.exit(1);
 }
 
-const socket = createConnection({ host: "127.0.0.1", port });
-let buffer = "";
-socket.setEncoding("utf8");
-socket.on("connect", () => socket.write(`${JSON.stringify({ id: "c", eval: js })}\n`));
-socket.on("data", (chunk) => {
-	buffer += chunk;
-	const newline = buffer.indexOf("\n");
-	if (newline < 0) return;
-	const { ok, value, error } = JSON.parse(buffer.slice(0, newline));
-	if (ok) {
-		console.log(typeof value === "string" ? value : JSON.stringify(value, null, 2));
-	} else {
-		console.error(error);
+function httpGet(port, path) {
+	return new Promise((resolve, reject) => {
+		const req = request(
+			{ host: "127.0.0.1", port, path, method: "GET" },
+			(res) => {
+				let body = "";
+				res.setEncoding("utf8");
+				res.on("data", (chunk) => (body += chunk));
+				res.on("end", () => resolve({ status: res.statusCode, body }));
+			},
+		);
+		req.on("error", reject);
+		req.end();
+	});
+}
+
+async function findUserSocketPort() {
+	for (
+		let port = USER_SOCKET_PORT_RANGE_START;
+		port <= USER_SOCKET_PORT_RANGE_END;
+		port++
+	) {
+		try {
+			const res = await httpGet(port, "/check");
+			if (res.status === 200 && res.body === USER_SOCKET_PHRASE) return port;
+		} catch {
+			// Port not open; keep probing.
+		}
 	}
-	process.exit(ok ? 0 : 1);
-});
-socket.on("end", () => {
-	console.error("Dev socket closed before a complete response was received.");
-	process.exit(1);
-});
-socket.on("error", (error) => {
+	return null;
+}
+
+const port = await findUserSocketPort();
+if (!port) {
 	console.error(
-		error.code === "ECONNREFUSED"
-			? `No dev socket on 127.0.0.1:${port} — is the app running in dev mode? (npm run dev)`
-			: error.message,
+		"No Rai Pal user socket found on 127.0.0.1 — is the app running in dev mode? (npm run dev)",
 	);
 	process.exit(1);
-});
+}
+
+const res = await httpGet(port, `/dev/eval?code=${encodeURIComponent(js)}`);
+
+try {
+	const data = JSON.parse(res.body);
+	if (data.ok) {
+		console.log(
+			typeof data.value === "string"
+				? data.value
+				: JSON.stringify(data.value, null, 2),
+		);
+		process.exit(0);
+	}
+	console.error(data.error);
+	process.exit(1);
+} catch {
+	console.error(`Unexpected response (${res.status}): ${res.body}`);
+	process.exit(1);
+}

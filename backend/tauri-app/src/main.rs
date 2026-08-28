@@ -107,7 +107,7 @@ mod app_settings;
 mod app_state;
 mod deep_links;
 #[cfg(debug_assertions)]
-mod dev_socket;
+mod dev_commands;
 mod events;
 mod result;
 #[cfg(debug_assertions)]
@@ -1111,7 +1111,7 @@ fn main() {
 			});
 
 			#[cfg(debug_assertions)]
-			dev_socket::start(window);
+			dev_commands::register(window);
 
 			// --- Background tasks ---
 

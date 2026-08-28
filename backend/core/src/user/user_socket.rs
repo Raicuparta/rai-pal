@@ -1,4 +1,9 @@
-use std::time::Duration;
+use std::{
+	future::Future,
+	pin::Pin,
+	sync::OnceLock,
+	time::Duration,
+};
 
 use tokio::{
 	io::{
@@ -25,6 +30,44 @@ const USER_SOCKET_POLL_INTERVAL: Duration = Duration::from_millis(100);
 const USER_SOCKET_PORT_RANGE_START: u16 = 43950;
 const USER_SOCKET_PORT_RANGE_END: u16 = 43960;
 const USER_SOCKET_PHRASE: &str = "RAI PAL";
+
+// --- Dev-mode commands ---
+//
+// In debug builds the app registers a handler here so the user socket also
+// serves developer-only commands (e.g. evaluating JavaScript in the webview).
+// In release builds none of this is compiled in and those paths simply 404.
+
+/// An HTTP response produced by a dev-mode command handler.
+#[cfg(debug_assertions)]
+#[derive(Debug, Clone)]
+pub struct DevHttpResponse {
+	pub status_code: u16,
+	pub status_text: String,
+	pub body: String,
+}
+
+#[cfg(debug_assertions)]
+type DevCommandFuture = Pin<Box<dyn Future<Output = Option<DevHttpResponse>> + Send>>;
+
+/// Handler for dev-only commands.
+///
+/// Registered by the app in debug builds. Receives the raw request target
+/// (path + query, e.g. `/dev/eval?code=...`) and returns an HTTP response if it
+/// handles the request, or `None` if the path isn't a dev command.
+#[cfg(debug_assertions)]
+pub type DevCommandHandler = Box<dyn Fn(String) -> DevCommandFuture + Send + Sync>;
+
+#[cfg(debug_assertions)]
+fn dev_command_handler() -> &'static OnceLock<DevCommandHandler> {
+	static HANDLER: OnceLock<DevCommandHandler> = OnceLock::new();
+	&HANDLER
+}
+
+/// Registers the dev-mode command handler. Only meaningful in debug builds.
+#[cfg(debug_assertions)]
+pub fn set_dev_command_handler(handler: DevCommandHandler) {
+	let _ = dev_command_handler().set(handler);
+}
 
 pub async fn start_user_socket_manager() {
 	let mut bind_error_logged = false;
@@ -64,7 +107,9 @@ pub async fn start_user_socket_manager() {
 }
 
 async fn handle_socket_connection(stream: &mut TcpStream) -> Result {
-	let mut buffer = [0_u8; 4096];
+	// Large enough to hold dev-mode eval expressions, which travel in the URL
+	// query string of the request line.
+	let mut buffer = [0_u8; 16384];
 	let bytes_read = stream.read(&mut buffer).await?;
 
 	if bytes_read == 0 {
@@ -92,6 +137,21 @@ async fn handle_socket_connection(stream: &mut TcpStream) -> Result {
 	}
 
 	if path != "/token" {
+		// Let a dev-mode handler (if any) try the path before falling through.
+		#[cfg(debug_assertions)]
+		if let Some(handler) = dev_command_handler().get()
+			&& let Some(response) = handler(path.to_string()).await
+		{
+			write_http_response(
+				stream,
+				response.status_code,
+				&response.status_text,
+				&response.body,
+			)
+			.await?;
+			return Ok(());
+		}
+
 		write_http_response(stream, 404, "Not Found", "Unknown path").await?;
 		return Ok(());
 	}

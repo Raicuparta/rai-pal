@@ -11,10 +11,10 @@ frontend in `/frontend`.
 
 ## Inspecting the frontend — the dev socket
 
-Debug builds open a TCP socket on `127.0.0.1:25899` (override with
-`RAI_PAL_DEV_SOCKET_PORT`). Connect to it to evaluate arbitrary JavaScript in
-the webview and read the result back. This is how you read the DOM and drive
-the UI. See `scripts/dev-socket/README.md`.
+Debug builds expose dev commands through the user socket (dynamic port in
+`43950..=43960`) that evaluate arbitrary JavaScript in the webview and read the
+result back. This is how you read the DOM and drive the UI. See
+`scripts/dev-socket/README.md`.
 
 ```sh
 npm run dev &                          # start the app (backgrounded)
