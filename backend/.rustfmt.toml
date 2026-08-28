@@ -1,6 +1,2 @@
-unstable_features = true
 edition = "2024"
-imports_layout = "Vertical"
-imports_granularity = "Crate"
-group_imports = "StdExternalCrate"
 hard_tabs = true
