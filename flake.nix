@@ -30,7 +30,14 @@
           rustfmt
           webkitgtk_4_1
           xdg-utils
+          glib-networking
+          dconf
         ];
+
+        shellHook = ''
+          export XDG_DATA_DIRS="$GSETTINGS_SCHEMAS_PATH"
+          export GIO_EXTRA_MODULES="${pkgs.dconf.lib}/lib/gio/modules:${pkgs.glib-networking}/lib/gio/modules"
+        '';
       };
     };
 }
