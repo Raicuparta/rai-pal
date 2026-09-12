@@ -4,6 +4,7 @@ import { IconLock, IconLockOpen, IconRestore } from "@tabler/icons-react";
 import { useLocalization } from "@hooks/use-localization";
 import { CheckboxButton } from "@components/checkbox-button";
 import { filterDetails } from "./filter-menu";
+import styles from "./filters.module.css";
 
 export type FilterKey = keyof GamesFilter;
 export type FilterChangeCallback = (
@@ -151,7 +152,7 @@ export function FilterSelect<TFilterKey extends FilterKey>({
 		(!unknownItem.enabled && !unknownItem.locked);
 
 	return (
-		<Stack>
+		<Stack className={styles.filterColumn}>
 			<Stack gap={5}>
 				<Group wrap="nowrap">
 					{!hasAnyDisabled ? (
@@ -172,7 +173,12 @@ export function FilterSelect<TFilterKey extends FilterKey>({
 							<IconRestore fontSize={13} />
 						</ActionIcon>
 					)}
-					<Text fz="md">{tProperty(filterDetails[id].localizationKey)}</Text>
+					<Text
+						fz="md"
+						className={styles.filterTitle}
+					>
+						{tProperty(filterDetails[id].localizationKey)}
+					</Text>
 				</Group>
 				<Stack
 					gap={2}
