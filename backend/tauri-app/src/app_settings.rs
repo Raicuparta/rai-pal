@@ -2,7 +2,6 @@ use std::{collections::HashSet, fs, path::PathBuf};
 
 use rai_pal_core::{app_paths, games_query::GamesQuery, path_extensions::PathExt};
 use rai_pal_proc_macros::{serializable_enum, serializable_struct};
-use serde::Deserialize;
 
 use crate::result::Result;
 
@@ -30,22 +29,12 @@ pub enum TabId {
 
 #[serializable_struct]
 #[derive(Default)]
-#[serde(default)]
 pub struct AppSettings {
 	pub hide_game_thumbnails: bool,
 	pub override_language: Option<AppLocale>,
-	#[serde(deserialize_with = "deserialize_games_query")]
 	pub games_query: GamesQuery,
 	pub selected_tab: TabId,
 	pub skip_confirm_dialogs: HashSet<String>,
-}
-
-// Settings written before this field became non-optional may contain `null`.
-fn deserialize_games_query<'de, D>(deserializer: D) -> std::result::Result<GamesQuery, D::Error>
-where
-	D: serde::Deserializer<'de>,
-{
-	Ok(Option::<GamesQuery>::deserialize(deserializer)?.unwrap_or_default())
 }
 
 // If the settings schema changes, update this so it gets recreated.
@@ -96,18 +85,11 @@ mod tests {
 	use super::AppSettings;
 
 	#[test]
-	fn null_games_query_defaults_to_all_filters_enabled() {
-		let settings: AppSettings = serde_json::from_str(r#"{"gamesQuery":null}"#).unwrap();
+	fn defaults_have_all_filters_enabled() {
+		let settings = AppSettings::default();
 
 		assert!(settings.games_query.filter.providers.known.is_empty());
-		assert!(settings.games_query.filter.tags.known.is_empty());
-	}
-
-	#[test]
-	fn missing_fields_fall_back_to_defaults() {
-		let settings: AppSettings = serde_json::from_str("{}").unwrap();
-
-		assert!(!settings.hide_game_thumbnails);
-		assert!(settings.games_query.filter.providers.known.is_empty());
+		assert!(settings.games_query.filter.architectures.known.is_empty());
+		assert!(settings.games_query.filter.os.known.is_empty());
 	}
 }
