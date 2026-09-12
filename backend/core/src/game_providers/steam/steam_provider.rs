@@ -18,6 +18,10 @@ use super::{
 		SteamLaunchOption,
 	},
 	packageinfo::PackageInfo,
+	steam_dir::{
+		find_steam_dir,
+		get_appinfo_path,
+	},
 };
 use crate::{
 	game::DbGame,
@@ -218,18 +222,14 @@ impl Steam {
 		Ok(package_info.get_app_ids())
 	}
 
-	fn get_appinfo_path(steam_path: &Path) -> PathBuf {
-		steam_path.join("appcache/appinfo.vdf")
-	}
-
 	fn get_packageinfo_path(steam_path: &Path) -> PathBuf {
 		steam_path.join("appcache/packageinfo.vdf")
 	}
 
 	pub fn delete_cache() -> Result {
-		let steam_dir = SteamDir::locate()?;
+		let steam_dir = find_steam_dir()?;
 		let steam_path = steam_dir.path();
-		let appinfo_path = Self::get_appinfo_path(steam_path);
+		let appinfo_path = get_appinfo_path(steam_path);
 		let packageinfo_path = Self::get_packageinfo_path(steam_path);
 
 		if appinfo_path.exists() {
@@ -246,8 +246,8 @@ impl Steam {
 
 impl ProviderActions for Steam {
 	fn insert_games(&self, db: &DbMutex) -> Result {
-		let steam_dir = SteamDir::locate()?;
-		let appinfo_path = Self::get_appinfo_path(steam_dir.path());
+		let steam_dir = find_steam_dir()?;
+		let appinfo_path = get_appinfo_path(steam_dir.path());
 
 		if appinfo_path.exists() {
 			let app_info_reader = SteamAppInfoReader::new(&appinfo_path)?;

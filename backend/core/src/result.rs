@@ -141,6 +141,9 @@ pub enum Error {
 	)]
 	SteamAppInfoNotFound(PathBuf),
 
+	#[error("Failed to find any Steam installation")]
+	SteamDirNotFound(),
+
 	#[error("Steam Proton handling error: {0}")]
 	SteamProton(String),
 

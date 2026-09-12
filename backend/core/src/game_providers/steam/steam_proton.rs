@@ -7,16 +7,16 @@ use std::{
 	process::Command,
 };
 
-use steamlocate::{
-	Library,
-	SteamDir,
-};
+use steamlocate::Library;
 
 use crate::{
 	game::DbGame,
 	game_providers::{
 		game_provider::WineProviderActions,
-		steam::steam_provider::Steam,
+		steam::{
+			steam_dir::find_steam_dir,
+			steam_provider::Steam,
+		},
 	},
 	path_extensions::PathExt,
 	result::{
@@ -29,7 +29,7 @@ use crate::{
 impl WineProviderActions for Steam {
 	fn get_wine_prefix_path(&self, game: &DbGame) -> Result<PathBuf> {
 		let app_id: u32 = game.external_id.parse()?;
-		let steam_dir = SteamDir::locate()?;
+		let steam_dir = find_steam_dir()?;
 
 		if let Some((_, library)) = steam_dir.find_app(app_id)? {
 			return Ok(get_prefix_path(&library, &game.external_id));
