@@ -14,7 +14,7 @@ Commit your work locally without pushing. When making changes to the same domain
 
 ## Comments
 
-Do not leave comments. Exception only for actual hacks or realy weird stuff, almost everything should be comment-free.
+Do not leave comments. Exception only for actual hacks or realy weird stuff, almost everything should be comment-free. Do not remove preexisting comments.
 
 ## Running the app
 
