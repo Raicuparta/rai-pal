@@ -26,7 +26,6 @@
           libsoup_3
           openssl
           pango
-          podman
           rustc
           rustfmt
           webkitgtk_4_1
