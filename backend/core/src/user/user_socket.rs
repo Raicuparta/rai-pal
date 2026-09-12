@@ -17,6 +17,10 @@ const USER_SOCKET_PORT_RANGE_START: u16 = 43950;
 const USER_SOCKET_PORT_RANGE_END: u16 = 43960;
 const USER_SOCKET_PHRASE: &str = "RAI PAL";
 
+// Large enough to hold dev-mode eval expressions, which travel in the URL
+// query string of the request line.
+const REQUEST_BUFFER_SIZE: usize = 16 * 1024;
+
 // --- Dev-mode commands ---
 //
 // In debug builds the app registers a handler here so the user socket also
@@ -93,9 +97,7 @@ pub async fn start_user_socket_manager() {
 }
 
 async fn handle_socket_connection(stream: &mut TcpStream) -> Result {
-	// Large enough to hold dev-mode eval expressions, which travel in the URL
-	// query string of the request line.
-	let mut buffer = [0_u8; 16384];
+	let mut buffer = [0_u8; REQUEST_BUFFER_SIZE];
 	let bytes_read = stream.read(&mut buffer).await?;
 
 	if bytes_read == 0 {

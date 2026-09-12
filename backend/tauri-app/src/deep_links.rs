@@ -51,11 +51,12 @@ pub fn handle(raw_url: &str, handle: &AppHandle) {
 }
 
 fn dispatch_mod_action(action: ModAction, query: &HashMap<String, String>, handle: &AppHandle) {
-	let Some(provider_id) = query
-		.get("providerId")
-		.and_then(|value| value.parse::<GameProviderId>().ok())
-	else {
-		log::warn!("Ignoring rai-pal:// {action:?} deep link without a valid providerId");
+	let Some(provider_id) = query.get("providerId") else {
+		log::warn!("Ignoring rai-pal:// {action:?} deep link without a providerId");
+		return;
+	};
+	let Ok(provider_id) = provider_id.parse::<GameProviderId>() else {
+		log::warn!("Ignoring rai-pal:// {action:?} deep link with an invalid providerId");
 		return;
 	};
 

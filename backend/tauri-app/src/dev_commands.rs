@@ -58,7 +58,10 @@ fn insert_pending(id: &str, sender: ResultSender) {
 }
 
 fn remove_pending(id: &str) -> Option<ResultSender> {
-	pending().lock().ok().and_then(|mut map| map.remove(id))
+	pending()
+		.lock()
+		.ok_or_log("Failed to lock pending dev evals")
+		.and_then(|mut map| map.remove(id))
 }
 
 fn next_id() -> String {
@@ -177,8 +180,8 @@ fn parse_query_param(query: &str, key: &str) -> Option<String> {
 		})
 		.and_then(|encoded| {
 			urlencoding::decode(&encoded)
-				.ok()
-				.map(|decoded| decoded.into_owned())
+				.ok_or_log("Failed to decode dev socket query parameter")
+				.map(std::borrow::Cow::into_owned)
 		})
 }
 

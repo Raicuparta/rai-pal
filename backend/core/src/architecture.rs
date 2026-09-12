@@ -29,8 +29,7 @@ pub fn get_architecture(exe_path: &Path) -> Result<Option<Architecture>> {
 }
 
 fn get_elf_architecture(mmap: &[u8]) -> Option<Architecture> {
-	let machine_bytes = mmap.get(18..20)?.try_into().ok()?;
-	let machine = u16::from_le_bytes(machine_bytes);
+	let machine = u16::from_le_bytes([*mmap.get(18)?, *mmap.get(19)?]);
 
 	match machine {
 		// EM_386
