@@ -3,6 +3,11 @@
 Rai Pal is a Tauri v2 desktop app: Rust backend in `/backend`, TypeScript/React
 frontend in `/frontend`.
 
+## Formatting
+
+Run `npm run format` before committing, so formatting changes are part of your
+commit instead of showing up as unrelated churn later.
+
 ## Running the app
 
 - `npm run dev` — starts the Vite dev server and the Tauri app (opens a native window).

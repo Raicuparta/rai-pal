@@ -4,31 +4,19 @@
 		"rust-analyzer": {
 			"initialization_options": {
 				"check": {
-					"command": "clippy",
-				},
-			},
-		},
+					"command": "clippy"
+				}
+			}
+		}
 	},
 	"languages": {
 		"Rust": {
 			"prettier": {
-				"allowed": false,
-			},
-			"formatter": {
-				"external": {
-					"command": "rustup",
-					"arguments": [
-						"run",
-						"nightly",
-						"rustfmt",
-						"--config-path",
-						"./backend",
-					],
-				},
-			},
-		},
+				"allowed": false
+			}
+		}
 	},
 	"prettier": {
-		"allowed": true,
-	},
+		"allowed": true
+	}
 }
