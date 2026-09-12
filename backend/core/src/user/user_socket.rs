@@ -59,6 +59,10 @@ pub fn set_dev_command_handler(handler: DevCommandHandler) {
 	let _ = dev_command_handler().set(handler);
 }
 
+#[expect(
+	clippy::large_futures,
+	reason = "spawned onto the async runtime, which heap-allocates the task future, so its size never lands on the stack"
+)]
 pub async fn start_user_socket_manager() {
 	let mut bind_error_logged = false;
 
