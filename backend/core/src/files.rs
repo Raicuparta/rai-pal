@@ -1,8 +1,5 @@
 use std::{
-	fs::{
-		self,
-		File,
-	},
+	fs::{self, File},
 	io,
 	path::Path,
 };

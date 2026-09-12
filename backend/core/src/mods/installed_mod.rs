@@ -2,17 +2,10 @@ use std::path::PathBuf;
 
 use crate::{
 	game::DbGame,
-	mods::{
-		game_mod::GameMod,
-		mod_config::ModConfig,
-		replacement_token::replace_tokens,
-	},
+	mods::{game_mod::GameMod, mod_config::ModConfig, replacement_token::replace_tokens},
 	open_better::open_detached_better,
 	path_extensions::PathExt,
-	result::{
-		Error,
-		Result,
-	},
+	result::{Error, Result},
 };
 
 pub struct InstalledMod {

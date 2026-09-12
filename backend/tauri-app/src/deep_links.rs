@@ -1,19 +1,11 @@
 use std::collections::HashMap;
 
 use rai_pal_core::game_providers::game_provider::GameProviderId;
-use tauri::{
-	AppHandle,
-	Url,
-};
+use tauri::{AppHandle, Url};
 
 use crate::{
-	events::{
-		self,
-		EventEmitter,
-	},
-	install_mod,
-	run_mod,
-	uninstall_mod,
+	events::{self, EventEmitter},
+	install_mod, run_mod, uninstall_mod,
 };
 
 #[derive(Clone, Copy, Debug)]
@@ -95,4 +87,3 @@ fn dispatch_mod_action(action: ModAction, query: &HashMap<String, String>, handl
 		}
 	});
 }
-

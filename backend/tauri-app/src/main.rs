@@ -4,100 +4,48 @@
 #![allow(clippy::unused_async)]
 
 use std::{
-	collections::{
-		BTreeMap,
-		HashSet,
-	},
+	collections::{BTreeMap, HashSet},
 	path::PathBuf,
 };
 
 use app_settings::AppSettings;
-use app_state::{
-	AppState,
-	StateData,
-	StatefulHandle,
-};
-use events::{
-	EventEmitter,
-	SelectedGameData,
-};
+use app_state::{AppState, StateData, StatefulHandle};
+use events::{EventEmitter, SelectedGameData};
 #[cfg(target_os = "windows")]
 use rai_pal_core::windows;
 use rai_pal_core::{
-	analytics,
-	app_paths,
+	analytics, app_paths,
 	game::DbGame,
 	game_providers::{
-		game_provider::{
-			self,
-			GameProviderId,
-		},
+		game_provider::{self, GameProviderId},
 		manual_provider,
-		manual_provider::{
-			DirectoryScanResult,
-			ScanProgress,
-		},
+		manual_provider::{DirectoryScanResult, ScanProgress},
 		provider_command::ProviderCommandAction,
-		steam::{
-			steam_provider::Steam,
-			steam_shortcut,
-		},
+		steam::{steam_provider::Steam, steam_shortcut},
 	},
 	games_query::GamesQuery,
 	local_database::{
-		app_database::{
-			AppDatabase,
-			DbMutex,
-		},
-		game_database::{
-			GameDatabase,
-			GameIdsResponse,
-			attach_remote,
-		},
-		mod_database::{
-			GameModInfo,
-			ModDatabase,
-		},
+		app_database::{AppDatabase, DbMutex},
+		game_database::{GameDatabase, GameIdsResponse, attach_remote},
+		mod_database::{GameModInfo, ModDatabase},
 	},
 	maps::TryGettable,
-	mod_providers::{
-		mod_provider,
-		url_mod_provider,
-	},
-	mods::game_mod::{
-		GameMod,
-		ModDependency,
-	},
+	mod_providers::{mod_provider, url_mod_provider},
+	mods::game_mod::{GameMod, ModDependency},
 	path_extensions::PathExt,
 	progress_status::ProgressStatus,
 	remote_config::RemoteConfigs,
-	remote_game::{
-		self,
-	},
+	remote_game::{self},
 	result::LogErrExt,
 	user::{
-		auth::{
-			AuthState,
-			get_user_auth_state,
-			logout_auth,
-			start_auth,
-		},
+		auth::{AuthState, get_user_auth_state, logout_auth, start_auth},
 		user_socket::start_user_socket_manager,
 	},
 };
 use strum::IntoEnumIterator;
-use tauri::{
-	AppHandle,
-	Manager,
-	WebviewUrl,
-	WebviewWindowBuilder,
-	ipc::Channel,
-};
+use tauri::{AppHandle, Manager, WebviewUrl, WebviewWindowBuilder, ipc::Channel};
 use tauri_plugin_deep_link::DeepLinkExt;
-use tauri_plugin_log::{
-	Target,
-	TargetKind,
-};
+use tauri_plugin_log::{Target, TargetKind};
 use tauri_plugin_window_state::StateFlags;
 use tauri_specta::Builder;
 
@@ -244,7 +192,9 @@ fn collect_deps_to_install(
 						.collect::<Vec<_>>(),
 					ModDependency::Family { family: dep_family } => relevant_mods
 						.iter()
-						.filter(|info| info.compatible && info.family.as_deref() == Some(dep_family.as_str()))
+						.filter(|info| {
+							info.compatible && info.family.as_deref() == Some(dep_family.as_str())
+						})
 						.collect::<Vec<_>>(),
 				};
 
@@ -254,7 +204,13 @@ fn collect_deps_to_install(
 						&& let Ok(dep_mod) = database.get_mod(&info.mod_id)
 						&& dep_mod.install.is_some()
 					{
-						collect_deps_to_install(&info.mod_id, database, relevant_mods, visited, result);
+						collect_deps_to_install(
+							&info.mod_id,
+							database,
+							relevant_mods,
+							visited,
+							result,
+						);
 						result.push(dep_mod);
 					}
 				}

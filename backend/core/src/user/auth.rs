@@ -1,34 +1,19 @@
-use std::{
-	collections::HashMap,
-	path::PathBuf,
-	time::Duration,
-};
+use std::{collections::HashMap, path::PathBuf, time::Duration};
 
 use rai_pal_proc_macros::serializable_struct;
 use serde::Deserialize;
 use tokio::{
-	io::{
-		AsyncReadExt,
-		AsyncWriteExt,
-	},
-	net::{
-		TcpListener,
-		TcpStream,
-	},
+	io::{AsyncReadExt, AsyncWriteExt},
+	net::{TcpListener, TcpStream},
 	time::timeout,
 };
 use uuid::Uuid;
 
 use crate::{
-	app_paths,
-	http,
+	app_paths, http,
 	open_better::open_detached_better,
 	path_extensions::AsValidStr,
-	result::{
-		Error,
-		LogErrExt,
-		Result,
-	},
+	result::{Error, LogErrExt, Result},
 };
 
 const AUTH_URL_BASE: &str = "https://auth.raicuparta.com";

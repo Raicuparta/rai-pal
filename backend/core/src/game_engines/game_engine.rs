@@ -1,9 +1,6 @@
 use std::cmp::Ordering;
 
-use rai_pal_proc_macros::{
-	serializable_enum,
-	serializable_struct,
-};
+use rai_pal_proc_macros::{serializable_enum, serializable_struct};
 
 #[serializable_enum]
 pub enum EngineBrand {

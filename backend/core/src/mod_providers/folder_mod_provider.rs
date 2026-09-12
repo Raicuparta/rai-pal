@@ -5,25 +5,12 @@ use crate::{
 	app_paths,
 	local_database::{
 		app_database::DbMutex,
-		mod_database::{
-			ModDatabase,
-			compute_scope,
-			scope_id,
-		},
+		mod_database::{ModDatabase, compute_scope, scope_id},
 	},
 	mod_providers::mod_provider::ModProviderId,
-	mods::game_mod::{
-		GameMod,
-		ModDownload,
-	},
-	path_extensions::{
-		AsValidStr,
-		PathExt,
-	},
-	result::{
-		Error,
-		Result,
-	},
+	mods::game_mod::{GameMod, ModDownload},
+	path_extensions::{AsValidStr, PathExt},
+	result::{Error, Result},
 };
 
 pub struct FolderModProvider {

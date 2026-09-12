@@ -1,18 +1,7 @@
-use std::{
-	collections::HashSet,
-	fs,
-	path::PathBuf,
-};
+use std::{collections::HashSet, fs, path::PathBuf};
 
-use rai_pal_core::{
-	app_paths,
-	games_query::GamesQuery,
-	path_extensions::PathExt,
-};
-use rai_pal_proc_macros::{
-	serializable_enum,
-	serializable_struct,
-};
+use rai_pal_core::{app_paths, games_query::GamesQuery, path_extensions::PathExt};
+use rai_pal_proc_macros::{serializable_enum, serializable_struct};
 
 use crate::result::Result;
 
@@ -79,6 +68,8 @@ impl AppSettings {
 	}
 
 	fn get_path() -> Result<PathBuf> {
-		Ok(app_paths::app_data_file(&format!("settings-{SETTINGS_VERSION}.json"))?)
+		Ok(app_paths::app_data_file(&format!(
+			"settings-{SETTINGS_VERSION}.json"
+		))?)
 	}
 }

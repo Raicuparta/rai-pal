@@ -1,22 +1,12 @@
-use std::{
-	path::Path,
-	sync::LazyLock,
-	time::Duration,
-};
+use std::{path::Path, sync::LazyLock, time::Duration};
 
 use futures_util::StreamExt;
 use tokio::{
 	fs::File,
-	io::{
-		AsyncWriteExt,
-		BufWriter,
-	},
+	io::{AsyncWriteExt, BufWriter},
 };
 
-use crate::{
-	progress_status::ProgressStatus,
-	result::Result,
-};
+use crate::{progress_status::ProgressStatus, result::Result};
 
 pub static CLIENT: LazyLock<reqwest::Client> = LazyLock::new(|| {
 	#[expect(

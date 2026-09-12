@@ -1,10 +1,7 @@
 use std::{
 	borrow::Cow,
 	collections::BTreeMap,
-	time::{
-		SystemTime,
-		UNIX_EPOCH,
-	},
+	time::{SystemTime, UNIX_EPOCH},
 };
 
 use rai_pal_proc_macros::serializable_struct;
@@ -13,27 +10,18 @@ use serde::Serialize;
 use crate::{
 	game_providers::game_provider::GameProviderId,
 	local_database::{
-		app_database::{
-			AppDatabase,
-			DbMutex,
-		},
+		app_database::{AppDatabase, DbMutex},
 		game_database::GameDatabase,
 		rusqlite_extensions::RowExt,
 	},
 	mod_providers::mod_provider::ModProviderId,
 	mods::{
-		game_mod::{
-			GameMod,
-			ModDependency,
-		},
+		game_mod::{GameMod, ModDependency},
 		installed_mod::InstalledMod,
 	},
 	operating_system::OperatingSystem,
 	path_extensions::PathExt,
-	result::{
-		Error,
-		Result,
-	},
+	result::{Error, Result},
 };
 
 #[serializable_struct]
@@ -632,7 +620,9 @@ impl ModDatabase for DbMutex {
 		let ids = self
 			.lock_db()?
 			.prepare_cached("SELECT id FROM main.mods WHERE provider_id = $1 AND scope = $2;")?
-			.query_map(rusqlite::params![provider_id, scope], |row| row.get::<_, String>(0))?
+			.query_map(rusqlite::params![provider_id, scope], |row| {
+				row.get::<_, String>(0)
+			})?
 			.collect::<rusqlite::Result<Vec<String>>>()?;
 
 		Ok(ids)

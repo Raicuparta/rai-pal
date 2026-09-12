@@ -4,23 +4,15 @@ use rai_pal_core::{
 	game_providers::game_provider::GameProviderId,
 	local_database::{
 		app_database::DbMutex,
-		game_database::{
-			self,
-		},
+		game_database::{self},
 		mod_database::ModDatabase,
 	},
 	progress_status::ProgressStatus,
 };
-use tauri::{
-	Manager,
-	ipc::Channel,
-};
+use tauri::{Manager, ipc::Channel};
 use tokio::sync::Mutex as AsyncMutex;
 
-use crate::result::{
-	Error,
-	Result,
-};
+use crate::result::{Error, Result};
 
 pub struct AppState {
 	pub database: DbMutex,

@@ -1,39 +1,20 @@
 #![cfg(target_os = "windows")]
 
-use std::path::{
-	Path,
-	PathBuf,
-};
+use std::path::{Path, PathBuf};
 
 use chrono::DateTime;
 use log::error;
 use rai_pal_proc_macros::serializable_struct;
-use rusqlite::{
-	Connection,
-	OpenFlags,
-};
+use rusqlite::{Connection, OpenFlags};
 use serde::Deserialize;
-use winreg::{
-	RegKey,
-	enums::HKEY_LOCAL_MACHINE,
-};
+use winreg::{RegKey, enums::HKEY_LOCAL_MACHINE};
 
-use super::provider_command::{
-	ProviderCommand,
-	ProviderCommandAction,
-};
+use super::provider_command::{ProviderCommand, ProviderCommandAction};
 use crate::{
 	app_paths,
 	game::DbGame,
-	game_providers::game_provider::{
-		GameProviderId,
-		ProviderActions,
-		WineProviderActions,
-	},
-	local_database::{
-		app_database::DbMutex,
-		game_database::GameDatabase,
-	},
+	game_providers::game_provider::{GameProviderId, ProviderActions, WineProviderActions},
+	local_database::{app_database::DbMutex, game_database::GameDatabase},
 	result::Result,
 };
 

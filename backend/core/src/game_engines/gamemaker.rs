@@ -3,15 +3,8 @@ use std::path::Path;
 use memchr::memmem;
 use pelite::PeFile;
 
-use super::game_engine::{
-	EngineBrand,
-	EngineVersion,
-	EngineVersionNumbers,
-};
-use crate::{
-	game::DbGame,
-	result::LogErrExt,
-};
+use super::game_engine::{EngineBrand, EngineVersion, EngineVersionNumbers};
+use crate::{game::DbGame, result::LogErrExt};
 
 fn read_gen8_version(form_offset: usize, data: &[u8]) -> Option<EngineVersion> {
 	if data.len() < form_offset + 76 {

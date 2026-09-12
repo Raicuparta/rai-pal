@@ -1,14 +1,7 @@
 use std::{
 	fs,
-	path::{
-		Path,
-		PathBuf,
-	},
-	time::{
-		Instant,
-		SystemTime,
-		UNIX_EPOCH,
-	},
+	path::{Path, PathBuf},
+	time::{Instant, SystemTime, UNIX_EPOCH},
 };
 
 use rai_pal_proc_macros::serializable_struct;
@@ -20,27 +13,13 @@ use crate::{
 	game::DbGame,
 	game_providers::game_provider::GameProviderId,
 	game_title::get_normalized_titles,
-	games_query::{
-		FilterGroup,
-		GamesQuery,
-		GamesSortBy,
-		InstallState,
-	},
+	games_query::{FilterGroup, GamesQuery, GamesSortBy, InstallState},
 	local_database::{
-		app_database::{
-			AppDatabase,
-			DbMutex,
-		},
-		rusqlite_extensions::{
-			JsonData,
-			RowExt,
-		},
+		app_database::{AppDatabase, DbMutex},
+		rusqlite_extensions::{JsonData, RowExt},
 	},
 	operating_system::OperatingSystem,
-	path_extensions::{
-		AsValidStr,
-		PathExt,
-	},
+	path_extensions::{AsValidStr, PathExt},
 	remote_game,
 	result::Result,
 };
@@ -285,11 +264,7 @@ impl GameDatabase for DbMutex {
 			}
 
 			// Operating systems filter
-			if let Some(cond) = build_nullable_exclusion_filter(
-				"ig.os",
-				&filter.os,
-				&mut params,
-			) {
+			if let Some(cond) = build_nullable_exclusion_filter("ig.os", &filter.os, &mut params) {
 				filters.push(cond);
 			}
 

@@ -1,20 +1,10 @@
 use std::{
 	collections::BTreeMap,
-	hash::{
-		DefaultHasher,
-		Hash,
-		Hasher,
-	},
-	path::{
-		Path,
-		PathBuf,
-	},
+	hash::{DefaultHasher, Hash, Hasher},
+	path::{Path, PathBuf},
 };
 
-use rai_pal_proc_macros::{
-	serializable_enum,
-	serializable_struct,
-};
+use rai_pal_proc_macros::{serializable_enum, serializable_struct};
 
 use crate::{
 	app_paths,
@@ -22,29 +12,17 @@ use crate::{
 	files,
 	game::DbGame,
 	game_engines::{
-		game_engine::{
-			EngineBrand,
-			EngineVersionRange,
-		},
+		game_engine::{EngineBrand, EngineVersionRange},
 		unity::UnityBackend,
 	},
 	game_providers::game_provider,
-	http::{
-		self,
-	},
-	mods::{
-		mod_config::ModConfig,
-		replacement_token::replace_tokens,
-	},
+	http::{self},
+	mods::{mod_config::ModConfig, replacement_token::replace_tokens},
 	open_better::spawn_detached,
 	operating_system::OperatingSystem,
 	path_extensions::PathExt,
 	progress_status::ProgressStatus,
-	result::{
-		Error,
-		LogErrExt,
-		Result,
-	},
+	result::{Error, LogErrExt, Result},
 };
 
 #[serializable_struct]

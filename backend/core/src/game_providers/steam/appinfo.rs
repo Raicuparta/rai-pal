@@ -1,26 +1,14 @@
 use std::{
 	fs,
-	path::{
-		Path,
-		PathBuf,
-	},
+	path::{Path, PathBuf},
 };
 
 use rai_pal_proc_macros::serializable_struct;
 
 use super::vdf::{
-	KeyValues,
-	ValueType,
-	find_keys,
-	value_to_i32,
-	value_to_kv,
-	value_to_path,
-	value_to_string,
+	KeyValues, ValueType, find_keys, value_to_i32, value_to_kv, value_to_path, value_to_string,
 };
-use crate::result::{
-	Error,
-	Result,
-};
+use crate::result::{Error, Result};
 
 #[serializable_struct]
 pub struct SteamLaunchOption {

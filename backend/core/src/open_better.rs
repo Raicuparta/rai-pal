@@ -1,17 +1,11 @@
 use std::{
 	ffi::OsStr,
-	process::{
-		Command,
-		Stdio,
-	},
+	process::{Command, Stdio},
 };
 
 use crate::{
 	path_extensions::AsValidStr,
-	result::{
-		Error,
-		Result,
-	},
+	result::{Error, Result},
 };
 
 /// Spawns `cmd` fully detached from rai-pal, so that games, mod scripts, and

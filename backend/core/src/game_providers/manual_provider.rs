@@ -1,35 +1,20 @@
 use std::{
-	collections::{
-		HashMap,
-		HashSet,
-	},
-	path::{
-		Path,
-		PathBuf,
-	},
+	collections::{HashMap, HashSet},
+	path::{Path, PathBuf},
 	time::Instant,
 };
 
 use log::error;
 use rai_pal_proc_macros::serializable_struct;
 
-use super::game_provider::{
-	GameProviderId,
-	ProviderActions,
-};
+use super::game_provider::{GameProviderId, ProviderActions};
 use crate::{
 	app_paths,
 	game::DbGame,
 	game_providers::game_provider::WineProviderActions,
-	local_database::{
-		app_database::DbMutex,
-		game_database::GameDatabase,
-	},
+	local_database::{app_database::DbMutex, game_database::GameDatabase},
 	path_extensions::PathExt,
-	result::{
-		Error,
-		Result,
-	},
+	result::{Error, Result},
 };
 
 const VALID_EXTENSIONS: [&str; 1] = ["exe"];

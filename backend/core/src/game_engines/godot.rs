@@ -4,21 +4,14 @@ use lazy_regex::regex_find;
 use pelite::PeFile;
 
 use super::{
-	game_engine::{
-		EngineBrand,
-		EngineVersion,
-		EngineVersionNumbers,
-	},
+	game_engine::{EngineBrand, EngineVersion, EngineVersionNumbers},
 	pe_utils,
 };
 use crate::{
 	game::DbGame,
 	open_better::open_detached_better,
 	path_extensions::PathExt,
-	result::{
-		LogErrExt,
-		Result,
-	},
+	result::{LogErrExt, Result},
 };
 
 fn parse_version(version_string: &str) -> Option<EngineVersion> {

@@ -1,15 +1,9 @@
 use std::path::Path;
 
-use pelite::{
-	PeFile,
-	Wrap,
-};
+use pelite::{PeFile, Wrap};
 use rai_pal_proc_macros::serializable_enum;
 
-use crate::{
-	game_engines::mmap_safe,
-	result::Result,
-};
+use crate::{game_engines::mmap_safe, result::Result};
 
 #[serializable_enum]
 pub enum Architecture {

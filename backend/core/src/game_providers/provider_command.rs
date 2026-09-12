@@ -4,10 +4,7 @@ use rai_pal_proc_macros::serializable_enum;
 
 use crate::{
 	game::DbGame,
-	open_better::{
-		open_detached_better,
-		spawn_detached,
-	},
+	open_better::{open_detached_better, spawn_detached},
 	operating_system::OperatingSystem,
 	result::Result,
 };
@@ -37,10 +34,7 @@ impl ProviderCommand {
 			Self::Path(path, args) => {
 				#[cfg(target_os = "linux")]
 				{
-					use std::{
-						collections::BTreeMap,
-						process::Command,
-					};
+					use std::{collections::BTreeMap, process::Command};
 
 					use crate::game_providers::game_provider;
 

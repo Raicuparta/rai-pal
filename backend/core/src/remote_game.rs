@@ -1,25 +1,15 @@
-use std::{
-	collections::HashMap,
-	path::PathBuf,
-};
+use std::{collections::HashMap, path::PathBuf};
 
 use lazy_regex::regex;
 use rai_pal_proc_macros::serializable_struct;
 
 use crate::{
 	app_paths,
-	game_engines::game_engine::{
-		EngineVersion,
-		EngineVersionNumbers,
-		GameEngine,
-	},
+	game_engines::game_engine::{EngineVersion, EngineVersionNumbers, GameEngine},
 	game_providers::game_provider::GameProviderId,
 	http,
 	path_extensions::PathExt,
-	result::{
-		LogErrExt,
-		Result,
-	},
+	result::{LogErrExt, Result},
 };
 
 const URL_BASE: &str = "https://raicuparta.github.io/rai-pal-db/game-db";

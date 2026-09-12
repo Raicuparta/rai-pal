@@ -24,33 +24,19 @@
 use std::{
 	collections::HashMap,
 	sync::{
-		Mutex,
-		OnceLock,
-		atomic::{
-			AtomicU64,
-			Ordering,
-		},
+		Mutex, OnceLock,
+		atomic::{AtomicU64, Ordering},
 	},
 	time::Duration,
 };
 
 use rai_pal_core::{
 	result::LogErrExt,
-	user::user_socket::{
-		DevCommandHandler,
-		DevHttpResponse,
-		set_dev_command_handler,
-	},
+	user::user_socket::{DevCommandHandler, DevHttpResponse, set_dev_command_handler},
 };
 use serde::Deserialize;
-use serde_json::{
-	Value,
-	json,
-};
-use tauri::{
-	Listener,
-	WebviewWindow,
-};
+use serde_json::{Value, json};
+use tauri::{Listener, WebviewWindow};
 use tokio::sync::mpsc;
 
 const EVAL_TIMEOUT: Duration = Duration::from_mins(1);
@@ -132,7 +118,9 @@ async fn handle_request(
 	window: &WebviewWindow<tauri::Wry>,
 	request_target: &str,
 ) -> Option<DevHttpResponse> {
-	let (path, query) = request_target.split_once('?').unwrap_or((request_target, ""));
+	let (path, query) = request_target
+		.split_once('?')
+		.unwrap_or((request_target, ""));
 
 	if path != "/dev/eval" {
 		return None;
@@ -187,7 +175,11 @@ fn parse_query_param(query: &str, key: &str) -> Option<String> {
 			let (name, value) = pair.split_once('=')?;
 			(name == key).then(|| value.to_string())
 		})
-		.and_then(|encoded| urlencoding::decode(&encoded).ok().map(|decoded| decoded.into_owned()))
+		.and_then(|encoded| {
+			urlencoding::decode(&encoded)
+				.ok()
+				.map(|decoded| decoded.into_owned())
+		})
 }
 
 /// Wraps the user's JS in an async IIFE that evaluates it, serializes the

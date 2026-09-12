@@ -1,16 +1,10 @@
 use std::collections::HashMap;
 
-use rai_pal_proc_macros::{
-	serializable_enum,
-	serializable_struct,
-};
+use rai_pal_proc_macros::{serializable_enum, serializable_struct};
 
 use crate::{
 	architecture::Architecture,
-	game_engines::{
-		game_engine::EngineBrand,
-		unity::UnityBackend,
-	},
+	game_engines::{game_engine::EngineBrand, unity::UnityBackend},
 	game_providers::game_provider::GameProviderId,
 	game_tag::GameTag,
 	operating_system::OperatingSystem,

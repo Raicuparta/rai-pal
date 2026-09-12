@@ -1,20 +1,9 @@
-use std::{
-	self,
-	env,
-	fs,
-	path::PathBuf,
-};
+use std::{self, env, fs, path::PathBuf};
 
-use directories::{
-	BaseDirs,
-	ProjectDirs,
-};
+use directories::{BaseDirs, ProjectDirs};
 use log;
 
-use crate::result::{
-	Error,
-	Result,
-};
+use crate::result::{Error, Result};
 
 pub fn base_dirs() -> Result<BaseDirs> {
 	directories::BaseDirs::new().ok_or_else(Error::AppDataNotFound)

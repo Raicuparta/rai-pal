@@ -1,27 +1,13 @@
-use std::{
-	future::Future,
-	pin::Pin,
-	sync::OnceLock,
-	time::Duration,
-};
+use std::{future::Future, pin::Pin, sync::OnceLock, time::Duration};
 
 use tokio::{
-	io::{
-		AsyncReadExt,
-		AsyncWriteExt,
-	},
-	net::{
-		TcpListener,
-		TcpStream,
-	},
+	io::{AsyncReadExt, AsyncWriteExt},
+	net::{TcpListener, TcpStream},
 	time::sleep,
 };
 
 use super::auth;
-use crate::result::{
-	Error,
-	Result,
-};
+use crate::result::{Error, Result};
 
 const USER_SOCKET_BIND_ADDRESS: &str = "127.0.0.1";
 const USER_SOCKET_POLL_INTERVAL: Duration = Duration::from_millis(100);

@@ -1,17 +1,11 @@
-use std::path::{
-	Path,
-	PathBuf,
-};
+use std::path::{Path, PathBuf};
 
 use rai_pal_proc_macros::serializable_struct;
 
 use crate::{
 	game::DbGame,
 	mods::{
-		game_mod::{
-			GameMod,
-			ModConfigDestinationType,
-		},
+		game_mod::{GameMod, ModConfigDestinationType},
 		replacement_token::replace_tokens,
 	},
 	remote_config,

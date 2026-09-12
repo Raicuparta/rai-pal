@@ -1,17 +1,9 @@
-use std::{
-	env,
-	fmt,
-	num,
-	path::PathBuf,
-	result,
-	time::SystemTimeError,
-};
+use std::{env, fmt, num, path::PathBuf, result, time::SystemTimeError};
 
 use lazy_regex::regex;
 
 use crate::{
-	game_engines::game_engine::EngineBrand,
-	game_providers::game_provider::GameProviderId,
+	game_engines::game_engine::EngineBrand, game_providers::game_provider::GameProviderId,
 };
 
 #[derive(Debug, thiserror::Error, specta::Type)]

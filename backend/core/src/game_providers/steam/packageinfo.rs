@@ -1,17 +1,10 @@
 use std::{
-	collections::{
-		HashMap,
-		HashSet,
-	},
+	collections::{HashMap, HashSet},
 	fs,
 	path::Path,
 };
 
-use super::vdf::{
-	KeyValues,
-	ValueType,
-	find_keys,
-};
+use super::vdf::{KeyValues, ValueType, find_keys};
 use crate::result::Result;
 
 #[derive(Debug)]

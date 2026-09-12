@@ -1,10 +1,6 @@
 use std::{
 	fs,
-	hash::{
-		DefaultHasher,
-		Hash,
-		Hasher,
-	},
+	hash::{DefaultHasher, Hash, Hasher},
 	path::PathBuf,
 };
 
@@ -12,23 +8,15 @@ use rai_pal_proc_macros::serializable_struct;
 
 use super::mod_provider::ModProvider;
 use crate::{
-	app_paths,
-	http,
+	app_paths, http,
 	local_database::{
 		app_database::DbMutex,
-		mod_database::{
-			ModDatabase,
-			compute_scope,
-			scope_id,
-		},
+		mod_database::{ModDatabase, compute_scope, scope_id},
 	},
 	mod_providers::mod_provider::ModProviderId,
 	mods::game_mod::GameMod,
 	path_extensions::PathExt,
-	result::{
-		LogErrExt,
-		Result,
-	},
+	result::{LogErrExt, Result},
 };
 
 #[serializable_struct]
@@ -147,7 +135,9 @@ pub fn add_url_mod_source(url: String) -> Result {
 pub fn remove_url_mod_source(url: &str) -> Result {
 	let mut sources = read_url_mod_sources();
 
-	sources.sources.retain(|source| source.url != url || source.is_default);
+	sources
+		.sources
+		.retain(|source| source.url != url || source.is_default);
 	write_url_mod_sources(&sources)
 }
 

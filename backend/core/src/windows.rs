@@ -1,31 +1,14 @@
 #![cfg(target_os = "windows")]
 
-use std::{
-	ffi::OsStr,
-	os::windows::ffi::OsStrExt,
-	ptr,
-};
+use std::{ffi::OsStr, os::windows::ffi::OsStrExt, ptr};
 
 use log::error;
 use winapi::{
-	ctypes::{
-		c_int,
-		c_uint,
-	},
-	um::winuser::{
-		IDYES,
-		MB_ICONERROR,
-		MB_OK,
-		MB_SYSTEMMODAL,
-		MB_YESNO,
-		MessageBoxW,
-	},
+	ctypes::{c_int, c_uint},
+	um::winuser::{IDYES, MB_ICONERROR, MB_OK, MB_SYSTEMMODAL, MB_YESNO, MessageBoxW},
 };
 
-use crate::{
-	app_paths,
-	path_extensions::PathExt,
-};
+use crate::{app_paths, path_extensions::PathExt};
 
 fn os_str_to_wide(os_str: &OsStr) -> Vec<u16> {
 	os_str.encode_wide().chain(std::iter::once(0)).collect()

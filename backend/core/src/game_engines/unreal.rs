@@ -1,31 +1,19 @@
 use std::{
-	fs::{
-		self,
-	},
+	fs::{self},
 	path::Path,
 };
 
-use lazy_regex::{
-	regex_captures,
-	regex_find,
-};
+use lazy_regex::{regex_captures, regex_find};
 use pelite::PeFile;
 use serde_json;
 
-use super::game_engine::{
-	EngineBrand,
-	EngineVersion,
-	EngineVersionNumbers,
-};
+use super::game_engine::{EngineBrand, EngineVersion, EngineVersionNumbers};
 use crate::{
 	architecture::get_architecture,
 	game::DbGame,
 	open_better::open_detached_better,
 	path_extensions::PathExt,
-	result::{
-		LogErrExt,
-		Result,
-	},
+	result::{LogErrExt, Result},
 };
 
 fn get_version_from_metadata(file_bytes: &[u8]) -> Option<EngineVersion> {

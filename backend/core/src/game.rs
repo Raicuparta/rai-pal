@@ -1,9 +1,6 @@
 use std::{
 	collections::BTreeMap,
-	path::{
-		Path,
-		PathBuf,
-	},
+	path::{Path, PathBuf},
 };
 
 use rai_pal_proc_macros::serializable_struct;
@@ -13,36 +10,20 @@ use crate::{
 	architecture::Architecture,
 	game_engines::{
 		game_engine::EngineBrand,
-		gamemaker,
-		godot,
-		unity::{
-			self,
-			UnityBackend,
-		},
+		gamemaker, godot,
+		unity::{self, UnityBackend},
 		unreal,
 	},
 	game_providers::{
 		game_provider::GameProviderId,
-		provider_command::{
-			ProviderCommand,
-			ProviderCommandAction,
-		},
+		provider_command::{ProviderCommand, ProviderCommandAction},
 	},
 	game_tag::GameTag,
 	game_title::is_probably_demo,
-	operating_system::{
-		self,
-		OperatingSystem,
-	},
+	operating_system::{self, OperatingSystem},
 	path_extensions::PathExt,
-	remote_config::{
-		self,
-		RemoteConfigs,
-	},
-	result::{
-		Error,
-		Result,
-	},
+	remote_config::{self, RemoteConfigs},
+	result::{Error, Result},
 };
 
 #[serializable_struct]
@@ -226,10 +207,7 @@ impl DbGame {
 		{
 			use std::path::PathBuf;
 
-			use crate::{
-				game_providers::game_provider,
-				path_extensions::AsValidStr,
-			};
+			use crate::{game_providers::game_provider, path_extensions::AsValidStr};
 
 			let provider = game_provider::get_provider(self.provider_id)?;
 			let prefix_path = provider.get_wine_prefix_path(self)?;

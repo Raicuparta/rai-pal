@@ -1,12 +1,8 @@
 use rai_pal_core::{
-	game::DbGame,
-	game_providers::game_provider::GameProviderId,
+	game::DbGame, game_providers::game_provider::GameProviderId,
 	local_database::mod_database::GameModInfo,
 };
-use rai_pal_proc_macros::{
-	serializable_event,
-	serializable_struct,
-};
+use rai_pal_proc_macros::{serializable_event, serializable_struct};
 use serde::Serialize;
 
 #[serializable_struct]

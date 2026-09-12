@@ -1,23 +1,12 @@
 #![cfg(target_os = "linux")]
 
-use std::{
-	collections::HashMap,
-	fs,
-	path::PathBuf,
-};
+use std::{collections::HashMap, fs, path::PathBuf};
 
-use serde::{
-	Deserialize,
-	Serialize,
-	de::DeserializeOwned,
-};
+use serde::{Deserialize, Serialize, de::DeserializeOwned};
 use serde_json::Value;
 
 use super::provider_command::ProviderCommand;
-use crate::{
-	app_paths,
-	result::Result,
-};
+use crate::{app_paths, result::Result};
 
 fn heroic_config_path(relative_path: &str) -> Result<std::path::PathBuf> {
 	let dirs = app_paths::base_dirs()?;

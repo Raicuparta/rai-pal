@@ -1,9 +1,6 @@
 use std::{
 	fs,
-	path::{
-		Path,
-		PathBuf,
-	},
+	path::{Path, PathBuf},
 	process::Command,
 };
 
@@ -13,16 +10,10 @@ use crate::{
 	game::DbGame,
 	game_providers::{
 		game_provider::WineProviderActions,
-		steam::{
-			steam_dir::find_steam_dir,
-			steam_provider::Steam,
-		},
+		steam::{steam_dir::find_steam_dir, steam_provider::Steam},
 	},
 	path_extensions::PathExt,
-	result::{
-		Error,
-		Result,
-	},
+	result::{Error, Result},
 	wine,
 };
 

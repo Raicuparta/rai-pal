@@ -2,42 +2,23 @@
 
 use std::{
 	collections::HashMap,
-	fs::{
-		self,
-		File,
-	},
+	fs::{self, File},
 	io::Read,
-	path::{
-		Path,
-		PathBuf,
-	},
+	path::{Path, PathBuf},
 };
 
 use base64::engine::general_purpose;
 use log::error;
 use rai_pal_proc_macros::serializable_struct;
-use winreg::{
-	RegKey,
-	enums::HKEY_LOCAL_MACHINE,
-};
+use winreg::{RegKey, enums::HKEY_LOCAL_MACHINE};
 
 use crate::{
 	game::DbGame,
 	game_providers::{
-		game_provider::{
-			GameProviderId,
-			ProviderActions,
-			WineProviderActions,
-		},
-		provider_command::{
-			ProviderCommand,
-			ProviderCommandAction,
-		},
+		game_provider::{GameProviderId, ProviderActions, WineProviderActions},
+		provider_command::{ProviderCommand, ProviderCommandAction},
 	},
-	local_database::{
-		app_database::DbMutex,
-		game_database::GameDatabase,
-	},
+	local_database::{app_database::DbMutex, game_database::GameDatabase},
 	path_extensions::PathExt,
 	result::Result,
 };

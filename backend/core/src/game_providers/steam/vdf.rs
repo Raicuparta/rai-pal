@@ -1,15 +1,8 @@
-use std::{
-	collections::HashMap,
-	path::PathBuf,
-};
+use std::{collections::HashMap, path::PathBuf};
 
 use memchr::memchr;
 
-use crate::result::{
-	Error,
-	LogErrExt,
-	Result,
-};
+use crate::result::{Error, LogErrExt, Result};
 
 const BIN_NONE: u8 = 0x00;
 const BIN_STRING: u8 = 0x01;

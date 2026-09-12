@@ -2,14 +2,8 @@ use rai_pal_proc_macros::serializable_enum;
 use tokio::sync::Mutex as AsyncMutex;
 
 use crate::{
-	local_database::{
-		app_database::DbMutex,
-		mod_database::ModDatabase,
-	},
-	mod_providers::{
-		folder_mod_provider::FolderModProvider,
-		url_mod_provider::UrlModProvider,
-	},
+	local_database::{app_database::DbMutex, mod_database::ModDatabase},
+	mod_providers::{folder_mod_provider::FolderModProvider, url_mod_provider::UrlModProvider},
 	result::Result,
 };
 

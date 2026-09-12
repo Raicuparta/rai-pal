@@ -1,14 +1,8 @@
 use std::path::PathBuf;
 
 use rusqlite::{
-	Row,
-	RowIndex,
-	types::{
-		FromSql,
-		FromSqlError,
-		FromSqlResult,
-		ValueRef,
-	},
+	Row, RowIndex,
+	types::{FromSql, FromSqlError, FromSqlResult, ValueRef},
 };
 use serde::de::DeserializeOwned;
 

@@ -1,24 +1,14 @@
 use std::{
 	cmp::Reverse,
 	fs,
-	path::{
-		Path,
-		PathBuf,
-	},
+	path::{Path, PathBuf},
 	time::SystemTime,
 };
 
 use crate::{
 	game_providers::steam::steam_dir::find_steam_dir,
-	path_extensions::{
-		AsValidStr,
-		PathExt,
-	},
-	result::{
-		Error,
-		LogErrExt,
-		Result,
-	},
+	path_extensions::{AsValidStr, PathExt},
+	result::{Error, LogErrExt, Result},
 };
 
 const RAI_PAL_SHORTCUT_NAME: &str = "Rai Pal";

@@ -1,16 +1,10 @@
 #![cfg(target_os = "linux")]
 
-use std::{
-	fs,
-	path::Path,
-};
+use std::{fs, path::Path};
 
 use log;
 
-use crate::{
-	app_paths,
-	result::Result,
-};
+use crate::{app_paths, result::Result};
 
 const DLL_OVERRIDES_SECTION: &str = "[Software\\\\Wine\\\\DllOverrides]";
 const DLL_OVERRIDE_VALUE: &str = "native,builtin";

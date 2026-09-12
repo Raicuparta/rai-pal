@@ -1,46 +1,25 @@
 use std::{
-	collections::{
-		HashMap,
-		HashSet,
-	},
-	path::{
-		Path,
-		PathBuf,
-	},
+	collections::{HashMap, HashSet},
+	path::{Path, PathBuf},
 };
 
 use chrono::DateTime;
 use steamlocate::SteamDir;
 
 use super::{
-	appinfo::{
-		SteamAppInfo,
-		SteamLaunchOption,
-	},
+	appinfo::{SteamAppInfo, SteamLaunchOption},
 	packageinfo::PackageInfo,
-	steam_dir::{
-		find_steam_dir,
-		get_appinfo_path,
-	},
+	steam_dir::{find_steam_dir, get_appinfo_path},
 };
 use crate::{
 	game::DbGame,
 	game_providers::{
-		game_provider::{
-			GameProviderId,
-			ProviderActions,
-		},
-		provider_command::{
-			ProviderCommand,
-			ProviderCommandAction,
-		},
+		game_provider::{GameProviderId, ProviderActions},
+		provider_command::{ProviderCommand, ProviderCommandAction},
 		steam::appinfo::SteamAppInfoReader,
 	},
 	game_tag::GameTag,
-	local_database::{
-		app_database::DbMutex,
-		game_database::GameDatabase,
-	},
+	local_database::{app_database::DbMutex, game_database::GameDatabase},
 	path_extensions::PathExt,
 	result::Result,
 };
@@ -145,11 +124,14 @@ impl Steam {
 			sorted_launch_options
 				.into_iter()
 				.map(|launch_option| {
-					let full_path = launch_option.executable.as_ref().and_then(|executable_path| {
-						app_path
-							.resolve_relative_path_case_insensitive(executable_path)
-							.filter(|path| path.is_file())
-					});
+					let full_path = launch_option
+						.executable
+						.as_ref()
+						.and_then(|executable_path| {
+							app_path
+								.resolve_relative_path_case_insensitive(executable_path)
+								.filter(|path| path.is_file())
+						});
 					(launch_option, full_path)
 				})
 				.collect();
