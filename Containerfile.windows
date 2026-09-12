@@ -1,4 +1,4 @@
-FROM ubuntu:22.04
+FROM docker.io/library/ubuntu:22.04
 
 ENV DEBIAN_FRONTEND=noninteractive \
     RUSTUP_HOME=/usr/local/rustup \
