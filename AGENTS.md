@@ -12,6 +12,10 @@ commit instead of showing up as unrelated churn later.
 
 Commit your work locally without pushing. When making changes to the same domain, or especially when fixing changes you made, amend commits, unless they've already been pushed.
 
+## Comments
+
+Do not leave comments. Exception only for actual hacks or realy weird stuff, almost everything should be comment-free.
+
 ## Running the app
 
 - `npm run dev` — starts the Vite dev server and the Tauri app (opens a native window).
