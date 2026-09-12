@@ -542,10 +542,11 @@ async fn uninstall_all_mods(
 #[specta::specta]
 async fn refresh_mods(handle: AppHandle) -> Result {
 	let state = handle.app_state();
-	mod_provider::refresh_all_mods(&state.database).await?;
+	let refresh_result = mod_provider::refresh_all_mods(&state.database).await;
 
 	// The open game's mod list depends on the mods table, so re-select it to
-	// refresh its mod info after sources change.
+	// refresh its mod info after sources change. Do this even if one of the
+	// providers failed, since the others may still have updated the table.
 	let selected_game = state
 		.selected_game
 		.read()
@@ -556,7 +557,7 @@ async fn refresh_mods(handle: AppHandle) -> Result {
 		handle.emit_safe(events::RefreshGame(provider_id, game_id));
 	}
 
-	Ok(())
+	Ok(refresh_result?)
 }
 
 #[tauri::command]
