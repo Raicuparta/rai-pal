@@ -83,7 +83,7 @@ export type AppLocale = "EnUs" | "EsEs" | "FrFr" | "DeDe" | "PtPt" | "ZhCn" | "J
 export type AppSettings = {
 	hideGameThumbnails: boolean,
 	overrideLanguage: AppLocale | null,
-	gamesQuery: GamesQuery | null,
+	gamesQuery: GamesQuery,
 	selectedTab: TabId,
 	skipConfirmDialogs: string[],
 };
@@ -142,7 +142,7 @@ export type Event = "InstallMod" | "UninstallMod" | "UpdateMod" | "RunMod" | "Pr
 export type ExecutedProviderCommand = null;
 
 export type FilterGroup<T> = {
-	known: { [key in T]: FilterItem },
+	known: Partial<{ [key in T]: FilterItem }>,
 	unknown: FilterItem | null,
 };
 

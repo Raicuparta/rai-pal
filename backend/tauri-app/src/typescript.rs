@@ -26,6 +26,18 @@ pub fn export(builder: &tauri_specta::Builder<tauri::Wry>) {
 		.unwrap()
 		.read_to_string(&mut content)
 		.unwrap();
+
+	// Specta types `FilterGroup.known` as a total map, but the backend treats
+	// missing keys as enabled. Make it partial so the default (empty) map is valid.
+	assert!(
+		content.contains("known: { [key in T]: FilterItem },"),
+		"Specta's FilterGroup binding changed, update the TypeScript patch"
+	);
+	let content = content.replace(
+		"known: { [key in T]: FilterItem },",
+		"known: Partial<{ [key in T]: FilterItem }>,",
+	);
+
 	#[expect(
 		clippy::unwrap_used,
 		reason = "This is dev only, we wanna make sure it explodes if types fail to generate."

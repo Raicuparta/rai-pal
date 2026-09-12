@@ -13,7 +13,8 @@ import {
 import { SearchInput } from "@components/search-input";
 import { FilterGroup, GamesFilter, GamesQuery } from "@api/bindings";
 import { modsAtom } from "@hooks/use-data";
-import { defaultQuery, useDataQuery } from "@hooks/use-data-query";
+import { defaultQuery } from "@hooks/default-settings";
+import { useDataQuery } from "@hooks/use-data-query";
 import { useLocalization } from "@hooks/use-localization";
 import { LocalizationKey } from "@localizations/localizations";
 
@@ -146,7 +147,9 @@ export const filterDetails = Object.freeze<{
 
 function hasDisabledNonLocked(group: FilterGroup<string>): boolean {
 	return (
-		Object.values(group.known).some((item) => !item.enabled && !item.locked) ||
+		Object.values(group.known).some(
+			(item) => item !== undefined && !item.enabled && !item.locked,
+		) ||
 		(group.unknown !== null && !group.unknown.enabled && !group.unknown.locked)
 	);
 }

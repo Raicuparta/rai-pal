@@ -14,10 +14,13 @@ export type FilterChangeCallback = (
 export function keepOnlyLocked(
 	group: FilterGroup<string>,
 ): FilterGroup<string> {
-	const known = Object.fromEntries(
-		Object.entries(group.known).filter(([, item]) => item.locked),
-	);
-	const unknown = group.unknown && group.unknown.locked ? group.unknown : null;
+	const known: Record<string, FilterItem> = {};
+	for (const [key, item] of Object.entries(group.known)) {
+		if (item?.locked) {
+			known[key] = item;
+		}
+	}
+	const unknown = group.unknown?.locked ? group.unknown : null;
 	return { known, unknown };
 }
 
@@ -32,7 +35,10 @@ function getDefaultItem(): FilterItem {
 	return { enabled: true, locked: false };
 }
 
-function getItem(known: Record<string, FilterItem>, key: string): FilterItem {
+function getItem(
+	known: Record<string, FilterItem | undefined>,
+	key: string,
+): FilterItem {
 	return known[key] ?? getDefaultItem();
 }
 
@@ -140,7 +146,7 @@ export function FilterSelect<TFilterKey extends FilterKey>({
 	const unknownItem = filterGroup.unknown ?? getDefaultItem();
 	const hasAnyDisabled =
 		Object.values(filterGroup.known).some(
-			(item) => !item.enabled && !item.locked,
+			(item) => item !== undefined && !item.enabled && !item.locked,
 		) ||
 		(!unknownItem.enabled && !unknownItem.locked);
 

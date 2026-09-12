@@ -1,34 +1,45 @@
 import { AppSettings, commands } from "@api/bindings";
 import { atom, useAtom, useStore } from "jotai";
 import { useCallback, useEffect } from "react";
-
-const defaultSettings: AppSettings = {
-	hideGameThumbnails: false,
-	overrideLanguage: null,
-	gamesQuery: null,
-	selectedTab: "Games",
-	skipConfirmDialogs: [],
-};
+import { defaultSettings } from "./default-settings";
 
 const appSettingsAtom = atom({
 	isInitialized: false,
 	settings: defaultSettings,
 });
 
-let isFetching = false;
+let settingsPromise: Promise<AppSettings> | null = null;
 
 export function useAppSettings() {
 	const [state, setSettingsInternal] = useAtom(appSettingsAtom);
 	const store = useStore();
 
 	useEffect(() => {
-		if (state.isInitialized || isFetching) return;
+		if (state.isInitialized) return;
 
-		isFetching = true;
-		commands.getAppSettings().then((initialSettings) => {
-			setSettingsInternal({ isInitialized: true, settings: initialSettings });
-			isFetching = false;
-		});
+		if (!settingsPromise) {
+			settingsPromise = commands.getAppSettings().catch((error) => {
+				settingsPromise = null;
+				throw error;
+			});
+		}
+
+		let isActive = true;
+		settingsPromise
+			.then((initialSettings) => {
+				if (!isActive) return;
+				setSettingsInternal({
+					isInitialized: true,
+					settings: initialSettings,
+				});
+			})
+			.catch((error) => {
+				console.error(`Failed to load app settings: ${error}`);
+			});
+
+		return () => {
+			isActive = false;
+		};
 	}, [state.isInitialized, setSettingsInternal]);
 
 	const setSettings = useCallback(
