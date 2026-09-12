@@ -8,6 +8,10 @@ frontend in `/frontend`.
 Run `npm run format` before committing, so formatting changes are part of your
 commit instead of showing up as unrelated churn later.
 
+## Commits
+
+Commit your work locally without pushing. When making changes to the same domain, or especially when fixing changes you made, amend commits, unless they've already been pushed.
+
 ## Running the app
 
 - `npm run dev` — starts the Vite dev server and the Tauri app (opens a native window).
