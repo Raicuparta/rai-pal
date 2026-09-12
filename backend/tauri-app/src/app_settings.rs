@@ -48,6 +48,9 @@ pub struct AppSettings {
 	pub skip_confirm_dialogs: HashSet<String>,
 }
 
+// If the settings schema changes, update this so it gets recreated.
+const SETTINGS_VERSION: u32 = 1u32;
+
 impl AppSettings {
 	fn try_read() -> Result<Self> {
 		let path = Self::get_path()?;
@@ -76,6 +79,6 @@ impl AppSettings {
 	}
 
 	fn get_path() -> Result<PathBuf> {
-		Ok(app_paths::app_data_file("settings.json")?)
+		Ok(app_paths::app_data_file(&format!("settings-{SETTINGS_VERSION}.json"))?)
 	}
 }
