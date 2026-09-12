@@ -58,18 +58,18 @@ impl SteamAppInfoReader {
 		let mmap = unsafe { memmap2::Mmap::map(&file)? };
 		let mut pos = 0;
 
-		let version = super::vdf::read_u32_le(&mmap, &mut pos);
-		let _universe = super::vdf::read_u32_le(&mmap, &mut pos);
+		let version = super::vdf::read_u32_le(&mmap, &mut pos)?;
+		let _universe = super::vdf::read_u32_le(&mmap, &mut pos)?;
 
 		let is_new_version = version > OLD_APPINFO_MAX_VERSION;
 
 		let keys = if is_new_version {
-			let key_list_address = super::vdf::read_u64_le(&mmap, &mut pos);
+			let key_list_address = super::vdf::read_u64_le(&mmap, &mut pos)?;
 			let position_before_jump = pos;
 
 			pos = usize::try_from(key_list_address)?;
 
-			let key_count = super::vdf::read_u32_le(&mmap, &mut pos);
+			let key_count = super::vdf::read_u32_le(&mmap, &mut pos)?;
 			let mut keys_vec: Vec<String> = Vec::with_capacity(usize::try_from(key_count)?);
 			for _ in 0..key_count {
 				if let Ok(key) = super::vdf::read_cstring(&mmap, &mut pos) {
@@ -88,12 +88,24 @@ impl SteamAppInfoReader {
 	}
 
 	pub fn try_next(&mut self) -> Result<Option<SteamAppInfo>> {
+		let result = self.try_next_inner();
+
+		if result.is_err() {
+			// A parse error can leave `pos` mid-entry. Advance to the end so the
+			// iterator doesn't repeat the same failing record forever.
+			self.pos = self.mmap.len();
+		}
+
+		result
+	}
+
+	fn try_next_inner(&mut self) -> Result<Option<SteamAppInfo>> {
 		loop {
 			if self.pos + 8 > self.mmap.len() {
 				return Ok(None);
 			}
 
-			let app_id = super::vdf::read_u32_le(&self.mmap, &mut self.pos);
+			let app_id = super::vdf::read_u32_le(&self.mmap, &mut self.pos)?;
 			if app_id == 0 {
 				return Ok(None);
 			}
@@ -111,13 +123,13 @@ impl SteamAppInfoReader {
 
 			// Quick scan for app_type to skip non-game entries without full VDF parse.
 			let mut scan_pos = vdf_start;
-			let early_type = super::vdf::find_app_type_in_vdf(&self.mmap, &mut scan_pos, keys_ref);
+			let early_type = super::vdf::find_app_type_in_vdf(&self.mmap, &mut scan_pos, keys_ref)?;
 
 			if let Some(ref app_type) = early_type
 				&& app_type != "Game"
 				&& app_type != "Demo"
 			{
-				super::vdf::skip_vdf(&self.mmap, &mut self.pos, keys_ref);
+				super::vdf::skip_vdf(&self.mmap, &mut self.pos, keys_ref)?;
 				continue;
 			}
 

@@ -2,7 +2,23 @@ use std::{collections::HashMap, path::PathBuf};
 
 use memchr::memchr;
 
-use crate::result::{Error, LogErrExt, Result};
+use crate::result::{Error, Result};
+
+fn unexpected_eof() -> Error {
+	Error::Io(std::io::Error::new(
+		std::io::ErrorKind::UnexpectedEof,
+		"unexpected end of VDF data",
+	))
+}
+
+/// Reads a fixed-size array without panicking on truncated data.
+pub(super) fn read_array<const N: usize>(data: &[u8], pos: &mut usize) -> Result<[u8; N]> {
+	let end = (*pos).checked_add(N).ok_or_else(unexpected_eof)?;
+	let mut array = [0_u8; N];
+	array.copy_from_slice(data.get(*pos..end).ok_or_else(unexpected_eof)?);
+	*pos = end;
+	Ok(array)
+}
 
 const BIN_NONE: u8 = 0x00;
 const BIN_STRING: u8 = 0x01;
@@ -80,35 +96,27 @@ pub const fn value_to_kv(value: Option<&ValueType>) -> Option<&KeyValues> {
 }
 
 #[inline]
-pub fn read_u32_le(data: &[u8], pos: &mut usize) -> u32 {
-	let bytes = data[*pos..*pos + 4].try_into().unwrap();
-	*pos += 4;
-	u32::from_le_bytes(bytes)
+pub fn read_u32_le(data: &[u8], pos: &mut usize) -> Result<u32> {
+	Ok(u32::from_le_bytes(read_array::<4>(data, pos)?))
 }
 
 #[inline]
-fn read_i32_le(data: &[u8], pos: &mut usize) -> i32 {
-	let bytes = data[*pos..*pos + 4].try_into().unwrap();
-	*pos += 4;
-	i32::from_le_bytes(bytes)
+fn read_i32_le(data: &[u8], pos: &mut usize) -> Result<i32> {
+	Ok(i32::from_le_bytes(read_array::<4>(data, pos)?))
 }
 
 #[inline]
-pub fn read_u64_le(data: &[u8], pos: &mut usize) -> u64 {
-	let bytes = data[*pos..*pos + 8].try_into().unwrap();
-	*pos += 8;
-	u64::from_le_bytes(bytes)
+pub fn read_u64_le(data: &[u8], pos: &mut usize) -> Result<u64> {
+	Ok(u64::from_le_bytes(read_array::<8>(data, pos)?))
 }
 
 #[inline]
-fn read_i64_le(data: &[u8], pos: &mut usize) -> i64 {
-	let bytes = data[*pos..*pos + 8].try_into().unwrap();
-	*pos += 8;
-	i64::from_le_bytes(bytes)
+fn read_i64_le(data: &[u8], pos: &mut usize) -> Result<i64> {
+	Ok(i64::from_le_bytes(read_array::<8>(data, pos)?))
 }
 
 pub fn read_cstring(data: &[u8], pos: &mut usize) -> Result<String> {
-	let remaining = &data[*pos..];
+	let remaining = data.get(*pos..).ok_or_else(unexpected_eof)?;
 	let null_pos = memchr(0, remaining).ok_or_else(|| {
 		Error::Io(std::io::Error::new(
 			std::io::ErrorKind::UnexpectedEof,
@@ -120,23 +128,17 @@ pub fn read_cstring(data: &[u8], pos: &mut usize) -> Result<String> {
 	Ok(s)
 }
 
-fn skip_cstring(data: &[u8], pos: &mut usize) {
-	let remaining = &data[*pos..];
-	let null_pos = memchr(0, remaining).unwrap();
+fn skip_cstring(data: &[u8], pos: &mut usize) -> Result {
+	let remaining = data.get(*pos..).ok_or_else(unexpected_eof)?;
+	let null_pos = memchr(0, remaining).ok_or_else(unexpected_eof)?;
 	*pos += null_pos + 1;
+	Ok(())
 }
 
 fn read_wide_string(data: &[u8], pos: &mut usize) -> Result<String> {
 	let mut buf: Vec<u16> = vec![];
 	loop {
-		let Ok(bytes) = data[*pos..*pos + 2].try_into() else {
-			return Err(Error::Io(std::io::Error::new(
-				std::io::ErrorKind::UnexpectedEof,
-				"unexpected end of wide string",
-			)));
-		};
-		*pos += 2;
-		let c = u16::from_le_bytes(bytes);
+		let c = u16::from_le_bytes(read_array::<2>(data, pos)?);
 		if c == 0 {
 			break;
 		}
@@ -145,23 +147,20 @@ fn read_wide_string(data: &[u8], pos: &mut usize) -> Result<String> {
 	Ok(String::from_utf16_lossy(&buf))
 }
 
-fn skip_wide_string(data: &[u8], pos: &mut usize) {
+fn skip_wide_string(data: &[u8], pos: &mut usize) -> Result {
 	loop {
-		let Ok(bytes) = data[*pos..*pos + 2].try_into() else {
-			return;
-		};
-		*pos += 2;
-		let c = u16::from_le_bytes(bytes);
+		let c = u16::from_le_bytes(read_array::<2>(data, pos)?);
 		if c == 0 {
 			break;
 		}
 	}
+	Ok(())
 }
 
 fn get_key(data: &[u8], pos: &mut usize, keys: Option<&[String]>) -> Result<String> {
 	match keys {
 		Some(keys) => {
-			let idx = usize::try_from(read_i32_le(data, pos))?;
+			let idx = usize::try_from(read_i32_le(data, pos)?)?;
 			Ok(keys.get(idx).cloned().unwrap_or_else(|| {
 				let fallback = format!("APPINFO_FALLBACK_{idx}");
 				log::warn!(
@@ -174,36 +173,43 @@ fn get_key(data: &[u8], pos: &mut usize, keys: Option<&[String]>) -> Result<Stri
 	}
 }
 
-fn skip_key(data: &[u8], pos: &mut usize, keys: Option<&[String]>) {
+fn skip_key(data: &[u8], pos: &mut usize, keys: Option<&[String]>) -> Result {
 	if keys.is_some() {
 		*pos += 4;
+		Ok(())
 	} else {
-		skip_cstring(data, pos);
+		skip_cstring(data, pos)
 	}
 }
 
-fn skip_typed_value(data: &[u8], pos: &mut usize, t: u8) {
+fn skip_typed_value(data: &[u8], pos: &mut usize, t: u8) -> Result {
 	match t {
 		BIN_NONE => unreachable!("skip_typed_value called for BIN_NONE; use skip_vdf"),
 		BIN_STRING => skip_cstring(data, pos),
 		BIN_WIDESTRING => skip_wide_string(data, pos),
-		BIN_INT32 | BIN_FLOAT32 | BIN_POINTER | BIN_COLOR => *pos += 4,
-		BIN_UINT64 | BIN_INT64 => *pos += 8,
-		_ => unreachable!("invalid VDF type byte: {t}"),
+		BIN_INT32 | BIN_FLOAT32 | BIN_POINTER | BIN_COLOR => {
+			*pos += 4;
+			Ok(())
+		}
+		BIN_UINT64 | BIN_INT64 => {
+			*pos += 8;
+			Ok(())
+		}
+		_ => Err(Error::InvalidBinaryVdfType(t, "<skipped>".to_string())),
 	}
 }
 
-pub fn skip_vdf(data: &[u8], pos: &mut usize, keys: Option<&[String]>) {
+pub fn skip_vdf(data: &[u8], pos: &mut usize, keys: Option<&[String]>) -> Result {
 	loop {
-		let t = data[*pos];
+		let t = *data.get(*pos).ok_or_else(unexpected_eof)?;
 		*pos += 1;
 		if t == BIN_END {
-			return;
+			return Ok(());
 		}
-		skip_key(data, pos, keys);
+		skip_key(data, pos, keys)?;
 		match t {
-			BIN_NONE => skip_vdf(data, pos, keys),
-			_ => skip_typed_value(data, pos, t),
+			BIN_NONE => skip_vdf(data, pos, keys)?,
+			_ => skip_typed_value(data, pos, t)?,
 		}
 	}
 }
@@ -217,7 +223,7 @@ pub fn read_kv_mmap(
 	let end_marker = if alt_format { BIN_END_ALT } else { BIN_END };
 	let mut node = KeyValues::new();
 	loop {
-		let t = data[*pos];
+		let t = *data.get(*pos).ok_or_else(unexpected_eof)?;
 		*pos += 1;
 		if t == end_marker {
 			return Ok(node);
@@ -237,28 +243,27 @@ pub fn read_kv_mmap(
 				node.insert(key, ValueType::WideString(val));
 			}
 			BIN_INT32 => {
-				let val = read_i32_le(data, pos);
+				let val = read_i32_le(data, pos)?;
 				node.insert(key, ValueType::Int32(val));
 			}
 			BIN_POINTER => {
-				let val = read_i32_le(data, pos);
+				let val = read_i32_le(data, pos)?;
 				node.insert(key, ValueType::Pointer(val));
 			}
 			BIN_COLOR => {
-				let val = read_i32_le(data, pos);
+				let val = read_i32_le(data, pos)?;
 				node.insert(key, ValueType::Color(val));
 			}
 			BIN_UINT64 => {
-				let val = read_u64_le(data, pos);
+				let val = read_u64_le(data, pos)?;
 				node.insert(key, ValueType::UInt64(val));
 			}
 			BIN_INT64 => {
-				let val = read_i64_le(data, pos);
+				let val = read_i64_le(data, pos)?;
 				node.insert(key, ValueType::Int64(val));
 			}
 			BIN_FLOAT32 => {
-				let val = f32::from_le_bytes(data[*pos..*pos + 4].try_into().unwrap());
-				*pos += 4;
+				let val = f32::from_le_bytes(read_array::<4>(data, pos)?);
 				node.insert(key, ValueType::Float32(val));
 			}
 			_ => return Err(Error::InvalidBinaryVdfType(t, key)),
@@ -270,71 +275,83 @@ pub fn find_app_type_in_vdf(
 	data: &[u8],
 	pos: &mut usize,
 	keys: Option<&[String]>,
-) -> Option<String> {
+) -> Result<Option<String>> {
 	let saved = *pos;
 
-	let t = *data.get(*pos)?;
+	let Some(&t) = data.get(*pos) else {
+		return Ok(None);
+	};
 	*pos += 1;
 	if t != BIN_NONE {
 		*pos = saved;
-		return None;
+		return Ok(None);
 	}
 
-	let top_key = get_key_str(data, pos, keys)?;
+	let Some(top_key) = get_key_str(data, pos, keys)? else {
+		*pos = saved;
+		return Ok(None);
+	};
 	if top_key != "appinfo" {
 		*pos = saved;
-		return None;
+		return Ok(None);
 	}
 
 	loop {
-		let inner_t = *data.get(*pos)?;
+		let Some(&inner_t) = data.get(*pos) else {
+			return Ok(None);
+		};
 		*pos += 1;
 		if inner_t == BIN_END {
 			*pos = saved;
-			return None;
+			return Ok(None);
 		}
 
-		let section_key = get_key_str(data, pos, keys)?;
+		let Some(section_key) = get_key_str(data, pos, keys)? else {
+			*pos = saved;
+			return Ok(None);
+		};
 		if section_key == "common" {
 			if inner_t != BIN_NONE {
 				*pos = saved;
-				return None;
+				return Ok(None);
 			}
 			loop {
-				let field_t = *data.get(*pos)?;
+				let Some(&field_t) = data.get(*pos) else {
+					return Ok(None);
+				};
 				*pos += 1;
 				if field_t == BIN_END {
 					*pos = saved;
-					return None;
+					return Ok(None);
 				}
 
-				let field_key = get_key_str(data, pos, keys)?;
+				let Some(field_key) = get_key_str(data, pos, keys)? else {
+					*pos = saved;
+					return Ok(None);
+				};
 				if field_key == "type" && field_t == BIN_STRING {
-					let app_type =
-						read_cstring(data, pos).ok_or_log("Failed to read app_type in VDF")?;
-					return Some(app_type);
+					return Ok(Some(read_cstring(data, pos)?));
 				}
 				match field_t {
-					BIN_NONE => skip_vdf(data, pos, keys),
-					_ => skip_typed_value(data, pos, field_t),
+					BIN_NONE => skip_vdf(data, pos, keys)?,
+					_ => skip_typed_value(data, pos, field_t)?,
 				}
 			}
 		}
 
 		match inner_t {
-			BIN_NONE => skip_vdf(data, pos, keys),
-			_ => skip_typed_value(data, pos, inner_t),
+			BIN_NONE => skip_vdf(data, pos, keys)?,
+			_ => skip_typed_value(data, pos, inner_t)?,
 		}
 	}
 }
 
-fn get_key_str(data: &[u8], pos: &mut usize, keys: Option<&[String]>) -> Option<String> {
+fn get_key_str(data: &[u8], pos: &mut usize, keys: Option<&[String]>) -> Result<Option<String>> {
 	match keys {
 		Some(keys) => {
-			let idx = usize::try_from(read_i32_le(data, pos))
-				.ok_or_log("Failed to parse VDF key index")?;
-			keys.get(idx).cloned()
+			let idx = usize::try_from(read_i32_le(data, pos)?)?;
+			Ok(keys.get(idx).cloned())
 		}
-		None => read_cstring(data, pos).ok_or_log("Failed to read VDF key string"),
+		None => Ok(Some(read_cstring(data, pos)?)),
 	}
 }
