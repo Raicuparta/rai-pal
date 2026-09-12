@@ -1,5 +1,8 @@
 use std::{
-	collections::HashMap,
+	collections::{
+		HashMap,
+		HashSet,
+	},
 	path::{
 		Path,
 		PathBuf,
@@ -9,7 +12,6 @@ use std::{
 
 use log::error;
 use rai_pal_proc_macros::serializable_struct;
-use strum::IntoEnumIterator;
 
 use super::game_provider::{
 	GameProviderId,
@@ -19,12 +21,6 @@ use crate::{
 	app_paths,
 	game::DbGame,
 	game_providers::game_provider::WineProviderActions,
-	games_query::{
-		FilterGroup,
-		FilterItem,
-		GamesFilter,
-		GamesQuery,
-	},
 	local_database::{
 		app_database::DbMutex,
 		game_database::GameDatabase,
@@ -77,10 +73,17 @@ impl ProviderActions for Manual {
 	fn insert_games(&self, db: &DbMutex) -> Result {
 		let config = read_games_config(&games_config_path()?);
 
+		// Games that are still configured in this refresh. Anything not in here is
+		// left out of the database on purpose so the provider's stale-game cleanup
+		// can remove it. This must not be built from a database query, otherwise
+		// games that were just removed from the config would get re-inserted (and
+		// get a fresh `created_at`) and would never be cleaned up.
+		let mut games: Vec<DbGame> = Vec::new();
+
 		for path in &config.paths {
 			match get_game_from_path(path) {
 				Ok(game) => {
-					db.insert_game(&game);
+					games.push(game);
 				}
 				Err(error) => {
 					error!(
@@ -112,7 +115,7 @@ impl ProviderActions for Manual {
 
 						match get_game_from_path(&exe_path) {
 							Ok(game) => {
-								db.insert_game(&game);
+								games.push(game);
 							}
 							Err(error) => {
 								error!(
@@ -130,7 +133,16 @@ impl ProviderActions for Manual {
 			}
 		}
 
-		compute_title_discriminators(db)?;
+		// The same executable can be reached both as a configured path and by
+		// scanning a configured directory, so avoid duplicates here.
+		let mut seen_game_ids = HashSet::new();
+		games.retain(|game| seen_game_ids.insert(game.game_id.clone()));
+
+		compute_title_discriminators(&mut games);
+
+		for game in &games {
+			db.insert_game(game);
+		}
 
 		clean_up_stale_ignored_paths(&config)?;
 
@@ -267,35 +279,7 @@ fn get_game_from_path(exe_path: &Path) -> Result<DbGame> {
 	Ok(game)
 }
 
-fn compute_title_discriminators(db: &DbMutex) -> Result {
-	let game_ids = db.get_game_ids(Some(GamesQuery {
-		filter: GamesFilter {
-			providers: FilterGroup {
-				known: GameProviderId::iter()
-					.filter(|p| *p != GameProviderId::Manual)
-					.map(|p| {
-						(
-							p,
-							FilterItem {
-								enabled: false,
-								locked: false,
-							},
-						)
-					})
-					.collect(),
-				unknown: None,
-			},
-			..Default::default()
-		},
-		..Default::default()
-	}))?;
-
-	let mut games: Vec<DbGame> = game_ids
-		.game_ids
-		.iter()
-		.map(|(provider_id, game_id)| db.get_game(provider_id, game_id))
-		.collect::<Result<Vec<_>>>()?;
-
+fn compute_title_discriminators(games: &mut [DbGame]) {
 	let mut groups: HashMap<String, Vec<usize>> = HashMap::new();
 	for (idx, game) in games.iter().enumerate() {
 		if game.exe_path.is_some() {
@@ -350,14 +334,6 @@ fn compute_title_discriminators(db: &DbMutex) -> Result {
 			}
 		}
 	}
-
-	for game in &games {
-		if game.title_discriminator.is_some() {
-			db.insert_game(game);
-		}
-	}
-
-	Ok(())
 }
 
 pub async fn add_game(path: &Path) -> Result<DbGame> {
