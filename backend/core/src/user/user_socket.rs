@@ -3,7 +3,7 @@ use std::{future::Future, pin::Pin, sync::OnceLock, time::Duration};
 use tokio::{
 	io::{AsyncReadExt, AsyncWriteExt},
 	net::{TcpListener, TcpStream},
-	time::sleep,
+	time::{sleep, timeout},
 };
 
 use super::auth;
@@ -20,6 +20,11 @@ const USER_SOCKET_PHRASE: &str = "RAI PAL";
 // Large enough to hold dev-mode eval expressions, which travel in the URL
 // query string of the request line.
 const REQUEST_BUFFER_SIZE: usize = 16 * 1024;
+
+// Don't let a client that connects but never sends a request hold a task open
+// forever. The request line is sent immediately, so this only needs to cover
+// slow local clients.
+const REQUEST_READ_TIMEOUT: Duration = Duration::from_secs(5);
 
 // --- Dev-mode commands ---
 //
@@ -59,10 +64,6 @@ pub fn set_dev_command_handler(handler: DevCommandHandler) {
 	let _ = dev_command_handler().set(handler);
 }
 
-#[expect(
-	clippy::large_futures,
-	reason = "spawned onto the async runtime, which heap-allocates the task future, so its size never lands on the stack"
-)]
 pub async fn start_user_socket_manager() {
 	let mut bind_error_logged = false;
 
@@ -72,13 +73,16 @@ pub async fn start_user_socket_manager() {
 				log::info!("User socket server is listening at {USER_SOCKET_BIND_ADDRESS}:{port}");
 				bind_error_logged = false;
 
-				// Continuously await incoming connections without blocking OS threads
+				// Accept connections without blocking OS threads, and handle each
+				// one in its own task so a slow request can't stall the listener.
 				loop {
 					match listener.accept().await {
-						Ok((mut stream, _)) => {
-							if let Err(error) = handle_socket_connection(&mut stream).await {
-								log::error!("Failed to handle user socket request: {error}");
-							}
+						Ok((stream, _)) => {
+							tokio::spawn(async move {
+								if let Err(error) = handle_socket_connection(stream).await {
+									log::error!("Failed to handle user socket request: {error}");
+								}
+							});
 						}
 						Err(error) => {
 							log::error!("User socket accept failed: {error}");
@@ -100,9 +104,14 @@ pub async fn start_user_socket_manager() {
 	}
 }
 
-async fn handle_socket_connection(stream: &mut TcpStream) -> Result {
-	let mut buffer = [0_u8; REQUEST_BUFFER_SIZE];
-	let bytes_read = stream.read(&mut buffer).await?;
+async fn handle_socket_connection(mut stream: TcpStream) -> Result {
+	// Heap-allocated so the 16 KB buffer isn't embedded in this future's state.
+	let mut buffer = vec![0_u8; REQUEST_BUFFER_SIZE];
+	let Ok(read_result) = timeout(REQUEST_READ_TIMEOUT, stream.read(&mut buffer)).await else {
+		log::debug!("Timed out waiting for user socket request");
+		return Ok(());
+	};
+	let bytes_read = read_result?;
 
 	if bytes_read == 0 {
 		return Ok(());
@@ -110,7 +119,7 @@ async fn handle_socket_connection(stream: &mut TcpStream) -> Result {
 
 	let request = String::from_utf8_lossy(&buffer[..bytes_read]);
 	let Some(request_line) = request.lines().next() else {
-		write_http_response(stream, 400, "Bad Request", "Malformed request").await?;
+		write_http_response(&mut stream, 400, "Bad Request", "Malformed request").await?;
 		return Ok(());
 	};
 
@@ -119,12 +128,18 @@ async fn handle_socket_connection(stream: &mut TcpStream) -> Result {
 	let path = line_parts.next().unwrap_or_default();
 
 	if method != "GET" {
-		write_http_response(stream, 405, "Method Not Allowed", "Only GET is supported").await?;
+		write_http_response(
+			&mut stream,
+			405,
+			"Method Not Allowed",
+			"Only GET is supported",
+		)
+		.await?;
 		return Ok(());
 	}
 
 	if path == "/check" {
-		write_http_response(stream, 200, "OK", USER_SOCKET_PHRASE).await?;
+		write_http_response(&mut stream, 200, "OK", USER_SOCKET_PHRASE).await?;
 		return Ok(());
 	}
 
@@ -135,7 +150,7 @@ async fn handle_socket_connection(stream: &mut TcpStream) -> Result {
 			&& let Some(response) = handler(path.to_string()).await
 		{
 			write_http_response(
-				stream,
+				&mut stream,
 				response.status_code,
 				&response.status_text,
 				&response.body,
@@ -144,17 +159,17 @@ async fn handle_socket_connection(stream: &mut TcpStream) -> Result {
 			return Ok(());
 		}
 
-		write_http_response(stream, 404, "Not Found", "Unknown path").await?;
+		write_http_response(&mut stream, 404, "Not Found", "Unknown path").await?;
 		return Ok(());
 	}
 
 	match auth::read_auth_token() {
 		Ok(access_token) => {
-			write_http_response(stream, 200, "OK", &access_token).await?;
+			write_http_response(&mut stream, 200, "OK", &access_token).await?;
 		}
 		Err(error) => {
 			write_http_response(
-				stream,
+				&mut stream,
 				401,
 				"Unauthorized",
 				"User is not authenticated in Rai Pal",
