@@ -209,10 +209,7 @@ export function FilterMenu() {
 							<IconX />
 						</Button>
 					)}
-					<Popover
-						trapFocus
-						position="bottom-end"
-					>
+					<Popover trapFocus>
 						<Popover.Target>
 							<Button leftSection={<IconFilter />}>{t("button")}</Button>
 						</Popover.Target>
