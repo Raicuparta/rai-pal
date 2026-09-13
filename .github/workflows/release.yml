@@ -12,8 +12,6 @@ on:
           - all
           - ubuntu
           - windows
-  push:
-    branches: [main]
 
 jobs:
   create-release:
