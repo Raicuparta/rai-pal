@@ -81,14 +81,23 @@ export function FilterSelect<TFilterKey extends FilterKey>({
 		return { known: nextKnown, unknown: filterGroup.unknown };
 	}
 
+	function hasAnyEnabledValue(group: FilterGroup<string>): boolean {
+		return possibleValuesWithNull.some((value) => {
+			const item =
+				value === "" && emptyLocalizationKey
+					? group.unknown
+					: group.known[value];
+			const resolved = item ?? getDefaultItem();
+			return resolved.enabled || resolved.locked;
+		});
+	}
+
 	function handleFilterClick(key: string) {
-		onChange(
-			id,
-			modifyKnown(key, (prev) => ({
-				...prev,
-				enabled: !prev.enabled,
-			})),
-		);
+		const next = modifyKnown(key, (prev) => ({
+			...prev,
+			enabled: !prev.enabled,
+		}));
+		onChange(id, hasAnyEnabledValue(next) ? next : keepOnlyLocked(filterGroup));
 	}
 
 	function handleLockClick(key: string) {
@@ -117,9 +126,7 @@ export function FilterSelect<TFilterKey extends FilterKey>({
 		// If the clicked value is locked, make sure it's enabled
 		if (key === "" && emptyLocalizationKey) {
 			const current = filterGroup.unknown ?? getDefaultItem();
-			if (current.locked) {
-				outUnknown = { enabled: true, locked: true };
-			}
+			outUnknown = current.locked ? { enabled: true, locked: true } : null;
 		} else if (getItem(filterGroup.known, key).locked) {
 			outKnown[key] = { enabled: true, locked: true };
 		}

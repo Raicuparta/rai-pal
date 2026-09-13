@@ -223,7 +223,7 @@ impl GameDatabase for DbMutex {
 					.as_ref()
 					.is_some_and(|item| !item.enabled)
 				{
-					conditions.push("g.tags = '[]'".to_string());
+					conditions.push("g.tags <> '[]'".to_string());
 				}
 				for (tag, item) in &filter.tags.known {
 					if !item.enabled {
@@ -289,9 +289,9 @@ impl GameDatabase for DbMutex {
 					params.push(Box::new(current_os));
 
 					filters.push(format!(
-						r"NOT EXISTS (
+						r"EXISTS (
 						SELECT 1 FROM main.mods m
-						WHERE m.family IN ({})
+						WHERE m.family NOT IN ({})
 						AND (json_extract(m.engine, '$') IS NULL OR json_extract(m.engine, '$') = COALESCE(ig.engine_brand, rg.engine_brand))
 						AND (json_extract(m.unity_backend, '$') IS NULL OR ig.unity_backend IS NULL OR json_extract(m.unity_backend, '$') = ig.unity_backend)
 					AND (json_extract(m.architecture, '$') IS NULL OR ig.architecture IS NULL OR json_extract(m.architecture, '$') = ig.architecture)
