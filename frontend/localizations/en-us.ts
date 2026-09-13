@@ -34,19 +34,45 @@ export const enUs = {
 		emptyGamesLoading: "Finding your games...",
 	},
 
-	addGame: {
-		// Button for adding a game to Rai Pal.
-		button: "Add game",
+	manualGames: {
+		manualSteamSupportNote:
+			"Note: you can also add your non-Steam games to Steam, and they will still be detected by Rai Pal.",
 
-		// Title of the modal for adding a game.
-		title: "Add game",
+		savedDirectories:
+			"These directories will be scanned recursively every time Rai Pal refreshes its data. Large folders may make things significantly slower.",
 
-		// Text inside the file drop area for adding a game.
-		dropField:
-			"Drag and drop a game executable here, or click to select a file.",
+		// Button for adding games manually to Rai Pal.
+		button: "Add games",
 
-		// Note that shows under the file drop area for adding a game.
-		note: "Note: you can drop game executable files anywhere on Rai Pal's window to add them to the installed game list without opening this dialog.",
+		// Title of the modal for manually adding games.
+		title: "Manually Added Games",
+
+		// Button for selecting a single game executable.
+		selectGameExecutable: "Select game executable",
+
+		// Button for adding a game directory to scan for multiple games, with a warning about it being potentially slow.
+		selectGamesDirectory: "Select game directory. Can be slow!",
+
+		// Note that explains you can drop files and folders onto Rai Pal's window.
+		fileDropNote:
+			"You can also just drop game executable files or entire folders anywhere on Rai Pal's window to add them to the library, even without opening this dialog.",
+
+		// Shown while scanning a directory for game executables.
+		scanning: "Scanning {path}...",
+
+		// Shows the scan progress. {directories} and {executables} are numbers.
+		scanProgress:
+			"Scanned {directories} directories, found {executables} executables",
+
+		// Shown after scan completes, asking the user to confirm. {gamesCount} is a number, {duration} is in seconds.
+		scanComplete:
+			"Found {gamesCount} executables in {duration} seconds. Add this folder to Rai Pal?",
+
+		// Button to confirm adding a scanned folder.
+		confirmAddFolder: "Add folder",
+
+		// Button to cancel adding the folder (during or after scan).
+		cancel: "Cancel",
 	},
 
 	refresh: {
@@ -82,6 +108,9 @@ export const enUs = {
 		// Game executable architecture (32-bit, 64-bit)
 		architecture: "Architecture",
 
+		// Game operating system (Windows, Linux)
+		os: "OS",
+
 		// Unity scripting backend (Mono, IL2CPP)
 		unityBackend: "Unity Backend",
 
@@ -90,6 +119,9 @@ export const enUs = {
 
 		// Game installation status (Installed, Not installed). Might have more statuses in the future.
 		status: "Status",
+
+		// Mod compatibility.
+		mod: "Mod",
 	},
 
 	// Different values for each of the filterable properties.
@@ -487,5 +519,32 @@ export const enUs = {
 
 		// Label of the checkbox for skipping future confirmations for a command.
 		dontAskAgain: "Don't ask again",
+	},
+
+	// Modal for managing custom mod database URLs.
+	urlModSources: {
+		// Title of the modal.
+		title: "Mod Sources",
+
+		add: "Add source",
+
+		// Description under the text input for adding a source URL.
+		addSourceDescription:
+			"Rai Pal will check for mods in all databases provided here, in addition to checking the default mod database. You can share mod sources via the deep-link {deepLink}.",
+
+		// Title for the confirmation modal when adding a new source.
+		confirmModalTitle: "Confirm Mod Source",
+
+		// Label showing how many mods were found in the source.
+		modsFound: "{count} mods found in this source",
+
+		// Button to confirm adding the source.
+		addSource: "Add Source",
+
+		// Button to cancel adding the source.
+		cancel: "Cancel",
+
+		// Text shown while the source URL is being fetched.
+		loading: "Loading mods...",
 	},
 } as const;

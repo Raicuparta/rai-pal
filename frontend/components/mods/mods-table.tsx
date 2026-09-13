@@ -9,7 +9,7 @@ type Props = {
 };
 
 export function ModsTable(props: Props) {
-	const t = useLocalization("modsPage");
+	const { t } = useLocalization("modsPage");
 
 	return (
 		<Table highlightOnHover={Boolean(props.onClick)}>

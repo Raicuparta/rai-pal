@@ -1,30 +1,17 @@
 #![cfg(target_os = "linux")]
 
-use std::{
-	fmt::Debug,
-	path::PathBuf,
-};
+use std::{fmt::Debug, path::PathBuf};
 
-use serde::{
-	Deserialize,
-	Serialize,
-};
+use serde::{Deserialize, Serialize};
 
 use super::provider_command::ProviderCommandAction;
 use crate::{
 	game::DbGame,
 	game_providers::{
-		game_provider::{
-			GameProviderId,
-			ProviderActions,
-			WineProviderActions,
-		},
+		game_provider::{GameProviderId, ProviderActions, WineProviderActions},
 		heroic_provider,
 	},
-	local_database::{
-		app_database::DbMutex,
-		game_database::GameDatabase,
-	},
+	local_database::{app_database::DbMutex, game_database::GameDatabase},
 	result::Result,
 };
 

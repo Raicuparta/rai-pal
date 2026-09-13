@@ -2,15 +2,8 @@ use std::{
 	collections::hash_map::DefaultHasher,
 	ffi::OsStr,
 	fs,
-	hash::{
-		Hash,
-		Hasher,
-	},
-	path::{
-		Component,
-		Path,
-		PathBuf,
-	},
+	hash::{Hash, Hasher},
+	path::{Component, Path, PathBuf},
 };
 
 use globwalk::glob;
@@ -18,11 +11,7 @@ use log;
 
 use crate::{
 	open_better::open_detached_better,
-	result::{
-		Error,
-		LogErrExt,
-		Result,
-	},
+	result::{Error, LogErrExt, Result},
 };
 
 pub trait PathExt {
@@ -205,7 +194,7 @@ impl AsValidStr for OsStr {
 
 impl AsValidStr for Path {
 	fn try_to_str(&self) -> Result<&str> {
-		#[allow(
+		#[expect(
 			clippy::disallowed_methods,
 			reason = "This is the replacement for to_string_lossy(), so it uses it internally"
 		)]

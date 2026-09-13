@@ -28,24 +28,22 @@ export function useCommandAtomData<TResultValue>(
 	const setValue = useSetAtom(atom);
 	const totalFetchCount = useRef(0);
 
-	const updateData = useCallback(() => {
+	const updateData = useCallback(async () => {
 		totalFetchCount.current += 1;
 		const thisFetchCount = totalFetchCount.current;
 
-		command()
-			.then((data) => {
-				if (thisFetchCount !== totalFetchCount.current) {
-					console.log(
-						"Cancelling this fetch since another one happened in the meantime.",
-					);
-					return;
-				}
-
-				setValue(data);
-			})
-			.catch((error) => {
-				showAppNotification(`Failed to get app data: ${error}`, "error");
-			});
+		try {
+			const data = await command();
+			if (thisFetchCount !== totalFetchCount.current) {
+				console.log(
+					"Cancelling this fetch since another one happened in the meantime.",
+				);
+				return;
+			}
+			setValue(data);
+		} catch (error) {
+			showAppNotification(`Failed to get app data: ${error}`, "error");
+		}
 	}, [command, setValue]);
 
 	return updateData;

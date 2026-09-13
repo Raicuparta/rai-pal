@@ -1,16 +1,10 @@
 #![cfg(target_os = "linux")]
 
-use std::{
-	fs,
-	path::Path,
-};
+use std::{fs, path::Path};
 
 use log;
 
-use crate::{
-	app_paths,
-	result::Result,
-};
+use crate::{app_paths, result::Result};
 
 const DLL_OVERRIDES_SECTION: &str = "[Software\\\\Wine\\\\DllOverrides]";
 const DLL_OVERRIDE_VALUE: &str = "native,builtin";
@@ -34,7 +28,13 @@ pub fn set_up_global_wine_overrides() -> Result {
 pub fn set_wine_dll_overrides_in_reg(prefix_path: &Path, dll_overrides: &[String]) -> Result {
 	let path = prefix_path.join("user.reg");
 
-	let user_reg_data = fs::read_to_string(&path)?;
+	let user_reg_data = if path.exists() {
+		fs::read_to_string(&path)?
+	} else {
+		return Err(crate::result::Error::WinePrefixNotInitialized(
+			prefix_path.to_path_buf(),
+		));
+	};
 	let mut ensured_user_reg_data = user_reg_data.clone();
 
 	for dll_override in dll_overrides {

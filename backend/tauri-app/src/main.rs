@@ -4,81 +4,48 @@
 #![allow(clippy::unused_async)]
 
 use std::{
-	collections::BTreeMap,
+	collections::{BTreeMap, HashSet},
 	path::PathBuf,
 };
 
 use app_settings::AppSettings;
-use app_state::{
-	AppState,
-	StateData,
-	StatefulHandle,
-};
-use events::EventEmitter;
+use app_state::{AppState, StateData, StatefulHandle};
+use events::{EventEmitter, SelectedGameData};
 #[cfg(target_os = "windows")]
 use rai_pal_core::windows;
 use rai_pal_core::{
-	analytics,
-	app_paths,
+	analytics, app_paths,
 	game::DbGame,
 	game_providers::{
-		game_provider::{
-			self,
-			GameProviderId,
-		},
+		game_provider::{self, GameProviderId},
 		manual_provider,
+		manual_provider::{DirectoryScanResult, ScanProgress},
 		provider_command::ProviderCommandAction,
-		steam::{
-			steam_provider::Steam,
-			steam_shortcut,
-		},
+		steam::{steam_provider::Steam, steam_shortcut},
 	},
 	games_query::GamesQuery,
-	http::DownloadStatus,
 	local_database::{
-		app_database::AppDatabase,
-		game_database::{
-			GameDatabase,
-			GameIdsResponse,
-			attach_remote,
-		},
-		mod_database::{
-			GameModInfo,
-			ModDatabase,
-		},
+		app_database::{AppDatabase, DbMutex},
+		game_database::{GameDatabase, GameIdsResponse, attach_remote},
+		mod_database::{GameModInfo, ModDatabase},
 	},
 	maps::TryGettable,
-	mod_providers::mod_provider,
-	mods::game_mod::GameMod,
+	mod_providers::{mod_provider, url_mod_provider},
+	mods::game_mod::{GameMod, ModDependency},
 	path_extensions::PathExt,
+	progress_status::ProgressStatus,
 	remote_config::RemoteConfigs,
-	remote_game::{
-		self,
-	},
+	remote_game::{self},
 	result::LogErrExt,
 	user::{
-		auth::{
-			AuthState,
-			get_user_auth_state,
-			logout_auth,
-			start_auth,
-		},
+		auth::{AuthState, get_user_auth_state, logout_auth, start_auth},
 		user_socket::start_user_socket_manager,
 	},
 };
 use strum::IntoEnumIterator;
-use tauri::{
-	AppHandle,
-	Manager,
-	WebviewUrl,
-	WebviewWindowBuilder,
-	ipc::Channel,
-};
+use tauri::{AppHandle, Manager, WebviewUrl, WebviewWindowBuilder, ipc::Channel};
 use tauri_plugin_deep_link::DeepLinkExt;
-use tauri_plugin_log::{
-	Target,
-	TargetKind,
-};
+use tauri_plugin_log::{Target, TargetKind};
 use tauri_plugin_window_state::StateFlags;
 use tauri_specta::Builder;
 
@@ -86,6 +53,9 @@ use crate::result::Result;
 
 mod app_settings;
 mod app_state;
+mod deep_links;
+#[cfg(debug_assertions)]
+mod dev_commands;
 mod events;
 mod result;
 #[cfg(debug_assertions)]
@@ -109,7 +79,7 @@ async fn get_auth_state() -> Result<AuthState> {
 #[tauri::command]
 #[specta::specta]
 async fn log_out() -> Result {
-	logout_auth().map_err(Into::into)
+	logout_auth().await.map_err(Into::into)
 }
 
 #[tauri::command]
@@ -195,6 +165,91 @@ async fn open_game_data_folder(
 	Ok(())
 }
 
+fn collect_deps_to_install(
+	mod_id: &str,
+	database: &DbMutex,
+	relevant_mods: &[GameModInfo],
+	visited: &mut HashSet<String>,
+	result: &mut Vec<GameMod>,
+) {
+	if !visited.insert(mod_id.to_string()) {
+		return;
+	}
+
+	if let Ok(game_mod) = database.get_mod(mod_id) {
+		for deps in [
+			game_mod.optional_dependencies.as_ref(),
+			game_mod.required_dependencies.as_ref(),
+		]
+		.into_iter()
+		.flatten()
+		{
+			for dep in deps {
+				let matching_mods = match dep {
+					ModDependency::ModId { mod_id: dep_id } => relevant_mods
+						.iter()
+						.filter(|info| info.compatible && info.mod_id == *dep_id)
+						.collect::<Vec<_>>(),
+					ModDependency::Family { family: dep_family } => relevant_mods
+						.iter()
+						.filter(|info| {
+							info.compatible && info.family.as_deref() == Some(dep_family.as_str())
+						})
+						.collect::<Vec<_>>(),
+				};
+
+				for info in matching_mods {
+					let outdated = info.installed_version.is_none() || info.is_outdated;
+					if outdated
+						&& let Ok(dep_mod) = database.get_mod(&info.mod_id)
+						&& dep_mod.install.is_some()
+					{
+						collect_deps_to_install(
+							&info.mod_id,
+							database,
+							relevant_mods,
+							visited,
+							result,
+						);
+						result.push(dep_mod);
+					}
+				}
+			}
+		}
+	}
+}
+
+fn build_steps(
+	mods: &[GameMod],
+	main_id: &str,
+) -> (Vec<(String, String)>, Option<String>, Option<String>) {
+	let mut steps = Vec::new();
+	let mut main_dl = None;
+	let mut main_ex = None;
+	for m in mods {
+		if m.download.is_none() {
+			continue;
+		}
+		let dl_key = format!("{}:download", m.id);
+		steps.push((dl_key.clone(), format!("Download {}", m.id)));
+		if m.id == main_id {
+			main_dl = Some(dl_key);
+		}
+		if m.install
+			.as_ref()
+			.and_then(|i| i.extract.as_ref())
+			.is_some()
+		{
+			let ex_key = format!("{}:extract", m.id);
+			steps.push((ex_key.clone(), format!("Extract {}", m.id)));
+			if m.id == main_id {
+				main_ex = Some(ex_key);
+			}
+		}
+	}
+	(steps, main_dl, main_ex)
+}
+
 #[tauri::command]
 #[specta::specta]
 async fn install_mod(
@@ -204,6 +259,7 @@ async fn install_mod(
 	handle: AppHandle,
 ) -> Result {
 	let state = handle.app_state();
+
 	let game_option = if let Some(game_id) = game_id_option
 		&& let Some(provider_id) = provider_id_option
 	{
@@ -213,32 +269,114 @@ async fn install_mod(
 	};
 	let game_mod = state.database.get_mod(mod_id)?;
 
-	let download_status_channel = state.download_status_channel.read_state()?.clone();
+	let download_status_channel = state
+		.download_status_channel
+		.read()
+		.ok_or_log("Failed to read download status channel")
+		.and_then(|guard| guard.clone());
 
-	install_mod_dependencies(&handle, &game_mod, game_option.as_ref()).await?;
+	let relevant_mods: Vec<GameModInfo> = if let Some(game) = game_option.as_ref() {
+		state
+			.database
+			.get_game_mods(&game.provider_id, &game.game_id)?
+	} else {
+		state
+			.database
+			.get_mod_map()?
+			.values()
+			.map(|other_mod| GameModInfo {
+				compatible: true,
+				has_installed_dependants: false,
+				installed_hash: None,
+				installed_version: None,
+				is_outdated: false,
+				mod_id: other_mod.id.clone(),
+				mod_scope: other_mod.scope.clone().unwrap_or_default(),
+				family: other_mod.family.clone(),
+			})
+			.collect()
+	};
 
-	if let Some(game) = game_option.as_ref()
-		&& let Some(installed_mod) = state.database.get_installed_mod(
-			mod_id,
-			Some(game.provider_id),
-			Some(game.game_id.clone()),
-		)? {
-		installed_mod.uninstall()?;
-	}
+	let mut deps_to_install = Vec::new();
+	collect_deps_to_install(
+		mod_id,
+		&state.database,
+		&relevant_mods,
+		&mut HashSet::new(),
+		&mut deps_to_install,
+	);
 
-	game_mod
-		.install(game_option.as_ref(), |status| {
-			download_status_channel
+	let all_owned: Vec<GameMod> = deps_to_install
+		.iter()
+		.chain(std::iter::once(&game_mod))
+		.cloned()
+		.collect();
+
+	let (steps, main_dl, _main_ex) = build_steps(&all_owned, mod_id);
+
+	let forward = move |status: ProgressStatus| {
+		if let Some(channel) = &download_status_channel {
+			channel
 				.send(status)
 				.ok_or_log("Failed to send download status update");
-		})
-		.await?;
+		}
+	};
 
-	state.database.refresh_installed_mods()?;
-
-	if let Some(game) = game_option.as_ref() {
-		handle.emit_safe(events::RefreshGame(game.provider_id, game.game_id.clone()));
+	for (step_id, step_name) in &steps {
+		forward(ProgressStatus::Pending {
+			id: step_id.clone(),
+			name: step_name.clone(),
+		});
 	}
+
+	// Prevent concurrent mod installs since it can get messy with shared dependencies.
+	// Acquired after sending pending state so the frontend always sees updates immediately.
+	let _install_guard = state.install_lock.lock().await;
+
+	let result: std::result::Result<(), rai_pal_core::result::Error> = async {
+		for m in &deps_to_install {
+			m.install(game_option.as_ref(), &forward).await?;
+		}
+
+		if let Some(game) = game_option.as_ref()
+			&& let Some(installed_mod) = state.database.get_installed_mod(
+				mod_id,
+				Some(game.provider_id),
+				Some(game.game_id.clone()),
+			)? {
+			installed_mod.uninstall().await?;
+		}
+
+		if main_dl.is_some() {
+			game_mod.install(game_option.as_ref(), &forward).await?;
+		}
+
+		state.database.refresh_installed_mods()?;
+
+		if let Some(game) = game_option.as_ref() {
+			handle.emit_safe(events::RefreshGame(game.provider_id, game.game_id.clone()));
+		}
+
+		for (step_id, _) in &steps {
+			forward(ProgressStatus::Finished {
+				id: step_id.clone(),
+			});
+		}
+
+		Ok(())
+	}
+	.await;
+
+	if let Err(error) = &result {
+		for (step_id, _) in &steps {
+			forward(ProgressStatus::Failed {
+				id: step_id.clone(),
+				error: error.to_string(),
+			});
+		}
+	}
+
+	result?;
 
 	Ok(())
 }
@@ -327,7 +465,8 @@ async fn uninstall_mod(
 	state
 		.database
 		.try_get_installed_mod(&provider_id, &game_id, mod_id)?
-		.uninstall()?;
+		.uninstall()
+		.await?;
 	state.database.refresh_installed_mods()?;
 
 	handle.emit_safe(events::RefreshGame(provider_id, game_id));
@@ -346,74 +485,11 @@ async fn uninstall_all_mods(
 	state
 		.database
 		.get_game(&provider_id, &game_id)?
-		.uninstall_all_mods()?;
+		.uninstall_all_mods()
+		.await?;
 	state.database.refresh_installed_mods()?;
 
 	handle.emit_safe(events::RefreshGame(provider_id, game_id));
-
-	Ok(())
-}
-
-async fn install_mod_dependencies(
-	handle: &AppHandle,
-	game_mod: &GameMod,
-	game_option: Option<&DbGame>,
-) -> Result {
-	let state = handle.app_state();
-
-	let relevant_mods: Vec<GameModInfo> = if let Some(game) = game_option {
-		state
-			.database
-			.get_game_mods(&game.provider_id, &game.game_id)?
-	} else {
-		state
-			.database
-			.get_mod_map()?
-			.values()
-			.map(|other_mod| GameModInfo {
-				compatible: true,
-				has_installed_dependants: false,
-				installed_hash: None,
-				installed_version: None,
-				is_outdated: false,
-				mod_id: other_mod.id.clone(),
-			})
-			.collect()
-	};
-
-	let download_status_channel = state.download_status_channel.read_state()?.clone();
-
-	if let Some(dependencies) = game_mod.dependencies.as_ref() {
-		for dependency in dependencies {
-			if let Some(relevant_dependency_mod_info) = relevant_mods.iter().find(|relevant_mod| {
-				relevant_mod.compatible && relevant_mod.mod_id == dependency.mod_id
-			}) {
-				let dependency_mod = state
-					.database
-					.get_mod(&relevant_dependency_mod_info.mod_id)?;
-
-				Box::pin(install_mod_dependencies(
-					handle,
-					&dependency_mod,
-					game_option,
-				))
-				.await?;
-
-				let outdated = relevant_dependency_mod_info.installed_version.is_none()
-					|| relevant_dependency_mod_info.is_outdated;
-
-				if outdated && dependency_mod.install.is_some() {
-					dependency_mod
-						.install(game_option, |status| {
-							download_status_channel
-								.send(status)
-								.ok_or_log("Failed to send download status update");
-						})
-						.await?;
-				}
-			}
-		}
-	}
 
 	Ok(())
 }
@@ -422,9 +498,52 @@ async fn install_mod_dependencies(
 #[specta::specta]
 async fn refresh_mods(handle: AppHandle) -> Result {
 	let state = handle.app_state();
-	mod_provider::refresh_all_mods(&state.database).await?;
+	let refresh_result = mod_provider::refresh_all_mods(&state.database).await;
 
-	Ok(())
+	// The open game's mod list depends on the mods table, so re-select it to
+	// refresh its mod info after sources change. Do this even if one of the
+	// providers failed, since the others may still have updated the table.
+	let selected_game = state
+		.selected_game
+		.read()
+		.map_err(|err| crate::result::Error::FailedToAccessStateData(err.to_string()))?
+		.clone();
+
+	if let Some((provider_id, game_id)) = selected_game {
+		handle.emit_safe(events::RefreshGame(provider_id, game_id));
+	}
+
+	Ok(refresh_result?)
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn get_url_mod_sources() -> Result<url_mod_provider::UrlModSources> {
+	Ok(url_mod_provider::get_url_mod_sources())
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn add_url_mod_source(url: String) -> Result {
+	Ok(url_mod_provider::add_url_mod_source(url)?)
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn get_mods_from_url_mod_source(url: String) -> Result<Vec<GameMod>> {
+	Ok(url_mod_provider::get_mods_from_url_mod_source(&url).await?)
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn remove_url_mod_source(url: String) -> Result {
+	Ok(url_mod_provider::remove_url_mod_source(&url)?)
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn set_url_mod_source_enabled(url: String, enabled: bool) -> Result {
+	Ok(url_mod_provider::set_url_mod_source_enabled(&url, enabled)?)
 }
 
 #[tauri::command]
@@ -457,16 +576,61 @@ async fn refresh_games(handle: AppHandle, provider_id: GameProviderId) -> Result
 #[specta::specta]
 async fn add_game(handle: AppHandle, path: PathBuf) -> Result {
 	let normalized_path = path.normalize();
-	let game = manual_provider::add_game(&normalized_path)?;
+	let game = manual_provider::add_game(&normalized_path).await?;
 	let state = handle.app_state();
 
 	state.database.insert_game(&game);
 
 	handle.emit_safe(events::RefreshGame(game.provider_id, game.game_id.clone()));
 	handle.emit_safe(events::AppDatabaseChanged());
-	handle.emit_safe(events::SelectGame(GameProviderId::Manual, game.game_id));
+
+	let mod_infos = state
+		.database
+		.get_game_mods(&GameProviderId::Manual, &game.game_id)?;
+	let data = SelectedGameData { game, mod_infos };
+	handle.emit_safe(events::SelectGame(Some(data)));
 
 	Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn add_game_directory(handle: AppHandle, path: PathBuf) -> Result {
+	let normalized_path = path.normalize();
+	let games = manual_provider::add_directory(&normalized_path).await?;
+	let state = handle.app_state();
+
+	for game in &games {
+		state.database.insert_game(game);
+		handle.emit_safe(events::RefreshGame(game.provider_id, game.game_id.clone()));
+	}
+
+	handle.emit_safe(events::AppDatabaseChanged());
+
+	Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn scan_game_directory(
+	path: PathBuf,
+	on_progress: Channel<ScanProgress>,
+) -> Result<DirectoryScanResult> {
+	let normalized_path = path.normalize();
+
+	let result = tokio::task::spawn_blocking(move || {
+		manual_provider::scan_directory(&normalized_path, move |progress| {
+			let _ = on_progress.send(progress);
+		})
+	})
+	.await
+	.map_err(|join_error| {
+		rai_pal_core::result::Error::Io(std::io::Error::other(format!(
+			"scan task failed: {join_error}"
+		)))
+	})??;
+
+	Ok(result)
 }
 
 #[tauri::command]
@@ -477,9 +641,22 @@ async fn remove_game(handle: AppHandle, provider_id: GameProviderId, game_id: St
 		.database
 		.get_game(&provider_id, &game_id)?;
 
-	manual_provider::remove_game(&game)?;
+	manual_provider::remove_game(&game).await?;
 
 	Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn remove_game_directory(path: PathBuf) -> Result {
+	manual_provider::remove_directory(&path.normalize()).await?;
+	Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn get_manual_game_directories() -> Result<Vec<PathBuf>> {
+	Ok(manual_provider::get_directories()?)
 }
 
 #[tauri::command]
@@ -653,12 +830,47 @@ async fn set_up_global_wine_overrides() -> Result {
 #[specta::specta]
 async fn listen_to_download_progress(
 	handle: AppHandle,
-	channel: Channel<DownloadStatus>,
+	channel: Channel<ProgressStatus>,
 ) -> Result {
 	handle
 		.app_state()
 		.download_status_channel
 		.write_state_value(channel)?;
+
+	Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn set_selected_game(
+	provider_id: Option<GameProviderId>,
+	game_id: Option<String>,
+	handle: AppHandle,
+) -> Result {
+	let state = handle.app_state();
+
+	if let Some(provider_id) = provider_id
+		&& let Some(game_id) = game_id
+	{
+		let game = state.database.get_game(&provider_id, &game_id)?;
+		let mod_infos = state.database.get_game_mods(&provider_id, &game_id)?;
+
+		*state
+			.selected_game
+			.write()
+			.map_err(|e| crate::result::Error::FailedToAccessStateData(e.to_string()))? =
+			Some((provider_id, game_id));
+
+		let data = SelectedGameData { game, mod_infos };
+		handle.emit_safe(events::SelectGame(Some(data)));
+	} else {
+		*state
+			.selected_game
+			.write()
+			.map_err(|e| crate::result::Error::FailedToAccessStateData(e.to_string()))? = None;
+
+		handle.emit_safe(events::SelectGame(None));
+	}
 
 	Ok(())
 }
@@ -669,6 +881,10 @@ fn show_panic(error: &str) {
 		.set_description(error)
 		.set_buttons(rfd::MessageButtons::Ok)
 		.show();
+}
+
+fn handle_deep_link_url(url: &str, handle: &AppHandle) {
+	deep_links::handle(url, handle);
 }
 
 fn focus(handle: &AppHandle) {
@@ -692,7 +908,10 @@ fn main() {
 	let builder = Builder::<tauri::Wry>::new()
 		.commands(tauri_specta::collect_commands![
 			add_game,
+			add_game_directory,
+			scan_game_directory,
 			add_rai_pal_steam_shortcut,
+			add_url_mod_source,
 			configure_mod,
 			download_remote_config,
 			get_app_settings,
@@ -701,7 +920,9 @@ fn main() {
 			get_game_ids,
 			get_game_mods,
 			get_mods,
+			get_mods_from_url_mod_source,
 			get_remote_configs,
+			get_url_mod_sources,
 			install_mod,
 			listen_to_download_progress,
 			log_in,
@@ -719,8 +940,13 @@ fn main() {
 			refresh_mods,
 			refresh_remote_games,
 			remove_game,
+			remove_game_directory,
+			get_manual_game_directories,
+			remove_url_mod_source,
 			reset_steam_cache,
 			run_mod,
+			set_selected_game,
+			set_url_mod_source_enabled,
 			run_provider_command,
 			save_app_settings,
 			send_analytics_event,
@@ -786,8 +1012,14 @@ fn main() {
 
 			app.deep_link().register_all()?;
 
+			let handle = app.handle().clone();
+
 			if let Ok(Some(urls)) = app.deep_link().get_current() {
 				log::info!("App opened via deep link: {urls:?}");
+
+				for url in &urls {
+					handle_deep_link_url(url.as_str(), &handle);
+				}
 			} else {
 				log::info!("App opened directly.");
 
@@ -796,8 +1028,14 @@ fn main() {
 				typescript::export(&builder);
 			}
 
-			app.deep_link().on_open_url(|event| {
-				log::info!("Deep link received: {:?}", event.urls());
+			app.deep_link().on_open_url(move |event| {
+				let urls = event.urls();
+
+				log::info!("Deep link received: {urls:?}");
+
+				for url in urls {
+					handle_deep_link_url(url.as_str(), &handle);
+				}
 			});
 
 			// --- Window ---
@@ -829,23 +1067,26 @@ fn main() {
 				}
 			});
 
+			#[cfg(debug_assertions)]
+			dev_commands::register(window);
+
 			// --- Background tasks ---
 
 			tauri::async_runtime::spawn(start_user_socket_manager());
 
 			tauri::async_runtime::spawn({
-				let handle = app.app_handle().clone();
+				let app_handle = app.app_handle().clone();
 				async move {
-					let state = handle.app_state();
+					let state = app_handle.app_state();
 
 					if let Err(error) = state
 						.database
 						.lock_db()
 						.map_err(|e| e.to_string())
 						.and_then(|db| {
-							let handle = handle.clone();
+							let db_handle = app_handle.clone();
 							db.update_hook(Some(move |_, _: &str, _: &str, _| {
-								handle.emit_safe(events::AppDatabaseChanged());
+								db_handle.emit_safe(events::AppDatabaseChanged());
 							}))
 							.map_err(|e| e.to_string())
 						}) {

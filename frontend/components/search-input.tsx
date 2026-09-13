@@ -9,7 +9,7 @@ type Props = {
 };
 
 export function SearchInput(props: Props) {
-	const t = useLocalization("filterMenu");
+	const { t } = useLocalization("filterMenu");
 
 	const [prevValueProp, setPrevValueProp] = useState(props.value);
 	const [innerValue, setInnerValue] = useState(props.value);

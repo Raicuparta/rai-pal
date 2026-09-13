@@ -1,14 +1,8 @@
 use std::{
 	collections::BTreeMap,
-	path::{
-		Path,
-		PathBuf,
-	},
+	path::{Path, PathBuf},
 	process::Command,
-	time::{
-		SystemTime,
-		UNIX_EPOCH,
-	},
+	time::{SystemTime, UNIX_EPOCH},
 };
 
 use rai_pal_proc_macros::serializable_enum;
@@ -16,31 +10,16 @@ use rai_pal_proc_macros::serializable_enum;
 #[cfg(target_os = "linux")]
 use crate::game_providers::heroic_gog_provider::HeroicGog;
 #[cfg(target_os = "linux")]
-use crate::game_providers::{
-	dummy_provider::Dummy,
-	heroic_epic_provider::HeroicEpic,
-};
+use crate::game_providers::{dummy_provider::Dummy, heroic_epic_provider::HeroicEpic};
 #[cfg(target_os = "windows")]
-use crate::game_providers::{
-	epic_provider::Epic,
-	gog_provider::Gog,
-	xbox_provider::Xbox,
-};
+use crate::game_providers::{epic_provider::Epic, gog_provider::Gog, xbox_provider::Xbox};
 use crate::{
 	game::DbGame,
-	game_providers::{
-		itch_provider::Itch,
-		manual_provider::Manual,
-		steam::steam_provider::Steam,
-	},
-	local_database::{
-		app_database::DbMutex,
-		game_database::GameDatabase,
-	},
-	result::{
-		Error,
-		Result,
-	},
+	game_engines::pe_utils,
+	game_providers::{itch_provider::Itch, manual_provider::Manual, steam::steam_provider::Steam},
+	local_database::{app_database::DbMutex, game_database::GameDatabase},
+	open_better::spawn_detached,
+	result::{Error, Result},
 };
 
 // These IDs need to match the ones in rai-pal-db.
@@ -93,14 +72,18 @@ pub trait WineProviderActions {
 	) -> Result {
 		let mut cmd = self.get_run_with_wine_command(game)?;
 
-		let child = cmd.arg(exe_path).args(args).envs(wine_env).spawn()?;
+		if pe_utils::is_pe_console_app(exe_path) {
+			cmd.arg("wineconsole");
+		}
+
+		cmd.arg(exe_path).args(args).envs(wine_env);
+		spawn_detached(&mut cmd)?;
 
 		log::info!(
-			"Launched `{}` with Wine for game `{}` ({}) (pid {})",
+			"Launched `{}` with Wine for game `{}` ({}) in a detached session",
 			exe_path.display(),
 			game.display_title,
 			game.external_id,
-			child.id(),
 		);
 
 		Ok(())

@@ -5,3 +5,11 @@
 .dropdownContent {
 	overflow-x: auto;
 }
+
+.filterColumn {
+	flex-shrink: 0;
+}
+
+.filterTitle:global(.mantine-Text-root) {
+	white-space: nowrap;
+}

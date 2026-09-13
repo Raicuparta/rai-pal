@@ -4,7 +4,8 @@ use rai_pal_proc_macros::serializable_enum;
 
 use crate::{
 	game::DbGame,
-	open_better::open_detached_better,
+	open_better::{open_detached_better, spawn_detached},
+	operating_system::OperatingSystem,
 	result::Result,
 };
 
@@ -33,16 +34,26 @@ impl ProviderCommand {
 			Self::Path(path, args) => {
 				#[cfg(target_os = "linux")]
 				{
-					use std::collections::BTreeMap;
+					use std::{collections::BTreeMap, process::Command};
 
 					use crate::game_providers::game_provider;
 
-					game_provider::get_provider(game.provider_id)?.run_with_wine(
-						game,
-						path,
-						args,
-						&BTreeMap::default(),
-					)?;
+					if game.os == Some(OperatingSystem::Linux) {
+						// Native Linux executable, run it directly.
+						let mut command = Command::new(path);
+						command.args(args);
+						if let Some(parent) = path.parent() {
+							command.current_dir(parent);
+						}
+						spawn_detached(&mut command)?;
+					} else {
+						game_provider::get_provider(game.provider_id)?.run_with_wine(
+							game,
+							path,
+							args,
+							&BTreeMap::default(),
+						)?;
+					}
 				}
 
 				#[cfg(target_os = "windows")]
@@ -54,7 +65,7 @@ impl ProviderCommand {
 					if let Some(parent) = path.parent() {
 						command.current_dir(parent);
 					}
-					command.spawn()?;
+					spawn_detached(&mut command)?;
 				}
 			}
 		}

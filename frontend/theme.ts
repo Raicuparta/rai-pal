@@ -1,6 +1,7 @@
 import { type MantineThemeOverride } from "@mantine/core";
 
 export const theme: MantineThemeOverride = {
+	cursorType: "pointer",
 	defaultRadius: "md",
 	primaryColor: "violet",
 	fontFamily:

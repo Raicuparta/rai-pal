@@ -1,27 +1,14 @@
 import { GamesQuery } from "@api/bindings";
 import { useAppSettingSingle } from "./use-app-setting-single";
 import { useEffect, useRef } from "react";
-
-export const defaultQuery: GamesQuery = {
-	sortBy: "Title",
-	search: "",
-	sortDescending: false,
-	filter: {
-		architectures: [],
-		engines: [],
-		providers: [],
-		tags: [],
-		unityBackends: [],
-		installed: [],
-	},
-};
+import { defaultQuery } from "./default-settings";
 
 export function useDataQuery() {
 	const [query, setQuery] = useAppSettingSingle("gamesQuery");
-	const queryRef = useRef(query || defaultQuery);
+	const queryRef = useRef(query);
 
 	useEffect(() => {
-		queryRef.current = query || defaultQuery;
+		queryRef.current = query;
 	}, [query]);
 
 	const setQueryPartial = (partialQuery: Partial<GamesQuery> | null) => {
@@ -31,5 +18,5 @@ export function useDataQuery() {
 		setQuery(newQuery);
 	};
 
-	return [query || defaultQuery, setQueryPartial] as const;
+	return [query, setQueryPartial] as const;
 }

@@ -1,7 +1,4 @@
-use std::{
-	collections::HashMap,
-	sync::LazyLock,
-};
+use std::{collections::HashMap, sync::LazyLock};
 
 use log;
 use rai_pal_proc_macros::serializable_enum;

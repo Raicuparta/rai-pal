@@ -7,7 +7,7 @@ type Props = {
 };
 
 export function SteamCacheButton(props: Props) {
-	const t = useLocalization("steamCache");
+	const { t } = useLocalization("steamCache");
 
 	return (
 		<Menu.Item

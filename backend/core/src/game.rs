@@ -1,46 +1,32 @@
 use std::{
 	collections::BTreeMap,
-	fs,
-	path::{
-		Path,
-		PathBuf,
-	},
+	path::{Path, PathBuf},
 };
+
+use rai_pal_proc_macros::serializable_struct;
 
 use crate::{
 	app_paths,
 	architecture::Architecture,
 	game_engines::{
 		game_engine::EngineBrand,
-		godot,
-		unity::{
-			self,
-			UnityBackend,
-		},
+		gamemaker, godot,
+		unity::{self, UnityBackend},
 		unreal,
 	},
 	game_providers::{
 		game_provider::GameProviderId,
-		provider_command::{
-			ProviderCommand,
-			ProviderCommandAction,
-		},
+		provider_command::{ProviderCommand, ProviderCommandAction},
 	},
 	game_tag::GameTag,
 	game_title::is_probably_demo,
+	operating_system::{self, OperatingSystem},
 	path_extensions::PathExt,
-	remote_config::{
-		self,
-		RemoteConfigs,
-	},
-	result::{
-		Error,
-		Result,
-	},
+	remote_config::{self, RemoteConfigs},
+	result::{Error, Result},
 };
 
-#[derive(serde::Serialize, specta::Type, Clone)]
-#[serde(rename_all = "camelCase")]
+#[serializable_struct]
 pub struct DbGame {
 	pub provider_id: GameProviderId,
 	pub game_id: String,
@@ -57,6 +43,7 @@ pub struct DbGame {
 	pub engine_version_display: Option<String>,
 	pub unity_backend: Option<UnityBackend>,
 	pub architecture: Option<Architecture>,
+	pub os: Option<OperatingSystem>,
 	pub tags: Vec<GameTag>,
 	pub provider_commands: BTreeMap<ProviderCommandAction, ProviderCommand>,
 }
@@ -79,6 +66,7 @@ impl DbGame {
 			engine_version_display: None,
 			unity_backend: None,
 			architecture: None,
+			os: None,
 			tags: Vec::default(),
 			provider_commands: BTreeMap::default(),
 		};
@@ -98,14 +86,16 @@ impl DbGame {
 		self.get_installed_mods_folder()?.open_folder_or_parent()
 	}
 
-	pub fn uninstall_all_mods(&self) -> Result {
-		Ok(fs::remove_dir_all(self.get_installed_mods_folder()?)?)
+	pub async fn uninstall_all_mods(&self) -> Result {
+		let folder = self.get_installed_mods_folder()?;
+		tokio::fs::remove_dir_all(folder).await?;
+		Ok(())
 	}
 
 	pub fn get_installed_mods_folder(&self) -> Result<PathBuf> {
 		let installed_mods_folder =
 			app_paths::installed_mods_path()?.join(self.try_get_exe_path()?.hash_string());
-		fs::create_dir_all(&installed_mods_folder)?;
+		std::fs::create_dir_all(&installed_mods_folder)?;
 
 		Ok(installed_mods_folder)
 	}
@@ -161,19 +151,15 @@ impl DbGame {
 				return self;
 			}
 
-			if extension == "x86" && exe_path.with_extension("x86_64").is_file() {
-				// If there's an x86_64 version, we ignore the x86 version.
-				// I'm just gonna presume there are no x86 modders out there,
-				// if someone cries about it I'll make this smarter.
-				return self;
-			}
-
 			self.exe_path = Some(exe_path.normalize());
+
+			self.os = operating_system::get_os_from_path(exe_path);
 
 			// Order matters here. We're checking all sequentially, so we should leave the most expensive ones last.
 			let _ = unity::process_game(self)
 				|| unreal::process_game(self)
-				|| godot::process_game(self);
+				|| godot::process_game(self)
+				|| gamemaker::process_game(self);
 		}
 
 		self
@@ -221,10 +207,7 @@ impl DbGame {
 		{
 			use std::path::PathBuf;
 
-			use crate::{
-				game_providers::game_provider,
-				path_extensions::AsValidStr,
-			};
+			use crate::{game_providers::game_provider, path_extensions::AsValidStr};
 
 			let provider = game_provider::get_provider(self.provider_id)?;
 			let prefix_path = provider.get_wine_prefix_path(self)?;

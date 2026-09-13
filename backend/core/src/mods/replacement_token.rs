@@ -3,19 +3,10 @@ use rai_pal_proc_macros::serializable_enum;
 use crate::{
 	app_paths,
 	game::DbGame,
-	game_providers::provider_command::{
-		ProviderCommand,
-		ProviderCommandAction,
-	},
+	game_providers::provider_command::{ProviderCommand, ProviderCommandAction},
 	mods::game_mod::GameMod,
-	path_extensions::{
-		AsValidStr,
-		PathExt,
-	},
-	result::{
-		Error,
-		Result,
-	},
+	path_extensions::{AsValidStr, PathExt},
+	result::{Error, Result},
 };
 
 #[serializable_enum]
@@ -125,10 +116,7 @@ pub fn replace_tokens(
 
 				use std::path::PathBuf;
 
-				use crate::{
-					game_providers::game_provider,
-					result::Error,
-				};
+				use crate::{game_providers::game_provider, result::Error};
 
 				let game = game_option.ok_or_else(Error::GameNeeded)?;
 

@@ -44,7 +44,7 @@ type Props<TKey extends string, TItem, TSort> = {
 export function TableHead<TKey extends string, TItem, TSort>(
 	props: Props<TKey, TItem, TSort>,
 ) {
-	const t = useLocalization("gamesTableColumn");
+	const { t } = useLocalization("gamesTableColumn");
 	const [settings] = useAppSettings();
 
 	return (

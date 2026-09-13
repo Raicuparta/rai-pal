@@ -19,7 +19,7 @@ import { GameModRow } from "./game-mod-row";
 import { useLocalization } from "@hooks/use-localization";
 import { useCommandData } from "@hooks/use-command-data";
 import { MutedText } from "@components/muted-text";
-import { GameModsData } from "@hooks/use-game-mods";
+import { GameModsData } from "@hooks/use-selected-game";
 import { useToggle } from "@mantine/hooks";
 
 type Props = {
@@ -28,7 +28,7 @@ type Props = {
 };
 
 export function GameMods({ game, mods }: Props) {
-	const t = useLocalization("gameModal");
+	const { t } = useLocalization("gameModal");
 	const getRemoteConfigs = useCallback(
 		() => commands.getRemoteConfigs(game.providerId, game.gameId),
 		[game],

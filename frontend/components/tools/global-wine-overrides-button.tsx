@@ -7,7 +7,7 @@ type Props = {
 };
 
 export function GlobalWineOverridesButton(props: Props) {
-	const t = useLocalization("globalWineOverrides");
+	const { t } = useLocalization("globalWineOverrides");
 
 	return (
 		<Menu.Item

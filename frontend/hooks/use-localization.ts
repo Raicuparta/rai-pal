@@ -7,7 +7,7 @@ import {
 } from "@localizations/localizations";
 import { AppLocale } from "@api/bindings";
 import { atom, useAtom } from "jotai";
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 import { locale } from "@tauri-apps/plugin-os";
 import { useAppSettings } from "./use-app-settings";
 
@@ -104,6 +104,36 @@ function getLocalizedText<
 	return localization;
 }
 
+function resolveLocalizedReactNode(
+	template: string,
+	params?: Record<string, React.ReactNode>,
+): React.ReactNode {
+	if (!params) return template;
+
+	let parts: React.ReactNode[] = [template];
+
+	for (const [param, value] of Object.entries(params)) {
+		const newParts: React.ReactNode[] = [];
+
+		for (const part of parts) {
+			if (typeof part === "string") {
+				const segments = part.split(`{${param}}`);
+
+				segments.forEach((segment, index) => {
+					if (index > 0) newParts.push(value);
+					if (segment) newParts.push(segment);
+				});
+			} else {
+				newParts.push(part);
+			}
+		}
+
+		parts = newParts;
+	}
+
+	return React.createElement(React.Fragment, null, ...parts);
+}
+
 export const detectedLocaleAtom = atom<AppLocale | null>(null);
 
 // At the time of writing this comment, Rai Pal only supports one language per locale.
@@ -154,7 +184,7 @@ export function useLocalization<TCategory extends LocalizationCategory>(
 		}
 	}, [detectedLocale, setDetectedLocale]);
 
-	return function <TKey extends LocalizationKey<TCategory>>(
+	function t<TKey extends LocalizationKey<TCategory>>(
 		key?: TKey,
 		...args: LocalizationFunctionArgs<BaseLocalization[TCategory][TKey]>
 	) {
@@ -167,5 +197,20 @@ export function useLocalization<TCategory extends LocalizationCategory>(
 			effectiveLocale === "WaWa",
 			...args,
 		);
-	};
+	}
+
+	function T<TKey extends LocalizationKey<TCategory>>({
+		path,
+		params,
+	}: {
+		path: TKey;
+		params?: Record<string, React.ReactNode>;
+	}) {
+		const template =
+			localizations[effectiveLocale]?.[category]?.[path] ?? `{${path}}`;
+
+		return resolveLocalizedReactNode(template, params);
+	}
+
+	return { t, T };
 }

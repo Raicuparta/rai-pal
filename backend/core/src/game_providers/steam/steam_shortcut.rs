@@ -1,25 +1,14 @@
 use std::{
 	cmp::Reverse,
 	fs,
-	path::{
-		Path,
-		PathBuf,
-	},
+	path::{Path, PathBuf},
 	time::SystemTime,
 };
 
-use steamlocate::SteamDir;
-
 use crate::{
-	path_extensions::{
-		AsValidStr,
-		PathExt,
-	},
-	result::{
-		Error,
-		LogErrExt,
-		Result,
-	},
+	game_providers::steam::steam_dir::find_steam_dir,
+	path_extensions::{AsValidStr, PathExt},
+	result::{Error, LogErrExt, Result},
 };
 
 const RAI_PAL_SHORTCUT_NAME: &str = "Rai Pal";
@@ -32,7 +21,7 @@ struct ShortcutSummary {
 	end_byte: usize,
 }
 pub fn add_current_executable_to_steam_shortcuts(executable_path: &Path) -> Result {
-	let steam_dir = SteamDir::locate()?;
+	let steam_dir = find_steam_dir()?;
 	let shortcuts_paths = get_target_shortcuts_paths(steam_dir.path())?;
 	log::info!(
 		"Resolved Steam shortcuts.vdf paths for adding Rai Pal shortcut: {}",

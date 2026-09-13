@@ -1,26 +1,15 @@
-use std::{
-	collections::HashMap,
-	fs,
-	path::PathBuf,
-};
+use std::{collections::HashMap, path::PathBuf};
 
 use lazy_regex::regex;
 use rai_pal_proc_macros::serializable_struct;
 
 use crate::{
 	app_paths,
-	game_engines::game_engine::{
-		EngineVersion,
-		EngineVersionNumbers,
-		GameEngine,
-	},
+	game_engines::game_engine::{EngineVersion, EngineVersionNumbers, GameEngine},
 	game_providers::game_provider::GameProviderId,
 	http,
 	path_extensions::PathExt,
-	result::{
-		LogErrExt,
-		Result,
-	},
+	result::{LogErrExt, Result},
 };
 
 const URL_BASE: &str = "https://raicuparta.github.io/rai-pal-db/game-db";
@@ -78,9 +67,9 @@ pub async fn download_database() -> Result<PathBuf> {
 
 	let file_path = get_database_file_path()?;
 
-	fs::create_dir_all(file_path.try_parent()?)?;
+	tokio::fs::create_dir_all(file_path.try_parent()?).await?;
 
-	fs::write(&file_path, response.bytes().await?)?;
+	tokio::fs::write(&file_path, response.bytes().await?).await?;
 
 	Ok(file_path)
 }

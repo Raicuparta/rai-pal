@@ -3,7 +3,6 @@ import { useEffect, useRef } from "react";
 import { check as checkUpdate } from "@tauri-apps/plugin-updater";
 import { relaunch } from "@tauri-apps/plugin-process";
 import { ask } from "@tauri-apps/plugin-dialog";
-import { showAppNotification } from "@components/app-notifications";
 
 const CHECK_INTERVAL_MILLISECONDS = 120000;
 
@@ -59,7 +58,7 @@ export function useAppUpdater() {
 					await relaunch();
 				})
 				.catch((error) => {
-					showAppNotification(`Failed to get app updates: ${error}`, "error");
+					console.error(`Failed to get app updates: ${error}`, "error");
 				});
 		}
 

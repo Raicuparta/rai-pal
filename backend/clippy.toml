@@ -2,4 +2,6 @@ disallowed-methods = [
     { path = "std::result::Result::ok", reason = "Using .ok() swallows errors.", replacement = "ok_or_log" },
     { path = "open::that_detached", reason = "Does't work on AppImage builds", replacement = "open_detached_better" },
     { path = "std::path::Path::to_string_lossy", reason = "Can replace characters and break paths, either use display() or try_to_str()", replacement = "try_to_str" },
+    { path = "steamlocate::locate", reason = "Returns an arbitrary Steam installation when multiple exist, use find_steam_dir instead", replacement = "find_steam_dir" },
+    { path = "steamlocate::SteamDir::locate", reason = "Returns an arbitrary Steam installation when multiple exist, use find_steam_dir instead", replacement = "find_steam_dir" },
 ]

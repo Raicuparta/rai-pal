@@ -15,7 +15,7 @@ type Props = {
 };
 
 export function ModModal(props: Props) {
-	const t = useLocalization("modModal");
+	const { t } = useLocalization("modModal");
 	const wrappedMod = useMemo(
 		() => ({ [props.mod.id]: props.mod }),
 		[props.mod],

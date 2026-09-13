@@ -11,7 +11,7 @@ type Props = {
 };
 
 export function SteamShortcutModal(props: Props) {
-	const t = useLocalization("steamShortcut");
+	const { t } = useLocalization("steamShortcut");
 	const [showSuccess, setShowSuccess] = useState(false);
 
 	return (

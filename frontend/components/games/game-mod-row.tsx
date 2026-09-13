@@ -31,8 +31,8 @@ import { CommandDropdown } from "@components/command-dropdown";
 import { DeprecatedBadge } from "@components/mods/deprecated-badge";
 import { useLocalization } from "@hooks/use-localization";
 import { GameModInstallButton } from "./game-mod-install-button";
-import { GameModUpdateButton } from "./game-mod-update-button";
 import { GameModRunButton } from "./game-mod-run-button";
+import { GameModUpdateButton } from "./game-mod-update-button";
 import { GameModUninstallButton } from "./game-mod-uninstall-button";
 
 type Props = {
@@ -50,7 +50,7 @@ export function GameModRow({
 	remoteConfigs,
 	incompatible = false,
 }: Props) {
-	const t = useLocalization("gameModRow");
+	const { t } = useLocalization("gameModRow");
 
 	const availableRemoteConfig = remoteConfigs?.configs.find(
 		(config) => config.modId === (mod.config?.modIdOverride ?? mod.id),

@@ -1,18 +1,7 @@
-use std::{
-	collections::HashSet,
-	fs,
-	path::PathBuf,
-};
+use std::{collections::HashSet, fs, path::PathBuf};
 
-use rai_pal_core::{
-	app_paths,
-	games_query::GamesQuery,
-	path_extensions::PathExt,
-};
-use rai_pal_proc_macros::{
-	serializable_enum,
-	serializable_struct,
-};
+use rai_pal_core::{app_paths, games_query::GamesQuery, path_extensions::PathExt};
+use rai_pal_proc_macros::{serializable_enum, serializable_struct};
 
 use crate::result::Result;
 
@@ -43,10 +32,13 @@ pub enum TabId {
 pub struct AppSettings {
 	pub hide_game_thumbnails: bool,
 	pub override_language: Option<AppLocale>,
-	pub games_query: Option<GamesQuery>,
+	pub games_query: GamesQuery,
 	pub selected_tab: TabId,
 	pub skip_confirm_dialogs: HashSet<String>,
 }
+
+// If the settings schema changes, update this so it gets recreated.
+const SETTINGS_VERSION: u32 = 1u32;
 
 impl AppSettings {
 	fn try_read() -> Result<Self> {
@@ -70,12 +62,34 @@ impl AppSettings {
 	pub fn try_write(&self) -> Result {
 		let path = Self::get_path()?;
 		fs::create_dir_all(path.try_parent()?)?;
-		fs::write(&path, serde_json::to_string(self)?)?;
+
+		// Write to a temp file first so a crash mid-write can't corrupt settings.
+		let temp_path = path.with_extension("json.tmp");
+		fs::write(&temp_path, serde_json::to_string(self)?)?;
+		fs::rename(&temp_path, &path)?;
 
 		Ok(())
 	}
 
 	fn get_path() -> Result<PathBuf> {
-		Ok(app_paths::app_data_file("settings.json")?)
+		Ok(app_paths::app_data_file(&format!(
+			"settings-{SETTINGS_VERSION}.json"
+		))?)
+	}
+}
+
+#[cfg(test)]
+mod tests {
+	#![allow(clippy::unwrap_used)]
+
+	use super::AppSettings;
+
+	#[test]
+	fn defaults_have_all_filters_enabled() {
+		let settings = AppSettings::default();
+
+		assert!(settings.games_query.filter.providers.known.is_empty());
+		assert!(settings.games_query.filter.architectures.known.is_empty());
+		assert!(settings.games_query.filter.os.known.is_empty());
 	}
 }

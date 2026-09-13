@@ -1,14 +1,7 @@
 use std::{
 	fs,
-	path::{
-		Path,
-		PathBuf,
-	},
-	time::{
-		Instant,
-		SystemTime,
-		UNIX_EPOCH,
-	},
+	path::{Path, PathBuf},
+	time::{Instant, SystemTime, UNIX_EPOCH},
 };
 
 use rai_pal_proc_macros::serializable_struct;
@@ -20,25 +13,13 @@ use crate::{
 	game::DbGame,
 	game_providers::game_provider::GameProviderId,
 	game_title::get_normalized_titles,
-	games_query::{
-		GamesQuery,
-		GamesSortBy,
-		InstallState,
-	},
+	games_query::{FilterGroup, GamesQuery, GamesSortBy, InstallState},
 	local_database::{
-		app_database::{
-			AppDatabase,
-			DbMutex,
-		},
-		rusqlite_extensions::{
-			JsonData,
-			RowExt,
-		},
+		app_database::{AppDatabase, DbMutex},
+		rusqlite_extensions::{JsonData, RowExt},
 	},
-	path_extensions::{
-		AsValidStr,
-		PathExt,
-	},
+	operating_system::OperatingSystem,
+	path_extensions::{AsValidStr, PathExt},
 	remote_game,
 	result::Result,
 };
@@ -52,8 +33,52 @@ pub trait GameDatabase {
 
 #[serializable_struct]
 pub struct GameIdsResponse {
-	game_ids: Vec<(GameProviderId, String)>,
-	total_count: u32,
+	pub game_ids: Vec<(GameProviderId, String)>,
+	pub total_count: u32,
+}
+
+fn build_nullable_exclusion_filter<T: std::fmt::Display + std::hash::Hash + std::cmp::Eq>(
+	column_expr: &str,
+	group: &FilterGroup<T>,
+	params: &mut Vec<Box<dyn rusqlite::types::ToSql>>,
+) -> Option<String> {
+	let mut conditions: Vec<String> = Vec::new();
+
+	if group.unknown.as_ref().is_some_and(|item| !item.enabled) {
+		conditions.push(format!("{column_expr} IS NOT NULL"));
+	}
+
+	let disabled: Vec<&T> = group
+		.known
+		.iter()
+		.filter(|(_, item)| !item.enabled)
+		.map(|(val, _)| val)
+		.collect();
+
+	if !disabled.is_empty() {
+		let placeholders: Vec<_> = disabled
+			.iter()
+			.map(|val| {
+				params.push(Box::new(val.to_string()));
+				"?".to_string()
+			})
+			.collect();
+		let cond = if group.unknown.as_ref().is_none_or(|item| item.enabled) {
+			format!(
+				"{column_expr} NOT IN ({}) OR {column_expr} IS NULL",
+				placeholders.join(", ")
+			)
+		} else {
+			format!("{column_expr} NOT IN ({})", placeholders.join(", "))
+		};
+		conditions.push(cond);
+	}
+
+	if conditions.is_empty() {
+		None
+	} else {
+		Some(format!("({})", conditions.join(" AND ")))
+	}
 }
 
 impl GameDatabase for DbMutex {
@@ -86,6 +111,7 @@ impl GameDatabase for DbMutex {
 			ig.exe_path,
 			ig.unity_backend,
 			ig.architecture,
+			ig.os,
 			COALESCE(ig.engine_brand, rg.engine_brand) AS engine_brand,
 			COALESCE(ig.engine_version_major, rg.engine_version_major) AS engine_version_major,
 			COALESCE(ig.engine_version_minor, rg.engine_version_minor) AS engine_version_minor,
@@ -117,11 +143,12 @@ impl GameDatabase for DbMutex {
 					exe_path: row.get_path(9)?,
 					unity_backend: row.get(10)?,
 					architecture: row.get(11)?,
-					engine_brand: row.get(12)?,
-					engine_version_major: row.get(13)?,
-					engine_version_minor: row.get(14)?,
-					engine_version_patch: row.get(15)?,
-					engine_version_display: row.get(16)?,
+					os: row.get(12)?,
+					engine_brand: row.get(13)?,
+					engine_version_major: row.get(14)?,
+					engine_version_minor: row.get(15)?,
+					engine_version_patch: row.get(16)?,
+					engine_version_display: row.get(17)?,
 				})
 			})?)
 	}
@@ -153,119 +180,171 @@ impl GameDatabase for DbMutex {
 
 		if let Some(filter) = query.as_ref().map(|q| &q.filter) {
 			// Installed filter
-			if filter.installed.contains(&Some(InstallState::Installed)) {
-				filters.push("ig.exe_path IS NOT NULL".to_string());
-			} else if filter.installed.contains(&Some(InstallState::NotInstalled)) {
+			let installed_disabled = filter
+				.installed
+				.known
+				.get(&InstallState::Installed)
+				.is_some_and(|item| !item.enabled);
+			let not_installed_disabled = filter
+				.installed
+				.known
+				.get(&InstallState::NotInstalled)
+				.is_some_and(|item| !item.enabled);
+			if installed_disabled {
 				filters.push("ig.exe_path IS NULL".to_string());
 			}
+			if not_installed_disabled {
+				filters.push("ig.exe_path IS NOT NULL".to_string());
+			}
 
-			if !filter.providers.is_empty() {
-				let provider_conditions: Vec<String> = filter
+			// Providers filter
+			{
+				let conditions: Vec<String> = filter
 					.providers
+					.known
 					.iter()
-					.filter_map(|provider| {
-						provider.as_ref().map(|p| {
-							params.push(Box::new(p.to_string()));
-							"g.provider_id = ?".to_string()
-						})
+					.filter(|(_, item)| !item.enabled)
+					.map(|(provider, _)| {
+						params.push(Box::new(provider.to_string()));
+						"g.provider_id = ?".to_string()
 					})
 					.collect();
-				if !provider_conditions.is_empty() {
-					filters.push(format!("({})", provider_conditions.join(" OR ")));
+				if !conditions.is_empty() {
+					filters.push(format!("NOT ({})", conditions.join(" OR ")));
 				}
 			}
 
-			if !filter.tags.is_empty() {
-				let tag_conditions: Vec<String> = filter
+			// Tags filter
+			{
+				let mut conditions: Vec<String> = Vec::new();
+				if filter
 					.tags
+					.unknown
+					.as_ref()
+					.is_some_and(|item| !item.enabled)
+				{
+					conditions.push("g.tags <> '[]'".to_string());
+				}
+				for (tag, item) in &filter.tags.known {
+					if !item.enabled {
+						params.push(Box::new(format!(r#"%"{tag}"%"#)));
+						conditions.push("g.tags NOT LIKE ?".to_string());
+					}
+				}
+				if !conditions.is_empty() {
+					filters.push(format!("({})", conditions.join(" AND ")));
+				}
+			}
+
+			// Engines filter
+			if let Some(cond) = build_nullable_exclusion_filter(
+				"COALESCE(ig.engine_brand, rg.engine_brand)",
+				&filter.engines,
+				&mut params,
+			) {
+				filters.push(cond);
+			}
+
+			// Unity backends filter
+			if let Some(cond) = build_nullable_exclusion_filter(
+				"ig.unity_backend",
+				&filter.unity_backends,
+				&mut params,
+			) {
+				filters.push(cond);
+			}
+
+			// Architectures filter
+			if let Some(cond) = build_nullable_exclusion_filter(
+				"ig.architecture",
+				&filter.architectures,
+				&mut params,
+			) {
+				filters.push(cond);
+			}
+
+			// Operating systems filter
+			if let Some(cond) = build_nullable_exclusion_filter("ig.os", &filter.os, &mut params) {
+				filters.push(cond);
+			}
+
+			// Mod families filter
+			{
+				let disabled: Vec<_> = filter
+					.mod_families
+					.known
 					.iter()
-					.map(|tag| {
-						tag.as_ref().map_or_else(
-							|| "g.tags = '[]'".to_string(),
-							|t| {
-								params.push(Box::new(format!(r#"%"{t}"%"#)));
-								"g.tags LIKE ?".to_string()
-							},
+					.filter(|(_, item)| !item.enabled)
+					.collect();
+				if !disabled.is_empty() {
+					let family_placeholders: Vec<String> = disabled
+						.iter()
+						.map(|(family, _)| {
+							params.push(Box::new((*family).clone()));
+							"?".to_string()
+						})
+						.collect();
+
+					let current_os = OperatingSystem::get_current().to_string();
+					params.push(Box::new(current_os));
+
+					filters.push(format!(
+						r"EXISTS (
+						SELECT 1 FROM main.mods m
+						WHERE m.family NOT IN ({})
+						AND (json_extract(m.engine, '$') IS NULL OR json_extract(m.engine, '$') = COALESCE(ig.engine_brand, rg.engine_brand))
+						AND (json_extract(m.unity_backend, '$') IS NULL OR ig.unity_backend IS NULL OR json_extract(m.unity_backend, '$') = ig.unity_backend)
+					AND (json_extract(m.architecture, '$') IS NULL OR ig.architecture IS NULL OR json_extract(m.architecture, '$') = ig.architecture)
+					AND (json_extract(m.game_os, '$') IS NULL OR ig.os IS NULL OR json_extract(m.game_os, '$') = ig.os)
+					AND (json_extract(m.host_os, '$') IS NULL OR json_extract(m.host_os, '$') = ?)
+						AND (
+							COALESCE(ig.engine_version_major, rg.engine_version_major) IS NULL
+							OR (
+								(
+									json_extract(m.engine_version_range, '$.minimum.major') IS NULL
+									OR NOT (
+										json_extract(m.engine_version_range, '$.minimum.major') > COALESCE(ig.engine_version_major, rg.engine_version_major)
+										OR (
+											json_extract(m.engine_version_range, '$.minimum.major') = COALESCE(ig.engine_version_major, rg.engine_version_major)
+											AND json_extract(m.engine_version_range, '$.minimum.minor') IS NOT NULL
+											AND COALESCE(ig.engine_version_minor, rg.engine_version_minor) IS NOT NULL
+											AND (
+												json_extract(m.engine_version_range, '$.minimum.minor') > COALESCE(ig.engine_version_minor, rg.engine_version_minor)
+												OR (
+													json_extract(m.engine_version_range, '$.minimum.minor') = COALESCE(ig.engine_version_minor, rg.engine_version_minor)
+													AND json_extract(m.engine_version_range, '$.minimum.patch') IS NOT NULL
+													AND COALESCE(ig.engine_version_patch, rg.engine_version_patch) IS NOT NULL
+													AND json_extract(m.engine_version_range, '$.minimum.patch') > COALESCE(ig.engine_version_patch, rg.engine_version_patch)
+												)
+											)
+										)
+									)
+								)
+								AND (
+									json_extract(m.engine_version_range, '$.maximum.major') IS NULL
+									OR NOT (
+										json_extract(m.engine_version_range, '$.maximum.major') < COALESCE(ig.engine_version_major, rg.engine_version_major)
+										OR (
+											json_extract(m.engine_version_range, '$.maximum.major') = COALESCE(ig.engine_version_major, rg.engine_version_major)
+											AND json_extract(m.engine_version_range, '$.maximum.minor') IS NOT NULL
+											AND COALESCE(ig.engine_version_minor, rg.engine_version_minor) IS NOT NULL
+											AND (
+												json_extract(m.engine_version_range, '$.maximum.minor') < COALESCE(ig.engine_version_minor, rg.engine_version_minor)
+												OR (
+													json_extract(m.engine_version_range, '$.maximum.minor') = COALESCE(ig.engine_version_minor, rg.engine_version_minor)
+													AND json_extract(m.engine_version_range, '$.maximum.patch') IS NOT NULL
+													AND COALESCE(ig.engine_version_patch, rg.engine_version_patch) IS NOT NULL
+													AND json_extract(m.engine_version_range, '$.maximum.patch') < COALESCE(ig.engine_version_patch, rg.engine_version_patch)
+												)
+											)
+										)
+									)
+								)
+							)
 						)
-					})
-					.collect();
-				if !tag_conditions.is_empty() {
-					filters.push(format!("({})", tag_conditions.join(" OR ")));
-				}
-			}
-
-			if !filter.engines.is_empty() {
-				let mut engine_conditions = Vec::new();
-
-				if filter.engines.contains(&None) {
-					engine_conditions
-						.push("COALESCE(ig.engine_brand, rg.engine_brand) IS NULL".to_string());
-				}
-
-				let engine_values: Vec<String> = filter
-					.engines
-					.iter()
-					.filter_map(|engine| {
-						engine.as_ref().map(|e| {
-							params.push(Box::new(e.to_string()));
-							"?".to_string()
-						})
-					})
-					.collect();
-
-				if !engine_values.is_empty() {
-					engine_conditions.push(format!(
-						"COALESCE(ig.engine_brand, rg.engine_brand) IN ({})",
-						engine_values.join(", ")
+					)",
+						family_placeholders.join(", ")
 					));
-				}
-
-				if !engine_conditions.is_empty() {
-					filters.push(format!("({})", engine_conditions.join(" OR ")));
-				}
-			}
-
-			if !filter.unity_backends.is_empty() {
-				let backend_conditions: Vec<String> = filter
-					.unity_backends
-					.iter()
-					.filter_map(|backend| {
-						backend.as_ref().map(|b| {
-							params.push(Box::new(b.to_string()));
-							"ig.unity_backend = ?".to_string()
-						})
-					})
-					.collect();
-				if !backend_conditions.is_empty() {
-					filters.push(format!("({})", backend_conditions.join(" OR ")));
-				}
-			}
-
-			if !filter.architectures.is_empty() {
-				let mut arch_conditions = Vec::new();
-
-				if filter.architectures.contains(&None) {
-					arch_conditions.push("ig.architecture IS NULL".to_string());
-				}
-
-				let arch_values: Vec<String> = filter
-					.architectures
-					.iter()
-					.filter_map(|arch| {
-						arch.as_ref().map(|a| {
-							params.push(Box::new(a.to_string()));
-							"?".to_string()
-						})
-					})
-					.collect();
-
-				if !arch_values.is_empty() {
-					arch_conditions
-						.push(format!("ig.architecture IN ({})", arch_values.join(", ")));
-				}
-
-				if !arch_conditions.is_empty() {
-					filters.push(format!("({})", arch_conditions.join(" OR ")));
 				}
 			}
 		}
@@ -338,10 +417,19 @@ impl GameDatabase for DbMutex {
 	}
 
 	fn remove_stale_games(&self, provider_id: &GameProviderId, max_time: u64) -> Result {
-		self.lock_db()?
-			.prepare_cached("DELETE FROM main.games WHERE provider_id = $1 AND created_at < $2;")?
+		let db = self.lock_db()?;
+		db.prepare_cached(
+			"DELETE FROM main.installed_games WHERE provider_id = $1 AND game_id IN (SELECT game_id FROM main.games WHERE provider_id = $1 AND created_at < $2)",
+		)?
+		.execute(rusqlite::params![provider_id, max_time.cast_signed()])?;
+		db.prepare_cached(
+			"DELETE FROM main.normalized_titles WHERE provider_id = $1 AND game_id IN (SELECT game_id FROM main.games WHERE provider_id = $1 AND created_at < $2)",
+		)?
+		.execute(rusqlite::params![provider_id, max_time.cast_signed()])?;
+		db.prepare_cached("DELETE FROM main.games WHERE provider_id = $1 AND created_at < $2")?
 			.execute(rusqlite::params![provider_id, max_time.cast_signed()])?;
 
+		drop(db);
 		Ok(())
 	}
 }
@@ -398,9 +486,10 @@ fn try_insert_game(connection_mutex: &DbMutex, game: &DbGame) -> Result {
 					engine_version_patch,
 					engine_version_display,
 					unity_backend,
-					architecture
+					architecture,
+					os
 				)
-				 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)",
+				 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)",
 			)?
 			.execute(rusqlite::params![
 				game.provider_id,
@@ -413,6 +502,7 @@ fn try_insert_game(connection_mutex: &DbMutex, game: &DbGame) -> Result {
 				game.engine_version_display.clone(),
 				game.unity_backend.clone(),
 				game.architecture.clone(),
+				game.os,
 			])?;
 	}
 
@@ -644,6 +734,7 @@ fn create() -> Result<DbMutex> {
 			engine_version_display TEXT,
 			unity_backend TEXT,
 			architecture TEXT,
+			os TEXT,
 			FOREIGN KEY(provider_id, game_id) REFERENCES games(provider_id, game_id) ON DELETE CASCADE,
 			PRIMARY KEY (provider_id, game_id)
 		);

@@ -1,38 +1,21 @@
 use std::{
 	ffi::OsStr,
-	fs::{
-		self,
-		File,
-	},
+	fs::{self, File},
 	io::Read,
-	path::{
-		Path,
-		PathBuf,
-	},
+	path::{Path, PathBuf},
 };
 
 use lazy_regex::regex_captures;
 use log::error;
 use rai_pal_proc_macros::serializable_enum;
 
-use super::game_engine::{
-	EngineBrand,
-	EngineVersion,
-	EngineVersionNumbers,
-};
+use super::game_engine::{EngineBrand, EngineVersion, EngineVersionNumbers};
 use crate::{
-	architecture::{
-		Architecture,
-		get_architecture,
-	},
+	architecture::{Architecture, get_architecture},
 	game::DbGame,
 	open_better::open_detached_better,
 	path_extensions::PathExt,
-	result::{
-		Error,
-		LogErrExt,
-		Result,
-	},
+	result::{Error, LogErrExt, Result},
 };
 
 #[serializable_enum]

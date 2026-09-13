@@ -16,7 +16,7 @@ type Props<TData> = {
 };
 
 export function DebugData<TData>({ data }: Props<TData>) {
-	const t = useLocalization("debugData");
+	const { t } = useLocalization("debugData");
 	const debugText = JSON.stringify(data, null, 2) ?? "";
 	const [opened, { open, close }] = useDisclosure(false);
 

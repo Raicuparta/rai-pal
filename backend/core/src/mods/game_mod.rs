@@ -1,21 +1,10 @@
 use std::{
 	collections::BTreeMap,
-	fs,
-	hash::{
-		DefaultHasher,
-		Hash,
-		Hasher,
-	},
-	path::{
-		Path,
-		PathBuf,
-	},
+	hash::{DefaultHasher, Hash, Hasher},
+	path::{Path, PathBuf},
 };
 
-use rai_pal_proc_macros::{
-	serializable_enum,
-	serializable_struct,
-};
+use rai_pal_proc_macros::{serializable_enum, serializable_struct};
 
 use crate::{
 	app_paths,
@@ -23,32 +12,24 @@ use crate::{
 	files,
 	game::DbGame,
 	game_engines::{
-		game_engine::{
-			EngineBrand,
-			EngineVersionRange,
-		},
+		game_engine::{EngineBrand, EngineVersionRange},
 		unity::UnityBackend,
 	},
 	game_providers::game_provider,
-	http::{
-		self,
-		DownloadStatus,
-	},
-	mods::{
-		mod_config::ModConfig,
-		replacement_token::replace_tokens,
-	},
+	http::{self},
+	mods::{mod_config::ModConfig, replacement_token::replace_tokens},
+	open_better::spawn_detached,
 	operating_system::OperatingSystem,
 	path_extensions::PathExt,
-	result::{
-		Error,
-		Result,
-	},
+	progress_status::ProgressStatus,
+	result::{Error, LogErrExt, Result},
 };
 
 #[serializable_struct]
 pub struct GameMod {
 	pub id: String,
+	pub scope: Option<String>,
+	pub family: Option<String>,
 	pub title: String,
 	pub hide_from_game_mods_list: Option<bool>,
 	pub author: String,
@@ -63,7 +44,8 @@ pub struct GameMod {
 	pub host_os: Option<OperatingSystem>,
 	pub deprecated: Option<bool>,
 	pub config: Option<ModConfig>,
-	pub dependencies: Option<Vec<ModDependency>>,
+	pub optional_dependencies: Option<Vec<ModDependency>>,
+	pub required_dependencies: Option<Vec<ModDependency>>,
 	pub install: Option<ModInstall>,
 	pub run_for_game: Option<ModRun>,
 	pub run_standalone: Option<ModRun>,
@@ -105,9 +87,13 @@ pub struct ModDownload {
 	pub url: String,
 }
 
-#[serializable_struct]
-pub struct ModDependency {
-	pub mod_id: String,
+#[derive(serde::Serialize, serde::Deserialize, specta::Type, Clone, Debug, PartialEq, Eq, Hash)]
+#[serde(untagged)]
+pub enum ModDependency {
+	#[serde(rename_all = "camelCase")]
+	ModId { mod_id: String },
+	#[serde(rename_all = "camelCase")]
+	Family { family: String },
 }
 
 #[serializable_enum]
@@ -128,7 +114,7 @@ impl GameMod {
 	}
 
 	pub fn from_file(path: &Path) -> Option<Self> {
-		match fs::read_to_string(path)
+		match std::fs::read_to_string(path)
 			.and_then(|manifest_bytes| Ok(serde_json::from_str::<Self>(&manifest_bytes)?))
 		{
 			Ok(manifest) => Some(manifest),
@@ -152,7 +138,7 @@ impl GameMod {
 	pub async fn install(
 		&self,
 		game_option: Option<&DbGame>,
-		on_download_status: impl Fn(DownloadStatus) + Send,
+		on_progress: impl Fn(ProgressStatus) + Send + Sync,
 	) -> Result {
 		let install = self
 			.install
@@ -165,7 +151,7 @@ impl GameMod {
 				.as_ref()
 				.ok_or_else(|| Error::ModInfoMissing(self.id.clone(), "download".to_string()))?;
 
-			let source_dir = download.download(on_download_status).await?;
+			let source_dir = download.download(&self.id, &on_progress).await?;
 
 			for extract_action in extract_actions {
 				let source_path = source_dir.join(&extract_action.source);
@@ -176,10 +162,10 @@ impl GameMod {
 				));
 
 				if source_path.is_dir() {
-					files::copy_dir_all(&source_path, &destination_path)?;
+					files::copy_dir_all(&source_path, &destination_path).await?;
 				} else {
-					fs::create_dir_all(destination_path.try_parent()?)?;
-					fs::copy(&source_path, &destination_path)?;
+					tokio::fs::create_dir_all(destination_path.try_parent()?).await?;
+					tokio::fs::copy(&source_path, &destination_path).await?;
 				}
 			}
 		}
@@ -190,8 +176,8 @@ impl GameMod {
 					PathBuf::from(replace_tokens(&write_action.destination, game_option, self));
 				let content = replace_tokens(&write_action.content, game_option, self);
 
-				fs::create_dir_all(destination_path.try_parent()?)?;
-				fs::write(destination_path, content)?;
+				tokio::fs::create_dir_all(destination_path.try_parent()?).await?;
+				tokio::fs::write(destination_path, content).await?;
 			}
 		}
 
@@ -201,7 +187,7 @@ impl GameMod {
 				.set_wine_dll_overrides(game, wine_dll_overrides)?;
 		}
 
-		self.update_installed_mod_manifest(game_option)?;
+		self.update_installed_mod_manifest(game_option).await?;
 
 		Ok(())
 	}
@@ -237,51 +223,76 @@ impl GameMod {
 			.map(|arg| replace_tokens(arg, game_option, self))
 			.collect();
 
+		log::info!(
+			"Running mod `{}` at `{}` with args `{}`",
+			self.id,
+			run_path.display(),
+			args.join(" ")
+		);
+
 		#[cfg(target_os = "linux")]
 		{
-			let game = game_option.ok_or_else(Error::GameNeeded)?;
+			if mod_run.os == Some(OperatingSystem::Windows) {
+				let game = game_option.ok_or_else(Error::GameNeeded)?;
 
-			let wine_environment: BTreeMap<String, String> = mod_run
-				.wine_environment
-				.clone()
-				.unwrap_or_default()
-				.iter()
-				.map(|(key, value)| (key.clone(), replace_tokens(value, game_option, self)))
-				.collect();
+				let wine_environment: BTreeMap<String, String> = mod_run
+					.wine_environment
+					.clone()
+					.unwrap_or_default()
+					.iter()
+					.map(|(key, value)| (key.clone(), replace_tokens(value, game_option, self)))
+					.collect();
 
-			game_provider::get_provider(game.provider_id)?.run_with_wine(
-				game,
-				&run_path,
-				&args,
-				&wine_environment,
-			)?;
+				game_provider::get_provider(game.provider_id)?.run_with_wine(
+					game,
+					&run_path,
+					&args,
+					&wine_environment,
+				)?;
+			} else {
+				make_executable(&run_path)?;
+				let mut command = std::process::Command::new(&run_path);
+				command.current_dir(run_path.try_parent()?).args(&args);
+				spawn_detached(&mut command)?;
+			}
 		}
 
 		#[cfg(target_os = "windows")]
 		{
-			std::process::Command::new(&run_path)
-				.current_dir(run_path.try_parent()?)
-				.args(&args)
-				.spawn()?;
+			let mut command = std::process::Command::new(&run_path);
+			command.current_dir(run_path.try_parent()?).args(&args);
+			spawn_detached(&mut command)?;
 		}
 
 		Ok(())
 	}
 
-	pub fn update_installed_mod_manifest(&self, game: Option<&DbGame>) -> Result {
+	pub async fn update_installed_mod_manifest(&self, game: Option<&DbGame>) -> Result {
 		let manifest_path = self.get_manifest_target_path(game)?;
-		fs::create_dir_all(manifest_path.try_parent()?)?;
+		tokio::fs::create_dir_all(manifest_path.try_parent()?).await?;
 		let manifest_contents = serde_json::to_string_pretty(&self)?;
-		fs::write(manifest_path, manifest_contents)?;
+		tokio::fs::write(manifest_path, manifest_contents).await?;
 
 		Ok(())
 	}
 }
 
+#[cfg(target_os = "linux")]
+fn make_executable(path: &Path) -> Result {
+	use std::os::unix::fs::PermissionsExt;
+
+	let mut permissions = std::fs::metadata(path)?.permissions();
+	permissions.set_mode(permissions.mode() | 0o111);
+	std::fs::set_permissions(path, permissions)?;
+
+	Ok(())
+}
+
 impl ModDownload {
 	async fn download(
 		&self,
-		on_download_status: impl Fn(DownloadStatus) + Send,
+		mod_id: &str,
+		on_progress: &(impl Fn(ProgressStatus) + Send + Sync),
 	) -> Result<PathBuf> {
 		if let Some(local_path) = self.url.strip_prefix("file://") {
 			let source_path = PathBuf::from(local_path);
@@ -298,16 +309,58 @@ impl ModDownload {
 		let url_hash = hasher.finish().to_string();
 
 		let temp_dir = app_paths::temp_dir(&url_hash)?;
-		let zip_path = temp_dir.join("download.zip");
 		let extracted_folder = temp_dir.join("extracted");
-		fs::create_dir_all(&extracted_folder)?;
 
-		if !zip_path.is_file() {
-			http::download(&self.url, &zip_path, on_download_status).await?;
+		let mut attempts = 0;
+		loop {
+			tokio::fs::create_dir_all(&extracted_folder).await?;
+
+			let part_path = temp_dir.join("download.zip.part");
+			let zip_path = temp_dir.join("download.zip");
+
+			if !zip_path.is_file() {
+				http::download(
+					&self.url,
+					&part_path,
+					&format!("{mod_id}:download"),
+					on_progress,
+				)
+				.await?;
+				tokio::fs::rename(&part_path, &zip_path).await?;
+			}
+
+			let extract_result = files::extract(
+				&zip_path,
+				&extracted_folder,
+				&|extracted_bytes, total_uncompressed| {
+					#[expect(
+						clippy::cast_precision_loss,
+						reason = "Precision loss is irrelevant for progress display"
+					)]
+					let percentage = if total_uncompressed > 0 {
+						extracted_bytes as f64 / total_uncompressed as f64
+					} else {
+						0.0
+					};
+					on_progress(ProgressStatus::InProgress {
+						id: format!("{mod_id}:extract"),
+						progress: percentage,
+					});
+				},
+			);
+
+			match extract_result {
+				Ok(()) => return Ok(extracted_folder),
+				Err(err) => {
+					tokio::fs::remove_dir_all(&temp_dir)
+						.await
+						.ok_or_log("Failed to remove temp dir");
+					if attempts >= 1 {
+						return Err(err.into());
+					}
+					attempts += 1;
+				}
+			}
 		}
-
-		files::extract(&zip_path, &extracted_folder)?;
-
-		Ok(extracted_folder)
 	}
 }

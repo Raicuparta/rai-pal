@@ -26,11 +26,7 @@
 //! unactionable at this layer, we encapsulate the single `unsafe` call here
 //! rather than pushing the burden onto every call site.
 
-use std::{
-	fs::File,
-	io,
-	path::Path,
-};
+use std::{fs::File, io, path::Path};
 
 use memmap2::Mmap;
 

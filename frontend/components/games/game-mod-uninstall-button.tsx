@@ -11,7 +11,7 @@ type Props = {
 };
 
 export function GameModUninstallButton({ game, mod, modInfo }: Props) {
-	const t = useLocalization("gameModRow");
+	const { t } = useLocalization("gameModRow");
 
 	return (
 		<Tooltip

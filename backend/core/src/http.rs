@@ -1,26 +1,18 @@
-use std::{
-	path::Path,
-	sync::LazyLock,
-	time::Duration,
-};
+use std::{path::Path, sync::LazyLock, time::Duration};
 
 use futures_util::StreamExt;
-use rai_pal_proc_macros::serializable_struct;
 use tokio::{
 	fs::File,
-	io::{
-		AsyncWriteExt,
-		BufWriter,
-	},
+	io::{AsyncWriteExt, BufWriter},
 };
 
-use crate::{
-	path_extensions::AsValidStr,
-	result::Result,
-};
+use crate::{progress_status::ProgressStatus, result::Result};
 
 pub static CLIENT: LazyLock<reqwest::Client> = LazyLock::new(|| {
-	#[allow(clippy::expect_used)]
+	#[expect(
+		clippy::expect_used,
+		reason = "Startup invariant — the app cannot function without an HTTP client"
+	)]
 	reqwest::Client::builder()
 		.connect_timeout(Duration::from_secs(10))
 		.pool_max_idle_per_host(10)
@@ -29,7 +21,10 @@ pub static CLIENT: LazyLock<reqwest::Client> = LazyLock::new(|| {
 });
 
 pub static CLIENT_NO_REDIRECT: LazyLock<reqwest::Client> = LazyLock::new(|| {
-	#[allow(clippy::expect_used)]
+	#[expect(
+		clippy::expect_used,
+		reason = "Startup invariant — the app cannot function without an HTTP client"
+	)]
 	reqwest::Client::builder()
 		.redirect(reqwest::redirect::Policy::none())
 		.connect_timeout(Duration::from_secs(10))
@@ -37,38 +32,12 @@ pub static CLIENT_NO_REDIRECT: LazyLock<reqwest::Client> = LazyLock::new(|| {
 		.build()
 		.expect("Failed to set up HTTP client")
 });
-#[serializable_struct]
-pub struct DownloadStatus {
-	url: String,
-	target_path: String,
-	downloaded_bytes: f64,
-	total_bytes: Option<f64>,
-}
-
-impl DownloadStatus {
-	pub fn new(
-		url: String,
-		target_path: String,
-		downloaded_bytes: usize,
-		total_bytes: Option<u64>,
-	) -> Self {
-		Self {
-			url,
-			target_path,
-
-			#[allow(clippy::cast_precision_loss)]
-			downloaded_bytes: downloaded_bytes as f64,
-
-			#[allow(clippy::cast_precision_loss)]
-			total_bytes: total_bytes.map(|total| total as f64),
-		}
-	}
-}
 
 pub async fn download(
 	url: &str,
 	target_path: &Path,
-	status_callback: impl Fn(DownloadStatus) + Send,
+	id: &str,
+	status_callback: &(impl Fn(ProgressStatus) + Send + Sync),
 ) -> Result {
 	let response = CLIENT.get(url).send().await?.error_for_status()?;
 
@@ -77,8 +46,7 @@ pub async fn download(
 
 	let mut downloaded_bytes: usize = 0;
 
-	let url_str = url.to_string();
-	let target_path_str = target_path.try_to_str()?;
+	let id_str = id.to_string();
 	let total_bytes = response.content_length();
 
 	let mut stream = response.bytes_stream();
@@ -90,22 +58,25 @@ pub async fn download(
 
 		downloaded_bytes += chunk.len();
 
-		status_callback(DownloadStatus::new(
-			url_str.clone(),
-			target_path_str.to_string(),
-			downloaded_bytes,
-			total_bytes,
-		));
+		#[expect(
+			clippy::cast_precision_loss,
+			reason = "Precision loss is irrelevant for progress display"
+		)]
+		let percentage = total_bytes.map_or(0.0, |total| {
+			if total == 0 {
+				0.0
+			} else {
+				downloaded_bytes as f64 / total as f64
+			}
+		});
+
+		status_callback(ProgressStatus::InProgress {
+			id: id_str.clone(),
+			progress: percentage,
+		});
 	}
 
 	file.flush().await?;
-
-	status_callback(DownloadStatus::new(
-		url_str,
-		target_path_str.to_string(),
-		downloaded_bytes,
-		Some(downloaded_bytes as u64),
-	));
 
 	Ok(())
 }

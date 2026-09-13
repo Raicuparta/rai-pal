@@ -1,4 +1,4 @@
-FROM ubuntu:22.04
+FROM docker.io/library/ubuntu:22.04
 
 ENV DEBIAN_FRONTEND=noninteractive \
     RUSTUP_HOME=/usr/local/rustup \
@@ -31,10 +31,16 @@ RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
     | sh -s -- -y --profile minimal --default-toolchain stable
 
 # Shitty fix for "EGL_BAD_PARAMETER" on AppImage releases.
+# The AppImage plugin is baked in with its magic bytes cleared: hosts can register
+# a global binfmt_misc handler for that magic, which doesn't exist in here and makes
+# the plugin fail to execute. Tauri skips downloading files that already exist.
 RUN TAURI_TOOLKIT_PATH="${XDG_CACHE_HOME:-$HOME/.cache}/tauri" \
  && mkdir -p "$TAURI_TOOLKIT_PATH" \
  && wget https://github.com/linuxdeploy/linuxdeploy/releases/latest/download/linuxdeploy-x86_64.AppImage -O "$TAURI_TOOLKIT_PATH/linuxdeploy-x86_64.AppImage" \
- && chmod +x "$TAURI_TOOLKIT_PATH/linuxdeploy-x86_64.AppImage"
+ && chmod +x "$TAURI_TOOLKIT_PATH/linuxdeploy-x86_64.AppImage" \
+ && wget https://github.com/linuxdeploy/linuxdeploy-plugin-appimage/releases/download/continuous/linuxdeploy-plugin-appimage-x86_64.AppImage -O "$TAURI_TOOLKIT_PATH/linuxdeploy-plugin-appimage.AppImage" \
+ && dd if=/dev/zero of="$TAURI_TOOLKIT_PATH/linuxdeploy-plugin-appimage.AppImage" bs=1 count=4 seek=8 conv=notrunc status=none \
+ && chmod +x "$TAURI_TOOLKIT_PATH/linuxdeploy-plugin-appimage.AppImage"
 
 WORKDIR /app
 

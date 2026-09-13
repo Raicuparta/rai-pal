@@ -7,7 +7,7 @@ type Props = {
 };
 
 export function SteamShortcutButton(props: Props) {
-	const t = useLocalization("steamShortcut");
+	const { t } = useLocalization("steamShortcut");
 
 	return (
 		<Menu.Item

@@ -1,14 +1,8 @@
-use std::sync::{
-	Mutex,
-	MutexGuard,
-};
+use std::sync::{Mutex, MutexGuard};
 
 pub type DbMutex = Mutex<rusqlite::Connection>;
 
-use crate::result::{
-	Error,
-	Result,
-};
+use crate::result::{Error, Result};
 
 pub trait AppDatabase {
 	fn lock_db(&self) -> Result<MutexGuard<'_, rusqlite::Connection>>;

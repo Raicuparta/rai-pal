@@ -1,17 +1,9 @@
-use std::{
-	env,
-	fmt,
-	num,
-	path::PathBuf,
-	result,
-	time::SystemTimeError,
-};
+use std::{env, fmt, num, path::PathBuf, result, time::SystemTimeError};
 
 use lazy_regex::regex;
 
 use crate::{
-	game_engines::game_engine::EngineBrand,
-	game_providers::game_provider::GameProviderId,
+	game_engines::game_engine::EngineBrand, game_providers::game_provider::GameProviderId,
 };
 
 #[derive(Debug, thiserror::Error, specta::Type)]
@@ -141,6 +133,9 @@ pub enum Error {
 	)]
 	SteamAppInfoNotFound(PathBuf),
 
+	#[error("Failed to find any Steam installation")]
+	SteamDirNotFound(),
+
 	#[error("Steam Proton handling error: {0}")]
 	SteamProton(String),
 
@@ -169,14 +164,6 @@ pub enum Error {
 
 	#[error("Unity backend not known for mod `{0}`")]
 	UnityBackendUnknown(String),
-
-	#[error(
-		"Operation can't be completed without a `runnable` section in the mod manifest (rai-pal-manifest.json) `{0}`"
-	)]
-	RunnableManifestNotFound(String),
-
-	#[error("Can't run mod with ID `{0}` because it isn't a runnable mod.")]
-	CantRunNonRunnable(String),
 
 	#[error(
 		"Provider ID {0} is invalid for this action, or not supported in the current platform."
@@ -220,6 +207,9 @@ pub enum Error {
 
 	#[error("Can't do this without a game. If possible, try it from the games tab instead.")]
 	GameNeeded(),
+
+	#[error("Wine prefix not initialized at `{0}`. Please start the game at least once first.")]
+	WinePrefixNotInitialized(PathBuf),
 }
 
 impl serde::Serialize for Error {

@@ -1,19 +1,10 @@
-use std::{
-	fs,
-	io::Cursor,
-	path::Path,
-};
+use std::{io::Cursor, path::Path};
 
 use rai_pal_proc_macros::serializable_struct;
 use reqwest::Response;
 use zip::ZipArchive;
 
-use crate::{
-	game::DbGame,
-	http,
-	path_extensions::PathExt,
-	result::Result,
-};
+use crate::{game::DbGame, http, path_extensions::PathExt, result::Result};
 
 const CONFIG_DB_BASE_URL: &str = "https://raicuparta.github.io/rai-pal-db/config-db";
 const CONFIG_DB_VERSION: u32 = 0;
@@ -68,7 +59,7 @@ pub async fn download_config_file(
 ) -> Result {
 	let content = download_config(config_file, game).await?.bytes().await?;
 
-	fs::write(destination_path, content)?;
+	tokio::fs::write(destination_path, content).await?;
 	Ok(())
 }
 

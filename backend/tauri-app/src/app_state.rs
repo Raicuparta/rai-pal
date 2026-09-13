@@ -1,49 +1,33 @@
 use std::sync::RwLock;
 
 use rai_pal_core::{
-	http::DownloadStatus,
+	game_providers::game_provider::GameProviderId,
 	local_database::{
 		app_database::DbMutex,
-		game_database::{
-			self,
-		},
+		game_database::{self},
 		mod_database::ModDatabase,
 	},
+	progress_status::ProgressStatus,
 };
-use tauri::{
-	Manager,
-	ipc::Channel,
-};
+use tauri::{Manager, ipc::Channel};
+use tokio::sync::Mutex as AsyncMutex;
 
-use crate::result::{
-	Error,
-	Result,
-};
+use crate::result::{Error, Result};
 
 pub struct AppState {
 	pub database: DbMutex,
-	pub download_status_channel: RwLock<Option<Channel<DownloadStatus>>>,
+	pub download_status_channel: RwLock<Option<Channel<ProgressStatus>>>,
+	pub selected_game: RwLock<Option<(GameProviderId, String)>>,
+	pub install_lock: AsyncMutex<()>,
 }
 
 type TauriState<'a> = tauri::State<'a, AppState>;
 
 pub trait StateData<TData> {
-	fn read_state(&self) -> Result<TData>;
 	fn write_state_value(&self, data: TData) -> Result;
 }
 
 impl<TData: Clone> StateData<TData> for RwLock<Option<TData>> {
-	fn read_state(&self) -> Result<TData> {
-		let guard = self
-			.read()
-			.map_err(|err| Error::FailedToAccessStateData(err.to_string()))?;
-
-		(*guard).as_ref().map_or_else(
-			|| Err(Error::FailedToAccessStateData("Empty data".into())),
-			|data| Ok(data.clone()),
-		)
-	}
-
 	fn write_state_value(&self, data: TData) -> Result {
 		*self
 			.write()
@@ -71,6 +55,8 @@ impl AppState {
 		Ok(Self {
 			database: games,
 			download_status_channel: RwLock::new(None),
+			selected_game: RwLock::new(None),
+			install_lock: AsyncMutex::new(()),
 		})
 	}
 }
