@@ -12,6 +12,8 @@
           nodejs_26
           cargo
           clippy
+          cmake
+          alsa-lib
           desktop-file-utils
           pkg-config
           gobject-introspection
