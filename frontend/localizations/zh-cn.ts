@@ -133,6 +133,8 @@ export const zhCn: Localization = {
 		reinstallMod: "重新安装",
 		uninstallMod: "卸载",
 		runMod: "运行",
+		stopMod: "停止",
+		running: "运行中",
 		downloadRemoteConfig: "下载推荐配置",
 		remoteConfigAvailable:
 			"推荐配置可用。如果你还没有配置，将会下载。你也可以从三点菜单强制下载。",
@@ -162,6 +164,7 @@ export const zhCn: Localization = {
 
 	modModal: {
 		runMod: "运行",
+		stopMod: "停止",
 		openModFolder: "打开模组文件夹",
 		updateMod: "更新模组",
 		downloadMod: "下载模组",

@@ -140,6 +140,8 @@ export const esEs: Localization = {
 		reinstallMod: "Reinstalar",
 		uninstallMod: "Desinstalar",
 		runMod: "Ejecutar",
+		stopMod: "Detener",
+		running: "En ejecución",
 		downloadRemoteConfig: "Descargar configuración recomendada",
 		remoteConfigAvailable:
 			"Configuración recomendada disponible. Se descargará si aún no tienes una configuración. También puedes forzar la descarga desde el menú de tres puntos.",
@@ -170,6 +172,7 @@ export const esEs: Localization = {
 
 	modModal: {
 		runMod: "Ejecutar",
+		stopMod: "Detener",
 		openModFolder: "Abrir carpeta del mod",
 		updateMod: "Actualizar mod",
 		downloadMod: "Descargar mod",

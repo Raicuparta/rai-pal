@@ -136,6 +136,8 @@ export const ptPt: Localization = {
 		reinstallMod: "Reinstalar",
 		uninstallMod: "Desinstalar",
 		runMod: "Executar",
+		stopMod: "Parar",
+		running: "Em execução",
 		downloadRemoteConfig: "Descarregar configuração recomendada",
 		remoteConfigAvailable:
 			"Configuração recomendada disponível. Será descarregada se ainda não tiveres uma configuração. Também podes forçar o download a partir do menu de três pontos.",
@@ -166,6 +168,7 @@ export const ptPt: Localization = {
 
 	modModal: {
 		runMod: "Executar",
+		stopMod: "Parar",
 		openModFolder: "Abrir pasta do mod",
 		updateMod: "Atualizar mod",
 		downloadMod: "Descarregar mod",

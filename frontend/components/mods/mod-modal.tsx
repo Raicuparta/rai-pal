@@ -7,7 +7,12 @@ import { ModsTable } from "./mods-table";
 import { SubPage } from "@components/sub-page";
 import { CommandButton } from "@components/command-button";
 import { useLocalization } from "@hooks/use-localization";
-import { IconDownload, IconPlayerPlay } from "@tabler/icons-react";
+import { useIsModRunning } from "@hooks/use-running-mods";
+import {
+	IconDownload,
+	IconPlayerPlay,
+	IconPlayerStop,
+} from "@tabler/icons-react";
 
 type Props = {
 	readonly mod: GameMod;
@@ -16,6 +21,7 @@ type Props = {
 
 export function ModModal(props: Props) {
 	const { t } = useLocalization("modModal");
+	const isRunning = useIsModRunning(props.mod.id, null, null);
 	const wrappedMod = useMemo(
 		() => ({ [props.mod.id]: props.mod }),
 		[props.mod],
@@ -38,8 +44,13 @@ export function ModModal(props: Props) {
 				<Stack>
 					{props.mod.runStandalone && (
 						<CommandButton
-							leftSection={<IconPlayerPlay />}
+							leftSection={isRunning ? <IconPlayerStop /> : <IconPlayerPlay />}
 							onClick={async () => {
+								if (isRunning) {
+									await commands.stopMod(props.mod.id, null, null);
+									return;
+								}
+
 								await commands.runMod(props.mod.id, null, null);
 
 								commands.sendAnalyticsEvent("RunMod", {
@@ -47,7 +58,7 @@ export function ModModal(props: Props) {
 								});
 							}}
 						>
-							{t("runMod")}
+							{isRunning ? t("stopMod") : t("runMod")}
 						</CommandButton>
 					)}
 					{props.mod.runStandalone && props.mod.install && (

@@ -140,6 +140,8 @@ export const deDe: Localization = {
 		reinstallMod: "Neu installieren",
 		uninstallMod: "Deinstallieren",
 		runMod: "Ausführen",
+		stopMod: "Stoppen",
+		running: "Läuft",
 		downloadRemoteConfig: "Empfohlene Konfiguration herunterladen",
 		remoteConfigAvailable:
 			"Empfohlene Konfiguration verfügbar. Wird heruntergeladen, falls du noch keine hast. Du kannst auch über das Drei-Punkte-Menü den Download erzwingen.",
@@ -170,6 +172,7 @@ export const deDe: Localization = {
 
 	modModal: {
 		runMod: "Ausführen",
+		stopMod: "Stoppen",
 		openModFolder: "Mod-Ordner öffnen",
 		updateMod: "Mod aktualisieren",
 		downloadMod: "Mod herunterladen",

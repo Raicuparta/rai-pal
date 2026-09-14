@@ -281,6 +281,12 @@ export const enUs = {
 		// For mods that can be executed (like UEVR), this button runs them.
 		runMod: "Run",
 
+		// For mods that are currently running, this button stops them.
+		stopMod: "Stop",
+
+		// Badge that shows when a mod is currently running.
+		running: "Running",
+
 		// Button for downloading a mod config from the database.
 		downloadRemoteConfig: "Download Recommended Config",
 
@@ -344,6 +350,9 @@ export const enUs = {
 	modModal: {
 		// For mods that can be executed (like UEVR), this button runs them.
 		runMod: "Run",
+
+		// For mods that are currently running, this button stops them.
+		stopMod: "Stop",
 
 		// Opens the folder where the mod's files are located.
 		openModFolder: "Open mod folder",

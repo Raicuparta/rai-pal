@@ -30,6 +30,7 @@ import { MutedText } from "@components/muted-text";
 import { CommandDropdown } from "@components/command-dropdown";
 import { DeprecatedBadge } from "@components/mods/deprecated-badge";
 import { useLocalization } from "@hooks/use-localization";
+import { useIsModRunning } from "@hooks/use-running-mods";
 import { GameModInstallButton } from "./game-mod-install-button";
 import { GameModRunButton } from "./game-mod-run-button";
 import { GameModUpdateButton } from "./game-mod-update-button";
@@ -59,6 +60,8 @@ export function GameModRow({
 	const isOutdated = info?.isOutdated;
 
 	const isInstalled = Boolean(info?.installedHash);
+
+	const isRunning = useIsModRunning(mod.id, game.providerId, game.gameId);
 
 	const { statusIcon, statusColor } = (() => {
 		if (isOutdated)
@@ -92,6 +95,14 @@ export function GameModRow({
 						</ThemeIcon>
 					)}
 					{mod.title}
+					{isRunning && (
+						<Badge
+							color="green"
+							variant="light"
+						>
+							{t("running")}
+						</Badge>
+					)}
 					<Tooltip
 						disabled={!isOutdated}
 						label={t("modOutdated")}

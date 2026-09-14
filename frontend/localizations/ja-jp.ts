@@ -138,6 +138,8 @@ export const jaJp: Localization = {
 		reinstallMod: "再インストール",
 		uninstallMod: "アンインストール",
 		runMod: "実行",
+		stopMod: "停止",
+		running: "実行中",
 		downloadRemoteConfig: "推奨設定をダウンロード",
 		remoteConfigAvailable:
 			"推奨設定あり。まだ設定がなければ自動でダウンロードされるよ。三点メニューから手動でもダウンロードできる。",
@@ -168,6 +170,7 @@ export const jaJp: Localization = {
 
 	modModal: {
 		runMod: "実行",
+		stopMod: "停止",
 		openModFolder: "Modフォルダーを開く",
 		updateMod: "Modを更新",
 		downloadMod: "Modをダウンロード",

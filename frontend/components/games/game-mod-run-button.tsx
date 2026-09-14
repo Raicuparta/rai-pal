@@ -1,7 +1,8 @@
 import { DbGame, GameMod, commands } from "@api/bindings";
 import { CommandButton } from "@components/command-button";
-import { IconPlayerPlay } from "@tabler/icons-react";
+import { IconPlayerPlay, IconPlayerStop } from "@tabler/icons-react";
 import { useLocalization } from "@hooks/use-localization";
+import { useIsModRunning } from "@hooks/use-running-mods";
 
 type Props = {
 	readonly game: DbGame;
@@ -10,6 +11,20 @@ type Props = {
 
 export function GameModRunButton({ game, mod }: Props) {
 	const { t } = useLocalization("gameModRow");
+	const isRunning = useIsModRunning(mod.id, game.providerId, game.gameId);
+
+	if (isRunning) {
+		return (
+			<CommandButton
+				leftSection={<IconPlayerStop />}
+				onClick={async () => {
+					await commands.stopMod(mod.id, game.providerId, game.gameId);
+				}}
+			>
+				{t("stopMod")}
+			</CommandButton>
+		);
+	}
 
 	return (
 		<CommandButton

@@ -79,6 +79,15 @@ pub struct ModRun {
 	pub args: Option<Vec<String>>,
 	pub wine_environment: Option<BTreeMap<String, String>>,
 	pub os: Option<OperatingSystem>,
+	pub managed: Option<bool>,
+}
+
+pub struct PreparedModRun {
+	pub path: PathBuf,
+	pub args: Vec<String>,
+	pub wine_environment: BTreeMap<String, String>,
+	pub os: Option<OperatingSystem>,
+	pub managed: bool,
 }
 
 #[serializable_struct]
@@ -192,16 +201,24 @@ impl GameMod {
 		Ok(())
 	}
 
-	pub fn run(&self, game_option: Option<&DbGame>) -> Result {
-		let mod_run = if game_option.is_some() {
+	pub fn get_run(&self, game_option: Option<&DbGame>) -> Result<&ModRun> {
+		if game_option.is_some() {
 			self.run_for_game
 				.as_ref()
-				.ok_or_else(|| Error::ModInfoMissing(self.id.clone(), "run_for_game".to_string()))?
+				.ok_or_else(|| Error::ModInfoMissing(self.id.clone(), "run_for_game".to_string()))
 		} else {
-			self.run_standalone.as_ref().ok_or_else(|| {
-				Error::ModInfoMissing(self.id.clone(), "run_standalone".to_string())
-			})?
-		};
+			self.run_standalone
+				.as_ref()
+				.ok_or_else(|| Error::ModInfoMissing(self.id.clone(), "run_standalone".to_string()))
+		}
+	}
+
+	pub fn is_managed(&self, game_option: Option<&DbGame>) -> Result<bool> {
+		Ok(self.get_run(game_option)?.managed.unwrap_or(false))
+	}
+
+	pub fn prepare_run(&self, game_option: Option<&DbGame>) -> Result<PreparedModRun> {
+		let mod_run = self.get_run(game_option)?;
 
 		let run_path = PathBuf::from(replace_tokens(
 			mod_run.path.as_ref().ok_or_else(|| {
@@ -215,6 +232,11 @@ impl GameMod {
 			return Err(Error::ModNotInstalled(self.id.clone()));
 		}
 
+		#[cfg(target_os = "linux")]
+		if mod_run.os != Some(OperatingSystem::Windows) {
+			make_executable(&run_path)?;
+		}
+
 		let args: Vec<String> = mod_run
 			.args
 			.clone()
@@ -223,44 +245,51 @@ impl GameMod {
 			.map(|arg| replace_tokens(arg, game_option, self))
 			.collect();
 
+		Ok(PreparedModRun {
+			path: run_path,
+			args,
+			wine_environment: replace_env_tokens(
+				mod_run.wine_environment.as_ref(),
+				game_option,
+				self,
+			),
+			os: mod_run.os,
+			managed: mod_run.managed.unwrap_or(false),
+		})
+	}
+
+	pub fn run(&self, game_option: Option<&DbGame>) -> Result {
+		let run = self.prepare_run(game_option)?;
+
 		log::info!(
 			"Running mod `{}` at `{}` with args `{}`",
 			self.id,
-			run_path.display(),
-			args.join(" ")
+			run.path.display(),
+			run.args.join(" ")
 		);
 
 		#[cfg(target_os = "linux")]
 		{
-			if mod_run.os == Some(OperatingSystem::Windows) {
+			if run.os == Some(OperatingSystem::Windows) {
 				let game = game_option.ok_or_else(Error::GameNeeded)?;
-
-				let wine_environment: BTreeMap<String, String> = mod_run
-					.wine_environment
-					.clone()
-					.unwrap_or_default()
-					.iter()
-					.map(|(key, value)| (key.clone(), replace_tokens(value, game_option, self)))
-					.collect();
 
 				game_provider::get_provider(game.provider_id)?.run_with_wine(
 					game,
-					&run_path,
-					&args,
-					&wine_environment,
+					&run.path,
+					&run.args,
+					&run.wine_environment,
 				)?;
 			} else {
-				make_executable(&run_path)?;
-				let mut command = std::process::Command::new(&run_path);
-				command.current_dir(run_path.try_parent()?).args(&args);
+				let mut command = std::process::Command::new(&run.path);
+				command.current_dir(run.path.try_parent()?).args(&run.args);
 				spawn_detached(&mut command)?;
 			}
 		}
 
 		#[cfg(target_os = "windows")]
 		{
-			let mut command = std::process::Command::new(&run_path);
-			command.current_dir(run_path.try_parent()?).args(&args);
+			let mut command = std::process::Command::new(&run.path);
+			command.current_dir(run.path.try_parent()?).args(&run.args);
 			spawn_detached(&mut command)?;
 		}
 
@@ -275,6 +304,21 @@ impl GameMod {
 
 		Ok(())
 	}
+}
+
+fn replace_env_tokens(
+	environment: Option<&BTreeMap<String, String>>,
+	game_option: Option<&DbGame>,
+	game_mod: &GameMod,
+) -> BTreeMap<String, String> {
+	environment
+		.map(|environment| {
+			environment
+				.iter()
+				.map(|(key, value)| (key.clone(), replace_tokens(value, game_option, game_mod)))
+				.collect()
+		})
+		.unwrap_or_default()
 }
 
 #[cfg(target_os = "linux")]

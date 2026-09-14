@@ -6,10 +6,11 @@
 use std::{
 	collections::{BTreeMap, HashSet},
 	path::PathBuf,
+	time::{SystemTime, UNIX_EPOCH},
 };
 
 use app_settings::AppSettings;
-use app_state::{AppState, StateData, StatefulHandle};
+use app_state::{AppState, RunningModInfo, StateData, StatefulHandle, running_mod_key};
 use events::{EventEmitter, SelectedGameData};
 #[cfg(target_os = "windows")]
 use rai_pal_core::windows;
@@ -33,6 +34,7 @@ use rai_pal_core::{
 	mod_providers::{mod_provider, url_mod_provider},
 	mods::game_mod::{GameMod, ModDependency},
 	path_extensions::PathExt,
+	process,
 	progress_status::ProgressStatus,
 	remote_config::RemoteConfigs,
 	remote_game::{self},
@@ -49,7 +51,7 @@ use tauri_plugin_log::{Target, TargetKind};
 use tauri_plugin_window_state::StateFlags;
 use tauri_specta::Builder;
 
-use crate::result::Result;
+use crate::result::{Error, Result};
 
 mod app_settings;
 mod app_state;
@@ -399,9 +401,168 @@ async fn run_mod(
 		None
 	};
 
-	state.database.get_mod(mod_id)?.run(game.as_ref())?;
+	let game_mod = state.database.get_mod(mod_id)?;
+
+	if game_mod.is_managed(game.as_ref())? {
+		start_managed_mod(&handle, &game_mod, game.as_ref()).await?;
+	} else {
+		game_mod.run(game.as_ref())?;
+	}
 
 	Ok(())
+}
+
+async fn start_managed_mod(
+	handle: &AppHandle,
+	game_mod: &GameMod,
+	game_option: Option<&DbGame>,
+) -> Result {
+	let state = handle.app_state();
+	let prepared = game_mod.prepare_run(game_option)?;
+
+	let provider_id = game_option.map(|game| game.provider_id);
+	let game_id = game_option.map(|game| game.game_id.clone());
+	let key = running_mod_key(&game_mod.id, provider_id.as_ref(), game_id.as_deref());
+
+	let (info, mut child) = {
+		let mut running_mods = state
+			.running_mods
+			.lock()
+			.map_err(|error| Error::FailedToAccessStateData(error.to_string()))?;
+
+		if running_mods.contains_key(&key) {
+			return Err(Error::ModAlreadyRunning(game_mod.id.clone()));
+		}
+
+		let child = process::spawn_managed(&prepared, game_option)?;
+		let pid = child.id().ok_or_else(|| {
+			Error::FailedToAccessStateData("Missing managed process ID".to_string())
+		})?;
+
+		let info = RunningModInfo {
+			mod_id: game_mod.id.clone(),
+			provider_id,
+			game_id,
+			pid,
+			started_at: u32::try_from(SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs())
+				.unwrap_or(u32::MAX),
+		};
+
+		running_mods.insert(key.clone(), info.clone());
+		drop(running_mods);
+
+		(info, child)
+	};
+
+	handle.emit_safe(events::ModRunStateChanged {
+		mod_id: info.mod_id.clone(),
+		provider_id: info.provider_id,
+		game_id: info.game_id.clone(),
+		running: true,
+		exit_code: None,
+	});
+
+	let handle = handle.clone();
+	tauri::async_runtime::spawn(async move {
+		let exit_code = child
+			.wait()
+			.await
+			.ok_or_log("Failed to wait for managed mod")
+			.and_then(|status| status.code());
+
+		{
+			let app_state = handle.app_state();
+			if let Ok(mut running_mods) = app_state.running_mods.lock() {
+				running_mods.remove(&key);
+			}
+		}
+
+		handle.emit_safe(events::ModRunStateChanged {
+			mod_id: info.mod_id,
+			provider_id: info.provider_id,
+			game_id: info.game_id,
+			running: false,
+			exit_code,
+		});
+	});
+
+	Ok(())
+}
+
+fn terminate_all_managed_mods(handle: &AppHandle) {
+	let state = handle.app_state();
+
+	let Ok(running_mods) = state.running_mods.lock() else {
+		log::error!("Failed to lock running mods while shutting down");
+		return;
+	};
+
+	for info in running_mods.values() {
+		if let Err(error) = process::terminate_managed_process(info.pid, true) {
+			log::error!("Failed to terminate managed mod `{}`: {error}", info.mod_id);
+		}
+	}
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn stop_mod(
+	mod_id: &str,
+	provider_id_option: Option<GameProviderId>,
+	game_id_option: Option<String>,
+	handle: AppHandle,
+) -> Result {
+	let state = handle.app_state();
+	let key = running_mod_key(
+		mod_id,
+		provider_id_option.as_ref(),
+		game_id_option.as_deref(),
+	);
+
+	let info = {
+		let running_mods = state
+			.running_mods
+			.lock()
+			.map_err(|error| Error::FailedToAccessStateData(error.to_string()))?;
+		running_mods.get(&key).cloned()
+	};
+
+	let Some(info) = info else {
+		return Ok(());
+	};
+
+	process::terminate_managed_process(info.pid, false)?;
+
+	// Give the process a moment to exit gracefully before forcing it.
+	for _ in 0..20 {
+		{
+			let running_mods = state
+				.running_mods
+				.lock()
+				.map_err(|error| Error::FailedToAccessStateData(error.to_string()))?;
+			if !running_mods.contains_key(&key) {
+				return Ok(());
+			}
+		}
+
+		tokio::time::sleep(std::time::Duration::from_millis(50)).await;
+	}
+
+	process::terminate_managed_process(info.pid, true)?;
+
+	Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn get_running_mods(handle: AppHandle) -> Result<Vec<RunningModInfo>> {
+	let state = handle.app_state();
+	let running_mods = state
+		.running_mods
+		.lock()
+		.map_err(|error| Error::FailedToAccessStateData(error.to_string()))?;
+
+	Ok(running_mods.values().cloned().collect())
 }
 
 #[tauri::command]
@@ -945,6 +1106,8 @@ fn main() {
 			remove_url_mod_source,
 			reset_steam_cache,
 			run_mod,
+			get_running_mods,
+			stop_mod,
 			set_selected_game,
 			set_url_mod_source_enabled,
 			run_provider_command,
@@ -971,7 +1134,7 @@ fn main() {
 		std::process::exit(1);
 	});
 
-	tauri::Builder::default()
+	let app = tauri::Builder::default()
 		.plugin(tauri_plugin_single_instance::init(|handle, _args, _cwd| {
 			focus(handle);
 		}))
@@ -1007,7 +1170,6 @@ fn main() {
 		.invoke_handler(builder.invoke_handler())
 		.setup(move |app| {
 			builder.mount_events(app);
-
 			// --- Deep link ---
 
 			app.deep_link().register_all()?;
@@ -1099,13 +1261,13 @@ fn main() {
 
 			Ok(())
 		})
-		.run(tauri::generate_context!())
+		.build(tauri::generate_context!())
 		.unwrap_or_else(|error| {
 			#[cfg(target_os = "windows")]
 			if let tauri::Error::Runtime(tauri_runtime::Error::CreateWebview(webview_error)) = error
 			{
 				windows::webview_error_dialog(&webview_error.to_string());
-				return;
+				std::process::exit(1);
 			}
 			#[cfg(target_os = "windows")]
 			windows::error_dialog(&error.to_string());
@@ -1113,5 +1275,13 @@ fn main() {
 			// Use eprintln! as fallback since log plugin may not capture this
 			eprintln!("Fatal error: {error}");
 			log::error!("Fatal error: {error}");
+
+			std::process::exit(1);
 		});
+
+	app.run(|handle, event| {
+		if matches!(event, tauri::RunEvent::Exit) {
+			terminate_all_managed_mods(handle);
+		}
+	});
 }
