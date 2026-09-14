@@ -27,7 +27,6 @@ RUN apt-get update \
     librsvg2-dev \
     nodejs \
     nsis \
-    cmake \
     llvm \
     lld \
     clang \
