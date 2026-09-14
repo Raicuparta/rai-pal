@@ -23,6 +23,8 @@ RUN apt-get update \
     libappindicator3-dev \
     librsvg2-dev \
     patchelf \
+    libasound2-dev \
+    cmake \
     xdg-utils \
     nodejs \
  && rm -rf /var/lib/apt/lists/*

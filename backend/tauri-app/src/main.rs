@@ -34,6 +34,7 @@ use rai_pal_core::{
 	mods::game_mod::{GameMod, ModDependency},
 	path_extensions::PathExt,
 	progress_status::ProgressStatus,
+	proximity_chat::start_proximity_chat,
 	remote_config::RemoteConfigs,
 	remote_game::{self},
 	result::LogErrExt,
@@ -1073,6 +1074,7 @@ fn main() {
 			// --- Background tasks ---
 
 			tauri::async_runtime::spawn(start_user_socket_manager());
+			tauri::async_runtime::spawn(async { start_proximity_chat() });
 
 			tauri::async_runtime::spawn({
 				let app_handle = app.app_handle().clone();
