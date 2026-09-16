@@ -4,6 +4,7 @@ use lazy_regex::regex_find;
 use pelite::PeFile;
 
 use super::{
+	elf_utils,
 	game_engine::{EngineBrand, EngineVersion, EngineVersionNumbers},
 	pe_utils,
 };
@@ -64,15 +65,13 @@ fn parse_version(version_string: &str) -> Option<EngineVersion> {
 	})
 }
 
-/// Scan a byte slice for Godot version strings.
 fn scan_for_version(bytes: &[u8]) -> Option<EngineVersion> {
 	// Godot 4.x: "Godot Engine v" or "Godot v"
 	if let Some(m) = regex_find!(r#"(?-u)(?i)Godot (?:Engine )?v\d[-.\d]*"#B, bytes) {
 		return parse_version(&String::from_utf8_lossy(m));
 	}
 
-	// Godot 3.x: version markers like "3.3.1.stable" — require a digit
-	// to anchor the match and avoid false positives like "alphaTest".
+	// Godot 3.x: "3.3.1.stable"
 	if let Some(m) = regex_find!(
 		r#"(?-u)(?i)\d[-.\d]*(?:\.stable|\.beta|\.alpha|\.rc|\.dev)"#B,
 		bytes
@@ -84,13 +83,19 @@ fn scan_for_version(bytes: &[u8]) -> Option<EngineVersion> {
 	None
 }
 
+fn check_elf(bytes: &[u8]) -> Option<EngineVersion> {
+	elf_utils::find_section(bytes, "pck")?;
+	let rodata = elf_utils::find_section(bytes, ".rodata")?;
+	scan_for_version(rodata)
+}
+
 fn check_exe(exe_path: &Path) -> Option<EngineVersion> {
-	// Memory-map the file. The OS loads pages lazily, so only the headers
-	// (a few KB) are actually fetched from disk for the fast filter. If the
-	// game turns out to be a Godot game, the .rdata pages are loaded on
-	// demand during the section scan.
 	let mmap = crate::game_engines::mmap_safe::map_readonly(exe_path)
 		.ok_or_log("Failed to memory map Godot exe")?;
+
+	if elf_utils::is_elf(&mmap) {
+		return check_elf(&mmap);
+	}
 
 	let pe = PeFile::from_bytes(&mmap).ok_or_log("Failed to parse PE file")?;
 	let sections = pe.section_headers();
