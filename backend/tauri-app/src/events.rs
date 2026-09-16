@@ -20,8 +20,6 @@ pub struct AppDatabaseChanged();
 #[serializable_event]
 pub struct ModRunStateChanged {
 	pub mod_id: String,
-	pub provider_id: Option<GameProviderId>,
-	pub game_id: Option<String>,
 	pub running: bool,
 	pub exit_code: Option<i32>,
 }

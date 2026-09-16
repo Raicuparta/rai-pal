@@ -49,6 +49,7 @@ pub struct GameMod {
 	pub install: Option<ModInstall>,
 	pub run_for_game: Option<ModRun>,
 	pub run_standalone: Option<ModRun>,
+	pub run_managed: Option<ModRun>,
 	pub hash: Option<String>,
 }
 
@@ -79,7 +80,6 @@ pub struct ModRun {
 	pub args: Option<Vec<String>>,
 	pub wine_environment: Option<BTreeMap<String, String>>,
 	pub os: Option<OperatingSystem>,
-	pub managed: Option<bool>,
 }
 
 pub struct PreparedModRun {
@@ -87,7 +87,6 @@ pub struct PreparedModRun {
 	pub args: Vec<String>,
 	pub wine_environment: BTreeMap<String, String>,
 	pub os: Option<OperatingSystem>,
-	pub managed: bool,
 }
 
 #[serializable_struct]
@@ -213,13 +212,24 @@ impl GameMod {
 		}
 	}
 
-	pub fn is_managed(&self, game_option: Option<&DbGame>) -> Result<bool> {
-		Ok(self.get_run(game_option)?.managed.unwrap_or(false))
+	pub fn prepare_run(&self, game_option: Option<&DbGame>) -> Result<PreparedModRun> {
+		self.prepare_run_inner(self.get_run(game_option)?, game_option)
 	}
 
-	pub fn prepare_run(&self, game_option: Option<&DbGame>) -> Result<PreparedModRun> {
-		let mod_run = self.get_run(game_option)?;
+	pub fn prepare_managed_run(&self, game_option: Option<&DbGame>) -> Result<PreparedModRun> {
+		let mod_run = self
+			.run_managed
+			.as_ref()
+			.ok_or_else(|| Error::ModInfoMissing(self.id.clone(), "run_managed".to_string()))?;
 
+		self.prepare_run_inner(mod_run, game_option)
+	}
+
+	fn prepare_run_inner(
+		&self,
+		mod_run: &ModRun,
+		game_option: Option<&DbGame>,
+	) -> Result<PreparedModRun> {
 		let run_path = PathBuf::from(replace_tokens(
 			mod_run.path.as_ref().ok_or_else(|| {
 				Error::ModInfoMissing(self.id.clone(), "mod_run.path".to_string())
@@ -254,7 +264,6 @@ impl GameMod {
 				self,
 			),
 			os: mod_run.os,
-			managed: mod_run.managed.unwrap_or(false),
 		})
 	}
 

@@ -11,14 +11,14 @@ type Props = {
 
 export function GameModRunButton({ game, mod }: Props) {
 	const { t } = useLocalization("gameModRow");
-	const isRunning = useIsModRunning(mod.id, game.providerId, game.gameId);
+	const isRunning = useIsModRunning(mod.id);
 
 	if (isRunning) {
 		return (
 			<CommandButton
 				leftSection={<IconPlayerStop />}
 				onClick={async () => {
-					await commands.stopMod(mod.id, game.providerId, game.gameId);
+					await commands.stopMod(mod.id);
 				}}
 			>
 				{t("stopMod")}

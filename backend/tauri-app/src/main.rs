@@ -10,7 +10,7 @@ use std::{
 };
 
 use app_settings::AppSettings;
-use app_state::{AppState, RunningModInfo, StateData, StatefulHandle, running_mod_key};
+use app_state::{AppState, RunningModInfo, StateData, StatefulHandle};
 use events::{EventEmitter, SelectedGameData};
 #[cfg(target_os = "windows")]
 use rai_pal_core::windows;
@@ -403,7 +403,7 @@ async fn run_mod(
 
 	let game_mod = state.database.get_mod(mod_id)?;
 
-	if game_mod.is_managed(game.as_ref())? {
+	if game_mod.run_managed.is_some() {
 		start_managed_mod(&handle, &game_mod, game.as_ref()).await?;
 	} else {
 		game_mod.run(game.as_ref())?;
@@ -418,11 +418,9 @@ async fn start_managed_mod(
 	game_option: Option<&DbGame>,
 ) -> Result {
 	let state = handle.app_state();
-	let prepared = game_mod.prepare_run(game_option)?;
+	let prepared = game_mod.prepare_managed_run(game_option)?;
 
-	let provider_id = game_option.map(|game| game.provider_id);
-	let game_id = game_option.map(|game| game.game_id.clone());
-	let key = running_mod_key(&game_mod.id, provider_id.as_ref(), game_id.as_deref());
+	let key = game_mod.id.clone();
 
 	let (info, mut child) = {
 		let mut running_mods = state
@@ -441,8 +439,6 @@ async fn start_managed_mod(
 
 		let info = RunningModInfo {
 			mod_id: game_mod.id.clone(),
-			provider_id,
-			game_id,
 			pid,
 			started_at: u32::try_from(SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs())
 				.unwrap_or(u32::MAX),
@@ -456,8 +452,6 @@ async fn start_managed_mod(
 
 	handle.emit_safe(events::ModRunStateChanged {
 		mod_id: info.mod_id.clone(),
-		provider_id: info.provider_id,
-		game_id: info.game_id.clone(),
 		running: true,
 		exit_code: None,
 	});
@@ -479,8 +473,6 @@ async fn start_managed_mod(
 
 		handle.emit_safe(events::ModRunStateChanged {
 			mod_id: info.mod_id,
-			provider_id: info.provider_id,
-			game_id: info.game_id,
 			running: false,
 			exit_code,
 		});
@@ -506,18 +498,9 @@ fn terminate_all_managed_mods(handle: &AppHandle) {
 
 #[tauri::command]
 #[specta::specta]
-async fn stop_mod(
-	mod_id: &str,
-	provider_id_option: Option<GameProviderId>,
-	game_id_option: Option<String>,
-	handle: AppHandle,
-) -> Result {
+async fn stop_mod(mod_id: &str, handle: AppHandle) -> Result {
 	let state = handle.app_state();
-	let key = running_mod_key(
-		mod_id,
-		provider_id_option.as_ref(),
-		game_id_option.as_deref(),
-	);
+	let key = mod_id.to_string();
 
 	let info = {
 		let running_mods = state

@@ -61,7 +61,7 @@ export function GameModRow({
 
 	const isInstalled = Boolean(info?.installedHash);
 
-	const isRunning = useIsModRunning(mod.id, game.providerId, game.gameId);
+	const isRunning = useIsModRunning(mod.id);
 
 	const { statusIcon, statusColor } = (() => {
 		if (isOutdated)
@@ -160,12 +160,13 @@ export function GameModRow({
 									remoteConfigFile={availableRemoteConfig?.file}
 								/>
 							)}
-							{mod.runForGame && (!mod.install || isInstalled) && (
-								<GameModRunButton
-									game={game}
-									mod={mod}
-								/>
-							)}
+							{(mod.runForGame || mod.runManaged) &&
+								(!mod.install || isInstalled) && (
+									<GameModRunButton
+										game={game}
+										mod={mod}
+									/>
+								)}
 							<CommandDropdown icon={<IconDotsVertical />}>
 								{(mod.config || availableRemoteConfig) && (
 									<ButtonGroup>

@@ -21,7 +21,7 @@ type Props = {
 
 export function ModModal(props: Props) {
 	const { t } = useLocalization("modModal");
-	const isRunning = useIsModRunning(props.mod.id, null, null);
+	const isRunning = useIsModRunning(props.mod.id);
 	const wrappedMod = useMemo(
 		() => ({ [props.mod.id]: props.mod }),
 		[props.mod],
@@ -42,12 +42,12 @@ export function ModModal(props: Props) {
 				gap="xl"
 			>
 				<Stack>
-					{props.mod.runStandalone && (
+					{(props.mod.runStandalone || props.mod.runManaged) && (
 						<CommandButton
 							leftSection={isRunning ? <IconPlayerStop /> : <IconPlayerPlay />}
 							onClick={async () => {
 								if (isRunning) {
-									await commands.stopMod(props.mod.id, null, null);
+									await commands.stopMod(props.mod.id);
 									return;
 								}
 
@@ -61,20 +61,21 @@ export function ModModal(props: Props) {
 							{isRunning ? t("stopMod") : t("runMod")}
 						</CommandButton>
 					)}
-					{props.mod.runStandalone && props.mod.install && (
-						<CommandButton
-							leftSection={<IconDownload />}
-							onClick={async () => {
-								await commands.installMod(props.mod.id, null, null);
+					{(props.mod.runStandalone || props.mod.runManaged) &&
+						props.mod.install && (
+							<CommandButton
+								leftSection={<IconDownload />}
+								onClick={async () => {
+									await commands.installMod(props.mod.id, null, null);
 
-								commands.sendAnalyticsEvent("InstallMod", {
-									mod_id: props.mod.id,
-								});
-							}}
-						>
-							{t("downloadMod")}
-						</CommandButton>
-					)}
+									commands.sendAnalyticsEvent("InstallMod", {
+										mod_id: props.mod.id,
+									});
+								}}
+							>
+								{t("downloadMod")}
+							</CommandButton>
+						)}
 					<DebugData data={props.mod} />
 				</Stack>
 			</Stack>

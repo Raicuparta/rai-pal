@@ -21,18 +21,8 @@ use crate::result::{Error, Result};
 #[serializable_struct]
 pub struct RunningModInfo {
 	pub mod_id: String,
-	pub provider_id: Option<GameProviderId>,
-	pub game_id: Option<String>,
 	pub pid: u32,
 	pub started_at: u32,
-}
-
-pub fn running_mod_key(
-	mod_id: &str,
-	provider_id: Option<&GameProviderId>,
-	game_id: Option<&str>,
-) -> String {
-	format!("{mod_id}|{provider_id:?}|{game_id:?}")
 }
 
 pub struct AppState {

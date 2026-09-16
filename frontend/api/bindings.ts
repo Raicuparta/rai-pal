@@ -52,7 +52,7 @@ export const commands = {
 	resetSteamCache: () => __TAURI_INVOKE<null>("reset_steam_cache"),
 	runMod: (modId: string, providerIdOption: "Epic" | "Gog" | "Itch" | "Manual" | "Steam" | "Xbox" | null, gameIdOption: string | null) => __TAURI_INVOKE<null>("run_mod", { modId, providerIdOption, gameIdOption }),
 	getRunningMods: () => __TAURI_INVOKE<RunningModInfo[]>("get_running_mods"),
-	stopMod: (modId: string, providerIdOption: "Epic" | "Gog" | "Itch" | "Manual" | "Steam" | "Xbox" | null, gameIdOption: string | null) => __TAURI_INVOKE<null>("stop_mod", { modId, providerIdOption, gameIdOption }),
+	stopMod: (modId: string) => __TAURI_INVOKE<null>("stop_mod", { modId }),
 	setSelectedGame: (providerId: "Epic" | "Gog" | "Itch" | "Manual" | "Steam" | "Xbox" | null, gameId: string | null) => __TAURI_INVOKE<null>("set_selected_game", { providerId, gameId }),
 	setUrlModSourceEnabled: (url: string, enabled: boolean) => __TAURI_INVOKE<null>("set_url_mod_source_enabled", { url, enabled }),
 	runProviderCommand: (providerId: GameProviderId, gameId: string, providerCommandAciton: ProviderCommandAction) => __TAURI_INVOKE<null>("run_provider_command", { providerId, gameId, providerCommandAciton }),
@@ -182,6 +182,7 @@ export type GameMod = {
 	install: ModInstall | null,
 	runForGame: ModRun | null,
 	runStandalone: ModRun | null,
+	runManaged: ModRun | null,
 	hash: string | null,
 };
 
@@ -260,13 +261,10 @@ export type ModRun = {
 	args: string[] | null,
 	wineEnvironment: { [key in string]: string } | null,
 	os: OperatingSystem | null,
-	managed: boolean | null,
 };
 
 export type ModRunStateChanged = {
 	mod_id: string,
-	provider_id: GameProviderId | null,
-	game_id: string | null,
 	running: boolean,
 	exit_code: number | null,
 };
@@ -293,8 +291,6 @@ export type RemoteConfigs = {
 
 export type RunningModInfo = {
 	modId: string,
-	providerId: GameProviderId | null,
-	gameId: string | null,
 	pid: number,
 	startedAt: number,
 };

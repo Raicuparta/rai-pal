@@ -1,43 +1,28 @@
 import { showAppNotification } from "@components/app-notifications";
-import { atom, useAtomValue, useSetAtom } from "jotai";
+import { atom, useAtomValue, useSetAtom, useStore } from "jotai";
 import { useCallback, useEffect } from "react";
-import { GameProviderId, commands } from "@api/bindings";
+import { commands } from "@api/bindings";
 import { useAppEvent } from "./use-app-event";
+import { modsAtom } from "./use-data";
 
 export const runningModsAtom = atom<Record<string, true>>({});
 
-export function runningModKey(
-	modId: string,
-	providerId: GameProviderId | null,
-	gameId: string | null,
-) {
-	return `${modId}|${providerId}|${gameId}`;
-}
-
-export function useIsModRunning(
-	modId: string,
-	providerId: GameProviderId | null,
-	gameId: string | null,
-) {
+export function useIsModRunning(modId: string) {
 	const runningMods = useAtomValue(runningModsAtom);
 
-	return Boolean(runningMods[runningModKey(modId, providerId, gameId)]);
+	return Boolean(runningMods[modId]);
 }
 
 export function useRunningMods() {
 	const setRunningMods = useSetAtom(runningModsAtom);
+	const store = useStore();
 
 	useEffect(() => {
 		commands
 			.getRunningMods()
 			.then((infos) =>
 				setRunningMods(
-					Object.fromEntries(
-						infos.map((info) => [
-							runningModKey(info.modId, info.providerId, info.gameId),
-							true as const,
-						]),
-					),
+					Object.fromEntries(infos.map((info) => [info.modId, true as const])),
 				),
 			)
 			.catch((error) => {
@@ -50,25 +35,29 @@ export function useRunningMods() {
 		"running-mods",
 		useCallback(
 			(payload) => {
-				const key = runningModKey(
-					payload.mod_id,
-					payload.provider_id,
-					payload.game_id,
-				);
-
 				setRunningMods((previous) => {
 					const next = { ...previous };
 
 					if (payload.running) {
-						next[key] = true;
+						next[payload.mod_id] = true;
 					} else {
-						delete next[key];
+						delete next[payload.mod_id];
 					}
 
 					return next;
 				});
+
+				if (!payload.running && payload.exit_code) {
+					const modTitle =
+						store.get(modsAtom)[payload.mod_id]?.title ?? payload.mod_id;
+
+					showAppNotification(
+						`Managed mod "${modTitle}" stopped unexpectedly (exit code ${payload.exit_code}).`,
+						"error",
+					);
+				}
 			},
-			[setRunningMods],
+			[setRunningMods, store],
 		),
 	);
 }
