@@ -32,6 +32,9 @@
           xdg-utils
           glib-networking
           dconf
+
+          # alsa-lib is for Everyone Voice Chat to work in dev mode.
+          alsa-lib
         ];
 
         RUST_SRC_PATH = "${pkgs.rustPlatform.rustLibSrc}";
@@ -39,6 +42,7 @@
         shellHook = ''
           export XDG_DATA_DIRS="$GSETTINGS_SCHEMAS_PATH"
           export GIO_EXTRA_MODULES="${pkgs.dconf.lib}/lib/gio/modules:${pkgs.glib-networking}/lib/gio/modules"
+          export LD_LIBRARY_PATH="${pkgs.lib.makeLibraryPath [ pkgs.alsa-lib ]}$LD_LIBRARY_PATH"
         '';
       };
     };
