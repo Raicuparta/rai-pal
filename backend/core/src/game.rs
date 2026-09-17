@@ -43,7 +43,8 @@ pub struct DbGame {
 	pub engine_version_display: Option<String>,
 	pub unity_backend: Option<UnityBackend>,
 	pub architecture: Option<Architecture>,
-	pub os: Option<OperatingSystem>,
+	pub executable_os: Option<OperatingSystem>,
+	pub supported_os: Vec<OperatingSystem>,
 	pub tags: Vec<GameTag>,
 	pub provider_commands: BTreeMap<ProviderCommandAction, ProviderCommand>,
 }
@@ -66,7 +67,8 @@ impl DbGame {
 			engine_version_display: None,
 			unity_backend: None,
 			architecture: None,
-			os: None,
+			executable_os: None,
+			supported_os: Vec::default(),
 			tags: Vec::default(),
 			provider_commands: BTreeMap::default(),
 		};
@@ -124,6 +126,14 @@ impl DbGame {
 		self
 	}
 
+	pub fn add_supported_os(&mut self, os: OperatingSystem) -> &mut Self {
+		if !self.supported_os.contains(&os) {
+			self.supported_os.push(os);
+		}
+
+		self
+	}
+
 	pub fn add_tag(&mut self, tag: GameTag) -> &mut Self {
 		if self.tags.contains(&tag) {
 			return self;
@@ -153,7 +163,7 @@ impl DbGame {
 
 			self.exe_path = Some(exe_path.normalize());
 
-			self.os = operating_system::get_os_from_path(exe_path);
+			self.executable_os = operating_system::get_os_from_path(exe_path);
 
 			// Order matters here. We're checking all sequentially, so we should leave the most expensive ones last.
 			let _ = unity::process_game(self)

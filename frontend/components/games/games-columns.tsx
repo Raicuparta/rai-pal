@@ -131,7 +131,11 @@ const engine: GamesColumn = {
 			: "gray";
 
 		const osDisplay =
-			item.os === "Windows" ? "win" : item.os === "Linux" ? "linux" : item.os;
+			item.executableOs === "Windows"
+				? "win"
+				: item.executableOs === "Linux"
+					? "linux"
+					: item.executableOs;
 
 		const detailsText = [osDisplay, item.unityBackend, item.architecture]
 			.filter(Boolean)

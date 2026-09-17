@@ -80,8 +80,20 @@ export const filterDetails = Object.freeze<{
 			},
 		},
 	},
-	os: {
-		localizationKey: "os",
+	executableOs: {
+		localizationKey: "executableOs",
+		emptyLocalizationKey: "unknown",
+		valueDetails: {
+			Windows: {
+				staticDisplayText: "Windows",
+			},
+			Linux: {
+				staticDisplayText: "Linux",
+			},
+		},
+	},
+	supportedOs: {
+		localizationKey: "supportedOs",
 		emptyLocalizationKey: "unknown",
 		valueDetails: {
 			Windows: {

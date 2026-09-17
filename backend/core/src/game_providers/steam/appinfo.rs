@@ -8,7 +8,10 @@ use rai_pal_proc_macros::serializable_struct;
 use super::vdf::{
 	KeyValues, ValueType, find_keys, value_to_i32, value_to_kv, value_to_path, value_to_string,
 };
-use crate::result::{Error, Result};
+use crate::{
+	operating_system::OperatingSystem,
+	result::{Error, Result},
+};
 
 #[serializable_struct]
 pub struct SteamLaunchOption {
@@ -38,6 +41,46 @@ pub struct SteamAppInfo {
 	pub is_free: bool,
 	pub app_type: Option<String>,
 	pub tags: Option<Vec<i32>>,
+}
+
+impl SteamAppInfo {
+	pub fn supported_os(&self) -> Vec<OperatingSystem> {
+		let mut supported_os = Vec::new();
+
+		for launch_option in &self.launch_options {
+			if let Some(os) = os_from_launch_option(launch_option)
+				&& !supported_os.contains(&os)
+			{
+				supported_os.push(os);
+			}
+		}
+
+		supported_os
+	}
+}
+
+fn os_from_launch_option(launch_option: &SteamLaunchOption) -> Option<OperatingSystem> {
+	if let Some(os_list) = launch_option.os_list.as_deref() {
+		return match os_list.to_ascii_lowercase().as_str() {
+			"windows" => Some(OperatingSystem::Windows),
+			"linux" => Some(OperatingSystem::Linux),
+			_ => None,
+		};
+	}
+
+	// Lots of older appinfo entries don't set an oslist, but their launch
+	// executables are still reliably Windows binaries.
+	match launch_option
+		.executable
+		.as_ref()
+		.and_then(|executable| executable.extension())
+		.and_then(|extension| extension.to_str())
+		.map(str::to_ascii_lowercase)
+		.as_deref()
+	{
+		Some("exe" | "bat") => Some(OperatingSystem::Windows),
+		_ => None,
+	}
 }
 
 pub struct SteamAppInfoReader {

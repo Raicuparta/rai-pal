@@ -511,8 +511,8 @@ impl ModDatabase for DbMutex {
 					)
 					AND (
 						json_extract(m.game_os, '$') IS NULL
-						OR ig.os IS NULL
-						OR json_extract(m.game_os, '$') = ig.os
+						OR ig.executable_os IS NULL
+						OR json_extract(m.game_os, '$') = ig.executable_os
 					)
 					AND (
 						json_extract(m.host_os, '$') IS NULL

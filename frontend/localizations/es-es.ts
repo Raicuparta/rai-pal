@@ -55,7 +55,6 @@ export const esEs: Localization = {
 		provider: "Proveedor",
 		tags: "Etiqueta",
 		architecture: "Arquitectura",
-		os: "Sistema operativo",
 		unityBackend: "Backend de Unity",
 		engine: "Motor",
 		status: "Estado",

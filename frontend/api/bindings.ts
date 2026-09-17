@@ -115,7 +115,8 @@ export type DbGame = {
 	engineVersionDisplay: string | null,
 	unityBackend: UnityBackend | null,
 	architecture: Architecture | null,
-	os: OperatingSystem | null,
+	executableOs: OperatingSystem | null,
+	supportedOs: OperatingSystem[],
 	tags: GameTag[],
 	providerCommands: Partial<{ [key in ProviderCommandAction]: ProviderCommand }>,
 };
@@ -207,7 +208,8 @@ export type GamesFilter = {
 	architectures: FilterGroup<Architecture>,
 	unityBackends: FilterGroup<UnityBackend>,
 	engines: FilterGroup<EngineBrand>,
-	os: FilterGroup<OperatingSystem>,
+	executableOs: FilterGroup<OperatingSystem>,
+	supportedOs: FilterGroup<OperatingSystem>,
 	installed: FilterGroup<InstallState>,
 	modFamilies: FilterGroup<string>,
 };

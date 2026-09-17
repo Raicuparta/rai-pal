@@ -46,7 +46,8 @@ pub struct GamesFilter {
 	pub architectures: FilterGroup<Architecture>,
 	pub unity_backends: FilterGroup<UnityBackend>,
 	pub engines: FilterGroup<EngineBrand>,
-	pub os: FilterGroup<OperatingSystem>,
+	pub executable_os: FilterGroup<OperatingSystem>,
+	pub supported_os: FilterGroup<OperatingSystem>,
 	pub installed: FilterGroup<InstallState>,
 	pub mod_families: FilterGroup<String>,
 }

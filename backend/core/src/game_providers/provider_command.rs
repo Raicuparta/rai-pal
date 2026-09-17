@@ -38,7 +38,7 @@ impl ProviderCommand {
 
 					use crate::game_providers::game_provider;
 
-					if game.os == Some(OperatingSystem::Linux) {
+					if game.executable_os == Some(OperatingSystem::Linux) {
 						// Native Linux executable, run it directly.
 						let mut command = Command::new(path);
 						command.args(args);
