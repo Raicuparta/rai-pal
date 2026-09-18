@@ -314,7 +314,7 @@ async fn install_mod(
 		.cloned()
 		.collect();
 
-	let (steps, main_dl, _main_ex) = build_steps(&all_owned, mod_id);
+	let (steps, _main_dl, _main_ex) = build_steps(&all_owned, mod_id);
 
 	let forward = move |status: ProgressStatus| {
 		if let Some(channel) = &download_status_channel {
@@ -349,7 +349,9 @@ async fn install_mod(
 			installed_mod.uninstall().await?;
 		}
 
-		if main_dl.is_some() {
+		// Mods without a `download` (e.g. loaders whose files are baked into
+		// the database) still need their `install.write` actions applied.
+		if game_mod.install.is_some() {
 			game_mod.install(game_option.as_ref(), &forward).await?;
 		}
 
