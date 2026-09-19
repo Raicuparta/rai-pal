@@ -32,7 +32,11 @@ use crate::{
 /// In all cases stdin/stdout/stderr are redirected to null so the child
 /// doesn't hold on to rai-pal's console.
 pub fn spawn_detached(cmd: &mut Command) -> Result {
-	cmd.stdin(Stdio::null())
+	cmd.env_remove("LD_LIBRARY_PATH")
+		.env_remove("QT_PLUGIN_PATH")
+		.env_remove("APPDIR")
+		.env_remove("APPIMAGE")
+		.stdin(Stdio::null())
 		.stdout(Stdio::null())
 		.stderr(Stdio::null());
 

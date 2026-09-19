@@ -63,6 +63,19 @@ pub trait WineProviderActions {
 		))
 	}
 
+	fn get_native_run_environment(&self, _game: &DbGame) -> Result<BTreeMap<String, String>> {
+		Ok(BTreeMap::new())
+	}
+
+	fn get_native_run_command(
+		&self,
+		_game: &DbGame,
+		_exe_path: &Path,
+		_args: &[String],
+	) -> Result<Option<Command>> {
+		Ok(None)
+	}
+
 	fn run_with_wine(
 		&self,
 		game: &DbGame,

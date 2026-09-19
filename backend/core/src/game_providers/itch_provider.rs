@@ -11,7 +11,7 @@ use crate::{
 	game::DbGame,
 	game_providers::game_provider::{GameProviderId, ProviderActions, WineProviderActions},
 	local_database::{app_database::DbMutex, game_database::GameDatabase},
-	result::{Error, LogErrExt, Result},
+	result::{LogErrExt, Result},
 };
 
 #[derive(Clone)]
@@ -217,25 +217,19 @@ fn find_itch_wine() -> PathBuf {
 fn get_itch_wine_prefix() -> Result<PathBuf> {
 	let base_dirs = app_paths::base_dirs()?;
 
-	let candidates = [
+	let existing_candidates = [
 		base_dirs.home_dir().join(".var/app/io.itch.itch/data/wine"),
+		base_dirs.home_dir().join(".var/app/io.itch.itch/.wine"),
 		base_dirs.home_dir().join(".itch/wine"),
 	];
 
-	for candidate in &candidates {
+	for candidate in &existing_candidates {
 		if candidate.join("drive_c").exists() {
 			return Ok(candidate.clone());
 		}
 	}
 
-	Err(Error::Itch(format!(
-		"Itch wine prefix not found. Tried:\n{}",
-		candidates
-			.iter()
-			.map(|p| format!("  - {}", p.display()))
-			.collect::<Vec<_>>()
-			.join("\n")
-	)))
+	Ok(crate::wine::get_default_wine_prefix())
 }
 
 fn parse_verdict(json_option: Option<&String>) -> Option<ItchDatabaseVerdict> {

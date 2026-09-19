@@ -141,13 +141,7 @@ impl WineProviderActions for Manual {}
 #[cfg(target_os = "linux")]
 impl WineProviderActions for Manual {
 	fn get_wine_prefix_path(&self, _game: &DbGame) -> Result<PathBuf> {
-		Ok(std::env::var_os("WINEPREFIX").map_or_else(
-			|| {
-				let home = std::env::var_os("HOME").unwrap_or_default();
-				PathBuf::from(home).join(".wine")
-			},
-			PathBuf::from,
-		))
+		Ok(crate::wine::get_default_wine_prefix())
 	}
 
 	fn get_wine_binary_path(&self, _game: &DbGame) -> Result<PathBuf> {

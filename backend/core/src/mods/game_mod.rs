@@ -289,8 +289,23 @@ impl GameMod {
 					&run.wine_environment,
 				)?;
 			} else {
-				let mut command = std::process::Command::new(&run.path);
-				command.current_dir(run.path.try_parent()?).args(&run.args);
+				let mut command = match game_option {
+					Some(game) => game_provider::get_provider(game.provider_id)?
+						.get_native_run_command(game, &run.path, &run.args)?,
+					None => None,
+				}
+				.unwrap_or_else(|| {
+					let mut command = std::process::Command::new(&run.path);
+					command.args(&run.args);
+					command
+				});
+				if let Some(game) = game_option {
+					command.envs(
+						game_provider::get_provider(game.provider_id)?
+							.get_native_run_environment(game)?,
+					);
+				}
+				command.current_dir(run.path.try_parent()?);
 				spawn_detached(&mut command)?;
 			}
 		}

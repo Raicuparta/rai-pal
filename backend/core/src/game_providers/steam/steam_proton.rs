@@ -1,4 +1,5 @@
 use std::{
+	collections::BTreeMap,
 	fs,
 	path::{Path, PathBuf},
 	process::Command,
@@ -10,9 +11,13 @@ use crate::{
 	game::DbGame,
 	game_providers::{
 		game_provider::WineProviderActions,
-		steam::{steam_dir::find_steam_dir, steam_provider::Steam},
+		steam::{
+			steam_dir::find_steam_dir,
+			steam_provider::Steam,
+			steam_runtime::{get_native_runtime_command, wrap_with_steam_runtime},
+		},
 	},
-	path_extensions::PathExt,
+	path_extensions::{AsValidStr, PathExt},
 	result::{Error, Result},
 	wine,
 };
@@ -42,36 +47,38 @@ impl WineProviderActions for Steam {
 	fn get_wine_binary_path(&self, game: &DbGame) -> Result<PathBuf> {
 		let prefix_path = self.get_wine_prefix_path(game)?;
 		let compat_data_path = prefix_path.try_parent()?;
-		let config_info_path = compat_data_path.join("config_info");
 
-		let config_info_data = fs::read_to_string(&config_info_path)?;
-
-		let proton_lib_path_line = match config_info_data.lines().nth(2) {
-			Some(line) if !line.trim().is_empty() => line.trim(),
-			_ => {
-				return Err(Error::SteamProton(
-					"Steam Proton config_info is missing a valid third line".to_string(),
-				));
-			}
-		};
-
-		Ok(Path::new(proton_lib_path_line)
-			.try_parent()?
+		Ok(get_proton_dir(compat_data_path)?
+			.join("files")
 			.join("bin")
 			.join("wine"))
 	}
 
 	fn get_run_with_wine_command(&self, game: &DbGame) -> Result<Command> {
 		let wine_prefix_path = self.get_wine_prefix_path(game)?;
-		let wine_binary_path = self.get_wine_binary_path(game)?;
 		let compat_data_path = wine_prefix_path.try_parent()?;
+		let wine_binary_path = self.get_wine_binary_path(game)?;
 
-		let mut cmd = Command::new(&wine_binary_path);
+		let mut cmd = wrap_with_steam_runtime(compat_data_path, &wine_binary_path);
 		cmd.env("WINEPREFIX", &wine_prefix_path)
 			.env("STEAM_COMPAT_DATA_PATH", compat_data_path)
-			.env("WINEFSYNC", "1");
+			.env("WINEFSYNC", "1")
+			.envs(get_steam_launch_environment(game)?);
 
 		Ok(cmd)
+	}
+
+	fn get_native_run_environment(&self, game: &DbGame) -> Result<BTreeMap<String, String>> {
+		get_steam_launch_environment(game)
+	}
+
+	fn get_native_run_command(
+		&self,
+		_game: &DbGame,
+		exe_path: &Path,
+		args: &[String],
+	) -> Result<Option<Command>> {
+		Ok(get_native_runtime_command(exe_path, args))
 	}
 
 	fn set_wine_dll_overrides(&self, game: &DbGame, dll_overrides: &[String]) -> Result {
@@ -79,6 +86,49 @@ impl WineProviderActions for Steam {
 		wine::set_wine_dll_overrides_in_reg(&prefix_path, dll_overrides)
 			.map_err(|err| Error::SteamProton(err.to_string()))
 	}
+}
+
+fn get_steam_launch_environment(game: &DbGame) -> Result<BTreeMap<String, String>> {
+	let mut env = BTreeMap::new();
+
+	for key in [
+		"SteamAppId",
+		"SteamGameId",
+		"SteamOverlayGameId",
+		"STEAM_COMPAT_APP_ID",
+	] {
+		env.insert(key.to_string(), game.external_id.clone());
+	}
+
+	env.insert("SteamClientLaunch".to_string(), "1".to_string());
+	env.insert("SteamEnv".to_string(), "1".to_string());
+
+	if let Some(parent) = game.exe_path.as_ref().and_then(|exe| exe.parent()) {
+		env.insert(
+			"STEAM_COMPAT_INSTALL_PATH".to_string(),
+			parent.try_to_str()?.to_string(),
+		);
+	}
+
+	Ok(env)
+}
+
+pub fn get_proton_dir(compat_data_path: &Path) -> Result<PathBuf> {
+	let config_info_data = fs::read_to_string(compat_data_path.join("config_info"))?;
+
+	let proton_lib_path_line = match config_info_data.lines().nth(2) {
+		Some(line) if !line.trim().is_empty() => line.trim(),
+		_ => {
+			return Err(Error::SteamProton(
+				"Steam Proton config_info is missing a valid third line".to_string(),
+			));
+		}
+	};
+
+	Ok(Path::new(proton_lib_path_line)
+		.try_parent()?
+		.try_parent()?
+		.to_path_buf())
 }
 
 fn get_prefix_path(library: &Library, app_id: &str) -> PathBuf {

@@ -58,8 +58,23 @@ fn build_command(run: &PreparedModRun, game_option: Option<&DbGame>) -> Result<C
 		return Ok(Command::from(command));
 	}
 
+	#[cfg(target_os = "linux")]
+	if let Some(game) = game_option
+		&& let Some(command) = game_provider::get_provider(game.provider_id)?
+			.get_native_run_command(game, &run.path, &run.args)?
+	{
+		let mut command = Command::from(command);
+		command
+			.envs(game_provider::get_provider(game.provider_id)?.get_native_run_environment(game)?);
+		return Ok(command);
+	}
+
 	let mut command = Command::new(&run.path);
 	command.args(&run.args);
+	if let Some(game) = game_option {
+		command
+			.envs(game_provider::get_provider(game.provider_id)?.get_native_run_environment(game)?);
+	}
 	Ok(command)
 }
 

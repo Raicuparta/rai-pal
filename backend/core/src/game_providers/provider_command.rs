@@ -38,21 +38,23 @@ impl ProviderCommand {
 
 					use crate::game_providers::game_provider;
 
+					let provider = game_provider::get_provider(game.provider_id)?;
+
 					if game.executable_os == Some(OperatingSystem::Linux) {
-						// Native Linux executable, run it directly.
-						let mut command = Command::new(path);
-						command.args(args);
+						let mut command = provider
+							.get_native_run_command(game, path, args)?
+							.unwrap_or_else(|| {
+								let mut command = Command::new(path);
+								command.args(args);
+								command
+							});
+						command.envs(provider.get_native_run_environment(game)?);
 						if let Some(parent) = path.parent() {
 							command.current_dir(parent);
 						}
 						spawn_detached(&mut command)?;
 					} else {
-						game_provider::get_provider(game.provider_id)?.run_with_wine(
-							game,
-							path,
-							args,
-							&BTreeMap::default(),
-						)?;
+						provider.run_with_wine(game, path, args, &BTreeMap::default())?;
 					}
 				}
 

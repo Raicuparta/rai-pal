@@ -1,6 +1,9 @@
 #![cfg(target_os = "linux")]
 
-use std::{fs, path::Path};
+use std::{
+	fs,
+	path::{Path, PathBuf},
+};
 
 use log;
 
@@ -8,6 +11,16 @@ use crate::{app_paths, result::Result};
 
 const DLL_OVERRIDES_SECTION: &str = "[Software\\\\Wine\\\\DllOverrides]";
 const DLL_OVERRIDE_VALUE: &str = "native,builtin";
+
+pub fn get_default_wine_prefix() -> PathBuf {
+	std::env::var_os("WINEPREFIX").map_or_else(
+		|| {
+			let home = std::env::var_os("HOME").unwrap_or_default();
+			PathBuf::from(home).join(".wine")
+		},
+		PathBuf::from,
+	)
+}
 
 // TODO: make this be a mod action?
 pub fn set_up_global_wine_overrides() -> Result {
