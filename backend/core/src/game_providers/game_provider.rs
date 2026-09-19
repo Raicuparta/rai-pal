@@ -33,6 +33,15 @@ pub enum GameProviderId {
 	Xbox,
 }
 
+/// BepInEx's bundled CoreCLR requires ICU, which the Steam Linux Runtime container
+/// doesn't ship, so it aborts on startup unless globalization is disabled.
+pub fn extend_native_run_environment(environment: &mut BTreeMap<String, String>) {
+	environment.insert(
+		"DOTNET_SYSTEM_GLOBALIZATION_INVARIANT".to_string(),
+		"1".to_string(),
+	);
+}
+
 pub trait ProviderActions {
 	fn insert_games(&self, db: &DbMutex) -> Result;
 }
@@ -64,7 +73,9 @@ pub trait WineProviderActions {
 	}
 
 	fn get_native_run_environment(&self, _game: &DbGame) -> Result<BTreeMap<String, String>> {
-		Ok(BTreeMap::new())
+		let mut environment = BTreeMap::new();
+		extend_native_run_environment(&mut environment);
+		Ok(environment)
 	}
 
 	fn get_native_run_command(

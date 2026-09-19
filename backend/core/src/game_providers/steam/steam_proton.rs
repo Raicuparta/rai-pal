@@ -10,7 +10,7 @@ use steamlocate::Library;
 use crate::{
 	game::DbGame,
 	game_providers::{
-		game_provider::WineProviderActions,
+		game_provider::{self, WineProviderActions},
 		steam::{
 			steam_dir::find_steam_dir,
 			steam_provider::Steam,
@@ -69,7 +69,9 @@ impl WineProviderActions for Steam {
 	}
 
 	fn get_native_run_environment(&self, game: &DbGame) -> Result<BTreeMap<String, String>> {
-		get_steam_launch_environment(game)
+		let mut environment = get_steam_launch_environment(game)?;
+		game_provider::extend_native_run_environment(&mut environment);
+		Ok(environment)
 	}
 
 	fn get_native_run_command(
