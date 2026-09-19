@@ -7,3 +7,4 @@ This file is here for me to track things I wanna fix for the next release. If th
 - Native linux Unreal Games usually come with a .sh launcher, which rai pal currently doesn't detect. need a whole new flow for that I guess.
 - MaybeWinePrefix should actually be Maybe?? Seems to be doing it even on native linux.
 - Changing the only mod source while a game in the games tab is selected breaks the mod list, have to close and reopen the game.
+- Make Rai Pal show an icon and cover art when installed to steam.
