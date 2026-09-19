@@ -5,6 +5,8 @@ frontend in `/frontend`.
 
 ## Formatting
 
+Ignore code warnings, clippy, format, etc, until I've confirmed that your implementation is correct. This way you don't waste time fixing tiny things that will be thrown away anyway.
+
 Run `npm run format` before committing, so formatting changes are part of your
 commit instead of showing up as unrelated churn later.
 

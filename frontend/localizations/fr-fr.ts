@@ -55,6 +55,8 @@ export const frFr: Localization = {
 		provider: "Fournisseur",
 		tags: "Tag",
 		architecture: "Architecture",
+		executableOs: "OS de l'exécutable",
+		supportedOs: "OS compatible",
 		unityBackend: "Backend Unity",
 		engine: "Moteur",
 		status: "Statut",

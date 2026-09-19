@@ -55,6 +55,8 @@ export const jaJp: Localization = {
 		provider: "プロバイダー",
 		tags: "タグ",
 		architecture: "アーキテクチャ",
+		executableOs: "実行ファイルのOS",
+		supportedOs: "対応OS",
 		unityBackend: "Unity バックエンド",
 		engine: "エンジン",
 		status: "ステータス",

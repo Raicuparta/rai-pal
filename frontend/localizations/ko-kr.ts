@@ -55,6 +55,8 @@ export const koKr: Localization = {
 		provider: "플랫폼",
 		tags: "태그",
 		architecture: "아키텍처",
+		executableOs: "실행 파일 OS",
+		supportedOs: "지원 OS",
 		unityBackend: "Unity 백엔드",
 		engine: "엔진",
 		status: "상태",

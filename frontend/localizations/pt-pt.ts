@@ -54,6 +54,8 @@ export const ptPt: Localization = {
 		provider: "Plataforma",
 		tags: "Tag",
 		architecture: "Arquitetura",
+		executableOs: "SO do executável",
+		supportedOs: "SO suportado",
 		unityBackend: "Backend do Unity",
 		engine: "Motor",
 		status: "Estado",

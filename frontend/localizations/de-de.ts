@@ -55,6 +55,8 @@ export const deDe: Localization = {
 		provider: "Anbieter",
 		tags: "Tag",
 		architecture: "Architektur",
+		executableOs: "OS der Exe",
+		supportedOs: "Unterstütztes OS",
 		unityBackend: "Unity Backend",
 		engine: "Engine",
 		status: "Status",
