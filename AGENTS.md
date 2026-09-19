@@ -3,6 +3,10 @@
 Rai Pal is a Tauri v2 desktop app: Rust backend in `/backend`, TypeScript/React
 frontend in `/frontend`.
 
+## Finding things
+
+Avoid doing system-wide searches when you're looking for stuff. If the user is likely to know where something is, just ask first before starting a long task.
+
 ## Formatting
 
 Ignore code warnings, clippy, format, etc, until I've confirmed that your implementation is correct. This way you don't waste time fixing tiny things that will be thrown away anyway.
