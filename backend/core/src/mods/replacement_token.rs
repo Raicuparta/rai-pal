@@ -122,9 +122,10 @@ pub fn replace_tokens(
 
 				let provider = game_provider::get_provider(game.provider_id)?;
 				let prefix_path = provider.get_wine_prefix_path(game)?;
-				let mut cmd = provider.get_run_with_wine_command(game)?;
+				let mut launch = provider.get_run_with_wine_command(game)?;
+				launch.arg("cmd").arg("/C").arg("echo %APPDATA%");
 
-				let output = cmd.arg("cmd").arg("/C").arg("echo %APPDATA%").output()?;
+				let output = launch.to_command().output()?;
 
 				let win_path = str::from_utf8(&output.stdout)?.trim();
 

@@ -1,4 +1,4 @@
-use std::{collections::HashMap, path::PathBuf, process::Command};
+use std::{collections::HashMap, path::PathBuf};
 
 use chrono::DateTime;
 use log::error;
@@ -9,6 +9,7 @@ use super::provider_command::{ProviderCommand, ProviderCommandAction};
 use crate::{
 	app_paths,
 	game::DbGame,
+	game_launch::GameLaunch,
 	game_providers::game_provider::{GameProviderId, ProviderActions, WineProviderActions},
 	local_database::{app_database::DbMutex, game_database::GameDatabase},
 	result::{LogErrExt, Result},
@@ -162,21 +163,21 @@ impl WineProviderActions for Itch {
 		Ok(find_itch_wine())
 	}
 
-	fn get_run_with_wine_command(&self, game: &DbGame) -> Result<Command> {
+	fn get_run_with_wine_command(&self, game: &DbGame) -> Result<GameLaunch> {
 		let wine_prefix_path = self.get_wine_prefix_path(game)?;
 		let wine_binary = self.get_wine_binary_path(game)?;
 
-		let mut cmd = Command::new(&wine_binary);
-		cmd.env("WINEPREFIX", &wine_prefix_path);
+		let mut launch = GameLaunch::new(&wine_binary);
+		launch.env("WINEPREFIX", &wine_prefix_path);
 
 		// Flatpak-bundled wine needs WINESERVER set explicitly to find its wineserver binary.
 		if let Some(wineserver) = wine_binary.parent().map(|p| p.join("wineserver"))
 			&& wineserver.exists()
 		{
-			cmd.env("WINESERVER", &wineserver);
+			launch.env("WINESERVER", &wineserver);
 		}
 
-		Ok(cmd)
+		Ok(launch)
 	}
 
 	fn set_wine_dll_overrides(&self, game: &DbGame, dll_overrides: &[String]) -> Result {

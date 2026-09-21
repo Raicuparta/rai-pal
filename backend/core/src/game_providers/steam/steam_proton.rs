@@ -2,19 +2,21 @@ use std::{
 	collections::BTreeMap,
 	fs,
 	path::{Path, PathBuf},
-	process::Command,
 };
 
 use steamlocate::Library;
 
 use crate::{
 	game::DbGame,
+	game_launch::GameLaunch,
 	game_providers::{
 		game_provider::{self, WineProviderActions},
 		steam::{
 			steam_dir::find_steam_dir,
 			steam_provider::Steam,
-			steam_runtime::{get_native_runtime_command, wrap_with_steam_runtime},
+			steam_runtime::{
+				get_native_runtime_command, wrap_game_with_steam_runtime, wrap_with_steam_runtime,
+			},
 		},
 	},
 	path_extensions::{AsValidStr, PathExt},
@@ -54,18 +56,32 @@ impl WineProviderActions for Steam {
 			.join("wine"))
 	}
 
-	fn get_run_with_wine_command(&self, game: &DbGame) -> Result<Command> {
+	fn get_run_with_wine_command(&self, game: &DbGame) -> Result<GameLaunch> {
 		let wine_prefix_path = self.get_wine_prefix_path(game)?;
 		let compat_data_path = wine_prefix_path.try_parent()?;
 		let wine_binary_path = self.get_wine_binary_path(game)?;
 
-		let mut cmd = wrap_with_steam_runtime(compat_data_path, &wine_binary_path);
-		cmd.env("WINEPREFIX", &wine_prefix_path)
-			.env("STEAM_COMPAT_DATA_PATH", compat_data_path)
-			.env("WINEFSYNC", "1")
-			.envs(get_steam_launch_environment(game)?);
+		build_wine_command(
+			game,
+			&wine_prefix_path,
+			compat_data_path,
+			&wine_binary_path,
+			false,
+		)
+	}
 
-		Ok(cmd)
+	fn get_game_run_with_wine_command(&self, game: &DbGame) -> Result<GameLaunch> {
+		let wine_prefix_path = self.get_wine_prefix_path(game)?;
+		let compat_data_path = wine_prefix_path.try_parent()?;
+		let wine_binary_path = self.get_wine_binary_path(game)?;
+
+		build_wine_command(
+			game,
+			&wine_prefix_path,
+			compat_data_path,
+			&wine_binary_path,
+			true,
+		)
 	}
 
 	fn get_native_run_environment(&self, game: &DbGame) -> Result<BTreeMap<String, String>> {
@@ -76,11 +92,15 @@ impl WineProviderActions for Steam {
 
 	fn get_native_run_command(
 		&self,
-		_game: &DbGame,
+		game: &DbGame,
 		exe_path: &Path,
 		args: &[String],
-	) -> Result<Option<Command>> {
-		Ok(get_native_runtime_command(exe_path, args))
+	) -> Result<Option<GameLaunch>> {
+		Ok(get_native_runtime_command(
+			&game.external_id,
+			exe_path,
+			args,
+		))
 	}
 
 	fn set_wine_dll_overrides(&self, game: &DbGame, dll_overrides: &[String]) -> Result {
@@ -88,6 +108,28 @@ impl WineProviderActions for Steam {
 		wine::set_wine_dll_overrides_in_reg(&prefix_path, dll_overrides)
 			.map_err(|err| Error::SteamProton(err.to_string()))
 	}
+}
+
+fn build_wine_command(
+	game: &DbGame,
+	wine_prefix_path: &Path,
+	compat_data_path: &Path,
+	wine_binary_path: &Path,
+	launch_game: bool,
+) -> Result<GameLaunch> {
+	let mut launch = if launch_game {
+		wrap_game_with_steam_runtime(&game.external_id, compat_data_path, wine_binary_path)
+	} else {
+		wrap_with_steam_runtime(compat_data_path, wine_binary_path)
+	};
+
+	launch
+		.env("WINEPREFIX", wine_prefix_path)
+		.env("STEAM_COMPAT_DATA_PATH", compat_data_path)
+		.env("WINEFSYNC", "1")
+		.envs(&get_steam_launch_environment(game)?);
+
+	Ok(launch)
 }
 
 fn get_steam_launch_environment(game: &DbGame) -> Result<BTreeMap<String, String>> {

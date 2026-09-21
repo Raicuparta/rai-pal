@@ -15,10 +15,10 @@ use crate::{
 		game_engine::{EngineBrand, EngineVersionRange},
 		unity::UnityBackend,
 	},
+	game_launch::{GameLaunch, spawn_game},
 	game_providers::game_provider,
 	http::{self},
 	mods::{mod_config::ModConfig, replacement_token::replace_tokens},
-	open_better::spawn_detached,
 	operating_system::OperatingSystem,
 	path_extensions::PathExt,
 	progress_status::ProgressStatus,
@@ -279,29 +279,28 @@ impl GameMod {
 					&run.wine_environment,
 				)?;
 			} else {
-				let mut command = match game_option {
+				let mut launch = match game_option {
 					Some(game) => game_provider::get_provider(game.provider_id)?
 						.get_native_run_command(game, &run.path, &run.args)?,
 					None => None,
 				}
-				.unwrap_or_else(|| {
-					let mut command = std::process::Command::new(&run.path);
-					command.args(&run.args);
-					command
-				});
+				.unwrap_or_else(|| GameLaunch::new(&run.path));
+				launch.args(&run.args);
 				if let Some(game) = game_option {
-					command.envs(
-						game_provider::get_provider(game.provider_id)?
+					launch.envs(
+						&game_provider::get_provider(game.provider_id)?
 							.get_native_run_environment(game)?,
 					);
 				}
-				command.current_dir(run.path.try_parent()?);
-				spawn_detached(&mut command)?;
+				launch.cwd = run.path.try_parent().ok().map(Path::to_path_buf);
+				spawn_game(&launch)?;
 			}
 		}
 
 		#[cfg(target_os = "windows")]
 		{
+			use crate::open_better::spawn_detached;
+
 			let mut command = std::process::Command::new(&run.path);
 			command.current_dir(run.path.try_parent()?).args(&run.args);
 			spawn_detached(&mut command)?;

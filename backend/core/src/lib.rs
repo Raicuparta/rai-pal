@@ -7,6 +7,7 @@ pub mod debug;
 pub mod files;
 pub mod game;
 pub mod game_engines;
+pub mod game_launch;
 pub mod game_providers;
 pub mod game_tag;
 pub mod game_title;

@@ -3,9 +3,7 @@ use std::path::PathBuf;
 use rai_pal_proc_macros::serializable_enum;
 
 use crate::{
-	game::DbGame,
-	open_better::{open_detached_better, spawn_detached},
-	operating_system::OperatingSystem,
+	game::DbGame, open_better::open_detached_better, operating_system::OperatingSystem,
 	result::Result,
 };
 
@@ -34,25 +32,25 @@ impl ProviderCommand {
 			Self::Path(path, args) => {
 				#[cfg(target_os = "linux")]
 				{
-					use std::{collections::BTreeMap, process::Command};
+					use std::collections::BTreeMap;
 
-					use crate::game_providers::game_provider;
+					use crate::{
+						game_launch::{GameLaunch, spawn_game},
+						game_providers::game_provider,
+					};
 
 					let provider = game_provider::get_provider(game.provider_id)?;
 
 					if game.executable_os == Some(OperatingSystem::Linux) {
-						let mut command = provider
+						let mut launch = provider
 							.get_native_run_command(game, path, args)?
-							.unwrap_or_else(|| {
-								let mut command = Command::new(path);
-								command.args(args);
-								command
-							});
-						command.envs(provider.get_native_run_environment(game)?);
+							.unwrap_or_else(|| GameLaunch::new(path));
+						launch.args(args);
+						launch.envs(&provider.get_native_run_environment(game)?);
 						if let Some(parent) = path.parent() {
-							command.current_dir(parent);
+							launch.cwd = Some(parent.to_path_buf());
 						}
-						spawn_detached(&mut command)?;
+						spawn_game(&launch)?;
 					} else {
 						provider.run_with_wine(game, path, args, &BTreeMap::default())?;
 					}
@@ -61,6 +59,8 @@ impl ProviderCommand {
 				#[cfg(target_os = "windows")]
 				{
 					use std::process::Command;
+
+					use crate::open_better::spawn_detached;
 
 					let mut command = Command::new(path);
 					command.args(args);

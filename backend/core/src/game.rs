@@ -221,9 +221,10 @@ impl DbGame {
 
 			let provider = game_provider::get_provider(self.provider_id)?;
 			let prefix_path = provider.get_wine_prefix_path(self)?;
-			let mut cmd = provider.get_run_with_wine_command(self)?;
+			let mut launch = provider.get_run_with_wine_command(self)?;
+			launch.arg("cmd").arg("/C").arg("echo %APPDATA%");
 
-			let output = cmd.arg("cmd").arg("/C").arg("echo %APPDATA%").output()?;
+			let output = launch.to_command().output()?;
 
 			let win_path = str::from_utf8(&output.stdout)?.trim();
 
