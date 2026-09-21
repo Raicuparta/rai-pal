@@ -17,8 +17,6 @@ use crate::{
 };
 
 const AUTH_URL_BASE: &str = "https://auth.raicuparta.com";
-const AUTH_KEYRING_SERVICE: &str = "rai-pal";
-const AUTH_KEYRING_ACCOUNT: &str = "auth-session-token";
 
 #[derive(Clone, Debug, serde::Serialize, specta::Type)]
 #[serde(rename_all = "camelCase")]
@@ -141,22 +139,14 @@ async fn parse_auth_callback(
 	}
 }
 
-fn get_auth_keyring_entry() -> Result<keyring::Entry> {
-	keyring::Entry::new(AUTH_KEYRING_SERVICE, AUTH_KEYRING_ACCOUNT).map_err(|error| {
-		Error::Auth(format!(
-			"Failed to open auth session keyring entry: {error}"
-		))
-	})
+fn get_auth_session_path() -> Result<PathBuf> {
+	app_paths::app_data_file("auth-session.json")
 }
 
 pub async fn logout_auth() -> Result {
-	if let Ok(entry) = get_auth_keyring_entry() {
-		let _ = entry.delete_credential();
-	}
-
-	let fallback_path = app_paths::app_data_file("auth-session.json")?;
-	if fallback_path.exists() {
-		tokio::fs::remove_file(fallback_path).await?;
+	let session_path = get_auth_session_path()?;
+	if session_path.exists() {
+		tokio::fs::remove_file(session_path).await?;
 	}
 
 	Ok(())
@@ -164,29 +154,20 @@ pub async fn logout_auth() -> Result {
 
 async fn save_auth_session_file(session: &AuthSavedSession) -> Result {
 	let session_json = serde_json::to_string(session)?;
-	let fallback_path = app_paths::app_data_file("auth-session.json")?;
+	let session_path = get_auth_session_path()?;
 
-	// Try storing in the secure keyring first
-	if let Ok(entry) = get_auth_keyring_entry()
-		&& entry.set_password(&session_json).is_ok()
-	{
-		let _ = tokio::fs::remove_file(&fallback_path).await;
-		return Ok(());
-	}
-
-	// Keyring not available or failed; write to fallback file
-	if let Some(parent) = fallback_path.parent() {
+	if let Some(parent) = session_path.parent() {
 		tokio::fs::create_dir_all(parent).await?;
 	}
-	tokio::fs::write(&fallback_path, &session_json).await?;
+	tokio::fs::write(&session_path, &session_json).await?;
 
 	#[cfg(unix)]
 	{
 		use std::os::unix::fs::PermissionsExt;
-		if let Ok(metadata) = tokio::fs::metadata(&fallback_path).await {
+		if let Ok(metadata) = tokio::fs::metadata(&session_path).await {
 			let mut permissions = metadata.permissions();
 			permissions.set_mode(0o600);
-			let _ = tokio::fs::set_permissions(&fallback_path, permissions).await;
+			let _ = tokio::fs::set_permissions(&session_path, permissions).await;
 		}
 	}
 
@@ -194,29 +175,16 @@ async fn save_auth_session_file(session: &AuthSavedSession) -> Result {
 }
 
 fn read_auth_session_file_optional() -> Result<Option<AuthSavedSession>> {
-	// Try reading from keyring
-	if let Ok(entry) = get_auth_keyring_entry()
-		&& let Ok(session_json) = entry.get_password()
-	{
-		let session = serde_json::from_str::<AuthSavedSession>(&session_json).map_err(|error| {
-			Error::Auth(format!(
-				"Failed to parse auth session from keyring: {error}"
-			))
-		})?;
-		return Ok(Some(session));
-	}
-
-	// Try fallback file
-	let fallback_path = app_paths::app_data_file("auth-session.json")?;
-	if !fallback_path.exists() {
+	let session_path = get_auth_session_path()?;
+	if !session_path.exists() {
 		return Ok(None);
 	}
 
-	let session_json = std::fs::read_to_string(&fallback_path)?;
+	let session_json = std::fs::read_to_string(&session_path)?;
 	let session = serde_json::from_str::<AuthSavedSession>(&session_json).map_err(|error| {
 		Error::Auth(format!(
 			"Failed to parse auth session from file `{}`: {error}",
-			fallback_path.display()
+			session_path.display()
 		))
 	})?;
 

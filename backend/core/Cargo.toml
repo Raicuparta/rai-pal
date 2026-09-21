@@ -35,12 +35,6 @@ steamlocate = "2.1.1"
 unicode-normalization = "0.1.25"
 uuid = { version = "1.23.1", features = ["v4"] }
 zip = { version = "8.6.0", default-features = false, features = ["deflate"] }
-keyring = { version = "3.6.3", features = [
-  "windows-native",
-  "linux-native-sync-persistent",
-  "crypto-rust",
-  "sync-secret-service",
-] }
 futures-util = "0.3"
 memchr = "2.8.3"
 libc = "0.2"
