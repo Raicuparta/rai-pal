@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { showAppNotification } from "@components/app-notifications";
 import { check as checkUpdate, Update } from "@tauri-apps/plugin-updater";
 import { relaunch } from "@tauri-apps/plugin-process";
 
@@ -67,8 +68,14 @@ export function useAppUpdater() {
 	const installUpdate = useCallback(async () => {
 		const update = pendingUpdate.current;
 		if (!update) return;
-		await update.downloadAndInstall();
-		await relaunch();
+		try {
+			console.log(`Downloading and installing update ${update.version}`);
+			await update.downloadAndInstall();
+			console.log("Update installed, relaunching Rai Pal...");
+			await relaunch();
+		} catch (error) {
+			showAppNotification(`Failed to install app update: ${error}`, "error");
+		}
 	}, []);
 
 	const ignoreUpdate = useCallback(() => {

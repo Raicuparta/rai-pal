@@ -12,6 +12,7 @@
 		"dialog:allow-ask",
 		"updater:allow-check",
 		"updater:default",
+		"process:default",
 		"os:allow-locale",
 		"deep-link:default"
 	]

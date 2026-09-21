@@ -1150,6 +1150,7 @@ fn main() {
 				.build(),
 		)
 		.plugin(tauri_plugin_dialog::init())
+		.plugin(tauri_plugin_process::init())
 		.plugin(tauri_plugin_updater::Builder::default().build())
 		.manage(app_state)
 		.invoke_handler(builder.invoke_handler())
