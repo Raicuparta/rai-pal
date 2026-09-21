@@ -7,12 +7,7 @@ import { ModsTable } from "./mods-table";
 import { SubPage } from "@components/sub-page";
 import { CommandButton } from "@components/command-button";
 import { useLocalization } from "@hooks/use-localization";
-import { useIsModRunning } from "@hooks/use-running-mods";
-import {
-	IconDownload,
-	IconPlayerPlay,
-	IconPlayerStop,
-} from "@tabler/icons-react";
+import { IconDownload, IconPlayerPlay } from "@tabler/icons-react";
 
 type Props = {
 	readonly mod: GameMod;
@@ -21,7 +16,6 @@ type Props = {
 
 export function ModModal(props: Props) {
 	const { t } = useLocalization("modModal");
-	const isRunning = useIsModRunning(props.mod.id);
 	const wrappedMod = useMemo(
 		() => ({ [props.mod.id]: props.mod }),
 		[props.mod],
@@ -42,15 +36,10 @@ export function ModModal(props: Props) {
 				gap="xl"
 			>
 				<Stack>
-					{(props.mod.runStandalone || props.mod.runManaged) && (
+					{props.mod.runStandalone && (
 						<CommandButton
-							leftSection={isRunning ? <IconPlayerStop /> : <IconPlayerPlay />}
+							leftSection={<IconPlayerPlay />}
 							onClick={async () => {
-								if (isRunning) {
-									await commands.stopMod(props.mod.id);
-									return;
-								}
-
 								await commands.runMod(props.mod.id, null, null);
 
 								commands.sendAnalyticsEvent("RunMod", {
@@ -58,24 +47,23 @@ export function ModModal(props: Props) {
 								});
 							}}
 						>
-							{isRunning ? t("stopMod") : t("runMod")}
+							{t("runMod")}
 						</CommandButton>
 					)}
-					{(props.mod.runStandalone || props.mod.runManaged) &&
-						props.mod.install && (
-							<CommandButton
-								leftSection={<IconDownload />}
-								onClick={async () => {
-									await commands.installMod(props.mod.id, null, null);
+					{props.mod.runStandalone && props.mod.install && (
+						<CommandButton
+							leftSection={<IconDownload />}
+							onClick={async () => {
+								await commands.installMod(props.mod.id, null, null);
 
-									commands.sendAnalyticsEvent("InstallMod", {
-										mod_id: props.mod.id,
-									});
-								}}
-							>
-								{t("downloadMod")}
-							</CommandButton>
-						)}
+								commands.sendAnalyticsEvent("InstallMod", {
+									mod_id: props.mod.id,
+								});
+							}}
+						>
+							{t("downloadMod")}
+						</CommandButton>
+					)}
 					<DebugData data={props.mod} />
 				</Stack>
 			</Stack>

@@ -51,8 +51,6 @@ export const commands = {
 	removeUrlModSource: (url: string) => __TAURI_INVOKE<null>("remove_url_mod_source", { url }),
 	resetSteamCache: () => __TAURI_INVOKE<null>("reset_steam_cache"),
 	runMod: (modId: string, providerIdOption: "Epic" | "Gog" | "Itch" | "Manual" | "Steam" | "Xbox" | null, gameIdOption: string | null) => __TAURI_INVOKE<null>("run_mod", { modId, providerIdOption, gameIdOption }),
-	getRunningMods: () => __TAURI_INVOKE<RunningModInfo[]>("get_running_mods"),
-	stopMod: (modId: string) => __TAURI_INVOKE<null>("stop_mod", { modId }),
 	setSelectedGame: (providerId: "Epic" | "Gog" | "Itch" | "Manual" | "Steam" | "Xbox" | null, gameId: string | null) => __TAURI_INVOKE<null>("set_selected_game", { providerId, gameId }),
 	setUrlModSourceEnabled: (url: string, enabled: boolean) => __TAURI_INVOKE<null>("set_url_mod_source_enabled", { url, enabled }),
 	runProviderCommand: (providerId: GameProviderId, gameId: string, providerCommandAciton: ProviderCommandAction) => __TAURI_INVOKE<null>("run_provider_command", { providerId, gameId, providerCommandAciton }),
@@ -68,7 +66,6 @@ export const events = {
 	addModSource: makeEvent<AddModSource>("add-mod-source"),
 	appDatabaseChanged: makeEvent<AppDatabaseChanged>("app-database-changed"),
 	executedProviderCommand: makeEvent<ExecutedProviderCommand>("executed-provider-command"),
-	modRunStateChanged: makeEvent<ModRunStateChanged>("mod-run-state-changed"),
 	refreshGame: makeEvent<RefreshGame>("refresh-game"),
 	selectGame: makeEvent<SelectGame>("select-game"),
 };
@@ -139,7 +136,7 @@ export type EngineVersionRange = {
 	maximum: EngineVersionNumbers | null,
 };
 
-export type Error = "Tauri" | "Core" | "Io" | "Rusql" | "SerdeJson" | "SystemTimeError" | ({ FailedToAccessStateData: string }) & { LinuxOnly?: never; ModAlreadyRunning?: never } | ({ ModAlreadyRunning: string }) & { FailedToAccessStateData?: never; LinuxOnly?: never } | ({ LinuxOnly: null }) & { FailedToAccessStateData?: never; ModAlreadyRunning?: never };
+export type Error = "Tauri" | "Core" | "Io" | "Rusql" | "SerdeJson" | ({ FailedToAccessStateData: string }) & { LinuxOnly?: never } | ({ LinuxOnly: null }) & { FailedToAccessStateData?: never };
 
 export type Event = "InstallMod" | "UninstallMod" | "UpdateMod" | "RunMod" | "ProviderCommand" | "StartApp" | "UserSignIn" | "ErrorNotification";
 
@@ -183,7 +180,6 @@ export type GameMod = {
 	install: ModInstall | null,
 	runForGame: ModRun | null,
 	runStandalone: ModRun | null,
-	runManaged: ModRun | null,
 	hash: string | null,
 };
 
@@ -265,12 +261,6 @@ export type ModRun = {
 	os: OperatingSystem | null,
 };
 
-export type ModRunStateChanged = {
-	mod_id: string,
-	running: boolean,
-	exit_code: number | null,
-};
-
 export type OperatingSystem = "Windows" | "Linux";
 
 export type ProgressStatus = { phase: "pending"; id: string; name: string } | { phase: "inProgress"; id: string; progress: number | null } | { phase: "finished"; id: string } | { phase: "failed"; id: string; error: string };
@@ -289,12 +279,6 @@ export type RemoteConfig = {
 
 export type RemoteConfigs = {
 	configs: RemoteConfig[],
-};
-
-export type RunningModInfo = {
-	modId: string,
-	pid: number,
-	startedAt: number,
 };
 
 export type ScanProgress = {

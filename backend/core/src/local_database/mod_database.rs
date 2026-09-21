@@ -106,7 +106,6 @@ impl ModDatabase for DbMutex {
 				install TEXT,
 				run_for_game TEXT,
 				run_standalone TEXT,
-				run_managed TEXT,
 				hash TEXT,
 				family TEXT,
 				created_at INTEGER
@@ -166,7 +165,6 @@ impl ModDatabase for DbMutex {
 				install,
 				run_for_game,
 				run_standalone,
-				run_managed,
 				hash,
 				hide_from_game_mods_list,
 				family,
@@ -197,11 +195,10 @@ impl ModDatabase for DbMutex {
 					install: row.get_json(16)?,
 					run_for_game: row.get_json(17)?,
 					run_standalone: row.get_json(18)?,
-					run_managed: row.get_json(19)?,
-					hash: row.get(20)?,
-					hide_from_game_mods_list: row.get(21)?,
-					family: row.get(22)?,
-					scope: row.get(23)?,
+					hash: row.get(19)?,
+					hide_from_game_mods_list: row.get(20)?,
+					family: row.get(21)?,
+					scope: row.get(22)?,
 				})
 			})?)
 	}
@@ -289,7 +286,6 @@ impl ModDatabase for DbMutex {
 				install,
 				run_for_game,
 				run_standalone,
-				run_managed,
 				hash,
 				hide_from_game_mods_list,
 				family,
@@ -318,11 +314,10 @@ impl ModDatabase for DbMutex {
 					install: row.get_json(16)?,
 					run_for_game: row.get_json(17)?,
 					run_standalone: row.get_json(18)?,
-					run_managed: row.get_json(19)?,
-					hash: row.get(20)?,
-					hide_from_game_mods_list: row.get(21)?,
-					family: row.get(22)?,
-					scope: row.get(23)?,
+					hash: row.get(19)?,
+					hide_from_game_mods_list: row.get(20)?,
+					family: row.get(21)?,
+					scope: row.get(22)?,
 				})
 			})?
 			.filter_map(|game_mod| match game_mod {
@@ -748,13 +743,12 @@ fn try_insert_mod(
 				install,
 				run_for_game,
 				run_standalone,
-				run_managed,
 				hide_from_game_mods_list,
 				hash,
 				family,
 				created_at,
 				scope
-			) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26)",
+			) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25)",
 		)?
 		.execute(rusqlite::params![
 			scoped_id.as_ref(),
@@ -777,7 +771,6 @@ fn try_insert_mod(
 			serialize_json_option(game_mod.install.as_ref())?,
 			serialize_json_option(game_mod.run_for_game.as_ref())?,
 			serialize_json_option(game_mod.run_standalone.as_ref())?,
-			serialize_json_option(game_mod.run_managed.as_ref())?,
 			game_mod.hide_from_game_mods_list,
 			game_mod.hash,
 			game_mod.family,

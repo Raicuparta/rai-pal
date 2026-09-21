@@ -4,14 +4,12 @@ import { AppNotifications } from "@components/app-notifications";
 import { useAppUpdater } from "@hooks/use-app-updater";
 import { AppTabs } from "@components/app-tabs";
 import { useAppEvent } from "@hooks/use-app-event";
-import { useRunningMods } from "@hooks/use-running-mods";
 import { ConfirmModSourceModal } from "@components/tools/confirm-mod-source-modal";
 import { AppUpdateModal } from "@components/app-update-modal";
 
 function App() {
 	const { availableUpdate, installUpdate, ignoreUpdate } = useAppUpdater();
 	useData();
-	useRunningMods();
 
 	const [pendingSourceUrl, setPendingSourceUrl] = useState<string | null>(null);
 

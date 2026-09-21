@@ -19,7 +19,6 @@ pub mod mods;
 pub mod open_better;
 pub mod operating_system;
 pub mod path_extensions;
-pub mod process;
 pub mod progress_status;
 pub mod remote_config;
 pub mod remote_game;

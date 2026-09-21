@@ -49,7 +49,6 @@ pub struct GameMod {
 	pub install: Option<ModInstall>,
 	pub run_for_game: Option<ModRun>,
 	pub run_standalone: Option<ModRun>,
-	pub run_managed: Option<ModRun>,
 	pub hash: Option<String>,
 }
 
@@ -214,15 +213,6 @@ impl GameMod {
 
 	pub fn prepare_run(&self, game_option: Option<&DbGame>) -> Result<PreparedModRun> {
 		self.prepare_run_inner(self.get_run(game_option)?, game_option)
-	}
-
-	pub fn prepare_managed_run(&self, game_option: Option<&DbGame>) -> Result<PreparedModRun> {
-		let mod_run = self
-			.run_managed
-			.as_ref()
-			.ok_or_else(|| Error::ModInfoMissing(self.id.clone(), "run_managed".to_string()))?;
-
-		self.prepare_run_inner(mod_run, game_option)
 	}
 
 	fn prepare_run_inner(

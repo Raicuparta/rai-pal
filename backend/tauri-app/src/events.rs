@@ -18,13 +18,6 @@ pub struct RefreshGame(pub GameProviderId, pub String);
 pub struct AppDatabaseChanged();
 
 #[serializable_event]
-pub struct ModRunStateChanged {
-	pub mod_id: String,
-	pub running: bool,
-	pub exit_code: Option<i32>,
-}
-
-#[serializable_event]
 pub struct ExecutedProviderCommand;
 
 #[serializable_event]
@@ -49,7 +42,6 @@ pub fn collect_events() -> tauri_specta::Events {
 	tauri_specta::collect_events![
 		RefreshGame,
 		AppDatabaseChanged,
-		ModRunStateChanged,
 		ExecutedProviderCommand,
 		SelectGame,
 		AddModSource,
