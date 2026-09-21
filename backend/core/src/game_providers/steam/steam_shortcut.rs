@@ -13,6 +13,15 @@ use crate::{
 
 const RAI_PAL_SHORTCUT_NAME: &str = "Rai Pal";
 
+const SHORTCUT_ARTWORK_FILES: [(&str, &str); 6] = [
+	("", "grid.png"),
+	("p", "portrait.png"),
+	("_hero", "hero.png"),
+	("_logo", "logo.png"),
+	("_header", "header.png"),
+	("_icon", "icon.png"),
+];
+
 #[derive(Debug, Clone, Default)]
 struct ShortcutSummary {
 	app_name: Option<String>,
@@ -20,7 +29,10 @@ struct ShortcutSummary {
 	start_byte: usize,
 	end_byte: usize,
 }
-pub fn add_current_executable_to_steam_shortcuts(executable_path: &Path) -> Result {
+pub fn add_current_executable_to_steam_shortcuts(
+	executable_path: &Path,
+	artwork_dir: &Path,
+) -> Result {
 	let steam_dir = find_steam_dir()?;
 	let shortcuts_paths = get_target_shortcuts_paths(steam_dir.path())?;
 	log::info!(
@@ -50,6 +62,7 @@ pub fn add_current_executable_to_steam_shortcuts(executable_path: &Path) -> Resu
 			&quoted_executable,
 			&start_dir,
 			app_id,
+			artwork_dir,
 		)?;
 	}
 
@@ -62,6 +75,7 @@ fn add_shortcut_to_path(
 	executable: &str,
 	start_dir: &str,
 	app_id: u32,
+	artwork_dir: &Path,
 ) -> Result {
 	if let Some(parent) = shortcuts_path.parent() {
 		fs::create_dir_all(parent)?;
@@ -89,6 +103,14 @@ fn add_shortcut_to_path(
 		shortcuts_bytes.drain(*start..*end);
 	}
 
+	let icon = match write_artwork(shortcuts_path, app_id, artwork_dir) {
+		Ok(icon_path) => icon_path.try_to_str()?.to_string(),
+		Err(error) => {
+			log::warn!("Failed to write Rai Pal Steam shortcut artwork: {error}");
+			String::new()
+		}
+	};
+
 	max_index += 1;
 
 	append_shortcut_entry(
@@ -97,6 +119,7 @@ fn add_shortcut_to_path(
 		app_name,
 		executable,
 		start_dir,
+		&icon,
 		app_id,
 	);
 
@@ -107,6 +130,20 @@ fn add_shortcut_to_path(
 	fs::write(shortcuts_path, shortcuts_bytes)?;
 
 	Ok(())
+}
+
+fn write_artwork(shortcuts_path: &Path, app_id: u32, artwork_dir: &Path) -> Result<PathBuf> {
+	let grid_dir = shortcuts_path.try_parent()?.join("grid");
+	fs::create_dir_all(&grid_dir)?;
+
+	for (suffix, file_name) in SHORTCUT_ARTWORK_FILES {
+		fs::copy(
+			artwork_dir.join(file_name),
+			grid_dir.join(format!("{app_id}{suffix}.png")),
+		)?;
+	}
+
+	Ok(grid_dir.join(format!("{app_id}_icon.png")))
 }
 
 fn create_numbered_backup(shortcuts_path: &Path) -> Result {
@@ -314,6 +351,7 @@ fn append_shortcut_entry(
 	app_name: &str,
 	executable: &str,
 	start_dir: &str,
+	icon: &str,
 	app_id: u32,
 ) {
 	// A valid shortcuts.vdf ends with TWO 0x08 bytes (one for the `shortcuts` dictionary,
@@ -330,7 +368,7 @@ fn append_shortcut_entry(
 	push_string_field(shortcuts_bytes, "appname", app_name);
 	push_string_field(shortcuts_bytes, "Exe", executable);
 	push_string_field(shortcuts_bytes, "StartDir", start_dir);
-	push_string_field(shortcuts_bytes, "icon", "");
+	push_string_field(shortcuts_bytes, "icon", icon);
 	push_i32_field(shortcuts_bytes, "IsHidden", 0);
 	push_i32_field(shortcuts_bytes, "AllowDesktopConfig", 1);
 	push_i32_field(shortcuts_bytes, "AllowOverlay", 0);

@@ -838,9 +838,10 @@ async fn reset_steam_cache(handle: AppHandle) -> Result {
 
 #[tauri::command]
 #[specta::specta]
-async fn add_rai_pal_steam_shortcut() -> Result {
+async fn add_rai_pal_steam_shortcut(handle: AppHandle) -> Result {
 	let current_executable = std::env::current_exe()?;
-	steam_shortcut::add_current_executable_to_steam_shortcuts(&current_executable)?;
+	let artwork_dir = handle.path().resource_dir()?.join("steam-artwork");
+	steam_shortcut::add_current_executable_to_steam_shortcuts(&current_executable, &artwork_dir)?;
 
 	Ok(())
 }
