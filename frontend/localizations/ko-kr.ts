@@ -232,6 +232,13 @@ export const koKr: Localization = {
 			"파일이 생성됐어요. 적용하려면 로그아웃 후 다시 로그인하거나 컴퓨터를 다시 시작해야 해요.",
 	},
 
+	appUpdate: {
+		updateAvailableTitle: "Rai Pal {version}",
+		noChangelog: "(변경 내역 없음)",
+		ignoreUpdate: "무시 (Rai Pal을 다시 시작할 때까지 다시 묻지 않음)",
+		updateNow: "지금 업데이트",
+	},
+
 	debugData: {
 		debugDataTitle: "디버그 데이터",
 		debugDataCopy: "디버그 데이터 복사",

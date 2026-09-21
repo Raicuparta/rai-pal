@@ -239,6 +239,14 @@ export const deDe: Localization = {
 			"Die Datei wurde geschrieben. Du musst dich abmelden und wieder anmelden oder deinen Computer neu starten, damit die Änderungen wirksam werden.",
 	},
 
+	appUpdate: {
+		updateAvailableTitle: "Rai Pal {version}",
+		noChangelog: "(Kein Changelog)",
+		ignoreUpdate:
+			"Ignorieren (wird bis zum Neustart von Rai Pal nicht erneut gefragt)",
+		updateNow: "Jetzt aktualisieren",
+	},
+
 	debugData: {
 		debugDataTitle: "Debug-Daten",
 		debugDataCopy: "Debug-Daten kopieren",

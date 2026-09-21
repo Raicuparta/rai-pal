@@ -1,61 +1,49 @@
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
-import { check as checkUpdate } from "@tauri-apps/plugin-updater";
+import { check as checkUpdate, Update } from "@tauri-apps/plugin-updater";
 import { relaunch } from "@tauri-apps/plugin-process";
-import { ask } from "@tauri-apps/plugin-dialog";
 
 const CHECK_INTERVAL_MILLISECONDS = 120000;
+
+export type AvailableUpdate = {
+	readonly version: string;
+	readonly body?: string;
+};
 
 export function useAppUpdater() {
 	// Use this ID as a way to prevent multiple checks at once.
 	const updateCheckId = useRef(0);
+	const pendingUpdate = useRef<Update | null>(null);
+	const interval = useRef<ReturnType<typeof setInterval> | undefined>(
+		undefined,
+	);
+	const [availableUpdate, setAvailableUpdate] =
+		useState<AvailableUpdate | null>(null);
 
 	useEffect(() => {
-		let shouldSkipUpdate = false;
-
 		function triggerUpdateCheck() {
 			// Increment the ID and use it for this check.
 			updateCheckId.current++;
 			const currentCheckId = updateCheckId.current;
 
 			checkUpdate()
-				.then(async (update) => {
+				.then((update) => {
 					if (currentCheckId !== updateCheckId.current) {
 						// If the IDs are different, that means a new check has started in the meantime.
 						return;
 					}
 
-					if (!update?.available || shouldSkipUpdate) return;
+					if (!update?.available || pendingUpdate.current) return;
 
 					console.log(
 						`Received update ${update.version}, ${update.date}, ${update.body}`,
 					);
 
-					// Skip any checks that happen while this one is open.
-					shouldSkipUpdate = true;
-
-					const userAcceptedUpdate = await ask(
-						update.body || "(no changelog)",
-						{
-							kind: "info",
-							cancelLabel: "Ignore (won't ask again until you restart Rai Pal)",
-							okLabel: "Update now",
-							title: `Rai Pal Update ${update.version}`,
-						},
-					);
-
-					shouldSkipUpdate = false;
-
-					if (!userAcceptedUpdate) {
-						// If the user says no, let's not bother them any longer during this session.
-						shouldSkipUpdate = true;
-						clearInterval(interval);
-
-						return;
-					}
-
-					await update.downloadAndInstall();
-					await relaunch();
+					pendingUpdate.current = update;
+					setAvailableUpdate({
+						version: update.version,
+						body: update.body,
+					});
 				})
 				.catch((error) => {
 					console.error(`Failed to get app updates: ${error}`, "error");
@@ -66,13 +54,29 @@ export function useAppUpdater() {
 		triggerUpdateCheck();
 
 		// Subsequent checks every so often.
-		const interval = setInterval(
+		interval.current = setInterval(
 			triggerUpdateCheck,
 			CHECK_INTERVAL_MILLISECONDS,
 		);
 
 		return () => {
-			clearInterval(interval);
+			clearInterval(interval.current);
 		};
 	}, []);
+
+	const installUpdate = useCallback(async () => {
+		const update = pendingUpdate.current;
+		if (!update) return;
+		await update.downloadAndInstall();
+		await relaunch();
+	}, []);
+
+	const ignoreUpdate = useCallback(() => {
+		// If the user says no, let's not bother them any longer during this session.
+		pendingUpdate.current = null;
+		setAvailableUpdate(null);
+		clearInterval(interval.current);
+	}, []);
+
+	return { availableUpdate, installUpdate, ignoreUpdate };
 }

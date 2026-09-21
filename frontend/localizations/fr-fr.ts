@@ -239,6 +239,14 @@ export const frFr: Localization = {
 			"Le fichier a été écrit. Vous devrez vous déconnecter et vous reconnecter, ou redémarrer votre ordinateur, pour que les modifications prennent effet.",
 	},
 
+	appUpdate: {
+		updateAvailableTitle: "Rai Pal {version}",
+		noChangelog: "(Pas de journal des modifications)",
+		ignoreUpdate:
+			"Ignorer (ne sera plus demandé jusqu'au redémarrage de Rai Pal)",
+		updateNow: "Mettre à jour maintenant",
+	},
+
 	debugData: {
 		debugDataTitle: "Données de débogage",
 		debugDataCopy: "Copier les données de débogage",

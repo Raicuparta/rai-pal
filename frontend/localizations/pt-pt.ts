@@ -235,6 +235,13 @@ export const ptPt: Localization = {
 			"O ficheiro foi escrito. Precisas de terminar sessão e voltar a iniciar, ou reiniciar o computador, para as alterações fazerem efeito.",
 	},
 
+	appUpdate: {
+		updateAvailableTitle: "Rai Pal {version}",
+		noChangelog: "(Sem registo de alterações)",
+		ignoreUpdate: "Ignorar (não voltará a perguntar até reiniciares o Rai Pal)",
+		updateNow: "Atualizar agora",
+	},
+
 	debugData: {
 		debugDataTitle: "Dados de depuração",
 		debugDataCopy: "Copiar dados de depuração",

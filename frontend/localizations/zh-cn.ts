@@ -229,6 +229,13 @@ export const zhCn: Localization = {
 			"文件已写入。你需要注销后重新登录，或重启计算机，更改才能生效。",
 	},
 
+	appUpdate: {
+		updateAvailableTitle: "Rai Pal {version}",
+		noChangelog: "（无更新日志）",
+		ignoreUpdate: "忽略（在重新启动 Rai Pal 之前不再询问）",
+		updateNow: "立即更新",
+	},
+
 	debugData: {
 		debugDataTitle: "调试数据",
 		debugDataCopy: "复制调试数据",

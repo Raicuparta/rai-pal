@@ -237,6 +237,13 @@ export const jaJp: Localization = {
 			"ファイルを書き込んだよ。変更を反映するには、ログアウトして再ログインするか、PCを再起動してね。",
 	},
 
+	appUpdate: {
+		updateAvailableTitle: "Rai Pal {version}",
+		noChangelog: "（変更履歴なし）",
+		ignoreUpdate: "無視（Rai Palを再起動するまで再確認しません）",
+		updateNow: "今すぐ更新",
+	},
+
 	debugData: {
 		debugDataTitle: "デバッグデータ",
 		debugDataCopy: "デバッグデータをコピー",

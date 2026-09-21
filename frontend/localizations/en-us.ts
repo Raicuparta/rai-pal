@@ -484,6 +484,21 @@ export const enUs = {
 			"File has been written. You will need to log out and log back in, or restart your computer, for the changes to take effect.",
 	},
 
+	// Modal for notifying about an available app update.
+	appUpdate: {
+		// Title of the app update modal. {version} is the new app version number.
+		updateAvailableTitle: "Rai Pal {version}",
+
+		// Shown in the app update modal when the release has no changelog text.
+		noChangelog: "(no changelog)",
+
+		// Button that dismisses the app update modal and stops asking again until Rai Pal is restarted.
+		ignoreUpdate: "Ignore (won't ask again until you restart Rai Pal)",
+
+		// Button that downloads and installs the available app update.
+		updateNow: "Update now",
+	},
+
 	// Debug data that shows in modals for games and mods.
 	// Basically a JSON dump of all the info Rai Pal has on that game / mod.
 	debugData: {

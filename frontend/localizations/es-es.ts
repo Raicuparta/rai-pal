@@ -240,6 +240,14 @@ export const esEs: Localization = {
 			"El archivo se ha creado. Tendrás que cerrar sesión y volver a iniciarla, o reiniciar el ordenador, para que los cambios se apliquen.",
 	},
 
+	appUpdate: {
+		updateAvailableTitle: "Rai Pal {version}",
+		noChangelog: "(Sin registro de cambios)",
+		ignoreUpdate:
+			"Ignorar (no se volverá a preguntar hasta que reinicies Rai Pal)",
+		updateNow: "Actualizar ahora",
+	},
+
 	debugData: {
 		debugDataTitle: "Datos de depuración",
 		debugDataCopy: "Copiar datos de depuración",
