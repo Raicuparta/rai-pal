@@ -258,6 +258,7 @@ export type ModRun = {
 	path: string | null,
 	args: string[] | null,
 	wineEnvironment: { [key in string]: string } | null,
+	environment: { [key in string]: string } | null,
 	os: OperatingSystem | null,
 };
 

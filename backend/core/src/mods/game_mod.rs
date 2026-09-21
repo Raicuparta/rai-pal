@@ -78,6 +78,7 @@ pub struct ModRun {
 	pub path: Option<String>,
 	pub args: Option<Vec<String>>,
 	pub wine_environment: Option<BTreeMap<String, String>>,
+	pub environment: Option<BTreeMap<String, String>>,
 	pub os: Option<OperatingSystem>,
 }
 
@@ -85,6 +86,7 @@ pub struct PreparedModRun {
 	pub path: PathBuf,
 	pub args: Vec<String>,
 	pub wine_environment: BTreeMap<String, String>,
+	pub environment: BTreeMap<String, String>,
 	pub os: Option<OperatingSystem>,
 }
 
@@ -253,6 +255,7 @@ impl GameMod {
 				game_option,
 				self,
 			),
+			environment: replace_env_tokens(mod_run.environment.as_ref(), game_option, self),
 			os: mod_run.os,
 		})
 	}
@@ -279,6 +282,23 @@ impl GameMod {
 					&run.wine_environment,
 				)?;
 			} else {
+				if let Some(game) = game_option {
+					if game.provider_id == game_provider::GameProviderId::Steam
+						&& game.executable_os == Some(OperatingSystem::Linux)
+						&& !run.environment.is_empty()
+					{
+						let cwd = run.path.try_parent().ok().map(Path::to_path_buf);
+						crate::game_providers::steam::steam_exe_swap::launch_via_steam_with_swapped_exe(
+							game,
+							&run.path,
+							&run.args,
+							&run.environment,
+							cwd.as_deref(),
+						)?;
+						return Ok(());
+					}
+				}
+
 				let mut launch = match game_option {
 					Some(game) => game_provider::get_provider(game.provider_id)?
 						.get_native_run_command(game, &run.path, &run.args)?,
@@ -286,6 +306,7 @@ impl GameMod {
 				}
 				.unwrap_or_else(|| GameLaunch::new(&run.path));
 				launch.args(&run.args);
+				launch.envs(&run.environment);
 				if let Some(game) = game_option {
 					launch.envs(
 						&game_provider::get_provider(game.provider_id)?
