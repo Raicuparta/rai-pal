@@ -1205,6 +1205,12 @@ fn main() {
 				.focusable(true)
 				.build()?;
 
+			// Steam Deck Game Mode (gamescope) has no window controls, so a windowed app
+			// is stuck at its default size. Fullscreen is the only reliable way to fill the screen there.
+			if std::env::var_os("GAMESCOPE_WAYLAND_DISPLAY").is_some() {
+				window.set_fullscreen(true)?;
+			}
+
 			window.on_window_event(|event| {
 				if matches!(event, tauri::WindowEvent::Destroyed) {
 					// Once the window is closed, we don't need to report panics anymore.
