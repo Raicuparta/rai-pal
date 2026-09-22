@@ -62,21 +62,21 @@ impl ProviderCommand {
 						game_providers::game_provider,
 					};
 
-					let provider = game_provider::get_provider(game.provider_id)?;
-
 					if game.executable_os == Some(OperatingSystem::Linux) {
-						let mut launch = provider
-							.get_native_run_command(game, path, args)?
-							.unwrap_or_else(|| GameLaunch::new(path));
+						let mut launch = GameLaunch::new(path);
 						launch.args(args);
-						launch.envs(&provider.get_native_run_environment(game)?);
 						launch.envs_expanded(environment);
 						if let Some(parent) = path.parent() {
 							launch.cwd = Some(parent.to_path_buf());
 						}
 						spawn_game(&launch)?;
 					} else {
-						provider.run_with_wine(game, path, args, &BTreeMap::default())?;
+						game_provider::get_provider(game.provider_id)?.run_with_wine(
+							game,
+							path,
+							args,
+							&BTreeMap::default(),
+						)?;
 					}
 				}
 

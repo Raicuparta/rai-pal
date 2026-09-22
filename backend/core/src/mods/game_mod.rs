@@ -284,19 +284,8 @@ impl GameMod {
 					&run.wine_environment,
 				)?;
 			} else {
-				let mut launch = match game_option {
-					Some(game) => game_provider::get_provider(game.provider_id)?
-						.get_native_run_command(game, &run.path, &run.args)?,
-					None => None,
-				}
-				.unwrap_or_else(|| GameLaunch::new(&run.path));
+				let mut launch = GameLaunch::new(&run.path);
 				launch.args(&run.args);
-				if let Some(game) = game_option {
-					launch.envs(
-						&game_provider::get_provider(game.provider_id)?
-							.get_native_run_environment(game)?,
-					);
-				}
 				launch.cwd = run.path.try_parent().ok().map(Path::to_path_buf);
 				spawn_game(&launch)?;
 			}
