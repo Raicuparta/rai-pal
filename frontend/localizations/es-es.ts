@@ -111,7 +111,6 @@ export const esEs: Localization = {
 			"No se pudo leer información importante sobre este juego. Esto podría deberse a que el ejecutable está protegido. Algunos mods podrían fallar al instalarse.",
 		failedToDetermineEngine:
 			"No se pudo determinar el motor de este juego. Algunos mods podrían fallar al instalarse.",
-		gameModsLabel: "Mods",
 		gameNotInstalledWarning:
 			"Este juego no está instalado, así que no estoy 100% seguro de qué mods son compatibles. Los que ves a continuación podrían funcionar. Si instalas el juego, te mostraré información más precisa.",
 		uninstallAllModsButton: "Desinstalar todos los mods",

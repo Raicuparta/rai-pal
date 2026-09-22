@@ -110,7 +110,6 @@ export const jaJp: Localization = {
 			"このゲームの重要情報がちゃんと読み取れなかった。実行ファイルが保護されてるのかも。一部のModはうまくインストールできないかも。",
 		failedToDetermineEngine:
 			"このゲームのエンジンが特定できなかった。一部のModはうまくインストールできないかも。",
-		gameModsLabel: "Mod",
 		gameNotInstalledWarning:
 			"このゲームはインストールされてないから、どのModが対応してるか100%は確信できないんだ。下に出てるModなら動くかも。インストールしたら、もっと正確な情報を出せるよ。",
 		uninstallAllModsButton: "すべてのModをアンインストール",

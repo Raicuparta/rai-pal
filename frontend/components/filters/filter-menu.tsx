@@ -1,4 +1,4 @@
-import { Box, Button, Card, Group } from "@mantine/core";
+import { Box, Button, Group } from "@mantine/core";
 import {
 	IconChevronDown,
 	IconChevronUp,

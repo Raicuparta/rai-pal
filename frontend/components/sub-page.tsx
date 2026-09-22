@@ -8,7 +8,7 @@ interface Props extends CardProps {
 	readonly header?: React.ReactNode;
 }
 
-export function SubPage({ onClose, ...props }: Props) {
+export function SubPage({ onClose, header, ...props }: Props) {
 	const { t } = useLocalization("subPage");
 
 	useHotkeys([["Escape", onClose]]);
@@ -22,7 +22,7 @@ export function SubPage({ onClose, ...props }: Props) {
 				>
 					{t("back")}
 				</Button>
-				{props.header}
+				{header}
 			</Group>
 			<Card
 				flex={1}

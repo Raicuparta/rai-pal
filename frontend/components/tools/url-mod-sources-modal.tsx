@@ -6,13 +6,11 @@ import {
 	ActionIcon,
 	Code,
 	Group,
-	Input,
 	Modal,
 	Stack,
 	Switch,
 	Text,
 	TextInput,
-	Tooltip,
 } from "@mantine/core";
 import { IconPlus, IconTrash } from "@tabler/icons-react";
 import { startTransition, useEffect, useState } from "react";

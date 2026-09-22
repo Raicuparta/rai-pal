@@ -106,7 +106,6 @@ export const zhCn: Localization = {
 		failedToReadGameInfo:
 			"无法读取此游戏的部分重要信息。可执行文件可能被保护了。一些模组可能无法安装。",
 		failedToDetermineEngine: "无法确定此游戏的引擎。一些模组可能无法安装。",
-		gameModsLabel: "模组",
 		gameNotInstalledWarning:
 			"此游戏未安装，所以我不太确定哪些模组兼容。下面列出的模组可能可以用。安装游戏后，我再显示更准确的信息。",
 		uninstallAllModsButton: "卸载所有模组",

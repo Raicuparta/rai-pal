@@ -1,7 +1,5 @@
-import { Card, Group, Stack } from "@mantine/core";
+import { Card, Stack } from "@mantine/core";
 import { FilterMenu } from "@components/filters/filter-menu";
-import { RefreshButton } from "@components/refresh-button";
-import { AddGame } from "./add-game-button";
 import { GamesTable } from "./games-table";
 import { GameModal } from "./game-modal";
 import { useSelectedGame } from "@hooks/use-selected-game";

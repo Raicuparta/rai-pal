@@ -109,7 +109,6 @@ export const ptPt: Localization = {
 			"Erro ao ler informações importantes sobre este jogo. O executável pode estar protegido. Alguns mods podem não instalar-se.",
 		failedToDetermineEngine:
 			"Não foi possível determinar o motor deste jogo. Alguns mods podem não funcionar.",
-		gameModsLabel: "Mods",
 		gameNotInstalledWarning:
 			"Este jogo não está instalado, por isso não tenho 100% de certeza sobre a compatibilidade dos mods. Os que vês abaixo podem funcionar. Se instalares o jogo, posso mostrar informações mais exatas.",
 		uninstallAllModsButton: "Desinstalar todos os mods",

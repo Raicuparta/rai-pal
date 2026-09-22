@@ -225,9 +225,6 @@ export const enUs = {
 		failedToDetermineEngine:
 			"Failed to determine the engine for this game. Some mods might fail to install.",
 
-		// Label for the section that shows mods for this game.
-		gameModsLabel: "Mods",
-
 		// Warning that shows when a game isn't installed.
 		gameNotInstalledWarning:
 			"This game isn't installed, so I'm not 100% sure which mods are compatible. The ones you see below might work. If you install the game, I'll show you more accurate information.",

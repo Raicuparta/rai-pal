@@ -149,7 +149,7 @@ const engine: GamesColumn = {
 						{item.engineBrand}
 					</Box>
 				)}
-				{!engine && <div>-</div>}
+				{!item.engineBrand && <div>-</div>}
 				{item.engineVersionDisplay && (
 					<Box className={styles.engineVersion}>
 						{item.engineVersionDisplay}

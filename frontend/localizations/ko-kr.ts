@@ -108,7 +108,6 @@ export const koKr: Localization = {
 			"이 게임의 중요 정보를 읽을 수 없었어요. 실행 파일이 보호돼 있어서 그럴 수 있어요. 일부 모드가 설치 안 될 수도 있어요.",
 		failedToDetermineEngine:
 			"이 게임의 엔진을 확인할 수 없었어요. 일부 모드가 설치 안 될 수도 있어요.",
-		gameModsLabel: "모드",
 		gameNotInstalledWarning:
 			"이 게임이 설치되지 않아서 어떤 모드가 맞는지 100% 장담할 수 없어요. 아래 모드들이 될 수도 있어요. 게임을 설치하면 더 정확히 알려드릴게요.",
 		uninstallAllModsButton: "모드 모두 제거",

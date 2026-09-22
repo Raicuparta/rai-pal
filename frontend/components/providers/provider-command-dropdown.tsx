@@ -2,7 +2,7 @@ import { DbGame, ProviderCommandAction } from "@api/bindings";
 import { CommandDropdown } from "@components/command-dropdown";
 import { ProviderIcon } from "@components/providers/provider-icon";
 import { ProviderCommandButton } from "./provider-command-button";
-import { Button, Group } from "@mantine/core";
+import { Button } from "@mantine/core";
 
 type Props = {
 	readonly game: DbGame;

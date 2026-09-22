@@ -111,7 +111,6 @@ export const frFr: Localization = {
 			"Impossible de lire certaines informations importantes sur ce jeu. C'est peut-être parce que l'exécutable est protégé. Certains mods risquent de ne pas s'installer.",
 		failedToDetermineEngine:
 			"Impossible de déterminer le moteur de ce jeu. Certains mods risquent de ne pas s'installer.",
-		gameModsLabel: "Mods",
 		gameNotInstalledWarning:
 			"Ce jeu n'est pas installé, donc je ne suis pas sûr à 100 % des mods compatibles. Ceux affichés ci-dessous pourraient fonctionner. Si vous installez le jeu, je vous montrerai des informations plus précises.",
 		uninstallAllModsButton: "Désinstaller tous les mods",

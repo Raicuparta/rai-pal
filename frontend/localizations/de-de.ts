@@ -111,7 +111,6 @@ export const deDe: Localization = {
 			"Konnte wichtige Infos zu diesem Spiel nicht lesen. Vielleicht ist die Exe geschützt. Einige Mods könnten dann nicht installiert werden.",
 		failedToDetermineEngine:
 			"Konnte die Engine für dieses Spiel nicht bestimmen. Einige Mods könnten dann nicht funktionieren.",
-		gameModsLabel: "Mods",
 		gameNotInstalledWarning:
 			"Das Spiel ist nicht installiert, daher bin ich mir nicht 100% sicher, welche Mods kompatibel sind. Die unten angezeigten könnten trotzdem funktionieren. Wenn du das Spiel installierst, zeig ich dir genauere Infos.",
 		uninstallAllModsButton: "Alle Mods deinstallieren",
