@@ -49,7 +49,6 @@ export function GameMods({ game, mods }: Props) {
 			<Stack>
 				{mods.compatibleMods.length > 0 && (
 					<>
-						<Divider label={t("gameModsLabel")} />
 						{!game.exePath && (
 							<Alert color="orange">{t("gameNotInstalledWarning")}</Alert>
 						)}

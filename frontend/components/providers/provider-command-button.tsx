@@ -2,6 +2,7 @@ import { DbGame, ProviderCommandAction, commands } from "@api/bindings";
 import { CommandButton } from "@components/command-button";
 import { useLocalization } from "@hooks/use-localization";
 import { LocalizationKey } from "@localizations/localizations";
+import { ButtonProps } from "@mantine/core";
 import {
 	Icon,
 	IconDeviceGamepad,
@@ -12,10 +13,10 @@ import {
 	IconExternalLink,
 } from "@tabler/icons-react";
 
-type Props = {
+interface Props extends ButtonProps {
 	readonly game: DbGame;
 	readonly action: ProviderCommandAction;
-};
+}
 
 const providerCommandLocalizationKey: Record<
 	ProviderCommandAction,
@@ -38,28 +39,24 @@ const providerCommandActionIcon: Record<ProviderCommandAction, Icon> = {
 	OpenInBrowser: IconExternalLink,
 };
 
-export function ProviderCommandButton(props: Props) {
+export function ProviderCommandButton({ action, game, ...props }: Props) {
 	const { t } = useLocalization("providerCommand");
-	const IconComponent =
-		providerCommandActionIcon[props.action] ?? IconDeviceGamepad;
+	const IconComponent = providerCommandActionIcon[action] ?? IconDeviceGamepad;
 
 	return (
 		<CommandButton
 			leftSection={<IconComponent />}
 			onClick={async () => {
-				await commands.runProviderCommand(
-					props.game.providerId,
-					props.game.gameId,
-					props.action,
-				);
+				await commands.runProviderCommand(game.providerId, game.gameId, action);
 
 				commands.sendAnalyticsEvent("ProviderCommand", {
-					action: props.action,
-					game: props.game.displayTitle,
+					action: action,
+					game: game.displayTitle,
 				});
 			}}
+			{...props}
 		>
-			{t(providerCommandLocalizationKey[props.action])}
+			{t(providerCommandLocalizationKey[action])}
 		</CommandButton>
 	);
 }

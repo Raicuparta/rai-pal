@@ -36,28 +36,22 @@ export function GameModal({ game, mods }: Props) {
 	const { providerId, gameId } = game;
 
 	return (
-		<SubPage onClose={close}>
-			<Box>
-				<TableContainer>
-					<Table highlightOnHover>
-						<Table.Thead>
-							<TableHead columns={gamesColumns} />
-						</Table.Thead>
-						<Table.Tbody>
-							<GameRowInner
-								game={game}
-								onClick={close}
-							/>
-						</Table.Tbody>
-					</Table>
-				</TableContainer>
-			</Box>
-			<Stack
-				p="xs"
-				gap="xl"
-			>
-				<Group>
-					<ProviderCommandButtons game={game} />
+		<SubPage
+			onClose={close}
+			header={
+				<Group
+					flex={1}
+					justify="end"
+					wrap="nowrap"
+				>
+					{game.exePath && (
+						<CommandButton
+							onClick={() => commands.refreshGame(providerId, gameId)}
+							leftSection={<IconRefresh />}
+						>
+							{t("refreshGame")}
+						</CommandButton>
+					)}
 					{game.exePath && (
 						<CommandDropdown
 							label={t("foldersDropdown")}
@@ -109,17 +103,29 @@ export function GameModal({ game, mods }: Props) {
 							gameId={gameId}
 						/>
 					)}
-					{game.exePath && (
-						<CommandButton
-							onClick={() => commands.refreshGame(providerId, gameId)}
-							leftSection={<IconRefresh />}
-						>
-							{t("refreshGame")}
-						</CommandButton>
-					)}
-
-					<DebugData data={{ game, mods }} />
+					<ProviderCommandButtons game={game} />
 				</Group>
+			}
+		>
+			<Box>
+				<TableContainer>
+					<Table highlightOnHover>
+						<Table.Thead>
+							<TableHead columns={gamesColumns} />
+						</Table.Thead>
+						<Table.Tbody>
+							<GameRowInner
+								game={game}
+								onClick={close}
+							/>
+						</Table.Tbody>
+					</Table>
+				</TableContainer>
+			</Box>
+			<Stack
+				p="xs"
+				gap="xl"
+			>
 				{game.exePath && (
 					<>
 						{game.engineBrand && !game.architecture && (
@@ -134,6 +140,7 @@ export function GameModal({ game, mods }: Props) {
 					game={game}
 					mods={mods}
 				/>
+				<DebugData data={{ game, mods }} />
 			</Stack>
 		</SubPage>
 	);

@@ -5,6 +5,7 @@ import { IconArrowLeft } from "@tabler/icons-react";
 
 interface Props extends CardProps {
 	readonly onClose: () => void;
+	readonly header?: React.ReactNode;
 }
 
 export function SubPage({ onClose, ...props }: Props) {
@@ -21,6 +22,7 @@ export function SubPage({ onClose, ...props }: Props) {
 				>
 					{t("back")}
 				</Button>
+				{props.header}
 			</Group>
 			<Card
 				flex={1}

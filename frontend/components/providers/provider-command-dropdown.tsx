@@ -2,7 +2,7 @@ import { DbGame, ProviderCommandAction } from "@api/bindings";
 import { CommandDropdown } from "@components/command-dropdown";
 import { ProviderIcon } from "@components/providers/provider-icon";
 import { ProviderCommandButton } from "./provider-command-button";
-import { Button } from "@mantine/core";
+import { Button, Group } from "@mantine/core";
 
 type Props = {
 	readonly game: DbGame;
@@ -28,23 +28,6 @@ export function ProviderCommandButtons(props: Props) {
 
 	return (
 		<>
-			{primaryStart && (
-				<Button.Group>
-					<ProviderCommandButton
-						game={props.game}
-						action={primaryStart}
-					/>
-
-					{secondaryStart && (
-						<CommandDropdown>
-							<ProviderCommandButton
-								game={props.game}
-								action={secondaryStart}
-							/>
-						</CommandDropdown>
-					)}
-				</Button.Group>
-			)}
 			{providerCommandActions.length > 0 && (
 				<CommandDropdown
 					label={props.game.providerId}
@@ -58,6 +41,24 @@ export function ProviderCommandButtons(props: Props) {
 						/>
 					))}
 				</CommandDropdown>
+			)}
+			{primaryStart && (
+				<Button.Group>
+					<ProviderCommandButton
+						variant="filled"
+						game={props.game}
+						action={primaryStart}
+					/>
+
+					{secondaryStart && (
+						<CommandDropdown>
+							<ProviderCommandButton
+								game={props.game}
+								action={secondaryStart}
+							/>
+						</CommandDropdown>
+					)}
+				</Button.Group>
 			)}
 		</>
 	);
