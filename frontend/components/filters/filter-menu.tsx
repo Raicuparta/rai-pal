@@ -251,35 +251,40 @@ export function FilterMenu() {
 			</Group>
 
 			<Group
-				className={styles.dropdownContent}
+				className={styles.dropdown}
 				display={isExpanded ? undefined : "none"}
-				align="start"
 				wrap="nowrap"
 			>
-				{(Object.keys(filterDetails) as Array<FilterKey>).map((filterKey) => {
-					const possibleValues =
-						filterKey === "modFamilies"
-							? ([
-									...new Set(
-										Object.values(mods)
-											.map((m) => m.family)
-											.filter((f): f is string => f !== null),
-									),
-								] as string[])
-							: (Object.keys(
-									filterDetails[filterKey].valueDetails,
-								) as string[]);
+				<Group
+					className={styles.dropdownContent}
+					align="start"
+					wrap="nowrap"
+				>
+					{(Object.keys(filterDetails) as Array<FilterKey>).map((filterKey) => {
+						const possibleValues =
+							filterKey === "modFamilies"
+								? ([
+										...new Set(
+											Object.values(mods)
+												.map((m) => m.family)
+												.filter((f): f is string => f !== null),
+										),
+									] as string[])
+								: (Object.keys(
+										filterDetails[filterKey].valueDetails,
+									) as string[]);
 
-					return (
-						<FilterSelect
-							key={filterKey}
-							id={filterKey}
-							possibleValues={possibleValues}
-							filterGroup={dataQuery.filter[filterKey] as FilterGroup<string>}
-							onChange={handleToggleClick}
-						/>
-					);
-				})}
+						return (
+							<FilterSelect
+								key={filterKey}
+								id={filterKey}
+								possibleValues={possibleValues}
+								filterGroup={dataQuery.filter[filterKey] as FilterGroup<string>}
+								onChange={handleToggleClick}
+							/>
+						);
+					})}
+				</Group>
 			</Group>
 		</>
 	);

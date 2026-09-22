@@ -1,11 +1,12 @@
 .dropdown {
-	max-width: 100%;
-}
-
-.dropdownContent {
 	width: 100vw;
 	margin-inline: calc(50% - 50vw);
 	overflow-x: scroll;
+}
+
+.dropdownContent {
+	flex-shrink: 0;
+	margin-inline: auto;
 }
 
 .filterColumn {
