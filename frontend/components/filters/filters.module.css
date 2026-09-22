@@ -3,6 +3,8 @@
 }
 
 .dropdownContent {
+	width: 100vw;
+	margin-inline: calc(50% - 50vw);
 	overflow-x: scroll;
 }
 
