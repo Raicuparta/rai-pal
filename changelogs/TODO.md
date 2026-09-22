@@ -9,6 +9,7 @@ This file is here for me to track things I wanna fix for the next release. If th
 - Make Rai Pal show an icon and cover art when installed to steam.
 - add game manually, remove it, it's still visible but not clickable.
 - oh actually add game manually, is immediately selected, but not visible in list until refresh is pressed.
+- maybe DOTNET_SYSTEM_GLOBALIZATION_INVARIANT is needed in bepinex linux environment in database?
 
 native linux games bepinex "run" on steam deck:
 
