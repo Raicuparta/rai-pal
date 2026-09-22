@@ -202,24 +202,25 @@ const gamesColumnsMap = {
 	releaseDate,
 };
 
-export type GamesColumnId = keyof typeof gamesColumnsMap;
+const gamesColumns = columnMapToList(gamesColumnsMap);
 
-export const gamesColumns = columnMapToList(gamesColumnsMap);
+export function getVisibleGamesColumns(hideGameThumbnails: boolean) {
+	return gamesColumns.filter(
+		(column) => !hideGameThumbnails || column.id !== "thumbnail",
+	);
+}
 
 export function GamesColgroup() {
 	const [settings] = useAppSettings();
 
 	return (
 		<colgroup>
-			{gamesColumns.map(
-				(column) =>
-					(!settings.hideGameThumbnails || column.id !== "thumbnail") && (
-						<col
-							key={column.id}
-							style={{ width: column.width }}
-						/>
-					),
-			)}
+			{getVisibleGamesColumns(settings.hideGameThumbnails).map((column) => (
+				<col
+					key={column.id}
+					style={{ width: column.width }}
+				/>
+			))}
 		</colgroup>
 	);
 }

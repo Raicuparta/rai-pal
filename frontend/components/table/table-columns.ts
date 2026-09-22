@@ -5,7 +5,7 @@ export type TableColumnBase<TItem> = {
 	width?: number;
 };
 
-export interface TableColumn<
+interface TableColumn<
 	TKey extends string,
 	TItem,
 > extends TableColumnBase<TItem> {
