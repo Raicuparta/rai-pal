@@ -21,7 +21,7 @@ import { defaultQuery } from "@hooks/default-settings";
 import { useDataQuery } from "@hooks/use-data-query";
 import { useLocalization } from "@hooks/use-localization";
 import { LocalizationKey } from "@localizations/localizations";
-import { useToggle } from "@mantine/hooks";
+import { useHotkeys, useToggle } from "@mantine/hooks";
 import { AddGame } from "@components/games/add-game-button";
 import { RefreshButton } from "@components/refresh-button";
 import { SortMenu } from "./sort-menu";
@@ -179,6 +179,8 @@ export function FilterMenu() {
 	const [isExpanded, toggleIsExpanded] = useToggle();
 	const mods = useAtomValue(modsAtom);
 	const { t } = useLocalization("filterMenu");
+
+	useHotkeys([["Escape", () => toggleIsExpanded(false)]]);
 
 	const handleToggleClick: FilterChangeCallback = (id, values) => {
 		setDataQuery({
