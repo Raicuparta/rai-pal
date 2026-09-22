@@ -18,10 +18,9 @@ type CellProps = { readonly item: DbGame };
 const thumbnail: GamesColumn = {
 	width: 100,
 	component: function Thumbnail({ item }: CellProps) {
-		const fallbackThumbnail = "images/fallback-thumbnail.png";
 		const [isBroken, setIsBroken] = useState(false);
 		const thumbnailUrl =
-			!isBroken && item.thumbnailUrl ? item.thumbnailUrl : fallbackThumbnail;
+			!isBroken && item.thumbnailUrl ? item.thumbnailUrl : undefined;
 
 		return (
 			<Table.Td
@@ -29,7 +28,7 @@ const thumbnail: GamesColumn = {
 				bg={`var(--mantine-color-${providerColors[item.providerId]}-light)`}
 				opacity={item.exePath ? 1 : 0.5}
 			>
-				{(item.thumbnailUrl || isBroken) && (
+				{thumbnailUrl && (
 					<img
 						decoding="async"
 						loading="lazy"

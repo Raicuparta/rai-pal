@@ -64,6 +64,17 @@
 	padding: 0;
 	position: relative;
 
+	&::before {
+		content: "";
+		position: absolute;
+		inset: 0;
+		background-color: rgba(0, 0, 0, 0.5);
+		background-image: url("images/fallback-thumbnail.png");
+		background-size: 60px;
+		background-position: 20px;
+		background-repeat: no-repeat;
+	}
+
 	img {
 		position: absolute;
 		top: 0;
@@ -78,12 +89,6 @@
 .thumbnailForeground {
 	z-index: 1;
 	object-fit: contain;
-	background-color: rgba(0, 0, 0, 0.5);
 	contain: paint;
 	image-rendering: pixelated;
-}
-
-.thumbnailFallback {
-	z-index: 1;
-	object-fit: cover;
 }
