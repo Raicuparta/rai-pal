@@ -7,6 +7,8 @@ This file is here for me to track things I wanna fix for the next release. If th
 - MaybeWinePrefix should actually be Maybe?? Seems to be doing it even on native linux.
 - Changing the only mod source while a game in the games tab is selected breaks the mod list, have to close and reopen the game.
 - Make Rai Pal show an icon and cover art when installed to steam.
+- add game manually, remove it, it's still visible but not clickable.
+- oh actually add game manually, is immediately selected, but not visible in list until refresh is pressed.
 
 native linux games bepinex "run" on steam deck:
 

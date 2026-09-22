@@ -17,11 +17,7 @@ export function GamesPage() {
 					mods={gameMods}
 				/>
 			) : (
-				<Group>
-					<AddGame />
-					<FilterMenu />
-					<RefreshButton />
-				</Group>
+				<FilterMenu />
 			)}
 			<Card
 				p={0}

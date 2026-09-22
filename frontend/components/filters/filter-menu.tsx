@@ -1,7 +1,11 @@
-// TODO: test this after fresh start (delete app data).
-
-import { Button, Group, Indicator, Popover } from "@mantine/core";
-import { IconFilter, IconX } from "@tabler/icons-react";
+import { Box, Button, Group } from "@mantine/core";
+import {
+	IconChevronDown,
+	IconChevronUp,
+	IconFilter,
+	IconFilterFilled,
+	IconX,
+} from "@tabler/icons-react";
 import { useAtomValue } from "jotai";
 import styles from "./filters.module.css";
 import {
@@ -17,6 +21,9 @@ import { defaultQuery } from "@hooks/default-settings";
 import { useDataQuery } from "@hooks/use-data-query";
 import { useLocalization } from "@hooks/use-localization";
 import { LocalizationKey } from "@localizations/localizations";
+import { useToggle } from "@mantine/hooks";
+import { AddGame } from "@components/games/add-game-button";
+import { RefreshButton } from "@components/refresh-button";
 
 type ValueDetails = {
 	noteLocalizationKey?: LocalizationKey<"filterValueNote">;
@@ -168,6 +175,7 @@ function hasDisabledNonLocked(group: FilterGroup<string>): boolean {
 
 export function FilterMenu() {
 	const [dataQuery, setDataQuery] = useDataQuery();
+	const [isExpanded, toggleIsExpanded] = useToggle();
 	const mods = useAtomValue(modsAtom);
 	const { t } = useLocalization("filterMenu");
 
@@ -186,18 +194,16 @@ export function FilterMenu() {
 
 	return (
 		<>
-			<SearchInput
-				onChange={(search) => {
-					setDataQuery({
-						search,
-					});
-				}}
-				value={dataQuery.search}
-			/>
-			<Indicator
-				disabled={!active}
-				offset={8}
-			>
+			<Group>
+				<AddGame />
+				<SearchInput
+					onChange={(search) => {
+						setDataQuery({
+							search,
+						});
+					}}
+					value={dataQuery.search}
+				/>
 				<Button.Group>
 					{active && (
 						<Button
@@ -221,53 +227,56 @@ export function FilterMenu() {
 							<IconX />
 						</Button>
 					)}
-					<Popover trapFocus>
-						<Popover.Target>
-							<Button leftSection={<IconFilter />}>{t("button")}</Button>
-						</Popover.Target>
-						<Popover.Dropdown
-							p={0}
-							className={styles.dropdown}
-						>
-							<Group
-								className={styles.dropdownContent}
-								p="xs"
-								align="start"
-								wrap="nowrap"
-							>
-								{(Object.keys(filterDetails) as Array<FilterKey>).map(
-									(filterKey) => {
-										const possibleValues =
-											filterKey === "modFamilies"
-												? ([
-														...new Set(
-															Object.values(mods)
-																.map((m) => m.family)
-																.filter((f): f is string => f !== null),
-														),
-													] as string[])
-												: (Object.keys(
-														filterDetails[filterKey].valueDetails,
-													) as string[]);
-
-										return (
-											<FilterSelect
-												key={filterKey}
-												id={filterKey}
-												possibleValues={possibleValues}
-												filterGroup={
-													dataQuery.filter[filterKey] as FilterGroup<string>
-												}
-												onChange={handleToggleClick}
-											/>
-										);
-									},
-								)}
-							</Group>
-						</Popover.Dropdown>
-					</Popover>
+					<Button
+						leftSection={
+							active ? (
+								<Box c="violet">
+									<IconFilterFilled />
+								</Box>
+							) : (
+								<IconFilter />
+							)
+						}
+						rightSection={isExpanded ? <IconChevronUp /> : <IconChevronDown />}
+						onClick={() => toggleIsExpanded()}
+					>
+						{t("button")}
+					</Button>
 				</Button.Group>
-			</Indicator>
+				<RefreshButton />
+			</Group>
+
+			<Group
+				className={styles.dropdownContent}
+				display={isExpanded ? undefined : "none"}
+				align="start"
+				wrap="nowrap"
+			>
+				{(Object.keys(filterDetails) as Array<FilterKey>).map((filterKey) => {
+					const possibleValues =
+						filterKey === "modFamilies"
+							? ([
+									...new Set(
+										Object.values(mods)
+											.map((m) => m.family)
+											.filter((f): f is string => f !== null),
+									),
+								] as string[])
+							: (Object.keys(
+									filterDetails[filterKey].valueDetails,
+								) as string[]);
+
+					return (
+						<FilterSelect
+							key={filterKey}
+							id={filterKey}
+							possibleValues={possibleValues}
+							filterGroup={dataQuery.filter[filterKey] as FilterGroup<string>}
+							onChange={handleToggleClick}
+						/>
+					);
+				})}
+			</Group>
 		</>
 	);
 }

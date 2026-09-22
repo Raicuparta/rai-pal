@@ -164,7 +164,7 @@ export function FilterSelect<TFilterKey extends FilterKey>({
 				<Group wrap="nowrap">
 					{!hasAnyDisabled ? (
 						<ThemeIcon
-							size="sm"
+							size="xs"
 							variant="transparent"
 							color="gray"
 							opacity={0.3}
@@ -173,7 +173,7 @@ export function FilterSelect<TFilterKey extends FilterKey>({
 						</ThemeIcon>
 					) : (
 						<ActionIcon
-							size="sm"
+							size="xs"
 							variant="subtle"
 							onClick={handleResetClick}
 						>
@@ -181,7 +181,7 @@ export function FilterSelect<TFilterKey extends FilterKey>({
 						</ActionIcon>
 					)}
 					<Text
-						fz="md"
+						fz="xs"
 						className={styles.filterTitle}
 					>
 						{tProperty(filterDetails[id].localizationKey)}
@@ -202,7 +202,7 @@ export function FilterSelect<TFilterKey extends FilterKey>({
 								wrap="nowrap"
 							>
 								<ActionIcon
-									size="sm"
+									size="xs"
 									variant="subtle"
 									color={item.locked ? "yellow" : "gray"}
 									disabled={item.enabled}
@@ -234,7 +234,7 @@ export function FilterSelect<TFilterKey extends FilterKey>({
 							wrap="nowrap"
 						>
 							<ActionIcon
-								size="sm"
+								size="xs"
 								variant="subtle"
 								color={unknownItem.locked ? "yellow" : "gray"}
 								disabled={unknownItem.enabled}

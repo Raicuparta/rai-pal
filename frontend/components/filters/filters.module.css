@@ -3,7 +3,7 @@
 }
 
 .dropdownContent {
-	overflow-x: auto;
+	overflow-x: scroll;
 }
 
 .filterColumn {
