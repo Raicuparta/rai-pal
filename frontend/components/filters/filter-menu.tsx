@@ -1,4 +1,4 @@
-import { Box, Button, Group } from "@mantine/core";
+import { Box, Button, Card, Group } from "@mantine/core";
 import {
 	IconChevronDown,
 	IconChevronUp,
@@ -254,6 +254,9 @@ export function FilterMenu() {
 				className={styles.dropdown}
 				display={isExpanded ? undefined : "none"}
 				wrap="nowrap"
+				bg="dark"
+				p="xs"
+				mt="-xs"
 			>
 				<Group
 					className={styles.dropdownContent}
