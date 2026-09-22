@@ -143,7 +143,7 @@ export const zhCn: Localization = {
 	},
 
 	gamesTableColumn: {
-		game: "游戏",
+		name: "名称",
 		engine: "引擎",
 		date: "日期",
 	},

@@ -150,7 +150,7 @@ export const frFr: Localization = {
 	},
 
 	gamesTableColumn: {
-		game: "Jeu",
+		name: "Nom",
 		engine: "Moteur",
 		date: "Date",
 	},

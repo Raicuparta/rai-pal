@@ -150,7 +150,7 @@ export const esEs: Localization = {
 	},
 
 	gamesTableColumn: {
-		game: "Juego",
+		name: "Nombre",
 		engine: "Motor",
 		date: "Fecha",
 	},

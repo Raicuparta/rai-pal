@@ -302,7 +302,7 @@ export const enUs = {
 	// Named table columns for the list of games.
 	gamesTableColumn: {
 		// This column is mostly for the game's name, but includes other information like tags.
-		game: "Game",
+		name: "Name",
 
 		// The game's engine (Unity, Unreal, etc), engine version, etc.
 		engine: "Engine",

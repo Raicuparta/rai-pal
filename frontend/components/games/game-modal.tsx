@@ -10,12 +10,11 @@ import {
 	IconRefresh,
 } from "@tabler/icons-react";
 import { DebugData } from "@components/debug-data";
+import { GamesColgroup } from "./games-columns";
 import { TableContainer } from "@components/table/table-container";
 import { CommandDropdown } from "@components/command-dropdown";
 import { ProviderCommandButtons } from "@components/providers/provider-command-dropdown";
 import { GameRowInner } from "./game-row";
-import { TableHead } from "@components/table/table-head";
-import { gamesColumns } from "./games-columns";
 import { useLocalization } from "@hooks/use-localization";
 import { useAsyncCommand } from "@hooks/use-async-command";
 import { RemoveGameButton } from "./remove-game-button";
@@ -110,9 +109,7 @@ export function GameModal({ game, mods }: Props) {
 			<Box>
 				<TableContainer>
 					<Table highlightOnHover>
-						<Table.Thead>
-							<TableHead columns={gamesColumns} />
-						</Table.Thead>
+						<GamesColgroup />
 						<Table.Tbody>
 							<GameRowInner
 								game={game}

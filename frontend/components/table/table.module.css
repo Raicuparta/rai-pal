@@ -4,11 +4,6 @@ div.table {
 	user-select: none;
 	background-color: var(--mantine-color-dark-6);
 
-	thead {
-		background: var(--background-dark);
-		white-space: nowrap;
-	}
-
 	code {
 		font-size: 0.8em;
 	}
@@ -38,17 +33,6 @@ div.table {
 			max-height: 60px;
 			min-height: 60px;
 		}
-	}
-}
-
-.sortable {
-	cursor: pointer;
-
-	&:hover {
-		background: light-dark(
-			var(--mantine-color-gray-3),
-			var(--mantine-color-dark-7)
-		);
 	}
 }
 

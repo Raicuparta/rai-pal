@@ -146,7 +146,7 @@ export const koKr: Localization = {
 	},
 
 	gamesTableColumn: {
-		game: "게임",
+		name: "이름",
 		engine: "엔진",
 		date: "날짜",
 	},

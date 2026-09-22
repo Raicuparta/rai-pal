@@ -13,24 +13,6 @@ export function ModsTable(props: Props) {
 
 	return (
 		<Table highlightOnHover={Boolean(props.onClick)}>
-			<Table.Thead pos="sticky">
-				<Table.Tr>
-					<Table.Th>{t("tableColumnMod")}</Table.Th>
-					<Table.Th ta="center">{t("tableColumnVersion")}</Table.Th>
-					<Table.Th
-						w={100}
-						ta="center"
-					>
-						{t("tableColumnGameEngine")}
-					</Table.Th>
-					<Table.Th
-						w={100}
-						ta="center"
-					>
-						{t("tableColumnUnityBackend")}
-					</Table.Th>
-				</Table.Tr>
-			</Table.Thead>
 			<Table.Tbody>
 				{Object.entries(props.mods).map(([modId, mod]) => (
 					<Table.Tr
@@ -64,8 +46,20 @@ export function ModsTable(props: Props) {
 						<Table.Td ta="center">
 							<Badge color="gray">{mod.download?.id ?? "-"}</Badge>
 						</Table.Td>
-						<Table.Td>{mod.engine}</Table.Td>
-						<Table.Td>{mod.unityBackend}</Table.Td>
+						<Table.Td
+							w={100}
+							ta="center"
+						>
+							{mod.engine}
+							{mod.unityBackend && (
+								<Text
+									size="xs"
+									opacity={0.5}
+								>
+									{mod.unityBackend}
+								</Text>
+							)}
+						</Table.Td>
 					</Table.Tr>
 				))}
 			</Table.Tbody>

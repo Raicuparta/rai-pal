@@ -78,6 +78,7 @@
 .thumbnailForeground {
 	z-index: 1;
 	object-fit: contain;
+	background-color: rgba(0, 0, 0, 0.5);
 	contain: paint;
 	image-rendering: pixelated;
 }

@@ -146,7 +146,7 @@ export const ptPt: Localization = {
 	},
 
 	gamesTableColumn: {
-		game: "Jogo",
+		name: "Nome",
 		engine: "Motor",
 		date: "Data",
 	},

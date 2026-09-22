@@ -24,6 +24,7 @@ import { LocalizationKey } from "@localizations/localizations";
 import { useToggle } from "@mantine/hooks";
 import { AddGame } from "@components/games/add-game-button";
 import { RefreshButton } from "@components/refresh-button";
+import { SortMenu } from "./sort-menu";
 
 type ValueDetails = {
 	noteLocalizationKey?: LocalizationKey<"filterValueNote">;
@@ -204,6 +205,7 @@ export function FilterMenu() {
 					}}
 					value={dataQuery.search}
 				/>
+				<SortMenu />
 				<Button.Group>
 					{active && (
 						<Button

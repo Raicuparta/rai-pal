@@ -148,7 +148,7 @@ export const jaJp: Localization = {
 	},
 
 	gamesTableColumn: {
-		game: "ゲーム",
+		name: "名前",
 		engine: "エンジン",
 		date: "日付",
 	},

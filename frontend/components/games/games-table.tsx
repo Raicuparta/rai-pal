@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { GamesSortBy, GameProviderId } from "@api/bindings";
+import { GameProviderId } from "@api/bindings";
 import { useAtomValue } from "jotai";
 import { gameDataAtom, loadingTasksAtom } from "@hooks/use-data";
 import { TableContainer } from "@components/table/table-container";
@@ -10,11 +10,10 @@ import {
 } from "react-virtuoso";
 import { GameRow, gameRowHeight } from "./game-row";
 import { useDataQuery } from "@hooks/use-data-query";
-import { gamesColumns } from "./games-columns";
+import { GamesColgroup } from "./games-columns";
 import styles from "./games.module.css";
 import { Alert, Table } from "@mantine/core";
 import React from "react";
-import { TableHead } from "@components/table/table-head";
 import { useLocalization } from "@hooks/use-localization";
 
 const tableComponents: TableComponents<[GameProviderId, string], unknown> = {
@@ -30,44 +29,20 @@ const tableComponents: TableComponents<[GameProviderId, string], unknown> = {
 		<Table
 			{...props}
 			highlightOnHover
-		/>
+		>
+			<GamesColgroup />
+			{props.children}
+		</Table>
 	),
-	TableHead: React.forwardRef(function TableHead(props, ref) {
-		return (
-			<Table.Thead
-				{...props}
-				ref={ref}
-			/>
-		);
-	}),
 	TableRow: GameRow,
 };
 
 export function GamesTable() {
 	const gameData = useAtomValue(gameDataAtom);
 	const loading = useAtomValue(loadingTasksAtom);
-	const [dataQuery, setDataQuery] = useDataQuery();
+	const [dataQuery] = useDataQuery();
 	const tableRef = useRef<TableVirtuosoHandle>(null);
 	const { t } = useLocalization("gamesPage");
-
-	const onChangeSort = (sortBy: GamesSortBy) => {
-		const sortDescending =
-			sortBy === dataQuery?.sortBy && !dataQuery?.sortDescending;
-
-		setDataQuery({
-			sortBy,
-			sortDescending,
-		});
-	};
-
-	const fixedHeaderContent = () => (
-		<TableHead
-			columns={gamesColumns}
-			onChangeSort={onChangeSort}
-			sortBy={dataQuery?.sortBy}
-			sortDescending={dataQuery?.sortDescending}
-		/>
-	);
 
 	useEffect(() => {
 		if (tableRef.current) {
@@ -93,7 +68,6 @@ export function GamesTable() {
 				ref={tableRef}
 				className={styles.table}
 				components={tableComponents}
-				fixedHeaderContent={fixedHeaderContent}
 				data={gameData.gameIds}
 				fixedItemHeight={gameRowHeight}
 				overscan={50}
