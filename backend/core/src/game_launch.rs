@@ -62,6 +62,18 @@ impl GameLaunch {
 		self
 	}
 
+	/// Like [`Self::envs`], but expands `${VAR}` references in values against the
+	/// environment set so far. Shell-based launches (the Steam exe swap) get this
+	/// for free; direct spawns need it so values like
+	/// `libdoorstop.so:${LD_PRELOAD}` don't end up literal.
+	pub fn envs_expanded(&mut self, env: &BTreeMap<String, String>) -> &mut Self {
+		for (key, value) in env {
+			let value = expand_environment_variables(value, &self.env);
+			self.env.insert(key.clone(), value);
+		}
+		self
+	}
+
 	pub fn with_cwd(mut self, cwd: impl Into<PathBuf>) -> Self {
 		self.cwd = Some(cwd.into());
 		self
@@ -81,6 +93,42 @@ impl GameLaunch {
 
 #[cfg(target_os = "linux")]
 static SYSTEMD_SERVICE_COUNTER: AtomicU64 = AtomicU64::new(0);
+
+fn expand_environment_variables(value: &str, environment: &BTreeMap<String, String>) -> String {
+	let mut output = String::new();
+	let mut rest = value;
+
+	while let Some(start) = rest.find("${") {
+		output.push_str(&rest[..start]);
+
+		let after = &rest[start + 2..];
+		let Some(end) = after.find('}') else {
+			output.push_str("${");
+			rest = after;
+			continue;
+		};
+
+		let name = &after[..end];
+		if name.is_empty()
+			|| !name
+				.chars()
+				.all(|character| character.is_ascii_alphanumeric() || character == '_')
+		{
+			output.push_str("${");
+			rest = after;
+			continue;
+		}
+
+		if let Some(replacement) = environment.get(name) {
+			output.push_str(replacement);
+		}
+
+		rest = &after[end + 1..];
+	}
+
+	output.push_str(rest);
+	output
+}
 
 #[cfg(target_os = "linux")]
 const ENV_VARS_TO_KEEP_OUT: &[&str] = &[

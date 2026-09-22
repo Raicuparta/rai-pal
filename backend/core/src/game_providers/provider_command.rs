@@ -1,10 +1,13 @@
-use std::path::PathBuf;
+use std::{collections::BTreeMap, path::PathBuf};
 
 use rai_pal_proc_macros::serializable_enum;
 
 use crate::{
-	game::DbGame, open_better::open_detached_better, operating_system::OperatingSystem,
-	result::Result,
+	game::DbGame,
+	game_providers::game_provider::GameProviderId,
+	open_better::open_detached_better,
+	operating_system::OperatingSystem,
+	result::{Error, Result},
 };
 
 #[derive(serde::Serialize, serde::Deserialize, specta::Type, Clone, PartialEq, Eq, Hash, Debug)]
@@ -24,16 +27,36 @@ pub enum ProviderCommandAction {
 }
 
 impl ProviderCommand {
-	pub fn run(&self, game: &DbGame) -> Result {
+	pub fn run(&self, game: &DbGame, environment: &BTreeMap<String, String>) -> Result {
+		if !environment.is_empty() && !self.supports_environment(game) {
+			return Err(Error::UnsupportedGameEnvironment(
+				game.display_title.clone(),
+				game.provider_id,
+			));
+		}
+
 		match self {
 			Self::String(command) => {
+				#[cfg(target_os = "linux")]
+				if !environment.is_empty() {
+					let exe_path = game.try_get_exe_path()?;
+					let cwd = exe_path.parent().map(PathBuf::from);
+					crate::game_providers::steam::steam_exe_swap::launch_via_steam_with_swapped_exe(
+						game,
+						exe_path,
+						&[],
+						environment,
+						cwd.as_deref(),
+					)?;
+
+					return Ok(());
+				}
+
 				open_detached_better(command)?;
 			}
 			Self::Path(path, args) => {
 				#[cfg(target_os = "linux")]
 				{
-					use std::collections::BTreeMap;
-
 					use crate::{
 						game_launch::{GameLaunch, spawn_game},
 						game_providers::game_provider,
@@ -47,6 +70,7 @@ impl ProviderCommand {
 							.unwrap_or_else(|| GameLaunch::new(path));
 						launch.args(args);
 						launch.envs(&provider.get_native_run_environment(game)?);
+						launch.envs_expanded(environment);
 						if let Some(parent) = path.parent() {
 							launch.cwd = Some(parent.to_path_buf());
 						}
@@ -72,5 +96,20 @@ impl ProviderCommand {
 			}
 		}
 		Ok(())
+	}
+
+	fn supports_environment(&self, game: &DbGame) -> bool {
+		#[cfg(target_os = "linux")]
+		if game.executable_os == Some(OperatingSystem::Linux) {
+			return match self {
+				Self::Path(_, _) => true,
+				Self::String(_) => game.provider_id == GameProviderId::Steam,
+			};
+		}
+
+		#[cfg(target_os = "windows")]
+		let _ = game;
+
+		false
 	}
 }

@@ -35,7 +35,7 @@ fn shell_quote(value: &OsStr) -> Result<String> {
 }
 
 /// Quotes a value for `export`, but allows `${VAR}` references to the process
-/// environment so mods can *prepend* to variables Steam already set (for
+/// environment so environment values can *prepend* to variables already set (for
 /// example `LD_PRELOAD=libdoorstop.so:${LD_PRELOAD}`).
 fn shell_quote_with_env(value: &str) -> String {
 	let mut output = String::new();
@@ -106,7 +106,7 @@ fn build_script(
 }
 
 /// Replaces a native Linux Steam game's executable with a script that restores
-/// the real executable, sets the mod's environment, and execs `program`, then
+/// the real executable, sets the game's environment, and execs `program`, then
 /// asks Steam to launch the app.
 ///
 /// Steam only tracks games it launched itself, so launching the game ourselves

@@ -180,6 +180,7 @@ export type GameMod = {
 	install: ModInstall | null,
 	runForGame: ModRun | null,
 	runStandalone: ModRun | null,
+	gameEnvironment: { [key in string]: string } | null,
 	hash: string | null,
 };
 
@@ -258,7 +259,6 @@ export type ModRun = {
 	path: string | null,
 	args: string[] | null,
 	wineEnvironment: { [key in string]: string } | null,
-	environment: { [key in string]: string } | null,
 	os: OperatingSystem | null,
 };
 
