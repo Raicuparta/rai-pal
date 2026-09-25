@@ -22,15 +22,14 @@ export type FilterDetails = {
 export const filterDetails = Object.freeze<{
 	[key in FilterKey]: FilterDetails;
 }>({
-	architectures: {
-		localizationKey: "architecture",
-		emptyLocalizationKey: "unknown",
+	installed: {
+		localizationKey: "status",
 		valueDetails: {
-			X64: {
-				localizationKey: "arch64",
+			Installed: {
+				localizationKey: "statusInstalled",
 			},
-			X86: {
-				localizationKey: "arch32",
+			NotInstalled: {
+				localizationKey: "statusNotInstalled",
 			},
 		},
 	},
@@ -50,6 +49,46 @@ export const filterDetails = Object.freeze<{
 			},
 			Unreal: {
 				staticDisplayText: "Unreal",
+			},
+		},
+	},
+	modFamilies: {
+		localizationKey: "mod",
+		valueDetails: {},
+	},
+	tags: {
+		localizationKey: "tags",
+		emptyLocalizationKey: "tagUntagged",
+		valueDetails: {
+			Demo: {
+				localizationKey: "tagDemo",
+			},
+			VR: {
+				localizationKey: "tagVr",
+			},
+		},
+	},
+	providers: {
+		localizationKey: "provider",
+		valueDetails: {
+			Epic: {
+				staticDisplayText: "Epic",
+			},
+			Gog: {
+				staticDisplayText: "GOG",
+			},
+			Itch: {
+				staticDisplayText: "itch.io",
+			},
+			Manual: {
+				localizationKey: "providerManual",
+			},
+			Steam: {
+				staticDisplayText: "Steam",
+			},
+			Xbox: {
+				staticDisplayText: "Xbox",
+				noteLocalizationKey: "providerXboxOnlyInstalled",
 			},
 		},
 	},
@@ -89,55 +128,16 @@ export const filterDetails = Object.freeze<{
 			},
 		},
 	},
-	tags: {
-		localizationKey: "tags",
-		emptyLocalizationKey: "tagUntagged",
+	architectures: {
+		localizationKey: "architecture",
+		emptyLocalizationKey: "unknown",
 		valueDetails: {
-			Demo: {
-				localizationKey: "tagDemo",
+			X64: {
+				localizationKey: "arch64",
 			},
-			VR: {
-				localizationKey: "tagVr",
+			X86: {
+				localizationKey: "arch32",
 			},
 		},
-	},
-	installed: {
-		localizationKey: "status",
-		valueDetails: {
-			Installed: {
-				localizationKey: "statusInstalled",
-			},
-			NotInstalled: {
-				localizationKey: "statusNotInstalled",
-			},
-		},
-	},
-	providers: {
-		localizationKey: "provider",
-		valueDetails: {
-			Epic: {
-				staticDisplayText: "Epic",
-			},
-			Gog: {
-				staticDisplayText: "GOG",
-			},
-			Itch: {
-				staticDisplayText: "itch.io",
-			},
-			Manual: {
-				localizationKey: "providerManual",
-			},
-			Steam: {
-				staticDisplayText: "Steam",
-			},
-			Xbox: {
-				staticDisplayText: "Xbox",
-				noteLocalizationKey: "providerXboxOnlyInstalled",
-			},
-		},
-	},
-	modFamilies: {
-		localizationKey: "mod",
-		valueDetails: {},
 	},
 });

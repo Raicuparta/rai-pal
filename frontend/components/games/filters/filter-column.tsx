@@ -1,5 +1,5 @@
 import { ActionIcon, Group, Stack, Text, ThemeIcon } from "@mantine/core";
-import { FilterGroup, FilterItem, GamesFilter } from "@api/bindings";
+import { FilterGroup, FilterItem } from "@api/bindings";
 import { IconLock, IconLockOpen, IconRestore } from "@tabler/icons-react";
 import { useLocalization } from "@hooks/use-localization";
 import { CheckboxButton } from "@components/checkbox-button";

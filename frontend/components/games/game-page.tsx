@@ -2,6 +2,7 @@ import { Alert, Box, Button, Divider, Stack, Table } from "@mantine/core";
 import { commands, DbGame, ProviderCommandAction } from "@api/bindings";
 import { CommandButton } from "@components/command-button";
 import {
+	IconExternalLink,
 	IconFileSettings,
 	IconFolder,
 	IconFolderCog,
@@ -94,60 +95,74 @@ export function GamePage({ game, mods }: Props) {
 								label={game.providerId}
 								mt="xs"
 							/>
-							{providerCommandActions.map((action) => (
-								<ProviderCommandButton
-									key={action}
-									game={game}
-									action={action}
-								/>
-							))}
+							<Button.Group orientation="vertical">
+								{providerCommandActions.map((action) => (
+									<ProviderCommandButton
+										justify="start"
+										key={action}
+										game={game}
+										action={action}
+									/>
+								))}
+							</Button.Group>
 						</Stack>
 					)}
 					{game.exePath && (
-						<Stack>
+						<>
 							<Divider
 								label={t("foldersDropdown")}
 								mt="xs"
 							/>
-							<CommandButton
-								leftSection={<IconFolder />}
-								onClick={() => commands.openGameFolder(providerId, gameId)}
-							>
-								{t("openGameFilesFolder")}
-							</CommandButton>
-							<CommandButton
-								leftSection={<IconFolderCog />}
-								onClick={() => commands.openGameModsFolder(providerId, gameId)}
-							>
-								{t("openInstalledModsFolder")}
-							</CommandButton>
-							<CommandButton
-								leftSection={<IconFileSettings />}
-								onClick={() => commands.openGameDataFolder(providerId, gameId)}
-							>
-								{t("openGameDataFolder")}
-							</CommandButton>
-							{platform() === "linux" && (
-								<>
-									<CommandButton
-										leftSection={<IconGlassFull />}
-										onClick={() =>
-											commands.openGameWinePrefixFolder(providerId, gameId)
-										}
-									>
-										{t("openGameWinePrefixFolder")}
-									</CommandButton>
-									<CommandButton
-										leftSection={<IconGlassFull />}
-										onClick={() =>
-											commands.openGameWineBinaryFolder(providerId, gameId)
-										}
-									>
-										{t("openGameWineBinaryFolder")}
-									</CommandButton>
-								</>
-							)}
-						</Stack>
+							<Button.Group orientation="vertical">
+								<CommandButton
+									justify="start"
+									leftSection={<IconFolder />}
+									onClick={() => commands.openGameFolder(providerId, gameId)}
+								>
+									{t("openGameFilesFolder")}
+								</CommandButton>
+								<CommandButton
+									justify="start"
+									leftSection={<IconFolderCog />}
+									onClick={() =>
+										commands.openGameModsFolder(providerId, gameId)
+									}
+								>
+									{t("openInstalledModsFolder")}
+								</CommandButton>
+								<CommandButton
+									justify="start"
+									leftSection={<IconFileSettings />}
+									onClick={() =>
+										commands.openGameDataFolder(providerId, gameId)
+									}
+								>
+									{t("openGameDataFolder")}
+								</CommandButton>
+								{platform() === "linux" && (
+									<>
+										<CommandButton
+											justify="start"
+											leftSection={<IconGlassFull />}
+											onClick={() =>
+												commands.openGameWinePrefixFolder(providerId, gameId)
+											}
+										>
+											{t("openGameWinePrefixFolder")}
+										</CommandButton>
+										<CommandButton
+											justify="start"
+											leftSection={<IconGlassFull />}
+											onClick={() =>
+												commands.openGameWineBinaryFolder(providerId, gameId)
+											}
+										>
+											{t("openGameWineBinaryFolder")}
+										</CommandButton>
+									</>
+								)}
+							</Button.Group>
+						</>
 					)}
 				</>
 			}
