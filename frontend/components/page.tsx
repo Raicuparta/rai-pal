@@ -1,4 +1,4 @@
-import { Button, Card, CardProps, Group, Stack } from "@mantine/core";
+import { Box, Button, Card, CardProps, Group, Stack } from "@mantine/core";
 import { useHotkeys } from "@mantine/hooks";
 import { useLocalization } from "@hooks/use-localization";
 import { IconArrowLeft } from "@tabler/icons-react";
@@ -40,12 +40,14 @@ export function Page({
 			>
 				<Sidebar>
 					{onClose && (
-						<Button
-							onClick={onClose}
-							leftSection={<IconArrowLeft />}
-						>
-							{t("back")}
-						</Button>
+						<Box p="xs">
+							<Button
+								onClick={onClose}
+								leftSection={<IconArrowLeft />}
+							>
+								{t("back")}
+							</Button>
+						</Box>
 					)}
 					{sidebar}
 				</Sidebar>

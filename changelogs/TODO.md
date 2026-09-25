@@ -31,3 +31,4 @@ new sidebar stuff:
 - game page sidebar can't scroll.
 - sort order dropdown should have a better "sort by" label.
 - search should have icon to be more visible maybe?
+- the "no games" message takes up the whole page.

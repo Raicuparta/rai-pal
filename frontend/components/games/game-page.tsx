@@ -55,7 +55,10 @@ export function GamePage({ game, mods }: Props) {
 		<Page
 			onClose={close}
 			sidebar={
-				<>
+				<Stack
+					p="xs"
+					gap="xs"
+				>
 					{providerId === "Manual" && (
 						<RemoveGameButton
 							providerId={providerId}
@@ -158,7 +161,7 @@ export function GamePage({ game, mods }: Props) {
 							</Button.Group>
 						</>
 					)}
-				</>
+				</Stack>
 			}
 		>
 			<Box>

@@ -53,6 +53,7 @@ export function FilterList() {
 			<Group
 				justify="space-between"
 				wrap="nowrap"
+				px="xs"
 			>
 				<Divider
 					label={
@@ -76,8 +77,7 @@ export function FilterList() {
 			</Group>
 			<Stack
 				className={styles.scrollArea}
-				gap="xs"
-				align="start"
+				gap={0}
 			>
 				{filterKeys.map((filterKey) => {
 					const possibleValues =

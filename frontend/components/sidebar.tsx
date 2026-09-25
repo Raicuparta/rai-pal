@@ -6,7 +6,6 @@ export function Sidebar(props: StackProps) {
 			flex="0 0 auto"
 			w={250}
 			gap="xs"
-			p="xs"
 			{...props}
 		/>
 	);

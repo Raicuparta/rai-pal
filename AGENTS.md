@@ -47,3 +47,9 @@ Key points to remember:
 - `await` is supported; thrown errors come back with a stack trace.
 - Results are JSON-serialized and pretty-printed; strings print plainly.
 - Prefer reading the DOM/text over screenshots; some models cannot view images.
+
+## Styles
+
+Use Mantine. Docs here: https://mantine.dev/llms/core-accordion.md
+
+Avoid making your own custom styles unless absolutely necessary. Default to using Mantine's provided utilities and styles with no extra css files, only adjusting it when necessary for functionality, or when specifically asked for something that can't be done easily with Mantine directly.

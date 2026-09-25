@@ -21,8 +21,8 @@
 }
 
 *::-webkit-scrollbar {
-	width: var(--mantine-spacing-md);
-	height: var(--mantine-spacing-md);
+	width: var(--mantine-spacing-xs);
+	height: var(--mantine-spacing-xs);
 }
 
 *::-webkit-scrollbar-track {

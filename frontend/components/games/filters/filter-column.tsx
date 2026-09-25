@@ -1,6 +1,7 @@
-import { ActionIcon, Group, Stack, Text, ThemeIcon } from "@mantine/core";
+import { Accordion, ActionIcon, Flex, Group, Stack } from "@mantine/core";
 import { FilterGroup, FilterItem } from "@api/bindings";
 import { IconLock, IconLockOpen, IconRestore } from "@tabler/icons-react";
+import { useEffect, useRef, useState } from "react";
 import { useLocalization } from "@hooks/use-localization";
 import { CheckboxButton } from "@components/checkbox-button";
 import { filterDetails, FilterKey } from "./filter-details";
@@ -65,6 +66,19 @@ export function FilterColumn<TFilterKey extends FilterKey>({
 		...(emptyLocalizationKey ? [""] : []),
 		...possibleValues,
 	];
+
+	const hasChanges = hasDisabledNonLocked(filterGroup);
+	const [expanded, setExpanded] = useState<string | null>(() =>
+		hasChanges ? id : null,
+	);
+	const autoExpanded = useRef(hasChanges);
+
+	useEffect(() => {
+		if (hasChanges && !autoExpanded.current) {
+			autoExpanded.current = true;
+			setExpanded(id);
+		}
+	}, [hasChanges, id]);
 
 	function modifyKnown(
 		key: string,
@@ -160,112 +174,112 @@ export function FilterColumn<TFilterKey extends FilterKey>({
 	}
 
 	const unknownItem = filterGroup.unknown ?? getDefaultItem();
-	const hasAnyDisabled =
-		Object.values(filterGroup.known).some(
-			(item) => item !== undefined && !item.enabled && !item.locked,
-		) ||
-		(!unknownItem.enabled && !unknownItem.locked);
 
 	return (
-		<Stack className={styles.filterColumn}>
-			<Stack gap={5}>
-				<Group wrap="nowrap">
-					{!hasAnyDisabled ? (
-						<ThemeIcon
-							size="xs"
-							variant="transparent"
-							color="gray"
-							opacity={0.3}
-						>
-							<IconRestore fontSize={13} />
-						</ThemeIcon>
-					) : (
-						<ActionIcon
-							size="xs"
-							variant="subtle"
-							onClick={handleResetClick}
-						>
-							<IconRestore fontSize={13} />
-						</ActionIcon>
-					)}
-					<Text
-						fz="xs"
+		<Accordion
+			className={styles.filterColumn}
+			value={expanded}
+			onChange={setExpanded}
+		>
+			<Accordion.Item
+				value={id}
+				bd={0}
+			>
+				<Flex
+					align="stretch"
+					gap={0}
+					wrap="nowrap"
+					pl="xs"
+				>
+					<ActionIcon
+						size="sm"
+						variant="subtle"
+						disabled={!hasChanges}
+						bg="transparent"
+						onClick={handleResetClick}
+						flex="0 0 auto"
+						h="auto"
+					>
+						<IconRestore fontSize={16} />
+					</ActionIcon>
+					<Accordion.Control
 						className={styles.filterTitle}
+						fz="xs"
 					>
 						{tProperty(filterDetails[id].localizationKey)}
-					</Text>
-				</Group>
-				<Stack
-					gap={2}
-					miw={100}
-				>
-					{possibleValues.map((possibleValue) => {
-						const valueDetails = filterDetails[id].valueDetails[possibleValue];
-						const item = getItem(filterGroup.known, possibleValue);
+					</Accordion.Control>
+				</Flex>
+				<Accordion.Panel>
+					<Stack gap={2}>
+						{possibleValues.map((possibleValue) => {
+							const valueDetails =
+								filterDetails[id].valueDetails[possibleValue];
+							const item = getItem(filterGroup.known, possibleValue);
 
-						return (
+							return (
+								<Group
+									key={possibleValue}
+									gap={2}
+									wrap="nowrap"
+								>
+									<ActionIcon
+										size="xs"
+										variant="subtle"
+										color={item.locked ? "yellow" : "gray"}
+										disabled={item.enabled}
+										onClick={() => handleLockClick(possibleValue)}
+									>
+										{item.locked ? (
+											<IconLock size={14} />
+										) : (
+											<IconLockOpen size={14} />
+										)}
+									</ActionIcon>
+									<CheckboxButton
+										tooltip={tValueNote(valueDetails?.noteLocalizationKey)}
+										checked={item.enabled}
+										disabled={item.locked && !item.enabled}
+										onClickCheckbox={() => handleFilterClick(possibleValue)}
+										onClickButton={() => handleExclusiveClick(possibleValue)}
+									>
+										{valueDetails?.staticDisplayText ??
+											tValue(valueDetails?.localizationKey) ??
+											possibleValue}
+									</CheckboxButton>
+								</Group>
+							);
+						})}
+						{emptyLocalizationKey && (
 							<Group
-								key={possibleValue}
 								gap={2}
 								wrap="nowrap"
 							>
 								<ActionIcon
 									size="xs"
 									variant="subtle"
-									color={item.locked ? "yellow" : "gray"}
-									disabled={item.enabled}
-									onClick={() => handleLockClick(possibleValue)}
+									color={unknownItem.locked ? "yellow" : "gray"}
+									disabled={unknownItem.enabled}
+									onClick={() => handleLockClick("")}
 								>
-									{item.locked ? (
+									{unknownItem.locked ? (
 										<IconLock size={14} />
 									) : (
 										<IconLockOpen size={14} />
 									)}
 								</ActionIcon>
 								<CheckboxButton
-									tooltip={tValueNote(valueDetails?.noteLocalizationKey)}
-									checked={item.enabled}
-									disabled={item.locked && !item.enabled}
-									onClickCheckbox={() => handleFilterClick(possibleValue)}
-									onClickButton={() => handleExclusiveClick(possibleValue)}
+									checked={unknownItem.enabled}
+									disabled={unknownItem.locked && !unknownItem.enabled}
+									onClickCheckbox={() => handleFilterClick("")}
+									onClickButton={() => handleExclusiveClick("")}
 								>
-									{valueDetails?.staticDisplayText ??
-										tValue(valueDetails?.localizationKey) ??
-										possibleValue}
+									{tValue(emptyLocalizationKey)}
 								</CheckboxButton>
 							</Group>
-						);
-					})}
-					{emptyLocalizationKey && (
-						<Group
-							gap={2}
-							wrap="nowrap"
-						>
-							<ActionIcon
-								size="xs"
-								variant="subtle"
-								color={unknownItem.locked ? "yellow" : "gray"}
-								disabled={unknownItem.enabled}
-								onClick={() => handleLockClick("")}
-							>
-								{unknownItem.locked ? (
-									<IconLock size={14} />
-								) : (
-									<IconLockOpen size={14} />
-								)}
-							</ActionIcon>
-							<CheckboxButton
-								checked={unknownItem.enabled}
-								disabled={unknownItem.locked && !unknownItem.enabled}
-								onClickCheckbox={() => handleFilterClick("")}
-								onClickButton={() => handleExclusiveClick("")}
-							>
-								{tValue(emptyLocalizationKey)}
-							</CheckboxButton>
-						</Group>
-					)}
-				</Stack>
-			</Stack>
-		</Stack>
+						)}
+					</Stack>
+				</Accordion.Panel>
+			</Accordion.Item>
+		</Accordion>
 	);
 }

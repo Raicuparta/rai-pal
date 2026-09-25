@@ -41,7 +41,10 @@ export function ModsPage() {
 			{!selectedMod && (
 				<Page
 					sidebar={
-						<>
+						<Stack
+							p="xs"
+							gap="xs"
+						>
 							<Button
 								onClick={openUrlModSourcesModal}
 								leftSection={<IconWorld />}
@@ -57,7 +60,7 @@ export function ModsPage() {
 								</Button>
 							</Tooltip>
 							<RefreshButton />
-						</>
+						</Stack>
 					}
 				>
 					<UrlModSourcesModal
