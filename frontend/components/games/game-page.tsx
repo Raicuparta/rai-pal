@@ -98,7 +98,6 @@ export function GamePage({ game, mods }: Props) {
 							<Button.Group orientation="vertical">
 								{providerCommandActions.map((action) => (
 									<ProviderCommandButton
-										justify="start"
 										key={action}
 										game={game}
 										action={action}
@@ -115,14 +114,12 @@ export function GamePage({ game, mods }: Props) {
 							/>
 							<Button.Group orientation="vertical">
 								<CommandButton
-									justify="start"
 									leftSection={<IconFolder />}
 									onClick={() => commands.openGameFolder(providerId, gameId)}
 								>
 									{t("openGameFilesFolder")}
 								</CommandButton>
 								<CommandButton
-									justify="start"
 									leftSection={<IconFolderCog />}
 									onClick={() =>
 										commands.openGameModsFolder(providerId, gameId)
@@ -131,7 +128,6 @@ export function GamePage({ game, mods }: Props) {
 									{t("openInstalledModsFolder")}
 								</CommandButton>
 								<CommandButton
-									justify="start"
 									leftSection={<IconFileSettings />}
 									onClick={() =>
 										commands.openGameDataFolder(providerId, gameId)
@@ -142,7 +138,6 @@ export function GamePage({ game, mods }: Props) {
 								{platform() === "linux" && (
 									<>
 										<CommandButton
-											justify="start"
 											leftSection={<IconGlassFull />}
 											onClick={() =>
 												commands.openGameWinePrefixFolder(providerId, gameId)
@@ -151,7 +146,6 @@ export function GamePage({ game, mods }: Props) {
 											{t("openGameWinePrefixFolder")}
 										</CommandButton>
 										<CommandButton
-											justify="start"
 											leftSection={<IconGlassFull />}
 											onClick={() =>
 												commands.openGameWineBinaryFolder(providerId, gameId)

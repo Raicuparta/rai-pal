@@ -29,4 +29,5 @@ trying to restart steam deck, suck on "waiting for rai pal to shut down"
 new sidebar stuff:
 
 - game page sidebar can't scroll.
--
+- sort order dropdown should have a better "sort by" label.
+- search should have icon to be more visible maybe?
