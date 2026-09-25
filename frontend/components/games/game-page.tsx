@@ -19,7 +19,7 @@ import { useLocalization } from "@hooks/use-localization";
 import { useAsyncCommand } from "@hooks/use-async-command";
 import { RemoveGameButton } from "./remove-game-button";
 import { platform } from "@tauri-apps/plugin-os";
-import { SubPage } from "@components/sub-page";
+import { Page } from "@components/page";
 import { GameModsData } from "@hooks/use-selected-game";
 import { GameMods } from "./game-mods";
 
@@ -35,7 +35,7 @@ export function GamePage({ game, mods }: Props) {
 	const { providerId, gameId } = game;
 
 	return (
-		<SubPage
+		<Page
 			onClose={close}
 			sidebar={
 				<>
@@ -135,6 +135,6 @@ export function GamePage({ game, mods }: Props) {
 				/>
 				<DebugData data={{ game, mods }} />
 			</Stack>
-		</SubPage>
+		</Page>
 	);
 }

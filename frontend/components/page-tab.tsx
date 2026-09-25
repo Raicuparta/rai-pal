@@ -3,7 +3,7 @@ import { useLocalization } from "@hooks/use-localization";
 import { LocalizationKey } from "@localizations/localizations";
 import { Tabs, Stack, Text } from "@mantine/core";
 
-export type Page = {
+export type PageDefinition = {
 	readonly localizationKey: LocalizationKey<"tab">;
 	readonly component: React.ComponentType;
 	readonly icon: React.ComponentType;
@@ -11,7 +11,7 @@ export type Page = {
 
 type Props = {
 	readonly id: TabId;
-	readonly page: Page;
+	readonly page: PageDefinition;
 	readonly label?: string;
 };
 

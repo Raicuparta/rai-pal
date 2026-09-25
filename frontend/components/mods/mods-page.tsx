@@ -1,4 +1,4 @@
-import { Button, Card, Group, Stack, Tooltip } from "@mantine/core";
+import { Button, Stack, Tooltip } from "@mantine/core";
 import { useMemo, useState } from "react";
 import { useDisclosure } from "@mantine/hooks";
 import { RefreshButton } from "@components/refresh-button";
@@ -11,6 +11,7 @@ import { TableContainer } from "@components/table/table-container";
 import { useAtomValue } from "jotai";
 import { modsAtom } from "@hooks/use-data";
 import { UrlModSourcesModal } from "@components/tools/url-mod-sources-modal";
+import { Page } from "@components/page";
 
 export function ModsPage() {
 	const { t } = useLocalization("modsPage");
@@ -38,41 +39,38 @@ export function ModsPage() {
 				/>
 			)}
 			{!selectedMod && (
-				<>
-					<Group justify="end">
-						<Button
-							onClick={openUrlModSourcesModal}
-							leftSection={<IconWorld />}
-						>
-							{urlModSourcesT("title")}
-						</Button>
-						<Tooltip label={t("openLoadlModsFolderTooltip")}>
+				<Page
+					sidebar={
+						<>
 							<Button
-								onClick={commands.openLocalModsFolder}
-								leftSection={<IconFolderCog />}
+								onClick={openUrlModSourcesModal}
+								leftSection={<IconWorld />}
 							>
-								{t("openLocalModsFolderButton")}
+								{urlModSourcesT("title")}
 							</Button>
-						</Tooltip>
-						<RefreshButton />
-					</Group>
+							<Tooltip label={t("openLoadlModsFolderTooltip")}>
+								<Button
+									onClick={commands.openLocalModsFolder}
+									leftSection={<IconFolderCog />}
+								>
+									{t("openLocalModsFolderButton")}
+								</Button>
+							</Tooltip>
+							<RefreshButton />
+						</>
+					}
+				>
 					<UrlModSourcesModal
 						isOpen={isUrlModSourcesModalOpen}
 						onClose={closeUrlModSourcesModal}
 					/>
-					<Card
-						p={0}
-						flex={1}
-						bg="dark"
-					>
-						<TableContainer style={{ overflowY: "scroll" }}>
-							<ModsTable
-								mods={mods}
-								onClick={(mod) => setSelectedId(mod.id)}
-							/>
-						</TableContainer>
-					</Card>
-				</>
+					<TableContainer>
+						<ModsTable
+							mods={mods}
+							onClick={(mod) => setSelectedId(mod.id)}
+						/>
+					</TableContainer>
+				</Page>
 			)}
 		</Stack>
 	);

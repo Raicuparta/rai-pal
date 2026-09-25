@@ -1,5 +1,5 @@
 import { Tabs, Container, Stack, Group } from "@mantine/core";
-import { Page, PageTab } from "@components/page-tab";
+import { PageDefinition, PageTab } from "@components/page-tab";
 import { IconBox, IconDeviceGamepad } from "@tabler/icons-react";
 import { GamesPage } from "./games/games-page";
 import { ModsPage } from "./mods/mods-page";
@@ -13,7 +13,7 @@ import { useAppSettingSingle } from "@hooks/use-app-setting-single";
 import { TabId } from "@api/bindings";
 import { ProgressStatusMenu } from "./tools/progress-status-menu";
 
-const pages: Record<TabId, Page> = {
+const pages: Record<TabId, PageDefinition> = {
 	Games: {
 		localizationKey: "games",
 		component: GamesPage,

@@ -1,8 +1,9 @@
-import { Card, Group, Stack } from "@mantine/core";
+import { Stack } from "@mantine/core";
 import { GamesTable } from "./games-table";
 import { GamePage } from "./game-page";
 import { useSelectedGame } from "@hooks/use-selected-game";
 import { GamesSidebar } from "./games-sidebar";
+import { Page } from "@components/page";
 
 export function GamesPage() {
 	const { selectedGame, gameMods } = useSelectedGame();
@@ -16,23 +17,12 @@ export function GamesPage() {
 					mods={gameMods}
 				/>
 			)}
-			<Card
-				p={0}
-				flex={1}
+			<Page
 				display={showGamePage ? "none" : undefined}
-				bg="dark"
+				sidebar={<GamesSidebar />}
 			>
-				<Group
-					flex={1}
-					mih={0}
-					wrap="nowrap"
-					align="stretch"
-					gap={0}
-				>
-					<GamesSidebar />
-					<GamesTable />
-				</Group>
-			</Card>
+				<GamesTable />
+			</Page>
 		</Stack>
 	);
 }
