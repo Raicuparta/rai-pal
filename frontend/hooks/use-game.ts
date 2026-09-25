@@ -1,4 +1,4 @@
-import { commands, GameProviderId } from "@api/bindings";
+import { commands, DbGame, GameProviderId } from "@api/bindings";
 import { useAppEvent } from "./use-app-event";
 import { useCommandData } from "./use-command-data";
 import { useAtomValue } from "jotai";
@@ -7,8 +7,11 @@ import { useCallback, useEffect, useMemo, useRef } from "react";
 
 let nextGameHookId = 0;
 
+const gameCache = new Map<string, DbGame>();
+
 export function useGame(providerId?: GameProviderId, gameId?: string) {
 	const hookId = useMemo(() => nextGameHookId++, []);
+	const cacheKey = `${providerId}:${gameId}`;
 
 	const getGame = useCallback(async () => {
 		if (!providerId || !gameId) return null;
@@ -19,7 +22,16 @@ export function useGame(providerId?: GameProviderId, gameId?: string) {
 		}
 	}, [providerId, gameId]);
 
-	const [game, updateGame] = useCommandData(getGame, null);
+	const [game, updateGame] = useCommandData(
+		getGame,
+		gameCache.get(cacheKey) ?? null,
+	);
+
+	useEffect(() => {
+		if (game) {
+			gameCache.set(cacheKey, game);
+		}
+	}, [game, cacheKey]);
 
 	useAppEvent(
 		"refreshGame",

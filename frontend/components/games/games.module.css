@@ -1,3 +1,7 @@
+.table {
+	overflow-y: scroll !important;
+}
+
 .engineWrapper {
 	overflow: hidden;
 	text-align: center;

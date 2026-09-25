@@ -11,10 +11,10 @@ import {
 import { GameRow, gameRowHeight } from "./game-row";
 import { useDataQuery } from "@hooks/use-data-query";
 import { GamesColgroup } from "./games-columns";
+import styles from "./games.module.css";
 import { Alert, Table } from "@mantine/core";
 import React from "react";
 import { useLocalization } from "@hooks/use-localization";
-import { usePageScrollElement } from "@components/page";
 
 const tableComponents: TableComponents<[GameProviderId, string], unknown> = {
 	TableBody: React.forwardRef(function TableBody(props, ref) {
@@ -42,7 +42,6 @@ export function GamesTable() {
 	const loading = useAtomValue(loadingTasksAtom);
 	const [dataQuery] = useDataQuery();
 	const tableRef = useRef<TableVirtuosoHandle>(null);
-	const pageScrollElement = usePageScrollElement();
 	const { t } = useLocalization("gamesPage");
 
 	useEffect(() => {
@@ -67,12 +66,12 @@ export function GamesTable() {
 		<TableContainer>
 			<TableVirtuoso
 				ref={tableRef}
-				customScrollParent={pageScrollElement ?? undefined}
+				className={styles.table}
 				components={tableComponents}
 				data={gameData.gameIds}
 				fixedItemHeight={gameRowHeight}
 				overscan={50}
-				increaseViewportBy={100}
+				increaseViewportBy={800}
 				computeItemKey={(index) =>
 					`${gameData.gameIds[index]?.[0]}${gameData.gameIds[index]?.[1]}`
 				}

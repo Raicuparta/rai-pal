@@ -3,24 +3,24 @@ import { useHotkeys } from "@mantine/hooks";
 import { useLocalization } from "@hooks/use-localization";
 import { IconArrowLeft } from "@tabler/icons-react";
 import { Sidebar } from "@components/sidebar";
-import { createContext, useContext, useState } from "react";
-
-const PageScrollContext = createContext<HTMLElement | null>(null);
-
-// Lets content that manages its own scrolling (like the virtualized games
-// table) reuse the page's single scroll container instead of nesting another.
-export function usePageScrollElement() {
-	return useContext(PageScrollContext);
-}
 
 interface Props extends CardProps {
 	readonly onClose?: () => void;
 	readonly sidebar?: React.ReactNode;
+	// The content area reserves a scrollbar by default, so that navigation
+	// between pages never shifts the layout. Pages whose content scrolls
+	// itself (like the games table) can opt out with "hidden".
+	readonly contentOverflow?: "auto" | "scroll" | "hidden";
 }
 
-export function Page({ onClose, sidebar, children, ...props }: Props) {
+export function Page({
+	onClose,
+	sidebar,
+	contentOverflow = "scroll",
+	children,
+	...props
+}: Props) {
 	const { t } = useLocalization("subPage");
-	const [scrollElement, setScrollElement] = useState<HTMLElement | null>(null);
 
 	useHotkeys([["Escape", () => onClose?.()]]);
 
@@ -50,15 +50,12 @@ export function Page({ onClose, sidebar, children, ...props }: Props) {
 					{sidebar}
 				</Sidebar>
 				<Stack
-					ref={setScrollElement}
 					flex={1}
 					mih={0}
 					gap={0}
-					style={{ overflowY: "scroll" }}
+					style={{ overflowY: contentOverflow }}
 				>
-					<PageScrollContext.Provider value={scrollElement}>
-						{children}
-					</PageScrollContext.Provider>
+					{children}
 				</Stack>
 			</Group>
 		</Card>
