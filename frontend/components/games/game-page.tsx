@@ -1,11 +1,10 @@
-import { Alert, Box, Stack, Table } from "@mantine/core";
-import { commands, DbGame } from "@api/bindings";
+import { Alert, Box, Button, Divider, Stack, Table } from "@mantine/core";
+import { commands, DbGame, ProviderCommandAction } from "@api/bindings";
 import { CommandButton } from "@components/command-button";
 import {
 	IconFileSettings,
 	IconFolder,
 	IconFolderCog,
-	IconFolderOpen,
 	IconGlassFull,
 	IconRefresh,
 } from "@tabler/icons-react";
@@ -13,7 +12,6 @@ import { DebugData } from "@components/debug-data";
 import { GamesColgroup } from "./games-columns";
 import { TableContainer } from "@components/table/table-container";
 import { CommandDropdown } from "@components/command-dropdown";
-import { ProviderCommandButtons } from "@components/providers/provider-command-dropdown";
 import { GameRowInner } from "./game-row";
 import { useLocalization } from "@hooks/use-localization";
 import { useAsyncCommand } from "@hooks/use-async-command";
@@ -22,6 +20,7 @@ import { platform } from "@tauri-apps/plugin-os";
 import { Page } from "@components/page";
 import { GameModsData } from "@hooks/use-selected-game";
 import { GameMods } from "./game-mods";
+import { ProviderCommandButton } from "@components/providers/provider-command-button";
 
 type Props = {
 	readonly game: DbGame;
@@ -34,11 +33,34 @@ export function GamePage({ game, mods }: Props) {
 
 	const { providerId, gameId } = game;
 
+	const {
+		StartViaProvider: startViaProvider,
+		StartViaExe: startViaExe,
+		...otherProviderCommands
+	} = game.providerCommands;
+
+	const providerCommandActions = Object.keys(
+		otherProviderCommands,
+	) as ProviderCommandAction[];
+
+	const [primaryStart, secondaryStart]: readonly ProviderCommandAction[] =
+		startViaProvider
+			? ["StartViaProvider", "StartViaExe"]
+			: startViaExe
+				? ["StartViaExe"]
+				: [];
+
 	return (
 		<Page
 			onClose={close}
 			sidebar={
 				<>
+					{providerId === "Manual" && (
+						<RemoveGameButton
+							providerId={providerId}
+							gameId={gameId}
+						/>
+					)}
 					{game.exePath && (
 						<CommandButton
 							onClick={() => commands.refreshGame(providerId, gameId)}
@@ -47,11 +69,46 @@ export function GamePage({ game, mods }: Props) {
 							{t("refreshGame")}
 						</CommandButton>
 					)}
+					{primaryStart && (
+						<Button.Group>
+							<ProviderCommandButton
+								variant="filled"
+								fullWidth
+								game={game}
+								action={primaryStart}
+							/>
+
+							{secondaryStart && (
+								<CommandDropdown>
+									<ProviderCommandButton
+										game={game}
+										action={secondaryStart}
+									/>
+								</CommandDropdown>
+							)}
+						</Button.Group>
+					)}
+					{providerCommandActions.length > 0 && (
+						<Stack>
+							<Divider
+								label={game.providerId}
+								mt="xs"
+							/>
+							{providerCommandActions.map((action) => (
+								<ProviderCommandButton
+									key={action}
+									game={game}
+									action={action}
+								/>
+							))}
+						</Stack>
+					)}
 					{game.exePath && (
-						<CommandDropdown
-							label={t("foldersDropdown")}
-							icon={<IconFolderOpen />}
-						>
+						<Stack>
+							<Divider
+								label={t("foldersDropdown")}
+								mt="xs"
+							/>
 							<CommandButton
 								leftSection={<IconFolder />}
 								onClick={() => commands.openGameFolder(providerId, gameId)}
@@ -90,15 +147,8 @@ export function GamePage({ game, mods }: Props) {
 									</CommandButton>
 								</>
 							)}
-						</CommandDropdown>
+						</Stack>
 					)}
-					{providerId === "Manual" && (
-						<RemoveGameButton
-							providerId={providerId}
-							gameId={gameId}
-						/>
-					)}
-					<ProviderCommandButtons game={game} />
 				</>
 			}
 		>

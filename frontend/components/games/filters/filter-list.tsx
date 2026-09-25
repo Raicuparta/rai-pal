@@ -1,4 +1,4 @@
-import { ActionIcon, Group, Stack, Text } from "@mantine/core";
+import { ActionIcon, Divider, Group, Stack } from "@mantine/core";
 import { useAtomValue } from "jotai";
 import { IconX } from "@tabler/icons-react";
 import styles from "./filter-list.module.css";
@@ -54,23 +54,25 @@ export function FilterList() {
 				justify="space-between"
 				wrap="nowrap"
 			>
-				<Text
-					fz="xs"
-					fw={700}
-					className={styles.filterTitle}
-				>
-					{t("button")}
-				</Text>
-				{hasActiveFilters && (
-					<ActionIcon
-						size="xs"
-						variant="subtle"
-						aria-label={t("resetButton")}
-						onClick={handleResetAll}
-					>
-						<IconX size={13} />
-					</ActionIcon>
-				)}
+				<Divider
+					label={
+						<Group>
+							{t("button")}
+							{hasActiveFilters && (
+								<ActionIcon
+									size="xs"
+									variant="light"
+									color="red"
+									aria-label={t("resetButton")}
+									onClick={handleResetAll}
+								>
+									<IconX size={13} />
+								</ActionIcon>
+							)}
+						</Group>
+					}
+					w="100%"
+				/>
 			</Group>
 			<Stack
 				className={styles.scrollArea}
