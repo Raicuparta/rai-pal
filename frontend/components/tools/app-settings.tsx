@@ -31,6 +31,8 @@ import { SteamShortcutButton } from "./steam-shortcut-button";
 import { SteamShortcutModal } from "./steam-shortcut-modal";
 import { GlobalWineOverridesButton } from "./global-wine-overrides-button";
 import { GlobalWineOverridesModal } from "./global-wine-overrides-modal";
+import { AddGameButton } from "./add-game-button";
+import { AddGameModal } from "./add-game-modal";
 
 const locales: AppLocale[] = [
 	"EnUs",
@@ -59,6 +61,10 @@ export function AppSettings() {
 	const [
 		isSteamShortcutModalOpen,
 		{ open: openSteamShortcutModal, close: closeSteamShortcutModal },
+	] = useDisclosure(false);
+	const [
+		isAddGameModalOpen,
+		{ open: openAddGameModal, close: closeAddGameModal },
 	] = useDisclosure(false);
 
 	const localeSelectValues = locales.map((locale) => ({
@@ -105,6 +111,7 @@ export function AppSettings() {
 					{platform() === "linux" && (
 						<GlobalWineOverridesButton onClick={openBepInExEnvironmentModal} />
 					)}
+					<AddGameButton onClick={openAddGameModal} />
 					<Divider my="xs" />
 					<Tooltip
 						label={t("resetRaiPalSettingsTooltip")}
@@ -173,6 +180,10 @@ export function AppSettings() {
 			<SteamShortcutModal
 				isOpen={isSteamShortcutModalOpen}
 				onClose={closeSteamShortcutModal}
+			/>
+			<AddGameModal
+				isOpen={isAddGameModalOpen}
+				onClose={closeAddGameModal}
 			/>
 			{platform() === "linux" && (
 				<GlobalWineOverridesModal

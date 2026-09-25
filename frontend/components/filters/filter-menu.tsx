@@ -22,7 +22,6 @@ import { useDataQuery } from "@hooks/use-data-query";
 import { useLocalization } from "@hooks/use-localization";
 import { LocalizationKey } from "@localizations/localizations";
 import { useHotkeys, useToggle } from "@mantine/hooks";
-import { AddGame } from "@components/games/add-game-button";
 import { RefreshButton } from "@components/refresh-button";
 import { SortMenu } from "./sort-menu";
 
@@ -198,7 +197,6 @@ export function FilterMenu() {
 	return (
 		<>
 			<Group>
-				<AddGame />
 				<SearchInput
 					onChange={(search) => {
 						setDataQuery({
