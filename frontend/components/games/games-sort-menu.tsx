@@ -21,7 +21,7 @@ const sortLocalizationKeys: Record<
 	ReleaseDate: "date",
 };
 
-export function SortMenu() {
+export function GamesSortMenu() {
 	const [dataQuery, setDataQuery] = useDataQuery();
 	const { t } = useLocalization("gamesTableColumn");
 

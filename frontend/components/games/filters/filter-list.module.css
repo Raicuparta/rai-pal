@@ -1,0 +1,14 @@
+.root {
+	flex: 1;
+	min-height: 0;
+	overflow-y: auto;
+	overflow-x: hidden;
+}
+
+.filterColumn {
+	flex-shrink: 0;
+}
+
+.filterTitle:global(.mantine-Text-root) {
+	white-space: nowrap;
+}

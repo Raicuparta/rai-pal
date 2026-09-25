@@ -32,7 +32,6 @@ export function SearchInput(props: Props) {
 				setValue(event.currentTarget.value);
 			}}
 			placeholder={t("searchPlaceholder")}
-			style={{ flex: 1 }}
 			value={innerValue}
 			rightSectionPointerEvents="all"
 			rightSection={

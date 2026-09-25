@@ -3,10 +3,9 @@ import { FilterGroup, FilterItem, GamesFilter } from "@api/bindings";
 import { IconLock, IconLockOpen, IconRestore } from "@tabler/icons-react";
 import { useLocalization } from "@hooks/use-localization";
 import { CheckboxButton } from "@components/checkbox-button";
-import { filterDetails } from "./filter-menu";
-import styles from "./filters.module.css";
+import { filterDetails, FilterKey } from "./filter-details";
+import styles from "./filter-list.module.css";
 
-export type FilterKey = keyof GamesFilter;
 export type FilterChangeCallback = (
 	id: FilterKey,
 	values: FilterGroup<string>,
@@ -43,7 +42,7 @@ function getItem(
 	return known[key] ?? getDefaultItem();
 }
 
-export function FilterSelect<TFilterKey extends FilterKey>({
+export function FilterColumn<TFilterKey extends FilterKey>({
 	id,
 	possibleValues,
 	filterGroup,
