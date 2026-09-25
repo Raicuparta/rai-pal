@@ -1,5 +1,6 @@
 import { AppLocale, commands } from "@api/bindings";
 import { useAppSettings } from "@hooks/use-app-settings";
+import { useAppSettingSingle } from "@hooks/use-app-setting-single";
 import {
 	NativeSelect,
 	Group,
@@ -49,6 +50,7 @@ const locales: AppLocale[] = [
 export function AppSettings() {
 	const { t } = useLocalization("appDropdownMenu");
 	const [settings, setSettings, resetSettings] = useAppSettings();
+	const [, setSelectedTab] = useAppSettingSingle("selectedTab");
 	const detectedLocale = useAtomValue(detectedLocaleAtom);
 	const [
 		isBepInExEnvironmentModalOpen,
@@ -111,7 +113,12 @@ export function AppSettings() {
 					{platform() === "linux" && (
 						<GlobalWineOverridesButton onClick={openBepInExEnvironmentModal} />
 					)}
-					<AddGameButton onClick={openAddGameModal} />
+					<AddGameButton
+						onClick={() => {
+							setSelectedTab("Games");
+							openAddGameModal();
+						}}
+					/>
 					<Divider my="xs" />
 					<Tooltip
 						label={t("resetRaiPalSettingsTooltip")}
