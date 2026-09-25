@@ -24,6 +24,15 @@ export function keepOnlyLocked(
 	return { known, unknown };
 }
 
+export function hasDisabledNonLocked(group: FilterGroup<string>): boolean {
+	return (
+		Object.values(group.known).some(
+			(item) => item !== undefined && !item.enabled && !item.locked,
+		) ||
+		(group.unknown !== null && !group.unknown.enabled && !group.unknown.locked)
+	);
+}
+
 type Props<TFilterKey extends FilterKey> = {
 	readonly id: TFilterKey;
 	readonly possibleValues: Array<string>;

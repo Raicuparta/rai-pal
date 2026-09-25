@@ -1,17 +1,17 @@
 import { Card, Group, Stack } from "@mantine/core";
 import { GamesTable } from "./games-table";
-import { GameModal } from "./game-modal";
+import { GamePage } from "./game-page";
 import { useSelectedGame } from "@hooks/use-selected-game";
 import { GamesSidebar } from "./games-sidebar";
 
 export function GamesPage() {
 	const { selectedGame, gameMods } = useSelectedGame();
-	const showModal = Boolean(selectedGame && gameMods);
+	const showGamePage = Boolean(selectedGame && gameMods);
 
 	return (
 		<Stack h="100%">
-			{showModal && selectedGame && gameMods && (
-				<GameModal
+			{showGamePage && selectedGame && gameMods && (
+				<GamePage
 					game={selectedGame}
 					mods={gameMods}
 				/>
@@ -19,7 +19,7 @@ export function GamesPage() {
 			<Card
 				p={0}
 				flex={1}
-				display={showModal ? "none" : undefined}
+				display={showGamePage ? "none" : undefined}
 				bg="dark"
 			>
 				<Group

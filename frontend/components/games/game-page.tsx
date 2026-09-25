@@ -1,4 +1,4 @@
-import { Alert, Box, Group, Stack, Table } from "@mantine/core";
+import { Alert, Box, Stack, Table } from "@mantine/core";
 import { commands, DbGame } from "@api/bindings";
 import { CommandButton } from "@components/command-button";
 import {
@@ -28,7 +28,7 @@ type Props = {
 	readonly mods: GameModsData;
 };
 
-export function GameModal({ game, mods }: Props) {
+export function GamePage({ game, mods }: Props) {
 	const { t } = useLocalization("gameModal");
 	const [close] = useAsyncCommand(() => commands.setSelectedGame(null, null));
 
@@ -37,12 +37,8 @@ export function GameModal({ game, mods }: Props) {
 	return (
 		<SubPage
 			onClose={close}
-			header={
-				<Group
-					flex={1}
-					justify="end"
-					wrap="nowrap"
-				>
+			sidebar={
+				<>
 					{game.exePath && (
 						<CommandButton
 							onClick={() => commands.refreshGame(providerId, gameId)}
@@ -103,7 +99,7 @@ export function GameModal({ game, mods }: Props) {
 						/>
 					)}
 					<ProviderCommandButtons game={game} />
-				</Group>
+				</>
 			}
 		>
 			<Box>
