@@ -35,6 +35,8 @@ pub struct AppSettings {
 	pub games_query: GamesQuery,
 	pub selected_tab: TabId,
 	pub skip_confirm_dialogs: HashSet<String>,
+	#[serde(default)]
+	pub expanded_filters: HashSet<String>,
 }
 
 // If the settings schema changes, update this so it gets recreated.

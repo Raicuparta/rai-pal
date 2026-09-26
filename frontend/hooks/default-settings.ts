@@ -26,4 +26,5 @@ export const defaultSettings: AppSettings = {
 	gamesQuery: defaultQuery,
 	selectedTab: "Games",
 	skipConfirmDialogs: [],
+	expandedFilters: [],
 };

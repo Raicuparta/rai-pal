@@ -1,7 +1,6 @@
 import { Accordion, ActionIcon, Flex, Group, Stack } from "@mantine/core";
 import { FilterGroup, FilterItem } from "@api/bindings";
 import { IconLock, IconLockOpen, IconRestore } from "@tabler/icons-react";
-import { useEffect, useRef, useState } from "react";
 import { useLocalization } from "@hooks/use-localization";
 import { CheckboxButton } from "@components/checkbox-button";
 import { filterDetails, FilterKey } from "./filter-details";
@@ -38,6 +37,8 @@ type Props<TFilterKey extends FilterKey> = {
 	readonly id: TFilterKey;
 	readonly possibleValues: Array<string>;
 	readonly filterGroup: FilterGroup<string>;
+	readonly expanded: boolean;
+	readonly onExpandedChange: (expanded: boolean) => void;
 	readonly onChange: FilterChangeCallback;
 };
 
@@ -56,6 +57,8 @@ export function FilterColumn<TFilterKey extends FilterKey>({
 	id,
 	possibleValues,
 	filterGroup,
+	expanded,
+	onExpandedChange,
 	onChange,
 }: Props<TFilterKey>) {
 	const { t: tProperty } = useLocalization("filterProperty");
@@ -68,17 +71,6 @@ export function FilterColumn<TFilterKey extends FilterKey>({
 	];
 
 	const hasChanges = hasDisabledNonLocked(filterGroup);
-	const [expanded, setExpanded] = useState<string | null>(() =>
-		hasChanges ? id : null,
-	);
-	const autoExpanded = useRef(hasChanges);
-
-	useEffect(() => {
-		if (hasChanges && !autoExpanded.current) {
-			autoExpanded.current = true;
-			setExpanded(id);
-		}
-	}, [hasChanges, id]);
 
 	function modifyKnown(
 		key: string,
@@ -178,8 +170,8 @@ export function FilterColumn<TFilterKey extends FilterKey>({
 	return (
 		<Accordion
 			className={styles.filterColumn}
-			value={expanded}
-			onChange={setExpanded}
+			value={expanded ? id : null}
+			onChange={(value) => onExpandedChange(value === id)}
 		>
 			<Accordion.Item
 				value={id}

@@ -11,12 +11,15 @@ import {
 import { GamesFilter, GamesQuery } from "@api/bindings";
 import { modsAtom } from "@hooks/use-data";
 import { useDataQuery } from "@hooks/use-data-query";
+import { useAppSettingSingle } from "@hooks/use-app-setting-single";
 import { filterDetails, FilterKey } from "./filter-details";
 import { useLocalization } from "@hooks/use-localization";
 import { defaultQuery } from "@hooks/default-settings";
 
 export function FilterList() {
 	const [dataQuery, setDataQuery] = useDataQuery();
+	const [expandedFilters = [], setExpandedFilters] =
+		useAppSettingSingle("expandedFilters");
 	const mods = useAtomValue(modsAtom);
 	const { t } = useLocalization("filterMenu");
 
@@ -99,6 +102,14 @@ export function FilterList() {
 							id={filterKey}
 							possibleValues={possibleValues}
 							filterGroup={dataQuery.filter[filterKey]}
+							expanded={expandedFilters.includes(filterKey)}
+							onExpandedChange={(expanded) =>
+								setExpandedFilters((prev = []) =>
+									expanded
+										? [...prev, filterKey]
+										: prev.filter((key) => key !== filterKey),
+								)
+							}
 							onChange={handleChange}
 						/>
 					);

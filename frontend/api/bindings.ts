@@ -86,6 +86,7 @@ export type AppSettings = {
 	gamesQuery: GamesQuery,
 	selectedTab: TabId,
 	skipConfirmDialogs: string[],
+	expandedFilters?: string[],
 };
 
 export type Architecture = "X64" | "X86";
