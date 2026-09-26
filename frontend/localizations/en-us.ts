@@ -87,8 +87,8 @@ export const enUs = {
 
 	// Menu for filtering games.
 	filterMenu: {
-		// Text in the filter button.
-		button: "Filter",
+		// Text in the divider above the list of filters.
+		filters: "Filters",
 
 		// Text in the reset button for each specific filterable property.
 		resetButton: "Reset",
@@ -121,7 +121,7 @@ export const enUs = {
 		engine: "Engine",
 
 		// Game installation status (Installed, Not installed). Might have more statuses in the future.
-		status: "Status",
+		status: "Install status",
 
 		// Mod compatibility.
 		mod: "Mod",
@@ -294,6 +294,15 @@ export const enUs = {
 		// Tooltip that shows when hovering the uninstall button for a mod that has other mods depending on it.
 		cantUninstallModWithDependants:
 			"Can't uninstall a mod that has dependants. Uninstall the mods that depend on this one first.",
+	},
+
+	// Controls for sorting the list of games.
+	gamesSort: {
+		// Label for the dropdown that chooses which property to sort games by.
+		sortBy: "Sort by",
+
+		// Tooltip/accessible label for the button that flips the sort direction between ascending and descending.
+		sortDirection: "Sort direction",
 	},
 
 	// Named table columns for the list of games.

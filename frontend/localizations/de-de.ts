@@ -46,7 +46,7 @@ export const deDe: Localization = {
 	},
 
 	filterMenu: {
-		button: "Filter",
+		filters: "Filter",
 		resetButton: "Zurücksetzen",
 		searchPlaceholder: "Suchen...",
 	},
@@ -59,7 +59,7 @@ export const deDe: Localization = {
 		supportedOs: "Unterstütztes OS",
 		unityBackend: "Unity Backend",
 		engine: "Engine",
-		status: "Status",
+		status: "Installationsstatus",
 		mod: "Mod",
 	},
 
@@ -146,6 +146,11 @@ export const deDe: Localization = {
 		modOutdated: "Mod veraltet",
 		cantUninstallModWithDependants:
 			"Kann keinen Mod deinstallieren, von dem andere Mods abhängen. Deinstalliere zuerst die Mods, die davon abhängen.",
+	},
+
+	gamesSort: {
+		sortBy: "Sortieren nach",
+		sortDirection: "Sortierrichtung",
 	},
 
 	gamesTableColumn: {

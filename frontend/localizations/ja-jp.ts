@@ -46,7 +46,7 @@ export const jaJp: Localization = {
 	},
 
 	filterMenu: {
-		button: "フィルター",
+		filters: "フィルター",
 		resetButton: "リセット",
 		searchPlaceholder: "検索...",
 	},
@@ -59,7 +59,7 @@ export const jaJp: Localization = {
 		supportedOs: "対応OS",
 		unityBackend: "Unity バックエンド",
 		engine: "エンジン",
-		status: "ステータス",
+		status: "インストール状況",
 		mod: "Mod",
 	},
 
@@ -144,6 +144,11 @@ export const jaJp: Localization = {
 		modOutdated: "Modが古い",
 		cantUninstallModWithDependants:
 			"依存ModがあるModはアンインストールできないよ。先に依存してるModをアンインストールしてね。",
+	},
+
+	gamesSort: {
+		sortBy: "並べ替え",
+		sortDirection: "並べ替え順",
 	},
 
 	gamesTableColumn: {

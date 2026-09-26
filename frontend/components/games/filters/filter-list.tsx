@@ -66,7 +66,7 @@ export function FilterList() {
 					<IconRestore fontSize={16} />
 				</ActionIcon>
 				<Divider
-					label={<Group>{t("button")}</Group>}
+					label={<Group>{t("filters")}</Group>}
 					w="100%"
 				/>
 			</Group>

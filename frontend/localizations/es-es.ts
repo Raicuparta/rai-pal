@@ -46,7 +46,7 @@ export const esEs: Localization = {
 	},
 
 	filterMenu: {
-		button: "Filtrar",
+		filters: "Filtros",
 		resetButton: "Restablecer",
 		searchPlaceholder: "Buscar...",
 	},
@@ -59,7 +59,7 @@ export const esEs: Localization = {
 		supportedOs: "SO compatible",
 		unityBackend: "Backend de Unity",
 		engine: "Motor",
-		status: "Estado",
+		status: "Estado de instalación",
 		mod: "Mod",
 	},
 
@@ -146,6 +146,11 @@ export const esEs: Localization = {
 		modOutdated: "Mod desactualizado",
 		cantUninstallModWithDependants:
 			"No se puede desinstalar un mod que tiene dependientes. Desinstala primero los mods que dependen de este.",
+	},
+
+	gamesSort: {
+		sortBy: "Ordenar por",
+		sortDirection: "Dirección de orden",
 	},
 
 	gamesTableColumn: {

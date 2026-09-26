@@ -46,7 +46,7 @@ export const frFr: Localization = {
 	},
 
 	filterMenu: {
-		button: "Filtrer",
+		filters: "Filtres",
 		resetButton: "Réinitialiser",
 		searchPlaceholder: "Rechercher...",
 	},
@@ -59,7 +59,7 @@ export const frFr: Localization = {
 		supportedOs: "OS compatible",
 		unityBackend: "Backend Unity",
 		engine: "Moteur",
-		status: "Statut",
+		status: "Statut d'installation",
 		mod: "Mod",
 	},
 
@@ -146,6 +146,11 @@ export const frFr: Localization = {
 		modOutdated: "Mod obsolète",
 		cantUninstallModWithDependants:
 			"Impossible de désinstaller un mod qui a des dépendants. Désinstallez d'abord les mods qui en dépendent.",
+	},
+
+	gamesSort: {
+		sortBy: "Trier par",
+		sortDirection: "Ordre de tri",
 	},
 
 	gamesTableColumn: {

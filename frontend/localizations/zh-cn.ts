@@ -46,7 +46,7 @@ export const zhCn: Localization = {
 	},
 
 	filterMenu: {
-		button: "筛选",
+		filters: "筛选",
 		resetButton: "重置",
 		searchPlaceholder: "搜索...",
 	},
@@ -59,7 +59,7 @@ export const zhCn: Localization = {
 		supportedOs: "支持的系统",
 		unityBackend: "Unity 后端",
 		engine: "引擎",
-		status: "状态",
+		status: "安装状态",
 		mod: "模组",
 	},
 
@@ -139,6 +139,11 @@ export const zhCn: Localization = {
 		modOutdated: "模组过时",
 		cantUninstallModWithDependants:
 			"无法卸载有依赖项的模组。请先卸载依赖此模组的其他模组。",
+	},
+
+	gamesSort: {
+		sortBy: "排序方式",
+		sortDirection: "排序方向",
 	},
 
 	gamesTableColumn: {

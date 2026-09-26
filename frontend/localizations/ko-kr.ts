@@ -46,7 +46,7 @@ export const koKr: Localization = {
 	},
 
 	filterMenu: {
-		button: "필터",
+		filters: "필터",
 		resetButton: "재설정",
 		searchPlaceholder: "검색...",
 	},
@@ -59,7 +59,7 @@ export const koKr: Localization = {
 		supportedOs: "지원 OS",
 		unityBackend: "Unity 백엔드",
 		engine: "엔진",
-		status: "상태",
+		status: "설치 상태",
 		mod: "모드",
 	},
 
@@ -142,6 +142,11 @@ export const koKr: Localization = {
 		modOutdated: "업데이트 가능",
 		cantUninstallModWithDependants:
 			"이 모드를 쓰는 다른 모드가 있으면 제거할 수 없어요. 그 모드들부터 먼저 제거해 주세요.",
+	},
+
+	gamesSort: {
+		sortBy: "정렬 기준",
+		sortDirection: "정렬 방향",
 	},
 
 	gamesTableColumn: {
