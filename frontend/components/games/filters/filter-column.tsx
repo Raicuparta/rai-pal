@@ -1,4 +1,4 @@
-import { Accordion, ActionIcon, Flex, Stack } from "@mantine/core";
+import { Accordion, ActionIcon, Flex, Indicator, Stack } from "@mantine/core";
 import { FilterGroup, FilterItem } from "@api/bindings";
 import { IconRestore } from "@tabler/icons-react";
 import { useLocalization } from "@hooks/use-localization";
@@ -22,6 +22,13 @@ export function keepOnlyLocked(
 	}
 	const unknown = group.unknown?.locked ? group.unknown : null;
 	return { known, unknown };
+}
+
+export function hasLocked(group: FilterGroup<string>): boolean {
+	return (
+		Object.values(group.known).some((item) => item?.locked) ||
+		group.unknown?.locked === true
+	);
 }
 
 export function hasDisabledNonLocked(group: FilterGroup<string>): boolean {
@@ -71,6 +78,7 @@ export function FilterColumn<TFilterKey extends FilterKey>({
 	];
 
 	const hasChanges = hasDisabledNonLocked(filterGroup);
+	const hasLockedValues = hasLocked(filterGroup);
 
 	function modifyKnown(
 		key: string,
@@ -177,30 +185,38 @@ export function FilterColumn<TFilterKey extends FilterKey>({
 				value={id}
 				bd={0}
 			>
-				<Flex
-					align="stretch"
-					gap={0}
-					wrap="nowrap"
-					pl="xs"
+				<Indicator
+					color="yellow.5"
+					position="top-start"
+					offset={8}
+					size={3}
+					disabled={!hasLockedValues}
 				>
-					<ActionIcon
-						size="sm"
-						variant="subtle"
-						disabled={!hasChanges}
-						bg="transparent"
-						onClick={handleResetClick}
-						flex="0 0 auto"
-						h="auto"
+					<Flex
+						align="stretch"
+						gap={0}
+						wrap="nowrap"
+						pl="xs"
 					>
-						<IconRestore fontSize={16} />
-					</ActionIcon>
-					<Accordion.Control
-						className={styles.filterTitle}
-						fz="xs"
-					>
-						{tProperty(filterDetails[id].localizationKey)}
-					</Accordion.Control>
-				</Flex>
+						<ActionIcon
+							size="sm"
+							variant="subtle"
+							disabled={!hasChanges}
+							bg="transparent"
+							onClick={handleResetClick}
+							flex="0 0 auto"
+							h="auto"
+						>
+							<IconRestore fontSize={16} />
+						</ActionIcon>
+						<Accordion.Control
+							className={styles.filterTitle}
+							fz="xs"
+						>
+							{tProperty(filterDetails[id].localizationKey)}
+						</Accordion.Control>
+					</Flex>
+				</Indicator>
 				<Accordion.Panel>
 					<Stack gap={2}>
 						{possibleValues.map((possibleValue) => {
