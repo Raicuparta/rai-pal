@@ -84,7 +84,7 @@ export function ConfirmModSourceModal(props: Props) {
 							{t("modsFound", { count: String(mods.length) })}
 						</Text>
 						<ScrollArea.Autosize mah={300}>
-							<Stack gap="xs">
+							<Stack>
 								{mods.map((mod) => (
 									<Text
 										key={mod.id}
@@ -98,10 +98,7 @@ export function ConfirmModSourceModal(props: Props) {
 					</>
 				)}
 
-				<Group
-					justify="end"
-					gap="xs"
-				>
+				<Group justify="end">
 					<Button
 						variant="default"
 						onClick={props.onClose}

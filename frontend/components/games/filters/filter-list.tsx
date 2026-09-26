@@ -49,31 +49,24 @@ export function FilterList() {
 	};
 
 	return (
-		<Stack
-			className={styles.root}
-			gap="xs"
-		>
+		<Stack className={styles.root}>
 			<Group
 				justify="space-between"
 				wrap="nowrap"
 				px="xs"
 			>
+				<ActionIcon
+					size="sm"
+					variant="subtle"
+					bg="transparent"
+					disabled={!hasActiveFilters}
+					aria-label={t("resetButton")}
+					onClick={handleResetAll}
+				>
+					<IconRestore fontSize={16} />
+				</ActionIcon>
 				<Divider
-					label={
-						<Group>
-							<ActionIcon
-								size="sm"
-								variant="subtle"
-								bg="transparent"
-								disabled={!hasActiveFilters}
-								aria-label={t("resetButton")}
-								onClick={handleResetAll}
-							>
-								<IconRestore fontSize={16} />
-							</ActionIcon>
-							{t("button")}
-						</Group>
-					}
+					label={<Group>{t("button")}</Group>}
 					w="100%"
 				/>
 			</Group>

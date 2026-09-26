@@ -10,10 +10,7 @@ export function GamesSidebar() {
 
 	return (
 		<>
-			<Stack
-				gap="xs"
-				p="xs"
-			>
+			<Stack p="xs">
 				<RefreshButton />
 				<SearchInput
 					value={dataQuery.search}

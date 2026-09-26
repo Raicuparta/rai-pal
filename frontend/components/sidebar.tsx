@@ -5,7 +5,7 @@ export function Sidebar(props: StackProps) {
 		<Stack
 			flex="0 0 auto"
 			w={250}
-			gap="xs"
+			style={{ overflowY: "auto" }}
 			{...props}
 		/>
 	);

@@ -2,7 +2,6 @@ import { Alert, Box, Button, Divider, Stack, Table } from "@mantine/core";
 import { commands, DbGame, ProviderCommandAction } from "@api/bindings";
 import { CommandButton } from "@components/command-button";
 import {
-	IconExternalLink,
 	IconFileSettings,
 	IconFolder,
 	IconFolderCog,
@@ -55,10 +54,7 @@ export function GamePage({ game, mods }: Props) {
 		<Page
 			onClose={close}
 			sidebar={
-				<Stack
-					p="xs"
-					gap="xs"
-				>
+				<Stack p="xs">
 					{providerId === "Manual" && (
 						<RemoveGameButton
 							providerId={providerId}

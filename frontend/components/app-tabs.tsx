@@ -63,10 +63,7 @@ export function AppTabs() {
 									label={page === pages.Games ? gamesCountLabel : undefined}
 								/>
 							))}
-							<Group
-								ml="auto"
-								gap="xs"
-							>
+							<Group ml="auto">
 								<ProgressStatusMenu />
 								<UserMenu />
 								<AppSettings />
