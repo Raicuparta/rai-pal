@@ -1,19 +1,23 @@
-import { ActionIcon, Button, ButtonProps, Group, Tooltip } from "@mantine/core";
+import { Button, ButtonProps, Tooltip } from "@mantine/core";
 import { forwardRef } from "react";
-import { IconCheck } from "@tabler/icons-react";
+import { IconCheck, IconLock, IconLockOpen, IconX } from "@tabler/icons-react";
 
 interface Props extends ButtonProps {
 	readonly checked: boolean;
+	readonly locked?: boolean;
 	readonly onClickCheckbox: () => void;
 	readonly onClickButton: () => void;
+	readonly onClickLock?: () => void;
 	readonly tooltip?: string;
 }
 
 function CheckboxButtonInternal(
 	{
 		checked,
+		locked = false,
 		onClickCheckbox,
 		onClickButton,
+		onClickLock,
 		tooltip,
 		children,
 		...props
@@ -25,20 +29,31 @@ function CheckboxButtonInternal(
 			label={tooltip}
 			disabled={!tooltip}
 		>
-			<Group
-				gap={0}
-				flex={1}
-			>
-				<ActionIcon
-					size="sm"
-					variant={checked ? "filled" : "default"}
+			<Button.Group flex={1}>
+				{onClickLock && (
+					<Button
+						px={4}
+						size="compact-xs"
+						variant="light"
+						bg={locked ? undefined : "transparent"}
+						color={locked ? "yellow" : "white"}
+						disabled={checked}
+						onClick={onClickLock}
+					>
+						{locked ? <IconLock /> : <IconLockOpen />}
+					</Button>
+				)}
+				<Button
+					size="compact-xs"
+					px={4}
+					variant={checked ? "filled" : "light"}
 					onClick={onClickCheckbox}
 				>
-					{checked && <IconCheck />}
-				</ActionIcon>
+					{checked ? <IconCheck /> : <IconX opacity={0.3} />}
+				</Button>
 				<Button
-					variant="subtle"
-					color="gray"
+					variant="light"
+					size="compact-xs"
 					ref={ref}
 					justify="start"
 					flex={1}
@@ -53,7 +68,7 @@ function CheckboxButtonInternal(
 
 					{tooltip && " *"}
 				</Button>
-			</Group>
+			</Button.Group>
 		</Tooltip>
 	);
 }
