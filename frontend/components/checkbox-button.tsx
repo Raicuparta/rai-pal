@@ -25,7 +25,10 @@ function CheckboxButtonInternal(
 			label={tooltip}
 			disabled={!tooltip}
 		>
-			<Group gap={0}>
+			<Group
+				gap={0}
+				flex={1}
+			>
 				<ActionIcon
 					size="sm"
 					variant={checked ? "filled" : "default"}

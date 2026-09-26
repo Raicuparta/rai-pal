@@ -1,6 +1,6 @@
 import { ActionIcon, Divider, Group, Stack } from "@mantine/core";
 import { useAtomValue } from "jotai";
-import { IconX } from "@tabler/icons-react";
+import { IconRestore } from "@tabler/icons-react";
 import styles from "./filter-list.module.css";
 import {
 	FilterChangeCallback,
@@ -61,18 +61,17 @@ export function FilterList() {
 				<Divider
 					label={
 						<Group>
+							<ActionIcon
+								size="sm"
+								variant="subtle"
+								bg="transparent"
+								disabled={!hasActiveFilters}
+								aria-label={t("resetButton")}
+								onClick={handleResetAll}
+							>
+								<IconRestore fontSize={16} />
+							</ActionIcon>
 							{t("button")}
-							{hasActiveFilters && (
-								<ActionIcon
-									size="xs"
-									variant="light"
-									color="red"
-									aria-label={t("resetButton")}
-									onClick={handleResetAll}
-								>
-									<IconX size={13} />
-								</ActionIcon>
-							)}
 						</Group>
 					}
 					w="100%"
