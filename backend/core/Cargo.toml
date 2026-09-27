@@ -10,7 +10,7 @@ log.workspace = true
 rai-pal-proc-macros.workspace = true
 serde_json.workspace = true
 serde.workspace = true
-specta.workspace = true
+specta = { workspace = true, features = ["derive"] }
 thiserror.workspace = true
 rusqlite.workspace = true
 strum.workspace = true
@@ -21,13 +21,14 @@ base64 = "0.22.1"
 byteorder = "1.5.0"
 chrono = { version = "0.4.44", default-features = false, features = ["std"] }
 directories = "6.0.0"
-tokio = { version = "1.52.3", features = ["process"] }
+tokio = { version = "1.52.3", features = ["process", "fs"] }
 globwalk = "0.9.1"
 lazy-regex = "3.6.0"
 memmap2 = "0.9.5"
 pelite = { version = "0.10.0", features = ["std"], default-features = false }
 reqwest = { version = "0.13.3", features = [
   "json",
+  "stream",
   "gzip", # We have some large JSONs in the Rai Pal Database, so gzip is useful.
 ] }
 serde_urlencoded = "0.7.1"
