@@ -56,7 +56,6 @@ export const commands = {
 	runProviderCommand: (providerId: GameProviderId, gameId: string, providerCommandAciton: ProviderCommandAction) => __TAURI_INVOKE<null>("run_provider_command", { providerId, gameId, providerCommandAciton }),
 	saveAppSettings: (settings: AppSettings) => __TAURI_INVOKE<null>("save_app_settings", { settings }),
 	sendAnalyticsEvent: (event: Event, data: { [key in string]: string } | null) => __TAURI_INVOKE<null>("send_analytics_event", { event, data }),
-	setUpGlobalWineOverrides: () => __TAURI_INVOKE<null>("set_up_global_wine_overrides"),
 	uninstallAllMods: (providerId: GameProviderId, gameId: string) => __TAURI_INVOKE<null>("uninstall_all_mods", { providerId, gameId }),
 	uninstallMod: (providerId: GameProviderId, gameId: string, modId: string) => __TAURI_INVOKE<null>("uninstall_mod", { providerId, gameId, modId }),
 };
@@ -137,7 +136,7 @@ export type EngineVersionRange = {
 	maximum: EngineVersionNumbers | null,
 };
 
-export type Error = "Tauri" | "Core" | "Io" | "Rusql" | "SerdeJson" | ({ FailedToAccessStateData: string }) & { LinuxOnly?: never } | ({ LinuxOnly: null }) & { FailedToAccessStateData?: never };
+export type Error = "Tauri" | "Core" | "Io" | "Rusql" | "SerdeJson" | { FailedToAccessStateData: string };
 
 export type Event = "InstallMod" | "UninstallMod" | "UpdateMod" | "RunMod" | "ProviderCommand" | "StartApp" | "UserSignIn" | "ErrorNotification";
 

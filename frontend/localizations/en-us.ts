@@ -467,23 +467,6 @@ export const enUs = {
 			"Rai Pal has been added to your Steam library. Restart Steam to see it.",
 	},
 
-	// Button and modal for making sure BepInEx loads on Linux with Wine.
-	globalWineOverrides: {
-		// Button that sets up the Linux environment for BepInEx.
-		setUpEnvironmentButton: "Set up Linux environment for BepInEx",
-
-		// Title of the modal that opens after clicking the set up Linux environment button.
-		setUpEnvironmentTitle: "Set up Linux environment for BepInEx",
-
-		// Description of what setting up the Linux environment for BepInEx does.
-		setUpEnvironmentDescription:
-			"When using Proton/Wine on Linux, BepInEx won't load automatically unless some Wine settings are set. This will set the environment variable WINEDLLOVERRIDES to 'winhttp.dll=n,b' globally. If you'd rather do that manually, then don't click this button.",
-
-		// Success message after setting up the Linux environment for BepInEx.
-		setUpEnvironmentSuccess:
-			"File has been written. You will need to log out and log back in, or restart your computer, for the changes to take effect.",
-	},
-
 	// Modal for notifying about an available app update.
 	appUpdate: {
 		// Title of the app update modal. {version} is the new app version number.

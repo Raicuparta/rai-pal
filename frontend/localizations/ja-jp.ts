@@ -229,15 +229,6 @@ export const jaJp: Localization = {
 			"Rai PalをSteamライブラリに追加したよ。表示するにはSteamを再起動してね。",
 	},
 
-	globalWineOverrides: {
-		setUpEnvironmentButton: "BepInEx用のLinux環境をセットアップ",
-		setUpEnvironmentTitle: "BepInEx用のLinux環境をセットアップ",
-		setUpEnvironmentDescription:
-			"LinuxでProton/Wineを使ってると、Wineの設定をしないとBepInExは自動で読み込まれないんだ。これは環境変数 WINEDLLOVERRIDES をグローバルに 'winhttp.dll=n,b' に設定するよ。手動でやりたいなら、このボタンは押さないでね。",
-		setUpEnvironmentSuccess:
-			"ファイルを書き込んだよ。変更を反映するには、ログアウトして再ログインするか、PCを再起動してね。",
-	},
-
 	appUpdate: {
 		updateAvailableTitle: "Rai Pal {version}",
 		noChangelog: "（変更履歴なし）",

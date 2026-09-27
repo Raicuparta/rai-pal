@@ -231,15 +231,6 @@ export const deDe: Localization = {
 			"Rai Pal wurde zu deiner Steam-Bibliothek hinzugefügt. Starte Steam neu, damit es angezeigt wird.",
 	},
 
-	globalWineOverrides: {
-		setUpEnvironmentButton: "Linux-Umgebung für BepInEx einrichten",
-		setUpEnvironmentTitle: "Linux-Umgebung für BepInEx einrichten",
-		setUpEnvironmentDescription:
-			"Bei Verwendung von Proton/Wine unter Linux wird BepInEx nicht automatisch geladen, wenn nicht einige Wine-Einstellungen gesetzt sind. Dies setzt die Umgebungsvariable WINEDLLOVERRIDES global auf 'winhttp.dll=n,b'. Wenn du das lieber manuell machen möchtest, klick nicht auf diesen Button.",
-		setUpEnvironmentSuccess:
-			"Die Datei wurde geschrieben. Du musst dich abmelden und wieder anmelden oder deinen Computer neu starten, damit die Änderungen wirksam werden.",
-	},
-
 	appUpdate: {
 		updateAvailableTitle: "Rai Pal {version}",
 		noChangelog: "(Kein Changelog)",

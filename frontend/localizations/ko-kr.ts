@@ -224,15 +224,6 @@ export const koKr: Localization = {
 			"Rai Pal이 Steam 라이브러리에 추가되었습니다. 보려면 Steam을 다시 시작하세요.",
 	},
 
-	globalWineOverrides: {
-		setUpEnvironmentButton: "BepInEx용 Linux 환경 설정",
-		setUpEnvironmentTitle: "BepInEx용 Linux 환경 설정",
-		setUpEnvironmentDescription:
-			"Linux에서 Proton/Wine을 쓸 때, Wine 설정을 안 해두면 BepInEx가 자동으로 로드되지 않아요. 이 버튼은 WINEDLLOVERRIDES 환경 변수를 전역으로 'winhttp.dll=n,b'로 설정해요. 직접 하고 싶으면 누르지 마세요.",
-		setUpEnvironmentSuccess:
-			"파일이 생성됐어요. 적용하려면 로그아웃 후 다시 로그인하거나 컴퓨터를 다시 시작해야 해요.",
-	},
-
 	appUpdate: {
 		updateAvailableTitle: "Rai Pal {version}",
 		noChangelog: "(변경 내역 없음)",

@@ -819,26 +819,6 @@ async fn download_remote_config(
 
 #[tauri::command]
 #[specta::specta]
-async fn set_up_global_wine_overrides() -> Result {
-	#[cfg(not(target_os = "linux"))]
-	{
-		use crate::result::Error;
-
-		return Err(Error::LinuxOnly());
-	}
-
-	#[cfg(target_os = "linux")]
-	{
-		use rai_pal_core::wine;
-
-		wine::set_up_global_wine_overrides()?;
-
-		Ok(())
-	}
-}
-
-#[tauri::command]
-#[specta::specta]
 async fn listen_to_download_progress(
 	handle: AppHandle,
 	channel: Channel<ProgressStatus>,
@@ -961,7 +941,6 @@ fn main() {
 			run_provider_command,
 			save_app_settings,
 			send_analytics_event,
-			set_up_global_wine_overrides,
 			uninstall_all_mods,
 			uninstall_mod,
 		])

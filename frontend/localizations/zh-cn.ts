@@ -221,15 +221,6 @@ export const zhCn: Localization = {
 			"Rai Pal 已添加到你的 Steam 库中。重启 Steam 后即可看到它。",
 	},
 
-	globalWineOverrides: {
-		setUpEnvironmentButton: "为 BepInEx 设置 Linux 环境",
-		setUpEnvironmentTitle: "为 BepInEx 设置 Linux 环境",
-		setUpEnvironmentDescription:
-			"在 Linux 上使用 Proton/Wine 时，除非设置了一些 Wine 配置，否则 BepInEx 不会自动加载。此操作将全局设置环境变量 WINEDLLOVERRIDES 为 'winhttp.dll=n,b'。如果你更想手动设置，别点这个按钮。",
-		setUpEnvironmentSuccess:
-			"文件已写入。你需要注销后重新登录，或重启计算机，更改才能生效。",
-	},
-
 	appUpdate: {
 		updateAvailableTitle: "Rai Pal {version}",
 		noChangelog: "（无更新日志）",

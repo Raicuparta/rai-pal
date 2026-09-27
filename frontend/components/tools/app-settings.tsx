@@ -25,13 +25,10 @@ import {
 } from "@localizations/localizations";
 import { SwitchButton } from "@components/switch-button";
 import { SteamCacheButton } from "./steam-cache-button";
-import { platform } from "@tauri-apps/plugin-os";
 import { useDisclosure } from "@mantine/hooks";
 import { SteamCacheModal } from "./steam-cache-modal";
 import { SteamShortcutButton } from "./steam-shortcut-button";
 import { SteamShortcutModal } from "./steam-shortcut-modal";
-import { GlobalWineOverridesButton } from "./global-wine-overrides-button";
-import { GlobalWineOverridesModal } from "./global-wine-overrides-modal";
 import { AddGameButton } from "./add-game-button";
 import { AddGameModal } from "./add-game-modal";
 
@@ -52,10 +49,6 @@ export function AppSettings() {
 	const [settings, setSettings, resetSettings] = useAppSettings();
 	const [, setSelectedTab] = useAppSettingSingle("selectedTab");
 	const detectedLocale = useAtomValue(detectedLocaleAtom);
-	const [
-		isBepInExEnvironmentModalOpen,
-		{ open: openBepInExEnvironmentModal, close: closeBepInExEnvironmentModal },
-	] = useDisclosure(false);
 	const [
 		isSteamCacheModalOpen,
 		{ open: openSteamCacheModal, close: closeSteamCacheModal },
@@ -110,9 +103,6 @@ export function AppSettings() {
 					<Divider my="xs" />
 					<SteamShortcutButton onClick={openSteamShortcutModal} />
 					<SteamCacheButton onClick={openSteamCacheModal} />
-					{platform() === "linux" && (
-						<GlobalWineOverridesButton onClick={openBepInExEnvironmentModal} />
-					)}
 					<AddGameButton
 						onClick={() => {
 							setSelectedTab("Games");
@@ -192,12 +182,6 @@ export function AppSettings() {
 				isOpen={isAddGameModalOpen}
 				onClose={closeAddGameModal}
 			/>
-			{platform() === "linux" && (
-				<GlobalWineOverridesModal
-					isOpen={isBepInExEnvironmentModalOpen}
-					onClose={closeBepInExEnvironmentModal}
-				/>
-			)}
 		</>
 	);
 }
