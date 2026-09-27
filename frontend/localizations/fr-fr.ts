@@ -47,6 +47,7 @@ export const frFr: Localization = {
 
 	filterMenu: {
 		filters: "Filtres",
+		collapseAll: "Réduire tous les filtres",
 		resetButton: "Réinitialiser",
 		searchPlaceholder: "Rechercher...",
 	},

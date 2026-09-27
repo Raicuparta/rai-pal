@@ -47,6 +47,7 @@ export const zhCn: Localization = {
 
 	filterMenu: {
 		filters: "筛选",
+		collapseAll: "折叠所有筛选器",
 		resetButton: "重置",
 		searchPlaceholder: "搜索...",
 	},

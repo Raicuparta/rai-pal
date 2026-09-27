@@ -47,6 +47,7 @@ export const koKr: Localization = {
 
 	filterMenu: {
 		filters: "필터",
+		collapseAll: "모든 필터 접기",
 		resetButton: "재설정",
 		searchPlaceholder: "검색...",
 	},

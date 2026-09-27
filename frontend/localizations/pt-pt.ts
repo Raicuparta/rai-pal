@@ -46,6 +46,7 @@ export const ptPt: Localization = {
 
 	filterMenu: {
 		filters: "Filtros",
+		collapseAll: "Recolher todos os filtros",
 		resetButton: "Repor",
 		searchPlaceholder: "Procurar...",
 	},

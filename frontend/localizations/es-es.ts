@@ -47,6 +47,7 @@ export const esEs: Localization = {
 
 	filterMenu: {
 		filters: "Filtros",
+		collapseAll: "Contraer todos los filtros",
 		resetButton: "Restablecer",
 		searchPlaceholder: "Buscar...",
 	},

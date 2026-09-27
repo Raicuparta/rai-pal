@@ -47,6 +47,7 @@ export const jaJp: Localization = {
 
 	filterMenu: {
 		filters: "フィルター",
+		collapseAll: "すべてのフィルターを折りたたむ",
 		resetButton: "リセット",
 		searchPlaceholder: "検索...",
 	},
