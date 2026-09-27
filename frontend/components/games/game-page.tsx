@@ -54,7 +54,10 @@ export function GamePage({ game, mods }: Props) {
 		<Page
 			onClose={close}
 			sidebar={
-				<Stack p="xs">
+				<Stack
+					px="xs"
+					gap="lg"
+				>
 					{primaryStart && (
 						<Button.Group>
 							<ProviderCommandButton
@@ -90,10 +93,7 @@ export function GamePage({ game, mods }: Props) {
 					)}
 					{providerCommandActions.length > 0 && (
 						<Stack>
-							<Divider
-								label={game.providerId}
-								mt="xs"
-							/>
+							<Divider label={game.providerId} />
 							<Button.Group orientation="vertical">
 								{providerCommandActions.map((action) => (
 									<ProviderCommandButton
@@ -106,11 +106,8 @@ export function GamePage({ game, mods }: Props) {
 						</Stack>
 					)}
 					{game.exePath && (
-						<>
-							<Divider
-								label={t("foldersDropdown")}
-								mt="xs"
-							/>
+						<Stack>
+							<Divider label={t("foldersDropdown")} />
 							<Button.Group orientation="vertical">
 								<CommandButton
 									leftSection={<IconFolder />}
@@ -155,7 +152,7 @@ export function GamePage({ game, mods }: Props) {
 									</>
 								)}
 							</Button.Group>
-						</>
+						</Stack>
 					)}
 				</Stack>
 			}

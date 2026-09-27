@@ -41,7 +41,10 @@ export function ModsPage() {
 			{!selectedMod && (
 				<Page
 					sidebar={
-						<Stack p="xs">
+						<Stack
+							px="xs"
+							gap="lg"
+						>
 							<RefreshButton />
 							<Tooltip label={t("openLoadlModsFolderTooltip")}>
 								<Button

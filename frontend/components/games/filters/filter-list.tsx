@@ -1,6 +1,6 @@
-import { ActionIcon, Box, Divider, Group, Stack } from "@mantine/core";
+import { ActionIcon, Divider, Group, Stack } from "@mantine/core";
 import { useAtomValue } from "jotai";
-import { IconRestore } from "@tabler/icons-react";
+import { IconChevronUp, IconRestore } from "@tabler/icons-react";
 import styles from "./filter-list.module.css";
 import {
 	FilterChangeCallback,
@@ -56,34 +56,32 @@ export function FilterList() {
 			<Group
 				wrap="nowrap"
 				px="xs"
-				gap={0}
 			>
-				{/* Lil hacky thing to make the reset button not decenter the divider label. */}
-				<Box
-					pos="relative"
-					h="100%"
+				<ActionIcon
+					bg="transparent"
+					size="sm"
+					variant="subtle"
+					disabled={!hasActiveFilters}
+					aria-label={t("resetButton")}
+					onClick={handleResetAll}
 				>
-					<Box
-						pos="absolute"
-						bg="dark"
-						pr={5}
-					>
-						<ActionIcon
-							bg="transparent"
-							size="sm"
-							variant="subtle"
-							disabled={!hasActiveFilters}
-							aria-label={t("resetButton")}
-							onClick={handleResetAll}
-						>
-							<IconRestore fontSize={16} />
-						</ActionIcon>
-					</Box>
-				</Box>
+					<IconRestore fontSize={16} />
+				</ActionIcon>
 				<Divider
 					label={t("filters")}
 					w="100%"
 				/>
+				<ActionIcon
+					bg="transparent"
+					size="sm"
+					color="white"
+					variant="subtle"
+					disabled={expandedFilters.length === 0}
+					aria-label={t("collapseAll")}
+					onClick={() => setExpandedFilters([])}
+				>
+					<IconChevronUp fontSize={16} />
+				</ActionIcon>
 			</Group>
 			<Stack
 				className={styles.scrollArea}

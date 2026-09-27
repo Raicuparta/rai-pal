@@ -40,7 +40,7 @@ export function Page({
 			>
 				<Sidebar>
 					{onClose && (
-						<Box p="xs">
+						<Box px="xs">
 							<Button
 								onClick={onClose}
 								leftSection={<IconArrowLeft />}

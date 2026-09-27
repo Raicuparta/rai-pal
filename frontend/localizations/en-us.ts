@@ -90,6 +90,9 @@ export const enUs = {
 		// Text in the divider above the list of filters.
 		filters: "Filters",
 
+		// Accessible label for the button that collapses all expanded filters.
+		collapseAll: "Collapse all filters",
+
 		// Text in the reset button for each specific filterable property.
 		resetButton: "Reset",
 
