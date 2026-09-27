@@ -165,11 +165,11 @@ pub fn replace_tokens(
 					.as_ref()
 					.is_some_and(|run| run.os == Some(OperatingSystem::Windows));
 
-			return Ok(if uses_wine {
+			Ok(if uses_wine {
 				"Z:".to_string()
 			} else {
 				String::new()
-			});
+			})
 		}
 		#[cfg(target_os = "windows")]
 		return Ok(String::new());

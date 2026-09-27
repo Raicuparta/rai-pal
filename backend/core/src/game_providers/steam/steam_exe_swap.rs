@@ -61,7 +61,9 @@ fn shell_quote_with_env(value: &str) -> String {
 			continue;
 		}
 
-		output.push_str(&format!("\"${{{name}}}\""));
+		output.push_str("\"${");
+		output.push_str(name);
+		output.push_str("}\"");
 		rest = &after[end + 1..];
 	}
 
@@ -78,31 +80,28 @@ fn build_script(
 	cwd: Option<&Path>,
 ) -> Result<String> {
 	let exe_quoted = shell_quote(exe_path.as_os_str())?;
-	let mut script = String::from(SCRIPT_PREFIX);
-
-	script.push_str(&format!("rm -f -- {exe_quoted}\n"));
-	script.push_str(&format!(
-		"mv -f -- {} {exe_quoted}\n",
-		shell_quote(backup.as_os_str())?
-	));
+	let mut lines = vec![
+		format!("rm -f -- {exe_quoted}"),
+		format!("mv -f -- {} {exe_quoted}", shell_quote(backup.as_os_str())?),
+	];
 
 	for (key, value) in environment {
-		script.push_str(&format!("export {key}={}\n", shell_quote_with_env(value)));
+		lines.push(format!("export {key}={}", shell_quote_with_env(value)));
 	}
 
 	if let Some(cwd) = cwd {
-		script.push_str(&format!("cd {} || exit 1\n", shell_quote(cwd.as_os_str())?));
+		lines.push(format!("cd {} || exit 1", shell_quote(cwd.as_os_str())?));
 	}
 
-	script.push_str("exec ");
-	script.push_str(&shell_quote(program.as_os_str())?);
-	for arg in args {
-		script.push(' ');
-		script.push_str(&shell_quote(OsStr::new(arg))?);
-	}
-	script.push_str(" \"$@\"\n");
+	let mut command = vec![shell_quote(program.as_os_str())?];
+	command.extend(
+		args.iter()
+			.map(|arg| shell_quote(OsStr::new(arg)))
+			.collect::<Result<Vec<_>>>()?,
+	);
+	lines.push(format!("exec {} \"$@\"", command.join(" ")));
 
-	Ok(script)
+	Ok(format!("{SCRIPT_PREFIX}{}\n", lines.join("\n")))
 }
 
 /// Replaces a native Linux Steam game's executable with a script that restores

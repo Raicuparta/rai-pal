@@ -286,7 +286,7 @@ impl GameMod {
 			} else {
 				let mut launch = GameLaunch::new(&run.path);
 				launch.args(&run.args);
-				launch.cwd = run.path.try_parent().ok().map(Path::to_path_buf);
+				launch.cwd = Some(run.path.try_parent()?.to_path_buf());
 				spawn_game(&launch)?;
 			}
 		}

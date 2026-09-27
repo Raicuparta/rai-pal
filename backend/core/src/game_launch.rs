@@ -74,6 +74,7 @@ impl GameLaunch {
 		self
 	}
 
+	#[must_use]
 	pub fn with_cwd(mut self, cwd: impl Into<PathBuf>) -> Self {
 		self.cwd = Some(cwd.into());
 		self
