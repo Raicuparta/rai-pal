@@ -151,9 +151,28 @@ pub fn replace_tokens(
 	});
 	result = replace_parameter_value(&result, ReplacementToken::MaybeWineRoot, || {
 		#[cfg(target_os = "linux")]
-		return Ok("Z:".to_string());
+		{
+			use crate::operating_system::OperatingSystem;
+
+			let uses_wine = game_option
+				.is_some_and(|game| game.executable_os == Some(OperatingSystem::Windows))
+				|| game_mod
+					.run_for_game
+					.as_ref()
+					.is_some_and(|run| run.os == Some(OperatingSystem::Windows))
+				|| game_mod
+					.run_standalone
+					.as_ref()
+					.is_some_and(|run| run.os == Some(OperatingSystem::Windows));
+
+			return Ok(if uses_wine {
+				"Z:".to_string()
+			} else {
+				String::new()
+			});
+		}
 		#[cfg(target_os = "windows")]
-		return Ok("".to_string());
+		return Ok(String::new());
 	});
 
 	result
