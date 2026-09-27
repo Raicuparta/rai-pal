@@ -1,7 +1,7 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useAtomValue } from "jotai";
 import { useAppEvent } from "./use-app-event";
-import { modsAtom } from "./use-data";
+import { gameDataVersionAtom, modsAtom } from "./use-data";
 import { commands, DbGame, GameMod, GameModInfo } from "@api/bindings";
 
 export type GameModsPart = { mod: GameMod; info: GameModInfo };
@@ -44,6 +44,17 @@ export function useSelectedGame() {
 			});
 		},
 	);
+
+	// Reselect if game data changes.
+	const dataVersion = useAtomValue(gameDataVersionAtom);
+	const lastDataVersion = useRef(dataVersion);
+	useEffect(() => {
+		if (lastDataVersion.current >= dataVersion) return;
+		lastDataVersion.current = dataVersion;
+		if (!selected) return;
+		console.log("selecting guys");
+		commands.setSelectedGame(selected.game.providerId, selected.game.gameId);
+	}, [dataVersion, selected]);
 
 	const gameMods = useMemo<GameModsData | null>(() => {
 		if (!selected?.modInfos) return null;
