@@ -218,7 +218,7 @@ impl GameDatabase for DbMutex {
 				"COALESCE(ig.engine_version_minor, rg.engine_version_minor)",
 				"COALESCE(ig.engine_version_patch, rg.engine_version_patch)",
 			],
-			_ => vec!["g.display_title"],
+			_ => vec!["g.display_title COLLATE NOCASE"],
 		};
 
 		let sort_order = if query.as_ref().is_some_and(|q| q.sort_descending) {

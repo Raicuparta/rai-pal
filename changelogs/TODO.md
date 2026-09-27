@@ -4,6 +4,4 @@ This file is here for me to track things I wanna fix for the next release. If th
 
 - Wine not being found on NixOS?
 - Native linux Unreal Games usually come with a .sh launcher, which rai pal currently doesn't detect. need a whole new flow for that I guess.
-- add game manually, remove it, it's still visible but not clickable.
-- oh actually add game manually, is immediately selected, but not visible in list until refresh is pressed.
 - maybe DOTNET_SYSTEM_GLOBALIZATION_INVARIANT is needed in bepinex linux environment in database?
