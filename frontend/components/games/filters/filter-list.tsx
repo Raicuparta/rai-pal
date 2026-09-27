@@ -56,7 +56,10 @@ export function FilterList() {
 	};
 
 	return (
-		<Stack>
+		<Stack
+			flex={1}
+			mih={100}
+		>
 			<Group
 				wrap="nowrap"
 				px="xs"
