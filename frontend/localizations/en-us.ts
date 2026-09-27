@@ -218,7 +218,7 @@ export const enUs = {
 			"Are you sure you want to remove this game from Rai Pal?",
 
 		// Button for refreshing the game's information.
-		refreshGame: "Refresh",
+		refreshGame: "Refresh game",
 
 		// Error message when Rai Pal fails to read enough information about the game.
 		failedToReadGameInfo:

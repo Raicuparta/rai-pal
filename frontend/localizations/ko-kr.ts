@@ -103,7 +103,7 @@ export const koKr: Localization = {
 		openGameWineBinaryFolder: "게임 Wine 바이너리",
 		removeFromRaiPal: "Rai Pal에서 제거",
 		removeGameConfirmation: "이 게임을 Rai Pal에서 제거할까요?",
-		refreshGame: "새로고침",
+		refreshGame: "게임 새로고침",
 		failedToReadGameInfo:
 			"이 게임의 중요 정보를 읽을 수 없었어요. 실행 파일이 보호돼 있어서 그럴 수 있어요. 일부 모드가 설치 안 될 수도 있어요.",
 		failedToDetermineEngine:

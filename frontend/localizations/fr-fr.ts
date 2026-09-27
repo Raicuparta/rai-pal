@@ -106,7 +106,7 @@ export const frFr: Localization = {
 		removeFromRaiPal: "Retirer de Rai Pal",
 		removeGameConfirmation:
 			"Vous êtes sûr de vouloir retirer ce jeu de Rai Pal ?",
-		refreshGame: "Rafraîchir",
+		refreshGame: "Actualiser le jeu",
 		failedToReadGameInfo:
 			"Impossible de lire certaines informations importantes sur ce jeu. C'est peut-être parce que l'exécutable est protégé. Certains mods risquent de ne pas s'installer.",
 		failedToDetermineEngine:

@@ -104,7 +104,7 @@ export const ptPt: Localization = {
 		openGameWineBinaryFolder: "Binário Wine",
 		removeFromRaiPal: "Remover do Rai Pal",
 		removeGameConfirmation: "Queres mesmo remover este jogo do Rai Pal?",
-		refreshGame: "Atualizar",
+		refreshGame: "Atualizar jogo",
 		failedToReadGameInfo:
 			"Erro ao ler informações importantes sobre este jogo. O executável pode estar protegido. Alguns mods podem não instalar-se.",
 		failedToDetermineEngine:

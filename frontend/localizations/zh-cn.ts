@@ -102,7 +102,7 @@ export const zhCn: Localization = {
 		openGameWineBinaryFolder: "Wine 程序",
 		removeFromRaiPal: "从 Rai Pal 移除",
 		removeGameConfirmation: "确定要从 Rai Pal 移除此游戏吗？",
-		refreshGame: "刷新",
+		refreshGame: "刷新游戏",
 		failedToReadGameInfo:
 			"无法读取此游戏的部分重要信息。可执行文件可能被保护了。一些模组可能无法安装。",
 		failedToDetermineEngine: "无法确定此游戏的引擎。一些模组可能无法安装。",

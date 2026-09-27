@@ -105,7 +105,7 @@ export const jaJp: Localization = {
 		openGameWineBinaryFolder: "Wineバイナリ",
 		removeFromRaiPal: "Rai Palから削除",
 		removeGameConfirmation: "このゲームをRai Palから削除していい？",
-		refreshGame: "更新",
+		refreshGame: "ゲームを更新",
 		failedToReadGameInfo:
 			"このゲームの重要情報がちゃんと読み取れなかった。実行ファイルが保護されてるのかも。一部のModはうまくインストールできないかも。",
 		failedToDetermineEngine:

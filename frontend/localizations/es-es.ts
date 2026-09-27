@@ -106,7 +106,7 @@ export const esEs: Localization = {
 		removeFromRaiPal: "Eliminar de Rai Pal",
 		removeGameConfirmation:
 			"¿Estás seguro de que quieres eliminar este juego de Rai Pal?",
-		refreshGame: "Actualizar",
+		refreshGame: "Actualizar juego",
 		failedToReadGameInfo:
 			"No se pudo leer información importante sobre este juego. Esto podría deberse a que el ejecutable está protegido. Algunos mods podrían fallar al instalarse.",
 		failedToDetermineEngine:
