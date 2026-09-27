@@ -190,6 +190,7 @@ impl WineProviderActions for Itch {
 	}
 }
 
+#[cfg(target_os = "linux")]
 fn find_itch_wine() -> PathBuf {
 	let wine_name = "wine";
 
@@ -215,6 +216,7 @@ fn find_itch_wine() -> PathBuf {
 	PathBuf::from(wine_name)
 }
 
+#[cfg(target_os = "linux")]
 fn get_itch_wine_prefix() -> Result<PathBuf> {
 	let base_dirs = app_paths::base_dirs()?;
 
