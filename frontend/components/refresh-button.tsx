@@ -14,7 +14,10 @@ export function RefreshButton() {
 	const isLoading = loadingTasks.length > 0;
 
 	return (
-		<Box pos="relative">
+		<Box
+			pos="relative"
+			px="xs"
+		>
 			<Button
 				w="100%"
 				leftSection={<IconRefresh />}

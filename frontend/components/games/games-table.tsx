@@ -51,15 +51,36 @@ export function GamesTable() {
 	}, [dataQuery]);
 
 	if (gameData.totalCount === 0 && loading.length > 0) {
-		return <Alert m="auto">{t("emptyGamesLoading")}</Alert>;
+		return (
+			<Alert
+				mx="xl"
+				my="auto"
+			>
+				{t("emptyGamesLoading")}
+			</Alert>
+		);
 	}
 
 	if (gameData.totalCount === 0) {
-		return <Alert m="auto">{t("emptyGamesList")}</Alert>;
+		return (
+			<Alert
+				mx="xl"
+				my="auto"
+			>
+				{t("emptyGamesList")}
+			</Alert>
+		);
 	}
 
 	if (gameData.gameIds.length === 0) {
-		return <Alert m="auto">{t("emptyFilteredGamesList")}</Alert>;
+		return (
+			<Alert
+				mx="xl"
+				my="auto"
+			>
+				{t("emptyFilteredGamesList")}
+			</Alert>
+		);
 	}
 
 	return (

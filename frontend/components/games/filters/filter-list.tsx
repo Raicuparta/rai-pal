@@ -1,4 +1,11 @@
-import { ActionIcon, Divider, Group, Stack } from "@mantine/core";
+import {
+	ActionIcon,
+	Box,
+	Divider,
+	Group,
+	InputLabel,
+	Stack,
+} from "@mantine/core";
 import { useAtomValue } from "jotai";
 import { IconRestore } from "@tabler/icons-react";
 import styles from "./filter-list.module.css";
@@ -49,24 +56,37 @@ export function FilterList() {
 	};
 
 	return (
-		<Stack className={styles.root}>
+		<Stack>
 			<Group
-				justify="space-between"
 				wrap="nowrap"
 				px="xs"
+				gap={0}
 			>
-				<ActionIcon
-					size="sm"
-					variant="subtle"
-					bg="transparent"
-					disabled={!hasActiveFilters}
-					aria-label={t("resetButton")}
-					onClick={handleResetAll}
+				{/* Lil hacky thing to make the reset button not decenter the divider label. */}
+				<Box
+					pos="relative"
+					h="100%"
 				>
-					<IconRestore fontSize={16} />
-				</ActionIcon>
+					<Box
+						pos="absolute"
+						bg="dark"
+						top={-10}
+						pr={5}
+					>
+						<ActionIcon
+							bg="transparent"
+							size="sm"
+							variant="subtle"
+							disabled={!hasActiveFilters}
+							aria-label={t("resetButton")}
+							onClick={handleResetAll}
+						>
+							<IconRestore fontSize={16} />
+						</ActionIcon>
+					</Box>
+				</Box>
 				<Divider
-					label={<Group>{t("filters")}</Group>}
+					label={t("filters")}
 					w="100%"
 				/>
 			</Group>
