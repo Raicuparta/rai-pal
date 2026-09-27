@@ -211,6 +211,7 @@ export function FilterColumn<TFilterKey extends FilterKey>({
 						</ActionIcon>
 						<Accordion.Control
 							className={styles.filterTitle}
+							px="xs"
 							fz="xs"
 						>
 							{tProperty(filterDetails[id].localizationKey)}

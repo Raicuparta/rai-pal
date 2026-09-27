@@ -74,6 +74,7 @@ export function FilterList() {
 				<ActionIcon
 					bg="transparent"
 					size="sm"
+					mr={-3}
 					color="white"
 					variant="subtle"
 					disabled={expandedFilters.length === 0}
