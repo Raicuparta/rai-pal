@@ -29,7 +29,6 @@ export function GamesSortMenu() {
 			<Group>
 				<Select
 					flex={1}
-
 					data={sortOptions.map((option) => ({
 						value: option,
 						label: t(sortLocalizationKeys[option]) ?? option,

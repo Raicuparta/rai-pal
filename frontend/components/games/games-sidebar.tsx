@@ -3,7 +3,7 @@ import { SearchInput } from "@components/search-input";
 import { useDataQuery } from "@hooks/use-data-query";
 import { GamesSortMenu } from "./games-sort-menu";
 import { FilterList } from "./filters/filter-list";
-import { Stack } from "@mantine/core";
+import { Box, Stack } from "@mantine/core";
 
 export function GamesSidebar() {
 	const [dataQuery, setDataQuery] = useDataQuery();
@@ -14,8 +14,11 @@ export function GamesSidebar() {
 				flex={1}
 				mih={0}
 				gap="md"
+				py="xs"
 			>
-				<RefreshButton />
+				<Box px="xs">
+					<RefreshButton />
+				</Box>
 				<SearchInput
 					value={dataQuery.search}
 					onChange={(search) => setDataQuery({ search })}

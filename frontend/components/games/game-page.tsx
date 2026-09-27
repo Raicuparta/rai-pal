@@ -55,20 +55,6 @@ export function GamePage({ game, mods }: Props) {
 			onClose={close}
 			sidebar={
 				<Stack p="xs">
-					{providerId === "Manual" && (
-						<RemoveGameButton
-							providerId={providerId}
-							gameId={gameId}
-						/>
-					)}
-					{game.exePath && (
-						<CommandButton
-							onClick={() => commands.refreshGame(providerId, gameId)}
-							leftSection={<IconRefresh />}
-						>
-							{t("refreshGame")}
-						</CommandButton>
-					)}
 					{primaryStart && (
 						<Button.Group>
 							<ProviderCommandButton
@@ -87,6 +73,20 @@ export function GamePage({ game, mods }: Props) {
 								</CommandDropdown>
 							)}
 						</Button.Group>
+					)}
+					{game.exePath && (
+						<CommandButton
+							onClick={() => commands.refreshGame(providerId, gameId)}
+							leftSection={<IconRefresh />}
+						>
+							{t("refreshGame")}
+						</CommandButton>
+					)}
+					{providerId === "Manual" && (
+						<RemoveGameButton
+							providerId={providerId}
+							gameId={gameId}
+						/>
 					)}
 					{providerCommandActions.length > 0 && (
 						<Stack>

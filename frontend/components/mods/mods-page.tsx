@@ -42,12 +42,7 @@ export function ModsPage() {
 				<Page
 					sidebar={
 						<Stack p="xs">
-							<Button
-								onClick={openUrlModSourcesModal}
-								leftSection={<IconWorld />}
-							>
-								{urlModSourcesT("title")}
-							</Button>
+							<RefreshButton />
 							<Tooltip label={t("openLoadlModsFolderTooltip")}>
 								<Button
 									onClick={commands.openLocalModsFolder}
@@ -56,7 +51,12 @@ export function ModsPage() {
 									{t("openLocalModsFolderButton")}
 								</Button>
 							</Tooltip>
-							<RefreshButton />
+							<Button
+								onClick={openUrlModSourcesModal}
+								leftSection={<IconWorld />}
+							>
+								{urlModSourcesT("title")}
+							</Button>
 						</Stack>
 					}
 				>

@@ -1,11 +1,4 @@
-import {
-	ActionIcon,
-	Box,
-	Divider,
-	Group,
-	InputLabel,
-	Stack,
-} from "@mantine/core";
+import { ActionIcon, Box, Divider, Group, Stack } from "@mantine/core";
 import { useAtomValue } from "jotai";
 import { IconRestore } from "@tabler/icons-react";
 import styles from "./filter-list.module.css";
@@ -73,7 +66,6 @@ export function FilterList() {
 					<Box
 						pos="absolute"
 						bg="dark"
-						top={-10}
 						pr={5}
 					>
 						<ActionIcon
