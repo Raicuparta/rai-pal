@@ -3,20 +3,54 @@ import { useHotkeys } from "@mantine/hooks";
 import { useLocalization } from "@hooks/use-localization";
 import { IconArrowLeft } from "@tabler/icons-react";
 import { Sidebar } from "@components/sidebar";
+import { ScrollAreaFill } from "@components/scroll-area-fill";
 
 interface Props extends CardProps {
 	readonly onClose?: () => void;
 	readonly sidebar?: React.ReactNode;
-	// The content area reserves a scrollbar by default, so that navigation
-	// between pages never shifts the layout. Pages whose content scrolls
-	// itself (like the games table) can opt out with "hidden".
-	readonly contentOverflow?: "auto" | "scroll" | "hidden";
+	// Pages whose content scrolls itself (like the games table) can opt out.
+	readonly scrollable?: boolean;
+}
+
+function PageContent({
+	scrollable,
+	children,
+}: {
+	readonly scrollable: boolean;
+	readonly children: React.ReactNode;
+}) {
+	if (!scrollable) {
+		return (
+			<Stack
+				flex={1}
+				mih={0}
+				gap={0}
+			>
+				{children}
+			</Stack>
+		);
+	}
+
+	return (
+		<ScrollAreaFill
+			flex={1}
+			mih={0}
+		>
+			<Stack
+				flex={1}
+				mih={0}
+				gap={0}
+			>
+				{children}
+			</Stack>
+		</ScrollAreaFill>
+	);
 }
 
 export function Page({
 	onClose,
 	sidebar,
-	contentOverflow = "scroll",
+	scrollable = true,
 	children,
 	...props
 }: Props) {
@@ -51,14 +85,7 @@ export function Page({
 					)}
 					{sidebar}
 				</Sidebar>
-				<Stack
-					flex={1}
-					mih={0}
-					gap={0}
-					style={{ overflowY: contentOverflow }}
-				>
-					{children}
-				</Stack>
+				<PageContent scrollable={scrollable}>{children}</PageContent>
 			</Group>
 		</Card>
 	);

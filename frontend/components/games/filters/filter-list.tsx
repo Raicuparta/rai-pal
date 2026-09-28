@@ -1,7 +1,6 @@
 import { ActionIcon, Divider, Group, Stack } from "@mantine/core";
 import { useAtomValue } from "jotai";
 import { IconChevronUp, IconRestore } from "@tabler/icons-react";
-import styles from "./filter-list.module.css";
 import {
 	FilterChangeCallback,
 	FilterColumn,
@@ -15,6 +14,7 @@ import { useAppSettingSingle } from "@hooks/use-app-setting-single";
 import { filterDetails, FilterKey } from "./filter-details";
 import { useLocalization } from "@hooks/use-localization";
 import { defaultQuery } from "@hooks/default-settings";
+import { ScrollAreaFill } from "@components/scroll-area-fill";
 
 export function FilterList() {
 	const [dataQuery, setDataQuery] = useDataQuery();
@@ -84,43 +84,45 @@ export function FilterList() {
 					<IconChevronUp fontSize={16} />
 				</ActionIcon>
 			</Group>
-			<Stack
-				className={styles.scrollArea}
-				gap={0}
+			<ScrollAreaFill
+				flex={1}
+				mih={0}
 			>
-				{filterKeys.map((filterKey) => {
-					const possibleValues =
-						filterKey === "modFamilies"
-							? ([
-									...new Set(
-										Object.values(mods)
-											.map((m) => m.family)
-											.filter((f): f is string => f !== null),
-									),
-								] as string[])
-							: (Object.keys(
-									filterDetails[filterKey].valueDetails,
-								) as string[]);
+				<Stack gap={0}>
+					{filterKeys.map((filterKey) => {
+						const possibleValues =
+							filterKey === "modFamilies"
+								? ([
+										...new Set(
+											Object.values(mods)
+												.map((m) => m.family)
+												.filter((f): f is string => f !== null),
+										),
+									] as string[])
+								: (Object.keys(
+										filterDetails[filterKey].valueDetails,
+									) as string[]);
 
-					return (
-						<FilterColumn
-							key={filterKey}
-							id={filterKey}
-							possibleValues={possibleValues}
-							filterGroup={dataQuery.filter[filterKey]}
-							expanded={expandedFilters.includes(filterKey)}
-							onExpandedChange={(expanded) =>
-								setExpandedFilters((prev = []) =>
-									expanded
-										? [...prev, filterKey]
-										: prev.filter((key) => key !== filterKey),
-								)
-							}
-							onChange={handleChange}
-						/>
-					);
-				})}
-			</Stack>
+						return (
+							<FilterColumn
+								key={filterKey}
+								id={filterKey}
+								possibleValues={possibleValues}
+								filterGroup={dataQuery.filter[filterKey]}
+								expanded={expandedFilters.includes(filterKey)}
+								onExpandedChange={(expanded) =>
+									setExpandedFilters((prev = []) =>
+										expanded
+											? [...prev, filterKey]
+											: prev.filter((key) => key !== filterKey),
+									)
+								}
+								onChange={handleChange}
+							/>
+						);
+					})}
+				</Stack>
+			</ScrollAreaFill>
 		</Stack>
 	);
 }

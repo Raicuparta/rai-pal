@@ -8,6 +8,7 @@ import {
 	Box,
 	Divider,
 	Tooltip,
+	ScrollArea,
 	MantineColor,
 } from "@mantine/core";
 import {
@@ -50,142 +51,143 @@ export function ThanksPage() {
 				<Card
 					flex={1}
 					h="100%"
-					style={{ overflowY: "auto" }}
 				>
-					<Stack>
-						<Group align="top">
-							<Stack
-								gap={0}
-								bg="dark"
-								justify="center"
-								p="sm"
-								flex={1}
-								style={{ borderRadius: 10 }}
-							>
-								<Image
-									src="/images/thanks/raicuparta.png"
-									radius="100%"
-								/>
-								<Text
-									fw={500}
-									size="xl"
-									ta="center"
+					<ScrollArea h="100%">
+						<Stack>
+							<Group align="top">
+								<Stack
+									gap={0}
+									bg="dark"
+									justify="center"
+									p="sm"
+									flex={1}
+									style={{ borderRadius: 10 }}
 								>
-									Raicuparta
-								</Text>
-							</Stack>
-							<Stack flex={4}>
-								<Text>{t("intro")}</Text>
-							</Stack>
-						</Group>
-						<Group>
-							<ThanksLinkButton
-								color="blue"
-								href="https://github.com/raicuparta/rai-pal"
-								leftSection={<IconBrandGithubFilled />}
-							>
-								{t("starRaiPalOnGitHub")}
-							</ThanksLinkButton>
-							<ThanksLinkButton
-								href="https://raicuparta.com"
-								color="grape"
-								leftSection={
 									<Image
 										src="/images/thanks/raicuparta.png"
 										radius="100%"
-										height={20}
 									/>
-								}
-							>
-								raicuparta.com
-							</ThanksLinkButton>
-						</Group>
-						<Group>
-							<ThanksLinkButton
-								href="https://www.patreon.com/raivr"
-								color="pink"
-								leftSection={<IconBrandPatreonFilled />}
-							>
-								Patreon
-							</ThanksLinkButton>
-							<ThanksLinkButton
-								href="https://paypal.me/raicuparta/5usd"
-								color="indigo"
-								leftSection={<IconBrandPaypalFilled />}
-							>
-								Paypal
-							</ThanksLinkButton>
-							<ThanksLinkButton
-								href="https://raicuparta.itch.io/"
-								color="red"
-								leftSection={<IconBrandItch />}
-							>
-								Itch.io
-							</ThanksLinkButton>
-						</Group>
-						<Divider />
-						<Stack>
-							<Text
-								fw={500}
-								size="xl"
-							>
-								{t("otherModdersTitle")}
-							</Text>
-							<Text>{t("otherModdersDescription")}</Text>
+									<Text
+										fw={500}
+										size="xl"
+										ta="center"
+									>
+										Raicuparta
+									</Text>
+								</Stack>
+								<Stack flex={4}>
+									<Text>{t("intro")}</Text>
+								</Stack>
+							</Group>
+							<Group>
+								<ThanksLinkButton
+									color="blue"
+									href="https://github.com/raicuparta/rai-pal"
+									leftSection={<IconBrandGithubFilled />}
+								>
+									{t("starRaiPalOnGitHub")}
+								</ThanksLinkButton>
+								<ThanksLinkButton
+									href="https://raicuparta.com"
+									color="grape"
+									leftSection={
+										<Image
+											src="/images/thanks/raicuparta.png"
+											radius="100%"
+											height={20}
+										/>
+									}
+								>
+									raicuparta.com
+								</ThanksLinkButton>
+							</Group>
+							<Group>
+								<ThanksLinkButton
+									href="https://www.patreon.com/raivr"
+									color="pink"
+									leftSection={<IconBrandPatreonFilled />}
+								>
+									Patreon
+								</ThanksLinkButton>
+								<ThanksLinkButton
+									href="https://paypal.me/raicuparta/5usd"
+									color="indigo"
+									leftSection={<IconBrandPaypalFilled />}
+								>
+									Paypal
+								</ThanksLinkButton>
+								<ThanksLinkButton
+									href="https://raicuparta.itch.io/"
+									color="red"
+									leftSection={<IconBrandItch />}
+								>
+									Itch.io
+								</ThanksLinkButton>
+							</Group>
+							<Divider />
+							<Stack>
+								<Text
+									fw={500}
+									size="xl"
+								>
+									{t("otherModdersTitle")}
+								</Text>
+								<Text>{t("otherModdersDescription")}</Text>
+							</Stack>
+							<Stack>
+								<ThanksLinkButton
+									href="https://www.patreon.com/praydog"
+									color="pink"
+									leftSection={<IconBrandPatreonFilled />}
+								>
+									{t("modderOnWebsite", {
+										modderName: "praydog",
+										website: "Patreon",
+									})}
+								</ThanksLinkButton>
+								<ThanksLinkButton
+									href="https://github.com/BepInEx"
+									color="blue"
+									leftSection={<IconBrandGithubFilled />}
+								>
+									{t("modderOnWebsite", {
+										modderName: "BepInEx",
+										website: "GitHub",
+									})}
+								</ThanksLinkButton>
+								<ThanksLinkButton
+									href="https://www.patreon.com/pardeike"
+									color="pink"
+									leftSection={<IconBrandPatreonFilled />}
+								>
+									{t("modderOnWebsite", {
+										modderName: "Andreas Pardeike",
+										website: "Patreon",
+									})}
+								</ThanksLinkButton>
+								<ThanksLinkButton
+									href="https://github.com/sinai-dev"
+									color="blue"
+									leftSection={<IconBrandGithubFilled />}
+								>
+									{t("modderOnWebsite", {
+										modderName: "sinai",
+										website: "GitHub",
+									})}
+								</ThanksLinkButton>
+								<ThanksLinkButton
+									href="https://www.patreon.com/ManlyMarco"
+									color="pink"
+									leftSection={<IconBrandPatreonFilled />}
+								>
+									{t("modderOnWebsite", {
+										modderName: "ManlyMarco",
+										website: "Patreon",
+									})}
+								</ThanksLinkButton>
+							</Stack>
 						</Stack>
-						<Stack>
-							<ThanksLinkButton
-								href="https://www.patreon.com/praydog"
-								color="pink"
-								leftSection={<IconBrandPatreonFilled />}
-							>
-								{t("modderOnWebsite", {
-									modderName: "praydog",
-									website: "Patreon",
-								})}
-							</ThanksLinkButton>
-							<ThanksLinkButton
-								href="https://github.com/BepInEx"
-								color="blue"
-								leftSection={<IconBrandGithubFilled />}
-							>
-								{t("modderOnWebsite", {
-									modderName: "BepInEx",
-									website: "GitHub",
-								})}
-							</ThanksLinkButton>
-							<ThanksLinkButton
-								href="https://www.patreon.com/pardeike"
-								color="pink"
-								leftSection={<IconBrandPatreonFilled />}
-							>
-								{t("modderOnWebsite", {
-									modderName: "Andreas Pardeike",
-									website: "Patreon",
-								})}
-							</ThanksLinkButton>
-							<ThanksLinkButton
-								href="https://github.com/sinai-dev"
-								color="blue"
-								leftSection={<IconBrandGithubFilled />}
-							>
-								{t("modderOnWebsite", {
-									modderName: "sinai",
-									website: "GitHub",
-								})}
-							</ThanksLinkButton>
-							<ThanksLinkButton
-								href="https://www.patreon.com/ManlyMarco"
-								color="pink"
-								leftSection={<IconBrandPatreonFilled />}
-							>
-								{t("modderOnWebsite", {
-									modderName: "ManlyMarco",
-									website: "Patreon",
-								})}
-							</ThanksLinkButton>
-						</Stack>
-					</Stack>
+					</ScrollArea>
 				</Card>
 				<Stack
 					h="100%"
@@ -220,41 +222,40 @@ export function ThanksPage() {
 							</Box>
 						</ThanksLinkButton>
 					</Group>
-					<Card
-						h="100%"
-						style={{ overflowY: "scroll" }}
-					>
-						<Stack>
-							{patrons.map((patron) => (
-								<Group
-									key={patron.ranking}
-									pos="relative"
-								>
-									<Box c={getRankingColor(patron.ranking)}>
-										<img
-											className={styles.patronAvatar}
-											src={patron.imageUrl}
-										/>
-									</Box>
-									{patron.ranking <= 3 && (
-										<Text
-											size="xl"
-											className={styles.patronMedal}
-										>
-											{getRankingEmoji(patron.ranking)}
-										</Text>
-									)}
-									<Text
-										flex={1}
-										className={styles.patronName}
-										fw={patron.ranking <= 3 ? "bold" : "normal"}
-										c={patron.ranking <= 3 ? "white" : undefined}
+					<Card h="100%">
+						<ScrollArea h="100%">
+							<Stack>
+								{patrons.map((patron) => (
+									<Group
+										key={patron.ranking}
+										pos="relative"
 									>
-										{patron.name}
-									</Text>
-								</Group>
-							))}
-						</Stack>
+										<Box c={getRankingColor(patron.ranking)}>
+											<img
+												className={styles.patronAvatar}
+												src={patron.imageUrl}
+											/>
+										</Box>
+										{patron.ranking <= 3 && (
+											<Text
+												size="xl"
+												className={styles.patronMedal}
+											>
+												{getRankingEmoji(patron.ranking)}
+											</Text>
+										)}
+										<Text
+											flex={1}
+											className={styles.patronName}
+											fw={patron.ranking <= 3 ? "bold" : "normal"}
+											c={patron.ranking <= 3 ? "white" : undefined}
+										>
+											{patron.name}
+										</Text>
+									</Group>
+								))}
+							</Stack>
+						</ScrollArea>
 					</Card>
 				</Stack>
 			</Group>

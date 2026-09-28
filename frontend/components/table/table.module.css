@@ -1,6 +1,9 @@
 div.table {
 	padding: 0;
 	flex: 1;
+	min-height: 0;
+	display: flex;
+	flex-direction: column;
 	user-select: none;
 	background-color: var(--mantine-color-dark-6);
 

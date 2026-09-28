@@ -7,16 +7,33 @@ import {
 	TableComponents,
 	TableVirtuoso,
 	TableVirtuosoHandle,
+	ScrollerProps,
 } from "react-virtuoso";
 import { GameRow, gameRowHeight } from "./game-row";
 import { useDataQuery } from "@hooks/use-data-query";
 import { GamesColgroup } from "./games-columns";
-import styles from "./games.module.css";
 import { Alert, Table } from "@mantine/core";
 import React from "react";
 import { useLocalization } from "@hooks/use-localization";
+import { ScrollAreaFill } from "@components/scroll-area-fill";
+
+const Scroller = React.forwardRef<HTMLDivElement, ScrollerProps>(
+	function Scroller({ children, ...props }, ref) {
+		return (
+			<ScrollAreaFill
+				flex={1}
+				mih={0}
+				viewportRef={ref}
+				viewportProps={props}
+			>
+				{children}
+			</ScrollAreaFill>
+		);
+	},
+);
 
 const tableComponents: TableComponents<[GameProviderId, string], unknown> = {
+	Scroller,
 	TableBody: React.forwardRef(function TableBody(props, ref) {
 		return (
 			<Table.Tbody
@@ -84,10 +101,9 @@ export function GamesTable() {
 	}
 
 	return (
-		<TableContainer>
+		<TableContainer scroll={false}>
 			<TableVirtuoso
 				ref={tableRef}
-				className={styles.table}
 				components={tableComponents}
 				data={gameData.gameIds}
 				fixedItemHeight={gameRowHeight}

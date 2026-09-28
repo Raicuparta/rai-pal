@@ -64,7 +64,7 @@
 		"eslint-plugin-react-refresh": "0.5.3",
 		"globals": "17.7.0",
 		"jotai": "2.20.2",
-		"postcss": "8.5.19",
+		"postcss": "8.5.28",
 		"postcss-preset-mantine": "1.18.0",
 		"postcss-simple-vars": "7.0.1",
 		"prettier": "3.9.5",

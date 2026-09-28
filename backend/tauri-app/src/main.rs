@@ -43,9 +43,9 @@ use rai_pal_core::{
 	},
 };
 use strum::IntoEnumIterator;
-use tauri::{AppHandle, Manager, WebviewUrl, WebviewWindowBuilder, ipc::Channel};
 #[cfg(windows)]
 use tauri::webview::ScrollBarStyle;
+use tauri::{AppHandle, Manager, WebviewUrl, WebviewWindowBuilder, ipc::Channel};
 use tauri_plugin_deep_link::DeepLinkExt;
 use tauri_plugin_log::{Target, TargetKind};
 use tauri_plugin_window_state::StateFlags;

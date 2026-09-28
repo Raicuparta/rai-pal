@@ -1,4 +1,4 @@
-import { Tabs, Container, Stack, Group } from "@mantine/core";
+import { Tabs, Container, Group, Stack } from "@mantine/core";
 import { PageDefinition, PageTab } from "@components/page-tab";
 import { IconBox, IconDeviceGamepad } from "@tabler/icons-react";
 import { GamesPage } from "./games/games-page";
@@ -12,6 +12,7 @@ import { UserMenu } from "./tools/user-menu";
 import { useAppSettingSingle } from "@hooks/use-app-setting-single";
 import { TabId } from "@api/bindings";
 import { ProgressStatusMenu } from "./tools/progress-status-menu";
+import { ScrollAreaFill } from "@components/scroll-area-fill";
 
 const pages: Record<TabId, PageDefinition> = {
 	Games: {
@@ -76,17 +77,26 @@ export function AppTabs() {
 					<Tabs.Panel
 						key={pageId}
 						style={{
-							overflowY: "auto",
+							display: "flex",
+							flexDirection: "column",
 							flex: 1,
+							minHeight: 0,
 						}}
 						value={pageId}
 					>
-						<Container
-							h="100%"
-							py="xs"
+						<ScrollAreaFill
+							flex={1}
+							mih={0}
 						>
-							<page.component />
-						</Container>
+							<Container
+								flex={1}
+								mih={0}
+								w="100%"
+								py="xs"
+							>
+								<page.component />
+							</Container>
+						</ScrollAreaFill>
 					</Tabs.Panel>
 				))}
 			</Stack>

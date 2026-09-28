@@ -19,7 +19,7 @@ export function GamesPage() {
 			)}
 			<Page
 				display={showGamePage ? "none" : undefined}
-				contentOverflow="hidden"
+				scrollable={false}
 				sidebar={<GamesSidebar />}
 			>
 				<GamesTable />
