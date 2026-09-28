@@ -44,6 +44,8 @@ use rai_pal_core::{
 };
 use strum::IntoEnumIterator;
 use tauri::{AppHandle, Manager, WebviewUrl, WebviewWindowBuilder, ipc::Channel};
+#[cfg(windows)]
+use tauri::webview::ScrollBarStyle;
 use tauri_plugin_deep_link::DeepLinkExt;
 use tauri_plugin_log::{Target, TargetKind};
 use tauri_plugin_window_state::StateFlags;
@@ -1035,14 +1037,20 @@ fn main() {
 			// We could also trigger this on the frontend to reduce the white flash,
 			// but it never seems to go away, and that introduces an extra delay
 			// until something is visible, so I figure I'd just show it here.
-			let window = WebviewWindowBuilder::new(app, "main", WebviewUrl::default())
+			let window_builder = WebviewWindowBuilder::new(app, "main", WebviewUrl::default())
 				.title(format!(
 					"Rai Pal {}{}",
 					env!("CARGO_PKG_VERSION"),
 					if cfg!(debug_assertions) { " DEV" } else { "" }
 				))
 				// Another reason to create Webview manually is to have full control of the data folder.
-				.data_directory(app_paths::app_data_subfolder("main-webview")?)
+				.data_directory(app_paths::app_data_subfolder("main-webview")?);
+
+			// WebView2's classic scrollbars reserve layout space; Fluent overlay matches Linux's WebKitGTK overlay scrollbars.
+			#[cfg(windows)]
+			let window_builder = window_builder.scroll_bar_style(ScrollBarStyle::FluentOverlay);
+
+			let window = window_builder
 				.inner_size(800.0, 600.0)
 				.min_inner_size(800.0, 500.0)
 				.focusable(true)
