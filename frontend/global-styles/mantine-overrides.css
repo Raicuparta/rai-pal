@@ -18,3 +18,8 @@
 	white-space: unset;
 	max-width: 30em;
 }
+
+button:disabled,
+[data-disabled] {
+	cursor: default;
+}
