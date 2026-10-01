@@ -1,6 +1,11 @@
 import { Button, ButtonProps, Tooltip } from "@mantine/core";
 import { forwardRef } from "react";
-import { IconCheck, IconLock, IconLockOpen, IconX } from "@tabler/icons-react";
+import {
+	IconCheck,
+	IconLock,
+	IconLockOpen,
+	IconMinus,
+} from "@tabler/icons-react";
 
 interface Props extends ButtonProps {
 	readonly checked: boolean;
@@ -41,7 +46,7 @@ function CheckboxButtonInternal(
 						color="currentcolor"
 					/>
 				) : (
-					<IconX />
+					<IconMinus />
 				)}
 			</Button>
 			<Tooltip
