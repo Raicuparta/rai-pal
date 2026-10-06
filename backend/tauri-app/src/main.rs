@@ -524,7 +524,7 @@ async fn refresh_mods(handle: AppHandle) -> Result {
 
 #[tauri::command]
 #[specta::specta]
-async fn get_url_mod_sources() -> Result<url_mod_provider::UrlModSources> {
+async fn get_url_mod_sources() -> Result<url_mod_provider::UrlModSourcesResponse> {
 	Ok(url_mod_provider::get_url_mod_sources())
 }
 

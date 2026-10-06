@@ -28,7 +28,7 @@ export const commands = {
 	getRemoteConfigs: (providerId: GameProviderId, gameId: string) => __TAURI_INVOKE<{
 	configs: RemoteConfig[],
 } | null>("get_remote_configs", { providerId, gameId }),
-	getUrlModSources: () => __TAURI_INVOKE<UrlModSources>("get_url_mod_sources"),
+	getUrlModSources: () => __TAURI_INVOKE<UrlModSourcesResponse>("get_url_mod_sources"),
 	installMod: (modId: string, providerIdOption: "Epic" | "Gog" | "Itch" | "Manual" | "Steam" | "Xbox" | null, gameIdOption: string | null) => __TAURI_INVOKE<null>("install_mod", { modId, providerIdOption, gameIdOption }),
 	listenToDownloadProgress: (channel: Channel<ProgressStatus>) => __TAURI_INVOKE<null>("listen_to_download_progress", { channel }),
 	logIn: () => __TAURI_INVOKE<null>("log_in"),
@@ -301,11 +301,11 @@ export type UnityBackend = "Il2Cpp" | "Mono";
 
 export type UrlModSource = {
 	url: string,
-	isDefault: boolean,
 	enabled: boolean,
 };
 
-export type UrlModSources = {
+export type UrlModSourcesResponse = {
+	defaultSource: UrlModSource,
 	sources: UrlModSource[],
 };
 
