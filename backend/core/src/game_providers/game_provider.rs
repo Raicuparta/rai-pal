@@ -55,15 +55,27 @@ pub trait WineProviderActions {
 		))
 	}
 
-	fn get_run_with_wine_command(&self, game: &DbGame) -> Result<GameLaunch> {
-		Err(Error::UnsupportedProviderOperation(
-			game.provider_id,
-			"get_run_with_wine_command".to_string(),
-		))
+	fn get_wine_environment(&self, _game: &DbGame) -> Result<BTreeMap<String, String>> {
+		Ok(BTreeMap::new())
 	}
 
-	fn get_game_run_with_wine_command(&self, game: &DbGame) -> Result<GameLaunch> {
-		self.get_run_with_wine_command(game)
+	fn get_run_with_wine_command(&self, game: &DbGame) -> Result<GameLaunch> {
+		#[cfg(target_os = "linux")]
+		{
+			Ok(crate::wine::make_wine_launch(
+				&self.get_wine_binary_path(game)?,
+				&self.get_wine_prefix_path(game)?,
+				&self.get_wine_environment(game)?,
+			))
+		}
+
+		#[cfg(not(target_os = "linux"))]
+		{
+			Err(Error::UnsupportedProviderOperation(
+				game.provider_id,
+				"get_run_with_wine_command".to_string(),
+			))
+		}
 	}
 
 	fn run_with_wine(
@@ -73,7 +85,7 @@ pub trait WineProviderActions {
 		args: &[String],
 		wine_env: &BTreeMap<String, String>,
 	) -> Result {
-		let mut launch = self.get_game_run_with_wine_command(game)?;
+		let mut launch = self.get_run_with_wine_command(game)?;
 
 		if pe_utils::is_pe_console_app(exe_path) {
 			launch.arg("wineconsole");

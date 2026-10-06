@@ -9,7 +9,6 @@ use super::provider_command::{ProviderCommand, ProviderCommandAction};
 use crate::{
 	app_paths,
 	game::DbGame,
-	game_launch::GameLaunch,
 	game_providers::game_provider::{GameProviderId, ProviderActions, WineProviderActions},
 	local_database::{app_database::DbMutex, game_database::GameDatabase},
 	result::{LogErrExt, Result},
@@ -160,24 +159,7 @@ impl WineProviderActions for Itch {
 	}
 
 	fn get_wine_binary_path(&self, _game: &DbGame) -> Result<PathBuf> {
-		Ok(find_itch_wine())
-	}
-
-	fn get_run_with_wine_command(&self, game: &DbGame) -> Result<GameLaunch> {
-		let wine_prefix_path = self.get_wine_prefix_path(game)?;
-		let wine_binary = self.get_wine_binary_path(game)?;
-
-		let mut launch = GameLaunch::new(&wine_binary);
-		launch.env("WINEPREFIX", &wine_prefix_path);
-
-		// Flatpak-bundled wine needs WINESERVER set explicitly to find its wineserver binary.
-		if let Some(wineserver) = wine_binary.parent().map(|p| p.join("wineserver"))
-			&& wineserver.exists()
-		{
-			launch.env("WINESERVER", &wineserver);
-		}
-
-		Ok(launch)
+		Ok(crate::wine::find_itch_wine())
 	}
 
 	fn set_wine_dll_overrides(&self, game: &DbGame, dll_overrides: &[String]) -> Result {
@@ -188,32 +170,6 @@ impl WineProviderActions for Itch {
 
 		Ok(())
 	}
-}
-
-#[cfg(target_os = "linux")]
-fn find_itch_wine() -> PathBuf {
-	let wine_name = "wine";
-
-	let flatpak_wine =
-		PathBuf::from("/var/lib/flatpak/app/io.itch.itch/current/active/files/bin/wine");
-
-	if flatpak_wine.exists() {
-		log::info!("Found itch flatpak wine: `{}`", flatpak_wine.display());
-		return flatpak_wine;
-	}
-
-	if let Some(path_var) = std::env::var_os("PATH") {
-		for dir in std::env::split_paths(&path_var) {
-			let wine_bin = dir.join(wine_name);
-			if wine_bin.exists() {
-				log::info!("Found wine via PATH: `{}`", wine_bin.display());
-				return wine_bin;
-			}
-		}
-	}
-
-	log::warn!("Could not find `wine` on PATH or in itch flatpak. Falling back to bare name.");
-	PathBuf::from(wine_name)
 }
 
 #[cfg(target_os = "linux")]

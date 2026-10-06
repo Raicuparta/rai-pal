@@ -1,13 +1,17 @@
 #![cfg(target_os = "linux")]
 
 use std::{
+	collections::BTreeMap,
 	fs,
 	path::{Path, PathBuf},
 };
 
 use log;
 
-use crate::result::Result;
+use crate::{
+	game_launch::{GameLaunch, find_in_path},
+	result::Result,
+};
 
 const DLL_OVERRIDES_SECTION: &str = "[Software\\\\Wine\\\\DllOverrides]";
 const DLL_OVERRIDE_VALUE: &str = "native,builtin";
@@ -20,6 +24,120 @@ pub fn get_default_wine_prefix() -> PathBuf {
 		},
 		PathBuf::from,
 	)
+}
+
+pub fn make_wine_launch(
+	wine: &Path,
+	prefix: &Path,
+	environment: &BTreeMap<String, String>,
+) -> GameLaunch {
+	let mut launch = fhs_wrapper(wine).map_or_else(
+		|| GameLaunch::new(wine),
+		|wrapper| {
+			let mut launch = GameLaunch::new(wrapper);
+			launch.arg(wine);
+			launch
+		},
+	);
+
+	launch.env("WINEPREFIX", prefix);
+
+	if let Some(wineserver) = wine
+		.parent()
+		.map(|parent| parent.join("wineserver"))
+		.filter(|wineserver| wineserver.exists())
+	{
+		launch.env("WINESERVER", wineserver);
+	}
+
+	launch.envs(environment);
+
+	launch
+}
+
+fn fhs_wrapper(wine: &Path) -> Option<PathBuf> {
+	let files_dir = wine.parent()?.parent()?;
+
+	if !files_dir.join("lib/wine/i386-unix/wine").exists()
+		|| Path::new("/lib/ld-linux.so.2").exists()
+	{
+		return None;
+	}
+
+	find_in_path("steam-run")
+}
+
+pub fn find_system_wine() -> PathBuf {
+	let wine_name = "wine";
+
+	if let Some(path_var) = std::env::var_os("PATH") {
+		for dir in std::env::split_paths(&path_var) {
+			let wine_bin = dir.join(wine_name);
+			if wine_bin.exists() {
+				log::info!("Found wine via PATH: `{}`", wine_bin.display());
+				return wine_bin;
+			}
+		}
+	}
+
+	let flatpak_candidates: &[&str] = &[
+		"/var/lib/flatpak/app/org.winehq.Wine/current/active/files/bin/wine",
+		"/var/lib/flatpak/app/org.winehq.Wine.Stable/current/active/files/bin/wine",
+		"/var/lib/flatpak/app/org.winehq.Wine.Devel/current/active/files/bin/wine",
+	];
+
+	for candidate in flatpak_candidates {
+		let path = PathBuf::from(candidate);
+		if path.exists() {
+			log::info!("Found flatpak wine: `{}`", path.display());
+			return path;
+		}
+	}
+
+	if let Some(home) = std::env::var_os("HOME") {
+		let user_flatpak_base = PathBuf::from(home).join(".local/share/flatpak/app");
+		for flatpak_id in [
+			"org.winehq.Wine",
+			"org.winehq.Wine.Stable",
+			"org.winehq.Wine.Devel",
+		] {
+			let candidate = user_flatpak_base
+				.join(flatpak_id)
+				.join("current/active/files/bin/wine");
+			if candidate.exists() {
+				log::info!("Found user flatpak wine: `{}`", candidate.display());
+				return candidate;
+			}
+		}
+	}
+
+	log::warn!("Could not find `wine` on PATH or as flatpak. Falling back to bare name.");
+	PathBuf::from(wine_name)
+}
+
+pub fn find_itch_wine() -> PathBuf {
+	let wine_name = "wine";
+
+	let flatpak_wine =
+		PathBuf::from("/var/lib/flatpak/app/io.itch.itch/current/active/files/bin/wine");
+
+	if flatpak_wine.exists() {
+		log::info!("Found itch flatpak wine: `{}`", flatpak_wine.display());
+		return flatpak_wine;
+	}
+
+	if let Some(path_var) = std::env::var_os("PATH") {
+		for dir in std::env::split_paths(&path_var) {
+			let wine_bin = dir.join(wine_name);
+			if wine_bin.exists() {
+				log::info!("Found wine via PATH: `{}`", wine_bin.display());
+				return wine_bin;
+			}
+		}
+	}
+
+	log::warn!("Could not find `wine` on PATH or in itch flatpak. Falling back to bare name.");
+	PathBuf::from(wine_name)
 }
 
 /// Updates the user.reg file inside a Wine prefix to add DLL overrides.

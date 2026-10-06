@@ -13,13 +13,6 @@ use std::{
 
 use crate::{open_better::spawn_detached, result::Result};
 
-/// A game command with everything needed to spawn it independently of Rai Pal.
-///
-/// We can't use a `std::process::Command` for this because Steam tracks a game
-/// by the process tree rooted at the `reaper` it spawns, and a child of Rai Pal
-/// stays inside that tree even after `setsid`/double-fork. To escape it we ask
-/// systemd to spawn the game as a separate user service, which needs the program,
-/// arguments and environment separately.
 #[derive(Clone, Default)]
 pub struct GameLaunch {
 	pub program: PathBuf,
@@ -62,10 +55,6 @@ impl GameLaunch {
 		self
 	}
 
-	/// Like [`Self::envs`], but expands `${VAR}` references in values against the
-	/// environment set so far. Shell-based launches (the Steam exe swap) get this
-	/// for free; direct spawns need it so values like
-	/// `libdoorstop.so:${LD_PRELOAD}` don't end up literal.
 	pub fn envs_expanded(&mut self, env: &BTreeMap<String, String>) -> &mut Self {
 		for (key, value) in env {
 			let value = expand_environment_variables(value, &self.env);
@@ -145,7 +134,7 @@ const ENV_VARS_TO_KEEP_OUT: &[&str] = &[
 ];
 
 #[cfg(target_os = "linux")]
-fn find_in_path(name: &str) -> Option<PathBuf> {
+pub(crate) fn find_in_path(name: &str) -> Option<PathBuf> {
 	let path = std::env::var_os("PATH")?;
 	std::env::split_paths(&path)
 		.map(|dir| dir.join(name))
@@ -159,10 +148,6 @@ fn has_user_systemd() -> bool {
 		.is_some_and(|runtime_dir| runtime_dir.join("systemd").exists())
 }
 
-/// Builds a `systemd-run` invocation that asks the user systemd manager to spawn
-/// the game as a transient service. Unlike a direct child of Rai Pal, that service
-/// is parented to the systemd manager, so Steam's `reaper` does not consider it
-/// part of Rai Pal's process tree.
 #[cfg(target_os = "linux")]
 fn systemd_run_command(launch: &GameLaunch) -> Option<Command> {
 	if !has_user_systemd() {
@@ -210,9 +195,6 @@ fn systemd_run_command(launch: &GameLaunch) -> Option<Command> {
 	Some(command)
 }
 
-/// Spawns a game outside of Rai Pal's process tree, so that closing Rai Pal (and
-/// Steam tearing it down) does not kill the game. Falls back to a plain detached
-/// spawn where systemd is not available.
 pub fn spawn_game(launch: &GameLaunch) -> Result {
 	#[cfg(target_os = "linux")]
 	if let Some(mut command) = systemd_run_command(launch) {

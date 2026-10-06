@@ -1,4 +1,5 @@
 use std::{
+	collections::BTreeMap,
 	fs,
 	path::{Path, PathBuf},
 };
@@ -7,12 +8,11 @@ use steamlocate::Library;
 
 use crate::{
 	game::DbGame,
-	game_launch::GameLaunch,
 	game_providers::{
 		game_provider::WineProviderActions,
 		steam::{steam_dir::find_steam_dir, steam_provider::Steam},
 	},
-	path_extensions::PathExt,
+	path_extensions::{AsValidStr, PathExt},
 	result::{Error, Result},
 	wine,
 };
@@ -49,18 +49,19 @@ impl WineProviderActions for Steam {
 			.join("wine"))
 	}
 
-	fn get_run_with_wine_command(&self, game: &DbGame) -> Result<GameLaunch> {
+	fn get_wine_environment(&self, game: &DbGame) -> Result<BTreeMap<String, String>> {
 		let wine_prefix_path = self.get_wine_prefix_path(game)?;
 		let compat_data_path = wine_prefix_path.try_parent()?;
-		let wine_binary_path = self.get_wine_binary_path(game)?;
 
-		let mut launch = GameLaunch::new(&wine_binary_path);
-		launch
-			.env("WINEPREFIX", &wine_prefix_path)
-			.env("STEAM_COMPAT_DATA_PATH", compat_data_path)
-			.env("WINEFSYNC", "1");
-
-		Ok(launch)
+		compat_data_path.try_to_str().map(|compat_data_path_str| {
+			BTreeMap::from([
+				(
+					"STEAM_COMPAT_DATA_PATH".to_string(),
+					compat_data_path_str.to_string(),
+				),
+				("WINEFSYNC".to_string(), "1".to_string()),
+			])
+		})
 	}
 
 	fn set_wine_dll_overrides(&self, game: &DbGame, dll_overrides: &[String]) -> Result {

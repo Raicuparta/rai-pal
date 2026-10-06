@@ -14,10 +14,6 @@ Ignore code warnings, clippy, format, etc, until I've confirmed that your implem
 Run `npm run format` before committing, so formatting changes are part of your
 commit instead of showing up as unrelated churn later.
 
-## Commits
-
-Commit your work locally without pushing. When making changes to the same domain, or especially when fixing changes you made, amend commits, unless they've already been pushed.
-
 ## Comments
 
 Do not leave comments. Exception only for actual hacks or realy weird stuff, almost everything should be comment-free. Do not remove preexisting comments.
