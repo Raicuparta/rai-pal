@@ -1,36 +1,29 @@
-import { Card, Group, Stack } from "@mantine/core";
-import { FilterMenu } from "@components/filters/filter-menu";
-import { RefreshButton } from "@components/refresh-button";
-import { AddGame } from "./add-game-button";
+import { Stack } from "@mantine/core";
 import { GamesTable } from "./games-table";
-import { GameModal } from "./game-modal";
+import { GamePage } from "./game-page";
 import { useSelectedGame } from "@hooks/use-selected-game";
+import { GamesSidebar } from "./games-sidebar";
+import { Page } from "@components/page";
 
 export function GamesPage() {
 	const { selectedGame, gameMods } = useSelectedGame();
+	const showGamePage = Boolean(selectedGame && gameMods);
 
 	return (
 		<Stack h="100%">
-			{selectedGame && gameMods ? (
-				<GameModal
+			{showGamePage && selectedGame && gameMods && (
+				<GamePage
 					game={selectedGame}
 					mods={gameMods}
 				/>
-			) : (
-				<Group>
-					<AddGame />
-					<FilterMenu />
-					<RefreshButton />
-				</Group>
 			)}
-			<Card
-				p={0}
-				flex={1}
-				display={selectedGame && gameMods ? "none" : undefined}
-				bg="dark"
+			<Page
+				display={showGamePage ? "none" : undefined}
+				scrollable={false}
+				sidebar={<GamesSidebar />}
 			>
 				<GamesTable />
-			</Card>
+			</Page>
 		</Stack>
 	);
 }

@@ -87,8 +87,11 @@ export const enUs = {
 
 	// Menu for filtering games.
 	filterMenu: {
-		// Text in the filter button.
-		button: "Filter",
+		// Text in the divider above the list of filters.
+		filters: "Filters",
+
+		// Accessible label for the button that collapses all expanded filters.
+		collapseAll: "Collapse all filters",
 
 		// Text in the reset button for each specific filterable property.
 		resetButton: "Reset",
@@ -108,8 +111,11 @@ export const enUs = {
 		// Game executable architecture (32-bit, 64-bit)
 		architecture: "Architecture",
 
-		// Game operating system (Windows, Linux)
-		os: "OS",
+		// Operating system of the installed game executable (Windows, Linux)
+		executableOs: "Executable OS",
+
+		// Operating systems the game supports, from provider metadata (Windows, Linux)
+		supportedOs: "Supported OS",
 
 		// Unity scripting backend (Mono, IL2CPP)
 		unityBackend: "Unity Backend",
@@ -118,7 +124,7 @@ export const enUs = {
 		engine: "Engine",
 
 		// Game installation status (Installed, Not installed). Might have more statuses in the future.
-		status: "Status",
+		status: "Install status",
 
 		// Mod compatibility.
 		mod: "Mod",
@@ -212,7 +218,7 @@ export const enUs = {
 			"Are you sure you want to remove this game from Rai Pal?",
 
 		// Button for refreshing the game's information.
-		refreshGame: "Refresh",
+		refreshGame: "Refresh game",
 
 		// Error message when Rai Pal fails to read enough information about the game.
 		failedToReadGameInfo:
@@ -221,9 +227,6 @@ export const enUs = {
 		// Error message when Rai Pal fails to determine the game's engine.
 		failedToDetermineEngine:
 			"Failed to determine the engine for this game. Some mods might fail to install.",
-
-		// Label for the section that shows mods for this game.
-		gameModsLabel: "Mods",
 
 		// Warning that shows when a game isn't installed.
 		gameNotInstalledWarning:
@@ -296,10 +299,19 @@ export const enUs = {
 			"Can't uninstall a mod that has dependants. Uninstall the mods that depend on this one first.",
 	},
 
+	// Controls for sorting the list of games.
+	gamesSort: {
+		// Label for the dropdown that chooses which property to sort games by.
+		sortBy: "Sort by",
+
+		// Tooltip/accessible label for the button that flips the sort direction between ascending and descending.
+		sortDirection: "Sort direction",
+	},
+
 	// Named table columns for the list of games.
 	gamesTableColumn: {
 		// This column is mostly for the game's name, but includes other information like tags.
-		game: "Game",
+		name: "Name",
 
 		// The game's engine (Unity, Unreal, etc), engine version, etc.
 		engine: "Engine",
@@ -455,21 +467,19 @@ export const enUs = {
 			"Rai Pal has been added to your Steam library. Restart Steam to see it.",
 	},
 
-	// Button and modal for making sure BepInEx loads on Linux with Wine.
-	globalWineOverrides: {
-		// Button that sets up the Linux environment for BepInEx.
-		setUpEnvironmentButton: "Set up Linux environment for BepInEx",
+	// Modal for notifying about an available app update.
+	appUpdate: {
+		// Title of the app update modal. {version} is the new app version number.
+		updateAvailableTitle: "Rai Pal {version}",
 
-		// Title of the modal that opens after clicking the set up Linux environment button.
-		setUpEnvironmentTitle: "Set up Linux environment for BepInEx",
+		// Shown in the app update modal when the release has no changelog text.
+		noChangelog: "(no changelog)",
 
-		// Description of what setting up the Linux environment for BepInEx does.
-		setUpEnvironmentDescription:
-			"When using Proton/Wine on Linux, BepInEx won't load automatically unless some Wine settings are set. This will set the environment variable WINEDLLOVERRIDES to 'winhttp.dll=n,b' globally. If you'd rather do that manually, then don't click this button.",
+		// Button that dismisses the app update modal and stops asking again until Rai Pal is restarted.
+		ignoreUpdate: "Ignore (won't ask again until you restart Rai Pal)",
 
-		// Success message after setting up the Linux environment for BepInEx.
-		setUpEnvironmentSuccess:
-			"File has been written. You will need to log out and log back in, or restart your computer, for the changes to take effect.",
+		// Button that downloads and installs the available app update.
+		updateNow: "Update now",
 	},
 
 	// Debug data that shows in modals for games and mods.

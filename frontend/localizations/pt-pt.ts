@@ -45,7 +45,8 @@ export const ptPt: Localization = {
 	},
 
 	filterMenu: {
-		button: "Filtrar",
+		filters: "Filtros",
+		collapseAll: "Recolher todos os filtros",
 		resetButton: "Repor",
 		searchPlaceholder: "Procurar...",
 	},
@@ -54,10 +55,11 @@ export const ptPt: Localization = {
 		provider: "Plataforma",
 		tags: "Tag",
 		architecture: "Arquitetura",
-		os: "Sistema operativo",
+		executableOs: "SO do executável",
+		supportedOs: "SO suportado",
 		unityBackend: "Backend do Unity",
 		engine: "Motor",
-		status: "Estado",
+		status: "Estado de instalação",
 		mod: "Mod",
 	},
 
@@ -103,12 +105,11 @@ export const ptPt: Localization = {
 		openGameWineBinaryFolder: "Binário Wine",
 		removeFromRaiPal: "Remover do Rai Pal",
 		removeGameConfirmation: "Queres mesmo remover este jogo do Rai Pal?",
-		refreshGame: "Atualizar",
+		refreshGame: "Atualizar jogo",
 		failedToReadGameInfo:
 			"Erro ao ler informações importantes sobre este jogo. O executável pode estar protegido. Alguns mods podem não instalar-se.",
 		failedToDetermineEngine:
 			"Não foi possível determinar o motor deste jogo. Alguns mods podem não funcionar.",
-		gameModsLabel: "Mods",
 		gameNotInstalledWarning:
 			"Este jogo não está instalado, por isso não tenho 100% de certeza sobre a compatibilidade dos mods. Os que vês abaixo podem funcionar. Se instalares o jogo, posso mostrar informações mais exatas.",
 		uninstallAllModsButton: "Desinstalar todos os mods",
@@ -144,8 +145,13 @@ export const ptPt: Localization = {
 			"Não é possível desinstalar um mod que tenha dependentes. Desinstala primeiro os mods que dependem deste.",
 	},
 
+	gamesSort: {
+		sortBy: "Ordenar por",
+		sortDirection: "Direção da ordenação",
+	},
+
 	gamesTableColumn: {
-		game: "Jogo",
+		name: "Nome",
 		engine: "Motor",
 		date: "Data",
 	},
@@ -222,13 +228,11 @@ export const ptPt: Localization = {
 			"O Rai Pal foi adicionado à tua biblioteca da Steam. Reinicia a Steam para o veres.",
 	},
 
-	globalWineOverrides: {
-		setUpEnvironmentButton: "Configurar ambiente Linux para o BepInEx",
-		setUpEnvironmentTitle: "Configurar ambiente Linux para o BepInEx",
-		setUpEnvironmentDescription:
-			"Ao usar Proton/Wine no Linux, o BepInEx não será carregado automaticamente a menos que algumas definições do Wine estejam configuradas. Isto irá definir a variável de ambiente WINEDLLOVERRIDES para 'winhttp.dll=n,b' globalmente. Se preferires fazer isso manualmente, não cliques neste botão.",
-		setUpEnvironmentSuccess:
-			"O ficheiro foi escrito. Precisas de terminar sessão e voltar a iniciar, ou reiniciar o computador, para as alterações fazerem efeito.",
+	appUpdate: {
+		updateAvailableTitle: "Rai Pal {version}",
+		noChangelog: "(Sem registo de alterações)",
+		ignoreUpdate: "Ignorar (não voltará a perguntar até reiniciares o Rai Pal)",
+		updateNow: "Atualizar agora",
 	},
 
 	debugData: {

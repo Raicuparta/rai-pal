@@ -46,7 +46,8 @@ export const deDe: Localization = {
 	},
 
 	filterMenu: {
-		button: "Filter",
+		filters: "Filter",
+		collapseAll: "Alle Filter einklappen",
 		resetButton: "Zurücksetzen",
 		searchPlaceholder: "Suchen...",
 	},
@@ -55,10 +56,11 @@ export const deDe: Localization = {
 		provider: "Anbieter",
 		tags: "Tag",
 		architecture: "Architektur",
-		os: "Betriebssystem",
+		executableOs: "OS der Exe",
+		supportedOs: "Unterstütztes OS",
 		unityBackend: "Unity Backend",
 		engine: "Engine",
-		status: "Status",
+		status: "Installationsstatus",
 		mod: "Mod",
 	},
 
@@ -97,20 +99,19 @@ export const deDe: Localization = {
 		startGameExecutable: "Spiel-Exe starten",
 		startGameViaProvider: "Spiel starten über {provider}",
 		foldersDropdown: "Ordner",
-		openGameFilesFolder: "Spiel-Ordner öffnen",
-		openInstalledModsFolder: "Installierte Mods öffnen",
-		openGameDataFolder: "App-Daten öffnen",
-		openGameWinePrefixFolder: "Wine-Prefix öffnen",
-		openGameWineBinaryFolder: "Wine Binary öffnen",
+		openGameFilesFolder: "Spieldateien",
+		openInstalledModsFolder: "Installierte Mods",
+		openGameDataFolder: "App-Daten",
+		openGameWinePrefixFolder: "Wine-Prefix",
+		openGameWineBinaryFolder: "Wine Binary",
 		removeFromRaiPal: "Aus Rai Pal entfernen",
 		removeGameConfirmation:
 			"Bist du sicher, dass du dieses Spiel aus Rai Pal entfernen willst?",
-		refreshGame: "Aktualisieren",
+		refreshGame: "Spiel aktualisieren",
 		failedToReadGameInfo:
 			"Konnte wichtige Infos zu diesem Spiel nicht lesen. Vielleicht ist die Exe geschützt. Einige Mods könnten dann nicht installiert werden.",
 		failedToDetermineEngine:
 			"Konnte die Engine für dieses Spiel nicht bestimmen. Einige Mods könnten dann nicht funktionieren.",
-		gameModsLabel: "Mods",
 		gameNotInstalledWarning:
 			"Das Spiel ist nicht installiert, daher bin ich mir nicht 100% sicher, welche Mods kompatibel sind. Die unten angezeigten könnten trotzdem funktionieren. Wenn du das Spiel installierst, zeig ich dir genauere Infos.",
 		uninstallAllModsButton: "Alle Mods deinstallieren",
@@ -148,8 +149,13 @@ export const deDe: Localization = {
 			"Kann keinen Mod deinstallieren, von dem andere Mods abhängen. Deinstalliere zuerst die Mods, die davon abhängen.",
 	},
 
+	gamesSort: {
+		sortBy: "Sortieren nach",
+		sortDirection: "Sortierrichtung",
+	},
+
 	gamesTableColumn: {
-		game: "Spiel",
+		name: "Name",
 		engine: "Engine",
 		date: "Datum",
 	},
@@ -226,13 +232,12 @@ export const deDe: Localization = {
 			"Rai Pal wurde zu deiner Steam-Bibliothek hinzugefügt. Starte Steam neu, damit es angezeigt wird.",
 	},
 
-	globalWineOverrides: {
-		setUpEnvironmentButton: "Linux-Umgebung für BepInEx einrichten",
-		setUpEnvironmentTitle: "Linux-Umgebung für BepInEx einrichten",
-		setUpEnvironmentDescription:
-			"Bei Verwendung von Proton/Wine unter Linux wird BepInEx nicht automatisch geladen, wenn nicht einige Wine-Einstellungen gesetzt sind. Dies setzt die Umgebungsvariable WINEDLLOVERRIDES global auf 'winhttp.dll=n,b'. Wenn du das lieber manuell machen möchtest, klick nicht auf diesen Button.",
-		setUpEnvironmentSuccess:
-			"Die Datei wurde geschrieben. Du musst dich abmelden und wieder anmelden oder deinen Computer neu starten, damit die Änderungen wirksam werden.",
+	appUpdate: {
+		updateAvailableTitle: "Rai Pal {version}",
+		noChangelog: "(Kein Changelog)",
+		ignoreUpdate:
+			"Ignorieren (wird bis zum Neustart von Rai Pal nicht erneut gefragt)",
+		updateNow: "Jetzt aktualisieren",
 	},
 
 	debugData: {

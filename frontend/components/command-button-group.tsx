@@ -8,7 +8,6 @@ interface Props extends StackProps {
 export function CommandButtonGroup({ label, children, ...props }: Props) {
 	return (
 		<Stack
-			gap="xs"
 			align="center"
 			style={{ flex: 1 }}
 			{...props}

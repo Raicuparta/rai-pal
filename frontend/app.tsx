@@ -5,9 +5,10 @@ import { useAppUpdater } from "@hooks/use-app-updater";
 import { AppTabs } from "@components/app-tabs";
 import { useAppEvent } from "@hooks/use-app-event";
 import { ConfirmModSourceModal } from "@components/tools/confirm-mod-source-modal";
+import { AppUpdateModal } from "@components/app-update-modal";
 
 function App() {
-	useAppUpdater();
+	const { availableUpdate, installUpdate, ignoreUpdate } = useAppUpdater();
 	useData();
 
 	const [pendingSourceUrl, setPendingSourceUrl] = useState<string | null>(null);
@@ -27,6 +28,11 @@ function App() {
 				isOpen={!!pendingSourceUrl}
 				onClose={() => setPendingSourceUrl(null)}
 				onSaved={() => setPendingSourceUrl(null)}
+			/>
+			<AppUpdateModal
+				update={availableUpdate}
+				onInstall={installUpdate}
+				onIgnore={ignoreUpdate}
 			/>
 		</>
 	);

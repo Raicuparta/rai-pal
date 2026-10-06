@@ -11,7 +11,6 @@ import "@mantine/core/styles.css";
 import "@mantine/notifications/styles.css";
 import "./global-styles/global.css";
 import "./global-styles/mantine-overrides.css";
-import "./global-styles/scroll-bar.css";
 import { platform } from "@tauri-apps/plugin-os";
 
 getVersion()

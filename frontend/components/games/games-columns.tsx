@@ -1,29 +1,26 @@
 import { Box, DefaultMantineColor, Flex, Stack, Table } from "@mantine/core";
-import { TableColumnBase, columnMapToList } from "@components/table/table-head";
-import styles from "./games.module.css";
 import {
-	EngineBrand,
-	DbGame,
-	GamesSortBy,
-	GameProviderId,
-} from "@api/bindings";
+	TableColumnBase,
+	columnMapToList,
+} from "@components/table/table-columns";
+import styles from "./games.module.css";
+import { EngineBrand, DbGame, GameProviderId } from "@api/bindings";
 import { IconCloud, IconDeviceDesktop } from "@tabler/icons-react";
 import { ProviderIcon } from "@components/providers/provider-icon";
 import { gameRowHeight } from "./game-row";
 import { useState } from "react";
+import { useAppSettings } from "@hooks/use-app-settings";
 
-type GamesColumn = TableColumnBase<DbGame, GamesSortBy>;
+type GamesColumn = TableColumnBase<DbGame>;
 
 type CellProps = { readonly item: DbGame };
 
 const thumbnail: GamesColumn = {
-	hidable: true,
 	width: 100,
 	component: function Thumbnail({ item }: CellProps) {
-		const fallbackThumbnail = "images/fallback-thumbnail.png";
 		const [isBroken, setIsBroken] = useState(false);
 		const thumbnailUrl =
-			!isBroken && item.thumbnailUrl ? item.thumbnailUrl : fallbackThumbnail;
+			!isBroken && item.thumbnailUrl ? item.thumbnailUrl : undefined;
 
 		return (
 			<Table.Td
@@ -31,7 +28,7 @@ const thumbnail: GamesColumn = {
 				bg={`var(--mantine-color-${providerColors[item.providerId]}-light)`}
 				opacity={item.exePath ? 1 : 0.5}
 			>
-				{(item.thumbnailUrl || isBroken) && (
+				{thumbnailUrl && (
 					<img
 						decoding="async"
 						loading="lazy"
@@ -55,7 +52,6 @@ const providerColors: Record<GameProviderId, DefaultMantineColor> = {
 } as const;
 
 const status: GamesColumn = {
-	hidable: true,
 	width: 30,
 	component: ({ item }: CellProps) => (
 		<Table.Td
@@ -78,8 +74,6 @@ const status: GamesColumn = {
 };
 
 const name: GamesColumn = {
-	localizationKey: "game",
-	sort: "Title",
 	component: ({ item }: CellProps) => (
 		<Table.Td
 			p={0}
@@ -120,18 +114,18 @@ const engineColors: Record<EngineBrand, DefaultMantineColor> = {
 } as const;
 
 const engine: GamesColumn = {
-	localizationKey: "engine",
-	sort: "Engine",
 	width: 130,
-	center: true,
-	hidable: true,
 	component: ({ item }: CellProps) => {
 		const engineColor = item.engineBrand
 			? engineColors[item.engineBrand]
 			: "gray";
 
 		const osDisplay =
-			item.os === "Windows" ? "win" : item.os === "Linux" ? "linux" : item.os;
+			item.executableOs === "Windows"
+				? "win"
+				: item.executableOs === "Linux"
+					? "linux"
+					: item.executableOs;
 
 		const detailsText = [osDisplay, item.unityBackend, item.architecture]
 			.filter(Boolean)
@@ -155,7 +149,7 @@ const engine: GamesColumn = {
 						{item.engineBrand}
 					</Box>
 				)}
-				{!engine && <div>-</div>}
+				{!item.engineBrand && <div>-</div>}
 				{item.engineVersionDisplay && (
 					<Box className={styles.engineVersion}>
 						{item.engineVersionDisplay}
@@ -176,10 +170,7 @@ const dateFormatter = Intl.DateTimeFormat("default", {
 });
 
 const releaseDate: GamesColumn = {
-	localizationKey: "date",
 	width: 80,
-	center: true,
-	sort: "ReleaseDate",
 	component: ({ item }: CellProps) => {
 		const date = item.releaseDateRfc3339
 			? new Date(item.releaseDateRfc3339)
@@ -211,6 +202,25 @@ const gamesColumnsMap = {
 	releaseDate,
 };
 
-export type GamesColumnId = keyof typeof gamesColumnsMap;
+const gamesColumns = columnMapToList(gamesColumnsMap);
 
-export const gamesColumns = columnMapToList(gamesColumnsMap);
+export function getVisibleGamesColumns(hideGameThumbnails: boolean) {
+	return gamesColumns.filter(
+		(column) => !hideGameThumbnails || column.id !== "thumbnail",
+	);
+}
+
+export function GamesColgroup() {
+	const [settings] = useAppSettings();
+
+	return (
+		<colgroup>
+			{getVisibleGamesColumns(settings.hideGameThumbnails).map((column) => (
+				<col
+					key={column.id}
+					style={{ width: column.width }}
+				/>
+			))}
+		</colgroup>
+	);
+}

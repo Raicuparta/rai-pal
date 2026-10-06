@@ -291,6 +291,10 @@ impl ProviderActions for Steam {
 							)),
 						);
 
+						for os in app_info.supported_os() {
+							game.add_supported_os(os);
+						}
+
 						if app_info
 							.tags
 							.as_ref()

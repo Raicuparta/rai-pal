@@ -1,4 +1,4 @@
-use std::{collections::HashMap, path::PathBuf, process::Command};
+use std::{collections::HashMap, path::PathBuf};
 
 use chrono::DateTime;
 use log::error;
@@ -11,7 +11,7 @@ use crate::{
 	game::DbGame,
 	game_providers::game_provider::{GameProviderId, ProviderActions, WineProviderActions},
 	local_database::{app_database::DbMutex, game_database::GameDatabase},
-	result::{Error, LogErrExt, Result},
+	result::{LogErrExt, Result},
 };
 
 #[derive(Clone)]
@@ -159,24 +159,7 @@ impl WineProviderActions for Itch {
 	}
 
 	fn get_wine_binary_path(&self, _game: &DbGame) -> Result<PathBuf> {
-		Ok(find_itch_wine())
-	}
-
-	fn get_run_with_wine_command(&self, game: &DbGame) -> Result<Command> {
-		let wine_prefix_path = self.get_wine_prefix_path(game)?;
-		let wine_binary = self.get_wine_binary_path(game)?;
-
-		let mut cmd = Command::new(&wine_binary);
-		cmd.env("WINEPREFIX", &wine_prefix_path);
-
-		// Flatpak-bundled wine needs WINESERVER set explicitly to find its wineserver binary.
-		if let Some(wineserver) = wine_binary.parent().map(|p| p.join("wineserver"))
-			&& wineserver.exists()
-		{
-			cmd.env("WINESERVER", &wineserver);
-		}
-
-		Ok(cmd)
+		Ok(crate::wine::find_itch_wine())
 	}
 
 	fn set_wine_dll_overrides(&self, game: &DbGame, dll_overrides: &[String]) -> Result {
@@ -189,53 +172,23 @@ impl WineProviderActions for Itch {
 	}
 }
 
-fn find_itch_wine() -> PathBuf {
-	let wine_name = "wine";
-
-	let flatpak_wine =
-		PathBuf::from("/var/lib/flatpak/app/io.itch.itch/current/active/files/bin/wine");
-
-	if flatpak_wine.exists() {
-		log::info!("Found itch flatpak wine: `{}`", flatpak_wine.display());
-		return flatpak_wine;
-	}
-
-	if let Some(path_var) = std::env::var_os("PATH") {
-		for dir in std::env::split_paths(&path_var) {
-			let wine_bin = dir.join(wine_name);
-			if wine_bin.exists() {
-				log::info!("Found wine via PATH: `{}`", wine_bin.display());
-				return wine_bin;
-			}
-		}
-	}
-
-	log::warn!("Could not find `wine` on PATH or in itch flatpak. Falling back to bare name.");
-	PathBuf::from(wine_name)
-}
-
+#[cfg(target_os = "linux")]
 fn get_itch_wine_prefix() -> Result<PathBuf> {
 	let base_dirs = app_paths::base_dirs()?;
 
-	let candidates = [
+	let existing_candidates = [
 		base_dirs.home_dir().join(".var/app/io.itch.itch/data/wine"),
+		base_dirs.home_dir().join(".var/app/io.itch.itch/.wine"),
 		base_dirs.home_dir().join(".itch/wine"),
 	];
 
-	for candidate in &candidates {
+	for candidate in &existing_candidates {
 		if candidate.join("drive_c").exists() {
 			return Ok(candidate.clone());
 		}
 	}
 
-	Err(Error::Itch(format!(
-		"Itch wine prefix not found. Tried:\n{}",
-		candidates
-			.iter()
-			.map(|p| format!("  - {}", p.display()))
-			.collect::<Vec<_>>()
-			.join("\n")
-	)))
+	Ok(crate::wine::get_default_wine_prefix())
 }
 
 fn parse_verdict(json_option: Option<&String>) -> Option<ItchDatabaseVerdict> {

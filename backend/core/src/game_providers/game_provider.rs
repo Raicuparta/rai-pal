@@ -1,7 +1,6 @@
 use std::{
 	collections::BTreeMap,
 	path::{Path, PathBuf},
-	process::Command,
 	time::{SystemTime, UNIX_EPOCH},
 };
 
@@ -16,9 +15,9 @@ use crate::game_providers::{epic_provider::Epic, gog_provider::Gog, xbox_provide
 use crate::{
 	game::DbGame,
 	game_engines::pe_utils,
+	game_launch::{GameLaunch, spawn_game},
 	game_providers::{itch_provider::Itch, manual_provider::Manual, steam::steam_provider::Steam},
 	local_database::{app_database::DbMutex, game_database::GameDatabase},
-	open_better::spawn_detached,
 	result::{Error, Result},
 };
 
@@ -56,11 +55,27 @@ pub trait WineProviderActions {
 		))
 	}
 
-	fn get_run_with_wine_command(&self, game: &DbGame) -> Result<Command> {
-		Err(Error::UnsupportedProviderOperation(
-			game.provider_id,
-			"get_run_with_wine_command".to_string(),
-		))
+	fn get_wine_environment(&self, _game: &DbGame) -> Result<BTreeMap<String, String>> {
+		Ok(BTreeMap::new())
+	}
+
+	fn get_run_with_wine_command(&self, game: &DbGame) -> Result<GameLaunch> {
+		#[cfg(target_os = "linux")]
+		{
+			Ok(crate::wine::make_wine_launch(
+				&self.get_wine_binary_path(game)?,
+				&self.get_wine_prefix_path(game)?,
+				&self.get_wine_environment(game)?,
+			))
+		}
+
+		#[cfg(not(target_os = "linux"))]
+		{
+			Err(Error::UnsupportedProviderOperation(
+				game.provider_id,
+				"get_run_with_wine_command".to_string(),
+			))
+		}
 	}
 
 	fn run_with_wine(
@@ -70,17 +85,17 @@ pub trait WineProviderActions {
 		args: &[String],
 		wine_env: &BTreeMap<String, String>,
 	) -> Result {
-		let mut cmd = self.get_run_with_wine_command(game)?;
+		let mut launch = self.get_run_with_wine_command(game)?;
 
 		if pe_utils::is_pe_console_app(exe_path) {
-			cmd.arg("wineconsole");
+			launch.arg("wineconsole");
 		}
 
-		cmd.arg(exe_path).args(args).envs(wine_env);
-		spawn_detached(&mut cmd)?;
+		launch.arg(exe_path).args(args).envs(wine_env);
+		spawn_game(&launch)?;
 
 		log::info!(
-			"Launched `{}` with Wine for game `{}` ({}) in a detached session",
+			"Launched `{}` with Wine for game `{}` ({})",
 			exe_path.display(),
 			game.display_title,
 			game.external_id,

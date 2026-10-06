@@ -46,7 +46,8 @@ export const jaJp: Localization = {
 	},
 
 	filterMenu: {
-		button: "フィルター",
+		filters: "フィルター",
+		collapseAll: "すべてのフィルターを折りたたむ",
 		resetButton: "リセット",
 		searchPlaceholder: "検索...",
 	},
@@ -55,10 +56,11 @@ export const jaJp: Localization = {
 		provider: "プロバイダー",
 		tags: "タグ",
 		architecture: "アーキテクチャ",
-		os: "OS",
+		executableOs: "実行ファイルのOS",
+		supportedOs: "対応OS",
 		unityBackend: "Unity バックエンド",
 		engine: "エンジン",
-		status: "ステータス",
+		status: "インストール状況",
 		mod: "Mod",
 	},
 
@@ -104,12 +106,11 @@ export const jaJp: Localization = {
 		openGameWineBinaryFolder: "Wineバイナリ",
 		removeFromRaiPal: "Rai Palから削除",
 		removeGameConfirmation: "このゲームをRai Palから削除していい？",
-		refreshGame: "更新",
+		refreshGame: "ゲームを更新",
 		failedToReadGameInfo:
 			"このゲームの重要情報がちゃんと読み取れなかった。実行ファイルが保護されてるのかも。一部のModはうまくインストールできないかも。",
 		failedToDetermineEngine:
 			"このゲームのエンジンが特定できなかった。一部のModはうまくインストールできないかも。",
-		gameModsLabel: "Mod",
 		gameNotInstalledWarning:
 			"このゲームはインストールされてないから、どのModが対応してるか100%は確信できないんだ。下に出てるModなら動くかも。インストールしたら、もっと正確な情報を出せるよ。",
 		uninstallAllModsButton: "すべてのModをアンインストール",
@@ -146,8 +147,13 @@ export const jaJp: Localization = {
 			"依存ModがあるModはアンインストールできないよ。先に依存してるModをアンインストールしてね。",
 	},
 
+	gamesSort: {
+		sortBy: "並べ替え",
+		sortDirection: "並べ替え順",
+	},
+
 	gamesTableColumn: {
-		game: "ゲーム",
+		name: "名前",
 		engine: "エンジン",
 		date: "日付",
 	},
@@ -224,13 +230,11 @@ export const jaJp: Localization = {
 			"Rai PalをSteamライブラリに追加したよ。表示するにはSteamを再起動してね。",
 	},
 
-	globalWineOverrides: {
-		setUpEnvironmentButton: "BepInEx用のLinux環境をセットアップ",
-		setUpEnvironmentTitle: "BepInEx用のLinux環境をセットアップ",
-		setUpEnvironmentDescription:
-			"LinuxでProton/Wineを使ってると、Wineの設定をしないとBepInExは自動で読み込まれないんだ。これは環境変数 WINEDLLOVERRIDES をグローバルに 'winhttp.dll=n,b' に設定するよ。手動でやりたいなら、このボタンは押さないでね。",
-		setUpEnvironmentSuccess:
-			"ファイルを書き込んだよ。変更を反映するには、ログアウトして再ログインするか、PCを再起動してね。",
+	appUpdate: {
+		updateAvailableTitle: "Rai Pal {version}",
+		noChangelog: "（変更履歴なし）",
+		ignoreUpdate: "無視（Rai Palを再起動するまで再確認しません）",
+		updateNow: "今すぐ更新",
 	},
 
 	debugData: {

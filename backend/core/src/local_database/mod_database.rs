@@ -8,6 +8,7 @@ use rai_pal_proc_macros::serializable_struct;
 use serde::Serialize;
 
 use crate::{
+	game::DbGame,
 	game_providers::game_provider::GameProviderId,
 	local_database::{
 		app_database::{AppDatabase, DbMutex},
@@ -46,6 +47,7 @@ pub trait ModDatabase {
 		provider_id_option: Option<GameProviderId>,
 		game_id_option: Option<String>,
 	) -> Result<Option<InstalledMod>>;
+	fn get_game_environment(&self, game: &DbGame) -> Result<BTreeMap<String, String>>;
 	fn try_get_installed_mod(
 		&self,
 		provider_id: &GameProviderId,
@@ -106,6 +108,7 @@ impl ModDatabase for DbMutex {
 				install TEXT,
 				run_for_game TEXT,
 				run_standalone TEXT,
+				game_environment TEXT,
 				hash TEXT,
 				family TEXT,
 				created_at INTEGER
@@ -168,7 +171,8 @@ impl ModDatabase for DbMutex {
 				hash,
 				hide_from_game_mods_list,
 				family,
-				scope
+				scope,
+				game_environment
 			FROM main.mods
 			WHERE id = $1
 			LIMIT 1
@@ -199,6 +203,7 @@ impl ModDatabase for DbMutex {
 					hide_from_game_mods_list: row.get(20)?,
 					family: row.get(21)?,
 					scope: row.get(22)?,
+					game_environment: row.get_json(23)?,
 				})
 			})?)
 	}
@@ -261,6 +266,27 @@ impl ModDatabase for DbMutex {
 			.ok_or(Error::ModNotInstalled(mod_id.to_string()))
 	}
 
+	fn get_game_environment(&self, game: &DbGame) -> Result<BTreeMap<String, String>> {
+		let exe_path_hash = game.try_get_exe_path()?.hash_string();
+
+		let mod_ids = self
+			.lock_db()?
+			.prepare_cached("SELECT mod_id FROM main.installed_mods WHERE exe_path_hash = $1")?
+			.query_map([exe_path_hash], |row| row.get::<_, String>(0))?
+			.collect::<rusqlite::Result<Vec<String>>>()?;
+
+		let mut environment = BTreeMap::new();
+
+		for mod_id in mod_ids {
+			let Ok(game_mod) = self.get_mod(&mod_id) else {
+				continue;
+			};
+			environment.extend(game_mod.get_game_environment(Some(game)));
+		}
+
+		Ok(environment)
+	}
+
 	fn get_mod_map(&self) -> Result<BTreeMap<String, GameMod>> {
 		Ok(self
 			.lock_db()?
@@ -289,7 +315,8 @@ impl ModDatabase for DbMutex {
 				hash,
 				hide_from_game_mods_list,
 				family,
-				scope
+				scope,
+				game_environment
 			FROM main.mods
 		",
 			)?
@@ -318,6 +345,7 @@ impl ModDatabase for DbMutex {
 					hide_from_game_mods_list: row.get(20)?,
 					family: row.get(21)?,
 					scope: row.get(22)?,
+					game_environment: row.get_json(23)?,
 				})
 			})?
 			.filter_map(|game_mod| match game_mod {
@@ -506,8 +534,8 @@ impl ModDatabase for DbMutex {
 					)
 					AND (
 						json_extract(m.game_os, '$') IS NULL
-						OR ig.os IS NULL
-						OR json_extract(m.game_os, '$') = ig.os
+						OR ig.executable_os IS NULL
+						OR json_extract(m.game_os, '$') = ig.executable_os
 					)
 					AND (
 						json_extract(m.host_os, '$') IS NULL
@@ -743,12 +771,13 @@ fn try_insert_mod(
 				install,
 				run_for_game,
 				run_standalone,
+				game_environment,
 				hide_from_game_mods_list,
 				hash,
 				family,
 				created_at,
 				scope
-			) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25)",
+			) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26)",
 		)?
 		.execute(rusqlite::params![
 			scoped_id.as_ref(),
@@ -771,6 +800,7 @@ fn try_insert_mod(
 			serialize_json_option(game_mod.install.as_ref())?,
 			serialize_json_option(game_mod.run_for_game.as_ref())?,
 			serialize_json_option(game_mod.run_standalone.as_ref())?,
+			serialize_json_option(game_mod.game_environment.as_ref())?,
 			game_mod.hide_from_game_mods_list,
 			game_mod.hash,
 			game_mod.family,

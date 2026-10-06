@@ -4,7 +4,7 @@ import { DebugData } from "@components/debug-data";
 import { TableContainer } from "@components/table/table-container";
 import { useMemo } from "react";
 import { ModsTable } from "./mods-table";
-import { SubPage } from "@components/sub-page";
+import { Page } from "@components/page";
 import { CommandButton } from "@components/command-button";
 import { useLocalization } from "@hooks/use-localization";
 import { IconDownload, IconPlayerPlay } from "@tabler/icons-react";
@@ -22,7 +22,7 @@ export function ModModal(props: Props) {
 	);
 
 	return (
-		<SubPage onClose={props.onClose}>
+		<Page onClose={props.onClose}>
 			<Box>
 				<TableContainer>
 					<ModsTable
@@ -67,6 +67,6 @@ export function ModModal(props: Props) {
 					<DebugData data={props.mod} />
 				</Stack>
 			</Stack>
-		</SubPage>
+		</Page>
 	);
 }

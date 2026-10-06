@@ -82,7 +82,7 @@ export function GameModRow({
 	return (
 		<Table.Tr key={mod.id}>
 			<Table.Td ta="left">
-				<Group gap="xs">
+				<Group>
 					{isModUsable && (
 						<ThemeIcon
 							color={statusColor}

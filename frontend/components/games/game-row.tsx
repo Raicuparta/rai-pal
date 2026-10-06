@@ -4,7 +4,7 @@ import { useGame } from "@hooks/use-game";
 import { useAsyncCommand } from "@hooks/use-async-command";
 import { ItemProps } from "react-virtuoso";
 import { commands, DbGame, GameProviderId } from "@api/bindings";
-import { gamesColumns } from "./games-columns";
+import { getVisibleGamesColumns } from "./games-columns";
 import { useAppSettings } from "@hooks/use-app-settings";
 
 // Needs to be consistent with height set in table.module.css ugh. TODO: fix that.
@@ -35,7 +35,8 @@ export const GameRow = React.forwardRef(function GameRow(
 		releaseDateRfc3339: null,
 		thumbnailUrl: null,
 		architecture: null,
-		os: null,
+		executableOs: null,
+		supportedOs: [],
 		unityBackend: null,
 		titleDiscriminator: null,
 		providerCommands: {},
@@ -64,14 +65,11 @@ export const GameRowInner = React.forwardRef(function GameRowInner(
 			ref={ref}
 			onClick={props.onClick}
 		>
-			{gamesColumns.map(
-				(column) =>
-					(!settings.hideGameThumbnails || column.id !== "thumbnail") && (
-						<React.Fragment key={column.id}>
-							<column.component item={props.game} />
-						</React.Fragment>
-					),
-			)}
+			{getVisibleGamesColumns(settings.hideGameThumbnails).map((column) => (
+				<React.Fragment key={column.id}>
+					<column.component item={props.game} />
+				</React.Fragment>
+			))}
 		</Table.Tr>
 	);
 });

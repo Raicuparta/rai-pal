@@ -12,6 +12,7 @@ devUrl = "http://localhost:1420"
 createUpdaterArtifacts = "v1Compatible"
 active = true
 targets = ["nsis", "appimage"]
+resources = { "resources/steam-artwork/" = "steam-artwork/" }
 icon = [
   "graphics/32x32.png",
   "graphics/128x128.png",

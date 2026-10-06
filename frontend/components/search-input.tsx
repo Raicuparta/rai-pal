@@ -1,6 +1,7 @@
 import { useLocalization } from "@hooks/use-localization";
 import { CloseButton, Input } from "@mantine/core";
 import { useDebouncedCallback } from "@mantine/hooks";
+import { IconSearch } from "@tabler/icons-react";
 import { useState } from "react";
 
 type Props = {
@@ -28,18 +29,19 @@ export function SearchInput(props: Props) {
 
 	return (
 		<Input
+			mx="xs"
 			onChange={(event) => {
 				setValue(event.currentTarget.value);
 			}}
 			placeholder={t("searchPlaceholder")}
-			style={{ flex: 1 }}
 			value={innerValue}
 			rightSectionPointerEvents="all"
 			rightSection={
-				<CloseButton
-					onClick={() => setValue("")}
-					style={{ display: innerValue ? undefined : "none" }}
-				/>
+				innerValue ? (
+					<CloseButton onClick={() => setValue("")} />
+				) : (
+					<IconSearch size={16} />
+				)
 			}
 		/>
 	);

@@ -28,7 +28,7 @@ export const commands = {
 	getRemoteConfigs: (providerId: GameProviderId, gameId: string) => __TAURI_INVOKE<{
 	configs: RemoteConfig[],
 } | null>("get_remote_configs", { providerId, gameId }),
-	getUrlModSources: () => __TAURI_INVOKE<UrlModSources>("get_url_mod_sources"),
+	getUrlModSources: () => __TAURI_INVOKE<UrlModSourcesResponse>("get_url_mod_sources"),
 	installMod: (modId: string, providerIdOption: "Epic" | "Gog" | "Itch" | "Manual" | "Steam" | "Xbox" | null, gameIdOption: string | null) => __TAURI_INVOKE<null>("install_mod", { modId, providerIdOption, gameIdOption }),
 	listenToDownloadProgress: (channel: Channel<ProgressStatus>) => __TAURI_INVOKE<null>("listen_to_download_progress", { channel }),
 	logIn: () => __TAURI_INVOKE<null>("log_in"),
@@ -56,7 +56,6 @@ export const commands = {
 	runProviderCommand: (providerId: GameProviderId, gameId: string, providerCommandAciton: ProviderCommandAction) => __TAURI_INVOKE<null>("run_provider_command", { providerId, gameId, providerCommandAciton }),
 	saveAppSettings: (settings: AppSettings) => __TAURI_INVOKE<null>("save_app_settings", { settings }),
 	sendAnalyticsEvent: (event: Event, data: { [key in string]: string } | null) => __TAURI_INVOKE<null>("send_analytics_event", { event, data }),
-	setUpGlobalWineOverrides: () => __TAURI_INVOKE<null>("set_up_global_wine_overrides"),
 	uninstallAllMods: (providerId: GameProviderId, gameId: string) => __TAURI_INVOKE<null>("uninstall_all_mods", { providerId, gameId }),
 	uninstallMod: (providerId: GameProviderId, gameId: string, modId: string) => __TAURI_INVOKE<null>("uninstall_mod", { providerId, gameId, modId }),
 };
@@ -86,6 +85,7 @@ export type AppSettings = {
 	gamesQuery: GamesQuery,
 	selectedTab: TabId,
 	skipConfirmDialogs: string[],
+	expandedFilters?: string[],
 };
 
 export type Architecture = "X64" | "X86";
@@ -112,7 +112,8 @@ export type DbGame = {
 	engineVersionDisplay: string | null,
 	unityBackend: UnityBackend | null,
 	architecture: Architecture | null,
-	os: OperatingSystem | null,
+	executableOs: OperatingSystem | null,
+	supportedOs: OperatingSystem[],
 	tags: GameTag[],
 	providerCommands: Partial<{ [key in ProviderCommandAction]: ProviderCommand }>,
 };
@@ -135,7 +136,7 @@ export type EngineVersionRange = {
 	maximum: EngineVersionNumbers | null,
 };
 
-export type Error = "Tauri" | "Core" | "Io" | "Rusql" | "SerdeJson" | "SystemTimeError" | ({ FailedToAccessStateData: string }) & { LinuxOnly?: never } | ({ LinuxOnly: null }) & { FailedToAccessStateData?: never };
+export type Error = "Tauri" | "Core" | "Io" | "Rusql" | "SerdeJson" | { FailedToAccessStateData: string };
 
 export type Event = "InstallMod" | "UninstallMod" | "UpdateMod" | "RunMod" | "ProviderCommand" | "StartApp" | "UserSignIn" | "ErrorNotification";
 
@@ -179,6 +180,7 @@ export type GameMod = {
 	install: ModInstall | null,
 	runForGame: ModRun | null,
 	runStandalone: ModRun | null,
+	gameEnvironment: { [key in string]: string } | null,
 	hash: string | null,
 };
 
@@ -203,7 +205,8 @@ export type GamesFilter = {
 	architectures: FilterGroup<Architecture>,
 	unityBackends: FilterGroup<UnityBackend>,
 	engines: FilterGroup<EngineBrand>,
-	os: FilterGroup<OperatingSystem>,
+	executableOs: FilterGroup<OperatingSystem>,
+	supportedOs: FilterGroup<OperatingSystem>,
 	installed: FilterGroup<InstallState>,
 	modFamilies: FilterGroup<string>,
 };
@@ -298,11 +301,11 @@ export type UnityBackend = "Il2Cpp" | "Mono";
 
 export type UrlModSource = {
 	url: string,
-	isDefault: boolean,
 	enabled: boolean,
 };
 
-export type UrlModSources = {
+export type UrlModSourcesResponse = {
+	defaultSource: UrlModSource,
 	sources: UrlModSource[],
 };
 

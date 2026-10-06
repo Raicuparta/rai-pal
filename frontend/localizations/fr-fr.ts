@@ -46,7 +46,8 @@ export const frFr: Localization = {
 	},
 
 	filterMenu: {
-		button: "Filtrer",
+		filters: "Filtres",
+		collapseAll: "Réduire tous les filtres",
 		resetButton: "Réinitialiser",
 		searchPlaceholder: "Rechercher...",
 	},
@@ -55,10 +56,11 @@ export const frFr: Localization = {
 		provider: "Fournisseur",
 		tags: "Tag",
 		architecture: "Architecture",
-		os: "Système d'exploitation",
+		executableOs: "OS de l'exécutable",
+		supportedOs: "OS compatible",
 		unityBackend: "Backend Unity",
 		engine: "Moteur",
-		status: "Statut",
+		status: "Statut d'installation",
 		mod: "Mod",
 	},
 
@@ -105,12 +107,11 @@ export const frFr: Localization = {
 		removeFromRaiPal: "Retirer de Rai Pal",
 		removeGameConfirmation:
 			"Vous êtes sûr de vouloir retirer ce jeu de Rai Pal ?",
-		refreshGame: "Rafraîchir",
+		refreshGame: "Actualiser le jeu",
 		failedToReadGameInfo:
 			"Impossible de lire certaines informations importantes sur ce jeu. C'est peut-être parce que l'exécutable est protégé. Certains mods risquent de ne pas s'installer.",
 		failedToDetermineEngine:
 			"Impossible de déterminer le moteur de ce jeu. Certains mods risquent de ne pas s'installer.",
-		gameModsLabel: "Mods",
 		gameNotInstalledWarning:
 			"Ce jeu n'est pas installé, donc je ne suis pas sûr à 100 % des mods compatibles. Ceux affichés ci-dessous pourraient fonctionner. Si vous installez le jeu, je vous montrerai des informations plus précises.",
 		uninstallAllModsButton: "Désinstaller tous les mods",
@@ -148,8 +149,13 @@ export const frFr: Localization = {
 			"Impossible de désinstaller un mod qui a des dépendants. Désinstallez d'abord les mods qui en dépendent.",
 	},
 
+	gamesSort: {
+		sortBy: "Trier par",
+		sortDirection: "Ordre de tri",
+	},
+
 	gamesTableColumn: {
-		game: "Jeu",
+		name: "Nom",
 		engine: "Moteur",
 		date: "Date",
 	},
@@ -226,13 +232,12 @@ export const frFr: Localization = {
 			"Rai Pal a été ajouté à votre bibliothèque Steam. Redémarrez Steam pour y accéder.",
 	},
 
-	globalWineOverrides: {
-		setUpEnvironmentButton: "Configurer l'environnement Linux pour BepInEx",
-		setUpEnvironmentTitle: "Configurer l'environnement Linux pour BepInEx",
-		setUpEnvironmentDescription:
-			"Quand vous utilisez Proton/Wine sous Linux, BepInEx ne se chargera pas automatiquement, sauf si certains paramètres Wine sont configurés. Cela définira la variable d'environnement WINEDLLOVERRIDES sur 'winhttp.dll=n,b' globalement. Si vous préférez le faire manuellement, ne cliquez pas sur ce bouton.",
-		setUpEnvironmentSuccess:
-			"Le fichier a été écrit. Vous devrez vous déconnecter et vous reconnecter, ou redémarrer votre ordinateur, pour que les modifications prennent effet.",
+	appUpdate: {
+		updateAvailableTitle: "Rai Pal {version}",
+		noChangelog: "(Pas de journal des modifications)",
+		ignoreUpdate:
+			"Ignorer (ne sera plus demandé jusqu'au redémarrage de Rai Pal)",
+		updateNow: "Mettre à jour maintenant",
 	},
 
 	debugData: {

@@ -1,3 +1,4 @@
+pub mod elf_utils;
 pub mod game_engine;
 pub mod gamemaker;
 pub mod godot;

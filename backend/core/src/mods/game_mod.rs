@@ -15,10 +15,10 @@ use crate::{
 		game_engine::{EngineBrand, EngineVersionRange},
 		unity::UnityBackend,
 	},
+	game_launch::{GameLaunch, spawn_game},
 	game_providers::game_provider,
 	http::{self},
 	mods::{mod_config::ModConfig, replacement_token::replace_tokens},
-	open_better::spawn_detached,
 	operating_system::OperatingSystem,
 	path_extensions::PathExt,
 	progress_status::ProgressStatus,
@@ -49,6 +49,7 @@ pub struct GameMod {
 	pub install: Option<ModInstall>,
 	pub run_for_game: Option<ModRun>,
 	pub run_standalone: Option<ModRun>,
+	pub game_environment: Option<BTreeMap<String, String>>,
 	pub hash: Option<String>,
 }
 
@@ -78,6 +79,13 @@ pub struct ModRun {
 	pub path: Option<String>,
 	pub args: Option<Vec<String>>,
 	pub wine_environment: Option<BTreeMap<String, String>>,
+	pub os: Option<OperatingSystem>,
+}
+
+pub struct PreparedModRun {
+	pub path: PathBuf,
+	pub args: Vec<String>,
+	pub wine_environment: BTreeMap<String, String>,
 	pub os: Option<OperatingSystem>,
 }
 
@@ -192,17 +200,27 @@ impl GameMod {
 		Ok(())
 	}
 
-	pub fn run(&self, game_option: Option<&DbGame>) -> Result {
-		let mod_run = if game_option.is_some() {
+	pub fn get_run(&self, game_option: Option<&DbGame>) -> Result<&ModRun> {
+		if game_option.is_some() {
 			self.run_for_game
 				.as_ref()
-				.ok_or_else(|| Error::ModInfoMissing(self.id.clone(), "run_for_game".to_string()))?
+				.ok_or_else(|| Error::ModInfoMissing(self.id.clone(), "run_for_game".to_string()))
 		} else {
-			self.run_standalone.as_ref().ok_or_else(|| {
-				Error::ModInfoMissing(self.id.clone(), "run_standalone".to_string())
-			})?
-		};
+			self.run_standalone
+				.as_ref()
+				.ok_or_else(|| Error::ModInfoMissing(self.id.clone(), "run_standalone".to_string()))
+		}
+	}
 
+	pub fn prepare_run(&self, game_option: Option<&DbGame>) -> Result<PreparedModRun> {
+		self.prepare_run_inner(self.get_run(game_option)?, game_option)
+	}
+
+	fn prepare_run_inner(
+		&self,
+		mod_run: &ModRun,
+		game_option: Option<&DbGame>,
+	) -> Result<PreparedModRun> {
 		let run_path = PathBuf::from(replace_tokens(
 			mod_run.path.as_ref().ok_or_else(|| {
 				Error::ModInfoMissing(self.id.clone(), "mod_run.path".to_string())
@@ -215,6 +233,11 @@ impl GameMod {
 			return Err(Error::ModNotInstalled(self.id.clone()));
 		}
 
+		#[cfg(target_os = "linux")]
+		if mod_run.os != Some(OperatingSystem::Windows) {
+			make_executable(&run_path)?;
+		}
+
 		let args: Vec<String> = mod_run
 			.args
 			.clone()
@@ -223,44 +246,57 @@ impl GameMod {
 			.map(|arg| replace_tokens(arg, game_option, self))
 			.collect();
 
+		Ok(PreparedModRun {
+			path: run_path,
+			args,
+			wine_environment: replace_env_tokens(
+				mod_run.wine_environment.as_ref(),
+				game_option,
+				self,
+			),
+			os: mod_run.os,
+		})
+	}
+
+	pub fn get_game_environment(&self, game: Option<&DbGame>) -> BTreeMap<String, String> {
+		replace_env_tokens(self.game_environment.as_ref(), game, self)
+	}
+
+	pub fn run(&self, game_option: Option<&DbGame>) -> Result {
+		let run = self.prepare_run(game_option)?;
+
 		log::info!(
 			"Running mod `{}` at `{}` with args `{}`",
 			self.id,
-			run_path.display(),
-			args.join(" ")
+			run.path.display(),
+			run.args.join(" ")
 		);
 
 		#[cfg(target_os = "linux")]
 		{
-			if mod_run.os == Some(OperatingSystem::Windows) {
+			if run.os == Some(OperatingSystem::Windows) {
 				let game = game_option.ok_or_else(Error::GameNeeded)?;
-
-				let wine_environment: BTreeMap<String, String> = mod_run
-					.wine_environment
-					.clone()
-					.unwrap_or_default()
-					.iter()
-					.map(|(key, value)| (key.clone(), replace_tokens(value, game_option, self)))
-					.collect();
 
 				game_provider::get_provider(game.provider_id)?.run_with_wine(
 					game,
-					&run_path,
-					&args,
-					&wine_environment,
+					&run.path,
+					&run.args,
+					&run.wine_environment,
 				)?;
 			} else {
-				make_executable(&run_path)?;
-				let mut command = std::process::Command::new(&run_path);
-				command.current_dir(run_path.try_parent()?).args(&args);
-				spawn_detached(&mut command)?;
+				let mut launch = GameLaunch::new(&run.path);
+				launch.args(&run.args);
+				launch.cwd = Some(run.path.try_parent()?.to_path_buf());
+				spawn_game(&launch)?;
 			}
 		}
 
 		#[cfg(target_os = "windows")]
 		{
-			let mut command = std::process::Command::new(&run_path);
-			command.current_dir(run_path.try_parent()?).args(&args);
+			use crate::open_better::spawn_detached;
+
+			let mut command = std::process::Command::new(&run.path);
+			command.current_dir(run.path.try_parent()?).args(&run.args);
 			spawn_detached(&mut command)?;
 		}
 
@@ -275,6 +311,21 @@ impl GameMod {
 
 		Ok(())
 	}
+}
+
+fn replace_env_tokens(
+	environment: Option<&BTreeMap<String, String>>,
+	game_option: Option<&DbGame>,
+	game_mod: &GameMod,
+) -> BTreeMap<String, String> {
+	environment
+		.map(|environment| {
+			environment
+				.iter()
+				.map(|(key, value)| (key.clone(), replace_tokens(value, game_option, game_mod)))
+				.collect()
+		})
+		.unwrap_or_default()
 }
 
 #[cfg(target_os = "linux")]

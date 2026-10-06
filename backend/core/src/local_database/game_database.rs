@@ -6,6 +6,7 @@ use std::{
 
 use rai_pal_proc_macros::serializable_struct;
 use rusqlite::OpenFlags;
+use strum::IntoEnumIterator;
 
 use crate::{
 	app_paths,
@@ -81,6 +82,56 @@ fn build_nullable_exclusion_filter<T: std::fmt::Display + std::hash::Hash + std:
 	}
 }
 
+fn build_supported_os_inclusion_filter(
+	group: &FilterGroup<OperatingSystem>,
+	params: &mut Vec<Box<dyn rusqlite::types::ToSql>>,
+) -> Option<String> {
+	let disabled: Vec<&OperatingSystem> = group
+		.known
+		.iter()
+		.filter(|(_, item)| !item.enabled)
+		.map(|(val, _)| val)
+		.collect();
+
+	// Unlike single-valued filters, a game can support several operating systems,
+	// so here the enabled values select which games to keep instead of which to hide.
+	let enabled: Vec<OperatingSystem> = OperatingSystem::iter()
+		.filter(|os| !disabled.contains(&os))
+		.collect();
+
+	let unknown_enabled = group.unknown.as_ref().is_none_or(|item| item.enabled);
+
+	if disabled.is_empty() && unknown_enabled {
+		return None;
+	}
+
+	if enabled.is_empty() && !unknown_enabled {
+		return Some("1=0".to_string());
+	}
+
+	let mut branches: Vec<String> = Vec::new();
+
+	if !enabled.is_empty() {
+		let like_conditions: Vec<String> = enabled
+			.iter()
+			.map(|os| {
+				params.push(Box::new(format!("%\"{os}\"%")));
+				"g.supported_os LIKE ?".to_string()
+			})
+			.collect();
+		branches.push(format!(
+			"(g.supported_os IS NOT NULL AND g.supported_os <> '[]' AND ({}))",
+			like_conditions.join(" OR ")
+		));
+	}
+
+	if unknown_enabled {
+		branches.push("(g.supported_os IS NULL OR g.supported_os = '[]')".to_string());
+	}
+
+	Some(format!("({})", branches.join(" OR ")))
+}
+
 impl GameDatabase for DbMutex {
 	fn insert_game(&self, game: &DbGame) {
 		if let Err(err) = try_insert_game(self, game) {
@@ -111,12 +162,13 @@ impl GameDatabase for DbMutex {
 			ig.exe_path,
 			ig.unity_backend,
 			ig.architecture,
-			ig.os,
+			ig.executable_os,
 			COALESCE(ig.engine_brand, rg.engine_brand) AS engine_brand,
 			COALESCE(ig.engine_version_major, rg.engine_version_major) AS engine_version_major,
 			COALESCE(ig.engine_version_minor, rg.engine_version_minor) AS engine_version_minor,
 			COALESCE(ig.engine_version_patch, rg.engine_version_patch) AS engine_version_patch,
-			COALESCE(ig.engine_version_display, rg.engine_version_display) AS engine_version_display
+			COALESCE(ig.engine_version_display, rg.engine_version_display) AS engine_version_display,
+			g.supported_os
 		FROM main.games g
 		LEFT JOIN main.installed_games ig ON g.provider_id = ig.provider_id AND g.game_id = ig.game_id
 		LEFT JOIN main.normalized_titles nt ON g.provider_id = nt.provider_id AND g.game_id = nt.game_id
@@ -143,12 +195,13 @@ impl GameDatabase for DbMutex {
 					exe_path: row.get_path(9)?,
 					unity_backend: row.get(10)?,
 					architecture: row.get(11)?,
-					os: row.get(12)?,
+					executable_os: row.get(12)?,
 					engine_brand: row.get(13)?,
 					engine_version_major: row.get(14)?,
 					engine_version_minor: row.get(15)?,
 					engine_version_patch: row.get(16)?,
 					engine_version_display: row.get(17)?,
+					supported_os: row.get_json(18)?,
 				})
 			})?)
 	}
@@ -165,7 +218,7 @@ impl GameDatabase for DbMutex {
 				"COALESCE(ig.engine_version_minor, rg.engine_version_minor)",
 				"COALESCE(ig.engine_version_patch, rg.engine_version_patch)",
 			],
-			_ => vec!["g.display_title"],
+			_ => vec!["g.display_title COLLATE NOCASE"],
 		};
 
 		let sort_order = if query.as_ref().is_some_and(|q| q.sort_descending) {
@@ -263,8 +316,19 @@ impl GameDatabase for DbMutex {
 				filters.push(cond);
 			}
 
-			// Operating systems filter
-			if let Some(cond) = build_nullable_exclusion_filter("ig.os", &filter.os, &mut params) {
+			// Executable operating system filter
+			if let Some(cond) = build_nullable_exclusion_filter(
+				"ig.executable_os",
+				&filter.executable_os,
+				&mut params,
+			) {
+				filters.push(cond);
+			}
+
+			// Supported operating systems filter
+			if let Some(cond) =
+				build_supported_os_inclusion_filter(&filter.supported_os, &mut params)
+			{
 				filters.push(cond);
 			}
 
@@ -295,7 +359,7 @@ impl GameDatabase for DbMutex {
 						AND (json_extract(m.engine, '$') IS NULL OR json_extract(m.engine, '$') = COALESCE(ig.engine_brand, rg.engine_brand))
 						AND (json_extract(m.unity_backend, '$') IS NULL OR ig.unity_backend IS NULL OR json_extract(m.unity_backend, '$') = ig.unity_backend)
 					AND (json_extract(m.architecture, '$') IS NULL OR ig.architecture IS NULL OR json_extract(m.architecture, '$') = ig.architecture)
-					AND (json_extract(m.game_os, '$') IS NULL OR ig.os IS NULL OR json_extract(m.game_os, '$') = ig.os)
+					AND (json_extract(m.game_os, '$') IS NULL OR ig.executable_os IS NULL OR json_extract(m.game_os, '$') = ig.executable_os)
 					AND (json_extract(m.host_os, '$') IS NULL OR json_extract(m.host_os, '$') = ?)
 						AND (
 							COALESCE(ig.engine_version_major, rg.engine_version_major) IS NULL
@@ -451,8 +515,9 @@ fn try_insert_game(connection_mutex: &DbMutex, game: &DbGame) -> Result {
 				title_discriminator,
 				provider_commands,
 				exe_path_hash,
-				created_at
-			) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)",
+				created_at,
+				supported_os
+			) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)",
 		)?
 		.execute(rusqlite::params![
 			game.provider_id,
@@ -470,7 +535,8 @@ fn try_insert_game(connection_mutex: &DbMutex, game: &DbGame) -> Result {
 			SystemTime::now()
 				.duration_since(UNIX_EPOCH)?
 				.as_secs()
-				.cast_signed()
+				.cast_signed(),
+			JsonData(game.supported_os.clone()),
 		])?;
 
 	if let Some(exe_path) = game.exe_path.as_ref() {
@@ -487,7 +553,7 @@ fn try_insert_game(connection_mutex: &DbMutex, game: &DbGame) -> Result {
 					engine_version_display,
 					unity_backend,
 					architecture,
-					os
+					executable_os
 				)
 				 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)",
 			)?
@@ -502,7 +568,7 @@ fn try_insert_game(connection_mutex: &DbMutex, game: &DbGame) -> Result {
 				game.engine_version_display.clone(),
 				game.unity_backend.clone(),
 				game.architecture.clone(),
-				game.os,
+				game.executable_os,
 			])?;
 	}
 
@@ -706,6 +772,7 @@ fn create() -> Result<DbMutex> {
 			provider_commands TEXT,
 			exe_path_hash TEXT,
 			created_at INTEGER,
+			supported_os TEXT,
 			PRIMARY KEY (provider_id, game_id)
 		);
 
@@ -734,7 +801,7 @@ fn create() -> Result<DbMutex> {
 			engine_version_display TEXT,
 			unity_backend TEXT,
 			architecture TEXT,
-			os TEXT,
+			executable_os TEXT,
 			FOREIGN KEY(provider_id, game_id) REFERENCES games(provider_id, game_id) ON DELETE CASCADE,
 			PRIMARY KEY (provider_id, game_id)
 		);

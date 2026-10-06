@@ -21,10 +21,7 @@ export function CommandDropdown(props: Props) {
 				</Button>
 			</Popover.Target>
 			<Popover.Dropdown>
-				<Stack
-					gap="xs"
-					className={styles.commandDropdownButtons}
-				>
+				<Stack className={styles.commandDropdownButtons}>
 					{props.children}
 				</Stack>
 			</Popover.Dropdown>

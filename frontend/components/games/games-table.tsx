@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { GamesSortBy, GameProviderId } from "@api/bindings";
+import { GameProviderId } from "@api/bindings";
 import { useAtomValue } from "jotai";
 import { gameDataAtom, loadingTasksAtom } from "@hooks/use-data";
 import { TableContainer } from "@components/table/table-container";
@@ -7,17 +7,33 @@ import {
 	TableComponents,
 	TableVirtuoso,
 	TableVirtuosoHandle,
+	ScrollerProps,
 } from "react-virtuoso";
 import { GameRow, gameRowHeight } from "./game-row";
 import { useDataQuery } from "@hooks/use-data-query";
-import { gamesColumns } from "./games-columns";
-import styles from "./games.module.css";
+import { GamesColgroup } from "./games-columns";
 import { Alert, Table } from "@mantine/core";
 import React from "react";
-import { TableHead } from "@components/table/table-head";
 import { useLocalization } from "@hooks/use-localization";
+import { ScrollAreaFill } from "@components/scroll-area-fill";
+
+const Scroller = React.forwardRef<HTMLDivElement, ScrollerProps>(
+	function Scroller({ children, ...props }, ref) {
+		return (
+			<ScrollAreaFill
+				flex={1}
+				mih={0}
+				viewportRef={ref}
+				viewportProps={props}
+			>
+				{children}
+			</ScrollAreaFill>
+		);
+	},
+);
 
 const tableComponents: TableComponents<[GameProviderId, string], unknown> = {
+	Scroller,
 	TableBody: React.forwardRef(function TableBody(props, ref) {
 		return (
 			<Table.Tbody
@@ -30,44 +46,20 @@ const tableComponents: TableComponents<[GameProviderId, string], unknown> = {
 		<Table
 			{...props}
 			highlightOnHover
-		/>
+		>
+			<GamesColgroup />
+			{props.children}
+		</Table>
 	),
-	TableHead: React.forwardRef(function TableHead(props, ref) {
-		return (
-			<Table.Thead
-				{...props}
-				ref={ref}
-			/>
-		);
-	}),
 	TableRow: GameRow,
 };
 
 export function GamesTable() {
 	const gameData = useAtomValue(gameDataAtom);
 	const loading = useAtomValue(loadingTasksAtom);
-	const [dataQuery, setDataQuery] = useDataQuery();
+	const [dataQuery] = useDataQuery();
 	const tableRef = useRef<TableVirtuosoHandle>(null);
 	const { t } = useLocalization("gamesPage");
-
-	const onChangeSort = (sortBy: GamesSortBy) => {
-		const sortDescending =
-			sortBy === dataQuery?.sortBy && !dataQuery?.sortDescending;
-
-		setDataQuery({
-			sortBy,
-			sortDescending,
-		});
-	};
-
-	const fixedHeaderContent = () => (
-		<TableHead
-			columns={gamesColumns}
-			onChangeSort={onChangeSort}
-			sortBy={dataQuery?.sortBy}
-			sortDescending={dataQuery?.sortDescending}
-		/>
-	);
 
 	useEffect(() => {
 		if (tableRef.current) {
@@ -76,28 +68,47 @@ export function GamesTable() {
 	}, [dataQuery]);
 
 	if (gameData.totalCount === 0 && loading.length > 0) {
-		return <Alert>{t("emptyGamesLoading")}</Alert>;
+		return (
+			<Alert
+				mx="xl"
+				my="auto"
+			>
+				{t("emptyGamesLoading")}
+			</Alert>
+		);
 	}
 
 	if (gameData.totalCount === 0) {
-		return <Alert>{t("emptyGamesList")}</Alert>;
+		return (
+			<Alert
+				mx="xl"
+				my="auto"
+			>
+				{t("emptyGamesList")}
+			</Alert>
+		);
 	}
 
 	if (gameData.gameIds.length === 0) {
-		return <Alert>{t("emptyFilteredGamesList")}</Alert>;
+		return (
+			<Alert
+				mx="xl"
+				my="auto"
+			>
+				{t("emptyFilteredGamesList")}
+			</Alert>
+		);
 	}
 
 	return (
-		<TableContainer>
+		<TableContainer scroll={false}>
 			<TableVirtuoso
 				ref={tableRef}
-				className={styles.table}
 				components={tableComponents}
-				fixedHeaderContent={fixedHeaderContent}
 				data={gameData.gameIds}
 				fixedItemHeight={gameRowHeight}
 				overscan={50}
-				increaseViewportBy={100}
+				increaseViewportBy={800}
 				computeItemKey={(index) =>
 					`${gameData.gameIds[index]?.[0]}${gameData.gameIds[index]?.[1]}`
 				}

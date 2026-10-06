@@ -42,7 +42,6 @@ export function UserMenu() {
 				setAuthState(state);
 			})
 			.catch((error) => {
-				console.error("Failed to read auth state:", error);
 				showAppNotification(
 					`Failed to read auth state: ${String(error)}`,
 					"error",
@@ -62,7 +61,6 @@ export function UserMenu() {
 			await refreshAuthState();
 			commands.sendAnalyticsEvent("UserSignIn", null);
 		} catch (error) {
-			console.error("Login failed:", error);
 			showAppNotification(`Sign-in failed: ${String(error)}`, "error");
 		}
 	};

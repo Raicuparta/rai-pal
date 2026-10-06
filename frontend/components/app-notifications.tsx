@@ -35,9 +35,12 @@ export function showAppNotification(message: string, type: NotificationType) {
 		icon: getNotificationIcon(type),
 	});
 	if (type === "error") {
+		console.error(`Error notification: ${message}`);
 		commands.sendAnalyticsEvent("ErrorNotification", {
 			error_message: message,
 		});
+	} else {
+		console.error(`Notification: ${message}`);
 	}
 }
 

@@ -31,6 +31,7 @@ export const theme: MantineThemeOverride = {
 		},
 		Button: {
 			defaultProps: {
+				justify: "start",
 				variant: "default",
 				size: "xs",
 			},

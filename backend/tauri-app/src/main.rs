@@ -43,6 +43,8 @@ use rai_pal_core::{
 	},
 };
 use strum::IntoEnumIterator;
+#[cfg(windows)]
+use tauri::webview::ScrollBarStyle;
 use tauri::{AppHandle, Manager, WebviewUrl, WebviewWindowBuilder, ipc::Channel};
 use tauri_plugin_deep_link::DeepLinkExt;
 use tauri_plugin_log::{Target, TargetKind};
@@ -312,7 +314,7 @@ async fn install_mod(
 		.cloned()
 		.collect();
 
-	let (steps, main_dl, _main_ex) = build_steps(&all_owned, mod_id);
+	let (steps, _main_dl, _main_ex) = build_steps(&all_owned, mod_id);
 
 	let forward = move |status: ProgressStatus| {
 		if let Some(channel) = &download_status_channel {
@@ -347,7 +349,9 @@ async fn install_mod(
 			installed_mod.uninstall().await?;
 		}
 
-		if main_dl.is_some() {
+		// Mods without a `download` (e.g. loaders whose files are baked into
+		// the database) still need their `install.write` actions applied.
+		if game_mod.install.is_some() {
 			game_mod.install(game_option.as_ref(), &forward).await?;
 		}
 
@@ -399,7 +403,9 @@ async fn run_mod(
 		None
 	};
 
-	state.database.get_mod(mod_id)?.run(game.as_ref())?;
+	let game_mod = state.database.get_mod(mod_id)?;
+
+	game_mod.run(game.as_ref())?;
 
 	Ok(())
 }
@@ -518,7 +524,7 @@ async fn refresh_mods(handle: AppHandle) -> Result {
 
 #[tauri::command]
 #[specta::specta]
-async fn get_url_mod_sources() -> Result<url_mod_provider::UrlModSources> {
+async fn get_url_mod_sources() -> Result<url_mod_provider::UrlModSourcesResponse> {
 	Ok(url_mod_provider::get_url_mod_sources())
 }
 
@@ -673,7 +679,13 @@ async fn run_provider_command(
 		.get_game(&provider_id, game_id)?;
 
 	let provider_command = game.provider_commands.try_get(&provider_command_aciton)?;
-	provider_command.run(&game)?;
+	let environment = match provider_command_aciton {
+		ProviderCommandAction::StartViaProvider | ProviderCommandAction::StartViaExe => {
+			handle.app_state().database.get_game_environment(&game)?
+		}
+		_ => BTreeMap::default(),
+	};
+	provider_command.run(&game, &environment)?;
 
 	handle.emit_safe(events::ExecutedProviderCommand);
 
@@ -692,9 +704,10 @@ async fn reset_steam_cache(handle: AppHandle) -> Result {
 
 #[tauri::command]
 #[specta::specta]
-async fn add_rai_pal_steam_shortcut() -> Result {
+async fn add_rai_pal_steam_shortcut(handle: AppHandle) -> Result {
 	let current_executable = std::env::current_exe()?;
-	steam_shortcut::add_current_executable_to_steam_shortcuts(&current_executable)?;
+	let artwork_dir = handle.path().resource_dir()?.join("steam-artwork");
+	steam_shortcut::add_current_executable_to_steam_shortcuts(&current_executable, &artwork_dir)?;
 
 	Ok(())
 }
@@ -804,26 +817,6 @@ async fn download_remote_config(
 	}
 
 	Ok(())
-}
-
-#[tauri::command]
-#[specta::specta]
-async fn set_up_global_wine_overrides() -> Result {
-	#[cfg(not(target_os = "linux"))]
-	{
-		use crate::result::Error;
-
-		return Err(Error::LinuxOnly());
-	}
-
-	#[cfg(target_os = "linux")]
-	{
-		use rai_pal_core::wine;
-
-		wine::set_up_global_wine_overrides()?;
-
-		Ok(())
-	}
 }
 
 #[tauri::command]
@@ -950,7 +943,6 @@ fn main() {
 			run_provider_command,
 			save_app_settings,
 			send_analytics_event,
-			set_up_global_wine_overrides,
 			uninstall_all_mods,
 			uninstall_mod,
 		])
@@ -971,7 +963,7 @@ fn main() {
 		std::process::exit(1);
 	});
 
-	tauri::Builder::default()
+	let app = tauri::Builder::default()
 		.plugin(tauri_plugin_single_instance::init(|handle, _args, _cwd| {
 			focus(handle);
 		}))
@@ -1002,12 +994,12 @@ fn main() {
 				.build(),
 		)
 		.plugin(tauri_plugin_dialog::init())
+		.plugin(tauri_plugin_process::init())
 		.plugin(tauri_plugin_updater::Builder::default().build())
 		.manage(app_state)
 		.invoke_handler(builder.invoke_handler())
 		.setup(move |app| {
 			builder.mount_events(app);
-
 			// --- Deep link ---
 
 			app.deep_link().register_all()?;
@@ -1045,18 +1037,30 @@ fn main() {
 			// We could also trigger this on the frontend to reduce the white flash,
 			// but it never seems to go away, and that introduces an extra delay
 			// until something is visible, so I figure I'd just show it here.
-			let window = WebviewWindowBuilder::new(app, "main", WebviewUrl::default())
+			let window_builder = WebviewWindowBuilder::new(app, "main", WebviewUrl::default())
 				.title(format!(
 					"Rai Pal {}{}",
 					env!("CARGO_PKG_VERSION"),
 					if cfg!(debug_assertions) { " DEV" } else { "" }
 				))
 				// Another reason to create Webview manually is to have full control of the data folder.
-				.data_directory(app_paths::app_data_subfolder("main-webview")?)
+				.data_directory(app_paths::app_data_subfolder("main-webview")?);
+
+			// WebView2's classic scrollbars reserve layout space; Fluent overlay matches Linux's WebKitGTK overlay scrollbars.
+			#[cfg(windows)]
+			let window_builder = window_builder.scroll_bar_style(ScrollBarStyle::FluentOverlay);
+
+			let window = window_builder
 				.inner_size(800.0, 600.0)
 				.min_inner_size(800.0, 500.0)
 				.focusable(true)
 				.build()?;
+
+			// Steam Deck Game Mode (gamescope) has no window controls, so a windowed app
+			// is stuck at its default size. Fullscreen is the only reliable way to fill the screen there.
+			if std::env::var_os("GAMESCOPE_WAYLAND_DISPLAY").is_some() {
+				window.set_fullscreen(true)?;
+			}
 
 			window.on_window_event(|event| {
 				if matches!(event, tauri::WindowEvent::Destroyed) {
@@ -1099,13 +1103,13 @@ fn main() {
 
 			Ok(())
 		})
-		.run(tauri::generate_context!())
+		.build(tauri::generate_context!())
 		.unwrap_or_else(|error| {
 			#[cfg(target_os = "windows")]
 			if let tauri::Error::Runtime(tauri_runtime::Error::CreateWebview(webview_error)) = error
 			{
 				windows::webview_error_dialog(&webview_error.to_string());
-				return;
+				std::process::exit(1);
 			}
 			#[cfg(target_os = "windows")]
 			windows::error_dialog(&error.to_string());
@@ -1113,5 +1117,9 @@ fn main() {
 			// Use eprintln! as fallback since log plugin may not capture this
 			eprintln!("Fatal error: {error}");
 			log::error!("Fatal error: {error}");
+
+			std::process::exit(1);
 		});
+
+	app.run(|_handle, _event| {});
 }

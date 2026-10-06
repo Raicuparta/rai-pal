@@ -1,5 +1,6 @@
 import { AppLocale, commands } from "@api/bindings";
 import { useAppSettings } from "@hooks/use-app-settings";
+import { useAppSettingSingle } from "@hooks/use-app-setting-single";
 import {
 	NativeSelect,
 	Group,
@@ -24,13 +25,12 @@ import {
 } from "@localizations/localizations";
 import { SwitchButton } from "@components/switch-button";
 import { SteamCacheButton } from "./steam-cache-button";
-import { platform } from "@tauri-apps/plugin-os";
 import { useDisclosure } from "@mantine/hooks";
 import { SteamCacheModal } from "./steam-cache-modal";
 import { SteamShortcutButton } from "./steam-shortcut-button";
 import { SteamShortcutModal } from "./steam-shortcut-modal";
-import { GlobalWineOverridesButton } from "./global-wine-overrides-button";
-import { GlobalWineOverridesModal } from "./global-wine-overrides-modal";
+import { AddGameButton } from "./add-game-button";
+import { AddGameModal } from "./add-game-modal";
 
 const locales: AppLocale[] = [
 	"EnUs",
@@ -47,11 +47,8 @@ const locales: AppLocale[] = [
 export function AppSettings() {
 	const { t } = useLocalization("appDropdownMenu");
 	const [settings, setSettings, resetSettings] = useAppSettings();
+	const [, setSelectedTab] = useAppSettingSingle("selectedTab");
 	const detectedLocale = useAtomValue(detectedLocaleAtom);
-	const [
-		isBepInExEnvironmentModalOpen,
-		{ open: openBepInExEnvironmentModal, close: closeBepInExEnvironmentModal },
-	] = useDisclosure(false);
 	const [
 		isSteamCacheModalOpen,
 		{ open: openSteamCacheModal, close: closeSteamCacheModal },
@@ -59,6 +56,10 @@ export function AppSettings() {
 	const [
 		isSteamShortcutModalOpen,
 		{ open: openSteamShortcutModal, close: closeSteamShortcutModal },
+	] = useDisclosure(false);
+	const [
+		isAddGameModalOpen,
+		{ open: openAddGameModal, close: closeAddGameModal },
 	] = useDisclosure(false);
 
 	const localeSelectValues = locales.map((locale) => ({
@@ -102,9 +103,12 @@ export function AppSettings() {
 					<Divider my="xs" />
 					<SteamShortcutButton onClick={openSteamShortcutModal} />
 					<SteamCacheButton onClick={openSteamCacheModal} />
-					{platform() === "linux" && (
-						<GlobalWineOverridesButton onClick={openBepInExEnvironmentModal} />
-					)}
+					<AddGameButton
+						onClick={() => {
+							setSelectedTab("Games");
+							openAddGameModal();
+						}}
+					/>
 					<Divider my="xs" />
 					<Tooltip
 						label={t("resetRaiPalSettingsTooltip")}
@@ -174,12 +178,10 @@ export function AppSettings() {
 				isOpen={isSteamShortcutModalOpen}
 				onClose={closeSteamShortcutModal}
 			/>
-			{platform() === "linux" && (
-				<GlobalWineOverridesModal
-					isOpen={isBepInExEnvironmentModalOpen}
-					onClose={closeBepInExEnvironmentModal}
-				/>
-			)}
+			<AddGameModal
+				isOpen={isAddGameModalOpen}
+				onClose={closeAddGameModal}
+			/>
 		</>
 	);
 }

@@ -46,7 +46,8 @@ export const koKr: Localization = {
 	},
 
 	filterMenu: {
-		button: "필터",
+		filters: "필터",
+		collapseAll: "모든 필터 접기",
 		resetButton: "재설정",
 		searchPlaceholder: "검색...",
 	},
@@ -55,10 +56,11 @@ export const koKr: Localization = {
 		provider: "플랫폼",
 		tags: "태그",
 		architecture: "아키텍처",
-		os: "운영체제",
+		executableOs: "실행 파일 OS",
+		supportedOs: "지원 OS",
 		unityBackend: "Unity 백엔드",
 		engine: "엔진",
-		status: "상태",
+		status: "설치 상태",
 		mod: "모드",
 	},
 
@@ -95,19 +97,18 @@ export const koKr: Localization = {
 		startGameExecutable: "실행 파일로 게임 시작",
 		startGameViaProvider: "{provider}로 게임 시작",
 		foldersDropdown: "폴더",
-		openGameFilesFolder: "게임 파일 폴더 열기",
-		openInstalledModsFolder: "설치된 모드 폴더 열기",
-		openGameDataFolder: "게임 앱 데이터 폴더 열기",
-		openGameWinePrefixFolder: "게임 Wine 프리픽스 폴더 열기",
-		openGameWineBinaryFolder: "게임 Wine 바이너리 폴더 열기",
+		openGameFilesFolder: "게임 파일",
+		openInstalledModsFolder: "설치된 모드",
+		openGameDataFolder: "게임 앱 데이터",
+		openGameWinePrefixFolder: "게임 Wine 프리픽스",
+		openGameWineBinaryFolder: "게임 Wine 바이너리",
 		removeFromRaiPal: "Rai Pal에서 제거",
 		removeGameConfirmation: "이 게임을 Rai Pal에서 제거할까요?",
-		refreshGame: "새로고침",
+		refreshGame: "게임 새로고침",
 		failedToReadGameInfo:
 			"이 게임의 중요 정보를 읽을 수 없었어요. 실행 파일이 보호돼 있어서 그럴 수 있어요. 일부 모드가 설치 안 될 수도 있어요.",
 		failedToDetermineEngine:
 			"이 게임의 엔진을 확인할 수 없었어요. 일부 모드가 설치 안 될 수도 있어요.",
-		gameModsLabel: "모드",
 		gameNotInstalledWarning:
 			"이 게임이 설치되지 않아서 어떤 모드가 맞는지 100% 장담할 수 없어요. 아래 모드들이 될 수도 있어요. 게임을 설치하면 더 정확히 알려드릴게요.",
 		uninstallAllModsButton: "모드 모두 제거",
@@ -144,8 +145,13 @@ export const koKr: Localization = {
 			"이 모드를 쓰는 다른 모드가 있으면 제거할 수 없어요. 그 모드들부터 먼저 제거해 주세요.",
 	},
 
+	gamesSort: {
+		sortBy: "정렬 기준",
+		sortDirection: "정렬 방향",
+	},
+
 	gamesTableColumn: {
-		game: "게임",
+		name: "이름",
 		engine: "엔진",
 		date: "날짜",
 	},
@@ -219,13 +225,11 @@ export const koKr: Localization = {
 			"Rai Pal이 Steam 라이브러리에 추가되었습니다. 보려면 Steam을 다시 시작하세요.",
 	},
 
-	globalWineOverrides: {
-		setUpEnvironmentButton: "BepInEx용 Linux 환경 설정",
-		setUpEnvironmentTitle: "BepInEx용 Linux 환경 설정",
-		setUpEnvironmentDescription:
-			"Linux에서 Proton/Wine을 쓸 때, Wine 설정을 안 해두면 BepInEx가 자동으로 로드되지 않아요. 이 버튼은 WINEDLLOVERRIDES 환경 변수를 전역으로 'winhttp.dll=n,b'로 설정해요. 직접 하고 싶으면 누르지 마세요.",
-		setUpEnvironmentSuccess:
-			"파일이 생성됐어요. 적용하려면 로그아웃 후 다시 로그인하거나 컴퓨터를 다시 시작해야 해요.",
+	appUpdate: {
+		updateAvailableTitle: "Rai Pal {version}",
+		noChangelog: "(변경 내역 없음)",
+		ignoreUpdate: "무시 (Rai Pal을 다시 시작할 때까지 다시 묻지 않음)",
+		updateNow: "지금 업데이트",
 	},
 
 	debugData: {

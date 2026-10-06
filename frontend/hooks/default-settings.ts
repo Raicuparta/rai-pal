@@ -13,7 +13,8 @@ export const defaultQuery: GamesQuery = {
 		providers: { known: {}, unknown: null },
 		tags: { known: {}, unknown: null },
 		unityBackends: { known: {}, unknown: null },
-		os: { known: {}, unknown: null },
+		executableOs: { known: {}, unknown: null },
+		supportedOs: { known: {}, unknown: null },
 		installed: { known: {}, unknown: null },
 		modFamilies: { known: {}, unknown: null },
 	},
@@ -25,4 +26,5 @@ export const defaultSettings: AppSettings = {
 	gamesQuery: defaultQuery,
 	selectedTab: "Games",
 	skipConfirmDialogs: [],
+	expandedFilters: [],
 };

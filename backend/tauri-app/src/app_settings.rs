@@ -35,6 +35,8 @@ pub struct AppSettings {
 	pub games_query: GamesQuery,
 	pub selected_tab: TabId,
 	pub skip_confirm_dialogs: HashSet<String>,
+	#[serde(default)]
+	pub expanded_filters: HashSet<String>,
 }
 
 // If the settings schema changes, update this so it gets recreated.
@@ -90,6 +92,7 @@ mod tests {
 
 		assert!(settings.games_query.filter.providers.known.is_empty());
 		assert!(settings.games_query.filter.architectures.known.is_empty());
-		assert!(settings.games_query.filter.os.known.is_empty());
+		assert!(settings.games_query.filter.executable_os.known.is_empty());
+		assert!(settings.games_query.filter.supported_os.known.is_empty());
 	}
 }

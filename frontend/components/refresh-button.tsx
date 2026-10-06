@@ -16,13 +16,12 @@ export function RefreshButton() {
 	return (
 		<Box pos="relative">
 			<Button
-				w={200}
+				w="100%"
 				leftSection={<IconRefresh />}
 				loading={isLoading}
 				onClick={() => updateAppData()}
 				opacity={isLoading ? 0.5 : 1}
 				variant="filled"
-				flex={1}
 			>
 				{t("button")}
 			</Button>

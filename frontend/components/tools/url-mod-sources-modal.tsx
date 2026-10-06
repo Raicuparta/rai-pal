@@ -6,13 +6,11 @@ import {
 	ActionIcon,
 	Code,
 	Group,
-	Input,
 	Modal,
 	Stack,
 	Switch,
 	Text,
 	TextInput,
-	Tooltip,
 } from "@mantine/core";
 import { IconPlus, IconTrash } from "@tabler/icons-react";
 import { startTransition, useEffect, useState } from "react";
@@ -24,13 +22,17 @@ type Props = {
 
 export function UrlModSourcesModal(props: Props) {
 	const { t, T } = useLocalization("urlModSources");
+	const [defaultSource, setDefaultSource] = useState<UrlModSource>();
 	const [sources, setSources] = useState<UrlModSource[]>([]);
 	const [newUrl, setNewUrl] = useState("");
 	const [pendingSourceUrl, setPendingSourceUrl] = useState<string | null>(null);
 	const [isToggling, setIsToggling] = useState(false);
 
 	const loadSources = () =>
-		commands.getUrlModSources().then((result) => setSources(result.sources));
+		commands.getUrlModSources().then((result) => {
+			setDefaultSource(result.defaultSource);
+			setSources(result.sources);
+		});
 
 	useEffect(() => {
 		if (props.isOpen) {
@@ -89,38 +91,50 @@ export function UrlModSourcesModal(props: Props) {
 				size="lg"
 			>
 				<Stack>
-					{sources.length > 0 && (
-						<Stack>
-							{sources.map((source) => (
-								<Group key={source.url}>
-									<Switch
-										checked={source.enabled}
-										onChange={(event) =>
-											handleToggle(source, event.currentTarget.checked)
-										}
-										disabled={isToggling}
-										size="xs"
-									/>
-									<TextInput
-										rightSection={
-											<ActionIcon
-												size="sm"
-												color="red"
-												variant="subtle"
-												disabled={source.isDefault}
-												onClick={() => handleRemove(source.url)}
-											>
-												<IconTrash />
-											</ActionIcon>
-										}
-										readOnly
-										value={source.url}
-										flex={1}
-									/>
-								</Group>
-							))}
-						</Stack>
+					{defaultSource && (
+						<Group>
+							<Switch
+								checked={defaultSource.enabled}
+								onChange={(event) =>
+									handleToggle(defaultSource, event.currentTarget.checked)
+								}
+								disabled={isToggling}
+								size="xs"
+							/>
+							<TextInput
+								readOnly
+								value={defaultSource.url}
+								flex={1}
+							/>
+						</Group>
 					)}
+					{sources.map((source) => (
+						<Group key={source.url}>
+							<Switch
+								checked={source.enabled}
+								onChange={(event) =>
+									handleToggle(source, event.currentTarget.checked)
+								}
+								disabled={isToggling}
+								size="xs"
+							/>
+							<TextInput
+								rightSection={
+									<ActionIcon
+										size="sm"
+										color="red"
+										variant="subtle"
+										onClick={() => handleRemove(source.url)}
+									>
+										<IconTrash />
+									</ActionIcon>
+								}
+								readOnly
+								value={source.url}
+								flex={1}
+							/>
+						</Group>
+					))}
 
 					<Group>
 						<TextInput

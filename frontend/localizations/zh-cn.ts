@@ -46,7 +46,8 @@ export const zhCn: Localization = {
 	},
 
 	filterMenu: {
-		button: "筛选",
+		filters: "筛选",
+		collapseAll: "折叠所有筛选器",
 		resetButton: "重置",
 		searchPlaceholder: "搜索...",
 	},
@@ -55,10 +56,11 @@ export const zhCn: Localization = {
 		provider: "平台",
 		tags: "标签",
 		architecture: "架构",
-		os: "操作系统",
+		executableOs: "可执行文件系统",
+		supportedOs: "支持的系统",
 		unityBackend: "Unity 后端",
 		engine: "引擎",
-		status: "状态",
+		status: "安装状态",
 		mod: "模组",
 	},
 
@@ -94,18 +96,17 @@ export const zhCn: Localization = {
 		startGameExecutable: "启动游戏可执行文件",
 		startGameViaProvider: "通过 {provider} 启动游戏",
 		foldersDropdown: "文件夹",
-		openGameFilesFolder: "打开游戏文件夹",
-		openInstalledModsFolder: "打开已安装模组文件夹",
-		openGameDataFolder: "打开游戏数据文件夹",
-		openGameWinePrefixFolder: "打开游戏的 Wine 前缀文件夹",
-		openGameWineBinaryFolder: "打开 Wine 程序文件夹",
+		openGameFilesFolder: "游戏文件夹",
+		openInstalledModsFolder: "已安装模组",
+		openGameDataFolder: "游戏数据",
+		openGameWinePrefixFolder: "Wine 前缀",
+		openGameWineBinaryFolder: "Wine 程序",
 		removeFromRaiPal: "从 Rai Pal 移除",
 		removeGameConfirmation: "确定要从 Rai Pal 移除此游戏吗？",
-		refreshGame: "刷新",
+		refreshGame: "刷新游戏",
 		failedToReadGameInfo:
 			"无法读取此游戏的部分重要信息。可执行文件可能被保护了。一些模组可能无法安装。",
 		failedToDetermineEngine: "无法确定此游戏的引擎。一些模组可能无法安装。",
-		gameModsLabel: "模组",
 		gameNotInstalledWarning:
 			"此游戏未安装，所以我不太确定哪些模组兼容。下面列出的模组可能可以用。安装游戏后，我再显示更准确的信息。",
 		uninstallAllModsButton: "卸载所有模组",
@@ -141,8 +142,13 @@ export const zhCn: Localization = {
 			"无法卸载有依赖项的模组。请先卸载依赖此模组的其他模组。",
 	},
 
+	gamesSort: {
+		sortBy: "排序方式",
+		sortDirection: "排序方向",
+	},
+
 	gamesTableColumn: {
-		game: "游戏",
+		name: "名称",
 		engine: "引擎",
 		date: "日期",
 	},
@@ -216,13 +222,11 @@ export const zhCn: Localization = {
 			"Rai Pal 已添加到你的 Steam 库中。重启 Steam 后即可看到它。",
 	},
 
-	globalWineOverrides: {
-		setUpEnvironmentButton: "为 BepInEx 设置 Linux 环境",
-		setUpEnvironmentTitle: "为 BepInEx 设置 Linux 环境",
-		setUpEnvironmentDescription:
-			"在 Linux 上使用 Proton/Wine 时，除非设置了一些 Wine 配置，否则 BepInEx 不会自动加载。此操作将全局设置环境变量 WINEDLLOVERRIDES 为 'winhttp.dll=n,b'。如果你更想手动设置，别点这个按钮。",
-		setUpEnvironmentSuccess:
-			"文件已写入。你需要注销后重新登录，或重启计算机，更改才能生效。",
+	appUpdate: {
+		updateAvailableTitle: "Rai Pal {version}",
+		noChangelog: "（无更新日志）",
+		ignoreUpdate: "忽略（在重新启动 Rai Pal 之前不再询问）",
+		updateNow: "立即更新",
 	},
 
 	debugData: {
