@@ -5,7 +5,7 @@ import {
 	Group,
 	Stack,
 	Tooltip,
-	Badge,
+	Text,
 } from "@mantine/core";
 import {
 	DbGame,
@@ -16,14 +16,15 @@ import {
 } from "@api/bindings";
 import { CommandButton } from "@components/command-button";
 import {
+	IconCalendarFilled,
 	IconCheck,
 	IconDotsVertical,
 	IconDownload,
 	IconFolderOpen,
 	IconMinus,
-	IconRefreshAlert,
 	IconSettings,
 	IconSettingsFilled,
+	IconUserFilled,
 } from "@tabler/icons-react";
 import { OutdatedMarker } from "@components/outdated-marker";
 import { MutedText } from "@components/muted-text";
@@ -34,6 +35,7 @@ import { GameModInstallButton } from "./game-mod-install-button";
 import { GameModRunButton } from "./game-mod-run-button";
 import { GameModUpdateButton } from "./game-mod-update-button";
 import { GameModUninstallButton } from "./game-mod-uninstall-button";
+import { dateFormatter } from "../../date-formatter";
 
 type Props = {
 	readonly game: DbGame;
@@ -81,47 +83,51 @@ export function GameModRow({
 
 	return (
 		<Table.Tr key={mod.id}>
-			<Table.Td ta="left">
-				<Group>
-					{isModUsable && (
-						<ThemeIcon
-							color={statusColor}
-							size="sm"
-						>
-							{statusIcon}
-						</ThemeIcon>
-					)}
-					{mod.title}
-					<Tooltip
-						disabled={!isOutdated}
-						label={t("modOutdated")}
-					>
-						<Stack
-							gap={5}
-							align="center"
-						>
-							<Badge
-								color={isOutdated ? "orange" : isInstalled ? "green" : "gray"}
-								maw={150}
-								leftSection={isOutdated && <IconRefreshAlert fontSize={15} />}
+			<Table.Td>
+				<Stack>
+					<Group wrap="nowrap">
+						{isModUsable && (
+							<ThemeIcon
+								color={statusColor}
+								size="sm"
 							>
-								{
-									(info?.installedVersion || mod.download?.id || "-").split(
-										"/",
-									)[0]
-								}
-							</Badge>
+								{statusIcon}
+							</ThemeIcon>
+						)}
+						<Stack gap={0}>
+							<Group>
+								<Text fw="bold">{mod.title}</Text>
+								{availableRemoteConfig && (
+									<Tooltip label={t("remoteConfigAvailable")}>
+										<IconSettingsFilled fontSize={15} />
+									</Tooltip>
+								)}
+							</Group>
+							<Group
+								gap={0}
+								style={{ columnGap: 10 }}
+							>
+								<MutedText>
+									{info?.installedVersion || mod.download?.id || "-"}
+									{isOutdated ? ` ➔ ${mod.download?.id}` : ""}
+								</MutedText>
+								{mod.download?.releaseDate && (
+									<Group gap={2}>
+										<IconCalendarFilled fontSize={10} />
+										<MutedText>
+											{dateFormatter.format(new Date(mod.download.releaseDate))}
+										</MutedText>
+									</Group>
+								)}
+								<Group gap={2}>
+									<IconUserFilled fontSize={10} />
+									<MutedText>{mod.author}</MutedText>
+								</Group>
+							</Group>
 						</Stack>
-					</Tooltip>
-					{availableRemoteConfig && (
-						<Tooltip label={t("remoteConfigAvailable")}>
-							<IconSettingsFilled fontSize="15" />
-						</Tooltip>
-					)}
-				</Group>
-				<Stack gap={0}>
-					{mod?.deprecated && <DeprecatedBadge mt={5} />}
-					{mod?.description && <MutedText>{mod.description}</MutedText>}
+						{mod?.deprecated && <DeprecatedBadge size="sm" />}
+					</Group>
+					<MutedText>{mod.description}</MutedText>
 				</Stack>
 			</Table.Td>
 			<Table.Td maw={200}>

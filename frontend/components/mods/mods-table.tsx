@@ -2,17 +2,12 @@ import { Badge, Group, Table, Text } from "@mantine/core";
 import { DeprecatedBadge } from "./deprecated-badge";
 import { useLocalization } from "@hooks/use-localization";
 import { GameMod } from "@api/bindings";
+import { dateFormatter } from "../../date-formatter";
 
 type Props = {
 	readonly mods: Record<string, GameMod>;
 	readonly onClick?: (mod: GameMod) => void;
 };
-
-const dateFormatter = Intl.DateTimeFormat("default", {
-	year: "numeric",
-	month: "long",
-	day: "2-digit",
-});
 
 export function ModsTable(props: Props) {
 	const { t } = useLocalization("modsPage");
