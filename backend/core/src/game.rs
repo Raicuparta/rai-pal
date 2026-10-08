@@ -88,7 +88,7 @@ impl DbGame {
 		self.get_installed_mods_folder()?.open_folder_or_parent()
 	}
 
-	pub async fn uninstall_all_mods(&self) -> Result {
+	pub async fn delete_mods_folder(&self) -> Result {
 		let folder = self.get_installed_mods_folder()?;
 		tokio::fs::remove_dir_all(folder).await?;
 		Ok(())

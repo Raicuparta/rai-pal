@@ -488,11 +488,13 @@ async fn uninstall_all_mods(
 	game_id: String,
 ) -> Result {
 	let state = handle.app_state();
-	state
-		.database
-		.get_game(&provider_id, &game_id)?
-		.uninstall_all_mods()
-		.await?;
+	let game = state.database.get_game(&provider_id, &game_id)?;
+
+	for installed_mod in state.database.get_installed_mods_for_game(&game)? {
+		installed_mod.uninstall().await?;
+	}
+
+	game.delete_mods_folder().await?;
 	state.database.refresh_installed_mods()?;
 
 	handle.emit_safe(events::RefreshGame(provider_id, game_id));
