@@ -135,13 +135,6 @@ export function GameModRow({
 									remoteConfigFile={availableRemoteConfig?.file}
 								/>
 							)}
-							{isInstalled && mod.install && (
-								<GameModUninstallButton
-									game={game}
-									mod={mod}
-									modInfo={info}
-								/>
-							)}
 							{isOutdated && (
 								<GameModUpdateButton
 									game={game}
@@ -222,6 +215,13 @@ export function GameModRow({
 									>
 										{t("downloadRemoteConfig")}
 									</CommandButton>
+								)}
+								{isInstalled && mod.install && (
+									<GameModUninstallButton
+										game={game}
+										mod={mod}
+										modInfo={info}
+									/>
 								)}
 							</CommandDropdown>
 						</ButtonGroup>
