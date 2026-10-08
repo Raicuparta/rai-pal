@@ -118,6 +118,8 @@ export const ptPt: Localization = {
 		uninstallAllModsConfirmation:
 			"Tens a certeza? Isto vai apagar todos os ficheiros da pasta de mods deste jogo. Mas não mexe nos ficheiros do jogo em si.",
 
+		installedMods: "Mods instalados",
+		availableMods: "Mods disponíveis",
 		incompatibleGameModsLabel: "Mods Incompatíveis",
 
 		incompatibleGameModsDescription:

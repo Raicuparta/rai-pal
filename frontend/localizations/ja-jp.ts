@@ -119,6 +119,8 @@ export const jaJp: Localization = {
 		uninstallAllModsConfirmation:
 			"本当に？このゲームのModフォルダー内の全ファイルが消えるよ。でもゲーム本体のファイルは消さないからね。",
 
+		installedMods: "導入済みMod",
+		availableMods: "利用可能なMod",
 		incompatibleGameModsLabel: "非対応Mod",
 
 		incompatibleGameModsDescription:

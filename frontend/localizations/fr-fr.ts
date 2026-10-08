@@ -120,6 +120,8 @@ export const frFr: Localization = {
 		uninstallAllModsConfirmation:
 			"T'es sûr ? Cela supprimera tous les fichiers dans le dossier des mods de ce jeu. Mais ça ne touchera pas aux fichiers du jeu.",
 
+		installedMods: "Mods installés",
+		availableMods: "Mods disponibles",
 		incompatibleGameModsLabel: "Mods incompatibles",
 
 		incompatibleGameModsDescription:

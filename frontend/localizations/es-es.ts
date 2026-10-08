@@ -120,6 +120,8 @@ export const esEs: Localization = {
 		uninstallAllModsConfirmation:
 			"¿Seguro? Esto borrará todos los archivos de la carpeta de mods del juego. Eso sí, los archivos del juego no se tocan.",
 
+		installedMods: "Mods instalados",
+		availableMods: "Mods disponibles",
 		incompatibleGameModsLabel: "Mods Incompatibles",
 
 		incompatibleGameModsDescription:

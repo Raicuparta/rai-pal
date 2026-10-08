@@ -242,6 +242,12 @@ export const enUs = {
 		uninstallAllModsConfirmation:
 			"You sure? This will delete all files in this game's mods folder. It won't delete any files from the actual game though.",
 
+		// Label for the section that lists the mods already installed for this game.
+		installedMods: "Installed Mods",
+
+		// Label for the section that lists mods that can still be installed for this game.
+		availableMods: "Available Mods",
+
 		// Label for the section that lists incompatible mods for this game.
 		incompatibleGameModsLabel: "Incompatible Mods",
 

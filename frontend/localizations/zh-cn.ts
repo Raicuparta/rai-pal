@@ -115,6 +115,8 @@ export const zhCn: Localization = {
 		uninstallAllModsConfirmation:
 			"你确定吗？这将删除此游戏模组文件夹中的所有文件。但不会删除游戏本身的文件。",
 
+		installedMods: "已安装模组",
+		availableMods: "可用模组",
 		incompatibleGameModsLabel: "不兼容的模组",
 
 		incompatibleGameModsDescription:

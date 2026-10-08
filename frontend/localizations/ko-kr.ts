@@ -117,6 +117,8 @@ export const koKr: Localization = {
 		uninstallAllModsConfirmation:
 			"확실해요? 이 게임 모드 폴더 안 파일이 전부 지워져요. 실제 게임 파일은 그대로 두고요.",
 
+		installedMods: "설치된 모드",
+		availableMods: "설치 가능한 모드",
 		incompatibleGameModsLabel: "호환되지 않는 모드",
 
 		incompatibleGameModsDescription:

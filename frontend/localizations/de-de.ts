@@ -120,6 +120,8 @@ export const deDe: Localization = {
 		uninstallAllModsConfirmation:
 			"Sicher? Das löscht alle Dateien im Mod-Ordner des Spiels. Dateien aus dem eigentlichen Spiel bleiben aber erhalten.",
 
+		installedMods: "Installierte Mods",
+		availableMods: "Verfügbare Mods",
 		incompatibleGameModsLabel: "Inkompatible Mods",
 
 		incompatibleGameModsDescription:
