@@ -1,4 +1,4 @@
-import { type MantineThemeOverride } from "@mantine/core";
+import { ScrollArea, type MantineThemeOverride } from "@mantine/core";
 
 export const theme: MantineThemeOverride = {
 	cursorType: "pointer",
@@ -86,6 +86,11 @@ export const theme: MantineThemeOverride = {
 						left: 0,
 					},
 				},
+			},
+		},
+		ScrollArea: {
+			defaultProps: {
+				scrollbarSize: 6,
 			},
 		},
 	},

@@ -118,7 +118,7 @@ const engine: GamesColumn = {
 	component: ({ item }: CellProps) => {
 		const engineColor = item.engineBrand
 			? engineColors[item.engineBrand]
-			: "gray";
+			: "dark.7";
 
 		const osDisplay =
 			item.executableOs === "Windows"
@@ -133,11 +133,7 @@ const engine: GamesColumn = {
 
 		return (
 			<Table.Td
-				bg={
-					item.engineBrand
-						? `var(--mantine-color-${engineColor}-light)`
-						: "dark.4"
-				}
+				bg={`var(--mantine-color-${engineColor}-light)`}
 				className={styles.engineWrapper}
 				p={0}
 			>

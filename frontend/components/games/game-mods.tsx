@@ -1,4 +1,4 @@
-import { Alert, Divider, Stack, Table } from "@mantine/core";
+import { Alert, Box, Divider, Stack, Table } from "@mantine/core";
 import { DbGame, RemoteConfigs, commands } from "@api/bindings";
 import { ReactNode, useCallback } from "react";
 import { CommandButton } from "@components/command-button";
@@ -28,14 +28,10 @@ function GameModsTable({
 	mods,
 	remoteConfigs,
 	incompatible,
-	highlightOnHover,
 	header,
 }: GameModsTableProps) {
 	return (
-		<Table
-			highlightOnHover={highlightOnHover}
-			highlightOnHoverColor="dark.7"
-		>
+		<Table bg="dark.7">
 			<Table.Tbody>
 				{header}
 				{mods.map(({ mod, info }) => (
@@ -94,17 +90,19 @@ export function GameMods({ game, mods }: Props) {
 									highlightOnHover
 								/>
 								{game.exePath && (
-									<CommandButton
-										confirmationText={t("uninstallAllModsConfirmation")}
-										onClick={() =>
-											commands.uninstallAllMods(game.providerId, game.gameId)
-										}
-										color="red"
-										variant="light"
-										leftSection={<IconTrash />}
-									>
-										{t("uninstallAllModsButton")}
-									</CommandButton>
+									<Box px="xs">
+										<CommandButton
+											confirmationText={t("uninstallAllModsConfirmation")}
+											onClick={() =>
+												commands.uninstallAllMods(game.providerId, game.gameId)
+											}
+											color="red"
+											variant="light"
+											leftSection={<IconTrash />}
+										>
+											{t("uninstallAllModsButton")}
+										</CommandButton>
+									</Box>
 								)}
 							</Stack>
 						)}

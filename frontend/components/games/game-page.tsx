@@ -177,10 +177,7 @@ export function GamePage({ game, mods }: Props) {
 					</Table>
 				</TableContainer>
 			</Box>
-			<Stack
-				p="xs"
-				gap="xl"
-			>
+			<Stack gap="xl">
 				{game.exePath && (
 					<>
 						{game.engineBrand && !game.architecture && (

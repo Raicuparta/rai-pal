@@ -5,7 +5,7 @@ div.table {
 	display: flex;
 	flex-direction: column;
 	user-select: none;
-	background-color: var(--mantine-color-dark-6);
+	background-color: var(--mantine-color-dark-8);
 
 	code {
 		font-size: 0.8em;
@@ -27,7 +27,11 @@ div.table {
 
 	tbody {
 		tr {
-			background-color: var(--mantine-color-dark-6);
+			background-color: var(--mantine-color-dark-8);
+
+			&:hover {
+				background-color: var(--mantine-color-dark-9);
+			}
 		}
 		tr,
 		td {
