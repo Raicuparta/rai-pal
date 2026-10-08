@@ -235,6 +235,7 @@ export type ModDependency = ({ modId: string }) & { family?: never } | ({ family
 export type ModDownload = {
 	id: string,
 	url: string,
+	releaseDate: string | null,
 };
 
 export type ModInstall = {

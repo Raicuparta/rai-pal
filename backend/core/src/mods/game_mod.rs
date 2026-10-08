@@ -93,6 +93,7 @@ pub struct PreparedModRun {
 pub struct ModDownload {
 	pub id: String,
 	pub url: String,
+	pub release_date: Option<String>,
 }
 
 #[derive(serde::Serialize, serde::Deserialize, specta::Type, Clone, Debug, PartialEq, Eq, Hash)]

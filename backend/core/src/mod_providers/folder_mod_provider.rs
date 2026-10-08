@@ -46,6 +46,7 @@ impl ModProvider for FolderModProvider {
 			game_mod.download = Some(ModDownload {
 				id: "0.0.0".to_string(),
 				url: format!("file://{}", manifest_path.try_parent()?.try_to_str()?),
+				release_date: None,
 			});
 
 			db.insert_mod(&game_mod, Self::get_id(), &source_hash);

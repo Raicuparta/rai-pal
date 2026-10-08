@@ -8,6 +8,12 @@ type Props = {
 	readonly onClick?: (mod: GameMod) => void;
 };
 
+const dateFormatter = Intl.DateTimeFormat("default", {
+	year: "numeric",
+	month: "long",
+	day: "2-digit",
+});
+
 export function ModsTable(props: Props) {
 	const { t } = useLocalization("modsPage");
 
@@ -45,6 +51,14 @@ export function ModsTable(props: Props) {
 						</Table.Td>
 						<Table.Td ta="center">
 							<Badge color="gray">{mod.download?.id ?? "-"}</Badge>
+							{mod.download?.releaseDate && (
+								<Text
+									size="xs"
+									opacity={0.5}
+								>
+									{dateFormatter.format(new Date(mod.download.releaseDate))}
+								</Text>
+							)}
 						</Table.Td>
 						<Table.Td
 							w={100}
