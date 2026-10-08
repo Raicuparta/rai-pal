@@ -77,14 +77,6 @@ export function GamePage({ game, mods }: Props) {
 							)}
 						</Button.Group>
 					)}
-					{game.exePath && (
-						<CommandButton
-							onClick={() => commands.refreshGame(providerId, gameId)}
-							leftSection={<IconRefresh />}
-						>
-							{t("refreshGame")}
-						</CommandButton>
-					)}
 					{providerId === "Manual" && (
 						<RemoveGameButton
 							providerId={providerId}
@@ -107,7 +99,7 @@ export function GamePage({ game, mods }: Props) {
 					)}
 					{game.exePath && (
 						<Stack>
-							<Divider label={t("foldersDropdown")} />
+							<Divider label={t("foldersSection")} />
 							<Button.Group orientation="vertical">
 								<CommandButton
 									leftSection={<IconFolder />}
@@ -154,6 +146,21 @@ export function GamePage({ game, mods }: Props) {
 							</Button.Group>
 						</Stack>
 					)}
+
+					<Stack>
+						<Divider label={t("dataSection")} />
+						<Button.Group orientation="vertical">
+							{game.exePath && (
+								<CommandButton
+									onClick={() => commands.refreshGame(providerId, gameId)}
+									leftSection={<IconRefresh />}
+								>
+									{t("refreshGame")}
+								</CommandButton>
+							)}
+							<DebugData data={{ game, mods }} />
+						</Button.Group>
+					</Stack>
 				</Stack>
 			}
 		>
@@ -188,7 +195,6 @@ export function GamePage({ game, mods }: Props) {
 					game={game}
 					mods={mods}
 				/>
-				<DebugData data={{ game, mods }} />
 			</Stack>
 		</Page>
 	);

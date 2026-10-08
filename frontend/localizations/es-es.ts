@@ -98,12 +98,14 @@ export const esEs: Localization = {
 		startGameButton: "Iniciar juego",
 		startGameExecutable: "Iniciar ejecutable del juego",
 		startGameViaProvider: "Iniciar juego vía {provider}",
-		foldersDropdown: "Carpetas",
+		foldersSection: "Carpetas",
 		openGameFilesFolder: "Archivos del juego",
 		openInstalledModsFolder: "Mods instalados",
 		openGameDataFolder: "Datos de la aplicación",
 		openGameWinePrefixFolder: "Prefijo Wine",
 		openGameWineBinaryFolder: "Binario Wine",
+
+		dataSection: "Datos",
 		removeFromRaiPal: "Eliminar de Rai Pal",
 		removeGameConfirmation:
 			"¿Estás seguro de que quieres eliminar este juego de Rai Pal?",

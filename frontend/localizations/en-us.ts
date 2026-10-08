@@ -192,8 +192,8 @@ export const enUs = {
 		// Start the game via the provider's launcher app.
 		startGameViaProvider: "Start Game via {provider}",
 
-		// Dropdown menu for folders related to the game.
-		foldersDropdown: "Folders",
+		// Section for folders related to the game.
+		foldersSection: "Folders",
 
 		// Open the folder where the game's executable is located.
 		openGameFilesFolder: "Game Files",
@@ -209,6 +209,9 @@ export const enUs = {
 
 		// Open the folder that contains the Wine binary used for this game.
 		openGameWineBinaryFolder: "Wine Binary",
+
+		// Section for miscellaneous data related to the game.
+		dataSection: "Data",
 
 		// Button for removing a manually-added game from Rai Pal.
 		removeFromRaiPal: "Remove from Rai Pal",

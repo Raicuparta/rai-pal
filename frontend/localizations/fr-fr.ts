@@ -98,12 +98,14 @@ export const frFr: Localization = {
 		startGameButton: "Lancer le jeu",
 		startGameExecutable: "Lancer l'exécutable du jeu",
 		startGameViaProvider: "Lancer le jeu via {provider}",
-		foldersDropdown: "Dossiers",
+		foldersSection: "Dossiers",
 		openGameFilesFolder: "Fichiers du jeu",
 		openInstalledModsFolder: "Mods installés",
 		openGameDataFolder: "Données d'application",
 		openGameWinePrefixFolder: "Préfixe Wine",
 		openGameWineBinaryFolder: "Binaire Wine",
+
+		dataSection: "Données",
 		removeFromRaiPal: "Retirer de Rai Pal",
 		removeGameConfirmation:
 			"Vous êtes sûr de vouloir retirer ce jeu de Rai Pal ?",
