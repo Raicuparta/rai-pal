@@ -1,31 +1,57 @@
-import {
-	Alert,
-	Divider,
-	Group,
-	Stack,
-	Table,
-	Text,
-	ThemeIcon,
-} from "@mantine/core";
-import { DbGame, commands } from "@api/bindings";
-import { useCallback } from "react";
+import { Alert, Divider, Stack, Table } from "@mantine/core";
+import { DbGame, RemoteConfigs, commands } from "@api/bindings";
+import { ReactNode, useCallback } from "react";
 import { CommandButton } from "@components/command-button";
-import {
-	IconChevronDown,
-	IconChevronRight,
-	IconTrash,
-} from "@tabler/icons-react";
+import { IconTrash } from "@tabler/icons-react";
 import { GameModRow } from "./game-mod-row";
 import { useLocalization } from "@hooks/use-localization";
 import { useCommandData } from "@hooks/use-command-data";
 import { MutedText } from "@components/muted-text";
-import { GameModsData } from "@hooks/use-selected-game";
-import { useToggle } from "@mantine/hooks";
+import { GameModsData, GameModsPart } from "@hooks/use-selected-game";
 
 type Props = {
 	readonly game: DbGame;
 	readonly mods: GameModsData;
 };
+
+type GameModsTableProps = {
+	readonly game: DbGame;
+	readonly mods: GameModsPart[];
+	readonly remoteConfigs: RemoteConfigs | null;
+	readonly incompatible?: boolean;
+	readonly highlightOnHover?: boolean;
+	readonly header?: ReactNode;
+};
+
+function GameModsTable({
+	game,
+	mods,
+	remoteConfigs,
+	incompatible,
+	highlightOnHover,
+	header,
+}: GameModsTableProps) {
+	return (
+		<Table
+			highlightOnHover={highlightOnHover}
+			highlightOnHoverColor="dark.7"
+		>
+			<Table.Tbody>
+				{header}
+				{mods.map(({ mod, info }) => (
+					<GameModRow
+						key={mod.id}
+						game={game}
+						mod={mod}
+						remoteConfigs={remoteConfigs}
+						info={info}
+						incompatible={incompatible}
+					/>
+				))}
+			</Table.Tbody>
+		</Table>
+	);
+}
 
 export function GameMods({ game, mods }: Props) {
 	const { t } = useLocalization("gameModal");
@@ -38,115 +64,86 @@ export function GameMods({ game, mods }: Props) {
 		null,
 		!game?.exePath,
 	);
-	const [showHiddenMods, toggleShowHiddenMods] = useToggle();
 
 	if (mods.compatibleMods.length + mods.incompatibleMods.length === 0) {
 		return null;
 	}
 
+	const installedMods = mods.compatibleMods.filter(
+		({ info }) => info.installedHash,
+	);
+	const notInstalledMods = mods.compatibleMods.filter(
+		({ info }) => !info.installedHash,
+	);
+
 	return (
 		<>
-			<Stack>
+			<Stack gap="lg">
 				{mods.compatibleMods.length > 0 && (
 					<>
 						{!game.exePath && (
 							<Alert color="orange">{t("gameNotInstalledWarning")}</Alert>
 						)}
-						<Table
-							highlightOnHover
-							highlightOnHoverColor="dark.7"
-						>
-							<Table.Tbody>
-								{mods.compatibleMods.map(({ mod, info }) => (
-									<GameModRow
-										key={mod.id}
-										game={game}
-										mod={mod}
-										remoteConfigs={remoteConfigs}
-										info={info}
-									/>
-								))}
-								{mods.hiddenMods.length > 0 && (
-									<>
-										<Table.Tr onClick={() => toggleShowHiddenMods()}>
-											<Table.Td
-												colSpan={2}
-												style={{ cursor: "pointer" }}
-											>
-												<Group fz="xs">
-													<ThemeIcon
-														size="sm"
-														color="gray"
-													>
-														{showHiddenMods ? (
-															<IconChevronDown />
-														) : (
-															<IconChevronRight />
-														)}
-													</ThemeIcon>
-													<Text size="sm">{t("otherThings")}</Text>
-												</Group>
-												{showHiddenMods && (
-													<Text
-														opacity={0.5}
-														size="xs"
-													>
-														{t("otherThingsDescription")}
-													</Text>
-												)}
-											</Table.Td>
-										</Table.Tr>
-										{showHiddenMods && (
-											<>
-												{mods.hiddenMods.map(({ mod, info }) => (
-													<GameModRow
-														key={mod.id}
-														game={game}
-														mod={mod}
-														remoteConfigs={remoteConfigs}
-														info={info}
-													/>
-												))}
-											</>
-										)}
-									</>
+						{installedMods.length > 0 && (
+							<Stack>
+								<Divider label={t("installedMods")} />
+								<GameModsTable
+									game={game}
+									mods={installedMods}
+									remoteConfigs={remoteConfigs}
+									highlightOnHover
+								/>
+								{game.exePath && (
+									<CommandButton
+										confirmationText={t("uninstallAllModsConfirmation")}
+										onClick={() =>
+											commands.uninstallAllMods(game.providerId, game.gameId)
+										}
+										color="red"
+										variant="light"
+										leftSection={<IconTrash />}
+									>
+										{t("uninstallAllModsButton")}
+									</CommandButton>
 								)}
-							</Table.Tbody>
-						</Table>
+							</Stack>
+						)}
+						{notInstalledMods.length > 0 && (
+							<Stack>
+								<Divider label={t("availableMods")} />
+								<GameModsTable
+									game={game}
+									mods={notInstalledMods}
+									remoteConfigs={remoteConfigs}
+									highlightOnHover
+								/>
+							</Stack>
+						)}
+						{mods.hiddenMods.length > 0 && (
+							<Stack>
+								<Divider label={t("otherThings")} />
+								<MutedText>{t("otherThingsDescription")}</MutedText>
+								<GameModsTable
+									game={game}
+									mods={mods.hiddenMods}
+									remoteConfigs={remoteConfigs}
+									highlightOnHover
+								/>
+							</Stack>
+						)}
 					</>
-				)}
-				{game.exePath && (
-					<CommandButton
-						confirmationText={t("uninstallAllModsConfirmation")}
-						onClick={() =>
-							commands.uninstallAllMods(game.providerId, game.gameId)
-						}
-						color="red"
-						variant="light"
-						leftSection={<IconTrash />}
-					>
-						{t("uninstallAllModsButton")}
-					</CommandButton>
 				)}
 			</Stack>
 			{mods.incompatibleMods.length > 0 && (
 				<Stack>
 					<Divider label={t("incompatibleGameModsLabel")} />
 					<MutedText>{t("incompatibleGameModsDescription")}</MutedText>
-					<Table>
-						<Table.Tbody>
-							{mods.incompatibleMods.map(({ mod, info }) => (
-								<GameModRow
-									key={mod.id}
-									game={game}
-									mod={mod}
-									remoteConfigs={remoteConfigs}
-									info={info}
-									incompatible
-								/>
-							))}
-						</Table.Tbody>
-					</Table>
+					<GameModsTable
+						game={game}
+						mods={mods.incompatibleMods}
+						remoteConfigs={remoteConfigs}
+						incompatible
+					/>
 				</Stack>
 			)}
 		</>
