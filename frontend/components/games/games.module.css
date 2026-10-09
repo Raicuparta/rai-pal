@@ -43,7 +43,10 @@
 	font-weight: 300;
 	padding: 3px;
 	line-height: 1;
-	background-color: var(--mantine-color-dark-7);
+	background-color: light-dark(
+		var(--mantine-color-gray-2),
+		var(--mantine-color-dark-7)
+	);
 	border-radius: 3px;
 	text-transform: uppercase;
 	white-space: nowrap;
@@ -64,8 +67,8 @@
 		content: "";
 		position: absolute;
 		inset: 0;
-		background-color: rgba(0, 0, 0, 0.5);
 		background-image: url("images/fallback-thumbnail.png");
+		filter: light-dark(invert(), none);
 		background-size: 60px;
 		background-position: 20px;
 		background-repeat: no-repeat;

@@ -23,3 +23,26 @@ button:disabled,
 [data-disabled] {
 	cursor: default;
 }
+
+.mantine-Menu-dropdown {
+	--menu-item-hover: light-dark(
+		var(--mantine-color-gray-2),
+		var(--mantine-color-dark-4)
+	);
+}
+
+:where([data-mantine-color-scheme="light"]) .mantine-Accordion-control:hover {
+	background-color: var(--mantine-color-gray-1);
+}
+
+:where([data-mantine-color-scheme="light"])
+	.mantine-Combobox-option:hover:not(
+		[data-combobox-selected],
+		[data-combobox-disabled]
+	) {
+	background-color: var(--mantine-color-gray-2);
+}
+
+:where([data-mantine-color-scheme="light"]) .mantine-CloseButton-root:hover {
+	background-color: var(--mantine-color-gray-1);
+}

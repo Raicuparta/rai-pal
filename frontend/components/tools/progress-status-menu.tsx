@@ -120,8 +120,8 @@ export function ProgressStatusMenu() {
 		>
 			<Menu.Target>
 				<Button
-					variant="filled"
-					color="dark"
+					variant="subtle"
+					color="gray"
 					fz="md"
 				>
 					<RingProgress
@@ -137,7 +137,7 @@ export function ProgressStatusMenu() {
 			</Menu.Target>
 			<Menu.Dropdown
 				p="xs"
-				bg="dark"
+				bg="var(--background-dark)"
 			>
 				<Menu.Item
 					onClick={() => {

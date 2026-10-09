@@ -83,28 +83,29 @@ export function UserMenu() {
 		>
 			<Menu.Target>
 				<Button
-					variant="filled"
-					color="dark"
+					variant="subtle"
+					color="gray"
 					fz="md"
 				>
 					{authState.isLoggedIn ? (
 						<Avatar
 							radius="xl"
-							bd="2px solid white"
+							bd="2px solid var(--mantine-color-bright)"
 							src={avatarUrl}
 							size="sm"
 							bg="black"
+							c="white"
 						>
 							{userInitials}
 						</Avatar>
 					) : (
-						<IconUserCircle color="white" />
+						<IconUserCircle />
 					)}
 				</Button>
 			</Menu.Target>
 			<Menu.Dropdown
 				p="xs"
-				bg="dark"
+				bg="var(--background-dark)"
 				maw={250}
 			>
 				{authState.isLoggedIn ? (

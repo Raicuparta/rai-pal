@@ -196,7 +196,6 @@ export function FilterColumn<TFilterKey extends FilterKey>({
 						align="stretch"
 						gap={0}
 						wrap="nowrap"
-						pl="xs"
 					>
 						<ActionIcon
 							size="sm"

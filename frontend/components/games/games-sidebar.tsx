@@ -10,7 +10,7 @@ export function GamesSidebar() {
 
 	return (
 		<>
-			<Box px="xs">
+			<Box pr="xs">
 				<RefreshButton />
 			</Box>
 			<SearchInput

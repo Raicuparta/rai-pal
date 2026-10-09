@@ -6,10 +6,12 @@ import { AppTabs } from "@components/app-tabs";
 import { useAppEvent } from "@hooks/use-app-event";
 import { ConfirmModSourceModal } from "@components/tools/confirm-mod-source-modal";
 import { AppUpdateModal } from "@components/app-update-modal";
+import { useColorScheme } from "@hooks/use-color-scheme";
 
 function App() {
 	const { availableUpdate, installUpdate, ignoreUpdate } = useAppUpdater();
 	useData();
+	useColorScheme();
 
 	const [pendingSourceUrl, setPendingSourceUrl] = useState<string | null>(null);
 

@@ -42,7 +42,7 @@ export function ModsPage() {
 				<Page
 					sidebar={
 						<Stack
-							px="xs"
+							pr="xs"
 							gap="lg"
 						>
 							<RefreshButton />

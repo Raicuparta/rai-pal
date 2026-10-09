@@ -94,10 +94,7 @@ function CommandButtonInternal<TResultValue>(
 				p={5}
 				maw={600}
 			>
-				<Paper
-					color="dark"
-					p="xs"
-				>
+				<Paper p="xs">
 					<Stack align="center">
 						{confirmationText}
 						<Group>

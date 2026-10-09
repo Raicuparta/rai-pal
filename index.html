@@ -7,6 +7,19 @@
 			content="width=device-width, initial-scale=1.0"
 		/>
 		<title>Rai Pal</title>
+		<script>
+			try {
+				var storedScheme = localStorage.getItem("mantine-color-scheme-value");
+				var scheme =
+					storedScheme === "light" || storedScheme === "dark"
+						? storedScheme
+						: window.matchMedia("(prefers-color-scheme: dark)").matches
+							? "dark"
+							: "light";
+				document.documentElement.setAttribute("data-mantine-color-scheme", scheme);
+				document.documentElement.style.colorScheme = scheme;
+			} catch (error) {}
+		</script>
 	</head>
 
 	<body>
@@ -16,9 +29,4 @@
 			src="/frontend/main.tsx"
 		></script>
 	</body>
-	<style>
-		body {
-			background-color: #1a1b1e;
-		}
-	</style>
 </html>

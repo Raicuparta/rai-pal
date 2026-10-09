@@ -55,7 +55,7 @@ export function GamePage({ game, mods }: Props) {
 			onClose={close}
 			sidebar={
 				<Stack
-					px="xs"
+					pr="xs"
 					gap="lg"
 				>
 					{primaryStart && (

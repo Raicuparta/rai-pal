@@ -53,7 +53,7 @@ export function AppTabs() {
 				gap={0}
 				style={{ height: "100vh" }}
 			>
-				<Tabs.List bg="dark">
+				<Tabs.List bg="var(--background-dark)">
 					<Container
 						flex={1}
 						size="xl"
@@ -95,7 +95,6 @@ export function AppTabs() {
 								flex={1}
 								mih={0}
 								w="100%"
-								py="xs"
 								size="xl"
 							>
 								<page.component />

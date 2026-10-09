@@ -67,7 +67,11 @@ const status: GamesColumn = {
 					providerId={item.providerId}
 					color={`var(--mantine-color-${providerColors[item.providerId]}-light-color)`}
 				/>
-				{item.exePath ? <IconDeviceDesktop color="white" /> : <IconCloud />}
+				{item.exePath ? (
+					<IconDeviceDesktop color="var(--mantine-color-bright)" />
+				) : (
+					<IconCloud />
+				)}
 			</Stack>
 		</Table.Td>
 	),
@@ -83,7 +87,7 @@ const name: GamesColumn = {
 				gap={3}
 				p="xs"
 				fw="bold"
-				c={item.exePath ? "white" : "grey"}
+				c={item.exePath ? "bright" : "dimmed"}
 				style={{
 					maxHeight: gameRowHeight,
 					overflow: "hidden",
@@ -118,7 +122,7 @@ const engine: GamesColumn = {
 	component: ({ item }: CellProps) => {
 		const engineColor = item.engineBrand
 			? engineColors[item.engineBrand]
-			: "dark.7";
+			: "gray";
 
 		const osDisplay =
 			item.executableOs === "Windows"

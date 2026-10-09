@@ -30,7 +30,7 @@ registerEvents();
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
 	<React.StrictMode>
 		<MantineProvider
-			defaultColorScheme="dark"
+			defaultColorScheme="auto"
 			cssVariablesResolver={v8CssVariablesResolver}
 			theme={theme}
 		>

@@ -76,7 +76,7 @@ export const theme: MantineThemeOverride = {
 		PopoverDropdown: {
 			defaultProps: {
 				p: "xs",
-				bg: "dark",
+				bg: "var(--background-dark)",
 			},
 		},
 		Modal: {

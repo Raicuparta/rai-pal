@@ -397,6 +397,18 @@ export const enUs = {
 		// Display name for the language option that automatically detects the user's language.
 		autoDetectedLanguage: "Auto-detected - {languageName}",
 
+		// Label on the dropdown for choosing the app's color scheme.
+		colorScheme: "Color scheme",
+
+		// Color scheme option that follows the system theme.
+		colorSchemeAuto: "Auto",
+
+		// Color scheme option that always uses the dark theme.
+		colorSchemeDark: "Dark",
+
+		// Color scheme option that always uses the light theme.
+		colorSchemeLight: "Light",
+
 		// Button for resetting Rai Pal's settings.
 		resetRaiPalSettingsButton: "Reset Rai Pal settings",
 

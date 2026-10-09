@@ -1,4 +1,4 @@
-import { AppLocale, commands } from "@api/bindings";
+import { AppLocale, ColorScheme, commands } from "@api/bindings";
 import { useAppSettings } from "@hooks/use-app-settings";
 import { useAppSettingSingle } from "@hooks/use-app-setting-single";
 import {
@@ -18,6 +18,7 @@ import {
 	IconLanguage,
 	IconMenu2,
 	IconRotateDot,
+	IconSunMoon,
 } from "@tabler/icons-react";
 import {
 	getNativeLocaleName,
@@ -76,8 +77,8 @@ export function AppSettings() {
 			>
 				<Menu.Target>
 					<Button
-						variant="filled"
-						color="dark"
+						variant="subtle"
+						color="gray"
 						fz="md"
 					>
 						<IconMenu2 />
@@ -85,7 +86,7 @@ export function AppSettings() {
 				</Menu.Target>
 				<Menu.Dropdown
 					p="xs"
-					bg="dark"
+					bg="var(--background-dark)"
 				>
 					<Stack>
 						<SwitchButton
@@ -168,6 +169,27 @@ export function AppSettings() {
 							</option>
 						))}
 					</NativeSelect>
+					<Divider my="xs" />
+					<NativeSelect
+						label={
+							<Group>
+								<span>{t("colorScheme")}</span>
+								<IconSunMoon />
+							</Group>
+						}
+						value={settings.colorScheme}
+						data={[
+							{ value: "Auto", label: t("colorSchemeAuto") ?? "Auto" },
+							{ value: "Dark", label: t("colorSchemeDark") ?? "Dark" },
+							{ value: "Light", label: t("colorSchemeLight") ?? "Light" },
+						]}
+						onChange={(event) => {
+							setSettings({
+								...settings,
+								colorScheme: event.currentTarget.value as ColorScheme,
+							});
+						}}
+					/>
 				</Menu.Dropdown>
 			</Menu>
 			<SteamCacheModal

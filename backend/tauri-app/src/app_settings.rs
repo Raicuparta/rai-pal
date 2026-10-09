@@ -27,6 +27,15 @@ pub enum TabId {
 	Thanks,
 }
 
+#[serializable_enum]
+#[derive(Default)]
+pub enum ColorScheme {
+	#[default]
+	Auto,
+	Dark,
+	Light,
+}
+
 #[serializable_struct]
 #[derive(Default)]
 pub struct AppSettings {
@@ -37,6 +46,8 @@ pub struct AppSettings {
 	pub skip_confirm_dialogs: HashSet<String>,
 	#[serde(default)]
 	pub expanded_filters: HashSet<String>,
+	#[serde(default)]
+	pub color_scheme: ColorScheme,
 }
 
 // If the settings schema changes, update this so it gets recreated.

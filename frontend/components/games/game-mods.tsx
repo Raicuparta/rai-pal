@@ -31,7 +31,7 @@ function GameModsTable({
 	header,
 }: GameModsTableProps) {
 	return (
-		<Table bg="dark.7">
+		<Table bg="var(--background-dark)">
 			<Table.Tbody>
 				{header}
 				{mods.map(({ mod, info }) => (

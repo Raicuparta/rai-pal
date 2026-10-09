@@ -86,6 +86,7 @@ export type AppSettings = {
 	selectedTab: TabId,
 	skipConfirmDialogs: string[],
 	expandedFilters?: string[],
+	colorScheme?: ColorScheme,
 };
 
 export type Architecture = "X64" | "X86";
@@ -95,6 +96,8 @@ export type AuthState = {
 	avatarPath: string | null,
 	userName: string | null,
 };
+
+export type ColorScheme = "Auto" | "Dark" | "Light";
 
 export type DbGame = {
 	providerId: GameProviderId,

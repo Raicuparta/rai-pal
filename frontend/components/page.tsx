@@ -1,11 +1,11 @@
-import { Box, Button, Card, CardProps, Group, Stack } from "@mantine/core";
+import { Box, Button, Group, GroupProps, Stack } from "@mantine/core";
 import { useHotkeys } from "@mantine/hooks";
 import { useLocalization } from "@hooks/use-localization";
 import { IconArrowLeft } from "@tabler/icons-react";
 import { Sidebar } from "@components/sidebar";
 import { ScrollAreaFill } from "@components/scroll-area-fill";
 
-interface Props extends CardProps {
+interface Props extends GroupProps {
 	readonly onClose?: () => void;
 	readonly sidebar?: React.ReactNode;
 	// Pages whose content scrolls itself (like the games table) can opt out.
@@ -59,34 +59,28 @@ export function Page({
 	useHotkeys([["Escape", () => onClose?.()]]);
 
 	return (
-		<Card
-			p={0}
+		<Group
 			flex={1}
-			bg="dark"
+			mih={0}
+			wrap="nowrap"
+			align="stretch"
+			gap={0}
 			{...props}
 		>
-			<Group
-				flex={1}
-				mih={0}
-				wrap="nowrap"
-				align="stretch"
-				gap={0}
-			>
-				<Sidebar>
-					{onClose && (
-						<Box px="xs">
-							<Button
-								onClick={onClose}
-								leftSection={<IconArrowLeft />}
-							>
-								{t("back")}
-							</Button>
-						</Box>
-					)}
-					{sidebar}
-				</Sidebar>
-				<PageContent scrollable={scrollable}>{children}</PageContent>
-			</Group>
-		</Card>
+			<Sidebar>
+				{onClose && (
+					<Box pr="xs">
+						<Button
+							onClick={onClose}
+							leftSection={<IconArrowLeft />}
+						>
+							{t("back")}
+						</Button>
+					</Box>
+				)}
+				{sidebar}
+			</Sidebar>
+			<PageContent scrollable={scrollable}>{children}</PageContent>
+		</Group>
 	);
 }

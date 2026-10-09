@@ -27,4 +27,5 @@ export const defaultSettings: AppSettings = {
 	selectedTab: "Games",
 	skipConfirmDialogs: [],
 	expandedFilters: [],
+	colorScheme: "Auto",
 };

@@ -55,7 +55,7 @@ export function FilterList() {
 		>
 			<Group
 				wrap="nowrap"
-				px="xs"
+				pr="xs"
 			>
 				<ActionIcon
 					bg="transparent"
@@ -75,7 +75,7 @@ export function FilterList() {
 					bg="transparent"
 					size="sm"
 					mr={-3}
-					color="white"
+					color="gray"
 					variant="subtle"
 					disabled={expandedFilters.length === 0}
 					aria-label={t("collapseAll")}

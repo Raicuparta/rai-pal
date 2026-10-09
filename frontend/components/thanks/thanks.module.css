@@ -1,5 +1,5 @@
 .heart {
-	color: var(--mantine-color-red-9);
+	color: light-dark(var(--mantine-color-red-7), var(--mantine-color-red-9));
 	animation: pulse 3s;
 	will-change: transform;
 }
@@ -34,14 +34,16 @@
 	width: 35px;
 	height: 35px;
 	border-radius: 100%;
-	border: 3px solid currentColor;
+	border: 4px solid currentColor;
 	display: block;
 }
 
 .patronMedal {
 	position: absolute;
-	left: -15px;
-	text-shadow: 2px 2px 3px rgba(0, 0, 0, 0.5);
+	top: -5px;
+	left: -20px;
+	text-shadow: 2px 2px 3px rgba(0, 0, 0, 0.6);
+	pointer-events: none;
 }
 
 .patronName {

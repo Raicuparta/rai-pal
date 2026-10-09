@@ -7,14 +7,14 @@ export function Sidebar(props: StackProps) {
 			flex="0 0 auto"
 			w={250}
 			style={{
-				borderRight: "solid 1px var(--mantine-color-dark-4)",
+				borderRight: "solid 1px var(--mantine-color-default-border)",
 			}}
 		>
 			<Stack
 				flex={1}
 				mih={0}
 				gap="lg"
-				py="xs"
+				pt="lg"
 				{...props}
 			/>
 		</ScrollAreaFill>

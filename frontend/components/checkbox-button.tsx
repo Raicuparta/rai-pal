@@ -80,7 +80,7 @@ function CheckboxButtonInternal(
 					size="compact-xs"
 					variant="light"
 					bg={locked ? undefined : "transparent"}
-					color={locked ? "yellow" : "white"}
+					color={locked ? "yellow" : "gray"}
 					disabled={checked}
 					onClick={onClickLock}
 				>
