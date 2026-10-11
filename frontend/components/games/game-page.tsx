@@ -178,15 +178,13 @@ export function GamePage({ game, mods }: Props) {
 				</TableContainer>
 			</Box>
 			<Stack gap="xl">
-				{game.exePath && (
-					<>
-						{game.engineBrand && !game.architecture && (
-							<Alert color="red">{t("failedToReadGameInfo")}</Alert>
-						)}
-						{!game.engineBrand && (
-							<Alert color="red">{t("failedToDetermineEngine")}</Alert>
-						)}
-					</>
+				{game.exePath && !game.engineBrand && (
+					<Alert
+						color="red"
+						m="md"
+					>
+						{t("failedToDetermineEngine")}
+					</Alert>
 				)}
 				<GameMods
 					game={game}

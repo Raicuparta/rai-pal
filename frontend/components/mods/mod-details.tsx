@@ -63,7 +63,8 @@ export function ModDetails({
 				<Group>
 					<Text
 						fw="bold"
-						size="lg"
+						size="md"
+						c="var(--mantine-color-bright)"
 					>
 						{mod.title}
 					</Text>

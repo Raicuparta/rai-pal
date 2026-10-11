@@ -108,8 +108,6 @@ export const ptPt: Localization = {
 		removeFromRaiPal: "Remover do Rai Pal",
 		removeGameConfirmation: "Queres mesmo remover este jogo do Rai Pal?",
 		refreshGame: "Atualizar jogo",
-		failedToReadGameInfo:
-			"Erro ao ler informações importantes sobre este jogo. O executável pode estar protegido. Alguns mods podem não instalar-se.",
 		failedToDetermineEngine:
 			"Não foi possível determinar o motor deste jogo. Alguns mods podem não funcionar.",
 		gameNotInstalledWarning:

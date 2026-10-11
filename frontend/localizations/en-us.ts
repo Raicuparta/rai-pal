@@ -223,10 +223,6 @@ export const enUs = {
 		// Button for refreshing the game's information.
 		refreshGame: "Refresh game",
 
-		// Error message when Rai Pal fails to read enough information about the game.
-		failedToReadGameInfo:
-			"Failed to read some important information about this game. This could be due to the executable being protected. Some mods might fail to install.",
-
 		// Error message when Rai Pal fails to determine the game's engine.
 		failedToDetermineEngine:
 			"Failed to determine the engine for this game. Some mods might fail to install.",

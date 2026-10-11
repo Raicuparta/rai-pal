@@ -107,8 +107,6 @@ export const koKr: Localization = {
 		removeFromRaiPal: "Rai Pal에서 제거",
 		removeGameConfirmation: "이 게임을 Rai Pal에서 제거할까요?",
 		refreshGame: "게임 새로고침",
-		failedToReadGameInfo:
-			"이 게임의 중요 정보를 읽을 수 없었어요. 실행 파일이 보호돼 있어서 그럴 수 있어요. 일부 모드가 설치 안 될 수도 있어요.",
 		failedToDetermineEngine:
 			"이 게임의 엔진을 확인할 수 없었어요. 일부 모드가 설치 안 될 수도 있어요.",
 		gameNotInstalledWarning:

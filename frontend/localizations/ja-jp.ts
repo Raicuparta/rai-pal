@@ -109,8 +109,6 @@ export const jaJp: Localization = {
 		removeFromRaiPal: "Rai Palから削除",
 		removeGameConfirmation: "このゲームをRai Palから削除していい？",
 		refreshGame: "ゲームを更新",
-		failedToReadGameInfo:
-			"このゲームの重要情報がちゃんと読み取れなかった。実行ファイルが保護されてるのかも。一部のModはうまくインストールできないかも。",
 		failedToDetermineEngine:
 			"このゲームのエンジンが特定できなかった。一部のModはうまくインストールできないかも。",
 		gameNotInstalledWarning:

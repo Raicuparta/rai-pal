@@ -1,4 +1,4 @@
-import { Alert, Box, Divider, Stack, Table } from "@mantine/core";
+import { Alert, Box, Divider, Stack, Table, Text } from "@mantine/core";
 import { DbGame, commands } from "@api/bindings";
 import { ReactNode, useCallback } from "react";
 import { CommandButton } from "@components/command-button";
@@ -6,7 +6,6 @@ import { IconTrash } from "@tabler/icons-react";
 import { GameModRow } from "./game-mod-row";
 import { useLocalization } from "@hooks/use-localization";
 import { useCommandData } from "@hooks/use-command-data";
-import { MutedText } from "@components/muted-text";
 import { GameModsData, GameModsPart } from "@hooks/use-selected-game";
 
 type Props = {
@@ -32,9 +31,18 @@ function GameModsSection({
 	readonly header?: ReactNode;
 }) {
 	return (
-		<Stack>
+		<Stack gap={0}>
 			<Divider label={label} />
-			<MutedText ml="xs">{description}</MutedText>
+			{description && (
+				<Text
+					opacity={0.4}
+					size="xs"
+					ta="center"
+					ml="xs"
+				>
+					{description}
+				</Text>
+			)}
 			<Table>
 				<Table.Tbody>
 					{header}

@@ -15,6 +15,7 @@ export function Sidebar(props: StackProps) {
 				mih={0}
 				gap="lg"
 				pt="lg"
+				pl="xs"
 				{...props}
 			/>
 		</ScrollAreaFill>

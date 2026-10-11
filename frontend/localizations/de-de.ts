@@ -110,8 +110,6 @@ export const deDe: Localization = {
 		removeGameConfirmation:
 			"Bist du sicher, dass du dieses Spiel aus Rai Pal entfernen willst?",
 		refreshGame: "Spiel aktualisieren",
-		failedToReadGameInfo:
-			"Konnte wichtige Infos zu diesem Spiel nicht lesen. Vielleicht ist die Exe geschützt. Einige Mods könnten dann nicht installiert werden.",
 		failedToDetermineEngine:
 			"Konnte die Engine für dieses Spiel nicht bestimmen. Einige Mods könnten dann nicht funktionieren.",
 		gameNotInstalledWarning:
