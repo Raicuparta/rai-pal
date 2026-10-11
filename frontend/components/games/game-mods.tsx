@@ -14,38 +14,43 @@ type Props = {
 	readonly mods: GameModsData;
 };
 
-type GameModsTableProps = {
-	readonly game: DbGame;
-	readonly mods: GameModsPart[];
-	readonly remoteConfigs: RemoteConfigs | null;
-	readonly incompatible?: boolean;
-	readonly highlightOnHover?: boolean;
-	readonly header?: ReactNode;
-};
-
-function GameModsTable({
+function GameModsSection({
 	game,
 	mods,
 	remoteConfigs,
 	incompatible,
 	header,
-}: GameModsTableProps) {
+	label,
+	description,
+}: {
+	readonly game: DbGame;
+	readonly mods: GameModsPart[];
+	readonly remoteConfigs: RemoteConfigs | null;
+	readonly label: string;
+	readonly description?: string;
+	readonly incompatible?: boolean;
+	readonly header?: ReactNode;
+}) {
 	return (
-		<Table bg="var(--background-dark)">
-			<Table.Tbody>
-				{header}
-				{mods.map(({ mod, info }) => (
-					<GameModRow
-						key={mod.id}
-						game={game}
-						mod={mod}
-						remoteConfigs={remoteConfigs}
-						info={info}
-						incompatible={incompatible}
-					/>
-				))}
-			</Table.Tbody>
-		</Table>
+		<Stack>
+			<Divider label={label} />
+			<MutedText ml="xs">{description}</MutedText>
+			<Table>
+				<Table.Tbody>
+					{header}
+					{mods.map(({ mod, info }) => (
+						<GameModRow
+							key={mod.id}
+							game={game}
+							mod={mod}
+							remoteConfigs={remoteConfigs}
+							info={info}
+							incompatible={incompatible}
+						/>
+					))}
+				</Table.Tbody>
+			</Table>
+		</Stack>
 	);
 }
 
@@ -82,12 +87,11 @@ export function GameMods({ game, mods }: Props) {
 						)}
 						{installedMods.length > 0 && (
 							<Stack>
-								<Divider label={t("installedMods")} />
-								<GameModsTable
+								<GameModsSection
+									label={t("installedMods")}
 									game={game}
 									mods={installedMods}
 									remoteConfigs={remoteConfigs}
-									highlightOnHover
 								/>
 								{game.exePath && (
 									<Box px="xs">
@@ -107,42 +111,34 @@ export function GameMods({ game, mods }: Props) {
 							</Stack>
 						)}
 						{notInstalledMods.length > 0 && (
-							<Stack>
-								<Divider label={t("availableMods")} />
-								<GameModsTable
-									game={game}
-									mods={notInstalledMods}
-									remoteConfigs={remoteConfigs}
-									highlightOnHover
-								/>
-							</Stack>
+							<GameModsSection
+								label={t("availableMods")}
+								game={game}
+								mods={notInstalledMods}
+								remoteConfigs={remoteConfigs}
+							/>
 						)}
 						{mods.hiddenMods.length > 0 && (
-							<Stack>
-								<Divider label={t("otherThings")} />
-								<MutedText>{t("otherThingsDescription")}</MutedText>
-								<GameModsTable
-									game={game}
-									mods={mods.hiddenMods}
-									remoteConfigs={remoteConfigs}
-									highlightOnHover
-								/>
-							</Stack>
+							<GameModsSection
+								label={t("otherThings")}
+								description={t("otherThingsDescription")}
+								game={game}
+								mods={mods.hiddenMods}
+								remoteConfigs={remoteConfigs}
+							/>
 						)}
 					</>
 				)}
 			</Stack>
 			{mods.incompatibleMods.length > 0 && (
-				<Stack>
-					<Divider label={t("incompatibleGameModsLabel")} />
-					<MutedText>{t("incompatibleGameModsDescription")}</MutedText>
-					<GameModsTable
-						game={game}
-						mods={mods.incompatibleMods}
-						remoteConfigs={remoteConfigs}
-						incompatible
-					/>
-				</Stack>
+				<GameModsSection
+					label={t("incompatibleGameModsLabel")}
+					description={t("incompatibleGameModsDescription")}
+					game={game}
+					mods={mods.incompatibleMods}
+					remoteConfigs={remoteConfigs}
+					incompatible
+				/>
 			)}
 		</>
 	);

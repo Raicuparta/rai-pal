@@ -105,7 +105,7 @@ export function UserMenu() {
 			</Menu.Target>
 			<Menu.Dropdown
 				p="xs"
-				bg="var(--background-dark)"
+				bg="var(--mantine-color-body)"
 				maw={250}
 			>
 				{authState.isLoggedIn ? (

@@ -24,25 +24,9 @@ button:disabled,
 	cursor: default;
 }
 
-.mantine-Menu-dropdown {
-	--menu-item-hover: light-dark(
-		var(--mantine-color-gray-2),
-		var(--mantine-color-dark-4)
+.mantine-Table-tr {
+	border-color: light-dark(
+		var(--mantine-color-gray-3),
+		var(--mantine-color-dark-6)
 	);
-}
-
-:where([data-mantine-color-scheme="light"]) .mantine-Accordion-control:hover {
-	background-color: var(--mantine-color-gray-1);
-}
-
-:where([data-mantine-color-scheme="light"])
-	.mantine-Combobox-option:hover:not(
-		[data-combobox-selected],
-		[data-combobox-disabled]
-	) {
-	background-color: var(--mantine-color-gray-2);
-}
-
-:where([data-mantine-color-scheme="light"]) .mantine-CloseButton-root:hover {
-	background-color: var(--mantine-color-gray-1);
 }

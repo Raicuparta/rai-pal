@@ -193,6 +193,10 @@ export const esEs: Localization = {
 		showGameThumbnails: "Mostrar miniaturas de juegos en la lista",
 		language: "Idioma",
 		autoDetectedLanguage: "Auto-detectado - {languageName}",
+		colorScheme: "Esquema de color",
+		colorSchemeAuto: "Automático",
+		colorSchemeDark: "Oscuro",
+		colorSchemeLight: "Claro",
 		resetRaiPalSettingsButton: "Restablecer configuración de Rai Pal",
 		resetRaiPalSettingsTooltip:
 			"Restablecerá filtros, diálogos de confirmación y demás.",

@@ -184,6 +184,10 @@ export const zhCn: Localization = {
 		showGameThumbnails: "在列表中显示游戏缩略图",
 		language: "语言",
 		autoDetectedLanguage: "自动检测 - {languageName}",
+		colorScheme: "配色方案",
+		colorSchemeAuto: "自动",
+		colorSchemeDark: "深色",
+		colorSchemeLight: "浅色",
 		resetRaiPalSettingsButton: "重置 Rai Pal 设置",
 		resetRaiPalSettingsTooltip:
 			"将重置筛选条件、确认对话框，可能还有其他内容。",

@@ -1,5 +1,5 @@
 .heart {
-	color: light-dark(var(--mantine-color-red-7), var(--mantine-color-red-9));
+	color: var(--mantine-color-red-8);
 	animation: pulse 3s;
 	will-change: transform;
 }

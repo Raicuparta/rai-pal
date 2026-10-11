@@ -137,7 +137,6 @@ const engine: GamesColumn = {
 
 		return (
 			<Table.Td
-				bg={`var(--mantine-color-${engineColor}-light)`}
 				className={styles.engineWrapper}
 				p={0}
 			>

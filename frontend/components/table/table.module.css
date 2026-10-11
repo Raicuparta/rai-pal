@@ -5,10 +5,6 @@ div.table {
 	display: flex;
 	flex-direction: column;
 	user-select: none;
-	background-color: light-dark(
-		var(--mantine-color-gray-1),
-		var(--mantine-color-dark-8)
-	);
 
 	code {
 		font-size: 0.8em;
@@ -20,29 +16,11 @@ div.table {
 		}
 	}
 
-	tr {
-		border-bottom: 2px solid
-			light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-7));
-	}
-
 	table {
 		table-layout: fixed;
 	}
 
 	tbody {
-		tr {
-			background-color: light-dark(
-				var(--mantine-color-gray-1),
-				var(--mantine-color-dark-8)
-			);
-
-			&:hover {
-				background-color: light-dark(
-					var(--mantine-color-gray-2),
-					var(--mantine-color-dark-9)
-				);
-			}
-		}
 		tr,
 		td {
 			/* Needs to be consistent with height set in game-row.tsx ugh. TODO: fix that. */

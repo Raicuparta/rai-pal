@@ -225,7 +225,9 @@ export function FilterColumn<TFilterKey extends FilterKey>({
 						{possibleValues.map((possibleValue) => {
 							const details = valueDetails[possibleValue];
 							const item = getItem(filterGroup.known, possibleValue);
-							const tooltip = tValueNote(details?.noteLocalizationKey);
+							const tooltip = details?.noteLocalizationKey
+								? tValueNote(details.noteLocalizationKey)
+								: undefined;
 
 							return (
 								<CheckboxButton
@@ -238,7 +240,9 @@ export function FilterColumn<TFilterKey extends FilterKey>({
 									onClickButton={() => handleExclusiveClick(possibleValue)}
 								>
 									{details?.staticDisplayText ??
-										tValue(details?.localizationKey) ??
+										(details?.localizationKey
+											? tValue(details.localizationKey)
+											: undefined) ??
 										possibleValue}
 								</CheckboxButton>
 							);

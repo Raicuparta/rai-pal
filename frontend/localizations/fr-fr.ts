@@ -193,6 +193,10 @@ export const frFr: Localization = {
 		showGameThumbnails: "Afficher les miniatures des jeux dans la liste",
 		language: "Langue",
 		autoDetectedLanguage: "Détecté automatiquement - {languageName}",
+		colorScheme: "Thème de couleurs",
+		colorSchemeAuto: "Automatique",
+		colorSchemeDark: "Sombre",
+		colorSchemeLight: "Clair",
 		resetRaiPalSettingsButton: "Réinitialiser les paramètres de Rai Pal",
 		resetRaiPalSettingsTooltip:
 			"Réinitialisera les filtres, les dialogues de confirmation, probablement d'autres trucs.",

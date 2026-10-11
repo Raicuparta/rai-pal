@@ -1,8 +1,8 @@
-import { Text } from "@mantine/core";
+import { Text, TextProps } from "@mantine/core";
 
-type Props = {
+interface Props extends TextProps {
 	readonly children: React.ReactNode;
-};
+}
 
 export function MutedText(props: Props) {
 	return (
@@ -10,8 +10,7 @@ export function MutedText(props: Props) {
 			component="span"
 			size="xs"
 			opacity={0.5}
-		>
-			{props.children}
-		</Text>
+			{...props}
+		/>
 	);
 }

@@ -193,6 +193,10 @@ export const deDe: Localization = {
 		showGameThumbnails: "Spiel-Thumbnails in der Liste anzeigen",
 		language: "Sprache",
 		autoDetectedLanguage: "Automatisch erkannt - {languageName}",
+		colorScheme: "Farbschema",
+		colorSchemeAuto: "Automatisch",
+		colorSchemeDark: "Dunkel",
+		colorSchemeLight: "Hell",
 		resetRaiPalSettingsButton: "Rai Pal-Einstellungen zurücksetzen",
 		resetRaiPalSettingsTooltip:
 			"Setzt Filter, Bestätigungsdialoge und wahrscheinlich andere Dinge zurück.",

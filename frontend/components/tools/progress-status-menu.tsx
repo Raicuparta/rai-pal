@@ -137,7 +137,7 @@ export function ProgressStatusMenu() {
 			</Menu.Target>
 			<Menu.Dropdown
 				p="xs"
-				bg="var(--background-dark)"
+				bg="var(--mantine-color-body)"
 			>
 				<Menu.Item
 					onClick={() => {

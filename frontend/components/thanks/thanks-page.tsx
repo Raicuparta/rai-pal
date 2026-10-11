@@ -109,7 +109,7 @@ export function ThanksPage() {
 						<Group align="top">
 							<Stack
 								gap={0}
-								bg="var(--background-dark)"
+								bg="var(--mantine-color-body)"
 								justify="center"
 								p="sm"
 								flex={1}

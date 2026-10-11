@@ -14,11 +14,13 @@ import {
 import { useAtomValue } from "jotai";
 import { detectedLocaleAtom, useLocalization } from "@hooks/use-localization";
 import {
+	IconDeviceLaptop,
 	IconFolderCode,
 	IconLanguage,
 	IconMenu2,
+	IconMoon,
 	IconRotateDot,
-	IconSunMoon,
+	IconSun,
 } from "@tabler/icons-react";
 import {
 	getNativeLocaleName,
@@ -86,7 +88,7 @@ export function AppSettings() {
 				</Menu.Target>
 				<Menu.Dropdown
 					p="xs"
-					bg="var(--background-dark)"
+					bg="var(--mantine-color-body)"
 				>
 					<Stack>
 						<SwitchButton
@@ -174,7 +176,9 @@ export function AppSettings() {
 						label={
 							<Group>
 								<span>{t("colorScheme")}</span>
-								<IconSunMoon />
+								{settings.colorScheme === "Auto" && <IconDeviceLaptop />}
+								{settings.colorScheme === "Dark" && <IconMoon />}
+								{settings.colorScheme === "Light" && <IconSun />}
 							</Group>
 						}
 						value={settings.colorScheme}

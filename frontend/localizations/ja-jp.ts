@@ -191,6 +191,10 @@ export const jaJp: Localization = {
 		showGameThumbnails: "リストにゲームのサムネイルを表示",
 		language: "言語",
 		autoDetectedLanguage: "自動検出 - {languageName}",
+		colorScheme: "カラースキーム",
+		colorSchemeAuto: "自動",
+		colorSchemeDark: "ダーク",
+		colorSchemeLight: "ライト",
 		resetRaiPalSettingsButton: "Rai Palの設定をリセット",
 		resetRaiPalSettingsTooltip:
 			"フィルターや確認ダイアログ、あと多分その他の設定もリセットされるよ。",

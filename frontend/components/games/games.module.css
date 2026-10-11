@@ -43,10 +43,8 @@
 	font-weight: 300;
 	padding: 3px;
 	line-height: 1;
-	background-color: light-dark(
-		var(--mantine-color-gray-2),
-		var(--mantine-color-dark-7)
-	);
+	color: white;
+	background-color: var(--mantine-color-dark-4);
 	border-radius: 3px;
 	text-transform: uppercase;
 	white-space: nowrap;

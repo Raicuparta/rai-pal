@@ -189,6 +189,10 @@ export const ptPt: Localization = {
 		showGameThumbnails: "Mostrar imagens na lista de jogos",
 		language: "Idioma",
 		autoDetectedLanguage: "Auto-detetado - {languageName}",
+		colorScheme: "Esquema de cores",
+		colorSchemeAuto: "Automático",
+		colorSchemeDark: "Escuro",
+		colorSchemeLight: "Claro",
 		openLogsFolderButton: "Abrir Pasta de Registos",
 		resetRaiPalSettingsButton: "Repor definições do Rai Pal",
 		resetRaiPalSettingsTooltip:

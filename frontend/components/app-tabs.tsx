@@ -53,7 +53,7 @@ export function AppTabs() {
 				gap={0}
 				style={{ height: "100vh" }}
 			>
-				<Tabs.List bg="var(--background-dark)">
+				<Tabs.List bg="var(--mantine-color-body)">
 					<Container
 						flex={1}
 						size="xl"
