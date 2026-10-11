@@ -5,6 +5,7 @@ import {
 	loadingTasksAtom,
 	gameDataAtom,
 	modsAtom,
+	modFamiliesAtom,
 	gameDataVersionAtom,
 } from "./use-data";
 import { showAppNotification } from "@components/app-notifications";
@@ -28,19 +29,25 @@ export function useUpdateData(executeOnMount = false) {
 
 	const updateMods = useCommandAtomData(commands.getMods, modsAtom);
 
+	const updateModFamilies = useCommandAtomData(
+		commands.getModFamilies,
+		modFamiliesAtom,
+	);
+
 	const setGameDataVersion = useSetAtom(gameDataVersionAtom);
 
 	useEffect(() => {
 		if (!executeOnMount) return;
 		updateGames();
 		updateMods();
-	}, [executeOnMount, updateGames, updateMods]);
+		updateModFamilies();
+	}, [executeOnMount, updateGames, updateMods, updateModFamilies]);
 
 	const debouncedUpdateData = useDebouncedCallback(async () => {
 		// Fetch games and mods concurrently so a slow games fetch doesn't delay
 		// the mods list update. Debouncing (trailing-only) means this runs once
 		// after the database-write burst settles, so it always reads final data.
-		await Promise.all([updateGames(), updateMods()]);
+		await Promise.all([updateGames(), updateMods(), updateModFamilies()]);
 		setGameDataVersion((v) => v + 1);
 	}, 500);
 

@@ -1,5 +1,5 @@
 import { atom } from "jotai";
-import { GameIdsResponse, GameMod } from "@api/bindings";
+import { GameIdsResponse, GameMod, ModFamily } from "@api/bindings";
 import { useUpdateData } from "./use-update-data";
 import { useGameDropEvent } from "./use-game-drop-event";
 
@@ -9,6 +9,8 @@ export const gameDataAtom = atom<GameIdsResponse>({
 });
 
 export const modsAtom = atom<Record<string, GameMod>>({});
+
+export const modFamiliesAtom = atom<Record<string, ModFamily>>({});
 
 export const gameDataVersionAtom = atom(0);
 

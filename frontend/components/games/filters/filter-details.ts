@@ -3,7 +3,7 @@ import { LocalizationKey } from "@localizations/localizations";
 
 export type FilterKey = keyof GamesFilter;
 
-type ValueDetails = {
+export type ValueDetails = {
 	noteLocalizationKey?: LocalizationKey<"filterValueNote">;
 	localizationKey?: LocalizationKey<"filterValue">;
 	staticDisplayText?: string;

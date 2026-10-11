@@ -1,4 +1,5 @@
 use std::{
+	collections::BTreeMap,
 	fs,
 	hash::{DefaultHasher, Hash, Hasher},
 	path::PathBuf,
@@ -14,13 +15,15 @@ use crate::{
 		mod_database::{ModDatabase, compute_scope, scope_id},
 	},
 	mod_providers::mod_provider::ModProviderId,
-	mods::game_mod::GameMod,
+	mods::{game_mod::GameMod, mod_family::ModFamily},
 	path_extensions::PathExt,
 	result::{LogErrExt, Result},
 };
 
 #[serializable_struct]
 pub struct UrlModDatabase {
+	#[serde(default)]
+	pub families: BTreeMap<String, ModFamily>,
 	pub mods: Vec<GameMod>,
 }
 
@@ -199,12 +202,16 @@ impl ModProvider for UrlModProvider {
 		);
 
 		let mut keep_ids = Vec::new();
+		let mut keep_family_ids = Vec::new();
 
 		for (url, source_hash) in enabled_sources {
 			let scope = compute_scope(Self::get_id(), &source_hash);
 
 			match fetch_and_insert(&url, &source_hash, &scope, db).await {
-				Ok(ids) => keep_ids.extend(ids),
+				Ok((ids, family_ids)) => {
+					keep_ids.extend(ids);
+					keep_family_ids.extend(family_ids);
+				}
 				Err(error) => {
 					// If a source fails to refresh, keep whatever we already had
 					// for it as a fallback, but still remove disabled sources.
@@ -212,11 +219,13 @@ impl ModProvider for UrlModProvider {
 						"Failed to refresh mod source `{url}`, keeping existing mods as fallback: {error}"
 					);
 					keep_ids.extend(db.get_mod_ids_in_scope(Self::get_id(), &scope)?);
+					keep_family_ids.extend(db.get_family_ids_in_scope(Self::get_id(), &scope)?);
 				}
 			}
 		}
 
 		db.remove_mods_except(Self::get_id(), &keep_ids)?;
+		db.remove_mod_families_except(Self::get_id(), &keep_family_ids)?;
 
 		Ok(())
 	}
@@ -227,24 +236,31 @@ async fn fetch_and_insert(
 	source_hash: &str,
 	scope: &str,
 	db: &DbMutex,
-) -> Result<Vec<String>> {
+) -> Result<(Vec<String>, Vec<String>)> {
 	// The timeout bounds how long a refresh can hold the mod refresh lock,
 	// so a single unresponsive mod source can't block all future refreshes.
-	let mods = http::CLIENT
+	let database = http::CLIENT
 		.get(url)
 		.timeout(std::time::Duration::from_secs(15))
 		.send()
 		.await?
 		.json::<UrlModDatabase>()
-		.await?
-		.mods;
+		.await?;
 
-	let mut ids = Vec::with_capacity(mods.len());
+	db.insert_mod_families(&database.families, ModProviderId::Url, source_hash);
 
-	for game_mod in &mods {
+	let mut ids = Vec::with_capacity(database.mods.len());
+
+	for game_mod in &database.mods {
 		db.insert_mod(game_mod, ModProviderId::Url, source_hash);
 		ids.push(scope_id(scope, &game_mod.id).into_owned());
 	}
 
-	Ok(ids)
+	let family_ids = database
+		.families
+		.keys()
+		.map(|family_id| scope_id(scope, family_id).into_owned())
+		.collect();
+
+	Ok((ids, family_ids))
 }

@@ -19,6 +19,7 @@ use crate::{
 	mods::{
 		game_mod::{GameMod, ModDependency},
 		installed_mod::InstalledMod,
+		mod_family::ModFamily,
 	},
 	operating_system::OperatingSystem,
 	path_extensions::PathExt,
@@ -64,6 +65,20 @@ pub trait ModDatabase {
 	) -> Result<Vec<GameModInfo>>;
 	fn get_mod_ids_in_scope(&self, provider_id: ModProviderId, scope: &str) -> Result<Vec<String>>;
 	fn remove_mods_except(&self, provider_id: ModProviderId, keep_ids: &[String]) -> Result;
+	fn insert_mod_families(
+		&self,
+		families: &BTreeMap<String, ModFamily>,
+		provider_id: ModProviderId,
+		source_hash: &str,
+	);
+	fn get_mod_families(&self) -> Result<BTreeMap<String, ModFamily>>;
+	fn get_family_ids_in_scope(
+		&self,
+		provider_id: ModProviderId,
+		scope: &str,
+	) -> Result<Vec<String>>;
+	fn remove_mod_families_except(&self, provider_id: ModProviderId, keep_ids: &[String])
+	-> Result;
 }
 
 pub(crate) fn compute_scope(provider_id: ModProviderId, source_hash: &str) -> String {
@@ -116,6 +131,14 @@ impl ModDatabase for DbMutex {
 			);
 
 			CREATE INDEX IF NOT EXISTS idx_mods_created_at ON mods(created_at);
+
+			CREATE TABLE IF NOT EXISTS mod_families (
+				id TEXT NOT NULL PRIMARY KEY,
+				scope TEXT NOT NULL DEFAULT '',
+				provider_id TEXT NOT NULL,
+				family_id TEXT NOT NULL,
+				data TEXT NOT NULL
+			);
 
 			CREATE TABLE IF NOT EXISTS installed_mods (
 				exe_path_hash TEXT NOT NULL,
@@ -688,6 +711,78 @@ impl ModDatabase for DbMutex {
 
 		Ok(())
 	}
+
+	fn insert_mod_families(
+		&self,
+		families: &BTreeMap<String, ModFamily>,
+		provider_id: ModProviderId,
+		source_hash: &str,
+	) {
+		if let Err(err) = try_insert_mod_families(self, families, provider_id, source_hash) {
+			log::error!("Failed to insert mod families into local database: {err}");
+		}
+	}
+
+	fn get_mod_families(&self) -> Result<BTreeMap<String, ModFamily>> {
+		let rows = self
+			.lock_db()?
+			.prepare_cached("SELECT family_id, data FROM main.mod_families ORDER BY id;")?
+			.query_map([], |row| {
+				Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?))
+			})?
+			.collect::<rusqlite::Result<Vec<(String, String)>>>()?;
+
+		let mut families = BTreeMap::new();
+
+		for (family_id, data) in rows {
+			match serde_json::from_str::<ModFamily>(&data) {
+				Ok(family) => {
+					families.insert(family_id, family);
+				}
+				Err(err) => {
+					log::warn!(
+						"Failed to parse mod family `{family_id}` from local database: {err}"
+					);
+				}
+			}
+		}
+
+		Ok(families)
+	}
+
+	fn get_family_ids_in_scope(
+		&self,
+		provider_id: ModProviderId,
+		scope: &str,
+	) -> Result<Vec<String>> {
+		let ids = self
+			.lock_db()?
+			.prepare_cached(
+				"SELECT id FROM main.mod_families WHERE provider_id = $1 AND scope = $2;",
+			)?
+			.query_map(rusqlite::params![provider_id, scope], |row| {
+				row.get::<_, String>(0)
+			})?
+			.collect::<rusqlite::Result<Vec<String>>>()?;
+
+		Ok(ids)
+	}
+
+	fn remove_mod_families_except(
+		&self,
+		provider_id: ModProviderId,
+		keep_ids: &[String],
+	) -> Result {
+		let keep_json = serde_json::to_string(keep_ids)?;
+
+		self.lock_db()?
+			.prepare_cached(
+				"DELETE FROM main.mod_families WHERE provider_id = ? AND id NOT IN (SELECT value FROM json_each(?));",
+			)?
+			.execute(rusqlite::params![provider_id, keep_json])?;
+
+		Ok(())
+	}
 }
 
 fn serialize_json_option<T: Serialize>(value: Option<&T>) -> Result<String> {
@@ -831,6 +926,46 @@ fn try_insert_mod(
 				.cast_signed(),
 			scope
 		])?;
+
+	Ok(())
+}
+
+fn try_insert_mod_families(
+	connection_mutex: &DbMutex,
+	families: &BTreeMap<String, ModFamily>,
+	provider_id: ModProviderId,
+	source_hash: &str,
+) -> Result {
+	let scope = compute_scope(provider_id, source_hash);
+
+	let mut connection = connection_mutex.lock_db()?;
+	let transaction = connection.transaction()?;
+
+	{
+		let mut statement = transaction.prepare_cached(
+			"INSERT OR REPLACE INTO mod_families (
+				id,
+				scope,
+				provider_id,
+				family_id,
+				data
+			) VALUES ($1, $2, $3, $4, $5)",
+		)?;
+
+		for (family_id, family) in families {
+			let scoped_id = scope_id(&scope, family_id);
+
+			statement.execute(rusqlite::params![
+				scoped_id.as_ref(),
+				scope,
+				provider_id,
+				family_id,
+				serde_json::to_string(family)?,
+			])?;
+		}
+	}
+
+	transaction.commit()?;
 
 	Ok(())
 }

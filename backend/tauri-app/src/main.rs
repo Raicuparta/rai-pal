@@ -31,7 +31,10 @@ use rai_pal_core::{
 	},
 	maps::TryGettable,
 	mod_providers::{mod_provider, url_mod_provider},
-	mods::game_mod::{GameMod, ModDependency},
+	mods::{
+		game_mod::{GameMod, ModDependency},
+		mod_family::ModFamily,
+	},
 	path_extensions::PathExt,
 	progress_status::ProgressStatus,
 	remote_config::RemoteConfigs,
@@ -563,6 +566,13 @@ async fn get_mods(handle: AppHandle) -> Result<BTreeMap<String, GameMod>> {
 
 #[tauri::command]
 #[specta::specta]
+async fn get_mod_families(handle: AppHandle) -> Result<BTreeMap<String, ModFamily>> {
+	let state = handle.app_state();
+	Ok(state.database.get_mod_families()?)
+}
+
+#[tauri::command]
+#[specta::specta]
 async fn refresh_remote_games() -> Result {
 	let path = remote_game::download_database().await?;
 	attach_remote(&path)?;
@@ -914,6 +924,7 @@ fn main() {
 			get_game,
 			get_game_ids,
 			get_game_mods,
+			get_mod_families,
 			get_mods,
 			get_mods_from_url_mod_source,
 			get_remote_configs,

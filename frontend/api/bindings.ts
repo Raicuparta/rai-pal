@@ -23,6 +23,7 @@ export const commands = {
 	sortDescending: boolean,
 } | null) => __TAURI_INVOKE<GameIdsResponse>("get_game_ids", { query }),
 	getGameMods: (providerId: GameProviderId, gameId: string) => __TAURI_INVOKE<GameModInfo[]>("get_game_mods", { providerId, gameId }),
+	getModFamilies: () => __TAURI_INVOKE<{ [key in string]: ModFamily }>("get_mod_families"),
 	getMods: () => __TAURI_INVOKE<{ [key in string]: GameMod }>("get_mods"),
 	getModsFromUrlModSource: (url: string) => __TAURI_INVOKE<GameMod[]>("get_mods_from_url_mod_source", { url }),
 	getRemoteConfigs: (providerId: GameProviderId, gameId: string) => __TAURI_INVOKE<{
@@ -239,6 +240,11 @@ export type ModDownload = {
 	id: string,
 	url: string,
 	releaseDate: string | null,
+};
+
+export type ModFamily = {
+	title: string,
+	description: string,
 };
 
 export type ModInstall = {

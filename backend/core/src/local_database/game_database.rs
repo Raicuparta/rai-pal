@@ -17,6 +17,7 @@ use crate::{
 	games_query::{FilterGroup, GamesQuery, GamesSortBy, InstallState},
 	local_database::{
 		app_database::{AppDatabase, DbMutex},
+		mod_database::ModDatabase,
 		rusqlite_extensions::{JsonData, RowExt},
 	},
 	operating_system::OperatingSystem,
@@ -333,7 +334,10 @@ impl GameDatabase for DbMutex {
 			}
 
 			// Mod families filter
-			{
+			// When no family definitions are available (e.g. offline before the first
+			// successful refresh), a saved selection can't be shown in the UI, so ignore
+			// it instead of filtering on families we know nothing about.
+			if !self.get_mod_families()?.is_empty() {
 				let disabled: Vec<_> = filter
 					.mod_families
 					.known
