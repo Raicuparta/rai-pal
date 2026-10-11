@@ -266,8 +266,14 @@ impl ProviderActions for Steam {
 							app_info.name.clone(),
 						);
 
+						let header_image = app_info
+							.header_image
+							.as_deref()
+							.filter(|image| !image.is_empty())
+							.unwrap_or("header.jpg");
+
 						game.thumbnail_url = Some(format!(
-							"https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/{external_id}/header.jpg"
+							"https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/{external_id}/{header_image}"
 						));
 
 						game.add_provider_command(

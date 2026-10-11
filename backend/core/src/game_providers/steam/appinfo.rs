@@ -41,6 +41,7 @@ pub struct SteamAppInfo {
 	pub is_free: bool,
 	pub app_type: Option<String>,
 	pub tags: Option<Vec<i32>>,
+	pub header_image: Option<String>,
 }
 
 impl SteamAppInfo {
@@ -233,6 +234,9 @@ impl SteamAppInfoReader {
 			let original_release_date =
 				value_to_i32(app.get(&["appinfo", "common", "original_release_date"]));
 
+			let header_image =
+				value_to_string(app.get(&["appinfo", "common", "header_image", "english"]));
+
 			let app_type_option = value_to_string(app.get(&["appinfo", "common", "type"]));
 			let is_free = app.get(&["appinfo", "extended", "isfreeapp"]).is_some()
 				|| app_type_option
@@ -261,6 +265,7 @@ impl SteamAppInfoReader {
 					is_free,
 					app_type: app_type_option,
 					tags,
+					header_image,
 				}));
 			}
 		}
