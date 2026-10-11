@@ -296,7 +296,6 @@ async fn install_mod(
 				installed_version: None,
 				is_outdated: false,
 				mod_id: other_mod.id.clone(),
-				mod_scope: other_mod.scope.clone().unwrap_or_default(),
 				family: other_mod.family.clone(),
 			})
 			.collect()

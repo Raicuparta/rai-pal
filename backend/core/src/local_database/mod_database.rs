@@ -29,7 +29,6 @@ use crate::{
 #[serializable_struct]
 pub struct GameModInfo {
 	pub mod_id: String,
-	pub mod_scope: String,
 	pub installed_version: Option<String>,
 	pub installed_hash: Option<String>,
 	pub is_outdated: bool,
@@ -142,7 +141,6 @@ impl ModDatabase for DbMutex {
 
 			CREATE TABLE IF NOT EXISTS installed_mods (
 				exe_path_hash TEXT NOT NULL,
-				mod_scope TEXT NOT NULL DEFAULT '',
 				mod_id TEXT NOT NULL,
 				installed_version TEXT,
 				installed_hash TEXT,
@@ -448,7 +446,6 @@ impl ModDatabase for DbMutex {
 
 				installed_mod_rows.push((
 					exe_path_hash.clone(),
-					manifest.scope.clone().unwrap_or_default(),
 					manifest.id,
 					manifest
 						.download
@@ -474,20 +471,16 @@ impl ModDatabase for DbMutex {
 				let mut statement = transaction.prepare_cached(
 					"INSERT OR REPLACE INTO main.installed_mods (
 						exe_path_hash,
-						mod_scope,
 						mod_id,
 						installed_version,
 						installed_hash,
 						created_at
-					) VALUES ($1, $2, $3, $4, $5, $6)",
+					) VALUES ($1, $2, $3, $4, $5)",
 				)?;
 
-				for (exe_path_hash, mod_scope, mod_id, installed_version, installed_hash) in
-					installed_mod_rows
-				{
+				for (exe_path_hash, mod_id, installed_version, installed_hash) in installed_mod_rows {
 					statement.execute(rusqlite::params![
 						exe_path_hash,
-						mod_scope,
 						mod_id,
 						installed_version,
 						installed_hash,
@@ -541,8 +534,7 @@ impl ModDatabase for DbMutex {
 					json_extract(m.engine_version_range, '$.minimum.patch') AS min_patch,
 					json_extract(m.engine_version_range, '$.maximum.major') AS max_major,
 					json_extract(m.engine_version_range, '$.maximum.minor') AS max_minor,
-					json_extract(m.engine_version_range, '$.maximum.patch') AS max_patch,
-					m.scope AS mod_scope
+					json_extract(m.engine_version_range, '$.maximum.patch') AS max_patch
 				FROM main.games g
 				LEFT JOIN main.installed_games ig ON g.provider_id = ig.provider_id AND g.game_id = ig.game_id
 				LEFT JOIN main.normalized_titles nt ON g.provider_id = nt.provider_id AND g.game_id = nt.game_id
@@ -654,7 +646,6 @@ impl ModDatabase for DbMutex {
 					) THEN 0
 					ELSE 1
 				END AS compatible,
-				cm.mod_scope,
 				cm.family
 			FROM candidate_mods cm
 		",
@@ -673,8 +664,7 @@ impl ModDatabase for DbMutex {
 						is_outdated: row.get(3)?,
 						has_installed_dependants: row.get(4)?,
 						compatible: row.get(5)?,
-						mod_scope: row.get(6)?,
-						family: row.get(7)?,
+						family: row.get(6)?,
 					})
 				},
 			)?

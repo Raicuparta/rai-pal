@@ -190,7 +190,6 @@ export type GameMod = {
 
 export type GameModInfo = {
 	modId: string,
-	modScope: string,
 	installedVersion: string | null,
 	installedHash: string | null,
 	isOutdated: boolean,
