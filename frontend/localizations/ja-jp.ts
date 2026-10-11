@@ -181,6 +181,7 @@ export const jaJp: Localization = {
 		openModFolder: "Modフォルダーを開く",
 		updateMod: "Modを更新",
 		downloadMod: "Modをダウンロード",
+		openModSource: "ウェブサイト",
 		deleteMod: "Modを削除",
 		deleteModConfirmation:
 			"本当に？Modフォルダーの中のファイルが全部消えちゃうよ。",

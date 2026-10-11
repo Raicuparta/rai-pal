@@ -35,6 +35,7 @@ use rai_pal_core::{
 		game_mod::{GameMod, ModDependency},
 		mod_family::ModFamily,
 	},
+	open_better,
 	path_extensions::PathExt,
 	progress_status::ProgressStatus,
 	remote_game::{self},
@@ -755,6 +756,14 @@ async fn open_logs_folder() -> Result {
 
 #[tauri::command]
 #[specta::specta]
+async fn open_url(url: String) -> Result {
+	open_better::open_detached_better(url)?;
+
+	Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
 async fn get_game_ids(handle: AppHandle, query: Option<GamesQuery>) -> Result<GameIdsResponse> {
 	let state = handle.app_state();
 	Ok(state.database.get_game_ids(query)?)
@@ -932,6 +941,7 @@ fn main() {
 			open_installed_mod_folder,
 			open_local_mods_folder,
 			open_logs_folder,
+			open_url,
 			refresh_game,
 			refresh_games,
 			refresh_mods,

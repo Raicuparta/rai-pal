@@ -373,7 +373,10 @@ export const enUs = {
 		updateMod: "Update mod",
 
 		// Button for downloading a mod.
-		downloadMod: "Download mod",
+		downloadMod: "Download",
+
+		// Button for opening the mod's website.
+		openModSource: "Website",
 
 		// Button for deleting a mod.
 		deleteMod: "Delete mod",

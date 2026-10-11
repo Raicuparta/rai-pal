@@ -175,6 +175,7 @@ export const zhCn: Localization = {
 		openModFolder: "打开模组文件夹",
 		updateMod: "更新模组",
 		downloadMod: "下载模组",
+		openModSource: "网站",
 		deleteMod: "删除模组",
 		deleteModConfirmation: "你确定吗？模组文件夹中的任何文件都将丢失。",
 		byAuthor: "由 {authorName} 制作",

@@ -183,6 +183,7 @@ export const deDe: Localization = {
 		openModFolder: "Mod-Ordner öffnen",
 		updateMod: "Mod aktualisieren",
 		downloadMod: "Mod herunterladen",
+		openModSource: "Webseite",
 		deleteMod: "Mod löschen",
 		deleteModConfirmation:
 			"Sicher? Alle Dateien im Mod-Ordner werden gelöscht.",

@@ -183,6 +183,7 @@ export const esEs: Localization = {
 		openModFolder: "Abrir carpeta del mod",
 		updateMod: "Actualizar mod",
 		downloadMod: "Descargar mod",
+		openModSource: "Sitio web",
 		deleteMod: "Eliminar mod",
 		deleteModConfirmation:
 			"¿Seguro? Se borrarán todos los archivos de la carpeta del mod.",

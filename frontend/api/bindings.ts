@@ -39,6 +39,7 @@ export const commands = {
 	openInstalledModFolder: (providerId: GameProviderId, gameId: string, modId: string) => __TAURI_INVOKE<null>("open_installed_mod_folder", { providerId, gameId, modId }),
 	openLocalModsFolder: () => __TAURI_INVOKE<null>("open_local_mods_folder"),
 	openLogsFolder: () => __TAURI_INVOKE<null>("open_logs_folder"),
+	openUrl: (url: string) => __TAURI_INVOKE<null>("open_url", { url }),
 	refreshGame: (providerId: GameProviderId, gameId: string) => __TAURI_INVOKE<null>("refresh_game", { providerId, gameId }),
 	refreshGames: (providerId: GameProviderId) => __TAURI_INVOKE<null>("refresh_games", { providerId }),
 	refreshMods: () => __TAURI_INVOKE<null>("refresh_mods"),

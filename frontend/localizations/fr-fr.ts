@@ -183,6 +183,7 @@ export const frFr: Localization = {
 		openModFolder: "Ouvrir le dossier du mod",
 		updateMod: "Mettre à jour le mod",
 		downloadMod: "Télécharger le mod",
+		openModSource: "Site web",
 		deleteMod: "Supprimer le mod",
 		deleteModConfirmation:
 			"T'es sûr ? Tous les fichiers dans le dossier du mod seront perdus.",

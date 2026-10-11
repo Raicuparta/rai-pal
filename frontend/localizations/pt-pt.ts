@@ -179,6 +179,7 @@ export const ptPt: Localization = {
 		openModFolder: "Abrir pasta do mod",
 		updateMod: "Atualizar mod",
 		downloadMod: "Descarregar mod",
+		openModSource: "Site",
 		deleteMod: "Eliminar mod",
 		deleteModConfirmation:
 			"Tens a certeza? Todos os ficheiros dentro da pasta do mod vão ser apagados.",

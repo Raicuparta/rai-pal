@@ -179,6 +179,7 @@ export const koKr: Localization = {
 		openModFolder: "모드 폴더 열기",
 		updateMod: "모드 업데이트",
 		downloadMod: "모드 다운로드",
+		openModSource: "웹사이트",
 		deleteMod: "모드 삭제",
 		deleteModConfirmation: "확실해요? 모드 폴더 안 파일이 전부 날아가요.",
 		byAuthor: "{authorName} 제작",
