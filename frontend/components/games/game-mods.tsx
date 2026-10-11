@@ -88,7 +88,12 @@ export function GameMods({ game, mods }: Props) {
 				{mods.compatibleMods.length > 0 && (
 					<>
 						{!game.exePath && (
-							<Alert color="orange">{t("gameNotInstalledWarning")}</Alert>
+							<Alert
+								m="md"
+								color="orange"
+							>
+								{t("gameNotInstalledWarning")}
+							</Alert>
 						)}
 						{installedMods.length > 0 && (
 							<Stack>

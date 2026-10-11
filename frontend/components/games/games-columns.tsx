@@ -1,4 +1,11 @@
-import { Box, DefaultMantineColor, Flex, Stack, Table } from "@mantine/core";
+import {
+	Box,
+	DefaultMantineColor,
+	Flex,
+	Image,
+	Stack,
+	Table,
+} from "@mantine/core";
 import {
 	TableColumnBase,
 	columnMapToList,
@@ -24,19 +31,18 @@ const thumbnail: GamesColumn = {
 
 		return (
 			<Table.Td
-				className={styles.thumbnailCell}
-				bg={`var(--mantine-color-${providerColors[item.providerId]}-light)`}
+				p={4}
 				opacity={item.exePath ? 1 : 0.5}
 			>
-				{thumbnailUrl && (
-					<img
-						decoding="async"
-						loading="lazy"
-						src={thumbnailUrl}
-						className={styles.thumbnailForeground}
-						onError={() => setIsBroken(true)}
-					/>
-				)}
+				<Image
+					radius="md"
+					maw="100%"
+					mah="100%"
+					decoding="async"
+					loading="lazy"
+					src={thumbnailUrl ?? "images/fallback-thumbnail.png"}
+					onError={() => setIsBroken(true)}
+				/>
 			</Table.Td>
 		);
 	},

@@ -23,6 +23,7 @@ export const ScrollAreaFill = forwardRef<HTMLDivElement, ScrollAreaProps>(
 			const content = child;
 
 			let lastScrollHeight = -1;
+			let isInitialCheck = true;
 			let nudgeTimeout: number | undefined;
 			let pendingMaxHeight: string | null = null;
 
@@ -42,6 +43,10 @@ export const ScrollAreaFill = forwardRef<HTMLDivElement, ScrollAreaProps>(
 			function checkOverflow() {
 				if (viewport.scrollHeight === lastScrollHeight) return;
 				lastScrollHeight = viewport.scrollHeight;
+				if (isInitialCheck) {
+					isInitialCheck = false;
+					return;
+				}
 				if (nudgeTimeout !== undefined) return;
 
 				pendingMaxHeight = content.style.maxHeight;
