@@ -59,7 +59,6 @@ export const theme: MantineThemeOverride = {
 		Tooltip: {
 			defaultProps: {
 				openDelay: 200,
-				withinPortal: false,
 			},
 		},
 		Menu: {

@@ -1,10 +1,8 @@
 import { Button, Stack, Tooltip } from "@mantine/core";
-import { useMemo, useState } from "react";
 import { useDisclosure } from "@mantine/hooks";
 import { RefreshButton } from "@components/refresh-button";
 import { commands } from "@api/bindings";
 import { IconFolderCog, IconWorld } from "@tabler/icons-react";
-import { ModModal } from "./mod-modal";
 import { useLocalization } from "@hooks/use-localization";
 import { ModsTable } from "./mods-table";
 import { TableContainer } from "@components/table/table-container";
@@ -16,7 +14,6 @@ import { Page } from "@components/page";
 export function ModsPage() {
 	const { t } = useLocalization("modsPage");
 	const { t: urlModSourcesT } = useLocalization("urlModSources");
-	const [selectedModId, setSelectedId] = useState<string>();
 	const [
 		isUrlModSourcesModalOpen,
 		{ open: openUrlModSourcesModal, close: closeUrlModSourcesModal },
@@ -24,57 +21,40 @@ export function ModsPage() {
 
 	const mods = useAtomValue(modsAtom);
 
-	const selectedMod = useMemo(() => {
-		const result = selectedModId ? mods[selectedModId] : undefined;
-
-		return result;
-	}, [selectedModId, mods]);
-
 	return (
 		<Stack h="100%">
-			{selectedMod && (
-				<ModModal
-					onClose={() => setSelectedId(undefined)}
-					mod={selectedMod}
-				/>
-			)}
-			{!selectedMod && (
-				<Page
-					sidebar={
-						<Stack
-							pr="xs"
-							gap="lg"
-						>
-							<RefreshButton />
-							<Tooltip label={t("openLoadlModsFolderTooltip")}>
-								<Button
-									onClick={commands.openLocalModsFolder}
-									leftSection={<IconFolderCog />}
-								>
-									{t("openLocalModsFolderButton")}
-								</Button>
-							</Tooltip>
+			<Page
+				sidebar={
+					<Stack
+						pr="xs"
+						gap="lg"
+					>
+						<RefreshButton />
+						<Tooltip label={t("openLoadlModsFolderTooltip")}>
 							<Button
-								onClick={openUrlModSourcesModal}
-								leftSection={<IconWorld />}
+								onClick={commands.openLocalModsFolder}
+								leftSection={<IconFolderCog />}
 							>
-								{urlModSourcesT("title")}
+								{t("openLocalModsFolderButton")}
 							</Button>
-						</Stack>
-					}
-				>
-					<UrlModSourcesModal
-						isOpen={isUrlModSourcesModalOpen}
-						onClose={closeUrlModSourcesModal}
-					/>
-					<TableContainer>
-						<ModsTable
-							mods={mods}
-							onClick={(mod) => setSelectedId(mod.id)}
-						/>
-					</TableContainer>
-				</Page>
-			)}
+						</Tooltip>
+						<Button
+							onClick={openUrlModSourcesModal}
+							leftSection={<IconWorld />}
+						>
+							{urlModSourcesT("title")}
+						</Button>
+					</Stack>
+				}
+			>
+				<UrlModSourcesModal
+					isOpen={isUrlModSourcesModalOpen}
+					onClose={closeUrlModSourcesModal}
+				/>
+				<TableContainer>
+					<ModsTable mods={mods} />
+				</TableContainer>
+			</Page>
 		</Stack>
 	);
 }
