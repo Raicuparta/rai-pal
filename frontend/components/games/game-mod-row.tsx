@@ -9,6 +9,8 @@ import {
 } from "@mantine/core";
 import {
 	DbGame,
+	EngineVersionNumbers,
+	EngineVersionRange,
 	GameMod,
 	GameModInfo,
 	RemoteConfigs,
@@ -21,13 +23,13 @@ import {
 	IconDotsVertical,
 	IconDownload,
 	IconFolderOpen,
+	IconGizmo,
 	IconMinus,
 	IconSettings,
 	IconSettingsFilled,
 	IconUserFilled,
 } from "@tabler/icons-react";
 import { OutdatedMarker } from "@components/outdated-marker";
-import { MutedText } from "@components/muted-text";
 import { CommandDropdown } from "@components/command-dropdown";
 import { DeprecatedBadge } from "@components/mods/deprecated-badge";
 import { useLocalization } from "@hooks/use-localization";
@@ -44,6 +46,23 @@ type Props = {
 	readonly info?: GameModInfo;
 	readonly incompatible?: boolean;
 };
+
+function renderVersionRange(range: EngineVersionRange | null) {
+	if (!range) return null;
+
+	return [range.minimum, range.maximum]
+		.map(renderVersionNumbers)
+		.filter(Boolean)
+		.join(" - ");
+}
+
+function renderVersionNumbers(version: EngineVersionNumbers | null) {
+	if (!version) return null;
+
+	return [version.major, version.minor, version.patch]
+		.filter(Boolean)
+		.join(".");
+}
 
 export function GameModRow({
 	game,
@@ -81,6 +100,13 @@ export function GameModRow({
 
 	const isModUsable = !incompatible && game.exePath;
 
+	const versionText = [
+		info?.installedVersion || mod.download?.id,
+		isOutdated ? mod.download?.id : null,
+	]
+		.filter(Boolean)
+		.join(" ➔ ");
+
 	return (
 		<Table.Tr key={mod.id}>
 			<Table.Td>
@@ -96,7 +122,12 @@ export function GameModRow({
 						)}
 						<Stack gap={0}>
 							<Group>
-								<Text fw="bold">{mod.title}</Text>
+								<Text
+									fw="bold"
+									size="lg"
+								>
+									{mod.title}
+								</Text>
 								{availableRemoteConfig && (
 									<Tooltip label={t("remoteConfigAvailable")}>
 										<IconSettingsFilled fontSize={15} />
@@ -106,28 +137,47 @@ export function GameModRow({
 							<Group
 								gap={0}
 								style={{ columnGap: 10 }}
+								fz="xs"
+								opacity={0.4}
 							>
-								<MutedText>
-									{info?.installedVersion || mod.download?.id || "-"}
-									{isOutdated ? ` ➔ ${mod.download?.id}` : ""}
-								</MutedText>
+								{versionText && <span>{versionText}</span>}
 								{mod.download?.releaseDate && (
 									<Group gap={2}>
 										<IconCalendarFilled fontSize={10} />
-										<MutedText>
+										<span>
 											{dateFormatter.format(new Date(mod.download.releaseDate))}
-										</MutedText>
+										</span>
 									</Group>
 								)}
 								<Group gap={2}>
 									<IconUserFilled fontSize={10} />
-									<MutedText>{mod.author}</MutedText>
+									<span>{mod.author}</span>
+								</Group>
+								<Group gap={2}>
+									<IconGizmo fontSize={10} />
+									<span>
+										{[
+											mod.engine,
+											renderVersionRange(mod.engineVersionRange),
+											mod.unityBackend,
+											mod.gameOs,
+											mod.architecture,
+										]
+											.filter(Boolean)
+											.join(" ")}
+									</span>
 								</Group>
 							</Group>
+
+							<Text
+								fz="sm"
+								opacity={0.75}
+							>
+								{mod.description}
+							</Text>
 						</Stack>
 						{mod?.deprecated && <DeprecatedBadge size="sm" />}
 					</Group>
-					<MutedText>{mod.description}</MutedText>
 				</Stack>
 			</Table.Td>
 			<Table.Td maw={200}>
