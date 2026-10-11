@@ -19,6 +19,7 @@ use crate::{
 	mods::{
 		game_mod::{GameMod, ModDependency},
 		installed_mod::InstalledMod,
+		mod_config::ModConfig,
 		mod_family::ModFamily,
 	},
 	operating_system::OperatingSystem,
@@ -478,7 +479,8 @@ impl ModDatabase for DbMutex {
 					) VALUES ($1, $2, $3, $4, $5)",
 				)?;
 
-				for (exe_path_hash, mod_id, installed_version, installed_hash) in installed_mod_rows {
+				for (exe_path_hash, mod_id, installed_version, installed_hash) in installed_mod_rows
+				{
 					statement.execute(rusqlite::params![
 						exe_path_hash,
 						mod_id,
@@ -779,6 +781,17 @@ fn serialize_json_option<T: Serialize>(value: Option<&T>) -> Result<String> {
 	serde_json::to_string(&value).map_err(Into::into)
 }
 
+// Config database ids are external to Rai Pal and unaware of provider scopes,
+// so the pre-scope id is recorded here to keep config lookups scope-independent.
+fn canonicalize_config(config: Option<&ModConfig>, mod_id: &str) -> Option<ModConfig> {
+	config.cloned().map(|mut config| {
+		config
+			.mod_id_override
+			.get_or_insert_with(|| mod_id.to_string());
+		config
+	})
+}
+
 fn scope_dependencies(deps: &[ModDependency], scope: &str) -> Vec<ModDependency> {
 	deps.iter()
 		.map(|dep| match dep {
@@ -852,6 +865,7 @@ fn try_insert_mod(
 		.required_dependencies
 		.as_ref()
 		.map(|deps| scope_dependencies(deps, &scope));
+	let stored_config = canonicalize_config(game_mod.config.as_ref(), &game_mod.id);
 
 	connection_mutex
 		.lock_db()?
@@ -900,7 +914,7 @@ fn try_insert_mod(
 			serialize_json_option(game_mod.game_os.as_ref())?,
 			serialize_json_option(game_mod.host_os.as_ref())?,
 			game_mod.deprecated,
-			serialize_json_option(game_mod.config.as_ref())?,
+			serialize_json_option(stored_config.as_ref())?,
 			serialize_json_option(scoped_optional_deps.as_ref())?,
 			serialize_json_option(scoped_required_deps.as_ref())?,
 			serialize_json_option(game_mod.install.as_ref())?,

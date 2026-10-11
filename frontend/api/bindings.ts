@@ -12,7 +12,7 @@ export const commands = {
 	addRaiPalSteamShortcut: () => __TAURI_INVOKE<null>("add_rai_pal_steam_shortcut"),
 	addUrlModSource: (url: string) => __TAURI_INVOKE<null>("add_url_mod_source", { url }),
 	configureMod: (providerId: GameProviderId, gameId: string, modId: string, openFolder: boolean) => __TAURI_INVOKE<null>("configure_mod", { providerId, gameId, modId, openFolder }),
-	downloadRemoteConfig: (providerId: GameProviderId, gameId: string, modId: string, remoteConfigFile: string, overwrite: boolean) => __TAURI_INVOKE<null>("download_remote_config", { providerId, gameId, modId, remoteConfigFile, overwrite }),
+	downloadModConfig: (providerId: GameProviderId, gameId: string, modId: string) => __TAURI_INVOKE<null>("download_mod_config", { providerId, gameId, modId }),
 	getAppSettings: () => __TAURI_INVOKE<AppSettings>("get_app_settings"),
 	getAuthState: () => __TAURI_INVOKE<AuthState>("get_auth_state"),
 	getGame: (providerId: GameProviderId, gameId: string) => __TAURI_INVOKE<DbGame>("get_game", { providerId, gameId }),
@@ -22,13 +22,10 @@ export const commands = {
 	sortBy: GamesSortBy,
 	sortDescending: boolean,
 } | null) => __TAURI_INVOKE<GameIdsResponse>("get_game_ids", { query }),
-	getGameMods: (providerId: GameProviderId, gameId: string) => __TAURI_INVOKE<GameModInfo[]>("get_game_mods", { providerId, gameId }),
 	getModFamilies: () => __TAURI_INVOKE<{ [key in string]: ModFamily }>("get_mod_families"),
 	getMods: () => __TAURI_INVOKE<{ [key in string]: GameMod }>("get_mods"),
 	getModsFromUrlModSource: (url: string) => __TAURI_INVOKE<GameMod[]>("get_mods_from_url_mod_source", { url }),
-	getRemoteConfigs: (providerId: GameProviderId, gameId: string) => __TAURI_INVOKE<{
-	configs: RemoteConfig[],
-} | null>("get_remote_configs", { providerId, gameId }),
+	getRemoteConfigModIds: (providerId: GameProviderId, gameId: string) => __TAURI_INVOKE<string[]>("get_remote_config_mod_ids", { providerId, gameId }),
 	getUrlModSources: () => __TAURI_INVOKE<UrlModSourcesResponse>("get_url_mod_sources"),
 	installMod: (modId: string, providerIdOption: "Epic" | "Gog" | "Itch" | "Manual" | "Steam" | "Xbox" | null, gameIdOption: string | null) => __TAURI_INVOKE<null>("install_mod", { modId, providerIdOption, gameIdOption }),
 	listenToDownloadProgress: (channel: Channel<ProgressStatus>) => __TAURI_INVOKE<null>("listen_to_download_progress", { channel }),
@@ -280,16 +277,6 @@ export type ProviderCommand = ({ String: string }) & { Path?: never } | ({ Path:
 export type ProviderCommandAction = "Install" | "ShowInLibrary" | "ShowInStore" | "StartViaProvider" | "StartViaExe" | "OpenInBrowser";
 
 export type RefreshGame = [GameProviderId, string];
-
-export type RemoteConfig = {
-	version: number,
-	modId: string,
-	file: string,
-};
-
-export type RemoteConfigs = {
-	configs: RemoteConfig[],
-};
 
 export type ScanProgress = {
 	scannedDirs: number,

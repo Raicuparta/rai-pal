@@ -1,5 +1,5 @@
 import { Alert, Box, Divider, Stack, Table } from "@mantine/core";
-import { DbGame, RemoteConfigs, commands } from "@api/bindings";
+import { DbGame, commands } from "@api/bindings";
 import { ReactNode, useCallback } from "react";
 import { CommandButton } from "@components/command-button";
 import { IconTrash } from "@tabler/icons-react";
@@ -17,7 +17,7 @@ type Props = {
 function GameModsSection({
 	game,
 	mods,
-	remoteConfigs,
+	remoteConfigModIds,
 	incompatible,
 	header,
 	label,
@@ -25,7 +25,7 @@ function GameModsSection({
 }: {
 	readonly game: DbGame;
 	readonly mods: GameModsPart[];
-	readonly remoteConfigs: RemoteConfigs | null;
+	readonly remoteConfigModIds: ReadonlySet<string>;
 	readonly label: string;
 	readonly description?: string;
 	readonly incompatible?: boolean;
@@ -43,8 +43,8 @@ function GameModsSection({
 							key={mod.id}
 							game={game}
 							mod={mod}
-							remoteConfigs={remoteConfigs}
 							info={info}
+							hasRemoteConfig={remoteConfigModIds.has(mod.id)}
 							incompatible={incompatible}
 						/>
 					))}
@@ -56,15 +56,12 @@ function GameModsSection({
 
 export function GameMods({ game, mods }: Props) {
 	const { t } = useLocalization("gameModal");
-	const getRemoteConfigs = useCallback(
-		() => commands.getRemoteConfigs(game.providerId, game.gameId),
+	const getRemoteConfigModIds = useCallback(
+		() => commands.getRemoteConfigModIds(game.providerId, game.gameId),
 		[game],
 	);
-	const [remoteConfigs] = useCommandData(
-		getRemoteConfigs,
-		null,
-		!game?.exePath,
-	);
+	const [remoteConfigModIds] = useCommandData(getRemoteConfigModIds, []);
+	const remoteConfigModIdSet = new Set(remoteConfigModIds);
 
 	if (mods.compatibleMods.length + mods.incompatibleMods.length === 0) {
 		return null;
@@ -91,7 +88,7 @@ export function GameMods({ game, mods }: Props) {
 									label={t("installedMods")}
 									game={game}
 									mods={installedMods}
-									remoteConfigs={remoteConfigs}
+									remoteConfigModIds={remoteConfigModIdSet}
 								/>
 								{game.exePath && (
 									<Box px="xs">
@@ -115,7 +112,7 @@ export function GameMods({ game, mods }: Props) {
 								label={t("availableMods")}
 								game={game}
 								mods={notInstalledMods}
-								remoteConfigs={remoteConfigs}
+								remoteConfigModIds={remoteConfigModIdSet}
 							/>
 						)}
 						{mods.hiddenMods.length > 0 && (
@@ -124,7 +121,7 @@ export function GameMods({ game, mods }: Props) {
 								description={t("otherThingsDescription")}
 								game={game}
 								mods={mods.hiddenMods}
-								remoteConfigs={remoteConfigs}
+								remoteConfigModIds={remoteConfigModIdSet}
 							/>
 						)}
 					</>
@@ -136,7 +133,7 @@ export function GameMods({ game, mods }: Props) {
 					description={t("incompatibleGameModsDescription")}
 					game={game}
 					mods={mods.incompatibleMods}
-					remoteConfigs={remoteConfigs}
+					remoteConfigModIds={remoteConfigModIdSet}
 					incompatible
 				/>
 			)}

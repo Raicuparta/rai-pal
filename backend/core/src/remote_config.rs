@@ -4,7 +4,9 @@ use rai_pal_proc_macros::serializable_struct;
 use reqwest::Response;
 use zip::ZipArchive;
 
-use crate::{game::DbGame, http, path_extensions::PathExt, result::Result};
+use crate::{
+	game::DbGame, http, mods::game_mod::GameMod, path_extensions::PathExt, result::Result,
+};
 
 const CONFIG_DB_BASE_URL: &str = "https://raicuparta.github.io/rai-pal-db/config-db";
 const CONFIG_DB_VERSION: u32 = 0;
@@ -19,6 +21,14 @@ pub struct RemoteConfig {
 #[serializable_struct]
 pub struct RemoteConfigs {
 	pub configs: Vec<RemoteConfig>,
+}
+
+impl RemoteConfigs {
+	pub fn get_for_mod(&self, game_mod: &GameMod) -> Option<&RemoteConfig> {
+		let mod_id = game_mod.get_config_db_id();
+
+		self.configs.iter().find(|config| config.mod_id == mod_id)
+	}
 }
 
 fn get_config_url(game_name: &str) -> String {

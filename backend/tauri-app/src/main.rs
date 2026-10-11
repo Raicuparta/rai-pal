@@ -37,7 +37,6 @@ use rai_pal_core::{
 	},
 	path_extensions::PathExt,
 	progress_status::ProgressStatus,
-	remote_config::RemoteConfigs,
 	remote_game::{self},
 	result::LogErrExt,
 	user::{
@@ -338,6 +337,10 @@ async fn install_mod(
 	let _install_guard = state.install_lock.lock().await;
 
 	let result: std::result::Result<(), rai_pal_core::result::Error> = async {
+		if let Some(game) = game_option.as_ref() {
+			game_mod.download_remote_config(game, false).await?;
+		}
+
 		for m in &deps_to_install {
 			m.install(game_option.as_ref(), &forward).await?;
 		}
@@ -782,50 +785,40 @@ async fn save_app_settings(settings: AppSettings) -> Result {
 
 #[tauri::command]
 #[specta::specta]
-async fn get_game_mods(
+async fn get_remote_config_mod_ids(
 	provider_id: GameProviderId,
 	game_id: String,
 	app_handle: AppHandle,
-) -> Result<Vec<GameModInfo>> {
+) -> Result<Vec<String>> {
 	let state = app_handle.app_state();
+	let game = state.database.get_game(&provider_id, &game_id)?;
 
-	Ok(state.database.get_game_mods(&provider_id, &game_id)?)
+	let Ok(Some(configs)) = game.get_remote_configs().await else {
+		return Ok(Vec::new());
+	};
+
+	Ok(state
+		.database
+		.get_mod_map()?
+		.into_values()
+		.filter(|game_mod| configs.get_for_mod(game_mod).is_some())
+		.map(|game_mod| game_mod.id)
+		.collect())
 }
 
 #[tauri::command]
 #[specta::specta]
-async fn get_remote_configs(
+async fn download_mod_config(
 	provider_id: GameProviderId,
 	game_id: String,
-	app_handle: AppHandle,
-) -> Result<Option<RemoteConfigs>> {
-	Ok(app_handle
-		.app_state()
-		.database
-		.get_game(&provider_id, &game_id)?
-		.get_remote_configs()
-		.await?)
-}
-
-#[tauri::command]
-#[specta::specta]
-async fn download_remote_config(
-	provider_id: GameProviderId,
-	game_id: &str,
 	mod_id: &str,
-	remote_config_file: &str,
-	overwrite: bool,
 	app_handle: AppHandle,
 ) -> Result {
 	let state = app_handle.app_state();
-	let game = state.database.get_game(&provider_id, game_id)?;
+	let game = state.database.get_game(&provider_id, &game_id)?;
 	let game_mod = state.database.get_mod(mod_id)?;
 
-	if let Some(mod_config) = game_mod.config.as_ref() {
-		mod_config
-			.download(&game, &game_mod, remote_config_file, overwrite)
-			.await?;
-	}
+	game_mod.download_remote_config(&game, true).await?;
 
 	Ok(())
 }
@@ -917,16 +910,15 @@ fn main() {
 			add_rai_pal_steam_shortcut,
 			add_url_mod_source,
 			configure_mod,
-			download_remote_config,
+			download_mod_config,
 			get_app_settings,
 			get_auth_state,
 			get_game,
 			get_game_ids,
-			get_game_mods,
 			get_mod_families,
 			get_mods,
 			get_mods_from_url_mod_source,
-			get_remote_configs,
+			get_remote_config_mod_ids,
 			get_url_mod_sources,
 			install_mod,
 			listen_to_download_progress,

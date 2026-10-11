@@ -22,6 +22,7 @@ use crate::{
 	operating_system::OperatingSystem,
 	path_extensions::PathExt,
 	progress_status::ProgressStatus,
+	remote_config::RemoteConfig,
 	result::{Error, LogErrExt, Result},
 };
 
@@ -142,6 +143,32 @@ impl GameMod {
 		self.install
 			.as_ref()
 			.ok_or_else(|| Error::ModInfoMissing(self.id.clone(), "install".to_string()))
+	}
+
+	pub fn get_config_db_id(&self) -> &str {
+		self.config
+			.as_ref()
+			.and_then(|config| config.mod_id_override.as_deref())
+			.unwrap_or(&self.id)
+	}
+
+	pub async fn get_remote_config(&self, game: &DbGame) -> Result<Option<RemoteConfig>> {
+		Ok(game
+			.get_remote_configs()
+			.await?
+			.and_then(|configs| configs.get_for_mod(self).cloned()))
+	}
+
+	pub async fn download_remote_config(&self, game: &DbGame, overwrite: bool) -> Result {
+		let Some(config) = self.config.as_ref() else {
+			return Ok(());
+		};
+
+		let Some(remote_config) = self.get_remote_config(game).await? else {
+			return Ok(());
+		};
+
+		config.download(game, self, &remote_config, overwrite).await
 	}
 
 	pub async fn install(

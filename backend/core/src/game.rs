@@ -185,10 +185,9 @@ impl DbGame {
 	}
 
 	pub async fn get_remote_configs(&self) -> Result<Option<RemoteConfigs>> {
-		if let Some(exe_path) = self.exe_path.as_ref() {
-			remote_config::get_remote_configs(exe_path).await
-		} else {
-			Err(Error::GameNotInstalled(self.display_title.clone()))
+		match self.exe_path.as_ref() {
+			Some(exe_path) => remote_config::get_remote_configs(exe_path).await,
+			None => Ok(None),
 		}
 	}
 

@@ -1,19 +1,5 @@
-import {
-	Table,
-	ThemeIcon,
-	ButtonGroup,
-	Group,
-	Tooltip,
-	Flex,
-	Stack,
-} from "@mantine/core";
-import {
-	DbGame,
-	GameMod,
-	GameModInfo,
-	RemoteConfigs,
-	commands,
-} from "@api/bindings";
+import { Table, ThemeIcon, ButtonGroup, Group, Tooltip } from "@mantine/core";
+import { DbGame, GameMod, GameModInfo, commands } from "@api/bindings";
 import { CommandButton } from "@components/command-button";
 import {
 	IconCheck,
@@ -36,31 +22,19 @@ import { GameModUninstallButton } from "./game-mod-uninstall-button";
 type Props = {
 	readonly game: DbGame;
 	readonly mod: GameMod;
-	readonly remoteConfigs?: RemoteConfigs | null;
 	readonly info?: GameModInfo;
+	readonly hasRemoteConfig?: boolean;
 	readonly incompatible?: boolean;
 };
-
-function getDatabaseModId(mod: GameMod) {
-	if (mod.config?.modIdOverride) return mod.config.modIdOverride;
-	if (mod.scope && mod.id.startsWith(`${mod.scope}:`)) {
-		return mod.id.slice(mod.scope.length + 1);
-	}
-	return mod.id;
-}
 
 export function GameModRow({
 	game,
 	mod,
 	info,
-	remoteConfigs,
+	hasRemoteConfig = false,
 	incompatible = false,
 }: Props) {
 	const { t } = useLocalization("gameModRow");
-
-	const availableRemoteConfig = remoteConfigs?.configs.find(
-		(config) => config.modId === getDatabaseModId(mod),
-	);
 
 	const isOutdated = info?.isOutdated;
 
@@ -109,7 +83,7 @@ export function GameModRow({
 						) : undefined
 					}
 					titleAdornment={
-						availableRemoteConfig ? (
+						hasRemoteConfig ? (
 							<Tooltip label={t("remoteConfigAvailable")}>
 								<IconSettingsFilled fontSize={15} />
 							</Tooltip>
@@ -125,14 +99,12 @@ export function GameModRow({
 								<GameModInstallButton
 									game={game}
 									mod={mod}
-									remoteConfigFile={availableRemoteConfig?.file}
 								/>
 							)}
 							{isOutdated && (
 								<GameModUpdateButton
 									game={game}
 									mod={mod}
-									remoteConfigFile={availableRemoteConfig?.file}
 								/>
 							)}
 							{mod.runForGame && (!mod.install || isInstalled) && (
@@ -142,7 +114,7 @@ export function GameModRow({
 								/>
 							)}
 							<CommandDropdown icon={<IconDotsVertical />}>
-								{(mod.config || availableRemoteConfig) && (
+								{(mod.config || hasRemoteConfig) && (
 									<ButtonGroup>
 										<CommandButton
 											flex={1}
@@ -192,17 +164,15 @@ export function GameModRow({
 								>
 									{t("openModFolder")}
 								</CommandButton>
-								{availableRemoteConfig && (
+								{hasRemoteConfig && (
 									<CommandButton
 										disabled={!isInstalled}
 										leftSection={<IconDownload />}
 										onClick={() =>
-											commands.downloadRemoteConfig(
+											commands.downloadModConfig(
 												game.providerId,
 												game.gameId,
 												mod.id,
-												availableRemoteConfig.file,
-												true,
 											)
 										}
 									>
