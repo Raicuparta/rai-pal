@@ -41,6 +41,14 @@ type Props = {
 	readonly incompatible?: boolean;
 };
 
+function getDatabaseModId(mod: GameMod) {
+	if (mod.config?.modIdOverride) return mod.config.modIdOverride;
+	if (mod.scope && mod.id.startsWith(`${mod.scope}:`)) {
+		return mod.id.slice(mod.scope.length + 1);
+	}
+	return mod.id;
+}
+
 export function GameModRow({
 	game,
 	mod,
@@ -51,7 +59,7 @@ export function GameModRow({
 	const { t } = useLocalization("gameModRow");
 
 	const availableRemoteConfig = remoteConfigs?.configs.find(
-		(config) => config.modId === (mod.config?.modIdOverride ?? mod.id),
+		(config) => config.modId === getDatabaseModId(mod),
 	);
 
 	const isOutdated = info?.isOutdated;
