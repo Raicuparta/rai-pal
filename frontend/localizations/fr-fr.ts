@@ -129,6 +129,9 @@ export const frFr: Localization = {
 
 		otherThingsDescription:
 			"Ce sont principalement des dépendances et d'autres trucs que vous n'avez généralement pas besoin de toucher directement.",
+
+		noModsForGame:
+			"Rien ! Aucun des mods disponibles n'est utile pour ce jeu. Essayez autre chose.",
 	},
 
 	gameModRow: {

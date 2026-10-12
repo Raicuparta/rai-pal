@@ -129,6 +129,9 @@ export const esEs: Localization = {
 
 		otherThingsDescription:
 			"Estas son principalmente dependencias y otras cosas que normalmente no necesitas modificar directamente.",
+
+		noModsForGame:
+			"¡Nada! Ninguno de los mods disponibles sirve para este juego. Prueba con otro.",
 	},
 
 	gameModRow: {

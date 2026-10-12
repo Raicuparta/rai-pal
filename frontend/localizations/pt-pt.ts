@@ -125,6 +125,9 @@ export const ptPt: Localization = {
 		otherThings: "Outras coisas",
 		otherThingsDescription:
 			"Estes são principalmente dependências e outras coisas que normalmente não precisas de mexer.",
+
+		noModsForGame:
+			"Nada! Nenhum dos mods disponíveis serve para este jogo. Tenta outra coisa.",
 	},
 
 	gameModRow: {

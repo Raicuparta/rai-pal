@@ -126,6 +126,9 @@ export const koKr: Localization = {
 
 		otherThingsDescription:
 			"이것들은 대부분 종속성 같은 거라서 보통 직접 건드릴 일이 없어요.",
+
+		noModsForGame:
+			"없어요! 이 게임에 쓸 수 있는 모드는 하나도 없어요. 다른 걸 시도해 보세요.",
 	},
 
 	gameModRow: {

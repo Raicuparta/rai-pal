@@ -129,6 +129,9 @@ export const deDe: Localization = {
 
 		otherThingsDescription:
 			"Das sind hauptsächlich Abhängigkeiten und andere Dinge, die du normalerweise nicht direkt bearbeiten musst.",
+
+		noModsForGame:
+			"Nichts! Keiner der verfügbaren Mods ist für dieses Spiel zu gebrauchen. Versuch es mit einem anderen.",
 	},
 
 	gameModRow: {

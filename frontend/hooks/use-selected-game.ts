@@ -53,7 +53,6 @@ export function useSelectedGame() {
 		if (lastDataVersion.current >= dataVersion) return;
 		lastDataVersion.current = dataVersion;
 		if (!selected) return;
-		console.log("selecting guys");
 		commands.setSelectedGame(selected.game.providerId, selected.game.gameId);
 	}, [dataVersion, selected]);
 

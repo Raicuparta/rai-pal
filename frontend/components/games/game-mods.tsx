@@ -72,7 +72,14 @@ export function GameMods({ game, mods }: Props) {
 	const remoteConfigModIdSet = new Set(remoteConfigModIds);
 
 	if (mods.compatibleMods.length + mods.incompatibleMods.length === 0) {
-		return null;
+		return (
+			<Alert
+				color="blue"
+				m="md"
+			>
+				{t("noModsForGame")}
+			</Alert>
+		);
 	}
 
 	const installedMods = mods.compatibleMods.filter(

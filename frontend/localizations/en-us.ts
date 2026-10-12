@@ -256,6 +256,10 @@ export const enUs = {
 		// Description for the section that shows hidden "mods".
 		otherThingsDescription:
 			"These are mostly dependencies and other stuff that you don't usually need to mess with directly.",
+
+		// Message that shows when there are no mods at all for a given game.
+		noModsForGame:
+			"Nothing! None of the available mods are of any use for this game. Try something else.",
 	},
 
 	// Row in the table that shows mods for a specific game in the game modal.

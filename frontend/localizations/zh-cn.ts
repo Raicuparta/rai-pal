@@ -123,6 +123,9 @@ export const zhCn: Localization = {
 		otherThings: "其他东西",
 
 		otherThingsDescription: "这些主要是依赖项之类的，一般不用直接碰。",
+
+		noModsForGame:
+			"什么都没有！可用的模组没有一个是这个游戏能用的。试试别的吧。",
 	},
 
 	gameModRow: {

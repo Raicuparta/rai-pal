@@ -128,6 +128,9 @@ export const jaJp: Localization = {
 
 		otherThingsDescription:
 			"これらは主に依存関係とかで、普段は直接いじる必要はないよ。",
+
+		noModsForGame:
+			"何もないよ！このゲームに使えるModは一つもないから、別のを試してみて。",
 	},
 
 	gameModRow: {
