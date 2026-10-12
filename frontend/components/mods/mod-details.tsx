@@ -33,7 +33,7 @@ function renderVersionNumbers(version: EngineVersionNumbers | null) {
 	if (!version) return null;
 
 	return [version.major, version.minor, version.patch]
-		.filter(Boolean)
+		.filter((component) => component != null)
 		.join(".");
 }
 
