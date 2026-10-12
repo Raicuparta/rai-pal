@@ -55,3 +55,11 @@
 	font-size: 0.75em;
 	opacity: 0.75;
 }
+
+.fallbackThumbnail {
+	filter: light-dark(invert(), none);
+}
+
+.thumbnail {
+	image-rendering: optimizeQuality;
+}

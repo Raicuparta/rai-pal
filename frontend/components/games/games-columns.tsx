@@ -36,12 +36,16 @@ const thumbnail: GamesColumn = {
 			>
 				<Image
 					radius="md"
+					w="auto"
+					h="auto"
 					maw="100%"
 					mah="100%"
+					mx="auto"
 					decoding="async"
 					loading="lazy"
 					src={thumbnailUrl ?? "images/fallback-thumbnail.png"}
 					onError={() => setIsBroken(true)}
+					className={`${styles.thumbnail} ${thumbnailUrl ? "" : styles.fallbackThumbnail}`}
 				/>
 			</Table.Td>
 		);
