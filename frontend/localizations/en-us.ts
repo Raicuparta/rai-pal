@@ -224,8 +224,7 @@ export const enUs = {
 		refreshGame: "Refresh game",
 
 		// Error message when Rai Pal fails to determine the game's engine.
-		failedToDetermineEngine:
-			"Failed to determine the engine for this game. Some mods might fail to install.",
+		failedToDetermineEngine: "Failed to determine the engine for this game.",
 
 		// Warning that shows when a game isn't installed.
 		gameNotInstalledWarning:

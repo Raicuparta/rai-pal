@@ -177,7 +177,7 @@ export function GamePage({ game, mods }: Props) {
 					</Table>
 				</TableContainer>
 			</Box>
-			<Stack gap="xl">
+			<Stack>
 				{game.exePath && !game.engineBrand && (
 					<Alert
 						color="red"

@@ -108,7 +108,7 @@ export const koKr: Localization = {
 		removeGameConfirmation: "이 게임을 Rai Pal에서 제거할까요?",
 		refreshGame: "게임 새로고침",
 		failedToDetermineEngine:
-			"이 게임의 엔진을 확인할 수 없었어요. 일부 모드가 설치 안 될 수도 있어요.",
+			"이 게임의 엔진을 확인할 수 없었어요.",
 		gameNotInstalledWarning:
 			"이 게임이 설치되지 않아서 어떤 모드가 맞는지 100% 장담할 수 없어요. 아래 모드들이 될 수도 있어요. 게임을 설치하면 더 정확히 알려드릴게요.",
 		uninstallAllModsButton: "모드 모두 제거",
@@ -179,7 +179,7 @@ export const koKr: Localization = {
 		runMod: "실행",
 		openModFolder: "모드 폴더 열기",
 		updateMod: "모드 업데이트",
-		downloadMod: "모드 다운로드",
+		downloadMod: "다운로드",
 		openModSource: "웹사이트",
 		deleteMod: "모드 삭제",
 		deleteModConfirmation: "확실해요? 모드 폴더 안 파일이 전부 날아가요.",

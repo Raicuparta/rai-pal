@@ -111,7 +111,7 @@ export const frFr: Localization = {
 			"Vous êtes sûr de vouloir retirer ce jeu de Rai Pal ?",
 		refreshGame: "Actualiser le jeu",
 		failedToDetermineEngine:
-			"Impossible de déterminer le moteur de ce jeu. Certains mods risquent de ne pas s'installer.",
+			"Impossible de déterminer le moteur de ce jeu.",
 		gameNotInstalledWarning:
 			"Ce jeu n'est pas installé, donc je ne suis pas sûr à 100 % des mods compatibles. Ceux affichés ci-dessous pourraient fonctionner. Si vous installez le jeu, je vous montrerai des informations plus précises.",
 		uninstallAllModsButton: "Désinstaller tous les mods",
@@ -183,7 +183,7 @@ export const frFr: Localization = {
 		runMod: "Exécuter",
 		openModFolder: "Ouvrir le dossier du mod",
 		updateMod: "Mettre à jour le mod",
-		downloadMod: "Télécharger le mod",
+		downloadMod: "Télécharger",
 		openModSource: "Site web",
 		deleteMod: "Supprimer le mod",
 		deleteModConfirmation:

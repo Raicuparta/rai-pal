@@ -106,7 +106,7 @@ export const zhCn: Localization = {
 		removeFromRaiPal: "从 Rai Pal 移除",
 		removeGameConfirmation: "确定要从 Rai Pal 移除此游戏吗？",
 		refreshGame: "刷新游戏",
-		failedToDetermineEngine: "无法确定此游戏的引擎。一些模组可能无法安装。",
+		failedToDetermineEngine: "无法确定此游戏的引擎。",
 		gameNotInstalledWarning:
 			"此游戏未安装，所以我不太确定哪些模组兼容。下面列出的模组可能可以用。安装游戏后，我再显示更准确的信息。",
 		uninstallAllModsButton: "卸载所有模组",
@@ -175,7 +175,7 @@ export const zhCn: Localization = {
 		runMod: "运行",
 		openModFolder: "打开模组文件夹",
 		updateMod: "更新模组",
-		downloadMod: "下载模组",
+		downloadMod: "下载",
 		openModSource: "网站",
 		deleteMod: "删除模组",
 		deleteModConfirmation: "你确定吗？模组文件夹中的任何文件都将丢失。",
