@@ -157,7 +157,7 @@ impl GameDatabase for DbMutex {
 			g.display_title,
 			g.title_discriminator,
 			g.thumbnail_url,
-			g.release_date,
+			COALESCE(g.release_date, rg.release_date) AS release_date,
 			g.tags,
 			g.provider_commands,
 			ig.exe_path,
@@ -212,7 +212,7 @@ impl GameDatabase for DbMutex {
 
 		// Build sorting logic
 		let sort_columns = match query.as_ref().map(|q| q.sort_by) {
-			Some(GamesSortBy::ReleaseDate) => vec!["g.release_date"],
+			Some(GamesSortBy::ReleaseDate) => vec!["COALESCE(g.release_date, rg.release_date)"],
 			Some(GamesSortBy::Engine) => vec![
 				"COALESCE(ig.engine_brand, rg.engine_brand)",
 				"COALESCE(ig.engine_version_major, rg.engine_version_major)",
@@ -642,7 +642,8 @@ pub fn attach_remote(path: &Path) -> Result {
 			r"
 			INSERT OR IGNORE INTO main.remote_games (
 				provider_id, external_id, engine_brand, engine_version_major,
-				engine_version_minor, engine_version_patch, engine_version_display
+				engine_version_minor, engine_version_patch, engine_version_display,
+				release_date
 			)
 			SELECT
 				provider_id,
@@ -651,7 +652,8 @@ pub fn attach_remote(path: &Path) -> Result {
 				NULL,
 				NULL,
 				NULL,
-				engine_version
+				engine_version,
+				release_date
 			FROM remote_db.games;
 			",
 			[],
@@ -818,6 +820,7 @@ fn create() -> Result<DbMutex> {
 			engine_version_minor INTEGER,
 			engine_version_patch INTEGER,
 			engine_version_display TEXT,
+			release_date TEXT,
 			PRIMARY KEY (provider_id, external_id)
 		);
 	",

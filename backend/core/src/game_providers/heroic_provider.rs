@@ -2,6 +2,7 @@
 
 use std::{collections::HashMap, fs, path::PathBuf};
 
+use chrono::DateTime;
 use serde::{Deserialize, Serialize, de::DeserializeOwned};
 use serde_json::Value;
 
@@ -53,6 +54,54 @@ where
 
 	let file_content = std::fs::read_to_string(path)?;
 	Ok(Some(serde_json::from_str::<T>(file_content.as_str())?))
+}
+
+pub fn read_heroic_json_files<T>(relative_dir: &str) -> Result<Vec<T>>
+where
+	T: DeserializeOwned,
+{
+	let path = heroic_config_path(relative_dir)?;
+	if !path.try_exists()? {
+		return Ok(Vec::new());
+	}
+
+	let mut values = Vec::new();
+	for entry in fs::read_dir(path)? {
+		let entry = entry?;
+		if !entry.file_type()?.is_file() {
+			continue;
+		}
+
+		let file_content = match fs::read_to_string(entry.path()) {
+			Ok(file_content) => file_content,
+			Err(error) => {
+				log::warn!(
+					"Failed to read Heroic cache file {}: {error}",
+					entry.path().display()
+				);
+				continue;
+			}
+		};
+
+		match serde_json::from_str::<T>(&file_content) {
+			Ok(value) => values.push(value),
+			Err(error) => {
+				log::warn!(
+					"Failed to parse Heroic cache file {}: {error}",
+					entry.path().display()
+				);
+			}
+		}
+	}
+
+	Ok(values)
+}
+
+pub fn parse_release_date(date: &str) -> Option<String> {
+	DateTime::parse_from_rfc3339(date)
+		.or_else(|_| DateTime::parse_from_str(date, "%Y-%m-%dT%H:%M:%S%z"))
+		.ok()
+		.map(|date_time| date_time.to_rfc3339())
 }
 
 pub fn set_wine_dll_overrides(game_id: &str, dll_overrides: &[String]) -> Result {

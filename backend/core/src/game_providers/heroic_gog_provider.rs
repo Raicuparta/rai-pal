@@ -9,6 +9,7 @@ use std::{
 
 use log;
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 
 use super::provider_command::ProviderCommandAction;
 use crate::{
@@ -40,6 +41,11 @@ struct ParsedGame {
 	art_cover: Option<String>,
 	art_square: Option<String>,
 	art_icon: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
+struct GogApiInfo {
+	first_release_date: Option<String>,
 }
 
 #[derive(Debug, Default, Serialize, Deserialize)]
@@ -90,6 +96,28 @@ impl HeroicGog {
 		)
 	}
 
+	// Heroic caches the GOG store API response here, and it's the only local file
+	// with release dates (`gog_library.json` only has library metadata).
+	fn get_release_dates() -> Result<HashMap<String, String>> {
+		let Some(api_info) = heroic_provider::read_heroic_json::<HashMap<String, Value>>(
+			"store_cache/gog_api_info.json",
+		)?
+		else {
+			return Ok(HashMap::new());
+		};
+
+		Ok(api_info
+			.into_iter()
+			.filter_map(|(key, value)| {
+				let app_name = key.strip_prefix("gog_")?.to_string();
+				let release_date = serde_json::from_value::<GogApiInfo>(value)
+					.ok()?
+					.first_release_date?;
+				heroic_provider::parse_release_date(&release_date).map(|date| (app_name, date))
+			})
+			.collect())
+	}
+
 	fn read_info_file(path: &Path, app_id: &str) -> Result<GogGame> {
 		let json_string = fs::read_to_string(path.join(format!("goggame-{app_id}.info")))?;
 		Ok(serde_json::from_str::<GogGame>(&json_string)?)
@@ -125,6 +153,7 @@ impl ProviderActions for HeroicGog {
 	fn insert_games(&self, db: &DbMutex) -> Result {
 		let owned_games = Self::get_owned_games()?;
 		let installed_games = Self::get_installed_games()?;
+		let release_dates = Self::get_release_dates()?;
 
 		for parsed_game in owned_games {
 			let mut game = DbGame::new(
@@ -133,6 +162,7 @@ impl ProviderActions for HeroicGog {
 				parsed_game.title.clone(),
 			);
 			game.thumbnail_url.clone_from(&parsed_game.art_icon);
+			game.release_date_rfc3339 = release_dates.get(&parsed_game.app_name).cloned();
 			if let Some(installed_game) = installed_games.get(&parsed_game.app_name) {
 				if let Some(exe_path) = Self::get_exe_path(installed_game) {
 					game.set_executable(&exe_path);
