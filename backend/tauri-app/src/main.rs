@@ -339,7 +339,10 @@ async fn install_mod(
 
 	let result: std::result::Result<(), rai_pal_core::result::Error> = async {
 		if let Some(game) = game_option.as_ref() {
-			game_mod.download_remote_config(game, false).await?;
+			game_mod
+				.download_remote_config(game, false)
+				.await
+				.ok_or_log("Failed to download recommended mod config");
 		}
 
 		for m in &deps_to_install {
