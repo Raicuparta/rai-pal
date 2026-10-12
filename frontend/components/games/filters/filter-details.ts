@@ -71,6 +71,9 @@ export const filterDetails = Object.freeze<{
 	providers: {
 		localizationKey: "provider",
 		valueDetails: {
+			Amazon: {
+				staticDisplayText: "Amazon",
+			},
 			Epic: {
 				staticDisplayText: "Epic",
 			},

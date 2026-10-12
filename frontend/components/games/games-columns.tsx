@@ -53,6 +53,7 @@ const thumbnail: GamesColumn = {
 };
 
 const providerColors: Record<GameProviderId, DefaultMantineColor> = {
+	Amazon: "orange",
 	Manual: "gray",
 	Steam: "blue",
 	Epic: "red",

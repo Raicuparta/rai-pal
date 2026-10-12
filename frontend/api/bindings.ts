@@ -27,7 +27,7 @@ export const commands = {
 	getModsFromUrlModSource: (url: string) => __TAURI_INVOKE<GameMod[]>("get_mods_from_url_mod_source", { url }),
 	getRemoteConfigModIds: (providerId: GameProviderId, gameId: string) => __TAURI_INVOKE<string[]>("get_remote_config_mod_ids", { providerId, gameId }),
 	getUrlModSources: () => __TAURI_INVOKE<UrlModSourcesResponse>("get_url_mod_sources"),
-	installMod: (modId: string, providerIdOption: "Epic" | "Gog" | "Itch" | "Manual" | "Steam" | "Xbox" | null, gameIdOption: string | null) => __TAURI_INVOKE<null>("install_mod", { modId, providerIdOption, gameIdOption }),
+	installMod: (modId: string, providerIdOption: "Amazon" | "Epic" | "Gog" | "Itch" | "Manual" | "Steam" | "Xbox" | null, gameIdOption: string | null) => __TAURI_INVOKE<null>("install_mod", { modId, providerIdOption, gameIdOption }),
 	listenToDownloadProgress: (channel: Channel<ProgressStatus>) => __TAURI_INVOKE<null>("listen_to_download_progress", { channel }),
 	logIn: () => __TAURI_INVOKE<null>("log_in"),
 	logOut: () => __TAURI_INVOKE<null>("log_out"),
@@ -49,8 +49,8 @@ export const commands = {
 	getManualGameDirectories: () => __TAURI_INVOKE<string[]>("get_manual_game_directories"),
 	removeUrlModSource: (url: string) => __TAURI_INVOKE<null>("remove_url_mod_source", { url }),
 	resetSteamCache: () => __TAURI_INVOKE<null>("reset_steam_cache"),
-	runMod: (modId: string, providerIdOption: "Epic" | "Gog" | "Itch" | "Manual" | "Steam" | "Xbox" | null, gameIdOption: string | null) => __TAURI_INVOKE<null>("run_mod", { modId, providerIdOption, gameIdOption }),
-	setSelectedGame: (providerId: "Epic" | "Gog" | "Itch" | "Manual" | "Steam" | "Xbox" | null, gameId: string | null) => __TAURI_INVOKE<null>("set_selected_game", { providerId, gameId }),
+	runMod: (modId: string, providerIdOption: "Amazon" | "Epic" | "Gog" | "Itch" | "Manual" | "Steam" | "Xbox" | null, gameIdOption: string | null) => __TAURI_INVOKE<null>("run_mod", { modId, providerIdOption, gameIdOption }),
+	setSelectedGame: (providerId: "Amazon" | "Epic" | "Gog" | "Itch" | "Manual" | "Steam" | "Xbox" | null, gameId: string | null) => __TAURI_INVOKE<null>("set_selected_game", { providerId, gameId }),
 	setUrlModSourceEnabled: (url: string, enabled: boolean) => __TAURI_INVOKE<null>("set_url_mod_source_enabled", { url, enabled }),
 	runProviderCommand: (providerId: GameProviderId, gameId: string, providerCommandAciton: ProviderCommandAction) => __TAURI_INVOKE<null>("run_provider_command", { providerId, gameId, providerCommandAciton }),
 	saveAppSettings: (settings: AppSettings) => __TAURI_INVOKE<null>("save_app_settings", { settings }),
@@ -69,7 +69,7 @@ export const events = {
 };
 
 /* Constants */
-export const PROVIDER_IDS = ["Epic","Gog","Itch","Manual","Steam","Xbox"] as const;
+export const PROVIDER_IDS = ["Amazon","Epic","Gog","Itch","Manual","Steam","Xbox"] as const;
 
 /* Types */
 export type AddModSource = string;
@@ -196,7 +196,7 @@ export type GameModInfo = {
 	family: string | null,
 };
 
-export type GameProviderId = "Epic" | "Gog" | "Itch" | "Manual" | "Steam" | "Xbox";
+export type GameProviderId = "Amazon" | "Epic" | "Gog" | "Itch" | "Manual" | "Steam" | "Xbox";
 
 export type GameTag = "VR" | "Demo";
 
