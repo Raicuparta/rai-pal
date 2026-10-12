@@ -163,6 +163,7 @@ impl ProviderActions for HeroicGog {
 			);
 			game.thumbnail_url.clone_from(&parsed_game.art_icon);
 			game.release_date_rfc3339 = release_dates.get(&parsed_game.app_name).cloned();
+
 			if let Some(installed_game) = installed_games.get(&parsed_game.app_name) {
 				if let Some(exe_path) = Self::get_exe_path(installed_game) {
 					game.set_executable(&exe_path);
@@ -172,6 +173,7 @@ impl ProviderActions for HeroicGog {
 					heroic_provider::launch_command(&parsed_game.app_name, Some("gog")),
 				);
 			}
+
 			db.insert_game(&game);
 		}
 
@@ -180,7 +182,12 @@ impl ProviderActions for HeroicGog {
 }
 
 impl WineProviderActions for HeroicGog {
+	fn get_wine_prefix_path(&self, game: &DbGame) -> Result<PathBuf> {
+		heroic_provider::get_wine_prefix_path(&game.external_id)
+	}
+
 	fn set_wine_dll_overrides(&self, game: &DbGame, dll_overrides: &[String]) -> Result {
-		heroic_provider::set_wine_dll_overrides(&game.external_id, dll_overrides)
+		let prefix_path = self.get_wine_prefix_path(game)?;
+		crate::wine::set_wine_dll_overrides_in_reg(&prefix_path, dll_overrides)
 	}
 }

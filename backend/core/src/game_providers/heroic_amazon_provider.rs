@@ -125,7 +125,12 @@ impl ProviderActions for HeroicAmazon {
 }
 
 impl WineProviderActions for HeroicAmazon {
+	fn get_wine_prefix_path(&self, game: &DbGame) -> Result<PathBuf> {
+		heroic_provider::get_wine_prefix_path(&game.external_id)
+	}
+
 	fn set_wine_dll_overrides(&self, game: &DbGame, dll_overrides: &[String]) -> Result {
-		heroic_provider::set_wine_dll_overrides(&game.external_id, dll_overrides)
+		let prefix_path = self.get_wine_prefix_path(game)?;
+		crate::wine::set_wine_dll_overrides_in_reg(&prefix_path, dll_overrides)
 	}
 }

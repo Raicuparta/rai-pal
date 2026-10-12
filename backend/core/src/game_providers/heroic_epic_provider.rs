@@ -4,7 +4,7 @@ use std::{collections::HashMap, fmt::Debug, path::PathBuf};
 
 use serde::{Deserialize, Serialize};
 
-use super::provider_command::ProviderCommandAction;
+use super::provider_command::{ProviderCommand, ProviderCommandAction};
 use crate::{
 	game::DbGame,
 	game_providers::{
@@ -21,6 +21,7 @@ struct ParsedGame {
 	title: String,
 	install: Option<Install>,
 	art_cover: Option<String>,
+	store_url: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -109,13 +110,22 @@ impl ProviderActions for HeroicEpic {
 					game.thumbnail_url = Some(format!("{art_cover}?h=100&resize=1"));
 				}
 				game.release_date_rfc3339 = release_dates.get(&parsed_game.app_name).cloned();
+
 				if let Some(exe_path) = Self::get_exe_path(&parsed_game) {
 					game.set_executable(&exe_path);
 					game.add_provider_command(
 						ProviderCommandAction::StartViaProvider,
-						heroic_provider::launch_command(&parsed_game.app_name, None),
+						heroic_provider::launch_command(&parsed_game.app_name, Some("legendary")),
 					);
 				}
+
+				if let Some(store_url) = &parsed_game.store_url {
+					game.add_provider_command(
+						ProviderCommandAction::OpenInBrowser,
+						ProviderCommand::String(store_url.clone()),
+					);
+				}
+
 				db.insert_game(&game);
 			}
 		}
@@ -124,7 +134,12 @@ impl ProviderActions for HeroicEpic {
 }
 
 impl WineProviderActions for HeroicEpic {
+	fn get_wine_prefix_path(&self, game: &DbGame) -> Result<PathBuf> {
+		heroic_provider::get_wine_prefix_path(&game.external_id)
+	}
+
 	fn set_wine_dll_overrides(&self, game: &DbGame, dll_overrides: &[String]) -> Result {
-		heroic_provider::set_wine_dll_overrides(&game.external_id, dll_overrides)
+		let prefix_path = self.get_wine_prefix_path(game)?;
+		crate::wine::set_wine_dll_overrides_in_reg(&prefix_path, dll_overrides)
 	}
 }

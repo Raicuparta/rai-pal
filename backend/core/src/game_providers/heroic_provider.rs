@@ -1,9 +1,9 @@
 #![cfg(target_os = "linux")]
 
-use std::{collections::HashMap, fs, path::PathBuf};
+use std::{fs, path::PathBuf};
 
 use chrono::DateTime;
-use serde::{Deserialize, Serialize, de::DeserializeOwned};
+use serde::de::DeserializeOwned;
 use serde_json::Value;
 
 use super::provider_command::ProviderCommand;
@@ -21,26 +21,6 @@ fn heroic_config_path(relative_path: &str) -> Result<std::path::PathBuf> {
 		.home_dir()
 		.join(".var/app/com.heroicgameslauncher.hgl/config/heroic");
 	Ok(flatpak.join(relative_path))
-}
-
-fn games_config_path(game_id: &str) -> Result<PathBuf> {
-	heroic_config_path(&format!("GamesConfig/{game_id}.json"))
-}
-
-#[derive(Default, Deserialize, Serialize)]
-struct HeroicGameConfig {
-	#[serde(rename = "enviromentOptions", default)]
-	environment_options: Vec<HeroicEnvironmentOption>,
-	#[serde(flatten)]
-	extra: HashMap<String, Value>,
-}
-
-#[derive(Deserialize, Serialize)]
-struct HeroicEnvironmentOption {
-	key: String,
-	value: String,
-	#[serde(flatten)]
-	extra: HashMap<String, Value>,
 }
 
 pub fn read_heroic_json<T>(relative_path: &str) -> Result<Option<T>>
@@ -104,47 +84,58 @@ pub fn parse_release_date(date: &str) -> Option<String> {
 		.map(|date_time| date_time.to_rfc3339())
 }
 
-pub fn set_wine_dll_overrides(game_id: &str, dll_overrides: &[String]) -> Result {
-	if dll_overrides.is_empty() {
-		return Ok(());
+pub fn get_wine_prefix_path(game_id: &str) -> Result<PathBuf> {
+	let game_config_path = format!("GamesConfig/{game_id}.json");
+	if let Some(prefix) = read_wine_prefix(&game_config_path, Some(game_id))? {
+		return Ok(prefix);
 	}
 
-	let wine_dll_overrides_value = dll_overrides
-		.iter()
-		.map(|dll| format!("{dll}=n,b"))
-		.collect::<Vec<_>>()
-		.join(";");
-
-	let environment = HashMap::from([("WINEDLLOVERRIDES".to_string(), wine_dll_overrides_value)]);
-
-	let relative_path = format!("GamesConfig/{game_id}.json");
-	let path = games_config_path(game_id)?;
-	let mut game_config = read_heroic_json::<HeroicGameConfig>(&relative_path)?.unwrap_or_default();
-
-	for (key, value) in environment {
-		if let Some(existing_entry) = game_config
-			.environment_options
-			.iter_mut()
-			.find(|entry| entry.key == *key)
-		{
-			existing_entry.value = value;
-		} else {
-			game_config
-				.environment_options
-				.push(HeroicEnvironmentOption {
-					key,
-					value,
-					extra: HashMap::default(),
-				});
-		}
+	if let Some(prefix) = read_wine_prefix("config.json", None)? {
+		return Ok(prefix);
 	}
 
-	if let Some(parent) = path.parent() {
-		fs::create_dir_all(parent)?;
-	}
-	fs::write(path, serde_json::to_string_pretty(&game_config)?)?;
+	Ok(default_wine_prefix()?)
+}
 
-	Ok(())
+fn read_wine_prefix(relative_path: &str, game_id: Option<&str>) -> Result<Option<PathBuf>> {
+	let Some(config) = read_heroic_json::<Value>(relative_path)? else {
+		return Ok(None);
+	};
+
+	let prefix = match game_id {
+		Some(game_id) => config
+			.get(game_id)
+			.and_then(|settings| settings.get("winePrefix")),
+		None => config
+			.get("defaultSettings")
+			.and_then(|settings| settings.get("winePrefix")),
+	};
+
+	let Some(prefix) = prefix
+		.and_then(Value::as_str)
+		.filter(|prefix| !prefix.is_empty())
+	else {
+		return Ok(None);
+	};
+
+	Ok(Some(expand_home_dir(prefix)?))
+}
+
+fn expand_home_dir(path: &str) -> Result<PathBuf> {
+	let path = PathBuf::from(path);
+	if let Ok(relative_path) = path.strip_prefix("~") {
+		return Ok(app_paths::base_dirs()?.home_dir().join(relative_path));
+	}
+	Ok(path)
+}
+
+fn default_wine_prefix() -> Result<PathBuf> {
+	Ok(app_paths::base_dirs()?
+		.home_dir()
+		.join("Games")
+		.join("Heroic")
+		.join("Prefixes")
+		.join("shared"))
 }
 
 pub fn launch_command(app_name: &str, store_prefix: Option<&str>) -> ProviderCommand {
