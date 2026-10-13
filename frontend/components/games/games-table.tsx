@@ -1,7 +1,8 @@
 import { useEffect, useRef } from "react";
 import { GameProviderId } from "@api/bindings";
 import { useAtomValue } from "jotai";
-import { gameDataAtom, loadingTasksAtom } from "@hooks/use-data";
+import { gameDataAtom } from "@hooks/use-data";
+import { refreshTasksAtom } from "@hooks/use-refresh-tasks";
 import { TableContainer } from "@components/table/table-container";
 import {
 	TableComponents,
@@ -56,7 +57,7 @@ const tableComponents: TableComponents<[GameProviderId, string], unknown> = {
 
 export function GamesTable() {
 	const gameData = useAtomValue(gameDataAtom);
-	const loading = useAtomValue(loadingTasksAtom);
+	const refreshTasks = useAtomValue(refreshTasksAtom);
 	const [dataQuery] = useDataQuery();
 	const tableRef = useRef<TableVirtuosoHandle>(null);
 	const { t } = useLocalization("gamesPage");
@@ -67,7 +68,7 @@ export function GamesTable() {
 		}
 	}, [dataQuery]);
 
-	if (gameData.totalCount === 0 && loading.length > 0) {
+	if (gameData.totalCount === 0 && refreshTasks.length > 0) {
 		return (
 			<Alert
 				mx="xl"

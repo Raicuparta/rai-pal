@@ -14,13 +14,6 @@ export const modFamiliesAtom = atom<Record<string, ModFamily>>({});
 
 export const gameDataVersionAtom = atom(0);
 
-type LoadingTask = {
-	index: number;
-	name: string;
-};
-
-export const loadingTasksAtom = atom<LoadingTask[]>([]);
-
 export function useData() {
 	useGameDropEvent();
 	useUpdateData(true);

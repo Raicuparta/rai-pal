@@ -15,12 +15,16 @@ import { CommandDropdown } from "@components/command-dropdown";
 import { GameRowInner } from "./game-row";
 import { useLocalization } from "@hooks/use-localization";
 import { useAsyncCommand } from "@hooks/use-async-command";
+import { useAtomValue } from "jotai";
+import { isRefreshingAtom } from "@hooks/use-refresh-tasks";
+import { useRefreshGame } from "@hooks/use-refresh-game";
 import { RemoveGameButton } from "./remove-game-button";
 import { platform } from "@tauri-apps/plugin-os";
 import { Page } from "@components/page";
 import { GameModsData } from "@hooks/use-selected-game";
 import { GameMods } from "./game-mods";
 import { ProviderCommandButton } from "@components/providers/provider-command-button";
+import { useWindowFocus } from "@hooks/use-window-focus";
 
 type Props = {
 	readonly game: DbGame;
@@ -32,6 +36,13 @@ export function GamePage({ game, mods }: Props) {
 	const [close] = useAsyncCommand(() => commands.setSelectedGame(null, null));
 
 	const { providerId, gameId } = game;
+
+	const isRefreshing = useAtomValue(isRefreshingAtom);
+	const refreshGame = useRefreshGame(providerId, gameId);
+
+	useWindowFocus(() => {
+		if (game.exePath) refreshGame();
+	});
 
 	const {
 		StartViaProvider: startViaProvider,
@@ -152,8 +163,10 @@ export function GamePage({ game, mods }: Props) {
 						<Button.Group orientation="vertical">
 							{game.exePath && (
 								<CommandButton
-									onClick={() => commands.refreshGame(providerId, gameId)}
+									onClick={refreshGame}
 									leftSection={<IconRefresh />}
+									loading={isRefreshing}
+									disabled={isRefreshing}
 								>
 									{t("refreshGame")}
 								</CommandButton>
