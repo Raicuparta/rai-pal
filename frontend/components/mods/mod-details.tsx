@@ -1,4 +1,4 @@
-import { Group, Stack, Text } from "@mantine/core";
+import { Group } from "@mantine/core";
 import {
 	EngineVersionNumbers,
 	EngineVersionRange,
@@ -12,6 +12,7 @@ import {
 import { ReactNode } from "react";
 import { DeprecatedBadge } from "./deprecated-badge";
 import { dateFormatter } from "../../date-formatter";
+import { ModSummary } from "./mod-summary";
 
 type Props = {
 	readonly mod: GameMod;
@@ -54,22 +55,13 @@ export function ModDetails({
 		.join(" ");
 
 	return (
-		<Group
-			wrap="nowrap"
-			align="center"
-		>
-			{leading}
-			<Stack gap={0}>
-				<Group>
-					<Text
-						fw="bold"
-						size="md"
-						c="var(--mantine-color-bright)"
-					>
-						{mod.title}
-					</Text>
-					{titleAdornment}
-				</Group>
+		<ModSummary
+			title={mod.title}
+			description={mod.description}
+			leading={leading}
+			titleAdornment={titleAdornment}
+			trailing={mod.deprecated ? <DeprecatedBadge size="sm" /> : null}
+			details={
 				<Group
 					gap={0}
 					style={{ columnGap: 10 }}
@@ -98,15 +90,7 @@ export function ModDetails({
 						</Group>
 					)}
 				</Group>
-
-				<Text
-					fz="sm"
-					opacity={0.75}
-				>
-					{mod.description}
-				</Text>
-			</Stack>
-			{mod.deprecated && <DeprecatedBadge size="sm" />}
-		</Group>
+			}
+		/>
 	);
 }

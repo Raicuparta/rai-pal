@@ -226,10 +226,6 @@ export const enUs = {
 		// Error message when Rai Pal fails to determine the game's engine.
 		failedToDetermineEngine: "Failed to determine the engine for this game.",
 
-		// Warning that shows when a game isn't installed.
-		gameNotInstalledWarning:
-			"This game isn't installed, so I'm not 100% sure which mods are compatible. The ones you see below might work. If you install the game, I'll show you more accurate information.",
-
 		// Button for uninstalling all mods for this game.
 		uninstallAllModsButton: "Uninstall all mods",
 
@@ -242,6 +238,13 @@ export const enUs = {
 
 		// Label for the section that lists mods that can still be installed for this game.
 		availableMods: "Available Mods",
+
+		// Label for the section that lists mods that might be compatible when the game isn't installed.
+		potentiallyCompatibleMods: "Potentially compatible mods",
+
+		// Description for the potentially compatible mods section, prompting the user to install the game.
+		potentiallyCompatibleModsDescription:
+			"Install this game to see more detailed information about which mods are compatible",
 
 		// Label for the section that lists incompatible mods for this game.
 		incompatibleGameModsLabel: "Incompatible Mods",

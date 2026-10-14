@@ -109,10 +109,7 @@ export const jaJp: Localization = {
 		removeFromRaiPal: "Rai Palから削除",
 		removeGameConfirmation: "このゲームをRai Palから削除していい？",
 		refreshGame: "ゲームを更新",
-		failedToDetermineEngine:
-			"このゲームのエンジンが特定できなかった。",
-		gameNotInstalledWarning:
-			"このゲームはインストールされてないから、どのModが対応してるか100%は確信できないんだ。下に出てるModなら動くかも。インストールしたら、もっと正確な情報を出せるよ。",
+		failedToDetermineEngine: "このゲームのエンジンが特定できなかった。",
 		uninstallAllModsButton: "すべてのModをアンインストール",
 		uninstallAllModsConfirmation:
 			"本当に？このゲームのModフォルダー内の全ファイルが消えるよ。でもゲーム本体のファイルは消さないからね。",

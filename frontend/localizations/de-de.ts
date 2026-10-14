@@ -112,8 +112,6 @@ export const deDe: Localization = {
 		refreshGame: "Spiel aktualisieren",
 		failedToDetermineEngine:
 			"Konnte die Engine für dieses Spiel nicht bestimmen.",
-		gameNotInstalledWarning:
-			"Das Spiel ist nicht installiert, daher bin ich mir nicht 100% sicher, welche Mods kompatibel sind. Die unten angezeigten könnten trotzdem funktionieren. Wenn du das Spiel installierst, zeig ich dir genauere Infos.",
 		uninstallAllModsButton: "Alle Mods deinstallieren",
 		uninstallAllModsConfirmation:
 			"Sicher? Das löscht alle Dateien im Mod-Ordner des Spiels. Dateien aus dem eigentlichen Spiel bleiben aber erhalten.",

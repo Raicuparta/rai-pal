@@ -108,10 +108,7 @@ export const ptPt: Localization = {
 		removeFromRaiPal: "Remover do Rai Pal",
 		removeGameConfirmation: "Queres mesmo remover este jogo do Rai Pal?",
 		refreshGame: "Atualizar jogo",
-		failedToDetermineEngine:
-			"Não foi possível determinar o motor deste jogo.",
-		gameNotInstalledWarning:
-			"Este jogo não está instalado, por isso não tenho 100% de certeza sobre a compatibilidade dos mods. Os que vês abaixo podem funcionar. Se instalares o jogo, posso mostrar informações mais exatas.",
+		failedToDetermineEngine: "Não foi possível determinar o motor deste jogo.",
 		uninstallAllModsButton: "Desinstalar todos os mods",
 		uninstallAllModsConfirmation:
 			"Tens a certeza? Isto vai apagar todos os ficheiros da pasta de mods deste jogo. Mas não mexe nos ficheiros do jogo em si.",

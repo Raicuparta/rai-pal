@@ -1,12 +1,20 @@
-import { Alert, Box, Divider, Stack, Table, Text } from "@mantine/core";
-import { DbGame, commands } from "@api/bindings";
-import { ReactNode, useCallback } from "react";
+import { Alert, Box, Stack, Table } from "@mantine/core";
+import { DbGame, ModFamily, commands } from "@api/bindings";
+import { ReactNode, useCallback, useMemo } from "react";
+import { useAtomValue } from "jotai";
 import { CommandButton } from "@components/command-button";
 import { IconTrash } from "@tabler/icons-react";
 import { GameModRow } from "./game-mod-row";
 import { useLocalization } from "@hooks/use-localization";
 import { useCommandData } from "@hooks/use-command-data";
 import { GameModsData, GameModsPart } from "@hooks/use-selected-game";
+import { modFamiliesAtom } from "@hooks/use-data";
+import { ModsSection } from "@components/mods/mods-section";
+import { ModSummary } from "@components/mods/mod-summary";
+
+type PotentialMod =
+	| { readonly type: "mod"; readonly mod: GameModsPart["mod"] }
+	| { readonly type: "family"; readonly family: ModFamily };
 
 type Props = {
 	readonly game: DbGame;
@@ -31,45 +39,101 @@ function GameModsSection({
 	readonly header?: ReactNode;
 }) {
 	return (
-		<Stack gap={0}>
-			<Divider label={label} />
-			{description && (
-				<Text
-					opacity={0.4}
-					size="xs"
-					ta="center"
-					ml="xs"
-				>
-					{description}
-				</Text>
-			)}
-			<Table>
-				<Table.Tbody>
-					{header}
-					{mods.map(({ mod, info }) => (
-						<GameModRow
-							key={mod.id}
-							game={game}
-							mod={mod}
-							info={info}
-							hasRemoteConfig={remoteConfigModIds.has(mod.id)}
-							incompatible={incompatible}
-						/>
-					))}
-				</Table.Tbody>
-			</Table>
-		</Stack>
+		<ModsSection
+			label={label}
+			description={description}
+		>
+			{header}
+			{mods.map(({ mod, info }) => (
+				<GameModRow
+					key={mod.id}
+					game={game}
+					mod={mod}
+					info={info}
+					hasRemoteConfig={remoteConfigModIds.has(mod.id)}
+					incompatible={incompatible}
+				/>
+			))}
+		</ModsSection>
+	);
+}
+
+function PotentialModsSection({
+	label,
+	description,
+	mods,
+}: {
+	readonly label: string;
+	readonly description?: string;
+	readonly mods: PotentialMod[];
+}) {
+	return (
+		<ModsSection
+			label={label}
+			description={description}
+		>
+			{mods.map((entry) => {
+				const isMod = entry.type === "mod";
+				const title = isMod ? entry.mod.title : entry.family.title;
+				const entryDescription = isMod
+					? entry.mod.description
+					: entry.family.description;
+
+				return (
+					<Table.Tr key={isMod ? entry.mod.id : title}>
+						<Table.Td>
+							<ModSummary
+								title={title}
+								description={entryDescription}
+							/>
+						</Table.Td>
+					</Table.Tr>
+				);
+			})}
+		</ModsSection>
 	);
 }
 
 export function GameMods({ game, mods }: Props) {
 	const { t } = useLocalization("gameModal");
+	const modFamilies = useAtomValue(modFamiliesAtom);
 	const getRemoteConfigModIds = useCallback(
 		() => commands.getRemoteConfigModIds(game.providerId, game.gameId),
 		[game],
 	);
 	const [remoteConfigModIds] = useCommandData(getRemoteConfigModIds, []);
 	const remoteConfigModIdSet = new Set(remoteConfigModIds);
+
+	const potentialMods = useMemo<PotentialMod[]>(() => {
+		const familyMods = new Map<string, GameModsPart[]>();
+		const result: PotentialMod[] = [];
+
+		for (const part of mods.compatibleMods) {
+			if (part.mod.family) {
+				const existing = familyMods.get(part.mod.family);
+				if (existing) {
+					existing.push(part);
+				} else {
+					familyMods.set(part.mod.family, [part]);
+				}
+			} else {
+				result.push({ type: "mod", mod: part.mod });
+			}
+		}
+
+		for (const [familyId, familyModsList] of familyMods) {
+			const family = modFamilies[familyId];
+			if (familyModsList.length > 1 && family) {
+				result.push({ type: "family", family });
+			} else {
+				for (const part of familyModsList) {
+					result.push({ type: "mod", mod: part.mod });
+				}
+			}
+		}
+
+		return result;
+	}, [mods.compatibleMods, modFamilies]);
 
 	if (mods.compatibleMods.length + mods.incompatibleMods.length === 0) {
 		return (
@@ -79,6 +143,16 @@ export function GameMods({ game, mods }: Props) {
 			>
 				{t("noModsForGame")}
 			</Alert>
+		);
+	}
+
+	if (!game.exePath) {
+		return (
+			<PotentialModsSection
+				label={t("potentiallyCompatibleMods")}
+				description={t("potentiallyCompatibleModsDescription")}
+				mods={potentialMods}
+			/>
 		);
 	}
 
@@ -94,14 +168,6 @@ export function GameMods({ game, mods }: Props) {
 			<Stack gap="lg">
 				{mods.compatibleMods.length > 0 && (
 					<>
-						{!game.exePath && (
-							<Alert
-								m="md"
-								color="orange"
-							>
-								{t("gameNotInstalledWarning")}
-							</Alert>
-						)}
 						{installedMods.length > 0 && (
 							<Stack>
 								<GameModsSection
@@ -110,21 +176,19 @@ export function GameMods({ game, mods }: Props) {
 									mods={installedMods}
 									remoteConfigModIds={remoteConfigModIdSet}
 								/>
-								{game.exePath && (
-									<Box px="xs">
-										<CommandButton
-											confirmationText={t("uninstallAllModsConfirmation")}
-											onClick={() =>
-												commands.uninstallAllMods(game.providerId, game.gameId)
-											}
-											color="red"
-											variant="light"
-											leftSection={<IconTrash />}
-										>
-											{t("uninstallAllModsButton")}
-										</CommandButton>
-									</Box>
-								)}
+								<Box px="xs">
+									<CommandButton
+										confirmationText={t("uninstallAllModsConfirmation")}
+										onClick={() =>
+											commands.uninstallAllMods(game.providerId, game.gameId)
+										}
+										color="red"
+										variant="light"
+										leftSection={<IconTrash />}
+									>
+										{t("uninstallAllModsButton")}
+									</CommandButton>
+								</Box>
 							</Stack>
 						)}
 						{notInstalledMods.length > 0 && (

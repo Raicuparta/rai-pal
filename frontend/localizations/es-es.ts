@@ -110,10 +110,7 @@ export const esEs: Localization = {
 		removeGameConfirmation:
 			"¿Estás seguro de que quieres eliminar este juego de Rai Pal?",
 		refreshGame: "Actualizar juego",
-		failedToDetermineEngine:
-			"No se pudo determinar el motor de este juego.",
-		gameNotInstalledWarning:
-			"Este juego no está instalado, así que no estoy 100% seguro de qué mods son compatibles. Los que ves a continuación podrían funcionar. Si instalas el juego, te mostraré información más precisa.",
+		failedToDetermineEngine: "No se pudo determinar el motor de este juego.",
 		uninstallAllModsButton: "Desinstalar todos los mods",
 		uninstallAllModsConfirmation:
 			"¿Seguro? Esto borrará todos los archivos de la carpeta de mods del juego. Eso sí, los archivos del juego no se tocan.",

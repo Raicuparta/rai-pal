@@ -107,8 +107,6 @@ export const zhCn: Localization = {
 		removeGameConfirmation: "确定要从 Rai Pal 移除此游戏吗？",
 		refreshGame: "刷新游戏",
 		failedToDetermineEngine: "无法确定此游戏的引擎。",
-		gameNotInstalledWarning:
-			"此游戏未安装，所以我不太确定哪些模组兼容。下面列出的模组可能可以用。安装游戏后，我再显示更准确的信息。",
 		uninstallAllModsButton: "卸载所有模组",
 		uninstallAllModsConfirmation:
 			"你确定吗？这将删除此游戏模组文件夹中的所有文件。但不会删除游戏本身的文件。",
