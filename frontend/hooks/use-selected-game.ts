@@ -73,9 +73,14 @@ export function useSelectedGame() {
 				} else {
 					compatible.push({ mod, info });
 				}
-			} else {
+			} else if (!mod.hideFromGameModsList) {
 				incompatible.push({ mod, info });
 			}
+		}
+
+		const compatibleFamilies = new Set<string>();
+		for (const { mod } of [...compatible, ...hidden]) {
+			if (mod.family) compatibleFamilies.add(mod.family);
 		}
 
 		compatible.sort((a, b) =>
@@ -100,7 +105,9 @@ export function useSelectedGame() {
 		return {
 			compatibleMods: compatible,
 			hiddenMods: hidden,
-			incompatibleMods: incompatible,
+			incompatibleMods: incompatible.filter(
+				({ mod }) => !mod.family || !compatibleFamilies.has(mod.family),
+			),
 		};
 	}, [selected, mods]);
 
