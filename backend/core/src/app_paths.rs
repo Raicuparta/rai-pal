@@ -1,4 +1,5 @@
-use std::{self, env, fs, path::PathBuf};
+use fs_err as fs;
+use std::{self, env, path::PathBuf};
 
 use directories::{BaseDirs, ProjectDirs};
 use log;

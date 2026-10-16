@@ -1,27 +1,25 @@
-use std::{
-	fs::{self, File},
-	io,
-	path::Path,
-};
+use fs_err as fs;
+use fs_err::File;
+use std::{io, path::Path};
 
 use zip::ZipArchive;
 
 use crate::result::Result;
 
 pub async fn copy_dir_all(src: &Path, dst: &Path) -> Result {
-	tokio::fs::create_dir_all(dst).await?;
+	fs_err::tokio::create_dir_all(dst).await?;
 	let mut dirs = vec![(src.to_path_buf(), dst.to_path_buf())];
 
 	while let Some((current_src, current_dst)) = dirs.pop() {
-		let mut entries = tokio::fs::read_dir(&current_src).await?;
+		let mut entries = fs_err::tokio::read_dir(&current_src).await?;
 		while let Some(entry) = entries.next_entry().await? {
 			let file_type = entry.file_type().await?;
 			let entry_dst = current_dst.join(entry.file_name());
 			if file_type.is_dir() {
-				tokio::fs::create_dir_all(&entry_dst).await?;
+				fs_err::tokio::create_dir_all(&entry_dst).await?;
 				dirs.push((entry.path(), entry_dst));
 			} else {
-				tokio::fs::copy(entry.path(), entry_dst).await?;
+				fs_err::tokio::copy(entry.path(), entry_dst).await?;
 			}
 		}
 	}

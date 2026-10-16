@@ -215,11 +215,11 @@ impl Steam {
 		let packageinfo_path = Self::get_packageinfo_path(steam_path);
 
 		if appinfo_path.exists() {
-			std::fs::remove_file(appinfo_path)?;
+			fs_err::remove_file(appinfo_path)?;
 		}
 
 		if packageinfo_path.exists() {
-			std::fs::remove_file(packageinfo_path)?;
+			fs_err::remove_file(packageinfo_path)?;
 		}
 
 		Ok(())

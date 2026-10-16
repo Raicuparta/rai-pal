@@ -90,14 +90,14 @@ impl DbGame {
 
 	pub async fn delete_mods_folder(&self) -> Result {
 		let folder = self.get_installed_mods_folder()?;
-		tokio::fs::remove_dir_all(folder).await?;
+		fs_err::tokio::remove_dir_all(folder).await?;
 		Ok(())
 	}
 
 	pub fn get_installed_mods_folder(&self) -> Result<PathBuf> {
 		let installed_mods_folder =
 			app_paths::installed_mods_path()?.join(self.try_get_exe_path()?.hash_string());
-		std::fs::create_dir_all(&installed_mods_folder)?;
+		fs_err::create_dir_all(&installed_mods_folder)?;
 
 		Ok(installed_mods_folder)
 	}

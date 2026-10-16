@@ -4,6 +4,7 @@ use std::{
 	path::{Path, PathBuf},
 };
 
+use fs_err::PathExt as FsErrPathExt;
 use rai_pal_proc_macros::{serializable_enum, serializable_struct};
 
 use crate::{
@@ -124,7 +125,7 @@ impl GameMod {
 	}
 
 	pub fn from_file(path: &Path) -> Option<Self> {
-		match std::fs::read_to_string(path)
+		match fs_err::read_to_string(path)
 			.and_then(|manifest_bytes| Ok(serde_json::from_str::<Self>(&manifest_bytes)?))
 		{
 			Ok(manifest) => Some(manifest),
@@ -200,8 +201,8 @@ impl GameMod {
 				if source_path.is_dir() {
 					files::copy_dir_all(&source_path, &destination_path).await?;
 				} else {
-					tokio::fs::create_dir_all(destination_path.try_parent()?).await?;
-					tokio::fs::copy(&source_path, &destination_path).await?;
+					fs_err::tokio::create_dir_all(destination_path.try_parent()?).await?;
+					fs_err::tokio::copy(&source_path, &destination_path).await?;
 				}
 			}
 		}
@@ -212,8 +213,8 @@ impl GameMod {
 					PathBuf::from(replace_tokens(&write_action.destination, game_option, self));
 				let content = replace_tokens(&write_action.content, game_option, self);
 
-				tokio::fs::create_dir_all(destination_path.try_parent()?).await?;
-				tokio::fs::write(destination_path, content).await?;
+				fs_err::tokio::create_dir_all(destination_path.try_parent()?).await?;
+				fs_err::tokio::write(destination_path, content).await?;
 			}
 		}
 
@@ -257,7 +258,7 @@ impl GameMod {
 			self,
 		));
 
-		if !run_path.try_exists()? {
+		if !run_path.fs_err_try_exists()? {
 			return Err(Error::ModNotInstalled(self.id.clone()));
 		}
 
@@ -333,9 +334,9 @@ impl GameMod {
 
 	pub async fn update_installed_mod_manifest(&self, game: Option<&DbGame>) -> Result {
 		let manifest_path = self.get_manifest_target_path(game)?;
-		tokio::fs::create_dir_all(manifest_path.try_parent()?).await?;
+		fs_err::tokio::create_dir_all(manifest_path.try_parent()?).await?;
 		let manifest_contents = serde_json::to_string_pretty(&self)?;
-		tokio::fs::write(manifest_path, manifest_contents).await?;
+		fs_err::tokio::write(manifest_path, manifest_contents).await?;
 
 		Ok(())
 	}
@@ -360,9 +361,9 @@ fn replace_env_tokens(
 fn make_executable(path: &Path) -> Result {
 	use std::os::unix::fs::PermissionsExt;
 
-	let mut permissions = std::fs::metadata(path)?.permissions();
+	let mut permissions = fs_err::metadata(path)?.permissions();
 	permissions.set_mode(permissions.mode() | 0o111);
-	std::fs::set_permissions(path, permissions)?;
+	fs_err::set_permissions(path, permissions)?;
 
 	Ok(())
 }
@@ -392,7 +393,7 @@ impl ModDownload {
 
 		let mut attempts = 0;
 		loop {
-			tokio::fs::create_dir_all(&extracted_folder).await?;
+			fs_err::tokio::create_dir_all(&extracted_folder).await?;
 
 			let part_path = temp_dir.join("download.zip.part");
 			let zip_path = temp_dir.join("download.zip");
@@ -405,7 +406,7 @@ impl ModDownload {
 					on_progress,
 				)
 				.await?;
-				tokio::fs::rename(&part_path, &zip_path).await?;
+				fs_err::tokio::rename(&part_path, &zip_path).await?;
 			}
 
 			let extract_result = files::extract(
@@ -431,7 +432,7 @@ impl ModDownload {
 			match extract_result {
 				Ok(()) => return Ok(extracted_folder),
 				Err(err) => {
-					tokio::fs::remove_dir_all(&temp_dir)
+					fs_err::tokio::remove_dir_all(&temp_dir)
 						.await
 						.ok_or_log("Failed to remove temp dir");
 					if attempts >= 1 {

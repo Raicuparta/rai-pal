@@ -1,6 +1,6 @@
+use fs_err as fs;
 use std::{
 	cmp::Reverse,
-	fs,
 	path::{Path, PathBuf},
 	time::SystemTime,
 };
@@ -192,9 +192,7 @@ fn get_target_shortcuts_paths(steam_path: &Path) -> Result<Vec<PathBuf>> {
 			}
 
 			let shortcuts_path = path.join("config/shortcuts.vdf");
-			let sort_time = path
-				.join("config/localconfig.vdf")
-				.metadata()
+			let sort_time = fs::metadata(path.join("config/localconfig.vdf"))
 				.and_then(|m| m.modified())
 				.unwrap_or_else(|error| {
 					log::warn!(

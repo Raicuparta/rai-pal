@@ -1,10 +1,8 @@
 use std::{path::Path, sync::LazyLock, time::Duration};
 
+use fs_err::tokio::File;
 use futures_util::StreamExt;
-use tokio::{
-	fs::File,
-	io::{AsyncWriteExt, BufWriter},
-};
+use tokio::io::{AsyncWriteExt, BufWriter};
 
 use crate::{progress_status::ProgressStatus, result::Result};
 

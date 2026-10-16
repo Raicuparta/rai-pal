@@ -12,7 +12,7 @@ pub fn get_appinfo_path(steam_path: &Path) -> PathBuf {
 }
 
 fn get_modified_time(path: &Path) -> SystemTime {
-	std::fs::metadata(path)
+	fs_err::metadata(path)
 		.and_then(|metadata| metadata.modified())
 		.unwrap_or(UNIX_EPOCH)
 }
@@ -36,7 +36,7 @@ pub fn find_steam_dir() -> Result<SteamDir> {
 			continue;
 		}
 
-		let appinfo_size = std::fs::metadata(&appinfo_path).map_or(0, |metadata| metadata.len());
+		let appinfo_size = fs_err::metadata(&appinfo_path).map_or(0, |metadata| metadata.len());
 
 		let score = (
 			get_modified_time(&steam_path.join("config/config.vdf")),

@@ -1,8 +1,8 @@
 #![cfg(target_os = "linux")]
 
+use fs_err as fs;
 use std::{
 	collections::BTreeMap,
-	fs,
 	path::{Path, PathBuf},
 };
 

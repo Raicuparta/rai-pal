@@ -1,6 +1,7 @@
+use fs_err as fs;
+use fs_err::File;
 use std::{
 	ffi::OsStr,
-	fs::{self, File},
 	io::Read,
 	path::{Path, PathBuf},
 };

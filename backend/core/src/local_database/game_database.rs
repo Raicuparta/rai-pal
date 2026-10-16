@@ -1,5 +1,5 @@
+use fs_err as fs;
 use std::{
-	fs,
 	path::{Path, PathBuf},
 	time::{Instant, SystemTime, UNIX_EPOCH},
 };
@@ -848,7 +848,7 @@ fn open_attach_database_connection() -> Result<rusqlite::Connection> {
 fn open_local_database_connection() -> Result<rusqlite::Connection> {
 	let path = db_file_path()?;
 	if let Some(parent) = path.parent() {
-		std::fs::create_dir_all(parent)?;
+		fs_err::create_dir_all(parent)?;
 	}
 
 	let connection = rusqlite::Connection::open_with_flags(

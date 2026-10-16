@@ -1,9 +1,9 @@
 #![cfg(target_os = "linux")]
 
+use fs_err as fs;
 use std::{
 	collections::HashMap,
 	fmt::Debug,
-	fs,
 	path::{Path, PathBuf},
 };
 

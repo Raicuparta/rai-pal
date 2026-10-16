@@ -1,7 +1,5 @@
-use std::{
-	fs,
-	path::{Path, PathBuf},
-};
+use fs_err as fs;
+use std::path::{Path, PathBuf};
 
 use rai_pal_proc_macros::serializable_struct;
 

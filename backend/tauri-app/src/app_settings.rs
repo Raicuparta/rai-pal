@@ -1,4 +1,5 @@
-use std::{collections::HashSet, fs, path::PathBuf};
+use fs_err as fs;
+use std::{collections::HashSet, path::PathBuf};
 
 use rai_pal_core::{app_paths, games_query::GamesQuery, path_extensions::PathExt};
 use rai_pal_proc_macros::{serializable_enum, serializable_struct};

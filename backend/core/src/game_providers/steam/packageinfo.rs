@@ -1,6 +1,6 @@
+use fs_err as fs;
 use std::{
 	collections::{HashMap, HashSet},
-	fs,
 	path::Path,
 };
 

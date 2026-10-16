@@ -1,7 +1,5 @@
-use std::{
-	fs::{self},
-	path::Path,
-};
+use fs_err as fs;
+use std::path::Path;
 
 use lazy_regex::{regex_captures, regex_find};
 use pelite::PeFile;

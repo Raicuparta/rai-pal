@@ -1,6 +1,8 @@
 #![cfg(target_os = "linux")]
 
-use std::{fs, path::PathBuf};
+use fs_err as fs;
+use fs_err::PathExt;
+use std::path::PathBuf;
 
 use chrono::DateTime;
 use serde::de::DeserializeOwned;
@@ -28,11 +30,11 @@ where
 	T: DeserializeOwned,
 {
 	let path = heroic_config_path(relative_path)?;
-	if !path.try_exists()? {
+	if !path.fs_err_try_exists()? {
 		return Ok(None);
 	}
 
-	let file_content = std::fs::read_to_string(path)?;
+	let file_content = fs_err::read_to_string(path)?;
 	Ok(Some(serde_json::from_str::<T>(file_content.as_str())?))
 }
 
@@ -41,7 +43,7 @@ where
 	T: DeserializeOwned,
 {
 	let path = heroic_config_path(relative_dir)?;
-	if !path.try_exists()? {
+	if !path.fs_err_try_exists()? {
 		return Ok(Vec::new());
 	}
 

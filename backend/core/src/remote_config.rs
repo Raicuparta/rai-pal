@@ -69,7 +69,7 @@ pub async fn download_config_file(
 ) -> Result {
 	let content = download_config(config_file, game).await?.bytes().await?;
 
-	tokio::fs::write(destination_path, content).await?;
+	fs_err::tokio::write(destination_path, content).await?;
 	Ok(())
 }
 

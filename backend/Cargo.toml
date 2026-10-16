@@ -15,6 +15,7 @@ rai-pal-core = { path = "./core" }
 rai-pal-proc-macros = { path = "./proc-macros" }
 serde = { version = "1.0.229", features = ["derive"] }
 serde_json = "1.0.154"
+fs-err = { version = "3.3.2", features = ["tokio"] }
 specta = "2.0.0-rc.24"
 tauri-specta = { version = "2.0.0-rc.24", features = ["derive", "typescript"] }
 thiserror = "2.0.21"
@@ -44,6 +45,8 @@ pedantic = { level = "warn", priority = -1 }
 cargo = { level = "warn", priority = -1 }
 
 # Specific lints to override. Priority defaults to 0.
+disallowed_methods = "warn"
+disallowed_types = "warn"
 too_many_lines = "allow"
 must_use_candidate = "allow"
 missing_errors_doc = "allow"

@@ -10,6 +10,7 @@ tauri-build = { version = "2.7.3", features = [] }
 log.workspace = true
 rai-pal-core.workspace = true
 rai-pal-proc-macros.workspace = true
+fs-err.workspace = true
 rusqlite.workspace = true
 serde_json.workspace = true
 serde.workspace = true

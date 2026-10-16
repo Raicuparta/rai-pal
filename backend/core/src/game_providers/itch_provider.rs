@@ -32,7 +32,7 @@ impl Itch {
 	}
 
 	fn scan_for_exe(base_path: &std::path::Path) -> Option<PathBuf> {
-		use std::fs;
+		use fs_err as fs;
 
 		let mut entries: Vec<_> = fs::read_dir(base_path)
 			.ok_or_log("Failed to read Itch dir")?

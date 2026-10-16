@@ -1,6 +1,6 @@
+use fs_err as fs;
 use std::{
 	collections::BTreeMap,
-	fs,
 	hash::{DefaultHasher, Hash, Hasher},
 	path::PathBuf,
 };

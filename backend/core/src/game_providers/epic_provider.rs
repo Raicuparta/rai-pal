@@ -1,8 +1,9 @@
 #![cfg(target_os = "windows")]
 
+use fs_err as fs;
+use fs_err::File;
 use std::{
 	collections::HashMap,
-	fs::{self, File},
 	io::Read,
 	path::{Path, PathBuf},
 };

@@ -67,9 +67,9 @@ pub async fn download_database() -> Result<PathBuf> {
 
 	let file_path = get_database_file_path()?;
 
-	tokio::fs::create_dir_all(file_path.try_parent()?).await?;
+	fs_err::tokio::create_dir_all(file_path.try_parent()?).await?;
 
-	tokio::fs::write(&file_path, response.bytes().await?).await?;
+	fs_err::tokio::write(&file_path, response.bytes().await?).await?;
 
 	Ok(file_path)
 }
