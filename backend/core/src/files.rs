@@ -51,17 +51,19 @@ pub fn extract(
 		let mut file = archive.by_index(i).map_err(io::Error::other)?;
 		let file_size = file.size();
 
+		let name = file.name().map_err(io::Error::other)?.into_owned();
+
 		// Some zips created on windows have cursed backslashes in their paths.
 		// We need to replace them with forward slashes to avoid issues when extracting on Linux.
 		// Hopefully there aren't any legitimate files with backslashes in their names.
-		let sanitized_name = file.name().replace('\\', "/");
+		let sanitized_name = name.replace('\\', "/");
 
 		let outpath = target_path.join(&sanitized_name);
 
 		if !outpath.starts_with(target_path) {
 			return Err(io::Error::new(
 				io::ErrorKind::InvalidData,
-				format!("Zip file contains path escaping target: {}", file.name()),
+				format!("Zip file contains path escaping target: {}", name),
 			));
 		}
 

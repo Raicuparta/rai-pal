@@ -15,18 +15,18 @@ thiserror.workspace = true
 rusqlite.workspace = true
 strum.workspace = true
 
-open = "5.3.5"
+open = "5.4.4"
 dunce = "1.0"
-base64 = "0.22.1"
+base64 = "0.23.1"
 byteorder = "1.5.0"
 chrono = { version = "0.4.44", default-features = false, features = ["std"] }
 directories = "6.0.0"
-tokio = { version = "1.52.3", features = ["process", "fs"] }
+tokio = { version = "1.53.3", features = ["process", "fs"] }
 globwalk = "0.9.1"
-lazy-regex = "3.6.0"
+lazy-regex = "3.6.2"
 memmap2 = "0.9.5"
 pelite = { version = "0.10.0", features = ["std"], default-features = false }
-reqwest = { version = "0.13.3", features = [
+reqwest = { version = "0.13.5", features = [
   "json",
   "stream",
   "gzip", # We have some large JSONs in the Rai Pal Database, so gzip is useful.
@@ -34,8 +34,8 @@ reqwest = { version = "0.13.3", features = [
 serde_urlencoded = "0.7.1"
 steamlocate = "2.1.1"
 unicode-normalization = "0.1.25"
-uuid = { version = "1.23.1", features = ["v4"] }
-zip = { version = "8.6.0", default-features = false, features = ["deflate"] }
+uuid = { version = "1.28.0", features = ["v4"] }
+zip = { version = "9.0.4", default-features = false, features = ["deflate"] }
 futures-util = "0.3"
 memchr = "2.8.3"
 libc = "0.2"
