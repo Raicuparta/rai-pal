@@ -115,6 +115,9 @@ export const ptPt: Localization = {
 
 		installedMods: "Mods instalados",
 		availableMods: "Mods disponíveis",
+		potentiallyCompatibleMods: "Mods potencialmente compatíveis",
+		potentiallyCompatibleModsDescription:
+			"Instala este jogo para ver informações mais detalhadas sobre que mods são compatíveis",
 		incompatibleGameModsLabel: "Mods Incompatíveis",
 
 		incompatibleGameModsDescription:

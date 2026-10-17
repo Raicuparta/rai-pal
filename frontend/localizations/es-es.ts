@@ -117,6 +117,9 @@ export const esEs: Localization = {
 
 		installedMods: "Mods instalados",
 		availableMods: "Mods disponibles",
+		potentiallyCompatibleMods: "Mods posiblemente compatibles",
+		potentiallyCompatibleModsDescription:
+			"Instala este juego para ver información más detallada sobre qué mods son compatibles",
 		incompatibleGameModsLabel: "Mods Incompatibles",
 
 		incompatibleGameModsDescription:

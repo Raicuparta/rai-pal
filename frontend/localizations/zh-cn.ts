@@ -113,6 +113,9 @@ export const zhCn: Localization = {
 
 		installedMods: "已安装模组",
 		availableMods: "可用模组",
+		potentiallyCompatibleMods: "可能兼容的模组",
+		potentiallyCompatibleModsDescription:
+			"安装此游戏即可查看哪些模组兼容的更多详细信息",
 		incompatibleGameModsLabel: "不兼容的模组",
 
 		incompatibleGameModsDescription:

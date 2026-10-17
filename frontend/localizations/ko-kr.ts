@@ -114,6 +114,9 @@ export const koKr: Localization = {
 
 		installedMods: "설치된 모드",
 		availableMods: "설치 가능한 모드",
+		potentiallyCompatibleMods: "호환될 수 있는 모드",
+		potentiallyCompatibleModsDescription:
+			"게임을 설치하면 어떤 모드가 호환되는지 자세히 볼 수 있어요",
 		incompatibleGameModsLabel: "호환되지 않는 모드",
 
 		incompatibleGameModsDescription:

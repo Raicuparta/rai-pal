@@ -118,6 +118,9 @@ export const deDe: Localization = {
 
 		installedMods: "Installierte Mods",
 		availableMods: "Verfügbare Mods",
+		potentiallyCompatibleMods: "Möglicherweise kompatible Mods",
+		potentiallyCompatibleModsDescription:
+			"Installiere dieses Spiel, um genauere Informationen darüber zu sehen, welche Mods kompatibel sind",
 		incompatibleGameModsLabel: "Inkompatible Mods",
 
 		incompatibleGameModsDescription:

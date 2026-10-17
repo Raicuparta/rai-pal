@@ -116,6 +116,9 @@ export const jaJp: Localization = {
 
 		installedMods: "導入済みMod",
 		availableMods: "利用可能なMod",
+		potentiallyCompatibleMods: "互換性があるかもしれないMod",
+		potentiallyCompatibleModsDescription:
+			"このゲームをインストールすると、どのModに互換性があるか詳しくわかるよ",
 		incompatibleGameModsLabel: "非対応Mod",
 
 		incompatibleGameModsDescription:
