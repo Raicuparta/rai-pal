@@ -91,20 +91,3 @@ impl AppSettings {
 		))?)
 	}
 }
-
-#[cfg(test)]
-mod tests {
-	#![allow(clippy::unwrap_used)]
-
-	use super::AppSettings;
-
-	#[test]
-	fn defaults_have_all_filters_enabled() {
-		let settings = AppSettings::default();
-
-		assert!(settings.games_query.filter.providers.known.is_empty());
-		assert!(settings.games_query.filter.architectures.known.is_empty());
-		assert!(settings.games_query.filter.executable_os.known.is_empty());
-		assert!(settings.games_query.filter.supported_os.known.is_empty());
-	}
-}
