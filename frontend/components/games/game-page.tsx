@@ -25,6 +25,7 @@ import { GameModsData } from "@hooks/use-selected-game";
 import { GameMods } from "./game-mods";
 import { ProviderCommandButton } from "@components/providers/provider-command-button";
 import { useWindowFocus } from "@hooks/use-window-focus";
+import { useEffect } from "react";
 
 type Props = {
 	readonly game: DbGame;
@@ -43,6 +44,10 @@ export function GamePage({ game, mods }: Props) {
 	useWindowFocus(() => {
 		if (game.exePath) refreshGame();
 	});
+
+	useEffect(() => {
+		if (game.exePath) refreshGame();
+	}, [providerId, gameId]);
 
 	const {
 		StartViaProvider: startViaProvider,
