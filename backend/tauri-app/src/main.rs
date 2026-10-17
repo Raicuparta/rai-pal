@@ -697,13 +697,13 @@ async fn run_provider_command(
 		.get_game(&provider_id, game_id)?;
 
 	let provider_command = game.provider_commands.try_get(&provider_command_aciton)?;
-	let environment = match provider_command_aciton {
+	let (environment, environment_mod_ids) = match provider_command_aciton {
 		ProviderCommandAction::StartViaProvider | ProviderCommandAction::StartViaExe => {
 			handle.app_state().database.get_game_environment(&game)?
 		}
-		_ => BTreeMap::default(),
+		_ => (BTreeMap::default(), Vec::new()),
 	};
-	provider_command.run(&game, &environment)?;
+	provider_command.run(&game, &environment, &environment_mod_ids)?;
 
 	handle.emit_safe(events::ExecutedProviderCommand);
 

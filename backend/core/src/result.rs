@@ -200,9 +200,9 @@ pub enum Error {
 	UnsupportedProviderOperation(GameProviderId, String),
 
 	#[error(
-		"Can't launch game `{0}` with environment variables: {1} can't set them with how it launches this game. Launch the game another way, or uninstall the mod that needs them."
+		"Can't launch game `{0}` with environment variables required by installed mod(s) `{2}`: {1} can't set them with how it launches this game. Launch the game another way, or uninstall the mod(s) that need them."
 	)]
-	UnsupportedGameEnvironment(String, GameProviderId),
+	UnsupportedGameEnvironment(String, GameProviderId, String),
 
 	#[error("Game engine {0} doesn't support this operation: `{1}`")]
 	UnsupportedEngineOperation(EngineBrand, String),

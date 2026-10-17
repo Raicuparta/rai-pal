@@ -50,7 +50,10 @@ pub trait ModDatabase {
 		game_id_option: Option<String>,
 	) -> Result<Option<InstalledMod>>;
 	fn get_installed_mods_for_game(&self, game: &DbGame) -> Result<Vec<InstalledMod>>;
-	fn get_game_environment(&self, game: &DbGame) -> Result<BTreeMap<String, String>>;
+	fn get_game_environment(
+		&self,
+		game: &DbGame,
+	) -> Result<(BTreeMap<String, String>, Vec<String>)>;
 	fn try_get_installed_mod(
 		&self,
 		provider_id: &GameProviderId,
@@ -317,7 +320,10 @@ impl ModDatabase for DbMutex {
 		Ok(installed_mods)
 	}
 
-	fn get_game_environment(&self, game: &DbGame) -> Result<BTreeMap<String, String>> {
+	fn get_game_environment(
+		&self,
+		game: &DbGame,
+	) -> Result<(BTreeMap<String, String>, Vec<String>)> {
 		let exe_path_hash = game.try_get_exe_path()?.hash_string();
 
 		let mod_ids = self
@@ -327,15 +333,20 @@ impl ModDatabase for DbMutex {
 			.collect::<rusqlite::Result<Vec<String>>>()?;
 
 		let mut environment = BTreeMap::new();
+		let mut environment_mod_ids = Vec::new();
 
 		for mod_id in mod_ids {
 			let Ok(game_mod) = self.get_mod(&mod_id) else {
 				continue;
 			};
-			environment.extend(game_mod.get_game_environment(Some(game)));
+			let mod_environment = game_mod.get_game_environment(Some(game));
+			if !mod_environment.is_empty() {
+				environment_mod_ids.push(mod_id);
+			}
+			environment.extend(mod_environment);
 		}
 
-		Ok(environment)
+		Ok((environment, environment_mod_ids))
 	}
 
 	fn get_mod_map(&self) -> Result<BTreeMap<String, GameMod>> {

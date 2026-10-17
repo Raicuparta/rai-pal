@@ -27,11 +27,17 @@ pub enum ProviderCommandAction {
 }
 
 impl ProviderCommand {
-	pub fn run(&self, game: &DbGame, environment: &BTreeMap<String, String>) -> Result {
+	pub fn run(
+		&self,
+		game: &DbGame,
+		environment: &BTreeMap<String, String>,
+		environment_mod_ids: &[String],
+	) -> Result {
 		if !environment.is_empty() && !self.supports_environment(game) {
 			return Err(Error::UnsupportedGameEnvironment(
 				game.display_title.clone(),
 				game.provider_id,
+				environment_mod_ids.join("`, `"),
 			));
 		}
 
