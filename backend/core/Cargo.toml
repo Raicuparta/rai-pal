@@ -16,7 +16,7 @@ thiserror.workspace = true
 rusqlite.workspace = true
 strum.workspace = true
 
-open = "5.4.4"
+open = { version = "5.4.4", features = ["shellexecute-on-windows"] }
 dunce = "1.0"
 base64 = "0.23.1"
 byteorder = "1.5.0"

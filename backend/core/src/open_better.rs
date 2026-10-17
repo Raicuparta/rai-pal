@@ -88,19 +88,30 @@ pub fn spawn_detached(cmd: &mut Command) -> Result {
 
 // Weird workaround for AppImage builds.
 pub fn open_detached_better(path: impl AsRef<OsStr>) -> Result {
-	let mut last_error = Error::NoCommandForOpen(path.as_ref().try_to_str()?.to_string());
-
-	for mut cmd in open::commands(path) {
-		cmd.env_remove("LD_LIBRARY_PATH");
-		cmd.env_remove("QT_PLUGIN_PATH");
-		cmd.env_remove("APPDIR");
-		cmd.env_remove("APPIMAGE");
-
-		match spawn_detached(&mut cmd) {
-			Ok(()) => return Ok(()),
-			Err(e) => last_error = e,
-		}
+	#[cfg(target_os = "windows")]
+	{
+		let path = path.as_ref();
+		open::that_detached(path)
+			.with_context(|| format!("failed to open `{}`", path.to_string_lossy()))?;
+		return Ok(());
 	}
 
-	Err(last_error)
+	#[cfg(not(target_os = "windows"))]
+	{
+		let mut last_error = Error::NoCommandForOpen(path.as_ref().try_to_str()?.to_string());
+
+		for mut cmd in open::commands(path) {
+			cmd.env_remove("LD_LIBRARY_PATH");
+			cmd.env_remove("QT_PLUGIN_PATH");
+			cmd.env_remove("APPDIR");
+			cmd.env_remove("APPIMAGE");
+
+			match spawn_detached(&mut cmd) {
+				Ok(()) => return Ok(()),
+				Err(e) => last_error = e,
+			}
+		}
+
+		Err(last_error)
+	}
 }
