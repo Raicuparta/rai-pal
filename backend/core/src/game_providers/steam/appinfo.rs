@@ -8,7 +8,7 @@ use super::vdf::{
 };
 use crate::{
 	operating_system::OperatingSystem,
-	result::{Error, Result},
+	result::{ContextResult, Error, Result},
 };
 
 #[serializable_struct]
@@ -97,7 +97,8 @@ impl SteamAppInfoReader {
 		}
 
 		let file = fs::File::open(appinfo_path)?;
-		let mmap = unsafe { memmap2::Mmap::map(&file)? };
+		let mmap = unsafe { memmap2::Mmap::map(&file) }
+			.context(format!("failed to memory-map `{}`", appinfo_path.display()))?;
 		let mut pos = 0;
 
 		let version = super::vdf::read_u32_le(&mmap, &mut pos)?;

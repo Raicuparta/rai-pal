@@ -39,7 +39,7 @@ use rai_pal_core::{
 	path_extensions::PathExt,
 	progress_status::ProgressStatus,
 	remote_game::{self},
-	result::LogErrExt,
+	result::{ContextResult, LogErrExt},
 	user::{
 		auth::{AuthState, get_user_auth_state, logout_auth, start_auth},
 		user_socket::start_user_socket_manager,
@@ -723,7 +723,8 @@ async fn reset_steam_cache(handle: AppHandle) -> Result {
 #[tauri::command]
 #[specta::specta]
 async fn add_rai_pal_steam_shortcut(handle: AppHandle) -> Result {
-	let current_executable = std::env::current_exe()?;
+	let current_executable =
+		std::env::current_exe().context("failed to find the Rai Pal executable path")?;
 	let artwork_dir = handle.path().resource_dir()?.join("steam-artwork");
 	steam_shortcut::add_current_executable_to_steam_shortcuts(&current_executable, &artwork_dir)?;
 

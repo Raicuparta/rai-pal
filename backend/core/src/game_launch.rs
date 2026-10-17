@@ -11,7 +11,10 @@ use std::{
 	sync::atomic::{AtomicU64, Ordering},
 };
 
-use crate::{open_better::spawn_detached, result::Result};
+use crate::{
+	open_better::spawn_detached,
+	result::{ContextResult, Result},
+};
 
 #[derive(Clone, Default)]
 pub struct GameLaunch {
@@ -198,7 +201,10 @@ fn systemd_run_command(launch: &GameLaunch) -> Option<Command> {
 pub fn spawn_game(launch: &GameLaunch) -> Result {
 	#[cfg(target_os = "linux")]
 	if let Some(mut command) = systemd_run_command(launch) {
-		let status = command.status()?;
+		let status = command.status().context(format!(
+			"failed to start `{}` through systemd",
+			launch.program.display()
+		))?;
 
 		if status.success() {
 			log::info!(

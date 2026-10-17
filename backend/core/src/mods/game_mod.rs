@@ -436,7 +436,7 @@ impl ModDownload {
 						.await
 						.ok_or_log("Failed to remove temp dir");
 					if attempts >= 1 {
-						return Err(err.into());
+						return Err(err);
 					}
 					attempts += 1;
 				}

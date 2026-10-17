@@ -5,7 +5,7 @@ use std::{
 };
 
 use super::vdf::{KeyValues, ValueType, find_keys};
-use crate::result::Result;
+use crate::result::{ContextResult, Result};
 
 #[derive(Debug)]
 pub struct Package {
@@ -25,7 +25,8 @@ pub struct PackageInfo {
 impl PackageInfo {
 	pub fn read(path: &Path) -> Result<Self> {
 		let file = fs::File::open(path)?;
-		let mmap = unsafe { memmap2::Mmap::map(&file)? };
+		let mmap = unsafe { memmap2::Mmap::map(&file) }
+			.context(format!("failed to memory-map `{}`", path.display()))?;
 		let mut pos = 0;
 
 		let magic = super::vdf::read_u32_le(&mmap, &mut pos)?;

@@ -4,7 +4,7 @@ use std::{io, path::Path};
 
 use zip::ZipArchive;
 
-use crate::result::Result;
+use crate::result::{ContextResult, Result};
 
 pub async fn copy_dir_all(src: &Path, dst: &Path) -> Result {
 	fs_err::tokio::create_dir_all(dst).await?;
@@ -26,11 +26,7 @@ pub async fn copy_dir_all(src: &Path, dst: &Path) -> Result {
 	Ok(())
 }
 
-pub fn extract(
-	archive_path: &Path,
-	target_path: &Path,
-	on_progress: &impl Fn(u64, u64),
-) -> io::Result<()> {
+pub fn extract(archive_path: &Path, target_path: &Path, on_progress: &impl Fn(u64, u64)) -> Result {
 	let mut archive = ZipArchive::new(File::open(archive_path)?)?;
 
 	let total_uncompressed: u64 = {
@@ -62,7 +58,8 @@ pub fn extract(
 			return Err(io::Error::new(
 				io::ErrorKind::InvalidData,
 				format!("Zip file contains path escaping target: {}", name),
-			));
+			)
+			.into());
 		}
 
 		if file.is_dir() || sanitized_name.ends_with('/') {
@@ -79,7 +76,8 @@ pub fn extract(
 				fs::create_dir_all(p)?;
 			}
 			let mut outfile = fs::File::create(&outpath)?;
-			io::copy(&mut file, &mut outfile)?;
+			io::copy(&mut file, &mut outfile)
+				.context(format!("failed to extract `{}`", outpath.display()))?;
 			extracted_bytes += file_size;
 		}
 

@@ -5,7 +5,7 @@ use std::{
 
 use crate::{
 	path_extensions::AsValidStr,
-	result::{Error, Result},
+	result::{ContextResult, Error, Result},
 };
 
 // Bunch of fucking hacks to avoid a bunch of fucking things.
@@ -14,6 +14,10 @@ pub fn spawn_detached(cmd: &mut Command) -> Result {
 		.env_remove("QT_PLUGIN_PATH")
 		.env_remove("APPDIR")
 		.env_remove("APPIMAGE");
+
+	let program = std::path::Path::new(cmd.get_program())
+		.display()
+		.to_string();
 
 	#[cfg(unix)]
 	{
@@ -48,8 +52,12 @@ pub fn spawn_detached(cmd: &mut Command) -> Result {
 
 		// The direct child is only the intermediate process, which exits a
 		// moment after forking. Reap it so it doesn't linger as a zombie.
-		let mut child = cmd.spawn()?;
-		child.wait()?;
+		let mut child = cmd
+			.spawn()
+			.context(format!("failed to launch `{program}`"))?;
+		child
+			.wait()
+			.context(format!("failed to wait for `{program}`"))?;
 	}
 
 	#[cfg(windows)]
@@ -58,7 +66,8 @@ pub fn spawn_detached(cmd: &mut Command) -> Result {
 		// invisibly with I/O redirected to null, so spawn those normally.
 		if crate::game_engines::pe_utils::is_pe_console_app(std::path::Path::new(cmd.get_program()))
 		{
-			cmd.spawn()?;
+			cmd.spawn()
+				.context(format!("failed to launch `{program}`"))?;
 		} else {
 			use std::os::windows::process::CommandExt;
 
@@ -69,7 +78,8 @@ pub fn spawn_detached(cmd: &mut Command) -> Result {
 				.stdout(Stdio::null())
 				.stderr(Stdio::null())
 				.creation_flags(DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP);
-			cmd.spawn()?;
+			cmd.spawn()
+				.context(format!("failed to launch `{program}`"))?;
 		}
 	}
 

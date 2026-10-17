@@ -23,7 +23,7 @@ use crate::{
 	operating_system::{self, OperatingSystem},
 	path_extensions::PathExt,
 	remote_config::{self, RemoteConfigs},
-	result::{Error, Result},
+	result::{ContextResult, Error, Result},
 };
 
 #[serializable_struct]
@@ -223,7 +223,10 @@ impl DbGame {
 			let mut launch = provider.get_run_with_wine_command(self)?;
 			launch.arg("cmd").arg("/C").arg("echo %APPDATA%");
 
-			let output = launch.to_command().output()?;
+			let output = launch
+				.to_command()
+				.output()
+				.context("failed to run `cmd /C echo %APPDATA%` in the Wine prefix")?;
 
 			let win_path = str::from_utf8(&output.stdout)?.trim();
 

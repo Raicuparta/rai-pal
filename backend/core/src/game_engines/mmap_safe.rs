@@ -26,24 +26,27 @@
 //! unactionable at this layer, we encapsulate the single `unsafe` call here
 //! rather than pushing the burden onto every call site.
 
-use std::{io, path::Path};
+use std::path::Path;
 
 use fs_err::File;
 
 use memmap2::Mmap;
+
+use crate::result::{ContextResult, Result};
 
 /// Memory-map `path` read-only.
 ///
 /// Returns an I/O error if the file cannot be opened or mapped. The returned
 /// [`Mmap`] must not outlive the calling function (see [module-level
 /// documentation](self) for the safety rationale).
-pub fn map_readonly(path: &Path) -> io::Result<Mmap> {
+pub fn map_readonly(path: &Path) -> Result<Mmap> {
 	let file = File::open(path)?;
 
 	// SAFETY: See module-level safety documentation. The caller must ensure
 	// the mapping does not escape the current stack frame — rai-pal's engine
 	// scanners satisfy this by construction.
-	let mmap = unsafe { Mmap::map(&file) }?;
+	let mmap = unsafe { Mmap::map(&file) }
+		.context(format!("failed to memory-map `{}`", path.display()))?;
 
 	// The `File` handle can be dropped: the OS keeps the mapping alive
 	// independently.

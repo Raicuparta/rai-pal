@@ -215,6 +215,42 @@ pub enum Error {
 
 	#[error("Wine prefix not initialized at `{0}`. Please start the game at least once first.")]
 	WinePrefixNotInitialized(PathBuf),
+
+	#[error("{message}: {source}")]
+	Context {
+		message: String,
+		#[specta(skip)]
+		#[source]
+		source: Box<Self>,
+	},
+}
+
+pub trait ContextResult<T> {
+	fn context(self, message: impl fmt::Display) -> Result<T>;
+	fn with_context<C, F>(self, f: F) -> Result<T>
+	where
+		C: fmt::Display,
+		F: FnOnce() -> C;
+}
+
+impl<T, E: Into<Error>> ContextResult<T> for std::result::Result<T, E> {
+	fn context(self, message: impl fmt::Display) -> Result<T> {
+		self.map_err(|error| Error::Context {
+			message: message.to_string(),
+			source: Box::new(error.into()),
+		})
+	}
+
+	fn with_context<C, F>(self, f: F) -> Result<T>
+	where
+		C: fmt::Display,
+		F: FnOnce() -> C,
+	{
+		self.map_err(|error| Error::Context {
+			message: f().to_string(),
+			source: Box::new(error.into()),
+		})
+	}
 }
 
 impl serde::Serialize for Error {
