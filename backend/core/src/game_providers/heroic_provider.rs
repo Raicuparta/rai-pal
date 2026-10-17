@@ -2,7 +2,7 @@
 
 use fs_err as fs;
 use fs_err::PathExt;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use chrono::DateTime;
 use serde::de::DeserializeOwned;
@@ -14,25 +14,24 @@ use crate::{
 	result::{ContextResult, Result},
 };
 
-fn heroic_config_path(relative_path: &str) -> Result<std::path::PathBuf> {
+pub(crate) fn config_path() -> Result<PathBuf> {
 	let dirs = app_paths::base_dirs()?;
 
 	let native = dirs.config_dir().join("heroic");
 	if native.exists() {
-		return Ok(native.join(relative_path));
+		return Ok(native);
 	}
 
-	let flatpak = dirs
+	Ok(dirs
 		.home_dir()
-		.join(".var/app/com.heroicgameslauncher.hgl/config/heroic");
-	Ok(flatpak.join(relative_path))
+		.join(".var/app/com.heroicgameslauncher.hgl/config/heroic"))
 }
 
-pub fn read_heroic_json<T>(relative_path: &str) -> Result<Option<T>>
+pub(crate) fn read_json_from<T>(root: &Path, relative_path: &str) -> Result<Option<T>>
 where
 	T: DeserializeOwned,
 {
-	let path = heroic_config_path(relative_path)?;
+	let path = root.join(relative_path);
 	if !path.fs_err_try_exists()? {
 		return Ok(None);
 	}
@@ -44,11 +43,11 @@ where
 	))
 }
 
-pub fn read_heroic_json_files<T>(relative_dir: &str) -> Result<Vec<T>>
+pub(crate) fn read_json_files_from<T>(root: &Path, relative_dir: &str) -> Result<Vec<T>>
 where
 	T: DeserializeOwned,
 {
-	let path = heroic_config_path(relative_dir)?;
+	let path = root.join(relative_dir);
 	if !path.fs_err_try_exists()? {
 		return Ok(Vec::new());
 	}
@@ -83,6 +82,13 @@ where
 	}
 
 	Ok(values)
+}
+
+pub fn read_heroic_json<T>(relative_path: &str) -> Result<Option<T>>
+where
+	T: DeserializeOwned,
+{
+	read_json_from(&config_path()?, relative_path)
 }
 
 pub fn parse_release_date(date: &str) -> Option<String> {

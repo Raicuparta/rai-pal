@@ -12,7 +12,7 @@ use super::provider_command::ProviderCommandAction;
 use crate::{
 	game::DbGame,
 	game_providers::{
-		game_provider::{GameProviderId, ProviderActions, WineProviderActions},
+		game_provider::{GameProviderId, ProviderActions, ProviderParser, WineProviderActions},
 		heroic_provider,
 	},
 	local_database::{app_database::DbMutex, game_database::GameDatabase},
@@ -59,9 +59,9 @@ struct Root {
 	library: Option<Vec<ParsedGame>>,
 }
 
-fn get_detected_games() -> Result<Option<Vec<ParsedGame>>> {
+fn get_detected_games(root: &Path) -> Result<Option<Vec<ParsedGame>>> {
 	Ok(
-		heroic_provider::read_heroic_json::<Root>("store_cache/nile_library.json")?
+		heroic_provider::read_json_from::<Root>(root, "store_cache/nile_library.json")?
 			.and_then(|root| root.library),
 	)
 }
@@ -79,9 +79,11 @@ impl HeroicAmazon {
 	}
 }
 
-impl ProviderActions for HeroicAmazon {
-	fn insert_games(&self, db: &DbMutex) -> Result {
-		if let Some(parsed_games) = get_detected_games()? {
+impl ProviderParser for HeroicAmazon {
+	type Source = PathBuf;
+
+	fn parse_games(&self, root: &Self::Source, insert: &mut impl FnMut(DbGame)) -> Result {
+		if let Some(parsed_games) = get_detected_games(root)? {
 			for parsed_game in parsed_games {
 				let mut game = DbGame::new(
 					GameProviderId::Amazon,
@@ -116,11 +118,19 @@ impl ProviderActions for HeroicAmazon {
 					game.set_executable(&exe_path);
 				}
 
-				db.insert_game(&game);
+				insert(game);
 			}
 		}
 
 		Ok(())
+	}
+}
+
+impl ProviderActions for HeroicAmazon {
+	fn insert_games(&self, db: &DbMutex) -> Result {
+		self.parse_games(&heroic_provider::config_path()?, &mut |game| {
+			db.insert_game(&game);
+		})
 	}
 }
 

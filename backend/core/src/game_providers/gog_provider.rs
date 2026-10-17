@@ -1,5 +1,3 @@
-#![cfg(target_os = "windows")]
-
 use std::path::{Path, PathBuf};
 
 use chrono::DateTime;
@@ -7,15 +5,22 @@ use log::error;
 use rai_pal_proc_macros::serializable_struct;
 use rusqlite::{Connection, OpenFlags};
 use serde::Deserialize;
+
+#[cfg(target_os = "windows")]
 use winreg::{RegKey, enums::HKEY_LOCAL_MACHINE};
 
 use super::provider_command::{ProviderCommand, ProviderCommandAction};
 use crate::{
-	app_paths,
 	game::DbGame,
-	game_providers::game_provider::{GameProviderId, ProviderActions, WineProviderActions},
-	local_database::{app_database::DbMutex, game_database::GameDatabase},
+	game_providers::game_provider::{GameProviderId, ProviderParser},
 	result::{ContextResult, Result},
+};
+
+#[cfg(target_os = "windows")]
+use crate::{
+	app_paths,
+	game_providers::game_provider::{ProviderActions, WineProviderActions},
+	local_database::{app_database::DbMutex, game_database::GameDatabase},
 };
 
 #[derive(Clone)]
@@ -29,6 +34,11 @@ struct GogDbEntry {
 
 #[derive(Clone)]
 pub struct Gog {}
+
+pub(crate) struct GogParseSource {
+	pub database_path: PathBuf,
+	pub launcher_path: PathBuf,
+}
 
 impl Gog {
 	fn get_game(db_entry: &GogDbEntry, launcher_path: &Path) -> DbGame {
@@ -60,19 +70,19 @@ impl Gog {
 	}
 }
 
-impl ProviderActions for Gog {
-	fn insert_games(&self, db: &DbMutex) -> Result {
-		if let Some(database) = get_database()? {
-			let launcher_path = get_launcher_path()?;
+impl ProviderParser for Gog {
+	type Source = GogParseSource;
 
+	fn parse_games(&self, source: &Self::Source, insert: &mut impl FnMut(DbGame)) -> Result {
+		if let Some(database) = get_database(&source.database_path)? {
 			for db_entry in database {
-				let mut game = Self::get_game(&db_entry, &launcher_path);
+				let mut game = Self::get_game(&db_entry, &source.launcher_path);
 				if let Some(executable_path) = db_entry.executable_path.as_ref() {
 					game.set_executable(executable_path);
 					game.add_provider_command(
 						ProviderCommandAction::StartViaProvider,
 						ProviderCommand::Path(
-							launcher_path.clone(),
+							source.launcher_path.clone(),
 							vec![
 								"/command=runGame".to_string(),
 								format!("/gameId={}", db_entry.id),
@@ -81,7 +91,7 @@ impl ProviderActions for Gog {
 					);
 				}
 
-				db.insert_game(&game);
+				insert(game);
 			}
 		} else {
 			log::info!(
@@ -89,6 +99,30 @@ impl ProviderActions for Gog {
 			);
 		}
 		Ok(())
+	}
+}
+
+#[cfg(target_os = "windows")]
+impl ProviderActions for Gog {
+	fn insert_games(&self, db: &DbMutex) -> Result {
+		let database_path =
+			app_paths::try_get_program_data_path().join("GOG.com/Galaxy/storage/galaxy-2.0.db");
+
+		if !database_path.is_file() {
+			log::info!(
+				"GOG database file not found. Probably means user hasn't installed GOG Galaxy."
+			);
+			return Ok(());
+		}
+
+		let source = GogParseSource {
+			database_path,
+			launcher_path: get_launcher_path()?,
+		};
+
+		self.parse_games(&source, &mut |game| {
+			db.insert_game(&game);
+		})
 	}
 }
 
@@ -105,10 +139,7 @@ pub struct GogDbEntryMeta {
 	release_date: Option<i32>,
 }
 
-fn get_database() -> Result<Option<Vec<GogDbEntry>>> {
-	let program_data = app_paths::try_get_program_data_path();
-	let database_path = program_data.join("GOG.com/Galaxy/storage/galaxy-2.0.db");
-
+fn get_database(database_path: &Path) -> Result<Option<Vec<GogDbEntry>>> {
 	if !database_path.is_file() {
 		return Ok(None);
 	}
@@ -172,6 +203,7 @@ GROUP BY
 	Ok(Some(rows))
 }
 
+#[cfg(target_os = "windows")]
 impl WineProviderActions for Gog {}
 
 fn try_parse_json<TData>(json: &str) -> Option<TData>
@@ -205,6 +237,7 @@ where
 	try_parse_json(&json)
 }
 
+#[cfg(target_os = "windows")]
 fn get_launcher_path() -> Result<PathBuf> {
 	Ok(RegKey::predef(HKEY_LOCAL_MACHINE)
 		.open_subkey(r"SOFTWARE\WOW6432Node\GOG.com\GalaxyClient\paths")

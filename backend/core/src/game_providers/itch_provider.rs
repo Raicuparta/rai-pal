@@ -1,4 +1,7 @@
-use std::{collections::HashMap, path::PathBuf};
+use std::{
+	collections::HashMap,
+	path::{Path, PathBuf},
+};
 
 use chrono::DateTime;
 use log::error;
@@ -9,7 +12,9 @@ use super::provider_command::{ProviderCommand, ProviderCommandAction};
 use crate::{
 	app_paths,
 	game::DbGame,
-	game_providers::game_provider::{GameProviderId, ProviderActions, WineProviderActions},
+	game_providers::game_provider::{
+		GameProviderId, ProviderActions, ProviderParser, WineProviderActions,
+	},
 	local_database::{app_database::DbMutex, game_database::GameDatabase},
 	result::{ContextResult, LogErrExt, Result},
 };
@@ -121,12 +126,11 @@ pub struct ItchDatabase {
 	caves: Vec<ItchDatabaseCave>,
 }
 
-impl ProviderActions for Itch {
-	fn insert_games(&self, db: &DbMutex) -> Result {
-		let Some(database) = get_database()? else {
-			log::info!(
-				"Itch database file not found. Probably means user hasn't installed the Itch app."
-			);
+impl ProviderParser for Itch {
+	type Source = PathBuf;
+
+	fn parse_games(&self, db_path: &Self::Source, insert: &mut impl FnMut(DbGame)) -> Result {
+		let Some(database) = get_database(db_path)? else {
 			return Ok(());
 		};
 		let caves_map: HashMap<_, _> = database
@@ -140,10 +144,25 @@ impl ProviderActions for Itch {
 			if let Some(exe_path) = caves_map.get(&db_entry.id).and_then(Self::get_exe_path) {
 				game.set_executable(&exe_path);
 			}
-			db.insert_game(&game);
+			insert(game);
 		}
 
 		Ok(())
+	}
+}
+
+impl ProviderActions for Itch {
+	fn insert_games(&self, db: &DbMutex) -> Result {
+		let Some(db_path) = find_butler_db()? else {
+			log::info!(
+				"Itch database file not found. Probably means user hasn't installed the Itch app."
+			);
+			return Ok(());
+		};
+
+		self.parse_games(&db_path, &mut |game| {
+			db.insert_game(&game);
+		})
 	}
 }
 
@@ -218,10 +237,11 @@ fn find_butler_db() -> Result<Option<PathBuf>> {
 	}))
 }
 
-fn get_database() -> Result<Option<ItchDatabase>> {
-	let Some(db_path) = find_butler_db()? else {
+fn get_database(db_path: &Path) -> Result<Option<ItchDatabase>> {
+	if !db_path.is_file() {
 		return Ok(None);
-	};
+	}
+
 	let db_display = db_path.display().to_string();
 	let connection = Connection::open_with_flags(db_path, OpenFlags::SQLITE_OPEN_READ_ONLY)
 		.with_context(|| format!("failed to open Itch database `{db_display}`"))?;

@@ -1,6 +1,10 @@
 #![cfg(target_os = "linux")]
 
-use std::{collections::HashMap, fmt::Debug, path::PathBuf};
+use std::{
+	collections::HashMap,
+	fmt::Debug,
+	path::{Path, PathBuf},
+};
 
 use serde::{Deserialize, Serialize};
 
@@ -8,7 +12,7 @@ use super::provider_command::{ProviderCommand, ProviderCommandAction};
 use crate::{
 	game::DbGame,
 	game_providers::{
-		game_provider::{GameProviderId, ProviderActions, WineProviderActions},
+		game_provider::{GameProviderId, ProviderActions, ProviderParser, WineProviderActions},
 		heroic_provider,
 	},
 	local_database::{app_database::DbMutex, game_database::GameDatabase},
@@ -54,9 +58,9 @@ struct LegendaryReleaseInfo {
 	date_added: Option<String>,
 }
 
-fn get_detected_games() -> Result<Option<Vec<ParsedGame>>> {
+fn get_detected_games(root: &Path) -> Result<Option<Vec<ParsedGame>>> {
 	Ok(
-		heroic_provider::read_heroic_json::<Root>("store_cache/legendary_library.json")?
+		heroic_provider::read_json_from::<Root>(root, "store_cache/legendary_library.json")?
 			.and_then(|root| root.library),
 	)
 }
@@ -73,10 +77,11 @@ impl HeroicEpic {
 
 	// Legendary caches Epic metadata here, and `releaseInfo` is the only local
 	// source of release dates.
-	fn get_release_dates() -> Result<HashMap<String, String>> {
+	fn get_release_dates(root: &Path) -> Result<HashMap<String, String>> {
 		let mut release_dates = HashMap::new();
 
-		for metadata in heroic_provider::read_heroic_json_files::<LegendaryMetadata>(
+		for metadata in heroic_provider::read_json_files_from::<LegendaryMetadata>(
+			root,
 			"legendaryConfig/legendary/metadata",
 		)? {
 			let earliest_release_date = metadata
@@ -96,10 +101,12 @@ impl HeroicEpic {
 	}
 }
 
-impl ProviderActions for HeroicEpic {
-	fn insert_games(&self, db: &DbMutex) -> Result {
-		let release_dates = Self::get_release_dates()?;
-		if let Some(parsed_games) = get_detected_games()? {
+impl ProviderParser for HeroicEpic {
+	type Source = PathBuf;
+
+	fn parse_games(&self, root: &Self::Source, insert: &mut impl FnMut(DbGame)) -> Result {
+		let release_dates = Self::get_release_dates(root)?;
+		if let Some(parsed_games) = get_detected_games(root)? {
 			for parsed_game in parsed_games {
 				let mut game = DbGame::new(
 					GameProviderId::Epic,
@@ -126,10 +133,18 @@ impl ProviderActions for HeroicEpic {
 					);
 				}
 
-				db.insert_game(&game);
+				insert(game);
 			}
 		}
 		Ok(())
+	}
+}
+
+impl ProviderActions for HeroicEpic {
+	fn insert_games(&self, db: &DbMutex) -> Result {
+		self.parse_games(&heroic_provider::config_path()?, &mut |game| {
+			db.insert_game(&game);
+		})
 	}
 }
 

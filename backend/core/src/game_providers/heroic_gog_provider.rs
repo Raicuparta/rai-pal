@@ -15,7 +15,7 @@ use super::provider_command::ProviderCommandAction;
 use crate::{
 	game::DbGame,
 	game_providers::{
-		game_provider::{GameProviderId, ProviderActions, WineProviderActions},
+		game_provider::{GameProviderId, ProviderActions, ProviderParser, WineProviderActions},
 		heroic_provider,
 	},
 	local_database::{app_database::DbMutex, game_database::GameDatabase},
@@ -73,9 +73,9 @@ struct GogGame {
 pub struct HeroicGog {}
 
 impl HeroicGog {
-	fn get_owned_games() -> Result<Vec<ParsedGame>> {
+	fn get_owned_games(root: &Path) -> Result<Vec<ParsedGame>> {
 		Ok(
-			heroic_provider::read_heroic_json::<Root>("store_cache/gog_library.json")?
+			heroic_provider::read_json_from::<Root>(root, "store_cache/gog_library.json")?
 				.unwrap_or_default()
 				.games
 				.into_iter()
@@ -85,9 +85,9 @@ impl HeroicGog {
 		)
 	}
 
-	fn get_installed_games() -> Result<HashMap<String, InstalledGOGGame>> {
+	fn get_installed_games(root: &Path) -> Result<HashMap<String, InstalledGOGGame>> {
 		Ok(
-			heroic_provider::read_heroic_json::<RootInstalled>("gog_store/installed.json")?
+			heroic_provider::read_json_from::<RootInstalled>(root, "gog_store/installed.json")?
 				.unwrap_or_default()
 				.installed
 				.into_iter()
@@ -98,8 +98,9 @@ impl HeroicGog {
 
 	// Heroic caches the GOG store API response here, and it's the only local file
 	// with release dates (`gog_library.json` only has library metadata).
-	fn get_release_dates() -> Result<HashMap<String, String>> {
-		let Some(api_info) = heroic_provider::read_heroic_json::<HashMap<String, Value>>(
+	fn get_release_dates(root: &Path) -> Result<HashMap<String, String>> {
+		let Some(api_info) = heroic_provider::read_json_from::<HashMap<String, Value>>(
+			root,
 			"store_cache/gog_api_info.json",
 		)?
 		else {
@@ -149,11 +150,13 @@ impl HeroicGog {
 	}
 }
 
-impl ProviderActions for HeroicGog {
-	fn insert_games(&self, db: &DbMutex) -> Result {
-		let owned_games = Self::get_owned_games()?;
-		let installed_games = Self::get_installed_games()?;
-		let release_dates = Self::get_release_dates()?;
+impl ProviderParser for HeroicGog {
+	type Source = PathBuf;
+
+	fn parse_games(&self, root: &Self::Source, insert: &mut impl FnMut(DbGame)) -> Result {
+		let owned_games = Self::get_owned_games(root)?;
+		let installed_games = Self::get_installed_games(root)?;
+		let release_dates = Self::get_release_dates(root)?;
 
 		for parsed_game in owned_games {
 			let mut game = DbGame::new(
@@ -174,10 +177,18 @@ impl ProviderActions for HeroicGog {
 				);
 			}
 
-			db.insert_game(&game);
+			insert(game);
 		}
 
 		Ok(())
+	}
+}
+
+impl ProviderActions for HeroicGog {
+	fn insert_games(&self, db: &DbMutex) -> Result {
+		self.parse_games(&heroic_provider::config_path()?, &mut |game| {
+			db.insert_game(&game);
+		})
 	}
 }
 

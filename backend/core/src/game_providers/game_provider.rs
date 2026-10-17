@@ -41,6 +41,12 @@ pub trait ProviderActions {
 	fn insert_games(&self, db: &DbMutex) -> Result;
 }
 
+pub(crate) trait ProviderParser {
+	type Source;
+
+	fn parse_games(&self, source: &Self::Source, insert: &mut impl FnMut(DbGame)) -> Result;
+}
+
 pub trait WineProviderActions {
 	fn set_wine_dll_overrides(&self, _game: &DbGame, _dll_overrides: &[String]) -> Result {
 		Ok(())

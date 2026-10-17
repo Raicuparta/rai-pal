@@ -11,3 +11,6 @@ pub mod manual_provider;
 pub mod provider_command;
 pub mod steam;
 pub mod xbox_provider;
+
+#[cfg(test)]
+mod tests;
