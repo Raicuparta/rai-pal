@@ -50,6 +50,7 @@ struct GogApiInfo {
 
 #[derive(Debug, Default, Serialize, Deserialize)]
 struct Root {
+	#[serde(default)]
 	games: Vec<ParsedGame>,
 }
 

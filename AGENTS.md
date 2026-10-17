@@ -53,3 +53,7 @@ Avoid making your own custom styles unless absolutely necessary. Default to usin
 ## Error handling in the backend
 
 We use thiserror via the enums defined in two result.rs files (core and tauri-app crates). Errors get thrown to the frontend mostly as-is, as strings. fs-err is used to add necessary context, so those are already fine. But other cases like io::Error coming from dependencies, etc, might need some extra context passed. For this, we use thiserror-context. Make sure to use that whenever we are throwing errors that can reach the frontend.
+
+## Tests
+
+Don't add tests unless asked to. When you make a change that you think warrants tests (especially if related to something that already has existing tests somewhere), ask the user if you should add tests first.
