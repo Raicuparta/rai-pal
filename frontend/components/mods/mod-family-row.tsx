@@ -16,7 +16,7 @@ export function ModFamilyRow({ family, mods }: Props) {
 		<>
 			<Table.Tr
 				onClick={toggle}
-				style={{ cursor: "pointer" }}
+				data-hover="true"
 			>
 				<Table.Td colSpan={2}>
 					<Group
