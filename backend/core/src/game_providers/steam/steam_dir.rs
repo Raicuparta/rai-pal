@@ -5,7 +5,7 @@ use std::{
 
 use steamlocate::SteamDir;
 
-use crate::result::{Error, Result};
+use crate::result::{ContextResult, Error, Result};
 
 pub fn get_appinfo_path(steam_path: &Path) -> PathBuf {
 	steam_path.join("appcache/appinfo.vdf")
@@ -20,7 +20,7 @@ fn get_modified_time(path: &Path) -> SystemTime {
 // Multiple Steam installations can exist. Making Rai Pal support multiple at once
 // is a bit of a big refactor, so instead I'm just using some heuristics to pic one.
 pub fn find_steam_dir() -> Result<SteamDir> {
-	let steam_dirs = steamlocate::locate_all()?;
+	let steam_dirs = steamlocate::locate_all().context("failed to locate Steam installations")?;
 
 	let prefer_appinfo = steam_dirs
 		.iter()

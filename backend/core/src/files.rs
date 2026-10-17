@@ -27,7 +27,8 @@ pub async fn copy_dir_all(src: &Path, dst: &Path) -> Result {
 }
 
 pub fn extract(archive_path: &Path, target_path: &Path, on_progress: &impl Fn(u64, u64)) -> Result {
-	let mut archive = ZipArchive::new(File::open(archive_path)?)?;
+	let mut archive = ZipArchive::new(File::open(archive_path)?)
+		.with_context(|| format!("failed to open zip archive `{}`", archive_path.display()))?;
 
 	let total_uncompressed: u64 = {
 		let mut total = 0;
@@ -42,10 +43,23 @@ pub fn extract(archive_path: &Path, target_path: &Path, on_progress: &impl Fn(u6
 	let mut extracted_bytes: u64 = 0;
 
 	for i in 0..archive.len() {
-		let mut file = archive.by_index(i).map_err(io::Error::other)?;
+		let mut file = archive.by_index(i).with_context(|| {
+			format!(
+				"failed to read entry {i} from zip archive `{}`",
+				archive_path.display()
+			)
+		})?;
 		let file_size = file.size();
 
-		let name = file.name().map_err(io::Error::other)?.into_owned();
+		let name = file
+			.name()
+			.with_context(|| {
+				format!(
+					"failed to read name of entry {i} in zip archive `{}`",
+					archive_path.display()
+				)
+			})?
+			.into_owned();
 
 		// Some zips created on windows have cursed backslashes in their paths.
 		// We need to replace them with forward slashes to avoid issues when extracting on Linux.
@@ -77,7 +91,7 @@ pub fn extract(archive_path: &Path, target_path: &Path, on_progress: &impl Fn(u6
 			}
 			let mut outfile = fs::File::create(&outpath)?;
 			io::copy(&mut file, &mut outfile)
-				.context(format!("failed to extract `{}`", outpath.display()))?;
+				.with_context(|| format!("failed to extract `{}`", outpath.display()))?;
 			extracted_bytes += file_size;
 		}
 

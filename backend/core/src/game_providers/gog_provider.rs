@@ -15,7 +15,7 @@ use crate::{
 	game::DbGame,
 	game_providers::game_provider::{GameProviderId, ProviderActions, WineProviderActions},
 	local_database::{app_database::DbMutex, game_database::GameDatabase},
-	result::Result,
+	result::{ContextResult, Result},
 };
 
 #[derive(Clone)]
@@ -113,10 +113,15 @@ fn get_database() -> Result<Option<Vec<GogDbEntry>>> {
 		return Ok(None);
 	}
 
-	let connection = Connection::open_with_flags(database_path, OpenFlags::SQLITE_OPEN_READ_ONLY)?;
+	let database_label = database_path.display().to_string();
 
-	let mut statement = connection.prepare(
-		r"SELECT
+	let connection =
+		Connection::open_with_flags(database_path, OpenFlags::SQLITE_OPEN_READ_ONLY)
+			.with_context(|| format!("failed to open GOG Galaxy database `{database_label}`"))?;
+
+	let mut statement = connection
+		.prepare(
+			r"SELECT
 	Builds.productId AS id,
 	MAX(CASE WHEN GamePieceTypes.type = 'originalTitle' THEN GamePieces.value END) AS title,
 	MAX(CASE WHEN GamePieceTypes.type = 'originalImages' THEN GamePieces.value END) AS images,
@@ -134,7 +139,8 @@ JOIN
 	GamePieceTypes ON GamePieces.gamePieceTypeId = GamePieceTypes.id
 GROUP BY
 	Builds.productId;",
-	)?;
+		)
+		.with_context(|| format!("failed to query GOG Galaxy database `{database_label}`"))?;
 
 	let rows: Vec<GogDbEntry> = statement
 		.query_map([], |row| {

@@ -46,7 +46,7 @@ pub fn map_readonly(path: &Path) -> Result<Mmap> {
 	// the mapping does not escape the current stack frame — rai-pal's engine
 	// scanners satisfy this by construction.
 	let mmap = unsafe { Mmap::map(&file) }
-		.context(format!("failed to memory-map `{}`", path.display()))?;
+		.with_context(|| format!("failed to memory-map `{}`", path.display()))?;
 
 	// The `File` handle can be dropped: the OS keeps the mapping alive
 	// independently.

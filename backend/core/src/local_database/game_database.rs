@@ -23,7 +23,7 @@ use crate::{
 	operating_system::OperatingSystem,
 	path_extensions::{AsValidStr, PathExt},
 	remote_game,
-	result::Result,
+	result::{ContextResult, Result},
 };
 
 pub trait GameDatabase {
@@ -204,7 +204,8 @@ impl GameDatabase for DbMutex {
 					engine_version_display: row.get(17)?,
 					supported_os: row.get_json(18)?,
 				})
-			})?)
+			})
+			.with_context(|| format!("querying game `{provider_id}/{game_id}`"))?)
 	}
 
 	fn get_game_ids(&self, query: Option<GamesQuery>) -> Result<GameIdsResponse> {
@@ -852,11 +853,12 @@ fn open_local_database_connection() -> Result<rusqlite::Connection> {
 	}
 
 	let connection = rusqlite::Connection::open_with_flags(
-		path,
+		&path,
 		OpenFlags::SQLITE_OPEN_CREATE
 			| OpenFlags::SQLITE_OPEN_READ_WRITE
 			| OpenFlags::SQLITE_OPEN_PRIVATE_CACHE,
-	)?;
+	)
+	.with_context(|| format!("failed to open local database `{}`", path.display()))?;
 
 	connection.execute_batch(
 		r"

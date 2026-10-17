@@ -201,10 +201,12 @@ fn systemd_run_command(launch: &GameLaunch) -> Option<Command> {
 pub fn spawn_game(launch: &GameLaunch) -> Result {
 	#[cfg(target_os = "linux")]
 	if let Some(mut command) = systemd_run_command(launch) {
-		let status = command.status().context(format!(
-			"failed to start `{}` through systemd",
-			launch.program.display()
-		))?;
+		let status = command.status().with_context(|| {
+			format!(
+				"failed to start `{}` through systemd",
+				launch.program.display()
+			)
+		})?;
 
 		if status.success() {
 			log::info!(

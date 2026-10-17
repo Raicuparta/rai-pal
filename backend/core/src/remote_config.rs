@@ -5,7 +5,11 @@ use reqwest::Response;
 use zip::ZipArchive;
 
 use crate::{
-	game::DbGame, http, mods::game_mod::GameMod, path_extensions::PathExt, result::Result,
+	game::DbGame,
+	http,
+	mods::game_mod::GameMod,
+	path_extensions::PathExt,
+	result::{ContextResult, Result},
 };
 
 const CONFIG_DB_BASE_URL: &str = "https://raicuparta.github.io/rai-pal-db/config-db";
@@ -49,7 +53,10 @@ pub async fn get_remote_configs(exe_path: &Path) -> Result<Option<RemoteConfigs>
 		return Ok(None);
 	}
 
-	let configs = response.json::<RemoteConfigs>().await?;
+	let configs = response
+		.json::<RemoteConfigs>()
+		.await
+		.with_context(|| format!("failed to decode remote configs from `{url}`"))?;
 	Ok(Some(configs))
 }
 
@@ -67,7 +74,11 @@ pub async fn download_config_file(
 	game: &DbGame,
 	destination_path: &Path,
 ) -> Result {
-	let content = download_config(config_file, game).await?.bytes().await?;
+	let content = download_config(config_file, game)
+		.await?
+		.bytes()
+		.await
+		.with_context(|| format!("failed to download config file `{config_file}`"))?;
 
 	fs_err::tokio::write(destination_path, content).await?;
 	Ok(())
@@ -78,7 +89,11 @@ pub async fn download_config_folder(
 	game: &DbGame,
 	destination_path: &Path,
 ) -> Result {
-	let content = download_config(config_file, game).await?.bytes().await?;
+	let content = download_config(config_file, game)
+		.await?
+		.bytes()
+		.await
+		.with_context(|| format!("failed to download config file `{config_file}`"))?;
 
 	ZipArchive::new(Cursor::new(content))?.extract(destination_path)?;
 

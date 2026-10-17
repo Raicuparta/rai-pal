@@ -9,7 +9,10 @@ use serde::de::DeserializeOwned;
 use serde_json::Value;
 
 use super::provider_command::ProviderCommand;
-use crate::{app_paths, result::Result};
+use crate::{
+	app_paths,
+	result::{ContextResult, Result},
+};
 
 fn heroic_config_path(relative_path: &str) -> Result<std::path::PathBuf> {
 	let dirs = app_paths::base_dirs()?;
@@ -34,8 +37,11 @@ where
 		return Ok(None);
 	}
 
-	let file_content = fs_err::read_to_string(path)?;
-	Ok(Some(serde_json::from_str::<T>(file_content.as_str())?))
+	let file_content = fs_err::read_to_string(&path)?;
+	Ok(Some(
+		serde_json::from_str::<T>(file_content.as_str())
+			.with_context(|| format!("failed to parse Heroic file `{}`", path.display()))?,
+	))
 }
 
 pub fn read_heroic_json_files<T>(relative_dir: &str) -> Result<Vec<T>>

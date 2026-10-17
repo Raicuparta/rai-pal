@@ -21,7 +21,7 @@ use crate::{
 	},
 	local_database::{app_database::DbMutex, game_database::GameDatabase},
 	path_extensions::PathExt,
-	result::Result,
+	result::{ContextResult, Result},
 };
 
 #[serializable_struct]
@@ -189,9 +189,20 @@ impl ProviderActions for Epic {
 				&general_purpose::STANDARD,
 			);
 			let mut json = String::default();
-			decoder.read_to_string(&mut json)?;
+			decoder.read_to_string(&mut json).with_context(|| {
+				format!(
+					"failed to decode Epic catalog cache `{}`",
+					catalog_path.display()
+				)
+			})?;
 
-			let catalog = serde_json::from_str::<Vec<EpicCatalogItem>>(&json)?;
+			let catalog =
+				serde_json::from_str::<Vec<EpicCatalogItem>>(&json).with_context(|| {
+					format!(
+						"failed to parse Epic catalog cache `{}`",
+						catalog_path.display()
+					)
+				})?;
 			for catalog_item in catalog {
 				if let Some(mut game) = Self::get_game(&catalog_item) {
 					if let Some(exe_path) = exe_paths.remove(&game.external_id) {
@@ -222,6 +233,7 @@ impl WineProviderActions for Epic {}
 
 fn read_manifest(path: &Path) -> Result<EpicManifest> {
 	let json = fs::read_to_string(path)?;
-	let manifest = serde_json::from_str::<EpicManifest>(&json)?;
+	let manifest = serde_json::from_str::<EpicManifest>(&json)
+		.with_context(|| format!("failed to parse Epic manifest `{}`", path.display()))?;
 	Ok(manifest)
 }

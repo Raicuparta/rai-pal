@@ -24,7 +24,7 @@ use crate::{
 	},
 	operating_system::OperatingSystem,
 	path_extensions::PathExt,
-	result::{Error, Result},
+	result::{ContextResult, Error, Result},
 };
 
 #[serializable_struct]
@@ -228,7 +228,8 @@ impl ModDatabase for DbMutex {
 					scope: row.get(22)?,
 					game_environment: row.get_json(23)?,
 				})
-			})?)
+			})
+			.with_context(|| format!("querying mod `{mod_id}`"))?)
 	}
 
 	fn get_installed_mod(
@@ -261,7 +262,8 @@ impl ModDatabase for DbMutex {
 					game_id_option.as_deref(),
 				],
 				|row| row.get::<_, bool>(0),
-			)?;
+			)
+			.with_context(|| format!("checking whether mod `{mod_id}` is installed"))?;
 
 		if !is_installed {
 			return Ok(None);

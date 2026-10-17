@@ -54,10 +54,10 @@ pub fn spawn_detached(cmd: &mut Command) -> Result {
 		// moment after forking. Reap it so it doesn't linger as a zombie.
 		let mut child = cmd
 			.spawn()
-			.context(format!("failed to launch `{program}`"))?;
+			.with_context(|| format!("failed to launch `{program}`"))?;
 		child
 			.wait()
-			.context(format!("failed to wait for `{program}`"))?;
+			.with_context(|| format!("failed to wait for `{program}`"))?;
 	}
 
 	#[cfg(windows)]
@@ -67,7 +67,7 @@ pub fn spawn_detached(cmd: &mut Command) -> Result {
 		if crate::game_engines::pe_utils::is_pe_console_app(std::path::Path::new(cmd.get_program()))
 		{
 			cmd.spawn()
-				.context(format!("failed to launch `{program}`"))?;
+				.with_context(|| format!("failed to launch `{program}`"))?;
 		} else {
 			use std::os::windows::process::CommandExt;
 
@@ -79,7 +79,7 @@ pub fn spawn_detached(cmd: &mut Command) -> Result {
 				.stderr(Stdio::null())
 				.creation_flags(DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP);
 			cmd.spawn()
-				.context(format!("failed to launch `{program}`"))?;
+				.with_context(|| format!("failed to launch `{program}`"))?;
 		}
 	}
 

@@ -11,7 +11,7 @@ use crate::{
 	game::DbGame,
 	game_providers::game_provider::{GameProviderId, ProviderActions, WineProviderActions},
 	local_database::{app_database::DbMutex, game_database::GameDatabase},
-	result::{LogErrExt, Result},
+	result::{ContextResult, LogErrExt, Result},
 };
 
 #[derive(Clone)]
@@ -223,17 +223,20 @@ fn get_database() -> Result<Option<ItchDatabase>> {
 		return Ok(None);
 	};
 	let db_display = db_path.display().to_string();
-	let connection = Connection::open_with_flags(db_path, OpenFlags::SQLITE_OPEN_READ_ONLY)?;
+	let connection = Connection::open_with_flags(db_path, OpenFlags::SQLITE_OPEN_READ_ONLY)
+		.with_context(|| format!("failed to open Itch database `{db_display}`"))?;
 
-	let mut caves_statement = connection.prepare(
-		r"SELECT
+	let mut caves_statement = connection
+		.prepare(
+			r"SELECT
 			caves.game_id, caves.verdict, games.title, games.cover_url
     FROM
 			caves
     JOIN
 			games ON caves.game_id = games.id;
   ",
-	)?;
+		)
+		.with_context(|| format!("failed to query Itch database `{db_display}`"))?;
 	let cave_rows = caves_statement.query_map([], |row| {
 		Ok(ItchDatabaseCave {
 			id: row.get("game_id")?,
