@@ -1,0 +1,18 @@
+{
+	"installed": [
+		{
+			"platform": "windows",
+			"executable": "",
+			"install_path": "/home/rai/Games/Heroic/INSIDE",
+			"install_size": "2.16 GiB",
+			"is_dlc": false,
+			"version": "10",
+			"appName": "1916896012",
+			"installedDLCs": [],
+			"language": "en-US",
+			"versionEtag": "\"f6f0d1ef2f44147d2b212fff8ae37e04\"",
+			"buildId": "50755933441365140",
+			"pinnedVersion": false
+		}
+	]
+}
