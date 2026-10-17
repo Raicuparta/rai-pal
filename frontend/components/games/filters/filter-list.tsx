@@ -1,5 +1,6 @@
 import { ActionIcon, Divider, Group, Stack } from "@mantine/core";
 import { useAtomValue } from "jotai";
+import { useMemo } from "react";
 import { IconChevronUp, IconRestore } from "@tabler/icons-react";
 import {
 	FilterChangeCallback,
@@ -8,7 +9,7 @@ import {
 	keepOnlyLocked,
 } from "./filter-column";
 import { GamesFilter, GamesQuery } from "@api/bindings";
-import { modFamiliesAtom } from "@hooks/use-data";
+import { modFamiliesAtom, modsAtom } from "@hooks/use-data";
 import { useDataQuery } from "@hooks/use-data-query";
 import { useAppSettingSingle } from "@hooks/use-app-setting-single";
 import { filterDetails, FilterKey } from "./filter-details";
@@ -20,8 +21,29 @@ export function FilterList() {
 	const [dataQuery, setDataQuery] = useDataQuery();
 	const [expandedFilters = [], setExpandedFilters] =
 		useAppSettingSingle("expandedFilters");
-	const modFamilies = useAtomValue(modFamiliesAtom);
+	const allModFamilies = useAtomValue(modFamiliesAtom);
+	const mods = useAtomValue(modsAtom);
 	const { t } = useLocalization("filterMenu");
+
+	const modFamilies = useMemo(() => {
+		const familiesWithAnyMods = new Set<string>();
+		const familiesWithVisibleMods = new Set<string>();
+
+		for (const mod of Object.values(mods)) {
+			if (!mod.family) continue;
+			familiesWithAnyMods.add(mod.family);
+			if (!mod.hideFromGameModsList) {
+				familiesWithVisibleMods.add(mod.family);
+			}
+		}
+
+		return Object.fromEntries(
+			Object.entries(allModFamilies).filter(
+				([id]) =>
+					!familiesWithAnyMods.has(id) || familiesWithVisibleMods.has(id),
+			),
+		);
+	}, [allModFamilies, mods]);
 
 	const hasModFamilies = Object.keys(modFamilies).length > 0;
 

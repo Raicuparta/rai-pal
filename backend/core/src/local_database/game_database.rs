@@ -362,6 +362,7 @@ impl GameDatabase for DbMutex {
 						r"EXISTS (
 						SELECT 1 FROM main.mods m
 						WHERE m.family NOT IN ({})
+						AND COALESCE(m.hide_from_game_mods_list, 0) = 0
 						AND (json_extract(m.engine, '$') IS NULL OR json_extract(m.engine, '$') = COALESCE(ig.engine_brand, rg.engine_brand))
 						AND (json_extract(m.unity_backend, '$') IS NULL OR ig.unity_backend IS NULL OR json_extract(m.unity_backend, '$') = ig.unity_backend)
 					AND (json_extract(m.architecture, '$') IS NULL OR ig.architecture IS NULL OR json_extract(m.architecture, '$') = ig.architecture)
