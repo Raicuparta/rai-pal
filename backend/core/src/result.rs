@@ -178,6 +178,12 @@ pub enum Error {
 	#[error("This operation requires mod `{0}` to be installed.")]
 	ModNotInstalled(String),
 
+	#[error("Game `{0}` is no longer in the local database. Refresh the games list and try again.")]
+	GameNotFound(String),
+
+	#[error("Mod `{0}` is no longer in the local mod list. Refresh the mods and try again.")]
+	ModNotFound(String),
+
 	#[error("Failed to find game executable at `{0}`")]
 	NoExecutableFound(PathBuf),
 

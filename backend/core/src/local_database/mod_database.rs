@@ -5,6 +5,7 @@ use std::{
 };
 
 use rai_pal_proc_macros::serializable_struct;
+use rusqlite::OptionalExtension;
 use serde::Serialize;
 
 use crate::{
@@ -229,7 +230,8 @@ impl ModDatabase for DbMutex {
 					game_environment: row.get_json(23)?,
 				})
 			})
-			.with_context(|| format!("querying mod `{mod_id}`"))?)
+			.optional()?
+			.ok_or_else(|| Error::ModNotFound(mod_id.to_string()))?)
 	}
 
 	fn get_installed_mod(
@@ -269,7 +271,11 @@ impl ModDatabase for DbMutex {
 			return Ok(None);
 		}
 
-		let game_mod = self.get_mod(mod_id)?;
+		let game_mod = match self.get_mod(mod_id) {
+			Ok(game_mod) => game_mod,
+			Err(Error::ModNotFound(_)) => return Ok(None),
+			Err(error) => return Err(error),
+		};
 		let game_option = if let Some(game_id) = game_id_option
 			&& let Some(provider_id) = provider_id_option
 		{

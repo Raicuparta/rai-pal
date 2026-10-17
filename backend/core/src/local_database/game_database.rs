@@ -5,7 +5,7 @@ use std::{
 };
 
 use rai_pal_proc_macros::serializable_struct;
-use rusqlite::OpenFlags;
+use rusqlite::{OpenFlags, OptionalExtension};
 use strum::IntoEnumIterator;
 
 use crate::{
@@ -23,7 +23,7 @@ use crate::{
 	operating_system::OperatingSystem,
 	path_extensions::{AsValidStr, PathExt},
 	remote_game,
-	result::{ContextResult, Result},
+	result::{ContextResult, Error, Result},
 };
 
 pub trait GameDatabase {
@@ -205,7 +205,8 @@ impl GameDatabase for DbMutex {
 					supported_os: row.get_json(18)?,
 				})
 			})
-			.with_context(|| format!("querying game `{provider_id}/{game_id}`"))?)
+			.optional()?
+			.ok_or_else(|| Error::GameNotFound(format!("{provider_id}/{game_id}")))?)
 	}
 
 	fn get_game_ids(&self, query: Option<GamesQuery>) -> Result<GameIdsResponse> {
