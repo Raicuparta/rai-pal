@@ -2,6 +2,7 @@ pub mod dummy_provider;
 pub mod epic_provider;
 pub mod game_provider;
 pub mod gog_provider;
+pub mod heroic_amazon_provider;
 pub mod heroic_epic_provider;
 pub mod heroic_gog_provider;
 pub mod heroic_provider;
@@ -10,3 +11,6 @@ pub mod manual_provider;
 pub mod provider_command;
 pub mod steam;
 pub mod xbox_provider;
+
+#[cfg(test)]
+mod tests;

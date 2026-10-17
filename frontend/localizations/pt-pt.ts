@@ -97,25 +97,27 @@ export const ptPt: Localization = {
 		startGameButton: "Iniciar jogo",
 		startGameExecutable: "Iniciar executável do jogo",
 		startGameViaProvider: "Iniciar jogo via {provider}",
-		foldersDropdown: "Pastas",
+		foldersSection: "Pastas",
 		openGameFilesFolder: "Ficheiros do jogo",
 		openInstalledModsFolder: "Mods instalados",
 		openGameDataFolder: "Dados da aplicação",
 		openGameWinePrefixFolder: "Prefixo Wine",
 		openGameWineBinaryFolder: "Binário Wine",
+
+		dataSection: "Dados",
 		removeFromRaiPal: "Remover do Rai Pal",
 		removeGameConfirmation: "Queres mesmo remover este jogo do Rai Pal?",
 		refreshGame: "Atualizar jogo",
-		failedToReadGameInfo:
-			"Erro ao ler informações importantes sobre este jogo. O executável pode estar protegido. Alguns mods podem não instalar-se.",
-		failedToDetermineEngine:
-			"Não foi possível determinar o motor deste jogo. Alguns mods podem não funcionar.",
-		gameNotInstalledWarning:
-			"Este jogo não está instalado, por isso não tenho 100% de certeza sobre a compatibilidade dos mods. Os que vês abaixo podem funcionar. Se instalares o jogo, posso mostrar informações mais exatas.",
+		failedToDetermineEngine: "Não foi possível determinar o motor deste jogo.",
 		uninstallAllModsButton: "Desinstalar todos os mods",
 		uninstallAllModsConfirmation:
 			"Tens a certeza? Isto vai apagar todos os ficheiros da pasta de mods deste jogo. Mas não mexe nos ficheiros do jogo em si.",
 
+		installedMods: "Mods instalados",
+		availableMods: "Mods disponíveis",
+		potentiallyCompatibleMods: "Mods potencialmente compatíveis",
+		potentiallyCompatibleModsDescription:
+			"Instala este jogo para ver informações mais detalhadas sobre que mods são compatíveis",
 		incompatibleGameModsLabel: "Mods Incompatíveis",
 
 		incompatibleGameModsDescription:
@@ -123,6 +125,9 @@ export const ptPt: Localization = {
 		otherThings: "Outras coisas",
 		otherThingsDescription:
 			"Estes são principalmente dependências e outras coisas que normalmente não precisas de mexer.",
+
+		noModsForGame:
+			"Nada! Nenhum dos mods disponíveis serve para este jogo. Tenta outra coisa.",
 	},
 
 	gameModRow: {
@@ -174,7 +179,8 @@ export const ptPt: Localization = {
 		runMod: "Executar",
 		openModFolder: "Abrir pasta do mod",
 		updateMod: "Atualizar mod",
-		downloadMod: "Descarregar mod",
+		downloadMod: "Descarregar",
+		openModSource: "Site",
 		deleteMod: "Eliminar mod",
 		deleteModConfirmation:
 			"Tens a certeza? Todos os ficheiros dentro da pasta do mod vão ser apagados.",
@@ -185,6 +191,10 @@ export const ptPt: Localization = {
 		showGameThumbnails: "Mostrar imagens na lista de jogos",
 		language: "Idioma",
 		autoDetectedLanguage: "Auto-detetado - {languageName}",
+		colorScheme: "Esquema de cores",
+		colorSchemeAuto: "Automático",
+		colorSchemeDark: "Escuro",
+		colorSchemeLight: "Claro",
 		openLogsFolderButton: "Abrir Pasta de Registos",
 		resetRaiPalSettingsButton: "Repor definições do Rai Pal",
 		resetRaiPalSettingsTooltip:

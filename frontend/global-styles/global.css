@@ -1,9 +1,4 @@
 body {
-	--background-dark: light-dark(
-		var(--mantine-color-gray-1),
-		var(--mantine-color-dark-8)
-	);
-
 	/*
 		Prevent unwanted scrolling. All scrolling in Rai Pal is meant to happen within each tab,
 		or within modals. The main window should never scroll. If it does, that's a mistake, and
@@ -13,7 +8,7 @@ body {
 }
 
 html {
-	/* 
+	/*
 		Mantine only sets the body background color by default,
 		which would cause a white flash while the content is still loading.
 		Setting the html background color means we get the correct color earlier.

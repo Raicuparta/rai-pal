@@ -29,18 +29,23 @@ pub enum ModProviderId {
 	Url,
 }
 
-// The whole refresh is serialized so concurrent calls (a toggle racing the
+// The whole refresh is guarded so concurrent calls (a toggle racing the
 // initial data update, or rapid toggles) can't interleave their insert/remove
-// phases and leave stale mods behind.
+// phases and leave stale mods behind. Calls that arrive while a refresh is
+// already running are skipped instead of queued, so slow refreshes can't pile
+// up.
 static REFRESH_LOCK: AsyncMutex<()> = AsyncMutex::const_new(());
 
-/// Refreshes every mod provider, serialized by a module-level lock.
+/// Refreshes every mod provider, guarded by a module-level lock.
 ///
-/// Every provider is attempted even if an earlier one fails, so a broken local
-/// mod manifest can't stop the remote (including third party) mod databases
-/// from being refreshed. The first error is still returned at the end.
+/// Does nothing if another refresh is already running. Every provider is
+/// attempted even if an earlier one fails, so a broken local mod manifest can't
+/// stop the remote (including third party) mod databases from being refreshed.
+/// The first error is still returned at the end.
 pub async fn refresh_all_mods(db: &DbMutex) -> Result {
-	let _guard = REFRESH_LOCK.lock().await;
+	let Ok(_guard) = REFRESH_LOCK.try_lock() else {
+		return Ok(());
+	};
 
 	let mut first_error = if let Err(error) = FolderModProvider::default()?.refresh(db).await {
 		log::error!("Failed to refresh local mods: {error}");

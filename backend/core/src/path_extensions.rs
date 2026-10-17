@@ -1,7 +1,7 @@
+use fs_err as fs;
 use std::{
 	collections::hash_map::DefaultHasher,
 	ffi::OsStr,
-	fs,
 	hash::{Hash, Hasher},
 	path::{Component, Path, PathBuf},
 };
@@ -87,7 +87,7 @@ impl PathExt for Path {
 			return Some(direct_path);
 		}
 
-		std::fs::read_dir(self)
+		fs_err::read_dir(self)
 			.ok_or_log(&format!("Failed to read dir {}", self.display()))?
 			.flatten()
 			.find(|entry| entry.file_name().eq_ignore_ascii_case(child_name))

@@ -52,9 +52,9 @@ impl InstalledMod {
 				));
 
 				if destination_path.is_dir() {
-					tokio::fs::remove_dir_all(&destination_path).await?;
+					fs_err::tokio::remove_dir_all(&destination_path).await?;
 				} else if destination_path.exists() {
-					tokio::fs::remove_file(&destination_path).await?;
+					fs_err::tokio::remove_file(&destination_path).await?;
 				}
 			}
 		}
@@ -68,14 +68,14 @@ impl InstalledMod {
 				));
 
 				if destination_path.exists() {
-					tokio::fs::remove_file(&destination_path).await?;
+					fs_err::tokio::remove_file(&destination_path).await?;
 				}
 			}
 		}
 
 		let manifest_path = self.game_mod.get_manifest_target_path(self.game.as_ref())?;
 		if manifest_path.exists() {
-			tokio::fs::remove_file(manifest_path).await?;
+			fs_err::tokio::remove_file(manifest_path).await?;
 		}
 
 		Ok(())

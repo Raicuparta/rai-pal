@@ -1,11 +1,11 @@
+use fs_err as fs;
 use std::{
 	collections::{HashMap, HashSet},
-	fs,
 	path::Path,
 };
 
 use super::vdf::{KeyValues, ValueType, find_keys};
-use crate::result::Result;
+use crate::result::{ContextResult, Result};
 
 #[derive(Debug)]
 pub struct Package {
@@ -25,27 +25,34 @@ pub struct PackageInfo {
 impl PackageInfo {
 	pub fn read(path: &Path) -> Result<Self> {
 		let file = fs::File::open(path)?;
-		let mmap = unsafe { memmap2::Mmap::map(&file)? };
+		let mmap = unsafe { memmap2::Mmap::map(&file) }
+			.with_context(|| format!("failed to memory-map `{}`", path.display()))?;
+
+		Self::from_mmap(&mmap)
+			.with_context(|| format!("failed to parse Steam packageinfo `{}`", path.display()))
+	}
+
+	fn from_mmap(mmap: &memmap2::Mmap) -> Result<Self> {
 		let mut pos = 0;
 
-		let magic = super::vdf::read_u32_le(&mmap, &mut pos)?;
-		let universe = super::vdf::read_u32_le(&mmap, &mut pos)?;
+		let magic = super::vdf::read_u32_le(mmap, &mut pos)?;
+		let universe = super::vdf::read_u32_le(mmap, &mut pos)?;
 
 		let mut packages = HashMap::new();
 
 		loop {
-			let package_id = super::vdf::read_u32_le(&mmap, &mut pos)?;
+			let package_id = super::vdf::read_u32_le(mmap, &mut pos)?;
 			if package_id == 0xffff_ffff {
 				break;
 			}
 
-			let checksum = super::vdf::read_array::<20>(&mmap, &mut pos)?;
+			let checksum = super::vdf::read_array::<20>(mmap, &mut pos)?;
 
-			let change_number = super::vdf::read_u32_le(&mmap, &mut pos)?;
+			let change_number = super::vdf::read_u32_le(mmap, &mut pos)?;
 			// XXX: No idea what this is. Seems to get ignored in vdf.py.
-			let pics = super::vdf::read_u64_le(&mmap, &mut pos)?;
+			let pics = super::vdf::read_u64_le(mmap, &mut pos)?;
 
-			let key_values = super::vdf::read_kv_mmap(&mmap, &mut pos, None, false)?;
+			let key_values = super::vdf::read_kv_mmap(mmap, &mut pos, None, false)?;
 
 			let package = Package {
 				checksum,

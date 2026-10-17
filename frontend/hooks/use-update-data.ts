@@ -2,21 +2,20 @@ import { useCallback, useEffect, useRef } from "react";
 import { useSetAtom } from "jotai";
 import { commands, PROVIDER_IDS } from "@api/bindings";
 import {
-	loadingTasksAtom,
 	gameDataAtom,
 	modsAtom,
+	modFamiliesAtom,
 	gameDataVersionAtom,
 } from "./use-data";
-import { showAppNotification } from "@components/app-notifications";
 import { useAppEvent } from "./use-app-event";
 import { useDebouncedCallback } from "@mantine/hooks";
 import { useDataQuery } from "./use-data-query";
 import { useCommandAtomData } from "./use-command-data";
+import { useRefreshTask } from "./use-refresh-tasks";
 
 export function useUpdateData(executeOnMount = false) {
-	const setLoadingTasks = useSetAtom(loadingTasksAtom);
+	const runRefreshTask = useRefreshTask();
 	const [gamesQuery] = useDataQuery();
-	const totalLoadingTaskCount = useRef(0);
 	const hasExecutedOnMount = useRef(false);
 
 	const getGameIds = useCallback(
@@ -28,53 +27,38 @@ export function useUpdateData(executeOnMount = false) {
 
 	const updateMods = useCommandAtomData(commands.getMods, modsAtom);
 
+	const updateModFamilies = useCommandAtomData(
+		commands.getModFamilies,
+		modFamiliesAtom,
+	);
+
 	const setGameDataVersion = useSetAtom(gameDataVersionAtom);
 
 	useEffect(() => {
 		if (!executeOnMount) return;
 		updateGames();
 		updateMods();
-	}, [executeOnMount, updateGames, updateMods]);
+		updateModFamilies();
+	}, [executeOnMount, updateGames, updateMods, updateModFamilies]);
 
 	const debouncedUpdateData = useDebouncedCallback(async () => {
 		// Fetch games and mods concurrently so a slow games fetch doesn't delay
 		// the mods list update. Debouncing (trailing-only) means this runs once
 		// after the database-write burst settles, so it always reads final data.
-		await Promise.all([updateGames(), updateMods()]);
+		await Promise.all([updateGames(), updateMods(), updateModFamilies()]);
 		setGameDataVersion((v) => v + 1);
 	}, 500);
 
 	useAppEvent("appDatabaseChanged", "update-data", debouncedUpdateData);
 
 	const updateAppData = useCallback(async () => {
-		function handleDataPromise(promise: Promise<null>, taskName: string) {
-			totalLoadingTaskCount.current += 1;
-			const taskIndex = totalLoadingTaskCount.current;
-			setLoadingTasks((previousLoadingTasks) => [
-				...previousLoadingTasks,
-				{ name: taskName, index: taskIndex },
-			]);
-			promise
-				.catch((error) => {
-					showAppNotification(
-						`Failed to initialize data update (${taskName}): ${error}`,
-						"error",
-					);
-				})
-				.finally(() =>
-					setLoadingTasks((previousLoadingTasks) =>
-						previousLoadingTasks.filter((task) => task.index !== taskIndex),
-					),
-				);
-		}
-
 		for (const providerId of PROVIDER_IDS) {
-			handleDataPromise(commands.refreshGames(providerId), providerId);
+			runRefreshTask(providerId, commands.refreshGames(providerId));
 		}
 
-		handleDataPromise(commands.refreshMods(), "mods");
-		handleDataPromise(commands.refreshRemoteGames(), "remote data");
-	}, [setLoadingTasks]);
+		runRefreshTask("mods", commands.refreshMods());
+		runRefreshTask("remote data", commands.refreshRemoteGames());
+	}, [runRefreshTask]);
 
 	useEffect(() => {
 		if (executeOnMount && !hasExecutedOnMount.current) {

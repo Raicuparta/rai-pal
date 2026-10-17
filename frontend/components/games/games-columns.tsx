@@ -1,4 +1,11 @@
-import { Box, DefaultMantineColor, Flex, Stack, Table } from "@mantine/core";
+import {
+	Box,
+	DefaultMantineColor,
+	Flex,
+	Image,
+	Stack,
+	Table,
+} from "@mantine/core";
 import {
 	TableColumnBase,
 	columnMapToList,
@@ -24,25 +31,29 @@ const thumbnail: GamesColumn = {
 
 		return (
 			<Table.Td
-				className={styles.thumbnailCell}
-				bg={`var(--mantine-color-${providerColors[item.providerId]}-light)`}
+				p={4}
 				opacity={item.exePath ? 1 : 0.5}
 			>
-				{thumbnailUrl && (
-					<img
-						decoding="async"
-						loading="lazy"
-						src={thumbnailUrl}
-						className={styles.thumbnailForeground}
-						onError={() => setIsBroken(true)}
-					/>
-				)}
+				<Image
+					radius="md"
+					w="auto"
+					h="auto"
+					maw="100%"
+					mah="100%"
+					mx="auto"
+					decoding="async"
+					loading="lazy"
+					src={thumbnailUrl ?? "images/fallback-thumbnail.png"}
+					onError={() => setIsBroken(true)}
+					className={`${styles.thumbnail} ${thumbnailUrl ? "" : styles.fallbackThumbnail}`}
+				/>
 			</Table.Td>
 		);
 	},
 };
 
 const providerColors: Record<GameProviderId, DefaultMantineColor> = {
+	Amazon: "orange",
 	Manual: "gray",
 	Steam: "blue",
 	Epic: "red",
@@ -67,7 +78,11 @@ const status: GamesColumn = {
 					providerId={item.providerId}
 					color={`var(--mantine-color-${providerColors[item.providerId]}-light-color)`}
 				/>
-				{item.exePath ? <IconDeviceDesktop color="white" /> : <IconCloud />}
+				{item.exePath ? (
+					<IconDeviceDesktop color="var(--mantine-color-bright)" />
+				) : (
+					<IconCloud />
+				)}
 			</Stack>
 		</Table.Td>
 	),
@@ -83,7 +98,7 @@ const name: GamesColumn = {
 				gap={3}
 				p="xs"
 				fw="bold"
-				c={item.exePath ? "white" : "grey"}
+				c={item.exePath ? "bright" : "dimmed"}
 				style={{
 					maxHeight: gameRowHeight,
 					overflow: "hidden",
@@ -133,12 +148,8 @@ const engine: GamesColumn = {
 
 		return (
 			<Table.Td
-				bg={
-					item.engineBrand
-						? `var(--mantine-color-${engineColor}-light)`
-						: "dark.4"
-				}
 				className={styles.engineWrapper}
+				bg={`var(--mantine-color-${engineColor}-light)`}
 				p={0}
 			>
 				{item.engineBrand && (

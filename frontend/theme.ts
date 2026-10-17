@@ -59,7 +59,6 @@ export const theme: MantineThemeOverride = {
 		Tooltip: {
 			defaultProps: {
 				openDelay: 200,
-				withinPortal: false,
 			},
 		},
 		Menu: {
@@ -76,7 +75,7 @@ export const theme: MantineThemeOverride = {
 		PopoverDropdown: {
 			defaultProps: {
 				p: "xs",
-				bg: "dark",
+				bg: "var(--mantine-color-body)",
 			},
 		},
 		Modal: {
@@ -86,6 +85,11 @@ export const theme: MantineThemeOverride = {
 						left: 0,
 					},
 				},
+			},
+		},
+		ScrollArea: {
+			defaultProps: {
+				scrollbarSize: 6,
 			},
 		},
 	},

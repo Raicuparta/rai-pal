@@ -146,7 +146,7 @@ fn get_auth_session_path() -> Result<PathBuf> {
 pub async fn logout_auth() -> Result {
 	let session_path = get_auth_session_path()?;
 	if session_path.exists() {
-		tokio::fs::remove_file(session_path).await?;
+		fs_err::tokio::remove_file(session_path).await?;
 	}
 
 	Ok(())
@@ -157,17 +157,17 @@ async fn save_auth_session_file(session: &AuthSavedSession) -> Result {
 	let session_path = get_auth_session_path()?;
 
 	if let Some(parent) = session_path.parent() {
-		tokio::fs::create_dir_all(parent).await?;
+		fs_err::tokio::create_dir_all(parent).await?;
 	}
-	tokio::fs::write(&session_path, &session_json).await?;
+	fs_err::tokio::write(&session_path, &session_json).await?;
 
 	#[cfg(unix)]
 	{
 		use std::os::unix::fs::PermissionsExt;
-		if let Ok(metadata) = tokio::fs::metadata(&session_path).await {
+		if let Ok(metadata) = fs_err::tokio::metadata(&session_path).await {
 			let mut permissions = metadata.permissions();
 			permissions.set_mode(0o600);
-			let _ = tokio::fs::set_permissions(&session_path, permissions).await;
+			let _ = fs_err::tokio::set_permissions(&session_path, permissions).await;
 		}
 	}
 
@@ -180,7 +180,7 @@ fn read_auth_session_file_optional() -> Result<Option<AuthSavedSession>> {
 		return Ok(None);
 	}
 
-	let session_json = std::fs::read_to_string(&session_path)?;
+	let session_json = fs_err::read_to_string(&session_path)?;
 	let session = serde_json::from_str::<AuthSavedSession>(&session_json).map_err(|error| {
 		Error::Auth(format!(
 			"Failed to parse auth session from file `{}`: {error}",
@@ -246,7 +246,7 @@ async fn save_avatar(url: &str) -> Result<Option<String>> {
 
 	let response = http::CLIENT.get(url).send().await?;
 
-	tokio::fs::write(&avatar_path, response.bytes().await?).await?;
+	fs_err::tokio::write(&avatar_path, response.bytes().await?).await?;
 
 	Ok(Some(avatar_path.try_to_str()?.to_string()))
 }

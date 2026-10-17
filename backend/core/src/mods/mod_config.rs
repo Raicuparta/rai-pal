@@ -1,3 +1,4 @@
+use fs_err::PathExt;
 use std::path::{Path, PathBuf};
 
 use rai_pal_proc_macros::serializable_struct;
@@ -8,7 +9,7 @@ use crate::{
 		game_mod::{GameMod, ModConfigDestinationType},
 		replacement_token::replace_tokens,
 	},
-	remote_config,
+	remote_config::{self, RemoteConfig},
 	result::Result,
 };
 
@@ -24,7 +25,7 @@ impl ModConfig {
 		&self,
 		game: &DbGame,
 		game_mod: &GameMod,
-		config_file: &str,
+		remote_config: &RemoteConfig,
 		overwrite: bool,
 	) -> Result {
 		let destination_path =
@@ -33,9 +34,9 @@ impl ModConfig {
 		if config_exists(&destination_path).await? {
 			if overwrite {
 				if destination_path.is_dir() {
-					tokio::fs::remove_dir_all(&destination_path).await?;
+					fs_err::tokio::remove_dir_all(&destination_path).await?;
 				} else {
-					tokio::fs::remove_file(&destination_path).await?;
+					fs_err::tokio::remove_file(&destination_path).await?;
 				}
 			} else {
 				return Ok(());
@@ -43,15 +44,17 @@ impl ModConfig {
 		}
 
 		if let Some(parent) = destination_path.parent() {
-			tokio::fs::create_dir_all(parent).await?;
+			fs_err::tokio::create_dir_all(parent).await?;
 		}
 
 		match self.destination_type {
 			ModConfigDestinationType::File => {
-				remote_config::download_config_file(config_file, game, &destination_path).await?;
+				remote_config::download_config_file(&remote_config.file, game, &destination_path)
+					.await?;
 			}
 			ModConfigDestinationType::Folder => {
-				remote_config::download_config_folder(config_file, game, &destination_path).await?;
+				remote_config::download_config_folder(&remote_config.file, game, &destination_path)
+					.await?;
 			}
 		}
 
@@ -60,12 +63,12 @@ impl ModConfig {
 }
 
 async fn config_exists(path: &Path) -> Result<bool> {
-	if !path.try_exists()? {
+	if !path.fs_err_try_exists()? {
 		return Ok(false);
 	}
 
 	if path.is_dir()
-		&& tokio::fs::read_dir(path)
+		&& fs_err::tokio::read_dir(path)
 			.await?
 			.next_entry()
 			.await?

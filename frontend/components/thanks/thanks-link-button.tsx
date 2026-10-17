@@ -12,6 +12,7 @@ export function ThanksLinkButton(props: Props) {
 			target="_blank"
 			color="blue"
 			variant="light"
+			justify="center"
 			className={styles.thanksButton}
 			{...props}
 		/>

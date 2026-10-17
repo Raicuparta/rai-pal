@@ -1,4 +1,4 @@
-import { AppLocale, commands } from "@api/bindings";
+import { AppLocale, ColorScheme, commands } from "@api/bindings";
 import { useAppSettings } from "@hooks/use-app-settings";
 import { useAppSettingSingle } from "@hooks/use-app-setting-single";
 import {
@@ -14,10 +14,13 @@ import {
 import { useAtomValue } from "jotai";
 import { detectedLocaleAtom, useLocalization } from "@hooks/use-localization";
 import {
+	IconDeviceLaptop,
 	IconFolderCode,
 	IconLanguage,
 	IconMenu2,
+	IconMoon,
 	IconRotateDot,
+	IconSun,
 } from "@tabler/icons-react";
 import {
 	getNativeLocaleName,
@@ -76,8 +79,8 @@ export function AppSettings() {
 			>
 				<Menu.Target>
 					<Button
-						variant="filled"
-						color="dark"
+						variant="subtle"
+						color="gray"
 						fz="md"
 					>
 						<IconMenu2 />
@@ -85,7 +88,7 @@ export function AppSettings() {
 				</Menu.Target>
 				<Menu.Dropdown
 					p="xs"
-					bg="dark"
+					bg="var(--mantine-color-body)"
 				>
 					<Stack>
 						<SwitchButton
@@ -168,6 +171,29 @@ export function AppSettings() {
 							</option>
 						))}
 					</NativeSelect>
+					<Divider my="xs" />
+					<NativeSelect
+						label={
+							<Group>
+								<span>{t("colorScheme")}</span>
+								{settings.colorScheme === "Auto" && <IconDeviceLaptop />}
+								{settings.colorScheme === "Dark" && <IconMoon />}
+								{settings.colorScheme === "Light" && <IconSun />}
+							</Group>
+						}
+						value={settings.colorScheme}
+						data={[
+							{ value: "Auto", label: t("colorSchemeAuto") ?? "Auto" },
+							{ value: "Dark", label: t("colorSchemeDark") ?? "Dark" },
+							{ value: "Light", label: t("colorSchemeLight") ?? "Light" },
+						]}
+						onChange={(event) => {
+							setSettings({
+								...settings,
+								colorScheme: event.currentTarget.value as ColorScheme,
+							});
+						}}
+					/>
 				</Menu.Dropdown>
 			</Menu>
 			<SteamCacheModal

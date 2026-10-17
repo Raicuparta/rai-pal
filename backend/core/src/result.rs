@@ -178,6 +178,12 @@ pub enum Error {
 	#[error("This operation requires mod `{0}` to be installed.")]
 	ModNotInstalled(String),
 
+	#[error("Game `{0}` is no longer in the local database. Refresh the games list and try again.")]
+	GameNotFound(String),
+
+	#[error("Mod `{0}` is no longer in the local mod list. Refresh the mods and try again.")]
+	ModNotFound(String),
+
 	#[error("Failed to find game executable at `{0}`")]
 	NoExecutableFound(PathBuf),
 
@@ -194,9 +200,9 @@ pub enum Error {
 	UnsupportedProviderOperation(GameProviderId, String),
 
 	#[error(
-		"Can't launch game `{0}` with environment variables: {1} can't set them with how it launches this game. Launch the game another way, or uninstall the mod that needs them."
+		"Can't launch game `{0}` with environment variables required by installed mod(s) `{2}`: {1} can't set them with how it launches this game. Launch the game another way, or uninstall the mod(s) that need them."
 	)]
-	UnsupportedGameEnvironment(String, GameProviderId),
+	UnsupportedGameEnvironment(String, GameProviderId, String),
 
 	#[error("Game engine {0} doesn't support this operation: `{1}`")]
 	UnsupportedEngineOperation(EngineBrand, String),
@@ -215,6 +221,42 @@ pub enum Error {
 
 	#[error("Wine prefix not initialized at `{0}`. Please start the game at least once first.")]
 	WinePrefixNotInitialized(PathBuf),
+
+	#[error("{message}: {source}")]
+	Context {
+		message: String,
+		#[specta(skip)]
+		#[source]
+		source: Box<Self>,
+	},
+}
+
+pub trait ContextResult<T> {
+	fn context(self, message: impl fmt::Display) -> Result<T>;
+	fn with_context<C, F>(self, f: F) -> Result<T>
+	where
+		C: fmt::Display,
+		F: FnOnce() -> C;
+}
+
+impl<T, E: Into<Error>> ContextResult<T> for std::result::Result<T, E> {
+	fn context(self, message: impl fmt::Display) -> Result<T> {
+		self.map_err(|error| Error::Context {
+			message: message.to_string(),
+			source: Box::new(error.into()),
+		})
+	}
+
+	fn with_context<C, F>(self, f: F) -> Result<T>
+	where
+		C: fmt::Display,
+		F: FnOnce() -> C,
+	{
+		self.map_err(|error| Error::Context {
+			message: f().to_string(),
+			source: Box::new(error.into()),
+		})
+	}
 }
 
 impl serde::Serialize for Error {

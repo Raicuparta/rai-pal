@@ -185,11 +185,9 @@ export function useLocalization<TCategory extends LocalizationCategory>(
 	}, [detectedLocale, setDetectedLocale]);
 
 	function t<TKey extends LocalizationKey<TCategory>>(
-		key?: TKey,
+		key: TKey,
 		...args: LocalizationFunctionArgs<BaseLocalization[TCategory][TKey]>
 	) {
-		if (!key) return undefined;
-
 		return getLocalizedText(
 			localizations[effectiveLocale],
 			category,

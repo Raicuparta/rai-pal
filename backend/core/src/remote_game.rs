@@ -9,7 +9,7 @@ use crate::{
 	game_providers::game_provider::GameProviderId,
 	http,
 	path_extensions::PathExt,
-	result::{LogErrExt, Result},
+	result::{ContextResult, LogErrExt, Result},
 };
 
 const URL_BASE: &str = "https://raicuparta.github.io/rai-pal-db/game-db";
@@ -67,9 +67,16 @@ pub async fn download_database() -> Result<PathBuf> {
 
 	let file_path = get_database_file_path()?;
 
-	tokio::fs::create_dir_all(file_path.try_parent()?).await?;
+	fs_err::tokio::create_dir_all(file_path.try_parent()?).await?;
 
-	tokio::fs::write(&file_path, response.bytes().await?).await?;
+	fs_err::tokio::write(
+		&file_path,
+		response
+			.bytes()
+			.await
+			.with_context(|| format!("failed to download remote game database from `{url}`"))?,
+	)
+	.await?;
 
 	Ok(file_path)
 }

@@ -1,4 +1,5 @@
-use std::{fs::File, io::Read, path::Path};
+use fs_err::File;
+use std::{io::Read, path::Path};
 
 use rai_pal_proc_macros::serializable_enum;
 

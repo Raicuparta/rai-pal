@@ -24,7 +24,7 @@ export function GamesSortMenu() {
 	const { sortBy, sortDescending } = dataQuery;
 
 	return (
-		<Stack px="xs">
+		<Stack pr="xs">
 			<Divider label={tSort("sortBy")} />
 			<Group>
 				<Select
