@@ -18,6 +18,12 @@ RUN apt-get update \
     wget \
     git \
     libssl-dev \
+    libfontconfig1-dev \
+    libfreetype-dev \
+    libxkbcommon-dev \
+    libxkbcommon-x11-dev \
+    libxcb-xkb-dev \
+    libwayland-dev \
     file \
     libwebkit2gtk-4.1-dev \
     libappindicator3-dev \

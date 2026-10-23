@@ -14,6 +14,8 @@
 		"bundle": "tauri bundle",
 		"build-debug": "cross-env CARGO_TARGET_DIR=target/debug/standalone-build tauri build --debug --no-bundle",
 		"build-slint-appimage": "bash scripts/build-slint-appimage.sh",
+		"podman-build-slint-appimage": "podman run --rm --pull=newer -v ${PWD}:/app -w /app -e LINUXDEPLOY=/var/cache/tauri/linuxdeploy-x86_64.AppImage -e APPIMAGE_EXTRACT_AND_RUN=1 ghcr.io/raicuparta/rai-pal-builder:linux-latest npm run build-slint-appimage",
+		"podman-build-slint-appimage-local": "podman build -f Containerfile.linux -t rai-pal-builder:linux-local . && podman run --rm -v ${PWD}:/app -w /app -e LINUXDEPLOY=/var/cache/tauri/linuxdeploy-x86_64.AppImage -e APPIMAGE_EXTRACT_AND_RUN=1 rai-pal-builder:linux-local npm run build-slint-appimage",
 		"vite": "vite",
 		"tauri": "tauri",
 		"update-icons": "tauri icon backend/graphics/icon-source.png",

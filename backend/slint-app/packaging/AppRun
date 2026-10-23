@@ -1,5 +1,8 @@
 #!/bin/sh
 set -e
 
-export SLINT_BACKEND="${SLINT_BACKEND:-winit-software}"
+if [ -d /run/opengl-driver ]; then
+	export SLINT_BACKEND="${SLINT_BACKEND:-winit-software}"
+fi
+
 exec "$APPDIR/usr/bin/rai-pal-slint" "$@"

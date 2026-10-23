@@ -33,9 +33,30 @@ if [[ "$SKIP_BUILD" -eq 0 ]] && ! command -v cargo >/dev/null 2>&1; then
 	exit 1
 fi
 
-if ! command -v linuxdeploy >/dev/null 2>&1; then
-	echo "Missing 'linuxdeploy'. Run this script inside 'nix develop'." >&2
+linuxdeploy_appimage=""
+
+if [[ -n "${LINUXDEPLOY:-}" ]]; then
+	if [[ "$LINUXDEPLOY" == *.AppImage ]]; then
+		linuxdeploy_appimage="$LINUXDEPLOY"
+	else
+		linuxdeploy_cmd="$LINUXDEPLOY"
+	fi
+elif command -v linuxdeploy >/dev/null 2>&1; then
+	linuxdeploy_cmd="linuxdeploy"
+elif [[ -x "${XDG_CACHE_HOME:-$HOME/.cache}/tauri/linuxdeploy-x86_64.AppImage" ]]; then
+	linuxdeploy_appimage="${XDG_CACHE_HOME:-$HOME/.cache}/tauri/linuxdeploy-x86_64.AppImage"
+else
+	echo "Missing 'linuxdeploy'. Run inside 'nix develop' or the Linux builder container." >&2
 	exit 1
+fi
+
+if [[ -n "$linuxdeploy_appimage" ]]; then
+	linuxdeploy_cmd="$(mktemp -t rai-pal-linuxdeploy.XXXXXX.AppImage)"
+	trap 'rm -f "$linuxdeploy_cmd"' EXIT
+	cp "$linuxdeploy_appimage" "$linuxdeploy_cmd"
+	dd if=/dev/zero of="$linuxdeploy_cmd" bs=1 count=4 seek=8 conv=notrunc status=none
+	chmod +x "$linuxdeploy_cmd"
+	export APPIMAGE_EXTRACT_AND_RUN=1
 fi
 
 for file in "$DESKTOP_FILE" "$ICON_FILE"; do
@@ -120,7 +141,7 @@ force_pkg_library xcb libxcb-xkb.so.1
 
 
 pushd "$DIST_DIR" >/dev/null
-linuxdeploy "${linuxdeploy_args[@]}"
+"$linuxdeploy_cmd" "${linuxdeploy_args[@]}"
 popd >/dev/null
 
 GENERATED_APPIMAGE="$(find "$DIST_DIR" -maxdepth 1 -name '*.AppImage' -print -quit)"
