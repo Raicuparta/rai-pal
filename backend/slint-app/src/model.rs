@@ -1,3 +1,5 @@
+use std::rc::Rc;
+
 use rai_pal_core::{
 	game::DbGame, game_providers::game_provider::GameProviderId, operating_system::OperatingSystem,
 };
@@ -13,6 +15,8 @@ pub fn make_rows(game_ids: &[(GameProviderId, String)]) -> Vec<GameRowData> {
 			title: "...".into(),
 			thumbnail: slint::Image::default(),
 			has_thumbnail: false,
+			installed: false,
+			tags: Default::default(),
 			loaded: false,
 			engine_brand: "".into(),
 			engine_version: "".into(),
@@ -29,6 +33,8 @@ pub fn reset_row(row: &mut GameRowData) {
 	row.title = "...".into();
 	row.thumbnail = slint::Image::default();
 	row.has_thumbnail = false;
+	row.installed = false;
+	row.tags = Default::default();
 	row.loaded = false;
 	row.engine_brand = "".into();
 	row.engine_version = "".into();
@@ -43,10 +49,12 @@ pub fn apply_game_to_row(row: &mut GameRowData, game: &DbGame) {
 	let (release_day, release_month, release_year) =
 		format_release_date(game.release_date_rfc3339.as_deref());
 
-	row.title = game.display_title.clone().into();
+	row.title = display_title(game).into();
+	row.installed = game.exe_path.is_some();
+	row.tags = Rc::new(slint::VecModel::from(tags(game))).into();
 	row.engine_brand = game
 		.engine_brand
-		.map(|brand| brand.to_string())
+		.map(|brand| brand.to_string().to_uppercase())
 		.unwrap_or_default()
 		.into();
 	row.engine_version = game
@@ -62,6 +70,23 @@ pub fn apply_game_to_row(row: &mut GameRowData, game: &DbGame) {
 		.unwrap_or_default()
 		.into();
 	row.loaded = true;
+}
+
+pub fn display_title(game: &DbGame) -> String {
+	match &game.title_discriminator {
+		Some(discriminator) => format!("{} ({})", game.display_title, discriminator),
+		None => game.display_title.clone(),
+	}
+}
+
+pub fn tags(game: &DbGame) -> Vec<slint::SharedString> {
+	let mut tags: Vec<String> = game
+		.tags
+		.iter()
+		.map(|tag| tag.to_string().to_uppercase())
+		.collect();
+	tags.sort();
+	tags.into_iter().map(Into::into).collect()
 }
 
 pub fn format_release_date(date: Option<&str>) -> (String, String, String) {
@@ -118,5 +143,5 @@ pub fn get_engine_details(game: &DbGame) -> String {
 		details.push(architecture.to_string());
 	}
 
-	details.join(" ")
+	details.join(" ").to_lowercase()
 }

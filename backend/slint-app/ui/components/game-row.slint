@@ -1,7 +1,7 @@
+import { IconDisplay, IconSet } from "@lucide";
 import { Palette } from "std-widgets.slint";
 import { GameRowData } from "../game-row-data.slint";
 import { ProviderIcon } from "provider-icon.slint";
-import { EngineIcon } from "engine-icon.slint";
 
 export component GameRowView inherits Rectangle {
     in property <GameRowData> game-row;
@@ -11,117 +11,168 @@ export component GameRowView inherits Rectangle {
 
     height: 60px;
     background: touch-area.has-hover ? Palette.selection-background : Palette.background;
-    property <brush> row-foreground: touch-area.has-hover ? Palette.selection-foreground : Palette.foreground;
+    property <brush> row-foreground: game-row.installed ? Palette.foreground : #868e96;
 
     function engine-background(brand: string) -> brush {
-        if brand == "Unity" {
-            return #e7f5ff;
+        if brand == "UNITY" {
+            return #102a43;
         }
-        if brand == "Unreal" {
-            return #fff5f5;
+        if brand == "UNREAL" {
+            return #3b1418;
         }
-        if brand == "Godot" {
-            return #f3f0ff;
+        if brand == "GODOT" {
+            return #2b1b40;
         }
-        if brand == "GameMaker" {
-            return #e6fcf5;
+        if brand == "GAMEMAKER" {
+            return #0e2f28;
         }
-        return Palette.alternate-background;
+        return #343a40;
     }
 
     function engine-foreground(brand: string) -> brush {
-        if brand == "Unity" {
-            return #1971c2;
+        if brand == "UNITY" {
+            return #74c0fc;
         }
-        if brand == "Unreal" {
-            return #e03131;
+        if brand == "UNREAL" {
+            return #ff8787;
         }
-        if brand == "Godot" {
-            return #7048e8;
+        if brand == "GODOT" {
+            return #b197fc;
         }
-        if brand == "GameMaker" {
-            return #0ca678;
+        if brand == "GAMEMAKER" {
+            return #63e6be;
         }
         return Palette.foreground;
     }
 
+    function provider-background(provider: string) -> brush {
+        if provider == "Steam" {
+            return #102a3a;
+        }
+        if provider == "Epic" {
+            return #3b1418;
+        }
+        if provider == "Gog" {
+            return #2c1b3d;
+        }
+        if provider == "Xbox" {
+            return #132b1b;
+        }
+        if provider == "Itch" {
+            return #3a1826;
+        }
+        return #242424;
+    }
+
     HorizontalLayout {
-        spacing: 8px;
+        spacing: 0px;
+
+        Rectangle {
+            width: 30px;
+            background: provider-background(game-row.provider-id);
+            opacity: game-row.installed ? 1 : 0.5;
+
+            VerticalLayout {
+                alignment: center;
+                cross-axis-alignment: center;
+                spacing: 2px;
+
+                ProviderIcon {
+                    provider-id: game-row.provider-id;
+                    icon-size: 16px;
+                }
+
+                if game-row.installed : IconDisplay {
+                    icon: IconSet.Monitor;
+                    size: 14px;
+                    stroke: white;
+                }
+
+                if !game-row.installed : IconDisplay {
+                    icon: IconSet.Cloud;
+                    size: 14px;
+                    stroke: Palette.foreground;
+                }
+            }
+        }
 
         Rectangle {
             width: 100px;
             clip: true;
-            background: Palette.alternate-background;
+            background: provider-background(game-row.provider-id);
+            opacity: game-row.installed ? 1 : 0.5;
 
             Image {
+                source: @image-url("../images/fallback-thumbnail.png");
+                width: 60px;
+                height: 60px;
+                x: (parent.width - self.width) / 2;
+                y: (parent.height - self.height) / 2;
+            }
+
+            if game-row.has-thumbnail : Image {
                 source: game-row.thumbnail;
-                visible: game-row.has-thumbnail;
                 width: 100%;
                 height: 100%;
-                image-fit: cover;
+                image-fit: contain;
             }
         }
 
-        HorizontalLayout {
-            width: 104px;
-            alignment: center;
-            cross-axis-alignment: center;
-
-            spacing: 4px;
-
-            ProviderIcon {
-                provider-id: game-row.provider-id;
-                icon-size: 16px;
-            }
+        FlexboxLayout {
+            horizontal-stretch: 1;
+            padding: 8px;
+            spacing: 3px;
+            flex-wrap: wrap;
+            alignment: start;
 
             Text {
-                text: game-row.provider-id;
+                text: game-row.title;
                 color: row-foreground;
-                overflow: elide;
+                font-weight: 700;
+                wrap: word-wrap;
             }
-        }
 
-        Text {
-            text: game-row.title;
-            color: row-foreground;
-            font-size: 14px;
-            vertical-alignment: center;
-            overflow: elide;
-            horizontal-stretch: 1;
+            for tag in game-row.tags : Rectangle {
+                width: tag-text.preferred-width + 6px;
+                height: tag-text.preferred-height + 4px;
+                background: #141517;
+                border-radius: 3px;
+
+                tag-text := Text {
+                    text: tag;
+                    font-size: 8px;
+                    font-weight: 300;
+                    color: Palette.foreground;
+                    horizontal-alignment: center;
+                    vertical-alignment: center;
+                }
+            }
         }
 
         Rectangle {
             width: 130px;
             background: engine-background(game-row.engine-brand);
+            clip: true;
 
             VerticalLayout {
                 alignment: center;
                 padding-left: 8px;
                 padding-right: 8px;
 
-                HorizontalLayout {
-                    spacing: 4px;
-                    alignment: center;
-                    cross-axis-alignment: center;
-
-                    if game-row.engine-brand != "" : EngineIcon {
-                        engine-brand: game-row.engine-brand;
-                        icon-color: engine-foreground(game-row.engine-brand);
-                        icon-size: 14px;
-                    }
-
-                    Text {
-                        text: game-row.engine-brand == "" ? "-" : game-row.engine-brand;
-                        color: engine-foreground(game-row.engine-brand);
-                        font-weight: 700;
-                        overflow: elide;
-                    }
+                Text {
+                    text: game-row.engine-brand == "" ? "-" : game-row.engine-brand;
+                    color: engine-foreground(game-row.engine-brand);
+                    font-weight: 700;
+                    horizontal-alignment: center;
+                    overflow: elide;
                 }
 
                 if game-row.engine-version != "" : Text {
                     text: game-row.engine-version;
                     horizontal-alignment: center;
                     color: engine-foreground(game-row.engine-brand);
+                    font-family: "monospace";
+                    font-size: 12px;
                     overflow: elide;
                 }
 
@@ -129,7 +180,8 @@ export component GameRowView inherits Rectangle {
                     text: game-row.engine-details;
                     horizontal-alignment: center;
                     color: engine-foreground(game-row.engine-brand);
-                    font-size: 12px;
+                    font-size: 10px;
+                    opacity: 0.5;
                     overflow: elide;
                 }
             }
@@ -138,23 +190,37 @@ export component GameRowView inherits Rectangle {
         VerticalLayout {
             width: 80px;
             alignment: center;
+            opacity: 0.75;
 
             Text {
                 text: game-row.release-day;
-                color: row-foreground;
+                color: Palette.foreground;
+                font-size: 12px;
+                horizontal-alignment: center;
             }
 
             Text {
                 text: game-row.release-month;
-                color: row-foreground;
+                color: Palette.foreground;
+                font-size: 12px;
+                horizontal-alignment: center;
                 overflow: elide;
             }
 
             Text {
                 text: game-row.release-year;
-                color: row-foreground;
+                color: Palette.foreground;
+                font-size: 12px;
+                horizontal-alignment: center;
             }
         }
+    }
+
+    Rectangle {
+        y: parent.height - self.height;
+        width: 100%;
+        height: 2px;
+        background: #141517;
     }
 
     touch-area := TouchArea {

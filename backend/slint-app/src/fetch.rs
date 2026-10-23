@@ -13,7 +13,7 @@ use slint::Model;
 
 use crate::{
 	MainWindow,
-	model::{format_release_date, get_engine_details},
+	model::{display_title, format_release_date, get_engine_details, tags},
 	scheduler::{FetchRequest, FetchScheduler},
 };
 
@@ -31,6 +31,8 @@ struct FetchResult {
 	index: usize,
 	generation: u64,
 	title: String,
+	installed: bool,
+	tags: Vec<slint::SharedString>,
 	engine_brand: String,
 	engine_version: String,
 	engine_details: String,
@@ -74,6 +76,8 @@ fn fetch_game(database: &DbMutex, request: &FetchRequest) -> FetchResult {
 				index: request.index,
 				generation: request.generation,
 				title: format!("{}: {}", request.provider_id, request.game_id),
+				installed: false,
+				tags: Vec::new(),
 				engine_brand: String::new(),
 				engine_version: String::new(),
 				engine_details: String::new(),
@@ -92,7 +96,7 @@ fn fetch_game(database: &DbMutex, request: &FetchRequest) -> FetchResult {
 				format_release_date(game.release_date_rfc3339.as_deref());
 			let engine_brand = game
 				.engine_brand
-				.map(|brand| brand.to_string())
+				.map(|brand| brand.to_string().to_uppercase())
 				.unwrap_or_default();
 			let engine_version = game.engine_version_display.clone().unwrap_or_default();
 			let engine_details = get_engine_details(&game);
@@ -102,7 +106,9 @@ fn fetch_game(database: &DbMutex, request: &FetchRequest) -> FetchResult {
 			FetchResult {
 				index: request.index,
 				generation: request.generation,
-				title: game.display_title,
+				title: display_title(&game),
+				installed: game.exe_path.is_some(),
+				tags: tags(&game),
 				engine_brand,
 				engine_version,
 				engine_details,
@@ -122,6 +128,8 @@ fn fetch_game(database: &DbMutex, request: &FetchRequest) -> FetchResult {
 				index: request.index,
 				generation: request.generation,
 				title: format!("{}: {}", request.provider_id, request.game_id),
+				installed: false,
+				tags: Vec::new(),
 				engine_brand: String::new(),
 				engine_version: String::new(),
 				engine_details: String::new(),
@@ -177,6 +185,8 @@ fn spawn_worker(
 				});
 
 				row.title = result.title.into();
+				row.installed = result.installed;
+				row.tags = std::rc::Rc::new(slint::VecModel::from(result.tags)).into();
 				row.engine_brand = result.engine_brand.into();
 				row.engine_version = result.engine_version.into();
 				row.engine_details = result.engine_details.into();
