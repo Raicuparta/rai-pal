@@ -65,6 +65,8 @@ export component GameRowView inherits Rectangle {
         HorizontalLayout {
             width: 104px;
             alignment: center;
+            cross-axis-alignment: center;
+
             spacing: 4px;
 
             ProviderIcon {
@@ -116,14 +118,16 @@ export component GameRowView inherits Rectangle {
                     }
                 }
 
-                Text {
+                if game-row.engine-version != "" : Text {
                     text: game-row.engine-version;
+                    horizontal-alignment: center;
                     color: engine-foreground(game-row.engine-brand);
                     overflow: elide;
                 }
 
-                Text {
+                if game-row.engine-details != "" : Text {
                     text: game-row.engine-details;
+                    horizontal-alignment: center;
                     color: engine-foreground(game-row.engine-brand);
                     font-size: 12px;
                     overflow: elide;
