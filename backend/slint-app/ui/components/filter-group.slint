@@ -1,0 +1,140 @@
+import { Button, CheckBox, Palette } from "std-widgets.slint";
+import { FilterGroupData, FilterValueData } from "../filter-data.slint";
+
+component FilterValueRow inherits Rectangle {
+    in property <FilterValueData> item;
+
+    callback toggled(checked: bool);
+    callback lock-toggled;
+    callback only;
+
+    height: 26px;
+    background: row-touch.has-hover ? Palette.alternate-background : transparent;
+
+    row-touch := TouchArea { }
+
+    HorizontalLayout {
+        spacing: 4px;
+        alignment: start;
+        cross-axis-alignment: center;
+
+        CheckBox {
+            text: root.item.label;
+            checked: root.item.enabled;
+            enabled: !root.item.locked;
+
+            toggled => {
+                root.toggled(self.checked);
+            }
+        }
+
+        Rectangle {
+            horizontal-stretch: 1;
+        }
+
+        Button {
+            text: root.item.locked ? "Locked" : "Lock";
+            enabled: !root.item.enabled;
+            height: 22px;
+            width: 52px;
+
+            clicked => {
+                root.lock-toggled();
+            }
+        }
+
+        if row-touch.has-hover : Button {
+            text: "Only";
+            enabled: !root.item.locked;
+            height: 22px;
+            width: 44px;
+
+            clicked => {
+                root.only();
+            }
+        }
+    }
+}
+
+export component FilterGroupView inherits Rectangle {
+    in property <FilterGroupData> group;
+
+    callback toggled(value: string, checked: bool);
+    callback lock-toggled(value: string);
+    callback only(value: string);
+    callback reset;
+    callback expanded-changed(expanded: bool);
+
+    VerticalLayout {
+        alignment: start;
+        spacing: 1px;
+
+        header := Rectangle {
+            height: 26px;
+
+            header-touch := TouchArea {
+                clicked => {
+                    root.expanded-changed(!root.group.expanded);
+                }
+            }
+
+            HorizontalLayout {
+                spacing: 4px;
+                alignment: start;
+                cross-axis-alignment: center;
+
+                Button {
+                    text: "Reset";
+                    enabled: root.group.has-changes;
+                    height: 22px;
+                    width: 52px;
+
+                    clicked => {
+                        root.reset();
+                    }
+                }
+
+                Text {
+                    text: root.group.expanded ? "▾" : "▸";
+                    color: Palette.foreground;
+                }
+
+                Text {
+                    text: root.group.label;
+                    font-weight: 700;
+                    overflow: elide;
+                    horizontal-stretch: 1;
+                }
+
+                if root.group.has-locked : Rectangle {
+                    width: 6px;
+                    height: 6px;
+                    border-radius: 3px;
+                    background: #fcc419;
+                }
+            }
+        }
+
+        if root.group.expanded : VerticalLayout {
+            alignment: start;
+            spacing: 0px;
+            padding-left: 8px;
+
+            for value in root.group.values : FilterValueRow {
+                item: value;
+
+                toggled(checked) => {
+                    root.toggled(value.value, checked);
+                }
+
+                lock-toggled => {
+                    root.lock-toggled(value.value);
+                }
+
+                only => {
+                    root.only(value.value);
+                }
+            }
+        }
+    }
+}

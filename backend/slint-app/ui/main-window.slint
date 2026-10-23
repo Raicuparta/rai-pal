@@ -1,5 +1,6 @@
 import { Palette } from "std-widgets.slint";
 import { GameRowData } from "game-row-data.slint";
+import { FilterGroupData } from "filter-data.slint";
 import { GameModRowData } from "game-mod-row-data.slint";
 import { ProviderActionItem } from "provider-action-item.slint";
 import { GamesSidebar } from "components/games-sidebar.slint";
@@ -22,6 +23,8 @@ export component MainWindow inherits Window {
     in property <[GameModRowData]> game-mods;
     in property <bool> has-installed-mods: false;
     in property <int> total-count: 0;
+    in property <[FilterGroupData]> filter-groups;
+    in property <bool> filters-have-changes;
     in-out property <string> search-text: "";
     in-out property <int> sort-index: 0;
     in-out property <string> details-json: "";
@@ -42,7 +45,13 @@ export component MainWindow inherits Window {
     callback visible-range-changed(first: int, last: int);
     callback search-changed(text: string);
     callback sort-changed(index: int);
-    callback filter-changed(group: string, value: string, checked: bool);
+    callback filter-toggled(group: string, value: string, checked: bool);
+    callback filter-lock-toggled(group: string, value: string);
+    callback filter-only(group: string, value: string);
+    callback filter-reset(group: string);
+    callback filters-reset;
+    callback filter-expanded-changed(group: string, expanded: bool);
+    callback tab-changed(index: int);
     callback select-game(index: int);
     callback back;
     callback run-game;
@@ -79,6 +88,7 @@ export component MainWindow inherits Window {
 
                     clicked => {
                         root.current-tab = 0;
+                        root.tab-changed(0);
                     }
                 }
 
@@ -88,6 +98,7 @@ export component MainWindow inherits Window {
 
                     clicked => {
                         root.current-tab = 1;
+                        root.tab-changed(1);
                     }
                 }
 
@@ -97,6 +108,7 @@ export component MainWindow inherits Window {
 
                     clicked => {
                         root.current-tab = 2;
+                        root.tab-changed(2);
                     }
                 }
 
@@ -227,6 +239,8 @@ export component MainWindow inherits Window {
                         visible: !root.game-selected;
                         search-text <=> root.search-text;
                         sort-index <=> root.sort-index;
+                        filter-groups: root.filter-groups;
+                        filters-have-changes: root.filters-have-changes;
 
                         search-changed(text) => {
                             root.search-changed(text);
@@ -236,8 +250,28 @@ export component MainWindow inherits Window {
                             root.sort-changed(index);
                         }
 
-                        filter-changed(group, value, checked) => {
-                            root.filter-changed(group, value, checked);
+                        filter-toggled(group, value, checked) => {
+                            root.filter-toggled(group, value, checked);
+                        }
+
+                        filter-lock-toggled(group, value) => {
+                            root.filter-lock-toggled(group, value);
+                        }
+
+                        filter-only(group, value) => {
+                            root.filter-only(group, value);
+                        }
+
+                        filter-reset(group) => {
+                            root.filter-reset(group);
+                        }
+
+                        filters-reset => {
+                            root.filters-reset();
+                        }
+
+                        filter-expanded-changed(group, expanded) => {
+                            root.filter-expanded-changed(group, expanded);
                         }
                     }
 

@@ -1,9 +1,8 @@
 use std::{collections::HashSet, fs, path::PathBuf};
 
-use rai_pal_core::{app_paths, games_query::GamesQuery, path_extensions::PathExt};
 use rai_pal_proc_macros::{serializable_enum, serializable_struct};
 
-use crate::result::Result;
+use crate::{app_paths, games_query::GamesQuery, path_extensions::PathExt, result::Result};
 
 #[serializable_enum]
 pub enum AppLocale {

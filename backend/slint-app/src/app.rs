@@ -7,13 +7,12 @@ use std::{
 };
 
 use rai_pal_core::{
+	app_settings::{AppSettings, TabId},
 	game::DbGame,
-	game_providers::{
-		game_provider::GameProviderId,
-		provider_command::ProviderCommandAction,
-	},
-	games_query::GamesQuery,
+	game_providers::{game_provider::GameProviderId, provider_command::ProviderCommandAction},
+	games_query::GamesSortBy,
 	local_database::{
+		app_database::DbMutex,
 		game_database::{GameDatabase, try_create},
 		mod_database::ModDatabase,
 	},
@@ -21,14 +20,15 @@ use rai_pal_core::{
 use slint::{ComponentHandle, Model};
 
 use crate::{
-	GameRowData, MainWindow,
-	actions,
+	GameRowData, MainWindow, actions,
 	fetch::spawn_fetchers,
-	filters::FilterState,
+	filters::{
+		FilterAction, apply_filter_action, build_groups, load_mod_families, reset_all_filters,
+	},
 	model::{self, make_rows},
 	mods,
-	query::{load_game_ids, make_games_query, start_query},
-	scheduler::{enqueue_index, schedule_visible_range},
+	query::{load_game_ids, start_query},
+	scheduler::{FetchScheduler, enqueue_index, schedule_visible_range},
 	selected,
 };
 
@@ -47,12 +47,33 @@ pub fn run() -> Result<(), slint::PlatformError> {
 		eprintln!("Failed to set up mod tables: {err}");
 	}
 
-	let response = load_game_ids(&database, GamesQuery::default());
+	let settings = Rc::new(RefCell::new(AppSettings::read()));
+	let mod_families = load_mod_families(&database);
+
+	let initial_query = settings.borrow().games_query.clone();
+	let initial_tab = tab_index(settings.borrow().selected_tab);
+	let initial_groups = build_groups(
+		&initial_query.filter,
+		&mod_families,
+		&settings.borrow().expanded_filters,
+	);
+
+	let initial_have_changes = initial_groups.iter().any(|group| group.has_changes);
+
+	let response = load_game_ids(&database, initial_query.clone());
 	let rows = make_rows(&response.game_ids);
 	let database = Arc::new(database);
 
 	let window = MainWindow::new()?;
 	window.set_app_version(env!("CARGO_PKG_VERSION").into());
+	window.set_search_text(initial_query.search.clone().into());
+	window.set_sort_index(sort_index(
+		initial_query.sort_by,
+		initial_query.sort_descending,
+	));
+	window.set_current_tab(initial_tab);
+	window.set_filter_groups(Rc::new(slint::VecModel::from(initial_groups)).into());
+	window.set_filters_have_changes(initial_have_changes);
 
 	let renderer_name = match window.window().set_rendering_notifier(|_, _| {}) {
 		Ok(()) => "FemtoVG (OpenGL)",
@@ -64,9 +85,6 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	let window_weak = window.as_weak();
 	let scheduler = spawn_fetchers(database.clone(), window_weak.clone());
 	scheduler.begin_query();
-
-	let filter_state = Rc::new(RefCell::new(FilterState::default()));
-	let selected_game: SelectedGameState = Arc::new(Mutex::new(None));
 
 	let ui_window = window_weak.clone();
 	let ui_scheduler = scheduler.clone();
@@ -91,56 +109,49 @@ pub fn run() -> Result<(), slint::PlatformError> {
 		};
 
 		let rows = window.get_game_rows();
-		schedule_visible_range(
-			&ui_scheduler,
-			&rows,
-			first.max(0) as usize,
-			last as usize,
-		);
+		schedule_visible_range(&ui_scheduler, &rows, first.max(0) as usize, last as usize);
 	});
 
+	let selected_game: SelectedGameState = Arc::new(Mutex::new(None));
+
+	let ui_settings = settings.clone();
 	let ui_window = window_weak.clone();
 	let ui_database = database.clone();
 	let ui_scheduler = scheduler.clone();
-	let ui_filter_state = filter_state.clone();
 	window.on_search_changed(move |text| {
-		let Some(window) = ui_window.upgrade() else {
-			return;
-		};
-
-		let query = {
-			let filters = ui_filter_state.borrow();
-			make_games_query(text.as_str(), window.get_sort_index(), &filters)
-		};
+		{
+			let mut settings = ui_settings.borrow_mut();
+			settings.games_query.search = text.to_string();
+		}
+		persist_settings(&ui_settings);
 
 		start_query(
 			ui_window.clone(),
 			ui_database.clone(),
 			ui_scheduler.clone(),
-			query,
+			ui_settings.borrow().games_query.clone(),
 			Duration::from_millis(200),
 		);
 	});
 
+	let ui_settings = settings.clone();
 	let ui_window = window_weak.clone();
 	let ui_database = database.clone();
 	let ui_scheduler = scheduler.clone();
-	let ui_filter_state = filter_state.clone();
 	window.on_sort_changed(move |index| {
-		let Some(window) = ui_window.upgrade() else {
-			return;
-		};
-
-		let query = {
-			let filters = ui_filter_state.borrow();
-			make_games_query(window.get_search_text().as_str(), index, &filters)
-		};
+		{
+			let mut settings = ui_settings.borrow_mut();
+			let (sort_by, sort_descending) = sort_from_index(index);
+			settings.games_query.sort_by = sort_by;
+			settings.games_query.sort_descending = sort_descending;
+		}
+		persist_settings(&ui_settings);
 
 		start_query(
 			ui_window.clone(),
 			ui_database.clone(),
 			ui_scheduler.clone(),
-			query,
+			ui_settings.borrow().games_query.clone(),
 			Duration::ZERO,
 		);
 	});
@@ -148,30 +159,124 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	let ui_window = window_weak.clone();
 	let ui_database = database.clone();
 	let ui_scheduler = scheduler.clone();
-	let ui_filter_state = filter_state.clone();
-	window.on_filter_changed(move |group, value, checked| {
-		let Some(window) = ui_window.upgrade() else {
-			return;
-		};
+	let ui_settings = settings.clone();
+	let ui_mod_families = mod_families.clone();
+	window.on_filter_toggled(move |group, value, checked| {
+		handle_filter_action(
+			&ui_window,
+			&ui_database,
+			&ui_scheduler,
+			&ui_settings,
+			&ui_mod_families,
+			group.as_str(),
+			value.as_str(),
+			FilterAction::Toggle(checked),
+		);
+	});
 
-		let query = {
-			let mut filters = ui_filter_state.borrow_mut();
-			filters.set(group.as_str(), value.as_str(), checked);
+	let ui_window = window_weak.clone();
+	let ui_database = database.clone();
+	let ui_scheduler = scheduler.clone();
+	let ui_settings = settings.clone();
+	let ui_mod_families = mod_families.clone();
+	window.on_filter_lock_toggled(move |group, value| {
+		handle_filter_action(
+			&ui_window,
+			&ui_database,
+			&ui_scheduler,
+			&ui_settings,
+			&ui_mod_families,
+			group.as_str(),
+			value.as_str(),
+			FilterAction::Lock,
+		);
+	});
 
-			make_games_query(
-				window.get_search_text().as_str(),
-				window.get_sort_index(),
-				&filters,
+	let ui_window = window_weak.clone();
+	let ui_database = database.clone();
+	let ui_scheduler = scheduler.clone();
+	let ui_settings = settings.clone();
+	let ui_mod_families = mod_families.clone();
+	window.on_filter_only(move |group, value| {
+		handle_filter_action(
+			&ui_window,
+			&ui_database,
+			&ui_scheduler,
+			&ui_settings,
+			&ui_mod_families,
+			group.as_str(),
+			value.as_str(),
+			FilterAction::Only,
+		);
+	});
+
+	let ui_window = window_weak.clone();
+	let ui_database = database.clone();
+	let ui_scheduler = scheduler.clone();
+	let ui_settings = settings.clone();
+	let ui_mod_families = mod_families.clone();
+	window.on_filter_reset(move |group| {
+		handle_filter_action(
+			&ui_window,
+			&ui_database,
+			&ui_scheduler,
+			&ui_settings,
+			&ui_mod_families,
+			group.as_str(),
+			"",
+			FilterAction::Reset,
+		);
+	});
+
+	let ui_window = window_weak.clone();
+	let ui_database = database.clone();
+	let ui_scheduler = scheduler.clone();
+	let ui_settings = settings.clone();
+	let ui_mod_families = mod_families.clone();
+	window.on_filters_reset(move || {
+		reset_filters(
+			&ui_window,
+			&ui_database,
+			&ui_scheduler,
+			&ui_settings,
+			&ui_mod_families,
+		);
+	});
+
+	let ui_window = window_weak.clone();
+	let ui_settings = settings.clone();
+	let ui_mod_families = mod_families.clone();
+	window.on_filter_expanded_changed(move |group, expanded| {
+		{
+			let mut settings = ui_settings.borrow_mut();
+			if expanded {
+				settings.expanded_filters.insert(group.to_string());
+			} else {
+				settings.expanded_filters.remove(group.as_str());
+			}
+		}
+		persist_settings(&ui_settings);
+
+		let groups = {
+			let settings = ui_settings.borrow();
+			build_groups(
+				&settings.games_query.filter,
+				&ui_mod_families,
+				&settings.expanded_filters,
 			)
 		};
 
-		start_query(
-			ui_window.clone(),
-			ui_database.clone(),
-			ui_scheduler.clone(),
-			query,
-			Duration::ZERO,
-		);
+		if let Some(window) = ui_window.upgrade() {
+			window.set_filter_groups(Rc::new(slint::VecModel::from(groups)).into());
+		}
+	});
+
+	let ui_settings = settings.clone();
+	window.on_tab_changed(move |index| {
+		let mut settings = ui_settings.borrow_mut();
+		settings.selected_tab = tab_from_index(index);
+		drop(settings);
+		persist_settings(&ui_settings);
 	});
 
 	let ui_window = window_weak.clone();
@@ -428,7 +533,10 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	window.run()
 }
 
-fn game_from_row(database: &Arc<rai_pal_core::local_database::app_database::DbMutex>, row: &GameRowData) -> Option<DbGame> {
+fn game_from_row(
+	database: &Arc<rai_pal_core::local_database::app_database::DbMutex>,
+	row: &GameRowData,
+) -> Option<DbGame> {
 	if let Ok(game) = serde_json::from_str::<DbGame>(row.game_json.as_str()) {
 		return Some(game);
 	}
@@ -438,5 +546,135 @@ fn game_from_row(database: &Arc<rai_pal_core::local_database::app_database::DbMu
 }
 
 fn get_selected_game(state: &SelectedGameState) -> Option<(usize, DbGame)> {
-	state.lock().ok().and_then(|selected_game| selected_game.clone())
+	state
+		.lock()
+		.ok()
+		.and_then(|selected_game| selected_game.clone())
+}
+
+fn persist_settings(settings: &Rc<RefCell<AppSettings>>) {
+	if let Err(err) = settings.borrow().try_write() {
+		eprintln!("Failed to save app settings: {err}");
+	}
+}
+
+fn refresh_filter_groups(
+	window: &slint::Weak<MainWindow>,
+	settings: &Rc<RefCell<AppSettings>>,
+	mod_families: &[String],
+) {
+	let groups = {
+		let settings = settings.borrow();
+		build_groups(
+			&settings.games_query.filter,
+			mod_families,
+			&settings.expanded_filters,
+		)
+	};
+
+	if let Some(window) = window.upgrade() {
+		window.set_filters_have_changes(groups.iter().any(|group| group.has_changes));
+		window.set_filter_groups(Rc::new(slint::VecModel::from(groups)).into());
+	}
+}
+
+fn handle_filter_action(
+	window: &slint::Weak<MainWindow>,
+	database: &Arc<DbMutex>,
+	scheduler: &Arc<FetchScheduler>,
+	settings: &Rc<RefCell<AppSettings>>,
+	mod_families: &[String],
+	group: &str,
+	value: &str,
+	action: FilterAction,
+) {
+	let changed = {
+		let mut settings = settings.borrow_mut();
+		apply_filter_action(
+			&mut settings.games_query.filter,
+			mod_families,
+			group,
+			value,
+			action,
+		)
+	};
+
+	if !changed {
+		return;
+	}
+
+	persist_settings(settings);
+	refresh_filter_groups(window, settings, mod_families);
+
+	let query = settings.borrow().games_query.clone();
+	start_query(
+		window.clone(),
+		database.clone(),
+		scheduler.clone(),
+		query,
+		Duration::ZERO,
+	);
+}
+
+fn reset_filters(
+	window: &slint::Weak<MainWindow>,
+	database: &Arc<DbMutex>,
+	scheduler: &Arc<FetchScheduler>,
+	settings: &Rc<RefCell<AppSettings>>,
+	mod_families: &[String],
+) {
+	{
+		let mut settings = settings.borrow_mut();
+		reset_all_filters(&mut settings.games_query.filter);
+	}
+
+	persist_settings(settings);
+	refresh_filter_groups(window, settings, mod_families);
+
+	let query = settings.borrow().games_query.clone();
+	start_query(
+		window.clone(),
+		database.clone(),
+		scheduler.clone(),
+		query,
+		Duration::ZERO,
+	);
+}
+
+fn sort_index(sort_by: GamesSortBy, sort_descending: bool) -> i32 {
+	match (sort_by, sort_descending) {
+		(GamesSortBy::Title, false) => 0,
+		(GamesSortBy::Title, true) => 1,
+		(GamesSortBy::Engine, false) => 2,
+		(GamesSortBy::Engine, true) => 3,
+		(GamesSortBy::ReleaseDate, false) => 4,
+		(GamesSortBy::ReleaseDate, true) => 5,
+	}
+}
+
+fn sort_from_index(index: i32) -> (GamesSortBy, bool) {
+	match index {
+		1 => (GamesSortBy::Title, true),
+		2 => (GamesSortBy::Engine, false),
+		3 => (GamesSortBy::Engine, true),
+		4 => (GamesSortBy::ReleaseDate, false),
+		5 => (GamesSortBy::ReleaseDate, true),
+		_ => (GamesSortBy::Title, false),
+	}
+}
+
+fn tab_index(tab: TabId) -> i32 {
+	match tab {
+		TabId::Games => 0,
+		TabId::Mods => 1,
+		TabId::Thanks => 2,
+	}
+}
+
+fn tab_from_index(index: i32) -> TabId {
+	match index {
+		1 => TabId::Mods,
+		2 => TabId::Thanks,
+		_ => TabId::Games,
+	}
 }

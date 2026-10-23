@@ -2,6 +2,7 @@
 
 pub mod analytics;
 pub mod app_paths;
+pub mod app_settings;
 pub mod architecture;
 pub mod debug;
 pub mod files;

@@ -1,13 +1,21 @@
-import { LineEdit, ComboBox, ScrollView, Palette } from "std-widgets.slint";
-import { FilterCheckBox } from "filter-check-box.slint";
+import { LineEdit, ComboBox, ScrollView, Palette, Button } from "std-widgets.slint";
+import { FilterGroupData } from "../filter-data.slint";
+import { FilterGroupView } from "filter-group.slint";
 
 export component GamesSidebar inherits Rectangle {
     in-out property <string> search-text: "";
     in-out property <int> sort-index: 0;
+    in property <[FilterGroupData]> filter-groups;
+    in property <bool> filters-have-changes;
 
     callback search-changed(text: string);
     callback sort-changed(index: int);
-    callback filter-changed(group: string, value: string, checked: bool);
+    callback filter-toggled(group: string, value: string, checked: bool);
+    callback filter-lock-toggled(group: string, value: string);
+    callback filter-only(group: string, value: string);
+    callback filter-reset(group: string);
+    callback filters-reset;
+    callback filter-expanded-changed(group: string, expanded: bool);
 
     width: 260px;
     background: Palette.alternate-background;
@@ -15,12 +23,6 @@ export component GamesSidebar inherits Rectangle {
     VerticalLayout {
         padding: 12px;
         spacing: 8px;
-
-        Text {
-            text: "Filters";
-            font-size: 16px;
-            font-weight: 700;
-        }
 
         LineEdit {
             text <=> root.search-text;
@@ -48,155 +50,55 @@ export component GamesSidebar inherits Rectangle {
             }
         }
 
+        HorizontalLayout {
+            spacing: 4px;
+            alignment: start;
+            cross-axis-alignment: center;
+
+            Button {
+                text: "Reset all";
+                height: 22px;
+                enabled: root.filters-have-changes;
+
+                clicked => {
+                    root.filters-reset();
+                }
+            }
+
+            Text {
+                text: "Filters";
+                font-size: 16px;
+                font-weight: 700;
+                vertical-alignment: center;
+            }
+        }
+
         ScrollView {
             VerticalLayout {
                 alignment: start;
-                spacing: 12px;
+                spacing: 8px;
 
-                VerticalLayout {
-                    alignment: start;
-                    spacing: 2px;
+                for group in root.filter-groups : FilterGroupView {
+                    group: group;
 
-                    Text {
-                        text: "Install state";
-                        font-weight: 700;
+                    toggled(value, checked) => {
+                        root.filter-toggled(group.key, value, checked);
                     }
 
-                    FilterCheckBox {
-                        text: "Installed";
-                        filter-group: "installed";
-                        filter-value: "Installed";
-                        filter-changed(group, value, checked) => {
-                            root.filter-changed(group, value, checked);
-                        }
+                    lock-toggled(value) => {
+                        root.filter-lock-toggled(group.key, value);
                     }
 
-                    FilterCheckBox {
-                        text: "Not installed";
-                        filter-group: "installed";
-                        filter-value: "NotInstalled";
-                        filter-changed(group, value, checked) => {
-                            root.filter-changed(group, value, checked);
-                        }
-                    }
-                }
-
-                VerticalLayout {
-                    alignment: start;
-                    spacing: 2px;
-
-                    Text {
-                        text: "Game engine";
-                        font-weight: 700;
+                    only(value) => {
+                        root.filter-only(group.key, value);
                     }
 
-                    FilterCheckBox {
-                        text: "Unity";
-                        filter-group: "engines";
-                        filter-value: "Unity";
-                        filter-changed(group, value, checked) => {
-                            root.filter-changed(group, value, checked);
-                        }
+                    reset => {
+                        root.filter-reset(group.key);
                     }
 
-                    FilterCheckBox {
-                        text: "Unreal";
-                        filter-group: "engines";
-                        filter-value: "Unreal";
-                        filter-changed(group, value, checked) => {
-                            root.filter-changed(group, value, checked);
-                        }
-                    }
-
-                    FilterCheckBox {
-                        text: "Godot";
-                        filter-group: "engines";
-                        filter-value: "Godot";
-                        filter-changed(group, value, checked) => {
-                            root.filter-changed(group, value, checked);
-                        }
-                    }
-
-                    FilterCheckBox {
-                        text: "GameMaker";
-                        filter-group: "engines";
-                        filter-value: "GameMaker";
-                        filter-changed(group, value, checked) => {
-                            root.filter-changed(group, value, checked);
-                        }
-                    }
-
-                    FilterCheckBox {
-                        text: "Unknown";
-                        filter-group: "engines";
-                        filter-value: "Unknown";
-                        filter-changed(group, value, checked) => {
-                            root.filter-changed(group, value, checked);
-                        }
-                    }
-                }
-
-                VerticalLayout {
-                    alignment: start;
-                    spacing: 2px;
-
-                    Text {
-                        text: "Game provider";
-                        font-weight: 700;
-                    }
-
-                    FilterCheckBox {
-                        text: "Steam";
-                        filter-group: "providers";
-                        filter-value: "Steam";
-                        filter-changed(group, value, checked) => {
-                            root.filter-changed(group, value, checked);
-                        }
-                    }
-
-                    FilterCheckBox {
-                        text: "Epic";
-                        filter-group: "providers";
-                        filter-value: "Epic";
-                        filter-changed(group, value, checked) => {
-                            root.filter-changed(group, value, checked);
-                        }
-                    }
-
-                    FilterCheckBox {
-                        text: "GOG";
-                        filter-group: "providers";
-                        filter-value: "Gog";
-                        filter-changed(group, value, checked) => {
-                            root.filter-changed(group, value, checked);
-                        }
-                    }
-
-                    FilterCheckBox {
-                        text: "itch.io";
-                        filter-group: "providers";
-                        filter-value: "Itch";
-                        filter-changed(group, value, checked) => {
-                            root.filter-changed(group, value, checked);
-                        }
-                    }
-
-                    FilterCheckBox {
-                        text: "Xbox";
-                        filter-group: "providers";
-                        filter-value: "Xbox";
-                        filter-changed(group, value, checked) => {
-                            root.filter-changed(group, value, checked);
-                        }
-                    }
-
-                    FilterCheckBox {
-                        text: "Manual";
-                        filter-group: "providers";
-                        filter-value: "Manual";
-                        filter-changed(group, value, checked) => {
-                            root.filter-changed(group, value, checked);
-                        }
+                    expanded-changed(expanded) => {
+                        root.filter-expanded-changed(group.key, expanded);
                     }
                 }
             }

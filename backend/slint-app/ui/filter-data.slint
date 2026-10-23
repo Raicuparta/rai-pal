@@ -1,0 +1,15 @@
+export struct FilterValueData {
+    value: string,
+    label: string,
+    enabled: bool,
+    locked: bool,
+}
+
+export struct FilterGroupData {
+    key: string,
+    label: string,
+    values: [FilterValueData],
+    has-changes: bool,
+    has-locked: bool,
+    expanded: bool,
+}

@@ -1,7 +1,5 @@
 use rai_pal_core::{
-	game::DbGame,
-	game_providers::game_provider::GameProviderId,
-	operating_system::OperatingSystem,
+	game::DbGame, game_providers::game_provider::GameProviderId, operating_system::OperatingSystem,
 };
 
 use crate::GameRowData;
@@ -60,7 +58,9 @@ pub fn apply_game_to_row(row: &mut GameRowData, game: &DbGame) {
 	row.release_day = release_day.into();
 	row.release_month = release_month.into();
 	row.release_year = release_year.into();
-	row.game_json = serde_json::to_string_pretty(game).unwrap_or_default().into();
+	row.game_json = serde_json::to_string_pretty(game)
+		.unwrap_or_default()
+		.into();
 	row.loaded = true;
 }
 

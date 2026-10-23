@@ -225,4 +225,3 @@ pub fn schedule_visible_range(
 
 	scheduler.set_visible_requests(requests);
 }
-

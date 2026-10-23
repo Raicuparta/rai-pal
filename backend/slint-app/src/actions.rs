@@ -2,14 +2,8 @@ use std::{collections::BTreeMap, sync::Arc, thread};
 
 use rai_pal_core::{
 	game::DbGame,
-	game_providers::{
-		game_provider,
-		provider_command::ProviderCommandAction,
-	},
-	local_database::{
-		app_database::DbMutex,
-		mod_database::ModDatabase,
-	},
+	game_providers::{game_provider, provider_command::ProviderCommandAction},
+	local_database::{app_database::DbMutex, mod_database::ModDatabase},
 	maps::TryGettable,
 	path_extensions::PathExt,
 	result::Result,
@@ -55,11 +49,7 @@ pub fn secondary_actions(game: &DbGame) -> Vec<ProviderCommandAction> {
 		.collect()
 }
 
-pub fn run_provider_action(
-	database: Arc<DbMutex>,
-	game: DbGame,
-	action: ProviderCommandAction,
-) {
+pub fn run_provider_action(database: Arc<DbMutex>, game: DbGame, action: ProviderCommandAction) {
 	spawn_logged(move || {
 		let provider_command = game.provider_commands.try_get(&action)?;
 		let environment = match action {

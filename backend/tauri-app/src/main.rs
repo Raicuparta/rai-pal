@@ -8,13 +8,13 @@ use std::{
 	path::PathBuf,
 };
 
-use app_settings::AppSettings;
 use app_state::{AppState, StateData, StatefulHandle};
 use events::{EventEmitter, SelectedGameData};
 #[cfg(target_os = "windows")]
 use rai_pal_core::windows;
 use rai_pal_core::{
 	analytics, app_paths,
+	app_settings::AppSettings,
 	game::DbGame,
 	game_providers::{
 		game_provider::{self, GameProviderId},
@@ -51,7 +51,6 @@ use tauri_specta::Builder;
 
 use crate::result::Result;
 
-mod app_settings;
 mod app_state;
 mod deep_links;
 #[cfg(debug_assertions)]
@@ -764,7 +763,7 @@ async fn get_app_settings() -> Result<AppSettings> {
 #[tauri::command]
 #[specta::specta]
 async fn save_app_settings(settings: AppSettings) -> Result {
-	settings.try_write()
+	Ok(settings.try_write()?)
 }
 
 #[tauri::command]

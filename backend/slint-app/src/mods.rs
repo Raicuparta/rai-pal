@@ -1,9 +1,4 @@
-use std::{
-	collections::HashSet,
-	rc::Rc,
-	sync::Arc,
-	thread,
-};
+use std::{collections::HashSet, rc::Rc, sync::Arc, thread};
 
 use rai_pal_core::{
 	game::DbGame,
@@ -21,9 +16,7 @@ const CATEGORIES: [&str; 4] = ["Installed", "Available", "Incompatible", "Other"
 
 pub fn refresh_mods(window: &MainWindow, database: &DbMutex, game: &DbGame) {
 	let rows = load_rows(database, game);
-	let has_installed_mods = rows
-		.iter()
-		.any(|row| row.installed && !row.incompatible);
+	let has_installed_mods = rows.iter().any(|row| row.installed && !row.incompatible);
 
 	window.set_has_installed_mods(has_installed_mods);
 	window.set_game_mods(Rc::new(slint::VecModel::from(rows)).into());
@@ -84,11 +77,7 @@ pub fn uninstall_mod(
 	});
 }
 
-pub fn uninstall_all_mods(
-	database: Arc<DbMutex>,
-	window: slint::Weak<MainWindow>,
-	game: DbGame,
-) {
+pub fn uninstall_all_mods(database: Arc<DbMutex>, window: slint::Weak<MainWindow>, game: DbGame) {
 	thread::spawn(move || {
 		let Ok(runtime) = tokio::runtime::Builder::new_current_thread()
 			.enable_all()
@@ -136,12 +125,7 @@ pub fn open_mod_folder(database: Arc<DbMutex>, game: DbGame, mod_id: String) {
 	});
 }
 
-pub fn configure_mod(
-	database: Arc<DbMutex>,
-	game: DbGame,
-	mod_id: String,
-	open_folder: bool,
-) {
+pub fn configure_mod(database: Arc<DbMutex>, game: DbGame, mod_id: String, open_folder: bool) {
 	thread::spawn(move || {
 		let result = database
 			.try_get_installed_mod(&game.provider_id, &game.game_id, &mod_id)
@@ -225,7 +209,12 @@ fn version_label(info: &GameModInfo, game_mod: &GameMod) -> String {
 	let raw = info
 		.installed_version
 		.clone()
-		.or_else(|| game_mod.download.as_ref().map(|download| download.id.clone()))
+		.or_else(|| {
+			game_mod
+				.download
+				.as_ref()
+				.map(|download| download.id.clone())
+		})
 		.unwrap_or_else(|| "-".to_string());
 
 	raw.split('/').next().unwrap_or("-").to_string()
@@ -306,13 +295,7 @@ fn collect_deps_to_install(
 					&& let Ok(dep_mod) = database.get_mod(&info.mod_id)
 					&& dep_mod.install.is_some()
 				{
-					collect_deps_to_install(
-						&info.mod_id,
-						database,
-						relevant_mods,
-						visited,
-						result,
-					);
+					collect_deps_to_install(&info.mod_id, database, relevant_mods, visited, result);
 					result.push(dep_mod);
 				}
 			}
@@ -320,11 +303,7 @@ fn collect_deps_to_install(
 	}
 }
 
-fn refresh_after_action(
-	window: &slint::Weak<MainWindow>,
-	database: &Arc<DbMutex>,
-	game: &DbGame,
-) {
+fn refresh_after_action(window: &slint::Weak<MainWindow>, database: &Arc<DbMutex>, game: &DbGame) {
 	let window = window.clone();
 	let database = database.clone();
 	let game = game.clone();
@@ -334,7 +313,9 @@ fn refresh_after_action(
 			return;
 		};
 
-		if !window.get_game_selected() || window.get_selected_game_row().game_id.to_string() != game.game_id {
+		if !window.get_game_selected()
+			|| window.get_selected_game_row().game_id.to_string() != game.game_id
+		{
 			return;
 		}
 

@@ -3,11 +3,7 @@ use std::rc::Rc;
 use rai_pal_core::game::DbGame;
 use slint::ModelRc;
 
-use crate::{
-	GameRowData, MainWindow, ProviderActionItem,
-	actions,
-	model::apply_game_to_row,
-};
+use crate::{GameRowData, MainWindow, ProviderActionItem, actions, model::apply_game_to_row};
 
 pub fn show(window: &MainWindow, game: &DbGame, mut row: GameRowData) {
 	apply_game_to_row(&mut row, game);
