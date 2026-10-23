@@ -60,3 +60,26 @@ Avoid making your own custom styles unless absolutely necessary. Default to usin
 - Prefer built-in Slint elements/widgets over hand-rolled equivalents: `TabWidget` for tabs, `ContextMenuArea` + `Menu`/`MenuItem` for context/dropdown menus, `PopupWindow` only for non-menu overlays.
 - Use `preferred-width` / `preferred-height` when a window should stay resizable; setting `width` / `height` pins its size.
 - Compile-check Slint changes with `cargo check -p rai-pal-slint`.
+
+## Tauri to Slint migration
+
+Rai Pal is being migrated from the Tauri app (`/backend/tauri-app` +
+`/frontend`) to the Slint app (`/backend/slint-app`). The Tauri app remains the
+reference implementation for behaviour and general UI structure until the
+migration is complete.
+
+- Match the general structure, information hierarchy, and behaviour of the Tauri
+  UI, not its exact styling. What is primary (bold/high contrast) and what is
+  secondary (thin/low contrast), and how things are aligned/centered, should
+  stay consistent.
+- Prefer native Slint components over recreating custom Tauri/Mantine widgets.
+  It is fine to restructure slightly to use Slint's built-ins better.
+- Icons are intentionally being used less than in the Tauri app. Buttons and
+  menu items currently have no icons; keep it that way.
+- When logic or shared state can live in `rai-pal-core` instead of a specific
+  app crate, move it there. Avoid duplicating behaviour between the Tauri and
+  Slint apps.
+- Persisted state must stay compatible between the two apps: use the same files
+  in the same locations, with the same JSON structure.
+- Refer to the Tauri implementation for detailed behaviour (filters, locking,
+  reset buttons, empty states, etc) instead of inventing new behaviour.
