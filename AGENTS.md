@@ -74,13 +74,18 @@ migration is complete.
   stay consistent.
 - Prefer native Slint components over recreating custom Tauri/Mantine widgets.
   It is fine to restructure slightly to use Slint's built-ins better.
-- Icons are intentionally being used less than in the Tauri app. Buttons and
-  menu items currently have no icons; keep it that way.
+- Icons are intentionally being used less than in the Tauri app. Regular buttons
+  and menu items have no icons. Compact controls that are icon-only in the Tauri
+  UI (filter lock/reset, overflow menus) can use icons.
 - When logic or shared state can live in `rai-pal-core` instead of a specific
   app crate, move it there. Avoid duplicating behaviour between the Tauri and
   Slint apps.
 - Persisted state must stay compatible between the two apps: use the same files
   in the same locations, with the same JSON structure.
+- Don't hardcode colors that assume one theme. Use `Palette`/`ColorScheme` or
+  values that read correctly in both light and dark mode.
+- For controls revealed on hover, reserve their layout space and track hover
+  across the whole row, so the layout doesn't shift or flicker.
 - Refer to the Tauri implementation for detailed behaviour (filters, locking,
   reset buttons, empty states, etc) instead of inventing new behaviour.
 - The Tauri localization files in `frontend/localizations` remain the source of

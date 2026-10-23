@@ -1,6 +1,8 @@
-import { Button, CheckBox, Palette } from "std-widgets.slint";
+import { IconDisplay, IconSet } from "@lucide";
+import { CheckBox, Palette } from "std-widgets.slint";
 import { FilterGroupData, FilterValueData } from "../filter-data.slint";
 import { Tr } from "../translations.slint";
+import { IconButton } from "icon-button.slint";
 
 component FilterValueRow inherits Rectangle {
     in property <FilterValueData> item;
@@ -9,49 +11,70 @@ component FilterValueRow inherits Rectangle {
     callback lock-toggled;
     callback only;
 
+    property <bool> hovered: row-touch.has-hover || checkbox-touch.has-hover || only-touch.has-hover || lock-button.hovered;
+
     height: 26px;
-    background: row-touch.has-hover ? Palette.alternate-background : transparent;
+    background: hovered ? Palette.alternate-background : transparent;
 
     row-touch := TouchArea { }
 
     HorizontalLayout {
+        padding-left: 4px;
         spacing: 4px;
-        alignment: start;
         cross-axis-alignment: center;
 
-        CheckBox {
-            text: root.item.label-key == "" ? root.item.label : Tr.filter-value(root.item.label-key);
-            checked: root.item.enabled;
-            enabled: !root.item.locked;
+        checkbox-area := Rectangle {
+            horizontal-stretch: 1;
+            height: 100%;
 
-            toggled => {
-                root.toggled(self.checked);
+            CheckBox {
+                x: 0;
+                y: (parent.height - self.height) / 2;
+                text: root.item.label-key == "" ? root.item.label : Tr.filter-value(root.item.label-key);
+                checked: root.item.enabled;
+                enabled: !root.item.locked;
+            }
+
+            checkbox-touch := TouchArea {
+                clicked => {
+                    if !root.item.locked {
+                        root.toggled(!root.item.enabled);
+                    }
+                }
             }
         }
 
-        Rectangle {
-            horizontal-stretch: 1;
+        only-area := Rectangle {
+            width: 40px;
+            height: 22px;
+            border-radius: 4px;
+            opacity: root.hovered ? 1 : 0;
+            background: only-touch.has-hover && !root.item.locked ? Palette.control-background : transparent;
+
+            only-touch := TouchArea {
+                clicked => {
+                    if !root.item.locked {
+                        root.only();
+                    }
+                }
+            }
+
+            Text {
+                text: "Only";
+                font-size: 12px;
+                color: root.item.locked ? Palette.alternate-foreground : Palette.foreground;
+                horizontal-alignment: center;
+                vertical-alignment: center;
+            }
         }
 
-        Button {
-            text: root.item.locked ? "Locked" : "Lock";
-            enabled: !root.item.enabled;
-            height: 22px;
-            width: 52px;
+        lock-button := IconButton {
+            icon: root.item.locked ? IconSet.Lock : IconSet.LockOpen;
+            active: !root.item.enabled;
+            selected: root.item.locked;
 
             clicked => {
                 root.lock-toggled();
-            }
-        }
-
-        if row-touch.has-hover : Button {
-            text: "Only";
-            enabled: !root.item.locked;
-            height: 22px;
-            width: 44px;
-
-            clicked => {
-                root.only();
             }
         }
     }
@@ -80,24 +103,16 @@ export component FilterGroupView inherits Rectangle {
             }
 
             HorizontalLayout {
+                padding-left: 4px;
                 spacing: 4px;
                 alignment: start;
                 cross-axis-alignment: center;
 
-                Button {
-                    text: @tr("filterMenu" => "Reset");
-                    enabled: root.group.has-changes;
-                    height: 22px;
-                    width: 52px;
-
-                    clicked => {
-                        root.reset();
-                    }
-                }
-
-                Text {
-                    text: root.group.expanded ? "▾" : "▸";
-                    color: Palette.foreground;
+                IconDisplay {
+                    icon: root.group.expanded ? IconSet.ChevronDown : IconSet.ChevronRight;
+                    size: 14px;
+                    stroke: Palette.alternate-foreground;
+                    stroke-width: 2;
                 }
 
                 Text {
@@ -112,6 +127,15 @@ export component FilterGroupView inherits Rectangle {
                     height: 6px;
                     border-radius: 3px;
                     background: #fcc419;
+                }
+
+                reset-button := IconButton {
+                    icon: IconSet.RotateCcw;
+                    active: root.group.has-changes;
+
+                    clicked => {
+                        root.reset();
+                    }
                 }
             }
         }

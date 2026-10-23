@@ -10,58 +10,59 @@ export component GameRowView inherits Rectangle {
     callback selected(index: int);
 
     height: 60px;
-    background: touch-area.has-hover ? Palette.selection-background : Palette.background;
+    property <bool> dark: Palette.color-scheme == ColorScheme.dark;
+    background: touch-area.has-hover ? (dark ? #2c2e33 : #f1f3f5) : Palette.background;
     property <brush> row-foreground: game-row.installed ? Palette.foreground : #868e96;
 
     function engine-background(brand: string) -> brush {
         if brand == "UNITY" {
-            return #102a43;
+            return dark ? #102a43 : #e7f5ff;
         }
         if brand == "UNREAL" {
-            return #3b1418;
+            return dark ? #3b1418 : #fff5f5;
         }
         if brand == "GODOT" {
-            return #2b1b40;
+            return dark ? #2b1b40 : #f3f0ff;
         }
         if brand == "GAMEMAKER" {
-            return #0e2f28;
+            return dark ? #0e2f28 : #e6fcf5;
         }
-        return #343a40;
+        return dark ? #343a40 : #f1f3f5;
     }
 
     function engine-foreground(brand: string) -> brush {
         if brand == "UNITY" {
-            return #74c0fc;
+            return dark ? #74c0fc : #1971c2;
         }
         if brand == "UNREAL" {
-            return #ff8787;
+            return dark ? #ff8787 : #e03131;
         }
         if brand == "GODOT" {
-            return #b197fc;
+            return dark ? #b197fc : #7048e8;
         }
         if brand == "GAMEMAKER" {
-            return #63e6be;
+            return dark ? #63e6be : #0ca678;
         }
         return Palette.foreground;
     }
 
     function provider-background(provider: string) -> brush {
         if provider == "Steam" {
-            return #102a3a;
+            return dark ? #102a3a : #e7f5ff;
         }
         if provider == "Epic" {
-            return #3b1418;
+            return dark ? #3b1418 : #fff5f5;
         }
         if provider == "Gog" {
-            return #2c1b3d;
+            return dark ? #2c1b3d : #f3f0ff;
         }
         if provider == "Xbox" {
-            return #132b1b;
+            return dark ? #132b1b : #ebfbee;
         }
         if provider == "Itch" {
-            return #3a1826;
+            return dark ? #3a1826 : #fff0f6;
         }
-        return #242424;
+        return dark ? #242424 : #f1f3f5;
     }
 
     HorizontalLayout {
@@ -85,7 +86,7 @@ export component GameRowView inherits Rectangle {
                 if game-row.installed : IconDisplay {
                     icon: IconSet.Monitor;
                     size: 14px;
-                    stroke: white;
+                    stroke: dark ? white : Palette.foreground;
                 }
 
                 if !game-row.installed : IconDisplay {
@@ -135,7 +136,7 @@ export component GameRowView inherits Rectangle {
             for tag in game-row.tags : Rectangle {
                 width: tag-text.preferred-width + 6px;
                 height: tag-text.preferred-height + 4px;
-                background: #141517;
+                background: dark ? #141517 : #e9ecef;
                 border-radius: 3px;
 
                 tag-text := Text {
@@ -220,7 +221,7 @@ export component GameRowView inherits Rectangle {
         y: parent.height - self.height;
         width: 100%;
         height: 2px;
-        background: #141517;
+        background: dark ? #141517 : #e9ecef;
     }
 
     touch-area := TouchArea {

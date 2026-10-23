@@ -12,14 +12,32 @@ use rai_pal_core::{
 
 use crate::{GameModRowData, MainWindow};
 
-const CATEGORIES: [&str; 4] = ["Installed", "Available", "Incompatible", "Other"];
-
 pub fn refresh_mods(window: &MainWindow, database: &DbMutex, game: &DbGame) {
 	let rows = load_rows(database, game);
-	let has_installed_mods = rows.iter().any(|row| row.installed && !row.incompatible);
+	let has_installed_mods = game.exe_path.is_some()
+		&& rows
+			.iter()
+			.any(|row| row.installed && row.section.as_str() != "incompatible");
+
+	let mut compatible = Vec::new();
+	let mut hidden = Vec::new();
+	let mut incompatible = Vec::new();
+
+	for row in rows {
+		match row.section.as_str() {
+			"hidden" => hidden.push(row),
+			"incompatible" => incompatible.push(row),
+			_ => compatible.push(row),
+		}
+	}
 
 	window.set_has_installed_mods(has_installed_mods);
-	window.set_game_mods(Rc::new(slint::VecModel::from(rows)).into());
+	window.set_has_compatible_mods(!compatible.is_empty());
+	window.set_has_hidden_mods(!hidden.is_empty());
+	window.set_has_incompatible_mods(!incompatible.is_empty());
+	window.set_game_mods(Rc::new(slint::VecModel::from(compatible)).into());
+	window.set_game_mods_hidden(Rc::new(slint::VecModel::from(hidden)).into());
+	window.set_game_mods_incompatible(Rc::new(slint::VecModel::from(incompatible)).into());
 }
 
 pub fn install_mod(
@@ -145,7 +163,9 @@ fn load_rows(database: &DbMutex, game: &DbGame) -> Vec<GameModRowData> {
 		return Vec::new();
 	};
 
-	let mut categories: [Vec<GameModRowData>; 4] = Default::default();
+	let mut compatible = Vec::new();
+	let mut hidden = Vec::new();
+	let mut incompatible = Vec::new();
 
 	for info in mod_infos {
 		let Some(game_mod) = mods.get(&info.mod_id) else {
@@ -153,56 +173,58 @@ fn load_rows(database: &DbMutex, game: &DbGame) -> Vec<GameModRowData> {
 		};
 
 		let installed = info.installed_hash.is_some();
-		let incompatible = !info.compatible;
-		let category_index = if incompatible {
-			2
-		} else if installed {
-			0
-		} else if game_mod.hide_from_game_mods_list == Some(true) {
-			3
-		} else {
-			1
-		};
+		let is_incompatible = !info.compatible;
+		let can_show_actions = !is_incompatible && game.exe_path.is_some();
 
 		let row = GameModRowData {
 			mod_id: game_mod.id.clone().into(),
 			title: game_mod.title.clone().into(),
 			description: game_mod.description.clone().into(),
 			version: version_label(&info, game_mod).into(),
-			category: CATEGORIES[category_index].into(),
-			show_category_header: false,
+			section: if is_incompatible {
+				"incompatible".into()
+			} else if game_mod.hide_from_game_mods_list == Some(true) {
+				"hidden".into()
+			} else {
+				"compatible".into()
+			},
 			installed,
 			outdated: info.is_outdated,
-			incompatible,
-			can_install: !incompatible
+			incompatible: is_incompatible,
+			deprecated: game_mod.deprecated == Some(true),
+			show_status: can_show_actions,
+			can_install: can_show_actions
 				&& !installed
-				&& game.exe_path.is_some()
+				&& !info.is_outdated
 				&& game_mod.install.is_some(),
-			can_uninstall: installed && !info.has_installed_dependants,
-			can_update: installed && info.is_outdated && game.exe_path.is_some(),
-			can_run: !incompatible
-				&& game.exe_path.is_some()
+			can_uninstall: can_show_actions && installed && game_mod.install.is_some(),
+			can_update: can_show_actions && installed && info.is_outdated,
+			can_run: can_show_actions
 				&& game_mod.run_for_game.is_some()
 				&& (game_mod.install.is_none() || installed),
+			can_show_actions,
 			has_config: game_mod.config.is_some(),
 			has_installed_dependants: info.has_installed_dependants,
 		};
 
-		categories[category_index].push(row);
-	}
-
-	let mut rows = Vec::new();
-
-	for mut category_rows in categories {
-		category_rows.sort_by(|a, b| a.title.cmp(&b.title));
-
-		for (index, mut row) in category_rows.into_iter().enumerate() {
-			row.show_category_header = index == 0;
-			rows.push(row);
+		if is_incompatible {
+			incompatible.push(row);
+		} else if game_mod.hide_from_game_mods_list == Some(true) {
+			hidden.push(row);
+		} else {
+			compatible.push(row);
 		}
 	}
 
-	rows
+	compatible.sort_by(|a, b| a.title.to_lowercase().cmp(&b.title.to_lowercase()));
+	hidden.sort_by(|a, b| a.title.to_lowercase().cmp(&b.title.to_lowercase()));
+	incompatible.sort_by(|a, b| a.title.to_lowercase().cmp(&b.title.to_lowercase()));
+
+	compatible
+		.into_iter()
+		.chain(hidden)
+		.chain(incompatible)
+		.collect()
 }
 
 fn version_label(info: &GameModInfo, game_mod: &GameMod) -> String {

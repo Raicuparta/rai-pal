@@ -21,7 +21,12 @@ export component MainWindow inherits Window {
 
     in property <[GameRowData]> game-rows;
     in property <[GameModRowData]> game-mods;
+    in property <[GameModRowData]> game-mods-hidden;
+    in property <[GameModRowData]> game-mods-incompatible;
     in property <bool> has-installed-mods: false;
+    in property <bool> has-compatible-mods: false;
+    in property <bool> has-hidden-mods: false;
+    in property <bool> has-incompatible-mods: false;
     in property <int> total-count: 0;
     in property <[FilterGroupData]> filter-groups;
     in property <bool> filters-have-changes;
@@ -204,7 +209,12 @@ export component MainWindow inherits Window {
                         visible: root.game-selected;
                         game-row: root.selected-game-row;
                         game-mods: root.game-mods;
+                        game-mods-hidden: root.game-mods-hidden;
+                        game-mods-incompatible: root.game-mods-incompatible;
                         has-installed-mods: root.has-installed-mods;
+                        has-compatible-mods: root.has-compatible-mods;
+                        has-hidden-mods: root.has-hidden-mods;
+                        has-incompatible-mods: root.has-incompatible-mods;
 
                         back => {
                             root.back();
