@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Rai Pal (Slint)
+Comment=Rai Pal Slint proof of concept
+Exec=rai-pal-slint
+Icon=rai-pal-slint
+Terminal=false
+Categories=Game;
+StartupNotify=true

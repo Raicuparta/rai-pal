@@ -1,0 +1,92 @@
+import { ScrollView, Button } from "std-widgets.slint";
+import { GameRowData } from "../game-row-data.slint";
+import { GameModRowData } from "../game-mod-row-data.slint";
+import { GameRowView } from "game-row.slint";
+import { GameModRowView } from "game-mod-row.slint";
+
+export component GameDetailsPage inherits Rectangle {
+    in property <GameRowData> game-row;
+    in property <[GameModRowData]> game-mods;
+    in property <bool> has-installed-mods;
+
+    callback back;
+    callback install-mod(mod-id: string);
+    callback uninstall-mod(mod-id: string);
+    callback update-mod(mod-id: string);
+    callback run-mod(mod-id: string);
+    callback open-mod-folder(mod-id: string);
+    callback configure-mod(mod-id: string);
+    callback configure-mod-folder(mod-id: string);
+    callback uninstall-all-mods;
+
+    ScrollView {
+        VerticalLayout {
+            alignment: start;
+            padding: 16px;
+            spacing: 8px;
+
+            GameRowView {
+                vertical-stretch: 0;
+                game-row: root.game-row;
+                row-index: 0;
+
+                selected(index) => {
+                    root.back();
+                }
+            }
+
+            for game-mod[index] in root.game-mods : VerticalLayout {
+                alignment: start;
+                vertical-stretch: 0;
+                spacing: 4px;
+
+                if game-mod.show-category-header : Text {
+                    text: game-mod.category;
+                    font-weight: 700;
+                }
+
+                GameModRowView {
+                    vertical-stretch: 0;
+                    game-mod: game-mod;
+
+                    install(mod-id) => {
+                        root.install-mod(mod-id);
+                    }
+
+                    uninstall(mod-id) => {
+                        root.uninstall-mod(mod-id);
+                    }
+
+                    update(mod-id) => {
+                        root.update-mod(mod-id);
+                    }
+
+                    run(mod-id) => {
+                        root.run-mod(mod-id);
+                    }
+
+                    open-folder(mod-id) => {
+                        root.open-mod-folder(mod-id);
+                    }
+
+                    configure(mod-id) => {
+                        root.configure-mod(mod-id);
+                    }
+
+                    configure-folder(mod-id) => {
+                        root.configure-mod-folder(mod-id);
+                    }
+                }
+            }
+
+            if root.has-installed-mods : Button {
+                vertical-stretch: 0;
+                text: "Uninstall all mods";
+
+                clicked => {
+                    root.uninstall-all-mods();
+                }
+            }
+        }
+    }
+}

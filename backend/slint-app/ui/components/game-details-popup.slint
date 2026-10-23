@@ -1,0 +1,47 @@
+import { ScrollView, Button, Palette } from "std-widgets.slint";
+
+export component GameDetailsPopup inherits PopupWindow {
+    in property <string> game-json;
+
+    callback closed;
+
+    close-policy: PopupClosePolicy.no-auto-close;
+
+    Rectangle {
+        background: Palette.background;
+        border-width: 1px;
+        border-color: Palette.border;
+
+        VerticalLayout {
+            padding: 12px;
+            spacing: 8px;
+
+            Text {
+                text: "Game data";
+                font-weight: 700;
+            }
+
+            ScrollView {
+                Text {
+                    text: root.game-json;
+                    font-family: "monospace";
+                    wrap: word-wrap;
+                    vertical-alignment: top;
+                }
+            }
+
+            HorizontalLayout {
+                alignment: end;
+
+                Button {
+                    text: "Close";
+
+                    clicked => {
+                        root.close();
+                        root.closed();
+                    }
+                }
+            }
+        }
+    }
+}

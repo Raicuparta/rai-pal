@@ -53,3 +53,10 @@ Key points to remember:
 Use Mantine. Docs here: https://mantine.dev/llms/core-accordion.md
 
 Avoid making your own custom styles unless absolutely necessary. Default to using Mantine's provided utilities and styles with no extra css files, only adjusting it when necessary for functionality, or when specifically asked for something that can't be done easily with Mantine directly. When passing props to Mantine components, make sure you're not being redundant by passing something that is either already a Mantine default, or a default in this project's theme (frontend/theme.ts)
+
+## Slint
+
+- Before working on `.slint` files, read `.agents/skills/slint/SKILL.md` and the relevant files in `.agents/skills/slint/reference/`.
+- Prefer built-in Slint elements/widgets over hand-rolled equivalents: `TabWidget` for tabs, `ContextMenuArea` + `Menu`/`MenuItem` for context/dropdown menus, `PopupWindow` only for non-menu overlays.
+- Use `preferred-width` / `preferred-height` when a window should stay resizable; setting `width` / `height` pins its size.
+- Compile-check Slint changes with `cargo check -p rai-pal-slint`.

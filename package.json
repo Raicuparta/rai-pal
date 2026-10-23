@@ -13,6 +13,7 @@
 		"build-deploy-deck": "npm run podman-build-linux; npm run deploy-deck",
 		"bundle": "tauri bundle",
 		"build-debug": "cross-env CARGO_TARGET_DIR=target/debug/standalone-build tauri build --debug --no-bundle",
+		"build-slint-appimage": "bash scripts/build-slint-appimage.sh",
 		"vite": "vite",
 		"tauri": "tauri",
 		"update-icons": "tauri icon backend/graphics/icon-source.png",

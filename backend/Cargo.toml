@@ -1,5 +1,5 @@
 [workspace]
-members = ["proc-macros", "core", "tauri-app"]
+members = ["proc-macros", "core", "tauri-app", "slint-app"]
 resolver = "2"
 
 [workspace.package]

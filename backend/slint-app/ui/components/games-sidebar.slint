@@ -1,0 +1,205 @@
+import { LineEdit, ComboBox, ScrollView, Palette } from "std-widgets.slint";
+import { FilterCheckBox } from "filter-check-box.slint";
+
+export component GamesSidebar inherits Rectangle {
+    in-out property <string> search-text: "";
+    in-out property <int> sort-index: 0;
+
+    callback search-changed(text: string);
+    callback sort-changed(index: int);
+    callback filter-changed(group: string, value: string, checked: bool);
+
+    width: 260px;
+    background: Palette.alternate-background;
+
+    VerticalLayout {
+        padding: 12px;
+        spacing: 8px;
+
+        Text {
+            text: "Filters";
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        LineEdit {
+            text <=> root.search-text;
+            placeholder-text: "Search...";
+
+            edited(text) => {
+                root.search-changed(text);
+            }
+        }
+
+        sort-combo := ComboBox {
+            model: [
+                "Name ascending",
+                "Name descending",
+                "Engine ascending",
+                "Engine descending",
+                "Date ascending",
+                "Date descending",
+            ];
+            current-index <=> root.sort-index;
+            horizontal-stretch: 0;
+
+            selected(value) => {
+                root.sort-changed(root.sort-index);
+            }
+        }
+
+        ScrollView {
+            VerticalLayout {
+                alignment: start;
+                spacing: 12px;
+
+                VerticalLayout {
+                    alignment: start;
+                    spacing: 2px;
+
+                    Text {
+                        text: "Install state";
+                        font-weight: 700;
+                    }
+
+                    FilterCheckBox {
+                        text: "Installed";
+                        filter-group: "installed";
+                        filter-value: "Installed";
+                        filter-changed(group, value, checked) => {
+                            root.filter-changed(group, value, checked);
+                        }
+                    }
+
+                    FilterCheckBox {
+                        text: "Not installed";
+                        filter-group: "installed";
+                        filter-value: "NotInstalled";
+                        filter-changed(group, value, checked) => {
+                            root.filter-changed(group, value, checked);
+                        }
+                    }
+                }
+
+                VerticalLayout {
+                    alignment: start;
+                    spacing: 2px;
+
+                    Text {
+                        text: "Game engine";
+                        font-weight: 700;
+                    }
+
+                    FilterCheckBox {
+                        text: "Unity";
+                        filter-group: "engines";
+                        filter-value: "Unity";
+                        filter-changed(group, value, checked) => {
+                            root.filter-changed(group, value, checked);
+                        }
+                    }
+
+                    FilterCheckBox {
+                        text: "Unreal";
+                        filter-group: "engines";
+                        filter-value: "Unreal";
+                        filter-changed(group, value, checked) => {
+                            root.filter-changed(group, value, checked);
+                        }
+                    }
+
+                    FilterCheckBox {
+                        text: "Godot";
+                        filter-group: "engines";
+                        filter-value: "Godot";
+                        filter-changed(group, value, checked) => {
+                            root.filter-changed(group, value, checked);
+                        }
+                    }
+
+                    FilterCheckBox {
+                        text: "GameMaker";
+                        filter-group: "engines";
+                        filter-value: "GameMaker";
+                        filter-changed(group, value, checked) => {
+                            root.filter-changed(group, value, checked);
+                        }
+                    }
+
+                    FilterCheckBox {
+                        text: "Unknown";
+                        filter-group: "engines";
+                        filter-value: "Unknown";
+                        filter-changed(group, value, checked) => {
+                            root.filter-changed(group, value, checked);
+                        }
+                    }
+                }
+
+                VerticalLayout {
+                    alignment: start;
+                    spacing: 2px;
+
+                    Text {
+                        text: "Game provider";
+                        font-weight: 700;
+                    }
+
+                    FilterCheckBox {
+                        text: "Steam";
+                        filter-group: "providers";
+                        filter-value: "Steam";
+                        filter-changed(group, value, checked) => {
+                            root.filter-changed(group, value, checked);
+                        }
+                    }
+
+                    FilterCheckBox {
+                        text: "Epic";
+                        filter-group: "providers";
+                        filter-value: "Epic";
+                        filter-changed(group, value, checked) => {
+                            root.filter-changed(group, value, checked);
+                        }
+                    }
+
+                    FilterCheckBox {
+                        text: "GOG";
+                        filter-group: "providers";
+                        filter-value: "Gog";
+                        filter-changed(group, value, checked) => {
+                            root.filter-changed(group, value, checked);
+                        }
+                    }
+
+                    FilterCheckBox {
+                        text: "itch.io";
+                        filter-group: "providers";
+                        filter-value: "Itch";
+                        filter-changed(group, value, checked) => {
+                            root.filter-changed(group, value, checked);
+                        }
+                    }
+
+                    FilterCheckBox {
+                        text: "Xbox";
+                        filter-group: "providers";
+                        filter-value: "Xbox";
+                        filter-changed(group, value, checked) => {
+                            root.filter-changed(group, value, checked);
+                        }
+                    }
+
+                    FilterCheckBox {
+                        text: "Manual";
+                        filter-group: "providers";
+                        filter-value: "Manual";
+                        filter-changed(group, value, checked) => {
+                            root.filter-changed(group, value, checked);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

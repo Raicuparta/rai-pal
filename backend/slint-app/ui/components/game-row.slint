@@ -1,0 +1,164 @@
+import { Palette } from "std-widgets.slint";
+import { GameRowData } from "../game-row-data.slint";
+import { ProviderIcon } from "provider-icon.slint";
+import { EngineIcon } from "engine-icon.slint";
+
+export component GameRowView inherits Rectangle {
+    in property <GameRowData> game-row;
+    in property <int> row-index;
+
+    callback selected(index: int);
+
+    height: 60px;
+    background: touch-area.has-hover ? Palette.selection-background : Palette.background;
+    property <brush> row-foreground: touch-area.has-hover ? Palette.selection-foreground : Palette.foreground;
+
+    function engine-background(brand: string) -> brush {
+        if brand == "Unity" {
+            return #e7f5ff;
+        }
+        if brand == "Unreal" {
+            return #fff5f5;
+        }
+        if brand == "Godot" {
+            return #f3f0ff;
+        }
+        if brand == "GameMaker" {
+            return #e6fcf5;
+        }
+        return Palette.alternate-background;
+    }
+
+    function engine-foreground(brand: string) -> brush {
+        if brand == "Unity" {
+            return #1971c2;
+        }
+        if brand == "Unreal" {
+            return #e03131;
+        }
+        if brand == "Godot" {
+            return #7048e8;
+        }
+        if brand == "GameMaker" {
+            return #0ca678;
+        }
+        return Palette.foreground;
+    }
+
+    HorizontalLayout {
+        spacing: 8px;
+
+        Rectangle {
+            width: 100px;
+            clip: true;
+            background: Palette.alternate-background;
+
+            Image {
+                source: game-row.thumbnail;
+                visible: game-row.has-thumbnail;
+                width: 100%;
+                height: 100%;
+                image-fit: cover;
+            }
+        }
+
+        HorizontalLayout {
+            width: 104px;
+            alignment: center;
+            spacing: 4px;
+
+            ProviderIcon {
+                provider-id: game-row.provider-id;
+                icon-size: 16px;
+            }
+
+            Text {
+                text: game-row.provider-id;
+                color: row-foreground;
+                overflow: elide;
+            }
+        }
+
+        Text {
+            text: game-row.title;
+            color: row-foreground;
+            font-size: 14px;
+            vertical-alignment: center;
+            overflow: elide;
+            horizontal-stretch: 1;
+        }
+
+        Rectangle {
+            width: 130px;
+            background: engine-background(game-row.engine-brand);
+
+            VerticalLayout {
+                alignment: center;
+                padding-left: 8px;
+                padding-right: 8px;
+
+                HorizontalLayout {
+                    spacing: 4px;
+                    alignment: center;
+                    cross-axis-alignment: center;
+
+                    if game-row.engine-brand != "" : EngineIcon {
+                        engine-brand: game-row.engine-brand;
+                        icon-color: engine-foreground(game-row.engine-brand);
+                        icon-size: 14px;
+                    }
+
+                    Text {
+                        text: game-row.engine-brand == "" ? "-" : game-row.engine-brand;
+                        color: engine-foreground(game-row.engine-brand);
+                        font-weight: 700;
+                        overflow: elide;
+                    }
+                }
+
+                Text {
+                    text: game-row.engine-version;
+                    color: engine-foreground(game-row.engine-brand);
+                    overflow: elide;
+                }
+
+                Text {
+                    text: game-row.engine-details;
+                    color: engine-foreground(game-row.engine-brand);
+                    font-size: 12px;
+                    overflow: elide;
+                }
+            }
+        }
+
+        VerticalLayout {
+            width: 80px;
+            alignment: center;
+
+            Text {
+                text: game-row.release-day;
+                color: row-foreground;
+            }
+
+            Text {
+                text: game-row.release-month;
+                color: row-foreground;
+                overflow: elide;
+            }
+
+            Text {
+                text: game-row.release-year;
+                color: row-foreground;
+            }
+        }
+    }
+
+    touch-area := TouchArea {
+        width: 100%;
+        height: 100%;
+
+        clicked => {
+            root.selected(root.row-index);
+        }
+    }
+}

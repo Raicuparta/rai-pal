@@ -1,0 +1,71 @@
+import { IconDisplay, IconSet } from "@lucide";
+import { Palette } from "std-widgets.slint";
+
+export component ProviderIcon inherits Rectangle {
+    in property <string> provider-id;
+    in property <length> icon-size: 16px;
+
+    function provider-color() -> brush {
+        if provider-id == "Steam" {
+            return #1f9fee;
+        }
+        if provider-id == "Epic" {
+            return #e03131;
+        }
+        if provider-id == "Gog" {
+            return #9c36b5;
+        }
+        if provider-id == "Itch" {
+            return #e64980;
+        }
+        if provider-id == "Xbox" {
+            return #2f9e44;
+        }
+        return Palette.foreground;
+    }
+
+    width: root.icon-size;
+    height: root.icon-size;
+
+    if provider-id == "Steam" : Image {
+        source: @image-url("../icons/providers/steam.svg");
+        colorize: provider-color();
+        width: 100%;
+        height: 100%;
+    }
+
+    if provider-id == "Epic" : Image {
+        source: @image-url("../icons/providers/epic.svg");
+        colorize: provider-color();
+        width: 100%;
+        height: 100%;
+    }
+
+    if provider-id == "Gog" : Image {
+        source: @image-url("../icons/providers/gog.svg");
+        colorize: provider-color();
+        width: 100%;
+        height: 100%;
+    }
+
+    if provider-id == "Itch" : Image {
+        source: @image-url("../icons/providers/itch.svg");
+        colorize: provider-color();
+        width: 100%;
+        height: 100%;
+    }
+
+    if provider-id == "Xbox" : Image {
+        source: @image-url("../icons/providers/xbox.svg");
+        colorize: provider-color();
+        width: 100%;
+        height: 100%;
+    }
+
+    if provider-id == "Manual" : IconDisplay {
+        icon: IconSet.Gamepad2;
+        size: root.icon-size;
+        stroke: provider-color();
+        stroke-width: 1.5;
+    }
+}

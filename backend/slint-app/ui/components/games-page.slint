@@ -1,0 +1,54 @@
+import { ListView } from "std-widgets.slint";
+import { GameRowData } from "../game-row-data.slint";
+import { GameRowView } from "game-row.slint";
+
+export component GamesPage inherits Rectangle {
+    in property <[GameRowData]> game-rows;
+
+    callback request-game(index: int);
+    callback visible-range-changed(first: int, last: int);
+    callback select-game(index: int);
+
+    property <length> list-content-y <=> game-list.content-y;
+    property <length> list-visible-height <=> game-list.visible-height;
+
+    function notify-visible-range() {
+        if (root.game-rows.length == 0) {
+            root.visible-range-changed(0, -1);
+            return;
+        }
+
+        let first = max(0, floor(-root.list-content-y / 60px));
+        let last = min(root.game-rows.length - 1, max(first, floor((-root.list-content-y + root.list-visible-height - 1px) / 60px)));
+
+        root.visible-range-changed(first, last);
+    }
+
+    changed game-rows => {
+        game-list.content-y = 0px;
+        root.notify-visible-range();
+    }
+
+    changed list-content-y => {
+        root.notify-visible-range();
+    }
+
+    changed list-visible-height => {
+        root.notify-visible-range();
+    }
+
+    game-list := ListView {
+        for item[index] in root.game-rows : GameRowView {
+            game-row: item;
+            row-index: index;
+
+            selected(index) => {
+                root.select-game(index);
+            }
+
+            init => {
+                root.request-game(index);
+            }
+        }
+    }
+}
