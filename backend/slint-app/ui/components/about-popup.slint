@@ -1,0 +1,52 @@
+import { Button, Palette } from "std-widgets.slint";
+
+export component AboutPopup inherits PopupWindow {
+    in property <string> app-version;
+    in property <string> renderer-name;
+
+    width: 360px;
+    height: 220px;
+    close-policy: PopupClosePolicy.no-auto-close;
+
+    Rectangle {
+        background: Palette.background;
+        border-width: 1px;
+        border-color: Palette.border;
+        border-radius: 8px;
+
+        VerticalLayout {
+            padding: 20px;
+            spacing: 10px;
+
+            Text {
+                text: "About Rai Pal";
+                font-size: 20px;
+                font-weight: 700;
+            }
+
+            Text {
+                text: "Version: \{root.app-version}";
+            }
+
+            Text {
+                text: "Rendering backend: \{root.renderer-name}";
+            }
+
+            Rectangle {
+                vertical-stretch: 1;
+            }
+
+            HorizontalLayout {
+                alignment: end;
+
+                Button {
+                    text: "Close";
+
+                    clicked => {
+                        root.close();
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,42 @@
+import { Palette } from "std-widgets.slint";
+
+export component NavTab inherits Rectangle {
+    in property <string> title;
+    in property <bool> selected;
+
+    callback clicked;
+
+    preferred-width: layout.preferred-width;
+    preferred-height: layout.preferred-height;
+    horizontal-stretch: 0;
+    vertical-stretch: 0;
+    background: touch-area.pressed ? Palette.control-background : touch-area.has-hover ? Palette.alternate-background : transparent;
+    border-radius: 4px;
+
+    layout := HorizontalLayout {
+        padding-left: 12px;
+        padding-right: 12px;
+        padding-top: 8px;
+        padding-bottom: 8px;
+
+        Text {
+            text: root.title;
+            color: root.selected ? Palette.foreground : Palette.alternate-foreground;
+            font-weight: root.selected ? 600 : 400;
+            vertical-alignment: center;
+            horizontal-alignment: center;
+        }
+    }
+
+    if root.selected : Rectangle {
+        y: parent.height - self.height;
+        height: 2px;
+        background: Palette.accent-background;
+    }
+
+    touch-area := TouchArea {
+        clicked => {
+            root.clicked();
+        }
+    }
+}

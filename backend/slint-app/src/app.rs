@@ -52,6 +52,15 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	let database = Arc::new(database);
 
 	let window = MainWindow::new()?;
+	window.set_app_version(env!("CARGO_PKG_VERSION").into());
+
+	let renderer_name = match window.window().set_rendering_notifier(|_, _| {}) {
+		Ok(()) => "FemtoVG (OpenGL)",
+		Err(slint::SetRenderingNotifierError::Unsupported) => "Software",
+		Err(_) => "Unknown",
+	};
+	window.set_renderer_name(renderer_name.into());
+
 	let window_weak = window.as_weak();
 	let scheduler = spawn_fetchers(database.clone(), window_weak.clone());
 	scheduler.begin_query();

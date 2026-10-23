@@ -1,0 +1,44 @@
+import { IconDisplay, IconSet } from "@lucide";
+import { Palette } from "std-widgets.slint";
+
+export component AppMenu inherits Rectangle {
+    callback about-clicked;
+
+    width: 36px;
+    height: 32px;
+
+    menu-area := ContextMenuArea {
+        Rectangle {
+            width: 100%;
+            height: 100%;
+            border-radius: 4px;
+            background: touch-area.pressed ? Palette.control-background : touch-area.has-hover ? Palette.alternate-background : transparent;
+
+            IconDisplay {
+                icon: IconSet.Menu;
+                size: 18px;
+                stroke: Palette.foreground;
+                stroke-width: 2;
+            }
+
+            touch-area := TouchArea {
+                clicked => {
+                    menu-area.show({
+                        x: root.width - 280px,
+                        y: root.height,
+                    });
+                }
+            }
+        }
+
+        Menu {
+            MenuItem {
+                title: "About...";
+
+                activated => {
+                    root.about-clicked();
+                }
+            }
+        }
+    }
+}

@@ -1,4 +1,4 @@
-import { TabWidget, Button } from "std-widgets.slint";
+import { Palette } from "std-widgets.slint";
 import { GameRowData } from "game-row-data.slint";
 import { GameModRowData } from "game-mod-row-data.slint";
 import { ProviderActionItem } from "provider-action-item.slint";
@@ -7,6 +7,9 @@ import { GameSidebar } from "components/game-sidebar.slint";
 import { GameDetailsPopup } from "components/game-details-popup.slint";
 import { GamesPage } from "components/games-page.slint";
 import { GameDetailsPage } from "components/game-details-page.slint";
+import { NavTab } from "components/nav-tab.slint";
+import { AppMenu } from "components/app-menu.slint";
+import { AboutPopup } from "components/about-popup.slint";
 
 export component MainWindow inherits Window {
     title: "Rai Pal - Slint PoC";
@@ -22,6 +25,8 @@ export component MainWindow inherits Window {
     in-out property <string> search-text: "";
     in-out property <int> sort-index: 0;
     in-out property <string> details-json: "";
+    in property <string> app-version: "";
+    in property <string> renderer-name: "";
 
     in-out property <int> current-tab: 0;
     in-out property <bool> game-selected: false;
@@ -57,174 +62,212 @@ export component MainWindow inherits Window {
     callback configure-mod-folder(mod-id: string);
     callback uninstall-all-mods;
 
-    Rectangle {
-        tabs := TabWidget {
-            current-index <=> root.current-tab;
+    VerticalLayout {
+        Rectangle {
+            height: 44px;
+            background: Palette.alternate-background;
 
-            Tab {
-                title: "Games";
-                max-width: self.preferred-width;
+            HorizontalLayout {
+                padding-left: 8px;
+                padding-right: 8px;
+                spacing: 2px;
+                cross-axis-alignment: center;
 
-                HorizontalLayout {
-                    if root.game-selected : GameSidebar {
-                        provider-id: root.selected-provider-id;
-                        can-run-game: root.selected-can-run-game;
-                        has-exe-path: root.selected-has-exe-path;
-                        show-wine-folders: root.selected-show-wine-folders;
-                        provider-actions: root.selected-provider-actions;
+                NavTab {
+                    title: "Games";
+                    selected: root.current-tab == 0;
 
-                        back => {
-                            root.back();
-                        }
-
-                        run-game => {
-                            root.run-game();
-                        }
-
-                        run-provider-action(value) => {
-                            root.run-provider-action(value);
-                        }
-
-                        open-game-folder => {
-                            root.open-game-folder();
-                        }
-
-                        open-game-mods-folder => {
-                            root.open-game-mods-folder();
-                        }
-
-                        open-game-data-folder => {
-                            root.open-game-data-folder();
-                        }
-
-                        open-wine-prefix-folder => {
-                            root.open-wine-prefix-folder();
-                        }
-
-                        open-wine-binary-folder => {
-                            root.open-wine-binary-folder();
-                        }
-
-                        refresh-game => {
-                            root.refresh-game();
-                        }
-
-                        debug-data => {
-                            root.details-json = root.selected-game-json;
-                            details-popup.show();
-                        }
+                    clicked => {
+                        root.current-tab = 0;
                     }
+                }
 
-                    if !root.game-selected : GamesSidebar {
-                        search-text <=> root.search-text;
-                        sort-index <=> root.sort-index;
+                NavTab {
+                    title: "Mods";
+                    selected: root.current-tab == 1;
 
-                        search-changed(text) => {
-                            root.search-changed(text);
-                        }
-
-                        sort-changed(index) => {
-                            root.sort-changed(index);
-                        }
-
-                        filter-changed(group, value, checked) => {
-                            root.filter-changed(group, value, checked);
-                        }
+                    clicked => {
+                        root.current-tab = 1;
                     }
+                }
 
-                    if root.game-selected : GameDetailsPage {
-                        game-row: root.selected-game-row;
-                        game-mods: root.game-mods;
-                        has-installed-mods: root.has-installed-mods;
+                NavTab {
+                    title: "Thanks";
+                    selected: root.current-tab == 2;
 
-                        back => {
-                            root.back();
-                        }
-
-                        install-mod(mod-id) => {
-                            root.install-mod(mod-id);
-                        }
-
-                        uninstall-mod(mod-id) => {
-                            root.uninstall-mod(mod-id);
-                        }
-
-                        update-mod(mod-id) => {
-                            root.update-mod(mod-id);
-                        }
-
-                        run-mod(mod-id) => {
-                            root.run-mod(mod-id);
-                        }
-
-                        open-mod-folder(mod-id) => {
-                            root.open-mod-folder(mod-id);
-                        }
-
-                        configure-mod(mod-id) => {
-                            root.configure-mod(mod-id);
-                        }
-
-                        configure-mod-folder(mod-id) => {
-                            root.configure-mod-folder(mod-id);
-                        }
-
-                        uninstall-all-mods => {
-                            root.uninstall-all-mods();
-                        }
+                    clicked => {
+                        root.current-tab = 2;
                     }
+                }
 
-                    if !root.game-selected : GamesPage {
-                        game-rows: root.game-rows;
+                Rectangle {
+                    horizontal-stretch: 1;
+                }
 
-                        request-game(index) => {
-                            root.request-game(index);
-                        }
-
-                        visible-range-changed(first, last) => {
-                            root.visible-range-changed(first, last);
-                        }
-
-                        select-game(index) => {
-                            root.select-game(index);
-                        }
+                AppMenu {
+                    about-clicked => {
+                        about-popup.show();
                     }
                 }
             }
 
-            Tab {
-                title: "Mods";
-                max-width: self.preferred-width;
-
-                Rectangle {
-                    Text {
-                        text: "Mods";
-                        font-size: 20px;
-                        horizontal-alignment: center;
-                        vertical-alignment: center;
-                    }
-                }
-            }
-
-            Tab {
-                title: "Thanks";
-                max-width: self.preferred-width;
-
-                Rectangle {
-                    Text {
-                        text: "Thanks";
-                        font-size: 20px;
-                        horizontal-alignment: center;
-                        vertical-alignment: center;
-                    }
-                }
+            Rectangle {
+                y: parent.height - self.height;
+                width: 100%;
+                height: 1px;
+                background: Palette.border;
             }
         }
 
-        Button {
-            text: "Menu";
-            x: parent.width - self.width - 8px;
-            y: 8px;
+        Rectangle {
+            HorizontalLayout {
+                visible: root.current-tab == 0;
+                if root.game-selected : GameSidebar {
+                    provider-id: root.selected-provider-id;
+                    can-run-game: root.selected-can-run-game;
+                    has-exe-path: root.selected-has-exe-path;
+                    show-wine-folders: root.selected-show-wine-folders;
+                    provider-actions: root.selected-provider-actions;
+
+                    back => {
+                        root.back();
+                    }
+
+                    run-game => {
+                        root.run-game();
+                    }
+
+                    run-provider-action(value) => {
+                        root.run-provider-action(value);
+                    }
+
+                    open-game-folder => {
+                        root.open-game-folder();
+                    }
+
+                    open-game-mods-folder => {
+                        root.open-game-mods-folder();
+                    }
+
+                    open-game-data-folder => {
+                        root.open-game-data-folder();
+                    }
+
+                    open-wine-prefix-folder => {
+                        root.open-wine-prefix-folder();
+                    }
+
+                    open-wine-binary-folder => {
+                        root.open-wine-binary-folder();
+                    }
+
+                    refresh-game => {
+                        root.refresh-game();
+                    }
+
+                    debug-data => {
+                        root.details-json = root.selected-game-json;
+                        details-popup.show();
+                    }
+                }
+
+                if !root.game-selected : GamesSidebar {
+                    search-text <=> root.search-text;
+                    sort-index <=> root.sort-index;
+
+                    search-changed(text) => {
+                        root.search-changed(text);
+                    }
+
+                    sort-changed(index) => {
+                        root.sort-changed(index);
+                    }
+
+                    filter-changed(group, value, checked) => {
+                        root.filter-changed(group, value, checked);
+                    }
+                }
+
+                if root.game-selected : GameDetailsPage {
+                    game-row: root.selected-game-row;
+                    game-mods: root.game-mods;
+                    has-installed-mods: root.has-installed-mods;
+
+                    back => {
+                        root.back();
+                    }
+
+                    install-mod(mod-id) => {
+                        root.install-mod(mod-id);
+                    }
+
+                    uninstall-mod(mod-id) => {
+                        root.uninstall-mod(mod-id);
+                    }
+
+                    update-mod(mod-id) => {
+                        root.update-mod(mod-id);
+                    }
+
+                    run-mod(mod-id) => {
+                        root.run-mod(mod-id);
+                    }
+
+                    open-mod-folder(mod-id) => {
+                        root.open-mod-folder(mod-id);
+                    }
+
+                    configure-mod(mod-id) => {
+                        root.configure-mod(mod-id);
+                    }
+
+                    configure-mod-folder(mod-id) => {
+                        root.configure-mod-folder(mod-id);
+                    }
+
+                    uninstall-all-mods => {
+                        root.uninstall-all-mods();
+                    }
+                }
+
+                if !root.game-selected : GamesPage {
+                    game-rows: root.game-rows;
+
+                    request-game(index) => {
+                        root.request-game(index);
+                    }
+
+                    visible-range-changed(first, last) => {
+                        root.visible-range-changed(first, last);
+                    }
+
+                    select-game(index) => {
+                        root.select-game(index);
+                    }
+                }
+            }
+
+            Rectangle {
+                visible: root.current-tab == 1;
+
+                Text {
+                    text: "Mods";
+                    font-size: 20px;
+                    horizontal-alignment: center;
+                    vertical-alignment: center;
+                }
+            }
+
+            Rectangle {
+                visible: root.current-tab == 2;
+
+                Text {
+                    text: "Thanks";
+                    font-size: 20px;
+                    horizontal-alignment: center;
+                    vertical-alignment: center;
+                }
+            }
         }
     }
 
@@ -238,5 +281,12 @@ export component MainWindow inherits Window {
         closed => {
             root.details-json = "";
         }
+    }
+
+    about-popup := AboutPopup {
+        x: (root.width - self.width) / 2;
+        y: (root.height - self.height) / 2;
+        app-version: root.app-version;
+        renderer-name: root.renderer-name;
     }
 }
