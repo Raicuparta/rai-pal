@@ -1,5 +1,6 @@
 import { Button, CheckBox, Palette } from "std-widgets.slint";
 import { FilterGroupData, FilterValueData } from "../filter-data.slint";
+import { Tr } from "../translations.slint";
 
 component FilterValueRow inherits Rectangle {
     in property <FilterValueData> item;
@@ -19,7 +20,7 @@ component FilterValueRow inherits Rectangle {
         cross-axis-alignment: center;
 
         CheckBox {
-            text: root.item.label;
+            text: root.item.label-key == "" ? root.item.label : Tr.filter-value(root.item.label-key);
             checked: root.item.enabled;
             enabled: !root.item.locked;
 
@@ -84,7 +85,7 @@ export component FilterGroupView inherits Rectangle {
                 cross-axis-alignment: center;
 
                 Button {
-                    text: "Reset";
+                    text: @tr("filterMenu" => "Reset");
                     enabled: root.group.has-changes;
                     height: 22px;
                     width: 52px;
@@ -100,7 +101,7 @@ export component FilterGroupView inherits Rectangle {
                 }
 
                 Text {
-                    text: root.group.label;
+                    text: root.group.label-key == "" ? root.group.label : Tr.filter-property(root.group.label-key);
                     font-weight: 700;
                     overflow: elide;
                     horizontal-stretch: 1;

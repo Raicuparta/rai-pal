@@ -12,7 +12,6 @@ pub fn show(window: &MainWindow, game: &DbGame, mut row: GameRowData) {
 		.into_iter()
 		.map(|action| ProviderActionItem {
 			value: action.to_string().into(),
-			label: actions::action_label(action).into(),
 		})
 		.collect();
 

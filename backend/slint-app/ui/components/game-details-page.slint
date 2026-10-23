@@ -81,7 +81,7 @@ export component GameDetailsPage inherits Rectangle {
 
             if root.has-installed-mods : Button {
                 vertical-stretch: 0;
-                text: "Uninstall all mods";
+                text: @tr("gameModal" => "Uninstall all mods");
 
                 clicked => {
                     root.uninstall-all-mods();

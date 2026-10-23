@@ -83,3 +83,7 @@ migration is complete.
   in the same locations, with the same JSON structure.
 - Refer to the Tauri implementation for detailed behaviour (filters, locking,
   reset buttons, empty states, etc) instead of inventing new behaviour.
+- The Tauri localization files in `frontend/localizations` remain the source of
+  truth. Regenerate the Slint gettext catalogs with
+  `node scripts/ts-localizations-to-po.mjs` after changing them; Slint UI
+  strings use @tr.

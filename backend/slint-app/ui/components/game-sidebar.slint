@@ -1,5 +1,6 @@
 import { Button, Palette } from "std-widgets.slint";
 import { ProviderActionItem } from "../provider-action-item.slint";
+import { Tr } from "../translations.slint";
 
 export component GameSidebar inherits Rectangle {
     in property <string> provider-id;
@@ -28,7 +29,7 @@ export component GameSidebar inherits Rectangle {
         alignment: start;
 
         Button {
-            text: "Back";
+            text: @tr("subPage" => "Back");
 
             clicked => {
                 root.back();
@@ -36,7 +37,7 @@ export component GameSidebar inherits Rectangle {
         }
 
         if root.can-run-game : Button {
-            text: "Run game";
+            text: @tr("gameModal" => "Start Game");
             primary: true;
 
             clicked => {
@@ -54,7 +55,7 @@ export component GameSidebar inherits Rectangle {
             }
 
             for action in root.provider-actions : Button {
-                text: action.label;
+                text: Tr.provider-command(action.value);
 
                 clicked => {
                     root.run-provider-action(action.value);
@@ -67,12 +68,12 @@ export component GameSidebar inherits Rectangle {
             spacing: 2px;
 
             Text {
-                text: "Folders";
+                text: @tr("gameModal" => "Folders");
                 font-weight: 700;
             }
 
             Button {
-                text: "Game folder";
+                text: @tr("gameModal" => "Game Files");
 
                 clicked => {
                     root.open-game-folder();
@@ -80,7 +81,7 @@ export component GameSidebar inherits Rectangle {
             }
 
             Button {
-                text: "Mods folder";
+                text: @tr("gameModal" => "Installed Mods");
 
                 clicked => {
                     root.open-game-mods-folder();
@@ -88,7 +89,7 @@ export component GameSidebar inherits Rectangle {
             }
 
             Button {
-                text: "Data folder";
+                text: @tr("gameModal" => "Game App Data");
 
                 clicked => {
                     root.open-game-data-folder();
@@ -96,7 +97,7 @@ export component GameSidebar inherits Rectangle {
             }
 
             if root.show-wine-folders : Button {
-                text: "Wine prefix";
+                text: @tr("gameModal" => "Wine Prefix");
 
                 clicked => {
                     root.open-wine-prefix-folder();
@@ -104,7 +105,7 @@ export component GameSidebar inherits Rectangle {
             }
 
             if root.show-wine-folders : Button {
-                text: "Wine binary";
+                text: @tr("gameModal" => "Wine Binary");
 
                 clicked => {
                     root.open-wine-binary-folder();
@@ -122,7 +123,7 @@ export component GameSidebar inherits Rectangle {
             }
 
             if root.has-exe-path : Button {
-                text: "Refresh game";
+                text: @tr("gameModal" => "Refresh game");
 
                 clicked => {
                     root.refresh-game();
@@ -130,7 +131,7 @@ export component GameSidebar inherits Rectangle {
             }
 
             Button {
-                text: "Debug data";
+                text: @tr("debugData" => "Debug data");
 
                 clicked => {
                     root.debug-data();

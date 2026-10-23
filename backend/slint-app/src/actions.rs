@@ -9,17 +9,6 @@ use rai_pal_core::{
 	result::Result,
 };
 
-pub fn action_label(action: ProviderCommandAction) -> &'static str {
-	match action {
-		ProviderCommandAction::Install => "Install",
-		ProviderCommandAction::ShowInLibrary => "Show in library",
-		ProviderCommandAction::ShowInStore => "Show in store",
-		ProviderCommandAction::StartViaProvider => "Start via provider",
-		ProviderCommandAction::StartViaExe => "Start via exe",
-		ProviderCommandAction::OpenInBrowser => "Open in browser",
-	}
-}
-
 pub fn primary_start(game: &DbGame) -> Option<ProviderCommandAction> {
 	if game
 		.provider_commands

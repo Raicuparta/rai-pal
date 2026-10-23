@@ -2,7 +2,11 @@ import { IconDisplay, IconSet } from "@lucide";
 import { Palette } from "std-widgets.slint";
 
 export component AppMenu inherits Rectangle {
+    in property <string> selected-language: "";
+    in property <string> detected-language-name: "";
+
     callback about-clicked;
+    callback language-changed(value: string);
 
     width: 36px;
     height: 32px;
@@ -37,6 +41,114 @@ export component AppMenu inherits Rectangle {
 
                 activated => {
                     root.about-clicked();
+                }
+            }
+
+            MenuSeparator { }
+
+            Menu {
+                title: @tr("appDropdownMenu" => "Language");
+
+                if root.detected-language-name != "" : MenuItem {
+                    checkable: true;
+                    checked: root.selected-language == "";
+                    title: @tr("appDropdownMenu" => "Auto-detected - {0}", root.detected-language-name);
+
+                    activated => {
+                        root.language-changed("");
+                    }
+                }
+
+                if root.detected-language-name != "" : MenuSeparator { }
+
+                MenuItem {
+                    checkable: true;
+                    checked: root.selected-language == "en";
+                    title: "English (US)";
+
+                    activated => {
+                        root.language-changed("en");
+                    }
+                }
+
+                MenuItem {
+                    checkable: true;
+                    checked: root.selected-language == "de";
+                    title: "Deutsch (Deutschland)";
+
+                    activated => {
+                        root.language-changed("de");
+                    }
+                }
+
+                MenuItem {
+                    checkable: true;
+                    checked: root.selected-language == "es";
+                    title: "Español (España)";
+
+                    activated => {
+                        root.language-changed("es");
+                    }
+                }
+
+                MenuItem {
+                    checkable: true;
+                    checked: root.selected-language == "fr";
+                    title: "Français (France)";
+
+                    activated => {
+                        root.language-changed("fr");
+                    }
+                }
+
+                MenuItem {
+                    checkable: true;
+                    checked: root.selected-language == "ja";
+                    title: "日本語";
+
+                    activated => {
+                        root.language-changed("ja");
+                    }
+                }
+
+                MenuItem {
+                    checkable: true;
+                    checked: root.selected-language == "ko";
+                    title: "한국어";
+
+                    activated => {
+                        root.language-changed("ko");
+                    }
+                }
+
+                MenuItem {
+                    checkable: true;
+                    checked: root.selected-language == "pt";
+                    title: "Português (Portugal)";
+
+                    activated => {
+                        root.language-changed("pt");
+                    }
+                }
+
+                MenuItem {
+                    checkable: true;
+                    checked: root.selected-language == "zh";
+                    title: "简体中文";
+
+                    activated => {
+                        root.language-changed("zh");
+                    }
+                }
+
+                MenuItem {
+                    checkable: true;
+                    checked: root.selected-language == "wa";
+                    title: "Wario (Waah!)";
+
+                    activated => {
+                        root.language-changed("wa");
+                    }
                 }
             }
         }

@@ -5,11 +5,13 @@ import { FilterGroupView } from "filter-group.slint";
 export component GamesSidebar inherits Rectangle {
     in-out property <string> search-text: "";
     in-out property <int> sort-index: 0;
+    in-out property <bool> sort-descending: false;
     in property <[FilterGroupData]> filter-groups;
     in property <bool> filters-have-changes;
 
     callback search-changed(text: string);
     callback sort-changed(index: int);
+    callback sort-direction-changed(descending: bool);
     callback filter-toggled(group: string, value: string, checked: bool);
     callback filter-lock-toggled(group: string, value: string);
     callback filter-only(group: string, value: string);
@@ -26,27 +28,37 @@ export component GamesSidebar inherits Rectangle {
 
         LineEdit {
             text <=> root.search-text;
-            placeholder-text: "Search...";
+            placeholder-text: @tr("filterMenu" => "Search...");
 
             edited(text) => {
                 root.search-changed(text);
             }
         }
 
-        sort-combo := ComboBox {
-            model: [
-                "Name ascending",
-                "Name descending",
-                "Engine ascending",
-                "Engine descending",
-                "Date ascending",
-                "Date descending",
-            ];
-            current-index <=> root.sort-index;
-            horizontal-stretch: 0;
+        HorizontalLayout {
+            spacing: 4px;
 
-            selected(value) => {
-                root.sort-changed(root.sort-index);
+            ComboBox {
+                model: [
+                    @tr("gamesTableColumn" => "Name"),
+                    @tr("gamesTableColumn" => "Engine"),
+                    @tr("gamesTableColumn" => "Date"),
+                ];
+                current-index <=> root.sort-index;
+                horizontal-stretch: 1;
+
+                selected(value) => {
+                    root.sort-changed(root.sort-index);
+                }
+            }
+
+            Button {
+                text: root.sort-descending ? "↓" : "↑";
+                width: 40px;
+
+                clicked => {
+                    root.sort-direction-changed(!root.sort-descending);
+                }
             }
         }
 
@@ -56,7 +68,7 @@ export component GamesSidebar inherits Rectangle {
             cross-axis-alignment: center;
 
             Button {
-                text: "Reset all";
+                text: @tr("filterMenu" => "Reset");
                 height: 22px;
                 enabled: root.filters-have-changes;
 
@@ -66,7 +78,7 @@ export component GamesSidebar inherits Rectangle {
             }
 
             Text {
-                text: "Filters";
+                text: @tr("filterMenu" => "Filters");
                 font-size: 16px;
                 font-weight: 700;
                 vertical-alignment: center;

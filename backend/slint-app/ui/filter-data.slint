@@ -1,5 +1,6 @@
 export struct FilterValueData {
     value: string,
+    label-key: string,
     label: string,
     enabled: bool,
     locked: bool,
@@ -7,6 +8,7 @@ export struct FilterValueData {
 
 export struct FilterGroupData {
     key: string,
+    label-key: string,
     label: string,
     values: [FilterValueData],
     has-changes: bool,

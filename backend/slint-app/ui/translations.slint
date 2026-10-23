@@ -1,0 +1,85 @@
+export global Tr {
+    public pure function filter-property(key: string) -> string {
+        if key == "provider" {
+            return @tr("filterProperty" => "Provider");
+        }
+        if key == "tags" {
+            return @tr("filterProperty" => "Tag");
+        }
+        if key == "architecture" {
+            return @tr("filterProperty" => "Architecture");
+        }
+        if key == "executableOs" {
+            return @tr("filterProperty" => "Executable OS");
+        }
+        if key == "supportedOs" {
+            return @tr("filterProperty" => "Supported OS");
+        }
+        if key == "unityBackend" {
+            return @tr("filterProperty" => "Unity Backend");
+        }
+        if key == "engine" {
+            return @tr("filterProperty" => "Engine");
+        }
+        if key == "status" {
+            return @tr("filterProperty" => "Install status");
+        }
+        if key == "mod" {
+            return @tr("filterProperty" => "Mod");
+        }
+        return key;
+    }
+
+    public pure function filter-value(key: string) -> string {
+        if key == "unknown" {
+            return @tr("filterValue" => "Unknown");
+        }
+        if key == "arch64" {
+            return @tr("filterValue" => "64-bit");
+        }
+        if key == "arch32" {
+            return @tr("filterValue" => "32-bit");
+        }
+        if key == "tagDemo" {
+            return @tr("filterValue" => "Demo");
+        }
+        if key == "tagVr" {
+            return @tr("filterValue" => "Native VR");
+        }
+        if key == "tagUntagged" {
+            return @tr("filterValue" => "Untagged");
+        }
+        if key == "statusInstalled" {
+            return @tr("filterValue" => "Installed");
+        }
+        if key == "statusNotInstalled" {
+            return @tr("filterValue" => "Not installed");
+        }
+        if key == "providerManual" {
+            return @tr("filterValue" => "Manual");
+        }
+        return key;
+    }
+
+    public pure function provider-command(key: string) -> string {
+        if key == "Install" {
+            return @tr("providerCommand" => "Install");
+        }
+        if key == "ShowInLibrary" {
+            return @tr("providerCommand" => "Show In Library");
+        }
+        if key == "ShowInStore" {
+            return @tr("providerCommand" => "Open Store Page");
+        }
+        if key == "StartViaProvider" {
+            return @tr("providerCommand" => "Start Game");
+        }
+        if key == "StartViaExe" {
+            return @tr("providerCommand" => "Run Game Executable");
+        }
+        if key == "OpenInBrowser" {
+            return @tr("providerCommand" => "Open In Browser");
+        }
+        return key;
+    }
+}

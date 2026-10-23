@@ -1,0 +1,619 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: ko\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgctxt "meta"
+msgid "English (US)"
+msgstr "한국어"
+
+msgctxt "tab"
+msgid "Games"
+msgstr "게임"
+
+msgctxt "tab"
+msgid "Mods"
+msgstr "모드"
+
+msgctxt "tab"
+msgid "Thanks"
+msgstr "감사"
+
+msgctxt "gamesPage"
+msgid "Rai Pal didn't find any games at all. Remember Rai Pal needs to find installed apps from other game providers, like Steam, Epic, etc."
+msgstr "Rai Pal이 게임을 하나도 못 찾았어요. Steam이나 Epic 같은 게임 플랫폼에서 설치된 앱이 있어야 해요."
+
+msgctxt "gamesPage"
+msgid "Nothing! All of your games are hidden because of the filters you selected. Clear your filters to see your beautiful games again."
+msgstr "아무것도 없어요! 선택한 필터 때문에 게임이 전부 숨겨졌어요. 필터 지우면 다시 보여요."
+
+msgctxt "gamesPage"
+msgid "Finding your games..."
+msgstr "게임을 찾는 중..."
+
+msgctxt "manualGames"
+msgid "Note: you can also add your non-Steam games to Steam, and they will still be detected by Rai Pal."
+msgstr "참고: Steam이 아닌 게임을 Steam에 추가해도 Rai Pal에서 계속 감지됩니다."
+
+msgctxt "manualGames"
+msgid "These directories will be scanned recursively every time Rai Pal refreshes its data. Large folders may make things significantly slower."
+msgstr "Rai Pal이 데이터를 새로고침할 때마다 이 디렉토리들이 재귀적으로 스캔됩니다. 큰 폴더는 속도를 현저히 느리게 할 수 있습니다."
+
+msgctxt "manualGames"
+msgid "Add games"
+msgstr "게임 추가"
+
+msgctxt "manualGames"
+msgid "Manually Added Games"
+msgstr "수동으로 추가된 게임"
+
+msgctxt "manualGames"
+msgid "Select game executable"
+msgstr "게임 실행 파일 선택"
+
+msgctxt "manualGames"
+msgid "Select game directory. Can be slow!"
+msgstr "게임 디렉토리 선택. 느릴 수 있음!"
+
+msgctxt "manualGames"
+msgid "You can also just drop game executable files or entire folders anywhere on Rai Pal's window to add them to the library, even without opening this dialog."
+msgstr "게임 실행 파일이나 폴더 전체를 Rai Pal 창 아무 곳에나 끌어다 놓으면 이 대화상자를 열지 않고도 라이브러리에 추가할 수 있습니다."
+
+msgctxt "manualGames"
+msgid "Scanning {0}..."
+msgstr "{0} 스캔 중..."
+
+msgctxt "manualGames"
+msgid "Scanned {0} directories, found {1} executables"
+msgstr "{0}개 디렉토리 스캔, {1}개 실행 파일 발견"
+
+msgctxt "manualGames"
+msgid "Found {0} executables in {1} seconds. Add this folder to Rai Pal?"
+msgstr "{1}초 만에 {0}개 실행 파일을 찾았습니다. 이 폴더를 Rai Pal에 추가할까요?"
+
+msgctxt "manualGames"
+msgid "Add folder"
+msgstr "폴더 추가"
+
+msgctxt "manualGames"
+msgid "Cancel"
+msgstr "취소"
+
+msgctxt "refresh"
+msgid "Refresh"
+msgstr "새로고침"
+
+msgctxt "refresh"
+msgid "Update remote databases"
+msgstr "원격 데이터베이스 업데이트"
+
+msgctxt "refresh"
+msgid "Loading {0}..."
+msgstr "{0} 로딩 중..."
+
+msgctxt "filterMenu"
+msgid "Filters"
+msgstr "필터"
+
+msgctxt "filterMenu"
+msgid "Reset"
+msgstr "재설정"
+
+msgctxt "filterMenu"
+msgid "Search..."
+msgstr "검색..."
+
+msgctxt "filterProperty"
+msgid "Provider"
+msgstr "플랫폼"
+
+msgctxt "filterProperty"
+msgid "Tag"
+msgstr "태그"
+
+msgctxt "filterProperty"
+msgid "Architecture"
+msgstr "아키텍처"
+
+msgctxt "filterProperty"
+msgid "Executable OS"
+msgstr "실행 파일 OS"
+
+msgctxt "filterProperty"
+msgid "Supported OS"
+msgstr "지원 OS"
+
+msgctxt "filterProperty"
+msgid "Unity Backend"
+msgstr "Unity 백엔드"
+
+msgctxt "filterProperty"
+msgid "Engine"
+msgstr "엔진"
+
+msgctxt "filterProperty"
+msgid "Install status"
+msgstr "설치 상태"
+
+msgctxt "filterProperty"
+msgid "Mod"
+msgstr "모드"
+
+msgctxt "filterValue"
+msgid "Unknown"
+msgstr "알 수 없음"
+
+msgctxt "filterValue"
+msgid "64-bit"
+msgstr "64비트"
+
+msgctxt "filterValue"
+msgid "32-bit"
+msgstr "32비트"
+
+msgctxt "filterValue"
+msgid "Demo"
+msgstr "데모"
+
+msgctxt "filterValue"
+msgid "Native VR"
+msgstr "네이티브 VR"
+
+msgctxt "filterValue"
+msgid "Untagged"
+msgstr "태그 없음"
+
+msgctxt "filterValue"
+msgid "Installed"
+msgstr "설치됨"
+
+msgctxt "filterValue"
+msgid "Not installed"
+msgstr "설치되지 않음"
+
+msgctxt "filterValue"
+msgid "Manual"
+msgstr "수동"
+
+msgctxt "filterValueNote"
+msgid "Only shows PC Xbox games if they're installed."
+msgstr "설치된 경우에만 PC Xbox 게임을 보여줍니다."
+
+msgctxt "filterValueNote"
+msgid "Godot games are not fully supported yet."
+msgstr "Godot 게임은 아직 완전히 지원되지 않습니다."
+
+msgctxt "filterValueNote"
+msgid "GameMaker games are not fully supported yet."
+msgstr "GameMaker 게임은 아직 완전히 지원되지 않습니다."
+
+msgctxt "providerCommand"
+msgid "Install"
+msgstr "설치"
+
+msgctxt "providerCommand"
+msgid "Show In Library"
+msgstr "라이브러리에서 보기"
+
+msgctxt "providerCommand"
+msgid "Open Store Page"
+msgstr "스토어 페이지 열기"
+
+msgctxt "providerCommand"
+msgid "Start Game"
+msgstr "게임 시작"
+
+msgctxt "providerCommand"
+msgid "Run Game Executable"
+msgstr "게임 실행 파일 실행"
+
+msgctxt "providerCommand"
+msgid "Open In Browser"
+msgstr "브라우저에서 열기"
+
+msgctxt "gameModal"
+msgid "Start Game"
+msgstr "게임 시작"
+
+msgctxt "gameModal"
+msgid "Start Game Executable"
+msgstr "실행 파일로 게임 시작"
+
+msgctxt "gameModal"
+msgid "Start Game via {0}"
+msgstr "{0}로 게임 시작"
+
+msgctxt "gameModal"
+msgid "Folders"
+msgstr "폴더"
+
+msgctxt "gameModal"
+msgid "Game Files"
+msgstr "게임 파일"
+
+msgctxt "gameModal"
+msgid "Installed Mods"
+msgstr "설치된 모드"
+
+msgctxt "gameModal"
+msgid "Game App Data"
+msgstr "게임 앱 데이터"
+
+msgctxt "gameModal"
+msgid "Wine Prefix"
+msgstr "게임 Wine 프리픽스"
+
+msgctxt "gameModal"
+msgid "Wine Binary"
+msgstr "게임 Wine 바이너리"
+
+msgctxt "gameModal"
+msgid "Remove from Rai Pal"
+msgstr "Rai Pal에서 제거"
+
+msgctxt "gameModal"
+msgid "Are you sure you want to remove this game from Rai Pal?"
+msgstr "이 게임을 Rai Pal에서 제거할까요?"
+
+msgctxt "gameModal"
+msgid "Refresh game"
+msgstr "게임 새로고침"
+
+msgctxt "gameModal"
+msgid "Failed to read some important information about this game. This could be due to the executable being protected. Some mods might fail to install."
+msgstr "이 게임의 중요 정보를 읽을 수 없었어요. 실행 파일이 보호돼 있어서 그럴 수 있어요. 일부 모드가 설치 안 될 수도 있어요."
+
+msgctxt "gameModal"
+msgid "Failed to determine the engine for this game. Some mods might fail to install."
+msgstr "이 게임의 엔진을 확인할 수 없었어요. 일부 모드가 설치 안 될 수도 있어요."
+
+msgctxt "gameModal"
+msgid "This game isn't installed, so I'm not 100% sure which mods are compatible. The ones you see below might work. If you install the game, I'll show you more accurate information."
+msgstr "이 게임이 설치되지 않아서 어떤 모드가 맞는지 100% 장담할 수 없어요. 아래 모드들이 될 수도 있어요. 게임을 설치하면 더 정확히 알려드릴게요."
+
+msgctxt "gameModal"
+msgid "Uninstall all mods"
+msgstr "모드 모두 제거"
+
+msgctxt "gameModal"
+msgid "You sure? This will delete all files in this game's mods folder. It won't delete any files from the actual game though."
+msgstr "확실해요? 이 게임 모드 폴더 안 파일이 전부 지워져요. 실제 게임 파일은 그대로 두고요."
+
+msgctxt "gameModal"
+msgid "Incompatible Mods"
+msgstr "호환되지 않는 모드"
+
+msgctxt "gameModal"
+msgid "The mods listed here can't be installed because they aren't compatible with this game's engine version."
+msgstr "여기 모드들은 이 게임 엔진 버전과 호환이 안 돼서 설치할 수 없어요."
+
+msgctxt "gameModal"
+msgid "Other things"
+msgstr "기타 항목"
+
+msgctxt "gameModal"
+msgid "These are mostly dependencies and other stuff that you don't usually need to mess with directly."
+msgstr "이것들은 대부분 종속성 같은 거라서 보통 직접 건드릴 일이 없어요."
+
+msgctxt "gameModRow"
+msgid "Edit Mod Config"
+msgstr "모드 설정 편집"
+
+msgctxt "gameModRow"
+msgid "Open folder containing this mod's config files"
+msgstr "이 모드의 설정 파일이 포함된 폴더 열기"
+
+msgctxt "gameModRow"
+msgid "Open Mod Folder"
+msgstr "모드 폴더 열기"
+
+msgctxt "gameModRow"
+msgid "Update"
+msgstr "업데이트"
+
+msgctxt "gameModRow"
+msgid "Install"
+msgstr "설치"
+
+msgctxt "gameModRow"
+msgid "Attention: be careful when installing mods on multiplayer games! Anticheat can detect some mods and get you banned, even if the mods seem harmless."
+msgstr "멀티플레이 게임에 모드 설치할 땐 조심하세요! 안티치트가 모드를 감지하면 해롭지 않아 보여도 밴 당할 수 있어요."
+
+msgctxt "gameModRow"
+msgid "Reinstall"
+msgstr "재설치"
+
+msgctxt "gameModRow"
+msgid "Uninstall"
+msgstr "제거"
+
+msgctxt "gameModRow"
+msgid "Run"
+msgstr "실행"
+
+msgctxt "gameModRow"
+msgid "Download Recommended Config"
+msgstr "권장 설정 다운로드"
+
+msgctxt "gameModRow"
+msgid "Recommended config available. Will be downloaded if you don't already have a config. You can also force it to download from the three dot menu."
+msgstr "권장 설정이 있어요. 아직 설정이 없으면 자동으로 받고, 세 점 메뉴에서 강제로 받을 수도 있어요."
+
+msgctxt "gameModRow"
+msgid "Mod outdated"
+msgstr "업데이트 가능"
+
+msgctxt "gameModRow"
+msgid "Can't uninstall a mod that has dependants. Uninstall the mods that depend on this one first."
+msgstr "이 모드를 쓰는 다른 모드가 있으면 제거할 수 없어요. 그 모드들부터 먼저 제거해 주세요."
+
+msgctxt "gamesSort"
+msgid "Sort by"
+msgstr "정렬 기준"
+
+msgctxt "gamesSort"
+msgid "Sort direction"
+msgstr "정렬 방향"
+
+msgctxt "gamesTableColumn"
+msgid "Name"
+msgstr "이름"
+
+msgctxt "gamesTableColumn"
+msgid "Engine"
+msgstr "엔진"
+
+msgctxt "gamesTableColumn"
+msgid "Date"
+msgstr "날짜"
+
+msgctxt "modsPage"
+msgid "Open Local Mods Folder"
+msgstr "모드 폴더 열기"
+
+msgctxt "modsPage"
+msgid "You can place mods in this folder with a rai-pal-manifest.json, to be loaded directly without going through the online database."
+msgstr "rai-pal-manifest.json이 있는 모드를 이 폴더에 넣으면 온라인 데이터베이스 없이 바로 불러올 수 있어요."
+
+msgctxt "modsPage"
+msgid "Mod"
+msgstr "모드"
+
+msgctxt "modsPage"
+msgid "Version"
+msgstr "버전"
+
+msgctxt "modsPage"
+msgid "Engine"
+msgstr "엔진"
+
+msgctxt "modsPage"
+msgid "Backend"
+msgstr "백엔드"
+
+msgctxt "modsPage"
+msgid "by {0}"
+msgstr "{0} 제작"
+
+msgctxt "modsPage"
+msgid "Deprecated"
+msgstr "사용 중지됨"
+
+msgctxt "modsPage"
+msgid "This mod is deprecated. You should uninstall it and install a newer alternative."
+msgstr "이 모드는 더 이상 지원되지 않아요. 제거하고 더 최신 모드를 설치하는 게 좋아요."
+
+msgctxt "modModal"
+msgid "Run"
+msgstr "실행"
+
+msgctxt "modModal"
+msgid "Open mod folder"
+msgstr "모드 폴더 열기"
+
+msgctxt "modModal"
+msgid "Update mod"
+msgstr "모드 업데이트"
+
+msgctxt "modModal"
+msgid "Download mod"
+msgstr "모드 다운로드"
+
+msgctxt "modModal"
+msgid "Delete mod"
+msgstr "모드 삭제"
+
+msgctxt "modModal"
+msgid "You sure? Any files inside the mod's folder will be lost."
+msgstr "확실해요? 모드 폴더 안 파일이 전부 날아가요."
+
+msgctxt "modModal"
+msgid "by {0}"
+msgstr "{0} 제작"
+
+msgctxt "appDropdownMenu"
+msgid "Show game thumbnails on list"
+msgstr "목록에 게임 썸네일 표시"
+
+msgctxt "appDropdownMenu"
+msgid "Language"
+msgstr "언어"
+
+msgctxt "appDropdownMenu"
+msgid "Auto-detected - {0}"
+msgstr "자동 감지 - {0}"
+
+msgctxt "appDropdownMenu"
+msgid "Reset Rai Pal settings"
+msgstr "Rai Pal 설정 재설정"
+
+msgctxt "appDropdownMenu"
+msgid "Will reset filters, confirmation dialogs, probably other stuff."
+msgstr "필터, 확인 창, 이것저것 다 초기화돼요."
+
+msgctxt "appDropdownMenu"
+msgid "Open Logs Folder"
+msgstr "로그 폴더 열기"
+
+msgctxt "appDropdownMenu"
+msgid "Clear Rai Pal cache"
+msgstr "Rai Pal 캐시 지우기"
+
+msgctxt "appDropdownMenu"
+msgid "Clears the game list cache used by Rai Pal."
+msgstr "Rai Pal이 사용하는 게임 목록 캐시를 지웁니다."
+
+msgctxt "userMenu"
+msgid "Unknown user"
+msgstr "알 수 없는 사용자"
+
+msgctxt "userMenu"
+msgid "Log out"
+msgstr "로그아웃"
+
+msgctxt "userMenu"
+msgid "Sign in with Discord"
+msgstr "Discord로 로그인"
+
+msgctxt "userMenu"
+msgid "Mods can use this to access your Discord username, avatar, roles, etc."
+msgstr "모드가 이걸로 Discord 사용자 이름, 아바타, 역할 등에 접근할 수 있어요."
+
+msgctxt "subPage"
+msgid "Back"
+msgstr "뒤로"
+
+msgctxt "downloadStatusMenu"
+msgid "Clear completed"
+msgstr "완료 항목 지우기"
+
+msgctxt "steamCache"
+msgid "Reset Steam cache"
+msgstr "Steam 캐시 재설정"
+
+msgctxt "steamCache"
+msgid "Reset Steam cache"
+msgstr "Steam 캐시 재설정"
+
+msgctxt "steamCache"
+msgid "Use this if Rai Pal is showing games you don't actually own on Steam. This will reset Steam's cache, and then you'll have to restart Steam. You'll get an error if the file has already been deleted."
+msgstr "Rai Pal에 내가 가지고 있지 않은 Steam 게임이 표시될 때 쓰세요. Steam 캐시를 초기화한 다음 Steam을 다시 시작해야 해요. 이미 지워진 파일이면 오류가 나요."
+
+msgctxt "steamCache"
+msgid "The cache file has been deleted. Please restart Steam, wait a few seconds, and then press the refresh button on Rai Pal."
+msgstr "캐시 파일이 삭제되었습니다. Steam을 다시 시작하고 몇 초 기다린 후 Rai Pal에서 새로고침 버튼을 누르세요."
+
+msgctxt "steamShortcut"
+msgid "Add Rai Pal to Steam library"
+msgstr "Rai Pal을 Steam 라이브러리에 추가"
+
+msgctxt "steamShortcut"
+msgid "Add Rai Pal to Steam Library"
+msgstr "Rai Pal을 Steam 라이브러리에 추가"
+
+msgctxt "steamShortcut"
+msgid "This is especially useful on Steam Deck, to be able to launch Rai Pal in Game Mode. You'll have to restart Steam after doing this."
+msgstr "이건 특히 Steam Deck에서 게임 모드로 Rai Pal을 실행할 때 좋아요. 하고 나서 Steam을 다시 시작해야 해요."
+
+msgctxt "steamShortcut"
+msgid "Rai Pal has been added to your Steam library. Restart Steam to see it."
+msgstr "Rai Pal이 Steam 라이브러리에 추가되었습니다. 보려면 Steam을 다시 시작하세요."
+
+msgctxt "appUpdate"
+msgid "Rai Pal {0}"
+msgstr "Rai Pal {0}"
+
+msgctxt "appUpdate"
+msgid "(no changelog)"
+msgstr "(변경 내역 없음)"
+
+msgctxt "appUpdate"
+msgid "Ignore (won't ask again until you restart Rai Pal)"
+msgstr "무시 (Rai Pal을 다시 시작할 때까지 다시 묻지 않음)"
+
+msgctxt "appUpdate"
+msgid "Update now"
+msgstr "지금 업데이트"
+
+msgctxt "debugData"
+msgid "Debug data"
+msgstr "디버그 데이터"
+
+msgctxt "debugData"
+msgid "Copy debug data"
+msgstr "디버그 데이터 복사"
+
+msgctxt "thanksPage"
+msgid "Hello. I made Rai Pal. I also made other VR mods in the past, and am currently working on a universal VR mod for Unity games. If you like what I do, and would like to see more, please consider donating! You can also support me by buying one of my free mods on itch.io."
+msgstr "안녕하세요. Rai Pal을 만든 사람이에요. 예전에 여러 VR 모드도 만들었고, 지금은 Unity 게임용 범용 VR 모드를 만들고 있어요. 제 작업이 마음에 들고 더 보고 싶으시면 후원 고려해 주세요! itch.io에서 제 무료 모드를 구매해서 응원해 주셔도 좋아요."
+
+msgctxt "thanksPage"
+msgid "Star Rai Pal on GitHub"
+msgstr "GitHub에서 Rai Pal 별표 주기"
+
+msgctxt "thanksPage"
+msgid "Other modders"
+msgstr "다른 모더들"
+
+msgctxt "thanksPage"
+msgid "Rai Pal is meant to help you manage game modding, and we can't do that without the tools that other developers have created. Some of these people don't have donation links, but I'm extremely grateful for their work."
+msgstr "Rai Pal은 게임 모딩을 쉽게 관리하도록 도와주는 도구예요. 다른 개발자분들이 만든 도구 없이는 불가능했을 거예요. 어떤 분들은 후원 링크가 없지만, 그래도 그분들 작업에 정말 감사드려요."
+
+msgctxt "thanksPage"
+msgid "{0} on {1}"
+msgstr "{1}의 {0}"
+
+msgctxt "thanksPage"
+msgid "Patreon Leaderboard"
+msgstr "Patreon 리더보드"
+
+msgctxt "thanksPage"
+msgid "Ranked by total lifetime donation amount."
+msgstr "총 후원 금액 기준으로 정렬됐어요."
+
+msgctxt "thanksPage"
+msgid "If you don't see yourself here, it's because your Patreon profile is private."
+msgstr "여기에 안 보이시면 Patreon 프로필이 비공개라서 그래요."
+
+msgctxt "commandButton"
+msgid "Cancel"
+msgstr "취소"
+
+msgctxt "commandButton"
+msgid "Don't ask again"
+msgstr "다시 묻지 않기"
+
+msgctxt "urlModSources"
+msgid "Mod Sources"
+msgstr "모드 소스"
+
+msgctxt "urlModSources"
+msgid "Add source"
+msgstr "소스 추가"
+
+msgctxt "urlModSources"
+msgid "Rai Pal will check for mods in all databases provided here, in addition to checking the default mod database. You can share mod sources via the deep-link {0}."
+msgstr "Rai Pal이 기본 데이터베이스 외에도 여기에 제공된 모든 데이터베이스에서 모드를 확인합니다. 딥링크 {0} 를 통해 모드 소스를 공유할 수 있습니다."
+
+msgctxt "urlModSources"
+msgid "Confirm Mod Source"
+msgstr "모드 소스 확인"
+
+msgctxt "urlModSources"
+msgid "{0} mods found in this source"
+msgstr "이 소스에서 {0}개의 모드를 찾았습니다"
+
+msgctxt "urlModSources"
+msgid "Add Source"
+msgstr "소스 추가"
+
+msgctxt "urlModSources"
+msgid "Cancel"
+msgstr "취소"
+
+msgctxt "urlModSources"
+msgid "Loading mods..."
+msgstr "모드 로딩 중..."
+

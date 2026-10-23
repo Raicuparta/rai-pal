@@ -1,0 +1,619 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: ja\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgctxt "meta"
+msgid "English (US)"
+msgstr "日本語"
+
+msgctxt "tab"
+msgid "Games"
+msgstr "ゲーム"
+
+msgctxt "tab"
+msgid "Mods"
+msgstr "Mod"
+
+msgctxt "tab"
+msgid "Thanks"
+msgstr "感謝"
+
+msgctxt "gamesPage"
+msgid "Rai Pal didn't find any games at all. Remember Rai Pal needs to find installed apps from other game providers, like Steam, Epic, etc."
+msgstr "Rai Palはゲームを全く見つけられませんでした。Rai PalはSteam、Epicなどの他のゲームプロバイダーからインストールされたアプリを見つける必要があることを覚えておいてください。"
+
+msgctxt "gamesPage"
+msgid "Nothing! All of your games are hidden because of the filters you selected. Clear your filters to see your beautiful games again."
+msgstr "何もありません！選択したフィルターのために、すべてのゲームが非表示になっています。フィルターをクリアして、美しいゲームを再び見てください。"
+
+msgctxt "gamesPage"
+msgid "Finding your games..."
+msgstr "ゲームを検索中..."
+
+msgctxt "manualGames"
+msgid "Note: you can also add your non-Steam games to Steam, and they will still be detected by Rai Pal."
+msgstr "注：Steam以外のゲームをSteamに追加しても、Rai Palは引き続き検出できます。"
+
+msgctxt "manualGames"
+msgid "These directories will be scanned recursively every time Rai Pal refreshes its data. Large folders may make things significantly slower."
+msgstr "これらのディレクトリは、Rai Palがデータを更新するたびに再帰的にスキャンされます。大きなフォルダは処理を大幅に遅くする可能性があります。"
+
+msgctxt "manualGames"
+msgid "Add games"
+msgstr "ゲームを追加"
+
+msgctxt "manualGames"
+msgid "Manually Added Games"
+msgstr "手動で追加したゲーム"
+
+msgctxt "manualGames"
+msgid "Select game executable"
+msgstr "ゲームの実行ファイルを選択"
+
+msgctxt "manualGames"
+msgid "Select game directory. Can be slow!"
+msgstr "ゲームディレクトリを選択。遅い可能性があります！"
+
+msgctxt "manualGames"
+msgid "You can also just drop game executable files or entire folders anywhere on Rai Pal's window to add them to the library, even without opening this dialog."
+msgstr "ゲームの実行ファイルやフォルダ全体をRai Palのウィンドウのどこにでもドロップして、このダイアログを開かずにライブラリに追加することもできます。"
+
+msgctxt "manualGames"
+msgid "Scanning {0}..."
+msgstr "{0}をスキャン中..."
+
+msgctxt "manualGames"
+msgid "Scanned {0} directories, found {1} executables"
+msgstr "{0}個のディレクトリをスキャン、{1}個の実行ファイルを発見"
+
+msgctxt "manualGames"
+msgid "Found {0} executables in {1} seconds. Add this folder to Rai Pal?"
+msgstr "{1}秒で{0}個の実行ファイルが見つかりました。このフォルダをRai Palに追加しますか？"
+
+msgctxt "manualGames"
+msgid "Add folder"
+msgstr "フォルダを追加"
+
+msgctxt "manualGames"
+msgid "Cancel"
+msgstr "キャンセル"
+
+msgctxt "refresh"
+msgid "Refresh"
+msgstr "更新"
+
+msgctxt "refresh"
+msgid "Update remote databases"
+msgstr "リモートデータベースを更新"
+
+msgctxt "refresh"
+msgid "Loading {0}..."
+msgstr "{0}を読み込み中..."
+
+msgctxt "filterMenu"
+msgid "Filters"
+msgstr "フィルター"
+
+msgctxt "filterMenu"
+msgid "Reset"
+msgstr "リセット"
+
+msgctxt "filterMenu"
+msgid "Search..."
+msgstr "検索..."
+
+msgctxt "filterProperty"
+msgid "Provider"
+msgstr "プロバイダー"
+
+msgctxt "filterProperty"
+msgid "Tag"
+msgstr "タグ"
+
+msgctxt "filterProperty"
+msgid "Architecture"
+msgstr "アーキテクチャ"
+
+msgctxt "filterProperty"
+msgid "Executable OS"
+msgstr "実行ファイルのOS"
+
+msgctxt "filterProperty"
+msgid "Supported OS"
+msgstr "対応OS"
+
+msgctxt "filterProperty"
+msgid "Unity Backend"
+msgstr "Unity バックエンド"
+
+msgctxt "filterProperty"
+msgid "Engine"
+msgstr "エンジン"
+
+msgctxt "filterProperty"
+msgid "Install status"
+msgstr "インストール状況"
+
+msgctxt "filterProperty"
+msgid "Mod"
+msgstr "Mod"
+
+msgctxt "filterValue"
+msgid "Unknown"
+msgstr "不明"
+
+msgctxt "filterValue"
+msgid "64-bit"
+msgstr "64ビット"
+
+msgctxt "filterValue"
+msgid "32-bit"
+msgstr "32ビット"
+
+msgctxt "filterValue"
+msgid "Demo"
+msgstr "デモ"
+
+msgctxt "filterValue"
+msgid "Native VR"
+msgstr "ネイティブVR"
+
+msgctxt "filterValue"
+msgid "Untagged"
+msgstr "タグなし"
+
+msgctxt "filterValue"
+msgid "Installed"
+msgstr "インストール済み"
+
+msgctxt "filterValue"
+msgid "Not installed"
+msgstr "未インストール"
+
+msgctxt "filterValue"
+msgid "Manual"
+msgstr "手動"
+
+msgctxt "filterValueNote"
+msgid "Only shows PC Xbox games if they're installed."
+msgstr "インストールされている場合のみPC Xboxゲームを表示します。"
+
+msgctxt "filterValueNote"
+msgid "Godot games are not fully supported yet."
+msgstr "Godotゲームはまだ完全にはサポートされていません。"
+
+msgctxt "filterValueNote"
+msgid "GameMaker games are not fully supported yet."
+msgstr "GameMakerゲームはまだ完全にはサポートされていません。"
+
+msgctxt "providerCommand"
+msgid "Install"
+msgstr "インストール"
+
+msgctxt "providerCommand"
+msgid "Show In Library"
+msgstr "ライブラリで表示"
+
+msgctxt "providerCommand"
+msgid "Open Store Page"
+msgstr "ストアページを開く"
+
+msgctxt "providerCommand"
+msgid "Start Game"
+msgstr "ゲームを開始"
+
+msgctxt "providerCommand"
+msgid "Run Game Executable"
+msgstr "ゲーム実行ファイルを実行"
+
+msgctxt "providerCommand"
+msgid "Open In Browser"
+msgstr "ブラウザで開く"
+
+msgctxt "gameModal"
+msgid "Start Game"
+msgstr "ゲームを開始"
+
+msgctxt "gameModal"
+msgid "Start Game Executable"
+msgstr "実行ファイルでゲームを開始"
+
+msgctxt "gameModal"
+msgid "Start Game via {0}"
+msgstr "{0}でゲームを開始"
+
+msgctxt "gameModal"
+msgid "Folders"
+msgstr "フォルダー"
+
+msgctxt "gameModal"
+msgid "Game Files"
+msgstr "ゲームの場所"
+
+msgctxt "gameModal"
+msgid "Installed Mods"
+msgstr "導入済みMod"
+
+msgctxt "gameModal"
+msgid "Game App Data"
+msgstr "アプリデータ"
+
+msgctxt "gameModal"
+msgid "Wine Prefix"
+msgstr "Wineプレフィックス"
+
+msgctxt "gameModal"
+msgid "Wine Binary"
+msgstr "Wineバイナリ"
+
+msgctxt "gameModal"
+msgid "Remove from Rai Pal"
+msgstr "Rai Palから削除"
+
+msgctxt "gameModal"
+msgid "Are you sure you want to remove this game from Rai Pal?"
+msgstr "このゲームをRai Palから削除していい？"
+
+msgctxt "gameModal"
+msgid "Refresh game"
+msgstr "ゲームを更新"
+
+msgctxt "gameModal"
+msgid "Failed to read some important information about this game. This could be due to the executable being protected. Some mods might fail to install."
+msgstr "このゲームの重要情報がちゃんと読み取れなかった。実行ファイルが保護されてるのかも。一部のModはうまくインストールできないかも。"
+
+msgctxt "gameModal"
+msgid "Failed to determine the engine for this game. Some mods might fail to install."
+msgstr "このゲームのエンジンが特定できなかった。一部のModはうまくインストールできないかも。"
+
+msgctxt "gameModal"
+msgid "This game isn't installed, so I'm not 100% sure which mods are compatible. The ones you see below might work. If you install the game, I'll show you more accurate information."
+msgstr "このゲームはインストールされてないから、どのModが対応してるか100%は確信できないんだ。下に出てるModなら動くかも。インストールしたら、もっと正確な情報を出せるよ。"
+
+msgctxt "gameModal"
+msgid "Uninstall all mods"
+msgstr "すべてのModをアンインストール"
+
+msgctxt "gameModal"
+msgid "You sure? This will delete all files in this game's mods folder. It won't delete any files from the actual game though."
+msgstr "本当に？このゲームのModフォルダー内の全ファイルが消えるよ。でもゲーム本体のファイルは消さないからね。"
+
+msgctxt "gameModal"
+msgid "Incompatible Mods"
+msgstr "非対応Mod"
+
+msgctxt "gameModal"
+msgid "The mods listed here can't be installed because they aren't compatible with this game's engine version."
+msgstr "ここに表示されてるModは、このゲームのエンジンバージョンと互換性がないからインストールできないよ。"
+
+msgctxt "gameModal"
+msgid "Other things"
+msgstr "その他のもの"
+
+msgctxt "gameModal"
+msgid "These are mostly dependencies and other stuff that you don't usually need to mess with directly."
+msgstr "これらは主に依存関係とかで、普段は直接いじる必要はないよ。"
+
+msgctxt "gameModRow"
+msgid "Edit Mod Config"
+msgstr "Mod設定"
+
+msgctxt "gameModRow"
+msgid "Open folder containing this mod's config files"
+msgstr "このModの設定ファイルがあるフォルダーを開く"
+
+msgctxt "gameModRow"
+msgid "Open Mod Folder"
+msgstr "Modフォルダーを開く"
+
+msgctxt "gameModRow"
+msgid "Update"
+msgstr "更新"
+
+msgctxt "gameModRow"
+msgid "Install"
+msgstr "インストール"
+
+msgctxt "gameModRow"
+msgid "Attention: be careful when installing mods on multiplayer games! Anticheat can detect some mods and get you banned, even if the mods seem harmless."
+msgstr "注意: マルチプレイゲームにModを入れるときは気をつけて！アンチチートがModを検出して、無害そうでもBANされることがあるからね。"
+
+msgctxt "gameModRow"
+msgid "Reinstall"
+msgstr "再インストール"
+
+msgctxt "gameModRow"
+msgid "Uninstall"
+msgstr "アンインストール"
+
+msgctxt "gameModRow"
+msgid "Run"
+msgstr "実行"
+
+msgctxt "gameModRow"
+msgid "Download Recommended Config"
+msgstr "推奨設定をダウンロード"
+
+msgctxt "gameModRow"
+msgid "Recommended config available. Will be downloaded if you don't already have a config. You can also force it to download from the three dot menu."
+msgstr "推奨設定あり。まだ設定がなければ自動でダウンロードされるよ。三点メニューから手動でもダウンロードできる。"
+
+msgctxt "gameModRow"
+msgid "Mod outdated"
+msgstr "Modが古い"
+
+msgctxt "gameModRow"
+msgid "Can't uninstall a mod that has dependants. Uninstall the mods that depend on this one first."
+msgstr "依存ModがあるModはアンインストールできないよ。先に依存してるModをアンインストールしてね。"
+
+msgctxt "gamesSort"
+msgid "Sort by"
+msgstr "並べ替え"
+
+msgctxt "gamesSort"
+msgid "Sort direction"
+msgstr "並べ替え順"
+
+msgctxt "gamesTableColumn"
+msgid "Name"
+msgstr "名前"
+
+msgctxt "gamesTableColumn"
+msgid "Engine"
+msgstr "エンジン"
+
+msgctxt "gamesTableColumn"
+msgid "Date"
+msgstr "日付"
+
+msgctxt "modsPage"
+msgid "Open Local Mods Folder"
+msgstr "Modフォルダーを開く"
+
+msgctxt "modsPage"
+msgid "You can place mods in this folder with a rai-pal-manifest.json, to be loaded directly without going through the online database."
+msgstr "このフォルダーに rai-pal-manifest.json 付きのModを入れれば、オンラインデータベースを通さずに直接読み込めるよ。"
+
+msgctxt "modsPage"
+msgid "Mod"
+msgstr "Mod"
+
+msgctxt "modsPage"
+msgid "Version"
+msgstr "バージョン"
+
+msgctxt "modsPage"
+msgid "Engine"
+msgstr "エンジン"
+
+msgctxt "modsPage"
+msgid "Backend"
+msgstr "バックエンド"
+
+msgctxt "modsPage"
+msgid "by {0}"
+msgstr "{0} 作"
+
+msgctxt "modsPage"
+msgid "Deprecated"
+msgstr "非推奨"
+
+msgctxt "modsPage"
+msgid "This mod is deprecated. You should uninstall it and install a newer alternative."
+msgstr "このModは非推奨だよ。アンインストールして新しいのに切り替えよう。"
+
+msgctxt "modModal"
+msgid "Run"
+msgstr "実行"
+
+msgctxt "modModal"
+msgid "Open mod folder"
+msgstr "Modフォルダーを開く"
+
+msgctxt "modModal"
+msgid "Update mod"
+msgstr "Modを更新"
+
+msgctxt "modModal"
+msgid "Download mod"
+msgstr "Modをダウンロード"
+
+msgctxt "modModal"
+msgid "Delete mod"
+msgstr "Modを削除"
+
+msgctxt "modModal"
+msgid "You sure? Any files inside the mod's folder will be lost."
+msgstr "本当に？Modフォルダーの中のファイルが全部消えちゃうよ。"
+
+msgctxt "modModal"
+msgid "by {0}"
+msgstr "{0} 作"
+
+msgctxt "appDropdownMenu"
+msgid "Show game thumbnails on list"
+msgstr "リストにゲームのサムネイルを表示"
+
+msgctxt "appDropdownMenu"
+msgid "Language"
+msgstr "言語"
+
+msgctxt "appDropdownMenu"
+msgid "Auto-detected - {0}"
+msgstr "自動検出 - {0}"
+
+msgctxt "appDropdownMenu"
+msgid "Reset Rai Pal settings"
+msgstr "Rai Palの設定をリセット"
+
+msgctxt "appDropdownMenu"
+msgid "Will reset filters, confirmation dialogs, probably other stuff."
+msgstr "フィルターや確認ダイアログ、あと多分その他の設定もリセットされるよ。"
+
+msgctxt "appDropdownMenu"
+msgid "Open Logs Folder"
+msgstr "ログフォルダーを開く"
+
+msgctxt "appDropdownMenu"
+msgid "Clear Rai Pal cache"
+msgstr "Rai Palのキャッシュをクリア"
+
+msgctxt "appDropdownMenu"
+msgid "Clears the game list cache used by Rai Pal."
+msgstr "Rai Palが使ってるゲームリストのキャッシュを消すよ。"
+
+msgctxt "userMenu"
+msgid "Unknown user"
+msgstr "不明なユーザー"
+
+msgctxt "userMenu"
+msgid "Log out"
+msgstr "ログアウト"
+
+msgctxt "userMenu"
+msgid "Sign in with Discord"
+msgstr "Discordでサインイン"
+
+msgctxt "userMenu"
+msgid "Mods can use this to access your Discord username, avatar, roles, etc."
+msgstr "Mod はこれを使ってあなたのDiscordユーザー名、アバター、ロールなどにアクセスできます。"
+
+msgctxt "subPage"
+msgid "Back"
+msgstr "戻る"
+
+msgctxt "downloadStatusMenu"
+msgid "Clear completed"
+msgstr "完了したものを消す"
+
+msgctxt "steamCache"
+msgid "Reset Steam cache"
+msgstr "Steamのキャッシュをリセット"
+
+msgctxt "steamCache"
+msgid "Reset Steam cache"
+msgstr "Steamのキャッシュをリセット"
+
+msgctxt "steamCache"
+msgid "Use this if Rai Pal is showing games you don't actually own on Steam. This will reset Steam's cache, and then you'll have to restart Steam. You'll get an error if the file has already been deleted."
+msgstr "Rai Palが実際には持ってないSteamのゲームを表示してるときに使ってね。Steamのキャッシュがリセットされるから、その後Steamを再起動して。ファイルが既に消えてたらエラーが出るかも。"
+
+msgctxt "steamCache"
+msgid "The cache file has been deleted. Please restart Steam, wait a few seconds, and then press the refresh button on Rai Pal."
+msgstr "キャッシュファイルを消したよ。Steamを再起動して数秒待ったら、Rai Palの更新ボタンを押してね。"
+
+msgctxt "steamShortcut"
+msgid "Add Rai Pal to Steam library"
+msgstr "Rai PalをSteamライブラリに追加"
+
+msgctxt "steamShortcut"
+msgid "Add Rai Pal to Steam Library"
+msgstr "Rai PalをSteamライブラリに追加"
+
+msgctxt "steamShortcut"
+msgid "This is especially useful on Steam Deck, to be able to launch Rai Pal in Game Mode. You'll have to restart Steam after doing this."
+msgstr "特にSteam DeckのゲームモードからRai Palを起動できるようになるから便利だよ。実行したらSteamを再起動してね。"
+
+msgctxt "steamShortcut"
+msgid "Rai Pal has been added to your Steam library. Restart Steam to see it."
+msgstr "Rai PalをSteamライブラリに追加したよ。表示するにはSteamを再起動してね。"
+
+msgctxt "appUpdate"
+msgid "Rai Pal {0}"
+msgstr "Rai Pal {0}"
+
+msgctxt "appUpdate"
+msgid "(no changelog)"
+msgstr "（変更履歴なし）"
+
+msgctxt "appUpdate"
+msgid "Ignore (won't ask again until you restart Rai Pal)"
+msgstr "無視（Rai Palを再起動するまで再確認しません）"
+
+msgctxt "appUpdate"
+msgid "Update now"
+msgstr "今すぐ更新"
+
+msgctxt "debugData"
+msgid "Debug data"
+msgstr "デバッグデータ"
+
+msgctxt "debugData"
+msgid "Copy debug data"
+msgstr "デバッグデータをコピー"
+
+msgctxt "thanksPage"
+msgid "Hello. I made Rai Pal. I also made other VR mods in the past, and am currently working on a universal VR mod for Unity games. If you like what I do, and would like to see more, please consider donating! You can also support me by buying one of my free mods on itch.io."
+msgstr "こんにちは。私がRai Palを作ったよ。過去には他のVR Modも作ってて、今はUnityゲーム向けのユニバーサルVR Modを開発中。もし私のやってることが気に入ったら、寄付を考えてみてね！itch.ioで私の無料Modを「購入」する形でもサポートできるよ。"
+
+msgctxt "thanksPage"
+msgid "Star Rai Pal on GitHub"
+msgstr "GitHubでRai Palにスターを付ける"
+
+msgctxt "thanksPage"
+msgid "Other modders"
+msgstr "他のModder"
+
+msgctxt "thanksPage"
+msgid "Rai Pal is meant to help you manage game modding, and we can't do that without the tools that other developers have created. Some of these people don't have donation links, but I'm extremely grateful for their work."
+msgstr "Rai PalはゲームのMod管理を手助けするツールだけど、他の開発者が作ったツールなしじゃ成り立たないんだ。寄付リンクを持ってない人もいるけど、みんなの仕事には本当に感謝してるよ。"
+
+msgctxt "thanksPage"
+msgid "{0} on {1}"
+msgstr "{0}（{1}）"
+
+msgctxt "thanksPage"
+msgid "Patreon Leaderboard"
+msgstr "Patreonリーダーボード"
+
+msgctxt "thanksPage"
+msgid "Ranked by total lifetime donation amount."
+msgstr "累計寄付額でランク付け"
+
+msgctxt "thanksPage"
+msgid "If you don't see yourself here, it's because your Patreon profile is private."
+msgstr "ここに表示されてない人は、Patreonのプロフィールが非公開になってるからだよ。"
+
+msgctxt "commandButton"
+msgid "Cancel"
+msgstr "キャンセル"
+
+msgctxt "commandButton"
+msgid "Don't ask again"
+msgstr "今後確認しない"
+
+msgctxt "urlModSources"
+msgid "Mod Sources"
+msgstr "Modソース"
+
+msgctxt "urlModSources"
+msgid "Add source"
+msgstr "ソースを追加"
+
+msgctxt "urlModSources"
+msgid "Rai Pal will check for mods in all databases provided here, in addition to checking the default mod database. You can share mod sources via the deep-link {0}."
+msgstr "Rai Palはデフォルトのデータベースに加えて、ここで提供されているすべてのデータベースでModをチェックします。ディープリンク {0} でModソースを共有できます。"
+
+msgctxt "urlModSources"
+msgid "Confirm Mod Source"
+msgstr "Modソースを確認"
+
+msgctxt "urlModSources"
+msgid "{0} mods found in this source"
+msgstr "このソースに{0}個のModが見つかりました"
+
+msgctxt "urlModSources"
+msgid "Add Source"
+msgstr "ソースを追加"
+
+msgctxt "urlModSources"
+msgid "Cancel"
+msgstr "キャンセル"
+
+msgctxt "urlModSources"
+msgid "Loading mods..."
+msgstr "Modを読み込み中..."
+

@@ -1,0 +1,619 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: es\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgctxt "meta"
+msgid "English (US)"
+msgstr "Español (España)"
+
+msgctxt "tab"
+msgid "Games"
+msgstr "Juegos"
+
+msgctxt "tab"
+msgid "Mods"
+msgstr "Mods"
+
+msgctxt "tab"
+msgid "Thanks"
+msgstr "Agradecimientos"
+
+msgctxt "gamesPage"
+msgid "Rai Pal didn't find any games at all. Remember Rai Pal needs to find installed apps from other game providers, like Steam, Epic, etc."
+msgstr "Rai Pal no encontró ningún juego. Recuerda que Rai Pal necesita encontrar aplicaciones instaladas de otros proveedores de juegos, como Steam, Epic, etc."
+
+msgctxt "gamesPage"
+msgid "Nothing! All of your games are hidden because of the filters you selected. Clear your filters to see your beautiful games again."
+msgstr "¡Nada! Todos tus juegos están ocultos debido a los filtros que seleccionaste. Limpia tus filtros para ver tus hermosos juegos de nuevo."
+
+msgctxt "gamesPage"
+msgid "Finding your games..."
+msgstr "Buscando tus juegos..."
+
+msgctxt "manualGames"
+msgid "Note: you can also add your non-Steam games to Steam, and they will still be detected by Rai Pal."
+msgstr "Nota: también puedes añadir tus juegos que no son de Steam a Steam, y Rai Pal los detectará igualmente."
+
+msgctxt "manualGames"
+msgid "These directories will be scanned recursively every time Rai Pal refreshes its data. Large folders may make things significantly slower."
+msgstr "Estos directorios se escanearán recursivamente cada vez que Rai Pal actualice sus datos. Las carpetas grandes pueden ralentizar significativamente las cosas."
+
+msgctxt "manualGames"
+msgid "Add games"
+msgstr "Agregar juegos"
+
+msgctxt "manualGames"
+msgid "Manually Added Games"
+msgstr "Juegos agregados manualmente"
+
+msgctxt "manualGames"
+msgid "Select game executable"
+msgstr "Seleccionar ejecutable de juego"
+
+msgctxt "manualGames"
+msgid "Select game directory. Can be slow!"
+msgstr "Seleccionar directorio de juegos. ¡Puede ser lento!"
+
+msgctxt "manualGames"
+msgid "You can also just drop game executable files or entire folders anywhere on Rai Pal's window to add them to the library, even without opening this dialog."
+msgstr "También puedes arrastrar archivos ejecutables de juegos o carpetas enteras a cualquier parte de la ventana de Rai Pal para agregarlos a la biblioteca, incluso sin abrir este diálogo."
+
+msgctxt "manualGames"
+msgid "Scanning {0}..."
+msgstr "Escaneando {0}..."
+
+msgctxt "manualGames"
+msgid "Scanned {0} directories, found {1} executables"
+msgstr "Escaneados {0} directorios, encontrados {1} ejecutables"
+
+msgctxt "manualGames"
+msgid "Found {0} executables in {1} seconds. Add this folder to Rai Pal?"
+msgstr "Se encontraron {0} ejecutables en {1} segundos. ¿Agregar esta carpeta a Rai Pal?"
+
+msgctxt "manualGames"
+msgid "Add folder"
+msgstr "Agregar carpeta"
+
+msgctxt "manualGames"
+msgid "Cancel"
+msgstr "Cancelar"
+
+msgctxt "refresh"
+msgid "Refresh"
+msgstr "Actualizar"
+
+msgctxt "refresh"
+msgid "Update remote databases"
+msgstr "Actualizar bases de datos remotas"
+
+msgctxt "refresh"
+msgid "Loading {0}..."
+msgstr "Cargando {0}..."
+
+msgctxt "filterMenu"
+msgid "Filters"
+msgstr "Filtros"
+
+msgctxt "filterMenu"
+msgid "Reset"
+msgstr "Restablecer"
+
+msgctxt "filterMenu"
+msgid "Search..."
+msgstr "Buscar..."
+
+msgctxt "filterProperty"
+msgid "Provider"
+msgstr "Proveedor"
+
+msgctxt "filterProperty"
+msgid "Tag"
+msgstr "Etiqueta"
+
+msgctxt "filterProperty"
+msgid "Architecture"
+msgstr "Arquitectura"
+
+msgctxt "filterProperty"
+msgid "Executable OS"
+msgstr "SO del ejecutable"
+
+msgctxt "filterProperty"
+msgid "Supported OS"
+msgstr "SO compatible"
+
+msgctxt "filterProperty"
+msgid "Unity Backend"
+msgstr "Backend de Unity"
+
+msgctxt "filterProperty"
+msgid "Engine"
+msgstr "Motor"
+
+msgctxt "filterProperty"
+msgid "Install status"
+msgstr "Estado de instalación"
+
+msgctxt "filterProperty"
+msgid "Mod"
+msgstr "Mod"
+
+msgctxt "filterValue"
+msgid "Unknown"
+msgstr "Desconocido"
+
+msgctxt "filterValue"
+msgid "64-bit"
+msgstr "64-bit"
+
+msgctxt "filterValue"
+msgid "32-bit"
+msgstr "32-bit"
+
+msgctxt "filterValue"
+msgid "Demo"
+msgstr "Demo"
+
+msgctxt "filterValue"
+msgid "Native VR"
+msgstr "VR nativa"
+
+msgctxt "filterValue"
+msgid "Untagged"
+msgstr "Sin etiqueta"
+
+msgctxt "filterValue"
+msgid "Installed"
+msgstr "Instalado"
+
+msgctxt "filterValue"
+msgid "Not installed"
+msgstr "No instalado"
+
+msgctxt "filterValue"
+msgid "Manual"
+msgstr "Manual"
+
+msgctxt "filterValueNote"
+msgid "Only shows PC Xbox games if they're installed."
+msgstr "Solo muestra juegos de Xbox para PC si están instalados."
+
+msgctxt "filterValueNote"
+msgid "Godot games are not fully supported yet."
+msgstr "Los juegos de Godot no son totalmente compatibles aún."
+
+msgctxt "filterValueNote"
+msgid "GameMaker games are not fully supported yet."
+msgstr "Los juegos de GameMaker no son totalmente compatibles aún."
+
+msgctxt "providerCommand"
+msgid "Install"
+msgstr "Instalar"
+
+msgctxt "providerCommand"
+msgid "Show In Library"
+msgstr "Mostrar en la biblioteca"
+
+msgctxt "providerCommand"
+msgid "Open Store Page"
+msgstr "Abrir la página de la tienda"
+
+msgctxt "providerCommand"
+msgid "Start Game"
+msgstr "Iniciar juego"
+
+msgctxt "providerCommand"
+msgid "Run Game Executable"
+msgstr "Abrir ejecutable del juego"
+
+msgctxt "providerCommand"
+msgid "Open In Browser"
+msgstr "Abrir en el navegador"
+
+msgctxt "gameModal"
+msgid "Start Game"
+msgstr "Iniciar juego"
+
+msgctxt "gameModal"
+msgid "Start Game Executable"
+msgstr "Iniciar ejecutable del juego"
+
+msgctxt "gameModal"
+msgid "Start Game via {0}"
+msgstr "Iniciar juego vía {0}"
+
+msgctxt "gameModal"
+msgid "Folders"
+msgstr "Carpetas"
+
+msgctxt "gameModal"
+msgid "Game Files"
+msgstr "Archivos del juego"
+
+msgctxt "gameModal"
+msgid "Installed Mods"
+msgstr "Mods instalados"
+
+msgctxt "gameModal"
+msgid "Game App Data"
+msgstr "Datos de la aplicación"
+
+msgctxt "gameModal"
+msgid "Wine Prefix"
+msgstr "Prefijo Wine"
+
+msgctxt "gameModal"
+msgid "Wine Binary"
+msgstr "Binario Wine"
+
+msgctxt "gameModal"
+msgid "Remove from Rai Pal"
+msgstr "Eliminar de Rai Pal"
+
+msgctxt "gameModal"
+msgid "Are you sure you want to remove this game from Rai Pal?"
+msgstr "¿Estás seguro de que quieres eliminar este juego de Rai Pal?"
+
+msgctxt "gameModal"
+msgid "Refresh game"
+msgstr "Actualizar juego"
+
+msgctxt "gameModal"
+msgid "Failed to read some important information about this game. This could be due to the executable being protected. Some mods might fail to install."
+msgstr "No se pudo leer información importante sobre este juego. Esto podría deberse a que el ejecutable está protegido. Algunos mods podrían fallar al instalarse."
+
+msgctxt "gameModal"
+msgid "Failed to determine the engine for this game. Some mods might fail to install."
+msgstr "No se pudo determinar el motor de este juego. Algunos mods podrían fallar al instalarse."
+
+msgctxt "gameModal"
+msgid "This game isn't installed, so I'm not 100% sure which mods are compatible. The ones you see below might work. If you install the game, I'll show you more accurate information."
+msgstr "Este juego no está instalado, así que no estoy 100% seguro de qué mods son compatibles. Los que ves a continuación podrían funcionar. Si instalas el juego, te mostraré información más precisa."
+
+msgctxt "gameModal"
+msgid "Uninstall all mods"
+msgstr "Desinstalar todos los mods"
+
+msgctxt "gameModal"
+msgid "You sure? This will delete all files in this game's mods folder. It won't delete any files from the actual game though."
+msgstr "¿Seguro? Esto borrará todos los archivos de la carpeta de mods del juego. Eso sí, los archivos del juego no se tocan."
+
+msgctxt "gameModal"
+msgid "Incompatible Mods"
+msgstr "Mods Incompatibles"
+
+msgctxt "gameModal"
+msgid "The mods listed here can't be installed because they aren't compatible with this game's engine version."
+msgstr "Los mods listados aquí no se pueden instalar porque no son compatibles con la versión del motor de este juego."
+
+msgctxt "gameModal"
+msgid "Other things"
+msgstr "Otras cosas"
+
+msgctxt "gameModal"
+msgid "These are mostly dependencies and other stuff that you don't usually need to mess with directly."
+msgstr "Estas son principalmente dependencias y otras cosas que normalmente no necesitas modificar directamente."
+
+msgctxt "gameModRow"
+msgid "Edit Mod Config"
+msgstr "Editar configuración del mod"
+
+msgctxt "gameModRow"
+msgid "Open folder containing this mod's config files"
+msgstr "Abrir la carpeta con los archivos de configuración del mod"
+
+msgctxt "gameModRow"
+msgid "Open Mod Folder"
+msgstr "Abrir carpeta del mod"
+
+msgctxt "gameModRow"
+msgid "Update"
+msgstr "Actualizar"
+
+msgctxt "gameModRow"
+msgid "Install"
+msgstr "Instalar"
+
+msgctxt "gameModRow"
+msgid "Attention: be careful when installing mods on multiplayer games! Anticheat can detect some mods and get you banned, even if the mods seem harmless."
+msgstr "Atención: ¡Ten cuidado al instalar mods en juegos multijugador! El anticheat puede detectar algunos mods y banearte, incluso si los mods parecen inofensivos."
+
+msgctxt "gameModRow"
+msgid "Reinstall"
+msgstr "Reinstalar"
+
+msgctxt "gameModRow"
+msgid "Uninstall"
+msgstr "Desinstalar"
+
+msgctxt "gameModRow"
+msgid "Run"
+msgstr "Ejecutar"
+
+msgctxt "gameModRow"
+msgid "Download Recommended Config"
+msgstr "Descargar configuración recomendada"
+
+msgctxt "gameModRow"
+msgid "Recommended config available. Will be downloaded if you don't already have a config. You can also force it to download from the three dot menu."
+msgstr "Configuración recomendada disponible. Se descargará si aún no tienes una configuración. También puedes forzar la descarga desde el menú de tres puntos."
+
+msgctxt "gameModRow"
+msgid "Mod outdated"
+msgstr "Mod desactualizado"
+
+msgctxt "gameModRow"
+msgid "Can't uninstall a mod that has dependants. Uninstall the mods that depend on this one first."
+msgstr "No se puede desinstalar un mod que tiene dependientes. Desinstala primero los mods que dependen de este."
+
+msgctxt "gamesSort"
+msgid "Sort by"
+msgstr "Ordenar por"
+
+msgctxt "gamesSort"
+msgid "Sort direction"
+msgstr "Dirección de orden"
+
+msgctxt "gamesTableColumn"
+msgid "Name"
+msgstr "Nombre"
+
+msgctxt "gamesTableColumn"
+msgid "Engine"
+msgstr "Motor"
+
+msgctxt "gamesTableColumn"
+msgid "Date"
+msgstr "Fecha"
+
+msgctxt "modsPage"
+msgid "Open Local Mods Folder"
+msgstr "Abrir carpeta de mods locales"
+
+msgctxt "modsPage"
+msgid "You can place mods in this folder with a rai-pal-manifest.json, to be loaded directly without going through the online database."
+msgstr "Puedes poner mods en esta carpeta con un rai-pal-manifest.json para cargarlos directamente sin pasar por la base de datos en línea."
+
+msgctxt "modsPage"
+msgid "Mod"
+msgstr "Mod"
+
+msgctxt "modsPage"
+msgid "Version"
+msgstr "Versión"
+
+msgctxt "modsPage"
+msgid "Engine"
+msgstr "Motor"
+
+msgctxt "modsPage"
+msgid "Backend"
+msgstr "Backend"
+
+msgctxt "modsPage"
+msgid "by {0}"
+msgstr "por {0}"
+
+msgctxt "modsPage"
+msgid "Deprecated"
+msgstr "Obsoleto"
+
+msgctxt "modsPage"
+msgid "This mod is deprecated. You should uninstall it and install a newer alternative."
+msgstr "Este mod está obsoleto. Deberías desinstalarlo e instalar una alternativa más reciente."
+
+msgctxt "modModal"
+msgid "Run"
+msgstr "Ejecutar"
+
+msgctxt "modModal"
+msgid "Open mod folder"
+msgstr "Abrir carpeta del mod"
+
+msgctxt "modModal"
+msgid "Update mod"
+msgstr "Actualizar mod"
+
+msgctxt "modModal"
+msgid "Download mod"
+msgstr "Descargar mod"
+
+msgctxt "modModal"
+msgid "Delete mod"
+msgstr "Eliminar mod"
+
+msgctxt "modModal"
+msgid "You sure? Any files inside the mod's folder will be lost."
+msgstr "¿Seguro? Se borrarán todos los archivos de la carpeta del mod."
+
+msgctxt "modModal"
+msgid "by {0}"
+msgstr "por {0}"
+
+msgctxt "appDropdownMenu"
+msgid "Show game thumbnails on list"
+msgstr "Mostrar miniaturas de juegos en la lista"
+
+msgctxt "appDropdownMenu"
+msgid "Language"
+msgstr "Idioma"
+
+msgctxt "appDropdownMenu"
+msgid "Auto-detected - {0}"
+msgstr "Auto-detectado - {0}"
+
+msgctxt "appDropdownMenu"
+msgid "Reset Rai Pal settings"
+msgstr "Restablecer configuración de Rai Pal"
+
+msgctxt "appDropdownMenu"
+msgid "Will reset filters, confirmation dialogs, probably other stuff."
+msgstr "Restablecerá filtros, diálogos de confirmación y demás."
+
+msgctxt "appDropdownMenu"
+msgid "Open Logs Folder"
+msgstr "Abrir carpeta de registros"
+
+msgctxt "appDropdownMenu"
+msgid "Clear Rai Pal cache"
+msgstr "Borrar caché de Rai Pal"
+
+msgctxt "appDropdownMenu"
+msgid "Clears the game list cache used by Rai Pal."
+msgstr "Borra la caché de la lista de juegos que usa Rai Pal."
+
+msgctxt "userMenu"
+msgid "Unknown user"
+msgstr "Usuario desconocido"
+
+msgctxt "userMenu"
+msgid "Log out"
+msgstr "Cerrar sesión"
+
+msgctxt "userMenu"
+msgid "Sign in with Discord"
+msgstr "Iniciar sesión con Discord"
+
+msgctxt "userMenu"
+msgid "Mods can use this to access your Discord username, avatar, roles, etc."
+msgstr "Los mods pueden usar esto para acceder a tu nombre de usuario de Discord, avatar, roles, etc."
+
+msgctxt "subPage"
+msgid "Back"
+msgstr "Volver"
+
+msgctxt "downloadStatusMenu"
+msgid "Clear completed"
+msgstr "Quitar completados"
+
+msgctxt "steamCache"
+msgid "Reset Steam cache"
+msgstr "Restablecer caché de Steam"
+
+msgctxt "steamCache"
+msgid "Reset Steam cache"
+msgstr "Restablecer caché de Steam"
+
+msgctxt "steamCache"
+msgid "Use this if Rai Pal is showing games you don't actually own on Steam. This will reset Steam's cache, and then you'll have to restart Steam. You'll get an error if the file has already been deleted."
+msgstr "Usa esto si Rai Pal está mostrando juegos que no posees realmente en Steam. Esto restablecerá la caché de Steam, y luego tendrás que reiniciar Steam. Recibirás un error si el archivo ya ha sido eliminado."
+
+msgctxt "steamCache"
+msgid "The cache file has been deleted. Please restart Steam, wait a few seconds, and then press the refresh button on Rai Pal."
+msgstr "El archivo de caché ha sido eliminado. Por favor, reinicia Steam, espera unos segundos y luego presiona el botón de actualizar en Rai Pal."
+
+msgctxt "steamShortcut"
+msgid "Add Rai Pal to Steam library"
+msgstr "Agregar Rai Pal a la biblioteca de Steam"
+
+msgctxt "steamShortcut"
+msgid "Add Rai Pal to Steam Library"
+msgstr "Agregar Rai Pal a la biblioteca de Steam"
+
+msgctxt "steamShortcut"
+msgid "This is especially useful on Steam Deck, to be able to launch Rai Pal in Game Mode. You'll have to restart Steam after doing this."
+msgstr "Esto es especialmente útil en Steam Deck para poder iniciar Rai Pal en Modo Juego. Tendrás que reiniciar Steam después de hacerlo."
+
+msgctxt "steamShortcut"
+msgid "Rai Pal has been added to your Steam library. Restart Steam to see it."
+msgstr "Rai Pal se ha agregado a tu biblioteca de Steam. Reinicia Steam para verlo."
+
+msgctxt "appUpdate"
+msgid "Rai Pal {0}"
+msgstr "Rai Pal {0}"
+
+msgctxt "appUpdate"
+msgid "(no changelog)"
+msgstr "(Sin registro de cambios)"
+
+msgctxt "appUpdate"
+msgid "Ignore (won't ask again until you restart Rai Pal)"
+msgstr "Ignorar (no se volverá a preguntar hasta que reinicies Rai Pal)"
+
+msgctxt "appUpdate"
+msgid "Update now"
+msgstr "Actualizar ahora"
+
+msgctxt "debugData"
+msgid "Debug data"
+msgstr "Datos de depuración"
+
+msgctxt "debugData"
+msgid "Copy debug data"
+msgstr "Copiar datos de depuración"
+
+msgctxt "thanksPage"
+msgid "Hello. I made Rai Pal. I also made other VR mods in the past, and am currently working on a universal VR mod for Unity games. If you like what I do, and would like to see more, please consider donating! You can also support me by buying one of my free mods on itch.io."
+msgstr "Hola. Hice Rai Pal. También hice otros mods de VR en el pasado, y actualmente estoy trabajando en un mod universal de VR para juegos de Unity. Si te gusta lo que hago y te gustaría ver más, anímate a donar. También puedes apoyarme comprando uno de mis mods gratuitos en itch.io."
+
+msgctxt "thanksPage"
+msgid "Star Rai Pal on GitHub"
+msgstr "Dale una estrella a Rai Pal en GitHub"
+
+msgctxt "thanksPage"
+msgid "Other modders"
+msgstr "Otros modders"
+
+msgctxt "thanksPage"
+msgid "Rai Pal is meant to help you manage game modding, and we can't do that without the tools that other developers have created. Some of these people don't have donation links, but I'm extremely grateful for their work."
+msgstr "Rai Pal está pensado para ayudarte a gestionar mods, y no podemos hacerlo sin las herramientas que otros desarrolladores han creado. Algunas de estas personas no tienen enlaces de donación, pero estoy muy agradecido por su trabajo."
+
+msgctxt "thanksPage"
+msgid "{0} on {1}"
+msgstr "{0} en {1}"
+
+msgctxt "thanksPage"
+msgid "Patreon Leaderboard"
+msgstr "Ranking de Patreon"
+
+msgctxt "thanksPage"
+msgid "Ranked by total lifetime donation amount."
+msgstr "Ordenado por el total de donaciones acumuladas."
+
+msgctxt "thanksPage"
+msgid "If you don't see yourself here, it's because your Patreon profile is private."
+msgstr "Si no te ves aquí, es porque tu perfil de Patreon es privado."
+
+msgctxt "commandButton"
+msgid "Cancel"
+msgstr "Cancelar"
+
+msgctxt "commandButton"
+msgid "Don't ask again"
+msgstr "No preguntar de nuevo"
+
+msgctxt "urlModSources"
+msgid "Mod Sources"
+msgstr "Fuentes de mods"
+
+msgctxt "urlModSources"
+msgid "Add source"
+msgstr "Añadir fuente"
+
+msgctxt "urlModSources"
+msgid "Rai Pal will check for mods in all databases provided here, in addition to checking the default mod database. You can share mod sources via the deep-link {0}."
+msgstr "Rai Pal buscará mods en todas las bases de datos proporcionadas aquí, además de la base de datos predeterminada. Puedes compartir fuentes de mods mediante el enlace profundo {0}."
+
+msgctxt "urlModSources"
+msgid "Confirm Mod Source"
+msgstr "Confirmar fuente de mods"
+
+msgctxt "urlModSources"
+msgid "{0} mods found in this source"
+msgstr "{0} mods encontrados en esta fuente"
+
+msgctxt "urlModSources"
+msgid "Add Source"
+msgstr "Añadir fuente"
+
+msgctxt "urlModSources"
+msgid "Cancel"
+msgstr "Cancelar"
+
+msgctxt "urlModSources"
+msgid "Loading mods..."
+msgstr "Cargando mods..."
+

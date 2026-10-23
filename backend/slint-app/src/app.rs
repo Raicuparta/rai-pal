@@ -25,6 +25,7 @@ use crate::{
 	filters::{
 		FilterAction, apply_filter_action, build_groups, load_mod_families, reset_all_filters,
 	},
+	i18n,
 	model::{self, make_rows},
 	mods,
 	query::{load_game_ids, start_query},
@@ -48,6 +49,8 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	}
 
 	let settings = Rc::new(RefCell::new(AppSettings::read()));
+	let detected_locale = i18n::detect_locale();
+	let initial_locale = i18n::effective_locale(&settings.borrow(), detected_locale);
 	let mod_families = load_mod_families(&database);
 
 	let initial_query = settings.borrow().games_query.clone();
@@ -65,12 +68,25 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	let database = Arc::new(database);
 
 	let window = MainWindow::new()?;
+	i18n::apply_translation(initial_locale);
+	window.set_selected_language(
+		settings
+			.borrow()
+			.override_language
+			.map(i18n::locale_code)
+			.unwrap_or_default()
+			.into(),
+	);
+	window.set_detected_language_name(
+		detected_locale
+			.map(i18n::native_name)
+			.unwrap_or_default()
+			.into(),
+	);
 	window.set_app_version(env!("CARGO_PKG_VERSION").into());
 	window.set_search_text(initial_query.search.clone().into());
-	window.set_sort_index(sort_index(
-		initial_query.sort_by,
-		initial_query.sort_descending,
-	));
+	window.set_sort_index(sort_index(initial_query.sort_by));
+	window.set_sort_descending(initial_query.sort_descending);
 	window.set_current_tab(initial_tab);
 	window.set_filter_groups(Rc::new(slint::VecModel::from(initial_groups)).into());
 	window.set_filters_have_changes(initial_have_changes);
@@ -141,9 +157,31 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	window.on_sort_changed(move |index| {
 		{
 			let mut settings = ui_settings.borrow_mut();
-			let (sort_by, sort_descending) = sort_from_index(index);
+			let sort_by = sort_from_index(index);
+			if settings.games_query.sort_by != sort_by {
+				settings.games_query.sort_descending = false;
+			}
 			settings.games_query.sort_by = sort_by;
-			settings.games_query.sort_descending = sort_descending;
+		}
+		persist_settings(&ui_settings);
+
+		start_query(
+			ui_window.clone(),
+			ui_database.clone(),
+			ui_scheduler.clone(),
+			ui_settings.borrow().games_query.clone(),
+			Duration::ZERO,
+		);
+	});
+
+	let ui_settings = settings.clone();
+	let ui_window = window_weak.clone();
+	let ui_database = database.clone();
+	let ui_scheduler = scheduler.clone();
+	window.on_sort_direction_changed(move |descending| {
+		{
+			let mut settings = ui_settings.borrow_mut();
+			settings.games_query.sort_descending = descending;
 		}
 		persist_settings(&ui_settings);
 
@@ -268,6 +306,35 @@ pub fn run() -> Result<(), slint::PlatformError> {
 
 		if let Some(window) = ui_window.upgrade() {
 			window.set_filter_groups(Rc::new(slint::VecModel::from(groups)).into());
+		}
+	});
+
+	let ui_settings = settings.clone();
+	let ui_window = window_weak.clone();
+	window.on_language_changed(move |value| {
+		let override_language = if value.is_empty() {
+			None
+		} else {
+			match value.parse::<rai_pal_core::app_settings::AppLocale>() {
+				Ok(locale) => Some(locale),
+				Err(err) => {
+					eprintln!("Invalid language selection {value}: {err}");
+					return;
+				}
+			}
+		};
+
+		{
+			let mut settings = ui_settings.borrow_mut();
+			settings.override_language = override_language;
+		}
+		persist_settings(&ui_settings);
+
+		let locale = i18n::effective_locale(&ui_settings.borrow(), detected_locale);
+		i18n::apply_translation(locale);
+
+		if let Some(window) = ui_window.upgrade() {
+			window.set_selected_language(value);
 		}
 	});
 
@@ -641,25 +708,19 @@ fn reset_filters(
 	);
 }
 
-fn sort_index(sort_by: GamesSortBy, sort_descending: bool) -> i32 {
-	match (sort_by, sort_descending) {
-		(GamesSortBy::Title, false) => 0,
-		(GamesSortBy::Title, true) => 1,
-		(GamesSortBy::Engine, false) => 2,
-		(GamesSortBy::Engine, true) => 3,
-		(GamesSortBy::ReleaseDate, false) => 4,
-		(GamesSortBy::ReleaseDate, true) => 5,
+fn sort_index(sort_by: GamesSortBy) -> i32 {
+	match sort_by {
+		GamesSortBy::Title => 0,
+		GamesSortBy::Engine => 1,
+		GamesSortBy::ReleaseDate => 2,
 	}
 }
 
-fn sort_from_index(index: i32) -> (GamesSortBy, bool) {
+fn sort_from_index(index: i32) -> GamesSortBy {
 	match index {
-		1 => (GamesSortBy::Title, true),
-		2 => (GamesSortBy::Engine, false),
-		3 => (GamesSortBy::Engine, true),
-		4 => (GamesSortBy::ReleaseDate, false),
-		5 => (GamesSortBy::ReleaseDate, true),
-		_ => (GamesSortBy::Title, false),
+		1 => GamesSortBy::Engine,
+		2 => GamesSortBy::ReleaseDate,
+		_ => GamesSortBy::Title,
 	}
 }
 

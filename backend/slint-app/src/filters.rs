@@ -314,9 +314,10 @@ pub fn reset_all_filters(filter: &mut GamesFilter) {
 	keep_only_locked(&mut filter.architectures);
 }
 
-fn item_data(value: &str, label: &str, item: FilterItem) -> FilterValueData {
+fn item_data(value: &str, label_key: &str, label: &str, item: FilterItem) -> FilterValueData {
 	FilterValueData {
 		value: value.into(),
+		label_key: label_key.into(),
 		label: label.into(),
 		enabled: item.enabled,
 		locked: item.locked,
@@ -325,6 +326,7 @@ fn item_data(value: &str, label: &str, item: FilterItem) -> FilterValueData {
 
 fn group_data(
 	key: &str,
+	label_key: &str,
 	label: &str,
 	values: Vec<FilterValueData>,
 	has_changes: bool,
@@ -333,6 +335,7 @@ fn group_data(
 ) -> FilterGroupData {
 	FilterGroupData {
 		key: key.into(),
+		label_key: label_key.into(),
 		label: label.into(),
 		values: values.as_slice().into(),
 		has_changes,
@@ -343,16 +346,24 @@ fn group_data(
 
 fn value<T: Eq + Hash + ToString>(
 	group: &FilterGroup<T>,
-	raw_value: &str,
 	key: &T,
+	label_key: &str,
 	label: &str,
 ) -> FilterValueData {
-	let _ = raw_value;
-	item_data(&key.to_string(), label, get_item(group, Some(key)))
+	item_data(
+		&key.to_string(),
+		label_key,
+		label,
+		get_item(group, Some(key)),
+	)
 }
 
-fn unknown_value<T: Eq + Hash>(group: &FilterGroup<T>, label: &str) -> FilterValueData {
-	item_data("", label, get_item(group, None))
+fn unknown_value<T: Eq + Hash>(
+	group: &FilterGroup<T>,
+	label_key: &str,
+	label: &str,
+) -> FilterValueData {
+	item_data("", label_key, label, get_item(group, None))
 }
 
 pub fn build_groups(
@@ -363,109 +374,107 @@ pub fn build_groups(
 	let installed_values = vec![
 		value(
 			&filter.installed,
-			"Installed",
 			&InstallState::Installed,
+			"statusInstalled",
 			"Installed",
 		),
 		value(
 			&filter.installed,
-			"NotInstalled",
 			&InstallState::NotInstalled,
+			"statusNotInstalled",
 			"Not installed",
 		),
 	];
 
 	let engine_values = vec![
-		value(&filter.engines, "Unity", &EngineBrand::Unity, "Unity"),
-		value(&filter.engines, "Unreal", &EngineBrand::Unreal, "Unreal"),
-		value(&filter.engines, "Godot", &EngineBrand::Godot, "Godot"),
-		value(
-			&filter.engines,
-			"GameMaker",
-			&EngineBrand::GameMaker,
-			"GameMaker",
-		),
-		unknown_value(&filter.engines, "Unknown"),
+		value(&filter.engines, &EngineBrand::Unity, "", "Unity"),
+		value(&filter.engines, &EngineBrand::Unreal, "", "Unreal"),
+		value(&filter.engines, &EngineBrand::Godot, "", "Godot"),
+		value(&filter.engines, &EngineBrand::GameMaker, "", "GameMaker"),
+		unknown_value(&filter.engines, "unknown", "Unknown"),
 	];
 
 	let mut family_values: Vec<FilterValueData> = mod_families
 		.iter()
-		.map(|family| item_data(family, family, get_item(&filter.mod_families, Some(family))))
+		.map(|family| {
+			item_data(
+				family,
+				"",
+				family,
+				get_item(&filter.mod_families, Some(family)),
+			)
+		})
 		.collect();
 	family_values.sort_by(|a, b| a.label.to_lowercase().cmp(&b.label.to_lowercase()));
 
 	let tag_values = vec![
-		value(&filter.tags, "VR", &GameTag::VR, "Native VR"),
-		value(&filter.tags, "Demo", &GameTag::Demo, "Demo"),
-		unknown_value(&filter.tags, "Untagged"),
+		value(&filter.tags, &GameTag::VR, "tagVr", "Native VR"),
+		value(&filter.tags, &GameTag::Demo, "tagDemo", "Demo"),
+		unknown_value(&filter.tags, "tagUntagged", "Untagged"),
 	];
 
 	let provider_values = vec![
-		value(&filter.providers, "Epic", &GameProviderId::Epic, "Epic"),
-		value(&filter.providers, "Gog", &GameProviderId::Gog, "GOG"),
-		value(&filter.providers, "Itch", &GameProviderId::Itch, "itch.io"),
+		value(&filter.providers, &GameProviderId::Epic, "", "Epic"),
+		value(&filter.providers, &GameProviderId::Gog, "", "GOG"),
+		value(&filter.providers, &GameProviderId::Itch, "", "itch.io"),
 		value(
 			&filter.providers,
-			"Manual",
 			&GameProviderId::Manual,
+			"providerManual",
 			"Manual",
 		),
-		value(&filter.providers, "Steam", &GameProviderId::Steam, "Steam"),
-		value(&filter.providers, "Xbox", &GameProviderId::Xbox, "Xbox"),
+		value(&filter.providers, &GameProviderId::Steam, "", "Steam"),
+		value(&filter.providers, &GameProviderId::Xbox, "", "Xbox"),
 	];
 
 	let unity_backend_values = vec![
-		value(
-			&filter.unity_backends,
-			"Il2Cpp",
-			&UnityBackend::Il2Cpp,
-			"IL2CPP",
-		),
-		value(&filter.unity_backends, "Mono", &UnityBackend::Mono, "Mono"),
-		unknown_value(&filter.unity_backends, "Unknown"),
+		value(&filter.unity_backends, &UnityBackend::Il2Cpp, "", "IL2CPP"),
+		value(&filter.unity_backends, &UnityBackend::Mono, "", "Mono"),
+		unknown_value(&filter.unity_backends, "unknown", "Unknown"),
 	];
 
 	let executable_os_values = vec![
 		value(
 			&filter.executable_os,
-			"Windows",
 			&OperatingSystem::Windows,
+			"",
 			"Windows",
 		),
-		value(
-			&filter.executable_os,
-			"Linux",
-			&OperatingSystem::Linux,
-			"Linux",
-		),
-		unknown_value(&filter.executable_os, "Unknown"),
+		value(&filter.executable_os, &OperatingSystem::Linux, "", "Linux"),
+		unknown_value(&filter.executable_os, "unknown", "Unknown"),
 	];
 
 	let supported_os_values = vec![
 		value(
 			&filter.supported_os,
-			"Windows",
 			&OperatingSystem::Windows,
+			"",
 			"Windows",
 		),
-		value(
-			&filter.supported_os,
-			"Linux",
-			&OperatingSystem::Linux,
-			"Linux",
-		),
-		unknown_value(&filter.supported_os, "Unknown"),
+		value(&filter.supported_os, &OperatingSystem::Linux, "", "Linux"),
+		unknown_value(&filter.supported_os, "unknown", "Unknown"),
 	];
 
 	let architecture_values = vec![
-		value(&filter.architectures, "X64", &Architecture::X64, "64-bit"),
-		value(&filter.architectures, "X86", &Architecture::X86, "32-bit"),
-		unknown_value(&filter.architectures, "Unknown"),
+		value(
+			&filter.architectures,
+			&Architecture::X64,
+			"arch64",
+			"64-bit",
+		),
+		value(
+			&filter.architectures,
+			&Architecture::X86,
+			"arch32",
+			"32-bit",
+		),
+		unknown_value(&filter.architectures, "unknown", "Unknown"),
 	];
 
 	vec![
 		group_data(
 			"installed",
+			"status",
 			"Install status",
 			installed_values,
 			has_changes(&filter.installed, INSTALL_STATES, false),
@@ -474,6 +483,7 @@ pub fn build_groups(
 		),
 		group_data(
 			"engines",
+			"engine",
 			"Engine",
 			engine_values,
 			has_changes(&filter.engines, ENGINES, true),
@@ -482,6 +492,7 @@ pub fn build_groups(
 		),
 		group_data(
 			"modFamilies",
+			"mod",
 			"Mod",
 			family_values,
 			has_changes(&filter.mod_families, mod_families, false),
@@ -489,6 +500,7 @@ pub fn build_groups(
 			expanded_filters,
 		),
 		group_data(
+			"tags",
 			"tags",
 			"Tag",
 			tag_values,
@@ -498,6 +510,7 @@ pub fn build_groups(
 		),
 		group_data(
 			"providers",
+			"provider",
 			"Provider",
 			provider_values,
 			has_changes(&filter.providers, PROVIDERS, false),
@@ -506,6 +519,7 @@ pub fn build_groups(
 		),
 		group_data(
 			"unityBackends",
+			"unityBackend",
 			"Unity Backend",
 			unity_backend_values,
 			has_changes(&filter.unity_backends, UNITY_BACKENDS, true),
@@ -513,6 +527,7 @@ pub fn build_groups(
 			expanded_filters,
 		),
 		group_data(
+			"executableOs",
 			"executableOs",
 			"Executable OS",
 			executable_os_values,
@@ -522,6 +537,7 @@ pub fn build_groups(
 		),
 		group_data(
 			"supportedOs",
+			"supportedOs",
 			"Supported OS",
 			supported_os_values,
 			has_changes(&filter.supported_os, OPERATING_SYSTEMS, true),
@@ -530,6 +546,7 @@ pub fn build_groups(
 		),
 		group_data(
 			"architectures",
+			"architecture",
 			"Architecture",
 			architecture_values,
 			has_changes(&filter.architectures, ARCHITECTURES, true),

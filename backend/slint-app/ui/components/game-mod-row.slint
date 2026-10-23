@@ -22,7 +22,7 @@ export component GameModRowView inherits Rectangle {
 
         Menu {
             MenuItem {
-                title: "Open mod folder";
+                title: @tr("gameModRow" => "Open Mod Folder");
                 enabled: game-mod.installed;
 
                 activated => {
@@ -31,7 +31,7 @@ export component GameModRowView inherits Rectangle {
             }
 
             MenuItem {
-                title: "Edit mod config";
+                title: @tr("gameModRow" => "Edit Mod Config");
                 enabled: game-mod.installed && game-mod.has-config;
 
                 activated => {
@@ -51,7 +51,7 @@ export component GameModRowView inherits Rectangle {
             MenuSeparator { }
 
             MenuItem {
-                title: "Run mod";
+                title: @tr("gameModRow" => "Run");
                 enabled: game-mod.can-run;
 
                 activated => {
@@ -60,7 +60,7 @@ export component GameModRowView inherits Rectangle {
             }
 
             MenuItem {
-                title: "Uninstall mod";
+                title: @tr("gameModRow" => "Uninstall");
                 enabled: game-mod.can-uninstall;
 
                 activated => {
@@ -122,7 +122,7 @@ export component GameModRowView inherits Rectangle {
             }
 
             if game-mod.can-install : Button {
-                text: "Install";
+                text: @tr("gameModRow" => "Install");
 
                 clicked => {
                     root.install(game-mod.mod-id);
@@ -130,7 +130,7 @@ export component GameModRowView inherits Rectangle {
             }
 
             if game-mod.can-update : Button {
-                text: "Update";
+                text: @tr("gameModRow" => "Update");
 
                 clicked => {
                     root.update(game-mod.mod-id);
@@ -138,7 +138,7 @@ export component GameModRowView inherits Rectangle {
             }
 
             if game-mod.can-uninstall : Button {
-                text: "Uninstall";
+                text: @tr("gameModRow" => "Uninstall");
 
                 clicked => {
                     root.uninstall(game-mod.mod-id);
@@ -146,7 +146,7 @@ export component GameModRowView inherits Rectangle {
             }
 
             if game-mod.can-run : Button {
-                text: "Run";
+                text: @tr("gameModRow" => "Run");
 
                 clicked => {
                     root.run(game-mod.mod-id);

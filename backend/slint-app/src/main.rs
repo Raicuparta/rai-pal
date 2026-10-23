@@ -6,6 +6,7 @@ mod actions;
 mod app;
 mod fetch;
 mod filters;
+mod i18n;
 mod model;
 mod mods;
 mod query;

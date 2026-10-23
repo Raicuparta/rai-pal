@@ -1,0 +1,619 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgctxt "meta"
+msgid "English (US)"
+msgstr "简体中文"
+
+msgctxt "tab"
+msgid "Games"
+msgstr "游戏"
+
+msgctxt "tab"
+msgid "Mods"
+msgstr "模组"
+
+msgctxt "tab"
+msgid "Thanks"
+msgstr "致谢"
+
+msgctxt "gamesPage"
+msgid "Rai Pal didn't find any games at all. Remember Rai Pal needs to find installed apps from other game providers, like Steam, Epic, etc."
+msgstr "Rai Pal 一个游戏都没找到。别忘了 Rai Pal 需要从其他游戏平台（如 Steam、Epic 等）检测到已安装的应用。"
+
+msgctxt "gamesPage"
+msgid "Nothing! All of your games are hidden because of the filters you selected. Clear your filters to see your beautiful games again."
+msgstr "什么都没有！因为你选的筛选条件，所有游戏都被隐藏了。清除筛选，再看看你的游戏吧。"
+
+msgctxt "gamesPage"
+msgid "Finding your games..."
+msgstr "正在找你的游戏..."
+
+msgctxt "manualGames"
+msgid "Note: you can also add your non-Steam games to Steam, and they will still be detected by Rai Pal."
+msgstr "注意：你也可以将非 Steam 游戏添加到 Steam 中，Rai Pal 仍会检测到它们。"
+
+msgctxt "manualGames"
+msgid "These directories will be scanned recursively every time Rai Pal refreshes its data. Large folders may make things significantly slower."
+msgstr "每次 Rai Pal 刷新数据时，这些目录都将被递归扫描。大文件夹可能会显著降低速度。"
+
+msgctxt "manualGames"
+msgid "Add games"
+msgstr "添加游戏"
+
+msgctxt "manualGames"
+msgid "Manually Added Games"
+msgstr "手动添加的游戏"
+
+msgctxt "manualGames"
+msgid "Select game executable"
+msgstr "选择游戏可执行文件"
+
+msgctxt "manualGames"
+msgid "Select game directory. Can be slow!"
+msgstr "选择游戏目录。可能很慢！"
+
+msgctxt "manualGames"
+msgid "You can also just drop game executable files or entire folders anywhere on Rai Pal's window to add them to the library, even without opening this dialog."
+msgstr "你也可以将游戏可执行文件或整个文件夹拖放到 Rai Pal 窗口的任何位置来添加到库中，无需打开此对话框。"
+
+msgctxt "manualGames"
+msgid "Scanning {0}..."
+msgstr "正在扫描 {0}..."
+
+msgctxt "manualGames"
+msgid "Scanned {0} directories, found {1} executables"
+msgstr "已扫描 {0} 个目录，找到 {1} 个可执行文件"
+
+msgctxt "manualGames"
+msgid "Found {0} executables in {1} seconds. Add this folder to Rai Pal?"
+msgstr "在 {1} 秒内找到 {0} 个可执行文件。是否将此文件夹添加到 Rai Pal？"
+
+msgctxt "manualGames"
+msgid "Add folder"
+msgstr "添加文件夹"
+
+msgctxt "manualGames"
+msgid "Cancel"
+msgstr "取消"
+
+msgctxt "refresh"
+msgid "Refresh"
+msgstr "刷新"
+
+msgctxt "refresh"
+msgid "Update remote databases"
+msgstr "更新远程数据库"
+
+msgctxt "refresh"
+msgid "Loading {0}..."
+msgstr "正在加载 {0}..."
+
+msgctxt "filterMenu"
+msgid "Filters"
+msgstr "筛选"
+
+msgctxt "filterMenu"
+msgid "Reset"
+msgstr "重置"
+
+msgctxt "filterMenu"
+msgid "Search..."
+msgstr "搜索..."
+
+msgctxt "filterProperty"
+msgid "Provider"
+msgstr "平台"
+
+msgctxt "filterProperty"
+msgid "Tag"
+msgstr "标签"
+
+msgctxt "filterProperty"
+msgid "Architecture"
+msgstr "架构"
+
+msgctxt "filterProperty"
+msgid "Executable OS"
+msgstr "可执行文件系统"
+
+msgctxt "filterProperty"
+msgid "Supported OS"
+msgstr "支持的系统"
+
+msgctxt "filterProperty"
+msgid "Unity Backend"
+msgstr "Unity 后端"
+
+msgctxt "filterProperty"
+msgid "Engine"
+msgstr "引擎"
+
+msgctxt "filterProperty"
+msgid "Install status"
+msgstr "安装状态"
+
+msgctxt "filterProperty"
+msgid "Mod"
+msgstr "模组"
+
+msgctxt "filterValue"
+msgid "Unknown"
+msgstr "未知"
+
+msgctxt "filterValue"
+msgid "64-bit"
+msgstr "64 位"
+
+msgctxt "filterValue"
+msgid "32-bit"
+msgstr "32 位"
+
+msgctxt "filterValue"
+msgid "Demo"
+msgstr "试玩"
+
+msgctxt "filterValue"
+msgid "Native VR"
+msgstr "原生 VR"
+
+msgctxt "filterValue"
+msgid "Untagged"
+msgstr "未标记"
+
+msgctxt "filterValue"
+msgid "Installed"
+msgstr "已安装"
+
+msgctxt "filterValue"
+msgid "Not installed"
+msgstr "未安装"
+
+msgctxt "filterValue"
+msgid "Manual"
+msgstr "手动"
+
+msgctxt "filterValueNote"
+msgid "Only shows PC Xbox games if they're installed."
+msgstr "仅在已安装时显示 PC Xbox 游戏。"
+
+msgctxt "filterValueNote"
+msgid "Godot games are not fully supported yet."
+msgstr "Godot 游戏尚未完全支持。"
+
+msgctxt "filterValueNote"
+msgid "GameMaker games are not fully supported yet."
+msgstr "GameMaker 游戏尚未完全支持。"
+
+msgctxt "providerCommand"
+msgid "Install"
+msgstr "安装"
+
+msgctxt "providerCommand"
+msgid "Show In Library"
+msgstr "在库中显示"
+
+msgctxt "providerCommand"
+msgid "Open Store Page"
+msgstr "打开商店页面"
+
+msgctxt "providerCommand"
+msgid "Start Game"
+msgstr "启动游戏"
+
+msgctxt "providerCommand"
+msgid "Run Game Executable"
+msgstr "运行游戏可执行文件"
+
+msgctxt "providerCommand"
+msgid "Open In Browser"
+msgstr "在浏览器中打开"
+
+msgctxt "gameModal"
+msgid "Start Game"
+msgstr "启动游戏"
+
+msgctxt "gameModal"
+msgid "Start Game Executable"
+msgstr "启动游戏可执行文件"
+
+msgctxt "gameModal"
+msgid "Start Game via {0}"
+msgstr "通过 {0} 启动游戏"
+
+msgctxt "gameModal"
+msgid "Folders"
+msgstr "文件夹"
+
+msgctxt "gameModal"
+msgid "Game Files"
+msgstr "游戏文件夹"
+
+msgctxt "gameModal"
+msgid "Installed Mods"
+msgstr "已安装模组"
+
+msgctxt "gameModal"
+msgid "Game App Data"
+msgstr "游戏数据"
+
+msgctxt "gameModal"
+msgid "Wine Prefix"
+msgstr "Wine 前缀"
+
+msgctxt "gameModal"
+msgid "Wine Binary"
+msgstr "Wine 程序"
+
+msgctxt "gameModal"
+msgid "Remove from Rai Pal"
+msgstr "从 Rai Pal 移除"
+
+msgctxt "gameModal"
+msgid "Are you sure you want to remove this game from Rai Pal?"
+msgstr "确定要从 Rai Pal 移除此游戏吗？"
+
+msgctxt "gameModal"
+msgid "Refresh game"
+msgstr "刷新游戏"
+
+msgctxt "gameModal"
+msgid "Failed to read some important information about this game. This could be due to the executable being protected. Some mods might fail to install."
+msgstr "无法读取此游戏的部分重要信息。可执行文件可能被保护了。一些模组可能无法安装。"
+
+msgctxt "gameModal"
+msgid "Failed to determine the engine for this game. Some mods might fail to install."
+msgstr "无法确定此游戏的引擎。一些模组可能无法安装。"
+
+msgctxt "gameModal"
+msgid "This game isn't installed, so I'm not 100% sure which mods are compatible. The ones you see below might work. If you install the game, I'll show you more accurate information."
+msgstr "此游戏未安装，所以我不太确定哪些模组兼容。下面列出的模组可能可以用。安装游戏后，我再显示更准确的信息。"
+
+msgctxt "gameModal"
+msgid "Uninstall all mods"
+msgstr "卸载所有模组"
+
+msgctxt "gameModal"
+msgid "You sure? This will delete all files in this game's mods folder. It won't delete any files from the actual game though."
+msgstr "你确定吗？这将删除此游戏模组文件夹中的所有文件。但不会删除游戏本身的文件。"
+
+msgctxt "gameModal"
+msgid "Incompatible Mods"
+msgstr "不兼容的模组"
+
+msgctxt "gameModal"
+msgid "The mods listed here can't be installed because they aren't compatible with this game's engine version."
+msgstr "这里列出的模组因不兼容此游戏的引擎版本，无法安装。"
+
+msgctxt "gameModal"
+msgid "Other things"
+msgstr "其他东西"
+
+msgctxt "gameModal"
+msgid "These are mostly dependencies and other stuff that you don't usually need to mess with directly."
+msgstr "这些主要是依赖项之类的，一般不用直接碰。"
+
+msgctxt "gameModRow"
+msgid "Edit Mod Config"
+msgstr "编辑模组配置"
+
+msgctxt "gameModRow"
+msgid "Open folder containing this mod's config files"
+msgstr "打开包含此模组配置文件的文件夹"
+
+msgctxt "gameModRow"
+msgid "Open Mod Folder"
+msgstr "打开模组文件夹"
+
+msgctxt "gameModRow"
+msgid "Update"
+msgstr "更新"
+
+msgctxt "gameModRow"
+msgid "Install"
+msgstr "安装"
+
+msgctxt "gameModRow"
+msgid "Attention: be careful when installing mods on multiplayer games! Anticheat can detect some mods and get you banned, even if the mods seem harmless."
+msgstr "警告：在多人游戏中安装模组时要小心！反作弊系统可能会检测到某些模组并导致封号，即使这些模组看起来无害。"
+
+msgctxt "gameModRow"
+msgid "Reinstall"
+msgstr "重新安装"
+
+msgctxt "gameModRow"
+msgid "Uninstall"
+msgstr "卸载"
+
+msgctxt "gameModRow"
+msgid "Run"
+msgstr "运行"
+
+msgctxt "gameModRow"
+msgid "Download Recommended Config"
+msgstr "下载推荐配置"
+
+msgctxt "gameModRow"
+msgid "Recommended config available. Will be downloaded if you don't already have a config. You can also force it to download from the three dot menu."
+msgstr "推荐配置可用。如果你还没有配置，将会下载。你也可以从三点菜单强制下载。"
+
+msgctxt "gameModRow"
+msgid "Mod outdated"
+msgstr "模组过时"
+
+msgctxt "gameModRow"
+msgid "Can't uninstall a mod that has dependants. Uninstall the mods that depend on this one first."
+msgstr "无法卸载有依赖项的模组。请先卸载依赖此模组的其他模组。"
+
+msgctxt "gamesSort"
+msgid "Sort by"
+msgstr "排序方式"
+
+msgctxt "gamesSort"
+msgid "Sort direction"
+msgstr "排序方向"
+
+msgctxt "gamesTableColumn"
+msgid "Name"
+msgstr "名称"
+
+msgctxt "gamesTableColumn"
+msgid "Engine"
+msgstr "引擎"
+
+msgctxt "gamesTableColumn"
+msgid "Date"
+msgstr "日期"
+
+msgctxt "modsPage"
+msgid "Open Local Mods Folder"
+msgstr "打开本地模组文件夹"
+
+msgctxt "modsPage"
+msgid "You can place mods in this folder with a rai-pal-manifest.json, to be loaded directly without going through the online database."
+msgstr "在此文件夹中放入包含 rai-pal-manifest.json 的模组，即可直接加载，无需通过在线数据库。"
+
+msgctxt "modsPage"
+msgid "Mod"
+msgstr "模组"
+
+msgctxt "modsPage"
+msgid "Version"
+msgstr "版本"
+
+msgctxt "modsPage"
+msgid "Engine"
+msgstr "引擎"
+
+msgctxt "modsPage"
+msgid "Backend"
+msgstr "后端"
+
+msgctxt "modsPage"
+msgid "by {0}"
+msgstr "由 {0} 制作"
+
+msgctxt "modsPage"
+msgid "Deprecated"
+msgstr "已弃用"
+
+msgctxt "modsPage"
+msgid "This mod is deprecated. You should uninstall it and install a newer alternative."
+msgstr "此模组已弃用。您应该卸载它并安装更新的替代品。"
+
+msgctxt "modModal"
+msgid "Run"
+msgstr "运行"
+
+msgctxt "modModal"
+msgid "Open mod folder"
+msgstr "打开模组文件夹"
+
+msgctxt "modModal"
+msgid "Update mod"
+msgstr "更新模组"
+
+msgctxt "modModal"
+msgid "Download mod"
+msgstr "下载模组"
+
+msgctxt "modModal"
+msgid "Delete mod"
+msgstr "删除模组"
+
+msgctxt "modModal"
+msgid "You sure? Any files inside the mod's folder will be lost."
+msgstr "你确定吗？模组文件夹中的任何文件都将丢失。"
+
+msgctxt "modModal"
+msgid "by {0}"
+msgstr "由 {0} 制作"
+
+msgctxt "appDropdownMenu"
+msgid "Show game thumbnails on list"
+msgstr "在列表中显示游戏缩略图"
+
+msgctxt "appDropdownMenu"
+msgid "Language"
+msgstr "语言"
+
+msgctxt "appDropdownMenu"
+msgid "Auto-detected - {0}"
+msgstr "自动检测 - {0}"
+
+msgctxt "appDropdownMenu"
+msgid "Reset Rai Pal settings"
+msgstr "重置 Rai Pal 设置"
+
+msgctxt "appDropdownMenu"
+msgid "Will reset filters, confirmation dialogs, probably other stuff."
+msgstr "将重置筛选条件、确认对话框，可能还有其他内容。"
+
+msgctxt "appDropdownMenu"
+msgid "Open Logs Folder"
+msgstr "打开日志文件夹"
+
+msgctxt "appDropdownMenu"
+msgid "Clear Rai Pal cache"
+msgstr "清除 Rai Pal 缓存"
+
+msgctxt "appDropdownMenu"
+msgid "Clears the game list cache used by Rai Pal."
+msgstr "清除 Rai Pal 使用的游戏列表缓存。"
+
+msgctxt "userMenu"
+msgid "Unknown user"
+msgstr "未知用户"
+
+msgctxt "userMenu"
+msgid "Log out"
+msgstr "退出登录"
+
+msgctxt "userMenu"
+msgid "Sign in with Discord"
+msgstr "使用 Discord 登录"
+
+msgctxt "userMenu"
+msgid "Mods can use this to access your Discord username, avatar, roles, etc."
+msgstr "模组可以使用此功能访问你的 Discord 用户名、头像、身份组等。"
+
+msgctxt "subPage"
+msgid "Back"
+msgstr "返回"
+
+msgctxt "downloadStatusMenu"
+msgid "Clear completed"
+msgstr "清除已完成"
+
+msgctxt "steamCache"
+msgid "Reset Steam cache"
+msgstr "重置 Steam 缓存"
+
+msgctxt "steamCache"
+msgid "Reset Steam cache"
+msgstr "重置 Steam 缓存"
+
+msgctxt "steamCache"
+msgid "Use this if Rai Pal is showing games you don't actually own on Steam. This will reset Steam's cache, and then you'll have to restart Steam. You'll get an error if the file has already been deleted."
+msgstr "如果 Rai Pal 显示了你不拥有的 Steam 游戏，可以用此功能。这会重置 Steam 的缓存，然后你需要重启 Steam。如果文件已被删除，会显示错误。"
+
+msgctxt "steamCache"
+msgid "The cache file has been deleted. Please restart Steam, wait a few seconds, and then press the refresh button on Rai Pal."
+msgstr "缓存文件已被删除。请重启 Steam，等待几秒钟，然后按 Rai Pal 上的刷新按钮。"
+
+msgctxt "steamShortcut"
+msgid "Add Rai Pal to Steam library"
+msgstr "将 Rai Pal 添加到 Steam 库"
+
+msgctxt "steamShortcut"
+msgid "Add Rai Pal to Steam Library"
+msgstr "将 Rai Pal 添加到 Steam 库"
+
+msgctxt "steamShortcut"
+msgid "This is especially useful on Steam Deck, to be able to launch Rai Pal in Game Mode. You'll have to restart Steam after doing this."
+msgstr "这在 Steam Deck 上尤其有用，这样你就可以在游戏模式中启动 Rai Pal。完成后需要重启 Steam。"
+
+msgctxt "steamShortcut"
+msgid "Rai Pal has been added to your Steam library. Restart Steam to see it."
+msgstr "Rai Pal 已添加到你的 Steam 库中。重启 Steam 后即可看到它。"
+
+msgctxt "appUpdate"
+msgid "Rai Pal {0}"
+msgstr "Rai Pal {0}"
+
+msgctxt "appUpdate"
+msgid "(no changelog)"
+msgstr "（无更新日志）"
+
+msgctxt "appUpdate"
+msgid "Ignore (won't ask again until you restart Rai Pal)"
+msgstr "忽略（在重新启动 Rai Pal 之前不再询问）"
+
+msgctxt "appUpdate"
+msgid "Update now"
+msgstr "立即更新"
+
+msgctxt "debugData"
+msgid "Debug data"
+msgstr "调试数据"
+
+msgctxt "debugData"
+msgid "Copy debug data"
+msgstr "复制调试数据"
+
+msgctxt "thanksPage"
+msgid "Hello. I made Rai Pal. I also made other VR mods in the past, and am currently working on a universal VR mod for Unity games. If you like what I do, and would like to see more, please consider donating! You can also support me by buying one of my free mods on itch.io."
+msgstr "你好。我做了 Rai Pal。我也做过其他 VR 模组，目前正在开发一个通用的 Unity 游戏 VR 模组。如果你喜欢我的作品并想看更多，可以考虑捐赠！你也可以在 itch.io 上购买我的免费模组来支持我。"
+
+msgctxt "thanksPage"
+msgid "Star Rai Pal on GitHub"
+msgstr "在 GitHub 上为 Rai Pal 点星"
+
+msgctxt "thanksPage"
+msgid "Other modders"
+msgstr "其他模组作者"
+
+msgctxt "thanksPage"
+msgid "Rai Pal is meant to help you manage game modding, and we can't do that without the tools that other developers have created. Some of these people don't have donation links, but I'm extremely grateful for their work."
+msgstr "Rai Pal 的目的是帮你管理游戏模组，而我们离不开其他开发者创建的工具。这些人中有些没有捐赠链接，但我非常感谢他们的工作。"
+
+msgctxt "thanksPage"
+msgid "{0} on {1}"
+msgstr "{0} 在 {1}"
+
+msgctxt "thanksPage"
+msgid "Patreon Leaderboard"
+msgstr "Patreon 排行榜"
+
+msgctxt "thanksPage"
+msgid "Ranked by total lifetime donation amount."
+msgstr "按总捐赠金额排名。"
+
+msgctxt "thanksPage"
+msgid "If you don't see yourself here, it's because your Patreon profile is private."
+msgstr "如果你没看到自己，那是因为你的 Patreon 个人资料是私密的。"
+
+msgctxt "commandButton"
+msgid "Cancel"
+msgstr "取消"
+
+msgctxt "commandButton"
+msgid "Don't ask again"
+msgstr "不再询问"
+
+msgctxt "urlModSources"
+msgid "Mod Sources"
+msgstr "模组来源"
+
+msgctxt "urlModSources"
+msgid "Add source"
+msgstr "添加来源"
+
+msgctxt "urlModSources"
+msgid "Rai Pal will check for mods in all databases provided here, in addition to checking the default mod database. You can share mod sources via the deep-link {0}."
+msgstr "Rai Pal 除了默认数据库外，还会在此提供的所有数据库中检查模组。你可以通过深层链接 {0} 共享模组来源。"
+
+msgctxt "urlModSources"
+msgid "Confirm Mod Source"
+msgstr "确认模组来源"
+
+msgctxt "urlModSources"
+msgid "{0} mods found in this source"
+msgstr "在此来源中找到 {0} 个模组"
+
+msgctxt "urlModSources"
+msgid "Add Source"
+msgstr "添加来源"
+
+msgctxt "urlModSources"
+msgid "Cancel"
+msgstr "取消"
+
+msgctxt "urlModSources"
+msgid "Loading mods..."
+msgstr "正在加载模组..."
+
