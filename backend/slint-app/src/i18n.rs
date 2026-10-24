@@ -66,4 +66,21 @@ pub fn apply_translation(locale: AppLocale) {
 		eprintln!("Failed to select translation {code}: {err}");
 		let _ = slint::select_bundled_translation("en");
 	}
+
+	slint::update_all_translations();
+}
+
+pub fn locale_from_code(code: &str) -> Option<AppLocale> {
+	match code {
+		"en" => Some(AppLocale::EnUs),
+		"de" => Some(AppLocale::DeDe),
+		"es" => Some(AppLocale::EsEs),
+		"fr" => Some(AppLocale::FrFr),
+		"ja" => Some(AppLocale::JaJp),
+		"ko" => Some(AppLocale::KoKr),
+		"pt" => Some(AppLocale::PtPt),
+		"zh" => Some(AppLocale::ZhCn),
+		"wa" => Some(AppLocale::WaWa),
+		_ => None,
+	}
 }

@@ -46,109 +46,108 @@ export component AppMenu inherits Rectangle {
 
             MenuSeparator { }
 
-            Menu {
+            MenuItem {
                 title: @tr("appDropdownMenu" => "Language");
+                enabled: false;
+            }
 
-                if root.detected-language-name != "" : MenuItem {
-                    checkable: true;
-                    checked: root.selected-language == "";
-                    title: @tr("appDropdownMenu" => "Auto-detected - {0}", root.detected-language-name);
+            if root.detected-language-name != "" : MenuItem {
+                checkable: true;
+                checked: root.selected-language == "";
+                title: @tr("appDropdownMenu" => "Auto-detected - {0}", root.detected-language-name);
 
-                    activated => {
-                        root.language-changed("");
-                    }
+                activated => {
+                    root.language-changed("");
                 }
+            }
 
-                if root.detected-language-name != "" : MenuSeparator { }
+            MenuItem {
+                checkable: true;
+                checked: root.selected-language == "en";
+                title: "English (US)";
 
-                MenuItem {
-                    checkable: true;
-                    checked: root.selected-language == "en";
-                    title: "English (US)";
-
-                    activated => {
-                        root.language-changed("en");
-                    }
+                activated => {
+                    root.language-changed("en");
                 }
+            }
 
-                MenuItem {
-                    checkable: true;
-                    checked: root.selected-language == "de";
-                    title: "Deutsch (Deutschland)";
+            MenuItem {
+                checkable: true;
+                checked: root.selected-language == "de";
+                title: "Deutsch (Deutschland)";
 
-                    activated => {
-                        root.language-changed("de");
-                    }
+                activated => {
+                    root.language-changed("de");
                 }
+            }
 
-                MenuItem {
-                    checkable: true;
-                    checked: root.selected-language == "es";
-                    title: "Español (España)";
+            MenuItem {
+                checkable: true;
+                checked: root.selected-language == "es";
+                title: "Español (España)";
 
-                    activated => {
-                        root.language-changed("es");
-                    }
+                activated => {
+                    root.language-changed("es");
                 }
+            }
 
-                MenuItem {
-                    checkable: true;
-                    checked: root.selected-language == "fr";
-                    title: "Français (France)";
+            MenuItem {
+                checkable: true;
+                checked: root.selected-language == "fr";
+                title: "Français (France)";
 
-                    activated => {
-                        root.language-changed("fr");
-                    }
+                activated => {
+                    root.language-changed("fr");
                 }
+            }
 
-                MenuItem {
-                    checkable: true;
-                    checked: root.selected-language == "ja";
-                    title: "日本語";
+            MenuItem {
+                checkable: true;
+                checked: root.selected-language == "ja";
+                title: "日本語";
 
-                    activated => {
-                        root.language-changed("ja");
-                    }
+                activated => {
+                    root.language-changed("ja");
                 }
+            }
 
-                MenuItem {
-                    checkable: true;
-                    checked: root.selected-language == "ko";
-                    title: "한국어";
+            MenuItem {
+                checkable: true;
+                checked: root.selected-language == "ko";
+                title: "한국어";
 
-                    activated => {
-                        root.language-changed("ko");
-                    }
+                activated => {
+                    root.language-changed("ko");
                 }
+            }
 
-                MenuItem {
-                    checkable: true;
-                    checked: root.selected-language == "pt";
-                    title: "Português (Portugal)";
+            MenuItem {
+                checkable: true;
+                checked: root.selected-language == "pt";
+                title: "Português (Portugal)";
 
-                    activated => {
-                        root.language-changed("pt");
-                    }
+                activated => {
+                    root.language-changed("pt");
                 }
+            }
 
-                MenuItem {
-                    checkable: true;
-                    checked: root.selected-language == "zh";
-                    title: "简体中文";
+            MenuItem {
+                checkable: true;
+                checked: root.selected-language == "zh";
+                title: "简体中文";
 
-                    activated => {
-                        root.language-changed("zh");
-                    }
+                activated => {
+                    root.language-changed("zh");
                 }
+            }
 
-                MenuItem {
-                    checkable: true;
-                    checked: root.selected-language == "wa";
-                    title: "Wario (Waah!)";
+            MenuItem {
+                checkable: true;
+                checked: root.selected-language == "wa";
+                title: "Wario (Waah!)";
 
-                    activated => {
-                        root.language-changed("wa");
-                    }
+                activated => {
+                    root.language-changed("wa");
                 }
             }
         }

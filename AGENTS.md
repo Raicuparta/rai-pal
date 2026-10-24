@@ -92,3 +92,6 @@ migration is complete.
   truth. Regenerate the Slint gettext catalogs with
   `node scripts/ts-localizations-to-po.mjs` after changing them; Slint UI
   strings use @tr.
+- Slint live preview does not support bundled translations. Use normal
+  `npm run slint-dev` when working on translations; `npm run slint-dev-live` is
+  only for live UI reloading.

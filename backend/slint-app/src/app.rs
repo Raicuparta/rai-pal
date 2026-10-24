@@ -315,10 +315,10 @@ pub fn run() -> Result<(), slint::PlatformError> {
 		let override_language = if value.is_empty() {
 			None
 		} else {
-			match value.parse::<rai_pal_core::app_settings::AppLocale>() {
-				Ok(locale) => Some(locale),
-				Err(err) => {
-					eprintln!("Invalid language selection {value}: {err}");
+			match i18n::locale_from_code(value.as_str()) {
+				Some(locale) => Some(locale),
+				None => {
+					eprintln!("Invalid language selection {value}");
 					return;
 				}
 			}
