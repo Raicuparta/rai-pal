@@ -14,7 +14,7 @@ use super::{
 use crate::{
 	game::DbGame,
 	game_providers::{
-		game_provider::{GameProviderId, ProviderActions},
+		game_provider::{GameProviderId, ProviderActions, ProviderParser},
 		provider_command::{ProviderCommand, ProviderCommandAction},
 		steam::appinfo::SteamAppInfoReader,
 	},
@@ -215,20 +215,22 @@ impl Steam {
 		let packageinfo_path = Self::get_packageinfo_path(steam_path);
 
 		if appinfo_path.exists() {
-			std::fs::remove_file(appinfo_path)?;
+			fs_err::remove_file(appinfo_path)?;
 		}
 
 		if packageinfo_path.exists() {
-			std::fs::remove_file(packageinfo_path)?;
+			fs_err::remove_file(packageinfo_path)?;
 		}
 
 		Ok(())
 	}
 }
 
-impl ProviderActions for Steam {
-	fn insert_games(&self, db: &DbMutex) -> Result {
-		let steam_dir = find_steam_dir()?;
+impl ProviderParser for Steam {
+	type Source = PathBuf;
+
+	fn parse_games(&self, steam_path: &Self::Source, insert: &mut impl FnMut(DbGame)) -> Result {
+		let steam_dir = SteamDir::from_dir(steam_path)?;
 		let appinfo_path = get_appinfo_path(steam_dir.path());
 
 		if appinfo_path.exists() {
@@ -266,8 +268,14 @@ impl ProviderActions for Steam {
 							app_info.name.clone(),
 						);
 
+						let header_image = app_info
+							.header_image
+							.as_deref()
+							.filter(|image| !image.is_empty())
+							.unwrap_or("header.jpg");
+
 						game.thumbnail_url = Some(format!(
-							"https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/{external_id}/header.jpg"
+							"https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/{external_id}/{header_image}"
 						));
 
 						game.add_provider_command(
@@ -324,10 +332,10 @@ impl ProviderActions for Steam {
 							.unwrap_or_default();
 
 						if installed_games.is_empty() {
-							db.insert_game(&game);
+							insert(game);
 						} else {
 							for installed_game in installed_games {
-								db.insert_game(&installed_game);
+								insert(installed_game);
 							}
 						}
 					}
@@ -344,10 +352,20 @@ impl ProviderActions for Steam {
 		}
 
 		for game in Self::get_shortcut_games(&steam_dir) {
-			db.insert_game(&game);
+			insert(game);
 		}
 
 		Ok(())
+	}
+}
+
+impl ProviderActions for Steam {
+	fn insert_games(&self, db: &DbMutex) -> Result {
+		let steam_dir = find_steam_dir()?;
+
+		self.parse_games(&steam_dir.path().to_path_buf(), &mut |game| {
+			db.insert_game(&game);
+		})
 	}
 }
 

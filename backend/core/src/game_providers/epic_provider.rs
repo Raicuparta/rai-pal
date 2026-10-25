@@ -1,8 +1,7 @@
-#![cfg(target_os = "windows")]
-
+use fs_err as fs;
+use fs_err::File;
 use std::{
 	collections::HashMap,
-	fs::{self, File},
 	io::Read,
 	path::{Path, PathBuf},
 };
@@ -10,17 +9,24 @@ use std::{
 use base64::engine::general_purpose;
 use log::error;
 use rai_pal_proc_macros::serializable_struct;
+
+#[cfg(target_os = "windows")]
 use winreg::{RegKey, enums::HKEY_LOCAL_MACHINE};
 
 use crate::{
 	game::DbGame,
 	game_providers::{
-		game_provider::{GameProviderId, ProviderActions, WineProviderActions},
+		game_provider::{GameProviderId, ProviderParser},
 		provider_command::{ProviderCommand, ProviderCommandAction},
 	},
-	local_database::{app_database::DbMutex, game_database::GameDatabase},
 	path_extensions::PathExt,
-	result::Result,
+	result::{ContextResult, Result},
+};
+
+#[cfg(target_os = "windows")]
+use crate::{
+	game_providers::game_provider::{ProviderActions, WineProviderActions},
+	local_database::{app_database::DbMutex, game_database::GameDatabase},
 };
 
 #[serializable_struct]
@@ -140,22 +146,10 @@ impl EpicCatalogItem {
 	}
 }
 
-impl ProviderActions for Epic {
-	fn insert_games(&self, db: &DbMutex) -> Result {
-		let app_data_path = match RegKey::predef(HKEY_LOCAL_MACHINE)
-			.open_subkey(r"SOFTWARE\Epic Games\EpicGamesLauncher")
-			.and_then(|launcher_reg| launcher_reg.get_value::<String, _>("AppDataPath"))
-			.map(PathBuf::from)
-		{
-			Ok(path) => path,
-			Err(err) => {
-				log::info!(
-					"Epic Games Launcher not found in registry. Probably means Epic Games Launcher isn't installed. Error: {err}"
-				);
-				return Ok(());
-			}
-		};
+impl ProviderParser for Epic {
+	type Source = PathBuf;
 
+	fn parse_games(&self, app_data_path: &Self::Source, insert: &mut impl FnMut(DbGame)) -> Result {
 		let mut exe_paths: HashMap<String, PathBuf> = HashMap::new();
 
 		let manifests_path = app_data_path.join("Manifests");
@@ -182,15 +176,26 @@ impl ProviderActions for Epic {
 
 		let catalog_path = app_data_path.join("Catalog").join("catcache.bin");
 		if catalog_path.is_file() {
-			let mut catalog_cache_file = File::open(catalog_path)?;
+			let mut catalog_cache_file = File::open(&catalog_path)?;
 			let mut decoder = base64::read::DecoderReader::new(
 				&mut catalog_cache_file,
 				&general_purpose::STANDARD,
 			);
 			let mut json = String::default();
-			decoder.read_to_string(&mut json)?;
+			decoder.read_to_string(&mut json).with_context(|| {
+				format!(
+					"failed to decode Epic catalog cache `{}`",
+					catalog_path.display()
+				)
+			})?;
 
-			let catalog = serde_json::from_str::<Vec<EpicCatalogItem>>(&json)?;
+			let catalog =
+				serde_json::from_str::<Vec<EpicCatalogItem>>(&json).with_context(|| {
+					format!(
+						"failed to parse Epic catalog cache `{}`",
+						catalog_path.display()
+					)
+				})?;
 			for catalog_item in catalog {
 				if let Some(mut game) = Self::get_game(&catalog_item) {
 					if let Some(exe_path) = exe_paths.remove(&game.external_id) {
@@ -204,7 +209,7 @@ impl ProviderActions for Epic {
 						);
 					}
 
-					db.insert_game(&game);
+					insert(game);
 				}
 			}
 		} else {
@@ -217,10 +222,35 @@ impl ProviderActions for Epic {
 	}
 }
 
+#[cfg(target_os = "windows")]
+impl ProviderActions for Epic {
+	fn insert_games(&self, db: &DbMutex) -> Result {
+		let app_data_path = match RegKey::predef(HKEY_LOCAL_MACHINE)
+			.open_subkey(r"SOFTWARE\Epic Games\EpicGamesLauncher")
+			.and_then(|launcher_reg| launcher_reg.get_value::<String, _>("AppDataPath"))
+			.map(PathBuf::from)
+		{
+			Ok(path) => path,
+			Err(err) => {
+				log::info!(
+					"Epic Games Launcher not found in registry. Probably means Epic Games Launcher isn't installed. Error: {err}"
+				);
+				return Ok(());
+			}
+		};
+
+		self.parse_games(&app_data_path, &mut |game| {
+			db.insert_game(&game);
+		})
+	}
+}
+
+#[cfg(target_os = "windows")]
 impl WineProviderActions for Epic {}
 
 fn read_manifest(path: &Path) -> Result<EpicManifest> {
 	let json = fs::read_to_string(path)?;
-	let manifest = serde_json::from_str::<EpicManifest>(&json)?;
+	let manifest = serde_json::from_str::<EpicManifest>(&json)
+		.with_context(|| format!("failed to parse Epic manifest `{}`", path.display()))?;
 	Ok(manifest)
 }

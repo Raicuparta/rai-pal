@@ -1,7 +1,5 @@
-use std::{
-	fs::{self},
-	path::Path,
-};
+use fs_err as fs;
+use std::path::Path;
 
 use lazy_regex::{regex_captures, regex_find};
 use pelite::PeFile;
@@ -218,6 +216,30 @@ fn is_valid_win_folder(path: &Path) -> bool {
 	path.ends_with("Win64") || path.ends_with("Win32") || path.ends_with("WinGDK")
 }
 
+const HELPER_EXE_NAMES: [&str; 3] = [
+	"CrashReportClient.exe",
+	"EpicWebHelper.exe",
+	"UnrealCEFSubProcess.exe",
+];
+
+fn is_helper_exe(path: &Path) -> bool {
+	path.file_name()
+		.and_then(|name| name.to_str())
+		.is_some_and(|name| {
+			HELPER_EXE_NAMES
+				.iter()
+				.any(|helper| helper.eq_ignore_ascii_case(name))
+		})
+}
+
+fn set_version(game: &mut DbGame, version: &EngineVersion, exe_path: &Path) {
+	game.engine_version_major = Some(version.numbers.major);
+	game.engine_version_minor = version.numbers.minor;
+	game.engine_version_patch = version.numbers.patch;
+	game.engine_version_display = Some(version.display.clone());
+	game.architecture = get_architecture(exe_path).unwrap_or(None);
+}
+
 fn is_unreal_exe(game_path: &Path) -> bool {
 	const VALID_FOLDER_NAMES: [&str; 3] = ["Win64", "Win32", "ThirdParty"];
 
@@ -244,65 +266,61 @@ fn is_unreal_exe(game_path: &Path) -> bool {
 }
 
 pub fn process_game(game: &mut DbGame) -> bool {
-	let Some(game_path) = game.exe_path.as_ref() else {
+	let Some(game_path) = game.exe_path.clone() else {
 		return false;
 	};
 
-	if !is_unreal_exe(game_path) {
+	if !is_unreal_exe(&game_path) {
 		return false;
 	}
 
 	game.engine_brand = Some(EngineBrand::Unreal);
-	let game_dir = game_path.parent().unwrap_or(game_path);
+	let game_dir = game_path.parent().unwrap_or(&game_path);
 
 	// 1. Try Build.version file (most reliable)
-	if let Some(version) = get_version_from_build_version_file(game_path) {
-		game.engine_version_major = Some(version.numbers.major);
-		game.engine_version_minor = version.numbers.minor;
-		game.engine_version_patch = version.numbers.patch;
-		game.engine_version_display = Some(version.display);
-		game.architecture = get_architecture(game_path).unwrap_or(None);
+	if let Some(version) = get_version_from_build_version_file(&game_path) {
+		set_version(game, &version, &game_path);
 		return true;
 	}
 
-	// 2-3. Try specific known launcher/helper executables (CrashReportClient.exe, EpicWebHelper.exe)
-	for filename in &["CrashReportClient.exe", "EpicWebHelper.exe"] {
-		let exe_paths = game_dir.join(format!("**/{filename}")).glob();
-		if let Some(exe_path) = exe_paths.first()
-			&& let Some(version) = get_version_from_exe_path(exe_path)
-		{
-			game.engine_version_major = Some(version.numbers.major);
-			game.engine_version_minor = version.numbers.minor;
-			game.engine_version_patch = version.numbers.patch;
-			game.engine_version_display = Some(version.display);
-			game.architecture = get_architecture(exe_path).unwrap_or(None);
-			game.exe_path = Some(exe_path.clone());
+	// 2. Try the actual game executable. Prefer *-Shipping.exe, which is the real
+	// game binary rather than the launcher/helper exes that also ship with Unreal games.
+	if let Some(exe_path) = game_dir
+		.join("**/*-Shipping.exe")
+		.glob()
+		.into_iter()
+		.find(|path| !is_helper_exe(path))
+		&& let Some(version) = get_version_from_exe_path(&exe_path)
+	{
+		set_version(game, &version, &exe_path);
+		game.exe_path = Some(exe_path);
+		return true;
+	}
+
+	// 3. Try any executable that isn't a known launcher/helper.
+	for exe_path in game_dir.join("**/*.exe").glob() {
+		if is_helper_exe(&exe_path) {
+			continue;
+		}
+		if let Some(version) = get_version_from_exe_path(&exe_path) {
+			set_version(game, &version, &exe_path);
+			game.exe_path = Some(exe_path);
 			return true;
 		}
 	}
 
-	// 4. Try *-Shipping.exe (build stamp and metadata)
-	if let Some(shipping_exe_path) = game_dir.join("**/*-Shipping.exe").glob().first().cloned()
-		&& let Some(version) = get_version_from_exe_path(&shipping_exe_path)
-	{
-		game.engine_version_major = Some(version.numbers.major);
-		game.engine_version_minor = version.numbers.minor;
-		game.engine_version_patch = version.numbers.patch;
-		game.engine_version_display = Some(version.display);
-		game.architecture = get_architecture(&shipping_exe_path).unwrap_or(None);
-		game.exe_path = Some(shipping_exe_path);
-		return true;
-	}
-
-	// 5-6. Try any .exe files
-	for exe_path in game_dir.join("**/*.exe").glob() {
-		if let Some(version) = get_version_from_exe_path(&exe_path) {
-			game.engine_version_major = Some(version.numbers.major);
-			game.engine_version_minor = version.numbers.minor;
-			game.engine_version_patch = version.numbers.patch;
-			game.engine_version_display = Some(version.display);
-			game.architecture = get_architecture(&exe_path).unwrap_or(None);
-			game.exe_path = Some(exe_path);
+	// 4. Only helper executables left. Use them for version detection, but never
+	// replace a real game executable with one.
+	for filename in &HELPER_EXE_NAMES {
+		if let Some(exe_path) = game_dir.join(format!("**/{filename}")).glob().first()
+			&& let Some(version) = get_version_from_exe_path(exe_path)
+		{
+			let version_exe_path = if is_helper_exe(&game_path) {
+				exe_path
+			} else {
+				&game_path
+			};
+			set_version(game, &version, version_exe_path);
 			return true;
 		}
 	}

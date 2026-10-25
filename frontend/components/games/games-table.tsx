@@ -1,22 +1,40 @@
 import { useEffect, useRef } from "react";
 import { GameProviderId } from "@api/bindings";
 import { useAtomValue } from "jotai";
-import { gameDataAtom, loadingTasksAtom } from "@hooks/use-data";
+import { gameDataAtom } from "@hooks/use-data";
+import { refreshTasksAtom } from "@hooks/use-refresh-tasks";
 import { TableContainer } from "@components/table/table-container";
 import {
 	TableComponents,
 	TableVirtuoso,
 	TableVirtuosoHandle,
+	ScrollerProps,
 } from "react-virtuoso";
 import { GameRow, gameRowHeight } from "./game-row";
 import { useDataQuery } from "@hooks/use-data-query";
 import { GamesColgroup } from "./games-columns";
-import styles from "./games.module.css";
 import { Alert, Table } from "@mantine/core";
 import React from "react";
 import { useLocalization } from "@hooks/use-localization";
+import { ScrollAreaFill } from "@components/scroll-area-fill";
+
+const Scroller = React.forwardRef<HTMLDivElement, ScrollerProps>(
+	function Scroller({ children, ...props }, ref) {
+		return (
+			<ScrollAreaFill
+				flex={1}
+				mih={0}
+				viewportRef={ref}
+				viewportProps={props}
+			>
+				{children}
+			</ScrollAreaFill>
+		);
+	},
+);
 
 const tableComponents: TableComponents<[GameProviderId, string], unknown> = {
+	Scroller,
 	TableBody: React.forwardRef(function TableBody(props, ref) {
 		return (
 			<Table.Tbody
@@ -39,7 +57,7 @@ const tableComponents: TableComponents<[GameProviderId, string], unknown> = {
 
 export function GamesTable() {
 	const gameData = useAtomValue(gameDataAtom);
-	const loading = useAtomValue(loadingTasksAtom);
+	const refreshTasks = useAtomValue(refreshTasksAtom);
 	const [dataQuery] = useDataQuery();
 	const tableRef = useRef<TableVirtuosoHandle>(null);
 	const { t } = useLocalization("gamesPage");
@@ -50,7 +68,7 @@ export function GamesTable() {
 		}
 	}, [dataQuery]);
 
-	if (gameData.totalCount === 0 && loading.length > 0) {
+	if (gameData.totalCount === 0 && refreshTasks.length > 0) {
 		return (
 			<Alert
 				mx="xl"
@@ -84,10 +102,9 @@ export function GamesTable() {
 	}
 
 	return (
-		<TableContainer>
+		<TableContainer scroll={false}>
 			<TableVirtuoso
 				ref={tableRef}
-				className={styles.table}
 				components={tableComponents}
 				data={gameData.gameIds}
 				fixedItemHeight={gameRowHeight}

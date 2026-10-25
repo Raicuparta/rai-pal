@@ -6,7 +6,7 @@ use crate::{
 	game_providers::provider_command::{ProviderCommand, ProviderCommandAction},
 	mods::game_mod::GameMod,
 	path_extensions::{AsValidStr, PathExt},
-	result::{Error, Result},
+	result::{ContextResult, Error, Result},
 };
 
 #[serializable_enum]
@@ -125,7 +125,10 @@ pub fn replace_tokens(
 				let mut launch = provider.get_run_with_wine_command(game)?;
 				launch.arg("cmd").arg("/C").arg("echo %APPDATA%");
 
-				let output = launch.to_command().output()?;
+				let output = launch
+					.to_command()
+					.output()
+					.context("failed to run `cmd /C echo %APPDATA%` in the Wine prefix")?;
 
 				let win_path = str::from_utf8(&output.stdout)?.trim();
 
@@ -165,11 +168,11 @@ pub fn replace_tokens(
 					.as_ref()
 					.is_some_and(|run| run.os == Some(OperatingSystem::Windows));
 
-			return Ok(if uses_wine {
+			Ok(if uses_wine {
 				"Z:".to_string()
 			} else {
 				String::new()
-			});
+			})
 		}
 		#[cfg(target_os = "windows")]
 		return Ok(String::new());

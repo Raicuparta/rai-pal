@@ -47,6 +47,7 @@ export const koKr: Localization = {
 
 	filterMenu: {
 		filters: "필터",
+		collapseAll: "모든 필터 접기",
 		resetButton: "재설정",
 		searchPlaceholder: "검색...",
 	},
@@ -95,25 +96,27 @@ export const koKr: Localization = {
 		startGameButton: "게임 시작",
 		startGameExecutable: "실행 파일로 게임 시작",
 		startGameViaProvider: "{provider}로 게임 시작",
-		foldersDropdown: "폴더",
+		foldersSection: "폴더",
 		openGameFilesFolder: "게임 파일",
 		openInstalledModsFolder: "설치된 모드",
 		openGameDataFolder: "게임 앱 데이터",
 		openGameWinePrefixFolder: "게임 Wine 프리픽스",
 		openGameWineBinaryFolder: "게임 Wine 바이너리",
+
+		dataSection: "데이터",
 		removeFromRaiPal: "Rai Pal에서 제거",
 		removeGameConfirmation: "이 게임을 Rai Pal에서 제거할까요?",
 		refreshGame: "게임 새로고침",
-		failedToReadGameInfo:
-			"이 게임의 중요 정보를 읽을 수 없었어요. 실행 파일이 보호돼 있어서 그럴 수 있어요. 일부 모드가 설치 안 될 수도 있어요.",
-		failedToDetermineEngine:
-			"이 게임의 엔진을 확인할 수 없었어요. 일부 모드가 설치 안 될 수도 있어요.",
-		gameNotInstalledWarning:
-			"이 게임이 설치되지 않아서 어떤 모드가 맞는지 100% 장담할 수 없어요. 아래 모드들이 될 수도 있어요. 게임을 설치하면 더 정확히 알려드릴게요.",
+		failedToDetermineEngine: "이 게임의 엔진을 확인할 수 없었어요.",
 		uninstallAllModsButton: "모드 모두 제거",
 		uninstallAllModsConfirmation:
 			"확실해요? 이 게임 모드 폴더 안 파일이 전부 지워져요. 실제 게임 파일은 그대로 두고요.",
 
+		installedMods: "설치된 모드",
+		availableMods: "설치 가능한 모드",
+		potentiallyCompatibleMods: "호환될 수 있는 모드",
+		potentiallyCompatibleModsDescription:
+			"게임을 설치하면 어떤 모드가 호환되는지 자세히 볼 수 있어요",
 		incompatibleGameModsLabel: "호환되지 않는 모드",
 
 		incompatibleGameModsDescription:
@@ -123,6 +126,9 @@ export const koKr: Localization = {
 
 		otherThingsDescription:
 			"이것들은 대부분 종속성 같은 거라서 보통 직접 건드릴 일이 없어요.",
+
+		noModsForGame:
+			"없어요! 이 게임에 쓸 수 있는 모드는 하나도 없어요. 다른 걸 시도해 보세요.",
 	},
 
 	gameModRow: {
@@ -173,7 +179,8 @@ export const koKr: Localization = {
 		runMod: "실행",
 		openModFolder: "모드 폴더 열기",
 		updateMod: "모드 업데이트",
-		downloadMod: "모드 다운로드",
+		downloadMod: "다운로드",
+		openModSource: "웹사이트",
 		deleteMod: "모드 삭제",
 		deleteModConfirmation: "확실해요? 모드 폴더 안 파일이 전부 날아가요.",
 		byAuthor: "{authorName} 제작",
@@ -183,6 +190,10 @@ export const koKr: Localization = {
 		showGameThumbnails: "목록에 게임 썸네일 표시",
 		language: "언어",
 		autoDetectedLanguage: "자동 감지 - {languageName}",
+		colorScheme: "색상 구성표",
+		colorSchemeAuto: "자동",
+		colorSchemeDark: "어둡게",
+		colorSchemeLight: "밝게",
 		resetRaiPalSettingsButton: "Rai Pal 설정 재설정",
 		resetRaiPalSettingsTooltip: "필터, 확인 창, 이것저것 다 초기화돼요.",
 		openLogsFolderButton: "로그 폴더 열기",

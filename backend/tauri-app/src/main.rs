@@ -31,18 +31,23 @@ use rai_pal_core::{
 	},
 	maps::TryGettable,
 	mod_providers::{mod_provider, url_mod_provider},
-	mods::game_mod::{GameMod, ModDependency},
+	mods::{
+		game_mod::{GameMod, ModDependency},
+		mod_family::ModFamily,
+	},
+	open_better,
 	path_extensions::PathExt,
 	progress_status::ProgressStatus,
-	remote_config::RemoteConfigs,
 	remote_game::{self},
-	result::LogErrExt,
+	result::{ContextResult, LogErrExt},
 	user::{
 		auth::{AuthState, get_user_auth_state, logout_auth, start_auth},
 		user_socket::start_user_socket_manager,
 	},
 };
 use strum::IntoEnumIterator;
+#[cfg(windows)]
+use tauri::webview::ScrollBarStyle;
 use tauri::{AppHandle, Manager, WebviewUrl, WebviewWindowBuilder, ipc::Channel};
 use tauri_plugin_deep_link::DeepLinkExt;
 use tauri_plugin_log::{Target, TargetKind};
@@ -291,7 +296,6 @@ async fn install_mod(
 				installed_version: None,
 				is_outdated: false,
 				mod_id: other_mod.id.clone(),
-				mod_scope: other_mod.scope.clone().unwrap_or_default(),
 				family: other_mod.family.clone(),
 			})
 			.collect()
@@ -334,6 +338,13 @@ async fn install_mod(
 	let _install_guard = state.install_lock.lock().await;
 
 	let result: std::result::Result<(), rai_pal_core::result::Error> = async {
+		if let Some(game) = game_option.as_ref() {
+			game_mod
+				.download_remote_config(game, false)
+				.await
+				.ok_or_log("Failed to download recommended mod config");
+		}
+
 		for m in &deps_to_install {
 			m.install(game_option.as_ref(), &forward).await?;
 		}
@@ -486,11 +497,13 @@ async fn uninstall_all_mods(
 	game_id: String,
 ) -> Result {
 	let state = handle.app_state();
-	state
-		.database
-		.get_game(&provider_id, &game_id)?
-		.uninstall_all_mods()
-		.await?;
+	let game = state.database.get_game(&provider_id, &game_id)?;
+
+	for installed_mod in state.database.get_installed_mods_for_game(&game)? {
+		installed_mod.uninstall().await?;
+	}
+
+	game.delete_mods_folder().await?;
 	state.database.refresh_installed_mods()?;
 
 	handle.emit_safe(events::RefreshGame(provider_id, game_id));
@@ -522,7 +535,7 @@ async fn refresh_mods(handle: AppHandle) -> Result {
 
 #[tauri::command]
 #[specta::specta]
-async fn get_url_mod_sources() -> Result<url_mod_provider::UrlModSources> {
+async fn get_url_mod_sources() -> Result<url_mod_provider::UrlModSourcesResponse> {
 	Ok(url_mod_provider::get_url_mod_sources())
 }
 
@@ -555,6 +568,13 @@ async fn set_url_mod_source_enabled(url: String, enabled: bool) -> Result {
 async fn get_mods(handle: AppHandle) -> Result<BTreeMap<String, GameMod>> {
 	let state = handle.app_state();
 	Ok(state.database.get_mod_map()?)
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn get_mod_families(handle: AppHandle) -> Result<BTreeMap<String, ModFamily>> {
+	let state = handle.app_state();
+	Ok(state.database.get_mod_families()?)
 }
 
 #[tauri::command]
@@ -677,13 +697,13 @@ async fn run_provider_command(
 		.get_game(&provider_id, game_id)?;
 
 	let provider_command = game.provider_commands.try_get(&provider_command_aciton)?;
-	let environment = match provider_command_aciton {
+	let (environment, environment_mod_ids) = match provider_command_aciton {
 		ProviderCommandAction::StartViaProvider | ProviderCommandAction::StartViaExe => {
 			handle.app_state().database.get_game_environment(&game)?
 		}
-		_ => BTreeMap::default(),
+		_ => (BTreeMap::default(), Vec::new()),
 	};
-	provider_command.run(&game, &environment)?;
+	provider_command.run(&game, &environment, &environment_mod_ids)?;
 
 	handle.emit_safe(events::ExecutedProviderCommand);
 
@@ -703,7 +723,8 @@ async fn reset_steam_cache(handle: AppHandle) -> Result {
 #[tauri::command]
 #[specta::specta]
 async fn add_rai_pal_steam_shortcut(handle: AppHandle) -> Result {
-	let current_executable = std::env::current_exe()?;
+	let current_executable =
+		std::env::current_exe().context("failed to find the Rai Pal executable path")?;
 	let artwork_dir = handle.path().resource_dir()?.join("steam-artwork");
 	steam_shortcut::add_current_executable_to_steam_shortcuts(&current_executable, &artwork_dir)?;
 
@@ -733,6 +754,14 @@ async fn open_local_mods_folder() -> Result {
 #[specta::specta]
 async fn open_logs_folder() -> Result {
 	app_paths::logs_path()?.open_folder_or_parent()?;
+
+	Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn open_url(url: String) -> Result {
+	open_better::open_detached_better(url)?;
 
 	Ok(())
 }
@@ -769,50 +798,40 @@ async fn save_app_settings(settings: AppSettings) -> Result {
 
 #[tauri::command]
 #[specta::specta]
-async fn get_game_mods(
+async fn get_remote_config_mod_ids(
 	provider_id: GameProviderId,
 	game_id: String,
 	app_handle: AppHandle,
-) -> Result<Vec<GameModInfo>> {
+) -> Result<Vec<String>> {
 	let state = app_handle.app_state();
+	let game = state.database.get_game(&provider_id, &game_id)?;
 
-	Ok(state.database.get_game_mods(&provider_id, &game_id)?)
+	let Ok(Some(configs)) = game.get_remote_configs().await else {
+		return Ok(Vec::new());
+	};
+
+	Ok(state
+		.database
+		.get_mod_map()?
+		.into_values()
+		.filter(|game_mod| configs.get_for_mod(game_mod).is_some())
+		.map(|game_mod| game_mod.id)
+		.collect())
 }
 
 #[tauri::command]
 #[specta::specta]
-async fn get_remote_configs(
+async fn download_mod_config(
 	provider_id: GameProviderId,
 	game_id: String,
-	app_handle: AppHandle,
-) -> Result<Option<RemoteConfigs>> {
-	Ok(app_handle
-		.app_state()
-		.database
-		.get_game(&provider_id, &game_id)?
-		.get_remote_configs()
-		.await?)
-}
-
-#[tauri::command]
-#[specta::specta]
-async fn download_remote_config(
-	provider_id: GameProviderId,
-	game_id: &str,
 	mod_id: &str,
-	remote_config_file: &str,
-	overwrite: bool,
 	app_handle: AppHandle,
 ) -> Result {
 	let state = app_handle.app_state();
-	let game = state.database.get_game(&provider_id, game_id)?;
+	let game = state.database.get_game(&provider_id, &game_id)?;
 	let game_mod = state.database.get_mod(mod_id)?;
 
-	if let Some(mod_config) = game_mod.config.as_ref() {
-		mod_config
-			.download(&game, &game_mod, remote_config_file, overwrite)
-			.await?;
-	}
+	game_mod.download_remote_config(&game, true).await?;
 
 	Ok(())
 }
@@ -904,15 +923,15 @@ fn main() {
 			add_rai_pal_steam_shortcut,
 			add_url_mod_source,
 			configure_mod,
-			download_remote_config,
+			download_mod_config,
 			get_app_settings,
 			get_auth_state,
 			get_game,
 			get_game_ids,
-			get_game_mods,
+			get_mod_families,
 			get_mods,
 			get_mods_from_url_mod_source,
-			get_remote_configs,
+			get_remote_config_mod_ids,
 			get_url_mod_sources,
 			install_mod,
 			listen_to_download_progress,
@@ -926,6 +945,7 @@ fn main() {
 			open_installed_mod_folder,
 			open_local_mods_folder,
 			open_logs_folder,
+			open_url,
 			refresh_game,
 			refresh_games,
 			refresh_mods,
@@ -1035,14 +1055,20 @@ fn main() {
 			// We could also trigger this on the frontend to reduce the white flash,
 			// but it never seems to go away, and that introduces an extra delay
 			// until something is visible, so I figure I'd just show it here.
-			let window = WebviewWindowBuilder::new(app, "main", WebviewUrl::default())
+			let window_builder = WebviewWindowBuilder::new(app, "main", WebviewUrl::default())
 				.title(format!(
 					"Rai Pal {}{}",
 					env!("CARGO_PKG_VERSION"),
 					if cfg!(debug_assertions) { " DEV" } else { "" }
 				))
 				// Another reason to create Webview manually is to have full control of the data folder.
-				.data_directory(app_paths::app_data_subfolder("main-webview")?)
+				.data_directory(app_paths::app_data_subfolder("main-webview")?);
+
+			// WebView2's classic scrollbars reserve layout space; Fluent overlay matches Linux's WebKitGTK overlay scrollbars.
+			#[cfg(windows)]
+			let window_builder = window_builder.scroll_bar_style(ScrollBarStyle::FluentOverlay);
+
+			let window = window_builder
 				.inner_size(800.0, 600.0)
 				.min_inner_size(800.0, 500.0)
 				.focusable(true)

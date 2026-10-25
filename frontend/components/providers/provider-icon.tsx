@@ -7,6 +7,7 @@ import {
 	IconCircleLetterG,
 	IconBrandXbox,
 	IconBrandItch,
+	IconBrandAmazon,
 } from "@tabler/icons-react";
 import { ComponentProps } from "react";
 
@@ -15,6 +16,7 @@ interface Props extends ComponentProps<typeof IconDeviceGamepad> {
 }
 
 const providerIcons: Record<GameProviderId, Icon> = {
+	Amazon: IconBrandAmazon,
 	Manual: IconDeviceGamepad,
 	Steam: IconBrandSteam,
 	Epic: IconSquareLetterE,

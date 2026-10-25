@@ -18,3 +18,15 @@
 	white-space: unset;
 	max-width: 30em;
 }
+
+button:disabled,
+[data-disabled] {
+	cursor: default;
+}
+
+.mantine-Table-tr {
+	border-color: light-dark(
+		var(--mantine-color-gray-3),
+		var(--mantine-color-dark-6)
+	);
+}

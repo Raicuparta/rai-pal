@@ -1,14 +1,13 @@
 import {
-	Container,
 	Group,
 	Stack,
-	Card,
 	Image,
 	Text,
 	Box,
 	Divider,
 	Tooltip,
 	MantineColor,
+	Container,
 } from "@mantine/core";
 import {
 	IconBrandGithubFilled,
@@ -21,6 +20,7 @@ import { ThanksLinkButton } from "./thanks-link-button";
 import { usePatrons } from "@hooks/use-patrons";
 import styles from "./thanks.module.css";
 import { useLocalization } from "@hooks/use-localization";
+import { Page } from "@components/page";
 
 function getRankingEmoji(ranking: number) {
 	if (ranking == 1) return "🥇";
@@ -33,7 +33,7 @@ function getRankingColor(ranking: number): MantineColor {
 	if (ranking == 1) return "yellow";
 	if (ranking == 2) return "gray";
 	if (ranking == 3) return "red";
-	return "dark";
+	return "transparent";
 }
 
 export function ThanksPage() {
@@ -41,22 +41,75 @@ export function ThanksPage() {
 	const patrons = usePatrons();
 
 	return (
-		<Container
-			h="100%"
-			size="sm"
-			p={0}
-		>
-			<Group h="100%">
-				<Card
-					flex={1}
-					h="100%"
-					style={{ overflowY: "auto" }}
+		<Stack h="100%">
+			<Page
+				sidebar={
+					<Stack
+						pr="xs"
+						gap="lg"
+					>
+						<Divider
+							label={
+								<Group>
+									{t("patreonLeaderboard")}{" "}
+									<Tooltip
+										ta="center"
+										withinPortal
+										label={
+											<>
+												<Text>{t("rankedByPatreonDonationAmount")}</Text>
+												<Text>{t("patreonProfilePrivateNotice")}</Text>
+											</>
+										}
+									>
+										<IconHelpCircleFilled />
+									</Tooltip>
+								</Group>
+							}
+						/>
+						<Stack pl="lg">
+							{patrons.map((patron) => (
+								<Group
+									key={patron.ranking}
+									pos="relative"
+								>
+									<Box c={getRankingColor(patron.ranking)}>
+										<img
+											className={styles.patronAvatar}
+											src={patron.imageUrl}
+										/>
+									</Box>
+									{patron.ranking <= 3 && (
+										<Text
+											fz={25}
+											className={styles.patronMedal}
+										>
+											{getRankingEmoji(patron.ranking)}
+										</Text>
+									)}
+									<Text
+										flex={1}
+										className={styles.patronName}
+										fw={patron.ranking <= 3 ? "bold" : "normal"}
+										c={patron.ranking <= 3 ? "bright" : undefined}
+									>
+										{patron.name}
+									</Text>
+								</Group>
+							))}
+						</Stack>
+					</Stack>
+				}
+			>
+				<Container
+					size="xs"
+					py="lg"
 				>
 					<Stack>
 						<Group align="top">
 							<Stack
 								gap={0}
-								bg="dark"
+								bg="var(--mantine-color-body)"
 								justify="center"
 								p="sm"
 								flex={1}
@@ -186,78 +239,8 @@ export function ThanksPage() {
 							</ThanksLinkButton>
 						</Stack>
 					</Stack>
-				</Card>
-				<Stack
-					h="100%"
-					w={200}
-				>
-					<Group align="top">
-						<ThanksLinkButton
-							pos="relative"
-							size="lg"
-							href="https://www.patreon.com/raivr"
-							color="pink"
-							flex={1}
-						>
-							<Box style={{ textWrap: "wrap" }}>{t("patreonLeaderboard")}</Box>
-							<Box
-								pos="absolute"
-								right={0}
-								top={0}
-							>
-								<Tooltip
-									ta="center"
-									withinPortal
-									label={
-										<>
-											<Text>{t("rankedByPatreonDonationAmount")}</Text>
-											<Text>{t("patreonProfilePrivateNotice")}</Text>
-										</>
-									}
-								>
-									<IconHelpCircleFilled />
-								</Tooltip>
-							</Box>
-						</ThanksLinkButton>
-					</Group>
-					<Card
-						h="100%"
-						style={{ overflowY: "scroll" }}
-					>
-						<Stack>
-							{patrons.map((patron) => (
-								<Group
-									key={patron.ranking}
-									pos="relative"
-								>
-									<Box c={getRankingColor(patron.ranking)}>
-										<img
-											className={styles.patronAvatar}
-											src={patron.imageUrl}
-										/>
-									</Box>
-									{patron.ranking <= 3 && (
-										<Text
-											size="xl"
-											className={styles.patronMedal}
-										>
-											{getRankingEmoji(patron.ranking)}
-										</Text>
-									)}
-									<Text
-										flex={1}
-										className={styles.patronName}
-										fw={patron.ranking <= 3 ? "bold" : "normal"}
-										c={patron.ranking <= 3 ? "white" : undefined}
-									>
-										{patron.name}
-									</Text>
-								</Group>
-							))}
-						</Stack>
-					</Card>
-				</Stack>
-			</Group>
-		</Container>
+				</Container>
+			</Page>
+		</Stack>
 	);
 }

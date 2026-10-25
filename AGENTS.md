@@ -14,10 +14,6 @@ Ignore code warnings, clippy, format, etc, until I've confirmed that your implem
 Run `npm run format` before committing, so formatting changes are part of your
 commit instead of showing up as unrelated churn later.
 
-## Commits
-
-Commit your work locally without pushing. When making changes to the same domain, or especially when fixing changes you made, amend commits, unless they've already been pushed.
-
 ## Comments
 
 Do not leave comments. Exception only for actual hacks or realy weird stuff, almost everything should be comment-free. Do not remove preexisting comments.
@@ -53,3 +49,11 @@ Key points to remember:
 Use Mantine. Docs here: https://mantine.dev/llms/core-accordion.md
 
 Avoid making your own custom styles unless absolutely necessary. Default to using Mantine's provided utilities and styles with no extra css files, only adjusting it when necessary for functionality, or when specifically asked for something that can't be done easily with Mantine directly. When passing props to Mantine components, make sure you're not being redundant by passing something that is either already a Mantine default, or a default in this project's theme (frontend/theme.ts)
+
+## Error handling in the backend
+
+We use thiserror via the enums defined in two result.rs files (core and tauri-app crates). Errors get thrown to the frontend mostly as-is, as strings. fs-err is used to add necessary context, so those are already fine. But other cases like io::Error coming from dependencies, etc, might need some extra context passed. For this, we use thiserror-context. Make sure to use that whenever we are throwing errors that can reach the frontend.
+
+## Tests
+
+Don't add tests unless asked to. When you make a change that you think warrants tests (especially if related to something that already has existing tests somewhere), ask the user if you should add tests first.

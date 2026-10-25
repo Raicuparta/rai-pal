@@ -192,8 +192,8 @@ export const enUs = {
 		// Start the game via the provider's launcher app.
 		startGameViaProvider: "Start Game via {provider}",
 
-		// Dropdown menu for folders related to the game.
-		foldersDropdown: "Folders",
+		// Section for folders related to the game.
+		foldersSection: "Folders",
 
 		// Open the folder where the game's executable is located.
 		openGameFilesFolder: "Game Files",
@@ -210,6 +210,9 @@ export const enUs = {
 		// Open the folder that contains the Wine binary used for this game.
 		openGameWineBinaryFolder: "Wine Binary",
 
+		// Section for miscellaneous data related to the game.
+		dataSection: "Data",
+
 		// Button for removing a manually-added game from Rai Pal.
 		removeFromRaiPal: "Remove from Rai Pal",
 
@@ -220,17 +223,8 @@ export const enUs = {
 		// Button for refreshing the game's information.
 		refreshGame: "Refresh game",
 
-		// Error message when Rai Pal fails to read enough information about the game.
-		failedToReadGameInfo:
-			"Failed to read some important information about this game. This could be due to the executable being protected. Some mods might fail to install.",
-
 		// Error message when Rai Pal fails to determine the game's engine.
-		failedToDetermineEngine:
-			"Failed to determine the engine for this game. Some mods might fail to install.",
-
-		// Warning that shows when a game isn't installed.
-		gameNotInstalledWarning:
-			"This game isn't installed, so I'm not 100% sure which mods are compatible. The ones you see below might work. If you install the game, I'll show you more accurate information.",
+		failedToDetermineEngine: "Failed to determine the engine for this game.",
 
 		// Button for uninstalling all mods for this game.
 		uninstallAllModsButton: "Uninstall all mods",
@@ -238,6 +232,19 @@ export const enUs = {
 		// Confirmation dialog for uninstalling all mods for this game.
 		uninstallAllModsConfirmation:
 			"You sure? This will delete all files in this game's mods folder. It won't delete any files from the actual game though.",
+
+		// Label for the section that lists the mods already installed for this game.
+		installedMods: "Installed Mods",
+
+		// Label for the section that lists mods that can still be installed for this game.
+		availableMods: "Available Mods",
+
+		// Label for the section that lists mods that might be compatible when the game isn't installed.
+		potentiallyCompatibleMods: "Potentially compatible mods",
+
+		// Description for the potentially compatible mods section, prompting the user to install the game.
+		potentiallyCompatibleModsDescription:
+			"Install this game to see more detailed information about which mods are compatible",
 
 		// Label for the section that lists incompatible mods for this game.
 		incompatibleGameModsLabel: "Incompatible Mods",
@@ -251,6 +258,10 @@ export const enUs = {
 		// Description for the section that shows hidden "mods".
 		otherThingsDescription:
 			"These are mostly dependencies and other stuff that you don't usually need to mess with directly.",
+
+		// Message that shows when there are no mods at all for a given game.
+		noModsForGame:
+			"Nothing! None of the available mods are of any use for this game. Try something else.",
 	},
 
 	// Row in the table that shows mods for a specific game in the game modal.
@@ -364,7 +375,10 @@ export const enUs = {
 		updateMod: "Update mod",
 
 		// Button for downloading a mod.
-		downloadMod: "Download mod",
+		downloadMod: "Download",
+
+		// Button for opening the mod's website.
+		openModSource: "Website",
 
 		// Button for deleting a mod.
 		deleteMod: "Delete mod",
@@ -387,6 +401,18 @@ export const enUs = {
 
 		// Display name for the language option that automatically detects the user's language.
 		autoDetectedLanguage: "Auto-detected - {languageName}",
+
+		// Label on the dropdown for choosing the app's color scheme.
+		colorScheme: "Color scheme",
+
+		// Color scheme option that follows the system theme.
+		colorSchemeAuto: "Auto",
+
+		// Color scheme option that always uses the dark theme.
+		colorSchemeDark: "Dark",
+
+		// Color scheme option that always uses the light theme.
+		colorSchemeLight: "Light",
 
 		// Button for resetting Rai Pal's settings.
 		resetRaiPalSettingsButton: "Reset Rai Pal settings",
