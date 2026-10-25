@@ -6,10 +6,9 @@ import { useLocalization } from "@hooks/use-localization";
 type Props = {
 	readonly game: DbGame;
 	readonly mod: GameMod;
-	readonly remoteConfigFile?: string;
 };
 
-export function GameModUpdateButton({ game, mod, remoteConfigFile }: Props) {
+export function GameModUpdateButton({ game, mod }: Props) {
 	const { t } = useLocalization("gameModRow");
 
 	return (
@@ -18,16 +17,6 @@ export function GameModUpdateButton({ game, mod, remoteConfigFile }: Props) {
 			color="green"
 			variant="light"
 			onClick={async () => {
-				if (remoteConfigFile) {
-					await commands.downloadRemoteConfig(
-						game.providerId,
-						game.gameId,
-						mod.id,
-						remoteConfigFile,
-						false,
-					);
-				}
-
 				await commands.installMod(mod.id, game.providerId, game.gameId);
 
 				commands.sendAnalyticsEvent("UpdateMod", {

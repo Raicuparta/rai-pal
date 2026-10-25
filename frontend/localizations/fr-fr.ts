@@ -47,6 +47,7 @@ export const frFr: Localization = {
 
 	filterMenu: {
 		filters: "Filtres",
+		collapseAll: "Réduire tous les filtres",
 		resetButton: "Réinitialiser",
 		searchPlaceholder: "Rechercher...",
 	},
@@ -97,26 +98,28 @@ export const frFr: Localization = {
 		startGameButton: "Lancer le jeu",
 		startGameExecutable: "Lancer l'exécutable du jeu",
 		startGameViaProvider: "Lancer le jeu via {provider}",
-		foldersDropdown: "Dossiers",
+		foldersSection: "Dossiers",
 		openGameFilesFolder: "Fichiers du jeu",
 		openInstalledModsFolder: "Mods installés",
 		openGameDataFolder: "Données d'application",
 		openGameWinePrefixFolder: "Préfixe Wine",
 		openGameWineBinaryFolder: "Binaire Wine",
+
+		dataSection: "Données",
 		removeFromRaiPal: "Retirer de Rai Pal",
 		removeGameConfirmation:
 			"Vous êtes sûr de vouloir retirer ce jeu de Rai Pal ?",
 		refreshGame: "Actualiser le jeu",
-		failedToReadGameInfo:
-			"Impossible de lire certaines informations importantes sur ce jeu. C'est peut-être parce que l'exécutable est protégé. Certains mods risquent de ne pas s'installer.",
-		failedToDetermineEngine:
-			"Impossible de déterminer le moteur de ce jeu. Certains mods risquent de ne pas s'installer.",
-		gameNotInstalledWarning:
-			"Ce jeu n'est pas installé, donc je ne suis pas sûr à 100 % des mods compatibles. Ceux affichés ci-dessous pourraient fonctionner. Si vous installez le jeu, je vous montrerai des informations plus précises.",
+		failedToDetermineEngine: "Impossible de déterminer le moteur de ce jeu.",
 		uninstallAllModsButton: "Désinstaller tous les mods",
 		uninstallAllModsConfirmation:
 			"T'es sûr ? Cela supprimera tous les fichiers dans le dossier des mods de ce jeu. Mais ça ne touchera pas aux fichiers du jeu.",
 
+		installedMods: "Mods installés",
+		availableMods: "Mods disponibles",
+		potentiallyCompatibleMods: "Mods potentiellement compatibles",
+		potentiallyCompatibleModsDescription:
+			"Installez ce jeu pour voir des informations plus détaillées sur les mods compatibles",
 		incompatibleGameModsLabel: "Mods incompatibles",
 
 		incompatibleGameModsDescription:
@@ -126,6 +129,9 @@ export const frFr: Localization = {
 
 		otherThingsDescription:
 			"Ce sont principalement des dépendances et d'autres trucs que vous n'avez généralement pas besoin de toucher directement.",
+
+		noModsForGame:
+			"Rien ! Aucun des mods disponibles n'est utile pour ce jeu. Essayez autre chose.",
 	},
 
 	gameModRow: {
@@ -177,7 +183,8 @@ export const frFr: Localization = {
 		runMod: "Exécuter",
 		openModFolder: "Ouvrir le dossier du mod",
 		updateMod: "Mettre à jour le mod",
-		downloadMod: "Télécharger le mod",
+		downloadMod: "Télécharger",
+		openModSource: "Site web",
 		deleteMod: "Supprimer le mod",
 		deleteModConfirmation:
 			"T'es sûr ? Tous les fichiers dans le dossier du mod seront perdus.",
@@ -188,6 +195,10 @@ export const frFr: Localization = {
 		showGameThumbnails: "Afficher les miniatures des jeux dans la liste",
 		language: "Langue",
 		autoDetectedLanguage: "Détecté automatiquement - {languageName}",
+		colorScheme: "Thème de couleurs",
+		colorSchemeAuto: "Automatique",
+		colorSchemeDark: "Sombre",
+		colorSchemeLight: "Clair",
 		resetRaiPalSettingsButton: "Réinitialiser les paramètres de Rai Pal",
 		resetRaiPalSettingsTooltip:
 			"Réinitialisera les filtres, les dialogues de confirmation, probablement d'autres trucs.",

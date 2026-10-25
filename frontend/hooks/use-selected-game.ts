@@ -3,6 +3,7 @@ import { useAtomValue } from "jotai";
 import { useAppEvent } from "./use-app-event";
 import { gameDataVersionAtom, modsAtom } from "./use-data";
 import { commands, DbGame, GameMod, GameModInfo } from "@api/bindings";
+import { compareReleaseDates } from "../date-formatter";
 
 export type GameModsPart = { mod: GameMod; info: GameModInfo };
 
@@ -52,7 +53,6 @@ export function useSelectedGame() {
 		if (lastDataVersion.current >= dataVersion) return;
 		lastDataVersion.current = dataVersion;
 		if (!selected) return;
-		console.log("selecting guys");
 		commands.setSelectedGame(selected.game.providerId, selected.game.gameId);
 	}, [dataVersion, selected]);
 
@@ -73,15 +73,41 @@ export function useSelectedGame() {
 				} else {
 					compatible.push({ mod, info });
 				}
-			} else {
+			} else if (!mod.hideFromGameModsList) {
 				incompatible.push({ mod, info });
 			}
 		}
 
+		const compatibleFamilies = new Set<string>();
+		for (const { mod } of [...compatible, ...hidden]) {
+			if (mod.family) compatibleFamilies.add(mod.family);
+		}
+
+		compatible.sort((a, b) =>
+			compareReleaseDates(
+				a.mod.download?.releaseDate,
+				b.mod.download?.releaseDate,
+			),
+		);
+		hidden.sort((a, b) =>
+			compareReleaseDates(
+				a.mod.download?.releaseDate,
+				b.mod.download?.releaseDate,
+			),
+		);
+		incompatible.sort((a, b) =>
+			compareReleaseDates(
+				a.mod.download?.releaseDate,
+				b.mod.download?.releaseDate,
+			),
+		);
+
 		return {
 			compatibleMods: compatible,
 			hiddenMods: hidden,
-			incompatibleMods: incompatible,
+			incompatibleMods: incompatible.filter(
+				({ mod }) => !mod.family || !compatibleFamilies.has(mod.family),
+			),
 		};
 	}, [selected, mods]);
 

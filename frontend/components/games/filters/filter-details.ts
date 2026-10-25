@@ -3,7 +3,7 @@ import { LocalizationKey } from "@localizations/localizations";
 
 export type FilterKey = keyof GamesFilter;
 
-type ValueDetails = {
+export type ValueDetails = {
 	noteLocalizationKey?: LocalizationKey<"filterValueNote">;
 	localizationKey?: LocalizationKey<"filterValue">;
 	staticDisplayText?: string;
@@ -71,6 +71,9 @@ export const filterDetails = Object.freeze<{
 	providers: {
 		localizationKey: "provider",
 		valueDetails: {
+			Amazon: {
+				staticDisplayText: "Amazon",
+			},
 			Epic: {
 				staticDisplayText: "Epic",
 			},

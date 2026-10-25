@@ -47,6 +47,7 @@ export const jaJp: Localization = {
 
 	filterMenu: {
 		filters: "フィルター",
+		collapseAll: "すべてのフィルターを折りたたむ",
 		resetButton: "リセット",
 		searchPlaceholder: "検索...",
 	},
@@ -97,25 +98,27 @@ export const jaJp: Localization = {
 		startGameButton: "ゲームを開始",
 		startGameExecutable: "実行ファイルでゲームを開始",
 		startGameViaProvider: "{provider}でゲームを開始",
-		foldersDropdown: "フォルダー",
+		foldersSection: "フォルダー",
 		openGameFilesFolder: "ゲームの場所",
 		openInstalledModsFolder: "導入済みMod",
 		openGameDataFolder: "アプリデータ",
 		openGameWinePrefixFolder: "Wineプレフィックス",
 		openGameWineBinaryFolder: "Wineバイナリ",
+
+		dataSection: "データ",
 		removeFromRaiPal: "Rai Palから削除",
 		removeGameConfirmation: "このゲームをRai Palから削除していい？",
 		refreshGame: "ゲームを更新",
-		failedToReadGameInfo:
-			"このゲームの重要情報がちゃんと読み取れなかった。実行ファイルが保護されてるのかも。一部のModはうまくインストールできないかも。",
-		failedToDetermineEngine:
-			"このゲームのエンジンが特定できなかった。一部のModはうまくインストールできないかも。",
-		gameNotInstalledWarning:
-			"このゲームはインストールされてないから、どのModが対応してるか100%は確信できないんだ。下に出てるModなら動くかも。インストールしたら、もっと正確な情報を出せるよ。",
+		failedToDetermineEngine: "このゲームのエンジンが特定できなかった。",
 		uninstallAllModsButton: "すべてのModをアンインストール",
 		uninstallAllModsConfirmation:
 			"本当に？このゲームのModフォルダー内の全ファイルが消えるよ。でもゲーム本体のファイルは消さないからね。",
 
+		installedMods: "導入済みMod",
+		availableMods: "利用可能なMod",
+		potentiallyCompatibleMods: "互換性があるかもしれないMod",
+		potentiallyCompatibleModsDescription:
+			"このゲームをインストールすると、どのModに互換性があるか詳しくわかるよ",
 		incompatibleGameModsLabel: "非対応Mod",
 
 		incompatibleGameModsDescription:
@@ -125,6 +128,9 @@ export const jaJp: Localization = {
 
 		otherThingsDescription:
 			"これらは主に依存関係とかで、普段は直接いじる必要はないよ。",
+
+		noModsForGame:
+			"何もないよ！このゲームに使えるModは一つもないから、別のを試してみて。",
 	},
 
 	gameModRow: {
@@ -175,7 +181,8 @@ export const jaJp: Localization = {
 		runMod: "実行",
 		openModFolder: "Modフォルダーを開く",
 		updateMod: "Modを更新",
-		downloadMod: "Modをダウンロード",
+		downloadMod: "ダウンロード",
+		openModSource: "ウェブサイト",
 		deleteMod: "Modを削除",
 		deleteModConfirmation:
 			"本当に？Modフォルダーの中のファイルが全部消えちゃうよ。",
@@ -186,6 +193,10 @@ export const jaJp: Localization = {
 		showGameThumbnails: "リストにゲームのサムネイルを表示",
 		language: "言語",
 		autoDetectedLanguage: "自動検出 - {languageName}",
+		colorScheme: "カラースキーム",
+		colorSchemeAuto: "自動",
+		colorSchemeDark: "ダーク",
+		colorSchemeLight: "ライト",
 		resetRaiPalSettingsButton: "Rai Palの設定をリセット",
 		resetRaiPalSettingsTooltip:
 			"フィルターや確認ダイアログ、あと多分その他の設定もリセットされるよ。",

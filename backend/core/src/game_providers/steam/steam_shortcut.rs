@@ -1,6 +1,6 @@
+use fs_err as fs;
 use std::{
 	cmp::Reverse,
-	fs,
 	path::{Path, PathBuf},
 	time::SystemTime,
 };
@@ -8,7 +8,7 @@ use std::{
 use crate::{
 	game_providers::steam::steam_dir::find_steam_dir,
 	path_extensions::{AsValidStr, PathExt},
-	result::{Error, LogErrExt, Result},
+	result::{ContextResult, Error, LogErrExt, Result},
 };
 
 const RAI_PAL_SHORTCUT_NAME: &str = "Rai Pal";
@@ -87,7 +87,12 @@ fn add_shortcut_to_path(
 		new_shortcuts_file_bytes()
 	};
 
-	let (mut max_index, entries) = parse_shortcuts_file(&shortcuts_bytes)?;
+	let (mut max_index, entries) = parse_shortcuts_file(&shortcuts_bytes).with_context(|| {
+		format!(
+			"failed to parse Steam shortcuts file `{}`",
+			shortcuts_path.display()
+		)
+	})?;
 
 	let matching_entries: Vec<_> = entries
 		.iter()
@@ -192,9 +197,7 @@ fn get_target_shortcuts_paths(steam_path: &Path) -> Result<Vec<PathBuf>> {
 			}
 
 			let shortcuts_path = path.join("config/shortcuts.vdf");
-			let sort_time = path
-				.join("config/localconfig.vdf")
-				.metadata()
+			let sort_time = fs::metadata(path.join("config/localconfig.vdf"))
 				.and_then(|m| m.modified())
 				.unwrap_or_else(|error| {
 					log::warn!(

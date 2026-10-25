@@ -1,19 +1,5 @@
-import {
-	Table,
-	ThemeIcon,
-	ButtonGroup,
-	Group,
-	Stack,
-	Tooltip,
-	Badge,
-} from "@mantine/core";
-import {
-	DbGame,
-	GameMod,
-	GameModInfo,
-	RemoteConfigs,
-	commands,
-} from "@api/bindings";
+import { Table, ThemeIcon, ButtonGroup, Group, Tooltip } from "@mantine/core";
+import { DbGame, GameMod, GameModInfo, commands } from "@api/bindings";
 import { CommandButton } from "@components/command-button";
 import {
 	IconCheck,
@@ -21,25 +7,24 @@ import {
 	IconDownload,
 	IconFolderOpen,
 	IconMinus,
-	IconRefreshAlert,
 	IconSettings,
 	IconSettingsFilled,
 } from "@tabler/icons-react";
 import { OutdatedMarker } from "@components/outdated-marker";
-import { MutedText } from "@components/muted-text";
 import { CommandDropdown } from "@components/command-dropdown";
-import { DeprecatedBadge } from "@components/mods/deprecated-badge";
+import { ModDetails } from "@components/mods/mod-details";
 import { useLocalization } from "@hooks/use-localization";
 import { GameModInstallButton } from "./game-mod-install-button";
 import { GameModRunButton } from "./game-mod-run-button";
 import { GameModUpdateButton } from "./game-mod-update-button";
 import { GameModUninstallButton } from "./game-mod-uninstall-button";
+import { GameModReinstallButton } from "./game-mod-reinstall-button";
 
 type Props = {
 	readonly game: DbGame;
 	readonly mod: GameMod;
-	readonly remoteConfigs?: RemoteConfigs | null;
 	readonly info?: GameModInfo;
+	readonly hasRemoteConfig?: boolean;
 	readonly incompatible?: boolean;
 };
 
@@ -47,14 +32,10 @@ export function GameModRow({
 	game,
 	mod,
 	info,
-	remoteConfigs,
+	hasRemoteConfig = false,
 	incompatible = false,
 }: Props) {
 	const { t } = useLocalization("gameModRow");
-
-	const availableRemoteConfig = remoteConfigs?.configs.find(
-		(config) => config.modId === (mod.config?.modIdOverride ?? mod.id),
-	);
 
 	const isOutdated = info?.isOutdated;
 
@@ -79,50 +60,46 @@ export function GameModRow({
 
 	const isModUsable = !incompatible && game.exePath;
 
+	const dropdownActions = {
+		editConfig: isInstalled && Boolean(mod.config || hasRemoteConfig),
+		openModFolder: isInstalled,
+		downloadConfig: isInstalled && hasRemoteConfig,
+		reinstall: isInstalled && Boolean(mod.install),
+		uninstall: isInstalled && Boolean(mod.install),
+	};
+	const hasDropdownActions = Object.values(dropdownActions).some(Boolean);
+
+	const versionText = [
+		info?.installedVersion || mod.download?.id,
+		isOutdated ? mod.download?.id : null,
+	]
+		.filter(Boolean)
+		.join(" ➔ ");
+
 	return (
 		<Table.Tr key={mod.id}>
-			<Table.Td ta="left">
-				<Group>
-					{isModUsable && (
-						<ThemeIcon
-							color={statusColor}
-							size="sm"
-						>
-							{statusIcon}
-						</ThemeIcon>
-					)}
-					{mod.title}
-					<Tooltip
-						disabled={!isOutdated}
-						label={t("modOutdated")}
-					>
-						<Stack
-							gap={5}
-							align="center"
-						>
-							<Badge
-								color={isOutdated ? "orange" : isInstalled ? "green" : "gray"}
-								maw={150}
-								leftSection={isOutdated && <IconRefreshAlert fontSize={15} />}
+			<Table.Td>
+				<ModDetails
+					mod={mod}
+					versionText={versionText}
+					leading={
+						isModUsable ? (
+							<ThemeIcon
+								color={statusColor}
+								size="sm"
 							>
-								{
-									(info?.installedVersion || mod.download?.id || "-").split(
-										"/",
-									)[0]
-								}
-							</Badge>
-						</Stack>
-					</Tooltip>
-					{availableRemoteConfig && (
-						<Tooltip label={t("remoteConfigAvailable")}>
-							<IconSettingsFilled fontSize="15" />
-						</Tooltip>
-					)}
-				</Group>
-				<Stack gap={0}>
-					{mod?.deprecated && <DeprecatedBadge mt={5} />}
-					{mod?.description && <MutedText>{mod.description}</MutedText>}
-				</Stack>
+								{statusIcon}
+							</ThemeIcon>
+						) : undefined
+					}
+					titleAdornment={
+						hasRemoteConfig ? (
+							<Tooltip label={t("remoteConfigAvailable")}>
+								<IconSettingsFilled fontSize={15} />
+							</Tooltip>
+						) : undefined
+					}
+				/>
 			</Table.Td>
 			<Table.Td maw={200}>
 				<Group justify="right">
@@ -132,21 +109,12 @@ export function GameModRow({
 								<GameModInstallButton
 									game={game}
 									mod={mod}
-									remoteConfigFile={availableRemoteConfig?.file}
-								/>
-							)}
-							{isInstalled && mod.install && (
-								<GameModUninstallButton
-									game={game}
-									mod={mod}
-									modInfo={info}
 								/>
 							)}
 							{isOutdated && (
 								<GameModUpdateButton
 									game={game}
 									mod={mod}
-									remoteConfigFile={availableRemoteConfig?.file}
 								/>
 							)}
 							{mod.runForGame && (!mod.install || isInstalled) && (
@@ -155,75 +123,86 @@ export function GameModRow({
 									mod={mod}
 								/>
 							)}
-							<CommandDropdown icon={<IconDotsVertical />}>
-								{(mod.config || availableRemoteConfig) && (
-									<ButtonGroup>
-										<CommandButton
-											flex={1}
-											disabled={!isInstalled}
-											onClick={() =>
-												commands.configureMod(
-													game.providerId,
-													game.gameId,
-													mod.id,
-													false,
-												)
-											}
-											leftSection={<IconSettings />}
-										>
-											{t("editModConfig")}
-										</CommandButton>
-										<Tooltip
-											label={t("openModConfigFolderTooltip")}
-											position="top-end"
-										>
+							{hasDropdownActions && (
+								<CommandDropdown icon={<IconDotsVertical />}>
+									{dropdownActions.editConfig && (
+										<ButtonGroup>
 											<CommandButton
-												disabled={!isInstalled}
+												flex={1}
 												onClick={() =>
 													commands.configureMod(
 														game.providerId,
 														game.gameId,
 														mod.id,
-														true,
+														false,
 													)
 												}
+												leftSection={<IconSettings />}
 											>
-												<IconFolderOpen />
+												{t("editModConfig")}
 											</CommandButton>
-										</Tooltip>
-									</ButtonGroup>
-								)}
-								<CommandButton
-									disabled={!isInstalled}
-									onClick={() =>
-										commands.openInstalledModFolder(
-											game.providerId,
-											game.gameId,
-											mod.id,
-										)
-									}
-									leftSection={<IconFolderOpen />}
-								>
-									{t("openModFolder")}
-								</CommandButton>
-								{availableRemoteConfig && (
-									<CommandButton
-										disabled={!isInstalled}
-										leftSection={<IconDownload />}
-										onClick={() =>
-											commands.downloadRemoteConfig(
-												game.providerId,
-												game.gameId,
-												mod.id,
-												availableRemoteConfig.file,
-												true,
-											)
-										}
-									>
-										{t("downloadRemoteConfig")}
-									</CommandButton>
-								)}
-							</CommandDropdown>
+											<Tooltip
+												label={t("openModConfigFolderTooltip")}
+												position="top-end"
+											>
+												<CommandButton
+													onClick={() =>
+														commands.configureMod(
+															game.providerId,
+															game.gameId,
+															mod.id,
+															true,
+														)
+													}
+												>
+													<IconFolderOpen />
+												</CommandButton>
+											</Tooltip>
+										</ButtonGroup>
+									)}
+									{dropdownActions.openModFolder && (
+										<CommandButton
+											onClick={() =>
+												commands.openInstalledModFolder(
+													game.providerId,
+													game.gameId,
+													mod.id,
+												)
+											}
+											leftSection={<IconFolderOpen />}
+										>
+											{t("openModFolder")}
+										</CommandButton>
+									)}
+									{dropdownActions.downloadConfig && (
+										<CommandButton
+											leftSection={<IconDownload />}
+											onClick={() =>
+												commands.downloadModConfig(
+													game.providerId,
+													game.gameId,
+													mod.id,
+												)
+											}
+										>
+											{t("downloadRemoteConfig")}
+										</CommandButton>
+									)}
+									{dropdownActions.reinstall && (
+										<GameModReinstallButton
+											game={game}
+											mod={mod}
+										/>
+									)}
+									{dropdownActions.uninstall && (
+										<GameModUninstallButton
+											game={game}
+											mod={mod}
+											modInfo={info}
+										/>
+									)}
+								</CommandDropdown>
+							)}
 						</ButtonGroup>
 					)}
 				</Group>

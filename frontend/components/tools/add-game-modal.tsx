@@ -13,6 +13,7 @@ import {
 	Divider,
 	Group,
 	Modal,
+	ScrollArea,
 	Stack,
 	Text,
 } from "@mantine/core";
@@ -216,12 +217,14 @@ export function AddGameModal(props: Props) {
 							{t("cancel")}
 						</Button>
 						{scanProgress && (
-							<Code
-								style={{ overflowX: "scroll" }}
+							<ScrollArea
 								w="100%"
+								scrollbars="x"
 							>
-								<pre>{scanProgress.currentPath}</pre>
-							</Code>
+								<Code>
+									<pre>{scanProgress.currentPath}</pre>
+								</Code>
+							</ScrollArea>
 						)}
 					</Stack>
 				)}

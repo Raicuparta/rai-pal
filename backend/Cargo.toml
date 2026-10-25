@@ -3,22 +3,23 @@ members = ["proc-macros", "core", "tauri-app", "slint-app"]
 resolver = "2"
 
 [workspace.package]
-version = "0.23.0"
+version = "0.24.0"
 authors = ["Raicuparta"]
 license = "GPL-3.0-or-later"
 repository = "https://github.com/Raicuparta/rai-pal"
 edition = "2024"
 
 [workspace.dependencies]
-log = "0.4.29"
+log = "0.4.34"
 rai-pal-core = { path = "./core" }
 rai-pal-proc-macros = { path = "./proc-macros" }
-serde = { version = "1.0.228", features = ["derive"] }
-serde_json = "1.0.150"
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.154"
+fs-err = { version = "3.3.2", features = ["tokio"] }
 specta = "2.0.0-rc.24"
 tauri-specta = { version = "2.0.0-rc.24", features = ["derive", "typescript"] }
-thiserror = "2.0.18"
-rusqlite = { version = "0.40.1", features = ["bundled", "hooks"] }
+thiserror = "2.0.21"
+rusqlite = { version = "0.40.2", features = ["bundled", "hooks"] }
 strum = { version = "0.28.0", features = ["derive"] }
 urlencoding = "2.1"
 
@@ -44,6 +45,8 @@ pedantic = { level = "warn", priority = -1 }
 cargo = { level = "warn", priority = -1 }
 
 # Specific lints to override. Priority defaults to 0.
+disallowed_methods = "warn"
+disallowed_types = "warn"
 too_many_lines = "allow"
 must_use_candidate = "allow"
 missing_errors_doc = "allow"
@@ -66,3 +69,8 @@ expect_used = "warn"
 shadow_unrelated = "warn"
 unwrap_used = "warn"
 verbose_file_reads = "warn"
+
+# TODO: Update these properly once they're live.
+[patch.crates-io]
+tauri-plugin-deep-link = { git = "https://github.com/tauri-apps/plugins-workspace", rev = "463977675da7bbb257dee59669b5e122c8d681db" }
+zip = { git = "https://github.com/zip-rs/zip2", tag = "v4.6.1" }

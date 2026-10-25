@@ -28,6 +28,3 @@ pub mod result;
 pub mod user;
 pub mod windows;
 pub mod wine;
-
-#[cfg(test)]
-mod tests;

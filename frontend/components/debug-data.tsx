@@ -13,21 +13,27 @@ import { IconBug, IconCheck, IconCopy } from "@tabler/icons-react";
 
 type Props<TData> = {
 	readonly data: TData;
+	readonly hideLabel?: boolean;
 };
 
-export function DebugData<TData>({ data }: Props<TData>) {
+export function DebugData<TData>({ data, hideLabel }: Props<TData>) {
 	const { t } = useLocalization("debugData");
 	const debugText = JSON.stringify(data, null, 2) ?? "";
 	const [opened, { open, close }] = useDisclosure(false);
 
 	return (
 		<>
-			<Button
-				leftSection={<IconBug />}
-				onClick={open}
+			<Tooltip
+				disabled={!hideLabel}
+				label={t("debugDataTitle")}
 			>
-				{t("debugDataTitle")}
-			</Button>
+				<Button
+					leftSection={!hideLabel && <IconBug />}
+					onClick={open}
+				>
+					{hideLabel ? <IconBug fontSize={15} /> : t("debugDataTitle")}
+				</Button>
+			</Tooltip>
 			<Modal
 				size="100%"
 				opened={opened}

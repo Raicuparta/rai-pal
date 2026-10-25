@@ -1,8 +1,10 @@
 div.table {
 	padding: 0;
 	flex: 1;
+	min-height: 0;
+	display: flex;
+	flex-direction: column;
 	user-select: none;
-	background-color: var(--mantine-color-dark-6);
 
 	code {
 		font-size: 0.8em;
@@ -14,18 +16,11 @@ div.table {
 		}
 	}
 
-	tr {
-		border-bottom: 2px solid var(--mantine-color-dark-7);
-	}
-
 	table {
 		table-layout: fixed;
 	}
 
 	tbody {
-		tr {
-			background-color: var(--mantine-color-dark-6);
-		}
 		tr,
 		td {
 			/* Needs to be consistent with height set in game-row.tsx ugh. TODO: fix that. */

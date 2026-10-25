@@ -1,0 +1,19 @@
+{
+	"$schema": "./node_modules/oxlint/configuration_schema.json",
+	"plugins": ["react", "typescript", "unicorn"],
+	"categories": {
+		"correctness": "error"
+	},
+	"ignorePatterns": [
+		"frontend/api/**",
+		"backend/**",
+		"dist/**",
+		"dist-ssr/**",
+		"target/**"
+	],
+	"rules": {
+		"react/jsx-curly-brace-presence": "warn",
+		"react/only-export-components": "error",
+		"typescript/prefer-readonly-parameter-types": "warn"
+	}
+}

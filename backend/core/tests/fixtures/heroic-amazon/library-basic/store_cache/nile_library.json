@@ -1,0 +1,1111 @@
+{
+	"library": [
+		{
+			"app_name": "amzn1.adg.product.deb00d63-00c9-4d80-ae82-2675d328ff07",
+			"art_cover": "https://m.media-amazon.com/images/I/81s7PgX60OL.jpg",
+			"art_logo": "https://m.media-amazon.com/images/I/51SrUewzVKL.png",
+			"art_background": "https://m.media-amazon.com/images/I/91yoJ4OXlmL.jpg",
+			"art_square": "https://m.media-amazon.com/images/I/814LNgAsCQL.jpg",
+			"canRunOffline": true,
+			"install": {},
+			"folder_name": "Puzzle Agent 2",
+			"is_installed": false,
+			"runner": "nile",
+			"title": "Puzzle Agent 2",
+			"developer": "Telltale Games",
+			"extra": {
+				"reqs": [],
+				"genres": [
+					"Point-and-click",
+					"Puzzle",
+					"Adventure"
+				],
+				"releaseDate": "2011-06-30T00:00:00Z"
+			},
+			"is_linux_native": false,
+			"is_mac_native": false
+		},
+		{
+			"app_name": "amzn1.adg.product.1f9ca5dd-6835-40ee-8ab8-946ebd636caa",
+			"art_cover": "https://m.media-amazon.com/images/I/91WyxFA3xnL.jpg",
+			"art_logo": "https://m.media-amazon.com/images/I/61fSnWDOuFL.png",
+			"art_background": "https://m.media-amazon.com/images/I/A1zHtqDXXPL.jpg",
+			"art_square": "https://m.media-amazon.com/images/I/91rE41imgsL.jpg",
+			"canRunOffline": true,
+			"install": {},
+			"folder_name": "Rogue Heroes Ruins of Tasos",
+			"is_installed": false,
+			"runner": "nile",
+			"title": "Rogue Heroes: Ruins of Tasos",
+			"developer": "Heliocentric Studios",
+			"extra": {
+				"reqs": [],
+				"genres": [
+					"Role-playing (RPG)",
+					"Adventure",
+					"Indie"
+				],
+				"releaseDate": "2021-02-22T16:00:00Z"
+			},
+			"is_linux_native": false,
+			"is_mac_native": false
+		},
+		{
+			"app_name": "amzn1.adg.product.9309e573-f790-4f1a-a285-d821cb7cf583",
+			"art_cover": "https://m.media-amazon.com/images/I/81HS69LgcCL.jpg",
+			"art_logo": "https://m.media-amazon.com/images/I/41KhphtihbL.png",
+			"art_background": "https://m.media-amazon.com/images/I/91rHcJGq4GL.jpg",
+			"art_square": "https://m.media-amazon.com/images/I/91Col8bketL.jpg",
+			"canRunOffline": true,
+			"install": {},
+			"folder_name": "Secret Files Sam Peters",
+			"is_installed": false,
+			"runner": "nile",
+			"title": "Secret Files: Sam Peters",
+			"developer": "Animation Arts",
+			"extra": {
+				"reqs": [],
+				"genres": [
+					"Point-and-click",
+					"Puzzle",
+					"Adventure"
+				],
+				"releaseDate": "2013-09-05T00:00:00Z"
+			},
+			"is_linux_native": false,
+			"is_mac_native": false
+		},
+		{
+			"app_name": "amzn1.adg.product.23434d56-fe28-4ba1-ba71-e04c90abbb96",
+			"art_cover": "https://m.media-amazon.com/images/I/81cN-NP9x7L.jpg",
+			"art_logo": "https://m.media-amazon.com/images/I/61sb+yyzyZL.png",
+			"art_background": "https://m.media-amazon.com/images/I/91SJ42XTizL.jpg",
+			"art_square": "https://m.media-amazon.com/images/I/81GT-c9tytL.jpg",
+			"canRunOffline": true,
+			"install": {},
+			"folder_name": "BAFL - Brakes Are For Losers",
+			"is_installed": false,
+			"runner": "nile",
+			"title": "BAFL - Brakes Are For Losers",
+			"developer": "Oudidon",
+			"extra": {
+				"reqs": [],
+				"genres": [
+					"Racing",
+					"Arcade",
+					"Card & Board Game"
+				],
+				"releaseDate": "2017-10-17T17:00:00Z"
+			},
+			"is_linux_native": false,
+			"is_mac_native": false
+		},
+		{
+			"app_name": "amzn1.adg.product.e75a0723-ff30-4fb7-bc0c-edc573d99cd1",
+			"art_cover": "https://m.media-amazon.com/images/I/81s3xHIOB4L.jpg",
+			"art_logo": "https://m.media-amazon.com/images/I/51rRjXca8pL.png",
+			"art_background": "https://m.media-amazon.com/images/I/A1t56J2SSLL.jpg",
+			"art_square": "https://m.media-amazon.com/images/I/912Eb7CAWlL.jpg",
+			"canRunOffline": true,
+			"install": {
+				"install_path": "/mnt/big_nvme/Games/Liberated/Liberated",
+				"install_size": "3.67 GiB",
+				"version": "877da3ce-20c2-4dfc-87bd-49f271a25781",
+				"platform": "Windows"
+			},
+			"folder_name": "Liberated",
+			"is_installed": true,
+			"runner": "nile",
+			"title": "Liberated",
+			"developer": "Atomic Wolf",
+			"extra": {
+				"reqs": [],
+				"genres": [
+					"Platform",
+					"Role-playing (RPG)",
+					"Adventure"
+				],
+				"releaseDate": "2020-07-29T17:00:00Z"
+			},
+			"is_linux_native": false,
+			"is_mac_native": false
+		},
+		{
+			"app_name": "amzn1.adg.product.24a8c798-49fa-4cc0-9505-112d8be51faa",
+			"art_cover": "https://m.media-amazon.com/images/I/81Yt+JQwY9L.jpg",
+			"art_logo": "https://m.media-amazon.com/images/I/61AwHlpUxsL.png",
+			"art_background": "https://m.media-amazon.com/images/I/91L74zdua4L.jpg",
+			"art_square": "https://m.media-amazon.com/images/I/81Dy8vkszcL.jpg",
+			"canRunOffline": true,
+			"install": {},
+			"folder_name": "Demon Hunter 2 New Chapter",
+			"is_installed": false,
+			"runner": "nile",
+			"title": "Demon Hunter 2: New Chapter",
+			"developer": "Brave Giant LTD",
+			"extra": {
+				"reqs": [],
+				"genres": [
+					"Puzzle",
+					"Adventure"
+				],
+				"releaseDate": "2016-07-21T00:00:00Z"
+			},
+			"is_linux_native": false,
+			"is_mac_native": false
+		},
+		{
+			"app_name": "amzn1.adg.product.6f7b2156-b0d8-460a-b25e-617077be4961",
+			"art_cover": "https://m.media-amazon.com/images/I/81C0Ro4pLhL.jpg",
+			"art_logo": "https://m.media-amazon.com/images/I/61s1dKZGiNL.png",
+			"art_background": "https://m.media-amazon.com/images/I/91-esVHdnoL.jpg",
+			"art_square": "https://m.media-amazon.com/images/I/814z3Ip7KGL.jpg",
+			"canRunOffline": true,
+			"install": {},
+			"folder_name": "Abandon Ship",
+			"is_installed": false,
+			"runner": "nile",
+			"title": "Abandon Ship",
+			"developer": "Fireblade Software",
+			"extra": {
+				"reqs": [],
+				"genres": [
+					"Role-playing (RPG)",
+					"Strategy",
+					"Tactical"
+				],
+				"releaseDate": "2019-10-22T00:00:00Z"
+			},
+			"is_linux_native": false,
+			"is_mac_native": false
+		},
+		{
+			"app_name": "amzn1.adg.product.d81c669c-346c-4490-8abf-d1cffa7bc876",
+			"art_cover": "https://m.media-amazon.com/images/I/81ZiRyZLusL.jpg",
+			"art_logo": "https://m.media-amazon.com/images/I/31Nbvdf-jXL.png",
+			"art_background": "https://m.media-amazon.com/images/I/91JL3-QzOoL.jpg",
+			"art_square": "https://m.media-amazon.com/images/I/81PxjbsHtjL.jpg",
+			"canRunOffline": true,
+			"install": {},
+			"folder_name": "WRC 7 FIA World Rally Championship",
+			"is_installed": false,
+			"runner": "nile",
+			"title": "WRC 7 FIA World Rally Championship",
+			"developer": "Kylotonn Games",
+			"extra": {
+				"reqs": [],
+				"genres": [
+					"Racing",
+					"Sport"
+				],
+				"releaseDate": "2017-09-15T00:00:00Z"
+			},
+			"is_linux_native": false,
+			"is_mac_native": false
+		},
+		{
+			"app_name": "amzn1.adg.product.d14f6257-7fa1-4887-a09a-666a6f051a6f",
+			"art_cover": "https://m.media-amazon.com/images/I/81fKuc-ZgDL.jpg",
+			"art_logo": "https://m.media-amazon.com/images/I/51Utvu2Xc-L.png",
+			"art_background": "https://m.media-amazon.com/images/I/91gewdXoUFL.jpg",
+			"art_square": "https://m.media-amazon.com/images/I/815eJcvCmwL.jpg",
+			"canRunOffline": true,
+			"install": {},
+			"folder_name": "Two Point Hospital",
+			"is_installed": false,
+			"runner": "nile",
+			"title": "Two Point Hospital",
+			"developer": "Two Point Studios",
+			"extra": {
+				"reqs": [],
+				"genres": [
+					"Simulator",
+					"Strategy",
+					"Indie"
+				],
+				"releaseDate": "2018-08-30T00:00:00Z"
+			},
+			"is_linux_native": false,
+			"is_mac_native": false
+		},
+		{
+			"app_name": "amzn1.adg.product.5a2dea57-7759-4312-8cd4-986ac1c46a45",
+			"art_cover": "https://m.media-amazon.com/images/I/81MYPuPBeeL.jpg",
+			"art_logo": "https://m.media-amazon.com/images/I/31svOVt1SgL.png",
+			"art_background": "https://m.media-amazon.com/images/I/91aHGmcyVoL.jpg",
+			"art_square": "https://m.media-amazon.com/images/I/81YepYWWGKL.jpg",
+			"canRunOffline": true,
+			"install": {},
+			"folder_name": "In Other Waters",
+			"is_installed": false,
+			"runner": "nile",
+			"title": "In Other Waters",
+			"developer": "Fellow Traveler",
+			"extra": {
+				"reqs": [],
+				"genres": [
+					"Puzzle",
+					"Simulator",
+					"Adventure"
+				],
+				"releaseDate": "2020-04-03T00:00:00Z"
+			},
+			"is_linux_native": false,
+			"is_mac_native": false
+		},
+		{
+			"app_name": "amzn1.adg.product.fb6747d7-7f88-49d8-bad4-3fc662531048",
+			"art_cover": "https://m.media-amazon.com/images/I/81vDSukJprL.jpg",
+			"art_logo": "https://m.media-amazon.com/images/I/61ruLmygVWL.png",
+			"art_background": "https://m.media-amazon.com/images/I/91kUqoyJqcL.jpg",
+			"art_square": "https://m.media-amazon.com/images/I/81R1HyoTVnL.jpg",
+			"canRunOffline": true,
+			"install": {},
+			"folder_name": "Paper Beast - Folded Edition",
+			"is_installed": false,
+			"runner": "nile",
+			"title": "Paper Beast - Folded Edition",
+			"developer": "Pixel Reef",
+			"extra": {
+				"reqs": [],
+				"genres": [
+					"Puzzle",
+					"Simulator",
+					"Adventure"
+				],
+				"releaseDate": "2020-10-19T17:00:00Z"
+			},
+			"is_linux_native": false,
+			"is_mac_native": false
+		},
+		{
+			"app_name": "amzn1.adg.product.6ed13be7-1d52-42b0-af03-9f487492ae93",
+			"art_cover": "https://m.media-amazon.com/images/I/8199xZUXqLL.jpg",
+			"art_logo": "https://m.media-amazon.com/images/I/51KA7t2t7ZL.png",
+			"art_background": "https://m.media-amazon.com/images/I/A1g8gEHyEAL.jpg",
+			"art_square": "https://m.media-amazon.com/images/I/81JT0OM1onL.jpg",
+			"canRunOffline": true,
+			"install": {},
+			"folder_name": "Fahrenheit Indigo Prophecy Remastered",
+			"is_installed": false,
+			"runner": "nile",
+			"title": "Fahrenheit: Indigo Prophecy Remastered",
+			"developer": "Quantic Dream",
+			"extra": {
+				"reqs": [],
+				"genres": [
+					"Role-playing (RPG)",
+					"Adventure"
+				],
+				"releaseDate": "2015-01-29T00:00:00Z"
+			},
+			"is_linux_native": false,
+			"is_mac_native": false
+		},
+		{
+			"app_name": "amzn1.adg.product.2e2c1fd6-26b3-43ae-a327-868104772841",
+			"art_cover": "https://m.media-amazon.com/images/I/81zRBsamECL.jpg",
+			"art_logo": "https://m.media-amazon.com/images/I/61Fk8GWlgWL.png",
+			"art_background": "https://m.media-amazon.com/images/I/914YXUSmK3L.jpg",
+			"art_square": "https://m.media-amazon.com/images/I/81N9psJfG8L.jpg",
+			"canRunOffline": true,
+			"install": {},
+			"folder_name": "Calico",
+			"is_installed": false,
+			"runner": "nile",
+			"title": "Calico",
+			"developer": "Peachy Keen Games",
+			"extra": {
+				"reqs": [],
+				"genres": [
+					"Role-playing (RPG)",
+					"Simulator",
+					"Adventure"
+				],
+				"releaseDate": "2020-12-15T00:00:00Z"
+			},
+			"is_linux_native": false,
+			"is_mac_native": false
+		},
+		{
+			"app_name": "amzn1.adg.product.bd27e9f5-7d23-4b4c-ab7c-f3103d1c1b5f",
+			"art_cover": "https://m.media-amazon.com/images/I/81Y+MoP-3qL.jpg",
+			"art_logo": "https://m.media-amazon.com/images/I/51BFZgmbZZL.png",
+			"art_background": "https://m.media-amazon.com/images/I/91vdBMd8TnL.jpg",
+			"art_square": "https://m.media-amazon.com/images/I/81heduAVrBL.jpg",
+			"canRunOffline": true,
+			"install": {},
+			"folder_name": "Astrologaster",
+			"is_installed": false,
+			"runner": "nile",
+			"title": "Astrologaster",
+			"developer": "Nyamyam",
+			"extra": {
+				"reqs": [],
+				"genres": [
+					"Strategy",
+					"Adventure",
+					"Indie"
+				],
+				"releaseDate": "2019-05-09T00:00:00Z"
+			},
+			"is_linux_native": false,
+			"is_mac_native": false
+		},
+		{
+			"app_name": "amzn1.adg.product.27f032e9-7a2c-4c0c-a30b-5a5d4b736701",
+			"art_cover": "https://m.media-amazon.com/images/I/81iYrz0aMGL.jpg",
+			"art_logo": "https://m.media-amazon.com/images/I/41gR5fPiCoL.png",
+			"art_background": "https://m.media-amazon.com/images/I/A11anpWe0BL.jpg",
+			"art_square": "https://m.media-amazon.com/images/I/81cV34kTkVL.jpg",
+			"canRunOffline": true,
+			"install": {},
+			"folder_name": "Across the Grooves",
+			"is_installed": false,
+			"runner": "nile",
+			"title": "Across the Grooves",
+			"developer": "Nova-Box",
+			"extra": {
+				"reqs": [],
+				"genres": [
+					"Adventure",
+					"Indie",
+					"Visual Novel"
+				],
+				"releaseDate": "2020-06-17T00:00:00Z"
+			},
+			"is_linux_native": false,
+			"is_mac_native": false
+		},
+		{
+			"app_name": "amzn1.adg.product.2cbd524e-6778-4f53-b367-b3255aca792c",
+			"art_cover": "https://m.media-amazon.com/images/I/91TP05oeZJL.jpg",
+			"art_logo": "https://m.media-amazon.com/images/I/61h0W24nQoL.png",
+			"art_background": "https://m.media-amazon.com/images/I/91-biw68mLL.jpg",
+			"art_square": "https://m.media-amazon.com/images/I/91kC79nM5-L.jpg",
+			"canRunOffline": true,
+			"install": {},
+			"folder_name": "Clouds  Sheep 2",
+			"is_installed": false,
+			"runner": "nile",
+			"title": "Clouds & Sheep 2",
+			"description": "The cute sheep are finally on the loose again.",
+			"developer": "HandyGames",
+			"extra": {
+				"reqs": [],
+				"genres": [
+					"Simulator",
+					"Adventure"
+				],
+				"releaseDate": "2016-10-24T00:00:00Z"
+			},
+			"is_linux_native": false,
+			"is_mac_native": false
+		},
+		{
+			"app_name": "amzn1.adg.product.8d752461-4a70-4f1c-9bd5-d320afa9c9f1",
+			"art_cover": "https://m.media-amazon.com/images/I/81I4XKNmf-L.jpg",
+			"art_logo": "https://m.media-amazon.com/images/I/41uMusU5EsL.png",
+			"art_background": "https://m.media-amazon.com/images/I/71C4huHvX1L.jpg",
+			"art_square": "https://m.media-amazon.com/images/I/81kjvxfVRBL.jpg",
+			"canRunOffline": true,
+			"install": {},
+			"folder_name": "The Darkside Detective A Fumble in the Dark",
+			"is_installed": false,
+			"runner": "nile",
+			"title": "The Darkside Detective: A Fumble in the Dark",
+			"developer": "Spooky Doorway",
+			"extra": {
+				"reqs": [],
+				"genres": [
+					"Point-and-click",
+					"Puzzle",
+					"Adventure"
+				],
+				"releaseDate": "2021-04-15T00:00:00Z"
+			},
+			"is_linux_native": false,
+			"is_mac_native": false
+		},
+		{
+			"app_name": "9242e234-46a5-4b48-b67c-3795b4c30067",
+			"art_cover": "https://m.media-amazon.com/images/I/511jled5v7L.jpg",
+			"art_logo": "https://m.media-amazon.com/images/I/11iFfgMh7zL.png",
+			"art_background": "https://m.media-amazon.com/images/I/51JEIO6gqpL.jpg",
+			"art_square": "https://m.media-amazon.com/images/I/812waawRGeL.jpg",
+			"canRunOffline": true,
+			"install": {},
+			"folder_name": "The Darkside Detective",
+			"is_installed": false,
+			"runner": "nile",
+			"title": "The Darkside Detective",
+			"description": "New game each week with Prime",
+			"developer": "Spooky Doorway",
+			"extra": {
+				"reqs": [],
+				"genres": [
+					"Point-and-click",
+					"Puzzle",
+					"Adventure"
+				],
+				"releaseDate": "2017-07-27T00:00:00Z"
+			},
+			"is_linux_native": false,
+			"is_mac_native": false
+		},
+		{
+			"app_name": "amzn1.adg.product.0dfe3eaa-1825-4500-9b1e-92536545fd51",
+			"art_cover": "https://m.media-amazon.com/images/I/814RtHTqWyL.jpg",
+			"art_logo": "https://m.media-amazon.com/images/I/41Gs8lJRdhL.png",
+			"art_background": "https://m.media-amazon.com/images/I/61g+CenPjgL.jpg",
+			"art_square": "https://m.media-amazon.com/images/I/91wOgX8o-7L.jpg",
+			"canRunOffline": true,
+			"install": {},
+			"folder_name": "WRC 8 FIA World Rally Championship",
+			"is_installed": false,
+			"runner": "nile",
+			"title": "WRC 8 FIA World Rally Championship",
+			"developer": "Kylotonn Games",
+			"extra": {
+				"reqs": [],
+				"genres": [
+					"Racing",
+					"Simulator",
+					"Sport"
+				],
+				"releaseDate": "2019-09-15T00:00:00Z"
+			},
+			"is_linux_native": false,
+			"is_mac_native": false
+		},
+		{
+			"app_name": "amzn1.adg.product.c82d2124-433c-4d90-beba-e1ea3f57ffd9",
+			"art_cover": "https://m.media-amazon.com/images/I/81V8u80mDCL.jpg",
+			"art_logo": "https://m.media-amazon.com/images/I/61qXUBEBp7L.png",
+			"art_background": "https://m.media-amazon.com/images/I/91Vc17KuujL.jpg",
+			"art_square": "https://m.media-amazon.com/images/I/81Vuv4VhufL.jpg",
+			"canRunOffline": true,
+			"install": {},
+			"folder_name": "8Doors Arums Afterlife Adventure",
+			"is_installed": false,
+			"runner": "nile",
+			"title": "8Doors: Arum's Afterlife Adventure",
+			"developer": "Rootless Studio",
+			"extra": {
+				"reqs": [],
+				"genres": [
+					"Platform",
+					"Adventure",
+					"Indie"
+				],
+				"releaseDate": "2021-04-08T00:00:00Z"
+			},
+			"is_linux_native": false,
+			"is_mac_native": false
+		},
+		{
+			"app_name": "amzn1.adg.product.8292d474-6625-4bcd-89c0-f7bf1763a69e",
+			"art_cover": "https://m.media-amazon.com/images/I/71tII6DgEyL.jpg",
+			"art_logo": "https://m.media-amazon.com/images/I/51Ex-fL3F8L.png",
+			"art_background": "https://m.media-amazon.com/images/I/61kOSqqqZlL.jpg",
+			"art_square": "https://m.media-amazon.com/images/I/81bAlbDVOvL.jpg",
+			"canRunOffline": true,
+			"install": {},
+			"folder_name": "Rain World",
+			"is_installed": false,
+			"runner": "nile",
+			"title": "Rain World",
+			"developer": "Videocult",
+			"extra": {
+				"reqs": [],
+				"genres": [
+					"Platform",
+					"Adventure",
+					"Indie"
+				],
+				"releaseDate": "2017-03-28T00:00:00Z"
+			},
+			"is_linux_native": false,
+			"is_mac_native": false
+		},
+		{
+			"app_name": "amzn1.adg.product.e13c50c9-d548-4e6f-a85a-7f70308279e8",
+			"art_cover": "https://m.media-amazon.com/images/I/81y8Fas0SIL.jpg",
+			"art_logo": "https://m.media-amazon.com/images/I/51SIO5bkrUL.png",
+			"art_background": "https://m.media-amazon.com/images/I/9105fHqn22L.jpg",
+			"art_square": "https://m.media-amazon.com/images/I/810oypC5wLL.jpg",
+			"canRunOffline": true,
+			"install": {},
+			"folder_name": "Bang Bang Racing",
+			"is_installed": false,
+			"runner": "nile",
+			"title": "Bang Bang Racing",
+			"description": "Drive high-speed, pumped-up racing cars through cones, tires, and exploding barrels.",
+			"developer": "Digital Reality",
+			"extra": {
+				"reqs": [],
+				"genres": [
+					"Racing",
+					"Arcade"
+				],
+				"releaseDate": "2012-06-08T00:00:00Z"
+			},
+			"is_linux_native": false,
+			"is_mac_native": false
+		},
+		{
+			"app_name": "amzn1.adg.product.90683494-2e3f-45c8-91cb-c35d659fad55",
+			"art_cover": "https://m.media-amazon.com/images/I/712LXCPSrWL.jpg",
+			"art_logo": "https://m.media-amazon.com/images/I/61hLFsnXgDL.png",
+			"art_background": "https://m.media-amazon.com/images/I/71zWUmMToSL.jpg",
+			"art_square": "https://m.media-amazon.com/images/I/81avy6S+cnL.jpg",
+			"canRunOffline": true,
+			"install": {},
+			"folder_name": "Gone Viral",
+			"is_installed": false,
+			"runner": "nile",
+			"title": "Gone Viral",
+			"developer": "Skullbot Games",
+			"extra": {
+				"reqs": [],
+				"genres": [
+					"Indie",
+					"Arcade"
+				],
+				"releaseDate": "2020-09-24T00:00:00Z"
+			},
+			"is_linux_native": false,
+			"is_mac_native": false
+		},
+		{
+			"app_name": "82d8ca92-26ed-4d0a-9ed8-b990c67727d6",
+			"art_cover": "https://m.media-amazon.com/images/I/81FVEHvgeTL.jpg",
+			"art_logo": "https://images-na.ssl-images-amazon.com/images/I/41Ul80ujjDL.png",
+			"art_background": "https://m.media-amazon.com/images/I/71QSrxLYuDL.jpg",
+			"art_square": "https://images-na.ssl-images-amazon.com/images/I/518mzlyacDL.jpg",
+			"canRunOffline": true,
+			"install": {},
+			"folder_name": "The King Of Fighters 2000",
+			"is_installed": false,
+			"runner": "nile",
+			"title": "The King Of Fighters 2000",
+			"developer": "SNK",
+			"extra": {
+				"reqs": [],
+				"genres": [
+					"Fighting",
+					"Arcade"
+				],
+				"releaseDate": "2000-01-21T00:00:00Z"
+			},
+			"is_linux_native": false,
+			"is_mac_native": false
+		},
+		{
+			"app_name": "694ee5bf-cecc-4a3d-b8fa-298066daaa45",
+			"art_cover": "https://m.media-amazon.com/images/I/51PzfoOqmkL.jpg",
+			"art_logo": "https://m.media-amazon.com/images/I/21lwvfQWypL.png",
+			"art_background": "https://m.media-amazon.com/images/I/51OU65yiwEL.jpg",
+			"art_square": "https://m.media-amazon.com/images/I/71PAGYpgsbL.jpg",
+			"canRunOffline": true,
+			"install": {},
+			"folder_name": "Death Squared",
+			"is_installed": false,
+			"runner": "nile",
+			"title": "Death Squared",
+			"description": "New game each week with Prime",
+			"developer": "SMG Studio",
+			"extra": {
+				"reqs": [],
+				"genres": [
+					"Platform",
+					"Puzzle",
+					"Strategy"
+				],
+				"releaseDate": "2017-03-13T00:00:00Z"
+			},
+			"is_linux_native": false,
+			"is_mac_native": false
+		},
+		{
+			"app_name": "eeb2fd4c-e7aa-4e73-a1d4-071b90e1060d",
+			"art_cover": "https://m.media-amazon.com/images/I/613ON-+Hl0L.jpg",
+			"art_logo": "https://m.media-amazon.com/images/I/31hCxB17ZeL.png",
+			"art_background": "https://m.media-amazon.com/images/I/61UIC09CFrL.jpg",
+			"art_square": "https://m.media-amazon.com/images/I/81w9GDAxHUL.jpg",
+			"canRunOffline": true,
+			"install": {},
+			"folder_name": "Pumped BMX Pro",
+			"is_installed": false,
+			"runner": "nile",
+			"title": "Pumped BMX Pro",
+			"description": "New game each week with Prime",
+			"developer": "Yeah Us! Games",
+			"extra": {
+				"reqs": [],
+				"genres": [
+					"Sport",
+					"Indie",
+					"Arcade"
+				],
+				"releaseDate": "2019-02-07T00:00:00Z"
+			},
+			"is_linux_native": false,
+			"is_mac_native": false
+		},
+		{
+			"app_name": "e9144f0f-a84c-43fd-9280-02b572609706",
+			"art_cover": "https://m.media-amazon.com/images/I/71rrCUrfJXL.jpg",
+			"art_logo": "https://images-na.ssl-images-amazon.com/images/I/41lM-ZftNcL.png",
+			"art_background": "https://m.media-amazon.com/images/I/61Xyea-f3hL.jpg",
+			"art_square": "https://images-na.ssl-images-amazon.com/images/I/51TTiHVe22L.jpg",
+			"canRunOffline": true,
+			"install": {},
+			"folder_name": "The King Of Fighters 2002",
+			"is_installed": false,
+			"runner": "nile",
+			"title": "The King Of Fighters 2002",
+			"developer": "SNK",
+			"extra": {
+				"reqs": [],
+				"genres": [
+					"Fighting"
+				],
+				"releaseDate": "2002-01-10T00:00:00Z"
+			},
+			"is_linux_native": false,
+			"is_mac_native": false
+		},
+		{
+			"app_name": "amzn1.adg.product.0a76e83e-1ecc-43eb-84bd-93e6675ec697",
+			"art_cover": "https://m.media-amazon.com/images/I/81nAb62e7pL.jpg",
+			"art_logo": "https://m.media-amazon.com/images/I/617ba1aLVtL.png",
+			"art_background": "https://m.media-amazon.com/images/I/91tJKLmo6XL.jpg",
+			"art_square": "https://m.media-amazon.com/images/I/91VE6TUZCzL.jpg",
+			"canRunOffline": true,
+			"install": {},
+			"folder_name": "Giana Sisters Twisted Dreams",
+			"is_installed": false,
+			"runner": "nile",
+			"title": "Giana Sisters: Twisted Dreams",
+			"description": "Warp Giana's vivid dreams to alter your abilities and destroy the creatures lurking within.",
+			"developer": "Black Forest Games",
+			"extra": {
+				"reqs": [],
+				"genres": [
+					"Platform",
+					"Adventure",
+					"Indie",
+					"Puzzle"
+				],
+				"releaseDate": "2012-10-23T00:00:00Z"
+			},
+			"is_linux_native": false,
+			"is_mac_native": false
+		},
+		{
+			"app_name": "13a0d6e1-fce9-4b6c-9f3a-582a0f04b6b7",
+			"art_cover": "https://m.media-amazon.com/images/I/51gsUNN7haL.jpg",
+			"art_logo": "https://m.media-amazon.com/images/I/51yZtLZBp4L.png",
+			"art_background": "https://m.media-amazon.com/images/I/51XSPJiVhZL.jpg",
+			"art_square": "https://m.media-amazon.com/images/I/81--adSmERL.jpg",
+			"canRunOffline": true,
+			"install": {},
+			"folder_name": "10 Second Ninja X",
+			"is_installed": false,
+			"runner": "nile",
+			"title": "10 Second Ninja X",
+			"description": "New game each week with Prime",
+			"developer": "Four Circle Interactive",
+			"extra": {
+				"reqs": [],
+				"genres": [
+					"Fighting",
+					"Platform",
+					"Puzzle"
+				],
+				"releaseDate": "2016-07-19T00:00:00Z"
+			},
+			"is_linux_native": false,
+			"is_mac_native": false
+		},
+		{
+			"app_name": "fbcc4aaa-a6f1-469c-b34e-dc65756f7141",
+			"art_cover": "https://m.media-amazon.com/images/I/81dhalU8zEL.jpg",
+			"art_logo": "https://m.media-amazon.com/images/I/618ddjx457L.png",
+			"art_background": "https://m.media-amazon.com/images/I/71g7H72AHfL.jpg",
+			"art_square": "https://m.media-amazon.com/images/I/91z99RjD35L.jpg",
+			"canRunOffline": true,
+			"install": {},
+			"folder_name": "Metal Slug 2",
+			"is_installed": false,
+			"runner": "nile",
+			"title": "Metal Slug 2",
+			"description": "New game each week with Prime",
+			"developer": "Dotemu",
+			"extra": {
+				"reqs": [],
+				"genres": [
+					"Shooter",
+					"Platform",
+					"Adventure"
+				],
+				"releaseDate": "1998-01-02T00:00:00Z"
+			},
+			"is_linux_native": false,
+			"is_mac_native": false
+		},
+		{
+			"app_name": "amzn1.adg.product.16da152f-0092-4b62-8cfe-374b7b8787b3",
+			"art_cover": "https://m.media-amazon.com/images/I/81mu5JAQv0L.jpg",
+			"art_logo": "https://m.media-amazon.com/images/I/313unRAI8IL.png",
+			"art_background": "https://m.media-amazon.com/images/I/91N3idBkebL.jpg",
+			"art_square": "https://m.media-amazon.com/images/I/81A9rEuEnvL.jpg",
+			"canRunOffline": true,
+			"install": {},
+			"folder_name": "Metal Unit",
+			"is_installed": false,
+			"runner": "nile",
+			"title": "Metal Unit",
+			"developer": "JellySnow Studio",
+			"extra": {
+				"reqs": [],
+				"genres": [
+					"Role-playing (RPG)",
+					"Adventure",
+					"Indie"
+				],
+				"releaseDate": "2021-01-28T00:00:00Z"
+			},
+			"is_linux_native": false,
+			"is_mac_native": false
+		},
+		{
+			"app_name": "2ebae692-5e13-4ee1-a4bd-1f901bac77c6",
+			"art_cover": "https://m.media-amazon.com/images/I/6173A+J2I8L.jpg",
+			"art_logo": "https://m.media-amazon.com/images/I/31zDGoc0m4L.png",
+			"art_background": "https://m.media-amazon.com/images/I/61xaUrgWi7L.jpg",
+			"art_square": "https://m.media-amazon.com/images/I/71SAFeL4TvL.jpg",
+			"canRunOffline": true,
+			"install": {},
+			"folder_name": "HUE",
+			"is_installed": false,
+			"runner": "nile",
+			"title": "HUE",
+			"description": "New game each week with Prime",
+			"developer": "Fiddlesticks",
+			"extra": {
+				"reqs": [],
+				"genres": [
+					"Platform",
+					"Puzzle",
+					"Adventure"
+				],
+				"releaseDate": "2016-08-30T00:00:00Z"
+			},
+			"is_linux_native": false,
+			"is_mac_native": false
+		},
+		{
+			"app_name": "dceac06b-afa9-441c-bcd1-35783bcf87e8",
+			"art_cover": "https://m.media-amazon.com/images/I/61h9ddQPXJL.jpg",
+			"art_logo": "https://m.media-amazon.com/images/I/61c6KGQ08gL.png",
+			"art_background": "https://m.media-amazon.com/images/I/61oY0pkhhQL.jpg",
+			"art_square": "https://m.media-amazon.com/images/I/81iBxaxyl5L.jpg",
+			"canRunOffline": true,
+			"install": {},
+			"folder_name": "Manual Samuel",
+			"is_installed": false,
+			"runner": "nile",
+			"title": "Manual Samuel",
+			"description": "New game each week with Prime",
+			"developer": "Perfectly Paranormal",
+			"extra": {
+				"reqs": [],
+				"genres": [
+					"Simulator",
+					"Adventure",
+					"Indie"
+				],
+				"releaseDate": "2016-10-11T00:00:00Z"
+			},
+			"is_linux_native": false,
+			"is_mac_native": false
+		},
+		{
+			"app_name": "amzn1.adg.product.7a7cba4b-e22f-4b25-a3b2-70d513306430",
+			"art_cover": "https://m.media-amazon.com/images/I/814nG5cJa9L.jpg",
+			"art_logo": "https://m.media-amazon.com/images/I/61AGMfO0ftL.png",
+			"art_background": "https://m.media-amazon.com/images/I/714qDhFS08L.jpg",
+			"art_square": "https://m.media-amazon.com/images/I/91cnLTMxnaL.jpg",
+			"canRunOffline": true,
+			"install": {},
+			"folder_name": "The Crows Eye",
+			"is_installed": false,
+			"runner": "nile",
+			"title": "The Crow's Eye",
+			"developer": "3D2 Entertainment",
+			"extra": {
+				"reqs": [],
+				"genres": [
+					"Puzzle",
+					"Adventure",
+					"Indie"
+				],
+				"releaseDate": "2017-03-20T00:00:00Z"
+			},
+			"is_linux_native": false,
+			"is_mac_native": false
+		},
+		{
+			"app_name": "67b7a89f-69e8-4b4d-a0a6-80a5bb6f1f75",
+			"art_cover": "https://m.media-amazon.com/images/I/81BJhk5E2RL.jpg",
+			"art_logo": "https://images-na.ssl-images-amazon.com/images/I/41pbNBKY7xL.png",
+			"art_background": "https://m.media-amazon.com/images/I/816nlJcL7qL.jpg",
+			"art_square": "https://images-na.ssl-images-amazon.com/images/I/61H4IHHH1CL.jpg",
+			"canRunOffline": true,
+			"install": {},
+			"folder_name": "Fatal Fury Special",
+			"is_installed": false,
+			"runner": "nile",
+			"title": "Fatal Fury Special",
+			"developer": "Hudson Soft",
+			"extra": {
+				"reqs": [],
+				"genres": [
+					"Fighting"
+				],
+				"releaseDate": "1993-01-16T00:00:00Z"
+			},
+			"is_linux_native": false,
+			"is_mac_native": false
+		},
+		{
+			"app_name": "6e99c309-1eae-42c5-834a-eceb0b1b5166",
+			"art_cover": "https://m.media-amazon.com/images/I/61wy2Wl3tHL.jpg",
+			"art_logo": "https://m.media-amazon.com/images/I/61q+sJiSb5L.png",
+			"art_background": "https://m.media-amazon.com/images/I/61Bbs+4VaTL.jpg",
+			"art_square": "https://m.media-amazon.com/images/I/81Puw33gQ3L.jpg",
+			"canRunOffline": true,
+			"install": {},
+			"folder_name": "Serial Cleaner",
+			"is_installed": false,
+			"runner": "nile",
+			"title": "Serial Cleaner",
+			"description": "New game each week with Prime",
+			"developer": "iFun4All",
+			"extra": {
+				"reqs": [],
+				"genres": [
+					"Puzzle",
+					"Simulator",
+					"Adventure"
+				],
+				"releaseDate": "2017-07-11T00:00:00Z"
+			},
+			"is_linux_native": false,
+			"is_mac_native": false
+		},
+		{
+			"app_name": "05996bea-0bdf-42a9-970b-02c76b663ca9",
+			"art_cover": "https://m.media-amazon.com/images/I/71UeklJPIVL.jpg",
+			"art_logo": "https://m.media-amazon.com/images/I/51KsWKL0iYL.png",
+			"art_background": "https://m.media-amazon.com/images/I/71kjG6DB6zL.jpg",
+			"art_square": "https://m.media-amazon.com/images/I/816oHf5BhCL.jpg",
+			"canRunOffline": true,
+			"install": {},
+			"folder_name": "Samurai Shodown II",
+			"is_installed": false,
+			"runner": "nile",
+			"title": "Samurai Shodown II",
+			"description": "New game each week with Prime",
+			"developer": "SNK",
+			"extra": {
+				"reqs": [],
+				"genres": [
+					"Fighting"
+				],
+				"releaseDate": "1994-01-02T00:00:00Z"
+			},
+			"is_linux_native": false,
+			"is_mac_native": false
+		},
+		{
+			"app_name": "e778b2fe-5847-41ce-947e-c1539e1f81d3",
+			"art_cover": "https://m.media-amazon.com/images/I/61Xk4UE+85L.jpg",
+			"art_logo": "https://m.media-amazon.com/images/I/711T364HGaL.png",
+			"art_background": "https://m.media-amazon.com/images/I/61jvzzORW1L.jpg",
+			"art_square": "https://m.media-amazon.com/images/I/91ptLRXm1GL.jpg",
+			"canRunOffline": true,
+			"install": {},
+			"folder_name": "The Metronomicon Slay the Dance Floor",
+			"is_installed": false,
+			"runner": "nile",
+			"title": "The Metronomicon: Slay the Dance Floor",
+			"description": "New game each week with Prime",
+			"developer": "Puuba",
+			"extra": {
+				"reqs": [],
+				"genres": [
+					"Music",
+					"Role-playing (RPG)",
+					"Indie"
+				],
+				"releaseDate": "2016-09-29T00:00:00Z"
+			},
+			"is_linux_native": false,
+			"is_mac_native": false
+		},
+		{
+			"app_name": "amzn1.adg.product.5fe86d64-2c5a-4ddf-a574-6e32ca7a0031",
+			"art_cover": "https://m.media-amazon.com/images/I/81IxETwIF9L.jpg",
+			"art_logo": "https://m.media-amazon.com/images/I/61E6K54k-PL.png",
+			"art_background": "https://m.media-amazon.com/images/I/81a5pNZvo1L.jpg",
+			"art_square": "https://m.media-amazon.com/images/I/91ZJJWNvyWL.jpg",
+			"canRunOffline": true,
+			"install": {},
+			"folder_name": "Escape from Monkey Island",
+			"is_installed": false,
+			"runner": "nile",
+			"title": "Escape from Monkey Island",
+			"developer": "LucasArts",
+			"extra": {
+				"reqs": [],
+				"genres": [
+					"Point-and-click",
+					"Puzzle",
+					"Adventure"
+				],
+				"releaseDate": "2000-11-07T16:00:00Z"
+			},
+			"is_linux_native": false,
+			"is_mac_native": false
+		},
+		{
+			"app_name": "amzn1.adg.product.8320bb7e-a254-4a71-82e2-d5c29cd6a687",
+			"art_cover": "https://m.media-amazon.com/images/I/818BhH7bw7L.jpg",
+			"art_logo": "https://m.media-amazon.com/images/I/51OJsiB5KsL.png",
+			"art_background": "https://m.media-amazon.com/images/I/71NF7sHsm5L.jpg",
+			"art_square": "https://m.media-amazon.com/images/I/71XY3vBo2tL.jpg",
+			"canRunOffline": true,
+			"install": {},
+			"folder_name": "STAR WARS Jedi Knight II - Jedi Outcast",
+			"is_installed": false,
+			"runner": "nile",
+			"title": "STAR WARS Jedi Knight II - Jedi Outcast",
+			"developer": "Vicarious Visions",
+			"extra": {
+				"reqs": [],
+				"genres": [
+					"Shooter",
+					"Adventure"
+				],
+				"releaseDate": "2002-03-26T00:00:00Z"
+			},
+			"is_linux_native": false,
+			"is_mac_native": false
+		},
+		{
+			"app_name": "amzn1.adg.product.0127edd7-4a35-4991-ab79-ff7601a699da",
+			"art_cover": "https://m.media-amazon.com/images/I/71HRfMHI4XL.jpg",
+			"art_logo": "https://m.media-amazon.com/images/I/51WuqB5qemL.png",
+			"art_background": "https://m.media-amazon.com/images/I/713+t3GZppL.jpg",
+			"art_square": "https://m.media-amazon.com/images/I/81Wmf+PsvfL.jpg",
+			"canRunOffline": true,
+			"install": {},
+			"folder_name": "STAR WARS Jedi Knight - Jedi Academy",
+			"is_installed": false,
+			"runner": "nile",
+			"title": "STAR WARS Jedi Knight - Jedi Academy",
+			"developer": "Raven Software",
+			"extra": {
+				"reqs": [],
+				"genres": [
+					"Shooter",
+					"Adventure"
+				],
+				"releaseDate": "2003-09-17T00:00:00Z"
+			},
+			"is_linux_native": false,
+			"is_mac_native": false
+		},
+		{
+			"app_name": "amzn1.adg.product.334f1d96-0646-4e9b-9613-8747be0c7505",
+			"art_cover": "https://m.media-amazon.com/images/I/81TjiCS6QPL.jpg",
+			"art_logo": "https://m.media-amazon.com/images/I/61vBkSvYnYL.png",
+			"art_background": "https://m.media-amazon.com/images/I/71+5-o0wQgL.jpg",
+			"art_square": "https://m.media-amazon.com/images/I/919RTJtSDmL.jpg",
+			"canRunOffline": true,
+			"install": {},
+			"folder_name": "STAR WARS Republic Commando",
+			"is_installed": false,
+			"runner": "nile",
+			"title": "STAR WARS Republic Commando",
+			"developer": "LucasArts",
+			"extra": {
+				"reqs": [],
+				"genres": [
+					"Shooter",
+					"Tactical",
+					"Adventure"
+				],
+				"releaseDate": "2005-03-01T00:00:00Z"
+			},
+			"is_linux_native": false,
+			"is_mac_native": false
+		},
+		{
+			"app_name": "amzn1.adg.product.a1ff60e3-ad99-4f3e-a284-2ca407c3f35a",
+			"art_cover": "https://m.media-amazon.com/images/I/71u7jIhSiwL.jpg",
+			"art_logo": "https://m.media-amazon.com/images/I/41eIh2LKvHL.png",
+			"art_background": "https://m.media-amazon.com/images/I/91gfS79Ml+L.jpg",
+			"art_square": "https://m.media-amazon.com/images/I/91PUdEnft-L.jpg",
+			"canRunOffline": true,
+			"install": {},
+			"folder_name": "Faraway 2 Jungle Escape",
+			"is_installed": false,
+			"runner": "nile",
+			"title": "Faraway 2: Jungle Escape",
+			"description": "Explore ruins of ancient temples full of challenges and mysterious riddles",
+			"developer": "Pine Studio",
+			"extra": {
+				"reqs": [],
+				"genres": [
+					"Puzzle",
+					"Adventure"
+				],
+				"releaseDate": "2018-05-01T00:00:00Z"
+			},
+			"is_linux_native": false,
+			"is_mac_native": false
+		},
+		{
+			"app_name": "amzn1.adg.product.c2f04483-a8a8-496d-88df-80831dd2bbb6",
+			"art_cover": "https://m.media-amazon.com/images/I/91wUL1rHGyL.jpg",
+			"art_logo": "https://m.media-amazon.com/images/I/314mNt57dML.png",
+			"art_background": "https://m.media-amazon.com/images/I/91PWzj8ICTL.jpg",
+			"art_square": "https://m.media-amazon.com/images/I/91XdPo50L6L.jpg",
+			"canRunOffline": true,
+			"install": {},
+			"folder_name": "DreadOut 2",
+			"is_installed": false,
+			"runner": "nile",
+			"title": "DreadOut 2",
+			"description": "A unique take on third-person action adventure survival horror.",
+			"developer": "Digital Happiness",
+			"extra": {
+				"reqs": [],
+				"genres": [
+					"Adventure",
+					"Indie"
+				],
+				"releaseDate": "2020-02-21T00:00:00Z"
+			},
+			"is_linux_native": false,
+			"is_mac_native": false
+		}
+	],
+	"__timestamp": {
+		"library": "Wed Oct 14 2026 15:41:23 GMT+0200 (Central European Summer Time)"
+	}
+}

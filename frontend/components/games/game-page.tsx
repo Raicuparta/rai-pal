@@ -15,12 +15,17 @@ import { CommandDropdown } from "@components/command-dropdown";
 import { GameRowInner } from "./game-row";
 import { useLocalization } from "@hooks/use-localization";
 import { useAsyncCommand } from "@hooks/use-async-command";
+import { useAtomValue } from "jotai";
+import { isRefreshingAtom } from "@hooks/use-refresh-tasks";
+import { useRefreshGame } from "@hooks/use-refresh-game";
 import { RemoveGameButton } from "./remove-game-button";
 import { platform } from "@tauri-apps/plugin-os";
 import { Page } from "@components/page";
 import { GameModsData } from "@hooks/use-selected-game";
 import { GameMods } from "./game-mods";
 import { ProviderCommandButton } from "@components/providers/provider-command-button";
+import { useWindowFocus } from "@hooks/use-window-focus";
+import { useEffect } from "react";
 
 type Props = {
 	readonly game: DbGame;
@@ -32,6 +37,17 @@ export function GamePage({ game, mods }: Props) {
 	const [close] = useAsyncCommand(() => commands.setSelectedGame(null, null));
 
 	const { providerId, gameId } = game;
+
+	const isRefreshing = useAtomValue(isRefreshingAtom);
+	const refreshGame = useRefreshGame(providerId, gameId);
+
+	useWindowFocus(() => {
+		if (game.exePath) refreshGame();
+	});
+
+	useEffect(() => {
+		if (game.exePath) refreshGame();
+	}, [providerId, gameId]);
 
 	const {
 		StartViaProvider: startViaProvider,
@@ -55,7 +71,7 @@ export function GamePage({ game, mods }: Props) {
 			onClose={close}
 			sidebar={
 				<Stack
-					px="xs"
+					pr="xs"
 					gap="lg"
 				>
 					{primaryStart && (
@@ -76,14 +92,6 @@ export function GamePage({ game, mods }: Props) {
 								</CommandDropdown>
 							)}
 						</Button.Group>
-					)}
-					{game.exePath && (
-						<CommandButton
-							onClick={() => commands.refreshGame(providerId, gameId)}
-							leftSection={<IconRefresh />}
-						>
-							{t("refreshGame")}
-						</CommandButton>
 					)}
 					{providerId === "Manual" && (
 						<RemoveGameButton
@@ -107,7 +115,7 @@ export function GamePage({ game, mods }: Props) {
 					)}
 					{game.exePath && (
 						<Stack>
-							<Divider label={t("foldersDropdown")} />
+							<Divider label={t("foldersSection")} />
 							<Button.Group orientation="vertical">
 								<CommandButton
 									leftSection={<IconFolder />}
@@ -154,6 +162,23 @@ export function GamePage({ game, mods }: Props) {
 							</Button.Group>
 						</Stack>
 					)}
+
+					<Stack>
+						<Divider label={t("dataSection")} />
+						<Button.Group orientation="vertical">
+							{game.exePath && (
+								<CommandButton
+									onClick={refreshGame}
+									leftSection={<IconRefresh />}
+									loading={isRefreshing}
+									disabled={isRefreshing}
+								>
+									{t("refreshGame")}
+								</CommandButton>
+							)}
+							<DebugData data={{ game, mods }} />
+						</Button.Group>
+					</Stack>
 				</Stack>
 			}
 		>
@@ -170,25 +195,19 @@ export function GamePage({ game, mods }: Props) {
 					</Table>
 				</TableContainer>
 			</Box>
-			<Stack
-				p="xs"
-				gap="xl"
-			>
-				{game.exePath && (
-					<>
-						{game.engineBrand && !game.architecture && (
-							<Alert color="red">{t("failedToReadGameInfo")}</Alert>
-						)}
-						{!game.engineBrand && (
-							<Alert color="red">{t("failedToDetermineEngine")}</Alert>
-						)}
-					</>
+			<Stack>
+				{game.exePath && !game.engineBrand && (
+					<Alert
+						color="red"
+						m="md"
+					>
+						{t("failedToDetermineEngine")}
+					</Alert>
 				)}
 				<GameMods
 					game={game}
 					mods={mods}
 				/>
-				<DebugData data={{ game, mods }} />
 			</Stack>
 		</Page>
 	);

@@ -1,11 +1,11 @@
+use fs_err as fs;
 use std::{
-	fs,
 	path::{Path, PathBuf},
 	time::{Instant, SystemTime, UNIX_EPOCH},
 };
 
 use rai_pal_proc_macros::serializable_struct;
-use rusqlite::OpenFlags;
+use rusqlite::{OpenFlags, OptionalExtension};
 use strum::IntoEnumIterator;
 
 use crate::{
@@ -17,12 +17,13 @@ use crate::{
 	games_query::{FilterGroup, GamesQuery, GamesSortBy, InstallState},
 	local_database::{
 		app_database::{AppDatabase, DbMutex},
+		mod_database::ModDatabase,
 		rusqlite_extensions::{JsonData, RowExt},
 	},
 	operating_system::OperatingSystem,
 	path_extensions::{AsValidStr, PathExt},
 	remote_game,
-	result::Result,
+	result::{ContextResult, Error, Result},
 };
 
 pub trait GameDatabase {
@@ -156,7 +157,7 @@ impl GameDatabase for DbMutex {
 			g.display_title,
 			g.title_discriminator,
 			g.thumbnail_url,
-			g.release_date,
+			COALESCE(g.release_date, rg.release_date) AS release_date,
 			g.tags,
 			g.provider_commands,
 			ig.exe_path,
@@ -203,7 +204,9 @@ impl GameDatabase for DbMutex {
 					engine_version_display: row.get(17)?,
 					supported_os: row.get_json(18)?,
 				})
-			})?)
+			})
+			.optional()?
+			.ok_or_else(|| Error::GameNotFound(format!("{provider_id}/{game_id}")))?)
 	}
 
 	fn get_game_ids(&self, query: Option<GamesQuery>) -> Result<GameIdsResponse> {
@@ -211,7 +214,7 @@ impl GameDatabase for DbMutex {
 
 		// Build sorting logic
 		let sort_columns = match query.as_ref().map(|q| q.sort_by) {
-			Some(GamesSortBy::ReleaseDate) => vec!["g.release_date"],
+			Some(GamesSortBy::ReleaseDate) => vec!["COALESCE(g.release_date, rg.release_date)"],
 			Some(GamesSortBy::Engine) => vec![
 				"COALESCE(ig.engine_brand, rg.engine_brand)",
 				"COALESCE(ig.engine_version_major, rg.engine_version_major)",
@@ -333,7 +336,10 @@ impl GameDatabase for DbMutex {
 			}
 
 			// Mod families filter
-			{
+			// When no family definitions are available (e.g. offline before the first
+			// successful refresh), a saved selection can't be shown in the UI, so ignore
+			// it instead of filtering on families we know nothing about.
+			if !self.get_mod_families()?.is_empty() {
 				let disabled: Vec<_> = filter
 					.mod_families
 					.known
@@ -356,6 +362,7 @@ impl GameDatabase for DbMutex {
 						r"EXISTS (
 						SELECT 1 FROM main.mods m
 						WHERE m.family NOT IN ({})
+						AND COALESCE(m.hide_from_game_mods_list, 0) = 0
 						AND (json_extract(m.engine, '$') IS NULL OR json_extract(m.engine, '$') = COALESCE(ig.engine_brand, rg.engine_brand))
 						AND (json_extract(m.unity_backend, '$') IS NULL OR ig.unity_backend IS NULL OR json_extract(m.unity_backend, '$') = ig.unity_backend)
 					AND (json_extract(m.architecture, '$') IS NULL OR ig.architecture IS NULL OR json_extract(m.architecture, '$') = ig.architecture)
@@ -638,7 +645,8 @@ pub fn attach_remote(path: &Path) -> Result {
 			r"
 			INSERT OR IGNORE INTO main.remote_games (
 				provider_id, external_id, engine_brand, engine_version_major,
-				engine_version_minor, engine_version_patch, engine_version_display
+				engine_version_minor, engine_version_patch, engine_version_display,
+				release_date
 			)
 			SELECT
 				provider_id,
@@ -647,7 +655,8 @@ pub fn attach_remote(path: &Path) -> Result {
 				NULL,
 				NULL,
 				NULL,
-				engine_version
+				engine_version,
+				release_date
 			FROM remote_db.games;
 			",
 			[],
@@ -814,6 +823,7 @@ fn create() -> Result<DbMutex> {
 			engine_version_minor INTEGER,
 			engine_version_patch INTEGER,
 			engine_version_display TEXT,
+			release_date TEXT,
 			PRIMARY KEY (provider_id, external_id)
 		);
 	",
@@ -841,15 +851,16 @@ fn open_attach_database_connection() -> Result<rusqlite::Connection> {
 fn open_local_database_connection() -> Result<rusqlite::Connection> {
 	let path = db_file_path()?;
 	if let Some(parent) = path.parent() {
-		std::fs::create_dir_all(parent)?;
+		fs_err::create_dir_all(parent)?;
 	}
 
 	let connection = rusqlite::Connection::open_with_flags(
-		path,
+		&path,
 		OpenFlags::SQLITE_OPEN_CREATE
 			| OpenFlags::SQLITE_OPEN_READ_WRITE
 			| OpenFlags::SQLITE_OPEN_PRIVATE_CACHE,
-	)?;
+	)
+	.with_context(|| format!("failed to open local database `{}`", path.display()))?;
 
 	connection.execute_batch(
 		r"

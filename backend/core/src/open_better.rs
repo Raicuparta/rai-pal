@@ -5,44 +5,27 @@ use std::{
 
 use crate::{
 	path_extensions::AsValidStr,
-	result::{Error, Result},
+	result::{ContextResult, Error, Result},
 };
 
-/// Spawns `cmd` fully detached from rai-pal, so that games, mod scripts, and
-/// other launched programs:
-///
-/// - Are **not killed** when rai-pal is killed (or when its terminal closes
-///   or its process group receives a signal).
-/// - Are **not left behind as children of rai-pal** once it exits.
-/// - Never linger as zombie processes under a running rai-pal.
-///
-/// How it works per platform:
-///
-/// - **Unix** (`setsid` + double-fork via [`Command::pre_exec`]): the child
-///   first becomes the leader of a brand new session and process group, so it
-///   no longer shares rai-pal's session/terminal/process group. Then it forks
-///   once more: the intermediate process exits immediately (and is reaped
-///   here), while the actual program keeps running as a grandchild that gets
-///   reparented to init. It is therefore not a direct child of rai-pal at
-///   all, and init reaps it when it eventually exits.
-/// - **Windows** (`DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP`): the child
-///   gets its own console and process group, so console close / Ctrl+C and
-///   process-group signals don't reach it.
-///
-/// In all cases stdin/stdout/stderr are redirected to null so the child
-/// doesn't hold on to rai-pal's console.
+// Bunch of fucking hacks to avoid a bunch of fucking things.
 pub fn spawn_detached(cmd: &mut Command) -> Result {
 	cmd.env_remove("LD_LIBRARY_PATH")
 		.env_remove("QT_PLUGIN_PATH")
 		.env_remove("APPDIR")
-		.env_remove("APPIMAGE")
-		.stdin(Stdio::null())
-		.stdout(Stdio::null())
-		.stderr(Stdio::null());
+		.env_remove("APPIMAGE");
+
+	let program = std::path::Path::new(cmd.get_program())
+		.display()
+		.to_string();
 
 	#[cfg(unix)]
 	{
 		use std::os::unix::process::CommandExt;
+
+		cmd.stdin(Stdio::null())
+			.stdout(Stdio::null())
+			.stderr(Stdio::null());
 
 		// SAFETY: the closure runs in the forked child right before exec, and
 		// only calls async-signal-safe libc functions (setsid, fork, _exit).
@@ -69,19 +52,35 @@ pub fn spawn_detached(cmd: &mut Command) -> Result {
 
 		// The direct child is only the intermediate process, which exits a
 		// moment after forking. Reap it so it doesn't linger as a zombie.
-		let mut child = cmd.spawn()?;
-		child.wait()?;
+		let mut child = cmd
+			.spawn()
+			.with_context(|| format!("failed to launch `{program}`"))?;
+		child
+			.wait()
+			.with_context(|| format!("failed to wait for `{program}`"))?;
 	}
 
 	#[cfg(windows)]
 	{
-		use std::os::windows::process::CommandExt;
+		// Console apps need a console to run in; detaching them makes them run
+		// invisibly with I/O redirected to null, so spawn those normally.
+		if crate::game_engines::pe_utils::is_pe_console_app(std::path::Path::new(cmd.get_program()))
+		{
+			cmd.spawn()
+				.with_context(|| format!("failed to launch `{program}`"))?;
+		} else {
+			use std::os::windows::process::CommandExt;
 
-		const DETACHED_PROCESS: u32 = 0x0000_0008;
-		const CREATE_NEW_PROCESS_GROUP: u32 = 0x0000_0200;
+			const DETACHED_PROCESS: u32 = 0x0000_0008;
+			const CREATE_NEW_PROCESS_GROUP: u32 = 0x0000_0200;
 
-		cmd.creation_flags(DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP);
-		cmd.spawn()?;
+			cmd.stdin(Stdio::null())
+				.stdout(Stdio::null())
+				.stderr(Stdio::null())
+				.creation_flags(DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP);
+			cmd.spawn()
+				.with_context(|| format!("failed to launch `{program}`"))?;
+		}
 	}
 
 	Ok(())
@@ -89,19 +88,30 @@ pub fn spawn_detached(cmd: &mut Command) -> Result {
 
 // Weird workaround for AppImage builds.
 pub fn open_detached_better(path: impl AsRef<OsStr>) -> Result {
-	let mut last_error = Error::NoCommandForOpen(path.as_ref().try_to_str()?.to_string());
-
-	for mut cmd in open::commands(path) {
-		cmd.env_remove("LD_LIBRARY_PATH");
-		cmd.env_remove("QT_PLUGIN_PATH");
-		cmd.env_remove("APPDIR");
-		cmd.env_remove("APPIMAGE");
-
-		match spawn_detached(&mut cmd) {
-			Ok(()) => return Ok(()),
-			Err(e) => last_error = e,
-		}
+	#[cfg(target_os = "windows")]
+	{
+		let path = path.as_ref();
+		open::that_detached(path)
+			.with_context(|| format!("failed to open `{}`", path.to_string_lossy()))?;
+		return Ok(());
 	}
 
-	Err(last_error)
+	#[cfg(not(target_os = "windows"))]
+	{
+		let mut last_error = Error::NoCommandForOpen(path.as_ref().try_to_str()?.to_string());
+
+		for mut cmd in open::commands(path) {
+			cmd.env_remove("LD_LIBRARY_PATH");
+			cmd.env_remove("QT_PLUGIN_PATH");
+			cmd.env_remove("APPDIR");
+			cmd.env_remove("APPIMAGE");
+
+			match spawn_detached(&mut cmd) {
+				Ok(()) => return Ok(()),
+				Err(e) => last_error = e,
+			}
+		}
+
+		Err(last_error)
+	}
 }

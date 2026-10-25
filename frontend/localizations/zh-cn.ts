@@ -47,6 +47,7 @@ export const zhCn: Localization = {
 
 	filterMenu: {
 		filters: "筛选",
+		collapseAll: "折叠所有筛选器",
 		resetButton: "重置",
 		searchPlaceholder: "搜索...",
 	},
@@ -94,24 +95,27 @@ export const zhCn: Localization = {
 		startGameButton: "启动游戏",
 		startGameExecutable: "启动游戏可执行文件",
 		startGameViaProvider: "通过 {provider} 启动游戏",
-		foldersDropdown: "文件夹",
+		foldersSection: "文件夹",
 		openGameFilesFolder: "游戏文件夹",
 		openInstalledModsFolder: "已安装模组",
 		openGameDataFolder: "游戏数据",
 		openGameWinePrefixFolder: "Wine 前缀",
 		openGameWineBinaryFolder: "Wine 程序",
+
+		dataSection: "数据",
 		removeFromRaiPal: "从 Rai Pal 移除",
 		removeGameConfirmation: "确定要从 Rai Pal 移除此游戏吗？",
 		refreshGame: "刷新游戏",
-		failedToReadGameInfo:
-			"无法读取此游戏的部分重要信息。可执行文件可能被保护了。一些模组可能无法安装。",
-		failedToDetermineEngine: "无法确定此游戏的引擎。一些模组可能无法安装。",
-		gameNotInstalledWarning:
-			"此游戏未安装，所以我不太确定哪些模组兼容。下面列出的模组可能可以用。安装游戏后，我再显示更准确的信息。",
+		failedToDetermineEngine: "无法确定此游戏的引擎。",
 		uninstallAllModsButton: "卸载所有模组",
 		uninstallAllModsConfirmation:
 			"你确定吗？这将删除此游戏模组文件夹中的所有文件。但不会删除游戏本身的文件。",
 
+		installedMods: "已安装模组",
+		availableMods: "可用模组",
+		potentiallyCompatibleMods: "可能兼容的模组",
+		potentiallyCompatibleModsDescription:
+			"安装此游戏即可查看哪些模组兼容的更多详细信息",
 		incompatibleGameModsLabel: "不兼容的模组",
 
 		incompatibleGameModsDescription:
@@ -120,6 +124,9 @@ export const zhCn: Localization = {
 		otherThings: "其他东西",
 
 		otherThingsDescription: "这些主要是依赖项之类的，一般不用直接碰。",
+
+		noModsForGame:
+			"什么都没有！可用的模组没有一个是这个游戏能用的。试试别的吧。",
 	},
 
 	gameModRow: {
@@ -169,7 +176,8 @@ export const zhCn: Localization = {
 		runMod: "运行",
 		openModFolder: "打开模组文件夹",
 		updateMod: "更新模组",
-		downloadMod: "下载模组",
+		downloadMod: "下载",
+		openModSource: "网站",
 		deleteMod: "删除模组",
 		deleteModConfirmation: "你确定吗？模组文件夹中的任何文件都将丢失。",
 		byAuthor: "由 {authorName} 制作",
@@ -179,6 +187,10 @@ export const zhCn: Localization = {
 		showGameThumbnails: "在列表中显示游戏缩略图",
 		language: "语言",
 		autoDetectedLanguage: "自动检测 - {languageName}",
+		colorScheme: "配色方案",
+		colorSchemeAuto: "自动",
+		colorSchemeDark: "深色",
+		colorSchemeLight: "浅色",
 		resetRaiPalSettingsButton: "重置 Rai Pal 设置",
 		resetRaiPalSettingsTooltip:
 			"将重置筛选条件、确认对话框，可能还有其他内容。",

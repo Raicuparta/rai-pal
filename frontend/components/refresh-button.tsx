@@ -2,33 +2,33 @@ import { Box, Button } from "@mantine/core";
 import { IconRefresh } from "@tabler/icons-react";
 import { useAtomValue } from "jotai";
 import { useUpdateData } from "@hooks/use-update-data";
-import { loadingTasksAtom } from "@hooks/use-data";
+import { refreshTasksAtom } from "@hooks/use-refresh-tasks";
 import styles from "./components.module.css";
 import { useLocalization } from "@hooks/use-localization";
 
 export function RefreshButton() {
-	const loadingTasks = useAtomValue(loadingTasksAtom);
+	const refreshTasks = useAtomValue(refreshTasksAtom);
 	const updateAppData = useUpdateData();
 	const { t } = useLocalization("refresh");
 
-	const isLoading = loadingTasks.length > 0;
+	const isRefreshing = refreshTasks.length > 0;
 
 	return (
 		<Box pos="relative">
 			<Button
 				w="100%"
 				leftSection={<IconRefresh />}
-				loading={isLoading}
+				loading={isRefreshing}
 				onClick={() => updateAppData()}
-				opacity={isLoading ? 0.5 : 1}
+				opacity={isRefreshing ? 0.5 : 1}
 				variant="filled"
 			>
 				{t("button")}
 			</Button>
-			{isLoading && (
+			{isRefreshing && (
 				<div className={styles.refreshProgress}>
 					{t("loading", {
-						items: loadingTasks.map((task) => task.name).join(", "),
+						items: refreshTasks.map((task) => task.name).join(", "),
 					})}
 				</div>
 			)}

@@ -1,4 +1,7 @@
-use std::{collections::HashMap, path::PathBuf};
+use std::{
+	collections::HashMap,
+	path::{Path, PathBuf},
+};
 
 use chrono::DateTime;
 use log::error;
@@ -9,10 +12,11 @@ use super::provider_command::{ProviderCommand, ProviderCommandAction};
 use crate::{
 	app_paths,
 	game::DbGame,
-	game_launch::GameLaunch,
-	game_providers::game_provider::{GameProviderId, ProviderActions, WineProviderActions},
+	game_providers::game_provider::{
+		GameProviderId, ProviderActions, ProviderParser, WineProviderActions,
+	},
 	local_database::{app_database::DbMutex, game_database::GameDatabase},
-	result::{LogErrExt, Result},
+	result::{ContextResult, LogErrExt, Result},
 };
 
 #[derive(Clone)]
@@ -33,7 +37,7 @@ impl Itch {
 	}
 
 	fn scan_for_exe(base_path: &std::path::Path) -> Option<PathBuf> {
-		use std::fs;
+		use fs_err as fs;
 
 		let mut entries: Vec<_> = fs::read_dir(base_path)
 			.ok_or_log("Failed to read Itch dir")?
@@ -122,12 +126,11 @@ pub struct ItchDatabase {
 	caves: Vec<ItchDatabaseCave>,
 }
 
-impl ProviderActions for Itch {
-	fn insert_games(&self, db: &DbMutex) -> Result {
-		let Some(database) = get_database()? else {
-			log::info!(
-				"Itch database file not found. Probably means user hasn't installed the Itch app."
-			);
+impl ProviderParser for Itch {
+	type Source = PathBuf;
+
+	fn parse_games(&self, db_path: &Self::Source, insert: &mut impl FnMut(DbGame)) -> Result {
+		let Some(database) = get_database(db_path)? else {
 			return Ok(());
 		};
 		let caves_map: HashMap<_, _> = database
@@ -141,10 +144,25 @@ impl ProviderActions for Itch {
 			if let Some(exe_path) = caves_map.get(&db_entry.id).and_then(Self::get_exe_path) {
 				game.set_executable(&exe_path);
 			}
-			db.insert_game(&game);
+			insert(game);
 		}
 
 		Ok(())
+	}
+}
+
+impl ProviderActions for Itch {
+	fn insert_games(&self, db: &DbMutex) -> Result {
+		let Some(db_path) = find_butler_db()? else {
+			log::info!(
+				"Itch database file not found. Probably means user hasn't installed the Itch app."
+			);
+			return Ok(());
+		};
+
+		self.parse_games(&db_path, &mut |game| {
+			db.insert_game(&game);
+		})
 	}
 }
 
@@ -160,24 +178,7 @@ impl WineProviderActions for Itch {
 	}
 
 	fn get_wine_binary_path(&self, _game: &DbGame) -> Result<PathBuf> {
-		Ok(find_itch_wine())
-	}
-
-	fn get_run_with_wine_command(&self, game: &DbGame) -> Result<GameLaunch> {
-		let wine_prefix_path = self.get_wine_prefix_path(game)?;
-		let wine_binary = self.get_wine_binary_path(game)?;
-
-		let mut launch = GameLaunch::new(&wine_binary);
-		launch.env("WINEPREFIX", &wine_prefix_path);
-
-		// Flatpak-bundled wine needs WINESERVER set explicitly to find its wineserver binary.
-		if let Some(wineserver) = wine_binary.parent().map(|p| p.join("wineserver"))
-			&& wineserver.exists()
-		{
-			launch.env("WINESERVER", &wineserver);
-		}
-
-		Ok(launch)
+		Ok(crate::wine::find_itch_wine())
 	}
 
 	fn set_wine_dll_overrides(&self, game: &DbGame, dll_overrides: &[String]) -> Result {
@@ -188,32 +189,6 @@ impl WineProviderActions for Itch {
 
 		Ok(())
 	}
-}
-
-#[cfg(target_os = "linux")]
-fn find_itch_wine() -> PathBuf {
-	let wine_name = "wine";
-
-	let flatpak_wine =
-		PathBuf::from("/var/lib/flatpak/app/io.itch.itch/current/active/files/bin/wine");
-
-	if flatpak_wine.exists() {
-		log::info!("Found itch flatpak wine: `{}`", flatpak_wine.display());
-		return flatpak_wine;
-	}
-
-	if let Some(path_var) = std::env::var_os("PATH") {
-		for dir in std::env::split_paths(&path_var) {
-			let wine_bin = dir.join(wine_name);
-			if wine_bin.exists() {
-				log::info!("Found wine via PATH: `{}`", wine_bin.display());
-				return wine_bin;
-			}
-		}
-	}
-
-	log::warn!("Could not find `wine` on PATH or in itch flatpak. Falling back to bare name.");
-	PathBuf::from(wine_name)
 }
 
 #[cfg(target_os = "linux")]
@@ -262,22 +237,26 @@ fn find_butler_db() -> Result<Option<PathBuf>> {
 	}))
 }
 
-fn get_database() -> Result<Option<ItchDatabase>> {
-	let Some(db_path) = find_butler_db()? else {
+fn get_database(db_path: &Path) -> Result<Option<ItchDatabase>> {
+	if !db_path.is_file() {
 		return Ok(None);
-	};
-	let db_display = db_path.display().to_string();
-	let connection = Connection::open_with_flags(db_path, OpenFlags::SQLITE_OPEN_READ_ONLY)?;
+	}
 
-	let mut caves_statement = connection.prepare(
-		r"SELECT
+	let db_display = db_path.display().to_string();
+	let connection = Connection::open_with_flags(db_path, OpenFlags::SQLITE_OPEN_READ_ONLY)
+		.with_context(|| format!("failed to open Itch database `{db_display}`"))?;
+
+	let mut caves_statement = connection
+		.prepare(
+			r"SELECT
 			caves.game_id, caves.verdict, games.title, games.cover_url
     FROM
 			caves
     JOIN
 			games ON caves.game_id = games.id;
   ",
-	)?;
+		)
+		.with_context(|| format!("failed to query Itch database `{db_display}`"))?;
 	let cave_rows = caves_statement.query_map([], |row| {
 		Ok(ItchDatabaseCave {
 			id: row.get("game_id")?,

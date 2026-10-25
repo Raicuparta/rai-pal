@@ -1,12 +1,13 @@
 use std::{path::Path, sync::LazyLock, time::Duration};
 
+use fs_err::tokio::File;
 use futures_util::StreamExt;
-use tokio::{
-	fs::File,
-	io::{AsyncWriteExt, BufWriter},
-};
+use tokio::io::{AsyncWriteExt, BufWriter};
 
-use crate::{progress_status::ProgressStatus, result::Result};
+use crate::{
+	progress_status::ProgressStatus,
+	result::{ContextResult, Result},
+};
 
 pub static CLIENT: LazyLock<reqwest::Client> = LazyLock::new(|| {
 	#[expect(
@@ -39,7 +40,12 @@ pub async fn download(
 	id: &str,
 	status_callback: &(impl Fn(ProgressStatus) + Send + Sync),
 ) -> Result {
-	let response = CLIENT.get(url).send().await?.error_for_status()?;
+	let response = CLIENT
+		.get(url)
+		.send()
+		.await
+		.with_context(|| format!("failed to request `{url}`"))?
+		.error_for_status()?;
 
 	let file = File::create(target_path).await?;
 	let mut file = BufWriter::new(file);
@@ -52,7 +58,7 @@ pub async fn download(
 	let mut stream = response.bytes_stream();
 
 	while let Some(chunk) = stream.next().await {
-		let chunk = chunk?;
+		let chunk = chunk.with_context(|| format!("failed to download `{url}`"))?;
 
 		file.write_all(&chunk).await?;
 

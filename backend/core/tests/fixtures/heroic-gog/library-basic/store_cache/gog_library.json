@@ -1,0 +1,2081 @@
+{
+	"games": [
+		{
+			"app_name": "gog-redist",
+			"runner": "gog",
+			"title": "Galaxy Common Redistributables",
+			"canRunOffline": true,
+			"install": {
+				"is_dlc": true
+			},
+			"is_installed": true,
+			"art_cover": "https://images.gog-statics.com/516af877f6a03199526d1ce5a76358b8f85f6b828764cf46c820f77ae8832fc5.jpg",
+			"art_square": "https://cdn2.steamgriddb.com/file/sgdb-cdn/grid/5fa80a0fb5ff0b2aaca6730ba213219b.png"
+		},
+		{
+			"runner": "gog",
+			"developer": "The Game Kitchen",
+			"app_name": "2068474256",
+			"art_cover": "https://images.gog.com/987cd9c97a6d209f65aecedba0e3fa6ae6de9f91c670c78e1d6907a68af843fd.jpg?namespace=gamesdb",
+			"art_square": "https://images.gog.com/41c1fcb2adf39d0c78853773a77a7692bf710e162b8726135cc1494eeed22a43.jpg?namespace=gamesdb",
+			"art_background": "https://images.gog.com/b93a88c65e32a988702bc5077428fcd55497bf7536be0984ff3004055881822b.webp?namespace=gamesdb",
+			"cloud_save_enabled": false,
+			"art_icon": "https://images.gog.com/86bc9d21260261dcde297a4f681b748fe678ce7f6a850437212805a827dd30f8.jpg?namespace=gamesdb",
+			"extra": {
+				"about": {
+					"description": "Blasphemous is a punishing action-platformer that combines the fast-paced, skilled combat of a hack-n-slash game with a deep and evocative narrative core. \r\n \r\nExplore this nightmarish world of twisted religion and discover its many secrets hidden deep inside. Use devastating combos and brutal executions to smite the hordes of grotesque monsters and titanic bosses, who are all ready to rip your limbs off. Locate and equip relics, rosary beads and prayers that call on the powers of the heavens to aid you in your quest to break your eternal damnation. \r\n \r\nKey Features: \r\n \r\nExplore a Non-Linear World: Overcome fearsome enemies and deadly traps as you venture through a variety of different landscapes, and search for redemption in the dark gothic world of Cvstodia. \r\n \r\n \r\n \r\nBrutal Combat: Release the power of Mea Culpa, a sword born from guilt itself, to slaughter your foes. Acquire devastating new combos and special moves as you purge all in your path. \r\n \r\n \r\n \r\nExecutions: Unleash your wrath and relish in the gory dismemberment of your adversaries - all in beautifully rendered, pixel-perfect execution animations. \r\n \r\n \r\n \r\nCustomise Your Build: Discover and equip Relics, Rosary Beads, Prayers and Sword Hearts to give you the new abilities and stat boosts you need to survive. Experiment with different combinations to suit your playstyle. \r\n \r\n \r\n \r\nEpic Boss Battles: Hordes of gigantic, twisted creatures stand between you and your goal. Learn how they move, survive their devastating attacks and emerge victorious. \r\n \r\n \r\n \r\nUnlock the Mysteries of Cvstodia: The world is full of tormented souls. Some offer you aid, some may ask for something in return. Uncover the stories and fates of these tortured characters to gain rewards and a deeper understanding of the dark world you inhabit.",
+					"shortDescription": ""
+				},
+				"reqs": [],
+				"genres": [
+					"Role-playing (RPG)",
+					"Adventure",
+					"Indie",
+					"Platform",
+					"Hack and slash/Beat 'em up"
+				]
+			},
+			"folder_name": "",
+			"install": {
+				"is_dlc": false
+			},
+			"is_installed": false,
+			"save_folder": "",
+			"title": "Blasphemous",
+			"canRunOffline": true,
+			"is_mac_native": true,
+			"is_linux_native": false
+		},
+		{
+			"runner": "gog",
+			"developer": "Telltale Games",
+			"app_name": "1432207977",
+			"art_cover": "https://images.gog.com/500cffb6090b8f806eb855d0dede64dcb01a1077107aa186733bd1000de3558f.jpg?namespace=gamesdb",
+			"art_square": "https://images.gog.com/1397f0a4dfa0d2ffd705fd2da3b64910ce22b23a4b19f2db6c4a1d555f4ab941.jpg?namespace=gamesdb",
+			"art_background": "https://images.gog.com/8018dc3fd8d7ae3a4512df7e9c1da18fef095de3d217f34043b664413b88e8dd.webp?namespace=gamesdb",
+			"cloud_save_enabled": false,
+			"art_icon": "https://images.gog.com/214c03146231cf4643a2c437a034b53d924c69598f73589c116c958c475a13ca.jpg?namespace=gamesdb",
+			"extra": {
+				"about": {
+					"description": "The Walking Dead: Season One (also known as The Walking Dead: The Game) is an episodic interactive drama graphic adventure video game developed and published by Telltale Games. Based on Robert Kirkman's The Walking Dead comic book series, the game consists of five episodes, released between April and November 2012. It is available for Android, iOS, Kindle Fire HDX, Microsoft Windows, Mac OS X, PlayStation 3, PlayStation Vita, Xbox 360, PlayStation 4 and Xbox One. The game is the first of The Walking Dead video game series published by Telltale.",
+					"shortDescription": ""
+				},
+				"reqs": [],
+				"genres": [
+					"Adventure",
+					"Puzzle",
+					"Point-and-click"
+				]
+			},
+			"folder_name": "",
+			"install": {
+				"is_dlc": false
+			},
+			"is_installed": false,
+			"save_folder": "",
+			"title": "The Walking Dead: Season One",
+			"canRunOffline": true,
+			"is_mac_native": false,
+			"is_linux_native": false
+		},
+		{
+			"runner": "gog",
+			"developer": "Lucas Pope",
+			"app_name": "1108393852",
+			"art_cover": "https://images.gog.com/337a6575ee4d32bab71cd1c72a9e9df845cf8c26c421718f14f4355d6091ba52.jpg?namespace=gamesdb",
+			"art_square": "https://images.gog.com/e23469b38b14a7a0522e2f7e49689e5a279ec7b543b51cf601928d8bf634450f.jpg?namespace=gamesdb",
+			"art_background": "https://images.gog.com/9cdc7f18161de399d05ed6bb7518d5f0484d3c8fadd81331ef461b8dd9f5ad4a.webp?namespace=gamesdb",
+			"cloud_save_enabled": false,
+			"art_icon": "https://images.gog.com/cd132f1205820844cdf03b405d385086c42d836b1b2433aa9b316e78003d452c.jpg?namespace=gamesdb",
+			"extra": {
+				"about": {
+					"description": "In this 1-bit first-person mystery game, a merchant ship called the Obra Dinn has appeared at a London harbor, years after being declared lost at sea. As an insurance adjuster, the player must examine the ship for clues.",
+					"shortDescription": ""
+				},
+				"reqs": [],
+				"genres": [
+					"Adventure",
+					"Indie",
+					"Puzzle"
+				]
+			},
+			"folder_name": "",
+			"install": {
+				"is_dlc": false
+			},
+			"is_installed": false,
+			"save_folder": "",
+			"title": "Return of the Obra Dinn",
+			"canRunOffline": true,
+			"is_mac_native": true,
+			"is_linux_native": false
+		},
+		{
+			"runner": "gog",
+			"developer": "Tarsier Studios",
+			"app_name": "1840760676",
+			"art_cover": "https://images.gog.com/d79a0aab07ebfd5bf2eea8f60f1b9b10113cf7a0397819bc8947bfb4e87a70fe.jpg?namespace=gamesdb",
+			"art_square": "https://images.gog.com/0f2b5afd9e62140a1b4dfe3118df53306100e74ad6625bbd36f8e64636209b0c.jpg?namespace=gamesdb",
+			"art_background": "https://images.gog.com/b4c2fc2bb3d84df21f6f9154ad1906433cca7a463ad8b1ccb650d0dd70a850c3.webp?namespace=gamesdb",
+			"cloud_save_enabled": false,
+			"art_icon": "https://images.gog.com/427a1eb8146706827e606a9ac2c7d963e8132a4524fc87e996ba4fb250921eb6.jpg?namespace=gamesdb",
+			"extra": {
+				"about": {
+					"description": "Little Nightmares II is a suspense-adventure game in which you play as Mono, a young boy trapped in a world that has been distorted by the humming transmission of a distant tower. With Six, the girl in a yellow raincoat, as his guide, Mono sets out to discover the dark secrets of The Signal Tower and save Six from her terrible fate; but their journey will not be straightforward as Mono and Six will face a gallery of new threats from the terrible residents of this world. \r\n \r\nWill you dare to face this collection of new, little nightmares?",
+					"shortDescription": ""
+				},
+				"reqs": [],
+				"genres": [
+					"Adventure",
+					"Platform",
+					"Puzzle"
+				]
+			},
+			"folder_name": "",
+			"install": {
+				"is_dlc": false
+			},
+			"is_installed": false,
+			"save_folder": "",
+			"title": "Little Nightmares II - DEMO",
+			"canRunOffline": true,
+			"is_mac_native": false,
+			"is_linux_native": false
+		},
+		{
+			"runner": "gog",
+			"developer": "Halberd Studios",
+			"app_name": "2099051765",
+			"art_cover": "https://images.gog.com/def8ce60a86c56ef98cac502f057f3739ca047dc12ff8052214db82db9e86cb8.jpg?namespace=gamesdb",
+			"art_square": "https://images.gog.com/96a9dff985f6c77e8cca0a24c9a77e66ce459dc6bbdc9ac1972cb3e72406a5d7.jpg?namespace=gamesdb",
+			"art_background": "https://images.gog.com/5a81fcaf2a7d39f552a9e9576e94ffe023c8ee6c87492fc13124b526a2b5d936.webp?namespace=gamesdb",
+			"cloud_save_enabled": false,
+			"art_icon": "https://images.gog.com/4ee6b7492cb030a07b2f647aecf85d190efdf2e35c503aabef5c99c278289a14.jpg?namespace=gamesdb",
+			"extra": {
+				"about": {
+					"description": "9 Years of Shadows is an emotionally-driven Metroidvania, enhanced by healing music that tells the story of Europa, a young woman of noble birth tasked with ending the curse that plagues her people and restoring color to all lands.",
+					"shortDescription": ""
+				},
+				"reqs": [],
+				"genres": [
+					"Role-playing (RPG)",
+					"Adventure",
+					"Indie",
+					"Platform"
+				]
+			},
+			"folder_name": "",
+			"install": {
+				"is_dlc": false
+			},
+			"is_installed": false,
+			"save_folder": "",
+			"title": "9 Years of Shadows",
+			"canRunOffline": true,
+			"is_mac_native": false,
+			"is_linux_native": false
+		},
+		{
+			"runner": "gog",
+			"developer": "Frictional Games",
+			"app_name": "1207659259",
+			"art_cover": "https://images.gog.com/ea47ff11c11a033a1afd2b203283395a9e6fec25a7151aa7bd59a7ccd9f27d31.jpg?namespace=gamesdb",
+			"art_square": "https://images.gog.com/c249233f5ae92174498f2252eae54d2ee01ff11d934063801d80f28059ca4c27.jpg?namespace=gamesdb",
+			"art_background": "https://images.gog.com/26960cb6d47a6a0709e2644c1626a780fabccf5c65741fd033abfd50f1024657.webp?namespace=gamesdb",
+			"cloud_save_enabled": false,
+			"art_icon": "https://images.gog.com/4bd8be8144db2a8277b072c15a7ba6f70695e094135dd51d958cc489e080762f.jpg?namespace=gamesdb",
+			"extra": {
+				"about": {
+					"description": "Amnesia: The Dark Descent is a survival horror video game by Frictional Games. The game features a protagonist named Daniel exploring a dark and foreboding castle, while trying to maintain his sanity by avoiding monsters and other terrifying obstructions. The game was critically well received.",
+					"shortDescription": ""
+				},
+				"reqs": [],
+				"genres": [
+					"Adventure",
+					"Indie",
+					"Puzzle"
+				]
+			},
+			"folder_name": "",
+			"install": {
+				"is_dlc": false
+			},
+			"is_installed": false,
+			"save_folder": "",
+			"title": "Amnesia: The Dark Descent",
+			"canRunOffline": true,
+			"is_mac_native": true,
+			"is_linux_native": true
+		},
+		{
+			"runner": "gog",
+			"developer": "Fireplace Games",
+			"app_name": "1589319779",
+			"art_cover": "https://images.gog.com/82986e0919e950ecc3758f75731772c6d24b261f705126875b9449ed0fb0712b.jpg?namespace=gamesdb",
+			"art_square": "https://images.gog.com/061af0cdc1d8e2ff648ea2115c2d7d82c3289c9441a8896326a691a5c99efa14.jpg?namespace=gamesdb",
+			"art_background": "https://images.gog.com/aea6b53bf93707d577a24491a60b062a234a55787ca3ed1848f213332526b0a0.webp?namespace=gamesdb",
+			"cloud_save_enabled": false,
+			"art_icon": "https://images.gog.com/baf5b044f084a92170793b2a1a9915494986a86100727838477763e38fd59085.jpg?namespace=gamesdb",
+			"extra": {
+				"about": {
+					"description": "A swashbuckling adventure!\nEn Garde! is a swashbuckling action-adventure game set in 17th century's Spain. Play as Adalia de Volador, a noble & impetuous swordswoman! Your palace has been seized by a mysterious mastermind and his hoard of guards - you will have to defend your family's honor!\n\nFight with your rapier and acrobatic moves against numerous opponents, and use the environment to your advantage in an intuitive way (every object is interactive, from tables to chandeliers!). You can even use your sense of repartee to taunt your opponents. Combat is a spectacle and should be done with panache!\n\nThis En Garde! prototype features story-driven action in an open level (the Volador's Palace) for a total play time of about 30 minutes.",
+					"shortDescription": ""
+				},
+				"reqs": [],
+				"genres": [
+					"Adventure",
+					"Indie",
+					"Fighting"
+				]
+			},
+			"folder_name": "",
+			"install": {
+				"is_dlc": false
+			},
+			"is_installed": false,
+			"save_folder": "",
+			"title": "En Garde!",
+			"canRunOffline": true,
+			"is_mac_native": false,
+			"is_linux_native": false
+		},
+		{
+			"runner": "gog",
+			"developer": "Squad",
+			"app_name": "1429864849",
+			"art_cover": "https://images.gog.com/fd6c1734e4a8c155bedd3e76fff0c840e80855a26a0e3a8717a7f693e186f000.jpg?namespace=gamesdb",
+			"art_square": "https://images.gog.com/dc68da69d6306d79c23bdddd69290ad585721579107cfb35779bc2219d3a5480.jpg?namespace=gamesdb",
+			"art_background": "https://images.gog.com/4d2680caf0bda7eeb4f90e3d9bccba500629cb0ec267dd1ec15bd38c9edcfec0.webp?namespace=gamesdb",
+			"cloud_save_enabled": false,
+			"art_icon": "https://images.gog.com/700ec1ea496cef400cba7c2b7cc701e4ae77448e0961be297320fbcb61c7a7b4.jpg?namespace=gamesdb",
+			"extra": {
+				"about": {
+					"description": "In Kerbal Space Program, take charge of the space program for the alien race known as the Kerbals. You have access to an array of parts to assemble fully-functional spacecraft that flies (or doesn’t) based on realistic aerodynamic and orbital physics. Launch your Kerbal crew into orbit and beyond (while keeping them alive) to explore moons and planets in the Kerbol solar system, constructing bases and space stations to expand the reach of your expedition.",
+					"shortDescription": ""
+				},
+				"reqs": [],
+				"genres": [
+					"Indie",
+					"Simulator"
+				]
+			},
+			"folder_name": "",
+			"install": {
+				"is_dlc": false
+			},
+			"is_installed": false,
+			"save_folder": "",
+			"title": "Kerbal Space Program",
+			"canRunOffline": true,
+			"is_mac_native": true,
+			"is_linux_native": true
+		},
+		{
+			"runner": "gog",
+			"developer": "Artificer",
+			"app_name": "1511366207",
+			"art_cover": "https://images.gog.com/4cb99b0fd171595f3ece585c6df2173418e9fc457dce76d48b0c6aa7b65012aa.jpg?namespace=gamesdb",
+			"art_square": "https://images.gog.com/7742a0de714f56fbaa4ce1718b2419043476f0fdda3b83db18403321a3fa9ff0.jpg?namespace=gamesdb",
+			"art_background": "https://images.gog.com/b5056ec30873866bc72cc074ed04958afc1865d57c4b183e48e40631902cecd8.webp?namespace=gamesdb",
+			"cloud_save_enabled": false,
+			"art_icon": "https://images.gog.com/235071564b8f0e6795dad4433dadc1c38d5789f865a8f9ce7e94915c59ad2517.jpg?namespace=gamesdb",
+			"extra": {
+				"about": {
+					"description": "As a contestant on a brutal reality game show of the future, you must survive a deadly urban environment packed with lethal traps, confounding puzzles, and murderous, heavily armed psychopaths. Turn-based combat in hand crafted levels, built for entertainment.",
+					"shortDescription": ""
+				},
+				"reqs": [],
+				"genres": [
+					"Strategy",
+					"Turn-based strategy (TBS)",
+					"Tactical"
+				]
+			},
+			"folder_name": "",
+			"install": {
+				"is_dlc": false
+			},
+			"is_installed": false,
+			"save_folder": "",
+			"title": "Showgunners",
+			"canRunOffline": true,
+			"is_mac_native": false,
+			"is_linux_native": false
+		},
+		{
+			"runner": "gog",
+			"developer": "Strollart",
+			"app_name": "1493813128",
+			"art_cover": "https://images.gog.com/ada9785d929f697c6ffc6916881ba9c41d9a6edbfc46a3c5c8bf22008907cc0f.jpg?namespace=gamesdb",
+			"art_square": "https://images.gog.com/a4278d00cf5290ea7379fc4688799de68f8415e62e73806c16a3986652f78e31.jpg?namespace=gamesdb",
+			"art_background": "https://images.gog.com/e8fe221022c3a97fdebdf8d0c5b02772224e47f8e0bec143d54ada30b41e2539.webp?namespace=gamesdb",
+			"cloud_save_enabled": false,
+			"art_icon": "https://images.gog.com/f021f2c24d267464141d62221a636f6895fb14166a937bdb7b6a459e3931f103.jpg?namespace=gamesdb",
+			"extra": {
+				"about": {
+					"description": "Below the Stone is a pixel-art roguelike about dwarves on the quest for the deepest depths. A place where each and every descent will lead to new adventures -- and where only the most determined dwarves with many lost lives will be rewarded by the hidden world lying below the stone.",
+					"shortDescription": ""
+				},
+				"reqs": [],
+				"genres": [
+					"Adventure",
+					"Indie"
+				]
+			},
+			"folder_name": "",
+			"install": {
+				"is_dlc": false
+			},
+			"is_installed": false,
+			"save_folder": "",
+			"title": "Below the Stone Demo",
+			"canRunOffline": true,
+			"is_mac_native": false,
+			"is_linux_native": false
+		},
+		{
+			"runner": "gog",
+			"developer": "Chuhai Labs",
+			"app_name": "1930721905",
+			"art_cover": "https://images.gog.com/abc3053556ced9c83c7d05dab196bbcbf61e54fb1d30a7aada6cc4883ec9fa1f.jpg?namespace=gamesdb",
+			"art_square": "https://images.gog.com/04123daf3ceb7a83266d40348930dfa56ac041eb38a294bef04701ceb8f8e567.jpg?namespace=gamesdb",
+			"art_background": "https://images.gog.com/7fa0effed4c6443571844a5c045e088c1b0fa21c8954a963760a35a76ae46453.webp?namespace=gamesdb",
+			"cloud_save_enabled": false,
+			"art_icon": "https://images.gog.com/fabe3a4788a2434e8408c93e1acdb445224c54def3c072b77005184a86dae5e2.jpg?namespace=gamesdb",
+			"extra": {
+				"about": {
+					"description": "Cursed to Golf is a golf-like adventure where every shot counts. Players are tasked with making it out of Golf Purgatory to become a Golfing Legend. With insane hazards, otherworldly power-ups and tons of replayability, will you make it back alive or will you forever be… Cursed to Golf!?",
+					"shortDescription": ""
+				},
+				"reqs": [],
+				"genres": [
+					"Adventure",
+					"Indie",
+					"Puzzle",
+					"Sport",
+					"Arcade",
+					"Card & Board Game"
+				]
+			},
+			"folder_name": "",
+			"install": {
+				"is_dlc": false
+			},
+			"is_installed": false,
+			"save_folder": "",
+			"title": "Cursed to Golf",
+			"canRunOffline": true,
+			"is_mac_native": false,
+			"is_linux_native": false
+		},
+		{
+			"runner": "gog",
+			"developer": "Robit Games",
+			"app_name": "1207659013",
+			"art_cover": "https://images.gog.com/24871d1c2910cfe3fc0d6ee7babaa768fa21d6776554c7f8cf4b2face75112da.jpg?namespace=gamesdb",
+			"art_square": "https://images.gog.com/caa70c9dd1f905312a5c1583dec1fa6c082ab20f231675ea76259f58bce166d0.jpg?namespace=gamesdb",
+			"art_background": "https://images.gog.com/dc8ff9435bfaf80d377f9fc6811157eb2e342836c032c390ad09acc720639b58.webp?namespace=gamesdb",
+			"cloud_save_enabled": false,
+			"art_icon": "https://images.gog.com/4ef694d6add749f71daa6e7993184847df5bc639b1e292d51321748737533af6.jpg?namespace=gamesdb",
+			"extra": {
+				"about": {
+					"description": "Treasure Adventure Game is a freeware open-world, platform adventure game developed by Stephen Orlando. It includes a 1 hour original sound-track composed by Robert Ellis",
+					"shortDescription": ""
+				},
+				"reqs": [],
+				"genres": [
+					"Role-playing (RPG)",
+					"Adventure",
+					"Indie",
+					"Platform"
+				]
+			},
+			"folder_name": "",
+			"install": {
+				"is_dlc": false
+			},
+			"is_installed": false,
+			"save_folder": "",
+			"title": "Treasure Adventure Game",
+			"canRunOffline": true,
+			"is_mac_native": false,
+			"is_linux_native": false
+		},
+		{
+			"runner": "gog",
+			"developer": "Eclipse Software",
+			"app_name": "1207658901",
+			"art_cover": "https://images.gog.com/b6973026fb66e94db4099841b8e70b42edcd7201c1225219f55e9f832163a38f.jpg?namespace=gamesdb",
+			"art_square": "https://images.gog.com/e3154e891fbc1fa3476997633ba39946100f2f89d57a21ff72cdab0395214385.jpg?namespace=gamesdb",
+			"art_background": "https://images.gog.com/551c302f4e3971c4be89463ce41871731d3a89c9ee4ecf6577af1e92e8878a30.webp?namespace=gamesdb",
+			"cloud_save_enabled": false,
+			"art_icon": "https://images.gog.com/bfd2963fb47aa0c7d143084cee6a43c87587860f2d7d4989ad3e98d6f9542c16.jpg?namespace=gamesdb",
+			"extra": {
+				"about": {
+					"description": "Tyrian 2000 is an updated rerelease of the original Tyrian. Tyrian is an action killing, smashing, shoot'em'all arcade game. Your goal is to kill as many enemies as possible and finish the level, buy more weapons and then kill many more enemies. Your battle ship can be improved over time and you can buy new weapons currently available. Your ship supports front guns, rear guns and side slots for the most deadly weapons.",
+					"shortDescription": ""
+				},
+				"reqs": [],
+				"genres": [
+					"Shooter",
+					"Arcade"
+				]
+			},
+			"folder_name": "",
+			"install": {
+				"is_dlc": false
+			},
+			"is_installed": false,
+			"save_folder": "",
+			"title": "Tyrian 2000",
+			"canRunOffline": true,
+			"is_mac_native": true,
+			"is_linux_native": false
+		},
+		{
+			"runner": "gog",
+			"developer": "Spiders",
+			"app_name": "1635210189",
+			"art_cover": "https://images.gog.com/fccadf4e5deeeaaf60f7c36029b562981122aab69eb224dfe1b8960a3a9113df.jpg?namespace=gamesdb",
+			"art_square": "https://images.gog.com/fd8c2f0c2b0eca9df7bc54af517775b7fb5946f98738e45a59b553781c4709d1.jpg?namespace=gamesdb",
+			"art_background": "https://images.gog.com/3f4c1de3439c1f2eb2e1cdcce031b0f5463a0529de4cd649e96744a3c5c75d06.webp?namespace=gamesdb",
+			"cloud_save_enabled": false,
+			"art_icon": "https://images.gog.com/7321561c7697f23b402e867c1bfb8229b5ae23b6a621409424cfa7c06884bc5b.jpg?namespace=gamesdb",
+			"extra": {
+				"about": {
+					"description": "Explore a fresh new world as you set foot - alongside many other settlers, mercenaries and treasure hunters - on a remote island seeping with magic, rumored to be filled with riches and lost secrets. \r\n \r\nGreedFall aims for a very unique visual identity, inspired by Baroque art from 17th Century Europe, depicting grandiose sceneries in muted warm colors and dark undertones. \r\n \r\nA grand journey filled with mystery follows, as you find yourself in the middle of ever-increasing tensions between the invading settlers and the locals, protected by supernatural beings, manifestation of the island's earthly magic. \r\n \r\nWith a strong focus on its core RPG identity, GreedFall follows Spiders’ experience in building intricate worlds filled with mysteries to discover, weaving deep character interactions, and offering players great freedom to achieve quests and objectives in a multitude of different ways – through combat of course, but also through diplomacy, deception or stealth.",
+					"shortDescription": ""
+				},
+				"reqs": [],
+				"genres": [
+					"Role-playing (RPG)",
+					"Adventure",
+					"Strategy"
+				]
+			},
+			"folder_name": "",
+			"install": {
+				"is_dlc": false
+			},
+			"is_installed": false,
+			"save_folder": "",
+			"title": "GreedFall",
+			"canRunOffline": true,
+			"is_mac_native": false,
+			"is_linux_native": false
+		},
+		{
+			"runner": "gog",
+			"developer": "Interplay Entertainment, Black Isle Studios",
+			"app_name": "1",
+			"art_cover": "https://images.gog.com/c553acb2c50b95ba62c332dd161e8ad6ec43ceba477ae94082dff1a55bdb8eb3.jpg?namespace=gamesdb",
+			"art_square": "https://images.gog.com/84c0608a3263f7acad8957b09f10ca393e62f5ba62c80e1f2969ad071f6366df.jpg?namespace=gamesdb",
+			"art_background": "https://images.gog.com/4f4fca6e38d3012e08f0008fe7311d0ddf985041357e885edc25bb1f80846f19.webp?namespace=gamesdb",
+			"cloud_save_enabled": false,
+			"art_icon": "https://images.gog.com/9652b5af69e00916568e02cf82686155bc04ada29ec1b649285bc66853aaae27.jpg?namespace=gamesdb",
+			"extra": {
+				"about": {
+					"description": "The Vault Dweller is tasked with exploring post-nuclear California in order to retrieve a water chip to replace the broken chip of Vault 13, their home, which they are the first person to ever leave. The player will engage in Western RPG character building and turn-based tactical combat while getting to know settlements and factions of people, mutants and ghouls through branching dialogue trees.",
+					"shortDescription": ""
+				},
+				"reqs": [],
+				"genres": [
+					"Role-playing (RPG)"
+				]
+			},
+			"folder_name": "",
+			"install": {
+				"is_dlc": false
+			},
+			"is_installed": false,
+			"save_folder": "",
+			"title": "Fallout Classic",
+			"canRunOffline": true,
+			"is_mac_native": true,
+			"is_linux_native": false
+		},
+		{
+			"runner": "gog",
+			"developer": "Robinson Technologies",
+			"app_name": "1640863824",
+			"art_cover": "https://images.gog.com/c82fb4bb89a92fca655ddec21bc21b181934ccb58c38cd9908573b93a1a817f6.jpg?namespace=gamesdb",
+			"art_square": "https://images.gog.com/cfa188f609a90c89821c7ea3131e0403def11f382f7d53943dd473cfd4d295d5.jpg?namespace=gamesdb",
+			"art_background": "https://images.gog.com/3f930a5009c840a3e470de129fe43162530e731692d4a6d3fc64d0aeccdc31da.webp?namespace=gamesdb",
+			"cloud_save_enabled": false,
+			"art_icon": "https://images.gog.com/e97e07539e93ac5d9d978246b027fc6cf64ea8f6882ad339eee4f2552f0c7524.jpg?namespace=gamesdb",
+			"extra": {
+				"about": {
+					"description": "Dink Smallwood is a humorous role-playing video game. It was first released in 1998 before becoming freeware on October 17, 1999. It was developed by Robinson Technologies, at the time consisting of Seth Robinson, Justin Martin, and Greg Smith. Mitch Brink composed several of the game's music tracks, while others are MIDI forms of classical music such as Debussy's Reverie. The game has a small but dedicated fan following that continues to develop add-ons for the game more than a decade after its release.",
+					"shortDescription": ""
+				},
+				"reqs": [],
+				"genres": [
+					"Role-playing (RPG)",
+					"Adventure"
+				]
+			},
+			"folder_name": "",
+			"install": {
+				"is_dlc": false
+			},
+			"is_installed": false,
+			"save_folder": "",
+			"title": "Dink Smallwood HD",
+			"canRunOffline": true,
+			"is_mac_native": false,
+			"is_linux_native": false
+		},
+		{
+			"runner": "gog",
+			"developer": "Feral Interactive, 2K Boston, 2K Australia",
+			"app_name": "1439656515",
+			"art_cover": "https://images.gog.com/2c36a735e64632e69b9f393c5e49774b8d3197fef1560cdd063c4d1a8398d545.jpg?namespace=gamesdb",
+			"art_square": "https://images.gog.com/5148b840cdb4a8c36ace0be14875e0af17ff0d69269524afd5a528c13bbcb979.jpg?namespace=gamesdb",
+			"art_background": "https://images.gog.com/e54c1a0cd296719ccfe332731fdebead268b7f371dfc8c4b18414058cf83fae6.webp?namespace=gamesdb",
+			"cloud_save_enabled": false,
+			"art_icon": "https://images.gog.com/df8c9897c81f8baecac27e7e3cae34a145eb88ae03db3b9494da2fe6e5bc9af1.jpg?namespace=gamesdb",
+			"extra": {
+				"about": {
+					"description": "BioShock Remastered was released as a part of BioShock: The Collection and also available separately for PC. The remastered version has achievements, full controller support, high resolution textures, models and interface, and 4K resolution support.",
+					"shortDescription": ""
+				},
+				"reqs": [],
+				"genres": [
+					"Role-playing (RPG)",
+					"Adventure",
+					"Shooter"
+				]
+			},
+			"folder_name": "",
+			"install": {
+				"is_dlc": false
+			},
+			"is_installed": false,
+			"save_folder": "",
+			"title": "BioShock™ Remastered",
+			"canRunOffline": true,
+			"is_mac_native": false,
+			"is_linux_native": false
+		},
+		{
+			"runner": "gog",
+			"developer": "",
+			"app_name": "1625610230",
+			"art_cover": "https://images.gog.com/c0714532465dce73cdfee74111fe418b736c7d1094c2ce9ae5f707166082eab3.jpg?namespace=gamesdb",
+			"art_square": "https://images.gog.com/2ca0234aa8fd551f32fb1d1703850ad4c44b747435c7cffac1de77268fd9d920.jpg?namespace=gamesdb",
+			"art_background": "https://images.gog.com/e7c750b98fdc773e50a2bab78101b662006d550bda1472442e04eb507c05fb3b.webp?namespace=gamesdb",
+			"cloud_save_enabled": false,
+			"art_icon": "https://images.gog.com/57bcdee3a5c5b0074a324b07569380299b5759d484a17e5a3c4bf4e9d707cd9e.jpg?namespace=gamesdb",
+			"extra": {
+				"about": {
+					"description": "Brassheart is a Point & Click adventure game set in the alternative 1920s, inspired by the dieselpunk aesthetics and the classics of the genre. In this world, Pola follows the clues that may provide a way to save her father kidnapped by his own invention, a rebellious supermachine, Valkiria.",
+					"shortDescription": ""
+				},
+				"reqs": [],
+				"genres": [
+					"Adventure",
+					"Indie",
+					"Point-and-click"
+				]
+			},
+			"folder_name": "",
+			"install": {
+				"is_dlc": false
+			},
+			"is_installed": false,
+			"save_folder": "",
+			"title": "Brassheart Demo",
+			"canRunOffline": true,
+			"is_mac_native": true,
+			"is_linux_native": false
+		},
+		{
+			"runner": "gog",
+			"developer": "Origin Systems",
+			"app_name": "1207658962",
+			"art_cover": "https://images.gog.com/f34add0a2b854e4d511f8f88ee191442eb908f309769d065e732ff22f3aa7df3.jpg?namespace=gamesdb",
+			"art_square": "https://images.gog.com/82003a7f51611404fa0059f4279eabe6125c75b564139765431ad4bdec8db9af.jpg?namespace=gamesdb",
+			"art_background": "https://images.gog.com/e2978070b04d9b5a84cd2c7ed5e66ed3d430e81adc4203d5a3c42d0e96e814e0.webp?namespace=gamesdb",
+			"cloud_save_enabled": false,
+			"art_icon": "https://images.gog.com/431830cd8611a14b4d267cdd6e76813d5e5ebe458b216f3ca945bd40bd6ef2b3.jpg?namespace=gamesdb",
+			"extra": {
+				"about": {
+					"description": "As an addendum to this work, I, Lord British, would like to speak of the Quest of the Avatar mentioned in these pages. The Quest of the Avatar is the search for a new standard, a new vision of life for which out people may strive. We seek the person who can become a shining example of our nation and guides us from the Age of Darkness into the Age of Light. We have sent this message our to the farthest reaches of the known universe, indeed, we have even spoken across the void of time. Is there One who can complete the Quest of the Avatar? Many have tried already, and have met with partial success, becoming enlightened in one or more of the Eight Virtues of the Avatar - but none have yet attained the true state of being an Avatar. \r\n\r\nThe secrets of the Avatar are buried deep in the hearts of both our people and the land in which we dwell. The search will be arduous and the One who shall succeed must be able to assemble all the parts of the great mystery in order to solve the Quest. Gaze upon the device portrayed on the facing page of this tome. Learn it well, for when thou dost gaze upon it again then shall thy life's quest be revealed.",
+					"shortDescription": ""
+				},
+				"reqs": [],
+				"genres": [
+					"Role-playing (RPG)"
+				]
+			},
+			"folder_name": "",
+			"install": {
+				"is_dlc": false
+			},
+			"is_installed": false,
+			"save_folder": "",
+			"title": "Ultima™ IV: Quest of the Avatar",
+			"canRunOffline": true,
+			"is_mac_native": false,
+			"is_linux_native": false
+		},
+		{
+			"runner": "gog",
+			"developer": "Nomada Studio",
+			"app_name": "2078272297",
+			"art_cover": "https://images.gog.com/545b499d226a4c8d198bd0ae67e16b1a0d769c4a48c0b462de87370c839f4080.jpg?namespace=gamesdb",
+			"art_square": "https://images.gog.com/9e7122fe690a6ad91c1ff74ead1b00969fab61ce4cdfa12bf2e8703fbd32ff44.jpg?namespace=gamesdb",
+			"art_background": "https://images.gog.com/80f1e821e13b81579d46c1fc8e239edfba484300951d5f11c19ce7fbf0871dd4.webp?namespace=gamesdb",
+			"cloud_save_enabled": false,
+			"art_icon": "https://images.gog.com/4170ab868b84991e63451b5f51b77045666298b317aca2fb3e8ae4e696091a4d.jpg?namespace=gamesdb",
+			"extra": {
+				"about": {
+					"description": "Gris is a 2D platformer developed by Nomada Studio and published by Devolver Digital. It is a visually striking game that follows the journey of a young woman named Gris as she navigates a world of grief and loss. The game features no dialogue, relying on its hand-painted art style, evocative music, and environmental storytelling to convey its themes.\n\nGameplay involves exploration, light platforming, and puzzle-solving, with Gris gaining new abilities as the story progresses. It received critical acclaim for its artistic design and emotional depth.",
+					"shortDescription": ""
+				},
+				"reqs": [],
+				"genres": [
+					"Adventure",
+					"Indie",
+					"Platform",
+					"Puzzle"
+				]
+			},
+			"folder_name": "",
+			"install": {
+				"is_dlc": false
+			},
+			"is_installed": false,
+			"save_folder": "",
+			"title": "GRIS",
+			"canRunOffline": true,
+			"is_mac_native": true,
+			"is_linux_native": false
+		},
+		{
+			"runner": "gog",
+			"developer": "Sluggerfly",
+			"app_name": "1156382433",
+			"art_cover": "https://images.gog.com/6e9f322b728b3a9b73b63aa5bd2391edddfade6ad8d2e1342ce5b5c045856503.jpg?namespace=gamesdb",
+			"art_square": "https://images.gog.com/255345ecfb820274aba32670fbdb18a24ca3c094de2ea1f9c2cf44f5194ba321.jpg?namespace=gamesdb",
+			"art_background": "https://images.gog.com/029425abde8b5a7ab785974869bb89e9a10bd75372048cd7ee1543472647e0fb.webp?namespace=gamesdb",
+			"cloud_save_enabled": false,
+			"art_icon": "https://images.gog.com/747a42c9388b7cdca5f8ca5ead135843529a966d331a6ec6493c882537555f96.jpg?namespace=gamesdb",
+			"extra": {
+				"about": {
+					"description": "Hell Pie is a single-player 3D platformer which empowers players with an extensive set of moves based on a swing mechanic and lets them explore a combination of large twisted worlds and small challenging levels. Fighting enemies, collecting weird cake ingredients and interactions with bizarre characters complement the gameplay. Our target audience are fans of old-school action-adventures and gamers who loved to play N64 classics such as Mario 64 or Banjo-Kazooie.",
+					"shortDescription": ""
+				},
+				"reqs": [],
+				"genres": [
+					"Adventure",
+					"Platform"
+				]
+			},
+			"folder_name": "",
+			"install": {
+				"is_dlc": false
+			},
+			"is_installed": false,
+			"save_folder": "",
+			"title": "Hell Pie",
+			"canRunOffline": true,
+			"is_mac_native": false,
+			"is_linux_native": false
+		},
+		{
+			"runner": "gog",
+			"developer": "2K Boston, 2K Australia",
+			"app_name": "2022341186",
+			"art_cover": "https://images.gog.com/906f0dc62627f400c27029febfc1c8c932df05bba9775f6369eeebb3aeca2b99.jpg?namespace=gamesdb",
+			"art_square": "https://images.gog.com/30cfd064a36dd90f81aa24f5aa36e3e65f5fd6f9fe4fc3860718ac142f2105d4.jpg?namespace=gamesdb",
+			"art_background": "https://images.gog.com/cca07f661b51e7a6493f63313c513e51a268ef5d43ac3cb73d68ed36e80490e9.webp?namespace=gamesdb",
+			"cloud_save_enabled": false,
+			"art_icon": "https://images.gog.com/305de1ab377e39b2f693b55d049dcd5ddfae1612b561c3c243e0ceb250b90649.jpg?namespace=gamesdb",
+			"extra": {
+				"about": {
+					"description": "BioShock is a horror-themed first-person shooter set in a steampunk underwater dystopia. The player is urged to turn everything into a weapon: biologically modifying their own body with Plasmids, hacking devices and systems, upgrading their weapons, crafting new ammo variants, and experimenting with different battle techniques are all possible. The game is described by the developers as a spiritual successor to their previous PC title System Shock 2. BioShock received high praise in critical reviews for its atmospheric audio and visual quality, absorbing and original plot and its unique gaming experience.",
+					"shortDescription": ""
+				},
+				"reqs": [],
+				"genres": [
+					"Role-playing (RPG)",
+					"Adventure",
+					"Puzzle",
+					"Shooter"
+				]
+			},
+			"folder_name": "",
+			"install": {
+				"is_dlc": false
+			},
+			"is_installed": false,
+			"save_folder": "",
+			"title": "BioShock™",
+			"canRunOffline": true,
+			"is_mac_native": false,
+			"is_linux_native": false
+		},
+		{
+			"runner": "gog",
+			"developer": "Atomic Wolf",
+			"app_name": "1780442795",
+			"art_cover": "https://images.gog.com/0dbe227aa13153eff8981b0a832174939bceb74cc0731c712403e905baaba7d8.jpg?namespace=gamesdb",
+			"art_square": "https://images.gog.com/29bf54b3ad1d0af097f6dc531d543df1e9d4232baa0c23c153a0d8975439e51c.jpg?namespace=gamesdb",
+			"art_background": "https://images.gog.com/ceba3e71aea33c047031057c95dce76b7d32b2a05c42caf3b19cb3f593edd522.webp?namespace=gamesdb",
+			"cloud_save_enabled": false,
+			"art_icon": "https://images.gog.com/f40ff0211e465aaf814aff67b3fd040b56281f866f4846b5ec6ddb1e9717770f.jpg?namespace=gamesdb",
+			"extra": {
+				"about": {
+					"description": "Players will experience a story about a world where government authorities use advanced technology to manipulate the population. Civil rights are a thing of the past, with the government engaging in complete surveillance of every citizen in the world. Social media activity, online payments, and GPS location tracking from mobile devices are just some of the ways every single person is being monitored. In this world, there are insurgents resisting this oppression, fighting for their freedom, while government agents try to maintain order and control. In Liberated, players will experience both sides of this conflict, with every choice they make changing the course of the story.",
+					"shortDescription": ""
+				},
+				"reqs": [],
+				"genres": [
+					"Role-playing (RPG)",
+					"Adventure",
+					"Indie",
+					"Platform",
+					"Visual Novel"
+				]
+			},
+			"folder_name": "",
+			"install": {
+				"is_dlc": false
+			},
+			"is_installed": false,
+			"save_folder": "",
+			"title": "Liberated",
+			"canRunOffline": true,
+			"is_mac_native": false,
+			"is_linux_native": false
+		},
+		{
+			"runner": "gog",
+			"developer": "Something We Made",
+			"app_name": "1436499377",
+			"art_cover": "https://images.gog.com/16c6f5b8d77e2732b5710d174e4af23b030151b6e5c8918bd24b1df322a06de1.jpg?namespace=gamesdb",
+			"art_square": "https://images.gog.com/f3c62b262ac4ca4bcd35f2fe3216f87f3c96f291ace3fe1791505e3bd0114842.jpg?namespace=gamesdb",
+			"art_background": "https://images.gog.com/b1207278fcde3385962e8b2009a468aa86c0eda59d8f5614971a3e03b790eceb.webp?namespace=gamesdb",
+			"cloud_save_enabled": false,
+			"art_icon": "https://images.gog.com/67721c23a710de1b4ca68520d622154075dc881b0ef2460d050d65be2a8172e9.jpg?namespace=gamesdb",
+			"extra": {
+				"about": {
+					"description": "An aesthetic adventure with the premise of enjoying the little things!\nToem is an adventure game, it aims to capture the curiosity of a child! Should I go left, right, who cares I'm on an adventure! Your smile, that's what's important to us.",
+					"shortDescription": ""
+				},
+				"reqs": [],
+				"genres": [
+					"Adventure",
+					"Indie",
+					"Puzzle"
+				]
+			},
+			"folder_name": "",
+			"install": {
+				"is_dlc": false
+			},
+			"is_installed": false,
+			"save_folder": "",
+			"title": "TOEM",
+			"canRunOffline": true,
+			"is_mac_native": true,
+			"is_linux_native": false
+		},
+		{
+			"runner": "gog",
+			"developer": "Chimera Entertainment",
+			"app_name": "1530174735",
+			"art_cover": "https://images.gog.com/dc70ddd05aa4dbb2178493ad52e69cbc036b4203cbed6bbc7b645f367caef742.jpg?namespace=gamesdb",
+			"art_square": "https://images.gog.com/81027797340ea7e877e90b7257479dcdefc51b958ee394ec83da1186f68d7c1e.jpg?namespace=gamesdb",
+			"art_background": "https://images.gog.com/982c77f840791bcf73c0bf59770fddbd3ef8ca12b93b5553b4f877ee93aa8bae.webp?namespace=gamesdb",
+			"cloud_save_enabled": false,
+			"art_icon": "https://images.gog.com/db91ee9595fdba9ff4a2b79480307b1665503b1117e6828cc74c6e0441d931d9.jpg?namespace=gamesdb",
+			"extra": {
+				"about": {
+					"description": "Songs of Silence is an Art Nouveau-inspired fantasy strategy game with a unique mix of turn-based kingdom management, hero development and real-time combat.",
+					"shortDescription": ""
+				},
+				"reqs": [],
+				"genres": [
+					"Role-playing (RPG)",
+					"Strategy",
+					"Turn-based strategy (TBS)"
+				]
+			},
+			"folder_name": "",
+			"install": {
+				"is_dlc": false
+			},
+			"is_installed": false,
+			"save_folder": "",
+			"title": "Songs Of Silence Demo",
+			"canRunOffline": true,
+			"is_mac_native": false,
+			"is_linux_native": false
+		},
+		{
+			"runner": "gog",
+			"developer": "Graphite Lab, Sonamu Games, Joystick",
+			"app_name": "1577460220",
+			"art_cover": "https://images.gog.com/6a3482ca64f878f294788e797cc6919d3075f9985017a012c062171a76cd5276.jpg?namespace=gamesdb",
+			"art_square": "https://images.gog.com/c02d29226e943122316497dda45e7ad928304ea27ddbee65a9d48a6e716e5402.jpg?namespace=gamesdb",
+			"art_background": "https://images.gog.com/446857b0fb7e0b5d5ba2e600f8c3a2f1080e8a487dec7c90c3d5185776729853.webp?namespace=gamesdb",
+			"cloud_save_enabled": false,
+			"art_icon": "https://images.gog.com/eae1b9d63f504f8de5a5d53ba88e1bbd0c040431322c149af02ad2f8156b68a1.jpg?namespace=gamesdb",
+			"extra": {
+				"about": {
+					"description": "Become an agent of vengeance in this bullet-heaven action roguelite! You are the lone survivor of your squad, on an alien planet with just your weapon, a jetpack, and the courage to keep fighting. Kill off alien swarms and transform their valuable guts into explosive upgrades and vital utilities.",
+					"shortDescription": ""
+				},
+				"reqs": [],
+				"genres": [
+					"Role-playing (RPG)",
+					"Indie"
+				]
+			},
+			"folder_name": "",
+			"install": {
+				"is_dlc": false
+			},
+			"is_installed": false,
+			"save_folder": "",
+			"title": "Hive Jump 2: Survivors",
+			"canRunOffline": true,
+			"is_mac_native": false,
+			"is_linux_native": false
+		},
+		{
+			"runner": "gog",
+			"developer": "Nosebleed Interactive",
+			"app_name": "1645177204",
+			"art_cover": "https://images.gog.com/8999a165c87518138b880ce7aa7c7fcdd81ea85712b1087ab35a49e1cf7ddd8c.jpg?namespace=gamesdb",
+			"art_square": "https://images.gog.com/988294590b4a4f80c1cd747ba8e5bc613fb3b4855fa102c6a000d16de03b5aee.jpg?namespace=gamesdb",
+			"art_background": "https://images.gog.com/576cc9415566d07ab66a9e52bd0c9db21425dbd67bff2952d7a276e9cc9c52e9.webp?namespace=gamesdb",
+			"cloud_save_enabled": false,
+			"art_icon": "https://images.gog.com/7a517a104b8ca8e996cb61c29102735f7b9909b6d7aba1afa0506440204f37d3.jpg?namespace=gamesdb",
+			"extra": {
+				"about": {
+					"description": "Welcome to Arcade Paradise, the 90’s retro arcade adventure game. With the keys to the family laundromat, Ashley decides to transform the business and give the sleepy town of Grindstone something to get excited about! Stay one step ahead of your father, manage and invest profits, and build your very own Arcade Paradise!",
+					"shortDescription": ""
+				},
+				"reqs": [],
+				"genres": [
+					"Adventure",
+					"Strategy",
+					"Indie",
+					"Puzzle",
+					"Arcade",
+					"Simulator"
+				]
+			},
+			"folder_name": "",
+			"install": {
+				"is_dlc": false
+			},
+			"is_installed": false,
+			"save_folder": "",
+			"title": "Arcade Paradise",
+			"canRunOffline": true,
+			"is_mac_native": false,
+			"is_linux_native": false
+		},
+		{
+			"runner": "gog",
+			"developer": "Playdead",
+			"app_name": "1916896012",
+			"art_cover": "https://images.gog.com/1851cfe1e5b6273dcbf1c51e963e4116447ec0996de7dbcd0100c790a433b078.jpg?namespace=gamesdb",
+			"art_square": "https://images.gog.com/eac0ece8469c64cb2910908ec594827a681bc694a2ab944ef28825eca0718568.jpg?namespace=gamesdb",
+			"art_background": "https://images.gog.com/4e48e1d529c827dd168e8c4263152092756beea147c73de538d309030c36227f.webp?namespace=gamesdb",
+			"cloud_save_enabled": false,
+			"art_icon": "https://images.gog.com/f0543534a675eeac52070aefa071a16e1abe81625d9ad2980834aadad1d7c7db.jpg?namespace=gamesdb",
+			"extra": {
+				"about": {
+					"description": "Hunted and alone, a boy finds himself drawn into the center of a dark project. INSIDE is a dark, narrative-driven platformer combining intense action with challenging puzzles. It has been critically acclaimed for its moody art style, ambient soundtrack and unsettling atmosphere.",
+					"shortDescription": ""
+				},
+				"reqs": [],
+				"genres": [
+					"Adventure",
+					"Indie",
+					"Platform",
+					"Puzzle"
+				]
+			},
+			"folder_name": "INSIDE",
+			"install": {
+				"is_dlc": false
+			},
+			"is_installed": false,
+			"save_folder": "",
+			"title": "INSIDE",
+			"canRunOffline": true,
+			"is_mac_native": true,
+			"is_linux_native": false
+		},
+		{
+			"runner": "gog",
+			"developer": "Summerfall Studios",
+			"app_name": "1624007757",
+			"art_cover": "https://images.gog.com/94accce039fc942e097e9f572fe94e4ae6ec1087eaef62059cb054c09145709b.jpg?namespace=gamesdb",
+			"art_square": "https://images.gog.com/154ab577fee7aa4bed49821f1327854fcd0af62e675a2491ab8a69deec0630c8.jpg?namespace=gamesdb",
+			"art_background": "https://images.gog.com/461d685e1bbb49c40f86e17f723749de14003c2371e94f53a6468df8830ffae6.webp?namespace=gamesdb",
+			"cloud_save_enabled": false,
+			"art_icon": "https://images.gog.com/a95684d8bdc1db679d17932899b78e754a0ddd69bf18a0cedaaf0ea0098adf7d.jpg?namespace=gamesdb",
+			"extra": {
+				"about": {
+					"description": "Murder. Gods. Romance. Band practice? Unravel the mystery of the Last Muse’s death in an interactive roleplaying musical where Greek gods live hidden among us. Use your newfound powers of musical persuasion to choose how this wry and moving saga will unfold. How will the curtain fall?",
+					"shortDescription": ""
+				},
+				"reqs": [],
+				"genres": [
+					"Role-playing (RPG)",
+					"Adventure",
+					"Music"
+				]
+			},
+			"folder_name": "",
+			"install": {
+				"is_dlc": false
+			},
+			"is_installed": false,
+			"save_folder": "",
+			"title": "Stray Gods: The Roleplaying Musical",
+			"canRunOffline": true,
+			"is_mac_native": false,
+			"is_linux_native": false
+		},
+		{
+			"runner": "gog",
+			"developer": "Crystal Dynamics",
+			"app_name": "1810841502",
+			"art_cover": "https://images.gog.com/b06ccc702f3886a8af39f7f58dac164c2925cde29b659876bc148a616eb9a1e5.jpg?namespace=gamesdb",
+			"art_square": "https://images.gog.com/cd7583d218c1afb10b82c67a1f4b01743e7a07537c7402ded3daf48c23e2ef5b.jpg?namespace=gamesdb",
+			"art_background": "https://images.gog.com/6599aeedcca625f189a1023b7f5f5f241a311a9c491194e76271bf7ac7bdf7c0.webp?namespace=gamesdb",
+			"cloud_save_enabled": false,
+			"art_icon": "https://images.gog.com/e00488a0ab29df8a7e739bdd36185f3236d7ae5f3777714e16d70adf7005526d.jpg?namespace=gamesdb",
+			"extra": {
+				"about": {
+					"description": "Tomb Raider: Legend is the seventh major game in the Tomb Raider series, now for the first time developed by Crystal Dynamics, along with the original character designer of the game's protagonist, Lara Croft. It serves as a reboot of the franchise, with a new incarnation of Lara Croft. The typical third-person action-adventure exploring is still present, and Lara can move more freely because specific jumps no longer limit her. As players travel through rough environments, they will need to run, dive, swim, climb on poles, ladders, and roofs, use zip lines, shimmy, and vault, with acrobatic actions such as somersaults and flips. Players need to cross difficult terrain, solve puzzles to advance or open up new areas, and engage in combat.",
+					"shortDescription": ""
+				},
+				"reqs": [],
+				"genres": [
+					"Adventure",
+					"Platform",
+					"Shooter"
+				]
+			},
+			"folder_name": "",
+			"install": {
+				"is_dlc": false
+			},
+			"is_installed": false,
+			"save_folder": "",
+			"title": "Tomb Raider: Legend",
+			"canRunOffline": true,
+			"is_mac_native": false,
+			"is_linux_native": false
+		},
+		{
+			"runner": "gog",
+			"developer": "Mimimi Games",
+			"app_name": "1346961749",
+			"art_cover": "https://images.gog.com/861e9edaac9cccbc801c6888dc8f1432cb6b3300046082bdccc470ecefa4a57c.jpg?namespace=gamesdb",
+			"art_square": "https://images.gog.com/699a11b9d2f376890e4e15da75f4ddba906031b4065edc8096ed352264b00b2d.jpg?namespace=gamesdb",
+			"art_background": "https://images.gog.com/b22ef8c46d79c3187a1533c37f0e4373eb762a356ba0d1d07c03449b31f22ecc.webp?namespace=gamesdb",
+			"cloud_save_enabled": false,
+			"art_icon": "https://images.gog.com/1f390a8579947d770eb3951e14960f5ccb8aeac7c595510ec5876d168456cef3.jpg?namespace=gamesdb",
+			"extra": {
+				"about": {
+					"description": "Welcome to the Lost Caribbean! In this stealth strategy game, join a ghost ship with a living soul and assemble a cursed pirate crew. Embrace magical powers to defy the menacing army of the Inquisition, who stands between you and the mysterious treasure of the legendary Captain Mordechai.",
+					"shortDescription": ""
+				},
+				"reqs": [],
+				"genres": [
+					"Role-playing (RPG)",
+					"Adventure",
+					"Strategy",
+					"Indie",
+					"Tactical"
+				]
+			},
+			"folder_name": "",
+			"install": {
+				"is_dlc": false
+			},
+			"is_installed": false,
+			"save_folder": "",
+			"title": "Shadow Gambit: The Cursed Crew Demo",
+			"canRunOffline": true,
+			"is_mac_native": false,
+			"is_linux_native": false
+		},
+		{
+			"runner": "gog",
+			"developer": "",
+			"app_name": "1486529526",
+			"art_cover": "https://images.gog.com/7f0b682bbf5ca156a4e30decbfd0d45f18839958f6285c7f4359aefdbcea2fcd.webp?namespace=gamesdb",
+			"art_square": "https://images.gog.com/253d9ba02f662d8d3d9fe66805c83bc4f53f83eaf54924b4703c97216c529040.jpg?namespace=gamesdb",
+			"art_background": "https://images.gog.com/7f0b682bbf5ca156a4e30decbfd0d45f18839958f6285c7f4359aefdbcea2fcd.webp?namespace=gamesdb",
+			"cloud_save_enabled": false,
+			"art_icon": "https://images.gog.com/d6be9d6e7acef31adf5347d66154907599b283f5eb6c93a07e259159e5926f6d.jpg?namespace=gamesdb",
+			"extra": {
+				"about": {
+					"description": "Description\r\nFLASHBACK™, the hit action-adventure game with over 2.2 million units sold, is back! \r\n\r\n2142. After fleeing from a space ship but stripped of all memory, the young scientist Conrad B. Hart awakens on Titan, a colonised moon of the planet Saturn. His enemies and kidnappers are snapping at his heels. He must find a way back to Earth, all the while defending himself against the dangers he encounters and unravelling an insidious extra-terrestrial plot that threatens the planet…\r\n\r\nOn its 25th anniversary, rediscover this classic, consistently ranked among the best 100 games of all time! It was one of the first games to use motion capture technology for more realistic animations, with backgrounds that were entirely hand-drawn and a gripping science-fiction storyline.\r\n\r\nTravel back to the early 90’s and reunite with Conrad to rediscover this cult classic.\r\nChoose to play with the original graphics and sounds from the 90’s and face an unforgiving difficulty.\r\nOr go with the Modern mode. You can also fine tune your experience by turning on Modern mode options independently and on the fly.\r\nEnhanced content:\r\nFor the first time ever, play the Director’s Cut version featuring 2 exclusive cutscenes\r\nWhite or pink? Choose among the two iconic colors of Conrad's t-shirt\r\nWant to practice on a specific level? You can now play any completed level during the main adventure\r\nReplay any cutscene that you unlocked from the menu\r\nJukebox: listen to the game's soundtrack\r\nStreet Art gallery: earn points in the game and unlock street art pictures in the gallery\r\n\r\nModern mode:\r\nPost-FX graphic filters,\r\nCompletely remastered sound and music,\r\nA brand new \"Rewind\" function, variable according to the level of difficulty\r\nTutorials for those who need a boost!",
+					"shortDescription": ""
+				},
+				"reqs": [],
+				"genres": [
+					"Adventure"
+				]
+			},
+			"folder_name": "",
+			"install": {
+				"is_dlc": false
+			},
+			"is_installed": false,
+			"save_folder": "",
+			"title": "Flashback™",
+			"canRunOffline": true,
+			"is_mac_native": true,
+			"is_linux_native": false
+		},
+		{
+			"runner": "gog",
+			"developer": "Campo Santo",
+			"app_name": "1459256379",
+			"art_cover": "https://images.gog.com/37616992f13a2aa1043ff82f16fa1d634c14699b79a2279feeec1d92ce84a52e.jpg?namespace=gamesdb",
+			"art_square": "https://images.gog.com/b99c68f8231d2576bbcb2a37247e214beed0b89df2918ebc438e322d8935b63c.jpg?namespace=gamesdb",
+			"art_background": "https://images.gog.com/2c8c5e36211b0b1ddca109da49c18988d60d623085b776c0881d313532a1f84b.webp?namespace=gamesdb",
+			"cloud_save_enabled": false,
+			"art_icon": "https://images.gog.com/ef7012c603fcd451f9b01e3bf35a080125a26e788b4057a44044c3832fb21a54.jpg?namespace=gamesdb",
+			"extra": {
+				"about": {
+					"description": "Firewatch is a single-player first-person video game where you, as a man named Henry, explore the Wyoming wilderness after taking a summer job as a fire lookout. What is supposed to be a peaceful respite from your complicated life takes a turn when you start to question some of the things that are happening to you.\n\nYour only human connection is over a handheld radio, which you’ll use to speak with your supervisor Delilah about the things both of you are experiencing.",
+					"shortDescription": ""
+				},
+				"reqs": [],
+				"genres": [
+					"Adventure",
+					"Indie"
+				]
+			},
+			"folder_name": "",
+			"install": {
+				"is_dlc": false
+			},
+			"is_installed": false,
+			"save_folder": "",
+			"title": "Firewatch",
+			"canRunOffline": true,
+			"is_mac_native": true,
+			"is_linux_native": true
+		},
+		{
+			"runner": "gog",
+			"developer": "Digital Sun Games",
+			"app_name": "2147483047",
+			"art_cover": "https://images.gog.com/60a5fc7b1209ad10b041a41ac4ca8fadfb0684978a919013b1504f8eda0c0cb4.jpg?namespace=gamesdb",
+			"art_square": "https://images.gog.com/925b490605376055670c4844feca7624a1902e985dbf5a58c1539935523aefe1.jpg?namespace=gamesdb",
+			"art_background": "https://images.gog.com/4a9cc8c7720bda3079c303ad0da5149d862509cb9a1e0ada5ddcf9ce89e30bb9.webp?namespace=gamesdb",
+			"cloud_save_enabled": false,
+			"art_icon": "https://images.gog.com/a39f076f488b48c8ce7687214920557a612863d792503bb97e36fda1ea5b4353.jpg?namespace=gamesdb",
+			"extra": {
+				"about": {
+					"description": "Moonlighter is an Action RPG with rogue-lite elements that demonstrates two sides of the coin – revealing everyday routines of Will, an adventurous shopkeeper that secretly dreams of becoming a hero.",
+					"shortDescription": ""
+				},
+				"reqs": [],
+				"genres": [
+					"Role-playing (RPG)",
+					"Adventure",
+					"Indie",
+					"Simulator",
+					"Hack and slash/Beat 'em up"
+				]
+			},
+			"folder_name": "",
+			"install": {
+				"is_dlc": false
+			},
+			"is_installed": false,
+			"save_folder": "",
+			"title": "Moonlighter",
+			"canRunOffline": true,
+			"is_mac_native": true,
+			"is_linux_native": true
+		},
+		{
+			"runner": "gog",
+			"developer": "ZA/UM",
+			"app_name": "1771589310",
+			"art_cover": "https://images.gog.com/64ccb9ba01c964067c3f24251e14ec77b169dd961a24074e67b01a5e9e5bbf23.jpg?namespace=gamesdb",
+			"art_square": "https://images.gog.com/145ed63cecd79e2bb619dee81220a7e964fe12dfd541f02a093592472247b3a6.jpg?namespace=gamesdb",
+			"art_background": "https://images.gog.com/d74c5485730cfbee857bce2b276d813f133a0381d5f6b8d5873cd6e9505646a2.webp?namespace=gamesdb",
+			"cloud_save_enabled": false,
+			"art_icon": "https://images.gog.com/3547f8877f5fb4b1f80cfc81caf6a223dc2cb39122d82157ca343fb470e20a45.jpg?namespace=gamesdb",
+			"extra": {
+				"about": {
+					"description": "Disco Elysium is a ground-breaking blend of hardboiled cop show and isometric RPG. Solve a massive, open ended case in a unique urban fantasy setting. Kick in doors, interrogate suspects, or just get lost exploring the gorgeously rendered city of Revachol. What kind of cop you are — is up to you. \r\n \r\nYou play a disgraced lieutenant detective in Revachol West, a shore town where corruption’s out of control, murders go unsolved, and the kids just wanna dance. Kick in doors, interrogate suspects, or get lost exploring a gorgeously rendered city and unraveling its mysteries. All the while, tensions rise around you as Revachol threatens to explode. \r\n \r\nDisco Elysium’s completely original skill system makes your innermost feelings, doubts, and memories an integral part of every conversation. Level up your rational faculties, sharpen your wits, or give in to your basest instincts. What kind of cop you are is up to you.",
+					"shortDescription": ""
+				},
+				"reqs": [],
+				"genres": [
+					"Role-playing (RPG)",
+					"Adventure",
+					"Indie"
+				]
+			},
+			"folder_name": "",
+			"install": {
+				"is_dlc": false
+			},
+			"is_installed": false,
+			"save_folder": "",
+			"title": "Disco Elysium - The Final Cut",
+			"canRunOffline": true,
+			"is_mac_native": true,
+			"is_linux_native": false
+		},
+		{
+			"runner": "gog",
+			"developer": "Team FOLON®",
+			"app_name": "1491728574",
+			"art_cover": "https://images.gog.com/a557fa41364e6d06bfe3fca629755b8371af04082645186fd6fdd55c70aaf147.jpg?namespace=gamesdb",
+			"art_square": "https://images.gog.com/a763950d7039103bebdcd6ebd92144ee19ddecbbd4d9cdfee4775aadc965fb01.jpg?namespace=gamesdb",
+			"art_background": "https://images.gog.com/0ac949e2aa519f1f34f7b5e9c9393d56a8b397587329ca7f42491c633cf95922.webp?namespace=gamesdb",
+			"cloud_save_enabled": false,
+			"art_icon": "https://images.gog.com/6215b457aefcbe90737be746b9668d04d54141a3b4cd7dd2176ae79cd4d4475b.jpg?namespace=gamesdb",
+			"extra": {
+				"about": {
+					"description": "There has never been a better time to sample the capital’s delights! Fallout: London lets you explore the wonders of the city 160 years after the bombs have dropped, and 40 years before the events of Fallout 3. You can now reimagine Fallout in a London-centric universe, interacting with a brave new world of London-based locations, stories, factions, creatures, weapons, and gameplay mechanics.",
+					"shortDescription": ""
+				},
+				"reqs": [],
+				"genres": [
+					"Role-playing (RPG)",
+					"Shooter"
+				]
+			},
+			"folder_name": "",
+			"install": {
+				"is_dlc": false
+			},
+			"is_installed": false,
+			"save_folder": "",
+			"title": "Fallout: London",
+			"canRunOffline": true,
+			"is_mac_native": false,
+			"is_linux_native": false
+		},
+		{
+			"runner": "gog",
+			"developer": "Tomas Sala",
+			"app_name": "2147483137",
+			"art_cover": "https://images.gog.com/89c59b37e5f0e8b64487929cdc7f96f6dbe4bf75da9650d91b3442a952023f23.jpg?namespace=gamesdb",
+			"art_square": "https://images.gog.com/5e0f98cdfa34dd97185fc4d510b06dddfd6067a9cb47604b495e7bb5b91da7c2.jpg?namespace=gamesdb",
+			"art_background": "https://images.gog.com/c5dba929c2c1d4e9cafb1e8aa999c6b1243a4b3118142d92f4dc7f76cb952e16.webp?namespace=gamesdb",
+			"cloud_save_enabled": false,
+			"art_icon": "https://images.gog.com/dd14f8be81c1fde7a28f9acc5142d3c31c628d8e8e84e67585a042bcf575a7d8.jpg?namespace=gamesdb",
+			"extra": {
+				"about": {
+					"description": "The Falconeer is an open-world air combat game, featuring frenetic aerial dogfights and deep exploration of the mysterious open-world of The Great Ursee. Generations of poisonous decisions and treason swirl in the deep, as factions clash in a fight to preserve the past or flee its terrible consequences.",
+					"shortDescription": ""
+				},
+				"reqs": [],
+				"genres": [
+					"Role-playing (RPG)",
+					"Adventure",
+					"Indie",
+					"Shooter",
+					"Simulator"
+				]
+			},
+			"folder_name": "",
+			"install": {
+				"is_dlc": false
+			},
+			"is_installed": false,
+			"save_folder": "",
+			"title": "The Falconeer",
+			"canRunOffline": true,
+			"is_mac_native": false,
+			"is_linux_native": false
+		},
+		{
+			"runner": "gog",
+			"developer": "Old Moon Games",
+			"app_name": "1305299338",
+			"art_cover": "https://images.gog.com/aba098bbb5fd3623efff35251de6076aff7ea464e105e6da1a4a3e5cc5f5c71d.jpg?namespace=gamesdb",
+			"art_square": "https://images.gog.com/fdc7ef2bbbcb89f1fbf133e94046138322ad0754bdd1dca5ab70c77f677c5f3f.jpg?namespace=gamesdb",
+			"art_background": "https://images.gog.com/a64dbefdf9b53c93676f5764e14b5ec7d8e1725983acf7a0ce6240133437473a.webp?namespace=gamesdb",
+			"cloud_save_enabled": false,
+			"art_icon": "https://images.gog.com/918b3ca9795ee8d6321ffbe002ed6644c321243d89cdc6a30a133ddd6288de88.jpg?namespace=gamesdb",
+			"extra": {
+				"about": {
+					"description": "On the desolate moon of Lorian V, a long-dormant Deadsuit awakens from slumber. Journey beneath the surface on an atmospheric 2D adventure of self-discovery, ancient mysteries, and cosmic terror. Explore winding caverns and acquire new abilities to unearth this alien world’s long-buried secrets.",
+					"shortDescription": ""
+				},
+				"reqs": [],
+				"genres": [
+					"Role-playing (RPG)",
+					"Adventure",
+					"Indie",
+					"Platform"
+				]
+			},
+			"folder_name": "",
+			"install": {
+				"is_dlc": false
+			},
+			"is_installed": false,
+			"save_folder": "",
+			"title": "Ghost Song",
+			"canRunOffline": true,
+			"is_mac_native": false,
+			"is_linux_native": false
+		},
+		{
+			"runner": "gog",
+			"developer": "State of Play Games",
+			"app_name": "1787058795",
+			"art_cover": "https://images.gog.com/2eb4d3a57d0f86063b029bb28e49f6ca82a545aff390385d92e76c3509bd3838.jpg?namespace=gamesdb",
+			"art_square": "https://images.gog.com/b99906adf5770060e251a3eb87d7eb93301280341912a5edf90e9b136a11e5bb.jpg?namespace=gamesdb",
+			"art_background": "https://images.gog.com/86366db4f52cc9b8a760fb2974c337340bfa36e7c02b940422feb7f6c4ff95b8.webp?namespace=gamesdb",
+			"cloud_save_enabled": false,
+			"art_icon": "https://images.gog.com/ac21a6d32bd49675565ca5e080eb4446fff1c74dddd378b4ae51d5e918a5912b.jpg?namespace=gamesdb",
+			"extra": {
+				"about": {
+					"description": "South of the Circle is an emotional narrative experience exploring the relationship between Peter and Clara, Cambridge academics caught up in the political conflict of the Cold War. The story focuses on the weight of life choices - between career, true love and the desire to keep our promises.",
+					"shortDescription": ""
+				},
+				"reqs": [],
+				"genres": [
+					"Adventure",
+					"Point-and-click"
+				]
+			},
+			"folder_name": "",
+			"install": {
+				"is_dlc": false
+			},
+			"is_installed": false,
+			"save_folder": "",
+			"title": "South of the Circle",
+			"canRunOffline": true,
+			"is_mac_native": false,
+			"is_linux_native": false
+		},
+		{
+			"runner": "gog",
+			"developer": "Jacob Dzwinel",
+			"app_name": "2024445598",
+			"art_cover": "https://images.gog.com/91122f23e2f948658ea59a47330a68a8a3d40dd183628c23d95d7dd95d9994f3.jpg?namespace=gamesdb",
+			"art_square": "https://images.gog.com/75f7c3cbe2cb2a18619d866e6618848d7ab0cc0c8d7e01deb878d1a7f82c3b65.jpg?namespace=gamesdb",
+			"art_background": "https://images.gog.com/7b61195ce8c1e958f04e8de1d93aa1547ad2b6de1d1fbdfa169ed33d83b8b1d4.webp?namespace=gamesdb",
+			"cloud_save_enabled": false,
+			"art_icon": "https://images.gog.com/24154cd1f8bc5aa3793be7ba97a72810407b6dbdb784bb2a7ff7dff21c32e92b.jpg?namespace=gamesdb",
+			"extra": {
+				"about": {
+					"description": "Fight your way across the city in a brutal romp that mixes old school brawlers and fast-paced motion-captured combat. You’re Babyface, a former member of the criminal underworld lured back into “the life” by a mysterious AI drone. Your mission against impossible odds: Fight your way across the city before sunrise, and prevent a citywide criminal takeover together.",
+					"shortDescription": ""
+				},
+				"reqs": [],
+				"genres": [
+					"Adventure",
+					"Indie",
+					"Shooter",
+					"Hack and slash/Beat 'em up",
+					"Fighting"
+				]
+			},
+			"folder_name": "",
+			"install": {
+				"is_dlc": false
+			},
+			"is_installed": false,
+			"save_folder": "",
+			"title": "Midnight Fight Express",
+			"canRunOffline": true,
+			"is_mac_native": false,
+			"is_linux_native": false
+		},
+		{
+			"runner": "gog",
+			"developer": "Revolution Software",
+			"app_name": "1207658695",
+			"art_cover": "https://images.gog.com/43d3c234e630c5c07984a98d8935e0606ed19e41477fb8d0d02f7930efa48b7a.jpg?namespace=gamesdb",
+			"art_square": "https://images.gog.com/cfa2550bbfd27506a0b5099423aab3cc0cbfb1ae2edcef4d32a6faa38e7721a6.jpg?namespace=gamesdb",
+			"art_background": "https://images.gog.com/2ddb74da4bb18466ea716abfa56674d48858483f6a07e94f16792b4304e16b0c.webp?namespace=gamesdb",
+			"cloud_save_enabled": false,
+			"art_icon": "https://images.gog.com/69140ff481409e4f6d553c5bb43ae63d28c3b44a8266408001e196168083c008.jpg?namespace=gamesdb",
+			"extra": {
+				"about": {
+					"description": "Beneath a Steel Sky is a cyberpunk, point and click, adventure game. You assume the role of Robert Foster and embark on a quest to make the world a better place, along with your robot companion Joey.",
+					"shortDescription": ""
+				},
+				"reqs": [],
+				"genres": [
+					"Adventure",
+					"Indie",
+					"Puzzle",
+					"Point-and-click"
+				]
+			},
+			"folder_name": "",
+			"install": {
+				"is_dlc": false
+			},
+			"is_installed": false,
+			"save_folder": "",
+			"title": "Beneath a Steel Sky (1994)",
+			"canRunOffline": true,
+			"is_mac_native": true,
+			"is_linux_native": true
+		},
+		{
+			"runner": "gog",
+			"developer": "Travellin Cats",
+			"app_name": "1496783574",
+			"art_cover": "https://images.gog.com/9e71faa57250bc52353c27019894800fe9eb2071c86802205a6ae3740728714f.jpg?namespace=gamesdb",
+			"art_square": "https://images.gog.com/b924325a730d3cec0d5073722de593be8450967b11bb7d7debabe613fe89f1a3.jpg?namespace=gamesdb",
+			"art_background": "https://images.gog.com/32eae5cd7d3aa4ac35055d20ab599bc8d8036cea935519a87669c32baf369ae4.webp?namespace=gamesdb",
+			"cloud_save_enabled": false,
+			"art_icon": "https://images.gog.com/6a25f38a455f641e48fc2b6d50e02289b89a38ec1493e48d28da709bf64e3889.jpg?namespace=gamesdb",
+			"extra": {
+				"about": {
+					"description": "Find 100 cats hiding in Paris, France in this cute hand-drawn hidden object game.",
+					"shortDescription": ""
+				},
+				"reqs": [],
+				"genres": [
+					"Adventure",
+					"Indie",
+					"Puzzle"
+				]
+			},
+			"folder_name": "",
+			"install": {
+				"is_dlc": false
+			},
+			"is_installed": false,
+			"save_folder": "",
+			"title": "Cats Hidden in Paris",
+			"canRunOffline": true,
+			"is_mac_native": false,
+			"is_linux_native": false
+		},
+		{
+			"runner": "gog",
+			"developer": "Rusty Lake",
+			"app_name": "1772252890",
+			"art_cover": "https://images.gog.com/cc7f18ccb10802f4bef9353b8fb3b3a7b02231eac0b71967c380ee3a4216d157.jpg?namespace=gamesdb",
+			"art_square": "https://images.gog.com/a87206abe6bface3ce7e22e205da4ac40864f1efe7a10f36fa18b30f38b2b18b.jpg?namespace=gamesdb",
+			"art_background": "https://images.gog.com/4494fe3103fc7eb652c76dabcaa0c8331f1540add3fb9ed53bef22918b8a957a.webp?namespace=gamesdb",
+			"cloud_save_enabled": false,
+			"art_icon": "https://images.gog.com/282c760845f438bd15a3701d4533695fbe171370c4c52f52f346379616748f87.jpg?namespace=gamesdb",
+			"extra": {
+				"about": {
+					"description": "You woke up in a mysterious room you have never seen before. Can you find another way out? Samsara Room is a remake of the praised predecessor of the Rusty Lake & Cube Escape series.",
+					"shortDescription": ""
+				},
+				"reqs": [],
+				"genres": [
+					"Adventure",
+					"Indie",
+					"Puzzle",
+					"Point-and-click"
+				]
+			},
+			"folder_name": "",
+			"install": {
+				"is_dlc": false
+			},
+			"is_installed": false,
+			"save_folder": "",
+			"title": "Samsara Room",
+			"canRunOffline": true,
+			"is_mac_native": true,
+			"is_linux_native": false
+		},
+		{
+			"runner": "gog",
+			"developer": "Lo-Fi Games",
+			"app_name": "1193046833",
+			"art_cover": "https://images.gog.com/a9d5810da910ec15475e8fbbbc52142ff577b9840daac4051a7421b397c9b03f.jpg?namespace=gamesdb",
+			"art_square": "https://images.gog.com/54cda2f0970619bb64ba989ddb5330f1c16566c0d79d6f43d992a3f322e7e820.jpg?namespace=gamesdb",
+			"art_background": "https://images.gog.com/106972a454a2f4ab9c5aeb114797050dfe7ee0786fd6347827f25123fa3a5a53.webp?namespace=gamesdb",
+			"cloud_save_enabled": false,
+			"art_icon": "https://images.gog.com/24bd5c5b09098c498b807d2d7281a90e6d56b97358d670faade7dbdd14aa42dc.jpg?namespace=gamesdb",
+			"extra": {
+				"about": {
+					"description": "A free-roaming squad based RPG. Focusing on open-ended sandbox gameplay features rather than a linear story. Be a trader, a thief, a rebel, a warlord, an adventurer, a farmer, a slave, or just food for the cannibals. Research new equipment and craft new gear. Purchase and upgrade your own buildings to use as safe fortified havens when things go bad, or use them to start up a business. Aid or oppose the various factions in the world while striving for the strength and wealth necessary to simply survive in the harsh desert. Train your men up from puny victims to master warriors. Carry your wounded squad mates to safety and get them all home alive.",
+					"shortDescription": ""
+				},
+				"reqs": [],
+				"genres": [
+					"Role-playing (RPG)",
+					"Adventure",
+					"Strategy",
+					"Indie",
+					"Real Time Strategy (RTS)"
+				]
+			},
+			"folder_name": "",
+			"install": {
+				"is_dlc": false
+			},
+			"is_installed": false,
+			"save_folder": "",
+			"title": "Kenshi",
+			"canRunOffline": true,
+			"is_mac_native": false,
+			"is_linux_native": false
+		},
+		{
+			"runner": "gog",
+			"developer": "Revolution Software",
+			"app_name": "1207658694",
+			"art_cover": "https://images.gog.com/c6f3c72d55b319ee1343ff6f1a2df49fc7897909e22253904f3bc06bcdd7a65d.jpg?namespace=gamesdb",
+			"art_square": "https://images.gog.com/43fe4a10fc911d5be00844f91bab3ffa98fbebd58c205a9471b82c87eb8a679e.jpg?namespace=gamesdb",
+			"art_background": "https://images.gog.com/77186a91e3e25840f0409722bd531e13fd2ca83e1822da62d9b35ed977aeb506.webp?namespace=gamesdb",
+			"cloud_save_enabled": false,
+			"art_icon": "https://images.gog.com/43fe4a10fc911d5be00844f91bab3ffa98fbebd58c205a9471b82c87eb8a679e.jpg?namespace=gamesdb",
+			"extra": {
+				"about": {
+					"description": "Lure of the Temptress is an Adventure game, developed by Revolution Software and published by Konami, which was released in 1992.",
+					"shortDescription": ""
+				},
+				"reqs": [],
+				"genres": [
+					"Adventure",
+					"Puzzle",
+					"Point-and-click"
+				]
+			},
+			"folder_name": "",
+			"install": {
+				"is_dlc": false
+			},
+			"is_installed": false,
+			"save_folder": "",
+			"title": "Lure of the Temptress (1992)",
+			"canRunOffline": true,
+			"is_mac_native": true,
+			"is_linux_native": true
+		},
+		{
+			"runner": "gog",
+			"developer": "Ice Code Games",
+			"app_name": "1345516108",
+			"art_cover": "https://images.gog.com/de7676f8ec8aec0a5e332264c3d9894455daf4dc517088e6b692a2c1a2a153e4.jpg?namespace=gamesdb",
+			"art_square": "https://images.gog.com/71f7dd3aded183188a0f6e889b8f3557a0fbd6e66fe831e8519a0716270a6241.jpg?namespace=gamesdb",
+			"art_background": "https://images.gog.com/516cc9ae3a7516ab3cc055bb176e823d15622c43ea7a5df3a0e254afe1edd228.webp?namespace=gamesdb",
+			"cloud_save_enabled": false,
+			"art_icon": "https://images.gog.com/0b0cc689c22a83978737d0de517814f2f20570da6db6918d6c40f95b48bd9edf.jpg?namespace=gamesdb",
+			"extra": {
+				"about": {
+					"description": "Hard West 2 is a supernatural journey to the dark heart of the West. With a gun full of lead and a fistful of witchcraft, raise an outlaw posse and chase down the devil to take back what’s yours.",
+					"shortDescription": ""
+				},
+				"reqs": [],
+				"genres": [
+					"Role-playing (RPG)",
+					"Strategy",
+					"Turn-based strategy (TBS)",
+					"Tactical"
+				]
+			},
+			"folder_name": "",
+			"install": {
+				"is_dlc": false
+			},
+			"is_installed": false,
+			"save_folder": "",
+			"title": "Hard West 2",
+			"canRunOffline": true,
+			"is_mac_native": false,
+			"is_linux_native": false
+		},
+		{
+			"runner": "gog",
+			"developer": "Double Fine Productions",
+			"app_name": "1207667183",
+			"art_cover": "https://images.gog.com/9e7b5ce16c0c1c5e6e9bca7e3ddc035e3f6b3799212eadd125131573330fe95f.jpg?namespace=gamesdb",
+			"art_square": "https://images.gog.com/9b7140f800c9da86be7fa106921c4657a89c809189cdd7b4f7c2748fe83c68b9.jpg?namespace=gamesdb",
+			"art_background": "https://images.gog.com/d565660c98b323cb4bd26fa5f5c8e9cb5de5668cb18cba769eb67d3a7d0bea10.webp?namespace=gamesdb",
+			"cloud_save_enabled": false,
+			"art_icon": "https://images.gog.com/57ed496fad5d5f4a7cf02f78265c7ba1b8dd151251360f699977200cb1703181.jpg?namespace=gamesdb",
+			"extra": {
+				"about": {
+					"description": "Something's rotten in the land of the dead, and you're being played for a sucker. Meet Manny Calavera, travel agent at the Department of Death. He sells luxury packages to souls on their four-year journey to eternal rest. But there's trouble in paradise. Help Manny untangle himself from a conspiracy that threatens his very salvation. \r\n \r\nOne of the most acclaimed adventure games of all time is now back, better than ever. Grim Fandango's epic story of four years in the life (or death) of Manny Calavera, travel agent to the dead, has been remastered to look, sound, and control even better than when it won GameSpot's Game of the Year award upon its original launch. Grim Fandango still stands as a classic of the genre, with unforgettable characters and unique combination of film noir and Mexican folklore.",
+					"shortDescription": ""
+				},
+				"reqs": [],
+				"genres": [
+					"Adventure",
+					"Puzzle",
+					"Point-and-click"
+				]
+			},
+			"folder_name": "",
+			"install": {
+				"is_dlc": false
+			},
+			"is_installed": false,
+			"save_folder": "",
+			"title": "Grim Fandango Remastered",
+			"canRunOffline": true,
+			"is_mac_native": true,
+			"is_linux_native": true
+		},
+		{
+			"runner": "gog",
+			"developer": "KO.DLL",
+			"app_name": "1106508737",
+			"art_cover": "https://images.gog.com/bd1942f44ae66bc398b0b1de7b72fc42e423b46d19505cdcb179740c7d1edf5a.jpg?namespace=gamesdb",
+			"art_square": "https://images.gog.com/c64be80221770b9ad72cb818bc67367133fe28c755947ecf847f7cc2cb3d47f8.jpg?namespace=gamesdb",
+			"art_background": "https://images.gog.com/3d0a47ab113e0c2470ff06659c321e80573471b04bade8f9a7f341f2eaab737c.webp?namespace=gamesdb",
+			"cloud_save_enabled": false,
+			"art_icon": "https://images.gog.com/0d291689542ec06758fb66c4134e876a5ada20de43e994c4c930e7144682b64d.jpg?namespace=gamesdb",
+			"extra": {
+				"about": {
+					"description": "Bzzzt is a fast-paced 2D platformer highly inspired by games from 80's. You become an artificial intelligence ZX8000 and in your newly obtained robotic body, you must prove your abilities in a series of testing chambers filled with deadly traps.",
+					"shortDescription": ""
+				},
+				"reqs": [],
+				"genres": [
+					"Adventure",
+					"Indie",
+					"Platform",
+					"Arcade"
+				]
+			},
+			"folder_name": "",
+			"install": {
+				"is_dlc": false
+			},
+			"is_installed": false,
+			"save_folder": "",
+			"title": "Bzzzt Demo",
+			"canRunOffline": true,
+			"is_mac_native": true,
+			"is_linux_native": true
+		},
+		{
+			"runner": "gog",
+			"developer": "Team Cherry",
+			"app_name": "1308320804",
+			"art_cover": "https://images.gog.com/c01560fa767affdb3dce18c569ddaebd81cfdbbee60b84d5515463e8fc6c365a.jpg?namespace=gamesdb",
+			"art_square": "https://images.gog.com/71cfac68718ddcd6b9d3ed7bdbdda3f75a3e61066a81e507f563d104a54f7e12.jpg?namespace=gamesdb",
+			"art_background": "https://images.gog.com/ecfd18155b46945a7335a5a4a5585aa8a394f602ff7ec56562ba658dcb9e709a.webp?namespace=gamesdb",
+			"cloud_save_enabled": false,
+			"art_icon": "https://images.gog.com/8364eded39b13f6ad5880e6c98525efd596ce3279901be7a13c3a14d0c3110a6.jpg?namespace=gamesdb",
+			"extra": {
+				"about": {
+					"description": "A 2D metroidvania with an emphasis on close combat and exploration in which the player enters the once-prosperous now-bleak insect kingdom of Hallownest, travels through its various districts, meets friendly inhabitants, fights hostile ones and uncovers the kingdom's history while improving their combat abilities and movement arsenal by fighting bosses and accessing out-of-the-way areas.",
+					"shortDescription": ""
+				},
+				"reqs": [],
+				"genres": [
+					"Adventure",
+					"Indie",
+					"Platform"
+				]
+			},
+			"folder_name": "Hollow Knight",
+			"install": {
+				"is_dlc": false
+			},
+			"is_installed": false,
+			"save_folder": "",
+			"title": "Hollow Knight",
+			"canRunOffline": true,
+			"is_mac_native": true,
+			"is_linux_native": true
+		},
+		{
+			"runner": "gog",
+			"developer": "rokaplay, Alchemist Interactive",
+			"app_name": "1377413834",
+			"art_cover": "https://images.gog.com/489fa0dde24b7a5c2c6081f912a6af6c884bc2aa5ed014395895ac98e1078b83.jpg?namespace=gamesdb",
+			"art_square": "https://images.gog.com/7834a7443842d1a866a1fecaa81ab1ba674e6306bf3ebf9d774004e53ac1cffc.jpg?namespace=gamesdb",
+			"art_background": "https://images.gog.com/a9c611f1e7e9411fa4fd31700c7b8c8162185d2dc0bfae394303c013f93937c8.webp?namespace=gamesdb",
+			"cloud_save_enabled": false,
+			"art_icon": "https://images.gog.com/c47d236003a2f4a60e1278606ec8a504036e5c0a50a86196c96b9743c9550241.jpg?namespace=gamesdb",
+			"extra": {
+				"about": {
+					"description": "Spells & Secrets is a modern-day fantasy roguelike set in a procedurally generated wizarding school. Players can craft their own wizard using in-depth character creation, team up with a friend via local co-op, and get creative with an arsenal of physics-based magic, using clever combinations of spells to get the upper hand against puzzles and enemies alike.",
+					"shortDescription": ""
+				},
+				"reqs": [],
+				"genres": [
+					"Adventure",
+					"Indie",
+					"Puzzle"
+				]
+			},
+			"folder_name": "",
+			"install": {
+				"is_dlc": false
+			},
+			"is_installed": false,
+			"save_folder": "",
+			"title": "Spells & Secrets",
+			"canRunOffline": true,
+			"is_mac_native": false,
+			"is_linux_native": false
+		},
+		{
+			"runner": "gog",
+			"developer": "CD Projekt RED",
+			"app_name": "1207658924",
+			"art_cover": "https://images.gog.com/3a4d9190f3c0a0a8d63638193ef8c9af2ba58eb0b250295db2a28bccf852a76d.jpg?namespace=gamesdb",
+			"art_square": "https://images.gog.com/7fbb815727527616881cb45a56f51a19e90ddf21ba00c9e22b4852d9bec6324a.jpg?namespace=gamesdb",
+			"art_background": "https://images.gog.com/fc1c44b2252e3200db66872630f7e21687bba217b6eabb188451556b5941cf63.webp?namespace=gamesdb",
+			"cloud_save_enabled": false,
+			"art_icon": "https://images.gog.com/7fbb815727527616881cb45a56f51a19e90ddf21ba00c9e22b4852d9bec6324a.jpg?namespace=gamesdb",
+			"extra": {
+				"about": {
+					"description": "Now you can experience this fantastic RPG on Mac and PC!",
+					"shortDescription": ""
+				},
+				"reqs": [],
+				"genres": [
+					"Role-playing (RPG)"
+				]
+			},
+			"folder_name": "",
+			"install": {
+				"is_dlc": false
+			},
+			"is_installed": false,
+			"save_folder": "",
+			"title": "The Witcher: Enhanced Edition",
+			"canRunOffline": true,
+			"is_mac_native": true,
+			"is_linux_native": false
+		},
+		{
+			"runner": "gog",
+			"developer": "Thunder Lotus",
+			"app_name": "1908018720",
+			"art_cover": "https://images.gog.com/ef94adaa85b6915c11ef443744d11dbdb778225fd10fd768e539d0710401e4dc.jpg?namespace=gamesdb",
+			"art_square": "https://images.gog.com/e3a9f1af39bd21116cec66166b4f6baa8fc752897b889811786b514ab77bfb25.jpg?namespace=gamesdb",
+			"art_background": "https://images.gog.com/6b2ff2103d9dbb3efe83ba31b392aa22cea7420b3c19cfe4921dbccabc870abb.webp?namespace=gamesdb",
+			"cloud_save_enabled": false,
+			"art_icon": "https://images.gog.com/eb5e59dcfe07096348bd07c278b73c64d23cef51179fec7c575b809cfe76da7d.jpg?namespace=gamesdb",
+			"extra": {
+				"about": {
+					"description": "Spiritfarer is a cozy management game about dying. You play Stella, ferrymaster to the deceased, a Spiritfarer. Build a boat to explore the world, then befriend and care for spirits before finally releasing them into the afterlife. Farm, mine, fish, harvest, cook, and craft your way across mystical seas. Join the adventure as Daffodil the cat, in two-player cooperative play. Spend relaxing quality time with your spirit passengers, create lasting memories, and, ultimately, learn how to say goodbye to your cherished friends. What will you leave behind?",
+					"shortDescription": ""
+				},
+				"reqs": [],
+				"genres": [
+					"Adventure",
+					"Indie",
+					"Platform",
+					"Simulator"
+				]
+			},
+			"folder_name": "",
+			"install": {
+				"is_dlc": false
+			},
+			"is_installed": false,
+			"save_folder": "",
+			"title": "Spiritfarer Demo",
+			"canRunOffline": true,
+			"is_mac_native": true,
+			"is_linux_native": true
+		},
+		{
+			"runner": "gog",
+			"developer": "MPS Labs",
+			"app_name": "1207658927",
+			"art_cover": "https://images.gog.com/f18f30c8e1df620f163f2b781e4e8b91a2dcbb2c177dc12557febc29aef47de8.jpg?namespace=gamesdb",
+			"art_square": "https://images.gog.com/b453b194fb1bc55ab2024b8aa16dc501dec8be8011fbf43bbc05ae1de51570a1.jpg?namespace=gamesdb",
+			"art_background": "https://images.gog.com/2c40bb032307ae1c58fccca9075bec260b844b868175d5c80047e5e6e6e60313.webp?namespace=gamesdb",
+			"cloud_save_enabled": false,
+			"art_icon": "https://images.gog.com/fb236f2d52ac71e663f35d876ce5ddf228fb5853aefd8a1c2d70b817e59ac743.jpg?namespace=gamesdb",
+			"extra": {
+				"about": {
+					"description": "Newly-crowned King of Callahach! It's been twenty years since your father saved the world by entrapping the evil Sorcerer Sanwe. Now the spell is waning. Sanwe's malevolent force will soon consume the land, and only you can stop him!",
+					"shortDescription": ""
+				},
+				"reqs": [],
+				"genres": [
+					"Adventure",
+					"Puzzle",
+					"Point-and-click",
+					"Quiz/Trivia"
+				]
+			},
+			"folder_name": "",
+			"install": {
+				"is_dlc": false
+			},
+			"is_installed": false,
+			"save_folder": "",
+			"title": "Dragonsphere",
+			"canRunOffline": true,
+			"is_mac_native": true,
+			"is_linux_native": true
+		},
+		{
+			"runner": "gog",
+			"developer": "Aspyr Media",
+			"app_name": "1407750955",
+			"art_cover": "https://images.gog.com/83810a304ecb17be6bfbc1a2a77bbc15293d0c592ac3698b3e6f0a00fb5af4d5.jpg?namespace=gamesdb",
+			"art_square": "https://images.gog.com/815237dc91df36507562e553bdc6e14cb8a69416349537da0e353f9883b4d6fb.jpg?namespace=gamesdb",
+			"art_background": "https://images.gog.com/deaea876cba95928aab77b3c5571979b7e3009284227321165e71a7e7b5abc9e.webp?namespace=gamesdb",
+			"cloud_save_enabled": false,
+			"art_icon": "https://images.gog.com/45f08ddd7e0df97d19d63d48886c742b8526f2bf928bad1773c93ded9d4bf501.jpg?namespace=gamesdb",
+			"extra": {
+				"about": {
+					"description": "Discover Lara Croft’s Original Adventures, Lovingly Restored\r\n\r\n Play the original three Tomb Raider adventures with all expansions and secret levels in this definitive collection. \r\n\r\nIncluded Game Titles\r\nTomb Raider I + The Unfinished Business Expansion\r\nTomb Raider II + The Gold Mask Expansion\r\nTomb Raider III + The Lost Artifact Expansion",
+					"shortDescription": ""
+				},
+				"reqs": [],
+				"genres": [
+					"Adventure",
+					"Strategy",
+					"Puzzle",
+					"Shooter"
+				]
+			},
+			"folder_name": "",
+			"install": {
+				"is_dlc": false
+			},
+			"is_installed": false,
+			"save_folder": "",
+			"title": "Tomb Raider I-III Remastered Starring Lara Croft",
+			"canRunOffline": true,
+			"is_mac_native": false,
+			"is_linux_native": false
+		},
+		{
+			"runner": "gog",
+			"developer": "CD Projekt RED",
+			"app_name": "1297352383",
+			"art_cover": "https://images.gog.com/296adfe92b4f0710f94f7ba60ca400d2394673e71a3234439a5be17a79606128.jpg?namespace=gamesdb",
+			"art_square": "https://images.gog.com/c31eab675785d490ac4e3f35014315371765c7bd66284363f8bcf721cbddad4f.jpg?namespace=gamesdb",
+			"art_background": "https://images.gog.com/16843844477c8ea9959094f012dd7fd9c4610735debe447b840a094812223d82.webp?namespace=gamesdb",
+			"cloud_save_enabled": false,
+			"art_icon": "https://images.gog.com/470261dacd530befbdadc7b63ac9b187e5a82e1d2448265e51e6a18874940853.jpg?namespace=gamesdb",
+			"extra": {
+				"about": {
+					"description": "From the creators of The Witcher 3: Wild Hunt comes a brand new tale set in the brutal and twisted universe of witcher Geralt of Rivia. \r\n \r\nThe world stands on the verge of chaos, as the tensions between the power-hungry Nilfgaardian Empire and proud Northern Realms grow. Facing an imminent invasion, Meve — war-veteran Queen of Lyria and Rivia — is forced to once again enter the warpath, and set out on a dark journey of destruction and revenge.",
+					"shortDescription": ""
+				},
+				"reqs": [],
+				"genres": [
+					"Role-playing (RPG)"
+				]
+			},
+			"folder_name": "",
+			"install": {
+				"is_dlc": false
+			},
+			"is_installed": false,
+			"save_folder": "",
+			"title": "Thronebreaker: The Witcher Tales",
+			"canRunOffline": true,
+			"is_mac_native": false,
+			"is_linux_native": false
+		},
+		{
+			"runner": "gog",
+			"developer": "Telltale Games",
+			"app_name": "1432208124",
+			"art_cover": "https://images.gog.com/84ae29be4317d522175ae981431386e08ba38f664a45fe03a10a52f3693ec4cb.jpg?namespace=gamesdb",
+			"art_square": "https://images.gog.com/872601f89cf4421522b785e7f80a9232959997d4b1a7e57d2a4ce2ab217dcd84.jpg?namespace=gamesdb",
+			"art_background": "https://images.gog.com/66e4552367770374d3a06b7a4d90a95d7c2fb2dfc9dfe04f0068dd85a7db7359.webp?namespace=gamesdb",
+			"cloud_save_enabled": false,
+			"art_icon": "https://images.gog.com/90a491540d3ab8af8d8aad330db7e2878a55294856cc7983d2342fd515ef24bd.jpg?namespace=gamesdb",
+			"extra": {
+				"about": {
+					"description": "Similar to the previous season, The Walking Dead: Season Two is a point-and-click adventure game. The player, in control of Clementine, can direct the character around the environment, examine and interact with various scenery elements and collect and use objects to advance the story. The player can also initiate conversations with non-player characters via conversation trees. Certain replies from other characters may offer the player multiple choices, including the option to stay silent, with a limited amount of time to make a selection; if the player does not select an option, the conversation will continue as if they had stayed quiet. Such choices can affect how the other characters will later react to Clementine, which can influence later events in the story. Other scenes are more action-oriented, requiring the player to complete quick-time events to prevent Clementine or her allies from being killed. If the player fails these events, the game will restart at the start of such scenes. Such action scenes may also require the player to make a key decision within a limited time frame, such as which of two characters to save from being attacked by walkers.",
+					"shortDescription": ""
+				},
+				"reqs": [],
+				"genres": [
+					"Adventure",
+					"Puzzle",
+					"Point-and-click"
+				]
+			},
+			"folder_name": "",
+			"install": {
+				"is_dlc": false
+			},
+			"is_installed": false,
+			"save_folder": "",
+			"title": "The Walking Dead: Season Two",
+			"canRunOffline": true,
+			"is_mac_native": false,
+			"is_linux_native": false
+		},
+		{
+			"runner": "gog",
+			"developer": "Different Tales",
+			"app_name": "1739170762",
+			"art_cover": "https://images.gog.com/f9049a1ec227220a9efaa152471473b0d372f9479c799b987576cb6ef99459bf.jpg?namespace=gamesdb",
+			"art_square": "https://images.gog.com/b0b413b45ee34c1fd56cb4bab0d4f0667eca665615d9f2a2f8ec87e8683060ca.jpg?namespace=gamesdb",
+			"art_background": "https://images.gog.com/0af99a554ca97a4b33ef067fd06a72419262881d9d4ef6bc3cdb92d45ec86e0c.webp?namespace=gamesdb",
+			"cloud_save_enabled": false,
+			"art_icon": "https://images.gog.com/2d7ab9004d7c970c2a7f9f829df8159ed84e8309314ffb625f19991c1e6f8b2f.jpg?namespace=gamesdb",
+			"extra": {
+				"about": {
+					"description": "Wanderlust Travel Stories is a digital travel experience. Feel a sense of awe and discovery as you visit a hot Thai marketplace or the peaceful Antarctic seas. Explore jewels of the world, from Bangladesh to Congo, from Papua New Guinea to Faroe Islands. It's a game to play when you're traveling – or wish that you were.",
+					"shortDescription": ""
+				},
+				"reqs": [],
+				"genres": [
+					"Role-playing (RPG)",
+					"Adventure",
+					"Indie",
+					"Simulator"
+				]
+			},
+			"folder_name": "",
+			"install": {
+				"is_dlc": false
+			},
+			"is_installed": false,
+			"save_folder": "",
+			"title": "Wanderlust: Travel Stories",
+			"canRunOffline": true,
+			"is_mac_native": true,
+			"is_linux_native": true
+		},
+		{
+			"runner": "gog",
+			"developer": "Darkworks",
+			"app_name": "1207658874",
+			"art_cover": "https://images.gog.com/4f8a58d45e85209afa99311cf18f7bad268fd9c923eede0dc70dd6676f28a78c.jpg?namespace=gamesdb",
+			"art_square": "https://images.gog.com/8fa12c08c17e7b2ce0724ca18a85f42cc7277be2e188f18149c715c216080616.jpg?namespace=gamesdb",
+			"art_background": "https://images.gog.com/d85ac45778664040bd4da44aaa2c25b413cc7b3741b4ab25d2ea22cdead1e201.webp?namespace=gamesdb",
+			"cloud_save_enabled": false,
+			"art_icon": "https://images.gog.com/74c098ce10147bf2d25e3bff516b3a6f32ca187d296d79c8b25902303c6818e9.jpg?namespace=gamesdb",
+			"extra": {
+				"about": {
+					"description": "Alone in the Dark: The New Nightmare is the fourth installment in the survival horror video game series Alone in the Dark. The player can choose which of the two protagonists to play as. Carnby’s side of the plot focuses mainly on fighting monsters through physical means, while Aline’s is more centered on puzzle-solving. The two occasionally meet, and the main plot areas intersect.",
+					"shortDescription": ""
+				},
+				"reqs": [],
+				"genres": [
+					"Adventure",
+					"Puzzle"
+				]
+			},
+			"folder_name": "",
+			"install": {
+				"is_dlc": false
+			},
+			"is_installed": false,
+			"save_folder": "",
+			"title": "Alone in the Dark: The New Nightmare",
+			"canRunOffline": true,
+			"is_mac_native": false,
+			"is_linux_native": false
+		},
+		{
+			"runner": "gog",
+			"developer": "Remedy Entertainment",
+			"app_name": "2049187585",
+			"art_cover": "https://images.gog.com/bc900962ee814d51504645df63d62efb5d515648f0278217b117d60c0b31adf2.jpg?namespace=gamesdb",
+			"art_square": "https://images.gog.com/a7109b6805ba44c05a110ceb6401422f3ed6de9289f95216b979b918ad3a0e95.jpg?namespace=gamesdb",
+			"art_background": "https://images.gog.com/d76cff73fe6d26607f202fe6abc314e7b113f36dea7c89c3d568d2b183701ef7.webp?namespace=gamesdb",
+			"cloud_save_enabled": false,
+			"art_icon": "https://images.gog.com/f5d4c750155f5ed637ed1b3c207b01d32429ded62d66a41e654a5894abbc6906.jpg?namespace=gamesdb",
+			"extra": {
+				"about": {
+					"description": "Control is a third-person action-adventure game set in the Federal Bureau of Control, a secretive U.S. government agency that studies paranormal phenomena. Players control Jesse Faden, who arrives at the Bureau's headquarters, the Oldest House, to find it invaded by a hostile force called the Hiss. Gameplay combines supernatural abilities with a shape-shifting firearm, and the environment is reactive and destructible.",
+					"shortDescription": ""
+				},
+				"reqs": [],
+				"genres": [
+					"Adventure",
+					"Shooter"
+				]
+			},
+			"folder_name": "",
+			"install": {
+				"is_dlc": false
+			},
+			"is_installed": false,
+			"save_folder": "",
+			"title": "Control Ultimate Edition",
+			"canRunOffline": true,
+			"is_mac_native": false,
+			"is_linux_native": false
+		},
+		{
+			"runner": "gog",
+			"developer": "Metropolis Software",
+			"app_name": "1207658753",
+			"art_cover": "https://images.gog.com/806450401419cca6e439471e8d40cfa133ea4fa6b6a67dc82257afd0028fd8a7.jpg?namespace=gamesdb",
+			"art_square": "https://images.gog.com/b8ad05356f20eaa1917ffc1ed762cd9b0a74f0093ef010edd2cfc0f0fade1089.jpg?namespace=gamesdb",
+			"art_background": "https://images.gog.com/79e809293c20a1f8be1bdf30057ce8994b0a3e849da175d8993ddf50f395e772.webp?namespace=gamesdb",
+			"cloud_save_enabled": false,
+			"art_icon": "https://images.gog.com/b8ad05356f20eaa1917ffc1ed762cd9b0a74f0093ef010edd2cfc0f0fade1089.jpg?namespace=gamesdb",
+			"extra": {
+				"about": {
+					"description": "The CD version was the first game to be released on CD-ROM in Poland.",
+					"shortDescription": ""
+				},
+				"reqs": [],
+				"genres": [
+					"Adventure",
+					"Puzzle",
+					"Point-and-click"
+				]
+			},
+			"folder_name": "",
+			"install": {
+				"is_dlc": false
+			},
+			"is_installed": false,
+			"save_folder": "",
+			"title": "Teenagent",
+			"canRunOffline": true,
+			"is_mac_native": true,
+			"is_linux_native": false
+		},
+		{
+			"runner": "gog",
+			"developer": "The Gentlebros",
+			"app_name": "1958338581",
+			"art_cover": "https://images.gog.com/b5c2991afedf6caee9b1ae621b374c4e6983ed1ed91365e1f3353df2428628f2.jpg?namespace=gamesdb",
+			"art_square": "https://images.gog.com/3df9be1cc924ce21ff37b57061123297a17af9e66960a964a599a2961326dcaf.jpg?namespace=gamesdb",
+			"art_background": "https://images.gog.com/0486b4701bc778cd8f2e1b3d37e5aae6ca38e48dcdfa6997cf1d4374c6c2adef.webp?namespace=gamesdb",
+			"cloud_save_enabled": false,
+			"art_icon": "https://images.gog.com/248ef3c0039f852f5ee0407bc4717e6a68ab74d1894e9f31ddc35063dafdb785.jpg?namespace=gamesdb",
+			"extra": {
+				"about": {
+					"description": "Under threat from a continuing war between the Cats of Felingard and the advancing Lupus Empire, CAT QUEST II will tell the tale of two rivals, brought together against their will, on a journey of discovery. Can they put aside their differences and bring peace to their world? \r\n \r\nFeatures \r\n \r\n-Brand new story set in the world of Felingard - and beyond! \r\n \r\n-All new switch and co-op gameplay. Play as both Cat and Dog, either alone or with a friend! \r\n \r\n-New weapons types – Swords, Staves and more will bring added depth to combat. \r\n \r\n-More spells bringing added furry judgement to your foes. \r\n \r\n-New passive abilities, who’s attributes can be mixed and combined for endless possibilities!",
+					"shortDescription": ""
+				},
+				"reqs": [],
+				"genres": [
+					"Role-playing (RPG)",
+					"Adventure",
+					"Indie"
+				]
+			},
+			"folder_name": "",
+			"install": {
+				"is_dlc": false
+			},
+			"is_installed": false,
+			"save_folder": "",
+			"title": "Cat Quest II",
+			"canRunOffline": true,
+			"is_mac_native": false,
+			"is_linux_native": false
+		},
+		{
+			"runner": "gog",
+			"developer": "Night School Studio",
+			"app_name": "1457519353",
+			"art_cover": "https://images.gog.com/b04ccb0d94b74d5386b0d6d3af3fbcf6e5ff72e9ebd521daae52aebd8ec3c991.jpg?namespace=gamesdb",
+			"art_square": "https://images.gog.com/9ebafa9617d269c58ba04cb465433b1c5f30810a90a216853782ccb32f48bfa9.jpg?namespace=gamesdb",
+			"art_background": "https://images.gog.com/937cd0bfcfacd430e62662a76b0a80b5798852cd1fc529d71326d25038f8de23.webp?namespace=gamesdb",
+			"cloud_save_enabled": false,
+			"art_icon": "https://images.gog.com/e24bc58ea75f8d29b46f03ddd9231f2eab94c0fb46a3d185f21f93814d682dd6.jpg?namespace=gamesdb",
+			"extra": {
+				"about": {
+					"description": "Oxenfree is a single-player graphic adventure game played from a 2.5D perspective, with the player controlling a teenager named Alex. Its central mechanic is a \"walk and talk\" system, where dialogue appears as speech bubbles and the player chooses responses in real time while still moving and exploring, shaping relationships with the other characters. Puzzles are solved largely by tuning a handheld radio to specific frequencies or adjusting tape recorders. The game has no fail state, and the player's choices lead to one of several possible endings. It was followed by a sequel, Oxenfree II: Lost Signals.",
+					"shortDescription": ""
+				},
+				"reqs": [],
+				"genres": [
+					"Role-playing (RPG)",
+					"Adventure",
+					"Indie"
+				]
+			},
+			"folder_name": "",
+			"install": {
+				"is_dlc": false
+			},
+			"is_installed": false,
+			"save_folder": "",
+			"title": "Oxenfree",
+			"canRunOffline": true,
+			"is_mac_native": true,
+			"is_linux_native": true
+		},
+		{
+			"runner": "gog",
+			"developer": "Bleakmill",
+			"app_name": "1804122723",
+			"art_cover": "https://images.gog.com/33d774a70f344926080c5d2f73fb3411cf643dd1006defb57a5cee311d972ef2.jpg?namespace=gamesdb",
+			"art_square": "https://images.gog.com/0424514c2d6089337d143b2ca11a543dbb9cc4af075b89335a4de9bec56f0927.jpg?namespace=gamesdb",
+			"art_background": "https://images.gog.com/ac75ef435d8514fef4a822c65a95e8ba37156b02e6926714e5d837b1d7b13e54.webp?namespace=gamesdb",
+			"cloud_save_enabled": false,
+			"art_icon": "https://images.gog.com/ddfffeee5940a9b246ea06607f96bafdd8b0452891b72603b1083d204c8f842f.jpg?namespace=gamesdb",
+			"extra": {
+				"about": {
+					"description": "Industria is a first-person shooter that takes you from East Berlin into a parallel reality, shortly before the end of the Cold War. On the search for a missing work colleague, you decipher a dark past in a mysterious and surreal steampunk world.",
+					"shortDescription": ""
+				},
+				"reqs": [],
+				"genres": [
+					"Adventure",
+					"Indie",
+					"Puzzle",
+					"Shooter"
+				]
+			},
+			"folder_name": "",
+			"install": {
+				"is_dlc": false
+			},
+			"is_installed": false,
+			"save_folder": "",
+			"title": "INDUSTRIA",
+			"canRunOffline": true,
+			"is_mac_native": false,
+			"is_linux_native": false
+		},
+		{
+			"runner": "gog",
+			"developer": "Traveller's Tales",
+			"app_name": "1753068551",
+			"art_cover": "https://images.gog.com/46ebffd4182b9c2fc9769e67ee9b3f7ba8aa01598500f779b00d81a4fef91da4.jpg?namespace=gamesdb",
+			"art_square": "https://images.gog.com/8a41353f5730cff58274dd0d75c9c3ec62aec257f1f6d6d2038f17076e78656a.jpg?namespace=gamesdb",
+			"art_background": "https://images.gog.com/e00b8bc67fd9edc4e1cbb6f3dfa88e8c59f8c204efd0fff5f371a559f49c1653.webp?namespace=gamesdb",
+			"cloud_save_enabled": false,
+			"art_icon": "https://images.gog.com/291216bd5583695220765f2887e1ce9bd29c803c8bcc4aaadc66bd7c7c1fc53e.jpg?namespace=gamesdb",
+			"extra": {
+				"about": {
+					"description": "Reclaim the Lost Kingdom brick by brick! Join Bilbo Baggins, Gandalf, Thorin and his company of Dwarves in an epic adventure across Middle-earth to recapture the Lonely Mountain in the most expansive LEGO game to date. Battle ravenous Trolls, dangerous Orcs and many more. Combine the Dwarves' unique abilities to solve puzzles - often with hilarious results! Explore iconic locations in Middle-earth, from the Shire to Goblin-town and beyond.",
+					"shortDescription": ""
+				},
+				"reqs": [],
+				"genres": [
+					"Role-playing (RPG)",
+					"Adventure",
+					"Puzzle"
+				]
+			},
+			"folder_name": "",
+			"install": {
+				"is_dlc": false
+			},
+			"is_installed": false,
+			"save_folder": "",
+			"title": "LEGO® The Hobbit™",
+			"canRunOffline": true,
+			"is_mac_native": false,
+			"is_linux_native": false
+		}
+	],
+	"__timestamp": {
+		"games": "Wed Oct 14 2026 15:42:38 GMT+0200 (Central European Summer Time)"
+	}
+}

@@ -29,7 +29,7 @@ export function SearchInput(props: Props) {
 
 	return (
 		<Input
-			mx="xs"
+			mr="xs"
 			onChange={(event) => {
 				setValue(event.currentTarget.value);
 			}}

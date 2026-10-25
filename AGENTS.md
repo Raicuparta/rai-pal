@@ -14,10 +14,6 @@ Ignore code warnings, clippy, format, etc, until I've confirmed that your implem
 Run `npm run format` before committing, so formatting changes are part of your
 commit instead of showing up as unrelated churn later.
 
-## Commits
-
-Commit your work locally without pushing. When making changes to the same domain, or especially when fixing changes you made, amend commits, unless they've already been pushed.
-
 ## Comments
 
 Do not leave comments. Exception only for actual hacks or realy weird stuff, almost everything should be comment-free. Do not remove preexisting comments.
@@ -95,3 +91,11 @@ migration is complete.
 - Slint live preview does not support bundled translations. Use normal
   `npm run slint-dev` when working on translations; `npm run slint-dev-live` is
   only for live UI reloading.
+
+## Error handling in the backend
+
+We use thiserror via the enums defined in two result.rs files (core and tauri-app crates). Errors get thrown to the frontend mostly as-is, as strings. fs-err is used to add necessary context, so those are already fine. But other cases like io::Error coming from dependencies, etc, might need some extra context passed. For this, we use thiserror-context. Make sure to use that whenever we are throwing errors that can reach the frontend.
+
+## Tests
+
+Don't add tests unless asked to. When you make a change that you think warrants tests (especially if related to something that already has existing tests somewhere), ask the user if you should add tests first.
