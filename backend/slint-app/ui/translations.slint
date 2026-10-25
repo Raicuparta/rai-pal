@@ -1,4 +1,8 @@
 export global Tr {
+    public pure function refresh-loading(items: string) -> string {
+        return @tr("refresh" => "Loading {0}...", items);
+    }
+
     public pure function filter-property(key: string) -> string {
         if key == "provider" {
             return @tr("filterProperty" => "Provider");

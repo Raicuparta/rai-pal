@@ -2,15 +2,19 @@ import { LineEdit, ComboBox, Button } from "std-widgets.slint";
 import { FilterGroupData } from "../filter-data.slint";
 import { Theme } from "../theme.slint";
 import { FilterGroupView } from "filter-group.slint";
+import { RefreshButton } from "refresh-button.slint";
 import { Sidebar } from "sidebar.slint";
 
 export component GamesSidebar inherits Sidebar {
+    in property <bool> refreshing;
+    in property <string> refresh-task-names;
     in-out property <string> search-text: "";
     in-out property <int> sort-index: 0;
     in-out property <bool> sort-descending: false;
     in property <[FilterGroupData]> filter-groups;
     in property <bool> filters-have-changes;
 
+    callback refresh-all;
     callback search-changed(text: string);
     callback sort-changed(index: int);
     callback sort-direction-changed(descending: bool);
@@ -20,6 +24,15 @@ export component GamesSidebar inherits Sidebar {
     callback filter-reset(group: string);
     callback filters-reset;
     callback filter-expanded-changed(group: string, expanded: bool);
+
+    RefreshButton {
+        refreshing: root.refreshing;
+        task-names: root.refresh-task-names;
+
+        clicked => {
+            root.refresh-all();
+        }
+    }
 
     LineEdit {
         vertical-stretch: 0;

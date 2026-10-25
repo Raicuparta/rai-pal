@@ -29,6 +29,7 @@ use crate::{
 	model::{self, make_rows},
 	mods, mods_tab,
 	query::{load_game_ids, start_query},
+	refresh,
 	scheduler::{FetchScheduler, enqueue_index, schedule_visible_range},
 	selected,
 };
@@ -131,6 +132,33 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	});
 
 	let selected_game: SelectedGameState = Arc::new(Mutex::new(None));
+
+	let ui_settings = settings.clone();
+	let ui_window = window_weak.clone();
+	let ui_database = database.clone();
+	let ui_scheduler = scheduler.clone();
+	let ui_selected_game = selected_game.clone();
+	window.on_refresh_all(move || {
+		let Some(window) = ui_window.upgrade() else {
+			return;
+		};
+
+		if window.get_refreshing() {
+			return;
+		}
+
+		window.set_refreshing(true);
+		window.set_refresh_task_names("".into());
+
+		let query = ui_settings.borrow().games_query.clone();
+		refresh::refresh_all(
+			ui_window.clone(),
+			ui_database.clone(),
+			ui_scheduler.clone(),
+			query,
+			ui_selected_game.clone(),
+		);
+	});
 
 	let ui_settings = settings.clone();
 	let ui_window = window_weak.clone();

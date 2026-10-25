@@ -50,6 +50,8 @@ export component MainWindow inherits Window {
     in-out property <string> details-json: "";
     in property <string> app-version: "";
     in property <string> renderer-name: "";
+    in property <bool> refreshing: false;
+    in property <string> refresh-task-names: "";
 
     in-out property <AppTab> current-tab: games;
     in-out property <bool> game-selected: false;
@@ -62,6 +64,7 @@ export component MainWindow inherits Window {
     in property <[ProviderActionItem]> selected-provider-actions;
 
     callback request-game(index: int);
+    callback refresh-all;
     callback visible-range-changed(first: int, last: int);
     callback search-changed(text: string);
     callback sort-changed(index: int);
@@ -264,6 +267,12 @@ export component MainWindow inherits Window {
                         sort-descending <=> root.sort-descending;
                         filter-groups: root.filter-groups;
                         filters-have-changes: root.filters-have-changes;
+                        refreshing: root.refreshing;
+                        refresh-task-names: root.refresh-task-names;
+
+                        refresh-all => {
+                            root.refresh-all();
+                        }
 
                         search-changed(text) => {
                             root.search-changed(text);
@@ -326,6 +335,12 @@ export component MainWindow inherits Window {
 
                 ModsPage {
                     items: root.mods-tab-items;
+                    refreshing: root.refreshing;
+                    refresh-task-names: root.refresh-task-names;
+
+                    refresh-all => {
+                        root.refresh-all();
+                    }
                 }
             }
 

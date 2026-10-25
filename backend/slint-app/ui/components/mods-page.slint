@@ -4,13 +4,27 @@ import { ModsTabItemData } from "../mods-tab-data.slint";
 import { Theme } from "../theme.slint";
 import { ModsTabRowView } from "mods-tab-row.slint";
 import { ModsTabFamilyRowView } from "mods-tab-family-row.slint";
+import { RefreshButton } from "refresh-button.slint";
 import { Sidebar } from "sidebar.slint";
 
 export component ModsPage inherits Rectangle {
     in property <[ModsTabItemData]> items;
+    in property <bool> refreshing;
+    in property <string> refresh-task-names;
+
+    callback refresh-all;
 
     HorizontalLayout {
         Sidebar {
+            RefreshButton {
+                refreshing: root.refreshing;
+                task-names: root.refresh-task-names;
+
+                clicked => {
+                    root.refresh-all();
+                }
+            }
+
             Button {
                 text: @tr("modsPage" => "Open Local Mods Folder");
 

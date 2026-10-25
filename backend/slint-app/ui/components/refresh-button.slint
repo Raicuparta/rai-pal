@@ -1,0 +1,31 @@
+import { Button } from "std-widgets.slint";
+import { Theme } from "../theme.slint";
+import { Tr } from "../translations.slint";
+
+export component RefreshButton inherits VerticalLayout {
+    in property <bool> refreshing;
+    in property <string> task-names;
+
+    callback clicked;
+
+    vertical-stretch: 0;
+    alignment: start;
+    spacing: Theme.space-2;
+
+    Button {
+        text: @tr("refresh" => "Refresh");
+        enabled: !root.refreshing;
+        opacity: root.refreshing ? 0.5 : 1;
+
+        clicked => {
+            root.clicked();
+        }
+    }
+
+    if root.refreshing : Text {
+        text: Tr.refresh-loading(root.task-names);
+        font-size: Theme.font-12;
+        opacity: 0.7;
+        wrap: word-wrap;
+    }
+}

@@ -11,6 +11,7 @@ mod model;
 mod mods;
 mod mods_tab;
 mod query;
+mod refresh;
 mod scheduler;
 mod selected;
 
