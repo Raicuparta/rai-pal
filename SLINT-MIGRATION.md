@@ -23,6 +23,7 @@ implemented.
 - Steam cache reset from the app menu.
 - Steam shortcut creation from the app menu.
 - Discord user menu with login and logout.
+- Toast notifications for errors and provider command feedback.
 
 ## Not done
 
@@ -31,7 +32,6 @@ implemented.
 - App settings beyond language/color scheme: hide thumbnails, skip confirmations, etc.
 - App update check/download flow.
 - Download progress UI.
-- Toast/error/notification UI.
 - Confirmation dialogs.
 - Mod details page and remaining mod UI parity.
 - Loading, empty, and error states parity.

@@ -1,0 +1,76 @@
+import { IconDisplay, IconSet } from "@lucide";
+import { Palette } from "std-widgets.slint";
+import { NotificationData, NotificationKind } from "../notification-data.slint";
+import { Theme } from "../theme.slint";
+import { IconButton } from "icon-button.slint";
+
+component NotificationToast inherits Rectangle {
+    in property <NotificationData> notification;
+
+    callback dismissed(id: int);
+
+    width: 100%;
+    height: layout.preferred-height;
+    background: Palette.background;
+    border-width: Theme.border-width * 2;
+    border-radius: Theme.radius-8;
+    border-color: root.notification.kind == NotificationKind.error ? Theme.status-error : root.notification.kind == NotificationKind.success ? Theme.status-success : Theme.status-info;
+
+    timer := Timer {
+        interval: 5s;
+        running: true;
+
+        triggered => {
+            root.dismissed(root.notification.id);
+        }
+    }
+
+    layout := HorizontalLayout {
+        padding: Theme.space-10;
+        spacing: Theme.space-8;
+        cross-axis-alignment: center;
+
+        IconDisplay {
+            icon: root.notification.kind == NotificationKind.error ? IconSet.CircleX : root.notification.kind == NotificationKind.success ? IconSet.CircleCheck : IconSet.Info;
+            size: Theme.icon-status-size;
+            stroke: root.notification.kind == NotificationKind.error ? Theme.status-error : root.notification.kind == NotificationKind.success ? Theme.status-success : Theme.status-info;
+            stroke-width: 2;
+        }
+
+        Text {
+            horizontal-stretch: 1;
+            text: root.notification.message;
+            wrap: word-wrap;
+        }
+
+        IconButton {
+            icon: IconSet.X;
+
+            clicked => {
+                root.dismissed(root.notification.id);
+            }
+        }
+    }
+}
+
+export component NotificationsOverlay inherits Rectangle {
+    in property <[NotificationData]> notifications;
+
+    callback dismissed(id: int);
+
+    VerticalLayout {
+        x: root.width - self.width - Theme.space-16;
+        y: Theme.navbar-height + Theme.space-16;
+        width: min(360px, root.width - Theme.space-16 * 2);
+        spacing: Theme.space-6;
+        alignment: start;
+
+        for notification in root.notifications : NotificationToast {
+            notification: notification;
+
+            dismissed(id) => {
+                root.dismissed(id);
+            }
+        }
+    }
+}

@@ -20,7 +20,7 @@ use rai_pal_core::{
 };
 use slint::ComponentHandle;
 
-use crate::{GameModRowData, MainWindow, PotentialModRowData};
+use crate::{GameModRowData, MainWindow, PotentialModRowData, notifications};
 
 #[derive(Default)]
 struct LoadedMods {
@@ -119,6 +119,7 @@ pub fn install_mod(
 
 		if let Err(err) = runtime.block_on(install_mod_inner(&database, &game, &mod_id)) {
 			eprintln!("Failed to install mod {mod_id}: {err}");
+			notifications::error_async(&window, format!("Failed to install mod {mod_id}: {err}"));
 			return;
 		}
 
@@ -151,6 +152,10 @@ pub fn download_mod_config(
 
 		if let Err(err) = result {
 			eprintln!("Failed to download config for mod {mod_id}: {err}");
+			notifications::error_async(
+				&window,
+				format!("Failed to download config for mod {mod_id}: {err}"),
+			);
 			return;
 		}
 
@@ -183,6 +188,7 @@ pub fn uninstall_mod(
 
 		if let Err(err) = result {
 			eprintln!("Failed to uninstall mod {mod_id}: {err}");
+			notifications::error_async(&window, format!("Failed to uninstall mod {mod_id}: {err}"));
 			return;
 		}
 
@@ -211,6 +217,7 @@ pub fn uninstall_all_mods(database: Arc<DbMutex>, window: slint::Weak<MainWindow
 
 		if let Err(err) = result {
 			eprintln!("Failed to uninstall all mods: {err}");
+			notifications::error_async(&window, format!("Failed to uninstall all mods: {err}"));
 			return;
 		}
 

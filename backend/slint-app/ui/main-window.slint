@@ -19,7 +19,9 @@ import { UrlModSourcesPopup } from "components/url-mod-sources-popup.slint";
 import { ConfirmModSourcePopup } from "components/confirm-mod-source-popup.slint";
 import { SteamCachePopup } from "components/steam-cache-popup.slint";
 import { SteamShortcutPopup } from "components/steam-shortcut-popup.slint";
+import { NotificationsOverlay } from "components/notifications.slint";
 import { UrlModSourceData } from "url-mod-source-data.slint";
+import { NotificationData } from "notification-data.slint";
 import { Theme } from "theme.slint";
 import { ModActions } from "actions.slint";
 import { AppColorScheme, AppTab } from "app-types.slint";
@@ -62,7 +64,8 @@ export component MainWindow inherits Window {
     in property <string> user-initials: "";
     in property <bool> user-has-avatar: false;
     in property <image> user-avatar;
-    in property <bool> refreshing: false;
+    in property <[NotificationData]> notifications;
+    in-out property <bool> refreshing: false;
     in property <string> refresh-task-names: "";
     in property <UrlModSourceData> default-url-mod-source;
     in property <[UrlModSourceData]> url-mod-sources;
@@ -107,6 +110,7 @@ export component MainWindow inherits Window {
     callback add-steam-shortcut;
     callback log-in;
     callback log-out;
+    callback dismiss-notification(id: int);
     callback visible-range-changed(first: int, last: int);
     callback search-changed(text: string);
     callback sort-changed(index: int);
@@ -429,6 +433,14 @@ export component MainWindow inherits Window {
                     vertical-alignment: center;
                 }
             }
+        }
+    }
+
+    NotificationsOverlay {
+        notifications: root.notifications;
+
+        dismissed(id) => {
+            root.dismiss-notification(id);
         }
     }
 

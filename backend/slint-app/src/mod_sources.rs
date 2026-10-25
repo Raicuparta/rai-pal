@@ -99,7 +99,7 @@ pub fn confirm_add(window: &MainWindow, database: Arc<DbMutex>, selected_game: S
 		let result = url_mod_provider::add_url_mod_source(url.clone());
 
 		if result.is_ok() {
-			refresh::refresh_mods(&database_for_refresh);
+			let _ = refresh::refresh_mods(&database_for_refresh);
 		}
 
 		let _ = slint::invoke_from_event_loop(move || {
@@ -144,7 +144,7 @@ pub fn set_enabled(
 		let result = url_mod_provider::set_url_mod_source_enabled(&url, enabled);
 
 		if result.is_ok() {
-			refresh::refresh_mods(&database_for_refresh);
+			let _ = refresh::refresh_mods(&database_for_refresh);
 		}
 
 		let _ = slint::invoke_from_event_loop(move || {
@@ -184,7 +184,7 @@ pub fn remove(
 		let result = url_mod_provider::remove_url_mod_source(&url);
 
 		if result.is_ok() {
-			refresh::refresh_mods(&database_for_refresh);
+			let _ = refresh::refresh_mods(&database_for_refresh);
 		}
 
 		let _ = slint::invoke_from_event_loop(move || {

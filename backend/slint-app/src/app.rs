@@ -27,7 +27,7 @@ use crate::{
 	},
 	i18n, mod_sources,
 	model::{self, make_rows},
-	mods, mods_tab,
+	mods, mods_tab, notifications,
 	query::{load_game_ids, start_query},
 	refresh,
 	scheduler::{FetchScheduler, enqueue_index, schedule_visible_range},
@@ -263,6 +263,13 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	let ui_window = window_weak.clone();
 	window.on_log_out(move || {
 		user::log_out(ui_window.clone());
+	});
+
+	let ui_window = window.as_weak();
+	window.on_dismiss_notification(move |id| {
+		if let Some(window) = ui_window.upgrade() {
+			notifications::dismiss(&window, id);
+		}
 	});
 
 	let ui_settings = settings.clone();
@@ -549,6 +556,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 		}
 	});
 
+	let ui_window = window_weak.clone();
 	let ui_database = database.clone();
 	let ui_selected_game = selected_game.clone();
 	window.on_run_provider_action(move |value| {
@@ -559,6 +567,10 @@ pub fn run() -> Result<(), slint::PlatformError> {
 		let Some((_, game)) = get_selected_game(&ui_selected_game) else {
 			return;
 		};
+
+		if let Some(window) = ui_window.upgrade() {
+			notifications::info(&window, "Running command... This might take a few seconds.");
+		}
 
 		actions::run_provider_action(ui_database.clone(), game, action);
 	});
@@ -772,6 +784,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 
 			if let Err(err) = game.refresh_executable() {
 				eprintln!("Failed to refresh game: {err}");
+				notifications::error_async(&window, format!("Failed to refresh game: {err}"));
 				return;
 			}
 
@@ -779,6 +792,10 @@ pub fn run() -> Result<(), slint::PlatformError> {
 
 			if let Err(err) = database.refresh_installed_mods() {
 				eprintln!("Failed to refresh installed mods: {err}");
+				notifications::error_async(
+					&window,
+					format!("Failed to refresh installed mods: {err}"),
+				);
 			}
 
 			let Ok(game) = database.get_game(&game.provider_id, &game.game_id) else {

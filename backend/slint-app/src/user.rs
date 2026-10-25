@@ -2,7 +2,7 @@ use std::{path::Path, thread};
 
 use rai_pal_core::user::auth::{AuthState, get_user_auth_state, logout_auth, start_auth};
 
-use crate::MainWindow;
+use crate::{MainWindow, notifications};
 
 pub fn load(window: slint::Weak<MainWindow>) {
 	refresh_state(window);
@@ -70,7 +70,10 @@ fn apply_result(window: slint::Weak<MainWindow>, result: Result<AuthState, Strin
 
 		match result {
 			Ok(state) => apply_state(&window, &state),
-			Err(err) => eprintln!("Failed to refresh user auth state: {err}"),
+			Err(err) => {
+				eprintln!("Failed to refresh user auth state: {err}");
+				notifications::error(&window, format!("Failed to refresh user auth state: {err}"));
+			}
 		}
 	});
 }

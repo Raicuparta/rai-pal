@@ -11,6 +11,7 @@ mod mod_sources;
 mod model;
 mod mods;
 mod mods_tab;
+mod notifications;
 mod query;
 mod refresh;
 mod scheduler;

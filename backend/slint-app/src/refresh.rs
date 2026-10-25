@@ -13,7 +13,10 @@ use rai_pal_core::{
 };
 use slint::ComponentHandle;
 
-use crate::{MainWindow, mods, mods_tab, query::start_query, scheduler::FetchScheduler, selected};
+use crate::{
+	MainWindow, mods, mods_tab, notifications, query::start_query, scheduler::FetchScheduler,
+	selected,
+};
 
 const PROVIDERS: &[GameProviderId] = &[
 	GameProviderId::Amazon,
@@ -42,6 +45,10 @@ pub fn refresh_all(
 
 			if let Err(err) = provider.insert_games(&database) {
 				eprintln!("Failed to refresh {provider} games: {err}");
+				notifications::error_async(
+					&window,
+					format!("Failed to refresh {provider} games: {err}"),
+				);
 			}
 
 			pop_task(&window, &mut tasks, &format!("{provider}"));
@@ -49,14 +56,24 @@ pub fn refresh_all(
 
 		if let Err(err) = database.refresh_installed_mods() {
 			eprintln!("Failed to refresh installed mods: {err}");
+			notifications::error_async(&window, format!("Failed to refresh installed mods: {err}"));
 		}
 
 		push_task(&window, &mut tasks, "mods");
-		refresh_mods(&database);
+		if let Err(err) = refresh_mods(&database) {
+			eprintln!("Failed to refresh mods: {err}");
+			notifications::error_async(&window, format!("Failed to refresh mods: {err}"));
+		}
 		pop_task(&window, &mut tasks, "mods");
 
 		push_task(&window, &mut tasks, "remote data");
-		refresh_remote_database();
+		if let Err(err) = refresh_remote_database() {
+			eprintln!("Failed to refresh remote database: {err}");
+			notifications::error_async(
+				&window,
+				format!("Failed to refresh remote database: {err}"),
+			);
+		}
 		pop_task(&window, &mut tasks, "remote data");
 
 		let _ = slint::invoke_from_event_loop(move || {
@@ -79,35 +96,29 @@ pub fn refresh_all(
 	});
 }
 
-pub(crate) fn refresh_mods(database: &DbMutex) {
-	let Ok(runtime) = tokio::runtime::Builder::new_current_thread()
+pub(crate) fn refresh_mods(database: &DbMutex) -> Result<(), String> {
+	let runtime = tokio::runtime::Builder::new_current_thread()
 		.enable_all()
 		.build()
-	else {
-		return;
-	};
+		.map_err(|err| err.to_string())?;
 
-	if let Err(err) = runtime.block_on(mod_provider::refresh_all_mods(database)) {
-		eprintln!("Failed to refresh mods: {err}");
-	}
+	runtime
+		.block_on(mod_provider::refresh_all_mods(database))
+		.map_err(|err| err.to_string())
 }
 
-fn refresh_remote_database() {
-	let Ok(runtime) = tokio::runtime::Builder::new_current_thread()
+fn refresh_remote_database() -> Result<(), String> {
+	let runtime = tokio::runtime::Builder::new_current_thread()
 		.enable_all()
 		.build()
-	else {
-		return;
-	};
+		.map_err(|err| err.to_string())?;
 
 	let result = runtime.block_on(async {
 		let path = remote_game::download_database().await?;
 		attach_remote(&path)
 	});
 
-	if let Err(err) = result {
-		eprintln!("Failed to refresh remote database: {err}");
-	}
+	result.map_err(|err| err.to_string())
 }
 
 fn push_task(window: &slint::Weak<MainWindow>, tasks: &mut Vec<String>, task: &str) {
