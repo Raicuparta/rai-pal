@@ -1,0 +1,97 @@
+import { IconDisplay, IconSet } from "@lucide";
+import { Palette } from "std-widgets.slint";
+import { Theme } from "../theme.slint";
+
+export component UserMenu inherits Rectangle {
+    in property <bool> logged-in;
+    in property <bool> busy;
+    in property <string> user-name;
+    in property <string> user-initials;
+    in property <bool> has-avatar;
+    in property <image> avatar;
+
+    callback log-in;
+    callback log-out;
+
+    width: Theme.control-height + Theme.space-4;
+    height: Theme.control-height;
+
+    menu-area := ContextMenuArea {
+        Rectangle {
+            width: 100%;
+            height: 100%;
+            border-radius: Theme.radius-4;
+            background: touch-area.pressed ? Palette.control-background : touch-area.has-hover ? Palette.alternate-background : transparent;
+
+            if root.logged-in && root.has-avatar : Rectangle {
+                width: Theme.icon-button-size + Theme.space-4;
+                height: Theme.icon-button-size + Theme.space-4;
+                border-radius: (Theme.icon-button-size + Theme.space-4) / 2;
+                border-width: Theme.border-width * 2;
+                border-color: Palette.foreground;
+                clip: true;
+
+                Image {
+                    source: root.avatar;
+                    width: 100%;
+                    height: 100%;
+                    image-fit: cover;
+                }
+            }
+
+            if root.logged-in && !root.has-avatar : Text {
+                text: root.user-initials;
+                font-size: Theme.font-12;
+                font-weight: Theme.weight-bold;
+                horizontal-alignment: center;
+                vertical-alignment: center;
+            }
+
+            if !root.logged-in : IconDisplay {
+                icon: IconSet.CircleUser;
+                size: Theme.menu-icon-size;
+                stroke: Palette.foreground;
+                stroke-width: 2;
+            }
+
+            touch-area := TouchArea {
+                clicked => {
+                    menu-area.show({
+                        x: root.width - Theme.menu-width,
+                        y: root.height,
+                    });
+                }
+            }
+        }
+
+        Menu {
+            if root.logged-in : MenuItem {
+                title: root.user-name == "" ? @tr("userMenu" => "Unknown user") : root.user-name;
+                enabled: false;
+            }
+
+            if root.logged-in : MenuItem {
+                title: @tr("userMenu" => "Log out");
+                enabled: !root.busy;
+
+                activated => {
+                    root.log-out();
+                }
+            }
+
+            if !root.logged-in : MenuItem {
+                title: @tr("userMenu" => "Sign in with Discord");
+                enabled: !root.busy;
+
+                activated => {
+                    root.log-in();
+                }
+            }
+
+            if !root.logged-in : MenuItem {
+                title: @tr("userMenu" => "Mods can use this to access your Discord username, avatar, roles, etc.");
+                enabled: false;
+            }
+        }
+    }
+}

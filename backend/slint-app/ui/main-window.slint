@@ -12,6 +12,7 @@ import { GamesPage } from "components/games-page.slint";
 import { GameDetailsPage } from "components/game-details-page.slint";
 import { NavTab } from "components/nav-tab.slint";
 import { AppMenu } from "components/app-menu.slint";
+import { UserMenu } from "components/user-menu.slint";
 import { AboutPopup } from "components/about-popup.slint";
 import { ModsPage } from "components/mods-page.slint";
 import { UrlModSourcesPopup } from "components/url-mod-sources-popup.slint";
@@ -55,6 +56,12 @@ export component MainWindow inherits Window {
     in-out property <string> details-json: "";
     in property <string> app-version: "";
     in property <string> renderer-name: "";
+    in property <bool> user-logged-in: false;
+    in property <bool> user-busy: false;
+    in property <string> user-name: "";
+    in property <string> user-initials: "";
+    in property <bool> user-has-avatar: false;
+    in property <image> user-avatar;
     in property <bool> refreshing: false;
     in property <string> refresh-task-names: "";
     in property <UrlModSourceData> default-url-mod-source;
@@ -98,6 +105,8 @@ export component MainWindow inherits Window {
     callback cancel-url-mod-source;
     callback reset-steam-cache;
     callback add-steam-shortcut;
+    callback log-in;
+    callback log-out;
     callback visible-range-changed(first: int, last: int);
     callback search-changed(text: string);
     callback sort-changed(index: int);
@@ -182,6 +191,23 @@ export component MainWindow inherits Window {
 
                 Rectangle {
                     horizontal-stretch: 1;
+                }
+
+                UserMenu {
+                    logged-in: root.user-logged-in;
+                    busy: root.user-busy;
+                    user-name: root.user-name;
+                    user-initials: root.user-initials;
+                    has-avatar: root.user-has-avatar;
+                    avatar: root.user-avatar;
+
+                    log-in => {
+                        root.log-in();
+                    }
+
+                    log-out => {
+                        root.log-out();
+                    }
                 }
 
                 AppMenu {

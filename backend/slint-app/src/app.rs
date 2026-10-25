@@ -31,7 +31,7 @@ use crate::{
 	query::{load_game_ids, start_query},
 	refresh,
 	scheduler::{FetchScheduler, enqueue_index, schedule_visible_range},
-	selected, tools,
+	selected, tools, user,
 };
 
 pub fn run() -> Result<(), slint::PlatformError> {
@@ -85,6 +85,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	window.set_selected_color_scheme(app_color_scheme(settings.borrow().color_scheme));
 	mods_tab::load(&window, &database);
 	window.set_app_version(env!("CARGO_PKG_VERSION").into());
+	user::load(window.as_weak());
 	window.set_search_text(initial_query.search.clone().into());
 	window.set_sort_index(sort_index(initial_query.sort_by));
 	window.set_sort_descending(initial_query.sort_descending);
@@ -252,6 +253,16 @@ pub fn run() -> Result<(), slint::PlatformError> {
 		{
 			tools::add_steam_shortcut(ui_window.clone());
 		}
+	});
+
+	let ui_window = window_weak.clone();
+	window.on_log_in(move || {
+		user::log_in(ui_window.clone());
+	});
+
+	let ui_window = window_weak.clone();
+	window.on_log_out(move || {
+		user::log_out(ui_window.clone());
 	});
 
 	let ui_settings = settings.clone();

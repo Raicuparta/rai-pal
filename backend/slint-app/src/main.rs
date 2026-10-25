@@ -16,6 +16,7 @@ mod refresh;
 mod scheduler;
 mod selected;
 mod tools;
+mod user;
 
 fn main() -> Result<(), slint::PlatformError> {
 	app::run()
