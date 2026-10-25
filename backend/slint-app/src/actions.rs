@@ -1,10 +1,12 @@
 use std::{collections::BTreeMap, sync::Arc, thread};
 
 use rai_pal_core::{
+	app_paths,
 	game::DbGame,
 	game_providers::{game_provider, provider_command::ProviderCommandAction},
 	local_database::{app_database::DbMutex, mod_database::ModDatabase},
 	maps::TryGettable,
+	open_better,
 	path_extensions::PathExt,
 	result::Result,
 };
@@ -78,6 +80,47 @@ pub fn open_wine_binary_folder(game: DbGame) {
 			.get_wine_binary_path(&game)?
 			.open_folder_or_parent()
 	});
+}
+
+pub fn run_standalone_mod(database: Arc<DbMutex>, mod_id: String) {
+	thread::spawn(move || {
+		let result = database
+			.get_mod(&mod_id)
+			.and_then(|game_mod| game_mod.run(None));
+
+		if let Err(err) = result {
+			eprintln!("Failed to run mod {mod_id}: {err}");
+		}
+	});
+}
+
+pub fn install_standalone_mod(database: Arc<DbMutex>, mod_id: String) {
+	thread::spawn(move || {
+		let Ok(runtime) = tokio::runtime::Builder::new_current_thread()
+			.enable_all()
+			.build()
+		else {
+			return;
+		};
+
+		let result = runtime.block_on(async {
+			database.get_mod(&mod_id)?.install(None, |_| {}).await?;
+			database.refresh_installed_mods()?;
+			Ok::<(), rai_pal_core::result::Error>(())
+		});
+
+		if let Err(err) = result {
+			eprintln!("Failed to install mod {mod_id}: {err}");
+		}
+	});
+}
+
+pub fn open_local_mods_folder() {
+	spawn_logged(|| app_paths::local_mods_path()?.open_folder_or_parent());
+}
+
+pub fn open_url(url: String) {
+	spawn_logged(move || open_better::open_detached_better(url));
 }
 
 fn spawn_logged(action: impl FnOnce() -> Result + Send + 'static) {

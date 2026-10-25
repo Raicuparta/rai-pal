@@ -1,0 +1,86 @@
+import { Button, Palette, ScrollView } from "std-widgets.slint";
+import { ModsTabItemData } from "../mods-tab-data.slint";
+import { ModsTabRowView } from "mods-tab-row.slint";
+import { ModsTabFamilyRowView } from "mods-tab-family-row.slint";
+
+export component ModsPage inherits Rectangle {
+    in property <[ModsTabItemData]> items;
+
+    callback run-mod(mod-id: string);
+    callback install-mod(mod-id: string);
+    callback open-url(url: string);
+    callback open-local-mods-folder;
+
+    HorizontalLayout {
+        Rectangle {
+            width: 260px;
+            background: Palette.alternate-background;
+
+            sidebar-scroll := ScrollView {
+                VerticalLayout {
+                    min-height: sidebar-scroll.visible-height;
+                    padding: 12px;
+                    spacing: 8px;
+                    alignment: start;
+
+                    Button {
+                        text: @tr("modsPage" => "Open Local Mods Folder");
+
+                        clicked => {
+                            root.open-local-mods-folder();
+                        }
+                    }
+                }
+            }
+        }
+
+        Rectangle {
+            horizontal-stretch: 1;
+
+            content-scroll := ScrollView {
+                VerticalLayout {
+                    alignment: start;
+                    spacing: 0px;
+
+                    for item in root.items : VerticalLayout {
+                        alignment: start;
+                        vertical-stretch: 0;
+                        spacing: 0px;
+
+                        if item.is-family : ModsTabFamilyRowView {
+                            item: item;
+
+                            run(mod-id) => {
+                                root.run-mod(mod-id);
+                            }
+
+                            install(mod-id) => {
+                                root.install-mod(mod-id);
+                            }
+
+                            open-url(url) => {
+                                root.open-url(url);
+                            }
+                        }
+
+                        if !item.is-family : ModsTabRowView {
+                            mod-data: item.single-mod;
+
+                            run(mod-id) => {
+                                root.run-mod(mod-id);
+                            }
+
+                            install(mod-id) => {
+                                root.install-mod(mod-id);
+                            }
+
+                            open-url(url) => {
+                                root.open-url(url);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

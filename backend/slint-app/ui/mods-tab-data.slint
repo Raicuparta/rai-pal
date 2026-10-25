@@ -1,0 +1,21 @@
+export struct ModsTabModData {
+    id: string,
+    title: string,
+    description: string,
+    version-text: string,
+    release-date: string,
+    author: string,
+    engine-text: string,
+    deprecated: bool,
+    source-code: string,
+    can-run: bool,
+    can-install: bool,
+}
+
+export struct ModsTabItemData {
+    is-family: bool,
+    family-title: string,
+    family-description: string,
+    mods: [ModsTabModData],
+    single-mod: ModsTabModData,
+}

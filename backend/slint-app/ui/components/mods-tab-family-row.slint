@@ -1,0 +1,87 @@
+import { IconDisplay, IconSet } from "@lucide";
+import { Palette } from "std-widgets.slint";
+import { ModsTabItemData } from "../mods-tab-data.slint";
+import { ModsTabRowView } from "mods-tab-row.slint";
+
+export component ModsTabFamilyRowView inherits Rectangle {
+    in property <ModsTabItemData> item;
+
+    callback run(mod-id: string);
+    callback install(mod-id: string);
+    callback open-url(url: string);
+
+    property <bool> expanded: false;
+
+    vertical-stretch: 0;
+
+    VerticalLayout {
+        alignment: start;
+        spacing: 2px;
+
+        header := Rectangle {
+            height: max(52px, header-content.preferred-height);
+            background: header-touch.has-hover ? Palette.alternate-background : transparent;
+
+            header-content := HorizontalLayout {
+                padding: 6px;
+                spacing: 8px;
+                cross-axis-alignment: center;
+
+                IconDisplay {
+                    icon: root.expanded ? IconSet.ChevronDown : IconSet.ChevronRight;
+                    size: 16px;
+                    stroke: Palette.alternate-foreground;
+                    stroke-width: 2;
+                }
+
+                VerticalLayout {
+                    horizontal-stretch: 1;
+                    alignment: start;
+                    spacing: 2px;
+
+                    Text {
+                        text: root.item.family-title;
+                        font-size: 16px;
+                        font-weight: 700;
+                        overflow: elide;
+                    }
+
+                    if root.item.family-description != "" : Text {
+                        text: root.item.family-description;
+                        font-size: 12px;
+                        opacity: 0.75;
+                        wrap: word-wrap;
+                    }
+                }
+            }
+
+            header-touch := TouchArea {
+                clicked => {
+                    root.expanded = !root.expanded;
+                }
+            }
+        }
+
+        if root.expanded : VerticalLayout {
+            alignment: start;
+            spacing: 0px;
+
+            for mod-row in root.item.mods : ModsTabRowView {
+                mod-data: mod-row;
+                indented: true;
+
+                run(mod-id) => {
+                    root.run(mod-id);
+                }
+
+                install(mod-id) => {
+                    root.install(mod-id);
+                }
+
+                open-url(url) => {
+                    root.open-url(url);
+                }
+            }
+        }
+    }
+}

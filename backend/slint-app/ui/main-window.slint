@@ -3,6 +3,7 @@ import { GameRowData } from "game-row-data.slint";
 import { FilterGroupData } from "filter-data.slint";
 import { GameModRowData } from "game-mod-row-data.slint";
 import { PotentialModRowData } from "potential-mod-row-data.slint";
+import { ModsTabItemData } from "mods-tab-data.slint";
 import { ProviderActionItem } from "provider-action-item.slint";
 import { GamesSidebar } from "components/games-sidebar.slint";
 import { GameSidebar } from "components/game-sidebar.slint";
@@ -12,6 +13,7 @@ import { GameDetailsPage } from "components/game-details-page.slint";
 import { NavTab } from "components/nav-tab.slint";
 import { AppMenu } from "components/app-menu.slint";
 import { AboutPopup } from "components/about-popup.slint";
+import { ModsPage } from "components/mods-page.slint";
 
 export component MainWindow inherits Window {
     title: "Rai Pal";
@@ -26,6 +28,7 @@ export component MainWindow inherits Window {
     in property <[GameModRowData]> game-mods-hidden;
     in property <[GameModRowData]> game-mods-incompatible;
     in property <[PotentialModRowData]> potential-mods;
+    in property <[ModsTabItemData]> mods-tab-items;
     in property <bool> has-any-mods: false;
     in property <bool> has-installed-mods: false;
     in property <bool> has-available-mods: false;
@@ -88,6 +91,10 @@ export component MainWindow inherits Window {
     callback configure-mod(mod-id: string);
     callback configure-mod-folder(mod-id: string);
     callback uninstall-all-mods;
+    callback run-standalone-mod(mod-id: string);
+    callback install-standalone-mod(mod-id: string);
+    callback open-url(url: string);
+    callback open-local-mods-folder;
 
     function apply-color-scheme() {
         if root.selected-color-scheme == "dark" {
@@ -367,11 +374,24 @@ export component MainWindow inherits Window {
             Rectangle {
                 visible: root.current-tab == 1;
 
-                Text {
-                    text: @tr("tab" => "Mods");
-                    font-size: 20px;
-                    horizontal-alignment: center;
-                    vertical-alignment: center;
+                ModsPage {
+                    items: root.mods-tab-items;
+
+                    run-mod(mod-id) => {
+                        root.run-standalone-mod(mod-id);
+                    }
+
+                    install-mod(mod-id) => {
+                        root.install-standalone-mod(mod-id);
+                    }
+
+                    open-url(url) => {
+                        root.open-url(url);
+                    }
+
+                    open-local-mods-folder => {
+                        root.open-local-mods-folder();
+                    }
                 }
             }
 

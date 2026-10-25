@@ -9,6 +9,7 @@ mod filters;
 mod i18n;
 mod model;
 mod mods;
+mod mods_tab;
 mod query;
 mod scheduler;
 mod selected;

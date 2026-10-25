@@ -28,7 +28,7 @@ use crate::{
 	},
 	i18n,
 	model::{self, make_rows},
-	mods,
+	mods, mods_tab,
 	query::{load_game_ids, start_query},
 	scheduler::{FetchScheduler, enqueue_index, schedule_visible_range},
 	selected,
@@ -85,6 +85,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 			.into(),
 	);
 	window.set_selected_color_scheme(color_scheme_code(settings.borrow().color_scheme).into());
+	mods_tab::load(&window, &database);
 	window.set_app_version(env!("CARGO_PKG_VERSION").into());
 	window.set_search_text(initial_query.search.clone().into());
 	window.set_sort_index(sort_index(initial_query.sort_by));
@@ -351,11 +352,20 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	});
 
 	let ui_settings = settings.clone();
+	let ui_window = window_weak.clone();
+	let ui_database = database.clone();
 	window.on_tab_changed(move |index| {
-		let mut settings = ui_settings.borrow_mut();
-		settings.selected_tab = tab_from_index(index);
-		drop(settings);
+		{
+			let mut settings = ui_settings.borrow_mut();
+			settings.selected_tab = tab_from_index(index);
+		}
 		persist_settings(&ui_settings);
+
+		if index == 1
+			&& let Some(window) = ui_window.upgrade()
+		{
+			mods_tab::load(&window, &ui_database);
+		}
 	});
 
 	let ui_window = window_weak.clone();
@@ -530,6 +540,24 @@ pub fn run() -> Result<(), slint::PlatformError> {
 		};
 
 		mods::run_mod(ui_database.clone(), game, mod_id.to_string());
+	});
+
+	let ui_database = database.clone();
+	window.on_run_standalone_mod(move |mod_id| {
+		actions::run_standalone_mod(ui_database.clone(), mod_id.to_string());
+	});
+
+	let ui_database = database.clone();
+	window.on_install_standalone_mod(move |mod_id| {
+		actions::install_standalone_mod(ui_database.clone(), mod_id.to_string());
+	});
+
+	window.on_open_url(move |url| {
+		actions::open_url(url.to_string());
+	});
+
+	window.on_open_local_mods_folder(|| {
+		actions::open_local_mods_folder();
 	});
 
 	let ui_database = database.clone();

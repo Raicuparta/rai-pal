@@ -1,0 +1,71 @@
+import { Button, Palette } from "std-widgets.slint";
+import { ModsTabModData } from "../mods-tab-data.slint";
+import { ModSummaryView } from "mod-summary.slint";
+
+export component ModsTabRowView inherits Rectangle {
+    in property <ModsTabModData> mod-data;
+    in property <bool> indented: false;
+
+    callback run(mod-id: string);
+    callback install(mod-id: string);
+    callback open-url(url: string);
+
+    vertical-stretch: 0;
+    height: max(56px, content.preferred-height);
+    background: row-touch.has-hover ? Palette.alternate-background : transparent;
+
+    row-touch := TouchArea { }
+
+    content := HorizontalLayout {
+        padding: 6px;
+        spacing: 8px;
+        cross-axis-alignment: center;
+
+        if root.indented : Rectangle {
+            width: 20px;
+        }
+
+        ModSummaryView {
+            horizontal-stretch: 1;
+            title: mod-data.title;
+            description: mod-data.description;
+            version-text: mod-data.version-text;
+            release-date: mod-data.release-date;
+            author: mod-data.author;
+            engine-text: mod-data.engine-text;
+            deprecated: mod-data.deprecated;
+        }
+
+        HorizontalLayout {
+            alignment: end;
+            spacing: 4px;
+
+            if mod-data.can-run : Button {
+                text: @tr("modModal" => "Run");
+                height: 28px;
+
+                clicked => {
+                    root.run(mod-data.id);
+                }
+            }
+
+            if mod-data.can-install : Button {
+                text: @tr("modModal" => "Download");
+                height: 28px;
+
+                clicked => {
+                    root.install(mod-data.id);
+                }
+            }
+
+            if mod-data.source-code != "" : Button {
+                text: @tr("modModal" => "Website");
+                height: 28px;
+
+                clicked => {
+                    root.open-url(mod-data.source-code);
+                }
+            }
+        }
+    }
+}

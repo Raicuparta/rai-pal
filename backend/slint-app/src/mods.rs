@@ -412,7 +412,7 @@ fn version_text(info: &GameModInfo, game_mod: &GameMod) -> String {
 	parts.join(" ➔ ")
 }
 
-fn release_date(game_mod: &GameMod) -> String {
+pub(crate) fn release_date(game_mod: &GameMod) -> String {
 	let Some(date) = mod_release_date(game_mod) else {
 		return String::new();
 	};
@@ -426,14 +426,14 @@ fn release_date(game_mod: &GameMod) -> String {
 	format!("{month} {day}, {year}")
 }
 
-fn mod_release_date(game_mod: &GameMod) -> Option<&str> {
+pub(crate) fn mod_release_date(game_mod: &GameMod) -> Option<&str> {
 	game_mod
 		.download
 		.as_ref()
 		.and_then(|download| download.release_date.as_deref())
 }
 
-fn engine_text(game_mod: &GameMod) -> String {
+pub(crate) fn engine_text(game_mod: &GameMod) -> String {
 	let mut parts = Vec::new();
 
 	if let Some(engine) = game_mod.engine {
