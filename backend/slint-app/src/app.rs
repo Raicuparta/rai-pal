@@ -25,7 +25,7 @@ use crate::{
 	filters::{
 		apply_filter_action, build_groups, load_mod_families, reset_all_filters, reset_filter_group,
 	},
-	i18n,
+	i18n, mod_sources,
 	model::{self, make_rows},
 	mods, mods_tab,
 	query::{load_game_ids, start_query},
@@ -33,8 +33,6 @@ use crate::{
 	scheduler::{FetchScheduler, enqueue_index, schedule_visible_range},
 	selected,
 };
-
-type SelectedGameState = Arc<Mutex<Option<(usize, DbGame)>>>;
 
 pub fn run() -> Result<(), slint::PlatformError> {
 	let database = match try_create() {
@@ -131,7 +129,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 		schedule_visible_range(&ui_scheduler, &rows, first.max(0) as usize, last as usize);
 	});
 
-	let selected_game: SelectedGameState = Arc::new(Mutex::new(None));
+	let selected_game: selected::SelectedGameState = Arc::new(Mutex::new(None));
 
 	let ui_settings = settings.clone();
 	let ui_window = window_weak.clone();
@@ -158,6 +156,74 @@ pub fn run() -> Result<(), slint::PlatformError> {
 			query,
 			ui_selected_game.clone(),
 		);
+	});
+
+	let ui_window = window_weak.clone();
+	window.on_request_url_mod_sources(move || {
+		if let Some(window) = ui_window.upgrade() {
+			mod_sources::show(&window);
+		}
+	});
+
+	let ui_window = window_weak.clone();
+	let ui_database = database.clone();
+	let ui_selected_game = selected_game.clone();
+	window.on_set_url_mod_source_enabled(move |url, enabled| {
+		let Some(window) = ui_window.upgrade() else {
+			return;
+		};
+
+		mod_sources::set_enabled(
+			&window,
+			ui_database.clone(),
+			ui_selected_game.clone(),
+			url.to_string(),
+			enabled,
+		);
+	});
+
+	let ui_window = window_weak.clone();
+	let ui_database = database.clone();
+	let ui_selected_game = selected_game.clone();
+	window.on_remove_url_mod_source(move |url| {
+		let Some(window) = ui_window.upgrade() else {
+			return;
+		};
+
+		mod_sources::remove(
+			&window,
+			ui_database.clone(),
+			ui_selected_game.clone(),
+			url.to_string(),
+		);
+	});
+
+	let ui_window = window_weak.clone();
+	window.on_add_url_mod_source(move |url| {
+		if let Some(window) = ui_window.upgrade() {
+			mod_sources::request_add(&window, url.to_string());
+		}
+	});
+
+	let ui_window = window_weak.clone();
+	let ui_database = database.clone();
+	let ui_selected_game = selected_game.clone();
+	window.on_confirm_url_mod_source(move || {
+		let Some(window) = ui_window.upgrade() else {
+			return;
+		};
+
+		mod_sources::confirm_add(&window, ui_database.clone(), ui_selected_game.clone());
+	});
+
+	let ui_window = window_weak.clone();
+	window.on_cancel_url_mod_source(move || {
+		if let Some(window) = ui_window.upgrade() {
+			window.set_confirm_mod_source_loading(false);
+			window.set_confirm_mod_source_error("".into());
+			window.set_confirm_mod_source_mods(Default::default());
+			window.set_confirm_mod_source_saving(false);
+		}
 	});
 
 	let ui_settings = settings.clone();
@@ -716,7 +782,7 @@ fn game_from_row(
 	database.get_game(&provider_id, row.game_id.as_str()).ok()
 }
 
-fn get_selected_game(state: &SelectedGameState) -> Option<(usize, DbGame)> {
+fn get_selected_game(state: &selected::SelectedGameState) -> Option<(usize, DbGame)> {
 	state
 		.lock()
 		.ok()

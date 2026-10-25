@@ -1,11 +1,6 @@
-use std::{
-	sync::{Arc, Mutex},
-	thread,
-	time::Duration,
-};
+use std::{sync::Arc, thread, time::Duration};
 
 use rai_pal_core::{
-	game::DbGame,
 	game_providers::game_provider::GameProviderId,
 	games_query::GamesQuery,
 	local_database::{
@@ -30,7 +25,7 @@ const PROVIDERS: &[GameProviderId] = &[
 	GameProviderId::Xbox,
 ];
 
-type SelectedGameState = Arc<Mutex<Option<(usize, DbGame)>>>;
+type SelectedGameState = crate::selected::SelectedGameState;
 
 pub fn refresh_all(
 	window: slint::Weak<MainWindow>,
@@ -84,7 +79,7 @@ pub fn refresh_all(
 	});
 }
 
-fn refresh_mods(database: &DbMutex) {
+pub(crate) fn refresh_mods(database: &DbMutex) {
 	let Ok(runtime) = tokio::runtime::Builder::new_current_thread()
 		.enable_all()
 		.build()

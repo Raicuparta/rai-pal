@@ -7,6 +7,7 @@ mod app;
 mod fetch;
 mod filters;
 mod i18n;
+mod mod_sources;
 mod model;
 mod mods;
 mod mods_tab;

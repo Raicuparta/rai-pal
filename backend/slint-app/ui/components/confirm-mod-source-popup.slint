@@ -1,0 +1,95 @@
+import { Button, Palette, ScrollView } from "std-widgets.slint";
+import { Theme } from "../theme.slint";
+
+export component ConfirmModSourcePopup inherits PopupWindow {
+    in property <string> url;
+    in property <bool> loading;
+    in property <string> error;
+    in property <[string]> mods;
+    in property <bool> saving;
+
+    callback confirm;
+    callback closed;
+
+    width: Theme.about-popup-width + Theme.space-20;
+    height: min(480px, Theme.details-popup-height);
+    close-policy: PopupClosePolicy.no-auto-close;
+
+    Rectangle {
+        background: Palette.background;
+        border-width: Theme.border-width;
+        border-color: Palette.border;
+        border-radius: Theme.radius-8;
+
+        VerticalLayout {
+            padding: Theme.space-16;
+            spacing: Theme.space-10;
+
+            Text {
+                text: @tr("urlModSources" => "Confirm Mod Source");
+                font-size: Theme.font-20;
+                font-weight: Theme.weight-bold;
+            }
+
+            Text {
+                text: root.url;
+                font-size: Theme.font-12;
+                opacity: 0.7;
+                wrap: word-wrap;
+            }
+
+            if root.loading : Text {
+                text: @tr("urlModSources" => "Loading mods...");
+            }
+
+            if root.error != "" : Text {
+                text: root.error;
+                color: red;
+                font-size: Theme.font-12;
+                wrap: word-wrap;
+            }
+
+            if !root.loading && root.error == "" : VerticalLayout {
+                Text {
+                    text: @tr("urlModSources" => "{0} mods found in this source", root.mods.length);
+                }
+
+                ScrollView {
+                    VerticalLayout {
+                        spacing: Theme.space-2;
+
+                        for mod-title in root.mods : Text {
+                            text: mod-title;
+                            font-size: Theme.font-12;
+                            wrap: word-wrap;
+                        }
+                    }
+                }
+            }
+
+            HorizontalLayout {
+                alignment: end;
+                spacing: Theme.space-6;
+
+                Button {
+                    text: @tr("urlModSources" => "Cancel");
+                    enabled: !root.saving;
+
+                    clicked => {
+                        root.close();
+                        root.closed();
+                    }
+                }
+
+                Button {
+                    text: @tr("urlModSources" => "Add Source");
+                    enabled: !root.loading && root.error == "" && !root.saving;
+
+                    clicked => {
+                        root.confirm();
+                    }
+                }
+            }
+        }
+    }
+}

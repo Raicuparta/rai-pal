@@ -13,6 +13,7 @@ export component ModsPage inherits Rectangle {
     in property <string> refresh-task-names;
 
     callback refresh-all;
+    callback open-url-mod-sources;
 
     HorizontalLayout {
         Sidebar {
@@ -22,6 +23,14 @@ export component ModsPage inherits Rectangle {
 
                 clicked => {
                     root.refresh-all();
+                }
+            }
+
+            Button {
+                text: @tr("urlModSources" => "Mod Sources");
+
+                clicked => {
+                    root.open-url-mod-sources();
                 }
             }
 

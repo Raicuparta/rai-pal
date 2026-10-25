@@ -1,9 +1,14 @@
-use std::rc::Rc;
+use std::{
+	rc::Rc,
+	sync::{Arc, Mutex},
+};
 
 use rai_pal_core::game::DbGame;
 use slint::ModelRc;
 
 use crate::{GameRowData, MainWindow, ProviderActionItem, model::apply_game_to_row};
+
+pub type SelectedGameState = Arc<Mutex<Option<(usize, DbGame)>>>;
 
 pub fn show(window: &MainWindow, game: &DbGame, mut row: GameRowData) {
 	apply_game_to_row(&mut row, game);

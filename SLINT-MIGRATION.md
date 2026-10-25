@@ -19,12 +19,12 @@ implemented.
 - Shared core filter mutation and provider-action selection logic.
 - Central Slint theme, branding colors, sidebar/section components, global mod actions.
 - Refresh all games, mod sources, and remote databases from the games and mods sidebars.
+- URL mod source management, including source toggles, removal, and add confirmation.
 
 ## Not done
 
 - Thanks page content.
 - Add game, scan/add game directory, remove manually added game.
-- URL mod source management.
 - App settings beyond language/color scheme: hide thumbnails, skip confirmations, etc.
 - Steam cache reset and Steam shortcut tools.
 - User login/logout and user menu.

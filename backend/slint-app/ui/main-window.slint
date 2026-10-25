@@ -14,6 +14,9 @@ import { NavTab } from "components/nav-tab.slint";
 import { AppMenu } from "components/app-menu.slint";
 import { AboutPopup } from "components/about-popup.slint";
 import { ModsPage } from "components/mods-page.slint";
+import { UrlModSourcesPopup } from "components/url-mod-sources-popup.slint";
+import { ConfirmModSourcePopup } from "components/confirm-mod-source-popup.slint";
+import { UrlModSourceData } from "url-mod-source-data.slint";
 import { Theme } from "theme.slint";
 import { ModActions } from "actions.slint";
 import { AppColorScheme, AppTab } from "app-types.slint";
@@ -52,6 +55,18 @@ export component MainWindow inherits Window {
     in property <string> renderer-name: "";
     in property <bool> refreshing: false;
     in property <string> refresh-task-names: "";
+    in property <UrlModSourceData> default-url-mod-source;
+    in property <[UrlModSourceData]> url-mod-sources;
+    in property <bool> url-mod-sources-toggling: false;
+    in property <string> url-mod-sources-error: "";
+    in-out property <string> new-url-mod-source: "";
+    in-out property <bool> url-mod-sources-open: false;
+    in property <bool> confirm-mod-source-loading: false;
+    in property <string> confirm-mod-source-url: "";
+    in property <string> confirm-mod-source-error: "";
+    in property <[string]> confirm-mod-source-mods;
+    in property <bool> confirm-mod-source-saving: false;
+    in-out property <bool> confirm-mod-source-open: false;
 
     in-out property <AppTab> current-tab: games;
     in-out property <bool> game-selected: false;
@@ -65,6 +80,12 @@ export component MainWindow inherits Window {
 
     callback request-game(index: int);
     callback refresh-all;
+    callback request-url-mod-sources;
+    callback set-url-mod-source-enabled(url: string, enabled: bool);
+    callback remove-url-mod-source(url: string);
+    callback add-url-mod-source(url: string);
+    callback confirm-url-mod-source;
+    callback cancel-url-mod-source;
     callback visible-range-changed(first: int, last: int);
     callback search-changed(text: string);
     callback sort-changed(index: int);
@@ -341,6 +362,10 @@ export component MainWindow inherits Window {
                     refresh-all => {
                         root.refresh-all();
                     }
+
+                    open-url-mod-sources => {
+                        root.request-url-mod-sources();
+                    }
                 }
             }
 
@@ -374,5 +399,66 @@ export component MainWindow inherits Window {
         y: (root.height - self.height) / 2;
         app-version: root.app-version;
         renderer-name: root.renderer-name;
+    }
+
+    changed url-mod-sources-open => {
+        if root.url-mod-sources-open {
+            url-mod-sources-popup.show();
+        } else {
+            url-mod-sources-popup.close();
+        }
+    }
+
+    changed confirm-mod-source-open => {
+        if root.confirm-mod-source-open {
+            confirm-mod-source-popup.show();
+        } else {
+            confirm-mod-source-popup.close();
+        }
+    }
+
+    url-mod-sources-popup := UrlModSourcesPopup {
+        x: (root.width - self.width) / 2;
+        y: (root.height - self.height) / 2;
+        default-source: root.default-url-mod-source;
+        sources: root.url-mod-sources;
+        toggling: root.url-mod-sources-toggling;
+        error: root.url-mod-sources-error;
+        new-url <=> root.new-url-mod-source;
+
+        add-source(url) => {
+            root.add-url-mod-source(url);
+        }
+
+        set-enabled(url, enabled) => {
+            root.set-url-mod-source-enabled(url, enabled);
+        }
+
+        remove-source(url) => {
+            root.remove-url-mod-source(url);
+        }
+
+        closed => {
+            root.url-mod-sources-open = false;
+        }
+    }
+
+    confirm-mod-source-popup := ConfirmModSourcePopup {
+        x: (root.width - self.width) / 2;
+        y: (root.height - self.height) / 2;
+        url: root.confirm-mod-source-url;
+        loading: root.confirm-mod-source-loading;
+        error: root.confirm-mod-source-error;
+        mods: root.confirm-mod-source-mods;
+        saving: root.confirm-mod-source-saving;
+
+        confirm => {
+            root.confirm-url-mod-source();
+        }
+
+        closed => {
+            root.confirm-mod-source-open = false;
+            root.cancel-url-mod-source();
+        }
     }
 }
