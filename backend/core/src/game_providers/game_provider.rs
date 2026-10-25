@@ -8,10 +8,14 @@ use rai_pal_proc_macros::serializable_enum;
 
 #[cfg(target_os = "linux")]
 use crate::game_providers::heroic_gog_provider::HeroicGog;
-#[cfg(target_os = "linux")]
-use crate::game_providers::{dummy_provider::Dummy, heroic_epic_provider::HeroicEpic};
 #[cfg(target_os = "windows")]
-use crate::game_providers::{epic_provider::Epic, gog_provider::Gog, xbox_provider::Xbox};
+use crate::game_providers::{
+	dummy_provider::Dummy, epic_provider::Epic, gog_provider::Gog, xbox_provider::Xbox,
+};
+#[cfg(target_os = "linux")]
+use crate::game_providers::{
+	dummy_provider::Dummy, heroic_amazon_provider::HeroicAmazon, heroic_epic_provider::HeroicEpic,
+};
 use crate::{
 	game::DbGame,
 	game_engines::pe_utils,
@@ -24,6 +28,7 @@ use crate::{
 // These IDs need to match the ones in rai-pal-db.
 #[serializable_enum]
 pub enum GameProviderId {
+	Amazon,
 	Epic,
 	Gog,
 	Itch,
@@ -34,6 +39,12 @@ pub enum GameProviderId {
 
 pub trait ProviderActions {
 	fn insert_games(&self, db: &DbMutex) -> Result;
+}
+
+pub(crate) trait ProviderParser {
+	type Source;
+
+	fn parse_games(&self, source: &Self::Source, insert: &mut impl FnMut(DbGame)) -> Result;
 }
 
 pub trait WineProviderActions {
@@ -115,6 +126,11 @@ pub fn get_provider(provider_id: GameProviderId) -> Result<Box<dyn GameProvider>
 		GameProviderId::Manual => Ok(Box::new(Manual {})),
 
 		GameProviderId::Itch => Ok(Box::new(Itch {})),
+
+		#[cfg(target_os = "linux")]
+		GameProviderId::Amazon => Ok(Box::new(HeroicAmazon {})),
+		#[cfg(target_os = "windows")]
+		GameProviderId::Amazon => Ok(Box::new(Dummy {})),
 
 		#[cfg(target_os = "linux")]
 		GameProviderId::Epic => Ok(Box::new(HeroicEpic {})),

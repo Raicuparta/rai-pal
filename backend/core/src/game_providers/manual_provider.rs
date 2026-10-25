@@ -160,7 +160,7 @@ fn games_config_path() -> Result<PathBuf> {
 }
 
 fn read_games_config(games_config_path: &Path) -> GamesConfig {
-	match std::fs::read_to_string(games_config_path)
+	match fs_err::read_to_string(games_config_path)
 		.and_then(|games_config_file| Ok(serde_json::from_str::<GamesConfig>(&games_config_file)?))
 	{
 		Ok(games_config) => games_config,
@@ -263,7 +263,7 @@ pub async fn add_game(path: &Path) -> Result<DbGame> {
 	let mut games_config = read_games_config(&config_path);
 	games_config.paths.push(path.to_path_buf());
 
-	tokio::fs::write(config_path, serde_json::to_string_pretty(&games_config)?).await?;
+	fs_err::tokio::write(config_path, serde_json::to_string_pretty(&games_config)?).await?;
 
 	Ok(game)
 }
@@ -290,7 +290,7 @@ pub async fn add_directory(path: &Path) -> Result<Vec<DbGame>> {
 
 	games_config.directories.push(path.to_path_buf());
 
-	tokio::fs::write(config_path, serde_json::to_string_pretty(&games_config)?).await?;
+	fs_err::tokio::write(config_path, serde_json::to_string_pretty(&games_config)?).await?;
 
 	Ok(games)
 }
@@ -335,7 +335,7 @@ fn walk_directory(
 		return Ok(());
 	}
 
-	for entry in std::fs::read_dir(dir)? {
+	for entry in fs_err::read_dir(dir)? {
 		let entry = entry?;
 		let path = entry.path();
 
@@ -421,7 +421,7 @@ fn remove_directory_path(path: &Path) -> Result {
 	games_config.directories.retain(|p| p != path);
 	games_config.ignored_paths.retain(|p| !p.starts_with(path));
 
-	std::fs::write(config_path, serde_json::to_string_pretty(&games_config)?)?;
+	fs_err::write(config_path, serde_json::to_string_pretty(&games_config)?)?;
 
 	Ok(())
 }
@@ -432,7 +432,7 @@ pub async fn remove_directory(path: &Path) -> Result {
 	games_config.directories.retain(|p| p != path);
 	games_config.ignored_paths.retain(|p| !p.starts_with(path));
 
-	tokio::fs::write(config_path, serde_json::to_string_pretty(&games_config)?).await?;
+	fs_err::tokio::write(config_path, serde_json::to_string_pretty(&games_config)?).await?;
 
 	Ok(())
 }
@@ -462,7 +462,7 @@ pub async fn remove_game(game: &DbGame) -> Result {
 		games_config.ignored_paths.push((*path).clone());
 	}
 
-	tokio::fs::write(config_path, serde_json::to_string_pretty(&games_config)?).await?;
+	fs_err::tokio::write(config_path, serde_json::to_string_pretty(&games_config)?).await?;
 
 	Ok(())
 }
@@ -472,7 +472,7 @@ fn remove_path(path: &Path) -> Result {
 	let mut games_config = read_games_config(&config_path);
 	games_config.paths.retain(|p| p != path);
 
-	std::fs::write(config_path, serde_json::to_string_pretty(&games_config)?)?;
+	fs_err::write(config_path, serde_json::to_string_pretty(&games_config)?)?;
 
 	Ok(())
 }
@@ -498,7 +498,7 @@ fn clean_up_stale_ignored_paths(config: &GamesConfig) -> Result {
 	let mut games_config = read_games_config(&config_path);
 	games_config.ignored_paths.retain(|p| p.exists());
 
-	std::fs::write(config_path, serde_json::to_string_pretty(&games_config)?)?;
+	fs_err::write(config_path, serde_json::to_string_pretty(&games_config)?)?;
 
 	Ok(())
 }

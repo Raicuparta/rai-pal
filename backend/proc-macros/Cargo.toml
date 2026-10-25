@@ -7,8 +7,8 @@ edition.workspace = true
 proc-macro = true
 
 [dependencies]
-quote = "1.0.46"
-syn = { version = "2.0.118", features = ["full"] }
+quote = "1.0.47"
+syn = { version = "3.0.9", features = ["full"] }
 
 [lints]
 workspace = true

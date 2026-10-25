@@ -1,20 +1,21 @@
 #![cfg(target_os = "linux")]
 
+use fs_err as fs;
 use std::{
 	collections::HashMap,
 	fmt::Debug,
-	fs,
 	path::{Path, PathBuf},
 };
 
 use log;
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 
 use super::provider_command::ProviderCommandAction;
 use crate::{
 	game::DbGame,
 	game_providers::{
-		game_provider::{GameProviderId, ProviderActions, WineProviderActions},
+		game_provider::{GameProviderId, ProviderActions, ProviderParser, WineProviderActions},
 		heroic_provider,
 	},
 	local_database::{app_database::DbMutex, game_database::GameDatabase},
@@ -42,8 +43,14 @@ struct ParsedGame {
 	art_icon: Option<String>,
 }
 
+#[derive(Debug, Deserialize)]
+struct GogApiInfo {
+	first_release_date: Option<String>,
+}
+
 #[derive(Debug, Default, Serialize, Deserialize)]
 struct Root {
+	#[serde(default)]
 	games: Vec<ParsedGame>,
 }
 
@@ -67,9 +74,9 @@ struct GogGame {
 pub struct HeroicGog {}
 
 impl HeroicGog {
-	fn get_owned_games() -> Result<Vec<ParsedGame>> {
+	fn get_owned_games(root: &Path) -> Result<Vec<ParsedGame>> {
 		Ok(
-			heroic_provider::read_heroic_json::<Root>("store_cache/gog_library.json")?
+			heroic_provider::read_json_from::<Root>(root, "store_cache/gog_library.json")?
 				.unwrap_or_default()
 				.games
 				.into_iter()
@@ -79,15 +86,38 @@ impl HeroicGog {
 		)
 	}
 
-	fn get_installed_games() -> Result<HashMap<String, InstalledGOGGame>> {
+	fn get_installed_games(root: &Path) -> Result<HashMap<String, InstalledGOGGame>> {
 		Ok(
-			heroic_provider::read_heroic_json::<RootInstalled>("gog_store/installed.json")?
+			heroic_provider::read_json_from::<RootInstalled>(root, "gog_store/installed.json")?
 				.unwrap_or_default()
 				.installed
 				.into_iter()
 				.map(|game| (game.app_name.clone(), game))
 				.collect(),
 		)
+	}
+
+	// Heroic caches the GOG store API response here, and it's the only local file
+	// with release dates (`gog_library.json` only has library metadata).
+	fn get_release_dates(root: &Path) -> Result<HashMap<String, String>> {
+		let Some(api_info) = heroic_provider::read_json_from::<HashMap<String, Value>>(
+			root,
+			"store_cache/gog_api_info.json",
+		)?
+		else {
+			return Ok(HashMap::new());
+		};
+
+		Ok(api_info
+			.into_iter()
+			.filter_map(|(key, value)| {
+				let app_name = key.strip_prefix("gog_")?.to_string();
+				let release_date = serde_json::from_value::<GogApiInfo>(value)
+					.ok()?
+					.first_release_date?;
+				heroic_provider::parse_release_date(&release_date).map(|date| (app_name, date))
+			})
+			.collect())
 	}
 
 	fn read_info_file(path: &Path, app_id: &str) -> Result<GogGame> {
@@ -121,10 +151,13 @@ impl HeroicGog {
 	}
 }
 
-impl ProviderActions for HeroicGog {
-	fn insert_games(&self, db: &DbMutex) -> Result {
-		let owned_games = Self::get_owned_games()?;
-		let installed_games = Self::get_installed_games()?;
+impl ProviderParser for HeroicGog {
+	type Source = PathBuf;
+
+	fn parse_games(&self, root: &Self::Source, insert: &mut impl FnMut(DbGame)) -> Result {
+		let owned_games = Self::get_owned_games(root)?;
+		let installed_games = Self::get_installed_games(root)?;
+		let release_dates = Self::get_release_dates(root)?;
 
 		for parsed_game in owned_games {
 			let mut game = DbGame::new(
@@ -133,6 +166,8 @@ impl ProviderActions for HeroicGog {
 				parsed_game.title.clone(),
 			);
 			game.thumbnail_url.clone_from(&parsed_game.art_icon);
+			game.release_date_rfc3339 = release_dates.get(&parsed_game.app_name).cloned();
+
 			if let Some(installed_game) = installed_games.get(&parsed_game.app_name) {
 				if let Some(exe_path) = Self::get_exe_path(installed_game) {
 					game.set_executable(&exe_path);
@@ -142,15 +177,29 @@ impl ProviderActions for HeroicGog {
 					heroic_provider::launch_command(&parsed_game.app_name, Some("gog")),
 				);
 			}
-			db.insert_game(&game);
+
+			insert(game);
 		}
 
 		Ok(())
 	}
 }
 
+impl ProviderActions for HeroicGog {
+	fn insert_games(&self, db: &DbMutex) -> Result {
+		self.parse_games(&heroic_provider::config_path()?, &mut |game| {
+			db.insert_game(&game);
+		})
+	}
+}
+
 impl WineProviderActions for HeroicGog {
+	fn get_wine_prefix_path(&self, game: &DbGame) -> Result<PathBuf> {
+		heroic_provider::get_wine_prefix_path(&game.external_id)
+	}
+
 	fn set_wine_dll_overrides(&self, game: &DbGame, dll_overrides: &[String]) -> Result {
-		heroic_provider::set_wine_dll_overrides(&game.external_id, dll_overrides)
+		let prefix_path = self.get_wine_prefix_path(game)?;
+		crate::wine::set_wine_dll_overrides_in_reg(&prefix_path, dll_overrides)
 	}
 }

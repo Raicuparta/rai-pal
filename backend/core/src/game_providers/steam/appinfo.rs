@@ -1,7 +1,5 @@
-use std::{
-	fs,
-	path::{Path, PathBuf},
-};
+use fs_err as fs;
+use std::path::{Path, PathBuf};
 
 use rai_pal_proc_macros::serializable_struct;
 
@@ -10,7 +8,7 @@ use super::vdf::{
 };
 use crate::{
 	operating_system::OperatingSystem,
-	result::{Error, Result},
+	result::{ContextResult, Error, Result},
 };
 
 #[serializable_struct]
@@ -41,6 +39,7 @@ pub struct SteamAppInfo {
 	pub is_free: bool,
 	pub app_type: Option<String>,
 	pub tags: Option<Vec<i32>>,
+	pub header_image: Option<String>,
 }
 
 impl SteamAppInfo {
@@ -87,6 +86,7 @@ pub struct SteamAppInfoReader {
 	mmap: memmap2::Mmap,
 	pos: usize,
 	keys: Option<Vec<String>>,
+	path: PathBuf,
 }
 
 const OLD_APPINFO_MAX_VERSION: u32 = 0x07_56_44_28;
@@ -98,7 +98,17 @@ impl SteamAppInfoReader {
 		}
 
 		let file = fs::File::open(appinfo_path)?;
-		let mmap = unsafe { memmap2::Mmap::map(&file)? };
+		let mmap = unsafe { memmap2::Mmap::map(&file) }
+			.with_context(|| format!("failed to memory-map `{}`", appinfo_path.display()))?;
+
+		let mut reader = Self::from_mmap(mmap).with_context(|| {
+			format!("failed to parse Steam appinfo `{}`", appinfo_path.display())
+		})?;
+		reader.path = appinfo_path.to_path_buf();
+		Ok(reader)
+	}
+
+	fn from_mmap(mmap: memmap2::Mmap) -> Result<Self> {
 		let mut pos = 0;
 
 		let version = super::vdf::read_u32_le(&mmap, &mut pos)?;
@@ -127,11 +137,18 @@ impl SteamAppInfoReader {
 			None
 		};
 
-		Ok(Self { mmap, pos, keys })
+		Ok(Self {
+			mmap,
+			pos,
+			keys,
+			path: PathBuf::new(),
+		})
 	}
 
 	pub fn try_next(&mut self) -> Result<Option<SteamAppInfo>> {
-		let result = self.try_next_inner();
+		let result = self
+			.try_next_inner()
+			.with_context(|| format!("failed to parse Steam appinfo `{}`", self.path.display()));
 
 		if result.is_err() {
 			// A parse error can leave `pos` mid-entry. Advance to the end so the
@@ -233,6 +250,9 @@ impl SteamAppInfoReader {
 			let original_release_date =
 				value_to_i32(app.get(&["appinfo", "common", "original_release_date"]));
 
+			let header_image =
+				value_to_string(app.get(&["appinfo", "common", "header_image", "english"]));
+
 			let app_type_option = value_to_string(app.get(&["appinfo", "common", "type"]));
 			let is_free = app.get(&["appinfo", "extended", "isfreeapp"]).is_some()
 				|| app_type_option
@@ -261,6 +281,7 @@ impl SteamAppInfoReader {
 					is_free,
 					app_type: app_type_option,
 					tags,
+					header_image,
 				}));
 			}
 		}

@@ -98,26 +98,29 @@ export const deDe: Localization = {
 		startGameButton: "Spiel starten",
 		startGameExecutable: "Spiel-Exe starten",
 		startGameViaProvider: "Spiel starten über {provider}",
-		foldersDropdown: "Ordner",
+		foldersSection: "Ordner",
 		openGameFilesFolder: "Spieldateien",
 		openInstalledModsFolder: "Installierte Mods",
 		openGameDataFolder: "App-Daten",
 		openGameWinePrefixFolder: "Wine-Prefix",
 		openGameWineBinaryFolder: "Wine Binary",
+
+		dataSection: "Daten",
 		removeFromRaiPal: "Aus Rai Pal entfernen",
 		removeGameConfirmation:
 			"Bist du sicher, dass du dieses Spiel aus Rai Pal entfernen willst?",
 		refreshGame: "Spiel aktualisieren",
-		failedToReadGameInfo:
-			"Konnte wichtige Infos zu diesem Spiel nicht lesen. Vielleicht ist die Exe geschützt. Einige Mods könnten dann nicht installiert werden.",
 		failedToDetermineEngine:
-			"Konnte die Engine für dieses Spiel nicht bestimmen. Einige Mods könnten dann nicht funktionieren.",
-		gameNotInstalledWarning:
-			"Das Spiel ist nicht installiert, daher bin ich mir nicht 100% sicher, welche Mods kompatibel sind. Die unten angezeigten könnten trotzdem funktionieren. Wenn du das Spiel installierst, zeig ich dir genauere Infos.",
+			"Konnte die Engine für dieses Spiel nicht bestimmen.",
 		uninstallAllModsButton: "Alle Mods deinstallieren",
 		uninstallAllModsConfirmation:
 			"Sicher? Das löscht alle Dateien im Mod-Ordner des Spiels. Dateien aus dem eigentlichen Spiel bleiben aber erhalten.",
 
+		installedMods: "Installierte Mods",
+		availableMods: "Verfügbare Mods",
+		potentiallyCompatibleMods: "Möglicherweise kompatible Mods",
+		potentiallyCompatibleModsDescription:
+			"Installiere dieses Spiel, um genauere Informationen darüber zu sehen, welche Mods kompatibel sind",
 		incompatibleGameModsLabel: "Inkompatible Mods",
 
 		incompatibleGameModsDescription:
@@ -127,6 +130,9 @@ export const deDe: Localization = {
 
 		otherThingsDescription:
 			"Das sind hauptsächlich Abhängigkeiten und andere Dinge, die du normalerweise nicht direkt bearbeiten musst.",
+
+		noModsForGame:
+			"Nichts! Keiner der verfügbaren Mods ist für dieses Spiel zu gebrauchen. Versuch es mit einem anderen.",
 	},
 
 	gameModRow: {
@@ -178,7 +184,8 @@ export const deDe: Localization = {
 		runMod: "Ausführen",
 		openModFolder: "Mod-Ordner öffnen",
 		updateMod: "Mod aktualisieren",
-		downloadMod: "Mod herunterladen",
+		downloadMod: "Herunterladen",
+		openModSource: "Webseite",
 		deleteMod: "Mod löschen",
 		deleteModConfirmation:
 			"Sicher? Alle Dateien im Mod-Ordner werden gelöscht.",
@@ -189,6 +196,10 @@ export const deDe: Localization = {
 		showGameThumbnails: "Spiel-Thumbnails in der Liste anzeigen",
 		language: "Sprache",
 		autoDetectedLanguage: "Automatisch erkannt - {languageName}",
+		colorScheme: "Farbschema",
+		colorSchemeAuto: "Automatisch",
+		colorSchemeDark: "Dunkel",
+		colorSchemeLight: "Hell",
 		resetRaiPalSettingsButton: "Rai Pal-Einstellungen zurücksetzen",
 		resetRaiPalSettingsTooltip:
 			"Setzt Filter, Bestätigungsdialoge und wahrscheinlich andere Dinge zurück.",

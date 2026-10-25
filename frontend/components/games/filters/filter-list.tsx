@@ -1,5 +1,6 @@
 import { ActionIcon, Divider, Group, Stack } from "@mantine/core";
 import { useAtomValue } from "jotai";
+import { useMemo } from "react";
 import { IconChevronUp, IconRestore } from "@tabler/icons-react";
 import {
 	FilterChangeCallback,
@@ -8,7 +9,7 @@ import {
 	keepOnlyLocked,
 } from "./filter-column";
 import { GamesFilter, GamesQuery } from "@api/bindings";
-import { modsAtom } from "@hooks/use-data";
+import { modFamiliesAtom, modsAtom } from "@hooks/use-data";
 import { useDataQuery } from "@hooks/use-data-query";
 import { useAppSettingSingle } from "@hooks/use-app-setting-single";
 import { filterDetails, FilterKey } from "./filter-details";
@@ -20,10 +21,37 @@ export function FilterList() {
 	const [dataQuery, setDataQuery] = useDataQuery();
 	const [expandedFilters = [], setExpandedFilters] =
 		useAppSettingSingle("expandedFilters");
+	const allModFamilies = useAtomValue(modFamiliesAtom);
 	const mods = useAtomValue(modsAtom);
 	const { t } = useLocalization("filterMenu");
 
-	const filterKeys = Object.keys(filterDetails) as Array<FilterKey>;
+	const modFamilies = useMemo(() => {
+		const familiesWithAnyMods = new Set<string>();
+		const familiesWithVisibleMods = new Set<string>();
+
+		for (const mod of Object.values(mods)) {
+			if (!mod.family) continue;
+			familiesWithAnyMods.add(mod.family);
+			if (!mod.hideFromGameModsList) {
+				familiesWithVisibleMods.add(mod.family);
+			}
+		}
+
+		return Object.fromEntries(
+			Object.entries(allModFamilies).filter(
+				([id]) =>
+					!familiesWithAnyMods.has(id) || familiesWithVisibleMods.has(id),
+			),
+		);
+	}, [allModFamilies, mods]);
+
+	const hasModFamilies = Object.keys(modFamilies).length > 0;
+
+	// When family definitions are unavailable, a saved family filter can't be
+	// shown, so hide the category and don't apply it (but keep it saved).
+	const filterKeys = (Object.keys(filterDetails) as Array<FilterKey>).filter(
+		(filterKey) => filterKey !== "modFamilies" || hasModFamilies,
+	);
 
 	const hasActiveFilters = filterKeys.some((filterKey) =>
 		hasDisabledNonLocked(dataQuery.filter[filterKey]),
@@ -45,6 +73,9 @@ export function FilterList() {
 				dataQuery.filter[filterKey],
 			);
 		}
+		if (!hasModFamilies) {
+			filter.modFamilies = dataQuery.filter.modFamilies;
+		}
 		setDataQuery({ filter });
 	};
 
@@ -55,7 +86,7 @@ export function FilterList() {
 		>
 			<Group
 				wrap="nowrap"
-				px="xs"
+				pr="xs"
 			>
 				<ActionIcon
 					bg="transparent"
@@ -75,7 +106,7 @@ export function FilterList() {
 					bg="transparent"
 					size="sm"
 					mr={-3}
-					color="white"
+					color="gray"
 					variant="subtle"
 					disabled={expandedFilters.length === 0}
 					aria-label={t("collapseAll")}
@@ -92,22 +123,27 @@ export function FilterList() {
 					{filterKeys.map((filterKey) => {
 						const possibleValues =
 							filterKey === "modFamilies"
-								? ([
-										...new Set(
-											Object.values(mods)
-												.map((m) => m.family)
-												.filter((f): f is string => f !== null),
-										),
-									] as string[])
+								? (Object.keys(modFamilies) as string[])
 								: (Object.keys(
 										filterDetails[filterKey].valueDetails,
 									) as string[]);
+
+						const valueDetails =
+							filterKey === "modFamilies"
+								? Object.fromEntries(
+										Object.entries(modFamilies).map(([id, family]) => [
+											id,
+											{ staticDisplayText: family.title },
+										]),
+									)
+								: undefined;
 
 						return (
 							<FilterColumn
 								key={filterKey}
 								id={filterKey}
 								possibleValues={possibleValues}
+								valueDetails={valueDetails}
 								filterGroup={dataQuery.filter[filterKey]}
 								expanded={expandedFilters.includes(filterKey)}
 								onExpandedChange={(expanded) =>

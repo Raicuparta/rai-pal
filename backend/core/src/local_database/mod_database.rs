@@ -5,6 +5,7 @@ use std::{
 };
 
 use rai_pal_proc_macros::serializable_struct;
+use rusqlite::OptionalExtension;
 use serde::Serialize;
 
 use crate::{
@@ -19,16 +20,17 @@ use crate::{
 	mods::{
 		game_mod::{GameMod, ModDependency},
 		installed_mod::InstalledMod,
+		mod_config::ModConfig,
+		mod_family::ModFamily,
 	},
 	operating_system::OperatingSystem,
 	path_extensions::PathExt,
-	result::{Error, Result},
+	result::{ContextResult, Error, Result},
 };
 
 #[serializable_struct]
 pub struct GameModInfo {
 	pub mod_id: String,
-	pub mod_scope: String,
 	pub installed_version: Option<String>,
 	pub installed_hash: Option<String>,
 	pub is_outdated: bool,
@@ -47,7 +49,11 @@ pub trait ModDatabase {
 		provider_id_option: Option<GameProviderId>,
 		game_id_option: Option<String>,
 	) -> Result<Option<InstalledMod>>;
-	fn get_game_environment(&self, game: &DbGame) -> Result<BTreeMap<String, String>>;
+	fn get_installed_mods_for_game(&self, game: &DbGame) -> Result<Vec<InstalledMod>>;
+	fn get_game_environment(
+		&self,
+		game: &DbGame,
+	) -> Result<(BTreeMap<String, String>, Vec<String>)>;
 	fn try_get_installed_mod(
 		&self,
 		provider_id: &GameProviderId,
@@ -63,6 +69,20 @@ pub trait ModDatabase {
 	) -> Result<Vec<GameModInfo>>;
 	fn get_mod_ids_in_scope(&self, provider_id: ModProviderId, scope: &str) -> Result<Vec<String>>;
 	fn remove_mods_except(&self, provider_id: ModProviderId, keep_ids: &[String]) -> Result;
+	fn insert_mod_families(
+		&self,
+		families: &BTreeMap<String, ModFamily>,
+		provider_id: ModProviderId,
+		source_hash: &str,
+	);
+	fn get_mod_families(&self) -> Result<BTreeMap<String, ModFamily>>;
+	fn get_family_ids_in_scope(
+		&self,
+		provider_id: ModProviderId,
+		scope: &str,
+	) -> Result<Vec<String>>;
+	fn remove_mod_families_except(&self, provider_id: ModProviderId, keep_ids: &[String])
+	-> Result;
 }
 
 pub(crate) fn compute_scope(provider_id: ModProviderId, source_hash: &str) -> String {
@@ -116,9 +136,16 @@ impl ModDatabase for DbMutex {
 
 			CREATE INDEX IF NOT EXISTS idx_mods_created_at ON mods(created_at);
 
+			CREATE TABLE IF NOT EXISTS mod_families (
+				id TEXT NOT NULL PRIMARY KEY,
+				scope TEXT NOT NULL DEFAULT '',
+				provider_id TEXT NOT NULL,
+				family_id TEXT NOT NULL,
+				data TEXT NOT NULL
+			);
+
 			CREATE TABLE IF NOT EXISTS installed_mods (
 				exe_path_hash TEXT NOT NULL,
-				mod_scope TEXT NOT NULL DEFAULT '',
 				mod_id TEXT NOT NULL,
 				installed_version TEXT,
 				installed_hash TEXT,
@@ -205,7 +232,9 @@ impl ModDatabase for DbMutex {
 					scope: row.get(22)?,
 					game_environment: row.get_json(23)?,
 				})
-			})?)
+			})
+			.optional()?
+			.ok_or_else(|| Error::ModNotFound(mod_id.to_string()))?)
 	}
 
 	fn get_installed_mod(
@@ -238,13 +267,18 @@ impl ModDatabase for DbMutex {
 					game_id_option.as_deref(),
 				],
 				|row| row.get::<_, bool>(0),
-			)?;
+			)
+			.with_context(|| format!("checking whether mod `{mod_id}` is installed"))?;
 
 		if !is_installed {
 			return Ok(None);
 		}
 
-		let game_mod = self.get_mod(mod_id)?;
+		let game_mod = match self.get_mod(mod_id) {
+			Ok(game_mod) => game_mod,
+			Err(Error::ModNotFound(_)) => return Ok(None),
+			Err(error) => return Err(error),
+		};
 		let game_option = if let Some(game_id) = game_id_option
 			&& let Some(provider_id) = provider_id_option
 		{
@@ -266,7 +300,30 @@ impl ModDatabase for DbMutex {
 			.ok_or(Error::ModNotInstalled(mod_id.to_string()))
 	}
 
-	fn get_game_environment(&self, game: &DbGame) -> Result<BTreeMap<String, String>> {
+	fn get_installed_mods_for_game(&self, game: &DbGame) -> Result<Vec<InstalledMod>> {
+		let exe_path_hash = game.try_get_exe_path()?.hash_string();
+
+		let mod_ids = self
+			.lock_db()?
+			.prepare_cached("SELECT mod_id FROM main.installed_mods WHERE exe_path_hash = $1")?
+			.query_map([exe_path_hash], |row| row.get::<_, String>(0))?
+			.collect::<rusqlite::Result<Vec<String>>>()?;
+
+		let mut installed_mods = Vec::new();
+
+		for mod_id in mod_ids {
+			if let Ok(game_mod) = self.get_mod(&mod_id) {
+				installed_mods.push(InstalledMod::new(game_mod, Some(game.clone())));
+			}
+		}
+
+		Ok(installed_mods)
+	}
+
+	fn get_game_environment(
+		&self,
+		game: &DbGame,
+	) -> Result<(BTreeMap<String, String>, Vec<String>)> {
 		let exe_path_hash = game.try_get_exe_path()?.hash_string();
 
 		let mod_ids = self
@@ -276,15 +333,20 @@ impl ModDatabase for DbMutex {
 			.collect::<rusqlite::Result<Vec<String>>>()?;
 
 		let mut environment = BTreeMap::new();
+		let mut environment_mod_ids = Vec::new();
 
 		for mod_id in mod_ids {
 			let Ok(game_mod) = self.get_mod(&mod_id) else {
 				continue;
 			};
-			environment.extend(game_mod.get_game_environment(Some(game)));
+			let mod_environment = game_mod.get_game_environment(Some(game));
+			if !mod_environment.is_empty() {
+				environment_mod_ids.push(mod_id);
+			}
+			environment.extend(mod_environment);
 		}
 
-		Ok(environment)
+		Ok((environment, environment_mod_ids))
 	}
 
 	fn get_mod_map(&self) -> Result<BTreeMap<String, GameMod>> {
@@ -404,7 +466,6 @@ impl ModDatabase for DbMutex {
 
 				installed_mod_rows.push((
 					exe_path_hash.clone(),
-					manifest.scope.clone().unwrap_or_default(),
 					manifest.id,
 					manifest
 						.download
@@ -430,20 +491,17 @@ impl ModDatabase for DbMutex {
 				let mut statement = transaction.prepare_cached(
 					"INSERT OR REPLACE INTO main.installed_mods (
 						exe_path_hash,
-						mod_scope,
 						mod_id,
 						installed_version,
 						installed_hash,
 						created_at
-					) VALUES ($1, $2, $3, $4, $5, $6)",
+					) VALUES ($1, $2, $3, $4, $5)",
 				)?;
 
-				for (exe_path_hash, mod_scope, mod_id, installed_version, installed_hash) in
-					installed_mod_rows
+				for (exe_path_hash, mod_id, installed_version, installed_hash) in installed_mod_rows
 				{
 					statement.execute(rusqlite::params![
 						exe_path_hash,
-						mod_scope,
 						mod_id,
 						installed_version,
 						installed_hash,
@@ -497,8 +555,7 @@ impl ModDatabase for DbMutex {
 					json_extract(m.engine_version_range, '$.minimum.patch') AS min_patch,
 					json_extract(m.engine_version_range, '$.maximum.major') AS max_major,
 					json_extract(m.engine_version_range, '$.maximum.minor') AS max_minor,
-					json_extract(m.engine_version_range, '$.maximum.patch') AS max_patch,
-					m.scope AS mod_scope
+					json_extract(m.engine_version_range, '$.maximum.patch') AS max_patch
 				FROM main.games g
 				LEFT JOIN main.installed_games ig ON g.provider_id = ig.provider_id AND g.game_id = ig.game_id
 				LEFT JOIN main.normalized_titles nt ON g.provider_id = nt.provider_id AND g.game_id = nt.game_id
@@ -610,7 +667,6 @@ impl ModDatabase for DbMutex {
 					) THEN 0
 					ELSE 1
 				END AS compatible,
-				cm.mod_scope,
 				cm.family
 			FROM candidate_mods cm
 		",
@@ -629,8 +685,7 @@ impl ModDatabase for DbMutex {
 						is_outdated: row.get(3)?,
 						has_installed_dependants: row.get(4)?,
 						compatible: row.get(5)?,
-						mod_scope: row.get(6)?,
-						family: row.get(7)?,
+						family: row.get(6)?,
 					})
 				},
 			)?
@@ -667,10 +722,93 @@ impl ModDatabase for DbMutex {
 
 		Ok(())
 	}
+
+	fn insert_mod_families(
+		&self,
+		families: &BTreeMap<String, ModFamily>,
+		provider_id: ModProviderId,
+		source_hash: &str,
+	) {
+		if let Err(err) = try_insert_mod_families(self, families, provider_id, source_hash) {
+			log::error!("Failed to insert mod families into local database: {err}");
+		}
+	}
+
+	fn get_mod_families(&self) -> Result<BTreeMap<String, ModFamily>> {
+		let rows = self
+			.lock_db()?
+			.prepare_cached("SELECT family_id, data FROM main.mod_families ORDER BY id;")?
+			.query_map([], |row| {
+				Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?))
+			})?
+			.collect::<rusqlite::Result<Vec<(String, String)>>>()?;
+
+		let mut families = BTreeMap::new();
+
+		for (family_id, data) in rows {
+			match serde_json::from_str::<ModFamily>(&data) {
+				Ok(family) => {
+					families.insert(family_id, family);
+				}
+				Err(err) => {
+					log::warn!(
+						"Failed to parse mod family `{family_id}` from local database: {err}"
+					);
+				}
+			}
+		}
+
+		Ok(families)
+	}
+
+	fn get_family_ids_in_scope(
+		&self,
+		provider_id: ModProviderId,
+		scope: &str,
+	) -> Result<Vec<String>> {
+		let ids = self
+			.lock_db()?
+			.prepare_cached(
+				"SELECT id FROM main.mod_families WHERE provider_id = $1 AND scope = $2;",
+			)?
+			.query_map(rusqlite::params![provider_id, scope], |row| {
+				row.get::<_, String>(0)
+			})?
+			.collect::<rusqlite::Result<Vec<String>>>()?;
+
+		Ok(ids)
+	}
+
+	fn remove_mod_families_except(
+		&self,
+		provider_id: ModProviderId,
+		keep_ids: &[String],
+	) -> Result {
+		let keep_json = serde_json::to_string(keep_ids)?;
+
+		self.lock_db()?
+			.prepare_cached(
+				"DELETE FROM main.mod_families WHERE provider_id = ? AND id NOT IN (SELECT value FROM json_each(?));",
+			)?
+			.execute(rusqlite::params![provider_id, keep_json])?;
+
+		Ok(())
+	}
 }
 
 fn serialize_json_option<T: Serialize>(value: Option<&T>) -> Result<String> {
 	serde_json::to_string(&value).map_err(Into::into)
+}
+
+// Config database ids are external to Rai Pal and unaware of provider scopes,
+// so the pre-scope id is recorded here to keep config lookups scope-independent.
+fn canonicalize_config(config: Option<&ModConfig>, mod_id: &str) -> Option<ModConfig> {
+	config.cloned().map(|mut config| {
+		config
+			.mod_id_override
+			.get_or_insert_with(|| mod_id.to_string());
+		config
+	})
 }
 
 fn scope_dependencies(deps: &[ModDependency], scope: &str) -> Vec<ModDependency> {
@@ -746,6 +884,7 @@ fn try_insert_mod(
 		.required_dependencies
 		.as_ref()
 		.map(|deps| scope_dependencies(deps, &scope));
+	let stored_config = canonicalize_config(game_mod.config.as_ref(), &game_mod.id);
 
 	connection_mutex
 		.lock_db()?
@@ -794,7 +933,7 @@ fn try_insert_mod(
 			serialize_json_option(game_mod.game_os.as_ref())?,
 			serialize_json_option(game_mod.host_os.as_ref())?,
 			game_mod.deprecated,
-			serialize_json_option(game_mod.config.as_ref())?,
+			serialize_json_option(stored_config.as_ref())?,
 			serialize_json_option(scoped_optional_deps.as_ref())?,
 			serialize_json_option(scoped_required_deps.as_ref())?,
 			serialize_json_option(game_mod.install.as_ref())?,
@@ -810,6 +949,46 @@ fn try_insert_mod(
 				.cast_signed(),
 			scope
 		])?;
+
+	Ok(())
+}
+
+fn try_insert_mod_families(
+	connection_mutex: &DbMutex,
+	families: &BTreeMap<String, ModFamily>,
+	provider_id: ModProviderId,
+	source_hash: &str,
+) -> Result {
+	let scope = compute_scope(provider_id, source_hash);
+
+	let mut connection = connection_mutex.lock_db()?;
+	let transaction = connection.transaction()?;
+
+	{
+		let mut statement = transaction.prepare_cached(
+			"INSERT OR REPLACE INTO mod_families (
+				id,
+				scope,
+				provider_id,
+				family_id,
+				data
+			) VALUES ($1, $2, $3, $4, $5)",
+		)?;
+
+		for (family_id, family) in families {
+			let scoped_id = scope_id(&scope, family_id);
+
+			statement.execute(rusqlite::params![
+				scoped_id.as_ref(),
+				scope,
+				provider_id,
+				family_id,
+				serde_json::to_string(family)?,
+			])?;
+		}
+	}
+
+	transaction.commit()?;
 
 	Ok(())
 }

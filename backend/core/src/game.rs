@@ -23,7 +23,7 @@ use crate::{
 	operating_system::{self, OperatingSystem},
 	path_extensions::PathExt,
 	remote_config::{self, RemoteConfigs},
-	result::{Error, Result},
+	result::{ContextResult, Error, Result},
 };
 
 #[serializable_struct]
@@ -88,16 +88,16 @@ impl DbGame {
 		self.get_installed_mods_folder()?.open_folder_or_parent()
 	}
 
-	pub async fn uninstall_all_mods(&self) -> Result {
+	pub async fn delete_mods_folder(&self) -> Result {
 		let folder = self.get_installed_mods_folder()?;
-		tokio::fs::remove_dir_all(folder).await?;
+		fs_err::tokio::remove_dir_all(folder).await?;
 		Ok(())
 	}
 
 	pub fn get_installed_mods_folder(&self) -> Result<PathBuf> {
 		let installed_mods_folder =
 			app_paths::installed_mods_path()?.join(self.try_get_exe_path()?.hash_string());
-		std::fs::create_dir_all(&installed_mods_folder)?;
+		fs_err::create_dir_all(&installed_mods_folder)?;
 
 		Ok(installed_mods_folder)
 	}
@@ -185,10 +185,9 @@ impl DbGame {
 	}
 
 	pub async fn get_remote_configs(&self) -> Result<Option<RemoteConfigs>> {
-		if let Some(exe_path) = self.exe_path.as_ref() {
-			remote_config::get_remote_configs(exe_path).await
-		} else {
-			Err(Error::GameNotInstalled(self.display_title.clone()))
+		match self.exe_path.as_ref() {
+			Some(exe_path) => remote_config::get_remote_configs(exe_path).await,
+			None => Ok(None),
 		}
 	}
 
@@ -224,7 +223,10 @@ impl DbGame {
 			let mut launch = provider.get_run_with_wine_command(self)?;
 			launch.arg("cmd").arg("/C").arg("echo %APPDATA%");
 
-			let output = launch.to_command().output()?;
+			let output = launch
+				.to_command()
+				.output()
+				.context("failed to run `cmd /C echo %APPDATA%` in the Wine prefix")?;
 
 			let win_path = str::from_utf8(&output.stdout)?.trim();
 

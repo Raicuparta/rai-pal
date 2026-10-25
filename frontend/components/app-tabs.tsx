@@ -53,8 +53,11 @@ export function AppTabs() {
 				gap={0}
 				style={{ height: "100vh" }}
 			>
-				<Tabs.List bg="dark">
-					<Container flex={1}>
+				<Tabs.List>
+					<Container
+						flex={1}
+						size="lg"
+					>
 						<Group>
 							{Object.entries(pages).map(([pageId, page]) => (
 								<PageTab
@@ -92,7 +95,8 @@ export function AppTabs() {
 								flex={1}
 								mih={0}
 								w="100%"
-								py="xs"
+								size="lg"
+								p={0}
 							>
 								<page.component />
 							</Container>

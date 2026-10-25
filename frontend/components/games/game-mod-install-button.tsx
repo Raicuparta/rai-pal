@@ -6,10 +6,9 @@ import { GameModActionButton } from "./game-mod-action-button";
 type Props = {
 	readonly game: DbGame;
 	readonly mod: GameMod;
-	readonly remoteConfigFile?: string;
 };
 
-export function GameModInstallButton({ game, mod, remoteConfigFile }: Props) {
+export function GameModInstallButton({ game, mod }: Props) {
 	const { t } = useLocalization("gameModRow");
 
 	return (
@@ -18,15 +17,6 @@ export function GameModInstallButton({ game, mod, remoteConfigFile }: Props) {
 			confirmationText={t("installModAnticheatWarning")}
 			confirmationSkipId="install-mod-confirm"
 			onClick={async () => {
-				if (remoteConfigFile) {
-					await commands.downloadRemoteConfig(
-						game.providerId,
-						game.gameId,
-						mod.id,
-						remoteConfigFile,
-						false,
-					);
-				}
 				await commands.installMod(mod.id, game.providerId, game.gameId);
 				commands.sendAnalyticsEvent("InstallMod", {
 					mod_id: mod.id,

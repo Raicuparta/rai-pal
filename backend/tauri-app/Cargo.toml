@@ -4,12 +4,13 @@ version.workspace = true
 edition.workspace = true
 
 [build-dependencies]
-tauri-build = { version = "2.6.3", features = [] }
+tauri-build = { version = "2.7.3", features = [] }
 
 [dependencies]
 log.workspace = true
 rai-pal-core.workspace = true
 rai-pal-proc-macros.workspace = true
+fs-err.workspace = true
 rusqlite.workspace = true
 serde_json.workspace = true
 serde.workspace = true
@@ -20,17 +21,17 @@ thiserror.workspace = true
 
 rfd = { version = "0.17.2", default-features = false, features = ["gtk3"] }
 specta-typescript = "0.0.12"
-tokio = { version = "1.52.3", features = ["time"] }
-tauri = { version = "2.11.5", features = ["protocol-asset", "config-toml"] }
-tauri-plugin-dialog = "2.7.1"
-tauri-plugin-log = "2.8.0"
-tauri-plugin-os = "2.3.2"
-tauri-plugin-process = "2.3.1"
-tauri-plugin-updater = "2.10.1"
-tauri-plugin-window-state = "2.4.1"
-tauri-runtime = "2.11.3"
-tauri-plugin-deep-link = "2.4.9"
-tauri-plugin-single-instance = { version = "2.4.2", features = ["deep-link"] }
+tokio = { version = "1.53.3", features = ["time"] }
+tauri = { version = "2.12.4", features = ["protocol-asset", "config-toml"] }
+tauri-plugin-dialog = "2.8.3"
+tauri-plugin-log = "2.10.1"
+tauri-plugin-os = "2.4.0"
+tauri-plugin-process = "2.4.0"
+tauri-plugin-updater = "2.14.0"
+tauri-plugin-window-state = "2.5.0"
+tauri-runtime = "2.12.2"
+tauri-plugin-deep-link = "2.6.2"
+tauri-plugin-single-instance = { version = "2.5.4", features = ["deep-link"] }
 urlencoding.workspace = true
 
 [features]

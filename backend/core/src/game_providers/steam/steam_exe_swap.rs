@@ -1,7 +1,7 @@
+use fs_err as fs;
 use std::{
 	collections::BTreeMap,
 	ffi::OsStr,
-	fs,
 	os::unix::fs::PermissionsExt,
 	path::{Path, PathBuf},
 };
@@ -146,7 +146,7 @@ pub fn launch_via_steam_with_swapped_exe(
 		let _ = fs::rename(&backup, exe_path);
 		return Err(error.into());
 	}
-	fs::set_permissions(exe_path, fs::Permissions::from_mode(0o755))?;
+	fs::set_permissions(exe_path, std::fs::Permissions::from_mode(0o755))?;
 
 	let url = format!("steam://rungameid/{}", game.external_id);
 	log::info!(

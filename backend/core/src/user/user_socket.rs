@@ -7,7 +7,7 @@ use tokio::{
 };
 
 use super::auth;
-use crate::result::{Error, Result};
+use crate::result::{ContextResult, Error, Result};
 
 const USER_SOCKET_BIND_ADDRESS: &str = "127.0.0.1";
 const USER_SOCKET_POLL_INTERVAL: Duration = Duration::from_millis(100);
@@ -111,7 +111,7 @@ async fn handle_socket_connection(mut stream: TcpStream) -> Result {
 		log::debug!("Timed out waiting for user socket request");
 		return Ok(());
 	};
-	let bytes_read = read_result?;
+	let bytes_read = read_result.context("failed to read user socket request")?;
 
 	if bytes_read == 0 {
 		return Ok(());
@@ -194,8 +194,14 @@ async fn write_http_response(
 		body
 	);
 
-	stream.write_all(response.as_bytes()).await?;
-	stream.flush().await?;
+	stream
+		.write_all(response.as_bytes())
+		.await
+		.context("failed to write user socket response")?;
+	stream
+		.flush()
+		.await
+		.context("failed to flush user socket response")?;
 
 	Ok(())
 }

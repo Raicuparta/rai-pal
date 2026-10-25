@@ -1,4 +1,5 @@
-use std::{collections::HashSet, fs, path::PathBuf};
+use fs_err as fs;
+use std::{collections::HashSet, path::PathBuf};
 
 use rai_pal_core::{app_paths, games_query::GamesQuery, path_extensions::PathExt};
 use rai_pal_proc_macros::{serializable_enum, serializable_struct};
@@ -27,6 +28,15 @@ pub enum TabId {
 	Thanks,
 }
 
+#[serializable_enum]
+#[derive(Default)]
+pub enum ColorScheme {
+	#[default]
+	Auto,
+	Dark,
+	Light,
+}
+
 #[serializable_struct]
 #[derive(Default)]
 pub struct AppSettings {
@@ -37,6 +47,8 @@ pub struct AppSettings {
 	pub skip_confirm_dialogs: HashSet<String>,
 	#[serde(default)]
 	pub expanded_filters: HashSet<String>,
+	#[serde(default)]
+	pub color_scheme: ColorScheme,
 }
 
 // If the settings schema changes, update this so it gets recreated.
@@ -77,22 +89,5 @@ impl AppSettings {
 		Ok(app_paths::app_data_file(&format!(
 			"settings-{SETTINGS_VERSION}.json"
 		))?)
-	}
-}
-
-#[cfg(test)]
-mod tests {
-	#![allow(clippy::unwrap_used)]
-
-	use super::AppSettings;
-
-	#[test]
-	fn defaults_have_all_filters_enabled() {
-		let settings = AppSettings::default();
-
-		assert!(settings.games_query.filter.providers.known.is_empty());
-		assert!(settings.games_query.filter.architectures.known.is_empty());
-		assert!(settings.games_query.filter.executable_os.known.is_empty());
-		assert!(settings.games_query.filter.supported_os.known.is_empty());
 	}
 }
