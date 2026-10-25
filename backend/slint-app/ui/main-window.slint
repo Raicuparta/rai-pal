@@ -58,6 +58,7 @@ export component MainWindow inherits Window {
     in property <[FilterGroupData]> filter-groups;
     in property <bool> filters-have-changes;
     in-out property <bool> hide-game-thumbnails: false;
+    in-out property <bool> drop-highlight: false;
     in-out property <string> selected-language: "";
     in-out property <AppColorScheme> selected-color-scheme: auto;
     in property <string> detected-language-name: "";
@@ -595,6 +596,12 @@ export component MainWindow inherits Window {
         closed => {
             root.steam-shortcut-open = false;
         }
+    }
+
+    if root.drop-highlight : Rectangle {
+        border-width: Theme.border-width * 2;
+        border-color: Theme.highlight;
+        background: transparent;
     }
 
     changed add-game-open => {

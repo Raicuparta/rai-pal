@@ -9,6 +9,13 @@ export component ProviderIcon inherits Rectangle {
     width: root.icon-size;
     height: root.icon-size;
 
+    if provider-id == "Amazon" : IconDisplay {
+        icon: IconSet.ShoppingCart;
+        size: root.icon-size;
+        stroke: Branding.provider-color(provider-id);
+        stroke-width: 1.5;
+    }
+
     if provider-id == "Steam" : Image {
         source: @image-url("../icons/providers/steam.svg");
         colorize: Branding.provider-color(provider-id);

@@ -2,7 +2,7 @@ use std::{
 	collections::{HashSet, VecDeque},
 	sync::{
 		Condvar, Mutex,
-		atomic::{AtomicU64, Ordering},
+		atomic::{AtomicBool, AtomicU64, Ordering},
 	},
 };
 
@@ -35,6 +35,7 @@ pub struct FetchScheduler {
 	state: Mutex<SchedulerState>,
 	condvar: Condvar,
 	generation: AtomicU64,
+	thumbnails_enabled: AtomicBool,
 }
 
 impl FetchScheduler {
@@ -155,6 +156,14 @@ impl FetchScheduler {
 
 	pub fn generation(&self) -> u64 {
 		self.generation.load(Ordering::SeqCst)
+	}
+
+	pub fn set_thumbnails_enabled(&self, enabled: bool) {
+		self.thumbnails_enabled.store(enabled, Ordering::SeqCst);
+	}
+
+	pub fn thumbnails_enabled(&self) -> bool {
+		self.thumbnails_enabled.load(Ordering::SeqCst)
 	}
 }
 

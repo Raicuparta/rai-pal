@@ -272,6 +272,50 @@ pub fn remove_game(
 	});
 }
 
+pub fn add_dropped_paths(
+	window: &MainWindow,
+	database: Arc<DbMutex>,
+	scheduler: Arc<FetchScheduler>,
+	query: GamesQuery,
+	paths: Vec<PathBuf>,
+) {
+	let window_weak = window.as_weak();
+
+	thread::spawn(move || {
+		let result = run_async(async {
+			for path in &paths {
+				let path = path.normalize();
+
+				if path.is_dir() {
+					for game in manual_provider::add_directory(&path).await? {
+						database.insert_game(&game);
+					}
+				} else {
+					let game = manual_provider::add_game(&path).await?;
+					database.insert_game(&game);
+				}
+			}
+
+			Ok::<(), rai_pal_core::result::Error>(())
+		});
+
+		let _ = slint::invoke_from_event_loop(move || {
+			let Some(window) = window_weak.upgrade() else {
+				return;
+			};
+
+			match result {
+				Ok(()) => {
+					refresh_after_change(&window, database, scheduler, query);
+				}
+				Err(err) => {
+					notifications::error(&window, err);
+				}
+			}
+		});
+	});
+}
+
 fn pick_executable() -> Option<PathBuf> {
 	rfd::FileDialog::new()
 		.set_title("Select the game executable")

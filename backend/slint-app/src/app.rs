@@ -17,7 +17,10 @@ use rai_pal_core::{
 		mod_database::ModDatabase,
 	},
 };
-use slint::{ComponentHandle, Model};
+use slint::{
+	ComponentHandle, Model,
+	winit_030::{EventResult, WinitWindowAccessor, winit},
+};
 
 use crate::{
 	AppColorScheme, AppTab, GameRowData, MainWindow, ModActions, actions, confirmation, downloads,
@@ -114,6 +117,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 
 	let window_weak = window.as_weak();
 	let scheduler = spawn_fetchers(database.clone(), window_weak.clone());
+	scheduler.set_thumbnails_enabled(!settings.borrow().hide_game_thumbnails);
 	scheduler.begin_query();
 
 	let ui_window = window_weak.clone();
@@ -625,9 +629,23 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	});
 
 	let ui_settings = settings.clone();
+	let ui_window = window_weak.clone();
+	let ui_database = database.clone();
+	let ui_scheduler = scheduler.clone();
 	window.on_hide_game_thumbnails_changed(move |hide| {
 		ui_settings.borrow_mut().hide_game_thumbnails = hide;
 		persist_settings(&ui_settings);
+		ui_scheduler.set_thumbnails_enabled(!hide);
+
+		if !hide {
+			start_query(
+				ui_window.clone(),
+				ui_database.clone(),
+				ui_scheduler.clone(),
+				ui_settings.borrow().games_query.clone(),
+				Duration::ZERO,
+			);
+		}
 	});
 
 	let ui_settings = settings.clone();
@@ -1010,6 +1028,40 @@ pub fn run() -> Result<(), slint::PlatformError> {
 				mods::refresh_mods(&window, &database, &game);
 			});
 		});
+	});
+
+	let ui_window = window.as_weak();
+	let ui_database = database.clone();
+	let ui_scheduler = scheduler.clone();
+	let ui_settings = settings.clone();
+	window.window().on_winit_window_event(move |_, event| {
+		match event {
+			winit::event::WindowEvent::HoveredFile(_) => {
+				if let Some(window) = ui_window.upgrade() {
+					window.set_drop_highlight(true);
+				}
+			}
+			winit::event::WindowEvent::HoveredFileCancelled => {
+				if let Some(window) = ui_window.upgrade() {
+					window.set_drop_highlight(false);
+				}
+			}
+			winit::event::WindowEvent::DroppedFile(path) => {
+				if let Some(window) = ui_window.upgrade() {
+					window.set_drop_highlight(false);
+					manual::add_dropped_paths(
+						&window,
+						ui_database.clone(),
+						ui_scheduler.clone(),
+						ui_settings.borrow().games_query.clone(),
+						vec![path.clone()],
+					);
+				}
+			}
+			_ => {}
+		}
+
+		EventResult::Propagate
 	});
 
 	let model = Rc::new(slint::VecModel::from(rows));

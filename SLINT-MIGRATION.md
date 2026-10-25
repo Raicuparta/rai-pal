@@ -26,7 +26,7 @@ implemented.
 - Toast notifications for errors and provider command feedback.
 - Confirmation dialogs with a persisted skip-confirmation setting.
 - Thanks page content, including Patreon leaderboard and donation links.
-- Manually adding games: executable picker, directory scanning with progress and confirmation, saved directory management, and removing manually added games.
+- Manually adding games: executable picker, drag and drop, directory scanning with progress and confirmation, saved directory management, and removing manually added games.
 - Game thumbnail visibility setting.
 - Download progress tracking and status menu, driven by shared install-step generation.
 - Loading, empty, and error states for the games list, game mods, and mods loading, including a startup refresh and data-query error notifications.

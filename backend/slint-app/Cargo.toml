@@ -7,10 +7,9 @@ edition.workspace = true
 log.workspace = true
 rai-pal-core.workspace = true
 reqwest = { version = "0.13.3", features = ["blocking"] }
-rfd = "0.17.2"
 serde_json.workspace = true
 tokio = { version = "1.52.3", features = ["rt-multi-thread"] }
-slint = "1.18.1"
+slint = { version = "1.18.1", features = ["unstable-winit-030"] }
 sys-locale = "0.3.2"
 image = { version = "0.25", default-features = false, features = ["png", "jpeg"] }
 
@@ -20,3 +19,9 @@ lucide-slint = "1.61.0"
 
 [lints]
 workspace = true
+
+[target.'cfg(target_os = "linux")'.dependencies]
+rfd = { version = "0.17.2", default-features = false, features = ["gtk3"] }
+
+[target.'cfg(not(target_os = "linux"))'.dependencies]
+rfd = "0.17.2"

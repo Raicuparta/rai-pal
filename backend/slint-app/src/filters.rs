@@ -15,6 +15,7 @@ use rai_pal_core::{
 use crate::{FilterGroupData, FilterValueData};
 
 const PROVIDERS: &[GameProviderId] = &[
+	GameProviderId::Amazon,
 	GameProviderId::Epic,
 	GameProviderId::Gog,
 	GameProviderId::Itch,
@@ -280,6 +281,7 @@ pub fn build_groups(
 	];
 
 	let provider_values = vec![
+		value(&filter.providers, &GameProviderId::Amazon, "", "Amazon"),
 		value(&filter.providers, &GameProviderId::Epic, "", "Epic"),
 		value(&filter.providers, &GameProviderId::Gog, "", "GOG"),
 		value(&filter.providers, &GameProviderId::Itch, "", "itch.io"),

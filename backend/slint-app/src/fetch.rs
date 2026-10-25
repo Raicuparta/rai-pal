@@ -87,7 +87,7 @@ fn fetch_thumbnail(url: &str) -> Option<FetchedImage> {
 	fetch_image(url, 200, 120)
 }
 
-fn fetch_game(database: &DbMutex, request: &FetchRequest) -> FetchResult {
+fn fetch_game(database: &DbMutex, request: &FetchRequest, thumbnails_enabled: bool) -> FetchResult {
 	let provider_id = match request.provider_id.parse::<GameProviderId>() {
 		Ok(provider_id) => provider_id,
 		Err(err) => {
@@ -121,7 +121,10 @@ fn fetch_game(database: &DbMutex, request: &FetchRequest) -> FetchResult {
 			let engine_version = game.engine_version_display.clone().unwrap_or_default();
 			let engine_details = get_engine_details(&game);
 			let game_json = serde_json::to_string_pretty(&game).unwrap_or_default();
-			let thumbnail = game.thumbnail_url.as_deref().and_then(fetch_thumbnail);
+			let thumbnail = thumbnails_enabled
+				.then(|| game.thumbnail_url.as_deref())
+				.flatten()
+				.and_then(fetch_thumbnail);
 
 			FetchResult {
 				index: request.index,
@@ -170,7 +173,7 @@ fn spawn_worker(
 ) {
 	thread::spawn(move || {
 		while let Some(request) = scheduler.take_next() {
-			let result = fetch_game(&database, &request);
+			let result = fetch_game(&database, &request, scheduler.thumbnails_enabled());
 			let window = window.clone();
 			let ui_scheduler = scheduler.clone();
 			let index = result.index;

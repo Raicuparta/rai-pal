@@ -3,6 +3,10 @@ import { Theme } from "theme.slint";
 
 export global Branding {
     public pure function provider-color(provider-id: string) -> brush {
+
+        if provider-id == "Amazon" {
+            return #f76707;
+        }
         if provider-id == "Steam" {
             return #1f9fee;
         }
@@ -22,6 +26,10 @@ export global Branding {
     }
 
     public pure function provider-background(provider-id: string) -> brush {
+
+        if provider-id == "Amazon" {
+            return Theme.dark ? #3b1e0e : #fff4e6;
+        }
         if provider-id == "Steam" {
             return Theme.dark ? #102a3a : #e7f5ff;
         }
