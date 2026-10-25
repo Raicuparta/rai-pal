@@ -1,0 +1,193 @@
+import { IconDisplay, IconSet } from "@lucide";
+import { Palette } from "std-widgets.slint";
+
+export component ModSummaryView inherits HorizontalLayout {
+    in property <string> title;
+    in property <string> description;
+    in property <string> version-text;
+    in property <string> release-date;
+    in property <string> author;
+    in property <string> engine-text;
+    in property <bool> deprecated: false;
+    in property <bool> has-remote-config: false;
+    in property <bool> show-status: false;
+    in property <bool> installed: false;
+    in property <bool> outdated: false;
+
+    property <bool> dark: Palette.color-scheme == ColorScheme.dark;
+    property <bool> has-details: version-text != "" || release-date != "" || author != "" || engine-text != "";
+
+    function status-orange() -> brush {
+        return dark ? #ffa94d : #e8590c;
+    }
+
+    function status-green() -> brush {
+        return dark ? #69db7c : #2b8a3e;
+    }
+
+    function deprecated-background() -> brush {
+        return dark ? #3d2b12 : #fff9db;
+    }
+
+    function deprecated-foreground() -> brush {
+        return dark ? #ffd43b : #e67700;
+    }
+
+    spacing: 8px;
+    cross-axis-alignment: center;
+
+    if show-status && outdated : IconDisplay {
+        icon: IconSet.CircleAlert;
+        size: 15px;
+        stroke: status-orange();
+        stroke-width: 2;
+    }
+
+    if show-status && installed && !outdated : IconDisplay {
+        icon: IconSet.CircleCheck;
+        size: 15px;
+        stroke: status-green();
+        stroke-width: 2;
+    }
+
+    if show-status && !installed && !outdated : IconDisplay {
+        icon: IconSet.CircleMinus;
+        size: 15px;
+        stroke: Palette.alternate-foreground;
+        stroke-width: 2;
+    }
+
+    VerticalLayout {
+        horizontal-stretch: 1;
+        alignment: start;
+        spacing: 2px;
+
+        HorizontalLayout {
+            spacing: 6px;
+            cross-axis-alignment: center;
+
+            Text {
+                text: root.title;
+                font-weight: 600;
+                overflow: elide;
+                horizontal-stretch: 1;
+            }
+
+            if root.has-remote-config : IconDisplay {
+                icon: IconSet.Settings;
+                size: 14px;
+                stroke: Palette.foreground;
+                stroke-width: 2;
+                opacity: 0.75;
+            }
+
+            if root.deprecated : Rectangle {
+                width: deprecated-content.preferred-width + 8px;
+                height: 18px;
+                border-radius: 3px;
+                background: deprecated-background();
+
+                deprecated-content := HorizontalLayout {
+                    padding-left: 4px;
+                    padding-right: 4px;
+                    spacing: 3px;
+                    alignment: center;
+
+                    IconDisplay {
+                        icon: IconSet.TriangleAlert;
+                        size: 11px;
+                        stroke: deprecated-foreground();
+                        stroke-width: 2;
+                    }
+
+                    Text {
+                        text: @tr("modsPage" => "Deprecated");
+                        font-size: 10px;
+                        font-weight: 700;
+                        color: deprecated-foreground();
+                        vertical-alignment: center;
+                    }
+                }
+            }
+        }
+
+        if root.has-details : HorizontalLayout {
+            opacity: 0.4;
+            spacing: 10px;
+            alignment: start;
+            cross-axis-alignment: center;
+
+            if root.version-text != "" : Text {
+                text: root.version-text;
+                font-size: 11px;
+                color: Palette.foreground;
+                horizontal-stretch: 0;
+            }
+
+            if root.release-date != "" : HorizontalLayout {
+                spacing: 2px;
+                horizontal-stretch: 0;
+                cross-axis-alignment: center;
+
+                IconDisplay {
+                    icon: IconSet.Calendar;
+                    size: 10px;
+                    stroke: Palette.foreground;
+                    stroke-width: 2;
+                }
+
+                Text {
+                    text: root.release-date;
+                    font-size: 11px;
+                    color: Palette.foreground;
+                }
+            }
+
+            if root.author != "" : HorizontalLayout {
+                spacing: 2px;
+                horizontal-stretch: 0;
+                cross-axis-alignment: center;
+
+                IconDisplay {
+                    icon: IconSet.UserRound;
+                    size: 10px;
+                    stroke: Palette.foreground;
+                    stroke-width: 2;
+                }
+
+                Text {
+                    text: root.author;
+                    font-size: 11px;
+                    color: Palette.foreground;
+                }
+            }
+
+            if root.engine-text != "" : HorizontalLayout {
+                spacing: 2px;
+                horizontal-stretch: 0;
+                cross-axis-alignment: center;
+
+                IconDisplay {
+                    icon: IconSet.Cpu;
+                    size: 10px;
+                    stroke: Palette.foreground;
+                    stroke-width: 2;
+                }
+
+                Text {
+                    text: root.engine-text;
+                    font-size: 11px;
+                    color: Palette.foreground;
+                }
+            }
+        }
+
+        if root.description != "" : Text {
+            text: root.description;
+            font-size: 12px;
+            opacity: 0.75;
+            wrap: word-wrap;
+            color: Palette.foreground;
+        }
+    }
+}

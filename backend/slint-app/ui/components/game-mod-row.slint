@@ -1,7 +1,8 @@
-import { IconDisplay, IconSet } from "@lucide";
+import { IconSet } from "@lucide";
 import { Button, Palette } from "std-widgets.slint";
 import { GameModRowData } from "../game-mod-row-data.slint";
 import { IconButton } from "icon-button.slint";
+import { ModSummaryView } from "mod-summary.slint";
 
 export component GameModRowView inherits Rectangle {
     in property <GameModRowData> game-mod;
@@ -16,26 +17,8 @@ export component GameModRowView inherits Rectangle {
     callback configure(mod-id: string);
     callback configure-folder(mod-id: string);
 
-    property <bool> dark: Palette.color-scheme == ColorScheme.dark;
     property <bool> interactive: game-mod.section != "incompatible";
-    property <bool> has-details: game-mod.version-text != "" || game-mod.release-date != "" || game-mod.author != "" || game-mod.engine-text != "";
     property <bool> has-dropdown-actions: game-mod.can-edit-config || game-mod.can-open-mod-folder || game-mod.can-download-config || game-mod.can-reinstall || game-mod.can-uninstall;
-
-    function status-orange() -> brush {
-        return dark ? #ffa94d : #e8590c;
-    }
-
-    function status-green() -> brush {
-        return dark ? #69db7c : #2b8a3e;
-    }
-
-    function deprecated-background() -> brush {
-        return dark ? #3d2b12 : #fff9db;
-    }
-
-    function deprecated-foreground() -> brush {
-        return dark ? #ffd43b : #e67700;
-    }
 
     vertical-stretch: 0;
     height: max(56px, content.preferred-height);
@@ -107,153 +90,19 @@ export component GameModRowView inherits Rectangle {
             spacing: 8px;
             cross-axis-alignment: center;
 
-            if game-mod.show-status && game-mod.outdated : IconDisplay {
-                icon: IconSet.CircleAlert;
-                size: 15px;
-                stroke: status-orange();
-                stroke-width: 2;
-            }
-
-            if game-mod.show-status && game-mod.installed && !game-mod.outdated : IconDisplay {
-                icon: IconSet.CircleCheck;
-                size: 15px;
-                stroke: status-green();
-                stroke-width: 2;
-            }
-
-            if game-mod.show-status && !game-mod.installed && !game-mod.outdated : IconDisplay {
-                icon: IconSet.CircleMinus;
-                size: 15px;
-                stroke: Palette.alternate-foreground;
-                stroke-width: 2;
-            }
-
-            VerticalLayout {
+            ModSummaryView {
                 horizontal-stretch: 1;
-                spacing: 2px;
-
-                HorizontalLayout {
-                    spacing: 6px;
-                    cross-axis-alignment: center;
-
-                    Text {
-                        text: game-mod.title;
-                        font-weight: 600;
-                        overflow: elide;
-                        horizontal-stretch: 1;
-                    }
-
-                    if game-mod.has-remote-config : IconDisplay {
-                        icon: IconSet.Settings;
-                        size: 14px;
-                        stroke: Palette.foreground;
-                        stroke-width: 2;
-                        opacity: 0.75;
-                    }
-
-                    if game-mod.deprecated : Rectangle {
-                        width: deprecated-content.preferred-width + 8px;
-                        height: 18px;
-                        border-radius: 3px;
-                        background: deprecated-background();
-
-                        deprecated-content := HorizontalLayout {
-                            padding-left: 4px;
-                            padding-right: 4px;
-                            spacing: 3px;
-                            alignment: center;
-
-                            IconDisplay {
-                                icon: IconSet.TriangleAlert;
-                                size: 11px;
-                                stroke: deprecated-foreground();
-                                stroke-width: 2;
-                            }
-
-                            Text {
-                                text: @tr("modsPage" => "Deprecated");
-                                font-size: 10px;
-                                font-weight: 700;
-                                color: deprecated-foreground();
-                                vertical-alignment: center;
-                            }
-                        }
-                    }
-                }
-
-                if root.has-details : HorizontalLayout {
-                    opacity: 0.4;
-                    spacing: 10px;
-                    cross-axis-alignment: center;
-
-                    if game-mod.version-text != "" : Text {
-                        text: game-mod.version-text;
-                        font-size: 11px;
-                        color: Palette.foreground;
-                    }
-
-                    if game-mod.release-date != "" : HorizontalLayout {
-                        spacing: 2px;
-                        cross-axis-alignment: center;
-
-                        IconDisplay {
-                            icon: IconSet.Calendar;
-                            size: 10px;
-                            stroke: Palette.foreground;
-                            stroke-width: 2;
-                        }
-
-                        Text {
-                            text: game-mod.release-date;
-                            font-size: 11px;
-                            color: Palette.foreground;
-                        }
-                    }
-
-                    if game-mod.author != "" : HorizontalLayout {
-                        spacing: 2px;
-                        cross-axis-alignment: center;
-
-                        IconDisplay {
-                            icon: IconSet.UserRound;
-                            size: 10px;
-                            stroke: Palette.foreground;
-                            stroke-width: 2;
-                        }
-
-                        Text {
-                            text: game-mod.author;
-                            font-size: 11px;
-                            color: Palette.foreground;
-                        }
-                    }
-
-                    if game-mod.engine-text != "" : HorizontalLayout {
-                        spacing: 2px;
-                        cross-axis-alignment: center;
-
-                        IconDisplay {
-                            icon: IconSet.Cpu;
-                            size: 10px;
-                            stroke: Palette.foreground;
-                            stroke-width: 2;
-                        }
-
-                        Text {
-                            text: game-mod.engine-text;
-                            font-size: 11px;
-                            color: Palette.foreground;
-                        }
-                    }
-                }
-
-                if game-mod.description != "" : Text {
-                    text: game-mod.description;
-                    font-size: 12px;
-                    opacity: 0.75;
-                    wrap: word-wrap;
-                    color: Palette.foreground;
-                }
+                title: game-mod.title;
+                description: game-mod.description;
+                version-text: game-mod.version-text;
+                release-date: game-mod.release-date;
+                author: game-mod.author;
+                engine-text: game-mod.engine-text;
+                deprecated: game-mod.deprecated;
+                has-remote-config: game-mod.has-remote-config;
+                show-status: game-mod.show-status;
+                installed: game-mod.installed;
+                outdated: game-mod.outdated;
             }
 
             if game-mod.can-show-actions : HorizontalLayout {

@@ -24,6 +24,7 @@ use crate::{
 	fetch::spawn_fetchers,
 	filters::{
 		FilterAction, apply_filter_action, build_groups, load_mod_families, reset_all_filters,
+		reset_filter_group,
 	},
 	i18n,
 	model::{self, make_rows},
@@ -255,15 +256,13 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	let ui_settings = settings.clone();
 	let ui_mod_families = mod_families.clone();
 	window.on_filter_reset(move |group| {
-		handle_filter_action(
+		reset_filter(
 			&ui_window,
 			&ui_database,
 			&ui_scheduler,
 			&ui_settings,
 			&ui_mod_families,
 			group.as_str(),
-			"",
-			FilterAction::Reset,
 		);
 	});
 
@@ -709,6 +708,36 @@ fn handle_filter_action(
 			value,
 			action,
 		)
+	};
+
+	if !changed {
+		return;
+	}
+
+	persist_settings(settings);
+	refresh_filter_groups(window, settings, mod_families);
+
+	let query = settings.borrow().games_query.clone();
+	start_query(
+		window.clone(),
+		database.clone(),
+		scheduler.clone(),
+		query,
+		Duration::ZERO,
+	);
+}
+
+fn reset_filter(
+	window: &slint::Weak<MainWindow>,
+	database: &Arc<DbMutex>,
+	scheduler: &Arc<FetchScheduler>,
+	settings: &Rc<RefCell<AppSettings>>,
+	mod_families: &[String],
+	group: &str,
+) {
+	let changed = {
+		let mut settings = settings.borrow_mut();
+		reset_filter_group(&mut settings.games_query.filter, group)
 	};
 
 	if !changed {

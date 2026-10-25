@@ -22,95 +22,105 @@ export component GamesSidebar inherits Rectangle {
     width: 260px;
     background: Palette.alternate-background;
 
-    VerticalLayout {
-        padding: 12px;
-        spacing: 8px;
+    sidebar-scroll := ScrollView {
+        VerticalLayout {
+            min-height: sidebar-scroll.visible-height;
+            padding: 12px;
+            spacing: 8px;
 
-        LineEdit {
-            text <=> root.search-text;
-            placeholder-text: @tr("filterMenu" => "Search...");
+            LineEdit {
+                text <=> root.search-text;
+                placeholder-text: @tr("filterMenu" => "Search...");
 
-            edited(text) => {
-                root.search-changed(text);
-            }
-        }
-
-        HorizontalLayout {
-            spacing: 4px;
-
-            ComboBox {
-                model: [
-                    @tr("gamesTableColumn" => "Name"),
-                    @tr("gamesTableColumn" => "Engine"),
-                    @tr("gamesTableColumn" => "Date"),
-                ];
-                current-index <=> root.sort-index;
-                horizontal-stretch: 1;
-
-                selected(value) => {
-                    root.sort-changed(root.sort-index);
+                edited(text) => {
+                    root.search-changed(text);
                 }
             }
 
-            Button {
-                text: root.sort-descending ? "↓" : "↑";
-                width: 40px;
+            HorizontalLayout {
+                spacing: 4px;
 
-                clicked => {
-                    root.sort-direction-changed(!root.sort-descending);
+                ComboBox {
+                    model: [
+                        @tr("gamesTableColumn" => "Name"),
+                        @tr("gamesTableColumn" => "Engine"),
+                        @tr("gamesTableColumn" => "Date"),
+                    ];
+                    current-index <=> root.sort-index;
+                    horizontal-stretch: 1;
+
+                    selected(value) => {
+                        root.sort-changed(root.sort-index);
+                    }
+                }
+
+                Button {
+                    text: root.sort-descending ? "↓" : "↑";
+                    width: 40px;
+
+                    clicked => {
+                        root.sort-direction-changed(!root.sort-descending);
+                    }
                 }
             }
-        }
 
-        HorizontalLayout {
-            spacing: 4px;
-            alignment: start;
-            cross-axis-alignment: center;
-
-            Button {
-                text: @tr("filterMenu" => "Reset");
-                height: 22px;
-                enabled: root.filters-have-changes;
-
-                clicked => {
-                    root.filters-reset();
-                }
-            }
-
-            Text {
-                text: @tr("filterMenu" => "Filters");
-                font-size: 16px;
-                font-weight: 700;
-                vertical-alignment: center;
-            }
-        }
-
-        ScrollView {
             VerticalLayout {
+                vertical-stretch: 1;
+                min-height: 100px;
                 alignment: start;
-                spacing: 8px;
+                spacing: 4px;
 
-                for group in root.filter-groups : FilterGroupView {
-                    group: group;
+                HorizontalLayout {
+                    spacing: 4px;
+                    alignment: start;
+                    cross-axis-alignment: center;
 
-                    toggled(value, checked) => {
-                        root.filter-toggled(group.key, value, checked);
+                    Button {
+                        text: @tr("filterMenu" => "Reset");
+                        height: 22px;
+                        enabled: root.filters-have-changes;
+
+                        clicked => {
+                            root.filters-reset();
+                        }
                     }
 
-                    lock-toggled(value) => {
-                        root.filter-lock-toggled(group.key, value);
+                    Text {
+                        text: @tr("filterMenu" => "Filters");
+                        font-size: 16px;
+                        font-weight: 700;
+                        vertical-alignment: center;
                     }
+                }
 
-                    only(value) => {
-                        root.filter-only(group.key, value);
-                    }
+                ScrollView {
+                    VerticalLayout {
+                        alignment: start;
+                        spacing: 8px;
 
-                    reset => {
-                        root.filter-reset(group.key);
-                    }
+                        for group in root.filter-groups : FilterGroupView {
+                            group: group;
 
-                    expanded-changed(expanded) => {
-                        root.filter-expanded-changed(group.key, expanded);
+                            toggled(value, checked) => {
+                                root.filter-toggled(group.key, value, checked);
+                            }
+
+                            lock-toggled(value) => {
+                                root.filter-lock-toggled(group.key, value);
+                            }
+
+                            only(value) => {
+                                root.filter-only(group.key, value);
+                            }
+
+                            reset => {
+                                root.filter-reset(group.key);
+                            }
+
+                            expanded-changed(expanded) => {
+                                root.filter-expanded-changed(group.key, expanded);
+                            }
+                        }
                     }
                 }
             }

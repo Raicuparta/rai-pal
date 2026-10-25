@@ -34,7 +34,6 @@ export component GameDetailsPage inherits Rectangle {
     ScrollView {
         VerticalLayout {
             alignment: start;
-            padding: 16px;
             spacing: 8px;
 
             GameRowView {
@@ -47,10 +46,16 @@ export component GameDetailsPage inherits Rectangle {
                 }
             }
 
-            if !root.has-any-mods : Text {
-                text: @tr("gameModal" => "Nothing! None of the available mods are of any use for this game. Try something else.");
-                opacity: 0.75;
-                wrap: word-wrap;
+            if !root.has-any-mods : HorizontalLayout {
+                padding-left: 8px;
+                padding-right: 8px;
+
+                Text {
+                    text: @tr("gameModal" => "Nothing! None of the available mods are of any use for this game. Try something else.");
+                    opacity: 0.75;
+                    wrap: word-wrap;
+                    horizontal-stretch: 1;
+                }
             }
 
             if !root.game-row.installed && root.has-any-mods : PotentialModsSection {
@@ -110,12 +115,18 @@ export component GameDetailsPage inherits Rectangle {
                         }
                     }
 
-                    Button {
-                        vertical-stretch: 0;
-                        text: @tr("gameModal" => "Uninstall all mods");
+                    HorizontalLayout {
+                        padding-left: 8px;
+                        padding-right: 8px;
+                        alignment: start;
 
-                        clicked => {
-                            root.uninstall-all-mods();
+                        Button {
+                            vertical-stretch: 0;
+                            text: @tr("gameModal" => "Uninstall all mods");
+
+                            clicked => {
+                                root.uninstall-all-mods();
+                            }
                         }
                     }
                 }
@@ -208,10 +219,16 @@ export component GameDetailsPage inherits Rectangle {
                     vertical-stretch: 0;
                     spacing: 6px;
 
-                    Rectangle {
-                        height: 1px;
-                        background: Palette.border;
-                        vertical-stretch: 0;
+                    HorizontalLayout {
+                        padding-left: 8px;
+                        padding-right: 8px;
+
+                        Rectangle {
+                            horizontal-stretch: 1;
+                            height: 1px;
+                            background: Palette.border;
+                            vertical-stretch: 0;
+                        }
                     }
 
                     ModsSection {

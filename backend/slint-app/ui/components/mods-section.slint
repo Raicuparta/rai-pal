@@ -20,16 +20,28 @@ export component ModsSection inherits VerticalLayout {
     alignment: start;
     spacing: 2px;
 
-    Text {
-        text: root.label;
-        font-weight: 700;
+    HorizontalLayout {
+        padding-left: 8px;
+        padding-right: 8px;
+
+        Text {
+            text: root.label;
+            font-weight: 700;
+            horizontal-stretch: 1;
+        }
     }
 
-    if root.description != "" : Text {
-        text: root.description;
-        opacity: 0.5;
-        font-size: 12px;
-        wrap: word-wrap;
+    if root.description != "" : HorizontalLayout {
+        padding-left: 8px;
+        padding-right: 8px;
+
+        Text {
+            text: root.description;
+            opacity: 0.5;
+            font-size: 12px;
+            wrap: word-wrap;
+            horizontal-stretch: 1;
+        }
     }
 
     for mod-row in root.mods : GameModRowView {

@@ -17,7 +17,6 @@ pub enum FilterAction {
 	Toggle(bool),
 	Lock,
 	Only,
-	Reset,
 }
 
 fn default_item() -> FilterItem {
@@ -162,7 +161,6 @@ fn apply_to_group<T: Eq + Hash + Clone>(
 				}
 			}
 		}
-		FilterAction::Reset => keep_only_locked(group),
 	}
 }
 
@@ -300,6 +298,23 @@ pub fn apply_filter_action(
 		),
 		_ => false,
 	}
+}
+
+pub fn reset_filter_group(filter: &mut GamesFilter, group_key: &str) -> bool {
+	match group_key {
+		"installed" => keep_only_locked(&mut filter.installed),
+		"engines" => keep_only_locked(&mut filter.engines),
+		"modFamilies" => keep_only_locked(&mut filter.mod_families),
+		"tags" => keep_only_locked(&mut filter.tags),
+		"providers" => keep_only_locked(&mut filter.providers),
+		"unityBackends" => keep_only_locked(&mut filter.unity_backends),
+		"executableOs" => keep_only_locked(&mut filter.executable_os),
+		"supportedOs" => keep_only_locked(&mut filter.supported_os),
+		"architectures" => keep_only_locked(&mut filter.architectures),
+		_ => return false,
+	}
+
+	true
 }
 
 pub fn reset_all_filters(filter: &mut GamesFilter) {
