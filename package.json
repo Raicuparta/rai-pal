@@ -5,8 +5,8 @@
 	"type": "module",
 	"scripts": {
 		"dev": "tauri dev",
-		"slint-dev": "cd backend && cargo run -p rai-pal-slint",
-		"slint-dev-live": "cd backend && cross-env SLINT_LIVE_PREVIEW=1 cargo run -p rai-pal-slint --features slint/live-preview",
+		"slint-dev": "cd backend && cross-env SLINT_EMIT_DEBUG_INFO=1 SLINT_MCP_PORT=9315 cargo run -p rai-pal-slint --features slint/mcp",
+		"slint-dev-live": "cd backend && cross-env SLINT_LIVE_PREVIEW=1 SLINT_EMIT_DEBUG_INFO=1 SLINT_MCP_PORT=9315 cargo run -p rai-pal-slint --features slint/live-preview,slint/mcp",
 		"build": "tauri build",
 		"build-windows": "tauri build --runner cargo-xwin --target x86_64-pc-windows-msvc",
 		"podman-build-linux": "podman run --rm --pull=newer -v ${PWD}:/app -w /app ghcr.io/raicuparta/rai-pal-builder:linux-latest npm run build",

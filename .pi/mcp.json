@@ -1,0 +1,8 @@
+{
+	"mcpServers": {
+		"slint": {
+			"url": "http://127.0.0.1:9315/mcp",
+			"description": "Inspect and drive the running Rai Pal Slint app: element tree, properties, clicks, keyboard, screenshots."
+		}
+	}
+}
