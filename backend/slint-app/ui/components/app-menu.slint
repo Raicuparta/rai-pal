@@ -9,6 +9,7 @@ export component AppMenu inherits Rectangle {
     in property <string> detected-language-name: "";
 
     callback about-clicked;
+    callback steam-cache-clicked;
     callback language-changed(value: string);
     callback color-scheme-changed(value: AppColorScheme);
 
@@ -45,6 +46,16 @@ export component AppMenu inherits Rectangle {
 
                 activated => {
                     root.about-clicked();
+                }
+            }
+
+            MenuSeparator { }
+
+            MenuItem {
+                title: @tr("steamCache" => "Reset Steam cache");
+
+                activated => {
+                    root.steam-cache-clicked();
                 }
             }
 

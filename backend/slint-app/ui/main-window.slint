@@ -16,6 +16,7 @@ import { AboutPopup } from "components/about-popup.slint";
 import { ModsPage } from "components/mods-page.slint";
 import { UrlModSourcesPopup } from "components/url-mod-sources-popup.slint";
 import { ConfirmModSourcePopup } from "components/confirm-mod-source-popup.slint";
+import { SteamCachePopup } from "components/steam-cache-popup.slint";
 import { UrlModSourceData } from "url-mod-source-data.slint";
 import { Theme } from "theme.slint";
 import { ModActions } from "actions.slint";
@@ -67,6 +68,10 @@ export component MainWindow inherits Window {
     in property <[string]> confirm-mod-source-mods;
     in property <bool> confirm-mod-source-saving: false;
     in-out property <bool> confirm-mod-source-open: false;
+    in-out property <bool> steam-cache-open: false;
+    in-out property <bool> steam-cache-running: false;
+    in-out property <bool> steam-cache-success: false;
+    in-out property <string> steam-cache-error: "";
 
     in-out property <AppTab> current-tab: games;
     in-out property <bool> game-selected: false;
@@ -86,6 +91,7 @@ export component MainWindow inherits Window {
     callback add-url-mod-source(url: string);
     callback confirm-url-mod-source;
     callback cancel-url-mod-source;
+    callback reset-steam-cache;
     callback visible-range-changed(first: int, last: int);
     callback search-changed(text: string);
     callback sort-changed(index: int);
@@ -179,6 +185,12 @@ export component MainWindow inherits Window {
 
                     about-clicked => {
                         about-popup.show();
+                    }
+
+                    steam-cache-clicked => {
+                        root.steam-cache-success = false;
+                        root.steam-cache-error = "";
+                        root.steam-cache-open = true;
                     }
 
                     language-changed(value) => {
@@ -414,6 +426,30 @@ export component MainWindow inherits Window {
             confirm-mod-source-popup.show();
         } else {
             confirm-mod-source-popup.close();
+        }
+    }
+
+    changed steam-cache-open => {
+        if root.steam-cache-open {
+            steam-cache-popup.show();
+        } else {
+            steam-cache-popup.close();
+        }
+    }
+
+    steam-cache-popup := SteamCachePopup {
+        x: (root.width - self.width) / 2;
+        y: (root.height - self.height) / 2;
+        running: root.steam-cache-running;
+        success: root.steam-cache-success;
+        error: root.steam-cache-error;
+
+        reset-clicked => {
+            root.reset-steam-cache();
+        }
+
+        closed => {
+            root.steam-cache-open = false;
         }
     }
 

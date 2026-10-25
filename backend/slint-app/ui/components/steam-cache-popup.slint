@@ -1,0 +1,82 @@
+import { Button, Palette } from "std-widgets.slint";
+import { Theme } from "../theme.slint";
+
+export component SteamCachePopup inherits PopupWindow {
+    in property <bool> running;
+    in property <bool> success;
+    in property <string> error;
+
+    callback reset-clicked;
+    callback closed;
+
+    width: Theme.details-popup-width;
+    height: Theme.about-popup-height + Theme.space-20;
+    close-policy: PopupClosePolicy.no-auto-close;
+
+    Rectangle {
+        background: Palette.background;
+        border-width: Theme.border-width;
+        border-color: Palette.border;
+        border-radius: Theme.radius-8;
+
+        VerticalLayout {
+            padding: Theme.space-20;
+            spacing: Theme.space-12;
+
+            Text {
+                text: @tr("steamCache" => "Reset Steam cache");
+                font-size: Theme.font-20;
+                font-weight: Theme.weight-bold;
+            }
+
+            Text {
+                text: @tr("steamCache" => "Use this if Rai Pal is showing games you don't actually own on Steam. This will reset Steam's cache, and then you'll have to restart Steam. You'll get an error if the file has already been deleted.");
+                wrap: word-wrap;
+            }
+
+            if root.success : Text {
+                text: @tr("steamCache" => "The cache file has been deleted. Please restart Steam, wait a few seconds, and then press the refresh button on Rai Pal.");
+                color: Theme.status-success;
+                wrap: word-wrap;
+            }
+
+            if root.error != "" : Text {
+                text: root.error;
+                color: red;
+                wrap: word-wrap;
+            }
+
+            Rectangle {
+                vertical-stretch: 1;
+            }
+
+            HorizontalLayout {
+                alignment: center;
+
+                Button {
+                    text: @tr("steamCache" => "Reset Steam cache");
+                    enabled: !root.running;
+                    primary: true;
+                    width: self.preferred-width * 2;
+
+                    clicked => {
+                        root.reset-clicked();
+                    }
+                }
+            }
+
+            HorizontalLayout {
+                alignment: end;
+
+                Button {
+                    text: "Close";
+
+                    clicked => {
+                        root.close();
+                        root.closed();
+                    }
+                }
+            }
+        }
+    }
+}

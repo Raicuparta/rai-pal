@@ -137,7 +137,7 @@ fn publish_tasks(window: &slint::Weak<MainWindow>, tasks: &[String]) {
 	});
 }
 
-fn refresh_selected_game(
+pub(crate) fn refresh_selected_game(
 	window: &MainWindow,
 	database: &Arc<DbMutex>,
 	selected_game: &SelectedGameState,

@@ -31,7 +31,7 @@ use crate::{
 	query::{load_game_ids, start_query},
 	refresh,
 	scheduler::{FetchScheduler, enqueue_index, schedule_visible_range},
-	selected,
+	selected, tools,
 };
 
 pub fn run() -> Result<(), slint::PlatformError> {
@@ -223,6 +223,25 @@ pub fn run() -> Result<(), slint::PlatformError> {
 			window.set_confirm_mod_source_error("".into());
 			window.set_confirm_mod_source_mods(Default::default());
 			window.set_confirm_mod_source_saving(false);
+		}
+	});
+
+	let ui_window = window_weak.clone();
+	let ui_database = database.clone();
+	let ui_scheduler = scheduler.clone();
+	let ui_settings = settings.clone();
+	let ui_selected_game = selected_game.clone();
+	window.on_reset_steam_cache(move || {
+		if let Some(window) = ui_window.upgrade()
+			&& !window.get_steam_cache_running()
+		{
+			tools::reset_steam_cache(
+				ui_window.clone(),
+				ui_database.clone(),
+				ui_scheduler.clone(),
+				ui_settings.borrow().games_query.clone(),
+				ui_selected_game.clone(),
+			);
 		}
 	});
 
