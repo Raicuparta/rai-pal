@@ -10,7 +10,7 @@ use rai_pal_core::{
 	app_settings::{AppSettings, ColorScheme, TabId},
 	game::DbGame,
 	game_providers::{game_provider::GameProviderId, provider_command::ProviderCommandAction},
-	games_query::GamesSortBy,
+	games_query::{FilterAction, GamesSortBy},
 	local_database::{
 		app_database::DbMutex,
 		game_database::{GameDatabase, try_create},
@@ -20,10 +20,10 @@ use rai_pal_core::{
 use slint::{ComponentHandle, Model};
 
 use crate::{
-	GameRowData, MainWindow, actions,
+	GameRowData, MainWindow, ModActions, actions,
 	fetch::spawn_fetchers,
 	filters::{
-		FilterAction, apply_filter_action, build_groups, load_mod_families, reset_all_filters,
+apply_filter_action, build_groups, load_mod_families, reset_all_filters,
 		reset_filter_group,
 	},
 	i18n,
@@ -414,7 +414,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 			return;
 		};
 
-		if let Some(action) = actions::primary_start(&game) {
+		if let Some(action) = game.primary_start_action() {
 			actions::run_provider_action(ui_database.clone(), game, action);
 		}
 	});
@@ -471,7 +471,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	let ui_window = window_weak.clone();
 	let ui_database = database.clone();
 	let ui_selected_game = selected_game.clone();
-	window.on_install_mod(move |mod_id| {
+	window.global::<ModActions>().on_install(move |mod_id| {
 		let Some((_, game)) = get_selected_game(&ui_selected_game) else {
 			return;
 		};
@@ -487,7 +487,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	let ui_window = window_weak.clone();
 	let ui_database = database.clone();
 	let ui_selected_game = selected_game.clone();
-	window.on_update_mod(move |mod_id| {
+	window.global::<ModActions>().on_update(move |mod_id| {
 		let Some((_, game)) = get_selected_game(&ui_selected_game) else {
 			return;
 		};
@@ -503,7 +503,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	let ui_window = window_weak.clone();
 	let ui_database = database.clone();
 	let ui_selected_game = selected_game.clone();
-	window.on_reinstall_mod(move |mod_id| {
+	window.global::<ModActions>().on_reinstall(move |mod_id| {
 		let Some((_, game)) = get_selected_game(&ui_selected_game) else {
 			return;
 		};
@@ -519,7 +519,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	let ui_window = window_weak.clone();
 	let ui_database = database.clone();
 	let ui_selected_game = selected_game.clone();
-	window.on_uninstall_mod(move |mod_id| {
+	window.global::<ModActions>().on_uninstall(move |mod_id| {
 		let Some((_, game)) = get_selected_game(&ui_selected_game) else {
 			return;
 		};
@@ -534,7 +534,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 
 	let ui_database = database.clone();
 	let ui_selected_game = selected_game.clone();
-	window.on_run_mod(move |mod_id| {
+	window.global::<ModActions>().on_run(move |mod_id| {
 		let Some((_, game)) = get_selected_game(&ui_selected_game) else {
 			return;
 		};
@@ -543,26 +543,26 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	});
 
 	let ui_database = database.clone();
-	window.on_run_standalone_mod(move |mod_id| {
+	window.global::<ModActions>().on_run_standalone(move |mod_id| {
 		actions::run_standalone_mod(ui_database.clone(), mod_id.to_string());
 	});
 
 	let ui_database = database.clone();
-	window.on_install_standalone_mod(move |mod_id| {
+	window.global::<ModActions>().on_install_standalone(move |mod_id| {
 		actions::install_standalone_mod(ui_database.clone(), mod_id.to_string());
 	});
 
-	window.on_open_url(move |url| {
+	window.global::<ModActions>().on_open_url(move |url| {
 		actions::open_url(url.to_string());
 	});
 
-	window.on_open_local_mods_folder(|| {
+	window.global::<ModActions>().on_open_local_mods_folder(|| {
 		actions::open_local_mods_folder();
 	});
 
 	let ui_database = database.clone();
 	let ui_selected_game = selected_game.clone();
-	window.on_open_mod_folder(move |mod_id| {
+	window.global::<ModActions>().on_open_folder(move |mod_id| {
 		let Some((_, game)) = get_selected_game(&ui_selected_game) else {
 			return;
 		};
@@ -573,7 +573,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	let ui_window = window_weak.clone();
 	let ui_database = database.clone();
 	let ui_selected_game = selected_game.clone();
-	window.on_download_mod_config(move |mod_id| {
+	window.global::<ModActions>().on_download_config(move |mod_id| {
 		let Some((_, game)) = get_selected_game(&ui_selected_game) else {
 			return;
 		};
@@ -588,7 +588,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 
 	let ui_database = database.clone();
 	let ui_selected_game = selected_game.clone();
-	window.on_configure_mod(move |mod_id| {
+	window.global::<ModActions>().on_configure(move |mod_id| {
 		let Some((_, game)) = get_selected_game(&ui_selected_game) else {
 			return;
 		};
@@ -598,7 +598,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 
 	let ui_database = database.clone();
 	let ui_selected_game = selected_game.clone();
-	window.on_configure_mod_folder(move |mod_id| {
+	window.global::<ModActions>().on_configure_folder(move |mod_id| {
 		let Some((_, game)) = get_selected_game(&ui_selected_game) else {
 			return;
 		};
@@ -609,7 +609,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	let ui_window = window_weak.clone();
 	let ui_database = database.clone();
 	let ui_selected_game = selected_game.clone();
-	window.on_uninstall_all_mods(move || {
+	window.global::<ModActions>().on_uninstall_all(move || {
 		let Some((_, game)) = get_selected_game(&ui_selected_game) else {
 			return;
 		};

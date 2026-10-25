@@ -1,4 +1,5 @@
 import { ScrollView, Button, Palette } from "std-widgets.slint";
+import { Theme } from "../theme.slint";
 
 export component GameDetailsPopup inherits PopupWindow {
     in property <string> game-json;
@@ -9,16 +10,16 @@ export component GameDetailsPopup inherits PopupWindow {
 
     Rectangle {
         background: Palette.background;
-        border-width: 1px;
+        border-width: Theme.border-width;
         border-color: Palette.border;
 
         VerticalLayout {
-            padding: 12px;
-            spacing: 8px;
+            padding: Theme.space-12;
+            spacing: Theme.space-8;
 
             Text {
                 text: "Game data";
-                font-weight: 700;
+                font-weight: Theme.weight-bold;
             }
 
             ScrollView {

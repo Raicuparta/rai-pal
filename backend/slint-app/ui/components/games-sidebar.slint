@@ -1,8 +1,10 @@
-import { LineEdit, ComboBox, ScrollView, Palette, Button } from "std-widgets.slint";
+import { LineEdit, ComboBox, Button } from "std-widgets.slint";
 import { FilterGroupData } from "../filter-data.slint";
+import { Theme } from "../theme.slint";
 import { FilterGroupView } from "filter-group.slint";
+import { Sidebar } from "sidebar.slint";
 
-export component GamesSidebar inherits Rectangle {
+export component GamesSidebar inherits Sidebar {
     in-out property <string> search-text: "";
     in-out property <int> sort-index: 0;
     in-out property <bool> sort-descending: false;
@@ -19,107 +21,97 @@ export component GamesSidebar inherits Rectangle {
     callback filters-reset;
     callback filter-expanded-changed(group: string, expanded: bool);
 
-    width: 260px;
-    background: Palette.alternate-background;
+    LineEdit {
+        vertical-stretch: 0;
+        height: Theme.control-height;
+        text <=> root.search-text;
+        placeholder-text: @tr("filterMenu" => "Search...");
 
-    ScrollView {
-        VerticalLayout {
-            padding: 12px;
-            spacing: 8px;
+        edited(text) => {
+            root.search-changed(text);
+        }
+    }
 
-            LineEdit {
-                vertical-stretch: 0;
-                height: 32px;
-                text <=> root.search-text;
-                placeholder-text: @tr("filterMenu" => "Search...");
+    HorizontalLayout {
+        vertical-stretch: 0;
+        height: Theme.control-height;
+        spacing: Theme.space-4;
 
-                edited(text) => {
-                    root.search-changed(text);
-                }
+        ComboBox {
+            vertical-stretch: 0;
+            height: Theme.control-height;
+            model: [
+                @tr("gamesTableColumn" => "Name"),
+                @tr("gamesTableColumn" => "Engine"),
+                @tr("gamesTableColumn" => "Date"),
+            ];
+            current-index <=> root.sort-index;
+            horizontal-stretch: 1;
+
+            selected(value) => {
+                root.sort-changed(root.sort-index);
+            }
+        }
+
+        Button {
+            text: root.sort-descending ? "↓" : "↑";
+            width: Theme.control-height + Theme.space-8;
+
+            clicked => {
+                root.sort-direction-changed(!root.sort-descending);
+            }
+        }
+    }
+
+    HorizontalLayout {
+        vertical-stretch: 0;
+        spacing: Theme.space-4;
+        alignment: start;
+        cross-axis-alignment: center;
+
+        Button {
+            text: @tr("filterMenu" => "Reset");
+            height: Theme.icon-button-size;
+            enabled: root.filters-have-changes;
+
+            clicked => {
+                root.filters-reset();
+            }
+        }
+
+        Text {
+            text: @tr("filterMenu" => "Filters");
+            font-size: Theme.font-16;
+            font-weight: Theme.weight-bold;
+            vertical-alignment: center;
+        }
+    }
+
+    VerticalLayout {
+        alignment: start;
+        spacing: Theme.space-8;
+
+        for group in root.filter-groups : FilterGroupView {
+            group: group;
+
+            toggled(value, checked) => {
+                root.filter-toggled(group.key, value, checked);
             }
 
-            HorizontalLayout {
-                vertical-stretch: 0;
-                height: 32px;
-                spacing: 4px;
-
-                ComboBox {
-                    vertical-stretch: 0;
-                    height: 32px;
-                    model: [
-                        @tr("gamesTableColumn" => "Name"),
-                        @tr("gamesTableColumn" => "Engine"),
-                        @tr("gamesTableColumn" => "Date"),
-                    ];
-                    current-index <=> root.sort-index;
-                    horizontal-stretch: 1;
-
-                    selected(value) => {
-                        root.sort-changed(root.sort-index);
-                    }
-                }
-
-                Button {
-                    text: root.sort-descending ? "↓" : "↑";
-                    width: 40px;
-
-                    clicked => {
-                        root.sort-direction-changed(!root.sort-descending);
-                    }
-                }
+            lock-toggled(value) => {
+                root.filter-lock-toggled(group.key, value);
             }
 
-            HorizontalLayout {
-                vertical-stretch: 0;
-                spacing: 4px;
-                alignment: start;
-                cross-axis-alignment: center;
-
-                Button {
-                    text: @tr("filterMenu" => "Reset");
-                    height: 22px;
-                    enabled: root.filters-have-changes;
-
-                    clicked => {
-                        root.filters-reset();
-                    }
-                }
-
-                Text {
-                    text: @tr("filterMenu" => "Filters");
-                    font-size: 16px;
-                    font-weight: 700;
-                    vertical-alignment: center;
-                }
+            only(value) => {
+                root.filter-only(group.key, value);
             }
 
-            VerticalLayout {
-                alignment: start;
-                spacing: 8px;
+            reset => {
+                root.filter-reset(group.key);
+            }
 
-                for group in root.filter-groups : FilterGroupView {
-                    group: group;
-
-                    toggled(value, checked) => {
-                        root.filter-toggled(group.key, value, checked);
-                    }
-
-                    lock-toggled(value) => {
-                        root.filter-lock-toggled(group.key, value);
-                    }
-
-                    only(value) => {
-                        root.filter-only(group.key, value);
-                    }
-
-                    reset => {
-                        root.filter-reset(group.key);
-                    }
-
-                    expanded-changed(expanded) => {
-                        root.filter-expanded-changed(group.key, expanded);
-                    }
-                }
+            expanded-changed(expanded) => {
+                root.filter-expanded-changed(group.key, expanded);
             }
         }
     }

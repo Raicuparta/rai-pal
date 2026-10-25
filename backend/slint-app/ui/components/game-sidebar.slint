@@ -1,8 +1,10 @@
-import { Button, Palette, ScrollView } from "std-widgets.slint";
+import { Button } from "std-widgets.slint";
 import { ProviderActionItem } from "../provider-action-item.slint";
+import { Theme } from "../theme.slint";
 import { Tr } from "../translations.slint";
+import { Sidebar } from "sidebar.slint";
 
-export component GameSidebar inherits Rectangle {
+export component GameSidebar inherits Sidebar {
     in property <string> provider-id;
     in property <bool> can-run-game;
     in property <bool> has-exe-path;
@@ -20,124 +22,113 @@ export component GameSidebar inherits Rectangle {
     callback refresh-game;
     callback debug-data;
 
-    width: 260px;
-    background: Palette.alternate-background;
+    Button {
+        text: @tr("subPage" => "Back");
 
-    ScrollView {
-        VerticalLayout {
-            padding: 12px;
-            spacing: 8px;
-            alignment: start;
+        clicked => {
+            root.back();
+        }
+    }
 
-            Button {
-                text: @tr("subPage" => "Back");
+    if root.can-run-game : Button {
+        text: @tr("gameModal" => "Start Game");
+        primary: true;
 
-                clicked => {
-                    root.back();
-                }
+        clicked => {
+            root.run-game();
+        }
+    }
+
+    if root.provider-actions.length > 0 : VerticalLayout {
+        alignment: start;
+        spacing: Theme.space-2;
+
+        Text {
+            text: root.provider-id;
+            font-weight: Theme.weight-bold;
+        }
+
+        for action in root.provider-actions : Button {
+            text: Tr.provider-command(action.value);
+
+            clicked => {
+                root.run-provider-action(action.value);
             }
+        }
+    }
 
-            if root.can-run-game : Button {
-                text: @tr("gameModal" => "Start Game");
-                primary: true;
+    if root.has-exe-path : VerticalLayout {
+        alignment: start;
+        spacing: Theme.space-2;
 
-                clicked => {
-                    root.run-game();
-                }
+        Text {
+            text: @tr("gameModal" => "Folders");
+            font-weight: Theme.weight-bold;
+        }
+
+        Button {
+            text: @tr("gameModal" => "Game Files");
+
+            clicked => {
+                root.open-game-folder();
             }
+        }
 
-            if root.provider-actions.length > 0 : VerticalLayout {
-                alignment: start;
-                spacing: 2px;
+        Button {
+            text: @tr("gameModal" => "Installed Mods");
 
-                Text {
-                    text: root.provider-id;
-                    font-weight: 700;
-                }
-
-                for action in root.provider-actions : Button {
-                    text: Tr.provider-command(action.value);
-
-                    clicked => {
-                        root.run-provider-action(action.value);
-                    }
-                }
+            clicked => {
+                root.open-game-mods-folder();
             }
+        }
 
-            if root.has-exe-path : VerticalLayout {
-                alignment: start;
-                spacing: 2px;
+        Button {
+            text: @tr("gameModal" => "Game App Data");
 
-                Text {
-                    text: @tr("gameModal" => "Folders");
-                    font-weight: 700;
-                }
-
-                Button {
-                    text: @tr("gameModal" => "Game Files");
-
-                    clicked => {
-                        root.open-game-folder();
-                    }
-                }
-
-                Button {
-                    text: @tr("gameModal" => "Installed Mods");
-
-                    clicked => {
-                        root.open-game-mods-folder();
-                    }
-                }
-
-                Button {
-                    text: @tr("gameModal" => "Game App Data");
-
-                    clicked => {
-                        root.open-game-data-folder();
-                    }
-                }
-
-                if root.show-wine-folders : Button {
-                    text: @tr("gameModal" => "Wine Prefix");
-
-                    clicked => {
-                        root.open-wine-prefix-folder();
-                    }
-                }
-
-                if root.show-wine-folders : Button {
-                    text: @tr("gameModal" => "Wine Binary");
-
-                    clicked => {
-                        root.open-wine-binary-folder();
-                    }
-                }
+            clicked => {
+                root.open-game-data-folder();
             }
+        }
 
-            VerticalLayout {
-                alignment: start;
-                spacing: 2px;
+        if root.show-wine-folders : Button {
+            text: @tr("gameModal" => "Wine Prefix");
 
-                Text {
-                    text: "Data";
-                    font-weight: 700;
-                }
+            clicked => {
+                root.open-wine-prefix-folder();
+            }
+        }
 
-                if root.has-exe-path : Button {
-                    text: @tr("gameModal" => "Refresh game");
+        if root.show-wine-folders : Button {
+            text: @tr("gameModal" => "Wine Binary");
 
-                    clicked => {
-                        root.refresh-game();
-                    }
-                }
+            clicked => {
+                root.open-wine-binary-folder();
+            }
+        }
+    }
 
-                Button {
-                    text: @tr("debugData" => "Debug data");
+    VerticalLayout {
+        alignment: start;
+        spacing: Theme.space-2;
 
-                    clicked => {
-                        root.debug-data();
-                    }
-                }
+        Text {
+            text: "Data";
+            font-weight: Theme.weight-bold;
+        }
+
+        if root.has-exe-path : Button {
+            text: @tr("gameModal" => "Refresh game");
+
+            clicked => {
+                root.refresh-game();
+            }
+        }
+
+        Button {
+            text: @tr("debugData" => "Debug data");
+
+            clicked => {
+                root.debug-data();
             }
         }
     }

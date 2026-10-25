@@ -1,39 +1,28 @@
 import { IconSet } from "@lucide";
 import { Button, Palette } from "std-widgets.slint";
+import { ModActions } from "../actions.slint";
 import { GameModRowData } from "../game-mod-row-data.slint";
+import { Theme } from "../theme.slint";
 import { IconButton } from "icon-button.slint";
 import { ModSummaryView } from "mod-summary.slint";
 
 export component GameModRowView inherits Rectangle {
     in property <GameModRowData> game-mod;
 
-    callback install(mod-id: string);
-    callback uninstall(mod-id: string);
-    callback update(mod-id: string);
-    callback reinstall(mod-id: string);
-    callback run(mod-id: string);
-    callback open-folder(mod-id: string);
-    callback download-config(mod-id: string);
-    callback configure(mod-id: string);
-    callback configure-folder(mod-id: string);
-
     property <bool> interactive: game-mod.section != "incompatible";
     property <bool> has-dropdown-actions: game-mod.can-edit-config || game-mod.can-open-mod-folder || game-mod.can-download-config || game-mod.can-reinstall || game-mod.can-uninstall;
 
     vertical-stretch: 0;
-    height: max(56px, content.preferred-height);
+    height: max(Theme.game-mod-row-height, content.preferred-height);
     background: interactive && row-touch.has-hover ? Palette.alternate-background : transparent;
 
     context-menu := ContextMenuArea {
-        width: 100%;
-        height: 100%;
-
         Menu {
             if game-mod.can-edit-config : MenuItem {
                 title: @tr("gameModRow" => "Edit Mod Config");
 
                 activated => {
-                    root.configure(game-mod.mod-id);
+                    ModActions.configure(game-mod.mod-id);
                 }
             }
 
@@ -41,7 +30,7 @@ export component GameModRowView inherits Rectangle {
                 title: @tr("gameModRow" => "Open folder containing this mod's config files");
 
                 activated => {
-                    root.configure-folder(game-mod.mod-id);
+                    ModActions.configure-folder(game-mod.mod-id);
                 }
             }
 
@@ -51,7 +40,7 @@ export component GameModRowView inherits Rectangle {
                 title: @tr("gameModRow" => "Open Mod Folder");
 
                 activated => {
-                    root.open-folder(game-mod.mod-id);
+                    ModActions.open-folder(game-mod.mod-id);
                 }
             }
 
@@ -59,7 +48,7 @@ export component GameModRowView inherits Rectangle {
                 title: @tr("gameModRow" => "Download Recommended Config");
 
                 activated => {
-                    root.download-config(game-mod.mod-id);
+                    ModActions.download-config(game-mod.mod-id);
                 }
             }
 
@@ -69,7 +58,7 @@ export component GameModRowView inherits Rectangle {
                 title: @tr("gameModRow" => "Reinstall");
 
                 activated => {
-                    root.reinstall(game-mod.mod-id);
+                    ModActions.reinstall(game-mod.mod-id);
                 }
             }
 
@@ -78,7 +67,7 @@ export component GameModRowView inherits Rectangle {
                 enabled: !game-mod.has-installed-dependants;
 
                 activated => {
-                    root.uninstall(game-mod.mod-id);
+                    ModActions.uninstall(game-mod.mod-id);
                 }
             }
         }
@@ -86,8 +75,8 @@ export component GameModRowView inherits Rectangle {
         row-touch := TouchArea { }
 
         content := HorizontalLayout {
-            padding: 6px;
-            spacing: 8px;
+            padding: Theme.space-6;
+            spacing: Theme.space-8;
             cross-axis-alignment: center;
 
             ModSummaryView {
@@ -107,32 +96,32 @@ export component GameModRowView inherits Rectangle {
 
             if game-mod.can-show-actions : HorizontalLayout {
                 alignment: end;
-                spacing: 4px;
+                spacing: Theme.space-4;
 
                 if game-mod.can-install : Button {
                     text: @tr("gameModRow" => "Install");
-                    height: 28px;
+                    height: Theme.action-button-height;
 
                     clicked => {
-                        root.install(game-mod.mod-id);
+                        ModActions.install(game-mod.mod-id);
                     }
                 }
 
                 if game-mod.can-update : Button {
                     text: @tr("gameModRow" => "Update");
-                    height: 28px;
+                    height: Theme.action-button-height;
 
                     clicked => {
-                        root.update(game-mod.mod-id);
+                        ModActions.update(game-mod.mod-id);
                     }
                 }
 
                 if game-mod.can-run : Button {
                     text: @tr("gameModRow" => "Run");
-                    height: 28px;
+                    height: Theme.action-button-height;
 
                     clicked => {
-                        root.run(game-mod.mod-id);
+                        ModActions.run(game-mod.mod-id);
                     }
                 }
 

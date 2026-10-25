@@ -49,12 +49,12 @@ pub fn apply_game_to_row(row: &mut GameRowData, game: &DbGame) {
 	let (release_day, release_month, release_year) =
 		format_release_date(game.release_date_rfc3339.as_deref());
 
-	row.title = display_title(game).into();
+	row.title = game.full_title().into();
 	row.installed = game.exe_path.is_some();
 	row.tags = Rc::new(slint::VecModel::from(tags(game))).into();
 	row.engine_brand = game
 		.engine_brand
-		.map(|brand| brand.to_string().to_uppercase())
+		.map(|brand| brand.to_string())
 		.unwrap_or_default()
 		.into();
 	row.engine_version = game
@@ -70,13 +70,6 @@ pub fn apply_game_to_row(row: &mut GameRowData, game: &DbGame) {
 		.unwrap_or_default()
 		.into();
 	row.loaded = true;
-}
-
-pub fn display_title(game: &DbGame) -> String {
-	match &game.title_discriminator {
-		Some(discriminator) => format!("{} ({})", game.display_title, discriminator),
-		None => game.display_title.clone(),
-	}
 }
 
 pub fn tags(game: &DbGame) -> Vec<slint::SharedString> {

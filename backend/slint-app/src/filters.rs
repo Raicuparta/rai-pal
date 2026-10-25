@@ -1,168 +1,16 @@
-use std::hash::Hash;
+use std::{collections::HashSet, hash::Hash, str::FromStr};
 
 use rai_pal_core::{
 	architecture::Architecture,
 	game_engines::{game_engine::EngineBrand, unity::UnityBackend},
 	game_providers::game_provider::GameProviderId,
 	game_tag::GameTag,
-	games_query::{FilterGroup, FilterItem, GamesFilter, InstallState},
+	games_query::{FilterAction, FilterGroup, FilterGroupKey, FilterItem, GamesFilter, InstallState},
 	local_database::{app_database::DbMutex, mod_database::ModDatabase},
 	operating_system::OperatingSystem,
 };
 
 use crate::{FilterGroupData, FilterValueData};
-
-#[derive(Clone, Copy)]
-pub enum FilterAction {
-	Toggle(bool),
-	Lock,
-	Only,
-}
-
-fn default_item() -> FilterItem {
-	FilterItem {
-		enabled: true,
-		locked: false,
-	}
-}
-
-fn get_item<T: Eq + Hash>(group: &FilterGroup<T>, key: Option<&T>) -> FilterItem {
-	match key {
-		Some(key) => group.known.get(key).cloned().unwrap_or_else(default_item),
-		None => group.unknown.clone().unwrap_or_else(default_item),
-	}
-}
-
-fn set_item<T: Eq + Hash + Clone>(group: &mut FilterGroup<T>, key: Option<T>, item: FilterItem) {
-	if key.is_none() && group.unknown.is_none() && item.enabled && !item.locked {
-		return;
-	}
-
-	if item.enabled && !item.locked {
-		if let Some(key) = key {
-			group.known.remove(&key);
-		} else {
-			group.unknown = None;
-		}
-	} else if let Some(key) = key {
-		group.known.insert(key, item);
-	} else {
-		group.unknown = Some(item);
-	}
-}
-
-fn keep_only_locked<T: Eq + Hash>(group: &mut FilterGroup<T>) {
-	group.known.retain(|_, item| item.locked);
-
-	if group.unknown.as_ref().is_some_and(|item| !item.locked) {
-		group.unknown = None;
-	}
-}
-
-fn has_any_enabled<T: Eq + Hash>(
-	group: &FilterGroup<T>,
-	possible_values: &[T],
-	has_unknown: bool,
-) -> bool {
-	let known_enabled = possible_values.iter().any(|value| {
-		let item = get_item(group, Some(value));
-		item.enabled || item.locked
-	});
-
-	known_enabled
-		|| (has_unknown && {
-			let item = get_item(group, None);
-			item.enabled || item.locked
-		})
-}
-
-fn has_changes<T: Eq + Hash>(
-	group: &FilterGroup<T>,
-	possible_values: &[T],
-	has_unknown: bool,
-) -> bool {
-	let known_changed = possible_values.iter().any(|value| {
-		let item = get_item(group, Some(value));
-		!item.enabled && !item.locked
-	});
-
-	known_changed
-		|| (has_unknown && {
-			let item = get_item(group, None);
-			!item.enabled && !item.locked
-		})
-}
-
-fn has_locked<T: Eq + Hash>(group: &FilterGroup<T>) -> bool {
-	group.known.values().any(|item| item.locked)
-		|| group.unknown.as_ref().is_some_and(|item| item.locked)
-}
-
-fn apply_to_group<T: Eq + Hash + Clone>(
-	group: &mut FilterGroup<T>,
-	target: Option<T>,
-	possible_values: &[T],
-	has_unknown: bool,
-	action: FilterAction,
-) {
-	match action {
-		FilterAction::Toggle(enabled) => {
-			let mut item = get_item(group, target.as_ref());
-			item.enabled = enabled;
-			set_item(group, target, item);
-
-			if !has_any_enabled(group, possible_values, has_unknown) {
-				keep_only_locked(group);
-			}
-		}
-		FilterAction::Lock => {
-			let mut item = get_item(group, target.as_ref());
-			item.locked = !item.locked;
-			set_item(group, target, item);
-		}
-		FilterAction::Only => {
-			for value in possible_values {
-				if target.as_ref() == Some(value) {
-					let mut item = get_item(group, Some(value));
-					item.enabled = true;
-					set_item(group, Some(value.clone()), item);
-				} else {
-					let item = get_item(group, Some(value));
-					if !item.locked {
-						set_item(
-							group,
-							Some(value.clone()),
-							FilterItem {
-								enabled: false,
-								locked: false,
-							},
-						);
-					}
-				}
-			}
-
-			if has_unknown {
-				if target.is_none() {
-					let mut item = get_item(group, None);
-					item.enabled = true;
-					set_item(group, None, item);
-				} else {
-					let item = get_item(group, None);
-					if !item.locked {
-						set_item(
-							group,
-							None,
-							FilterItem {
-								enabled: false,
-								locked: false,
-							},
-						);
-					}
-				}
-			}
-		}
-	}
-}
 
 const PROVIDERS: &[GameProviderId] = &[
 	GameProviderId::Epic,
@@ -190,31 +38,30 @@ const ARCHITECTURES: &[Architecture] = &[Architecture::X64, Architecture::X86];
 
 const INSTALL_STATES: &[InstallState] = &[InstallState::Installed, InstallState::NotInstalled];
 
-macro_rules! run_on_group {
-	($filter:expr, $field:ident, $ty:ty, $possible:expr, $has_unknown:expr, $value:expr, $action:expr) => {{
-		let possible_values: Vec<$ty> = $possible.to_vec();
-		let value_text: &str = $value;
-		let target = if value_text.is_empty() && $has_unknown {
-			None
-		} else {
-			value_text.parse::<$ty>().ok()
-		};
-
-		if value_text.is_empty() && !$has_unknown {
-			false
-		} else if target.is_some() || $has_unknown {
-			apply_to_group(
-				&mut $filter.$field,
-				target,
-				&possible_values,
-				$has_unknown,
-				$action,
-			);
-			true
-		} else {
-			false
+fn apply_string_value<T>(
+	group: &mut FilterGroup<T>,
+	value: &str,
+	possible_values: &[T],
+	has_unknown: bool,
+	action: FilterAction,
+) -> bool
+where
+	T: Eq + Hash + Clone + FromStr,
+{
+	let target = if value.is_empty() {
+		if !has_unknown {
+			return false;
 		}
-	}};
+		None
+	} else {
+		match value.parse() {
+			Ok(value) => Some(value),
+			Err(_) => return false,
+		}
+	};
+
+	group.apply_action(target, possible_values, has_unknown, action);
+	true
 }
 
 pub fn apply_filter_action(
@@ -224,109 +71,93 @@ pub fn apply_filter_action(
 	value: &str,
 	action: FilterAction,
 ) -> bool {
+	let Ok(group_key) = FilterGroupKey::from_str(group_key) else {
+		return false;
+	};
+
 	match group_key {
-		"installed" => {
-			run_on_group!(
-				filter,
-				installed,
-				InstallState,
-				INSTALL_STATES,
-				false,
-				value,
-				action
-			)
+		FilterGroupKey::Installed => apply_string_value(
+			&mut filter.installed,
+			value,
+			INSTALL_STATES,
+			false,
+			action,
+		),
+		FilterGroupKey::Engines => {
+			apply_string_value(&mut filter.engines, value, ENGINES, true, action)
 		}
-		"engines" => run_on_group!(filter, engines, EngineBrand, ENGINES, true, value, action),
-		"modFamilies" => {
-			run_on_group!(
-				filter,
-				mod_families,
-				String,
-				mod_families,
-				false,
-				value,
-				action
-			)
+		FilterGroupKey::ModFamilies => apply_string_value(
+			&mut filter.mod_families,
+			value,
+			mod_families,
+			false,
+			action,
+		),
+		FilterGroupKey::Tags => apply_string_value(&mut filter.tags, value, TAGS, true, action),
+		FilterGroupKey::Providers => {
+			apply_string_value(&mut filter.providers, value, PROVIDERS, false, action)
 		}
-		"tags" => run_on_group!(filter, tags, GameTag, TAGS, true, value, action),
-		"providers" => {
-			run_on_group!(
-				filter,
-				providers,
-				GameProviderId,
-				PROVIDERS,
-				false,
-				value,
-				action
-			)
-		}
-		"unityBackends" => run_on_group!(
-			filter,
-			unity_backends,
-			UnityBackend,
+		FilterGroupKey::UnityBackends => apply_string_value(
+			&mut filter.unity_backends,
+			value,
 			UNITY_BACKENDS,
 			true,
-			value,
-			action
+			action,
 		),
-		"executableOs" => run_on_group!(
-			filter,
-			executable_os,
-			OperatingSystem,
+		FilterGroupKey::ExecutableOs => apply_string_value(
+			&mut filter.executable_os,
+			value,
 			OPERATING_SYSTEMS,
 			true,
-			value,
-			action
+			action,
 		),
-		"supportedOs" => run_on_group!(
-			filter,
-			supported_os,
-			OperatingSystem,
+		FilterGroupKey::SupportedOs => apply_string_value(
+			&mut filter.supported_os,
+			value,
 			OPERATING_SYSTEMS,
 			true,
-			value,
-			action
+			action,
 		),
-		"architectures" => run_on_group!(
-			filter,
-			architectures,
-			Architecture,
+		FilterGroupKey::Architectures => apply_string_value(
+			&mut filter.architectures,
+			value,
 			ARCHITECTURES,
 			true,
-			value,
-			action
+			action,
 		),
-		_ => false,
 	}
 }
 
 pub fn reset_filter_group(filter: &mut GamesFilter, group_key: &str) -> bool {
+	let Ok(group_key) = FilterGroupKey::from_str(group_key) else {
+		return false;
+	};
+
 	match group_key {
-		"installed" => keep_only_locked(&mut filter.installed),
-		"engines" => keep_only_locked(&mut filter.engines),
-		"modFamilies" => keep_only_locked(&mut filter.mod_families),
-		"tags" => keep_only_locked(&mut filter.tags),
-		"providers" => keep_only_locked(&mut filter.providers),
-		"unityBackends" => keep_only_locked(&mut filter.unity_backends),
-		"executableOs" => keep_only_locked(&mut filter.executable_os),
-		"supportedOs" => keep_only_locked(&mut filter.supported_os),
-		"architectures" => keep_only_locked(&mut filter.architectures),
-		_ => return false,
+		FilterGroupKey::Installed => filter.installed.keep_only_locked(),
+		FilterGroupKey::Engines => filter.engines.keep_only_locked(),
+		FilterGroupKey::ModFamilies => filter.mod_families.keep_only_locked(),
+		FilterGroupKey::Tags => filter.tags.keep_only_locked(),
+		FilterGroupKey::Providers => filter.providers.keep_only_locked(),
+		FilterGroupKey::UnityBackends => filter.unity_backends.keep_only_locked(),
+		FilterGroupKey::ExecutableOs => filter.executable_os.keep_only_locked(),
+		FilterGroupKey::SupportedOs => filter.supported_os.keep_only_locked(),
+		FilterGroupKey::Architectures => filter.architectures.keep_only_locked(),
 	}
 
 	true
 }
 
 pub fn reset_all_filters(filter: &mut GamesFilter) {
-	keep_only_locked(&mut filter.installed);
-	keep_only_locked(&mut filter.engines);
-	keep_only_locked(&mut filter.mod_families);
-	keep_only_locked(&mut filter.tags);
-	keep_only_locked(&mut filter.providers);
-	keep_only_locked(&mut filter.unity_backends);
-	keep_only_locked(&mut filter.executable_os);
-	keep_only_locked(&mut filter.supported_os);
-	keep_only_locked(&mut filter.architectures);
+	filter.installed.keep_only_locked();
+	filter.engines.keep_only_locked();
+	filter.mod_families.keep_only_locked();
+	filter.tags.keep_only_locked();
+	filter.providers.keep_only_locked();
+	filter.unity_backends.keep_only_locked();
+	filter.executable_os.keep_only_locked();
+	filter.supported_os.keep_only_locked();
+	filter.architectures.keep_only_locked();
 }
 
 fn item_data(value: &str, label_key: &str, label: &str, item: FilterItem) -> FilterValueData {
@@ -340,22 +171,22 @@ fn item_data(value: &str, label_key: &str, label: &str, item: FilterItem) -> Fil
 }
 
 fn group_data(
-	key: &str,
+	key: FilterGroupKey,
 	label_key: &str,
 	label: &str,
 	values: Vec<FilterValueData>,
 	has_changes: bool,
 	has_locked: bool,
-	expanded_filters: &std::collections::HashSet<String>,
+	expanded_filters: &HashSet<String>,
 ) -> FilterGroupData {
 	FilterGroupData {
-		key: key.into(),
+		key: key.as_str().into(),
 		label_key: label_key.into(),
 		label: label.into(),
 		values: values.as_slice().into(),
 		has_changes,
 		has_locked,
-		expanded: expanded_filters.contains(key),
+		expanded: expanded_filters.contains(key.as_str()),
 	}
 }
 
@@ -369,7 +200,7 @@ fn value<T: Eq + Hash + ToString>(
 		&key.to_string(),
 		label_key,
 		label,
-		get_item(group, Some(key)),
+		group.item(Some(key)),
 	)
 }
 
@@ -378,13 +209,64 @@ fn unknown_value<T: Eq + Hash>(
 	label_key: &str,
 	label: &str,
 ) -> FilterValueData {
-	item_data("", label_key, label, get_item(group, None))
+	item_data("", label_key, label, group.item(None))
+}
+
+fn build_group<T: Eq + Hash>(
+	key: FilterGroupKey,
+	label_key: &str,
+	label: &str,
+	group: &FilterGroup<T>,
+	values: Vec<FilterValueData>,
+	possible_values: &[T],
+	has_unknown: bool,
+	expanded_filters: &HashSet<String>,
+) -> FilterGroupData {
+	group_data(
+		key,
+		label_key,
+		label,
+		values,
+		group.has_changes(possible_values, has_unknown),
+		group.has_locked(),
+		expanded_filters,
+	)
+}
+
+fn build_mod_family_group(
+	filter: &GamesFilter,
+	mod_families: &[String],
+	expanded_filters: &HashSet<String>,
+) -> FilterGroupData {
+	let mut values: Vec<FilterValueData> = mod_families
+		.iter()
+		.map(|family| {
+			item_data(
+				family,
+				"",
+				family,
+				filter.mod_families.item(Some(family)),
+			)
+		})
+		.collect();
+	values.sort_by(|a, b| a.label.to_lowercase().cmp(&b.label.to_lowercase()));
+
+	build_group(
+		FilterGroupKey::ModFamilies,
+		"mod",
+		"Mod",
+		&filter.mod_families,
+		values,
+		mod_families,
+		false,
+		expanded_filters,
+	)
 }
 
 pub fn build_groups(
 	filter: &GamesFilter,
 	mod_families: &[String],
-	expanded_filters: &std::collections::HashSet<String>,
+	expanded_filters: &HashSet<String>,
 ) -> Vec<FilterGroupData> {
 	let installed_values = vec![
 		value(
@@ -408,19 +290,6 @@ pub fn build_groups(
 		value(&filter.engines, &EngineBrand::GameMaker, "", "GameMaker"),
 		unknown_value(&filter.engines, "unknown", "Unknown"),
 	];
-
-	let mut family_values: Vec<FilterValueData> = mod_families
-		.iter()
-		.map(|family| {
-			item_data(
-				family,
-				"",
-				family,
-				get_item(&filter.mod_families, Some(family)),
-			)
-		})
-		.collect();
-	family_values.sort_by(|a, b| a.label.to_lowercase().cmp(&b.label.to_lowercase()));
 
 	let tag_values = vec![
 		value(&filter.tags, &GameTag::VR, "tagVr", "Native VR"),
@@ -487,85 +356,85 @@ pub fn build_groups(
 	];
 
 	vec![
-		group_data(
-			"installed",
+		build_group(
+			FilterGroupKey::Installed,
 			"status",
 			"Install status",
+			&filter.installed,
 			installed_values,
-			has_changes(&filter.installed, INSTALL_STATES, false),
-			has_locked(&filter.installed),
+			INSTALL_STATES,
+			false,
 			expanded_filters,
 		),
-		group_data(
-			"engines",
+		build_group(
+			FilterGroupKey::Engines,
 			"engine",
 			"Engine",
+			&filter.engines,
 			engine_values,
-			has_changes(&filter.engines, ENGINES, true),
-			has_locked(&filter.engines),
+			ENGINES,
+			true,
 			expanded_filters,
 		),
-		group_data(
-			"modFamilies",
-			"mod",
-			"Mod",
-			family_values,
-			has_changes(&filter.mod_families, mod_families, false),
-			has_locked(&filter.mod_families),
-			expanded_filters,
-		),
-		group_data(
-			"tags",
+		build_mod_family_group(filter, mod_families, expanded_filters),
+		build_group(
+			FilterGroupKey::Tags,
 			"tags",
 			"Tag",
+			&filter.tags,
 			tag_values,
-			has_changes(&filter.tags, TAGS, true),
-			has_locked(&filter.tags),
+			TAGS,
+			true,
 			expanded_filters,
 		),
-		group_data(
-			"providers",
+		build_group(
+			FilterGroupKey::Providers,
 			"provider",
 			"Provider",
+			&filter.providers,
 			provider_values,
-			has_changes(&filter.providers, PROVIDERS, false),
-			has_locked(&filter.providers),
+			PROVIDERS,
+			false,
 			expanded_filters,
 		),
-		group_data(
-			"unityBackends",
+		build_group(
+			FilterGroupKey::UnityBackends,
 			"unityBackend",
 			"Unity Backend",
+			&filter.unity_backends,
 			unity_backend_values,
-			has_changes(&filter.unity_backends, UNITY_BACKENDS, true),
-			has_locked(&filter.unity_backends),
+			UNITY_BACKENDS,
+			true,
 			expanded_filters,
 		),
-		group_data(
-			"executableOs",
+		build_group(
+			FilterGroupKey::ExecutableOs,
 			"executableOs",
 			"Executable OS",
+			&filter.executable_os,
 			executable_os_values,
-			has_changes(&filter.executable_os, OPERATING_SYSTEMS, true),
-			has_locked(&filter.executable_os),
+			OPERATING_SYSTEMS,
+			true,
 			expanded_filters,
 		),
-		group_data(
-			"supportedOs",
+		build_group(
+			FilterGroupKey::SupportedOs,
 			"supportedOs",
 			"Supported OS",
+			&filter.supported_os,
 			supported_os_values,
-			has_changes(&filter.supported_os, OPERATING_SYSTEMS, true),
-			has_locked(&filter.supported_os),
+			OPERATING_SYSTEMS,
+			true,
 			expanded_filters,
 		),
-		group_data(
-			"architectures",
+		build_group(
+			FilterGroupKey::Architectures,
 			"architecture",
 			"Architecture",
+			&filter.architectures,
 			architecture_values,
-			has_changes(&filter.architectures, ARCHITECTURES, true),
-			has_locked(&filter.architectures),
+			ARCHITECTURES,
+			true,
 			expanded_filters,
 		),
 	]

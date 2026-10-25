@@ -2,6 +2,7 @@ import { IconDisplay, IconSet } from "@lucide";
 import { CheckBox, Palette } from "std-widgets.slint";
 import { FilterGroupData, FilterValueData } from "../filter-data.slint";
 import { Tr } from "../translations.slint";
+import { Theme } from "../theme.slint";
 import { IconButton } from "icon-button.slint";
 
 component FilterValueRow inherits Rectangle {
@@ -13,14 +14,14 @@ component FilterValueRow inherits Rectangle {
 
     property <bool> hovered: row-touch.has-hover || checkbox-touch.has-hover || only-touch.has-hover || lock-button.hovered;
 
-    height: 26px;
+    height: Theme.filter-row-height;
     background: hovered ? Palette.alternate-background : transparent;
 
     row-touch := TouchArea { }
 
     HorizontalLayout {
-        padding-left: 4px;
-        spacing: 4px;
+        padding-left: Theme.space-4;
+        spacing: Theme.space-4;
         cross-axis-alignment: center;
 
         checkbox-area := Rectangle {
@@ -45,9 +46,9 @@ component FilterValueRow inherits Rectangle {
         }
 
         only-area := Rectangle {
-            width: 40px;
-            height: 22px;
-            border-radius: 4px;
+            width: Theme.only-button-width;
+            height: Theme.only-button-height;
+            border-radius: Theme.radius-4;
             opacity: root.hovered ? 1 : 0;
             background: only-touch.has-hover && !root.item.locked ? Palette.control-background : transparent;
 
@@ -61,7 +62,7 @@ component FilterValueRow inherits Rectangle {
 
             Text {
                 text: "Only";
-                font-size: 12px;
+                font-size: Theme.font-12;
                 color: root.item.locked ? Palette.alternate-foreground : Palette.foreground;
                 horizontal-alignment: center;
                 vertical-alignment: center;
@@ -91,10 +92,10 @@ export component FilterGroupView inherits Rectangle {
 
     VerticalLayout {
         alignment: start;
-        spacing: 1px;
+        spacing: Theme.border-width;
 
         header := Rectangle {
-            height: 26px;
+            height: Theme.filter-row-height;
 
             header-touch := TouchArea {
                 clicked => {
@@ -103,30 +104,30 @@ export component FilterGroupView inherits Rectangle {
             }
 
             HorizontalLayout {
-                padding-left: 4px;
-                spacing: 4px;
+                padding-left: Theme.space-4;
+                spacing: Theme.space-4;
                 alignment: start;
                 cross-axis-alignment: center;
 
                 IconDisplay {
                     icon: root.group.expanded ? IconSet.ChevronDown : IconSet.ChevronRight;
-                    size: 14px;
+                    size: Theme.icon-button-icon-size;
                     stroke: Palette.alternate-foreground;
                     stroke-width: 2;
                 }
 
                 Text {
                     text: root.group.label-key == "" ? root.group.label : Tr.filter-property(root.group.label-key);
-                    font-weight: 700;
+                    font-weight: Theme.weight-bold;
                     overflow: elide;
                     horizontal-stretch: 1;
                 }
 
                 if root.group.has-locked : Rectangle {
-                    width: 6px;
-                    height: 6px;
-                    border-radius: 3px;
-                    background: #fcc419;
+                    width: Theme.locked-indicator-size;
+                    height: Theme.locked-indicator-size;
+                    border-radius: Theme.locked-indicator-size / 2;
+                    background: Theme.highlight;
                 }
 
                 reset-button := IconButton {
@@ -143,7 +144,7 @@ export component FilterGroupView inherits Rectangle {
         if root.group.expanded : VerticalLayout {
             alignment: start;
             spacing: 0px;
-            padding-left: 8px;
+            padding-left: Theme.space-8;
 
             for value in root.group.values : FilterValueRow {
                 item: value;

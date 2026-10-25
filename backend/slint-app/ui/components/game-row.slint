@@ -1,6 +1,8 @@
 import { IconDisplay, IconSet } from "@lucide";
 import { Palette } from "std-widgets.slint";
+import { Branding } from "../branding.slint";
 import { GameRowData } from "../game-row-data.slint";
+import { Theme } from "../theme.slint";
 import { ProviderIcon } from "provider-icon.slint";
 
 export component GameRowView inherits Rectangle {
@@ -9,141 +11,84 @@ export component GameRowView inherits Rectangle {
 
     callback selected(index: int);
 
-    height: 60px;
-    property <bool> dark: Palette.color-scheme == ColorScheme.dark;
-    background: touch-area.has-hover ? (dark ? #2c2e33 : #f1f3f5) : Palette.background;
-    property <brush> row-foreground: game-row.installed ? Palette.foreground : #868e96;
-
-    function engine-background(brand: string) -> brush {
-        if brand == "UNITY" {
-            return dark ? #102a43 : #e7f5ff;
-        }
-        if brand == "UNREAL" {
-            return dark ? #3b1418 : #fff5f5;
-        }
-        if brand == "GODOT" {
-            return dark ? #2b1b40 : #f3f0ff;
-        }
-        if brand == "GAMEMAKER" {
-            return dark ? #0e2f28 : #e6fcf5;
-        }
-        return dark ? #343a40 : #f1f3f5;
-    }
-
-    function engine-foreground(brand: string) -> brush {
-        if brand == "UNITY" {
-            return dark ? #74c0fc : #1971c2;
-        }
-        if brand == "UNREAL" {
-            return dark ? #ff8787 : #e03131;
-        }
-        if brand == "GODOT" {
-            return dark ? #b197fc : #7048e8;
-        }
-        if brand == "GAMEMAKER" {
-            return dark ? #63e6be : #0ca678;
-        }
-        return Palette.foreground;
-    }
-
-    function provider-background(provider: string) -> brush {
-        if provider == "Steam" {
-            return dark ? #102a3a : #e7f5ff;
-        }
-        if provider == "Epic" {
-            return dark ? #3b1418 : #fff5f5;
-        }
-        if provider == "Gog" {
-            return dark ? #2c1b3d : #f3f0ff;
-        }
-        if provider == "Xbox" {
-            return dark ? #132b1b : #ebfbee;
-        }
-        if provider == "Itch" {
-            return dark ? #3a1826 : #fff0f6;
-        }
-        return dark ? #242424 : #f1f3f5;
-    }
+    height: Theme.game-row-height;
+    background: touch-area.has-hover ? Theme.row-hover : Palette.background;
+    property <brush> row-foreground: game-row.installed ? Palette.foreground : Palette.alternate-foreground;
 
     HorizontalLayout {
-        spacing: 0px;
-
         Rectangle {
-            width: 30px;
-            background: provider-background(game-row.provider-id);
+            width: Theme.provider-strip-width;
+            background: Branding.provider-background(game-row.provider-id);
             opacity: game-row.installed ? 1 : 0.5;
 
             VerticalLayout {
                 alignment: center;
                 cross-axis-alignment: center;
-                spacing: 2px;
+                spacing: Theme.space-2;
 
                 ProviderIcon {
                     provider-id: game-row.provider-id;
-                    icon-size: 16px;
+                    icon-size: Theme.space-16;
                 }
 
                 if game-row.installed : IconDisplay {
                     icon: IconSet.Monitor;
-                    size: 14px;
-                    stroke: dark ? white : Palette.foreground;
+                    size: Theme.icon-button-icon-size;
+                    stroke: Theme.dark ? white : Palette.foreground;
                 }
 
                 if !game-row.installed : IconDisplay {
                     icon: IconSet.Cloud;
-                    size: 14px;
+                    size: Theme.icon-button-icon-size;
                     stroke: Palette.foreground;
                 }
             }
         }
 
         Rectangle {
-            width: 100px;
+            width: Theme.thumbnail-column-width;
             clip: true;
-            background: provider-background(game-row.provider-id);
+            background: Branding.provider-background(game-row.provider-id);
             opacity: game-row.installed ? 1 : 0.5;
 
             Image {
                 source: @image-url("../images/fallback-thumbnail.png");
-                width: 60px;
-                height: 60px;
+                width: Theme.thumbnail-size;
+                height: Theme.thumbnail-size;
                 x: (parent.width - self.width) / 2;
                 y: (parent.height - self.height) / 2;
             }
 
             if game-row.has-thumbnail : Image {
                 source: game-row.thumbnail;
-                width: 100%;
-                height: 100%;
                 image-fit: contain;
             }
         }
 
         FlexboxLayout {
             horizontal-stretch: 1;
-            padding: 8px;
-            spacing: 3px;
+            padding: Theme.space-8;
+            spacing: Theme.space-3;
             flex-wrap: wrap;
             alignment: start;
 
             Text {
                 text: game-row.title;
                 color: row-foreground;
-                font-weight: 700;
+                font-weight: Theme.weight-bold;
                 wrap: word-wrap;
             }
 
             for tag in game-row.tags : Rectangle {
-                width: tag-text.preferred-width + 6px;
-                height: tag-text.preferred-height + 4px;
-                background: dark ? #141517 : #e9ecef;
-                border-radius: 3px;
+                width: tag-text.preferred-width + Theme.space-6;
+                height: tag-text.preferred-height + Theme.space-4;
+                background: Theme.tag-background;
+                border-radius: Theme.radius-3;
 
                 tag-text := Text {
                     text: tag;
-                    font-size: 8px;
-                    font-weight: 300;
-                    color: Palette.foreground;
+                    font-size: Theme.font-8;
+                    font-weight: Theme.weight-light;
                     horizontal-alignment: center;
                     vertical-alignment: center;
                 }
@@ -151,19 +96,19 @@ export component GameRowView inherits Rectangle {
         }
 
         Rectangle {
-            width: 130px;
-            background: engine-background(game-row.engine-brand);
+            width: Theme.engine-column-width;
+            background: Branding.engine-background(game-row.engine-brand);
             clip: true;
 
             VerticalLayout {
                 alignment: center;
-                padding-left: 8px;
-                padding-right: 8px;
+                padding-left: Theme.space-8;
+                padding-right: Theme.space-8;
 
                 Text {
                     text: game-row.engine-brand == "" ? "-" : game-row.engine-brand;
-                    color: engine-foreground(game-row.engine-brand);
-                    font-weight: 700;
+                    color: Branding.engine-foreground(game-row.engine-brand);
+                    font-weight: Theme.weight-bold;
                     horizontal-alignment: center;
                     overflow: elide;
                 }
@@ -171,17 +116,17 @@ export component GameRowView inherits Rectangle {
                 if game-row.engine-version != "" : Text {
                     text: game-row.engine-version;
                     horizontal-alignment: center;
-                    color: engine-foreground(game-row.engine-brand);
+                    color: Branding.engine-foreground(game-row.engine-brand);
                     font-family: "monospace";
-                    font-size: 12px;
+                    font-size: Theme.font-12;
                     overflow: elide;
                 }
 
                 if game-row.engine-details != "" : Text {
                     text: game-row.engine-details;
                     horizontal-alignment: center;
-                    color: engine-foreground(game-row.engine-brand);
-                    font-size: 10px;
+                    color: Branding.engine-foreground(game-row.engine-brand);
+                    font-size: Theme.font-10;
                     opacity: 0.5;
                     overflow: elide;
                 }
@@ -189,29 +134,26 @@ export component GameRowView inherits Rectangle {
         }
 
         VerticalLayout {
-            width: 80px;
+            width: Theme.date-column-width;
             alignment: center;
             opacity: 0.75;
 
             Text {
                 text: game-row.release-day;
-                color: Palette.foreground;
-                font-size: 12px;
+                font-size: Theme.font-12;
                 horizontal-alignment: center;
             }
 
             Text {
                 text: game-row.release-month;
-                color: Palette.foreground;
-                font-size: 12px;
+                font-size: Theme.font-12;
                 horizontal-alignment: center;
                 overflow: elide;
             }
 
             Text {
                 text: game-row.release-year;
-                color: Palette.foreground;
-                font-size: 12px;
+                font-size: Theme.font-12;
                 horizontal-alignment: center;
             }
         }
@@ -219,15 +161,11 @@ export component GameRowView inherits Rectangle {
 
     Rectangle {
         y: parent.height - self.height;
-        width: 100%;
-        height: 2px;
-        background: dark ? #141517 : #e9ecef;
+        height: Theme.row-divider-height;
+        background: Theme.row-divider;
     }
 
     touch-area := TouchArea {
-        width: 100%;
-        height: 100%;
-
         clicked => {
             root.selected(root.row-index);
         }

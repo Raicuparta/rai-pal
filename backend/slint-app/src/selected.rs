@@ -3,12 +3,12 @@ use std::rc::Rc;
 use rai_pal_core::game::DbGame;
 use slint::ModelRc;
 
-use crate::{GameRowData, MainWindow, ProviderActionItem, actions, model::apply_game_to_row};
+use crate::{GameRowData, MainWindow, ProviderActionItem, model::apply_game_to_row};
 
 pub fn show(window: &MainWindow, game: &DbGame, mut row: GameRowData) {
 	apply_game_to_row(&mut row, game);
 
-	let provider_actions: Vec<ProviderActionItem> = actions::secondary_actions(game)
+	let provider_actions: Vec<ProviderActionItem> = game.secondary_provider_actions()
 		.into_iter()
 		.map(|action| ProviderActionItem {
 			value: action.to_string().into(),
@@ -22,7 +22,7 @@ pub fn show(window: &MainWindow, game: &DbGame, mut row: GameRowData) {
 			.into(),
 	);
 	window.set_selected_provider_id(game.provider_id.to_string().into());
-	window.set_selected_can_run_game(actions::primary_start(game).is_some());
+	window.set_selected_can_run_game(game.primary_start_action().is_some());
 	window.set_selected_has_exe_path(game.exe_path.is_some());
 	window.set_selected_show_wine_folders(cfg!(target_os = "linux"));
 	window.set_selected_provider_actions(Rc::new(slint::VecModel::from(provider_actions)).into());

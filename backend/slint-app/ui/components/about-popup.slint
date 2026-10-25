@@ -1,27 +1,28 @@
 import { Button, Palette } from "std-widgets.slint";
+import { Theme } from "../theme.slint";
 
 export component AboutPopup inherits PopupWindow {
     in property <string> app-version;
     in property <string> renderer-name;
 
-    width: 360px;
-    height: 220px;
+    width: Theme.about-popup-width;
+    height: Theme.about-popup-height;
     close-policy: PopupClosePolicy.no-auto-close;
 
     Rectangle {
         background: Palette.background;
-        border-width: 1px;
+        border-width: Theme.border-width;
         border-color: Palette.border;
-        border-radius: 8px;
+        border-radius: Theme.radius-8;
 
         VerticalLayout {
-            padding: 20px;
-            spacing: 10px;
+            padding: Theme.space-20;
+            spacing: Theme.space-10;
 
             Text {
                 text: "About Rai Pal";
-                font-size: 20px;
-                font-weight: 700;
+                font-size: Theme.font-20;
+                font-weight: Theme.weight-bold;
             }
 
             Text {

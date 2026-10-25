@@ -1,0 +1,74 @@
+import { Palette } from "std-widgets.slint";
+import { Theme } from "theme.slint";
+
+export global Branding {
+    public pure function provider-color(provider-id: string) -> brush {
+        if provider-id == "Steam" {
+            return #1f9fee;
+        }
+        if provider-id == "Epic" {
+            return #e03131;
+        }
+        if provider-id == "Gog" {
+            return #9c36b5;
+        }
+        if provider-id == "Itch" {
+            return #e64980;
+        }
+        if provider-id == "Xbox" {
+            return #2f9e44;
+        }
+        return Palette.foreground;
+    }
+
+    public pure function provider-background(provider-id: string) -> brush {
+        if provider-id == "Steam" {
+            return Theme.dark ? #102a3a : #e7f5ff;
+        }
+        if provider-id == "Epic" {
+            return Theme.dark ? #3b1418 : #fff5f5;
+        }
+        if provider-id == "Gog" {
+            return Theme.dark ? #2c1b3d : #f3f0ff;
+        }
+        if provider-id == "Xbox" {
+            return Theme.dark ? #132b1b : #ebfbee;
+        }
+        if provider-id == "Itch" {
+            return Theme.dark ? #3a1826 : #fff0f6;
+        }
+        return Theme.dark ? #242424 : #f1f3f5;
+    }
+
+    public pure function engine-background(brand: string) -> brush {
+        if brand == "Unity" {
+            return Theme.dark ? #102a43 : #e7f5ff;
+        }
+        if brand == "Unreal" {
+            return Theme.dark ? #3b1418 : #fff5f5;
+        }
+        if brand == "Godot" {
+            return Theme.dark ? #2b1b40 : #f3f0ff;
+        }
+        if brand == "GameMaker" {
+            return Theme.dark ? #0e2f28 : #e6fcf5;
+        }
+        return Theme.dark ? #343a40 : #f1f3f5;
+    }
+
+    public pure function engine-foreground(brand: string) -> brush {
+        if brand == "Unity" {
+            return Theme.dark ? #74c0fc : #1971c2;
+        }
+        if brand == "Unreal" {
+            return Theme.dark ? #ff8787 : #e03131;
+        }
+        if brand == "Godot" {
+            return Theme.dark ? #b197fc : #7048e8;
+        }
+        if brand == "GameMaker" {
+            return Theme.dark ? #63e6be : #0ca678;
+        }
+        return Palette.foreground;
+    }
+}

@@ -1,0 +1,16 @@
+export global ModActions {
+    callback install(mod-id: string);
+    callback uninstall(mod-id: string);
+    callback update(mod-id: string);
+    callback reinstall(mod-id: string);
+    callback run(mod-id: string);
+    callback open-folder(mod-id: string);
+    callback download-config(mod-id: string);
+    callback configure(mod-id: string);
+    callback configure-folder(mod-id: string);
+    callback uninstall-all;
+    callback run-standalone(mod-id: string);
+    callback install-standalone(mod-id: string);
+    callback open-url(url: string);
+    callback open-local-mods-folder;
+}

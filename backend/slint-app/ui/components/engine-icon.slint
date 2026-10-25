@@ -1,9 +1,10 @@
 import { Palette } from "std-widgets.slint";
+import { Theme } from "../theme.slint";
 
 export component EngineIcon inherits Rectangle {
     in property <string> engine-brand;
     in property <brush> icon-color: Palette.foreground;
-    in property <length> icon-size: 14px;
+    in property <length> icon-size: Theme.icon-button-icon-size;
 
     width: root.icon-size;
     height: root.icon-size;

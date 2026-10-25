@@ -126,6 +126,42 @@ impl DbGame {
 		self
 	}
 
+	pub fn full_title(&self) -> String {
+		match &self.title_discriminator {
+			Some(discriminator) => format!("{} ({})", self.display_title, discriminator),
+			None => self.display_title.clone(),
+		}
+	}
+
+	pub fn primary_start_action(&self) -> Option<ProviderCommandAction> {
+		if self
+			.provider_commands
+			.contains_key(&ProviderCommandAction::StartViaProvider)
+		{
+			Some(ProviderCommandAction::StartViaProvider)
+		} else if self
+			.provider_commands
+			.contains_key(&ProviderCommandAction::StartViaExe)
+		{
+			Some(ProviderCommandAction::StartViaExe)
+		} else {
+			None
+		}
+	}
+
+	pub fn secondary_provider_actions(&self) -> Vec<ProviderCommandAction> {
+		self.provider_commands
+			.keys()
+			.copied()
+			.filter(|action| {
+				!matches!(
+					action,
+					ProviderCommandAction::StartViaProvider | ProviderCommandAction::StartViaExe
+				)
+			})
+			.collect()
+	}
+
 	pub fn add_supported_os(&mut self, os: OperatingSystem) -> &mut Self {
 		if !self.supported_os.contains(&os) {
 			self.supported_os.push(os);

@@ -1,0 +1,35 @@
+import { Palette } from "std-widgets.slint";
+import { Theme } from "../theme.slint";
+
+export component SectionHeader inherits VerticalLayout {
+    in property <string> label;
+    in property <string> description;
+
+    vertical-stretch: 0;
+    alignment: start;
+    spacing: Theme.space-2;
+
+    HorizontalLayout {
+        padding-left: Theme.space-8;
+        padding-right: Theme.space-8;
+
+        Text {
+            text: root.label;
+            font-weight: Theme.weight-bold;
+            horizontal-stretch: 1;
+        }
+    }
+
+    if root.description != "" : HorizontalLayout {
+        padding-left: Theme.space-8;
+        padding-right: Theme.space-8;
+
+        Text {
+            text: root.description;
+            opacity: 0.5;
+            font-size: Theme.font-12;
+            wrap: word-wrap;
+            horizontal-stretch: 1;
+        }
+    }
+}

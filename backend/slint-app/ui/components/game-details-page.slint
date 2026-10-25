@@ -1,7 +1,9 @@
 import { Button, Palette, ScrollView } from "std-widgets.slint";
+import { ModActions } from "../actions.slint";
 import { GameRowData } from "../game-row-data.slint";
 import { GameModRowData } from "../game-mod-row-data.slint";
 import { PotentialModRowData } from "../potential-mod-row-data.slint";
+import { Theme } from "../theme.slint";
 import { GameRowView } from "game-row.slint";
 import { ModsSection } from "mods-section.slint";
 import { PotentialModsSection } from "potential-mods-section.slint";
@@ -20,21 +22,11 @@ export component GameDetailsPage inherits Rectangle {
     in property <bool> has-incompatible-mods;
 
     callback back;
-    callback install-mod(mod-id: string);
-    callback uninstall-mod(mod-id: string);
-    callback update-mod(mod-id: string);
-    callback reinstall-mod(mod-id: string);
-    callback run-mod(mod-id: string);
-    callback open-mod-folder(mod-id: string);
-    callback download-mod-config(mod-id: string);
-    callback configure-mod(mod-id: string);
-    callback configure-mod-folder(mod-id: string);
-    callback uninstall-all-mods;
 
     ScrollView {
         VerticalLayout {
             alignment: start;
-            spacing: 8px;
+            spacing: Theme.space-8;
 
             GameRowView {
                 vertical-stretch: 0;
@@ -47,8 +39,8 @@ export component GameDetailsPage inherits Rectangle {
             }
 
             if !root.has-any-mods : HorizontalLayout {
-                padding-left: 8px;
-                padding-right: 8px;
+                padding-left: Theme.space-8;
+                padding-right: Theme.space-8;
 
                 Text {
                     text: @tr("gameModal" => "Nothing! None of the available mods are of any use for this game. Try something else.");
@@ -67,57 +59,21 @@ export component GameDetailsPage inherits Rectangle {
             if root.game-row.installed : VerticalLayout {
                 alignment: start;
                 vertical-stretch: 0;
-                spacing: 8px;
+                spacing: Theme.space-8;
 
                 if root.has-installed-mods : VerticalLayout {
                     alignment: start;
                     vertical-stretch: 0;
-                    spacing: 4px;
+                    spacing: Theme.space-4;
 
                     ModsSection {
                         label: @tr("gameModal" => "Installed Mods");
                         mods: root.game-mods-installed;
-
-                        install(mod-id) => {
-                            root.install-mod(mod-id);
-                        }
-
-                        uninstall(mod-id) => {
-                            root.uninstall-mod(mod-id);
-                        }
-
-                        update(mod-id) => {
-                            root.update-mod(mod-id);
-                        }
-
-                        reinstall(mod-id) => {
-                            root.reinstall-mod(mod-id);
-                        }
-
-                        run(mod-id) => {
-                            root.run-mod(mod-id);
-                        }
-
-                        open-folder(mod-id) => {
-                            root.open-mod-folder(mod-id);
-                        }
-
-                        download-config(mod-id) => {
-                            root.download-mod-config(mod-id);
-                        }
-
-                        configure(mod-id) => {
-                            root.configure-mod(mod-id);
-                        }
-
-                        configure-folder(mod-id) => {
-                            root.configure-mod-folder(mod-id);
-                        }
                     }
 
                     HorizontalLayout {
-                        padding-left: 8px;
-                        padding-right: 8px;
+                        padding-left: Theme.space-8;
+                        padding-right: Theme.space-8;
                         alignment: start;
 
                         Button {
@@ -125,7 +81,7 @@ export component GameDetailsPage inherits Rectangle {
                             text: @tr("gameModal" => "Uninstall all mods");
 
                             clicked => {
-                                root.uninstall-all-mods();
+                                ModActions.uninstall-all();
                             }
                         }
                     }
@@ -134,98 +90,26 @@ export component GameDetailsPage inherits Rectangle {
                 if root.has-available-mods : ModsSection {
                     label: @tr("gameModal" => "Available Mods");
                     mods: root.game-mods-available;
-
-                    install(mod-id) => {
-                        root.install-mod(mod-id);
-                    }
-
-                    uninstall(mod-id) => {
-                        root.uninstall-mod(mod-id);
-                    }
-
-                    update(mod-id) => {
-                        root.update-mod(mod-id);
-                    }
-
-                    reinstall(mod-id) => {
-                        root.reinstall-mod(mod-id);
-                    }
-
-                    run(mod-id) => {
-                        root.run-mod(mod-id);
-                    }
-
-                    open-folder(mod-id) => {
-                        root.open-mod-folder(mod-id);
-                    }
-
-                    download-config(mod-id) => {
-                        root.download-mod-config(mod-id);
-                    }
-
-                    configure(mod-id) => {
-                        root.configure-mod(mod-id);
-                    }
-
-                    configure-folder(mod-id) => {
-                        root.configure-mod-folder(mod-id);
-                    }
                 }
 
                 if root.has-hidden-mods : ModsSection {
                     label: @tr("gameModal" => "Other things");
                     description: @tr("gameModal" => "These are mostly dependencies and other stuff that you don't usually need to mess with directly.");
                     mods: root.game-mods-hidden;
-
-                    install(mod-id) => {
-                        root.install-mod(mod-id);
-                    }
-
-                    uninstall(mod-id) => {
-                        root.uninstall-mod(mod-id);
-                    }
-
-                    update(mod-id) => {
-                        root.update-mod(mod-id);
-                    }
-
-                    reinstall(mod-id) => {
-                        root.reinstall-mod(mod-id);
-                    }
-
-                    run(mod-id) => {
-                        root.run-mod(mod-id);
-                    }
-
-                    open-folder(mod-id) => {
-                        root.open-mod-folder(mod-id);
-                    }
-
-                    download-config(mod-id) => {
-                        root.download-mod-config(mod-id);
-                    }
-
-                    configure(mod-id) => {
-                        root.configure-mod(mod-id);
-                    }
-
-                    configure-folder(mod-id) => {
-                        root.configure-mod-folder(mod-id);
-                    }
                 }
 
                 if root.has-incompatible-mods : VerticalLayout {
                     alignment: start;
                     vertical-stretch: 0;
-                    spacing: 6px;
+                    spacing: Theme.space-6;
 
                     HorizontalLayout {
-                        padding-left: 8px;
-                        padding-right: 8px;
+                        padding-left: Theme.space-8;
+                        padding-right: Theme.space-8;
 
                         Rectangle {
                             horizontal-stretch: 1;
-                            height: 1px;
+                            height: Theme.border-width;
                             background: Palette.border;
                             vertical-stretch: 0;
                         }
@@ -235,42 +119,6 @@ export component GameDetailsPage inherits Rectangle {
                         label: @tr("gameModal" => "Incompatible Mods");
                         description: @tr("gameModal" => "The mods listed here can't be installed because they aren't compatible with this game's engine version.");
                         mods: root.game-mods-incompatible;
-
-                        install(mod-id) => {
-                            root.install-mod(mod-id);
-                        }
-
-                        uninstall(mod-id) => {
-                            root.uninstall-mod(mod-id);
-                        }
-
-                        update(mod-id) => {
-                            root.update-mod(mod-id);
-                        }
-
-                        reinstall(mod-id) => {
-                            root.reinstall-mod(mod-id);
-                        }
-
-                        run(mod-id) => {
-                            root.run-mod(mod-id);
-                        }
-
-                        open-folder(mod-id) => {
-                            root.open-mod-folder(mod-id);
-                        }
-
-                        download-config(mod-id) => {
-                            root.download-mod-config(mod-id);
-                        }
-
-                        configure(mod-id) => {
-                            root.configure-mod(mod-id);
-                        }
-
-                        configure-folder(mod-id) => {
-                            root.configure-mod-folder(mod-id);
-                        }
                     }
                 }
             }

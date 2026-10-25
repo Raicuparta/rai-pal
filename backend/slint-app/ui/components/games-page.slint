@@ -1,5 +1,6 @@
 import { ListView } from "std-widgets.slint";
 import { GameRowData } from "../game-row-data.slint";
+import { Theme } from "../theme.slint";
 import { GameRowView } from "game-row.slint";
 
 export component GamesPage inherits Rectangle {
@@ -18,8 +19,8 @@ export component GamesPage inherits Rectangle {
             return;
         }
 
-        let first = max(0, floor(-root.list-content-y / 60px));
-        let last = min(root.game-rows.length - 1, max(first, floor((-root.list-content-y + root.list-visible-height - 1px) / 60px)));
+        let first = max(0, floor(-root.list-content-y / Theme.game-row-height));
+        let last = min(root.game-rows.length - 1, max(first, floor((-root.list-content-y + root.list-visible-height - Theme.border-width) / Theme.game-row-height)));
 
         root.visible-range-changed(first, last);
     }

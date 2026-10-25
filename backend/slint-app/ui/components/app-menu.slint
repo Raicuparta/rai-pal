@@ -1,5 +1,6 @@
 import { IconDisplay, IconSet } from "@lucide";
 import { Palette } from "std-widgets.slint";
+import { Theme } from "../theme.slint";
 
 export component AppMenu inherits Rectangle {
     in property <string> selected-language: "";
@@ -10,19 +11,19 @@ export component AppMenu inherits Rectangle {
     callback language-changed(value: string);
     callback color-scheme-changed(value: string);
 
-    width: 36px;
-    height: 32px;
+    width: Theme.control-height + Theme.space-4;
+    height: Theme.control-height;
 
     menu-area := ContextMenuArea {
         Rectangle {
             width: 100%;
             height: 100%;
-            border-radius: 4px;
+            border-radius: Theme.radius-4;
             background: touch-area.pressed ? Palette.control-background : touch-area.has-hover ? Palette.alternate-background : transparent;
 
             IconDisplay {
                 icon: IconSet.Menu;
-                size: 18px;
+                size: Theme.menu-icon-size;
                 stroke: Palette.foreground;
                 stroke-width: 2;
             }
@@ -30,7 +31,7 @@ export component AppMenu inherits Rectangle {
             touch-area := TouchArea {
                 clicked => {
                     menu-area.show({
-                        x: root.width - 280px,
+                        x: root.width - Theme.menu-width,
                         y: root.height,
                     });
                 }

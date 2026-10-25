@@ -14,13 +14,17 @@ import { NavTab } from "components/nav-tab.slint";
 import { AppMenu } from "components/app-menu.slint";
 import { AboutPopup } from "components/about-popup.slint";
 import { ModsPage } from "components/mods-page.slint";
+import { Theme } from "theme.slint";
+import { ModActions } from "actions.slint";
+
+export { ModActions }
 
 export component MainWindow inherits Window {
     title: "Rai Pal";
-    preferred-width: 1100px;
-    preferred-height: 700px;
-    min-width: 800px;
-    min-height: 500px;
+    preferred-width: Theme.window-preferred-width;
+    preferred-height: Theme.window-preferred-height;
+    min-width: Theme.window-min-width;
+    min-height: Theme.window-min-height;
 
     in property <[GameRowData]> game-rows;
     in property <[GameModRowData]> game-mods-installed;
@@ -81,21 +85,6 @@ export component MainWindow inherits Window {
     callback open-wine-prefix-folder;
     callback open-wine-binary-folder;
     callback refresh-game;
-    callback install-mod(mod-id: string);
-    callback uninstall-mod(mod-id: string);
-    callback update-mod(mod-id: string);
-    callback reinstall-mod(mod-id: string);
-    callback run-mod(mod-id: string);
-    callback download-mod-config(mod-id: string);
-    callback open-mod-folder(mod-id: string);
-    callback configure-mod(mod-id: string);
-    callback configure-mod-folder(mod-id: string);
-    callback uninstall-all-mods;
-    callback run-standalone-mod(mod-id: string);
-    callback install-standalone-mod(mod-id: string);
-    callback open-url(url: string);
-    callback open-local-mods-folder;
-
     function apply-color-scheme() {
         if root.selected-color-scheme == "dark" {
             Palette.color-scheme = ColorScheme.dark;
@@ -116,13 +105,13 @@ export component MainWindow inherits Window {
 
     VerticalLayout {
         Rectangle {
-            height: 44px;
+            height: Theme.navbar-height;
             background: Palette.alternate-background;
 
             HorizontalLayout {
-                padding-left: 8px;
-                padding-right: 8px;
-                spacing: 2px;
+                padding-left: Theme.space-8;
+                padding-right: Theme.space-8;
+                spacing: Theme.space-2;
                 cross-axis-alignment: center;
 
                 NavTab {
@@ -182,7 +171,7 @@ export component MainWindow inherits Window {
             Rectangle {
                 y: parent.height - self.height;
                 width: 100%;
-                height: 1px;
+                height: Theme.border-width;
                 background: Palette.border;
             }
         }
@@ -262,45 +251,6 @@ export component MainWindow inherits Window {
                             root.back();
                         }
 
-                        install-mod(mod-id) => {
-                            root.install-mod(mod-id);
-                        }
-
-                        uninstall-mod(mod-id) => {
-                            root.uninstall-mod(mod-id);
-                        }
-
-                        update-mod(mod-id) => {
-                            root.update-mod(mod-id);
-                        }
-
-                        reinstall-mod(mod-id) => {
-                            root.reinstall-mod(mod-id);
-                        }
-
-                        run-mod(mod-id) => {
-                            root.run-mod(mod-id);
-                        }
-
-                        download-mod-config(mod-id) => {
-                            root.download-mod-config(mod-id);
-                        }
-
-                        open-mod-folder(mod-id) => {
-                            root.open-mod-folder(mod-id);
-                        }
-
-                        configure-mod(mod-id) => {
-                            root.configure-mod(mod-id);
-                        }
-
-                        configure-mod-folder(mod-id) => {
-                            root.configure-mod-folder(mod-id);
-                        }
-
-                        uninstall-all-mods => {
-                            root.uninstall-all-mods();
-                        }
                     }
                 }
 
@@ -376,22 +326,6 @@ export component MainWindow inherits Window {
 
                 ModsPage {
                     items: root.mods-tab-items;
-
-                    run-mod(mod-id) => {
-                        root.run-standalone-mod(mod-id);
-                    }
-
-                    install-mod(mod-id) => {
-                        root.install-standalone-mod(mod-id);
-                    }
-
-                    open-url(url) => {
-                        root.open-url(url);
-                    }
-
-                    open-local-mods-folder => {
-                        root.open-local-mods-folder();
-                    }
                 }
             }
 
@@ -400,7 +334,7 @@ export component MainWindow inherits Window {
 
                 Text {
                     text: @tr("tab" => "Thanks");
-                    font-size: 20px;
+                    font-size: Theme.font-20;
                     horizontal-alignment: center;
                     vertical-alignment: center;
                 }
@@ -409,8 +343,8 @@ export component MainWindow inherits Window {
     }
 
     details-popup := GameDetailsPopup {
-        width: min(700px, root.width - 64px);
-        height: min(500px, root.height - 64px);
+        width: min(Theme.details-popup-width, root.width - Theme.overlay-margin);
+        height: min(Theme.details-popup-height, root.height - Theme.overlay-margin);
         x: (root.width - self.width) / 2;
         y: (root.height - self.height) / 2;
         game-json: root.details-json;

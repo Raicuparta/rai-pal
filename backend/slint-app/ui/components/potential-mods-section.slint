@@ -1,26 +1,28 @@
 import { Palette } from "std-widgets.slint";
 import { PotentialModRowData } from "../potential-mod-row-data.slint";
+import { Theme } from "../theme.slint";
+import { SectionHeader } from "section-header.slint";
 
 component PotentialModRowView inherits Rectangle {
     in property <PotentialModRowData> potential-mod;
 
     vertical-stretch: 0;
-    height: max(44px, content.preferred-height);
+    height: max(Theme.potential-mod-row-height, content.preferred-height);
 
     content := VerticalLayout {
-        padding: 6px;
+        padding: Theme.space-6;
         alignment: start;
-        spacing: 2px;
+        spacing: Theme.space-2;
 
         Text {
             text: potential-mod.title;
-            font-weight: 600;
+            font-weight: Theme.weight-semibold;
             overflow: elide;
         }
 
         if potential-mod.description != "" : Text {
             text: potential-mod.description;
-            font-size: 12px;
+            font-size: Theme.font-12;
             opacity: 0.75;
             wrap: word-wrap;
             color: Palette.foreground;
@@ -35,30 +37,11 @@ export component PotentialModsSection inherits VerticalLayout {
 
     vertical-stretch: 0;
     alignment: start;
-    spacing: 2px;
+    spacing: Theme.space-2;
 
-    HorizontalLayout {
-        padding-left: 8px;
-        padding-right: 8px;
-
-        Text {
-            text: root.label;
-            font-weight: 700;
-            horizontal-stretch: 1;
-        }
-    }
-
-    if root.description != "" : HorizontalLayout {
-        padding-left: 8px;
-        padding-right: 8px;
-
-        Text {
-            text: root.description;
-            opacity: 0.5;
-            font-size: 12px;
-            wrap: word-wrap;
-            horizontal-stretch: 1;
-        }
+    SectionHeader {
+        label: root.label;
+        description: root.description;
     }
 
     for row in root.mods : PotentialModRowView {

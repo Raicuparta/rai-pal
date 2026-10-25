@@ -1,14 +1,11 @@
 import { IconDisplay, IconSet } from "@lucide";
 import { Palette } from "std-widgets.slint";
 import { ModsTabItemData } from "../mods-tab-data.slint";
+import { Theme } from "../theme.slint";
 import { ModsTabRowView } from "mods-tab-row.slint";
 
 export component ModsTabFamilyRowView inherits Rectangle {
     in property <ModsTabItemData> item;
-
-    callback run(mod-id: string);
-    callback install(mod-id: string);
-    callback open-url(url: string);
 
     property <bool> expanded: false;
 
@@ -16,20 +13,20 @@ export component ModsTabFamilyRowView inherits Rectangle {
 
     VerticalLayout {
         alignment: start;
-        spacing: 2px;
+        spacing: Theme.space-2;
 
         header := Rectangle {
-            height: max(52px, header-content.preferred-height);
+            height: max(Theme.game-mod-row-height, header-content.preferred-height);
             background: header-touch.has-hover ? Palette.alternate-background : transparent;
 
             header-content := HorizontalLayout {
-                padding: 6px;
-                spacing: 8px;
+                padding: Theme.space-6;
+                spacing: Theme.space-8;
                 cross-axis-alignment: center;
 
                 IconDisplay {
                     icon: root.expanded ? IconSet.ChevronDown : IconSet.ChevronRight;
-                    size: 16px;
+                    size: Theme.space-16;
                     stroke: Palette.alternate-foreground;
                     stroke-width: 2;
                 }
@@ -37,18 +34,18 @@ export component ModsTabFamilyRowView inherits Rectangle {
                 VerticalLayout {
                     horizontal-stretch: 1;
                     alignment: start;
-                    spacing: 2px;
+                    spacing: Theme.space-2;
 
                     Text {
                         text: root.item.family-title;
-                        font-size: 16px;
-                        font-weight: 700;
+                        font-size: Theme.font-16;
+                        font-weight: Theme.weight-bold;
                         overflow: elide;
                     }
 
                     if root.item.family-description != "" : Text {
                         text: root.item.family-description;
-                        font-size: 12px;
+                        font-size: Theme.font-12;
                         opacity: 0.75;
                         wrap: word-wrap;
                     }
@@ -69,18 +66,6 @@ export component ModsTabFamilyRowView inherits Rectangle {
             for mod-row in root.item.mods : ModsTabRowView {
                 mod-data: mod-row;
                 indented: true;
-
-                run(mod-id) => {
-                    root.run(mod-id);
-                }
-
-                install(mod-id) => {
-                    root.install(mod-id);
-                }
-
-                open-url(url) => {
-                    root.open-url(url);
-                }
             }
         }
     }

@@ -1,86 +1,23 @@
 import { GameModRowData } from "../game-mod-row-data.slint";
+import { Theme } from "../theme.slint";
 import { GameModRowView } from "game-mod-row.slint";
+import { SectionHeader } from "section-header.slint";
 
 export component ModsSection inherits VerticalLayout {
     in property <string> label;
     in property <string> description;
     in property <[GameModRowData]> mods;
 
-    callback install(mod-id: string);
-    callback uninstall(mod-id: string);
-    callback update(mod-id: string);
-    callback reinstall(mod-id: string);
-    callback run(mod-id: string);
-    callback open-folder(mod-id: string);
-    callback download-config(mod-id: string);
-    callback configure(mod-id: string);
-    callback configure-folder(mod-id: string);
-
     vertical-stretch: 0;
     alignment: start;
-    spacing: 2px;
+    spacing: Theme.space-2;
 
-    HorizontalLayout {
-        padding-left: 8px;
-        padding-right: 8px;
-
-        Text {
-            text: root.label;
-            font-weight: 700;
-            horizontal-stretch: 1;
-        }
-    }
-
-    if root.description != "" : HorizontalLayout {
-        padding-left: 8px;
-        padding-right: 8px;
-
-        Text {
-            text: root.description;
-            opacity: 0.5;
-            font-size: 12px;
-            wrap: word-wrap;
-            horizontal-stretch: 1;
-        }
+    SectionHeader {
+        label: root.label;
+        description: root.description;
     }
 
     for mod-row in root.mods : GameModRowView {
         game-mod: mod-row;
-
-        install(mod-id) => {
-            root.install(mod-id);
-        }
-
-        uninstall(mod-id) => {
-            root.uninstall(mod-id);
-        }
-
-        update(mod-id) => {
-            root.update(mod-id);
-        }
-
-        reinstall(mod-id) => {
-            root.reinstall(mod-id);
-        }
-
-        run(mod-id) => {
-            root.run(mod-id);
-        }
-
-        open-folder(mod-id) => {
-            root.open-folder(mod-id);
-        }
-
-        download-config(mod-id) => {
-            root.download-config(mod-id);
-        }
-
-        configure(mod-id) => {
-            root.configure(mod-id);
-        }
-
-        configure-folder(mod-id) => {
-            root.configure-folder(mod-id);
-        }
     }
 }

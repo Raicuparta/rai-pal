@@ -1,0 +1,17 @@
+import { Palette, ScrollView } from "std-widgets.slint";
+import { Theme } from "../theme.slint";
+
+export component Sidebar inherits Rectangle {
+    width: Theme.sidebar-width;
+    background: Palette.alternate-background;
+
+    ScrollView {
+        VerticalLayout {
+            padding: Theme.space-12;
+            spacing: Theme.space-8;
+            alignment: start;
+
+            @children
+        }
+    }
+}

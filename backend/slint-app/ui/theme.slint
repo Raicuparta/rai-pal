@@ -1,0 +1,78 @@
+import { Palette } from "std-widgets.slint";
+
+export global Theme {
+    out property <bool> dark: Palette.color-scheme == ColorScheme.dark;
+
+    out property <length> border-width: 1px;
+    out property <length> space-2: 2px;
+    out property <length> space-3: 3px;
+    out property <length> space-4: 4px;
+    out property <length> space-6: 6px;
+    out property <length> space-8: 8px;
+    out property <length> space-10: 10px;
+    out property <length> space-12: 12px;
+    out property <length> space-16: 16px;
+    out property <length> space-20: 20px;
+
+    out property <length> font-8: 8px;
+    out property <length> font-10: 10px;
+    out property <length> font-11: 11px;
+    out property <length> font-12: 12px;
+    out property <length> font-16: 16px;
+    out property <length> font-20: 20px;
+
+    out property <int> weight-light: 300;
+    out property <int> weight-normal: 400;
+    out property <int> weight-semibold: 600;
+    out property <int> weight-bold: 700;
+
+    out property <length> radius-3: 3px;
+    out property <length> radius-4: 4px;
+    out property <length> radius-8: 8px;
+
+    out property <length> window-preferred-width: 1100px;
+    out property <length> window-preferred-height: 700px;
+    out property <length> window-min-width: 800px;
+    out property <length> window-min-height: 500px;
+    out property <length> overlay-margin: 64px;
+
+    out property <length> navbar-height: 44px;
+    out property <length> sidebar-width: 260px;
+    out property <length> control-height: 32px;
+    out property <length> action-button-height: 28px;
+    out property <length> filter-row-height: 26px;
+    out property <length> icon-button-size: 22px;
+    out property <length> icon-button-icon-size: 14px;
+    out property <length> icon-status-size: 15px;
+    out property <length> menu-icon-size: 18px;
+    out property <length> menu-width: 280px;
+
+    out property <length> game-row-height: 60px;
+    out property <length> game-mod-row-height: 56px;
+    out property <length> potential-mod-row-height: 44px;
+    out property <length> provider-strip-width: 30px;
+    out property <length> thumbnail-column-width: 100px;
+    out property <length> thumbnail-size: 60px;
+    out property <length> engine-column-width: 130px;
+    out property <length> date-column-width: 80px;
+    out property <length> row-divider-height: 2px;
+    out property <length> active-tab-indicator-height: 2px;
+    out property <length> locked-indicator-size: 6px;
+    out property <length> only-button-width: 40px;
+    out property <length> only-button-height: 22px;
+    out property <length> deprecated-badge-height: 18px;
+
+    out property <length> details-popup-width: 700px;
+    out property <length> details-popup-height: 500px;
+    out property <length> about-popup-width: 360px;
+    out property <length> about-popup-height: 220px;
+
+    out property <brush> highlight: #fcc419;
+    out property <brush> row-hover: dark ? #2c2e33 : #f1f3f5;
+    out property <brush> row-divider: dark ? #141517 : #e9ecef;
+    out property <brush> tag-background: dark ? #141517 : #e9ecef;
+    out property <brush> status-warning: dark ? #ffa94d : #e8590c;
+    out property <brush> status-success: dark ? #69db7c : #2b8a3e;
+    out property <brush> deprecated-background: dark ? #3d2b12 : #fff9db;
+    out property <brush> deprecated-foreground: dark ? #ffd43b : #e67700;
+}

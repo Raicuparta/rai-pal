@@ -13,7 +13,7 @@ use slint::Model;
 
 use crate::{
 	MainWindow,
-	model::{display_title, format_release_date, get_engine_details, tags},
+	model::{format_release_date, get_engine_details, tags},
 	scheduler::{FetchRequest, FetchScheduler},
 };
 
@@ -96,7 +96,7 @@ fn fetch_game(database: &DbMutex, request: &FetchRequest) -> FetchResult {
 				format_release_date(game.release_date_rfc3339.as_deref());
 			let engine_brand = game
 				.engine_brand
-				.map(|brand| brand.to_string().to_uppercase())
+				.map(|brand| brand.to_string())
 				.unwrap_or_default();
 			let engine_version = game.engine_version_display.clone().unwrap_or_default();
 			let engine_details = get_engine_details(&game);
@@ -106,7 +106,7 @@ fn fetch_game(database: &DbMutex, request: &FetchRequest) -> FetchResult {
 			FetchResult {
 				index: request.index,
 				generation: request.generation,
-				title: display_title(&game),
+				title: game.full_title(),
 				installed: game.exe_path.is_some(),
 				tags: tags(&game),
 				engine_brand,

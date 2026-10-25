@@ -1,5 +1,28 @@
-import { IconDisplay, IconSet } from "@lucide";
+import { Icon, IconDisplay, IconSet } from "@lucide";
 import { Palette } from "std-widgets.slint";
+import { Theme } from "../theme.slint";
+
+component MetaItem inherits HorizontalLayout {
+    in property <Icon> icon;
+    in property <string> text;
+
+    spacing: Theme.space-2;
+    horizontal-stretch: 0;
+    cross-axis-alignment: center;
+
+    IconDisplay {
+        icon: root.icon;
+        size: Theme.font-10;
+        stroke: Palette.foreground;
+        stroke-width: 2;
+    }
+
+    Text {
+        text: root.text;
+        font-size: Theme.font-11;
+        color: Palette.foreground;
+    }
+}
 
 export component ModSummaryView inherits HorizontalLayout {
     in property <string> title;
@@ -14,45 +37,28 @@ export component ModSummaryView inherits HorizontalLayout {
     in property <bool> installed: false;
     in property <bool> outdated: false;
 
-    property <bool> dark: Palette.color-scheme == ColorScheme.dark;
     property <bool> has-details: version-text != "" || release-date != "" || author != "" || engine-text != "";
 
-    function status-orange() -> brush {
-        return dark ? #ffa94d : #e8590c;
-    }
-
-    function status-green() -> brush {
-        return dark ? #69db7c : #2b8a3e;
-    }
-
-    function deprecated-background() -> brush {
-        return dark ? #3d2b12 : #fff9db;
-    }
-
-    function deprecated-foreground() -> brush {
-        return dark ? #ffd43b : #e67700;
-    }
-
-    spacing: 8px;
+    spacing: Theme.space-8;
     cross-axis-alignment: center;
 
     if show-status && outdated : IconDisplay {
         icon: IconSet.CircleAlert;
-        size: 15px;
-        stroke: status-orange();
+        size: Theme.icon-status-size;
+        stroke: Theme.status-warning;
         stroke-width: 2;
     }
 
     if show-status && installed && !outdated : IconDisplay {
         icon: IconSet.CircleCheck;
-        size: 15px;
-        stroke: status-green();
+        size: Theme.icon-status-size;
+        stroke: Theme.status-success;
         stroke-width: 2;
     }
 
     if show-status && !installed && !outdated : IconDisplay {
         icon: IconSet.CircleMinus;
-        size: 15px;
+        size: Theme.icon-status-size;
         stroke: Palette.alternate-foreground;
         stroke-width: 2;
     }
@@ -60,51 +66,51 @@ export component ModSummaryView inherits HorizontalLayout {
     VerticalLayout {
         horizontal-stretch: 1;
         alignment: start;
-        spacing: 2px;
+        spacing: Theme.space-2;
 
         HorizontalLayout {
-            spacing: 6px;
+            spacing: Theme.space-6;
             cross-axis-alignment: center;
 
             Text {
                 text: root.title;
-                font-weight: 600;
+                font-weight: Theme.weight-semibold;
                 overflow: elide;
                 horizontal-stretch: 1;
             }
 
             if root.has-remote-config : IconDisplay {
                 icon: IconSet.Settings;
-                size: 14px;
+                size: Theme.icon-button-icon-size;
                 stroke: Palette.foreground;
                 stroke-width: 2;
                 opacity: 0.75;
             }
 
             if root.deprecated : Rectangle {
-                width: deprecated-content.preferred-width + 8px;
-                height: 18px;
-                border-radius: 3px;
-                background: deprecated-background();
+                width: deprecated-content.preferred-width + Theme.space-8;
+                height: Theme.deprecated-badge-height;
+                border-radius: Theme.radius-3;
+                background: Theme.deprecated-background;
 
                 deprecated-content := HorizontalLayout {
-                    padding-left: 4px;
-                    padding-right: 4px;
-                    spacing: 3px;
+                    padding-left: Theme.space-4;
+                    padding-right: Theme.space-4;
+                    spacing: Theme.space-3;
                     alignment: center;
 
                     IconDisplay {
                         icon: IconSet.TriangleAlert;
-                        size: 11px;
-                        stroke: deprecated-foreground();
+                        size: Theme.font-11;
+                        stroke: Theme.deprecated-foreground;
                         stroke-width: 2;
                     }
 
                     Text {
                         text: @tr("modsPage" => "Deprecated");
-                        font-size: 10px;
-                        font-weight: 700;
-                        color: deprecated-foreground();
+                        font-size: Theme.font-10;
+                        font-weight: Theme.weight-bold;
+                        color: Theme.deprecated-foreground;
                         vertical-alignment: center;
                     }
                 }
@@ -113,78 +119,36 @@ export component ModSummaryView inherits HorizontalLayout {
 
         if root.has-details : HorizontalLayout {
             opacity: 0.4;
-            spacing: 10px;
+            spacing: Theme.space-10;
             alignment: start;
             cross-axis-alignment: center;
 
             if root.version-text != "" : Text {
                 text: root.version-text;
-                font-size: 11px;
+                font-size: Theme.font-11;
                 color: Palette.foreground;
                 horizontal-stretch: 0;
             }
 
-            if root.release-date != "" : HorizontalLayout {
-                spacing: 2px;
-                horizontal-stretch: 0;
-                cross-axis-alignment: center;
-
-                IconDisplay {
-                    icon: IconSet.Calendar;
-                    size: 10px;
-                    stroke: Palette.foreground;
-                    stroke-width: 2;
-                }
-
-                Text {
-                    text: root.release-date;
-                    font-size: 11px;
-                    color: Palette.foreground;
-                }
+            if root.release-date != "" : MetaItem {
+                icon: IconSet.Calendar;
+                text: root.release-date;
             }
 
-            if root.author != "" : HorizontalLayout {
-                spacing: 2px;
-                horizontal-stretch: 0;
-                cross-axis-alignment: center;
-
-                IconDisplay {
-                    icon: IconSet.UserRound;
-                    size: 10px;
-                    stroke: Palette.foreground;
-                    stroke-width: 2;
-                }
-
-                Text {
-                    text: root.author;
-                    font-size: 11px;
-                    color: Palette.foreground;
-                }
+            if root.author != "" : MetaItem {
+                icon: IconSet.UserRound;
+                text: root.author;
             }
 
-            if root.engine-text != "" : HorizontalLayout {
-                spacing: 2px;
-                horizontal-stretch: 0;
-                cross-axis-alignment: center;
-
-                IconDisplay {
-                    icon: IconSet.Cpu;
-                    size: 10px;
-                    stroke: Palette.foreground;
-                    stroke-width: 2;
-                }
-
-                Text {
-                    text: root.engine-text;
-                    font-size: 11px;
-                    color: Palette.foreground;
-                }
+            if root.engine-text != "" : MetaItem {
+                icon: IconSet.Cpu;
+                text: root.engine-text;
             }
         }
 
         if root.description != "" : Text {
             text: root.description;
-            font-size: 12px;
+            font-size: Theme.font-12;
             opacity: 0.75;
             wrap: word-wrap;
             color: Palette.foreground;

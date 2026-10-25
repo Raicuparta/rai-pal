@@ -11,35 +11,6 @@ use rai_pal_core::{
 	result::Result,
 };
 
-pub fn primary_start(game: &DbGame) -> Option<ProviderCommandAction> {
-	if game
-		.provider_commands
-		.contains_key(&ProviderCommandAction::StartViaProvider)
-	{
-		Some(ProviderCommandAction::StartViaProvider)
-	} else if game
-		.provider_commands
-		.contains_key(&ProviderCommandAction::StartViaExe)
-	{
-		Some(ProviderCommandAction::StartViaExe)
-	} else {
-		None
-	}
-}
-
-pub fn secondary_actions(game: &DbGame) -> Vec<ProviderCommandAction> {
-	game.provider_commands
-		.keys()
-		.copied()
-		.filter(|action| {
-			!matches!(
-				action,
-				ProviderCommandAction::StartViaProvider | ProviderCommandAction::StartViaExe
-			)
-		})
-		.collect()
-}
-
 pub fn run_provider_action(database: Arc<DbMutex>, game: DbGame, action: ProviderCommandAction) {
 	spawn_logged(move || {
 		let provider_command = game.provider_commands.try_get(&action)?;
