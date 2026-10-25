@@ -245,6 +245,15 @@ pub fn run() -> Result<(), slint::PlatformError> {
 		}
 	});
 
+	let ui_window = window_weak.clone();
+	window.on_add_steam_shortcut(move || {
+		if let Some(window) = ui_window.upgrade()
+			&& !window.get_steam_shortcut_running()
+		{
+			tools::add_steam_shortcut(ui_window.clone());
+		}
+	});
+
 	let ui_settings = settings.clone();
 	let ui_window = window_weak.clone();
 	let ui_database = database.clone();

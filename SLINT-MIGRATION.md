@@ -21,13 +21,13 @@ implemented.
 - Refresh all games, mod sources, and remote databases from the games and mods sidebars.
 - URL mod source management, including source toggles, removal, and add confirmation.
 - Steam cache reset from the app menu.
+- Steam shortcut creation from the app menu.
 
 ## Not done
 
 - Thanks page content.
 - Add game, scan/add game directory, remove manually added game.
 - App settings beyond language/color scheme: hide thumbnails, skip confirmations, etc.
-- Steam shortcut tools.
 - User login/logout and user menu.
 - App update check/download flow.
 - Download progress UI.

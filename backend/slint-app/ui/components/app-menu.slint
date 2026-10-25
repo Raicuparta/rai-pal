@@ -10,6 +10,7 @@ export component AppMenu inherits Rectangle {
 
     callback about-clicked;
     callback steam-cache-clicked;
+    callback steam-shortcut-clicked;
     callback language-changed(value: string);
     callback color-scheme-changed(value: AppColorScheme);
 
@@ -56,6 +57,14 @@ export component AppMenu inherits Rectangle {
 
                 activated => {
                     root.steam-cache-clicked();
+                }
+            }
+
+            MenuItem {
+                title: @tr("steamShortcut" => "Add Rai Pal to Steam library");
+
+                activated => {
+                    root.steam-shortcut-clicked();
                 }
             }
 

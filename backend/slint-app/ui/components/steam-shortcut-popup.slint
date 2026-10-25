@@ -1,0 +1,82 @@
+import { Button, Palette } from "std-widgets.slint";
+import { Theme } from "../theme.slint";
+
+export component SteamShortcutPopup inherits PopupWindow {
+    in property <bool> running;
+    in property <bool> success;
+    in property <string> error;
+
+    callback add-clicked;
+    callback closed;
+
+    width: Theme.details-popup-width;
+    height: Theme.details-popup-height;
+    close-policy: PopupClosePolicy.no-auto-close;
+
+    Rectangle {
+        background: Palette.background;
+        border-width: Theme.border-width;
+        border-color: Palette.border;
+        border-radius: Theme.radius-8;
+
+        VerticalLayout {
+            padding: Theme.space-20;
+            spacing: Theme.space-12;
+
+            Text {
+                text: @tr("steamShortcut" => "Add Rai Pal to Steam Library");
+                font-size: Theme.font-20;
+                font-weight: Theme.weight-bold;
+            }
+
+            Text {
+                text: @tr("steamShortcut" => "This is especially useful on Steam Deck, to be able to launch Rai Pal in Game Mode. You'll have to restart Steam after doing this.");
+                wrap: word-wrap;
+            }
+
+            if root.success : Text {
+                text: @tr("steamShortcut" => "Rai Pal has been added to your Steam library. Restart Steam to see it.");
+                color: Theme.status-success;
+                wrap: word-wrap;
+            }
+
+            if root.error != "" : Text {
+                text: root.error;
+                color: red;
+                wrap: word-wrap;
+            }
+
+            Rectangle {
+                vertical-stretch: 1;
+            }
+
+            HorizontalLayout {
+                alignment: center;
+
+                Button {
+                    text: @tr("steamShortcut" => "Add Rai Pal to Steam library");
+                    enabled: !root.running;
+                    primary: true;
+                    width: self.preferred-width * 2;
+
+                    clicked => {
+                        root.add-clicked();
+                    }
+                }
+            }
+
+            HorizontalLayout {
+                alignment: end;
+
+                Button {
+                    text: "Close";
+
+                    clicked => {
+                        root.close();
+                        root.closed();
+                    }
+                }
+            }
+        }
+    }
+}
