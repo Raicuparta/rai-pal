@@ -8,6 +8,7 @@ import { ProviderIcon } from "provider-icon.slint";
 export component GameRowView inherits Rectangle {
     in property <GameRowData> game-row;
     in property <int> row-index;
+    in property <bool> show-thumbnail: true;
 
     callback selected(index: int);
 
@@ -45,7 +46,7 @@ export component GameRowView inherits Rectangle {
             }
         }
 
-        Rectangle {
+        if root.show-thumbnail : Rectangle {
             width: Theme.thumbnail-column-width;
             clip: true;
             background: Branding.provider-background(game-row.provider-id);

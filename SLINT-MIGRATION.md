@@ -27,9 +27,10 @@ implemented.
 - Confirmation dialogs with a persisted skip-confirmation setting.
 - Thanks page content, including Patreon leaderboard and donation links.
 - Manually adding games: executable picker, directory scanning with progress and confirmation, saved directory management, and removing manually added games.
+- Game thumbnail visibility setting.
 
 ## Not done
-- App settings beyond language/color scheme: hide thumbnails, etc.
+- App settings: reset settings and open logs folder.
 - App update check/download flow.
 - Download progress UI.
 - Mod details page and remaining mod UI parity.

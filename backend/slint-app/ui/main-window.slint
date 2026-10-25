@@ -54,6 +54,7 @@ export component MainWindow inherits Window {
     in property <bool> has-incompatible-mods: false;
     in property <[FilterGroupData]> filter-groups;
     in property <bool> filters-have-changes;
+    in-out property <bool> hide-game-thumbnails: false;
     in-out property <string> selected-language: "";
     in-out property <AppColorScheme> selected-color-scheme: auto;
     in property <string> detected-language-name: "";
@@ -153,6 +154,7 @@ export component MainWindow inherits Window {
     callback tab-changed(tab: AppTab);
     callback language-changed(value: string);
     callback color-scheme-changed(value: AppColorScheme);
+    callback hide-game-thumbnails-changed(hide: bool);
     callback select-game(index: int);
     callback back;
     callback run-game;
@@ -245,6 +247,7 @@ export component MainWindow inherits Window {
 
                 AppMenu {
                     selected-language: root.selected-language;
+                    hide-game-thumbnails: root.hide-game-thumbnails;
                     selected-color-scheme: root.selected-color-scheme;
                     detected-language-name: root.detected-language-name;
 
@@ -275,6 +278,11 @@ export component MainWindow inherits Window {
                     color-scheme-changed(value) => {
                         root.selected-color-scheme = value;
                         root.color-scheme-changed(value);
+                    }
+
+                    hide-game-thumbnails-changed(value) => {
+                        root.hide-game-thumbnails = value;
+                        root.hide-game-thumbnails-changed(value);
                     }
                 }
             }
@@ -361,6 +369,7 @@ export component MainWindow inherits Window {
                         has-available-mods: root.has-available-mods;
                         has-hidden-mods: root.has-hidden-mods;
                         has-incompatible-mods: root.has-incompatible-mods;
+                        show-thumbnail: !root.hide-game-thumbnails;
 
                         back => {
                             root.back();
@@ -426,6 +435,7 @@ export component MainWindow inherits Window {
                     GamesPage {
                         visible: !root.game-selected;
                         game-rows: root.game-rows;
+                        show-thumbnails: !root.hide-game-thumbnails;
 
                         request-game(index) => {
                             root.request-game(index);

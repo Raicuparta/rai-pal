@@ -5,6 +5,7 @@ import { GameRowView } from "game-row.slint";
 
 export component GamesPage inherits Rectangle {
     in property <[GameRowData]> game-rows;
+    in property <bool> show-thumbnails: true;
 
     callback request-game(index: int);
     callback visible-range-changed(first: int, last: int);
@@ -42,6 +43,7 @@ export component GamesPage inherits Rectangle {
         for item[index] in root.game-rows : GameRowView {
             game-row: item;
             row-index: index;
+            show-thumbnail: root.show-thumbnails;
 
             selected(index) => {
                 root.select-game(index);

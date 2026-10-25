@@ -20,6 +20,7 @@ export component GameDetailsPage inherits Rectangle {
     in property <bool> has-available-mods;
     in property <bool> has-hidden-mods;
     in property <bool> has-incompatible-mods;
+    in property <bool> show-thumbnail: true;
 
     callback back;
 
@@ -32,6 +33,7 @@ export component GameDetailsPage inherits Rectangle {
                 vertical-stretch: 0;
                 game-row: root.game-row;
                 row-index: 0;
+                show-thumbnail: root.show-thumbnail;
 
                 selected(index) => {
                     root.back();

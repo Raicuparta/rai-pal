@@ -83,6 +83,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 			.into(),
 	);
 	window.set_selected_color_scheme(app_color_scheme(settings.borrow().color_scheme));
+	window.set_hide_game_thumbnails(settings.borrow().hide_game_thumbnails);
 	mods_tab::load(&window, &database);
 	window.set_app_version(env!("CARGO_PKG_VERSION").into());
 	user::load(window.as_weak());
@@ -620,6 +621,12 @@ pub fn run() -> Result<(), slint::PlatformError> {
 			AppColorScheme::Light => ColorScheme::Light,
 			AppColorScheme::Auto => ColorScheme::Auto,
 		};
+		persist_settings(&ui_settings);
+	});
+
+	let ui_settings = settings.clone();
+	window.on_hide_game_thumbnails_changed(move |hide| {
+		ui_settings.borrow_mut().hide_game_thumbnails = hide;
 		persist_settings(&ui_settings);
 	});
 
