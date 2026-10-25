@@ -1,17 +1,21 @@
-import { IconDisplay, IconSet } from "@lucide";
 import { Button, Palette, ScrollView } from "std-widgets.slint";
 import { GameRowData } from "../game-row-data.slint";
 import { GameModRowData } from "../game-mod-row-data.slint";
+import { PotentialModRowData } from "../potential-mod-row-data.slint";
 import { GameRowView } from "game-row.slint";
-import { GameModRowView } from "game-mod-row.slint";
+import { ModsSection } from "mods-section.slint";
+import { PotentialModsSection } from "potential-mods-section.slint";
 
 export component GameDetailsPage inherits Rectangle {
     in property <GameRowData> game-row;
-    in property <[GameModRowData]> game-mods;
+    in property <[GameModRowData]> game-mods-installed;
+    in property <[GameModRowData]> game-mods-available;
     in property <[GameModRowData]> game-mods-hidden;
     in property <[GameModRowData]> game-mods-incompatible;
+    in property <[PotentialModRowData]> potential-mods;
+    in property <bool> has-any-mods;
     in property <bool> has-installed-mods;
-    in property <bool> has-compatible-mods;
+    in property <bool> has-available-mods;
     in property <bool> has-hidden-mods;
     in property <bool> has-incompatible-mods;
 
@@ -19,8 +23,10 @@ export component GameDetailsPage inherits Rectangle {
     callback install-mod(mod-id: string);
     callback uninstall-mod(mod-id: string);
     callback update-mod(mod-id: string);
+    callback reinstall-mod(mod-id: string);
     callback run-mod(mod-id: string);
     callback open-mod-folder(mod-id: string);
+    callback download-mod-config(mod-id: string);
     callback configure-mod(mod-id: string);
     callback configure-mod-folder(mod-id: string);
     callback uninstall-all-mods;
@@ -41,157 +47,214 @@ export component GameDetailsPage inherits Rectangle {
                 }
             }
 
-            if root.has-compatible-mods && !root.game-row.installed : Text {
-                text: @tr("gameModal" => "This game isn't installed, so I'm not 100% sure which mods are compatible. The ones you see below might work. If you install the game, I'll show you more accurate information.");
-                color: #f08c00;
+            if !root.has-any-mods : Text {
+                text: @tr("gameModal" => "Nothing! None of the available mods are of any use for this game. Try something else.");
+                opacity: 0.75;
                 wrap: word-wrap;
-                font-size: 12px;
             }
 
-            for mod-row[index] in root.game-mods : GameModRowView {
-                game-mod: mod-row;
-
-                install(mod-id) => {
-                    root.install-mod(mod-id);
-                }
-
-                uninstall(mod-id) => {
-                    root.uninstall-mod(mod-id);
-                }
-
-                update(mod-id) => {
-                    root.update-mod(mod-id);
-                }
-
-                run(mod-id) => {
-                    root.run-mod(mod-id);
-                }
-
-                open-folder(mod-id) => {
-                    root.open-mod-folder(mod-id);
-                }
-
-                configure(mod-id) => {
-                    root.configure-mod(mod-id);
-                }
-
-                configure-folder(mod-id) => {
-                    root.configure-mod-folder(mod-id);
-                }
+            if !root.game-row.installed && root.has-any-mods : PotentialModsSection {
+                label: @tr("gameModal" => "Potentially compatible mods");
+                description: @tr("gameModal" => "Install this game to see more detailed information about which mods are compatible");
+                mods: root.potential-mods;
             }
 
-            if root.has-hidden-mods : VerticalLayout {
+            if root.game-row.installed : VerticalLayout {
                 alignment: start;
                 vertical-stretch: 0;
-                spacing: 2px;
+                spacing: 8px;
 
-                Text {
-                    text: @tr("gameModal" => "Other things");
-                    font-weight: 700;
-                }
-
-                Text {
-                    text: @tr("gameModal" => "These are mostly dependencies and other stuff that you don't usually need to mess with directly.");
-                    opacity: 0.5;
-                    font-size: 12px;
-                    wrap: word-wrap;
-                }
-            }
-
-            for mod-row[index] in root.game-mods-hidden : GameModRowView {
-                game-mod: mod-row;
-
-                install(mod-id) => {
-                    root.install-mod(mod-id);
-                }
-
-                uninstall(mod-id) => {
-                    root.uninstall-mod(mod-id);
-                }
-
-                update(mod-id) => {
-                    root.update-mod(mod-id);
-                }
-
-                run(mod-id) => {
-                    root.run-mod(mod-id);
-                }
-
-                open-folder(mod-id) => {
-                    root.open-mod-folder(mod-id);
-                }
-
-                configure(mod-id) => {
-                    root.configure-mod(mod-id);
-                }
-
-                configure-folder(mod-id) => {
-                    root.configure-mod-folder(mod-id);
-                }
-            }
-
-            if root.has-installed-mods : Button {
-                vertical-stretch: 0;
-                text: @tr("gameModal" => "Uninstall all mods");
-
-                clicked => {
-                    root.uninstall-all-mods();
-                }
-            }
-
-            if root.has-incompatible-mods : VerticalLayout {
-                alignment: start;
-                vertical-stretch: 0;
-                spacing: 6px;
-
-                Rectangle {
-                    height: 1px;
-                    background: Palette.border;
+                if root.has-installed-mods : VerticalLayout {
+                    alignment: start;
                     vertical-stretch: 0;
+                    spacing: 4px;
+
+                    ModsSection {
+                        label: @tr("gameModal" => "Installed Mods");
+                        mods: root.game-mods-installed;
+
+                        install(mod-id) => {
+                            root.install-mod(mod-id);
+                        }
+
+                        uninstall(mod-id) => {
+                            root.uninstall-mod(mod-id);
+                        }
+
+                        update(mod-id) => {
+                            root.update-mod(mod-id);
+                        }
+
+                        reinstall(mod-id) => {
+                            root.reinstall-mod(mod-id);
+                        }
+
+                        run(mod-id) => {
+                            root.run-mod(mod-id);
+                        }
+
+                        open-folder(mod-id) => {
+                            root.open-mod-folder(mod-id);
+                        }
+
+                        download-config(mod-id) => {
+                            root.download-mod-config(mod-id);
+                        }
+
+                        configure(mod-id) => {
+                            root.configure-mod(mod-id);
+                        }
+
+                        configure-folder(mod-id) => {
+                            root.configure-mod-folder(mod-id);
+                        }
+                    }
+
+                    Button {
+                        vertical-stretch: 0;
+                        text: @tr("gameModal" => "Uninstall all mods");
+
+                        clicked => {
+                            root.uninstall-all-mods();
+                        }
+                    }
                 }
 
-                Text {
-                    text: @tr("gameModal" => "Incompatible Mods");
-                    font-weight: 700;
+                if root.has-available-mods : ModsSection {
+                    label: @tr("gameModal" => "Available Mods");
+                    mods: root.game-mods-available;
+
+                    install(mod-id) => {
+                        root.install-mod(mod-id);
+                    }
+
+                    uninstall(mod-id) => {
+                        root.uninstall-mod(mod-id);
+                    }
+
+                    update(mod-id) => {
+                        root.update-mod(mod-id);
+                    }
+
+                    reinstall(mod-id) => {
+                        root.reinstall-mod(mod-id);
+                    }
+
+                    run(mod-id) => {
+                        root.run-mod(mod-id);
+                    }
+
+                    open-folder(mod-id) => {
+                        root.open-mod-folder(mod-id);
+                    }
+
+                    download-config(mod-id) => {
+                        root.download-mod-config(mod-id);
+                    }
+
+                    configure(mod-id) => {
+                        root.configure-mod(mod-id);
+                    }
+
+                    configure-folder(mod-id) => {
+                        root.configure-mod-folder(mod-id);
+                    }
                 }
 
-                Text {
-                    text: @tr("gameModal" => "The mods listed here can't be installed because they aren't compatible with this game's engine version.");
-                    opacity: 0.5;
-                    font-size: 12px;
-                    wrap: word-wrap;
+                if root.has-hidden-mods : ModsSection {
+                    label: @tr("gameModal" => "Other things");
+                    description: @tr("gameModal" => "These are mostly dependencies and other stuff that you don't usually need to mess with directly.");
+                    mods: root.game-mods-hidden;
+
+                    install(mod-id) => {
+                        root.install-mod(mod-id);
+                    }
+
+                    uninstall(mod-id) => {
+                        root.uninstall-mod(mod-id);
+                    }
+
+                    update(mod-id) => {
+                        root.update-mod(mod-id);
+                    }
+
+                    reinstall(mod-id) => {
+                        root.reinstall-mod(mod-id);
+                    }
+
+                    run(mod-id) => {
+                        root.run-mod(mod-id);
+                    }
+
+                    open-folder(mod-id) => {
+                        root.open-mod-folder(mod-id);
+                    }
+
+                    download-config(mod-id) => {
+                        root.download-mod-config(mod-id);
+                    }
+
+                    configure(mod-id) => {
+                        root.configure-mod(mod-id);
+                    }
+
+                    configure-folder(mod-id) => {
+                        root.configure-mod-folder(mod-id);
+                    }
                 }
-            }
 
-            for mod-row[index] in root.game-mods-incompatible : GameModRowView {
-                game-mod: mod-row;
+                if root.has-incompatible-mods : VerticalLayout {
+                    alignment: start;
+                    vertical-stretch: 0;
+                    spacing: 6px;
 
-                install(mod-id) => {
-                    root.install-mod(mod-id);
-                }
+                    Rectangle {
+                        height: 1px;
+                        background: Palette.border;
+                        vertical-stretch: 0;
+                    }
 
-                uninstall(mod-id) => {
-                    root.uninstall-mod(mod-id);
-                }
+                    ModsSection {
+                        label: @tr("gameModal" => "Incompatible Mods");
+                        description: @tr("gameModal" => "The mods listed here can't be installed because they aren't compatible with this game's engine version.");
+                        mods: root.game-mods-incompatible;
 
-                update(mod-id) => {
-                    root.update-mod(mod-id);
-                }
+                        install(mod-id) => {
+                            root.install-mod(mod-id);
+                        }
 
-                run(mod-id) => {
-                    root.run-mod(mod-id);
-                }
+                        uninstall(mod-id) => {
+                            root.uninstall-mod(mod-id);
+                        }
 
-                open-folder(mod-id) => {
-                    root.open-mod-folder(mod-id);
-                }
+                        update(mod-id) => {
+                            root.update-mod(mod-id);
+                        }
 
-                configure(mod-id) => {
-                    root.configure-mod(mod-id);
-                }
+                        reinstall(mod-id) => {
+                            root.reinstall-mod(mod-id);
+                        }
 
-                configure-folder(mod-id) => {
-                    root.configure-mod-folder(mod-id);
+                        run(mod-id) => {
+                            root.run-mod(mod-id);
+                        }
+
+                        open-folder(mod-id) => {
+                            root.open-mod-folder(mod-id);
+                        }
+
+                        download-config(mod-id) => {
+                            root.download-mod-config(mod-id);
+                        }
+
+                        configure(mod-id) => {
+                            root.configure-mod(mod-id);
+                        }
+
+                        configure-folder(mod-id) => {
+                            root.configure-mod-folder(mod-id);
+                        }
+                    }
                 }
             }
         }

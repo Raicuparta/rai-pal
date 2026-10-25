@@ -2,6 +2,7 @@ import { Palette } from "std-widgets.slint";
 import { GameRowData } from "game-row-data.slint";
 import { FilterGroupData } from "filter-data.slint";
 import { GameModRowData } from "game-mod-row-data.slint";
+import { PotentialModRowData } from "potential-mod-row-data.slint";
 import { ProviderActionItem } from "provider-action-item.slint";
 import { GamesSidebar } from "components/games-sidebar.slint";
 import { GameSidebar } from "components/game-sidebar.slint";
@@ -20,17 +21,21 @@ export component MainWindow inherits Window {
     min-height: 500px;
 
     in property <[GameRowData]> game-rows;
-    in property <[GameModRowData]> game-mods;
+    in property <[GameModRowData]> game-mods-installed;
+    in property <[GameModRowData]> game-mods-available;
     in property <[GameModRowData]> game-mods-hidden;
     in property <[GameModRowData]> game-mods-incompatible;
+    in property <[PotentialModRowData]> potential-mods;
+    in property <bool> has-any-mods: false;
     in property <bool> has-installed-mods: false;
-    in property <bool> has-compatible-mods: false;
+    in property <bool> has-available-mods: false;
     in property <bool> has-hidden-mods: false;
     in property <bool> has-incompatible-mods: false;
     in property <int> total-count: 0;
     in property <[FilterGroupData]> filter-groups;
     in property <bool> filters-have-changes;
     in-out property <string> selected-language: "";
+    in-out property <string> selected-color-scheme: "auto";
     in property <string> detected-language-name: "";
     in-out property <string> search-text: "";
     in-out property <int> sort-index: 0;
@@ -62,6 +67,7 @@ export component MainWindow inherits Window {
     callback filter-expanded-changed(group: string, expanded: bool);
     callback tab-changed(index: int);
     callback language-changed(value: string);
+    callback color-scheme-changed(value: string);
     callback select-game(index: int);
     callback back;
     callback run-game;
@@ -75,11 +81,31 @@ export component MainWindow inherits Window {
     callback install-mod(mod-id: string);
     callback uninstall-mod(mod-id: string);
     callback update-mod(mod-id: string);
+    callback reinstall-mod(mod-id: string);
     callback run-mod(mod-id: string);
+    callback download-mod-config(mod-id: string);
     callback open-mod-folder(mod-id: string);
     callback configure-mod(mod-id: string);
     callback configure-mod-folder(mod-id: string);
     callback uninstall-all-mods;
+
+    function apply-color-scheme() {
+        if root.selected-color-scheme == "dark" {
+            Palette.color-scheme = ColorScheme.dark;
+        } else if root.selected-color-scheme == "light" {
+            Palette.color-scheme = ColorScheme.light;
+        } else {
+            Palette.color-scheme = ColorScheme.unknown;
+        }
+    }
+
+    init => {
+        root.apply-color-scheme();
+    }
+
+    changed selected-color-scheme => {
+        root.apply-color-scheme();
+    }
 
     VerticalLayout {
         Rectangle {
@@ -128,6 +154,7 @@ export component MainWindow inherits Window {
 
                 AppMenu {
                     selected-language: root.selected-language;
+                    selected-color-scheme: root.selected-color-scheme;
                     detected-language-name: root.detected-language-name;
 
                     about-clicked => {
@@ -136,6 +163,11 @@ export component MainWindow inherits Window {
 
                     language-changed(value) => {
                         root.language-changed(value);
+                    }
+
+                    color-scheme-changed(value) => {
+                        root.selected-color-scheme = value;
+                        root.color-scheme-changed(value);
                     }
                 }
             }
@@ -208,11 +240,14 @@ export component MainWindow inherits Window {
                     GameDetailsPage {
                         visible: root.game-selected;
                         game-row: root.selected-game-row;
-                        game-mods: root.game-mods;
+                        game-mods-installed: root.game-mods-installed;
+                        game-mods-available: root.game-mods-available;
                         game-mods-hidden: root.game-mods-hidden;
                         game-mods-incompatible: root.game-mods-incompatible;
+                        potential-mods: root.potential-mods;
+                        has-any-mods: root.has-any-mods;
                         has-installed-mods: root.has-installed-mods;
-                        has-compatible-mods: root.has-compatible-mods;
+                        has-available-mods: root.has-available-mods;
                         has-hidden-mods: root.has-hidden-mods;
                         has-incompatible-mods: root.has-incompatible-mods;
 
@@ -232,8 +267,16 @@ export component MainWindow inherits Window {
                             root.update-mod(mod-id);
                         }
 
+                        reinstall-mod(mod-id) => {
+                            root.reinstall-mod(mod-id);
+                        }
+
                         run-mod(mod-id) => {
                             root.run-mod(mod-id);
+                        }
+
+                        download-mod-config(mod-id) => {
+                            root.download-mod-config(mod-id);
                         }
 
                         open-mod-folder(mod-id) => {

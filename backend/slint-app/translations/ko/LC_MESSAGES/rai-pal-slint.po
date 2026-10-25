@@ -98,6 +98,10 @@ msgid "Filters"
 msgstr "필터"
 
 msgctxt "filterMenu"
+msgid "Collapse all filters"
+msgstr "모든 필터 접기"
+
+msgctxt "filterMenu"
 msgid "Reset"
 msgstr "재설정"
 
@@ -250,6 +254,10 @@ msgid "Wine Binary"
 msgstr "게임 Wine 바이너리"
 
 msgctxt "gameModal"
+msgid "Data"
+msgstr "데이터"
+
+msgctxt "gameModal"
 msgid "Remove from Rai Pal"
 msgstr "Rai Pal에서 제거"
 
@@ -262,16 +270,8 @@ msgid "Refresh game"
 msgstr "게임 새로고침"
 
 msgctxt "gameModal"
-msgid "Failed to read some important information about this game. This could be due to the executable being protected. Some mods might fail to install."
-msgstr "이 게임의 중요 정보를 읽을 수 없었어요. 실행 파일이 보호돼 있어서 그럴 수 있어요. 일부 모드가 설치 안 될 수도 있어요."
-
-msgctxt "gameModal"
-msgid "Failed to determine the engine for this game. Some mods might fail to install."
-msgstr "이 게임의 엔진을 확인할 수 없었어요. 일부 모드가 설치 안 될 수도 있어요."
-
-msgctxt "gameModal"
-msgid "This game isn't installed, so I'm not 100% sure which mods are compatible. The ones you see below might work. If you install the game, I'll show you more accurate information."
-msgstr "이 게임이 설치되지 않아서 어떤 모드가 맞는지 100% 장담할 수 없어요. 아래 모드들이 될 수도 있어요. 게임을 설치하면 더 정확히 알려드릴게요."
+msgid "Failed to determine the engine for this game."
+msgstr "이 게임의 엔진을 확인할 수 없었어요."
 
 msgctxt "gameModal"
 msgid "Uninstall all mods"
@@ -280,6 +280,22 @@ msgstr "모드 모두 제거"
 msgctxt "gameModal"
 msgid "You sure? This will delete all files in this game's mods folder. It won't delete any files from the actual game though."
 msgstr "확실해요? 이 게임 모드 폴더 안 파일이 전부 지워져요. 실제 게임 파일은 그대로 두고요."
+
+msgctxt "gameModal"
+msgid "Installed Mods"
+msgstr "설치된 모드"
+
+msgctxt "gameModal"
+msgid "Available Mods"
+msgstr "설치 가능한 모드"
+
+msgctxt "gameModal"
+msgid "Potentially compatible mods"
+msgstr "호환될 수 있는 모드"
+
+msgctxt "gameModal"
+msgid "Install this game to see more detailed information about which mods are compatible"
+msgstr "게임을 설치하면 어떤 모드가 호환되는지 자세히 볼 수 있어요"
 
 msgctxt "gameModal"
 msgid "Incompatible Mods"
@@ -296,6 +312,10 @@ msgstr "기타 항목"
 msgctxt "gameModal"
 msgid "These are mostly dependencies and other stuff that you don't usually need to mess with directly."
 msgstr "이것들은 대부분 종속성 같은 거라서 보통 직접 건드릴 일이 없어요."
+
+msgctxt "gameModal"
+msgid "Nothing! None of the available mods are of any use for this game. Try something else."
+msgstr "없어요! 이 게임에 쓸 수 있는 모드는 하나도 없어요. 다른 걸 시도해 보세요."
 
 msgctxt "gameModRow"
 msgid "Edit Mod Config"
@@ -418,8 +438,12 @@ msgid "Update mod"
 msgstr "모드 업데이트"
 
 msgctxt "modModal"
-msgid "Download mod"
-msgstr "모드 다운로드"
+msgid "Download"
+msgstr "다운로드"
+
+msgctxt "modModal"
+msgid "Website"
+msgstr "웹사이트"
 
 msgctxt "modModal"
 msgid "Delete mod"
@@ -444,6 +468,22 @@ msgstr "언어"
 msgctxt "appDropdownMenu"
 msgid "Auto-detected - {0}"
 msgstr "자동 감지 - {0}"
+
+msgctxt "appDropdownMenu"
+msgid "Color scheme"
+msgstr "색상 구성표"
+
+msgctxt "appDropdownMenu"
+msgid "Auto"
+msgstr "자동"
+
+msgctxt "appDropdownMenu"
+msgid "Dark"
+msgstr "어둡게"
+
+msgctxt "appDropdownMenu"
+msgid "Light"
+msgstr "밝게"
 
 msgctxt "appDropdownMenu"
 msgid "Reset Rai Pal settings"

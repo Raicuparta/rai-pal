@@ -7,7 +7,7 @@ use std::{
 };
 
 use rai_pal_core::{
-	app_settings::{AppSettings, TabId},
+	app_settings::{AppSettings, ColorScheme, TabId},
 	game::DbGame,
 	game_providers::{game_provider::GameProviderId, provider_command::ProviderCommandAction},
 	games_query::GamesSortBy,
@@ -83,6 +83,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 			.unwrap_or_default()
 			.into(),
 	);
+	window.set_selected_color_scheme(color_scheme_code(settings.borrow().color_scheme).into());
 	window.set_app_version(env!("CARGO_PKG_VERSION").into());
 	window.set_search_text(initial_query.search.clone().into());
 	window.set_sort_index(sort_index(initial_query.sort_by));
@@ -339,6 +340,18 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	});
 
 	let ui_settings = settings.clone();
+	window.on_color_scheme_changed(move |value| {
+		let color_scheme = match value.as_str() {
+			"dark" => ColorScheme::Dark,
+			"light" => ColorScheme::Light,
+			_ => ColorScheme::Auto,
+		};
+
+		ui_settings.borrow_mut().color_scheme = color_scheme;
+		persist_settings(&ui_settings);
+	});
+
+	let ui_settings = settings.clone();
 	window.on_tab_changed(move |index| {
 		let mut settings = ui_settings.borrow_mut();
 		settings.selected_tab = tab_from_index(index);
@@ -369,8 +382,8 @@ pub fn run() -> Result<(), slint::PlatformError> {
 			*selected_game = Some((index, game.clone()));
 		}
 
-		mods::refresh_mods(&window, &ui_database, &game);
 		selected::show(&window, &game, row);
+		mods::refresh_mods(&window, &ui_database, &game);
 	});
 
 	let ui_window = window_weak.clone();
@@ -481,6 +494,22 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	let ui_window = window_weak.clone();
 	let ui_database = database.clone();
 	let ui_selected_game = selected_game.clone();
+	window.on_reinstall_mod(move |mod_id| {
+		let Some((_, game)) = get_selected_game(&ui_selected_game) else {
+			return;
+		};
+
+		mods::install_mod(
+			ui_database.clone(),
+			ui_window.clone(),
+			game,
+			mod_id.to_string(),
+		);
+	});
+
+	let ui_window = window_weak.clone();
+	let ui_database = database.clone();
+	let ui_selected_game = selected_game.clone();
 	window.on_uninstall_mod(move |mod_id| {
 		let Some((_, game)) = get_selected_game(&ui_selected_game) else {
 			return;
@@ -512,6 +541,22 @@ pub fn run() -> Result<(), slint::PlatformError> {
 		};
 
 		mods::open_mod_folder(ui_database.clone(), game, mod_id.to_string());
+	});
+
+	let ui_window = window_weak.clone();
+	let ui_database = database.clone();
+	let ui_selected_game = selected_game.clone();
+	window.on_download_mod_config(move |mod_id| {
+		let Some((_, game)) = get_selected_game(&ui_selected_game) else {
+			return;
+		};
+
+		mods::download_mod_config(
+			ui_database.clone(),
+			ui_window.clone(),
+			game,
+			mod_id.to_string(),
+		);
 	});
 
 	let ui_database = database.clone();
@@ -588,8 +633,8 @@ pub fn run() -> Result<(), slint::PlatformError> {
 				let mut row = rows.row_data(index).unwrap_or_default();
 				model::apply_game_to_row(&mut row, &game);
 				rows.set_row_data(index, row.clone());
-				mods::refresh_mods(&window, &database, &game);
 				selected::show(&window, &game, row);
+				mods::refresh_mods(&window, &database, &game);
 			});
 		});
 	});
@@ -706,6 +751,14 @@ fn reset_filters(
 		query,
 		Duration::ZERO,
 	);
+}
+
+fn color_scheme_code(color_scheme: ColorScheme) -> &'static str {
+	match color_scheme {
+		ColorScheme::Dark => "dark",
+		ColorScheme::Light => "light",
+		ColorScheme::Auto => "auto",
+	}
 }
 
 fn sort_index(sort_by: GamesSortBy) -> i32 {

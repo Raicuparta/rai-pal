@@ -98,6 +98,10 @@ msgid "Filters"
 msgstr "筛选"
 
 msgctxt "filterMenu"
+msgid "Collapse all filters"
+msgstr "折叠所有筛选器"
+
+msgctxt "filterMenu"
 msgid "Reset"
 msgstr "重置"
 
@@ -250,6 +254,10 @@ msgid "Wine Binary"
 msgstr "Wine 程序"
 
 msgctxt "gameModal"
+msgid "Data"
+msgstr "数据"
+
+msgctxt "gameModal"
 msgid "Remove from Rai Pal"
 msgstr "从 Rai Pal 移除"
 
@@ -262,16 +270,8 @@ msgid "Refresh game"
 msgstr "刷新游戏"
 
 msgctxt "gameModal"
-msgid "Failed to read some important information about this game. This could be due to the executable being protected. Some mods might fail to install."
-msgstr "无法读取此游戏的部分重要信息。可执行文件可能被保护了。一些模组可能无法安装。"
-
-msgctxt "gameModal"
-msgid "Failed to determine the engine for this game. Some mods might fail to install."
-msgstr "无法确定此游戏的引擎。一些模组可能无法安装。"
-
-msgctxt "gameModal"
-msgid "This game isn't installed, so I'm not 100% sure which mods are compatible. The ones you see below might work. If you install the game, I'll show you more accurate information."
-msgstr "此游戏未安装，所以我不太确定哪些模组兼容。下面列出的模组可能可以用。安装游戏后，我再显示更准确的信息。"
+msgid "Failed to determine the engine for this game."
+msgstr "无法确定此游戏的引擎。"
 
 msgctxt "gameModal"
 msgid "Uninstall all mods"
@@ -280,6 +280,22 @@ msgstr "卸载所有模组"
 msgctxt "gameModal"
 msgid "You sure? This will delete all files in this game's mods folder. It won't delete any files from the actual game though."
 msgstr "你确定吗？这将删除此游戏模组文件夹中的所有文件。但不会删除游戏本身的文件。"
+
+msgctxt "gameModal"
+msgid "Installed Mods"
+msgstr "已安装模组"
+
+msgctxt "gameModal"
+msgid "Available Mods"
+msgstr "可用模组"
+
+msgctxt "gameModal"
+msgid "Potentially compatible mods"
+msgstr "可能兼容的模组"
+
+msgctxt "gameModal"
+msgid "Install this game to see more detailed information about which mods are compatible"
+msgstr "安装此游戏即可查看哪些模组兼容的更多详细信息"
 
 msgctxt "gameModal"
 msgid "Incompatible Mods"
@@ -296,6 +312,10 @@ msgstr "其他东西"
 msgctxt "gameModal"
 msgid "These are mostly dependencies and other stuff that you don't usually need to mess with directly."
 msgstr "这些主要是依赖项之类的，一般不用直接碰。"
+
+msgctxt "gameModal"
+msgid "Nothing! None of the available mods are of any use for this game. Try something else."
+msgstr "什么都没有！可用的模组没有一个是这个游戏能用的。试试别的吧。"
 
 msgctxt "gameModRow"
 msgid "Edit Mod Config"
@@ -418,8 +438,12 @@ msgid "Update mod"
 msgstr "更新模组"
 
 msgctxt "modModal"
-msgid "Download mod"
-msgstr "下载模组"
+msgid "Download"
+msgstr "下载"
+
+msgctxt "modModal"
+msgid "Website"
+msgstr "网站"
 
 msgctxt "modModal"
 msgid "Delete mod"
@@ -444,6 +468,22 @@ msgstr "语言"
 msgctxt "appDropdownMenu"
 msgid "Auto-detected - {0}"
 msgstr "自动检测 - {0}"
+
+msgctxt "appDropdownMenu"
+msgid "Color scheme"
+msgstr "配色方案"
+
+msgctxt "appDropdownMenu"
+msgid "Auto"
+msgstr "自动"
+
+msgctxt "appDropdownMenu"
+msgid "Dark"
+msgstr "深色"
+
+msgctxt "appDropdownMenu"
+msgid "Light"
+msgstr "浅色"
 
 msgctxt "appDropdownMenu"
 msgid "Reset Rai Pal settings"

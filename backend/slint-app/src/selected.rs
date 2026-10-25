@@ -38,11 +38,14 @@ pub fn hide(window: &MainWindow) {
 	window.set_selected_has_exe_path(false);
 	window.set_selected_show_wine_folders(false);
 	window.set_selected_provider_actions(ModelRc::default());
-	window.set_game_mods(ModelRc::default());
+	window.set_game_mods_installed(ModelRc::default());
+	window.set_game_mods_available(ModelRc::default());
 	window.set_game_mods_hidden(ModelRc::default());
 	window.set_game_mods_incompatible(ModelRc::default());
+	window.set_potential_mods(ModelRc::default());
+	window.set_has_any_mods(false);
 	window.set_has_installed_mods(false);
-	window.set_has_compatible_mods(false);
+	window.set_has_available_mods(false);
 	window.set_has_hidden_mods(false);
 	window.set_has_incompatible_mods(false);
 }

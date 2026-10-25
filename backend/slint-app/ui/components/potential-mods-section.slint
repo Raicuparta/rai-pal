@@ -1,0 +1,55 @@
+import { Palette } from "std-widgets.slint";
+import { PotentialModRowData } from "../potential-mod-row-data.slint";
+
+component PotentialModRowView inherits Rectangle {
+    in property <PotentialModRowData> potential-mod;
+
+    vertical-stretch: 0;
+    height: max(44px, content.preferred-height);
+
+    content := VerticalLayout {
+        padding: 6px;
+        alignment: start;
+        spacing: 2px;
+
+        Text {
+            text: potential-mod.title;
+            font-weight: 600;
+            overflow: elide;
+        }
+
+        if potential-mod.description != "" : Text {
+            text: potential-mod.description;
+            font-size: 12px;
+            opacity: 0.75;
+            wrap: word-wrap;
+            color: Palette.foreground;
+        }
+    }
+}
+
+export component PotentialModsSection inherits VerticalLayout {
+    in property <string> label;
+    in property <string> description;
+    in property <[PotentialModRowData]> mods;
+
+    vertical-stretch: 0;
+    alignment: start;
+    spacing: 2px;
+
+    Text {
+        text: root.label;
+        font-weight: 700;
+    }
+
+    if root.description != "" : Text {
+        text: root.description;
+        opacity: 0.5;
+        font-size: 12px;
+        wrap: word-wrap;
+    }
+
+    for row in root.mods : PotentialModRowView {
+        potential-mod: row;
+    }
+}

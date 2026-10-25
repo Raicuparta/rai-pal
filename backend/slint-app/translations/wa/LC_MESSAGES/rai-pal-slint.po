@@ -254,6 +254,10 @@ msgid "Wine Binary"
 msgstr "Waah waaaah!"
 
 msgctxt "gameModal"
+msgid "Data"
+msgstr "Waah!"
+
+msgctxt "gameModal"
 msgid "Remove from Rai Pal"
 msgstr "Waaaah waah wah wah!"
 
@@ -266,16 +270,8 @@ msgid "Refresh game"
 msgstr "Waaaaah waah!"
 
 msgctxt "gameModal"
-msgid "Failed to read some important information about this game. This could be due to the executable being protected. Some mods might fail to install."
-msgstr "Waaaah to waah waah waaaaaaah waaaaaaaaah waaah waah waaah waah waaah be wah to wah waaaaaaaah waaah waaaaaaaah waah waah waaah waah to waaaaaah!"
-
-msgctxt "gameModal"
-msgid "Failed to determine the engine for this game. Some mods might fail to install."
-msgstr "Waaaah to waaaaaaah wah waaaah wah waah waaah waah waah waaah waah to waaaaaah!"
-
-msgctxt "gameModal"
-msgid "This game isn't installed, so I'm not 100% sure which mods are compatible. The ones you see below might work. If you install the game, I'll show you more accurate information."
-msgstr "Waah waah waaah waaaaaaaah so wah wah waah waah waaah waah wah waaaaaaaaah wah waah wah wah waaah waaah waaah If wah waaaaah wah waaah waah waah wah waah waaaaaah waaaaaaaaaah!"
+msgid "Failed to determine the engine for this game."
+msgstr "Waaaah to waaaaaaah wah waaaah wah waah waaah!"
 
 msgctxt "gameModal"
 msgid "Uninstall all mods"
@@ -284,6 +280,22 @@ msgstr "Waaaaaaah wah waah!"
 msgctxt "gameModal"
 msgid "You sure? This will delete all files in this game's mods folder. It won't delete any files from the actual game though."
 msgstr "Wah waaah waah waah waaaah wah waaah in waah waaaah waah waaaaah It waaah waaaah wah waaah waah wah waaaah waah waaaaah!"
+
+msgctxt "gameModal"
+msgid "Installed Mods"
+msgstr "Waaaaaaah waah!"
+
+msgctxt "gameModal"
+msgid "Available Mods"
+msgstr "Waaaaaaah waah!"
+
+msgctxt "gameModal"
+msgid "Potentially compatible mods"
+msgstr "Waaaaaaaaah waaaaaaaah waah!"
+
+msgctxt "gameModal"
+msgid "Install this game to see more detailed information about which mods are compatible"
+msgstr "Waaaaah waah waah to wah waah waaaaaah waaaaaaaaah waaah waaah waah wah waaaaaaaah!"
 
 msgctxt "gameModal"
 msgid "Incompatible Mods"
@@ -300,6 +312,10 @@ msgstr "Waaah waaaah!"
 msgctxt "gameModal"
 msgid "These are mostly dependencies and other stuff that you don't usually need to mess with directly."
 msgstr "Waaah wah waaaah waaaaaaaaaah wah waaah waaah waah wah waaah waaaaah waah to waah waah waaaaaaah!"
+
+msgctxt "gameModal"
+msgid "Nothing! None of the available mods are of any use for this game. Try something else."
+msgstr "Waaaaaah waah of wah waaaaaaah waah wah of wah wah wah waah waaah wah waaaaaaah waaah!"
 
 msgctxt "gameModRow"
 msgid "Edit Mod Config"
@@ -422,8 +438,12 @@ msgid "Update mod"
 msgstr "Waaaah wah!"
 
 msgctxt "modModal"
-msgid "Download mod"
-msgstr "Waaaaaah wah!"
+msgid "Download"
+msgstr "Waaaaaah!"
+
+msgctxt "modModal"
+msgid "Website"
+msgstr "Waaaaah!"
 
 msgctxt "modModal"
 msgid "Delete mod"
@@ -448,6 +468,22 @@ msgstr "Waaaaaah!"
 msgctxt "appDropdownMenu"
 msgid "Auto-detected - {0}"
 msgstr "Waaaaaaaaaaah - {0}"
+
+msgctxt "appDropdownMenu"
+msgid "Color scheme"
+msgstr "Waaah waaaah!"
+
+msgctxt "appDropdownMenu"
+msgid "Auto"
+msgstr "Waah!"
+
+msgctxt "appDropdownMenu"
+msgid "Dark"
+msgstr "Waah!"
+
+msgctxt "appDropdownMenu"
+msgid "Light"
+msgstr "Waaah!"
 
 msgctxt "appDropdownMenu"
 msgid "Reset Rai Pal settings"

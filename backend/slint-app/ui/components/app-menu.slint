@@ -3,10 +3,12 @@ import { Palette } from "std-widgets.slint";
 
 export component AppMenu inherits Rectangle {
     in property <string> selected-language: "";
+    in property <string> selected-color-scheme: "auto";
     in property <string> detected-language-name: "";
 
     callback about-clicked;
     callback language-changed(value: string);
+    callback color-scheme-changed(value: string);
 
     width: 36px;
     height: 32px;
@@ -148,6 +150,43 @@ export component AppMenu inherits Rectangle {
 
                 activated => {
                     root.language-changed("wa");
+                }
+            }
+
+            MenuSeparator { }
+
+            MenuItem {
+                title: @tr("appDropdownMenu" => "Color scheme");
+                enabled: false;
+            }
+
+            MenuItem {
+                checkable: true;
+                checked: root.selected-color-scheme == "auto";
+                title: @tr("appDropdownMenu" => "Auto");
+
+                activated => {
+                    root.color-scheme-changed("auto");
+                }
+            }
+
+            MenuItem {
+                checkable: true;
+                checked: root.selected-color-scheme == "dark";
+                title: @tr("appDropdownMenu" => "Dark");
+
+                activated => {
+                    root.color-scheme-changed("dark");
+                }
+            }
+
+            MenuItem {
+                checkable: true;
+                checked: root.selected-color-scheme == "light";
+                title: @tr("appDropdownMenu" => "Light");
+
+                activated => {
+                    root.color-scheme-changed("light");
                 }
             }
         }

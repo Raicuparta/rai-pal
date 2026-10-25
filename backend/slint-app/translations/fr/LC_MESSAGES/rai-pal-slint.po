@@ -98,6 +98,10 @@ msgid "Filters"
 msgstr "Filtres"
 
 msgctxt "filterMenu"
+msgid "Collapse all filters"
+msgstr "Réduire tous les filtres"
+
+msgctxt "filterMenu"
 msgid "Reset"
 msgstr "Réinitialiser"
 
@@ -250,6 +254,10 @@ msgid "Wine Binary"
 msgstr "Binaire Wine"
 
 msgctxt "gameModal"
+msgid "Data"
+msgstr "Données"
+
+msgctxt "gameModal"
 msgid "Remove from Rai Pal"
 msgstr "Retirer de Rai Pal"
 
@@ -262,16 +270,8 @@ msgid "Refresh game"
 msgstr "Actualiser le jeu"
 
 msgctxt "gameModal"
-msgid "Failed to read some important information about this game. This could be due to the executable being protected. Some mods might fail to install."
-msgstr "Impossible de lire certaines informations importantes sur ce jeu. C'est peut-être parce que l'exécutable est protégé. Certains mods risquent de ne pas s'installer."
-
-msgctxt "gameModal"
-msgid "Failed to determine the engine for this game. Some mods might fail to install."
-msgstr "Impossible de déterminer le moteur de ce jeu. Certains mods risquent de ne pas s'installer."
-
-msgctxt "gameModal"
-msgid "This game isn't installed, so I'm not 100% sure which mods are compatible. The ones you see below might work. If you install the game, I'll show you more accurate information."
-msgstr "Ce jeu n'est pas installé, donc je ne suis pas sûr à 100 % des mods compatibles. Ceux affichés ci-dessous pourraient fonctionner. Si vous installez le jeu, je vous montrerai des informations plus précises."
+msgid "Failed to determine the engine for this game."
+msgstr "Impossible de déterminer le moteur de ce jeu."
 
 msgctxt "gameModal"
 msgid "Uninstall all mods"
@@ -280,6 +280,22 @@ msgstr "Désinstaller tous les mods"
 msgctxt "gameModal"
 msgid "You sure? This will delete all files in this game's mods folder. It won't delete any files from the actual game though."
 msgstr "T'es sûr ? Cela supprimera tous les fichiers dans le dossier des mods de ce jeu. Mais ça ne touchera pas aux fichiers du jeu."
+
+msgctxt "gameModal"
+msgid "Installed Mods"
+msgstr "Mods installés"
+
+msgctxt "gameModal"
+msgid "Available Mods"
+msgstr "Mods disponibles"
+
+msgctxt "gameModal"
+msgid "Potentially compatible mods"
+msgstr "Mods potentiellement compatibles"
+
+msgctxt "gameModal"
+msgid "Install this game to see more detailed information about which mods are compatible"
+msgstr "Installez ce jeu pour voir des informations plus détaillées sur les mods compatibles"
 
 msgctxt "gameModal"
 msgid "Incompatible Mods"
@@ -296,6 +312,10 @@ msgstr "Autres choses"
 msgctxt "gameModal"
 msgid "These are mostly dependencies and other stuff that you don't usually need to mess with directly."
 msgstr "Ce sont principalement des dépendances et d'autres trucs que vous n'avez généralement pas besoin de toucher directement."
+
+msgctxt "gameModal"
+msgid "Nothing! None of the available mods are of any use for this game. Try something else."
+msgstr "Rien ! Aucun des mods disponibles n'est utile pour ce jeu. Essayez autre chose."
 
 msgctxt "gameModRow"
 msgid "Edit Mod Config"
@@ -418,8 +438,12 @@ msgid "Update mod"
 msgstr "Mettre à jour le mod"
 
 msgctxt "modModal"
-msgid "Download mod"
-msgstr "Télécharger le mod"
+msgid "Download"
+msgstr "Télécharger"
+
+msgctxt "modModal"
+msgid "Website"
+msgstr "Site web"
 
 msgctxt "modModal"
 msgid "Delete mod"
@@ -444,6 +468,22 @@ msgstr "Langue"
 msgctxt "appDropdownMenu"
 msgid "Auto-detected - {0}"
 msgstr "Détecté automatiquement - {0}"
+
+msgctxt "appDropdownMenu"
+msgid "Color scheme"
+msgstr "Thème de couleurs"
+
+msgctxt "appDropdownMenu"
+msgid "Auto"
+msgstr "Automatique"
+
+msgctxt "appDropdownMenu"
+msgid "Dark"
+msgstr "Sombre"
+
+msgctxt "appDropdownMenu"
+msgid "Light"
+msgstr "Clair"
 
 msgctxt "appDropdownMenu"
 msgid "Reset Rai Pal settings"

@@ -98,6 +98,10 @@ msgid "Filters"
 msgstr "フィルター"
 
 msgctxt "filterMenu"
+msgid "Collapse all filters"
+msgstr "すべてのフィルターを折りたたむ"
+
+msgctxt "filterMenu"
 msgid "Reset"
 msgstr "リセット"
 
@@ -250,6 +254,10 @@ msgid "Wine Binary"
 msgstr "Wineバイナリ"
 
 msgctxt "gameModal"
+msgid "Data"
+msgstr "データ"
+
+msgctxt "gameModal"
 msgid "Remove from Rai Pal"
 msgstr "Rai Palから削除"
 
@@ -262,16 +270,8 @@ msgid "Refresh game"
 msgstr "ゲームを更新"
 
 msgctxt "gameModal"
-msgid "Failed to read some important information about this game. This could be due to the executable being protected. Some mods might fail to install."
-msgstr "このゲームの重要情報がちゃんと読み取れなかった。実行ファイルが保護されてるのかも。一部のModはうまくインストールできないかも。"
-
-msgctxt "gameModal"
-msgid "Failed to determine the engine for this game. Some mods might fail to install."
-msgstr "このゲームのエンジンが特定できなかった。一部のModはうまくインストールできないかも。"
-
-msgctxt "gameModal"
-msgid "This game isn't installed, so I'm not 100% sure which mods are compatible. The ones you see below might work. If you install the game, I'll show you more accurate information."
-msgstr "このゲームはインストールされてないから、どのModが対応してるか100%は確信できないんだ。下に出てるModなら動くかも。インストールしたら、もっと正確な情報を出せるよ。"
+msgid "Failed to determine the engine for this game."
+msgstr "このゲームのエンジンが特定できなかった。"
 
 msgctxt "gameModal"
 msgid "Uninstall all mods"
@@ -280,6 +280,22 @@ msgstr "すべてのModをアンインストール"
 msgctxt "gameModal"
 msgid "You sure? This will delete all files in this game's mods folder. It won't delete any files from the actual game though."
 msgstr "本当に？このゲームのModフォルダー内の全ファイルが消えるよ。でもゲーム本体のファイルは消さないからね。"
+
+msgctxt "gameModal"
+msgid "Installed Mods"
+msgstr "導入済みMod"
+
+msgctxt "gameModal"
+msgid "Available Mods"
+msgstr "利用可能なMod"
+
+msgctxt "gameModal"
+msgid "Potentially compatible mods"
+msgstr "互換性があるかもしれないMod"
+
+msgctxt "gameModal"
+msgid "Install this game to see more detailed information about which mods are compatible"
+msgstr "このゲームをインストールすると、どのModに互換性があるか詳しくわかるよ"
 
 msgctxt "gameModal"
 msgid "Incompatible Mods"
@@ -296,6 +312,10 @@ msgstr "その他のもの"
 msgctxt "gameModal"
 msgid "These are mostly dependencies and other stuff that you don't usually need to mess with directly."
 msgstr "これらは主に依存関係とかで、普段は直接いじる必要はないよ。"
+
+msgctxt "gameModal"
+msgid "Nothing! None of the available mods are of any use for this game. Try something else."
+msgstr "何もないよ！このゲームに使えるModは一つもないから、別のを試してみて。"
 
 msgctxt "gameModRow"
 msgid "Edit Mod Config"
@@ -418,8 +438,12 @@ msgid "Update mod"
 msgstr "Modを更新"
 
 msgctxt "modModal"
-msgid "Download mod"
-msgstr "Modをダウンロード"
+msgid "Download"
+msgstr "ダウンロード"
+
+msgctxt "modModal"
+msgid "Website"
+msgstr "ウェブサイト"
 
 msgctxt "modModal"
 msgid "Delete mod"
@@ -444,6 +468,22 @@ msgstr "言語"
 msgctxt "appDropdownMenu"
 msgid "Auto-detected - {0}"
 msgstr "自動検出 - {0}"
+
+msgctxt "appDropdownMenu"
+msgid "Color scheme"
+msgstr "カラースキーム"
+
+msgctxt "appDropdownMenu"
+msgid "Auto"
+msgstr "自動"
+
+msgctxt "appDropdownMenu"
+msgid "Dark"
+msgstr "ダーク"
+
+msgctxt "appDropdownMenu"
+msgid "Light"
+msgstr "ライト"
 
 msgctxt "appDropdownMenu"
 msgid "Reset Rai Pal settings"

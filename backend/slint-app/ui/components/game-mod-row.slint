@@ -9,13 +9,17 @@ export component GameModRowView inherits Rectangle {
     callback install(mod-id: string);
     callback uninstall(mod-id: string);
     callback update(mod-id: string);
+    callback reinstall(mod-id: string);
     callback run(mod-id: string);
     callback open-folder(mod-id: string);
+    callback download-config(mod-id: string);
     callback configure(mod-id: string);
     callback configure-folder(mod-id: string);
 
     property <bool> dark: Palette.color-scheme == ColorScheme.dark;
     property <bool> interactive: game-mod.section != "incompatible";
+    property <bool> has-details: game-mod.version-text != "" || game-mod.release-date != "" || game-mod.author != "" || game-mod.engine-text != "";
+    property <bool> has-dropdown-actions: game-mod.can-edit-config || game-mod.can-open-mod-folder || game-mod.can-download-config || game-mod.can-reinstall || game-mod.can-uninstall;
 
     function status-orange() -> brush {
         return dark ? #ffa94d : #e8590c;
@@ -25,24 +29,12 @@ export component GameModRowView inherits Rectangle {
         return dark ? #69db7c : #2b8a3e;
     }
 
-    function version-background() -> brush {
-        if game-mod.outdated {
-            return dark ? #3d2b12 : #fff4e6;
-        }
-        if game-mod.installed {
-            return dark ? #14351c : #ebfbee;
-        }
-        return dark ? #2c2e33 : #f1f3f5;
+    function deprecated-background() -> brush {
+        return dark ? #3d2b12 : #fff9db;
     }
 
-    function version-foreground() -> brush {
-        if game-mod.outdated {
-            return dark ? #ffc078 : #d9480f;
-        }
-        if game-mod.installed {
-            return dark ? #8ce99a : #2b8a3e;
-        }
-        return Palette.alternate-foreground;
+    function deprecated-foreground() -> brush {
+        return dark ? #ffd43b : #e67700;
     }
 
     vertical-stretch: 0;
@@ -54,32 +46,56 @@ export component GameModRowView inherits Rectangle {
         height: 100%;
 
         Menu {
-            if game-mod.has-config : MenuItem {
+            if game-mod.can-edit-config : MenuItem {
                 title: @tr("gameModRow" => "Edit Mod Config");
-                enabled: game-mod.can-show-actions && game-mod.installed;
 
                 activated => {
                     root.configure(game-mod.mod-id);
                 }
             }
 
-            if game-mod.has-config : MenuItem {
-                title: "Open config folder";
-                enabled: game-mod.can-show-actions && game-mod.installed;
+            if game-mod.can-edit-config : MenuItem {
+                title: @tr("gameModRow" => "Open folder containing this mod's config files");
 
                 activated => {
                     root.configure-folder(game-mod.mod-id);
                 }
             }
 
-            if game-mod.has-config : MenuSeparator { }
+            if game-mod.can-edit-config : MenuSeparator { }
 
-            MenuItem {
+            if game-mod.can-open-mod-folder : MenuItem {
                 title: @tr("gameModRow" => "Open Mod Folder");
-                enabled: game-mod.can-show-actions && game-mod.installed;
 
                 activated => {
                     root.open-folder(game-mod.mod-id);
+                }
+            }
+
+            if game-mod.can-download-config : MenuItem {
+                title: @tr("gameModRow" => "Download Recommended Config");
+
+                activated => {
+                    root.download-config(game-mod.mod-id);
+                }
+            }
+
+            if game-mod.can-download-config : MenuSeparator { }
+
+            if game-mod.can-reinstall : MenuItem {
+                title: @tr("gameModRow" => "Reinstall");
+
+                activated => {
+                    root.reinstall(game-mod.mod-id);
+                }
+            }
+
+            if game-mod.can-uninstall : MenuItem {
+                title: @tr("gameModRow" => "Uninstall");
+                enabled: !game-mod.has-installed-dependants;
+
+                activated => {
+                    root.uninstall(game-mod.mod-id);
                 }
             }
         }
@@ -91,6 +107,27 @@ export component GameModRowView inherits Rectangle {
             spacing: 8px;
             cross-axis-alignment: center;
 
+            if game-mod.show-status && game-mod.outdated : IconDisplay {
+                icon: IconSet.CircleAlert;
+                size: 15px;
+                stroke: status-orange();
+                stroke-width: 2;
+            }
+
+            if game-mod.show-status && game-mod.installed && !game-mod.outdated : IconDisplay {
+                icon: IconSet.CircleCheck;
+                size: 15px;
+                stroke: status-green();
+                stroke-width: 2;
+            }
+
+            if game-mod.show-status && !game-mod.installed && !game-mod.outdated : IconDisplay {
+                icon: IconSet.CircleMinus;
+                size: 15px;
+                stroke: Palette.alternate-foreground;
+                stroke-width: 2;
+            }
+
             VerticalLayout {
                 horizontal-stretch: 1;
                 spacing: 2px;
@@ -99,27 +136,6 @@ export component GameModRowView inherits Rectangle {
                     spacing: 6px;
                     cross-axis-alignment: center;
 
-                    if game-mod.show-status && game-mod.outdated : IconDisplay {
-                        icon: IconSet.CircleAlert;
-                        size: 15px;
-                        stroke: status-orange();
-                        stroke-width: 2;
-                    }
-
-                    if game-mod.show-status && game-mod.installed && !game-mod.outdated : IconDisplay {
-                        icon: IconSet.CircleCheck;
-                        size: 15px;
-                        stroke: status-green();
-                        stroke-width: 2;
-                    }
-
-                    if game-mod.show-status && !game-mod.installed && !game-mod.outdated : IconDisplay {
-                        icon: IconSet.CircleMinus;
-                        size: 15px;
-                        stroke: Palette.alternate-foreground;
-                        stroke-width: 2;
-                    }
-
                     Text {
                         text: game-mod.title;
                         font-weight: 600;
@@ -127,33 +143,114 @@ export component GameModRowView inherits Rectangle {
                         horizontal-stretch: 1;
                     }
 
-                    version-badge := Rectangle {
-                        width: version-text.preferred-width + 10px;
+                    if game-mod.has-remote-config : IconDisplay {
+                        icon: IconSet.Settings;
+                        size: 14px;
+                        stroke: Palette.foreground;
+                        stroke-width: 2;
+                        opacity: 0.75;
+                    }
+
+                    if game-mod.deprecated : Rectangle {
+                        width: deprecated-content.preferred-width + 8px;
                         height: 18px;
                         border-radius: 3px;
-                        background: version-background();
+                        background: deprecated-background();
 
-                        version-text := Text {
-                            text: game-mod.version;
+                        deprecated-content := HorizontalLayout {
+                            padding-left: 4px;
+                            padding-right: 4px;
+                            spacing: 3px;
+                            alignment: center;
+
+                            IconDisplay {
+                                icon: IconSet.TriangleAlert;
+                                size: 11px;
+                                stroke: deprecated-foreground();
+                                stroke-width: 2;
+                            }
+
+                            Text {
+                                text: @tr("modsPage" => "Deprecated");
+                                font-size: 10px;
+                                font-weight: 700;
+                                color: deprecated-foreground();
+                                vertical-alignment: center;
+                            }
+                        }
+                    }
+                }
+
+                if root.has-details : HorizontalLayout {
+                    opacity: 0.4;
+                    spacing: 10px;
+                    cross-axis-alignment: center;
+
+                    if game-mod.version-text != "" : Text {
+                        text: game-mod.version-text;
+                        font-size: 11px;
+                        color: Palette.foreground;
+                    }
+
+                    if game-mod.release-date != "" : HorizontalLayout {
+                        spacing: 2px;
+                        cross-axis-alignment: center;
+
+                        IconDisplay {
+                            icon: IconSet.Calendar;
+                            size: 10px;
+                            stroke: Palette.foreground;
+                            stroke-width: 2;
+                        }
+
+                        Text {
+                            text: game-mod.release-date;
                             font-size: 11px;
-                            color: version-foreground();
-                            horizontal-alignment: center;
-                            vertical-alignment: center;
+                            color: Palette.foreground;
                         }
                     }
 
-                    if game-mod.deprecated : Text {
-                        text: @tr("modsPage" => "Deprecated");
-                        font-size: 10px;
-                        font-weight: 700;
-                        color: #e03131;
+                    if game-mod.author != "" : HorizontalLayout {
+                        spacing: 2px;
+                        cross-axis-alignment: center;
+
+                        IconDisplay {
+                            icon: IconSet.UserRound;
+                            size: 10px;
+                            stroke: Palette.foreground;
+                            stroke-width: 2;
+                        }
+
+                        Text {
+                            text: game-mod.author;
+                            font-size: 11px;
+                            color: Palette.foreground;
+                        }
+                    }
+
+                    if game-mod.engine-text != "" : HorizontalLayout {
+                        spacing: 2px;
+                        cross-axis-alignment: center;
+
+                        IconDisplay {
+                            icon: IconSet.Cpu;
+                            size: 10px;
+                            stroke: Palette.foreground;
+                            stroke-width: 2;
+                        }
+
+                        Text {
+                            text: game-mod.engine-text;
+                            font-size: 11px;
+                            color: Palette.foreground;
+                        }
                     }
                 }
 
                 if game-mod.description != "" : Text {
                     text: game-mod.description;
                     font-size: 12px;
-                    opacity: 0.5;
+                    opacity: 0.75;
                     wrap: word-wrap;
                     color: Palette.foreground;
                 }
@@ -169,16 +266,6 @@ export component GameModRowView inherits Rectangle {
 
                     clicked => {
                         root.install(game-mod.mod-id);
-                    }
-                }
-
-                if game-mod.can-uninstall : Button {
-                    text: @tr("gameModRow" => "Uninstall");
-                    enabled: !game-mod.has-installed-dependants;
-                    height: 28px;
-
-                    clicked => {
-                        root.uninstall(game-mod.mod-id);
                     }
                 }
 
@@ -201,6 +288,7 @@ export component GameModRowView inherits Rectangle {
                 }
 
                 actions-button := IconButton {
+                    visible: root.has-dropdown-actions;
                     icon: IconSet.Ellipsis;
 
                     clicked => {
