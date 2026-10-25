@@ -29,11 +29,11 @@ implemented.
 - Manually adding games: executable picker, directory scanning with progress and confirmation, saved directory management, and removing manually added games.
 - Game thumbnail visibility setting.
 - Download progress tracking and status menu, driven by shared install-step generation.
+- Loading, empty, and error states for the games list, game mods, and mods loading, including a startup refresh and data-query error notifications.
 
 ## Not done
 - App settings: reset settings and open logs folder.
 - App update check/download flow.
 - Mod details page and remaining mod UI parity.
-- Loading, empty, and error states parity.
 - Window size/position persistence, single-instance behavior, deep links.
 - Analytics events.

@@ -62,8 +62,15 @@ pub fn run() -> Result<(), slint::PlatformError> {
 
 	let initial_have_changes = initial_groups.iter().any(|group| group.has_changes);
 
-	let response = load_game_ids(&database, initial_query.clone());
+	let response = load_game_ids(&database, initial_query.clone()).unwrap_or_else(|err| {
+		eprintln!("Failed to load initial games: {err}");
+		rai_pal_core::local_database::game_database::GameIdsResponse {
+			game_ids: Vec::new(),
+			total_count: 0,
+		}
+	});
 	let rows = make_rows(&response.game_ids);
+	let games_total_count = response.total_count;
 	let database = Arc::new(database);
 
 	let window = MainWindow::new()?;
@@ -91,6 +98,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 		thanks::load(window.as_weak());
 	}
 	window.set_search_text(initial_query.search.clone().into());
+	window.set_games_total_count(i32::try_from(games_total_count).unwrap_or(i32::MAX));
 	window.set_sort_index(sort_index(initial_query.sort_by));
 	window.set_sort_descending(initial_query.sort_descending);
 	window.set_current_tab(initial_tab);
@@ -147,20 +155,12 @@ pub fn run() -> Result<(), slint::PlatformError> {
 			return;
 		};
 
-		if window.get_refreshing() {
-			return;
-		}
-
-		window.set_refreshing(true);
-		window.set_refresh_task_names("".into());
-
-		let query = ui_settings.borrow().games_query.clone();
-		refresh::refresh_all(
-			ui_window.clone(),
+		begin_refresh_all(
+			&window,
 			ui_database.clone(),
 			ui_scheduler.clone(),
-			query,
-			ui_selected_game.clone(),
+			&ui_settings,
+			&ui_selected_game,
 		);
 	});
 
@@ -1014,6 +1014,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 
 	let model = Rc::new(slint::VecModel::from(rows));
 	window.set_game_rows(model.into());
+	begin_refresh_all(&window, database, scheduler, &settings, &selected_game);
 	window.run()
 }
 
@@ -1193,4 +1194,28 @@ fn core_tab(tab: AppTab) -> TabId {
 		AppTab::Mods => TabId::Mods,
 		AppTab::Thanks => TabId::Thanks,
 	}
+}
+
+fn begin_refresh_all(
+	window: &MainWindow,
+	database: Arc<DbMutex>,
+	scheduler: Arc<FetchScheduler>,
+	settings: &Rc<RefCell<AppSettings>>,
+	selected_game: &selected::SelectedGameState,
+) {
+	if window.get_refreshing() {
+		return;
+	}
+
+	window.set_refreshing(true);
+	window.set_refresh_task_names("".into());
+
+	let query = settings.borrow().games_query.clone();
+	refresh::refresh_all(
+		window.as_weak(),
+		database,
+		scheduler,
+		query,
+		selected_game.clone(),
+	);
 }

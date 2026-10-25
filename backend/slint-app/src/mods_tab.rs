@@ -5,7 +5,7 @@ use rai_pal_core::{
 	mods::{game_mod::GameMod, mod_family::ModFamily},
 };
 
-use crate::{MainWindow, ModsTabItemData, ModsTabModData, mods};
+use crate::{MainWindow, ModsTabItemData, ModsTabModData, mods, notifications};
 
 struct Group {
 	item: ModsTabItemData,
@@ -14,11 +14,15 @@ struct Group {
 }
 
 pub fn load(window: &MainWindow, database: &DbMutex) {
-	let Ok(mods) = database.get_mod_map() else {
-		window.set_mods_tab_items(
-			Rc::new(slint::VecModel::from(Vec::<ModsTabItemData>::new())).into(),
-		);
-		return;
+	let mods = match database.get_mod_map() {
+		Ok(mods) => mods,
+		Err(err) => {
+			notifications::error(window, format!("Failed to load mods: {err}"));
+			window.set_mods_tab_items(
+				Rc::new(slint::VecModel::from(Vec::<ModsTabItemData>::new())).into(),
+			);
+			return;
+		}
 	};
 	let families = database.get_mod_families().unwrap_or_default();
 

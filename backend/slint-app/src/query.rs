@@ -8,19 +8,12 @@ use rai_pal_core::{
 	},
 };
 
-use crate::{MainWindow, model::make_rows, scheduler::FetchScheduler};
+use crate::{MainWindow, model::make_rows, notifications, scheduler::FetchScheduler};
 
-pub fn load_game_ids(database: &DbMutex, query: GamesQuery) -> GameIdsResponse {
-	match database.get_game_ids(Some(query)) {
-		Ok(response) => response,
-		Err(err) => {
-			eprintln!("Failed to load game ids: {err}");
-			GameIdsResponse {
-				game_ids: vec![],
-				total_count: 0,
-			}
-		}
-	}
+pub fn load_game_ids(database: &DbMutex, query: GamesQuery) -> Result<GameIdsResponse, String> {
+	database
+		.get_game_ids(Some(query))
+		.map_err(|err| err.to_string())
 }
 
 pub fn start_query(
@@ -41,7 +34,7 @@ pub fn start_query(
 			return;
 		}
 
-		let response = load_game_ids(&database, query);
+		let result = load_game_ids(&database, query);
 		let ui_scheduler = scheduler.clone();
 
 		let _ = slint::invoke_from_event_loop(move || {
@@ -53,9 +46,19 @@ pub fn start_query(
 				return;
 			};
 
+			let response = match result {
+				Ok(response) => response,
+				Err(err) => {
+					eprintln!("Failed to get app data: {err}");
+					notifications::error(&window, format!("Failed to get app data: {err}"));
+					return;
+				}
+			};
+
 			let rows = make_rows(&response.game_ids);
 			ui_scheduler.begin_query();
 
+			window.set_games_total_count(i32::try_from(response.total_count).unwrap_or(i32::MAX));
 			let model = std::rc::Rc::new(slint::VecModel::from(rows));
 			window.set_game_rows(model.into());
 		});

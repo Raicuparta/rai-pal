@@ -89,7 +89,14 @@ fn apply_mods(
 	game: &DbGame,
 	remote_config_ids: &HashSet<String>,
 ) {
-	let loaded = load_mods(database, game, remote_config_ids);
+	let loaded = match load_mods(database, game, remote_config_ids) {
+		Ok(loaded) => loaded,
+		Err(err) => {
+			eprintln!("Failed to load mods: {err}");
+			notifications::error(window, format!("Failed to load mods: {err}"));
+			return;
+		}
+	};
 
 	window.set_has_any_mods(loaded.has_any_mods);
 	window.set_has_installed_mods(!loaded.installed.is_empty());
@@ -292,13 +299,13 @@ pub fn configure_mod(database: Arc<DbMutex>, game: DbGame, mod_id: String, open_
 	});
 }
 
-fn load_mods(database: &DbMutex, game: &DbGame, remote_config_ids: &HashSet<String>) -> LoadedMods {
-	let Ok(mod_infos) = database.get_game_mods(&game.provider_id, &game.game_id) else {
-		return LoadedMods::default();
-	};
-	let Ok(mods) = database.get_mod_map() else {
-		return LoadedMods::default();
-	};
+fn load_mods(
+	database: &DbMutex,
+	game: &DbGame,
+	remote_config_ids: &HashSet<String>,
+) -> Result<LoadedMods> {
+	let mod_infos = database.get_game_mods(&game.provider_id, &game.game_id)?;
+	let mods = database.get_mod_map()?;
 	let families = database.get_mod_families().unwrap_or_default();
 
 	let mut compatible_parts = Vec::new();
@@ -355,14 +362,14 @@ fn load_mods(database: &DbMutex, game: &DbGame, remote_config_ids: &HashSet<Stri
 	let potential = build_potential_rows(&compatible_rows, &families);
 	let (installed, available) = compatible_rows.into_iter().partition(|row| row.installed);
 
-	LoadedMods {
+	Ok(LoadedMods {
 		installed,
 		available,
 		hidden,
 		incompatible,
 		potential,
 		has_any_mods,
-	}
+	})
 }
 
 fn make_row(

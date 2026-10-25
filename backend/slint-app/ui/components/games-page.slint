@@ -2,10 +2,13 @@ import { ListView } from "std-widgets.slint";
 import { GameRowData } from "../game-row-data.slint";
 import { Theme } from "../theme.slint";
 import { GameRowView } from "game-row.slint";
+import { MessageState } from "message-state.slint";
 
 export component GamesPage inherits Rectangle {
     in property <[GameRowData]> game-rows;
     in property <bool> show-thumbnails: true;
+    in property <int> total-count: 0;
+    in property <bool> refreshing: false;
 
     callback request-game(index: int);
     callback visible-range-changed(first: int, last: int);
@@ -13,6 +16,18 @@ export component GamesPage inherits Rectangle {
 
     property <length> list-content-y <=> game-list.content-y;
     property <length> list-visible-height <=> game-list.visible-height;
+
+    function empty-message() -> string {
+        if root.total-count == 0 {
+            if root.refreshing {
+                return @tr("gamesPage" => "Finding your games...");
+            }
+        }
+        if root.total-count == 0 {
+            return @tr("gamesPage" => "Rai Pal didn't find any games at all. Remember Rai Pal needs to find installed apps from other game providers, like Steam, Epic, etc.");
+        }
+        return @tr("gamesPage" => "Nothing! All of your games are hidden because of the filters you selected. Clear your filters to see your beautiful games again.");
+    }
 
     function notify-visible-range() {
         if (root.game-rows.length == 0) {
@@ -39,7 +54,17 @@ export component GamesPage inherits Rectangle {
         root.notify-visible-range();
     }
 
+    if root.game-rows.length == 0 : VerticalLayout {
+        padding: Theme.space-20;
+        alignment: center;
+
+        MessageState {
+            message: root.empty-message();
+        }
+    }
+
     game-list := ListView {
+        visible: root.game-rows.length > 0;
         for item[index] in root.game-rows : GameRowView {
             game-row: item;
             row-index: index;

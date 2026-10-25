@@ -1,0 +1,19 @@
+import { Palette } from "std-widgets.slint";
+import { Theme } from "../theme.slint";
+
+export component MessageState inherits Rectangle {
+    in property <string> message;
+
+    background: Theme.tag-background;
+    border-radius: Theme.radius-8;
+    height: max(Theme.game-row-height, text.preferred-height + Theme.space-20);
+
+    text := Text {
+        text: root.message;
+        x: Theme.space-12;
+        width: parent.width - Theme.space-20;
+        vertical-alignment: center;
+        wrap: word-wrap;
+        color: Palette.foreground;
+    }
+}

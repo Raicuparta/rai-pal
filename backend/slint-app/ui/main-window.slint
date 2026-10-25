@@ -42,6 +42,7 @@ export component MainWindow inherits Window {
     min-height: Theme.window-min-height;
 
     in property <[GameRowData]> game-rows;
+    in property <int> games-total-count: 0;
     in property <[GameModRowData]> game-mods-installed;
     in property <[GameModRowData]> game-mods-available;
     in property <[GameModRowData]> game-mods-hidden;
@@ -450,6 +451,8 @@ export component MainWindow inherits Window {
                         visible: !root.game-selected;
                         game-rows: root.game-rows;
                         show-thumbnails: !root.hide-game-thumbnails;
+                        total-count: root.games-total-count;
+                        refreshing: root.refreshing;
 
                         request-game(index) => {
                             root.request-game(index);
