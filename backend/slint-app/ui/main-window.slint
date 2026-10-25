@@ -14,6 +14,7 @@ import { GameDetailsPage } from "components/game-details-page.slint";
 import { NavTab } from "components/nav-tab.slint";
 import { AppMenu } from "components/app-menu.slint";
 import { UserMenu } from "components/user-menu.slint";
+import { DownloadProgress } from "components/download-progress.slint";
 import { AboutPopup } from "components/about-popup.slint";
 import { ModsPage } from "components/mods-page.slint";
 import { ThanksPage } from "components/thanks-page.slint";
@@ -26,6 +27,7 @@ import { ConfirmationPopup } from "components/confirmation-popup.slint";
 import { NotificationsOverlay } from "components/notifications.slint";
 import { UrlModSourceData } from "url-mod-source-data.slint";
 import { NotificationData } from "notification-data.slint";
+import { DownloadItemData } from "download-data.slint";
 import { Theme } from "theme.slint";
 import { ModActions } from "actions.slint";
 import { AppColorScheme, AppTab, AddGamePhase } from "app-types.slint";
@@ -71,6 +73,8 @@ export component MainWindow inherits Window {
     in property <bool> user-has-avatar: false;
     in property <image> user-avatar;
     in property <[NotificationData]> notifications;
+    in property <[DownloadItemData]> downloads;
+    in property <float> download-progress: 0;
     in-out property <bool> refreshing: false;
     in property <string> refresh-task-names: "";
     in property <UrlModSourceData> default-url-mod-source;
@@ -140,6 +144,7 @@ export component MainWindow inherits Window {
     callback log-in;
     callback log-out;
     callback dismiss-notification(id: int);
+    callback clear-downloads;
     callback confirmation-response(confirmed: bool);
     callback visible-range-changed(first: int, last: int);
     callback search-changed(text: string);
@@ -226,6 +231,15 @@ export component MainWindow inherits Window {
 
                 Rectangle {
                     horizontal-stretch: 1;
+                }
+
+                DownloadProgress {
+                    items: root.downloads;
+                    overall-progress: root.download-progress;
+
+                    clear-completed => {
+                        root.clear-downloads();
+                    }
                 }
 
                 UserMenu {

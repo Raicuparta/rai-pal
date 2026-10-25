@@ -444,3 +444,38 @@ impl ModDownload {
 		}
 	}
 }
+
+#[derive(Clone, Debug)]
+pub struct InstallStep {
+	pub id: String,
+	pub name: String,
+}
+
+pub fn install_steps(mods: &[GameMod]) -> Vec<InstallStep> {
+	let mut steps = Vec::new();
+
+	for game_mod in mods {
+		if game_mod.download.is_none() {
+			continue;
+		}
+
+		steps.push(InstallStep {
+			id: format!("{}:download", game_mod.id),
+			name: format!("Download {}", game_mod.id),
+		});
+
+		if game_mod
+			.install
+			.as_ref()
+			.and_then(|install| install.extract.as_ref())
+			.is_some()
+		{
+			steps.push(InstallStep {
+				id: format!("{}:extract", game_mod.id),
+				name: format!("Extract {}", game_mod.id),
+			});
+		}
+	}
+
+	steps
+}

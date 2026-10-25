@@ -20,7 +20,7 @@ use rai_pal_core::{
 use slint::{ComponentHandle, Model};
 
 use crate::{
-	AppColorScheme, AppTab, GameRowData, MainWindow, ModActions, actions, confirmation,
+	AppColorScheme, AppTab, GameRowData, MainWindow, ModActions, actions, confirmation, downloads,
 	fetch::spawn_fetchers,
 	filters::{
 		apply_filter_action, build_groups, load_mod_families, reset_all_filters, reset_filter_group,
@@ -754,11 +754,14 @@ pub fn run() -> Result<(), slint::PlatformError> {
 		}
 	});
 
+	let downloads = downloads::Tracker::new(window.as_weak());
+
 	let ui_window = window_weak.clone();
 	let ui_settings = settings.clone();
 	let ui_pending_confirmation = pending_confirmation.clone();
 	let ui_database = database.clone();
 	let ui_selected_game = selected_game.clone();
+	let ui_downloads = downloads.clone();
 	window.global::<ModActions>().on_request_install(
 		move |mod_id, confirmation_text, confirm_label, skip_id| {
 			let Some((_, game)) = get_selected_game(&ui_selected_game) else {
@@ -776,6 +779,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 				ui_database.clone(),
 				game,
 				mod_id.to_string(),
+				ui_downloads.clone(),
 				confirmation_text.to_string(),
 				confirm_label.to_string(),
 				skip_id.to_string(),
@@ -786,6 +790,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	let ui_window = window_weak.clone();
 	let ui_database = database.clone();
 	let ui_selected_game = selected_game.clone();
+	let ui_downloads = downloads.clone();
 	window.global::<ModActions>().on_update(move |mod_id| {
 		let Some((_, game)) = get_selected_game(&ui_selected_game) else {
 			return;
@@ -796,12 +801,14 @@ pub fn run() -> Result<(), slint::PlatformError> {
 			ui_window.clone(),
 			game,
 			mod_id.to_string(),
+			ui_downloads.clone(),
 		);
 	});
 
 	let ui_window = window_weak.clone();
 	let ui_database = database.clone();
 	let ui_selected_game = selected_game.clone();
+	let ui_downloads = downloads.clone();
 	window.global::<ModActions>().on_reinstall(move |mod_id| {
 		let Some((_, game)) = get_selected_game(&ui_selected_game) else {
 			return;
@@ -812,6 +819,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 			ui_window.clone(),
 			game,
 			mod_id.to_string(),
+			ui_downloads.clone(),
 		);
 	});
 
@@ -849,11 +857,21 @@ pub fn run() -> Result<(), slint::PlatformError> {
 		});
 
 	let ui_database = database.clone();
+	let ui_downloads = downloads.clone();
 	window
 		.global::<ModActions>()
 		.on_install_standalone(move |mod_id| {
-			actions::install_standalone_mod(ui_database.clone(), mod_id.to_string());
+			actions::install_standalone_mod(
+				ui_database.clone(),
+				mod_id.to_string(),
+				ui_downloads.clone(),
+			);
 		});
+
+	let ui_downloads = downloads.clone();
+	window.on_clear_downloads(move || {
+		ui_downloads.clear_completed();
+	});
 
 	window.global::<ModActions>().on_open_url(move |url| {
 		actions::open_url(url.to_string());

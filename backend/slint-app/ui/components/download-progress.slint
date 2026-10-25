@@ -1,0 +1,64 @@
+import { IconDisplay, IconSet } from "@lucide";
+import { Palette, ProgressIndicator } from "std-widgets.slint";
+import { DownloadItemData } from "../download-data.slint";
+import { Theme } from "../theme.slint";
+
+export component DownloadProgress inherits Rectangle {
+    in property <[DownloadItemData]> items;
+    in property <float> overall-progress: 0;
+
+    callback clear-completed;
+
+    width: Theme.control-height + Theme.space-8;
+    height: Theme.control-height;
+    visible: root.items.length > 0;
+
+    menu-area := ContextMenuArea {
+        Rectangle {
+            width: 100%;
+            height: 100%;
+            border-radius: Theme.radius-4;
+            background: touch-area.pressed ? Palette.control-background : touch-area.has-hover ? Palette.alternate-background : transparent;
+
+            IconDisplay {
+                icon: IconSet.CloudDownload;
+                size: Theme.menu-icon-size;
+                stroke: Palette.foreground;
+                stroke-width: 2;
+            }
+
+            ProgressIndicator {
+                x: Theme.space-6;
+                width: parent.width - Theme.space-12;
+                y: parent.height - Theme.space-6;
+                progress: root.overall-progress;
+            }
+
+            touch-area := TouchArea {
+                clicked => {
+                    menu-area.show({
+                        x: root.width - Theme.menu-width,
+                        y: root.height,
+                    });
+                }
+            }
+        }
+
+        Menu {
+            MenuItem {
+                title: @tr("downloadStatusMenu" => "Clear completed");
+
+                activated => {
+                    root.clear-completed();
+                }
+            }
+
+            if root.items.length > 0 : MenuSeparator { }
+
+            for item in root.items : MenuItem {
+                enabled: false;
+                title: "\{item.name}: \{round(item.progress)}%";
+            }
+        }
+    }
+}

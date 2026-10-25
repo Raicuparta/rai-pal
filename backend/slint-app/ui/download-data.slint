@@ -1,0 +1,13 @@
+export enum DownloadPhase {
+    pending,
+    in-progress,
+    finished,
+    failed,
+}
+
+export struct DownloadItemData {
+    id: string,
+    name: string,
+    progress: float,
+    phase: DownloadPhase,
+}

@@ -1,11 +1,14 @@
 use std::{collections::BTreeMap, sync::Arc, thread};
 
+use crate::downloads::Tracker;
+
 use rai_pal_core::{
 	app_paths,
 	game::DbGame,
 	game_providers::{game_provider, provider_command::ProviderCommandAction},
 	local_database::{app_database::DbMutex, mod_database::ModDatabase},
 	maps::TryGettable,
+	mods::game_mod::install_steps,
 	open_better,
 	path_extensions::PathExt,
 	result::Result,
@@ -65,7 +68,7 @@ pub fn run_standalone_mod(database: Arc<DbMutex>, mod_id: String) {
 	});
 }
 
-pub fn install_standalone_mod(database: Arc<DbMutex>, mod_id: String) {
+pub fn install_standalone_mod(database: Arc<DbMutex>, mod_id: String, downloads: Tracker) {
 	thread::spawn(move || {
 		let Ok(runtime) = tokio::runtime::Builder::new_current_thread()
 			.enable_all()
@@ -74,14 +77,28 @@ pub fn install_standalone_mod(database: Arc<DbMutex>, mod_id: String) {
 			return;
 		};
 
+		let Ok(game_mod) = database.get_mod(&mod_id) else {
+			eprintln!("Failed to get mod {mod_id} for install");
+			return;
+		};
+
+		let steps = install_steps(std::slice::from_ref(&game_mod));
+		downloads.pending_steps(&steps);
+
 		let result = runtime.block_on(async {
-			database.get_mod(&mod_id)?.install(None, |_| {}).await?;
+			game_mod
+				.install(None, |status| downloads.record(status))
+				.await?;
 			database.refresh_installed_mods()?;
 			Ok::<(), rai_pal_core::result::Error>(())
 		});
 
-		if let Err(err) = result {
-			eprintln!("Failed to install mod {mod_id}: {err}");
+		match result {
+			Ok(()) => downloads.finish_steps(&steps),
+			Err(err) => {
+				eprintln!("Failed to install mod {mod_id}: {err}");
+				downloads.fail_steps(&steps);
+			}
 		}
 	});
 }

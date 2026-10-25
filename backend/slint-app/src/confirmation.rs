@@ -5,7 +5,10 @@ use rai_pal_core::{
 	local_database::app_database::DbMutex,
 };
 
-use crate::{MainWindow, app::persist_settings, mods, scheduler::FetchScheduler, selected};
+use crate::{
+	MainWindow, app::persist_settings, downloads::Tracker, mods, scheduler::FetchScheduler,
+	selected,
+};
 use slint::ComponentHandle;
 
 type ConfirmationFn = Box<dyn FnOnce(&MainWindow, Arc<DbMutex>)>;
@@ -25,6 +28,7 @@ pub fn request_install(
 	database: Arc<DbMutex>,
 	game: DbGame,
 	mod_id: String,
+	downloads: Tracker,
 	confirmation_text: String,
 	confirm_label: String,
 	skip_id: String,
@@ -35,7 +39,7 @@ pub fn request_install(
 		pending,
 		database,
 		Box::new(move |window, database| {
-			mods::install_mod(database, window.as_weak(), game, mod_id);
+			mods::install_mod(database, window.as_weak(), game, mod_id, downloads);
 		}),
 		confirmation_text,
 		confirm_label,

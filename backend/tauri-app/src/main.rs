@@ -32,7 +32,7 @@ use rai_pal_core::{
 	maps::TryGettable,
 	mod_providers::{mod_provider, url_mod_provider},
 	mods::{
-		game_mod::{GameMod, ModDependency},
+		game_mod::{GameMod, ModDependency, install_steps},
 		mod_family::ModFamily,
 	},
 	open_better,
@@ -223,37 +223,6 @@ fn collect_deps_to_install(
 	}
 }
 
-fn build_steps(
-	mods: &[GameMod],
-	main_id: &str,
-) -> (Vec<(String, String)>, Option<String>, Option<String>) {
-	let mut steps = Vec::new();
-	let mut main_dl = None;
-	let mut main_ex = None;
-	for m in mods {
-		if m.download.is_none() {
-			continue;
-		}
-		let dl_key = format!("{}:download", m.id);
-		steps.push((dl_key.clone(), format!("Download {}", m.id)));
-		if m.id == main_id {
-			main_dl = Some(dl_key);
-		}
-		if m.install
-			.as_ref()
-			.and_then(|i| i.extract.as_ref())
-			.is_some()
-		{
-			let ex_key = format!("{}:extract", m.id);
-			steps.push((ex_key.clone(), format!("Extract {}", m.id)));
-			if m.id == main_id {
-				main_ex = Some(ex_key);
-			}
-		}
-	}
-	(steps, main_dl, main_ex)
-}
-
 #[tauri::command]
 #[specta::specta]
 async fn install_mod(
@@ -315,7 +284,7 @@ async fn install_mod(
 		.cloned()
 		.collect();
 
-	let (steps, _main_dl, _main_ex) = build_steps(&all_owned, mod_id);
+	let steps = install_steps(&all_owned);
 
 	let forward = move |status: ProgressStatus| {
 		if let Some(channel) = &download_status_channel {
@@ -325,10 +294,10 @@ async fn install_mod(
 		}
 	};
 
-	for (step_id, step_name) in &steps {
+	for step in &steps {
 		forward(ProgressStatus::Pending {
-			id: step_id.clone(),
-			name: step_name.clone(),
+			id: step.id.clone(),
+			name: step.name.clone(),
 		});
 	}
 
@@ -369,9 +338,9 @@ async fn install_mod(
 			handle.emit_safe(events::RefreshGame(game.provider_id, game.game_id.clone()));
 		}
 
-		for (step_id, _) in &steps {
+		for step in &steps {
 			forward(ProgressStatus::Finished {
-				id: step_id.clone(),
+				id: step.id.clone(),
 			});
 		}
 
@@ -380,9 +349,9 @@ async fn install_mod(
 	.await;
 
 	if let Err(error) = &result {
-		for (step_id, _) in &steps {
+		for step in &steps {
 			forward(ProgressStatus::Failed {
-				id: step_id.clone(),
+				id: step.id.clone(),
 				error: error.to_string(),
 			});
 		}

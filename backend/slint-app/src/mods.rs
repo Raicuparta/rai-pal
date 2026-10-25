@@ -13,14 +13,14 @@ use rai_pal_core::{
 		mod_database::{GameModInfo, ModDatabase},
 	},
 	mods::{
-		game_mod::{GameMod, ModDependency},
+		game_mod::{GameMod, ModDependency, install_steps},
 		mod_family::ModFamily,
 	},
 	result::Result,
 };
 use slint::ComponentHandle;
 
-use crate::{GameModRowData, MainWindow, PotentialModRowData, notifications};
+use crate::{GameModRowData, MainWindow, PotentialModRowData, downloads::Tracker, notifications};
 
 #[derive(Default)]
 struct LoadedMods {
@@ -108,6 +108,7 @@ pub fn install_mod(
 	window: slint::Weak<MainWindow>,
 	game: DbGame,
 	mod_id: String,
+	downloads: Tracker,
 ) {
 	thread::spawn(move || {
 		let Ok(runtime) = tokio::runtime::Builder::new_current_thread()
@@ -117,12 +118,42 @@ pub fn install_mod(
 			return;
 		};
 
-		if let Err(err) = runtime.block_on(install_mod_inner(&database, &game, &mod_id)) {
+		let (game_mod, deps_to_install) = match collect_install_mods(&database, &game, &mod_id) {
+			Ok(mods) => mods,
+			Err(err) => {
+				eprintln!("Failed to prepare mod install {mod_id}: {err}");
+				notifications::error_async(
+					&window,
+					format!("Failed to install mod {mod_id}: {err}"),
+				);
+				return;
+			}
+		};
+
+		let all_owned = deps_to_install
+			.iter()
+			.chain(std::iter::once(&game_mod))
+			.cloned()
+			.collect::<Vec<_>>();
+		let steps = install_steps(&all_owned);
+		downloads.pending_steps(&steps);
+
+		let result = runtime.block_on(install_mod_inner(
+			&database,
+			&game,
+			game_mod,
+			deps_to_install,
+			&downloads,
+		));
+
+		if let Err(err) = result {
 			eprintln!("Failed to install mod {mod_id}: {err}");
+			downloads.fail_steps(&steps);
 			notifications::error_async(&window, format!("Failed to install mod {mod_id}: {err}"));
 			return;
 		}
 
+		downloads.finish_steps(&steps);
 		refresh_after_action(&window, &database, &game);
 	});
 }
@@ -531,7 +562,11 @@ fn build_potential_rows(
 	result
 }
 
-async fn install_mod_inner(database: &DbMutex, game: &DbGame, mod_id: &str) -> Result {
+fn collect_install_mods(
+	database: &DbMutex,
+	game: &DbGame,
+	mod_id: &str,
+) -> Result<(GameMod, Vec<GameMod>)> {
 	let game_mod = database.get_mod(mod_id)?;
 	let relevant_mods = database.get_game_mods(&game.provider_id, &game.game_id)?;
 	let mut deps_to_install = Vec::new();
@@ -544,18 +579,34 @@ async fn install_mod_inner(database: &DbMutex, game: &DbGame, mod_id: &str) -> R
 		&mut deps_to_install,
 	);
 
+	Ok((game_mod, deps_to_install))
+}
+
+async fn install_mod_inner(
+	database: &DbMutex,
+	game: &DbGame,
+	game_mod: GameMod,
+	deps_to_install: Vec<GameMod>,
+	downloads: &Tracker,
+) -> Result {
+	let mod_id = game_mod.id.clone();
+
 	for dependency in &deps_to_install {
-		dependency.install(Some(game), |_| {}).await?;
+		dependency
+			.install(Some(game), |status| downloads.record(status))
+			.await?;
 	}
 
 	if let Some(installed_mod) =
-		database.get_installed_mod(mod_id, Some(game.provider_id), Some(game.game_id.clone()))?
+		database.get_installed_mod(&mod_id, Some(game.provider_id), Some(game.game_id.clone()))?
 	{
 		installed_mod.uninstall().await?;
 	}
 
 	if game_mod.install.is_some() {
-		game_mod.install(Some(game), |_| {}).await?;
+		game_mod
+			.install(Some(game), |status| downloads.record(status))
+			.await?;
 	}
 
 	database.refresh_installed_mods()?;

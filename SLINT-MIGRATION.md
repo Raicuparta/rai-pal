@@ -28,11 +28,11 @@ implemented.
 - Thanks page content, including Patreon leaderboard and donation links.
 - Manually adding games: executable picker, directory scanning with progress and confirmation, saved directory management, and removing manually added games.
 - Game thumbnail visibility setting.
+- Download progress tracking and status menu, driven by shared install-step generation.
 
 ## Not done
 - App settings: reset settings and open logs folder.
 - App update check/download flow.
-- Download progress UI.
 - Mod details page and remaining mod UI parity.
 - Loading, empty, and error states parity.
 - Window size/position persistence, single-instance behavior, deep links.
