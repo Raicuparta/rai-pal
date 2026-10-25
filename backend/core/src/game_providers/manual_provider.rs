@@ -163,7 +163,10 @@ fn read_games_config(games_config_path: &Path) -> GamesConfig {
 	match fs_err::read_to_string(games_config_path)
 		.and_then(|games_config_file| Ok(serde_json::from_str::<GamesConfig>(&games_config_file)?))
 	{
-		Ok(games_config) => games_config,
+		Ok(mut games_config) => {
+			normalize_config_paths(&mut games_config);
+			games_config
+		}
 		Err(error) => {
 			error!("Error reading config: {error}");
 			GamesConfig {
@@ -261,7 +264,7 @@ pub async fn add_game(path: &Path) -> Result<DbGame> {
 	let config_path = games_config_path()?;
 
 	let mut games_config = read_games_config(&config_path);
-	games_config.paths.push(path.to_path_buf());
+	games_config.paths.push(path.normalize());
 
 	fs_err::tokio::write(config_path, serde_json::to_string_pretty(&games_config)?).await?;
 
@@ -284,11 +287,17 @@ pub async fn add_directory(path: &Path) -> Result<Vec<DbGame>> {
 	let config_path = games_config_path()?;
 	let mut games_config = read_games_config(&config_path);
 
-	if games_config.directories.iter().any(|p| p.as_path() == path) {
+	let path = path.normalize();
+
+	if games_config
+		.directories
+		.iter()
+		.any(|configured| configured.as_path() == path)
+	{
 		return Ok(games);
 	}
 
-	games_config.directories.push(path.to_path_buf());
+	games_config.directories.push(path);
 
 	fs_err::tokio::write(config_path, serde_json::to_string_pretty(&games_config)?).await?;
 
@@ -427,10 +436,13 @@ fn remove_directory_path(path: &Path) -> Result {
 }
 
 pub async fn remove_directory(path: &Path) -> Result {
+	let path = path.normalize();
 	let config_path = games_config_path()?;
 	let mut games_config = read_games_config(&config_path);
-	games_config.directories.retain(|p| p != path);
-	games_config.ignored_paths.retain(|p| !p.starts_with(path));
+	games_config
+		.directories
+		.retain(|configured| configured != &path);
+	games_config.ignored_paths.retain(|p| !p.starts_with(&path));
 
 	fs_err::tokio::write(config_path, serde_json::to_string_pretty(&games_config)?).await?;
 
@@ -448,18 +460,25 @@ pub async fn remove_game(game: &DbGame) -> Result {
 		return Err(Error::InvalidProviderId(game.provider_id.to_string()));
 	}
 
-	let path = &game
+	let path = game
 		.exe_path
 		.as_ref()
-		.ok_or_else(|| Error::GameNotInstalled(game.display_title.clone()))?;
+		.ok_or_else(|| Error::GameNotInstalled(game.display_title.clone()))?
+		.normalize();
 
 	let config_path = games_config_path()?;
 	let mut games_config = read_games_config(&config_path);
 
-	if games_config.paths.contains(path) {
-		games_config.paths.retain(|p| p != *path);
-	} else if !games_config.ignored_paths.contains(path) {
-		games_config.ignored_paths.push((*path).clone());
+	let configured_path = games_config.paths.contains(&path);
+	let inside_directory = games_config
+		.directories
+		.iter()
+		.any(|directory| path.starts_with(directory));
+
+	games_config.paths.retain(|configured| configured != &path);
+
+	if (!configured_path || inside_directory) && !games_config.ignored_paths.contains(&path) {
+		games_config.ignored_paths.push(path);
 	}
 
 	fs_err::tokio::write(config_path, serde_json::to_string_pretty(&games_config)?).await?;
@@ -501,4 +520,18 @@ fn clean_up_stale_ignored_paths(config: &GamesConfig) -> Result {
 	fs_err::write(config_path, serde_json::to_string_pretty(&games_config)?)?;
 
 	Ok(())
+}
+
+fn normalize_config_paths(config: &mut GamesConfig) {
+	for path in &mut config.paths {
+		*path = path.normalize();
+	}
+
+	for directory in &mut config.directories {
+		*directory = directory.normalize();
+	}
+
+	for ignored_path in &mut config.ignored_paths {
+		*ignored_path = ignored_path.normalize();
+	}
 }
