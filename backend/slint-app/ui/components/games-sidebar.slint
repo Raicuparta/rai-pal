@@ -22,13 +22,14 @@ export component GamesSidebar inherits Rectangle {
     width: 260px;
     background: Palette.alternate-background;
 
-    sidebar-scroll := ScrollView {
+    ScrollView {
         VerticalLayout {
-            min-height: sidebar-scroll.visible-height;
             padding: 12px;
             spacing: 8px;
 
             LineEdit {
+                vertical-stretch: 0;
+                height: 32px;
                 text <=> root.search-text;
                 placeholder-text: @tr("filterMenu" => "Search...");
 
@@ -38,9 +39,13 @@ export component GamesSidebar inherits Rectangle {
             }
 
             HorizontalLayout {
+                vertical-stretch: 0;
+                height: 32px;
                 spacing: 4px;
 
                 ComboBox {
+                    vertical-stretch: 0;
+                    height: 32px;
                     model: [
                         @tr("gamesTableColumn" => "Name"),
                         @tr("gamesTableColumn" => "Engine"),
@@ -64,63 +69,55 @@ export component GamesSidebar inherits Rectangle {
                 }
             }
 
-            VerticalLayout {
-                vertical-stretch: 1;
-                min-height: 100px;
-                alignment: start;
+            HorizontalLayout {
+                vertical-stretch: 0;
                 spacing: 4px;
+                alignment: start;
+                cross-axis-alignment: center;
 
-                HorizontalLayout {
-                    spacing: 4px;
-                    alignment: start;
-                    cross-axis-alignment: center;
+                Button {
+                    text: @tr("filterMenu" => "Reset");
+                    height: 22px;
+                    enabled: root.filters-have-changes;
 
-                    Button {
-                        text: @tr("filterMenu" => "Reset");
-                        height: 22px;
-                        enabled: root.filters-have-changes;
-
-                        clicked => {
-                            root.filters-reset();
-                        }
-                    }
-
-                    Text {
-                        text: @tr("filterMenu" => "Filters");
-                        font-size: 16px;
-                        font-weight: 700;
-                        vertical-alignment: center;
+                    clicked => {
+                        root.filters-reset();
                     }
                 }
 
-                ScrollView {
-                    VerticalLayout {
-                        alignment: start;
-                        spacing: 8px;
+                Text {
+                    text: @tr("filterMenu" => "Filters");
+                    font-size: 16px;
+                    font-weight: 700;
+                    vertical-alignment: center;
+                }
+            }
 
-                        for group in root.filter-groups : FilterGroupView {
-                            group: group;
+            VerticalLayout {
+                alignment: start;
+                spacing: 8px;
 
-                            toggled(value, checked) => {
-                                root.filter-toggled(group.key, value, checked);
-                            }
+                for group in root.filter-groups : FilterGroupView {
+                    group: group;
 
-                            lock-toggled(value) => {
-                                root.filter-lock-toggled(group.key, value);
-                            }
+                    toggled(value, checked) => {
+                        root.filter-toggled(group.key, value, checked);
+                    }
 
-                            only(value) => {
-                                root.filter-only(group.key, value);
-                            }
+                    lock-toggled(value) => {
+                        root.filter-lock-toggled(group.key, value);
+                    }
 
-                            reset => {
-                                root.filter-reset(group.key);
-                            }
+                    only(value) => {
+                        root.filter-only(group.key, value);
+                    }
 
-                            expanded-changed(expanded) => {
-                                root.filter-expanded-changed(group.key, expanded);
-                            }
-                        }
+                    reset => {
+                        root.filter-reset(group.key);
+                    }
+
+                    expanded-changed(expanded) => {
+                        root.filter-expanded-changed(group.key, expanded);
                     }
                 }
             }

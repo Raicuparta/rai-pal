@@ -23,9 +23,8 @@ export component GameSidebar inherits Rectangle {
     width: 260px;
     background: Palette.alternate-background;
 
-    sidebar-scroll := ScrollView {
+    ScrollView {
         VerticalLayout {
-            min-height: sidebar-scroll.visible-height;
             padding: 12px;
             spacing: 8px;
             alignment: start;
