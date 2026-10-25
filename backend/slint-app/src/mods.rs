@@ -105,7 +105,11 @@ pub fn uninstall_all_mods(database: Arc<DbMutex>, window: slint::Weak<MainWindow
 		};
 
 		let result = runtime.block_on(async {
-			game.uninstall_all_mods().await?;
+			for installed_mod in database.get_installed_mods_for_game(&game)? {
+				installed_mod.uninstall().await?;
+			}
+
+			game.delete_mods_folder().await?;
 			database.refresh_installed_mods()?;
 			Ok::<(), rai_pal_core::result::Error>(())
 		});

@@ -41,14 +41,14 @@ pub fn secondary_actions(game: &DbGame) -> Vec<ProviderCommandAction> {
 pub fn run_provider_action(database: Arc<DbMutex>, game: DbGame, action: ProviderCommandAction) {
 	spawn_logged(move || {
 		let provider_command = game.provider_commands.try_get(&action)?;
-		let environment = match action {
+		let (environment, environment_mod_ids) = match action {
 			ProviderCommandAction::StartViaProvider | ProviderCommandAction::StartViaExe => {
 				database.get_game_environment(&game)?
 			}
-			_ => BTreeMap::default(),
+			_ => (BTreeMap::default(), Vec::new()),
 		};
 
-		provider_command.run(&game, &environment)
+		provider_command.run(&game, &environment, &environment_mod_ids)
 	});
 }
 
