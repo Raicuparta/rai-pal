@@ -20,7 +20,7 @@ use rai_pal_core::{
 use slint::{ComponentHandle, Model};
 
 use crate::{
-	AppColorScheme, AppTab, GameRowData, MainWindow, ModActions, actions,
+	AppColorScheme, AppTab, GameRowData, MainWindow, ModActions, actions, confirmation,
 	fetch::spawn_fetchers,
 	filters::{
 		apply_filter_action, build_groups, load_mod_families, reset_all_filters, reset_filter_group,
@@ -131,6 +131,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	});
 
 	let selected_game: selected::SelectedGameState = Arc::new(Mutex::new(None));
+	let pending_confirmation = Rc::new(confirmation::PendingState::default());
 
 	let ui_settings = settings.clone();
 	let ui_window = window_weak.clone();
@@ -269,6 +270,22 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	window.on_dismiss_notification(move |id| {
 		if let Some(window) = ui_window.upgrade() {
 			notifications::dismiss(&window, id);
+		}
+	});
+
+	let ui_window = window_weak.clone();
+	let ui_settings = settings.clone();
+	let ui_pending_confirmation = pending_confirmation.clone();
+	let ui_database = database.clone();
+	window.on_confirmation_response(move |confirmed| {
+		if let Some(window) = ui_window.upgrade() {
+			confirmation::respond(
+				&window,
+				&ui_settings,
+				&ui_pending_confirmation,
+				ui_database.clone(),
+				confirmed,
+			);
 		}
 	});
 
@@ -611,20 +628,33 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	});
 
 	let ui_window = window_weak.clone();
+	let ui_settings = settings.clone();
+	let ui_pending_confirmation = pending_confirmation.clone();
 	let ui_database = database.clone();
 	let ui_selected_game = selected_game.clone();
-	window.global::<ModActions>().on_install(move |mod_id| {
-		let Some((_, game)) = get_selected_game(&ui_selected_game) else {
-			return;
-		};
+	window.global::<ModActions>().on_request_install(
+		move |mod_id, confirmation_text, confirm_label, skip_id| {
+			let Some((_, game)) = get_selected_game(&ui_selected_game) else {
+				return;
+			};
 
-		mods::install_mod(
-			ui_database.clone(),
-			ui_window.clone(),
-			game,
-			mod_id.to_string(),
-		);
-	});
+			let Some(window) = ui_window.upgrade() else {
+				return;
+			};
+
+			confirmation::request_install(
+				&window,
+				&ui_settings,
+				&ui_pending_confirmation,
+				ui_database.clone(),
+				game,
+				mod_id.to_string(),
+				confirmation_text.to_string(),
+				confirm_label.to_string(),
+				skip_id.to_string(),
+			);
+		},
+	);
 
 	let ui_window = window_weak.clone();
 	let ui_database = database.clone();
@@ -757,15 +787,31 @@ pub fn run() -> Result<(), slint::PlatformError> {
 		});
 
 	let ui_window = window_weak.clone();
+	let ui_settings = settings.clone();
+	let ui_pending_confirmation = pending_confirmation.clone();
 	let ui_database = database.clone();
 	let ui_selected_game = selected_game.clone();
-	window.global::<ModActions>().on_uninstall_all(move || {
-		let Some((_, game)) = get_selected_game(&ui_selected_game) else {
-			return;
-		};
+	window.global::<ModActions>().on_request_uninstall_all(
+		move |confirmation_text, confirm_label| {
+			let Some((_, game)) = get_selected_game(&ui_selected_game) else {
+				return;
+			};
 
-		mods::uninstall_all_mods(ui_database.clone(), ui_window.clone(), game);
-	});
+			let Some(window) = ui_window.upgrade() else {
+				return;
+			};
+
+			confirmation::request_uninstall_all(
+				&window,
+				&ui_settings,
+				&ui_pending_confirmation,
+				ui_database.clone(),
+				game,
+				confirmation_text.to_string(),
+				confirm_label.to_string(),
+			);
+		},
+	);
 
 	let ui_window = window_weak.clone();
 	let ui_database = database.clone();
@@ -845,7 +891,7 @@ fn get_selected_game(state: &selected::SelectedGameState) -> Option<(usize, DbGa
 		.and_then(|selected_game| selected_game.clone())
 }
 
-fn persist_settings(settings: &Rc<RefCell<AppSettings>>) {
+pub(crate) fn persist_settings(settings: &Rc<RefCell<AppSettings>>) {
 	if let Err(err) = settings.borrow().try_write() {
 		eprintln!("Failed to save app settings: {err}");
 	}

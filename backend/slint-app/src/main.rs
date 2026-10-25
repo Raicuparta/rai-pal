@@ -4,6 +4,7 @@ slint::include_modules!();
 
 mod actions;
 mod app;
+mod confirmation;
 mod fetch;
 mod filters;
 mod i18n;

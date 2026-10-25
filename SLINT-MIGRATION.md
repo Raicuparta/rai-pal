@@ -24,15 +24,15 @@ implemented.
 - Steam shortcut creation from the app menu.
 - Discord user menu with login and logout.
 - Toast notifications for errors and provider command feedback.
+- Confirmation dialogs with a persisted skip-confirmation setting.
 
 ## Not done
 
 - Thanks page content.
 - Add game, scan/add game directory, remove manually added game.
-- App settings beyond language/color scheme: hide thumbnails, skip confirmations, etc.
+- App settings beyond language/color scheme: hide thumbnails, etc.
 - App update check/download flow.
 - Download progress UI.
-- Confirmation dialogs.
 - Mod details page and remaining mod UI parity.
 - Loading, empty, and error states parity.
 - Window size/position persistence, single-instance behavior, deep links.

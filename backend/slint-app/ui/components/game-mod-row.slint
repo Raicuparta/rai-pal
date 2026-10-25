@@ -103,7 +103,12 @@ export component GameModRowView inherits Rectangle {
                     height: Theme.action-button-height;
 
                     clicked => {
-                        ModActions.install(game-mod.mod-id);
+                        ModActions.request-install(
+                            game-mod.mod-id,
+                            @tr("gameModRow" => "Attention: be careful when installing mods on multiplayer games! Anticheat can detect some mods and get you banned, even if the mods seem harmless."),
+                            @tr("gameModRow" => "Install"),
+                            "install-mod-confirm",
+                        );
                     }
                 }
 

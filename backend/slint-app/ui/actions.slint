@@ -1,5 +1,5 @@
 export global ModActions {
-    callback install(mod-id: string);
+    callback request-install(mod-id: string, confirmation-text: string, confirm-label: string, skip-id: string);
     callback uninstall(mod-id: string);
     callback update(mod-id: string);
     callback reinstall(mod-id: string);
@@ -8,7 +8,7 @@ export global ModActions {
     callback download-config(mod-id: string);
     callback configure(mod-id: string);
     callback configure-folder(mod-id: string);
-    callback uninstall-all;
+    callback request-uninstall-all(confirmation-text: string, confirm-label: string);
     callback run-standalone(mod-id: string);
     callback install-standalone(mod-id: string);
     callback open-url(url: string);

@@ -19,6 +19,7 @@ import { UrlModSourcesPopup } from "components/url-mod-sources-popup.slint";
 import { ConfirmModSourcePopup } from "components/confirm-mod-source-popup.slint";
 import { SteamCachePopup } from "components/steam-cache-popup.slint";
 import { SteamShortcutPopup } from "components/steam-shortcut-popup.slint";
+import { ConfirmationPopup } from "components/confirmation-popup.slint";
 import { NotificationsOverlay } from "components/notifications.slint";
 import { UrlModSourceData } from "url-mod-source-data.slint";
 import { NotificationData } from "notification-data.slint";
@@ -87,6 +88,11 @@ export component MainWindow inherits Window {
     in-out property <bool> steam-shortcut-running: false;
     in-out property <bool> steam-shortcut-success: false;
     in-out property <string> steam-shortcut-error: "";
+    in-out property <bool> confirmation-open: false;
+    in property <string> confirmation-text: "";
+    in property <string> confirmation-confirm-label: "";
+    in property <bool> confirmation-can-skip: false;
+    in-out property <bool> confirmation-dont-ask-again: false;
 
     in-out property <AppTab> current-tab: games;
     in-out property <bool> game-selected: false;
@@ -111,6 +117,7 @@ export component MainWindow inherits Window {
     callback log-in;
     callback log-out;
     callback dismiss-notification(id: int);
+    callback confirmation-response(confirmed: bool);
     callback visible-range-changed(first: int, last: int);
     callback search-changed(text: string);
     callback sort-changed(index: int);
@@ -441,6 +448,31 @@ export component MainWindow inherits Window {
 
         dismissed(id) => {
             root.dismiss-notification(id);
+        }
+    }
+
+    changed confirmation-open => {
+        if root.confirmation-open {
+            confirmation-popup.show();
+        } else {
+            confirmation-popup.close();
+        }
+    }
+
+    confirmation-popup := ConfirmationPopup {
+        x: (root.width - self.width) / 2;
+        y: (root.height - self.height) / 2;
+        text: root.confirmation-text;
+        confirm-label: root.confirmation-confirm-label;
+        can-skip: root.confirmation-can-skip;
+        dont-ask-again <=> root.confirmation-dont-ask-again;
+
+        response(confirmed) => {
+            root.confirmation-response(confirmed);
+        }
+
+        closed => {
+            root.confirmation-open = false;
         }
     }
 

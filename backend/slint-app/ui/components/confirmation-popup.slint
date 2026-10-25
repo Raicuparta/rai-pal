@@ -1,0 +1,66 @@
+import { Button, CheckBox, Palette } from "std-widgets.slint";
+import { Theme } from "../theme.slint";
+
+export component ConfirmationPopup inherits PopupWindow {
+    in property <string> text;
+    in property <string> confirm-label;
+    in property <bool> can-skip;
+    in-out property <bool> dont-ask-again: false;
+
+    callback response(confirmed: bool);
+    callback closed;
+
+    width: Theme.details-popup-width;
+    height: Theme.about-popup-height + Theme.space-20;
+    close-policy: PopupClosePolicy.no-auto-close;
+
+    Rectangle {
+        background: Palette.background;
+        border-width: Theme.border-width;
+        border-color: Palette.border;
+        border-radius: Theme.radius-8;
+
+        VerticalLayout {
+            padding: Theme.space-20;
+            spacing: Theme.space-12;
+
+            Text {
+                text: root.text;
+                wrap: word-wrap;
+            }
+
+            if root.can-skip : CheckBox {
+                text: @tr("commandButton" => "Don't ask again");
+                checked <=> root.dont-ask-again;
+            }
+
+            Rectangle {
+                vertical-stretch: 1;
+            }
+
+            HorizontalLayout {
+                alignment: center;
+                spacing: Theme.space-8;
+
+                Button {
+                    text: @tr("commandButton" => "Cancel");
+
+                    clicked => {
+                        root.close();
+                        root.response(false);
+                    }
+                }
+
+                Button {
+                    text: root.confirm-label;
+                    primary: true;
+
+                    clicked => {
+                        root.close();
+                        root.response(true);
+                    }
+                }
+            }
+        }
+    }
+}
