@@ -8,6 +8,7 @@ mod confirmation;
 mod fetch;
 mod filters;
 mod i18n;
+mod manual;
 mod mod_sources;
 mod model;
 mod mods;

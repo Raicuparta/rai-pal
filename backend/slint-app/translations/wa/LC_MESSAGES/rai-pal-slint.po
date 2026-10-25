@@ -78,6 +78,10 @@ msgid "Add folder"
 msgstr "Wah waaaah!"
 
 msgctxt "manualGames"
+msgid "Remove"
+msgstr "Waaaah!"
+
+msgctxt "manualGames"
 msgid "Cancel"
 msgstr "Waaaah!"
 

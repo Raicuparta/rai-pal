@@ -71,6 +71,9 @@ export const enUs = {
 		// Button to confirm adding a scanned folder.
 		confirmAddFolder: "Add folder",
 
+		// Button for removing a saved game directory from the scan list.
+		removeDirectory: "Remove",
+
 		// Button to cancel adding the folder (during or after scan).
 		cancel: "Cancel",
 	},

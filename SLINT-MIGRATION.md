@@ -26,9 +26,9 @@ implemented.
 - Toast notifications for errors and provider command feedback.
 - Confirmation dialogs with a persisted skip-confirmation setting.
 - Thanks page content, including Patreon leaderboard and donation links.
+- Manually adding games: executable picker, directory scanning with progress and confirmation, saved directory management, and removing manually added games.
 
 ## Not done
-- Add game, scan/add game directory, remove manually added game.
 - App settings beyond language/color scheme: hide thumbnails, etc.
 - App update check/download flow.
 - Download progress UI.

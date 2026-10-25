@@ -25,7 +25,7 @@ use crate::{
 	filters::{
 		apply_filter_action, build_groups, load_mod_families, reset_all_filters, reset_filter_group,
 	},
-	i18n, mod_sources,
+	i18n, manual, mod_sources,
 	model::{self, make_rows},
 	mods, mods_tab, notifications,
 	query::{load_game_ids, start_query},
@@ -257,6 +257,121 @@ pub fn run() -> Result<(), slint::PlatformError> {
 		{
 			tools::add_steam_shortcut(ui_window.clone());
 		}
+	});
+
+	let ui_window = window_weak.clone();
+	window.on_request_add_game(move || {
+		let Some(window) = ui_window.upgrade() else {
+			return;
+		};
+
+		window.set_current_tab(AppTab::Games);
+		window.invoke_tab_changed(AppTab::Games);
+		manual::show(&window);
+	});
+
+	let ui_window = window_weak.clone();
+	window.on_add_game_closed(move || {
+		if let Some(window) = ui_window.upgrade() {
+			manual::cancel_scan(&window);
+		}
+	});
+
+	let ui_window = window_weak.clone();
+	let ui_database = database.clone();
+	let ui_scheduler = scheduler.clone();
+	let ui_settings = settings.clone();
+	window.on_select_game_executable(move || {
+		let Some(window) = ui_window.upgrade() else {
+			return;
+		};
+
+		manual::select_executable(
+			&window,
+			ui_database.clone(),
+			ui_scheduler.clone(),
+			ui_settings.borrow().games_query.clone(),
+		);
+	});
+
+	let ui_window = window_weak.clone();
+	window.on_select_game_directory(move || {
+		let Some(window) = ui_window.upgrade() else {
+			return;
+		};
+
+		manual::select_directory(&window);
+	});
+
+	let ui_window = window_weak.clone();
+	window.on_cancel_game_scan(move || {
+		if let Some(window) = ui_window.upgrade() {
+			manual::cancel_scan(&window);
+		}
+	});
+
+	let ui_window = window_weak.clone();
+	let ui_database = database.clone();
+	let ui_scheduler = scheduler.clone();
+	let ui_settings = settings.clone();
+	window.on_confirm_game_directory(move || {
+		let Some(window) = ui_window.upgrade() else {
+			return;
+		};
+
+		manual::confirm_add_directory(
+			&window,
+			ui_database.clone(),
+			ui_scheduler.clone(),
+			ui_settings.borrow().games_query.clone(),
+		);
+	});
+
+	let ui_window = window_weak.clone();
+	let ui_database = database.clone();
+	let ui_scheduler = scheduler.clone();
+	let ui_settings = settings.clone();
+	window.on_remove_game_directory(move |path| {
+		let Some(window) = ui_window.upgrade() else {
+			return;
+		};
+
+		manual::remove_directory(
+			&window,
+			ui_database.clone(),
+			ui_scheduler.clone(),
+			ui_settings.borrow().games_query.clone(),
+			path.to_string(),
+		);
+	});
+
+	let ui_window = window_weak.clone();
+	let ui_database = database.clone();
+	let ui_scheduler = scheduler.clone();
+	let ui_settings = settings.clone();
+	let ui_pending_confirmation = pending_confirmation.clone();
+	let ui_selected_game = selected_game.clone();
+	window.on_remove_game(move |confirmation_text, confirm_label| {
+		let Some((_, game)) = get_selected_game(&ui_selected_game) else {
+			return;
+		};
+
+		let Some(window) = ui_window.upgrade() else {
+			return;
+		};
+
+		confirmation::request_remove_game(
+			&window,
+			&ui_settings,
+			&ui_pending_confirmation,
+			ui_database.clone(),
+			ui_scheduler.clone(),
+			ui_settings.borrow().games_query.clone(),
+			ui_selected_game.clone(),
+			game,
+			confirmation_text.to_string(),
+			confirm_label.to_string(),
+		);
 	});
 
 	let ui_window = window_weak.clone();

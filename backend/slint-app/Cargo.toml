@@ -7,6 +7,7 @@ edition.workspace = true
 log.workspace = true
 rai-pal-core.workspace = true
 reqwest = { version = "0.13.3", features = ["blocking"] }
+rfd = "0.17.2"
 serde_json.workspace = true
 tokio = { version = "1.52.3", features = ["rt-multi-thread"] }
 slint = "1.18.1"

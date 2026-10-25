@@ -1,19 +1,17 @@
 use std::{cell::RefCell, rc::Rc, sync::Arc};
 
 use rai_pal_core::{
-	app_settings::AppSettings, game::DbGame, local_database::app_database::DbMutex,
+	app_settings::AppSettings, game::DbGame, games_query::GamesQuery,
+	local_database::app_database::DbMutex,
 };
 
-use crate::{MainWindow, app::persist_settings, mods};
+use crate::{MainWindow, app::persist_settings, mods, scheduler::FetchScheduler, selected};
 use slint::ComponentHandle;
 
-pub enum ConfirmationAction {
-	InstallMod { game: DbGame, mod_id: String },
-	UninstallAllMods { game: DbGame },
-}
+type ConfirmationFn = Box<dyn FnOnce(&MainWindow, Arc<DbMutex>)>;
 
 struct PendingConfirmation {
-	action: ConfirmationAction,
+	action: ConfirmationFn,
 	skip_id: String,
 }
 
@@ -36,7 +34,9 @@ pub fn request_install(
 		settings,
 		pending,
 		database,
-		ConfirmationAction::InstallMod { game, mod_id },
+		Box::new(move |window, database| {
+			mods::install_mod(database, window.as_weak(), game, mod_id);
+		}),
 		confirmation_text,
 		confirm_label,
 		skip_id,
@@ -57,7 +57,45 @@ pub fn request_uninstall_all(
 		settings,
 		pending,
 		database,
-		ConfirmationAction::UninstallAllMods { game },
+		Box::new(move |window, database| {
+			mods::uninstall_all_mods(database, window.as_weak(), game);
+		}),
+		confirmation_text,
+		confirm_label,
+		String::new(),
+	);
+}
+
+#[expect(clippy::too_many_arguments)]
+pub fn request_remove_game(
+	window: &MainWindow,
+	settings: &Rc<RefCell<AppSettings>>,
+	pending: &Rc<PendingState>,
+	database: Arc<DbMutex>,
+	scheduler: Arc<FetchScheduler>,
+	query: GamesQuery,
+	selected_game: selected::SelectedGameState,
+	game: DbGame,
+	confirmation_text: String,
+	confirm_label: String,
+) {
+	let action_database = database.clone();
+
+	request(
+		window,
+		settings,
+		pending,
+		database,
+		Box::new(move |window, _| {
+			crate::manual::remove_game(
+				window,
+				action_database,
+				scheduler,
+				query,
+				selected_game,
+				game,
+			);
+		}),
 		confirmation_text,
 		confirm_label,
 		String::new(),
@@ -69,7 +107,7 @@ fn request(
 	settings: &Rc<RefCell<AppSettings>>,
 	pending: &Rc<PendingState>,
 	database: Arc<DbMutex>,
-	action: ConfirmationAction,
+	action: ConfirmationFn,
 	confirmation_text: String,
 	confirm_label: String,
 	skip_id: String,
@@ -123,13 +161,6 @@ pub fn respond(
 	execute(window, database, pending.action);
 }
 
-fn execute(window: &MainWindow, database: Arc<DbMutex>, action: ConfirmationAction) {
-	match action {
-		ConfirmationAction::InstallMod { game, mod_id } => {
-			mods::install_mod(database, window.as_weak(), game, mod_id);
-		}
-		ConfirmationAction::UninstallAllMods { game } => {
-			mods::uninstall_all_mods(database, window.as_weak(), game);
-		}
-	}
+fn execute(window: &MainWindow, database: Arc<DbMutex>, action: ConfirmationFn) {
+	action(window, database);
 }

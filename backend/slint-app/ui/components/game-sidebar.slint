@@ -21,6 +21,7 @@ export component GameSidebar inherits Sidebar {
     callback open-wine-binary-folder;
     callback refresh-game;
     callback debug-data;
+    callback remove-game(confirmation-text: string, confirm-label: string);
 
     Button {
         text: @tr("subPage" => "Back");
@@ -36,6 +37,14 @@ export component GameSidebar inherits Sidebar {
 
         clicked => {
             root.run-game();
+        }
+    }
+
+    if root.provider-id == "Manual" : Button {
+        text: @tr("gameModal" => "Remove from Rai Pal");
+
+        clicked => {
+            root.remove-game(@tr("gameModal" => "Are you sure you want to remove this game from Rai Pal?"), @tr("gameModal" => "Remove from Rai Pal"));
         }
     }
 

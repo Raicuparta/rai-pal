@@ -21,15 +21,16 @@ import { UrlModSourcesPopup } from "components/url-mod-sources-popup.slint";
 import { ConfirmModSourcePopup } from "components/confirm-mod-source-popup.slint";
 import { SteamCachePopup } from "components/steam-cache-popup.slint";
 import { SteamShortcutPopup } from "components/steam-shortcut-popup.slint";
+import { AddGamePopup } from "components/add-game-popup.slint";
 import { ConfirmationPopup } from "components/confirmation-popup.slint";
 import { NotificationsOverlay } from "components/notifications.slint";
 import { UrlModSourceData } from "url-mod-source-data.slint";
 import { NotificationData } from "notification-data.slint";
 import { Theme } from "theme.slint";
 import { ModActions } from "actions.slint";
-import { AppColorScheme, AppTab } from "app-types.slint";
+import { AppColorScheme, AppTab, AddGamePhase } from "app-types.slint";
 
-export { AppColorScheme, AppTab, ModActions }
+export { AppColorScheme, AppTab, AddGamePhase, ModActions }
 
 export component MainWindow inherits Window {
     title: "Rai Pal";
@@ -96,6 +97,16 @@ export component MainWindow inherits Window {
     in property <string> confirmation-confirm-label: "";
     in property <bool> confirmation-can-skip: false;
     in-out property <bool> confirmation-dont-ask-again: false;
+    in-out property <bool> add-game-open: false;
+    in-out property <AddGamePhase> scan-phase: idle;
+    in property <string> scan-selected-path: "";
+    in property <int> scan-scanned-dirs: 0;
+    in property <int> scan-executables-found: 0;
+    in property <string> scan-current-path: "";
+    in property <int> scan-games-count: 0;
+    in property <string> scan-duration-text: "";
+    in-out property <string> add-game-directory: "";
+    in property <[string]> manual-directories;
 
     in-out property <AppTab> current-tab: games;
     in-out property <bool> game-selected: false;
@@ -117,6 +128,14 @@ export component MainWindow inherits Window {
     callback cancel-url-mod-source;
     callback reset-steam-cache;
     callback add-steam-shortcut;
+    callback request-add-game;
+    callback add-game-closed;
+    callback select-game-executable;
+    callback select-game-directory;
+    callback cancel-game-scan;
+    callback confirm-game-directory;
+    callback remove-game-directory(path: string);
+    callback remove-game(confirmation-text: string, confirm-label: string);
     callback log-in;
     callback log-out;
     callback dismiss-notification(id: int);
@@ -245,6 +264,10 @@ export component MainWindow inherits Window {
                         root.steam-shortcut-open = true;
                     }
 
+                    add-game-clicked => {
+                        root.request-add-game();
+                    }
+
                     language-changed(value) => {
                         root.language-changed(value);
                     }
@@ -318,6 +341,10 @@ export component MainWindow inherits Window {
                         debug-data => {
                             root.details-json = root.selected-game-json;
                             details-popup.show();
+                        }
+
+                        remove-game(confirmation-text, confirm-label) => {
+                            root.remove-game(confirmation-text, confirm-label);
                         }
                     }
 
@@ -540,6 +567,52 @@ export component MainWindow inherits Window {
 
         closed => {
             root.steam-shortcut-open = false;
+        }
+    }
+
+    changed add-game-open => {
+        if root.add-game-open {
+            add-game-popup.show();
+        } else {
+            add-game-popup.close();
+        }
+    }
+
+    add-game-popup := AddGamePopup {
+        x: (root.width - self.width) / 2;
+        y: (root.height - self.height) / 2;
+        phase: root.scan-phase;
+        selected-path: root.scan-selected-path;
+        scanned-dirs: root.scan-scanned-dirs;
+        executables-found: root.scan-executables-found;
+        current-path: root.scan-current-path;
+        games-count: root.scan-games-count;
+        duration-text: root.scan-duration-text;
+        directories: root.manual-directories;
+
+        select-executable => {
+            root.select-game-executable();
+        }
+
+        select-directory => {
+            root.select-game-directory();
+        }
+
+        cancel-scan => {
+            root.cancel-game-scan();
+        }
+
+        confirm-directory => {
+            root.confirm-game-directory();
+        }
+
+        remove-directory(path) => {
+            root.remove-game-directory(path);
+        }
+
+        closed => {
+            root.add-game-closed();
+            root.add-game-open = false;
         }
     }
 
