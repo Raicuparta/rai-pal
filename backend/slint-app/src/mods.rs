@@ -347,13 +347,6 @@ fn make_row(
 		release_date: release_date(game_mod).into(),
 		author: game_mod.author.clone().into(),
 		engine_text: engine_text(game_mod).into(),
-		section: if is_incompatible {
-			"incompatible".into()
-		} else if game_mod.hide_from_game_mods_list == Some(true) {
-			"hidden".into()
-		} else {
-			"compatible".into()
-		},
 		installed,
 		outdated: info.is_outdated,
 		incompatible: is_incompatible,

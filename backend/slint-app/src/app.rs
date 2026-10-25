@@ -20,11 +20,10 @@ use rai_pal_core::{
 use slint::{ComponentHandle, Model};
 
 use crate::{
-	GameRowData, MainWindow, ModActions, actions,
+	AppColorScheme, AppTab, GameRowData, MainWindow, ModActions, actions,
 	fetch::spawn_fetchers,
 	filters::{
-apply_filter_action, build_groups, load_mod_families, reset_all_filters,
-		reset_filter_group,
+		apply_filter_action, build_groups, load_mod_families, reset_all_filters, reset_filter_group,
 	},
 	i18n,
 	model::{self, make_rows},
@@ -55,7 +54,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	let mod_families = load_mod_families(&database);
 
 	let initial_query = settings.borrow().games_query.clone();
-	let initial_tab = tab_index(settings.borrow().selected_tab);
+	let initial_tab = app_tab(settings.borrow().selected_tab);
 	let initial_groups = build_groups(
 		&initial_query.filter,
 		&mod_families,
@@ -84,7 +83,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 			.unwrap_or_default()
 			.into(),
 	);
-	window.set_selected_color_scheme(color_scheme_code(settings.borrow().color_scheme).into());
+	window.set_selected_color_scheme(app_color_scheme(settings.borrow().color_scheme));
 	mods_tab::load(&window, &database);
 	window.set_app_version(env!("CARGO_PKG_VERSION").into());
 	window.set_search_text(initial_query.search.clone().into());
@@ -341,27 +340,25 @@ pub fn run() -> Result<(), slint::PlatformError> {
 
 	let ui_settings = settings.clone();
 	window.on_color_scheme_changed(move |value| {
-		let color_scheme = match value.as_str() {
-			"dark" => ColorScheme::Dark,
-			"light" => ColorScheme::Light,
-			_ => ColorScheme::Auto,
+		ui_settings.borrow_mut().color_scheme = match value {
+			AppColorScheme::Dark => ColorScheme::Dark,
+			AppColorScheme::Light => ColorScheme::Light,
+			AppColorScheme::Auto => ColorScheme::Auto,
 		};
-
-		ui_settings.borrow_mut().color_scheme = color_scheme;
 		persist_settings(&ui_settings);
 	});
 
 	let ui_settings = settings.clone();
 	let ui_window = window_weak.clone();
 	let ui_database = database.clone();
-	window.on_tab_changed(move |index| {
+	window.on_tab_changed(move |tab| {
 		{
 			let mut settings = ui_settings.borrow_mut();
-			settings.selected_tab = tab_from_index(index);
+			settings.selected_tab = core_tab(tab);
 		}
 		persist_settings(&ui_settings);
 
-		if index == 1
+		if tab == AppTab::Mods
 			&& let Some(window) = ui_window.upgrade()
 		{
 			mods_tab::load(&window, &ui_database);
@@ -543,14 +540,18 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	});
 
 	let ui_database = database.clone();
-	window.global::<ModActions>().on_run_standalone(move |mod_id| {
-		actions::run_standalone_mod(ui_database.clone(), mod_id.to_string());
-	});
+	window
+		.global::<ModActions>()
+		.on_run_standalone(move |mod_id| {
+			actions::run_standalone_mod(ui_database.clone(), mod_id.to_string());
+		});
 
 	let ui_database = database.clone();
-	window.global::<ModActions>().on_install_standalone(move |mod_id| {
-		actions::install_standalone_mod(ui_database.clone(), mod_id.to_string());
-	});
+	window
+		.global::<ModActions>()
+		.on_install_standalone(move |mod_id| {
+			actions::install_standalone_mod(ui_database.clone(), mod_id.to_string());
+		});
 
 	window.global::<ModActions>().on_open_url(move |url| {
 		actions::open_url(url.to_string());
@@ -573,18 +574,20 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	let ui_window = window_weak.clone();
 	let ui_database = database.clone();
 	let ui_selected_game = selected_game.clone();
-	window.global::<ModActions>().on_download_config(move |mod_id| {
-		let Some((_, game)) = get_selected_game(&ui_selected_game) else {
-			return;
-		};
+	window
+		.global::<ModActions>()
+		.on_download_config(move |mod_id| {
+			let Some((_, game)) = get_selected_game(&ui_selected_game) else {
+				return;
+			};
 
-		mods::download_mod_config(
-			ui_database.clone(),
-			ui_window.clone(),
-			game,
-			mod_id.to_string(),
-		);
-	});
+			mods::download_mod_config(
+				ui_database.clone(),
+				ui_window.clone(),
+				game,
+				mod_id.to_string(),
+			);
+		});
 
 	let ui_database = database.clone();
 	let ui_selected_game = selected_game.clone();
@@ -598,13 +601,15 @@ pub fn run() -> Result<(), slint::PlatformError> {
 
 	let ui_database = database.clone();
 	let ui_selected_game = selected_game.clone();
-	window.global::<ModActions>().on_configure_folder(move |mod_id| {
-		let Some((_, game)) = get_selected_game(&ui_selected_game) else {
-			return;
-		};
+	window
+		.global::<ModActions>()
+		.on_configure_folder(move |mod_id| {
+			let Some((_, game)) = get_selected_game(&ui_selected_game) else {
+				return;
+			};
 
-		mods::configure_mod(ui_database.clone(), game, mod_id.to_string(), true);
-	});
+			mods::configure_mod(ui_database.clone(), game, mod_id.to_string(), true);
+		});
 
 	let ui_window = window_weak.clone();
 	let ui_database = database.clone();
@@ -668,7 +673,6 @@ pub fn run() -> Result<(), slint::PlatformError> {
 
 	let model = Rc::new(slint::VecModel::from(rows));
 	window.set_game_rows(model.into());
-	window.set_total_count(response.total_count as i32);
 	window.run()
 }
 
@@ -810,11 +814,11 @@ fn reset_filters(
 	);
 }
 
-fn color_scheme_code(color_scheme: ColorScheme) -> &'static str {
+fn app_color_scheme(color_scheme: ColorScheme) -> AppColorScheme {
 	match color_scheme {
-		ColorScheme::Dark => "dark",
-		ColorScheme::Light => "light",
-		ColorScheme::Auto => "auto",
+		ColorScheme::Dark => AppColorScheme::Dark,
+		ColorScheme::Light => AppColorScheme::Light,
+		ColorScheme::Auto => AppColorScheme::Auto,
 	}
 }
 
@@ -834,18 +838,18 @@ fn sort_from_index(index: i32) -> GamesSortBy {
 	}
 }
 
-fn tab_index(tab: TabId) -> i32 {
+fn app_tab(tab: TabId) -> AppTab {
 	match tab {
-		TabId::Games => 0,
-		TabId::Mods => 1,
-		TabId::Thanks => 2,
+		TabId::Games => AppTab::Games,
+		TabId::Mods => AppTab::Mods,
+		TabId::Thanks => AppTab::Thanks,
 	}
 }
 
-fn tab_from_index(index: i32) -> TabId {
-	match index {
-		1 => TabId::Mods,
-		2 => TabId::Thanks,
-		_ => TabId::Games,
+fn core_tab(tab: AppTab) -> TabId {
+	match tab {
+		AppTab::Games => TabId::Games,
+		AppTab::Mods => TabId::Mods,
+		AppTab::Thanks => TabId::Thanks,
 	}
 }

@@ -58,7 +58,6 @@ pub fn start_query(
 
 			let model = std::rc::Rc::new(slint::VecModel::from(rows));
 			window.set_game_rows(model.into());
-			window.set_total_count(response.total_count as i32);
 		});
 	});
 }

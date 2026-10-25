@@ -8,7 +8,8 @@ use crate::{GameRowData, MainWindow, ProviderActionItem, model::apply_game_to_ro
 pub fn show(window: &MainWindow, game: &DbGame, mut row: GameRowData) {
 	apply_game_to_row(&mut row, game);
 
-	let provider_actions: Vec<ProviderActionItem> = game.secondary_provider_actions()
+	let provider_actions: Vec<ProviderActionItem> = game
+		.secondary_provider_actions()
 		.into_iter()
 		.map(|action| ProviderActionItem {
 			value: action.to_string().into(),

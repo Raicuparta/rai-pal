@@ -16,8 +16,9 @@ import { AboutPopup } from "components/about-popup.slint";
 import { ModsPage } from "components/mods-page.slint";
 import { Theme } from "theme.slint";
 import { ModActions } from "actions.slint";
+import { AppColorScheme, AppTab } from "app-types.slint";
 
-export { ModActions }
+export { AppColorScheme, AppTab, ModActions }
 
 export component MainWindow inherits Window {
     title: "Rai Pal";
@@ -38,11 +39,10 @@ export component MainWindow inherits Window {
     in property <bool> has-available-mods: false;
     in property <bool> has-hidden-mods: false;
     in property <bool> has-incompatible-mods: false;
-    in property <int> total-count: 0;
     in property <[FilterGroupData]> filter-groups;
     in property <bool> filters-have-changes;
     in-out property <string> selected-language: "";
-    in-out property <string> selected-color-scheme: "auto";
+    in-out property <AppColorScheme> selected-color-scheme: auto;
     in property <string> detected-language-name: "";
     in-out property <string> search-text: "";
     in-out property <int> sort-index: 0;
@@ -51,7 +51,7 @@ export component MainWindow inherits Window {
     in property <string> app-version: "";
     in property <string> renderer-name: "";
 
-    in-out property <int> current-tab: 0;
+    in-out property <AppTab> current-tab: games;
     in-out property <bool> game-selected: false;
     in-out property <GameRowData> selected-game-row;
     in-out property <string> selected-game-json: "";
@@ -72,9 +72,9 @@ export component MainWindow inherits Window {
     callback filter-reset(group: string);
     callback filters-reset;
     callback filter-expanded-changed(group: string, expanded: bool);
-    callback tab-changed(index: int);
+    callback tab-changed(tab: AppTab);
     callback language-changed(value: string);
-    callback color-scheme-changed(value: string);
+    callback color-scheme-changed(value: AppColorScheme);
     callback select-game(index: int);
     callback back;
     callback run-game;
@@ -86,9 +86,9 @@ export component MainWindow inherits Window {
     callback open-wine-binary-folder;
     callback refresh-game;
     function apply-color-scheme() {
-        if root.selected-color-scheme == "dark" {
+        if root.selected-color-scheme == AppColorScheme.dark {
             Palette.color-scheme = ColorScheme.dark;
-        } else if root.selected-color-scheme == "light" {
+        } else if root.selected-color-scheme == AppColorScheme.light {
             Palette.color-scheme = ColorScheme.light;
         } else {
             Palette.color-scheme = ColorScheme.unknown;
@@ -116,31 +116,31 @@ export component MainWindow inherits Window {
 
                 NavTab {
                     title: @tr("tab" => "Games");
-                    selected: root.current-tab == 0;
+                    selected: root.current-tab == AppTab.games;
 
                     clicked => {
-                        root.current-tab = 0;
-                        root.tab-changed(0);
+                        root.current-tab = AppTab.games;
+                        root.tab-changed(AppTab.games);
                     }
                 }
 
                 NavTab {
                     title: @tr("tab" => "Mods");
-                    selected: root.current-tab == 1;
+                    selected: root.current-tab == AppTab.mods;
 
                     clicked => {
-                        root.current-tab = 1;
-                        root.tab-changed(1);
+                        root.current-tab = AppTab.mods;
+                        root.tab-changed(AppTab.mods);
                     }
                 }
 
                 NavTab {
                     title: @tr("tab" => "Thanks");
-                    selected: root.current-tab == 2;
+                    selected: root.current-tab == AppTab.thanks;
 
                     clicked => {
-                        root.current-tab = 2;
-                        root.tab-changed(2);
+                        root.current-tab = AppTab.thanks;
+                        root.tab-changed(AppTab.thanks);
                     }
                 }
 
@@ -178,7 +178,7 @@ export component MainWindow inherits Window {
 
         Rectangle {
             Rectangle {
-                visible: root.current-tab == 0;
+                visible: root.current-tab == AppTab.games;
 
                 HorizontalLayout {
                     visible: root.game-selected;
@@ -322,7 +322,7 @@ export component MainWindow inherits Window {
             }
 
             Rectangle {
-                visible: root.current-tab == 1;
+                visible: root.current-tab == AppTab.mods;
 
                 ModsPage {
                     items: root.mods-tab-items;
@@ -330,7 +330,7 @@ export component MainWindow inherits Window {
             }
 
             Rectangle {
-                visible: root.current-tab == 2;
+                visible: root.current-tab == AppTab.thanks;
 
                 Text {
                     text: @tr("tab" => "Thanks");

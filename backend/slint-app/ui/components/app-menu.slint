@@ -1,15 +1,16 @@
 import { IconDisplay, IconSet } from "@lucide";
 import { Palette } from "std-widgets.slint";
+import { AppColorScheme } from "../app-types.slint";
 import { Theme } from "../theme.slint";
 
 export component AppMenu inherits Rectangle {
     in property <string> selected-language: "";
-    in property <string> selected-color-scheme: "auto";
+    in property <AppColorScheme> selected-color-scheme: auto;
     in property <string> detected-language-name: "";
 
     callback about-clicked;
     callback language-changed(value: string);
-    callback color-scheme-changed(value: string);
+    callback color-scheme-changed(value: AppColorScheme);
 
     width: Theme.control-height + Theme.space-4;
     height: Theme.control-height;
@@ -163,31 +164,31 @@ export component AppMenu inherits Rectangle {
 
             MenuItem {
                 checkable: true;
-                checked: root.selected-color-scheme == "auto";
+                checked: root.selected-color-scheme == AppColorScheme.auto;
                 title: @tr("appDropdownMenu" => "Auto");
 
                 activated => {
-                    root.color-scheme-changed("auto");
+                    root.color-scheme-changed(AppColorScheme.auto);
                 }
             }
 
             MenuItem {
                 checkable: true;
-                checked: root.selected-color-scheme == "dark";
+                checked: root.selected-color-scheme == AppColorScheme.dark;
                 title: @tr("appDropdownMenu" => "Dark");
 
                 activated => {
-                    root.color-scheme-changed("dark");
+                    root.color-scheme-changed(AppColorScheme.dark);
                 }
             }
 
             MenuItem {
                 checkable: true;
-                checked: root.selected-color-scheme == "light";
+                checked: root.selected-color-scheme == AppColorScheme.light;
                 title: @tr("appDropdownMenu" => "Light");
 
                 activated => {
-                    root.color-scheme-changed("light");
+                    root.color-scheme-changed(AppColorScheme.light);
                 }
             }
         }

@@ -5,7 +5,9 @@ use rai_pal_core::{
 	game_engines::{game_engine::EngineBrand, unity::UnityBackend},
 	game_providers::game_provider::GameProviderId,
 	game_tag::GameTag,
-	games_query::{FilterAction, FilterGroup, FilterGroupKey, FilterItem, GamesFilter, InstallState},
+	games_query::{
+		FilterAction, FilterGroup, FilterGroupKey, FilterItem, GamesFilter, InstallState,
+	},
 	local_database::{app_database::DbMutex, mod_database::ModDatabase},
 	operating_system::OperatingSystem,
 };
@@ -76,23 +78,15 @@ pub fn apply_filter_action(
 	};
 
 	match group_key {
-		FilterGroupKey::Installed => apply_string_value(
-			&mut filter.installed,
-			value,
-			INSTALL_STATES,
-			false,
-			action,
-		),
+		FilterGroupKey::Installed => {
+			apply_string_value(&mut filter.installed, value, INSTALL_STATES, false, action)
+		}
 		FilterGroupKey::Engines => {
 			apply_string_value(&mut filter.engines, value, ENGINES, true, action)
 		}
-		FilterGroupKey::ModFamilies => apply_string_value(
-			&mut filter.mod_families,
-			value,
-			mod_families,
-			false,
-			action,
-		),
+		FilterGroupKey::ModFamilies => {
+			apply_string_value(&mut filter.mod_families, value, mod_families, false, action)
+		}
 		FilterGroupKey::Tags => apply_string_value(&mut filter.tags, value, TAGS, true, action),
 		FilterGroupKey::Providers => {
 			apply_string_value(&mut filter.providers, value, PROVIDERS, false, action)
@@ -196,12 +190,7 @@ fn value<T: Eq + Hash + ToString>(
 	label_key: &str,
 	label: &str,
 ) -> FilterValueData {
-	item_data(
-		&key.to_string(),
-		label_key,
-		label,
-		group.item(Some(key)),
-	)
+	item_data(&key.to_string(), label_key, label, group.item(Some(key)))
 }
 
 fn unknown_value<T: Eq + Hash>(
@@ -240,14 +229,7 @@ fn build_mod_family_group(
 ) -> FilterGroupData {
 	let mut values: Vec<FilterValueData> = mod_families
 		.iter()
-		.map(|family| {
-			item_data(
-				family,
-				"",
-				family,
-				filter.mod_families.item(Some(family)),
-			)
-		})
+		.map(|family| item_data(family, "", family, filter.mod_families.item(Some(family))))
 		.collect();
 	values.sort_by(|a, b| a.label.to_lowercase().cmp(&b.label.to_lowercase()));
 
