@@ -27,6 +27,28 @@ static HTTP_CLIENT: LazyLock<reqwest::blocking::Client> = LazyLock::new(|| {
 		.unwrap_or_default()
 });
 
+pub(crate) fn http_client() -> &'static reqwest::blocking::Client {
+	&HTTP_CLIENT
+}
+
+pub(crate) struct FetchedImage {
+	pub width: u32,
+	pub height: u32,
+	pub pixels: Vec<u8>,
+}
+
+impl FetchedImage {
+	pub fn into_slint_image(self) -> slint::Image {
+		let buffer = slint::SharedPixelBuffer::<slint::Rgba8Pixel>::clone_from_slice(
+			&self.pixels,
+			self.width,
+			self.height,
+		);
+
+		slint::Image::from_rgba8(buffer)
+	}
+}
+
 struct FetchResult {
 	index: usize,
 	generation: u64,
@@ -40,16 +62,10 @@ struct FetchResult {
 	release_month: String,
 	release_year: String,
 	game_json: String,
-	thumbnail: Option<Thumbnail>,
+	thumbnail: Option<FetchedImage>,
 }
 
-struct Thumbnail {
-	width: u32,
-	height: u32,
-	pixels: Vec<u8>,
-}
-
-fn fetch_thumbnail(url: &str) -> Option<Thumbnail> {
+pub(crate) fn fetch_image(url: &str, max_width: u32, max_height: u32) -> Option<FetchedImage> {
 	let response = HTTP_CLIENT.get(url).send().ok()?.error_for_status().ok()?;
 	let bytes = response.bytes().ok()?;
 
@@ -58,13 +74,17 @@ fn fetch_thumbnail(url: &str) -> Option<Thumbnail> {
 	}
 
 	let image = image::load_from_memory(&bytes).ok()?;
-	let image = image.thumbnail(200, 120).to_rgba8();
+	let image = image.thumbnail(max_width, max_height).to_rgba8();
 
-	Some(Thumbnail {
+	Some(FetchedImage {
 		width: image.width(),
 		height: image.height(),
 		pixels: image.into_raw(),
 	})
+}
+
+fn fetch_thumbnail(url: &str) -> Option<FetchedImage> {
+	fetch_image(url, 200, 120)
 }
 
 fn fetch_game(database: &DbMutex, request: &FetchRequest) -> FetchResult {
@@ -175,14 +195,7 @@ fn spawn_worker(
 					return;
 				};
 
-				let thumbnail = result.thumbnail.map(|thumbnail| {
-					let buffer = slint::SharedPixelBuffer::<slint::Rgba8Pixel>::clone_from_slice(
-						&thumbnail.pixels,
-						thumbnail.width,
-						thumbnail.height,
-					);
-					slint::Image::from_rgba8(buffer)
-				});
+				let thumbnail = result.thumbnail.map(FetchedImage::into_slint_image);
 
 				row.title = result.title.into();
 				row.installed = result.installed;

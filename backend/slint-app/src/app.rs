@@ -31,7 +31,7 @@ use crate::{
 	query::{load_game_ids, start_query},
 	refresh,
 	scheduler::{FetchScheduler, enqueue_index, schedule_visible_range},
-	selected, tools, user,
+	selected, thanks, tools, user,
 };
 
 pub fn run() -> Result<(), slint::PlatformError> {
@@ -86,6 +86,9 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	mods_tab::load(&window, &database);
 	window.set_app_version(env!("CARGO_PKG_VERSION").into());
 	user::load(window.as_weak());
+	if initial_tab == AppTab::Thanks {
+		thanks::load(window.as_weak());
+	}
 	window.set_search_text(initial_query.search.clone().into());
 	window.set_sort_index(sort_index(initial_query.sort_by));
 	window.set_sort_descending(initial_query.sort_descending);
@@ -515,10 +518,12 @@ pub fn run() -> Result<(), slint::PlatformError> {
 		}
 		persist_settings(&ui_settings);
 
-		if tab == AppTab::Mods
-			&& let Some(window) = ui_window.upgrade()
-		{
-			mods_tab::load(&window, &ui_database);
+		if let Some(window) = ui_window.upgrade() {
+			if tab == AppTab::Mods {
+				mods_tab::load(&window, &ui_database);
+			} else if tab == AppTab::Thanks && window.get_patrons().row_count() == 0 {
+				thanks::load(window.as_weak());
+			}
 		}
 	});
 

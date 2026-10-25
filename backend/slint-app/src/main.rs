@@ -17,6 +17,7 @@ mod query;
 mod refresh;
 mod scheduler;
 mod selected;
+mod thanks;
 mod tools;
 mod user;
 

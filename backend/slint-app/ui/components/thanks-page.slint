@@ -1,0 +1,250 @@
+import { Button, Palette, ScrollView } from "std-widgets.slint";
+import { IconDisplay, IconSet } from "@lucide";
+import { ModActions } from "../actions.slint";
+import { PatronData } from "../patron-data.slint";
+import { Theme } from "../theme.slint";
+import { Sidebar } from "sidebar.slint";
+
+component ThanksLink inherits Button {
+    in property <string> url;
+
+    clicked => {
+        ModActions.open-url(root.url);
+    }
+}
+
+component PatronRow inherits Rectangle {
+    in property <PatronData> patron;
+
+    height: Theme.control-height;
+    background: transparent;
+
+    HorizontalLayout {
+        spacing: Theme.space-8;
+        alignment: start;
+        cross-axis-alignment: center;
+
+        Rectangle {
+            width: Theme.control-height;
+            height: Theme.control-height;
+            border-radius: Theme.control-height / 2;
+            clip: true;
+            background: Palette.alternate-background;
+
+            if root.patron.has-avatar : Image {
+                source: root.patron.avatar;
+                width: 100%;
+                height: 100%;
+                image-fit: cover;
+            }
+
+            if !root.patron.has-avatar : Text {
+                text: root.patron.initials;
+                font-size: Theme.font-12;
+                font-weight: Theme.weight-bold;
+                horizontal-alignment: center;
+                vertical-alignment: center;
+            }
+        }
+
+        if root.patron.ranking <= 3 : IconDisplay {
+            icon: IconSet.Trophy;
+            size: Theme.icon-button-icon-size;
+            stroke: root.patron.ranking == 1 ? Theme.highlight : Palette.alternate-foreground;
+            stroke-width: 2;
+        }
+
+        Text {
+            text: root.patron.name;
+            horizontal-stretch: 1;
+            vertical-alignment: center;
+            font-weight: root.patron.ranking <= 3 ? Theme.weight-bold : Theme.weight-normal;
+            overflow: elide;
+        }
+    }
+}
+
+export component ThanksPage inherits Rectangle {
+    in property <[PatronData]> patrons;
+
+    HorizontalLayout {
+        Sidebar {
+            VerticalLayout {
+                spacing: Theme.space-6;
+                alignment: start;
+
+                Text {
+                    text: @tr("thanksPage" => "Patreon Leaderboard");
+                    font-weight: Theme.weight-bold;
+                }
+
+                Text {
+                    text: @tr("thanksPage" => "Ranked by total lifetime donation amount.");
+                    font-size: Theme.font-12;
+                    opacity: 0.5;
+                    wrap: word-wrap;
+                }
+
+                Text {
+                    text: @tr("thanksPage" => "If you don't see yourself here, it's because your Patreon profile is private.");
+                    font-size: Theme.font-12;
+                    opacity: 0.5;
+                    wrap: word-wrap;
+                }
+
+                for patron in root.patrons : PatronRow {
+                    patron: patron;
+                }
+            }
+        }
+
+        Rectangle {
+            horizontal-stretch: 1;
+
+            ScrollView {
+                VerticalLayout {
+                    padding: Theme.space-20;
+                    spacing: Theme.space-16;
+                    alignment: start;
+
+                    HorizontalLayout {
+                        spacing: Theme.space-16;
+                        alignment: start;
+
+                        Rectangle {
+                            width: 120px;
+                            border-radius: Theme.radius-8;
+                            background: Palette.alternate-background;
+
+                            VerticalLayout {
+                                padding: Theme.space-12;
+                                spacing: Theme.space-8;
+                                alignment: start;
+                                cross-axis-alignment: center;
+
+                                Rectangle {
+                                    width: 72px;
+                                    height: 72px;
+                                    border-radius: 36px;
+                                    clip: true;
+
+                                    Image {
+                                        source: @image-url("../images/raicuparta.png");
+                                        width: 100%;
+                                        height: 100%;
+                                        image-fit: cover;
+                                    }
+                                }
+
+                                Text {
+                                    text: "Raicuparta";
+                                    font-size: Theme.font-16;
+                                    font-weight: Theme.weight-semibold;
+                                }
+                            }
+                        }
+
+                        Text {
+                            text: @tr("thanksPage" => "Hello. I made Rai Pal. I also made other VR mods in the past, and am currently working on a universal VR mod for Unity games. If you like what I do, and would like to see more, please consider donating! You can also support me by buying one of my free mods on itch.io.");
+                            wrap: word-wrap;
+                            horizontal-stretch: 1;
+                        }
+                    }
+
+                    HorizontalLayout {
+                        spacing: Theme.space-8;
+                        alignment: start;
+
+                        ThanksLink {
+                            text: @tr("thanksPage" => "Star Rai Pal on GitHub");
+                            url: "https://github.com/raicuparta/rai-pal";
+                            primary: true;
+                        }
+
+                        ThanksLink {
+                            text: "raicuparta.com";
+                            url: "https://raicuparta.com";
+                        }
+                    }
+
+                    HorizontalLayout {
+                        spacing: Theme.space-8;
+                        alignment: start;
+
+                        ThanksLink {
+                            text: "Patreon";
+                            url: "https://www.patreon.com/raivr";
+                            primary: true;
+                        }
+
+                        ThanksLink {
+                            text: "Paypal";
+                            url: "https://paypal.me/raicuparta/5usd";
+                        }
+
+                        ThanksLink {
+                            text: "Itch.io";
+                            url: "https://raicuparta.itch.io/";
+                        }
+                    }
+
+                    Rectangle {
+                        height: Theme.border-width;
+                        background: Palette.border;
+                    }
+
+                    VerticalLayout {
+                        spacing: Theme.space-6;
+                        alignment: start;
+
+                        Text {
+                            text: @tr("thanksPage" => "Other modders");
+                            font-size: Theme.font-20;
+                            font-weight: Theme.weight-semibold;
+                        }
+
+                        Text {
+                            text: @tr("thanksPage" => "Rai Pal is meant to help you manage game modding, and we can't do that without the tools that other developers have created. Some of these people don't have donation links, but I'm extremely grateful for their work.");
+                            wrap: word-wrap;
+                        }
+                    }
+
+                    VerticalLayout {
+                        spacing: Theme.space-4;
+                        alignment: start;
+
+                        ThanksLink {
+                            text: @tr("thanksPage" => "{0} on {1}", "praydog", "Patreon");
+                            url: "https://www.patreon.com/praydog";
+                            width: 100%;
+                        }
+
+                        ThanksLink {
+                            text: @tr("thanksPage" => "{0} on {1}", "BepInEx", "GitHub");
+                            url: "https://github.com/BepInEx";
+                            width: 100%;
+                        }
+
+                        ThanksLink {
+                            text: @tr("thanksPage" => "{0} on {1}", "Andreas Pardeike", "Patreon");
+                            url: "https://www.patreon.com/pardeike";
+                            width: 100%;
+                        }
+
+                        ThanksLink {
+                            text: @tr("thanksPage" => "{0} on {1}", "sinai", "GitHub");
+                            url: "https://github.com/sinai-dev";
+                            width: 100%;
+                        }
+
+                        ThanksLink {
+                            text: @tr("thanksPage" => "{0} on {1}", "ManlyMarco", "Patreon");
+                            url: "https://www.patreon.com/ManlyMarco";
+                            width: 100%;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

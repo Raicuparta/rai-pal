@@ -4,6 +4,7 @@ import { FilterGroupData } from "filter-data.slint";
 import { GameModRowData } from "game-mod-row-data.slint";
 import { PotentialModRowData } from "potential-mod-row-data.slint";
 import { ModsTabItemData } from "mods-tab-data.slint";
+import { PatronData } from "patron-data.slint";
 import { ProviderActionItem } from "provider-action-item.slint";
 import { GamesSidebar } from "components/games-sidebar.slint";
 import { GameSidebar } from "components/game-sidebar.slint";
@@ -15,6 +16,7 @@ import { AppMenu } from "components/app-menu.slint";
 import { UserMenu } from "components/user-menu.slint";
 import { AboutPopup } from "components/about-popup.slint";
 import { ModsPage } from "components/mods-page.slint";
+import { ThanksPage } from "components/thanks-page.slint";
 import { UrlModSourcesPopup } from "components/url-mod-sources-popup.slint";
 import { ConfirmModSourcePopup } from "components/confirm-mod-source-popup.slint";
 import { SteamCachePopup } from "components/steam-cache-popup.slint";
@@ -43,6 +45,7 @@ export component MainWindow inherits Window {
     in property <[GameModRowData]> game-mods-incompatible;
     in property <[PotentialModRowData]> potential-mods;
     in property <[ModsTabItemData]> mods-tab-items;
+    in property <[PatronData]> patrons;
     in property <bool> has-any-mods: false;
     in property <bool> has-installed-mods: false;
     in property <bool> has-available-mods: false;
@@ -433,11 +436,8 @@ export component MainWindow inherits Window {
             Rectangle {
                 visible: root.current-tab == AppTab.thanks;
 
-                Text {
-                    text: @tr("tab" => "Thanks");
-                    font-size: Theme.font-20;
-                    horizontal-alignment: center;
-                    vertical-alignment: center;
+                ThanksPage {
+                    patrons: root.patrons;
                 }
             }
         }
