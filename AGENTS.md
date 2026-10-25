@@ -1,101 +1,117 @@
 # Instructions for AI agents
 
-Rai Pal is a Tauri v2 desktop app: Rust backend in `/backend`, TypeScript/React
-frontend in `/frontend`.
+Rai Pal is a desktop app with a shared Rust backend in `/backend`. The Tauri v2
+app (`/backend/tauri-app` + `/frontend`) is being migrated to Slint
+(`/backend/slint-app`).
 
 ## Finding things
 
-Avoid doing system-wide searches when you're looking for stuff. If the user is likely to know where something is, just ask first before starting a long task.
+Avoid system-wide searches when you're looking for stuff. If the user is likely
+to know where something is, ask first before starting a long task.
 
 ## Formatting
 
-Ignore code warnings, clippy, format, etc, until I've confirmed that your implementation is correct. This way you don't waste time fixing tiny things that will be thrown away anyway.
-
-Run `npm run format` before committing, so formatting changes are part of your
-commit instead of showing up as unrelated churn later.
+Ignore warnings, clippy, and formatting until the implementation is confirmed
+correct. Run `npm run format` before committing so formatting churn is part of
+the same commit.
 
 ## Comments
 
-Do not leave comments. Exception only for actual hacks or realy weird stuff, almost everything should be comment-free. Do not remove preexisting comments.
+Do not leave comments. Exception only for actual hacks or genuinely weird code.
+Do not remove pre-existing comments.
 
 ## Running the app
 
-- `npm run dev` — starts the Vite dev server and the Tauri app (opens a native window).
-- Backend logs go to stdout/stderr. The frontend runs in a native system webview, so
-  its `console.*` output and DOM are **not** visible from the terminal.
+- `npm run dev` — Vite dev server and Tauri app.
+- `npm run slint-dev` — Slint app with MCP enabled.
+- `npm run slint-dev-live` — Slint live preview (no bundled translations).
+- Backend logs go to stdout/stderr. The Tauri frontend runs in a native webview,
+  so its `console.*` output and DOM are **not** visible from the terminal.
 
-## Inspecting the frontend — the dev socket
+### Inspecting the Tauri frontend — dev socket
 
 Debug builds expose dev commands through the user socket (dynamic port in
-`43950..=43960`) that evaluate arbitrary JavaScript in the webview and read the
-result back. This is how you read the DOM and drive the UI. See
-`scripts/dev-socket/README.md`.
+`43950..=43960`) that evaluate JavaScript in the webview and return the result.
+See `scripts/dev-socket/README.md`.
 
 ```sh
-npm run dev &                          # start the app (backgrounded)
-npm run dev-socket -- "document.title" # evaluate a single expression
-echo 'document.body.innerText' | npm run dev-socket   # pipe JS in
+npm run dev &
+npm run dev-socket -- "document.title"
+echo 'document.body.innerText' | npm run dev-socket
 ```
 
-Key points to remember:
-
-- Write the expression directly — no `return` needed (`document.body.innerText` works).
-- `await` is supported; thrown errors come back with a stack trace.
+- Write the expression directly; no `return` needed.
+- `await` works; thrown errors return with a stack trace.
 - Results are JSON-serialized and pretty-printed; strings print plainly.
-- Prefer reading the DOM/text over screenshots; some models cannot view images.
+- Prefer reading DOM/text over screenshots; some models cannot view images.
 
 ## Styles
 
-Use Mantine. Docs here: https://mantine.dev/llms/core-accordion.md
+Tauri: use Mantine (`https://mantine.dev/llms/core-accordion.md`). Avoid custom
+CSS unless necessary. Don't pass props that are already Mantine defaults or
+defaults in `frontend/theme.ts`.
 
-Avoid making your own custom styles unless absolutely necessary. Default to using Mantine's provided utilities and styles with no extra css files, only adjusting it when necessary for functionality, or when specifically asked for something that can't be done easily with Mantine directly. When passing props to Mantine components, make sure you're not being redundant by passing something that is either already a Mantine default, or a default in this project's theme (frontend/theme.ts)
+Slint: use `ui/theme.slint` for all spacing, sizes, radii, font sizes, and
+semantic colors. Use `ui/branding.slint` for provider/engine colors. Don't
+hardcode magic numbers or theme-dependent colors in components. Don't repeat
+styles that a widget/layout already applies by default.
 
 ## Slint
 
-- Before working on `.slint` files, read `.agents/skills/slint/SKILL.md` and the relevant files in `.agents/skills/slint/reference/`.
-- Prefer built-in Slint elements/widgets over hand-rolled equivalents: `TabWidget` for tabs, `ContextMenuArea` + `Menu`/`MenuItem` for context/dropdown menus, `PopupWindow` only for non-menu overlays.
-- Use `preferred-width` / `preferred-height` when a window should stay resizable; setting `width` / `height` pins its size.
-- Compile-check Slint changes with `cargo check -p rai-pal-slint`.
+Read `.agents/skills/slint/SKILL.md` and the relevant
+`.agents/skills/slint/reference/*.md` before changing `.slint` files.
+
+- Prefer native Slint elements/widgets over hand-rolled equivalents:
+  `TabWidget`, `ContextMenuArea` + `Menu`/`MenuItem`, `PopupWindow` for non-menu
+  overlays, and built-in layouts instead of manual `x`/`y` positioning.
+- Use `preferred-width`/`preferred-height` for resizable windows; `width`/
+  `height` pin the size.
+- Model shared state and cross-cutting actions as exported globals instead of
+  forwarding callbacks through every layer. UI-local state stays local.
+- Use typed structs/enums and `Theme` constants instead of magic strings,
+  indexes, and numbers. Keep persisted JSON field names/serde representations
+  compatible with the Tauri app.
+- Use `in`/`out`/`in-out` deliberately. A callback that only reads or only
+  writes state should not be routed through a component that does neither.
+- Give custom interactive components `accessible-role` and `accessible-label`
+  (and default actions where applicable).
+- Mark user-visible strings with `@tr`, and use `{}` placeholders instead of
+  string concatenation so translations can reorder arguments.
+- Reserve space for hover-only controls and track hover across the whole row so
+  layouts don't shift or flicker.
+- Compile-check with `cargo check -p rai-pal-slint`; for visual/runtime checks
+  use the Slint MCP server or `slint-viewer`, not only source inspection.
 
 ## Tauri to Slint migration
 
-Rai Pal is being migrated from the Tauri app (`/backend/tauri-app` +
-`/frontend`) to the Slint app (`/backend/slint-app`). The Tauri app remains the
-reference implementation for behaviour and general UI structure until the
-migration is complete.
+The Tauri app remains the reference for behaviour and information hierarchy
+until the migration is complete.
 
-- Match the general structure, information hierarchy, and behaviour of the Tauri
-  UI, not its exact styling. What is primary (bold/high contrast) and what is
-  secondary (thin/low contrast), and how things are aligned/centered, should
-  stay consistent.
-- Prefer native Slint components over recreating custom Tauri/Mantine widgets.
-  It is fine to restructure slightly to use Slint's built-ins better.
-- Icons are intentionally being used less than in the Tauri app. Regular buttons
-  and menu items have no icons. Compact controls that are icon-only in the Tauri
-  UI (filter lock/reset, overflow menus) can use icons.
-- When logic or shared state can live in `rai-pal-core` instead of a specific
-  app crate, move it there. Avoid duplicating behaviour between the Tauri and
-  Slint apps.
-- Persisted state must stay compatible between the two apps: use the same files
-  in the same locations, with the same JSON structure.
-- Don't hardcode colors that assume one theme. Use `Palette`/`ColorScheme` or
-  values that read correctly in both light and dark mode.
-- For controls revealed on hover, reserve their layout space and track hover
-  across the whole row, so the layout doesn't shift or flicker.
+- Match structure, hierarchy, and behaviour, not exact styling. Keep primary
+  (bold/high-contrast) vs secondary (thin/low-contrast) emphasis and alignment
+  consistent.
+- Prefer native Slint components over recreating Tauri/Mantine widgets; small
+  structural changes to use Slint built-ins better are fine.
+- Icons are used less than in Tauri. Regular buttons/menu items have no icons;
+  compact icon-only controls (filter lock/reset, overflow menus) may use them.
+- Put shared logic/state in `rai-pal-core` instead of duplicating it between
+  `tauri-app` and `slint-app`. Be careful not to introduce extra lock
+  contention or make hot paths synchronous.
+- Persisted state must use the same files, locations, and JSON structure in both
+  apps.
 - Refer to the Tauri implementation for detailed behaviour (filters, locking,
-  reset buttons, empty states, etc) instead of inventing new behaviour.
-- The Tauri localization files in `frontend/localizations` remain the source of
-  truth. Regenerate the Slint gettext catalogs with
-  `node scripts/ts-localizations-to-po.mjs` after changing them; Slint UI
-  strings use @tr.
-- Slint live preview does not support bundled translations. Use normal
-  `npm run slint-dev` when working on translations; `npm run slint-dev-live` is
-  only for live UI reloading.
+  reset buttons, empty states, etc.) instead of inventing new behaviour.
+- Localization source of truth is `frontend/localizations`. Regenerate Slint
+  gettext catalogs with `node scripts/ts-localizations-to-po.mjs` after changes.
 
 ## Error handling in the backend
 
-We use thiserror via the enums defined in two result.rs files (core and tauri-app crates). Errors get thrown to the frontend mostly as-is, as strings. fs-err is used to add necessary context, so those are already fine. But other cases like io::Error coming from dependencies, etc, might need some extra context passed. For this, we use thiserror-context. Make sure to use that whenever we are throwing errors that can reach the frontend.
+Errors use thiserror enums in the two `result.rs` files (core and tauri-app).
+Errors reach the frontend mostly as strings. `fs-err` already adds useful
+context; for dependency `io::Error`s and similar, add context with
+`thiserror-context` whenever the error can reach the frontend.
 
 ## Tests
 
-Don't add tests unless asked to. When you make a change that you think warrants tests (especially if related to something that already has existing tests somewhere), ask the user if you should add tests first.
+Don't add tests unless asked. If a change warrants tests (especially near
+existing tests), ask first.
