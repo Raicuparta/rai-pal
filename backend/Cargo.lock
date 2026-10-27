@@ -1685,6 +1685,11 @@ checksum = "75b325c5dbd37f80359721ad39aca5a29fb04c89279657cffdda8736d0c0b9d2"
 
 [[package]]
 name = "dpi"
+version = "0.1.1"
+source = "git+https://github.com/rust-windowing/winit?rev=7a962fd46470a137d9a7a1945bf5b5d0b95a002c#7a962fd46470a137d9a7a1945bf5b5d0b95a002c"
+
+[[package]]
+name = "dpi"
 version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d8b14ccef22fc6f5a8f4d7d768562a182c04ce9a3b3157b91390b52ddfdf1a76"
@@ -4266,7 +4271,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1dd04e60bc0b07438a6771710ee1698f98f6ebbc7f89b61264af1563b8aeb878"
 dependencies = [
  "crossbeam-channel",
- "dpi",
+ "dpi 0.1.2",
  "keyboard-types 0.7.0",
  "objc2 0.6.5",
  "objc2-app-kit 0.3.2",
@@ -4285,7 +4290,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cca139e57da4383727f189e43e66e84fa372347027fc996f9f1a007ec0a37996"
 dependencies = [
  "crossbeam-channel",
- "dpi",
+ "dpi 0.1.2",
  "gtk",
  "keyboard-types 0.8.3",
  "objc2 0.6.5",
@@ -7189,7 +7194,7 @@ dependencies = [
  "dbus",
  "dispatch2",
  "dlopen2",
- "dpi",
+ "dpi 0.1.2",
  "gdkwayland-sys",
  "gdkx11-sys",
  "gtk",
@@ -7569,7 +7574,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7c55766d99cea69055904d1735b93c2049302b2e09effd462120deb5581d78e9"
 dependencies = [
  "cookie",
- "dpi",
+ "dpi 0.1.2",
  "gtk",
  "http",
  "jni 0.21.1",
@@ -9383,8 +9388,7 @@ checksum = "d6bbff5f0aada427a1e5a6da5f1f98158182f26556f345ac9e04d36d0ebed650"
 [[package]]
 name = "winit"
 version = "0.30.13"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a6755fa58a9f8350bd1e472d4c3fcc25f824ec358933bba33306d0b63df5978d"
+source = "git+https://github.com/rust-windowing/winit?rev=7a962fd46470a137d9a7a1945bf5b5d0b95a002c#7a962fd46470a137d9a7a1945bf5b5d0b95a002c"
 dependencies = [
  "ahash",
  "android-activity",
@@ -9398,7 +9402,7 @@ dependencies = [
  "core-foundation 0.9.4",
  "core-graphics 0.23.2",
  "cursor-icon",
- "dpi",
+ "dpi 0.1.1",
  "js-sys",
  "libc",
  "memmap2",
@@ -9515,7 +9519,7 @@ dependencies = [
  "crossbeam-channel",
  "dirs",
  "dom_query",
- "dpi",
+ "dpi 0.1.2",
  "dunce",
  "gdkx11",
  "gtk",

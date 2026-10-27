@@ -70,7 +70,13 @@ shadow_unrelated = "warn"
 unwrap_used = "warn"
 verbose_file_reads = "warn"
 
-# TODO: Update these properly once they're live.
 [patch.crates-io]
+
+# Needed for wayland drag and drop, comes from here: https://github.com/storytold/cadcraft/pull/2031
+winit = { git = "https://github.com/rust-windowing/winit", rev = "7a962fd46470a137d9a7a1945bf5b5d0b95a002c" }
+
+# Depends on stuff that doesn't exist, should be able to go back to normal soon.
 tauri-plugin-deep-link = { git = "https://github.com/tauri-apps/plugins-workspace", rev = "463977675da7bbb257dee59669b5e122c8d681db" }
+
+# Got dropped due to vulns, once tauri plugins update we shouldn't need this anymore.
 zip = { git = "https://github.com/zip-rs/zip2", tag = "v4.6.1" }
