@@ -1,5 +1,4 @@
 import { IconDisplay, IconSet } from "@lucide";
-import { Palette } from "std-widgets.slint";
 import { ModsTabItemData } from "../mods-tab-data.slint";
 import { Theme } from "../theme.slint";
 import { ModsTabRowView } from "mods-tab-row.slint";
@@ -17,7 +16,7 @@ export component ModsTabFamilyRowView inherits Rectangle {
 
         header := Rectangle {
             height: max(Theme.game-mod-row-height, header-content.preferred-height);
-            background: header-touch.has-hover ? Palette.alternate-background : transparent;
+            background: header-touch.has-hover ? Theme.hover-background : transparent;
 
             header-content := HorizontalLayout {
                 padding: Theme.space-6;
@@ -27,7 +26,7 @@ export component ModsTabFamilyRowView inherits Rectangle {
                 IconDisplay {
                     icon: root.expanded ? IconSet.ChevronDown : IconSet.ChevronRight;
                     size: Theme.space-16;
-                    stroke: Palette.alternate-foreground;
+                    stroke: Theme.dimmed-foreground;
                     stroke-width: 2;
                 }
 

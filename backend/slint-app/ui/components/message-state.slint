@@ -1,4 +1,3 @@
-import { Palette } from "std-widgets.slint";
 import { Theme } from "../theme.slint";
 
 export component MessageState inherits Rectangle {
@@ -14,6 +13,6 @@ export component MessageState inherits Rectangle {
         width: parent.width - Theme.space-20;
         vertical-alignment: center;
         wrap: word-wrap;
-        color: Palette.foreground;
+        color: Theme.foreground;
     }
 }

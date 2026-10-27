@@ -1,5 +1,5 @@
 import { IconSet } from "@lucide";
-import { Button, Palette } from "std-widgets.slint";
+import { Button } from "std-widgets.slint";
 import { ModActions } from "../actions.slint";
 import { GameModRowData } from "../game-mod-row-data.slint";
 import { Theme } from "../theme.slint";
@@ -14,7 +14,7 @@ export component GameModRowView inherits Rectangle {
 
     vertical-stretch: 0;
     height: max(Theme.game-mod-row-height, content.preferred-height);
-    background: interactive && row-touch.has-hover ? Palette.alternate-background : transparent;
+    background: interactive && row-touch.has-hover ? Theme.hover-background : transparent;
 
     context-menu := ContextMenuArea {
         Menu {

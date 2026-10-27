@@ -1,5 +1,4 @@
 import { IconDisplay, IconSet } from "@lucide";
-import { Palette } from "std-widgets.slint";
 import { Branding } from "../branding.slint";
 import { GameRowData } from "../game-row-data.slint";
 import { Theme } from "../theme.slint";
@@ -13,8 +12,8 @@ export component GameRowView inherits Rectangle {
     callback selected(index: int);
 
     height: Theme.game-row-height;
-    background: touch-area.has-hover ? Theme.row-hover : Palette.background;
-    property <brush> row-foreground: game-row.installed ? Palette.foreground : Palette.alternate-foreground;
+    background: touch-area.has-hover ? Theme.row-hover : Theme.background;
+    property <brush> row-foreground: game-row.installed ? Theme.foreground : Theme.dimmed-foreground;
 
     HorizontalLayout {
         Rectangle {
@@ -35,13 +34,13 @@ export component GameRowView inherits Rectangle {
                 if game-row.installed : IconDisplay {
                     icon: IconSet.Monitor;
                     size: Theme.icon-button-icon-size;
-                    stroke: Theme.dark ? white : Palette.foreground;
+                    stroke: Theme.dark ? white : Theme.foreground;
                 }
 
                 if !game-row.installed : IconDisplay {
                     icon: IconSet.Cloud;
                     size: Theme.icon-button-icon-size;
-                    stroke: Palette.foreground;
+                    stroke: Theme.foreground;
                 }
             }
         }

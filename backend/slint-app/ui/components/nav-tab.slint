@@ -1,4 +1,3 @@
-import { Palette } from "std-widgets.slint";
 import { Theme } from "../theme.slint";
 
 export component NavTab inherits Rectangle {
@@ -11,7 +10,7 @@ export component NavTab inherits Rectangle {
     preferred-height: layout.preferred-height;
     horizontal-stretch: 0;
     vertical-stretch: 0;
-    background: touch-area.pressed ? Palette.control-background : touch-area.has-hover ? Palette.alternate-background : transparent;
+    background: touch-area.pressed ? Theme.pressed-background : touch-area.has-hover ? Theme.hover-background : transparent;
     border-radius: Theme.radius-4;
 
     layout := HorizontalLayout {
@@ -22,7 +21,7 @@ export component NavTab inherits Rectangle {
 
         Text {
             text: root.title;
-            color: root.selected ? Palette.foreground : Palette.alternate-foreground;
+            color: root.selected ? Theme.foreground : Theme.dimmed-foreground;
             font-weight: root.selected ? Theme.weight-semibold : Theme.weight-normal;
             vertical-alignment: center;
             horizontal-alignment: center;
@@ -32,7 +31,7 @@ export component NavTab inherits Rectangle {
     if root.selected : Rectangle {
         y: parent.height - self.height;
         height: Theme.active-tab-indicator-height;
-        background: Palette.accent-background;
+        background: Theme.primary;
     }
 
     touch-area := TouchArea {

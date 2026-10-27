@@ -1,11 +1,13 @@
 import { Icon, IconDisplay } from "@lucide";
-import { Palette } from "std-widgets.slint";
 import { Theme } from "../theme.slint";
 
 export component IconButton inherits Rectangle {
     in property <Icon> icon;
     in property <bool> active: true;
     in property <bool> selected: false;
+    in property <brush> button-background: transparent;
+    in property <brush> hover-background: Theme.hover-background;
+    in property <brush> icon-color: Theme.foreground;
 
     callback clicked;
 
@@ -15,7 +17,7 @@ export component IconButton inherits Rectangle {
     height: Theme.icon-button-size;
     border-radius: Theme.radius-4;
     opacity: active ? (selected ? 1 : 0.8) : 0.3;
-    background: active && touch.has-hover ? Palette.control-background : transparent;
+    background: active && touch.has-hover ? root.hover-background : root.button-background;
 
     touch := TouchArea {
         clicked => {
@@ -28,7 +30,7 @@ export component IconButton inherits Rectangle {
     IconDisplay {
         icon: root.icon;
         size: Theme.icon-button-icon-size;
-        stroke: root.selected ? Theme.highlight : Palette.foreground;
+        stroke: root.selected ? Theme.highlight : root.icon-color;
         stroke-width: 2;
     }
 }

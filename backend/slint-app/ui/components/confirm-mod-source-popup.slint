@@ -1,4 +1,4 @@
-import { Button, Palette, ScrollView } from "std-widgets.slint";
+import { Button, ScrollView } from "std-widgets.slint";
 import { Theme } from "../theme.slint";
 
 export component ConfirmModSourcePopup inherits PopupWindow {
@@ -16,9 +16,9 @@ export component ConfirmModSourcePopup inherits PopupWindow {
     close-policy: PopupClosePolicy.no-auto-close;
 
     Rectangle {
-        background: Palette.background;
+        background: Theme.background;
         border-width: Theme.border-width;
-        border-color: Palette.border;
+        border-color: Theme.border;
         border-radius: Theme.radius-8;
 
         VerticalLayout {

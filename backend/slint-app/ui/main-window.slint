@@ -40,6 +40,7 @@ export component MainWindow inherits Window {
     preferred-height: Theme.window-preferred-height;
     min-width: Theme.window-min-width;
     min-height: Theme.window-min-height;
+    background: Theme.background;
 
     in property <[GameRowData]> game-rows;
     in property <int> games-total-count: 0;
@@ -194,112 +195,118 @@ export component MainWindow inherits Window {
     VerticalLayout {
         Rectangle {
             height: Theme.navbar-height;
-            background: Palette.alternate-background;
+            background: Theme.background;
 
-            HorizontalLayout {
-                padding-left: Theme.space-8;
-                padding-right: Theme.space-8;
-                spacing: Theme.space-2;
-                cross-axis-alignment: center;
+            Rectangle {
+                width: min(parent.width, Theme.content-max-width);
+                x: (parent.width - self.width) / 2;
+                background: transparent;
 
-                NavTab {
-                    title: @tr("tab" => "Games");
-                    selected: root.current-tab == AppTab.games;
+                HorizontalLayout {
+                    padding-left: Theme.space-8;
+                    padding-right: Theme.space-8;
+                    spacing: Theme.space-2;
+                    cross-axis-alignment: center;
 
-                    clicked => {
-                        root.current-tab = AppTab.games;
-                        root.tab-changed(AppTab.games);
-                    }
-                }
+                    NavTab {
+                        title: @tr("tab" => "Games");
+                        selected: root.current-tab == AppTab.games;
 
-                NavTab {
-                    title: @tr("tab" => "Mods");
-                    selected: root.current-tab == AppTab.mods;
-
-                    clicked => {
-                        root.current-tab = AppTab.mods;
-                        root.tab-changed(AppTab.mods);
-                    }
-                }
-
-                NavTab {
-                    title: @tr("tab" => "Thanks");
-                    selected: root.current-tab == AppTab.thanks;
-
-                    clicked => {
-                        root.current-tab = AppTab.thanks;
-                        root.tab-changed(AppTab.thanks);
-                    }
-                }
-
-                Rectangle {
-                    horizontal-stretch: 1;
-                }
-
-                DownloadProgress {
-                    items: root.downloads;
-                    overall-progress: root.download-progress;
-
-                    clear-completed => {
-                        root.clear-downloads();
-                    }
-                }
-
-                UserMenu {
-                    logged-in: root.user-logged-in;
-                    busy: root.user-busy;
-                    user-name: root.user-name;
-                    user-initials: root.user-initials;
-                    has-avatar: root.user-has-avatar;
-                    avatar: root.user-avatar;
-
-                    log-in => {
-                        root.log-in();
+                        clicked => {
+                            root.current-tab = AppTab.games;
+                            root.tab-changed(AppTab.games);
+                        }
                     }
 
-                    log-out => {
-                        root.log-out();
-                    }
-                }
+                    NavTab {
+                        title: @tr("tab" => "Mods");
+                        selected: root.current-tab == AppTab.mods;
 
-                AppMenu {
-                    selected-language: root.selected-language;
-                    hide-game-thumbnails: root.hide-game-thumbnails;
-                    selected-color-scheme: root.selected-color-scheme;
-                    detected-language-name: root.detected-language-name;
-
-                    about-clicked => {
-                        about-popup.show();
+                        clicked => {
+                            root.current-tab = AppTab.mods;
+                            root.tab-changed(AppTab.mods);
+                        }
                     }
 
-                    steam-cache-clicked => {
-                        root.steam-cache-success = false;
-                        root.steam-cache-error = "";
-                        root.steam-cache-open = true;
+                    NavTab {
+                        title: @tr("tab" => "Thanks");
+                        selected: root.current-tab == AppTab.thanks;
+
+                        clicked => {
+                            root.current-tab = AppTab.thanks;
+                            root.tab-changed(AppTab.thanks);
+                        }
                     }
 
-                    steam-shortcut-clicked => {
-                        root.steam-shortcut-success = false;
-                        root.steam-shortcut-error = "";
-                        root.steam-shortcut-open = true;
+                    Rectangle {
+                        horizontal-stretch: 1;
                     }
 
-                    add-game-clicked => {
-                        root.request-add-game();
+                    DownloadProgress {
+                        items: root.downloads;
+                        overall-progress: root.download-progress;
+
+                        clear-completed => {
+                            root.clear-downloads();
+                        }
                     }
 
-                    language-changed(value) => {
-                        root.language-changed(value);
+                    UserMenu {
+                        logged-in: root.user-logged-in;
+                        busy: root.user-busy;
+                        user-name: root.user-name;
+                        user-initials: root.user-initials;
+                        has-avatar: root.user-has-avatar;
+                        avatar: root.user-avatar;
+
+                        log-in => {
+                            root.log-in();
+                        }
+
+                        log-out => {
+                            root.log-out();
+                        }
                     }
 
-                    color-scheme-changed(value) => {
-                        root.selected-color-scheme = value;
-                        root.color-scheme-changed(value);
-                    }
+                    AppMenu {
+                        selected-language: root.selected-language;
+                        hide-game-thumbnails: root.hide-game-thumbnails;
+                        selected-color-scheme: root.selected-color-scheme;
+                        detected-language-name: root.detected-language-name;
 
-                    hide-game-thumbnails-changed(value) => {
-                        root.hide-game-thumbnails = value;
-                        root.hide-game-thumbnails-changed(value);
+                        about-clicked => {
+                            about-popup.show();
+                        }
+
+                        steam-cache-clicked => {
+                            root.steam-cache-success = false;
+                            root.steam-cache-error = "";
+                            root.steam-cache-open = true;
+                        }
+
+                        steam-shortcut-clicked => {
+                            root.steam-shortcut-success = false;
+                            root.steam-shortcut-error = "";
+                            root.steam-shortcut-open = true;
+                        }
+
+                        add-game-clicked => {
+                            root.request-add-game();
+                        }
+
+                        language-changed(value) => {
+                            root.language-changed(value);
+                        }
+
+                        color-scheme-changed(value) => {
+                            root.selected-color-scheme = value;
+                            root.color-scheme-changed(value);
+                        }
+
+                        hide-game-thumbnails-changed(value) => {
+                            root.hide-game-thumbnails = value;
+                            root.hide-game-thumbnails-changed(value);
+                        }
                     }
                 }
             }
@@ -308,13 +315,15 @@ export component MainWindow inherits Window {
                 y: parent.height - self.height;
                 width: 100%;
                 height: Theme.border-width;
-                background: Palette.border;
+                background: Theme.border;
             }
         }
 
         Rectangle {
             Rectangle {
                 visible: root.current-tab == AppTab.games;
+                width: min(parent.width, Theme.content-max-width);
+                x: (parent.width - self.width) / 2;
 
                 HorizontalLayout {
                     visible: root.game-selected;
@@ -473,6 +482,8 @@ export component MainWindow inherits Window {
 
             Rectangle {
                 visible: root.current-tab == AppTab.mods;
+                width: min(parent.width, Theme.content-max-width);
+                x: (parent.width - self.width) / 2;
 
                 ModsPage {
                     items: root.mods-tab-items;
@@ -491,6 +502,8 @@ export component MainWindow inherits Window {
 
             Rectangle {
                 visible: root.current-tab == AppTab.thanks;
+                width: min(parent.width, Theme.content-max-width);
+                x: (parent.width - self.width) / 2;
 
                 ThanksPage {
                     patrons: root.patrons;

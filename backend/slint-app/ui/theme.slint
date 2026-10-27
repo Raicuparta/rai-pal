@@ -34,10 +34,11 @@ export global Theme {
     out property <length> window-preferred-height: 700px;
     out property <length> window-min-width: 800px;
     out property <length> window-min-height: 500px;
+    out property <length> content-max-width: 1140px;
     out property <length> overlay-margin: 64px;
 
     out property <length> navbar-height: 44px;
-    out property <length> sidebar-width: 260px;
+    out property <length> sidebar-width: 250px;
     out property <length> control-height: 32px;
     out property <length> action-button-height: 28px;
     out property <length> filter-row-height: 26px;
@@ -69,10 +70,20 @@ export global Theme {
     out property <length> about-popup-width: 360px;
     out property <length> about-popup-height: 220px;
 
+    out property <brush> background: dark ? #1a1b1e : #ffffff;
+    out property <brush> surface-background: dark ? #25262b : #ffffff;
+    out property <brush> hover-background: dark ? #2c2e33 : #f1f3f5;
+    out property <brush> pressed-background: dark ? #25262b : #e9ecef;
+    out property <brush> border: dark ? #373a40 : #ced4da;
+    out property <brush> foreground: dark ? #c1c2c5 : #000000;
+    out property <brush> dimmed-foreground: dark ? #909296 : #868e96;
+    out property <brush> primary: Palette.accent-background;
+    out property <brush> primary-foreground: Palette.accent-foreground;
+
     out property <brush> highlight: #fcc419;
-    out property <brush> row-hover: dark ? #2c2e33 : #f1f3f5;
-    out property <brush> row-divider: dark ? #141517 : #e9ecef;
-    out property <brush> tag-background: dark ? #141517 : #e9ecef;
+    out property <brush> row-hover: hover-background;
+    out property <brush> row-divider: dark ? #25262b : #dee2e6;
+    out property <brush> tag-background: dark ? #25262b : #e9ecef;
     out property <brush> status-warning: dark ? #ffa94d : #e8590c;
     out property <brush> status-success: dark ? #69db7c : #2b8a3e;
     out property <brush> status-error: dark ? #ff8787 : #c92a2a;

@@ -1,4 +1,4 @@
-import { Button, CheckBox, LineEdit, Palette, ScrollView } from "std-widgets.slint";
+import { Button, CheckBox, LineEdit, ScrollView } from "std-widgets.slint";
 import { Theme } from "../theme.slint";
 import { UrlModSourceData } from "../url-mod-source-data.slint";
 
@@ -58,9 +58,9 @@ export component UrlModSourcesPopup inherits PopupWindow {
     close-policy: PopupClosePolicy.no-auto-close;
 
     Rectangle {
-        background: Palette.background;
+        background: Theme.background;
         border-width: Theme.border-width;
-        border-color: Palette.border;
+        border-color: Theme.border;
         border-radius: Theme.radius-8;
 
         VerticalLayout {

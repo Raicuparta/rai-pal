@@ -1,4 +1,4 @@
-import { Button, Palette, ScrollView } from "std-widgets.slint";
+import { Button, ScrollView } from "std-widgets.slint";
 import { AddGamePhase } from "../app-types.slint";
 import { Theme } from "../theme.slint";
 
@@ -17,7 +17,7 @@ component SavedDirectoryRow inherits Rectangle {
             horizontal-stretch: 1;
             height: Theme.control-height;
             border-radius: Theme.radius-4;
-            background: Palette.alternate-background;
+            background: Theme.surface-background;
 
             Text {
                 text: root.path;
@@ -62,9 +62,9 @@ export component AddGamePopup inherits PopupWindow {
     close-policy: PopupClosePolicy.no-auto-close;
 
     Rectangle {
-        background: Palette.background;
+        background: Theme.background;
         border-width: Theme.border-width;
-        border-color: Palette.border;
+        border-color: Theme.border;
         border-radius: Theme.radius-8;
 
         VerticalLayout {
@@ -186,7 +186,7 @@ export component AddGamePopup inherits PopupWindow {
 
                         Rectangle {
                             height: Theme.border-width;
-                            background: Palette.border;
+                            background: Theme.border;
                         }
 
                         Text {

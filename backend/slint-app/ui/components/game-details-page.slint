@@ -1,4 +1,4 @@
-import { Button, Palette, ScrollView } from "std-widgets.slint";
+import { Button, ScrollView } from "std-widgets.slint";
 import { ModActions } from "../actions.slint";
 import { GameRowData } from "../game-row-data.slint";
 import { GameModRowData } from "../game-mod-row-data.slint";
@@ -115,7 +115,7 @@ export component GameDetailsPage inherits Rectangle {
                         Rectangle {
                             horizontal-stretch: 1;
                             height: Theme.border-width;
-                            background: Palette.border;
+                            background: Theme.border;
                             vertical-stretch: 0;
                         }
                     }

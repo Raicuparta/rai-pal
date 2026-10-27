@@ -1,4 +1,3 @@
-import { Palette } from "std-widgets.slint";
 import { Theme } from "theme.slint";
 
 export global Branding {
@@ -22,7 +21,7 @@ export global Branding {
         if provider-id == "Xbox" {
             return #2f9e44;
         }
-        return Palette.foreground;
+        return Theme.foreground;
     }
 
     public pure function provider-background(provider-id: string) -> brush {
@@ -77,6 +76,6 @@ export global Branding {
         if brand == "GameMaker" {
             return Theme.dark ? #63e6be : #0ca678;
         }
-        return Palette.foreground;
+        return Theme.foreground;
     }
 }

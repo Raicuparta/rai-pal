@@ -1,5 +1,4 @@
 import { IconDisplay, IconSet } from "@lucide";
-import { Palette } from "std-widgets.slint";
 import { AppColorScheme } from "../app-types.slint";
 import { Theme } from "../theme.slint";
 
@@ -25,12 +24,12 @@ export component AppMenu inherits Rectangle {
             width: 100%;
             height: 100%;
             border-radius: Theme.radius-4;
-            background: touch-area.pressed ? Palette.control-background : touch-area.has-hover ? Palette.alternate-background : transparent;
+            background: touch-area.pressed ? Theme.pressed-background : touch-area.has-hover ? Theme.hover-background : transparent;
 
             IconDisplay {
                 icon: IconSet.Menu;
                 size: Theme.menu-icon-size;
-                stroke: Palette.foreground;
+                stroke: Theme.foreground;
                 stroke-width: 2;
             }
 

@@ -1,5 +1,5 @@
 import { IconDisplay, IconSet } from "@lucide";
-import { CheckBox, Palette } from "std-widgets.slint";
+import { CheckBox } from "std-widgets.slint";
 import { FilterGroupData, FilterValueData } from "../filter-data.slint";
 import { Tr } from "../translations.slint";
 import { Theme } from "../theme.slint";
@@ -15,7 +15,7 @@ component FilterValueRow inherits Rectangle {
     property <bool> hovered: row-touch.has-hover || checkbox-touch.has-hover || only-touch.has-hover || lock-button.hovered;
 
     height: Theme.filter-row-height;
-    background: hovered ? Palette.alternate-background : transparent;
+    background: hovered ? Theme.hover-background : transparent;
 
     row-touch := TouchArea { }
 
@@ -50,7 +50,7 @@ component FilterValueRow inherits Rectangle {
             height: Theme.only-button-height;
             border-radius: Theme.radius-4;
             opacity: root.hovered ? 1 : 0;
-            background: only-touch.has-hover && !root.item.locked ? Palette.control-background : transparent;
+            background: Theme.background;
 
             only-touch := TouchArea {
                 clicked => {
@@ -63,19 +63,29 @@ component FilterValueRow inherits Rectangle {
             Text {
                 text: "Only";
                 font-size: Theme.font-12;
-                color: root.item.locked ? Palette.alternate-foreground : Palette.foreground;
+                color: root.item.locked ? Theme.dimmed-foreground : Theme.foreground;
                 horizontal-alignment: center;
                 vertical-alignment: center;
             }
         }
 
-        lock-button := IconButton {
-            icon: root.item.locked ? IconSet.Lock : IconSet.LockOpen;
-            active: !root.item.enabled;
-            selected: root.item.locked;
+        Rectangle {
+            width: Theme.icon-button-size;
+            height: Theme.icon-button-size;
+            border-radius: Theme.radius-4;
+            background: Theme.background;
 
-            clicked => {
-                root.lock-toggled();
+            lock-button := IconButton {
+                width: 100%;
+                height: 100%;
+                icon: root.item.locked ? IconSet.Lock : IconSet.LockOpen;
+                active: !root.item.enabled;
+                selected: root.item.locked;
+                hover-background: transparent;
+
+                clicked => {
+                    root.lock-toggled();
+                }
             }
         }
     }
@@ -96,6 +106,7 @@ export component FilterGroupView inherits Rectangle {
 
         header := Rectangle {
             height: Theme.filter-row-height;
+            background: header-touch.has-hover ? Theme.hover-background : transparent;
 
             header-touch := TouchArea {
                 clicked => {
@@ -112,7 +123,7 @@ export component FilterGroupView inherits Rectangle {
                 IconDisplay {
                     icon: root.group.expanded ? IconSet.ChevronDown : IconSet.ChevronRight;
                     size: Theme.icon-button-icon-size;
-                    stroke: Palette.alternate-foreground;
+                    stroke: Theme.dimmed-foreground;
                     stroke-width: 2;
                 }
 
@@ -133,6 +144,9 @@ export component FilterGroupView inherits Rectangle {
                 reset-button := IconButton {
                     icon: IconSet.RotateCcw;
                     active: root.group.has-changes;
+                    button-background: root.group.has-changes ? Theme.background : transparent;
+                    hover-background: root.group.has-changes ? Theme.background : Theme.hover-background;
+                    icon-color: root.group.has-changes ? Theme.primary : Theme.foreground;
 
                     clicked => {
                         root.reset();

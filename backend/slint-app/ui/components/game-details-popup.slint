@@ -1,4 +1,4 @@
-import { ScrollView, Button, Palette } from "std-widgets.slint";
+import { ScrollView, Button } from "std-widgets.slint";
 import { Theme } from "../theme.slint";
 
 export component GameDetailsPopup inherits PopupWindow {
@@ -9,9 +9,9 @@ export component GameDetailsPopup inherits PopupWindow {
     close-policy: PopupClosePolicy.no-auto-close;
 
     Rectangle {
-        background: Palette.background;
+        background: Theme.background;
         border-width: Theme.border-width;
-        border-color: Palette.border;
+        border-color: Theme.border;
 
         VerticalLayout {
             padding: Theme.space-12;

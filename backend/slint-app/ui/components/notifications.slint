@@ -1,5 +1,4 @@
 import { IconDisplay, IconSet } from "@lucide";
-import { Palette } from "std-widgets.slint";
 import { NotificationData, NotificationKind } from "../notification-data.slint";
 import { Theme } from "../theme.slint";
 import { IconButton } from "icon-button.slint";
@@ -11,7 +10,7 @@ component NotificationToast inherits Rectangle {
 
     width: 100%;
     height: layout.preferred-height;
-    background: Palette.background;
+    background: Theme.background;
     border-width: Theme.border-width * 2;
     border-radius: Theme.radius-8;
     border-color: root.notification.kind == NotificationKind.error ? Theme.status-error : root.notification.kind == NotificationKind.success ? Theme.status-success : Theme.status-info;

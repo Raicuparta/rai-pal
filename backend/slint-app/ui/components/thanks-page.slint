@@ -1,4 +1,4 @@
-import { Button, Palette, ScrollView } from "std-widgets.slint";
+import { Button, ScrollView } from "std-widgets.slint";
 import { IconDisplay, IconSet } from "@lucide";
 import { ModActions } from "../actions.slint";
 import { PatronData } from "../patron-data.slint";
@@ -29,7 +29,7 @@ component PatronRow inherits Rectangle {
             height: Theme.control-height;
             border-radius: Theme.control-height / 2;
             clip: true;
-            background: Palette.alternate-background;
+            background: Theme.surface-background;
 
             if root.patron.has-avatar : Image {
                 source: root.patron.avatar;
@@ -50,7 +50,7 @@ component PatronRow inherits Rectangle {
         if root.patron.ranking <= 3 : IconDisplay {
             icon: IconSet.Trophy;
             size: Theme.icon-button-icon-size;
-            stroke: root.patron.ranking == 1 ? Theme.highlight : Palette.alternate-foreground;
+            stroke: root.patron.ranking == 1 ? Theme.highlight : Theme.dimmed-foreground;
             stroke-width: 2;
         }
 
@@ -114,7 +114,7 @@ export component ThanksPage inherits Rectangle {
                         Rectangle {
                             width: 120px;
                             border-radius: Theme.radius-8;
-                            background: Palette.alternate-background;
+                            background: Theme.background;
 
                             VerticalLayout {
                                 padding: Theme.space-12;
@@ -190,7 +190,7 @@ export component ThanksPage inherits Rectangle {
 
                     Rectangle {
                         height: Theme.border-width;
-                        background: Palette.border;
+                        background: Theme.border;
                     }
 
                     VerticalLayout {

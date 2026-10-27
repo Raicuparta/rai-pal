@@ -1,4 +1,4 @@
-import { Button, Palette } from "std-widgets.slint";
+import { Button } from "std-widgets.slint";
 import { ModActions } from "../actions.slint";
 import { ModsTabModData } from "../mods-tab-data.slint";
 import { Theme } from "../theme.slint";
@@ -10,7 +10,7 @@ export component ModsTabRowView inherits Rectangle {
 
     vertical-stretch: 0;
     height: max(Theme.game-mod-row-height, content.preferred-height);
-    background: row-touch.has-hover ? Palette.alternate-background : transparent;
+    background: row-touch.has-hover ? Theme.hover-background : transparent;
 
     row-touch := TouchArea { }
 
