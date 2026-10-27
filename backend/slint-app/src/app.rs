@@ -114,6 +114,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 		Err(_) => "Unknown",
 	};
 	window.set_renderer_name(renderer_name.into());
+	window.set_platform_name(platform_name().into());
 
 	let window_weak = window.as_weak();
 	let scheduler = spawn_fetchers(database.clone(), window_weak.clone());
@@ -1270,4 +1271,29 @@ fn begin_refresh_all(
 		query,
 		selected_game.clone(),
 	);
+}
+
+fn platform_name() -> String {
+	#[cfg(target_os = "linux")]
+	{
+		if std::env::var("WAYLAND_DISPLAY").is_ok_and(|value| !value.is_empty()) {
+			return "Linux (Wayland)".to_string();
+		}
+
+		if std::env::var("DISPLAY").is_ok_and(|value| !value.is_empty()) {
+			return "Linux (X11)".to_string();
+		}
+
+		return "Linux".to_string();
+	}
+
+	#[cfg(target_os = "windows")]
+	{
+		"Windows".to_string()
+	}
+
+	#[cfg(not(any(target_os = "linux", target_os = "windows")))]
+	{
+		std::env::consts::OS.to_string()
+	}
 }

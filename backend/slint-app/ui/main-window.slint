@@ -68,6 +68,7 @@ export component MainWindow inherits Window {
     in-out property <string> details-json: "";
     in property <string> app-version: "";
     in property <string> renderer-name: "";
+    in property <string> platform-name: "";
     in property <bool> user-logged-in: false;
     in property <bool> user-busy: false;
     in property <string> user-name: "";
@@ -548,6 +549,7 @@ export component MainWindow inherits Window {
         y: (root.height - self.height) / 2;
         app-version: root.app-version;
         renderer-name: root.renderer-name;
+        platform-name: root.platform-name;
     }
 
     changed url-mod-sources-open => {

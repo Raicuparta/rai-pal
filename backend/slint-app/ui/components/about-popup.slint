@@ -4,6 +4,7 @@ import { Theme } from "../theme.slint";
 export component AboutPopup inherits PopupWindow {
     in property <string> app-version;
     in property <string> renderer-name;
+    in property <string> platform-name;
 
     width: Theme.about-popup-width;
     height: Theme.about-popup-height;
@@ -31,6 +32,10 @@ export component AboutPopup inherits PopupWindow {
 
             Text {
                 text: "Rendering backend: \{root.renderer-name}";
+            }
+
+            Text {
+                text: "Platform: \{root.platform-name}";
             }
 
             Rectangle {
