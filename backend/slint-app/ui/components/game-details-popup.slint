@@ -1,12 +1,26 @@
-import { ScrollView, Button } from "std-widgets.slint";
-import { Theme } from "../theme.slint";
+import { TextEdit } from "std-widgets.slint";
+import { IconSet } from "@lucide";
+import { Fonts, Theme } from "../theme.slint";
+import { IconButton } from "icon-button.slint";
 
 export component GameDetailsPopup inherits PopupWindow {
     in property <string> game-json;
 
+    private property <bool> copied: false;
+    private property <length> saved-scroll-y: 0;
+
     callback closed;
 
     close-policy: PopupClosePolicy.no-auto-close;
+
+    copy-reset-timer := Timer {
+        interval: 2s;
+        running: root.copied;
+
+        triggered => {
+            root.copied = false;
+        }
+    }
 
     Rectangle {
         background: Theme.background;
@@ -17,31 +31,55 @@ export component GameDetailsPopup inherits PopupWindow {
             padding: Theme.space-12;
             spacing: Theme.space-8;
 
-            Text {
-                text: "Game data";
-                font-weight: Theme.weight-bold;
-            }
-
-            ScrollView {
-                Text {
-                    text: root.game-json;
-                    font-family: "monospace";
-                    wrap: word-wrap;
-                    vertical-alignment: top;
-                }
-            }
-
             HorizontalLayout {
-                alignment: end;
+                spacing: Theme.space-6;
+                cross-axis-alignment: center;
 
-                Button {
-                    text: "Close";
+                Text {
+                    text: @tr("debugData" => "Debug data");
+                    font-size: Theme.font-16;
+                    font-weight: Theme.weight-bold;
+                    vertical-alignment: center;
+                }
+
+                IconButton {
+                    icon: root.copied ? IconSet.Check : IconSet.Copy;
+                    icon-color: root.copied ? Theme.status-success : Theme.foreground;
+                    accessible-role: button;
+                    accessible-label: @tr("debugData" => "Copy debug data");
+
+                    clicked => {
+                        root.saved-scroll-y = debug-text.content-y;
+                        debug-text.select-all();
+                        debug-text.copy();
+                        debug-text.clear-selection();
+                        debug-text.content-y = root.saved-scroll-y;
+                        root.copied = true;
+                    }
+                }
+
+                Rectangle {
+                    horizontal-stretch: 1;
+                }
+
+                IconButton {
+                    icon: IconSet.X;
+                    accessible-role: button;
+                    accessible-label: @tr("debugData" => "Close");
 
                     clicked => {
                         root.close();
                         root.closed();
                     }
                 }
+            }
+
+            debug-text := TextEdit {
+                text: root.game-json;
+                read-only: true;
+                wrap: word-wrap;
+                font-family: Fonts.monospace-family;
+                font-size: Theme.font-12;
             }
         }
     }

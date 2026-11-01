@@ -1,7 +1,7 @@
 import { IconDisplay, IconSet } from "@lucide";
 import { Branding } from "../branding.slint";
 import { GameRowData } from "../game-row-data.slint";
-import { Theme } from "../theme.slint";
+import { Fonts, Theme } from "../theme.slint";
 import { ProviderIcon } from "provider-icon.slint";
 
 export component GameRowView inherits Rectangle {
@@ -119,7 +119,7 @@ export component GameRowView inherits Rectangle {
                     text: game-row.engine-version;
                     horizontal-alignment: center;
                     color: Branding.engine-foreground(game-row.engine-brand);
-                    font-family: "monospace";
+                    font-family: Fonts.monospace-family;
                     font-size: Theme.font-12;
                     overflow: elide;
                 }

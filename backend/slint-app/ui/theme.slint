@@ -1,5 +1,9 @@
 import { Palette } from "std-widgets.slint";
 
+export global Fonts {
+    in property <string> monospace-family: "monospace";
+}
+
 export global Theme {
     out property <bool> dark: Palette.color-scheme == ColorScheme.dark;
 

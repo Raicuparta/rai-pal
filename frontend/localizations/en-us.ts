@@ -519,6 +519,9 @@ export const enUs = {
 
 		// Button for copying the debug data to the clipboard.
 		debugDataCopy: "Copy debug data",
+
+		// Button that closes the debug data modal.
+		close: "Close",
 	},
 
 	// Page that shows credits and donation links.

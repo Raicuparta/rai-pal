@@ -1,6 +1,6 @@
 import { Button, ScrollView } from "std-widgets.slint";
 import { AddGamePhase } from "../app-types.slint";
-import { Theme } from "../theme.slint";
+import { Fonts, Theme } from "../theme.slint";
 
 component SavedDirectoryRow inherits Rectangle {
     in property <string> path;
@@ -21,7 +21,7 @@ component SavedDirectoryRow inherits Rectangle {
 
             Text {
                 text: root.path;
-                font-family: "monospace";
+                font-family: Fonts.monospace-family;
                 font-size: Theme.font-12;
                 vertical-alignment: center;
                 x: Theme.space-8;
@@ -134,7 +134,7 @@ export component AddGamePopup inherits PopupWindow {
 
                         Text {
                             text: root.current-path;
-                            font-family: "monospace";
+                            font-family: Fonts.monospace-family;
                             font-size: Theme.font-12;
                             opacity: 0.7;
                             overflow: elide;

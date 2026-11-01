@@ -589,6 +589,10 @@ msgctxt "debugData"
 msgid "Copy debug data"
 msgstr "Waah waaah waah!"
 
+msgctxt "debugData"
+msgid "Close"
+msgstr "Waaah!"
+
 msgctxt "thanksPage"
 msgid "Hello. I made Rai Pal. I also made other VR mods in the past, and am currently working on a universal VR mod for Unity games. If you like what I do, and would like to see more, please consider donating! You can also support me by buying one of my free mods on itch.io."
 msgstr "Waaaah I waah wah waah I waah waah waaah VR waah in wah waaah wah am waaaaaaah waaaaah on a waaaaaaah VR wah wah waaah waaaah If wah waah waah I wah wah waaah waah to wah waaah waaaah waaaaaah waaaaaaah wah wah waah waaaaah me by waaaah wah of my waah waah on waaaaaah!"

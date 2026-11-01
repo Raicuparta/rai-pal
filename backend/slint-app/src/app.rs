@@ -23,7 +23,7 @@ use slint::{
 };
 
 use crate::{
-	AppColorScheme, AppTab, GameRowData, MainWindow, ModActions, actions, confirmation, downloads,
+	AppColorScheme, AppTab, Fonts, GameRowData, MainWindow, ModActions, actions, confirmation, downloads,
 	fetch::spawn_fetchers,
 	filters::{
 		apply_filter_action, build_groups, load_mod_families, reset_all_filters, reset_filter_group,
@@ -115,6 +115,9 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	};
 	window.set_renderer_name(renderer_name.into());
 	window.set_platform_name(platform_name().into());
+	window
+		.global::<Fonts>()
+		.set_monospace_family(monospace_font_family().into());
 
 	let window_weak = window.as_weak();
 	let scheduler = spawn_fetchers(database.clone(), window_weak.clone());
@@ -1271,6 +1274,18 @@ fn begin_refresh_all(
 		query,
 		selected_game.clone(),
 	);
+}
+
+fn monospace_font_family() -> &'static str {
+	if cfg!(target_os = "windows") {
+		return "Consolas";
+	}
+
+	if cfg!(target_os = "macos") {
+		return "Menlo";
+	}
+
+	"DejaVu Sans Mono"
 }
 
 fn platform_name() -> String {
