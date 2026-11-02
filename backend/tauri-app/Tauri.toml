@@ -21,6 +21,9 @@ icon = [
   "graphics/icon.ico",
 ]
 
+[bundle.linux.appimage.files]
+"usr/lib/libgpg-error.so.0" = "/usr/lib/x86_64-linux-gnu/libgpg-error.so.0"
+
 [bundle.windows.nsis]
 installerIcon = "graphics/icon.ico"
 sidebarImage = "graphics/installer-sidebar.bmp"
