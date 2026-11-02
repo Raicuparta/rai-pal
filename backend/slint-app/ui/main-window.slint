@@ -66,6 +66,7 @@ export component MainWindow inherits Window {
     in property <bool> has-incompatible-mods: false;
     in property <[FilterGroupData]> filter-groups;
     in property <bool> filters-have-changes;
+    in property <bool> filters-have-expanded: false;
     in-out property <bool> hide-game-thumbnails: false;
     in-out property <bool> drop-highlight: false;
     in-out property <string> selected-language: "";
@@ -167,6 +168,7 @@ export component MainWindow inherits Window {
     callback filter-only(group: string, value: string);
     callback filter-reset(group: string);
     callback filters-reset;
+    callback filters-collapse-all;
     callback filter-expanded-changed(group: string, expanded: bool);
     callback tab-changed(tab: AppTab);
     callback language-changed(value: string);
@@ -426,6 +428,7 @@ export component MainWindow inherits Window {
                         sort-descending <=> root.sort-descending;
                         filter-groups: root.filter-groups;
                         filters-have-changes: root.filters-have-changes;
+                        filters-have-expanded: root.filters-have-expanded;
                         refreshing: root.refreshing;
                         refresh-task-names: root.refresh-task-names;
 
@@ -463,6 +466,10 @@ export component MainWindow inherits Window {
 
                         filters-reset => {
                             root.filters-reset();
+                        }
+
+                        filters-collapse-all => {
+                            root.filters-collapse-all();
                         }
 
                         filter-expanded-changed(group, expanded) => {

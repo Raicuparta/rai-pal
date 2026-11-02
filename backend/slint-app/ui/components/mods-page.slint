@@ -5,7 +5,7 @@ import { Theme } from "../theme.slint";
 import { ModsTabRowView } from "mods-tab-row.slint";
 import { ModsTabFamilyRowView } from "mods-tab-family-row.slint";
 import { RefreshButton } from "refresh-button.slint";
-import { Sidebar } from "sidebar.slint";
+import { Sidebar, SidebarSection } from "sidebar.slint";
 
 export component ModsPage inherits Rectangle {
     in property <[ModsTabItemData]> items;
@@ -17,28 +17,32 @@ export component ModsPage inherits Rectangle {
 
     HorizontalLayout {
         Sidebar {
-            RefreshButton {
-                refreshing: root.refreshing;
-                task-names: root.refresh-task-names;
+            SidebarSection {
+                spacing: Theme.space-8;
 
-                clicked => {
-                    root.refresh-all();
+                RefreshButton {
+                    refreshing: root.refreshing;
+                    task-names: root.refresh-task-names;
+
+                    clicked => {
+                        root.refresh-all();
+                    }
                 }
-            }
 
-            Button {
-                text: @tr("urlModSources" => "Mod Sources");
+                Button {
+                    text: @tr("urlModSources" => "Mod Sources");
 
-                clicked => {
-                    root.open-url-mod-sources();
+                    clicked => {
+                        root.open-url-mod-sources();
+                    }
                 }
-            }
 
-            Button {
-                text: @tr("modsPage" => "Open Local Mods Folder");
+                Button {
+                    text: @tr("modsPage" => "Open Local Mods Folder");
 
-                clicked => {
-                    ModActions.open-local-mods-folder();
+                    clicked => {
+                        ModActions.open-local-mods-folder();
+                    }
                 }
             }
         }

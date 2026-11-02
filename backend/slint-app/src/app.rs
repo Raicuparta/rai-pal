@@ -105,6 +105,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	window.set_sort_index(sort_index(initial_query.sort_by));
 	window.set_sort_descending(initial_query.sort_descending);
 	window.set_current_tab(initial_tab);
+	window.set_filters_have_expanded(initial_groups.iter().any(|group| group.expanded));
 	window.set_filter_groups(Rc::new(slint::VecModel::from(initial_groups)).into());
 	window.set_filters_have_changes(initial_have_changes);
 
@@ -568,6 +569,18 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	let ui_window = window_weak.clone();
 	let ui_settings = settings.clone();
 	let ui_mod_families = mod_families.clone();
+	window.on_filters_collapse_all(move || {
+		{
+			let mut settings = ui_settings.borrow_mut();
+			settings.expanded_filters.clear();
+		}
+		persist_settings(&ui_settings);
+		refresh_filter_groups(&ui_window, &ui_settings, &ui_mod_families);
+	});
+
+	let ui_window = window_weak.clone();
+	let ui_settings = settings.clone();
+	let ui_mod_families = mod_families.clone();
 	window.on_filter_expanded_changed(move |group, expanded| {
 		{
 			let mut settings = ui_settings.borrow_mut();
@@ -589,6 +602,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 		};
 
 		if let Some(window) = ui_window.upgrade() {
+			window.set_filters_have_expanded(groups.iter().any(|group| group.expanded));
 			window.set_filter_groups(Rc::new(slint::VecModel::from(groups)).into());
 		}
 	});
@@ -1115,6 +1129,7 @@ fn refresh_filter_groups(
 
 	if let Some(window) = window.upgrade() {
 		window.set_filters_have_changes(groups.iter().any(|group| group.has_changes));
+		window.set_filters_have_expanded(groups.iter().any(|group| group.expanded));
 		window.set_filter_groups(Rc::new(slint::VecModel::from(groups)).into());
 	}
 }
