@@ -5650,7 +5650,7 @@ dependencies = [
 
 [[package]]
 name = "rai-pal-slint"
-version = "0.24.0"
+version = "0.24.1"
 dependencies = [
  "image",
  "log",
