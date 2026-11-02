@@ -1,15 +1,77 @@
-import { Button, ScrollView } from "std-widgets.slint";
+import { ScrollView } from "std-widgets.slint";
 import { IconDisplay, IconSet } from "@lucide";
 import { ModActions } from "../actions.slint";
+import { Branding } from "../branding.slint";
 import { PatronData } from "../patron-data.slint";
 import { Theme } from "../theme.slint";
 import { Sidebar } from "sidebar.slint";
 
-component ThanksLink inherits Button {
+component ThanksLink inherits Rectangle {
+    in property <string> label;
+    in property <image> icon;
+    in property <brush> icon-color: Theme.foreground;
+    in property <bool> icon-round: false;
     in property <string> url;
 
-    clicked => {
+    preferred-width: link-layout.preferred-width;
+    height: Theme.control-height;
+    horizontal-stretch: 0;
+    accessible-role: AccessibleRole.button;
+    accessible-label: root.label;
+    accessible-action-default => {
         ModActions.open-url(root.url);
+    }
+
+    link-layout := HorizontalLayout {
+        padding-left: Theme.space-8;
+        padding-right: Theme.space-8;
+        spacing: Theme.space-8;
+        alignment: start;
+        cross-axis-alignment: center;
+
+        if root.icon-round : Rectangle {
+            width: Theme.space-20;
+            height: Theme.space-20;
+            border-radius: Theme.space-10;
+            clip: true;
+
+            Image {
+                source: root.icon;
+                width: 100%;
+                height: 100%;
+                image-fit: cover;
+            }
+        }
+
+        if !root.icon-round : Image {
+            source: root.icon;
+            width: Theme.space-20;
+            height: Theme.space-20;
+            colorize: root.icon-color;
+        }
+
+        Text {
+            text: root.label;
+            color: touch.has-hover ? Theme.primary.brighter(0.5) : Theme.primary;
+            font-size: Theme.font-16;
+            font-weight: Theme.weight-bold;
+            vertical-alignment: center;
+        }
+
+        IconDisplay {
+            icon: IconSet.ExternalLink;
+            size: Theme.icon-button-icon-size;
+            stroke: Theme.dimmed-foreground;
+            stroke-width: 2;
+        }
+    }
+
+    touch := TouchArea {
+        mouse-cursor: MouseCursor.pointer;
+
+        clicked => {
+            ModActions.open-url(root.url);
+        }
     }
 }
 
@@ -67,6 +129,9 @@ component PatronRow inherits Rectangle {
 export component ThanksPage inherits Rectangle {
     in property <[PatronData]> patrons;
 
+    private property <length> content-max-width: 540px;
+    private property <string> intro: @tr("thanksPage" => "Hello. I made Rai Pal. I also made other VR mods in the past, and am currently working on a universal VR mod for Unity games. If you like what I do, and would like to see more, please consider donating! You can also support me by buying one of my free mods on itch.io.");
+
     HorizontalLayout {
         Sidebar {
             VerticalLayout {
@@ -108,139 +173,114 @@ export component ThanksPage inherits Rectangle {
                     alignment: start;
 
                     HorizontalLayout {
-                        spacing: Theme.space-16;
-                        alignment: start;
+                        alignment: center;
 
                         Rectangle {
-                            width: 120px;
-                            border-radius: Theme.radius-8;
-                            background: Theme.background;
+                            horizontal-stretch: 1;
+                            max-width: root.content-max-width;
 
-                            VerticalLayout {
-                                padding: Theme.space-12;
-                                spacing: Theme.space-8;
+                            HorizontalLayout {
+                                spacing: Theme.space-16;
                                 alignment: start;
-                                cross-axis-alignment: center;
 
                                 Rectangle {
-                                    width: 72px;
-                                    height: 72px;
-                                    border-radius: 36px;
-                                    clip: true;
+                                    width: 120px;
+                                    border-radius: Theme.radius-8;
+                                    background: Theme.background;
 
-                                    Image {
-                                        source: @image-url("../images/raicuparta.png");
-                                        width: 100%;
-                                        height: 100%;
-                                        image-fit: cover;
+                                    VerticalLayout {
+                                        padding: Theme.space-12;
+                                        spacing: Theme.space-8;
+                                        alignment: start;
+                                        cross-axis-alignment: center;
+
+                                        Rectangle {
+                                            width: 72px;
+                                            height: 72px;
+                                            border-radius: 36px;
+                                            clip: true;
+
+                                            Image {
+                                                source: @image-url("../images/raicuparta.png");
+                                                width: 100%;
+                                                height: 100%;
+                                                image-fit: cover;
+                                            }
+                                        }
+
+                                        Text {
+                                            text: "Raicuparta";
+                                            font-size: Theme.font-16;
+                                            font-weight: Theme.weight-semibold;
+                                        }
                                     }
                                 }
 
-                                Text {
-                                    text: "Raicuparta";
-                                    font-size: Theme.font-16;
-                                    font-weight: Theme.weight-semibold;
+                                VerticalLayout {
+                                    horizontal-stretch: 1;
+                                    spacing: Theme.space-12;
+                                    alignment: start;
+
+                                    Rectangle {
+                                        height: intro-layout.preferred-height;
+                                        vertical-stretch: 0;
+                                        background: Theme.surface-background;
+                                        border-width: Theme.border-width;
+                                        border-color: Theme.border;
+                                        border-radius: Theme.radius-8;
+
+                                        intro-layout := VerticalLayout {
+                                            padding: Theme.space-16;
+
+                                            Text {
+                                                text: root.intro;
+                                                font-size: Theme.font-16;
+                                                wrap: word-wrap;
+                                            }
+                                        }
+                                    }
+
+                                    VerticalLayout {
+                                        spacing: Theme.space-2;
+                                        alignment: start;
+
+                                        ThanksLink {
+                                            label: "raicuparta.com";
+                                            icon: @image-url("../images/raicuparta.png");
+                                            icon-round: true;
+                                            url: "https://raicuparta.com";
+                                        }
+
+                                        ThanksLink {
+                                            label: @tr("thanksPage" => "Star Rai Pal on GitHub");
+                                            icon: @image-url("../icons/brands/github.svg");
+                                            icon-color: Branding.brand-color("GitHub");
+                                            url: "https://github.com/raicuparta/rai-pal";
+                                        }
+
+                                        ThanksLink {
+                                            label: "Patreon";
+                                            icon: @image-url("../icons/brands/patreon.svg");
+                                            icon-color: Branding.brand-color("Patreon");
+                                            url: "https://www.patreon.com/raivr";
+                                        }
+
+                                        ThanksLink {
+                                            label: "Paypal";
+                                            icon: @image-url("../icons/brands/paypal.svg");
+                                            icon-color: Branding.brand-color("Paypal");
+                                            url: "https://paypal.me/raicuparta/5usd";
+                                        }
+
+                                        ThanksLink {
+                                            label: "Itch.io";
+                                            icon: @image-url("../icons/providers/itch.svg");
+                                            icon-color: Branding.provider-color("Itch");
+                                            url: "https://raicuparta.itch.io/";
+                                        }
+                                    }
                                 }
                             }
-                        }
-
-                        Text {
-                            text: @tr("thanksPage" => "Hello. I made Rai Pal. I also made other VR mods in the past, and am currently working on a universal VR mod for Unity games. If you like what I do, and would like to see more, please consider donating! You can also support me by buying one of my free mods on itch.io.");
-                            wrap: word-wrap;
-                            horizontal-stretch: 1;
-                        }
-                    }
-
-                    HorizontalLayout {
-                        spacing: Theme.space-8;
-                        alignment: start;
-
-                        ThanksLink {
-                            text: @tr("thanksPage" => "Star Rai Pal on GitHub");
-                            url: "https://github.com/raicuparta/rai-pal";
-                            primary: true;
-                        }
-
-                        ThanksLink {
-                            text: "raicuparta.com";
-                            url: "https://raicuparta.com";
-                        }
-                    }
-
-                    HorizontalLayout {
-                        spacing: Theme.space-8;
-                        alignment: start;
-
-                        ThanksLink {
-                            text: "Patreon";
-                            url: "https://www.patreon.com/raivr";
-                            primary: true;
-                        }
-
-                        ThanksLink {
-                            text: "Paypal";
-                            url: "https://paypal.me/raicuparta/5usd";
-                        }
-
-                        ThanksLink {
-                            text: "Itch.io";
-                            url: "https://raicuparta.itch.io/";
-                        }
-                    }
-
-                    Rectangle {
-                        height: Theme.border-width;
-                        background: Theme.border;
-                    }
-
-                    VerticalLayout {
-                        spacing: Theme.space-6;
-                        alignment: start;
-
-                        Text {
-                            text: @tr("thanksPage" => "Other modders");
-                            font-size: Theme.font-20;
-                            font-weight: Theme.weight-semibold;
-                        }
-
-                        Text {
-                            text: @tr("thanksPage" => "Rai Pal is meant to help you manage game modding, and we can't do that without the tools that other developers have created. Some of these people don't have donation links, but I'm extremely grateful for their work.");
-                            wrap: word-wrap;
-                        }
-                    }
-
-                    VerticalLayout {
-                        spacing: Theme.space-4;
-                        alignment: start;
-
-                        ThanksLink {
-                            text: @tr("thanksPage" => "{0} on {1}", "praydog", "Patreon");
-                            url: "https://www.patreon.com/praydog";
-                            width: 100%;
-                        }
-
-                        ThanksLink {
-                            text: @tr("thanksPage" => "{0} on {1}", "BepInEx", "GitHub");
-                            url: "https://github.com/BepInEx";
-                            width: 100%;
-                        }
-
-                        ThanksLink {
-                            text: @tr("thanksPage" => "{0} on {1}", "Andreas Pardeike", "Patreon");
-                            url: "https://www.patreon.com/pardeike";
-                            width: 100%;
-                        }
-
-                        ThanksLink {
-                            text: @tr("thanksPage" => "{0} on {1}", "sinai", "GitHub");
-                            url: "https://github.com/sinai-dev";
-                            width: 100%;
-                        }
-
-                        ThanksLink {
-                            text: @tr("thanksPage" => "{0} on {1}", "ManlyMarco", "Patreon");
-                            url: "https://www.patreon.com/ManlyMarco";
-                            width: 100%;
                         }
                     }
                 }
