@@ -2,7 +2,9 @@ import { ScrollView } from "std-widgets.slint";
 import { Theme } from "../theme.slint";
 
 export component Sidebar inherits Rectangle {
-    width: Theme.sidebar-width;
+    private property <length> sidebar-width: 250px;
+
+    width: root.sidebar-width;
     background: Theme.background;
 
     ScrollView {

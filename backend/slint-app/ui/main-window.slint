@@ -37,11 +37,18 @@ export { AppColorScheme, AppTab, AddGamePhase, Fonts, ModActions }
 
 export component MainWindow inherits Window {
     title: "Rai Pal";
-    preferred-width: Theme.window-preferred-width;
-    preferred-height: Theme.window-preferred-height;
-    min-width: Theme.window-min-width;
-    min-height: Theme.window-min-height;
+    preferred-width: root.window-preferred-width;
+    preferred-height: root.window-preferred-height;
+    min-width: root.window-min-width;
+    min-height: root.window-min-height;
     background: Theme.background;
+
+    private property <length> window-preferred-width: 1100px;
+    private property <length> window-preferred-height: 700px;
+    private property <length> window-min-width: 800px;
+    private property <length> window-min-height: 500px;
+    private property <length> content-max-width: 1140px;
+    private property <length> overlay-margin: 64px;
 
     in property <[GameRowData]> game-rows;
     in property <int> games-total-count: 0;
@@ -199,7 +206,7 @@ export component MainWindow inherits Window {
             background: Theme.background;
 
             Rectangle {
-                width: min(parent.width, Theme.content-max-width);
+                width: min(parent.width, root.content-max-width);
                 x: (parent.width - self.width) / 2;
                 background: transparent;
 
@@ -222,7 +229,7 @@ export component MainWindow inherits Window {
 
                     NavTab {
                         title: @tr("tab" => "Mods");
-                        icon: IconSet.Box;
+                        icon: IconSet.Puzzle;
                         selected: root.current-tab == AppTab.mods;
 
                         clicked => {
@@ -234,7 +241,7 @@ export component MainWindow inherits Window {
                     NavTab {
                         title: @tr("tab" => "Thanks");
                         icon: IconSet.Heart;
-                        icon-color: Theme.thanks-heart;
+                        icon-color: #c92a2a;
                         selected: root.current-tab == AppTab.thanks;
 
                         clicked => {
@@ -327,7 +334,7 @@ export component MainWindow inherits Window {
         Rectangle {
             Rectangle {
                 visible: root.current-tab == AppTab.games;
-                width: min(parent.width, Theme.content-max-width);
+                width: min(parent.width, root.content-max-width);
                 x: (parent.width - self.width) / 2;
 
                 HorizontalLayout {
@@ -487,7 +494,7 @@ export component MainWindow inherits Window {
 
             Rectangle {
                 visible: root.current-tab == AppTab.mods;
-                width: min(parent.width, Theme.content-max-width);
+                width: min(parent.width, root.content-max-width);
                 x: (parent.width - self.width) / 2;
 
                 ModsPage {
@@ -507,7 +514,7 @@ export component MainWindow inherits Window {
 
             Rectangle {
                 visible: root.current-tab == AppTab.thanks;
-                width: min(parent.width, Theme.content-max-width);
+                width: min(parent.width, root.content-max-width);
                 x: (parent.width - self.width) / 2;
 
                 ThanksPage {
@@ -551,8 +558,8 @@ export component MainWindow inherits Window {
     }
 
     details-popup := GameDetailsPopup {
-        width: min(Theme.details-popup-width, root.width - Theme.overlay-margin);
-        height: min(Theme.details-popup-height, root.height - Theme.overlay-margin);
+        width: min(Theme.details-popup-width, root.width - root.overlay-margin);
+        height: min(Theme.details-popup-height, root.height - root.overlay-margin);
         x: (root.width - self.width) / 2;
         y: (root.height - self.height) / 2;
         game-json: root.details-json;

@@ -9,12 +9,14 @@ export component NavTab inherits Rectangle {
 
     callback clicked;
 
+    private property <length> nav-tab-icon-size: 24px;
+    private property <length> active-tab-indicator-height: 2px;
+
     preferred-width: layout.preferred-width;
     preferred-height: layout.preferred-height;
     horizontal-stretch: 0;
     vertical-stretch: 0;
     background: touch-area.pressed ? Theme.pressed-background : touch-area.has-hover ? Theme.hover-background : transparent;
-    border-radius: Theme.radius-4;
 
     layout := HorizontalLayout {
         padding-left: Theme.space-16;
@@ -26,8 +28,9 @@ export component NavTab inherits Rectangle {
 
         IconDisplay {
             icon: root.icon;
-            size: Theme.nav-tab-icon-size;
+            size: root.nav-tab-icon-size;
             stroke: root.icon-color;
+            stroke-fill: root.icon-color.transparentize(0.8);
             stroke-width: 2;
         }
 
@@ -41,7 +44,7 @@ export component NavTab inherits Rectangle {
 
     if root.selected : Rectangle {
         y: parent.height - self.height;
-        height: Theme.active-tab-indicator-height;
+        height: root.active-tab-indicator-height;
         background: Theme.primary;
     }
 

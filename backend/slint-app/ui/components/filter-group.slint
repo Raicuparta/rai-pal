@@ -5,6 +5,13 @@ import { Tr } from "../translations.slint";
 import { Theme } from "../theme.slint";
 import { IconButton } from "icon-button.slint";
 
+global FilterMetrics {
+    out property <length> row-height: 26px;
+    out property <length> only-button-width: 40px;
+    out property <length> only-button-height: 22px;
+    out property <length> locked-indicator-size: 6px;
+}
+
 component FilterValueRow inherits Rectangle {
     in property <FilterValueData> item;
 
@@ -14,7 +21,7 @@ component FilterValueRow inherits Rectangle {
 
     property <bool> hovered: row-touch.has-hover || checkbox-touch.has-hover || only-touch.has-hover || lock-button.hovered;
 
-    height: Theme.filter-row-height;
+    height: FilterMetrics.row-height;
     background: hovered ? Theme.hover-background : transparent;
 
     row-touch := TouchArea { }
@@ -46,8 +53,8 @@ component FilterValueRow inherits Rectangle {
         }
 
         only-area := Rectangle {
-            width: Theme.only-button-width;
-            height: Theme.only-button-height;
+            width: FilterMetrics.only-button-width;
+            height: FilterMetrics.only-button-height;
             border-radius: Theme.radius-4;
             opacity: root.hovered ? 1 : 0;
             background: Theme.background;
@@ -105,7 +112,7 @@ export component FilterGroupView inherits Rectangle {
         spacing: Theme.border-width;
 
         header := Rectangle {
-            height: Theme.filter-row-height;
+            height: FilterMetrics.row-height;
             background: header-touch.has-hover ? Theme.hover-background : transparent;
 
             header-touch := TouchArea {
@@ -135,9 +142,9 @@ export component FilterGroupView inherits Rectangle {
                 }
 
                 if root.group.has-locked : Rectangle {
-                    width: Theme.locked-indicator-size;
-                    height: Theme.locked-indicator-size;
-                    border-radius: Theme.locked-indicator-size / 2;
+                    width: FilterMetrics.locked-indicator-size;
+                    height: FilterMetrics.locked-indicator-size;
+                    border-radius: FilterMetrics.locked-indicator-size / 2;
                     background: Theme.highlight;
                 }
 

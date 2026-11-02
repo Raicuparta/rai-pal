@@ -38,6 +38,8 @@ export component ModSummaryView inherits HorizontalLayout {
 
     property <bool> has-details: version-text != "" || release-date != "" || author != "" || engine-text != "";
 
+    private property <length> deprecated-badge-height: 18px;
+
     spacing: Theme.space-8;
     cross-axis-alignment: center;
 
@@ -88,7 +90,7 @@ export component ModSummaryView inherits HorizontalLayout {
 
             if root.deprecated : Rectangle {
                 width: deprecated-content.preferred-width + Theme.space-8;
-                height: Theme.deprecated-badge-height;
+                height: root.deprecated-badge-height;
                 border-radius: Theme.radius-3;
                 background: Theme.deprecated-background;
 

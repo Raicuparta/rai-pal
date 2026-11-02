@@ -9,15 +9,22 @@ export component GameRowView inherits Rectangle {
     in property <int> row-index;
     in property <bool> show-thumbnail: true;
 
+    private property <length> provider-strip-width: 30px;
+    private property <length> thumbnail-column-width: 100px;
+    private property <length> thumbnail-size: 60px;
+    private property <length> engine-column-width: 130px;
+    private property <length> date-column-width: 80px;
+    private property <length> row-divider-height: 2px;
+
     callback selected(index: int);
 
     height: Theme.game-row-height;
-    background: touch-area.has-hover ? Theme.row-hover : Theme.background;
+    background: touch-area.has-hover ? Theme.hover-background : Theme.background;
     property <brush> row-foreground: game-row.installed ? Theme.foreground : Theme.dimmed-foreground;
 
     HorizontalLayout {
         Rectangle {
-            width: Theme.provider-strip-width;
+            width: root.provider-strip-width;
             background: Branding.provider-background(game-row.provider-id);
             opacity: game-row.installed ? 1 : 0.5;
 
@@ -46,15 +53,15 @@ export component GameRowView inherits Rectangle {
         }
 
         if root.show-thumbnail : Rectangle {
-            width: Theme.thumbnail-column-width;
+            width: root.thumbnail-column-width;
             clip: true;
             background: Branding.provider-background(game-row.provider-id);
             opacity: game-row.installed ? 1 : 0.5;
 
             Image {
                 source: @image-url("../images/fallback-thumbnail.png");
-                width: Theme.thumbnail-size;
-                height: Theme.thumbnail-size;
+                width: root.thumbnail-size;
+                height: root.thumbnail-size;
                 x: (parent.width - self.width) / 2;
                 y: (parent.height - self.height) / 2;
             }
@@ -98,7 +105,7 @@ export component GameRowView inherits Rectangle {
         }
 
         Rectangle {
-            width: Theme.engine-column-width;
+            width: root.engine-column-width;
             background: Branding.engine-background(game-row.engine-brand);
             clip: true;
 
@@ -136,7 +143,7 @@ export component GameRowView inherits Rectangle {
         }
 
         VerticalLayout {
-            width: Theme.date-column-width;
+            width: root.date-column-width;
             alignment: center;
             opacity: 0.75;
 
@@ -163,7 +170,7 @@ export component GameRowView inherits Rectangle {
 
     Rectangle {
         y: parent.height - self.height;
-        height: Theme.row-divider-height;
+        height: root.row-divider-height;
         background: Theme.row-divider;
     }
 
