@@ -1,7 +1,10 @@
+import { Icon, IconDisplay } from "@lucide";
 import { Theme } from "../theme.slint";
 
 export component NavTab inherits Rectangle {
     in property <string> title;
+    in property <Icon> icon;
+    in property <brush> icon-color: Theme.foreground;
     in property <bool> selected;
 
     callback clicked;
@@ -14,15 +17,23 @@ export component NavTab inherits Rectangle {
     border-radius: Theme.radius-4;
 
     layout := HorizontalLayout {
-        padding-left: Theme.space-12;
-        padding-right: Theme.space-12;
-        padding-top: Theme.space-8;
-        padding-bottom: Theme.space-8;
+        padding-left: Theme.space-16;
+        padding-right: Theme.space-16;
+        padding-top: Theme.space-10;
+        padding-bottom: Theme.space-10;
+        spacing: Theme.space-10;
+        cross-axis-alignment: center;
+
+        IconDisplay {
+            icon: root.icon;
+            size: Theme.nav-tab-icon-size;
+            stroke: root.icon-color;
+            stroke-width: 2;
+        }
 
         Text {
             text: root.title;
-            color: root.selected ? Theme.foreground : Theme.dimmed-foreground;
-            font-weight: root.selected ? Theme.weight-semibold : Theme.weight-normal;
+            color: Theme.foreground;
             vertical-alignment: center;
             horizontal-alignment: center;
         }
