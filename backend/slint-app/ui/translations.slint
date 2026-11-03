@@ -65,6 +65,19 @@ export global Tr {
         return key;
     }
 
+    public pure function filter-value-note(key: string) -> string {
+        if key == "providerXboxOnlyInstalled" {
+            return @tr("filterValueNote" => "Only shows PC Xbox games if they're installed.");
+        }
+        if key == "engineGodotNotFullySupported" {
+            return @tr("filterValueNote" => "Godot games are not fully supported yet.");
+        }
+        if key == "engineGameMakerNotFullySupported" {
+            return @tr("filterValueNote" => "GameMaker games are not fully supported yet.");
+        }
+        return "";
+    }
+
     public pure function provider-command(key: string) -> string {
         if key == "Install" {
             return @tr("providerCommand" => "Install");

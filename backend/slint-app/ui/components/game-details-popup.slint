@@ -47,6 +47,7 @@ export component GameDetailsPopup inherits PopupWindow {
                     icon-color: root.copied ? Theme.status-success : Theme.foreground;
                     accessible-role: button;
                     accessible-label: @tr("debugData" => "Copy debug data");
+                    tooltip: @tr("debugData" => "Copy debug data");
 
                     clicked => {
                         root.saved-scroll-y = debug-text.content-y;
@@ -66,6 +67,7 @@ export component GameDetailsPopup inherits PopupWindow {
                     icon: IconSet.X;
                     accessible-role: button;
                     accessible-label: @tr("debugData" => "Close");
+                    tooltip: @tr("debugData" => "Close");
 
                     clicked => {
                         root.close();

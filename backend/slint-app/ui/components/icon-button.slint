@@ -5,7 +5,9 @@ export component IconButton inherits BaseButton {
     in property <string> label: "";
     in property <bool> active: true;
     in property <bool> selected: false;
+    in property <string> tooltip;
 
+    tooltip-text: root.tooltip;
     text: root.label;
     icon-only: root.label == "";
     show-icon: root.label == "";

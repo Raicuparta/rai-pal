@@ -110,6 +110,22 @@ msgid "Reset"
 msgstr "Reset"
 
 msgctxt "filterMenu"
+msgid "Reset all filters"
+msgstr "Reset all filters"
+
+msgctxt "filterMenu"
+msgid "Lock filter value"
+msgstr "Lock filter value"
+
+msgctxt "filterMenu"
+msgid "Unlock filter value"
+msgstr "Unlock filter value"
+
+msgctxt "filterMenu"
+msgid "Only show this value"
+msgstr "Only show this value"
+
+msgctxt "filterMenu"
 msgid "Search..."
 msgstr "Search..."
 
@@ -377,6 +393,10 @@ msgctxt "gameModRow"
 msgid "Can't uninstall a mod that has dependants. Uninstall the mods that depend on this one first."
 msgstr "Can't uninstall a mod that has dependants. Uninstall the mods that depend on this one first."
 
+msgctxt "gameModRow"
+msgid "Mod actions"
+msgstr "Mod actions"
+
 msgctxt "gamesSort"
 msgid "Sort by"
 msgstr "Sort by"
@@ -490,6 +510,10 @@ msgid "by {0}"
 msgstr "by {0}"
 
 msgctxt "appDropdownMenu"
+msgid "App menu"
+msgstr "App menu"
+
+msgctxt "appDropdownMenu"
 msgid "Show game thumbnails on list"
 msgstr "Show game thumbnails on list"
 
@@ -538,6 +562,10 @@ msgid "Clears the game list cache used by Rai Pal."
 msgstr "Clears the game list cache used by Rai Pal."
 
 msgctxt "userMenu"
+msgid "User menu"
+msgstr "User menu"
+
+msgctxt "userMenu"
 msgid "Unknown user"
 msgstr "Unknown user"
 
@@ -556,6 +584,10 @@ msgstr "Mods can use this to access your Discord username, avatar, roles, etc."
 msgctxt "subPage"
 msgid "Back"
 msgstr "Back"
+
+msgctxt "downloadStatusMenu"
+msgid "Downloads"
+msgstr "Downloads"
 
 msgctxt "downloadStatusMenu"
 msgid "Clear completed"

@@ -155,13 +155,28 @@ pub fn reset_all_filters(filter: &mut GamesFilter) {
 	filter.architectures.keep_only_locked();
 }
 
-fn item_data(value: &str, label_key: &str, label: &str, item: FilterItem) -> FilterValueData {
+fn item_data(
+	value: &str,
+	label_key: &str,
+	label: &str,
+	item: FilterItem,
+	note_label_key: &str,
+) -> FilterValueData {
 	FilterValueData {
 		value: value.into(),
 		label_key: label_key.into(),
 		label: label.into(),
+		note_label_key: note_label_key.into(),
 		enabled: item.enabled,
 		locked: item.locked,
+	}
+}
+
+fn value_note_label_key(value: &str) -> &'static str {
+	match value {
+		"GameMaker" => "engineGameMakerNotFullySupported",
+		"Xbox" => "providerXboxOnlyInstalled",
+		_ => "",
 	}
 }
 
@@ -191,7 +206,14 @@ fn value<T: Eq + Hash + ToString>(
 	label_key: &str,
 	label: &str,
 ) -> FilterValueData {
-	item_data(&key.to_string(), label_key, label, group.item(Some(key)))
+	let value = key.to_string();
+	item_data(
+		&value,
+		label_key,
+		label,
+		group.item(Some(key)),
+		value_note_label_key(&value),
+	)
 }
 
 fn unknown_value<T: Eq + Hash>(
@@ -199,7 +221,7 @@ fn unknown_value<T: Eq + Hash>(
 	label_key: &str,
 	label: &str,
 ) -> FilterValueData {
-	item_data("", label_key, label, group.item(None))
+	item_data("", label_key, label, group.item(None), "")
 }
 
 fn build_group<T: Eq + Hash>(
@@ -230,7 +252,15 @@ fn build_mod_family_group(
 ) -> FilterGroupData {
 	let mut values: Vec<FilterValueData> = mod_families
 		.iter()
-		.map(|family| item_data(family, "", family, filter.mod_families.item(Some(family))))
+		.map(|family| {
+			item_data(
+				family,
+				"",
+				family,
+				filter.mod_families.item(Some(family)),
+				"",
+			)
+		})
 		.collect();
 	values.sort_by(|a, b| a.label.to_lowercase().cmp(&b.label.to_lowercase()));
 

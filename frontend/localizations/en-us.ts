@@ -99,6 +99,18 @@ export const enUs = {
 		// Text in the reset button for each specific filterable property.
 		resetButton: "Reset",
 
+		// Tooltip for the button that resets all filter groups.
+		resetAllFilters: "Reset all filters",
+
+		// Tooltip for the button that locks a filter value so it can't be changed.
+		lockFilterValue: "Lock filter value",
+
+		// Tooltip for the button that unlocks a locked filter value.
+		unlockFilterValue: "Unlock filter value",
+
+		// Tooltip for the button that enables only one filter value.
+		onlyFilterValue: "Only show this value",
+
 		// Placeholder text in the search input.
 		searchPlaceholder: "Search...",
 	},
@@ -314,6 +326,9 @@ export const enUs = {
 		// Tooltip that shows when hovering the uninstall button for a mod that has other mods depending on it.
 		cantUninstallModWithDependants:
 			"Can't uninstall a mod that has dependants. Uninstall the mods that depend on this one first.",
+
+		// Tooltip for the button that opens the menu with actions for this mod.
+		modActionsTooltip: "Mod actions",
 	},
 
 	// Controls for sorting the list of games.
@@ -417,6 +432,9 @@ export const enUs = {
 
 	// Text in the dropdown menu for tools and settings.
 	appDropdownMenu: {
+		// Tooltip for the button that opens the app menu.
+		menuButtonTooltip: "App menu",
+
 		// Label for the checkbox that toggles visibility of game images.
 		showGameThumbnails: "Show game thumbnails on list",
 
@@ -457,6 +475,9 @@ export const enUs = {
 
 	// Menu for Discord account login/logout and account info.
 	userMenu: {
+		// Tooltip for the button that opens the user menu.
+		userMenuTooltip: "User menu",
+
 		// Fallback label when Rai Pal has no username for the logged in account.
 		unknownUser: "Unknown user",
 
@@ -479,6 +500,9 @@ export const enUs = {
 
 	// Menu that shows active and completed file downloads.
 	downloadStatusMenu: {
+		// Tooltip for the button that opens the download status menu.
+		downloadStatusTooltip: "Downloads",
+
 		// Button that removes finished downloads from the list.
 		clear: "Clear completed",
 	},

@@ -43,6 +43,7 @@ component NotificationToast inherits Rectangle {
 
         IconButton {
             icon: IconSet.X;
+            tooltip: @tr("debugData" => "Close");
 
             clicked => {
                 root.dismissed(root.notification.id);

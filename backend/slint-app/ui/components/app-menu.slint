@@ -19,6 +19,8 @@ export component AppMenu inherits Rectangle {
     width: Theme.control-height + Theme.space-4;
     height: Theme.control-height;
 
+    private property <string> menu-tooltip: @tr("appDropdownMenu" => "App menu");
+
     menu-area := ContextMenuArea {
         Rectangle {
             width: 100%;
@@ -233,5 +235,9 @@ export component AppMenu inherits Rectangle {
                 }
             }
         }
+    }
+
+    Tooltip {
+        text: @markdown("\{root.menu-tooltip}");
     }
 }

@@ -36,7 +36,7 @@ component FilterValueRow inherits Rectangle {
             horizontal-stretch: 1;
             height: 100%;
 
-            CheckBox {
+            check-box := CheckBox {
                 x: 0;
                 y: (parent.height - self.height) / 2;
                 text: root.item.label-key == "" ? root.item.label : Tr.filter-value(root.item.label-key);
@@ -45,10 +45,30 @@ component FilterValueRow inherits Rectangle {
             }
 
             checkbox-touch := TouchArea {
+                width: root.item.note-label-key == "" ? parent.width : check-box.preferred-width;
+                height: parent.height;
+
                 clicked => {
                     if !root.item.locked {
                         root.toggled(!root.item.enabled);
                     }
+                }
+            }
+
+            if root.item.note-label-key != "" : Rectangle {
+                x: check-box.preferred-width + Theme.space-4;
+                y: (parent.height - self.height) / 2;
+                width: Theme.icon-button-icon-size;
+                height: Theme.icon-button-icon-size;
+
+                IconDisplay {
+                    icon: IconSet.CircleHelp;
+                    size: Theme.icon-button-icon-size;
+                    stroke: Theme.dimmed-foreground;
+                }
+
+                Tooltip {
+                    text: @markdown("\{Tr.filter-value-note(root.item.note-label-key)}");
                 }
             }
         }
@@ -57,6 +77,7 @@ component FilterValueRow inherits Rectangle {
             width: FilterMetrics.only-button-width;
             height: FilterMetrics.only-button-height;
             label: "Only";
+            tooltip: @tr("filterMenu" => "Only show this value");
             visible: !root.item.locked;
             active: !root.item.locked;
             opacity: root.hovered ? 1 : 0;
@@ -69,6 +90,7 @@ component FilterValueRow inherits Rectangle {
 
         lock-button := IconButton {
             icon: root.item.locked ? IconSet.Lock : IconSet.LockOpen;
+            tooltip: root.item.locked ? @tr("filterMenu" => "Unlock filter value") : @tr("filterMenu" => "Lock filter value");
             visible: (root.item.locked || root.hovered) && !root.item.enabled;
             active: !root.item.enabled;
             selected: root.item.locked;
@@ -139,6 +161,7 @@ export component FilterGroupView inherits Rectangle {
 
                 reset-button := IconButton {
                     icon: IconSet.RotateCcw;
+                    tooltip: @tr("filterMenu" => "Reset");
                     active: root.group.has-changes;
                     icon-color: root.group.has-changes ? Theme.primary : Theme.foreground;
 

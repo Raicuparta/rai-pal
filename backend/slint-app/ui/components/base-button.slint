@@ -5,6 +5,7 @@ import { Theme } from "../theme.slint";
 
 export component BaseButton inherits Rectangle {
     in property <string> text: "";
+    in property <string> tooltip-text: "";
     in property <Icon> icon;
     in property <bool> show-icon: false;
     in property <bool> icon-only: false;
@@ -41,7 +42,7 @@ export component BaseButton inherits Rectangle {
     min-width: root.icon-only ? 0px : 32px;
     horizontal-stretch: 0;
     vertical-stretch: 0;
-    border-radius: Theme.radius-4;
+    border-radius: Theme.radius-8;
     background: root.background-color;
     forward-focus: focus-scope;
 
@@ -121,5 +122,9 @@ export component BaseButton inherits Rectangle {
 
             return reject;
         }
+    }
+
+    if root.tooltip-text != "" : Tooltip {
+        text: @markdown("\{root.tooltip-text}");
     }
 }

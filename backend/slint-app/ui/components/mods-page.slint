@@ -42,6 +42,7 @@ export component ModsPage inherits Rectangle {
                 ActionButton {
                     text: @tr("modsPage" => "Open Local Mods Folder");
                     action-id: "open-local-mods-folder";
+                    tooltip: @tr("modsPage" => "You can place mods in this folder with a rai-pal-manifest.json, to be loaded directly without going through the online database.");
 
                     clicked => {
                         ModActions.open-local-mods-folder();

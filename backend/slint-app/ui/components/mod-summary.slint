@@ -4,6 +4,7 @@ import { Theme } from "../theme.slint";
 component MetaItem inherits HorizontalLayout {
     in property <Icon> icon;
     in property <string> text;
+    in property <string> tooltip: "";
 
     spacing: Theme.space-2;
     horizontal-stretch: 0;
@@ -19,6 +20,10 @@ component MetaItem inherits HorizontalLayout {
         text: root.text;
         font-size: Theme.font-11;
         color: Theme.foreground;
+
+        if root.tooltip != "" : Tooltip {
+            text: @markdown("\{root.tooltip}");
+        }
     }
 }
 
@@ -38,6 +43,7 @@ export component ModSummaryView inherits HorizontalLayout {
     property <bool> has-details: version-text != "" || release-date != "" || author != "" || engine-text != "" || has-remote-config;
 
     private property <length> deprecated-badge-height: 18px;
+    private property <string> deprecated-tooltip: @tr("modsPage" => "This mod is deprecated. You should uninstall it and install a newer alternative.");
 
     spacing: Theme.space-8;
     cross-axis-alignment: center;
@@ -81,6 +87,10 @@ export component ModSummaryView inherits HorizontalLayout {
                 height: root.deprecated-badge-height;
                 border-radius: Theme.radius-3;
                 background: Theme.deprecated-background;
+
+                Tooltip {
+                    text: @markdown("\{root.deprecated-tooltip}");
+                }
 
                 deprecated-content := HorizontalLayout {
                     padding-left: Theme.space-4;
@@ -136,6 +146,7 @@ export component ModSummaryView inherits HorizontalLayout {
             if root.has-remote-config : MetaItem {
                 icon: IconSet.Settings;
                 text: @tr("gameModRow" => "Recommended config");
+                tooltip: @tr("gameModRow" => "Recommended config available. Will be downloaded if you don't already have a config. You can also force it to download from the three dot menu.");
             }
         }
 

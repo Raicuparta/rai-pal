@@ -73,6 +73,7 @@ export component GamesSidebar inherits Sidebar {
 
         IconButton {
             icon: IconSet.ChevronUp;
+            tooltip: @tr("filterMenu" => "Collapse all filters");
             active: root.filters-have-expanded;
 
             clicked => {
@@ -87,6 +88,7 @@ export component GamesSidebar inherits Sidebar {
 
         IconButton {
             icon: IconSet.RotateCcw;
+            tooltip: @tr("filterMenu" => "Reset all filters");
             active: root.filters-have-changes;
             icon-color: root.filters-have-changes ? Theme.primary : Theme.foreground;
 

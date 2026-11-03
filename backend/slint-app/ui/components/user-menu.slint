@@ -15,6 +15,8 @@ export component UserMenu inherits Rectangle {
     width: Theme.control-height + Theme.space-4;
     height: Theme.control-height;
 
+    private property <string> menu-tooltip: @tr("userMenu" => "User menu");
+
     menu-area := ContextMenuArea {
         Rectangle {
             width: 100%;
@@ -91,5 +93,9 @@ export component UserMenu inherits Rectangle {
                 enabled: false;
             }
         }
+    }
+
+    Tooltip {
+        text: @markdown("\{root.menu-tooltip}");
     }
 }

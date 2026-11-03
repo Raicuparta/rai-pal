@@ -110,6 +110,22 @@ msgid "Reset"
 msgstr "Waaah!"
 
 msgctxt "filterMenu"
+msgid "Reset all filters"
+msgstr "Waaah wah waaaaah!"
+
+msgctxt "filterMenu"
+msgid "Lock filter value"
+msgstr "Waah waaaah waaah!"
+
+msgctxt "filterMenu"
+msgid "Unlock filter value"
+msgstr "Waaaah waaaah waaah!"
+
+msgctxt "filterMenu"
+msgid "Only show this value"
+msgstr "Waah waah waah waaah!"
+
+msgctxt "filterMenu"
 msgid "Search..."
 msgstr "Waaaaaaah!"
 
@@ -377,6 +393,10 @@ msgctxt "gameModRow"
 msgid "Can't uninstall a mod that has dependants. Uninstall the mods that depend on this one first."
 msgstr "Waaah waaaaaaah a wah waah wah waaaaaaaaah waaaaaaah wah waah waah waaaah on waah wah waaaah!"
 
+msgctxt "gameModRow"
+msgid "Mod actions"
+msgstr "Wah waaaaah!"
+
 msgctxt "gamesSort"
 msgid "Sort by"
 msgstr "Waah by"
@@ -490,6 +510,10 @@ msgid "by {0}"
 msgstr "by {0}"
 
 msgctxt "appDropdownMenu"
+msgid "App menu"
+msgstr "Wah waah!"
+
+msgctxt "appDropdownMenu"
 msgid "Show game thumbnails on list"
 msgstr "Waah waah waaaaaaaah on waah!"
 
@@ -538,6 +562,10 @@ msgid "Clears the game list cache used by Rai Pal."
 msgstr "Waaaah wah waah waah waaah waah by wah waah!"
 
 msgctxt "userMenu"
+msgid "User menu"
+msgstr "Waah waah!"
+
+msgctxt "userMenu"
 msgid "Unknown user"
 msgstr "Waaaaah waah!"
 
@@ -556,6 +584,10 @@ msgstr "Waah wah wah waah to waaaah waah waaaaah waaaaaaah waaaaah waaaah waah!"
 msgctxt "subPage"
 msgid "Back"
 msgstr "Waah!"
+
+msgctxt "downloadStatusMenu"
+msgid "Downloads"
+msgstr "Waaaaaaah!"
 
 msgctxt "downloadStatusMenu"
 msgid "Clear completed"

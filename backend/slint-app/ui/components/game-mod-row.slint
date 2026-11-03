@@ -136,6 +136,7 @@ export component GameModRowView inherits Rectangle {
                 actions-button := IconButton {
                     visible: root.has-dropdown-actions;
                     icon: IconSet.Ellipsis;
+                    tooltip: @tr("gameModRow" => "Mod actions");
 
                     clicked => {
                         context-menu.show({

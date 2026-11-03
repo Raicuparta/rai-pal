@@ -39,7 +39,7 @@ export global Theme {
     out property <length> control-height: 32px;
     out property <length> action-button-height: 28px;
     out property <length> icon-button-size: 22px;
-    out property <length> icon-button-icon-size: 14px;
+    out property <length> icon-button-icon-size: 16px;
     out property <length> icon-status-size: 15px;
     out property <length> menu-icon-size: 18px;
     out property <length> menu-width: 280px;
@@ -74,9 +74,9 @@ export global Theme {
     out property <brush> button-background: Palette.control-background;
     out property <brush> button-hover-background: foreground.transparentize(0.9);
     out property <brush> button-pressed-background: foreground.transparentize(0.84);
-    out property <brush> button-disabled-background: dark ? #FFFFFF0A : #F9F9F94D;
+    out property <brush> button-disabled-background: transparent;
     out property <brush> button-foreground: Palette.control-foreground;
-    out property <brush> button-disabled-foreground: dark ? #FFFFFF5E : #0000005E;
+    out property <brush> button-disabled-foreground: dark ? #FFFFFF33 : #00000033;
     out property <brush> button-border: dark ? @linear-gradient(180deg, #FFFFFF17 0%, #00000012 8.33%) : @linear-gradient(180deg, #0000000F 90.58%, #00000029 100%);
     out property <brush> button-primary-hover-background: Palette.accent-background.with-alpha(0.9);
     out property <brush> button-primary-pressed-background: Palette.accent-background.with-alpha(0.8);
