@@ -57,6 +57,7 @@ component FilterValueRow inherits Rectangle {
             width: FilterMetrics.only-button-width;
             height: FilterMetrics.only-button-height;
             label: "Only";
+            visible: !root.item.locked;
             active: !root.item.locked;
             opacity: root.hovered ? 1 : 0;
             icon-color: root.item.locked ? Theme.dimmed-foreground : Theme.foreground;
@@ -68,6 +69,7 @@ component FilterValueRow inherits Rectangle {
 
         lock-button := IconButton {
             icon: root.item.locked ? IconSet.Lock : IconSet.LockOpen;
+            visible: (root.item.locked || root.hovered) && !root.item.enabled;
             active: !root.item.enabled;
             selected: root.item.locked;
 
@@ -92,8 +94,10 @@ export component FilterGroupView inherits Rectangle {
         spacing: Theme.border-width;
 
         header := Rectangle {
+            property <bool> hovered: header-touch.has-hover || reset-button.hovered;
+
             height: FilterMetrics.row-height;
-            background: header-touch.has-hover ? Theme.hover-background : transparent;
+            background: hovered ? Theme.hover-background : transparent;
 
             header-touch := TouchArea {
                 clicked => {
