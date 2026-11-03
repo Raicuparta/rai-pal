@@ -121,7 +121,6 @@ export component FilterGroupView inherits Rectangle {
                         icon: root.group.expanded ? IconSet.ChevronDown : IconSet.ChevronRight;
                         size: Theme.icon-button-icon-size;
                         stroke: Theme.dimmed-foreground;
-                        stroke-width: 2;
                     }
                 }
 
@@ -129,7 +128,6 @@ export component FilterGroupView inherits Rectangle {
                     text: root.group.label-key == "" ? root.group.label : Tr.filter-property(root.group.label-key);
                     font-weight: Theme.weight-bold;
                     overflow: elide;
-                    horizontal-stretch: 1;
                 }
 
                 if root.group.has-locked : Rectangle {

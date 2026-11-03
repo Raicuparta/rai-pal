@@ -2,15 +2,14 @@ import { Theme } from "theme.slint";
 
 export global Branding {
     public pure function provider-color(provider-id: string) -> brush {
-
         if provider-id == "Amazon" {
-            return #f76707;
+            return #ebab34;
         }
         if provider-id == "Steam" {
             return #1f9fee;
         }
         if provider-id == "Epic" {
-            return #e03131;
+            return #fc4d32;
         }
         if provider-id == "Gog" {
             return #9c36b5;
@@ -25,26 +24,7 @@ export global Branding {
     }
 
     public pure function provider-background(provider-id: string) -> brush {
-
-        if provider-id == "Amazon" {
-            return Theme.dark ? #3b1e0e : #fff4e6;
-        }
-        if provider-id == "Steam" {
-            return Theme.dark ? #102a3a : #e7f5ff;
-        }
-        if provider-id == "Epic" {
-            return Theme.dark ? #3b1418 : #fff5f5;
-        }
-        if provider-id == "Gog" {
-            return Theme.dark ? #2c1b3d : #f3f0ff;
-        }
-        if provider-id == "Xbox" {
-            return Theme.dark ? #132b1b : #ebfbee;
-        }
-        if provider-id == "Itch" {
-            return Theme.dark ? #3a1826 : #fff0f6;
-        }
-        return Theme.dark ? #242424 : #f1f3f5;
+      return provider-color(provider-id).transparentize(0.85);
     }
 
     public pure function brand-color(brand: string) -> brush {
@@ -60,35 +40,27 @@ export global Branding {
         return Theme.foreground;
     }
 
+    pure function engine-color(brand: string) -> brush {
+      if brand == "Unity" {
+          return #74c0fc;
+      }
+      if brand == "Unreal" {
+          return #ff8787;
+      }
+      if brand == "Godot" {
+          return #b197fc;
+      }
+      if brand == "GameMaker" {
+          return #63e6be;
+      }
+      return Theme.foreground;
+    }
+
     public pure function engine-background(brand: string) -> brush {
-        if brand == "Unity" {
-            return Theme.dark ? #102a43 : #e7f5ff;
-        }
-        if brand == "Unreal" {
-            return Theme.dark ? #3b1418 : #fff5f5;
-        }
-        if brand == "Godot" {
-            return Theme.dark ? #2b1b40 : #f3f0ff;
-        }
-        if brand == "GameMaker" {
-            return Theme.dark ? #0e2f28 : #e6fcf5;
-        }
-        return Theme.dark ? #343a40 : #f1f3f5;
+      return engine-color(brand).transparentize(0.85);
     }
 
     public pure function engine-foreground(brand: string) -> brush {
-        if brand == "Unity" {
-            return Theme.dark ? #74c0fc : #1971c2;
-        }
-        if brand == "Unreal" {
-            return Theme.dark ? #ff8787 : #e03131;
-        }
-        if brand == "Godot" {
-            return Theme.dark ? #b197fc : #7048e8;
-        }
-        if brand == "GameMaker" {
-            return Theme.dark ? #63e6be : #0ca678;
-        }
-        return Theme.foreground;
+        return Theme.dark ? engine-color(brand) : engine-color(brand).darker(0.5);
     }
 }

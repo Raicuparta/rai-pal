@@ -80,6 +80,7 @@ export component GameRowView inherits Rectangle {
             spacing: Theme.space-3;
             flex-wrap: wrap;
             alignment: start;
+            cross-axis-self-alignment: center;
 
             Text {
                 text: game-row.title;
@@ -115,7 +116,7 @@ export component GameRowView inherits Rectangle {
                 padding-right: Theme.space-8;
 
                 Text {
-                    text: game-row.engine-brand == "" ? "-" : game-row.engine-brand;
+                    text: game-row.engine-brand == "" ? "-" : game-row.engine-brand.to-uppercase();
                     color: Branding.engine-foreground(game-row.engine-brand);
                     font-weight: Theme.weight-bold;
                     horizontal-alignment: center;
@@ -125,18 +126,17 @@ export component GameRowView inherits Rectangle {
                 if game-row.engine-version != "" : Text {
                     text: game-row.engine-version;
                     horizontal-alignment: center;
-                    color: Branding.engine-foreground(game-row.engine-brand);
+                    opacity: 0.75;
                     font-family: Fonts.monospace-family;
-                    font-size: Theme.font-12;
+                    font-size: Theme.font-10;
                     overflow: elide;
                 }
 
                 if game-row.engine-details != "" : Text {
                     text: game-row.engine-details;
                     horizontal-alignment: center;
-                    color: Branding.engine-foreground(game-row.engine-brand);
-                    font-size: Theme.font-10;
                     opacity: 0.5;
+                    font-size: Theme.font-10;
                     overflow: elide;
                 }
             }
@@ -149,20 +149,20 @@ export component GameRowView inherits Rectangle {
 
             Text {
                 text: game-row.release-day;
-                font-size: Theme.font-12;
+                font-size: Theme.font-10;
                 horizontal-alignment: center;
             }
 
             Text {
                 text: game-row.release-month;
-                font-size: Theme.font-12;
+                font-size: Theme.font-10;
                 horizontal-alignment: center;
                 overflow: elide;
             }
 
             Text {
                 text: game-row.release-year;
-                font-size: Theme.font-12;
+                font-size: Theme.font-10;
                 horizontal-alignment: center;
             }
         }

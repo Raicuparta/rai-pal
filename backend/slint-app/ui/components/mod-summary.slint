@@ -13,7 +13,6 @@ component MetaItem inherits HorizontalLayout {
         icon: root.icon;
         size: Theme.font-10;
         stroke: Theme.foreground;
-        stroke-width: 2;
     }
 
     Text {
@@ -47,21 +46,18 @@ export component ModSummaryView inherits HorizontalLayout {
         icon: IconSet.CircleAlert;
         size: Theme.icon-status-size;
         stroke: Theme.status-warning;
-        stroke-width: 2;
     }
 
     if show-status && installed && !outdated : IconDisplay {
         icon: IconSet.CircleCheck;
         size: Theme.icon-status-size;
         stroke: Theme.status-success;
-        stroke-width: 2;
     }
 
     if show-status && !installed && !outdated : IconDisplay {
         icon: IconSet.CircleMinus;
         size: Theme.icon-status-size;
         stroke: Theme.dimmed-foreground;
-        stroke-width: 2;
     }
 
     VerticalLayout {
@@ -84,7 +80,6 @@ export component ModSummaryView inherits HorizontalLayout {
                 icon: IconSet.Settings;
                 size: Theme.icon-button-icon-size;
                 stroke: Theme.foreground;
-                stroke-width: 2;
                 opacity: 0.75;
             }
 
@@ -104,7 +99,6 @@ export component ModSummaryView inherits HorizontalLayout {
                         icon: IconSet.TriangleAlert;
                         size: Theme.font-11;
                         stroke: Theme.deprecated-foreground;
-                        stroke-width: 2;
                     }
 
                     Text {
