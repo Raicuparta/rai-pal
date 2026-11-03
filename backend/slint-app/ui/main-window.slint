@@ -74,7 +74,6 @@ export component MainWindow inherits Window {
     in property <string> detected-language-name: "";
     in-out property <string> search-text: "";
     in-out property <int> sort-index: 0;
-    in-out property <bool> sort-descending: false;
     in-out property <string> details-json: "";
     in property <string> app-version: "";
     in property <string> renderer-name: "";
@@ -162,7 +161,6 @@ export component MainWindow inherits Window {
     callback visible-range-changed(first: int, last: int);
     callback search-changed(text: string);
     callback sort-changed(index: int);
-    callback sort-direction-changed(descending: bool);
     callback filter-toggled(group: string, value: string, checked: bool);
     callback filter-lock-toggled(group: string, value: string);
     callback filter-only(group: string, value: string);
@@ -425,7 +423,6 @@ export component MainWindow inherits Window {
                         visible: !root.game-selected;
                         search-text <=> root.search-text;
                         sort-index <=> root.sort-index;
-                        sort-descending <=> root.sort-descending;
                         filter-groups: root.filter-groups;
                         filters-have-changes: root.filters-have-changes;
                         filters-have-expanded: root.filters-have-expanded;
@@ -442,10 +439,6 @@ export component MainWindow inherits Window {
 
                         sort-changed(index) => {
                             root.sort-changed(index);
-                        }
-
-                        sort-direction-changed(descending) => {
-                            root.sort-direction-changed(descending);
                         }
 
                         filter-toggled(group, value, checked) => {

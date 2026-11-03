@@ -320,6 +320,24 @@ export const enUs = {
 
 		// Tooltip/accessible label for the button that flips the sort direction between ascending and descending.
 		sortDirection: "Sort direction",
+
+		// Sort option that orders games by name from A to Z.
+		nameAscending: "Name A-Z",
+
+		// Sort option that orders games by name from Z to A.
+		nameDescending: "Name Z-A",
+
+		// Sort option that orders games by engine from A to Z.
+		engineAscending: "Engine A-Z",
+
+		// Sort option that orders games by engine from Z to A.
+		engineDescending: "Engine Z-A",
+
+		// Sort option that orders games by release date from oldest to newest.
+		dateAscending: "Date Ascending",
+
+		// Sort option that orders games by release date from newest to oldest.
+		dateDescending: "Date Descending",
 	},
 
 	// Named table columns for the list of games.

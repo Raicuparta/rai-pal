@@ -102,8 +102,10 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	}
 	window.set_search_text(initial_query.search.clone().into());
 	window.set_games_total_count(i32::try_from(games_total_count).unwrap_or(i32::MAX));
-	window.set_sort_index(sort_index(initial_query.sort_by));
-	window.set_sort_descending(initial_query.sort_descending);
+	window.set_sort_index(sort_option_index(
+		initial_query.sort_by,
+		initial_query.sort_descending,
+	));
 	window.set_current_tab(initial_tab);
 	window.set_filters_have_expanded(initial_groups.iter().any(|group| group.expanded));
 	window.set_filter_groups(Rc::new(slint::VecModel::from(initial_groups)).into());
@@ -444,31 +446,9 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	window.on_sort_changed(move |index| {
 		{
 			let mut settings = ui_settings.borrow_mut();
-			let sort_by = sort_from_index(index);
-			if settings.games_query.sort_by != sort_by {
-				settings.games_query.sort_descending = false;
-			}
+			let (sort_by, sort_descending) = sort_option_from_index(index);
 			settings.games_query.sort_by = sort_by;
-		}
-		persist_settings(&ui_settings);
-
-		start_query(
-			ui_window.clone(),
-			ui_database.clone(),
-			ui_scheduler.clone(),
-			ui_settings.borrow().games_query.clone(),
-			Duration::ZERO,
-		);
-	});
-
-	let ui_settings = settings.clone();
-	let ui_window = window_weak.clone();
-	let ui_database = database.clone();
-	let ui_scheduler = scheduler.clone();
-	window.on_sort_direction_changed(move |descending| {
-		{
-			let mut settings = ui_settings.borrow_mut();
-			settings.games_query.sort_descending = descending;
+			settings.games_query.sort_descending = sort_descending;
 		}
 		persist_settings(&ui_settings);
 
@@ -1235,19 +1215,25 @@ fn app_color_scheme(color_scheme: ColorScheme) -> AppColorScheme {
 	}
 }
 
-fn sort_index(sort_by: GamesSortBy) -> i32 {
-	match sort_by {
-		GamesSortBy::Title => 0,
-		GamesSortBy::Engine => 1,
-		GamesSortBy::ReleaseDate => 2,
+fn sort_option_index(sort_by: GamesSortBy, sort_descending: bool) -> i32 {
+	match (sort_by, sort_descending) {
+		(GamesSortBy::Title, false) => 0,
+		(GamesSortBy::Title, true) => 1,
+		(GamesSortBy::Engine, false) => 2,
+		(GamesSortBy::Engine, true) => 3,
+		(GamesSortBy::ReleaseDate, false) => 4,
+		(GamesSortBy::ReleaseDate, true) => 5,
 	}
 }
 
-fn sort_from_index(index: i32) -> GamesSortBy {
+fn sort_option_from_index(index: i32) -> (GamesSortBy, bool) {
 	match index {
-		1 => GamesSortBy::Engine,
-		2 => GamesSortBy::ReleaseDate,
-		_ => GamesSortBy::Title,
+		1 => (GamesSortBy::Title, true),
+		2 => (GamesSortBy::Engine, false),
+		3 => (GamesSortBy::Engine, true),
+		4 => (GamesSortBy::ReleaseDate, false),
+		5 => (GamesSortBy::ReleaseDate, true),
+		_ => (GamesSortBy::Title, false),
 	}
 }
 

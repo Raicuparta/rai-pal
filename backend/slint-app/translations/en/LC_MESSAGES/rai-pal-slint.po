@@ -381,6 +381,30 @@ msgctxt "gamesSort"
 msgid "Sort direction"
 msgstr "Sort direction"
 
+msgctxt "gamesSort"
+msgid "Name A-Z"
+msgstr "Name A-Z"
+
+msgctxt "gamesSort"
+msgid "Name Z-A"
+msgstr "Name Z-A"
+
+msgctxt "gamesSort"
+msgid "Engine A-Z"
+msgstr "Engine A-Z"
+
+msgctxt "gamesSort"
+msgid "Engine Z-A"
+msgstr "Engine Z-A"
+
+msgctxt "gamesSort"
+msgid "Date Ascending"
+msgstr "Date Ascending"
+
+msgctxt "gamesSort"
+msgid "Date Descending"
+msgstr "Date Descending"
+
 msgctxt "gamesTableColumn"
 msgid "Name"
 msgstr "Name"

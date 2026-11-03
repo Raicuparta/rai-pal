@@ -381,6 +381,30 @@ msgctxt "gamesSort"
 msgid "Sort direction"
 msgstr "Waah waaaaaaah!"
 
+msgctxt "gamesSort"
+msgid "Name A-Z"
+msgstr "Waah wah!"
+
+msgctxt "gamesSort"
+msgid "Name Z-A"
+msgstr "Waah wah!"
+
+msgctxt "gamesSort"
+msgid "Engine A-Z"
+msgstr "Waaaah wah!"
+
+msgctxt "gamesSort"
+msgid "Engine Z-A"
+msgstr "Waaaah wah!"
+
+msgctxt "gamesSort"
+msgid "Date Ascending"
+msgstr "Waah waaaaaaah!"
+
+msgctxt "gamesSort"
+msgid "Date Descending"
+msgstr "Waah waaaaaaaah!"
+
 msgctxt "gamesTableColumn"
 msgid "Name"
 msgstr "Waah!"

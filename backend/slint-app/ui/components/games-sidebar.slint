@@ -1,4 +1,4 @@
-import { LineEdit, ComboBox, Button } from "std-widgets.slint";
+import { LineEdit, ComboBox } from "std-widgets.slint";
 import { IconSet } from "@lucide";
 import { FilterGroupData } from "../filter-data.slint";
 import { Theme } from "../theme.slint";
@@ -13,7 +13,6 @@ export component GamesSidebar inherits Sidebar {
     in property <string> refresh-task-names;
     in-out property <string> search-text: "";
     in-out property <int> sort-index: 0;
-    in-out property <bool> sort-descending: false;
     in property <[FilterGroupData]> filter-groups;
     in property <bool> filters-have-changes;
     in property <bool> filters-have-expanded;
@@ -21,7 +20,6 @@ export component GamesSidebar inherits Sidebar {
     callback refresh-all;
     callback search-changed(text: string);
     callback sort-changed(index: int);
-    callback sort-direction-changed(descending: bool);
     callback filter-toggled(group: string, value: string, checked: bool);
     callback filter-lock-toggled(group: string, value: string);
     callback filter-only(group: string, value: string);
@@ -55,34 +53,22 @@ export component GamesSidebar inherits Sidebar {
     }
 
     SidebarSection {
-        HorizontalLayout {
+        ComboBox {
             vertical-stretch: 0;
             height: Theme.control-height;
-            spacing: Theme.space-4;
+            model: [
+                "↓ " + @tr("gamesSort" => "Name A-Z"),
+                "↑ " + @tr("gamesSort" => "Name Z-A"),
+                "↓ " + @tr("gamesSort" => "Engine A-Z"),
+                "↑ " + @tr("gamesSort" => "Engine Z-A"),
+                "↓ " + @tr("gamesSort" => "Date Ascending"),
+                "↑ " + @tr("gamesSort" => "Date Descending"),
+            ];
+            current-index <=> root.sort-index;
+            horizontal-stretch: 1;
 
-            ComboBox {
-                vertical-stretch: 0;
-                height: Theme.control-height;
-                model: [
-                    @tr("gamesTableColumn" => "Name"),
-                    @tr("gamesTableColumn" => "Engine"),
-                    @tr("gamesTableColumn" => "Date"),
-                ];
-                current-index <=> root.sort-index;
-                horizontal-stretch: 1;
-
-                selected(value) => {
-                    root.sort-changed(root.sort-index);
-                }
-            }
-
-            Button {
-                text: root.sort-descending ? "↓" : "↑";
-                width: Theme.control-height + Theme.space-8;
-
-                clicked => {
-                    root.sort-direction-changed(!root.sort-descending);
-                }
+            selected(value) => {
+                root.sort-changed(root.sort-index);
             }
         }
     }
