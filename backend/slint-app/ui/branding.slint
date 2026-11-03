@@ -1,7 +1,7 @@
 import { Theme } from "theme.slint";
 
 export global Branding {
-    public pure function provider-color(provider-id: string) -> brush {
+    pure function provider-color(provider-id: string) -> brush {
         if provider-id == "Amazon" {
             return #ebab34;
         }
@@ -21,6 +21,10 @@ export global Branding {
             return #2f9e44;
         }
         return Theme.foreground;
+    }
+
+    public pure function provider-foreground(provider-id: string) -> brush {
+    return Theme.dark ? provider-color(provider-id).mix(white, 0.5) : provider-color(provider-id).darker(0.5);
     }
 
     public pure function provider-background(provider-id: string) -> brush {

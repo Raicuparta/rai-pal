@@ -11,42 +11,42 @@ export component ProviderIcon inherits Rectangle {
 
     if provider-id == "Amazon" : Image {
         source: @image-url("../icons/providers/amazon.svg");
-        colorize: Branding.provider-color(provider-id);
+        colorize: Branding.provider-foreground(provider-id);
         width: 100%;
         height: 100%;
     }
 
     if provider-id == "Steam" : Image {
         source: @image-url("../icons/providers/steam.svg");
-        colorize: Branding.provider-color(provider-id);
+        colorize: Branding.provider-foreground(provider-id);
         width: 100%;
         height: 100%;
     }
 
     if provider-id == "Epic" : Image {
         source: @image-url("../icons/providers/epic.svg");
-        colorize: Branding.provider-color(provider-id);
+        colorize: Branding.provider-foreground(provider-id);
         width: 100%;
         height: 100%;
     }
 
     if provider-id == "Gog" : Image {
         source: @image-url("../icons/providers/gog.svg");
-        colorize: Branding.provider-color(provider-id);
+        colorize: Branding.provider-foreground(provider-id);
         width: 100%;
         height: 100%;
     }
 
     if provider-id == "Itch" : Image {
         source: @image-url("../icons/providers/itch.svg");
-        colorize: Branding.provider-color(provider-id);
+        colorize: Branding.provider-foreground(provider-id);
         width: 100%;
         height: 100%;
     }
 
     if provider-id == "Xbox" : Image {
         source: @image-url("../icons/providers/xbox.svg");
-        colorize: Branding.provider-color(provider-id);
+        colorize: Branding.provider-foreground(provider-id);
         width: 100%;
         height: 100%;
     }
@@ -54,6 +54,6 @@ export component ProviderIcon inherits Rectangle {
     if provider-id == "Manual" : IconDisplay {
         icon: IconSet.Gamepad2;
         size: root.icon-size;
-        stroke: Branding.provider-color(provider-id);
+        stroke: Branding.provider-foreground(provider-id);
     }
 }
