@@ -1,7 +1,7 @@
-import { Button } from "std-widgets.slint";
 import { ModActions } from "../actions.slint";
 import { ModsTabModData } from "../mods-tab-data.slint";
 import { Theme } from "../theme.slint";
+import { ActionButton } from "action-button.slint";
 import { ModSummaryView } from "mod-summary.slint";
 
 export component ModsTabRowView inherits Rectangle {
@@ -38,27 +38,30 @@ export component ModsTabRowView inherits Rectangle {
             alignment: end;
             spacing: Theme.space-4;
 
-            if mod-data.can-run : Button {
+            if mod-data.can-run : ActionButton {
                 text: @tr("modModal" => "Run");
                 height: Theme.action-button-height;
+                action-id: "standalone-run:" + mod-data.id;
 
                 clicked => {
                     ModActions.run-standalone(mod-data.id);
                 }
             }
 
-            if mod-data.can-install : Button {
+            if mod-data.can-install : ActionButton {
                 text: @tr("modModal" => "Download");
                 height: Theme.action-button-height;
+                action-id: "standalone-install:" + mod-data.id;
 
                 clicked => {
                     ModActions.install-standalone(mod-data.id);
                 }
             }
 
-            if mod-data.source-code != "" : Button {
+            if mod-data.source-code != "" : ActionButton {
                 text: @tr("modModal" => "Website");
                 height: Theme.action-button-height;
+                show-icon: false;
 
                 clicked => {
                     ModActions.open-url(mod-data.source-code);

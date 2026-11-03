@@ -1,0 +1,125 @@
+import { Icon, IconDisplay, IconSet } from "@lucide";
+import { ActionState } from "../action-state.slint";
+import { ButtonKind } from "../app-types.slint";
+import { Theme } from "../theme.slint";
+
+export component BaseButton inherits Rectangle {
+    in property <string> text: "";
+    in property <Icon> icon;
+    in property <bool> show-icon: false;
+    in property <bool> icon-only: false;
+    in property <length> icon-size: Theme.icon-button-icon-size;
+    in property <length> text-size: Theme.font-14;
+    in property <length> horizontal-padding: Theme.space-12;
+    in property <length> content-spacing: Theme.space-6;
+    in property <bool> enabled: true;
+    in property <ButtonKind> kind: ButtonKind.secondary;
+    in property <ActionState> state: ActionState.idle;
+    in property <brush> icon-color: Theme.foreground;
+    in property <bool> use-custom-icon-color: false;
+    out property <bool> hovered: touch-area.has-hover;
+
+    private property <bool> long-loading: false;
+    private property <angle> spinner-angle: 1 * mod(animation-tick(), 1s) / 1s * 360deg;
+    private property <bool> interactive: root.enabled && root.state != ActionState.loading;
+    private property <bool> has-status: root.state == ActionState.success || root.state == ActionState.error;
+    private property <bool> is-primary: root.kind == ButtonKind.primary;
+    private property <bool> is-danger: root.kind == ButtonKind.danger;
+    private property <brush> status-background: root.state == ActionState.success ? Theme.status-success : Theme.status-error;
+    private property <brush> status-foreground: root.state == ActionState.success ? Theme.status-success-foreground : Theme.status-error-foreground;
+    private property <brush> base-background: root.is-primary ? Theme.primary : root.is-danger ? Theme.status-error : Theme.button-background;
+    private property <brush> hover-background: root.is-primary ? Theme.button-primary-hover-background : root.is-danger ? Theme.button-danger-hover-background : Theme.button-hover-background;
+    private property <brush> pressed-background: root.is-primary ? Theme.button-primary-pressed-background : root.is-danger ? Theme.button-danger-pressed-background : Theme.button-pressed-background;
+    private property <brush> background-color: !root.enabled ? Theme.button-disabled-background : root.has-status ? root.status-background : touch-area.pressed ? root.pressed-background : touch-area.has-hover ? root.hover-background : root.base-background;
+    private property <brush> foreground-color: !root.enabled ? Theme.button-disabled-foreground : root.has-status ? root.status-foreground : root.is-danger ? Theme.status-error-foreground : root.is-primary ? Theme.button-primary-foreground : Theme.button-foreground;
+    private property <brush> border-tint: !root.enabled || root.has-status || root.is-danger ? transparent : root.is-primary ? Theme.button-primary-border : Theme.button-border;
+    private property <Icon> display-icon: root.state == ActionState.success ? IconSet.CircleCheck : root.state == ActionState.error ? IconSet.CircleX : root.state == ActionState.loading && root.long-loading ? IconSet.LoaderCircle : root.icon;
+
+    callback clicked;
+
+    height: Theme.control-height;
+    min-width: root.icon-only ? 0px : 32px;
+    horizontal-stretch: 0;
+    vertical-stretch: 0;
+    border-radius: Theme.radius-4;
+    background: root.background-color;
+    forward-focus: focus-scope;
+
+    accessible-role: button;
+    accessible-enabled: root.interactive;
+    accessible-label: root.text;
+    accessible-action-default => {
+        if root.interactive {
+            root.clicked();
+        }
+    }
+
+    changed state => {
+        root.long-loading = false;
+    }
+
+    loading-timer := Timer {
+        interval: 500ms;
+        running: root.state == ActionState.loading && !root.long-loading;
+
+        triggered => {
+            root.long-loading = true;
+        }
+    }
+
+    Rectangle {
+        border-radius: parent.border-radius;
+        border-width: root.border-tint == transparent ? 0px : Theme.border-width;
+        border-color: root.border-tint;
+    }
+
+    HorizontalLayout {
+        width: 100%;
+        height: 100%;
+        padding-left: root.icon-only ? 0px : root.horizontal-padding;
+        padding-right: root.icon-only ? 0px : root.horizontal-padding;
+        spacing: root.icon-only ? 0px : root.content-spacing;
+        alignment: center;
+        cross-axis-alignment: center;
+
+        if root.show-icon || root.has-status || (root.state == ActionState.loading && root.long-loading) : IconDisplay {
+            icon: root.display-icon;
+            size: root.icon-size;
+            stroke: root.use-custom-icon-color ? root.icon-color : root.foreground-color;
+            transform-rotation: root.state == ActionState.loading && root.long-loading ? root.spinner-angle : 0deg;
+        }
+
+        if !root.icon-only && root.text != "" : Text {
+            text: root.text;
+            font-size: root.text-size;
+            color: root.foreground-color;
+            vertical-alignment: center;
+            overflow: elide;
+        }
+    }
+
+    touch-area := TouchArea {
+        enabled: root.interactive;
+
+        clicked => {
+            root.clicked();
+        }
+    }
+
+    focus-scope := FocusScope {
+        width: 0;
+        height: 0;
+        enabled: root.enabled;
+
+        key-pressed(event) => {
+            if event.text == Key.Space || event.text == Key.Return {
+                if root.interactive {
+                    root.clicked();
+                }
+                return accept;
+            }
+
+            return reject;
+        }
+    }
+}

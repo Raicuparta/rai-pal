@@ -1,7 +1,9 @@
-import { Button, ScrollView } from "std-widgets.slint";
+import { ScrollView } from "std-widgets.slint";
+import { Button } from "button.slint";
 import { ModActions } from "../actions.slint";
 import { ModsTabItemData } from "../mods-tab-data.slint";
 import { Theme } from "../theme.slint";
+import { ActionButton } from "action-button.slint";
 import { ModsTabRowView } from "mods-tab-row.slint";
 import { ModsTabFamilyRowView } from "mods-tab-family-row.slint";
 import { RefreshButton } from "refresh-button.slint";
@@ -37,8 +39,9 @@ export component ModsPage inherits Rectangle {
                     }
                 }
 
-                Button {
+                ActionButton {
                     text: @tr("modsPage" => "Open Local Mods Folder");
+                    action-id: "open-local-mods-folder";
 
                     clicked => {
                         ModActions.open-local-mods-folder();

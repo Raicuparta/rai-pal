@@ -23,7 +23,8 @@ use slint::{
 };
 
 use crate::{
-	AppColorScheme, AppTab, Fonts, GameRowData, MainWindow, ModActions, actions, confirmation, downloads,
+	ActionStates, AppColorScheme, AppTab, Fonts, GameRowData, MainWindow, ModActions, action_state,
+	actions, confirmation, downloads,
 	fetch::spawn_fetchers,
 	filters::{
 		apply_filter_action, build_groups, load_mod_families, reset_all_filters, reset_filter_group,
@@ -77,6 +78,9 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	let database = Arc::new(database);
 
 	let window = MainWindow::new()?;
+	window
+		.global::<ActionStates>()
+		.on_lookup(|id| action_state::lookup(id.as_str()));
 	i18n::apply_translation(initial_locale);
 	window.set_selected_language(
 		settings
@@ -704,6 +708,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 		}
 	});
 
+	let ui_window = window_weak.clone();
 	let ui_database = database.clone();
 	let ui_selected_game = selected_game.clone();
 	window.on_run_game(move || {
@@ -712,7 +717,13 @@ pub fn run() -> Result<(), slint::PlatformError> {
 		};
 
 		if let Some(action) = game.primary_start_action() {
-			actions::run_provider_action(ui_database.clone(), game, action);
+			actions::run_provider_action(
+				ui_database.clone(),
+				ui_window.clone(),
+				game,
+				action,
+				"game-run".to_string(),
+			);
 		}
 	});
 
@@ -732,41 +743,68 @@ pub fn run() -> Result<(), slint::PlatformError> {
 			notifications::info(&window, "Running command... This might take a few seconds.");
 		}
 
-		actions::run_provider_action(ui_database.clone(), game, action);
+		actions::run_provider_action(
+			ui_database.clone(),
+			ui_window.clone(),
+			game,
+			action,
+			format!("provider-action:{value}"),
+		);
 	});
 
+	let ui_window = window_weak.clone();
 	let ui_selected_game = selected_game.clone();
 	window.on_open_game_folder(move || {
 		if let Some((_, game)) = get_selected_game(&ui_selected_game) {
-			actions::open_game_folder(game);
+			actions::open_game_folder(ui_window.clone(), "open-game-folder".to_string(), game);
 		}
 	});
 
+	let ui_window = window_weak.clone();
 	let ui_selected_game = selected_game.clone();
 	window.on_open_game_mods_folder(move || {
 		if let Some((_, game)) = get_selected_game(&ui_selected_game) {
-			actions::open_game_mods_folder(game);
+			actions::open_game_mods_folder(
+				ui_window.clone(),
+				"open-game-mods-folder".to_string(),
+				game,
+			);
 		}
 	});
 
+	let ui_window = window_weak.clone();
 	let ui_selected_game = selected_game.clone();
 	window.on_open_game_data_folder(move || {
 		if let Some((_, game)) = get_selected_game(&ui_selected_game) {
-			actions::open_game_data_folder(game);
+			actions::open_game_data_folder(
+				ui_window.clone(),
+				"open-game-data-folder".to_string(),
+				game,
+			);
 		}
 	});
 
+	let ui_window = window_weak.clone();
 	let ui_selected_game = selected_game.clone();
 	window.on_open_wine_prefix_folder(move || {
 		if let Some((_, game)) = get_selected_game(&ui_selected_game) {
-			actions::open_wine_prefix_folder(game);
+			actions::open_wine_prefix_folder(
+				ui_window.clone(),
+				"open-wine-prefix-folder".to_string(),
+				game,
+			);
 		}
 	});
 
+	let ui_window = window_weak.clone();
 	let ui_selected_game = selected_game.clone();
 	window.on_open_wine_binary_folder(move || {
 		if let Some((_, game)) = get_selected_game(&ui_selected_game) {
-			actions::open_wine_binary_folder(game);
+			actions::open_wine_binary_folder(
+				ui_window.clone(),
+				"open-wine-binary-folder".to_string(),
+				game,
+			);
 		}
 	});
 
@@ -855,6 +893,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 		);
 	});
 
+	let ui_window = window_weak.clone();
 	let ui_database = database.clone();
 	let ui_selected_game = selected_game.clone();
 	window.global::<ModActions>().on_run(move |mod_id| {
@@ -862,16 +901,23 @@ pub fn run() -> Result<(), slint::PlatformError> {
 			return;
 		};
 
-		mods::run_mod(ui_database.clone(), game, mod_id.to_string());
+		mods::run_mod(
+			ui_database.clone(),
+			ui_window.clone(),
+			game,
+			mod_id.to_string(),
+		);
 	});
 
+	let ui_window = window_weak.clone();
 	let ui_database = database.clone();
 	window
 		.global::<ModActions>()
 		.on_run_standalone(move |mod_id| {
-			actions::run_standalone_mod(ui_database.clone(), mod_id.to_string());
+			actions::run_standalone_mod(ui_database.clone(), ui_window.clone(), mod_id.to_string());
 		});
 
+	let ui_window = window_weak.clone();
 	let ui_database = database.clone();
 	let ui_downloads = downloads.clone();
 	window
@@ -879,6 +925,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 		.on_install_standalone(move |mod_id| {
 			actions::install_standalone_mod(
 				ui_database.clone(),
+				ui_window.clone(),
 				mod_id.to_string(),
 				ui_downloads.clone(),
 			);
@@ -893,10 +940,17 @@ pub fn run() -> Result<(), slint::PlatformError> {
 		actions::open_url(url.to_string());
 	});
 
-	window.global::<ModActions>().on_open_local_mods_folder(|| {
-		actions::open_local_mods_folder();
-	});
+	let ui_window = window_weak.clone();
+	window
+		.global::<ModActions>()
+		.on_open_local_mods_folder(move || {
+			actions::open_local_mods_folder(
+				ui_window.clone(),
+				"open-local-mods-folder".to_string(),
+			);
+		});
 
+	let ui_window = window_weak.clone();
 	let ui_database = database.clone();
 	let ui_selected_game = selected_game.clone();
 	window.global::<ModActions>().on_open_folder(move |mod_id| {
@@ -904,7 +958,12 @@ pub fn run() -> Result<(), slint::PlatformError> {
 			return;
 		};
 
-		mods::open_mod_folder(ui_database.clone(), game, mod_id.to_string());
+		mods::open_mod_folder(
+			ui_database.clone(),
+			ui_window.clone(),
+			game,
+			mod_id.to_string(),
+		);
 	});
 
 	let ui_window = window_weak.clone();
@@ -925,6 +984,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 			);
 		});
 
+	let ui_window = window_weak.clone();
 	let ui_database = database.clone();
 	let ui_selected_game = selected_game.clone();
 	window.global::<ModActions>().on_configure(move |mod_id| {
@@ -932,9 +992,16 @@ pub fn run() -> Result<(), slint::PlatformError> {
 			return;
 		};
 
-		mods::configure_mod(ui_database.clone(), game, mod_id.to_string(), false);
+		mods::configure_mod(
+			ui_database.clone(),
+			ui_window.clone(),
+			game,
+			mod_id.to_string(),
+			false,
+		);
 	});
 
+	let ui_window = window_weak.clone();
 	let ui_database = database.clone();
 	let ui_selected_game = selected_game.clone();
 	window
@@ -944,7 +1011,13 @@ pub fn run() -> Result<(), slint::PlatformError> {
 				return;
 			};
 
-			mods::configure_mod(ui_database.clone(), game, mod_id.to_string(), true);
+			mods::configure_mod(
+				ui_database.clone(),
+				ui_window.clone(),
+				game,
+				mod_id.to_string(),
+				true,
+			);
 		});
 
 	let ui_window = window_weak.clone();
@@ -982,6 +1055,9 @@ pub fn run() -> Result<(), slint::PlatformError> {
 			return;
 		};
 
+		let action_id = "refresh-game".to_string();
+		action_state::start(&ui_window, action_id.clone());
+
 		let database = ui_database.clone();
 		let window = ui_window.clone();
 		let ui_selected_game = ui_selected_game.clone();
@@ -989,26 +1065,23 @@ pub fn run() -> Result<(), slint::PlatformError> {
 		thread::spawn(move || {
 			let mut game = game;
 
-			if let Err(err) = game.refresh_executable() {
-				eprintln!("Failed to refresh game: {err}");
-				notifications::error_async(&window, format!("Failed to refresh game: {err}"));
-				return;
-			}
+			let result = (|| {
+				game.refresh_executable()?;
+				database.insert_game(&game);
+				database.refresh_installed_mods()?;
+				database.get_game(&game.provider_id, &game.game_id)
+			})();
 
-			database.insert_game(&game);
-
-			if let Err(err) = database.refresh_installed_mods() {
-				eprintln!("Failed to refresh installed mods: {err}");
-				notifications::error_async(
-					&window,
-					format!("Failed to refresh installed mods: {err}"),
-				);
-			}
-
-			let Ok(game) = database.get_game(&game.provider_id, &game.game_id) else {
-				return;
+			let game = match result {
+				Ok(game) => game,
+				Err(err) => {
+					eprintln!("Failed to refresh game: {err}");
+					action_state::finish(&window, &action_id, Err(err), "Failed to refresh game");
+					return;
+				}
 			};
 
+			let finish_window = window.clone();
 			let _ = slint::invoke_from_event_loop(move || {
 				let Some(window) = window.upgrade() else {
 					return;
@@ -1025,6 +1098,13 @@ pub fn run() -> Result<(), slint::PlatformError> {
 				selected::show(&window, &game, row);
 				mods::refresh_mods(&window, &database, &game);
 			});
+
+			action_state::finish(
+				&finish_window,
+				&action_id,
+				Ok::<(), rai_pal_core::result::Error>(()),
+				"",
+			);
 		});
 	});
 

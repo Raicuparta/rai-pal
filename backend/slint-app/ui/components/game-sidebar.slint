@@ -1,7 +1,9 @@
-import { Button } from "std-widgets.slint";
+import { Button } from "button.slint";
 import { ProviderActionItem } from "../provider-action-item.slint";
 import { Theme } from "../theme.slint";
 import { Tr } from "../translations.slint";
+import { ButtonKind } from "../app-types.slint";
+import { ActionButton } from "action-button.slint";
 import { LabeledDivider } from "labeled-divider.slint";
 import { Sidebar, SidebarSection } from "sidebar.slint";
 
@@ -34,9 +36,10 @@ export component GameSidebar inherits Sidebar {
             }
         }
 
-        if root.can-run-game : Button {
+        if root.can-run-game : ActionButton {
             text: @tr("gameModal" => "Start Game");
-            primary: true;
+            kind: ButtonKind.primary;
+            action-id: "game-run";
 
             clicked => {
                 root.run-game();
@@ -59,8 +62,9 @@ export component GameSidebar inherits Sidebar {
                 label: root.provider-id;
             }
 
-            for action in root.provider-actions : Button {
+            for action in root.provider-actions : ActionButton {
                 text: Tr.provider-command(action.value);
+                action-id: "provider-action:" + action.value;
 
                 clicked => {
                     root.run-provider-action(action.value);
@@ -76,40 +80,45 @@ export component GameSidebar inherits Sidebar {
                 label: @tr("gameModal" => "Folders");
             }
 
-            Button {
+            ActionButton {
                 text: @tr("gameModal" => "Game Files");
+                action-id: "open-game-folder";
 
                 clicked => {
                     root.open-game-folder();
                 }
             }
 
-            Button {
+            ActionButton {
                 text: @tr("gameModal" => "Installed Mods");
+                action-id: "open-game-mods-folder";
 
                 clicked => {
                     root.open-game-mods-folder();
                 }
             }
 
-            Button {
+            ActionButton {
                 text: @tr("gameModal" => "Game App Data");
+                action-id: "open-game-data-folder";
 
                 clicked => {
                     root.open-game-data-folder();
                 }
             }
 
-            if root.show-wine-folders : Button {
+            if root.show-wine-folders : ActionButton {
                 text: @tr("gameModal" => "Wine Prefix");
+                action-id: "open-wine-prefix-folder";
 
                 clicked => {
                     root.open-wine-prefix-folder();
                 }
             }
 
-            if root.show-wine-folders : Button {
+            if root.show-wine-folders : ActionButton {
                 text: @tr("gameModal" => "Wine Binary");
+                action-id: "open-wine-binary-folder";
 
                 clicked => {
                     root.open-wine-binary-folder();
@@ -125,8 +134,9 @@ export component GameSidebar inherits Sidebar {
                 label: "Data";
             }
 
-            if root.has-exe-path : Button {
+            if root.has-exe-path : ActionButton {
                 text: @tr("gameModal" => "Refresh game");
+                action-id: "refresh-game";
 
                 clicked => {
                     root.refresh-game();

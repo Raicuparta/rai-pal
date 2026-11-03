@@ -1,0 +1,8 @@
+import { ButtonKind } from "../app-types.slint";
+import { BaseButton } from "base-button.slint";
+
+export component Button inherits BaseButton {
+    in property <bool> primary: false;
+
+    kind: root.primary ? ButtonKind.primary : ButtonKind.secondary;
+}

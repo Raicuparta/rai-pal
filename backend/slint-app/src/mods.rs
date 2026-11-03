@@ -20,7 +20,10 @@ use rai_pal_core::{
 };
 use slint::ComponentHandle;
 
-use crate::{GameModRowData, MainWindow, PotentialModRowData, downloads::Tracker, notifications};
+use crate::{
+	GameModRowData, MainWindow, PotentialModRowData, action_state, downloads::Tracker,
+	notifications,
+};
 
 #[derive(Default)]
 struct LoadedMods {
@@ -117,6 +120,9 @@ pub fn install_mod(
 	mod_id: String,
 	downloads: Tracker,
 ) {
+	let action_id = format!("game-mod-install:{mod_id}");
+	action_state::start(&window, action_id.clone());
+
 	thread::spawn(move || {
 		let Ok(runtime) = tokio::runtime::Builder::new_current_thread()
 			.enable_all()
@@ -129,9 +135,11 @@ pub fn install_mod(
 			Ok(mods) => mods,
 			Err(err) => {
 				eprintln!("Failed to prepare mod install {mod_id}: {err}");
-				notifications::error_async(
+				action_state::finish(
 					&window,
-					format!("Failed to install mod {mod_id}: {err}"),
+					&action_id,
+					Err(err),
+					format!("Failed to install mod {mod_id}"),
 				);
 				return;
 			}
@@ -156,12 +164,23 @@ pub fn install_mod(
 		if let Err(err) = result {
 			eprintln!("Failed to install mod {mod_id}: {err}");
 			downloads.fail_steps(&steps);
-			notifications::error_async(&window, format!("Failed to install mod {mod_id}: {err}"));
+			action_state::finish(
+				&window,
+				&action_id,
+				Err(err),
+				format!("Failed to install mod {mod_id}"),
+			);
 			return;
 		}
 
 		downloads.finish_steps(&steps);
 		refresh_after_action(&window, &database, &game);
+		action_state::finish(
+			&window,
+			&action_id,
+			Ok::<(), rai_pal_core::result::Error>(()),
+			"",
+		);
 	});
 }
 
@@ -171,6 +190,9 @@ pub fn download_mod_config(
 	game: DbGame,
 	mod_id: String,
 ) {
+	let action_id = format!("game-mod-download-config:{mod_id}");
+	action_state::start(&window, action_id.clone());
+
 	thread::spawn(move || {
 		let Ok(runtime) = tokio::runtime::Builder::new_current_thread()
 			.enable_all()
@@ -190,14 +212,22 @@ pub fn download_mod_config(
 
 		if let Err(err) = result {
 			eprintln!("Failed to download config for mod {mod_id}: {err}");
-			notifications::error_async(
+			action_state::finish(
 				&window,
-				format!("Failed to download config for mod {mod_id}: {err}"),
+				&action_id,
+				Err(err),
+				format!("Failed to download config for mod {mod_id}"),
 			);
 			return;
 		}
 
 		refresh_after_action(&window, &database, &game);
+		action_state::finish(
+			&window,
+			&action_id,
+			Ok::<(), rai_pal_core::result::Error>(()),
+			"",
+		);
 	});
 }
 
@@ -207,6 +237,9 @@ pub fn uninstall_mod(
 	game: DbGame,
 	mod_id: String,
 ) {
+	let action_id = format!("game-mod-uninstall:{mod_id}");
+	action_state::start(&window, action_id.clone());
+
 	thread::spawn(move || {
 		let Ok(runtime) = tokio::runtime::Builder::new_current_thread()
 			.enable_all()
@@ -226,15 +259,29 @@ pub fn uninstall_mod(
 
 		if let Err(err) = result {
 			eprintln!("Failed to uninstall mod {mod_id}: {err}");
-			notifications::error_async(&window, format!("Failed to uninstall mod {mod_id}: {err}"));
+			action_state::finish(
+				&window,
+				&action_id,
+				Err(err),
+				format!("Failed to uninstall mod {mod_id}"),
+			);
 			return;
 		}
 
 		refresh_after_action(&window, &database, &game);
+		action_state::finish(
+			&window,
+			&action_id,
+			Ok::<(), rai_pal_core::result::Error>(()),
+			"",
+		);
 	});
 }
 
 pub fn uninstall_all_mods(database: Arc<DbMutex>, window: slint::Weak<MainWindow>, game: DbGame) {
+	let action_id = "game-mod-uninstall-all".to_string();
+	action_state::start(&window, action_id.clone());
+
 	thread::spawn(move || {
 		let Ok(runtime) = tokio::runtime::Builder::new_current_thread()
 			.enable_all()
@@ -255,47 +302,96 @@ pub fn uninstall_all_mods(database: Arc<DbMutex>, window: slint::Weak<MainWindow
 
 		if let Err(err) = result {
 			eprintln!("Failed to uninstall all mods: {err}");
-			notifications::error_async(&window, format!("Failed to uninstall all mods: {err}"));
+			action_state::finish(
+				&window,
+				&action_id,
+				Err(err),
+				"Failed to uninstall all mods",
+			);
 			return;
 		}
 
 		refresh_after_action(&window, &database, &game);
+		action_state::finish(
+			&window,
+			&action_id,
+			Ok::<(), rai_pal_core::result::Error>(()),
+			"",
+		);
 	});
 }
 
-pub fn run_mod(database: Arc<DbMutex>, game: DbGame, mod_id: String) {
+pub fn run_mod(
+	database: Arc<DbMutex>,
+	window: slint::Weak<MainWindow>,
+	game: DbGame,
+	mod_id: String,
+) {
+	let action_id = format!("game-mod-run:{mod_id}");
+	action_state::start(&window, action_id.clone());
+
 	thread::spawn(move || {
 		let result = database
 			.get_mod(&mod_id)
 			.and_then(|game_mod| game_mod.run(Some(&game)));
 
-		if let Err(err) = result {
-			eprintln!("Failed to run mod {mod_id}: {err}");
-		}
+		action_state::finish(
+			&window,
+			&action_id,
+			result,
+			format!("Failed to run mod {mod_id}"),
+		);
 	});
 }
 
-pub fn open_mod_folder(database: Arc<DbMutex>, game: DbGame, mod_id: String) {
+pub fn open_mod_folder(
+	database: Arc<DbMutex>,
+	window: slint::Weak<MainWindow>,
+	game: DbGame,
+	mod_id: String,
+) {
+	let action_id = format!("game-mod-open-folder:{mod_id}");
+	action_state::start(&window, action_id.clone());
+
 	thread::spawn(move || {
 		let result = database
 			.try_get_installed_mod(&game.provider_id, &game.game_id, &mod_id)
 			.and_then(|installed_mod| installed_mod.open_folder());
 
-		if let Err(err) = result {
-			eprintln!("Failed to open mod folder {mod_id}: {err}");
-		}
+		action_state::finish(
+			&window,
+			&action_id,
+			result,
+			format!("Failed to open mod folder {mod_id}"),
+		);
 	});
 }
 
-pub fn configure_mod(database: Arc<DbMutex>, game: DbGame, mod_id: String, open_folder: bool) {
+pub fn configure_mod(
+	database: Arc<DbMutex>,
+	window: slint::Weak<MainWindow>,
+	game: DbGame,
+	mod_id: String,
+	open_folder: bool,
+) {
+	let action_id = if open_folder {
+		format!("game-mod-configure-folder:{mod_id}")
+	} else {
+		format!("game-mod-configure:{mod_id}")
+	};
+	action_state::start(&window, action_id.clone());
+
 	thread::spawn(move || {
 		let result = database
 			.try_get_installed_mod(&game.provider_id, &game.game_id, &mod_id)
 			.and_then(|installed_mod| installed_mod.configure(open_folder));
 
-		if let Err(err) = result {
-			eprintln!("Failed to configure mod {mod_id}: {err}");
-		}
+		action_state::finish(
+			&window,
+			&action_id,
+			result,
+			format!("Failed to configure mod {mod_id}"),
+		);
 	});
 }
 

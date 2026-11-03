@@ -1,9 +1,10 @@
-import { Button, ScrollView } from "std-widgets.slint";
+import { ScrollView } from "std-widgets.slint";
 import { ModActions } from "../actions.slint";
 import { GameRowData } from "../game-row-data.slint";
 import { GameModRowData } from "../game-mod-row-data.slint";
 import { PotentialModRowData } from "../potential-mod-row-data.slint";
 import { Theme } from "../theme.slint";
+import { ActionButton } from "action-button.slint";
 import { GameRowView } from "game-row.slint";
 import { ModsSection } from "mods-section.slint";
 import { PotentialModsSection } from "potential-mods-section.slint";
@@ -78,9 +79,10 @@ export component GameDetailsPage inherits Rectangle {
                         padding-right: Theme.space-8;
                         alignment: start;
 
-                        Button {
+                        ActionButton {
                             vertical-stretch: 0;
                             text: @tr("gameModal" => "Uninstall all mods");
+                            action-id: "game-mod-uninstall-all";
 
                             clicked => {
                                 ModActions.request-uninstall-all(

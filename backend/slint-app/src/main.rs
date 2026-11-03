@@ -2,6 +2,7 @@
 
 slint::include_modules!();
 
+mod action_state;
 mod actions;
 mod app;
 mod confirmation;

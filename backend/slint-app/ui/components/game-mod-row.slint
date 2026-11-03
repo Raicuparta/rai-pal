@@ -1,8 +1,8 @@
 import { IconSet } from "@lucide";
-import { Button } from "std-widgets.slint";
 import { ModActions } from "../actions.slint";
 import { GameModRowData } from "../game-mod-row-data.slint";
 import { Theme } from "../theme.slint";
+import { ActionButton } from "action-button.slint";
 import { IconButton } from "icon-button.slint";
 import { ModSummaryView } from "mod-summary.slint";
 
@@ -98,9 +98,10 @@ export component GameModRowView inherits Rectangle {
                 alignment: end;
                 spacing: Theme.space-4;
 
-                if game-mod.can-install : Button {
+                if game-mod.can-install : ActionButton {
                     text: @tr("gameModRow" => "Install");
                     height: Theme.action-button-height;
+                    action-id: "game-mod-install:" + game-mod.mod-id;
 
                     clicked => {
                         ModActions.request-install(
@@ -112,18 +113,20 @@ export component GameModRowView inherits Rectangle {
                     }
                 }
 
-                if game-mod.can-update : Button {
+                if game-mod.can-update : ActionButton {
                     text: @tr("gameModRow" => "Update");
                     height: Theme.action-button-height;
+                    action-id: "game-mod-install:" + game-mod.mod-id;
 
                     clicked => {
                         ModActions.update(game-mod.mod-id);
                     }
                 }
 
-                if game-mod.can-run : Button {
+                if game-mod.can-run : ActionButton {
                     text: @tr("gameModRow" => "Run");
                     height: Theme.action-button-height;
+                    action-id: "game-mod-run:" + game-mod.mod-id;
 
                     clicked => {
                         ModActions.run(game-mod.mod-id);
