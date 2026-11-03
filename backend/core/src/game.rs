@@ -281,5 +281,10 @@ impl DbGame {
 		{
 			Ok(app_paths::base_dirs()?.config_dir().to_owned())
 		}
+
+		#[cfg(not(any(target_os = "linux", target_os = "windows")))]
+		{
+			Ok(app_paths::base_dirs()?.config_dir().to_owned())
+		}
 	}
 }

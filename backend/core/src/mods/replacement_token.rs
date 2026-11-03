@@ -176,6 +176,8 @@ pub fn replace_tokens(
 		}
 		#[cfg(target_os = "windows")]
 		return Ok(String::new());
+		#[cfg(not(any(target_os = "linux", target_os = "windows")))]
+		return Ok(String::new());
 	});
 
 	result

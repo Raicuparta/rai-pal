@@ -16,6 +16,8 @@ use crate::game_providers::{
 use crate::game_providers::{
 	dummy_provider::Dummy, heroic_amazon_provider::HeroicAmazon, heroic_epic_provider::HeroicEpic,
 };
+#[cfg(not(any(target_os = "linux", target_os = "windows")))]
+use crate::game_providers::dummy_provider::Dummy;
 use crate::{
 	game::DbGame,
 	game_engines::pe_utils,
@@ -131,20 +133,28 @@ pub fn get_provider(provider_id: GameProviderId) -> Result<Box<dyn GameProvider>
 		GameProviderId::Amazon => Ok(Box::new(HeroicAmazon {})),
 		#[cfg(target_os = "windows")]
 		GameProviderId::Amazon => Ok(Box::new(Dummy {})),
+		#[cfg(not(any(target_os = "linux", target_os = "windows")))]
+		GameProviderId::Amazon => Ok(Box::new(Dummy {})),
 
 		#[cfg(target_os = "linux")]
 		GameProviderId::Epic => Ok(Box::new(HeroicEpic {})),
 		#[cfg(target_os = "windows")]
 		GameProviderId::Epic => Ok(Box::new(Epic {})),
+		#[cfg(not(any(target_os = "linux", target_os = "windows")))]
+		GameProviderId::Epic => Ok(Box::new(Dummy {})),
 
 		#[cfg(target_os = "linux")]
 		GameProviderId::Gog => Ok(Box::new(HeroicGog {})),
 		#[cfg(target_os = "windows")]
 		GameProviderId::Gog => Ok(Box::new(Gog {})),
+		#[cfg(not(any(target_os = "linux", target_os = "windows")))]
+		GameProviderId::Gog => Ok(Box::new(Dummy {})),
 
 		#[cfg(target_os = "windows")]
 		GameProviderId::Xbox => Ok(Box::new(Xbox {})),
 		#[cfg(target_os = "linux")]
+		GameProviderId::Xbox => Ok(Box::new(Dummy {})),
+		#[cfg(not(any(target_os = "linux", target_os = "windows")))]
 		GameProviderId::Xbox => Ok(Box::new(Dummy {})),
 	}
 }

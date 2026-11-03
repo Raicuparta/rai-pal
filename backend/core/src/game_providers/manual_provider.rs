@@ -137,6 +137,8 @@ impl ProviderActions for Manual {
 
 #[cfg(target_os = "windows")]
 impl WineProviderActions for Manual {}
+#[cfg(not(any(target_os = "linux", target_os = "windows")))]
+impl WineProviderActions for Manual {}
 
 #[cfg(target_os = "linux")]
 impl WineProviderActions for Manual {

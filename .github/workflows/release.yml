@@ -12,6 +12,7 @@ on:
           - all
           - ubuntu
           - windows
+          - macos
 
 jobs:
   create-release:
@@ -42,6 +43,7 @@ jobs:
 
   release-matrix:
     needs: create-release
+    if: inputs.build_target != 'macos'
     strategy:
       fail-fast: false
       matrix:
@@ -100,8 +102,31 @@ jobs:
           name: updater-partial-${{ matrix.os-name }}
           path: updater-partial-*.json
 
+  release-slint-macos:
+    needs: create-release
+    if: inputs.build_target == 'macos'
+    runs-on: macos-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build macOS app
+        run: bash scripts/build-slint-macos.sh
+
+      - name: Upload Release Assets
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ needs.create-release.outputs.tag_name }}
+          files: backend/slint-app/dist/*.zip
+          draft: true
+
   finalize-release:
-    needs: [create-release, release-matrix]
+    needs: [create-release, release-matrix, release-slint-macos]
+    if: ${{ !cancelled() && inputs.build_target != 'macos' }}
     runs-on: ubuntu-latest
     permissions:
       contents: write

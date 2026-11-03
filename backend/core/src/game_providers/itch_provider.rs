@@ -168,6 +168,8 @@ impl ProviderActions for Itch {
 
 #[cfg(target_os = "windows")]
 impl WineProviderActions for Itch {}
+#[cfg(not(any(target_os = "linux", target_os = "windows")))]
+impl WineProviderActions for Itch {}
 
 #[cfg(target_os = "linux")]
 impl WineProviderActions for Itch {
