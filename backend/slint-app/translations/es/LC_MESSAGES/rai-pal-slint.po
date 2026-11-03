@@ -358,6 +358,10 @@ msgid "Download Recommended Config"
 msgstr "Descargar configuración recomendada"
 
 msgctxt "gameModRow"
+msgid "Recommended config"
+msgstr "Configuración recomendada"
+
+msgctxt "gameModRow"
 msgid "Recommended config available. Will be downloaded if you don't already have a config. You can also force it to download from the three dot menu."
 msgstr "Configuración recomendada disponible. Se descargará si aún no tienes una configuración. También puedes forzar la descarga desde el menú de tres puntos."
 

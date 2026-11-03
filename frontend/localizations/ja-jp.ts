@@ -144,6 +144,7 @@ export const jaJp: Localization = {
 		reinstallMod: "再インストール",
 		uninstallMod: "アンインストール",
 		runMod: "実行",
+		recommendedConfig: "推奨設定",
 		downloadRemoteConfig: "推奨設定をダウンロード",
 		remoteConfigAvailable:
 			"推奨設定あり。まだ設定がなければ自動でダウンロードされるよ。三点メニューから手動でもダウンロードできる。",

@@ -301,6 +301,9 @@ export const enUs = {
 		// Button for downloading a mod config from the database.
 		downloadRemoteConfig: "Download Recommended Config",
 
+		// Label for a mod that has a recommended config available.
+		recommendedConfig: "Recommended config",
+
 		// Tooltip for icon that shows next to mod to indicate there's a downloadable config.
 		remoteConfigAvailable:
 			"Recommended config available. Will be downloaded if you don't already have a config. You can also force it to download from the three dot menu.",

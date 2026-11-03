@@ -362,6 +362,10 @@ msgid "Download Recommended Config"
 msgstr "Waaaaaah waaaaaaaaah waaaah!"
 
 msgctxt "gameModRow"
+msgid "Recommended config"
+msgstr "Waaaaaaaaah waaaah!"
+
+msgctxt "gameModRow"
 msgid "Recommended config available. Will be downloaded if you don't already have a config. You can also force it to download from the three dot menu."
 msgstr "Waaaaaaaaah waaaah waaaaaaaah waah be waaaaaaaah if wah waaah waaaaah waah a waaaaah wah wah waah waaah it to waaaaaah waah wah waaah wah waaah!"
 

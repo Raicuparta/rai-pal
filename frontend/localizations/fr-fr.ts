@@ -146,6 +146,7 @@ export const frFr: Localization = {
 		reinstallMod: "Réinstaller",
 		uninstallMod: "Désinstaller",
 		runMod: "Exécuter",
+		recommendedConfig: "Configuration recommandée",
 		downloadRemoteConfig: "Télécharger la configuration recommandée",
 		remoteConfigAvailable:
 			"Configuration recommandée disponible. Sera téléchargée si vous n'avez pas déjà une configuration. Vous pouvez aussi forcer le téléchargement depuis le menu à trois points.",

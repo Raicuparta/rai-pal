@@ -35,7 +35,7 @@ export component ModSummaryView inherits HorizontalLayout {
     in property <bool> installed: false;
     in property <bool> outdated: false;
 
-    property <bool> has-details: version-text != "" || release-date != "" || author != "" || engine-text != "";
+    property <bool> has-details: version-text != "" || release-date != "" || author != "" || engine-text != "" || has-remote-config;
 
     private property <length> deprecated-badge-height: 18px;
 
@@ -74,13 +74,6 @@ export component ModSummaryView inherits HorizontalLayout {
                 font-weight: Theme.weight-semibold;
                 overflow: elide;
                 horizontal-stretch: 1;
-            }
-
-            if root.has-remote-config : IconDisplay {
-                icon: IconSet.Settings;
-                size: Theme.icon-button-icon-size;
-                stroke: Theme.foreground;
-                opacity: 0.75;
             }
 
             if root.deprecated : Rectangle {
@@ -138,6 +131,11 @@ export component ModSummaryView inherits HorizontalLayout {
             if root.engine-text != "" : MetaItem {
                 icon: IconSet.Cpu;
                 text: root.engine-text;
+            }
+
+            if root.has-remote-config : MetaItem {
+                icon: IconSet.Settings;
+                text: @tr("gameModRow" => "Recommended config");
             }
         }
 

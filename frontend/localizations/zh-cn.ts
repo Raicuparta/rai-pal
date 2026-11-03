@@ -140,6 +140,7 @@ export const zhCn: Localization = {
 		reinstallMod: "重新安装",
 		uninstallMod: "卸载",
 		runMod: "运行",
+		recommendedConfig: "推荐配置",
 		downloadRemoteConfig: "下载推荐配置",
 		remoteConfigAvailable:
 			"推荐配置可用。如果你还没有配置，将会下载。你也可以从三点菜单强制下载。",
