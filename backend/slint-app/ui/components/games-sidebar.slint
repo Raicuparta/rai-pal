@@ -1,4 +1,4 @@
-import { LineEdit, ComboBox } from "std-widgets.slint";
+import { LineEdit } from "std-widgets.slint";
 import { IconSet } from "@lucide";
 import { FilterGroupData } from "../filter-data.slint";
 import { Theme } from "../theme.slint";
@@ -7,6 +7,7 @@ import { IconButton } from "icon-button.slint";
 import { LabeledDivider } from "labeled-divider.slint";
 import { RefreshButton } from "refresh-button.slint";
 import { Sidebar, SidebarSection } from "sidebar.slint";
+import { SortMenu } from "sort-menu.slint";
 
 export component GamesSidebar inherits Sidebar {
     in property <bool> refreshing;
@@ -53,22 +54,11 @@ export component GamesSidebar inherits Sidebar {
     }
 
     SidebarSection {
-        ComboBox {
-            vertical-stretch: 0;
-            height: Theme.control-height;
-            model: [
-                "↓ " + @tr("gamesSort" => "Name A-Z"),
-                "↑ " + @tr("gamesSort" => "Name Z-A"),
-                "↓ " + @tr("gamesSort" => "Engine A-Z"),
-                "↑ " + @tr("gamesSort" => "Engine Z-A"),
-                "↓ " + @tr("gamesSort" => "Date Ascending"),
-                "↑ " + @tr("gamesSort" => "Date Descending"),
-            ];
-            current-index <=> root.sort-index;
-            horizontal-stretch: 1;
+        SortMenu {
+            sort-index <=> root.sort-index;
 
-            selected(value) => {
-                root.sort-changed(root.sort-index);
+            sort-changed(index) => {
+                root.sort-changed(index);
             }
         }
     }
