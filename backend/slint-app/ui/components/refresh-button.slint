@@ -1,6 +1,7 @@
 import { Button } from "button.slint";
 import { Theme } from "../theme.slint";
 import { Tr } from "../translations.slint";
+import { IconSet } from "@lucide";
 
 export component RefreshButton inherits VerticalLayout {
     in property <bool> refreshing;
@@ -13,19 +14,13 @@ export component RefreshButton inherits VerticalLayout {
     spacing: Theme.space-2;
 
     Button {
-        text: @tr("refresh" => "Refresh");
+        text: root.refreshing ? Tr.refresh-loading(root.task-names) : @tr("refresh" => "Refresh");
         tint: Theme.primary;
         enabled: !root.refreshing;
+        icon: root.refreshing ? IconSet.Hourglass : IconSet.RotateCcw;
 
         clicked => {
             root.clicked();
         }
-    }
-
-    if root.refreshing : Text {
-        text: Tr.refresh-loading(root.task-names);
-        font-size: Theme.font-12;
-        opacity: 0.7;
-        wrap: word-wrap;
     }
 }

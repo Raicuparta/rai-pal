@@ -13,8 +13,6 @@ export component Button inherits Rectangle {
     in property <string> tooltip: "";
     in property <Icon> icon;
     in property <length> text-size: Theme.font-14;
-    in property <length> horizontal-padding: Theme.space-12;
-    in property <length> content-spacing: Theme.space-6;
     in property <bool> enabled: true;
     in property <ActionState> state: ActionState.idle;
     out property <bool> hovered: touch-area.has-hover;
@@ -25,9 +23,10 @@ export component Button inherits Rectangle {
     private property <bool> interactive: root.enabled && root.state != ActionState.loading;
     private property <bool> has-status: root.state == ActionState.success || root.state == ActionState.error;
     private property <bool> shows-spinner: root.state == ActionState.loading && root.long-loading;
+    private property <bool> has-icon: root.icon.paths.length > 0;
     private property <Icon> display-icon: root.state == ActionState.success ? IconSet.CircleCheck : root.state == ActionState.error ? IconSet.CircleX : root.shows-spinner ? IconSet.LoaderCircle : root.icon;
 
-    private property <brush> base-color: root.state == ActionState.success ? Theme.status-success : root.state == ActionState.error ? Theme.status-error : root.tint;
+    private property <brush> base-color: root.state == ActionState.success ? Theme.status-success : root.state == ActionState.error ? Theme.status-error : root.enabled ? root.tint : Theme.surface-background;
     private property <bool> needs-dark-ink: root.base-color.to-oklch().lightness > 0.62;
     private property <brush> ink: root.needs-dark-ink ? #1a1b1e : #ffffff;
     private property <brush> hover-fill: root.needs-dark-ink ? root.base-color.darker(0.08) : root.base-color.brighter(0.2);
@@ -38,10 +37,10 @@ export component Button inherits Rectangle {
 
     callback clicked;
 
-    height: Theme.control-height;
-    min-width: root.icon-only ? 0px : 32px;
-    horizontal-stretch: 0;
-    vertical-stretch: 0;
+    // height: Theme.control-height;
+    // min-width: root.icon-only ? 0px : 32px;
+    // horizontal-stretch: 0;
+    // vertical-stretch: 0;
     border-radius: Theme.radius-8;
     border-width: Theme.border-width;
     border-color: root.outline;
@@ -71,15 +70,13 @@ export component Button inherits Rectangle {
     }
 
     HorizontalLayout {
-        width: 100%;
-        height: 100%;
-        padding-left: root.icon-only ? 0px : root.horizontal-padding;
-        padding-right: root.icon-only ? 0px : root.horizontal-padding;
-        spacing: root.content-spacing;
-        alignment: center;
+        spacing: Theme.space-6;
+        padding: root.icon-only ? 0px : Theme.space-4;
+        padding-left: root.icon-only ? 0px : root.has-icon ? Theme.space-4 : Theme.space-8;
+        alignment: root.icon-only ? center : start;
         cross-axis-alignment: center;
 
-        if root.icon-only || root.has-status || root.shows-spinner : IconDisplay {
+        if root.has-icon || root.has-status || root.shows-spinner : IconDisplay {
             icon: root.display-icon;
             size: Theme.icon-button-icon-size;
             stroke: root.ink-color;
@@ -90,7 +87,6 @@ export component Button inherits Rectangle {
             text: root.text;
             font-size: root.text-size;
             color: root.ink-color;
-            vertical-alignment: center;
             overflow: elide;
         }
     }
