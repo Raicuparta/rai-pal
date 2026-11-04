@@ -1,7 +1,27 @@
 import { Icon, IconDisplay, IconSet } from "@lucide";
+import { Palette } from "std-widgets.slint";
 import { ActionState } from "../action-state.slint";
 import { ButtonKind } from "../app-types.slint";
 import { Theme } from "../theme.slint";
+
+global ButtonPalette {
+    out property <brush> background: Palette.control-background;
+    out property <brush> hover-background: Theme.foreground.transparentize(0.9);
+    out property <brush> pressed-background: Theme.foreground.transparentize(0.84);
+    out property <brush> disabled-background: transparent;
+    out property <brush> foreground: Palette.control-foreground;
+    out property <brush> disabled-foreground: Theme.dark ? #FFFFFF33 : #00000033;
+    out property <brush> border: Theme.dark ? @linear-gradient(180deg, #FFFFFF17 0%, #00000012 8.33%) : @linear-gradient(180deg, #0000000F 90.58%, #00000029 100%);
+    out property <brush> primary-background: Theme.primary;
+    out property <brush> primary-hover-background: Theme.primary.with-alpha(0.9);
+    out property <brush> primary-pressed-background: Theme.primary.with-alpha(0.8);
+    out property <brush> primary-border: Theme.dark ? @linear-gradient(180deg, #FFFFFF14 90.67%, #00000024 100%) : @linear-gradient(180deg, #FFFFFF14 90.67%, #00000066 100%);
+    out property <brush> primary-foreground: Palette.accent-foreground;
+    out property <brush> danger-background: Theme.status-error;
+    out property <brush> danger-hover-background: Theme.status-error.with-alpha(0.9);
+    out property <brush> danger-pressed-background: Theme.status-error.with-alpha(0.8);
+    out property <brush> strong-foreground: Theme.dark ? #1a1b1e : #ffffff;
+}
 
 export component BaseButton inherits Rectangle {
     in property <string> text: "";
@@ -21,20 +41,20 @@ export component BaseButton inherits Rectangle {
     out property <bool> hovered: touch-area.has-hover;
 
     private property <bool> long-loading: false;
-    private property <angle> spinner-angle: 1 * mod(animation-tick(), 1s) / 1s * 360deg;
+    private property <angle> spinner-angle: mod(animation-tick(), 1s) / 1s * 360deg;
     private property <bool> interactive: root.enabled && root.state != ActionState.loading;
     private property <bool> has-status: root.state == ActionState.success || root.state == ActionState.error;
+    private property <bool> shows-spinner: root.state == ActionState.loading && root.long-loading;
     private property <bool> is-primary: root.kind == ButtonKind.primary;
     private property <bool> is-danger: root.kind == ButtonKind.danger;
+    private property <bool> shows-border: root.enabled && !root.has-status && !root.is-danger;
+
     private property <brush> status-background: root.state == ActionState.success ? Theme.status-success : Theme.status-error;
-    private property <brush> status-foreground: root.state == ActionState.success ? Theme.status-success-foreground : Theme.status-error-foreground;
-    private property <brush> base-background: root.is-primary ? Theme.primary : root.is-danger ? Theme.status-error : Theme.button-background;
-    private property <brush> hover-background: root.is-primary ? Theme.button-primary-hover-background : root.is-danger ? Theme.button-danger-hover-background : Theme.button-hover-background;
-    private property <brush> pressed-background: root.is-primary ? Theme.button-primary-pressed-background : root.is-danger ? Theme.button-danger-pressed-background : Theme.button-pressed-background;
-    private property <brush> background-color: !root.enabled ? Theme.button-disabled-background : root.has-status ? root.status-background : touch-area.pressed ? root.pressed-background : touch-area.has-hover ? root.hover-background : root.base-background;
-    private property <brush> foreground-color: !root.enabled ? Theme.button-disabled-foreground : root.has-status ? root.status-foreground : root.is-danger ? Theme.status-error-foreground : root.is-primary ? Theme.button-primary-foreground : Theme.button-foreground;
-    private property <brush> border-tint: !root.enabled || root.has-status || root.is-danger ? transparent : root.is-primary ? Theme.button-primary-border : Theme.button-border;
-    private property <Icon> display-icon: root.state == ActionState.success ? IconSet.CircleCheck : root.state == ActionState.error ? IconSet.CircleX : root.state == ActionState.loading && root.long-loading ? IconSet.LoaderCircle : root.icon;
+    private property <brush> tone-background: root.is-primary ? ButtonPalette.primary-background : root.is-danger ? ButtonPalette.danger-background : ButtonPalette.background;
+    private property <brush> tone-hover-background: root.is-primary ? ButtonPalette.primary-hover-background : root.is-danger ? ButtonPalette.danger-hover-background : ButtonPalette.hover-background;
+    private property <brush> tone-pressed-background: root.is-primary ? ButtonPalette.primary-pressed-background : root.is-danger ? ButtonPalette.danger-pressed-background : ButtonPalette.pressed-background;
+    private property <brush> foreground-color: !root.enabled ? ButtonPalette.disabled-foreground : root.has-status || root.is-danger ? ButtonPalette.strong-foreground : root.is-primary ? ButtonPalette.primary-foreground : ButtonPalette.foreground;
+    private property <Icon> display-icon: root.state == ActionState.success ? IconSet.CircleCheck : root.state == ActionState.error ? IconSet.CircleX : root.shows-spinner ? IconSet.LoaderCircle : root.icon;
 
     callback clicked;
 
@@ -43,7 +63,9 @@ export component BaseButton inherits Rectangle {
     horizontal-stretch: 0;
     vertical-stretch: 0;
     border-radius: Theme.radius-8;
-    background: root.background-color;
+    border-width: root.shows-border ? Theme.border-width : 0px;
+    border-color: root.shows-border ? (root.is-primary ? ButtonPalette.primary-border : ButtonPalette.border) : transparent;
+    background: !root.enabled ? ButtonPalette.disabled-background : root.has-status ? root.status-background : touch-area.pressed ? root.tone-pressed-background : touch-area.has-hover ? root.tone-hover-background : root.tone-background;
     forward-focus: focus-scope;
 
     accessible-role: button;
@@ -68,12 +90,6 @@ export component BaseButton inherits Rectangle {
         }
     }
 
-    Rectangle {
-        border-radius: parent.border-radius;
-        border-width: root.border-tint == transparent ? 0px : Theme.border-width;
-        border-color: root.border-tint;
-    }
-
     HorizontalLayout {
         width: 100%;
         height: 100%;
@@ -83,11 +99,11 @@ export component BaseButton inherits Rectangle {
         alignment: center;
         cross-axis-alignment: center;
 
-        if root.show-icon || root.has-status || (root.state == ActionState.loading && root.long-loading) : IconDisplay {
+        if root.show-icon || root.has-status || root.shows-spinner : IconDisplay {
             icon: root.display-icon;
             size: root.icon-size;
             stroke: root.use-custom-icon-color ? root.icon-color : root.foreground-color;
-            transform-rotation: root.state == ActionState.loading && root.long-loading ? root.spinner-angle : 0deg;
+            transform-rotation: root.shows-spinner ? root.spinner-angle : 0deg;
         }
 
         if !root.icon-only && root.text != "" : Text {

@@ -51,10 +51,8 @@ Tauri: use Mantine (`https://mantine.dev/llms/core-accordion.md`). Avoid custom
 CSS unless necessary. Don't pass props that are already Mantine defaults or
 defaults in `frontend/theme.ts`.
 
-Slint: use `ui/theme.slint` for all spacing, sizes, radii, font sizes, and
-semantic colors. Use `ui/branding.slint` for provider/engine colors. Don't
-hardcode magic numbers or theme-dependent colors in components. Don't repeat
-styles that a widget/layout already applies by default.
+Slint: use `ui/theme.slint` for reusable spacing, sizes, radii, font sizes, and
+semantic colors. If some style is only used in one place, it probably shouldn't be in the theme.
 
 ## Slint
 
