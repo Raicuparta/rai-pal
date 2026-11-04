@@ -1,11 +1,8 @@
 import { ActionState, ActionStates } from "../action-state.slint";
-import { BaseButton } from "base-button.slint";
+import { Button } from "button.slint";
 
-export component ActionButton inherits BaseButton {
+export component ActionButton inherits Button {
     in property <string> action-id: "";
-    in property <string> tooltip: "";
-
-    tooltip-text: root.tooltip;
 
     private property <ActionState> action-state: ActionState.idle;
     private property <int> state-version: ActionStates.version;

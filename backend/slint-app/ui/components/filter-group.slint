@@ -76,12 +76,11 @@ component FilterValueRow inherits Rectangle {
         only-button := IconButton {
             width: FilterMetrics.only-button-width;
             height: FilterMetrics.only-button-height;
-            label: "Only";
+            text: "Only";
             tooltip: @tr("filterMenu" => "Only show this value");
             visible: !root.item.locked;
-            active: !root.item.locked;
+            enabled: !root.item.locked;
             opacity: root.hovered ? 1 : 0;
-            icon-color: root.item.locked ? Theme.dimmed-foreground : Theme.foreground;
 
             clicked => {
                 root.only();
@@ -91,9 +90,9 @@ component FilterValueRow inherits Rectangle {
         lock-button := IconButton {
             icon: root.item.locked ? IconSet.Lock : IconSet.LockOpen;
             tooltip: root.item.locked ? @tr("filterMenu" => "Unlock filter value") : @tr("filterMenu" => "Lock filter value");
-            visible: (root.item.locked || root.hovered) && !root.item.enabled;
-            active: !root.item.enabled;
-            selected: root.item.locked;
+            visible: root.item.locked || root.hovered;
+            enabled: !root.item.enabled;
+            tint: root.item.locked ? Theme.highlight : Theme.surface-background;
 
             clicked => {
                 root.lock-toggled();
@@ -162,8 +161,8 @@ export component FilterGroupView inherits Rectangle {
                 reset-button := IconButton {
                     icon: IconSet.RotateCcw;
                     tooltip: @tr("filterMenu" => "Reset");
-                    active: root.group.has-changes;
-                    icon-color: root.group.has-changes ? Theme.primary : Theme.foreground;
+                    enabled: root.group.has-changes;
+                    tint: root.group.has-changes ? Theme.primary : Theme.surface-background;
 
                     clicked => {
                         root.reset();

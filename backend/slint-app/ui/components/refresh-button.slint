@@ -14,9 +14,8 @@ export component RefreshButton inherits VerticalLayout {
 
     Button {
         text: @tr("refresh" => "Refresh");
-        primary: true;
+        tint: Theme.primary;
         enabled: !root.refreshing;
-        opacity: root.refreshing ? 0.5 : 1;
 
         clicked => {
             root.clicked();

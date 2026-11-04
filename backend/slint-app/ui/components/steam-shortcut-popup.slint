@@ -56,7 +56,7 @@ export component SteamShortcutPopup inherits PopupWindow {
                 Button {
                     text: @tr("steamShortcut" => "Add Rai Pal to Steam library");
                     enabled: !root.running;
-                    primary: true;
+                    tint: Theme.primary;
                     width: self.preferred-width * 2;
 
                     clicked => {

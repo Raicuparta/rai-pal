@@ -61,7 +61,6 @@ export component ModsTabRowView inherits Rectangle {
             if mod-data.source-code != "" : ActionButton {
                 text: @tr("modModal" => "Website");
                 height: Theme.action-button-height;
-                show-icon: false;
 
                 clicked => {
                     ModActions.open-url(mod-data.source-code);

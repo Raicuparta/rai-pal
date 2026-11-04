@@ -44,7 +44,6 @@ export component GameDetailsPopup inherits PopupWindow {
 
                 IconButton {
                     icon: root.copied ? IconSet.Check : IconSet.Copy;
-                    icon-color: root.copied ? Theme.status-success : Theme.foreground;
                     accessible-role: button;
                     accessible-label: @tr("debugData" => "Copy debug data");
                     tooltip: @tr("debugData" => "Copy debug data");

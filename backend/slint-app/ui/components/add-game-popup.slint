@@ -97,7 +97,7 @@ export component AddGamePopup inherits PopupWindow {
 
                         Button {
                             text: @tr("manualGames" => "Select game executable");
-                            primary: true;
+                            tint: Theme.primary;
                             height: Theme.control-height;
 
                             clicked => {
@@ -168,7 +168,7 @@ export component AddGamePopup inherits PopupWindow {
 
                             Button {
                                 text: @tr("manualGames" => "Add folder");
-                                primary: true;
+                                tint: Theme.primary;
 
                                 clicked => {
                                     root.confirm-directory();
