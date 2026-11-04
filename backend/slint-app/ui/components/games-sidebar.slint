@@ -6,6 +6,7 @@ import { FilterGroupView } from "filter-group.slint";
 import { IconButton } from "icon-button.slint";
 import { LabeledDivider } from "labeled-divider.slint";
 import { RefreshButton } from "refresh-button.slint";
+import { ResetButton } from "reset-button.slint";
 import { Sidebar, SidebarSection } from "sidebar.slint";
 import { SortMenu } from "sort-menu.slint";
 
@@ -86,8 +87,7 @@ export component GamesSidebar inherits Sidebar {
             horizontal-stretch: 1;
         }
 
-        IconButton {
-            icon: IconSet.RotateCcw;
+        ResetButton {
             tooltip: @tr("filterMenu" => "Reset all filters");
             enabled: root.filters-have-changes;
 

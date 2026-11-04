@@ -4,6 +4,7 @@ import { FilterGroupData, FilterValueData } from "../filter-data.slint";
 import { Tr } from "../translations.slint";
 import { Theme } from "../theme.slint";
 import { IconButton } from "icon-button.slint";
+import { ResetButton } from "reset-button.slint";
 
 global FilterMetrics {
     out property <length> row-height: 26px;
@@ -158,11 +159,9 @@ export component FilterGroupView inherits Rectangle {
                     background: Theme.highlight;
                 }
 
-                reset-button := IconButton {
-                    icon: IconSet.RotateCcw;
+                reset-button := ResetButton {
                     tooltip: @tr("filterMenu" => "Reset");
                     enabled: root.group.has-changes;
-                    tint: root.group.has-changes ? Theme.primary : Theme.surface-background;
 
                     clicked => {
                         root.reset();
