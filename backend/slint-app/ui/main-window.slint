@@ -201,6 +201,12 @@ export component MainWindow inherits Window {
             background: Theme.background;
             vertical-stretch: 0;
 
+            Rectangle {
+                y: parent.height - self.height;
+                height: Theme.border-width;
+                background: Theme.border;
+            }
+
             VerticalLayout {
                 cross-axis-alignment: center;
 
@@ -316,11 +322,6 @@ export component MainWindow inherits Window {
                             root.hide-game-thumbnails-changed(value);
                         }
                     }
-                }
-
-                Rectangle {
-                    height: Theme.border-width;
-                    background: Theme.border;
                 }
             }
         }
