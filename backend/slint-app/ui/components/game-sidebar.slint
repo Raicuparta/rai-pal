@@ -82,6 +82,7 @@ export component GameSidebar inherits Sidebar {
 
             ActionButton {
                 text: @tr("gameModal" => "Game Files");
+                icon: @image-url("../icons/ui/folder.svg");
                 action-id: "open-game-folder";
 
                 clicked => {
@@ -91,6 +92,7 @@ export component GameSidebar inherits Sidebar {
 
             ActionButton {
                 text: @tr("gameModal" => "Installed Mods");
+                icon: @image-url("../icons/ui/folder-mods.svg");
                 action-id: "open-game-mods-folder";
 
                 clicked => {
@@ -136,6 +138,7 @@ export component GameSidebar inherits Sidebar {
 
             if root.has-exe-path : ActionButton {
                 text: @tr("gameModal" => "Refresh game");
+                icon: @image-url("../icons/ui/refresh.svg");
                 action-id: "refresh-game";
 
                 clicked => {
@@ -145,6 +148,7 @@ export component GameSidebar inherits Sidebar {
 
             Button {
                 text: @tr("debugData" => "Debug data");
+                icon: @image-url("../icons/ui/bug.svg");
 
                 clicked => {
                     root.debug-data();

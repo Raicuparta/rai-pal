@@ -82,6 +82,7 @@ export component GameDetailsPage inherits Rectangle {
                         ActionButton {
                             vertical-stretch: 0;
                             text: @tr("gameModal" => "Uninstall all mods");
+                            icon: @image-url("../icons/ui/uninstall.svg");
                             action-id: "game-mod-uninstall-all";
 
                             clicked => {

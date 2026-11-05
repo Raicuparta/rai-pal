@@ -6,6 +6,8 @@ import { SvgIcon } from "svg-icon.slint";
 export component ModsTabFamilyRowView inherits Rectangle {
     in property <ModsTabItemData> item;
 
+    callback debug-data(json: string);
+
     property <bool> expanded: false;
 
     vertical-stretch: 0;
@@ -64,6 +66,10 @@ export component ModsTabFamilyRowView inherits Rectangle {
             for mod-row in root.item.mods : ModsTabRowView {
                 mod-data: mod-row;
                 indented: true;
+
+                debug-data(json) => {
+                    root.debug-data(json);
+                }
             }
         }
     }

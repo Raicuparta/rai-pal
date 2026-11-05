@@ -1,76 +1,10 @@
 import { ScrollView } from "std-widgets.slint";
-import { ModActions } from "../actions.slint";
 import { Branding } from "../branding.slint";
 import { PatronData } from "../patron-data.slint";
 import { Theme } from "../theme.slint";
+import { ExternalLink } from "external-link.slint";
 import { Sidebar } from "sidebar.slint";
 import { SvgIcon } from "svg-icon.slint";
-
-component ThanksLink inherits Rectangle {
-    in property <string> label;
-    in property <image> icon;
-    in property <brush> icon-color: Theme.foreground;
-    in property <bool> icon-round: false;
-    in property <string> url;
-
-    preferred-width: link-layout.preferred-width;
-    height: Theme.control-height;
-    horizontal-stretch: 0;
-    accessible-role: AccessibleRole.button;
-    accessible-label: root.label;
-    accessible-action-default => {
-        ModActions.open-url(root.url);
-    }
-
-    link-layout := HorizontalLayout {
-        padding-left: Theme.space-8;
-        padding-right: Theme.space-8;
-        spacing: Theme.space-8;
-        alignment: start;
-        cross-axis-alignment: center;
-
-        if root.icon-round : Rectangle {
-            width: Theme.space-20;
-            height: Theme.space-20;
-            border-radius: Theme.space-10;
-            clip: true;
-
-            Image {
-                source: root.icon;
-                width: 100%;
-                height: 100%;
-                image-fit: cover;
-            }
-        }
-
-        if !root.icon-round : SvgIcon {
-            source: root.icon;
-            size: Theme.space-20;
-            color: root.icon-color;
-        }
-
-        Text {
-            text: root.label;
-            color: touch.has-hover ? Theme.primary.brighter(0.5) : Theme.primary;
-            font-size: Theme.font-16;
-            font-weight: Theme.weight-bold;
-            vertical-alignment: center;
-        }
-
-        SvgIcon {
-            source: @image-url("../icons/ui/external-link.svg");
-            color: Theme.dimmed-foreground;
-        }
-    }
-
-    touch := TouchArea {
-        mouse-cursor: MouseCursor.pointer;
-
-        clicked => {
-            ModActions.open-url(root.url);
-        }
-    }
-}
 
 component PatronRow inherits Rectangle {
     in property <PatronData> patron;
@@ -240,35 +174,35 @@ export component ThanksPage inherits Rectangle {
                                         spacing: Theme.space-2;
                                         alignment: start;
 
-                                        ThanksLink {
+                                        ExternalLink {
                                             label: "raicuparta.com";
                                             icon: @image-url("../images/raicuparta.png");
                                             icon-round: true;
                                             url: "https://raicuparta.com";
                                         }
 
-                                        ThanksLink {
+                                        ExternalLink {
                                             label: @tr("thanksPage" => "Star Rai Pal on GitHub");
                                             icon: @image-url("../icons/brands/github.svg");
                                             icon-color: Branding.brand-color("GitHub");
                                             url: "https://github.com/raicuparta/rai-pal";
                                         }
 
-                                        ThanksLink {
+                                        ExternalLink {
                                             label: "Patreon";
                                             icon: @image-url("../icons/brands/patreon.svg");
                                             icon-color: Branding.brand-color("Patreon");
                                             url: "https://www.patreon.com/raivr";
                                         }
 
-                                        ThanksLink {
+                                        ExternalLink {
                                             label: "Paypal";
                                             icon: @image-url("../icons/brands/paypal.svg");
                                             icon-color: Branding.brand-color("Paypal");
                                             url: "https://paypal.me/raicuparta/5usd";
                                         }
 
-                                        ThanksLink {
+                                        ExternalLink {
                                             label: "Itch.io";
                                             icon: @image-url("../icons/providers/itch.svg");
                                             icon-color: Branding.provider-foreground("Itch");

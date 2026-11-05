@@ -120,6 +120,9 @@ fn mod_data(game_mod: &GameMod) -> ModsTabModData {
 		source_code: game_mod.source_code.clone().into(),
 		can_run: game_mod.run_standalone.is_some(),
 		can_install: game_mod.run_standalone.is_some() && game_mod.install.is_some(),
+		debug_json: serde_json::to_string_pretty(game_mod)
+			.unwrap_or_default()
+			.into(),
 	}
 }
 

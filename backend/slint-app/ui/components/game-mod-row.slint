@@ -19,6 +19,7 @@ export component GameModRowView inherits Rectangle {
         Menu {
             if game-mod.can-edit-config : MenuItem {
                 title: @tr("gameModRow" => "Edit Mod Config");
+                icon: @image-url("../icons/ui/settings.svg");
 
                 activated => {
                     ModActions.configure(game-mod.mod-id);
@@ -27,6 +28,7 @@ export component GameModRowView inherits Rectangle {
 
             if game-mod.can-edit-config : MenuItem {
                 title: @tr("gameModRow" => "Open folder containing this mod's config files");
+                icon: @image-url("../icons/ui/folder-mods.svg");
 
                 activated => {
                     ModActions.configure-folder(game-mod.mod-id);
@@ -37,6 +39,7 @@ export component GameModRowView inherits Rectangle {
 
             if game-mod.can-open-mod-folder : MenuItem {
                 title: @tr("gameModRow" => "Open Mod Folder");
+                icon: @image-url("../icons/ui/folder-mods.svg");
 
                 activated => {
                     ModActions.open-folder(game-mod.mod-id);
@@ -45,6 +48,7 @@ export component GameModRowView inherits Rectangle {
 
             if game-mod.can-download-config : MenuItem {
                 title: @tr("gameModRow" => "Download Recommended Config");
+                icon: @image-url("../icons/ui/download.svg");
 
                 activated => {
                     ModActions.download-config(game-mod.mod-id);
@@ -55,6 +59,7 @@ export component GameModRowView inherits Rectangle {
 
             if game-mod.can-reinstall : MenuItem {
                 title: @tr("gameModRow" => "Reinstall");
+                icon: @image-url("../icons/ui/reinstall.svg");
 
                 activated => {
                     ModActions.reinstall(game-mod.mod-id);
@@ -63,6 +68,7 @@ export component GameModRowView inherits Rectangle {
 
             if game-mod.can-uninstall : MenuItem {
                 title: @tr("gameModRow" => "Uninstall");
+                icon: @image-url("../icons/ui/uninstall.svg");
                 enabled: !game-mod.has-installed-dependants;
 
                 activated => {
@@ -99,6 +105,7 @@ export component GameModRowView inherits Rectangle {
 
                 if game-mod.can-install : ActionButton {
                     text: @tr("gameModRow" => "Install");
+                    icon: @image-url("../icons/ui/install.svg");
                     height: Theme.action-button-height;
                     action-id: "game-mod-install:" + game-mod.mod-id;
 
@@ -114,6 +121,7 @@ export component GameModRowView inherits Rectangle {
 
                 if game-mod.can-update : ActionButton {
                     text: @tr("gameModRow" => "Update");
+                    icon: @image-url("../icons/ui/update.svg");
                     height: Theme.action-button-height;
                     action-id: "game-mod-install:" + game-mod.mod-id;
 
@@ -124,6 +132,7 @@ export component GameModRowView inherits Rectangle {
 
                 if game-mod.can-run : ActionButton {
                     text: @tr("gameModRow" => "Run");
+                    icon: @image-url("../icons/ui/play.svg");
                     height: Theme.action-button-height;
                     action-id: "game-mod-run:" + game-mod.mod-id;
 

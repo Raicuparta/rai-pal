@@ -16,6 +16,7 @@ export component ModsPage inherits Rectangle {
 
     callback refresh-all;
     callback open-url-mod-sources;
+    callback debug-data(json: string);
 
     HorizontalLayout {
         Sidebar {
@@ -33,6 +34,7 @@ export component ModsPage inherits Rectangle {
 
                 Button {
                     text: @tr("urlModSources" => "Mod Sources");
+                    icon: @image-url("../icons/ui/mod-sources.svg");
 
                     clicked => {
                         root.open-url-mod-sources();
@@ -41,6 +43,7 @@ export component ModsPage inherits Rectangle {
 
                 ActionButton {
                     text: @tr("modsPage" => "Open Local Mods Folder");
+                    icon: @image-url("../icons/ui/folder-mods.svg");
                     action-id: "open-local-mods-folder";
                     tooltip: @tr("modsPage" => "You can place mods in this folder with a rai-pal-manifest.json, to be loaded directly without going through the online database.");
 
@@ -66,10 +69,18 @@ export component ModsPage inherits Rectangle {
 
                         if item.is-family : ModsTabFamilyRowView {
                             item: item;
+
+                            debug-data(json) => {
+                                root.debug-data(json);
+                            }
                         }
 
                         if !item.is-family : ModsTabRowView {
                             mod-data: item.single-mod;
+
+                            debug-data(json) => {
+                                root.debug-data(json);
+                            }
                         }
                     }
                 }

@@ -1,0 +1,76 @@
+import { ModActions } from "../actions.slint";
+import { Theme } from "../theme.slint";
+import { SvgIcon } from "svg-icon.slint";
+
+export component ExternalLinkIcon inherits SvgIcon {
+    source: @image-url("../icons/ui/external-link.svg");
+}
+
+export component ExternalLink inherits Rectangle {
+    in property <string> label;
+    in property <image> icon;
+    in property <bool> has-icon: true;
+    in property <brush> icon-color: Theme.foreground;
+    in property <bool> icon-round: false;
+    in property <length> icon-size: Theme.space-20;
+    in property <length> text-size: Theme.font-16;
+    in property <int> text-weight: Theme.weight-bold;
+    in property <string> url;
+
+    preferred-width: link-layout.preferred-width;
+    height: Theme.control-height;
+    horizontal-stretch: 0;
+    accessible-role: AccessibleRole.button;
+    accessible-label: root.label;
+    accessible-action-default => {
+        ModActions.open-url(root.url);
+    }
+
+    link-layout := HorizontalLayout {
+        padding-left: Theme.space-8;
+        padding-right: Theme.space-8;
+        spacing: Theme.space-8;
+        alignment: start;
+        cross-axis-alignment: center;
+
+        if root.has-icon && root.icon-round : Rectangle {
+            width: root.icon-size;
+            height: root.icon-size;
+            border-radius: root.icon-size / 2;
+            clip: true;
+
+            Image {
+                source: root.icon;
+                width: 100%;
+                height: 100%;
+                image-fit: cover;
+            }
+        }
+
+        if root.has-icon && !root.icon-round : SvgIcon {
+            source: root.icon;
+            size: root.icon-size;
+            color: root.icon-color;
+        }
+
+        Text {
+            text: root.label;
+            color: touch.has-hover ? Theme.primary.brighter(0.5) : Theme.primary;
+            font-size: root.text-size;
+            font-weight: root.text-weight;
+            vertical-alignment: center;
+        }
+
+        ExternalLinkIcon {
+            color: Theme.dimmed-foreground;
+        }
+    }
+
+    touch := TouchArea {
+        mouse-cursor: MouseCursor.pointer;
+
+        clicked => {
+            ModActions.open-url(root.url);
+        }
+    }
+}

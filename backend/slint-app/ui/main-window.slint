@@ -505,6 +505,11 @@ export component MainWindow inherits Window {
                     open-url-mod-sources => {
                         root.request-url-mod-sources();
                     }
+
+                    debug-data(json) => {
+                        root.details-json = json;
+                        details-popup.show();
+                    }
                 }
             }
 
