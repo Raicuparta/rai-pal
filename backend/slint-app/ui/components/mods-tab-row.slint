@@ -13,12 +13,11 @@ export component ModsTabRowView inherits Rectangle {
     callback debug-data(json: string);
 
     vertical-stretch: 0;
-    height: max(Theme.game-mod-row-height, content.preferred-height);
     background: row-touch.has-hover ? Theme.hover-background : transparent;
 
     row-touch := TouchArea { }
 
-    content := HorizontalLayout {
+    HorizontalLayout {
         padding: Theme.space-6;
         spacing: Theme.space-8;
         cross-axis-alignment: center;
@@ -45,7 +44,6 @@ export component ModsTabRowView inherits Rectangle {
             if mod-data.can-run : ActionButton {
                 text: @tr("modModal" => "Run");
                 icon: @image-url("../icons/ui/play.svg");
-                height: Theme.action-button-height;
                 action-id: "standalone-run:" + mod-data.id;
 
                 clicked => {
@@ -56,7 +54,6 @@ export component ModsTabRowView inherits Rectangle {
             if mod-data.can-install : ActionButton {
                 text: @tr("modModal" => "Download");
                 icon: @image-url("../icons/ui/download.svg");
-                height: Theme.action-button-height;
                 action-id: "standalone-install:" + mod-data.id;
 
                 clicked => {

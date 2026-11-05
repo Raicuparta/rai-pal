@@ -54,6 +54,11 @@ defaults in `frontend/theme.ts`.
 Slint: use `ui/theme.slint` for reusable spacing, sizes, radii, font sizes, and
 semantic colors. If some style is only used in one place, it probably shouldn't be in the theme.
 
+Prefer content-driven sizing. Let layouts and children determine dimensions
+implicitly; use padding, spacing, alignment, and stretch instead of explicit
+sizes, preferred-size forwarding, or duplicating child dimensions in wrappers.
+Pin sizes only for deliberate constraints.
+
 ## Slint
 
 Read `.agents/skills/slint/SKILL.md` and the relevant
@@ -62,8 +67,8 @@ Read `.agents/skills/slint/SKILL.md` and the relevant
 - Prefer native Slint elements/widgets over hand-rolled equivalents:
   `TabWidget`, `ContextMenuArea` + `Menu`/`MenuItem`, `PopupWindow` for non-menu
   overlays, and built-in layouts instead of manual `x`/`y` positioning.
-- Use `preferred-width`/`preferred-height` for resizable windows; `width`/
-  `height` pin the size.
+- Use `preferred-width`/`preferred-height` only for window sizing; don't
+  forward child preferred sizes through wrappers.
 - Model shared state and cross-cutting actions as exported globals instead of
   forwarding callbacks through every layer. UI-local state stays local.
 - Use typed structs/enums and `Theme` constants instead of magic strings,

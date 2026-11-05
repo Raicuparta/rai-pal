@@ -6,9 +6,8 @@ component PotentialModRowView inherits Rectangle {
     in property <PotentialModRowData> potential-mod;
 
     vertical-stretch: 0;
-    height: max(44px, content.preferred-height);
 
-    content := VerticalLayout {
+    VerticalLayout {
         padding: Theme.space-6;
         alignment: start;
         spacing: Theme.space-2;

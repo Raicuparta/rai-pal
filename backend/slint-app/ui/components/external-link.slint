@@ -17,8 +17,6 @@ export component ExternalLink inherits Rectangle {
     in property <int> text-weight: Theme.weight-bold;
     in property <string> url;
 
-    preferred-width: link-layout.preferred-width;
-    height: Theme.control-height;
     horizontal-stretch: 0;
     accessible-role: AccessibleRole.button;
     accessible-label: root.label;
@@ -26,9 +24,11 @@ export component ExternalLink inherits Rectangle {
         ModActions.open-url(root.url);
     }
 
-    link-layout := HorizontalLayout {
+    HorizontalLayout {
         padding-left: Theme.space-8;
         padding-right: Theme.space-8;
+        padding-top: Theme.space-4;
+        padding-bottom: Theme.space-4;
         spacing: Theme.space-8;
         alignment: start;
         cross-axis-alignment: center;

@@ -9,7 +9,6 @@ component NotificationToast inherits Rectangle {
     callback dismissed(id: int);
 
     width: 100%;
-    height: layout.preferred-height;
     background: Theme.background;
     border-width: Theme.border-width * 2;
     border-radius: Theme.radius-8;
@@ -24,7 +23,7 @@ component NotificationToast inherits Rectangle {
         }
     }
 
-    layout := HorizontalLayout {
+    HorizontalLayout {
         padding: Theme.space-10;
         spacing: Theme.space-8;
         cross-axis-alignment: center;

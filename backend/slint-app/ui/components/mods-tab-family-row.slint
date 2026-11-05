@@ -16,11 +16,10 @@ export component ModsTabFamilyRowView inherits Rectangle {
         alignment: start;
         spacing: Theme.space-2;
 
-        header := Rectangle {
-            height: max(Theme.game-mod-row-height, header-content.preferred-height);
+        Rectangle {
             background: header-touch.has-hover ? Theme.hover-background : transparent;
 
-            header-content := HorizontalLayout {
+            HorizontalLayout {
                 padding: Theme.space-6;
                 spacing: Theme.space-8;
                 cross-axis-alignment: center;
