@@ -37,16 +37,12 @@ export { ActionState, ActionStates, AppColorScheme, AppTab, AddGamePhase, Fonts,
 
 export component MainWindow inherits Window {
     title: "Rai Pal";
-    preferred-width: root.window-preferred-width;
-    preferred-height: root.window-preferred-height;
-    min-width: root.window-min-width;
-    min-height: root.window-min-height;
+    preferred-width: 1100px;
+    preferred-height: 700px;
+    min-width: 800px;
+    min-height: 500px;
     background: Theme.background;
 
-    private property <length> window-preferred-width: 1100px;
-    private property <length> window-preferred-height: 700px;
-    private property <length> window-min-width: 800px;
-    private property <length> window-min-height: 500px;
     private property <length> content-max-width: 1140px;
     private property <length> overlay-margin: 64px;
 

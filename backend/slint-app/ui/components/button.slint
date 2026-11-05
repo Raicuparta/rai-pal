@@ -12,12 +12,14 @@ export component Button inherits Rectangle {
     in property <string> text: "";
     in property <string> tooltip: "";
     in property <image> icon;
+    in property <length> icon-size: 16px;
     in property <length> text-size: Theme.font-14;
+    in property <length> content-padding: Theme.space-4;
+    in property <LayoutAlignment> content-alignment: start;
     in property <bool> enabled: true;
     in property <ActionState> state: ActionState.idle;
     out property <bool> hovered: touch-area.has-hover;
 
-    private property <bool> icon-only: root.text == "";
     private property <bool> long-loading: false;
     private property <angle> spinner-angle: mod(animation-tick(), 1s) / 1s * 360deg;
     private property <bool> interactive: root.enabled && root.state != ActionState.loading;
@@ -37,10 +39,6 @@ export component Button inherits Rectangle {
 
     callback clicked;
 
-    // height: Theme.control-height;
-    // min-width: root.icon-only ? 0px : 32px;
-    // horizontal-stretch: 0;
-    // vertical-stretch: 0;
     border-radius: Theme.radius-8;
     border-width: Theme.border-width;
     border-color: root.outline;
@@ -71,14 +69,14 @@ export component Button inherits Rectangle {
 
     HorizontalLayout {
         spacing: Theme.space-6;
-        padding: root.icon-only ? 0px : Theme.space-4;
-        padding-left: root.icon-only ? 0px : root.has-icon ? Theme.space-4 : Theme.space-8;
-        alignment: root.icon-only ? center : start;
+        padding: root.content-padding;
+        padding-left: root.has-icon ? root.content-padding : Theme.space-8;
+        alignment: root.content-alignment;
         cross-axis-alignment: center;
 
         if root.has-icon || root.has-status || root.shows-spinner : SvgIcon {
             source: root.display-icon;
-            size: Theme.icon-button-icon-size;
+            size: root.icon-size;
             color: root.ink-color;
             transform-rotation: root.shows-spinner ? root.spinner-angle : 0deg;
         }

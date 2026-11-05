@@ -16,6 +16,7 @@ export component UserMenu inherits Rectangle {
     height: Theme.control-height;
 
     private property <string> menu-tooltip: @tr("userMenu" => "User menu");
+    private property <length> avatar-size: 26px;
 
     menu-area := ContextMenuArea {
         Rectangle {
@@ -25,9 +26,9 @@ export component UserMenu inherits Rectangle {
             background: touch-area.pressed ? Theme.pressed-background : touch-area.has-hover ? Theme.hover-background : transparent;
 
             if root.logged-in && root.has-avatar : Rectangle {
-                width: Theme.icon-button-size + Theme.space-4;
-                height: Theme.icon-button-size + Theme.space-4;
-                border-radius: (Theme.icon-button-size + Theme.space-4) / 2;
+                width: root.avatar-size;
+                height: root.avatar-size;
+                border-radius: root.avatar-size / 2;
                 border-width: Theme.border-width * 2;
                 border-color: Theme.foreground;
                 clip: true;
@@ -50,7 +51,7 @@ export component UserMenu inherits Rectangle {
 
             if !root.logged-in : SvgIcon {
                 source: @image-url("../icons/ui/account.svg");
-                size: Theme.menu-icon-size;
+                size: 18px;
                 color: Theme.foreground;
             }
 

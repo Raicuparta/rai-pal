@@ -9,9 +9,6 @@ export component NavTab inherits Rectangle {
 
     callback clicked;
 
-    private property <length> nav-tab-icon-size: 24px;
-    private property <length> active-tab-indicator-height: 2px;
-
     preferred-width: layout.preferred-width;
     preferred-height: layout.preferred-height;
     horizontal-stretch: 0;
@@ -28,7 +25,7 @@ export component NavTab inherits Rectangle {
 
         SvgIcon {
             source: root.icon;
-            size: root.nav-tab-icon-size;
+            size: 24px;
             color: root.icon-color;
         }
 
@@ -42,7 +39,7 @@ export component NavTab inherits Rectangle {
 
     if root.selected : Rectangle {
         y: parent.height - self.height;
-        height: root.active-tab-indicator-height;
+        height: 2px;
         background: Theme.primary;
     }
 

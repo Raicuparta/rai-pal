@@ -2,6 +2,7 @@ import { CheckBox } from "std-widgets.slint";
 import { FilterGroupData, FilterValueData } from "../filter-data.slint";
 import { Tr } from "../translations.slint";
 import { Theme } from "../theme.slint";
+import { Button } from "button.slint";
 import { IconButton } from "icon-button.slint";
 import { ResetButton } from "reset-button.slint";
 import { SvgIcon } from "svg-icon.slint";
@@ -19,6 +20,8 @@ component FilterValueRow inherits Rectangle {
     callback toggled(checked: bool);
     callback lock-toggled;
     callback only;
+
+    private property <length> note-icon-size: 16px;
 
     property <bool> hovered: row-touch.has-hover || checkbox-touch.has-hover || only-button.hovered || lock-button.hovered;
 
@@ -59,12 +62,12 @@ component FilterValueRow inherits Rectangle {
             if root.item.note-label-key != "" : Rectangle {
                 x: check-box.preferred-width + Theme.space-4;
                 y: (parent.height - self.height) / 2;
-                width: Theme.icon-button-icon-size;
-                height: Theme.icon-button-icon-size;
+                width: root.note-icon-size;
+                height: root.note-icon-size;
 
                 SvgIcon {
                     source: @image-url("../icons/ui/help.svg");
-                    size: Theme.icon-button-icon-size;
+                    size: root.note-icon-size;
                     color: Theme.dimmed-foreground;
                 }
 
@@ -74,7 +77,7 @@ component FilterValueRow inherits Rectangle {
             }
         }
 
-        only-button := IconButton {
+        only-button := Button {
             width: FilterMetrics.only-button-width;
             height: FilterMetrics.only-button-height;
             text: "Only";
@@ -111,6 +114,8 @@ export component FilterGroupView inherits Rectangle {
     callback reset;
     callback expanded-changed(expanded: bool);
 
+    private property <length> expand-button-size: 22px;
+
     VerticalLayout {
         alignment: start;
         spacing: Theme.border-width;
@@ -134,14 +139,13 @@ export component FilterGroupView inherits Rectangle {
                 cross-axis-alignment: center;
 
                 Rectangle {
-                    width: Theme.icon-button-size;
-                    height: Theme.icon-button-size;
+                    width: root.expand-button-size;
+                    height: root.expand-button-size;
 
                     SvgIcon {
                         x: (parent.width - self.width) / 2;
                         y: (parent.height - self.height) / 2;
                         source: root.group.expanded ? @image-url("../icons/ui/expanded.svg") : @image-url("../icons/ui/collapsed.svg");
-                        size: Theme.icon-button-icon-size;
                         color: Theme.dimmed-foreground;
                     }
                 }

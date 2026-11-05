@@ -58,11 +58,8 @@ export component AddGamePopup inherits PopupWindow {
     callback remove-directory(path: string);
     callback closed;
 
-    private property <length> popup-width: 620px;
-    private property <length> popup-height: 560px;
-
-    width: min(root.popup-width, Theme.details-popup-width);
-    height: min(root.popup-height, Theme.details-popup-height);
+    width: min(620px, Theme.details-popup-width);
+    height: min(560px, Theme.details-popup-height);
     close-policy: PopupClosePolicy.no-auto-close;
 
     Rectangle {

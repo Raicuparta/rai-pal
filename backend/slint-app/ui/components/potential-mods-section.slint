@@ -5,10 +5,8 @@ import { SectionHeader } from "section-header.slint";
 component PotentialModRowView inherits Rectangle {
     in property <PotentialModRowData> potential-mod;
 
-    private property <length> potential-mod-row-height: 44px;
-
     vertical-stretch: 0;
-    height: max(root.potential-mod-row-height, content.preferred-height);
+    height: max(44px, content.preferred-height);
 
     content := VerticalLayout {
         padding: Theme.space-6;

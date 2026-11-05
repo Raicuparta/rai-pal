@@ -59,7 +59,6 @@ component ThanksLink inherits Rectangle {
 
         SvgIcon {
             source: @image-url("../icons/ui/external-link.svg");
-            size: Theme.icon-button-icon-size;
             color: Theme.dimmed-foreground;
         }
     }
@@ -109,7 +108,6 @@ component PatronRow inherits Rectangle {
 
         if root.patron.ranking <= 3 : SvgIcon {
             source: @image-url("../icons/ui/trophy.svg");
-            size: Theme.icon-button-icon-size;
             color: root.patron.ranking == 1 ? Theme.highlight : Theme.dimmed-foreground;
         }
 
@@ -126,7 +124,6 @@ component PatronRow inherits Rectangle {
 export component ThanksPage inherits Rectangle {
     in property <[PatronData]> patrons;
 
-    private property <length> content-max-width: 540px;
     private property <string> intro: @tr("thanksPage" => "Hello. I made Rai Pal. I also made other VR mods in the past, and am currently working on a universal VR mod for Unity games. If you like what I do, and would like to see more, please consider donating! You can also support me by buying one of my free mods on itch.io.");
 
     HorizontalLayout {
@@ -176,7 +173,7 @@ export component ThanksPage inherits Rectangle {
 
                         Rectangle {
                             horizontal-stretch: 1;
-                            max-width: root.content-max-width;
+                            max-width: 540px;
 
                             HorizontalLayout {
                                 spacing: Theme.space-16;
