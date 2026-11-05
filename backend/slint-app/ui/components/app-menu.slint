@@ -1,6 +1,6 @@
 import { AppColorScheme } from "../app-types.slint";
 import { Theme } from "../theme.slint";
-import { SvgIcon } from "svg-icon.slint";
+import { NavButton } from "nav-button.slint";
 
 export component AppMenu inherits Rectangle {
     in property <string> selected-language: "";
@@ -16,31 +16,17 @@ export component AppMenu inherits Rectangle {
     callback language-changed(value: string);
     callback color-scheme-changed(value: AppColorScheme);
 
-    width: Theme.control-height + Theme.space-4;
-    height: Theme.control-height;
-
     private property <string> menu-tooltip: @tr("appDropdownMenu" => "App menu");
 
     menu-area := ContextMenuArea {
-        Rectangle {
-            width: 100%;
-            height: 100%;
-            border-radius: Theme.radius-4;
-            background: touch-area.pressed ? Theme.pressed-background : touch-area.has-hover ? Theme.hover-background : transparent;
+        NavButton {
+            icon: @image-url("../icons/ui/menu.svg");
 
-            SvgIcon {
-                source: @image-url("../icons/ui/menu.svg");
-                size: 18px;
-                color: Theme.foreground;
-            }
-
-            touch-area := TouchArea {
-                clicked => {
-                    menu-area.show({
-                        x: root.width - Theme.menu-width,
-                        y: root.height,
-                    });
-                }
+            clicked => {
+                menu-area.show({
+                    x: root.width - Theme.menu-width,
+                    y: root.height,
+                });
             }
         }
 

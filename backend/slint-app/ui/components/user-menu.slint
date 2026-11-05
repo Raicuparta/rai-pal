@@ -1,5 +1,5 @@
 import { Theme } from "../theme.slint";
-import { SvgIcon } from "svg-icon.slint";
+import { NavButton } from "nav-button.slint";
 
 export component UserMenu inherits Rectangle {
     in property <bool> logged-in;
@@ -12,56 +12,24 @@ export component UserMenu inherits Rectangle {
     callback log-in;
     callback log-out;
 
-    width: Theme.control-height + Theme.space-4;
-    height: Theme.control-height;
-
     private property <string> menu-tooltip: @tr("userMenu" => "User menu");
-    private property <length> avatar-size: 26px;
+    private property <length> avatar-size: 24px;
 
     menu-area := ContextMenuArea {
-        Rectangle {
-            width: 100%;
-            height: 100%;
-            border-radius: Theme.radius-4;
-            background: touch-area.pressed ? Theme.pressed-background : touch-area.has-hover ? Theme.hover-background : transparent;
+        NavButton {
+            icon: root.logged-in ? root.avatar : @image-url("../icons/ui/account.svg");
+            icon-size: root.avatar-size;
+            icon-color: root.logged-in ? transparent : Theme.foreground;
+            icon-text: root.logged-in && !root.has-avatar ? root.user-initials : "";
+            icon-border-radius: root.logged-in ? root.avatar-size / 2 : 0px;
+            icon-border-width: root.logged-in ? Theme.border-width * 2 : 0px;
+            icon-border-color: Theme.foreground;
 
-            if root.logged-in && root.has-avatar : Rectangle {
-                width: root.avatar-size;
-                height: root.avatar-size;
-                border-radius: root.avatar-size / 2;
-                border-width: Theme.border-width * 2;
-                border-color: Theme.foreground;
-                clip: true;
-
-                Image {
-                    source: root.avatar;
-                    width: 100%;
-                    height: 100%;
-                    image-fit: cover;
-                }
-            }
-
-            if root.logged-in && !root.has-avatar : Text {
-                text: root.user-initials;
-                font-size: Theme.font-12;
-                font-weight: Theme.weight-bold;
-                horizontal-alignment: center;
-                vertical-alignment: center;
-            }
-
-            if !root.logged-in : SvgIcon {
-                source: @image-url("../icons/ui/account.svg");
-                size: 18px;
-                color: Theme.foreground;
-            }
-
-            touch-area := TouchArea {
-                clicked => {
-                    menu-area.show({
-                        x: root.width - Theme.menu-width,
-                        y: root.height,
-                    });
-                }
+            clicked => {
+                menu-area.show({
+                    x: root.width - Theme.menu-width,
+                    y: root.height,
+                });
             }
         }
 

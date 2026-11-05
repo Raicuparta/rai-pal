@@ -197,16 +197,16 @@ export component MainWindow inherits Window {
     }
 
     VerticalLayout {
-        Rectangle {
-            height: Theme.navbar-height;
+        navbar := Rectangle {
             background: Theme.background;
+            vertical-stretch: 0;
 
-            Rectangle {
-                width: min(parent.width, root.content-max-width);
-                x: (parent.width - self.width) / 2;
-                background: transparent;
+            VerticalLayout {
+                cross-axis-alignment: center;
 
                 HorizontalLayout {
+                    width: 100%;
+                    max-width: root.content-max-width;
                     padding-left: Theme.space-8;
                     padding-right: Theme.space-8;
                     spacing: Theme.space-2;
@@ -317,13 +317,11 @@ export component MainWindow inherits Window {
                         }
                     }
                 }
-            }
 
-            Rectangle {
-                y: parent.height - self.height;
-                width: 100%;
-                height: Theme.border-width;
-                background: Theme.border;
+                Rectangle {
+                    height: Theme.border-width;
+                    background: Theme.border;
+                }
             }
         }
 
@@ -527,6 +525,7 @@ export component MainWindow inherits Window {
 
     NotificationsOverlay {
         notifications: root.notifications;
+        top-offset: navbar.height;
 
         dismissed(id) => {
             root.dismiss-notification(id);
