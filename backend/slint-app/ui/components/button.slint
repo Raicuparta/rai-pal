@@ -6,8 +6,9 @@ import { SvgIcon } from "svg-icon.slint";
 export component Button inherits BaseButton {
     in property <string> text: "";
     in property <image> icon;
-    in property <length> text-size: Theme.font-14;
+    in property <length> text-size: Theme.font-12;
     in property <ActionState> state: ActionState.idle;
+    in property <bool> reserve-icon-space: true;
 
     private property <bool> long-loading: false;
     private property <bool> has-status: root.state == ActionState.success || root.state == ActionState.error;
@@ -35,25 +36,27 @@ export component Button inherits BaseButton {
     }
 
     HorizontalLayout {
-        spacing: Theme.space-6;
-        padding: Theme.space-4;
-        padding-left: root.has-icon ? Theme.space-6 : Theme.space-8;
-        padding-right: root.has-icon ? Theme.space-6 : Theme.space-8;
+        padding-left: has-icon || reserve-icon-space ? Theme.space-6 : 0px;
         cross-axis-alignment: center;
 
-        if root.shows-icon : SvgIcon {
+        if has-icon || reserve-icon-space : SvgIcon {
             source: root.display-icon;
-            size: root.text-size + 4px;
             color: root.ink-color;
             transform-rotation: root.shows-spinner ? root.spinner-angle : 0deg;
         }
 
-        if root.text != "" : Text {
-            text: root.text;
-            font-size: root.text-size;
-            color: root.ink-color;
-            overflow: elide;
-            font-weight: 500;
+        if root.text != "" : HorizontalLayout {
+            padding: Theme.space-4;
+            padding-left: Theme.space-6;
+            padding-right: Theme.space-6;
+
+            Text {
+                text: root.text;
+                font-size: root.text-size;
+                color: root.ink-color;
+                overflow: elide;
+                font-weight: 600;
+            }
         }
     }
 }

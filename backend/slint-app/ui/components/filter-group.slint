@@ -73,6 +73,7 @@ component FilterValueRow inherits Rectangle {
             visible: !root.item.locked;
             enabled: !root.item.locked;
             opacity: root.hovered ? 1 : 0;
+            reserve-icon-space: false;
 
             clicked => {
                 root.only();
