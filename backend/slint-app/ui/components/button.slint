@@ -1,58 +1,26 @@
 import { ActionState } from "../action-state.slint";
 import { Theme } from "../theme.slint";
+import { BaseButton } from "base-button.slint";
 import { SvgIcon } from "svg-icon.slint";
 
-global ButtonOutlines {
-    out property <brush> on-light-fill: Theme.dark ? @linear-gradient(180deg, #FFFFFF14 90.67%, #00000024 100%) : @linear-gradient(180deg, #0000000F 90.58%, #00000029 100%);
-    out property <brush> on-dark-fill: Theme.dark ? @linear-gradient(180deg, #FFFFFF17 0%, #00000012 8.33%) : @linear-gradient(180deg, #FFFFFF14 90.67%, #00000066 100%);
-}
-
-export component Button inherits Rectangle {
-    in property <brush> tint: Theme.surface-background;
+export component Button inherits BaseButton {
     in property <string> text: "";
-    in property <string> tooltip: "";
     in property <image> icon;
     in property <length> icon-size: 16px;
     in property <length> text-size: Theme.font-14;
-    in property <length> content-padding: Theme.space-4;
-    in property <LayoutAlignment> content-alignment: start;
-    in property <bool> enabled: true;
     in property <ActionState> state: ActionState.idle;
-    out property <bool> hovered: touch-area.has-hover;
 
     private property <bool> long-loading: false;
-    private property <angle> spinner-angle: mod(animation-tick(), 1s) / 1s * 360deg;
-    private property <bool> interactive: root.enabled && root.state != ActionState.loading;
     private property <bool> has-status: root.state == ActionState.success || root.state == ActionState.error;
     private property <bool> shows-spinner: root.state == ActionState.loading && root.long-loading;
     private property <bool> has-icon: root.icon.width > 0;
+    private property <bool> shows-icon: root.has-icon || root.has-status || root.shows-spinner;
+    private property <angle> spinner-angle: mod(animation-tick(), 1s) / 1s * 360deg;
     private property <image> display-icon: root.state == ActionState.success ? @image-url("../icons/ui/success.svg") : root.state == ActionState.error ? @image-url("../icons/ui/error.svg") : root.shows-spinner ? @image-url("../icons/ui/loading.svg") : root.icon;
 
-    private property <brush> base-color: root.state == ActionState.success ? Theme.status-success : root.state == ActionState.error ? Theme.status-error : root.enabled ? root.tint : Theme.surface-background;
-    private property <bool> needs-dark-ink: root.base-color.to-oklch().lightness > 0.62;
-    private property <brush> ink: root.needs-dark-ink ? #1a1b1e : #ffffff;
-    private property <brush> hover-fill: root.needs-dark-ink ? root.base-color.darker(0.08) : root.base-color.brighter(0.2);
-    private property <brush> pressed-fill: root.needs-dark-ink ? root.base-color.darker(0.16) : root.base-color.brighter(0.4);
-    private property <brush> fill: !root.enabled ? transparent : touch-area.pressed ? root.pressed-fill : touch-area.has-hover ? root.hover-fill : root.base-color;
-    private property <brush> outline: root.enabled ? (root.needs-dark-ink ? ButtonOutlines.on-light-fill : ButtonOutlines.on-dark-fill) : transparent;
-    private property <brush> ink-color: root.enabled ? root.ink : root.ink.transparentize(0.75);
-
-    callback clicked;
-
-    border-radius: Theme.radius-8;
-    border-width: Theme.border-width;
-    border-color: root.outline;
-    background: root.fill;
-    forward-focus: focus-scope;
-
-    accessible-role: button;
-    accessible-enabled: root.interactive;
+    base-color: root.state == ActionState.success ? Theme.status-success : root.state == ActionState.error ? Theme.status-error : root.enabled ? root.tint : Theme.surface-background;
+    interactive: root.enabled && root.state != ActionState.loading;
     accessible-label: root.text;
-    accessible-action-default => {
-        if root.interactive {
-            root.clicked();
-        }
-    }
 
     changed state => {
         root.long-loading = false;
@@ -69,12 +37,11 @@ export component Button inherits Rectangle {
 
     HorizontalLayout {
         spacing: Theme.space-6;
-        padding: root.content-padding;
-        padding-left: root.has-icon ? root.content-padding : Theme.space-8;
-        alignment: root.content-alignment;
+        padding: Theme.space-4;
+        padding-left: root.has-icon ? Theme.space-4 : Theme.space-8;
         cross-axis-alignment: center;
 
-        if root.has-icon || root.has-status || root.shows-spinner : SvgIcon {
+        if root.shows-icon : SvgIcon {
             source: root.display-icon;
             size: root.icon-size;
             color: root.ink-color;
@@ -87,34 +54,5 @@ export component Button inherits Rectangle {
             color: root.ink-color;
             overflow: elide;
         }
-    }
-
-    touch-area := TouchArea {
-        enabled: root.interactive;
-
-        clicked => {
-            root.clicked();
-        }
-    }
-
-    focus-scope := FocusScope {
-        width: 0;
-        height: 0;
-        enabled: root.enabled;
-
-        key-pressed(event) => {
-            if event.text == Key.Space || event.text == Key.Return {
-                if root.interactive {
-                    root.clicked();
-                }
-                return accept;
-            }
-
-            return reject;
-        }
-    }
-
-    if root.tooltip != "" : Tooltip {
-        text: @markdown("\{root.tooltip}");
     }
 }
