@@ -18,8 +18,8 @@ export component BaseButton inherits Rectangle {
 
     private property <bool> needs-dark-ink: root.base-color.to-oklch().lightness > 0.62;
     private property <brush> ink: root.needs-dark-ink ? #1a1b1e : #ffffff;
-    private property <brush> hover-fill: root.needs-dark-ink ? root.base-color.darker(0.08) : root.base-color.brighter(0.2);
-    private property <brush> pressed-fill: root.needs-dark-ink ? root.base-color.darker(0.16) : root.base-color.brighter(0.4);
+    private property <brush> hover-fill: root.needs-dark-ink ? root.base-color.darker(0.15) : root.base-color.brighter(0.4);
+    private property <brush> pressed-fill: root.needs-dark-ink ? root.base-color.darker(0.3) : root.base-color.brighter(0.7);
     private property <brush> fill: !root.enabled ? transparent : touch-area.pressed ? root.pressed-fill : touch-area.has-hover ? root.hover-fill : root.base-color;
     private property <brush> outline: root.enabled ? (root.needs-dark-ink ? ButtonOutlines.on-light-fill : ButtonOutlines.on-dark-fill) : transparent;
 

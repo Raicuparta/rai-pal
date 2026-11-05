@@ -6,7 +6,6 @@ import { SvgIcon } from "svg-icon.slint";
 export component Button inherits BaseButton {
     in property <string> text: "";
     in property <image> icon;
-    in property <length> icon-size: 16px;
     in property <length> text-size: Theme.font-14;
     in property <ActionState> state: ActionState.idle;
 
@@ -38,12 +37,13 @@ export component Button inherits BaseButton {
     HorizontalLayout {
         spacing: Theme.space-6;
         padding: Theme.space-4;
-        padding-left: root.has-icon ? Theme.space-4 : Theme.space-8;
+        padding-left: root.has-icon ? Theme.space-6 : Theme.space-8;
+        padding-right: root.has-icon ? Theme.space-6 : Theme.space-8;
         cross-axis-alignment: center;
 
         if root.shows-icon : SvgIcon {
             source: root.display-icon;
-            size: root.icon-size;
+            size: root.text-size + 4px;
             color: root.ink-color;
             transform-rotation: root.shows-spinner ? root.spinner-angle : 0deg;
         }
@@ -53,6 +53,7 @@ export component Button inherits BaseButton {
             font-size: root.text-size;
             color: root.ink-color;
             overflow: elide;
+            font-weight: 500;
         }
     }
 }
