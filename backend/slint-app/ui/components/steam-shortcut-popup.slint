@@ -1,81 +1,45 @@
 import { Button } from "button.slint";
 import { Theme } from "../theme.slint";
+import { Modal } from "modal.slint";
 
-export component SteamShortcutPopup inherits PopupWindow {
+export component SteamShortcutPopup inherits Modal {
     in property <bool> running;
     in property <bool> success;
     in property <string> error;
 
     callback add-clicked;
-    callback closed;
 
-    width: Theme.details-popup-width;
-    height: Theme.details-popup-height;
-    close-policy: PopupClosePolicy.no-auto-close;
+    title: @tr("steamShortcut" => "Add Rai Pal to Steam Library");
+    content-spacing: Theme.space-12;
 
-    Rectangle {
-        background: Theme.background;
-        border-width: Theme.border-width;
-        border-color: Theme.border;
-        border-radius: Theme.radius-8;
+    Text {
+        text: @tr("steamShortcut" => "This is especially useful on Steam Deck, to be able to launch Rai Pal in Game Mode. You'll have to restart Steam after doing this.");
+        wrap: word-wrap;
+    }
 
-        VerticalLayout {
-            padding: Theme.space-20;
-            spacing: Theme.space-12;
+    if root.success : Text {
+        text: @tr("steamShortcut" => "Rai Pal has been added to your Steam library. Restart Steam to see it.");
+        color: Theme.status-success;
+        wrap: word-wrap;
+    }
 
-            Text {
-                text: @tr("steamShortcut" => "Add Rai Pal to Steam Library");
-                font-size: Theme.font-20;
-                font-weight: Theme.weight-bold;
-            }
+    if root.error != "" : Text {
+        text: root.error;
+        color: red;
+        wrap: word-wrap;
+    }
 
-            Text {
-                text: @tr("steamShortcut" => "This is especially useful on Steam Deck, to be able to launch Rai Pal in Game Mode. You'll have to restart Steam after doing this.");
-                wrap: word-wrap;
-            }
+    HorizontalLayout {
+        alignment: center;
 
-            if root.success : Text {
-                text: @tr("steamShortcut" => "Rai Pal has been added to your Steam library. Restart Steam to see it.");
-                color: Theme.status-success;
-                wrap: word-wrap;
-            }
+        Button {
+            text: @tr("steamShortcut" => "Add Rai Pal to Steam library");
+            enabled: !root.running;
+            tint: Theme.primary;
+            horizontal-stretch: 1;
 
-            if root.error != "" : Text {
-                text: root.error;
-                color: red;
-                wrap: word-wrap;
-            }
-
-            Rectangle {
-                vertical-stretch: 1;
-            }
-
-            HorizontalLayout {
-                alignment: center;
-
-                Button {
-                    text: @tr("steamShortcut" => "Add Rai Pal to Steam library");
-                    enabled: !root.running;
-                    tint: Theme.primary;
-                    width: self.preferred-width * 2;
-
-                    clicked => {
-                        root.add-clicked();
-                    }
-                }
-            }
-
-            HorizontalLayout {
-                alignment: end;
-
-                Button {
-                    text: "Close";
-
-                    clicked => {
-                        root.close();
-                        root.closed();
-                    }
-                }
+            clicked => {
+                root.add-clicked();
             }
         }
     }

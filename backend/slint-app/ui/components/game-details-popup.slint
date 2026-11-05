@@ -1,16 +1,17 @@
 import { TextEdit } from "std-widgets.slint";
 import { Fonts, Theme } from "../theme.slint";
-import { IconButton } from "icon-button.slint";
+import { Modal } from "modal.slint";
 
-export component GameDetailsPopup inherits PopupWindow {
+export component GameDetailsPopup inherits Modal {
     in property <string> game-json;
 
     private property <bool> copied: false;
     private property <length> saved-scroll-y: 0;
 
-    callback closed;
-
-    close-policy: PopupClosePolicy.no-auto-close;
+    title: @tr("debugData" => "Debug data");
+    big: true;
+    header-action-icon: root.copied ? @image-url("../icons/ui/copied.svg") : @image-url("../icons/ui/copy.svg");
+    header-action-tooltip: @tr("debugData" => "Copy debug data");
 
     copy-reset-timer := Timer {
         interval: 2s;
@@ -21,66 +22,22 @@ export component GameDetailsPopup inherits PopupWindow {
         }
     }
 
-    Rectangle {
-        background: Theme.background;
-        border-width: Theme.border-width;
-        border-color: Theme.border;
+    header-action-clicked => {
+        root.saved-scroll-y = debug-text.content-y;
+        debug-text.select-all();
+        debug-text.copy();
+        debug-text.clear-selection();
+        debug-text.content-y = root.saved-scroll-y;
+        root.copied = true;
+    }
 
-        VerticalLayout {
-            padding: Theme.space-12;
-            spacing: Theme.space-8;
-
-            HorizontalLayout {
-                spacing: Theme.space-6;
-                cross-axis-alignment: center;
-
-                Text {
-                    text: @tr("debugData" => "Debug data");
-                    font-size: Theme.font-16;
-                    font-weight: Theme.weight-bold;
-                    vertical-alignment: center;
-                }
-
-                IconButton {
-                    icon: root.copied ? @image-url("../icons/ui/copied.svg") : @image-url("../icons/ui/copy.svg");
-                    accessible-role: button;
-                    accessible-label: @tr("debugData" => "Copy debug data");
-                    tooltip: @tr("debugData" => "Copy debug data");
-
-                    clicked => {
-                        root.saved-scroll-y = debug-text.content-y;
-                        debug-text.select-all();
-                        debug-text.copy();
-                        debug-text.clear-selection();
-                        debug-text.content-y = root.saved-scroll-y;
-                        root.copied = true;
-                    }
-                }
-
-                Rectangle {
-                    horizontal-stretch: 1;
-                }
-
-                IconButton {
-                    icon: @image-url("../icons/ui/close.svg");
-                    accessible-role: button;
-                    accessible-label: @tr("debugData" => "Close");
-                    tooltip: @tr("debugData" => "Close");
-
-                    clicked => {
-                        root.close();
-                        root.closed();
-                    }
-                }
-            }
-
-            debug-text := TextEdit {
-                text: root.game-json;
-                read-only: true;
-                wrap: word-wrap;
-                font-family: Fonts.monospace-family;
-                font-size: Theme.font-12;
-            }
-        }
+    debug-text := TextEdit {
+        text: root.game-json;
+        read-only: true;
+        wrap: word-wrap;
+        font-family: Fonts.monospace-family;
+        font-size: Theme.font-12;
+        width: 100%;
+        height: 100%;
     }
 }

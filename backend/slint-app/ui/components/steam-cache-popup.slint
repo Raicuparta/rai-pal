@@ -1,81 +1,45 @@
 import { Button } from "button.slint";
 import { Theme } from "../theme.slint";
+import { Modal } from "modal.slint";
 
-export component SteamCachePopup inherits PopupWindow {
+export component SteamCachePopup inherits Modal {
     in property <bool> running;
     in property <bool> success;
     in property <string> error;
 
     callback reset-clicked;
-    callback closed;
 
-    width: Theme.details-popup-width;
-    height: Theme.small-popup-height + Theme.space-20;
-    close-policy: PopupClosePolicy.no-auto-close;
+    title: @tr("steamCache" => "Reset Steam cache");
+    content-spacing: Theme.space-12;
 
-    Rectangle {
-        background: Theme.background;
-        border-width: Theme.border-width;
-        border-color: Theme.border;
-        border-radius: Theme.radius-8;
+    Text {
+        text: @tr("steamCache" => "Use this if Rai Pal is showing games you don't actually own on Steam. This will reset Steam's cache, and then you'll have to restart Steam. You'll get an error if the file has already been deleted.");
+        wrap: word-wrap;
+    }
 
-        VerticalLayout {
-            padding: Theme.space-20;
-            spacing: Theme.space-12;
+    if root.success : Text {
+        text: @tr("steamCache" => "The cache file has been deleted. Please restart Steam, wait a few seconds, and then press the refresh button on Rai Pal.");
+        color: Theme.status-success;
+        wrap: word-wrap;
+    }
 
-            Text {
-                text: @tr("steamCache" => "Reset Steam cache");
-                font-size: Theme.font-20;
-                font-weight: Theme.weight-bold;
-            }
+    if root.error != "" : Text {
+        text: root.error;
+        color: red;
+        wrap: word-wrap;
+    }
 
-            Text {
-                text: @tr("steamCache" => "Use this if Rai Pal is showing games you don't actually own on Steam. This will reset Steam's cache, and then you'll have to restart Steam. You'll get an error if the file has already been deleted.");
-                wrap: word-wrap;
-            }
+    HorizontalLayout {
+        alignment: center;
 
-            if root.success : Text {
-                text: @tr("steamCache" => "The cache file has been deleted. Please restart Steam, wait a few seconds, and then press the refresh button on Rai Pal.");
-                color: Theme.status-success;
-                wrap: word-wrap;
-            }
+        Button {
+            text: @tr("steamCache" => "Reset Steam cache");
+            enabled: !root.running;
+            tint: Theme.primary;
+            horizontal-stretch: 1;
 
-            if root.error != "" : Text {
-                text: root.error;
-                color: red;
-                wrap: word-wrap;
-            }
-
-            Rectangle {
-                vertical-stretch: 1;
-            }
-
-            HorizontalLayout {
-                alignment: center;
-
-                Button {
-                    text: @tr("steamCache" => "Reset Steam cache");
-                    enabled: !root.running;
-                    tint: Theme.primary;
-                    width: self.preferred-width * 2;
-
-                    clicked => {
-                        root.reset-clicked();
-                    }
-                }
-            }
-
-            HorizontalLayout {
-                alignment: end;
-
-                Button {
-                    text: "Close";
-
-                    clicked => {
-                        root.close();
-                        root.closed();
-                    }
-                }
+            clicked => {
+                root.reset-clicked();
             }
         }
     }

@@ -1,8 +1,8 @@
-import { ScrollView } from "std-widgets.slint";
 import { Button } from "button.slint";
 import { Theme } from "../theme.slint";
+import { Modal } from "modal.slint";
 
-export component ConfirmModSourcePopup inherits PopupWindow {
+export component ConfirmModSourcePopup inherits Modal {
     in property <string> url;
     in property <bool> loading;
     in property <string> error;
@@ -10,86 +10,61 @@ export component ConfirmModSourcePopup inherits PopupWindow {
     in property <bool> saving;
 
     callback confirm;
-    callback closed;
 
-    width: Theme.small-popup-width + Theme.space-20;
-    height: min(480px, Theme.details-popup-height);
-    close-policy: PopupClosePolicy.no-auto-close;
+    title: @tr("urlModSources" => "Confirm Mod Source");
 
-    Rectangle {
-        background: Theme.background;
-        border-width: Theme.border-width;
-        border-color: Theme.border;
-        border-radius: Theme.radius-8;
+    Text {
+        text: root.url;
+        font-size: Theme.font-12;
+        opacity: 0.7;
+        wrap: word-wrap;
+    }
 
-        VerticalLayout {
-            padding: Theme.space-16;
-            spacing: Theme.space-10;
+    if root.loading : Text {
+        text: @tr("urlModSources" => "Loading mods...");
+    }
 
-            Text {
-                text: @tr("urlModSources" => "Confirm Mod Source");
-                font-size: Theme.font-20;
-                font-weight: Theme.weight-bold;
+    if root.error != "" : Text {
+        text: root.error;
+        color: red;
+        font-size: Theme.font-12;
+        wrap: word-wrap;
+    }
+
+    if !root.loading && root.error == "" : VerticalLayout {
+        spacing: Theme.space-2;
+        alignment: start;
+
+        Text {
+            text: @tr("urlModSources" => "{0} mods found in this source", root.mods.length);
+        }
+
+        for mod-title in root.mods : Text {
+            text: mod-title;
+            font-size: Theme.font-12;
+            wrap: word-wrap;
+        }
+    }
+
+    HorizontalLayout {
+        alignment: end;
+        spacing: Theme.space-6;
+
+        Button {
+            text: @tr("urlModSources" => "Cancel");
+            enabled: !root.saving;
+
+            clicked => {
+                root.closed();
             }
+        }
 
-            Text {
-                text: root.url;
-                font-size: Theme.font-12;
-                opacity: 0.7;
-                wrap: word-wrap;
-            }
+        Button {
+            text: @tr("urlModSources" => "Add Source");
+            enabled: !root.loading && root.error == "" && !root.saving;
 
-            if root.loading : Text {
-                text: @tr("urlModSources" => "Loading mods...");
-            }
-
-            if root.error != "" : Text {
-                text: root.error;
-                color: red;
-                font-size: Theme.font-12;
-                wrap: word-wrap;
-            }
-
-            if !root.loading && root.error == "" : VerticalLayout {
-                Text {
-                    text: @tr("urlModSources" => "{0} mods found in this source", root.mods.length);
-                }
-
-                ScrollView {
-                    VerticalLayout {
-                        spacing: Theme.space-2;
-
-                        for mod-title in root.mods : Text {
-                            text: mod-title;
-                            font-size: Theme.font-12;
-                            wrap: word-wrap;
-                        }
-                    }
-                }
-            }
-
-            HorizontalLayout {
-                alignment: end;
-                spacing: Theme.space-6;
-
-                Button {
-                    text: @tr("urlModSources" => "Cancel");
-                    enabled: !root.saving;
-
-                    clicked => {
-                        root.close();
-                        root.closed();
-                    }
-                }
-
-                Button {
-                    text: @tr("urlModSources" => "Add Source");
-                    enabled: !root.loading && root.error == "" && !root.saving;
-
-                    clicked => {
-                        root.confirm();
-                    }
-                }
+            clicked => {
+                root.confirm();
             }
         }
     }

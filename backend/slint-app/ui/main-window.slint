@@ -44,7 +44,7 @@ export component MainWindow inherits Window {
     background: Theme.background;
 
     private property <length> content-max-width: 1140px;
-    private property <length> overlay-margin: 64px;
+    private property <bool> about-open: false;
 
     in property <[GameRowData]> game-rows;
     in property <int> games-total-count: 0;
@@ -283,7 +283,7 @@ export component MainWindow inherits Window {
                         detected-language-name: root.detected-language-name;
 
                         about-clicked => {
-                            about-popup.show();
+                            root.about-open = true;
                         }
 
                         steam-cache-clicked => {
@@ -380,7 +380,6 @@ export component MainWindow inherits Window {
 
                         debug-data => {
                             root.details-json = root.selected-game-json;
-                            details-popup.show();
                         }
 
                         remove-game(confirmation-text, confirm-label) => {
@@ -506,7 +505,6 @@ export component MainWindow inherits Window {
 
                     debug-data(json) => {
                         root.details-json = json;
-                        details-popup.show();
                     }
                 }
             }
@@ -532,36 +530,32 @@ export component MainWindow inherits Window {
         }
     }
 
-    changed confirmation-open => {
-        if root.confirmation-open {
-            confirmation-popup.show();
-        } else {
-            confirmation-popup.close();
-        }
+    if root.drop-highlight : Rectangle {
+        border-width: Theme.border-width * 2;
+        border-color: Theme.highlight;
+        background: transparent;
     }
 
     confirmation-popup := ConfirmationPopup {
-        x: (root.width - self.width) / 2;
-        y: (root.height - self.height) / 2;
+        open: root.confirmation-open;
         text: root.confirmation-text;
         confirm-label: root.confirmation-confirm-label;
         can-skip: root.confirmation-can-skip;
         dont-ask-again <=> root.confirmation-dont-ask-again;
 
         response(confirmed) => {
+            root.confirmation-open = false;
             root.confirmation-response(confirmed);
         }
 
         closed => {
             root.confirmation-open = false;
+            root.confirmation-response(false);
         }
     }
 
     details-popup := GameDetailsPopup {
-        width: min(Theme.details-popup-width, root.width - root.overlay-margin);
-        height: min(Theme.details-popup-height, root.height - root.overlay-margin);
-        x: (root.width - self.width) / 2;
-        y: (root.height - self.height) / 2;
+        open: root.details-json != "";
         game-json: root.details-json;
 
         closed => {
@@ -570,48 +564,18 @@ export component MainWindow inherits Window {
     }
 
     about-popup := AboutPopup {
-        x: (root.width - self.width) / 2;
-        y: (root.height - self.height) / 2;
+        open: root.about-open;
         app-version: root.app-version;
         renderer-name: root.renderer-name;
         platform-name: root.platform-name;
-    }
 
-    changed url-mod-sources-open => {
-        if root.url-mod-sources-open {
-            url-mod-sources-popup.show();
-        } else {
-            url-mod-sources-popup.close();
-        }
-    }
-
-    changed confirm-mod-source-open => {
-        if root.confirm-mod-source-open {
-            confirm-mod-source-popup.show();
-        } else {
-            confirm-mod-source-popup.close();
-        }
-    }
-
-    changed steam-cache-open => {
-        if root.steam-cache-open {
-            steam-cache-popup.show();
-        } else {
-            steam-cache-popup.close();
-        }
-    }
-
-    changed steam-shortcut-open => {
-        if root.steam-shortcut-open {
-            steam-shortcut-popup.show();
-        } else {
-            steam-shortcut-popup.close();
+        closed => {
+            root.about-open = false;
         }
     }
 
     steam-shortcut-popup := SteamShortcutPopup {
-        x: (root.width - self.width) / 2;
-        y: (root.height - self.height) / 2;
+        open: root.steam-shortcut-open;
         running: root.steam-shortcut-running;
         success: root.steam-shortcut-success;
         error: root.steam-shortcut-error;
@@ -625,23 +589,8 @@ export component MainWindow inherits Window {
         }
     }
 
-    if root.drop-highlight : Rectangle {
-        border-width: Theme.border-width * 2;
-        border-color: Theme.highlight;
-        background: transparent;
-    }
-
-    changed add-game-open => {
-        if root.add-game-open {
-            add-game-popup.show();
-        } else {
-            add-game-popup.close();
-        }
-    }
-
     add-game-popup := AddGamePopup {
-        x: (root.width - self.width) / 2;
-        y: (root.height - self.height) / 2;
+        open: root.add-game-open;
         phase: root.scan-phase;
         selected-path: root.scan-selected-path;
         scanned-dirs: root.scan-scanned-dirs;
@@ -678,8 +627,7 @@ export component MainWindow inherits Window {
     }
 
     steam-cache-popup := SteamCachePopup {
-        x: (root.width - self.width) / 2;
-        y: (root.height - self.height) / 2;
+        open: root.steam-cache-open;
         running: root.steam-cache-running;
         success: root.steam-cache-success;
         error: root.steam-cache-error;
@@ -694,8 +642,7 @@ export component MainWindow inherits Window {
     }
 
     url-mod-sources-popup := UrlModSourcesPopup {
-        x: (root.width - self.width) / 2;
-        y: (root.height - self.height) / 2;
+        open: root.url-mod-sources-open;
         default-source: root.default-url-mod-source;
         sources: root.url-mod-sources;
         toggling: root.url-mod-sources-toggling;
@@ -720,8 +667,7 @@ export component MainWindow inherits Window {
     }
 
     confirm-mod-source-popup := ConfirmModSourcePopup {
-        x: (root.width - self.width) / 2;
-        y: (root.height - self.height) / 2;
+        open: root.confirm-mod-source-open;
         url: root.confirm-mod-source-url;
         loading: root.confirm-mod-source-loading;
         error: root.confirm-mod-source-error;

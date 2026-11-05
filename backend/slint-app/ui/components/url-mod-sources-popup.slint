@@ -1,7 +1,8 @@
-import { CheckBox, LineEdit, ScrollView } from "std-widgets.slint";
+import { CheckBox, LineEdit } from "std-widgets.slint";
 import { Button } from "button.slint";
 import { Theme } from "../theme.slint";
 import { UrlModSourceData } from "../url-mod-source-data.slint";
+import { Modal } from "modal.slint";
 
 component UrlModSourceRow inherits Rectangle {
     in property <UrlModSourceData> source;
@@ -42,7 +43,7 @@ component UrlModSourceRow inherits Rectangle {
     }
 }
 
-export component UrlModSourcesPopup inherits PopupWindow {
+export component UrlModSourcesPopup inherits Modal {
     in property <UrlModSourceData> default-source;
     in property <[UrlModSourceData]> sources;
     in property <bool> toggling;
@@ -52,107 +53,67 @@ export component UrlModSourcesPopup inherits PopupWindow {
     callback add-source(url: string);
     callback set-enabled(url: string, enabled: bool);
     callback remove-source(url: string);
-    callback closed;
 
-    width: min(620px, Theme.details-popup-width);
-    height: min(480px, Theme.details-popup-height);
-    close-policy: PopupClosePolicy.no-auto-close;
+    title: @tr("urlModSources" => "Mod Sources");
 
-    Rectangle {
-        background: Theme.background;
-        border-width: Theme.border-width;
-        border-color: Theme.border;
-        border-radius: Theme.radius-8;
+    if root.default-source.url != "" : UrlModSourceRow {
+        source: root.default-source;
+        toggling: root.toggling;
 
-        VerticalLayout {
-            padding: Theme.space-16;
-            spacing: Theme.space-10;
+        toggled(enabled) => {
+            root.set-enabled(root.default-source.url, enabled);
+        }
+    }
 
-            Text {
-                text: @tr("urlModSources" => "Mod Sources");
-                font-size: Theme.font-20;
-                font-weight: Theme.weight-bold;
-            }
+    for source in root.sources : UrlModSourceRow {
+        source: source;
+        toggling: root.toggling;
 
-            ScrollView {
-                VerticalLayout {
-                    spacing: Theme.space-6;
+        toggled(enabled) => {
+            root.set-enabled(source.url, enabled);
+        }
 
-                    if root.default-source.url != "" : UrlModSourceRow {
-                        source: root.default-source;
-                        toggling: root.toggling;
+        removed => {
+            root.remove-source(source.url);
+        }
+    }
 
-                        toggled(enabled) => {
-                            root.set-enabled(root.default-source.url, enabled);
-                        }
-                    }
+    HorizontalLayout {
+        spacing: Theme.space-6;
+        alignment: start;
+        cross-axis-alignment: center;
 
-                    for source in root.sources : UrlModSourceRow {
-                        source: source;
-                        toggling: root.toggling;
+        LineEdit {
+            horizontal-stretch: 1;
+            text <=> root.new-url;
+            placeholder-text: "https://example.com/mods.json";
 
-                        toggled(enabled) => {
-                            root.set-enabled(source.url, enabled);
-                        }
-
-                        removed => {
-                            root.remove-source(source.url);
-                        }
-                    }
-                }
-            }
-
-            HorizontalLayout {
-                spacing: Theme.space-6;
-                alignment: start;
-                cross-axis-alignment: center;
-
-                LineEdit {
-                    horizontal-stretch: 1;
-                    text <=> root.new-url;
-                    placeholder-text: "https://example.com/mods.json";
-
-                    accepted => {
-                        root.add-source(root.new-url);
-                    }
-                }
-
-                Button {
-                    text: @tr("urlModSources" => "Add source");
-                    enabled: root.new-url != "";
-
-                    clicked => {
-                        root.add-source(root.new-url);
-                    }
-                }
-            }
-
-            if root.error != "" : Text {
-                text: root.error;
-                color: red;
-                wrap: word-wrap;
-                font-size: Theme.font-12;
-            }
-
-            Text {
-                text: @tr("urlModSources" => "Rai Pal will check for mods in all databases provided here, in addition to checking the default mod database. You can share mod sources via the deep-link {0}.", "rai-pal://add-mod-source?url=[URL]");
-                font-size: Theme.font-12;
-                opacity: 0.7;
-                wrap: word-wrap;
-            }
-
-            HorizontalLayout {
-                alignment: end;
-
-                Button {
-                    text: "Close";
-
-                    clicked => {
-                        root.close();
-                        root.closed();
-                    }
-                }
+            accepted => {
+                root.add-source(root.new-url);
             }
         }
+
+        Button {
+            text: @tr("urlModSources" => "Add source");
+            enabled: root.new-url != "";
+
+            clicked => {
+                root.add-source(root.new-url);
+            }
+        }
+    }
+
+    if root.error != "" : Text {
+        text: root.error;
+        color: red;
+        wrap: word-wrap;
+        font-size: Theme.font-12;
+    }
+
+    Text {
+        text: @tr("urlModSources" => "Rai Pal will check for mods in all databases provided here, in addition to checking the default mod database. You can share mod sources via the deep-link {0}.", "rai-pal://add-mod-source?url=[URL]");
+        font-size: Theme.font-12;
+        opacity: 0.7;
+        wrap: word-wrap;
     }
 }

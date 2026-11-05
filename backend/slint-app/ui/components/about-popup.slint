@@ -1,58 +1,21 @@
-import { Button } from "button.slint";
-import { Theme } from "../theme.slint";
+import { Modal } from "modal.slint";
 
-export component AboutPopup inherits PopupWindow {
+export component AboutPopup inherits Modal {
     in property <string> app-version;
     in property <string> renderer-name;
     in property <string> platform-name;
 
-    width: Theme.small-popup-width;
-    height: Theme.small-popup-height;
-    close-policy: PopupClosePolicy.no-auto-close;
+    title: "About Rai Pal";
 
-    Rectangle {
-        background: Theme.background;
-        border-width: Theme.border-width;
-        border-color: Theme.border;
-        border-radius: Theme.radius-8;
+    Text {
+        text: "Version: \{root.app-version}";
+    }
 
-        VerticalLayout {
-            padding: Theme.space-20;
-            spacing: Theme.space-10;
+    Text {
+        text: "Rendering backend: \{root.renderer-name}";
+    }
 
-            Text {
-                text: "About Rai Pal";
-                font-size: Theme.font-20;
-                font-weight: Theme.weight-bold;
-            }
-
-            Text {
-                text: "Version: \{root.app-version}";
-            }
-
-            Text {
-                text: "Rendering backend: \{root.renderer-name}";
-            }
-
-            Text {
-                text: "Platform: \{root.platform-name}";
-            }
-
-            Rectangle {
-                vertical-stretch: 1;
-            }
-
-            HorizontalLayout {
-                alignment: end;
-
-                Button {
-                    text: "Close";
-
-                    clicked => {
-                        root.close();
-                    }
-                }
-            }
-        }
+    Text {
+        text: "Platform: \{root.platform-name}";
     }
 }

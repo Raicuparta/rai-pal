@@ -1,7 +1,7 @@
-import { ScrollView } from "std-widgets.slint";
 import { Button } from "button.slint";
 import { AddGamePhase } from "../app-types.slint";
 import { Fonts, Theme } from "../theme.slint";
+import { Modal } from "modal.slint";
 
 component SavedDirectoryRow inherits Rectangle {
     in property <string> path;
@@ -38,7 +38,7 @@ component SavedDirectoryRow inherits Rectangle {
     }
 }
 
-export component AddGamePopup inherits PopupWindow {
+export component AddGamePopup inherits Modal {
     in property <AddGamePhase> phase: idle;
     in property <string> selected-path;
     in property <int> scanned-dirs;
@@ -53,173 +53,129 @@ export component AddGamePopup inherits PopupWindow {
     callback cancel-scan;
     callback confirm-directory;
     callback remove-directory(path: string);
-    callback closed;
 
-    width: min(620px, Theme.details-popup-width);
-    height: min(560px, Theme.details-popup-height);
-    close-policy: PopupClosePolicy.no-auto-close;
+    title: @tr("manualGames" => "Manually Added Games");
 
-    Rectangle {
-        background: Theme.background;
-        border-width: Theme.border-width;
-        border-color: Theme.border;
-        border-radius: Theme.radius-8;
+    Text {
+        text: @tr("manualGames" => "Note: you can also add your non-Steam games to Steam, and they will still be detected by Rai Pal.");
+        font-size: Theme.font-12;
+        opacity: 0.7;
+        wrap: word-wrap;
+    }
 
-        VerticalLayout {
-            padding: Theme.space-16;
-            spacing: Theme.space-12;
+    if root.phase == AddGamePhase.idle : VerticalLayout {
+        spacing: Theme.space-10;
 
-            Text {
-                text: @tr("manualGames" => "Manually Added Games");
-                font-size: Theme.font-20;
-                font-weight: Theme.weight-bold;
+        Button {
+            text: @tr("manualGames" => "Select game executable");
+            tint: Theme.primary;
+            height: Theme.control-height;
+
+            clicked => {
+                root.select-executable();
             }
+        }
 
-            Text {
-                text: @tr("manualGames" => "Note: you can also add your non-Steam games to Steam, and they will still be detected by Rai Pal.");
-                font-size: Theme.font-12;
-                opacity: 0.7;
-                wrap: word-wrap;
+        Button {
+            text: @tr("manualGames" => "Select game directory. Can be slow!");
+            height: Theme.control-height;
+
+            clicked => {
+                root.select-directory();
             }
+        }
 
-            ScrollView {
-                VerticalLayout {
-                    spacing: Theme.space-10;
+        Text {
+            text: @tr("manualGames" => "You can also just drop game executable files or entire folders anywhere on Rai Pal's window to add them to the library, even without opening this dialog.");
+            font-size: Theme.font-12;
+            opacity: 0.7;
+            wrap: word-wrap;
+        }
+    }
 
-                    if root.phase == AddGamePhase.idle : VerticalLayout {
-                        spacing: Theme.space-10;
+    if root.phase == AddGamePhase.scanning : VerticalLayout {
+        spacing: Theme.space-10;
+        alignment: start;
 
-                        Button {
-                            text: @tr("manualGames" => "Select game executable");
-                            tint: Theme.primary;
-                            height: Theme.control-height;
+        Text {
+            text: @tr("manualGames" => "Scanning {0}...", root.selected-path);
+            font-weight: Theme.weight-bold;
+            wrap: word-wrap;
+        }
 
-                            clicked => {
-                                root.select-executable();
-                            }
-                        }
+        Text {
+            text: @tr("manualGames" => "Scanned {0} directories, found {1} executables", root.scanned-dirs, root.executables-found);
+        }
 
-                        Button {
-                            text: @tr("manualGames" => "Select game directory. Can be slow!");
-                            height: Theme.control-height;
+        Text {
+            text: root.current-path;
+            font-family: Fonts.monospace-family;
+            font-size: Theme.font-12;
+            opacity: 0.7;
+            overflow: elide;
+        }
 
-                            clicked => {
-                                root.select-directory();
-                            }
-                        }
+        Button {
+            text: @tr("manualGames" => "Cancel");
+            height: Theme.control-height;
 
-                        Text {
-                            text: @tr("manualGames" => "You can also just drop game executable files or entire folders anywhere on Rai Pal's window to add them to the library, even without opening this dialog.");
-                            font-size: Theme.font-12;
-                            opacity: 0.7;
-                            wrap: word-wrap;
-                        }
-                    }
+            clicked => {
+                root.cancel-scan();
+            }
+        }
+    }
 
-                    if root.phase == AddGamePhase.scanning : VerticalLayout {
-                        spacing: Theme.space-10;
-                        alignment: start;
+    if root.phase == AddGamePhase.confirming : VerticalLayout {
+        spacing: Theme.space-10;
+        alignment: start;
 
-                        Text {
-                            text: @tr("manualGames" => "Scanning {0}...", root.selected-path);
-                            font-weight: Theme.weight-bold;
-                            wrap: word-wrap;
-                        }
+        Text {
+            text: @tr("manualGames" => "Found {0} executables in {1} seconds. Add this folder to Rai Pal?", root.games-count, root.duration-text);
+            wrap: word-wrap;
+        }
 
-                        Text {
-                            text: @tr("manualGames" => "Scanned {0} directories, found {1} executables", root.scanned-dirs, root.executables-found);
-                        }
+        HorizontalLayout {
+            spacing: Theme.space-8;
 
-                        Text {
-                            text: root.current-path;
-                            font-family: Fonts.monospace-family;
-                            font-size: Theme.font-12;
-                            opacity: 0.7;
-                            overflow: elide;
-                        }
+            Button {
+                text: @tr("manualGames" => "Add folder");
+                tint: Theme.primary;
 
-                        Button {
-                            text: @tr("manualGames" => "Cancel");
-                            height: Theme.control-height;
-
-                            clicked => {
-                                root.cancel-scan();
-                            }
-                        }
-                    }
-
-                    if root.phase == AddGamePhase.confirming : VerticalLayout {
-                        spacing: Theme.space-10;
-                        alignment: start;
-
-                        Text {
-                            text: @tr("manualGames" => "Found {0} executables in {1} seconds. Add this folder to Rai Pal?", root.games-count, root.duration-text);
-                            wrap: word-wrap;
-                        }
-
-                        HorizontalLayout {
-                            spacing: Theme.space-8;
-
-                            Button {
-                                text: @tr("manualGames" => "Add folder");
-                                tint: Theme.primary;
-
-                                clicked => {
-                                    root.confirm-directory();
-                                }
-                            }
-
-                            Button {
-                                text: @tr("manualGames" => "Cancel");
-
-                                clicked => {
-                                    root.cancel-scan();
-                                }
-                            }
-                        }
-                    }
-
-                    if root.phase == AddGamePhase.idle && root.directories.length > 0 : VerticalLayout {
-                        spacing: Theme.space-8;
-
-                        Rectangle {
-                            height: Theme.border-width;
-                            background: Theme.border;
-                        }
-
-                        Text {
-                            text: @tr("manualGames" => "These directories will be scanned recursively every time Rai Pal refreshes its data. Large folders may make things significantly slower.");
-                            font-size: Theme.font-12;
-                            opacity: 0.7;
-                            wrap: word-wrap;
-                        }
-
-                        for directory in root.directories : SavedDirectoryRow {
-                            path: directory;
-
-                            removed => {
-                                root.remove-directory(directory);
-                            }
-                        }
-                    }
+                clicked => {
+                    root.confirm-directory();
                 }
             }
 
-            Rectangle {
-                vertical-stretch: 1;
-            }
+            Button {
+                text: @tr("manualGames" => "Cancel");
 
-            HorizontalLayout {
-                alignment: end;
-
-                Button {
-                    text: "Close";
-
-                    clicked => {
-                        root.close();
-                        root.closed();
-                    }
+                clicked => {
+                    root.cancel-scan();
                 }
+            }
+        }
+    }
+
+    if root.phase == AddGamePhase.idle && root.directories.length > 0 : VerticalLayout {
+        spacing: Theme.space-8;
+
+        Rectangle {
+            height: Theme.border-width;
+            background: Theme.border;
+        }
+
+        Text {
+            text: @tr("manualGames" => "These directories will be scanned recursively every time Rai Pal refreshes its data. Large folders may make things significantly slower.");
+            font-size: Theme.font-12;
+            opacity: 0.7;
+            wrap: word-wrap;
+        }
+
+        for directory in root.directories : SavedDirectoryRow {
+            path: directory;
+
+            removed => {
+                root.remove-directory(directory);
             }
         }
     }

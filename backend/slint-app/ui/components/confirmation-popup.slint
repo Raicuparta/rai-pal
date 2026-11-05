@@ -1,66 +1,47 @@
 import { CheckBox } from "std-widgets.slint";
 import { Button } from "button.slint";
 import { Theme } from "../theme.slint";
+import { Modal } from "modal.slint";
 
-export component ConfirmationPopup inherits PopupWindow {
+export component ConfirmationPopup inherits Modal {
     in property <string> text;
     in property <string> confirm-label;
     in property <bool> can-skip;
     in-out property <bool> dont-ask-again: false;
 
     callback response(confirmed: bool);
-    callback closed;
 
-    width: Theme.details-popup-width;
-    height: Theme.small-popup-height + Theme.space-20;
-    close-policy: PopupClosePolicy.no-auto-close;
+    title: root.confirm-label;
+    content-spacing: Theme.space-12;
 
-    Rectangle {
-        background: Theme.background;
-        border-width: Theme.border-width;
-        border-color: Theme.border;
-        border-radius: Theme.radius-8;
+    Text {
+        text: root.text;
+        wrap: word-wrap;
+    }
 
-        VerticalLayout {
-            padding: Theme.space-20;
-            spacing: Theme.space-12;
+    if root.can-skip : CheckBox {
+        text: @tr("commandButton" => "Don't ask again");
+        checked <=> root.dont-ask-again;
+    }
 
-            Text {
-                text: root.text;
-                wrap: word-wrap;
+    HorizontalLayout {
+        alignment: center;
+        spacing: Theme.space-8;
+
+        Button {
+            text: @tr("commandButton" => "Cancel");
+
+            clicked => {
+                root.response(false);
             }
+        }
 
-            if root.can-skip : CheckBox {
-                text: @tr("commandButton" => "Don't ask again");
-                checked <=> root.dont-ask-again;
-            }
+        Button {
+            text: root.confirm-label;
+            tint: Theme.primary;
 
-            Rectangle {
-                vertical-stretch: 1;
-            }
-
-            HorizontalLayout {
-                alignment: center;
-                spacing: Theme.space-8;
-
-                Button {
-                    text: @tr("commandButton" => "Cancel");
-
-                    clicked => {
-                        root.close();
-                        root.response(false);
-                    }
-                }
-
-                Button {
-                    text: root.confirm-label;
-                    tint: Theme.primary;
-
-                    clicked => {
-                        root.close();
-                        root.response(true);
-                    }
-                }
+            clicked => {
+                root.response(true);
             }
         }
     }
