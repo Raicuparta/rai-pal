@@ -1,7 +1,6 @@
 import { Button } from "button.slint";
 import { Theme } from "../theme.slint";
 import { Tr } from "../translations.slint";
-import { IconSet } from "@lucide";
 
 export component RefreshButton inherits VerticalLayout {
     in property <bool> refreshing;
@@ -17,7 +16,7 @@ export component RefreshButton inherits VerticalLayout {
         text: root.refreshing ? Tr.refresh-loading(root.task-names) : @tr("refresh" => "Refresh");
         tint: Theme.primary;
         enabled: !root.refreshing;
-        icon: root.refreshing ? IconSet.Hourglass : IconSet.RotateCcw;
+        icon: root.refreshing ? @image-url("../icons/ui/refreshing.svg") : @image-url("../icons/ui/refresh.svg");
 
         clicked => {
             root.clicked();

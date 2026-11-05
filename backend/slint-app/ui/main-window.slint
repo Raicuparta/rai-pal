@@ -1,5 +1,4 @@
 import { Palette } from "std-widgets.slint";
-import { IconSet } from "@lucide";
 import { GameRowData } from "game-row-data.slint";
 import { FilterGroupData } from "filter-data.slint";
 import { GameModRowData } from "game-mod-row-data.slint";
@@ -219,7 +218,7 @@ export component MainWindow inherits Window {
 
                     NavTab {
                         title: @tr("tab" => "Games");
-                        icon: IconSet.Gamepad2;
+                        icon: @image-url("icons/ui/games.svg");
                         selected: root.current-tab == AppTab.games;
 
                         clicked => {
@@ -230,7 +229,7 @@ export component MainWindow inherits Window {
 
                     NavTab {
                         title: @tr("tab" => "Mods");
-                        icon: IconSet.Puzzle;
+                        icon: @image-url("icons/ui/mods.svg");
                         selected: root.current-tab == AppTab.mods;
 
                         clicked => {
@@ -241,7 +240,7 @@ export component MainWindow inherits Window {
 
                     NavTab {
                         title: @tr("tab" => "Thanks");
-                        icon: IconSet.Heart;
+                        icon: @image-url("icons/ui/thanks.svg");
                         icon-color: #c92a2a;
                         selected: root.current-tab == AppTab.thanks;
 

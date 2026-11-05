@@ -1,6 +1,6 @@
-import { IconDisplay, IconSet } from "@lucide";
 import { Branding } from "../branding.slint";
 import { Theme } from "../theme.slint";
+import { SvgIcon } from "svg-icon.slint";
 
 export component ProviderIcon inherits Rectangle {
     in property <string> provider-id;
@@ -9,51 +9,34 @@ export component ProviderIcon inherits Rectangle {
     width: root.icon-size;
     height: root.icon-size;
 
-    if provider-id == "Amazon" : Image {
-        source: @image-url("../icons/providers/amazon.svg");
-        colorize: Branding.provider-foreground(provider-id);
-        width: 100%;
-        height: 100%;
+    pure function icon-source(id: string) -> image {
+        if id == "Amazon" {
+            return @image-url("../icons/providers/amazon.svg");
+        }
+        if id == "Steam" {
+            return @image-url("../icons/providers/steam.svg");
+        }
+        if id == "Epic" {
+            return @image-url("../icons/providers/epic.svg");
+        }
+        if id == "Gog" {
+            return @image-url("../icons/providers/gog.svg");
+        }
+        if id == "Itch" {
+            return @image-url("../icons/providers/itch.svg");
+        }
+        if id == "Xbox" {
+            return @image-url("../icons/providers/xbox.svg");
+        }
+        if id == "Manual" {
+            return @image-url("../icons/providers/manual.svg");
+        }
+        return @image-url("");
     }
 
-    if provider-id == "Steam" : Image {
-        source: @image-url("../icons/providers/steam.svg");
-        colorize: Branding.provider-foreground(provider-id);
-        width: 100%;
-        height: 100%;
-    }
-
-    if provider-id == "Epic" : Image {
-        source: @image-url("../icons/providers/epic.svg");
-        colorize: Branding.provider-foreground(provider-id);
-        width: 100%;
-        height: 100%;
-    }
-
-    if provider-id == "Gog" : Image {
-        source: @image-url("../icons/providers/gog.svg");
-        colorize: Branding.provider-foreground(provider-id);
-        width: 100%;
-        height: 100%;
-    }
-
-    if provider-id == "Itch" : Image {
-        source: @image-url("../icons/providers/itch.svg");
-        colorize: Branding.provider-foreground(provider-id);
-        width: 100%;
-        height: 100%;
-    }
-
-    if provider-id == "Xbox" : Image {
-        source: @image-url("../icons/providers/xbox.svg");
-        colorize: Branding.provider-foreground(provider-id);
-        width: 100%;
-        height: 100%;
-    }
-
-    if provider-id == "Manual" : IconDisplay {
-        icon: IconSet.Gamepad2;
+    SvgIcon {
+        source: root.icon-source(root.provider-id);
         size: root.icon-size;
-        stroke: Branding.provider-foreground(provider-id);
+        color: Branding.provider-foreground(root.provider-id);
     }
 }

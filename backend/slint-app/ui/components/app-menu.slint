@@ -1,6 +1,6 @@
-import { IconDisplay, IconSet } from "@lucide";
 import { AppColorScheme } from "../app-types.slint";
 import { Theme } from "../theme.slint";
+import { SvgIcon } from "svg-icon.slint";
 
 export component AppMenu inherits Rectangle {
     in property <string> selected-language: "";
@@ -28,10 +28,10 @@ export component AppMenu inherits Rectangle {
             border-radius: Theme.radius-4;
             background: touch-area.pressed ? Theme.pressed-background : touch-area.has-hover ? Theme.hover-background : transparent;
 
-            IconDisplay {
-                icon: IconSet.Menu;
+            SvgIcon {
+                source: @image-url("../icons/ui/menu.svg");
                 size: Theme.menu-icon-size;
-                stroke: Theme.foreground;
+                color: Theme.foreground;
             }
 
             touch-area := TouchArea {

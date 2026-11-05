@@ -1,10 +1,10 @@
 import { ScrollView } from "std-widgets.slint";
-import { IconDisplay, IconSet } from "@lucide";
 import { ModActions } from "../actions.slint";
 import { Branding } from "../branding.slint";
 import { PatronData } from "../patron-data.slint";
 import { Theme } from "../theme.slint";
 import { Sidebar } from "sidebar.slint";
+import { SvgIcon } from "svg-icon.slint";
 
 component ThanksLink inherits Rectangle {
     in property <string> label;
@@ -43,11 +43,10 @@ component ThanksLink inherits Rectangle {
             }
         }
 
-        if !root.icon-round : Image {
+        if !root.icon-round : SvgIcon {
             source: root.icon;
-            width: Theme.space-20;
-            height: Theme.space-20;
-            colorize: root.icon-color;
+            size: Theme.space-20;
+            color: root.icon-color;
         }
 
         Text {
@@ -58,10 +57,10 @@ component ThanksLink inherits Rectangle {
             vertical-alignment: center;
         }
 
-        IconDisplay {
-            icon: IconSet.ExternalLink;
+        SvgIcon {
+            source: @image-url("../icons/ui/external-link.svg");
             size: Theme.icon-button-icon-size;
-            stroke: Theme.dimmed-foreground;
+            color: Theme.dimmed-foreground;
         }
     }
 
@@ -108,10 +107,10 @@ component PatronRow inherits Rectangle {
             }
         }
 
-        if root.patron.ranking <= 3 : IconDisplay {
-            icon: IconSet.Trophy;
+        if root.patron.ranking <= 3 : SvgIcon {
+            source: @image-url("../icons/ui/trophy.svg");
             size: Theme.icon-button-icon-size;
-            stroke: root.patron.ranking == 1 ? Theme.highlight : Theme.dimmed-foreground;
+            color: root.patron.ranking == 1 ? Theme.highlight : Theme.dimmed-foreground;
         }
 
         Text {

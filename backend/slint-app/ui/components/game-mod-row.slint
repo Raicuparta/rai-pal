@@ -1,4 +1,3 @@
-import { IconSet } from "@lucide";
 import { ModActions } from "../actions.slint";
 import { GameModRowData } from "../game-mod-row-data.slint";
 import { Theme } from "../theme.slint";
@@ -135,7 +134,7 @@ export component GameModRowView inherits Rectangle {
 
                 actions-button := IconButton {
                     visible: root.has-dropdown-actions;
-                    icon: IconSet.Ellipsis;
+                    icon: @image-url("../icons/ui/more.svg");
                     tooltip: @tr("gameModRow" => "Mod actions");
 
                     clicked => {

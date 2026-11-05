@@ -1,0 +1,10 @@
+import { Theme } from "../theme.slint";
+
+export component SvgIcon inherits Image {
+    in property <length> size: Theme.space-16;
+    in property <brush> color: Theme.foreground;
+
+    width: root.size;
+    height: root.size;
+    colorize: root.color;
+}

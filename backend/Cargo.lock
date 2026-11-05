@@ -4124,12 +4124,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4050469837a6ff301cd14c1f8f24f88549e6d548f24f64e2148eb0f72cebc51f"
 
 [[package]]
-name = "lucide-slint"
-version = "1.61.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f1bc6233e403b3105f77d361af1ae67c769d1a4108a970a3e0194812505c3ef6"
-
-[[package]]
 name = "lyon_algorithms"
 version = "1.0.22"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5654,7 +5648,6 @@ version = "1.0.0"
 dependencies = [
  "image",
  "log",
- "lucide-slint",
  "rai-pal-core",
  "reqwest",
  "rfd 0.17.2",

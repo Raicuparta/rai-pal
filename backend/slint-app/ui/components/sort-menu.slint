@@ -1,5 +1,5 @@
-import { IconDisplay, IconSet } from "@lucide";
 import { Theme } from "../theme.slint";
+import { SvgIcon } from "svg-icon.slint";
 
 export component SortMenu inherits Rectangle {
     in-out property <int> sort-index: 0;
@@ -33,10 +33,10 @@ export component SortMenu inherits Rectangle {
                     overflow: elide;
                 }
 
-                IconDisplay {
-                    icon: IconSet.ChevronDown;
+                SvgIcon {
+                    source: @image-url("../icons/ui/sort-menu.svg");
                     size: Theme.icon-button-icon-size;
-                    stroke: Theme.dimmed-foreground;
+                    color: Theme.dimmed-foreground;
                 }
             }
 

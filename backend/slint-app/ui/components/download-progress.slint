@@ -1,7 +1,7 @@
-import { IconDisplay, IconSet } from "@lucide";
 import { ProgressIndicator } from "std-widgets.slint";
 import { DownloadItemData } from "../download-data.slint";
 import { Theme } from "../theme.slint";
+import { SvgIcon } from "svg-icon.slint";
 
 export component DownloadProgress inherits Rectangle {
     in property <[DownloadItemData]> items;
@@ -22,10 +22,10 @@ export component DownloadProgress inherits Rectangle {
             border-radius: Theme.radius-4;
             background: touch-area.pressed ? Theme.pressed-background : touch-area.has-hover ? Theme.hover-background : transparent;
 
-            IconDisplay {
-                icon: IconSet.CloudDownload;
+            SvgIcon {
+                source: @image-url("../icons/ui/download.svg");
                 size: Theme.menu-icon-size;
-                stroke: Theme.foreground;
+                color: Theme.foreground;
             }
 
             ProgressIndicator {

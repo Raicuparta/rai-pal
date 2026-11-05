@@ -1,8 +1,8 @@
-import { Icon, IconDisplay, IconSet } from "@lucide";
 import { Theme } from "../theme.slint";
+import { SvgIcon } from "svg-icon.slint";
 
 component MetaItem inherits HorizontalLayout {
-    in property <Icon> icon;
+    in property <image> icon;
     in property <string> text;
     in property <string> tooltip: "";
 
@@ -10,10 +10,10 @@ component MetaItem inherits HorizontalLayout {
     horizontal-stretch: 0;
     cross-axis-alignment: center;
 
-    IconDisplay {
-        icon: root.icon;
+    SvgIcon {
+        source: root.icon;
         size: Theme.font-10;
-        stroke: Theme.foreground;
+        color: Theme.foreground;
     }
 
     Text {
@@ -48,22 +48,10 @@ export component ModSummaryView inherits HorizontalLayout {
     spacing: Theme.space-8;
     cross-axis-alignment: center;
 
-    if show-status && outdated : IconDisplay {
-        icon: IconSet.CircleAlert;
+    if show-status : SvgIcon {
+        source: outdated ? @image-url("../icons/ui/outdated.svg") : installed ? @image-url("../icons/ui/success.svg") : @image-url("../icons/ui/mod-not-installed.svg");
         size: Theme.icon-status-size;
-        stroke: Theme.status-warning;
-    }
-
-    if show-status && installed && !outdated : IconDisplay {
-        icon: IconSet.CircleCheck;
-        size: Theme.icon-status-size;
-        stroke: Theme.status-success;
-    }
-
-    if show-status && !installed && !outdated : IconDisplay {
-        icon: IconSet.CircleMinus;
-        size: Theme.icon-status-size;
-        stroke: Theme.dimmed-foreground;
+        color: outdated ? Theme.status-warning : installed ? Theme.status-success : Theme.dimmed-foreground;
     }
 
     VerticalLayout {
@@ -98,10 +86,10 @@ export component ModSummaryView inherits HorizontalLayout {
                     spacing: Theme.space-3;
                     alignment: center;
 
-                    IconDisplay {
-                        icon: IconSet.TriangleAlert;
+                    SvgIcon {
+                        source: @image-url("../icons/ui/deprecated.svg");
                         size: Theme.font-11;
-                        stroke: Theme.deprecated-foreground;
+                        color: Theme.deprecated-foreground;
                     }
 
                     Text {
@@ -129,22 +117,22 @@ export component ModSummaryView inherits HorizontalLayout {
             }
 
             if root.release-date != "" : MetaItem {
-                icon: IconSet.Calendar;
+                icon: @image-url("../icons/ui/calendar.svg");
                 text: root.release-date;
             }
 
             if root.author != "" : MetaItem {
-                icon: IconSet.UserRound;
+                icon: @image-url("../icons/ui/user.svg");
                 text: root.author;
             }
 
             if root.engine-text != "" : MetaItem {
-                icon: IconSet.Cpu;
+                icon: @image-url("../icons/ui/engine.svg");
                 text: root.engine-text;
             }
 
             if root.has-remote-config : MetaItem {
-                icon: IconSet.Settings;
+                icon: @image-url("../icons/ui/settings.svg");
                 text: @tr("gameModRow" => "Recommended config");
                 tooltip: @tr("gameModRow" => "Recommended config available. Will be downloaded if you don't already have a config. You can also force it to download from the three dot menu.");
             }

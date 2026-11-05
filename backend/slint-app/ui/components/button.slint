@@ -1,6 +1,6 @@
-import { Icon, IconDisplay, IconSet } from "@lucide";
 import { ActionState } from "../action-state.slint";
 import { Theme } from "../theme.slint";
+import { SvgIcon } from "svg-icon.slint";
 
 global ButtonOutlines {
     out property <brush> on-light-fill: Theme.dark ? @linear-gradient(180deg, #FFFFFF14 90.67%, #00000024 100%) : @linear-gradient(180deg, #0000000F 90.58%, #00000029 100%);
@@ -11,7 +11,7 @@ export component Button inherits Rectangle {
     in property <brush> tint: Theme.surface-background;
     in property <string> text: "";
     in property <string> tooltip: "";
-    in property <Icon> icon;
+    in property <image> icon;
     in property <length> text-size: Theme.font-14;
     in property <bool> enabled: true;
     in property <ActionState> state: ActionState.idle;
@@ -23,8 +23,8 @@ export component Button inherits Rectangle {
     private property <bool> interactive: root.enabled && root.state != ActionState.loading;
     private property <bool> has-status: root.state == ActionState.success || root.state == ActionState.error;
     private property <bool> shows-spinner: root.state == ActionState.loading && root.long-loading;
-    private property <bool> has-icon: root.icon.paths.length > 0;
-    private property <Icon> display-icon: root.state == ActionState.success ? IconSet.CircleCheck : root.state == ActionState.error ? IconSet.CircleX : root.shows-spinner ? IconSet.LoaderCircle : root.icon;
+    private property <bool> has-icon: root.icon.width > 0;
+    private property <image> display-icon: root.state == ActionState.success ? @image-url("../icons/ui/success.svg") : root.state == ActionState.error ? @image-url("../icons/ui/error.svg") : root.shows-spinner ? @image-url("../icons/ui/loading.svg") : root.icon;
 
     private property <brush> base-color: root.state == ActionState.success ? Theme.status-success : root.state == ActionState.error ? Theme.status-error : root.enabled ? root.tint : Theme.surface-background;
     private property <bool> needs-dark-ink: root.base-color.to-oklch().lightness > 0.62;
@@ -76,10 +76,10 @@ export component Button inherits Rectangle {
         alignment: root.icon-only ? center : start;
         cross-axis-alignment: center;
 
-        if root.has-icon || root.has-status || root.shows-spinner : IconDisplay {
-            icon: root.display-icon;
+        if root.has-icon || root.has-status || root.shows-spinner : SvgIcon {
+            source: root.display-icon;
             size: Theme.icon-button-icon-size;
-            stroke: root.ink-color;
+            color: root.ink-color;
             transform-rotation: root.shows-spinner ? root.spinner-angle : 0deg;
         }
 

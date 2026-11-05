@@ -1,9 +1,9 @@
-import { Icon, IconDisplay } from "@lucide";
 import { Theme } from "../theme.slint";
+import { SvgIcon } from "svg-icon.slint";
 
 export component NavTab inherits Rectangle {
     in property <string> title;
-    in property <Icon> icon;
+    in property <image> icon;
     in property <brush> icon-color: Theme.foreground;
     in property <bool> selected;
 
@@ -26,11 +26,10 @@ export component NavTab inherits Rectangle {
         spacing: Theme.space-10;
         cross-axis-alignment: center;
 
-        IconDisplay {
-            icon: root.icon;
+        SvgIcon {
+            source: root.icon;
             size: root.nav-tab-icon-size;
-            stroke: root.icon-color;
-            stroke-fill: root.icon-color.transparentize(0.8);
+            color: root.icon-color;
         }
 
         Text {

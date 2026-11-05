@@ -1,8 +1,8 @@
-import { IconDisplay, IconSet } from "@lucide";
 import { Branding } from "../branding.slint";
 import { GameRowData } from "../game-row-data.slint";
 import { Fonts, Theme } from "../theme.slint";
 import { ProviderIcon } from "provider-icon.slint";
+import { SvgIcon } from "svg-icon.slint";
 
 export component GameRowView inherits Rectangle {
     in property <GameRowData> game-row;
@@ -38,16 +38,10 @@ export component GameRowView inherits Rectangle {
                     icon-size: Theme.space-16;
                 }
 
-                if game-row.installed : IconDisplay {
-                    icon: IconSet.Monitor;
+                SvgIcon {
+                    source: game-row.installed ? @image-url("../icons/ui/game-installed.svg") : @image-url("../icons/ui/game-not-installed.svg");
                     size: Theme.icon-button-icon-size;
-                    stroke: Theme.dark ? white : Theme.foreground;
-                }
-
-                if !game-row.installed : IconDisplay {
-                    icon: IconSet.Cloud;
-                    size: Theme.icon-button-icon-size;
-                    stroke: Theme.foreground;
+                    color: game-row.installed && Theme.dark ? white : Theme.foreground;
                 }
             }
         }

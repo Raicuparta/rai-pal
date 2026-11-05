@@ -1,8 +1,7 @@
-import { IconSet } from "@lucide";
 import { Theme } from "../theme.slint";
 import { IconButton } from "icon-button.slint";
 
 export component ResetButton inherits IconButton {
-    icon: IconSet.RotateCcw;
+    icon: @image-url("../icons/ui/reset.svg");
     tint: root.enabled ? Theme.primary : Theme.surface-background;
 }

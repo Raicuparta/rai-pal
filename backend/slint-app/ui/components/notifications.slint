@@ -1,7 +1,7 @@
-import { IconDisplay, IconSet } from "@lucide";
 import { NotificationData, NotificationKind } from "../notification-data.slint";
 import { Theme } from "../theme.slint";
 import { IconButton } from "icon-button.slint";
+import { SvgIcon } from "svg-icon.slint";
 
 component NotificationToast inherits Rectangle {
     in property <NotificationData> notification;
@@ -29,10 +29,10 @@ component NotificationToast inherits Rectangle {
         spacing: Theme.space-8;
         cross-axis-alignment: center;
 
-        IconDisplay {
-            icon: root.notification.kind == NotificationKind.error ? IconSet.CircleX : root.notification.kind == NotificationKind.success ? IconSet.CircleCheck : IconSet.Info;
+        SvgIcon {
+            source: root.notification.kind == NotificationKind.error ? @image-url("../icons/ui/error.svg") : root.notification.kind == NotificationKind.success ? @image-url("../icons/ui/success.svg") : @image-url("../icons/ui/info.svg");
             size: Theme.icon-status-size;
-            stroke: root.notification.kind == NotificationKind.error ? Theme.status-error : root.notification.kind == NotificationKind.success ? Theme.status-success : Theme.status-info;
+            color: root.notification.kind == NotificationKind.error ? Theme.status-error : root.notification.kind == NotificationKind.success ? Theme.status-success : Theme.status-info;
         }
 
         Text {
@@ -42,7 +42,7 @@ component NotificationToast inherits Rectangle {
         }
 
         IconButton {
-            icon: IconSet.X;
+            icon: @image-url("../icons/ui/close.svg");
             tooltip: @tr("debugData" => "Close");
 
             clicked => {

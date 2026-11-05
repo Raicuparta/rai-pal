@@ -1,5 +1,5 @@
-import { IconDisplay, IconSet } from "@lucide";
 import { Theme } from "../theme.slint";
+import { SvgIcon } from "svg-icon.slint";
 
 export component UserMenu inherits Rectangle {
     in property <bool> logged-in;
@@ -48,10 +48,10 @@ export component UserMenu inherits Rectangle {
                 vertical-alignment: center;
             }
 
-            if !root.logged-in : IconDisplay {
-                icon: IconSet.CircleUser;
+            if !root.logged-in : SvgIcon {
+                source: @image-url("../icons/ui/account.svg");
                 size: Theme.menu-icon-size;
-                stroke: Theme.foreground;
+                color: Theme.foreground;
             }
 
             touch-area := TouchArea {

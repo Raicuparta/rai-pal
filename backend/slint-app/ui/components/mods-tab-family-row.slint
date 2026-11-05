@@ -1,7 +1,7 @@
-import { IconDisplay, IconSet } from "@lucide";
 import { ModsTabItemData } from "../mods-tab-data.slint";
 import { Theme } from "../theme.slint";
 import { ModsTabRowView } from "mods-tab-row.slint";
+import { SvgIcon } from "svg-icon.slint";
 
 export component ModsTabFamilyRowView inherits Rectangle {
     in property <ModsTabItemData> item;
@@ -23,10 +23,10 @@ export component ModsTabFamilyRowView inherits Rectangle {
                 spacing: Theme.space-8;
                 cross-axis-alignment: center;
 
-                IconDisplay {
-                    icon: root.expanded ? IconSet.ChevronDown : IconSet.ChevronRight;
+                SvgIcon {
+                    source: root.expanded ? @image-url("../icons/ui/expanded.svg") : @image-url("../icons/ui/collapsed.svg");
                     size: Theme.space-16;
-                    stroke: Theme.dimmed-foreground;
+                    color: Theme.dimmed-foreground;
                 }
 
                 VerticalLayout {

@@ -1,5 +1,4 @@
 import { LineEdit } from "std-widgets.slint";
-import { IconSet } from "@lucide";
 import { FilterGroupData } from "../filter-data.slint";
 import { Theme } from "../theme.slint";
 import { FilterGroupView } from "filter-group.slint";
@@ -73,7 +72,7 @@ export component GamesSidebar inherits Sidebar {
         cross-axis-alignment: center;
 
         IconButton {
-            icon: IconSet.ChevronUp;
+            icon: @image-url("../icons/ui/collapse-all.svg");
             tooltip: @tr("filterMenu" => "Collapse all filters");
             enabled: root.filters-have-expanded;
 

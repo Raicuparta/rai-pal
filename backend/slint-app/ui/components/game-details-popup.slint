@@ -1,5 +1,4 @@
 import { TextEdit } from "std-widgets.slint";
-import { IconSet } from "@lucide";
 import { Fonts, Theme } from "../theme.slint";
 import { IconButton } from "icon-button.slint";
 
@@ -43,7 +42,7 @@ export component GameDetailsPopup inherits PopupWindow {
                 }
 
                 IconButton {
-                    icon: root.copied ? IconSet.Check : IconSet.Copy;
+                    icon: root.copied ? @image-url("../icons/ui/copied.svg") : @image-url("../icons/ui/copy.svg");
                     accessible-role: button;
                     accessible-label: @tr("debugData" => "Copy debug data");
                     tooltip: @tr("debugData" => "Copy debug data");
@@ -63,7 +62,7 @@ export component GameDetailsPopup inherits PopupWindow {
                 }
 
                 IconButton {
-                    icon: IconSet.X;
+                    icon: @image-url("../icons/ui/close.svg");
                     accessible-role: button;
                     accessible-label: @tr("debugData" => "Close");
                     tooltip: @tr("debugData" => "Close");

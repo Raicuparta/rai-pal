@@ -1,10 +1,10 @@
-import { IconDisplay, IconSet } from "@lucide";
 import { CheckBox } from "std-widgets.slint";
 import { FilterGroupData, FilterValueData } from "../filter-data.slint";
 import { Tr } from "../translations.slint";
 import { Theme } from "../theme.slint";
 import { IconButton } from "icon-button.slint";
 import { ResetButton } from "reset-button.slint";
+import { SvgIcon } from "svg-icon.slint";
 
 global FilterMetrics {
     out property <length> row-height: 26px;
@@ -62,10 +62,10 @@ component FilterValueRow inherits Rectangle {
                 width: Theme.icon-button-icon-size;
                 height: Theme.icon-button-icon-size;
 
-                IconDisplay {
-                    icon: IconSet.CircleHelp;
+                SvgIcon {
+                    source: @image-url("../icons/ui/help.svg");
                     size: Theme.icon-button-icon-size;
-                    stroke: Theme.dimmed-foreground;
+                    color: Theme.dimmed-foreground;
                 }
 
                 Tooltip {
@@ -89,7 +89,7 @@ component FilterValueRow inherits Rectangle {
         }
 
         lock-button := IconButton {
-            icon: root.item.locked ? IconSet.Lock : IconSet.LockOpen;
+            icon: root.item.locked ? @image-url("../icons/ui/locked.svg") : @image-url("../icons/ui/unlocked.svg");
             tooltip: root.item.locked ? @tr("filterMenu" => "Unlock filter value") : @tr("filterMenu" => "Lock filter value");
             visible: root.item.locked || root.hovered;
             enabled: !root.item.enabled;
@@ -137,12 +137,12 @@ export component FilterGroupView inherits Rectangle {
                     width: Theme.icon-button-size;
                     height: Theme.icon-button-size;
 
-                    IconDisplay {
+                    SvgIcon {
                         x: (parent.width - self.width) / 2;
                         y: (parent.height - self.height) / 2;
-                        icon: root.group.expanded ? IconSet.ChevronDown : IconSet.ChevronRight;
+                        source: root.group.expanded ? @image-url("../icons/ui/expanded.svg") : @image-url("../icons/ui/collapsed.svg");
                         size: Theme.icon-button-icon-size;
-                        stroke: Theme.dimmed-foreground;
+                        color: Theme.dimmed-foreground;
                     }
                 }
 
