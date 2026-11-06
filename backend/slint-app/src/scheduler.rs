@@ -1,5 +1,5 @@
 use std::{
-	collections::{HashSet, VecDeque},
+	collections::{HashMap, HashSet, VecDeque},
 	sync::{
 		Condvar, Mutex,
 		atomic::{AtomicBool, AtomicU64, Ordering},
@@ -19,6 +19,18 @@ pub struct FetchRequest {
 	pub game_id: String,
 }
 
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+pub struct ThumbnailJob {
+	pub generation: u64,
+	pub url: String,
+}
+
+pub enum ThumbnailOutcome {
+	Success,
+	Cancelled,
+	Failed,
+}
+
 #[derive(Default)]
 struct SchedulerState {
 	queue: VecDeque<FetchRequest>,
@@ -28,6 +40,10 @@ struct SchedulerState {
 	visible_first: usize,
 	visible_last: usize,
 	has_visible_range: bool,
+	thumbnail_queue: VecDeque<ThumbnailJob>,
+	thumbnail_queued: HashSet<ThumbnailJob>,
+	thumbnail_in_flight: HashSet<ThumbnailJob>,
+	thumbnail_subscribers: HashMap<ThumbnailJob, Vec<usize>>,
 }
 
 #[derive(Default)]
@@ -39,6 +55,28 @@ pub struct FetchScheduler {
 }
 
 impl FetchScheduler {
+	fn index_in_visible_margin(state: &SchedulerState, index: usize) -> bool {
+		if !state.has_visible_range {
+			return true;
+		}
+
+		let start = state.visible_first.saturating_sub(VISIBLE_MARGIN);
+		let end = state.visible_last.saturating_add(VISIBLE_MARGIN);
+
+		index >= start && index <= end
+	}
+
+	fn thumbnail_job_wanted(state: &SchedulerState, job: &ThumbnailJob) -> bool {
+		state
+			.thumbnail_subscribers
+			.get(job)
+			.is_some_and(|indices| {
+				indices
+					.iter()
+					.any(|index| Self::index_in_visible_margin(state, *index))
+			})
+	}
+
 	fn enqueue(&self, request: FetchRequest) {
 		let Ok(mut state) = self.state.lock() else {
 			return;
@@ -96,6 +134,11 @@ impl FetchScheduler {
 			state.loaded.remove(index);
 		}
 
+		state.thumbnail_subscribers.retain(|_, indices| {
+			indices.retain(|index| *index >= start && *index <= end);
+			!indices.is_empty()
+		});
+
 		evicted
 	}
 
@@ -110,14 +153,112 @@ impl FetchScheduler {
 			return false;
 		};
 
-		if !state.has_visible_range {
-			return true;
+		Self::index_in_visible_margin(&state, index)
+	}
+
+	pub fn enqueue_thumbnail(&self, index: usize, generation: u64, url: String) {
+		if !self.thumbnails_enabled() || generation != self.generation() {
+			return;
 		}
 
-		let start = state.visible_first.saturating_sub(VISIBLE_MARGIN);
-		let end = state.visible_last.saturating_add(VISIBLE_MARGIN);
+		let job = ThumbnailJob { generation, url };
+		let Ok(mut state) = self.state.lock() else {
+			return;
+		};
 
-		index >= start && index <= end
+		if !Self::index_in_visible_margin(&state, index) {
+			return;
+		}
+
+		let subscribers = state.thumbnail_subscribers.entry(job.clone()).or_default();
+
+		if !subscribers.contains(&index) {
+			subscribers.push(index);
+		}
+
+		if state.thumbnail_in_flight.contains(&job) || !state.thumbnail_queued.insert(job.clone()) {
+			return;
+		}
+
+		state.thumbnail_queue.push_back(job);
+		self.condvar.notify_all();
+	}
+
+	pub fn take_next_thumbnail(&self) -> Option<ThumbnailJob> {
+		let mut state = self.state.lock().ok()?;
+
+		loop {
+			if self.thumbnails_enabled() {
+				while let Some(job) = state.thumbnail_queue.pop_front() {
+					state.thumbnail_queued.remove(&job);
+
+					if job.generation != self.generation() {
+						continue;
+					}
+
+					if !Self::thumbnail_job_wanted(&state, &job) {
+						state.thumbnail_subscribers.remove(&job);
+						continue;
+					}
+
+					state.thumbnail_in_flight.insert(job.clone());
+					return Some(job);
+				}
+			} else {
+				state.thumbnail_queue.clear();
+				state.thumbnail_queued.clear();
+				state.thumbnail_subscribers.clear();
+			}
+
+			state = self.condvar.wait(state).ok()?;
+		}
+	}
+
+	pub fn thumbnail_wanted(&self, job: &ThumbnailJob) -> bool {
+		if !self.thumbnails_enabled() || job.generation != self.generation() {
+			return false;
+		}
+
+		let Ok(state) = self.state.lock() else {
+			return false;
+		};
+
+		Self::thumbnail_job_wanted(&state, job)
+	}
+
+	pub fn finish_thumbnail(&self, job: &ThumbnailJob, outcome: ThumbnailOutcome) -> Vec<usize> {
+		let Ok(mut state) = self.state.lock() else {
+			return Vec::new();
+		};
+
+		state.thumbnail_in_flight.remove(job);
+
+		match outcome {
+			ThumbnailOutcome::Success => {
+				let mut indices = state.thumbnail_subscribers.remove(job).unwrap_or_default();
+				indices.retain(|index| Self::index_in_visible_margin(&state, *index));
+				indices
+			}
+			ThumbnailOutcome::Failed => {
+				state.thumbnail_subscribers.remove(job);
+				Vec::new()
+			}
+			ThumbnailOutcome::Cancelled => {
+				if self.thumbnails_enabled()
+					&& job.generation == self.generation()
+					&& Self::thumbnail_job_wanted(&state, job)
+				{
+					if state.thumbnail_queued.insert(job.clone()) {
+						state.thumbnail_queue.push_back(job.clone());
+						self.condvar.notify_all();
+					}
+				} else {
+					state.thumbnail_subscribers.remove(job);
+				}
+
+				Vec::new()
+			}
+		}
 	}
 
 	pub fn take_next(&self) -> Option<FetchRequest> {
@@ -149,6 +290,10 @@ impl FetchScheduler {
 			state.in_flight.clear();
 			state.loaded.clear();
 			state.has_visible_range = false;
+			state.thumbnail_queue.clear();
+			state.thumbnail_queued.clear();
+			state.thumbnail_in_flight.clear();
+			state.thumbnail_subscribers.clear();
 		}
 
 		generation
@@ -160,6 +305,14 @@ impl FetchScheduler {
 
 	pub fn set_thumbnails_enabled(&self, enabled: bool) {
 		self.thumbnails_enabled.store(enabled, Ordering::SeqCst);
+
+		if let Ok(mut state) = self.state.lock() {
+			state.thumbnail_queue.clear();
+			state.thumbnail_queued.clear();
+			state.thumbnail_subscribers.clear();
+		}
+
+		self.condvar.notify_all();
 	}
 
 	pub fn thumbnails_enabled(&self) -> bool {
