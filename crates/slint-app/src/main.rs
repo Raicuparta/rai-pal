@@ -23,6 +23,7 @@ mod refresh;
 mod runtime;
 mod scheduler;
 mod selected;
+mod single_instance;
 mod text;
 mod thanks;
 mod tools;

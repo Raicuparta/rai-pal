@@ -35,10 +35,14 @@ use crate::{
 	query::{load_game_ids, start_query},
 	refresh,
 	scheduler::{FetchScheduler, enqueue_index, schedule_visible_range},
-	selected, thanks, tools, user,
+	selected, single_instance, thanks, tools, user,
 };
 
 pub fn run() -> Result<(), slint::PlatformError> {
+	let Some(_single_instance) = single_instance::acquire() else {
+		return Ok(());
+	};
+
 	let database = match try_create() {
 		Ok(database) => database,
 		Err(err) => {
@@ -799,6 +803,32 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	for argument in std::env::args().skip(1) {
 		deep_links::handle(&argument, &window, &database, &selected_game, &downloads);
 	}
+
+	let instance_window = window.as_weak();
+	let instance_database = database.clone();
+	let instance_selected_game = selected_game.clone();
+	let instance_downloads = downloads.clone();
+	single_instance::listen(move |arguments| {
+		let window = instance_window.clone();
+		let database = instance_database.clone();
+		let selected_game = instance_selected_game.clone();
+		let downloads = instance_downloads.clone();
+
+		let _ = slint::invoke_from_event_loop(move || {
+			let Some(window) = window.upgrade() else {
+				return;
+			};
+
+			window.window().set_minimized(false);
+			window.window().with_winit_window(|winit_window| {
+				winit_window.focus_window();
+			});
+
+			for argument in arguments {
+				deep_links::handle(&argument, &window, &database, &selected_game, &downloads);
+			}
+		});
+	});
 
 	let ui_window = window_weak.clone();
 	let ui_settings = settings.clone();

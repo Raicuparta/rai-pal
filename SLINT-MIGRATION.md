@@ -38,6 +38,8 @@ needs an equivalent after that removal.
 - Deep links (`rai-pal://`) registration and handling on Linux and Windows,
   including `add-mod-source`, `install-mod`, `uninstall-mod`, and `run-mod`.
   macOS bundles declare the URL scheme, but incoming open-url events are not wired.
+- Single-instance behavior, including focusing the running window and forwarding
+  command-line arguments (deep links) to it.
 
 ## Not done
 
@@ -45,7 +47,6 @@ needs an equivalent after that removal.
   updater artifacts or `latest.json`; there is no updater endpoint or UI yet.
 - Windows installer packaging. Releases currently contain a raw `.exe`; the old
   NSIS installer, installer icon/sidebar, and WinGet publishing are gone.
-- Single-instance behavior.
 - Window size/position persistence.
 - App settings: reset settings and open logs folder.
 - File logging. Tauri wrote logs to the app data logs folder; the Slint app logs
