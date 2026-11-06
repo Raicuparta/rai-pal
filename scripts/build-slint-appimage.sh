@@ -44,7 +44,7 @@ if [[ -n "${LINUXDEPLOY:-}" ]]; then
 elif command -v linuxdeploy >/dev/null 2>&1; then
 	linuxdeploy_cmd="linuxdeploy"
 else
-	echo "Missing 'linuxdeploy'. Run inside 'nix develop' or the Linux builder container." >&2
+	echo "Missing 'linuxdeploy'. Run inside the Linux builder container (or 'nix develop' locally)." >&2
 	exit 1
 fi
 

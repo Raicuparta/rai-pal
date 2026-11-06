@@ -26,6 +26,7 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Validate updater signing secrets
+        shell: bash
         env:
           UPDATE_PRIVATE_KEY: ${{ secrets.UPDATE_PRIVATE_KEY }}
           UPDATE_KEY_PASSWORD: ${{ secrets.UPDATE_KEY_PASSWORD }}
@@ -79,6 +80,7 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Validate updater signing secrets
+        shell: bash
         env:
           UPDATE_PRIVATE_KEY: ${{ secrets.UPDATE_PRIVATE_KEY }}
           UPDATE_KEY_PASSWORD: ${{ secrets.UPDATE_KEY_PASSWORD }}
