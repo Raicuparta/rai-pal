@@ -46,6 +46,7 @@ needs an equivalent after that removal.
   basic size-based rotation.
 - Analytics events for app start, mod install/update/uninstall/run, provider
   commands, sign-in, and error notifications.
+- Window icon wired from the shared graphics assets at runtime.
 
 ## Not done
 
@@ -53,8 +54,6 @@ needs an equivalent after that removal.
   updater artifacts or `latest.json`; there is no updater endpoint or UI yet.
 - Windows installer packaging. Releases currently contain a raw `.exe`; the old
   NSIS installer, installer icon/sidebar, and WinGet publishing are gone.
-- Application/window icon wiring beyond the packaging assets used by AppImage
-  and the macOS bundle.
 
 ## Core/Slint cleanup
 
