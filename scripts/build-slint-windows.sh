@@ -27,6 +27,10 @@ INSTALLER_SCRIPT="$PACKAGE_DIR/packaging/windows-installer.nsi"
 INSTALLER_ICON="$PACKAGE_DIR/graphics/icon.ico"
 INSTALLER_SIDEBAR="$PACKAGE_DIR/graphics/installer-sidebar.bmp"
 
+# The git winit patch is only needed for Wayland drag and drop, and it brings
+# its own dpi crate which conflicts with muda on Windows. Remove it here.
+sed -i '/^# Needed for wayland drag and drop/,/^winit = /d' "$ROOT_DIR/Cargo.toml"
+
 VERSION="$(sed -n 's/^version = "\(.*\)"/\1/p' "$ROOT_DIR/Cargo.toml" | head -n 1)"
 if [[ -z "$VERSION" ]]; then
 	echo "Could not determine version from Cargo.toml." >&2
