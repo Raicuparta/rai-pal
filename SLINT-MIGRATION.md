@@ -41,6 +41,7 @@ needs an equivalent after that removal.
 - Single-instance behavior, including focusing the running window and forwarding
   command-line arguments (deep links) to it.
 - Window size, position, and maximized-state persistence in the app settings.
+- App menu actions to reset Rai Pal settings and open the logs folder.
 
 ## Not done
 
@@ -48,7 +49,6 @@ needs an equivalent after that removal.
   updater artifacts or `latest.json`; there is no updater endpoint or UI yet.
 - Windows installer packaging. Releases currently contain a raw `.exe`; the old
   NSIS installer, installer icon/sidebar, and WinGet publishing are gone.
-- App settings: reset settings and open logs folder.
 - File logging. Tauri wrote logs to the app data logs folder; the Slint app logs
   to stdout/stderr only.
 - Analytics events.

@@ -281,6 +281,56 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	});
 
 	let ui_window = window_weak.clone();
+	window.on_open_logs_folder(move || {
+		actions::open_logs_folder(ui_window.clone(), "open-logs-folder".to_string());
+	});
+
+	let ui_window = window_weak.clone();
+	let ui_database = database.clone();
+	let ui_scheduler = scheduler.clone();
+	let ui_settings = settings.clone();
+	let ui_mod_families = mod_families.clone();
+	window.on_reset_settings(move || {
+		let Some(window) = ui_window.upgrade() else {
+			return;
+		};
+
+		let window_state = ui_settings.borrow().window_state;
+		let mut settings = AppSettings::default();
+		settings.window_state = window_state;
+		*ui_settings.borrow_mut() = settings;
+		persist_settings(&ui_settings);
+
+		let locale = i18n::effective_locale(&ui_settings.borrow(), detected_locale);
+		i18n::apply_translation(locale);
+
+		window.set_selected_language("".into());
+		window.set_selected_color_scheme(AppColorScheme::Auto);
+		window.set_hide_game_thumbnails(false);
+		window.set_search_text("".into());
+		window.set_sort_index(0);
+		window.set_current_tab(AppTab::Games);
+		ui_scheduler.set_thumbnails_enabled(true);
+
+		let groups = build_groups(
+			&ui_settings.borrow().games_query.filter,
+			&ui_mod_families,
+			&ui_settings.borrow().expanded_filters,
+		);
+		window.set_filters_have_changes(groups.iter().any(|group| group.has_changes));
+		window.set_filters_have_expanded(groups.iter().any(|group| group.expanded));
+		window.set_filter_groups(Rc::new(slint::VecModel::from(groups)).into());
+
+		start_query(
+			ui_window.clone(),
+			ui_database.clone(),
+			ui_scheduler.clone(),
+			ui_settings.borrow().games_query.clone(),
+			Duration::ZERO,
+		);
+	});
+
+	let ui_window = window_weak.clone();
 	window.on_request_add_game(move || {
 		let Some(window) = ui_window.upgrade() else {
 			return;

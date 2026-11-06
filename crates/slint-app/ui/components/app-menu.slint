@@ -12,6 +12,8 @@ export component AppMenu inherits Rectangle {
     callback steam-cache-clicked;
     callback steam-shortcut-clicked;
     callback add-game-clicked;
+    callback reset-settings-clicked;
+    callback open-logs-folder-clicked;
     callback hide-game-thumbnails-changed(hide: bool);
     callback language-changed(value: string);
     callback color-scheme-changed(value: AppColorScheme);
@@ -74,6 +76,24 @@ export component AppMenu inherits Rectangle {
 
                 activated => {
                     root.add-game-clicked();
+                }
+            }
+
+            MenuSeparator { }
+
+            MenuItem {
+                title: @tr("appDropdownMenu" => "Reset Rai Pal settings");
+
+                activated => {
+                    root.reset-settings-clicked();
+                }
+            }
+
+            MenuItem {
+                title: @tr("appDropdownMenu" => "Open Logs Folder");
+
+                activated => {
+                    root.open-logs-folder-clicked();
                 }
             }
 

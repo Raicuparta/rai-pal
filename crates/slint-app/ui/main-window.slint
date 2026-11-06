@@ -140,6 +140,8 @@ export component MainWindow inherits Window {
     callback reset-steam-cache;
     callback add-steam-shortcut;
     callback request-add-game;
+    callback reset-settings;
+    callback open-logs-folder;
     callback add-game-closed;
     callback select-game-executable;
     callback select-game-directory;
@@ -303,6 +305,14 @@ export component MainWindow inherits Window {
 
                         add-game-clicked => {
                             root.request-add-game();
+                        }
+
+                        reset-settings-clicked => {
+                            root.reset-settings();
+                        }
+
+                        open-logs-folder-clicked => {
+                            root.open-logs-folder();
                         }
 
                         language-changed(value) => {

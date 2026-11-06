@@ -182,6 +182,12 @@ pub fn open_local_mods_folder(window: slint::Weak<MainWindow>, action_id: String
 	);
 }
 
+pub fn open_logs_folder(window: slint::Weak<MainWindow>, action_id: String) {
+	spawn_action(window, action_id, "Failed to open logs folder", || {
+		app_paths::logs_path()?.open_folder_or_parent()
+	});
+}
+
 pub fn open_url(url: String) {
 	thread::spawn(move || {
 		if let Err(err) = open_better::open_detached_better(url) {
