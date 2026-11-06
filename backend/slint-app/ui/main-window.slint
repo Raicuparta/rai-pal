@@ -126,7 +126,6 @@ export component MainWindow inherits Window {
     in-out property <GameRowData> selected-game-row;
     in-out property <string> selected-game-json: "";
     in property <string> selected-provider-id: "";
-    in property <bool> selected-can-run-game: false;
     in property <bool> selected-has-exe-path: false;
     in property <bool> selected-show-wine-folders: false;
     in property <[ProviderActionItem]> selected-provider-actions;
@@ -170,7 +169,6 @@ export component MainWindow inherits Window {
     callback hide-game-thumbnails-changed(hide: bool);
     callback select-game(index: int);
     callback back;
-    callback run-game;
     callback run-provider-action(value: string);
     callback open-game-folder;
     callback open-game-mods-folder;
@@ -338,17 +336,12 @@ export component MainWindow inherits Window {
                     GameSidebar {
                         visible: root.game-selected;
                         provider-id: root.selected-provider-id;
-                        can-run-game: root.selected-can-run-game;
                         has-exe-path: root.selected-has-exe-path;
                         show-wine-folders: root.selected-show-wine-folders;
                         provider-actions: root.selected-provider-actions;
 
                         back => {
                             root.back();
-                        }
-
-                        run-game => {
-                            root.run-game();
                         }
 
                         run-provider-action(value) => {

@@ -17,7 +17,7 @@ use crate::{
 	game::DbGame,
 	game_providers::{
 		game_provider::{GameProviderId, ProviderParser},
-		provider_command::{ProviderCommand, ProviderCommandAction},
+		provider_command::{ProviderCommandAction, ProviderCommandKind},
 	},
 	path_extensions::PathExt,
 	result::{ContextResult, Result},
@@ -94,7 +94,7 @@ impl Epic {
 
 		game.add_provider_command(
 			ProviderCommandAction::Install,
-			ProviderCommand::String(format!(
+			ProviderCommandKind::String(format!(
 				"com.epicgames.launcher://apps/{}%3A{}%3A{}?action=install",
 				catalog_item.namespace,
 				catalog_item.id,
@@ -107,7 +107,7 @@ impl Epic {
 		)
 		.add_provider_command(
 			ProviderCommandAction::OpenInBrowser,
-			ProviderCommand::String(format!(
+			ProviderCommandKind::String(format!(
 				"https://store.epicgames.com/browse?{}",
 				serde_urlencoded::to_string([("sortBy", "relevancy"), ("q", &catalog_item.title)])
 					.ok()?,
@@ -202,7 +202,7 @@ impl ProviderParser for Epic {
 						game.set_executable(&exe_path);
 						game.add_provider_command(
 							ProviderCommandAction::StartViaProvider,
-							ProviderCommand::String(format!(
+							ProviderCommandKind::String(format!(
 								"com.epicgames.launcher://apps/{}?action=launch&silent=true",
 								&game.external_id
 							)),

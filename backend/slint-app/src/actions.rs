@@ -7,11 +7,10 @@ use rai_pal_core::{
 	game::DbGame,
 	game_providers::{game_provider, provider_command::ProviderCommandAction},
 	local_database::{app_database::DbMutex, mod_database::ModDatabase},
-	maps::TryGettable,
 	mods::game_mod::install_steps,
 	open_better,
 	path_extensions::PathExt,
-	result::Result,
+	result::{Error, Result},
 };
 
 pub fn run_provider_action(
@@ -22,7 +21,9 @@ pub fn run_provider_action(
 	action_id: String,
 ) {
 	spawn_action(window, action_id, "Failed to run game action", move || {
-		let provider_command = game.provider_commands.try_get(&action)?;
+		let provider_command = game
+			.get_provider_command(action)
+			.ok_or_else(|| Error::DataEntryNotFound(action.to_string()))?;
 		let (environment, environment_mod_ids) = match action {
 			ProviderCommandAction::StartViaProvider | ProviderCommandAction::StartViaExe => {
 				database.get_game_environment(&game)?

@@ -29,7 +29,6 @@ use rai_pal_core::{
 		game_database::{GameDatabase, GameIdsResponse, attach_remote},
 		mod_database::{GameModInfo, ModDatabase},
 	},
-	maps::TryGettable,
 	mod_providers::{mod_provider, url_mod_provider},
 	mods::{
 		game_mod::{GameMod, ModDependency, install_steps},
@@ -633,7 +632,14 @@ async fn remove_game(handle: AppHandle, provider_id: GameProviderId, game_id: St
 		.database
 		.get_game(&provider_id, &game_id)?;
 
-	manual_provider::remove_game(&game).await?;
+	let provider_command = game
+		.get_provider_command(ProviderCommandAction::Delete)
+		.ok_or_else(|| {
+			rai_pal_core::result::Error::DataEntryNotFound(
+				ProviderCommandAction::Delete.to_string(),
+			)
+		})?;
+	provider_command.run(&game, &BTreeMap::default(), &[])?;
 
 	Ok(())
 }
@@ -664,7 +670,11 @@ async fn run_provider_command(
 		.database
 		.get_game(&provider_id, game_id)?;
 
-	let provider_command = game.provider_commands.try_get(&provider_command_aciton)?;
+	let provider_command = game
+		.get_provider_command(provider_command_aciton)
+		.ok_or_else(|| {
+			rai_pal_core::result::Error::DataEntryNotFound(provider_command_aciton.to_string())
+		})?;
 	let (environment, environment_mod_ids) = match provider_command_aciton {
 		ProviderCommandAction::StartViaProvider | ProviderCommandAction::StartViaExe => {
 			handle.app_state().database.get_game_environment(&game)?

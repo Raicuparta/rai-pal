@@ -1,7 +1,4 @@
-use std::{
-	collections::BTreeMap,
-	path::{Path, PathBuf},
-};
+use std::path::{Path, PathBuf};
 
 use rai_pal_proc_macros::serializable_struct;
 
@@ -16,7 +13,7 @@ use crate::{
 	},
 	game_providers::{
 		game_provider::GameProviderId,
-		provider_command::{ProviderCommand, ProviderCommandAction},
+		provider_command::{ProviderCommand, ProviderCommandAction, ProviderCommandKind},
 	},
 	game_tag::GameTag,
 	game_title::is_probably_demo,
@@ -46,7 +43,10 @@ pub struct DbGame {
 	pub executable_os: Option<OperatingSystem>,
 	pub supported_os: Vec<OperatingSystem>,
 	pub tags: Vec<GameTag>,
-	pub provider_commands: BTreeMap<ProviderCommandAction, ProviderCommand>,
+	#[serde(
+		deserialize_with = "crate::game_providers::provider_command::deserialize_provider_commands"
+	)]
+	pub provider_commands: Vec<ProviderCommand>,
 }
 
 impl DbGame {
@@ -70,7 +70,7 @@ impl DbGame {
 			executable_os: None,
 			supported_os: Vec::default(),
 			tags: Vec::default(),
-			provider_commands: BTreeMap::default(),
+			provider_commands: Vec::default(),
 		};
 
 		if is_probably_demo(&game.display_title) {
@@ -119,11 +119,29 @@ impl DbGame {
 
 	pub fn add_provider_command(
 		&mut self,
-		command_action: ProviderCommandAction,
-		command: ProviderCommand,
+		action: ProviderCommandAction,
+		kind: ProviderCommandKind,
 	) -> &mut Self {
-		self.provider_commands.insert(command_action, command);
+		let command = ProviderCommand { action, kind };
+
+		if let Some(existing_command) = self
+			.provider_commands
+			.iter_mut()
+			.find(|command| command.action == action)
+		{
+			*existing_command = command;
+		} else {
+			self.provider_commands.push(command);
+			self.provider_commands.sort_by_key(|command| command.action);
+		}
+
 		self
+	}
+
+	pub fn get_provider_command(&self, action: ProviderCommandAction) -> Option<&ProviderCommand> {
+		self.provider_commands
+			.iter()
+			.find(|command| command.action == action)
 	}
 
 	pub fn full_title(&self) -> String {
@@ -131,35 +149,6 @@ impl DbGame {
 			Some(discriminator) => format!("{} ({})", self.display_title, discriminator),
 			None => self.display_title.clone(),
 		}
-	}
-
-	pub fn primary_start_action(&self) -> Option<ProviderCommandAction> {
-		if self
-			.provider_commands
-			.contains_key(&ProviderCommandAction::StartViaProvider)
-		{
-			Some(ProviderCommandAction::StartViaProvider)
-		} else if self
-			.provider_commands
-			.contains_key(&ProviderCommandAction::StartViaExe)
-		{
-			Some(ProviderCommandAction::StartViaExe)
-		} else {
-			None
-		}
-	}
-
-	pub fn secondary_provider_actions(&self) -> Vec<ProviderCommandAction> {
-		self.provider_commands
-			.keys()
-			.copied()
-			.filter(|action| {
-				!matches!(
-					action,
-					ProviderCommandAction::StartViaProvider | ProviderCommandAction::StartViaExe
-				)
-			})
-			.collect()
 	}
 
 	pub fn add_supported_os(&mut self, os: OperatingSystem) -> &mut Self {
@@ -188,7 +177,7 @@ impl DbGame {
 
 		self.add_provider_command(
 			ProviderCommandAction::StartViaExe,
-			ProviderCommand::Path(exe_path.to_path_buf(), Vec::default()),
+			ProviderCommandKind::Path(exe_path.to_path_buf(), Vec::default()),
 		);
 
 		// We ignore games that don't have an extension.

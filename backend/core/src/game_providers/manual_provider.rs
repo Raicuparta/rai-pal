@@ -8,6 +8,7 @@ use log::error;
 use rai_pal_proc_macros::serializable_struct;
 
 use super::game_provider::{GameProviderId, ProviderActions};
+use super::provider_command::{ProviderCommandAction, ProviderCommandKind};
 use crate::{
 	app_paths,
 	game::DbGame,
@@ -133,6 +134,33 @@ impl ProviderActions for Manual {
 
 		Ok(())
 	}
+
+	fn delete_game(&self, game: &DbGame) -> Result {
+		let path = game
+			.exe_path
+			.as_ref()
+			.ok_or_else(|| Error::GameNotInstalled(game.display_title.clone()))?
+			.normalize();
+
+		let config_path = games_config_path()?;
+		let mut games_config = read_games_config(&config_path);
+
+		let configured_path = games_config.paths.contains(&path);
+		let inside_directory = games_config
+			.directories
+			.iter()
+			.any(|directory| path.starts_with(directory));
+
+		games_config.paths.retain(|configured| configured != &path);
+
+		if (!configured_path || inside_directory) && !games_config.ignored_paths.contains(&path) {
+			games_config.ignored_paths.push(path);
+		}
+
+		fs_err::write(config_path, serde_json::to_string_pretty(&games_config)?)?;
+
+		Ok(())
+	}
 }
 
 #[cfg(target_os = "windows")]
@@ -196,6 +224,7 @@ fn get_game_from_path(exe_path: &Path) -> Result<DbGame> {
 		},
 	);
 	game.set_executable(exe_path);
+	game.add_provider_command(ProviderCommandAction::Delete, ProviderCommandKind::Delete);
 	Ok(game)
 }
 
@@ -455,37 +484,6 @@ pub fn get_directories() -> Result<Vec<PathBuf>> {
 	let config_path = games_config_path()?;
 	let config = read_games_config(&config_path);
 	Ok(config.directories)
-}
-
-pub async fn remove_game(game: &DbGame) -> Result {
-	if game.provider_id != GameProviderId::Manual {
-		return Err(Error::InvalidProviderId(game.provider_id.to_string()));
-	}
-
-	let path = game
-		.exe_path
-		.as_ref()
-		.ok_or_else(|| Error::GameNotInstalled(game.display_title.clone()))?
-		.normalize();
-
-	let config_path = games_config_path()?;
-	let mut games_config = read_games_config(&config_path);
-
-	let configured_path = games_config.paths.contains(&path);
-	let inside_directory = games_config
-		.directories
-		.iter()
-		.any(|directory| path.starts_with(directory));
-
-	games_config.paths.retain(|configured| configured != &path);
-
-	if (!configured_path || inside_directory) && !games_config.ignored_paths.contains(&path) {
-		games_config.ignored_paths.push(path);
-	}
-
-	fs_err::tokio::write(config_path, serde_json::to_string_pretty(&games_config)?).await?;
-
-	Ok(())
 }
 
 fn remove_path(path: &Path) -> Result {

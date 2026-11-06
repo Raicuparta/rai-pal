@@ -8,7 +8,7 @@ use std::{
 
 use serde::{Deserialize, Serialize};
 
-use super::provider_command::{ProviderCommand, ProviderCommandAction};
+use super::provider_command::{ProviderCommandAction, ProviderCommandKind};
 use crate::{
 	game::DbGame,
 	game_providers::{
@@ -129,7 +129,7 @@ impl ProviderParser for HeroicEpic {
 				if let Some(store_url) = &parsed_game.store_url {
 					game.add_provider_command(
 						ProviderCommandAction::OpenInBrowser,
-						ProviderCommand::String(store_url.clone()),
+						ProviderCommandKind::String(store_url.clone()),
 					);
 				}
 

@@ -1,6 +1,7 @@
 use std::{collections::BTreeMap, path::PathBuf};
 
-use rai_pal_proc_macros::serializable_enum;
+use rai_pal_proc_macros::{serializable_enum, serializable_struct};
+use serde::Deserialize;
 
 use crate::{
 	game::DbGame,
@@ -11,19 +12,54 @@ use crate::{
 };
 
 #[derive(serde::Serialize, serde::Deserialize, specta::Type, Clone, PartialEq, Eq, Hash, Debug)]
-pub enum ProviderCommand {
+pub enum ProviderCommandKind {
 	String(String),
 	Path(PathBuf, Vec<String>),
+	Delete,
 }
 
 #[serializable_enum]
 pub enum ProviderCommandAction {
+	StartViaProvider,
+	StartViaExe,
 	Install,
 	ShowInLibrary,
 	ShowInStore,
-	StartViaProvider,
-	StartViaExe,
 	OpenInBrowser,
+	Delete,
+}
+
+#[serializable_struct]
+#[derive(PartialEq, Eq, Hash)]
+pub struct ProviderCommand {
+	pub action: ProviderCommandAction,
+	pub kind: ProviderCommandKind,
+}
+
+#[derive(Deserialize)]
+#[serde(untagged)]
+enum ProviderCommandsRepr {
+	List(Vec<ProviderCommand>),
+	Map(BTreeMap<ProviderCommandAction, ProviderCommandKind>),
+}
+
+pub(crate) fn deserialize_provider_commands<'de, D>(
+	deserializer: D,
+) -> std::result::Result<Vec<ProviderCommand>, D::Error>
+where
+	D: serde::Deserializer<'de>,
+{
+	let mut commands = match ProviderCommandsRepr::deserialize(deserializer)? {
+		ProviderCommandsRepr::List(commands) => commands,
+		ProviderCommandsRepr::Map(commands) => commands
+			.into_iter()
+			.map(|(action, kind)| ProviderCommand { action, kind })
+			.collect(),
+	};
+
+	commands.sort_by_key(|command| command.action);
+
+	Ok(commands)
 }
 
 impl ProviderCommand {
@@ -41,8 +77,8 @@ impl ProviderCommand {
 			));
 		}
 
-		match self {
-			Self::String(command) => {
+		match &self.kind {
+			ProviderCommandKind::String(command) => {
 				#[cfg(target_os = "linux")]
 				if !environment.is_empty() {
 					let exe_path = game.try_get_exe_path()?;
@@ -60,7 +96,7 @@ impl ProviderCommand {
 
 				open_detached_better(command)?;
 			}
-			Self::Path(path, args) => {
+			ProviderCommandKind::Path(path, args) => {
 				#[cfg(target_os = "linux")]
 				{
 					use crate::{
@@ -100,6 +136,10 @@ impl ProviderCommand {
 					spawn_detached(&mut command)?;
 				}
 			}
+			ProviderCommandKind::Delete => {
+				crate::game_providers::game_provider::get_provider(game.provider_id)?
+					.delete_game(game)?;
+			}
 		}
 		Ok(())
 	}
@@ -107,9 +147,10 @@ impl ProviderCommand {
 	fn supports_environment(&self, game: &DbGame) -> bool {
 		#[cfg(target_os = "linux")]
 		if game.executable_os == Some(OperatingSystem::Linux) {
-			return match self {
-				Self::Path(_, _) => true,
-				Self::String(_) => game.provider_id == GameProviderId::Steam,
+			return match &self.kind {
+				ProviderCommandKind::Path(_, _) => true,
+				ProviderCommandKind::String(_) => game.provider_id == GameProviderId::Steam,
+				ProviderCommandKind::Delete => false,
 			};
 		}
 

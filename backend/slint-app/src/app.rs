@@ -711,25 +711,6 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	let ui_window = window_weak.clone();
 	let ui_database = database.clone();
 	let ui_selected_game = selected_game.clone();
-	window.on_run_game(move || {
-		let Some((_, game)) = get_selected_game(&ui_selected_game) else {
-			return;
-		};
-
-		if let Some(action) = game.primary_start_action() {
-			actions::run_provider_action(
-				ui_database.clone(),
-				ui_window.clone(),
-				game,
-				action,
-				"game-run".to_string(),
-			);
-		}
-	});
-
-	let ui_window = window_weak.clone();
-	let ui_database = database.clone();
-	let ui_selected_game = selected_game.clone();
 	window.on_run_provider_action(move |value| {
 		let Ok(action) = value.parse::<ProviderCommandAction>() else {
 			return;

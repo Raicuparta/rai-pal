@@ -3,7 +3,7 @@ use rai_pal_proc_macros::serializable_enum;
 use crate::{
 	app_paths,
 	game::DbGame,
-	game_providers::provider_command::{ProviderCommand, ProviderCommandAction},
+	game_providers::provider_command::{ProviderCommandAction, ProviderCommandKind},
 	mods::game_mod::GameMod,
 	path_extensions::{AsValidStr, PathExt},
 	result::{ContextResult, Error, Result},
@@ -58,10 +58,10 @@ pub fn replace_tokens(
 	let mut result = base_string.to_string();
 
 	if let Some(game) = game_option {
-		let provider_commands = &game.provider_commands;
-		let start_command = provider_commands
-			.get(&ProviderCommandAction::StartViaProvider)
-			.or_else(|| provider_commands.get(&ProviderCommandAction::StartViaExe));
+		let start_command = game
+			.get_provider_command(ProviderCommandAction::StartViaProvider)
+			.or_else(|| game.get_provider_command(ProviderCommandAction::StartViaExe))
+			.map(|command| &command.kind);
 
 		result = replace_parameter_value(&result, ReplacementToken::GameExecutableName, || {
 			game.try_get_exe_name()
@@ -85,16 +85,21 @@ pub fn replace_tokens(
 			match start_command
 				.ok_or_else(|| Error::GameNotInstalled(game.display_title.clone()))?
 			{
-				ProviderCommand::String(s) => Ok(s.clone()),
-				ProviderCommand::Path(exe_path, _) => Ok(exe_path.try_to_str()?.to_string()),
+				ProviderCommandKind::String(s) => Ok(s.clone()),
+				ProviderCommandKind::Path(exe_path, _) => Ok(exe_path.try_to_str()?.to_string()),
+				ProviderCommandKind::Delete => Err(Error::UnsupportedProviderOperation(
+					game.provider_id,
+					"game start command".to_string(),
+				)),
 			}
 		});
 		result = replace_parameter_value(&result, ReplacementToken::GameStartCommandArgs, || {
 			start_command.map_or_else(
 				|| Ok(String::new()),
 				|provider_command| match provider_command {
-					ProviderCommand::Path(_, args) => Ok(args.join(" ")),
-					ProviderCommand::String(_) => Ok(String::new()),
+					ProviderCommandKind::Path(_, args) => Ok(args.join(" ")),
+					ProviderCommandKind::String(_) => Ok(String::new()),
+					ProviderCommandKind::Delete => Ok(String::new()),
 				},
 			)
 		});

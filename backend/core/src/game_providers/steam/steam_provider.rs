@@ -15,7 +15,7 @@ use crate::{
 	game::DbGame,
 	game_providers::{
 		game_provider::{GameProviderId, ProviderActions, ProviderParser},
-		provider_command::{ProviderCommand, ProviderCommandAction},
+		provider_command::{ProviderCommandAction, ProviderCommandKind},
 		steam::appinfo::SteamAppInfoReader,
 	},
 	game_tag::GameTag,
@@ -72,14 +72,14 @@ impl Steam {
 					);
 					game.add_provider_command(
 						ProviderCommandAction::ShowInLibrary,
-						ProviderCommand::String(format!(
+						ProviderCommandKind::String(format!(
 							"steam://nav/games/details/{}",
 							shortcut.app_id
 						)),
 					)
 					.add_provider_command(
 						ProviderCommandAction::StartViaProvider,
-						ProviderCommand::String(format!(
+						ProviderCommandKind::String(format!(
 							"steam://rungameid/{}",
 							// There is a shortcut.steam_id() thing in there, but we can't use that since it doesn't follow the cached ID Steam actually needs.
 							// So we need to do our own conversion from the 32-bit app_id to the 64-bit one needed for this specific command.
@@ -280,21 +280,21 @@ impl ProviderParser for Steam {
 
 						game.add_provider_command(
 							ProviderCommandAction::ShowInLibrary,
-							ProviderCommand::String(format!(
+							ProviderCommandKind::String(format!(
 								"steam://nav/games/details/{external_id}"
 							)),
 						)
 						.add_provider_command(
 							ProviderCommandAction::ShowInStore,
-							ProviderCommand::String(format!("steam://store/{external_id}")),
+							ProviderCommandKind::String(format!("steam://store/{external_id}")),
 						)
 						.add_provider_command(
 							ProviderCommandAction::Install,
-							ProviderCommand::String(format!("steam://install/{external_id}")),
+							ProviderCommandKind::String(format!("steam://install/{external_id}")),
 						)
 						.add_provider_command(
 							ProviderCommandAction::OpenInBrowser,
-							ProviderCommand::String(format!(
+							ProviderCommandKind::String(format!(
 								"https://store.steampowered.com/app/{external_id}"
 							)),
 						);
@@ -379,8 +379,8 @@ impl crate::game_providers::game_provider::WineProviderActions for Steam {}
 pub fn get_start_command(
 	steam_launch: &SteamLaunchOption,
 	discriminator: &Option<String>,
-) -> ProviderCommand {
-	ProviderCommand::String(if discriminator.is_none() {
+) -> ProviderCommandKind {
+	ProviderCommandKind::String(if discriminator.is_none() {
 		// If a game has no discriminator, it means we're probably using the default launch option.
 		// For those, we use the steam://rungameid command, since that one will make steam show a nice
 		// loading popup, wait for game updates, etc.

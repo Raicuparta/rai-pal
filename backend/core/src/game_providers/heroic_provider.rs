@@ -8,7 +8,7 @@ use chrono::DateTime;
 use serde::de::DeserializeOwned;
 use serde_json::Value;
 
-use super::provider_command::ProviderCommand;
+use super::provider_command::ProviderCommandKind;
 use crate::{
 	app_paths,
 	result::{ContextResult, Result},
@@ -152,11 +152,11 @@ fn default_wine_prefix() -> Result<PathBuf> {
 		.join("shared"))
 }
 
-pub fn launch_command(app_name: &str, store_prefix: Option<&str>) -> ProviderCommand {
+pub fn launch_command(app_name: &str, store_prefix: Option<&str>) -> ProviderCommandKind {
 	let launch_target = store_prefix.map_or_else(
 		|| app_name.to_string(),
 		|prefix| format!("{prefix}/{app_name}"),
 	);
 
-	ProviderCommand::String(format!("heroic://launch/{launch_target}"))
+	ProviderCommandKind::String(format!("heroic://launch/{launch_target}"))
 }

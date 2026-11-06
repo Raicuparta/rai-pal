@@ -1,4 +1,5 @@
 use std::{
+	collections::BTreeMap,
 	path::PathBuf,
 	rc::Rc,
 	sync::{
@@ -11,7 +12,9 @@ use std::{
 
 use rai_pal_core::{
 	game::DbGame,
-	game_providers::{game_provider::GameProviderId, manual_provider},
+	game_providers::{
+		game_provider::GameProviderId, manual_provider, provider_command::ProviderCommandAction,
+	},
 	games_query::GamesQuery,
 	local_database::{
 		app_database::DbMutex, game_database::GameDatabase, mod_database::ModDatabase,
@@ -244,8 +247,14 @@ pub fn remove_game(
 
 	thread::spawn(move || {
 		let result = run_async(async {
-			manual_provider::remove_game(&game).await?;
-			GameProviderId::Manual.insert_games(&database)?;
+			game.get_provider_command(ProviderCommandAction::Delete)
+				.ok_or_else(|| {
+					rai_pal_core::result::Error::DataEntryNotFound(
+						ProviderCommandAction::Delete.to_string(),
+					)
+				})?
+				.run(&game, &BTreeMap::default(), &[])?;
+			game.provider_id.insert_games(&database)?;
 			database.refresh_installed_mods()?;
 			Ok::<(), rai_pal_core::result::Error>(())
 		});

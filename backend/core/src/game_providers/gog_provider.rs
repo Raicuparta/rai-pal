@@ -9,7 +9,7 @@ use serde::Deserialize;
 #[cfg(target_os = "windows")]
 use winreg::{RegKey, enums::HKEY_LOCAL_MACHINE};
 
-use super::provider_command::{ProviderCommand, ProviderCommandAction};
+use super::provider_command::{ProviderCommandAction, ProviderCommandKind};
 use crate::{
 	game::DbGame,
 	game_providers::game_provider::{GameProviderId, ProviderParser},
@@ -50,7 +50,7 @@ impl Gog {
 
 		game.add_provider_command(
 			ProviderCommandAction::ShowInLibrary,
-			ProviderCommand::Path(
+			ProviderCommandKind::Path(
 				launcher_path.to_owned(),
 				[
 					"/command=launch".to_string(),
@@ -81,7 +81,7 @@ impl ProviderParser for Gog {
 					game.set_executable(executable_path);
 					game.add_provider_command(
 						ProviderCommandAction::StartViaProvider,
-						ProviderCommand::Path(
+						ProviderCommandKind::Path(
 							source.launcher_path.clone(),
 							vec![
 								"/command=runGame".to_string(),

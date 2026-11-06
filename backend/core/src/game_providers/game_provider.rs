@@ -6,6 +6,8 @@ use std::{
 
 use rai_pal_proc_macros::serializable_enum;
 
+#[cfg(not(any(target_os = "linux", target_os = "windows")))]
+use crate::game_providers::dummy_provider::Dummy;
 #[cfg(target_os = "linux")]
 use crate::game_providers::heroic_gog_provider::HeroicGog;
 #[cfg(target_os = "windows")]
@@ -16,8 +18,6 @@ use crate::game_providers::{
 use crate::game_providers::{
 	dummy_provider::Dummy, heroic_amazon_provider::HeroicAmazon, heroic_epic_provider::HeroicEpic,
 };
-#[cfg(not(any(target_os = "linux", target_os = "windows")))]
-use crate::game_providers::dummy_provider::Dummy;
 use crate::{
 	game::DbGame,
 	game_engines::pe_utils,
@@ -41,6 +41,13 @@ pub enum GameProviderId {
 
 pub trait ProviderActions {
 	fn insert_games(&self, db: &DbMutex) -> Result;
+
+	fn delete_game(&self, game: &DbGame) -> Result {
+		Err(Error::UnsupportedProviderOperation(
+			game.provider_id,
+			"delete_game".to_string(),
+		))
+	}
 }
 
 pub(crate) trait ProviderParser {

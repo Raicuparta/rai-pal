@@ -14,10 +14,10 @@ pub fn show(window: &MainWindow, game: &DbGame, mut row: GameRowData) {
 	apply_game_to_row(&mut row, game);
 
 	let provider_actions: Vec<ProviderActionItem> = game
-		.secondary_provider_actions()
-		.into_iter()
-		.map(|action| ProviderActionItem {
-			value: action.to_string().into(),
+		.provider_commands
+		.iter()
+		.map(|provider_command| ProviderActionItem {
+			value: provider_command.action.to_string().into(),
 		})
 		.collect();
 
@@ -28,7 +28,6 @@ pub fn show(window: &MainWindow, game: &DbGame, mut row: GameRowData) {
 			.into(),
 	);
 	window.set_selected_provider_id(game.provider_id.to_string().into());
-	window.set_selected_can_run_game(game.primary_start_action().is_some());
 	window.set_selected_has_exe_path(game.exe_path.is_some());
 	window.set_selected_show_wine_folders(cfg!(target_os = "linux"));
 	window.set_selected_provider_actions(Rc::new(slint::VecModel::from(provider_actions)).into());
@@ -40,7 +39,6 @@ pub fn hide(window: &MainWindow) {
 	window.set_selected_game_row(GameRowData::default());
 	window.set_selected_game_json("".into());
 	window.set_selected_provider_id("".into());
-	window.set_selected_can_run_game(false);
 	window.set_selected_has_exe_path(false);
 	window.set_selected_show_wine_folders(false);
 	window.set_selected_provider_actions(ModelRc::default());

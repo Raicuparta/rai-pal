@@ -8,7 +8,7 @@ use log::error;
 use rai_pal_proc_macros::serializable_struct;
 use rusqlite::{Connection, OpenFlags};
 
-use super::provider_command::{ProviderCommand, ProviderCommandAction};
+use super::provider_command::{ProviderCommandAction, ProviderCommandKind};
 use crate::{
 	app_paths,
 	game::DbGame,
@@ -81,11 +81,11 @@ impl Itch {
 
 		game.add_provider_command(
 			ProviderCommandAction::ShowInLibrary,
-			ProviderCommand::String(format!("itch://games/{}", row.id)),
+			ProviderCommandKind::String(format!("itch://games/{}", row.id)),
 		)
 		.add_provider_command(
 			ProviderCommandAction::Install,
-			ProviderCommand::String(format!("itch://install?game_id={}", row.id)),
+			ProviderCommandKind::String(format!("itch://install?game_id={}", row.id)),
 		);
 
 		game
