@@ -37,6 +37,16 @@ pub enum ColorScheme {
 }
 
 #[serializable_struct]
+#[derive(Default, Copy)]
+pub struct WindowState {
+	pub x: i32,
+	pub y: i32,
+	pub width: u32,
+	pub height: u32,
+	pub maximized: bool,
+}
+
+#[serializable_struct]
 #[derive(Default)]
 pub struct AppSettings {
 	pub hide_game_thumbnails: bool,
@@ -48,6 +58,8 @@ pub struct AppSettings {
 	pub expanded_filters: HashSet<String>,
 	#[serde(default)]
 	pub color_scheme: ColorScheme,
+	#[serde(default)]
+	pub window_state: Option<WindowState>,
 }
 
 // If the settings schema changes, update this so it gets recreated.

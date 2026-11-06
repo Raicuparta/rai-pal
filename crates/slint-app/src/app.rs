@@ -7,7 +7,7 @@ use std::{
 };
 
 use rai_pal_core::{
-	app_settings::{AppSettings, ColorScheme, TabId},
+	app_settings::{AppSettings, ColorScheme, TabId, WindowState},
 	game::Game,
 	game_providers::{game_provider::GameProviderId, provider_command::ProviderCommandAction},
 	games_query::{FilterAction, GamesSortBy},
@@ -82,6 +82,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	let database = Arc::new(database);
 
 	let window = MainWindow::new()?;
+	apply_window_state(&window, settings.borrow().window_state);
 	window
 		.global::<ActionStates>()
 		.on_lookup(|id| action_state::lookup(id.as_str()));
@@ -1132,8 +1133,16 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	let ui_database = database.clone();
 	let ui_scheduler = scheduler.clone();
 	let ui_settings = settings.clone();
-	window.window().on_winit_window_event(move |_, event| {
+	let window_settings = settings.clone();
+	window.window().on_winit_window_event(move |window, event| {
 		match event {
+			winit::event::WindowEvent::Resized(_) | winit::event::WindowEvent::Moved(_) => {
+				update_window_state(window, &mut window_settings.borrow_mut());
+			}
+			winit::event::WindowEvent::CloseRequested | winit::event::WindowEvent::Destroyed => {
+				update_window_state(window, &mut window_settings.borrow_mut());
+				persist_settings(&window_settings);
+			}
 			winit::event::WindowEvent::HoveredFile(_) => {
 				if let Some(window) = ui_window.upgrade() {
 					window.set_drop_highlight(true);
@@ -1173,6 +1182,48 @@ fn get_selected_game(state: &selected::SelectedGameState) -> Option<(usize, Game
 		.lock()
 		.ok()
 		.and_then(|selected_game| selected_game.clone())
+}
+
+fn apply_window_state(window: &MainWindow, state: Option<WindowState>) {
+	let Some(state) = state else {
+		return;
+	};
+
+	if state.width > 0 && state.height > 0 {
+		window
+			.window()
+			.set_size(slint::PhysicalSize::new(state.width, state.height));
+	}
+
+	window
+		.window()
+		.set_position(slint::PhysicalPosition::new(state.x, state.y));
+
+	if state.maximized {
+		window.window().set_maximized(true);
+	}
+}
+
+fn update_window_state(window: &slint::Window, settings: &mut AppSettings) {
+	let maximized = window.is_maximized();
+	let position = window.position();
+	let size = window.size();
+
+	let state = settings.window_state.get_or_insert(WindowState {
+		x: position.x,
+		y: position.y,
+		width: size.width,
+		height: size.height,
+		maximized,
+	});
+
+	state.maximized = maximized;
+	if !maximized && size.width > 0 && size.height > 0 {
+		state.x = position.x;
+		state.y = position.y;
+		state.width = size.width;
+		state.height = size.height;
+	}
 }
 
 pub(crate) fn persist_settings(settings: &Rc<RefCell<AppSettings>>) {
