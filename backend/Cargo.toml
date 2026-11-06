@@ -33,6 +33,7 @@ strip = true
 
 [profile.dev]
 debug = 0
+opt-level = 1
 strip = "debuginfo"
 
 [workspace.lints.clippy]
