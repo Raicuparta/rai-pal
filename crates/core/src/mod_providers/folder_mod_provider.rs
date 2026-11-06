@@ -8,7 +8,7 @@ use crate::{
 		mod_database::{ModDatabase, compute_scope, scope_id},
 	},
 	mod_providers::mod_provider::ModProviderId,
-	mods::game_mod::{GameMod, ModDownload},
+	mods::manifest::{Mod, ModDownload},
 	path_extensions::{AsValidStr, PathExt},
 	result::{Error, Result},
 };
@@ -34,8 +34,8 @@ impl ModProvider for FolderModProvider {
 
 		let mut keep_ids = Vec::new();
 
-		for manifest_path in self.folder_path.join("*").join(GameMod::FILE_NAME).glob() {
-			let Some(mut game_mod) = GameMod::from_file(&manifest_path) else {
+		for manifest_path in self.folder_path.join("*").join(Mod::FILE_NAME).glob() {
+			let Some(mut game_mod) = Mod::from_file(&manifest_path) else {
 				continue;
 			};
 

@@ -11,7 +11,7 @@ use strum::IntoEnumIterator;
 use crate::{
 	app_paths,
 	debug::LoggableInstant,
-	game::DbGame,
+	game::Game,
 	game_providers::game_provider::GameProviderId,
 	game_title::get_normalized_titles,
 	games_query::{FilterGroup, GamesQuery, GamesSortBy, InstallState},
@@ -27,15 +27,21 @@ use crate::{
 };
 
 pub trait GameDatabase {
-	fn insert_game(&self, game: &DbGame);
-	fn get_game(&self, provider_id: &GameProviderId, game_id: &str) -> Result<DbGame>;
+	fn insert_game(&self, game: &Game);
+	fn get_game(&self, provider_id: &GameProviderId, game_id: &str) -> Result<Game>;
 	fn get_game_ids(&self, query: Option<GamesQuery>) -> Result<GameIdsResponse>;
 	fn remove_stale_games(&self, provider_id: &GameProviderId, max_time: u64) -> Result;
 }
 
 #[serializable_struct]
+pub struct GameId {
+	pub provider_id: GameProviderId,
+	pub game_id: String,
+}
+
+#[serializable_struct]
 pub struct GameIdsResponse {
-	pub game_ids: Vec<(GameProviderId, String)>,
+	pub game_ids: Vec<GameId>,
 	pub total_count: u32,
 }
 
@@ -134,7 +140,7 @@ fn build_supported_os_inclusion_filter(
 }
 
 impl GameDatabase for DbMutex {
-	fn insert_game(&self, game: &DbGame) {
+	fn insert_game(&self, game: &Game) {
 		if let Err(err) = try_insert_game(self, game) {
 			log::error!(
 				"Failed to insert game ({}/{}) into local database: {}",
@@ -145,7 +151,7 @@ impl GameDatabase for DbMutex {
 		}
 	}
 
-	fn get_game(&self, provider_id: &GameProviderId, game_id: &str) -> Result<DbGame> {
+	fn get_game(&self, provider_id: &GameProviderId, game_id: &str) -> Result<Game> {
 		Ok(self
 			.lock_db()?
 			.prepare_cached(
@@ -183,7 +189,7 @@ impl GameDatabase for DbMutex {
 	",
 			)?
 			.query_row([provider_id.to_string(), game_id.to_string()], |row| {
-				Ok(DbGame {
+				Ok(Game {
 					provider_id: row.get(0)?,
 					game_id: row.get(1)?,
 					external_id: row.get(2)?,
@@ -461,7 +467,12 @@ impl GameDatabase for DbMutex {
 		let game_ids = self
 			.lock_db()?
 			.prepare(&sql_query)?
-			.query_map(param_refs.as_slice(), |row| Ok((row.get(0)?, row.get(1)?)))?
+			.query_map(param_refs.as_slice(), |row| {
+				Ok(GameId {
+					provider_id: row.get(0)?,
+					game_id: row.get(1)?,
+				})
+			})?
 			.filter_map(|game_id| match game_id {
 				Ok(id) => Some(id),
 				Err(err) => {
@@ -505,7 +516,7 @@ impl GameDatabase for DbMutex {
 	}
 }
 
-fn try_insert_game(connection_mutex: &DbMutex, game: &DbGame) -> Result {
+fn try_insert_game(connection_mutex: &DbMutex, game: &Game) -> Result {
 	let mut connection = connection_mutex.lock_db()?;
 	let transaction = connection.transaction()?;
 

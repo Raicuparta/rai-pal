@@ -15,7 +15,7 @@ use crate::{
 		mod_database::{ModDatabase, compute_scope, scope_id},
 	},
 	mod_providers::mod_provider::ModProviderId,
-	mods::{game_mod::GameMod, mod_family::ModFamily},
+	mods::{manifest::Mod, mod_family::ModFamily},
 	path_extensions::PathExt,
 	result::{LogErrExt, Result},
 };
@@ -24,7 +24,7 @@ use crate::{
 pub struct UrlModDatabase {
 	#[serde(default)]
 	pub families: BTreeMap<String, ModFamily>,
-	pub mods: Vec<GameMod>,
+	pub mods: Vec<Mod>,
 }
 
 const URL_BASE: &str = "https://raicuparta.github.io/rai-pal-db/mod-db";
@@ -117,7 +117,7 @@ pub struct UrlModSourcesResponse {
 	pub sources: Vec<UrlModSource>,
 }
 
-pub async fn get_mods_from_url_mod_source(url: &str) -> Result<Vec<GameMod>> {
+pub async fn get_mods_from_url_mod_source(url: &str) -> Result<Vec<Mod>> {
 	let mods = http::CLIENT
 		.get(url)
 		.timeout(std::time::Duration::from_secs(15))

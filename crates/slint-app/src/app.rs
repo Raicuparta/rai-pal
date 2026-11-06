@@ -8,7 +8,7 @@ use std::{
 
 use rai_pal_core::{
 	app_settings::{AppSettings, ColorScheme, TabId},
-	game::DbGame,
+	game::Game,
 	game_providers::{game_provider::GameProviderId, provider_command::ProviderCommandAction},
 	games_query::{FilterAction, GamesSortBy},
 	local_database::{
@@ -23,8 +23,8 @@ use slint::{
 };
 
 use crate::{
-	ActionStates, AppColorScheme, AppTab, Fonts, GameRowData, MainWindow, ModActions, action_state,
-	actions, confirmation, downloads,
+	ActionStates, AppColorScheme, AppTab, Fonts, MainWindow, ModActions, action_state, actions,
+	confirmation, downloads,
 	fetch::spawn_fetchers,
 	filters::{
 		apply_filter_action, build_groups, load_mod_families, reset_all_filters, reset_filter_group,
@@ -684,7 +684,11 @@ pub fn run() -> Result<(), slint::PlatformError> {
 			return;
 		};
 
-		let Some(game) = game_from_row(&ui_database, &row) else {
+		let Ok(provider_id) = row.provider_id.parse::<GameProviderId>() else {
+			return;
+		};
+
+		let Ok(game) = ui_database.get_game(&provider_id, row.game_id.as_str()) else {
 			return;
 		};
 
@@ -1129,19 +1133,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	window.run()
 }
 
-fn game_from_row(
-	database: &Arc<rai_pal_core::local_database::app_database::DbMutex>,
-	row: &GameRowData,
-) -> Option<DbGame> {
-	if let Ok(game) = serde_json::from_str::<DbGame>(row.game_json.as_str()) {
-		return Some(game);
-	}
-
-	let provider_id = row.provider_id.parse::<GameProviderId>().ok()?;
-	database.get_game(&provider_id, row.game_id.as_str()).ok()
-}
-
-fn get_selected_game(state: &selected::SelectedGameState) -> Option<(usize, DbGame)> {
+fn get_selected_game(state: &selected::SelectedGameState) -> Option<(usize, Game)> {
 	state
 		.lock()
 		.ok()
@@ -1276,26 +1268,28 @@ fn app_color_scheme(color_scheme: ColorScheme) -> AppColorScheme {
 	}
 }
 
+const SORT_OPTIONS: [(GamesSortBy, bool); 6] = [
+	(GamesSortBy::Title, false),
+	(GamesSortBy::Title, true),
+	(GamesSortBy::Engine, false),
+	(GamesSortBy::Engine, true),
+	(GamesSortBy::ReleaseDate, false),
+	(GamesSortBy::ReleaseDate, true),
+];
+
 fn sort_option_index(sort_by: GamesSortBy, sort_descending: bool) -> i32 {
-	match (sort_by, sort_descending) {
-		(GamesSortBy::Title, false) => 0,
-		(GamesSortBy::Title, true) => 1,
-		(GamesSortBy::Engine, false) => 2,
-		(GamesSortBy::Engine, true) => 3,
-		(GamesSortBy::ReleaseDate, false) => 4,
-		(GamesSortBy::ReleaseDate, true) => 5,
-	}
+	SORT_OPTIONS
+		.iter()
+		.position(|option| *option == (sort_by, sort_descending))
+		.and_then(|index| i32::try_from(index).ok())
+		.unwrap_or_default()
 }
 
 fn sort_option_from_index(index: i32) -> (GamesSortBy, bool) {
-	match index {
-		1 => (GamesSortBy::Title, true),
-		2 => (GamesSortBy::Engine, false),
-		3 => (GamesSortBy::Engine, true),
-		4 => (GamesSortBy::ReleaseDate, false),
-		5 => (GamesSortBy::ReleaseDate, true),
-		_ => (GamesSortBy::Title, false),
-	}
+	usize::try_from(index)
+		.ok()
+		.and_then(|index| SORT_OPTIONS.get(index).copied())
+		.unwrap_or((GamesSortBy::Title, false))
 }
 
 fn app_tab(tab: TabId) -> AppTab {

@@ -1,17 +1,90 @@
 use std::rc::Rc;
 
 use rai_pal_core::{
-	game::DbGame, game_providers::game_provider::GameProviderId, operating_system::OperatingSystem,
+	game::Game, local_database::game_database::GameId, operating_system::OperatingSystem,
 };
 
-use crate::GameRowData;
+use crate::GameRowView;
 
-pub fn make_rows(game_ids: &[(GameProviderId, String)]) -> Vec<GameRowData> {
+#[derive(Clone, Debug, Default)]
+pub struct ReleaseDate {
+	pub day: String,
+	pub month: String,
+	pub year: String,
+}
+
+impl ReleaseDate {
+	pub fn parse(date: Option<&str>) -> Self {
+		let Some(date) = date else {
+			return Self::default();
+		};
+
+		let date = date.get(0..10).unwrap_or(date);
+		let mut parts = date.split('-');
+		let year = parts.next().unwrap_or_default();
+		let month = parts
+			.next()
+			.map_or(0, |month| month.parse::<u32>().unwrap_or_default());
+		let day = parts.next().unwrap_or_default();
+
+		Self {
+			day: day.to_string(),
+			month: month_name(month).to_string(),
+			year: year.to_string(),
+		}
+	}
+
+	pub fn display_short(&self) -> String {
+		if self.year.is_empty() {
+			return String::new();
+		}
+
+		let mut parts = Vec::new();
+
+		if !self.month.is_empty() {
+			parts.push(self.month.clone());
+		}
+
+		if !self.day.is_empty() {
+			parts.push(self.day.clone());
+		}
+
+		if parts.is_empty() {
+			return self.year.clone();
+		}
+
+		format!("{}, {}", parts.join(" "), self.year)
+	}
+}
+
+const MONTHS: [&str; 12] = [
+	"January",
+	"February",
+	"March",
+	"April",
+	"May",
+	"June",
+	"July",
+	"August",
+	"September",
+	"October",
+	"November",
+	"December",
+];
+
+fn month_name(month: u32) -> &'static str {
+	match usize::try_from(month) {
+		Ok(month) if (1..=MONTHS.len()).contains(&month) => MONTHS[month - 1],
+		_ => "",
+	}
+}
+
+pub fn make_rows(game_ids: &[GameId]) -> Vec<GameRowView> {
 	game_ids
 		.iter()
-		.map(|(provider, id)| GameRowData {
-			provider_id: format!("{provider}").into(),
-			game_id: id.clone().into(),
+		.map(|game_id| GameRowView {
+			provider_id: format!("{}", game_id.provider_id).into(),
+			game_id: game_id.game_id.clone().into(),
 			title: "...".into(),
 			thumbnail: slint::Image::default(),
 			has_thumbnail: false,
@@ -24,12 +97,11 @@ pub fn make_rows(game_ids: &[(GameProviderId, String)]) -> Vec<GameRowData> {
 			release_day: "".into(),
 			release_month: "".into(),
 			release_year: "".into(),
-			game_json: "".into(),
 		})
 		.collect()
 }
 
-pub fn reset_row(row: &mut GameRowData) {
+pub fn reset_row(row: &mut GameRowView) {
 	row.title = "...".into();
 	row.thumbnail = slint::Image::default();
 	row.has_thumbnail = false;
@@ -42,16 +114,26 @@ pub fn reset_row(row: &mut GameRowData) {
 	row.release_day = "".into();
 	row.release_month = "".into();
 	row.release_year = "".into();
-	row.game_json = "".into();
 }
 
-pub fn apply_game_to_row(row: &mut GameRowData, game: &DbGame) {
-	let (release_day, release_month, release_year) =
-		format_release_date(game.release_date_rfc3339.as_deref());
+pub fn apply_game_to_row(row: &mut GameRowView, game: &Game) {
+	let mut tags = game
+		.tags
+		.iter()
+		.map(|tag| tag.to_string().to_uppercase())
+		.collect::<Vec<_>>();
+	tags.sort();
+
+	let release_date = ReleaseDate::parse(game.release_date_rfc3339.as_deref());
 
 	row.title = game.full_title().into();
 	row.installed = game.exe_path.is_some();
-	row.tags = Rc::new(slint::VecModel::from(tags(game))).into();
+	row.tags = Rc::new(slint::VecModel::from(
+		tags.into_iter()
+			.map(slint::SharedString::from)
+			.collect::<Vec<_>>(),
+	))
+	.into();
 	row.engine_brand = game
 		.engine_brand
 		.map(|brand| brand.to_string())
@@ -63,59 +145,13 @@ pub fn apply_game_to_row(row: &mut GameRowData, game: &DbGame) {
 		.unwrap_or_default()
 		.into();
 	row.engine_details = get_engine_details(game).into();
-	row.release_day = release_day.into();
-	row.release_month = release_month.into();
-	row.release_year = release_year.into();
-	row.game_json = serde_json::to_string_pretty(game)
-		.unwrap_or_default()
-		.into();
+	row.release_day = release_date.day.into();
+	row.release_month = release_date.month.into();
+	row.release_year = release_date.year.into();
 	row.loaded = true;
 }
 
-pub fn tags(game: &DbGame) -> Vec<slint::SharedString> {
-	let mut tags: Vec<String> = game
-		.tags
-		.iter()
-		.map(|tag| tag.to_string().to_uppercase())
-		.collect();
-	tags.sort();
-	tags.into_iter().map(Into::into).collect()
-}
-
-pub fn format_release_date(date: Option<&str>) -> (String, String, String) {
-	let Some(date) = date else {
-		return (String::new(), String::new(), String::new());
-	};
-
-	let date = date.get(0..10).unwrap_or(date);
-	let mut parts = date.split('-');
-	let year = parts.next().unwrap_or_default();
-	let month_number = parts
-		.next()
-		.and_then(|month| month.parse::<u32>().ok())
-		.unwrap_or_default();
-	let day = parts.next().unwrap_or_default();
-
-	let month = match month_number {
-		1 => "January",
-		2 => "February",
-		3 => "March",
-		4 => "April",
-		5 => "May",
-		6 => "June",
-		7 => "July",
-		8 => "August",
-		9 => "September",
-		10 => "October",
-		11 => "November",
-		12 => "December",
-		_ => "",
-	};
-
-	(day.to_string(), month.to_string(), year.to_string())
-}
-
-pub fn get_engine_details(game: &DbGame) -> String {
+fn get_engine_details(game: &Game) -> String {
 	let mut details = Vec::new();
 
 	if let Some(os) = game.executable_os {

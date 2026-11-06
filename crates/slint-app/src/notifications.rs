@@ -5,7 +5,7 @@ use std::{
 
 use slint::Model;
 
-use crate::{MainWindow, NotificationData, NotificationKind};
+use crate::{MainWindow, NotificationKind, NotificationView};
 
 static NEXT_ID: AtomicI32 = AtomicI32::new(1);
 
@@ -51,7 +51,7 @@ pub fn dismiss(window: &MainWindow, id: i32) {
 fn show(window: &MainWindow, message: impl Into<slint::SharedString>, kind: NotificationKind) {
 	let mut notifications = window.get_notifications().iter().collect::<Vec<_>>();
 
-	notifications.push(NotificationData {
+	notifications.push(NotificationView {
 		id: NEXT_ID.fetch_add(1, Ordering::Relaxed),
 		message: message.into(),
 		kind,

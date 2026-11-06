@@ -2,7 +2,7 @@ use std::{path::Path, thread};
 
 use rai_pal_core::user::auth::{AuthState, get_user_auth_state, logout_auth, start_auth};
 
-use crate::{MainWindow, notifications};
+use crate::{MainWindow, notifications, runtime, text};
 
 pub fn load(window: slint::Weak<MainWindow>) {
 	refresh_state(window);
@@ -21,7 +21,7 @@ pub fn log_in(window: slint::Weak<MainWindow>) {
 	drop(handle);
 
 	thread::spawn(move || {
-		let result = run_async(async {
+		let result = runtime::block_on(async {
 			start_auth().await?;
 			Ok(get_user_auth_state().await?)
 		});
@@ -43,7 +43,7 @@ pub fn log_out(window: slint::Weak<MainWindow>) {
 	drop(handle);
 
 	thread::spawn(move || {
-		let result = run_async(async {
+		let result = runtime::block_on(async {
 			logout_auth().await?;
 			Ok(get_user_auth_state().await?)
 		});
@@ -54,7 +54,7 @@ pub fn log_out(window: slint::Weak<MainWindow>) {
 
 fn refresh_state(window: slint::Weak<MainWindow>) {
 	thread::spawn(move || {
-		let result = run_async(get_user_auth_state());
+		let result = runtime::block_on(get_user_auth_state());
 
 		apply_result(window, result);
 	});
@@ -88,52 +88,10 @@ fn apply_state(window: &MainWindow, state: &AuthState) {
 	window.set_user_logged_in(state.is_logged_in);
 	window.set_user_name(state.user_name.clone().unwrap_or_default().into());
 	window.set_user_initials(
-		get_initials(state.user_name.as_deref())
+		text::initials(state.user_name.as_deref().unwrap_or_default())
 			.unwrap_or_default()
 			.into(),
 	);
 	window.set_user_has_avatar(avatar.is_some());
 	window.set_user_avatar(avatar.unwrap_or_default());
-}
-
-fn run_async<T>(
-	future: impl std::future::Future<Output = rai_pal_core::result::Result<T>>,
-) -> Result<T, String> {
-	let runtime = tokio::runtime::Builder::new_current_thread()
-		.enable_all()
-		.build()
-		.map_err(|err| err.to_string())?;
-
-	runtime.block_on(future).map_err(|err| err.to_string())
-}
-
-fn get_initials(name: Option<&str>) -> Option<String> {
-	let words = name?.split_whitespace().collect::<Vec<_>>();
-
-	if words.is_empty() {
-		return None;
-	}
-
-	let initials = if words.len() == 1 {
-		words[0]
-			.chars()
-			.filter(|character| character.is_ascii_alphanumeric())
-			.collect::<String>()
-	} else {
-		words
-			.iter()
-			.filter_map(|word| {
-				word.chars()
-					.find(|character| character.is_ascii_alphanumeric())
-			})
-			.collect::<String>()
-	};
-
-	let initials = initials.chars().take(2).collect::<String>().to_uppercase();
-
-	if initials.is_empty() {
-		None
-	} else {
-		Some(initials)
-	}
 }

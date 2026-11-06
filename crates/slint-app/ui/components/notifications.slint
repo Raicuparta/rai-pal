@@ -1,10 +1,10 @@
-import { NotificationData, NotificationKind } from "../notification-data.slint";
+import { NotificationView, NotificationKind } from "../notification-view.slint";
 import { Theme } from "../theme.slint";
 import { IconButton } from "icon-button.slint";
 import { SvgIcon } from "svg-icon.slint";
 
 component NotificationToast inherits Rectangle {
-    in property <NotificationData> notification;
+    in property <NotificationView> notification;
 
     callback dismissed(id: int);
 
@@ -52,7 +52,7 @@ component NotificationToast inherits Rectangle {
 }
 
 export component NotificationsOverlay inherits Rectangle {
-    in property <[NotificationData]> notifications;
+    in property <[NotificationView]> notifications;
     in property <length> top-offset: 0px;
 
     callback dismissed(id: int);

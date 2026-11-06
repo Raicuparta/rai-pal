@@ -7,7 +7,7 @@ use std::{
 };
 
 use crate::{
-	game::DbGame,
+	game::Game,
 	open_better::open_detached_better,
 	path_extensions::AsValidStr,
 	result::{Error, Result},
@@ -113,7 +113,7 @@ fn build_script(
 /// launch path (with our script in place of the game binary) gives Steam a
 /// launch record, so the whole process tree can be stopped again.
 pub fn launch_via_steam_with_swapped_exe(
-	game: &DbGame,
+	game: &Game,
 	program: &Path,
 	args: &[String],
 	environment: &BTreeMap<String, String>,

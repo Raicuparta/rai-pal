@@ -13,7 +13,7 @@ use rai_pal_proc_macros::serializable_enum;
 use super::game_engine::{EngineBrand, EngineVersion, EngineVersionNumbers};
 use crate::{
 	architecture::{Architecture, get_architecture},
-	game::DbGame,
+	game::Game,
 	open_better::open_detached_better,
 	path_extensions::PathExt,
 	result::{Error, LogErrExt, Result},
@@ -23,6 +23,10 @@ use crate::{
 pub enum UnityBackend {
 	Il2Cpp,
 	Mono,
+}
+
+impl UnityBackend {
+	pub const ALL: [Self; 2] = [Self::Il2Cpp, Self::Mono];
 }
 
 pub fn parse_version(string: &str) -> Option<EngineVersion> {
@@ -157,7 +161,7 @@ fn get_alt_architecture(game_path: &Path) -> Option<Architecture> {
 	None
 }
 
-pub fn process_game(game: &mut DbGame) -> bool {
+pub fn process_game(game: &mut Game) -> bool {
 	let Some(exe_path) = game.exe_path.as_ref() else {
 		return false;
 	};
@@ -198,7 +202,7 @@ pub fn process_game(game: &mut DbGame) -> bool {
 	true
 }
 
-pub fn open_data_folder(game: &DbGame) -> Result {
+pub fn open_data_folder(game: &Game) -> Result {
 	let app_data = game
 		.get_roaming_app_data_slow()?
 		.try_parent()?

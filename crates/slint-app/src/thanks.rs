@@ -3,8 +3,9 @@ use std::{rc::Rc, thread};
 use serde_json::Value;
 
 use crate::{
-	MainWindow, PatronData,
+	MainWindow, PatronView,
 	fetch::{self, FetchedImage},
+	text,
 };
 
 const PATRONS_URL: &str = "https://raicuparta.github.io/patron-fetcher/patrons.json";
@@ -31,7 +32,7 @@ pub fn load(window: slint::Weak<MainWindow>) {
 				.map(|patron| {
 					let avatar = patron.avatar.map(FetchedImage::into_slint_image);
 
-					PatronData {
+					PatronView {
 						ranking: patron.ranking,
 						name: patron.name.into(),
 						initials: patron.initials.into(),
@@ -83,16 +84,8 @@ fn patron_from_json(value: &Value) -> Option<FetchedPatron> {
 
 	Some(FetchedPatron {
 		ranking,
-		initials: initials(&name),
+		initials: text::initials(&name).unwrap_or_default(),
 		name,
 		avatar,
 	})
-}
-
-fn initials(name: &str) -> String {
-	name.split_whitespace()
-		.filter_map(|word| word.chars().next())
-		.take(2)
-		.collect::<String>()
-		.to_uppercase()
 }

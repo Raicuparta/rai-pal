@@ -2,9 +2,9 @@ use rai_pal_proc_macros::serializable_enum;
 
 use crate::{
 	app_paths,
-	game::DbGame,
+	game::Game,
 	game_providers::provider_command::{ProviderCommandAction, ProviderCommandKind},
-	mods::game_mod::GameMod,
+	mods::manifest::Mod,
 	path_extensions::{AsValidStr, PathExt},
 	result::{ContextResult, Error, Result},
 };
@@ -50,11 +50,7 @@ fn replace_parameter_value<TValue: AsRef<str>, TGetValue: Fn() -> Result<TValue>
 	}
 }
 
-pub fn replace_tokens(
-	base_string: &str,
-	game_option: Option<&DbGame>,
-	game_mod: &GameMod,
-) -> String {
+pub fn replace_tokens(base_string: &str, game_option: Option<&Game>, game_mod: &Mod) -> String {
 	let mut result = base_string.to_string();
 
 	if let Some(game) = game_option {

@@ -11,7 +11,7 @@ use winreg::{RegKey, enums::HKEY_LOCAL_MACHINE};
 
 use super::provider_command::{ProviderCommandAction, ProviderCommandKind};
 use crate::{
-	game::DbGame,
+	game::Game,
 	game_providers::game_provider::{GameProviderId, ProviderParser},
 	result::{ContextResult, Result},
 };
@@ -41,8 +41,8 @@ pub(crate) struct GogParseSource {
 }
 
 impl Gog {
-	fn get_game(db_entry: &GogDbEntry, launcher_path: &Path) -> DbGame {
-		let mut game = DbGame::new(
+	fn get_game(db_entry: &GogDbEntry, launcher_path: &Path) -> Game {
+		let mut game = Game::new(
 			GameProviderId::Gog,
 			db_entry.id.clone(),
 			db_entry.title.clone(),
@@ -73,7 +73,7 @@ impl Gog {
 impl ProviderParser for Gog {
 	type Source = GogParseSource;
 
-	fn parse_games(&self, source: &Self::Source, insert: &mut impl FnMut(DbGame)) -> Result {
+	fn parse_games(&self, source: &Self::Source, insert: &mut impl FnMut(Game)) -> Result {
 		if let Some(database) = get_database(&source.database_path)? {
 			for db_entry in database {
 				let mut game = Self::get_game(&db_entry, &source.launcher_path);

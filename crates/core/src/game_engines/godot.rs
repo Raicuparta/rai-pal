@@ -9,7 +9,7 @@ use super::{
 	pe_utils,
 };
 use crate::{
-	game::DbGame,
+	game::Game,
 	open_better::open_detached_better,
 	path_extensions::PathExt,
 	result::{LogErrExt, Result},
@@ -115,7 +115,7 @@ fn check_exe(exe_path: &Path) -> Option<EngineVersion> {
 	None
 }
 
-pub fn process_game(game: &mut DbGame) -> bool {
+pub fn process_game(game: &mut Game) -> bool {
 	let Some(exe_path) = game.exe_path.as_ref() else {
 		return false;
 	};
@@ -133,7 +133,7 @@ pub fn process_game(game: &mut DbGame) -> bool {
 	true
 }
 
-pub fn open_data_folder(game: &DbGame) -> Result {
+pub fn open_data_folder(game: &Game) -> Result {
 	let app_data = game.get_roaming_app_data_slow()?;
 	let default_godot_data = game.get_roaming_app_data_slow()?.join("Godot/app_userdata");
 

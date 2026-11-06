@@ -1,5 +1,5 @@
 import { ModActions } from "../actions.slint";
-import { ModsTabModData } from "../mods-tab-data.slint";
+import { ModsTabModView } from "../mods-tab-view.slint";
 import { Theme } from "../theme.slint";
 import { ActionButton } from "action-button.slint";
 import { ExternalLink } from "external-link.slint";
@@ -7,7 +7,7 @@ import { IconButton } from "icon-button.slint";
 import { ModSummaryView } from "mod-summary.slint";
 
 export component ModsTabRowView inherits Rectangle {
-    in property <ModsTabModData> mod-data;
+    in property <ModsTabModView> mod-data;
     in property <bool> indented: false;
 
     callback debug-data(json: string);

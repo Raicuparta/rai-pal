@@ -10,7 +10,7 @@ use winreg::{
 };
 
 use crate::{
-	game::DbGame,
+	game::Game,
 	game_providers::game_provider::{GameProviderId, ProviderActions, WineProviderActions},
 	local_database::{app_database::DbMutex, game_database::GameDatabase},
 	path_extensions::PathExt,
@@ -102,7 +102,7 @@ fn get_games(db: &DbMutex) -> io::Result<()> {
 													"[Name Not Found]".to_string()
 												});
 
-											let mut game = DbGame::new(
+											let mut game = Game::new(
 												GameProviderId::Xbox,
 												package_id.clone(),
 												display_name,

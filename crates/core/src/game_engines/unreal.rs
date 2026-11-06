@@ -8,7 +8,7 @@ use serde_json;
 use super::game_engine::{EngineBrand, EngineVersion, EngineVersionNumbers};
 use crate::{
 	architecture::get_architecture,
-	game::DbGame,
+	game::Game,
 	open_better::open_detached_better,
 	path_extensions::PathExt,
 	result::{LogErrExt, Result},
@@ -232,7 +232,7 @@ fn is_helper_exe(path: &Path) -> bool {
 		})
 }
 
-fn set_version(game: &mut DbGame, version: &EngineVersion, exe_path: &Path) {
+fn set_version(game: &mut Game, version: &EngineVersion, exe_path: &Path) {
 	game.engine_version_major = Some(version.numbers.major);
 	game.engine_version_minor = version.numbers.minor;
 	game.engine_version_patch = version.numbers.patch;
@@ -265,7 +265,7 @@ fn is_unreal_exe(game_path: &Path) -> bool {
 	false
 }
 
-pub fn process_game(game: &mut DbGame) -> bool {
+pub fn process_game(game: &mut Game) -> bool {
 	let Some(game_path) = game.exe_path.clone() else {
 		return false;
 	};
@@ -328,7 +328,7 @@ pub fn process_game(game: &mut DbGame) -> bool {
 	true
 }
 
-pub fn open_data_folder(game: &DbGame) -> Result {
+pub fn open_data_folder(game: &Game) -> Result {
 	let app_data = game
 		.get_roaming_app_data_slow()?
 		.try_parent()?

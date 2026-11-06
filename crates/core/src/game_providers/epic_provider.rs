@@ -14,7 +14,7 @@ use rai_pal_proc_macros::serializable_struct;
 use winreg::{RegKey, enums::HKEY_LOCAL_MACHINE};
 
 use crate::{
-	game::DbGame,
+	game::Game,
 	game_providers::{
 		game_provider::{GameProviderId, ProviderParser},
 		provider_command::{ProviderCommandAction, ProviderCommandKind},
@@ -77,7 +77,7 @@ pub struct EpicCatalogItem {
 pub struct Epic {}
 
 impl Epic {
-	fn get_game(catalog_item: &EpicCatalogItem) -> Option<DbGame> {
+	fn get_game(catalog_item: &EpicCatalogItem) -> Option<Game> {
 		if catalog_item
 			.categories
 			.iter()
@@ -86,7 +86,7 @@ impl Epic {
 			return None;
 		}
 
-		let mut game = DbGame::new(
+		let mut game = Game::new(
 			GameProviderId::Epic,
 			catalog_item.id.clone(),
 			catalog_item.title.clone(),
@@ -149,7 +149,7 @@ impl EpicCatalogItem {
 impl ProviderParser for Epic {
 	type Source = PathBuf;
 
-	fn parse_games(&self, app_data_path: &Self::Source, insert: &mut impl FnMut(DbGame)) -> Result {
+	fn parse_games(&self, app_data_path: &Self::Source, insert: &mut impl FnMut(Game)) -> Result {
 		let mut exe_paths: HashMap<String, PathBuf> = HashMap::new();
 
 		let manifests_path = app_data_path.join("Manifests");

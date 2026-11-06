@@ -6,7 +6,7 @@ use std::{
 };
 
 use crate::{
-	game::DbGame,
+	game::Game,
 	game_providers::{
 		game_provider::ProviderParser, itch_provider::Itch, steam::steam_provider::Steam,
 	},
@@ -54,7 +54,7 @@ fn expected_games(root: &Path) -> Vec<String> {
 	})
 }
 
-fn parse_path_fixture<TParser>(parser: &TParser, name: &str) -> (PathBuf, Vec<DbGame>)
+fn parse_path_fixture<TParser>(parser: &TParser, name: &str) -> (PathBuf, Vec<Game>)
 where
 	TParser: ProviderParser<Source = PathBuf>,
 {
@@ -66,7 +66,7 @@ where
 	(root, games)
 }
 
-fn find_game<'a>(root: &Path, games: &'a [DbGame], external_id: &str) -> &'a DbGame {
+fn find_game<'a>(root: &Path, games: &'a [Game], external_id: &str) -> &'a Game {
 	games
 		.iter()
 		.find(|game| game.external_id == external_id)
@@ -82,7 +82,7 @@ fn find_game<'a>(root: &Path, games: &'a [DbGame], external_id: &str) -> &'a DbG
 		})
 }
 
-fn assert_expected_games(root: &Path, games: &[DbGame]) {
+fn assert_expected_games(root: &Path, games: &[Game]) {
 	let expected = expected_games(root);
 
 	assert!(

@@ -11,7 +11,7 @@ use rusqlite::{Connection, OpenFlags};
 use super::provider_command::{ProviderCommandAction, ProviderCommandKind};
 use crate::{
 	app_paths,
-	game::DbGame,
+	game::Game,
 	game_providers::game_provider::{
 		GameProviderId, ProviderActions, ProviderParser, WineProviderActions,
 	},
@@ -65,8 +65,8 @@ impl Itch {
 		None
 	}
 
-	fn get_game(row: &ItchDatabaseGame) -> DbGame {
-		let mut game = DbGame::new(GameProviderId::Itch, row.id.to_string(), row.title.clone());
+	fn get_game(row: &ItchDatabaseGame) -> Game {
+		let mut game = Game::new(GameProviderId::Itch, row.id.to_string(), row.title.clone());
 
 		game.thumbnail_url.clone_from(&row.cover_url);
 
@@ -129,7 +129,7 @@ pub struct ItchDatabase {
 impl ProviderParser for Itch {
 	type Source = PathBuf;
 
-	fn parse_games(&self, db_path: &Self::Source, insert: &mut impl FnMut(DbGame)) -> Result {
+	fn parse_games(&self, db_path: &Self::Source, insert: &mut impl FnMut(Game)) -> Result {
 		let Some(database) = get_database(db_path)? else {
 			return Ok(());
 		};
@@ -173,17 +173,17 @@ impl WineProviderActions for Itch {}
 
 #[cfg(target_os = "linux")]
 impl WineProviderActions for Itch {
-	fn get_wine_prefix_path(&self, _game: &DbGame) -> Result<PathBuf> {
+	fn get_wine_prefix_path(&self, _game: &Game) -> Result<PathBuf> {
 		let prefix = get_itch_wine_prefix()?;
 		log::info!("Resolved Itch wine prefix: `{}`", prefix.display());
 		Ok(prefix)
 	}
 
-	fn get_wine_binary_path(&self, _game: &DbGame) -> Result<PathBuf> {
+	fn get_wine_binary_path(&self, _game: &Game) -> Result<PathBuf> {
 		Ok(crate::wine::find_itch_wine())
 	}
 
-	fn set_wine_dll_overrides(&self, game: &DbGame, dll_overrides: &[String]) -> Result {
+	fn set_wine_dll_overrides(&self, game: &Game, dll_overrides: &[String]) -> Result {
 		use crate::wine;
 
 		let prefix_path = self.get_wine_prefix_path(game)?;

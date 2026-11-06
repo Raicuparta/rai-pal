@@ -7,7 +7,7 @@ use std::{
 use steamlocate::Library;
 
 use crate::{
-	game::DbGame,
+	game::Game,
 	game_providers::{
 		game_provider::WineProviderActions,
 		steam::{steam_dir::find_steam_dir, steam_provider::Steam},
@@ -18,7 +18,7 @@ use crate::{
 };
 
 impl WineProviderActions for Steam {
-	fn get_wine_prefix_path(&self, game: &DbGame) -> Result<PathBuf> {
+	fn get_wine_prefix_path(&self, game: &Game) -> Result<PathBuf> {
 		let app_id: u32 = game.external_id.parse()?;
 		let steam_dir = find_steam_dir()?;
 
@@ -39,7 +39,7 @@ impl WineProviderActions for Steam {
 		)))
 	}
 
-	fn get_wine_binary_path(&self, game: &DbGame) -> Result<PathBuf> {
+	fn get_wine_binary_path(&self, game: &Game) -> Result<PathBuf> {
 		let prefix_path = self.get_wine_prefix_path(game)?;
 		let compat_data_path = prefix_path.try_parent()?;
 
@@ -49,7 +49,7 @@ impl WineProviderActions for Steam {
 			.join("wine"))
 	}
 
-	fn get_wine_environment(&self, game: &DbGame) -> Result<BTreeMap<String, String>> {
+	fn get_wine_environment(&self, game: &Game) -> Result<BTreeMap<String, String>> {
 		let wine_prefix_path = self.get_wine_prefix_path(game)?;
 		let compat_data_path = wine_prefix_path.try_parent()?;
 
@@ -64,7 +64,7 @@ impl WineProviderActions for Steam {
 		})
 	}
 
-	fn set_wine_dll_overrides(&self, game: &DbGame, dll_overrides: &[String]) -> Result {
+	fn set_wine_dll_overrides(&self, game: &Game, dll_overrides: &[String]) -> Result {
 		let prefix_path = self.get_wine_prefix_path(game)?;
 		wine::set_wine_dll_overrides_in_reg(&prefix_path, dll_overrides)
 			.map_err(|err| Error::SteamProton(err.to_string()))

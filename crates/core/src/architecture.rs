@@ -11,6 +11,10 @@ pub enum Architecture {
 	X86,
 }
 
+impl Architecture {
+	pub const ALL: [Self; 2] = [Self::X64, Self::X86];
+}
+
 pub fn get_architecture(exe_path: &Path) -> Result<Option<Architecture>> {
 	let mmap = mmap_safe::map_readonly(exe_path)?;
 

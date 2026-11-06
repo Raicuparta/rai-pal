@@ -5,9 +5,9 @@ use reqwest::Response;
 use zip::ZipArchive;
 
 use crate::{
-	game::DbGame,
+	game::Game,
 	http,
-	mods::game_mod::GameMod,
+	mods::manifest::Mod,
 	path_extensions::PathExt,
 	result::{ContextResult, Result},
 };
@@ -28,7 +28,7 @@ pub struct RemoteConfigs {
 }
 
 impl RemoteConfigs {
-	pub fn get_for_mod(&self, game_mod: &GameMod) -> Option<&RemoteConfig> {
+	pub fn get_for_mod(&self, game_mod: &Mod) -> Option<&RemoteConfig> {
 		let mod_id = game_mod.get_config_db_id();
 
 		self.configs.iter().find(|config| config.mod_id == mod_id)
@@ -60,7 +60,7 @@ pub async fn get_remote_configs(exe_path: &Path) -> Result<Option<RemoteConfigs>
 	Ok(Some(configs))
 }
 
-async fn download_config(config_file: &str, game: &DbGame) -> Result<Response> {
+async fn download_config(config_file: &str, game: &Game) -> Result<Response> {
 	let game_name = get_game_config_name(game.try_get_exe_path()?)?;
 
 	let url = format!("{CONFIG_DB_BASE_URL}/{CONFIG_DB_VERSION}/{game_name}/configs/{config_file}");
@@ -71,7 +71,7 @@ async fn download_config(config_file: &str, game: &DbGame) -> Result<Response> {
 
 pub async fn download_config_file(
 	config_file: &str,
-	game: &DbGame,
+	game: &Game,
 	destination_path: &Path,
 ) -> Result {
 	let content = download_config(config_file, game)
@@ -86,7 +86,7 @@ pub async fn download_config_file(
 
 pub async fn download_config_folder(
 	config_file: &str,
-	game: &DbGame,
+	game: &Game,
 	destination_path: &Path,
 ) -> Result {
 	let content = download_config(config_file, game)

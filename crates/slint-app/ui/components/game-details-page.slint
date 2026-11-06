@@ -1,8 +1,8 @@
 import { ScrollView } from "std-widgets.slint";
 import { ModActions } from "../actions.slint";
-import { GameRowData } from "../game-row-data.slint";
-import { GameModRowData } from "../game-mod-row-data.slint";
-import { PotentialModRowData } from "../potential-mod-row-data.slint";
+import { GameRowView } from "../game-row-view.slint";
+import { GameModView } from "../game-mod-view.slint";
+import { PotentialModView } from "../potential-mod-view.slint";
 import { Theme } from "../theme.slint";
 import { ActionButton } from "action-button.slint";
 import { GameRowView } from "game-row.slint";
@@ -10,12 +10,12 @@ import { ModsSection } from "mods-section.slint";
 import { PotentialModsSection } from "potential-mods-section.slint";
 
 export component GameDetailsPage inherits Rectangle {
-    in property <GameRowData> game-row;
-    in property <[GameModRowData]> game-mods-installed;
-    in property <[GameModRowData]> game-mods-available;
-    in property <[GameModRowData]> game-mods-hidden;
-    in property <[GameModRowData]> game-mods-incompatible;
-    in property <[PotentialModRowData]> potential-mods;
+    in property <GameRowView> game-row;
+    in property <[GameModView]> game-mods-installed;
+    in property <[GameModView]> game-mods-available;
+    in property <[GameModView]> game-mods-hidden;
+    in property <[GameModView]> game-mods-incompatible;
+    in property <[PotentialModView]> potential-mods;
     in property <bool> has-any-mods;
     in property <bool> has-installed-mods;
     in property <bool> has-available-mods;

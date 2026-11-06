@@ -1,11 +1,11 @@
 import { Branding } from "../branding.slint";
-import { GameRowData } from "../game-row-data.slint";
+import { GameRowView } from "../game-row-view.slint";
 import { Fonts, Theme } from "../theme.slint";
 import { ProviderIcon } from "provider-icon.slint";
 import { SvgIcon } from "svg-icon.slint";
 
 export component GameRowView inherits Rectangle {
-    in property <GameRowData> game-row;
+    in property <GameRowView> game-row;
     in property <int> row-index;
     in property <bool> show-thumbnail: true;
 

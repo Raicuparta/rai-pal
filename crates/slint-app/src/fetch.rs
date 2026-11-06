@@ -6,6 +6,7 @@ use std::{
 };
 
 use rai_pal_core::{
+	game::Game,
 	game_providers::game_provider::GameProviderId,
 	local_database::{app_database::DbMutex, game_database::GameDatabase},
 };
@@ -14,7 +15,7 @@ use slint::Model;
 
 use crate::{
 	MainWindow, image_cache,
-	model::{format_release_date, get_engine_details, tags},
+	model::apply_game_to_row,
 	scheduler::{FetchRequest, FetchScheduler, ThumbnailOutcome},
 };
 
@@ -54,17 +55,7 @@ impl FetchedImage {
 struct FetchResult {
 	index: usize,
 	generation: u64,
-	title: String,
-	installed: bool,
-	tags: Vec<slint::SharedString>,
-	engine_brand: String,
-	engine_version: String,
-	engine_details: String,
-	release_day: String,
-	release_month: String,
-	release_year: String,
-	game_json: String,
-	thumbnail_url: Option<String>,
+	game: Result<Game, String>,
 }
 
 pub(crate) enum ImageFetchOutcome {
@@ -180,50 +171,17 @@ fn fetch_game(database: &DbMutex, request: &FetchRequest) -> FetchResult {
 			return FetchResult {
 				index: request.index,
 				generation: request.generation,
-				title: format!("{}: {}", request.provider_id, request.game_id),
-				installed: false,
-				tags: Vec::new(),
-				engine_brand: String::new(),
-				engine_version: String::new(),
-				engine_details: String::new(),
-				release_day: String::new(),
-				release_month: String::new(),
-				release_year: String::new(),
-				game_json: String::new(),
-				thumbnail_url: None,
+				game: Err(format!("{}: {}", request.provider_id, request.game_id)),
 			};
 		}
 	};
 
 	match database.get_game(&provider_id, &request.game_id) {
-		Ok(game) => {
-			let (release_day, release_month, release_year) =
-				format_release_date(game.release_date_rfc3339.as_deref());
-			let engine_brand = game
-				.engine_brand
-				.map(|brand| brand.to_string())
-				.unwrap_or_default();
-			let engine_version = game.engine_version_display.clone().unwrap_or_default();
-			let engine_details = get_engine_details(&game);
-			let game_json = serde_json::to_string_pretty(&game).unwrap_or_default();
-			let thumbnail_url = game.thumbnail_url.clone();
-
-			FetchResult {
-				index: request.index,
-				generation: request.generation,
-				title: game.full_title(),
-				installed: game.exe_path.is_some(),
-				tags: tags(&game),
-				engine_brand,
-				engine_version,
-				engine_details,
-				release_day,
-				release_month,
-				release_year,
-				game_json,
-				thumbnail_url,
-			}
-		}
+		Ok(game) => FetchResult {
+			index: request.index,
+			generation: request.generation,
+			game: Ok(game),
+		},
 		Err(err) => {
 			eprintln!(
 				"Failed to load game {}:{}: {err}",
@@ -232,17 +190,7 @@ fn fetch_game(database: &DbMutex, request: &FetchRequest) -> FetchResult {
 			FetchResult {
 				index: request.index,
 				generation: request.generation,
-				title: format!("{}: {}", request.provider_id, request.game_id),
-				installed: false,
-				tags: Vec::new(),
-				engine_brand: String::new(),
-				engine_version: String::new(),
-				engine_details: String::new(),
-				release_day: String::new(),
-				release_month: String::new(),
-				release_year: String::new(),
-				game_json: String::new(),
-				thumbnail_url: None,
+				game: Err(format!("{}: {}", request.provider_id, request.game_id)),
 			}
 		}
 	}
@@ -280,19 +228,18 @@ fn spawn_worker(
 					return;
 				};
 
-				let thumbnail_url = result.thumbnail_url;
+				let thumbnail_url = match &result.game {
+					Ok(game) => game.thumbnail_url.clone(),
+					Err(_) => None,
+				};
 
-				row.title = result.title.into();
-				row.installed = result.installed;
-				row.tags = std::rc::Rc::new(slint::VecModel::from(result.tags)).into();
-				row.engine_brand = result.engine_brand.into();
-				row.engine_version = result.engine_version.into();
-				row.engine_details = result.engine_details.into();
-				row.release_day = result.release_day.into();
-				row.release_month = result.release_month.into();
-				row.release_year = result.release_year.into();
-				row.game_json = result.game_json.into();
-				row.loaded = true;
+				match result.game {
+					Ok(game) => apply_game_to_row(&mut row, &game),
+					Err(title) => {
+						row.title = title.into();
+						row.loaded = true;
+					}
+				}
 
 				rows.set_row_data(result.index, row);
 				ui_scheduler.mark_loaded(result.index);

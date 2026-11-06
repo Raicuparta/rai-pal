@@ -3,22 +3,20 @@ use std::{
 	sync::{Arc, Mutex},
 };
 
-use rai_pal_core::game::DbGame;
+use rai_pal_core::game::Game;
 use slint::ModelRc;
 
-use crate::{GameRowData, MainWindow, ProviderActionItem, model::apply_game_to_row};
+use crate::{GameRowView, MainWindow, model::apply_game_to_row};
 
-pub type SelectedGameState = Arc<Mutex<Option<(usize, DbGame)>>>;
+pub type SelectedGameState = Arc<Mutex<Option<(usize, Game)>>>;
 
-pub fn show(window: &MainWindow, game: &DbGame, mut row: GameRowData) {
+pub fn show(window: &MainWindow, game: &Game, mut row: GameRowView) {
 	apply_game_to_row(&mut row, game);
 
-	let provider_actions: Vec<ProviderActionItem> = game
+	let provider_actions: Vec<slint::SharedString> = game
 		.provider_commands
 		.iter()
-		.map(|provider_command| ProviderActionItem {
-			value: provider_command.action.to_string().into(),
-		})
+		.map(|provider_command| provider_command.action.to_string().into())
 		.collect();
 
 	window.set_selected_game_row(row);
@@ -36,7 +34,7 @@ pub fn show(window: &MainWindow, game: &DbGame, mut row: GameRowData) {
 
 pub fn hide(window: &MainWindow) {
 	window.set_game_selected(false);
-	window.set_selected_game_row(GameRowData::default());
+	window.set_selected_game_row(GameRowView::default());
 	window.set_selected_game_json("".into());
 	window.set_selected_provider_id("".into());
 	window.set_selected_has_exe_path(false);

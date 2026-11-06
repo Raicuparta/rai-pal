@@ -4,7 +4,7 @@ use memchr::memmem;
 use pelite::PeFile;
 
 use super::game_engine::{EngineBrand, EngineVersion, EngineVersionNumbers};
-use crate::{game::DbGame, result::LogErrExt};
+use crate::{game::Game, result::LogErrExt};
 
 fn read_gen8_version(form_offset: usize, data: &[u8]) -> Option<EngineVersion> {
 	if data.len() < form_offset + 76 {
@@ -123,7 +123,7 @@ fn check_exe(exe_path: &Path) -> Option<EngineVersion> {
 	None
 }
 
-pub fn process_game(game: &mut DbGame) -> bool {
+pub fn process_game(game: &mut Game) -> bool {
 	let Some(exe_path) = game.exe_path.as_ref() else {
 		return false;
 	};

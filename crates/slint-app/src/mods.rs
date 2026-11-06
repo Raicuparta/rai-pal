@@ -1,55 +1,47 @@
-use std::{
-	collections::{BTreeMap, HashSet},
-	rc::Rc,
-	sync::Arc,
-	thread,
-};
+use std::{collections::HashSet, rc::Rc, sync::Arc, thread};
 
 use rai_pal_core::{
-	game::DbGame,
+	game::Game,
 	game_engines::game_engine::{EngineVersionNumbers, EngineVersionRange},
 	local_database::{
 		app_database::DbMutex,
-		mod_database::{GameModInfo, ModDatabase},
+		mod_database::{ModDatabase, ModInfo},
 	},
 	mods::{
-		game_mod::{GameMod, ModDependency, install_steps},
-		mod_family::ModFamily,
+		game_mods::{GameMod, GameModGroups, PotentialMod},
+		manifest::{Mod, ModDependency, install_steps},
 	},
 	result::Result,
 };
 use slint::ComponentHandle;
 
 use crate::{
-	GameModRowData, MainWindow, PotentialModRowData, action_state, downloads::Tracker,
-	notifications,
+	GameModView, MainWindow, PotentialModView, action_state, downloads::Tracker, notifications,
+	runtime,
 };
 
 #[derive(Default)]
 struct LoadedMods {
-	installed: Vec<GameModRowData>,
-	available: Vec<GameModRowData>,
-	hidden: Vec<GameModRowData>,
-	incompatible: Vec<GameModRowData>,
-	potential: Vec<PotentialModRowData>,
+	installed: Vec<GameModView>,
+	available: Vec<GameModView>,
+	hidden: Vec<GameModView>,
+	incompatible: Vec<GameModView>,
+	potential: Vec<PotentialModView>,
 	has_any_mods: bool,
 }
 
-pub fn refresh_mods(window: &MainWindow, database: &Arc<DbMutex>, game: &DbGame) {
+pub fn refresh_mods(window: &MainWindow, database: &Arc<DbMutex>, game: &Game) {
 	apply_mods(window, database, game, &HashSet::new());
 	refresh_remote_configs(window.as_weak(), database.clone(), game.clone());
 }
 
-fn refresh_remote_configs(window: slint::Weak<MainWindow>, database: Arc<DbMutex>, game: DbGame) {
+fn refresh_remote_configs(window: slint::Weak<MainWindow>, database: Arc<DbMutex>, game: Game) {
 	if game.exe_path.is_none() {
 		return;
 	}
 
 	thread::spawn(move || {
-		let Ok(runtime) = tokio::runtime::Builder::new_current_thread()
-			.enable_all()
-			.build()
-		else {
+		let Ok(runtime) = runtime::current_thread() else {
 			return;
 		};
 
@@ -89,7 +81,7 @@ fn refresh_remote_configs(window: slint::Weak<MainWindow>, database: Arc<DbMutex
 fn apply_mods(
 	window: &MainWindow,
 	database: &DbMutex,
-	game: &DbGame,
+	game: &Game,
 	remote_config_ids: &HashSet<String>,
 ) {
 	let loaded = match load_mods(database, game, remote_config_ids) {
@@ -116,7 +108,7 @@ fn apply_mods(
 pub fn install_mod(
 	database: Arc<DbMutex>,
 	window: slint::Weak<MainWindow>,
-	game: DbGame,
+	game: Game,
 	mod_id: String,
 	downloads: Tracker,
 ) {
@@ -124,10 +116,7 @@ pub fn install_mod(
 	action_state::start(&window, action_id.clone());
 
 	thread::spawn(move || {
-		let Ok(runtime) = tokio::runtime::Builder::new_current_thread()
-			.enable_all()
-			.build()
-		else {
+		let Ok(runtime) = runtime::current_thread() else {
 			return;
 		};
 
@@ -187,17 +176,14 @@ pub fn install_mod(
 pub fn download_mod_config(
 	database: Arc<DbMutex>,
 	window: slint::Weak<MainWindow>,
-	game: DbGame,
+	game: Game,
 	mod_id: String,
 ) {
 	let action_id = format!("game-mod-download-config:{mod_id}");
 	action_state::start(&window, action_id.clone());
 
 	thread::spawn(move || {
-		let Ok(runtime) = tokio::runtime::Builder::new_current_thread()
-			.enable_all()
-			.build()
-		else {
+		let Ok(runtime) = runtime::current_thread() else {
 			return;
 		};
 
@@ -234,17 +220,14 @@ pub fn download_mod_config(
 pub fn uninstall_mod(
 	database: Arc<DbMutex>,
 	window: slint::Weak<MainWindow>,
-	game: DbGame,
+	game: Game,
 	mod_id: String,
 ) {
 	let action_id = format!("game-mod-uninstall:{mod_id}");
 	action_state::start(&window, action_id.clone());
 
 	thread::spawn(move || {
-		let Ok(runtime) = tokio::runtime::Builder::new_current_thread()
-			.enable_all()
-			.build()
-		else {
+		let Ok(runtime) = runtime::current_thread() else {
 			return;
 		};
 
@@ -278,15 +261,12 @@ pub fn uninstall_mod(
 	});
 }
 
-pub fn uninstall_all_mods(database: Arc<DbMutex>, window: slint::Weak<MainWindow>, game: DbGame) {
+pub fn uninstall_all_mods(database: Arc<DbMutex>, window: slint::Weak<MainWindow>, game: Game) {
 	let action_id = "game-mod-uninstall-all".to_string();
 	action_state::start(&window, action_id.clone());
 
 	thread::spawn(move || {
-		let Ok(runtime) = tokio::runtime::Builder::new_current_thread()
-			.enable_all()
-			.build()
-		else {
+		let Ok(runtime) = runtime::current_thread() else {
 			return;
 		};
 
@@ -324,7 +304,7 @@ pub fn uninstall_all_mods(database: Arc<DbMutex>, window: slint::Weak<MainWindow
 pub fn run_mod(
 	database: Arc<DbMutex>,
 	window: slint::Weak<MainWindow>,
-	game: DbGame,
+	game: Game,
 	mod_id: String,
 ) {
 	let action_id = format!("game-mod-run:{mod_id}");
@@ -347,7 +327,7 @@ pub fn run_mod(
 pub fn open_mod_folder(
 	database: Arc<DbMutex>,
 	window: slint::Weak<MainWindow>,
-	game: DbGame,
+	game: Game,
 	mod_id: String,
 ) {
 	let action_id = format!("game-mod-open-folder:{mod_id}");
@@ -370,7 +350,7 @@ pub fn open_mod_folder(
 pub fn configure_mod(
 	database: Arc<DbMutex>,
 	window: slint::Weak<MainWindow>,
-	game: DbGame,
+	game: Game,
 	mod_id: String,
 	open_folder: bool,
 ) {
@@ -397,135 +377,107 @@ pub fn configure_mod(
 
 fn load_mods(
 	database: &DbMutex,
-	game: &DbGame,
+	game: &Game,
 	remote_config_ids: &HashSet<String>,
 ) -> Result<LoadedMods> {
-	let mod_infos = database.get_game_mods(&game.provider_id, &game.game_id)?;
-	let mods = database.get_mod_map()?;
-	let families = database.get_mod_families().unwrap_or_default();
+	let list = GameModGroups::load(database, game, remote_config_ids)?;
 
-	let mut compatible_parts = Vec::new();
-	let mut hidden_parts = Vec::new();
-	let mut incompatible_parts = Vec::new();
-
-	for info in &mod_infos {
-		let Some(game_mod) = mods.get(&info.mod_id) else {
-			continue;
-		};
-
-		if info.compatible {
-			if game_mod.hide_from_game_mods_list == Some(true) {
-				hidden_parts.push((game_mod, info));
-			} else {
-				compatible_parts.push((game_mod, info));
-			}
-		} else if game_mod.hide_from_game_mods_list != Some(true) {
-			incompatible_parts.push((game_mod, info));
-		}
-	}
-
-	let compatible_families = compatible_parts
-		.iter()
-		.chain(hidden_parts.iter())
-		.filter_map(|(game_mod, _)| game_mod.family.clone())
-		.collect::<HashSet<_>>();
-
-	incompatible_parts.retain(|(game_mod, _)| {
-		game_mod
-			.family
-			.as_ref()
-			.is_none_or(|family| !compatible_families.contains(family))
-	});
-
-	sort_parts(&mut compatible_parts);
-	sort_parts(&mut hidden_parts);
-	sort_parts(&mut incompatible_parts);
-
-	let compatible_rows = compatible_parts
+	let installed = list
+		.installed
 		.into_iter()
-		.map(|(game_mod, info)| make_row(game_mod, info, game, remote_config_ids))
+		.map(|entry| row_data(entry, game))
 		.collect::<Vec<_>>();
-	let hidden = hidden_parts
+	let available = list
+		.available
 		.into_iter()
-		.map(|(game_mod, info)| make_row(game_mod, info, game, remote_config_ids))
+		.map(|entry| row_data(entry, game))
 		.collect::<Vec<_>>();
-	let incompatible = incompatible_parts
+	let hidden = list
+		.hidden
 		.into_iter()
-		.map(|(game_mod, info)| make_row(game_mod, info, game, remote_config_ids))
+		.map(|entry| row_data(entry, game))
 		.collect::<Vec<_>>();
-
-	let has_any_mods = !compatible_rows.is_empty() || !incompatible.is_empty();
-	let potential = build_potential_rows(&compatible_rows, &families);
-	let (installed, available) = compatible_rows.into_iter().partition(|row| row.installed);
+	let incompatible = list
+		.incompatible
+		.into_iter()
+		.map(|entry| row_data(entry, game))
+		.collect::<Vec<_>>();
+	let has_any_mods = !installed.is_empty() || !available.is_empty() || !incompatible.is_empty();
 
 	Ok(LoadedMods {
 		installed,
 		available,
 		hidden,
 		incompatible,
-		potential,
+		potential: list.potential.into_iter().map(potential_row_data).collect(),
 		has_any_mods,
 	})
 }
 
-fn make_row(
-	game_mod: &GameMod,
-	info: &GameModInfo,
-	game: &DbGame,
-	remote_config_ids: &HashSet<String>,
-) -> GameModRowData {
+fn row_data(entry: GameMod, game: &Game) -> GameModView {
+	let GameMod {
+		manifest,
+		info,
+		has_remote_config,
+	} = entry;
 	let installed = info.installed_hash.is_some();
 	let is_incompatible = !info.compatible;
 	let can_show_actions = !is_incompatible && game.exe_path.is_some();
-	let has_remote_config = remote_config_ids.contains(&game_mod.id);
+	let version_text = version_text(&info, &manifest);
+	let release_date = release_date_display(&manifest);
+	let engine_text = engine_text(&manifest);
 
-	GameModRowData {
-		mod_id: game_mod.id.clone().into(),
-		title: game_mod.title.clone().into(),
-		description: game_mod.description.clone().into(),
-		family: game_mod.family.clone().unwrap_or_default().into(),
-		version_text: version_text(info, game_mod).into(),
-		release_date: release_date(game_mod).into(),
-		author: game_mod.author.clone().into(),
-		engine_text: engine_text(game_mod).into(),
+	GameModView {
+		mod_id: manifest.id.into(),
+		title: manifest.title.into(),
+		description: manifest.description.into(),
+		family: manifest.family.unwrap_or_default().into(),
+		version_text: version_text.into(),
+		release_date: release_date.into(),
+		author: manifest.author.into(),
+		engine_text: engine_text.into(),
 		installed,
 		outdated: info.is_outdated,
 		incompatible: is_incompatible,
-		deprecated: game_mod.deprecated == Some(true),
+		deprecated: manifest.deprecated == Some(true),
 		has_remote_config,
 		show_status: can_show_actions,
 		can_install: can_show_actions
 			&& !installed
 			&& !info.is_outdated
-			&& game_mod.install.is_some(),
+			&& manifest.install.is_some(),
 		can_update: can_show_actions && info.is_outdated,
 		can_run: can_show_actions
-			&& game_mod.run_for_game.is_some()
-			&& (game_mod.install.is_none() || installed),
+			&& manifest.run_for_game.is_some()
+			&& (manifest.install.is_none() || installed),
 		can_show_actions,
 		can_edit_config: can_show_actions
 			&& installed
-			&& (game_mod.config.is_some() || has_remote_config),
+			&& (manifest.config.is_some() || has_remote_config),
 		can_open_mod_folder: can_show_actions && installed,
 		can_download_config: can_show_actions && installed && has_remote_config,
-		can_reinstall: can_show_actions && installed && game_mod.install.is_some(),
-		can_uninstall: can_show_actions && installed && game_mod.install.is_some(),
+		can_reinstall: can_show_actions && installed && manifest.install.is_some(),
+		can_uninstall: can_show_actions && installed && manifest.install.is_some(),
 		has_installed_dependants: info.has_installed_dependants,
 	}
 }
 
-fn sort_parts(parts: &mut [(&GameMod, &GameModInfo)]) {
-	parts.sort_by(|(a, _), (b, _)| {
-		let a_date = mod_release_date(a).unwrap_or_default();
-		let b_date = mod_release_date(b).unwrap_or_default();
+fn potential_row_data(item: PotentialMod) -> PotentialModView {
+	let (title, description) = match item {
+		PotentialMod::Family(family) => (family.title, family.description),
+		PotentialMod::Manifest(manifest) => {
+			let manifest = *manifest;
+			(manifest.title, manifest.description)
+		}
+	};
 
-		b_date
-			.cmp(a_date)
-			.then_with(|| a.title.to_lowercase().cmp(&b.title.to_lowercase()))
-	});
+	PotentialModView {
+		title: title.into(),
+		description: description.into(),
+	}
 }
 
-fn version_text(info: &GameModInfo, game_mod: &GameMod) -> String {
+fn version_text(info: &ModInfo, game_mod: &Mod) -> String {
 	let download_id = game_mod
 		.download
 		.as_ref()
@@ -546,28 +498,19 @@ fn version_text(info: &GameModInfo, game_mod: &GameMod) -> String {
 	parts.join(" ➔ ")
 }
 
-pub(crate) fn release_date(game_mod: &GameMod) -> String {
-	let Some(date) = mod_release_date(game_mod) else {
-		return String::new();
-	};
-
-	let (day, month, year) = crate::model::format_release_date(Some(date));
-
-	if year.is_empty() {
-		return String::new();
-	}
-
-	format!("{month} {day}, {year}")
+pub(crate) fn release_date_display(game_mod: &Mod) -> String {
+	crate::model::ReleaseDate::parse(game_mod.release_date()).display_short()
 }
 
-pub(crate) fn mod_release_date(game_mod: &GameMod) -> Option<&str> {
+pub(crate) fn download_version(game_mod: &Mod) -> String {
 	game_mod
 		.download
 		.as_ref()
-		.and_then(|download| download.release_date.as_deref())
+		.map(|download| download.id.clone())
+		.unwrap_or_default()
 }
 
-pub(crate) fn engine_text(game_mod: &GameMod) -> String {
+pub(crate) fn engine_text(game_mod: &Mod) -> String {
 	let mut parts = Vec::new();
 
 	if let Some(engine) = game_mod.engine {
@@ -623,53 +566,7 @@ fn version_numbers(version: &EngineVersionNumbers) -> String {
 	parts.join(".")
 }
 
-fn build_potential_rows(
-	compatible_rows: &[GameModRowData],
-	families: &BTreeMap<String, ModFamily>,
-) -> Vec<PotentialModRowData> {
-	let mut family_counts = BTreeMap::<&str, usize>::new();
-
-	for row in compatible_rows {
-		if !row.family.is_empty() {
-			*family_counts.entry(row.family.as_str()).or_default() += 1;
-		}
-	}
-
-	let mut seen_families = HashSet::new();
-	let mut result = Vec::new();
-
-	for row in compatible_rows {
-		let family = if !row.family.is_empty()
-			&& family_counts.get(row.family.as_str()).copied().unwrap_or(0) > 1
-		{
-			families.get(row.family.as_str())
-		} else {
-			None
-		};
-
-		if let Some(family) = family {
-			if seen_families.insert(row.family.to_string()) {
-				result.push(PotentialModRowData {
-					title: family.title.clone().into(),
-					description: family.description.clone().into(),
-				});
-			}
-		} else {
-			result.push(PotentialModRowData {
-				title: row.title.clone(),
-				description: row.description.clone(),
-			});
-		}
-	}
-
-	result
-}
-
-fn collect_install_mods(
-	database: &DbMutex,
-	game: &DbGame,
-	mod_id: &str,
-) -> Result<(GameMod, Vec<GameMod>)> {
+fn collect_install_mods(database: &DbMutex, game: &Game, mod_id: &str) -> Result<(Mod, Vec<Mod>)> {
 	let game_mod = database.get_mod(mod_id)?;
 	let relevant_mods = database.get_game_mods(&game.provider_id, &game.game_id)?;
 	let mut deps_to_install = Vec::new();
@@ -687,9 +584,9 @@ fn collect_install_mods(
 
 async fn install_mod_inner(
 	database: &DbMutex,
-	game: &DbGame,
-	game_mod: GameMod,
-	deps_to_install: Vec<GameMod>,
+	game: &Game,
+	game_mod: Mod,
+	deps_to_install: Vec<Mod>,
 	downloads: &Tracker,
 ) -> Result {
 	let mod_id = game_mod.id.clone();
@@ -720,9 +617,9 @@ async fn install_mod_inner(
 fn collect_deps_to_install(
 	mod_id: &str,
 	database: &DbMutex,
-	relevant_mods: &[GameModInfo],
+	relevant_mods: &[ModInfo],
 	visited: &mut HashSet<String>,
-	result: &mut Vec<GameMod>,
+	result: &mut Vec<Mod>,
 ) {
 	if !visited.insert(mod_id.to_string()) {
 		return;
@@ -768,7 +665,7 @@ fn collect_deps_to_install(
 	}
 }
 
-fn refresh_after_action(window: &slint::Weak<MainWindow>, database: &Arc<DbMutex>, game: &DbGame) {
+fn refresh_after_action(window: &slint::Weak<MainWindow>, database: &Arc<DbMutex>, game: &Game) {
 	let window = window.clone();
 	let database = database.clone();
 	let game = game.clone();

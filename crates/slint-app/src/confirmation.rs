@@ -1,7 +1,7 @@
 use std::{cell::RefCell, rc::Rc, sync::Arc};
 
 use rai_pal_core::{
-	app_settings::AppSettings, game::DbGame, games_query::GamesQuery,
+	app_settings::AppSettings, game::Game, games_query::GamesQuery,
 	local_database::app_database::DbMutex,
 };
 
@@ -26,7 +26,7 @@ pub fn request_install(
 	settings: &Rc<RefCell<AppSettings>>,
 	pending: &Rc<PendingState>,
 	database: Arc<DbMutex>,
-	game: DbGame,
+	game: Game,
 	mod_id: String,
 	downloads: Tracker,
 	confirmation_text: String,
@@ -52,7 +52,7 @@ pub fn request_uninstall_all(
 	settings: &Rc<RefCell<AppSettings>>,
 	pending: &Rc<PendingState>,
 	database: Arc<DbMutex>,
-	game: DbGame,
+	game: Game,
 	confirmation_text: String,
 	confirm_label: String,
 ) {
@@ -79,7 +79,7 @@ pub fn request_remove_game(
 	scheduler: Arc<FetchScheduler>,
 	query: GamesQuery,
 	selected_game: selected::SelectedGameState,
-	game: DbGame,
+	game: Game,
 	confirmation_text: String,
 	confirm_label: String,
 ) {

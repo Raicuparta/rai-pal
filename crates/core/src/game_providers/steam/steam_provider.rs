@@ -12,7 +12,7 @@ use super::{
 	steam_dir::{find_steam_dir, get_appinfo_path},
 };
 use crate::{
-	game::DbGame,
+	game::Game,
 	game_providers::{
 		game_provider::{GameProviderId, ProviderActions, ProviderParser},
 		provider_command::{ProviderCommandAction, ProviderCommandKind},
@@ -51,7 +51,7 @@ impl Steam {
 		Some(PathBuf::from(executable_path))
 	}
 
-	fn get_shortcut_games(steam_dir: &SteamDir) -> Vec<DbGame> {
+	fn get_shortcut_games(steam_dir: &SteamDir) -> Vec<Game> {
 		let mut games = Vec::new();
 
 		let shortcuts = match steam_dir.shortcuts() {
@@ -65,7 +65,7 @@ impl Steam {
 		for shortcut_result in shortcuts {
 			match shortcut_result {
 				Ok(shortcut) => {
-					let mut game = DbGame::new(
+					let mut game = Game::new(
 						GameProviderId::Steam,
 						shortcut.app_id.to_string(),
 						shortcut.app_name,
@@ -105,11 +105,7 @@ impl Steam {
 		games
 	}
 
-	pub fn get_installed_games(
-		game: &DbGame,
-		app_info: &SteamAppInfo,
-		app_path: &Path,
-	) -> Vec<DbGame> {
+	pub fn get_installed_games(game: &Game, app_info: &SteamAppInfo, app_path: &Path) -> Vec<Game> {
 		let mut used_paths: HashSet<PathBuf> = HashSet::new();
 		let mut used_names: HashSet<String> = HashSet::new();
 		let mut installed_games = Vec::new();
@@ -229,7 +225,7 @@ impl Steam {
 impl ProviderParser for Steam {
 	type Source = PathBuf;
 
-	fn parse_games(&self, steam_path: &Self::Source, insert: &mut impl FnMut(DbGame)) -> Result {
+	fn parse_games(&self, steam_path: &Self::Source, insert: &mut impl FnMut(Game)) -> Result {
 		let steam_dir = SteamDir::from_dir(steam_path)?;
 		let appinfo_path = get_appinfo_path(steam_dir.path());
 
@@ -262,7 +258,7 @@ impl ProviderParser for Steam {
 							continue;
 						}
 
-						let mut game = DbGame::new(
+						let mut game = Game::new(
 							GameProviderId::Steam,
 							external_id.clone(),
 							app_info.name.clone(),

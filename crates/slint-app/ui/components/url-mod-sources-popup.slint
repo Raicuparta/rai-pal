@@ -1,11 +1,11 @@
 import { CheckBox, LineEdit } from "std-widgets.slint";
 import { Button } from "button.slint";
 import { Theme } from "../theme.slint";
-import { UrlModSourceData } from "../url-mod-source-data.slint";
+import { UrlModSourceView } from "../url-mod-source-view.slint";
 import { Modal } from "modal.slint";
 
 component UrlModSourceRow inherits Rectangle {
-    in property <UrlModSourceData> source;
+    in property <UrlModSourceView> source;
     in property <bool> toggling;
 
     callback toggled(enabled: bool);
@@ -44,8 +44,8 @@ component UrlModSourceRow inherits Rectangle {
 }
 
 export component UrlModSourcesPopup inherits Modal {
-    in property <UrlModSourceData> default-source;
-    in property <[UrlModSourceData]> sources;
+    in property <UrlModSourceView> default-source;
+    in property <[UrlModSourceView]> sources;
     in property <bool> toggling;
     in property <string> error;
     in-out property <string> new-url: "";

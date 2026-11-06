@@ -1,10 +1,10 @@
 import { ProgressIndicator } from "std-widgets.slint";
-import { DownloadItemData } from "../download-data.slint";
+import { DownloadItemView } from "../download-view.slint";
 import { Theme } from "../theme.slint";
 import { SvgIcon } from "svg-icon.slint";
 
 export component DownloadProgress inherits Rectangle {
-    in property <[DownloadItemData]> items;
+    in property <[DownloadItemView]> items;
     in property <float> overall-progress: 0;
 
     callback clear-completed;

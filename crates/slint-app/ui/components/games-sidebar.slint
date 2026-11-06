@@ -1,5 +1,5 @@
 import { LineEdit } from "std-widgets.slint";
-import { FilterGroupData } from "../filter-data.slint";
+import { FilterGroupView } from "../filter-view.slint";
 import { Theme } from "../theme.slint";
 import { FilterGroupView } from "filter-group.slint";
 import { IconButton } from "icon-button.slint";
@@ -14,7 +14,7 @@ export component GamesSidebar inherits Sidebar {
     in property <string> refresh-task-names;
     in-out property <string> search-text: "";
     in-out property <int> sort-index: 0;
-    in property <[FilterGroupData]> filter-groups;
+    in property <[FilterGroupView]> filter-groups;
     in property <bool> filters-have-changes;
     in property <bool> filters-have-expanded;
 

@@ -52,4 +52,106 @@ needs an equivalent after that removal.
 - Analytics events.
 - Application/window icon wiring beyond the packaging assets used by AppImage
   and the macOS bundle.
-- Mod details page and remaining mod UI parity.
+
+## Core/Slint cleanup
+
+- Removed the Tauri-era game JSON round-trip: game rows no longer carry a
+  serialized `Game`. Selecting a row reloads it from the local database, and
+  the details debug popup still shows pretty JSON from the selected game.
+- Kept Slint row structs and display formatting on the Slint side. Frontend data
+  types use a `View` suffix: `GameRowView` is populated by the `ReleaseDate` and
+  formatting helpers in `crates/slint-app/src/model.rs`, and fetch workers send
+  the typed `Game` back to the UI thread instead of building preformatted data.
+- Backend names now distinguish the manifest from the per-game entry: `Mod` is
+  the manifest (`mods::manifest`), `GameMod` is a manifest plus its `ModInfo` and
+  remote-config state (`mods::game_mods`), `GameModGroups` holds classified
+  entries, and `ModGroup` holds mod-tab groups (`mods::mod_groups`). The Slint app
+  maps those domain results into `GameModView` rows and derives the UI action
+  flags there.
+- Moved mod display helpers (`release_date_display`, `engine_text`,
+  `download_version`) and standalone action checks into the Slint app, while
+  keeping the underlying `Mod` manifest fields typed and public in core.
+- Replaced awkward core tuples with named domain types: `GameId` for query
+  results, `GameEnvironment` for launch environment variables plus contributing
+  mod IDs, and `InstallStep`/`InstallStepKind` instead of preformatted step
+  names.
+- Added `ALL` value lists for provider, engine, tag, OS, architecture, Unity
+  backend, and install-state enums, removing copies in the Slint filters and
+  refresh code.
+- Kept the games sort option order in the Slint app, where the menu lives.
+- Centralized the current-thread Tokio runtime setup and shared `initials` in
+  the Slint app.
+- Removed the unused `maps` helper module and `byteorder` dependency.
+- Removed the single-field `ProviderActionItem` Slint struct; provider actions
+  are now exposed as plain strings.
+
+## Further cleanup candidates
+
+These are plausible simplifications that need a product or API decision before
+changing.
+
+- Move filter group metadata (labels, translation keys, display values, and
+  notes) from `crates/slint-app/src/filters.rs` into core, so the UI only maps
+  core filter definitions into Slint models. The value lists and mutation logic
+  are already shared, but the labels are still duplicated and can drift from
+  the core filter groups.
+- Replace the duplicated `TabId`/`AppTab` and `ColorScheme`/`AppColorScheme`
+  pairs. Slint enums cannot directly use the core types, so this needs a
+  decision between generated enum bindings, integer codes, or keeping the
+  explicit boundary conversion.
+- Make `AppSettings.expanded_filters` a set of `FilterGroupKey` values instead
+  of strings, with a serialization format that stays compatible with existing
+  settings files. This would remove string parsing and casts in the UI.
+- Expose provider actions as typed items (action plus label/menu metadata)
+  instead of strings that are parsed back into `ProviderCommandAction` when the
+  callback fires. This was intentionally left plain when removing
+  `ProviderActionItem`.
+- Decide what to do with the unused `analytics` module. Analytics events are
+  still listed as not done after the Tauri removal, so the module is currently
+  dead code in core.
+- Revisit the `serializable_struct`/`serializable_enum` proc macros. They still
+  make sense because remote manifests, settings, and debug JSON need serde, but
+  their names and bundled SQLite impls no longer reflect why most types use
+  them. Splitting serde and SQLite behaviour into separate derives would be
+  clearer.
+- The Slint row structs still need an explicit field-to-field mapping because
+  Slint cannot import arbitrary Rust structs. A small conversion macro could
+  remove the boilerplate if it becomes annoying, but it should stay in the
+  Slint crate.
+- The mods-tab row's `debug_json` serializes every mod when the mods tab loads
+  even though the debug popup is rarely opened. Making it lazy would avoid that
+  work, at the cost of an extra callback and per-mod lookup.
+
+## Images
+
+### Done
+
+- Metadata and image fetching are separate; rows render before thumbnails arrive.
+- Dedicated image worker pool with URL coalescing, visibility priority, and cancellable downloads.
+- Visible rows wait 100 ms before fetching; cached visible rows skip the wait.
+- Disk cache only: compressed bytes keyed by URL + 200x120 + cache version, stored in
+  `~/.local/share/rai-pal/thumbnail-cache`.
+- Disk cache capped at 200 MB, pruned at startup to ~180 MB.
+- GIF decoding enabled, so GIF thumbnails cache normally. Only the first frame is displayed.
+- Failed requests retry after 1 second while the row is still wanted.
+- Temporary debug logging added during investigation and removed.
+
+### CPU profiling
+
+Scrolling CPU is dominated by rendering, not image fetching/decoding:
+
+```text
+80.1%  llvmpipe-* threads       software OpenGL rasterizer
+19.7%  rai-pal-slint            app/main-thread work
+ 0.1%  reqwest/async-io         network-related threads
+```
+
+Main hotspot: Mesa `llvmpipe` software rasterization (`util_fill_rect`, shading, z/stencil clears).
+
+### Remaining
+
+1. Investigate why OpenGL falls back to `llvmpipe`; fixing that is the biggest CPU win.
+2. If software rendering remains, reduce repaint frequency/area during scrolling.
+3. Optional: memory cache if decoding becomes a profile hotspot.
+4. Optional: first-frame-only GIF downloads or resized itch GIF URLs to reduce first-view bandwidth.
+5. Optional: reduce row reset churn.

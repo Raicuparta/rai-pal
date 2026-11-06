@@ -10,6 +10,10 @@ pub enum EngineBrand {
 	GameMaker,
 }
 
+impl EngineBrand {
+	pub const ALL: [Self; 4] = [Self::Unity, Self::Unreal, Self::Godot, Self::GameMaker];
+}
+
 #[serializable_struct]
 pub struct GameEngine {
 	pub brand: EngineBrand,

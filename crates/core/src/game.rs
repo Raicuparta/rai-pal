@@ -24,7 +24,7 @@ use crate::{
 };
 
 #[serializable_struct]
-pub struct DbGame {
+pub struct Game {
 	pub provider_id: GameProviderId,
 	pub game_id: String,
 	pub external_id: String,
@@ -49,7 +49,7 @@ pub struct DbGame {
 	pub provider_commands: Vec<ProviderCommand>,
 }
 
-impl DbGame {
+impl Game {
 	pub fn new(provider_id: GameProviderId, game_id: String, title: String) -> Self {
 		let mut game = Self {
 			provider_id,

@@ -1,20 +1,20 @@
 use std::path::PathBuf;
 
 use crate::{
-	game::DbGame,
-	mods::{game_mod::GameMod, mod_config::ModConfig, replacement_token::replace_tokens},
+	game::Game,
+	mods::{manifest::Mod, mod_config::ModConfig, replacement_token::replace_tokens},
 	open_better::open_detached_better,
 	path_extensions::PathExt,
 	result::{Error, Result},
 };
 
 pub struct InstalledMod {
-	pub game_mod: GameMod,
-	pub game: Option<DbGame>,
+	pub game_mod: Mod,
+	pub game: Option<Game>,
 }
 
 impl InstalledMod {
-	pub const fn new(game_mod: GameMod, game: Option<DbGame>) -> Self {
+	pub const fn new(game_mod: Mod, game: Option<Game>) -> Self {
 		Self { game_mod, game }
 	}
 

@@ -10,7 +10,7 @@ use serde::{Deserialize, Serialize};
 
 use super::provider_command::{ProviderCommandAction, ProviderCommandKind};
 use crate::{
-	game::DbGame,
+	game::Game,
 	game_providers::{
 		game_provider::{GameProviderId, ProviderActions, ProviderParser, WineProviderActions},
 		heroic_provider,
@@ -104,11 +104,11 @@ impl HeroicEpic {
 impl ProviderParser for HeroicEpic {
 	type Source = PathBuf;
 
-	fn parse_games(&self, root: &Self::Source, insert: &mut impl FnMut(DbGame)) -> Result {
+	fn parse_games(&self, root: &Self::Source, insert: &mut impl FnMut(Game)) -> Result {
 		let release_dates = Self::get_release_dates(root)?;
 		if let Some(parsed_games) = get_detected_games(root)? {
 			for parsed_game in parsed_games {
-				let mut game = DbGame::new(
+				let mut game = Game::new(
 					GameProviderId::Epic,
 					parsed_game.app_name.clone(),
 					parsed_game.title.clone(),
@@ -149,11 +149,11 @@ impl ProviderActions for HeroicEpic {
 }
 
 impl WineProviderActions for HeroicEpic {
-	fn get_wine_prefix_path(&self, game: &DbGame) -> Result<PathBuf> {
+	fn get_wine_prefix_path(&self, game: &Game) -> Result<PathBuf> {
 		heroic_provider::get_wine_prefix_path(&game.external_id)
 	}
 
-	fn set_wine_dll_overrides(&self, game: &DbGame, dll_overrides: &[String]) -> Result {
+	fn set_wine_dll_overrides(&self, game: &Game, dll_overrides: &[String]) -> Result {
 		let prefix_path = self.get_wine_prefix_path(game)?;
 		crate::wine::set_wine_dll_overrides_in_reg(&prefix_path, dll_overrides)
 	}

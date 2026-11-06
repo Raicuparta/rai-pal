@@ -5,9 +5,12 @@ use std::{
 	time::{Duration, Instant},
 };
 
-use rai_pal_core::{mods::game_mod::InstallStep, progress_status::ProgressStatus};
+use rai_pal_core::{
+	mods::manifest::{InstallStep, InstallStepKind},
+	progress_status::ProgressStatus,
+};
 
-use crate::{DownloadItemData, DownloadPhase, MainWindow};
+use crate::{DownloadItemView, DownloadPhase, MainWindow};
 
 const PUBLISH_INTERVAL: Duration = Duration::from_millis(100);
 const FINISHED_RETENTION: Duration = Duration::from_secs(5);
@@ -47,7 +50,13 @@ impl Tracker {
 	pub fn pending_steps(&self, steps: &[InstallStep]) {
 		if let Ok(mut items) = self.items.lock() {
 			for step in steps {
-				upsert(&mut items, &step.id, &step.name, 0.0, Phase::Pending);
+				upsert(
+					&mut items,
+					&step.id(),
+					&step_name(step),
+					0.0,
+					Phase::Pending,
+				);
 			}
 		}
 
@@ -88,7 +97,13 @@ impl Tracker {
 	pub fn finish_steps(&self, steps: &[InstallStep]) {
 		if let Ok(mut items) = self.items.lock() {
 			for step in steps {
-				upsert(&mut items, &step.id, &step.name, 100.0, Phase::Finished);
+				upsert(
+					&mut items,
+					&step.id(),
+					&step_name(step),
+					100.0,
+					Phase::Finished,
+				);
 			}
 		}
 
@@ -99,7 +114,7 @@ impl Tracker {
 	pub fn fail_steps(&self, steps: &[InstallStep]) {
 		if let Ok(mut items) = self.items.lock() {
 			for step in steps {
-				update_existing(&mut items, &step.id, None, Phase::Failed);
+				update_existing(&mut items, &step.id(), None, Phase::Failed);
 			}
 		}
 
@@ -163,7 +178,7 @@ impl Tracker {
 
 			let rows = items
 				.into_iter()
-				.map(|item| DownloadItemData {
+				.map(|item| DownloadItemView {
 					id: item.id.into(),
 					name: item.name.into(),
 					progress: item.progress as f32,
@@ -218,6 +233,13 @@ impl Tracker {
 
 			tracker.publish();
 		});
+	}
+}
+
+fn step_name(step: &InstallStep) -> String {
+	match step.kind {
+		InstallStepKind::Download => format!("Download {}", step.mod_id),
+		InstallStepKind::Extract => format!("Extract {}", step.mod_id),
 	}
 }
 

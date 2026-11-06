@@ -6,7 +6,9 @@ use rai_pal_core::{
 };
 use slint::ComponentHandle;
 
-use crate::{MainWindow, UrlModSourceData, mods, mods_tab, refresh, selected::SelectedGameState};
+use crate::{
+	MainWindow, UrlModSourceView, mods, mods_tab, refresh, runtime, selected::SelectedGameState,
+};
 
 pub fn show(window: &MainWindow) {
 	window.set_url_mod_sources_error("".into());
@@ -17,7 +19,7 @@ pub fn show(window: &MainWindow) {
 fn load_sources(window: &MainWindow) {
 	let response = url_mod_provider::get_url_mod_sources();
 
-	window.set_default_url_mod_source(UrlModSourceData {
+	window.set_default_url_mod_source(UrlModSourceView {
 		url: response.default_source.url.into(),
 		enabled: response.default_source.enabled,
 		is_default: true,
@@ -26,7 +28,7 @@ fn load_sources(window: &MainWindow) {
 	let sources = response
 		.sources
 		.into_iter()
-		.map(|source| UrlModSourceData {
+		.map(|source| UrlModSourceView {
 			url: source.url.into(),
 			enabled: source.enabled,
 			is_default: false,
@@ -204,15 +206,8 @@ pub fn remove(
 	});
 }
 
-fn get_mods(url: &str) -> Result<Vec<rai_pal_core::mods::game_mod::GameMod>, String> {
-	let runtime = tokio::runtime::Builder::new_current_thread()
-		.enable_all()
-		.build()
-		.map_err(|err| err.to_string())?;
-
-	runtime
-		.block_on(url_mod_provider::get_mods_from_url_mod_source(url))
-		.map_err(|err| err.to_string())
+fn get_mods(url: &str) -> Result<Vec<rai_pal_core::mods::manifest::Mod>, String> {
+	runtime::block_on(url_mod_provider::get_mods_from_url_mod_source(url))
 }
 
 fn after_mod_refresh(

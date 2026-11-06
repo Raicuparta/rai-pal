@@ -1,13 +1,16 @@
-use std::{collections::BTreeMap, sync::Arc, thread};
+use std::{sync::Arc, thread};
 
 use crate::{MainWindow, action_state, downloads::Tracker};
 
 use rai_pal_core::{
 	app_paths,
-	game::DbGame,
+	game::Game,
 	game_providers::{game_provider, provider_command::ProviderCommandAction},
-	local_database::{app_database::DbMutex, mod_database::ModDatabase},
-	mods::game_mod::install_steps,
+	local_database::{
+		app_database::DbMutex,
+		mod_database::{GameEnvironment, ModDatabase},
+	},
+	mods::manifest::install_steps,
 	open_better,
 	path_extensions::PathExt,
 	result::{Error, Result},
@@ -16,7 +19,7 @@ use rai_pal_core::{
 pub fn run_provider_action(
 	database: Arc<DbMutex>,
 	window: slint::Weak<MainWindow>,
-	game: DbGame,
+	game: Game,
 	action: ProviderCommandAction,
 	action_id: String,
 ) {
@@ -24,24 +27,24 @@ pub fn run_provider_action(
 		let provider_command = game
 			.get_provider_command(action)
 			.ok_or_else(|| Error::DataEntryNotFound(action.to_string()))?;
-		let (environment, environment_mod_ids) = match action {
+		let environment = match action {
 			ProviderCommandAction::StartViaProvider | ProviderCommandAction::StartViaExe => {
 				database.get_game_environment(&game)?
 			}
-			_ => (BTreeMap::default(), Vec::new()),
+			_ => GameEnvironment::default(),
 		};
 
-		provider_command.run(&game, &environment, &environment_mod_ids)
+		provider_command.run(&game, &environment.variables, &environment.mod_ids)
 	});
 }
 
-pub fn open_game_folder(window: slint::Weak<MainWindow>, action_id: String, game: DbGame) {
+pub fn open_game_folder(window: slint::Weak<MainWindow>, action_id: String, game: Game) {
 	spawn_action(window, action_id, "Failed to open game folder", move || {
 		game.open_game_folder()
 	});
 }
 
-pub fn open_game_mods_folder(window: slint::Weak<MainWindow>, action_id: String, game: DbGame) {
+pub fn open_game_mods_folder(window: slint::Weak<MainWindow>, action_id: String, game: Game) {
 	spawn_action(
 		window,
 		action_id,
@@ -50,7 +53,7 @@ pub fn open_game_mods_folder(window: slint::Weak<MainWindow>, action_id: String,
 	);
 }
 
-pub fn open_game_data_folder(window: slint::Weak<MainWindow>, action_id: String, game: DbGame) {
+pub fn open_game_data_folder(window: slint::Weak<MainWindow>, action_id: String, game: Game) {
 	spawn_action(
 		window,
 		action_id,
@@ -59,7 +62,7 @@ pub fn open_game_data_folder(window: slint::Weak<MainWindow>, action_id: String,
 	);
 }
 
-pub fn open_wine_prefix_folder(window: slint::Weak<MainWindow>, action_id: String, game: DbGame) {
+pub fn open_wine_prefix_folder(window: slint::Weak<MainWindow>, action_id: String, game: Game) {
 	spawn_action(
 		window,
 		action_id,
@@ -72,7 +75,7 @@ pub fn open_wine_prefix_folder(window: slint::Weak<MainWindow>, action_id: Strin
 	);
 }
 
-pub fn open_wine_binary_folder(window: slint::Weak<MainWindow>, action_id: String, game: DbGame) {
+pub fn open_wine_binary_folder(window: slint::Weak<MainWindow>, action_id: String, game: Game) {
 	spawn_action(
 		window,
 		action_id,

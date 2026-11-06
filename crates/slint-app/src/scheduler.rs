@@ -9,7 +9,7 @@ use std::{
 
 use slint::{Model, ModelRc};
 
-use crate::{GameRowData, image_cache, model::reset_row};
+use crate::{GameRowView, image_cache, model::reset_row};
 
 const VISIBLE_MARGIN: usize = 8;
 const THUMBNAIL_VISIBLE_DELAY: Duration = Duration::from_millis(100);
@@ -415,7 +415,7 @@ impl FetchScheduler {
 }
 
 fn make_request(
-	rows: &ModelRc<GameRowData>,
+	rows: &ModelRc<GameRowView>,
 	index: usize,
 	generation: u64,
 ) -> Option<FetchRequest> {
@@ -433,7 +433,7 @@ fn make_request(
 	})
 }
 
-pub fn enqueue_index(scheduler: &FetchScheduler, rows: &ModelRc<GameRowData>, index: usize) {
+pub fn enqueue_index(scheduler: &FetchScheduler, rows: &ModelRc<GameRowView>, index: usize) {
 	if let Some(request) = make_request(rows, index, scheduler.generation()) {
 		scheduler.enqueue(request);
 	}
@@ -441,7 +441,7 @@ pub fn enqueue_index(scheduler: &FetchScheduler, rows: &ModelRc<GameRowData>, in
 
 pub fn schedule_visible_range(
 	scheduler: &FetchScheduler,
-	rows: &ModelRc<GameRowData>,
+	rows: &ModelRc<GameRowView>,
 	first: usize,
 	last: usize,
 ) {

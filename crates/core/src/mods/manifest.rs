@@ -11,7 +11,7 @@ use crate::{
 	app_paths,
 	architecture::Architecture,
 	files,
-	game::DbGame,
+	game::Game,
 	game_engines::{
 		game_engine::{EngineBrand, EngineVersionRange},
 		unity::UnityBackend,
@@ -28,7 +28,7 @@ use crate::{
 };
 
 #[serializable_struct]
-pub struct GameMod {
+pub struct Mod {
 	pub id: String,
 	pub scope: Option<String>,
 	pub family: Option<String>,
@@ -113,10 +113,16 @@ pub enum ModConfigDestinationType {
 	Folder,
 }
 
-impl GameMod {
+impl Mod {
 	pub const FILE_NAME: &'static str = "rai-pal-manifest.json";
 
-	pub fn get_manifest_target_path(&self, game: Option<&DbGame>) -> Result<PathBuf> {
+	pub fn release_date(&self) -> Option<&str> {
+		self.download
+			.as_ref()
+			.and_then(|download| download.release_date.as_deref())
+	}
+
+	pub fn get_manifest_target_path(&self, game: Option<&Game>) -> Result<PathBuf> {
 		Ok(PathBuf::from(replace_tokens(
 			&self.get_install()?.manifest_path,
 			game,
@@ -153,14 +159,14 @@ impl GameMod {
 			.unwrap_or(&self.id)
 	}
 
-	pub async fn get_remote_config(&self, game: &DbGame) -> Result<Option<RemoteConfig>> {
+	pub async fn get_remote_config(&self, game: &Game) -> Result<Option<RemoteConfig>> {
 		Ok(game
 			.get_remote_configs()
 			.await?
 			.and_then(|configs| configs.get_for_mod(self).cloned()))
 	}
 
-	pub async fn download_remote_config(&self, game: &DbGame, overwrite: bool) -> Result {
+	pub async fn download_remote_config(&self, game: &Game, overwrite: bool) -> Result {
 		let Some(config) = self.config.as_ref() else {
 			return Ok(());
 		};
@@ -174,7 +180,7 @@ impl GameMod {
 
 	pub async fn install(
 		&self,
-		game_option: Option<&DbGame>,
+		game_option: Option<&Game>,
 		on_progress: impl Fn(ProgressStatus) + Send + Sync,
 	) -> Result {
 		let install = self
@@ -229,7 +235,7 @@ impl GameMod {
 		Ok(())
 	}
 
-	pub fn get_run(&self, game_option: Option<&DbGame>) -> Result<&ModRun> {
+	pub fn get_run(&self, game_option: Option<&Game>) -> Result<&ModRun> {
 		if game_option.is_some() {
 			self.run_for_game
 				.as_ref()
@@ -241,14 +247,14 @@ impl GameMod {
 		}
 	}
 
-	pub fn prepare_run(&self, game_option: Option<&DbGame>) -> Result<PreparedModRun> {
+	pub fn prepare_run(&self, game_option: Option<&Game>) -> Result<PreparedModRun> {
 		self.prepare_run_inner(self.get_run(game_option)?, game_option)
 	}
 
 	fn prepare_run_inner(
 		&self,
 		mod_run: &ModRun,
-		game_option: Option<&DbGame>,
+		game_option: Option<&Game>,
 	) -> Result<PreparedModRun> {
 		let run_path = PathBuf::from(replace_tokens(
 			mod_run.path.as_ref().ok_or_else(|| {
@@ -287,11 +293,11 @@ impl GameMod {
 		})
 	}
 
-	pub fn get_game_environment(&self, game: Option<&DbGame>) -> BTreeMap<String, String> {
+	pub fn get_game_environment(&self, game: Option<&Game>) -> BTreeMap<String, String> {
 		replace_env_tokens(self.game_environment.as_ref(), game, self)
 	}
 
-	pub fn run(&self, game_option: Option<&DbGame>) -> Result {
+	pub fn run(&self, game_option: Option<&Game>) -> Result {
 		let run = self.prepare_run(game_option)?;
 
 		log::info!(
@@ -332,7 +338,7 @@ impl GameMod {
 		Ok(())
 	}
 
-	pub async fn update_installed_mod_manifest(&self, game: Option<&DbGame>) -> Result {
+	pub async fn update_installed_mod_manifest(&self, game: Option<&Game>) -> Result {
 		let manifest_path = self.get_manifest_target_path(game)?;
 		fs_err::tokio::create_dir_all(manifest_path.try_parent()?).await?;
 		let manifest_contents = serde_json::to_string_pretty(&self)?;
@@ -344,8 +350,8 @@ impl GameMod {
 
 fn replace_env_tokens(
 	environment: Option<&BTreeMap<String, String>>,
-	game_option: Option<&DbGame>,
-	game_mod: &GameMod,
+	game_option: Option<&Game>,
+	game_mod: &Mod,
 ) -> BTreeMap<String, String> {
 	environment
 		.map(|environment| {
@@ -445,13 +451,34 @@ impl ModDownload {
 	}
 }
 
-#[derive(Clone, Debug)]
-pub struct InstallStep {
-	pub id: String,
-	pub name: String,
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum InstallStepKind {
+	Download,
+	Extract,
 }
 
-pub fn install_steps(mods: &[GameMod]) -> Vec<InstallStep> {
+impl InstallStepKind {
+	const fn suffix(self) -> &'static str {
+		match self {
+			Self::Download => "download",
+			Self::Extract => "extract",
+		}
+	}
+}
+
+#[derive(Clone, Debug)]
+pub struct InstallStep {
+	pub mod_id: String,
+	pub kind: InstallStepKind,
+}
+
+impl InstallStep {
+	pub fn id(&self) -> String {
+		format!("{}:{}", self.mod_id, self.kind.suffix())
+	}
+}
+
+pub fn install_steps(mods: &[Mod]) -> Vec<InstallStep> {
 	let mut steps = Vec::new();
 
 	for game_mod in mods {
@@ -460,8 +487,8 @@ pub fn install_steps(mods: &[GameMod]) -> Vec<InstallStep> {
 		}
 
 		steps.push(InstallStep {
-			id: format!("{}:download", game_mod.id),
-			name: format!("Download {}", game_mod.id),
+			mod_id: game_mod.id.clone(),
+			kind: InstallStepKind::Download,
 		});
 
 		if game_mod
@@ -471,8 +498,8 @@ pub fn install_steps(mods: &[GameMod]) -> Vec<InstallStep> {
 			.is_some()
 		{
 			steps.push(InstallStep {
-				id: format!("{}:extract", game_mod.id),
-				name: format!("Extract {}", game_mod.id),
+				mod_id: game_mod.id.clone(),
+				kind: InstallStepKind::Extract,
 			});
 		}
 	}

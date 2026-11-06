@@ -16,6 +16,10 @@ pub enum InstallState {
 	NotInstalled,
 }
 
+impl InstallState {
+	pub const ALL: [Self; 2] = [Self::Installed, Self::NotInstalled];
+}
+
 #[serializable_struct]
 pub struct FilterItem {
 	pub enabled: bool,

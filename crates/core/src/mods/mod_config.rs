@@ -4,9 +4,9 @@ use std::path::{Path, PathBuf};
 use rai_pal_proc_macros::serializable_struct;
 
 use crate::{
-	game::DbGame,
+	game::Game,
 	mods::{
-		game_mod::{GameMod, ModConfigDestinationType},
+		manifest::{Mod, ModConfigDestinationType},
 		replacement_token::replace_tokens,
 	},
 	remote_config::{self, RemoteConfig},
@@ -23,8 +23,8 @@ pub struct ModConfig {
 impl ModConfig {
 	pub async fn download(
 		&self,
-		game: &DbGame,
-		game_mod: &GameMod,
+		game: &Game,
+		game_mod: &Mod,
 		remote_config: &RemoteConfig,
 		overwrite: bool,
 	) -> Result {

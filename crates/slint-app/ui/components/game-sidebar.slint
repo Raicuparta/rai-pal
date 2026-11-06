@@ -1,5 +1,4 @@
 import { Button } from "button.slint";
-import { ProviderActionItem } from "../provider-action-item.slint";
 import { Theme } from "../theme.slint";
 import { Tr } from "../translations.slint";
 import { ActionButton } from "action-button.slint";
@@ -10,7 +9,7 @@ export component GameSidebar inherits Sidebar {
     in property <string> provider-id;
     in property <bool> has-exe-path;
     in property <bool> show-wine-folders;
-    in property <[ProviderActionItem]> provider-actions;
+    in property <[string]> provider-actions;
 
     callback back;
     callback run-provider-action(value: string);
@@ -43,15 +42,15 @@ export component GameSidebar inherits Sidebar {
             }
 
             for action[index] in root.provider-actions : ActionButton {
-                text: Tr.provider-command(action.value);
+                text: Tr.provider-command(action);
                 tint: index == 0 ? Theme.primary : Theme.surface-background;
-                action-id: "provider-action:" + action.value;
+                action-id: "provider-action:" + action;
 
                 clicked => {
-                    if action.value == "Delete" {
+                    if action == "Delete" {
                         root.remove-game(@tr("gameModal" => "Are you sure you want to remove this game from Rai Pal?"), @tr("gameModal" => "Remove from Rai Pal"));
                     } else {
-                        root.run-provider-action(action.value);
+                        root.run-provider-action(action);
                     }
                 }
             }

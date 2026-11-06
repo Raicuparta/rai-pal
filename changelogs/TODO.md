@@ -7,3 +7,4 @@ This file is here for me to track things I wanna fix for the next release. If th
 - Either fix submenus for language and dark/light mode, or make that menu scrollable.
 - Filters scrolling still always scrolls entire sidebar.
 - patreon trophy missing bronze color and probably needs a circle instead of just icon, plus avatar outlines missing.
+- go through the terrible hacks the stupid ai did like doing match instead of .ok() to avoid the clippy warning.

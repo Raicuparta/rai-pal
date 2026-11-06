@@ -11,7 +11,7 @@ use super::game_provider::{GameProviderId, ProviderActions};
 use super::provider_command::{ProviderCommandAction, ProviderCommandKind};
 use crate::{
 	app_paths,
-	game::DbGame,
+	game::Game,
 	game_providers::game_provider::WineProviderActions,
 	local_database::{app_database::DbMutex, game_database::GameDatabase},
 	path_extensions::PathExt,
@@ -51,7 +51,7 @@ pub struct ScanProgress {
 
 #[serializable_struct]
 pub struct DirectoryScanResult {
-	pub games: Vec<DbGame>,
+	pub games: Vec<Game>,
 	pub duration_secs: f64,
 }
 
@@ -64,7 +64,7 @@ impl ProviderActions for Manual {
 		// can remove it. This must not be built from a database query, otherwise
 		// games that were just removed from the config would get re-inserted (and
 		// get a fresh `created_at`) and would never be cleaned up.
-		let mut games: Vec<DbGame> = Vec::new();
+		let mut games: Vec<Game> = Vec::new();
 
 		for path in &config.paths {
 			match get_game_from_path(path) {
@@ -135,7 +135,7 @@ impl ProviderActions for Manual {
 		Ok(())
 	}
 
-	fn delete_game(&self, game: &DbGame) -> Result {
+	fn delete_game(&self, game: &Game) -> Result {
 		let path = game
 			.exe_path
 			.as_ref()
@@ -170,15 +170,15 @@ impl WineProviderActions for Manual {}
 
 #[cfg(target_os = "linux")]
 impl WineProviderActions for Manual {
-	fn get_wine_prefix_path(&self, _game: &DbGame) -> Result<PathBuf> {
+	fn get_wine_prefix_path(&self, _game: &Game) -> Result<PathBuf> {
 		Ok(crate::wine::get_default_wine_prefix())
 	}
 
-	fn get_wine_binary_path(&self, _game: &DbGame) -> Result<PathBuf> {
+	fn get_wine_binary_path(&self, _game: &Game) -> Result<PathBuf> {
 		Ok(crate::wine::find_system_wine())
 	}
 
-	fn set_wine_dll_overrides(&self, game: &DbGame, dll_overrides: &[String]) -> Result {
+	fn set_wine_dll_overrides(&self, game: &Game, dll_overrides: &[String]) -> Result {
 		let prefix_path = self.get_wine_prefix_path(game)?;
 		crate::wine::set_wine_dll_overrides_in_reg(&prefix_path, dll_overrides)?;
 		Ok(())
@@ -208,14 +208,14 @@ fn read_games_config(games_config_path: &Path) -> GamesConfig {
 	}
 }
 
-fn get_game_from_path(exe_path: &Path) -> Result<DbGame> {
+fn get_game_from_path(exe_path: &Path) -> Result<Game> {
 	let name = exe_path.file_name_without_extension()?.to_string();
 	let parent_folder = exe_path
 		.parent()
 		.and_then(|p| p.file_name())
 		.map(|f| f.to_string_lossy().to_string());
 
-	let mut game = DbGame::new(
+	let mut game = Game::new(
 		GameProviderId::Manual,
 		exe_path.hash_string(),
 		match parent_folder {
@@ -228,7 +228,7 @@ fn get_game_from_path(exe_path: &Path) -> Result<DbGame> {
 	Ok(game)
 }
 
-fn compute_title_discriminators(games: &mut [DbGame]) {
+fn compute_title_discriminators(games: &mut [Game]) {
 	let mut groups: HashMap<String, Vec<usize>> = HashMap::new();
 	for (idx, game) in games.iter().enumerate() {
 		if game.exe_path.is_some() {
@@ -285,7 +285,7 @@ fn compute_title_discriminators(games: &mut [DbGame]) {
 	}
 }
 
-pub async fn add_game(path: &Path) -> Result<DbGame> {
+pub async fn add_game(path: &Path) -> Result<Game> {
 	let game = get_game_from_path(path)?;
 
 	if game.exe_path.is_none() {
@@ -302,14 +302,14 @@ pub async fn add_game(path: &Path) -> Result<DbGame> {
 	Ok(game)
 }
 
-pub async fn add_directory(path: &Path) -> Result<Vec<DbGame>> {
+pub async fn add_directory(path: &Path) -> Result<Vec<Game>> {
 	if !path.is_dir() {
 		return Err(Error::NoExecutableFound(path.to_owned()));
 	}
 
 	let executables = find_executables_in_directory(path)?;
 
-	let games: Result<Vec<DbGame>> = executables
+	let games: Result<Vec<Game>> = executables
 		.iter()
 		.map(|exe_path| get_game_from_path(exe_path))
 		.collect();
@@ -443,7 +443,7 @@ pub fn scan_directory(
 
 	let duration_secs = start.elapsed().as_secs_f64();
 
-	let games: Result<Vec<DbGame>> = executables
+	let games: Result<Vec<Game>> = executables
 		.iter()
 		.map(|exe_path| get_game_from_path(exe_path))
 		.collect();

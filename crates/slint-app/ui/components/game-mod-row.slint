@@ -1,12 +1,12 @@
 import { ModActions } from "../actions.slint";
-import { GameModRowData } from "../game-mod-row-data.slint";
+import { GameModView } from "../game-mod-view.slint";
 import { Theme } from "../theme.slint";
 import { ActionButton } from "action-button.slint";
 import { IconButton } from "icon-button.slint";
 import { ModSummaryView } from "mod-summary.slint";
 
 export component GameModRowView inherits Rectangle {
-    in property <GameModRowData> game-mod;
+    in property <GameModView> game-mod;
 
     property <bool> interactive: !game-mod.incompatible;
     property <bool> has-dropdown-actions: game-mod.can-edit-config || game-mod.can-open-mod-folder || game-mod.can-download-config || game-mod.can-reinstall || game-mod.can-uninstall;

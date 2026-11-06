@@ -19,7 +19,7 @@ use crate::game_providers::{
 	dummy_provider::Dummy, heroic_amazon_provider::HeroicAmazon, heroic_epic_provider::HeroicEpic,
 };
 use crate::{
-	game::DbGame,
+	game::Game,
 	game_engines::pe_utils,
 	game_launch::{GameLaunch, spawn_game},
 	game_providers::{itch_provider::Itch, manual_provider::Manual, steam::steam_provider::Steam},
@@ -39,10 +39,22 @@ pub enum GameProviderId {
 	Xbox,
 }
 
+impl GameProviderId {
+	pub const ALL: [Self; 7] = [
+		Self::Amazon,
+		Self::Epic,
+		Self::Gog,
+		Self::Itch,
+		Self::Manual,
+		Self::Steam,
+		Self::Xbox,
+	];
+}
+
 pub trait ProviderActions {
 	fn insert_games(&self, db: &DbMutex) -> Result;
 
-	fn delete_game(&self, game: &DbGame) -> Result {
+	fn delete_game(&self, game: &Game) -> Result {
 		Err(Error::UnsupportedProviderOperation(
 			game.provider_id,
 			"delete_game".to_string(),
@@ -53,33 +65,33 @@ pub trait ProviderActions {
 pub(crate) trait ProviderParser {
 	type Source;
 
-	fn parse_games(&self, source: &Self::Source, insert: &mut impl FnMut(DbGame)) -> Result;
+	fn parse_games(&self, source: &Self::Source, insert: &mut impl FnMut(Game)) -> Result;
 }
 
 pub trait WineProviderActions {
-	fn set_wine_dll_overrides(&self, _game: &DbGame, _dll_overrides: &[String]) -> Result {
+	fn set_wine_dll_overrides(&self, _game: &Game, _dll_overrides: &[String]) -> Result {
 		Ok(())
 	}
 
-	fn get_wine_prefix_path(&self, game: &DbGame) -> Result<PathBuf> {
+	fn get_wine_prefix_path(&self, game: &Game) -> Result<PathBuf> {
 		Err(Error::UnsupportedProviderOperation(
 			game.provider_id,
 			"get_wine_prefix_path".to_string(),
 		))
 	}
 
-	fn get_wine_binary_path(&self, game: &DbGame) -> Result<PathBuf> {
+	fn get_wine_binary_path(&self, game: &Game) -> Result<PathBuf> {
 		Err(Error::UnsupportedProviderOperation(
 			game.provider_id,
 			"get_wine_binary_path".to_string(),
 		))
 	}
 
-	fn get_wine_environment(&self, _game: &DbGame) -> Result<BTreeMap<String, String>> {
+	fn get_wine_environment(&self, _game: &Game) -> Result<BTreeMap<String, String>> {
 		Ok(BTreeMap::new())
 	}
 
-	fn get_run_with_wine_command(&self, game: &DbGame) -> Result<GameLaunch> {
+	fn get_run_with_wine_command(&self, game: &Game) -> Result<GameLaunch> {
 		#[cfg(target_os = "linux")]
 		{
 			Ok(crate::wine::make_wine_launch(
@@ -100,7 +112,7 @@ pub trait WineProviderActions {
 
 	fn run_with_wine(
 		&self,
-		game: &DbGame,
+		game: &Game,
 		exe_path: &Path,
 		args: &[String],
 		wine_env: &BTreeMap<String, String>,

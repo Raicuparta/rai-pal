@@ -1,4 +1,4 @@
-export struct ModsTabModData {
+export struct ModsTabModView {
     id: string,
     title: string,
     description: string,
@@ -13,10 +13,10 @@ export struct ModsTabModData {
     debug-json: string,
 }
 
-export struct ModsTabItemData {
+export struct ModsTabItemView {
     is-family: bool,
     family-title: string,
     family-description: string,
-    mods: [ModsTabModData],
-    single-mod: ModsTabModData,
+    mods: [ModsTabModView],
+    single-mod: ModsTabModView,
 }

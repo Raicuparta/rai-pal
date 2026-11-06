@@ -1,11 +1,11 @@
 import { ListView } from "std-widgets.slint";
-import { GameRowData } from "../game-row-data.slint";
+import { GameRowView } from "../game-row-view.slint";
 import { Theme } from "../theme.slint";
 import { GameRowView } from "game-row.slint";
 import { MessageState } from "message-state.slint";
 
 export component GamesPage inherits Rectangle {
-    in property <[GameRowData]> game-rows;
+    in property <[GameRowView]> game-rows;
     in property <bool> show-thumbnails: true;
     in property <int> total-count: 0;
     in property <bool> refreshing: false;

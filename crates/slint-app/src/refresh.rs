@@ -14,19 +14,9 @@ use rai_pal_core::{
 use slint::ComponentHandle;
 
 use crate::{
-	MainWindow, mods, mods_tab, notifications, query::start_query, scheduler::FetchScheduler,
-	selected,
+	MainWindow, mods, mods_tab, notifications, query::start_query, runtime,
+	scheduler::FetchScheduler, selected,
 };
-
-const PROVIDERS: &[GameProviderId] = &[
-	GameProviderId::Amazon,
-	GameProviderId::Epic,
-	GameProviderId::Gog,
-	GameProviderId::Itch,
-	GameProviderId::Manual,
-	GameProviderId::Steam,
-	GameProviderId::Xbox,
-];
 
 type SelectedGameState = crate::selected::SelectedGameState;
 
@@ -40,7 +30,7 @@ pub fn refresh_all(
 	thread::spawn(move || {
 		let mut tasks = Vec::<String>::new();
 
-		for provider in PROVIDERS {
+		for provider in GameProviderId::ALL {
 			push_task(&window, &mut tasks, &format!("{provider}"));
 
 			if let Err(err) = provider.insert_games(&database) {
@@ -97,28 +87,14 @@ pub fn refresh_all(
 }
 
 pub(crate) fn refresh_mods(database: &DbMutex) -> Result<(), String> {
-	let runtime = tokio::runtime::Builder::new_current_thread()
-		.enable_all()
-		.build()
-		.map_err(|err| err.to_string())?;
-
-	runtime
-		.block_on(mod_provider::refresh_all_mods(database))
-		.map_err(|err| err.to_string())
+	runtime::block_on(mod_provider::refresh_all_mods(database))
 }
 
 fn refresh_remote_database() -> Result<(), String> {
-	let runtime = tokio::runtime::Builder::new_current_thread()
-		.enable_all()
-		.build()
-		.map_err(|err| err.to_string())?;
-
-	let result = runtime.block_on(async {
+	runtime::block_on(async {
 		let path = remote_game::download_database().await?;
 		attach_remote(&path)
-	});
-
-	result.map_err(|err| err.to_string())
+	})
 }
 
 fn push_task(window: &slint::Weak<MainWindow>, tasks: &mut Vec<String>, task: &str) {

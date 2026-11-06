@@ -1,4 +1,4 @@
-export struct FilterValueData {
+export struct FilterValueView {
     value: string,
     label-key: string,
     label: string,
@@ -7,11 +7,11 @@ export struct FilterValueData {
     locked: bool,
 }
 
-export struct FilterGroupData {
+export struct FilterGroupView {
     key: string,
     label-key: string,
     label: string,
-    values: [FilterValueData],
+    values: [FilterValueView],
     has-changes: bool,
     has-locked: bool,
     expanded: bool,

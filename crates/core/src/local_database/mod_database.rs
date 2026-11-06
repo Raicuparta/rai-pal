@@ -9,7 +9,7 @@ use rusqlite::OptionalExtension;
 use serde::Serialize;
 
 use crate::{
-	game::DbGame,
+	game::Game,
 	game_providers::game_provider::GameProviderId,
 	local_database::{
 		app_database::{AppDatabase, DbMutex},
@@ -18,8 +18,8 @@ use crate::{
 	},
 	mod_providers::mod_provider::ModProviderId,
 	mods::{
-		game_mod::{GameMod, ModDependency},
 		installed_mod::InstalledMod,
+		manifest::{Mod, ModDependency},
 		mod_config::ModConfig,
 		mod_family::ModFamily,
 	},
@@ -29,7 +29,7 @@ use crate::{
 };
 
 #[serializable_struct]
-pub struct GameModInfo {
+pub struct ModInfo {
 	pub mod_id: String,
 	pub installed_version: Option<String>,
 	pub installed_hash: Option<String>,
@@ -39,34 +39,33 @@ pub struct GameModInfo {
 	pub family: Option<String>,
 }
 
+#[derive(Clone, Debug, Default)]
+pub struct GameEnvironment {
+	pub variables: BTreeMap<String, String>,
+	pub mod_ids: Vec<String>,
+}
+
 pub trait ModDatabase {
 	fn setup_mod_tables(&self) -> Result;
-	fn insert_mod(&self, game_mod: &GameMod, provider_id: ModProviderId, source_hash: &str);
-	fn get_mod(&self, mod_id: &str) -> Result<GameMod>;
+	fn insert_mod(&self, game_mod: &Mod, provider_id: ModProviderId, source_hash: &str);
+	fn get_mod(&self, mod_id: &str) -> Result<Mod>;
 	fn get_installed_mod(
 		&self,
 		mod_id: &str,
 		provider_id_option: Option<GameProviderId>,
 		game_id_option: Option<String>,
 	) -> Result<Option<InstalledMod>>;
-	fn get_installed_mods_for_game(&self, game: &DbGame) -> Result<Vec<InstalledMod>>;
-	fn get_game_environment(
-		&self,
-		game: &DbGame,
-	) -> Result<(BTreeMap<String, String>, Vec<String>)>;
+	fn get_installed_mods_for_game(&self, game: &Game) -> Result<Vec<InstalledMod>>;
+	fn get_game_environment(&self, game: &Game) -> Result<GameEnvironment>;
 	fn try_get_installed_mod(
 		&self,
 		provider_id: &GameProviderId,
 		game_id: &str,
 		mod_id: &str,
 	) -> Result<InstalledMod>;
-	fn get_mod_map(&self) -> Result<BTreeMap<String, GameMod>>;
+	fn get_mod_map(&self) -> Result<BTreeMap<String, Mod>>;
 	fn refresh_installed_mods(&self) -> Result;
-	fn get_game_mods(
-		&self,
-		provider_id: &GameProviderId,
-		game_id: &str,
-	) -> Result<Vec<GameModInfo>>;
+	fn get_game_mods(&self, provider_id: &GameProviderId, game_id: &str) -> Result<Vec<ModInfo>>;
 	fn get_mod_ids_in_scope(&self, provider_id: ModProviderId, scope: &str) -> Result<Vec<String>>;
 	fn remove_mods_except(&self, provider_id: ModProviderId, keep_ids: &[String]) -> Result;
 	fn insert_mod_families(
@@ -160,7 +159,7 @@ impl ModDatabase for DbMutex {
 		Ok(())
 	}
 
-	fn insert_mod(&self, game_mod: &GameMod, provider_id: ModProviderId, source_hash: &str) {
+	fn insert_mod(&self, game_mod: &Mod, provider_id: ModProviderId, source_hash: &str) {
 		if let Err(err) = try_insert_mod(self, game_mod, provider_id, source_hash) {
 			log::error!(
 				"Failed to insert mod ({}) into local database: {}",
@@ -170,7 +169,7 @@ impl ModDatabase for DbMutex {
 		}
 	}
 
-	fn get_mod(&self, mod_id: &str) -> Result<GameMod> {
+	fn get_mod(&self, mod_id: &str) -> Result<Mod> {
 		Ok(self
 			.lock_db()?
 			.prepare_cached(
@@ -206,7 +205,7 @@ impl ModDatabase for DbMutex {
 		",
 			)?
 			.query_row([mod_id], |row| {
-				Ok(GameMod {
+				Ok(Mod {
 					id: row.get(0)?,
 					title: row.get(1)?,
 					author: row.get(2)?,
@@ -300,7 +299,7 @@ impl ModDatabase for DbMutex {
 			.ok_or(Error::ModNotInstalled(mod_id.to_string()))
 	}
 
-	fn get_installed_mods_for_game(&self, game: &DbGame) -> Result<Vec<InstalledMod>> {
+	fn get_installed_mods_for_game(&self, game: &Game) -> Result<Vec<InstalledMod>> {
 		let exe_path_hash = game.try_get_exe_path()?.hash_string();
 
 		let mod_ids = self
@@ -320,10 +319,7 @@ impl ModDatabase for DbMutex {
 		Ok(installed_mods)
 	}
 
-	fn get_game_environment(
-		&self,
-		game: &DbGame,
-	) -> Result<(BTreeMap<String, String>, Vec<String>)> {
+	fn get_game_environment(&self, game: &Game) -> Result<GameEnvironment> {
 		let exe_path_hash = game.try_get_exe_path()?.hash_string();
 
 		let mod_ids = self
@@ -346,10 +342,13 @@ impl ModDatabase for DbMutex {
 			environment.extend(mod_environment);
 		}
 
-		Ok((environment, environment_mod_ids))
+		Ok(GameEnvironment {
+			variables: environment,
+			mod_ids: environment_mod_ids,
+		})
 	}
 
-	fn get_mod_map(&self) -> Result<BTreeMap<String, GameMod>> {
+	fn get_mod_map(&self) -> Result<BTreeMap<String, Mod>> {
 		Ok(self
 			.lock_db()?
 			.prepare_cached(
@@ -383,7 +382,7 @@ impl ModDatabase for DbMutex {
 		",
 			)?
 			.query_map([], |row| {
-				Ok(GameMod {
+				Ok(Mod {
 					id: row.get(0)?,
 					title: row.get(1)?,
 					author: row.get(2)?,
@@ -460,7 +459,7 @@ impl ModDatabase for DbMutex {
 					continue;
 				}
 
-				let Some(manifest) = GameMod::from_file(&manifest_path) else {
+				let Some(manifest) = Mod::from_file(&manifest_path) else {
 					continue;
 				};
 
@@ -520,11 +519,7 @@ impl ModDatabase for DbMutex {
 		Ok(())
 	}
 
-	fn get_game_mods(
-		&self,
-		provider_id: &GameProviderId,
-		game_id: &str,
-	) -> Result<Vec<GameModInfo>> {
+	fn get_game_mods(&self, provider_id: &GameProviderId, game_id: &str) -> Result<Vec<ModInfo>> {
 		let mut mod_infos = self
 			.lock_db()?
 			.prepare_cached(
@@ -678,7 +673,7 @@ impl ModDatabase for DbMutex {
 					OperatingSystem::get_current().to_string(),
 				],
 				|row| {
-					Ok(GameModInfo {
+					Ok(ModInfo {
 						mod_id: row.get(0)?,
 						installed_version: row.get(1)?,
 						installed_hash: row.get(2)?,
@@ -689,7 +684,7 @@ impl ModDatabase for DbMutex {
 					})
 				},
 			)?
-			.collect::<rusqlite::Result<Vec<GameModInfo>>>()?;
+			.collect::<rusqlite::Result<Vec<ModInfo>>>()?;
 
 		// A mod whose required dependencies don't exist (or aren't compatible)
 		// is itself considered not compatible.
@@ -826,8 +821,8 @@ fn scope_dependencies(deps: &[ModDependency], scope: &str) -> Vec<ModDependency>
 // don't exist in this game's mod list, or aren't themselves compatible.
 // Kept in a loop so incompatibility propagates through chains of required deps.
 fn apply_required_dependency_compatibility(
-	mod_infos: &mut [GameModInfo],
-	mod_map: &BTreeMap<String, GameMod>,
+	mod_infos: &mut [ModInfo],
+	mod_map: &BTreeMap<String, Mod>,
 ) {
 	loop {
 		let mut changed = false;
@@ -860,7 +855,7 @@ fn apply_required_dependency_compatibility(
 	}
 }
 
-fn dependency_matches(dep: &ModDependency, info: &GameModInfo) -> bool {
+fn dependency_matches(dep: &ModDependency, info: &ModInfo) -> bool {
 	match dep {
 		ModDependency::ModId { mod_id } => info.mod_id == *mod_id,
 		ModDependency::Family { family } => info.family.as_deref() == Some(family.as_str()),
@@ -869,7 +864,7 @@ fn dependency_matches(dep: &ModDependency, info: &GameModInfo) -> bool {
 
 fn try_insert_mod(
 	connection_mutex: &DbMutex,
-	game_mod: &GameMod,
+	game_mod: &Mod,
 	provider_id: ModProviderId,
 	source_hash: &str,
 ) -> Result {

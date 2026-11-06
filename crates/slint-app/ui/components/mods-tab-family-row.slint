@@ -1,10 +1,10 @@
-import { ModsTabItemData } from "../mods-tab-data.slint";
+import { ModsTabItemView } from "../mods-tab-view.slint";
 import { Theme } from "../theme.slint";
 import { ModsTabRowView } from "mods-tab-row.slint";
 import { SvgIcon } from "svg-icon.slint";
 
 export component ModsTabFamilyRowView inherits Rectangle {
-    in property <ModsTabItemData> item;
+    in property <ModsTabItemView> item;
 
     callback debug-data(json: string);
 

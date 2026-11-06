@@ -4,7 +4,7 @@ use rai_pal_proc_macros::{serializable_enum, serializable_struct};
 use serde::Deserialize;
 
 use crate::{
-	game::DbGame,
+	game::Game,
 	game_providers::game_provider::GameProviderId,
 	open_better::open_detached_better,
 	operating_system::OperatingSystem,
@@ -65,7 +65,7 @@ where
 impl ProviderCommand {
 	pub fn run(
 		&self,
-		game: &DbGame,
+		game: &Game,
 		environment: &BTreeMap<String, String>,
 		environment_mod_ids: &[String],
 	) -> Result {
@@ -144,7 +144,7 @@ impl ProviderCommand {
 		Ok(())
 	}
 
-	fn supports_environment(&self, game: &DbGame) -> bool {
+	fn supports_environment(&self, game: &Game) -> bool {
 		#[cfg(target_os = "linux")]
 		if game.executable_os == Some(OperatingSystem::Linux) {
 			return match &self.kind {

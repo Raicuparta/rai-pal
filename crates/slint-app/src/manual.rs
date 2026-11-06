@@ -11,7 +11,7 @@ use std::{
 };
 
 use rai_pal_core::{
-	game::DbGame,
+	game::Game,
 	game_providers::{
 		game_provider::GameProviderId, manual_provider, provider_command::ProviderCommandAction,
 	},
@@ -24,7 +24,7 @@ use rai_pal_core::{
 use slint::ComponentHandle;
 
 use crate::{
-	AddGamePhase, MainWindow, mods_tab, notifications, query::start_query,
+	AddGamePhase, MainWindow, mods_tab, notifications, query::start_query, runtime,
 	scheduler::FetchScheduler, selected,
 };
 
@@ -55,7 +55,7 @@ pub fn select_executable(
 		};
 		let path = path.normalize();
 
-		let result = run_async(async {
+		let result = runtime::block_on(async {
 			let game = manual_provider::add_game(&path).await?;
 			database.insert_game(&game);
 			Ok::<(), rai_pal_core::result::Error>(())
@@ -168,7 +168,7 @@ pub fn confirm_add_directory(
 	let window_weak = window.as_weak();
 
 	thread::spawn(move || {
-		let result = run_async(async {
+		let result = runtime::block_on(async {
 			let games = manual_provider::add_directory(&path).await?;
 
 			for game in &games {
@@ -210,7 +210,7 @@ pub fn remove_directory(
 	thread::spawn(move || {
 		let path = PathBuf::from(path);
 
-		let result = run_async(async {
+		let result = runtime::block_on(async {
 			manual_provider::remove_directory(&path).await?;
 			GameProviderId::Manual.insert_games(&database)?;
 			database.refresh_installed_mods()?;
@@ -241,12 +241,12 @@ pub fn remove_game(
 	scheduler: Arc<FetchScheduler>,
 	query: GamesQuery,
 	selected_game: crate::selected::SelectedGameState,
-	game: DbGame,
+	game: Game,
 ) {
 	let window_weak = window.as_weak();
 
 	thread::spawn(move || {
-		let result = run_async(async {
+		let result = runtime::block_on(async {
 			game.get_provider_command(ProviderCommandAction::Delete)
 				.ok_or_else(|| {
 					rai_pal_core::result::Error::DataEntryNotFound(
@@ -291,7 +291,7 @@ pub fn add_dropped_paths(
 	let window_weak = window.as_weak();
 
 	thread::spawn(move || {
-		let result = run_async(async {
+		let result = runtime::block_on(async {
 			for path in &paths {
 				let path = path.normalize();
 
@@ -373,15 +373,4 @@ fn refresh_after_change(
 ) {
 	mods_tab::load(window, &database);
 	start_query(window.as_weak(), database, scheduler, query, Duration::ZERO);
-}
-
-fn run_async<T>(
-	future: impl std::future::Future<Output = rai_pal_core::result::Result<T>>,
-) -> Result<T, String> {
-	let runtime = tokio::runtime::Builder::new_current_thread()
-		.enable_all()
-		.build()
-		.map_err(|err| err.to_string())?;
-
-	runtime.block_on(future).map_err(|err| err.to_string())
 }
