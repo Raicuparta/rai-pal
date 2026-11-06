@@ -1,4 +1,6 @@
-use std::{future::Future, pin::Pin, sync::OnceLock, time::Duration};
+use std::time::Duration;
+#[cfg(debug_assertions)]
+use std::{future::Future, pin::Pin, sync::OnceLock};
 
 use tokio::{
 	io::{AsyncReadExt, AsyncWriteExt},

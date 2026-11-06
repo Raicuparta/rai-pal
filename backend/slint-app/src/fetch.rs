@@ -75,14 +75,14 @@ pub(crate) enum ImageFetchOutcome {
 
 enum ImageBytesOutcome {
 	Fetched(Vec<u8>),
-	Cancelled(usize),
+	Cancelled,
 	Failed,
 }
 
 pub(crate) fn fetch_image(url: &str, max_width: u32, max_height: u32) -> Option<FetchedImage> {
 	match fetch_image_bytes_cancellable(url, || true) {
 		ImageBytesOutcome::Fetched(bytes) => decode_image(&bytes, max_width, max_height),
-		ImageBytesOutcome::Cancelled(_) | ImageBytesOutcome::Failed => None,
+		ImageBytesOutcome::Cancelled | ImageBytesOutcome::Failed => None,
 	}
 }
 
@@ -104,7 +104,7 @@ where
 
 	loop {
 		if !should_continue() {
-			return ImageBytesOutcome::Cancelled(bytes.len());
+			return ImageBytesOutcome::Cancelled;
 		}
 
 		match response.read(&mut chunk) {
@@ -115,7 +115,7 @@ where
 	}
 
 	if !should_continue() {
-		return ImageBytesOutcome::Cancelled(bytes.len());
+		return ImageBytesOutcome::Cancelled;
 	}
 
 	ImageBytesOutcome::Fetched(bytes)
@@ -159,7 +159,7 @@ where
 
 	let bytes = match fetch_image_bytes_cancellable(url, &mut should_continue) {
 		ImageBytesOutcome::Fetched(bytes) => bytes,
-		ImageBytesOutcome::Cancelled(_) => return ImageFetchOutcome::Cancelled,
+		ImageBytesOutcome::Cancelled => return ImageFetchOutcome::Cancelled,
 		ImageBytesOutcome::Failed => return ImageFetchOutcome::Failed,
 	};
 
