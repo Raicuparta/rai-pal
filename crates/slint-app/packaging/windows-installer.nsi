@@ -1,4 +1,5 @@
 !include "MUI2.nsh"
+!include "FileFunc.nsh"
 !include "x64.nsh"
 
 !define APP_NAME "Rai Pal"
@@ -53,6 +54,14 @@ VIAddVersionKey "LegalCopyright" "Raicuparta"
 !insertmacro MUI_LANGUAGE "Turkish"
 !insertmacro MUI_LANGUAGE "Ukrainian"
 
+Function .onInit
+	${GetParameters} $R0
+	${GetOptions} $R0 "/P" $R1
+	IfErrors passiveDone
+	SetSilent silent
+	passiveDone:
+FunctionEnd
+
 Section "Install"
 	SetOutPath "$INSTDIR"
 	File "${SOURCE_EXE}"
@@ -71,6 +80,17 @@ Section "Install"
 	WriteRegStr HKLM "${UNINSTALL_KEY}" "UninstallString" "$INSTDIR\Uninstall.exe"
 	WriteRegDWORD HKLM "${UNINSTALL_KEY}" "NoModify" 1
 	WriteRegDWORD HKLM "${UNINSTALL_KEY}" "NoRepair" 1
+
+	${GetParameters} $R0
+	${GetOptions} $R0 "/UPDATER" $R1
+	IfErrors checkRestart
+	Goto relaunchApp
+	checkRestart:
+	${GetOptions} $R0 "/R" $R1
+	IfErrors updaterDone
+	relaunchApp:
+	ExecShell "open" "$INSTDIR\${APP_EXE}"
+	updaterDone:
 SectionEnd
 
 Section "Uninstall"

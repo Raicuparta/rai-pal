@@ -49,11 +49,15 @@ needs an equivalent after that removal.
 - Window icon wired from the shared graphics assets at runtime.
 - Windows NSIS installer packaging, including installer icon/sidebar, Start menu
   and desktop shortcuts, uninstall metadata, and WinGet release publishing.
+- App update check/download flow on Linux and Windows. The app checks signed
+  `latest.json` every two minutes, shows the changelog, verifies Minisign
+  signatures, replaces the running AppImage on Linux, and runs the NSIS
+  installer silently on Windows. Release publishing uploads `latest.json` and
+  updater signatures.
 
 ## Not done
 
-- App update check/download flow. The release workflow no longer creates signed
-  updater artifacts or `latest.json`; there is no updater endpoint or UI yet.
+Nothing currently.
 
 ## Core/Slint cleanup
 

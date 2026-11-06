@@ -35,7 +35,7 @@ use crate::{
 	query::{load_game_ids, start_query},
 	refresh,
 	scheduler::{FetchScheduler, enqueue_index, schedule_visible_range},
-	selected, single_instance, thanks, tools, user,
+	selected, single_instance, thanks, tools, updater, user,
 };
 
 pub fn run() -> Result<(), slint::PlatformError> {
@@ -876,6 +876,21 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	});
 
 	let downloads = downloads::Tracker::new(window.as_weak());
+	let updater = Rc::new(updater::Updater::start(window.as_weak()));
+
+	let ui_window = window_weak.clone();
+	let ui_updater = updater.clone();
+	window.on_install_update(move || {
+		ui_updater.install(ui_window.clone());
+	});
+
+	let ui_window = window.as_weak();
+	let ui_updater = updater.clone();
+	window.on_ignore_update(move || {
+		if let Some(window) = ui_window.upgrade() {
+			ui_updater.ignore(&window);
+		}
+	});
 
 	deep_links::register();
 	for argument in std::env::args().skip(1) {

@@ -18,10 +18,12 @@ case "$PLATFORM" in
 	windows)
 		SOURCE="$DIST_DIR/RaiPal-Slint-$VERSION-x86_64-setup.exe"
 		TARGET="$OUTPUT_DIR/RaiPal.exe"
+		PLATFORM_KEY="windows-x86_64"
 		;;
 	linux)
 		SOURCE="$DIST_DIR/RaiPal-Slint-$VERSION-x86_64.AppImage"
 		TARGET="$OUTPUT_DIR/RaiPal.AppImage"
+		PLATFORM_KEY="linux-x86_64"
 		;;
 	*)
 		echo "Unsupported platform: $PLATFORM. Expected: windows|linux" >&2
@@ -36,3 +38,21 @@ fi
 
 cp "$SOURCE" "$TARGET"
 echo "Copied $SOURCE -> $TARGET"
+
+if [[ -n "${UPDATE_PRIVATE_KEY:-}" ]]; then
+	SIGNATURE="$(cargo run --quiet --release -p rai-pal-updater-signer -- "$TARGET")"
+	TARGET_NAME="$(basename "$TARGET")"
+	cat > "$ROOT_DIR/updater-partial-$PLATFORM.json" <<JSON
+{
+  "version": "$VERSION",
+  "platformKey": "$PLATFORM_KEY",
+  "platformData": {
+    "signature": "$SIGNATURE",
+    "url": "https://github.com/Raicuparta/rai-pal/releases/download/v$VERSION/$TARGET_NAME"
+  }
+}
+JSON
+	echo "Generated updater-partial-$PLATFORM.json"
+else
+	echo "Skipping updater signature (missing UPDATE_PRIVATE_KEY)."
+fi

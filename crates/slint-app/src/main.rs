@@ -29,6 +29,7 @@ mod single_instance;
 mod text;
 mod thanks;
 mod tools;
+mod updater;
 mod user;
 
 fn main() -> Result<(), slint::PlatformError> {

@@ -22,6 +22,7 @@ import { ConfirmModSourcePopup } from "components/confirm-mod-source-popup.slint
 import { SteamCachePopup } from "components/steam-cache-popup.slint";
 import { SteamShortcutPopup } from "components/steam-shortcut-popup.slint";
 import { AddGamePopup } from "components/add-game-popup.slint";
+import { AppUpdatePopup } from "components/app-update-popup.slint";
 import { ConfirmationPopup } from "components/confirmation-popup.slint";
 import { NotificationsOverlay } from "components/notifications.slint";
 import { UrlModSourceView } from "url-mod-source-view.slint";
@@ -111,6 +112,10 @@ export component MainWindow inherits Window {
     in property <bool> confirmation-can-skip: false;
     in-out property <bool> confirmation-dont-ask-again: false;
     in-out property <bool> add-game-open: false;
+    in-out property <bool> update-open: false;
+    in property <string> update-version: "";
+    in property <string> update-notes: "";
+    in property <bool> update-installing: false;
     in-out property <AddGamePhase> scan-phase: idle;
     in property <string> scan-selected-path: "";
     in property <int> scan-scanned-dirs: 0;
@@ -144,6 +149,8 @@ export component MainWindow inherits Window {
     callback reset-settings;
     callback open-logs-folder;
     callback add-game-closed;
+    callback install-update;
+    callback ignore-update;
     callback select-game-executable;
     callback select-game-directory;
     callback cancel-game-scan;
@@ -590,6 +597,22 @@ export component MainWindow inherits Window {
 
         closed => {
             root.steam-shortcut-open = false;
+        }
+    }
+
+    app-update-popup := AppUpdatePopup {
+        open: root.update-open;
+        version: root.update-version;
+        notes: root.update-notes;
+        installing: root.update-installing;
+
+        install-clicked => {
+            root.install-update();
+        }
+
+        ignore-clicked => {
+            root.update-open = false;
+            root.ignore-update();
         }
     }
 

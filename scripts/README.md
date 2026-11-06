@@ -21,12 +21,16 @@ Windows builds use `cargo-xwin` and package an NSIS installer with `makensis`.
 The macOS script removes the Linux-only winit patch from `Cargo.toml` before
 building.
 
+Updater releases are signed with `UPDATE_PRIVATE_KEY` and
+`UPDATE_KEY_PASSWORD`.
+
 ## Releases
 
 ```sh
 scripts/get-version.sh
 scripts/generate-release-body.sh <version>
 scripts/collect-build-artifacts.sh <windows|linux> <version>
+scripts/merge-updater-json.sh <partials-dir>
 ```
 
 ## Containers

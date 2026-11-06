@@ -25,6 +25,16 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - name: Validate updater signing secrets
+        env:
+          UPDATE_PRIVATE_KEY: ${{ secrets.UPDATE_PRIVATE_KEY }}
+          UPDATE_KEY_PASSWORD: ${{ secrets.UPDATE_KEY_PASSWORD }}
+        run: |
+          if [[ -z "$UPDATE_PRIVATE_KEY" || -z "$UPDATE_KEY_PASSWORD" ]]; then
+            echo "Missing UPDATE_PRIVATE_KEY or UPDATE_KEY_PASSWORD repository secret." >&2
+            exit 1
+          fi
+
       - name: Get Version
         id: version
         run: bash scripts/get-version.sh
@@ -68,6 +78,16 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - name: Validate updater signing secrets
+        env:
+          UPDATE_PRIVATE_KEY: ${{ secrets.UPDATE_PRIVATE_KEY }}
+          UPDATE_KEY_PASSWORD: ${{ secrets.UPDATE_KEY_PASSWORD }}
+        run: |
+          if [[ -z "$UPDATE_PRIVATE_KEY" || -z "$UPDATE_KEY_PASSWORD" ]]; then
+            echo "Missing UPDATE_PRIVATE_KEY or UPDATE_KEY_PASSWORD repository secret." >&2
+            exit 1
+          fi
+
       - name: Ensure NSIS
         if: matrix.os-name == 'windows'
         run: |
@@ -86,12 +106,46 @@ jobs:
 
       - name: Collect Build Artifacts
         run: bash scripts/collect-build-artifacts.sh ${{ matrix.os-name }} ${{ needs.create-release.outputs.version }}
+        env:
+          UPDATE_PRIVATE_KEY: ${{ secrets.UPDATE_PRIVATE_KEY }}
+          UPDATE_KEY_PASSWORD: ${{ secrets.UPDATE_KEY_PASSWORD }}
 
       - name: Upload Release Assets
         uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ needs.create-release.outputs.tag_name }}
           files: release-assets/*
+          draft: true
+
+      - name: Upload Updater Partial
+        uses: actions/upload-artifact@v7
+        with:
+          name: updater-partial-${{ matrix.os-name }}
+          path: updater-partial-*.json
+
+  finalize-release:
+    needs: [create-release, release-matrix]
+    if: inputs.build_target != 'macos'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Download Updater Partials
+        uses: actions/download-artifact@v4
+        with:
+          path: updater-partials
+          pattern: updater-partial-*
+
+      - name: Merge Updater JSON
+        run: bash scripts/merge-updater-json.sh updater-partials
+
+      - name: Upload Updater JSON
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ needs.create-release.outputs.tag_name }}
+          files: latest.json
           draft: true
 
   release-slint-macos:

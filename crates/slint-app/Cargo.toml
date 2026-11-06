@@ -8,7 +8,11 @@ log.workspace = true
 rai-pal-core.workspace = true
 reqwest = { version = "0.13.3", features = ["blocking"] }
 rfd = "0.17.2"
+serde.workspace = true
 serde_json.workspace = true
+semver = "1.0.28"
+base64 = "0.23.1"
+minisign-verify = "0.3.0"
 sha2 = "0.10"
 tokio = { version = "1.52.3", features = ["rt-multi-thread"] }
 url = "2.5.7"
