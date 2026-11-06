@@ -9,10 +9,11 @@ rai-pal-core.workspace = true
 reqwest = { version = "0.13.3", features = ["blocking"] }
 rfd = "0.17.2"
 serde_json.workspace = true
+sha2 = "0.10"
 tokio = { version = "1.52.3", features = ["rt-multi-thread"] }
 slint = { version = "1.18.1", features = ["unstable-winit-030"] }
 sys-locale = "0.3.2"
-image = { version = "0.25", default-features = false, features = ["png", "jpeg"] }
+image = { version = "0.25", default-features = false, features = ["png", "jpeg", "gif"] }
 
 [build-dependencies]
 slint-build = "1.18.1"

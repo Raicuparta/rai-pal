@@ -13,7 +13,7 @@ use rai_pal_core::{
 use slint::Model;
 
 use crate::{
-	MainWindow,
+	MainWindow, image_cache,
 	model::{format_release_date, get_engine_details, tags},
 	scheduler::{FetchRequest, FetchScheduler, ThumbnailOutcome},
 };
@@ -73,14 +73,66 @@ pub(crate) enum ImageFetchOutcome {
 	Failed,
 }
 
+enum ImageBytesOutcome {
+	Fetched(Vec<u8>),
+	Cancelled(usize),
+	Failed,
+}
+
 pub(crate) fn fetch_image(url: &str, max_width: u32, max_height: u32) -> Option<FetchedImage> {
-	match fetch_image_cancellable(url, max_width, max_height, || true) {
-		ImageFetchOutcome::Fetched(image) => Some(image),
-		ImageFetchOutcome::Cancelled | ImageFetchOutcome::Failed => None,
+	match fetch_image_bytes_cancellable(url, || true) {
+		ImageBytesOutcome::Fetched(bytes) => decode_image(&bytes, max_width, max_height),
+		ImageBytesOutcome::Cancelled(_) | ImageBytesOutcome::Failed => None,
 	}
 }
 
-pub(crate) fn fetch_image_cancellable<F>(
+fn fetch_image_bytes_cancellable<F>(url: &str, mut should_continue: F) -> ImageBytesOutcome
+where
+	F: FnMut() -> bool,
+{
+	let response = match HTTP_CLIENT.get(url).send() {
+		Ok(response) => response,
+		Err(_) => return ImageBytesOutcome::Failed,
+	};
+	let mut response = match response.error_for_status() {
+		Ok(response) => response,
+		Err(_) => return ImageBytesOutcome::Failed,
+	};
+
+	let mut bytes = Vec::new();
+	let mut chunk = [0u8; 16 * 1024];
+
+	loop {
+		if !should_continue() {
+			return ImageBytesOutcome::Cancelled(bytes.len());
+		}
+
+		match response.read(&mut chunk) {
+			Ok(0) => break,
+			Ok(length) => bytes.extend_from_slice(&chunk[..length]),
+			Err(_) => return ImageBytesOutcome::Failed,
+		}
+	}
+
+	if !should_continue() {
+		return ImageBytesOutcome::Cancelled(bytes.len());
+	}
+
+	ImageBytesOutcome::Fetched(bytes)
+}
+
+fn decode_image(bytes: &[u8], max_width: u32, max_height: u32) -> Option<FetchedImage> {
+	let image = image::load_from_memory(bytes).ok()?;
+	let image = image.thumbnail(max_width, max_height).to_rgba8();
+
+	Some(FetchedImage {
+		width: image.width(),
+		height: image.height(),
+		pixels: image.into_raw(),
+	})
+}
+
+fn fetch_thumbnail_cached<F>(
 	url: &str,
 	max_width: u32,
 	max_height: u32,
@@ -89,48 +141,35 @@ pub(crate) fn fetch_image_cancellable<F>(
 where
 	F: FnMut() -> bool,
 {
-	let response = match HTTP_CLIENT.get(url).send() {
-		Ok(response) => response,
-		Err(_) => return ImageFetchOutcome::Failed,
-	};
-	let mut response = match response.error_for_status() {
-		Ok(response) => response,
-		Err(_) => return ImageFetchOutcome::Failed,
-	};
-
-	let mut bytes = Vec::new();
-	let mut chunk = [0u8; 16 * 1024];
-
-	loop {
-		if !should_continue() {
-			return ImageFetchOutcome::Cancelled;
-		}
-
-		match response.read(&mut chunk) {
-			Ok(0) => break,
-			Ok(length) => bytes.extend_from_slice(&chunk[..length]),
-			Err(_) => return ImageFetchOutcome::Failed,
-		}
-	}
-
 	if !should_continue() {
 		return ImageFetchOutcome::Cancelled;
 	}
 
-	if bytes.starts_with(b"GIF8") {
-		return ImageFetchOutcome::Failed;
+	if let Some(bytes) = image_cache::load(url, max_width, max_height) {
+		if !should_continue() {
+			return ImageFetchOutcome::Cancelled;
+		}
+
+		if let Some(image) = decode_image(&bytes, max_width, max_height) {
+			return ImageFetchOutcome::Fetched(image);
+		}
+
+		image_cache::remove(url, max_width, max_height);
 	}
 
-	let Ok(image) = image::load_from_memory(&bytes) else {
+	let bytes = match fetch_image_bytes_cancellable(url, &mut should_continue) {
+		ImageBytesOutcome::Fetched(bytes) => bytes,
+		ImageBytesOutcome::Cancelled(_) => return ImageFetchOutcome::Cancelled,
+		ImageBytesOutcome::Failed => return ImageFetchOutcome::Failed,
+	};
+
+	let Some(image) = decode_image(&bytes, max_width, max_height) else {
 		return ImageFetchOutcome::Failed;
 	};
-	let image = image.thumbnail(max_width, max_height).to_rgba8();
 
-	ImageFetchOutcome::Fetched(FetchedImage {
-		width: image.width(),
-		height: image.height(),
-		pixels: image.into_raw(),
-	})
+	image_cache::store(url, max_width, max_height, &bytes);
+
+	ImageFetchOutcome::Fetched(image)
 }
 
 fn fetch_game(database: &DbMutex, request: &FetchRequest) -> FetchResult {
@@ -275,9 +314,12 @@ fn spawn_image_worker(scheduler: Arc<FetchScheduler>, window: slint::Weak<MainWi
 		while let Some(job) = scheduler.take_next_thumbnail() {
 			let cancel_scheduler = scheduler.clone();
 			let cancel_job = job.clone();
-			let outcome = fetch_image_cancellable(&job.url, 200, 120, move || {
-				cancel_scheduler.thumbnail_wanted(&cancel_job)
-			});
+			let outcome = fetch_thumbnail_cached(
+				&job.url,
+				image_cache::THUMBNAIL_WIDTH,
+				image_cache::THUMBNAIL_HEIGHT,
+				move || cancel_scheduler.thumbnail_wanted(&cancel_job),
+			);
 
 			match outcome {
 				ImageFetchOutcome::Fetched(image) => {
@@ -325,6 +367,7 @@ fn spawn_image_worker(scheduler: Arc<FetchScheduler>, window: slint::Weak<MainWi
 					scheduler.finish_thumbnail(&job, ThumbnailOutcome::Cancelled);
 				}
 				ImageFetchOutcome::Failed => {
+					thread::sleep(Duration::from_secs(1));
 					scheduler.finish_thumbnail(&job, ThumbnailOutcome::Failed);
 				}
 			}
@@ -337,6 +380,8 @@ pub fn spawn_fetchers(
 	window: slint::Weak<MainWindow>,
 ) -> Arc<FetchScheduler> {
 	let scheduler = Arc::new(FetchScheduler::default());
+
+	thread::spawn(image_cache::prune);
 
 	for _ in 0..WORKER_COUNT {
 		spawn_worker(scheduler.clone(), database.clone(), window.clone());

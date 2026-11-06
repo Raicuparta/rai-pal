@@ -57,6 +57,10 @@ pub fn installed_mods_path() -> Result<PathBuf> {
 	app_data_subfolder("installed-mods")
 }
 
+pub fn thumbnail_cache_path() -> Result<PathBuf> {
+	app_data_subfolder("thumbnail-cache")
+}
+
 fn databases_path() -> Result<PathBuf> {
 	app_data_subfolder("databases")
 }

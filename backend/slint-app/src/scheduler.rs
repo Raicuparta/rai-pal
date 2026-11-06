@@ -9,7 +9,7 @@ use std::{
 
 use slint::{Model, ModelRc};
 
-use crate::{GameRowData, model::reset_row};
+use crate::{GameRowData, image_cache, model::reset_row};
 
 const VISIBLE_MARGIN: usize = 8;
 const THUMBNAIL_VISIBLE_DELAY: Duration = Duration::from_millis(100);
@@ -76,20 +76,15 @@ impl FetchScheduler {
 	}
 
 	fn index_is_visible(state: &SchedulerState, index: usize) -> bool {
-		state.has_visible_range
-			&& index >= state.visible_first
-			&& index <= state.visible_last
+		state.has_visible_range && index >= state.visible_first && index <= state.visible_last
 	}
 
 	fn thumbnail_job_wanted(state: &SchedulerState, job: &ThumbnailJob) -> bool {
-		state
-			.thumbnail_subscribers
-			.get(job)
-			.is_some_and(|indices| {
-				indices
-					.iter()
-					.any(|index| Self::index_in_visible_margin(state, *index))
-			})
+		state.thumbnail_subscribers.get(job).is_some_and(|indices| {
+			indices
+				.iter()
+				.any(|index| Self::index_in_visible_margin(state, *index))
+		})
 	}
 
 	fn thumbnail_job_eligibility(
@@ -101,6 +96,11 @@ impl FetchScheduler {
 			return ThumbnailEligibility::NotVisible;
 		};
 
+		let cached = image_cache::contains(
+			&job.url,
+			image_cache::THUMBNAIL_WIDTH,
+			image_cache::THUMBNAIL_HEIGHT,
+		);
 		let mut waiting = None;
 		let mut has_visible_subscriber = false;
 
@@ -110,6 +110,11 @@ impl FetchScheduler {
 			}
 
 			has_visible_subscriber = true;
+
+			if cached {
+				return ThumbnailEligibility::Ready;
+			}
+
 			let visible_since = state.visible_since.get(index).copied().unwrap_or(now);
 			let elapsed = now.saturating_duration_since(visible_since);
 
@@ -279,7 +284,8 @@ impl FetchScheduler {
 						}
 						ThumbnailEligibility::Waiting(duration) => {
 							next_wait = Some(
-								next_wait.map_or(duration, |current: Duration| current.min(duration)),
+								next_wait
+									.map_or(duration, |current: Duration| current.min(duration)),
 							);
 							state.thumbnail_queued.insert(job.clone());
 							state.thumbnail_queue.push_back(job);
@@ -330,11 +336,7 @@ impl FetchScheduler {
 				indices.retain(|index| Self::index_in_visible_margin(&state, *index));
 				indices
 			}
-			ThumbnailOutcome::Failed => {
-				state.thumbnail_subscribers.remove(job);
-				Vec::new()
-			}
-			ThumbnailOutcome::Cancelled => {
+			ThumbnailOutcome::Cancelled | ThumbnailOutcome::Failed => {
 				if self.thumbnails_enabled()
 					&& job.generation == self.generation()
 					&& Self::thumbnail_job_wanted(&state, job)

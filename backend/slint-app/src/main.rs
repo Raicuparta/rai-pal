@@ -10,6 +10,7 @@ mod downloads;
 mod fetch;
 mod filters;
 mod i18n;
+mod image_cache;
 mod manual;
 mod mod_sources;
 mod model;
