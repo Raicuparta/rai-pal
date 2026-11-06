@@ -4,6 +4,7 @@ use std::{
 		Condvar, Mutex,
 		atomic::{AtomicBool, AtomicU64, Ordering},
 	},
+	time::{Duration, Instant},
 };
 
 use slint::{Model, ModelRc};
@@ -11,6 +12,7 @@ use slint::{Model, ModelRc};
 use crate::{GameRowData, model::reset_row};
 
 const VISIBLE_MARGIN: usize = 8;
+const THUMBNAIL_VISIBLE_DELAY: Duration = Duration::from_millis(100);
 
 pub struct FetchRequest {
 	pub index: usize,
@@ -31,6 +33,12 @@ pub enum ThumbnailOutcome {
 	Failed,
 }
 
+enum ThumbnailEligibility {
+	Ready,
+	Waiting(Duration),
+	NotVisible,
+}
+
 #[derive(Default)]
 struct SchedulerState {
 	queue: VecDeque<FetchRequest>,
@@ -44,6 +52,7 @@ struct SchedulerState {
 	thumbnail_queued: HashSet<ThumbnailJob>,
 	thumbnail_in_flight: HashSet<ThumbnailJob>,
 	thumbnail_subscribers: HashMap<ThumbnailJob, Vec<usize>>,
+	visible_since: HashMap<usize, Instant>,
 }
 
 #[derive(Default)]
@@ -66,6 +75,12 @@ impl FetchScheduler {
 		index >= start && index <= end
 	}
 
+	fn index_is_visible(state: &SchedulerState, index: usize) -> bool {
+		state.has_visible_range
+			&& index >= state.visible_first
+			&& index <= state.visible_last
+	}
+
 	fn thumbnail_job_wanted(state: &SchedulerState, job: &ThumbnailJob) -> bool {
 		state
 			.thumbnail_subscribers
@@ -75,6 +90,42 @@ impl FetchScheduler {
 					.iter()
 					.any(|index| Self::index_in_visible_margin(state, *index))
 			})
+	}
+
+	fn thumbnail_job_eligibility(
+		state: &SchedulerState,
+		job: &ThumbnailJob,
+		now: Instant,
+	) -> ThumbnailEligibility {
+		let Some(indices) = state.thumbnail_subscribers.get(job) else {
+			return ThumbnailEligibility::NotVisible;
+		};
+
+		let mut waiting = None;
+		let mut has_visible_subscriber = false;
+
+		for index in indices {
+			if !Self::index_is_visible(state, *index) {
+				continue;
+			}
+
+			has_visible_subscriber = true;
+			let visible_since = state.visible_since.get(index).copied().unwrap_or(now);
+			let elapsed = now.saturating_duration_since(visible_since);
+
+			if elapsed >= THUMBNAIL_VISIBLE_DELAY {
+				return ThumbnailEligibility::Ready;
+			}
+
+			let remaining = THUMBNAIL_VISIBLE_DELAY - elapsed;
+			waiting = Some(waiting.map_or(remaining, |current: Duration| current.min(remaining)));
+		}
+
+		if has_visible_subscriber {
+			ThumbnailEligibility::Waiting(waiting.unwrap_or(THUMBNAIL_VISIBLE_DELAY))
+		} else {
+			ThumbnailEligibility::NotVisible
+		}
 	}
 
 	fn enqueue(&self, request: FetchRequest) {
@@ -120,6 +171,17 @@ impl FetchScheduler {
 		state.visible_last = last;
 		state.has_visible_range = true;
 
+		let now = Instant::now();
+		state
+			.visible_since
+			.retain(|index, _| *index >= first && *index <= last);
+
+		if first <= last {
+			for index in first..=last {
+				state.visible_since.entry(index).or_insert(now);
+			}
+		}
+
 		let start = first.saturating_sub(VISIBLE_MARGIN);
 		let end = last.saturating_add(VISIBLE_MARGIN);
 
@@ -138,6 +200,8 @@ impl FetchScheduler {
 			indices.retain(|index| *index >= start && *index <= end);
 			!indices.is_empty()
 		});
+
+		self.condvar.notify_all();
 
 		evicted
 	}
@@ -189,7 +253,14 @@ impl FetchScheduler {
 
 		loop {
 			if self.thumbnails_enabled() {
-				while let Some(job) = state.thumbnail_queue.pop_front() {
+				let now = Instant::now();
+				let mut next_wait = None;
+				let queued_count = state.thumbnail_queue.len();
+
+				for _ in 0..queued_count {
+					let Some(job) = state.thumbnail_queue.pop_front() else {
+						break;
+					};
 					state.thumbnail_queued.remove(&job);
 
 					if job.generation != self.generation() {
@@ -201,16 +272,36 @@ impl FetchScheduler {
 						continue;
 					}
 
-					state.thumbnail_in_flight.insert(job.clone());
-					return Some(job);
+					match Self::thumbnail_job_eligibility(&state, &job, now) {
+						ThumbnailEligibility::Ready => {
+							state.thumbnail_in_flight.insert(job.clone());
+							return Some(job);
+						}
+						ThumbnailEligibility::Waiting(duration) => {
+							next_wait = Some(
+								next_wait.map_or(duration, |current: Duration| current.min(duration)),
+							);
+							state.thumbnail_queued.insert(job.clone());
+							state.thumbnail_queue.push_back(job);
+						}
+						ThumbnailEligibility::NotVisible => {
+							state.thumbnail_queued.insert(job.clone());
+							state.thumbnail_queue.push_back(job);
+						}
+					}
 				}
+
+				state = if let Some(duration) = next_wait {
+					self.condvar.wait_timeout(state, duration).ok()?.0
+				} else {
+					self.condvar.wait(state).ok()?
+				};
 			} else {
 				state.thumbnail_queue.clear();
 				state.thumbnail_queued.clear();
 				state.thumbnail_subscribers.clear();
+				state = self.condvar.wait(state).ok()?;
 			}
-
-			state = self.condvar.wait(state).ok()?;
 		}
 	}
 
@@ -294,6 +385,7 @@ impl FetchScheduler {
 			state.thumbnail_queued.clear();
 			state.thumbnail_in_flight.clear();
 			state.thumbnail_subscribers.clear();
+			state.visible_since.clear();
 		}
 
 		generation
