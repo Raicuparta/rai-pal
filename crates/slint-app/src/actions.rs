@@ -1,6 +1,6 @@
 use std::{sync::Arc, thread};
 
-use crate::{MainWindow, action_state, downloads::Tracker};
+use crate::{MainWindow, action_state, analytics, downloads::Tracker};
 
 use rai_pal_core::{
 	app_paths,
@@ -89,6 +89,8 @@ pub fn open_wine_binary_folder(window: slint::Weak<MainWindow>, action_id: Strin
 }
 
 pub fn run_standalone_mod(database: Arc<DbMutex>, window: slint::Weak<MainWindow>, mod_id: String) {
+	analytics::send_mod(rai_pal_core::analytics::Event::RunMod, &mod_id, None);
+
 	let action_id = format!("standalone-run:{mod_id}");
 
 	spawn_action(
@@ -109,6 +111,8 @@ pub fn install_standalone_mod(
 	mod_id: String,
 	downloads: Tracker,
 ) {
+	analytics::send_mod(rai_pal_core::analytics::Event::InstallMod, &mod_id, None);
+
 	let action_id = format!("standalone-install:{mod_id}");
 	action_state::start(&window, action_id.clone());
 

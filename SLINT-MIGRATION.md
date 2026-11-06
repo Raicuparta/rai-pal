@@ -44,6 +44,8 @@ needs an equivalent after that removal.
 - App menu actions to reset Rai Pal settings and open the logs folder.
 - File logging to the app data logs folder, with stdout/stderr mirroring and
   basic size-based rotation.
+- Analytics events for app start, mod install/update/uninstall/run, provider
+  commands, sign-in, and error notifications.
 
 ## Not done
 
@@ -51,7 +53,6 @@ needs an equivalent after that removal.
   updater artifacts or `latest.json`; there is no updater endpoint or UI yet.
 - Windows installer packaging. Releases currently contain a raw `.exe`; the old
   NSIS installer, installer icon/sidebar, and WinGet publishing are gone.
-- Analytics events.
 - Application/window icon wiring beyond the packaging assets used by AppImage
   and the macOS bundle.
 
@@ -108,9 +109,6 @@ changing.
   instead of strings that are parsed back into `ProviderCommandAction` when the
   callback fires. This was intentionally left plain when removing
   `ProviderActionItem`.
-- Decide what to do with the unused `analytics` module. Analytics events are
-  still listed as not done after the Tauri removal, so the module is currently
-  dead code in core.
 - Revisit the `serializable_struct`/`serializable_enum` proc macros. They still
   make sense because remote manifests, settings, and debug JSON need serde, but
   their names and bundled SQLite impls no longer reflect why most types use

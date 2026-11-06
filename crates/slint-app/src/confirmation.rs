@@ -6,8 +6,8 @@ use rai_pal_core::{
 };
 
 use crate::{
-	MainWindow, app::persist_settings, downloads::Tracker, mods, scheduler::FetchScheduler,
-	selected,
+	MainWindow, analytics, app::persist_settings, downloads::Tracker, mods,
+	scheduler::FetchScheduler, selected,
 };
 use slint::ComponentHandle;
 
@@ -39,6 +39,11 @@ pub fn request_install(
 		pending,
 		database,
 		Box::new(move |window, database| {
+			analytics::send_mod(
+				rai_pal_core::analytics::Event::InstallMod,
+				&mod_id,
+				Some(&game),
+			);
 			mods::install_mod(database, window.as_weak(), game, mod_id, downloads);
 		}),
 		confirmation_text,

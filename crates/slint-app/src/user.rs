@@ -2,7 +2,7 @@ use std::{path::Path, thread};
 
 use rai_pal_core::user::auth::{AuthState, get_user_auth_state, logout_auth, start_auth};
 
-use crate::{MainWindow, notifications, runtime, text};
+use crate::{MainWindow, analytics, notifications, runtime, text};
 
 pub fn load(window: slint::Weak<MainWindow>) {
 	refresh_state(window);
@@ -25,6 +25,10 @@ pub fn log_in(window: slint::Weak<MainWindow>) {
 			start_auth().await?;
 			Ok(get_user_auth_state().await?)
 		});
+
+		if result.is_ok() {
+			analytics::send(rai_pal_core::analytics::Event::UserSignIn, &[]);
+		}
 
 		apply_result(window, result);
 	});

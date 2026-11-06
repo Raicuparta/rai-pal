@@ -24,7 +24,7 @@ use slint::{
 
 use crate::{
 	ActionStates, AppColorScheme, AppTab, Fonts, MainWindow, ModActions, action_state, actions,
-	confirmation, deep_links, downloads,
+	analytics, confirmation, deep_links, downloads,
 	fetch::spawn_fetchers,
 	filters::{
 		apply_filter_action, build_groups, load_mod_families, reset_all_filters, reset_filter_group,
@@ -44,6 +44,23 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	let Some(_single_instance) = single_instance::acquire() else {
 		return Ok(());
 	};
+
+	analytics::send(
+		rai_pal_core::analytics::Event::StartApp,
+		&[
+			("app_version", env!("CARGO_PKG_VERSION").to_string()),
+			("platform", std::env::consts::OS.to_string()),
+			(
+				"mode",
+				if cfg!(debug_assertions) {
+					"dev"
+				} else {
+					"release"
+				}
+				.to_string(),
+			),
+		],
+	);
 
 	let database = match try_create() {
 		Ok(database) => database,
@@ -781,6 +798,14 @@ pub fn run() -> Result<(), slint::PlatformError> {
 			return;
 		};
 
+		analytics::send(
+			rai_pal_core::analytics::Event::ProviderCommand,
+			&[
+				("action", action.to_string()),
+				("game", game.display_title.clone()),
+			],
+		);
+
 		if let Some(window) = ui_window.upgrade() {
 			notifications::info(&window, "Running command... This might take a few seconds.");
 		}
@@ -923,6 +948,11 @@ pub fn run() -> Result<(), slint::PlatformError> {
 			return;
 		};
 
+		analytics::send_mod(
+			rai_pal_core::analytics::Event::UpdateMod,
+			mod_id.as_str(),
+			Some(&game),
+		);
 		mods::install_mod(
 			ui_database.clone(),
 			ui_window.clone(),
@@ -941,6 +971,11 @@ pub fn run() -> Result<(), slint::PlatformError> {
 			return;
 		};
 
+		analytics::send_mod(
+			rai_pal_core::analytics::Event::InstallMod,
+			mod_id.as_str(),
+			Some(&game),
+		);
 		mods::install_mod(
 			ui_database.clone(),
 			ui_window.clone(),
@@ -958,6 +993,11 @@ pub fn run() -> Result<(), slint::PlatformError> {
 			return;
 		};
 
+		analytics::send_mod(
+			rai_pal_core::analytics::Event::UninstallMod,
+			mod_id.as_str(),
+			Some(&game),
+		);
 		mods::uninstall_mod(
 			ui_database.clone(),
 			ui_window.clone(),
@@ -974,6 +1014,11 @@ pub fn run() -> Result<(), slint::PlatformError> {
 			return;
 		};
 
+		analytics::send_mod(
+			rai_pal_core::analytics::Event::RunMod,
+			mod_id.as_str(),
+			Some(&game),
+		);
 		mods::run_mod(
 			ui_database.clone(),
 			ui_window.clone(),

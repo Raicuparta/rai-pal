@@ -4,6 +4,7 @@ slint::include_modules!();
 
 mod action_state;
 mod actions;
+mod analytics;
 mod app;
 mod confirmation;
 mod deep_links;
