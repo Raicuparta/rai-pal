@@ -87,7 +87,7 @@ fn apply_mods(
 	let loaded = match load_mods(database, game, remote_config_ids) {
 		Ok(loaded) => loaded,
 		Err(err) => {
-			eprintln!("Failed to load mods: {err}");
+			log::error!("Failed to load mods: {err}");
 			notifications::error(window, format!("Failed to load mods: {err}"));
 			return;
 		}
@@ -123,7 +123,7 @@ pub fn install_mod(
 		let (game_mod, deps_to_install) = match collect_install_mods(&database, &game, &mod_id) {
 			Ok(mods) => mods,
 			Err(err) => {
-				eprintln!("Failed to prepare mod install {mod_id}: {err}");
+				log::error!("Failed to prepare mod install {mod_id}: {err}");
 				action_state::finish(
 					&window,
 					&action_id,
@@ -151,7 +151,7 @@ pub fn install_mod(
 		));
 
 		if let Err(err) = result {
-			eprintln!("Failed to install mod {mod_id}: {err}");
+			log::error!("Failed to install mod {mod_id}: {err}");
 			downloads.fail_steps(&steps);
 			action_state::finish(
 				&window,
@@ -197,7 +197,7 @@ pub fn download_mod_config(
 		});
 
 		if let Err(err) = result {
-			eprintln!("Failed to download config for mod {mod_id}: {err}");
+			log::error!("Failed to download config for mod {mod_id}: {err}");
 			action_state::finish(
 				&window,
 				&action_id,
@@ -241,7 +241,7 @@ pub fn uninstall_mod(
 		});
 
 		if let Err(err) = result {
-			eprintln!("Failed to uninstall mod {mod_id}: {err}");
+			log::error!("Failed to uninstall mod {mod_id}: {err}");
 			action_state::finish(
 				&window,
 				&action_id,
@@ -281,7 +281,7 @@ pub fn uninstall_all_mods(database: Arc<DbMutex>, window: slint::Weak<MainWindow
 		});
 
 		if let Err(err) = result {
-			eprintln!("Failed to uninstall all mods: {err}");
+			log::error!("Failed to uninstall all mods: {err}");
 			action_state::finish(
 				&window,
 				&action_id,

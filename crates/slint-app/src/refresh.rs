@@ -34,7 +34,7 @@ pub fn refresh_all(
 			push_task(&window, &mut tasks, &format!("{provider}"));
 
 			if let Err(err) = provider.insert_games(&database) {
-				eprintln!("Failed to refresh {provider} games: {err}");
+				log::error!("Failed to refresh {provider} games: {err}");
 				notifications::error_async(
 					&window,
 					format!("Failed to refresh {provider} games: {err}"),
@@ -45,20 +45,20 @@ pub fn refresh_all(
 		}
 
 		if let Err(err) = database.refresh_installed_mods() {
-			eprintln!("Failed to refresh installed mods: {err}");
+			log::error!("Failed to refresh installed mods: {err}");
 			notifications::error_async(&window, format!("Failed to refresh installed mods: {err}"));
 		}
 
 		push_task(&window, &mut tasks, "mods");
 		if let Err(err) = refresh_mods(&database) {
-			eprintln!("Failed to refresh mods: {err}");
+			log::error!("Failed to refresh mods: {err}");
 			notifications::error_async(&window, format!("Failed to refresh mods: {err}"));
 		}
 		pop_task(&window, &mut tasks, "mods");
 
 		push_task(&window, &mut tasks, "remote data");
 		if let Err(err) = refresh_remote_database() {
-			eprintln!("Failed to refresh remote database: {err}");
+			log::error!("Failed to refresh remote database: {err}");
 			notifications::error_async(
 				&window,
 				format!("Failed to refresh remote database: {err}"),

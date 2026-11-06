@@ -71,7 +71,7 @@ fn apply_result(window: slint::Weak<MainWindow>, result: Result<AuthState, Strin
 		match result {
 			Ok(state) => apply_state(&window, &state),
 			Err(err) => {
-				eprintln!("Failed to refresh user auth state: {err}");
+				log::error!("Failed to refresh user auth state: {err}");
 				notifications::error(&window, format!("Failed to refresh user auth state: {err}"));
 			}
 		}

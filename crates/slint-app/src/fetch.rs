@@ -167,7 +167,7 @@ fn fetch_game(database: &DbMutex, request: &FetchRequest) -> FetchResult {
 	let provider_id = match request.provider_id.parse::<GameProviderId>() {
 		Ok(provider_id) => provider_id,
 		Err(err) => {
-			eprintln!("Invalid provider id {}: {err}", request.provider_id);
+			log::error!("Invalid provider id {}: {err}", request.provider_id);
 			return FetchResult {
 				index: request.index,
 				generation: request.generation,
@@ -183,9 +183,10 @@ fn fetch_game(database: &DbMutex, request: &FetchRequest) -> FetchResult {
 			game: Ok(game),
 		},
 		Err(err) => {
-			eprintln!(
+			log::error!(
 				"Failed to load game {}:{}: {err}",
-				request.provider_id, request.game_id
+				request.provider_id,
+				request.game_id
 			);
 			FetchResult {
 				index: request.index,

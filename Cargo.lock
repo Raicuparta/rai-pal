@@ -4283,6 +4283,7 @@ dependencies = [
 name = "rai-pal-slint"
 version = "1.0.0"
 dependencies = [
+ "chrono",
  "image",
  "log",
  "rai-pal-core",

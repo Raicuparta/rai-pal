@@ -191,7 +191,7 @@ pub fn open_logs_folder(window: slint::Weak<MainWindow>, action_id: String) {
 pub fn open_url(url: String) {
 	thread::spawn(move || {
 		if let Err(err) = open_better::open_detached_better(url) {
-			eprintln!("Failed to open URL: {err}");
+			log::error!("Failed to open URL: {err}");
 		}
 	});
 }

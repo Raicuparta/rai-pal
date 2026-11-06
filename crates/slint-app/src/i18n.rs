@@ -42,7 +42,7 @@ pub fn detect_locale() -> Option<AppLocale> {
 		"ko" => AppLocale::KoKr,
 		"zh" => AppLocale::ZhCn,
 		_ => {
-			eprintln!(
+			log::error!(
 				"Couldn't find a localization for the language code {language_code}, extracted from locale string {locale}"
 			);
 			return None;
@@ -63,7 +63,7 @@ pub fn apply_translation(locale: AppLocale) {
 	let code = locale_code(locale);
 
 	if let Err(err) = slint::select_bundled_translation(code) {
-		eprintln!("Failed to select translation {code}: {err}");
+		log::error!("Failed to select translation {code}: {err}");
 		let _ = slint::select_bundled_translation("en");
 	}
 

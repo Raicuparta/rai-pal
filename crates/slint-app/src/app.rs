@@ -29,7 +29,7 @@ use crate::{
 	filters::{
 		apply_filter_action, build_groups, load_mod_families, reset_all_filters, reset_filter_group,
 	},
-	i18n, manual, mod_sources,
+	i18n, logging, manual, mod_sources,
 	model::{self, make_rows},
 	mods, mods_tab, notifications,
 	query::{load_game_ids, start_query},
@@ -39,6 +39,8 @@ use crate::{
 };
 
 pub fn run() -> Result<(), slint::PlatformError> {
+	logging::init();
+
 	let Some(_single_instance) = single_instance::acquire() else {
 		return Ok(());
 	};
@@ -46,13 +48,13 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	let database = match try_create() {
 		Ok(database) => database,
 		Err(err) => {
-			eprintln!("Failed to open local database: {err}");
+			log::error!("Failed to open local database: {err}");
 			return Ok(());
 		}
 	};
 
 	if let Err(err) = database.setup_mod_tables() {
-		eprintln!("Failed to set up mod tables: {err}");
+		log::error!("Failed to set up mod tables: {err}");
 	}
 
 	let settings = Rc::new(RefCell::new(AppSettings::read()));
@@ -71,7 +73,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	let initial_have_changes = initial_groups.iter().any(|group| group.has_changes);
 
 	let response = load_game_ids(&database, initial_query.clone()).unwrap_or_else(|err| {
-		eprintln!("Failed to load initial games: {err}");
+		log::error!("Failed to load initial games: {err}");
 		rai_pal_core::local_database::game_database::GameIdsResponse {
 			game_ids: Vec::new(),
 			total_count: 0,
@@ -655,7 +657,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 			match i18n::locale_from_code(value.as_str()) {
 				Some(locale) => Some(locale),
 				None => {
-					eprintln!("Invalid language selection {value}");
+					log::error!("Invalid language selection {value}");
 					return;
 				}
 			}
@@ -1146,7 +1148,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 			let game = match result {
 				Ok(game) => game,
 				Err(err) => {
-					eprintln!("Failed to refresh game: {err}");
+					log::error!("Failed to refresh game: {err}");
 					action_state::finish(&window, &action_id, Err(err), "Failed to refresh game");
 					return;
 				}
@@ -1278,7 +1280,7 @@ fn update_window_state(window: &slint::Window, settings: &mut AppSettings) {
 
 pub(crate) fn persist_settings(settings: &Rc<RefCell<AppSettings>>) {
 	if let Err(err) = settings.borrow().try_write() {
-		eprintln!("Failed to save app settings: {err}");
+		log::error!("Failed to save app settings: {err}");
 	}
 }
 

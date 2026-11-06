@@ -49,7 +49,7 @@ pub fn start_query(
 			let response = match result {
 				Ok(response) => response,
 				Err(err) => {
-					eprintln!("Failed to get app data: {err}");
+					log::error!("Failed to get app data: {err}");
 					notifications::error(&window, format!("Failed to get app data: {err}"));
 					return;
 				}
