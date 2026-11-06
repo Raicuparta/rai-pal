@@ -36,39 +36,24 @@
 
       devShells.${system}.default = pkgs.mkShell {
         packages = with pkgs; [
-          nodejs_26
           cargo
           clippy
-          desktop-file-utils
           pkg-config
-          gobject-introspection
-          at-spi2-atk
-          atkmm
           binutils
-          cairo
           file
-          gdk-pixbuf
-          glib
-          gtk3
-          harfbuzz
-          librsvg
-          libsoup_3
+          fontconfig
+          freetype
           libxcb
           libxkbcommon
           linuxdeployAppImage
           mesa
-          openssl
-          pango
           patchelf
           rustc
           rustfmt
           squashfs-tools
           wayland
-          webkitgtk_4_1
           xdg-utils
           xkeyboard-config
-          glib-networking
-          dconf
 
           # alsa-lib is for Everyone Voice Chat to work in dev mode.
           alsa-lib
@@ -78,7 +63,6 @@
 
         shellHook = ''
           export XDG_DATA_DIRS="$GSETTINGS_SCHEMAS_PATH"
-          export GIO_EXTRA_MODULES="${pkgs.dconf.lib}/lib/gio/modules:${pkgs.glib-networking}/lib/gio/modules"
           export LD_LIBRARY_PATH="${pkgs.lib.makeLibraryPath [ pkgs.alsa-lib pkgs.libGL pkgs.libxkbcommon pkgs.mesa pkgs.wayland ]}$LD_LIBRARY_PATH"
           export LIBGL_DRIVERS_PATH="${pkgs.mesa}/lib/dri"
           export GBM_BACKENDS_PATH="${pkgs.mesa}/lib/gbm"

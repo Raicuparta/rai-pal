@@ -5,54 +5,45 @@ description: "Use when asked to update translations, localize strings, add new l
 
 # Update Translations
 
-## Step 1: Validate source of truth
+Translations are gettext catalogs:
 
-Run TypeScript check on `frontend/localizations/en-us.ts`:
-
-```bash
-npx tsc --noEmit --ignoreConfig frontend/localizations/en-us.ts
+```text
+crates/slint-app/translations/<language>/LC_MESSAGES/rai-pal-slint.po
 ```
 
-If there are **any** TypeScript errors, cancel the entire process and report the error to the user. Do not proceed.
+`crates/slint-app/translations/en/LC_MESSAGES/rai-pal-slint.po` is the source of truth
+for `msgid` and `msgctxt`. Other languages are under their short language code
+(`de`, `es`, `fr`, `ja`, `ko`, `pt`, `wa`, `zh`).
 
-`en-us.ts` is the source of truth with contextual comments. No other language files have or should have comments.
+## Adding or changing a string
 
-## Step 2: Check and fix other language files
+1. Add or update the entry in the English catalog first.
+2. Use the same `msgctxt` as the surrounding entries. The context comes from the
+   `@tr("context" => "...")` call in the `.slint` file.
+3. Keep placeholders exactly as numbered arguments: `{0}`, `{1}`, and so on.
+   Never reorder or rename them.
+4. Add the translated entry to every language file that already has a real
+   translation for it. If a language does not have a translation yet, leave the
+   entry out rather than inserting English placeholder text.
 
-For every other `.ts` file in `frontend/localizations/` (excluding `en-us.ts` and `localizations.ts`):
+## Syncing other languages
 
-1. Run `npx tsc --noEmit --ignoreConfig frontend/localizations/<file>.ts` — if it passes, skip it entirely.
-2. If it has errors, the TypeScript errors will tell you exactly which keys are missing or have wrong parameter signatures (because they all use the `Localization` type derived from `en-us`).
-3. Translate the missing entries **one by one**, respecting the context comments in `en-us.ts`. Leave all existing translations untouched.
-4. After fixing each file, re-run the type check to confirm it passes.
+Compare each non-English catalog against the English one. Missing keys are
+expected to be untranslated until someone provides a real translation. Do not
+fill them with copied English text, `TODO`, or machine-guessed filler.
 
-## Rules
+When translating an existing key, leave all unrelated entries untouched.
 
-- Never add comments to non-en-us files.
-- Never modify `localizations.ts`.
-- When syncing other language files (Steps 1–2 above), never modify `en-us.ts`. Only modify `en-us.ts` when adding new keys for a feature (see below).
-- Keep existing translations as-is — only add missing entries or fix parameter mismatches.
-- Match the same parameters/variables from `en-us.ts` (e.g. `{items}`, `{authorName}`, `{provider}`).
-- **NEVER put placeholder values in any language file.** No English text, no `TODO`, no copied en-us strings, no machine-guessed filler — a key either gets a real translation or it is not added to that file at all.
-- **Never add translations to non-English files unless the user explicitly asks you to translate.** New keys go only in `en-us.ts`. Type errors from missing keys in other language files are the intended signal that translations are pending.
+## Validation
 
-## Missing translations are signaled by type errors — on purpose
+Compile-check the catalogs together with the UI:
 
-Type errors from missing translation keys are **by design**. They are the mechanism that tells us which translations are missing. Never "fix" them by inserting placeholder values.
+```bash
+cargo check -p rai-pal-slint
+```
 
-### When the user says "don't translate yet" / "use placeholders"
+If `msgfmt` is available, it can also check an individual catalog:
 
-Do NOT put placeholder values in any language file. Instead:
-
-1. Use the translations hook as normal in the component code.
-2. Purposely reference a new translation key that doesn't exist yet.
-3. Leave **all** language files untouched, including `en-us.ts`.
-4. The resulting type errors are intentional — leave them, and tell the user they mark the pending translations.
-
-### When implementing features that need translated text (user gave no instructions about translations)
-
-Default behavior:
-
-1. Add the new keys **only** to `en-us.ts`, with contextual comments as usual.
-2. Leave every other language file untouched.
-3. Ignore the type errors this causes in the other language files — they are the intended signal that translations are missing.
+```bash
+msgfmt --check -o /dev/null crates/slint-app/translations/en/LC_MESSAGES/rai-pal-slint.po
+```

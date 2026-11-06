@@ -1,0 +1,481 @@
+use std::{
+	collections::BTreeMap,
+	hash::{DefaultHasher, Hash, Hasher},
+	path::{Path, PathBuf},
+};
+
+use fs_err::PathExt as FsErrPathExt;
+use rai_pal_proc_macros::{serializable_enum, serializable_struct};
+
+use crate::{
+	app_paths,
+	architecture::Architecture,
+	files,
+	game::DbGame,
+	game_engines::{
+		game_engine::{EngineBrand, EngineVersionRange},
+		unity::UnityBackend,
+	},
+	game_launch::{GameLaunch, spawn_game},
+	game_providers::game_provider,
+	http::{self},
+	mods::{mod_config::ModConfig, replacement_token::replace_tokens},
+	operating_system::OperatingSystem,
+	path_extensions::PathExt,
+	progress_status::ProgressStatus,
+	remote_config::RemoteConfig,
+	result::{Error, LogErrExt, Result},
+};
+
+#[serializable_struct]
+pub struct GameMod {
+	pub id: String,
+	pub scope: Option<String>,
+	pub family: Option<String>,
+	pub title: String,
+	pub hide_from_game_mods_list: Option<bool>,
+	pub author: String,
+	pub source_code: String,
+	pub description: String,
+	pub download: Option<ModDownload>,
+	pub engine: Option<EngineBrand>,
+	pub engine_version_range: Option<EngineVersionRange>,
+	pub unity_backend: Option<UnityBackend>,
+	pub architecture: Option<Architecture>,
+	pub game_os: Option<OperatingSystem>,
+	pub host_os: Option<OperatingSystem>,
+	pub deprecated: Option<bool>,
+	pub config: Option<ModConfig>,
+	pub optional_dependencies: Option<Vec<ModDependency>>,
+	pub required_dependencies: Option<Vec<ModDependency>>,
+	pub install: Option<ModInstall>,
+	pub run_for_game: Option<ModRun>,
+	pub run_standalone: Option<ModRun>,
+	pub game_environment: Option<BTreeMap<String, String>>,
+	pub hash: Option<String>,
+}
+
+#[serializable_struct]
+pub struct ModInstallExtract {
+	pub source: String,
+	pub destination: String,
+}
+
+#[serializable_struct]
+pub struct ModInstallWrite {
+	pub content: String,
+	pub destination: String,
+}
+
+#[serializable_struct]
+pub struct ModInstall {
+	pub manifest_path: String,
+	pub extract: Option<Vec<ModInstallExtract>>,
+	pub write: Option<Vec<ModInstallWrite>>,
+	pub wine_dll_overrides: Option<Vec<String>>,
+	pub main_installed_folder_path: Option<String>,
+}
+
+#[serializable_struct]
+pub struct ModRun {
+	pub path: Option<String>,
+	pub args: Option<Vec<String>>,
+	pub wine_environment: Option<BTreeMap<String, String>>,
+	pub os: Option<OperatingSystem>,
+}
+
+pub struct PreparedModRun {
+	pub path: PathBuf,
+	pub args: Vec<String>,
+	pub wine_environment: BTreeMap<String, String>,
+	pub os: Option<OperatingSystem>,
+}
+
+#[serializable_struct]
+pub struct ModDownload {
+	pub id: String,
+	pub url: String,
+	pub release_date: Option<String>,
+}
+
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[serde(untagged)]
+pub enum ModDependency {
+	#[serde(rename_all = "camelCase")]
+	ModId { mod_id: String },
+	#[serde(rename_all = "camelCase")]
+	Family { family: String },
+}
+
+#[serializable_enum]
+pub enum ModConfigDestinationType {
+	File,
+	Folder,
+}
+
+impl GameMod {
+	pub const FILE_NAME: &'static str = "rai-pal-manifest.json";
+
+	pub fn get_manifest_target_path(&self, game: Option<&DbGame>) -> Result<PathBuf> {
+		Ok(PathBuf::from(replace_tokens(
+			&self.get_install()?.manifest_path,
+			game,
+			self,
+		)))
+	}
+
+	pub fn from_file(path: &Path) -> Option<Self> {
+		match fs_err::read_to_string(path)
+			.and_then(|manifest_bytes| Ok(serde_json::from_str::<Self>(&manifest_bytes)?))
+		{
+			Ok(manifest) => Some(manifest),
+			Err(error) => {
+				log::error!(
+					"Error getting manifest in path '{}': {}",
+					path.display(),
+					error
+				);
+				None
+			}
+		}
+	}
+
+	pub fn get_install(&self) -> Result<&ModInstall> {
+		self.install
+			.as_ref()
+			.ok_or_else(|| Error::ModInfoMissing(self.id.clone(), "install".to_string()))
+	}
+
+	pub fn get_config_db_id(&self) -> &str {
+		self.config
+			.as_ref()
+			.and_then(|config| config.mod_id_override.as_deref())
+			.unwrap_or(&self.id)
+	}
+
+	pub async fn get_remote_config(&self, game: &DbGame) -> Result<Option<RemoteConfig>> {
+		Ok(game
+			.get_remote_configs()
+			.await?
+			.and_then(|configs| configs.get_for_mod(self).cloned()))
+	}
+
+	pub async fn download_remote_config(&self, game: &DbGame, overwrite: bool) -> Result {
+		let Some(config) = self.config.as_ref() else {
+			return Ok(());
+		};
+
+		let Some(remote_config) = self.get_remote_config(game).await? else {
+			return Ok(());
+		};
+
+		config.download(game, self, &remote_config, overwrite).await
+	}
+
+	pub async fn install(
+		&self,
+		game_option: Option<&DbGame>,
+		on_progress: impl Fn(ProgressStatus) + Send + Sync,
+	) -> Result {
+		let install = self
+			.install
+			.as_ref()
+			.ok_or_else(|| Error::ModInfoMissing(self.id.clone(), "install".to_string()))?;
+
+		if let Some(extract_actions) = install.extract.as_ref() {
+			let download = self
+				.download
+				.as_ref()
+				.ok_or_else(|| Error::ModInfoMissing(self.id.clone(), "download".to_string()))?;
+
+			let source_dir = download.download(&self.id, &on_progress).await?;
+
+			for extract_action in extract_actions {
+				let source_path = source_dir.join(&extract_action.source);
+				let destination_path = PathBuf::from(replace_tokens(
+					&extract_action.destination,
+					game_option,
+					self,
+				));
+
+				if source_path.is_dir() {
+					files::copy_dir_all(&source_path, &destination_path).await?;
+				} else {
+					fs_err::tokio::create_dir_all(destination_path.try_parent()?).await?;
+					fs_err::tokio::copy(&source_path, &destination_path).await?;
+				}
+			}
+		}
+
+		if let Some(write_actions) = install.write.as_ref() {
+			for write_action in write_actions {
+				let destination_path =
+					PathBuf::from(replace_tokens(&write_action.destination, game_option, self));
+				let content = replace_tokens(&write_action.content, game_option, self);
+
+				fs_err::tokio::create_dir_all(destination_path.try_parent()?).await?;
+				fs_err::tokio::write(destination_path, content).await?;
+			}
+		}
+
+		if let Some(wine_dll_overrides) = install.wine_dll_overrides.as_ref() {
+			let game = game_option.ok_or_else(Error::GameNeeded)?;
+			game_provider::get_provider(game.provider_id)?
+				.set_wine_dll_overrides(game, wine_dll_overrides)?;
+		}
+
+		self.update_installed_mod_manifest(game_option).await?;
+
+		Ok(())
+	}
+
+	pub fn get_run(&self, game_option: Option<&DbGame>) -> Result<&ModRun> {
+		if game_option.is_some() {
+			self.run_for_game
+				.as_ref()
+				.ok_or_else(|| Error::ModInfoMissing(self.id.clone(), "run_for_game".to_string()))
+		} else {
+			self.run_standalone
+				.as_ref()
+				.ok_or_else(|| Error::ModInfoMissing(self.id.clone(), "run_standalone".to_string()))
+		}
+	}
+
+	pub fn prepare_run(&self, game_option: Option<&DbGame>) -> Result<PreparedModRun> {
+		self.prepare_run_inner(self.get_run(game_option)?, game_option)
+	}
+
+	fn prepare_run_inner(
+		&self,
+		mod_run: &ModRun,
+		game_option: Option<&DbGame>,
+	) -> Result<PreparedModRun> {
+		let run_path = PathBuf::from(replace_tokens(
+			mod_run.path.as_ref().ok_or_else(|| {
+				Error::ModInfoMissing(self.id.clone(), "mod_run.path".to_string())
+			})?,
+			game_option,
+			self,
+		));
+
+		if !run_path.fs_err_try_exists()? {
+			return Err(Error::ModNotInstalled(self.id.clone()));
+		}
+
+		#[cfg(target_os = "linux")]
+		if mod_run.os != Some(OperatingSystem::Windows) {
+			make_executable(&run_path)?;
+		}
+
+		let args: Vec<String> = mod_run
+			.args
+			.clone()
+			.unwrap_or_default()
+			.iter()
+			.map(|arg| replace_tokens(arg, game_option, self))
+			.collect();
+
+		Ok(PreparedModRun {
+			path: run_path,
+			args,
+			wine_environment: replace_env_tokens(
+				mod_run.wine_environment.as_ref(),
+				game_option,
+				self,
+			),
+			os: mod_run.os,
+		})
+	}
+
+	pub fn get_game_environment(&self, game: Option<&DbGame>) -> BTreeMap<String, String> {
+		replace_env_tokens(self.game_environment.as_ref(), game, self)
+	}
+
+	pub fn run(&self, game_option: Option<&DbGame>) -> Result {
+		let run = self.prepare_run(game_option)?;
+
+		log::info!(
+			"Running mod `{}` at `{}` with args `{}`",
+			self.id,
+			run.path.display(),
+			run.args.join(" ")
+		);
+
+		#[cfg(target_os = "linux")]
+		{
+			if run.os == Some(OperatingSystem::Windows) {
+				let game = game_option.ok_or_else(Error::GameNeeded)?;
+
+				game_provider::get_provider(game.provider_id)?.run_with_wine(
+					game,
+					&run.path,
+					&run.args,
+					&run.wine_environment,
+				)?;
+			} else {
+				let mut launch = GameLaunch::new(&run.path);
+				launch.args(&run.args);
+				launch.cwd = Some(run.path.try_parent()?.to_path_buf());
+				spawn_game(&launch)?;
+			}
+		}
+
+		#[cfg(target_os = "windows")]
+		{
+			use crate::open_better::spawn_detached;
+
+			let mut command = std::process::Command::new(&run.path);
+			command.current_dir(run.path.try_parent()?).args(&run.args);
+			spawn_detached(&mut command)?;
+		}
+
+		Ok(())
+	}
+
+	pub async fn update_installed_mod_manifest(&self, game: Option<&DbGame>) -> Result {
+		let manifest_path = self.get_manifest_target_path(game)?;
+		fs_err::tokio::create_dir_all(manifest_path.try_parent()?).await?;
+		let manifest_contents = serde_json::to_string_pretty(&self)?;
+		fs_err::tokio::write(manifest_path, manifest_contents).await?;
+
+		Ok(())
+	}
+}
+
+fn replace_env_tokens(
+	environment: Option<&BTreeMap<String, String>>,
+	game_option: Option<&DbGame>,
+	game_mod: &GameMod,
+) -> BTreeMap<String, String> {
+	environment
+		.map(|environment| {
+			environment
+				.iter()
+				.map(|(key, value)| (key.clone(), replace_tokens(value, game_option, game_mod)))
+				.collect()
+		})
+		.unwrap_or_default()
+}
+
+#[cfg(target_os = "linux")]
+fn make_executable(path: &Path) -> Result {
+	use std::os::unix::fs::PermissionsExt;
+
+	let mut permissions = fs_err::metadata(path)?.permissions();
+	permissions.set_mode(permissions.mode() | 0o111);
+	fs_err::set_permissions(path, permissions)?;
+
+	Ok(())
+}
+
+impl ModDownload {
+	async fn download(
+		&self,
+		mod_id: &str,
+		on_progress: &(impl Fn(ProgressStatus) + Send + Sync),
+	) -> Result<PathBuf> {
+		if let Some(local_path) = self.url.strip_prefix("file://") {
+			let source_path = PathBuf::from(local_path);
+
+			if source_path.is_dir() {
+				return Ok(source_path);
+			}
+
+			return Ok(source_path);
+		}
+
+		let mut hasher = DefaultHasher::new();
+		self.url.hash(&mut hasher);
+		let url_hash = hasher.finish().to_string();
+
+		let temp_dir = app_paths::temp_dir(&url_hash)?;
+		let extracted_folder = temp_dir.join("extracted");
+
+		let mut attempts = 0;
+		loop {
+			fs_err::tokio::create_dir_all(&extracted_folder).await?;
+
+			let part_path = temp_dir.join("download.zip.part");
+			let zip_path = temp_dir.join("download.zip");
+
+			if !zip_path.is_file() {
+				http::download(
+					&self.url,
+					&part_path,
+					&format!("{mod_id}:download"),
+					on_progress,
+				)
+				.await?;
+				fs_err::tokio::rename(&part_path, &zip_path).await?;
+			}
+
+			let extract_result = files::extract(
+				&zip_path,
+				&extracted_folder,
+				&|extracted_bytes, total_uncompressed| {
+					#[expect(
+						clippy::cast_precision_loss,
+						reason = "Precision loss is irrelevant for progress display"
+					)]
+					let percentage = if total_uncompressed > 0 {
+						extracted_bytes as f64 / total_uncompressed as f64
+					} else {
+						0.0
+					};
+					on_progress(ProgressStatus::InProgress {
+						id: format!("{mod_id}:extract"),
+						progress: percentage,
+					});
+				},
+			);
+
+			match extract_result {
+				Ok(()) => return Ok(extracted_folder),
+				Err(err) => {
+					fs_err::tokio::remove_dir_all(&temp_dir)
+						.await
+						.ok_or_log("Failed to remove temp dir");
+					if attempts >= 1 {
+						return Err(err);
+					}
+					attempts += 1;
+				}
+			}
+		}
+	}
+}
+
+#[derive(Clone, Debug)]
+pub struct InstallStep {
+	pub id: String,
+	pub name: String,
+}
+
+pub fn install_steps(mods: &[GameMod]) -> Vec<InstallStep> {
+	let mut steps = Vec::new();
+
+	for game_mod in mods {
+		if game_mod.download.is_none() {
+			continue;
+		}
+
+		steps.push(InstallStep {
+			id: format!("{}:download", game_mod.id),
+			name: format!("Download {}", game_mod.id),
+		});
+
+		if game_mod
+			.install
+			.as_ref()
+			.and_then(|install| install.extract.as_ref())
+			.is_some()
+		{
+			steps.push(InstallStep {
+				id: format!("{}:extract", game_mod.id),
+				name: format!("Extract {}", game_mod.id),
+			});
+		}
+	}
+
+	steps
+}

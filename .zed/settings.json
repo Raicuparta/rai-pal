@@ -8,15 +8,5 @@
 				}
 			}
 		}
-	},
-	"languages": {
-		"Rust": {
-			"prettier": {
-				"allowed": false
-			}
-		}
-	},
-	"prettier": {
-		"allowed": true
 	}
 }

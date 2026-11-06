@@ -8,15 +8,9 @@
 
 ### Windows
 
-Download the installer:
+Download Rai Pal:
 
 [![Download for Windows](https://shields.io/badge/-🪟_Download_Rai_Pal_for_Windows-3c7dcf?style=for-the-badge)](https://github.com/Raicuparta/rai-pal/releases/latest/download/RaiPal.exe)
-
-or install via winget:
-
-```
-winget install Raicuparta.RaiPal
-```
 
 ### Linux
 
@@ -59,19 +53,6 @@ Rai Pal also uses a few different methods for detecting game engines. There's a 
 | Epic     | ✅                          | ✅                                  | 🤏 Decent guess         | 🤏 Decent guess                 |
 | Itch     | ✅                          | ✅                                  | 🤏 Decent guess         | 🤏 Decent guess                 |
 | PC Xbox  | ✅                          | Unity only                          | 👎 Not available        | 👎 Not available                |
-
-## Deep links
-
-Rai Pal registers the `rai-pal://` URL scheme (also known as protocol urls).
-
-| Link                                                             | Description                                                                                  |
-| ---------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| `rai-pal://add-mod-source?url=<url>`                             | Ask the user to add a custom mod database (same as pasting a URL in the mod sources dialog). |
-| `rai-pal://install-mod?providerId=<id>&gameId=<id>&modId=<id>`   | Install a mod for a game.                                                                    |
-| `rai-pal://uninstall-mod?providerId=<id>&gameId=<id>&modId=<id>` | Uninstall a mod from a game.                                                                 |
-| `rai-pal://run-mod?providerId=<id>&gameId=<id>&modId=<id>`       | Run a game with a mod.                                                                       |
-
-To know what values you can pass to `providerId`, `gameId`, and `modId`, check the "Debug Data" buttons in Rai Pal (available in the games tab when selecting a game, and in the mods tab when selecting a mod).
 
 ## License
 

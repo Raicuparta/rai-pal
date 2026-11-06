@@ -20,19 +20,19 @@ done
 
 APP_NAME="RaiPal-Slint"
 BINARY_NAME="rai-pal-slint"
-PACKAGE_DIR="$ROOT_DIR/backend/slint-app"
+PACKAGE_DIR="$ROOT_DIR/crates/slint-app"
 DIST_DIR="$PACKAGE_DIR/dist"
 APP_DIR="$DIST_DIR/$APP_NAME.app"
-BINARY="$ROOT_DIR/backend/target/release/$BINARY_NAME"
-ICON_FILE="$ROOT_DIR/backend/tauri-app/graphics/icon.icns"
-CARGO_TOML="$ROOT_DIR/backend/Cargo.toml"
+BINARY="$ROOT_DIR/target/release/$BINARY_NAME"
+ICON_FILE="$PACKAGE_DIR/graphics/icon.icns"
+CARGO_TOML="$ROOT_DIR/Cargo.toml"
 
 # The git winit patch used for Wayland drag and drop brings its own `dpi` crate,
 # which conflicts with the one muda expects on macOS. Only needed on Linux.
 sed -i '' '/^# Needed for wayland drag and drop/,/^winit = /d' "$CARGO_TOML"
 
 if [[ "$SKIP_BUILD" -eq 0 ]]; then
-	cargo build --release --manifest-path "$ROOT_DIR/backend/Cargo.toml" -p "$BINARY_NAME"
+	cargo build --release -p "$BINARY_NAME"
 else
 	echo "Skipping cargo build (using existing $BINARY)"
 fi
@@ -42,9 +42,9 @@ if [[ ! -x "$BINARY" ]]; then
 	exit 1
 fi
 
-VERSION="$(sed -n 's/^version = "\(.*\)"/\1/p' "$ROOT_DIR/backend/Cargo.toml" | head -n 1)"
+VERSION="$(sed -n 's/^version = "\(.*\)"/\1/p' "$CARGO_TOML" | head -n 1)"
 if [[ -z "$VERSION" ]]; then
-	echo "Could not determine version from backend/Cargo.toml." >&2
+	echo "Could not determine version from Cargo.toml." >&2
 	exit 1
 fi
 

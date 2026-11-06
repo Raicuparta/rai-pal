@@ -27,11 +27,11 @@ jobs:
 
       - name: Get Version
         id: version
-        run: node scripts/get-version.js
+        run: bash scripts/get-version.sh
 
       - name: Generate Release Body
         id: body
-        run: node scripts/generate-release-body.js ${{ steps.version.outputs.version }}
+        run: bash scripts/generate-release-body.sh ${{ steps.version.outputs.version }}
 
       - name: Create Draft Release
         uses: softprops/action-gh-release@v3
@@ -68,26 +68,16 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Install frontend dependencies
-        run: npm ci
-
       - name: Build (Linux)
         if: matrix.os-name == 'linux'
-        run: npm run build
-        env:
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
-          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
+        run: bash scripts/build-slint-appimage.sh
 
       - name: Build (Windows)
         if: matrix.os-name == 'windows'
-        run: npm run build-windows
-        env:
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
-          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
+        run: bash scripts/build-slint-windows.sh
 
       - name: Collect Build Artifacts
-        id: collect
-        run: node scripts/collect-build-artifacts.js ${{ matrix.os-name }} ${{ github.repository_owner }} ${{ github.event.repository.name }} ${{ needs.create-release.outputs.version }}
+        run: bash scripts/collect-build-artifacts.sh ${{ matrix.os-name }} ${{ needs.create-release.outputs.version }}
 
       - name: Upload Release Assets
         uses: softprops/action-gh-release@v3
@@ -95,12 +85,6 @@ jobs:
           tag_name: ${{ needs.create-release.outputs.tag_name }}
           files: release-assets/*
           draft: true
-
-      - name: Upload Updater Partial
-        uses: actions/upload-artifact@v7
-        with:
-          name: updater-partial-${{ matrix.os-name }}
-          path: updater-partial-*.json
 
   release-slint-macos:
     needs: create-release
@@ -121,36 +105,5 @@ jobs:
         uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ needs.create-release.outputs.tag_name }}
-          files: backend/slint-app/dist/*.zip
-          draft: true
-
-  finalize-release:
-    needs: [create-release, release-matrix, release-slint-macos]
-    if: ${{ !cancelled() && inputs.build_target != 'macos' }}
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v6
-
-      - name: Setup Node
-        uses: actions/setup-node@v6
-        with:
-          node-version: 25
-
-      - name: Download Updater Partials
-        uses: actions/download-artifact@v4
-        with:
-          path: updater-partials
-          pattern: updater-partial-*
-
-      - name: Merge Updater JSON
-        id: merge
-        run: node scripts/merge-updater-json.js updater-partials
-
-      - name: Upload Updater JSON
-        uses: softprops/action-gh-release@v3
-        with:
-          tag_name: ${{ needs.create-release.outputs.tag_name }}
-          files: latest.json
+          files: crates/slint-app/dist/*.zip
           draft: true

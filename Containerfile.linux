@@ -4,49 +4,39 @@ ENV DEBIAN_FRONTEND=noninteractive \
     RUSTUP_HOME=/usr/local/rustup \
     CARGO_HOME=/usr/local/cargo \
     PATH=/usr/local/cargo/bin:$PATH \
-    npm_config_cache=/tmp/npm-cache \
-    XDG_CACHE_HOME=/var/cache
+    XDG_CACHE_HOME=/var/cache \
+    LINUXDEPLOY=/opt/linuxdeploy/linuxdeploy-x86_64.AppImage \
+    APPIMAGE_EXTRACT_AND_RUN=1
 
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
-    curl ca-certificates gnupg \
- && curl -fsSL https://deb.nodesource.com/setup_25.x | bash - \
- && apt-get update \
- && apt-get install -y --no-install-recommends \
     build-essential \
-    pkg-config \
-    wget \
+    ca-certificates \
+    curl \
+    file \
     git \
-    libssl-dev \
     libfontconfig1-dev \
     libfreetype-dev \
+    libwayland-dev \
+    libxcb-xkb-dev \
     libxkbcommon-dev \
     libxkbcommon-x11-dev \
-    libxcb-xkb-dev \
-    libwayland-dev \
-    file \
-    libwebkit2gtk-4.1-dev \
-    libappindicator3-dev \
-    librsvg2-dev \
     patchelf \
+    pkg-config \
+    wget \
     xdg-utils \
-    nodejs \
  && rm -rf /var/lib/apt/lists/*
 
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
     | sh -s -- -y --profile minimal --default-toolchain stable
 
-# Shitty fix for "EGL_BAD_PARAMETER" on AppImage releases.
-# The AppImage plugin is baked in with its magic bytes cleared: hosts can register
-# a global binfmt_misc handler for that magic, which doesn't exist in here and makes
-# the plugin fail to execute. Tauri skips downloading files that already exist.
-RUN TAURI_TOOLKIT_PATH="${XDG_CACHE_HOME:-$HOME/.cache}/tauri" \
- && mkdir -p "$TAURI_TOOLKIT_PATH" \
- && wget https://github.com/linuxdeploy/linuxdeploy/releases/latest/download/linuxdeploy-x86_64.AppImage -O "$TAURI_TOOLKIT_PATH/linuxdeploy-x86_64.AppImage" \
- && chmod +x "$TAURI_TOOLKIT_PATH/linuxdeploy-x86_64.AppImage" \
- && wget https://github.com/linuxdeploy/linuxdeploy-plugin-appimage/releases/download/continuous/linuxdeploy-plugin-appimage-x86_64.AppImage -O "$TAURI_TOOLKIT_PATH/linuxdeploy-plugin-appimage.AppImage" \
- && dd if=/dev/zero of="$TAURI_TOOLKIT_PATH/linuxdeploy-plugin-appimage.AppImage" bs=1 count=4 seek=8 conv=notrunc status=none \
- && chmod +x "$TAURI_TOOLKIT_PATH/linuxdeploy-plugin-appimage.AppImage"
+# Clearing the AppImage magic bytes avoids binfmt_misc failures in the container.
+RUN mkdir -p /opt/linuxdeploy \
+ && wget https://github.com/linuxdeploy/linuxdeploy/releases/latest/download/linuxdeploy-x86_64.AppImage -O "$LINUXDEPLOY" \
+ && chmod +x "$LINUXDEPLOY" \
+ && wget https://github.com/linuxdeploy/linuxdeploy-plugin-appimage/releases/download/continuous/linuxdeploy-plugin-appimage-x86_64.AppImage -O /opt/linuxdeploy/linuxdeploy-plugin-appimage.AppImage \
+ && dd if=/dev/zero of=/opt/linuxdeploy/linuxdeploy-plugin-appimage.AppImage bs=1 count=4 seek=8 conv=notrunc status=none \
+ && chmod +x /opt/linuxdeploy/linuxdeploy-plugin-appimage.AppImage
 
 WORKDIR /app
 

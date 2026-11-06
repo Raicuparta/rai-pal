@@ -20,13 +20,13 @@ done
 
 APP_ID="rai-pal-slint"
 BINARY_NAME="rai-pal-slint"
-PACKAGE_DIR="$ROOT_DIR/backend/slint-app"
+PACKAGE_DIR="$ROOT_DIR/crates/slint-app"
 DIST_DIR="$PACKAGE_DIR/dist"
 APPDIR="$DIST_DIR/$APP_ID.AppDir"
 DESKTOP_FILE="$PACKAGE_DIR/packaging/$APP_ID.desktop"
 APPRUN_FILE="$PACKAGE_DIR/packaging/AppRun"
-ICON_FILE="$ROOT_DIR/backend/tauri-app/graphics/icon.png"
-BINARY="$ROOT_DIR/backend/target/release/$BINARY_NAME"
+ICON_FILE="$PACKAGE_DIR/graphics/icon.png"
+BINARY="$ROOT_DIR/target/release/$BINARY_NAME"
 
 if [[ "$SKIP_BUILD" -eq 0 ]] && ! command -v cargo >/dev/null 2>&1; then
 	echo "Missing 'cargo'. Run this script inside 'nix develop'." >&2
@@ -43,8 +43,6 @@ if [[ -n "${LINUXDEPLOY:-}" ]]; then
 	fi
 elif command -v linuxdeploy >/dev/null 2>&1; then
 	linuxdeploy_cmd="linuxdeploy"
-elif [[ -x "${XDG_CACHE_HOME:-$HOME/.cache}/tauri/linuxdeploy-x86_64.AppImage" ]]; then
-	linuxdeploy_appimage="${XDG_CACHE_HOME:-$HOME/.cache}/tauri/linuxdeploy-x86_64.AppImage"
 else
 	echo "Missing 'linuxdeploy'. Run inside 'nix develop' or the Linux builder container." >&2
 	exit 1
@@ -66,14 +64,14 @@ for file in "$DESKTOP_FILE" "$ICON_FILE"; do
 	fi
 done
 
-VERSION="$(sed -n 's/^version = "\(.*\)"/\1/p' "$ROOT_DIR/backend/Cargo.toml" | head -n 1)"
+VERSION="$(sed -n 's/^version = "\(.*\)"/\1/p' "$ROOT_DIR/Cargo.toml" | head -n 1)"
 if [[ -z "$VERSION" ]]; then
-	echo "Could not determine version from backend/Cargo.toml." >&2
+	echo "Could not determine version from Cargo.toml." >&2
 	exit 1
 fi
 
 if [[ "$SKIP_BUILD" -eq 0 ]]; then
-	cargo build --release --manifest-path "$ROOT_DIR/backend/Cargo.toml" -p "$BINARY_NAME"
+	cargo build --release -p "$BINARY_NAME"
 else
 	echo "Skipping cargo build (using existing $BINARY)"
 fi

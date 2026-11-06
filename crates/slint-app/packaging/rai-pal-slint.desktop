@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Rai Pal
+Comment=Universal game mod manager
+Exec=rai-pal-slint
+Icon=rai-pal-slint
+Terminal=false
+Categories=Game;
+StartupNotify=true
