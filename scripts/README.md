@@ -17,8 +17,9 @@ scripts/build-slint-windows.sh
 scripts/build-slint-macos.sh
 ```
 
-Windows builds use `cargo-xwin`. The macOS script removes the Linux-only winit
-patch from `Cargo.toml` before building.
+Windows builds use `cargo-xwin` and package an NSIS installer with `makensis`.
+The macOS script removes the Linux-only winit patch from `Cargo.toml` before
+building.
 
 ## Releases
 

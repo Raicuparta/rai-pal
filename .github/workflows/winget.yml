@@ -1,0 +1,24 @@
+name: Update WinGet Package
+
+on:
+  release:
+    types: [released]
+  workflow_dispatch:
+    inputs:
+      release-tag:
+        description: "The release tag to submit to WinGet"
+        required: true
+
+jobs:
+  winget:
+    runs-on: ubuntu-slim
+    steps:
+      - uses: vedantmgoyal9/winget-releaser@7bd472be23763def6e16bd06cc8b1cdfab0e2fd5
+        with:
+          identifier: Raicuparta.RaiPal
+          installers-regex: 'RaiPal\.exe
+          token: ${{ secrets.WINGET_GH_TOKEN }}
+          release-tag: ${{ github.event.release.tag_name || github.event.inputs.release-tag }}
+
+          token: ${{ secrets.WINGET_GH_TOKEN }}
+          release-tag: ${{ github.event.release.tag_name || github.event.inputs.release-tag }}

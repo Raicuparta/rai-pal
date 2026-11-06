@@ -47,13 +47,13 @@ needs an equivalent after that removal.
 - Analytics events for app start, mod install/update/uninstall/run, provider
   commands, sign-in, and error notifications.
 - Window icon wired from the shared graphics assets at runtime.
+- Windows NSIS installer packaging, including installer icon/sidebar, Start menu
+  and desktop shortcuts, uninstall metadata, and WinGet release publishing.
 
 ## Not done
 
 - App update check/download flow. The release workflow no longer creates signed
   updater artifacts or `latest.json`; there is no updater endpoint or UI yet.
-- Windows installer packaging. Releases currently contain a raw `.exe`; the old
-  NSIS installer, installer icon/sidebar, and WinGet publishing are gone.
 
 ## Core/Slint cleanup
 

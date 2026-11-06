@@ -68,6 +68,14 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - name: Ensure NSIS
+        if: matrix.os-name == 'windows'
+        run: |
+          if ! command -v makensis >/dev/null 2>&1; then
+            apt-get update
+            apt-get install -y --no-install-recommends nsis
+          fi
+
       - name: Build (Linux)
         if: matrix.os-name == 'linux'
         run: bash scripts/build-slint-appimage.sh

@@ -23,6 +23,9 @@ TARGET="x86_64-pc-windows-msvc"
 PACKAGE_DIR="$ROOT_DIR/crates/slint-app"
 DIST_DIR="$PACKAGE_DIR/dist"
 BINARY="$ROOT_DIR/target/$TARGET/release/$BINARY_NAME.exe"
+INSTALLER_SCRIPT="$PACKAGE_DIR/packaging/windows-installer.nsi"
+INSTALLER_ICON="$PACKAGE_DIR/graphics/icon.ico"
+INSTALLER_SIDEBAR="$PACKAGE_DIR/graphics/installer-sidebar.bmp"
 
 VERSION="$(sed -n 's/^version = "\(.*\)"/\1/p' "$ROOT_DIR/Cargo.toml" | head -n 1)"
 if [[ -z "$VERSION" ]]; then
@@ -41,8 +44,34 @@ if [[ ! -f "$BINARY" ]]; then
 	exit 1
 fi
 
+if ! command -v makensis >/dev/null 2>&1; then
+	echo "Missing 'makensis'. Install NSIS to build the Windows installer." >&2
+	exit 1
+fi
+
+for file in "$INSTALLER_SCRIPT" "$INSTALLER_ICON" "$INSTALLER_SIDEBAR"; do
+	if [[ ! -f "$file" ]]; then
+		echo "Missing required installer file: $file" >&2
+		exit 1
+	fi
+done
+
 mkdir -p "$DIST_DIR"
 FINAL_EXE="$DIST_DIR/RaiPal-Slint-$VERSION-x86_64.exe"
+FINAL_INSTALLER="$DIST_DIR/RaiPal-Slint-$VERSION-x86_64-setup.exe"
 cp "$BINARY" "$FINAL_EXE"
 
+STAGING_DIR="$(mktemp -d)"
+trap 'rm -rf "$STAGING_DIR"' EXIT
+cp "$BINARY" "$STAGING_DIR/Rai-Pal.exe"
+
+makensis \
+	-DVERSION="$VERSION" \
+	-DSOURCE_EXE="$STAGING_DIR/Rai-Pal.exe" \
+	-DOUTPUT_FILE="$FINAL_INSTALLER" \
+	-DICON_FILE="$INSTALLER_ICON" \
+	-DSIDEBAR_FILE="$INSTALLER_SIDEBAR" \
+	"$INSTALLER_SCRIPT"
+
 echo "Built $FINAL_EXE"
+echo "Built $FINAL_INSTALLER"

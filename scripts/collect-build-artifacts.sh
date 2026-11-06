@@ -16,7 +16,7 @@ mkdir -p "$OUTPUT_DIR"
 
 case "$PLATFORM" in
 	windows)
-		SOURCE="$DIST_DIR/RaiPal-Slint-$VERSION-x86_64.exe"
+		SOURCE="$DIST_DIR/RaiPal-Slint-$VERSION-x86_64-setup.exe"
 		TARGET="$OUTPUT_DIR/RaiPal.exe"
 		;;
 	linux)
