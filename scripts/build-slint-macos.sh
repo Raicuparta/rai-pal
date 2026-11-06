@@ -70,6 +70,17 @@ cat > "$APP_DIR/Contents/Info.plist" <<EOF
 	<string>$APP_NAME</string>
 	<key>CFBundleIdentifier</key>
 	<string>com.raicuparta.rai-pal-slint</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.raicuparta.rai-pal-slint</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>rai-pal</string>
+			</array>
+		</dict>
+	</array>
 	<key>CFBundleExecutable</key>
 	<string>$BINARY_NAME</string>
 	<key>CFBundleIconFile</key>

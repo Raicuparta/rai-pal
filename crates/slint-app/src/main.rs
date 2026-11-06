@@ -6,6 +6,7 @@ mod action_state;
 mod actions;
 mod app;
 mod confirmation;
+mod deep_links;
 mod downloads;
 mod fetch;
 mod filters;

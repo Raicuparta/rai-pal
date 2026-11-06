@@ -24,7 +24,7 @@ use slint::{
 
 use crate::{
 	ActionStates, AppColorScheme, AppTab, Fonts, MainWindow, ModActions, action_state, actions,
-	confirmation, downloads,
+	confirmation, deep_links, downloads,
 	fetch::spawn_fetchers,
 	filters::{
 		apply_filter_action, build_groups, load_mod_families, reset_all_filters, reset_filter_group,
@@ -794,6 +794,11 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	});
 
 	let downloads = downloads::Tracker::new(window.as_weak());
+
+	deep_links::register();
+	for argument in std::env::args().skip(1) {
+		deep_links::handle(&argument, &window, &database, &selected_game, &downloads);
+	}
 
 	let ui_window = window_weak.clone();
 	let ui_settings = settings.clone();

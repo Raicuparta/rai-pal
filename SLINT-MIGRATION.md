@@ -35,6 +35,9 @@ needs an equivalent after that removal.
 - Game thumbnail visibility setting.
 - Download progress tracking and status menu, driven by shared install-step generation.
 - Loading, empty, and error states for the games list, game mods, and mods loading, including a startup refresh and data-query error notifications.
+- Deep links (`rai-pal://`) registration and handling on Linux and Windows,
+  including `add-mod-source`, `install-mod`, `uninstall-mod`, and `run-mod`.
+  macOS bundles declare the URL scheme, but incoming open-url events are not wired.
 
 ## Not done
 
@@ -42,8 +45,6 @@ needs an equivalent after that removal.
   updater artifacts or `latest.json`; there is no updater endpoint or UI yet.
 - Windows installer packaging. Releases currently contain a raw `.exe`; the old
   NSIS installer, installer icon/sidebar, and WinGet publishing are gone.
-- Deep links (`rai-pal://`) registration and handling. Some UI text still
-  mentions the add-mod-source deep link.
 - Single-instance behavior.
 - Window size/position persistence.
 - App settings: reset settings and open logs folder.

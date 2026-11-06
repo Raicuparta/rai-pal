@@ -4282,6 +4282,8 @@ dependencies = [
  "slint-build",
  "sys-locale",
  "tokio",
+ "url",
+ "winreg",
 ]
 
 [[package]]
