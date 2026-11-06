@@ -152,7 +152,7 @@ jobs:
 
   release-slint-macos:
     needs: create-release
-    if: inputs.build_target == 'macos'
+    if: inputs.build_target == 'macos' || inputs.build_target == 'all'
     runs-on: macos-latest
     permissions:
       contents: write
