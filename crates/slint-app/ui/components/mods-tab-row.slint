@@ -10,7 +10,7 @@ export component ModsTabRowView inherits Rectangle {
     in property <ModsTabModView> mod-data;
     in property <bool> indented: false;
 
-    callback debug-data(json: string);
+    callback debug-data(mod-id: string);
 
     vertical-stretch: 0;
     background: row-touch.has-hover ? Theme.hover-background : transparent;
@@ -62,12 +62,12 @@ export component ModsTabRowView inherits Rectangle {
                 }
             }
 
-            if mod-data.debug-json != "" : IconButton {
+            IconButton {
                 icon: @image-url("../icons/ui/bug.svg");
                 tooltip: @tr("debugData" => "Debug data");
 
                 clicked => {
-                    root.debug-data(mod-data.debug-json);
+                    root.debug-data(mod-data.id);
                 }
             }
 

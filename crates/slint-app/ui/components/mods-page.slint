@@ -15,7 +15,7 @@ export component ModsPage inherits Rectangle {
 
     callback refresh-all;
     callback open-url-mod-sources;
-    callback debug-data(json: string);
+    callback debug-data(mod-id: string);
 
     HorizontalLayout {
         Sidebar {
@@ -65,16 +65,16 @@ export component ModsPage inherits Rectangle {
                         if item.is-family : ModsTabFamilyRowView {
                             item: item;
 
-                            debug-data(json) => {
-                                root.debug-data(json);
+                            debug-data(mod-id) => {
+                                root.debug-data(mod-id);
                             }
                         }
 
                         if !item.is-family : ModsTabRowView {
                             mod-data: item.single-mod;
 
-                            debug-data(json) => {
-                                root.debug-data(json);
+                            debug-data(mod-id) => {
+                                root.debug-data(mod-id);
                             }
                         }
                     }

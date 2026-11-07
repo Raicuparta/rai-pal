@@ -482,6 +482,40 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	});
 
 	let ui_window = window_weak.clone();
+	let ui_selected_game = selected_game.clone();
+	window.on_request_debug_data(move || {
+		let Some(window) = ui_window.upgrade() else {
+			return;
+		};
+		let Some((_, game)) = get_selected_game(&ui_selected_game) else {
+			return;
+		};
+
+		match serde_json::to_string_pretty(&game) {
+			Ok(json) => window.set_details_json(json.into()),
+			Err(err) => notifications::error(&window, format!("Failed to serialize game: {err}")),
+		}
+	});
+
+	let ui_window = window_weak.clone();
+	let ui_database = database.clone();
+	window.on_request_mod_debug_data(move |mod_id| {
+		let Some(window) = ui_window.upgrade() else {
+			return;
+		};
+
+		match ui_database.get_mod(mod_id.as_str()) {
+			Ok(game_mod) => match serde_json::to_string_pretty(&game_mod) {
+				Ok(json) => window.set_details_json(json.into()),
+				Err(err) => {
+					notifications::error(&window, format!("Failed to serialize mod: {err}"));
+				}
+			},
+			Err(err) => notifications::error(&window, format!("Failed to load mod: {err}")),
+		}
+	});
+
+	let ui_window = window_weak.clone();
 	let ui_settings = settings.clone();
 	let ui_pending_confirmation = pending_confirmation.clone();
 	let ui_database = database.clone();

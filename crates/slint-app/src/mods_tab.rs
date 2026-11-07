@@ -62,7 +62,6 @@ fn mod_data(game_mod: Mod) -> ModsTabModView {
 	let version_text = download_version(&game_mod);
 	let release_date = release_date_display(&game_mod);
 	let engine_text = engine_text(&game_mod);
-	let debug_json = serde_json::to_string_pretty(&game_mod).unwrap_or_default();
 
 	ModsTabModView {
 		id: game_mod.id.into(),
@@ -76,6 +75,5 @@ fn mod_data(game_mod: Mod) -> ModsTabModView {
 		source_code: game_mod.source_code.into(),
 		can_run: game_mod.run_standalone.is_some(),
 		can_install: game_mod.run_standalone.is_some() && game_mod.install.is_some(),
-		debug_json: debug_json.into(),
 	}
 }

@@ -20,11 +20,6 @@ pub fn show(window: &MainWindow, game: &Game, mut row: GameRowView) {
 		.collect();
 
 	window.set_selected_game_row(row);
-	window.set_selected_game_json(
-		serde_json::to_string_pretty(game)
-			.unwrap_or_default()
-			.into(),
-	);
 	window.set_selected_provider_id(game.provider_id.to_string().into());
 	window.set_selected_has_exe_path(game.exe_path.is_some());
 	window.set_selected_show_wine_folders(cfg!(target_os = "linux"));
@@ -35,7 +30,6 @@ pub fn show(window: &MainWindow, game: &Game, mut row: GameRowView) {
 pub fn hide(window: &MainWindow) {
 	window.set_game_selected(false);
 	window.set_selected_game_row(GameRowView::default());
-	window.set_selected_game_json("".into());
 	window.set_selected_provider_id("".into());
 	window.set_selected_has_exe_path(false);
 	window.set_selected_show_wine_folders(false);
