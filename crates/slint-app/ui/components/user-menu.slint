@@ -1,5 +1,6 @@
 import { Theme } from "../theme.slint";
 import { NavButton } from "nav-button.slint";
+import { SvgIcon } from "svg-icon.slint";
 import { PopupMenu, PopupMenuItem } from "menu.slint";
 
 export component UserMenu inherits Rectangle {
@@ -17,16 +18,47 @@ export component UserMenu inherits Rectangle {
     private property <length> avatar-size: 24px;
 
     NavButton {
-        icon: root.logged-in ? root.avatar : @image-url("../icons/ui/account.svg");
-        icon-size: root.avatar-size;
-        icon-color: root.logged-in ? transparent : Theme.foreground;
-        icon-text: root.logged-in && !root.has-avatar ? root.user-initials : "";
-        icon-border-radius: root.logged-in ? root.avatar-size / 2 : 0px;
-        icon-border-width: root.logged-in ? Theme.border-width * 2 : 0px;
-        icon-border-color: Theme.foreground;
-
         clicked => {
             menu.show();
+        }
+
+        if root.logged-in : Rectangle {
+            width: root.avatar-size;
+            height: root.avatar-size;
+            border-radius: root.avatar-size / 2;
+            background: Theme.foreground;
+            clip: true;
+
+            Rectangle {
+                x: Theme.border-width * 2;
+                y: Theme.border-width * 2;
+                width: root.avatar-size - Theme.border-width * 4;
+                height: root.avatar-size - Theme.border-width * 4;
+                border-radius: (root.avatar-size - Theme.border-width * 4) / 2;
+                background: Theme.background;
+                clip: true;
+
+                if root.has-avatar : Image {
+                    source: root.avatar;
+                    width: 100%;
+                    height: 100%;
+                }
+
+                if !root.has-avatar : Text {
+                    text: root.user-initials;
+                    font-size: Theme.font-12;
+                    font-weight: Theme.weight-bold;
+                    color: Theme.foreground;
+                    horizontal-alignment: center;
+                    vertical-alignment: center;
+                }
+            }
+        }
+
+        if !root.logged-in : SvgIcon {
+            source: @image-url("../icons/ui/account.svg");
+            size: root.avatar-size;
+            color: Theme.foreground;
         }
     }
 
@@ -34,12 +66,12 @@ export component UserMenu inherits Rectangle {
         x: root.width - Theme.menu-width;
         y: root.height;
 
-        if root.logged-in : PopupMenuItem {
+        if root.logged-in: PopupMenuItem {
             text: root.user-name == "" ? @tr("userMenu" => "Unknown user") : root.user-name;
             enabled: false;
         }
 
-        if root.logged-in : PopupMenuItem {
+        if root.logged-in: PopupMenuItem {
             text: @tr("userMenu" => "Log out");
             enabled: !root.busy;
 
@@ -49,7 +81,7 @@ export component UserMenu inherits Rectangle {
             }
         }
 
-        if !root.logged-in : PopupMenuItem {
+        if !root.logged-in: PopupMenuItem {
             text: @tr("userMenu" => "Sign in with Discord");
             enabled: !root.busy;
 
@@ -59,7 +91,7 @@ export component UserMenu inherits Rectangle {
             }
         }
 
-        if !root.logged-in : PopupMenuItem {
+        if !root.logged-in: PopupMenuItem {
             text: @tr("userMenu" => "Mods can use this to access your Discord username, avatar, roles, etc.");
             enabled: false;
         }

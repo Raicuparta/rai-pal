@@ -1,6 +1,7 @@
 import { AppColorScheme } from "../app-types.slint";
 import { Theme } from "../theme.slint";
 import { NavButton } from "nav-button.slint";
+import { SvgIcon } from "svg-icon.slint";
 import { PopupMenu, PopupMenuItem, PopupMenuSeparator } from "menu.slint";
 import { SelectMenu, SelectOption } from "select-menu.slint";
 
@@ -71,10 +72,14 @@ export component AppMenu inherits Rectangle {
     }
 
     NavButton {
-        icon: @image-url("../icons/ui/menu.svg");
-
         clicked => {
             menu.show();
+        }
+
+        SvgIcon {
+            source: @image-url("../icons/ui/menu.svg");
+            size: 24px;
+            color: Theme.foreground;
         }
     }
 
