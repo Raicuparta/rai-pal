@@ -2,7 +2,6 @@
 
 This file is here for me to track things I wanna fix for the next release. If there are things here on the main branch, I probably forgot to delete them. It should never have todos I only intend to complete in future releases, that's what GitHub issues are for.
 
-- Bigger close button for modals so it's easier to click.
 - Patreon leaderboard and page fixes:
   - bronze has same color of silver, needs to be fixed.
   - top three people should have a border around their avatar circle with the color of the trophy (importantly, border shouldn't cover parts of the image, should be outside).

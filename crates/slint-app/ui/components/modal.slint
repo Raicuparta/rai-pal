@@ -80,6 +80,7 @@ export component Modal inherits Rectangle {
 
                 if root.show-close-button : IconButton {
                     icon: @image-url("../icons/ui/close.svg");
+                    icon-size: Theme.font-20;
                     tooltip: root.close-tooltip;
 
                     clicked => {
