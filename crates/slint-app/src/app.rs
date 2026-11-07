@@ -101,6 +101,11 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	let database = Arc::new(database);
 
 	let window = MainWindow::new()?;
+	window.set_window_title(if cfg!(debug_assertions) {
+		"Rai Pal DEV".into()
+	} else {
+		"Rai Pal".into()
+	});
 	apply_window_state(&window, settings.borrow().window_state);
 	window
 		.global::<ActionStates>()
