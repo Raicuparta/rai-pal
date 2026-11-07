@@ -11,3 +11,5 @@ This file is here for me to track things I wanna fix for the next release. If th
 - debug json data should be on-demand. and currently missing a bunch of data. add more buttons for game-mods maybe would be good.
 - make the single-instance thing ignore dev.
 - show DEV and version in title.
+- issue with "auto" color scheme sometimes changing some things but not others. example changes background but not some text, like filters text.
+- search x button should be visible even when input not focused.

@@ -1,5 +1,6 @@
 import { Theme } from "../theme.slint";
 import { NavButton } from "nav-button.slint";
+import { PopupMenu, PopupMenuItem } from "menu.slint";
 
 export component UserMenu inherits Rectangle {
     in property <bool> logged-in;
@@ -15,52 +16,52 @@ export component UserMenu inherits Rectangle {
     private property <string> menu-tooltip: @tr("userMenu" => "User menu");
     private property <length> avatar-size: 24px;
 
-    menu-area := ContextMenuArea {
-        NavButton {
-            icon: root.logged-in ? root.avatar : @image-url("../icons/ui/account.svg");
-            icon-size: root.avatar-size;
-            icon-color: root.logged-in ? transparent : Theme.foreground;
-            icon-text: root.logged-in && !root.has-avatar ? root.user-initials : "";
-            icon-border-radius: root.logged-in ? root.avatar-size / 2 : 0px;
-            icon-border-width: root.logged-in ? Theme.border-width * 2 : 0px;
-            icon-border-color: Theme.foreground;
+    NavButton {
+        icon: root.logged-in ? root.avatar : @image-url("../icons/ui/account.svg");
+        icon-size: root.avatar-size;
+        icon-color: root.logged-in ? transparent : Theme.foreground;
+        icon-text: root.logged-in && !root.has-avatar ? root.user-initials : "";
+        icon-border-radius: root.logged-in ? root.avatar-size / 2 : 0px;
+        icon-border-width: root.logged-in ? Theme.border-width * 2 : 0px;
+        icon-border-color: Theme.foreground;
+
+        clicked => {
+            menu.show();
+        }
+    }
+
+    menu := PopupMenu {
+        x: root.width - Theme.menu-width;
+        y: root.height;
+
+        if root.logged-in : PopupMenuItem {
+            text: root.user-name == "" ? @tr("userMenu" => "Unknown user") : root.user-name;
+            enabled: false;
+        }
+
+        if root.logged-in : PopupMenuItem {
+            text: @tr("userMenu" => "Log out");
+            enabled: !root.busy;
 
             clicked => {
-                menu-area.show({
-                    x: root.width - Theme.menu-width,
-                    y: root.height,
-                });
+                root.log-out();
+                menu.close();
             }
         }
 
-        Menu {
-            if root.logged-in : MenuItem {
-                title: root.user-name == "" ? @tr("userMenu" => "Unknown user") : root.user-name;
-                enabled: false;
+        if !root.logged-in : PopupMenuItem {
+            text: @tr("userMenu" => "Sign in with Discord");
+            enabled: !root.busy;
+
+            clicked => {
+                root.log-in();
+                menu.close();
             }
+        }
 
-            if root.logged-in : MenuItem {
-                title: @tr("userMenu" => "Log out");
-                enabled: !root.busy;
-
-                activated => {
-                    root.log-out();
-                }
-            }
-
-            if !root.logged-in : MenuItem {
-                title: @tr("userMenu" => "Sign in with Discord");
-                enabled: !root.busy;
-
-                activated => {
-                    root.log-in();
-                }
-            }
-
-            if !root.logged-in : MenuItem {
-                title: @tr("userMenu" => "Mods can use this to access your Discord username, avatar, roles, etc.");
-                enabled: false;
-            }
+        if !root.logged-in : PopupMenuItem {
+            text: @tr("userMenu" => "Mods can use this to access your Discord username, avatar, roles, etc.");
+            enabled: false;
         }
     }
 

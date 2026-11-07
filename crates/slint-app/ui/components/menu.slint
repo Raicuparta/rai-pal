@@ -1,0 +1,113 @@
+import { ScrollView } from "std-widgets.slint";
+import { Theme } from "../theme.slint";
+import { LabeledDivider } from "labeled-divider.slint";
+import { SvgIcon } from "svg-icon.slint";
+
+export component PopupMenu inherits PopupWindow {
+    in property <length> menu-width: Theme.menu-width;
+    in property <length> max-menu-height: 600px;
+
+    close-policy: PopupClosePolicy.close-on-click-outside;
+    width: root.menu-width;
+    height: menu-surface.height;
+
+    menu-surface := Rectangle {
+        width: 100%;
+        height: min(menu-layout.preferred-height + Theme.border-width * 2, root.max-menu-height);
+        background: Theme.background;
+        border-width: Theme.border-width;
+        border-color: Theme.border;
+        border-radius: Theme.radius-4;
+        clip: true;
+
+        ScrollView {
+            horizontal-scrollbar-policy: ScrollBarPolicy.always-off;
+            vertical-scrollbar-policy: ScrollBarPolicy.as-needed;
+
+            menu-layout := VerticalLayout {
+                padding-top: Theme.space-4;
+                padding-bottom: Theme.space-4;
+                padding-left: Theme.space-4;
+                padding-right: Theme.space-4;
+                spacing: Theme.space-2;
+
+                @children
+            }
+        }
+    }
+}
+
+export component PopupMenuItem inherits Rectangle {
+    in property <string> text;
+    in property <image> icon;
+    in property <bool> enabled: true;
+    in property <bool> checkable: false;
+    in property <bool> checked: false;
+
+    callback clicked;
+
+    vertical-stretch: 0;
+    height: max(item-layout.preferred-height, Theme.control-height);
+    background: item-touch.pressed ? Theme.pressed-background : item-touch.has-hover ? Theme.hover-background : transparent;
+    border-radius: Theme.radius-3;
+    accessible-role: AccessibleRole.button;
+    accessible-label: root.text;
+    accessible-enabled: root.enabled;
+    accessible-action-default => {
+        if root.enabled {
+            root.clicked();
+        }
+    }
+
+    item-layout := HorizontalLayout {
+        padding-left: Theme.space-8;
+        padding-right: Theme.space-8;
+        padding-top: Theme.space-4;
+        padding-bottom: Theme.space-4;
+        spacing: Theme.space-8;
+        cross-axis-alignment: center;
+        vertical-stretch: 0;
+
+        SvgIcon {
+            source: root.checked ? @image-url("../icons/ui/check.svg") : root.icon;
+            color: root.enabled ? Theme.foreground : Theme.dimmed-foreground;
+        }
+
+        Text {
+            text: root.text;
+            color: root.enabled ? Theme.foreground : Theme.dimmed-foreground;
+            vertical-alignment: center;
+            wrap: word-wrap;
+            horizontal-stretch: 1;
+        }
+    }
+
+    item-touch := TouchArea {
+        enabled: root.enabled;
+
+        clicked => {
+            root.clicked();
+        }
+    }
+}
+
+export component PopupMenuSeparator inherits Rectangle {
+    vertical-stretch: 0;
+    height: Theme.space-8;
+    background: transparent;
+
+    Rectangle {
+        x: Theme.space-4;
+        width: parent.width - Theme.space-8;
+        y: (parent.height - self.height) / 2;
+        height: Theme.border-width;
+        background: Theme.border;
+    }
+}
+
+export component PopupMenuSectionTitle inherits LabeledDivider {
+    padding-left: Theme.space-4;
+    padding-right: Theme.space-4;
+    padding-top: Theme.space-4;
+    padding-bottom: Theme.space-4;
+}

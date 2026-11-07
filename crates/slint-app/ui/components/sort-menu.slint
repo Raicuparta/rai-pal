@@ -1,5 +1,5 @@
 import { Theme } from "../theme.slint";
-import { SvgIcon } from "svg-icon.slint";
+import { SelectMenu, SelectOption } from "select-menu.slint";
 
 export component SortMenu inherits Rectangle {
     in-out property <int> sort-index: 0;
@@ -9,112 +9,22 @@ export component SortMenu inherits Rectangle {
     horizontal-stretch: 1;
     height: Theme.control-height;
 
-    private property <string> current-label: root.sort-index == 0 ? @tr("gamesSort" => "Name A-Z") : root.sort-index == 1 ? @tr("gamesSort" => "Name Z-A") : root.sort-index == 2 ? @tr("gamesSort" => "Engine A-Z") : root.sort-index == 3 ? @tr("gamesSort" => "Engine Z-A") : root.sort-index == 4 ? @tr("gamesSort" => "Date Ascending") : @tr("gamesSort" => "Date Descending");
+    private property <[SelectOption]> options: [
+        { label: @tr("gamesSort" => "Name A-Z"), value: "0" },
+        { label: @tr("gamesSort" => "Name Z-A"), value: "1" },
+        { label: @tr("gamesSort" => "Engine A-Z"), value: "2" },
+        { label: @tr("gamesSort" => "Engine Z-A"), value: "3" },
+        { label: @tr("gamesSort" => "Date Ascending"), value: "4" },
+        { label: @tr("gamesSort" => "Date Descending"), value: "5" },
+    ];
 
-    menu-area := ContextMenuArea {
-        Rectangle {
-            width: 100%;
-            height: 100%;
-            border-width: Theme.border-width;
-            border-color: Theme.border;
-            border-radius: Theme.radius-4;
-            background: touch-area.pressed ? Theme.pressed-background : touch-area.has-hover ? Theme.hover-background : Theme.background;
+    SelectMenu {
+        options: root.options;
+        selected-index <=> root.sort-index;
 
-            HorizontalLayout {
-                padding-left: Theme.space-8;
-                padding-right: Theme.space-8;
-                spacing: Theme.space-4;
-                cross-axis-alignment: center;
-
-                Text {
-                    text: root.current-label;
-                    horizontal-stretch: 1;
-                    vertical-alignment: center;
-                    overflow: elide;
-                }
-
-                SvgIcon {
-                    source: @image-url("../icons/ui/sort-menu.svg");
-                    color: Theme.dimmed-foreground;
-                }
-            }
-
-            touch-area := TouchArea {
-                clicked => {
-                    menu-area.show({
-                        x: 0,
-                        y: root.height,
-                    });
-                }
-            }
-        }
-
-        Menu {
-            MenuItem {
-                checkable: true;
-                checked: root.sort-index == 0;
-                title: @tr("gamesSort" => "Name A-Z");
-
-                activated => {
-                    root.sort-index = 0;
-                    root.sort-changed(0);
-                }
-            }
-
-            MenuItem {
-                checkable: true;
-                checked: root.sort-index == 1;
-                title: @tr("gamesSort" => "Name Z-A");
-
-                activated => {
-                    root.sort-index = 1;
-                    root.sort-changed(1);
-                }
-            }
-
-            MenuItem {
-                checkable: true;
-                checked: root.sort-index == 2;
-                title: @tr("gamesSort" => "Engine A-Z");
-
-                activated => {
-                    root.sort-index = 2;
-                    root.sort-changed(2);
-                }
-            }
-
-            MenuItem {
-                checkable: true;
-                checked: root.sort-index == 3;
-                title: @tr("gamesSort" => "Engine Z-A");
-
-                activated => {
-                    root.sort-index = 3;
-                    root.sort-changed(3);
-                }
-            }
-
-            MenuItem {
-                checkable: true;
-                checked: root.sort-index == 4;
-                title: @tr("gamesSort" => "Date Ascending");
-
-                activated => {
-                    root.sort-index = 4;
-                    root.sort-changed(4);
-                }
-            }
-
-            MenuItem {
-                checkable: true;
-                checked: root.sort-index == 5;
-                title: @tr("gamesSort" => "Date Descending");
-
-                activated => {
-                    root.sort-index = 5;
-                    root.sort-changed(5);
-                }
-            }
+        selected(index) => {
+            root.sort-index = index;
+            root.sort-changed(index);
         }
     }
 }

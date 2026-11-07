@@ -108,28 +108,10 @@ export component GameDetailsPage inherits Rectangle {
                     mods: root.game-mods-hidden;
                 }
 
-                if root.has-incompatible-mods : VerticalLayout {
-                    alignment: start;
-                    vertical-stretch: 0;
-                    spacing: Theme.space-6;
-
-                    HorizontalLayout {
-                        padding-left: Theme.space-8;
-                        padding-right: Theme.space-8;
-
-                        Rectangle {
-                            horizontal-stretch: 1;
-                            height: Theme.border-width;
-                            background: Theme.border;
-                            vertical-stretch: 0;
-                        }
-                    }
-
-                    ModsSection {
-                        label: @tr("gameModal" => "Incompatible Mods");
-                        description: @tr("gameModal" => "The mods listed here can't be installed because they aren't compatible with this game's engine version.");
-                        mods: root.game-mods-incompatible;
-                    }
+                if root.has-incompatible-mods : ModsSection {
+                    label: @tr("gameModal" => "Incompatible Mods");
+                    description: @tr("gameModal" => "The mods listed here can't be installed because they aren't compatible with this game's engine version.");
+                    mods: root.game-mods-incompatible;
                 }
             }
         }

@@ -4,153 +4,170 @@ import { Theme } from "../theme.slint";
 import { ActionButton } from "action-button.slint";
 import { IconButton } from "icon-button.slint";
 import { ModSummaryView } from "mod-summary.slint";
+import { PopupMenu, PopupMenuItem, PopupMenuSeparator } from "menu.slint";
 
 export component GameModRowView inherits Rectangle {
     in property <GameModView> game-mod;
 
     property <bool> interactive: !game-mod.incompatible;
     property <bool> has-dropdown-actions: game-mod.can-edit-config || game-mod.can-open-mod-folder || game-mod.can-download-config || game-mod.can-reinstall || game-mod.can-uninstall;
+    private property <length> menu-x: 0;
+    private property <length> menu-y: 0;
 
     vertical-stretch: 0;
     background: interactive && row-touch.has-hover ? Theme.hover-background : transparent;
 
-    context-menu := ContextMenuArea {
-        Menu {
-            if game-mod.can-edit-config: MenuItem {
-                title: @tr("gameModRow" => "Edit Mod Config");
-                icon: @image-url("../icons/ui/settings.svg");
+    menu := PopupMenu {
+        x: root.menu-x;
+        y: root.menu-y;
 
-                activated => {
-                    ModActions.configure(game-mod.mod-id);
-                }
-            }
+        if game-mod.can-edit-config: PopupMenuItem {
+            text: @tr("gameModRow" => "Edit Mod Config");
+            icon: @image-url("../icons/ui/settings.svg");
 
-            if game-mod.can-edit-config: MenuItem {
-                title: @tr("gameModRow" => "Open folder containing this mod's config files");
-                icon: @image-url("../icons/ui/folder-mods.svg");
-
-                activated => {
-                    ModActions.configure-folder(game-mod.mod-id);
-                }
-            }
-
-            if game-mod.can-edit-config: MenuSeparator { }
-
-            if game-mod.can-open-mod-folder: MenuItem {
-                title: @tr("gameModRow" => "Open Mod Folder");
-                icon: @image-url("../icons/ui/folder-mods.svg");
-
-                activated => {
-                    ModActions.open-folder(game-mod.mod-id);
-                }
-            }
-
-            if game-mod.can-download-config: MenuItem {
-                title: @tr("gameModRow" => "Download Recommended Config");
-                icon: @image-url("../icons/ui/download.svg");
-
-                activated => {
-                    ModActions.download-config(game-mod.mod-id);
-                }
-            }
-
-            if game-mod.can-download-config: MenuSeparator { }
-
-            if game-mod.can-reinstall: MenuItem {
-                title: @tr("gameModRow" => "Reinstall");
-                icon: @image-url("../icons/ui/reinstall.svg");
-
-                activated => {
-                    ModActions.reinstall(game-mod.mod-id);
-                }
-            }
-
-            if game-mod.can-uninstall: MenuItem {
-                title: @tr("gameModRow" => "Uninstall");
-                icon: @image-url("../icons/ui/uninstall.svg");
-                enabled: !game-mod.has-installed-dependants;
-
-                activated => {
-                    ModActions.uninstall(game-mod.mod-id);
-                }
+            clicked => {
+                ModActions.configure(game-mod.mod-id);
+                menu.close();
             }
         }
 
-        row-touch := TouchArea { }
+        if game-mod.can-edit-config: PopupMenuItem {
+            text: @tr("gameModRow" => "Open folder containing this mod's config files");
+            icon: @image-url("../icons/ui/folder-mods.svg");
 
-        HorizontalLayout {
-            padding: Theme.space-6;
-            spacing: Theme.space-8;
-            cross-axis-alignment: center;
+            clicked => {
+                ModActions.configure-folder(game-mod.mod-id);
+                menu.close();
+            }
+        }
 
-            ModSummaryView {
-                horizontal-stretch: 1;
-                title: game-mod.title;
-                description: game-mod.description;
-                version-text: game-mod.version-text;
-                release-date: game-mod.release-date;
-                author: game-mod.author;
-                engine-text: game-mod.engine-text;
-                deprecated: game-mod.deprecated;
-                has-remote-config: game-mod.has-remote-config;
-                show-status: game-mod.show-status;
-                installed: game-mod.installed;
-                outdated: game-mod.outdated;
+        if game-mod.can-edit-config: PopupMenuSeparator { }
+
+        if game-mod.can-open-mod-folder: PopupMenuItem {
+            text: @tr("gameModRow" => "Open Mod Folder");
+            icon: @image-url("../icons/ui/folder-mods.svg");
+
+            clicked => {
+                ModActions.open-folder(game-mod.mod-id);
+                menu.close();
+            }
+        }
+
+        if game-mod.can-download-config: PopupMenuItem {
+            text: @tr("gameModRow" => "Download Recommended Config");
+            icon: @image-url("../icons/ui/download.svg");
+
+            clicked => {
+                ModActions.download-config(game-mod.mod-id);
+                menu.close();
+            }
+        }
+
+        if game-mod.can-download-config: PopupMenuSeparator { }
+
+        if game-mod.can-reinstall: PopupMenuItem {
+            text: @tr("gameModRow" => "Reinstall");
+            icon: @image-url("../icons/ui/reinstall.svg");
+
+            clicked => {
+                ModActions.reinstall(game-mod.mod-id);
+                menu.close();
+            }
+        }
+
+        if game-mod.can-uninstall: PopupMenuItem {
+            text: @tr("gameModRow" => "Uninstall");
+            icon: @image-url("../icons/ui/uninstall.svg");
+            enabled: !game-mod.has-installed-dependants;
+
+            clicked => {
+                ModActions.uninstall(game-mod.mod-id);
+                menu.close();
+            }
+        }
+    }
+
+    row-touch := TouchArea {
+        pointer-event(event) => {
+            if event.kind == PointerEventKind.down && event.button == PointerEventButton.right {
+                root.menu-x = max(0px, min(row-touch.pressed-x, root.width - Theme.menu-width));
+                root.menu-y = row-touch.pressed-y;
+                menu.show();
+            }
+        }
+    }
+
+    HorizontalLayout {
+        padding: Theme.space-6;
+        spacing: Theme.space-8;
+        cross-axis-alignment: center;
+
+        ModSummaryView {
+            horizontal-stretch: 1;
+            title: game-mod.title;
+            description: game-mod.description;
+            version-text: game-mod.version-text;
+            release-date: game-mod.release-date;
+            author: game-mod.author;
+            engine-text: game-mod.engine-text;
+            deprecated: game-mod.deprecated;
+            has-remote-config: game-mod.has-remote-config;
+            show-status: game-mod.show-status;
+            installed: game-mod.installed;
+            outdated: game-mod.outdated;
+        }
+
+        if game-mod.can-show-actions: HorizontalLayout {
+            horizontal-stretch: 0;
+            alignment: end;
+            spacing: Theme.space-4;
+            min-width: self.preferred-width;
+
+            if game-mod.can-install: ActionButton {
+                text: @tr("gameModRow" => "Install");
+                icon: @image-url("../icons/ui/install.svg");
+                action-id: "game-mod-install:" + game-mod.mod-id;
+
+                clicked => {
+                    ModActions.request-install(
+                        game-mod.mod-id,
+                        @tr("gameModRow" => "Attention: be careful when installing mods on multiplayer games! Anticheat can detect some mods and get you banned, even if the mods seem harmless."),
+                        @tr("gameModRow" => "Install"),
+                        "install-mod-confirm",
+                    );
+                }
             }
 
-            if game-mod.can-show-actions: HorizontalLayout {
-                horizontal-stretch: 0;
-                alignment: end;
-                spacing: Theme.space-4;
-                min-width: self.preferred-width;
+            if game-mod.can-update: ActionButton {
+                text: @tr("gameModRow" => "Update");
+                icon: @image-url("../icons/ui/update.svg");
+                action-id: "game-mod-install:" + game-mod.mod-id;
 
-                if game-mod.can-install: ActionButton {
-                    text: @tr("gameModRow" => "Install");
-                    icon: @image-url("../icons/ui/install.svg");
-                    action-id: "game-mod-install:" + game-mod.mod-id;
-
-                    clicked => {
-                        ModActions.request-install(
-                            game-mod.mod-id,
-                            @tr("gameModRow" => "Attention: be careful when installing mods on multiplayer games! Anticheat can detect some mods and get you banned, even if the mods seem harmless."),
-                            @tr("gameModRow" => "Install"),
-                            "install-mod-confirm",
-                        );
-                    }
+                clicked => {
+                    ModActions.update(game-mod.mod-id);
                 }
+            }
 
-                if game-mod.can-update: ActionButton {
-                    text: @tr("gameModRow" => "Update");
-                    icon: @image-url("../icons/ui/update.svg");
-                    action-id: "game-mod-install:" + game-mod.mod-id;
+            if game-mod.can-run: ActionButton {
+                text: @tr("gameModRow" => "Run");
+                icon: @image-url("../icons/ui/play.svg");
+                action-id: "game-mod-run:" + game-mod.mod-id;
 
-                    clicked => {
-                        ModActions.update(game-mod.mod-id);
-                    }
+                clicked => {
+                    ModActions.run(game-mod.mod-id);
                 }
+            }
 
-                if game-mod.can-run: ActionButton {
-                    text: @tr("gameModRow" => "Run");
-                    icon: @image-url("../icons/ui/play.svg");
-                    action-id: "game-mod-run:" + game-mod.mod-id;
+            actions-button := IconButton {
+                visible: root.has-dropdown-actions;
+                icon: @image-url("../icons/ui/more.svg");
+                icon-size: 22px;
+                tooltip: @tr("gameModRow" => "Mod actions");
 
-                    clicked => {
-                        ModActions.run(game-mod.mod-id);
-                    }
-                }
-
-                actions-button := IconButton {
-                    visible: root.has-dropdown-actions;
-                    icon: @image-url("../icons/ui/more.svg");
-                    icon-size: 22px;
-                    tooltip: @tr("gameModRow" => "Mod actions");
-
-                    clicked => {
-                        context-menu.show({
-                            x: actions-button.absolute-position.x - root.absolute-position.x,
-                            y: actions-button.absolute-position.y - root.absolute-position.y + actions-button.height,
-                        });
-                    }
+                clicked => {
+                    root.menu-x = actions-button.absolute-position.x - root.absolute-position.x + actions-button.width - Theme.menu-width;
+                    root.menu-y = actions-button.absolute-position.y - root.absolute-position.y + actions-button.height;
+                    menu.show();
                 }
             }
         }
