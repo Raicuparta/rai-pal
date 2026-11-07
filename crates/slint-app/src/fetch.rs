@@ -9,6 +9,7 @@ use rai_pal_core::{
 	game::Game,
 	game_providers::game_provider::GameProviderId,
 	local_database::{app_database::DbMutex, game_database::GameDatabase},
+	result::LogErrExt,
 };
 
 use slint::Model;
@@ -81,13 +82,18 @@ fn fetch_image_bytes_cancellable<F>(url: &str, mut should_continue: F) -> ImageB
 where
 	F: FnMut() -> bool,
 {
-	let response = match HTTP_CLIENT.get(url).send() {
-		Ok(response) => response,
-		Err(_) => return ImageBytesOutcome::Failed,
+	let Some(response) = HTTP_CLIENT
+		.get(url)
+		.send()
+		.ok_or_log("Failed to request image")
+	else {
+		return ImageBytesOutcome::Failed;
 	};
-	let mut response = match response.error_for_status() {
-		Ok(response) => response,
-		Err(_) => return ImageBytesOutcome::Failed,
+	let Some(mut response) = response
+		.error_for_status()
+		.ok_or_log("Image request failed")
+	else {
+		return ImageBytesOutcome::Failed;
 	};
 
 	let mut bytes = Vec::new();
@@ -98,11 +104,16 @@ where
 			return ImageBytesOutcome::Cancelled;
 		}
 
-		match response.read(&mut chunk) {
-			Ok(0) => break,
-			Ok(length) => bytes.extend_from_slice(&chunk[..length]),
-			Err(_) => return ImageBytesOutcome::Failed,
+		let Some(length) = response
+			.read(&mut chunk)
+			.ok_or_log("Failed to read image response")
+		else {
+			return ImageBytesOutcome::Failed;
+		};
+		if length == 0 {
+			break;
 		}
+		bytes.extend_from_slice(&chunk[..length]);
 	}
 
 	if !should_continue() {

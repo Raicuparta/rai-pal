@@ -30,10 +30,10 @@ where
 		}
 		None
 	} else {
-		match value.parse() {
-			Ok(value) => Some(value),
-			Err(_) => return false,
-		}
+		let Ok(value) = value.parse() else {
+			return false;
+		};
+		Some(value)
 	};
 
 	group.apply_action(target, possible_values, has_unknown, action);

@@ -2,7 +2,6 @@
 
 This file is here for me to track things I wanna fix for the next release. If there are things here on the main branch, I probably forgot to delete them. It should never have todos I only intend to complete in future releases, that's what GitHub issues are for.
 
-- You saw my custom clippy warning to avoid .ok() in rust but instead of fixing it properly you were a dumbass and worked around it by using match or something stupid like that. So now you have to go through the entire code and see if there are any dumb usages of match that were likely just avoiding an .ok(), and fix it properly, for instance by using ok_and_log() (or whatever it's called) or by properly throwing the error forward when it makes sense.
 - notifications should be on the bottom right corner. currently they're on the top right.
 - confirm that the tauri to slint migration didn't cause any paths to change. important are the build names (should already be good) and the folder names used for configs, downloaded mods, installed mods, etc.
 - debug json data should be on-demand. don't include debug json data in structs etc, it should be a request that the frontend does when a debug button is clicked.
