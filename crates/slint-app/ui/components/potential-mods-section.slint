@@ -19,6 +19,7 @@ component PotentialModRowView inherits Rectangle {
         }
 
         if potential-mod.description != "" : Text {
+            height: self.preferred-height;
             text: potential-mod.description;
             font-size: Theme.font-12;
             opacity: 0.75;

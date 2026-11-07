@@ -60,6 +60,15 @@ Read `.agents/skills/slint/SKILL.md` and the relevant
   layouts don't shift or flicker.
 - Compile-check with `cargo check -p rai-pal-slint`; for visual/runtime checks
   use the Slint MCP server or `slint-viewer`, not only source inspection.
+- Avoid putting wrapped `Text` or layouts that size to wrapped content inside
+  `if`. Slint 1.18 gives conditional elements their unconstrained
+  `preferred-height`, so they under- or over-report their height and cause
+  overlaps. If you need a conditional, add `height: self.preferred-height;` to
+  the conditional `Text`/layout to force width-aware sizing.
+- Slint 1.18's default `horizontal-stretch` is 1 (not 0), and a layout's
+  stretch is the sum of its children's. In a row with one expanding column and
+  one fixed-content column, explicitly set `horizontal-stretch: 0` on the fixed
+  column, otherwise it steals the extra space and squeezes the expanding one.
 
 ## Shared code
 

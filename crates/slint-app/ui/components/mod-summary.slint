@@ -65,7 +65,7 @@ export component ModSummaryView inherits HorizontalLayout {
             Text {
                 text: root.title;
                 font-weight: Theme.weight-semibold;
-                overflow: elide;
+                wrap: word-wrap;
                 horizontal-stretch: 1;
             }
 
@@ -102,9 +102,12 @@ export component ModSummaryView inherits HorizontalLayout {
             }
         }
 
-        if root.has-details : HorizontalLayout {
+        if root.has-details : FlexboxLayout {
+            height: self.preferred-height;
             opacity: 0.4;
-            spacing: Theme.space-10;
+            spacing-horizontal: Theme.space-10;
+            spacing-vertical: Theme.space-2;
+            flex-wrap: wrap;
             alignment: start;
             cross-axis-alignment: center;
 
@@ -138,6 +141,7 @@ export component ModSummaryView inherits HorizontalLayout {
         }
 
         if root.description != "" : Text {
+            height: self.preferred-height;
             text: root.description;
             font-size: Theme.font-12;
             opacity: 0.75;

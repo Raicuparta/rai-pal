@@ -43,6 +43,7 @@ export component ModsTabFamilyRowView inherits Rectangle {
                     }
 
                     if root.item.family-description != "" : Text {
+                        height: self.preferred-height;
                         text: root.item.family-description;
                         font-size: Theme.font-12;
                         opacity: 0.75;
