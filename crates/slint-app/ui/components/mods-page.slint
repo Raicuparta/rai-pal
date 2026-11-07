@@ -1,0 +1,90 @@
+import { ScrollView } from "std-widgets.slint";
+import { Button } from "button.slint";
+import { ModActions } from "../actions.slint";
+import { ModsTabItemView } from "../mods-tab-view.slint";
+import { Theme } from "../theme.slint";
+import { ActionButton } from "action-button.slint";
+import { ModsTabRowView } from "mods-tab-row.slint";
+import { ModsTabFamilyRowView } from "mods-tab-family-row.slint";
+import { RefreshButton } from "refresh-button.slint";
+import { Sidebar, SidebarSection } from "sidebar.slint";
+
+export component ModsPage inherits Rectangle {
+    in property <[ModsTabItemView]> items;
+    in property <bool> refreshing;
+    in property <string> refresh-task-names;
+
+    callback refresh-all;
+    callback open-url-mod-sources;
+    callback debug-data(json: string);
+
+    HorizontalLayout {
+        Sidebar {
+            SidebarSection {
+                spacing: Theme.space-8;
+
+                RefreshButton {
+                    refreshing: root.refreshing;
+                    task-names: root.refresh-task-names;
+
+                    clicked => {
+                        root.refresh-all();
+                    }
+                }
+
+                Button {
+                    text: @tr("urlModSources" => "Mod Sources");
+                    icon: @image-url("../icons/ui/mod-sources.svg");
+
+                    clicked => {
+                        root.open-url-mod-sources();
+                    }
+                }
+
+                ActionButton {
+                    text: @tr("modsPage" => "Open Local Mods Folder");
+                    icon: @image-url("../icons/ui/folder-mods.svg");
+                    action-id: "open-local-mods-folder";
+                    tooltip: @tr("modsPage" => "You can place mods in this folder with a rai-pal-manifest.json, to be loaded directly without going through the online database.");
+
+                    clicked => {
+                        ModActions.open-local-mods-folder();
+                    }
+                }
+            }
+        }
+
+        Rectangle {
+            horizontal-stretch: 1;
+
+            content-scroll := ScrollView {
+                VerticalLayout {
+                    alignment: start;
+                    spacing: 0px;
+
+                    for item in root.items : VerticalLayout {
+                        alignment: start;
+                        vertical-stretch: 0;
+                        spacing: 0px;
+
+                        if item.is-family : ModsTabFamilyRowView {
+                            item: item;
+
+                            debug-data(json) => {
+                                root.debug-data(json);
+                            }
+                        }
+
+                        if !item.is-family : ModsTabRowView {
+                            mod-data: item.single-mod;
+
+                            debug-data(json) => {
+                                root.debug-data(json);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

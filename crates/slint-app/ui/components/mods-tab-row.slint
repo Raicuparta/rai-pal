@@ -1,0 +1,82 @@
+import { ModActions } from "../actions.slint";
+import { ModsTabModView } from "../mods-tab-view.slint";
+import { Theme } from "../theme.slint";
+import { ActionButton } from "action-button.slint";
+import { ExternalLink } from "external-link.slint";
+import { IconButton } from "icon-button.slint";
+import { ModSummaryView } from "mod-summary.slint";
+
+export component ModsTabRowView inherits Rectangle {
+    in property <ModsTabModView> mod-data;
+    in property <bool> indented: false;
+
+    callback debug-data(json: string);
+
+    vertical-stretch: 0;
+    background: row-touch.has-hover ? Theme.hover-background : transparent;
+
+    row-touch := TouchArea { }
+
+    HorizontalLayout {
+        padding: Theme.space-6;
+        spacing: Theme.space-8;
+        cross-axis-alignment: center;
+
+        if root.indented : Rectangle {
+            width: Theme.space-20;
+        }
+
+        ModSummaryView {
+            horizontal-stretch: 1;
+            title: mod-data.title;
+            description: mod-data.description;
+            version-text: mod-data.version-text;
+            release-date: mod-data.release-date;
+            author: mod-data.author;
+            engine-text: mod-data.engine-text;
+            deprecated: mod-data.deprecated;
+        }
+
+        HorizontalLayout {
+            horizontal-stretch: 0;
+            alignment: end;
+            spacing: Theme.space-4;
+
+            if mod-data.can-run : ActionButton {
+                text: @tr("modModal" => "Run");
+                icon: @image-url("../icons/ui/play.svg");
+                action-id: "standalone-run:" + mod-data.id;
+
+                clicked => {
+                    ModActions.run-standalone(mod-data.id);
+                }
+            }
+
+            if mod-data.can-install : ActionButton {
+                text: @tr("modModal" => "Download");
+                icon: @image-url("../icons/ui/download.svg");
+                action-id: "standalone-install:" + mod-data.id;
+
+                clicked => {
+                    ModActions.install-standalone(mod-data.id);
+                }
+            }
+
+            if mod-data.debug-json != "" : IconButton {
+                icon: @image-url("../icons/ui/bug.svg");
+                tooltip: @tr("debugData" => "Debug data");
+
+                clicked => {
+                    root.debug-data(mod-data.debug-json);
+                }
+            }
+
+            if mod-data.source-code != "" : ExternalLink {
+                label: @tr("modModal" => "Website");
+                icon: @image-url("../icons/ui/website.svg");
+                text-size: Theme.font-12;
+                url: mod-data.source-code;
+            }
+        }
+    }
+}

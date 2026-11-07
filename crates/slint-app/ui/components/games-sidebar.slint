@@ -1,0 +1,125 @@
+import { LineEdit } from "std-widgets.slint";
+import { FilterGroupView } from "../filter-view.slint";
+import { Theme } from "../theme.slint";
+import { FilterGroupView } from "filter-group.slint";
+import { IconButton } from "icon-button.slint";
+import { LabeledDivider } from "labeled-divider.slint";
+import { RefreshButton } from "refresh-button.slint";
+import { ResetButton } from "reset-button.slint";
+import { Sidebar, SidebarSection } from "sidebar.slint";
+import { SortMenu } from "sort-menu.slint";
+
+export component GamesSidebar inherits Sidebar {
+    in property <bool> refreshing;
+    in property <string> refresh-task-names;
+    in-out property <string> search-text: "";
+    in-out property <int> sort-index: 0;
+    in property <[FilterGroupView]> filter-groups;
+    in property <bool> filters-have-changes;
+    in property <bool> filters-have-expanded;
+
+    callback refresh-all;
+    callback search-changed(text: string);
+    callback sort-changed(index: int);
+    callback filter-toggled(group: string, value: string, checked: bool);
+    callback filter-lock-toggled(group: string, value: string);
+    callback filter-only(group: string, value: string);
+    callback filter-reset(group: string);
+    callback filters-reset;
+    callback filters-collapse-all;
+    callback filter-expanded-changed(group: string, expanded: bool);
+
+    SidebarSection {
+        RefreshButton {
+            refreshing: root.refreshing;
+            task-names: root.refresh-task-names;
+
+            clicked => {
+                root.refresh-all();
+            }
+        }
+    }
+
+    SidebarSection {
+        LineEdit {
+            vertical-stretch: 0;
+            text <=> root.search-text;
+            placeholder-text: @tr("filterMenu" => "Search...");
+
+            edited(text) => {
+                root.search-changed(text);
+            }
+        }
+    }
+
+    SidebarSection {
+        SortMenu {
+            sort-index <=> root.sort-index;
+
+            sort-changed(index) => {
+                root.sort-changed(index);
+            }
+        }
+    }
+
+    HorizontalLayout {
+        vertical-stretch: 0;
+        padding-left: Theme.space-8;
+        padding-right: Theme.space-8;
+        spacing: Theme.space-4;
+        cross-axis-alignment: center;
+
+        IconButton {
+            icon: @image-url("../icons/ui/collapse-all.svg");
+            tooltip: @tr("filterMenu" => "Collapse all filters");
+            enabled: root.filters-have-expanded;
+
+            clicked => {
+                root.filters-collapse-all();
+            }
+        }
+
+        LabeledDivider {
+            label: @tr("filterMenu" => "Filters");
+            horizontal-stretch: 1;
+        }
+
+        ResetButton {
+            tooltip: @tr("filterMenu" => "Reset all filters");
+            enabled: root.filters-have-changes;
+
+            clicked => {
+                root.filters-reset();
+            }
+        }
+    }
+
+    VerticalLayout {
+        alignment: start;
+        spacing: Theme.space-8;
+
+        for group in root.filter-groups : FilterGroupView {
+            group: group;
+
+            toggled(value, checked) => {
+                root.filter-toggled(group.key, value, checked);
+            }
+
+            lock-toggled(value) => {
+                root.filter-lock-toggled(group.key, value);
+            }
+
+            only(value) => {
+                root.filter-only(group.key, value);
+            }
+
+            reset => {
+                root.filter-reset(group.key);
+            }
+
+            expanded-changed(expanded) => {
+                root.filter-expanded-changed(group.key, expanded);
+            }
+        }
+    }
+}

@@ -1,0 +1,42 @@
+import { Branding } from "../branding.slint";
+import { Theme } from "../theme.slint";
+import { SvgIcon } from "svg-icon.slint";
+
+export component ProviderIcon inherits Rectangle {
+    in property <string> provider-id;
+    in property <length> icon-size: Theme.space-16;
+
+    width: root.icon-size;
+    height: root.icon-size;
+
+    pure function icon-source(id: string) -> image {
+        if id == "Amazon" {
+            return @image-url("../icons/providers/amazon.svg");
+        }
+        if id == "Steam" {
+            return @image-url("../icons/providers/steam.svg");
+        }
+        if id == "Epic" {
+            return @image-url("../icons/providers/epic.svg");
+        }
+        if id == "Gog" {
+            return @image-url("../icons/providers/gog.svg");
+        }
+        if id == "Itch" {
+            return @image-url("../icons/providers/itch.svg");
+        }
+        if id == "Xbox" {
+            return @image-url("../icons/providers/xbox.svg");
+        }
+        if id == "Manual" {
+            return @image-url("../icons/providers/manual.svg");
+        }
+        return @image-url("");
+    }
+
+    SvgIcon {
+        source: root.icon-source(root.provider-id);
+        size: root.icon-size;
+        color: Branding.provider-foreground(root.provider-id);
+    }
+}

@@ -1,0 +1,62 @@
+import { ActionState } from "../action-state.slint";
+import { Theme } from "../theme.slint";
+import { BaseButton } from "base-button.slint";
+import { SvgIcon } from "svg-icon.slint";
+
+export component Button inherits BaseButton {
+    in property <string> text: "";
+    in property <image> icon;
+    in property <length> text-size: Theme.font-12;
+    in property <ActionState> state: ActionState.idle;
+    in property <bool> reserve-icon-space: true;
+
+    private property <bool> long-loading: false;
+    private property <bool> has-status: root.state == ActionState.success || root.state == ActionState.error;
+    private property <bool> shows-spinner: root.state == ActionState.loading && root.long-loading;
+    private property <bool> has-icon: root.icon.width > 0;
+    private property <bool> shows-icon: root.has-icon || root.has-status || root.shows-spinner;
+    private property <angle> spinner-angle: mod(animation-tick(), 1s) / 1s * 360deg;
+    private property <image> display-icon: root.state == ActionState.success ? @image-url("../icons/ui/success.svg") : root.state == ActionState.error ? @image-url("../icons/ui/error.svg") : root.shows-spinner ? @image-url("../icons/ui/loading.svg") : root.icon;
+
+    base-color: root.state == ActionState.success ? Theme.status-success : root.state == ActionState.error ? Theme.status-error : root.enabled ? root.tint : Theme.surface-background;
+    interactive: root.enabled && root.state != ActionState.loading;
+    accessible-label: root.text;
+
+    changed state => {
+        root.long-loading = false;
+    }
+
+    loading-timer := Timer {
+        interval: 500ms;
+        running: root.state == ActionState.loading && !root.long-loading;
+
+        triggered => {
+            root.long-loading = true;
+        }
+    }
+
+    HorizontalLayout {
+        padding-left: has-icon || reserve-icon-space ? Theme.space-6 : 0px;
+        cross-axis-alignment: center;
+
+        if has-icon || reserve-icon-space : SvgIcon {
+            source: root.display-icon;
+            color: root.ink-color;
+            transform-rotation: root.shows-spinner ? root.spinner-angle : 0deg;
+        }
+
+        if root.text != "" : HorizontalLayout {
+            padding: Theme.space-4;
+            padding-left: Theme.space-6;
+            padding-right: Theme.space-6;
+
+            Text {
+                text: root.text;
+                font-size: root.text-size;
+                color: root.ink-color;
+                overflow: elide;
+                font-weight: 600;
+            }
+        }
+    }
+}

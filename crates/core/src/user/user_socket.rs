@@ -1,0 +1,227 @@
+use std::time::Duration;
+#[cfg(debug_assertions)]
+use std::{future::Future, pin::Pin, sync::OnceLock};
+
+use tokio::{
+	io::{AsyncReadExt, AsyncWriteExt},
+	net::{TcpListener, TcpStream},
+	time::{sleep, timeout},
+};
+
+use super::auth;
+use crate::result::{ContextResult, Error, Result};
+
+const USER_SOCKET_BIND_ADDRESS: &str = "127.0.0.1";
+const USER_SOCKET_POLL_INTERVAL: Duration = Duration::from_millis(100);
+
+// Important: ports and phrase must be reflected in Everyone Client, or any other mods that rely on this.
+const USER_SOCKET_PORT_RANGE_START: u16 = 43950;
+const USER_SOCKET_PORT_RANGE_END: u16 = 43960;
+const USER_SOCKET_PHRASE: &str = "RAI PAL";
+
+// Large enough to hold dev-mode eval expressions, which travel in the URL
+// query string of the request line.
+const REQUEST_BUFFER_SIZE: usize = 16 * 1024;
+
+// Don't let a client that connects but never sends a request hold a task open
+// forever. The request line is sent immediately, so this only needs to cover
+// slow local clients.
+const REQUEST_READ_TIMEOUT: Duration = Duration::from_secs(5);
+
+// --- Dev-mode commands ---
+//
+// In debug builds the app registers a handler here so the user socket also
+// serves developer-only commands (e.g. evaluating JavaScript in the webview).
+// In release builds none of this is compiled in and those paths simply 404.
+
+/// An HTTP response produced by a dev-mode command handler.
+#[cfg(debug_assertions)]
+#[derive(Debug, Clone)]
+pub struct DevHttpResponse {
+	pub status_code: u16,
+	pub status_text: String,
+	pub body: String,
+}
+
+#[cfg(debug_assertions)]
+type DevCommandFuture = Pin<Box<dyn Future<Output = Option<DevHttpResponse>> + Send>>;
+
+/// Handler for dev-only commands.
+///
+/// Registered by the app in debug builds. Receives the raw request target
+/// (path + query, e.g. `/dev/eval?code=...`) and returns an HTTP response if it
+/// handles the request, or `None` if the path isn't a dev command.
+#[cfg(debug_assertions)]
+pub type DevCommandHandler = Box<dyn Fn(String) -> DevCommandFuture + Send + Sync>;
+
+#[cfg(debug_assertions)]
+fn dev_command_handler() -> &'static OnceLock<DevCommandHandler> {
+	static HANDLER: OnceLock<DevCommandHandler> = OnceLock::new();
+	&HANDLER
+}
+
+/// Registers the dev-mode command handler. Only meaningful in debug builds.
+#[cfg(debug_assertions)]
+pub fn set_dev_command_handler(handler: DevCommandHandler) {
+	let _ = dev_command_handler().set(handler);
+}
+
+pub async fn start_user_socket_manager() {
+	let mut bind_error_logged = false;
+
+	loop {
+		match bind_first_available_port().await {
+			Ok((listener, port)) => {
+				log::info!("User socket server is listening at {USER_SOCKET_BIND_ADDRESS}:{port}");
+				bind_error_logged = false;
+
+				// Accept connections without blocking OS threads, and handle each
+				// one in its own task so a slow request can't stall the listener.
+				loop {
+					match listener.accept().await {
+						Ok((stream, _)) => {
+							tokio::spawn(async move {
+								if let Err(error) = handle_socket_connection(stream).await {
+									log::error!("Failed to handle user socket request: {error}");
+								}
+							});
+						}
+						Err(error) => {
+							log::error!("User socket accept failed: {error}");
+							break; // Break the inner loop to re-bind the listener
+						}
+					}
+				}
+			}
+			Err(error) => {
+				if !bind_error_logged {
+					log::error!("Failed to start user socket server: {error}");
+					bind_error_logged = true;
+				}
+			}
+		}
+
+		// If binding fails or the accept loop breaks, sleep briefly before retrying
+		sleep(USER_SOCKET_POLL_INTERVAL).await;
+	}
+}
+
+async fn handle_socket_connection(mut stream: TcpStream) -> Result {
+	// Heap-allocated so the 16 KB buffer isn't embedded in this future's state.
+	let mut buffer = vec![0_u8; REQUEST_BUFFER_SIZE];
+	let Ok(read_result) = timeout(REQUEST_READ_TIMEOUT, stream.read(&mut buffer)).await else {
+		log::debug!("Timed out waiting for user socket request");
+		return Ok(());
+	};
+	let bytes_read = read_result.context("failed to read user socket request")?;
+
+	if bytes_read == 0 {
+		return Ok(());
+	}
+
+	let request = String::from_utf8_lossy(&buffer[..bytes_read]);
+	let Some(request_line) = request.lines().next() else {
+		write_http_response(&mut stream, 400, "Bad Request", "Malformed request").await?;
+		return Ok(());
+	};
+
+	let mut line_parts = request_line.split_whitespace();
+	let method = line_parts.next().unwrap_or_default();
+	let path = line_parts.next().unwrap_or_default();
+
+	if method != "GET" {
+		write_http_response(
+			&mut stream,
+			405,
+			"Method Not Allowed",
+			"Only GET is supported",
+		)
+		.await?;
+		return Ok(());
+	}
+
+	if path == "/check" {
+		write_http_response(&mut stream, 200, "OK", USER_SOCKET_PHRASE).await?;
+		return Ok(());
+	}
+
+	if path != "/token" {
+		// Let a dev-mode handler (if any) try the path before falling through.
+		#[cfg(debug_assertions)]
+		if let Some(handler) = dev_command_handler().get()
+			&& let Some(response) = handler(path.to_string()).await
+		{
+			write_http_response(
+				&mut stream,
+				response.status_code,
+				&response.status_text,
+				&response.body,
+			)
+			.await?;
+			return Ok(());
+		}
+
+		write_http_response(&mut stream, 404, "Not Found", "Unknown path").await?;
+		return Ok(());
+	}
+
+	match auth::read_auth_token() {
+		Ok(access_token) => {
+			write_http_response(&mut stream, 200, "OK", &access_token).await?;
+		}
+		Err(error) => {
+			write_http_response(
+				&mut stream,
+				401,
+				"Unauthorized",
+				"User is not authenticated in Rai Pal",
+			)
+			.await?;
+			log::debug!("Unable to serve /token because token is unavailable: {error}");
+		}
+	}
+
+	Ok(())
+}
+
+async fn write_http_response(
+	stream: &mut TcpStream,
+	status_code: u16,
+	status_text: &str,
+	body: &str,
+) -> Result {
+	let response = format!(
+		"HTTP/1.1 {status_code} {status_text}\r\nContent-Type: text/plain; charset=utf-8\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
+		body.len(),
+		body
+	);
+
+	stream
+		.write_all(response.as_bytes())
+		.await
+		.context("failed to write user socket response")?;
+	stream
+		.flush()
+		.await
+		.context("failed to flush user socket response")?;
+
+	Ok(())
+}
+
+async fn bind_first_available_port() -> Result<(TcpListener, u16)> {
+	for port in USER_SOCKET_PORT_RANGE_START..=USER_SOCKET_PORT_RANGE_END {
+		match TcpListener::bind((USER_SOCKET_BIND_ADDRESS, port)).await {
+			Ok(listener) => return Ok((listener, port)),
+			Err(error) if error.kind() == std::io::ErrorKind::AddrInUse => {}
+			Err(error) => {
+				return Err(Error::Auth(format!(
+					"Failed to bind user socket at {USER_SOCKET_BIND_ADDRESS}:{port}: {error}"
+				)));
+			}
+		}
+	}
+
+	Err(Error::Auth(format!(
+		"No available user socket ports in range {USER_SOCKET_PORT_RANGE_START}..={USER_SOCKET_PORT_RANGE_END}"
+	)))
+}

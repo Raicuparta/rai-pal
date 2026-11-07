@@ -1,0 +1,12 @@
+export enum ActionState {
+    idle,
+    loading,
+    success,
+    error,
+}
+
+export global ActionStates {
+    in-out property <int> version: 0;
+
+    callback lookup(id: string) -> ActionState;
+}

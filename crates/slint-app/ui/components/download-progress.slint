@@ -1,0 +1,69 @@
+import { ProgressIndicator } from "std-widgets.slint";
+import { DownloadItemView } from "../download-view.slint";
+import { Theme } from "../theme.slint";
+import { SvgIcon } from "svg-icon.slint";
+
+export component DownloadProgress inherits Rectangle {
+    in property <[DownloadItemView]> items;
+    in property <float> overall-progress: 0;
+
+    callback clear-completed;
+
+    width: Theme.control-height + Theme.space-8;
+    height: Theme.control-height;
+    visible: root.items.length > 0;
+
+    private property <string> menu-tooltip: @tr("downloadStatusMenu" => "Downloads");
+
+    menu-area := ContextMenuArea {
+        Rectangle {
+            width: 100%;
+            height: 100%;
+            border-radius: Theme.radius-4;
+            background: touch-area.pressed ? Theme.pressed-background : touch-area.has-hover ? Theme.hover-background : transparent;
+
+            SvgIcon {
+                source: @image-url("../icons/ui/download.svg");
+                size: 18px;
+                color: Theme.foreground;
+            }
+
+            ProgressIndicator {
+                x: Theme.space-6;
+                width: parent.width - Theme.space-12;
+                y: parent.height - Theme.space-6;
+                progress: root.overall-progress;
+            }
+
+            touch-area := TouchArea {
+                clicked => {
+                    menu-area.show({
+                        x: root.width - Theme.menu-width,
+                        y: root.height,
+                    });
+                }
+            }
+        }
+
+        Menu {
+            MenuItem {
+                title: @tr("downloadStatusMenu" => "Clear completed");
+
+                activated => {
+                    root.clear-completed();
+                }
+            }
+
+            if root.items.length > 0 : MenuSeparator { }
+
+            for item in root.items : MenuItem {
+                enabled: false;
+                title: "\{item.name}: \{round(item.progress)}%";
+            }
+        }
+    }
+
+    Tooltip {
+        text: @markdown("\{root.menu-tooltip}");
+    }
+}

@@ -1,0 +1,76 @@
+import { ModsTabItemView } from "../mods-tab-view.slint";
+import { Theme } from "../theme.slint";
+import { ModsTabRowView } from "mods-tab-row.slint";
+import { SvgIcon } from "svg-icon.slint";
+
+export component ModsTabFamilyRowView inherits Rectangle {
+    in property <ModsTabItemView> item;
+
+    callback debug-data(json: string);
+
+    property <bool> expanded: false;
+
+    vertical-stretch: 0;
+
+    VerticalLayout {
+        alignment: start;
+        spacing: Theme.space-2;
+
+        Rectangle {
+            background: header-touch.has-hover ? Theme.hover-background : transparent;
+
+            HorizontalLayout {
+                padding: Theme.space-6;
+                spacing: Theme.space-8;
+                cross-axis-alignment: center;
+
+                SvgIcon {
+                    source: root.expanded ? @image-url("../icons/ui/expanded.svg") : @image-url("../icons/ui/collapsed.svg");
+                    size: Theme.space-16;
+                    color: Theme.dimmed-foreground;
+                }
+
+                VerticalLayout {
+                    horizontal-stretch: 1;
+                    alignment: start;
+                    spacing: Theme.space-2;
+
+                    Text {
+                        text: root.item.family-title;
+                        font-size: Theme.font-16;
+                        font-weight: Theme.weight-bold;
+                        overflow: elide;
+                    }
+
+                    if root.item.family-description != "" : Text {
+                        height: self.preferred-height;
+                        text: root.item.family-description;
+                        font-size: Theme.font-12;
+                        opacity: 0.75;
+                        wrap: word-wrap;
+                    }
+                }
+            }
+
+            header-touch := TouchArea {
+                clicked => {
+                    root.expanded = !root.expanded;
+                }
+            }
+        }
+
+        if root.expanded : VerticalLayout {
+            alignment: start;
+            spacing: 0px;
+
+            for mod-row in root.item.mods : ModsTabRowView {
+                mod-data: mod-row;
+                indented: true;
+
+                debug-data(json) => {
+                    root.debug-data(json);
+                }
+            }
+        }
+    }
+}

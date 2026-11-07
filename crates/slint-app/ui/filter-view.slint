@@ -1,0 +1,18 @@
+export struct FilterValueView {
+    value: string,
+    label-key: string,
+    label: string,
+    note-label-key: string,
+    enabled: bool,
+    locked: bool,
+}
+
+export struct FilterGroupView {
+    key: string,
+    label-key: string,
+    label: string,
+    values: [FilterValueView],
+    has-changes: bool,
+    has-locked: bool,
+    expanded: bool,
+}

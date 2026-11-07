@@ -1,0 +1,104 @@
+use std::path::PathBuf;
+
+use crate::{
+	game::Game,
+	mods::{manifest::Mod, mod_config::ModConfig, replacement_token::replace_tokens},
+	open_better::open_detached_better,
+	path_extensions::PathExt,
+	result::{Error, Result},
+};
+
+pub struct InstalledMod {
+	pub game_mod: Mod,
+	pub game: Option<Game>,
+}
+
+impl InstalledMod {
+	pub const fn new(game_mod: Mod, game: Option<Game>) -> Self {
+		Self { game_mod, game }
+	}
+
+	pub fn open_folder(&self) -> Result {
+		PathBuf::from(replace_tokens(
+			self.game_mod
+				.get_install()?
+				.main_installed_folder_path
+				.as_ref()
+				.ok_or_else(|| {
+					Error::ModInfoMissing(
+						self.game_mod.id.clone(),
+						"main_installed_folder_path".to_string(),
+					)
+				})?,
+			self.game.as_ref(),
+			&self.game_mod,
+		))
+		.open_folder_or_parent()?;
+
+		Ok(())
+	}
+
+	pub async fn uninstall(&self) -> Result {
+		let install = self.game_mod.install.as_ref().ok_or_else(|| {
+			Error::ModInfoMissing(self.game_mod.id.clone(), "install".to_string())
+		})?;
+
+		if let Some(extract_actions) = install.extract.as_ref() {
+			for extract_action in extract_actions {
+				let destination_path = PathBuf::from(replace_tokens(
+					&extract_action.destination,
+					self.game.as_ref(),
+					&self.game_mod,
+				));
+
+				if destination_path.is_dir() {
+					fs_err::tokio::remove_dir_all(&destination_path).await?;
+				} else if destination_path.exists() {
+					fs_err::tokio::remove_file(&destination_path).await?;
+				}
+			}
+		}
+
+		if let Some(write_actions) = install.write.as_ref() {
+			for write_action in write_actions {
+				let destination_path = PathBuf::from(replace_tokens(
+					&write_action.destination,
+					self.game.as_ref(),
+					&self.game_mod,
+				));
+
+				if destination_path.exists() {
+					fs_err::tokio::remove_file(&destination_path).await?;
+				}
+			}
+		}
+
+		let manifest_path = self.game_mod.get_manifest_target_path(self.game.as_ref())?;
+		if manifest_path.exists() {
+			fs_err::tokio::remove_file(manifest_path).await?;
+		}
+
+		Ok(())
+	}
+
+	fn get_config_path(&self, config: &ModConfig) -> PathBuf {
+		PathBuf::from(&replace_tokens(
+			&config.destination_path,
+			self.game.as_ref(),
+			&self.game_mod,
+		))
+	}
+
+	pub fn configure(&self, open_folder: bool) -> Result {
+		if let Some(config) = self.game_mod.config.as_ref() {
+			let config_path = self.get_config_path(config);
+			if open_folder {
+				config_path.open_folder_or_parent()?;
+			} else {
+				open_detached_better(config_path)?;
+			}
+		}
+
+		Ok(())
+	}
+}

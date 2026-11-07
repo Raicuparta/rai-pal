@@ -1,0 +1,23 @@
+import { GameModView } from "../game-mod-view.slint";
+import { Theme } from "../theme.slint";
+import { GameModRowView } from "game-mod-row.slint";
+import { SectionHeader } from "section-header.slint";
+
+export component ModsSection inherits VerticalLayout {
+    in property <string> label;
+    in property <string> description;
+    in property <[GameModView]> mods;
+
+    vertical-stretch: 0;
+    alignment: start;
+    spacing: Theme.space-2;
+
+    SectionHeader {
+        label: root.label;
+        description: root.description;
+    }
+
+    for mod-row in root.mods : GameModRowView {
+        game-mod: mod-row;
+    }
+}

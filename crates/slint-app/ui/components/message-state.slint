@@ -1,0 +1,18 @@
+import { Theme } from "../theme.slint";
+
+export component MessageState inherits Rectangle {
+    in property <string> message;
+
+    background: Theme.tag-background;
+    border-radius: Theme.radius-8;
+
+    VerticalLayout {
+        padding: Theme.space-12;
+
+        Text {
+            text: root.message;
+            wrap: word-wrap;
+            color: Theme.foreground;
+        }
+    }
+}

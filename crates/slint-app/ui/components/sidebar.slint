@@ -1,0 +1,34 @@
+import { ScrollView } from "std-widgets.slint";
+import { Theme } from "../theme.slint";
+
+export component SidebarSection inherits VerticalLayout {
+    vertical-stretch: 0;
+    alignment: start;
+    padding-left: Theme.space-12;
+    padding-right: Theme.space-12;
+
+    @children
+}
+
+export component Sidebar inherits Rectangle {
+    width: 250px;
+    background: Theme.background;
+
+    ScrollView {
+        VerticalLayout {
+            padding-top: Theme.space-12;
+            padding-bottom: Theme.space-12;
+            spacing: Theme.space-8;
+            alignment: start;
+
+            @children
+        }
+    }
+
+    Rectangle {
+        x: parent.width - self.width;
+        width: Theme.border-width;
+        height: parent.height;
+        background: Theme.border;
+    }
+}

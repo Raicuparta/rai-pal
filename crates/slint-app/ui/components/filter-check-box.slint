@@ -1,0 +1,14 @@
+import { CheckBox } from "std-widgets.slint";
+
+export component FilterCheckBox inherits CheckBox {
+    in property <string> filter-group;
+    in property <string> filter-value;
+
+    callback filter-changed(group: string, value: string, checked: bool);
+
+    checked: true;
+
+    toggled => {
+        root.filter-changed(root.filter-group, root.filter-value, root.checked);
+    }
+}

@@ -1,0 +1,70 @@
+import { Theme } from "theme.slint";
+
+export global Branding {
+    pure function provider-color(provider-id: string) -> brush {
+        if provider-id == "Amazon" {
+            return #ebab34;
+        }
+        if provider-id == "Steam" {
+            return #1f9fee;
+        }
+        if provider-id == "Epic" {
+            return #fc4d32;
+        }
+        if provider-id == "Gog" {
+            return #9c36b5;
+        }
+        if provider-id == "Itch" {
+            return #e64980;
+        }
+        if provider-id == "Xbox" {
+            return #2f9e44;
+        }
+        return Theme.foreground;
+    }
+
+    public pure function provider-foreground(provider-id: string) -> brush {
+    return Theme.dark ? provider-color(provider-id).mix(white, 0.5) : provider-color(provider-id).darker(0.5);
+    }
+
+    public pure function provider-background(provider-id: string) -> brush {
+      return provider-color(provider-id).transparentize(0.85);
+    }
+
+    public pure function brand-color(brand: string) -> brush {
+        if brand == "GitHub" {
+            return Theme.dark ? #74c0fc : #1971c2;
+        }
+        if brand == "Patreon" {
+            return Theme.dark ? #f783ac : #d6336c;
+        }
+        if brand == "Paypal" {
+            return Theme.dark ? #91a7ff : #4263eb;
+        }
+        return Theme.foreground;
+    }
+
+    pure function engine-color(brand: string) -> brush {
+      if brand == "Unity" {
+          return #74c0fc;
+      }
+      if brand == "Unreal" {
+          return #ff8787;
+      }
+      if brand == "Godot" {
+          return #b197fc;
+      }
+      if brand == "GameMaker" {
+          return #63e6be;
+      }
+      return Theme.foreground;
+    }
+
+    public pure function engine-background(brand: string) -> brush {
+      return engine-color(brand).transparentize(0.85);
+    }
+
+    public pure function engine-foreground(brand: string) -> brush {
+        return Theme.dark ? engine-color(brand) : engine-color(brand).darker(0.5);
+    }
+}

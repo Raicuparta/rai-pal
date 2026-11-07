@@ -1,0 +1,105 @@
+import { ScrollView } from "std-widgets.slint";
+import { Theme } from "../theme.slint";
+import { IconButton } from "icon-button.slint";
+
+export component Modal inherits Rectangle {
+    in property <string> title;
+    in property <bool> big: false;
+    in property <bool> open;
+    in property <bool> close-on-click-outside: true;
+    in property <bool> show-close-button: true;
+    in property <string> close-tooltip: @tr("debugData" => "Close");
+    in property <image> header-action-icon;
+    in property <string> header-action-tooltip: "";
+    in property <bool> header-action-enabled: true;
+    in property <length> content-spacing: Theme.space-10;
+
+    callback closed;
+    callback header-action-clicked;
+
+    private property <length> modal-max-width: root.big ? 700px : 360px;
+    private property <length> modal-margin: Theme.space-32;
+    private property <length> modal-padding: Theme.space-20;
+
+    visible: root.open;
+
+    Rectangle {
+        background: Theme.overlay;
+
+        TouchArea {
+            clicked => {
+                if root.close-on-click-outside {
+                    root.closed();
+                }
+            }
+        }
+    }
+
+    card := Rectangle {
+        x: (parent.width - self.width) / 2;
+        y: (parent.height - self.height) / 2;
+        width: min(root.big ? root.modal-max-width : max(header.preferred-width, body-layout.preferred-width) + root.modal-padding * 2, root.modal-max-width, root.width - root.modal-margin * 2);
+        height: root.big ? root.height - root.modal-margin * 2 : min(header.preferred-height + body-layout.preferred-height + root.modal-padding * 2 + Theme.space-12, root.height - root.modal-margin * 2);
+        background: Theme.background;
+        border-width: Theme.border-width;
+        border-color: Theme.border;
+        border-radius: Theme.radius-8;
+        clip: true;
+
+        TouchArea { }
+
+        VerticalLayout {
+            padding: root.modal-padding;
+            spacing: Theme.space-12;
+
+            header := HorizontalLayout {
+                spacing: Theme.space-6;
+                cross-axis-alignment: center;
+
+                Text {
+                    text: root.title;
+                    font-size: Theme.font-20;
+                    font-weight: Theme.weight-bold;
+                    vertical-alignment: center;
+                    overflow: elide;
+                }
+
+                Rectangle {
+                    horizontal-stretch: 1;
+                }
+
+                if root.header-action-icon.width > 0 : IconButton {
+                    icon: root.header-action-icon;
+                    enabled: root.header-action-enabled;
+                    tooltip: root.header-action-tooltip;
+
+                    clicked => {
+                        root.header-action-clicked();
+                    }
+                }
+
+                if root.show-close-button : IconButton {
+                    icon: @image-url("../icons/ui/close.svg");
+                    tooltip: root.close-tooltip;
+
+                    clicked => {
+                        root.closed();
+                    }
+                }
+            }
+
+            body-scroll := ScrollView {
+                horizontal-scrollbar-policy: ScrollBarPolicy.always-off;
+
+                body-layout := VerticalLayout {
+                    width: body-scroll.visible-width;
+                    height: max(self.preferred-height, body-scroll.visible-height);
+                    alignment: start;
+                    cross-axis-alignment: stretch;
+                    spacing: root.content-spacing;
+                    @children
+                }
+            }
+        }
+    }
+}

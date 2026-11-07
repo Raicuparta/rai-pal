@@ -1,0 +1,143 @@
+import { Button } from "button.slint";
+import { Theme } from "../theme.slint";
+import { Tr } from "../translations.slint";
+import { ActionButton } from "action-button.slint";
+import { LabeledDivider } from "labeled-divider.slint";
+import { Sidebar, SidebarSection } from "sidebar.slint";
+
+export component GameSidebar inherits Sidebar {
+    in property <string> provider-id;
+    in property <bool> has-exe-path;
+    in property <bool> show-wine-folders;
+    in property <[string]> provider-actions;
+
+    callback back;
+    callback run-provider-action(value: string);
+    callback open-game-folder;
+    callback open-game-mods-folder;
+    callback open-game-data-folder;
+    callback open-wine-prefix-folder;
+    callback open-wine-binary-folder;
+    callback refresh-game;
+    callback debug-data;
+    callback remove-game(confirmation-text: string, confirm-label: string);
+    SidebarSection {
+        spacing: Theme.space-8;
+
+        Button {
+            text: @tr("subPage" => "Back");
+            icon: @image-url("../icons/ui/back.svg");
+
+            clicked => {
+                root.back();
+            }
+        }
+
+        if root.provider-actions.length > 0 : VerticalLayout {
+            alignment: start;
+            spacing: Theme.space-2;
+
+            LabeledDivider {
+                label: root.provider-id;
+            }
+
+            for action[index] in root.provider-actions : ActionButton {
+                text: Tr.provider-command(action);
+                tint: index == 0 ? Theme.primary : Theme.surface-background;
+                action-id: "provider-action:" + action;
+
+                clicked => {
+                    if action == "Delete" {
+                        root.remove-game(@tr("gameModal" => "Are you sure you want to remove this game from Rai Pal?"), @tr("gameModal" => "Remove from Rai Pal"));
+                    } else {
+                        root.run-provider-action(action);
+                    }
+                }
+            }
+        }
+
+        if root.has-exe-path : VerticalLayout {
+            alignment: start;
+            spacing: Theme.space-2;
+
+            LabeledDivider {
+                label: @tr("gameModal" => "Folders");
+            }
+
+            ActionButton {
+                text: @tr("gameModal" => "Game Files");
+                icon: @image-url("../icons/ui/folder.svg");
+                action-id: "open-game-folder";
+
+                clicked => {
+                    root.open-game-folder();
+                }
+            }
+
+            ActionButton {
+                text: @tr("gameModal" => "Installed Mods");
+                icon: @image-url("../icons/ui/folder-mods.svg");
+                action-id: "open-game-mods-folder";
+
+                clicked => {
+                    root.open-game-mods-folder();
+                }
+            }
+
+            ActionButton {
+                text: @tr("gameModal" => "Game App Data");
+                action-id: "open-game-data-folder";
+
+                clicked => {
+                    root.open-game-data-folder();
+                }
+            }
+
+            if root.show-wine-folders : ActionButton {
+                text: @tr("gameModal" => "Wine Prefix");
+                action-id: "open-wine-prefix-folder";
+
+                clicked => {
+                    root.open-wine-prefix-folder();
+                }
+            }
+
+            if root.show-wine-folders : ActionButton {
+                text: @tr("gameModal" => "Wine Binary");
+                action-id: "open-wine-binary-folder";
+
+                clicked => {
+                    root.open-wine-binary-folder();
+                }
+            }
+        }
+
+        VerticalLayout {
+            alignment: start;
+            spacing: Theme.space-2;
+
+            LabeledDivider {
+                label: "Data";
+            }
+
+            if root.has-exe-path : ActionButton {
+                text: @tr("gameModal" => "Refresh game");
+                icon: @image-url("../icons/ui/refresh.svg");
+                action-id: "refresh-game";
+
+                clicked => {
+                    root.refresh-game();
+                }
+            }
+
+            Button {
+                text: @tr("debugData" => "Debug data");
+                icon: @image-url("../icons/ui/bug.svg");
+
+                clicked => {
+                    root.debug-data();
+                }
+            }
+        }
+    }
+}

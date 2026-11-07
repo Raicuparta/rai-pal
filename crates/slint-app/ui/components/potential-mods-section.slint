@@ -1,0 +1,49 @@
+import { PotentialModView } from "../potential-mod-view.slint";
+import { Theme } from "../theme.slint";
+import { SectionHeader } from "section-header.slint";
+
+component PotentialModRowView inherits Rectangle {
+    in property <PotentialModView> potential-mod;
+
+    vertical-stretch: 0;
+
+    VerticalLayout {
+        padding: Theme.space-6;
+        alignment: start;
+        spacing: Theme.space-2;
+
+        Text {
+            text: potential-mod.title;
+            font-weight: Theme.weight-semibold;
+            overflow: elide;
+        }
+
+        if potential-mod.description != "" : Text {
+            height: self.preferred-height;
+            text: potential-mod.description;
+            font-size: Theme.font-12;
+            opacity: 0.75;
+            wrap: word-wrap;
+            color: Theme.foreground;
+        }
+    }
+}
+
+export component PotentialModsSection inherits VerticalLayout {
+    in property <string> label;
+    in property <string> description;
+    in property <[PotentialModView]> mods;
+
+    vertical-stretch: 0;
+    alignment: start;
+    spacing: Theme.space-2;
+
+    SectionHeader {
+        label: root.label;
+        description: root.description;
+    }
+
+    for row in root.mods : PotentialModRowView {
+        potential-mod: row;
+    }
+}

@@ -1,0 +1,12 @@
+[package]
+name = "rai-pal-updater-signer"
+version.workspace = true
+edition.workspace = true
+publish = false
+
+[dependencies]
+base64 = "0.23.1"
+minisign = "0.10.0"
+
+[lints]
+workspace = true

@@ -7,7 +7,7 @@ description: "Use when asked to update the changelog."
 
 Check what the latest release version is. Should be the latest git tag in the `main` branch.
 
-Then, find what the new version is gonna be. This should be the version in `backend/Cargo.toml`. The new version should be higher than the previous one.
+Then, find what the new version is gonna be. This should be the version in `Cargo.toml`. The new version should be higher than the previous one.
 
 If any of these things don't line up, notify the user before proceeding.
 

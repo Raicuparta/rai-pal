@@ -1,0 +1,11 @@
+export enum NotificationKind {
+    error,
+    success,
+    info,
+}
+
+export struct NotificationView {
+    id: int,
+    message: string,
+    kind: NotificationKind,
+}

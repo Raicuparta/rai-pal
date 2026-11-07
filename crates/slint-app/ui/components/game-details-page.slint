@@ -1,0 +1,137 @@
+import { ScrollView } from "std-widgets.slint";
+import { ModActions } from "../actions.slint";
+import { GameRowView } from "../game-row-view.slint";
+import { GameModView } from "../game-mod-view.slint";
+import { PotentialModView } from "../potential-mod-view.slint";
+import { Theme } from "../theme.slint";
+import { ActionButton } from "action-button.slint";
+import { GameRowView } from "game-row.slint";
+import { ModsSection } from "mods-section.slint";
+import { PotentialModsSection } from "potential-mods-section.slint";
+
+export component GameDetailsPage inherits Rectangle {
+    in property <GameRowView> game-row;
+    in property <[GameModView]> game-mods-installed;
+    in property <[GameModView]> game-mods-available;
+    in property <[GameModView]> game-mods-hidden;
+    in property <[GameModView]> game-mods-incompatible;
+    in property <[PotentialModView]> potential-mods;
+    in property <bool> has-any-mods;
+    in property <bool> has-installed-mods;
+    in property <bool> has-available-mods;
+    in property <bool> has-hidden-mods;
+    in property <bool> has-incompatible-mods;
+    in property <bool> show-thumbnail: true;
+
+    callback back;
+
+    ScrollView {
+        VerticalLayout {
+            alignment: start;
+            spacing: Theme.space-8;
+
+            GameRowView {
+                vertical-stretch: 0;
+                game-row: root.game-row;
+                row-index: 0;
+                show-thumbnail: root.show-thumbnail;
+
+                selected(index) => {
+                    root.back();
+                }
+            }
+
+            if !root.has-any-mods : HorizontalLayout {
+                height: self.preferred-height;
+                padding-left: Theme.space-8;
+                padding-right: Theme.space-8;
+
+                Text {
+                    text: @tr("gameModal" => "Nothing! None of the available mods are of any use for this game. Try something else.");
+                    opacity: 0.75;
+                    wrap: word-wrap;
+                    horizontal-stretch: 1;
+                }
+            }
+
+            if !root.game-row.installed && root.has-any-mods : PotentialModsSection {
+                label: @tr("gameModal" => "Potentially compatible mods");
+                description: @tr("gameModal" => "Install this game to see more detailed information about which mods are compatible");
+                mods: root.potential-mods;
+            }
+
+            if root.game-row.installed : VerticalLayout {
+                alignment: start;
+                vertical-stretch: 0;
+                spacing: Theme.space-8;
+
+                if root.has-installed-mods : VerticalLayout {
+                    alignment: start;
+                    vertical-stretch: 0;
+                    spacing: Theme.space-4;
+
+                    ModsSection {
+                        label: @tr("gameModal" => "Installed Mods");
+                        mods: root.game-mods-installed;
+                    }
+
+                    HorizontalLayout {
+                        padding-left: Theme.space-8;
+                        padding-right: Theme.space-8;
+                        alignment: start;
+
+                        ActionButton {
+                            vertical-stretch: 0;
+                            text: @tr("gameModal" => "Uninstall all mods");
+                            icon: @image-url("../icons/ui/uninstall.svg");
+                            action-id: "game-mod-uninstall-all";
+                            tint: Theme.danger;
+
+                            clicked => {
+                                ModActions.request-uninstall-all(
+                                    @tr("gameModal" => "You sure? This will delete all files in this game's mods folder. It won't delete any files from the actual game though."),
+                                    @tr("gameModal" => "Uninstall all mods"),
+                                );
+                            }
+                        }
+                    }
+                }
+
+                if root.has-available-mods : ModsSection {
+                    label: @tr("gameModal" => "Available Mods");
+                    mods: root.game-mods-available;
+                }
+
+                if root.has-hidden-mods : ModsSection {
+                    label: @tr("gameModal" => "Other things");
+                    description: @tr("gameModal" => "These are mostly dependencies and other stuff that you don't usually need to mess with directly.");
+                    mods: root.game-mods-hidden;
+                }
+
+                if root.has-incompatible-mods : VerticalLayout {
+                    alignment: start;
+                    vertical-stretch: 0;
+                    spacing: Theme.space-6;
+
+                    HorizontalLayout {
+                        padding-left: Theme.space-8;
+                        padding-right: Theme.space-8;
+
+                        Rectangle {
+                            horizontal-stretch: 1;
+                            height: Theme.border-width;
+                            background: Theme.border;
+                            vertical-stretch: 0;
+                        }
+                    }
+
+                    ModsSection {
+                        label: @tr("gameModal" => "Incompatible Mods");
+                        description: @tr("gameModal" => "The mods listed here can't be installed because they aren't compatible with this game's engine version.");
+                        mods: root.game-mods-incompatible;
+                    }
+                }
+            }
+        }
+    }
+}

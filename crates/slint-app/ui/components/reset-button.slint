@@ -1,0 +1,7 @@
+import { Theme } from "../theme.slint";
+import { IconButton } from "icon-button.slint";
+
+export component ResetButton inherits IconButton {
+    icon: @image-url("../icons/ui/reset.svg");
+    tint: root.enabled ? Theme.primary : Theme.surface-background;
+}

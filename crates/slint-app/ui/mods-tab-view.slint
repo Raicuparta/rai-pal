@@ -1,0 +1,22 @@
+export struct ModsTabModView {
+    id: string,
+    title: string,
+    description: string,
+    version-text: string,
+    release-date: string,
+    author: string,
+    engine-text: string,
+    deprecated: bool,
+    source-code: string,
+    can-run: bool,
+    can-install: bool,
+    debug-json: string,
+}
+
+export struct ModsTabItemView {
+    is-family: bool,
+    family-title: string,
+    family-description: string,
+    mods: [ModsTabModView],
+    single-mod: ModsTabModView,
+}

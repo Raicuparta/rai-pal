@@ -1,0 +1,71 @@
+import { Button } from "button.slint";
+import { Theme } from "../theme.slint";
+import { Modal } from "modal.slint";
+
+export component ConfirmModSourcePopup inherits Modal {
+    in property <string> url;
+    in property <bool> loading;
+    in property <string> error;
+    in property <[string]> mods;
+    in property <bool> saving;
+
+    callback confirm;
+
+    title: @tr("urlModSources" => "Confirm Mod Source");
+
+    Text {
+        text: root.url;
+        font-size: Theme.font-12;
+        opacity: 0.7;
+        wrap: word-wrap;
+    }
+
+    if root.loading : Text {
+        text: @tr("urlModSources" => "Loading mods...");
+    }
+
+    if root.error != "" : Text {
+        text: root.error;
+        color: red;
+        font-size: Theme.font-12;
+        wrap: word-wrap;
+    }
+
+    if !root.loading && root.error == "" : VerticalLayout {
+        spacing: Theme.space-2;
+        alignment: start;
+
+        Text {
+            text: @tr("urlModSources" => "{0} mods found in this source", root.mods.length);
+        }
+
+        for mod-title in root.mods : Text {
+            text: mod-title;
+            font-size: Theme.font-12;
+            wrap: word-wrap;
+        }
+    }
+
+    HorizontalLayout {
+        alignment: end;
+        spacing: Theme.space-6;
+
+        Button {
+            text: @tr("urlModSources" => "Cancel");
+            enabled: !root.saving;
+
+            clicked => {
+                root.closed();
+            }
+        }
+
+        Button {
+            text: @tr("urlModSources" => "Add Source");
+            enabled: !root.loading && root.error == "" && !root.saving;
+
+            clicked => {
+                root.confirm();
+            }
+        }
+    }
+}

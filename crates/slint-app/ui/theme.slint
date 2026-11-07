@@ -1,0 +1,70 @@
+import { Palette } from "std-widgets.slint";
+
+export global Fonts {
+    in property <string> monospace-family: "monospace";
+}
+
+export global Theme {
+    out property <bool> dark: Palette.color-scheme == ColorScheme.dark;
+
+    out property <length> border-width: 1px;
+    out property <length> space-2: 2px;
+    out property <length> space-3: 3px;
+    out property <length> space-4: 4px;
+    out property <length> space-6: 6px;
+    out property <length> space-8: 8px;
+    out property <length> space-10: 10px;
+    out property <length> space-12: 12px;
+    out property <length> space-16: 16px;
+    out property <length> space-20: 20px;
+    out property <length> space-32: 32px;
+
+    out property <length> font-8: 8px;
+    out property <length> font-10: 10px;
+    out property <length> font-11: 11px;
+    out property <length> font-12: 12px;
+    out property <length> font-14: 14px;
+    out property <length> font-16: 16px;
+    out property <length> font-20: 20px;
+
+    out property <int> weight-light: 300;
+    out property <int> weight-normal: 400;
+    out property <int> weight-semibold: 600;
+    out property <int> weight-bold: 700;
+
+    out property <length> radius-3: 3px;
+    out property <length> radius-4: 4px;
+    out property <length> radius-8: 8px;
+
+    out property <length> control-height: 32px;
+    out property <length> icon-size: 16px;
+    out property <length> menu-width: 280px;
+
+    out property <length> game-row-height: 60px;
+
+    out property <length> details-popup-width: 700px;
+    out property <length> details-popup-height: 500px;
+    out property <length> small-popup-width: 360px;
+    out property <length> small-popup-height: 220px;
+
+    out property <brush> background: dark ? #1a1b1e : #ffffff;
+    out property <brush> overlay: #00000099;
+    out property <brush> surface-background: dark ? #25262b : #ffffff;
+    out property <brush> hover-background: dark ? #2c2e33 : #f1f3f5;
+    out property <brush> pressed-background: dark ? #25262b : #e9ecef;
+    out property <brush> border: dark ? #373a40 : #ced4da;
+    out property <brush> foreground: dark ? #c1c2c5 : #000000;
+    out property <brush> dimmed-foreground: dark ? #909296 : #868e96;
+    out property <brush> primary: Palette.accent-background;
+
+    out property <brush> highlight: dark ? #ffe485 : #ffca38;
+    out property <brush> danger: dark ? #5c2020 : #ffc7c7;
+    out property <brush> row-divider: dark ? #25262b : #dee2e6;
+    out property <brush> tag-background: dark ? #25262b : #e9ecef;
+    out property <brush> status-warning: dark ? #ffa94d : #e8590c;
+    out property <brush> status-success: dark ? #69db7c : #2b8a3e;
+    out property <brush> status-error: dark ? #ff8787 : #c92a2a;
+    out property <brush> status-info: dark ? #4dabf7 : #1971c2;
+    out property <brush> deprecated-background: dark ? #3d2b12 : #fff9db;
+    out property <brush> deprecated-foreground: dark ? #ffd43b : #e67700;
+}

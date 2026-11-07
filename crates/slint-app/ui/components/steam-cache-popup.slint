@@ -1,0 +1,46 @@
+import { Button } from "button.slint";
+import { Theme } from "../theme.slint";
+import { Modal } from "modal.slint";
+
+export component SteamCachePopup inherits Modal {
+    in property <bool> running;
+    in property <bool> success;
+    in property <string> error;
+
+    callback reset-clicked;
+
+    title: @tr("steamCache" => "Reset Steam cache");
+    content-spacing: Theme.space-12;
+
+    Text {
+        text: @tr("steamCache" => "Use this if Rai Pal is showing games you don't actually own on Steam. This will reset Steam's cache, and then you'll have to restart Steam. You'll get an error if the file has already been deleted.");
+        wrap: word-wrap;
+    }
+
+    if root.success : Text {
+        text: @tr("steamCache" => "The cache file has been deleted. Please restart Steam, wait a few seconds, and then press the refresh button on Rai Pal.");
+        color: Theme.status-success;
+        wrap: word-wrap;
+    }
+
+    if root.error != "" : Text {
+        text: root.error;
+        color: red;
+        wrap: word-wrap;
+    }
+
+    HorizontalLayout {
+        alignment: center;
+
+        Button {
+            text: @tr("steamCache" => "Reset Steam cache");
+            enabled: !root.running;
+            tint: Theme.primary;
+            horizontal-stretch: 1;
+
+            clicked => {
+                root.reset-clicked();
+            }
+        }
+    }
+}
