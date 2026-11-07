@@ -1,6 +1,7 @@
 import { AppColorScheme } from "../app-types.slint";
 import { Theme } from "../theme.slint";
 import { NavButton } from "nav-button.slint";
+import { PopupMenu, PopupMenuItem, PopupMenuSectionTitle, PopupMenuSeparator } from "menu.slint";
 
 export component AppMenu inherits Rectangle {
     in property <string> selected-language: "";
@@ -20,225 +21,221 @@ export component AppMenu inherits Rectangle {
 
     private property <string> menu-tooltip: @tr("appDropdownMenu" => "App menu");
 
-    menu-area := ContextMenuArea {
-        NavButton {
-            icon: @image-url("../icons/ui/menu.svg");
+    NavButton {
+        icon: @image-url("../icons/ui/menu.svg");
+
+        clicked => {
+            menu.show();
+        }
+    }
+
+    menu := PopupMenu {
+        x: root.width - Theme.menu-width;
+        y: root.height;
+
+        PopupMenuItem {
+            checkable: true;
+            checked: !root.hide-game-thumbnails;
+            text: @tr("appDropdownMenu" => "Show game thumbnails on list");
 
             clicked => {
-                menu-area.show({
-                    x: root.width - Theme.menu-width,
-                    y: root.height,
-                });
+                root.hide-game-thumbnails-changed(!root.hide-game-thumbnails);
             }
         }
 
-        Menu {
-            MenuItem {
-                checkable: true;
-                checked: !root.hide-game-thumbnails;
-                title: @tr("appDropdownMenu" => "Show game thumbnails on list");
+        PopupMenuSeparator { }
 
-                activated => {
-                    root.hide-game-thumbnails-changed(!root.hide-game-thumbnails);
-                }
+        PopupMenuItem {
+            text: "About...";
+
+            clicked => {
+                root.about-clicked();
             }
+        }
 
-            MenuSeparator { }
+        PopupMenuSeparator { }
 
-            MenuItem {
-                title: "About...";
+        PopupMenuItem {
+            text: @tr("steamCache" => "Reset Steam cache");
 
-                activated => {
-                    root.about-clicked();
-                }
+            clicked => {
+                root.steam-cache-clicked();
             }
+        }
 
-            MenuSeparator { }
+        PopupMenuItem {
+            text: @tr("steamShortcut" => "Add Rai Pal to Steam library");
 
-            MenuItem {
-                title: @tr("steamCache" => "Reset Steam cache");
-
-                activated => {
-                    root.steam-cache-clicked();
-                }
+            clicked => {
+                root.steam-shortcut-clicked();
             }
+        }
 
-            MenuItem {
-                title: @tr("steamShortcut" => "Add Rai Pal to Steam library");
+        PopupMenuItem {
+            text: @tr("manualGames" => "Add games");
 
-                activated => {
-                    root.steam-shortcut-clicked();
-                }
+            clicked => {
+                root.add-game-clicked();
             }
+        }
 
-            MenuItem {
-                title: @tr("manualGames" => "Add games");
+        PopupMenuSeparator { }
 
-                activated => {
-                    root.add-game-clicked();
-                }
+        PopupMenuItem {
+            text: @tr("appDropdownMenu" => "Reset Rai Pal settings");
+
+            clicked => {
+                root.reset-settings-clicked();
             }
+        }
 
-            MenuSeparator { }
+        PopupMenuItem {
+            text: @tr("appDropdownMenu" => "Open Logs Folder");
 
-            MenuItem {
-                title: @tr("appDropdownMenu" => "Reset Rai Pal settings");
-
-                activated => {
-                    root.reset-settings-clicked();
-                }
+            clicked => {
+                root.open-logs-folder-clicked();
             }
+        }
 
-            MenuItem {
-                title: @tr("appDropdownMenu" => "Open Logs Folder");
+        PopupMenuSeparator { }
 
-                activated => {
-                    root.open-logs-folder-clicked();
-                }
+        PopupMenuSectionTitle {
+            label: @tr("appDropdownMenu" => "Language");
+        }
+
+        if root.detected-language-name != "" : PopupMenuItem {
+            checkable: true;
+            checked: root.selected-language == "";
+            text: @tr("appDropdownMenu" => "Auto-detected - {0}", root.detected-language-name);
+
+            clicked => {
+                root.language-changed("");
             }
+        }
 
-            MenuSeparator { }
+        PopupMenuItem {
+            checkable: true;
+            checked: root.selected-language == "en";
+            text: "English (US)";
 
-            MenuItem {
-                title: @tr("appDropdownMenu" => "Language");
-                enabled: false;
+            clicked => {
+                root.language-changed("en");
             }
+        }
 
-            if root.detected-language-name != "" : MenuItem {
-                checkable: true;
-                checked: root.selected-language == "";
-                title: @tr("appDropdownMenu" => "Auto-detected - {0}", root.detected-language-name);
+        PopupMenuItem {
+            checkable: true;
+            checked: root.selected-language == "de";
+            text: "Deutsch (Deutschland)";
 
-                activated => {
-                    root.language-changed("");
-                }
+            clicked => {
+                root.language-changed("de");
             }
+        }
 
-            MenuItem {
-                checkable: true;
-                checked: root.selected-language == "en";
-                title: "English (US)";
+        PopupMenuItem {
+            checkable: true;
+            checked: root.selected-language == "es";
+            text: "Español (España)";
 
-                activated => {
-                    root.language-changed("en");
-                }
+            clicked => {
+                root.language-changed("es");
             }
+        }
 
-            MenuItem {
-                checkable: true;
-                checked: root.selected-language == "de";
-                title: "Deutsch (Deutschland)";
+        PopupMenuItem {
+            checkable: true;
+            checked: root.selected-language == "fr";
+            text: "Français (France)";
 
-                activated => {
-                    root.language-changed("de");
-                }
+            clicked => {
+                root.language-changed("fr");
             }
+        }
 
-            MenuItem {
-                checkable: true;
-                checked: root.selected-language == "es";
-                title: "Español (España)";
+        PopupMenuItem {
+            checkable: true;
+            checked: root.selected-language == "ja";
+            text: "日本語";
 
-                activated => {
-                    root.language-changed("es");
-                }
+            clicked => {
+                root.language-changed("ja");
             }
+        }
 
-            MenuItem {
-                checkable: true;
-                checked: root.selected-language == "fr";
-                title: "Français (France)";
+        PopupMenuItem {
+            checkable: true;
+            checked: root.selected-language == "ko";
+            text: "한국어";
 
-                activated => {
-                    root.language-changed("fr");
-                }
+            clicked => {
+                root.language-changed("ko");
             }
+        }
 
-            MenuItem {
-                checkable: true;
-                checked: root.selected-language == "ja";
-                title: "日本語";
+        PopupMenuItem {
+            checkable: true;
+            checked: root.selected-language == "pt";
+            text: "Português (Portugal)";
 
-                activated => {
-                    root.language-changed("ja");
-                }
+            clicked => {
+                root.language-changed("pt");
             }
+        }
 
-            MenuItem {
-                checkable: true;
-                checked: root.selected-language == "ko";
-                title: "한국어";
+        PopupMenuItem {
+            checkable: true;
+            checked: root.selected-language == "zh";
+            text: "简体中文";
 
-                activated => {
-                    root.language-changed("ko");
-                }
+            clicked => {
+                root.language-changed("zh");
             }
+        }
 
-            MenuItem {
-                checkable: true;
-                checked: root.selected-language == "pt";
-                title: "Português (Portugal)";
+        PopupMenuItem {
+            checkable: true;
+            checked: root.selected-language == "wa";
+            text: "Wario (Waah!)";
 
-                activated => {
-                    root.language-changed("pt");
-                }
+            clicked => {
+                root.language-changed("wa");
             }
+        }
 
-            MenuItem {
-                checkable: true;
-                checked: root.selected-language == "zh";
-                title: "简体中文";
+        PopupMenuSeparator { }
 
-                activated => {
-                    root.language-changed("zh");
-                }
+        PopupMenuSectionTitle {
+            label: @tr("appDropdownMenu" => "Color scheme");
+        }
+
+        PopupMenuItem {
+            checkable: true;
+            checked: root.selected-color-scheme == AppColorScheme.auto;
+            text: @tr("appDropdownMenu" => "Auto");
+
+            clicked => {
+                root.color-scheme-changed(AppColorScheme.auto);
             }
+        }
 
-            MenuItem {
-                checkable: true;
-                checked: root.selected-language == "wa";
-                title: "Wario (Waah!)";
+        PopupMenuItem {
+            checkable: true;
+            checked: root.selected-color-scheme == AppColorScheme.dark;
+            text: @tr("appDropdownMenu" => "Dark");
 
-                activated => {
-                    root.language-changed("wa");
-                }
+            clicked => {
+                root.color-scheme-changed(AppColorScheme.dark);
             }
+        }
 
-            MenuSeparator { }
+        PopupMenuItem {
+            checkable: true;
+            checked: root.selected-color-scheme == AppColorScheme.light;
+            text: @tr("appDropdownMenu" => "Light");
 
-            MenuItem {
-                title: @tr("appDropdownMenu" => "Color scheme");
-                enabled: false;
-            }
-
-            MenuItem {
-                checkable: true;
-                checked: root.selected-color-scheme == AppColorScheme.auto;
-                title: @tr("appDropdownMenu" => "Auto");
-
-                activated => {
-                    root.color-scheme-changed(AppColorScheme.auto);
-                }
-            }
-
-            MenuItem {
-                checkable: true;
-                checked: root.selected-color-scheme == AppColorScheme.dark;
-                title: @tr("appDropdownMenu" => "Dark");
-
-                activated => {
-                    root.color-scheme-changed(AppColorScheme.dark);
-                }
-            }
-
-            MenuItem {
-                checkable: true;
-                checked: root.selected-color-scheme == AppColorScheme.light;
-                title: @tr("appDropdownMenu" => "Light");
-
-                activated => {
-                    root.color-scheme-changed(AppColorScheme.light);
-                }
+            clicked => {
+                root.color-scheme-changed(AppColorScheme.light);
             }
         }
     }
