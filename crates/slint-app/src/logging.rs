@@ -1,6 +1,6 @@
 use std::{
 	fs::{self, File, OpenOptions},
-	io::Write,
+	io::{self, Write},
 	path::PathBuf,
 	sync::Mutex,
 };
@@ -32,20 +32,32 @@ impl log::Log for Logger {
 			record.args()
 		);
 
-		let _ = std::io::stderr().write_all(line.as_bytes());
+		if let Err(err) = std::io::stderr().write_all(line.as_bytes()) {
+			eprintln!("Failed to write log line to stderr: {err}");
+		}
 
-		if let Ok(mut file) = self.file.lock()
-			&& let Some(file) = file.as_mut()
-		{
-			let _ = file.write_all(line.as_bytes());
+		match self.file.lock() {
+			Ok(mut file) => {
+				if let Some(file) = file.as_mut()
+					&& let Err(err) = file.write_all(line.as_bytes())
+				{
+					eprintln!("Failed to write log line to file: {err}");
+				}
+			}
+			Err(err) => eprintln!("Failed to lock log file: {err}"),
 		}
 	}
 
 	fn flush(&self) {
-		if let Ok(mut file) = self.file.lock()
-			&& let Some(file) = file.as_mut()
-		{
-			let _ = file.flush();
+		match self.file.lock() {
+			Ok(mut file) => {
+				if let Some(file) = file.as_mut()
+					&& let Err(err) = file.flush()
+				{
+					eprintln!("Failed to flush log file: {err}");
+				}
+			}
+			Err(err) => eprintln!("Failed to lock log file: {err}"),
 		}
 	}
 }
@@ -59,14 +71,13 @@ pub fn init() {
 
 	let file = log_file().and_then(|path| {
 		rotate_if_needed(&path);
-		OpenOptions::new()
-			.create(true)
-			.append(true)
-			.open(&path)
-			.map_err(|err| {
+		match OpenOptions::new().create(true).append(true).open(&path) {
+			Ok(file) => Some(file),
+			Err(err) => {
 				eprintln!("Failed to open log file {}: {err}", path.display());
-			})
-			.ok()
+				None
+			}
+		}
 	});
 
 	let logger = Logger {
@@ -74,22 +85,33 @@ pub fn init() {
 		level,
 	};
 
-	if log::set_boxed_logger(Box::new(logger)).is_ok() {
+	if let Err(err) = log::set_boxed_logger(Box::new(logger)) {
+		eprintln!("Failed to install logger: {err}");
+	} else {
 		log::set_max_level(level);
 	}
 }
 
 fn log_file() -> Option<PathBuf> {
-	let path = rai_pal_core::app_paths::logs_path()
-		.map_err(|err| eprintln!("Failed to get logs folder: {err}"))
-		.ok()?
-		.join("rai-pal.log");
+	let path = match rai_pal_core::app_paths::logs_path() {
+		Ok(path) => path,
+		Err(err) => {
+			eprintln!("Failed to get logs folder: {err}");
+			return None;
+		}
+	}
+	.join("rai-pal.log");
 	Some(path)
 }
 
 fn rotate_if_needed(path: &PathBuf) {
-	let Ok(metadata) = fs::metadata(path) else {
-		return;
+	let metadata = match fs::metadata(path) {
+		Ok(metadata) => metadata,
+		Err(err) if err.kind() == io::ErrorKind::NotFound => return,
+		Err(err) => {
+			eprintln!("Failed to read log file metadata {}: {err}", path.display());
+			return;
+		}
 	};
 
 	if metadata.len() <= MAX_LOG_SIZE {

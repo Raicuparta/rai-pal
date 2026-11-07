@@ -128,7 +128,12 @@ pub fn launch_via_steam_with_swapped_exe(
 			"Found leftover Rai Pal executable backup at `{}`, restoring it before swapping again",
 			backup.display()
 		);
-		let _ = fs::remove_file(exe_path);
+		if let Err(error) = fs::remove_file(exe_path) {
+			log::warn!(
+				"Failed to remove stale game executable {}: {error}",
+				exe_path.display()
+			);
+		}
 		fs::rename(&backup, exe_path)?;
 	}
 
@@ -143,7 +148,9 @@ pub fn launch_via_steam_with_swapped_exe(
 
 	fs::rename(exe_path, &backup)?;
 	if let Err(error) = fs::write(exe_path, script.as_bytes()) {
-		let _ = fs::rename(&backup, exe_path);
+		if let Err(restore_error) = fs::rename(&backup, exe_path) {
+			log::warn!("Failed to restore game executable backup: {restore_error}");
+		}
 		return Err(error.into());
 	}
 	fs::set_permissions(exe_path, std::fs::Permissions::from_mode(0o755))?;
@@ -155,8 +162,12 @@ pub fn launch_via_steam_with_swapped_exe(
 	);
 
 	if let Err(error) = open_detached_better(&url) {
-		let _ = fs::remove_file(exe_path);
-		let _ = fs::rename(&backup, exe_path);
+		if let Err(remove_error) = fs::remove_file(exe_path) {
+			log::warn!("Failed to remove temporary game launcher: {remove_error}");
+		}
+		if let Err(restore_error) = fs::rename(&backup, exe_path) {
+			log::warn!("Failed to restore game executable backup: {restore_error}");
+		}
 		return Err(error);
 	}
 

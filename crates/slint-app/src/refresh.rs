@@ -10,6 +10,7 @@ use rai_pal_core::{
 	},
 	mod_providers::mod_provider,
 	remote_game,
+	result::LogErrExt,
 };
 use slint::ComponentHandle;
 
@@ -66,7 +67,7 @@ pub fn refresh_all(
 		}
 		pop_task(&window, &mut tasks, "remote data");
 
-		let _ = slint::invoke_from_event_loop(move || {
+		crate::runtime::invoke_on_ui(move || {
 			let Some(window) = window.upgrade() else {
 				return;
 			};
@@ -114,7 +115,7 @@ fn publish_tasks(window: &slint::Weak<MainWindow>, tasks: &[String]) {
 	let names = tasks.join(", ");
 	let active = !tasks.is_empty();
 
-	let _ = slint::invoke_from_event_loop(move || {
+	crate::runtime::invoke_on_ui(move || {
 		let Some(window) = window.upgrade() else {
 			return;
 		};
@@ -129,11 +130,18 @@ pub(crate) fn refresh_selected_game(
 	database: &Arc<DbMutex>,
 	selected_game: &SelectedGameState,
 ) {
-	let Some((_, game)) = selected_game.lock().ok().and_then(|game| game.clone()) else {
+	let Some((_, game)) = selected_game
+		.lock()
+		.ok_or_log("Failed to lock selected game")
+		.and_then(|game| game.clone())
+	else {
 		return;
 	};
 
-	let Ok(updated_game) = database.get_game(&game.provider_id, &game.game_id) else {
+	let Some(updated_game) = database
+		.get_game(&game.provider_id, &game.game_id)
+		.ok_or_log("Failed to reload selected game")
+	else {
 		return;
 	};
 

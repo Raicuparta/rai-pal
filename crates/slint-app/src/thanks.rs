@@ -1,5 +1,6 @@
 use std::{rc::Rc, thread};
 
+use rai_pal_core::result::LogErrExt;
 use serde_json::Value;
 
 use crate::{
@@ -22,7 +23,7 @@ pub fn load(window: slint::Weak<MainWindow>) {
 	thread::spawn(move || {
 		let patrons = fetch_patrons();
 
-		let _ = slint::invoke_from_event_loop(move || {
+		crate::runtime::invoke_on_ui(move || {
 			let Some(window) = window.upgrade() else {
 				return;
 			};
@@ -59,11 +60,13 @@ fn fetch_active_patrons() -> Option<Vec<Value>> {
 	let response = fetch::http_client()
 		.get(PATRONS_URL)
 		.send()
-		.ok()?
+		.ok_or_log("Failed to request patrons")?
 		.error_for_status()
-		.ok()?;
+		.ok_or_log("Patrons request failed")?;
 
-	let database: Value = response.json().ok()?;
+	let database: Value = response
+		.json()
+		.ok_or_log("Failed to parse patrons response")?;
 	let patrons = database.get("activePatrons")?.as_array()?;
 
 	Some(patrons.clone())

@@ -155,7 +155,12 @@ fn parse_version(string: &str) -> Option<EngineVersion> {
 
 	Some(EngineVersion {
 		numbers: EngineVersionNumbers {
-			major: major.parse().unwrap_or(0),
+			major: major
+				.parse()
+				.ok_or_log(&format!(
+					"Failed to parse major version number `{major}` from version string `{string}`"
+				))
+				.unwrap_or(0),
 			minor: minor.parse().ok_or_log(&format!(
 				"Failed to parse minor version number `{minor}` from version string `{string}`"
 			)),
@@ -204,7 +209,12 @@ fn get_version_from_exe_parse(file_bytes: &[u8]) -> Option<EngineVersion> {
 	let match_string = String::from_utf16_lossy(
 		&match_result?
 			.chunks(2)
-			.map(|e| u16::from_le_bytes(e.try_into().unwrap_or_default()))
+			.map(|e| {
+				let bytes = <[u8; 2]>::try_from(e)
+					.ok_or_log("Failed to convert Unreal version chunk")
+					.unwrap_or_default();
+				u16::from_le_bytes(bytes)
+			})
 			.collect::<Vec<_>>(),
 	);
 
@@ -237,7 +247,9 @@ fn set_version(game: &mut Game, version: &EngineVersion, exe_path: &Path) {
 	game.engine_version_minor = version.numbers.minor;
 	game.engine_version_patch = version.numbers.patch;
 	game.engine_version_display = Some(version.display.clone());
-	game.architecture = get_architecture(exe_path).unwrap_or(None);
+	game.architecture = get_architecture(exe_path)
+		.ok_or_log("Failed to get Unreal game architecture")
+		.unwrap_or(None);
 }
 
 fn is_unreal_exe(game_path: &Path) -> bool {

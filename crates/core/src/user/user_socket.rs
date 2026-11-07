@@ -63,7 +63,9 @@ fn dev_command_handler() -> &'static OnceLock<DevCommandHandler> {
 /// Registers the dev-mode command handler. Only meaningful in debug builds.
 #[cfg(debug_assertions)]
 pub fn set_dev_command_handler(handler: DevCommandHandler) {
-	let _ = dev_command_handler().set(handler);
+	if let Err(_handler) = dev_command_handler().set(handler) {
+		log::warn!("Dev command handler was already set");
+	}
 }
 
 pub async fn start_user_socket_manager() {

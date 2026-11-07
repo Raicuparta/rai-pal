@@ -164,10 +164,15 @@ async fn save_auth_session_file(session: &AuthSavedSession) -> Result {
 	#[cfg(unix)]
 	{
 		use std::os::unix::fs::PermissionsExt;
-		if let Ok(metadata) = fs_err::tokio::metadata(&session_path).await {
+		if let Some(metadata) = fs_err::tokio::metadata(&session_path)
+			.await
+			.ok_or_log("Failed to read auth session file metadata")
+		{
 			let mut permissions = metadata.permissions();
 			permissions.set_mode(0o600);
-			let _ = fs_err::tokio::set_permissions(&session_path, permissions).await;
+			if let Err(err) = fs_err::tokio::set_permissions(&session_path, permissions).await {
+				log::warn!("Failed to set auth session file permissions: {err}");
+			}
 		}
 	}
 

@@ -8,6 +8,7 @@ use std::{
 use rai_pal_core::{
 	mods::manifest::{InstallStep, InstallStepKind},
 	progress_status::ProgressStatus,
+	result::LogErrExt,
 };
 
 use crate::{DownloadItemView, DownloadPhase, MainWindow};
@@ -48,7 +49,7 @@ impl Tracker {
 	}
 
 	pub fn pending_steps(&self, steps: &[InstallStep]) {
-		if let Ok(mut items) = self.items.lock() {
+		if let Some(mut items) = self.items.lock().ok_or_log("Failed to lock download items") {
 			for step in steps {
 				upsert(
 					&mut items,
@@ -66,27 +67,35 @@ impl Tracker {
 	pub fn record(&self, status: ProgressStatus) {
 		match status {
 			ProgressStatus::Pending { id, name } => {
-				if let Ok(mut items) = self.items.lock() {
+				if let Some(mut items) =
+					self.items.lock().ok_or_log("Failed to lock download items")
+				{
 					upsert(&mut items, &id, &name, 0.0, Phase::Pending);
 				}
 				self.publish();
 			}
 			ProgressStatus::InProgress { id, progress } => {
-				if let Ok(mut items) = self.items.lock() {
+				if let Some(mut items) =
+					self.items.lock().ok_or_log("Failed to lock download items")
+				{
 					let progress = progress * 100.0;
 					update_existing(&mut items, &id, Some(progress), Phase::InProgress);
 				}
 				self.publish_if_due();
 			}
 			ProgressStatus::Finished { id } => {
-				if let Ok(mut items) = self.items.lock() {
+				if let Some(mut items) =
+					self.items.lock().ok_or_log("Failed to lock download items")
+				{
 					update_existing(&mut items, &id, Some(100.0), Phase::Finished);
 				}
 				self.publish();
 				self.schedule_cleanup();
 			}
 			ProgressStatus::Failed { id, .. } => {
-				if let Ok(mut items) = self.items.lock() {
+				if let Some(mut items) =
+					self.items.lock().ok_or_log("Failed to lock download items")
+				{
 					update_existing(&mut items, &id, None, Phase::Failed);
 				}
 				self.publish();
@@ -95,7 +104,7 @@ impl Tracker {
 	}
 
 	pub fn finish_steps(&self, steps: &[InstallStep]) {
-		if let Ok(mut items) = self.items.lock() {
+		if let Some(mut items) = self.items.lock().ok_or_log("Failed to lock download items") {
 			for step in steps {
 				upsert(
 					&mut items,
@@ -112,7 +121,7 @@ impl Tracker {
 	}
 
 	pub fn fail_steps(&self, steps: &[InstallStep]) {
-		if let Ok(mut items) = self.items.lock() {
+		if let Some(mut items) = self.items.lock().ok_or_log("Failed to lock download items") {
 			for step in steps {
 				update_existing(&mut items, &step.id(), None, Phase::Failed);
 			}
@@ -122,7 +131,7 @@ impl Tracker {
 	}
 
 	pub fn clear_completed(&self) {
-		if let Ok(mut items) = self.items.lock() {
+		if let Some(mut items) = self.items.lock().ok_or_log("Failed to lock download items") {
 			items.retain(|item| item.phase != Phase::Finished && item.phase != Phase::Failed);
 		}
 
@@ -130,7 +139,11 @@ impl Tracker {
 	}
 
 	fn publish_if_due(&self) {
-		let Ok(mut last_publish) = self.last_publish.lock() else {
+		let Some(mut last_publish) = self
+			.last_publish
+			.lock()
+			.ok_or_log("Failed to lock download publish timer")
+		else {
 			return;
 		};
 
@@ -148,16 +161,21 @@ impl Tracker {
 		let items = self
 			.items
 			.lock()
+			.ok_or_log("Failed to lock download items")
 			.map(|items| items.clone())
 			.unwrap_or_default();
 
-		if let Ok(mut last_publish) = self.last_publish.lock() {
+		if let Some(mut last_publish) = self
+			.last_publish
+			.lock()
+			.ok_or_log("Failed to lock download publish timer")
+		{
 			*last_publish = Instant::now();
 		}
 
 		let window = self.window.clone();
 
-		let _ = slint::invoke_from_event_loop(move || {
+		crate::runtime::invoke_on_ui(move || {
 			let Some(window) = window.upgrade() else {
 				return;
 			};
@@ -206,6 +224,7 @@ impl Tracker {
 
 			let removed = items
 				.lock()
+				.ok_or_log("Failed to lock download items")
 				.map(|mut items| {
 					let has_active = items
 						.iter()

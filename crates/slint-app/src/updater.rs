@@ -14,6 +14,7 @@ use base64::{Engine as _, engine::general_purpose::STANDARD};
 use minisign_verify::{PublicKey, Signature};
 #[cfg(target_os = "windows")]
 use rai_pal_core::app_paths;
+use rai_pal_core::result::LogErrExt;
 use semver::Version;
 use serde::Deserialize;
 use slint::{Timer, TimerMode};
@@ -81,7 +82,12 @@ impl Updater {
 	}
 
 	pub fn install(&self, window: slint::Weak<MainWindow>) {
-		let Some(release) = self.pending.lock().ok().and_then(|pending| pending.clone()) else {
+		let Some(release) = self
+			.pending
+			.lock()
+			.ok_or_log("Failed to lock pending update")
+			.and_then(|pending| pending.clone())
+		else {
 			return;
 		};
 
@@ -96,7 +102,7 @@ impl Updater {
 			if let Err(err) = result {
 				log::error!("Failed to install app update: {err}");
 
-				let _ = slint::invoke_from_event_loop(move || {
+				crate::runtime::invoke_on_ui(move || {
 					let Some(window) = window.upgrade() else {
 						return;
 					};
@@ -112,8 +118,11 @@ impl Updater {
 
 	pub fn ignore(&self, window: &MainWindow) {
 		self.ignored.store(true, Ordering::SeqCst);
-		if let Ok(mut pending) = self.pending.lock() {
-			pending.take();
+		match self.pending.lock() {
+			Ok(mut pending) => {
+				pending.take();
+			}
+			Err(err) => log::warn!("Failed to lock pending update: {err}"),
 		}
 		window.set_update_open(false);
 	}
@@ -125,7 +134,10 @@ fn check_for_update(
 	ignored: &Arc<AtomicBool>,
 	checking: &Arc<AtomicBool>,
 ) {
-	let has_pending = pending.lock().is_ok_and(|pending| pending.is_some());
+	let has_pending = pending
+		.lock()
+		.ok_or_log("Failed to lock pending update")
+		.is_some_and(|pending| pending.is_some());
 	if ignored.load(Ordering::SeqCst) || has_pending || checking.swap(true, Ordering::SeqCst) {
 		return;
 	}
@@ -138,7 +150,7 @@ fn check_for_update(
 	thread::spawn(move || {
 		let result = fetch_update();
 
-		let _ = slint::invoke_from_event_loop(move || {
+		crate::runtime::invoke_on_ui(move || {
 			checking.store(false, Ordering::SeqCst);
 
 			let Some(window) = window.upgrade() else {
@@ -147,8 +159,12 @@ fn check_for_update(
 
 			match result {
 				Ok(Some(release)) => {
-					let Ok(mut pending) = pending.lock() else {
-						return;
+					let mut pending = match pending.lock() {
+						Ok(pending) => pending,
+						Err(err) => {
+							log::warn!("Failed to lock pending update: {err}");
+							return;
+						}
 					};
 
 					if ignored.load(Ordering::SeqCst) || pending.is_some() {
@@ -260,11 +276,18 @@ fn update_file_path(file_name: &str) -> Result<PathBuf, String> {
 fn install_and_restart(bytes: &[u8]) -> Result<(), String> {
 	use std::os::unix::fs::PermissionsExt;
 
-	let target = std::env::var_os("APPIMAGE")
-		.map(PathBuf::from)
-		.or_else(|| std::env::current_exe().ok())
-		.ok_or_else(|| "Could not find the AppImage path".to_string())?;
-	let target = fs::canonicalize(&target).unwrap_or(target);
+	let target = match std::env::var_os("APPIMAGE") {
+		Some(path) => PathBuf::from(path),
+		None => std::env::current_exe()
+			.map_err(|err| format!("Could not find the AppImage path: {err}"))?,
+	};
+	let target = fs::canonicalize(&target).unwrap_or_else(|err| {
+		log::warn!(
+			"Failed to canonicalize AppImage path {}: {err}",
+			target.display()
+		);
+		target
+	});
 	let parent = target
 		.parent()
 		.ok_or_else(|| "Could not find the AppImage folder".to_string())?;

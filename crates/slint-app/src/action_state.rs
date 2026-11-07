@@ -9,6 +9,7 @@ use std::{
 	time::Duration,
 };
 
+use rai_pal_core::result::LogErrExt;
 use slint::{ComponentHandle, Weak};
 
 use crate::{ActionState, ActionStates, MainWindow, notifications};
@@ -23,7 +24,7 @@ static VERSION: AtomicI32 = AtomicI32::new(1);
 pub fn lookup(id: &str) -> ActionState {
 	STATES
 		.lock()
-		.ok()
+		.ok_or_log("Failed to lock action states")
 		.and_then(|states| states.get(id).copied())
 		.unwrap_or(ActionState::Idle)
 }
@@ -32,7 +33,7 @@ pub fn start(window: &Weak<MainWindow>, id: impl Into<String>) {
 	let window = window.clone();
 	let id = id.into();
 
-	let _ = slint::invoke_from_event_loop(move || {
+	crate::runtime::invoke_on_ui(move || {
 		if let Some(window) = window.upgrade() {
 			set(&window, &id, ActionState::Loading);
 		}
@@ -71,7 +72,7 @@ fn set_async(window: &Weak<MainWindow>, id: &str, state: ActionState) {
 	let window = window.clone();
 	let id = id.to_string();
 
-	let _ = slint::invoke_from_event_loop(move || {
+	crate::runtime::invoke_on_ui(move || {
 		if let Some(window) = window.upgrade() {
 			set(&window, &id, state);
 		}
@@ -82,7 +83,7 @@ fn schedule_reset(window: Weak<MainWindow>, id: String, state: ActionState, dura
 	thread::spawn(move || {
 		thread::sleep(duration);
 
-		let _ = slint::invoke_from_event_loop(move || {
+		crate::runtime::invoke_on_ui(move || {
 			let Some(window) = window.upgrade() else {
 				return;
 			};
@@ -96,7 +97,7 @@ fn schedule_reset(window: Weak<MainWindow>, id: String, state: ActionState, dura
 
 fn set(window: &MainWindow, id: &str, state: ActionState) {
 	{
-		let Ok(mut states) = STATES.lock() else {
+		let Some(mut states) = STATES.lock().ok_or_log("Failed to lock action states") else {
 			return;
 		};
 

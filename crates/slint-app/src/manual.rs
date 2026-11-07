@@ -20,6 +20,7 @@ use rai_pal_core::{
 		app_database::DbMutex, game_database::GameDatabase, mod_database::ModDatabase,
 	},
 	path_extensions::PathExt,
+	result::LogErrExt,
 };
 use slint::ComponentHandle;
 
@@ -61,7 +62,7 @@ pub fn select_executable(
 			Ok::<(), rai_pal_core::result::Error>(())
 		});
 
-		let _ = slint::invoke_from_event_loop(move || {
+		crate::runtime::invoke_on_ui(move || {
 			let Some(window) = window_weak.upgrade() else {
 				return;
 			};
@@ -91,7 +92,7 @@ pub fn select_directory(window: &MainWindow) {
 		let path = path.normalize();
 		let path_text = path.display().to_string();
 
-		let _ = slint::invoke_from_event_loop({
+		crate::runtime::invoke_on_ui({
 			let window = window_weak.clone();
 			let path_text = path_text.clone();
 
@@ -113,7 +114,7 @@ pub fn select_directory(window: &MainWindow) {
 
 			let window = progress_window.clone();
 
-			let _ = slint::invoke_from_event_loop(move || {
+			crate::runtime::invoke_on_ui(move || {
 				if SCAN_GENERATION.load(Ordering::SeqCst) != generation {
 					return;
 				}
@@ -128,7 +129,7 @@ pub fn select_directory(window: &MainWindow) {
 			});
 		});
 
-		let _ = slint::invoke_from_event_loop(move || {
+		crate::runtime::invoke_on_ui(move || {
 			if SCAN_GENERATION.load(Ordering::SeqCst) != generation {
 				return;
 			}
@@ -178,7 +179,7 @@ pub fn confirm_add_directory(
 			Ok::<(), rai_pal_core::result::Error>(())
 		});
 
-		let _ = slint::invoke_from_event_loop(move || {
+		crate::runtime::invoke_on_ui(move || {
 			let Some(window) = window_weak.upgrade() else {
 				return;
 			};
@@ -217,7 +218,7 @@ pub fn remove_directory(
 			Ok::<(), rai_pal_core::result::Error>(())
 		});
 
-		let _ = slint::invoke_from_event_loop(move || {
+		crate::runtime::invoke_on_ui(move || {
 			let Some(window) = window_weak.upgrade() else {
 				return;
 			};
@@ -259,14 +260,17 @@ pub fn remove_game(
 			Ok::<(), rai_pal_core::result::Error>(())
 		});
 
-		let _ = slint::invoke_from_event_loop(move || {
+		crate::runtime::invoke_on_ui(move || {
 			let Some(window) = window_weak.upgrade() else {
 				return;
 			};
 
 			match result {
 				Ok(()) => {
-					if let Ok(mut selected_game) = selected_game.lock() {
+					if let Some(mut selected_game) = selected_game
+						.lock()
+						.ok_or_log("Failed to lock selected game")
+					{
 						*selected_game = None;
 					}
 
@@ -308,7 +312,7 @@ pub fn add_dropped_paths(
 			Ok::<(), rai_pal_core::result::Error>(())
 		});
 
-		let _ = slint::invoke_from_event_loop(move || {
+		crate::runtime::invoke_on_ui(move || {
 			let Some(window) = window_weak.upgrade() else {
 				return;
 			};

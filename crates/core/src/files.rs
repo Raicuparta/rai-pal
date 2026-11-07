@@ -4,7 +4,7 @@ use std::{io, path::Path};
 
 use zip::ZipArchive;
 
-use crate::result::{ContextResult, Result};
+use crate::result::{ContextResult, LogErrExt, Result};
 
 pub async fn copy_dir_all(src: &Path, dst: &Path) -> Result {
 	fs_err::tokio::create_dir_all(dst).await?;
@@ -33,7 +33,10 @@ pub fn extract(archive_path: &Path, target_path: &Path, on_progress: &impl Fn(u6
 	let total_uncompressed: u64 = {
 		let mut total = 0;
 		for i in 0..archive.len() {
-			if let Ok(file) = archive.by_index(i) {
+			if let Some(file) = archive
+				.by_index(i)
+				.ok_or_log("Failed to read zip archive entry")
+			{
 				total += file.size();
 			}
 		}
@@ -78,8 +81,14 @@ pub fn extract(archive_path: &Path, target_path: &Path, on_progress: &impl Fn(u6
 
 		if file.is_dir() || sanitized_name.ends_with('/') {
 			fs::create_dir_all(&outpath)?;
-		} else if let Ok(metadata) = fs::metadata(&outpath)
-			&& metadata.len() == file_size
+		} else if let Some(metadata) = match fs::metadata(&outpath) {
+			Ok(metadata) => Some(metadata),
+			Err(err) if err.kind() == io::ErrorKind::NotFound => None,
+			Err(err) => {
+				log::warn!("Failed to read existing archive output metadata: {err}");
+				None
+			}
+		} && metadata.len() == file_size
 		{
 			// Skip extracting if already extracted.
 			extracted_bytes += file_size;

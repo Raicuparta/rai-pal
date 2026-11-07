@@ -2,6 +2,7 @@ use std::rc::Rc;
 
 use rai_pal_core::{
 	game::Game, local_database::game_database::GameId, operating_system::OperatingSystem,
+	result::LogErrExt,
 };
 
 use crate::GameRowView;
@@ -22,9 +23,12 @@ impl ReleaseDate {
 		let date = date.get(0..10).unwrap_or(date);
 		let mut parts = date.split('-');
 		let year = parts.next().unwrap_or_default();
-		let month = parts
-			.next()
-			.map_or(0, |month| month.parse::<u32>().unwrap_or_default());
+		let month = parts.next().map_or(0, |month| {
+			month
+				.parse::<u32>()
+				.ok_or_log(&format!("Failed to parse release month {month}"))
+				.unwrap_or_default()
+		});
 		let day = parts.next().unwrap_or_default();
 
 		Self {

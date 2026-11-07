@@ -5,7 +5,7 @@ use std::{
 
 use steamlocate::SteamDir;
 
-use crate::result::{ContextResult, Error, Result};
+use crate::result::{ContextResult, Error, LogErrExt, Result};
 
 pub fn get_appinfo_path(steam_path: &Path) -> PathBuf {
 	steam_path.join("appcache/appinfo.vdf")
@@ -14,6 +14,10 @@ pub fn get_appinfo_path(steam_path: &Path) -> PathBuf {
 fn get_modified_time(path: &Path) -> SystemTime {
 	fs_err::metadata(path)
 		.and_then(|metadata| metadata.modified())
+		.ok_or_log(&format!(
+			"Failed to get modification time for {}",
+			path.display()
+		))
 		.unwrap_or(UNIX_EPOCH)
 }
 

@@ -29,7 +29,7 @@ fn show_async(
 	let window = window.clone();
 	let message = message.into();
 
-	let _ = slint::invoke_from_event_loop(move || {
+	crate::runtime::invoke_on_ui(move || {
 		let Some(window) = window.upgrade() else {
 			return;
 		};

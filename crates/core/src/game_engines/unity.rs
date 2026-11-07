@@ -44,7 +44,12 @@ pub fn parse_version(string: &str) -> Option<EngineVersion> {
 	Some(EngineVersion {
 		display: full.to_string(),
 		numbers: EngineVersionNumbers {
-			major: major.parse().unwrap_or(0),
+			major: major
+				.parse()
+				.ok_or_log(&format!(
+					"Failed to parse major version number `{major}` from version string `{string}`"
+				))
+				.unwrap_or(0),
 			minor: minor.parse().ok_or_log(&format!(
 				"Failed to parse minor version number `{minor}` from version string `{string}`"
 			)),
@@ -78,7 +83,8 @@ fn get_version(data_path: &Path) -> Option<EngineVersion> {
 	for asset_name in &ASSETS_WITH_VERSION {
 		let asset_path = data_path.join(asset_name);
 
-		if let Ok(metadata) = fs::metadata(&asset_path)
+		if let Some(metadata) =
+			fs::metadata(&asset_path).ok_or_log("Failed to read Unity asset metadata")
 			&& metadata.is_file()
 		{
 			match get_version_from_asset(&asset_path) {
@@ -136,7 +142,8 @@ fn get_alt_architecture(game_path: &Path) -> Option<Architecture> {
 		// Here the guessing can go wrong, since it's possible a top level dll is actual x86,
 		// when the actual game is x64.
 		if let Some(first_dll) = game_folder.join("*.dll").glob().first()
-			&& let Ok(Some(architecture)) = get_architecture(first_dll)
+			&& let Some(Some(architecture)) =
+				get_architecture(first_dll).ok_or_log("Failed to get Unity architecture from DLL")
 		{
 			return Some(architecture);
 		}
@@ -146,13 +153,15 @@ fn get_alt_architecture(game_path: &Path) -> Option<Architecture> {
 		// But it's common to drop all kinds of dlls in the plugins folder,
 		// so I'm leaving it for last. (mostly because my own UUVR mod drops both the
 		// x86 and x64 dlls in the folder so Unity picks the right one)
-		if let Ok(unity_data_path) = get_unity_data_path(game_path)
+		if let Some(unity_data_path) =
+			get_unity_data_path(game_path).ok_or_log("Failed to get Unity data path")
 			&& let Some(plugin_dll) = unity_data_path
 				.join("Plugins")
 				.join("**")
 				.join("*.dll")
 				.glob()
-				.first() && let Ok(Some(architecture)) = get_architecture(plugin_dll)
+				.first() && let Some(Some(architecture)) =
+			get_architecture(plugin_dll).ok_or_log("Failed to get Unity plugin architecture")
 		{
 			return Some(architecture);
 		}
@@ -170,7 +179,8 @@ pub fn process_game(game: &mut Game) -> bool {
 		return false;
 	}
 
-	let Ok(data_path) = get_unity_data_path(exe_path) else {
+	let Some(data_path) = get_unity_data_path(exe_path).ok_or_log("Failed to get Unity data path")
+	else {
 		return false;
 	};
 

@@ -8,7 +8,7 @@ use std::{
 	time::UNIX_EPOCH,
 };
 
-use rai_pal_core::app_paths;
+use rai_pal_core::{app_paths, result::LogErrExt};
 use sha2::{Digest, Sha256};
 
 pub(crate) const THUMBNAIL_WIDTH: u32 = 200;
@@ -18,8 +18,9 @@ const CACHE_VERSION: u32 = 1;
 const MAX_CACHE_BYTES: u64 = 200 * 1024 * 1024;
 const PRUNE_TARGET_BYTES: u64 = 180 * 1024 * 1024;
 
-static CACHE_DIR: LazyLock<Option<PathBuf>> =
-	LazyLock::new(|| app_paths::thumbnail_cache_path().ok());
+static CACHE_DIR: LazyLock<Option<PathBuf>> = LazyLock::new(|| {
+	app_paths::thumbnail_cache_path().ok_or_log("Failed to get thumbnail cache path")
+});
 static TEMP_COUNTER: AtomicU64 = AtomicU64::new(0);
 
 fn cache_path(url: &str, width: u32, height: u32) -> Option<PathBuf> {
@@ -42,7 +43,10 @@ pub(crate) fn contains(url: &str, width: u32, height: u32) -> bool {
 
 pub(crate) fn load(url: &str, width: u32, height: u32) -> Option<Vec<u8>> {
 	let path = cache_path(url, width, height)?;
-	fs::read(&path).ok()
+	fs::read(&path).ok_or_log(&format!(
+		"Failed to read thumbnail cache file {}",
+		path.display()
+	))
 }
 
 pub(crate) fn store(url: &str, width: u32, height: u32, bytes: &[u8]) {
@@ -56,19 +60,45 @@ pub(crate) fn store(url: &str, width: u32, height: u32, bytes: &[u8]) {
 		TEMP_COUNTER.fetch_add(1, Ordering::Relaxed)
 	));
 
-	if fs::write(&temp_path, bytes).is_err() {
-		let _ = fs::remove_file(&temp_path);
+	if let Err(err) = fs::write(&temp_path, bytes) {
+		log::warn!(
+			"Failed to write thumbnail cache file {}: {err}",
+			temp_path.display()
+		);
+		if let Err(remove_err) = fs::remove_file(&temp_path) {
+			log::warn!(
+				"Failed to remove temporary thumbnail cache file {}: {remove_err}",
+				temp_path.display()
+			);
+		}
 		return;
 	}
 
-	if fs::rename(&temp_path, &path).is_err() {
-		let _ = fs::remove_file(&temp_path);
+	if let Err(err) = fs::rename(&temp_path, &path) {
+		log::warn!(
+			"Failed to move thumbnail cache file {} to {}: {err}",
+			temp_path.display(),
+			path.display()
+		);
+		if let Err(remove_err) = fs::remove_file(&temp_path) {
+			log::warn!(
+				"Failed to remove temporary thumbnail cache file {}: {remove_err}",
+				temp_path.display()
+			);
+		}
 	}
 }
 
 pub(crate) fn remove(url: &str, width: u32, height: u32) {
-	if let Some(path) = cache_path(url, width, height) {
-		let _ = fs::remove_file(path);
+	let Some(path) = cache_path(url, width, height) else {
+		return;
+	};
+
+	if let Err(err) = fs::remove_file(&path) {
+		log::warn!(
+			"Failed to remove thumbnail cache file {}: {err}",
+			path.display()
+		);
 	}
 }
 
@@ -76,16 +106,37 @@ pub(crate) fn prune() {
 	let Some(dir) = CACHE_DIR.as_ref() else {
 		return;
 	};
-	let Ok(entries) = fs::read_dir(dir) else {
-		return;
+	let entries = match fs::read_dir(dir) {
+		Ok(entries) => entries,
+		Err(err) => {
+			log::warn!(
+				"Failed to read thumbnail cache directory {}: {err}",
+				dir.display()
+			);
+			return;
+		}
 	};
 
 	let mut files = Vec::new();
 	let mut total = 0u64;
 
-	for entry in entries.flatten() {
-		let Ok(metadata) = entry.metadata() else {
-			continue;
+	for entry_result in entries {
+		let entry = match entry_result {
+			Ok(entry) => entry,
+			Err(err) => {
+				log::warn!("Failed to read thumbnail cache directory entry: {err}");
+				continue;
+			}
+		};
+		let metadata = match entry.metadata() {
+			Ok(metadata) => metadata,
+			Err(err) => {
+				log::warn!(
+					"Failed to read thumbnail cache metadata for {}: {err}",
+					entry.path().display()
+				);
+				continue;
+			}
 		};
 
 		if !metadata.is_file() {
@@ -93,7 +144,13 @@ pub(crate) fn prune() {
 		}
 
 		let size = metadata.len();
-		let modified = metadata.modified().unwrap_or(UNIX_EPOCH);
+		let modified = metadata.modified().unwrap_or_else(|err| {
+			log::warn!(
+				"Failed to read thumbnail cache modification time for {}: {err}",
+				entry.path().display()
+			);
+			UNIX_EPOCH
+		});
 
 		total = total.saturating_add(size);
 		files.push((modified, entry.path(), size));
@@ -110,8 +167,12 @@ pub(crate) fn prune() {
 			break;
 		}
 
-		if fs::remove_file(path).is_ok() {
-			total = total.saturating_sub(size);
+		match fs::remove_file(&path) {
+			Ok(()) => total = total.saturating_sub(size),
+			Err(err) => log::warn!(
+				"Failed to remove pruned thumbnail cache file {}: {err}",
+				path.display()
+			),
 		}
 	}
 }

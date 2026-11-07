@@ -7,6 +7,7 @@ use std::{
 	time::{Duration, Instant},
 };
 
+use rai_pal_core::result::LogErrExt;
 use slint::{Model, ModelRc};
 
 use crate::{GameRowView, image_cache, model::reset_row};
@@ -134,7 +135,11 @@ impl FetchScheduler {
 	}
 
 	fn enqueue(&self, request: FetchRequest) {
-		let Ok(mut state) = self.state.lock() else {
+		let Some(mut state) = self
+			.state
+			.lock()
+			.ok_or_log("Failed to lock fetch scheduler state")
+		else {
 			return;
 		};
 
@@ -147,7 +152,11 @@ impl FetchScheduler {
 	}
 
 	pub fn set_visible_requests(&self, requests: Vec<FetchRequest>) {
-		let Ok(mut state) = self.state.lock() else {
+		let Some(mut state) = self
+			.state
+			.lock()
+			.ok_or_log("Failed to lock fetch scheduler state")
+		else {
 			return;
 		};
 
@@ -168,7 +177,11 @@ impl FetchScheduler {
 	}
 
 	pub fn set_visible_bounds(&self, first: usize, last: usize) -> Vec<usize> {
-		let Ok(mut state) = self.state.lock() else {
+		let Some(mut state) = self
+			.state
+			.lock()
+			.ok_or_log("Failed to lock fetch scheduler state")
+		else {
 			return Vec::new();
 		};
 
@@ -212,13 +225,21 @@ impl FetchScheduler {
 	}
 
 	pub fn mark_loaded(&self, index: usize) {
-		if let Ok(mut state) = self.state.lock() {
+		if let Some(mut state) = self
+			.state
+			.lock()
+			.ok_or_log("Failed to lock fetch scheduler state")
+		{
 			state.loaded.insert(index);
 		}
 	}
 
 	pub fn should_apply(&self, index: usize) -> bool {
-		let Ok(state) = self.state.lock() else {
+		let Some(state) = self
+			.state
+			.lock()
+			.ok_or_log("Failed to lock fetch scheduler state")
+		else {
 			return false;
 		};
 
@@ -231,7 +252,11 @@ impl FetchScheduler {
 		}
 
 		let job = ThumbnailJob { generation, url };
-		let Ok(mut state) = self.state.lock() else {
+		let Some(mut state) = self
+			.state
+			.lock()
+			.ok_or_log("Failed to lock fetch scheduler state")
+		else {
 			return;
 		};
 
@@ -254,7 +279,10 @@ impl FetchScheduler {
 	}
 
 	pub fn take_next_thumbnail(&self) -> Option<ThumbnailJob> {
-		let mut state = self.state.lock().ok()?;
+		let mut state = self
+			.state
+			.lock()
+			.ok_or_log("Failed to lock fetch scheduler state")?;
 
 		loop {
 			if self.thumbnails_enabled() {
@@ -298,15 +326,23 @@ impl FetchScheduler {
 				}
 
 				state = if let Some(duration) = next_wait {
-					self.condvar.wait_timeout(state, duration).ok()?.0
+					self.condvar
+						.wait_timeout(state, duration)
+						.ok_or_log("Failed to wait on fetch scheduler")?
+						.0
 				} else {
-					self.condvar.wait(state).ok()?
+					self.condvar
+						.wait(state)
+						.ok_or_log("Failed to wait on fetch scheduler")?
 				};
 			} else {
 				state.thumbnail_queue.clear();
 				state.thumbnail_queued.clear();
 				state.thumbnail_subscribers.clear();
-				state = self.condvar.wait(state).ok()?;
+				state = self
+					.condvar
+					.wait(state)
+					.ok_or_log("Failed to wait on fetch scheduler")?;
 			}
 		}
 	}
@@ -316,7 +352,11 @@ impl FetchScheduler {
 			return false;
 		}
 
-		let Ok(state) = self.state.lock() else {
+		let Some(state) = self
+			.state
+			.lock()
+			.ok_or_log("Failed to lock fetch scheduler state")
+		else {
 			return false;
 		};
 
@@ -324,7 +364,11 @@ impl FetchScheduler {
 	}
 
 	pub fn finish_thumbnail(&self, job: &ThumbnailJob, outcome: ThumbnailOutcome) -> Vec<usize> {
-		let Ok(mut state) = self.state.lock() else {
+		let Some(mut state) = self
+			.state
+			.lock()
+			.ok_or_log("Failed to lock fetch scheduler state")
+		else {
 			return Vec::new();
 		};
 
@@ -355,7 +399,10 @@ impl FetchScheduler {
 	}
 
 	pub fn take_next(&self) -> Option<FetchRequest> {
-		let mut state = self.state.lock().ok()?;
+		let mut state = self
+			.state
+			.lock()
+			.ok_or_log("Failed to lock fetch scheduler state")?;
 
 		loop {
 			if let Some(request) = state.queue.pop_front() {
@@ -364,12 +411,19 @@ impl FetchScheduler {
 				return Some(request);
 			}
 
-			state = self.condvar.wait(state).ok()?;
+			state = self
+				.condvar
+				.wait(state)
+				.ok_or_log("Failed to wait on fetch scheduler")?;
 		}
 	}
 
 	pub fn finish(&self, index: usize) {
-		if let Ok(mut state) = self.state.lock() {
+		if let Some(mut state) = self
+			.state
+			.lock()
+			.ok_or_log("Failed to lock fetch scheduler state")
+		{
 			state.in_flight.remove(&index);
 		}
 	}
@@ -377,7 +431,11 @@ impl FetchScheduler {
 	pub fn begin_query(&self) -> u64 {
 		let generation = self.generation.fetch_add(1, Ordering::SeqCst) + 1;
 
-		if let Ok(mut state) = self.state.lock() {
+		if let Some(mut state) = self
+			.state
+			.lock()
+			.ok_or_log("Failed to lock fetch scheduler state")
+		{
 			state.queue.clear();
 			state.queued.clear();
 			state.in_flight.clear();
@@ -400,7 +458,11 @@ impl FetchScheduler {
 	pub fn set_thumbnails_enabled(&self, enabled: bool) {
 		self.thumbnails_enabled.store(enabled, Ordering::SeqCst);
 
-		if let Ok(mut state) = self.state.lock() {
+		if let Some(mut state) = self
+			.state
+			.lock()
+			.ok_or_log("Failed to lock fetch scheduler state")
+		{
 			state.thumbnail_queue.clear();
 			state.thumbnail_queued.clear();
 			state.thumbnail_subscribers.clear();

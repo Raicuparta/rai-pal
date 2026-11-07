@@ -3,7 +3,10 @@ use std::path::Path;
 use pelite::{PeFile, Wrap};
 use rai_pal_proc_macros::serializable_enum;
 
-use crate::{game_engines::mmap_safe, result::Result};
+use crate::{
+	game_engines::mmap_safe,
+	result::{LogErrExt, Result},
+};
 
 #[serializable_enum]
 pub enum Architecture {
@@ -22,7 +25,8 @@ pub fn get_architecture(exe_path: &Path) -> Result<Option<Architecture>> {
 		return Ok(get_elf_architecture(&mmap));
 	}
 
-	let Ok(pe) = PeFile::from_bytes(&mmap) else {
+	let Some(pe) = PeFile::from_bytes(&mmap).ok_or_log("Failed to parse PE file for architecture")
+	else {
 		return Ok(None);
 	};
 

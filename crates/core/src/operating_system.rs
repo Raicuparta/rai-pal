@@ -3,6 +3,8 @@ use std::{io::Read, path::Path};
 
 use rai_pal_proc_macros::serializable_enum;
 
+use crate::result::LogErrExt;
+
 #[serializable_enum]
 pub enum OperatingSystem {
 	Windows,
@@ -25,12 +27,16 @@ impl OperatingSystem {
 /// Infer the operating system an executable targets by reading its file header.
 /// Windows executables are PE files (`MZ` magic), Linux executables are ELF files.
 pub fn get_os_from_path(exe_path: &Path) -> Option<OperatingSystem> {
-	let Ok(mut file) = File::open(exe_path) else {
+	let Some(mut file) = File::open(exe_path).ok_or_log(&format!(
+		"Failed to open executable {exe_path:?} to detect OS"
+	)) else {
 		return None;
 	};
 
 	let mut magic = [0u8; 4];
-	if let Ok(bytes_read) = file.read(&mut magic)
+	if let Some(bytes_read) = file
+		.read(&mut magic)
+		.ok_or_log("Failed to read executable header to detect OS")
 		&& bytes_read < 2
 	{
 		return None;

@@ -4,7 +4,7 @@ use crate::{
 	game::Game,
 	local_database::mod_database::{ModDatabase, ModInfo},
 	mods::{manifest::Mod, mod_family::ModFamily},
-	result::Result,
+	result::{LogErrExt, Result},
 };
 
 /// A mod that applies to a game, together with its compatibility and install state.
@@ -44,7 +44,10 @@ impl GameModGroups {
 	) -> Result<Self> {
 		let mod_infos = database.get_game_mods(&game.provider_id, &game.game_id)?;
 		let mods = database.get_mod_map()?;
-		let families = database.get_mod_families().unwrap_or_default();
+		let families = database
+			.get_mod_families()
+			.ok_or_log("Failed to load mod families")
+			.unwrap_or_default();
 
 		let mut compatible_parts = Vec::new();
 		let mut hidden_parts = Vec::new();

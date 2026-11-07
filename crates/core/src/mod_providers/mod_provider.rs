@@ -43,8 +43,12 @@ static REFRESH_LOCK: AsyncMutex<()> = AsyncMutex::const_new(());
 /// stop the remote (including third party) mod databases from being refreshed.
 /// The first error is still returned at the end.
 pub async fn refresh_all_mods(db: &DbMutex) -> Result {
-	let Ok(_guard) = REFRESH_LOCK.try_lock() else {
-		return Ok(());
+	let _guard = match REFRESH_LOCK.try_lock() {
+		Ok(guard) => guard,
+		Err(err) => {
+			log::debug!("Skipping mod refresh because another refresh is running: {err}");
+			return Ok(());
+		}
 	};
 
 	let mut first_error = if let Err(error) = FolderModProvider::default()?.refresh(db).await {

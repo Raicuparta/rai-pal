@@ -19,7 +19,7 @@ use crate::{
 		heroic_provider,
 	},
 	local_database::{app_database::DbMutex, game_database::GameDatabase},
-	result::Result,
+	result::{LogErrExt, Result},
 };
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -113,7 +113,7 @@ impl HeroicGog {
 			.filter_map(|(key, value)| {
 				let app_name = key.strip_prefix("gog_")?.to_string();
 				let release_date = serde_json::from_value::<GogApiInfo>(value)
-					.ok()?
+					.ok_or_log("Failed to parse Heroic GOG API info")?
 					.first_release_date?;
 				heroic_provider::parse_release_date(&release_date).map(|date| (app_name, date))
 			})

@@ -260,8 +260,11 @@ fn parse_shortcuts_file(bytes: &[u8]) -> Result<(u32, Vec<ShortcutSummary>)> {
 			entry.end_byte = next_position;
 			position = next_position;
 
-			if let Ok(index) = field_name.parse::<u32>() {
-				max_index = max_index.max(index);
+			match field_name.parse::<u32>() {
+				Ok(index) => max_index = max_index.max(index),
+				Err(err) => {
+					log::debug!("Steam shortcut key {field_name} is not a numeric index: {err}")
+				}
 			}
 
 			entries.push(entry);
@@ -433,5 +436,7 @@ fn calculate_shortcut_app_id(app_name: &str, executable: &str) -> u32 {
 		String::new(),
 	);
 
-	u32::try_from(shortcut.steam_id() >> 32).unwrap_or_default()
+	u32::try_from(shortcut.steam_id() >> 32)
+		.ok_or_log("Failed to convert Steam shortcut ID")
+		.unwrap_or_default()
 }

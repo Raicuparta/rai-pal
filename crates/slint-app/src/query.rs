@@ -37,7 +37,7 @@ pub fn start_query(
 		let result = load_game_ids(&database, query);
 		let ui_scheduler = scheduler.clone();
 
-		let _ = slint::invoke_from_event_loop(move || {
+		crate::runtime::invoke_on_ui(move || {
 			if ui_scheduler.generation() != query_generation {
 				return;
 			}
@@ -58,7 +58,12 @@ pub fn start_query(
 			let rows = make_rows(&response.game_ids);
 			ui_scheduler.begin_query();
 
-			window.set_games_total_count(i32::try_from(response.total_count).unwrap_or(i32::MAX));
+			window.set_games_total_count(i32::try_from(response.total_count).unwrap_or_else(
+				|err| {
+					log::warn!("Games count exceeds i32: {err}");
+					i32::MAX
+				},
+			));
 			let model = std::rc::Rc::new(slint::VecModel::from(rows));
 			window.set_game_rows(model.into());
 		});

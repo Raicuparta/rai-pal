@@ -5,7 +5,7 @@ use rai_pal_proc_macros::serializable_enum;
 use serde::Serialize;
 use uuid::Uuid;
 
-use crate::http;
+use crate::{http, result::LogErrExt};
 
 const COLLECT_URL: &str = "https://events.raicuparta.com/rai-pal/collect";
 
@@ -50,7 +50,11 @@ pub async fn send_event(event: Event, data: Option<AnalyticsData>) {
 				if d.is_empty() {
 					None
 				} else {
-					Some(serde_json::to_value(d).unwrap_or_default())
+					Some(
+						serde_json::to_value(d)
+							.ok_or_log("Failed to serialize analytics data")
+							.unwrap_or_default(),
+					)
 				}
 			}),
 		}],

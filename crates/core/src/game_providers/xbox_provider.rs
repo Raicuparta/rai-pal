@@ -14,7 +14,7 @@ use crate::{
 	game_providers::game_provider::{GameProviderId, ProviderActions, WineProviderActions},
 	local_database::{app_database::DbMutex, game_database::GameDatabase},
 	path_extensions::PathExt,
-	result::Result,
+	result::{LogErrExt, Result},
 };
 
 #[derive(Clone)]
@@ -62,22 +62,37 @@ fn get_games(db: &DbMutex) -> io::Result<()> {
 			.open_subkey("Software\\Classes\\Local Settings\\Software\\Microsoft\\Windows\\CurrentVersion\\AppModel\\Repository\\Packages")?;
 
 	for key in package_roots.enum_keys().flatten() {
-		if let Ok(child) = package_roots.open_subkey(key) {
+		if let Some(child) = package_roots
+			.open_subkey(key)
+			.ok_or_log("Failed to open Xbox package root")
+		{
 			if let Some(Ok(subkey)) = child.enum_keys().next() {
-				if let Ok(subchild) = child.open_subkey(subkey) {
-					if let Ok(package_id) = subchild.get_value::<String, _>("Package") {
-						if let Ok(root_path) = subchild.get_value::<String, _>("Root") {
-							if let Ok(executables) =
-								game_configs.open_subkey(format!("{package_id}\\Executable"))
+				if let Some(subchild) = child
+					.open_subkey(subkey)
+					.ok_or_log("Failed to open Xbox package subkey")
+				{
+					if let Some(package_id) = subchild
+						.get_value::<String, _>("Package")
+						.ok_or_log("Failed to read Xbox package ID")
+					{
+						if let Some(root_path) = subchild
+							.get_value::<String, _>("Root")
+							.ok_or_log("Failed to read Xbox package root path")
+						{
+							if let Some(executables) = game_configs
+								.open_subkey(format!("{package_id}\\Executable"))
+								.ok_or_log("Failed to open Xbox game executables key")
 							{
 								if let Some(Ok(first_executable_key)) =
 									executables.enum_keys().next()
 								{
-									if let Ok(first_executable) =
-										executables.open_subkey(first_executable_key)
+									if let Some(first_executable) = executables
+										.open_subkey(first_executable_key)
+										.ok_or_log("Failed to open Xbox executable key")
 									{
-										if let Ok(executable_name) =
-											first_executable.get_value::<String, _>("Name")
+										if let Some(executable_name) = first_executable
+											.get_value::<String, _>("Name")
+											.ok_or_log("Failed to read Xbox executable name")
 										{
 											let executable_path =
 												PathBuf::from(&root_path).join(&executable_name);

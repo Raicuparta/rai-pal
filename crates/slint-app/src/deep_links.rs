@@ -4,6 +4,7 @@ use rai_pal_core::{
 	app_paths,
 	game_providers::game_provider::GameProviderId,
 	local_database::{app_database::DbMutex, game_database::GameDatabase},
+	result::LogErrExt,
 };
 use slint::ComponentHandle;
 use url::Url;
@@ -24,7 +25,7 @@ pub fn handle(
 	selected_game: &SelectedGameState,
 	downloads: &Tracker,
 ) {
-	let Ok(url) = Url::parse(raw_url) else {
+	let Some(url) = Url::parse(raw_url).ok_or_log("Failed to parse deep link URL") else {
 		return;
 	};
 
@@ -84,7 +85,10 @@ fn dispatch_mod_action(
 		log::warn!("Ignoring rai-pal:// {action:?} deep link without a providerId");
 		return;
 	};
-	let Ok(provider_id) = provider_id.parse::<GameProviderId>() else {
+	let Some(provider_id) = provider_id
+		.parse::<GameProviderId>()
+		.ok_or_log("Failed to parse deep link provider ID")
+	else {
 		log::warn!("Ignoring rai-pal:// {action:?} deep link with an invalid providerId");
 		return;
 	};
@@ -94,7 +98,10 @@ fn dispatch_mod_action(
 		return;
 	};
 
-	let Ok(game) = database.get_game(&provider_id, game_id) else {
+	let Some(game) = database
+		.get_game(&provider_id, game_id)
+		.ok_or_log("Failed to load game from deep link")
+	else {
 		log::warn!("Ignoring rai-pal:// {action:?} deep link for an unknown game");
 		return;
 	};
@@ -129,7 +136,9 @@ pub fn register() {
 fn register_linux() {
 	use std::{fs, process::Command};
 
-	let Some(dirs) = app_paths::base_dirs().ok() else {
+	let Some(dirs) =
+		app_paths::base_dirs().ok_or_log("Failed to get base dirs for deep link registration")
+	else {
 		return;
 	};
 	let applications_dir = dirs.data_dir().join("applications");
@@ -194,6 +203,6 @@ fn register_windows() {
 fn current_executable() -> std::path::PathBuf {
 	std::env::var_os("APPIMAGE")
 		.map(std::path::PathBuf::from)
-		.or_else(|| std::env::current_exe().ok())
+		.or_else(|| std::env::current_exe().ok_or_log("Failed to get current executable path"))
 		.unwrap_or_default()
 }

@@ -25,7 +25,7 @@ use crate::{
 	},
 	operating_system::OperatingSystem,
 	path_extensions::PathExt,
-	result::{ContextResult, Error, Result},
+	result::{ContextResult, Error, LogErrExt, Result},
 };
 
 #[serializable_struct]
@@ -311,7 +311,10 @@ impl ModDatabase for DbMutex {
 		let mut installed_mods = Vec::new();
 
 		for mod_id in mod_ids {
-			if let Ok(game_mod) = self.get_mod(&mod_id) {
+			if let Some(game_mod) = self
+				.get_mod(&mod_id)
+				.ok_or_log("Failed to load installed mod")
+			{
 				installed_mods.push(InstalledMod::new(game_mod, Some(game.clone())));
 			}
 		}
@@ -332,7 +335,10 @@ impl ModDatabase for DbMutex {
 		let mut environment_mod_ids = Vec::new();
 
 		for mod_id in mod_ids {
-			let Ok(game_mod) = self.get_mod(&mod_id) else {
+			let Some(game_mod) = self
+				.get_mod(&mod_id)
+				.ok_or_log("Failed to load mod environment")
+			else {
 				continue;
 			};
 			let mod_environment = game_mod.get_game_environment(Some(game));
@@ -439,19 +445,25 @@ impl ModDatabase for DbMutex {
 		let mut installed_mod_rows = Vec::new();
 
 		for (provider_id, game_id) in installed_game_ids {
-			let Ok(game) = self.get_game(&provider_id, &game_id) else {
-				log::warn!(
-					"Game ({provider_id}/{game_id}) not found in database, skipping refresh of installed mods"
-				);
+			let Some(game) = self
+				.get_game(&provider_id, &game_id)
+				.ok_or_log("Failed to load installed game while refreshing mods")
+			else {
 				continue;
 			};
-			let Ok(exe_path) = game.try_get_exe_path() else {
+			let Some(exe_path) = game
+				.try_get_exe_path()
+				.ok_or_log("Failed to get game executable path while refreshing installed mods")
+			else {
 				continue;
 			};
 			let exe_path_hash = exe_path.hash_string();
 
 			for game_mod in game_mods.values() {
-				let Ok(manifest_path) = game_mod.get_manifest_target_path(Some(&game)) else {
+				let Some(manifest_path) = game_mod
+					.get_manifest_target_path(Some(&game))
+					.ok_or_log("Failed to get installed mod manifest path")
+				else {
 					continue;
 				};
 

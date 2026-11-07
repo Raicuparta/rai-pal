@@ -3,6 +3,7 @@ use std::{rc::Rc, sync::Arc, thread};
 use rai_pal_core::{
 	local_database::{app_database::DbMutex, game_database::GameDatabase},
 	mod_providers::url_mod_provider,
+	result::LogErrExt,
 };
 use slint::ComponentHandle;
 
@@ -60,7 +61,7 @@ pub fn request_add(window: &MainWindow, url: String) {
 	thread::spawn(move || {
 		let result = get_mods(&url);
 
-		let _ = slint::invoke_from_event_loop(move || {
+		crate::runtime::invoke_on_ui(move || {
 			let Some(window) = window.upgrade() else {
 				return;
 			};
@@ -100,11 +101,13 @@ pub fn confirm_add(window: &MainWindow, database: Arc<DbMutex>, selected_game: S
 	thread::spawn(move || {
 		let result = url_mod_provider::add_url_mod_source(url.clone());
 
-		if result.is_ok() {
-			let _ = refresh::refresh_mods(&database_for_refresh);
+		if result.is_ok()
+			&& let Err(err) = refresh::refresh_mods(&database_for_refresh)
+		{
+			log::warn!("Failed to refresh mods after changing URL mod sources: {err}");
 		}
 
-		let _ = slint::invoke_from_event_loop(move || {
+		crate::runtime::invoke_on_ui(move || {
 			let Some(window) = window.upgrade() else {
 				return;
 			};
@@ -145,11 +148,13 @@ pub fn set_enabled(
 	thread::spawn(move || {
 		let result = url_mod_provider::set_url_mod_source_enabled(&url, enabled);
 
-		if result.is_ok() {
-			let _ = refresh::refresh_mods(&database_for_refresh);
+		if result.is_ok()
+			&& let Err(err) = refresh::refresh_mods(&database_for_refresh)
+		{
+			log::warn!("Failed to refresh mods after changing URL mod sources: {err}");
 		}
 
-		let _ = slint::invoke_from_event_loop(move || {
+		crate::runtime::invoke_on_ui(move || {
 			let Some(window) = window_weak.upgrade() else {
 				return;
 			};
@@ -185,11 +190,13 @@ pub fn remove(
 	thread::spawn(move || {
 		let result = url_mod_provider::remove_url_mod_source(&url);
 
-		if result.is_ok() {
-			let _ = refresh::refresh_mods(&database_for_refresh);
+		if result.is_ok()
+			&& let Err(err) = refresh::refresh_mods(&database_for_refresh)
+		{
+			log::warn!("Failed to refresh mods after changing URL mod sources: {err}");
 		}
 
-		let _ = slint::invoke_from_event_loop(move || {
+		crate::runtime::invoke_on_ui(move || {
 			let Some(window) = window_weak.upgrade() else {
 				return;
 			};
@@ -217,11 +224,18 @@ fn after_mod_refresh(
 ) {
 	mods_tab::load(window, database);
 
-	let Some((_, game)) = selected_game.lock().ok().and_then(|game| game.clone()) else {
+	let Some((_, game)) = selected_game
+		.lock()
+		.ok_or_log("Failed to lock selected game")
+		.and_then(|game| game.clone())
+	else {
 		return;
 	};
 
-	let Ok(updated_game) = database.get_game(&game.provider_id, &game.game_id) else {
+	let Some(updated_game) = database
+		.get_game(&game.provider_id, &game.game_id)
+		.ok_or_log("Failed to reload selected game")
+	else {
 		return;
 	};
 

@@ -13,7 +13,7 @@ use rai_pal_core::{
 	mods::manifest::install_steps,
 	open_better,
 	path_extensions::PathExt,
-	result::{Error, Result},
+	result::{Error, LogErrExt, Result},
 };
 
 pub fn run_provider_action(
@@ -117,9 +117,10 @@ pub fn install_standalone_mod(
 	action_state::start(&window, action_id.clone());
 
 	thread::spawn(move || {
-		let Ok(runtime) = tokio::runtime::Builder::new_current_thread()
+		let Some(runtime) = tokio::runtime::Builder::new_current_thread()
 			.enable_all()
 			.build()
+			.ok_or_log("Failed to create async runtime")
 		else {
 			action_state::finish(
 				&window,

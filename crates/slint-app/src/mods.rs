@@ -11,7 +11,7 @@ use rai_pal_core::{
 		game_mods::{GameMod, GameModGroups, PotentialMod},
 		manifest::{Mod, ModDependency, install_steps},
 	},
-	result::Result,
+	result::{LogErrExt, Result},
 };
 use slint::ComponentHandle;
 
@@ -41,15 +41,20 @@ fn refresh_remote_configs(window: slint::Weak<MainWindow>, database: Arc<DbMutex
 	}
 
 	thread::spawn(move || {
-		let Ok(runtime) = runtime::current_thread() else {
+		let Some(runtime) = runtime::current_thread().ok_or_log("Failed to create async runtime")
+		else {
 			return;
 		};
 
-		let Ok(Some(configs)) = runtime.block_on(game.get_remote_configs()) else {
+		let Some(configs) = runtime
+			.block_on(game.get_remote_configs())
+			.ok_or_log("Failed to load remote configs")
+			.flatten()
+		else {
 			return;
 		};
 
-		let Ok(mods) = database.get_mod_map() else {
+		let Some(mods) = database.get_mod_map().ok_or_log("Failed to load mod map") else {
 			return;
 		};
 
@@ -62,7 +67,7 @@ fn refresh_remote_configs(window: slint::Weak<MainWindow>, database: Arc<DbMutex
 		let database = database.clone();
 		let game = game.clone();
 
-		let _ = slint::invoke_from_event_loop(move || {
+		crate::runtime::invoke_on_ui(move || {
 			let Some(window) = window.upgrade() else {
 				return;
 			};
@@ -116,7 +121,8 @@ pub fn install_mod(
 	action_state::start(&window, action_id.clone());
 
 	thread::spawn(move || {
-		let Ok(runtime) = runtime::current_thread() else {
+		let Some(runtime) = runtime::current_thread().ok_or_log("Failed to create async runtime")
+		else {
 			return;
 		};
 
@@ -183,7 +189,8 @@ pub fn download_mod_config(
 	action_state::start(&window, action_id.clone());
 
 	thread::spawn(move || {
-		let Ok(runtime) = runtime::current_thread() else {
+		let Some(runtime) = runtime::current_thread().ok_or_log("Failed to create async runtime")
+		else {
 			return;
 		};
 
@@ -227,7 +234,8 @@ pub fn uninstall_mod(
 	action_state::start(&window, action_id.clone());
 
 	thread::spawn(move || {
-		let Ok(runtime) = runtime::current_thread() else {
+		let Some(runtime) = runtime::current_thread().ok_or_log("Failed to create async runtime")
+		else {
 			return;
 		};
 
@@ -266,7 +274,8 @@ pub fn uninstall_all_mods(database: Arc<DbMutex>, window: slint::Weak<MainWindow
 	action_state::start(&window, action_id.clone());
 
 	thread::spawn(move || {
-		let Ok(runtime) = runtime::current_thread() else {
+		let Some(runtime) = runtime::current_thread().ok_or_log("Failed to create async runtime")
+		else {
 			return;
 		};
 
@@ -625,7 +634,10 @@ fn collect_deps_to_install(
 		return;
 	}
 
-	let Ok(game_mod) = database.get_mod(mod_id) else {
+	let Some(game_mod) = database
+		.get_mod(mod_id)
+		.ok_or_log("Failed to load mod dependencies")
+	else {
 		return;
 	};
 
@@ -654,7 +666,9 @@ fn collect_deps_to_install(
 				let outdated = info.installed_version.is_none() || info.is_outdated;
 
 				if outdated
-					&& let Ok(dep_mod) = database.get_mod(&info.mod_id)
+					&& let Some(dep_mod) = database
+						.get_mod(&info.mod_id)
+						.ok_or_log("Failed to load dependency mod")
 					&& dep_mod.install.is_some()
 				{
 					collect_deps_to_install(&info.mod_id, database, relevant_mods, visited, result);
@@ -670,7 +684,7 @@ fn refresh_after_action(window: &slint::Weak<MainWindow>, database: &Arc<DbMutex
 	let database = database.clone();
 	let game = game.clone();
 
-	let _ = slint::invoke_from_event_loop(move || {
+	crate::runtime::invoke_on_ui(move || {
 		let Some(window) = window.upgrade() else {
 			return;
 		};

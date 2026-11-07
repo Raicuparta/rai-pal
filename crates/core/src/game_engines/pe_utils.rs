@@ -30,11 +30,12 @@ fn read_cstr(file_bytes: &[u8], offset: usize) -> Option<&str> {
 }
 
 pub fn is_pe_console_app(exe_path: &Path) -> bool {
-	let Ok(mmap) = super::mmap_safe::map_readonly(exe_path) else {
+	let Some(mmap) = super::mmap_safe::map_readonly(exe_path).ok_or_log("Failed to map PE file")
+	else {
 		return false;
 	};
 
-	let Ok(pe) = PeFile::from_bytes(&mmap) else {
+	let Some(pe) = PeFile::from_bytes(&mmap).ok_or_log("Failed to parse PE file") else {
 		return false;
 	};
 
@@ -62,7 +63,9 @@ pub fn try_read_export_dll_name<'a>(
 	let exp_dir_bytes = file_bytes.get(export_offset..exp_dir_end)?;
 	let name_offset_in_struct = std::mem::offset_of!(IMAGE_EXPORT_DIRECTORY, Name);
 	let name_rva_bytes = exp_dir_bytes.get(name_offset_in_struct..name_offset_in_struct + 4)?;
-	let Ok(name_rva_bytes): Result<[u8; 4], _> = name_rva_bytes.try_into() else {
+	let Some(name_rva_bytes) =
+		<[u8; 4]>::try_from(name_rva_bytes).ok_or_log("Failed to convert PE export name RVA")
+	else {
 		return None;
 	};
 	let name_rva = u32::from_le_bytes(name_rva_bytes);

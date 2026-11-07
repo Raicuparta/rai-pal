@@ -128,11 +128,13 @@ pub fn process_game(game: &mut Game) -> bool {
 		return false;
 	};
 
-	let Ok(mmap) = crate::game_engines::mmap_safe::map_readonly(exe_path) else {
+	let Some(mmap) = crate::game_engines::mmap_safe::map_readonly(exe_path)
+		.ok_or_log("Failed to map GameMaker executable")
+	else {
 		return false;
 	};
 
-	let Ok(pe) = PeFile::from_bytes(&mmap) else {
+	let Some(pe) = PeFile::from_bytes(&mmap).ok_or_log("Failed to parse GameMaker PE file") else {
 		return false;
 	};
 

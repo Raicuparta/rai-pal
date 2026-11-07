@@ -16,7 +16,7 @@ use crate::{
 		heroic_provider,
 	},
 	local_database::{app_database::DbMutex, game_database::GameDatabase},
-	result::Result,
+	result::{LogErrExt, Result},
 };
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -73,8 +73,10 @@ impl HeroicAmazon {
 	// Amazon writes the launch command into `fuel.json` when installing, so the
 	// executable comes from the game's own metadata instead of guessing.
 	fn get_exe_path(install_path: &Path) -> Option<PathBuf> {
-		let fuel_content = fs::read_to_string(install_path.join("fuel.json")).ok()?;
-		let fuel = serde_json::from_str::<Fuel>(&fuel_content).ok()?;
+		let fuel_content = fs::read_to_string(install_path.join("fuel.json"))
+			.ok_or_log("Failed to read Amazon fuel.json")?;
+		let fuel = serde_json::from_str::<Fuel>(&fuel_content)
+			.ok_or_log("Failed to parse Amazon fuel.json")?;
 		Some(install_path.join(fuel.main.command.replace('\\', "/")))
 	}
 }

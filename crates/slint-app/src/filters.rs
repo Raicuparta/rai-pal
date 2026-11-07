@@ -10,6 +10,7 @@ use rai_pal_core::{
 	},
 	local_database::{app_database::DbMutex, mod_database::ModDatabase},
 	operating_system::OperatingSystem,
+	result::LogErrExt,
 };
 
 use crate::{FilterGroupView, FilterValueView};
@@ -23,6 +24,7 @@ fn apply_string_value<T>(
 ) -> bool
 where
 	T: Eq + Hash + Clone + FromStr,
+	<T as FromStr>::Err: std::fmt::Display,
 {
 	let target = if value.is_empty() {
 		if !has_unknown {
@@ -30,7 +32,7 @@ where
 		}
 		None
 	} else {
-		let Ok(value) = value.parse() else {
+		let Some(value) = value.parse().ok_or_log("Failed to parse filter value") else {
 			return false;
 		};
 		Some(value)
@@ -47,7 +49,10 @@ pub fn apply_filter_action(
 	value: &str,
 	action: FilterAction,
 ) -> bool {
-	let Ok(group_key) = FilterGroupKey::from_str(group_key) else {
+	let Some(group_key) = FilterGroupKey::from_str(group_key)
+		.map_err(|()| "invalid filter group key")
+		.ok_or_log("Failed to parse filter group key")
+	else {
 		return false;
 	};
 
@@ -107,7 +112,10 @@ pub fn apply_filter_action(
 }
 
 pub fn reset_filter_group(filter: &mut GamesFilter, group_key: &str) -> bool {
-	let Ok(group_key) = FilterGroupKey::from_str(group_key) else {
+	let Some(group_key) = FilterGroupKey::from_str(group_key)
+		.map_err(|()| "invalid filter group key")
+		.ok_or_log("Failed to parse filter group key")
+	else {
 		return false;
 	};
 
@@ -460,7 +468,7 @@ pub fn build_groups(
 }
 
 pub fn load_mod_families(database: &DbMutex) -> Vec<String> {
-	let Ok(mods) = database.get_mod_map() else {
+	let Some(mods) = database.get_mod_map().ok_or_log("Failed to load mod map") else {
 		return Vec::new();
 	};
 

@@ -5,6 +5,7 @@ use std::{
 	time::Duration,
 };
 
+use rai_pal_core::result::LogErrExt;
 use single_instance::SingleInstance;
 
 const INSTANCE_NAME: &str = "rai-pal-single-instance";
@@ -37,13 +38,22 @@ fn forward_arguments() {
 	let arguments = std::env::args().skip(1).collect::<Vec<_>>();
 
 	for _ in 0..50 {
-		if let Ok(mut stream) = TcpStream::connect(("127.0.0.1", FORWARD_PORT)) {
-			if stream
-				.write_all(&serde_json::to_vec(&arguments).unwrap_or_default())
-				.is_ok()
-			{
-				return;
+		match TcpStream::connect(("127.0.0.1", FORWARD_PORT)) {
+			Ok(mut stream) => {
+				let Some(encoded) = serde_json::to_vec(&arguments)
+					.ok_or_log("Failed to serialize arguments for running instance")
+				else {
+					return;
+				};
+
+				match stream.write_all(&encoded) {
+					Ok(()) => return,
+					Err(err) => {
+						log::debug!("Failed to forward arguments to running instance: {err}")
+					}
+				}
 			}
+			Err(err) => log::debug!("Failed to connect to running instance: {err}"),
 		}
 
 		thread::sleep(Duration::from_millis(100));
@@ -65,16 +75,23 @@ pub fn listen(callback: impl Fn(Vec<String>) + Send + Sync + 'static) {
 		};
 
 		for stream in listener.incoming() {
-			let Ok(mut stream) = stream else {
-				continue;
+			let mut stream = match stream {
+				Ok(stream) => stream,
+				Err(err) => {
+					log::warn!("Failed to accept second instance connection: {err}");
+					continue;
+				}
 			};
 
 			let mut data = String::new();
-			if stream.read_to_string(&mut data).is_err() {
+			if let Err(err) = stream.read_to_string(&mut data) {
+				log::warn!("Failed to read second instance arguments: {err}");
 				continue;
 			}
 
-			let Ok(arguments) = serde_json::from_str::<Vec<String>>(&data) else {
+			let Some(arguments) = serde_json::from_str::<Vec<String>>(&data)
+				.ok_or_log("Failed to parse second instance arguments")
+			else {
 				continue;
 			};
 

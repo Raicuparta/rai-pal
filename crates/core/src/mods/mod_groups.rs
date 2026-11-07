@@ -3,7 +3,7 @@ use std::collections::BTreeMap;
 use crate::{
 	local_database::mod_database::ModDatabase,
 	mods::{manifest::Mod, mod_family::ModFamily},
-	result::Result,
+	result::{LogErrExt, Result},
 };
 
 /// A mods-tab entry: either one standalone mod or a family with several mods.
@@ -21,7 +21,10 @@ struct Group {
 
 pub fn get_mod_groups<D: ModDatabase>(database: &D) -> Result<Vec<ModGroup>> {
 	let all_mods = database.get_mod_map()?;
-	let families = database.get_mod_families().unwrap_or_default();
+	let families = database
+		.get_mod_families()
+		.ok_or_log("Failed to load mod families")
+		.unwrap_or_default();
 
 	let mut family_mods = BTreeMap::<String, Vec<Mod>>::new();
 	let mut groups = Vec::<Group>::new();

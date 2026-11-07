@@ -4,8 +4,15 @@ use std::{
 };
 
 fn emit_translation_reruns(directory: &Path) {
-	let Ok(entries) = fs::read_dir(directory) else {
-		return;
+	let entries = match fs::read_dir(directory) {
+		Ok(entries) => entries,
+		Err(err) => {
+			println!(
+				"cargo:warning=Failed to read translation directory {}: {err}",
+				directory.display()
+			);
+			return;
+		}
 	};
 
 	for entry in entries.flatten() {

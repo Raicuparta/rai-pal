@@ -34,7 +34,7 @@ pub fn reset_steam_cache(
 			.and_then(|()| GameProviderId::Steam.insert_games(&database))
 			.and_then(|()| database.refresh_installed_mods());
 
-		let _ = slint::invoke_from_event_loop(move || {
+		crate::runtime::invoke_on_ui(move || {
 			let Some(window) = window.upgrade() else {
 				return;
 			};
@@ -71,7 +71,7 @@ pub fn add_steam_shortcut(window: slint::Weak<MainWindow>) {
 	thread::spawn(move || {
 		let result = add_shortcut();
 
-		let _ = slint::invoke_from_event_loop(move || {
+		crate::runtime::invoke_on_ui(move || {
 			let Some(window) = window.upgrade() else {
 				return;
 			};

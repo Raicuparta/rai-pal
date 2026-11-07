@@ -20,7 +20,7 @@ use crate::{
 		provider_command::{ProviderCommandAction, ProviderCommandKind},
 	},
 	path_extensions::PathExt,
-	result::{ContextResult, Result},
+	result::{ContextResult, LogErrExt, Result},
 };
 
 #[cfg(target_os = "windows")]
@@ -110,7 +110,7 @@ impl Epic {
 			ProviderCommandKind::String(format!(
 				"https://store.epicgames.com/browse?{}",
 				serde_urlencoded::to_string([("sortBy", "relevancy"), ("q", &catalog_item.title)])
-					.ok()?,
+					.ok_or_log("Failed to encode Epic browser URL query")?,
 			)),
 		);
 
@@ -129,7 +129,7 @@ impl EpicCatalogItem {
 				.date_added
 				.as_ref()?
 				.parse::<chrono::DateTime<chrono::Utc>>()
-				.ok()?
+				.ok_or_log("Failed to parse Epic release date")?
 				.to_rfc3339(),
 		)
 	}

@@ -16,6 +16,7 @@ use rai_pal_core::{
 		game_database::{GameDatabase, try_create},
 		mod_database::ModDatabase,
 	},
+	result::LogErrExt,
 };
 use slint::{
 	ComponentHandle, Model,
@@ -134,7 +135,10 @@ pub fn run() -> Result<(), slint::PlatformError> {
 		thanks::load(window.as_weak());
 	}
 	window.set_search_text(initial_query.search.clone().into());
-	window.set_games_total_count(i32::try_from(games_total_count).unwrap_or(i32::MAX));
+	window.set_games_total_count(i32::try_from(games_total_count).unwrap_or_else(|err| {
+		log::warn!("Games count exceeds i32: {err}");
+		i32::MAX
+	}));
 	window.set_sort_index(sort_option_index(
 		initial_query.sort_by,
 		initial_query.sort_descending,
@@ -147,7 +151,10 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	let renderer_name = match window.window().set_rendering_notifier(|_, _| {}) {
 		Ok(()) => "FemtoVG (OpenGL)",
 		Err(slint::SetRenderingNotifierError::Unsupported) => "Software",
-		Err(_) => "Unknown",
+		Err(err) => {
+			log::warn!("Failed to determine renderer name: {err}");
+			"Unknown"
+		}
 	};
 	window.set_renderer_name(renderer_name.into());
 	window.set_platform_name(platform_name().into());
@@ -797,15 +804,25 @@ pub fn run() -> Result<(), slint::PlatformError> {
 			return;
 		};
 
-		let Ok(provider_id) = row.provider_id.parse::<GameProviderId>() else {
+		let Some(provider_id) = row
+			.provider_id
+			.parse::<GameProviderId>()
+			.ok_or_log("Failed to parse game provider ID")
+		else {
 			return;
 		};
 
-		let Ok(game) = ui_database.get_game(&provider_id, row.game_id.as_str()) else {
+		let Some(game) = ui_database
+			.get_game(&provider_id, row.game_id.as_str())
+			.ok_or_log("Failed to load game")
+		else {
 			return;
 		};
 
-		if let Ok(mut selected_game) = ui_selected_game.lock() {
+		if let Some(mut selected_game) = ui_selected_game
+			.lock()
+			.ok_or_log("Failed to lock selected game")
+		{
 			*selected_game = Some((index, game.clone()));
 		}
 
@@ -816,7 +833,10 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	let ui_window = window_weak.clone();
 	let ui_selected_game = selected_game.clone();
 	window.on_back(move || {
-		if let Ok(mut selected_game) = ui_selected_game.lock() {
+		if let Some(mut selected_game) = ui_selected_game
+			.lock()
+			.ok_or_log("Failed to lock selected game")
+		{
 			*selected_game = None;
 		}
 
@@ -829,7 +849,10 @@ pub fn run() -> Result<(), slint::PlatformError> {
 	let ui_database = database.clone();
 	let ui_selected_game = selected_game.clone();
 	window.on_run_provider_action(move |value| {
-		let Ok(action) = value.parse::<ProviderCommandAction>() else {
+		let Some(action) = value
+			.parse::<ProviderCommandAction>()
+			.ok_or_log("Failed to parse provider action")
+		else {
 			return;
 		};
 
@@ -946,7 +969,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 		let selected_game = instance_selected_game.clone();
 		let downloads = instance_downloads.clone();
 
-		let _ = slint::invoke_from_event_loop(move || {
+		crate::runtime::invoke_on_ui(move || {
 			let Some(window) = window.upgrade() else {
 				return;
 			};
@@ -1254,12 +1277,15 @@ pub fn run() -> Result<(), slint::PlatformError> {
 			};
 
 			let finish_window = window.clone();
-			let _ = slint::invoke_from_event_loop(move || {
+			crate::runtime::invoke_on_ui(move || {
 				let Some(window) = window.upgrade() else {
 					return;
 				};
 
-				if let Ok(mut selected_game) = ui_selected_game.lock() {
+				if let Some(mut selected_game) = ui_selected_game
+					.lock()
+					.ok_or_log("Failed to lock selected game")
+				{
 					*selected_game = Some((index, game.clone()));
 				}
 
@@ -1331,7 +1357,7 @@ pub fn run() -> Result<(), slint::PlatformError> {
 fn get_selected_game(state: &selected::SelectedGameState) -> Option<(usize, Game)> {
 	state
 		.lock()
-		.ok()
+		.ok_or_log("Failed to lock selected game")
 		.and_then(|selected_game| selected_game.clone())
 }
 
@@ -1518,13 +1544,13 @@ fn sort_option_index(sort_by: GamesSortBy, sort_descending: bool) -> i32 {
 	SORT_OPTIONS
 		.iter()
 		.position(|option| *option == (sort_by, sort_descending))
-		.and_then(|index| i32::try_from(index).ok())
+		.and_then(|index| i32::try_from(index).ok_or_log("Sort option index does not fit in i32"))
 		.unwrap_or_default()
 }
 
 fn sort_option_from_index(index: i32) -> (GamesSortBy, bool) {
 	usize::try_from(index)
-		.ok()
+		.ok_or_log("Sort option index is negative")
 		.and_then(|index| SORT_OPTIONS.get(index).copied())
 		.unwrap_or((GamesSortBy::Title, false))
 }

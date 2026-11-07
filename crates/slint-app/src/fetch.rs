@@ -28,7 +28,10 @@ static HTTP_CLIENT: LazyLock<reqwest::blocking::Client> = LazyLock::new(|| {
 		.connect_timeout(Duration::from_secs(10))
 		.timeout(Duration::from_secs(30))
 		.build()
-		.unwrap_or_default()
+		.unwrap_or_else(|err| {
+			log::warn!("Failed to build HTTP client, using defaults: {err}");
+			reqwest::blocking::Client::default()
+		})
 });
 
 pub(crate) fn http_client() -> &'static reqwest::blocking::Client {
@@ -124,7 +127,7 @@ where
 }
 
 fn decode_image(bytes: &[u8], max_width: u32, max_height: u32) -> Option<FetchedImage> {
-	let image = image::load_from_memory(bytes).ok()?;
+	let image = image::load_from_memory(bytes).ok_or_log("Failed to decode image")?;
 	let image = image.thumbnail(max_width, max_height).to_rgba8();
 
 	Some(FetchedImage {
@@ -240,28 +243,28 @@ fn spawn_worker(
 					return;
 				};
 
-				let thumbnail_url = match &result.game {
-					Ok(game) => game.thumbnail_url.clone(),
-					Err(_) => None,
-				};
-
 				match result.game {
-					Ok(game) => apply_game_to_row(&mut row, &game),
+					Ok(game) => {
+						let thumbnail_url = game.thumbnail_url.clone();
+						apply_game_to_row(&mut row, &game);
+						rows.set_row_data(result.index, row);
+						ui_scheduler.mark_loaded(result.index);
+
+						if let Some(url) = thumbnail_url {
+							ui_scheduler.enqueue_thumbnail(result.index, result.generation, url);
+						}
+					}
 					Err(title) => {
 						row.title = title.into();
 						row.loaded = true;
+						rows.set_row_data(result.index, row);
+						ui_scheduler.mark_loaded(result.index);
 					}
-				}
-
-				rows.set_row_data(result.index, row);
-				ui_scheduler.mark_loaded(result.index);
-
-				if let Some(url) = thumbnail_url {
-					ui_scheduler.enqueue_thumbnail(result.index, result.generation, url);
 				}
 			});
 
-			if sent.is_err() {
+			if let Err(err) = sent {
+				log::warn!("Failed to send game fetch result to UI: {err}");
 				scheduler.finish(index);
 			}
 		}
@@ -316,7 +319,8 @@ fn spawn_image_worker(scheduler: Arc<FetchScheduler>, window: slint::Weak<MainWi
 						}
 					});
 
-					if sent.is_err() {
+					if let Err(err) = sent {
+						log::warn!("Failed to send thumbnail fetch result to UI: {err}");
 						scheduler.finish_thumbnail(&job, ThumbnailOutcome::Failed);
 					}
 				}

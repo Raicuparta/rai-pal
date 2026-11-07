@@ -11,7 +11,7 @@ use serde_json::Value;
 use super::provider_command::ProviderCommandKind;
 use crate::{
 	app_paths,
-	result::{ContextResult, Result},
+	result::{ContextResult, LogErrExt, Result},
 };
 
 pub(crate) fn config_path() -> Result<PathBuf> {
@@ -94,7 +94,7 @@ where
 pub fn parse_release_date(date: &str) -> Option<String> {
 	DateTime::parse_from_rfc3339(date)
 		.or_else(|_| DateTime::parse_from_str(date, "%Y-%m-%dT%H:%M:%S%z"))
-		.ok()
+		.ok_or_log(&format!("Failed to parse Heroic release date {date}"))
 		.map(|date_time| date_time.to_rfc3339())
 }
 
@@ -137,7 +137,11 @@ fn read_wine_prefix(relative_path: &str, game_id: Option<&str>) -> Result<Option
 
 fn expand_home_dir(path: &str) -> Result<PathBuf> {
 	let path = PathBuf::from(path);
-	if let Ok(relative_path) = path.strip_prefix("~") {
+	if path.starts_with("~")
+		&& let Some(relative_path) = path
+			.strip_prefix("~")
+			.ok_or_log("Failed to strip home prefix from path")
+	{
 		return Ok(app_paths::base_dirs()?.home_dir().join(relative_path));
 	}
 	Ok(path)

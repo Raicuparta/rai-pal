@@ -1,6 +1,9 @@
 use std::{path::Path, thread};
 
-use rai_pal_core::user::auth::{AuthState, get_user_auth_state, logout_auth, start_auth};
+use rai_pal_core::{
+	result::LogErrExt,
+	user::auth::{AuthState, get_user_auth_state, logout_auth, start_auth},
+};
 
 use crate::{MainWindow, analytics, notifications, runtime, text};
 
@@ -65,7 +68,7 @@ fn refresh_state(window: slint::Weak<MainWindow>) {
 }
 
 fn apply_result(window: slint::Weak<MainWindow>, result: Result<AuthState, String>) {
-	let _ = slint::invoke_from_event_loop(move || {
+	crate::runtime::invoke_on_ui(move || {
 		let Some(window) = window.upgrade() else {
 			return;
 		};
@@ -87,7 +90,9 @@ fn apply_state(window: &MainWindow, state: &AuthState) {
 		.avatar_path
 		.as_deref()
 		.map(Path::new)
-		.and_then(|path| slint::Image::load_from_path(path).ok());
+		.and_then(|path| {
+			slint::Image::load_from_path(path).ok_or_log("Failed to load user avatar")
+		});
 
 	window.set_user_logged_in(state.is_logged_in);
 	window.set_user_name(state.user_name.clone().unwrap_or_default().into());

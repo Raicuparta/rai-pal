@@ -64,7 +64,9 @@ pub fn apply_translation(locale: AppLocale) {
 
 	if let Err(err) = slint::select_bundled_translation(code) {
 		log::error!("Failed to select translation {code}: {err}");
-		let _ = slint::select_bundled_translation("en");
+		if let Err(err) = slint::select_bundled_translation("en") {
+			log::warn!("Failed to select fallback translation: {err}");
+		}
 	}
 
 	slint::update_all_translations();

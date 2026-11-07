@@ -14,3 +14,9 @@ pub fn block_on<T>(
 		.block_on(future)
 		.map_err(|err| err.to_string())
 }
+
+pub fn invoke_on_ui(callback: impl FnOnce() + Send + 'static) {
+	if let Err(err) = slint::invoke_from_event_loop(callback) {
+		log::warn!("Failed to invoke UI callback: {err}");
+	}
+}

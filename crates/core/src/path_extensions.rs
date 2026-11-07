@@ -156,8 +156,13 @@ impl PathExt for Path {
 	}
 
 	fn remove_if_exists(&self) -> Result {
-		let Ok(metadata) = fs::symlink_metadata(self) else {
-			return Ok(());
+		let metadata = match fs::symlink_metadata(self) {
+			Ok(metadata) => metadata,
+			Err(err) if err.kind() == std::io::ErrorKind::NotFound => return Ok(()),
+			Err(err) => {
+				log::warn!("Failed to read metadata for {}: {err}", self.display());
+				return Ok(());
+			}
 		};
 
 		if metadata.is_dir() {

@@ -83,7 +83,7 @@ fn url_mod_sources_path() -> Result<PathBuf> {
 fn read_url_mod_sources() -> UrlModSources {
 	let default = UrlModSources::default();
 
-	let Ok(path) = url_mod_sources_path() else {
+	let Some(path) = url_mod_sources_path().ok_or_log("Failed to get URL mod sources path") else {
 		return default;
 	};
 

@@ -8,7 +8,7 @@ use super::vdf::{
 };
 use crate::{
 	operating_system::OperatingSystem,
-	result::{ContextResult, Error, Result},
+	result::{ContextResult, Error, LogErrExt, Result},
 };
 
 #[serializable_struct]
@@ -125,7 +125,9 @@ impl SteamAppInfoReader {
 			let key_count = super::vdf::read_u32_le(&mmap, &mut pos)?;
 			let mut keys_vec: Vec<String> = Vec::with_capacity(usize::try_from(key_count)?);
 			for _ in 0..key_count {
-				if let Ok(key) = super::vdf::read_cstring(&mmap, &mut pos) {
+				if let Some(key) = super::vdf::read_cstring(&mmap, &mut pos)
+					.ok_or_log("Failed to read Steam app info key")
+				{
 					keys_vec.push(key);
 				}
 			}
