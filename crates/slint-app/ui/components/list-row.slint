@@ -1,0 +1,68 @@
+import { Theme } from "../theme.slint";
+
+export component ListRow inherits Rectangle {
+    in property <bool> enabled: true;
+    in property <bool> interactive: root.enabled;
+    in property <bool> extra-hovered: false;
+    in property <string> tooltip: "";
+    in property <length> content-padding-left: Theme.space-8;
+    in property <length> content-padding-right: Theme.space-8;
+    in property <length> content-padding-top: Theme.space-6;
+    in property <length> content-padding-bottom: Theme.space-6;
+    in property <length> spacing: Theme.space-8;
+
+    out property <bool> hovered: row-touch.has-hover || root.extra-hovered;
+
+    callback clicked;
+
+    vertical-stretch: 0;
+    min-height: Theme.control-height;
+    background: !root.enabled ? transparent : row-touch.pressed ? Theme.pressed-background : root.hovered ? Theme.hover-background : transparent;
+    forward-focus: focus-scope;
+
+    accessible-role: button;
+    accessible-enabled: root.interactive;
+    accessible-action-default => {
+        if root.interactive {
+            root.clicked();
+        }
+    }
+
+    row-touch := TouchArea {
+        enabled: root.interactive;
+
+        clicked => {
+            root.clicked();
+        }
+    }
+
+    HorizontalLayout {
+        padding-left: root.content-padding-left;
+        padding-right: root.content-padding-right;
+        padding-top: root.content-padding-top;
+        padding-bottom: root.content-padding-bottom;
+        spacing: root.spacing;
+        cross-axis-alignment: center;
+
+        @children
+    }
+
+    focus-scope := FocusScope {
+        width: 0;
+        height: 0;
+        enabled: root.interactive;
+
+        key-pressed(event) => {
+            if event.text == Key.Space || event.text == Key.Return {
+                root.clicked();
+                return accept;
+            }
+
+            return reject;
+        }
+    }
+
+    if root.tooltip != "" : Tooltip {
+        text: @markdown("\{root.tooltip}");
+    }
+}

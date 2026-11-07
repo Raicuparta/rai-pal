@@ -18,7 +18,9 @@ import { AboutPopup } from "components/about-popup.slint";
 import { ModsPage } from "components/mods-page.slint";
 import { ThanksPage } from "components/thanks-page.slint";
 import { UrlModSourcesPopup } from "components/url-mod-sources-popup.slint";
-import { ConfirmModSourcePopup } from "components/confirm-mod-source-popup.slint";
+import {
+    ConfirmModSourcePopup,
+} from "components/confirm-mod-source-popup.slint";
 import { SteamCachePopup } from "components/steam-cache-popup.slint";
 import { SteamShortcutPopup } from "components/steam-shortcut-popup.slint";
 import { AddGamePopup } from "components/add-game-popup.slint";
@@ -33,8 +35,15 @@ import { ModActions } from "actions.slint";
 import { ActionState, ActionStates } from "action-state.slint";
 import { AppColorScheme, AppTab, AddGamePhase } from "app-types.slint";
 
-export { ActionState, ActionStates, AppColorScheme, AppTab, AddGamePhase, Fonts, ModActions }
-
+export {
+    ActionState,
+    ActionStates,
+    AppColorScheme,
+    AppTab,
+    AddGamePhase,
+    Fonts,
+    ModActions,
+}
 export component MainWindow inherits Window {
     title: "Rai Pal";
     icon: @image-url("../graphics/icon.png");
@@ -416,7 +425,6 @@ export component MainWindow inherits Window {
                         back => {
                             root.back();
                         }
-
                     }
                 }
 
@@ -541,7 +549,7 @@ export component MainWindow inherits Window {
         }
     }
 
-    if root.drop-highlight : Rectangle {
+    if root.drop-highlight: Rectangle {
         border-width: Theme.border-width * 2;
         border-color: Theme.highlight;
         background: transparent;

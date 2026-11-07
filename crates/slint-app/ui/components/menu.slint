@@ -1,6 +1,7 @@
 import { ScrollView } from "std-widgets.slint";
 import { Theme } from "../theme.slint";
 import { LabeledDivider } from "labeled-divider.slint";
+import { ListRow } from "list-row.slint";
 import { SvgIcon } from "svg-icon.slint";
 
 export component PopupMenu inherits PopupWindow {
@@ -28,11 +29,7 @@ export component PopupMenu inherits PopupWindow {
             vertical-scrollbar-policy: ScrollBarPolicy.as-needed;
 
             menu-layout := VerticalLayout {
-                padding-top: Theme.space-4;
-                padding-bottom: Theme.space-4;
-                padding-left: Theme.space-4;
-                padding-right: Theme.space-4;
-                spacing: Theme.space-2;
+                spacing: 0px;
 
                 @children
             }
@@ -40,57 +37,25 @@ export component PopupMenu inherits PopupWindow {
     }
 }
 
-export component PopupMenuItem inherits Rectangle {
+export component PopupMenuItem inherits ListRow {
     in property <string> text;
     in property <image> icon;
-    in property <bool> enabled: true;
     in property <bool> checkable: false;
     in property <bool> checked: false;
 
-    callback clicked;
-
-    vertical-stretch: 0;
-    height: max(item-layout.preferred-height, Theme.control-height);
-    background: item-touch.pressed ? Theme.pressed-background : item-touch.has-hover ? Theme.hover-background : transparent;
-    border-radius: Theme.radius-3;
-    accessible-role: AccessibleRole.button;
     accessible-label: root.text;
-    accessible-enabled: root.enabled;
-    accessible-action-default => {
-        if root.enabled {
-            root.clicked();
-        }
+
+    SvgIcon {
+        source: root.checked ? @image-url("../icons/ui/check.svg") : root.icon;
+        color: root.enabled ? Theme.foreground : Theme.dimmed-foreground;
     }
 
-    item-layout := HorizontalLayout {
-        padding-left: Theme.space-8;
-        padding-right: Theme.space-8;
-        padding-top: Theme.space-4;
-        padding-bottom: Theme.space-4;
-        spacing: Theme.space-8;
-        cross-axis-alignment: center;
-        vertical-stretch: 0;
-
-        SvgIcon {
-            source: root.checked ? @image-url("../icons/ui/check.svg") : root.icon;
-            color: root.enabled ? Theme.foreground : Theme.dimmed-foreground;
-        }
-
-        Text {
-            text: root.text;
-            color: root.enabled ? Theme.foreground : Theme.dimmed-foreground;
-            vertical-alignment: center;
-            wrap: word-wrap;
-            horizontal-stretch: 1;
-        }
-    }
-
-    item-touch := TouchArea {
-        enabled: root.enabled;
-
-        clicked => {
-            root.clicked();
-        }
+    Text {
+        text: root.text;
+        color: root.enabled ? Theme.foreground : Theme.dimmed-foreground;
+        vertical-alignment: center;
+        wrap: word-wrap;
+        horizontal-stretch: 1;
     }
 }
 
@@ -100,8 +65,8 @@ export component PopupMenuSeparator inherits Rectangle {
     background: transparent;
 
     Rectangle {
-        x: Theme.space-4;
-        width: parent.width - Theme.space-8;
+        x: Theme.space-8;
+        width: parent.width - Theme.space-16;
         y: (parent.height - self.height) / 2;
         height: Theme.border-width;
         background: Theme.border;

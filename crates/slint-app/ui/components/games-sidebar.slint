@@ -29,14 +29,12 @@ export component GamesSidebar inherits Sidebar {
     callback filters-collapse-all;
     callback filter-expanded-changed(group: string, expanded: bool);
 
-    SidebarSection {
-        RefreshButton {
-            refreshing: root.refreshing;
-            task-names: root.refresh-task-names;
+    RefreshButton {
+        refreshing: root.refreshing;
+        task-names: root.refresh-task-names;
 
-            clicked => {
-                root.refresh-all();
-            }
+        clicked => {
+            root.refresh-all();
         }
     }
 

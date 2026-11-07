@@ -4,92 +4,94 @@ import { Tr } from "../translations.slint";
 import { Theme } from "../theme.slint";
 import { Button } from "button.slint";
 import { IconButton } from "icon-button.slint";
+import { ListRow } from "list-row.slint";
 import { ResetButton } from "reset-button.slint";
 import { SvgIcon } from "svg-icon.slint";
 
-component FilterValueRow inherits Rectangle {
+component FilterValueRow inherits ListRow {
     in property <FilterValueView> item;
 
     callback toggled(checked: bool);
     callback lock-toggled;
     callback only;
 
-    property <bool> hovered: row-touch.has-hover || checkbox-touch.has-hover || only-button.hovered || lock-button.hovered;
+    extra-hovered: checkbox-touch.has-hover || only-button.hovered || lock-button.hovered;
+    content-padding-left: Theme.space-20 + Theme.space-4;
+    content-padding-right: Theme.space-8;
+    content-padding-top: Theme.space-4;
+    content-padding-bottom: Theme.space-4;
+    spacing: Theme.space-4;
+    accessible-label: root.item.label-key == "" ? root.item.label : Tr.filter-value(root.item.label-key);
 
-    background: hovered ? Theme.hover-background : transparent;
-
-    row-touch := TouchArea { }
-
-    HorizontalLayout {
-        padding-left: Theme.space-20 + Theme.space-4;
-        padding-right: Theme.space-8;
-        spacing: Theme.space-4;
-        cross-axis-alignment: center;
-
-        checkbox-area := Rectangle {
-            horizontal-stretch: 1;
-            height: 100%;
-
-            check-box := CheckBox {
-                x: 0;
-                y: (parent.height - self.height) / 2;
-                text: root.item.label-key == "" ? root.item.label : Tr.filter-value(root.item.label-key);
-                checked: root.item.enabled;
-                enabled: !root.item.locked;
-            }
-
-            checkbox-touch := TouchArea {
-                width: root.item.note-label-key == "" ? parent.width : check-box.preferred-width;
-                height: parent.height;
-
-                clicked => {
-                    if !root.item.locked {
-                        root.toggled(!root.item.enabled);
-                    }
-                }
-            }
-
-            if root.item.note-label-key != "" : Rectangle {
-                x: check-box.preferred-width + Theme.space-4;
-                y: (parent.height - self.height) / 2;
-                width: 12px;
-
-                SvgIcon {
-                    source: @image-url("../icons/ui/help.svg");
-                    size: 12px;
-                    color: Theme.dimmed-foreground;
-                }
-
-                Tooltip {
-                    text: @markdown("\{Tr.filter-value-note(root.item.note-label-key)}");
-                }
-            }
+    clicked => {
+        if !root.item.locked {
+            root.toggled(!root.item.enabled);
         }
+    }
 
-        only-button := Button {
-            text: "Only";
-            text-size: 10px;
-            tooltip: @tr("filterMenu" => "Only show this value");
-            visible: !root.item.locked;
+    checkbox-area := Rectangle {
+        horizontal-stretch: 1;
+        height: 100%;
+
+        check-box := CheckBox {
+            x: 0;
+            y: (parent.height - self.height) / 2;
+            text: root.item.label-key == "" ? root.item.label : Tr.filter-value(root.item.label-key);
+            checked: root.item.enabled;
             enabled: !root.item.locked;
-            opacity: root.hovered ? 1 : 0;
-            reserve-icon-space: false;
+        }
+
+        checkbox-touch := TouchArea {
+            width: root.item.note-label-key == "" ? parent.width : check-box.preferred-width;
+            height: parent.height;
 
             clicked => {
-                root.only();
+                if !root.item.locked {
+                    root.toggled(!root.item.enabled);
+                }
             }
         }
 
-        lock-button := IconButton {
-            icon: root.item.locked ? @image-url("../icons/ui/locked.svg") : @image-url("../icons/ui/unlocked.svg");
-            tooltip: root.item.locked ? @tr("filterMenu" => "Unlock filter value") : @tr("filterMenu" => "Lock filter value");
-            visible: root.item.locked || root.hovered;
-            enabled: !root.item.enabled;
-            tint: root.item.locked ? Theme.highlight : Theme.surface-background;
+        if root.item.note-label-key != "" : Rectangle {
+            x: check-box.preferred-width + Theme.space-4;
+            y: (parent.height - self.height) / 2;
+            width: 12px;
 
-            clicked => {
-                root.lock-toggled();
+            SvgIcon {
+                source: @image-url("../icons/ui/help.svg");
+                size: 12px;
+                color: Theme.dimmed-foreground;
             }
+
+            Tooltip {
+                text: @markdown("\{Tr.filter-value-note(root.item.note-label-key)}");
+            }
+        }
+    }
+
+    only-button := Button {
+        text: "Only";
+        text-size: 10px;
+        tooltip: @tr("filterMenu" => "Only show this value");
+        visible: !root.item.locked;
+        enabled: !root.item.locked;
+        opacity: root.hovered ? 1 : 0;
+        reserve-icon-space: false;
+
+        clicked => {
+            root.only();
+        }
+    }
+
+    lock-button := IconButton {
+        icon: root.item.locked ? @image-url("../icons/ui/locked.svg") : @image-url("../icons/ui/unlocked.svg");
+        tooltip: root.item.locked ? @tr("filterMenu" => "Unlock filter value") : @tr("filterMenu" => "Lock filter value");
+        visible: root.item.locked || root.hovered;
+        enabled: !root.item.enabled;
+        tint: root.item.locked ? Theme.highlight : Theme.surface-background;
+
+        clicked => {
+            root.lock-toggled();
         }
     }
 }
@@ -109,55 +111,50 @@ export component FilterGroupView inherits Rectangle {
         alignment: start;
         spacing: Theme.border-width;
 
-        header := Rectangle {
-            property <bool> hovered: header-touch.has-hover || reset-button.hovered;
+        header := ListRow {
+            extra-hovered: reset-button.hovered;
+            content-padding-left: Theme.space-8;
+            content-padding-right: Theme.space-8;
+            content-padding-top: Theme.space-4;
+            content-padding-bottom: Theme.space-4;
+            spacing: Theme.space-4;
+            accessible-label: root.group.label-key == "" ? root.group.label : Tr.filter-property(root.group.label-key);
 
-            background: hovered ? Theme.hover-background : transparent;
+            clicked => {
+                root.expanded-changed(!root.group.expanded);
+            }
 
-            header-touch := TouchArea {
-                clicked => {
-                    root.expanded-changed(!root.group.expanded);
+            Rectangle {
+                width: root.expand-button-size;
+                height: root.expand-button-size;
+
+                SvgIcon {
+                    x: (parent.width - self.width) / 2;
+                    y: (parent.height - self.height) / 2;
+                    source: root.group.expanded ? @image-url("../icons/ui/expanded.svg") : @image-url("../icons/ui/collapsed.svg");
+                    color: Theme.dimmed-foreground;
                 }
             }
 
-            HorizontalLayout {
-                padding-left: Theme.space-8;
-                padding-right: Theme.space-8;
-                spacing: Theme.space-4;
-                cross-axis-alignment: center;
+            Text {
+                text: root.group.label-key == "" ? root.group.label : Tr.filter-property(root.group.label-key);
+                font-weight: Theme.weight-bold;
+                overflow: elide;
+            }
 
-                Rectangle {
-                    width: root.expand-button-size;
-                    height: root.expand-button-size;
+            if root.group.has-locked : Rectangle {
+                width: 6px;
+                height: 6px;
+                border-radius: 6px / 2;
+                background: Theme.highlight;
+            }
 
-                    SvgIcon {
-                        x: (parent.width - self.width) / 2;
-                        y: (parent.height - self.height) / 2;
-                        source: root.group.expanded ? @image-url("../icons/ui/expanded.svg") : @image-url("../icons/ui/collapsed.svg");
-                        color: Theme.dimmed-foreground;
-                    }
-                }
+            reset-button := ResetButton {
+                tooltip: @tr("filterMenu" => "Reset");
+                enabled: root.group.has-changes;
 
-                Text {
-                    text: root.group.label-key == "" ? root.group.label : Tr.filter-property(root.group.label-key);
-                    font-weight: Theme.weight-bold;
-                    overflow: elide;
-                }
-
-                if root.group.has-locked : Rectangle {
-                    width: 6px;
-                    height: 6px;
-                    border-radius: 6px / 2;
-                    background: Theme.highlight;
-                }
-
-                reset-button := ResetButton {
-                    tooltip: @tr("filterMenu" => "Reset");
-                    enabled: root.group.has-changes;
-
-                    clicked => {
-                        root.reset();
-                    }
+                clicked => {
+                    root.reset();
                 }
             }
         }

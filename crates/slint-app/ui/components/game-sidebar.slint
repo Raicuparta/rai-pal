@@ -1,8 +1,7 @@
-import { Button } from "button.slint";
 import { Theme } from "../theme.slint";
 import { Tr } from "../translations.slint";
-import { ActionButton } from "action-button.slint";
 import { LabeledDivider } from "labeled-divider.slint";
+import { SidebarAction } from "sidebar-action.slint";
 import { Sidebar, SidebarSection } from "sidebar.slint";
 
 export component GameSidebar inherits Sidebar {
@@ -21,10 +20,12 @@ export component GameSidebar inherits Sidebar {
     callback refresh-game;
     callback debug-data;
     callback remove-game(confirmation-text: string, confirm-label: string);
-    SidebarSection {
+
+    VerticalLayout {
+        alignment: start;
         spacing: Theme.space-8;
 
-        Button {
+        SidebarAction {
             text: @tr("subPage" => "Back");
             icon: @image-url("../icons/ui/back.svg");
 
@@ -35,15 +36,21 @@ export component GameSidebar inherits Sidebar {
 
         if root.provider-actions.length > 0 : VerticalLayout {
             alignment: start;
-            spacing: Theme.space-2;
+            spacing: 0px;
 
-            LabeledDivider {
-                label: root.provider-id;
+            SidebarSection {
+                padding-top: Theme.space-4;
+                padding-bottom: Theme.space-4;
+
+                LabeledDivider {
+                    label: root.provider-id;
+                    horizontal-stretch: 1;
+                }
             }
 
-            for action[index] in root.provider-actions : ActionButton {
+            for action[index] in root.provider-actions : SidebarAction {
                 text: Tr.provider-command(action);
-                tint: index == 0 ? Theme.primary : Theme.surface-background;
+                highlighted: index == 0;
                 action-id: "provider-action:" + action;
 
                 clicked => {
@@ -58,13 +65,19 @@ export component GameSidebar inherits Sidebar {
 
         if root.has-exe-path : VerticalLayout {
             alignment: start;
-            spacing: Theme.space-2;
+            spacing: 0px;
 
-            LabeledDivider {
-                label: @tr("gameModal" => "Folders");
+            SidebarSection {
+                padding-top: Theme.space-4;
+                padding-bottom: Theme.space-4;
+
+                LabeledDivider {
+                    label: @tr("gameModal" => "Folders");
+                    horizontal-stretch: 1;
+                }
             }
 
-            ActionButton {
+            SidebarAction {
                 text: @tr("gameModal" => "Game Files");
                 icon: @image-url("../icons/ui/folder.svg");
                 action-id: "open-game-folder";
@@ -74,7 +87,7 @@ export component GameSidebar inherits Sidebar {
                 }
             }
 
-            ActionButton {
+            SidebarAction {
                 text: @tr("gameModal" => "Installed Mods");
                 icon: @image-url("../icons/ui/folder-mods.svg");
                 action-id: "open-game-mods-folder";
@@ -84,7 +97,7 @@ export component GameSidebar inherits Sidebar {
                 }
             }
 
-            ActionButton {
+            SidebarAction {
                 text: @tr("gameModal" => "Game App Data");
                 action-id: "open-game-data-folder";
 
@@ -93,7 +106,7 @@ export component GameSidebar inherits Sidebar {
                 }
             }
 
-            if root.show-wine-folders : ActionButton {
+            if root.show-wine-folders : SidebarAction {
                 text: @tr("gameModal" => "Wine Prefix");
                 action-id: "open-wine-prefix-folder";
 
@@ -102,7 +115,7 @@ export component GameSidebar inherits Sidebar {
                 }
             }
 
-            if root.show-wine-folders : ActionButton {
+            if root.show-wine-folders : SidebarAction {
                 text: @tr("gameModal" => "Wine Binary");
                 action-id: "open-wine-binary-folder";
 
@@ -114,13 +127,19 @@ export component GameSidebar inherits Sidebar {
 
         VerticalLayout {
             alignment: start;
-            spacing: Theme.space-2;
+            spacing: 0px;
 
-            LabeledDivider {
-                label: "Data";
+            SidebarSection {
+                padding-top: Theme.space-4;
+                padding-bottom: Theme.space-4;
+
+                LabeledDivider {
+                    label: "Data";
+                    horizontal-stretch: 1;
+                }
             }
 
-            if root.has-exe-path : ActionButton {
+            if root.has-exe-path : SidebarAction {
                 text: @tr("gameModal" => "Refresh game");
                 icon: @image-url("../icons/ui/refresh.svg");
                 action-id: "refresh-game";
@@ -130,7 +149,7 @@ export component GameSidebar inherits Sidebar {
                 }
             }
 
-            Button {
+            SidebarAction {
                 text: @tr("debugData" => "Debug data");
                 icon: @image-url("../icons/ui/bug.svg");
 

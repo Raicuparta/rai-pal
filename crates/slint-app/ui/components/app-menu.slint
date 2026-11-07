@@ -160,30 +160,40 @@ export component AppMenu inherits Rectangle {
 
         PopupMenuSeparator { }
 
-        SelectMenu {
-            label: @tr("appDropdownMenu" => "Language");
-            options: root.language-options;
-            selected-index: root.language-index();
+        HorizontalLayout {
+            padding-left: Theme.space-4;
+            padding-right: Theme.space-4;
 
-            selected(index) => {
-                root.language-changed(root.language-options[index].value);
+            SelectMenu {
+                label: @tr("appDropdownMenu" => "Language");
+                options: root.language-options;
+                selected-index: root.language-index();
+
+                selected(index) => {
+                    root.language-changed(root.language-options[index].value);
+                }
             }
         }
 
         PopupMenuSeparator { }
 
-        SelectMenu {
-            label: @tr("appDropdownMenu" => "Color scheme");
-            options: root.color-scheme-options;
-            selected-index: root.color-scheme-index();
+        HorizontalLayout {
+            padding-left: Theme.space-4;
+            padding-right: Theme.space-4;
 
-            selected(index) => {
-                if root.color-scheme-options[index].value == "light" {
-                    root.color-scheme-changed(AppColorScheme.light);
-                } else if root.color-scheme-options[index].value == "dark" {
-                    root.color-scheme-changed(AppColorScheme.dark);
-                } else {
-                    root.color-scheme-changed(AppColorScheme.auto);
+            SelectMenu {
+                label: @tr("appDropdownMenu" => "Color scheme");
+                options: root.color-scheme-options;
+                selected-index: root.color-scheme-index();
+
+                selected(index) => {
+                    if root.color-scheme-options[index].value == "light" {
+                        root.color-scheme-changed(AppColorScheme.light);
+                    } else if root.color-scheme-options[index].value == "dark" {
+                        root.color-scheme-changed(AppColorScheme.dark);
+                    } else {
+                        root.color-scheme-changed(AppColorScheme.auto);
+                    }
                 }
             }
         }
