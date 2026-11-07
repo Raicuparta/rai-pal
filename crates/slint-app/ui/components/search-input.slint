@@ -1,0 +1,73 @@
+import { Theme } from "../theme.slint";
+import { ResetButton } from "reset-button.slint";
+
+export component SearchInput inherits Rectangle {
+    in property <string> placeholder-text;
+    in-out property <string> text;
+
+    callback edited(text: string);
+
+    height: Theme.control-height;
+    border-radius: Theme.radius-4;
+    border-width: Theme.border-width;
+    border-color: input.has-focus ? Theme.primary : Theme.border;
+    background: Theme.surface-background;
+    forward-focus: input;
+
+    HorizontalLayout {
+        padding-left: Theme.space-12;
+        padding-right: Theme.space-6;
+        spacing: Theme.space-4;
+        cross-axis-alignment: center;
+
+        input-clip := Rectangle {
+            horizontal-stretch: 1;
+            height: 100%;
+            clip: true;
+
+            if root.text == "" : Text {
+                width: 100%;
+                height: 100%;
+                vertical-alignment: center;
+                text: root.placeholder-text;
+                font-size: Theme.font-14;
+                color: Theme.dimmed-foreground;
+            }
+
+            input := TextInput {
+                property <length> computed-x;
+
+                x: min(0px, max(parent.width - self.width - self.text-cursor-width, self.computed-x));
+                width: max(parent.width - self.text-cursor-width, self.preferred-width);
+                height: 100%;
+                vertical-alignment: center;
+                single-line: true;
+                font-size: Theme.font-14;
+                color: Theme.foreground;
+                text <=> root.text;
+
+                edited => {
+                    root.edited(input.text);
+                }
+
+                cursor-position-changed(cursor-position) => {
+                    if cursor-position.x + self.computed-x < 0px {
+                        self.computed-x = -cursor-position.x;
+                    } else if cursor-position.x + self.computed-x > parent.width - self.text-cursor-width {
+                        self.computed-x = parent.width - cursor-position.x - self.text-cursor-width;
+                    }
+                }
+            }
+        }
+
+        if root.text != "" : ResetButton {
+            icon-size: Theme.font-14;
+            tooltip: @tr("filterMenu" => "Clear search");
+
+            clicked => {
+                root.text = "";
+                root.edited("");
+            }
+        }
+    }
+}
