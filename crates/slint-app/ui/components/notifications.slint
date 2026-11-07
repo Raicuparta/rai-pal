@@ -60,6 +60,7 @@ export component NotificationsOverlay inherits Rectangle {
         x: root.width - self.width - Theme.space-16;
         y: root.height - self.height - Theme.space-16;
         width: min(360px, root.width - Theme.space-16 * 2);
+        height: self.preferred-height;
         spacing: Theme.space-6;
         alignment: start;
 
