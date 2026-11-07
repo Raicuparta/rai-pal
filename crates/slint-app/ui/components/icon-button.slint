@@ -5,13 +5,15 @@ export component IconButton inherits BaseButton {
     in property <image> icon;
     in property <length> icon-size: 14px;
 
-    width: 18px;
-    height: 18px;
-    border-radius: 9px;
+    private property <length> size: icon-size * 1.2;
+
+    width: size;
+    height: size;
+    border-radius: size / 2;
 
     accessible-label: root.tooltip;
 
-    if root.icon.width > 0 : SvgIcon {
+    if root.icon.width > 0: SvgIcon {
         source: root.icon;
         size: root.icon-size;
         color: root.ink-color;

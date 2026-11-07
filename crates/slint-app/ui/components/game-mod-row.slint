@@ -16,7 +16,7 @@ export component GameModRowView inherits Rectangle {
 
     context-menu := ContextMenuArea {
         Menu {
-            if game-mod.can-edit-config : MenuItem {
+            if game-mod.can-edit-config: MenuItem {
                 title: @tr("gameModRow" => "Edit Mod Config");
                 icon: @image-url("../icons/ui/settings.svg");
 
@@ -25,7 +25,7 @@ export component GameModRowView inherits Rectangle {
                 }
             }
 
-            if game-mod.can-edit-config : MenuItem {
+            if game-mod.can-edit-config: MenuItem {
                 title: @tr("gameModRow" => "Open folder containing this mod's config files");
                 icon: @image-url("../icons/ui/folder-mods.svg");
 
@@ -34,9 +34,9 @@ export component GameModRowView inherits Rectangle {
                 }
             }
 
-            if game-mod.can-edit-config : MenuSeparator { }
+            if game-mod.can-edit-config: MenuSeparator { }
 
-            if game-mod.can-open-mod-folder : MenuItem {
+            if game-mod.can-open-mod-folder: MenuItem {
                 title: @tr("gameModRow" => "Open Mod Folder");
                 icon: @image-url("../icons/ui/folder-mods.svg");
 
@@ -45,7 +45,7 @@ export component GameModRowView inherits Rectangle {
                 }
             }
 
-            if game-mod.can-download-config : MenuItem {
+            if game-mod.can-download-config: MenuItem {
                 title: @tr("gameModRow" => "Download Recommended Config");
                 icon: @image-url("../icons/ui/download.svg");
 
@@ -54,9 +54,9 @@ export component GameModRowView inherits Rectangle {
                 }
             }
 
-            if game-mod.can-download-config : MenuSeparator { }
+            if game-mod.can-download-config: MenuSeparator { }
 
-            if game-mod.can-reinstall : MenuItem {
+            if game-mod.can-reinstall: MenuItem {
                 title: @tr("gameModRow" => "Reinstall");
                 icon: @image-url("../icons/ui/reinstall.svg");
 
@@ -65,7 +65,7 @@ export component GameModRowView inherits Rectangle {
                 }
             }
 
-            if game-mod.can-uninstall : MenuItem {
+            if game-mod.can-uninstall: MenuItem {
                 title: @tr("gameModRow" => "Uninstall");
                 icon: @image-url("../icons/ui/uninstall.svg");
                 enabled: !game-mod.has-installed-dependants;
@@ -98,12 +98,12 @@ export component GameModRowView inherits Rectangle {
                 outdated: game-mod.outdated;
             }
 
-            if game-mod.can-show-actions : HorizontalLayout {
+            if game-mod.can-show-actions: HorizontalLayout {
                 alignment: end;
                 spacing: Theme.space-4;
                 min-width: self.preferred-width;
 
-                if game-mod.can-install : ActionButton {
+                if game-mod.can-install: ActionButton {
                     text: @tr("gameModRow" => "Install");
                     icon: @image-url("../icons/ui/install.svg");
                     action-id: "game-mod-install:" + game-mod.mod-id;
@@ -118,7 +118,7 @@ export component GameModRowView inherits Rectangle {
                     }
                 }
 
-                if game-mod.can-update : ActionButton {
+                if game-mod.can-update: ActionButton {
                     text: @tr("gameModRow" => "Update");
                     icon: @image-url("../icons/ui/update.svg");
                     action-id: "game-mod-install:" + game-mod.mod-id;
@@ -128,7 +128,7 @@ export component GameModRowView inherits Rectangle {
                     }
                 }
 
-                if game-mod.can-run : ActionButton {
+                if game-mod.can-run: ActionButton {
                     text: @tr("gameModRow" => "Run");
                     icon: @image-url("../icons/ui/play.svg");
                     action-id: "game-mod-run:" + game-mod.mod-id;
@@ -141,6 +141,7 @@ export component GameModRowView inherits Rectangle {
                 actions-button := IconButton {
                     visible: root.has-dropdown-actions;
                     icon: @image-url("../icons/ui/more.svg");
+                    icon-size: 22px;
                     tooltip: @tr("gameModRow" => "Mod actions");
 
                     clicked => {
