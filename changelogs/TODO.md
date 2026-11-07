@@ -9,4 +9,3 @@ This file is here for me to track things I wanna fix for the next release. If th
 - patreon trophy missing bronze color and probably needs a circle instead of just icon, plus avatar outlines missing.
 - go through the terrible hacks the stupid ai did like doing match instead of .ok() to avoid the clippy warning.
 - rename slint app ids so it doesn't have slint in the name and matches exactly the same names of the tauri app everywhere so it always replaces the tauri app when installed etc, in both windows and linux.
-- support more image formats for thumbnail. does supporting all make it too big?
