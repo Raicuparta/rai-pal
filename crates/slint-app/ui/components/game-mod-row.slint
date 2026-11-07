@@ -101,6 +101,7 @@ export component GameModRowView inherits Rectangle {
             if game-mod.can-show-actions : HorizontalLayout {
                 alignment: end;
                 spacing: Theme.space-4;
+                min-width: self.preferred-width;
 
                 if game-mod.can-install : ActionButton {
                     text: @tr("gameModRow" => "Install");
