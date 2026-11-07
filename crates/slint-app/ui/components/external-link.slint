@@ -53,12 +53,24 @@ export component ExternalLink inherits Rectangle {
             color: root.icon-color;
         }
 
-        Text {
-            text: root.label;
-            color: touch.has-hover ? Theme.primary.brighter(0.5) : Theme.primary;
-            font-size: root.text-size;
-            font-weight: root.text-weight;
-            vertical-alignment: center;
+        Rectangle {
+            width: label-text.preferred-width;
+            height: label-text.preferred-height;
+
+            label-text := Text {
+                text: root.label;
+                color: Theme.foreground;
+                font-size: root.text-size;
+                font-weight: root.text-weight;
+                vertical-alignment: center;
+            }
+
+            Rectangle {
+                y: parent.height - Theme.border-width;
+                width: parent.width;
+                height: Theme.border-width;
+                background: touch.has-hover ? Theme.foreground : transparent;
+            }
         }
 
         ExternalLinkIcon {
