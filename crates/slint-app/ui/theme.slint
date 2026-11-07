@@ -5,7 +5,7 @@ export global Fonts {
 }
 
 export global Theme {
-    out property <bool> dark: Palette.color-scheme == ColorScheme.dark;
+    out property <bool> dark: Palette.background.to-oklch().lightness < 0.5;
 
     out property <length> border-width: 1px;
     out property <length> space-2: 2px;
