@@ -7,7 +7,7 @@ use std::{
 
 use slint::{ComponentHandle, Model};
 
-use crate::{MainWindow, NotificationKind, NotificationView, analytics};
+use crate::{MainWindow, NotificationData, NotificationKind, analytics};
 
 static NEXT_ID: AtomicI32 = AtomicI32::new(1);
 
@@ -82,7 +82,7 @@ fn show(window: &MainWindow, message: impl Into<slint::SharedString>, kind: Noti
 	}
 
 	let id = NEXT_ID.fetch_add(1, Ordering::Relaxed);
-	notifications.push(NotificationView { id, message, kind });
+	notifications.push(NotificationData { id, message, kind });
 
 	window.set_notifications(Rc::new(slint::VecModel::from(notifications)).into());
 

@@ -6,11 +6,11 @@ use std::{
 use rai_pal_core::game::Game;
 use slint::ModelRc;
 
-use crate::{GameRowView, MainWindow, model::apply_game_to_row};
+use crate::{GameRowData, MainWindow, model::apply_game_to_row};
 
 pub type SelectedGameState = Arc<Mutex<Option<(usize, Game)>>>;
 
-pub fn show(window: &MainWindow, game: &Game, mut row: GameRowView) {
+pub fn show(window: &MainWindow, game: &Game, mut row: GameRowData) {
 	apply_game_to_row(&mut row, game);
 
 	let provider_actions: Vec<slint::SharedString> = game
@@ -29,7 +29,7 @@ pub fn show(window: &MainWindow, game: &Game, mut row: GameRowView) {
 
 pub fn hide(window: &MainWindow) {
 	window.set_game_selected(false);
-	window.set_selected_game_row(GameRowView::default());
+	window.set_selected_game_row(GameRowData::default());
 	window.set_selected_provider_id("".into());
 	window.set_selected_has_exe_path(false);
 	window.set_selected_show_wine_folders(false);

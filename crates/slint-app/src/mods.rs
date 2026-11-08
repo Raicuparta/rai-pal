@@ -16,17 +16,17 @@ use rai_pal_core::{
 use slint::ComponentHandle;
 
 use crate::{
-	GameModView, MainWindow, PotentialModView, action_state, downloads::Tracker, notifications,
+	GameModData, MainWindow, PotentialModData, action_state, downloads::Tracker, notifications,
 	runtime,
 };
 
 #[derive(Default)]
 struct LoadedMods {
-	installed: Vec<GameModView>,
-	available: Vec<GameModView>,
-	hidden: Vec<GameModView>,
-	incompatible: Vec<GameModView>,
-	potential: Vec<PotentialModView>,
+	installed: Vec<GameModData>,
+	available: Vec<GameModData>,
+	hidden: Vec<GameModData>,
+	incompatible: Vec<GameModData>,
+	potential: Vec<PotentialModData>,
 	has_any_mods: bool,
 }
 
@@ -423,7 +423,7 @@ fn load_mods(
 	})
 }
 
-fn row_data(entry: GameMod, game: &Game) -> GameModView {
+fn row_data(entry: GameMod, game: &Game) -> GameModData {
 	let GameMod {
 		manifest,
 		info,
@@ -436,7 +436,7 @@ fn row_data(entry: GameMod, game: &Game) -> GameModView {
 	let release_date = release_date_display(&manifest);
 	let engine_text = engine_text(&manifest);
 
-	GameModView {
+	GameModData {
 		mod_id: manifest.id.into(),
 		title: manifest.title.into(),
 		description: manifest.description.into(),
@@ -471,7 +471,7 @@ fn row_data(entry: GameMod, game: &Game) -> GameModView {
 	}
 }
 
-fn potential_row_data(item: PotentialMod) -> PotentialModView {
+fn potential_row_data(item: PotentialMod) -> PotentialModData {
 	let (title, description) = match item {
 		PotentialMod::Family(family) => (family.title, family.description),
 		PotentialMod::Manifest(manifest) => {
@@ -480,7 +480,7 @@ fn potential_row_data(item: PotentialMod) -> PotentialModView {
 		}
 	};
 
-	PotentialModView {
+	PotentialModData {
 		title: title.into(),
 		description: description.into(),
 	}

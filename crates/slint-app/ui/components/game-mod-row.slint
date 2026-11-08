@@ -1,5 +1,5 @@
 import { ModActions } from "../actions.slint";
-import { GameModView } from "../app-types.slint";
+import { GameModData } from "../app-types.slint";
 import { Theme } from "../theme.slint";
 import { ActionButton } from "action-button.slint";
 import { IconButton } from "icon-button.slint";
@@ -8,8 +8,8 @@ import { PopupMenu, PopupMenuItem, PopupMenuSeparator } from "menu.slint";
 import { RowDivider } from "row-divider.slint";
 import { Icon } from "svg-icon.slint";
 
-export component GameModRowView inherits VerticalLayout {
-    in property <GameModView> game-mod;
+export component GameModRow inherits VerticalLayout {
+    in property <GameModData> game-mod;
 
     property <bool> interactive: !game-mod.incompatible;
     property <bool> has-dropdown-actions: game-mod.can-edit-config || game-mod.can-open-mod-folder || game-mod.can-download-config || game-mod.can-reinstall || game-mod.can-uninstall;

@@ -29,14 +29,14 @@ export enum NotificationKind {
     info,
 }
 
-export struct DownloadItemView {
+export struct DownloadItemData {
     id: string,
     name: string,
     progress: float,
     phase: DownloadPhase,
 }
 
-export struct FilterValueView {
+export struct FilterValueData {
     value: string,
     label-key: string,
     label: string,
@@ -45,17 +45,17 @@ export struct FilterValueView {
     locked: bool,
 }
 
-export struct FilterGroupView {
+export struct FilterGroupData {
     key: string,
     label-key: string,
     label: string,
-    values: [FilterValueView],
+    values: [FilterValueData],
     has-changes: bool,
     has-locked: bool,
     expanded: bool,
 }
 
-export struct GameModView {
+export struct GameModData {
     mod-id: string,
     title: string,
     description: string,
@@ -82,7 +82,7 @@ export struct GameModView {
     has-installed-dependants: bool,
 }
 
-export struct GameRowView {
+export struct GameRowData {
     provider-id: string,
     game-id: string,
     title: string,
@@ -99,7 +99,7 @@ export struct GameRowView {
     release-year: string,
 }
 
-export struct ModsTabModView {
+export struct ModsTabModData {
     id: string,
     title: string,
     description: string,
@@ -113,21 +113,21 @@ export struct ModsTabModView {
     can-install: bool,
 }
 
-export struct ModsTabItemView {
+export struct ModsTabItemData {
     is-family: bool,
     family-title: string,
     family-description: string,
-    mods: [ModsTabModView],
-    single-mod: ModsTabModView,
+    mods: [ModsTabModData],
+    single-mod: ModsTabModData,
 }
 
-export struct NotificationView {
+export struct NotificationData {
     id: int,
     message: string,
     kind: NotificationKind,
 }
 
-export struct PatronView {
+export struct PatronData {
     ranking: int,
     name: string,
     initials: string,
@@ -135,12 +135,12 @@ export struct PatronView {
     avatar: image,
 }
 
-export struct PotentialModView {
+export struct PotentialModData {
     title: string,
     description: string,
 }
 
-export struct UrlModSourceView {
+export struct UrlModSourceData {
     url: string,
     enabled: bool,
     is-default: bool,

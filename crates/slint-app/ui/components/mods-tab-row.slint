@@ -1,5 +1,5 @@
 import { ModActions } from "../actions.slint";
-import { ModsTabModView } from "../app-types.slint";
+import { ModsTabModData } from "../app-types.slint";
 import { Theme } from "../theme.slint";
 import { ActionButton } from "action-button.slint";
 import { ExternalLink } from "external-link.slint";
@@ -8,8 +8,8 @@ import { ModSummaryView } from "mod-summary.slint";
 import { RowDivider } from "row-divider.slint";
 import { Icon } from "svg-icon.slint";
 
-export component ModsTabRowView inherits VerticalLayout {
-    in property <ModsTabModView> mod-data;
+export component ModsTabRow inherits VerticalLayout {
+    in property <ModsTabModData> mod-data;
     in property <bool> indented: false;
 
     callback debug-data(mod-id: string);

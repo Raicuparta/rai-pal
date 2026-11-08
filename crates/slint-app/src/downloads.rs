@@ -11,7 +11,7 @@ use rai_pal_core::{
 	result::LogErrExt,
 };
 
-use crate::{DownloadItemView, DownloadPhase, MainWindow};
+use crate::{DownloadItemData, DownloadPhase, MainWindow};
 
 const PUBLISH_INTERVAL: Duration = Duration::from_millis(100);
 const FINISHED_RETENTION: Duration = Duration::from_secs(5);
@@ -196,7 +196,7 @@ impl Tracker {
 
 			let rows = items
 				.into_iter()
-				.map(|item| DownloadItemView {
+				.map(|item| DownloadItemData {
 					id: item.id.into(),
 					name: item.name.into(),
 					progress: item.progress as f32,

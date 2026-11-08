@@ -1,6 +1,6 @@
 import { ScrollView, ComboBox } from "std-widgets.slint";
 import { Branding } from "../branding.slint";
-import { PatronView } from "../app-types.slint";
+import { PatronData } from "../app-types.slint";
 import { Theme } from "../theme.slint";
 import { ExternalLink } from "external-link.slint";
 import { LabeledDivider } from "labeled-divider.slint";
@@ -8,7 +8,7 @@ import { Sidebar } from "sidebar.slint";
 import { Icon, SvgIcon } from "svg-icon.slint";
 
 component PatronRow inherits Rectangle {
-    in property <PatronView> patron;
+    in property <PatronData> patron;
 
     private property <length> avatar-size: Theme.control-height;
     private property <length> rank-border-width: 2px;
@@ -72,7 +72,7 @@ component PatronRow inherits Rectangle {
 }
 
 export component ThanksPage inherits Rectangle {
-    in property <[PatronView]> patrons;
+    in property <[PatronData]> patrons;
 
     private property <string> intro: @tr("thanksPage" => "Hello. I made Rai Pal. I also made other VR mods in the past, and am currently working on a universal VR mod for Unity games. If you like what I do, and would like to see more, please consider donating! You can also support me by buying one of my free mods on itch.io.");
     private property <string> leaderboard-tooltip: @tr("thanksPage" => "Ranked by total lifetime donation amount.") + " " + @tr("thanksPage" => "If you don't see yourself here, it's because your Patreon profile is private.");

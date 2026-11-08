@@ -1,5 +1,5 @@
 import { CheckBox } from "std-widgets.slint";
-import { FilterGroupView, FilterValueView } from "../app-types.slint";
+import { FilterGroupData, FilterValueData } from "../app-types.slint";
 import { Tr } from "../translations.slint";
 import { Theme } from "../theme.slint";
 import { Button } from "button.slint";
@@ -9,7 +9,7 @@ import { ResetButton } from "reset-button.slint";
 import { Icon, SvgIcon } from "svg-icon.slint";
 
 component FilterValueRow inherits ListRow {
-    in property <FilterValueView> item;
+    in property <FilterValueData> item;
 
     callback toggled(checked: bool);
     callback lock-toggled;
@@ -93,8 +93,8 @@ component FilterValueRow inherits ListRow {
     }
 }
 
-export component FilterGroupView inherits Rectangle {
-    in property <FilterGroupView> group;
+export component FilterGroup inherits Rectangle {
+    in property <FilterGroupData> group;
 
     callback toggled(value: string, checked: bool);
     callback lock-toggled(value: string);

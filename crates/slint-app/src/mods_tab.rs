@@ -6,7 +6,7 @@ use rai_pal_core::{
 };
 
 use crate::{
-	MainWindow, ModsTabItemView, ModsTabModView,
+	MainWindow, ModsTabItemData, ModsTabModData,
 	mods::{download_version, engine_text, release_date_display},
 	notifications,
 };
@@ -17,7 +17,7 @@ pub fn load(window: &MainWindow, database: &DbMutex) {
 		Err(err) => {
 			notifications::error(window, format!("Failed to load mods: {err}"));
 			window.set_mods_tab_items(
-				Rc::new(slint::VecModel::from(Vec::<ModsTabItemView>::new())).into(),
+				Rc::new(slint::VecModel::from(Vec::<ModsTabItemData>::new())).into(),
 			);
 			return;
 		}
@@ -30,7 +30,7 @@ pub fn load(window: &MainWindow, database: &DbMutex) {
 			let mods = group.mods;
 
 			if let Some(family) = family {
-				ModsTabItemView {
+				ModsTabItemData {
 					is_family: true,
 					family_title: family.title.into(),
 					family_description: family.description.into(),
@@ -38,10 +38,10 @@ pub fn load(window: &MainWindow, database: &DbMutex) {
 						mods.into_iter().map(mod_data).collect::<Vec<_>>(),
 					))
 					.into(),
-					single_mod: ModsTabModView::default(),
+					single_mod: ModsTabModData::default(),
 				}
 			} else {
-				ModsTabItemView {
+				ModsTabItemData {
 					is_family: false,
 					family_title: "".into(),
 					family_description: "".into(),
@@ -49,7 +49,7 @@ pub fn load(window: &MainWindow, database: &DbMutex) {
 					single_mod: mods
 						.into_iter()
 						.next()
-						.map_or_else(ModsTabModView::default, mod_data),
+						.map_or_else(ModsTabModData::default, mod_data),
 				}
 			}
 		})
@@ -58,12 +58,12 @@ pub fn load(window: &MainWindow, database: &DbMutex) {
 	window.set_mods_tab_items(Rc::new(slint::VecModel::from(items)).into());
 }
 
-fn mod_data(game_mod: Mod) -> ModsTabModView {
+fn mod_data(game_mod: Mod) -> ModsTabModData {
 	let version_text = download_version(&game_mod);
 	let release_date = release_date_display(&game_mod);
 	let engine_text = engine_text(&game_mod);
 
-	ModsTabModView {
+	ModsTabModData {
 		id: game_mod.id.into(),
 		title: game_mod.title.into(),
 		description: game_mod.description.into(),

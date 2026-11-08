@@ -4,7 +4,7 @@ use rai_pal_core::result::LogErrExt;
 use serde_json::Value;
 
 use crate::{
-	MainWindow, PatronView,
+	MainWindow, PatronData,
 	fetch::{self, FetchedImage},
 	text,
 };
@@ -33,7 +33,7 @@ pub fn load(window: slint::Weak<MainWindow>) {
 				.map(|patron| {
 					let avatar = patron.avatar.map(FetchedImage::into_slint_image);
 
-					PatronView {
+					PatronData {
 						ranking: patron.ranking,
 						name: patron.name.into(),
 						initials: patron.initials.into(),

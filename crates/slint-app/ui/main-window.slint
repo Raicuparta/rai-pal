@@ -1,5 +1,5 @@
 import { Palette } from "std-widgets.slint";
-import { GameRowView, FilterGroupView, GameModView, PotentialModView, ModsTabItemView, PatronView, UrlModSourceView, NotificationView, DownloadItemView, AppColorScheme, AppTab, AddGamePhase } from "app-types.slint";
+import { GameRowData, FilterGroupData, GameModData, PotentialModData, ModsTabItemData, PatronData, UrlModSourceData, NotificationData, DownloadItemData, AppColorScheme, AppTab, AddGamePhase } from "app-types.slint";
 import { GamesSidebar } from "components/games-sidebar.slint";
 import { GameSidebar } from "components/game-sidebar.slint";
 import { GameDetailsPopup } from "components/game-details-popup.slint";
@@ -49,21 +49,21 @@ export component MainWindow inherits Window {
     private property <length> content-max-width: 1140px;
     private property <bool> about-open: false;
 
-    in property <[GameRowView]> game-rows;
+    in property <[GameRowData]> game-rows;
     in property <int> games-total-count: 0;
-    in property <[GameModView]> game-mods-installed;
-    in property <[GameModView]> game-mods-available;
-    in property <[GameModView]> game-mods-hidden;
-    in property <[GameModView]> game-mods-incompatible;
-    in property <[PotentialModView]> potential-mods;
-    in property <[ModsTabItemView]> mods-tab-items;
-    in property <[PatronView]> patrons;
+    in property <[GameModData]> game-mods-installed;
+    in property <[GameModData]> game-mods-available;
+    in property <[GameModData]> game-mods-hidden;
+    in property <[GameModData]> game-mods-incompatible;
+    in property <[PotentialModData]> potential-mods;
+    in property <[ModsTabItemData]> mods-tab-items;
+    in property <[PatronData]> patrons;
     in property <bool> has-any-mods: false;
     in property <bool> has-installed-mods: false;
     in property <bool> has-available-mods: false;
     in property <bool> has-hidden-mods: false;
     in property <bool> has-incompatible-mods: false;
-    in property <[FilterGroupView]> filter-groups;
+    in property <[FilterGroupData]> filter-groups;
     in property <bool> filters-have-changes;
     in property <bool> filters-have-expanded: false;
     in-out property <bool> hide-game-thumbnails: false;
@@ -83,13 +83,13 @@ export component MainWindow inherits Window {
     in property <string> user-initials: "";
     in property <bool> user-has-avatar: false;
     in property <image> user-avatar;
-    in property <[NotificationView]> notifications;
-    in property <[DownloadItemView]> downloads;
+    in property <[NotificationData]> notifications;
+    in property <[DownloadItemData]> downloads;
     in property <float> download-progress: 0;
     in-out property <bool> refreshing: false;
     in property <string> refresh-task-names: "";
-    in property <UrlModSourceView> default-url-mod-source;
-    in property <[UrlModSourceView]> url-mod-sources;
+    in property <UrlModSourceData> default-url-mod-source;
+    in property <[UrlModSourceData]> url-mod-sources;
     in property <bool> url-mod-sources-toggling: false;
     in property <string> url-mod-sources-error: "";
     in-out property <string> new-url-mod-source: "";
@@ -130,7 +130,7 @@ export component MainWindow inherits Window {
 
     in-out property <AppTab> current-tab: games;
     in-out property <bool> game-selected: false;
-    in-out property <GameRowView> selected-game-row;
+    in-out property <GameRowData> selected-game-row;
     in property <string> selected-provider-id: "";
     in property <bool> selected-has-exe-path: false;
     in property <bool> selected-show-wine-folders: false;

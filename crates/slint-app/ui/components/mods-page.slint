@@ -1,16 +1,16 @@
 import { ScrollView } from "std-widgets.slint";
 import { ModActions } from "../actions.slint";
-import { ModsTabItemView } from "../app-types.slint";
+import { ModsTabItemData } from "../app-types.slint";
 import { Theme } from "../theme.slint";
-import { ModsTabRowView } from "mods-tab-row.slint";
-import { ModsTabFamilyRowView } from "mods-tab-family-row.slint";
+import { ModsTabRow } from "mods-tab-row.slint";
+import { ModsTabFamilyRow } from "mods-tab-family-row.slint";
 import { RefreshButton } from "refresh-button.slint";
 import { Sidebar, SidebarSection } from "sidebar.slint";
 import { SidebarAction } from "sidebar-action.slint";
 import { Icon } from "svg-icon.slint";
 
 export component ModsPage inherits Rectangle {
-    in property <[ModsTabItemView]> items;
+    in property <[ModsTabItemData]> items;
     in property <bool> refreshing;
     in property <string> refresh-task-names;
 
@@ -68,7 +68,7 @@ export component ModsPage inherits Rectangle {
                         vertical-stretch: 0;
                         spacing: 0px;
 
-                        if item.is-family: ModsTabFamilyRowView {
+                        if item.is-family: ModsTabFamilyRow {
                             item: item;
 
                             debug-data(mod-id) => {
@@ -76,7 +76,7 @@ export component ModsPage inherits Rectangle {
                             }
                         }
 
-                        if !item.is-family: ModsTabRowView {
+                        if !item.is-family: ModsTabRow {
                             mod-data: item.single-mod;
 
                             debug-data(mod-id) => {

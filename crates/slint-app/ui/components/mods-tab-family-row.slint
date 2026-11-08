@@ -1,11 +1,11 @@
-import { ModsTabItemView } from "../app-types.slint";
+import { ModsTabItemData } from "../app-types.slint";
 import { Theme } from "../theme.slint";
-import { ModsTabRowView } from "mods-tab-row.slint";
+import { ModsTabRow } from "mods-tab-row.slint";
 import { RowDivider } from "row-divider.slint";
 import { Icon, SvgIcon } from "svg-icon.slint";
 
-export component ModsTabFamilyRowView inherits Rectangle {
-    in property <ModsTabItemView> item;
+export component ModsTabFamilyRow inherits Rectangle {
+    in property <ModsTabItemData> item;
 
     callback debug-data(mod-id: string);
 
@@ -73,7 +73,7 @@ export component ModsTabFamilyRowView inherits Rectangle {
             alignment: start;
             spacing: 0px;
 
-            for mod-row in root.item.mods: ModsTabRowView {
+            for mod-row in root.item.mods: ModsTabRow {
                 mod-data: mod-row;
                 indented: true;
 

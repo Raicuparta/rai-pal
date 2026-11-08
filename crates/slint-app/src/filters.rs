@@ -13,7 +13,7 @@ use rai_pal_core::{
 	result::LogErrExt,
 };
 
-use crate::{FilterGroupView, FilterValueView};
+use crate::{FilterGroupData, FilterValueData};
 
 fn apply_string_value<T>(
 	group: &mut FilterGroup<T>,
@@ -152,8 +152,8 @@ fn item_data(
 	label: &str,
 	item: FilterItem,
 	note_label_key: &str,
-) -> FilterValueView {
-	FilterValueView {
+) -> FilterValueData {
+	FilterValueData {
 		value: value.into(),
 		label_key: label_key.into(),
 		label: label.into(),
@@ -175,12 +175,12 @@ fn group_data(
 	key: FilterGroupKey,
 	label_key: &str,
 	label: &str,
-	values: Vec<FilterValueView>,
+	values: Vec<FilterValueData>,
 	has_changes: bool,
 	has_locked: bool,
 	expanded_filters: &HashSet<String>,
-) -> FilterGroupView {
-	FilterGroupView {
+) -> FilterGroupData {
+	FilterGroupData {
 		key: key.as_str().into(),
 		label_key: label_key.into(),
 		label: label.into(),
@@ -196,7 +196,7 @@ fn value<T: Eq + Hash + ToString>(
 	key: &T,
 	label_key: &str,
 	label: &str,
-) -> FilterValueView {
+) -> FilterValueData {
 	let value = key.to_string();
 	item_data(
 		&value,
@@ -211,7 +211,7 @@ fn unknown_value<T: Eq + Hash>(
 	group: &FilterGroup<T>,
 	label_key: &str,
 	label: &str,
-) -> FilterValueView {
+) -> FilterValueData {
 	item_data("", label_key, label, group.item(None), "")
 }
 
@@ -220,11 +220,11 @@ fn build_group<T: Eq + Hash>(
 	label_key: &str,
 	label: &str,
 	group: &FilterGroup<T>,
-	values: Vec<FilterValueView>,
+	values: Vec<FilterValueData>,
 	possible_values: &[T],
 	has_unknown: bool,
 	expanded_filters: &HashSet<String>,
-) -> FilterGroupView {
+) -> FilterGroupData {
 	group_data(
 		key,
 		label_key,
@@ -240,8 +240,8 @@ fn build_mod_family_group(
 	filter: &GamesFilter,
 	mod_families: &[String],
 	expanded_filters: &HashSet<String>,
-) -> FilterGroupView {
-	let mut values: Vec<FilterValueView> = mod_families
+) -> FilterGroupData {
+	let mut values: Vec<FilterValueData> = mod_families
 		.iter()
 		.map(|family| {
 			item_data(
@@ -267,7 +267,7 @@ fn build_mod_family_group(
 	)
 }
 
-fn installed_values(filter: &GamesFilter) -> Vec<FilterValueView> {
+fn installed_values(filter: &GamesFilter) -> Vec<FilterValueData> {
 	InstallState::ALL
 		.iter()
 		.map(|state| {
@@ -281,7 +281,7 @@ fn installed_values(filter: &GamesFilter) -> Vec<FilterValueView> {
 		.collect()
 }
 
-fn engine_values(filter: &GamesFilter) -> Vec<FilterValueView> {
+fn engine_values(filter: &GamesFilter) -> Vec<FilterValueData> {
 	EngineBrand::ALL
 		.iter()
 		.map(|brand| value(&filter.engines, brand, "", &brand.to_string()))
@@ -293,7 +293,7 @@ fn engine_values(filter: &GamesFilter) -> Vec<FilterValueView> {
 		.collect()
 }
 
-fn tag_values(filter: &GamesFilter) -> Vec<FilterValueView> {
+fn tag_values(filter: &GamesFilter) -> Vec<FilterValueData> {
 	GameTag::ALL
 		.iter()
 		.map(|tag| {
@@ -312,7 +312,7 @@ fn tag_values(filter: &GamesFilter) -> Vec<FilterValueView> {
 		.collect()
 }
 
-fn provider_values(filter: &GamesFilter) -> Vec<FilterValueView> {
+fn provider_values(filter: &GamesFilter) -> Vec<FilterValueData> {
 	GameProviderId::ALL
 		.iter()
 		.map(|provider| {
@@ -331,7 +331,7 @@ fn provider_values(filter: &GamesFilter) -> Vec<FilterValueView> {
 		.collect()
 }
 
-fn unity_backend_values(filter: &GamesFilter) -> Vec<FilterValueView> {
+fn unity_backend_values(filter: &GamesFilter) -> Vec<FilterValueData> {
 	UnityBackend::ALL
 		.iter()
 		.map(|backend| {
@@ -350,7 +350,7 @@ fn unity_backend_values(filter: &GamesFilter) -> Vec<FilterValueView> {
 		.collect()
 }
 
-fn operating_system_values(group: &FilterGroup<OperatingSystem>) -> Vec<FilterValueView> {
+fn operating_system_values(group: &FilterGroup<OperatingSystem>) -> Vec<FilterValueData> {
 	OperatingSystem::ALL
 		.iter()
 		.map(|os| value(group, os, "", &os.to_string()))
@@ -358,7 +358,7 @@ fn operating_system_values(group: &FilterGroup<OperatingSystem>) -> Vec<FilterVa
 		.collect()
 }
 
-fn architecture_values(filter: &GamesFilter) -> Vec<FilterValueView> {
+fn architecture_values(filter: &GamesFilter) -> Vec<FilterValueData> {
 	Architecture::ALL
 		.iter()
 		.map(|architecture| {
@@ -381,7 +381,7 @@ pub fn build_groups(
 	filter: &GamesFilter,
 	mod_families: &[String],
 	expanded_filters: &HashSet<String>,
-) -> Vec<FilterGroupView> {
+) -> Vec<FilterGroupData> {
 	vec![
 		build_group(
 			FilterGroupKey::Installed,

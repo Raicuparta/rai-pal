@@ -1,5 +1,5 @@
 import { Branding } from "../branding.slint";
-import { GameRowView } from "../app-types.slint";
+import { GameRowData } from "../app-types.slint";
 import { Fonts, Theme } from "../theme.slint";
 import { ProviderIcon } from "provider-icon.slint";
 import { RowDivider } from "row-divider.slint";
@@ -7,8 +7,8 @@ import { Icon, SvgIcon } from "svg-icon.slint";
 import { EngineIcon } from "engine-icon.slint";
 import { HorizontalBox, Palette } from "std-widgets.slint";
 
-export component GameRowView inherits VerticalLayout {
-    in property <GameRowView> game-row;
+export component GameRow inherits VerticalLayout {
+    in property <GameRowData> game-row;
     in property <int> row-index;
     in property <bool> show-thumbnail: true;
 

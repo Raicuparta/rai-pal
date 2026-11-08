@@ -5,7 +5,7 @@ use rai_pal_core::{
 	result::LogErrExt,
 };
 
-use crate::GameRowView;
+use crate::GameRowData;
 
 #[derive(Clone, Debug, Default)]
 pub struct ReleaseDate {
@@ -83,10 +83,10 @@ fn month_name(month: u32) -> &'static str {
 	}
 }
 
-pub fn make_rows(game_ids: &[GameId]) -> Vec<GameRowView> {
+pub fn make_rows(game_ids: &[GameId]) -> Vec<GameRowData> {
 	game_ids
 		.iter()
-		.map(|game_id| GameRowView {
+		.map(|game_id| GameRowData {
 			provider_id: format!("{}", game_id.provider_id).into(),
 			game_id: game_id.game_id.clone().into(),
 			title: "...".into(),
@@ -105,7 +105,7 @@ pub fn make_rows(game_ids: &[GameId]) -> Vec<GameRowView> {
 		.collect()
 }
 
-pub fn reset_row(row: &mut GameRowView) {
+pub fn reset_row(row: &mut GameRowData) {
 	row.title = "...".into();
 	row.thumbnail = slint::Image::default();
 	row.has_thumbnail = false;
@@ -120,7 +120,7 @@ pub fn reset_row(row: &mut GameRowView) {
 	row.release_year = "".into();
 }
 
-pub fn apply_game_to_row(row: &mut GameRowView, game: &Game) {
+pub fn apply_game_to_row(row: &mut GameRowData, game: &Game) {
 	let mut tags = game
 		.tags
 		.iter()

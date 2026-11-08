@@ -1,20 +1,20 @@
 import { ScrollView } from "std-widgets.slint";
 import { ModActions } from "../actions.slint";
-import { GameRowView, GameModView, PotentialModView } from "../app-types.slint";
+import { GameRowData, GameModData, PotentialModData } from "../app-types.slint";
 import { Theme } from "../theme.slint";
 import { ActionButton } from "action-button.slint";
-import { GameRowView } from "game-row.slint";
+import { GameRow } from "game-row.slint";
 import { ModsSection } from "mods-section.slint";
 import { PotentialModsSection } from "potential-mods-section.slint";
 import { Icon } from "svg-icon.slint";
 
 export component GameDetailsPage inherits Rectangle {
-    in property <GameRowView> game-row;
-    in property <[GameModView]> game-mods-installed;
-    in property <[GameModView]> game-mods-available;
-    in property <[GameModView]> game-mods-hidden;
-    in property <[GameModView]> game-mods-incompatible;
-    in property <[PotentialModView]> potential-mods;
+    in property <GameRowData> game-row;
+    in property <[GameModData]> game-mods-installed;
+    in property <[GameModData]> game-mods-available;
+    in property <[GameModData]> game-mods-hidden;
+    in property <[GameModData]> game-mods-incompatible;
+    in property <[PotentialModData]> potential-mods;
     in property <bool> has-any-mods;
     in property <bool> has-installed-mods;
     in property <bool> has-available-mods;
@@ -29,7 +29,7 @@ export component GameDetailsPage inherits Rectangle {
             alignment: start;
             spacing: Theme.space-sm;
 
-            GameRowView {
+            GameRow {
                 vertical-stretch: 0;
                 game-row: root.game-row;
                 row-index: 0;

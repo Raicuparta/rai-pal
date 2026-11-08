@@ -1,6 +1,6 @@
-import { FilterGroupView } from "../app-types.slint";
+import { FilterGroupData } from "../app-types.slint";
 import { Theme } from "../theme.slint";
-import { FilterGroupView } from "filter-group.slint";
+import { FilterGroup } from "filter-group.slint";
 import { IconButton } from "icon-button.slint";
 import { LabeledDivider } from "labeled-divider.slint";
 import { RefreshButton } from "refresh-button.slint";
@@ -15,7 +15,7 @@ export component GamesSidebar inherits Sidebar {
     in property <string> refresh-task-names;
     in-out property <string> search-text: "";
     in-out property <int> sort-index: 0;
-    in property <[FilterGroupView]> filter-groups;
+    in property <[FilterGroupData]> filter-groups;
     in property <bool> filters-have-changes;
     in property <bool> filters-have-expanded;
 
@@ -93,7 +93,7 @@ export component GamesSidebar inherits Sidebar {
             }
         }
 
-        for group in root.filter-groups: FilterGroupView {
+        for group in root.filter-groups: FilterGroup {
             group: group;
 
             toggled(value, checked) => {

@@ -8,7 +8,7 @@ use rai_pal_core::{
 use slint::ComponentHandle;
 
 use crate::{
-	MainWindow, UrlModSourceView, mods, mods_tab, refresh, runtime, selected::SelectedGameState,
+	MainWindow, UrlModSourceData, mods, mods_tab, refresh, runtime, selected::SelectedGameState,
 };
 
 pub fn show(window: &MainWindow) {
@@ -20,7 +20,7 @@ pub fn show(window: &MainWindow) {
 fn load_sources(window: &MainWindow) {
 	let response = url_mod_provider::get_url_mod_sources();
 
-	window.set_default_url_mod_source(UrlModSourceView {
+	window.set_default_url_mod_source(UrlModSourceData {
 		url: response.default_source.url.into(),
 		enabled: response.default_source.enabled,
 		is_default: true,
@@ -29,7 +29,7 @@ fn load_sources(window: &MainWindow) {
 	let sources = response
 		.sources
 		.into_iter()
-		.map(|source| UrlModSourceView {
+		.map(|source| UrlModSourceData {
 			url: source.url.into(),
 			enabled: source.enabled,
 			is_default: false,

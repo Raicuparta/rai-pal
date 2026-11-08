@@ -1,9 +1,9 @@
-import { PotentialModView } from "../app-types.slint";
+import { PotentialModData } from "../app-types.slint";
 import { Theme } from "../theme.slint";
 import { SectionHeader } from "section-header.slint";
 
-component PotentialModRowView inherits Rectangle {
-    in property <PotentialModView> potential-mod;
+component PotentialModRow inherits Rectangle {
+    in property <PotentialModData> potential-mod;
 
     vertical-stretch: 0;
 
@@ -32,7 +32,7 @@ component PotentialModRowView inherits Rectangle {
 export component PotentialModsSection inherits VerticalLayout {
     in property <string> label;
     in property <string> description;
-    in property <[PotentialModView]> mods;
+    in property <[PotentialModData]> mods;
 
     vertical-stretch: 0;
     alignment: start;
@@ -43,7 +43,7 @@ export component PotentialModsSection inherits VerticalLayout {
         description: root.description;
     }
 
-    for row in root.mods : PotentialModRowView {
+    for row in root.mods : PotentialModRow {
         potential-mod: row;
     }
 }
