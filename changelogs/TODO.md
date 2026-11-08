@@ -6,7 +6,6 @@ For agents: if asked to complete todos, do these one by one, one commit each (si
 
 # Do these now:
 
-- bug: can click through toast notifications.
 - bug: unchecking all filters not taking into account locked (shouldnt count locked as something that needs to be unchecked for the reset to happen, unchecking all unlocked items is what matters and should trigger the reset to check all that are unlocked).
 
 # Do not do yet:
@@ -29,3 +28,4 @@ For agents: if asked to complete todos, do these one by one, one commit each (si
 - Notification expiry moved from the Slint `Timer` in the repeated toast element to a Rust timer keyed by notification id. Replacing the notifications model was recreating repeated toasts and restarting their timers, so they could live much longer than 5 seconds.
 - Mod Update buttons now use the success/green tint.
 - Filter checkbox rows now show the pointer cursor over the checkbox area too, not just the rest of the row.
+- Toasts now have a `TouchArea` behind their content, so clicks on a toast no longer fall through to the UI underneath.
