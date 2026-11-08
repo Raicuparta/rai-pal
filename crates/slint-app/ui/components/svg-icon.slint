@@ -64,12 +64,13 @@ export enum Icon {
     manual,
     steam,
     xbox,
+    rai,
 }
 
 export component SvgIcon inherits Image {
     in property <Icon> icon: Icon.none;
     in property <length> size: Theme.icon-size;
-    in property <brush> color: Theme.foreground;
+    in property <brush> color: Theme.strong-foreground;
 
     width: root.size;
     height: root.size;
@@ -139,6 +140,7 @@ export component SvgIcon inherits Image {
         if icon == Icon.manual { return @image-url("../icons/providers/manual.svg"); }
         if icon == Icon.steam { return @image-url("../icons/providers/steam.svg"); }
         if icon == Icon.xbox { return @image-url("../icons/providers/xbox.svg"); }
+        if icon == Icon.rai { return @image-url("../icons/brands/rai.svg"); }
         return @image-url("");
     }
 }

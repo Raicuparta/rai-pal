@@ -4,6 +4,7 @@ import { LabeledDivider } from "labeled-divider.slint";
 import { SidebarAction } from "sidebar-action.slint";
 import { Sidebar, SidebarSection } from "sidebar.slint";
 import { Icon } from "svg-icon.slint";
+import { Button } from "button.slint";
 
 export component GameSidebar inherits Sidebar {
     in property <string> provider-id;
@@ -36,12 +37,14 @@ export component GameSidebar inherits Sidebar {
         alignment: start;
         spacing: Theme.space-8;
 
-        SidebarAction {
-            text: @tr("subPage" => "Back");
-            icon: Icon.back;
+        SidebarSection {
+            Button {
+                text: @tr("subPage" => "Back");
+                icon: Icon.back;
 
-            clicked => {
-                root.back();
+                clicked => {
+                    root.back();
+                }
             }
         }
 

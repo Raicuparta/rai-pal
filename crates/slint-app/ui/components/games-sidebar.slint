@@ -30,16 +30,18 @@ export component GamesSidebar inherits Sidebar {
     callback filters-collapse-all;
     callback filter-expanded-changed(group: string, expanded: bool);
 
-    RefreshButton {
-        refreshing: root.refreshing;
-        task-names: root.refresh-task-names;
-
-        clicked => {
-            root.refresh-all();
-        }
-    }
-
     SidebarSection {
+        spacing: Theme.space-8;
+
+        RefreshButton {
+            refreshing: root.refreshing;
+            task-names: root.refresh-task-names;
+
+            clicked => {
+                root.refresh-all();
+            }
+        }
+
         SearchInput {
             text <=> root.search-text;
             placeholder-text: @tr("filterMenu" => "Search...");
@@ -48,9 +50,7 @@ export component GamesSidebar inherits Sidebar {
                 root.search-changed(text);
             }
         }
-    }
 
-    SidebarSection {
         SortMenu {
             sort-index <=> root.sort-index;
 
@@ -96,7 +96,7 @@ export component GamesSidebar inherits Sidebar {
         alignment: start;
         spacing: Theme.space-8;
 
-        for group in root.filter-groups : FilterGroupView {
+        for group in root.filter-groups: FilterGroupView {
             group: group;
 
             toggled(value, checked) => {

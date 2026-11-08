@@ -2,20 +2,11 @@ import { ModActions } from "../actions.slint";
 import { Theme } from "../theme.slint";
 import { Icon, SvgIcon } from "svg-icon.slint";
 
-export component ExternalLinkIcon inherits SvgIcon {
-    icon: Icon.external-link;
-}
-
 export component ExternalLink inherits Rectangle {
     in property <string> label;
     in property <Icon> icon: Icon.none;
-    in property <image> icon-image;
-    private property <bool> has-icon: root.icon != Icon.none || root.icon-image.width > 0;
     in property <brush> icon-color: Theme.foreground;
-    in property <bool> icon-round: false;
-    in property <length> icon-size: Theme.space-20;
     in property <length> text-size: Theme.font-16;
-    in property <int> text-weight: Theme.weight-bold;
     in property <string> url;
 
     horizontal-stretch: 0;
@@ -26,32 +17,17 @@ export component ExternalLink inherits Rectangle {
     }
 
     HorizontalLayout {
-        padding-left: Theme.space-8;
-        padding-right: Theme.space-8;
-        padding-top: Theme.space-4;
-        padding-bottom: Theme.space-4;
-        spacing: Theme.space-8;
         alignment: start;
         cross-axis-alignment: center;
 
-        if root.has-icon && root.icon-round : Rectangle {
-            width: root.icon-size;
-            height: root.icon-size;
-            border-radius: root.icon-size / 2;
-            clip: true;
+        if root.icon != Icon.none: HorizontalLayout {
+            padding-right: Theme.space-8;
 
-            Image {
-                source: root.icon-image;
-                width: 100%;
-                height: 100%;
-                image-fit: cover;
+            SvgIcon {
+                icon: root.icon;
+                color: root.icon-color;
+                size: 20px;
             }
-        }
-
-        if root.has-icon && !root.icon-round : SvgIcon {
-            icon: root.icon;
-            size: root.icon-size;
-            color: root.icon-color;
         }
 
         Rectangle {
@@ -60,9 +36,9 @@ export component ExternalLink inherits Rectangle {
 
             label-text := Text {
                 text: root.label;
-                color: Theme.foreground;
+                color: Theme.strong-foreground;
                 font-size: root.text-size;
-                font-weight: root.text-weight;
+                font-weight: Theme.weight-bold;
                 vertical-alignment: center;
             }
 
@@ -74,8 +50,9 @@ export component ExternalLink inherits Rectangle {
             }
         }
 
-        ExternalLinkIcon {
-            color: Theme.dimmed-foreground;
+        SvgIcon {
+            icon: Icon.external-link;
+            size: 12px;
         }
     }
 

@@ -14,7 +14,6 @@ export component ModsTabRowView inherits Rectangle {
     callback debug-data(mod-id: string);
 
     vertical-stretch: 0;
-    background: row-touch.has-hover ? Theme.hover-background : transparent;
 
     row-touch := TouchArea { }
 
@@ -23,7 +22,7 @@ export component ModsTabRowView inherits Rectangle {
         spacing: Theme.space-8;
         cross-axis-alignment: center;
 
-        if root.indented : Rectangle {
+        if root.indented: Rectangle {
             width: Theme.space-20;
         }
 
@@ -43,7 +42,7 @@ export component ModsTabRowView inherits Rectangle {
             alignment: end;
             spacing: Theme.space-4;
 
-            if mod-data.can-run : ActionButton {
+            if mod-data.can-run: ActionButton {
                 text: @tr("modModal" => "Run");
                 icon: Icon.play;
                 action-id: "standalone-run:" + mod-data.id;
@@ -53,7 +52,7 @@ export component ModsTabRowView inherits Rectangle {
                 }
             }
 
-            if mod-data.can-install : ActionButton {
+            if mod-data.can-install: ActionButton {
                 text: @tr("modModal" => "Download");
                 icon: Icon.download;
                 action-id: "standalone-install:" + mod-data.id;
@@ -63,20 +62,28 @@ export component ModsTabRowView inherits Rectangle {
                 }
             }
 
-            IconButton {
-                icon: Icon.bug;
-                tooltip: @tr("debugData" => "Debug data");
+            VerticalLayout {
+                cross-axis-alignment: end;
+                spacing: Theme.space-6;
+                padding-right: Theme.space-12;
 
-                clicked => {
-                    root.debug-data(mod-data.id);
+                HorizontalLayout {
+                    IconButton {
+                        icon: Icon.bug;
+                        tooltip: @tr("debugData" => "Debug data");
+                        icon-size: 18px;
+
+                        clicked => {
+                            root.debug-data(mod-data.id);
+                        }
+                    }
                 }
-            }
 
-            if mod-data.source-code != "" : ExternalLink {
-                label: @tr("modModal" => "Website");
-                icon: Icon.website;
-                text-size: Theme.font-12;
-                url: mod-data.source-code;
+                if mod-data.source-code != "": ExternalLink {
+                    label: @tr("modModal" => "Website");
+                    text-size: Theme.font-12;
+                    url: mod-data.source-code;
+                }
             }
         }
     }

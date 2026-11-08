@@ -42,7 +42,7 @@ export component ModsTabFamilyRowView inherits Rectangle {
                         overflow: elide;
                     }
 
-                    if root.item.family-description != "" : Text {
+                    if root.item.family-description != "": Text {
                         height: self.preferred-height;
                         text: root.item.family-description;
                         font-size: Theme.font-12;
@@ -53,17 +53,19 @@ export component ModsTabFamilyRowView inherits Rectangle {
             }
 
             header-touch := TouchArea {
+                mouse-cursor: pointer;
+
                 clicked => {
                     root.expanded = !root.expanded;
                 }
             }
         }
 
-        if root.expanded : VerticalLayout {
+        if root.expanded: VerticalLayout {
             alignment: start;
             spacing: 0px;
 
-            for mod-row in root.item.mods : ModsTabRowView {
+            for mod-row in root.item.mods: ModsTabRowView {
                 mod-data: mod-row;
                 indented: true;
 
