@@ -40,6 +40,7 @@ component FilterValueRow inherits ListRow {
         checkbox-touch := TouchArea {
             width: root.item.note-label-key == "" ? parent.width : check-box.preferred-width;
             height: parent.height;
+            mouse-cursor: pointer;
 
             clicked => {
                 if !root.item.locked {
