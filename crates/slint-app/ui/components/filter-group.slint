@@ -16,8 +16,6 @@ component FilterValueRow inherits ListRow {
     callback only;
 
     extra-hovered: checkbox-touch.has-hover || only-button.hovered || lock-button.hovered;
-    content-padding-left: Theme.space-20 + Theme.space-4;
-    content-padding-right: Theme.space-8;
     spacing: Theme.space-4;
     accessible-label: root.item.label-key == "" ? root.item.label : Tr.filter-value(root.item.label-key);
 
@@ -32,7 +30,7 @@ component FilterValueRow inherits ListRow {
         height: 100%;
 
         check-box := CheckBox {
-            x: 0;
+            x: Theme.space-16;
             y: (parent.height - self.height) / 2;
             text: root.item.label-key == "" ? root.item.label : Tr.filter-value(root.item.label-key);
             checked: root.item.enabled;
@@ -51,7 +49,7 @@ component FilterValueRow inherits ListRow {
         }
 
         if root.item.note-label-key != "": Rectangle {
-            x: check-box.preferred-width + Theme.space-4;
+            x: check-box.preferred-width + Theme.space-16;
             y: (parent.height - self.height) / 2;
             width: 12px;
 
@@ -103,16 +101,12 @@ export component FilterGroupView inherits Rectangle {
     callback reset;
     callback expanded-changed(expanded: bool);
 
-    private property <length> expand-button-size: 22px;
-
     VerticalLayout {
         alignment: start;
         spacing: Theme.border-width;
 
         header := ListRow {
             extra-hovered: reset-button.hovered;
-            content-padding-left: Theme.space-8;
-            content-padding-right: Theme.space-8;
             spacing: Theme.space-4;
             accessible-label: root.group.label-key == "" ? root.group.label : Tr.filter-property(root.group.label-key);
 
@@ -120,16 +114,9 @@ export component FilterGroupView inherits Rectangle {
                 root.expanded-changed(!root.group.expanded);
             }
 
-            Rectangle {
-                width: root.expand-button-size;
-                height: root.expand-button-size;
-
-                SvgIcon {
-                    x: (parent.width - self.width) / 2;
-                    y: (parent.height - self.height) / 2;
-                    icon: root.group.expanded ? Icon.expanded : Icon.collapsed;
-                    color: Theme.dimmed-foreground;
-                }
+            SvgIcon {
+                icon: root.group.expanded ? Icon.expanded : Icon.collapsed;
+                color: Theme.dimmed-foreground;
             }
 
             Text {
@@ -157,9 +144,6 @@ export component FilterGroupView inherits Rectangle {
         }
 
         if root.group.expanded: VerticalLayout {
-            alignment: start;
-            spacing: 0px;
-
             for value in root.group.values: FilterValueRow {
                 item: value;
 

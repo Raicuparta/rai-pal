@@ -19,3 +19,4 @@ This file is here for me to track things I wanna fix for the next release. If th
 - button size and icon spacing needs to be adjusted to match the tauri one better.
 - cursor wrong for checkbox part of checkbox row.
 - bug: can click through toast notifications.
+- bug: unchecking all filters not taking into account locked (shouldnt count locked, unchecking all unlocked is what matters and should recheck all that are unlocked).
