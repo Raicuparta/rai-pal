@@ -24,11 +24,11 @@ export global Branding {
     }
 
     public pure function provider-foreground(provider-id: string) -> brush {
-    return Theme.dark ? provider-color(provider-id).mix(white, 0.5) : provider-color(provider-id).darker(0.5);
+        return Theme.dark ? provider-color(provider-id).mix(white, 0.5) : provider-color(provider-id).darker(0.5);
     }
 
     public pure function provider-background(provider-id: string) -> brush {
-      return provider-color(provider-id).transparentize(0.85);
+        return provider-color(provider-id).darker(2).transparentize(0.2);
     }
 
     public pure function brand-color(brand: string) -> brush {
@@ -45,23 +45,23 @@ export global Branding {
     }
 
     pure function engine-color(brand: string) -> brush {
-      if brand == "Unity" {
-          return #74c0fc;
-      }
-      if brand == "Unreal" {
-          return #ff8787;
-      }
-      if brand == "Godot" {
-          return #b197fc;
-      }
-      if brand == "GameMaker" {
-          return #63e6be;
-      }
-      return Theme.foreground;
+        if brand == "Unity" {
+            return #74c0fc;
+        }
+        if brand == "Unreal" {
+            return #ff8787;
+        }
+        if brand == "Godot" {
+            return #b197fc;
+        }
+        if brand == "GameMaker" {
+            return #63e6be;
+        }
+        return Theme.foreground;
     }
 
     public pure function engine-background(brand: string) -> brush {
-      return engine-color(brand).transparentize(0.85);
+        return engine-color(brand).transparentize(0.85);
     }
 
     public pure function engine-foreground(brand: string) -> brush {

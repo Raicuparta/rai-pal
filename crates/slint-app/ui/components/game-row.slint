@@ -4,14 +4,12 @@ import { Fonts, Theme } from "../theme.slint";
 import { ProviderIcon } from "provider-icon.slint";
 import { SvgIcon } from "svg-icon.slint";
 import { EngineIcon } from "engine-icon.slint";
-import { HorizontalBox } from "std-widgets.slint";
+import { HorizontalBox, Palette } from "std-widgets.slint";
 
 export component GameRowView inherits Rectangle {
     in property <GameRowView> game-row;
     in property <int> row-index;
     in property <bool> show-thumbnail: true;
-
-    private property <length> thumbnail-size: 60px;
 
     callback selected(index: int);
 
@@ -19,9 +17,10 @@ export component GameRowView inherits Rectangle {
     background: touch-area.has-hover ? Theme.hover-background : Theme.background;
 
     HorizontalLayout {
+        cross-axis-alignment: center;
+
         Rectangle {
             width: 30px;
-            background: Branding.provider-background(game-row.provider-id);
             opacity: game-row.installed ? 1 : 0.5;
 
             VerticalLayout {
@@ -42,17 +41,18 @@ export component GameRowView inherits Rectangle {
         }
 
         if root.show-thumbnail: Rectangle {
-            width: 100px;
+            width: 90px;
+            height: 54px;
             clip: true;
-            background: Branding.provider-background(game-row.provider-id);
             opacity: game-row.installed ? 1 : 0.5;
+            border-radius: Theme.radius-8;
+            background: Branding.provider-background(game-row.provider-id);
 
             Image {
                 source: @image-url("../images/fallback-thumbnail.png");
-                width: root.thumbnail-size;
-                height: root.thumbnail-size;
-                x: (parent.width - self.width) / 2;
-                y: (parent.height - self.height) / 2;
+                width: 100%;
+                height: 100%;
+                image-fit: contain;
             }
 
             if game-row.has-thumbnail: Image {
